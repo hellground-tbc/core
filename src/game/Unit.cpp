@@ -8599,6 +8599,17 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
 
     switch(spellProto->SpellFamilyName)
     {
+		case SPELLFAMILY_GENERIC:
+			// Siphon Essence - 0%
+			if(spellProto->AttributesEx == 268435456 && spellProto->SpellIconID == 2027)
+			{
+				CastingTime = 0;
+			}
+			// Goblin Rocket Launcher - 0%
+			else if (spellProto->SpellIconID == 184 && spellProto->Attributes == 4259840)
+			{
+				CastingTime = 0;
+			}
         case SPELLFAMILY_MAGE:
             // Ignite - do not modify, it is (8*Rank)% damage of procing Spell
             if(spellProto->Id==12654)
@@ -9021,7 +9032,8 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
     // These Spells are doing fixed amount of healing (TODO found less hack-like check)
     if (spellProto->Id == 15290 || spellProto->Id == 39373 ||
         spellProto->Id == 33778 || spellProto->Id == 379   ||
-        spellProto->Id == 38395 || spellProto->Id == 40972)
+        spellProto->Id == 38395 || spellProto->Id == 40972 ||
+		spellProto->Id == 22845)
         return healamount;
 
     int32 AdvertisedBenefit = SpellBaseHealingBonus(GetSpellSchoolMask(spellProto));
@@ -9125,6 +9137,12 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
                     DotFactor = damagetype == DOT ? 0.705f : 1.0f;
                     CastingTime = damagetype == DOT ? 3500 : 1010;
                 }
+				// Improved Leader of the Pack
+				else if (spellProto->AttributesEx2 == 536870912 && spellProto->SpellIconID == 312 
+					&& spellProto->AttributesEx3 == 33554432)
+				{
+					CastingTime = 0;
+				}
                 break;
             case SPELLFAMILY_PRIEST:
                 // Holy Nova - 14%
