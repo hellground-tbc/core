@@ -2364,11 +2364,10 @@ void SpellMgr::LoadSpellCustomAttr()
         case 45976: // Muru Portal Channel
         case 39365: // Thundering Storm
         case 41071: // Raise Dead
+        case 41172: // Rapid Shot
             spellInfo->MaxAffectedTargets = 1;
             break;
         case 41357: // L1 Acane Charge
-            spellInfo->MaxAffectedTargets = 3;
-            break;
         case 41376: // Spite
         case 39992: // Needle Spine
         case 29576: //Multi-Shot
