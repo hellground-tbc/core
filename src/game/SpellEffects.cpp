@@ -954,6 +954,34 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->CastSpell(m_caster,23782,true);
                     m_caster->CastSpell(m_caster,23783,true);
                     return;
+                case 24930:                                 // Hallow's End Candy
+                    if(m_caster->GetTypeId()!=TYPEID_PLAYER)
+                        return;
+
+                    switch(m_caster->GetMap()->irand(0,3))
+                    {
+                    case 0:
+                        m_caster->CastSpell(m_caster,24927,true); // Ghost
+                        break;
+                    case 1:
+                        m_caster->CastSpell(m_caster,24926,true); // Pirate
+                        if(m_caster->getGender() == GENDER_MALE)
+                        {
+                            m_caster->CastSpell(m_caster,44743,true);
+                        }
+                        else
+                        {
+                            m_caster->CastSpell(m_caster,44742,true);
+                        }
+                        break;
+                    case 2:
+                        m_caster->CastSpell(m_caster,24925,true); // Skeleton
+                        break;
+                    case 3:
+                        m_caster->CastSpell(m_caster,24924,true); // Huge and Orange
+                        break;
+                    }
+                    return;
                 case 25860:                                 // Reindeer Transformation
                 {
                     if (!m_caster->HasAuraType(SPELL_AURA_MOUNTED))
