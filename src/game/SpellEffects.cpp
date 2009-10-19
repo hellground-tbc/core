@@ -4891,61 +4891,54 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         }
         case 48025:                                     // Headless Horseman's Mount
         {
-                if(!unitTarget)
+                if(!unitTarget && unitTarget->GetTypeId() == TYPEID_PLAYER)
                     return;
 
-                if(unitTarget)
+                if(GetVirtualMapForMapAndZone(unitTarget->GetMapId(),unitTarget->GetZoneId()) != 530)
                 {
-                    if(GetVirtualMapForMapAndZone(unitTarget->GetMapId(),unitTarget->GetZoneId()) != 530)
+                    switch(((Player*)unitTarget)->GetBaseSkillValue(762))
                     {
-                        switch(((Player*)unitTarget)->GetBaseSkillValue(762))
-                        {
-                        case 75: unitTarget->CastSpell(unitTarget, 51621, true); break;;
-                        case 150: case 225: case 300: unitTarget->CastSpell(unitTarget, 48024, true); break;
-                        default: break;
-                        }
-                    }else
+                    case 75: unitTarget->CastSpell(unitTarget, 51621, true); break;;
+                    case 150: case 225: case 300: unitTarget->CastSpell(unitTarget, 48024, true); break;
+                    default: break;
+                    }
+                }else
+                {
+                    switch(((Player*)unitTarget)->GetBaseSkillValue(762))
                     {
-                        switch(((Player*)unitTarget)->GetBaseSkillValue(762))
-                        {
-                        case 75: unitTarget->CastSpell(unitTarget, 51621, true); break;;
-                        case 150: unitTarget->CastSpell(unitTarget, 48024, true); break;
-                        case 225: unitTarget->CastSpell(unitTarget, 51617, true); break;
-                        case 300: unitTarget->CastSpell(unitTarget, 48023, true); break;
-                        default: break;
-                        }
+                    case 75: unitTarget->CastSpell(unitTarget, 51621, true); break;;
+                    case 150: unitTarget->CastSpell(unitTarget, 48024, true); break;
+                    case 225: unitTarget->CastSpell(unitTarget, 51617, true); break;
+                    case 300: unitTarget->CastSpell(unitTarget, 48023, true); break;
+                    default: break;
                     }
                 }
                 break;
         }
         case 47977:                                     // Magic Broom
         {
-            if(!unitTarget)
+            if(!unitTarget && unitTarget->GetTypeId() == TYPEID_PLAYER)
                 return;
 
-            if(unitTarget)
+            if(GetVirtualMapForMapAndZone(unitTarget->GetMapId(),unitTarget->GetZoneId()) != 530)
             {
-                if(GetVirtualMapForMapAndZone(unitTarget->GetMapId(),unitTarget->GetZoneId()) != 530)
+                switch(((Player*)unitTarget)->GetBaseSkillValue(762))
                 {
-                    switch(((Player*)unitTarget)->GetBaseSkillValue(762))
-                    {
-                    case 75: unitTarget->CastSpell(unitTarget, 42681, true); break;;
-                    case 150: case 225: case 300: unitTarget->CastSpell(unitTarget, 42683, true); break;
-                    default: break;
-                    }
+                case 75: unitTarget->CastSpell(unitTarget, 42681, true); break;;
+                case 150: case 225: case 300: unitTarget->CastSpell(unitTarget, 42683, true); break;
+                default: break;
                 }
-                else
+            }
+            else
+            {
+                switch(((Player*)unitTarget)->GetBaseSkillValue(762))
                 {
-                    switch(((Player*)unitTarget)->GetBaseSkillValue(762))
-                    {
-                    case 75: unitTarget->CastSpell(unitTarget, 42681, true); break;;
-                    case 150: unitTarget->CastSpell(unitTarget, 42684, true); break;
-                    case 225: unitTarget->CastSpell(unitTarget, 42673, true); break;
-                    case 300: unitTarget->CastSpell(unitTarget, 42679, true); break;
-                    default: break;
-                    }
+                case 75: unitTarget->CastSpell(unitTarget, 42681, true); break;;
+                case 150: unitTarget->CastSpell(unitTarget, 42684, true); break;
+                case 225: unitTarget->CastSpell(unitTarget, 42673, true); break;
+                case 300: unitTarget->CastSpell(unitTarget, 42679, true); break;
+                default: break;
                 }
-
             }
             break;
         }
