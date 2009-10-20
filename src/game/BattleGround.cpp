@@ -1623,7 +1623,8 @@ void BattleGround::EventPlayerLoggedOut(Player* player)
     {
         if( isBattleGround() )
             EventPlayerDroppedFlag(player);
-        else if( isArena() )
-            player->LeaveBattleground();
     }
+    else
+        if( isArena() )
+            player->LeaveBattleground();
 }
