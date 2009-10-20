@@ -4891,7 +4891,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         }
         case 48025:                                     // Headless Horseman's Mount
         {
-                if(!unitTarget && unitTarget->GetTypeId() == TYPEID_PLAYER)
+                if(!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
                     return;
 
                 if(GetVirtualMapForMapAndZone(unitTarget->GetMapId(),unitTarget->GetZoneId()) != 530)
@@ -4917,7 +4917,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         }
         case 47977:                                     // Magic Broom
         {
-            if(!unitTarget && unitTarget->GetTypeId() == TYPEID_PLAYER)
+            if(!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
                 return;
 
             if(GetVirtualMapForMapAndZone(unitTarget->GetMapId(),unitTarget->GetZoneId()) != 530)
