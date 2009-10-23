@@ -1533,3 +1533,14 @@ void GameEvent::SendWorldStateUpdate(Player * plr, uint16 event_id)
     }
 }
 
+TRINITY_DLL_SPEC bool isGameEventActive(uint16 event_id)
+{
+    GameEvent::ActiveEvents const& ae = gameeventmgr.GetActiveEventList();
+
+    for(GameEvent::ActiveEvents::const_iterator itr = ae.begin(); itr != ae.end(); ++itr)
+        if(*itr == event_id)
+	    return true;
+	    
+    return false;
+}
+

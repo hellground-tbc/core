@@ -161,3 +161,4 @@ class GameEvent
 #define gameeventmgr Trinity::Singleton<GameEvent>::Instance()
 #endif
 
+TRINITY_DLL_SPEC bool isGameEventActive(uint16 event_id);

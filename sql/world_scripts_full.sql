@@ -1068,3 +1068,6 @@ UPDATE `creature_template` SET `ScriptName` = 'mob_webwrap' WHERE `entry` = 1648
 UPDATE `creature_template` SET `ScriptName` = 'mob_dragonmaw_peon' WHERE `entry` = 22252;
 UPDATE `creature_template` SET `ScriptName` = 'npc_karynaku' WHERE `entry` = 22112;
 UPDATE `creature_template` SET `ScriptName` = 'mob_ohgan' WHERE `entry` = 14988;
+
+UPDATE `creature_template` SET `ScriptName` = 'pyrewood_ambush' WHERE `entry` = 2058;
+UPDATE `creature_template` SET `Scriptname` = 'npc_innkeeper' WHERE `npcflag`& 65536 AND ScriptName = ''
