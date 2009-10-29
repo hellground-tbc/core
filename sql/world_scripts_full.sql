@@ -1071,3 +1071,9 @@ UPDATE `creature_template` SET `ScriptName` = 'mob_ohgan' WHERE `entry` = 14988;
 
 UPDATE `creature_template` SET `ScriptName` = 'pyrewood_ambush' WHERE `entry` = 2058;
 UPDATE `creature_template` SET `Scriptname` = 'npc_innkeeper' WHERE `npcflag`& 65536 AND ScriptName = ''
+
+/* ULDAMAN */
+UPDATE `gameobject_template` SET `ScriptName` = 'go_keystone_chamber' WHERE `entry` = 124371;
+DELETE FROM `areatrigger_scripts` where `entry` = 822;
+INSERT INTO `areatrigger_scripts` (`entry`, `ScriptName`) VALUES (822, 'at_map_chamber');
+
