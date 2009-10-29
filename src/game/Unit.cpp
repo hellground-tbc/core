@@ -697,7 +697,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         }
     }
 
-    if(cleanDamage && cleanDamage->damage)
+    if(damage || (cleanDamage && cleanDamage->damage))
     {
         pVictim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_DAMAGE, spellProto ? spellProto->Id : 0);
         pVictim->RemoveSpellbyDamageTaken(damage, spellProto ? spellProto->Id : 0);
