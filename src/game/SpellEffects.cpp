@@ -4993,7 +4993,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         {
             //Workaround for Range ... should be global for every ScriptEffect
             float radius = GetSpellRadius(sSpellRadiusStore.LookupEntry(m_spellInfo->EffectRadiusIndex[effIndex]));
-            if(unitTarget && unitTarget->GetTypeId() == TYPEID_PLAYER && unitTarget->GetDistance(m_caster) >= radius && !unitTarget->HasAura(46394,0) && unitTarget != m_caster)
+            if(unitTarget && unitTarget->GetTypeId() == TYPEID_PLAYER && unitTarget->GetDistance(m_caster) <= radius && !unitTarget->HasAura(46394,0) && unitTarget != m_caster)
                 unitTarget->CastSpell(unitTarget,46394,true);
 
             break;
