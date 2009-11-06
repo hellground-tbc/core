@@ -63,7 +63,7 @@ void DynamicObject::RemoveFromWorld()
     }
 }
 
-bool DynamicObject::Create( uint32 guidlow, Unit *caster, uint32 spellId, uint32 effIndex, float x, float y, float z, int32 duration, float radius )
+bool DynamicObject::Create( uint32 guidlow, Unit *caster, uint32 spellId, uint32 effIndex, float x, float y, float z, int32 duration, float radius, float range )
 {
     SetInstanceId(caster->GetInstanceId());
 
@@ -76,12 +76,16 @@ bool DynamicObject::Create( uint32 guidlow, Unit *caster, uint32 spellId, uint32
         return false;
     }
 
+    float modVisualRadius = 1.0;
+    if(range==0.0)
+        modVisualRadius = 2.2;
+
     SetEntry(spellId);
     SetFloatValue( OBJECT_FIELD_SCALE_X, 1 );
     SetUInt64Value( DYNAMICOBJECT_CASTER, caster->GetGUID() );
     SetUInt32Value( DYNAMICOBJECT_BYTES, 0x00000001 );
     SetUInt32Value( DYNAMICOBJECT_SPELLID, spellId );
-    SetFloatValue( DYNAMICOBJECT_RADIUS, radius);
+    SetFloatValue( DYNAMICOBJECT_RADIUS, (radius * modVisualRadius));
     SetFloatValue( DYNAMICOBJECT_POS_X, x );
     SetFloatValue( DYNAMICOBJECT_POS_Y, y );
     SetFloatValue( DYNAMICOBJECT_POS_Z, z );
