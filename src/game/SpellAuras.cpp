@@ -4448,7 +4448,7 @@ void Aura::HandleAuraModTotalManaPercentRegen(bool apply, bool Real)
             m_modifier.periodictime = 1000;
         if(m_periodicTimer <= 0 && m_target->getPowerType() == POWER_MANA)
         {
-            m_periodicTimer += m_amplitude;
+            m_periodicTimer += m_amplitude > 0 ? m_amplitude : 1000;
 
             if(m_target->GetPower(POWER_MANA) < m_target->GetMaxPower(POWER_MANA))
             {

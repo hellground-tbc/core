@@ -1131,6 +1131,14 @@ void Spell::EffectDummy(uint32 i)
                     DoCreateItem(i,newitemid);
                     return;
                 }
+                case 40834: // Agonizing Flames
+                {
+                    if(unitTarget->GetTypeId() != TYPEID_PLAYER)
+                        return;
+                    
+                    m_caster->CastSpell(unitTarget,40932,true);
+                    break;
+                }
                 // Demon Broiled Surprise
                 /* FIX ME: Required for correct work implementing implicit target 7 (in pair (22,7))
                 case 43723:

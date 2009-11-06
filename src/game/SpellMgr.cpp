@@ -2365,6 +2365,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 39365: // Thundering Storm
         case 41071: // Raise Dead
         case 41172: // Rapid Shot
+        case 40834: // Agonizing Flames
             spellInfo->MaxAffectedTargets = 1;
             break;
         case 41357: // L1 Acane Charge
