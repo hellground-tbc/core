@@ -366,6 +366,9 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                         if(!radius) return;
                         float distance = m_caster->GetDistance2d(unitTarget);
                         damage = (distance > radius ) ? 0 : (int32)(m_spellInfo->EffectBasePoints[0]*((radius - distance)/radius));
+                        // Set the damage directly without spell bonus damage
+                        m_damage += damage;
+                        damage = 0;
                         break;
                     }
                     // Cataclysmic Bolt
@@ -4867,7 +4870,23 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             }
             break;
         }
+        // Gruul's shatter
+        case 33654:
+        {
+            if(!unitTarget)
+                return;
 
+            //Remove Stoned
+            if(unitTarget->HasAura(33652,0))
+                unitTarget->RemoveAurasDueToSpell(33652);
+
+            // Only player cast this
+            if(unitTarget->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+            unitTarget->CastSpell(unitTarget,33671,true,0,0,m_caster->GetGUID());
+            break;
+        }
         // Goblin Weather Machine
         case 46203:
         {
