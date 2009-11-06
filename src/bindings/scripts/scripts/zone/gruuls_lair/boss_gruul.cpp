@@ -187,32 +187,26 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
 
                     case 2:
                     {
-                        //The dummy shatter spell is cast
                         DoCast(m_creature, SPELL_SHATTER);
-
                         GroundSlamTimer = 1000;
-
                      break;
                     }
 
                     case 3:
                     {
                         //Shatter takes effect
-                        std::list<HostilReference*>& m_threatlist = m_creature->getThreatManager().getThreatList();
-
-                        for(std::list<HostilReference*>::iterator itr = m_threatlist.begin(); itr!= m_threatlist.end(); ++itr)
-                        {
-                            Unit *target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
-
-                            if(target)
-                            {
-                                target->RemoveAurasDueToSpell(SPELL_STONED);
-
-                                if(target->GetTypeId() == TYPEID_PLAYER)
-                                    target->CastSpell(target, SPELL_SHATTER_EFFECT, false, NULL, NULL, m_creature->GetGUID());
-                            }
-
-                        }
+                        // Not Needet Anymore Handled in Spell SPELL_SHATTER
+                        //std::list<HostilReference*>& m_threatlist = m_creature->getThreatManager().getThreatList();
+                        //for(std::list<HostilReference*>::iterator itr = m_threatlist.begin(); itr!= m_threatlist.end(); ++itr)
+                        //{
+                        //    Unit *target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
+                        //    if(target)
+                        //    {
+                        //        target->RemoveAurasDueToSpell(SPELL_STONED);
+                        //        if(target->GetTypeId() == TYPEID_PLAYER)
+                        //            target->CastSpell(target, SPELL_SHATTER_EFFECT, false, NULL, NULL, m_creature->GetGUID());
+                        //    }
+                        //}
 
                         m_creature->GetMotionMaster()->Clear();
 
