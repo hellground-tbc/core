@@ -859,6 +859,7 @@ UPDATE `creature_template` SET `ScriptName`='npc_marin_noggenfogger' WHERE `entr
 UPDATE `creature_template` SET `ScriptName`='npc_steward_of_time' WHERE `entry`=20142;
 UPDATE `creature_template` SET `ScriptName`='npc_stone_watcher_of_norgannon' WHERE `entry`=7918;
 UPDATE `creature_template` SET `ScriptName` = 'npc_OOX17' WHERE `entry` = 7784;
+UPDATE `gameobject_template` SET `ScriptName` = 'go_landmark_treasure' WHERE `entry` = 142189;
 
 /* TELDRASSIL */
 
