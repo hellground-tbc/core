@@ -2354,6 +2354,11 @@ void SpellMgr::LoadSpellCustomAttr()
         case 42384:                             // Brutal Swipe
         case 45150:                             // Meteor Slash
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_SHARE_DAMAGE;
+            switch(i) // Saber Lash Targets
+            {
+            case 40810:             spellInfo->MaxAffectedTargets = 3; break;
+            case 43267: case 43268: spellInfo->MaxAffectedTargets = 2; break;
+            }
             break;
         case 44978: case 45001: case 45002:     // Wild Magic
         case 45004: case 45006: case 45010:     // Wild Magic
@@ -2372,7 +2377,6 @@ void SpellMgr::LoadSpellCustomAttr()
         case 41376: // Spite
         case 39992: // Needle Spine
         case 29576: //Multi-Shot
-        case 40816: //Saber Lash
         case 37790: //Spread Shot
         case 46771: //Flame Sear
         case 45248: //Shadow Blades

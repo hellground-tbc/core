@@ -2856,6 +2856,10 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     if (roll < tmp)
         return SPELL_MISS_MISS;
 
+    bool canDodge = true;
+    bool canParry = true;
+    bool canBlock = spell->AttributesEx3 & SPELL_ATTR_EX3_UNK3;
+
     // Same spells cannot be parry/dodge
     if (spell->Attributes & SPELL_ATTR_IMPOSSIBLE_DODGE_PARRY_BLOCK)
         return SPELL_MISS_NONE;
@@ -2870,22 +2874,16 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     if (attType == RANGED_ATTACK)
         return SPELL_MISS_NONE;
 
-    bool attackFromBehind = !pVictim->HasInArc(M_PI,this);
-
-    // Roll dodge
-    int32 dodgeChance = int32(pVictim->GetUnitDodgeChance()*100.0f) - skillDiff * 4;
-    // Reduce enemy dodge chance by SPELL_AURA_MOD_COMBAT_RESULT_CHANCE
-    dodgeChance+= GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_COMBAT_RESULT_CHANCE, VICTIMSTATE_DODGE)*100;
-
-    // Reduce dodge chance by attacker expertise rating
-    if (GetTypeId() == TYPEID_PLAYER)
-        dodgeChance-=int32(((Player*)this)->GetExpertiseDodgeOrParryReduction(attType) * 100.0f);
-    if (dodgeChance < 0)
-        dodgeChance = 0;
-
-    // Can`t dodge from behind in PvP (but its possible in PvE)
-    if (GetTypeId() == TYPEID_PLAYER && pVictim->GetTypeId() == TYPEID_PLAYER && attackFromBehind)
-        dodgeChance = 0;
+    // Check for attack from behind
+    if (!pVictim->HasInArc(M_PI,this))
+    {
+        // Can`t dodge from behind in PvP (but its possible in PvE)
+        if (pVictim->GetTypeId() == TYPEID_PLAYER)
+            canDodge = false;
+        // Can`t parry or block
+        canParry = false;
+        canBlock = false;
+    }
 
     // Rogue talent`s cant be dodged
     AuraList const& mCanNotBeDodge = GetAurasByType(SPELL_AURA_IGNORE_COMBAT_RESULT);
@@ -2895,28 +2893,55 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell)
         {
             if(spell->SpellFamilyName==SPELLFAMILY_ROGUE && (spell->SpellFamilyFlags & SPELLFAMILYFLAG_ROGUE__FINISHING_MOVE))
             {
-                dodgeChance = 0;
+                canDodge = false;
                 break;
             }
         }
     }
 
-    tmp += dodgeChance;
-    if (roll < tmp)
-        return SPELL_MISS_DODGE;
+    if (canDodge)
+    {
+        // Roll dodge
+        int32 dodgeChance = int32(pVictim->GetUnitDodgeChance()*100.0f) - skillDiff * 4;
+        // Reduce enemy dodge chance by SPELL_AURA_MOD_COMBAT_RESULT_CHANCE
+        dodgeChance+= GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_COMBAT_RESULT_CHANCE, VICTIMSTATE_DODGE)*100;
+        dodgeChance = int32 (float (dodgeChance) * GetTotalAuraMultiplier(SPELL_AURA_MOD_ENEMY_DODGE));
+        // Reduce dodge chance by attacker expertise rating
+        if (GetTypeId() == TYPEID_PLAYER)
+            dodgeChance-=int32(((Player*)this)->GetExpertiseDodgeOrParryReduction(attType) * 100.0f);
+        if (dodgeChance < 0)
+            dodgeChance = 0;
 
-    // Roll parry
-    int32 parryChance = int32(pVictim->GetUnitParryChance()*100.0f)  - skillDiff * 4;
-    // Reduce parry chance by attacker expertise rating
-    if (GetTypeId() == TYPEID_PLAYER)
-        parryChance-=int32(((Player*)this)->GetExpertiseDodgeOrParryReduction(attType) * 100.0f);
-    // Can`t parry from behind
-    if (parryChance < 0 || attackFromBehind)
-        parryChance = 0;
+        tmp += dodgeChance;
+        if (roll < tmp)
+            return SPELL_MISS_DODGE;
+    }
 
-    tmp += parryChance;
-    if (roll < tmp)
-        return SPELL_MISS_PARRY;
+    if (canParry)
+    {
+        // Roll parry
+        int32 parryChance = int32(pVictim->GetUnitParryChance()*100.0f)  - skillDiff * 4;
+        // Reduce parry chance by attacker expertise rating
+        if (GetTypeId() == TYPEID_PLAYER)
+            parryChance-=int32(((Player*)this)->GetExpertiseDodgeOrParryReduction(attType) * 100.0f);
+        if (parryChance < 0)
+            parryChance = 0;
+
+        tmp += parryChance;
+        if (roll < tmp)
+            return SPELL_MISS_PARRY;
+    }
+
+    if (canBlock)
+    {
+        int32 blockChance = int32(pVictim->GetUnitBlockChance()*100.0f)  - skillDiff * 4;
+        if ( blockChance < 0 )
+            blockChance = 0;
+        tmp += blockChance;
+
+        if (roll < tmp)
+            return SPELL_MISS_BLOCK;
+    }
 
     return SPELL_MISS_NONE;
 }
@@ -2989,12 +3014,12 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
 SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool CanReflect)
 {
     // Return evade for units in evade mode
-    if (pVictim->GetTypeId()==TYPEID_UNIT && ((Creature*)pVictim)->IsInEvadeMode())
+    if (pVictim->GetTypeId()==TYPEID_UNIT && ((Creature*)pVictim)->IsInEvadeMode() && this != pVictim)
         return SPELL_MISS_EVADE;
 
     // If Spel has this flag cannot be resisted/immuned/etc
-    if (spell->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY)
-        return SPELL_MISS_NONE;
+    //if (spell->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY)
+    //    return SPELL_MISS_NONE;
 
     // Check for immune (use charges)
     if (pVictim->IsImmunedToSpell(spell,true))
