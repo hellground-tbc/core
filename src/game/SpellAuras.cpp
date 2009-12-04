@@ -769,7 +769,7 @@ void PersistentAreaAura::Update(uint32 diff)
     {
         if(GetId() == 40253)
         {
-            DynamicObject *dynObj = ObjectAccessor::GetDynamicObject(*caster, dynObjGUID);
+            DynamicObject *dynObj = caster->GetMap()->GetDynamicObject(dynObjGUID);
             if(dynObj)
             {
                 if (!m_target->IsWithinDistInMap(dynObj, dynObj->GetRadius()))
@@ -2328,7 +2328,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     uint64 guid = caster->m_TotemSlot[3];
                     if (guid)
                     {
-                        Creature *totem = ObjectAccessor::GetCreature(*caster, guid);
+                        Creature *totem = caster->GetMap()->GetCreature(guid);
                         if (totem && totem->isTotem())
                             ((Player*)caster)->CastSpell(totem, 6277, true);
                     }

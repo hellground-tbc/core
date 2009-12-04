@@ -926,9 +926,9 @@ void Spell::EffectDummy(uint32 i)
                     WorldLocation wLoc;
                     Creature* cTarget = (Creature*)unitTarget;
                     cTarget->GetPosition(wLoc);
-                    ang = cTarget->GetAngle(wLoc.x,wLoc.y);                    
+                    float ang = cTarget->GetAngle(wLoc.x,wLoc.y);                    
                     
-                    if(Creature * rat = m_caster->SummonCreature(13017,x,y,z,ang,TEMPSUMMON_TIMED_DESPAWN,600000))
+                    if(Creature * rat = m_caster->SummonCreature(13017,wLoc.x,wLoc.y,wLoc.z,ang,TEMPSUMMON_TIMED_DESPAWN,600000))
                         rat->GetMotionMaster()->MoveFollow(m_caster, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
                     
                     cTarget->setDeathState(JUST_DIED);
@@ -5433,7 +5433,7 @@ void Spell::EffectSummonTotem(uint32 i)
         uint64 guid = m_caster->m_TotemSlot[slot];
         if(guid != 0)
         {
-            Creature *OldTotem = ObjectAccessor::GetCreature(*m_caster, guid);
+            Creature *OldTotem = m_caster->GetMap()->GetCreature(guid);
             if(OldTotem && OldTotem->isTotem())
                 ((Totem*)OldTotem)->UnSummon();
         }
@@ -5636,7 +5636,7 @@ void Spell::EffectSummonObject(uint32 i)
     {
         GameObject* obj = NULL;
         if( m_caster )
-            obj = ObjectAccessor::GetGameObject(*m_caster, guid);
+            obj = m_caster->GetMap()->GetGameObject(guid);
 
         if(obj) obj->Delete();
         m_caster->m_ObjectSlot[slot] = 0;
@@ -6198,7 +6198,7 @@ void Spell::EffectDestroyAllTotems(uint32 /*i*/)
         if(!m_caster->m_TotemSlot[slot])
             continue;
 
-        Creature* totem = ObjectAccessor::GetCreature(*m_caster,m_caster->m_TotemSlot[slot]);
+        Creature* totem = m_caster->GetMap()->GetCreature(m_caster->m_TotemSlot[slot]);
         if(totem && totem->isTotem())
         {
             uint32 spell_id = totem->GetUInt32Value(UNIT_CREATED_BY_SPELL);

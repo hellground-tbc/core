@@ -89,7 +89,7 @@ ObjectAccessor::GetNPCIfCanInteractWith(Player const &player, uint64 guid, uint3
         return NULL;
 
     // exist
-    Creature *unit = GetCreature(player, guid);
+    Creature *unit = player.GetMap()->GetCreature(guid);
     if (!unit)
         return NULL;
 
@@ -138,23 +138,7 @@ ObjectAccessor::GetCreatureOrPet(WorldObject const &u, uint64 guid)
     if(Creature *unit = GetPet(guid))
         return unit;
 
-    return GetCreature(u, guid);
-}
-
-Creature*
-ObjectAccessor::GetCreature(WorldObject const &u, uint64 guid)
-{
-    Creature * ret = GetObjectInWorld(guid, (Creature*)NULL);
-    if(!ret)
-        return NULL;
-
-    if(ret->GetMapId() != u.GetMapId())
-        return NULL;
-
-    if(ret->GetInstanceId() != u.GetInstanceId())
-        return NULL;
-
-    return ret;
+    return u.GetMap()->GetCreature(guid);
 }
 
 Unit*
@@ -195,13 +179,13 @@ Object* ObjectAccessor::GetObjectByTypeMask(Player const &p, uint64 guid, uint32
 
     if(typemask & TYPEMASK_GAMEOBJECT)
     {
-        obj = GetGameObject(p,guid);
+        obj = p.GetMap()->GetGameObject(guid);
         if(obj) return obj;
     }
 
     if(typemask & TYPEMASK_DYNAMICOBJECT)
     {
-        obj = GetDynamicObject(p,guid);
+        obj = p.GetMap()->GetDynamicObject(guid);
         if(obj) return obj;
     }
 
@@ -212,22 +196,6 @@ Object* ObjectAccessor::GetObjectByTypeMask(Player const &p, uint64 guid, uint32
     }
 
     return NULL;
-}
-
-GameObject*
-ObjectAccessor::GetGameObject(WorldObject const &u, uint64 guid)
-{
-    GameObject * ret = GetObjectInWorld(guid, (GameObject*)NULL);
-    if(ret && ret->GetMapId() != u.GetMapId()) ret = NULL;
-    return ret;
-}
-
-DynamicObject*
-ObjectAccessor::GetDynamicObject(Unit const &u, uint64 guid)
-{
-    DynamicObject * ret = GetObjectInWorld(guid, (DynamicObject*)NULL);
-    if(ret && ret->GetMapId() != u.GetMapId()) ret = NULL;
-    return ret;
 }
 
 Player*

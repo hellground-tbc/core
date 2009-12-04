@@ -305,13 +305,13 @@ struct TRINITY_DLL_DECL instance_karazhan : public ScriptedInstance
         {
             if(CheckTimer < diff)
             {
-                Creature *Kilrek = instance->GetCreatureInMap(KilrekGUID);
+                Creature *Kilrek = instance->GetCreature(KilrekGUID);
                 if(Kilrek && needRespawn)
                 {
                     Kilrek->Respawn();
                     needRespawn = false;
                     
-                    Creature *Terestian = instance->GetCreatureInMap(TerestianGUID);
+                    Creature *Terestian = instance->GetCreature(TerestianGUID);
                     if(Terestian && Terestian->isAlive())
                         Terestian->RemoveAurasDueToSpell(SPELL_BROKEN_PACT);
                 }
