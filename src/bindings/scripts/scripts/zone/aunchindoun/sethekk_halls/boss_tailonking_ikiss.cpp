@@ -55,6 +55,7 @@ struct TRINITY_DLL_DECL boss_talon_king_ikissAI : public ScriptedAI
     boss_talon_king_ikissAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        m_creature->GetPosition(wLoc);
     }
 
     ScriptedInstance* pInstance;
@@ -65,6 +66,8 @@ struct TRINITY_DLL_DECL boss_talon_king_ikissAI : public ScriptedAI
     uint32 Sheep_Timer;
     uint32 Blink_Timer;
     uint32 Slow_Timer;
+
+    WorldLocation wLoc;
 
     bool ManaShield;
     bool Blink;
@@ -188,11 +191,8 @@ struct TRINITY_DLL_DECL boss_talon_king_ikissAI : public ScriptedAI
                 //Spell doesn't work, but we use for visual effect at least
                 DoCast(target,SPELL_BLINK);
 
-                float X = target->GetPositionX();
-                float Y = target->GetPositionY();
-                float Z = target->GetPositionZ();
-
-                DoTeleportTo(X,Y,Z);
+                m_creature->Relocate(wLoc.x,wLoc.y,wLoc.z);
+                m_creature->SendMonsterMove(wLoc.x,wLoc.y,wLoc.z, 0);
 
                 DoCast(target,SPELL_BLINK_TELEPORT);
                 Blink = true;
