@@ -441,13 +441,18 @@ struct TRINITY_DLL_DECL boss_illidari_councilAI : public ScriptedAI
 
 struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public boss_illidari_councilAI
 {
-    boss_gathios_the_shattererAI(Creature *c) : boss_illidari_councilAI(c) {}
+    boss_gathios_the_shattererAI(Creature *c) : boss_illidari_councilAI(c) 
+    {
+        m_creature->GetPosition(wLoc);
+    }
 
     uint32 ConsecrationTimer;
     uint32 HammerOfJusticeTimer;
     uint32 SealTimer;
     uint32 AuraTimer;
     uint32 BlessingTimer;
+    uint32 CheckTimer;
+    WorldLocation wLoc;
 
     void Reset()
     {
@@ -456,6 +461,7 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public boss_illidari_coun
         SealTimer = 40000;
         AuraTimer = 90000;
         BlessingTimer = 60000;
+        CheckTimer = 3000;
     }
 
     void KilledUnit(Unit *victim)
@@ -501,6 +507,17 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public boss_illidari_coun
     {
         if(!UpdateVictim())
             return;
+
+        if (CheckTimer < diff)
+        {
+            if (m_creature->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 60)
+                EnterEvadeMode();
+            else
+                DoZoneInCombat();
+            CheckTimer = 3000;
+        }
+        else
+            CheckTimer -= diff;
 
         if(BlessingTimer < diff)
         {
@@ -556,7 +573,10 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public boss_illidari_coun
 
 struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public boss_illidari_councilAI
 {
-    boss_high_nethermancer_zerevorAI(Creature *c) : boss_illidari_councilAI(c) {}
+    boss_high_nethermancer_zerevorAI(Creature *c) : boss_illidari_councilAI(c) 
+    {
+        m_creature->GetPosition(wLoc);
+    }
 
     uint32 BlizzardTimer;
     uint32 FlamestrikeTimer;
@@ -564,6 +584,8 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public boss_illidari_
     uint32 DampenMagicTimer;
     uint32 Cooldown;
     uint32 ArcaneExplosionTimer;
+    uint32 CheckTimer;
+    WorldLocation wLoc;
 
     void Reset()
     {
@@ -573,6 +595,7 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public boss_illidari_
         DampenMagicTimer = 2000;
         ArcaneExplosionTimer = 14000;
         Cooldown = 0;
+        CheckTimer = 3000;
     }
 
     void KilledUnit(Unit *victim)
@@ -589,6 +612,17 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public boss_illidari_
     {
         if(!UpdateVictim())
             return;
+
+        if (CheckTimer < diff)
+        {
+            if (m_creature->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 60)
+                EnterEvadeMode();
+            else
+                DoZoneInCombat();
+            CheckTimer = 3000;
+        }
+        else
+            CheckTimer -= diff;
 
         if(Cooldown)
         {
@@ -648,12 +682,17 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public boss_illidari_
 
 struct TRINITY_DLL_DECL boss_lady_malandeAI : public boss_illidari_councilAI
 {
-    boss_lady_malandeAI(Creature *c) : boss_illidari_councilAI(c) {}
+    boss_lady_malandeAI(Creature *c) : boss_illidari_councilAI(c) 
+    {
+        m_creature->GetPosition(wLoc);
+    }
 
     uint32 EmpoweredSmiteTimer;
     uint32 CircleOfHealingTimer;
     uint32 DivineWrathTimer;
     uint32 ReflectiveShieldTimer;
+    uint32 CheckTimer;
+    WorldLocation wLoc;
 
     void Reset()
     {
@@ -661,6 +700,7 @@ struct TRINITY_DLL_DECL boss_lady_malandeAI : public boss_illidari_councilAI
         CircleOfHealingTimer = 20000;
         DivineWrathTimer = 40000;
         ReflectiveShieldTimer = 0;
+        CheckTimer = 3000;
     }
 
     void KilledUnit(Unit *victim)
@@ -677,6 +717,17 @@ struct TRINITY_DLL_DECL boss_lady_malandeAI : public boss_illidari_councilAI
     {
         if(!UpdateVictim())
             return;
+
+        if (CheckTimer < diff)
+        {
+            if (m_creature->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 60)
+                EnterEvadeMode();
+            else
+                DoZoneInCombat();
+            CheckTimer = 3000;
+        }
+        else
+            CheckTimer -= diff;
 
         if(EmpoweredSmiteTimer < diff)
         {
@@ -714,13 +765,18 @@ struct TRINITY_DLL_DECL boss_lady_malandeAI : public boss_illidari_councilAI
 
 struct TRINITY_DLL_DECL boss_veras_darkshadowAI : public boss_illidari_councilAI
 {
-    boss_veras_darkshadowAI(Creature *c) : boss_illidari_councilAI(c) {}
+    boss_veras_darkshadowAI(Creature *c) : boss_illidari_councilAI(c) 
+    {
+        m_creature->GetPosition(wLoc);
+    }
 
     uint64 EnvenomTargetGUID;
 
     uint32 DeadlyPoisonTimer;
     uint32 VanishTimer;
     uint32 AppearEnvenomTimer;
+    uint32 CheckTimer;
+    WorldLocation wLoc;
 
     bool HasVanished;
 
@@ -731,6 +787,7 @@ struct TRINITY_DLL_DECL boss_veras_darkshadowAI : public boss_illidari_councilAI
         DeadlyPoisonTimer = 20000;
         VanishTimer = 60000 + rand()%61 * 1000;
         AppearEnvenomTimer = 150000;
+        CheckTimer = 3000;
 
         HasVanished = false;
         m_creature->SetVisibility(VISIBILITY_ON);
@@ -751,6 +808,17 @@ struct TRINITY_DLL_DECL boss_veras_darkshadowAI : public boss_illidari_councilAI
     {
         if(!UpdateVictim())
             return;
+
+        if (CheckTimer < diff)
+        {
+            if (m_creature->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 60)
+                EnterEvadeMode();
+            else
+                DoZoneInCombat();
+            CheckTimer = 3000;
+        }
+        else
+            CheckTimer -= diff;
 
         if(!HasVanished)
         {

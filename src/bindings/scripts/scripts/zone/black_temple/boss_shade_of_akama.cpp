@@ -171,6 +171,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
         m_creature->setActive(true);//if view distance is too low
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
         m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
+        m_creature->GetPosition(wLoc);
     }
 
     ScriptedInstance* pInstance;
@@ -186,6 +187,9 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
     uint32 SummonTimer;
     uint32 ResetTimer;
     uint32 DefenderTimer;                                   // They are on a flat 15 second timer, independant of the other summon creature timer.
+    
+    uint32 CheckTimer;
+    WorldLocation wLoc;
 
     bool IsBanished;
     bool HasKilledAkama;
@@ -220,6 +224,9 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
         ReduceHealthTimer = 0;
         ResetTimer = 60000;
         DefenderTimer = 15000;
+
+        CheckTimer = 3000;
+        WorldLocation wLoc;
 
         IsBanished = true;
         HasKilledAkama = false;
@@ -394,6 +401,17 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
     {
         if(!InCombat)
             return;
+
+        if (CheckTimer < diff)
+        {
+            if (m_creature->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 100)
+                EnterEvadeMode();
+            else
+                DoZoneInCombat();
+            CheckTimer = 3000;
+        }
+        else 
+            CheckTimer -= diff;
 
         if(IsBanished)
         {

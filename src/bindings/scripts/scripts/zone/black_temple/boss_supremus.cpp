@@ -35,6 +35,7 @@ EndScriptData */
 #define SPELL_VOLCANIC_ERUPTION     40117
 #define SPELL_VOLCANIC_SUMMON       40276
 #define SPELL_BERSERK               45078
+#define SPELL_CHARGE                41581
 
 #define CREATURE_VOLCANO            23085
 #define CREATURE_STALKER            23095
@@ -43,9 +44,29 @@ struct TRINITY_DLL_DECL molten_flameAI : public NullCreatureAI
 {
     molten_flameAI(Creature *c) : NullCreatureAI(c)
     {
-        float x, y, z;
-        me->GetNearPoint(me, x, y, z, 1, 50, M_PI*2*rand_norm());
-        me->GetMotionMaster()->MovePoint(0, x, y, z);
+        pInstance = ((ScriptedInstance *)c->GetInstanceData());
+        Punch();
+    }
+
+    ScriptedInstance *pInstance;
+
+    void Punch()
+    {
+        m_creature->SetSpeed(MOVE_WALK, 4.0f, true);
+        m_creature->SetSpeed(MOVE_RUN, 4.0f, true);
+        if(pInstance)
+        {
+            Unit *supremus = Unit::GetUnit(*m_creature, pInstance->GetData64(DATA_SUPREMUS));
+            if(supremus)
+            {
+                m_creature->setFaction(supremus->getFaction());
+                float angle = supremus->GetAngle(m_creature);
+                float x = m_creature->GetPositionX() + 100.0f * cos(angle);
+                float y = m_creature->GetPositionY() + 100.0f * sin(angle);
+                float z = m_creature->GetMap()->GetHeight(x, y, MAX_HEIGHT, true);
+                m_creature->GetMotionMaster()->MovePoint(0, x, y, z + 0.05f);
+            }
+        }
     }
 };
 
@@ -54,9 +75,12 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
     boss_supremusAI(Creature *c) : ScriptedAI(c), summons(m_creature)
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        m_creature->GetPosition(wLoc);
     }
 
     ScriptedInstance* pInstance;
+
+    uint32 MoltenFlameTimer;
 
     uint32 SummonFlameTimer;
     uint32 SwitchTargetTimer;
@@ -64,6 +88,9 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
     uint32 SummonVolcanoTimer;
     uint32 HatefulStrikeTimer;
     uint32 BerserkTimer;
+    
+    uint32 CheckTimer;
+    WorldLocation wLoc;
 
     bool Phase1;
 
@@ -81,12 +108,16 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
             //else ToggleDoors(false);
         }
 
+        MoltenFlameTimer = 10000;
         HatefulStrikeTimer = 5000;
         SummonFlameTimer = 20000;
         SwitchTargetTimer = 90000;
         PhaseSwitchTimer = 60000;
         SummonVolcanoTimer = 5000;
         BerserkTimer = 900000;                              // 15 minute enrage
+        CheckTimer = 3000;
+
+        WorldLocation wLoc;
 
         Phase1 = true;
         summons.DespawnAll();
@@ -105,6 +136,9 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
 
     void ToggleDoors(bool close)
     {
+        if(!pInstance)
+            return;
+
         if(GameObject* Doors = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_GAMEOBJECT_SUPREMUS_DOORS)))
         {
             if(close) Doors->SetGoState(1);                 // Closed
@@ -150,8 +184,20 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
+
         if (!UpdateVictim())
             return;
+
+        if (CheckTimer < diff)
+        {
+            if (m_creature->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 100)
+                EnterEvadeMode();
+            else
+                DoZoneInCombat();
+            CheckTimer = 3000;
+        }
+        else 
+            CheckTimer -= diff;
 
         if(!m_creature->HasAura(SPELL_BERSERK, 0))
         {
@@ -162,9 +208,14 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
 
         if(SummonFlameTimer < diff)
         {
+            Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, 100.0f, true);
+            if(!target)
+                target = m_creature->getVictim();
+
             DoCast(m_creature, SPELL_MOLTEN_PUNCH);
             SummonFlameTimer = 20000;
-        }else SummonFlameTimer -= diff;
+        }
+        else SummonFlameTimer -= diff;
 
         if(Phase1)
         {
@@ -173,7 +224,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
                 if(Unit* target = CalculateHatefulStrikeTarget())
                 {
                     DoCast(target, SPELL_HATEFUL_STRIKE);
-                    HatefulStrikeTimer = 5000;
+                    HatefulStrikeTimer = 8000;
                 }
             }else HatefulStrikeTimer -= diff;
         }
@@ -195,7 +246,9 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
             {
                 if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 999, true))
                 {
-                    DoCast(target, SPELL_VOLCANIC_SUMMON);
+                    float x, y, z;
+                    target->GetClosePoint(x, y, z, 5.0f, false, m_creature->GetOrientation());
+                    m_creature->CastSpell(x, y, z, SPELL_VOLCANIC_SUMMON, true);
                     DoScriptText(EMOTE_GROUND_CRACK, m_creature);
                     SummonVolcanoTimer = 10000;
                 }
@@ -236,48 +289,22 @@ struct TRINITY_DLL_DECL npc_volcanoAI : public ScriptedAI
 {
     npc_volcanoAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
     }
-
-    ScriptedInstance *pInstance;
-
-    uint32 CheckTimer;
-    bool Eruption;
 
     void Reset()
     {
-        CheckTimer = 1500;
-        Eruption = false;
-
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        m_creature->CastSpell(m_creature, 42716, true);
+        m_creature->CastSpell(m_creature, SPELL_VOLCANIC_ERUPTION,true);
     }
 
     void Aggro(Unit *who) {}
 
-    void MoveInLineOfSight(Unit *who)
-    {
-        return; // paralyze the npc
-    }
+    void MoveInLineOfSight(Unit *who) {}
 
     void UpdateAI(const uint32 diff)
     {
-        if(CheckTimer < diff)
-        {
-            uint64 SupremusGUID = pInstance->GetData64(DATA_SUPREMUS);
-            Creature* Supremus = (Unit::GetCreature((*m_creature), SupremusGUID));
-            if(!Eruption && Supremus && !((boss_supremusAI*)Supremus->AI())->Phase1)
-            {
-                Eruption = true;
-                DoCast(m_creature, SPELL_VOLCANIC_ERUPTION);
-            }
-            else if((Eruption && Supremus && ((boss_supremusAI*)Supremus->AI())->Phase1) || !Supremus)
-            {
-                if(m_creature->HasAura(SPELL_VOLCANIC_ERUPTION, 0))
-                    m_creature->RemoveAura(SPELL_VOLCANIC_ERUPTION, 0);
-            }
-            CheckTimer = 1500;
-        }else CheckTimer -= diff;
     }
 };
 
