@@ -146,7 +146,6 @@ class TRINITY_DLL_DECL ObjectAccessor : public Trinity::Singleton<ObjectAccessor
         }
 
         static Object*   GetObjectByTypeMask(Player const &, uint64, uint32 typemask);
-        static Creature* GetNPCIfCanInteractWith(Player const &player, uint64 guid, uint32 npcflagmask);
         static Creature* GetCreatureOrPet(WorldObject const &, uint64);
         static Unit* GetUnit(WorldObject const &, uint64);
         static Pet* GetPet(Unit const &, uint64 guid) { return GetPet(guid); }

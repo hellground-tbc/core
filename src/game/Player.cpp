@@ -1814,6 +1814,10 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         else
             return false;
     }
+
+    if(Group *pGroup = GetGroup())
+        pGroup->UpdatePlayerOutOfRange(this);
+
     return true;
 }
 
@@ -2015,6 +2019,84 @@ bool Player::CanInteractWithNPCs(bool alive) const
         return false;
 
     return true;
+}
+
+Creature* Player::GetNPCIfCanInteractWith(uint64 guid, uint32 npcflagmask)
+{
+    // unit checks
+    if(!guid)
+        return NULL;
+
+    // exist
+    Creature *unit = GetMap()->GetCreature(guid);
+    if(!unit)
+        return NULL;
+
+    // player check
+    if(!CanInteractWithNPCs(!unit->isSpiritService()))
+        return NULL;
+
+    if(IsHostileTo(unit))
+        return NULL;
+    
+    // appropriate npc type
+    if(npcflagmask && !unit->HasFlag( UNIT_NPC_FLAGS, npcflagmask ))
+        return NULL;
+
+    // alive or spirit healer
+    if(!unit->isAlive() && (!unit->isSpiritService() || isAlive() ))
+        return NULL;
+
+    // not allow interaction under control
+    if(unit->GetCharmerGUID())
+        return NULL;
+
+    // not enemy
+    if(unit->IsHostileTo(this))
+        return NULL;
+
+    // not unfriendly
+    FactionTemplateEntry const* factionTemplate = sFactionTemplateStore.LookupEntry(unit->getFaction());
+    if(factionTemplate)
+    {
+        FactionEntry const* faction = sFactionStore.LookupEntry(factionTemplate->faction);
+        if( faction->reputationListID >= 0 && GetReputationRank(faction) <= REP_UNFRIENDLY)
+            return NULL;
+    }
+
+    // not too far
+    if(!unit->IsWithinDistInMap(this, INTERACTION_DISTANCE))
+        return NULL;
+
+    return unit;
+}
+
+GameObject* Player::GetGameObjectIfCanInteractWith(uint64 guid, GameobjectTypes type) const
+{
+    if(GameObject *gObject = GetMap()->GetGameObject(guid))
+    {
+        if(gObject->GetGoType() == type)
+        {
+            float maxdist;
+            switch(type)
+            {
+                case GAMEOBJECT_TYPE_GUILD_BANK:
+                case GAMEOBJECT_TYPE_MAILBOX:
+                    maxdist = 10.0f;
+                    break;
+                case GAMEOBJECT_TYPE_FISHINGHOLE:
+                    maxdist = 20.0f + CONTACT_DISTANCE;       // max spell range
+                    break;
+                default:
+                    maxdist = INTERACTION_DISTANCE;
+                    break;
+            }
+
+            if (gObject->IsWithinDistInMap(this, maxdist))
+                return gObject;
+        }
+    }
+    return NULL;
 }
 
 bool Player::IsUnderWater() const
@@ -17270,7 +17352,7 @@ bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint
         return false;
     }
 
-    Creature *pCreature = ObjectAccessor::GetNPCIfCanInteractWith(*this, vendorguid,UNIT_NPC_FLAG_VENDOR);
+    Creature *pCreature = GetNPCIfCanInteractWith(vendorguid, UNIT_NPC_FLAG_VENDOR);
     if (!pCreature)
     {
         sLog.outDebug( "WORLD: BuyItemFromVendor - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(vendorguid)) );
