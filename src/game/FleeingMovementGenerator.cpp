@@ -23,6 +23,7 @@
 #include "FleeingMovementGenerator.h"
 #include "DestinationHolderImp.h"
 #include "ObjectAccessor.h"
+#include "VMapFactory.h"
 
 #define MIN_QUIET_DISTANCE 28.0f
 #define MAX_QUIET_DISTANCE 43.0f
@@ -37,8 +38,8 @@ FleeingMovementGenerator<T>::_setTargetLocation(T &owner)
     if( owner.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED) )
         return;
 
-    if(!_setMoveData(owner))
-        return;
+//    if(!_setMoveData(owner))
+//        return;
 
     float x, y, z;
     if(!_getPoint(owner, x, y, z))
@@ -46,7 +47,7 @@ FleeingMovementGenerator<T>::_setTargetLocation(T &owner)
 
     owner.addUnitState(UNIT_STAT_FLEEING);
     Traveller<T> traveller(owner);
-    i_destinationHolder.SetDestination(traveller, x, y, z);
+    i_destinationHolder.SetDestination(traveller, i_dest_x, i_dest_y, i_dest_z);
 }
 
 template<>
@@ -76,15 +77,12 @@ FleeingMovementGenerator<T>::_getPoint(T &owner, float &x, float &y, float &z)
     y = owner.GetPositionY();
     z = owner.GetPositionZ();
 
-    float temp_x, temp_y, angle;
-    const Map * _map = MapManager::Instance().GetBaseMap(owner.GetMapId());
+    float temp_x, temp_y, temp_z, angle;
+    const Map *_map = MapManager::Instance().GetBaseMap(owner.GetMapId());
     //primitive path-finding
-    for(uint8 i = 0; i < 18; i++)
+    for(uint8 i = 0; i < 8; ++i)
     {
-        if(i_only_forward && i > 2)
-            break;
-
-        float distance = 5.0f;
+        float distance = 14.0f;
 
         switch(i)
         {
@@ -92,110 +90,105 @@ FleeingMovementGenerator<T>::_getPoint(T &owner, float &x, float &y, float &z)
                 angle = i_cur_angle;
                 break;
             case 1:
-                angle = i_cur_angle;
-                distance /= 2;
+                angle = i_cur_angle + M_PI/4.0f;
                 break;
             case 2:
-                angle = i_cur_angle;
-                distance /= 4;
+                angle = i_cur_angle + M_PI/2.0f;
                 break;
             case 3:
-                angle = i_cur_angle + M_PI/4.0f;
+                angle = i_cur_angle - M_PI/4.0f;
                 break;
             case 4:
-                angle = i_cur_angle - M_PI/4.0f;
+                angle = i_cur_angle - M_PI/2.0f;
                 break;
             case 5:
-                angle = i_cur_angle + M_PI/4.0f;
-                distance /= 2;
+                angle = i_cur_angle + M_PI*3/4.0f;
                 break;
             case 6:
-                angle = i_cur_angle - M_PI/4.0f;
-                distance /= 2;
+                angle = i_cur_angle - M_PI*3/4.0f;
                 break;
             case 7:
-                angle = i_cur_angle + M_PI/2.0f;
-                break;
-            case 8:
-                angle = i_cur_angle - M_PI/2.0f;
-                break;
-            case 9:
-                angle = i_cur_angle + M_PI/2.0f;
-                distance /= 2;
-                break;
-            case 10:
-                angle = i_cur_angle - M_PI/2.0f;
-                distance /= 2;
-                break;
-            case 11:
-                angle = i_cur_angle + M_PI/4.0f;
-                distance /= 4;
-                break;
-            case 12:
-                angle = i_cur_angle - M_PI/4.0f;
-                distance /= 4;
-                break;
-            case 13:
-                angle = i_cur_angle + M_PI/2.0f;
-                distance /= 4;
-                break;
-            case 14:
-                angle = i_cur_angle - M_PI/2.0f;
-                distance /= 4;
-                break;
-            case 15:
-                angle = i_cur_angle + M_PI*3/4.0f;
-                distance /= 2;
-                break;
-            case 16:
-                angle = i_cur_angle - M_PI*3/4.0f;
-                distance /= 2;
-                break;
-            case 17:
                 angle = i_cur_angle + M_PI;
-                distance /= 2;
                 break;
         }
+
+        // destination point
         temp_x = x + distance * cos(angle);
         temp_y = y + distance * sin(angle);
         Trinity::NormalizeMapCoord(temp_x);
         Trinity::NormalizeMapCoord(temp_y);
-        if( owner.IsWithinLOS(temp_x,temp_y,z))
+
+        float ground, floor;
+        ground = _map->GetHeight(temp_x, temp_y, MAX_HEIGHT, true);
+        floor = _map->GetHeight(temp_x, temp_y, z, true);
+
+        temp_z = (fabs(ground - z) >= fabs(floor - z)) ? floor : ground;
+
+        if(temp_z <= INVALID_HEIGHT)
+            continue;
+
+        // if something on way get Hit Position and update distance
+        if(VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(owner.GetMapId(), x, y, z+0.5f, temp_x, temp_y, temp_z+0.5f, temp_x, temp_y, temp_z, -1.0f))
+            distance = owner.GetDistance2d(temp_x, temp_y);
+
+        float dest_floor, dest_ground;
+        float dest_x = x;
+        float dest_y = y;
+        float dest_z = z;
+
+
+        for(int j = 1; j <= 7; ++j)
         {
-            bool is_water_now = _map->IsInWater(x,y,z);
-
-            if(is_water_now && _map->IsInWater(temp_x,temp_y,z))
+            float dist = j*2.0f;
+            if(dist > distance)
             {
-                x = temp_x;
-                y = temp_y;
-                return true;
+                dist = distance;
+                j = 8; // end loop after executing code below
             }
-            float new_z = _map->GetHeight(temp_x,temp_y,z,true);
 
-            if(new_z <= INVALID_HEIGHT)
-                continue;
+            temp_x = x + dist*cos(angle);
+            temp_y = y + dist*sin(angle);
+            dest_ground = _map->GetHeight(temp_x, temp_y, MAX_HEIGHT, true);
+            dest_floor  = _map->GetHeight(temp_x, temp_y, dest_z, true);
+            temp_z = (fabs(dest_ground - dest_z) >= fabs(dest_floor - dest_z)) ? dest_floor : dest_ground;
 
-            bool is_water_next = _map->IsInWater(temp_x,temp_y,new_z);
+            if(temp_z < INVALID_HEIGHT || fabs(temp_z - dest_z) > 1.6f)
+                break;
 
-            if((is_water_now && !is_water_next && !is_land_ok) || (!is_water_now && is_water_next && !is_water_ok))
-                continue;
+            /*
+            // height on left from new point
+            float tx, ty;
+            tx = temp_x + 2.0f*cos(angle+M_PI);
+            ty = temp_y + 2.0f*sin(angle+M_PI);
+            dest_ground = _map->GetHeight(tx, ty, MAX_HEIGHT, true);
+            dest_floor  = _map->GetHeight(tx, ty, dest_z, true);
 
-            if( !(new_z - z) || distance / fabs(new_z - z) > 1.0f)
-            {
-                float new_z_left = _map->GetHeight(temp_x + 1.0f*cos(angle+M_PI/2),temp_y + 1.0f*sin(angle+M_PI/2),z,true);
-                float new_z_right = _map->GetHeight(temp_x + 1.0f*cos(angle-M_PI/2),temp_y + 1.0f*sin(angle-M_PI/2),z,true);
-                if(fabs(new_z_left - new_z) < 1.2f && fabs(new_z_right - new_z) < 1.2f)
-                {
-                    x = temp_x;
-                    y = temp_y;
-                    z = new_z;
-                    return true;
-                }
-            }
+            float left_z  = (fabs(dest_ground - dest_z) >= fabs(dest_floor - dest_z)) ? dest_floor : dest_ground;
+            if(left_z < INVALID_HEIGHT || fabs(left_z - temp_z) > 1.6f)
+                break;
+
+            tx = temp_x + 2.0f*cos(angle-M_PI);
+            ty = temp_y + 2.0f*sin(angle-M_PI);
+            dest_ground = _map->GetHeight(tx, ty, MAX_HEIGHT, true);
+            dest_floor  = _map->GetHeight(tx, ty, dest_z, true);
+
+            float right_z  = (fabs(dest_ground - dest_z) >= fabs(dest_floor - dest_z)) ? dest_floor : dest_ground;
+            if(right_z < INVALID_HEIGHT || fabs(right_z - temp_z) > 1.6f)
+                break;*/
+
+            dest_x = temp_x;
+            dest_y = temp_y;
+            dest_z = temp_z;
+        }
+
+        if(i_dest_x != dest_x || i_dest_y != dest_y)
+        {
+            i_dest_x = dest_x;
+            i_dest_y = dest_y;
+            i_dest_z = dest_z;
+            return true;
         }
     }
-    i_to_distance_from_caster = 0.0f;
-    i_nextCheckTime.Reset( urand(500,1000) );
     return false;
 }
 
@@ -203,8 +196,12 @@ template<class T>
 bool
 FleeingMovementGenerator<T>::_setMoveData(T &owner)
 {
-    float cur_dist_xyz = owner.GetDistance(i_caster_x, i_caster_y, i_caster_z);
+//    Unit *fright = Unit::GetUnit(owner, i_frightGUID);
+//    if(i_last_distance_from_caster < fright->GetDistance(&owner))
 
+//    float cur_dist_xyz = owner.GetDistance(i_caster_x, i_caster_y, i_caster_z);
+
+    /*
     if(i_to_distance_from_caster > 0.0f)
     {
         if((i_last_distance_from_caster > i_to_distance_from_caster && cur_dist_xyz < i_to_distance_from_caster)   ||
@@ -290,7 +287,7 @@ FleeingMovementGenerator<T>::_setMoveData(T &owner)
 
     // current distance
     i_last_distance_from_caster = cur_dist;
-
+*/
     return true;
 }
 
@@ -311,13 +308,14 @@ FleeingMovementGenerator<T>::Initialize(T &owner)
     owner.SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
     owner.SetUInt64Value(UNIT_FIELD_TARGET, 0);
     owner.RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
-    i_caster_x = fright->GetPositionX();
-    i_caster_y = fright->GetPositionY();
-    i_caster_z = fright->GetPositionZ();
+    i_dest_x = i_caster_x = fright->GetPositionX();
+    i_dest_y = i_caster_y = fright->GetPositionY();
+    i_dest_z = i_caster_z = fright->GetPositionZ();
     i_only_forward = true;
-    i_cur_angle = 0.0f;
-    i_last_distance_from_caster = 0.0f;
-    i_to_distance_from_caster = 0.0f;
+    i_cur_angle = fright->GetAngle(&owner);
+//    i_angle_multi = 1.0f;
+//    i_last_distance_from_caster = 0.0f;
+//    i_to_distance_from_caster = 0.0f;
     _setTargetLocation(owner);
 }
 
@@ -367,24 +365,16 @@ FleeingMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
         return true;
 
     Traveller<T> traveller(owner);
-
-    i_nextCheckTime.Update(time_diff);
-
+/*
     if( (owner.IsStopped() && !i_destinationHolder.HasArrived()) || !i_destinationHolder.HasDestination() )
     {
         _setTargetLocation(owner);
         return true;
-    }
+    }*/
 
     if (i_destinationHolder.UpdateTraveller(traveller, time_diff))
-    {
-        i_destinationHolder.ResetUpdate(50);
-        if(i_nextCheckTime.Passed() && i_destinationHolder.HasArrived())
-        {
+        if(i_destinationHolder.HasArrived())
             _setTargetLocation(owner);
-            return true;
-        }
-    }
     return true;
 }
 
