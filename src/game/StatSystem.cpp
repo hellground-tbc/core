@@ -160,6 +160,9 @@ void Player::UpdateArmor()
 
     value *= GetModifierValue(unitMod, TOTAL_PCT);
 
+    if(HasAura(5229,0))
+        value -= HasAura(9634,0) ? 0.16*value : 0.27*value;
+
     SetArmor(int32(value));
 
     Pet *pet = GetPet();

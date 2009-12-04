@@ -231,7 +231,7 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleModSpellDamagePercentFromStat,             //174 SPELL_AURA_MOD_SPELL_DAMAGE_OF_STAT_PERCENT  implemented in Unit::SpellBaseDamageBonus (by default intellect, dependent from SPELL_AURA_MOD_SPELL_HEALING_OF_STAT_PERCENT)
     &Aura::HandleModSpellHealingPercentFromStat,            //175 SPELL_AURA_MOD_SPELL_HEALING_OF_STAT_PERCENT implemented in Unit::SpellBaseHealingBonus
     &Aura::HandleSpiritOfRedemption,                        //176 SPELL_AURA_SPIRIT_OF_REDEMPTION   only for Spirit of Redemption spell, die at aura end
-    &Aura::HandleNULL,                                      //177 SPELL_AURA_AOE_CHARM
+    &Aura::HandleAuraAoeCharm,                        //177 SPELL_AURA_AOE_CHARM
     &Aura::HandleNoImmediateEffect,                         //178 SPELL_AURA_MOD_DEBUFF_RESISTANCE          implemented in Unit::MagicSpellHitResult
     &Aura::HandleNoImmediateEffect,                         //179 SPELL_AURA_MOD_ATTACKER_SPELL_CRIT_CHANCE implemented in Unit::SpellCriticalBonus
     &Aura::HandleNoImmediateEffect,                         //180 SPELL_AURA_MOD_FLAT_SPELL_DAMAGE_VERSUS   implemented in Unit::SpellDamageBonus
@@ -1052,7 +1052,18 @@ void Aura::_RemoveAura()
 
         // Conflagrate aura state
         if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && (GetSpellProto()->SpellFamilyFlags & 4))
-            m_target->ModifyAuraState(AURA_STATE_IMMOLATE, false);
+        {
+            Unit::AuraList const &mPeriodic = m_target->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
+            for(Unit::AuraList::const_iterator i = mPeriodic.begin(); i != mPeriodic.end(); ++i)
+            {
+                 if((*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && ((*i)->GetSpellProto()->SpellFamilyFlags & 4))
+                 {
+                     m_target->ModifyAuraState(AURA_STATE_IMMOLATE, true); 
+                     break;
+                 }
+                 m_target->ModifyAuraState(AURA_STATE_IMMOLATE, false);
+            }
+        }
 
         // Swiftmend aura state
         if(GetSpellProto()->SpellFamilyName == SPELLFAMILY_DRUID
@@ -3424,6 +3435,22 @@ void Aura::HandleAuraModSilence(bool apply, bool Real)
 
         switch (GetId())
         {
+            case 28730:                                 // Arcane Torrent (Mana)
+            {
+                Unit * caster = GetCaster();
+                if (!caster)
+                    return;
+
+                Aura * dummy = caster->GetDummyAura(28734);
+                if (dummy)
+                {
+                    int32 bp = (5 + caster->getLevel()) * dummy->GetStackAmount();
+                    caster->CastCustomSpell(caster, 28733, &bp, NULL, NULL, true);
+                    caster->RemoveAurasDueToSpell(28734);
+                }
+                return;
+            }
+
             // Arcane Torrent (Energy)
             case 25046:
             {
@@ -3606,7 +3633,9 @@ void Aura::HandleAuraModDecreaseSpeed(bool /*apply*/, bool Real)
     if(!Real)
         return;
 
-	//m_target->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
+    if(m_spellProto->Id == 12323)
+        m_target->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
+
     m_target->UpdateSpeed(MOVE_RUN, true);
     m_target->UpdateSpeed(MOVE_SWIM, true);
     m_target->UpdateSpeed(MOVE_FLIGHT, true);
@@ -3895,6 +3924,9 @@ void Aura::HandlePeriodicEnergize(bool apply, bool Real)
         m_periodicTimer += m_modifier.periodictime;
 
     m_isPeriodic = apply;
+
+    if(GetId() == 5229)
+        m_target->UpdateArmor();
 }
 
 void Aura::HandlePeriodicHeal(bool apply, bool Real)
@@ -5382,6 +5414,20 @@ void Aura::HandleSpiritOfRedemption( bool apply, bool Real )
         m_target->setDeathState(JUST_DIED);
 }
 
+void Aura::HandleAuraAoeCharm( bool apply, bool Real )
+{
+    if(!Real)
+        return;
+
+    if(Unit* caster = this->GetCaster())
+    {
+        if(apply)
+            m_target->SetCharmedOrPossessedBy(caster, false);
+        else
+            m_target->RemoveCharmedOrPossessedBy(caster);
+    }
+}
+
 void Aura::CleanupTriggeredSpells()
 {
     uint32 tSpellId = m_spellProto->EffectTriggerSpell[GetEffIndex()];
@@ -5464,6 +5510,9 @@ void Aura::HandleSchoolAbsorb(bool apply, bool Real)
 void Aura::PeriodicTick()
 {
     if(!m_target->isAlive())
+        return;
+
+    if(GetId() == 38575 && m_tickNumber < 3)  // Toxic - Spores delay deal damage
         return;
 
     switch(m_modifier.m_auraname)
@@ -5930,7 +5979,7 @@ void Aura::PeriodicTick()
             // Mark of Kazzak
             if(GetId() == 32960)
             {
-                int32 modifier = (m_target->GetPower(power) * 0.05f);
+                int32 modifier = (m_target->GetMaxPower(power) * 0.05f);
                 m_target->ModifyPower(power, -modifier);
 
                 if(m_target->GetPower(power) == 0)

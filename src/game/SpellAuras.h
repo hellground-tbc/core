@@ -189,6 +189,7 @@ class TRINITY_DLL_SPEC Aura
         void HandleAuraModRangedAttackPowerPercent(bool apply, bool Real);
         void HandleAuraModRangedAttackPowerOfStatPercent(bool apply, bool Real);
         void HandleSpiritOfRedemption(bool apply, bool Real);
+        void HandleAuraAoeCharm(bool apply, bool Real);
         void HandleModManaRegen(bool apply, bool Real);
         void HandleComprehendLanguage(bool apply, bool Real);
         void HandleShieldBlockValue(bool apply, bool Real);
@@ -282,6 +283,23 @@ class TRINITY_DLL_SPEC Aura
         bool IsRemovedOnShapeLost() const { return m_isRemovedOnShapeLost; }
         bool IsRemoved() const { return m_isRemoved; }
         bool IsInUse() const { return m_in_use;}
+        bool StackNotByCaster()
+        { 
+            return (GetId() == 22959 || 
+                    GetId() == 12579 ||
+                    GetId() == 15258 ||
+                    GetId() == 25225 );
+        }
+        bool DiffPerCaster()
+        { 
+            if( this->GetSpellProto()->SpellFamilyFlags & 0x800000LL && this->GetSpellProto()->SpellIconID == 548 ) // Mind Flay
+                return true;
+
+            if( this->GetSpellProto()->SpellFamilyFlags & 0x40000000000LL ) // Vampiric Touch
+                return true;
+
+            return false;
+        }
         void CleanupTriggeredSpells();
 
         virtual void Update(uint32 diff);

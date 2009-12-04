@@ -1132,6 +1132,16 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
     if(!unit || !effectMask)
         return;
 
+    if(unit->IsImmunedToSpellEffect(SPELL_EFFECT_ATTACK_ME,MECHANIC_NONE))
+    {
+        for(uint8 i = 0; i < 3; i++)
+            if(m_spellInfo->Effect[i] == SPELL_EFFECT_ATTACK_ME)
+            {
+                m_caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_IMMUNE);
+                return;
+            }    
+    }
+   
     // Recheck immune (only for delayed spells)
     if( m_spellInfo->speed &&
         !(m_spellInfo->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY)
@@ -3967,7 +3977,11 @@ uint8 Spell::CanCast(bool strict)
                 // get the lock entry
                 LockEntry const *lockInfo = NULL;
                 if (GameObject* go=m_targets.getGOTarget())
+                {
                     lockInfo = sLockStore.LookupEntry(go->GetLockId());
+                    if(!go->GetLockId())
+                        return SPELL_FAILED_BAD_TARGETS;
+                }
                 else if(Item* itm=m_targets.getItemTarget())
                     lockInfo = sLockStore.LookupEntry(itm->GetProto()->LockID);
 

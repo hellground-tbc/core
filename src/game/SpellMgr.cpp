@@ -2415,6 +2415,8 @@ void SpellMgr::LoadSpellCustomAttr()
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             spellInfo->Attributes |= SPELL_ATTR_IMPOSSIBLE_DODGE_PARRY_BLOCK;
             break;
+        case 24905: // Moonkin form -> elune's touch
+            spellInfo->EffectImplicitTargetA[2] = TARGET_UNIT_CASTER;
         default:
             break;
         }

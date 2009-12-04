@@ -602,7 +602,11 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                     Unit::AuraList const& auras = unitTarget->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
                     for(Unit::AuraList::const_iterator itr = auras.begin(); itr!=auras.end(); ++itr)
                         if((*itr)->GetId() == 31803 && (*itr)->GetCasterGUID()==m_caster->GetGUID())
-                            ++stacks;
+                        {
+                            stacks = (*itr)->GetStackAmount();
+                            break;
+                        }
+
                     if(!stacks)
                         //No damage if the target isn't affected by this
                         damage = -1;
@@ -635,6 +639,28 @@ void Spell::EffectDummy(uint32 i)
         {
             switch(m_spellInfo->Id )
             {
+                // Six Demon Bag, TODO: Seatrch and add more spells to cast with normal dmg ( 100 ~ 200 ), Shadow bolt, Fireball, Summon Felhunter
+                case 14537:
+                {
+                    int32 spell_id = 0;
+                    if(rand()%4)
+                        switch(m_caster->GetMap()->urand(1,3))
+                        {
+                            case 1: spell_id = 45297; break;     // Chain Lightning
+                            case 2: spell_id = 23102; break;     // Frostbolt!
+                            case 3: spell_id = 9487;  break;     // Fireball !
+                        }
+                    else
+                        spell_id = (rand()%2) ? 29848 : 31718;     // Polymorph: Sheep : Enveloping Winds
+                   
+                    uint8 backfire = rand()%5;
+                    if(spell_id == 29848 && !backfire)
+                        m_caster->CastSpell(m_caster,spell_id,true); // backfire with poly chance
+                    else
+                        m_caster->CastSpell(unitTarget,spell_id,true);
+                return;
+                }
+
                 // Wrath of the Astromancer
                 case 42784:
                 {
@@ -1017,7 +1043,7 @@ void Spell::EffectDummy(uint32 i)
                         m_caster->CastSpell(unitTarget,29294,true);
                     return;
                 }
-                case 28730:                                 // Arcane Torrent (Mana)
+                /*case 28730:                                 // Arcane Torrent (Mana)
                 {
                     Aura * dummy = m_caster->GetDummyAura(28734);
                     if (dummy)
@@ -1027,7 +1053,7 @@ void Spell::EffectDummy(uint32 i)
                         m_caster->RemoveAurasDueToSpell(28734);
                     }
                     return;
-                }
+                }*/
                 case 29200:                                 // Purify Helboar Meat
                 {
                     if( m_caster->GetTypeId() != TYPEID_PLAYER )
@@ -2718,6 +2744,11 @@ void Spell::EffectEnergize(uint32 i)
 
     if(m_spellInfo->EffectMiscValue[i] < 0 || m_spellInfo->EffectMiscValue[i] >= MAX_POWERS)
         return;
+  
+    //Serpent Coil Braid
+    if(m_spellInfo->Id == 27103)
+        if(unitTarget->HasAura(37447, 0))
+            unitTarget->CastSpell(unitTarget,37445,true);
 
     // Some level depends spells
     int multiplier = 0;
@@ -2738,6 +2769,10 @@ void Spell::EffectEnergize(uint32 i)
         case 24532:
             level_diff = m_caster->getLevel() - 60;
             multiplier = 4;
+            break;
+        //Elune's Touch (30% AP)
+        case 33926:
+            damage = m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 30 / 100;
             break;
         default:
             break;
@@ -4095,7 +4130,8 @@ void Spell::EffectTaunt(uint32 /*i*/)
     // this effect use before aura Taunt apply for prevent taunt already attacking target
     // for spell as marked "non effective at already attacking target"
     if(!unitTarget || !unitTarget->CanHaveThreatList()
-        || unitTarget->getVictim() == m_caster)
+        || unitTarget->getVictim() == m_caster
+        || unitTarget->IsImmunedToSpellEffect(SPELL_EFFECT_ATTACK_ME,MECHANIC_NONE))
     {
         SendCastResult(SPELL_FAILED_DONT_REPORT);
         return;
@@ -5349,38 +5385,15 @@ void Spell::EffectSummonTotem(uint32 i)
     float angle = slot < MAX_TOTEM ? M_PI/MAX_TOTEM - (slot*2*M_PI/MAX_TOTEM) : 0;
 
     float x,y,z;
-    
-    //totem size is 0, take care.
-    m_caster->GetClosePoint(x,y,z,pTotem->GetObjectSize(),2.0f,angle);
-    
-    if(sWorld.getConfig(CONFIG_VMAP_TOTEM))
-    {
-        VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
-        if(vmgr->isHeightCalcEnabled() && vmgr->isLineOfSightCalcEnabled() )
-        {   
-            float cx, cy, cz;
-            m_caster->GetPosition(cx,cy,cz);
-            
-            //TODO: sometimes the HitPos fails getting LOS of the caster/totem, but almost allways works and do it quickly.
-            //      maybe vmaps files needs a more detail level?
-            
-            //checks for collision between two points, and writes resulting collision into last three floats
-            if(vmgr->getObjectHitPos(m_caster->GetMapId(), cx, cy, cz, x, y, z, x, y, z, 0) ) 
-            {
-                //sLog.outDebug("TOTEM HIT! c(%.2f,%.2f,%.2f)=>(%.2f,%.2f,%.2f) \n",cx,cy,cz, x,y,z);
-                //Collision occured
-                x -= 0.5f * cos(angle);
-                y -= 0.5f * sin(angle);
-                z += 0.5f;
-            }
-        }
-    }
+
+    if(((Player*)m_caster)->InArena())
+        m_caster->GetPosition(x,y,z);
     else
-    {
-        // totem must be at same Z in case swimming caster and etc.
-        if( fabs( z - m_caster->GetPositionZ() ) > 5 )
-            z = m_caster->GetPositionZ();
-    }
+        m_caster->GetClosePoint(x,y,z,pTotem->GetObjectSize(),2.0f,angle);
+
+    // totem must be at same Z in case swimming caster and etc.
+    if( fabs( z - m_caster->GetPositionZ() ) > 5 )
+        z = m_caster->GetPositionZ();
 
     pTotem->Relocate(x, y, z, m_caster->GetOrientation());
 
@@ -5689,55 +5702,65 @@ void Spell::EffectMomentMove(uint32 i)
     if(unitTarget->isInFlight())
         return;
 
-    if(!m_targets.HasDst())
-        return;
-
-    uint32 mapid = m_caster->GetMapId();
-    float dist = GetSpellRadius(sSpellRadiusStore.LookupEntry(m_spellInfo->EffectRadiusIndex[i]));
-    float x,y,z;
-    float destx,desty,destz,ground,floor;
-    float orientation = unitTarget->GetOrientation(), step = dist/10.0f;
-
-    unitTarget->GetPosition(x,y,z);
-    destx = x + dist * cos(orientation);
-    desty = y + dist * sin(orientation);
-    ground = unitTarget->GetMap()->GetHeight(destx,desty,MAX_HEIGHT,true);
-    floor = unitTarget->GetMap()->GetHeight(destx,desty,z, true);
-    destz = fabs(ground - z) <= fabs(floor - z) ? ground:floor;
-
-    bool col = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(mapid,x,y,z+0.5f,destx,desty,destz+0.5f,destx,desty,destz,-0.5f);
-
-    if(col)    // We had a collision!
+	if( m_spellInfo->rangeIndex== 1)                        //self range
     {
-      destx -= 0.6 * cos(orientation);
-      desty -= 0.6 * sin(orientation);
-      dist = sqrt((x-destx)*(x-destx) + (y-desty)*(y-desty));
-      step = dist/10.0f;
+        uint32 mapid = m_caster->GetMapId();
+        float dis = GetSpellRadius(m_spellInfo, i, true);
+
+        // Start Info //
+        float cx,cy,cz;
+        float dx,dy,dz;
+        float angle = unitTarget->GetOrientation();
+        unitTarget->GetPosition(cx,cy,cz);
+            
+        //Check use of vamps//
+        bool useVmap = false;
+        bool swapZone = true;
+
+        if( VMAP::VMapFactory::createOrGetVMapManager()->isHeightCalcEnabled() )
+            useVmap = true;
+            
+        //Going foward 0.5f until max distance
+        for(float i=0.5f; i<dis; i+=0.5f)
+        {
+            unitTarget->GetNearPoint2D(dx,dy,i,angle);
+            dz = MapManager::Instance().GetMap(mapid, unitTarget)->GetHeight(dx, dy, cz, useVmap);
+               
+            //Prevent climbing and go around object maybe 2.0f is to small? use 3.0f?
+            if( (dz-cz) < 2.0f && (dz-cz) > -2.0f && (unitTarget->IsWithinLOS(dx, dy, dz)))
+            {
+                //No climb, the z differenze between this and prev step is ok. Store this destination for future use or check.
+                cx = dx;
+                cy = dy;
+                cz = dz;
+            }
+            else
+            {
+                //Something wrong with los or z differenze... maybe we are going from outer world inside a building or viceversa
+                if(swapZone)
+                {
+                    //so... change use of vamp and go back 1 step backward and recheck again.
+                    swapZone = false;
+                    useVmap = !useVmap;
+                    i-=0.5f;
+                }
+                else
+                {
+                    //bad recheck result... so break this and use last good coord for teleport player...
+                    dz += 0.5f;
+                    break;
+                }
+            }
+        }
+            
+        //Prevent Falling during swap building/outerspace
+        unitTarget->UpdateGroundPositionZ(cx, cy, cz);
+
+        if(unitTarget->GetTypeId() == TYPEID_PLAYER)
+            ((Player*)unitTarget)->TeleportTo(mapid, cx, cy, cz, unitTarget->GetOrientation(), TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (unitTarget==m_caster ? TELE_TO_SPELL : 0));
+        else
+            MapManager::Instance().GetMap(mapid, unitTarget)->CreatureRelocation((Creature*)unitTarget, cx, cy, cz, unitTarget->GetOrientation());
     }
-
-    int j = 0;
-    for(j; j<10 ;j++)
-      {
-    if(fabs(z - destz) > 6)
-      {
-      destx -= step * cos(orientation);
-      desty -= step * sin(orientation);
-      ground = unitTarget->GetMap()->GetHeight(destx,desty,MAX_HEIGHT,true);
-      floor = unitTarget->GetMap()->GetHeight(destx,desty,z, true);
-      destz = fabs(ground - z) <= fabs(floor - z) ? ground:floor;
-      }else
-      break;
-      }
-    if(j == 9)
-      {
-    return;
-      }
-
-    if(unitTarget->GetTypeId() == TYPEID_PLAYER)
-      ((Player*)unitTarget)->TeleportTo(mapid, destx, desty, destz+0.07531f, unitTarget->GetOrientation(), TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (unitTarget==m_caster ? TELE_TO_SPELL : 0));
-    else
-        unitTarget->GetMap()->CreatureRelocation((Creature*)unitTarget, destx, desty, destz,unitTarget->GetOrientation());
-
 }
 
 void Spell::EffectReputation(uint32 i)
@@ -5958,7 +5981,7 @@ void Spell::EffectKnockBack(uint32 i)
     float vcos, vsin;
     if(dx < 0.001f && dy < 0.001f)
     {
-      float angle = m_caster->GetMap()->rand_norm()*2*M_PI;
+        float angle = (m_spellInfo->Id == 42867 ? m_caster->GetOrientation() : m_caster->GetMap()->rand_norm()*2*M_PI);
         vcos = cos(angle);
         vsin = sin(angle);
     }
@@ -6084,6 +6107,7 @@ void Spell::EffectSummonDeadPet(uint32 /*i*/)
     float x,y,z;
     _player->GetPosition(x, y, z);
     _player->GetMap()->CreatureRelocation(pet, x, y, z, _player->GetOrientation());
+    pet->SendMonsterMove(x,y,z,0,NULL);
 
     pet->SetUInt32Value(UNIT_DYNAMIC_FLAGS, 0);
     pet->RemoveFlag (UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);

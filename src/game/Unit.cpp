@@ -713,6 +713,14 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         }
     }
 
+    if(((Unit*)this)->HasAura(37381,0))
+    {
+        Pet* pet = ((Unit*)this)->GetPet();
+        
+        if(pet && pet->isAlive())
+            pet->ModifyHealth((int32).15*damage);
+    }
+
     if(pVictim->GetTypeId() != TYPEID_PLAYER)
     {
         // no xp,health if type 8 /critters/
@@ -1651,6 +1659,10 @@ void Unit::DealMeleeDamage(CalcDamageInfo *damageInfo, bool durabilityLoss)
            {
                alreadyDone.insert(*i);
                uint32 damage=(*i)->GetModifier()->m_amount;
+               
+               if(pVictim->HasAura(37190,0))
+                   damage += 15;
+
                SpellEntry const *spellProto = sSpellStore.LookupEntry((*i)->GetId());
                if(!spellProto)
                    continue;
@@ -3149,7 +3161,7 @@ uint32 Unit::GetDefenseSkillValue(Unit const* target) const
     if(GetTypeId() == TYPEID_PLAYER)
     {
         // in PvP use full skill instead current skill value
-        uint32 value = (target && target->GetTypeId() == TYPEID_PLAYER)
+        uint32 value = (target && (target->GetTypeId() == TYPEID_PLAYER || ((Creature*)target)->isTotem() || ((Creature*)target)->isPet()))
             ? ((Player*)this)->GetMaxSkillValue(SKILL_DEFENSE)
             : ((Player*)this)->GetSkillValue(SKILL_DEFENSE);
         value += uint32(((Player*)this)->GetRatingBonusValue(CR_DEFENSE_SKILL));
@@ -3796,7 +3808,7 @@ int32 Unit::GetMaxNegativeAuraModifierByMiscValue(AuraType auratype, int32 misc_
 bool Unit::AddAura(Aura *Aur)
 {
     // ghost spell check, allow apply any auras at player loading in ghost mode (will be cleanup after load)
-    if( !isAlive() && Aur->GetId() != 20584 && Aur->GetId() != 8326 && Aur->GetId() != 2584 &&
+    if( !isAlive() && Aur->GetId() != 20584 && Aur->GetId() != 8326 && Aur->GetId() != 2584 && Aur->GetId() != 37128 &&
         (GetTypeId()!=TYPEID_PLAYER || !((Player*)this)->GetSession()->PlayerLoading()) )
     {
         delete Aur;
@@ -3818,11 +3830,11 @@ bool Unit::AddAura(Aura *Aur)
 
     bool stackModified=false;
     // passive and persistent auras can stack with themselves any number of times
-    if (!Aur->IsPassive() && !Aur->IsPersistent())
+    if (!Aur->IsPassive() && !Aur->IsPersistent() && !Aur->DiffPerCaster())
     {
         for(AuraMap::iterator i2 = m_Auras.lower_bound(spair); i2 != m_Auras.upper_bound(spair);)
         {
-            if(i2->second->GetCasterGUID()==Aur->GetCasterGUID())
+            if(i2->second->GetCasterGUID()==Aur->GetCasterGUID() || Aur->StackNotByCaster())
             {
                 if (!stackModified)
                 {
@@ -12523,7 +12535,7 @@ void Unit::GetPartyMember(std::list<Unit*> &TagUnitMap, float radius)
 
 void Unit::AddAura(uint32 spellId, Unit* target)
 {
-    if(!target || !target->isAlive())
+    if(!target || (!target->isAlive() && spellId != 37128))
         return;
 
     SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);

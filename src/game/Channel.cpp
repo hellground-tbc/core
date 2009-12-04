@@ -49,6 +49,7 @@ Channel::Channel(const std::string& name, uint32 channel_id)
     else                                                    // it's custom channel
     {
         m_flags |= CHANNEL_FLAG_CUSTOM;
+        m_announce = false;
     }
 }
 

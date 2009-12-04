@@ -77,10 +77,13 @@ TotemAI::UpdateAI(const uint32 /*diff*/)
     // pointer to appropriate target if found any
     Unit* victim = i_victimGuid ? ObjectAccessor::GetUnit(i_totem, i_victimGuid) : NULL;
 
+    if(!max_range)
+        victim = &i_totem;
+
     // Search victim if no, not attackable, or out of range, or friendly (possible in case duel end)
     if( !victim ||
         !victim->isTargetableForAttack() || !i_totem.IsWithinDistInMap(victim, max_range) ||
-        i_totem.IsFriendlyTo(victim) || !victim->isVisibleForOrDetect(&i_totem,false) )
+        ( i_totem.IsFriendlyTo(victim) && victim != &i_totem ) || !victim->isVisibleForOrDetect(&i_totem,false) )
     {
         CellPair p(Trinity::ComputeCellPair(i_totem.GetPositionX(),i_totem.GetPositionY()));
         Cell cell(p);
