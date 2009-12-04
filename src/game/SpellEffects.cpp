@@ -918,6 +918,24 @@ void Spell::EffectDummy(uint32 i)
                     }
                     return;
                 }
+                case 21050:                                 // Melodious Rapture
+                {
+                    if(!unitTarget || unitTarget->GetTypeId() != TYPEID_UNIT || unitTarget->GetEntry() != 13016)
+                        return;
+
+                    WorldLocation wLoc;
+                    Creature* cTarget = (Creature*)unitTarget;
+                    cTarget->GetPosition(wLoc);
+                    ang = cTarget->GetAngle(wLoc.x,wLoc.y);                    
+                    
+                    if(Creature * rat = m_caster->SummonCreature(13017,x,y,z,ang,TEMPSUMMON_TIMED_DESPAWN,600000))
+                        rat->GetMotionMaster()->MoveFollow(m_caster, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+                    
+                    cTarget->setDeathState(JUST_DIED);
+                    cTarget->RemoveCorpse();
+                    cTarget->SetHealth(0);                  // just for nice GM-mode view
+                    return;
+                }
                 case 15998:                                 // Capture Worg Pup
                 case 29435:                                 // Capture Female Kaliri Hatchling
                 {
