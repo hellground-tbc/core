@@ -5705,7 +5705,7 @@ void Spell::EffectMomentMove(uint32 i)
 	if( m_spellInfo->rangeIndex== 1)                        //self range
     {
         uint32 mapid = m_caster->GetMapId();
-        float dis = GetSpellRadius(m_spellInfo, i, true);
+        float dis = GetSpellRadius(sSpellRadiusStore.LookupEntry(m_spellInfo->EffectRadiusIndex[i]));
 
         // Start Info //
         float cx,cy,cz;

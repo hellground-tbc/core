@@ -47,7 +47,10 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_doomlordkazzakAI : public ScriptedAI
 {
-    boss_doomlordkazzakAI(Creature *c) : ScriptedAI(c) {}
+    boss_doomlordkazzakAI(Creature *c) : ScriptedAI(c)
+    {
+        m_creature->GetPosition(wLoc);
+    }
 
     uint32 ShadowVolley_Timer;
     uint32 Cleave_Timer;
@@ -55,17 +58,23 @@ struct TRINITY_DLL_DECL boss_doomlordkazzakAI : public ScriptedAI
     uint32 VoidBolt_Timer;
     uint32 MarkOfKazzak_Timer;
     uint32 Enrage_Timer;
+    uint8 SVolley_count;
     uint32 Twisted_Reflection_Timer;
+    uint32 Check_Timer;
+
+    WorldLocation wLoc;
 
     void Reset()
     {
-        ShadowVolley_Timer = 8000 + rand()%4000;
+        ShadowVolley_Timer = 3000;
         Cleave_Timer = 7000;
         ThunderClap_Timer = 16000 + rand()%4000;
         VoidBolt_Timer = 30000;
         MarkOfKazzak_Timer = 25000;
         Enrage_Timer = 60000;
         Twisted_Reflection_Timer = 33000;                   // Timer may be incorrect
+        Check_Timer = 2000;
+        SVolley_count = 0;
     }
 
     void JustRespawned()
@@ -109,6 +118,14 @@ struct TRINITY_DLL_DECL boss_doomlordkazzakAI : public ScriptedAI
         if (!UpdateVictim() )
             return;
 
+        if(Check_Timer < diff)
+        {
+            if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 50.0f)
+                EnterEvadeMode();
+
+            Check_Timer = 2000;
+        }else Check_Timer -= diff;
+        
         //ShadowVolley_Timer
         if (ShadowVolley_Timer < diff)
         {
@@ -116,6 +133,20 @@ struct TRINITY_DLL_DECL boss_doomlordkazzakAI : public ScriptedAI
             ShadowVolley_Timer = 4000 + rand()%2000;
         }else ShadowVolley_Timer -= diff;
 
+        if(m_creature->HasAura(SPELL_ENRAGE,0))
+        {
+            //ShadowVolley_Timer
+            if (ShadowVolley_Timer < diff)
+            {
+                SVolley_count++; 
+                DoCast(m_creature->getVictim(), SPELL_SHADOWVOLLEY);
+
+                if(SVolley_count >= 6)
+                    m_creature->RemoveAurasDueToSpell(SPELL_ENRAGE);
+
+                ShadowVolley_Timer = 3000;
+            }else ShadowVolley_Timer -= diff;
+        }
         //Cleave_Timer
         if (Cleave_Timer < diff)
         {
@@ -153,7 +184,7 @@ struct TRINITY_DLL_DECL boss_doomlordkazzakAI : public ScriptedAI
         {
             DoScriptText(EMOTE_FRENZY, m_creature);
             DoCast(m_creature,SPELL_ENRAGE);
-            Enrage_Timer = 30000;
+            Enrage_Timer = 40000;
         }else Enrage_Timer -= diff;
 
         if(Twisted_Reflection_Timer < diff)

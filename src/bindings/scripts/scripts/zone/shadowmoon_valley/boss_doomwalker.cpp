@@ -42,13 +42,22 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_doomwalkerAI : public ScriptedAI
 {
-    boss_doomwalkerAI(Creature *c) : ScriptedAI(c) {}
+    boss_doomwalkerAI(Creature *c) : ScriptedAI(c)
+    {
+        m_creature->GetPosition(wLoc);
+
+        if(SpellEntry *spell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_MARK_DEATH))
+            spell->AttributesEx |= SPELL_ATTR_EX_NEGATIVE;
+    }
 
     uint32 Chain_Timer;
     uint32 Enrage_Timer;
     uint32 Overrun_Timer;
     uint32 Quake_Timer;
     uint32 Armor_Timer;
+    uint32 Check_Timer;
+
+    WorldLocation wLoc;
 
     bool InEnrage;
 
@@ -63,10 +72,10 @@ struct TRINITY_DLL_DECL boss_doomwalkerAI : public ScriptedAI
         InEnrage = false;
     }
 
-    void KilledUnit(Unit* Victim)
+    void KilledUnit(Unit* victim)
     {
-        if(rand()%5)
-            return;
+        if(!victim->HasAura(SPELL_MARK_DEATH,0))
+            m_creature->AddAura(SPELL_MARK_DEATH,victim);
 
         switch(rand()%3)
         {
@@ -74,8 +83,6 @@ struct TRINITY_DLL_DECL boss_doomwalkerAI : public ScriptedAI
             case 1: DoScriptText(SAY_SLAY_2, m_creature); break;
             case 2: DoScriptText(SAY_SLAY_3, m_creature); break;
         }
-
-        DoCast(m_creature->getVictim(), SPELL_MARK_DEATH);
     }
 
     void JustDied(Unit* Killer)
@@ -88,11 +95,27 @@ struct TRINITY_DLL_DECL boss_doomwalkerAI : public ScriptedAI
         DoScriptText(SAY_AGGRO, m_creature);
     }
 
+    void MoveInLineOfSight(Unit* who)
+    {
+        if(who->HasAura(SPELL_MARK_DEATH,0))
+            m_creature->Kill(who,true);
+       
+        ScriptedAI::MoveInLineOfSight(who);
+    }
+        
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim())
             return;
 
+        if(Check_Timer < diff)
+        {
+            if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 80.0f)
+                EnterEvadeMode();
+
+            Check_Timer = 2000;
+        }else Check_Timer -= diff;
+        
         //Spell Enrage, when hp <= 20% gain enrage
         if (((m_creature->GetHealth()*100)/ m_creature->GetMaxHealth()) <= 20)
         {
@@ -114,6 +137,9 @@ struct TRINITY_DLL_DECL boss_doomwalkerAI : public ScriptedAI
             }
 
             DoCast(m_creature->getVictim(),SPELL_OVERRUN);
+            
+            DoResetThreat();
+
             Overrun_Timer = 25000 + rand()%15000;
         }else Overrun_Timer -= diff;
 
