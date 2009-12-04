@@ -639,6 +639,57 @@ void Spell::EffectDummy(uint32 i)
         {
             switch(m_spellInfo->Id )
             {
+                // Tag Subbued Talbuk (for Quest Creatures of the Eco-Domes - 10427)
+                case 35771:
+                {
+                    if(((Player*)m_caster)->GetQuestStatus(10427) == QUEST_STATUS_INCOMPLETE)
+                    {
+                        // Get Sleep Visual (34664)
+                        SpellEntry const *sleepSpellInfo = sSpellStore.LookupEntry(34664);
+                        if (sleepSpellInfo) // Make the creature sleep in peace :)
+                        {
+                            m_caster->AttackStop();
+                            unitTarget->RemoveAllAuras();
+                            unitTarget->DeleteThreatList();
+                            unitTarget->CombatStop();
+                            SpellEntry const *sleepSpellInfo = sSpellStore.LookupEntry(34664);
+                            Aura* sleepAura = CreateAura(sleepSpellInfo, 0, NULL, unitTarget,unitTarget, 0);
+
+                            unitTarget->AddAura(sleepAura); // Apply Visual Sleep
+                            unitTarget->addUnitState(UNIT_STAT_STUNNED);
+                            // Cant use q item again on this target untill creature awakes
+                            unitTarget->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                        }
+                        // Add q objecive + 1
+                        ((Player*)m_caster)->CastedCreatureOrGO(20982, unitTarget->GetGUID(), 35771);
+                    }
+                return;
+                }
+                 // Skyguard Blasting Charge (for quest Fires Over Skettis - 11008)
+                case 39844:
+                {
+                    if(((Player*)m_caster)->GetQuestStatus(11008) == QUEST_STATUS_INCOMPLETE)
+                    {
+                        if(unitTarget && unitTarget->GetEntry() == 22991) // trigger
+                        {
+                            // Handle associated GO - monstrous kaliri egg
+                            GameObject* target = NULL;
+                            Trinity::AllGameObjectsWithEntryInGrid go_check(185549);
+                            Trinity::GameObjectSearcher<Trinity::AllGameObjectsWithEntryInGrid> searcher(target, go_check);
+                            
+                            // Find GO that matches this trigger:
+                            unitTarget->VisitNearbyGridObject(3, searcher);
+
+                            // Add q objective and clean up
+                            if(target)
+                            {
+                                m_caster->DealDamage(unitTarget, unitTarget->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                                // TODO: Zrobic tak zeby GO zniknal, ale tak zeby sie zrespil normalnie po swoim czasie (3 min w bazie ma)
+                                // target->  ??????
+                            }
+                        }
+                    }
+                }
                 // Six Demon Bag, TODO: Seatrch and add more spells to cast with normal dmg ( 100 ~ 200 ), Shadow bolt, Fireball, Summon Felhunter
                 case 14537:
                 {
