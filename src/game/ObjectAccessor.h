@@ -105,7 +105,13 @@ class TRINITY_DLL_DECL ObjectAccessor : public Trinity::Singleton<ObjectAccessor
                 return NULL;
 
             if (IS_PLAYER_GUID(guid))
-                return (Unit*)HashMapHolder<Player>::Find(guid);
+            {
+                Unit * u = (Unit*)HashMapHolder<Player>::Find(guid);
+                if(!u || !u->IsInWorld())
+                    return NULL;
+
+                return u;
+            }
 
             if (Unit* u = (Unit*)HashMapHolder<Pet>::Find(guid))
                 return u;

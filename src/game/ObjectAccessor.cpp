@@ -233,7 +233,11 @@ ObjectAccessor::GetDynamicObject(Unit const &u, uint64 guid)
 Player*
 ObjectAccessor::FindPlayer(uint64 guid)
 {
-    return GetObjectInWorld(guid, (Player*)NULL);
+    Player * plr = GetObjectInWorld(guid, (Player*)NULL);
+    if(!plr || !plr->IsInWorld())
+        return NULL;
+     
+    return plr;
 }
 
 Player*
@@ -243,7 +247,7 @@ ObjectAccessor::FindPlayerByName(const char *name)
     HashMapHolder<Player>::MapType& m = HashMapHolder<Player>::GetContainer();
     HashMapHolder<Player>::MapType::iterator iter = m.begin();
     for(; iter != m.end(); ++iter)
-        if( ::strcmp(name, iter->second->GetName()) == 0 )
+        if( iter->second->IsInWorld() && ( ::strcmp(name, iter->second->GetName()) == 0 ) )
             return iter->second;
     return NULL;
 }

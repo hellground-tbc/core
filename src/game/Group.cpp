@@ -987,7 +987,7 @@ void Group::Update(time_t diff)
 
 void Group::UpdatePlayerOutOfRange(Player* pPlayer)
 {
-    if(!pPlayer)
+    if(!pPlayer || !pPlayer->IsInWorld())
         return;
 
     Player *player;
