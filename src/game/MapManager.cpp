@@ -34,9 +34,9 @@
 #include "Corpse.h"
 #include "ObjectMgr.h"
 
-#define CLASS_LOCK Trinity::ClassLevelLockable<MapManager, ZThread::Mutex>
+#define CLASS_LOCK Trinity::ClassLevelLockable<MapManager, ACE_Thread_Mutex>
 INSTANTIATE_SINGLETON_2(MapManager, CLASS_LOCK);
-INSTANTIATE_CLASS_MUTEX(MapManager, ZThread::Mutex);
+INSTANTIATE_CLASS_MUTEX(MapManager, ACE_Thread_Mutex);
 
 extern GridState* si_GridStates[];                          // debugging code, should be deleted some day
 
@@ -249,7 +249,7 @@ MapManager::Update(time_t diff)
     ObjectAccessor::Instance().UpdatePlayers(i_timer.GetCurrent());
     sWorld.RecordTimeDiff("UpdatePlayers");
 
-    uint32 i=0;
+    int32 i=0;
     MapMapType::iterator iter;
     std::vector<Map*> update_queue(i_maps.size());
     omp_set_num_threads(sWorld.getConfig(CONFIG_NUMTHREADS));
@@ -261,13 +261,13 @@ MapManager::Update(time_t diff)
 */
     
 #pragma omp parallel for schedule(dynamic) private(i) shared(update_queue)
-    for(int32 i = 0; i < i_maps.size(); ++i)
+    for( i = 0; i < i_maps.size(); ++i )
     {
-        checkAndCorrectGridStatesArray();                   // debugging code, should be deleted some day
         update_queue[i]->Update(i_timer.GetCurrent());
         sWorld.RecordTimeDiff("UpdateMap %u", update_queue[i]->GetId());
     //  sLog.outError("This is thread %d out of %d threads,updating map %u",omp_get_thread_num(),omp_get_num_threads(),iter->second->GetId());
     }
+    checkAndCorrectGridStatesArray();                   // debugging code, should be deleted some day
 
     ObjectAccessor::Instance().Update(i_timer.GetCurrent());
     sWorld.RecordTimeDiff("UpdateObjectAccessor");

@@ -25,7 +25,8 @@
 
 #include "Database.h"
 #include "Policies/Singleton.h"
-#include "zthread/FastMutex.h"
+#include "ace/Thread_Mutex.h"
+#include "ace/Guard_T.h"
 
 #ifdef WIN32
 #define FD_SETSIZE 1024
@@ -45,8 +46,8 @@ class TRINITY_DLL_SPEC DatabaseMysql : public Database
 
         //! Initializes Mysql and connects to a server.
         /*! infoString should be formated like hostname;username;password;database. */
-        bool Initialize(const char *infoString, bool initDelayThread = true);
-        void InitDelayThread(const char* infoString);
+        bool Initialize(const char *infoString);
+        void InitDelayThread();
         void HaltDelayThread();
         QueryResult* Query(const char *sql);
         bool Execute(const char *sql);
@@ -65,9 +66,9 @@ class TRINITY_DLL_SPEC DatabaseMysql : public Database
         // must be call before finish thread run
         void ThreadEnd();
     private:
-        ZThread::FastMutex mMutex;
+        ACE_Thread_Mutex mMutex;
 
-        ZThread::ThreadImpl* tranThread;
+        ACE_Based::Thread * tranThread;
 
         MYSQL *mMysql;
 

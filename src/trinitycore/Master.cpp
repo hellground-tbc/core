@@ -60,7 +60,7 @@ INSTANTIATE_SINGLETON_1( Master );
 
 volatile uint32 Master::m_masterLoopCounter = 0;
 
-class FreezeDetectorRunnable : public ZThread::Runnable
+class FreezeDetectorRunnable : public ACE_Based::Runnable
 {
 public:
     FreezeDetectorRunnable() { _delaytime = 0; }
@@ -79,7 +79,7 @@ public:
         w_lastchange = 0;
         while(!World::IsStopped())
         {
-            ZThread::Thread::sleep(1000);
+            ACE_Based::Thread::Sleep(1000);
             uint32 curtime = getMSTime();
             //DEBUG_LOG("anti-freeze: time=%u, counters=[%u; %u]",curtime,Master::m_masterLoopCounter,World::m_worldLoopCounter);
 
@@ -115,7 +115,7 @@ public:
     }
 };
 
-class RARunnable : public ZThread::Runnable
+class RARunnable : public ACE_Based::Runnable
 {
 public:
   uint32 numLoops, loopCounter;
@@ -180,7 +180,7 @@ public:
     else
       while (!World::IsStopped())
         {
-          ZThread::Thread::sleep (static_cast<unsigned long> (socketSelecttime / 1000));
+          ACE_Based::Thread::Sleep(static_cast<unsigned long> (socketSelecttime / 1000));
           checkping ();
         }
   }
@@ -235,8 +235,8 @@ int Master::Run()
     _HookSignals();
 
     ///- Launch WorldRunnable thread
-    ZThread::Thread t(new WorldRunnable);
-    t.setPriority ((ZThread::Priority )2);
+    ACE_Based::Thread t(*new WorldRunnable);
+    t.setPriority(ACE_Based::Highest);
 
     // set server online
     LoginDatabase.PExecute("UPDATE realmlist SET color = 0, population = 0 WHERE id = '%d'",realmID);
@@ -248,10 +248,10 @@ int Master::Run()
 #endif
     {
         ///- Launch CliRunnable thread
-        ZThread::Thread td1(new CliRunnable);
+        ACE_Based::Thread td1(*new CliRunnable);
     }
 
-    ZThread::Thread td2(new RARunnable);
+    ACE_Based::Thread td2(*new RARunnable);
 
     ///- Handle affinity for multiple processors and process priority on Windows
     #ifdef WIN32
@@ -312,8 +312,8 @@ int Master::Run()
     {
         FreezeDetectorRunnable *fdr = new FreezeDetectorRunnable();
         fdr->SetDelayTime(freeze_delay*1000);
-        ZThread::Thread t(fdr);
-        t.setPriority(ZThread::High);
+        ACE_Based::Thread t(*fdr);
+        t.setPriority(ACE_Based::Highest);
     }
 
     ///- Launch the world listener socket

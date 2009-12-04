@@ -36,7 +36,7 @@ trinitysockets
 trinitydatabase
 trinityauth
 trinityconfig
-ZThread
+ACE
 zlib
 gomp
 ${SSLLIB}

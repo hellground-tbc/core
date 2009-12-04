@@ -23,9 +23,9 @@
 
 #include "Platform/Define.h"
 #include "Policies/ThreadingModel.h"
-#include "zthread/Lockable.h"
-#include "zthread/Mutex.h"
-#include "zthread/FairReadWriteLock.h"
+#include "ace/RW_Thread_Mutex.h"
+#include "ace/Thread_Mutex.h"
+
 #include "Database/DBCStructure.h"
 #include "GridDefines.h"
 #include "Cell.h"
@@ -46,13 +46,7 @@ class InstanceSave;
 class WorldObject;
 class CreatureGroup;
 
-namespace ZThread
-{
-    class Lockable;
-    class ReadWriteLock;
-}
-
-typedef ZThread::FairReadWriteLock GridRWLock;
+typedef ACE_RW_Thread_Mutex GridRWLock;
 
 template<class MUTEX, class LOCK_TYPE>
 struct RGuard
@@ -68,8 +62,8 @@ struct WGuard
     Trinity::GeneralLock<LOCK_TYPE> i_lock;
 };
 
-typedef RGuard<GridRWLock, ZThread::Lockable> GridReadGuard;
-typedef WGuard<GridRWLock, ZThread::Lockable> GridWriteGuard;
+typedef RGuard<GridRWLock, ACE_Thread_Mutex> GridReadGuard;
+typedef WGuard<GridRWLock, ACE_Thread_Mutex> GridWriteGuard;
 typedef Trinity::SingleThreaded<GridRWLock>::Lock NullGuard;
 
 typedef struct
@@ -130,7 +124,7 @@ typedef UNORDERED_MAP<Creature*, CreatureMover> CreatureMoveList;
 
 typedef std::map<uint32/*leaderDBGUID*/, CreatureGroup*>        CreatureGroupHolderType;
 
-class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockable<Map, ZThread::Mutex>
+class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockable<Map, ACE_Thread_Mutex>
 {
     friend class MapReference;
     public:
@@ -346,7 +340,7 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
     protected:
         void SetUnloadReferenceLock(const GridPair &p, bool on) { getNGrid(p.x_coord, p.y_coord)->setUnloadReferenceLock(on); }
 
-        typedef Trinity::ObjectLevelLockable<Map, ZThread::Mutex>::Lock Guard;
+        typedef Trinity::ObjectLevelLockable<Map, ACE_Thread_Mutex>::Lock Guard;
 
         MapEntry const* i_mapEntry;
         uint8 i_spawnMode;
