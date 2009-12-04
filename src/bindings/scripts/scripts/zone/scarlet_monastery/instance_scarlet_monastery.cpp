@@ -117,7 +117,7 @@ struct TRINITY_DLL_DECL instance_scarlet_monastery : public ScriptedInstance
         switch(type)
         {
             //case GAMEOBJECT_PUMPKIN_SHRINE:   return PumpkinShrineGUID;
-            //case DATA_HORSEMAN:               return HorsemanGUID;
+            case DATA_HORSEMAN_EVENT:           return HorsemanGUID;
             //case DATA_HEAD:                   return HeadGUID;
             case DATA_MOGRAINE:             return MograineGUID;
             case DATA_WHITEMANE:            return WhitemaneGUID;
