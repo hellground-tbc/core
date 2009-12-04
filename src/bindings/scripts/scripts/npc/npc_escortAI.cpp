@@ -113,9 +113,10 @@ void npc_escortAI::UpdateAI(const uint32 diff)
         if (ReconnectWP)
         {
             //Correct movement speed
-            if (Run)
+            if (bIsRunning && m_creature->HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))
                 m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
-            else m_creature->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+            else if (!bIsRunning && !m_creature->HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))
+                m_creature->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
 
             //Continue with waypoints
             if( !IsOnHold )
@@ -230,7 +231,7 @@ void npc_escortAI::MovementInform(uint32 type, uint32 id)
         //Make sure that we are still on the right waypoint
         if (CurrentWP->id != id)
         {
-            debug_log("SD2 ERROR: EscortAI reached waypoint out of order %d, expected %d", id, CurrentWP->id);
+            debug_log("TSC ERROR: EscortAI reached waypoint out of order %d, expected %d", id, CurrentWP->id);
             return;
         }
 
@@ -271,31 +272,71 @@ void npc_escortAI::AddWaypoint(uint32 id, float x, float y, float z, uint32 Wait
     WaypointList.push_back(t);
 }
 
+void npc_escortAI::FillPointMovementListForCreature()
+{
+    UNORDERED_MAP<uint32, std::vector<PointMovement> >::iterator pPointsEntries = PointMovementMap.find(m_creature->GetEntry());
+
+    if (pPointsEntries != PointMovementMap.end())
+    {
+        std::vector<PointMovement>::iterator itr;
+
+        for (itr = pPointsEntries->second.begin(); itr != pPointsEntries->second.end(); ++itr)
+        {
+            Escort_Waypoint pPoint(itr->m_uiPointId,itr->m_fX,itr->m_fY,itr->m_fZ,itr->m_uiWaitTime);
+            WaypointList.push_back(pPoint);
+        }
+    }
+}
+
+void npc_escortAI::SetRun(bool bRun)
+{
+    if (bRun)
+    {
+        if (!bIsRunning)
+        {
+            m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+            bIsRunning = true;
+        }
+        else
+            debug_log("TSC: EscortAI attempt to set run mode, but is already running.");
+    }
+    else
+    {
+        if (bIsRunning)
+        {
+            m_creature->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+            bIsRunning = false;
+        }
+        else
+            debug_log("TSC: EscortAI attempt to set walk mode, but is already walking.");
+    }
+}
+
 void npc_escortAI::Start(bool bAttack, bool bDefend, bool bRun, uint64 pGUID)
 {
     if (InCombat)
     {
-        debug_log("SD2 ERROR: EscortAI attempt to Start while in combat");
+        debug_log("TSC ERROR: EscortAI attempt to Start while in combat");
         return;
     }
 
     if (WaypointList.empty())
     {
-        debug_log("SD2 ERROR: Call to escortAI::Start with 0 waypoints");
+        debug_log("TSC ERROR: Call to escortAI::Start with 0 waypoints");
         return;
     }
 
     Attack = bAttack;
     Defend = bDefend;
-    Run = bRun;
+    bIsRunning = bRun;
     PlayerGUID = pGUID;
 
-    debug_log("TSCR: EscortAI started with %d waypoints. Attack = %d, Defend = %d, Run = %d, PlayerGUID = %d", WaypointList.size(), Attack, Defend, Run, PlayerGUID);
+    debug_log("TSC: EscortAI started with %d waypoints. Attack = %d, Defend = %d, Run = %d, PlayerGUID = %d", WaypointList.size(), Attack, Defend, bIsRunning, PlayerGUID);
 
     CurrentWP = WaypointList.begin();
 
     //Set initial speed
-    if (Run)
+    if (bIsRunning)
         m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
     else m_creature->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
 

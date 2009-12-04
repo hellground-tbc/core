@@ -7,6 +7,8 @@
 
 #define DEFAULT_MAX_PLAYER_DISTANCE 50
 
+extern UNORDERED_MAP<uint32, std::vector<PointMovement> > PointMovementMap;
+
 struct Escort_Waypoint
 {
     Escort_Waypoint(uint32 _id, float _x, float _y, float _z, uint32 _w)
@@ -57,9 +59,13 @@ struct TRINITY_DLL_DECL npc_escortAI : public ScriptedAI
 
         // EscortAI functions
         void AddWaypoint(uint32 id, float x, float y, float z, uint32 WaitTimeMs = 0);
+        
+        void FillPointMovementListForCreature();
 
         void Start(bool bAttack, bool bDefend, bool bRun, uint64 pGUID = 0);
-
+        
+        void SetRun(bool bRun = true);
+        
         void SetMaxPlayerDistance(float newMax) { MaxPlayerDistance = newMax; }
         float GetMaxPlayerDistance() { return MaxPlayerDistance; }
 
@@ -93,7 +99,7 @@ struct TRINITY_DLL_DECL npc_escortAI : public ScriptedAI
         bool Defend;
         bool Returning;
         bool ReconnectWP;
-        bool Run;
+        bool bIsRunning;
         bool CanMelee;
         bool DespawnAtEnd;
         bool DespawnAtFar;
