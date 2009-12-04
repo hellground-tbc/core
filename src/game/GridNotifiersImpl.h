@@ -210,10 +210,10 @@ inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
         if(target->HasAura(38575,eff_index))
             return;
 
+    PersistentAreaAura* Aur = new PersistentAreaAura(spellInfo, eff_index, NULL, target, i_dynobject.GetCaster());
     if(spellInfo->Id == 40253 && Aur)
         Aur->dynObjGUID = i_dynobject.GetGUID();
 
-    PersistentAreaAura* Aur = new PersistentAreaAura(spellInfo, eff_index, NULL, target, i_dynobject.GetCaster());
     target->AddAura(Aur);
     i_dynobject.AddAffected(target);
 }
