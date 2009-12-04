@@ -1018,6 +1018,10 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         uint32 GetCombatTimer() const { return m_CombatTimer; }
 
         bool HasAuraType(AuraType auraType) const;
+        uint32 GetAurasAmountByType(AuraType auraType) const
+        {
+            return m_modAuras[auraType].size();
+        }
         bool HasAuraTypeWithFamilyFlags(AuraType auraType, uint32 familyName,  uint64 familyFlags) const;
         bool HasAura(uint32 spellId, uint32 effIndex) const
             { return m_Auras.find(spellEffectPair(spellId, effIndex)) != m_Auras.end(); }

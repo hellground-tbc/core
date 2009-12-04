@@ -65,6 +65,7 @@ struct TRINITY_DLL_DECL boss_akilzonAI : public ScriptedAI
         if(TempSpell)
             TempSpell->EffectBasePoints[1] = 49;//disable bugged lightning until fixed in core
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        m_creature->GetPosition(wLoc);
     }
     ScriptedInstance *pInstance;
 
@@ -84,6 +85,9 @@ struct TRINITY_DLL_DECL boss_akilzonAI : public ScriptedAI
     uint32 StormSequenceTimer;
 
     bool isRaining;
+
+    uint32 checkTimer;
+    WorldLocation wLoc;
 
     void Reset()
     {
@@ -110,6 +114,8 @@ struct TRINITY_DLL_DECL boss_akilzonAI : public ScriptedAI
         isRaining = false;
 
         SetWeather(WEATHER_STATE_FINE, 0.0f);
+
+        checkTimer = 3000;
     }
 
     void Aggro(Unit *who)
@@ -241,6 +247,17 @@ struct TRINITY_DLL_DECL boss_akilzonAI : public ScriptedAI
     {
         if (!UpdateVictim())
             return;
+
+        if (checkTimer < diff)
+        {
+            if (m_creature->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 45)
+                EnterEvadeMode();
+            else
+                DoZoneInCombat();
+            checkTimer = 3000;
+        }
+        else
+            checkTimer -= diff;
 
         if(StormCount)
         {

@@ -96,6 +96,13 @@ struct TRINITY_DLL_DECL boss_nalorakkAI : public ScriptedAI
         MoveEvent = true;
         MovePhase = 0;
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
+
+        SpellEntry *TempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_MANGLE);
+        if(TempSpell)
+        {
+            TempSpell->EffectImplicitTargetA[1] = TARGET_UNIT_TARGET_ENEMY;
+        }
+        m_creature->GetPosition(wLoc);
     }
 
     ScriptedInstance *pInstance;
@@ -116,6 +123,9 @@ struct TRINITY_DLL_DECL boss_nalorakkAI : public ScriptedAI
     bool inMove;
     uint32 MovePhase;
     uint32 waitTimer;
+
+    uint32 checkTimer;
+    WorldLocation wLoc;
 
     void Reset()
     {
@@ -140,6 +150,8 @@ struct TRINITY_DLL_DECL boss_nalorakkAI : public ScriptedAI
         Mangle_Timer = 10000 + rand()%5000;
         ShapeShift_Timer = 45000 + rand()%5000;
         Berserk_Timer = 600000;
+
+        checkTimer = 3000;
 
         inBearForm = false;
         m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + 1, 5122);
@@ -347,6 +359,17 @@ struct TRINITY_DLL_DECL boss_nalorakkAI : public ScriptedAI
 
         if(!UpdateVictim())
             return;
+
+        if (checkTimer < diff)
+        {
+            if (m_creature->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 75 && !MoveEvent)
+                EnterEvadeMode();
+            else
+                DoZoneInCombat();
+            checkTimer = 3000;
+        }
+        else
+            checkTimer -= diff;
 
         if(Berserk_Timer < diff)
         {

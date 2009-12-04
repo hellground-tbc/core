@@ -345,6 +345,9 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
                 EnterEvadeMode();
                 return;
             }
+            else
+                DoZoneInCombat();
+
             ResetTimer = 5000;
         }else ResetTimer -= diff;
 

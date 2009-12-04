@@ -129,6 +129,8 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
 
     uint64 FireBombGUIDs[40];
 
+    uint32 checkTimer;
+
     void Reset()
     {
         if(pInstance)
@@ -152,6 +154,8 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
             FireBombGUIDs[i] = 0;
 
         HatchAllEggs(1);
+
+        checkTimer = 3000;
     }
 
     void JustDied(Unit* Killer)
@@ -337,6 +341,17 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
 
         if(!UpdateVictim())
             return;
+
+        if (checkTimer < diff)
+        {
+            if (m_creature->GetDistance(JanalainPos[0][0], JanalainPos[0][1], JanalainPos[0][2]) > 20)
+                EnterEvadeMode();
+            else
+                DoZoneInCombat();
+            checkTimer = 3000;
+        }
+        else
+            checkTimer -= diff;
 
         //enrage if under 25% hp before 5 min.
         if(!enraged && m_creature->GetHealth() * 4 < m_creature->GetMaxHealth())
