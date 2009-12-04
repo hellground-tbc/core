@@ -71,7 +71,7 @@
 				AdditionalDependencies="trinitycore.lib ACEd.lib"
 				OutputFile="$(OutDir)/TrinityScript.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;..\..\..\..\dep\lib\$(PlatformName)_$(ConfigurationName)&quot;;&quot;..\..\..\..\win\VC90\trinitycore__$(PlatformName)_$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="..\..\..\..\dep\lib\$(PlatformName)_$(ConfigurationName);..\..\..\..\win\VC90\ace__$(PlatformName)_$(ConfigurationName);..\..\..\..\win\VC90\trinitycore__$(PlatformName)_$(ConfigurationName)"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/MaNGOSScript.pdb"
 				SubSystem="2"
@@ -155,7 +155,7 @@
 				AdditionalDependencies="trinitycore.lib ACE.lib"
 				OutputFile="$(OutDir)/TrinityScript.dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;..\..\..\..\dep\lib\$(PlatformName)_$(ConfigurationName)&quot;;&quot;..\..\..\..\win\VC90\trinitycore__$(PlatformName)_$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="..\..\..\..\dep\lib\$(PlatformName)_$(ConfigurationName);..\..\..\..\win\VC90\zthread__$(PlatformName)_$(ConfigurationName);..\..\..\..\win\VC90\trinitycore__$(PlatformName)_$(ConfigurationName)"
 				GenerateDebugInformation="false"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -237,10 +237,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="trinitycore.lib zthread.lib"
+				AdditionalDependencies="trinitycore.lib ACEd.lib"
 				OutputFile="$(OutDir)/TrinityScript.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\..\..\win\VC90\zthread__$(PlatformName)_$(ConfigurationName);..\..\..\..\win\VC90\trinitycore__$(PlatformName)_$(ConfigurationName)"
+				AdditionalLibraryDirectories="..\..\..\..\dep\lib\$(PlatformName)_$(ConfigurationName);..\..\..\..\win\VC90\zthread__$(PlatformName)_$(ConfigurationName);..\..\..\..\win\VC90\trinitycore__$(PlatformName)_$(ConfigurationName)"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/MaNGOSScript.pdb"
 				SubSystem="2"
@@ -317,10 +317,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="trinitycore.lib zthread.lib"
+				AdditionalDependencies="trinitycore.lib ACE.lib"
 				OutputFile="$(OutDir)/TrinityScript.dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\..\..\win\VC90\zthread__$(PlatformName)_$(ConfigurationName);..\..\..\..\win\VC90\trinitycore__$(PlatformName)_$(ConfigurationName)"
+				AdditionalLibraryDirectories="..\..\..\..\dep\lib\$(PlatformName)_$(ConfigurationName);..\..\..\..\win\VC90\zthread__$(PlatformName)_$(ConfigurationName);..\..\..\..\win\VC90\trinitycore__$(PlatformName)_$(ConfigurationName)"
 				GenerateDebugInformation="false"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -508,6 +508,26 @@
 					>
 					<File
 						RelativePath="..\scripts\zone\ashenvale_forest\ashenvale.cpp"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="Alterac Valley"
+					>
+					<File
+						RelativePath="..\scripts\zone\alterac_valley\boss_balinda.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\scripts\zone\alterac_valley\boss_drekthar.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\scripts\zone\alterac_valley\boss_galvangar.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\scripts\zone\alterac_valley\boss_vanndar.cpp"
 						>
 					</File>
 				</Filter>
@@ -905,10 +925,6 @@
 				</Filter>
 				<Filter
 					Name="Hillsbrad Foothills"
-					>
-				</Filter>
-				<Filter
-					Name="Hinterlands"
 					>
 				</Filter>
 				<Filter
@@ -2154,6 +2170,10 @@
 				<Filter
 					Name="Exodar"
 					>
+					<Filter
+						Name="Hinterlands"
+						>
+					</Filter>
 				</Filter>
 				<Filter
 					Name="Iron Forge"

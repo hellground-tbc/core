@@ -32,6 +32,7 @@ npc_mount_vendor        100%    Regular mount vendors all over the world. Displa
 npc_rogue_trainer       80%     Scripted trainers, so they are able to offer item 17126 for class quest 6681
 npc_sayge               100%    Darkmoon event fortune teller, buff player based on answers given
 npc_snake_trap_serpents 80%     AI for snakes that summoned by Snake Trap
+npc_flight_master       100%    AI for flight masters.
 EndContentData */
 
 #include "precompiled.h"
@@ -1125,9 +1126,316 @@ CreatureAI* GetAI_npc_snake_trap_serpents(Creature *_Creature)
     return new npc_snake_trap_serpentsAI(_Creature);
 }
 
+/*################
+# Flight Master  #
+################*/
+
+uint32 ADVISOR[] = {
+    9297,      // ENRAGED_WYVERN
+    9526,      // ENRAGED_GRYPHON
+    9521,      // ENRAGED_FELBAT
+    9527,      // ENRAGED_HIPPOGRYPH
+    27946      // SILVERMOON_DRAGONHAWK
+};
+const char type[] = "WGBHD";
+
+struct TRINITY_DLL_DECL npc_flight_masterAI : public ScriptedAI
+{
+    npc_flight_masterAI(Creature *c) : ScriptedAI(c) {}
+    
+    void Reset(){}
+    void SummonAdvisor()
+    {
+        const char *subname = m_creature->GetSubName();
+        for(uint8 i = 0; i<5; i++)
+        {
+            if(subname[0] == type[i])
+            {
+               DoSpawnCreature(ADVISOR[i], 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1);
+               DoSpawnCreature(ADVISOR[i], 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1);
+            }
+        }
+    }
+    void JustSummoned(Creature *add)
+    {
+       if(add)
+       {
+           add->setFaction(m_creature->getFaction());
+           add->SetLevel(m_creature->getLevel());
+           add->AI()->AttackStart(m_creature->getVictim());
+       }
+    }
+
+    void Aggro(Unit *who)
+    {
+        SummonAdvisor();
+    }
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+        
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_flight_master(Creature *_Creature)
+{
+    return new npc_flight_masterAI(_Creature);
+}
+
+/*######
+## npc_garments_of_quests
+######*/
+
+enum
+{
+    SPELL_LESSER_HEAL_R2    = 2052,
+    SPELL_FORTITUDE_R1      = 1243,
+
+    QUEST_MOON              = 5621,
+    QUEST_LIGHT_1           = 5624,
+    QUEST_LIGHT_2           = 5625,
+    QUEST_SPIRIT            = 5648,
+    QUEST_DARKNESS          = 5650,
+
+    ENTRY_SHAYA             = 12429,
+    ENTRY_ROBERTS           = 12423,
+    ENTRY_DOLF              = 12427,
+    ENTRY_KORJA             = 12430,
+    ENTRY_DG_KEL            = 12428,
+
+    SAY_COMMON_HEALED       = -1000531,
+    SAY_DG_KEL_THANKS       = -1000532,
+    SAY_DG_KEL_GOODBYE      = -1000533,
+    SAY_ROBERTS_THANKS      = -1000556,
+    SAY_ROBERTS_GOODBYE     = -1000557,
+    SAY_KORJA_THANKS        = -1000558,
+    SAY_KORJA_GOODBYE       = -1000559,
+    SAY_DOLF_THANKS         = -1000560,
+    SAY_DOLF_GOODBYE        = -1000561,
+    SAY_SHAYA_THANKS        = -1000562,
+    SAY_SHAYA_GOODBYE       = -1000563,
+};
+
+float RunTo[5][3]=
+{
+    {9661.724, 869.803, 1270.742},                          //shaya
+    {-9543.747, -117.770, 57.893},                          //roberts
+    {-5650.226, -473.517, 397.027},                         //dolf
+    {189.175, -4747.069, 11.215},                           //kor'ja
+    {2471.303, 371.101, 30.919},                            //kel
+};
+
+struct TRINITY_DLL_DECL npc_garments_of_questsAI : public ScriptedAI
+{
+    npc_garments_of_questsAI(Creature *c) : ScriptedAI(c) {Reset();}
+
+    uint64 caster;
+
+    bool IsHealed;
+    bool CanRun;
+
+    uint32 RunAwayTimer;
+
+    void Reset()
+    {
+        caster = 0;
+        IsHealed = false;
+        CanRun = false;
+
+        RunAwayTimer = 5000;
+
+        m_creature->SetStandState(PLAYER_STATE_KNEEL);
+        m_creature->SetHealth(int(m_creature->GetMaxHealth()*0.7));
+        m_creature->SetVisibility(VISIBILITY_ON);
+    }
+
+    void Aggro(Unit *who) {}
+
+    void SpellHit(Unit* pCaster, const SpellEntry *Spell)
+    {
+        if(Spell->Id == SPELL_LESSER_HEAL_R2 || Spell->Id == SPELL_FORTITUDE_R1)
+        {
+            //not while in combat
+            if(InCombat)
+                return;
+
+            //nothing to be done now
+            if(IsHealed && CanRun)
+                return;
+
+            if(pCaster->GetTypeId() == TYPEID_PLAYER)
+            {
+                switch(m_creature->GetEntry())
+                {
+                    case ENTRY_SHAYA:
+                        if (((Player*)pCaster)->GetQuestStatus(QUEST_MOON) == QUEST_STATUS_INCOMPLETE)
+                        {
+                            if (IsHealed && !CanRun && Spell->Id == SPELL_FORTITUDE_R1)
+                            {
+                                DoScriptText(SAY_SHAYA_THANKS,m_creature,pCaster);
+                                CanRun = true;
+                            }
+                            else if (!IsHealed && Spell->Id == SPELL_LESSER_HEAL_R2)
+                            {
+                                caster = pCaster->GetGUID();
+                                m_creature->SetStandState(PLAYER_STATE_NONE);
+                                DoScriptText(SAY_COMMON_HEALED,m_creature,pCaster);
+                                IsHealed = true;
+                            }
+                        }
+                        break;
+                    case ENTRY_ROBERTS:
+                        if (((Player*)pCaster)->GetQuestStatus(QUEST_LIGHT_1) == QUEST_STATUS_INCOMPLETE)
+                        {
+                            if (IsHealed && !CanRun && Spell->Id == SPELL_FORTITUDE_R1)
+                            {
+                                DoScriptText(SAY_ROBERTS_THANKS,m_creature,pCaster);
+                                CanRun = true;
+                            }
+                            else if (!IsHealed && Spell->Id == SPELL_LESSER_HEAL_R2)
+                            {
+                                caster = pCaster->GetGUID();
+                                m_creature->SetStandState(PLAYER_STATE_NONE);
+                                DoScriptText(SAY_COMMON_HEALED,m_creature,pCaster);
+                                IsHealed = true;
+                            }
+                        }
+                        break;
+                    case ENTRY_DOLF:
+                        if (((Player*)pCaster)->GetQuestStatus(QUEST_LIGHT_2) == QUEST_STATUS_INCOMPLETE)
+                        {
+                            if (IsHealed && !CanRun && Spell->Id == SPELL_FORTITUDE_R1)
+                            {
+                                DoScriptText(SAY_DOLF_THANKS,m_creature,pCaster);
+                                CanRun = true;
+                            }
+                            else if (!IsHealed && Spell->Id == SPELL_LESSER_HEAL_R2)
+                            {
+                                caster = pCaster->GetGUID();
+                                m_creature->SetStandState(PLAYER_STATE_NONE);
+                                DoScriptText(SAY_COMMON_HEALED,m_creature,pCaster);
+                                IsHealed = true;
+                            }
+                        }
+                        break;
+                    case ENTRY_KORJA:
+                        if (((Player*)pCaster)->GetQuestStatus(QUEST_SPIRIT) == QUEST_STATUS_INCOMPLETE)
+                        {
+                            if (IsHealed && !CanRun && Spell->Id == SPELL_FORTITUDE_R1)
+                            {
+                                DoScriptText(SAY_KORJA_THANKS,m_creature,pCaster);
+                                CanRun = true;
+                            }
+                            else if (!IsHealed && Spell->Id == SPELL_LESSER_HEAL_R2)
+                            {
+                                caster = pCaster->GetGUID();
+                                m_creature->SetStandState(PLAYER_STATE_NONE);
+                                DoScriptText(SAY_COMMON_HEALED,m_creature,pCaster);
+                                IsHealed = true;
+                            }
+                        }
+                        break;
+                    case ENTRY_DG_KEL:
+                        if (((Player*)pCaster)->GetQuestStatus(QUEST_DARKNESS) == QUEST_STATUS_INCOMPLETE)
+                        {
+                            if (IsHealed && !CanRun && Spell->Id == SPELL_FORTITUDE_R1)
+                            {
+                                DoScriptText(SAY_DG_KEL_THANKS,m_creature,pCaster);
+                                CanRun = true;
+                            }
+                            else if (!IsHealed && Spell->Id == SPELL_LESSER_HEAL_R2)
+                            {
+                                caster = pCaster->GetGUID();
+                                m_creature->SetStandState(PLAYER_STATE_NONE);
+                                DoScriptText(SAY_COMMON_HEALED,m_creature,pCaster);
+                                IsHealed = true;
+                            }
+                        }
+                        break;
+                }
+
+                //give quest credit, not expect any special quest objectives
+                if (CanRun)
+                    ((Player*)pCaster)->TalkedToCreature(m_creature->GetEntry(),m_creature->GetGUID());
+            }
+        }
+    }
+
+    void MovementInform(uint32 type, uint32 id)
+    {
+        if (type != POINT_MOTION_TYPE)
+            return;
+
+        //we reached destination, kill ourselves
+        if (id == 0)
+        {
+            m_creature->SetVisibility(VISIBILITY_OFF);
+            m_creature->setDeathState(JUST_DIED);
+            m_creature->SetHealth(0);
+            m_creature->CombatStop();
+            m_creature->DeleteThreatList();
+            m_creature->RemoveCorpse();
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (CanRun && !InCombat)
+        {
+            if (RunAwayTimer <= diff)
+            {
+                if (Unit *pUnit = Unit::GetUnit(*m_creature,caster))
+                {
+                    switch(m_creature->GetEntry())
+                    {
+                        case ENTRY_SHAYA:
+                            DoScriptText(SAY_SHAYA_GOODBYE,m_creature,pUnit);
+                            m_creature->GetMotionMaster()->MovePoint(0, RunTo[0][0], RunTo[0][1], RunTo[0][2]);
+                            break;
+                        case ENTRY_ROBERTS:
+                            DoScriptText(SAY_ROBERTS_GOODBYE,m_creature,pUnit);
+                            m_creature->GetMotionMaster()->MovePoint(0, RunTo[1][0], RunTo[1][1], RunTo[1][2]);
+                            break;
+                        case ENTRY_DOLF:
+                            DoScriptText(SAY_DOLF_GOODBYE,m_creature,pUnit);
+                            m_creature->GetMotionMaster()->MovePoint(0, RunTo[2][0], RunTo[2][1], RunTo[2][2]);
+                            break;
+                        case ENTRY_KORJA:
+                            DoScriptText(SAY_KORJA_GOODBYE,m_creature,pUnit);
+                            m_creature->GetMotionMaster()->MovePoint(0, RunTo[3][0], RunTo[3][1], RunTo[3][2]);
+                            break;
+                        case ENTRY_DG_KEL:
+                            DoScriptText(SAY_DG_KEL_GOODBYE,m_creature,pUnit);
+                            m_creature->GetMotionMaster()->MovePoint(0, RunTo[4][0], RunTo[4][1], RunTo[4][2]);
+                            break;
+                    }
+                }
+                else
+                    EnterEvadeMode();                       //something went wrong
+
+                RunAwayTimer = 30000;
+            }else RunAwayTimer -= diff;
+        }
+
+       DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_garments_of_quests(Creature* pCreature)
+{
+    return new npc_garments_of_questsAI(pCreature);
+}
+
 void AddSC_npcs_special()
 {
     Script *newscript;
+
+    newscript = new Script;
+    newscript->Name = "npc_garments_of_quests";
+    newscript->GetAI = &GetAI_npc_garments_of_quests;
+    newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="npc_chicken_cluck";
@@ -1200,6 +1508,11 @@ void AddSC_npcs_special()
     newscript = new Script;
     newscript->Name="npc_snake_trap_serpents";
     newscript->GetAI = &GetAI_npc_snake_trap_serpents;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_flight_master";
+    newscript->GetAI = &GetAI_npc_flight_master;
     newscript->RegisterSelf();
 }
 

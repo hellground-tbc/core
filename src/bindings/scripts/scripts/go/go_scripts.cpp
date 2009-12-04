@@ -36,6 +36,18 @@ EndContentData */
 #include "precompiled.h"
 
 /*######
+## go_cat_figurine  UPDATE `gameobject_template` SET `ScriptName`='go_cat_figurine' WHERE `entry`=13873;
+######*/
+
+#define SPELL_SUMMON_GHOST_SABER    5968
+
+bool GOHello_go_cat_figurine(Player *player, GameObject* _GO)
+{
+    player->CastSpell(player,SPELL_SUMMON_GHOST_SABER,true);
+    return false;
+}
+
+/*######
 ## go_crystal_pylons (3x)
 ######*/
 
@@ -171,30 +183,6 @@ bool GOHello_go_jump_a_tron(Player *player, GameObject* _GO)
 }
 
 /*######
-## go_ethereum_prison
-######*/
-
-float ethereum_NPC[2][7] =
-{
- {20785,20790,20789,20784,20786,20783,20788}, // hostile npc
- {22810,22811,22812,22813,22814,22815,0}      // fiendly npc (need script in acid ? only to cast spell reputation reward)
-};
-
-bool GOHello_go_ethereum_prison(Player *player, GameObject* _GO)
-{
- _GO->SetGoState(0);
- switch(rand()%2){
-    case 0:
-        _GO->SummonCreature(ethereum_NPC[0][rand()%6],_GO->GetPositionX(),_GO->GetPositionY(),_GO->GetPositionZ()+0.3, 0,TEMPSUMMON_CORPSE_TIMED_DESPAWN,10000);
-    break;
-    case 1:
-        _GO->SummonCreature(ethereum_NPC[1][rand()%5],_GO->GetPositionX(),_GO->GetPositionY(),_GO->GetPositionZ()+0.3, 0,TEMPSUMMON_TIMED_DESPAWN,10000);
-    break;
-}
-return true;
-}
-
-/*######
 ## go_sacred_fire_of_life
 ######*/
 
@@ -208,6 +196,90 @@ bool GOHello_go_sacred_fire_of_life(Player* pPlayer, GameObject* pGO)
     return true;
 }
 
+/*######
+## go_crystalforge
+######*/
+
+#define GOSSIP_ITEM_BEAST_1 "[PH] Create 1 x Flask of Beast"
+#define GOSSIP_ITEM_BEAST_5 "[PH] Create 5 x Flask of Beast"
+
+#define GOSSIP_ITEM_SORCERER_1 "[PH] Create 1 x Flask of Sorcerer"
+#define GOSSIP_ITEM_SORCERER_5 "[PH] Create 5 x Flask of Sorcerer"
+
+enum FELFORGE
+{
+    SPELL_CREATE_1_FLASK_OF_BEAST   = 40964,
+    SPELL_CREATE_5_FLASK_OF_BEAST   = 40965,
+};
+
+enum BASHIRFORGE
+{
+    SPELL_CREATE_1_FLASK_OF_SORCERER   = 40968,
+    SPELL_CREATE_5_FLASK_OF_SORCERER   = 40970,
+};
+
+bool GOHello_go_crystalforge(Player* pPlayer, GameObject* pGO)
+{
+    switch(pGO->GetEntry())
+    {
+        case 185919: // Fel Crystalforge
+            pPlayer->ADD_GOSSIP_ITEM(NULL, GOSSIP_ITEM_BEAST_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+            pPlayer->ADD_GOSSIP_ITEM(NULL, GOSSIP_ITEM_BEAST_5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+        break;
+        
+        case 185921: // Bashir Crystalforge
+            pPlayer->ADD_GOSSIP_ITEM(NULL, GOSSIP_ITEM_SORCERER_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+            pPlayer->ADD_GOSSIP_ITEM(NULL, GOSSIP_ITEM_SORCERER_5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+        break; 
+    }
+    pPlayer->SEND_GOSSIP_MENU(pGO->GetGOInfo()->questgiver.gossipID, pGO->GetGUID());
+    return true;
+}
+
+bool GOSelect_go_crystalforge(Player* pPlayer, GameObject* pGO, uint32 Sender, uint32 action)
+{
+    switch(action)
+    {
+        case GOSSIP_ACTION_INFO_DEF+1:
+            pPlayer->CastSpell(pPlayer,(pGO->GetEntry() == 185919) ? SPELL_CREATE_1_FLASK_OF_BEAST : SPELL_CREATE_1_FLASK_OF_SORCERER,false);
+        break;
+        case GOSSIP_ACTION_INFO_DEF+2:    
+            pPlayer->CastSpell(pPlayer,(pGO->GetEntry() == 185919) ? SPELL_CREATE_5_FLASK_OF_BEAST : SPELL_CREATE_5_FLASK_OF_SORCERER,false);
+        break;
+    }
+    
+    pPlayer->CLOSE_GOSSIP_MENU();
+    return true;
+}
+
+/*######
+## go_ethereum_stasis
+######*/
+
+const uint32 NpcStasisEntry[] =
+{
+    22825, 20888, 22827, 22826, 22828
+};
+
+bool GOHello_go_ethereum_stasis(Player* pPlayer, GameObject* pGo)
+{
+    pGo->SetGoState(0);
+    pPlayer->SummonCreature(NpcStasisEntry[rand()%5],pGo->GetPositionX(), pGo->GetPositionY(), pGo->GetPositionZ(), pGo->GetAngle(pPlayer), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+    pGo->SetRespawnTime(120);
+    return false;
+}
+/*######
+## go_darkmoon_cannon
+######*/
+
+#define SPELL_WINGS 42867
+
+bool GOHello_go_darkmoon_cannon(Player *player, GameObject* _GO)
+{
+    // player->Relocate(    //przeniesc gracza na czubek armaty :]
+    player->CastSpell(player,SPELL_WINGS,true);
+    return false;
+}
 void AddSC_go_scripts()
 {
     Script *newscript;
@@ -263,14 +335,29 @@ void AddSC_go_scripts()
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="go_ethereum_prison";
-    newscript->pGOHello =           &GOHello_go_ethereum_prison;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
     newscript->Name = "go_sacred_fire_of_life";
     newscript->pGOHello =           &GOHello_go_sacred_fire_of_life;
     newscript->RegisterSelf();
 
+    newscript = new Script;
+    newscript->Name = "go_crystalforge";
+    newscript->pGOHello =           &GOHello_go_crystalforge;
+    newscript->pGOSelect =          &GOSelect_go_crystalforge;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "go_cat_figurine";
+    newscript->pGOHello =           &GOHello_go_cat_figurine;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "go_ethereum_stasis";
+    newscript->pGOHello =           &GOHello_go_ethereum_stasis;
+    newscript->RegisterSelf();
+   
+    newscript = new Script;
+    newscript->Name = "go_darkmoon_cannon";
+    newscript->pGOHello =           &GOHello_go_darkmoon_cannon;
+    newscript->RegisterSelf();
 }
 

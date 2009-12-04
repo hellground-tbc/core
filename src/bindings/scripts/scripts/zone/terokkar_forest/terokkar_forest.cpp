@@ -542,6 +542,42 @@ bool GossipSelect_go_skull_pile(Player *player, GameObject* _GO, uint32 sender, 
     return true;
 }
 
+/***
+Script for Quest: Hungry Nether Rays (11093)
+***/
+struct TRINITY_DLL_DECL npc_blackwing_warp_chaser : public ScriptedAI
+{
+    npc_blackwing_warp_chaser(Creature *c) : ScriptedAI(c) {}
+    
+    Unit* HungryNetherRay;
+
+    void JustDied(Unit* slayer)
+    {
+        if(slayer->GetTypeId()==TYPEID_PLAYER && ((Player*)(slayer))->GetQuestStatus(11093)==QUEST_STATUS_INCOMPLETE)
+        {
+            HungryNetherRay = FindCreature(23439, 50, m_creature);
+            // to avoid leeching by other players:
+            if(HungryNetherRay && HungryNetherRay->GetOwner()==slayer)
+            {
+                // cast Lucille Feed Credit Trigger
+                HungryNetherRay->CastSpell(HungryNetherRay, 41427, true);
+            }
+        }
+    }
+    
+    void Aggro(Unit *who) {}
+
+    void Reset() 
+    {
+        HungryNetherRay = NULL;
+    }
+};
+
+CreatureAI* GetAI_npc_blackwing_warp_chaser(Creature *_Creature)
+{
+    return new npc_blackwing_warp_chaser(_Creature);
+}
+
 void AddSC_terokkar_forest()
 {
     Script *newscript;
@@ -588,6 +624,11 @@ void AddSC_terokkar_forest()
     newscript->Name="go_skull_pile";
     newscript->pGOHello  = &GossipHello_go_skull_pile;
     newscript->pGOSelect = &GossipSelect_go_skull_pile;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_blackwing_warp_chaser";
+    newscript->GetAI = &GetAI_npc_blackwing_warp_chaser;
     newscript->RegisterSelf();
 
 }

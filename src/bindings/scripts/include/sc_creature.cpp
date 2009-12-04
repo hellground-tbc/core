@@ -51,6 +51,23 @@ void SummonList::DespawnEntry(uint32 entry)
     }
 }
 
+void SummonList::AuraOnEntry(uint32 entry, uint32 spellId, bool apply)
+{
+    for(iterator i = begin(); i != end(); ++i)
+    {
+        if(Creature *summon = Unit::GetCreature(*m_creature, *i))
+        {
+            if(summon->GetEntry() == entry)
+            {
+                if(apply)
+                    summon->AddAura(spellId, summon);
+                else
+                    summon->RemoveAurasDueToSpell(spellId);
+            }
+        }
+    }
+}
+
 void SummonList::DespawnAll()
 {
     for(iterator i = begin(); i != end(); ++i)
@@ -355,6 +372,7 @@ Unit* ScriptedAI::SelectUnit(SelectAggroTarget targetType, uint32 position, floa
 
             target = Unit::GetUnit(*m_creature,(*i)->getUnitGuid());
             if(!target
+                || !target->isAlive()
                 || playerOnly && target->GetTypeId() != TYPEID_PLAYER
                 || dist && !m_creature->IsWithinCombatRange(target, dist))
             {

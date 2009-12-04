@@ -1196,6 +1196,7 @@ struct TRINITY_DLL_DECL Mob_EventAI : public ScriptedAI
 
         EventUpdateTime = EVENT_UPDATE_TIME;
         EventDiff = 0;
+
     }
 
     void AttackStart(Unit *who)
@@ -1281,7 +1282,7 @@ struct TRINITY_DLL_DECL Mob_EventAI : public ScriptedAI
         bool Combat = InCombat ? UpdateVictim() : false;
 
         //Must return if creature isn't alive. Normally select hostil target and get victim prevent this
-        if (!m_creature->isAlive())
+        if (!m_creature->isAlive() || m_creature->hasUnitState(UNIT_STAT_LOST_CONTROL) || m_creature->IsPolymorphed())
             return;
 
         if (IsFleeing)

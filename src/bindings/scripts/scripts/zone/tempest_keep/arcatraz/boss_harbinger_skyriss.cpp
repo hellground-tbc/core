@@ -53,6 +53,9 @@ EndContentData */
 #define SPELL_66_ILLUSION       36931                       //entry 21466
 #define SPELL_33_ILLUSION       36932                       //entry 21467
 
+#define NPC_MILLHOUSE           20977
+#define QUEST_10886             10886
+
 struct TRINITY_DLL_DECL boss_harbinger_skyrissAI : public ScriptedAI
 {
     boss_harbinger_skyrissAI(Creature *c) : ScriptedAI(c)
@@ -106,8 +109,23 @@ struct TRINITY_DLL_DECL boss_harbinger_skyrissAI : public ScriptedAI
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_DEATH, m_creature);
-        if( pInstance )
+        if(pInstance)
             pInstance->SetData(TYPE_HARBINGERSKYRISS,DONE);
+        
+        if(pInstance && HeroicMode)
+        {
+            if(Unit* millhouse = (Unit*)FindCreature(NPC_MILLHOUSE, 100, m_creature))
+            {
+                if(millhouse->isAlive())
+                {
+                    MapRefManager::const_iterator player = pInstance->instance->GetPlayers().begin();
+                    
+                    if(player != pInstance->instance->GetPlayers().end())
+                        player->getSource()->GroupEventHappens(QUEST_10886, m_creature);
+
+                }
+            }
+        }
     }
 
     void JustSummoned(Creature *summon)

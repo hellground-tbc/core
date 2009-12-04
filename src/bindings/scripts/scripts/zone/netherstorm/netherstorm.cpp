@@ -59,6 +59,7 @@ EndContentData */
 #define SPELL_DISABLE_VISUAL    35031
 #define SPELL_INTERRUPT_1       35016                       //ACID mobs should cast this
 #define SPELL_INTERRUPT_2       35176                       //ACID mobs should cast this (Manaforge Ara-version)
+#define SPELL_SLEEP_VISUAL      34664                        // Used by in Creatures of Eco-Drome
 
 struct TRINITY_DLL_DECL npc_manaforge_control_consoleAI : public ScriptedAI
 {
@@ -1009,8 +1010,220 @@ CreatureAI* GetAI_npc_bessy(Creature *_Creature)
     return (CreatureAI*)bessyAI;
 }
 
+/***
+Script for Quest: Creatures of the Eco-Domes (10427)
+***/
+struct TRINITY_DLL_DECL mob_talbukAI : public ScriptedAI
+{
+    mob_talbukAI(Creature *c) : ScriptedAI(c) {}
+
+    uint32 Tagged_Timer;
+
+    void Reset()
+    {
+        Tagged_Timer = 60000;
+    }
+
+    void Aggro(Unit *who) {}
+    
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim() && !m_creature->HasAura(SPELL_SLEEP_VISUAL,0))
+            return;
+        
+        if (m_creature->HasAura(SPELL_SLEEP_VISUAL,0)) // Sleep Visual
+        {
+            if(Tagged_Timer < diff) // Remove every effect caused by aura and reset creature.
+            {    
+                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                m_creature->clearUnitState(UNIT_STAT_STUNNED);
+                m_creature->RemoveAurasDueToSpell(SPELL_SLEEP_VISUAL);
+                EnterEvadeMode();
+            }
+            else 
+                Tagged_Timer -= diff;
+        }
+        
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_talbuk(Creature *_Creature)
+{
+    return new mob_talbukAI(_Creature);
+}
+
+/***
+Script for Quest: The Flesh Lies... (10345)
+***/
+struct TRINITY_DLL_DECL npc_withered_corpseAI : public ScriptedAI
+{
+    npc_withered_corpseAI(Creature *c) : ScriptedAI(c) {}
+
+    void Reset()
+    {
+        // makes creature appear dead
+        m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, PLAYER_STATE_DEAD);
+    }
+
+    void Aggro(Unit *who) {}
+    
+    void MoveInLineOfSight(Unit* who) 
+    {
+        // summon Parasitic Fleshbeast(20335) when player gets very close, and then remove NPC
+        if(who->GetTypeId()==TYPEID_PLAYER && m_creature->IsWithinMeleeRange(who))
+        {
+            m_creature->SummonCreature(20335, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), m_creature->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 0);
+            m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+            m_creature->RemoveCorpse();
+        }
+    }
+
+    void SpellHit(Unit *caster, const SpellEntry *spell)
+    {
+        if(spell->Id == 35372)
+        {
+            m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+            m_creature->RemoveCorpse();
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_withered_corpse(Creature *_Creature)
+{
+    return new npc_withered_corpseAI(_Creature);
+}
+
 /*######
-##
+## go_ethereum_prison
+######*/
+
+float ethereum_NPC[2][7] =
+{
+ {20785,20790,20789,20784,20786,20783,20788}, // hostile npc
+ {22810,22811,22812,22813,22814,22815,0}      // fiendly npc (need script in acid ? only to cast spell reputation reward)
+};
+
+bool GOHello_go_ethereum_prison(Player *player, GameObject* _GO)
+{
+ _GO->SetGoState(0);
+ uint32 entry;
+
+switch(rand()%2)
+{
+    case 0:
+        entry = ethereum_NPC[0][rand()%7];
+        _GO->SummonCreature(entry,_GO->GetPositionX(),_GO->GetPositionY(),_GO->GetPositionZ()+0.3, 0,TEMPSUMMON_CORPSE_TIMED_DESPAWN,10000);
+    break;
+    case 1:
+        entry = ethereum_NPC[1][rand()%6];
+        if(Creature *prisoner = _GO->SummonCreature(entry,_GO->GetPositionX(),_GO->GetPositionY(),_GO->GetPositionZ()+0.3, 0,TEMPSUMMON_TIMED_DESPAWN,10000))
+        {
+            int32 spellId = NULL;
+            switch(prisoner->GetEntry())
+            {
+                case 22810: spellId = 39460; break;  // Cenarion Expedition +500
+                case 22811: spellId = 39456; break;  // Lower City +500
+                case 22812: spellId = 39457; break;  // Sha'tar +500
+                case 22813: spellId = 39474; break;  // Consortium +500
+                case 22814: spellId = 39476; break;  // Sporegar +500
+                case 22815: spellId = 39475; break;  // Keepers of Time +500
+            }
+            prisoner->CastSpell(player,spellId,false,false,false,0);
+        }
+            
+    break;
+}
+ _GO->SetRespawnTime(120);
+return true;
+}
+
+/***
+Script for Quest: Bloody Imp-ossible! (10924)
+***/
+
+struct TRINITY_DLL_DECL npc_warp_chaserAI : public ScriptedAI
+{
+    npc_warp_chaserAI(Creature *c) : ScriptedAI(c) {}
+    
+    Unit* summonedZeppit;
+
+    void JustDied(Unit* slayer)
+    {
+        if(slayer->GetTypeId()==TYPEID_PLAYER && ((Player*)(slayer))->GetQuestStatus(10924)==QUEST_STATUS_INCOMPLETE)
+        {
+            if(m_creature->IsWithinMeleeRange(slayer))
+            {
+                summonedZeppit = FindCreature(22484, MELEE_RANGE + 5, m_creature);
+                // to avoid leeching by other players:
+                if(summonedZeppit && summonedZeppit->GetOwner()==slayer)
+                {
+                    // create item needed to complete the quest
+                    summonedZeppit->CastSpell(summonedZeppit, 39244, true);
+                }
+            }    
+        }
+    }
+    
+    void Aggro(Unit *who) {}
+
+    void Reset() 
+    {
+        summonedZeppit = NULL;
+    }
+};
+
+CreatureAI* GetAI_npc_warp_chaser(Creature *_Creature)
+{
+    return new npc_warp_chaserAI(_Creature);
+}
+
+/*######
+## Script for Quest: Elemental Power Extraction
+######*/
+
+// Spells
+#define SPELL_EPEXTRACTOR       34520
+#define SPELL_CREATE_EPOWER     34525
+#define SPELL_SUMMON_SHARD      35310 
+#define ENTRY_RUMBLER           18881
+
+struct TRINITY_DLL_DECL mob_epextractionAI : public ScriptedAI
+{
+
+    mob_epextractionAI(Creature *c) : ScriptedAI(c) {}
+
+    bool PowerExtracted;
+
+    void Reset()
+    {
+       PowerExtracted = false; 
+    }
+
+    void Aggro(Unit *who){}
+
+    void SpellHit(Unit *caster, const SpellEntry *spell)
+    {
+        if(spell->Id == SPELL_EPEXTRACTOR)
+            PowerExtracted = true;
+    }
+
+    void JustDied(Unit* killer)
+    {
+        if(m_creature->GetEntry() == ENTRY_RUMBLER)
+           m_creature->CastSpell(m_creature,SPELL_SUMMON_SHARD,false);
+        
+        if(PowerExtracted)
+            m_creature->CastSpell(m_creature,SPELL_CREATE_EPOWER,false);
+    }
+};
+
+CreatureAI* GetAI_mob_epextraction(Creature *_Creature)
+{
+    return new mob_epextractionAI (_Creature);
+}
+/*######
+## AddSC_netherstrom
 ######*/
 
 void AddSC_netherstorm()
@@ -1065,6 +1278,31 @@ void AddSC_netherstorm()
     newscript->Name = "npc_bessy";
     newscript->GetAI = &GetAI_npc_bessy;
     newscript->pQuestAccept = &QuestAccept_npc_bessy;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_talbuk";
+    newscript->GetAI = &GetAI_mob_talbuk;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_withered_corpse";
+    newscript->GetAI = &GetAI_npc_withered_corpse;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="go_ethereum_prison";
+    newscript->pGOHello = &GOHello_go_ethereum_prison;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "npc_warp_chaser";
+    newscript->GetAI = &GetAI_npc_warp_chaser;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_epextraction";
+    newscript->GetAI = &GetAI_npc_warp_chaser;
     newscript->RegisterSelf();
 }
 

@@ -364,6 +364,8 @@ struct TRINITY_DLL_DECL mob_dragonmaw_peonAI : public ScriptedAI
             PoisonTimer = 0;
             m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         }else PoisonTimer -= diff;
+        
+         DoMeleeAttackIfReady();
     }
 };
 
@@ -434,6 +436,60 @@ bool GossipSelect_npcs_flanis_swiftwing_and_kagrosh(Player *player, Creature *_C
             player->StoreNewItem( dest, 30659, 1, true);
             player->PlayerTalkClass->ClearMenus();
         }
+    }
+    return true;
+}
+
+/*######
+## npc_grand_commander_ruusk
+######*/
+
+#define QUEST_10577    10577
+
+#define GOSSIP_HGCR "I bring word from Lord Illidan."
+#define GOSSIP_SGCR1 "The cipher fragment is to be moved. Have it delivered to Zuluhed."
+#define GOSSIP_SGCR2 "Perhaps you did not hear me, Ruusk. I am giving you an order from Illidan himself!"
+#define GOSSIP_SGCR3 "Very well. I will return to the Black Temple and notify Lord Illidan of your unwillingness to carry out his wishes. I suggest you make arrangements with your subordinates and let them know that you will soon be leaving this world."
+#define GOSSIP_SGCR4 "Do I need to go into all the gory details? I think we are both well aware of what Lord Illidan does with those that would oppose his word. Now, I must be going! Farewell, Ruusk! Forever..."
+#define GOSSIP_SGCR5 "Ah, good of you to come around, Ruusk. Thank you and farewell."
+
+bool GossipHello_npc_grand_commander_ruusk(Player *player, Creature *_Creature)
+{
+    if (player->GetQuestStatus(QUEST_10577) == QUEST_STATUS_INCOMPLETE)
+        player->ADD_GOSSIP_ITEM( 0, GOSSIP_HGCR, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+
+    player->SEND_GOSSIP_MENU(10401, _Creature->GetGUID());
+    return true;
+}
+
+bool GossipSelect_npc_grand_commander_ruusk(Player *player, Creature *_Creature, uint32 sender, uint32 action)
+{
+    switch (action)
+    {
+        case GOSSIP_ACTION_INFO_DEF+1:
+            player->ADD_GOSSIP_ITEM(0, GOSSIP_SGCR1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+            player->SEND_GOSSIP_MENU(10405, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+2:
+            player->ADD_GOSSIP_ITEM(0, GOSSIP_SGCR2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
+            player->SEND_GOSSIP_MENU(10406, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+3:
+            player->ADD_GOSSIP_ITEM(0, GOSSIP_SGCR3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+4);                                                            
+            player->SEND_GOSSIP_MENU(10407, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+4:
+            player->ADD_GOSSIP_ITEM(0, GOSSIP_SGCR4, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);                                                    
+            player->SEND_GOSSIP_MENU(10408, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+5:
+			player->ADD_GOSSIP_ITEM(0, GOSSIP_SGCR5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+6);                                                    
+            player->SEND_GOSSIP_MENU(10409, _Creature->GetGUID());
+            break;
+		case GOSSIP_ACTION_INFO_DEF+6:
+			player->CLOSE_GOSSIP_MENU();
+            player->AreaExploredOrEventHappens(QUEST_10577);
+            break;
     }
     return true;
 }
@@ -719,7 +775,7 @@ struct TRINITY_DLL_DECL npc_overlord_morghorAI : public ScriptedAI
 
         Unit* Illi = Unit::GetUnit((*m_creature), IllidanGUID);
 
-        if(!plr || !Illi)
+        if(!plr || (!Illi && Step < 23))
         {
             EnterEvadeMode();
             return 0;
@@ -1801,6 +1857,12 @@ void AddSC_shadowmoon_valley()
     newscript->Name="npcs_flanis_swiftwing_and_kagrosh";
     newscript->pGossipHello =  &GossipHello_npcs_flanis_swiftwing_and_kagrosh;
     newscript->pGossipSelect = &GossipSelect_npcs_flanis_swiftwing_and_kagrosh;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_grand_commander_ruusk";
+    newscript->pGossipHello =  &GossipHello_npc_grand_commander_ruusk;
+    newscript->pGossipSelect = &GossipSelect_npc_grand_commander_ruusk;
     newscript->RegisterSelf();
 
     newscript = new Script;

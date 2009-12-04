@@ -611,6 +611,39 @@ bool GOHello_go_landmark_treasure(Player *player, GameObject* _GO)
 };
 
 /*######
+## npc_anachronos
+######*/
+
+#define SAY_MISTAKE -1645010
+
+struct TRINITY_DLL_DECL npc_anachronosAI : public ScriptedAI
+{
+    npc_anachronosAI(Creature *c) : ScriptedAI(c) {}
+
+    void Aggro(Unit* who){}
+
+    void UpdateAI(const uint32 diff)
+   {
+        if (!UpdateVictim() )
+            return;
+
+        if (m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 20)
+        {
+            DoScriptText(SAY_MISTAKE, m_creature);
+            m_creature->Kill(m_creature, false);
+            m_creature->RemoveCorpse();
+        }
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_anachronos(Creature *_Creature)
+{
+    return new npc_anachronosAI(_Creature);
+}
+
+/*######
 ## AddSC
 ######*/
 
@@ -656,6 +689,11 @@ void AddSC_tanaris()
     newscript = new Script;
     newscript->Name = "go_landmark_treasure";
     newscript->pGOHello = &GOHello_go_landmark_treasure;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_anachronos";
+    newscript->GetAI = &GetAI_npc_anachronos;
     newscript->RegisterSelf();
 }
 
