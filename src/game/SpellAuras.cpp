@@ -483,6 +483,7 @@ AreaAura::~AreaAura()
 PersistentAreaAura::PersistentAreaAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target,
 Unit *caster, Item* castItem) : Aura(spellproto, eff, currentBasePoints, target, caster, castItem)
 {
+    dynObjGUID = 0;
     m_isPersistent = true;
 }
 
@@ -766,14 +767,28 @@ void PersistentAreaAura::Update(uint32 diff)
     Unit *caster = GetCaster();
     if (caster)
     {
-        DynamicObject *dynObj = caster->GetDynObject(GetId(), GetEffIndex());
-        if (dynObj)
+        if(GetId() == 40253)
         {
-            if (!m_target->IsWithinDistInMap(dynObj, dynObj->GetRadius()))
+            DynamicObject *dynObj = ObjectAccessor::GetDynamicObject(*caster, dynObjGUID);
+            if(dynObj)
+            {
+                if (!m_target->IsWithinDistInMap(dynObj, dynObj->GetRadius()))
+                    remove = true;
+            }
+            else
                 remove = true;
         }
         else
-            remove = true;
+        {
+            DynamicObject *dynObj = caster->GetDynObject(GetId(), GetEffIndex());
+            if (dynObj)
+            {
+                if (!m_target->IsWithinDistInMap(dynObj, dynObj->GetRadius()))
+                    remove = true;
+            }
+            else
+                remove = true;
+        }
     }
     else
         remove = true;
