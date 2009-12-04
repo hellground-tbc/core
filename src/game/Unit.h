@@ -1374,6 +1374,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         void  UpdateSpeed(UnitMoveType mtype, bool forced);
         float GetSpeed( UnitMoveType mtype ) const;
+        float GetMaxSpeedRate( UnitMoveType mtype ) const { return m_max_speed_rate[mtype]; }
         float GetSpeedRate( UnitMoveType mtype ) const { return m_speed_rate[mtype]; }
         void SetSpeed(UnitMoveType mtype, float rate, bool forced = false);
 
@@ -1501,7 +1502,9 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         bool m_canModifyStats;
         //std::list< spellEffectPair > AuraSpells[TOTAL_AURAS];  // TODO: use this if ok for mem
 
-        float m_speed_rate[MAX_MOVE_TYPE];
+        float m_speed_rate[MAX_MOVE_TYPE];                      // current speed
+        float m_max_speed_rate[MAX_MOVE_TYPE];                  // max possible speed
+
 
         CharmInfo *m_charmInfo;
         SharedVisionList m_sharedVision;

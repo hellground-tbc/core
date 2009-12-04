@@ -66,6 +66,7 @@ class TRINITY_DLL_SPEC TargetedMovementGenerator
     private:
 
         void _setTargetLocation(T &);
+        void _adaptSpeedToTarget(T &);
 
         float i_offset;
         float i_angle;
