@@ -30,6 +30,7 @@
 #include "NPCHandler.h"
 #include "QuestDef.h"
 #include "Group.h"
+#include "Object.h"
 #include "Bag.h"
 #include "WorldSession.h"
 #include "Pet.h"

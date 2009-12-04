@@ -43,6 +43,7 @@
 
 #define DEFAULT_GRID_EXPIRY     300
 #define MAX_GRID_LOAD_TIME      50
+#define MAX_CREATURE_ATTACK_RADIUS  (45.0f * sWorld.getRate(RATE_CREATURE_AGGRO))
 
 // magic *.map header
 const char MAP_MAGIC[] = "MAP_2.50";
@@ -210,6 +211,7 @@ void Map::DeleteStateMachine()
 Map::Map(uint32 id, time_t expiry, uint32 InstanceId, uint8 SpawnMode)
    : i_mapEntry (sMapStore.LookupEntry(id)), i_spawnMode(SpawnMode),
    i_id(id), i_InstanceId(InstanceId), m_unloadTimer(0), i_gridExpiry(expiry),
+   m_VisibleDistance(DEFAULT_VISIBILITY_DISTANCE),
    m_activeNonPlayersIter(m_activeNonPlayers.end())
    , i_lock(true)
 {
@@ -222,6 +224,15 @@ Map::Map(uint32 id, time_t expiry, uint32 InstanceId, uint8 SpawnMode)
             setNGrid(NULL, idx, j);
         }
     }
+
+    //lets initialize visibility distance for map
+    Map::InitVisibilityDistance();
+}
+
+void Map::InitVisibilityDistance()
+{
+    //init visibility for continents
+    m_VisibleDistance = sWorld.GetMaxVisibleDistanceOnContinents();
 }
 
 // Template specialization of utility methods
@@ -421,8 +432,8 @@ Map::EnsureGridCreated(const GridPair &p)
             getNGrid(p.x_coord, p.y_coord)->SetGridState(GRID_STATE_IDLE);
 
             //z coord
-            int gx=63-p.x_coord;
-            int gy=63-p.y_coord;
+            int gx = (MAX_NUMBER_OF_GRIDS - 1) - p.x_coord;
+            int gy = (MAX_NUMBER_OF_GRIDS - 1) - p.y_coord;
 
             if(!GridMaps[gx][gy])
                 Map::LoadMapAndVMap(i_id,i_InstanceId,gx,gy);
@@ -547,7 +558,7 @@ void Map::MessageBroadcast(Player *player, WorldPacket *msg, bool to_self, bool 
     Trinity::MessageDeliverer post_man(*player, msg, to_possessor, to_self);
     TypeContainerVisitor<Trinity::MessageDeliverer, WorldTypeMapContainer > message(post_man);
     CellLock<ReadGuard> cell_lock(cell, p);
-    cell_lock->Visit(cell_lock, message, *this);
+    cell_lock->Visit(cell_lock, message, *this, *player, GetVisibilityDistance());
 }
 
 void Map::MessageBroadcast(WorldObject *obj, WorldPacket *msg, bool to_possessor)
@@ -570,7 +581,7 @@ void Map::MessageBroadcast(WorldObject *obj, WorldPacket *msg, bool to_possessor
     Trinity::ObjectMessageDeliverer post_man(*obj, msg, to_possessor);
     TypeContainerVisitor<Trinity::ObjectMessageDeliverer, WorldTypeMapContainer > message(post_man);
     CellLock<ReadGuard> cell_lock(cell, p);
-    cell_lock->Visit(cell_lock, message, *this);
+    cell_lock->Visit(cell_lock, message, *this, *obj, GetVisibilityDistance());
 }
 
 void Map::MessageDistBroadcast(Player *player, WorldPacket *msg, float dist, bool to_self, bool to_possessor, bool own_team_only)
@@ -592,7 +603,7 @@ void Map::MessageDistBroadcast(Player *player, WorldPacket *msg, float dist, boo
     Trinity::MessageDistDeliverer post_man(*player, msg, to_possessor, dist, to_self, own_team_only);
     TypeContainerVisitor<Trinity::MessageDistDeliverer , WorldTypeMapContainer > message(post_man);
     CellLock<ReadGuard> cell_lock(cell, p);
-    cell_lock->Visit(cell_lock, message, *this);
+    cell_lock->Visit(cell_lock, message, *this, *player, dist);
 }
 
 void Map::MessageDistBroadcast(WorldObject *obj, WorldPacket *msg, float dist, bool to_possessor)
@@ -615,7 +626,7 @@ void Map::MessageDistBroadcast(WorldObject *obj, WorldPacket *msg, float dist, b
     Trinity::ObjectMessageDistDeliverer post_man(*obj, msg, to_possessor, dist);
     TypeContainerVisitor<Trinity::ObjectMessageDistDeliverer, WorldTypeMapContainer > message(post_man);
     CellLock<ReadGuard> cell_lock(cell, p);
-    cell_lock->Visit(cell_lock, message, *this);
+    cell_lock->Visit(cell_lock, message, *this, *obj, dist);
 }
 
 bool Map::loaded(const GridPair &p) const
@@ -649,20 +660,20 @@ void Map::RelocationNotify()
         if(dist > 10.0f)
         {
             Trinity::VisibleChangesNotifier notifier(*unit);
-            VisitWorld(unit->oldX, unit->oldY, World::GetMaxVisibleDistance(), notifier);
+            VisitWorld(unit->oldX, unit->oldY, unit->GetMap()->GetVisibilityDistance(), notifier);
             dist = 0;
         }
 
         if(unit->GetTypeId() == TYPEID_PLAYER)
         {
             Trinity::PlayerRelocationNotifier notifier(*((Player*)unit));
-            VisitAll(unit->GetPositionX(), unit->GetPositionY(), World::GetMaxVisibleDistance() + dist, notifier);
+            VisitAll(unit->GetPositionX(), unit->GetPositionY(), unit->GetMap()->GetVisibilityDistance() + dist, notifier);
             notifier.Notify();
         }
         else
         {
             Trinity::CreatureRelocationNotifier notifier(*((Creature*)unit));
-            VisitAll(unit->GetPositionX(), unit->GetPositionY(), World::GetMaxVisibleDistance() + dist, notifier);
+            VisitAll(unit->GetPositionX(), unit->GetPositionY(), unit->GetMap()->GetVisibilityDistance() + dist, notifier);
         }
     }
     for(std::vector<Unit*>::iterator iter = i_unitsToNotify.begin(); iter != i_unitsToNotify.end(); ++iter)
@@ -717,8 +728,8 @@ void Map::Update(const uint32 &t_diff)
         // the overloaded operators handle range checking
         // so ther's no need for range checking inside the loop
         CellPair begin_cell(standing_cell), end_cell(standing_cell);
-        begin_cell << 1; begin_cell -= 1;               // upper left
-        end_cell >> 1; end_cell += 1;                   // lower right
+        CellArea area = Cell::CalculateCellArea(*plr, GetVisibilityDistance());
+        area.ResizeBorders(begin_cell, end_cell);
 
         for(uint32 x = begin_cell.x_coord; x <= end_cell.x_coord; ++x)
         {
@@ -779,7 +790,7 @@ void Map::Update(const uint32 &t_diff)
                     if(caster->GetTypeId() == TYPEID_PLAYER && caster->GetUInt64Value(PLAYER_FARSIGHT) == obj->GetGUID())
                     {
                         Trinity::PlayerVisibilityNotifier notifier(*((Player*)caster));
-                        VisitAll(obj->GetPositionX(), obj->GetPositionY(), World::GetMaxVisibleDistance(), notifier);
+                        VisitAll(obj->GetPositionX(), obj->GetPositionY(), obj->GetMap()->GetVisibilityDistance(), notifier);
                         notifier.Notify();
                     }
             }
@@ -1182,8 +1193,8 @@ bool Map::UnloadGrid(const uint32 &x, const uint32 &y, bool unloadAll)
         delete grid;
         setNGrid(NULL, x, y);
     }
-    int gx=63-x;
-    int gy=63-y;
+    int gx = (MAX_NUMBER_OF_GRIDS - 1) - x;
+    int gy = (MAX_NUMBER_OF_GRIDS - 1) - y;
 
     // delete grid map, but don't delete if it is from parent map (and thus only reference)
     //+++if (GridMaps[gx][gy]) don't check for GridMaps[gx][gy], we might have to unload vmaps
@@ -1528,7 +1539,7 @@ void Map::UpdateObjectVisibility( WorldObject* obj, Cell cell, CellPair cellpair
     Trinity::VisibleChangesNotifier notifier(*obj);
     TypeContainerVisitor<Trinity::VisibleChangesNotifier, WorldTypeMapContainer > player_notifier(notifier);
     CellLock<GridReadGuard> cell_lock(cell, cellpair);
-    cell_lock->Visit(cell_lock, player_notifier, *this);
+    cell_lock->Visit(cell_lock, player_notifier, *this, *obj, GetVisibilityDistance());
 }
 
 void Map::SendInitSelf( Player * player)
@@ -1732,10 +1743,15 @@ bool Map::ActiveObjectsNearGrid(uint32 x, uint32 y) const
 {
     CellPair cell_min(x*MAX_NUMBER_OF_CELLS, y*MAX_NUMBER_OF_CELLS);
     CellPair cell_max(cell_min.x_coord + MAX_NUMBER_OF_CELLS, cell_min.y_coord+MAX_NUMBER_OF_CELLS);
-    cell_min << 2;
-    cell_min -= 2;
-    cell_max >> 2;
-    cell_max += 2;
+
+    //we must find visible range in cells so we unload only non-visible cells...
+    float viewDist = GetVisibilityDistance();
+    int cell_range = (int)ceilf(viewDist / SIZE_OF_GRID_CELL) + 1;
+
+    cell_min << cell_range;
+    cell_min -= cell_range;
+    cell_max >> cell_range;
+    cell_max += cell_range;
 
     for(MapRefManager::const_iterator iter = m_mapRefManager.begin(); iter != m_mapRefManager.end(); ++iter)
     {
@@ -1818,6 +1834,9 @@ InstanceMap::InstanceMap(uint32 id, time_t expiry, uint32 InstanceId, uint8 Spaw
   : Map(id, expiry, InstanceId, SpawnMode), i_data(NULL),
     m_resetAfterUnload(false), m_unloadWhenEmpty(false)
 {
+
+    InstanceMap::InitVisibilityDistance();
+
     // the timer is started by default, and stopped when the first player joins
     // this make sure it gets unloaded if for some reason no player joins
     m_unloadTimer = std::max(sWorld.getConfig(CONFIG_INSTANCE_UNLOAD_DELAY), (uint32)MIN_UNLOAD_DELAY);
@@ -1830,6 +1849,16 @@ InstanceMap::~InstanceMap()
         delete i_data;
         i_data = NULL;
     }
+}
+
+void InstanceMap::InitVisibilityDistance()
+{
+    //init visibility distance for instances
+    
+    if(i_mapEntry->MapID == 550) // The Eye
+       m_VisibleDistance = 120.0f;
+    else
+        m_VisibleDistance = sWorld.GetMaxVisibleDistanceInInstances();
 }
 
 /*
@@ -2146,10 +2175,20 @@ void InstanceMap::SetResetSchedule(bool on)
 BattleGroundMap::BattleGroundMap(uint32 id, time_t expiry, uint32 InstanceId)
   : Map(id, expiry, InstanceId, DIFFICULTY_NORMAL)
 {
+    BattleGroundMap::InitVisibilityDistance();
 }
 
 BattleGroundMap::~BattleGroundMap()
 {
+}
+
+void BattleGroundMap::InitVisibilityDistance()
+{
+    //init visibility distance for BG/Arenas
+    if(IsBattleArena())
+       m_VisibleDistance = sWorld.GetMaxVisibleDistanceInArenas();
+    else
+        m_VisibleDistance = sWorld.GetMaxVisibleDistanceInBG();
 }
 
 bool BattleGroundMap::CanEnter(Player * player)

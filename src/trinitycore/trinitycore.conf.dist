@@ -973,8 +973,12 @@ GM.AllowFriend    = 0
 ###################################################################################################################
 
 Visibility.GroupMode = 0
-Visibility.Distance.Creature      = 132
-Visibility.Distance.Player        = 132
+
+Visibility.Distance.Continents    = 132
+Visibility.Distance.Instances     = 132
+Visibility.Distance.Arenas        = 132
+Visibility.Distance.BG            = 132
+
 Visibility.Distance.Object        = 132
 Visibility.Distance.InFlight      = 132
 Visibility.Distance.Grey.Unit   = 1

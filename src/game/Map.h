@@ -151,6 +151,9 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         void MessageBroadcast(WorldObject *, WorldPacket *, bool to_possessor);
         void MessageDistBroadcast(Player *, WorldPacket *, float dist, bool to_self, bool to_possessor, bool own_team_only = false);
         void MessageDistBroadcast(WorldObject *, WorldPacket *, float dist, bool to_possessor);
+        
+        float GetVisibilityDistance() const { return m_VisibleDistance; }
+        virtual void InitVisibilityDistance();
 
         void PlayerRelocation(Player *, float x, float y, float z, float angl);
         void CreatureRelocation(Creature *creature, float x, float y, float, float);
@@ -349,6 +352,7 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         uint32 i_id;
         uint32 i_InstanceId;
         uint32 m_unloadTimer;
+        float m_VisibleDistance;
 
         MapRefManager m_mapRefManager;
         MapRefManager::iterator m_mapRefIter;
@@ -439,6 +443,8 @@ class TRINITY_DLL_SPEC InstanceMap : public Map
         bool CanEnter(Player* player);
         void SendResetWarnings(uint32 timeLeft) const;
         void SetResetSchedule(bool on);
+        virtual void InitVisibilityDistance();
+
     private:
         bool m_resetAfterUnload;
         bool m_unloadWhenEmpty;
@@ -455,6 +461,7 @@ class TRINITY_DLL_SPEC BattleGroundMap : public Map
         bool Add(Player *);
         void Remove(Player *, bool);
         bool CanEnter(Player* player);
+        virtual void InitVisibilityDistance();
         void SetUnload();
         void UnloadAll();
 };

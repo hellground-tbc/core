@@ -337,13 +337,15 @@ void GameObject::Update(uint32 diff)
                     CellLock<GridReadGuard> cell_lock(cell, p);
 
                     TypeContainerVisitor<Trinity::UnitSearcher<Trinity::AnyUnfriendlyNoTotemUnitInObjectRangeCheck>, GridTypeMapContainer > grid_object_checker(checker);
-                    cell_lock->Visit(cell_lock, grid_object_checker, *MapManager::Instance().GetMap(GetMapId(), this));
-
+                    //cell_lock->Visit(cell_lock, grid_object_checker, *MapManager::Instance().GetMap(GetMapId(), this));
+                    cell_lock->Visit(cell_lock, grid_object_checker, *GetMap(), *this, radius);
+                    
                     // or unfriendly player/pet
                     if(!ok)
                     {
                         TypeContainerVisitor<Trinity::UnitSearcher<Trinity::AnyUnfriendlyNoTotemUnitInObjectRangeCheck>, WorldTypeMapContainer > world_object_checker(checker);
-                        cell_lock->Visit(cell_lock, world_object_checker, *MapManager::Instance().GetMap(GetMapId(), this));
+                        //cell_lock->Visit(cell_lock, world_object_checker, *MapManager::Instance().GetMap(GetMapId(), this));
+                        cell_lock->Visit(cell_lock, world_object_checker, *GetMap(), *this, radius);
                     }
                 }
                 else                                        // environmental trap
@@ -358,7 +360,8 @@ void GameObject::Update(uint32 diff)
                     CellLock<GridReadGuard> cell_lock(cell, p);
 
                     TypeContainerVisitor<Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck>, WorldTypeMapContainer > world_object_checker(checker);
-                    cell_lock->Visit(cell_lock, world_object_checker, *MapManager::Instance().GetMap(GetMapId(), this));
+                    //cell_lock->Visit(cell_lock, world_object_checker, *MapManager::Instance().GetMap(GetMapId(), this));
+                    cell_lock->Visit(cell_lock, world_object_checker, *GetMap(), *this, radius);
                     ok = p_ok;
                 }
 
@@ -866,7 +869,8 @@ void GameObject::TriggeringLinkedGameObject( uint32 trapEntry, Unit* target)
 
         TypeContainerVisitor<Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck>, GridTypeMapContainer > object_checker(checker);
         CellLock<GridReadGuard> cell_lock(cell, p);
-        cell_lock->Visit(cell_lock, object_checker, *MapManager::Instance().GetMap(GetMapId(), this));
+        //cell_lock->Visit(cell_lock, object_checker, *MapManager::Instance().GetMap(GetMapId(), this));
+        cell_lock->Visit(cell_lock, object_checker, *GetMap(), *target, range);
     }
 
     // found correct GO
@@ -888,7 +892,8 @@ GameObject* GameObject::LookupFishingHoleAround(float range)
     CellLock<GridReadGuard> cell_lock(cell, p);
 
     TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::NearestGameObjectFishingHole>, GridTypeMapContainer > grid_object_checker(checker);
-    cell_lock->Visit(cell_lock, grid_object_checker, *MapManager::Instance().GetMap(GetMapId(), this));
+    //cell_lock->Visit(cell_lock, grid_object_checker, *MapManager::Instance().GetMap(GetMapId(), this));
+    cell_lock->Visit(cell_lock, grid_object_checker, *GetMap(), *this, range);
 
     return ok;
 }
@@ -1107,7 +1112,8 @@ void GameObject::Use(Unit* user)
                         //fish catched
                         player->UpdateFishingSkill();
 
-                        GameObject* ok = LookupFishingHoleAround(DEFAULT_VISIBILITY_DISTANCE);
+                        //TODO: find reasonable value for fishing hole search
+                        GameObject* ok = LookupFishingHoleAround(20.0f + CONTACT_DISTANCE);
                         if (ok)
                         {
                             player->SendLoot(ok->GetGUID(),LOOT_FISHINGHOLE);

@@ -267,7 +267,9 @@ ObjectAccessor::_buildChangeObjectForPlayer(WorldObject *obj, UpdateDataMapType 
     WorldObjectChangeAccumulator notifier(*obj, update_players);
     TypeContainerVisitor<WorldObjectChangeAccumulator, WorldTypeMapContainer > player_notifier(notifier);
     CellLock<GridReadGuard> cell_lock(cell, p);
-    cell_lock->Visit(cell_lock, player_notifier, *obj->GetMap());
+    //cell_lock->Visit(cell_lock, player_notifier, *obj->GetMap());
+    Map& map = *obj->GetMap();
+    cell_lock->Visit(cell_lock, player_notifier, map, *obj, map.GetVisibilityDistance());
 }
 
 Pet*

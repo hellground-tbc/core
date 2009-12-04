@@ -1908,8 +1908,8 @@ Unit* Creature::SelectNearestTarget(float dist) const
         TypeContainerVisitor<Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAttackDistanceCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
 
         CellLock<GridReadGuard> cell_lock(cell, p);
-        cell_lock->Visit(cell_lock, world_unit_searcher, *GetMap());
-        cell_lock->Visit(cell_lock, grid_unit_searcher, *GetMap());
+        cell_lock->Visit(cell_lock, world_unit_searcher, *GetMap(), *this, 5.0f);
+        cell_lock->Visit(cell_lock, grid_unit_searcher, *GetMap(), *this, 5.0f);
     }
 
     return target;
@@ -1938,7 +1938,8 @@ void Creature::CallAssistance()
                 TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AnyAssistCreatureInRangeCheck>, GridTypeMapContainer >  grid_creature_searcher(searcher);
 
                 CellLock<GridReadGuard> cell_lock(cell, p);
-                cell_lock->Visit(cell_lock, grid_creature_searcher, *MapManager::Instance().GetMap(GetMapId(), this));
+                //cell_lock->Visit(cell_lock, grid_creature_searcher, *MapManager::Instance().GetMap(GetMapId(), this));
+                cell_lock->Visit(cell_lock, grid_creature_searcher, *GetMap(), *this, radius);
             }
 
             if (!assistList.empty())

@@ -9148,7 +9148,7 @@ int32 Unit::ModifyPower(Powers power, int32 dVal)
 
 bool Unit::isVisibleForOrDetect(Unit const* u, bool detect, bool inVisibleList, bool is3dDistance) const
 {
-    if(!u)
+    if(!u || !IsInMap(u))
         return false;
 
     return u->canSeeOrDetect(this, detect, inVisibleList, is3dDistance);
@@ -9237,9 +9237,9 @@ void Unit::DestroyForNearbyPlayers()
         return;
 
     std::list<Unit*> targets;
-    Trinity::AnyUnitInObjectRangeCheck check(this, World::GetMaxVisibleDistance());
+    Trinity::AnyUnitInObjectRangeCheck check(this, GetMap()->GetVisibilityDistance());
     Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(targets, check);
-    VisitNearbyWorldObject(World::GetMaxVisibleDistance(), searcher);
+    VisitNearbyWorldObject(GetMap()->GetVisibilityDistance(), searcher);
     for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
         if(*iter != this && (*iter)->GetTypeId() == TYPEID_PLAYER
             && ((Player*)(*iter))->HaveAtClient(this))
@@ -9493,7 +9493,7 @@ void Unit::setDeathState(DeathState s)
     {
         RemoveAllAurasOnDeath();
         UnsummonAllTotems();
-
+        StopMoving();
         ModifyAuraState(AURA_STATE_HEALTHLESS_20_PERCENT, false);
         ModifyAuraState(AURA_STATE_HEALTHLESS_35_PERCENT, false);
         // remove aurastates allowing special moves

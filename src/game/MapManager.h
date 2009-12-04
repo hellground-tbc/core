@@ -110,6 +110,7 @@ class TRINITY_DLL_DECL MapManager : public Trinity::Singleton<MapManager, Trinit
         void RemoveBonesFromMap(uint32 mapid, uint64 guid, float x, float y);
         inline uint32 GenerateInstanceId() { return ++i_MaxInstanceId; }
         void InitMaxInstanceId();
+        void InitializeVisibilityDistanceInfo();
 
         /* statistics */
         uint32 GetNumInstances();
