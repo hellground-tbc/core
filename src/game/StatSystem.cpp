@@ -199,7 +199,12 @@ void Player::UpdateMaxHealth()
     value += GetModifierValue(unitMod, TOTAL_VALUE) + GetHealthBonusFromStamina();
     value *= GetModifierValue(unitMod, TOTAL_PCT);
 
-    SetMaxHealth((uint32)value);
+    if(HasAura(30421, 0)) // Netherspite's Red Beam - Perseverence
+    {
+        value += 30000;
+        SetMaxHealth((uint32)value);
+        SetHealth((uint32)value);
+    }else SetMaxHealth((uint32)value);
 }
 
 void Player::UpdateMaxPower(Powers power)

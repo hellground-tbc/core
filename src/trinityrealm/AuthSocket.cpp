@@ -249,7 +249,7 @@ void AuthSocket::OnAccept()
     sLog.outBasic("Accepting connection from '%s:%d'",
         GetRemoteAddress().c_str(), GetRemotePort());
 
-	if(!AllowedToConnect(GetRemoteAddress()))
+    if(!AllowedToConnect(GetRemoteAddress()))
     {
         sLog.outBasic("FLOOD! Dropping connection. [%s:%u]", GetRemoteAddress().c_str(), GetRemotePort());
         SetCloseAndDelete();

@@ -94,7 +94,7 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
     {
         DoScriptText(SAY_AGGRO, m_creature);
         DoZoneInCombat();
-		
+        
         if(pInstance)
             pInstance->SetData(DATA_VOIDREAVEREVENT, IN_PROGRESS);
     }
@@ -174,13 +174,13 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
             DoCast(m_creature->getVictim(),SPELL_KNOCK_AWAY);
 
             Unit *target = NULL;
-			target = SelectUnit(SELECT_TARGET_TOPAGGRO,0);
+            target = SelectUnit(SELECT_TARGET_TOPAGGRO,0);
             if(DoGetThreat(target))
                 DoModifyThreatPercent(target,-25);
-			
-			target = SelectUnit(SELECT_TARGET_TOPAGGRO,0);
-			if(target)
-			    m_creature->Attack(target,true);
+            
+            target = SelectUnit(SELECT_TARGET_TOPAGGRO,0);
+            if(target)
+                m_creature->Attack(target,true);
 
             KnockAway_Timer = 30000;
         }else KnockAway_Timer -= diff;

@@ -31,17 +31,17 @@ static MTRandTSS mtRand;
 
 int32 irand (int32 min, int32 max)
 {
-	int32 result;
+    int32 result;
 #pragma omp critical (mtrand)
 {
-	result = mtRand->randInt (max-min) + min;
+    result = mtRand->randInt (max-min) + min;
 }
   return result;
 }
 
 uint32 urand (uint32 min, uint32 max)
 {
-	uint32 result;
+    uint32 result;
 #pragma omp critical (mtrand)
 {
   result =  mtRand->randInt (max - min) + min;
@@ -276,7 +276,7 @@ bool Utf8toWStr(char const* utf8str, size_t csize, wchar_t* wstr, size_t& wsize)
         {
             if(wsize > 0)
                 wstr[0] = L'\0';
-			wsize = 0;
+            wsize = 0;
             return false;
         }
 

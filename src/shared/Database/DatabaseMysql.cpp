@@ -318,7 +318,7 @@ bool DatabaseMysql::BeginTransaction()
     // don't use queued execution if it has not been initialized
     if (!m_threadBody)
     {
-        if (tranThread == ACE_Based::Thread::current())		
+        if (tranThread == ACE_Based::Thread::current())        
             return false;                                   // huh? this thread already started transaction
         mMutex.acquire();
         if (!_TransactionCmd("START TRANSACTION"))

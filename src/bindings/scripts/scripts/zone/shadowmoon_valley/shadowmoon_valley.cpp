@@ -483,11 +483,11 @@ bool GossipSelect_npc_grand_commander_ruusk(Player *player, Creature *_Creature,
             player->SEND_GOSSIP_MENU(10408, _Creature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+5:
-			player->ADD_GOSSIP_ITEM(0, GOSSIP_SGCR5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+6);                                                    
+            player->ADD_GOSSIP_ITEM(0, GOSSIP_SGCR5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+6);                                                    
             player->SEND_GOSSIP_MENU(10409, _Creature->GetGUID());
             break;
-		case GOSSIP_ACTION_INFO_DEF+6:
-			player->CLOSE_GOSSIP_MENU();
+        case GOSSIP_ACTION_INFO_DEF+6:
+            player->CLOSE_GOSSIP_MENU();
             player->AreaExploredOrEventHappens(QUEST_10577);
             break;
     }

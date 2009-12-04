@@ -288,14 +288,14 @@ extern int main(int argc, char **argv)
                 raise(SIGSEGV); // force close
                 abort();
             }
-			
-			last_ping_time = now;
+            
+            last_ping_time = now;
             loopCounter = 0;
             sLog.outDetail("Ping MySQL to keep connection alive");
             delete LoginDatabase.Query("SELECT 1 FROM realmlist LIMIT 1");
         }
 
-		// FG: clear flood protect buffer periodically
+        // FG: clear flood protect buffer periodically
         if(getMSTimeDiff(last_ipprops_cleanup, now) > 30000) // flush stored IPs every 30 secs
         {
             last_ipprops_cleanup = now;
