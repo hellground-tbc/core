@@ -76,6 +76,7 @@ struct TRINITY_DLL_DECL boss_high_astromancer_solarianAI : public ScriptedAI
 
         defaultarmor = m_creature->GetArmor();
         defaultsize = m_creature->GetFloatValue(OBJECT_FIELD_SCALE_X);
+        m_creature->GetPosition(wLoc);
     }
 
     ScriptedInstance *pInstance;
@@ -96,6 +97,9 @@ struct TRINITY_DLL_DECL boss_high_astromancer_solarianAI : public ScriptedAI
     uint32 Jump_Timer;
     uint32 defaultarmor;
     uint32 Wrath_Timer;
+    uint32 Check_Timer;
+
+    WorldLocation wLoc;
 
     float defaultsize;
     float Portals[3][3];
@@ -118,6 +122,7 @@ struct TRINITY_DLL_DECL boss_high_astromancer_solarianAI : public ScriptedAI
         AppearDelay = false;
         MarkOfTheSolarian_Timer=45000;
         Jump_Timer=8000;
+        Check_Timer = 3000;
         Wrath_Timer = 20000+rand()%5000;//twice in phase one
         Phase = 1;
 
@@ -202,6 +207,17 @@ struct TRINITY_DLL_DECL boss_high_astromancer_solarianAI : public ScriptedAI
     {
         if(!UpdateVictim() )
             return;
+
+        //Check_Timer
+        if(Check_Timer < diff)
+        {
+            if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 135.0f)
+                EnterEvadeMode();
+            else
+                DoZoneInCombat();
+            
+            Check_Timer = 3000;
+        }else Check_Timer -= diff;
 
         if (AppearDelay)
         {

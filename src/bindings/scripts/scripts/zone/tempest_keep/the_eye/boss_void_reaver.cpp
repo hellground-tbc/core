@@ -36,12 +36,14 @@ EndScriptData */
 #define SPELL_ARCANE_ORB            34172
 #define SPELL_KNOCK_AWAY            25778
 #define SPELL_BERSERK               27680
+#define TRIGGER                     29530 
 
 struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
 {
     boss_void_reaverAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        m_creature->GetPosition(wLoc);
     }
 
     ScriptedInstance* pInstance;
@@ -50,6 +52,9 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
     uint32 ArcaneOrb_Timer;
     uint32 KnockAway_Timer;
     uint32 Berserk_Timer;
+    uint32 Check_Timer;
+
+    WorldLocation wLoc;
 
     bool Enraged;
 
@@ -59,8 +64,9 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
         ArcaneOrb_Timer = 3000;
         KnockAway_Timer = 30000;
         Berserk_Timer = 600000;
-
-        Enraged = false;
+        Check_Timer = 3000;
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
+        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
 
         if (pInstance && m_creature->isAlive())
             pInstance->SetData(DATA_VOIDREAVEREVENT, NOT_STARTED);
@@ -70,9 +76,9 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
     {
         switch(rand()%3)
         {
-        case 0: DoScriptText(SAY_SLAY1, m_creature); break;
-        case 1: DoScriptText(SAY_SLAY2, m_creature); break;
-        case 2: DoScriptText(SAY_SLAY3, m_creature); break;
+            case 0: DoScriptText(SAY_SLAY1, m_creature); break;
+            case 1: DoScriptText(SAY_SLAY2, m_creature); break;
+            case 2: DoScriptText(SAY_SLAY3, m_creature); break;
         }
     }
 
@@ -87,27 +93,51 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
     void Aggro(Unit *who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
-
+        DoZoneInCombat();
+		
         if(pInstance)
             pInstance->SetData(DATA_VOIDREAVEREVENT, IN_PROGRESS);
     }
-
+    
+    void SpellHit(Unit* caster,const SpellEntry* spell)
+    {
+        for(uint8 i = 0; i<3; i++)
+            if(spell->Effect[i] == SPELL_EFFECT_INTERRUPT_CAST)
+                return;
+    }
+    
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim() )
             return;
 
+        //Check_Timer
+        if(Check_Timer < diff)
+        {
+            if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 135.0f)
+                EnterEvadeMode();
+            else
+                DoZoneInCombat();
+            
+            Check_Timer = 3000;
+        }else Check_Timer -= diff;
+
         // Pounding
         if(Pounding_Timer < diff)
         {
+            m_creature->InterruptNonMeleeSpells(false);
             DoCast(m_creature->getVictim(),SPELL_POUNDING);
 
             switch(rand()%2)
             {
-            case 0: DoScriptText(SAY_POUNDING1, m_creature); break;
-            case 1: DoScriptText(SAY_POUNDING2, m_creature); break;
+                case 0: DoScriptText(SAY_POUNDING1, m_creature); break;
+                case 1: DoScriptText(SAY_POUNDING2, m_creature); break;
             }
-             Pounding_Timer = 15000;                         //cast time(3000) + cooldown time(12000)
+
+            if(KnockAway_Timer < 3100)
+                KnockAway_Timer = 3100;
+
+            Pounding_Timer = 15000;                         //cast time(3000) + cooldown time(12000)
         }else Pounding_Timer -= diff;
 
         // Arcane Orb
@@ -119,37 +149,48 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
             for(std::list<HostilReference *>::iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
             {
                 target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
-                                                            //18 yard radius minimum
+                //18 yard radius minimum
                 if(target && target->GetTypeId() == TYPEID_PLAYER && target->isAlive() && target->GetDistance2d(m_creature) >= 18)
                     target_list.push_back(target);
                 target = NULL;
             }
             if(target_list.size())
                 target = *(target_list.begin()+rand()%target_list.size());
+            else
+                target = m_creature->getVictim();
 
-            if (target)
-                m_creature->CastSpell(target->GetPositionX(),target->GetPositionY(),target->GetPositionZ(), SPELL_ARCANE_ORB, false);
+            if(target)
+              if(Creature* t = DoSpawnCreature(TRIGGER, 0, 0, 10, 0, TEMPSUMMON_TIMED_DESPAWN, 10000))
+                 t->CastSpell(target, SPELL_ARCANE_ORB, false, 0, 0, m_creature->GetGUID());
 
-            ArcaneOrb_Timer = 3000;
+
+            ArcaneOrb_Timer = 3000 + rand()%1001;
         }else ArcaneOrb_Timer -= diff;
 
         // Single Target knock back, reduces aggro
         if(KnockAway_Timer < diff)
         {
+            m_creature->InterruptNonMeleeSpells(false);
             DoCast(m_creature->getVictim(),SPELL_KNOCK_AWAY);
 
-            //Drop 25% aggro
-            if(DoGetThreat(m_creature->getVictim()))
-                DoModifyThreatPercent(m_creature->getVictim(),-25);
+            Unit *target = NULL;
+			target = SelectUnit(SELECT_TARGET_TOPAGGRO,0);
+            if(DoGetThreat(target))
+                DoModifyThreatPercent(target,-25);
+			
+			target = SelectUnit(SELECT_TARGET_TOPAGGRO,0);
+			if(target)
+			    m_creature->Attack(target,true);
 
             KnockAway_Timer = 30000;
         }else KnockAway_Timer -= diff;
 
         //Berserk
-        if(Berserk_Timer < diff && !Enraged)
+        if(Berserk_Timer < diff)
         {
+            m_creature->InterruptNonMeleeSpells(false);
             DoCast(m_creature,SPELL_BERSERK);
-            Enraged = true;
+            Berserk_Timer = 600000;
         }else Berserk_Timer -= diff;
 
         DoMeleeAttackIfReady();
@@ -169,4 +210,3 @@ void AddSC_boss_void_reaver()
     newscript->GetAI = &GetAI_boss_void_reaver;
     newscript->RegisterSelf();
 }
-
