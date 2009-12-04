@@ -46,17 +46,24 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_midnightAI : public ScriptedAI
 {
-    boss_midnightAI(Creature *c) : ScriptedAI(c) {}
+    boss_midnightAI(Creature *c) : ScriptedAI(c) 
+    {
+        m_creature->GetPosition(wLoc);
+    }
 
     uint64 Attumen;
     uint8 Phase;
     uint32 Mount_Timer;
+    uint32 CheckTimer;
+
+    WorldLocation wLoc;
 
     void Reset()
     {
         Phase = 1;
         Attumen = 0;
         Mount_Timer = 0;
+        CheckTimer = 3000;
 
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->SetVisibility(VISIBILITY_ON);
@@ -77,6 +84,16 @@ struct TRINITY_DLL_DECL boss_midnightAI : public ScriptedAI
     {
         if (!UpdateVictim())
             return;
+
+        if(CheckTimer < diff)
+        {
+            if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 50.0f)
+                EnterEvadeMode();
+            else
+                DoZoneInCombat();
+            
+            CheckTimer = 3000;
+        }else CheckTimer -= diff;
 
         if(Phase == 1 && (m_creature->GetHealth()*100)/m_creature->GetMaxHealth() < 95)
         {
@@ -283,6 +300,7 @@ struct TRINITY_DLL_DECL boss_attumenAI : public ScriptedAI
                 {
                     ((boss_midnightAI*)(pMidnight->AI()))->Mount(m_creature);
                     m_creature->SetHealth(pMidnight->GetHealth());
+                    DoResetThreat();
                 }
             }
         }

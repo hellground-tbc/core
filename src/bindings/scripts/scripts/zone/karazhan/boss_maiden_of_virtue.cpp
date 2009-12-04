@@ -39,13 +39,19 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_maiden_of_virtueAI : public ScriptedAI
 {
-    boss_maiden_of_virtueAI(Creature *c) : ScriptedAI(c) {}
+    boss_maiden_of_virtueAI(Creature *c) : ScriptedAI(c) 
+    {
+        m_creature->GetPosition(wLoc);
+    }
 
     uint32 Repentance_Timer;
     uint32 Holyfire_Timer;
     uint32 Holywrath_Timer;
     uint32 Holyground_Timer;
     uint32 Enrage_Timer;
+    uint32 CheckTimer;
+
+    WorldLocation wLoc;
 
     bool Enraged;
 
@@ -56,6 +62,7 @@ struct TRINITY_DLL_DECL boss_maiden_of_virtueAI : public ScriptedAI
         Holywrath_Timer     = 20000+(rand()%10000);
         Holyground_Timer    = 3000;
         Enrage_Timer        = 600000;
+        CheckTimer = 3000;
 
         Enraged = false;
     }
@@ -88,6 +95,16 @@ struct TRINITY_DLL_DECL boss_maiden_of_virtueAI : public ScriptedAI
         if (!UpdateVictim() )
             return;
 
+        if(CheckTimer < diff)
+        {
+            if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 30.0f)
+                EnterEvadeMode();
+            else
+                DoZoneInCombat();
+            
+            CheckTimer = 3000;
+        }else CheckTimer -= diff;
+
         if (Enrage_Timer < diff && !Enraged)
         {
             DoCast(m_creature, SPELL_BERSERK,true);
@@ -110,6 +127,7 @@ struct TRINITY_DLL_DECL boss_maiden_of_virtueAI : public ScriptedAI
             case 1: DoScriptText(SAY_REPENTANCE2, m_creature);break;
             }
             Repentance_Timer = 30000 + rand()%15000;        //A little randomness on that spell
+            Holyfire_Timer += 6000;
         }else Repentance_Timer -= diff;
 
         if (Holyfire_Timer < diff)

@@ -83,8 +83,9 @@ static InfernalPoint InfernalPoints[] =
 #define SPELL_SUNDER_ARMOR      30901                       //Sunder armor during phase 2
 #define SPELL_THRASH_AURA       3417                        //Passive proc chance for thrash
 #define SPELL_EQUIP_AXES        30857                       //Visual for axe equiping
-#define SPELL_AMPLIFY_DAMAGE    12738                       //Amplifiy during phase 3
+#define SPELL_AMPLIFY_DAMAGE    39095                       //Amplifiy during phase 3
 #define SPELL_HELLFIRE          30859                       //Infenals' hellfire aura
+#define SPELL_CLEAVE            30131                       //Same as Nightbane. 
 #define NETHERSPITE_INFERNAL    17646                       //The netherspite infernal creature
 #define MALCHEZARS_AXE          17650                       //Malchezar's axes (creatures), summoned during phase 3
 
@@ -159,6 +160,7 @@ struct TRINITY_DLL_DECL boss_malchezaarAI : public ScriptedAI
     boss_malchezaarAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        m_creature->GetPosition(wLoc);
     }
 
     ScriptedInstance *pInstance;
@@ -171,6 +173,10 @@ struct TRINITY_DLL_DECL boss_malchezaarAI : public ScriptedAI
     uint32 InfernalTimer;
     uint32 AxesTargetSwitchTimer;
     uint32 InfernalCleanupTimer;
+    uint32 CheckTimer;
+    uint32 Cleave_Timer;
+
+    WorldLocation wLoc;
 
     std::vector<uint64> infernals;
     std::vector<InfernalPoint*> positions;
@@ -198,19 +204,21 @@ struct TRINITY_DLL_DECL boss_malchezaarAI : public ScriptedAI
         EnfeebleResetTimer = 38000;
         ShadowNovaTimer = 35000;
         SWPainTimer = 20000;
-        AmplifyDamageTimer = 10000;
+        AmplifyDamageTimer = 5000;
+        Cleave_Timer = 8000;
         InfernalTimer = 45000;
         InfernalCleanupTimer = 47000;
         AxesTargetSwitchTimer = 7500 + rand()%12500;
+        CheckTimer = 3000;
         phase = 1;
 
         if(pInstance)
         {
-            GameObject* Door = GameObject::GetGameObject((*m_creature),pInstance->GetData64(DATA_GAMEOBJECT_NETHER_DOOR));
+           GameObject* Door = GameObject::GetGameObject((*m_creature),pInstance->GetData64(DATA_GAMEOBJECT_NETHER_DOOR));
             if(Door)
-            {
+           {
                 Door->SetGoState(0);
-            }
+           }
         }
     }
 
@@ -396,10 +404,28 @@ struct TRINITY_DLL_DECL boss_malchezaarAI : public ScriptedAI
         }
     }
 
+    void DamageTaken(Unit *done_by, uint32 &damage)
+    {
+        if(done_by->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 95.0f)
+        {
+            damage = 0;
+        }
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim() )
             return;
+
+        if(CheckTimer < diff)
+        {
+            if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 95.0f)
+                DoResetThreat();
+            else
+                DoZoneInCombat();
+            
+            CheckTimer = 3000;
+        }else CheckTimer -= diff;
 
         if(EnfeebleResetTimer)
             if(EnfeebleResetTimer <= diff)                  //Let's not forget to reset that
@@ -502,6 +528,12 @@ struct TRINITY_DLL_DECL boss_malchezaarAI : public ScriptedAI
                 SunderArmorTimer = 15000;
 
             }else SunderArmorTimer -= diff;
+            
+            if(Cleave_Timer < diff)
+            {
+                DoCast(m_creature->getVictim(), SPELL_CLEAVE);
+                Cleave_Timer = 6000 + rand()%6000;
+            }else Cleave_Timer -= diff;
         }
         else
         {

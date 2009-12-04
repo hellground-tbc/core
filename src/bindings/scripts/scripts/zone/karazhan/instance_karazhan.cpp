@@ -63,6 +63,10 @@ struct TRINITY_DLL_DECL instance_karazhan : public ScriptedInstance
     uint64 NetherspaceDoor;                                // Door at Malchezaar
     uint64 MastersTerraceDoor[2];
     uint64 ImageGUID;
+    uint64 AranGUID;
+    uint32 CheckTimer;
+
+    bool needRespawn;
 
     void Initialize()
     {
@@ -79,6 +83,7 @@ struct TRINITY_DLL_DECL instance_karazhan : public ScriptedInstance
         KilrekGUID          = 0;
         TerestianGUID       = 0;
         MoroesGUID          = 0;
+        AranGUID            = 0;
 
         LibraryDoor         = 0;
         MassiveDoor         = 0;
@@ -88,6 +93,9 @@ struct TRINITY_DLL_DECL instance_karazhan : public ScriptedInstance
         MastersTerraceDoor[0]= 0;
         MastersTerraceDoor[1]= 0;
         ImageGUID = 0;
+        CheckTimer = 5000;
+
+        needRespawn = true;
     }
 
     bool IsEncounterInProgress() const
@@ -130,6 +138,7 @@ struct TRINITY_DLL_DECL instance_karazhan : public ScriptedInstance
             case 17229:   KilrekGUID = creature->GetGUID();      break;
             case 15688:   TerestianGUID = creature->GetGUID();   break;
             case 15687:   MoroesGUID = creature->GetGUID();      break;
+            case 16524:   AranGUID = creature->GetGUID();        break;
         }
     }
 
@@ -148,8 +157,9 @@ struct TRINITY_DLL_DECL instance_karazhan : public ScriptedInstance
             case DATA_GAMEOBJECT_GAME_DOOR:        return GamesmansDoor;
             case DATA_GAMEOBJECT_GAME_EXIT_DOOR:   return GamesmansExitDoor;
             case DATA_GAMEOBJECT_NETHER_DOOR:      return NetherspaceDoor;
-            case DATA_MASTERS_TERRACE_DOOR_1:      return MastersTerraceDoor[0];
+            case DATA_MASTERS_TERRACE_DOOR_1:      return NetherspaceDoor;
             case DATA_MASTERS_TERRACE_DOOR_2:      return MastersTerraceDoor[1];
+            case DATA_ARAN:                        return AranGUID;
         }
 
         return 0;
@@ -159,25 +169,53 @@ struct TRINITY_DLL_DECL instance_karazhan : public ScriptedInstance
     {
          switch (type)
         {
-            case DATA_ATTUMEN_EVENT:           Encounters[0]  = data; break;
-            case DATA_MOROES_EVENT:
-                if (Encounters[1] == DONE)
-                    break;
-                Encounters[1] = data;
+         case DATA_ATTUMEN_EVENT:
+                if(Encounters[0] != DONE)
+                    Encounters[0] = data;
                 break;
-            case DATA_MAIDENOFVIRTUE_EVENT:    Encounters[2]  = data; break;
-            case DATA_OPTIONAL_BOSS_EVENT:     Encounters[3]  = data; break;
-            case DATA_OPERA_EVENT:             Encounters[4]  = data; break;
-            case DATA_CURATOR_EVENT:           Encounters[5]  = data; break;
-            case DATA_SHADEOFARAN_EVENT:       Encounters[6]  = data; break;
-            case DATA_TERESTIAN_EVENT:         Encounters[7]  = data; break;
-            case DATA_NETHERSPITE_EVENT:       Encounters[8]  = data; break;
-            case DATA_CHESS_EVENT:             Encounters[9]  = data; break;
-            case DATA_MALCHEZZAR_EVENT:        Encounters[10] = data; break;
+            case DATA_MOROES_EVENT:
+                if(Encounters[1] != DONE)
+                    Encounters[1] = data;
+                break;
+            case DATA_MAIDENOFVIRTUE_EVENT:
+                if(Encounters[2] != DONE)
+                    Encounters[2] = data;
+                break;
+            case DATA_OPTIONAL_BOSS_EVENT:
+                if(Encounters[3] != DONE)
+                    Encounters[3] = data;
+                break;
+            case DATA_OPERA_EVENT:
+                if(Encounters[4] != DONE)
+                    Encounters[4] = data;
+                break;
+            case DATA_CURATOR_EVENT:
+                if(Encounters[5] != DONE)
+                    Encounters[5] = data;
+                break;
+            case DATA_SHADEOFARAN_EVENT:
+                if(Encounters[6] != DONE)
+                    Encounters[6] = data;
+                break;
+            case DATA_TERESTIAN_EVENT:
+                if(Encounters[7] != DONE)
+                    Encounters[7] = data;
+                break;
+            case DATA_NETHERSPITE_EVENT:
+                if(Encounters[8] != DONE)
+                    Encounters[8] = data;
+                break;
+            case DATA_CHESS_EVENT:
+                if(Encounters[9] != DONE)
+                    Encounters[9] = data;
+                break;
+            case DATA_MALCHEZZAR_EVENT:
+                if(Encounters[10] != DONE)
+                    Encounters[10] = data;
+                break;
             case DATA_NIGHTBANE_EVENT:
-                if (Encounters[11] == DONE)
-                    break;
-                Encounters[11] = data;
+                if(Encounters[1] != DONE)
+                    Encounters[1] = data;
                 break;
             case DATA_OPERA_OZ_DEATHCOUNT:     ++OzDeathCount;        break;
         }
@@ -206,8 +244,8 @@ struct TRINITY_DLL_DECL instance_karazhan : public ScriptedInstance
             case 184276:   GamesmansDoor        = go->GetGUID();         break;
             case 184277:   GamesmansExitDoor    = go->GetGUID();         break;
             case 185134:   NetherspaceDoor      = go->GetGUID();         break;
-            case 184274:    MastersTerraceDoor[0] = go->GetGUID();  break;
-            case 184280:    MastersTerraceDoor[1] = go->GetGUID();  break;
+            case 184274:   MastersTerraceDoor[0] = go->GetGUID();  break;
+            case 184280:   MastersTerraceDoor[1] = go->GetGUID();  break;
         }
 
         switch(OperaEvent)
@@ -259,6 +297,31 @@ struct TRINITY_DLL_DECL instance_karazhan : public ScriptedInstance
             if(Encounters[i] == IN_PROGRESS)                // Do not load an encounter as "In Progress" - reset it instead.
                 Encounters[i] = NOT_STARTED;
         OUT_LOAD_INST_DATA_COMPLETE;
+    }
+
+    void Update(uint32 diff)
+    {
+        if(GetData(DATA_TERESTIAN_EVENT) == IN_PROGRESS)
+        {
+            if(CheckTimer < diff)
+            {
+                Creature *Kilrek = instance->GetCreatureInMap(KilrekGUID);
+                if(Kilrek && needRespawn)
+                {
+                    Kilrek->Respawn();
+                    needRespawn = false;
+                    
+                    Creature *Terestian = instance->GetCreatureInMap(TerestianGUID);
+                    if(Terestian && Terestian->isAlive())
+                        Terestian->RemoveAurasDueToSpell(SPELL_BROKEN_PACT);
+                }
+                if(Kilrek && !Kilrek->isAlive() && !needRespawn)
+                {
+                    needRespawn = true;
+                    CheckTimer = 45000;
+                }else CheckTimer = 5000;
+            }else CheckTimer -= diff;
+        }
     }
 };
 

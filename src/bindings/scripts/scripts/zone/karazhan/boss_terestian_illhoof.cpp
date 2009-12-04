@@ -47,11 +47,16 @@ EndScriptData */
 
 #define SPELL_BROKEN_PACT           30065                   // All damage taken increased by 25%.
 #define SPELL_AMPLIFY_FLAMES        30053                   // Increases the Fire damage taken by an enemy by 500 for 25 sec.
-#define SPELL_FIREBOLT              18086                   // Blasts a target for 150 Fire damage.
+#define SPELL_FIREBOLT              30050                   // Blasts a target for 150 Fire damage.
 
 #define CREATURE_DEMONCHAINS    17248
 #define CREATURE_FIENDISHIMP    17267
 #define CREATURE_PORTAL         17265
+#define CREATURE_KILREK            17229
+
+#define KILREK_POS_X    -1.7001953125
+#define KILREK_POS_Y     3.949951171875
+#define KILREK_POS_Z     0.001007080078125
 
 #define PORTAL_Z        179.434
 
@@ -78,7 +83,7 @@ struct TRINITY_DLL_DECL mob_kilrekAI : public ScriptedAI
     {
         TerestianGUID = 0;
 
-        AmplifyTimer = 0;
+        AmplifyTimer = 2000;
     }
 
     void Aggro(Unit *who)
@@ -119,7 +124,7 @@ struct TRINITY_DLL_DECL mob_kilrekAI : public ScriptedAI
             m_creature->InterruptNonMeleeSpells(false);
             DoCast(m_creature->getVictim(),SPELL_AMPLIFY_FLAMES);
 
-            AmplifyTimer = 20000;
+            AmplifyTimer = 10000 + rand()%10000;
         }else AmplifyTimer -= diff;
 
         //Chain cast
@@ -129,9 +134,9 @@ struct TRINITY_DLL_DECL mob_kilrekAI : public ScriptedAI
     }
 };
 
-struct TRINITY_DLL_DECL mob_demon_chainAI : public ScriptedAI
+struct TRINITY_DLL_DECL mob_demon_chainAI : public Scripted_NoMovementAI
 {
-    mob_demon_chainAI(Creature *c) : ScriptedAI(c) {}
+    mob_demon_chainAI(Creature *c) : Scripted_NoMovementAI(c) {}
 
     uint64 SacrificeGUID;
 
@@ -160,20 +165,21 @@ struct TRINITY_DLL_DECL boss_terestianAI : public ScriptedAI
     boss_terestianAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        m_creature->GetPosition(wLoc);
     }
 
     ScriptedInstance *pInstance;
 
-    uint64 KilrekGUID;
     uint64 PortalGUID[2];
 
-    uint32 CheckKilrekTimer;
     uint32 SacrificeTimer;
     uint32 ShadowboltTimer;
     uint32 SummonTimer;
     uint32 BerserkTimer;
+    uint32 CheckTimer;
 
-    bool SummonKilrek;
+    WorldLocation wLoc;
+
     bool SummonedPortals;
     bool Berserk;
 
@@ -191,8 +197,8 @@ struct TRINITY_DLL_DECL boss_terestianAI : public ScriptedAI
             }
         }
 
-        CheckKilrekTimer    =  5000;
         SacrificeTimer      = 30000;
+        CheckTimer          = 3000;
         ShadowboltTimer     =  5000;
         SummonTimer         = 10000;
         BerserkTimer        = 600000;
@@ -253,31 +259,17 @@ struct TRINITY_DLL_DECL boss_terestianAI : public ScriptedAI
         if(!UpdateVictim())
             return;
 
-        if(CheckKilrekTimer < diff)
+        //Check_Timer
+        if(CheckTimer < diff)
         {
-            CheckKilrekTimer = 5000;
-
-            if(pInstance)
-                uint64 KilrekGUID = pInstance->GetData64(DATA_KILREK);
-            else ERROR_INST_DATA(m_creature);
-
-            Creature* Kilrek = (Unit::GetCreature((*m_creature), KilrekGUID));
-            if(SummonKilrek && Kilrek)
-            {
-                Kilrek->Respawn();
-                if(Kilrek->AI())
-                    Kilrek->AI()->AttackStart(m_creature->getVictim());
-
-                SummonKilrek = false;
-            }
-
-            if(!Kilrek || !Kilrek->isAlive())
-            {
-                SummonKilrek = true;
-                CheckKilrekTimer = 45000;
-            }
-        }else CheckKilrekTimer -= diff;
-
+            if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 35.0f)
+                EnterEvadeMode();
+            else
+                DoZoneInCombat();
+            
+            CheckTimer = 3000;
+        }else CheckTimer -= diff;
+        
         if(SacrificeTimer < diff)
         {
             Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1);
@@ -345,8 +337,6 @@ struct TRINITY_DLL_DECL boss_terestianAI : public ScriptedAI
     }
 };
 
-#define SPELL_FIREBOLT  30050   // Blasts a target for 181-209 Fire damage.
-
 struct TRINITY_DLL_DECL mob_fiendish_impAI : public ScriptedAI
 {
     mob_fiendish_impAI(Creature *c) : ScriptedAI(c) {}
@@ -355,7 +345,8 @@ struct TRINITY_DLL_DECL mob_fiendish_impAI : public ScriptedAI
 
     void Reset()
     {
-        FireboltTimer = 3000;
+        FireboltTimer = 2000;
+        m_creature->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_FIRE, true);
     }
 
     void Aggro(Unit *who) {}
@@ -369,7 +360,7 @@ struct TRINITY_DLL_DECL mob_fiendish_impAI : public ScriptedAI
         if(FireboltTimer < diff)
         {
             DoCast(m_creature->getVictim(), SPELL_FIREBOLT);
-            FireboltTimer = 1500;
+            FireboltTimer = 2200;
         }else FireboltTimer -= diff;
 
         DoMeleeAttackIfReady();
