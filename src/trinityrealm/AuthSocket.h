@@ -81,6 +81,10 @@ class AuthSocket: public TcpSocket
         uint16 _build;
         AccountTypes _accountSecurityLevel;
 };
+
+bool AllowedToConnect(std::string);
+void CleanupIPPropmap(uint32&,uint32&, uint32&);
+
 #endif
 /// @}
 

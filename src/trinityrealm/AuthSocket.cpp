@@ -33,6 +33,8 @@
 #include <openssl/md5.h>
 #include "Auth/Sha1.h"
 //#include "Util.h" -- for commented utf8ToUpperOnlyLatin
+// FG: for getMSTime()
+#include "Timer.h"
 
 extern RealmList m_realmList;
 
@@ -247,6 +249,11 @@ void AuthSocket::OnAccept()
     sLog.outBasic("Accepting connection from '%s:%d'",
         GetRemoteAddress().c_str(), GetRemotePort());
 
+	if(!AllowedToConnect(GetRemoteAddress()))
+    {
+        sLog.outBasic("FLOOD! Dropping connection. [%s:%u]", GetRemoteAddress().c_str(), GetRemotePort());
+        SetCloseAndDelete();
+    }
     s.SetRand(s_BYTE_SIZE * 8);
 }
 
@@ -1090,5 +1097,76 @@ Patcher::~Patcher()
 {
     for(Patches::iterator i = _patches.begin(); i != _patches.end(); i++ )
         delete i->second;
+}
+// FG: flood protection stuff
+
+struct IPProperties
+{
+    IPProperties() : connecttime(0), connectcount(0), banuntil(0) {}
+    IPProperties(uint32 t) : connecttime(t), connectcount(0), banuntil(0) {}
+    uint16 connectcount; // amount of overspeed connects
+    uint32 connecttime; // time of last connection accept/attempt
+    uint32 banuntil; // after this time allow connect again
+};
+typedef std::map<std::string, IPProperties> IPPropMap;
+
+IPPropMap _propmap;
+
+bool AllowedToConnect(std::string ip)
+{
+    IPPropMap::iterator it;
+    uint32 now = getMSTime();
+    it = _propmap.find(ip);
+    if(it != _propmap.end())
+    {
+        if(getMSTimeDiff(it->second.connecttime, now) < 1000)
+        {
+            it->second.connectcount++;
+            if(it->second.connectcount >= 5)
+            {
+                it->second.banuntil = now + 30000; // 30 secs
+                return false;
+            }
+        }
+        else
+        {
+            it->second.connectcount = 0;
+        }
+        it->second.connecttime = now;
+
+        if(it->second.banuntil > now)
+            return false;
+    }
+    else
+    {
+        _propmap[ip] = IPProperties(now);
+    }
+    return true;
+}
+
+void CleanupIPPropmap(uint32& flushed, uint32& blocked, uint32 &stored)
+{
+    uint32 now = getMSTime();
+    blocked = 0;
+    std::list<std::string> rem;
+    for(IPPropMap::iterator it = _propmap.begin(); it != _propmap.end(); it++)
+    {
+        if(it->second.connecttime + 1000 < now && it->second.banuntil < now)
+        {
+            if(it->second.banuntil)
+            {
+                LoginDatabase.PExecute("DELETE FROM blocked_ips WHERE ip='%s'", it->first.c_str());
+                LoginDatabase.PExecute("INSERT INTO blocked_ips (ip,recorded,rec_date,cnt) VALUES ('%s', UNIX_TIMESTAMP(), NOW(), %u)", it->first.c_str(), it->second.connectcount);
+                ++blocked;
+            }
+            rem.push_back(it->first);
+        }
+    }
+    for(std::list<std::string>::iterator ri = rem.begin(); ri != rem.end(); ri++)
+    {
+        _propmap.erase(*ri);
+    }
+    flushed = rem.size();
+   stored = _propmap.size();
 }
 
