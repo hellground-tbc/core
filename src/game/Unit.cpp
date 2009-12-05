@@ -5433,6 +5433,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 triggered_spell_id = 37436;
                 break;
             }
+
             switch(dummySpell->Id)
             {
                 // Ignite
@@ -5444,15 +5445,29 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 {
                     switch (dummySpell->Id)
                     {
-                        case 11119: basepoints0 = int32(0.04f*damage); break;
-                        case 11120: basepoints0 = int32(0.08f*damage); break;
-                        case 12846: basepoints0 = int32(0.12f*damage); break;
-                        case 12847: basepoints0 = int32(0.16f*damage); break;
-                        case 12848: basepoints0 = int32(0.20f*damage); break;
-                        default:
-                            sLog.outError("Unit::HandleDummyAuraProc: non handled spell id: %u (IG)",dummySpell->Id);
-                            return false;
+                        case 11119: damage *= 0.04f; break;
+                        case 11120: damage *= 0.08f; break;
+                        case 12846: damage *= 0.12f; break;
+                        case 12847: damage *= 0.16f; break;
+                        case 12848: damage *= 0.20f; break;
+                         default:
+                             sLog.outError("Unit::HandleDummyAuraProc: non handled spell id: %u (IG)",dummySpell->Id);
+                             return false;
+                     }
+ 
+                    AuraList const& auras = target->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
+                    for (AuraList::const_iterator i = auras.begin(); i != auras.end(); ++i)
+                    {
+                        SpellEntry const *spell = (*i)->GetSpellProto();
+                        if (spell->Id == 12654 && (*i)->GetCasterGUID() == triggeredByAura->GetCasterGUID())
+                        {
+                            int32 remainingTicks = (*i)->GetAuraDuration() / (*i)->GetModifier()->periodictime + 1;
+                            damage += remainingTicks * (*i)->GetModifier()->m_amount;
+                            break;
+                        }
                     }
+
+                    basepoints0 = int32(damage / 2);
 
                     triggered_spell_id = 12654;
                     break;
