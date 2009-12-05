@@ -886,7 +886,7 @@ bool ChatHandler::HandleGonameCommand(const char* args)
         }
         else if(cMap->IsDungeon())
         {
-            Map* pMap = MapManager::Instance().GetMap(_player->GetMapId(),_player);
+            Map* pMap = _player->GetMap();
 
             // we have to go to instance, and can go to player only if:
             //   1) we are in his group (either as leader or as member)
@@ -2530,7 +2530,7 @@ bool ChatHandler::HandleGroupgoCommand(const char* args)
         return false;
     }
 
-    Map* gmMap = MapManager::Instance().GetMap(m_session->GetPlayer()->GetMapId(),m_session->GetPlayer());
+    Map* gmMap = m_session->GetPlayer()->GetMap();
     bool to_instance =  gmMap->Instanceable();
 
     // we are in instance, and can summon only player in our group with us as lead
@@ -2560,7 +2560,7 @@ bool ChatHandler::HandleGroupgoCommand(const char* args)
 
         if (to_instance)
         {
-            Map* plMap = MapManager::Instance().GetMap(pl->GetMapId(),pl);
+            Map* plMap = pl->GetMap();
 
             if ( plMap->Instanceable() && plMap->GetInstanceId() != gmMap->GetInstanceId() )
             {
@@ -2633,7 +2633,7 @@ bool ChatHandler::HandleGoXYCommand(const char* args)
     else
         _player->SaveRecallPosition();
 
-    Map const *map = MapManager::Instance().GetBaseMap(mapid);
+    Map const *map = MapManager::Instance().CreateBaseMap(mapid);
     float z = std::max(map->GetHeight(x, y, MAX_HEIGHT), map->GetWaterLevel(x, y));
 
     _player->TeleportTo(mapid, x, y, z, _player->GetOrientation());
@@ -2721,7 +2721,7 @@ bool ChatHandler::HandleGoZoneXYCommand(const char* args)
     // update to parent zone if exist (client map show only zones without parents)
     AreaTableEntry const* zoneEntry = areaEntry->zone ? GetAreaEntryByAreaID(areaEntry->zone) : areaEntry;
 
-    Map const *map = MapManager::Instance().GetBaseMap(zoneEntry->mapid);
+    Map const *map = MapManager::Instance().CreateBaseMap(zoneEntry->mapid);
 
     if(map->Instanceable())
     {
@@ -2796,7 +2796,7 @@ bool ChatHandler::HandleGoGridCommand(const char* args)
     else
         _player->SaveRecallPosition();
 
-    Map const *map = MapManager::Instance().GetBaseMap(mapid);
+    Map const *map = MapManager::Instance().CreateBaseMap(mapid);
     float z = std::max(map->GetHeight(x, y, MAX_HEIGHT), map->GetWaterLevel(x, y));
     _player->TeleportTo(mapid, x, y, z, _player->GetOrientation());
 

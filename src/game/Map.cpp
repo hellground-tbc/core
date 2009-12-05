@@ -130,7 +130,7 @@ void Map::LoadMap(uint32 mapid, uint32 instanceid, int x,int y)
         if(GridMaps[x][y])
             return;
 
-        Map* baseMap = const_cast<Map*>(MapManager::Instance().GetBaseMap(mapid));
+         Map* baseMap = const_cast<Map*>(MapManager::Instance().CreateBaseMap(mapid));
 
         // load gridmap for base map
         if (!baseMap->GridMaps[x][y])
@@ -1205,7 +1205,7 @@ bool Map::UnloadGrid(const uint32 &x, const uint32 &y, bool unloadAll)
             VMAP::VMapFactory::createOrGetVMapManager()->unloadMap(GetId(), gx, gy);
         }
         else
-            ((MapInstanced*)(MapManager::Instance().GetBaseMap(i_id)))->RemoveGridMapReference(GridPair(gx, gy));
+            ((MapInstanced*)(MapManager::Instance().CreateBaseMap(i_id)))->RemoveGridMapReference(GridPair(gx, gy));
         GridMaps[gx][gy] = NULL;
     }
     DEBUG_LOG("Unloading grid[%u,%u] for map %u finished", x,y, i_id);

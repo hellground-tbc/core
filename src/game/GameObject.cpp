@@ -278,7 +278,7 @@ void GameObject::Update(uint32 diff)
                                 return;
                             }
                                                             // respawn timer
-                            MapManager::Instance().GetMap(GetMapId(), this)->Add(this);
+                            GetMap()->Add(this);
                             break;
                     }
                 }
@@ -493,7 +493,7 @@ void GameObject::Refresh()
         return;
 
     if(isSpawned())
-        MapManager::Instance().GetMap(GetMapId(), this)->Add(this);
+        GetMap()->Add(this);
 }
 
 void GameObject::AddUniqueUse(Player* player)
