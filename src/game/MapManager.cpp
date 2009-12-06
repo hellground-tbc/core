@@ -255,8 +255,6 @@ MapManager::Update(time_t diff)
         return;
 
     sWorld.RecordTimeDiff(NULL);
-    ObjectAccessor::Instance().UpdatePlayers(i_timer.GetCurrent());
-    sWorld.RecordTimeDiff("UpdatePlayers");
 
     int32 i=0;
     MapMapType::iterator iter;
