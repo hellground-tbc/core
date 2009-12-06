@@ -21,6 +21,8 @@
 #ifndef _DEBUGCMDLOGGER_H
 #define _DEBUGCMDLOGGER_H
 
+#include <cstdio>
+
 #include <G3D/Vector3.h>
 #include <G3D/Array.h>
 
