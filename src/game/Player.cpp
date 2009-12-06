@@ -1278,8 +1278,9 @@ void Player::Update( uint32 p_time )
     {
         if (p_time >= m_DetectInvTimer)
         {
-            m_DetectInvTimer = 3000;
+
             HandleStealthedUnitsDetection();
+            m_DetectInvTimer = 3000;
         }
         else
             m_DetectInvTimer -= p_time;
@@ -17094,22 +17095,35 @@ void Player::HandleStealthedUnitsDetection()
     std::list<Unit*> stealthedUnits;
     Trinity::AnyStealthedCheck u_check;
     Trinity::UnitListSearcher<Trinity::AnyStealthedCheck > searcher(stealthedUnits, u_check);
-    //VisitNearbyObject(World::GetMaxVisibleDistance(), searcher);
-    VisitNearbyObject(45.0f, searcher);
+    VisitNearbyObject(MAX_PLAYER_STEALTH_DETECT_RANGE, searcher);
 
-    for (std::list<Unit*>::iterator i = stealthedUnits.begin(); i != stealthedUnits.end(); ++i)
+    for (std::list<Unit*>::const_iterator i = stealthedUnits.begin(); i != stealthedUnits.end(); ++i)
     {
-        if (!HaveAtClient(*i) && canSeeOrDetect(*i, true))
+        if((*i) == this)
+            continue;
+
+        bool hasAtClient = HaveAtClient((*i));
+        bool hasDetected = canSeeOrDetect(*i, true);
+
+        if (hasDetected)
         {
-            (*i)->SendUpdateToPlayer(this);
-            m_clientGUIDs.insert((*i)->GetGUID());
+            if(!hasAtClient)
+            {
+                (*i)->SendUpdateToPlayer(this);
+                m_clientGUIDs.insert((*i)->GetGUID());
 
-            #ifdef TRINITY_DEBUG
-            if((sLog.getLogFilter() & LOG_FILTER_VISIBILITY_CHANGES)==0)
-                sLog.outDebug("Object %u (Type: %u) is detected in stealth by player %u. Distance = %f",(*i)->GetGUIDLow(),(*i)->GetTypeId(),GetGUIDLow(),GetDistance(*i));
-            #endif
-
-            SendInitialVisiblePackets(*i);
+                // target aura duration for caster show only if target exist at caster client
+                // send data at target visibility change (adding to client)
+                SendInitialVisiblePackets(*i);
+            }
+        }
+        else
+        {
+            if(hasAtClient)
+            {
+                (*i)->DestroyForPlayer(this);
+                m_clientGUIDs.erase((*i)->GetGUID());
+            }
         }
     }
 }
