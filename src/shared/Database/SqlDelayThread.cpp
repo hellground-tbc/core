@@ -40,7 +40,7 @@ void SqlDelayThread::run()
     {
         // if the running state gets turned off while sleeping
         // empty the queue before exiting
-        s = (SqlAsyncTask*)m_sqlQueue.dequeue(/*&_time*/);
+        SqlAsyncTask * s = dynamic_cast<SqlAsyncTask*> (m_sqlQueue.dequeue(/*&_time*/));
         if(s)
         {
             s->call();

@@ -123,22 +123,22 @@ class SqlQueryHolderEx : public SqlOperation
 
 class SqlAsyncTask : public ACE_Method_Request
 {
-public:
-    SqlAsyncTask(Database * db, SqlOperation * op) : m_db(db), m_op(op) {}
-    ~SqlAsyncTask() { delete m_op; }
+    public:
+        SqlAsyncTask(Database * db, SqlOperation * op) : m_db(db), m_op(op) {}
+        ~SqlAsyncTask() { if(!m_op) return; delete m_op; }
 
     int call()
     {
-        if(this == NULL || !m_db || !m_op)
+        if (this == NULL || !m_db || !m_op)
             return -1;
 
         m_op->Execute(m_db);
         return 0;
     }
 
-private:
-    Database * m_db;
-    SqlOperation * m_op;
+    private:
+        Database * m_db;
+        SqlOperation * m_op;
 };
 
 #endif                                                      //__SQLOPERATIONS_H
