@@ -1518,7 +1518,7 @@ void World::RecordTimeDiff(const char *text, ...)
         va_start(ap, text);
         vsnprintf(str,256,text, ap );
         va_end(ap);
-        sLog.outDetail("Difftime %s: %u.", str, diff);
+        sLog.outError("Difftime %s: %u.", str, diff);
     }
 
     m_currentTime = thisTime;
