@@ -223,7 +223,10 @@ struct TRINITY_DLL_DECL boss_morogrim_tidewalkerAI : public ScriptedAI
                     Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
                     Creature* Murloc = m_creature->SummonCreature(MurlocCords[i][0],MurlocCords[i][1],MurlocCords[i][2],MurlocCords[i][3],MurlocCords[i][4], TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000);
                     if(target && Murloc)
+                    {
+                        Murloc->setActive(true);
                         Murloc->AI()->AttackStart(target);
+                    }
                 }
                 DoScriptText(EMOTE_EARTHQUAKE, m_creature);
                 Earthquake = false;
