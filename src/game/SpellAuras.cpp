@@ -1518,7 +1518,16 @@ void Aura::TriggerSpell()
 //                    // Bloodmyst Tesla
 //                    case 31611: break;
 //                    // Doomfire
-//                    case 31944: break;
+ 	
+
+                    // Doomfire
+                    case 31944:
+                    {
+                        int32 damage = 2250 - (150 * m_tickNumber-1);
+                        if(damage < 0) damage = 0;
+                            m_target->CastCustomSpell(m_target, 31969, &damage, NULL, NULL, true, 0, this, originalCasterGUID);
+                        return;
+                    }
 //                    // Teleport Test
 //                    case 32236: break;
 //                    // Earthquake
@@ -5587,6 +5596,13 @@ void Aura::PeriodicTick()
                             }
                         }
                         m_modifier.m_amount = 100 * m_tickNumber;
+                    }break;
+                    // Curse of Agony - Sathrovarr
+                    case 45032:
+                    case 45034:
+                    {
+                        if((m_tickNumber-1) % 5 == 0 && (m_tickNumber-1) > 0)
+                            m_modifier.m_amount *= 2;
                     }break;
                     // Brutallus Burn
                     case 46394:

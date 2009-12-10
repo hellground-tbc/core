@@ -266,7 +266,11 @@ Unit::~Unit()
     RemoveAllDynObjects();
     _DeleteAuras();
 
-    if(m_charmInfo) delete m_charmInfo;
+    if(m_charmInfo)
+    {
+        delete m_charmInfo;
+        m_charmInfo = NULL;
+    }
 
     assert(!m_attacking);
     assert(m_attackers.empty());
@@ -2866,16 +2870,23 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     int32 fullSkillDiff = attackerWeaponSkill - int32(pVictim->GetDefenseSkillValue(this));
 
     uint32 roll = GetMap()->urand (0, 10000);
-    uint32 missChance = uint32(MeleeSpellMissChance(pVictim, attType, fullSkillDiff, spell->Id)*100.0f);
-
-    // Roll miss
-    uint32 tmp = missChance;
-    if (roll < tmp)
-        return SPELL_MISS_MISS;
-
+    
+    uint32 tmp = 0;
     bool canDodge = true;
     bool canParry = true;
     bool canBlock = spell->AttributesEx3 & SPELL_ATTR_EX3_UNK3;
+    //We use SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY until right Attribute was found
+    bool canMiss = !(spell->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY);
+
+    if(canMiss)
+    {
+        uint32 missChance = uint32(MeleeSpellMissChance(pVictim, attType, fullSkillDiff, spell->Id)*100.0f);
+       
+        // Roll miss
+        tmp += missChance;
+        if (roll < tmp)
+            return SPELL_MISS_MISS;
+    }
 
     // Same spells cannot be parry/dodge
     if (spell->Attributes & SPELL_ATTR_IMPOSSIBLE_DODGE_PARRY_BLOCK)
@@ -3034,10 +3045,6 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool 
     if (pVictim->GetTypeId()==TYPEID_UNIT && ((Creature*)pVictim)->IsInEvadeMode() && this != pVictim)
         return SPELL_MISS_EVADE;
 
-    // If Spel has this flag cannot be resisted/immuned/etc
-    //if (spell->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY)
-    //    return SPELL_MISS_NONE;
-
     // Check for immune (use charges)
     if (pVictim->IsImmunedToSpell(spell,true))
         return SPELL_MISS_IMMUNE;
@@ -3049,8 +3056,10 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool 
         return SPELL_MISS_NONE;
 
     // Check for immune (use charges)
-    if (pVictim->IsImmunedToDamage(GetSpellSchoolMask(spell),true))
-        return SPELL_MISS_IMMUNE;
+    // Check if Spell cannot be immuned
+    if (!(spell->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY))
+        if (pVictim->IsImmunedToDamage(GetSpellSchoolMask(spell),true))
+            return SPELL_MISS_IMMUNE;
 
     if(this == pVictim)
         return SPELL_MISS_NONE;
@@ -4358,7 +4367,7 @@ void Unit::RemoveNotOwnSingleTargetAuras()
     {
         Aura* aur = *iter;
         ++iter;
-        if (aur->GetTarget()!=this)
+        if (aur && aur->GetTarget() != this)
         {
             uint32 removedAuras = m_removedAurasCount;
             aur->GetTarget()->RemoveAura( aur->GetId(),aur->GetEffIndex() );
@@ -4381,6 +4390,9 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
     // remove aura from list before to prevent deleting it before
     m_Auras.erase(i);
     ++m_removedAurasCount;
+
+    if(!Aur) 
+        return;
 
     SpellEntry const* AurSpellInfo = Aur->GetSpellProto();
     Unit* caster = NULL;
@@ -7760,10 +7772,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
     for(AuraList::const_iterator i = mModDamagePercentDone.begin(); i != mModDamagePercentDone.end(); ++i)
     {
         if( ((*i)->GetModifier()->m_miscvalue & GetSpellSchoolMask(spellProto)) &&
-            (*i)->GetSpellProto()->EquippedItemClass == -1 &&
-                                                            // -1 == any item class (not wand then)
-            (*i)->GetSpellProto()->EquippedItemInventoryTypeMask == 0 )
-                                                            // 0 == any inventory type (not wand then)
+            (GetTypeId() != TYPEID_PLAYER || ((Player*)this)->HasItemFitToSpellReqirements((*i)->GetSpellProto())))
         {
             DoneTotalMod *= ((*i)->GetModifierValue() +100.0f)/100.0f;
         }
@@ -8551,6 +8560,10 @@ bool Unit::IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges)
     if (!spellInfo)
         return false;
 
+    // If Spel has this flag cannot be resisted/immuned/etc
+    if (spellInfo->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY)
+        return false;
+    
     SpellImmuneList const& dispelList = m_spellImmune[IMMUNITY_DISPEL];
     for(SpellImmuneList::const_iterator itr = dispelList.begin(); itr != dispelList.end(); ++itr)
         if(itr->type == spellInfo->Dispel)
@@ -8584,7 +8597,7 @@ bool Unit::IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges)
             return true;
         }
     }
-
+    
     return false;
 }
 

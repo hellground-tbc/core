@@ -221,7 +221,7 @@ class TRINITY_DLL_SPEC Aura
         int32 GetMiscBValue() {return m_spellProto->EffectMiscValueB[m_effIndex];}
 
         SpellEntry const* GetSpellProto() const { return m_spellProto; }
-        uint32 GetId() const{ return m_spellProto->Id; }
+        uint32 GetId() const{ return m_spellProto ? m_spellProto->Id : NULL; }
         uint64 GetCastItemGUID() const { return m_castItemGuid; }
         uint32 GetEffIndex() const{ return m_effIndex; }
         int32 GetBasePoints() const { return m_currentBasePoints; }
@@ -247,7 +247,7 @@ class TRINITY_DLL_SPEC Aura
 
         uint64 const& GetCasterGUID() const { return m_caster_guid; }
         Unit* GetCaster() const;
-        Unit* GetTarget() const { return m_target; }
+        Unit* GetTarget() const { return m_target ? m_target : NULL; }
         void SetTarget(Unit* target) { m_target = target; }
         void SetLoadedState(uint64 caster_guid,int32 damage,int32 maxduration,int32 duration,int32 charges)
         {
