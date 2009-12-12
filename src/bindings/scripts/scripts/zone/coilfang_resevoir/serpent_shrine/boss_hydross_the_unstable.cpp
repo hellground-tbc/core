@@ -84,6 +84,7 @@ struct TRINITY_DLL_DECL boss_hydross_the_unstableAI : public ScriptedAI
     ScriptedInstance* pInstance;
     uint64 beams[2];
     uint32 PosCheck_Timer;
+    uint32 PulseCombat_Timer;
     uint32 MarkOfHydross_Timer;
     uint32 MarkOfCorruption_Timer;
     uint32 WaterTomb_Timer;
@@ -101,6 +102,7 @@ struct TRINITY_DLL_DECL boss_hydross_the_unstableAI : public ScriptedAI
         beams[0] = 0;
         beams[1] = 0;
         PosCheck_Timer = 2500;
+        PulseCombat_Timer = 5000;
         MarkOfHydross_Timer = 15000;
         MarkOfCorruption_Timer = 15000;
         WaterTomb_Timer = 7000;
@@ -224,6 +226,10 @@ struct TRINITY_DLL_DECL boss_hydross_the_unstableAI : public ScriptedAI
         //Return since we have no target
         if (!UpdateVictim() )
             return;
+
+        if(PulseCombat_Timer < diff)
+            DoZoneInCombat();
+        else PulseCombat_Timer -= diff;
 
         // corrupted form
         if (CorruptedForm)

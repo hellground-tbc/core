@@ -189,6 +189,7 @@ class TRINITY_DLL_SPEC Aura
         void HandleAuraModRangedAttackPowerPercent(bool apply, bool Real);
         void HandleAuraModRangedAttackPowerOfStatPercent(bool apply, bool Real);
         void HandleSpiritOfRedemption(bool apply, bool Real);
+        void HandleAuraAoeCharm(bool apply, bool Real);
         void HandleModManaRegen(bool apply, bool Real);
         void HandleComprehendLanguage(bool apply, bool Real);
         void HandleShieldBlockValue(bool apply, bool Real);
@@ -220,7 +221,7 @@ class TRINITY_DLL_SPEC Aura
         int32 GetMiscBValue() {return m_spellProto->EffectMiscValueB[m_effIndex];}
 
         SpellEntry const* GetSpellProto() const { return m_spellProto; }
-        uint32 GetId() const{ return m_spellProto->Id; }
+        uint32 GetId() const{ return m_spellProto ? m_spellProto->Id : NULL; }
         uint64 GetCastItemGUID() const { return m_castItemGuid; }
         uint32 GetEffIndex() const{ return m_effIndex; }
         int32 GetBasePoints() const { return m_currentBasePoints; }
@@ -244,7 +245,7 @@ class TRINITY_DLL_SPEC Aura
 
         uint64 const& GetCasterGUID() const { return m_caster_guid; }
         Unit* GetCaster() const;
-        Unit* GetTarget() const { return m_target; }
+        Unit* GetTarget() const { return m_target ? m_target : NULL; }
         void SetTarget(Unit* target) { m_target = target; }
         void SetLoadedState(uint64 caster_guid,int32 damage,int32 maxduration,int32 duration,int32 charges)
         {
@@ -279,6 +280,23 @@ class TRINITY_DLL_SPEC Aura
         bool IsDeathPersistent() const { return m_isDeathPersist; }
         bool IsRemovedOnShapeLost() const { return m_isRemovedOnShapeLost; }
         bool IsInUse() const { return m_in_use;}
+        bool StackNotByCaster()
+        { 
+            return (GetId() == 22959 || 
+                    GetId() == 12579 ||
+                    GetId() == 15258 ||
+                    GetId() == 25225 );
+        }
+        bool DiffPerCaster()
+        { 
+            if( this->GetSpellProto()->SpellFamilyFlags & 0x800000LL && this->GetSpellProto()->SpellIconID == 548 ) // Mind Flay
+                return true;
+
+            if( this->GetSpellProto()->SpellFamilyFlags & 0x40000000000LL ) // Vampiric Touch
+                return true;
+
+            return false;
+        }
         void CleanupTriggeredSpells();
 
         virtual void Update(uint32 diff);
@@ -380,6 +398,7 @@ class TRINITY_DLL_SPEC PersistentAreaAura : public Aura
         PersistentAreaAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = NULL, Item* castItem = NULL);
         ~PersistentAreaAura();
         void Update(uint32 diff);
+        uint64 dynObjGUID;
 };
 
 Aura* CreateAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = NULL, Item* castItem = NULL);

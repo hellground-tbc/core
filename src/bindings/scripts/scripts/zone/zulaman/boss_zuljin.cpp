@@ -144,6 +144,7 @@ struct TRINITY_DLL_DECL boss_zuljinAI : public ScriptedAI
     boss_zuljinAI(Creature *c) : ScriptedAI(c), Summons(m_creature)
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        m_creature->GetPosition(wLoc);
     }
     ScriptedInstance *pInstance;
 
@@ -171,6 +172,9 @@ struct TRINITY_DLL_DECL boss_zuljinAI : public ScriptedAI
     uint32 Flame_Whirl_Timer;
     uint32 Flame_Breath_Timer;
     uint32 Pillar_Of_Fire_Timer;
+
+    uint32 checkTimer;
+    WorldLocation wLoc;
 
     SummonList Summons;
 
@@ -203,6 +207,8 @@ struct TRINITY_DLL_DECL boss_zuljinAI : public ScriptedAI
 
         ClawTargetGUID = 0;
         TankGUID = 0;
+
+        checkTimer = 3000;
 
         Summons.DespawnAll();
 
@@ -394,6 +400,17 @@ struct TRINITY_DLL_DECL boss_zuljinAI : public ScriptedAI
             if(m_creature->GetHealth() < health_20 * (4 - Phase))
                 EnterPhase(Phase + 1);
         }
+
+        if (checkTimer < diff)
+        {
+            if (m_creature->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 100)
+                EnterEvadeMode();
+            else
+                DoZoneInCombat();
+            checkTimer = 3000;
+        }
+        else
+            checkTimer -= diff;
 
         if(Berserk_Timer < diff)
         {

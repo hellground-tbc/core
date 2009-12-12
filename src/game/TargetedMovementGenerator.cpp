@@ -93,6 +93,28 @@ TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
 
 template<class T>
 void
+TargetedMovementGenerator<T>::_adaptSpeedToTarget(T &owner)
+{
+    float lowerCritDist = 3*i_offset;
+    float upperCritDist = 6*i_offset;
+
+    float maxSpeed	    = owner.GetMaxSpeedRate(MOVE_RUN);
+    float currSpeed     = owner.GetSpeedRate(MOVE_RUN);
+    float targetSpeed   = i_target->GetSpeedRate(MOVE_RUN);
+    if( targetSpeed > maxSpeed )
+        targetSpeed = maxSpeed;
+
+    float dist_to_target = owner.GetDistance2d( i_target.getTarget() );
+
+    if( dist_to_target <= lowerCritDist && currSpeed != targetSpeed )
+        owner.SetSpeed(MOVE_RUN, targetSpeed, true);
+    // distance is greater than threashold: go to max speed
+    else if( dist_to_target > upperCritDist && currSpeed != maxSpeed )
+        owner.SetSpeed(MOVE_RUN, maxSpeed, true);
+}
+
+template<class T>
+void
 TargetedMovementGenerator<T>::Initialize(T &owner)
 {
     if(!&owner)
@@ -110,6 +132,11 @@ void
 TargetedMovementGenerator<T>::Finalize(T &owner)
 {
     owner.clearUnitState(UNIT_STAT_CHASE);
+
+    // make sure that owner is at maxspeed
+    if( owner.GetSpeedRate(MOVE_RUN) != owner.GetMaxSpeedRate(MOVE_RUN) )
+        owner.SetSpeed(MOVE_RUN, owner.GetMaxSpeedRate(MOVE_RUN), true);
+
 }
 
 template<class T>
@@ -164,25 +191,29 @@ TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
         if (owner.GetObjectSize())
             i_destinationHolder.ResetUpdate(50);
 
+        // adapt speed at follow mode
+        if( owner.hasUnitState(UNIT_STAT_FOLLOW) )
+            _adaptSpeedToTarget(owner);
+
         //float dist = owner.GetCombatReach() + i_target.getTarget()->GetCombatReach() + sWorld.getRate(RATE_TARGET_POS_RECALCULATION_RANGE);
 
         //More distance let have better performance, less distance let have more sensitive reaction at target move.
 
         // try to counter precision differences
         //if( i_destinationHolder.GetDistance2dFromDestSq(*i_target.getTarget()) >= dist * dist)
-        if(i_offset ? !i_target->IsWithinDistInMap(&owner,2*i_offset)
-            : !i_target->IsWithinMeleeRange(&owner))
+        if((i_offset ? !i_target->IsWithinDistInMap(&owner,2*i_offset)
+            : !i_target->IsWithinMeleeRange(&owner)) || i_recalculateTravel)
         {
             owner.SetInFront(i_target.getTarget());         // Set new Angle For Map::
             _setTargetLocation(owner);                      //Calculate New Dest and Send data To Player
+            i_recalculateTravel = false;
         }
         // Update the Angle of the target only for Map::, no need to send packet for player
         else if ( !i_angle && !owner.HasInArc( 0.01f, i_target.getTarget() ) )
             owner.SetInFront(i_target.getTarget());
 
-        if(( owner.IsStopped() && !i_destinationHolder.HasArrived() ) || i_recalculateTravel )
+        if(( owner.IsStopped() && !i_destinationHolder.HasArrived() ))
         {
-            i_recalculateTravel = false;
             //Angle update will take place into owner.StopMoving()
             owner.SetInFront(i_target.getTarget());
 

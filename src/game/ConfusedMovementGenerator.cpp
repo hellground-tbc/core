@@ -28,24 +28,24 @@ template<class T>
 void
 ConfusedMovementGenerator<T>::Initialize(T &unit)
 {
-    const float wander_distance=11;
+    const float wander_distance = 5.0f;
     float x,y,z;
     x = unit.GetPositionX();
     y = unit.GetPositionY();
     z = unit.GetPositionZ();
     uint32 mapid=unit.GetMapId();
 
-    Map const* map = MapManager::Instance().GetBaseMap(mapid);
+    Map const *map = unit.GetBaseMap();
 
     i_nextMove = 1;
 
     bool is_water_ok, is_land_ok;
     _InitSpecific(unit, is_water_ok, is_land_ok);
 
-    for(unsigned int idx=0; idx < MAX_CONF_WAYPOINTS+1; ++idx)
+    for(unsigned int idx = 0; idx < MAX_CONF_WAYPOINTS+1; ++idx)
     {
-      const float wanderX=wander_distance*rand_norm() - wander_distance/2;
-      const float wanderY=wander_distance*rand_norm() - wander_distance/2;
+        const float wanderX = wander_distance*rand_norm();
+        const float wanderY = wander_distance*rand_norm();
 
         i_waypoints[idx][0] = x + wanderX;
         i_waypoints[idx][1] = y + wanderY;
@@ -54,23 +54,36 @@ ConfusedMovementGenerator<T>::Initialize(T &unit)
         Trinity::NormalizeMapCoord(i_waypoints[idx][0]);
         Trinity::NormalizeMapCoord(i_waypoints[idx][1]);
 
-        bool is_water = map->IsInWater(i_waypoints[idx][0],i_waypoints[idx][1],z);
+
+        float ground, floor;
+        ground = map->GetHeight(i_waypoints[idx][0], i_waypoints[idx][1], MAX_HEIGHT, true);
+        floor  = map->GetHeight(i_waypoints[idx][0], i_waypoints[idx][1], z, true);
+        i_waypoints[idx][2] = fabs(ground - z) <= fabs(floor - z) ? ground : floor;
+
+        bool is_water = map->IsInWater(i_waypoints[idx][0],i_waypoints[idx][1], z);
+        // if in water set higher z coord
+        if(is_water)
+            i_waypoints[idx][2] = (z >= i_waypoints[idx][2]) ? z : i_waypoints[idx][2];
+
         // if generated wrong path just ignore
-        if( is_water && !is_water_ok || !is_water && !is_land_ok )
+        if( is_water && !is_water_ok || !is_water && !is_land_ok ||
+            !Trinity::IsValidMapCoord(i_waypoints[idx][0], i_waypoints[idx][1]) ||
+            fabs(i_waypoints[idx][2] - z) > 2.0f)
         {
             i_waypoints[idx][0] = idx > 0 ? i_waypoints[idx-1][0] : x;
             i_waypoints[idx][1] = idx > 0 ? i_waypoints[idx-1][1] : y;
+            i_waypoints[idx][2] = idx > 0 ? i_waypoints[idx-1][2] : z;
         }
-        unit.UpdateGroundPositionZ(i_waypoints[idx][0],i_waypoints[idx][1],z);
-        i_waypoints[idx][2] =  z;
+        unit.UpdateGroundPositionZ(i_waypoints[idx][0], i_waypoints[idx][1], i_waypoints[idx][2]);
     }
 
-    unit.SetUInt64Value(UNIT_FIELD_TARGET, 0);
-    unit.SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
     unit.CastStop();
     unit.StopMoving();
     unit.RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
-    unit.addUnitState(UNIT_STAT_CONFUSED);
+    unit.addUnitState(UNIT_STAT_CONFUSED); //.cast back 12824 triggered
+    unit.SetUInt64Value(UNIT_FIELD_TARGET, 0);
+    unit.SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
+
 }
 
 template<>
@@ -94,7 +107,6 @@ void
 ConfusedMovementGenerator<T>::Reset(T &unit)
 {
     i_nextMove = 1;
-    i_nextMoveTime.Reset(0);
     i_destinationHolder.ResetUpdate();
     unit.StopMoving();
 }
@@ -109,37 +121,18 @@ ConfusedMovementGenerator<T>::Update(T &unit, const uint32 &diff)
     if(unit.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED))
         return true;
 
-    if( i_nextMoveTime.Passed() )
-    {
-        // currently moving, update location
-        Traveller<T> traveller(unit);
-        if( i_destinationHolder.UpdateTraveller(traveller, diff))
-        {
-            if( i_destinationHolder.HasArrived())
-            {
-                // arrived, stop and wait a bit
-                unit.clearUnitState(UNIT_STAT_MOVE);
+    Traveller<T> traveller(unit);
 
-                i_nextMove = urand(1,MAX_CONF_WAYPOINTS);
-                i_nextMoveTime.Reset(urand(0, 1500-1));     // TODO: check the minimum reset time, should be probably higher
-            }
-        }
-    }
-    else
-    {
-        // waiting for next move
-        i_nextMoveTime.Update(diff);
-        if( i_nextMoveTime.Passed() )
+    if(i_destinationHolder.UpdateTraveller(traveller, diff))
+        if( i_destinationHolder.HasArrived())
         {
-            // start moving
             assert( i_nextMove <= MAX_CONF_WAYPOINTS );
             const float x = i_waypoints[i_nextMove][0];
             const float y = i_waypoints[i_nextMove][1];
             const float z = i_waypoints[i_nextMove][2];
-            Traveller<T> traveller(unit);
             i_destinationHolder.SetDestination(traveller, x, y, z);
+            i_nextMove = urand(1,MAX_CONF_WAYPOINTS);
         }
-    }
     return true;
 }
 

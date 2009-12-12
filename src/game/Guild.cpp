@@ -908,13 +908,24 @@ void Guild::UnloadGuildEventlog()
 // This will renum guids used at load to prevent always going up until infinit
 void Guild::RenumGuildEventlog()
 {
-    QueryResult *result = CharacterDatabase.PQuery("SELECT Min(LogGuid), Max(LogGuid) FROM guild_eventlog WHERE guildid = %u", Id);
+    /*QueryResult *result = CharacterDatabase.PQuery("SELECT Min(LogGuid), Max(LogGuid) FROM guild_eventlog WHERE guildid = %u", Id);
     if(!result)
         return;
 
     Field *fields = result->Fetch();
     CharacterDatabase.PExecute("UPDATE guild_eventlog SET LogGuid=LogGuid-%u+1 WHERE guildid=%u ORDER BY LogGuid %s",fields[0].GetUInt32(), Id, fields[0].GetUInt32()?"ASC":"DESC");
-    GuildEventlogMaxGuid = fields[1].GetUInt32()+1;
+    GuildEventlogMaxGuid = fields[1].GetUInt32()+1;*/
+
+    CharacterDatabase.PExecute("UPDATE guild_eventlog AS target INNER JOIN ( SELECT *, (SELECT @COUNT := -1) FROM guild_eventlog WHERE guildid = %u ORDER BY logguid ASC) "
+                                   "AS source ON source.logguid = target.logguid AND source.guildid = target.guildid SET target.logguid = (@COUNT := @COUNT + 1);", Id);
+
+    QueryResult *result = CharacterDatabase.PQuery("SELECT Max(LogGuid) FROM guild_eventlog WHERE guildid = %u", Id);
+    if(!result)
+        return;
+
+    Field *fields = result->Fetch();
+    GuildEventlogMaxGuid = fields[0].GetUInt32()+1;
+
     delete result;
 }
 
@@ -1671,13 +1682,24 @@ void Guild::LogBankEvent(uint8 LogEntry, uint8 TabId, uint32 PlayerGuidLow, uint
 // This will renum guids used at load to prevent always going up until infinit
 void Guild::RenumBankLogs()
 {
-    QueryResult *result = CharacterDatabase.PQuery("SELECT Min(LogGuid), Max(LogGuid) FROM guild_bank_eventlog WHERE guildid = %u", Id);
+    /*QueryResult *result = CharacterDatabase.PQuery("SELECT Min(LogGuid), Max(LogGuid) FROM guild_bank_eventlog WHERE guildid = %u", Id);
     if(!result)
         return;
 
     Field *fields = result->Fetch();
     CharacterDatabase.PExecute("UPDATE guild_bank_eventlog SET LogGuid=LogGuid-%u+1 WHERE guildid=%u ORDER BY LogGuid %s",fields[0].GetUInt32(), Id, fields[0].GetUInt32()?"ASC":"DESC");
-    LogMaxGuid = fields[1].GetUInt32()+1;
+    LogMaxGuid = fields[1].GetUInt32()+1;*/
+
+    CharacterDatabase.PExecute("UPDATE guild_bank_eventlog AS target INNER JOIN ( SELECT *, (SELECT @COUNT := -1) FROM guild_bank_eventlog WHERE guildid = %u ORDER BY logguid ASC) "
+                                   "AS source ON source.logguid = target.logguid AND source.guildid = target.guildid SET target.logguid = (@COUNT := @COUNT + 1);", Id);
+
+    QueryResult *result = CharacterDatabase.PQuery("SELECT Max(LogGuid) FROM guild_bank_eventlog WHERE guildid = %u", Id);
+    if(!result)
+        return;
+
+    Field *fields = result->Fetch();
+    LogMaxGuid = fields[0].GetUInt32()+1;
+
     delete result;
 }
 

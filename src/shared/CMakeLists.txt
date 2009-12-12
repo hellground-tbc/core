@@ -12,6 +12,7 @@ SET(shared_STAT_SRCS
    Common.cpp
    Common.h
    Errors.h
+   LockedQueue.h
    Log.cpp
    Log.h
    Mthread.cpp
@@ -23,6 +24,8 @@ SET(shared_STAT_SRCS
    Util.h
    WorldPacket.h
    SystemConfig.h
+   Threading.cpp
+   Threading.h
 )
 add_definitions(-fopenmp)
 add_library(shared STATIC ${shared_STAT_SRCS})

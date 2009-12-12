@@ -81,6 +81,7 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
     boss_shahrazAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        m_creature->GetPosition(wLoc);
     }
 
     ScriptedInstance* pInstance;
@@ -97,6 +98,9 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
     uint32 RandomYellTimer;
     uint32 EnrageTimer;
     uint32 ExplosionCount;
+
+    uint32 CheckTimer;
+    WorldLocation wLoc;
 
     bool Enraged;
 
@@ -119,6 +123,8 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         RandomYellTimer = 70000 + rand()%41 * 1000;
         EnrageTimer = 600000;
         ExplosionCount = 0;
+
+        CheckTimer = 3000;
 
         Enraged = false;
     }
@@ -171,6 +177,17 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
     {
         if(!UpdateVictim())
             return;
+
+        if (CheckTimer < diff)
+        {
+            if (m_creature->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 100)
+                EnterEvadeMode();
+            else
+                DoZoneInCombat();
+            CheckTimer = 3000;
+        }
+        else 
+            CheckTimer -= diff;
 
         if(((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 10) && !Enraged)
         {

@@ -31,7 +31,7 @@ class TRINITY_DLL_SPEC FleeingMovementGenerator
 : public MovementGeneratorMedium< T, FleeingMovementGenerator<T> >
 {
     public:
-        FleeingMovementGenerator(uint64 fright) : i_frightGUID(fright), i_nextCheckTime(0) {}
+        FleeingMovementGenerator(uint64 fright) : i_frightGUID(fright) {}
 
         void Initialize(T &);
         void Finalize(T &);
@@ -54,10 +54,11 @@ class TRINITY_DLL_SPEC FleeingMovementGenerator
         float i_caster_x;
         float i_caster_y;
         float i_caster_z;
-        float i_last_distance_from_caster;
-        float i_to_distance_from_caster;
+
         float i_cur_angle;
-        TimeTracker i_nextCheckTime;
+        float i_dest_x;
+        float i_dest_y;
+        float i_dest_z;
         uint64 i_frightGUID;
 
         DestinationHolder< Traveller<T> > i_destinationHolder;

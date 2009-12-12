@@ -155,7 +155,7 @@ void SpellCastTargets::setCorpseTarget(Corpse* corpse)
 
 void SpellCastTargets::Update(Unit* caster)
 {
-    m_GOTarget   = m_GOTargetGUID ? ObjectAccessor::GetGameObject(*caster,m_GOTargetGUID) : NULL;
+    m_GOTarget   = m_GOTargetGUID ? caster->GetMap()->GetGameObject(m_GOTargetGUID) : NULL;
     m_unitTarget = m_unitTargetGUID ?
         ( m_unitTargetGUID==caster->GetGUID() ? caster : ObjectAccessor::GetUnit(*caster, m_unitTargetGUID) ) :
     NULL;
@@ -836,7 +836,7 @@ void Spell::AddGOTarget(GameObject* pVictim, uint32 effIndex)
 
 void Spell::AddGOTarget(uint64 goGUID, uint32 effIndex)
 {
-    GameObject* go = ObjectAccessor::GetGameObject(*m_caster, goGUID);
+    GameObject* go = m_caster->GetMap()->GetGameObject(goGUID);
     if (go)
         AddGOTarget(go, effIndex);
 }
@@ -1118,6 +1118,13 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
                 unit->SetStandState(PLAYER_STATE_NONE);
         }
     }
+
+    // if target is flagged for pvp also flag caster if a player
+    if(unit->IsPvP())
+    {
+        if ((m_caster->GetTypeId() == TYPEID_PLAYER) && (m_caster != unit))
+            ((Player*)m_caster)->UpdatePvP(true);
+    }
 }
 
 void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
@@ -1125,6 +1132,16 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
     if(!unit || !effectMask)
         return;
 
+    if(unit->IsImmunedToSpellEffect(SPELL_EFFECT_ATTACK_ME,MECHANIC_NONE))
+    {
+        for(uint8 i = 0; i < 3; i++)
+            if(m_spellInfo->Effect[i] == SPELL_EFFECT_ATTACK_ME)
+            {
+                m_caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_IMMUNE);
+                return;
+            }    
+    }
+   
     // Recheck immune (only for delayed spells)
     if( m_spellInfo->speed &&
         !(m_spellInfo->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY)
@@ -1287,7 +1304,7 @@ void Spell::DoAllEffectOnTarget(GOTargetInfo *target)
     if(!effectMask)
         return;
 
-    GameObject* go = ObjectAccessor::GetGameObject(*m_caster, target->targetGUID);
+    GameObject* go = m_caster->GetMap()->GetGameObject(target->targetGUID);
     if(!go)
         return;
 
@@ -2236,16 +2253,15 @@ void Spell::cancel()
             SendChannelUpdate(0);
             SendInterrupted(0);
             SendCastResult(SPELL_FAILED_INTERRUPTED);
-
-            if(m_caster->GetTypeId() == TYPEID_PLAYER)
-                ((Player*)m_caster)->RemoveGlobalCooldown(m_spellInfo);
-
         } break;
 
         default:
         {
         } break;
     }
+
+    if(m_caster->GetTypeId() == TYPEID_PLAYER)
+        ((Player*)m_caster)->RemoveGlobalCooldown(m_spellInfo);
 
     m_caster->RemoveDynObject(m_spellInfo->Id);
     m_caster->RemoveGameObject(m_spellInfo->Id,true);
@@ -2727,7 +2743,7 @@ void Spell::update(uint32 difftime)
                     {
                         GOTargetInfo* target = &*ihit;
 
-                        GameObject* go = ObjectAccessor::GetGameObject(*m_caster, target->targetGUID);
+                        GameObject* go = m_caster->GetMap()->GetGameObject(target->targetGUID);
                         if(!go)
                             continue;
 
@@ -3173,7 +3189,7 @@ void Spell::SendChannelStart(uint32 duration)
         {
             if(itr->effectMask & (1<<0) )
             {
-                target = ObjectAccessor::GetGameObject(*m_caster, itr->targetGUID);
+                target = m_caster->GetMap()->GetGameObject(itr->targetGUID);
                 break;
             }
         }
@@ -3961,7 +3977,11 @@ uint8 Spell::CanCast(bool strict)
                 // get the lock entry
                 LockEntry const *lockInfo = NULL;
                 if (GameObject* go=m_targets.getGOTarget())
+                {
                     lockInfo = sLockStore.LookupEntry(go->GetLockId());
+                    if(!go->GetLockId())
+                        return SPELL_FAILED_BAD_TARGETS;
+                }
                 else if(Item* itm=m_targets.getItemTarget())
                     lockInfo = sLockStore.LookupEntry(itm->GetProto()->LockID);
 
@@ -4772,7 +4792,8 @@ uint8 Spell::CheckItems()
 
         TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectFocusCheck>, GridTypeMapContainer > object_checker(checker);
         CellLock<GridReadGuard> cell_lock(cell, p);
-        cell_lock->Visit(cell_lock, object_checker, *MapManager::Instance().GetMap(m_caster->GetMapId(), m_caster));
+        Map& map = *m_caster->GetMap();
+        cell_lock->Visit(cell_lock, object_checker, map, *m_caster, map.GetVisibilityDistance());
 
         if(!ok)
             return (uint8)SPELL_FAILED_REQUIRES_SPELL_FOCUS;

@@ -1122,12 +1122,12 @@ void WorldObject::_Create( uint32 guidlow, HighGuid guidhigh, uint32 mapid )
 
 uint32 WorldObject::GetZoneId() const
 {
-    return MapManager::Instance().GetBaseMap(m_mapId)->GetZoneId(m_positionX,m_positionY);
+    return GetBaseMap()->GetZoneId(m_positionX, m_positionY);
 }
 
 uint32 WorldObject::GetAreaId() const
 {
-    return MapManager::Instance().GetBaseMap(m_mapId)->GetAreaId(m_positionX,m_positionY);
+    return GetBaseMap()->GetAreaId(m_positionX,m_positionY);
 }
 
 InstanceData* WorldObject::GetInstanceData()
@@ -1302,7 +1302,7 @@ void WorldObject::GetRandomPoint( float x, float y, float z, float distance, flo
 
 void WorldObject::UpdateGroundPositionZ(float x, float y, float &z) const
 {
-    float new_z = MapManager::Instance().GetBaseMap(GetMapId())->GetHeight(x,y,z,true);
+    float new_z = GetBaseMap()->GetHeight(x,y,z,true);
     if(new_z > INVALID_HEIGHT)
         z = new_z+ 0.05f;                                   // just to be sure that we are not a few pixel under the surface
 }
@@ -1330,7 +1330,7 @@ void WorldObject::MonsterTextEmote(const char* text, uint64 TargetGuid, bool IsB
 {
     WorldPacket data(SMSG_MESSAGECHAT, 200);
     BuildMonsterChat(&data,IsBossEmote ? CHAT_MSG_RAID_BOSS_EMOTE : CHAT_MSG_MONSTER_EMOTE,text,LANG_UNIVERSAL,GetName(),TargetGuid);
-    SendMessageToSetInRange(&data,sWorld.getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE),true);
+    SendMessageToSetInRange(&data,sWorld.getConfig(IsBossEmote ? CONFIG_LISTEN_RANGE_YELL : CONFIG_LISTEN_RANGE_TEXTEMOTE),true);
 }
 
 void WorldObject::MonsterWhisper(const char* text, uint64 receiver, bool IsBossWhisper)
@@ -1439,7 +1439,8 @@ void WorldObject::MonsterSay(int32 textId, uint32 language, uint64 TargetGuid)
     Trinity::PlayerWorker<Trinity::MessageChatLocaleCacheDo> say_worker(say_do);
     TypeContainerVisitor<Trinity::PlayerWorker<Trinity::MessageChatLocaleCacheDo>, WorldTypeMapContainer > message(say_worker);
     CellLock<GridReadGuard> cell_lock(cell, p);
-    cell_lock->Visit(cell_lock, message, *GetMap());
+    //cell_lock->Visit(cell_lock, message, *GetMap());
+    cell_lock->Visit(cell_lock, message, *GetMap(), *this, sWorld.getConfig(CONFIG_LISTEN_RANGE_SAY));
 }
 
 void WorldObject::MonsterYell(int32 textId, uint32 language, uint64 TargetGuid)
@@ -1454,7 +1455,8 @@ void WorldObject::MonsterYell(int32 textId, uint32 language, uint64 TargetGuid)
     Trinity::PlayerWorker<Trinity::MessageChatLocaleCacheDo> say_worker(say_do);
     TypeContainerVisitor<Trinity::PlayerWorker<Trinity::MessageChatLocaleCacheDo>, WorldTypeMapContainer > message(say_worker);
     CellLock<GridReadGuard> cell_lock(cell, p);
-    cell_lock->Visit(cell_lock, message, *GetMap());
+    //cell_lock->Visit(cell_lock, message, *GetMap());
+    cell_lock->Visit(cell_lock, message, *GetMap(), *this, sWorld.getConfig(CONFIG_LISTEN_RANGE_YELL));
 }
 
 void WorldObject::MonsterTextEmote(int32 textId, uint64 TargetGuid, bool IsBossEmote)
@@ -1469,7 +1471,8 @@ void WorldObject::MonsterTextEmote(int32 textId, uint64 TargetGuid, bool IsBossE
     Trinity::PlayerWorker<Trinity::MessageChatLocaleCacheDo> say_worker(say_do);
     TypeContainerVisitor<Trinity::PlayerWorker<Trinity::MessageChatLocaleCacheDo>, WorldTypeMapContainer > message(say_worker);
     CellLock<GridReadGuard> cell_lock(cell, p);
-    cell_lock->Visit(cell_lock, message, *GetMap());
+    //cell_lock->Visit(cell_lock, message, *GetMap());
+    cell_lock->Visit(cell_lock, message, *GetMap(), *this, sWorld.getConfig(IsBossEmote ? CONFIG_LISTEN_RANGE_YELL : CONFIG_LISTEN_RANGE_TEXTEMOTE));
 }
 
 void WorldObject::MonsterWhisper(int32 textId, uint64 receiver, bool IsBossWhisper)
@@ -1549,12 +1552,12 @@ void WorldObject::BuildTeleportAckMsg(WorldPacket *data, float x, float y, float
 
 void WorldObject::SendMessageToSet(WorldPacket *data, bool /*fake*/, bool bToPossessor)
 {
-    MapManager::Instance().GetMap(m_mapId, this)->MessageBroadcast(this, data, bToPossessor);
+    GetMap()->MessageBroadcast(this, data, bToPossessor);
 }
 
 void WorldObject::SendMessageToSetInRange(WorldPacket *data, float dist, bool /*bToSelf*/, bool bToPossessor)
 {
-    MapManager::Instance().GetMap(m_mapId, this)->MessageDistBroadcast(this, data, dist, bToPossessor);
+    GetMap()->MessageDistBroadcast(this, data, dist, bToPossessor);
 }
 
 void WorldObject::SendObjectDeSpawnAnim(uint64 guid)
@@ -1576,7 +1579,7 @@ Map* WorldObject::_findMap()
 
 Map const* WorldObject::GetBaseMap() const
 {
-    return MapManager::Instance().GetBaseMap(GetMapId());
+    return MapManager::Instance().CreateBaseMap(GetMapId());
 }
 
 void WorldObject::AddObjectToRemoveList()

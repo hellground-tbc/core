@@ -23,9 +23,9 @@
 
 #include "Platform/Define.h"
 #include "Policies/ThreadingModel.h"
-#include "zthread/Lockable.h"
-#include "zthread/Mutex.h"
-#include "zthread/FairReadWriteLock.h"
+#include "ace/RW_Thread_Mutex.h"
+#include "ace/Thread_Mutex.h"
+
 #include "Database/DBCStructure.h"
 #include "GridDefines.h"
 #include "Cell.h"
@@ -43,16 +43,15 @@ class WorldPacket;
 class InstanceData;
 class Group;
 class InstanceSave;
+class Object;
+class Player;
 class WorldObject;
 class CreatureGroup;
 
-namespace ZThread
-{
-    class Lockable;
-    class ReadWriteLock;
-}
+struct ScriptInfo;
+struct ScriptAction;
 
-typedef ZThread::FairReadWriteLock GridRWLock;
+typedef ACE_RW_Thread_Mutex GridRWLock;
 
 template<class MUTEX, class LOCK_TYPE>
 struct RGuard
@@ -68,8 +67,8 @@ struct WGuard
     Trinity::GeneralLock<LOCK_TYPE> i_lock;
 };
 
-typedef RGuard<GridRWLock, ZThread::Lockable> GridReadGuard;
-typedef WGuard<GridRWLock, ZThread::Lockable> GridWriteGuard;
+typedef RGuard<GridRWLock, ACE_Thread_Mutex> GridReadGuard;
+typedef WGuard<GridRWLock, ACE_Thread_Mutex> GridWriteGuard;
 typedef Trinity::SingleThreaded<GridRWLock>::Lock NullGuard;
 
 typedef struct
@@ -130,7 +129,7 @@ typedef UNORDERED_MAP<Creature*, CreatureMover> CreatureMoveList;
 
 typedef std::map<uint32/*leaderDBGUID*/, CreatureGroup*>        CreatureGroupHolderType;
 
-class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockable<Map, ZThread::Mutex>
+class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockable<Map, ACE_Thread_Mutex>
 {
     friend class MapReference;
     public:
@@ -157,6 +156,9 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         void MessageBroadcast(WorldObject *, WorldPacket *, bool to_possessor);
         void MessageDistBroadcast(Player *, WorldPacket *, float dist, bool to_self, bool to_possessor, bool own_team_only = false);
         void MessageDistBroadcast(WorldObject *, WorldPacket *, float dist, bool to_possessor);
+        
+        float GetVisibilityDistance() const { return m_VisibleDistance; }
+        virtual void InitVisibilityDistance();
 
         void PlayerRelocation(Player *, float x, float y, float z, float angl);
         void CreatureRelocation(Creature *creature, float x, float y, float, float);
@@ -214,8 +216,9 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
             return GetZoneId(GetAreaFlag(x,y),i_id);
         }
 
-        virtual void MoveAllCreaturesInMoveList();
-        virtual void RemoveAllObjectsInRemoveList();
+        void MoveAllCreaturesInMoveList();
+        void RemoveAllObjectsInRemoveList();
+        void RelocationNotify();
 
         bool CreatureRespawnRelocation(Creature *c);        // used only in MoveAllCreaturesInMoveList and ObjectGridUnloader
 
@@ -238,7 +241,7 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
 
         void AddObjectToRemoveList(WorldObject *obj);
         void AddObjectToSwitchList(WorldObject *obj, bool on);
-        void DoDelayedMovesAndRemoves();
+        virtual void DelayedUpdate(const uint32 diff);
 
         virtual bool RemoveBones(uint64 guid, float x, float y);
 
@@ -247,15 +250,13 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         void resetMarkedCells() { marked_cells.reset(); }
         bool isCellMarked(uint32 pCellId) { return marked_cells.test(pCellId); }
         void markCell(uint32 pCellId) { marked_cells.set(pCellId); }
-        Creature* GetCreatureInMap(uint64 guid);
-        GameObject* GetGameObjectInMap(uint64 guid);
 
         bool HavePlayers() const { return !m_mapRefManager.isEmpty(); }
         uint32 GetPlayersCountExceptGMs() const;
         bool ActiveObjectsNearGrid(uint32 x, uint32 y) const;
 
         void AddUnitToNotify(Unit* unit);
-        void RelocationNotify();
+        void RemoveUnitFromNotify(Unit *unit);
 
         void SendToPlayers(WorldPacket const* data) const;
 
@@ -268,6 +269,10 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
 
         void AddToActive(Creature* obj);
 
+        //per-map script storage
+        void ScriptsStart(std::map<uint32, std::multimap<uint32, ScriptInfo> > const& scripts, uint32 id, Object* source, Object* target);
+        void ScriptCommandStart(ScriptInfo const& script, uint32 delay, Object* source, Object* target);
+        
         // must called with RemoveFromWorld
         template<class T>
         void RemoveFromActive(T* obj) { RemoveFromActiveHelper(obj); }
@@ -306,6 +311,10 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
           return mtRand.randExc(100.0);
         }
 
+        Creature* GetCreature(uint64 guid);
+        GameObject* GetGameObject(uint64 guid);
+        DynamicObject* GetDynamicObject(uint64 guid);
+
     private:
         void LoadVMap(int pX, int pY);
         void LoadMap(uint32 mapid, uint32 instanceid, int x,int y);
@@ -340,19 +349,21 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         bool isGridObjectDataLoaded(uint32 x, uint32 y) const { return getNGrid(x,y)->isGridObjectDataLoaded(); }
         void setGridObjectDataLoaded(bool pLoaded, uint32 x, uint32 y) { getNGrid(x,y)->setGridObjectDataLoaded(pLoaded); }
 
+        void ScriptsProcess();
         void setNGrid(NGridType* grid, uint32 x, uint32 y);
 
         void UpdateActiveCells(const float &x, const float &y, const uint32 &t_diff);
     protected:
         void SetUnloadReferenceLock(const GridPair &p, bool on) { getNGrid(p.x_coord, p.y_coord)->setUnloadReferenceLock(on); }
 
-        typedef Trinity::ObjectLevelLockable<Map, ZThread::Mutex>::Lock Guard;
+        typedef Trinity::ObjectLevelLockable<Map, ACE_Thread_Mutex>::Lock Guard;
 
         MapEntry const* i_mapEntry;
         uint8 i_spawnMode;
         uint32 i_id;
         uint32 i_InstanceId;
         uint32 m_unloadTimer;
+        float m_VisibleDistance;
 
         MapRefManager m_mapRefManager;
         MapRefManager::iterator m_mapRefIter;
@@ -372,11 +383,14 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
 
         time_t i_gridExpiry;
 
-        bool i_lock;
-        std::vector<uint64> i_unitsToNotifyBacklog;
+        IntervalTimer m_notifyTimer;
+
+        bool i_notifyLock, i_scriptLock;
+        std::vector<Unit*> i_unitsToNotifyBacklog;
         std::vector<Unit*> i_unitsToNotify;
         std::set<WorldObject *> i_objectsToRemove;
         std::map<WorldObject*, bool> i_objectsToSwitch;
+        std::multimap<time_t, ScriptAction> m_scriptSchedule;
 
         // Type specific code for add/remove to/from grid
         template<class T>
@@ -443,6 +457,8 @@ class TRINITY_DLL_SPEC InstanceMap : public Map
         bool CanEnter(Player* player);
         void SendResetWarnings(uint32 timeLeft) const;
         void SetResetSchedule(bool on);
+        virtual void InitVisibilityDistance();
+
     private:
         bool m_resetAfterUnload;
         bool m_unloadWhenEmpty;
@@ -459,6 +475,7 @@ class TRINITY_DLL_SPEC BattleGroundMap : public Map
         bool Add(Player *);
         void Remove(Player *, bool);
         bool CanEnter(Player* player);
+        virtual void InitVisibilityDistance();
         void SetUnload();
         void UnloadAll();
 };

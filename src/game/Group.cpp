@@ -401,8 +401,8 @@ bool Group::ChangeLeaderToFirstOnlineMember()
 
        if (player && player->IsInWorld() && player->GetGUID() != m_leaderGuid)
        {
-	    ChangeLeader(player->GetGUID());
-	    return true;
+        ChangeLeader(player->GetGUID());
+        return true;
        }
     }
     return false;
@@ -987,7 +987,7 @@ void Group::Update(time_t diff)
 
 void Group::UpdatePlayerOutOfRange(Player* pPlayer)
 {
-    if(!pPlayer)
+    if(!pPlayer || !pPlayer->IsInWorld())
         return;
 
     Player *player;

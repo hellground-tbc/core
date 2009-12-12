@@ -193,9 +193,9 @@ void BattleGround::Update(time_t diff)
                     if(!plr)
                         continue;
 
-                    if (!sh)
+                    if (!sh && plr->IsInWorld())
                     {
-                        sh = ObjectAccessor::GetCreature(*plr, itr->first);
+                        sh = plr->GetMap()->GetCreature(itr->first);
                         // only for visual effect
                         if (sh)
                             sh->CastSpell(sh, SPELL_SPIRIT_HEAL, true);   // Spirit Heal, effect 117
@@ -222,6 +222,31 @@ void BattleGround::Update(time_t diff)
             if(!plr)
                 continue;
             plr->ResurrectPlayer(1.0f);
+
+            //restore player's pet
+            if(plr->GetLastPetNumber() && plr->isAlive())
+            {
+                Pet* NewPet = new Pet();
+
+               if(!NewPet->LoadPetFromDB(plr, 0, plr->GetLastPetNumber(), true))
+                    delete NewPet;
+               //restore pet's Health and Mana
+               else if(plr->getClass() == CLASS_HUNTER)
+               {
+                   NewPet->SetHealth(NewPet->GetMaxHealth());
+                   //NewPet->SetPower(POWER_MANA,NewPet->GetMaxPower(POWER_MANA));
+                    NewPet->SetPower(POWER_HAPPINESS ,NewPet->GetMaxPower(POWER_HAPPINESS));
+               }else if(plr->getClass() == CLASS_WARLOCK)
+               {
+                   NewPet->SetHealth(NewPet->GetMaxHealth());
+                   NewPet->SetPower(POWER_MANA, NewPet->GetMaxPower(POWER_MANA));
+
+                   if(NewPet->GetEntry() == 11859 || NewPet->GetEntry() == 89)
+                       NewPet->SetEntry(416);
+               }
+
+            }
+
             plr->CastSpell(plr, SPELL_SPIRIT_HEAL_MANA, true);
             ObjectAccessor::Instance().ConvertCorpseForPlayer(*itr);
         }
@@ -287,7 +312,7 @@ void BattleGround::SendPacketToAll(WorldPacket *packet)
         if(plr)
             plr->GetSession()->SendPacket(packet);
         else
-            sLog.outError("BattleGround: Player " I64FMTD " not found!", itr->first);
+            sLog.outDebug("BattleGround: Player " I64FMTD " not found!", itr->first);
     }
 }
 
@@ -299,7 +324,7 @@ void BattleGround::SendPacketToTeam(uint32 TeamID, WorldPacket *packet, Player *
 
         if(!plr)
         {
-            sLog.outError("BattleGround: Player " I64FMTD " not found!", itr->first);
+            sLog.outDebug("BattleGround: Player " I64FMTD " not found!", itr->first);
             continue;
         }
 
@@ -331,7 +356,7 @@ void BattleGround::PlaySoundToTeam(uint32 SoundID, uint32 TeamID)
 
         if(!plr)
         {
-            sLog.outError("BattleGround: Player " I64FMTD " not found!", itr->first);
+            sLog.outDebug("BattleGround: Player " I64FMTD " not found!", itr->first);
             continue;
         }
 
@@ -354,7 +379,7 @@ void BattleGround::CastSpellOnTeam(uint32 SpellID, uint32 TeamID)
 
         if(!plr)
         {
-            sLog.outError("BattleGround: Player " I64FMTD " not found!", itr->first);
+            sLog.outDebug("BattleGround: Player " I64FMTD " not found!", itr->first);
             continue;
         }
 
@@ -374,7 +399,7 @@ void BattleGround::YellToAll(Creature* creature, const char* text, uint32 langua
         Player *plr = objmgr.GetPlayer(itr->first);
         if(!plr)
         {
-            sLog.outError("BattleGround: Player " I64FMTD " not found!", itr->first);
+            sLog.outDebug("BattleGround: Player " I64FMTD " not found!", itr->first);
             continue;
         }
         creature->BuildMonsterChat(&data,CHAT_MSG_MONSTER_YELL,text,language,creature->GetName(),itr->first);
@@ -391,7 +416,7 @@ void BattleGround::RewardHonorToTeam(uint32 Honor, uint32 TeamID)
 
         if(!plr)
         {
-            sLog.outError("BattleGround: Player " I64FMTD " not found!", itr->first);
+            sLog.outDebug("BattleGround: Player " I64FMTD " not found!", itr->first);
             continue;
         }
 
@@ -416,7 +441,7 @@ void BattleGround::RewardReputationToTeam(uint32 faction_id, uint32 Reputation, 
 
         if(!plr)
         {
-            sLog.outError("BattleGround: Player " I64FMTD " not found!", itr->first);
+            sLog.outDebug("BattleGround: Player " I64FMTD " not found!", itr->first);
             continue;
         }
 
@@ -537,7 +562,7 @@ void BattleGround::EndBattleGround(uint32 winner)
         Player *plr = objmgr.GetPlayer(itr->first);
         if(!plr)
         {
-            sLog.outError("BattleGround: Player " I64FMTD " not found!", itr->first);
+            sLog.outDebug("BattleGround: Player " I64FMTD " not found!", itr->first);
             continue;
         }
 
@@ -1588,7 +1613,7 @@ uint32 BattleGround::GetAlivePlayersCountByTeam(uint32 Team) const
         if(itr->second.Team == Team)
         {
             Player * pl = objmgr.GetPlayer(itr->first);
-            if(pl && pl->isAlive())
+            if(pl && pl->isAlive() && !pl->HasByteFlag(UNIT_FIELD_BYTES_2, 3, FORM_SPIRITOFREDEMPTION))
                 ++count;
         }
     }
@@ -1624,7 +1649,7 @@ void BattleGround::EventPlayerLoggedOut(Player* player)
         if( isBattleGround() )
             EventPlayerDroppedFlag(player);
     }
-    else
-        if( isArena() )
-            player->LeaveBattleground();
+
+    if( isArena() )
+        player->LeaveBattleground();
 }

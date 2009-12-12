@@ -347,18 +347,18 @@ SpellSpecific GetSpellSpecific(uint32 spellId)
                 && !spellInfo->Category)
                 return SPELL_WELL_FED;
 
-			switch(spellInfo->Id)
-			{
-				case 12880: // warrior's Enrage rank 1
+            switch(spellInfo->Id)
+            {
+                case 12880: // warrior's Enrage rank 1
                 case 14201: //           Enrage rank 2
                 case 14202: //           Enrage rank 3
                 case 14203: //           Enrage rank 4
                 case 14204: //           Enrage rank 5
-                case 12292: //	         Death Wish
-					return SPELL_WARRIOR_ENRAGE;
-				break;
-				default: break;
-			}
+                case 12292: //             Death Wish
+                    return SPELL_WARRIOR_ENRAGE;
+                break;
+                default: break;
+            }
             break;
         }
         case SPELLFAMILY_MAGE:
@@ -503,7 +503,7 @@ bool IsSingleFromSpellSpecificPerTarget(uint32 spellSpec1,uint32 spellSpec2)
         case SPELL_DRINK:
         case SPELL_FOOD:
         case SPELL_CHARM:
-		case SPELL_WARRIOR_ENRAGE:
+        case SPELL_WARRIOR_ENRAGE:
             return spellSpec1==spellSpec2;
         case SPELL_BATTLE_ELIXIR:
             return spellSpec2==SPELL_BATTLE_ELIXIR
@@ -2354,6 +2354,11 @@ void SpellMgr::LoadSpellCustomAttr()
         case 42384:                             // Brutal Swipe
         case 45150:                             // Meteor Slash
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_SHARE_DAMAGE;
+            switch(i) // Saber Lash Targets
+            {
+            case 40810:             spellInfo->MaxAffectedTargets = 3; break;
+            case 43267: case 43268: spellInfo->MaxAffectedTargets = 2; break;
+            }
             break;
         case 44978: case 45001: case 45002:     // Wild Magic
         case 45004: case 45006: case 45010:     // Wild Magic
@@ -2372,7 +2377,6 @@ void SpellMgr::LoadSpellCustomAttr()
         case 41376: // Spite
         case 39992: // Needle Spine
         case 29576: //Multi-Shot
-        case 40816: //Saber Lash
         case 37790: //Spread Shot
         case 46771: //Flame Sear
         case 45248: //Shadow Blades
@@ -2411,6 +2415,8 @@ void SpellMgr::LoadSpellCustomAttr()
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             spellInfo->Attributes |= SPELL_ATTR_IMPOSSIBLE_DODGE_PARRY_BLOCK;
             break;
+        case 24905: // Moonkin form -> elune's touch
+            spellInfo->EffectImplicitTargetA[2] = TARGET_UNIT_CASTER;
         default:
             break;
         }

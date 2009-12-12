@@ -47,11 +47,17 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_curatorAI : public ScriptedAI
 {
-    boss_curatorAI(Creature *c) : ScriptedAI(c) {}
+    boss_curatorAI(Creature *c) : ScriptedAI(c) 
+    {
+        m_creature->GetPosition(wLoc);
+    }
 
     uint32 AddTimer;
     uint32 HatefulBoltTimer;
     uint32 BerserkTimer;
+    uint32 CheckTimer;
+
+    WorldLocation wLoc;
 
     bool Enraged;
     bool Evocating;
@@ -61,6 +67,7 @@ struct TRINITY_DLL_DECL boss_curatorAI : public ScriptedAI
         AddTimer = 10000;
         HatefulBoltTimer = 15000;                           //This time may be wrong
         BerserkTimer = 720000;                              //12 minutes
+        CheckTimer = 3000;
         Enraged = false;
         Evocating = false;
     }
@@ -89,6 +96,16 @@ struct TRINITY_DLL_DECL boss_curatorAI : public ScriptedAI
         if (!UpdateVictim() )
             return;
 
+        if(CheckTimer < diff)
+        {
+            if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 135.0f)
+                EnterEvadeMode();
+            else
+                DoZoneInCombat();
+            
+            CheckTimer = 3000;
+        }else CheckTimer -= diff;
+
         if (Evocating && !m_creature->HasAura(SPELL_EVOCATION, 0))
             Evocating = false;
 
@@ -112,6 +129,7 @@ struct TRINITY_DLL_DECL boss_curatorAI : public ScriptedAI
                 if (AstralFlare && target)
                 {
                     AstralFlare->CastSpell(AstralFlare, SPELL_ASTRAL_FLARE_PASSIVE, false);
+                    AstralFlare->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_ARCANE, true);
                     AstralFlare->AI()->AttackStart(target);
                 }
 
@@ -133,7 +151,7 @@ struct TRINITY_DLL_DECL boss_curatorAI : public ScriptedAI
                 if(target)
                     DoCast(target, SPELL_HATEFUL_BOLT);
 
-                HatefulBoltTimer = 15000;
+                HatefulBoltTimer = (Enraged) ? 7000 : 15000;
             }else HatefulBoltTimer -= diff;
 
             if (m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 15)

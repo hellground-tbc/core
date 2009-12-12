@@ -23,7 +23,7 @@
 
 #include "Platform/Define.h"
 #include "Policies/Singleton.h"
-#include "zthread/FastMutex.h"
+#include "ace/Thread_Mutex.h"
 #include "Utilities/UnorderedMap.h"
 #include "Policies/ThreadingModel.h"
 
@@ -50,7 +50,7 @@ class HashMapHolder
     public:
 
         typedef UNORDERED_MAP< uint64, T* >   MapType;
-        typedef ZThread::FastMutex LockType;
+        typedef ACE_Thread_Mutex LockType;
         typedef Trinity::GeneralLock<LockType > Guard;
 
         static void Insert(T* o) { m_objectMap[o->GetGUID()] = o; }
@@ -81,7 +81,7 @@ class HashMapHolder
         static MapType  m_objectMap;
 };
 
-class TRINITY_DLL_DECL ObjectAccessor : public Trinity::Singleton<ObjectAccessor, Trinity::ClassLevelLockable<ObjectAccessor, ZThread::FastMutex> >
+class TRINITY_DLL_DECL ObjectAccessor : public Trinity::Singleton<ObjectAccessor, Trinity::ClassLevelLockable<ObjectAccessor, ACE_Thread_Mutex> >
 {
 
     friend class Trinity::OperatorNew<ObjectAccessor>;
@@ -105,7 +105,13 @@ class TRINITY_DLL_DECL ObjectAccessor : public Trinity::Singleton<ObjectAccessor
                 return NULL;
 
             if (IS_PLAYER_GUID(guid))
-                return (Unit*)HashMapHolder<Player>::Find(guid);
+            {
+                Unit * u = (Unit*)HashMapHolder<Player>::Find(guid);
+                if(!u || !u->IsInWorld())
+                    return NULL;
+
+                return u;
+            }
 
             if (Unit* u = (Unit*)HashMapHolder<Pet>::Find(guid))
                 return u;
@@ -140,14 +146,10 @@ class TRINITY_DLL_DECL ObjectAccessor : public Trinity::Singleton<ObjectAccessor
         }
 
         static Object*   GetObjectByTypeMask(Player const &, uint64, uint32 typemask);
-        static Creature* GetNPCIfCanInteractWith(Player const &player, uint64 guid, uint32 npcflagmask);
-        static Creature* GetCreature(WorldObject const &, uint64);
         static Creature* GetCreatureOrPet(WorldObject const &, uint64);
         static Unit* GetUnit(WorldObject const &, uint64);
         static Pet* GetPet(Unit const &, uint64 guid) { return GetPet(guid); }
         static Player* GetPlayer(Unit const &, uint64 guid) { return FindPlayer(guid); }
-        static GameObject* GetGameObject(WorldObject const &, uint64);
-        static DynamicObject* GetDynamicObject(Unit const &, uint64);
         static Corpse* GetCorpse(WorldObject const &u, uint64 guid);
         static Pet* GetPet(uint64 guid);
         static Player* FindPlayer(uint64);
@@ -216,7 +218,7 @@ class TRINITY_DLL_DECL ObjectAccessor : public Trinity::Singleton<ObjectAccessor
         friend struct WorldObjectChangeAccumulator;
         Player2CorpsesMapType   i_player2corpse;
 
-        typedef ZThread::FastMutex LockType;
+        typedef ACE_Thread_Mutex LockType;
         typedef Trinity::GeneralLock<LockType > Guard;
 
         static void _buildChangeObjectForPlayer(WorldObject *, UpdateDataMapType &);

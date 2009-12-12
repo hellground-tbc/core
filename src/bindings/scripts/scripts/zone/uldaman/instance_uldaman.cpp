@@ -114,23 +114,23 @@ struct TRINITY_DLL_DECL instance_uldaman : public ScriptedInstance
                 if (Encounters[1] == DONE) 
                     HandleGameObject(NULL,true,go);
                 break;
-	    
-	    case IRONAYA_SEAL_DOOR:
+        
+        case IRONAYA_SEAL_DOOR:
                 ironayaSealDoor = go->GetGUID();
 
                 if (Encounters[2] == DONE) 
                     HandleGameObject(NULL,true,go);
-	        break;
-	    
-	    case KEYSTONE_GO:
-	        keystoneGUID = go->GetGUID();
+            break;
+        
+        case KEYSTONE_GO:
+            keystoneGUID = go->GetGUID();
 
                 if (Encounters[2] == DONE)
                 {
-                    HandleGameObject(NULL,true,go);		
+                    HandleGameObject(NULL,true,go);        
                     go->SetUInt32Value(GAMEOBJECT_FLAGS, GO_FLAG_INTERACT_COND);
-		}
-	        break;
+        }
+            break;
         }
     }
 
@@ -145,7 +145,7 @@ struct TRINITY_DLL_DECL instance_uldaman : public ScriptedInstance
 
     void SetDoor(uint64 guid, bool open)
     {
-        GameObject *go = instance->GetGameObjectInMap(guid);
+        GameObject *go = instance->GetGameObject(guid);
         if(!go)
             return;
 
@@ -154,7 +154,7 @@ struct TRINITY_DLL_DECL instance_uldaman : public ScriptedInstance
     
     void BlockGO(uint64 guid)
     {
-        GameObject *go = instance->GetGameObjectInMap(guid);
+        GameObject *go = instance->GetGameObject(guid);
         if(!go)
             return;
         go->SetUInt32Value(GAMEOBJECT_FLAGS, GO_FLAG_INTERACT_COND);
@@ -165,7 +165,7 @@ struct TRINITY_DLL_DECL instance_uldaman : public ScriptedInstance
     {
         for(std::vector<uint64>::iterator i = stoneKeeper.begin(); i != stoneKeeper.end(); ++i)
         {
-            Creature *target = instance->GetCreatureInMap(*i);
+            Creature *target = instance->GetCreature(*i);
             if (!target || !target->isAlive() || target->getFaction()==14)
                 continue;
             target->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_DISABLE_MOVE);
@@ -180,13 +180,13 @@ struct TRINITY_DLL_DECL instance_uldaman : public ScriptedInstance
 
     void ActivateWallMinions()
     {
-        Creature *archaedas = instance->GetCreatureInMap(archaedasGUID);
+        Creature *archaedas = instance->GetCreature(archaedasGUID);
         if(!archaedas)
             return;
 
         for(std::vector<uint64>::iterator i = archaedasWallMinions.begin(); i != archaedasWallMinions.end(); ++i)
         {
-            Creature *target = instance->GetCreatureInMap(*i);
+            Creature *target = instance->GetCreature(*i);
             if (!target || !target->isAlive() || target->getFaction()==14)
                 continue;
             archaedas->CastSpell(target, SPELL_AWAKEN_VAULT_WALKER, true);
@@ -201,7 +201,7 @@ struct TRINITY_DLL_DECL instance_uldaman : public ScriptedInstance
         // first despawn any aggroed wall minions
         for(std::vector<uint64>::iterator i = archaedasWallMinions.begin(); i != archaedasWallMinions.end(); ++i)
         {
-            Creature *target = instance->GetCreatureInMap(*i);
+            Creature *target = instance->GetCreature(*i);
             if (!target || target->isDead() || target->getFaction()!=14)
                 continue;
             target->setDeathState(JUST_DIED);
@@ -211,7 +211,7 @@ struct TRINITY_DLL_DECL instance_uldaman : public ScriptedInstance
         // Vault Walkers
         for(std::vector<uint64>::iterator i = vaultWalker.begin(); i != vaultWalker.end(); ++i)
         {
-            Creature *target = instance->GetCreatureInMap(*i);
+            Creature *target = instance->GetCreature(*i);
             if (!target || target->isDead() || target->getFaction()!=14)
                 continue;
             target->setDeathState(JUST_DIED);
@@ -221,7 +221,7 @@ struct TRINITY_DLL_DECL instance_uldaman : public ScriptedInstance
         // Earthen Guardians
         for(std::vector<uint64>::iterator i = earthenGuardian.begin(); i != earthenGuardian.end(); ++i)
         {
-            Creature *target = instance->GetCreatureInMap(*i);
+            Creature *target = instance->GetCreature(*i);
             if (!target || target->isDead() || target->getFaction()!=14)
                 continue;
             target->setDeathState(JUST_DIED);
@@ -231,7 +231,7 @@ struct TRINITY_DLL_DECL instance_uldaman : public ScriptedInstance
 
     void ActivateArchaedas(uint64 target)
     {
-        Creature *archaedas = instance->GetCreatureInMap(archaedasGUID);
+        Creature *archaedas = instance->GetCreature(archaedasGUID);
         if(!archaedas)
             return;
 
@@ -244,7 +244,7 @@ struct TRINITY_DLL_DECL instance_uldaman : public ScriptedInstance
     
     void ActivateIronaya()
     {
-        Creature *ironaya = instance->GetCreatureInMap(ironayaGUID);
+        Creature *ironaya = instance->GetCreature(ironayaGUID);
         if(!ironaya)
             return;
 
@@ -258,7 +258,7 @@ struct TRINITY_DLL_DECL instance_uldaman : public ScriptedInstance
         // first respawn any aggroed wall minions
         for(std::vector<uint64>::iterator i = archaedasWallMinions.begin(); i != archaedasWallMinions.end(); ++i)
         {
-            Creature *target = instance->GetCreatureInMap(*i);
+            Creature *target = instance->GetCreature(*i);
             if (target && target->isDead())
             {
                 target->Respawn();
@@ -270,7 +270,7 @@ struct TRINITY_DLL_DECL instance_uldaman : public ScriptedInstance
         // Vault Walkers
         for(std::vector<uint64>::iterator i = vaultWalker.begin(); i != vaultWalker.end(); ++i)
         {
-            Creature *target = instance->GetCreatureInMap(*i);
+            Creature *target = instance->GetCreature(*i);
             if (target && target->isDead())
             {
                 target->Respawn();
@@ -282,7 +282,7 @@ struct TRINITY_DLL_DECL instance_uldaman : public ScriptedInstance
         // Earthen Guardians
         for(std::vector<uint64>::iterator i = earthenGuardian.begin(); i != earthenGuardian.end(); ++i)
         {
-            Creature *target = instance->GetCreatureInMap(*i);
+            Creature *target = instance->GetCreature(*i);
             if (target && target->isDead())
             {
                 target->Respawn();
@@ -295,19 +295,19 @@ struct TRINITY_DLL_DECL instance_uldaman : public ScriptedInstance
     void Update(uint32 diff)
     {
         if (!keystoneCheck)
-	    return;
-	    
-	if(ironayaSealDoorTimer <= diff)
+        return;
+        
+    if(ironayaSealDoorTimer <= diff)
         {
-	    ActivateIronaya();
-	    
-	    SetDoor(ironayaSealDoor, true);
-	    BlockGO(keystoneGUID);
-	    
+        ActivateIronaya();
+        
+        SetDoor(ironayaSealDoor, true);
+        BlockGO(keystoneGUID);
+        
             SetData(DATA_IRONAYA_DOOR, DONE); //save state
-	    keystoneCheck = false;
+        keystoneCheck = false;
         }
-	else
+    else
             ironayaSealDoorTimer -= diff;
     }     
 
@@ -316,40 +316,40 @@ struct TRINITY_DLL_DECL instance_uldaman : public ScriptedInstance
         switch(type)
         {
             case DATA_ALTAR_DOORS:
-	        Encounters[0] = data;
+            Encounters[0] = data;
                 if(data == DONE)
                     SetDoor (altarOfTheKeeperTempleDoor, true);
                 break;
-	    
-	    case DATA_ANCIENT_DOOR:
-	        Encounters[1] = data;
-	        if(data == DONE) //archeadas defeat
+        
+        case DATA_ANCIENT_DOOR:
+            Encounters[1] = data;
+            if(data == DONE) //archeadas defeat
                 {
                     SetDoor (archaedasTempleDoor, true); //re open enter door
                     SetDoor (ancientVaultDoor, true);
                 }
                 break;
-	    
-	    case DATA_IRONAYA_DOOR:
-	    	Encounters[2] = data;
+        
+        case DATA_IRONAYA_DOOR:
+            Encounters[2] = data;
                 break;
-	
-	    case DATA_STONE_KEEPERS:
-	        ActivateStoneKeepers();
+    
+        case DATA_STONE_KEEPERS:
+            ActivateStoneKeepers();
                 break;
-	
-	    case DATA_MINIONS:
+    
+        case DATA_MINIONS:
                 switch(data)
                 {
                     case NOT_STARTED:
-	                if (Encounters[0] == DONE) //if players opened the doors 
+                    if (Encounters[0] == DONE) //if players opened the doors 
                             SetDoor (archaedasTempleDoor, true);
 
                         RespawnMinions();
                         break;
                     case IN_PROGRESS:
                         ActivateWallMinions();
-                	break;
+                    break;
                     case SPECIAL:
                         DeActivateMinions();
                         break;
@@ -359,10 +359,10 @@ struct TRINITY_DLL_DECL instance_uldaman : public ScriptedInstance
             case DATA_IRONAYA_SEAL:
                 keystoneCheck = true;
                 break;
-	}
+    }
 
-	if(data == DONE)
-	{
+    if(data == DONE)
+    {
 
             OUT_SAVE_INST_DATA;
 
@@ -373,8 +373,8 @@ struct TRINITY_DLL_DECL instance_uldaman : public ScriptedInstance
 
             SaveToDB();
             OUT_SAVE_INST_DATA_COMPLETE;
-	    
-	}
+        
+    }
     }
 
     void SetData64 (uint32 type, uint64 data)
@@ -407,7 +407,7 @@ struct TRINITY_DLL_DECL instance_uldaman : public ScriptedInstance
             case 7076:    // Earthen Guardian
                 earthenGuardian.push_back(creature->GetGUID());
                 break;
-		
+        
             case 7228:   // Ironaya
                 ironayaGUID = creature->GetGUID();
                 

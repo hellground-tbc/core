@@ -1134,7 +1134,7 @@ void GameEvent::GameEventSpawn(int16 event_id)
             objmgr.AddCreatureToGrid(*itr, data);
 
             // Spawn if necessary (loaded grids only)
-            Map* map = const_cast<Map*>(MapManager::Instance().GetBaseMap(data->mapid));
+            Map* map = const_cast<Map*>(MapManager::Instance().CreateBaseMap(data->mapid));
             // We use spawn coords to spawn
             if(!map->Instanceable() && !map->IsRemovalGrid(data->posX,data->posY))
             {
@@ -1167,7 +1167,7 @@ void GameEvent::GameEventSpawn(int16 event_id)
             objmgr.AddGameobjectToGrid(*itr, data);
             // Spawn if necessary (loaded grids only)
             // this base map checked as non-instanced and then only existed
-            Map* map = const_cast<Map*>(MapManager::Instance().GetBaseMap(data->mapid));
+            Map* map = const_cast<Map*>(MapManager::Instance().CreateBaseMap(data->mapid));
             // We use current coords to unspawn, not spawn coords since creature can have changed grid
             if(!map->Instanceable() && !map->IsRemovalGrid(data->posX, data->posY))
             {
@@ -1539,8 +1539,8 @@ TRINITY_DLL_SPEC bool isGameEventActive(uint16 event_id)
 
     for(GameEvent::ActiveEvents::const_iterator itr = ae.begin(); itr != ae.end(); ++itr)
         if(*itr == event_id)
-	    return true;
-	    
+        return true;
+        
     return false;
 }
 

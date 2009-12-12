@@ -30,6 +30,7 @@
 #include "NPCHandler.h"
 #include "QuestDef.h"
 #include "Group.h"
+#include "Object.h"
 #include "Bag.h"
 #include "WorldSession.h"
 #include "Pet.h"
@@ -956,6 +957,8 @@ class TRINITY_DLL_SPEC Player : public Unit
         void SendTransferAborted(uint32 mapid, uint16 reason);
         void SendInstanceResetWarning(uint32 mapid, uint32 time);
 
+        GameObject* GetGameObjectIfCanInteractWith(uint64 guid, GameobjectTypes type = GAMEOBJECT_TYPE_GUILD_BANK) const;
+        Creature* GetNPCIfCanInteractWith(uint64 guid, uint32 npcflagmask);
         bool CanInteractWithNPCs(bool alive = true) const;
 
         bool ToggleAFK();
@@ -2076,6 +2079,10 @@ class TRINITY_DLL_SPEC Player : public Unit
         static void ConvertInstancesToGroup(Player *player, Group *group = NULL, uint64 player_guid = 0);
         bool Satisfy(AccessRequirement const*, uint32 target_map, bool report = false);
 
+        // last used pet number (for BG's)
+        uint32 GetLastPetNumber() const { return m_lastpetnumber; }
+        void SetLastPetNumber(uint32 petnumber) { m_lastpetnumber = petnumber; }
+
         /*********************************************************/
         /***                   GROUP SYSTEM                    ***/
         /*********************************************************/
@@ -2327,6 +2334,9 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         uint64 m_miniPet;
         GuardianPetList m_guardianPets;
+
+        // last used pet number (for BG's)
+        uint32 m_lastpetnumber;
 
         // Player summoning
         time_t m_summon_expire;

@@ -107,6 +107,9 @@ struct TRINITY_DLL_DECL npc_torekAI : public npc_escortAI
 
     void JustDied(Unit* killer)
     {
+        if (killer->GetEntry() == m_creature->GetEntry())
+            return;
+            
         if (PlayerGUID && !Completed)
         {
             if (Player* player = Unit::GetPlayer(PlayerGUID))

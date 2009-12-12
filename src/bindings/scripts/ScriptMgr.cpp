@@ -50,6 +50,9 @@ UNORDERED_MAP<int32, StringTextData> TextMap;
 
 //*** End Global data ***
 
+// Waypoint map (escorts)
+UNORDERED_MAP<uint32, std::vector<PointMovement> > PointMovementMap;
+
 //*** EventAI data ***
 //Event AI structure. Used exclusivly by mob_event_ai.cpp (60 bytes each)
 UNORDERED_MAP<uint32, std::vector<EventAI_Event> > EventAI_Event_Map;
@@ -110,6 +113,12 @@ extern void AddSC_npc_innkeeper();
 
 //Alterac Mountains
 extern void AddSC_alterac_mountains();
+
+//Alterac Valley
+extern void AddSC_boss_balinda();
+extern void AddSC_boss_drekthar();
+extern void AddSC_boss_galvangar();
+extern void AddSC_boss_vanndar();
 
 //Arathi Highlands
 extern void AddSC_arathi_highlands();
@@ -349,6 +358,7 @@ extern void AddSC_bosses_opera();
 extern void AddSC_instance_karazhan();
 extern void AddSC_karazhan();
 extern void AddSC_boss_nightbane();
+extern void AddSC_boss_netherspite();
 
 //Loch Modan
 extern void AddSC_loch_modan();
@@ -856,6 +866,67 @@ void LoadDatabase()
         bar.step();
         outstring_log("");
         outstring_log(">> Loaded 0 additional Custom Texts data. DB table `custom_texts` is empty.");
+    }
+    // Drop Existing Waypoint list
+    PointMovementMap.clear();
+    uint64 uiCreatureCount = 0;
+
+    // Load Waypoints
+    result = TScriptDB.PQuery("SELECT COUNT(entry) FROM script_waypoint GROUP BY entry");
+    if (result)
+    {
+        uiCreatureCount = result->GetRowCount();
+        delete result;
+    }
+
+    outstring_log("TSC: Loading Script Waypoints for %u creature(s)...", uiCreatureCount);
+
+    result = TScriptDB.PQuery("SELECT entry, pointid, location_x, location_y, location_z, waittime FROM script_waypoint ORDER BY pointid");
+
+    if (result)
+    {
+        barGoLink bar(result->GetRowCount());
+        uint32 uiNodeCount = 0;
+
+        do
+        {
+            bar.step();
+            Field* pFields = result->Fetch();
+            PointMovement pTemp;
+
+            pTemp.m_uiCreatureEntry  = pFields[0].GetUInt32();
+            uint32 uiCreatureEntry   = pTemp.m_uiCreatureEntry;
+            pTemp.m_uiPointId        = pFields[1].GetUInt32();
+            pTemp.m_fX               = pFields[2].GetFloat();
+            pTemp.m_fY               = pFields[3].GetFloat();
+            pTemp.m_fZ               = pFields[4].GetFloat();
+            pTemp.m_uiWaitTime       = pFields[5].GetUInt32();
+
+            CreatureInfo const* pCInfo = GetCreatureTemplateStore(pTemp.m_uiCreatureEntry);
+            if (!pCInfo)
+            {
+                error_db_log("TSC: DB table script_waypoint has waypoint for non-existant creature entry %u", pTemp.m_uiCreatureEntry);
+                continue;
+            }
+
+            if (!pCInfo->ScriptID)
+                error_db_log("TSC: DB table script_waypoint has waypoint for creature entry %u, but creature does not have ScriptName defined and then useless.", pTemp.m_uiCreatureEntry);
+
+            PointMovementMap[uiCreatureEntry].push_back(pTemp);
+            ++uiNodeCount;
+        } while (result->NextRow());
+
+        delete result;
+
+        outstring_log("");
+        outstring_log(">> Loaded %u Script Waypoint nodes.", uiNodeCount);
+    }
+    else
+    {
+        barGoLink bar(1);
+        bar.step();
+        outstring_log("");
+        outstring_log(">> Loaded 0 Script Waypoints. DB table `script_waypoint` is empty.");
     }
 
     //Gather additional data for EventAI
@@ -1434,6 +1505,12 @@ void ScriptsInit(char const* cfg_file = "trinitycore.conf")
     //Alterac Mountains
     AddSC_alterac_mountains();
 
+    //Alterac Valley
+    AddSC_boss_balinda();
+    AddSC_boss_drekthar();
+    AddSC_boss_galvangar();
+    AddSC_boss_vanndar();
+
     //Arathi Highlands
     AddSC_arathi_highlands();
 
@@ -1671,6 +1748,7 @@ void ScriptsInit(char const* cfg_file = "trinitycore.conf")
     AddSC_instance_karazhan();
     AddSC_karazhan();
     AddSC_boss_nightbane();
+    AddSC_boss_netherspite();
 
     //Loch Modan
     AddSC_loch_modan();

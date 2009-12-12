@@ -107,7 +107,7 @@ bool ChatHandler::HandleServerInfoCommand(const char* /*args*/)
     //PSendSysMessage(LANG_USING_WORLD_DB,sWorld.GetDBVersion());
     PSendSysMessage(LANG_CONNECTED_USERS, activeClientsNum, maxActiveClientsNum, queuedClientsNum, maxQueuedClientsNum);
     PSendSysMessage(LANG_UPTIME, str.c_str());
-    PSendSysMessage("Update time diff: %u.", updateTime);
+    PSendSysMessage("Diff: %u.", updateTime);
 
     return true;
 }

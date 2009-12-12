@@ -88,6 +88,7 @@ void WorldSession::HandlePetAction( WorldPacket & recv_data )
                     pet->AttackStop();
                     pet->InterruptNonMeleeSpells(false);
                     pet->GetMotionMaster()->MoveIdle();
+                    pet->clearUnitState(UNIT_STAT_FOLLOW);
                     charmInfo->SetCommandState( COMMAND_STAY );
                     break;
                 case COMMAND_FOLLOW:                        //spellid=1792  //FOLLOW
@@ -206,8 +207,6 @@ void WorldSession::HandlePetAction( WorldPacket & recv_data )
             // do not cast not learned spells
             if(!pet->HasSpell(spellid) || IsPassiveSpell(spellid))
                 return;
-
-            pet->clearUnitState(UNIT_STAT_FOLLOW);
 
             Spell *spell = new Spell(pet, spellInfo, false);
 
@@ -481,6 +480,9 @@ void WorldSession::HandlePetAbandon( WorldPacket & recv_data )
     uint64 guid;
     recv_data >> guid;                                      //pet guid
     sLog.outDetail( "HandlePetAbandon. CMSG_PET_ABANDON pet guid is %u", GUID_LOPART(guid) );
+
+    if(!_player->IsInWorld())
+        return;
 
     // pet/charmed
     Creature* pet = ObjectAccessor::GetCreatureOrPet(*_player, guid);

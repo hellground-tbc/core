@@ -90,7 +90,7 @@ struct TRINITY_DLL_DECL instance_scarlet_monastery : public ScriptedInstance
         case TYPE_MOGRAINE_AND_WHITE_EVENT: Encounter[0] = data; break;
         case GAMEOBJECT_PUMPKIN_SHRINE:
             {
-            GameObject *Shrine = instance->GetGameObjectInMap(PumpkinShrineGUID);
+            GameObject *Shrine = instance->GetGameObject(PumpkinShrineGUID);
             if(Shrine)
                 Shrine->SetUInt32Value(GAMEOBJECT_STATE,1);
             }break;
@@ -99,12 +99,12 @@ struct TRINITY_DLL_DECL instance_scarlet_monastery : public ScriptedInstance
             {
                 for(std::set<uint64>::iterator itr = HorsemanAdds.begin(); itr != HorsemanAdds.end(); ++itr)
                 {
-                    Creature* add = instance->GetCreatureInMap(*itr);
+                    Creature* add = instance->GetCreature(*itr);
                     if(add && add->isAlive())
                         add->DealDamage(add, add->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 }
                 HorsemanAdds.clear();
-                GameObject *Shrine = instance->GetGameObjectInMap(PumpkinShrineGUID);
+                GameObject *Shrine = instance->GetGameObject(PumpkinShrineGUID);
                 if(Shrine)
                     Shrine->SetUInt32Value(GAMEOBJECT_STATE,1);
             }
@@ -117,7 +117,7 @@ struct TRINITY_DLL_DECL instance_scarlet_monastery : public ScriptedInstance
         switch(type)
         {
             //case GAMEOBJECT_PUMPKIN_SHRINE:   return PumpkinShrineGUID;
-            //case DATA_HORSEMAN:               return HorsemanGUID;
+            case DATA_HORSEMAN_EVENT:           return HorsemanGUID;
             //case DATA_HEAD:                   return HeadGUID;
             case DATA_MOGRAINE:             return MograineGUID;
             case DATA_WHITEMANE:            return WhitemaneGUID;

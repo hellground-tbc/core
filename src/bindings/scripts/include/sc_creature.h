@@ -21,6 +21,7 @@ public:
     void Despawn(Creature *summon);
     void DespawnEntry(uint32 entry);
     void DespawnAll();
+    void AuraOnEntry(uint32 entry, uint32 spellId, bool apply);
 private:
     Creature *m_creature;
 };
@@ -30,6 +31,16 @@ Unit* FindCreature(uint32 entry, float range, Unit* Finder);
 
 //Get a single gameobject of given entry
 GameObject* FindGameObject(uint32 entry, float range, Unit* Finder);
+
+struct PointMovement
+{
+    uint32 m_uiCreatureEntry;
+    uint32 m_uiPointId;
+    float m_fX;
+    float m_fY;
+    float m_fZ;
+    uint32 m_uiWaitTime;
+};
 
 struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
 {

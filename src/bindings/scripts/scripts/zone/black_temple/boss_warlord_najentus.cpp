@@ -36,7 +36,7 @@ EndScriptData */
 #define SAY_DEATH                       -1564009
 
 //Spells
-#define SPELL_NEEDLE_SPINE             39992
+#define SPELL_NEEDLE_SPINE             39835
 #define SPELL_TIDAL_BURST              39878
 #define SPELL_TIDAL_SHIELD             39872
 #define SPELL_IMPALING_SPINE           39837
@@ -51,6 +51,7 @@ struct TRINITY_DLL_DECL boss_najentusAI : public ScriptedAI
     boss_najentusAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        m_creature->GetPosition(wLoc);
     }
 
     ScriptedInstance* pInstance;
@@ -60,17 +61,34 @@ struct TRINITY_DLL_DECL boss_najentusAI : public ScriptedAI
     uint32 SpecialYellTimer;
     uint32 TidalShieldTimer;
     uint32 ImpalingSpineTimer;
+    uint32 CheckTimer;
 
-    uint64 SpineTargetGUID;
+    WorldLocation wLoc;
+
+    //       go_guid, target_guid
+    std::map<uint64 , uint64> SpineTargetMap;
 
     void Reset()
     {
         EnrageTimer = 480000;
         SpecialYellTimer = 45000 + (rand()%76)*1000;
 
-        ResetTimer();
+        ImpalingSpineTimer = 20000;
+        NeedleSpineTimer   = 17000;
+        TidalShieldTimer   = 60000;
 
-        SpineTargetGUID = 0;
+        CheckTimer = 3000;
+
+
+        std::map<uint64, uint64>::iterator spineTarget = SpineTargetMap.begin();
+        for(;spineTarget != SpineTargetMap.end(); ++spineTarget)
+            if(GameObject *go = GameObject::GetGameObject(*m_creature, spineTarget->first))
+            {
+                go->SetLootState(GO_JUST_DEACTIVATED);
+                go->SetRespawnTime(0);
+            }
+
+        SpineTargetMap.clear();
 
         if(pInstance)
             pInstance->SetData(DATA_HIGHWARLORDNAJENTUSEVENT, NOT_STARTED);
@@ -99,7 +117,6 @@ struct TRINITY_DLL_DECL boss_najentusAI : public ScriptedAI
         {
             m_creature->RemoveAurasDueToSpell(SPELL_TIDAL_SHIELD);
             m_creature->CastSpell(m_creature, SPELL_TIDAL_BURST, true);
-            ResetTimer();
         }
     }
 
@@ -112,21 +129,20 @@ struct TRINITY_DLL_DECL boss_najentusAI : public ScriptedAI
         DoZoneInCombat();
     }
 
-    bool RemoveImpalingSpine()
+    bool RemoveImpalingSpine(uint64 go_guid)
     {
-        if(!SpineTargetGUID) return false;
-        Unit* target = Unit::GetUnit(*m_creature, SpineTargetGUID);
+        if(SpineTargetMap.empty())
+            return false;
+
+        std::map<uint64, uint64>::iterator spineTarget = SpineTargetMap.find(go_guid);
+        if(spineTarget == SpineTargetMap.end())
+            return false;
+
+        Unit *target = Unit::GetUnit(*m_creature, spineTarget->second);
         if(target && target->HasAura(SPELL_IMPALING_SPINE, 1))
             target->RemoveAurasDueToSpell(SPELL_IMPALING_SPINE);
-        SpineTargetGUID=0;
+        SpineTargetMap.erase(spineTarget);
         return true;
-    }
-
-    void ResetTimer(uint32 inc = 0)
-    {
-        NeedleSpineTimer = 10000 + inc;
-        TidalShieldTimer = 60000 + inc;
-        ImpalingSpineTimer = 20000 + inc;
     }
 
     void UpdateAI(const uint32 diff)
@@ -134,10 +150,25 @@ struct TRINITY_DLL_DECL boss_najentusAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
+        if (CheckTimer < diff)
+        {
+            if (m_creature->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 105)
+                EnterEvadeMode();
+            else
+                DoZoneInCombat();
+            CheckTimer = 3000;
+        }
+        else
+            CheckTimer -= diff;
+
         if(TidalShieldTimer < diff)
         {
             m_creature->CastSpell(m_creature, SPELL_TIDAL_SHIELD, true);
-            ResetTimer(45000);
+
+            if(NeedleSpineTimer < 10000)
+                NeedleSpineTimer = 10000;
+
+            TidalShieldTimer = 60000;
         }else TidalShieldTimer -= diff;
 
         if(EnrageTimer < diff)
@@ -149,12 +180,12 @@ struct TRINITY_DLL_DECL boss_najentusAI : public ScriptedAI
 
         if(NeedleSpineTimer < diff)
         {
-            //m_creature->CastSpell(m_creature, SPELL_NEEDLE_SPINE, true);
-            std::list<Unit*> target;
-            SelectUnitList(target, 3, SELECT_TARGET_RANDOM, 80, true);
-            for(std::list<Unit*>::iterator i = target.begin(); i != target.end(); ++i)
-                m_creature->CastSpell(*i, 39835, true);
-            NeedleSpineTimer = 20000+rand()%5000;
+            Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1);
+            if(!target)
+                target = m_creature->getVictim();
+            if(target)
+                m_creature->CastSpell(target, SPELL_NEEDLE_SPINE, true);
+            NeedleSpineTimer = 15000 + rand()%5*1000;
         }else NeedleSpineTimer -= diff;
 
         if(SpecialYellTimer < diff)
@@ -169,22 +200,30 @@ struct TRINITY_DLL_DECL boss_najentusAI : public ScriptedAI
 
         if(ImpalingSpineTimer < diff)
         {
-            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1);
-            if(!target) target = m_creature->getVictim();
+            Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1);
+            if(!target)
+                target = m_creature->getVictim();
+
             if(target)
             {
                 m_creature->CastSpell(target, SPELL_IMPALING_SPINE, true);
-                SpineTargetGUID = target->GetGUID();
+
                 //must let target summon, otherwise you cannot click the spine
-                target->SummonGameObject(GOBJECT_SPINE, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), m_creature->GetOrientation(), 0, 0, 0, 0, 30);
+                GameObject *_go = target->SummonGameObject(GOBJECT_SPINE, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), m_creature->GetOrientation(), 0, 0, 0, 0, 30);
+
+                if(_go)
+                {
+                    std::pair<uint64, uint64> spineTarget(_go->GetGUID(), target->GetGUID());
+                    SpineTargetMap.insert(spineTarget);
+                }
 
                 switch(rand()%2)
                 {
-                case 0: DoScriptText(SAY_NEEDLE1, m_creature); break;
-                case 1: DoScriptText(SAY_NEEDLE2, m_creature); break;
+                    case 0: DoScriptText(SAY_NEEDLE1, m_creature); break;
+                    case 1: DoScriptText(SAY_NEEDLE2, m_creature); break;
                 }
-                ImpalingSpineTimer = 21000;
             }
+            ImpalingSpineTimer = 20000;
         }else ImpalingSpineTimer -= diff;
 
         DoMeleeAttackIfReady();
@@ -195,10 +234,10 @@ bool GOHello_go_najentus_spine(Player *player, GameObject* _GO)
 {
     if(ScriptedInstance* pInstance = (ScriptedInstance*)_GO->GetInstanceData())
         if(Creature* Najentus = Unit::GetCreature(*_GO, pInstance->GetData64(DATA_HIGHWARLORDNAJENTUS)))
-            if(((boss_najentusAI*)Najentus->AI())->RemoveImpalingSpine())
+            if(((boss_najentusAI*)Najentus->AI())->RemoveImpalingSpine(_GO->GetGUID()))
             {
                 player->CastSpell(player, SPELL_CREATE_NAJENTUS_SPINE, true);
-                _GO->SetLootState(GO_NOT_READY);
+                _GO->SetLootState(GO_JUST_DEACTIVATED);
                 _GO->SetRespawnTime(0);
             }
     return true;

@@ -779,7 +779,8 @@ enum ReactiveType
 
 // delay time next attack to prevent client attack animation problems
 #define ATTACK_DISPLAY_DELAY 200
-
+#define MAX_PLAYER_STEALTH_DETECT_RANGE 45.0f               // max distance for detection targets by player
+ 
 struct SpellProcEventEntry;                                 // used only privately
 
 class TRINITY_DLL_SPEC Unit : public WorldObject
@@ -1018,6 +1019,10 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         uint32 GetCombatTimer() const { return m_CombatTimer; }
 
         bool HasAuraType(AuraType auraType) const;
+        uint32 GetAurasAmountByType(AuraType auraType) const
+        {
+            return m_modAuras[auraType].size();
+        }
         bool HasAuraTypeWithFamilyFlags(AuraType auraType, uint32 familyName,  uint64 familyFlags) const;
         bool HasAura(uint32 spellId, uint32 effIndex) const
             { return m_Auras.find(spellEffectPair(spellId, effIndex)) != m_Auras.end(); }
@@ -1370,6 +1375,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         void  UpdateSpeed(UnitMoveType mtype, bool forced);
         float GetSpeed( UnitMoveType mtype ) const;
+        float GetMaxSpeedRate( UnitMoveType mtype ) const { return m_max_speed_rate[mtype]; }
         float GetSpeedRate( UnitMoveType mtype ) const { return m_speed_rate[mtype]; }
         void SetSpeed(UnitMoveType mtype, float rate, bool forced = false);
 
@@ -1442,7 +1448,8 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         // relocation notification
         void SetToNotify();
-        bool m_Notified, m_IsInNotifyList;
+        bool m_Notified;
+        int32 m_NotifyListPos;
         float oldX, oldY;
 
         void SetReducedThreatPercent(uint32 pct, uint64 guid)
@@ -1494,7 +1501,9 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         bool m_canModifyStats;
         //std::list< spellEffectPair > AuraSpells[TOTAL_AURAS];  // TODO: use this if ok for mem
 
-        float m_speed_rate[MAX_MOVE_TYPE];
+        float m_speed_rate[MAX_MOVE_TYPE];                      // current speed
+        float m_max_speed_rate[MAX_MOVE_TYPE];                  // max possible speed
+
 
         CharmInfo *m_charmInfo;
         SharedVisionList m_sharedVision;

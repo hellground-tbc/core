@@ -104,6 +104,7 @@ UPDATE `creature_template` SET `ScriptName`='npc_tonk_mine' WHERE `entry` = 1536
 UPDATE `creature_template` SET `ScriptName`='npc_winter_reveler' WHERE `entry`=15760;
 UPDATE `creature_template` SET `ScriptName`='npc_brewfest_reveler' WHERE `entry`=24484;
 UPDATE `creature_template` SET `ScriptName`='npc_snake_trap_serpents' where entry in (19921, 19833);
+UPDATE `creature_template` SET `Scriptname`='npc_innkeeper' WHERE `npcflag`& 65536 AND ScriptName = '';
 
 /*  */
 /* ZONE */
@@ -781,6 +782,7 @@ UPDATE `creature_template` SET `ScriptName`='npc_blood_knight_stillblade' WHERE 
 /* SILVERPINE FOREST */
 UPDATE `creature_template` SET `ScriptName`='npc_astor_hadren' WHERE `entry`=6497;
 UPDATE `creature_template` SET `ScriptName`='npc_deathstalker_erland' WHERE `entry`=1978;
+UPDATE `creature_template` SET `ScriptName`='pyrewood_ambush' WHERE `entry`=2058;
 
 /* STOCKADES */
 
@@ -859,6 +861,7 @@ UPDATE `creature_template` SET `ScriptName`='npc_marin_noggenfogger' WHERE `entr
 UPDATE `creature_template` SET `ScriptName`='npc_steward_of_time' WHERE `entry`=20142;
 UPDATE `creature_template` SET `ScriptName`='npc_stone_watcher_of_norgannon' WHERE `entry`=7918;
 UPDATE `creature_template` SET `ScriptName` = 'npc_OOX17' WHERE `entry` = 7784;
+UPDATE `gameobject_template` SET `ScriptName` = 'go_landmark_treasure' WHERE `entry` = 142189;
 
 /* TELDRASSIL */
 
@@ -968,6 +971,9 @@ UPDATE `creature_template` SET `ScriptName`='mob_archaedas_minions' WHERE `entry
 UPDATE `creature_template` SET `ScriptName`='mob_stonekeepers' WHERE `entry`=4857;
 UPDATE `gameobject_template` SET `ScriptName`='go_altar_of_the_keepers' WHERE `entry`=130511;
 UPDATE `gameobject_template` SET `ScriptName`='go_altar_of_archaedas' WHERE `entry`=133234;
+UPDATE `gameobject_template` SET `ScriptName`='go_keystone_chamber' WHERE `entry`=124371;
+DELETE FROM `areatrigger_scripts` where `entry`=822;
+INSERT INTO `areatrigger_scripts` (`entry`, `ScriptName`) VALUES (822, 'at_map_chamber');
 
 /* UN'GORO CRATER */
 UPDATE `creature_template` SET `ScriptName` = 'npc_ame' WHERE `entry` = 9623;
@@ -1069,11 +1075,4 @@ UPDATE `creature_template` SET `ScriptName` = 'mob_dragonmaw_peon' WHERE `entry`
 UPDATE `creature_template` SET `ScriptName` = 'npc_karynaku' WHERE `entry` = 22112;
 UPDATE `creature_template` SET `ScriptName` = 'mob_ohgan' WHERE `entry` = 14988;
 
-UPDATE `creature_template` SET `ScriptName` = 'pyrewood_ambush' WHERE `entry` = 2058;
-UPDATE `creature_template` SET `Scriptname` = 'npc_innkeeper' WHERE `npcflag`& 65536 AND ScriptName = ''
-
-/* ULDAMAN */
-UPDATE `gameobject_template` SET `ScriptName` = 'go_keystone_chamber' WHERE `entry` = 124371;
-DELETE FROM `areatrigger_scripts` where `entry` = 822;
-INSERT INTO `areatrigger_scripts` (`entry`, `ScriptName`) VALUES (822, 'at_map_chamber');
 

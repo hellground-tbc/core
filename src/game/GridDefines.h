@@ -34,17 +34,16 @@ class Pet;
 class Player;
 
 #ifdef LARGE_CELL
-#define MAX_NUMBER_OF_CELLS     4
-#define CENTER_GRID_CELL_ID     128
-#else
 #define MAX_NUMBER_OF_CELLS     8
-#define CENTER_GRID_CELL_ID     256
+#else
+#define MAX_NUMBER_OF_CELLS     16
 #endif
 
 #define MAX_NUMBER_OF_GRIDS      64
 
-#define SIZE_OF_GRIDS            533.33333f
-#define CENTER_GRID_ID           (MAX_NUMBER_OF_GRIDS/2)
+#define SIZE_OF_GRIDS           533.33333f
+#define CENTER_GRID_ID          (MAX_NUMBER_OF_GRIDS/2)
+#define CENTER_GRID_CELL_ID     (MAX_NUMBER_OF_CELLS*MAX_NUMBER_OF_GRIDS/2)
 
 #define CENTER_GRID_OFFSET      (SIZE_OF_GRIDS/2)
 
@@ -73,7 +72,7 @@ typedef GridRefManager<GameObject>      GameObjectMapType;
 typedef GridRefManager<Player>          PlayerMapType;
 
 typedef Grid<Player, AllWorldObjectTypes,AllGridObjectTypes> GridType;
-typedef NGrid<8, Player, AllWorldObjectTypes, AllGridObjectTypes> NGridType;
+typedef NGrid<MAX_NUMBER_OF_CELLS, Player, AllWorldObjectTypes, AllGridObjectTypes> NGridType;
 
 typedef TypeMapContainer<AllGridObjectTypes> GridTypeMapContainer;
 typedef TypeMapContainer<AllWorldObjectTypes> WorldTypeMapContainer;
@@ -94,7 +93,7 @@ struct TRINITY_DLL_DECL CoordPair
 
     void operator<<(const uint32 val)
     {
-        if( x_coord >= val )
+        if( x_coord > val )
             x_coord -= val;
         else
             x_coord = 0;
@@ -110,7 +109,7 @@ struct TRINITY_DLL_DECL CoordPair
 
     void operator-=(const uint32 val)
     {
-        if( y_coord >= val )
+        if( y_coord > val )
             y_coord -= val;
         else
             y_coord = 0;

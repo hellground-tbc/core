@@ -369,6 +369,7 @@ Player::Player (WorldSession *session): Unit()
     //returning reagents for temporarily removed pets
     //when dying/logging out
     m_oldpetspell = 0;
+    m_lastpetnumber = 0;
 
     ////////////////////Rest System/////////////////////
     time_inn_enter=0;
@@ -1277,8 +1278,9 @@ void Player::Update( uint32 p_time )
     {
         if (p_time >= m_DetectInvTimer)
         {
-            m_DetectInvTimer = 3000;
+
             HandleStealthedUnitsDetection();
+            m_DetectInvTimer = 3000;
         }
         else
             m_DetectInvTimer -= p_time;
@@ -1626,7 +1628,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
     // ObjectAccessor won't find the flag.
     if (duel && GetMapId()!=mapid)
     {
-        GameObject* obj = ObjectAccessor::GetGameObject(*this, GetUInt64Value(PLAYER_DUEL_ARBITER));
+        GameObject* obj = GetMap()->GetGameObject(GetUInt64Value(PLAYER_DUEL_ARBITER));
         if (obj)
             DuelComplete(DUEL_FLED);
     }
@@ -1813,6 +1815,10 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         else
             return false;
     }
+
+    if(Group *pGroup = GetGroup())
+        pGroup->UpdatePlayerOutOfRange(this);
+
     return true;
 }
 
@@ -2016,10 +2022,88 @@ bool Player::CanInteractWithNPCs(bool alive) const
     return true;
 }
 
+Creature* Player::GetNPCIfCanInteractWith(uint64 guid, uint32 npcflagmask)
+{
+    // unit checks
+    if(!guid)
+        return NULL;
+
+    // exist
+    Creature *unit = GetMap()->GetCreature(guid);
+    if(!unit)
+        return NULL;
+
+    // player check
+    if(!CanInteractWithNPCs(!unit->isSpiritService()))
+        return NULL;
+
+    if(IsHostileTo(unit))
+        return NULL;
+    
+    // appropriate npc type
+    if(npcflagmask && !unit->HasFlag( UNIT_NPC_FLAGS, npcflagmask ))
+        return NULL;
+
+    // alive or spirit healer
+    if(!unit->isAlive() && (!unit->isSpiritService() || isAlive() ))
+        return NULL;
+
+    // not allow interaction under control
+    if(unit->GetCharmerGUID())
+        return NULL;
+
+    // not enemy
+    if(unit->IsHostileTo(this))
+        return NULL;
+
+    // not unfriendly
+    FactionTemplateEntry const* factionTemplate = sFactionTemplateStore.LookupEntry(unit->getFaction());
+    if(factionTemplate)
+    {
+        FactionEntry const* faction = sFactionStore.LookupEntry(factionTemplate->faction);
+        if( faction->reputationListID >= 0 && GetReputationRank(faction) <= REP_UNFRIENDLY)
+            return NULL;
+    }
+
+    // not too far
+    if(!unit->IsWithinDistInMap(this, INTERACTION_DISTANCE))
+        return NULL;
+
+    return unit;
+}
+
+GameObject* Player::GetGameObjectIfCanInteractWith(uint64 guid, GameobjectTypes type) const
+{
+    if(GameObject *gObject = GetMap()->GetGameObject(guid))
+    {
+        if(gObject->GetGoType() == type)
+        {
+            float maxdist;
+            switch(type)
+            {
+                case GAMEOBJECT_TYPE_GUILD_BANK:
+                case GAMEOBJECT_TYPE_MAILBOX:
+                    maxdist = 10.0f;
+                    break;
+                case GAMEOBJECT_TYPE_FISHINGHOLE:
+                    maxdist = 20.0f + CONTACT_DISTANCE;       // max spell range
+                    break;
+                default:
+                    maxdist = INTERACTION_DISTANCE;
+                    break;
+            }
+
+            if (gObject->IsWithinDistInMap(this, maxdist))
+                return gObject;
+        }
+    }
+    return NULL;
+}
+
 bool Player::IsUnderWater() const
 {
     return IsInWater() &&
-        GetPositionZ() < (MapManager::Instance().GetBaseMap(GetMapId())->GetWaterLevel(GetPositionX(),GetPositionY())-2);
+        GetPositionZ() < (GetBaseMap()->GetWaterLevel(GetPositionX(),GetPositionY())-2);
 }
 
 void Player::SetInWater(bool apply)
@@ -2370,11 +2454,11 @@ void Player::InitStatsForLevel(bool reapplyMods)
     SetFloatValue(UNIT_FIELD_MINRANGEDDAMAGE, 0.0f );
     SetFloatValue(UNIT_FIELD_MAXRANGEDDAMAGE, 0.0f );
 
-    SetUInt32Value(UNIT_FIELD_ATTACK_POWER,            0 );
-    SetUInt32Value(UNIT_FIELD_ATTACK_POWER_MODS,       0 );
+    SetInt32Value(UNIT_FIELD_ATTACK_POWER,            0 );
+    SetInt32Value(UNIT_FIELD_ATTACK_POWER_MODS,       0 );
     SetFloatValue(UNIT_FIELD_ATTACK_POWER_MULTIPLIER,0.0f);
-    SetUInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER,     0 );
-    SetUInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER_MODS,0 );
+    SetInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER,     0 );
+    SetInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER_MODS,0 );
     SetFloatValue(UNIT_FIELD_RANGED_ATTACK_POWER_MULTIPLIER,0.0f);
 
     // Base crit values (will be recalculated in UpdateAllStats() at loading and in _ApplyAllStatBonuses() at reset
@@ -4222,7 +4306,7 @@ void Player::RepopAtGraveyard()
     AreaTableEntry const *zone = GetAreaEntryByAreaID(GetAreaId());
 
     // Such zones are considered unreachable as a ghost and the player must be automatically revived
-    if(!isAlive() && zone && zone->flags & AREA_FLAG_NEED_FLY || GetTransport())
+    if(!isAlive() && zone && zone->flags & AREA_FLAG_NEED_FLY || GetTransport() || GetPositionZ() < -500.0f)
     {
         ResurrectPlayer(0.5f);
         SpawnCorpseBones();
@@ -5371,17 +5455,17 @@ void Player::SaveRecallPosition()
 
 void Player::SendMessageToSet(WorldPacket *data, bool self, bool to_possessor)
 {
-    MapManager::Instance().GetMap(GetMapId(), this)->MessageBroadcast(this, data, self, to_possessor);
+    GetMap()->MessageBroadcast(this, data, self, to_possessor);
 }
 
 void Player::SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool to_possessor)
 {
-    MapManager::Instance().GetMap(GetMapId(), this)->MessageDistBroadcast(this, data, dist, self, to_possessor);
+    GetMap()->MessageDistBroadcast(this, data, dist, self, to_possessor);
 }
 
 void Player::SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool to_possessor, bool own_team_only)
 {
-    MapManager::Instance().GetMap(GetMapId(), this)->MessageDistBroadcast(this, data, dist, self, to_possessor, own_team_only);
+    GetMap()->MessageDistBroadcast(this, data, dist, self, to_possessor, own_team_only);
 }
 
 void Player::SendDirectMessage(WorldPacket *data)
@@ -5397,7 +5481,7 @@ void Player::CheckExploreSystem()
     if (isInFlight())
         return;
 
-    uint16 areaFlag=MapManager::Instance().GetBaseMap(GetMapId())->GetAreaFlag(GetPositionX(),GetPositionY());
+    uint16 areaFlag = GetBaseMap()->GetAreaFlag(GetPositionX(),GetPositionY());
     if(areaFlag==0xffff)
         return;
     int offset = areaFlag / 32;
@@ -6460,7 +6544,7 @@ void Player::CheckDuelDistance(time_t currTime)
         return;
 
     uint64 duelFlagGUID = GetUInt64Value(PLAYER_DUEL_ARBITER);
-    GameObject* obj = ObjectAccessor::GetGameObject(*this, duelFlagGUID);
+    GameObject* obj = GetMap()->GetGameObject(duelFlagGUID);
     if(!obj)
         return;
 
@@ -6532,7 +6616,7 @@ void Player::DuelComplete(DuelCompleteType type)
     duel->opponent->GetSession()->SendPacket(&data);*/
 
     //Remove Duel Flag object
-    GameObject* obj = ObjectAccessor::GetGameObject(*this, GetUInt64Value(PLAYER_DUEL_ARBITER));
+    GameObject* obj = GetMap()->GetGameObject(GetUInt64Value(PLAYER_DUEL_ARBITER));
     if(obj)
         duel->initiator->RemoveGameObject(obj,true);
 
@@ -7373,8 +7457,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
     if (IS_GAMEOBJECT_GUID(guid))
     {
         sLog.outDebug("       IS_GAMEOBJECT_GUID(guid)");
-        GameObject *go =
-            ObjectAccessor::GetGameObject(*this, guid);
+        GameObject* go = GetMap()->GetGameObject(guid);
 
         // not check distance for GO in case owned GO (fishing bobber case, for example)
         // And permit out of range GO with no owner in case fishing hole
@@ -7513,7 +7596,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
     }
     else
     {
-        Creature *creature = ObjectAccessor::GetCreature(*this, guid);
+        Creature *creature = GetMap()->GetCreature(guid);
 
         // must be in range and creature must be alive for pickpocket and must be dead for another loot
         if (!creature || creature->isAlive()!=(loot_type == LOOT_PICKPOCKETING) || !creature->IsWithinDistInMap(this,INTERACTION_DISTANCE))
@@ -12078,7 +12161,7 @@ void Player::PrepareQuestMenu( uint64 guid )
     Object *pObject;
     QuestRelations* pObjectQR;
     QuestRelations* pObjectQIR;
-    Creature *pCreature = ObjectAccessor::GetCreature(*this, guid);
+    Creature *pCreature = GetMap()->GetCreature(guid);
     if( pCreature )
     {
         pObject = (Object*)pCreature;
@@ -12087,7 +12170,7 @@ void Player::PrepareQuestMenu( uint64 guid )
     }
     else
     {
-        GameObject *pGameObject = ObjectAccessor::GetGameObject(*this, guid);
+        GameObject *pGameObject = GetMap()->GetGameObject(guid);
         if( pGameObject )
         {
             pObject = (Object*)pGameObject;
@@ -12164,7 +12247,7 @@ void Player::SendPreparedQuest( uint64 guid )
         qe._Delay = 0;
         qe._Emote = 0;
         std::string title = "";
-        Creature *pCreature = ObjectAccessor::GetCreature(*this, guid);
+        Creature *pCreature = GetMap()->GetCreature(guid);
         if( pCreature )
         {
             uint32 textid = pCreature->GetNpcTextId();
@@ -12228,7 +12311,7 @@ Quest const * Player::GetNextQuest( uint64 guid, Quest const *pQuest )
     QuestRelations* pObjectQR;
     QuestRelations* pObjectQIR;
 
-    Creature *pCreature = ObjectAccessor::GetCreature(*this, guid);
+    Creature *pCreature = GetMap()->GetCreature(guid);
     if( pCreature )
     {
         pObject = (Object*)pCreature;
@@ -12237,7 +12320,7 @@ Quest const * Player::GetNextQuest( uint64 guid, Quest const *pQuest )
     }
     else
     {
-        GameObject *pGameObject = ObjectAccessor::GetGameObject(*this, guid);
+        GameObject *pGameObject = GetMap()->GetGameObject(guid);
         if( pGameObject )
         {
             pObject = (Object*)pGameObject;
@@ -12517,7 +12600,7 @@ void Player::AddQuest( Quest const *pQuest, Object *questGiver )
 
     //starting initial quest script
     if(questGiver && pQuest->GetQuestStartScript()!=0)
-        sWorld.ScriptsStart(sQuestStartScripts, pQuest->GetQuestStartScript(), questGiver, this);
+        GetMap()->ScriptsStart(sQuestStartScripts, pQuest->GetQuestStartScript(), questGiver, this);
 
     UpdateForQuestsGO();
 }
@@ -13685,7 +13768,7 @@ void Player::SendQuestReward( Quest const *pQuest, uint32 XP, Object * questGive
     GetSession()->SendPacket( &data );
 
     if (pQuest->GetQuestCompleteScript() != 0)
-        sWorld.ScriptsStart(sQuestEndScripts, pQuest->GetQuestCompleteScript(), questGiver, this);
+        GetMap()->ScriptsStart(sQuestEndScripts, pQuest->GetQuestCompleteScript(), questGiver, this);
 }
 
 void Player::SendQuestFailed( uint32 quest_id )
@@ -15411,7 +15494,7 @@ void Player::ConvertInstancesToGroup(Player *player, Group *group, uint64 player
     }
 
     // if the player's not online we don't know what binds it has
-    if(!player || !group || has_binds) CharacterDatabase.PExecute("INSERT INTO group_instance SELECT guid, instance, permanent FROM character_instance WHERE guid = '%u'", GUID_LOPART(player_guid));
+    if(!player || !group || has_binds) CharacterDatabase.PExecute("REPLACE INTO group_instance SELECT guid, instance, permanent FROM character_instance WHERE guid = '%u'", GUID_LOPART(player_guid));
     // the following should not get executed when changing leaders
     if(!player || has_solo) CharacterDatabase.PExecute("DELETE FROM character_instance WHERE guid = '%d' AND permanent = 0", GUID_LOPART(player_guid));
 }
@@ -15566,13 +15649,13 @@ void Player::SaveToDB()
 
     CharacterDatabase.BeginTransaction();
 
-    CharacterDatabase.PExecute("DELETE FROM characters WHERE guid = '%u'",GetGUIDLow());
+    //CharacterDatabase.PExecute("DELETE FROM characters WHERE guid = '%u'",GetGUIDLow());
 
     std::string sql_name = m_name;
     CharacterDatabase.escape_string(sql_name);
 
     std::ostringstream ss;
-    ss << "INSERT INTO characters (guid,account,name,race,class,"
+    ss << "REPLACE INTO characters (guid,account,name,race,class,"
         "map, dungeon_difficulty, position_x, position_y, position_z, orientation, data, "
         "taximask, online, cinematic, "
         "totaltime, leveltime, rest_bonus, logout_time, is_logout_resting, resettalents_cost, resettalents_time, "
@@ -16404,7 +16487,7 @@ void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent)
     if(!pet)
         pet = GetPet();
 
-    if(returnreagent && (pet || m_temporaryUnsummonedPetNumber))
+    if(returnreagent && (pet || m_temporaryUnsummonedPetNumber) && !InBattleGround())
     {
         //returning of reagents only for players, so best done here
         uint32 spellId = pet ? pet->GetUInt32Value(UNIT_CREATED_BY_SPELL) : m_oldpetspell;
@@ -17012,21 +17095,35 @@ void Player::HandleStealthedUnitsDetection()
     std::list<Unit*> stealthedUnits;
     Trinity::AnyStealthedCheck u_check;
     Trinity::UnitListSearcher<Trinity::AnyStealthedCheck > searcher(stealthedUnits, u_check);
-    VisitNearbyObject(World::GetMaxVisibleDistance(), searcher);
+    VisitNearbyObject(MAX_PLAYER_STEALTH_DETECT_RANGE, searcher);
 
-    for (std::list<Unit*>::iterator i = stealthedUnits.begin(); i != stealthedUnits.end(); ++i)
+    for (std::list<Unit*>::const_iterator i = stealthedUnits.begin(); i != stealthedUnits.end(); ++i)
     {
-        if (!HaveAtClient(*i) && canSeeOrDetect(*i, true))
+        if((*i) == this)
+            continue;
+
+        bool hasAtClient = HaveAtClient((*i));
+        bool hasDetected = canSeeOrDetect(*i, true);
+
+        if (hasDetected)
         {
-            (*i)->SendUpdateToPlayer(this);
-            m_clientGUIDs.insert((*i)->GetGUID());
+            if(!hasAtClient)
+            {
+                (*i)->SendUpdateToPlayer(this);
+                m_clientGUIDs.insert((*i)->GetGUID());
 
-            #ifdef TRINITY_DEBUG
-            if((sLog.getLogFilter() & LOG_FILTER_VISIBILITY_CHANGES)==0)
-                sLog.outDebug("Object %u (Type: %u) is detected in stealth by player %u. Distance = %f",(*i)->GetGUIDLow(),(*i)->GetTypeId(),GetGUIDLow(),GetDistance(*i));
-            #endif
-
-            SendInitialVisiblePackets(*i);
+                // target aura duration for caster show only if target exist at caster client
+                // send data at target visibility change (adding to client)
+                SendInitialVisiblePackets(*i);
+            }
+        }
+        else
+        {
+            if(hasAtClient)
+            {
+                (*i)->DestroyForPlayer(this);
+                m_clientGUIDs.erase((*i)->GetGUID());
+            }
         }
     }
 }
@@ -17270,7 +17367,7 @@ bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint
         return false;
     }
 
-    Creature *pCreature = ObjectAccessor::GetNPCIfCanInteractWith(*this, vendorguid,UNIT_NPC_FLAG_VENDOR);
+    Creature *pCreature = GetNPCIfCanInteractWith(vendorguid, UNIT_NPC_FLAG_VENDOR);
     if (!pCreature)
     {
         sLog.outDebug( "WORLD: BuyItemFromVendor - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(vendorguid)) );
@@ -17762,13 +17859,11 @@ void Player::LeaveBattleground(bool teleportToEntryPoint)
 {
     if(BattleGround *bg = GetBattleGround())
     {
-        bool need_debuf = bg->isBattleGround() && !isGameMaster() && (bg->GetStatus() == STATUS_IN_PROGRESS) && sWorld.getConfig(CONFIG_BATTLEGROUND_CAST_DESERTER);
-
         bg->RemovePlayerAtLeave(GetGUID(), teleportToEntryPoint, true);
 
-        // call after remove to be sure that player resurrected for correct cast
-        if(need_debuf)
-            CastSpell(this, 26013, true);                   // Deserter
+        if( bg->isBattleGround() && sWorld.getConfig(CONFIG_BATTLEGROUND_CAST_DESERTER) )
+            if( bg->GetStatus() == STATUS_IN_PROGRESS || bg->GetStatus() == STATUS_WAIT_JOIN )
+                CastSpell(this, 26013, true);               // Deserter
     }
 }
 
@@ -17837,6 +17932,7 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
     if(GetGUID() == u->GetCharmerOrOwnerGUID())
         return true;
 
+    Map& _map = *u->GetMap();
     // Grid dead/alive checks
     // non visible at grid for any stealth state
     if(!u->IsVisibleInGridForPlayer(this))
@@ -17850,24 +17946,24 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
     // different visible distance checks
     if(isInFlight())                                     // what see player in flight
     {
-        if (!target->IsWithinDistInMap(u,World::GetMaxVisibleDistanceInFlight()+(inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), is3dDistance))
+        if (!target->IsWithinDistInMap(u, _map.GetVisibilityDistance() + (inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), is3dDistance))
             return false;
     }
     else if(!u->isAlive())                                     // distance for show body
     {
-        if (!target->IsWithinDistInMap(u,World::GetMaxVisibleDistanceForObject()+(inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), is3dDistance))
+        if (!target->IsWithinDistInMap(u, _map.GetVisibilityDistance() + (inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), is3dDistance))
             return false;
     }
     else if(u->GetTypeId()==TYPEID_PLAYER)                     // distance for show player
     {
         // Players far than max visible distance for player or not in our map are not visible too
-        if (!at_same_transport && !target->IsWithinDistInMap(u,World::GetMaxVisibleDistanceForPlayer()+(inVisibleList ? World::GetVisibleUnitGreyDistance() : 0.0f), is3dDistance))
+        if (!at_same_transport && !target->IsWithinDistInMap(u, _map.GetVisibilityDistance() + (inVisibleList ? World::GetVisibleUnitGreyDistance() : 0.0f), is3dDistance))
             return false;
     }
     else if(u->GetCharmerOrOwnerGUID())                        // distance for show pet/charmed
     {
         // Pet/charmed far than max visible distance for player or not in our map are not visible too
-        if (!target->IsWithinDistInMap(u,World::GetMaxVisibleDistanceForPlayer()+(inVisibleList ? World::GetVisibleUnitGreyDistance() : 0.0f), is3dDistance))
+        if (!target->IsWithinDistInMap(u, _map.GetVisibilityDistance() + (inVisibleList ? World::GetVisibleUnitGreyDistance() : 0.0f), is3dDistance))
             return false;
     }
     else                                                    // distance for show creature
@@ -17875,7 +17971,7 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
         // Units far than max visible distance for creature or not in our map are not visible too
         if (!target->IsWithinDistInMap(u
             , u->isActiveObject() ? (MAX_VISIBILITY_DISTANCE - (inVisibleList ? 0.0f : World::GetVisibleUnitGreyDistance()))
-            : (World::GetMaxVisibleDistanceForCreature() + (inVisibleList ? World::GetVisibleUnitGreyDistance() : 0.0f))
+            : ( _map.GetVisibilityDistance() + (inVisibleList ? World::GetVisibleUnitGreyDistance() : 0.0f))
             , is3dDistance))
             return false;
     }
@@ -19121,7 +19217,14 @@ void Player::UpdateAreaDependentAuras( uint32 newArea )
     {
         // use m_zoneUpdateId for speed: UpdateArea called from UpdateZone or instead UpdateZone in both cases m_zoneUpdateId up-to-date
         if(!IsSpellAllowedInLocation(iter->second->GetSpellProto(),GetMapId(),m_zoneUpdateId,newArea))
+        {
+            for(uint8 i = 0; i < 3; ++i)
+            {
+                if(iter->second->GetSpellProto()->Effect[i] == SPELL_EFFECT_TRIGGER_SPELL && HasAura(iter->second->GetSpellProto()->EffectTriggerSpell[i],0))
+                    RemoveAurasDueToSpell(iter->second->GetSpellProto()->EffectTriggerSpell[i]);
+            }
             RemoveAura(iter);
+        }
         else
             ++iter;
     }

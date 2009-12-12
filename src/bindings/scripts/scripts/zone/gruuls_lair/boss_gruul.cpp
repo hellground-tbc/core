@@ -42,8 +42,8 @@ EndScriptData */
 #define SPELL_GROUND_SLAM         33525                     // AoE Ground Slam applying Ground Slam to everyone with a script effect (most likely the knock back, we can code it to a set knockback)
 #define SPELL_REVERBERATION       36297                     //AoE Silence
 #define SPELL_SHATTER             33654
-#define SPELL_MAGNETIC_PULL       28337
-#define SPELL_KNOCK_BACK          24199                     //Knockback spell until correct implementation is made
+#define SPELL_KNOCK_BACK2         10689
+#define SPELL_KNOCK_BACK          40191                     //Knockback spell until correct implementation is made
 #define SPELL_SHATTER_EFFECT        33671
 #define SPELL_HURTFUL_STRIKE        33813
 #define SPELL_STONED                33652                   //Spell is self cast
@@ -65,6 +65,7 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
     uint32 PerformingGroundSlam;
     uint32 HurtfulStrike_Timer;
     uint32 Reverberation_Timer;
+    uint32 Combat_Timer;
 
     void Reset()
     {
@@ -75,6 +76,7 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
         PerformingGroundSlam= false;
         HurtfulStrike_Timer= 8000;
         Reverberation_Timer= 60000+45000;
+        Combat_Timer= 5000;
 
         if(pInstance)
             pInstance->SetData(DATA_GRUULEVENT, NOT_STARTED);
@@ -112,6 +114,12 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
         //Return since we have no target
         if (!UpdateVictim() )
             return;
+
+        if(Combat_Timer < diff)
+        {
+            DoZoneInCombat();
+            Combat_Timer= 5000;
+        }else Combat_Timer -= diff;
 
         // Growth
         // Gruul can cast this spell up to 30 times
@@ -154,8 +162,8 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
                             {
                                 switch(rand()%2)
                                 {
-                                    case 0: target2->CastSpell(target, SPELL_MAGNETIC_PULL, true, NULL, NULL, m_creature->GetGUID()); break;
-                                    case 1: target2->CastSpell(target, SPELL_KNOCK_BACK, true, NULL, NULL, m_creature->GetGUID()); break;
+                                    case 0: target->CastSpell(target, SPELL_KNOCK_BACK, true, NULL, NULL, m_creature->GetGUID()); break;
+                                    case 1: target->CastSpell(target, SPELL_KNOCK_BACK2, true, NULL, NULL, m_creature->GetGUID()); break;
                                 }
                             }
                         }
@@ -187,8 +195,11 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
 
                     case 2:
                     {
+                        //The dummy shatter spell is cast
                         DoCast(m_creature, SPELL_SHATTER);
+
                         GroundSlamTimer = 1000;
+
                      break;
                     }
 

@@ -80,6 +80,7 @@ struct TRINITY_DLL_DECL boss_halazziAI : public ScriptedAI
         SpellEntry *TempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_LIGHTNING);
         if(TempSpell && TempSpell->CastingTimeIndex != 5)
             TempSpell->CastingTimeIndex = 5; // 2000 ms casting time
+        m_creature->GetPosition(wLoc);
     }
 
     ScriptedInstance *pInstance;
@@ -97,6 +98,9 @@ struct TRINITY_DLL_DECL boss_halazziAI : public ScriptedAI
 
     uint64 LynxGUID;
 
+    uint32 checkTimer2;
+    WorldLocation wLoc;
+
     void Reset()
     {
         if(pInstance)
@@ -110,6 +114,8 @@ struct TRINITY_DLL_DECL boss_halazziAI : public ScriptedAI
 
         Phase = PHASE_NONE;
         EnterPhase(PHASE_LYNX);
+
+        checkTimer2 = 3000;
     }
 
     void Aggro(Unit *who)
@@ -206,6 +212,17 @@ struct TRINITY_DLL_DECL boss_halazziAI : public ScriptedAI
     {
         if(!UpdateVictim())
             return;
+
+        if (checkTimer2 < diff)
+        {
+            if (m_creature->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 50)
+                EnterEvadeMode();
+            else
+                DoZoneInCombat();
+            checkTimer2 = 3000;
+        }
+        else
+            checkTimer2 -= diff;
 
         if(BerserkTimer < diff)
         {

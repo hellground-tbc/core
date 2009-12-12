@@ -198,6 +198,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
     boss_teron_gorefiendAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        m_creature->GetPosition(wLoc);
     }
 
     ScriptedInstance* pInstance;
@@ -210,6 +211,9 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
     uint32 SummonShadowsTimer;
     uint32 RandomYellTimer;
     uint32 AggroTimer;
+    uint32 CheckTimer;
+
+    WorldLocation wLoc;
 
     uint64 AggroTargetGUID;
     uint64 GhostGUID;                                       // Player that gets killed by Shadow of Death and gets turned into a ghost
@@ -227,6 +231,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
         CrushingShadowsTimer = 22000;
         SummonShadowsTimer = 60000;
         RandomYellTimer = 50000;
+        CheckTimer = 3000;
 
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         // Start off unattackable so that the intro is done properly
@@ -393,6 +398,17 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
 
         if(!UpdateVictim() || Intro)
             return;
+
+        if (CheckTimer < diff)
+        {
+            if (m_creature->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 90)
+                EnterEvadeMode();
+            else
+                DoZoneInCombat();
+            CheckTimer = 3000;
+        }
+        else 
+            CheckTimer -= diff;
 
         if(SummonShadowsTimer < diff)
         {

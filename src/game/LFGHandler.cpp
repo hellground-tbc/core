@@ -38,6 +38,9 @@ static void AttemptJoin(Player* _player)
     {
         Player *plr = iter->second;
 
+        if(!plr->IsInWorld())
+            continue;
+        
         // skip enemies and self
         if(!plr || plr==_player || plr->GetTeam() != _player->GetTeam())
             continue;
@@ -93,6 +96,9 @@ static void AttemptAddMore(Player* _player)
     for(HashMapHolder<Player>::MapType::const_iterator iter = players.begin(); iter != players.end(); ++iter)
     {
         Player *plr = iter->second;
+
+        if(!plr || !plr->IsInWorld())
+            continue;
 
         // skip enemies and self
         if(!plr || plr==_player || plr->GetTeam() != _player->GetTeam())
@@ -266,6 +272,9 @@ void WorldSession::SendLfgResult(uint32 type, uint32 entry, uint8 lfg_type)
     for(HashMapHolder<Player>::MapType::const_iterator iter = players.begin(); iter != players.end(); ++iter)
     {
         Player *plr = iter->second;
+
+        if(!plr->IsInWorld())
+            continue;
 
         if(!plr || plr->GetTeam() != _player->GetTeam())
             continue;

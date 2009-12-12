@@ -42,9 +42,9 @@
 
 #include <cmath>
 
-#define CLASS_LOCK Trinity::ClassLevelLockable<ObjectAccessor, ZThread::FastMutex>
+#define CLASS_LOCK Trinity::ClassLevelLockable<ObjectAccessor, ACE_Thread_Mutex>
 INSTANTIATE_SINGLETON_2(ObjectAccessor, CLASS_LOCK);
-INSTANTIATE_CLASS_MUTEX(ObjectAccessor, ZThread::FastMutex);
+INSTANTIATE_CLASS_MUTEX(ObjectAccessor, ACE_Thread_Mutex);
 
 namespace Trinity
 {
@@ -82,79 +82,15 @@ ObjectAccessor::ObjectAccessor() {}
 ObjectAccessor::~ObjectAccessor() {}
 
 Creature*
-ObjectAccessor::GetNPCIfCanInteractWith(Player const &player, uint64 guid, uint32 npcflagmask)
-{
-    // unit checks
-    if (!guid)
-        return NULL;
-
-    // exist
-    Creature *unit = GetCreature(player, guid);
-    if (!unit)
-        return NULL;
-
-    // player check
-    if(!player.CanInteractWithNPCs(!unit->isSpiritService()))
-        return NULL;
-
-    if(player.IsHostileTo(unit))
-        return NULL;
-    
-    // appropriate npc type
-    if(npcflagmask && !unit->HasFlag( UNIT_NPC_FLAGS, npcflagmask ))
-        return NULL;
-
-    // alive or spirit healer
-    if(!unit->isAlive() && (!unit->isSpiritService() || player.isAlive() ))
-        return NULL;
-
-    // not allow interaction under control
-    if(unit->GetCharmerGUID())
-        return NULL;
-
-    // not enemy
-    if( unit->IsHostileTo(&player))
-        return NULL;
-
-    // not unfriendly
-    FactionTemplateEntry const* factionTemplate = sFactionTemplateStore.LookupEntry(unit->getFaction());
-    if(factionTemplate)
-    {
-        FactionEntry const* faction = sFactionStore.LookupEntry(factionTemplate->faction);
-        if( faction->reputationListID >= 0 && player.GetReputationRank(faction) <= REP_UNFRIENDLY)
-            return NULL;
-    }
-
-    // not too far
-    if(!unit->IsWithinDistInMap(&player,INTERACTION_DISTANCE))
-        return NULL;
-
-    return unit;
-}
-
-Creature*
 ObjectAccessor::GetCreatureOrPet(WorldObject const &u, uint64 guid)
 {
-    if(Creature *unit = GetPet(guid))
-        return unit;
-
-    return GetCreature(u, guid);
-}
-
-Creature*
-ObjectAccessor::GetCreature(WorldObject const &u, uint64 guid)
-{
-    Creature * ret = GetObjectInWorld(guid, (Creature*)NULL);
-    if(!ret)
+    if(IS_PLAYER_GUID(guid))
         return NULL;
+ 
+    if(IS_PET_GUID(guid))
+        return GetPet(guid);
 
-    if(ret->GetMapId() != u.GetMapId())
-        return NULL;
-
-    if(ret->GetInstanceId() != u.GetInstanceId())
-        return NULL;
-
-    return ret;
+    return u.GetMap()->GetCreature(guid);
 }
 
 Unit*
@@ -195,13 +131,13 @@ Object* ObjectAccessor::GetObjectByTypeMask(Player const &p, uint64 guid, uint32
 
     if(typemask & TYPEMASK_GAMEOBJECT)
     {
-        obj = GetGameObject(p,guid);
+        obj = p.GetMap()->GetGameObject(guid);
         if(obj) return obj;
     }
 
     if(typemask & TYPEMASK_DYNAMICOBJECT)
     {
-        obj = GetDynamicObject(p,guid);
+        obj = p.GetMap()->GetDynamicObject(guid);
         if(obj) return obj;
     }
 
@@ -214,26 +150,14 @@ Object* ObjectAccessor::GetObjectByTypeMask(Player const &p, uint64 guid, uint32
     return NULL;
 }
 
-GameObject*
-ObjectAccessor::GetGameObject(WorldObject const &u, uint64 guid)
-{
-    GameObject * ret = GetObjectInWorld(guid, (GameObject*)NULL);
-    if(ret && ret->GetMapId() != u.GetMapId()) ret = NULL;
-    return ret;
-}
-
-DynamicObject*
-ObjectAccessor::GetDynamicObject(Unit const &u, uint64 guid)
-{
-    DynamicObject * ret = GetObjectInWorld(guid, (DynamicObject*)NULL);
-    if(ret && ret->GetMapId() != u.GetMapId()) ret = NULL;
-    return ret;
-}
-
 Player*
 ObjectAccessor::FindPlayer(uint64 guid)
 {
-    return GetObjectInWorld(guid, (Player*)NULL);
+    Player * plr = GetObjectInWorld(guid, (Player*)NULL);
+    if(!plr || !plr->IsInWorld())
+        return NULL;
+     
+    return plr;
 }
 
 Player*
@@ -243,7 +167,7 @@ ObjectAccessor::FindPlayerByName(const char *name)
     HashMapHolder<Player>::MapType& m = HashMapHolder<Player>::GetContainer();
     HashMapHolder<Player>::MapType::iterator iter = m.begin();
     for(; iter != m.end(); ++iter)
-        if( ::strcmp(name, iter->second->GetName()) == 0 )
+        if( iter->second->IsInWorld() && ( ::strcmp(name, iter->second->GetName()) == 0 ) )
             return iter->second;
     return NULL;
 }
@@ -346,7 +270,9 @@ ObjectAccessor::_buildChangeObjectForPlayer(WorldObject *obj, UpdateDataMapType 
     WorldObjectChangeAccumulator notifier(*obj, update_players);
     TypeContainerVisitor<WorldObjectChangeAccumulator, WorldTypeMapContainer > player_notifier(notifier);
     CellLock<GridReadGuard> cell_lock(cell, p);
-    cell_lock->Visit(cell_lock, player_notifier, *obj->GetMap());
+    //cell_lock->Visit(cell_lock, player_notifier, *obj->GetMap());
+    Map& map = *obj->GetMap();
+    cell_lock->Visit(cell_lock, player_notifier, map, *obj, map.GetVisibilityDistance());
 }
 
 Pet*
@@ -603,7 +529,7 @@ ObjectAccessor::UpdateObjectVisibility(WorldObject *obj)
 /// Define the static member of HashMapHolder
 
 template <class T> UNORDERED_MAP< uint64, T* > HashMapHolder<T>::m_objectMap;
-template <class T> ZThread::FastMutex HashMapHolder<T>::i_lock;
+template <class T> ACE_Thread_Mutex HashMapHolder<T>::i_lock;
 
 /// Global definitions for the hashmap storage
 

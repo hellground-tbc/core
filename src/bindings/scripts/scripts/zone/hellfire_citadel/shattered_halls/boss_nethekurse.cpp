@@ -183,31 +183,23 @@ struct TRINITY_DLL_DECL boss_grand_warlock_nethekurseAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit *who)
     {
-        if (!m_creature->getVictim() && who->isTargetableForAttack() && ( m_creature->IsHostileTo( who )) && who->isInAccessiblePlaceFor(m_creature) )
+        if (!IntroOnce && m_creature->IsWithinDistInMap(who, 50.0f))
         {
-            if (!IntroOnce && m_creature->IsWithinDistInMap(who, 75))
-            {
-                DoScriptText(SAY_INTRO, m_creature);
-                IntroOnce = true;
-                IsIntroEvent = true;
-
-                if (pInstance)
-                    pInstance->SetData(TYPE_NETHEKURSE,IN_PROGRESS);
-            }
-
-            if (!m_creature->canFly() && m_creature->GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE )
+            if (who->GetTypeId() != TYPEID_PLAYER)
                 return;
 
-            if (IsIntroEvent || !IsMainEvent)
-                return;
+            DoScriptText(SAY_INTRO, m_creature);
+            IntroOnce = true;
+            IsIntroEvent = true;
 
-            float attackRadius = m_creature->GetAttackDistance(who);
-            if (m_creature->IsWithinDistInMap(who, attackRadius) && m_creature->IsWithinLOSInMap(who) )
-            {
-                //who->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
-                AttackStart(who);
-            }
+            if (pInstance)
+                pInstance->SetData(TYPE_NETHEKURSE,IN_PROGRESS);
         }
+
+        if (IsIntroEvent || !IsMainEvent)
+            return;
+        
+        ScriptedAI::MoveInLineOfSight(who);
     }
 
     void Aggro(Unit *who)
@@ -222,9 +214,12 @@ struct TRINITY_DLL_DECL boss_grand_warlock_nethekurseAI : public ScriptedAI
 
     void JustSummoned(Creature *summoned)
     {
-        summoned->setFaction(14);
+        summoned->setFaction(16);
         summoned->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         summoned->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+
+        summoned->CastSpell(summoned,SPELL_TEMPORARY_VISUAL,true);
+        summoned->CastSpell(summoned,SPELL_CONSUMPTION,false,0,0,m_creature->GetGUID());
     }
 
     void KilledUnit(Unit* victim)
@@ -340,21 +335,26 @@ struct TRINITY_DLL_DECL mob_fel_orc_convertAI : public ScriptedAI
             if (pInstance->GetData64(DATA_NETHEKURSE))
             {
                 Creature *pKurse = Unit::GetCreature(*m_creature,pInstance->GetData64(DATA_NETHEKURSE));
-                if (pKurse)
+                if (pKurse && m_creature->GetDistance(pKurse) < 45.0f)
+                {
                     ((boss_grand_warlock_nethekurseAI*)pKurse->AI())->DoYellForPeonAggro();
-            }
 
-            if (pInstance->GetData(TYPE_NETHEKURSE) == IN_PROGRESS )
-                return;
-            else pInstance->SetData(TYPE_NETHEKURSE,IN_PROGRESS);
+                    if (pInstance->GetData(TYPE_NETHEKURSE) == IN_PROGRESS)
+                        return;
+                    else pInstance->SetData(TYPE_NETHEKURSE,IN_PROGRESS);
+                }
+            }
         }
     }
-
+   
     void JustDied(Unit* Killer)
     {
         if (pInstance)
         {
-            if (pInstance->GetData64(DATA_NETHEKURSE))
+            if (pInstance->GetData(TYPE_NETHEKURSE) != IN_PROGRESS)
+                return;
+
+                if (pInstance->GetData64(DATA_NETHEKURSE))
             {
                 Creature *pKurse = Unit::GetCreature(*m_creature,pInstance->GetData64(DATA_NETHEKURSE));
                 if (pKurse)
@@ -378,46 +378,6 @@ struct TRINITY_DLL_DECL mob_fel_orc_convertAI : public ScriptedAI
     }
 };
 
-//NOTE: this creature are also summoned by other spells, for different creatures
-struct TRINITY_DLL_DECL mob_lesser_shadow_fissureAI : public ScriptedAI
-{
-    mob_lesser_shadow_fissureAI(Creature *c) : ScriptedAI(c) {}
-
-    bool Start;
-    uint32 Stop_Timer;
-
-    void Reset()
-    {
-        Start = false;
-        Stop_Timer = 30000;
-    }
-
-    void Aggro(Unit* who) { }
-
-    void MoveInLineOfSight(Unit *who) { return; }
-
-    void AttackStart(Unit* who) { return; }
-
-    void UpdateAI(const uint32 diff)
-    {
-        if (!Start)
-        {
-            //triggered spell of consumption does not properly show it's SpellVisual, hack it a bit
-            m_creature->CastSpell(m_creature,SPELL_TEMPORARY_VISUAL,true);
-            m_creature->CastSpell(m_creature,SPELL_CONSUMPTION,false);
-            Start = true;
-        }
-
-        if (Stop_Timer < diff)
-        {
-            m_creature->setDeathState(JUST_DIED);
-            m_creature->SetHealth(0);
-            m_creature->CombatStop();
-            m_creature->DeleteThreatList();
-        }else Stop_Timer -= diff;
-    }
-};
-
 CreatureAI* GetAI_boss_grand_warlock_nethekurse(Creature *_Creature)
 {
     return new boss_grand_warlock_nethekurseAI (_Creature);
@@ -426,11 +386,6 @@ CreatureAI* GetAI_boss_grand_warlock_nethekurse(Creature *_Creature)
 CreatureAI* GetAI_mob_fel_orc_convert(Creature *_Creature)
 {
     return new mob_fel_orc_convertAI (_Creature);
-}
-
-CreatureAI* GetAI_mob_lesser_shadow_fissure(Creature *_Creature)
-{
-    return new mob_lesser_shadow_fissureAI (_Creature);
 }
 
 void AddSC_boss_grand_warlock_nethekurse()
@@ -447,9 +402,5 @@ void AddSC_boss_grand_warlock_nethekurse()
     newscript->GetAI = &GetAI_mob_fel_orc_convert;
     newscript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name="mob_lesser_shadow_fissure";
-    newscript->GetAI = &GetAI_mob_lesser_shadow_fissure;
-    newscript->RegisterSelf();
 }
 

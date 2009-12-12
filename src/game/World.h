@@ -29,6 +29,7 @@
 #include "Timer.h"
 #include "Policies/Singleton.h"
 #include "SharedDefines.h"
+#include "ace/Atomic_Op.h"
 
 #include <map>
 #include <set>
@@ -497,20 +498,23 @@ class World
         BanReturn BanAccount(BanMode mode, std::string nameOrIP, std::string duration, std::string reason, std::string author);
         bool RemoveBanAccount(BanMode mode, std::string nameOrIP);
 
-        void ScriptsStart(std::map<uint32, std::multimap<uint32, ScriptInfo> > const& scripts, uint32 id, Object* source, Object* target, bool start = true);
-        void ScriptCommandStart(ScriptInfo const& script, uint32 delay, Object* source, Object* target);
-        bool IsScriptScheduled() const { return !m_scriptSchedule.empty(); }
+        uint32 IncreaseScheduledScriptsCount() { return (uint32)++m_scheduledScripts; }
+        uint32 DecreaseScheduledScriptCount() { return (uint32)--m_scheduledScripts; }
+        uint32 DecreaseScheduledScriptCount(size_t count) { return (uint32)(m_scheduledScripts -= count); }
+        bool IsScriptScheduled() const { return m_scheduledScripts > 0; }
 
         bool IsAllowedMap(uint32 mapid) { return m_forbiddenMapIds.count(mapid) == 0 ;}
 
         // for max speed access
-        static float GetMaxVisibleDistance()            { return m_MaxVisibleDistance;            }
-        static float GetMaxVisibleDistanceForCreature() { return m_MaxVisibleDistanceForCreature; }
-        static float GetMaxVisibleDistanceForPlayer()   { return m_MaxVisibleDistanceForPlayer;   }
-        static float GetMaxVisibleDistanceForObject()   { return m_MaxVisibleDistanceForObject;   }
-        static float GetMaxVisibleDistanceInFlight()    { return m_MaxVisibleDistanceInFlight;    }
-        static float GetVisibleUnitGreyDistance()       { return m_VisibleUnitGreyDistance;       }
-        static float GetVisibleObjectGreyDistance()     { return m_VisibleObjectGreyDistance;     }
+        static float GetMaxVisibleDistanceOnContinents()    { return m_MaxVisibleDistanceOnContinents; }
+        static float GetMaxVisibleDistanceInInstances()     { return m_MaxVisibleDistanceInInstances;  }
+        static float GetMaxVisibleDistanceInArenas()        { return m_MaxVisibleDistanceInArenas;   }
+        static float GetMaxVisibleDistanceInBG()            { return m_MaxVisibleDistanceInBG;   }
+        static float GetMaxVisibleDistanceForObject()       { return m_MaxVisibleDistanceForObject;   }
+
+        static float GetMaxVisibleDistanceInFlight()        { return m_MaxVisibleDistanceInFlight;    }
+        static float GetVisibleUnitGreyDistance()           { return m_VisibleUnitGreyDistance;       }
+        static float GetVisibleObjectGreyDistance()         { return m_VisibleObjectGreyDistance;     }
 
         void ProcessCliCommands();
         void QueueCliCommand( CliCommandHolder::Print* zprintf, char const* input ) { cliCmdQueue.add(new CliCommandHolder(input, zprintf)); }
@@ -537,7 +541,6 @@ class World
         void RecordTimeDiff(const char * text, ...);
     protected:
         void _UpdateGameTime();
-        void ScriptsProcess();
         // callback for UpdateRealmCharacters
         void _UpdateRealmCharCount(QueryResult *resultCharCount, uint32 accountId);
 
@@ -548,6 +551,9 @@ class World
         static uint8 m_ExitCode;
         uint32 m_ShutdownTimer;
         uint32 m_ShutdownMask;
+
+        //atomic op counter for active scripts amount
+        ACE_Atomic_Op<ACE_Thread_Mutex, long> m_scheduledScripts;
 
         time_t m_startTime;
         time_t m_gameTime;
@@ -567,8 +573,6 @@ class World
         uint32 m_maxActiveSessionCount;
         uint32 m_maxQueuedSessionCount;
 
-        std::multimap<time_t, ScriptAction> m_scriptSchedule;
-
         std::string m_newCharString;
 
         float rate_values[MAX_RATES];
@@ -585,15 +589,17 @@ class World
 
         // for max speed access
         static float m_MaxVisibleDistance;
-        static float m_MaxVisibleDistanceForCreature;
-        static float m_MaxVisibleDistanceForPlayer;
+        static float m_MaxVisibleDistanceOnContinents;
+        static float m_MaxVisibleDistanceInInstances;
+        static float m_MaxVisibleDistanceInArenas;
+        static float m_MaxVisibleDistanceInBG;
         static float m_MaxVisibleDistanceForObject;
         static float m_MaxVisibleDistanceInFlight;
         static float m_VisibleUnitGreyDistance;
         static float m_VisibleObjectGreyDistance;
 
         // CLI command holder to be thread safe
-        ZThread::LockedQueue<CliCommandHolder*, ZThread::FastMutex> cliCmdQueue;
+        ACE_Based::LockedQueue<CliCommandHolder*, ACE_Thread_Mutex> cliCmdQueue;
         SqlResultQueue *m_resultQueue;
 
         // next daily quests reset time
@@ -604,7 +610,7 @@ class World
 
         //sessions that are added async
         void AddSession_(WorldSession* s);
-        ZThread::LockedQueue<WorldSession*, ZThread::FastMutex> addSessQueue;
+        ACE_Based::LockedQueue<WorldSession*, ACE_Thread_Mutex> addSessQueue;
 
         //used versions
         std::string m_DBVersion;

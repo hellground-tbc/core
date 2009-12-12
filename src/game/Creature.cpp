@@ -249,7 +249,7 @@ bool Creature::InitEntry(uint32 Entry, uint32 team, const CreatureData *data )
     CreatureInfo const *cinfo = normalInfo;
     if(normalInfo->HeroicEntry)
     {
-        Map *map = MapManager::Instance().FindMap(GetMapId(), GetInstanceId());
+        Map *map = GetMap();
         if(map && map->IsHeroic())
         {
             cinfo = objmgr.GetCreatureTemplate(normalInfo->HeroicEntry);
@@ -302,9 +302,10 @@ bool Creature::InitEntry(uint32 Entry, uint32 team, const CreatureData *data )
 
     SetFloatValue(UNIT_MOD_CAST_SPEED, 1.0f);
 
-    SetSpeed(MOVE_WALK,     cinfo->speed );
-    SetSpeed(MOVE_RUN,      cinfo->speed );
-    SetSpeed(MOVE_SWIM,     cinfo->speed );
+    float m_baseSpeed = GetBaseSpeed();
+    SetSpeed(MOVE_WALK, m_baseSpeed);
+    SetSpeed(MOVE_RUN,  m_baseSpeed);
+    SetSpeed(MOVE_SWIM, m_baseSpeed);
 
     SetFloatValue(OBJECT_FIELD_SCALE_X, cinfo->scale);
 
@@ -1727,6 +1728,7 @@ void Creature::Respawn()
 
         //GetMap()->Add(this);
     }
+    SetToNotify();
 }
 
 bool Creature::IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges)
@@ -1907,8 +1909,8 @@ Unit* Creature::SelectNearestTarget(float dist) const
         TypeContainerVisitor<Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAttackDistanceCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
 
         CellLock<GridReadGuard> cell_lock(cell, p);
-        cell_lock->Visit(cell_lock, world_unit_searcher, *GetMap());
-        cell_lock->Visit(cell_lock, grid_unit_searcher, *GetMap());
+        cell_lock->Visit(cell_lock, world_unit_searcher, *GetMap(), *this, 5.0f);
+        cell_lock->Visit(cell_lock, grid_unit_searcher, *GetMap(), *this, 5.0f);
     }
 
     return target;
@@ -1937,7 +1939,8 @@ void Creature::CallAssistance()
                 TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AnyAssistCreatureInRangeCheck>, GridTypeMapContainer >  grid_creature_searcher(searcher);
 
                 CellLock<GridReadGuard> cell_lock(cell, p);
-                cell_lock->Visit(cell_lock, grid_creature_searcher, *MapManager::Instance().GetMap(GetMapId(), this));
+                //cell_lock->Visit(cell_lock, grid_creature_searcher, *MapManager::Instance().GetMap(GetMapId(), this));
+                cell_lock->Visit(cell_lock, grid_creature_searcher, *GetMap(), *this, radius);
             }
 
             if (!assistList.empty())
@@ -2148,6 +2151,27 @@ bool Creature::HasSpellCooldown(uint32 spell_id) const
 bool Creature::IsInEvadeMode() const
 {
     return /*!i_motionMaster.empty() &&*/ i_motionMaster.GetCurrentMovementGeneratorType() == HOME_MOTION_TYPE;
+}
+
+float Creature::GetBaseSpeed() const
+{
+    if(isPet())
+    {
+        switch( ((Pet*)this)->getPetType() )
+        {
+            case SUMMON_PET:
+            case HUNTER_PET:
+            {
+                return 1.15;  // Blizzlike ;p
+            }
+            case GUARDIAN_PET:
+            case MINI_PET:
+            {
+                break;
+            }
+        }
+    }
+    return m_creatureInfo->speed;
 }
 
 bool Creature::HasSpell(uint32 spellID) const

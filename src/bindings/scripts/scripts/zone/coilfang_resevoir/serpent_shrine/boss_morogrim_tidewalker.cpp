@@ -101,16 +101,21 @@ struct TRINITY_DLL_DECL boss_morogrim_tidewalkerAI : public ScriptedAI
     boss_morogrim_tidewalkerAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        m_creature->GetPosition(wLoc);
     }
 
     ScriptedInstance* pInstance;
     Map::PlayerList const *PlayerList;
 
     uint32 TidalWave_Timer;
+    uint32 PulseCombat_Timer;
     uint32 WateryGrave_Timer;
     uint32 Earthquake_Timer;
     uint32 WateryGlobules_Timer;
     uint32 globulespell[4];
+
+    WorldLocation wLoc;
+
     int8 Playercount;
     int8 counter;
 
@@ -120,6 +125,7 @@ struct TRINITY_DLL_DECL boss_morogrim_tidewalkerAI : public ScriptedAI
     void Reset()
     {
         TidalWave_Timer = 10000;
+        PulseCombat_Timer = 5000;
         WateryGrave_Timer = 30000;
         Earthquake_Timer = 40000;
         WateryGlobules_Timer = 0;
@@ -185,6 +191,16 @@ struct TRINITY_DLL_DECL boss_morogrim_tidewalkerAI : public ScriptedAI
         if (!UpdateVictim() )
             return;
 
+        if(PulseCombat_Timer < diff)
+        {    
+            if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 135.0f)
+                EnterEvadeMode();
+            else
+                DoZoneInCombat();
+            
+            PulseCombat_Timer = 3000;
+        }else PulseCombat_Timer -= diff;
+
         //Earthquake_Timer
         if (Earthquake_Timer < diff)
         {
@@ -207,7 +223,10 @@ struct TRINITY_DLL_DECL boss_morogrim_tidewalkerAI : public ScriptedAI
                     Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
                     Creature* Murloc = m_creature->SummonCreature(MurlocCords[i][0],MurlocCords[i][1],MurlocCords[i][2],MurlocCords[i][3],MurlocCords[i][4], TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000);
                     if(target && Murloc)
+                    {
+                        Murloc->setActive(true);
                         Murloc->AI()->AttackStart(target);
+                    }
                 }
                 DoScriptText(EMOTE_EARTHQUAKE, m_creature);
                 Earthquake = false;

@@ -68,6 +68,7 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
     boss_gurtogg_bloodboilAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        m_creature->GetPosition(wLoc);
     }
 
     ScriptedInstance* pInstance;
@@ -86,6 +87,9 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
     uint32 EjectTimer;
     uint32 BewilderingStrikeTimer;
     uint32 PhaseChangeTimer;
+
+    uint32 CheckTimer;
+    WorldLocation wLoc;
 
     bool Phase1;
 
@@ -108,6 +112,7 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
         EjectTimer = 10000;
         BewilderingStrikeTimer = 15000;
         PhaseChangeTimer = 60000;
+        CheckTimer = 3000;
 
         Phase1 = true;
 
@@ -202,6 +207,17 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
     {
         if(!UpdateVictim())
             return;
+
+        if (CheckTimer < diff)
+        {
+            if (m_creature->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 60)
+                EnterEvadeMode();
+            else
+                DoZoneInCombat();
+            CheckTimer = 3000;
+        }
+        else 
+            CheckTimer -= diff;
 
         if(ArcingSmashTimer < diff)
         {

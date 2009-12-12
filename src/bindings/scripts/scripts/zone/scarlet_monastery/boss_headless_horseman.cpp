@@ -168,7 +168,7 @@ struct TRINITY_DLL_DECL mob_wisp_invisAI : public ScriptedAI
     void SpellHit(Unit* caster, const SpellEntry *spell)
     {
         if(spell->Id == SPELL_WISP_FLIGHT_PORT && Creaturetype == 4)
-            m_creature->SummonCreature(23904,0,0,0,0,TEMPSUMMON_TIMED_DESPAWN,600000);
+            m_creature->SetDisplayId(2027);
     }
 
     void MoveInLineOfSight(Unit *who)
@@ -197,9 +197,13 @@ struct TRINITY_DLL_DECL mob_wisp_invisAI : public ScriptedAI
 
 struct TRINITY_DLL_DECL mob_headAI : public ScriptedAI
 {
-    mob_headAI(Creature *c) : ScriptedAI(c) {}
+    mob_headAI(Creature *c) : ScriptedAI(c) 
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
 
     uint64 bodyGUID;
+    ScriptedInstance *pInstance;
 
     uint32 Phase;
     uint32 laugh;
@@ -232,16 +236,7 @@ struct TRINITY_DLL_DECL mob_headAI : public ScriptedAI
     void DamageTaken(Unit* done_by,uint32 &damage)
     {
         if (withbody)
-        {
-            damage = 0;
             return;
-        }
-
-        if(die)
-        {
-            damage = 0;
-            return;
-        }
 
         switch(Phase)
         {
@@ -259,13 +254,17 @@ struct TRINITY_DLL_DECL mob_headAI : public ScriptedAI
                     die = true;
                     withbody = true;
                     wait = 300;
-                    damage = m_creature->GetHealth() - 1;
                     m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                     m_creature->StopMoving();
                     //m_creature->GetMotionMaster()->MoveIdle();
                     DoCast(m_creature,SPELL_HEAD_IS_DEAD);
                 }break;
         }
+    }
+    void JustDied(Unit *killer)
+    {
+        Creature* horseman = Creature::GetCreature((*m_creature), pInstance->GetData64(DATA_HORSEMAN_EVENT));
+        horseman->DealDamage(horseman, horseman->GetHealth(), 0, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, 0, false);
     }
 
     void SpellHit(Unit *caster, const SpellEntry* spell)
@@ -332,14 +331,14 @@ struct TRINITY_DLL_DECL boss_headless_horsemanAI : public ScriptedAI
 {
     boss_headless_horsemanAI(Creature *c) : ScriptedAI(c)
     {
-        //SpellEntry *confl = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_CONFLAGRATION);
-        //if(confl)
-        //{
-        //    confl->EffectApplyAuraName[0] = SPELL_AURA_PERIODIC_DAMAGE_PERCENT;
-        //    confl->EffectBasePoints[0] = 10;
-        //    confl->EffectBaseDice[0] = 10;
-        //    confl->DmgMultiplier[0] = 1;
-        //}
+        SpellEntry *confl = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_CONFLAGRATION);
+        if(confl)
+        {
+            confl->EffectApplyAuraName[0] = SPELL_AURA_PERIODIC_DAMAGE_PERCENT;
+            confl->EffectBasePoints[0] = 10;
+            confl->EffectBaseDice[0] = 10;
+            confl->DmgMultiplier[0] = 1;
+        }
 /*      SpellEntry *confl = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_CONFLAGRATION);
         if(confl)
             confl->EffectTriggerSpell[1] = 22587;
@@ -418,6 +417,7 @@ struct TRINITY_DLL_DECL boss_headless_horsemanAI : public ScriptedAI
         say_timer = 3000;
         id = 0;
         Phase = 0;
+        IsFlying = false;
     }
 
     void MovementInform(uint32 type, uint32 i)
@@ -444,19 +444,15 @@ struct TRINITY_DLL_DECL boss_headless_horsemanAI : public ScriptedAI
             break;
         case 19:
             m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_FLYING2);break;
-        case 20: 
-            {
-                Phase = 1;
-                IsFlying = false;
-                wp_reached = false;
-                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                SaySound(SAY_ENTRANCE);
-                Unit *plr = Unit::GetUnit((*m_creature),playerGUID);
-                if (plr)
-                {
-                    AttackStart(plr);
-                    //DoStartMovement(plr);
-                }
+        case 20: {
+            Phase = 1;
+            IsFlying = false;
+            wp_reached = false;
+            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            SaySound(SAY_ENTRANCE);
+            Unit *plr = Unit::GetUnit((*m_creature),playerGUID);
+            if (plr)
+                AttackStart(plr);
             }
             break;
         }
@@ -576,7 +572,8 @@ struct TRINITY_DLL_DECL boss_headless_horsemanAI : public ScriptedAI
         {
             withhead = false;
             returned = false;
-            damage = m_creature->GetHealth() - 1;
+            damage = 0;
+            m_creature->SetHealth(m_creature->GetMaxHealth()/100);
             m_creature->RemoveAllAuras();
             m_creature->SetName("Headless Horseman, Unhorsed");
 
@@ -608,8 +605,7 @@ struct TRINITY_DLL_DECL boss_headless_horsemanAI : public ScriptedAI
             case 0: {
                     if (!IsFlying)
                     {
-                        if (say_timer < diff)
-                        {
+                        if (say_timer < diff) {
                             say_timer = 3000;
                             Player *plr = SelectRandomPlayer(100.0f,false);
                             if (count < 3)
@@ -659,11 +655,7 @@ struct TRINITY_DLL_DECL boss_headless_horsemanAI : public ScriptedAI
                         plr = m_creature->getVictim();
 
                     if (plr)
-                    {
-                        int32 damage;
-                        damage = plr->GetMaxHealth()/10;
-                        m_creature->CastCustomSpell(plr,SPELL_CONFLAGRATION,&damage,NULL,NULL,false);
-                    }
+                        m_creature->CastSpell(plr,SPELL_CONFLAGRATION,false);
                     conflagrate = 10000 + rand()%7 * 1000;
                 }else conflagrate -= diff;
                 break;

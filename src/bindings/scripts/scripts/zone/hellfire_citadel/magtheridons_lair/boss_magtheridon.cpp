@@ -79,7 +79,6 @@ static Yell RandomTaunt[]=
 #define SPELL_DARK_MENDING          30528
 #define SPELL_FEAR                  30530 //39176
 #define SPELL_BURNING_ABYSSAL       30511
-#define SPELL_SOUL_TRANSFER         30531 // core bug, does not support target 7
 
 #define SPELL_FIRE_BLAST            37110
 
@@ -208,7 +207,14 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public ScriptedAI
     {
         if(pInstance)
         {
-            pInstance->SetData(DATA_MAGTHERIDON_EVENT, NOT_STARTED);
+            if(pInstance->GetData(DATA_MAGTHERIDON_EVENT) == DONE)
+            {
+                 m_creature->setDeathState(JUST_DIED);
+                 m_creature->RemoveCorpse();
+            }
+            else
+                pInstance->SetData(DATA_MAGTHERIDON_EVENT, NOT_STARTED);
+
             pInstance->SetData(DATA_COLLAPSE, false);
         }
 
@@ -451,12 +457,6 @@ struct TRINITY_DLL_DECL mob_hellfire_channelerAI : public ScriptedAI
     void JustSummoned(Creature *summon) {summon->AI()->AttackStart(m_creature->getVictim());}
 
     void MoveInLineOfSight(Unit*) {}
-
-    void DamageTaken(Unit*, uint32 &damage)
-    {
-        if(damage >= m_creature->GetHealth())
-            m_creature->CastSpell(m_creature, SPELL_SOUL_TRANSFER, true);
-    }
 
     void JustDied(Unit*)
     {

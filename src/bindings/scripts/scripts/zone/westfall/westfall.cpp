@@ -28,6 +28,258 @@ EndContentData */
 #include "precompiled.h"
 #include "../../npc/npc_escortAI.h"
 
+/*#####
+# npc_daphne_stilwell
+######*/
+
+//Quest
+#define QUEST_PROTECT_DAPHNE 1651
+
+//Paths
+#define PATH_FIRST 1651
+#define PATH_SECOND 1652
+
+//Thug definitions
+#define DEFIAS_RAIDER 6180
+
+#define THUG_SPAWN_X -11443
+#define THUG_SPAWN_Y 1581
+#define THUG_SPAWN_Z 59.018
+#define THUG_SPAWN_O 4.164382
+#define THUG_SPAWN_R  5 
+
+//Speech
+#define SAY_KILL_HER "Kill her! Take the farm!"
+#define SAY_MOVE "To the house! Stay close to me no matter what! I have my gun and ammo there!"
+#define SAY_BEGIN "You won't ruin my lands, you scum!"
+#define SAY_WAVE "One more down!"
+#define SAY_END "We've done it, we won!"
+#define SAY_MOVE_BACK "Meet me at the orchad--I just need to put my gun away."
+
+struct TRINITY_DLL_DECL npc_daphne_stilwellAI : public npc_escortAI
+{
+    npc_daphne_stilwellAI(Creature *c) : npc_escortAI(c)
+    {
+        SetVariables();
+    }
+
+
+    std::vector<uint64> enemies;       
+    uint8 thug_wave;                   
+    bool IsWalking;
+    bool initial_movement;
+    bool real_event_started;
+    bool yeller_spawned;
+    bool say_end;
+
+    void SetVariables()
+    {
+        thug_wave = 0;
+        initial_movement = true;
+        real_event_started = false;
+        yeller_spawned = false;
+        IsWalking = false;
+        say_end = false;
+    }
+
+    void WaypointReached(uint32 i)
+    {
+        Player* player = Unit::GetPlayer(PlayerGUID);
+
+        if (!player)
+            return;
+
+        if (IsWalking && !m_creature->HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))
+            m_creature->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+
+        switch (i)
+        {
+        case 0:
+            SetVariables();
+            break;
+        case 3:
+            if (!yeller_spawned)
+            {
+                Creature *yeller = m_creature->SummonCreature(DEFIAS_RAIDER, THUG_SPAWN_X, THUG_SPAWN_Y, THUG_SPAWN_Z, THUG_SPAWN_O, TEMPSUMMON_TIMED_DESPAWN, 3000);
+                yeller->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                yeller->Yell(SAY_KILL_HER, LANG_UNIVERSAL, 0);
+                yeller_spawned = true;
+            }
+            break;
+        case 5:
+            real_event_started = true;
+            NextEvent();
+            break;
+        case 6:
+            IsWalking = true;
+            break;
+        case 11:
+            if (PlayerGUID && thug_wave > 3)
+            {
+                if (Player* player = Unit::GetPlayer(PlayerGUID))
+                    player->CompleteQuest(QUEST_PROTECT_DAPHNE);
+            }
+            if (player && player->GetTypeId() == TYPEID_PLAYER)
+                ((Player*)player)->GroupEventHappens(QUEST_PROTECT_DAPHNE,m_creature);
+
+            m_creature->GetMotionMaster()->MovementExpired();
+            m_creature->GetMotionMaster()->MoveTargetedHome();
+            SetVariables();
+            break;
+        }
+    }
+
+    void Aggro(Unit* who){}
+
+    void Reset()
+    {
+        if (IsWalking && !m_creature->HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))
+        {
+            m_creature->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+            return;
+        }
+        IsWalking = false;
+    }
+
+    void JustDied(Unit* killer)
+    {
+        if (PlayerGUID)
+        {
+            if (Player* player = Unit::GetPlayer(PlayerGUID))
+                player->FailQuest(QUEST_PROTECT_DAPHNE);
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (real_event_started)
+        {
+            if (initial_movement)
+            {
+                DoYell(SAY_BEGIN, LANG_UNIVERSAL, NULL);
+                initial_movement = false;
+            }
+
+            if (PlayerGUID)
+            {
+                Player* player = Unit::GetPlayer(PlayerGUID);
+
+                if (player)
+                {
+                    if(player->isDead())
+                    {
+                        player->FailQuest(QUEST_PROTECT_DAPHNE);
+                        SetVariables();
+                    }
+                }
+
+                if(m_creature->isDead() && player)
+                    player->FailQuest(QUEST_PROTECT_DAPHNE);
+            }
+
+            UpdateEvent(diff);
+        }
+
+        npc_escortAI::UpdateAI(diff);
+    }
+
+    void UpdateEvent(uint32 diff)
+    {
+        if(!thug_wave)
+            return;
+
+        if(enemies.empty())
+            NextEvent();
+
+        bool alldead = true;
+
+        for(std::vector<uint64>::iterator itr = enemies.begin(), next; itr!= enemies.end(); ++itr)
+        {
+            Unit *enemy = Unit::GetUnit(*m_creature, *itr);
+            if(enemy && enemy->isAlive())
+            {
+                alldead = false;
+            }
+        }
+
+        if(alldead)
+            enemies.clear();
+    }
+
+    void NextEvent()
+    {
+        thug_wave++;
+
+        if(thug_wave > 3 && !say_end)
+        {
+            DoSay(SAY_END, LANG_UNIVERSAL, NULL);
+            m_creature->HandleEmoteCommand(4);
+            DoSay(SAY_MOVE_BACK, LANG_UNIVERSAL, NULL, true);
+            say_end = true;
+            real_event_started = false;
+        }
+        else
+        {
+            if(thug_wave!=1)
+                DoSay(SAY_WAVE, LANG_UNIVERSAL, NULL);
+            ActivateAmbush(DEFIAS_RAIDER, 2 + thug_wave, THUG_SPAWN_R, THUG_SPAWN_X, THUG_SPAWN_Y, THUG_SPAWN_Z, THUG_SPAWN_O, &enemies);
+        }
+    }
+
+    void ActivateAmbush(uint32 creature_id, uint32 count, uint32 spawn_radius, float x, float y, float z, float o, std::vector<uint64> *store)
+    {
+        for( ; count > 0; count--)
+        {
+            float posX, posY, posZ;
+            m_creature->GetRandomPoint(x,y,z,spawn_radius, posX, posY, posZ);
+            Creature *attacker = m_creature->SummonCreature(creature_id, posX, posY, posZ, o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+            if(attacker)
+            {
+                attacker->setActive(true);
+                attacker->AI()->AttackStart(m_creature);
+
+                store->push_back(attacker->GetGUID());
+            }
+        }
+    }
+};
+
+bool QuestAccept_npc_daphne_stilwell(Player* player, Creature* creature, Quest const* quest)
+{
+    if (quest->GetQuestId() == QUEST_PROTECT_DAPHNE)
+    {
+        ((npc_escortAI*)(creature->AI()))->Start(true, true, true, player->GetGUID());
+        ((npc_escortAI*)(creature->AI()))->DoSay(SAY_MOVE, LANG_UNIVERSAL, NULL);
+    }
+
+    return true;
+}
+
+CreatureAI* GetAI_npc_daphne_stilwell(Creature *_Creature)
+{
+    npc_daphne_stilwellAI* thisAI = new npc_daphne_stilwellAI(_Creature);
+
+    thisAI->AddWaypoint(0, -11466.4, 1530.26, 50.2492);
+    thisAI->AddWaypoint(1, -11463.2, 1525.15, 50.9378);
+    thisAI->AddWaypoint(2, -11460.5, 1526.95, 50.9395);
+    thisAI->AddWaypoint(3, -11463.2, 1525.15, 50.9378);
+    thisAI->AddWaypoint(4, -11466.4, 1530.26, 50.2492);
+    thisAI->AddWaypoint(5, -11461.2, 1539.06, 52.259, 20000);
+    thisAI->AddWaypoint(6, -11466.4, 1530.26, 50.2492);
+    thisAI->AddWaypoint(7, -11463.2, 1525.15, 50.9378);
+    thisAI->AddWaypoint(8, -11460.5, 1526.95, 50.9395);
+    thisAI->AddWaypoint(9, -11463.2, 1525.15, 50.9378);
+    thisAI->AddWaypoint(10, -11466.4, 1530.26, 50.2492);
+    thisAI->AddWaypoint(11, -11480.7, 1551.8, 49.2635);
+
+    return (CreatureAI*)thisAI;
+}
+
+/*######
+## npc_defias_traitor
+######*/
+
+
 #define SAY_START                   -1000101
 #define SAY_PROGRESS                -1000102
 #define SAY_END                     -1000103
@@ -46,16 +298,13 @@ struct TRINITY_DLL_DECL npc_defias_traitorAI : public npc_escortAI
     {
         Player* player = Unit::GetPlayer(PlayerGUID);
 
-        if (!player)
+        if (!player || player->GetTypeId() != TYPEID_PLAYER)
             return;
-
-        if (IsWalking && !m_creature->HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))
-            m_creature->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
 
         switch (i)
         {
             case 35:
-                IsWalking = true;
+                SetRun(false);
                 break;
             case 36:
                 DoScriptText(SAY_PROGRESS, m_creature, player);
@@ -63,8 +312,7 @@ struct TRINITY_DLL_DECL npc_defias_traitorAI : public npc_escortAI
             case 44:
                 DoScriptText(SAY_END, m_creature, player);
                 {
-                    if (player && player->GetTypeId() == TYPEID_PLAYER)
-                        ((Player*)player)->GroupEventHappens(QUEST_DEFIAS_BROTHERHOOD,m_creature);
+                    ((Player*)player)->GroupEventHappens(QUEST_DEFIAS_BROTHERHOOD,m_creature);
                 }
                 break;
         }
@@ -78,15 +326,7 @@ struct TRINITY_DLL_DECL npc_defias_traitorAI : public npc_escortAI
         }
     }
 
-    void Reset()
-    {
-        if (IsWalking && !m_creature->HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))
-        {
-            m_creature->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
-            return;
-        }
-        IsWalking = false;
-    }
+    void Reset(){}
 
     void JustDied(Unit* killer)
     {
@@ -170,6 +410,13 @@ CreatureAI* GetAI_npc_defias_traitor(Creature *_Creature)
 void AddSC_westfall()
 {
     Script *newscript;
+
+    newscript = new Script;
+    newscript->Name="npc_daphne_stilwell";
+    newscript->GetAI = &GetAI_npc_daphne_stilwell;
+    newscript->pQuestAccept = &QuestAccept_npc_daphne_stilwell;
+    newscript->RegisterSelf();
+
 
     newscript = new Script;
     newscript->Name="npc_defias_traitor";

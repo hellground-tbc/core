@@ -22,34 +22,30 @@
 #include "Database/SqlOperations.h"
 #include "DatabaseEnv.h"
 
-SqlDelayThread::SqlDelayThread(Database* db, const char* infoString) :m_running(true)
+SqlDelayThread::SqlDelayThread(Database* db) : m_dbEngine(db), m_running(true)
 {
-
-  m_dbEngine = new DatabaseType;
-  ((DatabaseType*)m_dbEngine)->Initialize(infoString, false);
-
 }
 
 void SqlDelayThread::run()
 {
-    SqlOperation* s;
+    SqlAsyncTask * s = NULL;
+
     #ifndef DO_POSTGRESQL
     mysql_thread_init();
     #endif
 
+    // lets wait for next async task no more than 2 secs...
+    ACE_Time_Value _time(2);
     while (m_running)
     {
-      try
-	{
-	  s = m_sqlQueue.next();
-	}
-      catch(...)
-	{continue;}
-      if(!s)
-	continue;
-      s->Execute(m_dbEngine);
-      delete s;
-      
+        // if the running state gets turned off while sleeping
+        // empty the queue before exiting
+        SqlAsyncTask * s = dynamic_cast<SqlAsyncTask*> (m_sqlQueue.dequeue(/*&_time*/));
+        if(s)
+        {
+            s->call();
+            delete s;
+        }
     }
 
     #ifndef DO_POSTGRESQL
@@ -60,6 +56,11 @@ void SqlDelayThread::run()
 void SqlDelayThread::Stop()
 {
     m_running = false;
-    m_sqlQueue.cancel();
+    m_sqlQueue.queue()->deactivate();
 }
 
+bool SqlDelayThread::Delay(SqlOperation* sql)
+{
+    int res = m_sqlQueue.enqueue(new SqlAsyncTask(m_dbEngine, sql));
+    return (res != -1);
+}

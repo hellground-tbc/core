@@ -307,10 +307,15 @@ int32 altarOfArchaedasCounter=0;
 bool GOHello_go_altar_of_archaedas(Player *player, GameObject* go)
 {
     bool alreadyUsed;
+    // avoid crash
+    if(altarOfArchaedasCounter >= 4)
+        return false;
+
     go->AddUse ();
 
     alreadyUsed = false;
-    for (uint32 loop=0; loop<5; loop++) {
+    for (uint32 loop=0; loop<5; loop++)
+    {
         if (altarOfArchaedasCount[loop] == player->GetGUID()) alreadyUsed = true;
     }
     if (!alreadyUsed)
@@ -325,7 +330,8 @@ bool GOHello_go_altar_of_archaedas(Player *player, GameObject* go)
     // Check to make sure at least three people are still casting
     uint32 count=0;
     Unit *pTarget;
-    for (uint32 x=0; x<=5; x++) {
+    for (uint32 x=0; x<=5; x++)
+    {
         pTarget = Unit::GetUnit(*player, altarOfArchaedasCount[x]);
         if (!pTarget) continue;
         if (pTarget->IsNonMeleeSpellCasted(true)) count++;

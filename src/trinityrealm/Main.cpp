@@ -58,6 +58,9 @@ char serviceDescription[] = "Massive Network Game Object Server";
 int m_ServiceStatus = -1;
 #endif
 
+// FG: for getMSTime()
+#include "Timer.h"
+
 bool StartDB(std::string &dbstring);
 void UnhookSignals();
 void HookSignals();
@@ -263,19 +266,44 @@ extern int main(int argc, char **argv)
     // maximum counter for next ping
     uint32 numLoops = (sConfig.GetIntDefault( "MaxPingTime", 30 ) * (MINUTE * 1000000 / 100000));
     uint32 loopCounter = 0;
+    uint32 last_ping_time = 0;
+    uint32 now = getMSTime();
+    uint32 last_ipprops_cleanup = 0;
 
     ///- Wait for termination signal
     while (!stopEvent)
     {
 
         h.Select(0, 100000);
+        now = getMSTime();
 
         if( (++loopCounter) == numLoops )
         {
+            // FG: protect against network system overloading
+            // if that happens, force realmd close (autorestarter ftw!)
+            
+            if(getMSTimeDiff(last_ping_time, now) < 10000)
+            {
+                sLog.outError("NETWORK SYSTEM OVERLOAD");
+                raise(SIGSEGV); // force close
+                abort();
+            }
+            
+            last_ping_time = now;
             loopCounter = 0;
             sLog.outDetail("Ping MySQL to keep connection alive");
             delete LoginDatabase.Query("SELECT 1 FROM realmlist LIMIT 1");
         }
+
+        // FG: clear flood protect buffer periodically
+        if(getMSTimeDiff(last_ipprops_cleanup, now) > 30000) // flush stored IPs every 30 secs
+        {
+            last_ipprops_cleanup = now;
+            uint32 flushed = 0, blocked = 0, stored = 0;
+            CleanupIPPropmap(flushed, blocked, stored);
+            sLog.outDetail("IPProp: Flushed %u total, %u of them blocked, now %u stored", flushed, blocked, stored);
+        }
+
 #ifdef WIN32
         if (m_ServiceStatus == 0) stopEvent = true;
         while (m_ServiceStatus == 2) Sleep(1000);

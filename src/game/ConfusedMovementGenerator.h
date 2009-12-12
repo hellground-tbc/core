@@ -32,7 +32,7 @@ class TRINITY_DLL_SPEC ConfusedMovementGenerator
 : public MovementGeneratorMedium< T, ConfusedMovementGenerator<T> >
 {
     public:
-        explicit ConfusedMovementGenerator() : i_nextMoveTime(0) {}
+        explicit ConfusedMovementGenerator() {}
 
         void Initialize(T &);
         void Finalize(T &);
@@ -49,7 +49,6 @@ class TRINITY_DLL_SPEC ConfusedMovementGenerator
         MovementGeneratorType GetMovementGeneratorType() { return CONFUSED_MOTION_TYPE; }
     private:
         void _InitSpecific(T &, bool &, bool &);
-        TimeTracker i_nextMoveTime;
         float i_waypoints[MAX_CONF_WAYPOINTS+1][3];
         DestinationHolder< Traveller<T> > i_destinationHolder;
         uint32 i_nextMove;

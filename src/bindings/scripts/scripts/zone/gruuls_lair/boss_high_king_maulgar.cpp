@@ -58,7 +58,7 @@ EndScriptData */
 //Blindeye the Seer
 #define SPELL_GREATER_PW_SHIELD         33147
 #define SPELL_HEAL                      33144
-#define SPELL_PRAYER_OH                 33152
+#define SPELL_PRAYEROFHEALING           33152
 
 //Krosh Firehand
 #define SPELL_GREATER_FIREBALL  33051
@@ -127,6 +127,9 @@ struct TRINITY_DLL_DECL boss_high_king_maulgarAI : public ScriptedAI
 
     void Reset()
     {
+        if(pInstance)
+            pInstance->SetData(DATA_MAULGAREVENT, NOT_STARTED);
+
         ArcingSmash_Timer = 10000;
         MightyBlow_Timer = 40000;
         Whirlwind_Timer = 30000;
@@ -150,10 +153,6 @@ struct TRINITY_DLL_DECL boss_high_king_maulgarAI : public ScriptedAI
                 }
             }
         }
-
-        //reset encounter
-        if (pInstance)
-            pInstance->SetData(DATA_MAULGAREVENT, NOT_STARTED);
     }
 
     void KilledUnit()
@@ -170,10 +169,9 @@ struct TRINITY_DLL_DECL boss_high_king_maulgarAI : public ScriptedAI
     {
         DoScriptText(SAY_DEATH, m_creature);
 
-        if(CheckAllBossDied(pInstance, m_creature))
+        if(pInstance)
             pInstance->SetData(DATA_MAULGAREVENT, DONE);
     }
-
        void AddDeath()
        {
             switch(rand()%4)
@@ -521,13 +519,15 @@ struct TRINITY_DLL_DECL boss_blindeye_the_seerAI : public ScriptedAI
 
     uint32 GreaterPowerWordShield_Timer;
     uint32 Heal_Timer;
+    uint32 PrayerofHealing_Timer;
 
     ScriptedInstance* pInstance;
 
     void Reset()
     {
         GreaterPowerWordShield_Timer = 5000;
-        Heal_Timer = 30000;
+        Heal_Timer = 25000 + rand()%15000;
+        PrayerofHealing_Timer = 45000 + rand()%10000;
 
         //reset encounter
         if (pInstance)
@@ -593,9 +593,16 @@ struct TRINITY_DLL_DECL boss_blindeye_the_seerAI : public ScriptedAI
         if(Heal_Timer < diff)
         {
             DoCast(m_creature, SPELL_HEAL);
-            Heal_Timer = 60000;
+            Heal_Timer = 15000 + rand()%25000;
         }else Heal_Timer -= diff;
-
+        
+        //PrayerofHealing_Timer
+        if (PrayerofHealing_Timer < diff)
+        {
+            DoCast(m_creature, SPELL_PRAYEROFHEALING);
+            PrayerofHealing_Timer = 35000 + rand()%15000;
+        }else PrayerofHealing_Timer -= diff;
+        
         DoMeleeAttackIfReady();
     }
 };

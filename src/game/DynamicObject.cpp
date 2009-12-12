@@ -76,8 +76,16 @@ bool DynamicObject::Create( uint32 guidlow, Unit *caster, uint32 spellId, uint32
         return false;
     }
 
+    float scale;       // Temp hack :[ When we find a proper way to determine visual scale or radius for persistent auras this should be deleted.
+    switch(spellId)    // But now use this for spells in important encounters to set good visual radius.
+    {
+        case 30129: scale = 2.5; break;  // Nightbane  - Charred Earth
+        case 38575: scale = 4.0; break;  // Lady Vashj - Toxic Spores
+        default:    scale = 1.5; break;
+    }
+    
     SetEntry(spellId);
-    SetFloatValue( OBJECT_FIELD_SCALE_X, 1 );
+    SetFloatValue( OBJECT_FIELD_SCALE_X, scale );
     SetUInt64Value( DYNAMICOBJECT_CASTER, caster->GetGUID() );
     SetUInt32Value( DYNAMICOBJECT_BYTES, 0x00000001 );
     SetUInt32Value( DYNAMICOBJECT_SPELLID, spellId );
@@ -125,7 +133,7 @@ void DynamicObject::Update(uint32 p_time)
         {
             Trinity::DynamicObjectUpdater notifier(*this,caster);
             VisitNearbyObject(GetRadius(), notifier);
-            m_updateTimer = 500; // is this official-like?
+            m_updateTimer = 600; // is this official-like?
         }else m_updateTimer -= p_time;
     }
 

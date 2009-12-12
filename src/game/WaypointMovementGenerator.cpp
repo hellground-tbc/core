@@ -189,7 +189,7 @@ WaypointMovementGenerator<Creature>::Update(Creature &unit, const uint32 &diff)
 
             //note: disable "start" for mtmap
             if(node->event_id && rand()%100 < node->event_chance)
-                sWorld.ScriptsStart(sWaypointScripts, node->event_id, &unit, NULL, false);
+                unit.GetMap()->ScriptsStart(sWaypointScripts, node->event_id, &unit, NULL/*, false*/);
 
             MovementInform(unit);
             unit.UpdateWaypointID(i_currentNode);
@@ -257,7 +257,7 @@ void FlightPathMovementGenerator::Finalize(Player & player)
 {
 
     float x, y, z;
-    i_destinationHolder.GetLocationNow(player.GetMapId(), x, y, z);
+    i_destinationHolder.GetLocationNow(player.GetBaseMap(), x, y, z);
     player.SetPosition(x, y, z, player.GetOrientation());
 
     player.clearUnitState(UNIT_STAT_IN_FLIGHT);

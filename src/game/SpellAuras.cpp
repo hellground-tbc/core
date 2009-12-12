@@ -231,7 +231,7 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleModSpellDamagePercentFromStat,             //174 SPELL_AURA_MOD_SPELL_DAMAGE_OF_STAT_PERCENT  implemented in Unit::SpellBaseDamageBonus (by default intellect, dependent from SPELL_AURA_MOD_SPELL_HEALING_OF_STAT_PERCENT)
     &Aura::HandleModSpellHealingPercentFromStat,            //175 SPELL_AURA_MOD_SPELL_HEALING_OF_STAT_PERCENT implemented in Unit::SpellBaseHealingBonus
     &Aura::HandleSpiritOfRedemption,                        //176 SPELL_AURA_SPIRIT_OF_REDEMPTION   only for Spirit of Redemption spell, die at aura end
-    &Aura::HandleNULL,                                      //177 SPELL_AURA_AOE_CHARM
+    &Aura::HandleAuraAoeCharm,                              //177 SPELL_AURA_AOE_CHARM
     &Aura::HandleNoImmediateEffect,                         //178 SPELL_AURA_MOD_DEBUFF_RESISTANCE          implemented in Unit::MagicSpellHitResult
     &Aura::HandleNoImmediateEffect,                         //179 SPELL_AURA_MOD_ATTACKER_SPELL_CRIT_CHANCE implemented in Unit::SpellCriticalBonus
     &Aura::HandleNoImmediateEffect,                         //180 SPELL_AURA_MOD_FLAT_SPELL_DAMAGE_VERSUS   implemented in Unit::SpellDamageBonus
@@ -483,6 +483,7 @@ AreaAura::~AreaAura()
 PersistentAreaAura::PersistentAreaAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target,
 Unit *caster, Item* castItem) : Aura(spellproto, eff, currentBasePoints, target, caster, castItem)
 {
+    dynObjGUID = 0;
     m_isPersistent = true;
 }
 
@@ -766,14 +767,28 @@ void PersistentAreaAura::Update(uint32 diff)
     Unit *caster = GetCaster();
     if (caster)
     {
-        DynamicObject *dynObj = caster->GetDynObject(GetId(), GetEffIndex());
-        if (dynObj)
+        if(GetId() == 40253)
         {
-            if (!m_target->IsWithinDistInMap(dynObj, dynObj->GetRadius()))
+            DynamicObject *dynObj = caster->GetMap()->GetDynamicObject(dynObjGUID);
+            if(dynObj)
+            {
+                if (!m_target->IsWithinDistInMap(dynObj, dynObj->GetRadius()))
+                    remove = true;
+            }
+            else
                 remove = true;
         }
         else
-            remove = true;
+        {
+            DynamicObject *dynObj = caster->GetDynObject(GetId(), GetEffIndex());
+            if (dynObj)
+            {
+                if (!m_target->IsWithinDistInMap(dynObj, dynObj->GetRadius()))
+                    remove = true;
+            }
+            else
+                remove = true;
+        }
     }
     else
         remove = true;
@@ -1049,7 +1064,18 @@ void Aura::_RemoveAura()
 
         // Conflagrate aura state
         if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && (GetSpellProto()->SpellFamilyFlags & 4))
-            m_target->ModifyAuraState(AURA_STATE_IMMOLATE, false);
+        {
+            Unit::AuraList const &mPeriodic = m_target->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
+            for(Unit::AuraList::const_iterator i = mPeriodic.begin(); i != mPeriodic.end(); ++i)
+            {
+                 if((*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && ((*i)->GetSpellProto()->SpellFamilyFlags & 4))
+                 {
+                     m_target->ModifyAuraState(AURA_STATE_IMMOLATE, true); 
+                     break;
+                 }
+                 m_target->ModifyAuraState(AURA_STATE_IMMOLATE, false);
+            }
+        }
 
         // Swiftmend aura state
         if(GetSpellProto()->SpellFamilyName == SPELLFAMILY_DRUID
@@ -1487,8 +1513,14 @@ void Aura::TriggerSpell()
                     }
 //                    // Bloodmyst Tesla
 //                    case 31611: break;
-//                    // Doomfire
-//                    case 31944: break;
+                    // Doomfire
+                    case 31944:
+                    {
+                        int32 damage = 2250 - (150 * m_tickNumber-1);
+                        if(damage < 0) damage = 0;
+                            m_target->CastCustomSpell(m_target, 31969, &damage, NULL, NULL, true, 0, this, originalCasterGUID);
+                        return;
+                    }
 //                    // Teleport Test
 //                    case 32236: break;
 //                    // Earthquake
@@ -1872,7 +1904,7 @@ void Aura::TriggerSpell()
         triggeredSpellInfo = sSpellStore.LookupEntry(trigger_spell_id);
         if(triggeredSpellInfo == NULL)
         {
-            sLog.outError("Aura::TriggerSpell: Spell %u have 0 in EffectTriggered[%d], not handled custom case?",GetId(),GetEffIndex());
+            sLog.outDebug("Aura::TriggerSpell: Spell %u have 0 in EffectTriggered[%d], not handled custom case?",GetId(),GetEffIndex());
             return;
         }
     }
@@ -2298,7 +2330,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     uint64 guid = caster->m_TotemSlot[3];
                     if (guid)
                     {
-                        Creature *totem = ObjectAccessor::GetCreature(*caster, guid);
+                        Creature *totem = caster->GetMap()->GetCreature(guid);
                         if (totem && totem->isTotem())
                             ((Player*)caster)->CastSpell(totem, 6277, true);
                     }
@@ -3127,9 +3159,9 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
         */
 
         std::list<Unit*> targets;
-        Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(m_target, m_target, World::GetMaxVisibleDistance());
+        Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(m_target, m_target, m_target->GetMap()->GetVisibilityDistance());
         Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(targets, u_check);
-        m_target->VisitNearbyObject(World::GetMaxVisibleDistance(), searcher);
+        m_target->VisitNearbyObject(m_target->GetMap()->GetVisibilityDistance(), searcher);
         for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
         {
             if(!(*iter)->hasUnitState(UNIT_STAT_CASTING))
@@ -3324,6 +3356,8 @@ void Aura::HandleInvisibility(bool apply, bool Real)
             // remove player from the objective's active player count at invisibility
             if(OutdoorPvP * pvp = ((Player*)m_target)->GetOutdoorPvP())
                 pvp->HandlePlayerActivityChanged((Player*)m_target);
+
+            m_target->SetToNotify();
         }
 
         // apply only if not in GM invisibility and not stealth
@@ -3362,6 +3396,7 @@ void Aura::HandleInvisibility(bool apply, bool Real)
                             pvp->HandlePlayerActivityChanged((Player*)m_target);
                 }
             }
+            m_target->SetToNotify();
         }
     }
 }
@@ -3420,6 +3455,22 @@ void Aura::HandleAuraModSilence(bool apply, bool Real)
 
         switch (GetId())
         {
+            case 28730:                                 // Arcane Torrent (Mana)
+            {
+                Unit * caster = GetCaster();
+                if (!caster)
+                    return;
+
+                Aura * dummy = caster->GetDummyAura(28734);
+                if (dummy)
+                {
+                    int32 bp = (5 + caster->getLevel()) * dummy->GetStackAmount();
+                    caster->CastCustomSpell(caster, 28733, &bp, NULL, NULL, true);
+                    caster->RemoveAurasDueToSpell(28734);
+                }
+                return;
+            }
+
             // Arcane Torrent (Energy)
             case 25046:
             {
@@ -3602,7 +3653,9 @@ void Aura::HandleAuraModDecreaseSpeed(bool /*apply*/, bool Real)
     if(!Real)
         return;
 
-	//m_target->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
+    if(m_spellProto->Id == 12323)
+        m_target->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
+
     m_target->UpdateSpeed(MOVE_RUN, true);
     m_target->UpdateSpeed(MOVE_SWIM, true);
     m_target->UpdateSpeed(MOVE_FLIGHT, true);
@@ -3891,6 +3944,9 @@ void Aura::HandlePeriodicEnergize(bool apply, bool Real)
         m_periodicTimer += m_modifier.periodictime;
 
     m_isPeriodic = apply;
+
+    if(GetId() == 5229)
+        m_target->UpdateArmor();
 }
 
 void Aura::HandlePeriodicHeal(bool apply, bool Real)
@@ -4800,28 +4856,28 @@ void Aura::HandleRangedAmmoHaste(bool apply, bool Real)
 void Aura::HandleAuraModAttackPower(bool apply, bool Real)
 {
     m_target->HandleStatModifier(UNIT_MOD_ATTACK_POWER, TOTAL_VALUE, float(GetModifierValue()), apply);
-	if(apply)
-	switch(m_spellProto->Id){
-	    // Warrior & Druid Demoshout should remove stealth
-	    case 1160:
-		case 6190:
-		case 11554:
-		case 11555:
-		case 11556:
-		case 25202:
-		case 25203:
-		case 47437:  //WotLK spell
-	    case 99:
-		case 1735:
-		case 9490:
-		case 9747:
-		case 9898:
-		case 26998:
-		case 48559:  //WotLK spell
-		case 48560:  //WotLK spell
-	        m_target->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
-		    break;
-	}
+    if(apply)
+    switch(m_spellProto->Id){
+        // Warrior & Druid Demoshout should remove stealth
+        case 1160:
+        case 6190:
+        case 11554:
+        case 11555:
+        case 11556:
+        case 25202:
+        case 25203:
+        case 47437:  //WotLK spell
+        case 99:
+        case 1735:
+        case 9490:
+        case 9747:
+        case 9898:
+        case 26998:
+        case 48559:  //WotLK spell
+        case 48560:  //WotLK spell
+            m_target->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
+            break;
+    }
 }
 
 void Aura::HandleAuraModRangedAttackPower(bool apply, bool Real)
@@ -5215,15 +5271,15 @@ void Aura::HandleAuraModPacify(bool apply, bool Real)
         m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED);
     else
         m_target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED);
-		
-	
- 	if(m_spellProto->Id == 45839){
-		if(apply){
+        
+    
+     if(m_spellProto->Id == 45839){
+        if(apply){
             m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-		}else{
+        }else{
             m_target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-		}
-	}
+        }
+    }
 }
 
 void Aura::HandleAuraModPacifyAndSilence(bool apply, bool Real)
@@ -5378,6 +5434,20 @@ void Aura::HandleSpiritOfRedemption( bool apply, bool Real )
         m_target->setDeathState(JUST_DIED);
 }
 
+void Aura::HandleAuraAoeCharm( bool apply, bool Real )
+{
+    if(!Real)
+        return;
+
+    if(Unit* caster = this->GetCaster())
+    {
+        if(apply)
+            m_target->SetCharmedOrPossessedBy(caster, false);
+        else
+            m_target->RemoveCharmedOrPossessedBy(caster);
+    }
+}
+
 void Aura::CleanupTriggeredSpells()
 {
     uint32 tSpellId = m_spellProto->EffectTriggerSpell[GetEffIndex()];
@@ -5462,6 +5532,9 @@ void Aura::PeriodicTick()
     if(!m_target->isAlive())
         return;
 
+    if(GetId() == 38575 && m_tickNumber < 3)  // Toxic - Spores delay deal damage
+        return;
+
     switch(m_modifier.m_auraname)
     {
         case SPELL_AURA_PERIODIC_DAMAGE:
@@ -5519,6 +5592,13 @@ void Aura::PeriodicTick()
                             }
                         }
                         m_modifier.m_amount = 100 * m_tickNumber;
+                    }break;
+                    // Curse of Agony - Sathrovarr
+                    case 45032:
+                    case 45034:
+                    {
+                        if((m_tickNumber-1) % 5 == 0 && (m_tickNumber-1) > 0)
+                            m_modifier.m_amount *= 2;
                     }break;
                     // Brutallus Burn
                     case 46394:
@@ -5926,7 +6006,7 @@ void Aura::PeriodicTick()
             // Mark of Kazzak
             if(GetId() == 32960)
             {
-                int32 modifier = (m_target->GetPower(power) * 0.05f);
+                int32 modifier = (m_target->GetMaxPower(power) * 0.05f);
                 m_target->ModifyPower(power, -modifier);
 
                 if(m_target->GetPower(power) == 0)
