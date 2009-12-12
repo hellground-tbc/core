@@ -152,7 +152,7 @@ bool IsPassiveStackableSpell( uint32 spellId )
 
 Unit::Unit()
 : WorldObject(), i_motionMaster(this), m_ThreatManager(this), m_HostilRefManager(this)
-, m_IsInNotifyList(false), m_Notified(false), IsAIEnabled(false), NeedChangeAI(false)
+, m_NotifyListPos(-1), m_Notified(false), IsAIEnabled(false), NeedChangeAI(false)
 , i_AI(NULL), i_disabledAI(NULL), m_removedAurasCount(0), m_procDeep(0)
 {
     m_objectType |= TYPEMASK_UNIT;
@@ -7659,6 +7659,7 @@ void Unit::RemoveCharmAuras()
     RemoveSpellsCausingAura(SPELL_AURA_MOD_CHARM);
     RemoveSpellsCausingAura(SPELL_AURA_MOD_POSSESS_PET);
     RemoveSpellsCausingAura(SPELL_AURA_MOD_POSSESS);
+    RemoveSpellsCausingAura(SPELL_AURA_AOE_CHARM);
 }
 
 void Unit::UnsummonAllTotems()
@@ -10376,7 +10377,7 @@ void Unit::AddToWorld()
     {
         WorldObject::AddToWorld();
         m_Notified = false;
-        m_IsInNotifyList = false;
+        assert(m_NotifyListPos < 0); //instance : crash
         SetToNotify();
     }
 }
@@ -10389,6 +10390,10 @@ void Unit::RemoveFromWorld()
         RemoveCharmAuras();
         RemoveBindSightAuras();
         RemoveNotOwnSingleTargetAuras();
+
+        if (m_NotifyListPos >= 0)
+            GetMap()->RemoveUnitFromNotify(this);
+
         WorldObject::RemoveFromWorld();
     }
 }
@@ -11934,11 +11939,9 @@ void Unit::RemoveAurasAtChanneledTarget(SpellEntry const* spellInfo, Unit * cast
 
 void Unit::SetToNotify()
 {
-    if(m_IsInNotifyList)
-        return;
-
-    if(Map *map = GetMap())
-        map->AddUnitToNotify(this);
+    // it is called somewhere when obj is not in world (crash when log in instance)
+    if (m_NotifyListPos < 0)
+        GetMap()->AddUnitToNotify(this);
 }
 
 void Unit::Kill(Unit *pVictim, bool durabilityLoss)

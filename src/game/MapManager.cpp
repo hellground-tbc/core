@@ -280,6 +280,9 @@ MapManager::Update(time_t diff)
     ObjectAccessor::Instance().Update(i_timer.GetCurrent());
     //sWorld.RecordTimeDiff("UpdateObjectAccessor");
 
+    for(MapMapType::iterator iter = i_maps.begin(); iter != i_maps.end(); ++iter)
+        iter->second->DelayedUpdate(i_timer.GetCurrent());
+
     for (TransportSet::iterator iter = m_Transports.begin(); iter != m_Transports.end(); ++iter)
         (*iter)->Update(i_timer.GetCurrent());
     //sWorld.RecordTimeDiff("UpdateTransports");
@@ -299,7 +302,7 @@ void MapManager::DoDelayedMovesAndRemoves()
     
 #pragma omp parallel for schedule(dynamic) private(i) shared(update_queue)
     for(i=0;i<i_maps.size();i++)
-    update_queue[i]->DoDelayedMovesAndRemoves();
+    update_queue[i]->RelocationNotify();
 }
 
 bool MapManager::ExistMapAndVMap(uint32 mapid, float x,float y)

@@ -3363,6 +3363,8 @@ void Aura::HandleInvisibility(bool apply, bool Real)
             // remove player from the objective's active player count at invisibility
             if(OutdoorPvP * pvp = ((Player*)m_target)->GetOutdoorPvP())
                 pvp->HandlePlayerActivityChanged((Player*)m_target);
+
+            m_target->SetToNotify();
         }
 
         // apply only if not in GM invisibility and not stealth
@@ -3401,6 +3403,7 @@ void Aura::HandleInvisibility(bool apply, bool Real)
                             pvp->HandlePlayerActivityChanged((Player*)m_target);
                 }
             }
+            m_target->SetToNotify();
         }
     }
 }

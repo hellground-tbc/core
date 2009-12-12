@@ -1728,6 +1728,7 @@ void Creature::Respawn()
 
         //GetMap()->Add(this);
     }
+    SetToNotify();
 }
 
 bool Creature::IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges)
