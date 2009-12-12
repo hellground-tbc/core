@@ -27,6 +27,7 @@
 #include "ObjectAccessor.h"
 #include "Transports.h"
 #include "GridDefines.h"
+#include "InstanceData.h"
 #include "MapInstanced.h"
 #include "DestinationHolderImp.h"
 #include "World.h"
@@ -177,6 +178,17 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player)
                     // TODO: this is not a good place to send the message
                     player->GetSession()->SendAreaTriggerMessage(player->GetSession()->GetTrinityString(810), mapName);
                     sLog.outDebug("MAP: Player '%s' must be in a raid group to enter instance of '%s'", player->GetName(), mapName);
+                    return false;
+                }
+            }
+
+            if(Group* pGroup = player->GetGroup())
+            {
+                InstanceGroupBind* boundedInstance = player->GetGroup()->GetBoundInstance(mapid, player->GetDifficulty());
+                if(boundedInstance && boundedInstance->save && pGroup->InCombatToInstance(boundedInstance->save->GetInstanceId()))
+                {
+                    sLog.outDebug("MAP: Player '%s' can't enter instance '%s' while an encounter is in progress.", player->GetName(), mapName);
+                    player->SendTransferAborted(mapid, TRANSFER_ABORT_ZONE_IN_COMBAT);
                     return false;
                 }
             }
