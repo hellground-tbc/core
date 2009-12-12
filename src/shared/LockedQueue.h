@@ -39,7 +39,7 @@ namespace ACE_Based
         StorageType _queue;
 
         //! Cancellation flag
-        volatile bool _canceled;
+        bool _canceled;
 
         public:
 
@@ -52,93 +52,51 @@ namespace ACE_Based
             /**
              * @see Queue::add(const T& item)
              */
-            void add(const T& item)
-            {
-
-                ACE_Guard<LockType> g(_lock);
-
-                ASSERT(!_canceled);
-                //	throw Cancellation_Exception();
-
+            //! Adds an item to the queue.
+             void add(const T& item)
+             {
+                 ACE_Guard<LockType> g(this->_lock);
+ 
+                //ASSERT(!this->_canceled);
+                // throw Cancellation_Exception();
+ 
                 _queue.push_back(item);
-
-            }
-
-            /**
-             * @see Queue::next()
-             */
-            T next()
+             }
+ 
+            //! Gets the next result in the queue, if any.
+            bool next(T& result)
             {
-
-                ACE_Guard<LockType> g(_lock);
-
-                ASSERT (!_queue.empty() || !_canceled);
-                //	throw Cancellation_Exception();
-
-                T item = _queue.front();
+                 ACE_Guard<LockType> g(this->_lock);
+ 
+                if (_queue.empty())
+                    return false;
+ 
+                //ASSERT (!_queue.empty() || !this->_canceled);
+                // throw Cancellation_Exception();
+ 
+                result = _queue.front();
                 _queue.pop_front();
-
-                return item;
-
-            }
-
-            T front()
-            {
-                ACE_Guard<LockType> g(_lock);
-
-                ASSERT (!_queue.empty());
-                //	throw NoSuchElement_Exception();
-
-                return _queue.front();
-            }
-
-            /**
-             * @see Queue::cancel()
-             */
-            void cancel()
-            {
-
-                ACE_Guard<LockType> g(_lock);
-
+ 
+                return true;
+             }
+ 
+            //! Cancels the queue.
+             void cancel()
+             {
+                 ACE_Guard<LockType> g(this->_lock);
+ 
                 _canceled = true;
-
-            }
-
-            /**
-             * @see Queue::isCanceled()
-             */
-            bool isCanceled()
-            {
-
-                // Faster check since the queue will not become un-canceled
-                if(_canceled)
-                    return true;
-
-                ACE_Guard<LockType> g(_lock);
+             }
+ 
+            //! Checks if the queue is cancelled.
+            bool cancelled()
+             {
+                 ACE_Guard<LockType> g(this->_lock);
 
                 return _canceled;
+             }
+     };
 
-            }
-
-            /**
-             * @see Queue::size()
-             */
-            size_t size()
-            {
-
-                ACE_Guard<LockType> g(_lock);
-                return _queue.size();
-
-            }
-
-            bool empty()
-            {
-
-                ACE_Guard<LockType> g(_lock);
-                return _queue.empty();
-            }
-
-    };
 
 }
 #endif
