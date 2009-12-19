@@ -82,16 +82,19 @@ EndScriptData */
 #define OLUM_Z                     -7.54773f
 #define OLUM_O                     0.401581f
 
-const uint32 SpellID[2] = { 
+const uint32 SpellID[2] =
+{ 
     38433,     // summon Sporebat
     38431      // summon Lurker
 }; 
-const uint32 PetID[2] = { 
+const uint32 PetID[2] = 
+{ 
     22120,     // Sporebat entry
     22119      // Lurker entry
 }; 
 const int32 AbilityTEXT[3] = { -1548023, -1548024, -1548025 }; // text on ability gain
-const uint32 Ability[3]  = { 
+const uint32 Ability[3]  = 
+{ 
     38455,    // Power of Sharkkis
     38452,    // Power of Tidalvess
     38451     // Power of Caribdis 
@@ -619,6 +622,33 @@ struct TRINITY_DLL_DECL boss_fathomguard_caribdisAI : public ScriptedAI
             pInstance->SetData(DATA_KARATHRESSEVENT, NOT_STARTED);
     }
 
+    Unit* selectAdvisorUnit()
+    {
+        Unit* pUnit = NULL;
+        
+        if(pInstance)
+        {
+            switch(rand()%4)
+            {
+                case 0:
+                    pUnit = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_KARATHRESS));
+                break;
+                case 1:
+                    pUnit = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_SHARKKIS));
+                break;
+                case 2:
+                    pUnit = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_TIDALVESS));
+                break;
+                case 3:
+                    pUnit = m_creature;
+                break;
+            }
+        }
+        else
+            pUnit = m_creature;
+
+        return pUnit;
+    }
     void JustDied(Unit *victim)
     {
         if (pInstance)
@@ -666,9 +696,11 @@ struct TRINITY_DLL_DECL boss_fathomguard_caribdisAI : public ScriptedAI
         //TidalSurge_Timer
         if (TidalSurge_Timer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_TIDAL_SURGE);
-            // Hacky way to do it - won't trigger elseways
-            m_creature->getVictim()->CastSpell( m_creature->getVictim(), SPELL_TIDAL_SURGE_FREEZE, true );
+            if(Unit *target = m_creature->getVictim())
+                return;
+
+            DoCast(target, SPELL_TIDAL_SURGE);
+            target->CastSpell( target, SPELL_TIDAL_SURGE_FREEZE, true );
             TidalSurge_Timer = 15000+rand()%5000;
         }else TidalSurge_Timer -= diff;
 
@@ -685,10 +717,9 @@ struct TRINITY_DLL_DECL boss_fathomguard_caribdisAI : public ScriptedAI
                 Cyclone->setFaction(m_creature->getFaction());
                 Cyclone->CastSpell(Cyclone, SPELL_CYCLONE_CYCLONE, true);
                 Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0);
+
                 if( target )
-                {
                     Cyclone->AI()->AttackStart(target);
-                }
             }
         }else Cyclone_Timer -= diff;
 
@@ -699,42 +730,16 @@ struct TRINITY_DLL_DECL boss_fathomguard_caribdisAI : public ScriptedAI
             Unit *pUnit = NULL;
 
             while( pUnit == NULL || !pUnit->isAlive() )
-            {
                 pUnit = selectAdvisorUnit();
-            }
 
             if(pUnit && pUnit->isAlive())
                 DoCast(pUnit, SPELL_HEAL);
+
             Heal_Timer = 60000;
         }else Heal_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }
-
-    Unit* selectAdvisorUnit()
-    {
-        Unit* pUnit;
-        if(pInstance)
-        {
-            switch(rand()%4)
-            {
-            case 0:
-                pUnit = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_KARATHRESS));
-                break;
-            case 1:
-                pUnit = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_SHARKKIS));
-                break;
-            case 2:
-                pUnit = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_TIDALVESS));
-                break;
-            case 3:
-                pUnit = m_creature;
-                break;
-            }
-        }else pUnit = m_creature;
-
-                return pUnit;
-        }
 };
 
 CreatureAI* GetAI_boss_fathomlord_karathress(Creature *_Creature)
