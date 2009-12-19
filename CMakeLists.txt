@@ -13,6 +13,19 @@ CONFIGURE_FILE(
   IMMEDIATE @ONLY)
 ADD_CUSTOM_TARGET(uninstall "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
 
+add_definitions("-O3 
+-ggdb 
+-ffast-math 
+-msse3 
+-fomit-frame-pointer 
+-fno-delete-null-pointer-checks 
+-ftracer 
+-fno-strict-aliasing 
+-fno-math-errno
+-funsafe-math-optimizations
+-funroll-loops
+")
+
 OPTION(DO_MYSQL "With MySQL support" 1)
 OPTION(DO_POSTGRESQL "With PostgreSQL support" 0) # not complete yet, may not link properly.
 OPTION(DO_SCRIPTS "With trinityscripts" 1)
