@@ -272,22 +272,22 @@ MapManager::Update(time_t diff)
 
     int32 i=0;
     MapMapType::iterator iter;
-    std::vector<Map*> update_queue(i_maps.size());
+    //std::vector<Map*> update_queue(i_maps.size());
+    Map* update_queue[i_maps.size()];
     omp_set_num_threads(sWorld.getConfig(CONFIG_NUMTHREADS));
     for(iter = i_maps.begin(), i=0;iter != i_maps.end(); ++iter, i++)
         update_queue[i]=iter->second;
-/*
-    gomp in gcc <4.4 version cannot parallelise loops using random access iterators
-    so until gcc 4.4 isnt standard, we need the update_queue workaround
-*/
-    
-#pragma omp parallel for schedule(dynamic) private(i) shared(update_queue)
+    i = 0;
+
+#pragma omp parallel for schedule(dynamic) private(i) shared(update_queue) num_threads(sWorld.getConfig(CONFIG_NUMTHREADS))
     for( i = 0; i < i_maps.size(); ++i )
     {
-        update_queue[i]->Update(i_timer.GetCurrent());
+      checkAndCorrectGridStatesArray();                   // debugging code, should be deleted some day
+      update_queue[i]->Update(i_timer.GetCurrent());
         //sWorld.RecordTimeDiff("UpdateMap %u", update_queue[i]->GetId());
     }
-    checkAndCorrectGridStatesArray();                   // debugging code, should be deleted some day
+
+    
 
     ObjectAccessor::Instance().Update(i_timer.GetCurrent());
     //sWorld.RecordTimeDiff("UpdateObjectAccessor");
