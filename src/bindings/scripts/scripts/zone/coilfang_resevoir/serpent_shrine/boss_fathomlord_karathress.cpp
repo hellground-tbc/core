@@ -694,13 +694,13 @@ struct TRINITY_DLL_DECL boss_fathomguard_caribdisAI : public ScriptedAI
         }else WaterBoltVolley_Timer -= diff;
 
         //TidalSurge_Timer
-        if (TidalSurge_Timer < diff)
+        if(TidalSurge_Timer < diff)
         {
             if(Unit *target = m_creature->getVictim())
-                return;
-
-            DoCast(target, SPELL_TIDAL_SURGE);
-            target->CastSpell( target, SPELL_TIDAL_SURGE_FREEZE, true );
+            {
+                DoCast(target, SPELL_TIDAL_SURGE);
+                target->CastSpell( target, SPELL_TIDAL_SURGE_FREEZE, true );
+            }
             TidalSurge_Timer = 15000+rand()%5000;
         }else TidalSurge_Timer -= diff;
 
