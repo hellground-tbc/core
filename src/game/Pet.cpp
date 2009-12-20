@@ -1228,7 +1228,7 @@ bool Pet::InitStatsForLevel(uint32 petlevel)
 
 bool Pet::HaveInDiet(ItemPrototype const* item) const
 {
-    if (!item->FoodType)
+    if (!item || !item->FoodType)
         return false;
 
     CreatureInfo const* cInfo = GetCreatureInfo();

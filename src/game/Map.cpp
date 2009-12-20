@@ -2707,7 +2707,7 @@ void InstanceMap::InitVisibilityDistance()
     //init visibility distance for instances
     
     if(i_mapEntry->MapID == 550) // The Eye
-       m_VisibleDistance = 120.0f;
+       m_VisibleDistance = 180.0f;
     else
         m_VisibleDistance = sWorld.GetMaxVisibleDistanceInInstances();
 }
