@@ -119,6 +119,13 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
         DoYell(SAY_ONDEATH, LANG_UNIVERSAL, NULL);
     }
 
+    void SpellHit(Unit* pAttacker, const SpellEntry* Spell)
+    {
+        for(uint8 i = 0; i<3; i++)
+           if(Spell->Effect[i] == SPELL_EFFECT_INTERRUPT_CAST)
+               return;
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if (IsEvent)
@@ -203,7 +210,8 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
         }else AuraTimer -= diff;
         if(InfernoTimer < diff)
         {
-            DoCast(SelectUnit(SELECT_TARGET_RANDOM,0,100,true), SPELL_INFERNO);
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0,100,true))
+                DoCast(target, SPELL_INFERNO);
             InfernoTimer = 45000;
             switch(rand()%2)
             {

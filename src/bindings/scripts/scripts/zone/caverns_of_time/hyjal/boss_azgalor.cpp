@@ -92,6 +92,13 @@ struct TRINITY_DLL_DECL boss_azgalorAI : public hyjal_trashAI
         }
     }
 
+    void SpellHit(Unit* pAttacker, const SpellEntry* Spell)
+    {
+        for(uint8 i = 0; i<3; i++)
+           if(Spell->Effect[i] == SPELL_EFFECT_INTERRUPT_CAST)
+               return;
+    }
+
     void WaypointReached(uint32 i)
     {
         pos = i;
@@ -149,13 +156,15 @@ struct TRINITY_DLL_DECL boss_azgalorAI : public hyjal_trashAI
 
         if(RainTimer < diff)
         {
-            DoCast(SelectUnit(SELECT_TARGET_RANDOM,0,30,true), SPELL_RAIN_OF_FIRE);
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0,30,true))    
+                DoCast(target, SPELL_RAIN_OF_FIRE);
             RainTimer = 20000+rand()%15000;
         }else RainTimer -= diff;
 
         if(DoomTimer < diff)
         {
-            DoCast(SelectUnit(SELECT_TARGET_RANDOM,1,100,true), SPELL_DOOM);//never on tank
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,1,100,true))
+                DoCast(target, SPELL_DOOM);//never on tank
             DoomTimer = 45000+rand()%5000;
         }else DoomTimer -= diff;
 
@@ -167,7 +176,8 @@ struct TRINITY_DLL_DECL boss_azgalorAI : public hyjal_trashAI
 
         if(CleaveTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_CLEAVE);
+            if(Unit *target = m_creature->getVictim())
+                DoCast(target, SPELL_CLEAVE);
             CleaveTimer = 10000+rand()%5000;
         }else CleaveTimer -= diff;
 
@@ -272,7 +282,8 @@ struct TRINITY_DLL_DECL mob_lesser_doomguardAI : public hyjal_trashAI
 
         if(CrippleTimer < diff)
         {
-            DoCast(SelectUnit(SELECT_TARGET_RANDOM,0,100,true), SPELL_CRIPPLE);
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0,100,true))
+                DoCast(target, SPELL_CRIPPLE);
             CrippleTimer = 25000+rand()%5000;
         }else CrippleTimer -= diff;
 

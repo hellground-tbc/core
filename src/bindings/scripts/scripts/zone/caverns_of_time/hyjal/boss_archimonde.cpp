@@ -497,6 +497,13 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         }
     }
 
+    void SpellHit(Unit* pAttacker, const SpellEntry* Spell)
+    {
+        for(uint8 i = 0; i<3; i++)
+           if(Spell->Effect[i] == SPELL_EFFECT_INTERRUPT_CAST)
+               return;
+    }
+
     void UnleashSoulCharge()
     {
         m_creature->InterruptNonMeleeSpells(false);
@@ -664,7 +671,8 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
         if(GripOfTheLegionTimer < diff)
         {
-            DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_GRIP_OF_THE_LEGION);
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                DoCast(target, SPELL_GRIP_OF_THE_LEGION);
             GripOfTheLegionTimer = 5000 + rand()%20000;
         }else GripOfTheLegionTimer -= diff;
 
@@ -675,8 +683,10 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
             else
                 DoScriptText(SAY_AIR_BURST2, m_creature);
 
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1))
+                DoCast(target, SPELL_AIR_BURST);//not on tank
 
-            DoCast(SelectUnit(SELECT_TARGET_RANDOM, 1), SPELL_AIR_BURST);//not on tank
+            if( FearTimer < 10000 ) FearTimer += 10000;
             AirBurstTimer = 25000 + rand()%15000;
         }else AirBurstTimer -= diff;
 
@@ -688,7 +698,8 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
         if(DoomfireTimer < diff)
         {
-            SummonDoomfire(SelectUnit(SELECT_TARGET_RANDOM, 1));
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1))
+                SummonDoomfire(target);
             DoomfireTimer = 40000;
         }else DoomfireTimer -= diff;
 
@@ -696,7 +707,8 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         {
             if(CanUseFingerOfDeath())
             {
-                DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_FINGER_OF_DEATH);
+                if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    DoCast(target, SPELL_FINGER_OF_DEATH);
                 MeleeRangeCheckTimer = 1000;
             }
 

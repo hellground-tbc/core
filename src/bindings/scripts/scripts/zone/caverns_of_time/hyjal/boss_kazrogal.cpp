@@ -106,6 +106,13 @@ struct TRINITY_DLL_DECL boss_kazrogalAI : public hyjal_trashAI
         DoPlaySoundToSet(m_creature, SOUND_ONDEATH);
     }
 
+    void SpellHit(Unit* pAttacker, const SpellEntry* Spell)
+    {
+        for(uint8 i = 0; i<3; i++)
+           if(Spell->Effect[i] == SPELL_EFFECT_INTERRUPT_CAST)
+               return;
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if (IsEvent)

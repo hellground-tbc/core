@@ -104,6 +104,13 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
         DoYell(SAY_ONDEATH, LANG_UNIVERSAL, NULL);
     }
 
+    void SpellHit(Unit* pAttacker, const SpellEntry* Spell)
+    {
+        for(uint8 i = 0; i<3; i++)
+           if(Spell->Effect[i] == SPELL_EFFECT_INTERRUPT_CAST)
+               return;
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if (IsEvent)
@@ -148,7 +155,8 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
 
         if(DecayTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_DEATH_AND_DECAY);
+            if(Unit *target = m_creature->getVictim())
+                DoCast(target, SPELL_DEATH_AND_DECAY);
             DecayTimer = 60000+rand()%20000;
             switch(rand()%2)
             {
@@ -165,9 +173,13 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
 
         if(NovaTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_FROST_NOVA);
+            if(Unit *target = m_creature->getVictim())
+                DoCast(target, SPELL_FROST_NOVA);
             NovaTimer = 30000+rand()%15000;
-            DecayTimer += 10000%1000;
+
+            if(DecayTimer < 10000)
+                DecayTimer += 10000%1000;
+
             switch(rand()%2)
             {
                 case 0:
@@ -182,7 +194,8 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
         }else NovaTimer -= diff;
         if(IceboltTimer < diff)
         {
-            DoCast(SelectUnit(SELECT_TARGET_RANDOM,0,40,true), SPELL_ICEBOLT);
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0,40,true))
+                DoCast(target, SPELL_ICEBOLT);
             IceboltTimer = 11000+rand()%20000;
         }else IceboltTimer -= diff;
 
