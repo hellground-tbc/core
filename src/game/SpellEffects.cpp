@@ -462,7 +462,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                         // Starfire Bonus (caster)
                         switch((*i)->GetModifier()->m_miscvalue)
                         {
-                            case 5481:                      // Nordrassil Regalia - bonus
+                            case 37327:                      // Nordrassil Regalia - bonus
                             {
                                 Unit::AuraList const& m_periodicDamageAuras = unitTarget->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
                                 for(Unit::AuraList::const_iterator itr = m_periodicDamageAuras.begin(); itr != m_periodicDamageAuras.end(); ++itr)
