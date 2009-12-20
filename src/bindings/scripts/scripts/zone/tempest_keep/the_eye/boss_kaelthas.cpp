@@ -1688,13 +1688,13 @@ struct TRINITY_DLL_DECL mob_phoenix_tkAI : public ScriptedAI
 
     ScriptedInstance* pInstance;
     uint32 Cycle_Timer;
-    bool egg;
+    bool Egg;
 
     void Reset()
     {
         m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);//birds can fly! :)
-        egg = true;
         Cycle_Timer = 2000;
+        Egg = true;
         m_creature->CastSpell(m_creature,SPELL_BURN,true);
     }
 
@@ -1705,24 +1705,18 @@ struct TRINITY_DLL_DECL mob_phoenix_tkAI : public ScriptedAI
         if(damage >= m_creature->GetHealth())
         {
             damage = 0;
-            if(egg)
-            {
-                float x,y,z;
-                m_creature->GetPosition(x,y,z);
-                z = m_creature->GetMap()->GetVmapHeight(x,y,z,true);
+            float x,y,z;
+            m_creature->GetPosition(x,y,z);
             
-                if(z == INVALID_HEIGHT)
-                    z = ROOM_BASE_Z;
-
-                Creature * phoenixEgg = m_creature->SummonCreature(PHOENIX_EGG,x,y,z,m_creature->GetOrientation(),TEMPSUMMON_TIMED_DESPAWN,16000);
-                if (phoenixEgg)
-                {
-                    phoenixEgg->setFaction(m_creature->getFaction());
-                    phoenixEgg = 0;
-                }
-                m_creature->Kill(m_creature,false);
-                m_creature->RemoveCorpse();
+            Creature * phoenixEgg = Egg ? m_creature->SummonCreature(PHOENIX_EGG,x,y,z,0,TEMPSUMMON_TIMED_DESPAWN,600000) : NULL;
+            
+            if (phoenixEgg)
+            {
+                phoenixEgg->setFaction(m_creature->getFaction());
+                phoenixEgg = 0;
             }
+            m_creature->Kill(m_creature,false);
+            m_creature->RemoveCorpse();
         }
     }
 
@@ -1735,8 +1729,8 @@ struct TRINITY_DLL_DECL mob_phoenix_tkAI : public ScriptedAI
                 Creature* Kael = Unit::GetCreature((*m_creature), pInstance->GetData64(DATA_KAELTHAS));
                 if (Kael && Kael->getThreatManager().getThreatList().empty())
                 {
-                    egg = false;
-                    m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                    Egg = false;
+                    m_creature->Kill(m_creature, false);
                     Cycle_Timer = 2000;
                     return;
                 }
@@ -1998,8 +1992,8 @@ struct TRINITY_DLL_DECL weapon_advisorAI : public ScriptedAI
                     if(Unit* adv = CheckIfAdvisorNeedHeal())
                     {
                         DoCast(adv,SPELL_INFUSER_HEAL,false);
-                        Heal_Timer = 5000;
-                    }else Heal_Timer = 1000;                     
+                        Heal_Timer = 10000;
+                    }else Heal_Timer = 5000;                     
                 }else Heal_Timer -= diff;
                 
                 if(HNova_Timer < diff)
@@ -2057,7 +2051,9 @@ struct TRINITY_DLL_DECL weapon_advisorAI : public ScriptedAI
                 
                 if(Rend_Timer <= diff)
                 {
-                    m_creature->CastSpell(m_creature->getVictim(),SPELL_WARP_REND,true);
+                    if(Aura * aur = m_creature->GetAura(SPELL_WARP_REND,0))
+                        if(aur && aur->GetStackAmount() < 15)
+                            m_creature->CastSpell(m_creature->getVictim(),SPELL_WARP_REND,true);
                     Rend_Timer = 2000;
                 }else Rend_Timer -= diff;
                 
