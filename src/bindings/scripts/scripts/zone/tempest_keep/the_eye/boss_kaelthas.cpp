@@ -2052,7 +2052,7 @@ struct TRINITY_DLL_DECL weapon_advisorAI : public ScriptedAI
                 if(Rend_Timer <= diff)
                 {
                     if(Aura * aur = m_creature->GetAura(SPELL_WARP_REND,0))
-                        if(aur && aur->GetStackAmount() < 15)
+                        if(aur && aur->GetStackAmount() < 10)
                             m_creature->CastSpell(m_creature->getVictim(),SPELL_WARP_REND,true);
                     Rend_Timer = 2000;
                 }else Rend_Timer -= diff;
