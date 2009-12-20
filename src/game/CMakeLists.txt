@@ -138,6 +138,8 @@ SET(game_STAT_SRCS
    MovementGenerator.h
    MovementGeneratorImpl.h
    MovementHandler.cpp
+   MapUpdater.cpp
+   MapUpdater.h
    NPCHandler.cpp
    NPCHandler.h
    NullCreatureAI.cpp
