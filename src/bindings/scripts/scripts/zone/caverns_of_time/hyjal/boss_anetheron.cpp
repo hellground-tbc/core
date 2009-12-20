@@ -54,6 +54,7 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
     uint32 SwarmTimer;
     uint32 SleepTimer;
     uint32 AuraTimer;
+    uint32 CheckTimer;
     uint32 InfernoTimer;
     bool go;
     uint32 pos;
@@ -65,6 +66,7 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
         SleepTimer = 60000;
         AuraTimer = 5000;
         InfernoTimer = 45000;
+        CheckTimer = 3000;
 
         if(pInstance && IsEvent)
             pInstance->SetData(DATA_ANETHERONEVENT, NOT_STARTED);
@@ -145,6 +147,13 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
         //Return since we have no target
         if (!UpdateVictim() )
             return;
+
+        if(CheckTimer < diff)
+        {
+            DoZoneInCombat();
+            CheckTimer = 3000;
+        }else
+            CheckTimer -= diff;
 
         if(SwarmTimer < diff)
         {

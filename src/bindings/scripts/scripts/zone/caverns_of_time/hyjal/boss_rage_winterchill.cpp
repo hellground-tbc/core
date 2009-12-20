@@ -43,6 +43,8 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
     uint32 DecayTimer;
     uint32 NovaTimer;
     uint32 IceboltTimer;
+    uint32 CheckTimer;
+
     bool go;
     uint32 pos;
 
@@ -53,6 +55,7 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
         DecayTimer = 45000;
         NovaTimer = 15000;
         IceboltTimer = 10000;
+        CheckTimer = 3000;
 
         if(pInstance && IsEvent)
             pInstance->SetData(DATA_RAGEWINTERCHILLEVENT, NOT_STARTED);
@@ -130,11 +133,19 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
         if (!UpdateVictim() )
             return;
 
+        if(CheckTimer < diff)
+        {
+            DoZoneInCombat();
+            CheckTimer = 3000;
+        }else
+            CheckTimer -= diff;
+
         if(FrostArmorTimer < diff)
         {
             DoCast(m_creature, SPELL_FROST_ARMOR);
             FrostArmorTimer = 40000+rand()%20000;
         }else FrostArmorTimer -= diff;
+
         if(DecayTimer < diff)
         {
             DoCast(m_creature->getVictim(), SPELL_DEATH_AND_DECAY);
@@ -151,10 +162,12 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
                     break;
             }
         }else DecayTimer -= diff;
+
         if(NovaTimer < diff)
         {
             DoCast(m_creature->getVictim(), SPELL_FROST_NOVA);
             NovaTimer = 30000+rand()%15000;
+            DecayTimer += 10000%1000;
             switch(rand()%2)
             {
                 case 0:

@@ -346,6 +346,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
     uint32 WispCount;
     uint32 EnrageTimer;
     uint32 CheckDistanceTimer;
+    uint32 CheckTimer;
 
     bool Enraged;
     bool BelowTenPercent;
@@ -369,6 +370,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         HandOfDeathTimer = 2000;
         WispCount = 0;                                      // When ~30 wisps are summoned, Archimonde dies
         EnrageTimer = 600000;                               // 10 minutes
+        CheckTimer = 3000;
         CheckDistanceTimer = 30000;                         // This checks if he's too close to the World Tree (75 yards from a point on the tree), if true then he will enrage
         SummonWispTimer = 0;
 
@@ -572,6 +574,13 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
         if(!UpdateVictim())
             return;
+
+        if(CheckTimer < diff)
+        {
+            DoZoneInCombat();
+            CheckTimer = 3000;
+        }else
+            CheckTimer -= diff;
 
         if(((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 10) && !BelowTenPercent && !Enraged)
             BelowTenPercent = true;

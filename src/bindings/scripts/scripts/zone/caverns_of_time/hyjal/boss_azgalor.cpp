@@ -44,6 +44,7 @@ struct TRINITY_DLL_DECL boss_azgalorAI : public hyjal_trashAI
     uint32 HowlTimer;
     uint32 CleaveTimer;
     uint32 EnrageTimer;
+    uint32 CheckTimer;
     bool enraged;
 
     bool go;
@@ -57,6 +58,7 @@ struct TRINITY_DLL_DECL boss_azgalorAI : public hyjal_trashAI
         HowlTimer = 30000;
         CleaveTimer = 10000;
         EnrageTimer = 600000;
+        CheckTimer = 3000;
         enraged = false;
 
         if(pInstance && IsEvent)
@@ -137,6 +139,13 @@ struct TRINITY_DLL_DECL boss_azgalorAI : public hyjal_trashAI
         //Return since we have no target
         if (!UpdateVictim() )
             return;
+
+        if(CheckTimer < diff)
+        {
+            DoZoneInCombat();
+            CheckTimer = 3000;
+        }else
+            CheckTimer -= diff;
 
         if(RainTimer < diff)
         {
