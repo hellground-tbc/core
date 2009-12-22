@@ -675,6 +675,12 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
             return 0;
     }
 
+    if( pVictim->GetTypeId()== TYPEID_PLAYER && this->GetTypeId() == TYPEID_PLAYER )
+    {
+        if(pVictim->HasAura(32830,0) && ((Player*)this)->HasItemCount(30312, 1, false))
+            pVictim->RemoveAurasDueToSpell(32830);
+    }
+
     //Script Event damage taken
     if( pVictim->GetTypeId()== TYPEID_UNIT && ((Creature *)pVictim)->IsAIEnabled )
     {

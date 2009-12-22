@@ -1134,12 +1134,12 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
 
     if(unit->IsImmunedToSpellEffect(SPELL_EFFECT_ATTACK_ME,MECHANIC_NONE))
     {
-        for(uint8 i = 0; i < 3; i++)
+        for(int i = 0; i < 3; i++)
             if(m_spellInfo->Effect[i] == SPELL_EFFECT_ATTACK_ME)
             {
                 m_caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_IMMUNE);
                 return;
-            }    
+            }
     }
    
     // Recheck immune (only for delayed spells)
@@ -1226,21 +1226,11 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
 
     for(uint32 effectNumber=0;effectNumber<3;effectNumber++)
     {
+        if(unit->IsImmunedToSpellEffect(m_spellInfo->Effect[effectNumber],m_spellInfo->EffectMechanic[effectNumber]))
+            continue;
+        
         if (effectMask & (1<<effectNumber))
-        {
             HandleEffects(unit,NULL,NULL,effectNumber/*,m_damageMultipliers[effectNumber]*/);
-            //Only damage and heal spells need this
-            /*if ( m_applyMultiplierMask & (1 << effectNumber) )
-            {
-                // Get multiplier
-                float multiplier = m_spellInfo->DmgMultiplier[effectNumber];
-                // Apply multiplier mods
-                if(m_originalCaster)
-                    if(Player* modOwner = m_originalCaster->GetSpellModOwner())
-                        modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_EFFECT_PAST_FIRST, multiplier,this);
-                m_damageMultipliers[effectNumber] *= multiplier;
-            }*/
-        }
     }
 
     if(unit->GetTypeId() == TYPEID_UNIT && ((Creature*)unit)->IsAIEnabled)

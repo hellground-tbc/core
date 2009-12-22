@@ -1358,7 +1358,7 @@ struct TRINITY_DLL_DECL boss_lord_sanguinarAI : public advisorbase_ai
             if(Check_Timer < diff)
             {
                 WorldLocation wLoc = ((boss_kaelthasAI*)kael->AI())->wLoc;
-                if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 135.0f)
+                if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 200.0f)
                     EnterEvadeMode();
                 else
                     DoZoneInCombat();
@@ -1453,7 +1453,7 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
             if(Check_Timer < diff)
             {
                 WorldLocation wLoc = ((boss_kaelthasAI*)kael->AI())->wLoc;
-                if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 160.0f)
+                if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 200.0f)
                     EnterEvadeMode();
                 else
                     DoZoneInCombat();
@@ -1590,6 +1590,9 @@ struct TRINITY_DLL_DECL boss_master_engineer_telonicusAI : public advisorbase_ai
                 else if( m_creature->hasUnitState(UNIT_STAT_CHASE) )
                     m_creature->StopMoving();
             }
+            else
+                if( !m_creature->hasUnitState(UNIT_STAT_CHASE) )
+                    ScriptedAI::AttackStart(hunter, true);
         }
 
         if(Creature* kael = Creature::GetCreature((*m_creature), pInstance->GetData64(DATA_KAELTHAS)))
@@ -1598,7 +1601,7 @@ struct TRINITY_DLL_DECL boss_master_engineer_telonicusAI : public advisorbase_ai
             if(Check_Timer < diff)
             {
                 WorldLocation wLoc = ((boss_kaelthasAI*)kael->AI())->wLoc;
-                if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 135.0f)
+                if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 200.0f)
                     EnterEvadeMode();
                 else
                     DoZoneInCombat();
@@ -1952,7 +1955,7 @@ struct TRINITY_DLL_DECL weapon_advisorAI : public ScriptedAI
             if(Check_Timer < diff)
             {
                 WorldLocation wLoc = ((boss_kaelthasAI*)kael->AI())->wLoc;
-                if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 135.0f)
+                if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 200.0f)
                     EnterEvadeMode();
                 else
                     DoZoneInCombat();
