@@ -461,6 +461,10 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
 
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
+        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
+        m_creature->ApplySpellImmune(2, IMMUNITY_STATE, SPELL_AURA_MOD_HASTE, true);
+
         if(pInstance)
             pInstance->SetData(DATA_KAELTHASEVENT, NOT_STARTED);
     }
@@ -1313,6 +1317,7 @@ struct TRINITY_DLL_DECL boss_lord_sanguinarAI : public advisorbase_ai
     {
         Fear_Timer = 20000;
         Check_Timer = 3000;
+        m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
         advisorbase_ai::Reset();
     }
 
@@ -1525,7 +1530,12 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
 //Master Engineer Telonicus AI
 struct TRINITY_DLL_DECL boss_master_engineer_telonicusAI : public advisorbase_ai
 {
-    boss_master_engineer_telonicusAI(Creature *c) : advisorbase_ai(c){}
+    boss_master_engineer_telonicusAI(Creature *c) : advisorbase_ai(c)
+    {
+        SpellEntry *TempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_BOMB);
+        if(TempSpell)
+            TempSpell->Effect[0] = 2;
+    }
 
     uint32 Bomb_Timer;
     uint32 RemoteToy_Timer;

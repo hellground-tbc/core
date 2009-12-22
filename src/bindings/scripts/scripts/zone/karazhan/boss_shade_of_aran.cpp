@@ -174,6 +174,8 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         PotionUsed              = false;
         ArcaneCasting           = false;
 
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_HASTE, true);
+
         if(pInstance)
         {
             // Not in progress

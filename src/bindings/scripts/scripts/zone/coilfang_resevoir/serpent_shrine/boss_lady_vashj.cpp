@@ -955,9 +955,6 @@ struct TRINITY_DLL_DECL mob_coilfang_eliteAI : public ScriptedAI
     {
         if(Move)
         {
-            if(MoveWP == 2)
-                DoZoneInCombat();
-
             if(MoveWP >= 4)
             {
                 m_creature->GetMotionMaster()->Clear(false);
@@ -967,7 +964,7 @@ struct TRINITY_DLL_DECL mob_coilfang_eliteAI : public ScriptedAI
 
                 OnPath = false;
                 
-                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,10,true))
+                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,60,true))
                     DoStartMovement(target);
             
             }else
@@ -978,6 +975,8 @@ struct TRINITY_DLL_DECL mob_coilfang_eliteAI : public ScriptedAI
 
         if(Check_Timer)
         {
+            DoZoneInCombat();
+
             if(pInstance && pInstance->GetData(DATA_LADYVASHJEVENT) != IN_PROGRESS)
                 m_creature->Kill(m_creature,false);
                
@@ -1072,10 +1071,8 @@ struct TRINITY_DLL_DECL mob_coilfang_striderAI : public ScriptedAI
         if(Move)
         {
             if(MoveWP == 2)
-            {
                 m_creature->CastSpell(m_creature,38257,false);
-                DoZoneInCombat();
-            }
+
             if(MoveWP >= 4)
             {
                 m_creature->SetSpeed(MOVE_WALK,1.5);
@@ -1084,7 +1081,7 @@ struct TRINITY_DLL_DECL mob_coilfang_striderAI : public ScriptedAI
                 m_creature->GetMotionMaster()->Clear(false);
                 OnPath = false;
                 
-                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,10,true))
+                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,60,true))
                     DoStartMovement(target);
              }
             else
@@ -1095,6 +1092,8 @@ struct TRINITY_DLL_DECL mob_coilfang_striderAI : public ScriptedAI
         
         if(Check_Timer)
         {
+            DoZoneInCombat();
+
             if(pInstance && pInstance->GetData(DATA_LADYVASHJEVENT) != IN_PROGRESS)
                 m_creature->Kill(m_creature,false);
                
