@@ -2706,8 +2706,8 @@ void InstanceMap::InitVisibilityDistance()
 {
     //init visibility distance for instances
     
-    if(i_mapEntry->MapID == 550) // The Eye
-       m_VisibleDistance = 180.0f;
+    if(i_mapEntry->MapID == 550 || i_mapEntry->MapID == 534)    // The Eye & Hyjal Summit
+       m_VisibleDistance = 100.0f;
     else
         m_VisibleDistance = sWorld.GetMaxVisibleDistanceInInstances();
 }
