@@ -1132,14 +1132,13 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
     if(!unit || !effectMask)
         return;
 
-    if(unit->IsImmunedToSpellEffect(SPELL_EFFECT_ATTACK_ME,MECHANIC_NONE))
+    for(int i = 0; i < 3; i++)
     {
-        for(int i = 0; i < 3; i++)
-            if(m_spellInfo->Effect[i] == SPELL_EFFECT_ATTACK_ME)
-            {
-                m_caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_IMMUNE);
-                return;
-            }
+        if(unit->IsImmunedToSpellEffect(SPELL_EFFECT_ATTACK_ME, MECHANIC_NONE) && m_spellInfo->Effect[i] == SPELL_EFFECT_ATTACK_ME)
+        {
+            m_caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_IMMUNE);
+            return;
+        }
     }
    
     // Recheck immune (only for delayed spells)
@@ -1228,7 +1227,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
     {
         if(unit->IsImmunedToSpellEffect(m_spellInfo->Effect[effectNumber],m_spellInfo->EffectMechanic[effectNumber]))
             continue;
-        
+
         if (effectMask & (1<<effectNumber))
             HandleEffects(unit,NULL,NULL,effectNumber/*,m_damageMultipliers[effectNumber]*/);
     }

@@ -374,15 +374,16 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
         m_creature->GetPosition(wLoc);
-        AdvisorGuid[0] = 0;
-        AdvisorGuid[1] = 0;
-        AdvisorGuid[2] = 0;
-        AdvisorGuid[3] = 0;
+
+        for(int i = 0; i < 4; i++)
+            AdvisorGuid[i] = 0;
+
+        SpellEntry *TempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_PYROBLAST);
+        if(TempSpell)
+            TempSpell->EffectImplicitTargetA[0] = 6;
     }
 
     ScriptedInstance* pInstance;
-
-    std::list<uint64> Phoenix;
 
     uint32 Fireball_Timer;
     uint32 ArcaneDisruption_Timer;
@@ -463,7 +464,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
 
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
         m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
-        m_creature->ApplySpellImmune(2, IMMUNITY_STATE, SPELL_AURA_MOD_HASTE, true);
+        m_creature->ApplySpellImmune(2, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
 
         if(pInstance)
             pInstance->SetData(DATA_KAELTHASEVENT, NOT_STARTED);
@@ -861,6 +862,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                     pInstance->SetData(DATA_KAELTHASEVENT, 4);
 
                     DoResetThreat();
+                    DoZoneInCombat();
                     m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
 
@@ -954,7 +956,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                 //Phoenix_Timer
                 if(Phoenix_Timer < diff && !InGravityLapse)
                 {
-                    DoCast(m_creature, SPELL_SUMMON_PHOENIX);
+                    m_creature->SummonCreature(PHOENIX,m_creature->GetPositionX(),m_creature->GetPositionY(),m_creature->GetPositionZ(),m_creature->GetOrientation(),TEMPSUMMON_CORPSE_DESPAWN,1000);
                     switch(rand()%2)
                     {
                     case 0: DoScriptText(SAY_SUMMON_PHOENIX1, m_creature); break;
@@ -1032,7 +1034,6 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                 //Phase 5
                 if(Phase == 6)
                 {
-
                     //GravityLapse_Timer
                     if(GravityLapse_Timer < diff)
                     {
@@ -1202,6 +1203,10 @@ struct TRINITY_DLL_DECL boss_thaladred_the_darkenerAI : public advisorbase_ai
         Check_Timer = 1000;
         Check_Timer2 = 3000;
 
+        m_creature->SetSpeed(MOVE_WALK, 1.0f);
+        m_creature->SetSpeed(MOVE_RUN, 1.0f);
+        m_creature->SetUnitMovementFlags(MOVEMENTFLAG_WALK_MODE);
+
         advisorbase_ai::Reset();
     }
 
@@ -1317,7 +1322,10 @@ struct TRINITY_DLL_DECL boss_lord_sanguinarAI : public advisorbase_ai
     {
         Fear_Timer = 20000;
         Check_Timer = 3000;
-        m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
+
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
+        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
+
         advisorbase_ai::Reset();
     }
 
@@ -1337,14 +1345,6 @@ struct TRINITY_DLL_DECL boss_lord_sanguinarAI : public advisorbase_ai
         DoScriptText(SAY_SANGUINAR_AGGRO, m_creature);
     }
     
-    void SpellHit(Unit* pAttacker, const SpellEntry* Spell)
-    {
-
-        for(uint8 i = 0; i<3; i++)
-            if(Spell->Effect[i] == SPELL_EFFECT_INTERRUPT_CAST)
-                return;
-    }
-
     void UpdateAI(const uint32 diff)
     {
         advisorbase_ai::UpdateAI(diff);

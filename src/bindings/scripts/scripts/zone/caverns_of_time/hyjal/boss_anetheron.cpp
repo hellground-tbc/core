@@ -68,6 +68,9 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
         InfernoTimer = 45000;
         CheckTimer = 3000;
 
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
+        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
+
         if(pInstance && IsEvent)
             pInstance->SetData(DATA_ANETHERONEVENT, NOT_STARTED);
     }
@@ -117,13 +120,6 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
             pInstance->SetData(DATA_ANETHERONEVENT, DONE);
         DoPlaySoundToSet(m_creature, SOUND_ONDEATH);
         DoYell(SAY_ONDEATH, LANG_UNIVERSAL, NULL);
-    }
-
-    void SpellHit(Unit* pAttacker, const SpellEntry* Spell)
-    {
-        for(uint8 i = 0; i<3; i++)
-           if(Spell->Effect[i] == SPELL_EFFECT_INTERRUPT_CAST)
-               return;
     }
 
     void UpdateAI(const uint32 diff)

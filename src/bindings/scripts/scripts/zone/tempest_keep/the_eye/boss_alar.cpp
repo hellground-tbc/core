@@ -499,13 +499,13 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
             else
             {
                 Unit *target = NULL;
-                target = m_creature->SelectNearestTarget(6);
+                target = m_creature->SelectNearestTarget(6.0f);
                 if(target)
                     m_creature->AI()->AttackStart(target);
                 else
                 {
-                    m_creature->CastSpell(m_creature, SPELL_FLAME_BUFFET, true);
-                    m_creature->setAttackTimer(BASE_ATTACK, 1500);
+                    m_creature->CastSpell(m_creature, SPELL_FLAME_BUFFET, false);
+                    m_creature->setAttackTimer(BASE_ATTACK, 2000);
                 }
             }
         }

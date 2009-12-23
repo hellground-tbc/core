@@ -136,10 +136,13 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
             pInstance->SetData(DATA_THELURKERBELOWEVENT, NOT_STARTED);
             pInstance->SetData(DATA_STRANGE_POOL, NOT_STARTED);
         }
+
         DoCast(m_creature,SPELL_SUBMERGE);              //submerge anim
         m_creature->SetVisibility(VISIBILITY_OFF);      //we start invis under water, submerged
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
+        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
     }
     void Aggro(Unit *who)
     {

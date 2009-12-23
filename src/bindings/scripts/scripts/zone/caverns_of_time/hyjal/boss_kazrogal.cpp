@@ -56,6 +56,12 @@ struct TRINITY_DLL_DECL boss_kazrogalAI : public hyjal_trashAI
         MarkTimerBase = 45000;
         CheckTimer = 3000;
 
+        m_creature->SetSpeed(MOVE_RUN, 4.0f);
+        m_creature->SetSpeed(MOVE_WALK, 4.0f);
+        
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
+        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
+
         if(pInstance && IsEvent)
             pInstance->SetData(DATA_KAZROGALEVENT, NOT_STARTED);
     }
@@ -104,13 +110,6 @@ struct TRINITY_DLL_DECL boss_kazrogalAI : public hyjal_trashAI
         if(pInstance && IsEvent)
             pInstance->SetData(DATA_KAZROGALEVENT, DONE);
         DoPlaySoundToSet(m_creature, SOUND_ONDEATH);
-    }
-
-    void SpellHit(Unit* pAttacker, const SpellEntry* Spell)
-    {
-        for(uint8 i = 0; i<3; i++)
-           if(Spell->Effect[i] == SPELL_EFFECT_INTERRUPT_CAST)
-               return;
     }
 
     void UpdateAI(const uint32 diff)

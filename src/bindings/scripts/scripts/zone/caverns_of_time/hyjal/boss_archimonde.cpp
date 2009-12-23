@@ -146,6 +146,9 @@ struct TRINITY_DLL_DECL mob_doomfireAI : public ScriptedAI
 
         ArchimondeGUID = 0;
         TargetGUID = 0;
+
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
+        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
     }
 
     void DamageTaken(Unit *done_by, uint32 &damage) { damage = 0; }

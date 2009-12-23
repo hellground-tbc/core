@@ -194,6 +194,9 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
         InCombat = false;
         CanAttack = false;
 
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
+        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
+
         Unit *remo;
         for(uint8 i = 0; i < 4; i++)
         {
@@ -1083,7 +1086,7 @@ struct TRINITY_DLL_DECL mob_coilfang_striderAI : public ScriptedAI
                 
                 if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,60,true))
                     DoStartMovement(target);
-             }
+            }
             else
                 m_creature->GetMotionMaster()->MovePoint(MoveWP,StriderNagaWP[4*path_nr + MoveWP][0],StriderNagaWP[4*path_nr + MoveWP][1],StriderNagaWP[4*path_nr + MoveWP][2]);
 
