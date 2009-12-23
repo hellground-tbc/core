@@ -199,7 +199,7 @@ struct TRINITY_DLL_DECL advisorbase_ai : public ScriptedAI
     bool FakeDeath;
     uint32 DelayRes_Timer;
     uint64 DelayRes_Target;
-    bool reset;
+    bool RestoreHP;
 
     void Reset()
     {
@@ -209,6 +209,7 @@ struct TRINITY_DLL_DECL advisorbase_ai : public ScriptedAI
         DelayRes_Target = 0;
 
         m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
+        m_creature->setActive(true);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
 
@@ -221,7 +222,7 @@ struct TRINITY_DLL_DECL advisorbase_ai : public ScriptedAI
             if (Creature *Kaelthas = (Creature*)Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_KAELTHAS)))
                 Kaelthas->AI()->EnterEvadeMode();
         }
-        reset = true;
+        RestoreHP = true;
     }
 
     void MoveInLineOfSight(Unit *who)
@@ -303,7 +304,7 @@ struct TRINITY_DLL_DECL advisorbase_ai : public ScriptedAI
             return;
 
         //Prevent glitch if in fake death
-        if (FakeDeath)
+        if(FakeDeath)
         {
             damage = 0;
             return;
@@ -319,8 +320,6 @@ struct TRINITY_DLL_DECL advisorbase_ai : public ScriptedAI
             m_creature->SetHealth(0);
             m_creature->ClearComboPointHolders();
             m_creature->RemoveAllAurasOnDeath();
-            //m_creature->ModifyAuraState(AURA_STATE_HEALTHLESS_20_PERCENT, false);
-            //m_creature->ModifyAuraState(AURA_STATE_HEALTHLESS_35_PERCENT, false);
             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             m_creature->ClearAllReactives();
             m_creature->SetUInt64Value(UNIT_FIELD_TARGET,0);
@@ -336,33 +335,32 @@ struct TRINITY_DLL_DECL advisorbase_ai : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (reset)
+        if(RestoreHP)
         {
             m_creature->SetHealth(100000);
             SetMinHealth();
             m_creature->SetHealth(m_creature->GetMaxHealth());
-            reset = false;
-            return;
+            RestoreHP = false;
         }
 
-        if (DelayRes_Timer)
+        if(FakeDeath)
         {
-            if (DelayRes_Timer <= diff)
+            if(DelayRes_Timer <= diff)
             {
-                DelayRes_Timer = 0;
                 FakeDeath = false;
+                DoZoneInCombat();
 
-                Unit* Target = Unit::GetUnit((*m_creature), DelayRes_Target);
-                if (!Target)
-                    Target = m_creature->getVictim();
-                DoResetThreat();
-                if(!Target)
-                    return;
-                AttackStart(Target);
-                m_creature->GetMotionMaster()->Clear();
-                m_creature->GetMotionMaster()->MoveChase(Target);
-                m_creature->AddThreat(Target, 0.0f);
-            }else DelayRes_Timer -= diff;
+                if(Unit* target = SelectUnit(SELECT_TARGET_TOPAGGRO,0))
+                {
+                    m_creature->AddThreat(target, 0.0f);
+                    AttackStart(target);
+
+                    m_creature->GetMotionMaster()->Clear();
+                    m_creature->GetMotionMaster()->MoveChase(target);
+                }
+            }
+            else
+                DelayRes_Timer -= diff;
         }
     }
 };
