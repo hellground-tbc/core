@@ -343,12 +343,13 @@ struct TRINITY_DLL_DECL advisorbase_ai : public ScriptedAI
             RestoreHP = false;
         }
 
-        if(FakeDeath)
+        if(FakeDeath && DelayRes_Timer)
         {
             if(DelayRes_Timer <= diff)
             {
                 FakeDeath = false;
                 DoZoneInCombat();
+                DelayRes_Timer = 0;
 
                 if(Unit* target = SelectUnit(SELECT_TARGET_TOPAGGRO,0))
                 {
