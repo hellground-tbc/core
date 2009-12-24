@@ -33,6 +33,7 @@ npc_rogue_trainer       80%     Scripted trainers, so they are able to offer ite
 npc_sayge               100%    Darkmoon event fortune teller, buff player based on answers given
 npc_snake_trap_serpents 80%     AI for snakes that summoned by Snake Trap
 npc_flight_master       100%    AI for flight masters.
+npc_lazy_peon                   AI for peons for quest 5441 (Lazy Peons)
 EndContentData */
 
 #include "precompiled.h"
@@ -1428,6 +1429,55 @@ CreatureAI* GetAI_npc_garments_of_quests(Creature* pCreature)
     return new npc_garments_of_questsAI(pCreature);
 }
 
+#define MIN_TIME_TO_GO_ASLEEP    60000         //1 minute
+#define MAX_TIME_TO_GO_ASLEEP    600000        //10 minutes
+
+struct TRINITY_DLL_DECL npc_lazy_peonAI : public ScriptedAI
+{
+    npc_lazy_peonAI(Creature *c) : ScriptedAI(c) {Reset();}
+
+    uint32 reAuraTimer;
+
+    void Reset() 
+    {
+        reAuraTimer = urand(MIN_TIME_TO_GO_ASLEEP, MAX_TIME_TO_GO_ASLEEP);
+    }
+
+    void Aggro(Unit *who) {}
+
+    void SpellHit(Unit* pCaster, const SpellEntry *spell)
+    {
+        if (spell->Id == 19938 && m_creature->HasAura(17743, 0))
+            m_creature->RemoveAura(17743, 0);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (m_creature->HasAura(17743, 0))
+            return;
+
+        if (reAuraTimer < diff)
+        {
+            if (!m_creature->HasAura(17743, 0))
+            {
+                m_creature->CastSpell(m_creature, 17743, true);
+                reAuraTimer = urand(MIN_TIME_TO_GO_ASLEEP, MAX_TIME_TO_GO_ASLEEP);
+                
+                return;
+            }
+        }
+        else
+            reAuraTimer -= diff;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_lazy_peon(Creature* pCreature)
+{
+    return new npc_lazy_peonAI(pCreature);
+}
+
 void AddSC_npcs_special()
 {
     Script *newscript;
@@ -1513,6 +1563,11 @@ void AddSC_npcs_special()
     newscript = new Script;
     newscript->Name="npc_flight_master";
     newscript->GetAI = &GetAI_npc_flight_master;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_lazy_peon";
+    newscript->GetAI = &GetAI_npc_lazy_peon;
     newscript->RegisterSelf();
 }
 
