@@ -866,18 +866,27 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
 
         if (pVictim->GetTypeId() != TYPEID_PLAYER)
         {
-            if(spellProto && IsDamageToThreatSpell(spellProto))
-                pVictim->AddThreat(this, damage*2, damageSchoolMask, spellProto);
+            if (spellProto && spellProto->Id == 33619)                 //if it's from Reflective Shield
+                pVictim->AddThreat(this, 1.0f, damageSchoolMask, spellProto);
             else
-                pVictim->AddThreat(this, damage, damageSchoolMask, spellProto);
+            {
+                if(spellProto && IsDamageToThreatSpell(spellProto))
+                    pVictim->AddThreat(this, damage*2, damageSchoolMask, spellProto);
+                else
+                    pVictim->AddThreat(this, damage, damageSchoolMask, spellProto);
+            }
         }
         else                                                // victim is a player
         {
             // Rage from damage received
             if(this != pVictim && pVictim->getPowerType() == POWER_RAGE)
             {
-                uint32 rage_damage = damage + (cleanDamage ? cleanDamage->damage : 0);
-                ((Player*)pVictim)->RewardRage(rage_damage, 0, false);
+                //if it's not from Reflective Shield
+                if (!spellProto || (spellProto && spellProto->Id != 33619))
+                {    
+                    uint32 rage_damage = damage + (cleanDamage ? cleanDamage->damage : 0);
+                    ((Player*)pVictim)->RewardRage(rage_damage, 0, false);
+                }
             }
 
             // random durability for items (HIT TAKEN)
