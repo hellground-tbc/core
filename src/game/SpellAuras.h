@@ -285,7 +285,10 @@ class TRINITY_DLL_SPEC Aura
             return (GetId() == 22959 || 
                     GetId() == 12579 ||
                     GetId() == 15258 ||
-                    GetId() == 25225 );
+                    GetId() == 25225 ||
+                    GetId() == 36478 || 
+                    GetId() == 36482
+                    );
         }
         bool DiffPerCaster()
         { 
