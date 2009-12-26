@@ -1562,7 +1562,7 @@ struct TRINITY_DLL_DECL boss_master_engineer_telonicusAI : public advisorbase_ai
 };
 
 //Flame Strike AI
-struct TRINITY_DLL_DECL mob_kael_flamestrikeAI : public ScriptedAI
+struct TRINITY_DLL_DECL mob_kael_flamestrikeAI : public Scripted_NoMovementAI
 {
     mob_kael_flamestrikeAI(Creature *c) : ScriptedAI(c) {}
 
@@ -1632,7 +1632,15 @@ struct TRINITY_DLL_DECL mob_phoenix_tkAI : public ScriptedAI
     }
 
     void Aggro(Unit *who) { }
+    void SpellHit(Unit *caster, SpellEntry* spell)
+    {
+        for(int i = 0; i < 3; i++)
+        {
+            if(spell->EffectMechanic[i] == MECHANIC_BANISH && spell->Id != 35182)
+                m_creature->RemoveAurasDueToSpell(spell->Id);
+        }
 
+    }
     void DamageTaken(Unit *killer, uint32 &damage)
     {
         if(damage >= m_creature->GetHealth())
