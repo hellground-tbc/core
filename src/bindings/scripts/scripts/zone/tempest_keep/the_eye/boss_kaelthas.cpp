@@ -1564,7 +1564,7 @@ struct TRINITY_DLL_DECL boss_master_engineer_telonicusAI : public advisorbase_ai
 //Flame Strike AI
 struct TRINITY_DLL_DECL mob_kael_flamestrikeAI : public Scripted_NoMovementAI
 {
-    mob_kael_flamestrikeAI(Creature *c) : ScriptedAI(c) {}
+    mob_kael_flamestrikeAI(Creature *c) : Scripted_NoMovementAI(c) {}
 
     uint32 Timer;
     bool Casting;
