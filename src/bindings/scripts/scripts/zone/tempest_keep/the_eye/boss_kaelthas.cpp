@@ -144,8 +144,8 @@ float KaelthasWeapons[7][5] =
 #define GRAVITY_Y 0.0f
 #define GRAVITY_Z 70.0f
 
-#define TIME_PHASE_2_3      120000
-#define TIME_PHASE_3_4      120000
+#define TIME_PHASE_2_3      125000 // Phase 2 ends approximately 2 minutes and 5 seconds after it begins
+#define TIME_PHASE_3_4      180000 // Phase 3 ends approximately 3 minutes after it begins
 
 #define KAEL_VISIBLE_RANGE  50.0f
 #define ROOM_BASE_Z 49.0f
@@ -847,7 +847,9 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                         DoCast(m_creature->getVictim(), SPELL_ARCANE_DISRUPTION, true);
 
                         ArcaneDisruption_Timer = 60000;
-                    }else ArcaneDisruption_Timer -= diff;
+                    }
+                    else
+                        ArcaneDisruption_Timer -= diff;
 
                     if (FlameStrike_Timer < diff)
                     {
@@ -855,23 +857,30 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                             DoCast(pUnit, SPELL_FLAME_STRIKE);
 
                         FlameStrike_Timer = 30000;
-                    }FlameStrike_Timer -= diff;
+                    }
+                    else 
+                        FlameStrike_Timer -= diff;
 
-                    if (MindControl_Timer < diff)
+                    if(Phase == 5)
                     {
-                        if (m_creature->getThreatManager().getThreatList().size() >= 2)
-                        for (uint32 i = 0; i < 3; i++)
+                        if(MindControl_Timer < diff)
                         {
+                            if (m_creature->getThreatManager().getThreatList().size() >= 2)
+                            for (uint32 i = 0; i < 3; i++)
+                            {
 
-                            Unit* target =SelectUnit(SELECT_TARGET_RANDOM, 1, 70, true);
-                            if(!target) target = m_creature->getVictim();
-                            debug_log("TSCR: Kael'Thas mind control not supported.");
-                            if(target)
-                                DoCast(target, SPELL_MIND_CONTROL);
+                                Unit* target =SelectUnit(SELECT_TARGET_RANDOM, 1, 70, true);
+                                if(!target)
+                                    target = m_creature->getVictim();
+
+                                if(target)
+                                    DoCast(target, SPELL_MIND_CONTROL);
+                            }
+                            MindControl_Timer = 60000;
                         }
-
-                        MindControl_Timer = 60000;
-                    }MindControl_Timer -= diff;
+                        else 
+                            MindControl_Timer -= diff;
+                    }
                 }
 
                 //Phoenix_Timer
@@ -885,7 +894,9 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                     }
 
                     Phoenix_Timer = 60000;
-                }else Phoenix_Timer -= diff;
+                }
+                else
+                    Phoenix_Timer -= diff;
 
                 //Phase 4 specific spells
                 if(Phase == 4)
@@ -916,18 +927,23 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                         Check_Timer = 0;
 
                         ShockBarrier_Timer = 60000;
-                    }else ShockBarrier_Timer -= diff;
+                    }
+                    else
+                        ShockBarrier_Timer -= diff;
 
                     //Chain Pyros (3 of them max)
-                    if (ChainPyros){
-                        if (PyrosCasted < 3 && Check_Timer < diff)
+                    if (ChainPyros)
+                    {
+                        if(PyrosCasted < 3 && Check_Timer < diff)
                         {
                             Unit * target = SelectUnit(SELECT_TARGET_TOPAGGRO, 0);
                             DoCast(target, SPELL_PYROBLAST);
                             ++PyrosCasted;
 
                             Check_Timer = 4400;
-                        }else Check_Timer -= diff;
+                        }
+                        else
+                            Check_Timer -= diff;
                         
                         if(PyrosCasted >= 3)
                         {
@@ -936,9 +952,11 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                             ArcaneDisruption_Timer = 60000;
                         }
                     }
-                }else Check_Timer -= 4100;
+                }
+                else
+                    Check_Timer -= 4100;
 
-                if (Phase == 5)
+                if(Phase == 5)
                 {
                     if(Phase_Timer < diff)
                     {
@@ -949,7 +967,9 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                         Phase = 6;
                         DoStartMovement(m_creature->getVictim());
                         AttackStart(m_creature->getVictim());
-                    }else Phase_Timer -= diff;
+                    }
+                    else
+                        Phase_Timer -= diff;
                 }
 
                 //Phase 5
