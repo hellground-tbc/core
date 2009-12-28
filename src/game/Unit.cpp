@@ -5099,8 +5099,8 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 case 18765:
                 case 35429:
                 {
-                    // prevent chain of triggered spell from same triggered spell
-                    if(procSpell && procSpell->Id==12723)
+                    // prevent chain of triggered spell from same triggered spell and whirlwind attack
+                    if(procSpell && procSpell->Id == 12723 || proSpell->Id == 1680 || proSpell->Id == 44949)
                         return false;
 
                     target = SelectNearbyTarget();
@@ -5474,19 +5474,10 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                              return false;
                      }
  
-                    AuraList const& auras = target->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
-                    for (AuraList::const_iterator i = auras.begin(); i != auras.end(); ++i)
-                    {
-                        SpellEntry const *spell = (*i)->GetSpellProto();
-                        if (spell->Id == 12654 && (*i)->GetCasterGUID() == triggeredByAura->GetCasterGUID())
-                        {
-                            int32 remainingTicks = (*i)->GetAuraDuration() / (*i)->GetModifier()->periodictime + 1;
-                            damage += remainingTicks * (*i)->GetModifier()->m_amount;
-                            break;
-                        }
-                    }
-
-                    basepoints0 = int32(damage / 2);
+                    AuraList const &DoT = pVictim->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
+                    for (AuraList::const_iterator itr = DoT.begin(); itr != DoT.end(); ++itr)
+                        if ((*itr)->GetId() == 12654 && (*itr)->GetCaster() == this)
+                            basepoints0 += int((*itr)->GetBasePoints()/((*itr)->GetTickNumber() + 1));
 
                     triggered_spell_id = 12654;
                     break;
