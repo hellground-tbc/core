@@ -5469,7 +5469,13 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     AuraList const &DoT = pVictim->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
                     for (AuraList::const_iterator itr = DoT.begin(); itr != DoT.end(); ++itr)
                         if ((*itr)->GetId() == 12654 && (*itr)->GetCaster() == this)
-                            basepoints0 += int((*itr)->GetBasePoints()/((*itr)->GetTickNumber() + 1));
+                        {
+                            int temp = int((*itr)->GetBasePoints()/((*itr)->GetTickNumber() + 1));
+                            if(temp <= 0 || temp > 5000)
+                                sLog.outError("Ignite dmg: %d, Tick number: %d, Basepoints0: %d",temp,(*itr)->GetTickNumber(),(*itr)->GetBasePoints());
+                            else 
+                                basepoints0 += temp;
+                        }
 
                     triggered_spell_id = 12654;
                     break;
