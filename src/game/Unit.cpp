@@ -5109,7 +5109,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 case 35429:
                 {
                     // prevent chain of triggered spell from same triggered spell and whirlwind attack
-                    if(procSpell && procSpell->Id == 12723 || procSpell->Id == 1680 || procSpell->Id == 44949)
+                    if(procSpell && ( procSpell->Id == 12723 || procSpell->Id == 1680 || procSpell->Id == 44949 ))
                         return false;
 
                     target = SelectNearbyTarget();
