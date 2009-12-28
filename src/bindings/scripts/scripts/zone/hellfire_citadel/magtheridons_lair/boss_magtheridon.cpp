@@ -91,6 +91,13 @@ struct TRINITY_DLL_DECL mob_abyssalAI : public ScriptedAI
 {
     mob_abyssalAI(Creature *c) : ScriptedAI(c)
     {
+        SpellEntry *TempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_DEBRIS_DAMAGE);
+        if(TempSpell)
+        {
+            TempSpell->EffectImplicitTargetA[0] = 22;
+            TempSpell->EffectImplicitTargetB[0] = 15;
+        }
+
         trigger = 0;
         Despawn_Timer = 60000;
     }
@@ -141,7 +148,9 @@ struct TRINITY_DLL_DECL mob_abyssalAI : public ScriptedAI
                 {
                     m_creature->CastSpell(m_creature, SPELL_DEBRIS_DAMAGE, true);
                     trigger = 3;
-                }else FireBlast_Timer -= diff;
+                }
+                else
+                    FireBlast_Timer -= diff;
             }
             return;
         }
@@ -150,7 +159,9 @@ struct TRINITY_DLL_DECL mob_abyssalAI : public ScriptedAI
         {
             m_creature->SetVisibility(VISIBILITY_OFF);
             m_creature->setDeathState(JUST_DIED);
-        }else Despawn_Timer -= diff;
+        }
+        else
+            Despawn_Timer -= diff;
 
         if(!UpdateVictim())
             return;
@@ -159,7 +170,9 @@ struct TRINITY_DLL_DECL mob_abyssalAI : public ScriptedAI
         {
             DoCast(m_creature->getVictim(), SPELL_FIRE_BLAST);
             FireBlast_Timer = 5000+rand()%10000;
-        }else FireBlast_Timer -= diff;
+        }
+        else
+            FireBlast_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }
@@ -178,9 +191,10 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public ScriptedAI
         TempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_BLAZE_TARGET);
         if(TempSpell && TempSpell->EffectImplicitTargetA[0] != 6)
         {
-            TempSpell->EffectImplicitTargetA[0] = 6;
+            TempSpell->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
             TempSpell->EffectImplicitTargetB[0] = 0;
         }
+
         TempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_QUAKE_TRIGGER);
         if(TempSpell && TempSpell->EffectTriggerSpell[0] != SPELL_QUAKE_KNOCKBACK)
         {
@@ -241,6 +255,7 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public ScriptedAI
         // to avoid multiclicks from 1 cube
         if(uint64 guid = Cube[cubeGUID])
             DebuffClicker(Unit::GetUnit(*m_creature, guid));
+
         Cube[cubeGUID] = clickerGUID;
         NeedCheckCube = true;
     }
@@ -268,7 +283,9 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public ScriptedAI
             {
                 DebuffClicker(clicker);
                 (*i).second = 0;
-            }else ClickerNum++;
+            }
+            else
+                ClickerNum++;
         }
 
         // if 5 clickers from other cubes apply shadow cage
@@ -308,6 +325,7 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public ScriptedAI
     {
         if(pInstance)
             pInstance->SetData(DATA_MAGTHERIDON_EVENT, IN_PROGRESS);
+
         DoZoneInCombat();
 
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -324,7 +342,9 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public ScriptedAI
             {
                 DoScriptText(RandomTaunt[rand()%6].id, m_creature);
                 RandChat_Timer = 90000;
-            }else RandChat_Timer -= diff;
+            }
+            else
+                RandChat_Timer -= diff;
         }
 
         if(!UpdateVictim())
@@ -337,13 +357,17 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public ScriptedAI
             m_creature->CastSpell(m_creature, SPELL_BERSERK, true);
             DoScriptText(EMOTE_BERSERK, m_creature);
             Berserk_Timer = 60000;
-        }else Berserk_Timer -= diff;
+        }
+        else
+            Berserk_Timer -= diff;
 
         if(Cleave_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_CLEAVE);
             Cleave_Timer = 10000;
-        }else Cleave_Timer -= diff;
+        }
+        else
+            Cleave_Timer -= diff;
 
         if(BlastNova_Timer < diff)
         {
@@ -354,7 +378,9 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public ScriptedAI
                 DoCast(m_creature, SPELL_BLASTNOVA);
                 BlastNova_Timer = 60000;
             }
-        }else BlastNova_Timer -= diff;
+        }
+        else
+            BlastNova_Timer -= diff;
 
         if(Quake_Timer < diff)
         {
@@ -364,7 +390,9 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public ScriptedAI
                 m_creature->CastSpell(m_creature, SPELL_QUAKE_TRIGGER, true);
                 Quake_Timer = 50000;
             }
-        }else Quake_Timer -= diff;
+        }
+        else
+            Quake_Timer -= diff;
 
         if(Blaze_Timer < diff)
         {
@@ -381,7 +409,9 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public ScriptedAI
                 }
             }
             Blaze_Timer = 20000 + rand()%20000;
-        }else Blaze_Timer -= diff;
+        }
+        else
+            Blaze_Timer -= diff;
 
         if(!Phase3 && m_creature->GetHealth()*10 < m_creature->GetMaxHealth()*3
             && !m_creature->IsNonMeleeSpellCasted(false) // blast nova
@@ -408,7 +438,9 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public ScriptedAI
                     if(summon) ((mob_abyssalAI*)summon->AI())->SetTrigger(1);
                 }
                 Debris_Timer = 10000;
-            }else Debris_Timer -= diff;
+            }
+            else
+                Debris_Timer -= diff;
         }
 
         DoMeleeAttackIfReady();
