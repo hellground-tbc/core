@@ -1147,10 +1147,6 @@ struct TRINITY_DLL_DECL boss_thaladred_the_darkenerAI : public advisorbase_ai
         Check_Timer = 1000;
         Check_Timer2 = 3000;
 
-        m_creature->SetSpeed(MOVE_WALK, 0.6f);
-        m_creature->SetSpeed(MOVE_RUN, 0.6f);
-        m_creature->SetUnitMovementFlags(MOVEMENTFLAG_WALK_MODE);
-
         advisorbase_ai::Reset();
     }
 

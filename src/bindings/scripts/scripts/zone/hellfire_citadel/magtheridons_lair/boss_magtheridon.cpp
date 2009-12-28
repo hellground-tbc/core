@@ -443,7 +443,8 @@ struct TRINITY_DLL_DECL mob_hellfire_channelerAI : public ScriptedAI
         if(pInstance)
             pInstance->SetData(DATA_CHANNELER_EVENT, NOT_STARTED);
 
-        m_creature->CastSpell(m_creature, SPELL_SHADOW_GRASP_C, false);
+        if(Creature *Magtheridon = Unit::GetCreature(*m_creature, pInstance->GetData64(DATA_MAGTHERIDON)))
+            m_creature->CastSpell(Magtheridon, SPELL_SHADOW_GRASP_C, false);
 
         Summons.DespawnAll();
     }
@@ -510,6 +511,7 @@ struct TRINITY_DLL_DECL mob_hellfire_channelerAI : public ScriptedAI
         {
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
                 m_creature->CastSpell(target, SPELL_BURNING_ABYSSAL, true);
+
             Infernal_Timer = 30000 + rand()%10000;
         }
         else
