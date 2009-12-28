@@ -691,6 +691,23 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         }
     }
 
+    if( GetDummyAura(38196) ) // Vampiric aura
+    {
+        int health = 3.0*damage;
+        CastCustomSpell(this, 20810, &health, NULL, NULL, true);
+    }
+
+    if(GetDummyAura(37381)) // Rift & Corruptor bonus(2) 
+    {
+        Pet* pet = GetPet();
+        
+        if(pet && pet->isAlive())
+        {
+            int health = 0.15*damage;
+            CastCustomSpell(pet, 37382, &health, NULL, NULL, true);
+        }
+    }
+
     //Script Event damage taken
     if( pVictim->GetTypeId()== TYPEID_UNIT && ((Creature *)pVictim)->IsAIEnabled )
     {
@@ -733,14 +750,6 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
                 ((Player*)pVictim)->RewardRage(cleanDamage->damage, 0, false);
             return 0;
         }
-    }
-
-    if(((Unit*)this)->HasAura(37381,0))
-    {
-        Pet* pet = ((Unit*)this)->GetPet();
-        
-        if(pet && pet->isAlive())
-            pet->ModifyHealth((int32).15*damage);
     }
 
     if(pVictim->GetTypeId() != TYPEID_PLAYER)
@@ -5100,7 +5109,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 case 35429:
                 {
                     // prevent chain of triggered spell from same triggered spell and whirlwind attack
-                    if(procSpell && procSpell->Id == 12723 || proSpell->Id == 1680 || proSpell->Id == 44949)
+                    if(procSpell && procSpell->Id == 12723 || procSpell->Id == 1680 || procSpell->Id == 44949)
                         return false;
 
                     target = SelectNearbyTarget();

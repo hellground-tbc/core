@@ -56,9 +56,6 @@ struct TRINITY_DLL_DECL boss_kazrogalAI : public hyjal_trashAI
         MarkTimerBase = 45000;
         CheckTimer = 3000;
 
-        m_creature->SetSpeed(MOVE_RUN, 4.0f);
-        m_creature->SetSpeed(MOVE_WALK, 4.0f);
-        
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
         m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
 

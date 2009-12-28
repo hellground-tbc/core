@@ -155,7 +155,8 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
         {
             DoZoneInCombat();
             CheckTimer = 3000;
-        }else
+        }
+        else
             CheckTimer -= diff;
 
         if(SwarmTimer < diff)
@@ -165,6 +166,7 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
                 DoCast(target,SPELL_CARRION_SWARM);
 
             SwarmTimer = 45000+rand()%15000;
+            
             switch(rand()%2)
             {
                 case 0:
@@ -176,7 +178,9 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
                     DoYell(SAY_SWARM2, LANG_UNIVERSAL, NULL);
                     break;
             }
-        }else SwarmTimer -= diff;
+        }
+        else
+            SwarmTimer -= diff;
 
         if(SleepTimer < diff)
         {
@@ -186,7 +190,9 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
                 if(target)
                     target->CastSpell(target,SPELL_SLEEP,true);
             }
+
             SleepTimer = 60000;
+
             switch(rand()%2)
             {
                 case 0:
@@ -198,17 +204,25 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
                     DoYell(SAY_SLEEP2, LANG_UNIVERSAL, NULL);
                     break;
             }
-        }else SleepTimer -= diff;
+        }
+        else
+            SleepTimer -= diff;
+
         if(AuraTimer < diff)
         {
             DoCast(m_creature, SPELL_VAMPIRIC_AURA,true);
             AuraTimer = 10000+rand()%10000;
-        }else AuraTimer -= diff;
+        }
+        else
+            AuraTimer -= diff;
+
         if(InfernoTimer < diff)
         {
             if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0,100,true))
                 DoCast(target, SPELL_INFERNO);
+
             InfernoTimer = 45000;
+
             switch(rand()%2)
             {
                 case 0:
@@ -220,7 +234,9 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
                     DoYell(SAY_INFERNO2, LANG_UNIVERSAL, NULL);
                     break;
             }
-        }else InfernoTimer -= diff;
+        }
+        else
+            InfernoTimer -= diff;
 
         DoMeleeAttackIfReady();
     }

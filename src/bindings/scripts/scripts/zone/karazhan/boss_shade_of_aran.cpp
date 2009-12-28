@@ -623,11 +623,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
             return;
 
         if(ArcaneCasting)
-        {
-            for(uint8 i = 0; i<3; i++)
-                if(Spell->Effect[i] == SPELL_EFFECT_INTERRUPT_CAST)
-                    return;
-        }
+            return;
 
         //Inturrupt effect
         m_creature->InterruptNonMeleeSpells(false);

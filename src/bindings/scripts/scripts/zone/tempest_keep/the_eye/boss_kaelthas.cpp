@@ -303,7 +303,10 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
 
         SpellEntry *TempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_PYROBLAST);
         if(TempSpell)
-            TempSpell->EffectImplicitTargetA[0] = 6;
+        {
+            TempSpell->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
+            TempSpell->EffectImplicitTargetB[0] = 0;
+        }
     }
 
     ScriptedInstance* pInstance;
