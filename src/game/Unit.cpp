@@ -691,23 +691,6 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         }
     }
 
-    if( GetDummyAura(38196) ) // Vampiric aura
-    {
-        int health = 3.0*damage;
-        CastCustomSpell(this, 20810, &health, NULL, NULL, true);
-    }
-
-    if(GetDummyAura(37381)) // Rift & Corruptor bonus(2) 
-    {
-        Pet* pet = GetPet();
-        
-        if(pet && pet->isAlive())
-        {
-            int health = 0.15*damage;
-            CastCustomSpell(pet, 37382, &health, NULL, NULL, true);
-        }
-    }
-
     //Script Event damage taken
     if( pVictim->GetTypeId()== TYPEID_UNIT && ((Creature *)pVictim)->IsAIEnabled )
     {
