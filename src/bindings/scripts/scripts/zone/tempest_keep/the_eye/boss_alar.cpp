@@ -40,6 +40,9 @@ EndScriptData */
 #define CREATURE_FLAME_PATCH_ALAR     20602 // Flame Patch - every 30 sec in phase 2
 #define SPELL_FLAME_PATCH             35380 //
 
+#define ASHTONGUE_RUSE                39527
+#define QUEST_RUSEOFTHEASHTONGUE      10946
+
 static float waypoint[6][3] =
 {
     {340.15, 58.65, 17.71},
@@ -148,6 +151,14 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
 
+        Map::PlayerList const &PlayerList = ((InstanceMap*)m_creature->GetMap())->GetPlayers();
+        for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+        {
+            Player* i_pl = i->getSource();
+            if(i_pl && i_pl->HasAura(ASHTONGUE_RUSE,0) && i_pl->GetQuestStatus(QUEST_RUSEOFTHEASHTONGUE) == QUEST_STATUS_INCOMPLETE)
+                i_pl->AreaExploredOrEventHappens(QUEST_RUSEOFTHEASHTONGUE);
+        }
+
         if(pInstance)
             pInstance->SetData(DATA_ALAREVENT, DONE);
     }
@@ -186,6 +197,7 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
                 {
                     WaitEvent = WE_TRULY_DIE;
                     m_creature->SetHealth(1);
+                    JustDied(pKiller);
                     WaitTimer = 5000;
                 }
                 m_creature->InterruptNonMeleeSpells(true);
