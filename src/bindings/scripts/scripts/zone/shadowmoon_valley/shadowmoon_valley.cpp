@@ -2123,11 +2123,13 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
                 if(olum)
                 {
                     olum->setDeathState(JUST_DIED);
-                    Creature* spirit = m_creature->SummonCreature(OLUMS_SPIRIT,OlumNewPos[0],OlumNewPos[1],OlumNewPos[2],OlumNewPos[3]-2.0f,TEMPSUMMON_TIMED_DESPAWN,16000);
-                    spirit->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                    spirit->SetUnitMovementFlags(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
-                    // spirit->SetUInt32Value(UNIT_NPC_EMOTESTATE,STATE_DROWNED); // improve Olum's Spirit animation using Drowned State, right movement flag or monster move type needed
-                    spirit->SendMonsterMove(OlumNewPos[0],OlumNewPos[1],OlumNewPos[2]+8.0f,16000);
+                    if(Creature* spirit = m_creature->SummonCreature(OLUMS_SPIRIT,OlumNewPos[0],OlumNewPos[1],OlumNewPos[2],OlumNewPos[3]-2.0f,TEMPSUMMON_TIMED_DESPAWN,16000))
+                    {
+                        spirit->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                        spirit->SetUnitMovementFlags(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
+                        // spirit->SetUInt32Value(UNIT_NPC_EMOTESTATE,STATE_DROWNED); // improve Olum's Spirit animation using Drowned State, right movement flag or monster move type needed
+                        spirit->SendMonsterMove(OlumNewPos[0],OlumNewPos[1],OlumNewPos[2]+8.0f,16000);
+                    }
                 }
                 return 7000;
             case 12:

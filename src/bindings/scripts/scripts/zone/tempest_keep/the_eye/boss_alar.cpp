@@ -197,7 +197,6 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
                 {
                     WaitEvent = WE_TRULY_DIE;
                     m_creature->SetHealth(1);
-                    JustDied(pKiller);
                     WaitTimer = 5000;
                 }
                 m_creature->InterruptNonMeleeSpells(true);
