@@ -953,8 +953,36 @@ void BattleGround::StartBattleGround()
     ///this method should spawn spirit guides and so on
     SetStartTime(0);
     SetLastResurrectTime(0);
+    AnnounceBGStart();
     if(m_IsRated)
         sLog.outArena("Arena match type: %u for Team1Id: %u - Team2Id: %u started.", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE]);
+}
+
+void BattleGround::AnnounceBGStart()
+{
+    if (!sWorld.getConfig(CONFIG_ANNOUNCE_BG_START))
+        return;
+
+    std::stringstream ss;
+    switch (m_TypeID)
+    {
+        case BATTLEGROUND_AV:
+            ss << "Alterac Valley "; break;
+        case BATTLEGROUND_WS:
+            ss << "Warsong Gulch "; break;
+        case BATTLEGROUND_EY:
+            ss << "Eye of the Storm "; break;
+        case BATTLEGROUND_AB:
+            ss << "Arathi Bathin "; break;
+        default: return;
+    }
+
+    ss << "(#" << GetInstanceID() << ") started for levels: ";
+    ss << m_LevelMin;
+    if (m_LevelMin != 70)
+        ss << "-" << m_LevelMax;
+
+    sWorld.SendWorldTextForLevels(m_LevelMin, m_LevelMax, LANG_BG_START_ANNOUNCE, ss.str().c_str());
 }
 
 void BattleGround::AddPlayer(Player *plr)

@@ -567,6 +567,8 @@ void World::LoadConfigSettings(bool reload)
     if(reload)
         MapManager::Instance().SetGridCleanUpDelay(m_configs[CONFIG_INTERVAL_GRIDCLEAN]);
 
+    m_configs[CONFIG_ANNOUNCE_BG_START] = sConfig.GetIntDefault("AnnounceBGStart", 0);
+
     m_configs[CONFIG_INTERVAL_MAPUPDATE] = sConfig.GetIntDefault("MapUpdateInterval", 100);
     if(m_configs[CONFIG_INTERVAL_MAPUPDATE] < MIN_MAP_UPDATE_DELAY)
     {
@@ -1715,6 +1717,63 @@ void World::SendWorldText(int32 string_id, ...)
     for(SessionMap::iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
     {
         if(!itr->second || !itr->second->GetPlayer() || !itr->second->GetPlayer()->IsInWorld() )
+            continue;
+
+        uint32 loc_idx = itr->second->GetSessionDbLocaleIndex();
+        uint32 cache_idx = loc_idx+1;
+
+        std::vector<WorldPacket*>* data_list;
+
+        // create if not cached yet
+        if(data_cache.size() < cache_idx+1 || data_cache[cache_idx].empty())
+        {
+            if(data_cache.size() < cache_idx+1)
+                data_cache.resize(cache_idx+1);
+
+            data_list = &data_cache[cache_idx];
+
+            char const* text = objmgr.GetTrinityString(string_id,loc_idx);
+
+            char buf[1000];
+
+            va_list argptr;
+            va_start( argptr, string_id );
+            vsnprintf( buf,1000, text, argptr );
+            va_end( argptr );
+
+            char* pos = &buf[0];
+
+            while(char* line = ChatHandler::LineFromMessage(pos))
+            {
+                WorldPacket* data = new WorldPacket();
+                ChatHandler::FillMessageData(data, NULL, CHAT_MSG_SYSTEM, LANG_UNIVERSAL, NULL, 0, line, NULL);
+                data_list->push_back(data);
+            }
+        }
+        else
+            data_list = &data_cache[cache_idx];
+
+        for(int i = 0; i < data_list->size(); ++i)
+            itr->second->SendPacket((*data_list)[i]);
+    }
+
+    // free memory
+    for(int i = 0; i < data_cache.size(); ++i)
+        for(int j = 0; j < data_cache[i].size(); ++j)
+            delete data_cache[i][j];
+}
+
+// send global message for players in range <minLevel, maxLevel>
+void World::SendWorldTextForLevels(uint32 minLevel, uint32 maxLevel, int32 string_id, ...)
+{
+    std::vector<std::vector<WorldPacket*> > data_cache;     // 0 = default, i => i-1 locale index
+
+    for(SessionMap::iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
+    {
+        if(!itr->second || !itr->second->GetPlayer() || !itr->second->GetPlayer()->IsInWorld() )
+            continue;
+
+        if(itr->second->GetPlayer()->getLevel() < minLevel || itr->second->GetPlayer()->getLevel() > maxLevel)
             continue;
 
         uint32 loc_idx = itr->second->GetSessionDbLocaleIndex();

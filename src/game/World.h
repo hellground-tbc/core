@@ -212,6 +212,7 @@ enum WorldConfigs
     CONFIG_PET_LOS,
     CONFIG_VMAP_TOTEM,
     CONFIG_NUMTHREADS,
+    CONFIG_ANNOUNCE_BG_START,
 
     CONFIG_VALUE_COUNT
 };
@@ -446,7 +447,8 @@ class World
         void SetInitialWorldSettings();
         void LoadConfigSettings(bool reload = false);
 
-        void SendWorldText(int32 string_id, ...);
+        void SendWorldText(int32 string_id, ...)
+        void SendWorldTextForLevels(uint32 minLevel, uint32 maxLevel, int32 string_id, ...);
         void SendGlobalText(const char* text, WorldSession *self);
         void SendGMText(int32 string_id, ...);
         void SendGlobalMessage(WorldPacket *packet, WorldSession *self = 0, uint32 team = 0);
