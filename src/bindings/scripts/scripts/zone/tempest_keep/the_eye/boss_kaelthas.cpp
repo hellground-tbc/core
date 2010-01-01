@@ -80,6 +80,7 @@ EndScriptData */
 #define SPELL_PYROBLAST                   36819
 #define SPELL_FLAME_STRIKE                36735
 #define SPELL_FLAME_STRIKE_VIS            36730
+#define	SPELL_BANISH					  35182
 #define SPELL_FLAME_STRIKE_DMG            36731
 #define SPELL_ARCANE_DISRUPTION           36834
 #define SPELL_SHOCK_BARRIER               36815
@@ -144,8 +145,8 @@ float KaelthasWeapons[7][5] =
 #define GRAVITY_Y 0.0f
 #define GRAVITY_Z 70.0f
 
-#define TIME_PHASE_2_3      125000 // Phase 2 ends approximately 2 minutes and 5 seconds after it begins
-#define TIME_PHASE_3_4      180000 // Phase 3 ends approximately 3 minutes after it begins
+#define TIME_PHASE_2_3			125000 // Phase 2 ends approximately 2 minutes and 5 seconds after it begins
+#define TIME_PHASE_3_4			180000 // Phase 3 ends approximately 3 minutes after it begins
 
 #define KAEL_VISIBLE_RANGE  50.0f
 #define ROOM_BASE_Z 49.0f
@@ -312,15 +313,19 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
     ScriptedInstance* pInstance;
 
     uint32 Fireball_Timer;
-    uint32 ArcaneDisruption_Timer;
-    uint32 Phoenix_Timer;
+    uint32 Visual_Timer;
+    uint32 Arcane_Timer1;
+    uint32 Arcane_Timer2;
+    uint32 ShockPyroChain_Timer;
     uint32 ShockBarrier_Timer;
+    uint32 Pyro_Timer;
     uint32 GravityLapse_Timer;
     uint32 GravityLapse_Phase;
     uint32 NetherBeam_Timer;
     uint32 NetherVapor_Timer;
     uint32 FlameStrike_Timer;
     uint32 MindControl_Timer;
+    uint32 Phoenix_Timer;
     uint32 Check_Timer;
     uint32 Phase;
     uint32 PhaseSubphase;                                   //generic
@@ -330,6 +335,9 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
 
     WorldLocation wLoc;
 
+    bool Arcane1;
+    bool Arcane2;
+    bool MC_Done;
     bool InGravityLapse;
     bool IsCastingFireball;
     bool ChainPyros;
@@ -364,11 +372,15 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
     {
         m_creature->SetNoCallAssistance(true);
         Fireball_Timer = 5000+rand()%10000;
-        ArcaneDisruption_Timer = 45000;
-        MindControl_Timer = 40000;
-        Phoenix_Timer = 50000;
+        Arcane_Timer1 = 20000;
+        Arcane_Timer2 = 40000;
+        MindControl_Timer = 10000;
+        Phoenix_Timer =50000;
+        ShockPyroChain_Timer = 60000;
+        PyrosCasted = 0;
+        Pyro_Timer = 0;
         ShockBarrier_Timer = 60000;
-        FlameStrike_Timer = 30000;
+        FlameStrike_Timer = 29000;
         GravityLapse_Timer = 20000;
         GravityLapse_Phase = 0;
         NetherBeam_Timer = 8000;
@@ -377,6 +389,9 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
         Check_Timer2 = 3000;
         PyrosCasted = 0;
         Phase = 0;
+        Arcane1 = false;
+        Arcane2 = false;
+        MC_Done = false;
         InGravityLapse = false;
         IsCastingFireball = false;
         ChainPyros = false;
@@ -843,63 +858,108 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                             Fireball_Timer = 5000+rand()%10000;
                         }
                     }else Fireball_Timer -= diff;
+                }
 
-                    //ArcaneDisruption_Timer
-                    if(ArcaneDisruption_Timer < diff)
+                //Phoenix_Timer
+                if (Phoenix_Timer < diff)
+                {
+                    if(!ChainPyros && !InGravityLapse && !IsCastingFireball)
                     {
-                        DoCast(m_creature->getVictim(), SPELL_ARCANE_DISRUPTION, true);
-
-                        ArcaneDisruption_Timer = 60000;
+                         if(m_creature->IsNonMeleeSpellCasted(true))
+                         {
+                             m_creature->InterruptNonMeleeSpells(true);
+                         }
+                         if (Unit* pUnit = SelectUnit(SELECT_TARGET_RANDOM, 0, 70, true))
+                         DoCast(pUnit, SPELL_SUMMON_PHOENIX);
+                         switch(rand()%2)
+                          {
+                            case 0: DoScriptText(SAY_SUMMON_PHOENIX1, m_creature); break;
+                            case 1: DoScriptText(SAY_SUMMON_PHOENIX2, m_creature); break;
+                          }
+                         Phoenix_Timer = 30000 +rand()%10000;
                     }
-                    else
-                        ArcaneDisruption_Timer -= diff;
+                  }
+                    else 
+                        Phoenix_Timer -= diff;
 
-                    if (FlameStrike_Timer < diff)
+                // FlameStrike_Timer
+                if (FlameStrike_Timer < diff)
                     {
+                      if(!ChainPyros && !InGravityLapse)
+                      {
+                        if(m_creature->IsNonMeleeSpellCasted(true))
+                        {
+                            m_creature->InterruptNonMeleeSpells(true);
+                        }
                         if (Unit* pUnit = SelectUnit(SELECT_TARGET_RANDOM, 0, 70, true))
                             DoCast(pUnit, SPELL_FLAME_STRIKE);
 
                         FlameStrike_Timer = 30000;
+                      }
                     }
                     else 
                         FlameStrike_Timer -= diff;
 
-                    if(Phase == 5)
+                    
+                if(Phase != 5)
                     {
-                        if(MindControl_Timer < diff)
+                        if(Arcane_Timer1 < diff && !Arcane1)
                         {
-                            if (m_creature->getThreatManager().getThreatList().size() >= 2)
-                            for (uint32 i = 0; i < 3; i++)
+                            //Arcane Disruption after 20 sec from Pyros chain (4 Phase) or Shock (5 Phase)
+                            DoCast(m_creature->getVictim(), SPELL_ARCANE_DISRUPTION, true);
+                            Arcane1 = true;
+
+                            // MC after 20 sec from Pyros chain (4 Phase)
+                            if(Phase == 4)
                             {
+                              if(m_creature->getThreatManager().getThreatList().size() >= 2)
+                              for (uint32 i = 0; i < 3; i++)
+                              {
 
-                                Unit* target =SelectUnit(SELECT_TARGET_RANDOM, 1, 70, true);
-                                if(!target)
-                                    target = m_creature->getVictim();
+                                  Unit* target =SelectUnit(SELECT_TARGET_RANDOM, 1, 70, true);
+                                  if(!target)
+                                      target = m_creature->getVictim();
 
-                                if(target)
-                                    DoCast(target, SPELL_MIND_CONTROL);
+                                  if(target)
+                                      DoCast(target, SPELL_MIND_CONTROL);
+                              }
+                              MindControl_Timer = 10000;
+                              MC_Done = false;				// for second MC to have a good timer
                             }
-                            MindControl_Timer = 60000;
                         }
-                        else 
-                            MindControl_Timer -= diff;
-                    }
-                }
+                        else
+                            Arcane_Timer1 -= diff;
 
-                //Phoenix_Timer
-                if(Phoenix_Timer < diff && !InGravityLapse)
-                {
-                    m_creature->SummonCreature(PHOENIX,m_creature->GetPositionX(),m_creature->GetPositionY(),m_creature->GetPositionZ(),m_creature->GetOrientation(),TEMPSUMMON_CORPSE_DESPAWN,1000);
-                    switch(rand()%2)
-                    {
-                    case 0: DoScriptText(SAY_SUMMON_PHOENIX1, m_creature); break;
-                    case 1: DoScriptText(SAY_SUMMON_PHOENIX2, m_creature); break;
-                    }
+                        if(Arcane_Timer2 < diff)
+                        {
+                            // MC after 50 sec from Pyros chain (4 Phase)
+                            if(MindControl_Timer < diff && Phase == 4 && !MC_Done)
+                            {
+                                if(m_creature->getThreatManager().getThreatList().size() >= 2)
+                                for (uint32 i = 0; i < 3; i++)
+                                {
 
-                    Phoenix_Timer = 60000;
-                }
-                else
-                    Phoenix_Timer -= diff;
+                                    Unit* target =SelectUnit(SELECT_TARGET_RANDOM, 1, 70, true);
+                                    if(!target)
+                                        target = m_creature->getVictim();
+
+                                    if(target)
+                                        DoCast(target, SPELL_MIND_CONTROL);
+                                }
+                                MC_Done = true;
+                            }else
+                                MindControl_Timer -= diff;
+
+                            //Arcane Disruption after 40 sec from Pyros chain (4 Phase) or Shock (5 Phase)
+                            if(!Arcane2)
+                            {
+                            DoCast(m_creature->getVictim(), SPELL_ARCANE_DISRUPTION, true);
+                            Arcane2 = true;
+                            }
+                        }
+                        else
+                            Arcane_Timer2 -= diff;									
+                    }
 
                 //Phase 4 specific spells
                 if(Phase == 4)
@@ -921,40 +981,45 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                     }
 
-                    //ShockBarrier_Timer
-                    if(ShockBarrier_Timer < diff)
+                    // arcane disruption, shock, pyroblasts chain
+                    if(ShockPyroChain_Timer < diff)
                     {
-                        DoCast(m_creature, SPELL_SHOCK_BARRIER);
-                        ChainPyros = true;
-                        PyrosCasted = 0;
-                        Check_Timer = 0;
-
-                        ShockBarrier_Timer = 60000;
-                    }
-                    else
-                        ShockBarrier_Timer -= diff;
-
-                    //Chain Pyros (3 of them max)
-                    if (ChainPyros)
-                    {
-                        if(PyrosCasted < 3 && Check_Timer < diff)
+                        if(PyrosCasted == 0)
                         {
-                            Unit * target = SelectUnit(SELECT_TARGET_TOPAGGRO, 0);
-                            DoCast(target, SPELL_PYROBLAST);
-                            ++PyrosCasted;
+                            if(m_creature->IsNonMeleeSpellCasted(true))
+                            {
+                                m_creature->InterruptNonMeleeSpells(true);
+                            }
+                            DoCast(m_creature, SPELL_SHOCK_BARRIER);
+                            DoCast(m_creature->getVictim(), SPELL_ARCANE_DISRUPTION, true);
+                            Fireball_Timer = 2500;
+                            Arcane_Timer1 = 20000;
+                            Arcane1 = false;
+                            Arcane_Timer2 = 40000;
+                            Arcane2 = false;
+                            ChainPyros = true;
+                        }
 
-                            Check_Timer = 4400;
+                        if(PyrosCasted < 3 && Pyro_Timer < diff)
+                        {
+                            m_creature->StopMoving();
+                            m_creature->CastSpell(m_creature->getVictim(), SPELL_PYROBLAST, false);
+                            ++PyrosCasted;
+                            Pyro_Timer = 4000 + diff;
                         }
                         else
-                            Check_Timer -= diff;
-                        
-                        if(PyrosCasted >= 3)
+                            Pyro_Timer -= diff;
+
+                        if(PyrosCasted >= 3 && Pyro_Timer < diff)
                         {
                             ChainPyros = false;
-                            Fireball_Timer = 2500;
-                            ArcaneDisruption_Timer = 60000;
+                            PyrosCasted = 0;
+                            ShockPyroChain_Timer = 48000;
+                            Pyro_Timer = 0;
                         }
                     }
+                    else
+                        ShockPyroChain_Timer -= diff;
                 }
                 else
                     Check_Timer -= 4100;
@@ -999,10 +1064,14 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                                         DoTeleportPlayer(pUnit, GRAVITY_X, GRAVITY_Y, GRAVITY_Z, pUnit->GetOrientation());
                                     }
                                 }
-                                summons.AuraOnEntry(PHOENIX,35182,true);
+                                summons.AuraOnEntry(PHOENIX,SPELL_BANISH,true);
                                 GravityLapse_Timer = 500;
                                 ++GravityLapse_Phase;
                                 InGravityLapse = true;
+                                Arcane_Timer1 = 20000;
+                                Arcane1 = false;
+                                Arcane_Timer2 = 40000;
+                                Arcane2 = false;
                                 ShockBarrier_Timer = 1000;
                                 NetherBeam_Timer = 5000;
                                 break;
@@ -1071,9 +1140,9 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                                         pUnit->SendMessageToSet(&data, true);
                                     }
                                 }
-                                summons.AuraOnEntry(PHOENIX,35182,false);
                                 m_creature->RemoveAurasDueToSpell(SPELL_NETHER_VAPOR);
                                 InGravityLapse = false;
+                                summons.AuraOnEntry(PHOENIX,SPELL_BANISH,false);
                                 GravityLapse_Timer = 60000;
                                 GravityLapse_Phase = 0;
                                 DoStartMovement(m_creature->getVictim());
@@ -1084,7 +1153,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
 
                     if(InGravityLapse)
                     {
-                        //ShockBarrier_Timer
+                        //ShockBarrier_Timer in 5th phase only
                         if(ShockBarrier_Timer < diff)
                         {
                             DoCast(m_creature, SPELL_SHOCK_BARRIER);
@@ -1655,7 +1724,7 @@ struct TRINITY_DLL_DECL mob_phoenix_tkAI : public ScriptedAI
     {
         for(int i = 0; i < 3; i++)
         {
-            if(spell->EffectMechanic[i] == MECHANIC_BANISH && spell->Id != 35182)
+            if(spell->EffectMechanic[i] == MECHANIC_BANISH && spell->Id != SPELL_BANISH)
                 m_creature->RemoveAurasDueToSpell(spell->Id);
         }
 
