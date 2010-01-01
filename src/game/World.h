@@ -447,7 +447,7 @@ class World
         void SetInitialWorldSettings();
         void LoadConfigSettings(bool reload = false);
 
-        void SendWorldText(int32 string_id, ...)
+        void SendWorldText(int32 string_id, ...);
         void SendWorldTextForLevels(uint32 minLevel, uint32 maxLevel, int32 string_id, ...);
         void SendGlobalText(const char* text, WorldSession *self);
         void SendGMText(int32 string_id, ...);
