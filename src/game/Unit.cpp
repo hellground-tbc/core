@@ -7763,6 +7763,20 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
     AuraList const& mModDamagePercentDone = GetAurasByType(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
     for(AuraList::const_iterator i = mModDamagePercentDone.begin(); i != mModDamagePercentDone.end(); ++i)
     {
+        switch ((*i)->GetId())
+        {
+            case 6057:  // M Wand Spec 1
+            case 6085:  // M Wand Spec 2
+            case 14524: // P Wand Spec 1
+            case 14525: // P Wand Spec 2
+            case 14526: // P Wand Spec 3
+            case 14527: // P Wand Spec 4
+            case 14528: // P Wand Spec 5
+                if (spellProto->Id != 5019) // Wand Shoot
+                    continue;
+            default: break;
+        }
+
         if( ((*i)->GetModifier()->m_miscvalue & GetSpellSchoolMask(spellProto)) &&
             (GetTypeId() != TYPEID_PLAYER || ((Player*)this)->HasItemFitToSpellReqirements((*i)->GetSpellProto())))
         {
