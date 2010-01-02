@@ -1720,6 +1720,22 @@ struct TRINITY_DLL_DECL mob_phoenix_tkAI : public ScriptedAI
     }
 
     void Aggro(Unit *who) { }
+
+    void JustDied(Unit* Killer)
+    {
+        float x,y,z;
+
+        m_creature->GetPosition(x,y,z);
+        Creature * phoenixEgg = Egg ? m_creature->SummonCreature(PHOENIX_EGG,x,y,z,0,TEMPSUMMON_CORPSE_TIMED_DESPAWN,60000) : NULL;
+        m_creature->CastSpell(m_creature, SPELL_EMBER_BLAST, true);
+        if(phoenixEgg)
+          {
+            phoenixEgg->setFaction(m_creature->getFaction());
+            phoenixEgg = NULL;
+          }
+        m_creature->RemoveCorpse();
+    }
+
     void SpellHit(Unit *caster, SpellEntry* spell)
     {
         for(int i = 0; i < 3; i++)
@@ -1728,26 +1744,6 @@ struct TRINITY_DLL_DECL mob_phoenix_tkAI : public ScriptedAI
                 m_creature->RemoveAurasDueToSpell(spell->Id);
         }
 
-    }
-    void DamageTaken(Unit *killer, uint32 &damage)
-    {
-        if(damage >= m_creature->GetHealth())
-        {
-            damage = 0;
-            float x,y,z;
-            m_creature->GetPosition(x,y,z);
-            
-            Creature * phoenixEgg = Egg ? m_creature->SummonCreature(PHOENIX_EGG,x,y,z,0,TEMPSUMMON_TIMED_DESPAWN,600000) : NULL;
-            
-            if(phoenixEgg)
-            {
-                phoenixEgg->setFaction(m_creature->getFaction());
-                phoenixEgg = NULL;
-            }
-
-            m_creature->Kill(m_creature, false);
-            m_creature->RemoveCorpse();
-        }
     }
 
     void UpdateAI(const uint32 diff)
@@ -1765,13 +1761,15 @@ struct TRINITY_DLL_DECL mob_phoenix_tkAI : public ScriptedAI
                     return;
                 }
             }
-            //spell Burn should possible do this, but it doesn't, so do this for now.
-            uint32 dmg = urand(4500,5500);
-            if (m_creature->GetHealth() > dmg)
-                m_creature->SetHealth(uint32(m_creature->GetHealth()-dmg));
-            else//kill itt
-                m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-            Cycle_Timer = 2000;
+              //spell Burn should possible do this, but it doesn't, so do this for now.
+             uint32 dmg = 0.05*(m_creature->GetMaxHealth());	// burn 5% of phoenix HP each tick
+
+             if (m_creature->GetHealth() > dmg)
+             {
+                 m_creature->SetHealth(uint32(m_creature->GetHealth()-dmg));
+             }			 
+              else m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);	//kill it
+          Cycle_Timer = 2000;
         }else Cycle_Timer -= diff;
 
         if (!UpdateVictim())
