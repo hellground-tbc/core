@@ -4,7 +4,7 @@
 #include "hyjal_trash.h"
 
 #define SPELL_FROST_ARMOR 31256
-#define SPELL_DEATH_AND_DECAY 39658
+#define SPELL_DEATH_AND_DECAY 31258
 
 #define SPELL_FROST_NOVA 31250
 #define SPELL_ICEBOLT 31249
