@@ -95,7 +95,7 @@ template<class T>
 void
 TargetedMovementGenerator<T>::_adaptSpeedToTarget(T &owner)
 {
-    if(!owner.isPet())
+    if(!owner.GetOwner())
         return;
 
     float lowerCritDist = 3*i_offset;
@@ -122,7 +122,6 @@ TargetedMovementGenerator<T>::Initialize(T &owner)
 {
     if(!&owner)
         return;
-
     owner.RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
 
     if (owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->canFly())
