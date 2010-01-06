@@ -241,6 +241,8 @@ struct TRINITY_DLL_DECL advisorbase_ai : public ScriptedAI
         m_creature->setDeathState(ALIVE);
         DoCast(m_creature, SPELL_RES_VISUAL, false);
 
+        DoZoneInCombat(); // So we have now new shiny target list ;]
+
         if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
         {
             m_creature->GetMotionMaster()->MoveChase(target);
