@@ -2213,18 +2213,15 @@ bool ChooseReward_npc_Akama(Player *player, Creature *_Creature, const Quest *_Q
     bool PreludeEventStarted = ((npc_AkamaAI*)_Creature->AI())->PreludeEventStarted;
 
     if(EventStarted || PreludeEventStarted)
-    return false;
+        return false;
 
     if(!EventStarted && _Quest->GetQuestId() == 10628)
-    {
         ((npc_AkamaAI*)_Creature->AI())->StartEvent();
-    }
+
     if(!PreludeEventStarted && _Quest->GetQuestId() == 10944)
-    {
         ((npc_AkamaAI*)_Creature->AI())->StartPreludeEvent();
-    
-    }
-    return true;
+
+    return false;
 }
 
 /*#####
