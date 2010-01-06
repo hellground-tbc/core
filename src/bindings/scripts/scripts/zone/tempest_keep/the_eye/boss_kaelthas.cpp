@@ -238,6 +238,7 @@ struct TRINITY_DLL_DECL advisorbase_ai : public ScriptedAI
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->SetHealth(m_creature->GetMaxHealth());
         m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, PLAYER_STATE_NONE);
+        m_creature->setDeathState(ALIVE);
         DoCast(m_creature, SPELL_RES_VISUAL, false);
 
         if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
@@ -284,7 +285,7 @@ struct TRINITY_DLL_DECL advisorbase_ai : public ScriptedAI
             
                 UpdateMaxHealth(true);
 
-                if(pInstance->GetData(DATA_KAELTHASEVENT) == 3)
+                if(pInstance->GetData(DATA_KAELTHASEVENT) == 4)		// phase 3 = phase 4, to discriminate phase 3 state from DONE
                     JustDied(pKiller);
             }
         }
@@ -767,7 +768,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                     if (Phase_Timer < diff)
                 {
                     DoScriptText(SAY_PHASE3_ADVANCE, m_creature);
-                    pInstance->SetData(DATA_KAELTHASEVENT, 3);
+                    pInstance->SetData(DATA_KAELTHASEVENT, 4);		// phase 3 = phase 4, to discriminate phase 3 state from DONE
                     Phase = 3;
                     PhaseSubphase = 0;
                 }else Phase_Timer -= diff;

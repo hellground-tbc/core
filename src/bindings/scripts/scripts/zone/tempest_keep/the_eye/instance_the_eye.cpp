@@ -42,6 +42,7 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
     uint64 GrandAstromancerCapernian;
     uint64 MasterEngineerTelonicus;
     uint64 Kaelthas;
+    std::set<uint64> DoorGUID;
     uint64 Astromancer;
     uint64 Alar;
 
@@ -57,6 +58,7 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
         GrandAstromancerCapernian = 0;
         MasterEngineerTelonicus = 0;
         Kaelthas = 0;
+        DoorGUID.clear();
         Astromancer = 0;
         Alar = 0;
 
@@ -89,6 +91,16 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
         }
     }
 
+    void OnObjectCreate(GameObject *go)
+    {
+        switch(go->GetEntry())
+        {
+        case 184324:
+            DoorGUID.insert(go->GetGUID());
+            break;
+        }
+    }
+
     uint64 GetData64(uint32 identifier)
     {
         switch(identifier)
@@ -111,7 +123,23 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
             case DATA_ALAREVENT:    AlarEventPhase = data;  Encounters[0] = data;           break;
             case DATA_HIGHASTROMANCERSOLARIANEVENT: Encounters[1] = data;                   break;
             case DATA_VOIDREAVEREVENT:  Encounters[2] = data;                               break;
-            case DATA_KAELTHASEVENT:    KaelthasEventPhase = data;  Encounters[3] = data;   break;
+            case DATA_KAELTHASEVENT:
+                if(data == NOT_STARTED || data == DONE)
+                {
+                    for(std::set<uint64>::iterator i = DoorGUID.begin(); i != DoorGUID.end(); ++i)
+                    {
+                        if(GameObject *Door = instance->GetGameObject(*i))
+                        Door->SetGoState(0);
+                    }
+                }
+                else
+                    for(std::set<uint64>::iterator i = DoorGUID.begin(); i != DoorGUID.end(); ++i)
+                    {
+                        if(GameObject *Door = instance->GetGameObject(*i))
+                        Door->SetGoState(1);
+                    }
+                KaelthasEventPhase = data;
+                Encounters[3] = data;   break;
         }
         if(data == DONE)
             SaveToDB();
