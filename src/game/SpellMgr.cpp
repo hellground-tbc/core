@@ -2808,8 +2808,12 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
             return DIMINISHING_FEAR;
         else if (spellproto->Mechanic == MECHANIC_CHARM   || spellproto->EffectMechanic[i] == MECHANIC_CHARM)
             return DIMINISHING_CHARM;
-        else if (spellproto->Mechanic == MECHANIC_SILENCE || spellproto->EffectMechanic[i] == MECHANIC_SILENCE)
-            return DIMINISHING_SILENCE;
+        /*
+            Patch 3.0.8 (2009-01-20): All Silence spells now have diminishing returns.
+            This includes: Arcane Torrent, Garrote silence effect, Improved Counterspell effect, Improved Kick effect, Silence, Gag Order, Silencing Shot, Spell Lock, and Strangulate.
+        */
+        //else if (spellproto->Mechanic == MECHANIC_SILENCE || spellproto->EffectMechanic[i] == MECHANIC_SILENCE)
+        //    return DIMINISHING_SILENCE;
         else if (spellproto->Mechanic == MECHANIC_DISARM  || spellproto->EffectMechanic[i] == MECHANIC_DISARM)
             return DIMINISHING_DISARM;
         else if (spellproto->Mechanic == MECHANIC_FREEZE  || spellproto->EffectMechanic[i] == MECHANIC_FREEZE)
