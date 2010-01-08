@@ -2550,7 +2550,7 @@ void Player::SendInitialSpells()
 
     for (PlayerSpellMap::const_iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
     {
-        if(itr->second->state == PLAYERSPELL_REMOVED)
+        if(!itr->second || itr->second->state == PLAYERSPELL_REMOVED)
             continue;
 
         if(!itr->second->active || itr->second->disabled)
@@ -16063,6 +16063,9 @@ void Player::_SaveQuestStatus()
     // we don't need transactions here.
     for( QuestStatusMap::iterator i = mQuestStatus.begin( ); i != mQuestStatus.end( ); ++i )
     {
+        if(!i->second)
+            continue;
+        
         switch (i->second.uState)
         {
             case QUEST_NEW :
@@ -16077,6 +16080,7 @@ void Player::_SaveQuestStatus()
             case QUEST_UNCHANGED:
                 break;
         };
+
         i->second.uState = QUEST_UNCHANGED;
     }
 }
