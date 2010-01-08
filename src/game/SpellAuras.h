@@ -398,10 +398,12 @@ class TRINITY_DLL_SPEC AreaAura : public Aura
 class TRINITY_DLL_SPEC PersistentAreaAura : public Aura
 {
     public:
-        PersistentAreaAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = NULL, Item* castItem = NULL);
+        PersistentAreaAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = NULL, Item* castItem = NULL, uint64 dynObjGUID = 0);
         ~PersistentAreaAura();
         void Update(uint32 diff);
-        uint64 dynObjGUID;
+
+    private:
+        uint64 dynamicObjectGUID;
 };
 
 Aura* CreateAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = NULL, Item* castItem = NULL);

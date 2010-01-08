@@ -492,9 +492,9 @@ AreaAura::~AreaAura()
 }
 
 PersistentAreaAura::PersistentAreaAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target,
-Unit *caster, Item* castItem) : Aura(spellproto, eff, currentBasePoints, target, caster, castItem)
+Unit *caster, Item* castItem, uint64 dynObjGUID) : Aura(spellproto, eff, currentBasePoints, target, caster, castItem)
 {
-    dynObjGUID = 0;
+    dynamicObjectGUID = dynObjGUID;
     m_isPersistent = true;
 }
 
@@ -778,28 +778,19 @@ void PersistentAreaAura::Update(uint32 diff)
     Unit *caster = GetCaster();
     if (caster)
     {
-        if(GetId() == 40253)
+        DynamicObject *dynObj = NULL;
+        if (m_dynamicObjectGUID)
+            dynObj = ObjectAccessor::GetDynamicObject(*caster, m_dynamicObjectGUID); // try to get linked dynamic object
+        else
+            dynObj = caster->GetDynObject(GetId(), GetEffIndex()); // old way - do we need it?
+
+        if (dynObj)
         {
-            DynamicObject *dynObj = caster->GetMap()->GetDynamicObject(dynObjGUID);
-            if(dynObj)
-            {
-                if (!m_target->IsWithinDistInMap(dynObj, dynObj->GetRadius()))
-                    remove = true;
-            }
-            else
+            if (!m_target->IsWithinDistInMap(dynObj, dynObj->GetRadius()))
                 remove = true;
         }
         else
-        {
-            DynamicObject *dynObj = caster->GetDynObject(GetId(), GetEffIndex());
-            if (dynObj)
-            {
-                if (!m_target->IsWithinDistInMap(dynObj, dynObj->GetRadius()))
-                    remove = true;
-            }
-            else
-                remove = true;
-        }
+            remove = true;
     }
     else
         remove = true;
