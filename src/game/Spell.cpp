@@ -3911,6 +3911,10 @@ uint8 Spell::CanCast(bool strict)
                 if (m_caster->hasUnitState(UNIT_STAT_ROOT))
                     return SPELL_FAILED_ROOTED;
 
+                if(m_caster->GetTypeId() == TYPEID_PLAYER)
+                    if(BattleGround const *bg = dynamic_cast<Player *>(m_caster)->GetBattleGround())
+                        if(bg->GetStatus() != STATUS_IN_PROGRESS)
+                            return SPELL_FAILED_TRY_AGAIN;
                 break;
             }
             case SPELL_EFFECT_SKINNING:
@@ -4156,14 +4160,20 @@ uint8 Spell::CanCast(bool strict)
             }
             case SPELL_EFFECT_SUMMON_PLAYER:
             {
-                if(m_caster->GetTypeId()!=TYPEID_PLAYER)
-                    return SPELL_FAILED_BAD_TARGETS;
-                if(!((Player*)m_caster)->GetSelection())
+                if(m_caster->GetTypeId() != TYPEID_PLAYER)
                     return SPELL_FAILED_BAD_TARGETS;
 
-                Player* target = objmgr.GetPlayer(((Player*)m_caster)->GetSelection());
-                if( !target || ((Player*)m_caster)==target || !target->IsInSameRaidWith((Player*)m_caster) )
+                if(!dynamic_cast<Player *>(m_caster)->GetSelection())
                     return SPELL_FAILED_BAD_TARGETS;
+
+                Player* target = objmgr.GetPlayer(dynamic_cast<Player *>(m_caster)->GetSelection());
+                if( !target || m_caster == target || !target->IsInSameRaidWith(dynamic_cast<Player *>(m_caster)) )
+                    return SPELL_FAILED_BAD_TARGETS;
+
+                if(m_caster->GetTypeId() == TYPEID_PLAYER)
+                    if(BattleGround const *bg = dynamic_cast<Player *>(m_caster)->GetBattleGround())
+                        if(bg->GetStatus() != STATUS_IN_PROGRESS)
+                            return SPELL_FAILED_DONT_REPORT; // Ritual of Summoning Effect is triggered so don't report
 
                 // check if our map is dungeon
                 if( sMapStore.LookupEntry(m_caster->GetMapId())->IsDungeon() )
