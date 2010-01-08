@@ -2744,8 +2744,9 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
                 return false;
             case PLAYERSPELL_REMOVED:                       // re-learning removed not saved spell
             {
-                delete itr->second;
+                PlayerSpell *spell = itr->second;
                 m_spells.erase(itr);
+                delete spell;
                 state = PLAYERSPELL_CHANGED;
                 break;                                      // need re-add
             }
