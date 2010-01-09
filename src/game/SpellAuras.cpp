@@ -494,7 +494,7 @@ AreaAura::~AreaAura()
 PersistentAreaAura::PersistentAreaAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target,
 Unit *caster, Item* castItem, uint64 dynObjGUID) : Aura(spellproto, eff, currentBasePoints, target, caster, castItem)
 {
-    dynamicObjectGUID = dynObjGUID;
+    m_dynamicObjectGUID = dynObjGUID;
     m_isPersistent = true;
 }
 
@@ -780,7 +780,8 @@ void PersistentAreaAura::Update(uint32 diff)
     {
         DynamicObject *dynObj = NULL;
         if (m_dynamicObjectGUID)
-            dynObj = ObjectAccessor::GetDynamicObject(*caster, m_dynamicObjectGUID); // try to get linked dynamic object
+            //dynObj = ObjectAccessor::GetDynamicObject(*caster, m_dynamicObjectGUID); // try to get linked dynamic object
+            dynObj = caster->GetMap()->GetDynamicObject(m_dynamicObjectGUID); //prev version commented, delete one 
         else
             dynObj = caster->GetDynObject(GetId(), GetEffIndex()); // old way - do we need it?
 
