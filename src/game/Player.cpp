@@ -16064,9 +16064,6 @@ void Player::_SaveQuestStatus()
     // we don't need transactions here.
     for( QuestStatusMap::iterator i = mQuestStatus.begin( ); i != mQuestStatus.end( ); ++i )
     {
-        if(!i->second)
-            continue;
-        
         switch (i->second.uState)
         {
             case QUEST_NEW :
