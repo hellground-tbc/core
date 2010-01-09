@@ -2389,9 +2389,13 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
             if(basevalue == T(0))
                 continue;
 
-            // special case (skip >10sec spell casts for instant cast setting)
-            if( mod->op==SPELLMOD_CASTING_TIME  && basevalue >= T(10000) && mod->value <= -100)
-                continue;
+            // special case (skip > 10sec spell casts for instant cast setting)
+            if (mod->op == SPELLMOD_CASTING_TIME)
+            {
+                SpellCastTimesEntry const *spellCastTimeEntry = sSpellCastTimesStore.LookupEntry(spellInfo->CastingTimeIndex);
+                if (spellCastTimeEntry->CastTime >= T(10000))
+                    continue;
+            }
 
             totalpct += mod->value;
         }
