@@ -88,6 +88,9 @@ EndScriptData */
 #define SPELL_MIND_CONTROL                32830
 
 //Phase 5 spells
+#define SPELL_NETHERBEAM_EXPLODE          36089
+#define SPELL_NETHERBEAM                  36090
+#define SPELL_GAINING_POWER               36091
 #define SPELL_EXPLODE                     36092
 #define SPELL_FULLPOWER                   36187
 #define SPELL_KNOCKBACK                   11027
@@ -114,7 +117,7 @@ EndScriptData */
 #define SPELL_REMOTE_TOY                  37027
 
 //Nether Vapor spell
-#define SPELL_NETHER_VAPOR                35859
+#define SPELL_NETHER_VAPOR                35858  //trigger for 35859
 
 //Phoenix spell
 #define SPELL_BURN                        36720
@@ -287,8 +290,8 @@ struct TRINITY_DLL_DECL advisorbase_ai : public ScriptedAI
             
                 UpdateMaxHealth(true);
 
-                if(pInstance->GetData(DATA_KAELTHASEVENT) == 4)		// phase 3 = phase 4, to discriminate phase 3 state from DONE
-                    JustDied(pKiller);
+                /*if(pInstance->GetData(DATA_KAELTHASEVENT) == 4)		// phase 3 = phase 4, to discriminate phase 3 state from DONE
+                    JustDied(pKiller);*/
             }
         }
     }
@@ -837,9 +840,10 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                     Check_Timer = 3000;
                 }else Check_Timer -= diff;
 
-                //Fireball_Timer
+                
                 if(!InGravityLapse && !ChainPyros && Phase != 5)
                 {
+                    //Fireball_Timer
                     if(Fireball_Timer < diff)
                     {
                         if(!IsCastingFireball)
@@ -861,14 +865,11 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                             Fireball_Timer = 5000+rand()%10000;
                         }
                     }else Fireball_Timer -= diff;
-                }
 
-                //Phoenix_Timer
-                if (Phoenix_Timer < diff)
-                {
-                    if(!ChainPyros && !InGravityLapse && !IsCastingFireball)
+                    //Phoenix_Timer
+                    if(Phoenix_Timer < diff && !IsCastingFireball)
                     {
-                         if(m_creature->IsNonMeleeSpellCasted(true))
+                        if(m_creature->IsNonMeleeSpellCasted(true))
                          {
                              m_creature->InterruptNonMeleeSpells(true);
                          }
@@ -881,15 +882,12 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                           }
                          Phoenix_Timer = 30000 +rand()%10000;
                     }
-                  }
-                    else 
-                        Phoenix_Timer -= diff;
+                    else
+                        Phoenix_Timer -=diff;
 
-                // FlameStrike_Timer
-                if (FlameStrike_Timer < diff)
+                    // FlameStrike_Timer
+                    if(FlameStrike_Timer < diff)
                     {
-                      if(!ChainPyros && !InGravityLapse)
-                      {
                         if(m_creature->IsNonMeleeSpellCasted(true))
                         {
                             m_creature->InterruptNonMeleeSpells(true);
@@ -898,11 +896,10 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                             DoCast(pUnit, SPELL_FLAME_STRIKE);
 
                         FlameStrike_Timer = 30000;
-                      }
                     }
-                    else 
+                    else
                         FlameStrike_Timer -= diff;
-
+                }
                     
                 if(Phase != 5)
                     {
