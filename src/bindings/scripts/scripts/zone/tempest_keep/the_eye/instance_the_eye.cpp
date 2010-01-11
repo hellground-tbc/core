@@ -43,6 +43,7 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
     uint64 MasterEngineerTelonicus;
     uint64 Kaelthas;
     std::set<uint64> DoorGUID;
+    std::set<uint64> ExplodeObjectGUID;
     uint64 Astromancer;
     uint64 Alar;
 
@@ -59,6 +60,7 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
         MasterEngineerTelonicus = 0;
         Kaelthas = 0;
         DoorGUID.clear();
+        ExplodeObjectGUID.clear();
         Astromancer = 0;
         Alar = 0;
 
@@ -97,6 +99,11 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
         {
         case 184324:
             DoorGUID.insert(go->GetGUID());
+            break;
+        case 184069: // main window
+        case 184596: // statues
+        case 184597:
+            ExplodeObjectGUID.insert(go->GetGUID());
             break;
         }
     }
@@ -140,6 +147,13 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
                     }
                 KaelthasEventPhase = data;
                 Encounters[3] = data;   break;
+            case DATA_EXPLODE:
+                // true - collapse / false - reset
+                for(std::set<uint64>::iterator i = ExplodeObjectGUID.begin(); i != ExplodeObjectGUID.end(); ++i)
+                {
+                    if(GameObject *ExplodeObject = instance->GetGameObject(*i))
+                    ExplodeObject->SetGoState(!data);
+                }
         }
         if(data == DONE)
             SaveToDB();
