@@ -100,10 +100,10 @@ EndScriptData */
 #define SPELL_GRAVITY_LAPSE               34480
 #define SPELL_GRAVITY_LAPSE_AURA          39432
 #define SPELL_NETHER_BEAM                 35873
-#define SPELL_EXPLODE_SHAKE1			  35373
-#define SPELL_EXPLODE_SHAKE2			  35375
-#define SPELL_EXPLODE_SHAKE3			  35354
-#define SPELL_EXPLODE_SHAKE4			  35376
+#define SPELL_EXPLODE_SHAKE1              36373
+#define SPELL_EXPLODE_SHAKE2              36375
+#define SPELL_EXPLODE_SHAKE3              36354
+#define SPELL_EXPLODE_SHAKE4              36376
 
 //Thaladred the Darkener spells
 #define SPELL_PSYCHIC_BLOW                10689
