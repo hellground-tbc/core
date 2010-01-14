@@ -274,6 +274,8 @@ Unit::~Unit()
     assert(!m_attacking);
     assert(m_attackers.empty());
     assert(m_sharedVision.empty());
+    
+    // Need to check iterators in m_modAura list ;]
 }
 
 void Unit::Update( uint32 p_time )
@@ -12071,9 +12073,8 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
         if(cVictim->GetInstanceId())
         {
             Map *m = cVictim->GetMap();
-            Player *creditedPlayer = GetCharmerOrOwnerPlayerOrPlayerItself();
-            // TODO: do instance binding anyway if the charmer/owner is offline
-
+            Player *creditedPlayer = m->GetPlayers().begin();
+            
             if(m->IsDungeon() && creditedPlayer)
             {
                 if(m->IsRaid() || m->IsHeroic())
