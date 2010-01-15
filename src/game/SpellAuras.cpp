@@ -1071,7 +1071,7 @@ void Aura::_RemoveAura()
             Unit::AuraList const &mPeriodic = m_target->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
             for(Unit::AuraList::const_iterator i = mPeriodic.begin(); i != mPeriodic.end(); ++i)
             {
-                 if((*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && (*i)->GetCasterGUID() != GetCasterGUID() && (*i)->GetSpellProto()->SpellFamilyFlags & 4))
+                 if((*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && (*i)->GetCasterGUID() != GetCasterGUID() && ((*i)->GetSpellProto()->SpellFamilyFlags & 4))
                  {
                      m_target->ModifyAuraState(AURA_STATE_IMMOLATE, true); 
                      break;
