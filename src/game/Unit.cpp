@@ -12073,7 +12073,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
         if(cVictim->GetInstanceId())
         {
             Map *m = cVictim->GetMap();
-            Player *creditedPlayer = m->GetPlayers().begin()->getSource();
+            Player *creditedPlayer = m->GetPlayers().begin() != m->GetPlayers().end() ? m->GetPlayers().begin()->getSource() : NULL;
             
             if(m->IsDungeon() && creditedPlayer)
             {
