@@ -2338,6 +2338,17 @@ void SpellMgr::LoadSpellCustomAttr()
         if(spellInfo->SpellFamilyName == SPELLFAMILY_DRUID && spellInfo->SpellFamilyFlags & 0x1000LL)
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
 
+        // Modify SchoolMask to allow them critically heal
+        // Healthstones
+        if(spellInfo->SpellFamilyName == SPELLFAMILY_WARLOCK && spellInfo->SpellFamilyFlags & 0x10000LL)
+            spellInfo->SchoolMask = SPELL_SCHOOL_MASK_SHADOW;
+        // Earth Shield proc
+        else if (spellInfo->Id == 379)
+        {
+            spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
+            spellInfo->SchoolMask = SPELL_SCHOOL_MASK_NATURE;
+        }
+
         switch(i)
         {
         case 26029: // dark glare
