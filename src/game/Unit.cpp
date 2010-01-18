@@ -274,7 +274,7 @@ Unit::~Unit()
     assert(!m_attacking);
     assert(m_attackers.empty());
     assert(m_sharedVision.empty());
-    
+
     // Need to check iterators in m_modAura list ;]
 }
 
@@ -832,7 +832,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         if(GetCharmerOrOwnerPlayerOrPlayerItself())
             ((Creature*)pVictim)->LowerPlayerDamageReq(health < damage ?  health : damage);
     }
-    
+
     if (health <= damage)
     {
         DEBUG_LOG("DealDamage: victim just died");
@@ -887,7 +887,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
             {
                 //if it's not from Reflective Shield
                 if (!spellProto || (spellProto && spellProto->Id != 33619))
-                {    
+                {
                     uint32 rage_damage = damage + (cleanDamage ? cleanDamage->damage : 0);
                     ((Player*)pVictim)->RewardRage(rage_damage, 0, false);
                 }
@@ -1298,7 +1298,18 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 dama
     // Calculate absorb resist
     if(damage > 0)
     {
-        CalcAbsorbResist(pVictim, damageSchoolMask, SPELL_DIRECT_DAMAGE, damage, &damageInfo->absorb, &damageInfo->resist);
+        switch (spellInfo->Id)
+        {   //spell ID's which should ignore resistance
+         case 33051:    //Krosh Firehand - Greater Fireball
+         case 36805:    //Kael'thas - Fireball
+         case 36819:    //Kael'thas - Pyroblast
+            damageInfo->resist = 0;
+            CalcAbsorb(pVictim, damageSchoolMask, damage, &damageInfo->absorb, &damageInfo->resist);
+            break;
+        default:
+            CalcAbsorbResist(pVictim, damageSchoolMask, SPELL_DIRECT_DAMAGE, damage, &damageInfo->absorb, &damageInfo->resist);
+            break;
+        }
         damage-= damageInfo->absorb + damageInfo->resist;
     }
     else
@@ -1687,7 +1698,7 @@ void Unit::DealMeleeDamage(CalcDamageInfo *damageInfo, bool durabilityLoss)
            {
                alreadyDone.insert(*i);
                uint32 damage=(*i)->GetModifier()->m_amount;
-               
+
                if(pVictim->HasAura(37190,0))
                    damage += 15;
 
@@ -1794,6 +1805,14 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
     }
     else
         *resist = 0;
+
+    CalcAbsorb(pVictim, schoolMask, damage, absorb, resist);
+}
+
+void Unit::CalcAbsorb(Unit *pVictim,SpellSchoolMask schoolMask, const uint32 damage, uint32 *absorb, uint32 *resist)
+{
+    if(!pVictim || !pVictim->isAlive() || !damage)
+        return;
 
     int32 RemainingDamage = damage - *resist;
 
@@ -2858,7 +2877,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     int32 fullSkillDiff = attackerWeaponSkill - int32(pVictim->GetDefenseSkillValue(this));
 
     uint32 roll = GetMap()->urand (0, 10000);
-    
+
     uint32 tmp = 0;
     bool canDodge = true;
     bool canParry = true;
@@ -2869,7 +2888,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     if(canMiss)
     {
         uint32 missChance = uint32(MeleeSpellMissChance(pVictim, attType, fullSkillDiff, spell->Id)*100.0f);
-       
+
         // Roll miss
         tmp += missChance;
         if (roll < tmp)
@@ -4393,7 +4412,7 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
     m_Auras.erase(i);
     ++m_removedAuras;                                       // internal count used by unit update
 
-    if(!Aur) 
+    if(!Aur)
         return;
 
     Unit* caster = NULL;
@@ -4445,7 +4464,7 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
                     {
                         caster->m_currentSpells[CURRENT_CHANNELED_SPELL]->cancel();
                         caster->m_currentSpells[CURRENT_CHANNELED_SPELL]=NULL;
-            
+
                     }
                 }
 
@@ -5476,7 +5495,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                         if ((*itr)->GetId() == 12654 && (*itr)->GetCaster() == this)
                             if ((*itr)->GetBasePoints() > 0)
                                 basepoints0 += int((*itr)->GetBasePoints()/((*itr)->GetTickNumber() + 1));
-                    
+
                     triggered_spell_id = 12654;
                     break;
                 }
@@ -6791,7 +6810,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
     }
 
     // check if triggering spell can stack with current target's auras (if not - don't proc)
-    // don't check if 
+    // don't check if
     // aura is passive (talent's aura)
     // trigger_spell_id's aura is already active (allow to refresh triggered auras)
     // trigger_spell_id's triggeredByAura is already active (for example shaman's shields)
@@ -8574,7 +8593,7 @@ bool Unit::IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges)
     // If Spel has this flag cannot be resisted/immuned/etc
     if (spellInfo->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY)
         return false;
-    
+
     SpellImmuneList const& dispelList = m_spellImmune[IMMUNITY_DISPEL];
     for(SpellImmuneList::const_iterator itr = dispelList.begin(); itr != dispelList.end(); ++itr)
         if(itr->type == spellInfo->Dispel)
@@ -8608,7 +8627,7 @@ bool Unit::IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges)
             return true;
         }
     }
-    
+
     return false;
 }
 
@@ -8934,7 +8953,7 @@ void Unit::Unmount()
                 delete NewPet;
             ((Player*)this)->SetTemporaryUnsummonedPetNumber(0);
         }
-        else 
+        else
            if(Pet *pPet = GetPet())
                if(pPet->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE) && !pPet->hasUnitState(UNIT_STAT_STUNNED))
                    pPet->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE);
@@ -8973,7 +8992,7 @@ void Unit::CombatStart(Unit* target)
     {
         ((Creature*)target)->AI()->AttackStart(this);
         if(((Creature*)target)->GetFormation())
-        {   
+        {
             ((Creature*)target)->GetFormation()->MemberAttackStart((Creature*)target, this);
             sLog.outDebug("Unit::CombatStart() calls CreatureGroups::MemberHasAttacked(this);");
         }
@@ -9789,7 +9808,7 @@ int32 Unit::CalculateSpellDamage(SpellEntry const* spellProto, uint8 effect_inde
 
     if(!basePointsPerLevel && (spellProto->Attributes & SPELL_ATTR_LEVEL_DAMAGE_CALCULATION && spellProto->spellLevel) &&
             spellProto->Effect[effect_index] != SPELL_EFFECT_WEAPON_PERCENT_DAMAGE &&
-            spellProto->Effect[effect_index] != SPELL_EFFECT_KNOCK_BACK && 
+            spellProto->Effect[effect_index] != SPELL_EFFECT_KNOCK_BACK &&
             spellProto->EffectApplyAuraName[effect_index] != SPELL_AURA_MOD_SPEED_ALWAYS &&
             spellProto->EffectApplyAuraName[effect_index] != SPELL_AURA_MOD_SPEED_NOT_STACK &&
             spellProto->EffectApplyAuraName[effect_index] != SPELL_AURA_MOD_INCREASE_SPEED &&
@@ -11976,7 +11995,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
         if(!bRewardIsAllowed)
             ((Creature*)pVictim)->SetLootRecipient(NULL);
     }
-    
+
     if(bRewardIsAllowed && pVictim->GetTypeId() == TYPEID_UNIT && ((Creature*)pVictim)->GetLootRecipient())
         player = ((Creature*)pVictim)->GetLootRecipient();
     // Reward player, his pets, and group/raid members
@@ -12074,7 +12093,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
         {
             Map *m = cVictim->GetMap();
             Player *creditedPlayer = m->GetPlayers().begin() != m->GetPlayers().end() ? m->GetPlayers().begin()->getSource() : NULL;
-            
+
             if(m->IsDungeon() && creditedPlayer)
             {
                 if(m->IsRaid() || m->IsHeroic())

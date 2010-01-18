@@ -780,7 +780,7 @@ enum ReactiveType
 // delay time next attack to prevent client attack animation problems
 #define ATTACK_DISPLAY_DELAY 200
 #define MAX_PLAYER_STEALTH_DETECT_RANGE 45.0f               // max distance for detection targets by player
- 
+
 struct SpellProcEventEntry;                                 // used only privately
 
 class TRINITY_DLL_SPEC Unit : public WorldObject
@@ -1372,6 +1372,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         uint32 CalcArmorReducedDamage(Unit* pVictim, const uint32 damage);
         void CalcAbsorbResist(Unit *pVictim, SpellSchoolMask schoolMask, DamageEffectType damagetype, const uint32 damage, uint32 *absorb, uint32 *resist);
+        void CalcAbsorb(Unit *pVictim, SpellSchoolMask schoolMask, const uint32 damage, uint32 *absorb, uint32 *resist);
 
         void  UpdateSpeed(UnitMoveType mtype, bool forced);
         float GetSpeed( UnitMoveType mtype ) const;
