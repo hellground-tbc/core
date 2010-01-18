@@ -143,6 +143,18 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
     bool PotionUsed;
     bool ArcaneCasting;
 
+    void SetBlizzardWaypoints()
+    {
+        blizzardWaypoints[0][0] = -11156.6;    blizzardWaypoints[1][0] = -1905.2;
+        blizzardWaypoints[0][1] = -11163.9;    blizzardWaypoints[1][1] = -1901.1;
+        blizzardWaypoints[0][2] = -11171.6;    blizzardWaypoints[1][2] = -1903.6;
+        blizzardWaypoints[0][3] = -11176.1;    blizzardWaypoints[1][3] = -1910.8;
+        blizzardWaypoints[0][4] = -11173.5;    blizzardWaypoints[1][4] = -1918.7;
+        blizzardWaypoints[0][5] = -11166.4;    blizzardWaypoints[1][5] = -1922.9;
+        blizzardWaypoints[0][6] = -11158.4;    blizzardWaypoints[1][6] = -1920.4;
+        blizzardWaypoints[0][7] = -11154.2;    blizzardWaypoints[1][7] = -1913.1;
+    }
+
     void Reset()
     {
         SecondarySpellTimer = 5000;
@@ -184,10 +196,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
 
         if (m_creature->isAlive())
         {
-            blizzardWaypoints = {
-            {-11156.6, -11163.9, -11171.6, -11176.1, -11173.5, -11166.4, -11158.4, -11154.2},  // X coord
-            {-1905.2,  -1901.1,  -1903.6,  -1910.8,  -1918.7,  -1922.9,  -1920.4,  -1913.1}    // Y coord
-            };
+            SetBlizzardWaypoints();
         }
     }
 
