@@ -148,7 +148,7 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
                 KaelthasEventPhase = data;
                 Encounters[3] = data;   break;
             case DATA_EXPLODE:
-                // true - collapse / false - reset
+                // true - explode / false - reset
                 for(std::set<uint64>::iterator i = ExplodeObjectGUID.begin(); i != ExplodeObjectGUID.end(); ++i)
                 {
                     if(GameObject *ExplodeObject = instance->GetGameObject(*i))
