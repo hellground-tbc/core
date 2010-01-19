@@ -572,6 +572,16 @@ void Unit::RemoveAuraTypeByCaster(AuraType auraType, uint64 casterGUID)
     }
 }
 
+bool Unit::hasNegativeAuraWithInterruptFlag(uint32 flag)
+{
+    for (AuraMap::iterator iter = m_Auras.begin(); iter != m_Auras.end(); ++iter)
+    {
+        if (!iter->second->IsPositive() && iter->second->GetSpellProto()->AuraInterruptFlags & flag)
+            return true;
+    }
+    return false;
+}
+
 void Unit::RemoveAurasWithInterruptFlags(uint32 flag, uint32 except)
 {
     if(!(m_interruptMask & flag))
@@ -9913,10 +9923,11 @@ void Unit::ApplyDiminishingToDuration(DiminishingGroup group, int32 &duration,Un
     if(duration == -1 || group == DIMINISHING_NONE)/*(caster->IsFriendlyTo(this) && caster != this)*/
         return;
 
-    if(caster->GetTypeId() == TYPEID_UNIT && !caster->GetOwner())
+    if(caster->GetTypeId() == TYPEID_UNIT && !caster->GetCharmerOrOwner())
         return;
+
     // test pet/charm masters instead pets/charmedsz
-    Unit const* targetOwner = GetCharmerOrOwner();
+    Unit const* targetOwner = GetCharmerOrOwner(); 
     Unit const* casterOwner = caster->GetCharmerOrOwner();
 
     // Duration of crowd control abilities on pvp target is limited by 10 sec. (2.2.0)
