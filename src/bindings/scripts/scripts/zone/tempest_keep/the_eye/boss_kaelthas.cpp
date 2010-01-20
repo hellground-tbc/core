@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: boss_Kaelthas
-SD%Complete: 60
-SDComment: Mind Control, Reset Event if Weapons despawn/reset
+SD%Complete: 95
+SDComment: Animation cosmetics, check all timers in phase 5
 SDCategory: Tempest Keep, The Eye
 EndScriptData */
 
@@ -106,7 +106,7 @@ EndScriptData */
 #define SPELL_EXPLODE_SHAKE4              36376
 
 //Thaladred the Darkener spells
-#define SPELL_PSYCHIC_BLOW                10689
+#define SPELL_PSYCHIC_BLOW                36966     //10689  change for proper spell
 #define SPELL_SILENCE                     30225
 #define SPELL_REND                        36965
 
@@ -155,13 +155,20 @@ float KaelthasWeapons[7][5] =
 
 #define GRAVITY_X 795.0f
 #define GRAVITY_Y 0.0f
-#define GRAVITY_Z 70.0f
+#define GRAVITY_Z 49.0f
+
+float NetherVaporStartPos[4][2] =                           //spawn positions of Nether Vapor clouds in phase 5
+{
+    {787.0, 0.0},
+    {795.0, -8.0},
+    {795.0, 8.0},
+    {803.0, 0.0}
+};
 
 #define TIME_PHASE_2_3			125000 // Phase 2 ends approximately 2 minutes and 5 seconds after it begins
 #define TIME_PHASE_3_4			180000 // Phase 3 ends approximately 3 minutes after it begins
 
 #define KAEL_VISIBLE_RANGE  50.0f
-#define ROOM_BASE_Z 49.0f
 
 // Netherstrand Longbow spells
 #define SPELL_BOW_MULTISHOOT    36979  // multi-shot
@@ -298,9 +305,6 @@ struct TRINITY_DLL_DECL advisorbase_ai : public ScriptedAI
                 m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1,PLAYER_STATE_DEAD);
             
                 UpdateMaxHealth(true);
-
-                /*if(pInstance->GetData(DATA_KAELTHASEVENT) == 4)		// phase 3 = phase 4, to discriminate phase 3 state from DONE
-                    JustDied(pKiller);*/
             }
         }
     }
@@ -317,13 +321,12 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
         for(int i = 0; i < 4; i++)
             AdvisorGuid[i] = 0;
 
-        // check if not source of Kael bugging from time to time
-        /*SpellEntry *TempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_PYROBLAST);
+        SpellEntry *TempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_PYROBLAST);
         if(TempSpell)
         {
             TempSpell->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
             TempSpell->EffectImplicitTargetB[0] = 0;
-        }*/
+        }
     }
 
     ScriptedInstance* pInstance;
@@ -357,7 +360,6 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
     bool Arcane2;
     bool MC_Done;
     bool InGravityLapse;
-    bool IsCastingFireball;
     bool ChainPyros;
     bool reset;
 
@@ -413,7 +415,6 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
         Arcane2 = false;
         MC_Done = false;
         InGravityLapse = false;
-        IsCastingFireball = false;
         ChainPyros = false;
         reset = true;
 
@@ -423,7 +424,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->SetFloatValue(OBJECT_FIELD_SCALE_X, 1.0f);
-        m_creature->Relocate(GRAVITY_X, GRAVITY_Y, ROOM_BASE_Z, 3.14f);
+        m_creature->Relocate(GRAVITY_X, GRAVITY_Y, GRAVITY_Z, 3.14f);
 
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
         m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
@@ -590,11 +591,10 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
             pInstance->SetData(DATA_KAELTHASEVENT, 4);
             m_creature->GetMotionMaster()->Clear();
             m_creature->GetMotionMaster()->MoveIdle();
-            DoTeleportTo(GRAVITY_X, GRAVITY_Y, ROOM_BASE_Z);
-            m_creature->Relocate(GRAVITY_X, GRAVITY_Y, ROOM_BASE_Z, 0);
+            DoTeleportTo(GRAVITY_X, GRAVITY_Y, GRAVITY_Z);
+            m_creature->Relocate(GRAVITY_X, GRAVITY_Y, GRAVITY_Z, 0);
             m_creature->InterruptNonMeleeSpells(false);
             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-            DoResetThreat();
             return 1000;
         case 2:
             DoCast(m_creature, SPELL_GAINING_POWER);
@@ -607,7 +607,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
             return 1000;
         case 5:
             m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
-            m_creature->SendMonsterMove(GRAVITY_X-0.5f, GRAVITY_Y, ROOM_BASE_Z+25.0f, 12000);
+            m_creature->SendMonsterMove(GRAVITY_X-0.5f, GRAVITY_Y, GRAVITY_Z+25.0f, 12000);
             DoCast(m_creature, SPELL_EXPLODE_SHAKE1, true);
             return 4000;
         case 6:
@@ -618,7 +618,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
             DoCast(m_creature, SPELL_NETHERBEAM_GLOW2, true);
             return 4000;
         case 8:
-            m_creature->Relocate(GRAVITY_X-0.5f, GRAVITY_Y, ROOM_BASE_Z+25.0f);
+            m_creature->Relocate(GRAVITY_X-0.5f, GRAVITY_Y, GRAVITY_Z+25.0f);
             DoCast(m_creature, SPELL_NETHERBEAM_GLOW3, true);
             return 4000;
         case 9:
@@ -642,20 +642,18 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
         case 14:
             return 2000;
         case 15:
-            m_creature->SendMonsterMove(GRAVITY_X-1.0f, GRAVITY_Y, ROOM_BASE_Z, 13000);
-            m_creature->Relocate(GRAVITY_X-1.0f, GRAVITY_Y, ROOM_BASE_Z);
+            m_creature->SendMonsterMove(GRAVITY_X-1.0f, GRAVITY_Y, GRAVITY_Z, 13000);
+            m_creature->Relocate(GRAVITY_X-1.0f, GRAVITY_Y, GRAVITY_Z);
             return 13000;			
         case 16:
-            m_creature->Relocate(GRAVITY_X-1.0f, GRAVITY_Y, ROOM_BASE_Z);
+            m_creature->Relocate(GRAVITY_X-1.0f, GRAVITY_Y, GRAVITY_Z);
             m_creature->InterruptNonMeleeSpells(false);
             m_creature->RemoveAurasDueToSpell(SPELL_FULLPOWER);
             m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
             Phase = 6;
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0)) //reset threat when starting phase 5
+            if (Unit * target = SelectUnit(SELECT_TARGET_TOPAGGRO, 0))
             {
-                DoResetThreat();
-                DoZoneInCombat();
                 DoStartMovement(target);
                 AttackStart(target);
             }
@@ -666,6 +664,10 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
         return 0;
     }
 
+    float FloatRand(float MaxVal)
+    {
+        return ((float)rand()/((float)RAND_MAX + 1.0f)) * MaxVal;
+    }
 
     void UpdateAI(const uint32 diff)
     {
@@ -876,6 +878,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                             Weapon->AI()->AttackStart(Target);
                             Weapon->CastSpell(Weapon, SPELL_WEAPON_SPAWN, false);
                             WeaponGuid[i] = Weapon->GetGUID();
+                            m_creature->GetMotionMaster()->Clear();
                         }
                     }
 
@@ -960,28 +963,15 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                     //Fireball_Timer
                     if(Fireball_Timer < diff)
                     {
-                        if(!IsCastingFireball  && !InGravityLapse)
+                        if(!InGravityLapse)
                         {
-                            if(!m_creature->IsNonMeleeSpellCasted(false))
-                            {
-                                //interruptable
-                                m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, false);
                                 m_creature->CastSpell(m_creature->getVictim(), SPELL_FIREBALL, false);
-                                IsCastingFireball = true;
-                                Fireball_Timer = 2500;
-                            }
-                        }
-                        else
-                        {
-                            //apply resistance
-                            m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
-                            IsCastingFireball = false;
-                            Fireball_Timer = 5000+rand()%10000;
+                                Fireball_Timer = 5000+rand()%10000;
                         }
                     }else Fireball_Timer -= diff;
 
                     //Phoenix_Timer
-                    if(Phoenix_Timer < diff && !IsCastingFireball && !InGravityLapse)
+                    if(Phoenix_Timer < diff && !InGravityLapse)
                     {
                          DoCast(m_creature, SPELL_SUMMON_PHOENIX, true);
                          switch(rand()%2)
@@ -997,10 +987,6 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                     // FlameStrike_Timer
                     if(FlameStrike_Timer < diff && !InGravityLapse)
                     {
-                        if(m_creature->IsNonMeleeSpellCasted(true))
-                        {
-                            m_creature->InterruptNonMeleeSpells(true);
-                        }
                         if (Unit* pUnit = SelectUnit(SELECT_TARGET_RANDOM, 0, 70, true))
                             DoCast(pUnit, SPELL_FLAME_STRIKE);
 
@@ -1093,11 +1079,11 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                     {
                         if(PyrosCasted == 0)
                         {
-                            if(m_creature->IsNonMeleeSpellCasted(true))
+                            if(m_creature->IsNonMeleeSpellCasted(false))
                             {
                                 m_creature->InterruptNonMeleeSpells(true);
                             }
-                            DoCast(m_creature, SPELL_SHOCK_BARRIER);
+                            DoCast(m_creature, SPELL_SHOCK_BARRIER, true);
                             DoCast(m_creature, SPELL_ARCANE_DISRUPTION, true);
                             Fireball_Timer = 2500;
                             Arcane_Timer1 = 20000;
@@ -1153,7 +1139,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                             case 0:
                                 m_creature->GetMotionMaster()->Clear();
                                 m_creature->GetMotionMaster()->MoveIdle();
-                                DoTeleportTo(GRAVITY_X, GRAVITY_Y, ROOM_BASE_Z);
+                                DoTeleportTo(GRAVITY_X, GRAVITY_Y, GRAVITY_Z);
                                 // 1) Kael'thas will portal the whole raid right into his body
                                 for (i = m_creature->getThreatManager().getThreatList().begin(); i!= m_creature->getThreatManager().getThreatList().end();)
                                 {
@@ -1162,7 +1148,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                                     if(pUnit && (pUnit->GetTypeId() == TYPEID_PLAYER))
                                     {
                                         //Use work around packet to prevent player from being dropped from combat
-                                        DoTeleportPlayer(pUnit, GRAVITY_X, GRAVITY_Y, ROOM_BASE_Z, pUnit->GetOrientation());
+                                        DoTeleportPlayer(pUnit, GRAVITY_X, GRAVITY_Y, GRAVITY_Z, pUnit->GetOrientation());
                                     }
                                 }
                                 summons.AuraOnEntry(PHOENIX,SPELL_BANISH,true);
@@ -1217,15 +1203,15 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
 
                             case 2:
                                 //Summon Nether Vapor clouds NPC's and cast Nether Vapor aura on self
-                                DoCast(m_creature, SPELL_NETHER_VAPOR, true);
-                                for(uint8 i = 0; i <= 16; i += 16)
+                                DoCast(m_creature, SPELL_NETHER_VAPOR);
+                                for(uint8 i = 0; i < 4; i++)
                                 {
-                                for(uint8 j = 0; j <= 16; j += 16)
+                                for(uint8 j = 0; j <=6; j +=6)
                                 {
-                                for(uint8 k = 0; k <=4; k +=4)
-                                {
-                                    m_creature->SummonCreature(NETHER_VAPOR_CLOUD, GRAVITY_X-8.0f+i, GRAVITY_Y-8.0f+j, ROOM_BASE_Z+4.0f+k, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 0); 
-                                }
+                                    float z;	//randomize 'z' position of summoned NPC but between 6 and 18 
+                                    z = FloatRand(12.0);
+                                    z = z > 6.0 ? (z + j) : (6.0 + j);
+                                    m_creature->SummonCreature(NETHER_VAPOR_CLOUD, NetherVaporStartPos[i][0], NetherVaporStartPos[i][1], GRAVITY_Z+z, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 0);
                                 }
                                 }
                                 GravityLapse_Timer = 27000;
@@ -1273,7 +1259,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                         //ShockBarrier_Timer in 5th phase only
                         if(ShockBarrier_Timer < diff)
                         {
-                            DoCast(m_creature, SPELL_SHOCK_BARRIER);
+                            DoCast(m_creature, SPELL_SHOCK_BARRIER, true);
                             ShockBarrier_Timer = 8000;
                         }else ShockBarrier_Timer -= diff;
 
@@ -1297,7 +1283,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                                 Unit* pUnit = Unit::GetUnit((*m_creature), iPl->GetGUID());
                                 ++i;
                                 float tempZ = iPl->GetPositionZ();
-                                if (tempZ < ROOM_BASE_Z + 7)
+                                if (tempZ < GRAVITY_Z + 7)
                                     m_creature->CastSpell(iPl, SPELL_KNOCKBACK, true);
                                 WorldPacket data(12);
                                 data.SetOpcode(SMSG_MOVE_SET_CAN_FLY);
@@ -1431,7 +1417,7 @@ struct TRINITY_DLL_DECL boss_thaladred_the_darkenerAI : public advisorbase_ai
         //Silence_Timer
         if(Silence_Timer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_SILENCE, true);
+            DoCast(m_creature, SPELL_SILENCE, true);
             Silence_Timer = 20000;
         }
         else
@@ -1439,7 +1425,7 @@ struct TRINITY_DLL_DECL boss_thaladred_the_darkenerAI : public advisorbase_ai
 
         if(Rend_Timer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_REND, true);
+            DoCast(m_creature->getVictim(), SPELL_REND);
             Rend_Timer = 10000;
         }
         else
@@ -1993,16 +1979,16 @@ struct TRINITY_DLL_DECL mob_nether_vaporAI : public ScriptedAI
     ScriptedInstance* pInstance;
 
     uint32 Vapor_Timer;
-    uint32 Cast_Timer;
+    uint32 Move_Timer;
 
     void Reset()
     {
         Vapor_Timer = 27000;
-        Cast_Timer = 8000;
+        Move_Timer = 500;
 
         m_creature->setFaction(16);
-        m_creature->SetFloatValue(OBJECT_FIELD_SCALE_X, m_creature->GetFloatValue(OBJECT_FIELD_SCALE_X)*4.0f);
         m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
+        m_creature->CastSpell(m_creature, SPELL_NETHER_VAPOR, false);
         m_creature->StopMoving();
     }
 
@@ -2014,15 +2000,16 @@ struct TRINITY_DLL_DECL mob_nether_vaporAI : public ScriptedAI
     void UpdateAI(const uint32 diff)
     {
 
-        if(Cast_Timer < diff)
+        if(Move_Timer < diff)
         {
+            float newX, newY, newZ;
             m_creature->Relocate(m_creature->GetPositionX(),m_creature->GetPositionY(),m_creature->GetPositionZ());
-            m_creature->CastSpell(m_creature, SPELL_NETHER_VAPOR, false);
-            m_creature->GetMotionMaster()->MoveRandom(20.0);
-            Cast_Timer = 8000;
+            m_creature->GetRandomPoint(m_creature->GetPositionX(),m_creature->GetPositionY(),m_creature->GetPositionZ(), 6.0, newX, newY, newZ);
+            m_creature->SendMonsterMoveWithSpeed(newX, newY, newZ, MOVEMENTFLAG_LEVITATING, 2500);
+            Move_Timer = 3000;
         }
         else
-            Cast_Timer -= diff;
+            Move_Timer -= diff;
 
         if(Vapor_Timer < diff)
         {
