@@ -16627,6 +16627,7 @@ void Player::Uncharm()
     else
     {
         charm->RemoveSpellsCausingAura(SPELL_AURA_MOD_CHARM);
+        charm->RemoveSpellsCausingAura(SPELL_AURA_AOE_CHARM);
         charm->RemoveSpellsCausingAura(SPELL_AURA_MOD_POSSESS_PET);
         charm->RemoveSpellsCausingAura(SPELL_AURA_MOD_POSSESS);
     }
@@ -19626,6 +19627,7 @@ void Player::UpdateCharmedAI()
         GetMotionMaster()->MoveFollow(charmer, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
 
     Unit *target = getVictim();
+
     if(!target || !charmer->canAttack(target))
     {
         target = charmer->SelectNearestTarget();
@@ -19634,6 +19636,41 @@ void Player::UpdateCharmedAI()
 
         GetMotionMaster()->MoveChase(target);
         Attack(target, true);
+    }
+    else
+        CastSpellWhenCharmed();
+}
+
+void Player::CastSpellWhenCharmed()
+{
+    /* For now only placeholder, what we need to do:
+     - make a list of spells used by specific class when charmed (on forum is big part of it),
+     - add prioritylist of those spells(what is used as first and what as last one),
+     - check if player can cast it or not,
+     - cast spell, add cooldown, add GC(if it won't be added after cast :]) select next spell,
+     - add mabe a wait interval between spells ?
+     */
+
+    switch(getClass())
+    {
+        case CLASS_WARRIOR:
+            break;
+        case CLASS_PALADIN:
+            break;
+        case CLASS_HUNTER:
+            break;
+        case CLASS_ROGUE:
+            break;
+        case CLASS_PRIEST:
+            break;
+        case CLASS_SHAMAN:
+            break;
+        case CLASS_MAGE:
+            break;
+        case CLASS_WARLOCK:
+            break;
+        case CLASS_DRUID:
+            break;
     }
 }
 

@@ -7682,9 +7682,9 @@ void Unit::RemoveBindSightAuras()
 void Unit::RemoveCharmAuras()
 {
     RemoveSpellsCausingAura(SPELL_AURA_MOD_CHARM);
+    RemoveSpellsCausingAura(SPELL_AURA_AOE_CHARM);
     RemoveSpellsCausingAura(SPELL_AURA_MOD_POSSESS_PET);
     RemoveSpellsCausingAura(SPELL_AURA_MOD_POSSESS);
-    RemoveSpellsCausingAura(SPELL_AURA_AOE_CHARM);
 }
 
 void Unit::UnsummonAllTotems()
@@ -9923,9 +9923,6 @@ void Unit::ApplyDiminishingToDuration(DiminishingGroup group, int32 &duration,Un
     if(duration == -1 || group == DIMINISHING_NONE)/*(caster->IsFriendlyTo(this) && caster != this)*/
         return;
 
-    if(caster->GetTypeId() == TYPEID_UNIT && !caster->GetCharmerOrOwner())
-        return;
-
     // test pet/charm masters instead pets/charmedsz
     Unit const* targetOwner = GetCharmerOrOwner(); 
     Unit const* casterOwner = caster->GetCharmerOrOwner();
@@ -10446,6 +10443,9 @@ void Unit::CleanupsBeforeDelete()
 
     //A unit may be in removelist and not in world, but it is still in grid
     //and may have some references during delete
+    if(isAlive() && HasAuraType(SPELL_AURA_AOE_CHARM))
+        Kill(this,true);
+
     RemoveAllAuras();
     InterruptNonMeleeSpells(true);
     m_Events.KillAllEvents(false);                      // non-delatable (currently casted spells) will not deleted now but it will deleted at call in Map::RemoveAllObjectsInRemoveList

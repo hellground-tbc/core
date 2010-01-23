@@ -2362,6 +2362,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         MapReference m_mapRef;
 
         void UpdateCharmedAI();
+        void CastSpellWhenCharmed();
         UnitAI *i_AI;
 };
 
