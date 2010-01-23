@@ -85,7 +85,7 @@ EndScriptData */
 #define SPELL_ARCANE_DISRUPTION           36834
 #define SPELL_SHOCK_BARRIER               36815
 #define SPELL_SUMMON_PHOENIX              36723
-#define SPELL_MIND_CONTROL                32830
+#define SPELL_MIND_CONTROL                36797
 
 //Phase 5 spells
 #define SPELL_NETHERBEAM_EXPLODE          36089
