@@ -50,6 +50,7 @@ class Transport;
 class UpdateMask;
 class PlayerSocial;
 class OutdoorPvP;
+class SpellMgr;
 
 typedef std::deque<Mail*> PlayerMails;
 
@@ -2384,19 +2385,7 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
             continue;
 
         if(mod->type == SPELLMOD_FLAT)
-        {
-            uint8 DotTicks = 1;
-            for(int i = 0; i<3; i++)
-            {
-                if(spellInfo->Effect[i] == SPELL_EFFECT_APPLY_AURA &&
-                   spellInfo->EffectApplyAuraName[i] == SPELL_AURA_PERIODIC_DAMAGE)
-                {
-                    DotTicks = GetSpellDuration(spellInfo) / spellInfo->EffectAmplitude[i];
-                    break;
-                }
-            }
-            totalflat += mod->value*DotTicks;
-        }
+            totalflat += mod->value;
         else if (mod->type == SPELLMOD_PCT)
         {
             // skip percent mods for null basevalue (most important for spell mods with charges )
