@@ -7741,7 +7741,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
         if (((Creature*)this)->isPet())
         {
             if(spellProto->DmgClass == SPELL_DAMAGE_CLASS_MAGIC)
-                 BonusDamage = ((Pet*)this)->GetBonusDamage()*0.33;
+                BonusDamage = ((Pet*)this)->getPetType() == HUNTER_PET ? ((Pet*)this)->GetBonusDamage()*0.33 : ((Pet*)this)->GetBonusDamage();
             else if(spellProto->DmgClass == SPELL_DAMAGE_CLASS_MELEE && ((Pet*)this)->getPetType() == HUNTER_PET)
                 BonusDamage = ((Pet*)this)->GetTotalAttackPowerValue(BASE_ATTACK)*0.07;
         }
