@@ -421,6 +421,16 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
         DeleteLegs();
         summons.DespawnAll();
 
+        //when reset, dispell Mind Control from players
+        std::list<HostilReference*>::iterator i = m_creature->getThreatManager().getThreatList().begin();
+        for (i = m_creature->getThreatManager().getThreatList().begin(); i!= m_creature->getThreatManager().getThreatList().end();)
+        {
+            Unit* pUnit = Unit::GetUnit((*m_creature), (*i)->getUnitGuid());
+            ++i;
+            if(pUnit && (pUnit->GetTypeId() == TYPEID_PLAYER))
+                pUnit->RemoveAurasDueToSpell(SPELL_MIND_CONTROL);
+        }
+
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->SetFloatValue(OBJECT_FIELD_SCALE_X, 1.0f);
@@ -1342,7 +1352,7 @@ struct TRINITY_DLL_DECL boss_thaladred_the_darkenerAI : public advisorbase_ai
         DoScriptText(SAY_THALADRED_AGGRO, m_creature);
         m_creature->AddThreat(who, 5000000.0f);
         m_creature->SetUnitMovementFlags(MOVEMENTFLAG_WALK_MODE);
-        m_creature->SetSpeed(MOVE_WALK, 1.2f, true);
+        m_creature->SetSpeed(MOVE_WALK, 1.5f, true);
     }
 
     void UpdateAI(const uint32 diff)
@@ -1397,16 +1407,18 @@ struct TRINITY_DLL_DECL boss_thaladred_the_darkenerAI : public advisorbase_ai
         //Gaze_Timer
         if(Gaze_Timer < diff)
         {
+            m_creature->SetUnitMovementFlags(MOVEMENTFLAG_WALK_MODE);
+            m_creature->SetSpeed(MOVE_WALK, 1.5f, true);
+
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
-            {
+            {                
                 if(target)
                 {
                     DoResetThreat();
                     m_creature->AddThreat(target, 5000001.0f);
                     DoScriptText(EMOTE_THALADRED_GAZE, m_creature, target);
-                    m_creature->SetUnitMovementFlags(MOVEMENTFLAG_WALK_MODE);
-                    m_creature->SetSpeed(MOVE_WALK, 1.2f, true);
                     AttackStart(target);
+                    m_creature->SetSpeed(MOVE_WALK, 1.5f, true);
                 }
                 Gaze_Timer = 8500;
             }
