@@ -2382,8 +2382,21 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
 
         if(!IsAffectedBySpellmod(spellInfo,mod,spell))
             continue;
-        if (mod->type == SPELLMOD_FLAT)
-            totalflat += mod->value;
+
+        if(mod->type == SPELLMOD_FLAT)
+        {
+            uint8 DotTicks = 1;
+            for(int i = 0; i<3; i++)
+            {
+                if(spellInfo->Effect[i] == SPELL_EFFECT_APPLY_AURA &&
+                   spellInfo->EffectApplyAuraName[i] == SPELL_AURA_PERIODIC_DAMAGE)
+                {
+                    DotTicks = GetSpellDuration(spellInfo) / spellInfo->EffectAmplitude[i];
+                    break;
+                }
+            }
+            totalflat += mod->value*DotTicks;
+        }
         else if (mod->type == SPELLMOD_PCT)
         {
             // skip percent mods for null basevalue (most important for spell mods with charges )
