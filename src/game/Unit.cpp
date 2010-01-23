@@ -7738,9 +7738,12 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
     {
         // Pets just add their bonus damage to their spell damage
         // note that their spell damage is just gain of their own auras
-        if (((Creature*)this)->isPet() && spellProto->DmgClass == SPELL_DAMAGE_CLASS_MAGIC)
+        if (((Creature*)this)->isPet())
         {
-            BonusDamage = ((Pet*)this)->GetBonusDamage();
+            if(spellProto->DmgClass == SPELL_DAMAGE_CLASS_MAGIC)
+                 BonusDamage = ((Pet*)this)->GetBonusDamage();
+            else if(spellProto->DmgClass == SPELL_DAMAGE_CLASS_MELEE)
+                BonusDamage = ((Pet*)this)->GetTotalAttackPowerValue(BASE_ATTACK)*0.07;
         }
         // For totems get damage bonus from owner (statue isn't totem in fact)
         else if (((Creature*)this)->isTotem() && ((Totem*)this)->GetTotemType()!=TOTEM_STATUE)
