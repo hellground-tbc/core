@@ -7762,6 +7762,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
 
     // Damage over Time spells bonus calculation
     float DotFactor = 1.0f;
+    int DotTicks = 6;
     if(damagetype == DOT)
     {
         int32 DotDuration = GetSpellDuration(spellProto);
@@ -7781,7 +7782,6 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
                     break;
                 }
             }
-            int DotTicks = 6;
             if(spellProto->EffectAmplitude[x] != 0)
                 DotTicks = DotDuration / spellProto->EffectAmplitude[x];
             if(DotTicks)
@@ -8132,8 +8132,15 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
         CoefficientPtc *= ((float)CastingTime/3500.0f);
 
     if(Player* modOwner = GetSpellModOwner())
-        //modOwner->ApplySpellMod(spellProto->Id,SPELLMOD_SPELL_BONUS_DAMAGE,SpellModSpellDamage);
-        modOwner->ApplySpellMod(spellProto->Id,SPELLMOD_SPELL_BONUS_DAMAGE,CoefficientPtc);
+    {
+        float oldCoeff = CoefficientPtc;
+        modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_SPELL_BONUS_DAMAGE, CoefficientPtc);
+        // DO IT IN BETTER WAY (read: rewrite auras system)
+        if (damagetype == DOT)
+        {
+            CoefficientPtc += (CoefficientPtc-oldCoeff)*(DotTicks-1);
+        }
+    }
 
     //SpellModSpellDamage /= 100.0f;
     CoefficientPtc /= 100.0f;
