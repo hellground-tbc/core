@@ -2813,7 +2813,11 @@ void Spell::EffectEnergize(uint32 i)
 
     if(m_spellInfo->EffectMiscValue[i] < 0 || m_spellInfo->EffectMiscValue[i] >= MAX_POWERS)
         return;
-  
+
+    // Don't energize targets with other power type
+    if(unitTarget->getPowerType() != m_spellInfo->EffectMiscValue[i])
+        return;
+
     //Serpent Coil Braid
     if(m_spellInfo->Id == 27103)
         if(unitTarget->HasAura(37447, 0))

@@ -287,6 +287,7 @@ Spell::Spell( Unit* Caster, SpellEntry const *info, bool triggered, uint64 origi
 : m_spellInfo(info), m_spellValue(new SpellValue(m_spellInfo))
 , m_caster(Caster)
 {
+    m_spellState = SPELL_STATE_NULL;
     m_customAttr = spellmgr.GetSpellCustomAttr(m_spellInfo->Id);
     m_skipCheck = skipCheck;
     m_selfContainer = NULL;
@@ -297,6 +298,8 @@ Spell::Spell( Unit* Caster, SpellEntry const *info, bool triggered, uint64 origi
     m_delayAtDamageCount = 0;
 
     m_applyMultiplierMask = 0;
+
+    m_spellSchoolMask = GetSpellSchoolMask(info);           // Can be override for some spell (wand shoot for example)
 
     // Get data for type of attack
     switch (m_spellInfo->DmgClass)
@@ -311,45 +314,38 @@ Spell::Spell( Unit* Caster, SpellEntry const *info, bool triggered, uint64 origi
             m_attackType = RANGED_ATTACK;
             break;
         default:
-                                                            // Wands
+            // Wands
             if (m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_REQ_WAND)
+            {
                 m_attackType = RANGED_ATTACK;
+                if(m_caster->getClassMask() & CLASSMASK_WAND_USERS && m_caster->GetTypeId()==TYPEID_PLAYER)
+                {
+                    if(Item* pItem = dynamic_cast<Player *>(m_caster)->GetWeaponForAttack(RANGED_ATTACK))
+                    m_spellSchoolMask = SpellSchoolMask(1 << pItem->GetProto()->Damage->DamageType);
+                }
+            }
             else
                 m_attackType = BASE_ATTACK;
             break;
     }
 
-    m_spellSchoolMask = GetSpellSchoolMask(info);           // Can be override for some spell (wand shoot for example)
-
-    if(m_attackType == RANGED_ATTACK)
-    {
-        // wand case
-        if((m_caster->getClassMask() & CLASSMASK_WAND_USERS) != 0 && m_caster->GetTypeId()==TYPEID_PLAYER)
-        {
-            if(Item* pItem = ((Player*)m_caster)->GetWeaponForAttack(RANGED_ATTACK))
-                m_spellSchoolMask = SpellSchoolMask(1 << pItem->GetProto()->Damage->DamageType);
-        }
-    }
     // Set health leech amount to zero
     m_healthLeech = 0;
 
     if(originalCasterGUID)
+    {
         m_originalCasterGUID = originalCasterGUID;
-    else
-        m_originalCasterGUID = m_caster->GetGUID();
-
-    if(m_originalCasterGUID==m_caster->GetGUID())
-        m_originalCaster = m_caster;
+        m_originalCaster = ObjectAccessor::GetUnit(*m_caster,m_originalCasterGUID);
+        if (m_originalCaster && !m_originalCaster->IsInWorld()) m_originalCaster = NULL;
+    }
     else
     {
-        m_originalCaster = ObjectAccessor::GetUnit(*m_caster,m_originalCasterGUID);
-        if(m_originalCaster && !m_originalCaster->IsInWorld()) m_originalCaster = NULL;
+        m_originalCasterGUID = m_caster->GetGUID();
+        m_originalCaster = m_caster;
     }
 
     for(int i=0; i <3; ++i)
         m_currentBasePoints[i] = m_spellValue->EffectBasePoints[i];
-
-    m_spellState = SPELL_STATE_NULL;
 
     m_castPositionX = m_castPositionY = m_castPositionZ = 0;
     m_TriggerSpells.clear();
@@ -378,7 +374,6 @@ Spell::Spell( Unit* Caster, SpellEntry const *info, bool triggered, uint64 origi
 
     // determine reflection
     m_canReflect = false;
-
     if(m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC && !IsAreaOfEffectSpell(m_spellInfo) && (m_spellInfo->AttributesEx2 & 0x4)==0)
     {
         for(int j=0;j<3;j++)
@@ -2104,14 +2099,14 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
 
 void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
 {
+    m_spellState = SPELL_STATE_PREPARING;
+
     if(m_CastItem)
         m_castItemGUID = m_CastItem->GetGUID();
     else
         m_castItemGUID = 0;
 
     m_targets = *targets;
-
-    m_spellState = SPELL_STATE_PREPARING;
 
     m_caster->GetPosition(m_castPositionX, m_castPositionY, m_castPositionZ);
     m_castOrientation = m_caster->GetOrientation();
