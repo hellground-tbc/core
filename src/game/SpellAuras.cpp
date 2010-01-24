@@ -5648,6 +5648,13 @@ void Aura::PeriodicTick()
                         pdamage += (pdamage+1)/2;           // +1 prevent 0.5 damage possible lost at 1..4 ticks
                     // 5..8 ticks have normal tick damage
                 }
+				
+				// Corruption and Immolate bonus damage from t5 set
+				if(GetSpellProto()->SpellFamilyName==SPELLFAMILY_WARLOCK && (GetSpellProto()->SpellFamilyFlags & 6))
+				{
+					pdamage += pdamage * GetModifier()->m_miscvalue / 10;
+				}
+
             }
             else
                 pdamage = uint32(m_target->GetMaxHealth()*amount/100);

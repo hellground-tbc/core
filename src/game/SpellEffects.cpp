@@ -414,8 +414,40 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                     // Incinerate does more dmg (dmg*0.25) if the target is Immolated.
                     if(unitTarget->HasAuraState(AURA_STATE_IMMOLATE))
                         damage += int32(damage*0.25);
+					// T5 bonus - increase immolate damage on incinerate hit
+					if(m_caster->HasAura(37384, 0)) {
+						// look for immolate casted by m_caster
+						Unit::AuraList const &mPeriodic = unitTarget->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
+						for(Unit::AuraList::const_iterator i = mPeriodic.begin(); i != mPeriodic.end(); ++i)
+						{
+							if( (*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && ((*i)->GetSpellProto()->SpellFamilyFlags & 4) &&
+								(*i)->GetCasterGUID()==m_caster->GetGUID() )
+							{
+								// store number of incinerate hits in m_miscvalue
+								(*i)->GetModifier()->m_miscvalue++;
+								break;
+							}
+						}
+					}
                 }
-
+				// Shadow bolt
+				if (m_spellInfo->SpellFamilyFlags & 1) {
+					// T5 bonus - increase corruption on shadow bolt hit
+					if(m_caster->HasAura(37384, 0)) {
+						// look for corruption casted by m_caster
+						Unit::AuraList const &mPeriodic = unitTarget->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
+						for(Unit::AuraList::const_iterator i = mPeriodic.begin(); i != mPeriodic.end(); ++i)
+						{
+							if( (*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && ((*i)->GetSpellProto()->SpellFamilyFlags & 2) &&
+								(*i)->GetCasterGUID()==m_caster->GetGUID() )
+							{
+								// store number of shadow bolt hits in m_miscvalue
+								(*i)->GetModifier()->m_miscvalue++;
+								break;
+							}
+						}
+					}
+				}
                 // Conflagrate - consumes immolate
                 if (m_spellInfo->TargetAuraState == AURA_STATE_IMMOLATE)
                 {
@@ -462,7 +494,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                         // Starfire Bonus (caster)
                         switch((*i)->GetModifier()->m_miscvalue)
                         {
-                            case 37327:                      // Nordrassil Regalia - bonus
+                            case 5481:                      // Nordrassil Regalia - bonus
                             {
                                 Unit::AuraList const& m_periodicDamageAuras = unitTarget->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
                                 for(Unit::AuraList::const_iterator itr = m_periodicDamageAuras.begin(); itr != m_periodicDamageAuras.end(); ++itr)
