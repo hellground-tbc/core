@@ -6920,8 +6920,20 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         // Finish movies that add combo
         case 14189: // Seal Fate (Netherblade set)
         case 14157: // Ruthlessness
-        {
+        {            
             // Need add combopoint AFTER finish movie (or they dropped in finish phase)
+            if(GetTypeId()==TYPEID_PLAYER && procSpell->SpellFamilyFlags & SPELLFAMILYFLAG_ROGUE__FINISHING_MOVE)
+            {
+                // avoid double proc
+                if(pVictim != this)
+                {
+                    ((Player*)this)->AddFinishingComboPoints(1);
+                    return true;
+                }
+                else
+                    return false;
+                
+            }
             break;
         }
         // Shamanistic Rage triggered spell
