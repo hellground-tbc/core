@@ -1360,6 +1360,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         uint64 GetComboTarget() { return m_comboTarget; }
 
         void AddComboPoints(Unit* target, int8 count);
+        void AddFinishingComboPoints(int8 count) { m_finishingComboPoints += count; }
         void ClearComboPoints();
         void SendComboPoints();
 
@@ -2235,6 +2236,7 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         uint64 m_comboTarget;
         int8 m_comboPoints;
+        int8 m_finishingComboPoints;        // combo points added by finishing move before it's procceed
 
         QuestStatusMap mQuestStatus;
 
