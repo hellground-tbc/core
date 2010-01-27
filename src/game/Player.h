@@ -50,7 +50,6 @@ class Transport;
 class UpdateMask;
 class PlayerSocial;
 class OutdoorPvP;
-class SpellMgr;
 
 typedef std::deque<Mail*> PlayerMails;
 

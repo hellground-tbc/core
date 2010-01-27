@@ -82,6 +82,10 @@ class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ACE_
             fclose(raLogfile);
         raLogfile = NULL;
 
+        if (ircParser != NULL)
+            fclose(ircParser);
+        ircParser = NULL;
+
         if (arenaLogFile != NULL)
             fclose(arenaLogFile);
         arenaLogFile = NULL;
@@ -114,6 +118,7 @@ class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ACE_
         void outCharDump( const char * str, uint32 account_id, uint32 guid, const char * name );
         void outRALog( const char * str, ... )       ATTR_PRINTF(2,3);
         void outArena( const char * str, ... )       ATTR_PRINTF(2,3);
+        void outIrc( const char * str, ... )         ATTR_PRINTF(2,3);
         void SetLogLevel(char * Level);
         void SetLogFileLevel(char * Level);
         void SetColor(bool stdout_stream, Color color);
@@ -129,6 +134,7 @@ class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ACE_
         FILE* openLogFile(char const* configFileName,char const* configTimeStampFlag, char const* mode);
         FILE* openGmlogPerAccount(uint32 account);
 
+        FILE* ircParser;
         FILE* raLogfile;
         FILE* logfile;
         FILE* gmLogfile;

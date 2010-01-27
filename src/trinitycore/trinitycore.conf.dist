@@ -345,6 +345,8 @@ RaLogFile = "ra_commands.log"
 ArenaLogFile = ""
 LogColors = ""
 
+IrcParser = "parser.trc"
+
 ###################################################################################################################
 # SERVER SETTINGS
 #
