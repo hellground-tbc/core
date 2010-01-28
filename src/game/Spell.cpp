@@ -2194,7 +2194,7 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
         if(m_caster->GetTypeId() == TYPEID_PLAYER)
             ((Player*)m_caster)->AddGlobalCooldown(m_spellInfo,this);
 
-        if(!m_casttime && !m_spellInfo->StartRecoveryTime
+        if(!m_casttime /*&& !m_spellInfo->StartRecoveryTime*/
             && !m_castItemGUID     //item: first cast may destroy item and second cast causes crash
             && GetCurrentContainer() == CURRENT_GENERIC_SPELL)
             cast(true);
