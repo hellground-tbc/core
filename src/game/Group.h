@@ -116,7 +116,6 @@ class Roll : public LootValidatorRef
         uint8 totalGreed;
         uint8 totalPass;
         uint8 itemSlot;
-        bool save;
 };
 
 struct InstanceGroupBind
