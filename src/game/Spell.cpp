@@ -1648,13 +1648,8 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             switch(cur)
             {
                 case TARGET_UNIT_TARGET_ENEMY:
-                    if((m_spellInfo->AttributesEx & (0x8 | 0x80)) == 0)
-                    {
-                        // try to select magnet target first
-                        if(SelectMagnetTarget() == m_targets.getUnitTarget())
-                            // if not found (target is not changed) search for SPELL_AURA_ADD_CASTER_HIT_TRIGGER
-                            HandleHitTriggerAura();
-                    }
+                    SelectMagnetTarget();
+                    break;
                 case TARGET_UNIT_CHAINHEAL:
                     pushType = PUSH_CHAIN;
                     break;
@@ -5273,60 +5268,61 @@ Unit* Spell::SelectMagnetTarget()
 {
     Unit* target = m_targets.getUnitTarget();
 
-    if(target && m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC && target->HasAuraType(SPELL_AURA_SPELL_MAGNET)) //Attributes & 0x10 what is this?
+    if (!target)
+        return NULL;
+
+    if (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC)
     {
-        Unit::AuraList const& magnetAuras = target->GetAurasByType(SPELL_AURA_SPELL_MAGNET);
-        for(Unit::AuraList::const_iterator itr = magnetAuras.begin(); itr != magnetAuras.end(); ++itr)
+        if(target->HasAuraType(SPELL_AURA_SPELL_MAGNET)) //Attributes & 0x10 what is this?
         {
-            if(Unit* magnet = (*itr)->GetCaster())
+            Unit::AuraList const& magnetAuras = target->GetAurasByType(SPELL_AURA_SPELL_MAGNET);
+            for(Unit::AuraList::const_iterator itr = magnetAuras.begin(); itr != magnetAuras.end(); ++itr)
             {
-                if((*itr)->m_procCharges>0)
+                if(Unit* magnet = (*itr)->GetCaster())
                 {
-                    (*itr)->SetAuraProcCharges((*itr)->m_procCharges-1);
-                    target = magnet;
-                    m_targets.setUnitTarget(target);
-                    AddUnitTarget(target, 0);
-                    uint64 targetGUID = target->GetGUID();
-                    for(std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin();ihit != m_UniqueTargetInfo.end();++ihit)
+                    if((*itr)->m_procCharges>0)
                     {
-                        if (targetGUID == ihit->targetGUID)                 // Found in list
+                        (*itr)->SetAuraProcCharges((*itr)->m_procCharges-1);
+                        target = magnet;
+                        m_targets.setUnitTarget(target);
+                        AddUnitTarget(target, 0);
+                        uint64 targetGUID = target->GetGUID();
+                        for(std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin();ihit != m_UniqueTargetInfo.end();++ihit)
                         {
-                            (*ihit).damage = target->GetHealth();
-                            break;
+                            if (targetGUID == ihit->targetGUID)                 // Found in list
+                            {
+                                (*ihit).damage = target->GetHealth();
+                                break;
+                            }
                         }
+                        break;
                     }
-                    break;
                 }
             }
         }
     }
-
-    return target;
-}
-
-void Spell::HandleHitTriggerAura()
-{
-    Unit* target = m_targets.getUnitTarget();
-
-    if(target && m_spellInfo->DmgClass != SPELL_DAMAGE_CLASS_MAGIC && target->HasAuraType(SPELL_AURA_ADD_CASTER_HIT_TRIGGER))
+    else
     {
-        Unit::AuraList const& hitTriggerAuras = target->GetAurasByType(SPELL_AURA_ADD_CASTER_HIT_TRIGGER);
-        for(Unit::AuraList::const_iterator itr = hitTriggerAuras.begin(); itr != hitTriggerAuras.end(); ++itr)
+        if (target->HasAuraType(SPELL_AURA_ADD_CASTER_HIT_TRIGGER))
         {
-            if(Unit* hitTarget = (*itr)->GetCaster())
+            Unit::AuraList const& hitTriggerAuras = target->GetAurasByType(SPELL_AURA_ADD_CASTER_HIT_TRIGGER);
+            for(Unit::AuraList::const_iterator itr = hitTriggerAuras.begin(); itr != hitTriggerAuras.end(); ++itr)
             {
-                if((*itr)->m_procCharges>0)
+                if(Unit* hitTarget = (*itr)->GetCaster())
                 {
-                    (*itr)->SetAuraProcCharges((*itr)->m_procCharges-1);
-                    target = hitTarget;
-                    m_targets.setUnitTarget(target);
-                    AddUnitTarget(target, 0);
-                    uint64 targetGUID = target->GetGUID();
-                    return;
+                    if((*itr)->m_procCharges > 0)
+                    {
+                        (*itr)->SetAuraProcCharges((*itr)->m_procCharges-1);
+                        target = hitTarget;
+                        m_targets.setUnitTarget(target);
+                        uint64 targetGUID = target->GetGUID();
+                        break;
+                    }
                 }
             }
         }
     }
+    return target;
 }
 
 bool Spell::IsNeedSendToClient() const
