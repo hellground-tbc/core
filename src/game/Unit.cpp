@@ -12411,7 +12411,7 @@ void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
         ((Player*)this)->SetViewport(GetGUID(), false);
 
         if(charmer->GetTypeId() == TYPEID_UNIT)
-            ((Player*)this)->CreateCharmAI();
+            ((Player*)this)->CharmAI(true);
     }
 
     // Pets already have a properly initialized CharmInfo, don't overwrite it.
@@ -12502,7 +12502,7 @@ void Unit::RemoveCharmedOrPossessedBy(Unit *charmer)
     else
     {
         if(IsAIEnabled)
-            ((Player*)this)->DeleteCharmAI();
+            ((Player*)this)->CharmAI(false);
 
         ((Player*)this)->SetViewport(GetGUID(), true);
     }

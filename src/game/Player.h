@@ -1419,6 +1419,7 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         void CreateCharmAI();
         void DeleteCharmAI();
+        void CharmAI(bool enable = true);
 
         void PetSpellInitialize();
         void CharmSpellInitialize();

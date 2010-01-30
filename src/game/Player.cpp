@@ -432,6 +432,8 @@ Player::Player (WorldSession *session): Unit()
     m_farsightVision = false;
 
     m_globalCooldowns.clear();
+
+    CreateCharmAI();
 }
 
 Player::~Player ()
@@ -1036,9 +1038,6 @@ void Player::SetDrunkValue(uint16 newDrunkenValue, uint32 itemId)
 
 void Player::CreateCharmAI()
 {
-    if(IsAIEnabled || i_AI)
-        return;
-
     switch(getClass())
     {
         case CLASS_WARRIOR:
@@ -1068,23 +1067,28 @@ void Player::CreateCharmAI()
         case CLASS_DRUID:
             i_AI = new DruidAI(this);
             break;
-    }
-    
-    if(i_AI)
-    {
-        i_AI->Reset();
-        IsAIEnabled = true;
+        default:
+            sLog.outError("Unhandled class type, while creating charmAI");
+            break;
     }
 }
+
 void Player::DeleteCharmAI()
 {
     if(i_AI)
     {
-        IsAIEnabled = false;
+        CharmAI(false);
         delete i_AI;
         i_AI = NULL;
     }
 }
+
+void Player::CharmAI(bool enable)
+{
+    if(IsAIEnabled = enable)
+        i_AI->Reset();
+}
+
 void Player::Update( uint32 p_time )
 {
     if(!IsInWorld())
