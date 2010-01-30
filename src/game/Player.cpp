@@ -432,8 +432,6 @@ Player::Player (WorldSession *session): Unit()
     m_farsightVision = false;
 
     m_globalCooldowns.clear();
-
-    CreateCharmAI();
 }
 
 Player::~Player ()
@@ -1071,6 +1069,9 @@ void Player::CreateCharmAI()
             sLog.outError("Unhandled class type, while creating charmAI");
             break;
     }
+
+    if(i_AI)
+        i_AI->Reset();
 }
 
 void Player::DeleteCharmAI()
@@ -1086,7 +1087,12 @@ void Player::DeleteCharmAI()
 void Player::CharmAI(bool enable)
 {
     if(IsAIEnabled = enable)
-        i_AI->Reset();
+    {
+        if(!i_AI)            
+            CreateCharmAI();
+        else
+            i_AI->Reset();
+    }
 }
 
 void Player::Update( uint32 p_time )
