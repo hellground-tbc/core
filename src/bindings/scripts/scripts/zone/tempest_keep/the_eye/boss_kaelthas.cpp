@@ -887,11 +887,11 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                             Weapon->setFaction(m_creature->getFaction());
                             Weapon->AI()->AttackStart(Target);
                             Weapon->CastSpell(Weapon, SPELL_WEAPON_SPAWN, false);
-                            WeaponGuid[i] = Weapon->GetGUID();
-                            m_creature->GetMotionMaster()->Clear();
+                            WeaponGuid[i] = Weapon->GetGUID();                            
                         }
                     }
 
+                    m_creature->StopMoving();
                     PhaseSubphase = 2;
                     Phase_Timer = TIME_PHASE_2_3;
                 }
@@ -1843,6 +1843,8 @@ struct TRINITY_DLL_DECL mob_phoenix_tkAI : public ScriptedAI
     void Reset()
     {
         m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);//birds can fly! :)
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_SCHOOL_IMMUNITY, true);	//immune to players banish effects, but not banishing in phase 5
+        m_creature->ApplySpellImmune(1, IMMUNITY_STATE, SPELL_AURA_MOD_STUN, true);
         Cycle_Timer = 2000;
         Egg = true;
         m_creature->CastSpell(m_creature,SPELL_BURN,true);
@@ -2011,6 +2013,8 @@ struct TRINITY_DLL_DECL mob_nether_vaporAI : public ScriptedAI
 
         m_creature->setFaction(16);
         m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->CastSpell(m_creature, SPELL_NETHER_VAPOR, false);
         m_creature->StopMoving();
     }
