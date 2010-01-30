@@ -992,6 +992,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\game\PlayerAI.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\PlayerAI.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\game\PossessedAI.cpp"
 				>
 			</File>

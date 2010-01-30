@@ -182,6 +182,8 @@ SET(game_STAT_SRCS
    PetitionsHandler.cpp
    Player.cpp
    Player.h
+   PlayerAI.cpp
+   PlayerAI.h
    PlayerDump.cpp
    PlayerDump.h
    PointMovementGenerator.cpp

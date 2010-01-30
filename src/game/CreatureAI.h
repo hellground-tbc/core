@@ -93,22 +93,6 @@ class TRINITY_DLL_SPEC UnitAI
         void DoMeleeAttackIfReady();
 };
 
-class TRINITY_DLL_SPEC PlayerAI : public UnitAI
-{
-    protected:
-        Player *me;
-    public:
-        PlayerAI(Player *p) : UnitAI((Unit*)p), me(p) {}
-
-        void OnCharmed(bool apply);
-};
-
-class TRINITY_DLL_SPEC SimpleCharmedAI : public PlayerAI
-{
-    public:
-        void UpdateAI(const uint32 diff);
-};
-
 class TRINITY_DLL_SPEC CreatureAI : public UnitAI
 {
     protected:

@@ -480,6 +480,7 @@ Player::~Player ()
 
 void Player::CleanupsBeforeDelete()
 {
+    DeleteCharmAI();
     if(m_uint32Values)                                      // only for fully created Object
     {
         TradeCancel(false);
@@ -1033,6 +1034,57 @@ void Player::SetDrunkValue(uint16 newDrunkenValue, uint32 itemId)
     SendMessageToSet(&data, true);
 }
 
+void Player::CreateCharmAI()
+{
+    if(IsAIEnabled || i_AI)
+        return;
+
+    switch(getClass())
+    {
+        case CLASS_WARRIOR:
+            i_AI = new WarriorAI(this);
+            break;
+        case CLASS_PALADIN:
+            i_AI = new PaladinAI(this);
+            break;
+        case CLASS_HUNTER:
+            i_AI = new HunterAI(this);
+            break;
+        case CLASS_ROGUE:
+            i_AI = new RogueAI(this);
+            break;
+        case CLASS_PRIEST:
+            i_AI = new PriestAI(this);
+            break;
+        case CLASS_SHAMAN:
+            i_AI = new ShamanAI(this);
+            break;
+        case CLASS_MAGE:
+            i_AI = new MageAI(this);
+            break;
+        case CLASS_WARLOCK:
+            i_AI = new WarlockAI(this);
+            break;
+        case CLASS_DRUID:
+            i_AI = new DruidAI(this);
+            break;
+    }
+    
+    if(i_AI)
+    {
+        i_AI->Reset();
+        IsAIEnabled = true;
+    }
+}
+void Player::DeleteCharmAI()
+{
+    if(i_AI)
+    {
+        IsAIEnabled = false;
+        delete i_AI;
+        i_AI = NULL;
+    }
+}
 void Player::Update( uint32 p_time )
 {
     if(!IsInWorld())
@@ -1073,12 +1125,8 @@ void Player::Update( uint32 p_time )
 
     CheckExploreSystem();
 
-    if(isCharmed())
-    {
-        if(Unit *charmer = GetCharmer())
-            if(charmer->GetTypeId() == TYPEID_UNIT && charmer->isAlive())
-                UpdateCharmedAI();
-    }
+    if(IsAIEnabled)
+        i_AI->UpdateAI(p_time);
 
     // Update items that have just a limited lifetime
     if (now>m_Last_tick)
@@ -19618,74 +19666,6 @@ bool Player::isTotalImmunity()
         }
     }
     return false;
-}
-
-void Player::UpdateCharmedAI()
-{
-    //This should only called in Player::Update
-    Creature *charmer = (Creature*)GetCharmer();
-
-    //kill self if charm aura has infinite duration
-    if(charmer->IsInEvadeMode())
-    {
-        AuraList const& auras = GetAurasByType(SPELL_AURA_MOD_CHARM);
-        for(AuraList::const_iterator iter = auras.begin(); iter != auras.end(); ++iter)
-            if((*iter)->GetCasterGUID() == charmer->GetGUID() && (*iter)->IsPermanent())
-            {
-                charmer->DealDamage(this, GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-                return;
-            }
-    }
-
-    if(!charmer->isInCombat())
-        GetMotionMaster()->MoveFollow(charmer, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
-
-    Unit *target = getVictim();
-
-    if(!target || !charmer->canAttack(target))
-    {
-        target = charmer->SelectNearestTarget();
-        if(!target)
-            return;
-
-        GetMotionMaster()->MoveChase(target);
-        Attack(target, true);
-    }
-    else
-        CastSpellWhenCharmed();
-}
-
-void Player::CastSpellWhenCharmed()
-{
-    /* For now only placeholder, what we need to do:
-     - make a list of spells used by specific class when charmed (on forum is big part of it),
-     - add prioritylist of those spells(what is used as first and what as last one),
-     - check if player can cast it or not,
-     - cast spell, add cooldown, add GC(if it won't be added after cast :]) select next spell,
-     - add mabe a wait interval between spells ?
-     */
-
-    switch(getClass())
-    {
-        case CLASS_WARRIOR:
-            break;
-        case CLASS_PALADIN:
-            break;
-        case CLASS_HUNTER:
-            break;
-        case CLASS_ROGUE:
-            break;
-        case CLASS_PRIEST:
-            break;
-        case CLASS_SHAMAN:
-            break;
-        case CLASS_MAGE:
-            break;
-        case CLASS_WARLOCK:
-            break;
-        case CLASS_DRUID:
-            break;
-    }
 }
 
 void Player::AddGlobalCooldown(SpellEntry const *spellInfo, Spell const *spell)

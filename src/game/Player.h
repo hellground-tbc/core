@@ -34,6 +34,7 @@
 #include "Bag.h"
 #include "WorldSession.h"
 #include "Pet.h"
+#include "PlayerAI.h"
 #include "MapReference.h"
 #include "Util.h"                                           // for Tokens typedef
 
@@ -1416,6 +1417,9 @@ class TRINITY_DLL_SPEC Player : public Unit
             return true;
         }
 
+        void CreateCharmAI();
+        void DeleteCharmAI();
+
         void PetSpellInitialize();
         void CharmSpellInitialize();
         void PossessSpellInitialize();
@@ -2363,9 +2367,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         GridReference<Player> m_gridRef;
         MapReference m_mapRef;
 
-        void UpdateCharmedAI();
-        void CastSpellWhenCharmed();
-        UnitAI *i_AI;
+        PlayerAI *i_AI;
 };
 
 void AddItemsSetItem(Player*player,Item *item);
