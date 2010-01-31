@@ -85,7 +85,7 @@ EndScriptData */
 #define SPELL_ARCANE_DISRUPTION           36834
 #define SPELL_SHOCK_BARRIER               36815
 #define SPELL_SUMMON_PHOENIX              36723
-#define SPELL_MIND_CONTROL                32830 //36797 wrong for a moment
+#define SPELL_MIND_CONTROL                36797 //right MC spell
 
 //Phase 5 spells
 #define SPELL_NETHERBEAM_EXPLODE          36089
@@ -327,6 +327,16 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
             TempSpell->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
             TempSpell->EffectImplicitTargetB[0] = 0;
         }
+        SpellEntry *MCTempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_MIND_CONTROL);
+        if(MCTempSpell)
+        {
+            MCTempSpell->MaxAffectedTargets = 1;
+            for(uint8 i = 0; i<3; i++)
+            {
+                MCTempSpell->EffectImplicitTargetA[i] = TARGET_UNIT_TARGET_ENEMY;
+                MCTempSpell->EffectImplicitTargetB[i] = NULL;
+            }
+        }
     }
 
     ScriptedInstance* pInstance;
@@ -388,6 +398,19 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
         }
     }
 
+    void DispellMindControl()
+    {
+        InstanceMap::PlayerList const &playerliste = ((InstanceMap*)m_creature->GetMap())->GetPlayers();
+        InstanceMap::PlayerList::const_iterator it;
+
+        Map::PlayerList const &PlayerList = ((InstanceMap*)m_creature->GetMap())->GetPlayers();
+        for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+        {
+            Player* i_pl = i->getSource();
+            i_pl->RemoveAurasDueToSpell(SPELL_MIND_CONTROL);
+        }
+    }
+
     void Reset()
     {
         m_creature->SetNoCallAssistance(true);
@@ -420,16 +443,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
 
         DeleteLegs();
         summons.DespawnAll();
-
-        //when reset, dispell Mind Control from players
-        std::list<HostilReference*>::iterator i = m_creature->getThreatManager().getThreatList().begin();
-        for (i = m_creature->getThreatManager().getThreatList().begin(); i!= m_creature->getThreatManager().getThreatList().end();)
-        {
-            Unit* pUnit = Unit::GetUnit((*m_creature), (*i)->getUnitGuid());
-            ++i;
-            if(pUnit && (pUnit->GetTypeId() == TYPEID_PLAYER))
-                pUnit->RemoveAurasDueToSpell(SPELL_MIND_CONTROL);
-        }
+        DispellMindControl();	//when reset, dispell Mind Control from players
 
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -570,6 +584,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
 
         DeleteLegs();
         summons.DespawnAll();
+        DispellMindControl();
 
         if(pInstance)
             pInstance->SetData(DATA_KAELTHASEVENT, DONE);
