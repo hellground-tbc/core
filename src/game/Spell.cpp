@@ -1649,7 +1649,6 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             {
                 case TARGET_UNIT_TARGET_ENEMY:
                     SelectMagnetTarget();
-                    break;
                 case TARGET_UNIT_CHAINHEAL:
                     pushType = PUSH_CHAIN;
                     break;
@@ -5315,6 +5314,7 @@ Unit* Spell::SelectMagnetTarget()
                         (*itr)->SetAuraProcCharges((*itr)->m_procCharges-1);
                         target = hitTarget;
                         m_targets.setUnitTarget(target);
+                        AddUnitTarget(target, 0);
                         uint64 targetGUID = target->GetGUID();
                         break;
                     }
