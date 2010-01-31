@@ -292,7 +292,6 @@ bool IsPassiveSpell(uint32 spellId)
     SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
     if (!spellInfo)
         return false;
-
     return (spellInfo->Attributes & SPELL_ATTR_PASSIVE) != 0;
 }
 
@@ -752,7 +751,8 @@ bool IsPositiveSpell(uint32 spellId)
     SpellEntry const *spellproto = sSpellStore.LookupEntry(spellId);
     if (!spellproto) return false;
 
-    if(IsPassiveSpell(spellId) || GetTalentSpellCost(spellId))
+    // talents
+    if(IsPassiveSpell(spellId) && GetTalentSpellCost(spellId))
         return true;
 
     // spells with at least one negative effect are considered negative
