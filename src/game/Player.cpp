@@ -1084,15 +1084,21 @@ void Player::DeleteCharmAI()
     }
 }
 
-void Player::CharmAI(bool enable)
+void Player::CharmAI(bool apply)
 {
-    if(IsAIEnabled = enable)
+    if(apply)
     {
-        if(!i_AI)            
+        if(!i_AI)
             CreateCharmAI();
-        else
-            i_AI->Reset();
+
+        if(!i_AI)
+            return;
+
+        i_AI->Reset();
+        IsAIEnabled = true;
     }
+    else
+        IsAIEnabled = false;
 }
 
 void Player::Update( uint32 p_time )
