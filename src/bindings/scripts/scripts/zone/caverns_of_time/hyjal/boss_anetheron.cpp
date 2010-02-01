@@ -259,6 +259,7 @@ struct TRINITY_DLL_DECL mob_towering_infernalAI : public ScriptedAI
     {
         DoCast(m_creature, SPELL_INFERNO_EFFECT);
         m_creature->setFaction(1720);
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
         ImmolationTimer = 5000;
         CheckTimer = 5000;
     }
