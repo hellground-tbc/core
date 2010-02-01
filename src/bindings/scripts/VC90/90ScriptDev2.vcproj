@@ -606,6 +606,10 @@
 				<Filter
 					Name="Duskwood"
 					>
+					<File
+						RelativePath="..\scripts\zone\duskwood\duskwood.cpp"
+						>
+					</File>
 				</Filter>
 				<Filter
 					Name="Dustwallow Marsh"

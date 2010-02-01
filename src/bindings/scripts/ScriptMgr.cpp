@@ -284,6 +284,8 @@ extern void AddSC_dun_morogh();
 
 //Durotar
 //Duskwood
+extern void AddSC_duskwood();
+
 //Dustwallow marsh
 extern void AddSC_dustwallow_marsh();
 
@@ -1674,6 +1676,8 @@ void ScriptsInit(char const* cfg_file = "trinitycore.conf")
 
     //Durotar
     //Duskwood
+    AddSC_duskwood();
+
     //Dustwallow marsh
     AddSC_dustwallow_marsh();
 
