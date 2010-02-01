@@ -5,7 +5,7 @@
 
 #define SPELL_CARRION_SWARM 31306
 #define SPELL_SLEEP 31298
-#define SPELL_VAMPIRIC_AURA 38196
+#define SPELL_VAMPIRIC_AURA 31317
 #define SPELL_INFERNO 31299
 
 #define SAY_ONDEATH "The clock... is still... ticking."
@@ -53,7 +53,6 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
 
     uint32 SwarmTimer;
     uint32 SleepTimer;
-    uint32 AuraTimer;
     uint32 CheckTimer;
     uint32 InfernoTimer;
     bool go;
@@ -64,7 +63,6 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
         damageTaken = 0;
         SwarmTimer = 45000;
         SleepTimer = 60000;
-        AuraTimer = 5000;
         InfernoTimer = 45000;
         CheckTimer = 3000;
 
@@ -81,6 +79,7 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
             pInstance->SetData(DATA_ANETHERONEVENT, IN_PROGRESS);
         DoPlaySoundToSet(m_creature, SOUND_ONAGGRO);
         DoYell(SAY_ONAGGRO, LANG_UNIVERSAL, NULL);
+        DoCast(m_creature, SPELL_VAMPIRIC_AURA, true);
     }
 
     void KilledUnit(Unit *victim)
@@ -208,14 +207,6 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
         else
             SleepTimer -= diff;
 
-        if(AuraTimer < diff)
-        {
-            DoCast(m_creature, SPELL_VAMPIRIC_AURA,true);
-            AuraTimer = 10000+rand()%10000;
-        }
-        else
-            AuraTimer -= diff;
-
         if(InfernoTimer < diff)
         {
             if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0,100,true))
@@ -267,6 +258,7 @@ struct TRINITY_DLL_DECL mob_towering_infernalAI : public ScriptedAI
     void Reset()
     {
         DoCast(m_creature, SPELL_INFERNO_EFFECT);
+        m_creature->setFaction(1720);
         ImmolationTimer = 5000;
         CheckTimer = 5000;
     }

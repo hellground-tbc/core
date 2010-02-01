@@ -57,9 +57,9 @@ return false;
 # boss_twilight_corrupter
 ######*/
 
-#define SPELL_SOUL_CORRUPTION			25805
-#define SPELL_CREATURE_OF_NIGHTMARE		25806
-#define SPELL_LEVEL_UP					24312
+#define SPELL_SOUL_CORRUPTION           25805
+#define SPELL_CREATURE_OF_NIGHTMARE     25806
+#define SPELL_LEVEL_UP                  24312
 
 struct TRINITY_DLL_DECL boss_twilight_corrupterAI : public ScriptedAI
 {
