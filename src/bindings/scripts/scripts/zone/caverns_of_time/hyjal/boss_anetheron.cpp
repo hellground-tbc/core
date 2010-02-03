@@ -238,7 +238,7 @@ CreatureAI* GetAI_boss_anetheron(Creature *_Creature)
     return new boss_anetheronAI (_Creature);
 }
 
-#define SPELL_IMMOLATION 31303
+#define SPELL_IMMOLATION 31304
 #define SPELL_INFERNO_EFFECT 31302
 
 struct TRINITY_DLL_DECL mob_towering_infernalAI : public ScriptedAI
@@ -250,7 +250,6 @@ struct TRINITY_DLL_DECL mob_towering_infernalAI : public ScriptedAI
             AnetheronGUID = pInstance->GetData64(DATA_ANETHERON);
     }
 
-    uint32 ImmolationTimer;
     uint32 CheckTimer;
     uint64 AnetheronGUID;
     ScriptedInstance* pInstance;
@@ -258,9 +257,9 @@ struct TRINITY_DLL_DECL mob_towering_infernalAI : public ScriptedAI
     void Reset()
     {
         DoCast(m_creature, SPELL_INFERNO_EFFECT);
+        DoCast(m_creature, SPELL_IMMOLATION);
         m_creature->setFaction(1720);
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
-        ImmolationTimer = 5000;
         CheckTimer = 5000;
     }
 
@@ -308,12 +307,6 @@ struct TRINITY_DLL_DECL mob_towering_infernalAI : public ScriptedAI
         //Return since we have no target
         if (!UpdateVictim())
             return;
-
-        if(ImmolationTimer < diff)
-        {
-            DoCast(m_creature, SPELL_IMMOLATION);
-            ImmolationTimer = 5000;
-        }else ImmolationTimer -= diff;
 
         DoMeleeAttackIfReady();
     }
