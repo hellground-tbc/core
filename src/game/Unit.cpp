@@ -9448,6 +9448,11 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
             break;
     }
 
+    if(Unit* owner = GetOwner()) {
+        float owner_speed = owner->GetMaxSpeedRate(mtype) * 1.1f;
+        speed = owner_speed > speed ? owner_speed : speed;
+    }
+
     // Apply strongest slow aura mod to speed
     int32 slow = GetMaxNegativeAuraModifier(SPELL_AURA_MOD_DECREASE_SPEED);
     if (slow)
@@ -9460,6 +9465,9 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
     if( !hasUnitState(UNIT_STAT_FOLLOW) )
         SetSpeed(mtype, speed, forced);
 
+    // update speed of pets
+    if(Pet *pet = GetPet())
+        pet->UpdateSpeed(mtype, forced);
 }
 
 float Unit::GetSpeed( UnitMoveType mtype ) const

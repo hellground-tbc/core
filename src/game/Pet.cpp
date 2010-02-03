@@ -1219,6 +1219,7 @@ bool Pet::InitStatsForLevel(uint32 petlevel)
         SetModifierValue(UnitMods(UNIT_MOD_RESISTANCE_START + i), BASE_VALUE, float(createResistance[i]));
 
     UpdateAllStats();
+    UpdateSpeed(MOVE_RUN, true);
 
     SetHealth(GetMaxHealth());
     SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
