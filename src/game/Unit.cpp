@@ -2015,6 +2015,31 @@ void Unit::CalcAbsorb(Unit *pVictim,SpellSchoolMask schoolMask, const uint32 dam
     *absorb = damage - RemainingDamage - *resist;
 }
 
+bool Unit::CalcBinaryResist(Unit *pVictim, SpellSchoolMask schoolMask) {
+    
+    if(!pVictim || !pVictim->isAlive())
+        return false;
+
+    // Magic damage, check for resists
+    if ((schoolMask & SPELL_SCHOOL_MASK_NORMAL)==0)
+    {
+        // Get base victim resistance for school
+        uint32 effectiveResistance = pVictim->GetResistance(GetFirstSchoolInMask(schoolMask));
+        // Ignore resistance by self SPELL_AURA_MOD_TARGET_RESISTANCE aura
+        effectiveResistance += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, schoolMask);
+
+        effectiveResistance = effectiveResistance * 15 / getLevel();
+        if (effectiveResistance < 0)
+            effectiveResistance = 0;
+        if (effectiveResistance > 75)
+            effectiveResistance = 75;
+        uint32 ran = GetMap()->urand(0, 100);
+        return ran < effectiveResistance;
+    }
+
+    return false;
+}
+
 /*
 void Unit::DoAttackDamage (Unit *pVictim, uint32 *damage, CleanDamage *cleanDamage, uint32 *blocked_amount, SpellSchoolMask damageSchoolMask, uint32 *hitInfo, VictimState *victimState, uint32 *absorbDamage, uint32 *resistDamage, WeaponAttackType attType, SpellEntry const *spellCasted, bool isTriggeredSpell)
 {
@@ -3060,6 +3085,13 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     uint32 rand = GetMap()->urand(0,10000);
     if (rand > HitChance)
         return SPELL_MISS_RESIST;
+
+    // binary resist spells TODO: find out how to check if spell is subject to binary resist
+    // this is quick fix only for Mark of Kaz'rogal
+    if(spell->Id == 31447)
+        if(CalcBinaryResist(pVictim, schoolMask))
+            return SPELL_MISS_RESIST;
+
     return SPELL_MISS_NONE;
 }
 
