@@ -74,7 +74,7 @@ class TRINITY_DLL_SPEC InstanceData
 
         //Used by the map's CanEnter function.
         //This is to prevent players from entering during boss encounters.
-        virtual bool IsEncounterInProgress() const;
+        virtual bool IsEncounterInProgress() const { return false; }
 
         //Called when a player successfully enters the instance.
         virtual void OnPlayerEnter(Player *) {}
