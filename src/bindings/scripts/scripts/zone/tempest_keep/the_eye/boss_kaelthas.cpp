@@ -705,7 +705,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
 
         if(pInstance && Phase)
         {
-            if(pInstance->GetData(DATA_KAELTHASEVENT) == IN_PROGRESS && m_creature->getThreatManager().getThreatList().empty())
+            if(pInstance->GetData(DATA_KAELTHASEVENT) != DONE || pInstance->GetData(DATA_KAELTHASEVENT) != NOT_STARTED && m_creature->getThreatManager().getThreatList().empty())
             {
                 EnterEvadeMode();
                 return;

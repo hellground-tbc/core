@@ -74,7 +74,7 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
     bool IsEncounterInProgress() const
     {
         for(uint8 i = 0; i < ENCOUNTERS; i++)
-            if(Encounters[i] == IN_PROGRESS) return true;
+            if(Encounters[i] != DONE || Encounters[i] != NOT_STARTED) return true;
 
         return false;
     }
