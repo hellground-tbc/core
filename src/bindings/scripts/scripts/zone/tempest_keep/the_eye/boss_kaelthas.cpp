@@ -1121,17 +1121,20 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                             ChainPyros = true;
                         }
 
-                        if(PyrosCasted < 3 && Pyro_Timer < diff)
-                        {
-                            m_creature->StopMoving();
-                            m_creature->CastSpell(m_creature->getVictim(), SPELL_PYROBLAST, false);
-                            ++PyrosCasted;
-                            Pyro_Timer = 4000 + diff;
+                        if(Pyro_Timer < diff)
+                        { 
+                            if(PyrosCasted < 3)
+                            {
+                              m_creature->StopMoving();
+                              m_creature->CastSpell(m_creature->getVictim(), SPELL_PYROBLAST, false);
+                              ++PyrosCasted;
+                              Pyro_Timer = 4000;
+                            }
                         }
                         else
                             Pyro_Timer -= diff;
 
-                        if(PyrosCasted >= 3 && Pyro_Timer < diff)
+                        if(PyrosCasted >= 3)
                         {
                             ChainPyros = false;
                             PyrosCasted = 0;
@@ -1143,7 +1146,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                         ShockPyroChain_Timer -= diff;
                 }
                 else
-                    Check_Timer -= 4100;
+                    Check_Timer -= 5000;
 
                 if(Phase == 5)
                 {
