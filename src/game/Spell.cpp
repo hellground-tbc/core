@@ -1217,7 +1217,10 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         DiminishingReturnsType type = GetDiminishingReturnsGroupType(m_diminishGroup);
         // Increase Diminishing on unit, current informations for actually casts will use values above
         if((type == DRTYPE_PLAYER && (unit->GetTypeId() == TYPEID_PLAYER || ((Creature*)unit)->isPet() || ((Creature*)unit)->isPossessedByPlayer())) || type == DRTYPE_ALL)
-            unit->IncrDiminishing(m_diminishGroup);
+        {
+            if(m_caster->GetTypeId() == TYPEID_PLAYER || ((Creature*)m_caster)->isPet())         
+                unit->IncrDiminishing(m_diminishGroup);
+        }
     }
 
     for(uint32 effectNumber=0;effectNumber<3;effectNumber++)
