@@ -96,9 +96,10 @@ EndScriptData */
 #define SPELL_GAINING_POWER               36091
 #define SPELL_EXPLODE                     36092
 #define SPELL_FULLPOWER                   36187
-#define SPELL_KNOCKBACK                   11027
+#define SPELL_KNOCKBACK                   37412 //proper spell unknown, this one should not freez players (?)
 #define SPELL_GRAVITY_LAPSE               34480
-#define SPELL_GRAVITY_LAPSE_AURA          39432
+#define SPELL_GRAVITY_KAEL_VISUAL         35941
+#define SPELL_GRAVITY_LAPSE_FLIGHT_AURA   39432
 #define SPELL_NETHER_BEAM                 35873
 #define SPELL_EXPLODE_SHAKE1              36373
 #define SPELL_EXPLODE_SHAKE2              36375
@@ -424,7 +425,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
         Pyro_Timer = 0;
         ShockBarrier_Timer = 60000;
         FlameStrike_Timer = 29000;
-        GravityLapse_Timer = 20000;
+        GravityLapse_Timer = 16000;
         GravityLapse_Phase = 0;
         NetherBeam_Timer = 8000;
         Kick_Timer = 3000;
@@ -620,6 +621,8 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
             m_creature->Relocate(GRAVITY_X, GRAVITY_Y, GRAVITY_Z, 0);
             m_creature->InterruptNonMeleeSpells(false);
             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            Arcane1 = true;
+            Arcane2 = true;
             return 1000;
         case 2:
             DoCast(m_creature, SPELL_GAINING_POWER);
@@ -683,6 +686,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                 AttackStart(target);
             }
             Phase_Timer = 8000;
+            Phoenix_Timer = 5000;
             return 500;
         default: return 0;
         }
@@ -1164,35 +1168,22 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                     //GravityLapse_Timer
                     if(GravityLapse_Timer < diff)
                     {
-                        std::list<HostilReference*>::iterator i = m_creature->getThreatManager().getThreatList().begin();
+                        std::list<HostilReference*>::iterator iter = m_creature->getThreatManager().getThreatList().begin();
+                        uint32 glapse_teleport_id = 35966;
+
                         switch(GravityLapse_Phase)
                         {
                             case 0:
                                 m_creature->GetMotionMaster()->Clear();
                                 m_creature->GetMotionMaster()->MoveIdle();
                                 DoTeleportTo(GRAVITY_X, GRAVITY_Y, GRAVITY_Z);
-                                // 1) Kael'thas will portal the whole raid right into his body
-                                for (i = m_creature->getThreatManager().getThreatList().begin(); i!= m_creature->getThreatManager().getThreatList().end();)
-                                {
-                                    Unit* pUnit = Unit::GetUnit((*m_creature), (*i)->getUnitGuid());
-                                    ++i;
-                                    if(pUnit && (pUnit->GetTypeId() == TYPEID_PLAYER))
-                                    {
-                                        //Use work around packet to prevent player from being dropped from combat
-                                        DoTeleportPlayer(pUnit, GRAVITY_X, GRAVITY_Y, GRAVITY_Z, pUnit->GetOrientation());
-                                    }
-                                }
-                                summons.AuraOnEntry(PHOENIX,SPELL_BANISH,true);
-                                if(pInstance)
-                                    pInstance->SetData(DATA_KAELTHASEVENT, 5);	// set KaelthasEventPhase = 5 for Gravity Lapse phase
-                                GravityLapse_Timer = 500;
+                                // 1) Kael'thas casts teleportation visual spell on self
+                                m_creature->CastSpell(m_creature, SPELL_GRAVITY_KAEL_VISUAL, false);
+                                GravityLapse_Timer = 2000;
                                 ++GravityLapse_Phase;
                                 InGravityLapse = true;
-                                Arcane_Timer1 = 20000;
+                                Arcane_Timer1 = 0;
                                 Arcane1 = false;
-                                Arcane_Timer2 = 40000;
-                                Arcane2 = false;
-                                Phoenix_Timer = 33000;
                                 FlameStrike_Timer = 32000;
                                 ShockBarrier_Timer = 0;
                                 NetherBeam_Timer = 5000;
@@ -1200,33 +1191,32 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                                 break;
 
                             case 1:
+                                // 2) Kael'thas will portal the whole raid near to his position
+                                for (iter = m_creature->getThreatManager().getThreatList().begin(); iter!= m_creature->getThreatManager().getThreatList().end();)
+                                {
+                                    Unit* pUnit = Unit::GetUnit((*m_creature), (*iter)->getUnitGuid());
+                                    ++iter;
+                                    if(pUnit && (pUnit->GetTypeId() == TYPEID_PLAYER) && !((Player*)pUnit)->isGameMaster()) //to allow GM's spying :P
+                                    {
+                                        m_creature->CastSpell(pUnit, glapse_teleport_id, true);  //this should probably go to the core
+                                        // 2) At that point he will put a Gravity Lapse debuff on everyone
+                                        pUnit->CastSpell(pUnit, SPELL_GRAVITY_LAPSE, true, 0, 0, m_creature->GetGUID());
+                                        pUnit->CastSpell(pUnit, SPELL_GRAVITY_LAPSE_FLIGHT_AURA, true);
+                                        glapse_teleport_id++;
+                                    }
+                                }
+
+                                summons.AuraOnEntry(PHOENIX,SPELL_BANISH,true);
+
+                                if(pInstance)
+                                    pInstance->SetData(DATA_KAELTHASEVENT, 5);	// set KaelthasEventPhase = 5 for Gravity Lapse phase
+
                                 switch(rand()%2)
                                 {
                                 case 0: DoScriptText(SAY_GRAVITYLAPSE1, m_creature); break;
                                 case 1: DoScriptText(SAY_GRAVITYLAPSE2, m_creature); break;
                                 }
-
-                                // 2) At that point he will put a Gravity Lapse debuff on everyone
-                                for (i = m_creature->getThreatManager().getThreatList().begin(); i!= m_creature->getThreatManager().getThreatList().end();)
-                                {
-                                    Unit* pUnit = Unit::GetUnit((*m_creature), (*i)->getUnitGuid());
-                                    ++i;
-                                    if(pUnit && pUnit->GetTypeId() == TYPEID_PLAYER)
-                                    {
-                                        m_creature->CastSpell(pUnit, SPELL_KNOCKBACK, true);
-                                        //Gravity lapse - needs an exception in Spell system to work
-
-                                        pUnit->CastSpell(pUnit, SPELL_GRAVITY_LAPSE, true, 0, 0, m_creature->GetGUID());
-                                        pUnit->CastSpell(pUnit, SPELL_GRAVITY_LAPSE_AURA, true, 0, 0, m_creature->GetGUID());
-
-                                        //Using packet workaround
-                                        WorldPacket data(12);
-                                        data.SetOpcode(SMSG_MOVE_SET_CAN_FLY);
-                                        data.append(pUnit->GetPackGUID());
-                                        data << uint32(0);
-                                        pUnit->SendMessageToSet(&data, true);
-                                    }
-                                }
+                                //Cast nether vapor summoning
                                 GravityLapse_Timer = 3000;
                                 DoCast(m_creature, SPELL_SUMMON_NETHER_VAPOR);
                                 ++GravityLapse_Phase;
@@ -1250,35 +1240,30 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                                 break;
 
                             case 3:
-                                //Remove flight
-                                Map *map = m_creature->GetMap();
-                                Map::PlayerList const &PlayerList = map->GetPlayers();
-                                if (PlayerList.isEmpty())
-                                    return;
-
-                                Map::PlayerList::const_iterator i;
-                                for (i = PlayerList.begin(); i!= PlayerList.end();)
+                                m_creature->RemoveAurasDueToSpell(SPELL_NETHER_VAPOR);
+                                InGravityLapse = false;
+                                summons.AuraOnEntry(PHOENIX,SPELL_BANISH,false);
+                                if(pInstance)
+                                    pInstance->SetData(DATA_KAELTHASEVENT, 4);	// after Gravity Lapse set back state 4 of KaelthasPhaseEvent
+                                // remove flight aura, can be removed when knockback fixed
+                                for (iter = m_creature->getThreatManager().getThreatList().begin(); iter!= m_creature->getThreatManager().getThreatList().end();)
                                 {
-                                    Player* i_pl = i->getSource();
-                                    Unit* pUnit = Unit::GetUnit((*m_creature), i_pl->GetGUID());
-                                    ++i;
-                                    if(pUnit && pUnit->GetTypeId() == TYPEID_PLAYER)
+                                    Unit* pUnit = Unit::GetUnit((*m_creature), (*iter)->getUnitGuid());
+                                    ++iter;
+                                    if(pUnit && (pUnit->GetTypeId() == TYPEID_PLAYER) && !((Player*)pUnit)->isGameMaster()) //to allow GM's spying :P
                                     {
-                                        //Using packet workaround
-                                        WorldPacket data(12);
+                                        WorldPacket data(12);										// when proper knockback effect known this should be removed
                                         data.SetOpcode(SMSG_MOVE_UNSET_CAN_FLY);
                                         data.append(pUnit->GetPackGUID());
                                         data << uint32(0);
                                         pUnit->SendMessageToSet(&data, true);
                                     }
                                 }
-                                m_creature->RemoveAurasDueToSpell(SPELL_NETHER_VAPOR);
-                                InGravityLapse = false;
-                                summons.AuraOnEntry(PHOENIX,SPELL_BANISH,false);
-                                if(pInstance)
-                                    pInstance->SetData(DATA_KAELTHASEVENT, 4);	// after Gravity Lapse set back state 4 of KaelthasPhaseEvent
-                                GravityLapse_Timer = 60000;
+                                GravityLapse_Timer = 58000;
                                 GravityLapse_Phase = 0;
+                                Phoenix_Timer = 5000 + rand()%5000;
+                                Arcane_Timer2 = 30000;
+                                Arcane2 = false;
                                 DoStartMovement(m_creature->getVictim());
                                 AttackStart(m_creature->getVictim());
                                 break;
@@ -1314,9 +1299,9 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                                 Unit* pUnit = Unit::GetUnit((*m_creature), iPl->GetGUID());
                                 ++i;
                                 float tempZ = iPl->GetPositionZ();
-                                if (tempZ < GRAVITY_Z + 7)
-                                    m_creature->CastSpell(iPl, SPELL_KNOCKBACK, true);
-                                WorldPacket data(12);
+                                if (tempZ < GRAVITY_Z + 7 && !iPl->isGameMaster())
+                                    iPl->CastSpell(iPl, SPELL_KNOCKBACK, true);
+                                WorldPacket data(12);										// when proper knockback effect known this should be removed
                                 data.SetOpcode(SMSG_MOVE_SET_CAN_FLY);
                                 data.append(pUnit->GetPackGUID());
                                 data << uint32(0);
