@@ -9694,7 +9694,7 @@ void Unit::TauntApply(Unit* taunter)
     if(!taunter || (taunter->GetTypeId() == TYPEID_PLAYER && ((Player*)taunter)->isGameMaster()))
         return;
 
-    if(!CanHaveThreatList())
+    if(!CanHaveThreatList() && !((Creature*)this)->isPet())
         return;
 
     Unit *target = getVictim();
