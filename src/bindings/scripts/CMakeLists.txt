@@ -154,6 +154,7 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/deadmines/def_deadmines.h
    scripts/zone/deadmines/deadmines.cpp
    scripts/zone/dun_morogh/dun_morogh.cpp
+   scripts/zone/duskwood/duskwood.cpp
    scripts/zone/dustwallow_marsh/dustwallow_marsh.cpp
    scripts/zone/eastern_plaguelands/eastern_plaguelands.cpp
    scripts/zone/elwynn_forest/elwynn_forest.cpp

@@ -72,12 +72,10 @@ WorldSession::~WorldSession()
         m_Socket = NULL;
     }
 
-    ///- empty incoming packet queue
-    while(!_recvQueue.empty())
-    {
-        WorldPacket *packet = _recvQueue.next ();
+    WorldPacket* packet;
+    while(_recvQueue.next(packet))
         delete packet;
-    }
+
     LoginDatabase.PExecute("UPDATE account SET online = 0 WHERE id = %u;", GetAccountId());
     CharacterDatabase.PExecute("UPDATE characters SET online = 0 WHERE account = %u;", GetAccountId());
 }
@@ -149,7 +147,7 @@ void WorldSession::QueuePacket(WorldPacket* new_packet)
 /// Logging helper for unexpected opcodes
 void WorldSession::logUnexpectedOpcode(WorldPacket* packet, const char *reason)
 {
-    sLog.outError( "SESSION: received unexpected opcode %s (0x%.4X) %s",
+        sLog.outDebug( "SESSION: received unexpected opcode %s (0x%.4X) %s",
         LookupOpcodeName(packet->GetOpcode()),
         packet->GetOpcode(),
         reason);
@@ -160,16 +158,9 @@ bool WorldSession::Update(uint32 /*diff*/)
 {
     ///- Retrieve packets from the receive queue and call the appropriate handlers
     /// not proccess packets if socket already closed
-    while (!_recvQueue.empty() && m_Socket && !m_Socket->IsClosed ())
+    WorldPacket* packet;
+    while (_recvQueue.next(packet) && m_Socket && !m_Socket->IsClosed ())
     {
-        WorldPacket *packet = _recvQueue.next();
-
-        /*#if 1
-        sLog.outError( "MOEP: %s (0x%.4X)",
-                        LookupOpcodeName(packet->GetOpcode()),
-                        packet->GetOpcode());
-        #endif*/
-
         if(packet->GetOpcode() >= NUM_MSG_TYPES)
         {
             sLog.outError( "SESSION: received non-existed opcode %s (0x%.4X)",

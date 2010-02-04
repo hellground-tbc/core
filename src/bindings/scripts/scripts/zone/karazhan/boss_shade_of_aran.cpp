@@ -73,7 +73,6 @@ EndScriptData */
 #define CREATURE_WATER_ELEMENTAL         17167
 #define CREATURE_SHADOW_OF_ARAN          18254
 #define CREATURE_ARAN_BLIZZARD           17161
-#define CREATURE_ARAN_TELEPORT           17170      //waypoint's for blizzard
 
 enum SuperSpell
 {
@@ -90,10 +89,6 @@ float ElementalSpawnPoints[2][4] = {
 float shadowOfAranSpawnPoints[2][8] = {
     {-11143.5, -11152.1, -11167.6, -11181.3, -11186.8, -11178,  -11162.6, -11148.6},// X coord
     {-1914.26, -1928.2,  -1933.8,  -1925.05, -1909.7,  -1895.7, -1895.4,  -1899}    // Y coord
-};
-float blizzardWaypointsSpawnPoints[2][8] = {
-    {-11156.6, -11163.9, -11171.6, -11176.1, -11173.5, -11166.4, -11158.4, -11154.2},  // X coord
-    {-1905.2,  -1901.1,  -1903.6,  -1910.8,  -1918.7,  -1922.9,  -1920.4,  -1913.1}    // Y coord
 };
 
 struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
@@ -135,6 +130,8 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
 
     uint64 shadeOfAranTeleportCreatures[8];
 
+    float blizzardWaypoints[2][8];
+
     WorldLocation wLoc;
 
     uint32 DrinkInturruptTimer;
@@ -145,6 +142,18 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
     bool DrinkInturrupted;
     bool PotionUsed;
     bool ArcaneCasting;
+
+    void SetBlizzardWaypoints()
+    {
+        blizzardWaypoints[0][0] = -11156.6;    blizzardWaypoints[1][0] = -1905.2;
+        blizzardWaypoints[0][1] = -11163.9;    blizzardWaypoints[1][1] = -1901.1;
+        blizzardWaypoints[0][2] = -11171.6;    blizzardWaypoints[1][2] = -1903.6;
+        blizzardWaypoints[0][3] = -11176.1;    blizzardWaypoints[1][3] = -1910.8;
+        blizzardWaypoints[0][4] = -11173.5;    blizzardWaypoints[1][4] = -1918.7;
+        blizzardWaypoints[0][5] = -11166.4;    blizzardWaypoints[1][5] = -1922.9;
+        blizzardWaypoints[0][6] = -11158.4;    blizzardWaypoints[1][6] = -1920.4;
+        blizzardWaypoints[0][7] = -11154.2;    blizzardWaypoints[1][7] = -1913.1;
+    }
 
     void Reset()
     {
@@ -174,6 +183,8 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         PotionUsed              = false;
         ArcaneCasting           = false;
 
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
+
         if(pInstance)
         {
             // Not in progress
@@ -183,15 +194,9 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                 Door->SetGoState(0);
         }
 
-        if(m_creature->isAlive() && !shadeOfAranTeleportCreatures[0])
+        if (m_creature->isAlive())
         {
-            Creature *pCreature;
-            for (uint16 i = 0; i < 8; i++)
-            {
-                pCreature = m_creature->SummonCreature(CREATURE_ARAN_TELEPORT, blizzardWaypointsSpawnPoints[0][i], blizzardWaypointsSpawnPoints[1][i], m_creature->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
-                if(pCreature)
-                    shadeOfAranTeleportCreatures[i] = pCreature->GetGUID();
-            }
+            SetBlizzardWaypoints();
         }
     }
 
@@ -222,27 +227,38 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
             if(GameObject* Door = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_GAMEOBJECT_LIBRARY_DOOR)))
                 Door->SetGoState(0);
         }
+    }
 
-        if (shadeOfAranTeleportCreatures[0])
+    bool PlayerHaveAtiesh()
+    {
+        Map::PlayerList const &PlayerList = ((InstanceMap*)m_creature->GetMap())->GetPlayers();
+        for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
         {
-            Creature *pCreature;
-            for (int16 i = 0; i < 8; i++)
-            {
-                pCreature = Unit::GetCreature(*m_creature, shadeOfAranTeleportCreatures[i]);
-                if(pCreature)
-                    m_creature->Kill(pCreature, false);
-                shadeOfAranTeleportCreatures[i] = 0;
-            }
+            Player* i_pl = i->getSource();
+            if (i_pl->HasItemCount(22632, 1, false) ||
+                i_pl->HasItemCount(22631, 1, false) ||
+                i_pl->HasItemCount(22630, 1, false) ||
+                i_pl->HasItemCount(22589, 1, false))
+                return true;
         }
+
+        return false;
     }
 
     void Aggro(Unit *who)
     {
-        switch(rand()%3)
+        if (PlayerHaveAtiesh())
         {
-        case 0: DoScriptText(SAY_AGGRO1, m_creature); break;
-        case 1: DoScriptText(SAY_AGGRO2, m_creature); break;
-        case 2: DoScriptText(SAY_AGGRO3, m_creature); break;
+            DoScriptText(SAY_ATIESH, m_creature);
+        }
+        else
+        {
+            switch(rand()%3)
+            {
+            case 0: DoScriptText(SAY_AGGRO1, m_creature); break;
+            case 1: DoScriptText(SAY_AGGRO2, m_creature); break;
+            case 2: DoScriptText(SAY_AGGRO3, m_creature); break;
+            }
         }
 
         if(pInstance)
@@ -290,13 +306,18 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
 
     void ChangeBlizzardWaypointsOrder(uint16 change)
     {
-        uint64 temp = 0;
+        float temp[2] = {0, 0};
         for (int16 i = 0; i < change; i++)
         {
-            temp = shadeOfAranTeleportCreatures[0];
+            temp[0] = blizzardWaypoints[0][0];
+            temp[1] = blizzardWaypoints[1][0];
             for (int16 j = 0; j < 7; j++)
-                shadeOfAranTeleportCreatures[j] = shadeOfAranTeleportCreatures[j + 1];
-            shadeOfAranTeleportCreatures[7] = temp;
+            {
+                blizzardWaypoints[0][j] = blizzardWaypoints[0][j + 1];
+                blizzardWaypoints[1][j] = blizzardWaypoints[1][j + 1];
+            }
+            blizzardWaypoints[0][7] = temp[0];
+            blizzardWaypoints[1][7] = temp[1];
         }
     }
 
@@ -312,7 +333,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                 EnterEvadeMode();
             else
                 DoZoneInCombat();
-            
+
             CheckTimer = 3000;
         }else CheckTimer -= diff;
 
@@ -386,7 +407,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                 PotionUsed = true;
                 m_creature->CastSpell(m_creature, SPELL_POTION, false);
             }
-            
+
             if (DrinkInturruptTimer < diff)
             {
                 Drinking = false;
@@ -621,11 +642,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
             return;
 
         if(ArcaneCasting)
-        {
-            for(uint8 i = 0; i<3; i++)
-                if(Spell->Effect[i] == SPELL_EFFECT_INTERRUPT_CAST)
-                    return;
-        }
+            return;
 
         //Inturrupt effect
         m_creature->InterruptNonMeleeSpells(false);
@@ -707,7 +724,7 @@ struct TRINITY_DLL_DECL shadow_of_aranAI : public ScriptedAI
 
 struct TRINITY_DLL_DECL circular_blizzardAI : public ScriptedAI
 {
-    circular_blizzardAI(Creature *c) : ScriptedAI(c) 
+    circular_blizzardAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
         if(pInstance)
@@ -715,7 +732,7 @@ struct TRINITY_DLL_DECL circular_blizzardAI : public ScriptedAI
     }
 
     uint16 currentWaypoint;
-    uint16 waypointTimer; 
+    uint16 waypointTimer;
     uint64 AranGUID;
     WorldLocation wLoc;
     ScriptedInstance *pInstance;
@@ -727,9 +744,9 @@ struct TRINITY_DLL_DECL circular_blizzardAI : public ScriptedAI
             Creature *pAran = Unit::GetCreature(*m_creature, AranGUID);
             if(pAran)
             {
-                Creature *pCreature = Unit::GetCreature(*m_creature, ((boss_aranAI *)pAran->AI())->shadeOfAranTeleportCreatures[0]);
-                if(pCreature)
-                    pCreature->GetPosition(wLoc);
+                wLoc.x = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[0][0];
+                wLoc.y = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[1][0];
+                wLoc.z = pAran->GetPositionZ();
             }
         }
         if(wLoc.x || wLoc.y || wLoc.z)
@@ -757,11 +774,8 @@ struct TRINITY_DLL_DECL circular_blizzardAI : public ScriptedAI
                 Creature *pAran = Unit::GetCreature(*m_creature, AranGUID);
                 if(pAran)
                 {
-                    Creature *pCreature = Unit::GetCreature(*m_creature, ((boss_aranAI *)pAran->AI())->shadeOfAranTeleportCreatures[currentWaypoint]);
-                    if(pCreature)
-                        pCreature->GetPosition(wLoc);
-                    else
-                        m_creature->Kill(m_creature, false);
+                    wLoc.x = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[0][currentWaypoint];
+                    wLoc.y = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[1][currentWaypoint];
                 }
             }
             m_creature->GetMotionMaster()->MovePoint(currentWaypoint, wLoc.x, wLoc.y, wLoc.z);

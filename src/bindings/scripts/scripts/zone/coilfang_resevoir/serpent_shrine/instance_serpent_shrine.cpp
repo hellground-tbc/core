@@ -121,8 +121,8 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
     bool IsEncounterInProgress() const
     {
         for(uint8 i = 0; i < ENCOUNTERS; i++)
-            if(Encounters[i] == IN_PROGRESS) return true;
-
+            if(Encounters[i] == IN_PROGRESS)
+                return true;
         return false;
     }
 
@@ -167,7 +167,7 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
 
     void OpenDoor(uint64 DoorGUID, bool open)
     {
-        if(GameObject *Door = instance->GetGameObjectInMap(DoorGUID))
+        if(GameObject *Door = instance->GetGameObject(DoorGUID))
             Door->SetUInt32Value(GAMEOBJECT_STATE, open ? 0 : 1);
     }
 
@@ -324,7 +324,9 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
             {
                 LurkerSubEvent = LURKER_HOOKED;
                 SetData(DATA_STRANGE_POOL, IN_PROGRESS);//just fished, signal Lurker script to emerge and start fight, we use IN_PROGRESS so it won't get saved and lurker will be alway invis at start if server restarted
-            }else FishingTimer -= diff;
+            }
+            else
+                FishingTimer -= diff;
         }
         //Water checks    
         if(WaterCheckTimer < diff)
@@ -353,7 +355,8 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
                             {
                                 pPlayer->CastSpell(pPlayer, SPELL_SCALDINGWATER,true);
                             }
-                        }else if(Water == WATERSTATE_FRENZY)
+                        }
+                        else if(Water == WATERSTATE_FRENZY)
                         {
                             //spawn frenzy
                             if(DoSpawnFrenzy)
@@ -367,7 +370,7 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
                             }
                         }
                     }                
-                    if(pPlayer->HasAura(SPELL_SCALDINGWATER,0) && pPlayer->GetPositionZ() > -21.434931f)
+                    if(pPlayer->HasAura(SPELL_SCALDINGWATER,0) && pPlayer->GetPositionZ() > -19.9645f)
                         pPlayer->RemoveAurasDueToSpell(SPELL_SCALDINGWATER);
                 }
                                     

@@ -35,7 +35,7 @@ ConfusedMovementGenerator<T>::Initialize(T &unit)
     z = unit.GetPositionZ();
     uint32 mapid=unit.GetMapId();
 
-    Map const* map = MapManager::Instance().GetBaseMap(mapid);
+    Map const *map = unit.GetBaseMap();
 
     i_nextMove = 1;
 

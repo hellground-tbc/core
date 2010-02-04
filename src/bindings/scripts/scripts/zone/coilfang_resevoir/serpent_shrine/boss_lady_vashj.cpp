@@ -194,6 +194,9 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
         InCombat = false;
         CanAttack = false;
 
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
+        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
+
         Unit *remo;
         for(uint8 i = 0; i < 4; i++)
         {
@@ -249,8 +252,8 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
 
     void JustDied(Unit *victim)
     {
-           Paralyze(false);
-           DoScriptText(SAY_DEATH, m_creature);
+        Paralyze(false);
+        DoScriptText(SAY_DEATH, m_creature);
 
         if(pInstance)
             pInstance->SetData(DATA_LADYVASHJEVENT, DONE);
@@ -357,15 +360,16 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
             {
                 CanAttack = true;
                 m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                AggroTimer=19000;
-            }else
+                AggroTimer = 19000;
+            }
+            else
             {
-                AggroTimer-=diff;
+                AggroTimer -= diff;
                 return;
             }
         }
         //to prevent abuses during phase 2
-        Unit *nearTarget = SelectUnit(SELECT_TARGET_NEAREST,0,50.0f,true);
+        Unit *nearTarget = SelectUnit(SELECT_TARGET_NEAREST,0,80.0f,true);
         if(Phase == 2 && !nearTarget && InCombat)
         {
             EnterEvadeMode();
@@ -379,7 +383,9 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
         {
             DoZoneInCombat();
             PulseCombat_Timer = 3000;
-        }else PulseCombat_Timer -= diff;
+        }
+        else
+            PulseCombat_Timer -= diff;
 
         // Paralyze effect
         if(Phase == 2)
@@ -387,8 +393,15 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
            if(ParalyzeCheck_Timer < diff)
            {
                Paralyze(true);
+               if(m_creature->hasUnitState(UNIT_STAT_CHASE))
+               {
+                    m_creature->GetMotionMaster()->Clear();
+                    DoTeleportTo(MIDDLE_X, MIDDLE_Y, MIDDLE_Z);
+               }
                ParalyzeCheck_Timer = 1000;
-           }else ParalyzeCheck_Timer -= diff;
+           }
+           else
+               ParalyzeCheck_Timer -= diff;
         }
     
         if(Phase == 1 || Phase == 3)
@@ -403,7 +416,9 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
 
                 DoCast(m_creature->getVictim(), SPELL_SHOCK_BLAST);
                 ShockBlast_Timer = 8000+rand()%12000;       //random cooldown
-            }else ShockBlast_Timer -= diff;
+            }
+            else
+                ShockBlast_Timer -= diff;
 
             //StaticCharge_Timer
             if(StaticCharge_Timer < diff)
@@ -414,14 +429,15 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
                 target = SelectUnit(SELECT_TARGET_RANDOM, 0);
 
                 if(target && !target->HasAura(SPELL_STATIC_CHARGE_TRIGGER, 0))
-                                                            //cast Static Charge every 2 seconds for 20 seconds
-                        DoCast(target, SPELL_STATIC_CHARGE_TRIGGER);
+                    DoCast(target, SPELL_STATIC_CHARGE_TRIGGER);
 
                 StaticCharge_Timer = 10000+rand()%20000;    //blizzlike
-            }else StaticCharge_Timer -= diff;
+            }
+            else
+                StaticCharge_Timer -= diff;
 
             //Entangle_Timer
-            if (Entangle_Timer < diff)
+            if(Entangle_Timer < diff)
             {
                 if(!Entangle)
                 {
@@ -437,7 +453,9 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
                     Entangle = false;
                     Entangle_Timer = 20000+rand()%5000;
                 }
-            }else Entangle_Timer -= diff;
+            }
+            else
+                Entangle_Timer -= diff;
 
             //Phase 1
             if(Phase == 1)
@@ -487,7 +505,9 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
                     if(SummonSporebat_Timer < 5000)
                         SummonSporebat_Timer = 5000;
 
-                }else SummonSporebat_Timer -= diff;
+                }
+                else
+                    SummonSporebat_Timer -= diff;
             }
 
             //Melee attack
@@ -534,7 +554,9 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
                 DoCast(target, SPELL_FORKED_LIGHTNING);
 
                 ForkedLightning_Timer = 2000+rand()%6000;   //blizzlike
-            }else ForkedLightning_Timer -= diff;
+            }
+            else
+                ForkedLightning_Timer -= diff;
 
             //EnchantedElemental_Timer
             if(EnchantedElemental_Timer < diff)
@@ -550,7 +572,9 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
                 if (Elemental)
                     EnchantedElemental_Timer = 20000+rand()%5000;
 
-            }else EnchantedElemental_Timer -= diff;
+            }
+            else
+                EnchantedElemental_Timer -= diff;
 
             //TaintedElemental_Timer
             if(TaintedElemental_Timer < diff)
@@ -560,7 +584,9 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
                 Tain_Elemental = m_creature->SummonCreature(TAINTED_ELEMENTAL, ElementPos[pos][0], ElementPos[pos][1], ElementPos[pos][2], ElementPos[pos][3], TEMPSUMMON_DEAD_DESPAWN, 0);
 
                 TaintedElemental_Timer = 120000;
-            }else TaintedElemental_Timer -= diff;
+            }
+            else
+                TaintedElemental_Timer -= diff;
 
             //CoilfangElite_Timer
             if(CoilfangElite_Timer < diff)
@@ -568,7 +594,9 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
                 path_nr = urand(0,3);
                 m_creature->SummonCreature(COILFANG_ELITE, StriderNagaWP[path_nr*4][0],StriderNagaWP[path_nr*4][1],StriderNagaWP[path_nr*4][2],0, TEMPSUMMON_DEAD_DESPAWN, 0);
                 CoilfangElite_Timer = 50000+rand()%5000;
-            }else CoilfangElite_Timer -= diff;
+            }
+            else
+                CoilfangElite_Timer -= diff;
 
             //CoilfangStrider_Timer
             if(CoilfangStrider_Timer < diff)
@@ -577,7 +605,9 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
                 m_creature->SummonCreature(COILFANG_STRIDER, StriderNagaWP[pos*4][0],StriderNagaWP[pos*4][1],StriderNagaWP[pos*4][2],0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000);
 
                 CoilfangStrider_Timer = 60000+rand()%10000;
-            }else CoilfangStrider_Timer -= diff;
+            }
+            else
+                CoilfangStrider_Timer -= diff;
 
             //Check_Timer
             if(Check_Timer < diff)
@@ -598,7 +628,9 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
                     m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
                 }
                 Check_Timer = 1000;
-            }else Check_Timer -= diff;
+            }
+            else
+                Check_Timer -= diff;
         }
     }
 };
@@ -955,9 +987,6 @@ struct TRINITY_DLL_DECL mob_coilfang_eliteAI : public ScriptedAI
     {
         if(Move)
         {
-            if(MoveWP == 2)
-                DoZoneInCombat();
-
             if(MoveWP >= 4)
             {
                 m_creature->GetMotionMaster()->Clear(false);
@@ -967,7 +996,7 @@ struct TRINITY_DLL_DECL mob_coilfang_eliteAI : public ScriptedAI
 
                 OnPath = false;
                 
-                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,10,true))
+                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,60,true))
                     DoStartMovement(target);
             
             }else
@@ -978,6 +1007,8 @@ struct TRINITY_DLL_DECL mob_coilfang_eliteAI : public ScriptedAI
 
         if(Check_Timer)
         {
+            DoZoneInCombat();
+
             if(pInstance && pInstance->GetData(DATA_LADYVASHJEVENT) != IN_PROGRESS)
                 m_creature->Kill(m_creature,false);
                
@@ -1072,10 +1103,8 @@ struct TRINITY_DLL_DECL mob_coilfang_striderAI : public ScriptedAI
         if(Move)
         {
             if(MoveWP == 2)
-            {
                 m_creature->CastSpell(m_creature,38257,false);
-                DoZoneInCombat();
-            }
+
             if(MoveWP >= 4)
             {
                 m_creature->SetSpeed(MOVE_WALK,1.5);
@@ -1084,9 +1113,9 @@ struct TRINITY_DLL_DECL mob_coilfang_striderAI : public ScriptedAI
                 m_creature->GetMotionMaster()->Clear(false);
                 OnPath = false;
                 
-                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,10,true))
+                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,60,true))
                     DoStartMovement(target);
-             }
+            }
             else
                 m_creature->GetMotionMaster()->MovePoint(MoveWP,StriderNagaWP[4*path_nr + MoveWP][0],StriderNagaWP[4*path_nr + MoveWP][1],StriderNagaWP[4*path_nr + MoveWP][2]);
 
@@ -1095,6 +1124,8 @@ struct TRINITY_DLL_DECL mob_coilfang_striderAI : public ScriptedAI
         
         if(Check_Timer)
         {
+            DoZoneInCombat();
+
             if(pInstance && pInstance->GetData(DATA_LADYVASHJEVENT) != IN_PROGRESS)
                 m_creature->Kill(m_creature,false);
                

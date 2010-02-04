@@ -221,7 +221,7 @@ class TRINITY_DLL_SPEC Aura
         int32 GetMiscBValue() {return m_spellProto->EffectMiscValueB[m_effIndex];}
 
         SpellEntry const* GetSpellProto() const { return m_spellProto; }
-        uint32 GetId() const{ return m_spellProto->Id; }
+        uint32 GetId() const{ return m_spellProto ? m_spellProto->Id : NULL; }
         uint64 GetCastItemGUID() const { return m_castItemGuid; }
         uint32 GetEffIndex() const{ return m_effIndex; }
         int32 GetBasePoints() const { return m_currentBasePoints; }
@@ -238,8 +238,6 @@ class TRINITY_DLL_SPEC Aura
                 m_permanent=false;
         }
         time_t GetAuraApplyTime() { return m_applyTime; }
-
-        bool IsExpired() const { return !GetAuraDuration() && !(IsPermanent() || IsPassive()); }
         void UpdateAuraDuration();
         void SendAuraDurationForCaster(Player* caster);
         void UpdateSlotCounterAndDuration();
@@ -247,7 +245,7 @@ class TRINITY_DLL_SPEC Aura
 
         uint64 const& GetCasterGUID() const { return m_caster_guid; }
         Unit* GetCaster() const;
-        Unit* GetTarget() const { return m_target; }
+        Unit* GetTarget() const { return m_target ? m_target : NULL; }
         void SetTarget(Unit* target) { m_target = target; }
         void SetLoadedState(uint64 caster_guid,int32 damage,int32 maxduration,int32 duration,int32 charges)
         {
@@ -281,14 +279,16 @@ class TRINITY_DLL_SPEC Aura
         bool IsPersistent() const { return m_isPersistent; }
         bool IsDeathPersistent() const { return m_isDeathPersist; }
         bool IsRemovedOnShapeLost() const { return m_isRemovedOnShapeLost; }
-        bool IsRemoved() const { return m_isRemoved; }
         bool IsInUse() const { return m_in_use;}
         bool StackNotByCaster()
         { 
             return (GetId() == 22959 || 
                     GetId() == 12579 ||
                     GetId() == 15258 ||
-                    GetId() == 25225 );
+                    GetId() == 25225 ||
+                    GetId() == 36478 || 
+                    GetId() == 36482
+                    );
         }
         bool DiffPerCaster()
         { 
@@ -366,7 +366,6 @@ class TRINITY_DLL_SPEC Aura
         bool m_isPersistent:1;
         bool m_isDeathPersist:1;
         bool m_isRemovedOnShapeLost:1;
-        bool m_isRemoved:1;
         bool m_updated:1;
         bool m_in_use:1;                                    // true while in Aura::ApplyModifier call
         bool m_isSingleTargetAura:1;                        // true if it's a single target spell and registered at caster - can change at spell steal for example
@@ -399,9 +398,12 @@ class TRINITY_DLL_SPEC AreaAura : public Aura
 class TRINITY_DLL_SPEC PersistentAreaAura : public Aura
 {
     public:
-        PersistentAreaAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = NULL, Item* castItem = NULL);
+        PersistentAreaAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = NULL, Item* castItem = NULL, uint64 dynObjGUID = 0);
         ~PersistentAreaAura();
         void Update(uint32 diff);
+
+    private:
+        uint64 m_dynamicObjectGUID;
 };
 
 Aura* CreateAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = NULL, Item* castItem = NULL);

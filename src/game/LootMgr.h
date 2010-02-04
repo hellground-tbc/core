@@ -28,6 +28,8 @@
 #include <map>
 #include <vector>
 
+class Creature;
+
 enum RollType
 {
     ROLL_PASS         = 0,
@@ -99,6 +101,8 @@ struct LootItem
     // Constructor, copies most fields from LootStoreItem, generates random count and random suffixes/properties
     // Should be called for non-reference LootStoreItem entries only (mincountOrRef > 0)
     explicit LootItem(LootStoreItem const& li);
+
+    explicit LootItem(uint32 id);
 
     // Basic checks for player/item compatibility - if false no chance to see the item in the loot
     bool AllowedForPlayer(Player const * player) const;
@@ -223,7 +227,7 @@ struct Loot
     uint32 gold;
     uint8 unlootedCount;
 
-    Loot(uint32 _gold = 0) : gold(_gold), unlootedCount(0) {}
+    Loot(uint32 _gold = 0) : gold(_gold), unlootedCount(0), save(false), load(false) {}
     ~Loot() { clear(); }
 
     // if loot becomes invalid this reference is used to inform the listener
@@ -266,15 +270,29 @@ struct Loot
     void generateMoneyLoot(uint32 minAmount, uint32 maxAmount);
     void FillLoot(uint32 loot_id, LootStore const& store, Player* loot_owner);
 
+    void saveLootToDB(Player *owner);
+    void loadLootFromDB(Creature *pCreature);
+    void removeItemFromSavedLoot(uint8 lootIndex);
+
     // Inserts the item into the loot (called by LootTemplate processors)
     void AddItem(LootStoreItem const & item);
 
+    void setCreatureGUID(Creature *pCreature);
+
+    bool save;
+    bool load;
+
     LootItem* LootItemInSlot(uint32 lootslot, Player* player, QuestItem** qitem = NULL, QuestItem** ffaitem = NULL, QuestItem** conditem = NULL);
+
+    LootItem* LootItemInSlot(uint32 lootslot);
+
     private:
         std::set<uint64> PlayersLooting;
         QuestItemMap PlayerQuestItems;
         QuestItemMap PlayerFFAItems;
         QuestItemMap PlayerNonQuestNonFFAConditionalItems;
+
+        uint64 m_creatureGUID;
 
         // All rolls are registered here. They need to know, when the loot is not valid anymore
         LootValidatorRefManager i_LootValidatorRefManager;

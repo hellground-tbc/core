@@ -796,6 +796,8 @@ void Group::CountTheRoll(Rolls::iterator rollI, uint32 NumberOfPlayers)
                     roll->getLoot()->NotifyItemRemoved(roll->itemSlot);
                     --roll->getLoot()->unlootedCount;
                     player->StoreNewItem( dest, roll->itemid, true, item->randomPropertyId);
+                    if (roll->getLoot()->save)
+                        player->SaveToDB();
                 }
                 else
                 {
@@ -841,6 +843,8 @@ void Group::CountTheRoll(Rolls::iterator rollI, uint32 NumberOfPlayers)
                     roll->getLoot()->NotifyItemRemoved(roll->itemSlot);
                     --roll->getLoot()->unlootedCount;
                     player->StoreNewItem( dest, roll->itemid, true, item->randomPropertyId);
+                    if (roll->getLoot()->save)
+                        player->SaveToDB();
                 }
                 else
                 {
@@ -1461,19 +1465,6 @@ void Group::SetDifficulty(uint8 difficulty)
     }
 }
 
-bool Group::InCombatToInstance(uint32 instanceId)
-{
-    for(GroupReference *itr = GetFirstMember(); itr != NULL; itr = itr->next())
-    {
-        Player *pPlayer = itr->getSource();
-        if(pPlayer && pPlayer->getAttackers().size() && pPlayer->GetInstanceId() == instanceId && (pPlayer->GetMap()->IsRaid() || pPlayer->GetMap()->IsHeroic()))
-            for(std::set<Unit*>::const_iterator i = pPlayer->getAttackers().begin(); i!=pPlayer->getAttackers().end(); ++i)
-                if((*i) && (*i)->GetTypeId() == TYPEID_UNIT && ((Creature*)(*i))->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_INSTANCE_BIND)
-                    return true;
-    }
-    return false;
-}
-
 void Group::ResetInstances(uint8 method, Player* SendMsgTo)
 {
     if(isBGGroup())
@@ -1586,6 +1577,7 @@ void Group::UnbindInstance(uint32 mapid, uint8 difficulty, bool unload)
     if(itr != m_boundInstances[difficulty].end())
     {
         if(!unload) CharacterDatabase.PExecute("DELETE FROM group_instance WHERE leaderGuid = '%u' AND instance = '%u'", GUID_LOPART(GetLeaderGUID()), itr->second.save->GetInstanceId());
+        CharacterDatabase.PExecute("DELETE FROM group_saved_loot WHERE instanceId='%u'", (*itr).second.save->GetInstanceId());
         itr->second.save->RemoveGroup(this);                // save can become invalid
         m_boundInstances[difficulty].erase(itr);
     }

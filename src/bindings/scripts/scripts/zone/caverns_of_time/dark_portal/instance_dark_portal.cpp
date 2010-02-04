@@ -152,7 +152,10 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
     void OnCreatureCreate(Creature *creature, uint32 creature_entry)
     {
         if (creature->GetEntry() == C_MEDIVH)
+        {
+            creature->setActive(true);
             MedivhGUID = creature->GetGUID();
+        }
     }
 
     //what other conditions to check?
@@ -317,12 +320,14 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
                     if (temp)
                     {
 
+                        temp->setActive(true);
                         temp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                         temp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
 
 
                         if (Unit* boss = SummonedPortalBoss(temp))
                         {
+                            boss->setActive(true);
                             if (boss->GetEntry() == C_AEONUS)
                             {
                                 boss->AddThreat(medivh,0.0f);

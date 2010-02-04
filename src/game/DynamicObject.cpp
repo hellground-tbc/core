@@ -133,7 +133,7 @@ void DynamicObject::Update(uint32 p_time)
         {
             Trinity::DynamicObjectUpdater notifier(*this,caster);
             VisitNearbyObject(GetRadius(), notifier);
-            m_updateTimer = 500; // is this official-like?
+            m_updateTimer = 600; // is this official-like?
         }else m_updateTimer -= p_time;
     }
 

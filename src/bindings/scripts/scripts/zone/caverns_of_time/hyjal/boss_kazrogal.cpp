@@ -43,6 +43,7 @@ struct TRINITY_DLL_DECL boss_kazrogalAI : public hyjal_trashAI
     uint32 WarStompTimer;
     uint32 MarkTimer;
     uint32 MarkTimerBase;
+    uint32 CheckTimer;
     bool go;
     uint32 pos;
 
@@ -53,6 +54,10 @@ struct TRINITY_DLL_DECL boss_kazrogalAI : public hyjal_trashAI
         WarStompTimer = 15000;
         MarkTimer = 45000;
         MarkTimerBase = 45000;
+        CheckTimer = 3000;
+
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
+        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
 
         if(pInstance && IsEvent)
             pInstance->SetData(DATA_KAZROGALEVENT, NOT_STARTED);
@@ -132,6 +137,13 @@ struct TRINITY_DLL_DECL boss_kazrogalAI : public hyjal_trashAI
         //Return since we have no target
         if (!UpdateVictim() )
             return;
+
+        if(CheckTimer < diff)
+        {
+            DoZoneInCombat();
+            CheckTimer = 3000;
+        }else
+            CheckTimer -= diff;
 
         if(CleaveTimer < diff)
         {

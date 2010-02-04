@@ -193,9 +193,9 @@ void BattleGround::Update(time_t diff)
                     if(!plr)
                         continue;
 
-                    if (!sh)
+                    if (!sh && plr->IsInWorld())
                     {
-                        sh = ObjectAccessor::GetCreature(*plr, itr->first);
+                        sh = plr->GetMap()->GetCreature(itr->first);
                         // only for visual effect
                         if (sh)
                             sh->CastSpell(sh, SPELL_SPIRIT_HEAL, true);   // Spirit Heal, effect 117
@@ -312,7 +312,7 @@ void BattleGround::SendPacketToAll(WorldPacket *packet)
         if(plr)
             plr->GetSession()->SendPacket(packet);
         else
-            sLog.outError("BattleGround: Player " I64FMTD " not found!", itr->first);
+            sLog.outDebug("BattleGround: Player " I64FMTD " not found!", itr->first);
     }
 }
 
@@ -324,7 +324,7 @@ void BattleGround::SendPacketToTeam(uint32 TeamID, WorldPacket *packet, Player *
 
         if(!plr)
         {
-            sLog.outError("BattleGround: Player " I64FMTD " not found!", itr->first);
+            sLog.outDebug("BattleGround: Player " I64FMTD " not found!", itr->first);
             continue;
         }
 
@@ -356,7 +356,7 @@ void BattleGround::PlaySoundToTeam(uint32 SoundID, uint32 TeamID)
 
         if(!plr)
         {
-            sLog.outError("BattleGround: Player " I64FMTD " not found!", itr->first);
+            sLog.outDebug("BattleGround: Player " I64FMTD " not found!", itr->first);
             continue;
         }
 
@@ -379,7 +379,7 @@ void BattleGround::CastSpellOnTeam(uint32 SpellID, uint32 TeamID)
 
         if(!plr)
         {
-            sLog.outError("BattleGround: Player " I64FMTD " not found!", itr->first);
+            sLog.outDebug("BattleGround: Player " I64FMTD " not found!", itr->first);
             continue;
         }
 
@@ -399,7 +399,7 @@ void BattleGround::YellToAll(Creature* creature, const char* text, uint32 langua
         Player *plr = objmgr.GetPlayer(itr->first);
         if(!plr)
         {
-            sLog.outError("BattleGround: Player " I64FMTD " not found!", itr->first);
+            sLog.outDebug("BattleGround: Player " I64FMTD " not found!", itr->first);
             continue;
         }
         creature->BuildMonsterChat(&data,CHAT_MSG_MONSTER_YELL,text,language,creature->GetName(),itr->first);
@@ -416,7 +416,7 @@ void BattleGround::RewardHonorToTeam(uint32 Honor, uint32 TeamID)
 
         if(!plr)
         {
-            sLog.outError("BattleGround: Player " I64FMTD " not found!", itr->first);
+            sLog.outDebug("BattleGround: Player " I64FMTD " not found!", itr->first);
             continue;
         }
 
@@ -441,7 +441,7 @@ void BattleGround::RewardReputationToTeam(uint32 faction_id, uint32 Reputation, 
 
         if(!plr)
         {
-            sLog.outError("BattleGround: Player " I64FMTD " not found!", itr->first);
+            sLog.outDebug("BattleGround: Player " I64FMTD " not found!", itr->first);
             continue;
         }
 
@@ -562,7 +562,7 @@ void BattleGround::EndBattleGround(uint32 winner)
         Player *plr = objmgr.GetPlayer(itr->first);
         if(!plr)
         {
-            sLog.outError("BattleGround: Player " I64FMTD " not found!", itr->first);
+            sLog.outDebug("BattleGround: Player " I64FMTD " not found!", itr->first);
             continue;
         }
 
@@ -953,8 +953,36 @@ void BattleGround::StartBattleGround()
     ///this method should spawn spirit guides and so on
     SetStartTime(0);
     SetLastResurrectTime(0);
+    AnnounceBGStart();
     if(m_IsRated)
         sLog.outArena("Arena match type: %u for Team1Id: %u - Team2Id: %u started.", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE]);
+}
+
+void BattleGround::AnnounceBGStart()
+{
+    if (!sWorld.getConfig(CONFIG_ANNOUNCE_BG_START))
+        return;
+
+    std::stringstream ss;
+    switch (m_TypeID)
+    {
+        case BATTLEGROUND_AV:
+            ss << "Alterac Valley "; break;
+        case BATTLEGROUND_WS:
+            ss << "Warsong Gulch "; break;
+        case BATTLEGROUND_EY:
+            ss << "Eye of the Storm "; break;
+        case BATTLEGROUND_AB:
+            ss << "Arathi Bathin "; break;
+        default: return;
+    }
+
+    ss << "(#" << GetInstanceID() << ") started for levels: ";
+    ss << m_LevelMin;
+    if (m_LevelMin != 70)
+        ss << "-" << m_LevelMax;
+
+    sWorld.SendWorldTextForLevels(m_LevelMin, m_LevelMax, LANG_BG_START_ANNOUNCE, ss.str().c_str());
 }
 
 void BattleGround::AddPlayer(Player *plr)

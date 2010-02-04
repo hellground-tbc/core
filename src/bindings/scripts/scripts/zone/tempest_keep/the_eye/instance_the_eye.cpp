@@ -42,6 +42,8 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
     uint64 GrandAstromancerCapernian;
     uint64 MasterEngineerTelonicus;
     uint64 Kaelthas;
+    std::set<uint64> DoorGUID;
+    std::set<uint64> ExplodeObjectGUID;
     uint64 Astromancer;
     uint64 Alar;
 
@@ -57,6 +59,8 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
         GrandAstromancerCapernian = 0;
         MasterEngineerTelonicus = 0;
         Kaelthas = 0;
+        DoorGUID.clear();
+        ExplodeObjectGUID.clear();
         Astromancer = 0;
         Alar = 0;
 
@@ -70,7 +74,8 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
     bool IsEncounterInProgress() const
     {
         for(uint8 i = 0; i < ENCOUNTERS; i++)
-            if(Encounters[i] == IN_PROGRESS) return true;
+            if(Encounters[i] != DONE && Encounters[i] != NOT_STARTED)
+                return true;
 
         return false;
     }
@@ -86,6 +91,21 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
             case 19622: Kaelthas = creature->GetGUID(); break;
             case 18805: Astromancer = creature->GetGUID(); break;
             case 19514: Alar = creature->GetGUID(); break;
+        }
+    }
+
+    void OnObjectCreate(GameObject *go)
+    {
+        switch(go->GetEntry())
+        {
+        case 184324:
+            DoorGUID.insert(go->GetGUID());
+            break;
+        case 184069: // main window
+        case 184596: // statues
+        case 184597:
+            ExplodeObjectGUID.insert(go->GetGUID());
+            break;
         }
     }
 
@@ -111,7 +131,30 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
             case DATA_ALAREVENT:    AlarEventPhase = data;  Encounters[0] = data;           break;
             case DATA_HIGHASTROMANCERSOLARIANEVENT: Encounters[1] = data;                   break;
             case DATA_VOIDREAVEREVENT:  Encounters[2] = data;                               break;
-            case DATA_KAELTHASEVENT:    KaelthasEventPhase = data;  Encounters[3] = data;   break;
+            case DATA_KAELTHASEVENT:
+                if(data == NOT_STARTED || data == DONE)
+                {
+                    for(std::set<uint64>::iterator i = DoorGUID.begin(); i != DoorGUID.end(); ++i)
+                    {
+                        if(GameObject *Door = instance->GetGameObject(*i))
+                        Door->SetGoState(0);
+                    }
+                }
+                else
+                    for(std::set<uint64>::iterator i = DoorGUID.begin(); i != DoorGUID.end(); ++i)
+                    {
+                        if(GameObject *Door = instance->GetGameObject(*i))
+                        Door->SetGoState(1);
+                    }
+                KaelthasEventPhase = data;
+                Encounters[3] = data;   break;
+            case DATA_EXPLODE:
+                // true - explode / false - reset
+                for(std::set<uint64>::iterator i = ExplodeObjectGUID.begin(); i != ExplodeObjectGUID.end(); ++i)
+                {
+                    if(GameObject *ExplodeObject = instance->GetGameObject(*i))
+                    ExplodeObject->SetGoState(!data);
+                }
         }
         if(data == DONE)
             SaveToDB();

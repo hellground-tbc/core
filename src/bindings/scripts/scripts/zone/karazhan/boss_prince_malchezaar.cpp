@@ -212,6 +212,9 @@ struct TRINITY_DLL_DECL boss_malchezaarAI : public ScriptedAI
         CheckTimer = 3000;
         phase = 1;
 
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
+        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
+
         if(pInstance)
         {
            GameObject* Door = GameObject::GetGameObject((*m_creature),pInstance->GetData64(DATA_GAMEOBJECT_NETHER_DOOR));

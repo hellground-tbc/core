@@ -37,15 +37,7 @@
 # define _ENDIAN_STRING "little-endian"
 #endif
 
-#if PLATFORM == PLATFORM_WINDOWS
-# ifdef _WIN64
-#  define _FULLVERSION _PACKAGENAME "Rev: " _REVISION  " Hash: " _HASH " (Win64," _ENDIAN_STRING ")"
-# else
-#  define _FULLVERSION _PACKAGENAME "Rev: " _REVISION  " Hash: " _HASH " (Win32," _ENDIAN_STRING ")"
-# endif
-#else
-#  define _FULLVERSION _PACKAGENAME "Rev: " _REVISION  " Hash: " _HASH " (Unix," _ENDIAN_STRING ")"
-#endif
+#define _FULLVERSION _PACKAGENAME "Rev: " _REVISION
 
 #define DEFAULT_PLAYER_LIMIT 100
 #define DEFAULT_WORLDSERVER_PORT 8085                       //8129

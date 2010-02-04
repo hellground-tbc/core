@@ -278,6 +278,7 @@ Player::Player (WorldSession *session): Unit()
 
     m_comboTarget = 0;
     m_comboPoints = 0;
+    m_finishingComboPoints = 0;
 
     m_usedTalentCount = 0;
 
@@ -1032,6 +1033,73 @@ void Player::SetDrunkValue(uint16 newDrunkenValue, uint32 itemId)
     SendMessageToSet(&data, true);
 }
 
+void Player::CreateCharmAI()
+{
+    switch(getClass())
+    {
+        case CLASS_WARRIOR:
+            i_AI = new WarriorAI(this);
+            break;
+        case CLASS_PALADIN:
+            i_AI = new PaladinAI(this);
+            break;
+        case CLASS_HUNTER:
+            i_AI = new HunterAI(this);
+            break;
+        case CLASS_ROGUE:
+            i_AI = new RogueAI(this);
+            break;
+        case CLASS_PRIEST:
+            i_AI = new PriestAI(this);
+            break;
+        case CLASS_SHAMAN:
+            i_AI = new ShamanAI(this);
+            break;
+        case CLASS_MAGE:
+            i_AI = new MageAI(this);
+            break;
+        case CLASS_WARLOCK:
+            i_AI = new WarlockAI(this);
+            break;
+        case CLASS_DRUID:
+            i_AI = new DruidAI(this);
+            break;
+        default:
+            sLog.outError("Unhandled class type, while creating charmAI");
+            break;
+    }
+
+    if(i_AI)
+        i_AI->Reset();
+}
+
+void Player::DeleteCharmAI()
+{
+    if(i_AI)
+    {
+        CharmAI(false);
+        delete i_AI;
+        i_AI = NULL;
+    }
+}
+
+void Player::CharmAI(bool apply)
+{
+    if(apply)
+    {
+        if(!i_AI)
+            CreateCharmAI();
+
+        if(!i_AI)
+            return;
+
+        i_AI->Reset();
+        IsAIEnabled = true;
+    }
+    else
+        IsAIEnabled = false;
+}
+
 void Player::Update( uint32 p_time )
 {
     if(!IsInWorld())
@@ -1072,12 +1140,8 @@ void Player::Update( uint32 p_time )
 
     CheckExploreSystem();
 
-    if(isCharmed())
-    {
-        if(Unit *charmer = GetCharmer())
-            if(charmer->GetTypeId() == TYPEID_UNIT && charmer->isAlive())
-                UpdateCharmedAI();
-    }
+    if(IsAIEnabled)
+        i_AI->UpdateAI(p_time);
 
     // Update items that have just a limited lifetime
     if (now>m_Last_tick)
@@ -1278,8 +1342,9 @@ void Player::Update( uint32 p_time )
     {
         if (p_time >= m_DetectInvTimer)
         {
-            m_DetectInvTimer = 3000;
+
             HandleStealthedUnitsDetection();
+            m_DetectInvTimer = 3000;
         }
         else
             m_DetectInvTimer -= p_time;
@@ -1627,7 +1692,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
     // ObjectAccessor won't find the flag.
     if (duel && GetMapId()!=mapid)
     {
-        GameObject* obj = ObjectAccessor::GetGameObject(*this, GetUInt64Value(PLAYER_DUEL_ARBITER));
+        GameObject* obj = GetMap()->GetGameObject(GetUInt64Value(PLAYER_DUEL_ARBITER));
         if (obj)
             DuelComplete(DUEL_FLED);
     }
@@ -1718,7 +1783,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         // If the map is not created, assume it is possible to enter it.
         // It will be created in the WorldPortAck.
         Map *map = MapManager::Instance().FindMap(mapid);
-        if (!map ||  map->CanEnter(this))
+        if (!map || map->CanEnter(this))
         {
             SetSelection(0);
 
@@ -1814,6 +1879,10 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         else
             return false;
     }
+
+    if(Group *pGroup = GetGroup())
+        pGroup->UpdatePlayerOutOfRange(this);
+
     return true;
 }
 
@@ -2017,10 +2086,88 @@ bool Player::CanInteractWithNPCs(bool alive) const
     return true;
 }
 
+Creature* Player::GetNPCIfCanInteractWith(uint64 guid, uint32 npcflagmask)
+{
+    // unit checks
+    if(!guid)
+        return NULL;
+
+    // exist
+    Creature *unit = GetMap()->GetCreature(guid);
+    if(!unit)
+        return NULL;
+
+    // player check
+    if(!CanInteractWithNPCs(!unit->isSpiritService()))
+        return NULL;
+
+    if(IsHostileTo(unit))
+        return NULL;
+    
+    // appropriate npc type
+    if(npcflagmask && !unit->HasFlag( UNIT_NPC_FLAGS, npcflagmask ))
+        return NULL;
+
+    // alive or spirit healer
+    if(!unit->isAlive() && (!unit->isSpiritService() || isAlive() ))
+        return NULL;
+
+    // not allow interaction under control
+    if(unit->GetCharmerGUID())
+        return NULL;
+
+    // not enemy
+    if(unit->IsHostileTo(this))
+        return NULL;
+
+    // not unfriendly
+    FactionTemplateEntry const* factionTemplate = sFactionTemplateStore.LookupEntry(unit->getFaction());
+    if(factionTemplate)
+    {
+        FactionEntry const* faction = sFactionStore.LookupEntry(factionTemplate->faction);
+        if( faction->reputationListID >= 0 && GetReputationRank(faction) <= REP_UNFRIENDLY)
+            return NULL;
+    }
+
+    // not too far
+    if(!unit->IsWithinDistInMap(this, INTERACTION_DISTANCE))
+        return NULL;
+
+    return unit;
+}
+
+GameObject* Player::GetGameObjectIfCanInteractWith(uint64 guid, GameobjectTypes type) const
+{
+    if(GameObject *gObject = GetMap()->GetGameObject(guid))
+    {
+        if(gObject->GetGoType() == type)
+        {
+            float maxdist;
+            switch(type)
+            {
+                case GAMEOBJECT_TYPE_GUILD_BANK:
+                case GAMEOBJECT_TYPE_MAILBOX:
+                    maxdist = 10.0f;
+                    break;
+                case GAMEOBJECT_TYPE_FISHINGHOLE:
+                    maxdist = 20.0f + CONTACT_DISTANCE;       // max spell range
+                    break;
+                default:
+                    maxdist = INTERACTION_DISTANCE;
+                    break;
+            }
+
+            if (gObject->IsWithinDistInMap(this, maxdist))
+                return gObject;
+        }
+    }
+    return NULL;
+}
+
 bool Player::IsUnderWater() const
 {
     return IsInWater() &&
-        GetPositionZ() < (MapManager::Instance().GetBaseMap(GetMapId())->GetWaterLevel(GetPositionX(),GetPositionY())-2);
+        GetPositionZ() < (GetBaseMap()->GetWaterLevel(GetPositionX(),GetPositionY())-2);
 }
 
 void Player::SetInWater(bool apply)
@@ -2371,11 +2518,11 @@ void Player::InitStatsForLevel(bool reapplyMods)
     SetFloatValue(UNIT_FIELD_MINRANGEDDAMAGE, 0.0f );
     SetFloatValue(UNIT_FIELD_MAXRANGEDDAMAGE, 0.0f );
 
-    SetUInt32Value(UNIT_FIELD_ATTACK_POWER,            0 );
-    SetUInt32Value(UNIT_FIELD_ATTACK_POWER_MODS,       0 );
+    SetInt32Value(UNIT_FIELD_ATTACK_POWER,            0 );
+    SetInt32Value(UNIT_FIELD_ATTACK_POWER_MODS,       0 );
     SetFloatValue(UNIT_FIELD_ATTACK_POWER_MULTIPLIER,0.0f);
-    SetUInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER,     0 );
-    SetUInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER_MODS,0 );
+    SetInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER,     0 );
+    SetInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER_MODS,0 );
     SetFloatValue(UNIT_FIELD_RANGED_ATTACK_POWER_MULTIPLIER,0.0f);
 
     // Base crit values (will be recalculated in UpdateAllStats() at loading and in _ApplyAllStatBonuses() at reset
@@ -2467,7 +2614,7 @@ void Player::SendInitialSpells()
 
     for (PlayerSpellMap::const_iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
     {
-        if(itr->second->state == PLAYERSPELL_REMOVED)
+        if(!itr->second || itr->second->state == PLAYERSPELL_REMOVED)
             continue;
 
         if(!itr->second->active || itr->second->disabled)
@@ -2661,8 +2808,9 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
                 return false;
             case PLAYERSPELL_REMOVED:                       // re-learning removed not saved spell
             {
-                delete itr->second;
+                PlayerSpell *spell = itr->second;
                 m_spells.erase(itr);
+                delete spell;
                 state = PLAYERSPELL_CHANGED;
                 break;                                      // need re-add
             }
@@ -5372,17 +5520,17 @@ void Player::SaveRecallPosition()
 
 void Player::SendMessageToSet(WorldPacket *data, bool self, bool to_possessor)
 {
-    MapManager::Instance().GetMap(GetMapId(), this)->MessageBroadcast(this, data, self, to_possessor);
+    GetMap()->MessageBroadcast(this, data, self, to_possessor);
 }
 
 void Player::SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool to_possessor)
 {
-    MapManager::Instance().GetMap(GetMapId(), this)->MessageDistBroadcast(this, data, dist, self, to_possessor);
+    GetMap()->MessageDistBroadcast(this, data, dist, self, to_possessor);
 }
 
 void Player::SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool to_possessor, bool own_team_only)
 {
-    MapManager::Instance().GetMap(GetMapId(), this)->MessageDistBroadcast(this, data, dist, self, to_possessor, own_team_only);
+    GetMap()->MessageDistBroadcast(this, data, dist, self, to_possessor, own_team_only);
 }
 
 void Player::SendDirectMessage(WorldPacket *data)
@@ -5398,7 +5546,7 @@ void Player::CheckExploreSystem()
     if (isInFlight())
         return;
 
-    uint16 areaFlag=MapManager::Instance().GetBaseMap(GetMapId())->GetAreaFlag(GetPositionX(),GetPositionY());
+    uint16 areaFlag = GetBaseMap()->GetAreaFlag(GetPositionX(),GetPositionY());
     if(areaFlag==0xffff)
         return;
     int offset = areaFlag / 32;
@@ -6461,13 +6609,13 @@ void Player::CheckDuelDistance(time_t currTime)
         return;
 
     uint64 duelFlagGUID = GetUInt64Value(PLAYER_DUEL_ARBITER);
-    GameObject* obj = ObjectAccessor::GetGameObject(*this, duelFlagGUID);
+    GameObject* obj = GetMap()->GetGameObject(duelFlagGUID);
     if(!obj)
         return;
 
     if(duel->outOfBound == 0)
     {
-        if(!IsWithinDistInMap(obj, 50))
+        if(!IsWithinDistInMap(obj, 75))
         {
             duel->outOfBound = currTime;
 
@@ -6477,7 +6625,7 @@ void Player::CheckDuelDistance(time_t currTime)
     }
     else
     {
-        if(IsWithinDistInMap(obj, 40))
+        if(IsWithinDistInMap(obj, 75))
         {
             duel->outOfBound = 0;
 
@@ -6533,7 +6681,7 @@ void Player::DuelComplete(DuelCompleteType type)
     duel->opponent->GetSession()->SendPacket(&data);*/
 
     //Remove Duel Flag object
-    GameObject* obj = ObjectAccessor::GetGameObject(*this, GetUInt64Value(PLAYER_DUEL_ARBITER));
+    GameObject* obj = GetMap()->GetGameObject(GetUInt64Value(PLAYER_DUEL_ARBITER));
     if(obj)
         duel->initiator->RemoveGameObject(obj,true);
 
@@ -7374,8 +7522,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
     if (IS_GAMEOBJECT_GUID(guid))
     {
         sLog.outDebug("       IS_GAMEOBJECT_GUID(guid)");
-        GameObject *go =
-            ObjectAccessor::GetGameObject(*this, guid);
+        GameObject* go = GetMap()->GetGameObject(guid);
 
         // not check distance for GO in case owned GO (fishing bobber case, for example)
         // And permit out of range GO with no owner in case fishing hole
@@ -7514,7 +7661,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
     }
     else
     {
-        Creature *creature = ObjectAccessor::GetCreature(*this, guid);
+        Creature *creature = GetMap()->GetCreature(guid);
 
         // must be in range and creature must be alive for pickpocket and must be dead for another loot
         if (!creature || creature->isAlive()!=(loot_type == LOOT_PICKPOCKETING) || !creature->IsWithinDistInMap(this,INTERACTION_DISTANCE))
@@ -7566,10 +7713,14 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             if(!creature->lootForBody)
             {
                 creature->lootForBody = true;
-                loot->clear();
+                if (!loot->load)
+                    loot->clear();
 
                 if (uint32 lootid = creature->GetCreatureInfo()->lootid)
+                {
+                    loot->setCreatureGUID(creature);
                     loot->FillLoot(lootid, LootTemplates_Creature, recipient);
+                }
 
                 loot->generateMoneyLoot(creature->GetCreatureInfo()->mingold,creature->GetCreatureInfo()->maxgold);
 
@@ -12079,7 +12230,7 @@ void Player::PrepareQuestMenu( uint64 guid )
     Object *pObject;
     QuestRelations* pObjectQR;
     QuestRelations* pObjectQIR;
-    Creature *pCreature = ObjectAccessor::GetCreature(*this, guid);
+    Creature *pCreature = GetMap()->GetCreature(guid);
     if( pCreature )
     {
         pObject = (Object*)pCreature;
@@ -12088,7 +12239,7 @@ void Player::PrepareQuestMenu( uint64 guid )
     }
     else
     {
-        GameObject *pGameObject = ObjectAccessor::GetGameObject(*this, guid);
+        GameObject *pGameObject = GetMap()->GetGameObject(guid);
         if( pGameObject )
         {
             pObject = (Object*)pGameObject;
@@ -12165,7 +12316,7 @@ void Player::SendPreparedQuest( uint64 guid )
         qe._Delay = 0;
         qe._Emote = 0;
         std::string title = "";
-        Creature *pCreature = ObjectAccessor::GetCreature(*this, guid);
+        Creature *pCreature = GetMap()->GetCreature(guid);
         if( pCreature )
         {
             uint32 textid = pCreature->GetNpcTextId();
@@ -12229,7 +12380,7 @@ Quest const * Player::GetNextQuest( uint64 guid, Quest const *pQuest )
     QuestRelations* pObjectQR;
     QuestRelations* pObjectQIR;
 
-    Creature *pCreature = ObjectAccessor::GetCreature(*this, guid);
+    Creature *pCreature = GetMap()->GetCreature(guid);
     if( pCreature )
     {
         pObject = (Object*)pCreature;
@@ -12238,7 +12389,7 @@ Quest const * Player::GetNextQuest( uint64 guid, Quest const *pQuest )
     }
     else
     {
-        GameObject *pGameObject = ObjectAccessor::GetGameObject(*this, guid);
+        GameObject *pGameObject = GetMap()->GetGameObject(guid);
         if( pGameObject )
         {
             pObject = (Object*)pGameObject;
@@ -12518,7 +12669,7 @@ void Player::AddQuest( Quest const *pQuest, Object *questGiver )
 
     //starting initial quest script
     if(questGiver && pQuest->GetQuestStartScript()!=0)
-        sWorld.ScriptsStart(sQuestStartScripts, pQuest->GetQuestStartScript(), questGiver, this);
+        GetMap()->ScriptsStart(sQuestStartScripts, pQuest->GetQuestStartScript(), questGiver, this);
 
     UpdateForQuestsGO();
 }
@@ -13686,7 +13837,7 @@ void Player::SendQuestReward( Quest const *pQuest, uint32 XP, Object * questGive
     GetSession()->SendPacket( &data );
 
     if (pQuest->GetQuestCompleteScript() != 0)
-        sWorld.ScriptsStart(sQuestEndScripts, pQuest->GetQuestCompleteScript(), questGiver, this);
+        GetMap()->ScriptsStart(sQuestEndScripts, pQuest->GetQuestCompleteScript(), questGiver, this);
 }
 
 void Player::SendQuestFailed( uint32 quest_id )
@@ -14523,7 +14674,7 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
 
 bool Player::isAllowedToLoot(Creature* creature)
 {
-    if(creature->isDead() && !creature->IsDamageEnoughForLootingAndReward())
+    if(creature->isDead() && !creature->IsDamageEnoughForLootingAndReward() && !creature->loot.load)
        return false;
 
     if(Player* recipient = creature->GetLootRecipient())
@@ -15995,6 +16146,7 @@ void Player::_SaveQuestStatus()
             case QUEST_UNCHANGED:
                 break;
         };
+
         i->second.uState = QUEST_UNCHANGED;
     }
 }
@@ -16034,9 +16186,13 @@ void Player::_SaveSpells()
     for (PlayerSpellMap::const_iterator itr = m_spells.begin(), next = m_spells.begin(); itr != m_spells.end(); itr = next)
     {
         ++next;
-        if (itr->second->state == PLAYERSPELL_REMOVED || itr->second->state == PLAYERSPELL_CHANGED)
+
+        if(!itr->second)
+            continue;
+
+        if(itr->second->state == PLAYERSPELL_REMOVED || itr->second->state == PLAYERSPELL_CHANGED)
             CharacterDatabase.PExecute("DELETE FROM character_spell WHERE guid = '%u' and spell = '%u'", GetGUIDLow(), itr->first);
-        if (itr->second->state == PLAYERSPELL_NEW || itr->second->state == PLAYERSPELL_CHANGED)
+        if(itr->second->state == PLAYERSPELL_NEW || itr->second->state == PLAYERSPELL_CHANGED)
             CharacterDatabase.PExecute("INSERT INTO character_spell (guid,spell,slot,active,disabled) VALUES ('%u', '%u', '%u','%u','%u')", GetGUIDLow(), itr->first, itr->second->slotId,itr->second->active ? 1 : 0,itr->second->disabled ? 1 : 0);
 
         if (itr->second->state == PLAYERSPELL_REMOVED)
@@ -16539,6 +16695,7 @@ void Player::Uncharm()
     else
     {
         charm->RemoveSpellsCausingAura(SPELL_AURA_MOD_CHARM);
+        charm->RemoveSpellsCausingAura(SPELL_AURA_AOE_CHARM);
         charm->RemoveSpellsCausingAura(SPELL_AURA_MOD_POSSESS_PET);
         charm->RemoveSpellsCausingAura(SPELL_AURA_MOD_POSSESS);
     }
@@ -17013,21 +17170,35 @@ void Player::HandleStealthedUnitsDetection()
     std::list<Unit*> stealthedUnits;
     Trinity::AnyStealthedCheck u_check;
     Trinity::UnitListSearcher<Trinity::AnyStealthedCheck > searcher(stealthedUnits, u_check);
-    VisitNearbyObject(World::GetMaxVisibleDistance(), searcher);
+    VisitNearbyObject(MAX_PLAYER_STEALTH_DETECT_RANGE, searcher);
 
-    for (std::list<Unit*>::iterator i = stealthedUnits.begin(); i != stealthedUnits.end(); ++i)
+    for (std::list<Unit*>::const_iterator i = stealthedUnits.begin(); i != stealthedUnits.end(); ++i)
     {
-        if (!HaveAtClient(*i) && canSeeOrDetect(*i, true))
+        if((*i) == this)
+            continue;
+
+        bool hasAtClient = HaveAtClient((*i));
+        bool hasDetected = canSeeOrDetect(*i, true);
+
+        if (hasDetected)
         {
-            (*i)->SendUpdateToPlayer(this);
-            m_clientGUIDs.insert((*i)->GetGUID());
+            if(!hasAtClient)
+            {
+                (*i)->SendUpdateToPlayer(this);
+                m_clientGUIDs.insert((*i)->GetGUID());
 
-            #ifdef TRINITY_DEBUG
-            if((sLog.getLogFilter() & LOG_FILTER_VISIBILITY_CHANGES)==0)
-                sLog.outDebug("Object %u (Type: %u) is detected in stealth by player %u. Distance = %f",(*i)->GetGUIDLow(),(*i)->GetTypeId(),GetGUIDLow(),GetDistance(*i));
-            #endif
-
-            SendInitialVisiblePackets(*i);
+                // target aura duration for caster show only if target exist at caster client
+                // send data at target visibility change (adding to client)
+                SendInitialVisiblePackets(*i);
+            }
+        }
+        else
+        {
+            if(hasAtClient)
+            {
+                (*i)->DestroyForPlayer(this);
+                m_clientGUIDs.erase((*i)->GetGUID());
+            }
         }
     }
 }
@@ -17271,7 +17442,7 @@ bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint
         return false;
     }
 
-    Creature *pCreature = ObjectAccessor::GetNPCIfCanInteractWith(*this, vendorguid,UNIT_NPC_FLAG_VENDOR);
+    Creature *pCreature = GetNPCIfCanInteractWith(vendorguid, UNIT_NPC_FLAG_VENDOR);
     if (!pCreature)
     {
         sLog.outDebug( "WORLD: BuyItemFromVendor - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(vendorguid)) );
@@ -17836,6 +18007,7 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
     if(GetGUID() == u->GetCharmerOrOwnerGUID())
         return true;
 
+    Map& _map = *u->GetMap();
     // Grid dead/alive checks
     // non visible at grid for any stealth state
     if(!u->IsVisibleInGridForPlayer(this))
@@ -17849,24 +18021,24 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
     // different visible distance checks
     if(isInFlight())                                     // what see player in flight
     {
-        if (!target->IsWithinDistInMap(u,World::GetMaxVisibleDistanceInFlight()+(inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), is3dDistance))
+        if (!target->IsWithinDistInMap(u, _map.GetVisibilityDistance() + (inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), is3dDistance))
             return false;
     }
     else if(!u->isAlive())                                     // distance for show body
     {
-        if (!target->IsWithinDistInMap(u,World::GetMaxVisibleDistanceForObject()+(inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), is3dDistance))
+        if (!target->IsWithinDistInMap(u, _map.GetVisibilityDistance() + (inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), is3dDistance))
             return false;
     }
     else if(u->GetTypeId()==TYPEID_PLAYER)                     // distance for show player
     {
         // Players far than max visible distance for player or not in our map are not visible too
-        if (!at_same_transport && !target->IsWithinDistInMap(u,World::GetMaxVisibleDistanceForPlayer()+(inVisibleList ? World::GetVisibleUnitGreyDistance() : 0.0f), is3dDistance))
+        if (!at_same_transport && !target->IsWithinDistInMap(u, _map.GetVisibilityDistance() + (inVisibleList ? World::GetVisibleUnitGreyDistance() : 0.0f), is3dDistance))
             return false;
     }
     else if(u->GetCharmerOrOwnerGUID())                        // distance for show pet/charmed
     {
         // Pet/charmed far than max visible distance for player or not in our map are not visible too
-        if (!target->IsWithinDistInMap(u,World::GetMaxVisibleDistanceForPlayer()+(inVisibleList ? World::GetVisibleUnitGreyDistance() : 0.0f), is3dDistance))
+        if (!target->IsWithinDistInMap(u, _map.GetVisibilityDistance() + (inVisibleList ? World::GetVisibleUnitGreyDistance() : 0.0f), is3dDistance))
             return false;
     }
     else                                                    // distance for show creature
@@ -17874,7 +18046,7 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
         // Units far than max visible distance for creature or not in our map are not visible too
         if (!target->IsWithinDistInMap(u
             , u->isActiveObject() ? (MAX_VISIBILITY_DISTANCE - (inVisibleList ? 0.0f : World::GetVisibleUnitGreyDistance()))
-            : (World::GetMaxVisibleDistanceForCreature() + (inVisibleList ? World::GetVisibleUnitGreyDistance() : 0.0f))
+            : ( _map.GetVisibilityDistance() + (inVisibleList ? World::GetVisibleUnitGreyDistance() : 0.0f))
             , is3dDistance))
             return false;
     }
@@ -18187,11 +18359,20 @@ void Player::ClearComboPoints()
 
     m_comboPoints = 0;
 
+    Unit* target = ObjectAccessor::GetUnit(*this,m_comboTarget);
+
+    if(m_finishingComboPoints && target) {
+        AddComboPoints(target, m_finishingComboPoints);
+        m_finishingComboPoints = 0;
+        return;
+    }
+    m_finishingComboPoints = 0;
+
     SendComboPoints();
 
-    if(Unit* target = ObjectAccessor::GetUnit(*this,m_comboTarget))
+    if(target)
         target->RemoveComboPointHolder(GetGUIDLow());
-
+    
     m_comboTarget = 0;
 }
 
@@ -19500,38 +19681,6 @@ bool Player::isTotalImmunity()
         }
     }
     return false;
-}
-
-void Player::UpdateCharmedAI()
-{
-    //This should only called in Player::Update
-    Creature *charmer = (Creature*)GetCharmer();
-
-    //kill self if charm aura has infinite duration
-    if(charmer->IsInEvadeMode())
-    {
-        AuraList const& auras = GetAurasByType(SPELL_AURA_MOD_CHARM);
-        for(AuraList::const_iterator iter = auras.begin(); iter != auras.end(); ++iter)
-            if((*iter)->GetCasterGUID() == charmer->GetGUID() && (*iter)->IsPermanent())
-            {
-                charmer->DealDamage(this, GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-                return;
-            }
-    }
-
-    if(!charmer->isInCombat())
-        GetMotionMaster()->MoveFollow(charmer, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
-
-    Unit *target = getVictim();
-    if(!target || !charmer->canAttack(target))
-    {
-        target = charmer->SelectNearestTarget();
-        if(!target)
-            return;
-
-        GetMotionMaster()->MoveChase(target);
-        Attack(target, true);
-    }
 }
 
 void Player::AddGlobalCooldown(SpellEntry const *spellInfo, Spell const *spell)

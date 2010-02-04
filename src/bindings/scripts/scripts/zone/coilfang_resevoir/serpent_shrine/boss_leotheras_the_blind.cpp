@@ -264,6 +264,7 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
 
     void StartEvent()
     {
+        DoZoneInCombat();
         DoScriptText(SAY_AGGRO, m_creature);
         if(pInstance)
             pInstance->SetData(DATA_LEOTHERASTHEBLINDEVENT, IN_PROGRESS);
@@ -407,7 +408,7 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
     void Aggro(Unit *who)
     {
         if(m_creature->HasAura(AURA_BANISH, 0))
-        return;
+            return;
 
         m_creature->LoadEquipment(m_creature->GetEquipmentId());
     }
@@ -417,11 +418,13 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
         //Return since we have no target
         if (m_creature->HasAura(AURA_BANISH, 0) || !UpdateVictim())
         {
-            if(BanishTimer<diff)
+            if(BanishTimer < diff)
             {
-                CheckBanish();//no need to check every update tick
+                CheckBanish();         //no need to check every update tick
                 BanishTimer = 1000;
-            }else BanishTimer -= diff;
+            }
+            else
+                BanishTimer -= diff;
             return;
         }
  
@@ -449,7 +452,9 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
                     m_creature->GetMotionMaster()->MovePoint(0,newTarget->GetPositionX(),newTarget->GetPositionY(),newTarget->GetPositionZ());
                 }
                 Whirlwind_Timer = 2000;
-            }else Whirlwind_Timer -= diff;
+            }
+            else
+                Whirlwind_Timer -= diff;
 
         // reseting after changing forms and after ending whirlwind
         if(NeedThreatReset && !m_creature->HasAura(SPELL_WHIRLWIND, 0))
@@ -459,7 +464,10 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
                 InnerDemons_Timer = 30000;
             else
                 Whirlwind_Timer =  15000;
-            if(Immune && !DemonForm) TauntImmune(false);
+
+            if(Immune && !DemonForm)
+                TauntImmune(false);
+
             NeedThreatReset = false;
             DoResetThreat();
             m_creature->GetMotionMaster()->Clear();
@@ -471,7 +479,9 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
         {
             DoCast(m_creature, SPELL_BERSERK);
             EnrageUsed = true;
-        }else Berserk_Timer -= diff;
+        }
+        else
+            Berserk_Timer -= diff;
 
         if(!DemonForm)
         {
@@ -485,7 +495,9 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
                     // while whirlwinding this variable is used to countdown target's change
                     Whirlwind_Timer = 2000;
                     NeedThreatReset = true;
-                }else Whirlwind_Timer -= diff;
+                }
+                else
+                    Whirlwind_Timer -= diff;
             }
             //Switch_Timer
 
@@ -502,7 +514,9 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
                     DemonForm = true;
                     NeedThreatReset = true;
                     SwitchToDemon_Timer = 45000;
-                }else SwitchToDemon_Timer -= diff;
+                }
+                else
+                    SwitchToDemon_Timer -= diff;
             DoMeleeAttackIfReady();
         }
         else

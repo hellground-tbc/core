@@ -34,6 +34,18 @@ MapInstanced::MapInstanced(uint32 id, time_t expiry) : Map(id, expiry, 0, 0)
     memset(&GridMapReference, 0, MAX_NUMBER_OF_GRIDS*MAX_NUMBER_OF_GRIDS*sizeof(uint16));
 }
 
+void MapInstanced::InitVisibilityDistance()
+{
+    if(m_InstancedMaps.empty())
+        return;
+
+    //initialize visibility distances for all instance copies
+    for (InstancedMaps::iterator i = m_InstancedMaps.begin(); i != m_InstancedMaps.end(); ++i)
+    {
+        (*i).second->InitVisibilityDistance();
+    }
+}
+
 void MapInstanced::Update(const uint32& t)
 {
     // take care of loaded GridMaps (when unused, unload it!)
@@ -57,24 +69,12 @@ void MapInstanced::Update(const uint32& t)
     }
 }
 
-void MapInstanced::MoveAllCreaturesInMoveList()
+void MapInstanced::DelayedUpdate(const uint32 diff)
 {
     for (InstancedMaps::iterator i = m_InstancedMaps.begin(); i != m_InstancedMaps.end(); ++i)
-    {
-        i->second->MoveAllCreaturesInMoveList();
-    }
+        i->second->DelayedUpdate(diff);
 
-    Map::MoveAllCreaturesInMoveList();
-}
-
-void MapInstanced::RemoveAllObjectsInRemoveList()
-{
-    for (InstancedMaps::iterator i = m_InstancedMaps.begin(); i != m_InstancedMaps.end(); ++i)
-    {
-        i->second->RemoveAllObjectsInRemoveList();
-    }
-
-    Map::RemoveAllObjectsInRemoveList();
+    Map::DelayedUpdate(diff);
 }
 
 bool MapInstanced::RemoveBones(uint64 guid, float x, float y)

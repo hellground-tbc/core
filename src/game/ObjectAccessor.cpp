@@ -82,79 +82,15 @@ ObjectAccessor::ObjectAccessor() {}
 ObjectAccessor::~ObjectAccessor() {}
 
 Creature*
-ObjectAccessor::GetNPCIfCanInteractWith(Player const &player, uint64 guid, uint32 npcflagmask)
-{
-    // unit checks
-    if (!guid)
-        return NULL;
-
-    // exist
-    Creature *unit = GetCreature(player, guid);
-    if (!unit)
-        return NULL;
-
-    // player check
-    if(!player.CanInteractWithNPCs(!unit->isSpiritService()))
-        return NULL;
-
-    if(player.IsHostileTo(unit))
-        return NULL;
-    
-    // appropriate npc type
-    if(npcflagmask && !unit->HasFlag( UNIT_NPC_FLAGS, npcflagmask ))
-        return NULL;
-
-    // alive or spirit healer
-    if(!unit->isAlive() && (!unit->isSpiritService() || player.isAlive() ))
-        return NULL;
-
-    // not allow interaction under control
-    if(unit->GetCharmerGUID())
-        return NULL;
-
-    // not enemy
-    if( unit->IsHostileTo(&player))
-        return NULL;
-
-    // not unfriendly
-    FactionTemplateEntry const* factionTemplate = sFactionTemplateStore.LookupEntry(unit->getFaction());
-    if(factionTemplate)
-    {
-        FactionEntry const* faction = sFactionStore.LookupEntry(factionTemplate->faction);
-        if( faction->reputationListID >= 0 && player.GetReputationRank(faction) <= REP_UNFRIENDLY)
-            return NULL;
-    }
-
-    // not too far
-    if(!unit->IsWithinDistInMap(&player,INTERACTION_DISTANCE))
-        return NULL;
-
-    return unit;
-}
-
-Creature*
 ObjectAccessor::GetCreatureOrPet(WorldObject const &u, uint64 guid)
 {
-    if(Creature *unit = GetPet(guid))
-        return unit;
-
-    return GetCreature(u, guid);
-}
-
-Creature*
-ObjectAccessor::GetCreature(WorldObject const &u, uint64 guid)
-{
-    Creature * ret = GetObjectInWorld(guid, (Creature*)NULL);
-    if(!ret)
+    if(IS_PLAYER_GUID(guid))
         return NULL;
+ 
+    if(IS_PET_GUID(guid))
+        return GetPet(guid);
 
-    if(ret->GetMapId() != u.GetMapId())
-        return NULL;
-
-    if(ret->GetInstanceId() != u.GetInstanceId())
-        return NULL;
-
-    return ret;
+    return u.GetMap()->GetCreature(guid);
 }
 
 Unit*
@@ -195,13 +131,13 @@ Object* ObjectAccessor::GetObjectByTypeMask(Player const &p, uint64 guid, uint32
 
     if(typemask & TYPEMASK_GAMEOBJECT)
     {
-        obj = GetGameObject(p,guid);
+        obj = p.GetMap()->GetGameObject(guid);
         if(obj) return obj;
     }
 
     if(typemask & TYPEMASK_DYNAMICOBJECT)
     {
-        obj = GetDynamicObject(p,guid);
+        obj = p.GetMap()->GetDynamicObject(guid);
         if(obj) return obj;
     }
 
@@ -212,22 +148,6 @@ Object* ObjectAccessor::GetObjectByTypeMask(Player const &p, uint64 guid, uint32
     }
 
     return NULL;
-}
-
-GameObject*
-ObjectAccessor::GetGameObject(WorldObject const &u, uint64 guid)
-{
-    GameObject * ret = GetObjectInWorld(guid, (GameObject*)NULL);
-    if(ret && ret->GetMapId() != u.GetMapId()) ret = NULL;
-    return ret;
-}
-
-DynamicObject*
-ObjectAccessor::GetDynamicObject(Unit const &u, uint64 guid)
-{
-    DynamicObject * ret = GetObjectInWorld(guid, (DynamicObject*)NULL);
-    if(ret && ret->GetMapId() != u.GetMapId()) ret = NULL;
-    return ret;
 }
 
 Player*
@@ -350,7 +270,9 @@ ObjectAccessor::_buildChangeObjectForPlayer(WorldObject *obj, UpdateDataMapType 
     WorldObjectChangeAccumulator notifier(*obj, update_players);
     TypeContainerVisitor<WorldObjectChangeAccumulator, WorldTypeMapContainer > player_notifier(notifier);
     CellLock<GridReadGuard> cell_lock(cell, p);
-    cell_lock->Visit(cell_lock, player_notifier, *obj->GetMap());
+    //cell_lock->Visit(cell_lock, player_notifier, *obj->GetMap());
+    Map& map = *obj->GetMap();
+    cell_lock->Visit(cell_lock, player_notifier, map, *obj, map.GetVisibilityDistance());
 }
 
 Pet*

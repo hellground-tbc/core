@@ -270,7 +270,7 @@ void WorldSession::HandleGameObjectUseOpcode( WorldPacket & recv_data )
     recv_data >> guid;
 
     sLog.outDebug( "WORLD: Recvd CMSG_GAMEOBJ_USE Message [guid=%u]", GUID_LOPART(guid));
-    GameObject *obj = ObjectAccessor::GetGameObject(*_player, guid);
+    GameObject *obj = GetPlayer()->GetMap()->GetGameObject(guid);
 
     if(!obj)
         return;
@@ -357,6 +357,28 @@ void WorldSession::HandleCancelAuraOpcode( WorldPacket& recvPacket)
     // not allow remove non positive spells and spells with attr SPELL_ATTR_CANT_CANCEL
     if(!IsPositiveSpell(spellId) || (spellInfo->Attributes & SPELL_ATTR_CANT_CANCEL))
         return;
+
+    // lifebloom must delete final heal effect
+    if (spellInfo->SpellFamilyName == SPELLFAMILY_DRUID && (spellInfo->SpellFamilyFlags & 0x1000000000LL) )
+    {
+        Unit::AuraMap::iterator iter;
+        while((iter = _player->m_Auras.find(Unit::spellEffectPair(spellId, 1))) != _player->m_Auras.end())
+        {
+            _player->m_modAuras[SPELL_AURA_DUMMY].remove(iter->second);
+
+            Aura* Aur = iter->second;
+            _player->m_Auras.erase(iter);
+            ++_player->m_removedAuras; // internal count used by unit update
+
+            delete Aur;
+
+            if( _player->m_Auras.empty() )
+                iter = _player->m_Auras.end();
+            else
+                iter = _player->m_Auras.begin();
+
+        }
+    }
 
     // channeled spell case (it currently casted then)
     if(IsChanneledSpell(spellInfo))
@@ -454,7 +476,7 @@ void WorldSession::HandleTotemDestroy( WorldPacket& recvPacket)
     if(!_player->m_TotemSlot[slotId])
         return;
 
-    Creature* totem = ObjectAccessor::GetCreature(*_player,_player->m_TotemSlot[slotId]);
+    Creature* totem = GetPlayer()->GetMap()->GetCreature(_player->m_TotemSlot[slotId]);
     // Don't unsummon sentry totem
     if(totem && totem->isTotem() && totem->GetEntry() != SENTRY_TOTEM_ENTRY)
         ((Totem*)totem)->UnSummon();

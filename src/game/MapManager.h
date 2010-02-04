@@ -27,6 +27,7 @@
 #include "Common.h"
 #include "Map.h"
 #include "GridStates.h"
+#include "MapUpdater.h"
 
 class Transport;
 
@@ -40,16 +41,15 @@ class TRINITY_DLL_DECL MapManager : public Trinity::Singleton<MapManager, Trinit
     public:
 
         Map* GetMap(uint32, const WorldObject* obj);
-        Map* FindMap(uint32 mapid) { return _findMap(mapid); }
-        Map* FindMap(uint32 mapid, uint32 instanceId);
+        Map const* CreateBaseMap(uint32 id) const { return const_cast<MapManager*>(this)->_createBaseMap(id); }
+        Map* FindMap(uint32 mapid, uint32 instanceId = 0) const;
 
         // only const version for outer users
-        Map const* GetBaseMap(uint32 id) const { return const_cast<MapManager*>(this)->_GetBaseMap(id); }
         void DeleteInstance(uint32 mapid, uint32 instanceId);
 
         inline uint16 GetAreaFlag(uint32 mapid, float x, float y) const
         {
-            Map const* m = GetBaseMap(mapid);
+            Map const* m = CreateBaseMap(mapid);
             return m->GetAreaFlag(x, y);
         }
         inline uint32 GetAreaId(uint32 mapid, float x, float y) { return Map::GetAreaId(GetAreaFlag(mapid, x, y),mapid); }
@@ -110,6 +110,7 @@ class TRINITY_DLL_DECL MapManager : public Trinity::Singleton<MapManager, Trinit
         void RemoveBonesFromMap(uint32 mapid, uint64 guid, float x, float y);
         inline uint32 GenerateInstanceId() { return ++i_MaxInstanceId; }
         void InitMaxInstanceId();
+        void InitializeVisibilityDistanceInfo();
 
         /* statistics */
         uint32 GetNumInstances();
@@ -127,7 +128,7 @@ class TRINITY_DLL_DECL MapManager : public Trinity::Singleton<MapManager, Trinit
         MapManager(const MapManager &);
         MapManager& operator=(const MapManager &);
 
-        Map* _GetBaseMap(uint32 id);
+        Map* _createBaseMap(uint32 id);
         Map* _findMap(uint32 id) const
         {
             MapMapType::const_iterator iter = i_maps.find(id);
@@ -139,6 +140,7 @@ class TRINITY_DLL_DECL MapManager : public Trinity::Singleton<MapManager, Trinit
         MapMapType i_maps;
         IntervalTimer i_timer;
 
+        MapUpdater m_updater;
         uint32 i_MaxInstanceId;
 };
 #endif

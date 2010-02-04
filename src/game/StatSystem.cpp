@@ -326,8 +326,8 @@ void Player::UpdateAttackPowerAndDamage(bool ranged )
 
     float attPowerMultiplier = GetModifierValue(unitMod, TOTAL_PCT) - 1.0f;
 
-    SetUInt32Value(index, (uint32)base_attPower);           //UNIT_FIELD_(RANGED)_ATTACK_POWER field
-    SetUInt32Value(index_mod, (uint32)attPowerMod);         //UNIT_FIELD_(RANGED)_ATTACK_POWER_MODS field
+    SetInt32Value(index, (uint32)base_attPower);           //UNIT_FIELD_(RANGED)_ATTACK_POWER field
+    SetInt32Value(index_mod, (uint32)attPowerMod);         //UNIT_FIELD_(RANGED)_ATTACK_POWER_MODS field
     SetFloatValue(index_mult, attPowerMultiplier);          //UNIT_FIELD_(RANGED)_ATTACK_POWER_MULTIPLIER field
 
     //automatically update weapon damage after attack power modification
@@ -403,6 +403,12 @@ void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, fl
     {
         weapon_mindamage += GetAmmoDPS() * att_speed;
         weapon_maxdamage += GetAmmoDPS() * att_speed;
+    }
+
+    if(attType == BASE_ATTACK)
+    {
+        int32 ModSpeed = GetTotalAuraModifier(SPELL_AURA_MOD_ATTACKSPEED);
+        base_pct = base_pct * 100.0f/(100.0f+float(ModSpeed/2));
     }
 
     min_damage = ((base_value + weapon_mindamage) * base_pct + total_value) * total_pct;
@@ -720,7 +726,26 @@ void Creature::UpdateMaxPower(Powers power)
 
 void Creature::UpdateAttackPowerAndDamage(bool ranged)
 {
-    //automatically update weapon damage after attack power modification
+    UnitMods unitMod = ranged ? UNIT_MOD_ATTACK_POWER_RANGED : UNIT_MOD_ATTACK_POWER;
+    uint16 index = UNIT_FIELD_ATTACK_POWER;
+    uint16 index_mod = UNIT_FIELD_ATTACK_POWER_MODS;
+    uint16 index_mult = UNIT_FIELD_ATTACK_POWER_MULTIPLIER;
+
+    if(ranged)
+    {
+        index = UNIT_FIELD_RANGED_ATTACK_POWER;
+        index_mod = UNIT_FIELD_RANGED_ATTACK_POWER_MODS;
+        index_mult = UNIT_FIELD_RANGED_ATTACK_POWER_MULTIPLIER;
+    }
+
+    float base_attPower  = GetModifierValue(unitMod, BASE_VALUE) * GetModifierValue(unitMod, BASE_PCT);
+    float attPowerMod = GetModifierValue(unitMod, TOTAL_VALUE);
+    float attPowerMultiplier = GetModifierValue(unitMod, TOTAL_PCT) - 1.0f;
+
+    SetInt32Value(index, (uint32)base_attPower);           //UNIT_FIELD_(RANGED)_ATTACK_POWER field
+    SetInt32Value(index_mod, (uint32)attPowerMod);         //UNIT_FIELD_(RANGED)_ATTACK_POWER_MODS field
+    SetFloatValue(index_mult, attPowerMultiplier);          //UNIT_FIELD_(RANGED)_ATTACK_POWER_MULTIPLIER field
+
     if(ranged)
         UpdateDamagePhysical(RANGED_ATTACK);
     else
@@ -962,9 +987,9 @@ void Pet::UpdateAttackPowerAndDamage(bool ranged)
     float attPowerMultiplier = GetModifierValue(unitMod, TOTAL_PCT) - 1.0f;
 
     //UNIT_FIELD_(RANGED)_ATTACK_POWER field
-    SetUInt32Value(UNIT_FIELD_ATTACK_POWER, (uint32)base_attPower);
+    SetInt32Value(UNIT_FIELD_ATTACK_POWER, (uint32)base_attPower);
     //UNIT_FIELD_(RANGED)_ATTACK_POWER_MODS field
-    SetUInt32Value(UNIT_FIELD_ATTACK_POWER_MODS, (uint32)attPowerMod);
+    SetInt32Value(UNIT_FIELD_ATTACK_POWER_MODS, (uint32)attPowerMod);
     //UNIT_FIELD_(RANGED)_ATTACK_POWER_MULTIPLIER field
     SetFloatValue(UNIT_FIELD_ATTACK_POWER_MULTIPLIER, attPowerMultiplier);
 
@@ -1010,6 +1035,9 @@ void Pet::UpdateDamagePhysical(WeaponAttackType attType)
 
     float weapon_mindamage = GetWeaponDamageRange(BASE_ATTACK, MINDAMAGE);
     float weapon_maxdamage = GetWeaponDamageRange(BASE_ATTACK, MAXDAMAGE);
+
+    int32 ModSpeed = GetTotalAuraModifier(SPELL_AURA_MOD_ATTACKSPEED);
+    base_pct = base_pct * 100.0f/(100.0f+float(ModSpeed/2));
 
     float mindamage = ((base_value + weapon_mindamage) * base_pct + total_value) * total_pct;
     float maxdamage = ((base_value + weapon_maxdamage) * base_pct + total_value) * total_pct;

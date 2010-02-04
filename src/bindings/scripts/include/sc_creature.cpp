@@ -669,18 +669,17 @@ void ScriptedAI::DoZoneInCombat(Unit* pUnit)
         return;
     }
 
-    if (!pUnit->CanHaveThreatList() || pUnit->getThreatManager().isThreatListEmpty())
+    if (!pUnit->CanHaveThreatList() || !pUnit->isAlive() /*pUnit->getThreatManager().isThreatListEmpty()*/)
     {
         error_log("TSCR: DoZoneInCombat called for creature that either cannot have threat list or has empty threat list (pUnit entry = %d)", pUnit->GetTypeId() == TYPEID_UNIT ? ((Creature*)pUnit)->GetEntry() : 0);
-
         return;
     }
 
     Map::PlayerList const &PlayerList = map->GetPlayers();
     for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
     {
-        if (Player* i_pl = i->getSource())
-            if (i_pl->isAlive())
+        if(Player* i_pl = i->getSource())
+            if(i_pl->isAlive())
             {
                 pUnit->SetInCombatWith(i_pl);
                 i_pl->SetInCombatWith(pUnit);

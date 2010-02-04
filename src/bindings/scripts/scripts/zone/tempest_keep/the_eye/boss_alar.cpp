@@ -40,6 +40,9 @@ EndScriptData */
 #define CREATURE_FLAME_PATCH_ALAR     20602 // Flame Patch - every 30 sec in phase 2
 #define SPELL_FLAME_PATCH             35380 //
 
+#define ASHTONGUE_RUSE                39527
+#define QUEST_RUSEOFTHEASHTONGUE      10946
+
 static float waypoint[6][3] =
 {
     {340.15, 58.65, 17.71},
@@ -147,6 +150,14 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
         m_creature->SetDisplayId(m_creature->GetNativeDisplayId());
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+
+        Map::PlayerList const &PlayerList = ((InstanceMap*)m_creature->GetMap())->GetPlayers();
+        for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+        {
+            Player* i_pl = i->getSource();
+            if(i_pl && i_pl->HasAura(ASHTONGUE_RUSE,0) && i_pl->GetQuestStatus(QUEST_RUSEOFTHEASHTONGUE) == QUEST_STATUS_INCOMPLETE)
+                i_pl->AreaExploredOrEventHappens(QUEST_RUSEOFTHEASHTONGUE);
+        }
 
         if(pInstance)
             pInstance->SetData(DATA_ALAREVENT, DONE);
@@ -499,13 +510,13 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
             else
             {
                 Unit *target = NULL;
-                target = m_creature->SelectNearestTarget(6);
+                target = m_creature->SelectNearestTarget(6.0f);
                 if(target)
                     m_creature->AI()->AttackStart(target);
                 else
                 {
-                    m_creature->CastSpell(m_creature, SPELL_FLAME_BUFFET, true);
-                    m_creature->setAttackTimer(BASE_ATTACK, 1500);
+                    m_creature->CastSpell(m_creature, SPELL_FLAME_BUFFET, true); // true no casting time
+                    m_creature->setAttackTimer(BASE_ATTACK, 2000);
                 }
             }
         }

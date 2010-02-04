@@ -560,6 +560,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 31579:                                         // Arcane Empowerment Rank1 talent aura with one positive and one negative (check not needed in wotlk)
         case 31582:                                         // Arcane Empowerment Rank2
         case 31583:                                         // Arcane Empowerment Rank3
+        case 37441:                                         // Improved Arcane Blast
             return true;
         case 46392:                                         // Focused Assault
         case 46393:                                         // Brutal Assault
@@ -2338,6 +2339,17 @@ void SpellMgr::LoadSpellCustomAttr()
         if(spellInfo->SpellFamilyName == SPELLFAMILY_DRUID && spellInfo->SpellFamilyFlags & 0x1000LL)
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
 
+        // Modify SchoolMask to allow them critically heal
+        // Healthstones
+        if(spellInfo->SpellFamilyName == SPELLFAMILY_WARLOCK && spellInfo->SpellFamilyFlags & 0x10000LL)
+            spellInfo->SchoolMask = SPELL_SCHOOL_MASK_SHADOW;
+        // Earth Shield proc
+        else if (spellInfo->Id == 379)
+        {
+            spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
+            spellInfo->SchoolMask = SPELL_SCHOOL_MASK_NATURE;
+        }
+
         switch(i)
         {
         case 26029: // dark glare
@@ -2808,8 +2820,12 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
             return DIMINISHING_FEAR;
         else if (spellproto->Mechanic == MECHANIC_CHARM   || spellproto->EffectMechanic[i] == MECHANIC_CHARM)
             return DIMINISHING_CHARM;
-        else if (spellproto->Mechanic == MECHANIC_SILENCE || spellproto->EffectMechanic[i] == MECHANIC_SILENCE)
-            return DIMINISHING_SILENCE;
+        /*
+            Patch 3.0.8 (2009-01-20): All Silence spells now have diminishing returns.
+            This includes: Arcane Torrent, Garrote silence effect, Improved Counterspell effect, Improved Kick effect, Silence, Gag Order, Silencing Shot, Spell Lock, and Strangulate.
+        */
+        //else if (spellproto->Mechanic == MECHANIC_SILENCE || spellproto->EffectMechanic[i] == MECHANIC_SILENCE)
+        //    return DIMINISHING_SILENCE;
         else if (spellproto->Mechanic == MECHANIC_DISARM  || spellproto->EffectMechanic[i] == MECHANIC_DISARM)
             return DIMINISHING_DISARM;
         else if (spellproto->Mechanic == MECHANIC_FREEZE  || spellproto->EffectMechanic[i] == MECHANIC_FREEZE)

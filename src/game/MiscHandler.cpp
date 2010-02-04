@@ -98,7 +98,7 @@ void WorldSession::HandleGossipSelectOptionOpcode( WorldPacket & recv_data )
     GameObject *go = NULL;
     if(IS_CREATURE_GUID(guid))
     {
-        unit = ObjectAccessor::GetNPCIfCanInteractWith(*_player, guid, UNIT_NPC_FLAG_NONE);
+        unit = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_NONE);
         if (!unit)
         {
             sLog.outDebug( "WORLD: HandleGossipSelectOptionOpcode - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(guid)) );
@@ -107,7 +107,7 @@ void WorldSession::HandleGossipSelectOptionOpcode( WorldPacket & recv_data )
     }
     else if(IS_GAMEOBJECT_GUID(guid))
     {
-        go = ObjectAccessor::GetGameObject(*_player, guid);
+        go = _player->GetMap()->GetGameObject(guid);
         if (!go)
         {
             sLog.outDebug( "WORLD: HandleGossipSelectOptionOpcode - GameObject (GUID: %u) not found.", uint32(GUID_LOPART(guid)) );

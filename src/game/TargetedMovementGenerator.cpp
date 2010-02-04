@@ -95,6 +95,9 @@ template<class T>
 void
 TargetedMovementGenerator<T>::_adaptSpeedToTarget(T &owner)
 {
+    if(!owner.GetOwner())
+        return;
+
     float lowerCritDist = 3*i_offset;
     float upperCritDist = 6*i_offset;
 

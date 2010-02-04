@@ -99,7 +99,7 @@ struct TRINITY_DLL_DECL npc_medivh_bmAI : public ScriptedAI
             pInstance->SetData(TYPE_MEDIVH,IN_PROGRESS);
             m_creature->CastSpell(m_creature,SPELL_CHANNEL,false);
             Check_Timer = 5000;
-                 }
+        }
         else if (who->GetTypeId() == TYPEID_UNIT && m_creature->IsWithinDistInMap(who, 15.0f))
         {
             if (pInstance->GetData(TYPE_MEDIVH) != IN_PROGRESS)
@@ -293,6 +293,7 @@ struct TRINITY_DLL_DECL npc_time_riftAI : public ScriptedAI
 
         if (Summon)
         {
+            Summon->setActive(true);
             if (Unit *temp = Unit::GetUnit(*m_creature,pInstance->GetData64(DATA_MEDIVH)))
                 Summon->AddThreat(temp,0.0f);
         }

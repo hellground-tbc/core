@@ -60,13 +60,9 @@ void UnitAI::DoMeleeAttackIfReady()
     }
 }
 
-//Enable PlayerAI when charmed
-void PlayerAI::OnCharmed(bool apply) { me->IsAIEnabled = apply; }
 
-//Disable CreatureAI when charmed
 void CreatureAI::OnCharmed(bool apply)
 {
-    //me->IsAIEnabled = !apply;*/
     me->NeedChangeAI = true;
     me->IsAIEnabled = false;
 }
@@ -105,28 +101,3 @@ void CreatureAI::EnterEvadeMode()
     if(me->isAlive())
         me->GetMotionMaster()->MoveTargetedHome();
 }
-
-void SimpleCharmedAI::UpdateAI(const uint32 /*diff*/)
-{
-    Creature *charmer = (Creature*)me->GetCharmer();
-
-    //kill self if charm aura has infinite duration
-    if(charmer->IsInEvadeMode())
-    {
-        Unit::AuraList const& auras = me->GetAurasByType(SPELL_AURA_MOD_CHARM);
-        for(Unit::AuraList::const_iterator iter = auras.begin(); iter != auras.end(); ++iter)
-            if((*iter)->GetCasterGUID() == charmer->GetGUID() && (*iter)->IsPermanent())
-            {
-                charmer->Kill(me);
-                return;
-            }
-    }
-
-    if(!charmer->isInCombat())
-        me->GetMotionMaster()->MoveFollow(charmer, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
-
-    Unit *target = me->getVictim();
-    if(!target || !charmer->canAttack(target))
-        AttackStart(charmer->SelectNearestTarget());
-}
-

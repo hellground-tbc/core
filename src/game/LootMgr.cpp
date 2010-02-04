@@ -293,6 +293,21 @@ bool LootStoreItem::IsValid(LootStore const& store, uint32 entry) const
 // --------- LootItem ---------
 //
 
+LootItem::LootItem(uint32 id)
+{
+    itemid      = id;
+    count       = 1;
+    conditionId = 0;
+    freeforall  = false;
+    needs_quest = false;
+    randomSuffix = GenerateEnchSuffixFactor(itemid);
+    randomPropertyId = Item::GenerateItemRandomPropertyId(itemid);
+    is_looted = 0;
+    is_blocked = 0;
+    is_underthreshold = 0;
+    is_counted = 0;
+}
+
 // Constructor, copies most fields from LootStoreItem and generates random count
 LootItem::LootItem(LootStoreItem const& li)
 {
@@ -365,9 +380,136 @@ void Loot::AddItem(LootStoreItem const & item)
     }
 }
 
+void Loot::setCreatureGUID(Creature *pCreature)
+{
+    if (!pCreature || !pCreature->isWorldBoss())
+        return;
+
+    save = true;
+    m_creatureGUID = pCreature->GetGUID();
+}
+
+void Loot::loadLootFromDB(Creature *pCreature)
+{
+    if (!pCreature)
+        return;
+    m_creatureGUID = pCreature->GetGUID();
+
+    QueryResult *result = CharacterDatabase.PQuery("SELECT itemId, itemCount FROM group_saved_loot WHERE creatureId='%u' AND instanceId='%u'", pCreature->GetEntry(), pCreature->GetInstanceId());
+    if (result)
+    {
+        do
+        {
+            Field *fields = result->Fetch();
+
+            uint32 itemid    = fields[0].GetUInt32();
+            uint32 itemcount = fields[1].GetUInt32();
+            for (uint8 i = 0; i < itemcount; ++i)
+            {
+                LootItem item(itemid);
+                items.push_back(item);
+                unlootedCount++;
+            }
+        }
+        while (result->NextRow());
+        delete result;
+
+        load = true;
+
+        // make body visible to loot
+        pCreature->setDeathState(JUST_DIED);
+        pCreature->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+        pCreature->SetVisibility(VISIBILITY_ON);
+    }
+}
+
+void Loot::removeItemFromSavedLoot(uint8 lootIndex)
+{
+    if (!m_creatureGUID)
+        return;
+
+    LootItem const *item = LootItemInSlot(lootIndex);
+    if (!item)
+        return;
+
+    uint32 p_guid = 0;
+    if (PlayersLooting.begin() != PlayersLooting.end())
+        p_guid = *PlayersLooting.begin();
+
+    Player *pPlayer = ObjectAccessor::FindPlayer(p_guid);
+    if (!pPlayer)
+        return;
+
+    Creature *pCreature = ObjectAccessor::GetCreatureOrPet(*pPlayer, m_creatureGUID);
+    if (!pCreature)
+        return;
+
+    QueryResult *result = CharacterDatabase.PQuery("SELECT itemCount FROM group_saved_loot WHERE itemId='%u' AND instanceId='%u' AND creatureId='%u'", item->itemid, pCreature->GetInstanceId(), pCreature->GetEntry());
+    if (!result)
+        return;
+
+    // it should be single line
+    uint32 count = 0;
+    {
+        Field *fields = result->Fetch();
+        count = fields[0].GetUInt32();
+    }
+    delete result;
+
+    CharacterDatabase.BeginTransaction();
+    if (count != 1)
+    {
+        count--;
+        CharacterDatabase.PExecute("UPDATE group_saved_loot SET itemCount='%u' WHERE instanceId='%u' AND itemId='%u' AND creatureId='%u'", count, pCreature->GetInstanceId(), item->itemid, pCreature->GetEntry());
+    }
+    else
+        CharacterDatabase.PExecute("DELETE FROM group_saved_loot WHERE instanceId='%u' AND itemId='%u' AND creatureId='%u'", pCreature->GetInstanceId(), item->itemid, pCreature->GetEntry());
+    CharacterDatabase.CommitTransaction();
+}
+
+void Loot::saveLootToDB(Player *owner)
+{
+    if (!m_creatureGUID)
+        return;
+
+    Creature *pCreature = ObjectAccessor::GetCreatureOrPet(*owner, m_creatureGUID);
+    if (!pCreature)
+        return;
+
+    std::map<uint32, uint32> item_count;
+    CharacterDatabase.BeginTransaction();
+    // delete old saved loot
+    CharacterDatabase.PExecute("DELETE FROM group_saved_loot WHERE creatureId='%u' AND instanceId='%u'", pCreature->GetEntry(), pCreature->GetInstanceId());
+    for (std::vector<LootItem>::iterator iter = items.begin(); iter != items.end(); ++iter)
+    {
+        LootItem const *item = &(*iter);
+
+        if (item->is_looted || item->conditionId)
+            continue;
+
+        ItemPrototype const *item_proto = objmgr.GetItemPrototype(item->itemid);
+        if (!item_proto || item_proto->Flags & ITEM_FLAGS_PARTY_LOOT)
+            continue;
+
+        if (item_proto->Quality >= ITEM_QUALITY_RARE)
+        {
+            item_count[item->itemid] += 1;
+            uint32 count = item_count[item->itemid];
+            if (count != 1)
+                CharacterDatabase.PExecute("UPDATE group_saved_loot SET itemCount='%u' WHERE itemId='%u' AND instanceId='%u'", count, item->itemid, pCreature->GetInstanceId());
+            else
+                CharacterDatabase.PExecute("INSERT INTO group_saved_loot VALUES ('%u', '%u', '%u', '%u')", pCreature->GetEntry(), pCreature->GetInstanceId(), item->itemid, count);
+        }
+    }
+    CharacterDatabase.CommitTransaction();
+}
+
 // Calls processor of corresponding LootTemplate (which handles everything including references)
 void Loot::FillLoot(uint32 loot_id, LootStore const& store, Player* loot_owner)
 {
+    if (load)
+        return;
+
     LootTemplate const* tab = store.GetLootFor(loot_id);
 
     if (!tab)
@@ -410,6 +552,8 @@ void Loot::FillLoot(uint32 loot_id, LootStore const& store, Player* loot_owner)
             FillNonQuestNonFFAConditionalLoot(pl);
         }
     }
+    if (save)
+        saveLootToDB(loot_owner);
 }
 
 QuestItemList* Loot::FillFFALoot(Player* player)
@@ -513,6 +657,7 @@ void Loot::NotifyItemRemoved(uint8 lootIndex)
         else
             PlayersLooting.erase(i);
     }
+    removeItemFromSavedLoot(lootIndex);
 }
 
 void Loot::NotifyMoneyRemoved()
@@ -566,6 +711,9 @@ void Loot::NotifyQuestItemRemoved(uint8 questIndex)
 
 void Loot::generateMoneyLoot( uint32 minAmount, uint32 maxAmount )
 {
+    if (load)
+        return;
+
     if (maxAmount > 0)
     {
         if (maxAmount <= minAmount)
@@ -639,6 +787,15 @@ LootItem* Loot::LootItemInSlot(uint32 lootSlot, Player* player, QuestItem **qite
 
     return item;
 }
+
+
+LootItem* Loot::LootItemInSlot(uint32 lootSlot)
+{
+    if (lootSlot >= items.size())
+        return NULL;
+    return &items[lootSlot];
+}
+
 
 ByteBuffer& operator<<(ByteBuffer& b, LootItem const& li)
 {

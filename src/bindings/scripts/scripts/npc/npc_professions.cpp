@@ -183,6 +183,24 @@ there is no difference here (except that default text is chosen with `gameobject
 # formulas to calculate unlearning cost
 ###*/
 
+void RemoveProffesionQuest(uint32 entry, Player *player)
+{
+    for(uint8 slot = 0; slot < MAX_QUEST_LOG_SIZE; ++slot )
+    {
+        uint32 quest = player->GetQuestSlotQuestId(slot);
+        if(quest == entry)
+        {
+            player->SetQuestSlot(slot,0);
+
+            // we ignore unequippable quest items in this case, its' still be equipped
+            player->TakeQuestSourceItem( quest, false );
+        }
+     }
+
+     player->SetQuestStatus( entry, QUEST_STATUS_NONE);
+     player->getQuestStatusMap()[entry].m_rewarded = false;
+}
+
 int32 DoLearnCost(Player *player)                           //tailor, alchemy
 {
     return 200000;
@@ -409,8 +427,9 @@ void SendActionMenu_npc_prof_alchemy(Player *player, Creature *_Creature, uint32
             {
                 player->CastSpell(player, S_LEARN_TRANSMUTE, true);
                 player->ModifyMoney(-DoLearnCost(player));
-            } else
-            player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
+            }
+            else
+                player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
             player->CLOSE_GOSSIP_MENU();
             break;
         case GOSSIP_ACTION_INFO_DEF + 2:
@@ -418,8 +437,9 @@ void SendActionMenu_npc_prof_alchemy(Player *player, Creature *_Creature, uint32
             {
                 player->CastSpell(player, S_LEARN_ELIXIR, true);
                 player->ModifyMoney(-DoLearnCost(player));
-            } else
-            player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
+            }
+            else
+                player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
             player->CLOSE_GOSSIP_MENU();
             break;
         case GOSSIP_ACTION_INFO_DEF + 3:
@@ -427,8 +447,9 @@ void SendActionMenu_npc_prof_alchemy(Player *player, Creature *_Creature, uint32
             {
                 player->CastSpell(player, S_LEARN_POTION, true);
                 player->ModifyMoney(-DoLearnCost(player));
-            } else
-            player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
+            }
+            else
+                player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
             player->CLOSE_GOSSIP_MENU();
             break;
             //Unlearn Alchemy
@@ -437,8 +458,10 @@ void SendActionMenu_npc_prof_alchemy(Player *player, Creature *_Creature, uint32
             {
                 _Creature->CastSpell(player, S_UNLEARN_TRANSMUTE, true);
                 player->ModifyMoney(-DoHighUnlearnCost(player));
-            } else
-            player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
+                RemoveProffesionQuest(10899, player);
+            }
+            else
+                player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
             player->CLOSE_GOSSIP_MENU();
             break;
         case GOSSIP_ACTION_INFO_DEF + 5:
@@ -446,8 +469,10 @@ void SendActionMenu_npc_prof_alchemy(Player *player, Creature *_Creature, uint32
             {
                 _Creature->CastSpell(player, S_UNLEARN_ELIXIR, true);
                 player->ModifyMoney(-DoHighUnlearnCost(player));
-            } else
-            player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
+                RemoveProffesionQuest(10902, player);
+            }
+            else
+                player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
             player->CLOSE_GOSSIP_MENU();
             break;
         case GOSSIP_ACTION_INFO_DEF + 6:
@@ -455,8 +480,10 @@ void SendActionMenu_npc_prof_alchemy(Player *player, Creature *_Creature, uint32
             {
                 _Creature->CastSpell(player, S_UNLEARN_POTION, true);
                 player->ModifyMoney(-DoHighUnlearnCost(player));
-            } else
-            player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
+                RemoveProffesionQuest(10897, player);
+            }
+            else
+                player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
             player->CLOSE_GOSSIP_MENU();
             break;
     }
@@ -645,9 +672,12 @@ void SendActionMenu_npc_prof_blacksmith(Player *player, Creature *_Creature, uin
                     ProfessionUnlearnSpells(player, S_UNLEARN_WEAPON);
                     player->ModifyMoney(-DoLowUnlearnCost(player));
                     _Creature->CastSpell(player, S_REP_ARMOR, true);
+
+                    RemoveProffesionQuest(player->GetTeam() == ALLIANCE ? 5284 : 5302, player);
                     player->CLOSE_GOSSIP_MENU();
-                } else
-                player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
+                }
+                else
+                    player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
             }
             else
             {
@@ -663,11 +693,14 @@ void SendActionMenu_npc_prof_blacksmith(Player *player, Creature *_Creature, uin
                     player->CastSpell(player, S_UNLEARN_ARMOR, true);
                     ProfessionUnlearnSpells(player, S_UNLEARN_ARMOR);
                     player->ModifyMoney(-DoLowUnlearnCost(player));
+                    RemoveProffesionQuest(player->GetTeam() == ALLIANCE ? 5283 : 5301, player);
                     _Creature->CastSpell(player, S_REP_WEAPON, true);
-                } else
-                player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
-            } else
-            player->SendEquipError(EQUIP_ERR_CANT_DO_RIGHT_NOW,NULL,NULL);
+                }
+                else
+                    player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
+            }
+            else
+                player->SendEquipError(EQUIP_ERR_CANT_DO_RIGHT_NOW,NULL,NULL);
             player->CLOSE_GOSSIP_MENU();
             break;
             //Learn Hammer/Axe/Sword
@@ -692,10 +725,12 @@ void SendActionMenu_npc_prof_blacksmith(Player *player, Creature *_Creature, uin
                     player->CastSpell(player, S_UNLEARN_HAMMER, true);
                     ProfessionUnlearnSpells(player, S_UNLEARN_HAMMER);
                     player->ModifyMoney(-DoMedUnlearnCost(player));
-                } else
-                player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
-            } else
-            player->SendEquipError(EQUIP_ERR_CANT_DO_RIGHT_NOW,NULL,NULL);
+                }
+                else
+                    player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
+            }
+            else
+                player->SendEquipError(EQUIP_ERR_CANT_DO_RIGHT_NOW,NULL,NULL);
             player->CLOSE_GOSSIP_MENU();
             break;
         case GOSSIP_ACTION_INFO_DEF + 9:
@@ -706,10 +741,12 @@ void SendActionMenu_npc_prof_blacksmith(Player *player, Creature *_Creature, uin
                     player->CastSpell(player, S_UNLEARN_AXE, true);
                     ProfessionUnlearnSpells(player, S_UNLEARN_AXE);
                     player->ModifyMoney(-DoMedUnlearnCost(player));
-                } else
-                player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
-            } else
-            player->SendEquipError(EQUIP_ERR_CANT_DO_RIGHT_NOW,NULL,NULL);
+                }
+                else
+                    player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
+            }
+            else
+                player->SendEquipError(EQUIP_ERR_CANT_DO_RIGHT_NOW,NULL,NULL);
             player->CLOSE_GOSSIP_MENU();
             break;
         case GOSSIP_ACTION_INFO_DEF + 10:
@@ -720,10 +757,12 @@ void SendActionMenu_npc_prof_blacksmith(Player *player, Creature *_Creature, uin
                     player->CastSpell(player, S_UNLEARN_SWORD, true);
                     ProfessionUnlearnSpells(player, S_UNLEARN_SWORD);
                     player->ModifyMoney(-DoMedUnlearnCost(player));
-                } else
-                player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
-            } else
-            player->SendEquipError(EQUIP_ERR_CANT_DO_RIGHT_NOW,NULL,NULL);
+                }
+                else
+                    player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
+            }
+            else
+                player->SendEquipError(EQUIP_ERR_CANT_DO_RIGHT_NOW,NULL,NULL);
             player->CLOSE_GOSSIP_MENU();
             break;
     }
@@ -873,24 +912,31 @@ void SendActionMenu_npc_prof_leather(Player *player, Creature *_Creature, uint32
                     player->CastSpell(player, S_UNLEARN_DRAGON, true);
                     ProfessionUnlearnSpells(player, S_UNLEARN_DRAGON);
                     player->ModifyMoney(-DoMedUnlearnCost(player));
-                } else
-                player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
-            } else
-            player->SendEquipError(EQUIP_ERR_CANT_DO_RIGHT_NOW,NULL,NULL);
+                    RemoveProffesionQuest(player->GetTeam() == ALLIANCE ? 5141 : 5145, player);
+                }
+                else
+                    player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
+            }
+            else
+                player->SendEquipError(EQUIP_ERR_CANT_DO_RIGHT_NOW,NULL,NULL);
+
             player->CLOSE_GOSSIP_MENU();
             break;
         case GOSSIP_ACTION_INFO_DEF + 2:
             if( EquippedOk(player,S_UNLEARN_ELEMENTAL) )
             {
-                if( player->GetMoney() >= DoMedUnlearnCost(player) )
+                if(player->GetMoney() >= DoMedUnlearnCost(player) )
                 {
                     player->CastSpell(player, S_UNLEARN_ELEMENTAL, true);
                     ProfessionUnlearnSpells(player, S_UNLEARN_ELEMENTAL);
                     player->ModifyMoney(-DoMedUnlearnCost(player));
-                } else
-                player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
-            } else
-            player->SendEquipError(EQUIP_ERR_CANT_DO_RIGHT_NOW,NULL,NULL);
+                    RemoveProffesionQuest(player->GetTeam() == ALLIANCE ? 5144 : 5146, player);
+                }
+                else
+                    player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
+            }
+            else
+                player->SendEquipError(EQUIP_ERR_CANT_DO_RIGHT_NOW,NULL,NULL);
             player->CLOSE_GOSSIP_MENU();
             break;
         case GOSSIP_ACTION_INFO_DEF + 3:
@@ -901,10 +947,13 @@ void SendActionMenu_npc_prof_leather(Player *player, Creature *_Creature, uint32
                     player->CastSpell(player, S_UNLEARN_TRIBAL, true);
                     ProfessionUnlearnSpells(player, S_UNLEARN_TRIBAL);
                     player->ModifyMoney(-DoMedUnlearnCost(player));
-                } else
-                player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
-            } else
-            player->SendEquipError(EQUIP_ERR_CANT_DO_RIGHT_NOW,NULL,NULL);
+                    RemoveProffesionQuest(player->GetTeam() == ALLIANCE ? 5143 : 5148, player);
+                }
+                else
+                    player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
+            }
+            else
+                player->SendEquipError(EQUIP_ERR_CANT_DO_RIGHT_NOW,NULL,NULL);
             player->CLOSE_GOSSIP_MENU();
             break;
     }
@@ -1020,8 +1069,9 @@ void SendActionMenu_npc_prof_tailor(Player *player, Creature *_Creature, uint32 
             {
                 player->CastSpell(player, S_LEARN_SPELLFIRE, true);
                 player->ModifyMoney(-DoLearnCost(player));
-            } else
-            player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
+            }
+            else
+                player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
             player->CLOSE_GOSSIP_MENU();
             break;
         case GOSSIP_ACTION_INFO_DEF + 2:
@@ -1029,8 +1079,9 @@ void SendActionMenu_npc_prof_tailor(Player *player, Creature *_Creature, uint32 
             {
                 player->CastSpell(player, S_LEARN_MOONCLOTH, true);
                 player->ModifyMoney(-DoLearnCost(player));
-            } else
-            player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
+            }
+            else
+                player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
             player->CLOSE_GOSSIP_MENU();
             break;
         case GOSSIP_ACTION_INFO_DEF + 3:
@@ -1038,8 +1089,9 @@ void SendActionMenu_npc_prof_tailor(Player *player, Creature *_Creature, uint32 
             {
                 player->CastSpell(player, S_LEARN_SHADOWEAVE, true);
                 player->ModifyMoney(-DoLearnCost(player));
-            } else
-            player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
+            }
+            else
+                player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
             player->CLOSE_GOSSIP_MENU();
             break;
             //Unlearn Tailor
@@ -1051,10 +1103,13 @@ void SendActionMenu_npc_prof_tailor(Player *player, Creature *_Creature, uint32 
                     player->CastSpell(player, S_UNLEARN_SPELLFIRE, true);
                     ProfessionUnlearnSpells(player, S_UNLEARN_SPELLFIRE);
                     player->ModifyMoney(-DoHighUnlearnCost(player));
-                } else
-                player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
-            } else
-            player->SendEquipError(EQUIP_ERR_CANT_DO_RIGHT_NOW,NULL,NULL);
+                    RemoveProffesionQuest(10832, player);
+                }
+                else
+                    player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
+            }
+            else
+                player->SendEquipError(EQUIP_ERR_CANT_DO_RIGHT_NOW,NULL,NULL);
             player->CLOSE_GOSSIP_MENU();
             break;
         case GOSSIP_ACTION_INFO_DEF + 5:
@@ -1065,10 +1120,13 @@ void SendActionMenu_npc_prof_tailor(Player *player, Creature *_Creature, uint32 
                     player->CastSpell(player, S_UNLEARN_MOONCLOTH, true);
                     ProfessionUnlearnSpells(player, S_UNLEARN_MOONCLOTH);
                     player->ModifyMoney(-DoHighUnlearnCost(player));
-                } else
-                player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
-            } else
-            player->SendEquipError(EQUIP_ERR_CANT_DO_RIGHT_NOW,NULL,NULL);
+                    RemoveProffesionQuest(10831, player);
+                }
+                else
+                    player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
+            }
+            else
+                player->SendEquipError(EQUIP_ERR_CANT_DO_RIGHT_NOW,NULL,NULL);
             player->CLOSE_GOSSIP_MENU();
             break;
         case GOSSIP_ACTION_INFO_DEF + 6:
@@ -1079,10 +1137,13 @@ void SendActionMenu_npc_prof_tailor(Player *player, Creature *_Creature, uint32 
                     player->CastSpell(player, S_UNLEARN_SHADOWEAVE, true);
                     ProfessionUnlearnSpells(player, S_UNLEARN_SHADOWEAVE);
                     player->ModifyMoney(-DoHighUnlearnCost(player));
-                } else
-                player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
-            } else
-            player->SendEquipError(EQUIP_ERR_CANT_DO_RIGHT_NOW,NULL,NULL);
+                    RemoveProffesionQuest(10833, player);
+                }
+                else
+                    player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
+            }
+            else
+                player->SendEquipError(EQUIP_ERR_CANT_DO_RIGHT_NOW,NULL,NULL);
             player->CLOSE_GOSSIP_MENU();
             break;
     }

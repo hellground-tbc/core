@@ -159,6 +159,7 @@ struct TRINITY_DLL_DECL boss_grandmaster_vorpilAI : public ScriptedAI
         banish_Timer = 17000;
         HelpYell = false;
         destroyPortals();
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
 
         if(pInstance)
             pInstance->SetData(DATA_GRANDMASTERVORPILEVENT, NOT_STARTED);
@@ -285,7 +286,7 @@ struct TRINITY_DLL_DECL boss_grandmaster_vorpilAI : public ScriptedAI
             Map::PlayerList const &PlayerList = map->GetPlayers();
             for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                 if (Player* i_pl = i->getSource())
-                    if (i_pl->isAlive() && !i_pl->HasAura(SPELL_BANISH,0))
+                    if (i_pl->isAlive() && !i_pl->HasAura(SPELL_BANISH,0) && !i_pl->isGameMaster())
                         i_pl->TeleportTo(m_creature->GetMapId(), VorpilPosition[0],VorpilPosition[1],VorpilPosition[2], 0, TELE_TO_NOT_LEAVE_COMBAT);
 
             m_creature->Relocate(VorpilPosition[0],VorpilPosition[1],VorpilPosition[2]);

@@ -33,20 +33,11 @@ void InstanceData::SaveToDB()
 void InstanceData::HandleGameObject(uint64 GUID, bool open, GameObject *go) 
 {            
     if(!go)
-        go = instance->GetGameObjectInMap(GUID);
+        go = instance->GetGameObject(GUID);
     if(go)
         go->SetGoState(open ? 0 : 1);
     else
         debug_log("TSCR: InstanceData: HandleGameObject failed");
-}
-
-bool InstanceData::IsEncounterInProgress() const
-{
-    for(std::vector<BossInfo>::const_iterator itr = bosses.begin(); itr != bosses.end(); ++itr)
-        if(itr->state == IN_PROGRESS)
-            return true;
-
-    return false;
 }
 
 void InstanceData::AddBossRoomDoor(uint32 id, GameObject *door)

@@ -43,6 +43,8 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
     uint32 DecayTimer;
     uint32 NovaTimer;
     uint32 IceboltTimer;
+    uint32 CheckTimer;
+
     bool go;
     uint32 pos;
 
@@ -53,6 +55,10 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
         DecayTimer = 45000;
         NovaTimer = 15000;
         IceboltTimer = 10000;
+        CheckTimer = 3000;
+
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
+        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
 
         if(pInstance && IsEvent)
             pInstance->SetData(DATA_RAGEWINTERCHILLEVENT, NOT_STARTED);
@@ -130,14 +136,23 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
         if (!UpdateVictim() )
             return;
 
+        if(CheckTimer < diff)
+        {
+            DoZoneInCombat();
+            CheckTimer = 3000;
+        }else
+            CheckTimer -= diff;
+
         if(FrostArmorTimer < diff)
         {
             DoCast(m_creature, SPELL_FROST_ARMOR);
             FrostArmorTimer = 40000+rand()%20000;
         }else FrostArmorTimer -= diff;
+
         if(DecayTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_DEATH_AND_DECAY);
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 70, true))
+                DoCast(target, SPELL_DEATH_AND_DECAY);
             DecayTimer = 60000+rand()%20000;
             switch(rand()%2)
             {
@@ -151,10 +166,16 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
                     break;
             }
         }else DecayTimer -= diff;
+
         if(NovaTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_FROST_NOVA);
+            if(Unit *target = m_creature->getVictim())
+                DoCast(target, SPELL_FROST_NOVA);
             NovaTimer = 30000+rand()%15000;
+
+            if(DecayTimer < 10000)
+                DecayTimer += 10000%1000;
+
             switch(rand()%2)
             {
                 case 0:
@@ -169,7 +190,8 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
         }else NovaTimer -= diff;
         if(IceboltTimer < diff)
         {
-            DoCast(SelectUnit(SELECT_TARGET_RANDOM,0,40,true), SPELL_ICEBOLT);
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0,40,true))
+                DoCast(target, SPELL_ICEBOLT);
             IceboltTimer = 11000+rand()%20000;
         }else IceboltTimer -= diff;
 

@@ -1823,6 +1823,406 @@ CreatureAI* GetAI_npc_enraged_spirit(Creature *_Creature)
 {
 return new npc_enraged_spiritAI(_Creature);
 }
+/*#####
+# Akama's cutscene after quest 10628 & Akama BT Prelude after quest 10944
+######*/
+
+/*TODO
+ - improve Olum's Spirit animation
+ - set exact NPC emotes into the db
+ - find and setup green glowing flames spell seen with Illidan appearence
+*/
+
+// Cutscene after quest 10628 dialogs
+#define SAY_DIALOG_VAGATH_1 "Mortals, here? What is the meaning of this, pathetic Broken!"
+#define SAY_WHISPER_AKAMA_2 "Have no fear, $c. Just play along."
+#define SAY_DIALOG_AKAMA_3  "A mere nuisance, I assure you! Tell the Master his prisoner will not escape while Akama and his Deathsworn watch over her."
+#define SAY_DIALOG_VAGATH_4 "You'd do well not to toy with me, Akama. Illidan has given me strict orders to keep watch on the Warden. If I find out you are hiding anything from me, I will crush you with my bare hands!"
+#define SAY_DIALOG_AKAMA_5  "Forgive my harsh methods, but the Betrayer cannot learn of the truth. My secret must be kept at all costs!"
+#define SAY_DIALOG_MAIEV_6  "If we truly desire the same thing, Akama, then release me! If Illidan is to die, it shall be by my hand!"
+#define SAY_DIALOG_AKAMA_7  "In due time, Maiev. I've spent years planning to make my move - I can't afford to put my plans in peril by tipping my hand too soon."
+#define SAY_DIALOG_MAIEV_8  "Curse you, Akama! I am not a pawn in your game...my will is my own. When I unleash my wrath upon Illidan it will have nothing to do with your foolish scheme!"
+
+// Cutscene after quest 10628 creatures & spells
+#define VAGATH                   21768
+#define ILLIDARI_SUCCUBUS        22860
+#define MAIEV_SHADOWSONG         21699
+#define SPELL_FAKE_KILL_VISUAL   37071      // not blizzlike, blizzlike unknown
+#define SPELL_RESURECTION_VISUAL 21074      // not blizzlike, blizzlike unknown
+
+// Cutscene after quest 10628 postions data
+static float VagathPos[4] = {-3726.75,1038.05,55.95,4.60};
+static float SuccubPos1[4] = {-3723.55,1041.40,55.95,4.60};
+static float SuccubPos2[4] = {-3730.46,1041.40,55.95,4.60};
+
+// BT prelude after quest 10944 dialogs & music
+#define SAY_DIALOG_OLUM_1           -1563012
+#define SAY_DIALOG_PRE_AKAMA_1      -1563001
+#define SAY_DIALOG_OLUM_2           -1563013
+#define SAY_DIALOG_PRE_AKAMA_2      -1563002
+#define SAY_DIALOG_OLUM_3           -1563014
+#define SAY_DIALOG_PRE_AKAMA_3      -1563003
+#define SAY_DIALOG_OLUM_4           -1563015
+#define SAY_DIALOG_PRE_AKAMA_4      -1563004
+#define SAY_DIALOG_OLUM_5           -1563016
+#define SAY_DIALOG_PRE_AKAMA_5      -1563005
+#define SAY_DIALOG_PRE_AKAMA_6      -1563006
+#define SAY_DIALOG_ILLIDAN_1        -1563009
+#define SAY_DIALOG_PRE_AKAMA_7      -1563007
+#define SAY_DIALOG_ILLIDAN_2        -1563010
+#define SAY_DIALOG_ILLIDAN_3        -1563011
+#define SAY_DIALOG_PRE_AKAMA_8      -1563008
+#define BLACK_TEMPLE_PRELUDE_MUSIC     11716
+#define ILLIDAN_APPEARING               5756
+
+// BT prelude after quest 10944 creatures & spells & emotes
+#define ILLIDAN                     22083
+#define	SEER_OLUM                   22820
+#define OLUMS_SPIRIT                22870
+#define SPELL_OLUMS_SACRIFICE       39552
+#define STATE_DROWNED                 383
+ 
+// BT prelude after quest 10944 postions data
+static float OlumPos[4] = {-3729.17,1035.63,55.95,5.82};
+static float OlumNewPos[4] = {-3721.87,1031.86,55.95,5.90};
+static float AkamaPos[4] = {-3714.50,1028.95,55.95,2.57};
+static float AkamaNewPos[4] = {-3718.33,1030.27,55.95,2.77}; 
+
+
+
+
+
+struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
+{
+    npc_AkamaAI(Creature* c) : ScriptedAI(c) {}
+ 
+    uint64 VagathGUID;
+    uint64 Succub1GUID;
+    uint64 Succub2GUID;
+
+    uint64 OlumGUID;
+    uint64 IllidanGUID;
+    uint64 OlumSpiritGUID;
+ 
+    uint32 TalkTimer;
+    uint32 Step;
+ 
+    std::list<Unit*> targets;
+ 
+    bool EventStarted;
+    bool PreludeEventStarted;
+ 
+    void Reset()
+    {
+        VagathGUID = 0;
+        Step = 0;
+ 
+        TalkTimer = 0;
+        EventStarted = false;
+        targets.clear();
+    }
+
+    void PreludeReset()
+    {
+        OlumGUID = 0;
+        IllidanGUID = 0;
+        Step = 0;
+
+        TalkTimer = 0;
+        PreludeEventStarted = false;
+
+    }
+ 
+    void Aggro(Unit* who){}
+ 
+    void BuildNearbyUnitsList()
+    {
+        float range = 20.0f;
+        Trinity::AnyUnitInObjectRangeCheck check(m_creature, range);
+        Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(targets, check);
+        me->VisitNearbyWorldObject(range, searcher);
+    }
+
+    void StartEvent()
+    {
+        Step = 1;
+        EventStarted = true;
+ 
+        Creature* Vagath = m_creature->SummonCreature(VAGATH,VagathPos[0],VagathPos[1],VagathPos[2],VagathPos[3],TEMPSUMMON_CORPSE_TIMED_DESPAWN,0);
+        Creature* Succub1 = m_creature->SummonCreature(ILLIDARI_SUCCUBUS,SuccubPos1[0],SuccubPos1[1],SuccubPos1[2],SuccubPos1[3],TEMPSUMMON_CORPSE_TIMED_DESPAWN,0);
+        Creature* Succub2 = m_creature->SummonCreature(ILLIDARI_SUCCUBUS,SuccubPos2[0],SuccubPos2[1],SuccubPos2[2],SuccubPos2[3],TEMPSUMMON_CORPSE_TIMED_DESPAWN,0);
+       
+        if(!Vagath || !Succub1 || !Succub2)
+            return;
+ 
+        VagathGUID = Vagath->GetGUID();
+        Succub1GUID = Succub1->GetGUID();
+        Succub2GUID = Succub2->GetGUID();
+ 
+        Vagath->setFaction(35);
+        TalkTimer = 3000;
+ 
+        BuildNearbyUnitsList();
+    } 
+
+    uint32 NextStep(uint32 Step)
+    {
+        Unit* vaga = Unit::GetUnit((*m_creature),VagathGUID);
+        Unit* Succub1 = Unit::GetUnit((*m_creature),Succub1GUID);
+        Unit* Succub2 = Unit::GetUnit((*m_creature),Succub2GUID);
+        Unit* maiev = FindCreature(MAIEV_SHADOWSONG, 50, m_creature);
+       
+        switch(Step)
+        {
+            case 0:
+            return 0;
+           
+            case 1:
+                if(vaga)
+                ((Creature*)vaga)->Say(SAY_DIALOG_VAGATH_1,LANG_UNIVERSAL,NULL);
+                return 3000;
+           
+            case 2:
+                for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
+                {
+                    if((*iter)->GetTypeId() == TYPEID_PLAYER)
+                    DoWhisper(SAY_WHISPER_AKAMA_2, (*iter));
+                }
+                return 1000;
+           
+            case 3:
+                for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
+                {
+                    if((*iter)->GetTypeId() == TYPEID_PLAYER)
+                    DoCast((*iter), SPELL_FAKE_KILL_VISUAL);
+                }
+                return 1000;
+           
+            case 4:
+                for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
+                {
+                    if((*iter)->GetTypeId() == TYPEID_PLAYER)
+                    {
+                        (*iter)->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
+                        (*iter)->SetHealth(1);
+                        ((Player*)(*iter))->setRegenTimer(60000);
+                        (*iter)->SetStunned(true);
+                    }
+                }
+                return 3000;
+           
+            case 5:
+                m_creature->Say(SAY_DIALOG_AKAMA_3,LANG_UNIVERSAL,NULL);
+                return 12000;
+           
+            case 6:
+                if(vaga)
+                ((Creature*)vaga)->Say(SAY_DIALOG_VAGATH_4,LANG_UNIVERSAL,NULL);
+                return 15000;
+           
+            case 7:
+                if(vaga)
+                ((Creature*)vaga)->setDeathState(CORPSE);
+                if(Succub1)
+                ((Creature*)Succub1)->setDeathState(CORPSE);
+                if(Succub2)
+                ((Creature*)Succub2)->setDeathState(CORPSE);
+                return 3000;
+           
+            case 8:
+                for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
+                {
+                    if((*iter)->GetTypeId() == TYPEID_PLAYER)
+                    DoCast((*iter), SPELL_RESURECTION_VISUAL);
+                }
+                return 2000;
+           
+            case 9:
+                for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
+                {
+                    if((*iter)->GetTypeId() == TYPEID_PLAYER)
+                    {
+                        (*iter)->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
+                        (*iter)->SetHealth((*iter)->GetMaxHealth());
+                        (*iter)->SetStunned(false);
+                    }
+                }
+                m_creature->Say(SAY_DIALOG_AKAMA_5, LANG_UNIVERSAL, NULL);
+                return 12000;
+           
+            case 10:
+                if(maiev)
+                ((Creature*)maiev)->Say(SAY_DIALOG_MAIEV_6,LANG_UNIVERSAL,NULL);
+                return 12000;
+           
+            case 11:
+                m_creature->Say(SAY_DIALOG_AKAMA_7,LANG_UNIVERSAL,NULL);
+                return 12000;
+           
+            case 12:
+                if(maiev)
+                ((Creature*)maiev)->Say(SAY_DIALOG_MAIEV_8,LANG_UNIVERSAL,NULL);
+                return 1000;
+           
+            case 13:
+                Reset();
+                return 100;
+           
+            default:
+            return 0;
+        }
+        return 0;
+    }
+
+    void StartPreludeEvent()
+    {
+        Step = 1;
+        PreludeEventStarted = true;
+
+        DoPlaySoundToSet(m_creature,BLACK_TEMPLE_PRELUDE_MUSIC);
+
+        Creature* Olum = m_creature->SummonCreature(SEER_OLUM,OlumPos[0],OlumPos[1],OlumPos[2],OlumPos[3],TEMPSUMMON_CORPSE_TIMED_DESPAWN,45000);	// despawn corpse after 45 seconds - Blizzlike
+
+        if(!Olum)return;
+
+        OlumGUID = Olum->GetGUID();
+        DoScriptText(SAY_DIALOG_OLUM_1,Olum);
+        Olum->SendMonsterMove(OlumNewPos[0],OlumNewPos[1],OlumNewPos[2],5000);
+        Olum->Relocate(OlumNewPos[0],OlumNewPos[1],OlumNewPos[2],OlumNewPos[3]);
+        
+        TalkTimer = 13000;
+    }
+
+    uint32 PreludeNextStep(uint32 Step)
+    {       
+        Unit* olum = Unit::GetUnit((*m_creature),OlumGUID);
+        Unit* Illidan = Unit::GetUnit((*m_creature), IllidanGUID);
+       
+        switch(Step)
+        {
+            case 0:
+            return 0;
+           
+            case 1: DoScriptText(SAY_DIALOG_PRE_AKAMA_1,m_creature); return 4000;
+            case 2: if(olum) DoScriptText(SAY_DIALOG_OLUM_2,(Creature*)olum); return 8000;
+            case 3: DoScriptText(SAY_DIALOG_PRE_AKAMA_2,m_creature); return 7000;
+            case 4: if(olum) DoScriptText(SAY_DIALOG_OLUM_3,(Creature*)olum); return 27500;
+            case 5: DoScriptText(SAY_DIALOG_PRE_AKAMA_3,m_creature); return 5000;
+            case 6: if(olum) DoScriptText(SAY_DIALOG_OLUM_4,(Creature*)olum); return 16000;
+            case 7: DoScriptText(SAY_DIALOG_PRE_AKAMA_4,m_creature); return 8000;
+            case 8: if(olum) DoScriptText(SAY_DIALOG_OLUM_5,(Creature*)olum); return 14500;
+            case 9:
+                m_creature->SendMonsterMove(AkamaNewPos[0],AkamaNewPos[1],AkamaNewPos[2],2000);
+                m_creature->Relocate(AkamaNewPos[0],AkamaNewPos[1],AkamaNewPos[2], AkamaNewPos[3]);
+                return 2500;
+            case 10:
+                if(olum)
+                    DoCast(olum,SPELL_OLUMS_SACRIFICE);
+                return 6800;
+            case 11:
+                if(olum)
+                {
+                    olum->setDeathState(JUST_DIED);
+                    if(Creature* spirit = m_creature->SummonCreature(OLUMS_SPIRIT,OlumNewPos[0],OlumNewPos[1],OlumNewPos[2],OlumNewPos[3]-2.0f,TEMPSUMMON_TIMED_DESPAWN,16000))
+                    {
+                        spirit->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                        spirit->SetUnitMovementFlags(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
+                        // spirit->SetUInt32Value(UNIT_NPC_EMOTESTATE,STATE_DROWNED); // improve Olum's Spirit animation using Drowned State, right movement flag or monster move type needed
+                        spirit->SendMonsterMove(OlumNewPos[0],OlumNewPos[1],OlumNewPos[2]+8.0f,16000);
+                    }
+                }
+                return 7000;
+            case 12:
+                DoScriptText(SAY_DIALOG_PRE_AKAMA_5,m_creature);
+                return 12000;
+            case 13:
+                m_creature->SendMonsterMove((AkamaPos[0]+0.1f), (AkamaPos[1]-0.1f), AkamaPos[2], 2000);
+                m_creature->Relocate(AkamaPos[0]+0.1f, AkamaPos[1]-0.1f, AkamaPos[2]);
+                return 2100;
+            case 14:
+                m_creature->SendMonsterMove((AkamaPos[0]-0.05f), (AkamaPos[1]), AkamaPos[2], 200);	// just to turn back Akama to Illidan
+                return 6000;
+            case 15:
+                DoScriptText(SAY_DIALOG_PRE_AKAMA_6,m_creature);
+                m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE,68);
+                return 200;
+            case 16:
+                if(Illidan)	DoPlaySoundToSet(Illidan,ILLIDAN_APPEARING); return 7000;
+            case 17:
+                if(Illidan)	DoScriptText(SAY_DIALOG_ILLIDAN_1,(Creature*)Illidan); return 14000;
+            case 18:
+                DoScriptText(SAY_DIALOG_PRE_AKAMA_7,m_creature);
+                return 19000;
+            case 19:
+                if(Illidan)	DoScriptText(SAY_DIALOG_ILLIDAN_2,(Creature*)Illidan); return 21000;
+            case 20:
+                if(Illidan)	DoScriptText(SAY_DIALOG_ILLIDAN_3,(Creature*)Illidan); return 22000;
+            case 21:
+                DoScriptText(SAY_DIALOG_PRE_AKAMA_8,m_creature);
+                return 1000;
+            case 22:
+                if(Illidan)	Illidan->setDeathState(CORPSE);	return 1000;
+            case 23:
+                PreludeReset();
+                return 100;
+            default:
+            return 0;
+        }
+        return 0;
+    }
+ 
+    void UpdateAI(const uint32 diff)
+    {
+        if(EventStarted && VagathGUID)
+        {
+            if(TalkTimer < diff)
+            {
+                TalkTimer = NextStep(Step++);
+            }
+            else
+                TalkTimer -= diff;
+        }
+
+        if(PreludeEventStarted && OlumGUID)
+        {
+            if(Step == 16 && !IllidanGUID && TalkTimer < diff)
+            {
+                Creature* Illidan = m_creature->SummonCreature(ILLIDAN,OlumNewPos[0]-3.0f,OlumNewPos[1]+0.5f,OlumNewPos[2],OlumNewPos[3],TEMPSUMMON_CORPSE_DESPAWN,0);
+                Illidan->SetFloatValue(OBJECT_FIELD_SCALE_X,0.65f);
+                Illidan->SetVisibility(VISIBILITY_ON);
+                Illidan->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NOT_SELECTABLE);
+                IllidanGUID = Illidan->GetGUID();
+            }
+            if(TalkTimer < diff)
+            {
+                TalkTimer = PreludeNextStep(Step++);
+            }
+            else
+                TalkTimer -= diff;
+        }
+    }
+};
+ 
+CreatureAI* GetAI_npc_Akama(Creature *_Creature)
+{
+    return new npc_AkamaAI(_Creature);
+}
+bool ChooseReward_npc_Akama(Player *player, Creature *_Creature, const Quest *_Quest, uint32 slot)
+{
+    bool EventStarted = ((npc_AkamaAI*)_Creature->AI())->EventStarted;
+    bool PreludeEventStarted = ((npc_AkamaAI*)_Creature->AI())->PreludeEventStarted;
+
+    if(EventStarted || PreludeEventStarted)
+        return false;
+
+    if(!EventStarted && _Quest->GetQuestId() == 10628)
+        ((npc_AkamaAI*)_Creature->AI())->StartEvent();
+
+    if(!PreludeEventStarted && _Quest->GetQuestId() == 10944)
+        ((npc_AkamaAI*)_Creature->AI())->StartPreludeEvent();
+
+    return false;
+}
 
 /*#####
 #
@@ -1923,6 +2323,12 @@ void AddSC_shadowmoon_valley()
     newscript = new Script;
     newscript->Name = "npc_enraged_spirit";
     newscript->GetAI = &GetAI_npc_enraged_spirit;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_Akama";
+    newscript->GetAI = &GetAI_npc_Akama;
+    newscript->pChooseReward = &ChooseReward_npc_Akama;
     newscript->RegisterSelf();
 }
 

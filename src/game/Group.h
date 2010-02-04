@@ -284,7 +284,6 @@ class TRINITY_DLL_SPEC Group
         void SetDifficulty(uint8 difficulty);
         uint8 GetDifficulty() { return m_difficulty; }
         uint16 InInstance();
-        bool InCombatToInstance(uint32 instanceId);
         void ResetInstances(uint8 method, Player* SendMsgTo);
 
         // -no description-

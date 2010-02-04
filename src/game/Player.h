@@ -30,9 +30,11 @@
 #include "NPCHandler.h"
 #include "QuestDef.h"
 #include "Group.h"
+#include "Object.h"
 #include "Bag.h"
 #include "WorldSession.h"
 #include "Pet.h"
+#include "PlayerAI.h"
 #include "MapReference.h"
 #include "Util.h"                                           // for Tokens typedef
 
@@ -956,6 +958,8 @@ class TRINITY_DLL_SPEC Player : public Unit
         void SendTransferAborted(uint32 mapid, uint16 reason);
         void SendInstanceResetWarning(uint32 mapid, uint32 time);
 
+        GameObject* GetGameObjectIfCanInteractWith(uint64 guid, GameobjectTypes type = GAMEOBJECT_TYPE_GUILD_BANK) const;
+        Creature* GetNPCIfCanInteractWith(uint64 guid, uint32 npcflagmask);
         bool CanInteractWithNPCs(bool alive = true) const;
 
         bool ToggleAFK();
@@ -1356,6 +1360,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         uint64 GetComboTarget() { return m_comboTarget; }
 
         void AddComboPoints(Unit* target, int8 count);
+        void AddFinishingComboPoints(int8 count) { m_finishingComboPoints += count; }
         void ClearComboPoints();
         void SendComboPoints();
 
@@ -1411,6 +1416,10 @@ class TRINITY_DLL_SPEC Player : public Unit
             mMitems.erase(i);
             return true;
         }
+
+        void CreateCharmAI();
+        void DeleteCharmAI();
+        void CharmAI(bool enable = true);
 
         void PetSpellInitialize();
         void CharmSpellInitialize();
@@ -2231,6 +2240,7 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         uint64 m_comboTarget;
         int8 m_comboPoints;
+        int8 m_finishingComboPoints;        // combo points added by finishing move before it's procceed
 
         QuestStatusMap mQuestStatus;
 
@@ -2358,8 +2368,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         GridReference<Player> m_gridRef;
         MapReference m_mapRef;
 
-        void UpdateCharmedAI();
-        UnitAI *i_AI;
+        PlayerAI *i_AI;
 };
 
 void AddItemsSetItem(Player*player,Item *item);
@@ -2378,7 +2387,8 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
 
         if(!IsAffectedBySpellmod(spellInfo,mod,spell))
             continue;
-        if (mod->type == SPELLMOD_FLAT)
+
+        if(mod->type == SPELLMOD_FLAT)
             totalflat += mod->value;
         else if (mod->type == SPELLMOD_PCT)
         {
@@ -2386,9 +2396,13 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
             if(basevalue == T(0))
                 continue;
 
-            // special case (skip >10sec spell casts for instant cast setting)
-            if( mod->op==SPELLMOD_CASTING_TIME  && basevalue >= T(10000) && mod->value <= -100)
-                continue;
+            // special case (skip > 10sec spell casts for instant cast setting)
+            if (mod->op == SPELLMOD_CASTING_TIME)
+            {
+                SpellCastTimesEntry const *spellCastTimeEntry = sSpellCastTimesStore.LookupEntry(spellInfo->CastingTimeIndex);
+                if (spellCastTimeEntry->CastTime >= T(10000))
+                    continue;
+            }
 
             totalpct += mod->value;
         }

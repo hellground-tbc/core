@@ -524,6 +524,22 @@ void Log::outBasic( const char * str, ... )
     }
     fflush(stdout);
 }
+void Log::outIrc(const char * str, ... )
+{
+    if (!str)
+        return;
+
+    if(ircParser = openLogFile("IrcParser",NULL,"w"))
+    {
+        va_list ap;
+        va_start(ap, str);
+        vfprintf(ircParser, str, ap);
+        fprintf(ircParser, "\n" );
+        va_end(ap);
+        fclose(ircParser);
+        ircParser = NULL;
+    }
+}
 
 void Log::outDetail( const char * str, ... )
 {

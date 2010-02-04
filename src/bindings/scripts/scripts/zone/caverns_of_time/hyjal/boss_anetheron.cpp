@@ -5,7 +5,7 @@
 
 #define SPELL_CARRION_SWARM 31306
 #define SPELL_SLEEP 31298
-#define SPELL_VAMPIRIC_AURA 38196
+#define SPELL_VAMPIRIC_AURA 31317
 #define SPELL_INFERNO 31299
 
 #define SAY_ONDEATH "The clock... is still... ticking."
@@ -53,7 +53,7 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
 
     uint32 SwarmTimer;
     uint32 SleepTimer;
-    uint32 AuraTimer;
+    uint32 CheckTimer;
     uint32 InfernoTimer;
     bool go;
     uint32 pos;
@@ -63,8 +63,11 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
         damageTaken = 0;
         SwarmTimer = 45000;
         SleepTimer = 60000;
-        AuraTimer = 5000;
         InfernoTimer = 45000;
+        CheckTimer = 3000;
+
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
+        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
 
         if(pInstance && IsEvent)
             pInstance->SetData(DATA_ANETHERONEVENT, NOT_STARTED);
@@ -76,6 +79,7 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
             pInstance->SetData(DATA_ANETHERONEVENT, IN_PROGRESS);
         DoPlaySoundToSet(m_creature, SOUND_ONAGGRO);
         DoYell(SAY_ONAGGRO, LANG_UNIVERSAL, NULL);
+        DoCast(m_creature, SPELL_VAMPIRIC_AURA, true);
     }
 
     void KilledUnit(Unit *victim)
@@ -146,6 +150,14 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
         if (!UpdateVictim() )
             return;
 
+        if(CheckTimer < diff)
+        {
+            DoZoneInCombat();
+            CheckTimer = 3000;
+        }
+        else
+            CheckTimer -= diff;
+
         if(SwarmTimer < diff)
         {
             Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,100,true);
@@ -153,6 +165,7 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
                 DoCast(target,SPELL_CARRION_SWARM);
 
             SwarmTimer = 45000+rand()%15000;
+            
             switch(rand()%2)
             {
                 case 0:
@@ -164,7 +177,9 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
                     DoYell(SAY_SWARM2, LANG_UNIVERSAL, NULL);
                     break;
             }
-        }else SwarmTimer -= diff;
+        }
+        else
+            SwarmTimer -= diff;
 
         if(SleepTimer < diff)
         {
@@ -174,7 +189,9 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
                 if(target)
                     target->CastSpell(target,SPELL_SLEEP,true);
             }
+
             SleepTimer = 60000;
+
             switch(rand()%2)
             {
                 case 0:
@@ -186,16 +203,17 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
                     DoYell(SAY_SLEEP2, LANG_UNIVERSAL, NULL);
                     break;
             }
-        }else SleepTimer -= diff;
-        if(AuraTimer < diff)
-        {
-            DoCast(m_creature, SPELL_VAMPIRIC_AURA,true);
-            AuraTimer = 10000+rand()%10000;
-        }else AuraTimer -= diff;
+        }
+        else
+            SleepTimer -= diff;
+
         if(InfernoTimer < diff)
         {
-            DoCast(SelectUnit(SELECT_TARGET_RANDOM,0,100,true), SPELL_INFERNO);
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0,100,true))
+                DoCast(target, SPELL_INFERNO);
+
             InfernoTimer = 45000;
+
             switch(rand()%2)
             {
                 case 0:
@@ -207,7 +225,9 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
                     DoYell(SAY_INFERNO2, LANG_UNIVERSAL, NULL);
                     break;
             }
-        }else InfernoTimer -= diff;
+        }
+        else
+            InfernoTimer -= diff;
 
         DoMeleeAttackIfReady();
     }
@@ -218,7 +238,7 @@ CreatureAI* GetAI_boss_anetheron(Creature *_Creature)
     return new boss_anetheronAI (_Creature);
 }
 
-#define SPELL_IMMOLATION 31303
+#define SPELL_IMMOLATION 31304
 #define SPELL_INFERNO_EFFECT 31302
 
 struct TRINITY_DLL_DECL mob_towering_infernalAI : public ScriptedAI
@@ -230,7 +250,6 @@ struct TRINITY_DLL_DECL mob_towering_infernalAI : public ScriptedAI
             AnetheronGUID = pInstance->GetData64(DATA_ANETHERON);
     }
 
-    uint32 ImmolationTimer;
     uint32 CheckTimer;
     uint64 AnetheronGUID;
     ScriptedInstance* pInstance;
@@ -238,7 +257,9 @@ struct TRINITY_DLL_DECL mob_towering_infernalAI : public ScriptedAI
     void Reset()
     {
         DoCast(m_creature, SPELL_INFERNO_EFFECT);
-        ImmolationTimer = 5000;
+        DoCast(m_creature, SPELL_IMMOLATION);
+        m_creature->setFaction(1720);
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
         CheckTimer = 5000;
     }
 
@@ -286,12 +307,6 @@ struct TRINITY_DLL_DECL mob_towering_infernalAI : public ScriptedAI
         //Return since we have no target
         if (!UpdateVictim())
             return;
-
-        if(ImmolationTimer < diff)
-        {
-            DoCast(m_creature, SPELL_IMMOLATION);
-            ImmolationTimer = 5000;
-        }else ImmolationTimer -= diff;
 
         DoMeleeAttackIfReady();
     }

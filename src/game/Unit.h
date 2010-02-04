@@ -779,6 +779,7 @@ enum ReactiveType
 
 // delay time next attack to prevent client attack animation problems
 #define ATTACK_DISPLAY_DELAY 200
+#define MAX_PLAYER_STEALTH_DETECT_RANGE 45.0f               // max distance for detection targets by player
 
 struct SpellProcEventEntry;                                 // used only privately
 
@@ -1022,6 +1023,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         {
             return m_modAuras[auraType].size();
         }
+        bool hasNegativeAuraWithInterruptFlag(uint32 flag);
         bool HasAuraTypeWithFamilyFlags(AuraType auraType, uint32 familyName,  uint64 familyFlags) const;
         bool HasAura(uint32 spellId, uint32 effIndex) const
             { return m_Auras.find(spellEffectPair(spellId, effIndex)) != m_Auras.end(); }
@@ -1371,6 +1373,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         uint32 CalcArmorReducedDamage(Unit* pVictim, const uint32 damage);
         void CalcAbsorbResist(Unit *pVictim, SpellSchoolMask schoolMask, DamageEffectType damagetype, const uint32 damage, uint32 *absorb, uint32 *resist);
+        void CalcAbsorb(Unit *pVictim, SpellSchoolMask schoolMask, const uint32 damage, uint32 *absorb, uint32 *resist);
 
         void  UpdateSpeed(UnitMoveType mtype, bool forced);
         float GetSpeed( UnitMoveType mtype ) const;
@@ -1447,7 +1450,8 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         // relocation notification
         void SetToNotify();
-        bool m_Notified, m_IsInNotifyList;
+        bool m_Notified;
+        int32 m_NotifyListPos;
         float oldX, oldY;
 
         void SetReducedThreatPercent(uint32 pct, uint64 guid)
@@ -1465,7 +1469,6 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         UnitAI *i_AI, *i_disabledAI;
 
         void _UpdateSpells(uint32 time);
-        void _DeleteAuras();
 
         void _UpdateAutoRepeatSpell();
         bool m_AutoRepeatFirstCast;
@@ -1480,8 +1483,6 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         DeathState m_deathState;
 
         AuraMap m_Auras;
-        AuraMap::iterator m_AurasUpdateIterator;
-        uint32 m_removedAurasCount;
 
         typedef std::list<uint64> DynObjectGUIDs;
         DynObjectGUIDs m_dynObjGUIDs;
@@ -1489,7 +1490,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         std::list<GameObject*> m_gameObj;
         bool m_isSorted;
         uint32 m_transform;
-        AuraList m_removedAuras;
+        uint32 m_removedAuras;
 
         AuraList m_modAuras[TOTAL_AURAS];
         AuraList m_scAuras;                        // casted singlecast auras

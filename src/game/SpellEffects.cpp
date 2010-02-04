@@ -414,8 +414,40 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                     // Incinerate does more dmg (dmg*0.25) if the target is Immolated.
                     if(unitTarget->HasAuraState(AURA_STATE_IMMOLATE))
                         damage += int32(damage*0.25);
+					// T5 bonus - increase immolate damage on incinerate hit
+					if(m_caster->HasAura(37384, 0)) {
+						// look for immolate casted by m_caster
+						Unit::AuraList const &mPeriodic = unitTarget->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
+						for(Unit::AuraList::const_iterator i = mPeriodic.begin(); i != mPeriodic.end(); ++i)
+						{
+							if( (*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && ((*i)->GetSpellProto()->SpellFamilyFlags & 4) &&
+								(*i)->GetCasterGUID()==m_caster->GetGUID() )
+							{
+								// store number of incinerate hits in m_miscvalue
+								(*i)->GetModifier()->m_miscvalue++;
+								break;
+							}
+						}
+					}
                 }
-
+				// Shadow bolt
+				if (m_spellInfo->SpellFamilyFlags & 1) {
+					// T5 bonus - increase corruption on shadow bolt hit
+					if(m_caster->HasAura(37384, 0)) {
+						// look for corruption casted by m_caster
+						Unit::AuraList const &mPeriodic = unitTarget->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
+						for(Unit::AuraList::const_iterator i = mPeriodic.begin(); i != mPeriodic.end(); ++i)
+						{
+							if( (*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && ((*i)->GetSpellProto()->SpellFamilyFlags & 2) &&
+								(*i)->GetCasterGUID()==m_caster->GetGUID() )
+							{
+								// store number of shadow bolt hits in m_miscvalue
+								(*i)->GetModifier()->m_miscvalue++;
+								break;
+							}
+						}
+					}
+				}
                 // Conflagrate - consumes immolate
                 if (m_spellInfo->TargetAuraState == AURA_STATE_IMMOLATE)
                 {
@@ -757,7 +789,7 @@ void Spell::EffectDummy(uint32 i)
                     //pGameObj->SetUInt32Value(GAMEOBJECT_LEVEL, m_caster->getLevel());
                     pGameObj->SetSpellId(m_spellInfo->Id);
 
-                    MapManager::Instance().GetMap(creatureTarget->GetMapId(), pGameObj)->Add(pGameObj);
+                    creatureTarget->GetMap()->Add(pGameObj);
 
                     WorldPacket data(SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE, 8);
                     data << uint64(pGameObj->GetGUID());
@@ -916,6 +948,24 @@ void Spell::EffectDummy(uint32 i)
                             ((Player*)m_caster)->GetSession()->SendPacket(&data);
                         }
                     }
+                    return;
+                }
+                case 21050:                                 // Melodious Rapture
+                {
+                    if(!unitTarget || unitTarget->GetTypeId() != TYPEID_UNIT || unitTarget->GetEntry() != 13016)
+                        return;
+
+                    WorldLocation wLoc;
+                    Creature* cTarget = (Creature*)unitTarget;
+                    cTarget->GetPosition(wLoc);
+                    float ang = cTarget->GetAngle(wLoc.x,wLoc.y);                    
+                    
+                    if(Creature * rat = m_caster->SummonCreature(13017,wLoc.x,wLoc.y,wLoc.z,ang,TEMPSUMMON_TIMED_DESPAWN,600000))
+                        rat->GetMotionMaster()->MoveFollow(m_caster, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+                    
+                    cTarget->setDeathState(JUST_DIED);
+                    cTarget->RemoveCorpse();
+                    cTarget->SetHealth(0);                  // just for nice GM-mode view
                     return;
                 }
                 case 15998:                                 // Capture Worg Pup
@@ -2144,7 +2194,7 @@ void Spell::EffectTeleportUnits(uint32 i)
         ((Player*)unitTarget)->TeleportTo(mapid, x, y, z, orientation, TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (unitTarget==m_caster ? TELE_TO_SPELL : 0));
     else
     {
-        MapManager::Instance().GetMap(mapid, m_caster)->CreatureRelocation((Creature*)unitTarget, x, y, z, orientation);
+        m_caster->GetMap()->CreatureRelocation((Creature*)unitTarget, x, y, z, orientation);
         WorldPacket data;
         unitTarget->BuildTeleportAckMsg(&data, x, y, z, orientation);
         unitTarget->SendMessageToSet(&data, false);
@@ -2457,7 +2507,7 @@ void Spell::EffectSendEvent(uint32 EffectIndex)
         }
     }
     sLog.outDebug("Spell ScriptStart %u for spellid %u in EffectSendEvent ", m_spellInfo->EffectMiscValue[EffectIndex], m_spellInfo->Id);
-    sWorld.ScriptsStart(sEventScripts, m_spellInfo->EffectMiscValue[EffectIndex], m_caster, focusObject);
+    m_caster->GetMap()->ScriptsStart(sEventScripts, m_spellInfo->EffectMiscValue[EffectIndex], m_caster, focusObject);
 }
 
 void Spell::EffectPowerBurn(uint32 i)
@@ -2795,7 +2845,11 @@ void Spell::EffectEnergize(uint32 i)
 
     if(m_spellInfo->EffectMiscValue[i] < 0 || m_spellInfo->EffectMiscValue[i] >= MAX_POWERS)
         return;
-  
+
+    // Don't energize targets with other power type
+    if(unitTarget->getPowerType() != m_spellInfo->EffectMiscValue[i])
+        return;
+
     //Serpent Coil Braid
     if(m_spellInfo->Id == 27103)
         if(unitTarget->HasAura(37447, 0))
@@ -2923,7 +2977,7 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
             case GAMEOBJECT_TYPE_DOOR:
             case GAMEOBJECT_TYPE_BUTTON:
                 gameObjTarget->UseDoorOrButton();
-                sWorld.ScriptsStart(sGameObjectScripts, gameObjTarget->GetDBTableGUIDLow(), player, gameObjTarget);
+                player->GetMap()->ScriptsStart(sGameObjectScripts, gameObjTarget->GetDBTableGUIDLow(), player, gameObjTarget);
                 return;
 
             case GAMEOBJECT_TYPE_QUESTGIVER:
@@ -2943,7 +2997,7 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
                 if (gameObjTarget->GetGOInfo()->goober.eventId)
                 {
                     sLog.outDebug("Goober ScriptStart id %u for GO %u", gameObjTarget->GetGOInfo()->goober.eventId,gameObjTarget->GetDBTableGUIDLow());
-                    sWorld.ScriptsStart(sEventScripts, gameObjTarget->GetGOInfo()->goober.eventId, player, gameObjTarget);
+                    player->GetMap()->ScriptsStart(sEventScripts, gameObjTarget->GetGOInfo()->goober.eventId, player, gameObjTarget);
                 }
 
                 // cast goober spell
@@ -2953,7 +3007,7 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
                         return;
 
                 Script->GOHello(player, gameObjTarget);
-                sWorld.ScriptsStart(sGameObjectScripts, gameObjTarget->GetDBTableGUIDLow(), player, gameObjTarget);
+                gameObjTarget->GetMap()->ScriptsStart(sGameObjectScripts, gameObjTarget->GetDBTableGUIDLow(), player, gameObjTarget);
 
                 gameObjTarget->AddUniqueUse(player);
                 gameObjTarget->SetLootState(GO_JUST_DEACTIVATED);
@@ -2975,7 +3029,7 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
                 if (gameObjTarget->GetGOInfo()->chest.eventId)
                 {
                     sLog.outDebug("Chest ScriptStart id %u for GO %u", gameObjTarget->GetGOInfo()->chest.eventId,gameObjTarget->GetDBTableGUIDLow());
-                    sWorld.ScriptsStart(sEventScripts, gameObjTarget->GetGOInfo()->chest.eventId, player, gameObjTarget);
+                    player->GetMap()->ScriptsStart(sEventScripts, gameObjTarget->GetGOInfo()->chest.eventId, player, gameObjTarget);
                 }
 
                 // triggering linked GO
@@ -3607,7 +3661,7 @@ void Spell::EffectAddFarsight(uint32 i)
     m_caster->AddDynObject(dynObj);
 
     dynObj->setActive(true);    //must before add to map to be put in world container
-    dynObj->GetMap()->Add(dynObj); //grid will also be loaded
+    m_caster->GetMap()->Add(dynObj); //grid will also be loaded
 
     // Need to update visibility of object for client to accept farsight guid
     ((Player*)m_caster)->UpdateVisibilityOf(dynObj);
@@ -5191,7 +5245,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
 
     // normal DB scripted effect
     sLog.outDebug("Spell ScriptStart spellid %u in EffectScriptEffect ", m_spellInfo->Id);
-    sWorld.ScriptsStart(sSpellScripts, m_spellInfo->Id, m_caster, unitTarget);
+    m_caster->GetMap()->ScriptsStart(sSpellScripts, m_spellInfo->Id, m_caster, unitTarget);
 }
 
 void Spell::EffectSanctuary(uint32 /*i*/)
@@ -5200,9 +5254,9 @@ void Spell::EffectSanctuary(uint32 /*i*/)
         return;
 
     std::list<Unit*> targets;
-    Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(unitTarget, unitTarget, World::GetMaxVisibleDistance());
+    Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(unitTarget, unitTarget, m_caster->GetMap()->GetVisibilityDistance());
     Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(targets, u_check);
-    unitTarget->VisitNearbyObject(World::GetMaxVisibleDistance(), searcher);
+    unitTarget->VisitNearbyObject(m_caster->GetMap()->GetVisibilityDistance(), searcher);
     for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
     {
         if(!(*iter)->hasUnitState(UNIT_STAT_CASTING))
@@ -5391,7 +5445,7 @@ void Spell::EffectActivateObject(uint32 effect_idx)
 
     int32 delay_secs = m_spellInfo->EffectMiscValue[effect_idx];
 
-    sWorld.ScriptCommandStart(activateCommand, delay_secs, m_caster, gameObjTarget);
+    gameObjTarget->GetMap()->ScriptCommandStart(activateCommand, delay_secs, m_caster, gameObjTarget);
 }
 
 void Spell::EffectSummonTotem(uint32 i)
@@ -5415,7 +5469,7 @@ void Spell::EffectSummonTotem(uint32 i)
         uint64 guid = m_caster->m_TotemSlot[slot];
         if(guid != 0)
         {
-            Creature *OldTotem = ObjectAccessor::GetCreature(*m_caster, guid);
+            Creature *OldTotem = m_caster->GetMap()->GetCreature(guid);
             if(OldTotem && OldTotem->isTotem())
                 ((Totem*)OldTotem)->UnSummon();
         }
@@ -5618,7 +5672,7 @@ void Spell::EffectSummonObject(uint32 i)
     {
         GameObject* obj = NULL;
         if( m_caster )
-            obj = ObjectAccessor::GetGameObject(*m_caster, guid);
+            obj = m_caster->GetMap()->GetGameObject(guid);
 
         if(obj) obj->Delete();
         m_caster->m_ObjectSlot[slot] = 0;
@@ -5775,7 +5829,7 @@ void Spell::EffectMomentMove(uint32 i)
         for(float i=0.5f; i<dis; i+=0.5f)
         {
             unitTarget->GetNearPoint2D(dx,dy,i,angle);
-            dz = MapManager::Instance().GetMap(mapid, unitTarget)->GetHeight(dx, dy, cz, useVmap);
+            dz = unitTarget->GetMap()->GetHeight(dx, dy, cz, useVmap);
                
             //Prevent climbing and go around object maybe 2.0f is to small? use 3.0f?
             if( (dz-cz) < 2.0f && (dz-cz) > -2.0f && (unitTarget->IsWithinLOS(dx, dy, dz)))
@@ -5810,7 +5864,7 @@ void Spell::EffectMomentMove(uint32 i)
         if(unitTarget->GetTypeId() == TYPEID_PLAYER)
             ((Player*)unitTarget)->TeleportTo(mapid, cx, cy, cz, unitTarget->GetOrientation(), TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (unitTarget==m_caster ? TELE_TO_SPELL : 0));
         else
-            MapManager::Instance().GetMap(mapid, unitTarget)->CreatureRelocation((Creature*)unitTarget, cx, cy, cz, unitTarget->GetOrientation());
+            unitTarget->GetMap()->CreatureRelocation((Creature*)unitTarget, cx, cy, cz, unitTarget->GetOrientation());
     }
 }
 
@@ -6180,7 +6234,7 @@ void Spell::EffectDestroyAllTotems(uint32 /*i*/)
         if(!m_caster->m_TotemSlot[slot])
             continue;
 
-        Creature* totem = ObjectAccessor::GetCreature(*m_caster,m_caster->m_TotemSlot[slot]);
+        Creature* totem = m_caster->GetMap()->GetCreature(m_caster->m_TotemSlot[slot]);
         if(totem && totem->isTotem())
         {
             uint32 spell_id = totem->GetUInt32Value(UNIT_CREATED_BY_SPELL);
@@ -6289,9 +6343,17 @@ void Spell::EffectTransmitted(uint32 effIndex)
 
     Map *cMap = m_caster->GetMap();
 
-    if(goinfo->type==GAMEOBJECT_TYPE_FISHINGNODE)
+    if(goinfo->type == GAMEOBJECT_TYPE_FISHINGNODE)
     {
-        if ( !cMap->IsInWater(fx,fy,fz-0.5f)) // Hack to prevent fishing bobber from failing to land on fishing hole
+        // SSC POOL
+        if(cMap->GetId() == 548 && m_caster->GetDistance(36.69, -416.38, -19.9645) <= 16)//center of strange pool
+        {
+            fx = 36.69+irand(-8,8);//random place for the bobber
+            fy = -416.38+irand(-8,8);
+            fz = -19.9645; //serpentshrine water level        
+        
+        }
+        else if ( !cMap->IsInWater(fx,fy,fz-0.5f)) // Hack to prevent fishing bobber from failing to land on fishing hole
         { // but this is not proper, we really need to ignore not materialized objects
             SendCastResult(SPELL_FAILED_NOT_HERE);
             SendChannelUpdate(0);
@@ -6299,7 +6361,8 @@ void Spell::EffectTransmitted(uint32 effIndex)
         }
 
         // replace by water level in this case
-        fz = cMap->GetWaterLevel(fx,fy);
+        if(cMap->GetId() != 548)//if map is not serpentshrine caverns
+            fz = cMap->GetWaterLevel(fx, fy);
     }
     // if gameobject is summoning object, it should be spawned right on caster's position
     else if(goinfo->type==GAMEOBJECT_TYPE_SUMMONING_RITUAL)

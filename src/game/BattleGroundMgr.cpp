@@ -634,6 +634,11 @@ void BattleGroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
         {
             // create new battleground
             bg2 = sBattleGroundMgr.CreateNewBattleGround(bgTypeId);
+            if (bg2)
+            {
+                uint32 minLevel = (queue_id + 1) * 10;
+                bg2->SetLevelRange(minLevel, minLevel + 9);
+            }
         }
 
         if(!bg2)
