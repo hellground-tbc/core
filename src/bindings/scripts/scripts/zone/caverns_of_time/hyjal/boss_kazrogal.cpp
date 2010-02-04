@@ -161,21 +161,13 @@ struct TRINITY_DLL_DECL boss_kazrogalAI : public hyjal_trashAI
             m_creature->RemoveAurasDueToSpell(SPELL_MARK);
         if(MarkTimer < diff)
         {
-            //cast dummy, useful for bos addons
-            m_creature->CastCustomSpell(m_creature, SPELL_MARK, NULL, NULL, NULL, false, NULL, NULL, m_creature->GetGUID());
+            m_creature->CastSpell(m_creature, SPELL_MARK, false);
 
-            std::list<HostilReference *> t_list = m_creature->getThreatManager().getThreatList();
-            for(std::list<HostilReference *>::iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
-            {
-                Unit *target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
-                if (target && target->GetTypeId() == TYPEID_PLAYER && target->getPowerType() == POWER_MANA)
-                {
-                    target->CastSpell(target, SPELL_MARK,true);//only cast on mana users
-                }
-            }
             MarkTimerBase -= 5000;
+
             if(MarkTimerBase < 5500)
-                MarkTimerBase = 5500;
+                MarkTimerBase = 10500;
+
             MarkTimer = MarkTimerBase;
             switch(rand()%3)
             {
