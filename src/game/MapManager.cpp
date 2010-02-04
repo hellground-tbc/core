@@ -193,7 +193,7 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player)
                 InstanceGroupBind* boundedInstance = player->GetGroup()->GetBoundInstance(mapid, player->GetDifficulty());
                 if(boundedInstance && boundedInstance->save)
                 {
-                    Map * pMap = MapManager::FindMap(mapid,boundedInstance->save->GetInstanceId());
+                    Map * pMap = NULL; //MapManager::FindMap(mapid,boundedInstance->save->GetInstanceId());
                     if(pMap && pMap->IsDungeon() && ((InstanceMap*)pMap)->GetInstanceData() && ((InstanceMap*)pMap)->GetInstanceData()->IsEncounterInProgress())
                     {
                         sLog.outDebug("MAP: Player '%s' can't enter instance '%s' while an encounter is in progress.", player->GetName(), mapName);

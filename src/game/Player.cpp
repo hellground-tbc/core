@@ -480,7 +480,6 @@ Player::~Player ()
 
 void Player::CleanupsBeforeDelete()
 {
-    DeleteCharmAI();
     if(m_uint32Values)                                      // only for fully created Object
     {
         TradeCancel(false);
