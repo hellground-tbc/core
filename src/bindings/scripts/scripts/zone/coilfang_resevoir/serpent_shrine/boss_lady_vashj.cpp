@@ -1063,6 +1063,7 @@ struct TRINITY_DLL_DECL mob_coilfang_striderAI : public ScriptedAI
         Move = false;
         OnPath = true;
         
+        m_creature->CastSpell(m_creature,38257,true);
         m_creature->GetMotionMaster()->MovePoint(MoveWP,StriderNagaWP[4*path_nr + 1][0],StriderNagaWP[4*path_nr + 1][1],StriderNagaWP[4*path_nr + 1][2]);
     }
 
@@ -1102,9 +1103,6 @@ struct TRINITY_DLL_DECL mob_coilfang_striderAI : public ScriptedAI
     {
         if(Move)
         {
-            if(MoveWP == 2)
-                m_creature->CastSpell(m_creature,38257,false);
-
             if(MoveWP >= 4)
             {
                 m_creature->SetSpeed(MOVE_WALK,1.5);
