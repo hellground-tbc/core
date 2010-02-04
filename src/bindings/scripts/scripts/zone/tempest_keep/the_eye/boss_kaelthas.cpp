@@ -80,7 +80,7 @@ EndScriptData */
 #define SPELL_PYROBLAST                   36819
 #define SPELL_FLAME_STRIKE                36735
 #define SPELL_FLAME_STRIKE_VIS            36730
-#define	SPELL_BANISH					  35182
+#define SPELL_BANISH                      18647// banish without self-healing
 #define SPELL_FLAME_STRIKE_DMG            36731
 #define SPELL_ARCANE_DISRUPTION           36834
 #define SPELL_SHOCK_BARRIER               36815
@@ -1909,14 +1909,17 @@ struct TRINITY_DLL_DECL mob_phoenix_tkAI : public ScriptedAI
             }
               //spell Burn should possible do this, but it doesn't, so do this for now.
              uint32 dmg = 0.05*(m_creature->GetMaxHealth());	// burn 5% of phoenix HP each tick
-
+         if(pInstance->GetData(DATA_KAELTHASEVENT) != 5)
+         {
              if (m_creature->GetHealth() > dmg)
              {
                  m_creature->SetHealth(uint32(m_creature->GetHealth()-dmg));
              }			 
               else m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);	//kill it
           Cycle_Timer = 2000;
+         }
         }else Cycle_Timer -= diff;
+
 
         if (!UpdateVictim())
             return;
