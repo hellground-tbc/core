@@ -20,8 +20,8 @@
 #ifndef TRINITY_SPELLAURADEFINES_H
 #define TRINITY_SPELLAURADEFINES_H
 
-#define MAX_AURAS 80
-#define MAX_POSITIVE_AURAS 40
+#define MAX_AURAS 56          // max display aura slots controlled by client
+#define MAX_POSITIVE_AURAS 30 // default: 40, test: 30 if smth go wrong ! revert
 
 enum AURA_FLAGS
 {
