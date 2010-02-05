@@ -4639,6 +4639,7 @@ void Unit::RemoveAllAurasOnDeath()
         else
             ++iter;
     }
+    RemoveCharmAuras();
 }
 
 void Unit::DelayAura(uint32 spellId, uint32 effindex, int32 delaytime)
