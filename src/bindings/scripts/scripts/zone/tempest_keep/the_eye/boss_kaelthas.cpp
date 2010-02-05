@@ -353,7 +353,6 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
     uint32 GravityLapse_Phase;
     uint32 NetherBeam_Timer;
     uint32 Kick_Timer;
-    uint32 FlameStrike_Timer;
     uint32 MindControl_Timer;
     uint32 Phoenix_Timer;
     uint32 Check_Timer;
@@ -424,7 +423,6 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
         PyrosCasted = 0;
         Pyro_Timer = 0;
         ShockBarrier_Timer = 60000;
-        FlameStrike_Timer = 29000;
         GravityLapse_Timer = 16000;
         GravityLapse_Phase = 0;
         NetherBeam_Timer = 8000;
@@ -1012,26 +1010,18 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                     }
                     else
                         Phoenix_Timer -=diff;
-
-                    // FlameStrike_Timer
-                    if(FlameStrike_Timer < diff && !InGravityLapse)
-                    {
-                        if (Unit* pUnit = SelectUnit(SELECT_TARGET_RANDOM, 0, 70, true))
-                            DoCast(pUnit, SPELL_FLAME_STRIKE);
-
-                        FlameStrike_Timer = 30000;
-                    }
-                    else
-                        FlameStrike_Timer -= diff;
                 }
                     
                 if(Phase != 5)
                     {
                         if(Arcane_Timer1 < diff && !Arcane1)
                         {
-                            //Arcane Disruption after 20 sec from Pyros chain (4 Phase) or Shock (5 Phase)
+                            //Arcane Disruption and Flamestrike after 20 sec from Pyros chain (4 Phase) or Shock (5 Phase)
                             DoCast(m_creature, SPELL_ARCANE_DISRUPTION, true);
                             Arcane1 = true;
+
+                            if (Unit* pUnit = SelectUnit(SELECT_TARGET_RANDOM, 0, 70, true))
+                            DoCast(pUnit, SPELL_FLAME_STRIKE);
 
                             // MC after 20 sec from Pyros chain (4 Phase)
                             if(Phase == 4)
@@ -1087,11 +1077,14 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                             }else
                                 MindControl_Timer -= diff;
 
-                            //Arcane Disruption after 40 sec from Pyros chain (4 Phase) or Shock (5 Phase)
+                            //Arcane Disruption and Flamestrike after 40 sec from Pyros chain (4 Phase) or Shock (5 Phase)
                             if(!Arcane2)
                             {
                             DoCast(m_creature, SPELL_ARCANE_DISRUPTION, true);
                             Arcane2 = true;
+
+                            if (Unit* pUnit = SelectUnit(SELECT_TARGET_RANDOM, 0, 70, true))
+                            DoCast(pUnit, SPELL_FLAME_STRIKE);
                             }
                         }
                         else
@@ -1184,7 +1177,6 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                                 InGravityLapse = true;
                                 Arcane_Timer1 = 0;
                                 Arcane1 = false;
-                                FlameStrike_Timer = 32000;
                                 ShockBarrier_Timer = 0;
                                 NetherBeam_Timer = 5000;
                                 Kick_Timer = 3000;
@@ -2285,9 +2277,9 @@ struct TRINITY_DLL_DECL weapon_advisorAI : public ScriptedAI
                 
                 if(Rend_Timer <= diff)
                 {
-                    if(Aura * aur = m_creature->GetAura(SPELL_WARP_REND,0))
-                        if(aur && aur->GetStackAmount() < 10)
-                            m_creature->CastSpell(m_creature->getVictim(),SPELL_WARP_REND,true);
+                    Aura * aur = m_creature->getVictim()->GetAura(SPELL_WARP_REND,0);
+                      if(!aur || aur->GetStackAmount() < 10)
+                          m_creature->CastSpell(m_creature->getVictim(),SPELL_WARP_REND,true);
                     Rend_Timer = 2000;
                 }else Rend_Timer -= diff;
                 
