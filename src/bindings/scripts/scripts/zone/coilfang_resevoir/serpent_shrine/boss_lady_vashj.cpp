@@ -1047,6 +1047,9 @@ struct TRINITY_DLL_DECL mob_coilfang_striderAI : public ScriptedAI
         m_creature->SetSpeed(MOVE_WALK,3);
         m_creature->SetSpeed(MOVE_RUN,3);
 
+        m_creature->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 2);
+        m_creature->SetFloatValue(UNIT_FIELD_COMBATREACH, 2);
+
         for(int i = 0; i < 3; ++i)
         {
             if(m_creature->GetDistance(StriderNagaWP[i*4][0],StriderNagaWP[i*4][1],StriderNagaWP[i*4][2]) < 5)

@@ -6047,8 +6047,7 @@ bool ChatHandler::HandleRespawnCommand(const char* /*args*/)
     Trinity::WorldObjectWorker<Trinity::RespawnDo> worker(u_do);
 
     TypeContainerVisitor<Trinity::WorldObjectWorker<Trinity::RespawnDo>, GridTypeMapContainer > obj_worker(worker);
-    CellLock<GridReadGuard> cell_lock(cell, p);
-    cell_lock->Visit(cell_lock, obj_worker, *pl->GetMap());
+    cell.Visit(p, obj_worker, *pl->GetMap());
 
     return true;
 }
@@ -7460,16 +7459,16 @@ bool ChatHandler::HandleBindSightCommand(const char* args)
     if (!pUnit)
         return false;
 
-    m_session->GetPlayer()->CastSpell(pUnit, 6277, true);
+    m_session->GetPlayer()->SetFarsightTarget(pUnit);
+
+    //pUnit->AddPlayerToVision(m_session->GetPlayer());
     return true;
 }
 
 bool ChatHandler::HandleUnbindSightCommand(const char* args)
 {
-    if (m_session->GetPlayer()->isPossessing())
-        return false;
-
-    m_session->GetPlayer()->StopCastingBindSight();
+    m_session->GetPlayer()->ClearFarsight();
+    //pUnit->RemovePlayerFromVision(m_session->GetPlayer());
     return true;
 }
 

@@ -34,7 +34,7 @@ EndScriptData */
 
 //Karathress spells
 #define SPELL_CATACLYSMIC_BOLT          38441
-#define SPELL_ENRAGE                    24318
+#define SPELL_ENRAGE                    35595
 #define SPELL_SEAR_NOVA                 38445
 #define SPELL_BLESSING_OF_THE_TIDES     38449
 
@@ -125,6 +125,7 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
     uint32 AuraCheck_Timer;
 
     bool BlessingOfTides;
+    uint8 BlessingOfTidesCounter;
 
     WorldLocation wLoc;
 
@@ -140,6 +141,7 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
         TidalSurge_Timer = 15000+rand()%5000; 
 
         BlessingOfTides = false;
+        BlessingOfTidesCounter = 0;
 
         if(pInstance)
         {
@@ -314,7 +316,6 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
         if (Enrage_Timer < diff)
         {
             DoCast(m_creature, SPELL_ENRAGE);
-            Enrage_Timer = 90000;
         }else Enrage_Timer -= diff;
 
         //Blessing of Tides Trigger
@@ -323,25 +324,27 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
             BlessingOfTides = true;
             bool continueTriggering = false;
             Creature* Advisor;
-            for(uint8 i = 0; i < 4; ++i)
+            for(uint8 i = 0; i < 4; ++i) 
+            {
                 if(Advisors[i])
                 {
                     Advisor = (Creature*)Unit::GetUnit(*m_creature,Advisors[i]);
-                    if(Advisor)
-                    {
-                        if(Advisor->isAlive())
-                        {
-                            continueTriggering = true;
-                            break;
-                        }
-                    }
+                    if(Advisor && Advisor->isAlive())
+                        BlessingOfTidesCounter++;
                 }
-                if( continueTriggering )
-                {
-                    m_creature->CastSpell(m_creature, SPELL_BLESSING_OF_THE_TIDES,false);
-                    DoYell(SAY_GAIN_BLESSING_OF_TIDES, LANG_UNIVERSAL, NULL);
-                    DoPlaySoundToSet(m_creature, SOUND_GAIN_BLESSING_OF_TIDES);
-                }
+            }
+
+            if(BlessingOfTidesCounter) 
+            {
+                DoYell(SAY_GAIN_BLESSING_OF_TIDES, LANG_UNIVERSAL, NULL);
+                DoPlaySoundToSet(m_creature, SOUND_GAIN_BLESSING_OF_TIDES);
+            }
+        }
+
+        if(BlessingOfTidesCounter) 
+        {
+            m_creature->CastSpell(m_creature, SPELL_BLESSING_OF_THE_TIDES,false);
+            BlessingOfTidesCounter--;
         }
 
         DoMeleeAttackIfReady();
