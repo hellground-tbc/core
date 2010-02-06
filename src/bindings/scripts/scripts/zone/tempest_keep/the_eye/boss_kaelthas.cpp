@@ -447,7 +447,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->SetFloatValue(OBJECT_FIELD_SCALE_X, 1.0f);
-        m_creature->Relocate(GRAVITY_X, GRAVITY_Y, GRAVITY_Z, 3.14f);
+        m_creature->Relocate(GRAVITY_X, GRAVITY_Y, GRAVITY_Z);
 
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
         m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);

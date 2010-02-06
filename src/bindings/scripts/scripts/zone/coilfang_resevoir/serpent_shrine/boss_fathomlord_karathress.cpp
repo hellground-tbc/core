@@ -34,7 +34,7 @@ EndScriptData */
 
 //Karathress spells
 #define SPELL_CATACLYSMIC_BOLT          38441
-#define SPELL_ENRAGE                    24318
+#define SPELL_ENRAGE                    35595
 #define SPELL_SEAR_NOVA                 38445
 #define SPELL_BLESSING_OF_THE_TIDES     38449
 
@@ -316,7 +316,6 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
         if (Enrage_Timer < diff)
         {
             DoCast(m_creature, SPELL_ENRAGE);
-            Enrage_Timer = 90000;
         }else Enrage_Timer -= diff;
 
         //Blessing of Tides Trigger
