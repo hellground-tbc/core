@@ -62,6 +62,8 @@ struct TRINITY_DLL_DECL boss_doomlordkazzakAI : public ScriptedAI
     uint32 Twisted_Reflection_Timer;
     uint32 Check_Timer;
 
+    bool Enraged;
+
     WorldLocation wLoc;
 
     void Reset()
@@ -75,6 +77,7 @@ struct TRINITY_DLL_DECL boss_doomlordkazzakAI : public ScriptedAI
         Twisted_Reflection_Timer = 33000;                   // Timer may be incorrect
         Check_Timer = 2000;
         SVolley_count = 0;
+        Enraged = false;
     }
 
     void JustRespawned()
@@ -124,52 +127,61 @@ struct TRINITY_DLL_DECL boss_doomlordkazzakAI : public ScriptedAI
                 EnterEvadeMode();
 
             Check_Timer = 2000;
-        }else Check_Timer -= diff;
+        }
+        else
+            Check_Timer -= diff;
         
         //ShadowVolley_Timer
         if (ShadowVolley_Timer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_SHADOWVOLLEY);
-            ShadowVolley_Timer = 4000 + rand()%2000;
-        }else ShadowVolley_Timer -= diff;
+            DoCast(m_creature, SPELL_SHADOWVOLLEY);
 
-        if(m_creature->HasAura(SPELL_ENRAGE,0))
-        {
-            //ShadowVolley_Timer
-            if (ShadowVolley_Timer < diff)
+            if(Enraged)
             {
                 SVolley_count++; 
-                DoCast(m_creature->getVictim(), SPELL_SHADOWVOLLEY);
 
                 if(SVolley_count >= 6)
+                {
+                    Enraged = false;
                     m_creature->RemoveAurasDueToSpell(SPELL_ENRAGE);
-
-                ShadowVolley_Timer = 3000;
-            }else ShadowVolley_Timer -= diff;
+                }
+                ShadowVolley_Timer = 2000;
+            }
+            else
+                ShadowVolley_Timer = 4000 + rand()%2000;
         }
+        else
+            ShadowVolley_Timer -= diff;
+
         //Cleave_Timer
         if (Cleave_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_CLEAVE);
             Cleave_Timer = 8000 + rand()%4000;
-        }else Cleave_Timer -= diff;
+        }
+        else
+            Cleave_Timer -= diff;
 
         //ThunderClap_Timer
         if (ThunderClap_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_THUNDERCLAP);
             ThunderClap_Timer = 10000 + rand()%4000;
-        }else ThunderClap_Timer -= diff;
+        }
+        else
+            ThunderClap_Timer -= diff;
 
         //VoidBolt_Timer
         if (VoidBolt_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_VOIDBOLT);
             VoidBolt_Timer = 15000 + rand()%3000;
-        }else VoidBolt_Timer -= diff;
+        }
+        else
+            VoidBolt_Timer -= diff;
 
         //MarkOfKazzak_Timer
-        if (MarkOfKazzak_Timer < diff)
+        if(MarkOfKazzak_Timer < diff)
         {
             Unit* victim = SelectUnit(SELECT_TARGET_RANDOM, 0);
             if(victim->GetPower(POWER_MANA))
@@ -177,21 +189,29 @@ struct TRINITY_DLL_DECL boss_doomlordkazzakAI : public ScriptedAI
                 DoCast(victim, SPELL_MARKOFKAZZAK);
                 MarkOfKazzak_Timer = 20000;
             }
-        }else MarkOfKazzak_Timer -= diff;
+        }
+        else
+            MarkOfKazzak_Timer -= diff;
 
         //Enrage_Timer
         if (Enrage_Timer < diff)
         {
             DoScriptText(EMOTE_FRENZY, m_creature);
             DoCast(m_creature,SPELL_ENRAGE);
+            Enraged = true;
+            SVolley_count = 0;
             Enrage_Timer = 40000;
-        }else Enrage_Timer -= diff;
+        }
+        else
+            Enrage_Timer -= diff;
 
         if(Twisted_Reflection_Timer < diff)
         {
             DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_TWISTEDREFLECTION);
             Twisted_Reflection_Timer = 15000;
-        }else Twisted_Reflection_Timer -= diff;
+        }
+        else
+            Twisted_Reflection_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }

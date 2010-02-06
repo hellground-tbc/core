@@ -353,7 +353,6 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
     uint32 GravityLapse_Phase;
     uint32 NetherBeam_Timer;
     uint32 Kick_Timer;
-    uint32 FlameStrike_Timer;
     uint32 MindControl_Timer;
     uint32 Phoenix_Timer;
     uint32 Check_Timer;
@@ -424,7 +423,6 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
         PyrosCasted = 0;
         Pyro_Timer = 0;
         ShockBarrier_Timer = 60000;
-        FlameStrike_Timer = 29000;
         GravityLapse_Timer = 16000;
         GravityLapse_Phase = 0;
         NetherBeam_Timer = 8000;
@@ -1012,26 +1010,18 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                     }
                     else
                         Phoenix_Timer -=diff;
-
-                    // FlameStrike_Timer
-                    if(FlameStrike_Timer < diff && !InGravityLapse)
-                    {
-                        if (Unit* pUnit = SelectUnit(SELECT_TARGET_RANDOM, 0, 70, true))
-                            DoCast(pUnit, SPELL_FLAME_STRIKE);
-
-                        FlameStrike_Timer = 30000;
-                    }
-                    else
-                        FlameStrike_Timer -= diff;
                 }
                     
                 if(Phase != 5)
                     {
                         if(Arcane_Timer1 < diff && !Arcane1)
                         {
-                            //Arcane Disruption after 20 sec from Pyros chain (4 Phase) or Shock (5 Phase)
+                            //Arcane Disruption and Flamestrike after 20 sec from Pyros chain (4 Phase) or Shock (5 Phase)
                             DoCast(m_creature, SPELL_ARCANE_DISRUPTION, true);
                             Arcane1 = true;
+
+                            if (Unit* pUnit = SelectUnit(SELECT_TARGET_RANDOM, 0, 70, true))
+                            DoCast(pUnit, SPELL_FLAME_STRIKE);
 
                             // MC after 20 sec from Pyros chain (4 Phase)
                             if(Phase == 4)
@@ -1087,11 +1077,14 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                             }else
                                 MindControl_Timer -= diff;
 
-                            //Arcane Disruption after 40 sec from Pyros chain (4 Phase) or Shock (5 Phase)
+                            //Arcane Disruption and Flamestrike after 40 sec from Pyros chain (4 Phase) or Shock (5 Phase)
                             if(!Arcane2)
                             {
                             DoCast(m_creature, SPELL_ARCANE_DISRUPTION, true);
                             Arcane2 = true;
+
+                            if (Unit* pUnit = SelectUnit(SELECT_TARGET_RANDOM, 0, 70, true))
+                            DoCast(pUnit, SPELL_FLAME_STRIKE);
                             }
                         }
                         else
@@ -1117,7 +1110,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                             }
                             DoCast(m_creature, SPELL_SHOCK_BARRIER, true);
                             DoCast(m_creature, SPELL_ARCANE_DISRUPTION, true);
-                            Fireball_Timer = 2500;
+                            Fireball_Timer = 6000;
                             Arcane_Timer1 = 20000;
                             Arcane1 = false;
                             Arcane_Timer2 = 40000;
@@ -1179,12 +1172,16 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                                 DoTeleportTo(GRAVITY_X, GRAVITY_Y, GRAVITY_Z);
                                 // 1) Kael'thas casts teleportation visual spell on self
                                 m_creature->CastSpell(m_creature, SPELL_GRAVITY_KAEL_VISUAL, false);
+                                switch(rand()%2)
+                                {
+                                case 0: DoScriptText(SAY_GRAVITYLAPSE1, m_creature); break;
+                                case 1: DoScriptText(SAY_GRAVITYLAPSE2, m_creature); break;
+                                }
                                 GravityLapse_Timer = 2000;
                                 ++GravityLapse_Phase;
                                 InGravityLapse = true;
                                 Arcane_Timer1 = 0;
                                 Arcane1 = false;
-                                FlameStrike_Timer = 32000;
                                 ShockBarrier_Timer = 0;
                                 NetherBeam_Timer = 5000;
                                 Kick_Timer = 3000;
@@ -1211,11 +1208,6 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                                 if(pInstance)
                                     pInstance->SetData(DATA_KAELTHASEVENT, 5);	// set KaelthasEventPhase = 5 for Gravity Lapse phase
 
-                                switch(rand()%2)
-                                {
-                                case 0: DoScriptText(SAY_GRAVITYLAPSE1, m_creature); break;
-                                case 1: DoScriptText(SAY_GRAVITYLAPSE2, m_creature); break;
-                                }
                                 //Cast nether vapor summoning
                                 GravityLapse_Timer = 3000;
                                 DoCast(m_creature, SPELL_SUMMON_NETHER_VAPOR);
@@ -1978,6 +1970,8 @@ struct TRINITY_DLL_DECL mob_phoenix_egg_tkAI : public ScriptedAI
       //prevent eggs from hatching when in Gravity Lapse
       if(pInstance->GetData(DATA_KAELTHASEVENT) == 4)
       {
+        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+
         if (Rebirth_Timer < diff)
         {
             if(!summoned)
@@ -1989,7 +1983,9 @@ struct TRINITY_DLL_DECL mob_phoenix_egg_tkAI : public ScriptedAI
         }
         else
             Rebirth_Timer -= diff;
-      }
+      } 
+      else if(pInstance->GetData(DATA_KAELTHASEVENT) == 5)
+              m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
 
       //remove phoenix eggs if encounter resets or done
       if(pInstance->GetData(DATA_KAELTHASEVENT) == NOT_STARTED || pInstance->GetData(DATA_KAELTHASEVENT) == DONE)
@@ -2285,10 +2281,12 @@ struct TRINITY_DLL_DECL weapon_advisorAI : public ScriptedAI
                 
                 if(Rend_Timer <= diff)
                 {
-                    if(Aura * aur = m_creature->GetAura(SPELL_WARP_REND,0))
-                        if(aur && aur->GetStackAmount() < 10)
-                            m_creature->CastSpell(m_creature->getVictim(),SPELL_WARP_REND,true);
-                    Rend_Timer = 2000;
+                    Aura * aur = m_creature->getVictim()->GetAura(SPELL_WARP_REND,0);
+                      if(!aur || aur->GetStackAmount() < 10)
+                          m_creature->CastSpell(m_creature->getVictim(),SPELL_WARP_REND,true);
+                      if(aur && aur->GetStackAmount() == 10)
+                          aur->SetStackAmount(9);
+                    Rend_Timer = 2500;
                 }else Rend_Timer -= diff;
                 
                 DoMeleeAttackIfReady();

@@ -246,8 +246,7 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
 
             TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> cSearcher(searcher);
 
-            CellLock<GridReadGuard> cell_lock(cell, pair);
-            cell_lock->Visit(cell_lock, cSearcher, *(m_creature->GetMap()));
+            cell.Visit(pair, cSearcher, *(m_creature->GetMap()));
         }
 
         //error_log("Eggs %d at middle", templist.size());
@@ -281,8 +280,7 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
 
             TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> cSearcher(searcher);
 
-            CellLock<GridReadGuard> cell_lock(cell, pair);
-            cell_lock->Visit(cell_lock, cSearcher, *(m_creature->GetMap()));
+            cell.Visit(pair, cSearcher, *(m_creature->GetMap()));
         }
         for(std::list<Creature*>::iterator i = templist.begin(); i != templist.end(); ++i)
         {
@@ -536,8 +534,7 @@ struct TRINITY_DLL_DECL mob_amanishi_hatcherAI : public ScriptedAI
 
             TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> cSearcher(searcher);
 
-            CellLock<GridReadGuard> cell_lock(cell, pair);
-            cell_lock->Visit(cell_lock, cSearcher, *(m_creature->GetMap()));
+            cell.Visit(pair, cSearcher, *(m_creature->GetMap()));
         }
 
         //error_log("Eggs %d at %d", templist.size(), side);

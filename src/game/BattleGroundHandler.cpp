@@ -461,6 +461,12 @@ void WorldSession::HandleBattleGroundPlayerPortOpcode( WorldPacket &recv_data )
                 sBattleGroundMgr.SendToBattleGround(_player, instanceId);
                 // add only in HandleMoveWorldPortAck()
                 // bg->AddPlayer(_player,team);
+
+                for (int i = 0; i < MAX_BATTLEGROUND_QUEUE_TYPES; ++i)
+                    if (i != bgQueueTypeId)
+                        _player->RemoveBattleGroundQueueId(i);
+
+
                 sLog.outDebug("Battleground: player %s (%u) joined battle for bg %u, bgtype %u, queue type %u.",_player->GetName(),_player->GetGUIDLow(),bg->GetInstanceID(),bg->GetTypeID(),bgQueueTypeId);
                 break;
             case 0:                                     // leave queue

@@ -1216,9 +1216,9 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
 
         DiminishingReturnsType type = GetDiminishingReturnsGroupType(m_diminishGroup);
         // Increase Diminishing on unit, current informations for actually casts will use values above
-        if((type == DRTYPE_PLAYER && (unit->GetTypeId() == TYPEID_PLAYER || ((Creature*)unit)->isPet() || ((Creature*)unit)->isPossessedByPlayer())) || type == DRTYPE_ALL)
+        if((type == DRTYPE_PLAYER && unit->isCharmedOwnedByPlayerOrPlayer()) || type == DRTYPE_ALL)
         {
-            if(m_caster->GetTypeId() == TYPEID_PLAYER || ((Creature*)m_caster)->isPet())         
+            if(m_caster->isCharmedOwnedByPlayerOrPlayer())         
                 unit->IncrDiminishing(m_diminishGroup);
         }
     }
@@ -4784,9 +4784,8 @@ uint8 Spell::CheckItems()
         Trinity::GameObjectSearcher<Trinity::GameObjectFocusCheck> checker(ok,go_check);
 
         TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectFocusCheck>, GridTypeMapContainer > object_checker(checker);
-        CellLock<GridReadGuard> cell_lock(cell, p);
         Map& map = *m_caster->GetMap();
-        cell_lock->Visit(cell_lock, object_checker, map, *m_caster, map.GetVisibilityDistance());
+        cell.Visit(p, object_checker, map, *m_caster, map.GetVisibilityDistance());
 
         if(!ok)
             return (uint8)SPELL_FAILED_REQUIRES_SPELL_FOCUS;
@@ -5158,7 +5157,7 @@ bool Spell::CheckTargetCreatureType(Unit* target) const
     if(m_spellInfo->SpellFamilyName==SPELLFAMILY_WARLOCK && m_spellInfo->SpellFamilyFlags == 0x0200000000LL)
     {
         // not allow cast at player
-        if(target->GetTypeId() == TYPEID_PLAYER || ((Creature*)target)->isPet())
+        if(target->isCharmedOwnedByPlayerOrPlayer())
             return false;
 
         spellCreatureTargetMask = 0x7FF;
