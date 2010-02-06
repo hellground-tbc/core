@@ -125,6 +125,7 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
     uint32 AuraCheck_Timer;
 
     bool BlessingOfTides;
+    uint8 BlessingOfTidesCounter;
 
     WorldLocation wLoc;
 
@@ -140,6 +141,7 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
         TidalSurge_Timer = 15000+rand()%5000; 
 
         BlessingOfTides = false;
+        BlessingOfTidesCounter = 0;
 
         if(pInstance)
         {
@@ -323,25 +325,27 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
             BlessingOfTides = true;
             bool continueTriggering = false;
             Creature* Advisor;
-            for(uint8 i = 0; i < 4; ++i)
+            for(uint8 i = 0; i < 4; ++i) 
+            {
                 if(Advisors[i])
                 {
                     Advisor = (Creature*)Unit::GetUnit(*m_creature,Advisors[i]);
-                    if(Advisor)
-                    {
-                        if(Advisor->isAlive())
-                        {
-                            continueTriggering = true;
-                            break;
-                        }
-                    }
+                    if(Advisor && Advisor->isAlive())
+                        BlessingOfTidesCounter++;
                 }
-                if( continueTriggering )
-                {
-                    m_creature->CastSpell(m_creature, SPELL_BLESSING_OF_THE_TIDES,false);
-                    DoYell(SAY_GAIN_BLESSING_OF_TIDES, LANG_UNIVERSAL, NULL);
-                    DoPlaySoundToSet(m_creature, SOUND_GAIN_BLESSING_OF_TIDES);
-                }
+            }
+
+            if(BlessingOfTidesCounter) 
+            {
+                DoYell(SAY_GAIN_BLESSING_OF_TIDES, LANG_UNIVERSAL, NULL);
+                DoPlaySoundToSet(m_creature, SOUND_GAIN_BLESSING_OF_TIDES);
+            }
+        }
+
+        if(BlessingOfTidesCounter) 
+        {
+            m_creature->CastSpell(m_creature, SPELL_BLESSING_OF_THE_TIDES,false);
+            BlessingOfTidesCounter--;
         }
 
         DoMeleeAttackIfReady();
