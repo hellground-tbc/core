@@ -135,8 +135,8 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
     {
         PulseCombat_Timer = 5000;
         CataclysmicBolt_Timer = 10000;
-        Enrage_Timer = 600000;                              //10 minutes
-        SearNova_Timer = 20000+rand()%40000; // 20 - 60 seconds
+        Enrage_Timer = 600000;                 // 10 minutes
+        SearNova_Timer = 20000+rand()%40000;   // 20 - 60 seconds
         AuraCheck_Timer = 3000; 
         TidalSurge_Timer = 15000+rand()%5000; 
 
@@ -146,9 +146,21 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
         if(pInstance)
         {
             uint64 RAdvisors[3];
+
+            if(Creature *sharkkisPet = Unit::GetCreature(*m_creature, pInstance->GetData64(DATA_SHARKKIS_PET)))
+                m_creature->Kill(sharkkisPet,false);
+
             RAdvisors[0] = pInstance->GetData64(DATA_SHARKKIS);
             RAdvisors[1] = pInstance->GetData64(DATA_TIDALVESS);
             RAdvisors[2] = pInstance->GetData64(DATA_CARIBDIS);
+            
+            // Don't respawn adds if encounter is done
+            if(pInstance->GetData(DATA_KARATHRESSEVENT) == DONE)
+            {
+                m_creature->SummonCreature(SEER_OLUM, OLUM_X, OLUM_Y, OLUM_Z, OLUM_O, TEMPSUMMON_TIMED_DESPAWN, 3600000);
+                return;
+            }
+
             //Respawn of the 3 Advisors
             Creature* pAdvisor = NULL;
             for( int i=0; i<3; i++ ){
@@ -369,9 +381,6 @@ struct TRINITY_DLL_DECL boss_fathomguard_sharkkisAI : public ScriptedAI
 
     bool pet;
 
-    uint64 SummonedPet;
-
-
     void Reset()
     {
         LeechingThrow_Timer = 20000;
@@ -380,18 +389,8 @@ struct TRINITY_DLL_DECL boss_fathomguard_sharkkisAI : public ScriptedAI
         Pet_Timer = 10000;
 
         pet = false;
-
-        Creature *Pet = (Creature*) Unit::GetUnit(*m_creature, SummonedPet);
-        if( Pet && Pet->isAlive() )
-        {
-            Pet->DealDamage( Pet, Pet->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false );
-        }
-
-        SummonedPet = 0;
-
-        if( pInstance )
-            pInstance->SetData(DATA_KARATHRESSEVENT, NOT_STARTED);
     }
+
     void JustSummoned(Creature *Pet)
     {
         if(Pet && (Pet->GetEntry() == PetID[0] || Pet->GetEntry() == PetID[1]))
@@ -400,10 +399,12 @@ struct TRINITY_DLL_DECL boss_fathomguard_sharkkisAI : public ScriptedAI
             if (Pet && target)
             {
                 Pet->AI()->AttackStart(target);
-                SummonedPet = Pet->GetGUID();
+                if(pInstance)
+                    pInstance->SetData64(DATA_SHARKKIS_PET,Pet->GetGUID());
             } 
         }
     }
+
     void JustDied(Unit *victim)
     {
         if (pInstance)
@@ -461,26 +462,31 @@ struct TRINITY_DLL_DECL boss_fathomguard_sharkkisAI : public ScriptedAI
         {
             DoCast(m_creature->getVictim(), SPELL_MULTISHOT);
             Multishot_Timer = 10000;
-        }else Multishot_Timer -= diff;
+        }
+        else
+            Multishot_Timer -= diff;
 
         //TheBeastWithin_Timer
         if(TheBeastWithin_Timer < diff)
         {
             DoCast(m_creature, SPELL_THE_BEAST_WITHIN);
-            Creature *Pet = (Creature*) Unit::GetUnit(*m_creature, SummonedPet);
-            if( Pet && Pet->isAlive() )
-            {
-                Pet->CastSpell(Pet, SPELL_PET_ENRAGE, true );
-            }
-            TheBeastWithin_Timer = 30000;
-        }else TheBeastWithin_Timer -= diff;
+            Creature *pet = Unit::GetCreature(*m_creature, pInstance->GetData64(DATA_SHARKKIS_PET));
+            if(pet && pet->isAlive())
+                pet->CastSpell(pet, SPELL_PET_ENRAGE, true );
 
-        //Pet_Timer
-        if(Pet_Timer < diff && pet == false)
-        {
-            pet = true;
-            DoCast(m_creature, SpellID[rand()%2]);
-        }else Pet_Timer -= diff;
+            TheBeastWithin_Timer = 30000;
+        }
+        else
+            TheBeastWithin_Timer -= diff;
+
+        if(!pet)
+            if(Pet_Timer < diff)
+            {
+                pet = true;
+                DoCast(m_creature, SpellID[rand()%2]);
+            }
+            else
+                Pet_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }
@@ -507,21 +513,16 @@ struct TRINITY_DLL_DECL boss_fathomguard_tidalvessAI : public ScriptedAI
         Spitfire_Timer = 60000;
         PoisonCleansing_Timer = 30000;
         Earthbind_Timer = 45000;
-
-        if (pInstance)
-            pInstance->SetData(DATA_KARATHRESSEVENT, NOT_STARTED);
     }
 
     void JustDied(Unit *victim)
     {
-        if (pInstance)
+        if(pInstance)
         {
-            Creature *Karathress = NULL;
-            Karathress = (Creature*)(Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_KARATHRESS)));
-
-            if (Karathress)
-                if(!m_creature->isAlive() && Karathress)
-                    ((boss_fathomlord_karathressAI*)Karathress->AI())->EventAdvisorDeath(1);
+            Creature *Karathress = Unit::GetCreature((*m_creature), pInstance->GetData64(DATA_KARATHRESS));
+            
+            if(Karathress && !m_creature->isAlive())
+                ((boss_fathomlord_karathressAI*)Karathress->AI())->EventAdvisorDeath(1);
         }
     }
 
@@ -540,12 +541,8 @@ struct TRINITY_DLL_DECL boss_fathomguard_tidalvessAI : public ScriptedAI
         //Only if not incombat check if the event is started
         if (!InCombat && pInstance && pInstance->GetData(DATA_KARATHRESSEVENT))
         {
-            Unit* target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_KARATHRESSEVENT_STARTER));
-
-            if (target)
-            {
+            if(Unit* target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_KARATHRESSEVENT_STARTER)))
                 AttackStart(target);
-            }
         }
 
         //Return since we have no target
