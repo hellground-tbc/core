@@ -1022,14 +1022,14 @@ void Pet::UpdateDamagePhysical(WeaponAttackType attType)
                     bonusDamage = spellDmg * 0.4f;
             }
         }
-        // shadowfiend
+        // shadowfiend 65.7% per 10 hits so 6.57 per hit
         else if(GetEntry() == 19668)
         {
             if(Unit *owner = GetOwner())
             {
                 int32 sDmamage = int32(owner->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_SHADOW));
                 if(sDmamage > 0)
-                    bonusDamage = sDmamage * 0.65f;
+                    bonusDamage = sDmamage * 0.0657f;
             }
         }
     }
