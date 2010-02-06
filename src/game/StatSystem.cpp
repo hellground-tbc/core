@@ -1022,6 +1022,16 @@ void Pet::UpdateDamagePhysical(WeaponAttackType attType)
                     bonusDamage = spellDmg * 0.4f;
             }
         }
+        // shadowfiend
+        else if(GetEntry() == 19668)
+        {
+            if(Unit *owner = GetOwner())
+            {
+                int32 sDmamage = int32(owner->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_SHADOW));
+                if(sDmamage > 0)
+                    bonusDamage = sDmamage * 0.65f;
+            }
+        }
     }
 
     UnitMods unitMod = UNIT_MOD_DAMAGE_MAINHAND;
