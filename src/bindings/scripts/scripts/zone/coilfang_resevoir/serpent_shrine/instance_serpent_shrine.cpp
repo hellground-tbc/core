@@ -62,6 +62,7 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
 
     uint64 LurkerBelow;
     uint64 Sharkkis;
+    uint64 SharkkisPet;
     uint64 Tidalvess;
     uint64 Caribdis;
     uint64 LadyVashj;
@@ -88,6 +89,7 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
     {
         LurkerBelow = 0;
         Sharkkis = 0;
+        SharkkisPet = 0;
         Tidalvess = 0;
         Caribdis = 0;
         LadyVashj = 0;
@@ -190,6 +192,8 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
             KarathressEvent_Starter = data;
         if(type == DATA_LEOTHERAS_EVENT_STARTER)
             LeotherasEventStarter = data;
+        if(type == DATA_SHARKKIS_PET)
+            SharkkisPet = data;
     }
 
     uint64 GetData64(uint32 identifier)
@@ -198,6 +202,7 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
         {
             case DATA_THELURKERBELOW:           return LurkerBelow;
             case DATA_SHARKKIS:                 return Sharkkis;
+            case DATA_SHARKKIS_PET:             return SharkkisPet;
             case DATA_TIDALVESS:                return Tidalvess;
             case DATA_CARIBDIS:                 return Caribdis;
             case DATA_LADYVASHJ:                return LadyVashj;

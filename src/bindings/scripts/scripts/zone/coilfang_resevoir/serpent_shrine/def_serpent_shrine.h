@@ -43,5 +43,6 @@ enum WaterEventState
 #define DATA_STRANGE_POOL 23
 #define DATA_WATER 24
 #define DATA_TRASH 25
+#define DATA_SHARKKIS_PET 26
 #endif
 
