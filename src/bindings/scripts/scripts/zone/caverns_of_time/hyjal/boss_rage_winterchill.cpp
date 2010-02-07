@@ -204,6 +204,7 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
             DoCast(m_creature, SPELL_BERSERK);
             Enrage_Timer = 300000;
         }
+        else Enrage_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }
