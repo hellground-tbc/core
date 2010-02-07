@@ -6,7 +6,7 @@
 #define SPELL_CLEAVE   31436
 #define SPELL_WARSTOMP 31480
 #define SPELL_MARK     31447
-#define SPELL_CRIPPLE  31406
+#define SPELL_CRIPPLE  31477
 
 #define SOUND_ONDEATH 11018
 
@@ -169,7 +169,7 @@ struct TRINITY_DLL_DECL boss_kazrogalAI : public hyjal_trashAI
         if(CrippleTimer < diff)
         {
             if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,1,90,true))
-                DoCast(target, SPELL_WARSTOMP);
+                DoCast(target, SPELL_CRIPPLE);
 
             CrippleTimer = 20000+rand()%10000;
         }
