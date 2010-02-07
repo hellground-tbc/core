@@ -3,9 +3,10 @@
 #include "def_hyjal.h"
 #include "hyjal_trash.h"
 
-#define SPELL_CLEAVE 31436
+#define SPELL_CLEAVE   31436
 #define SPELL_WARSTOMP 31480
-#define SPELL_MARK 31447
+#define SPELL_MARK     31447
+#define SPELL_CRIPPLE  31406
 
 #define SOUND_ONDEATH 11018
 
@@ -44,6 +45,8 @@ struct TRINITY_DLL_DECL boss_kazrogalAI : public hyjal_trashAI
     uint32 MarkTimer;
     uint32 MarkTimerBase;
     uint32 CheckTimer;
+    uint32 CrippleTimer;
+
     bool go;
     uint32 pos;
 
@@ -55,6 +58,7 @@ struct TRINITY_DLL_DECL boss_kazrogalAI : public hyjal_trashAI
         MarkTimer = 45000;
         MarkTimerBase = 45000;
         CheckTimer = 3000;
+        CrippleTimer = 15000+rand()%10000;
 
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
         m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
@@ -67,6 +71,7 @@ struct TRINITY_DLL_DECL boss_kazrogalAI : public hyjal_trashAI
     {
         if(pInstance && IsEvent)
             pInstance->SetData(DATA_KAZROGALEVENT, IN_PROGRESS);
+
         DoPlaySoundToSet(m_creature, SOUND_ONAGGRO);
         DoYell(SAY_ONAGGRO, LANG_UNIVERSAL, NULL);
     }
@@ -147,7 +152,7 @@ struct TRINITY_DLL_DECL boss_kazrogalAI : public hyjal_trashAI
 
         if(CleaveTimer < diff)
         {
-            DoCast(m_creature->getVicitm(), SPELL_CLEAVE);
+            DoCast(m_creature->getVictim(), SPELL_CLEAVE);
             CleaveTimer = 6000+rand()%15000;
         }
         else
@@ -160,6 +165,16 @@ struct TRINITY_DLL_DECL boss_kazrogalAI : public hyjal_trashAI
         }
         else
             WarStompTimer -= diff;
+
+        if(CrippleTimer < diff)
+        {
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,1,90,true))
+                DoCast(target, SPELL_WARSTOMP);
+
+            CrippleTimer = 20000+rand()%10000;
+        }
+        else
+            CrippleTimer -= diff;
 
         if(m_creature->HasAura(SPELL_MARK,0))
             m_creature->RemoveAurasDueToSpell(SPELL_MARK);
