@@ -1176,14 +1176,19 @@ struct mob_frost_wyrmAI : public hyjal_trashAI
                 }
             }
         }
+
         if (!UpdateVictim())
             return;
-        if(m_creature->GetDistance(m_creature->getVictim()) >= 25){
-            if(MoveTimer<diff)
+
+        if(m_creature->GetDistance(m_creature->getVictim()) >= 25)
+        {
+            if(MoveTimer < diff)
             {
                 m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
                 MoveTimer = 2000;
-            }else MoveTimer-=diff;
+            }
+            else
+                MoveTimer -= diff;
         }
 
         if(FrostBreathTimer<diff)
@@ -1315,11 +1320,17 @@ struct mob_gargoyleAI : public hyjal_trashAI
                 float x,y,z;
                 m_creature->getVictim()->GetPosition(x,y,z);
                 m_creature->GetMotionMaster()->MovePoint(0,x,y,z+Zpos);
-                Zpos-=1.0;
-                if(Zpos<=0)Zpos=0;
+                Zpos -= 1.0;
+
+                if(Zpos<=0)
+                    Zpos=0;
+
                 MoveTimer = 2000;
-            }else MoveTimer-=diff;
+            }
+            else
+                MoveTimer -= diff;
         }
+
         if(StrikeTimer<diff)
         {
             if(m_creature->GetDistance(m_creature->getVictim()) < 20)
@@ -1328,8 +1339,12 @@ struct mob_gargoyleAI : public hyjal_trashAI
                 m_creature->StopMoving();
                 m_creature->GetMotionMaster()->Clear();
                 StrikeTimer = 2000+rand()%1000;
-            }else StrikeTimer=0;
-        }else StrikeTimer -= diff;
+            }
+            else
+                StrikeTimer = 0;
+        }
+        else
+            StrikeTimer -= diff;
     }
 };
 
@@ -1340,6 +1355,7 @@ CreatureAI* GetAI_mob_gargoyle(Creature* _Creature)
 }
 
 #define SPELL_EXPLODING_SHOT 7896
+#define SPELL_SHOOT 32103
 
 struct TRINITY_DLL_DECL alliance_riflemanAI : public Scripted_NoMovementAI
 {
@@ -1349,6 +1365,7 @@ struct TRINITY_DLL_DECL alliance_riflemanAI : public Scripted_NoMovementAI
     }
 
     uint32 ExplodeTimer;
+    uint32 ShootTimer;
 
     void JustDied(Unit*)
     {
@@ -1356,6 +1373,7 @@ struct TRINITY_DLL_DECL alliance_riflemanAI : public Scripted_NoMovementAI
 
     void Reset()
     {
+        ShootTimer = 2000;
         ExplodeTimer = 5000+rand()%5000;
     }
 
@@ -1383,6 +1401,7 @@ struct TRINITY_DLL_DECL alliance_riflemanAI : public Scripted_NoMovementAI
         //Check if we have a target
         if (!UpdateVictim())
             return;
+
         if(ExplodeTimer < diff)
         {
             if (!m_creature->IsWithinDistInMap(m_creature->getVictim(), 30))
@@ -1390,11 +1409,22 @@ struct TRINITY_DLL_DECL alliance_riflemanAI : public Scripted_NoMovementAI
                 EnterEvadeMode();
                 return;
             }
+
             int dmg = 500+rand()%700;
+
             m_creature->CastCustomSpell(m_creature->getVictim(), SPELL_EXPLODING_SHOT, &dmg, 0, 0, false);
-            ExplodeTimer = 5000+rand()%5000;
-        }else ExplodeTimer -= diff;
-        DoMeleeAttackIfReady();
+            ExplodeTimer = 2000 + rand()%5000;
+        }
+        else
+            ExplodeTimer -= diff;
+
+        if(ShootTimer < diff)
+        {
+            DoCast(m_creature->getVictim(), SPELL_SHOOT,true);
+            ShootTimer = 2000;
+        }
+        else
+            ShootTimer -= diff;
     }
 };
 
