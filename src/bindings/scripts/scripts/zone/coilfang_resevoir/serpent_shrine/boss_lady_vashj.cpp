@@ -42,6 +42,7 @@ EndScriptData */
 #define SAY_DEATH                   -1548055
 
 #define SPELL_SURGE                 38044
+#define SPELL_MIND_BLAST            38259
 #define SPELL_MULTI_SHOT            38310
 #define SPELL_SHOCK_BLAST           38509
 #define SPELL_ENTANGLE              38316
@@ -1138,7 +1139,7 @@ struct TRINITY_DLL_DECL mob_coilfang_striderAI : public ScriptedAI
 
         if(MindBlast_Timer < diff)
         {
-            m_creature->CastSpell(m_creature->getVictim(),41374,false);
+            m_creature->CastSpell(m_creature->getVictim(),SPELL_MIND_BLAST,true);
             MindBlast_Timer = 3000+rand()%1000;
         }else MindBlast_Timer -= diff;
 
