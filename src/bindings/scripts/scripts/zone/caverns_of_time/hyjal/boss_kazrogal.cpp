@@ -147,18 +147,23 @@ struct TRINITY_DLL_DECL boss_kazrogalAI : public hyjal_trashAI
 
         if(CleaveTimer < diff)
         {
-            DoCast(m_creature, SPELL_CLEAVE);
+            DoCast(m_creature->getVicitm(), SPELL_CLEAVE);
             CleaveTimer = 6000+rand()%15000;
-        }else CleaveTimer -= diff;
+        }
+        else
+            CleaveTimer -= diff;
 
         if(WarStompTimer < diff)
         {
             DoCast(m_creature, SPELL_WARSTOMP);
             WarStompTimer = 60000;
-        }else WarStompTimer -= diff;
+        }
+        else
+            WarStompTimer -= diff;
 
         if(m_creature->HasAura(SPELL_MARK,0))
             m_creature->RemoveAurasDueToSpell(SPELL_MARK);
+
         if(MarkTimer < diff)
         {
             m_creature->CastSpell(m_creature, SPELL_MARK, false);
@@ -180,7 +185,9 @@ struct TRINITY_DLL_DECL boss_kazrogalAI : public hyjal_trashAI
                     DoYell(SAY_MARK2, LANG_UNIVERSAL, NULL);
                     break;
             }
-        }else MarkTimer -= diff;
+        }
+        else
+            MarkTimer -= diff;
 
         DoMeleeAttackIfReady();
     }
