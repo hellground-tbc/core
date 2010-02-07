@@ -26,6 +26,7 @@ EndScriptData */
 
 #define SPELL_SOUL_TRANSFER         30531 // core bug, does not support target 7
 #define SPELL_BLAZE_TARGET          30541 // core bug, does not support target 7
+#define SPELL_SHADOW_CAGE_C         30205
 
 #define CHAMBER_CENTER_X            -15.14
 #define CHAMBER_CENTER_Y              1.8
@@ -165,7 +166,12 @@ struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
                     {
                         Creature *Channeler = instance->GetCreature(*i);
                         if(Channeler && Channeler->isAlive())
+                        {
+                            Channeler->InterruptNonMeleeSpells(false);
                             Channeler->AI()->AttackStart(Channeler->SelectNearestTarget(999));
+                            Channeler->setActive(true);
+                        }
+
                     }
                     // Release Magtheridon after two minutes.
                     Creature *Magtheridon = instance->GetCreature(MagtheridonGUID);
@@ -223,7 +229,7 @@ struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
                 Creature *Magtheridon = instance->GetCreature(MagtheridonGUID);
                 if(Magtheridon && Magtheridon->isAlive())
                 {
-                    Magtheridon->clearUnitState(UNIT_STAT_STUNNED);
+                    Magtheridon->RemoveAurasDueToSpell(SPELL_SHADOW_CAGE_C);
                     Magtheridon->AI()->AttackStart(Magtheridon->SelectNearestTarget(999));
                 }
                 CageTimer = 0;
