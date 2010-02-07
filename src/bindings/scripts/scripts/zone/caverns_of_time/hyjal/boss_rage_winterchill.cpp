@@ -8,6 +8,7 @@
 
 #define SPELL_FROST_NOVA 31250
 #define SPELL_ICEBOLT 31249
+#define SPELL_BERSERK 28498
 
 #define SAY_ONDEATH "You have won this battle, but not... the... war"
 #define SOUND_ONDEATH 11026
@@ -44,6 +45,7 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
     uint32 NovaTimer;
     uint32 IceboltTimer;
     uint32 CheckTimer;
+    uint32 Enrage_Timer;
 
     bool go;
     uint32 pos;
@@ -51,11 +53,12 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
     void Reset()
     {
         damageTaken = 0;
-        FrostArmorTimer = 37000;
+        FrostArmorTimer = 20000;
         DecayTimer = 45000;
         NovaTimer = 15000;
         IceboltTimer = 10000;
         CheckTimer = 3000;
+        Enrage_Timer = 600000;
 
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
         m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
@@ -145,8 +148,8 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
 
         if(FrostArmorTimer < diff)
         {
-            DoCast(m_creature, SPELL_FROST_ARMOR);
-            FrostArmorTimer = 40000+rand()%20000;
+            DoCast(m_creature, SPELL_FROST_ARMOR, true);
+            FrostArmorTimer = 11000+rand()%20000;
         }else FrostArmorTimer -= diff;
 
         if(DecayTimer < diff)
@@ -170,7 +173,7 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
         if(NovaTimer < diff)
         {
             if(Unit *target = m_creature->getVictim())
-                DoCast(target, SPELL_FROST_NOVA);
+                DoCast(target, SPELL_FROST_NOVA, true);
             NovaTimer = 30000+rand()%15000;
 
             if(DecayTimer < 10000)
@@ -188,12 +191,19 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
                     break;
             }
         }else NovaTimer -= diff;
+
         if(IceboltTimer < diff)
         {
             if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0,40,true))
-                DoCast(target, SPELL_ICEBOLT);
+                DoCast(target, SPELL_ICEBOLT, true);
             IceboltTimer = 11000+rand()%20000;
         }else IceboltTimer -= diff;
+
+        if(Enrage_Timer < diff)
+        {
+            DoCast(m_creature, SPELL_BERSERK);
+            Enrage_Timer = 300000;
+        }
 
         DoMeleeAttackIfReady();
     }
