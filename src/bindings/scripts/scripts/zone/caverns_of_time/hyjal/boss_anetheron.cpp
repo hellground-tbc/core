@@ -61,7 +61,7 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
     void Reset()
     {
         damageTaken = 0;
-        SwarmTimer = 45000;
+        SwarmTimer = 10000;
         SleepTimer = 60000;
         InfernoTimer = 45000;
         CheckTimer = 3000;
@@ -162,9 +162,9 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
         {
             Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,100,true);
             if(target)
-                DoCast(target,SPELL_CARRION_SWARM);
+                DoCast(target,SPELL_CARRION_SWARM, true);
 
-            SwarmTimer = 45000+rand()%15000;
+            SwarmTimer = 12000+rand()%6000;
             
             switch(rand()%2)
             {
