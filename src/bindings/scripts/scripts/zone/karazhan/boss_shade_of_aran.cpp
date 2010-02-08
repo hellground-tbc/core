@@ -355,21 +355,24 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         {
             if (ArcaneCooldown >= diff)
                 ArcaneCooldown -= diff;
-        else ArcaneCooldown = 0;
+            else 
+                ArcaneCooldown = 0;
         }
 
         if (FireCooldown)
         {
             if (FireCooldown >= diff)
                 FireCooldown -= diff;
-        else FireCooldown = 0;
+            else
+                FireCooldown = 0;
         }
 
         if (FrostCooldown)
         {
             if (FrostCooldown >= diff)
                 FrostCooldown -= diff;
-        else FrostCooldown = 0;
+            else 
+                FrostCooldown = 0;
         }
 
         if(!Drinking && (m_creature->GetPower(POWER_MANA)*100 / m_creature->GetMaxPower(POWER_MANA)) < 20)
@@ -457,7 +460,8 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                 if (AvailableSpells)
                 {
                     CurrentNormalSpell = Spells[rand() % AvailableSpells];
-                    m_creature->CastSpell(target, CurrentNormalSpell,false);
+                    //m_creature->CastSpell(target, CurrentNormalSpell,false);
+                    AddSpellToCast(target, CurrentNormalSpell);
                 }
             }
             NormalCastTimer = 1000;
@@ -469,11 +473,13 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
             {
 
                 case 0:
-                    DoCast(m_creature, SPELL_AOE_CS);
+                    AddSpellToCast(m_creature, SPELL_AOE_CS);
+                    //DoCast(m_creature, SPELL_AOE_CS);
                     break;
                 case 1:
                     if (Unit* pUnit = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                        DoCast(pUnit, SPELL_CHAINSOFICE);
+                        AddSpellToCast(pUnit, SPELL_CHAINSOFICE);
+                        //DoCast(pUnit, SPELL_CHAINSOFICE);
                     break;
             }
             SecondarySpellTimer = 5000 + (rand()%15000);
@@ -551,6 +557,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                     Spawn = DoSpawnCreature(CREATURE_ARAN_BLIZZARD, 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN, 25000);
                     if (Spawn)
                     {
+                        Spawn->setFaction(m_creature->getFaction());
                         Spawn->CastSpell(Spawn, SPELL_CIRCULAR_BLIZZARD, false);
                     }
                     break;
@@ -612,7 +619,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                         continue;
 
                     Unit* pUnit = Unit::GetUnit(*m_creature, FlameWreathTarget[i]);
-                    if (pUnit && pUnit->GetDistance2d(FWTargPosX[i], FWTargPosY[i]) > 3)
+                    if (pUnit && pUnit->GetDistance2d(FWTargPosX[i], FWTargPosY[i]) > 1)
                     {
                         pUnit->CastSpell(pUnit, 20476, true, 0, 0, m_creature->GetGUID());
                         pUnit->CastSpell(pUnit, 11027, true);
@@ -622,7 +629,8 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                 FlameWreathCheckTime = 500;
             }else FlameWreathCheckTime -= diff;
         }
-
+        
+        CastNextSpellIfAnyAndReady();
         if (ArcaneCooldown && FireCooldown && FrostCooldown)
             DoMeleeAttackIfReady();
     }
@@ -679,9 +687,14 @@ struct TRINITY_DLL_DECL water_elementalAI : public ScriptedAI
 
         if(CastTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_WATERBOLT);
+            AddSpellToCast(m_creature->getVictim(), SPELL_WATERBOLT);
+            //DoCast(m_creature->getVictim(), SPELL_WATERBOLT);
             CastTimer = 2000 + (rand()%3000);
-        }else CastTimer -= diff;
+        }
+        else 
+            CastTimer -= diff;
+
+        CastNextSpellIfAnyAndReady();
     }
 };
 

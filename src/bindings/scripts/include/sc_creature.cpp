@@ -160,6 +160,7 @@ void ScriptedAI::EnterEvadeMode()
     }
 
     InCombat = false;
+    spellList.clear();
     Reset();
 }
 
@@ -193,6 +194,30 @@ void ScriptedAI::DoStopAttack()
     }
 }
 
+void ScriptedAI::CastNextSpellIfAnyAndReady()
+{
+    if (spellList.empty())
+        return;
+
+    SpellToCast * temp = &spellList.front();
+
+    if (!temp || m_creature->hasUnitState(UNIT_STAT_CASTING) && !temp->triggered)
+        return;
+
+    if (temp->scriptTextEntry && temp->scriptTextSource)
+        DoScriptText(temp->scriptTextEntry, temp->scriptTextSource, temp->scriptTextTarget);
+
+    if (temp->target || temp->isAOECast)
+    {
+        if (temp->spellId)
+            m_creature->CastSpell(temp->target, temp->spellId, temp->triggered, temp->castItem, temp->triggeredByAura, temp->originalCaster);
+        else
+            if (temp->spellInfo)
+                m_creature->CastSpell(temp->target, temp->spellInfo, temp->triggered, temp->castItem, temp->triggeredByAura, temp->originalCaster);
+    }
+    spellList.pop_front();
+}
+
 void ScriptedAI::DoCast(Unit* victim, uint32 spellId, bool triggered)
 {
     if (!victim || m_creature->hasUnitState(UNIT_STAT_CASTING) && !triggered)
@@ -217,6 +242,55 @@ void ScriptedAI::DoCastSpell(Unit* who,SpellEntry const *spellInfo, bool trigger
 
     m_creature->StopMoving();
     m_creature->CastSpell(who, spellInfo, triggered);
+}
+
+void ScriptedAI::AddSpellToCast(Unit* victim, uint32 spellId, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
+{
+    if (!victim)
+        return;
+
+    SpellToCast temp(victim, spellId, NULL, triggered, 0, NULL, NULL, castItem, triggeredByAura, originalCaster, false);
+    
+    spellList.push_back(temp);
+}
+
+void ScriptedAI::AddSpellToCastWithScriptText(Unit* victim, uint32 spellId, int32 scriptTextEntry, WorldObject* scriptTextSource, bool triggered, 
+                                                Unit* scriptTextTarget, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
+{
+    if (!victim)
+        return;
+
+    SpellToCast temp(victim, spellId, NULL, triggered, scriptTextEntry, scriptTextSource, scriptTextTarget, castItem, triggeredByAura, originalCaster, false);
+    
+    spellList.push_back(temp);
+}
+
+void ScriptedAI::AddSpellToCast(Unit* who, SpellEntry const *spellInfo, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
+{
+    if (!who || !spellInfo)
+        return;
+
+    SpellToCast temp(who, 0, spellInfo, triggered, 0, NULL, NULL, castItem, triggeredByAura, originalCaster, false);
+    
+    spellList.push_back(temp);
+}
+
+void ScriptedAI::AddSpellToCastWithScriptText(Unit* who, SpellEntry const *spellInfo, int32 scriptTextEntry, WorldObject* scriptTextSource, bool triggered, 
+                                                Unit* scriptTextTarget, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
+{
+    if (!who || !spellInfo)
+        return;
+
+    SpellToCast temp(who, 0, spellInfo, triggered, scriptTextEntry, scriptTextSource, scriptTextTarget, castItem, triggeredByAura, originalCaster, false);
+    
+    spellList.push_back(temp);
+}
+
+void ScriptedAI::AddAOESpellToCast(uint32 spellId, bool triggered)
+{
+    SpellToCast temp((Unit*)NULL, spellId, NULL, triggered, 0, NULL, NULL, NULL, NULL, 0, true);
+    
+    spellList.push_back(temp);
 }
 
 void ScriptedAI::DoSay(const char* text, uint32 language, Unit* target, bool SayEmote)

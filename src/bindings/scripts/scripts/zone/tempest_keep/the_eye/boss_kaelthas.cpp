@@ -991,14 +991,12 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                     if(Fireball_Timer < diff)
                     {
                         if(!InGravityLapse)
-                        {
-                                m_creature->CastSpell(m_creature->getVictim(), SPELL_FIREBALL, false);
-                                Fireball_Timer = 5000+rand()%10000;
-                        }
+                            m_creature->CastSpell(m_creature->getVictim(), SPELL_FIREBALL, false);
+                        Fireball_Timer = 5000+rand()%10000;
                     }else Fireball_Timer -= diff;
 
                     //Phoenix_Timer
-                    if(Phoenix_Timer < diff && !InGravityLapse)
+                    if(!InGravityLapse && Phoenix_Timer < diff)
                     {
                          DoCast(m_creature, SPELL_SUMMON_PHOENIX, true);
                          switch(rand()%2)

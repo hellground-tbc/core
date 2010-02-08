@@ -230,6 +230,7 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public ScriptedAI
                 pInstance->SetData(DATA_MAGTHERIDON_EVENT, NOT_STARTED);
 
             pInstance->SetData(DATA_COLLAPSE, false);
+            pInstance->SetData(DATA_CHANNELER_EVENT, NOT_STARTED);
         }
 
         Berserk_Timer = 1320000;
@@ -242,11 +243,8 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public ScriptedAI
 
         Phase3 = false;
 
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
-        m_creature->addUnitState(UNIT_STAT_STUNNED);
         m_creature->CastSpell(m_creature, SPELL_SHADOW_CAGE_C, true);
     }
 
@@ -317,7 +315,7 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public ScriptedAI
 
     void AttackStart(Unit *who)
     {
-        if(!m_creature->hasUnitState(UNIT_STAT_STUNNED))
+        if(!m_creature->HasAura(SPELL_SHADOW_CAGE_C, 0))
             ScriptedAI::AttackStart(who);
     }
 
@@ -328,8 +326,8 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public ScriptedAI
 
         DoZoneInCombat();
 
-        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        m_creature->RemoveAurasDueToSpell(SPELL_SHADOW_CAGE_C);
+        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
 
         DoScriptText(SAY_FREED, m_creature);
    }
@@ -486,7 +484,6 @@ struct TRINITY_DLL_DECL mob_hellfire_channelerAI : public ScriptedAI
         if(pInstance)
             pInstance->SetData(DATA_CHANNELER_EVENT, IN_PROGRESS);
 
-        m_creature->InterruptNonMeleeSpells(false);
         DoZoneInCombat();
     }
 
@@ -575,7 +572,7 @@ bool GOHello_go_Manticron_Cube(Player *player, GameObject* _GO)
 
     player->InterruptNonMeleeSpells(false);
     player->CastSpell(player, SPELL_SHADOW_GRASP, true);
-    player->CastSpell(player, SPELL_SHADOW_GRASP_VISUAL, false);
+    player->CastSpell(Magtheridon, SPELL_SHADOW_GRASP_VISUAL, false);
     ((boss_magtheridonAI*)Magtheridon->AI())->SetClicker(_GO->GetGUID(), player->GetGUID());
     return true;
 }
