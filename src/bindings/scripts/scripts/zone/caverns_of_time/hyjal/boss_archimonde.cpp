@@ -112,9 +112,11 @@ struct mob_ancient_wispAI : public ScriptedAI
                 if(Archimonde)
                 {
                     if((((Archimonde->GetHealth()*100) / Archimonde->GetMaxHealth()) < 2) || !Archimonde->isAlive())
-                        DoCast(m_creature, SPELL_DENOUEMENT_WISP);
+                        AddSpellToCast(m_creature, SPELL_DENOUEMENT_WISP);
+                        //DoCast(m_creature, SPELL_DENOUEMENT_WISP);
                     else
-                        DoCast(Archimonde, SPELL_ANCIENT_SPARK);
+                        AddSpellToCast(Archimonde, SPELL_ANCIENT_SPARK);
+                        //DoCast(Archimonde, SPELL_ANCIENT_SPARK);
                 }
             }
             CheckTimer = 1000;
@@ -665,7 +667,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
                 m_creature->GetMotionMaster()->Clear(false);
                 m_creature->GetMotionMaster()->MoveIdle();
                 //all members of raid must get this buff
-                DoCast(m_creature->getVictim(), SPELL_PROTECTION_OF_ELUNE);
+                m_creature->CastSpell(m_creature->getVictim(), SPELL_PROTECTION_OF_ELUNE, false);
                 HasProtected = true;
                 Enraged = true;
             }
@@ -692,9 +694,8 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         {
             if(HandOfDeathTimer < diff)
             {
-                DoCast(m_creature->getVictim(), SPELL_HAND_OF_DEATH);
+                m_creature->CastSpell(m_creature->getVictim(), SPELL_HAND_OF_DEATH, false);
                 HandOfDeathTimer = 2000;
-
             }
             else
                 HandOfDeathTimer -= diff;
@@ -724,7 +725,8 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
                     if (SoulChargeCount)
                     {
                         SoulChargeCount--;
-                        DoCast(m_creature->getVictim(), unleashSpell);
+                        //DoCast(m_creature->getVictim(), unleashSpell);
+                        AddSpellToCast(m_creature->getVictim(), unleashSpell);
                         SoulChargeTimer = 1000;
                     }
                     else
@@ -769,22 +771,24 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         if(GripOfTheLegionTimer < diff)
         {
             if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
-                DoCast(target, SPELL_GRIP_OF_THE_LEGION);
+                AddSpellToCast(target, SPELL_GRIP_OF_THE_LEGION);
+                //DoCast(target, SPELL_GRIP_OF_THE_LEGION);
 
             GripOfTheLegionTimer = 5000 + rand()%20000;
         }else GripOfTheLegionTimer -= diff;
 
         if(AirBurstTimer < diff)
         {
-            if(rand()%2 == 0)
-                DoScriptText(SAY_AIR_BURST1, m_creature);
-            else
-                DoScriptText(SAY_AIR_BURST2, m_creature);
-
             if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, 100, true))
             {
+                if(rand()%2 == 0)
+                    AddSpellToCastWithScriptText(target, SPELL_AIR_BURST, SAY_AIR_BURST1, m_creature);
+                    //DoScriptText(SAY_AIR_BURST1, m_creature);
+                else
+                    AddSpellToCastWithScriptText(target, SPELL_AIR_BURST, SAY_AIR_BURST2, m_creature);
+                    //DoScriptText(SAY_AIR_BURST2, m_creature);
                 //m_creature->SetUInt64Value(UNIT_FIELD_TARGET, target->GetGUID()); // ustawiamy selekcje na ansz target
-                DoCast(target, SPELL_AIR_BURST);//not on tank
+                //DoCast(target, SPELL_AIR_BURST);//not on tank
             }
 
             if( FearTimer < 10000 )
@@ -795,7 +799,8 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
         if(FearTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_FEAR);
+            AddSpellToCast(m_creature->getVictim(), SPELL_FEAR);
+            //DoCast(m_creature->getVictim(), SPELL_FEAR);
             FearTimer = 42000;
         }
         else
@@ -816,7 +821,8 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
             if(CanUseFingerOfDeath())
             {
                 if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 150, true))
-                    DoCast(target, SPELL_FINGER_OF_DEATH);
+                    AddSpellToCast(target, SPELL_FINGER_OF_DEATH);
+                    //DoCast(target, SPELL_FINGER_OF_DEATH);
 
                 MeleeRangeCheckTimer = 1000;
             }
@@ -826,6 +832,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         else
             MeleeRangeCheckTimer -= diff;
 
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
     void WaypointReached(uint32 i){}

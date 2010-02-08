@@ -42,6 +42,67 @@ struct PointMovement
     uint32 m_uiWaitTime;
 };
 
+struct SpellToCast
+{
+public:
+    Unit* target;
+    uint32 spellId; 
+    SpellEntry const *spellInfo;
+    bool triggered;
+    Item *castItem;
+    Aura* triggeredByAura;
+    uint64 originalCaster;
+    bool isAOECast;
+    int32 scriptTextEntry;
+    WorldObject* scriptTextSource;
+    Unit* scriptTextTarget;
+
+    SpellToCast(Unit* target, uint32 spellId, SpellEntry const *spellInfo, bool triggered, int32 scriptTextEntry, WorldObject* scriptTextSource, Unit* scriptTextTarget, Item *castItem, Aura* triggeredByAura, uint64 originalCaster, bool isAOECast)
+    {
+        this->target = target;
+        this->spellId = spellId;
+        this->spellInfo = spellInfo;
+        this->triggered = triggered;
+        this->castItem = castItem;
+        this->triggeredByAura = triggeredByAura;
+        this->originalCaster = originalCaster;
+        this->isAOECast = isAOECast;
+        this->scriptTextEntry = scriptTextEntry;
+        this->scriptTextSource = scriptTextSource;
+        this->scriptTextTarget = scriptTextTarget;
+    }
+
+    SpellToCast()
+    {
+        this->target = NULL;
+        this->spellId = 0;
+        this->spellInfo = NULL;
+        this->triggered = false;
+        this->castItem = NULL;
+        this->triggeredByAura = NULL;
+        this->originalCaster = 0;
+        this->isAOECast = false;
+        this->scriptTextEntry = 0;
+        this->scriptTextSource = NULL;
+        this->scriptTextTarget = NULL;
+    }
+    
+    ~SpellToCast()
+    {
+        this->target = NULL;
+        this->spellId = 0;
+        this->spellInfo = NULL;
+        this->triggered = false;
+        this->castItem = NULL;
+        this->triggeredByAura = NULL;
+        this->originalCaster = 0;
+        this->isAOECast = false;
+        this->scriptTextEntry = 0;
+        this->scriptTextSource = NULL;
+        this->scriptTextTarget = NULL;
+    }
+};
+
 struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
 {
     ScriptedAI(Creature* creature) : CreatureAI(creature), m_creature(creature), InCombat(false), IsFleeing(false) {}
@@ -104,6 +165,9 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
     //For fleeing
     bool IsFleeing;
 
+    //Spell list to cast
+    std::list<SpellToCast> spellList;
+
     //*************
     //Pure virtual functions
     //*************
@@ -127,12 +191,22 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
     //Stop attack of current victim
     void DoStopAttack();
 
+    //Cast next spell from list
+    void CastNextSpellIfAnyAndReady();
+
     //Cast spell by Id
     void DoCast(Unit* victim, uint32 spellId, bool triggered = false);
     void DoCastAOE(uint32 spellId, bool triggered = false);
+    void AddSpellToCast(Unit* victim, uint32 spellId, bool triggered = false, Item *castItem = NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0);
+    void AddSpellToCastWithScriptText(Unit* victim, uint32 spellId, int32 scriptTextEntry, WorldObject* scriptTextSource, bool triggered = false, 
+                                        Unit* scriptTextTarget = NULL, Item *castItem = NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0);
+    void AddAOESpellToCast(uint32 spellId, bool triggered = false);
 
     //Cast spell by spell info
-    void DoCastSpell(Unit* who,SpellEntry const *spellInfo, bool triggered = false);
+    void DoCastSpell(Unit* who, SpellEntry const *spellInfo, bool triggered = false);
+    void AddSpellToCast(Unit* who, SpellEntry const *spellInfo, bool triggered = false, Item *castItem = NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0);
+    void AddSpellToCastWithScriptText(Unit* who, SpellEntry const *spellInfo, int32 scriptTextEntry, WorldObject* scriptTextSource, bool triggered = false, 
+                                        Unit* scriptTextTarget = NULL, Item *castItem = NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0);
 
     //Creature say
     void DoSay(const char* text, uint32 language, Unit* target, bool SayEmote = false);
