@@ -42,6 +42,13 @@ struct PointMovement
     uint32 m_uiWaitTime;
 };
 
+enum interruptSpell
+{
+	DONT_INTERRUPT                = 0,
+	INTERRUPT_AND_CAST            = 1,   //cast when CastNextSpellIfAnyAndReady() is called
+	INTERRUPT_AND_CAST_INSTANTLY  = 2    //cast instantly (CastSpell())
+};
+
 struct SpellToCast
 {
 public:
@@ -201,6 +208,16 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
     void AddSpellToCastWithScriptText(Unit* victim, uint32 spellId, int32 scriptTextEntry, WorldObject* scriptTextSource, bool triggered = false, 
                                         Unit* scriptTextTarget = NULL, Item *castItem = NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0);
     void AddAOESpellToCast(uint32 spellId, bool triggered = false);
+	
+    //Forces spell cast by Id
+    void ForceSpellCast(Unit* victim, uint32 spellId, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false, Item *castItem = NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0);
+    void ForceSpellCastWithScriptText(Unit* victim, uint32 spellId, int32 scriptTextEntry, WorldObject* scriptTextSource, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false, 
+                                        Unit* scriptTextTarget = NULL, Item *castItem = NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0);
+
+    //Forces spell cast by spell info
+    void ForceSpellCast(Unit* victim, SpellEntry const *spellInfo, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false, Item *castItem = NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0);
+    void ForceSpellCastWithScriptText(Unit* victim, SpellEntry const *spellInfo, int32 scriptTextEntry, WorldObject* scriptTextSource, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false, 
+                                        Unit* scriptTextTarget = NULL, Item *castItem = NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0);
 
     //Cast spell by spell info
     void DoCastSpell(Unit* who, SpellEntry const *spellInfo, bool triggered = false);

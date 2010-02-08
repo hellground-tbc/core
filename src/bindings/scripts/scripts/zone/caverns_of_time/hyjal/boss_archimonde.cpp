@@ -514,7 +514,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
             for(itr = m_creature->getThreatManager().getThreatList().begin(); itr != m_creature->getThreatManager().getThreatList().end(); ++itr)
                 Doomfire->AddThreat(Unit::GetUnit(*m_creature, (*itr)->getUnitGuid()), 1.0f);
             Doomfire->setFaction(m_creature->getFaction());
-            DoCast(Doomfire, SPELL_DOOMFIRE_SPAWN);
+            ForceSpellCast(Doomfire, SPELL_DOOMFIRE_SPAWN);
             Doomfire->CastSpell(Doomfire, SPELL_DOOMFIRE_VISUAL, true);
             if(target)
                 Doomfire->AI()->AttackStart(target);
@@ -593,7 +593,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
                     {
                         Nordrassil->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                         Nordrassil->SetUInt32Value(UNIT_FIELD_DISPLAYID, 11686);
-                        DoCast(Nordrassil, SPELL_DRAIN_WORLD_TREE);
+                        AddSpellToCast(Nordrassil, SPELL_DRAIN_WORLD_TREE);
                         IsChanneling = true;
                     }
                 }
@@ -667,7 +667,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
                 m_creature->GetMotionMaster()->Clear(false);
                 m_creature->GetMotionMaster()->MoveIdle();
                 //all members of raid must get this buff
-                m_creature->CastSpell(m_creature->getVictim(), SPELL_PROTECTION_OF_ELUNE, false);
+                ForceSpellCast(m_creature->getVictim(), SPELL_PROTECTION_OF_ELUNE, INTERRUPT_AND_CAST_INSTANTLY);
                 HasProtected = true;
                 Enraged = true;
             }
@@ -694,7 +694,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         {
             if(HandOfDeathTimer < diff)
             {
-                m_creature->CastSpell(m_creature->getVictim(), SPELL_HAND_OF_DEATH, false);
+                ForceSpellCast(m_creature->getVictim(), SPELL_HAND_OF_DEATH, INTERRUPT_AND_CAST_INSTANTLY);
                 HandOfDeathTimer = 2000;
             }
             else
@@ -709,7 +709,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
             else SoulChargeTimer -= diff;
         }*/
-     
+
         if (SoulChargeTimer < diff)
         {
             if (SoulChargeUnleash)
