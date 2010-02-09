@@ -81,12 +81,10 @@ struct mob_ancient_wispAI : public ScriptedAI
     }
 
     ScriptedInstance* pInstance;
-    uint64 ArchimondeGUID;
     uint32 CheckTimer;
 
     void Reset()
     {
-        ArchimondeGUID = 0;
         CheckTimer = 1000;
 
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -98,17 +96,11 @@ struct mob_ancient_wispAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(!ArchimondeGUID)
-        {
-            if(pInstance)
-                ArchimondeGUID = pInstance->GetData64(DATA_ARCHIMONDE);
-        }
-
         if(CheckTimer < diff)
         {
-            if(ArchimondeGUID)
+            if(pInstance)
             {
-                Unit* Archimonde = Unit::GetUnit((*m_creature), ArchimondeGUID);
+                Unit* Archimonde = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_ARCHIMONDE));
                 if(Archimonde)
                 {
                     if((((Archimonde->GetHealth()*100) / Archimonde->GetMaxHealth()) < 2) || !Archimonde->isAlive())
@@ -120,7 +112,9 @@ struct mob_ancient_wispAI : public ScriptedAI
                 }
             }
             CheckTimer = 1000;
-        }else CheckTimer -= diff;
+        }
+        else
+            CheckTimer -= diff;
     }
 };
 
@@ -129,14 +123,18 @@ struct mob_ancient_wispAI : public ScriptedAI
    are within 3 yards. Another creature called Doomfire Targetting spawns this creature as well as stalks. */
 struct TRINITY_DLL_DECL mob_doomfireAI : public ScriptedAI
 {
-    mob_doomfireAI(Creature* c) : ScriptedAI(c) {}
+    mob_doomfireAI(Creature* c) : ScriptedAI(c)
+    {
+        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+    }
+
+    ScriptedInstance *pInstance;
 
     uint32 CheckTimer;
     uint32 RefreshTimer;
 
     bool TargetSelected;
 
-    uint64 ArchimondeGUID;
     uint64 TargetGUID;
 
     void Reset()
@@ -146,11 +144,7 @@ struct TRINITY_DLL_DECL mob_doomfireAI : public ScriptedAI
 
         TargetSelected = false;
 
-        ArchimondeGUID = 0;
         TargetGUID = 0;
-
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
-        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
     }
 
     void DamageTaken(Unit *done_by, uint32 &damage) { damage = 0; }
@@ -176,10 +170,10 @@ struct TRINITY_DLL_DECL mob_doomfireAI : public ScriptedAI
     void KilledUnit(Unit* victim)
     {
         bool suicide = true;
-        if(ArchimondeGUID)
+        if(pInstance)
         {
-            Creature* Archimonde = (Unit::GetCreature((*m_creature), ArchimondeGUID));
-            if(Archimonde && Archimonde->isAlive())
+            Creature* Archimonde = Unit::GetCreature((*m_creature), pInstance->GetData64(DATA_ARCHIMONDE));
+            if(!Archimonde || !Archimonde->isAlive())
             {
                 suicide = false;
                 Archimonde->AI()->KilledUnit(victim);
@@ -194,7 +188,8 @@ struct TRINITY_DLL_DECL mob_doomfireAI : public ScriptedAI
     {
         if(RefreshTimer < diff)
             RefreshTimer = 0;
-        else RefreshTimer -= diff;
+        else
+            RefreshTimer -= diff;
 
         if(TargetSelected && TargetGUID)
         {
@@ -209,34 +204,40 @@ struct TRINITY_DLL_DECL mob_doomfireAI : public ScriptedAI
 
         if(CheckTimer < diff)
         {
-            if(ArchimondeGUID)
+            if(pInstance)
             {
-                Unit* Archimonde = Unit::GetUnit((*m_creature), ArchimondeGUID);
+                Unit* Archimonde = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_ARCHIMONDE));
                 if(!Archimonde || !Archimonde->isAlive())
                     m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                
                 CheckTimer = 5000;
             }
-            else m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-        }else CheckTimer -= diff;
+            else
+                m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+        }
+        else
+            CheckTimer -= diff;
     }
 };
 
 /* This is the script for the Doomfire Targetting Mob. This mob simply follows players and/or travels in random directions and spawns the actual Doomfire which does damage to anyone that moves close.  */
 struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public ScriptedAI
 {
-    mob_doomfire_targettingAI(Creature* c) : ScriptedAI(c) {}
+    mob_doomfire_targettingAI(Creature* c) : ScriptedAI(c)
+    {
+        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+    }
+
+    ScriptedInstance *pInstance;
 
     uint32 ChangeTargetTimer;
     uint32 SummonTimer;                                     // This timer will serve as both a summon timer for the doomfire that does damage as well as to check on Archionde
 
-    uint64 ArchimondeGUID;
 
     void Reset()
     {
         ChangeTargetTimer = 5000;
         SummonTimer = 1000;
-
-        ArchimondeGUID = 0;
     }
 
     void Aggro(Unit* who) {}
@@ -260,16 +261,15 @@ struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public ScriptedAI
 
         if(SummonTimer < diff)
         {
-            if(ArchimondeGUID)
+            if(pInstance)
             {
-                Unit* Archimonde = Unit::GetUnit((*m_creature), ArchimondeGUID);
+                Unit* Archimonde = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_ARCHIMONDE));
                 if(Archimonde && Archimonde->isAlive())
                 {
                     Creature* Doomfire = DoSpawnCreature(CREATURE_DOOMFIRE, 0, 0, 2, 0, TEMPSUMMON_TIMED_DESPAWN, 30000);
                     if(Doomfire)
                     {
                         Doomfire->CastSpell(Doomfire, SPELL_DOOMFIRE_VISUAL, true);
-                        ((mob_doomfireAI*)Doomfire->AI())->ArchimondeGUID = ArchimondeGUID;
                         Doomfire->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     }
                     SummonTimer = 500;
@@ -279,7 +279,9 @@ struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public ScriptedAI
             }
             else
                 m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-        }else SummonTimer -= diff;
+        }
+        else
+            SummonTimer -= diff;
 
         if(ChangeTargetTimer < diff)
         {
@@ -504,18 +506,19 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
     void SummonDoomfire(Unit* target)
     {
-        Creature* Doomfire = DoSpawnCreature(CREATURE_DOOMFIRE_TARGETING, rand()%30, rand()%30, 0, 0, TEMPSUMMON_TIMED_DESPAWN, 30000);
-        if(Doomfire)
+        if(Creature* Doomfire = DoSpawnCreature(CREATURE_DOOMFIRE_TARGETING, rand()%30, rand()%30, 1, 0, TEMPSUMMON_TIMED_DESPAWN, 30000))
         {
-            ((mob_doomfire_targettingAI*)Doomfire->AI())->ArchimondeGUID = m_creature->GetGUID();
             Doomfire->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            Doomfire->setFaction(m_creature->getFaction());
+
             // Give Doomfire a taste of everyone in the threatlist = more targets to chase.
             std::list<HostilReference*>::iterator itr;
             for(itr = m_creature->getThreatManager().getThreatList().begin(); itr != m_creature->getThreatManager().getThreatList().end(); ++itr)
                 Doomfire->AddThreat(Unit::GetUnit(*m_creature, (*itr)->getUnitGuid()), 1.0f);
-            Doomfire->setFaction(m_creature->getFaction());
+
             ForceSpellCast(Doomfire, SPELL_DOOMFIRE_SPAWN);
             Doomfire->CastSpell(Doomfire, SPELL_DOOMFIRE_VISUAL, true);
+
             if(target)
                 Doomfire->AI()->AttackStart(target);
 
@@ -525,45 +528,6 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
                 DoScriptText(SAY_DOOMFIRE2, m_creature);
         }
     }
-
-    void SpellHit(Unit* pAttacker, const SpellEntry* Spell)
-    {
-        for(uint8 i = 0; i<3; i++)
-           if(Spell->Effect[i] == SPELL_EFFECT_INTERRUPT_CAST)
-               return;
-    }
-
-    /*void UnleashSoulCharge()
-    {
-        m_creature->InterruptNonMeleeSpells(false);
-        bool HasCast = false;
-        uint32 chargeSpell = 0;
-        uint32 unleashSpell = 0;
-        switch(rand()%3)
-        {
-            case 0:
-                chargeSpell = SPELL_SOUL_CHARGE_RED;
-                unleashSpell = SPELL_UNLEASH_SOUL_RED;
-                break;
-            case 1:
-                chargeSpell = SPELL_SOUL_CHARGE_YELLOW;
-                unleashSpell = SPELL_UNLEASH_SOUL_YELLOW;
-                break;
-            case 2:
-                chargeSpell = SPELL_SOUL_CHARGE_GREEN;
-                unleashSpell = SPELL_UNLEASH_SOUL_GREEN;
-                break;
-        }
-        if(m_creature->HasAura(chargeSpell, 0))
-        {
-            m_creature->RemoveSingleAuraFromStack(chargeSpell, 0);
-            DoCast(m_creature->getVictim(), unleashSpell);
-            HasCast = true;
-            SoulChargeCount--;
-        }
-        if(HasCast)
-            SoulChargeTimer = 2000 + rand()%28000;
-    }*/
 
     void UpdateAI(const uint32 diff)
     {
@@ -616,7 +580,11 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         if(CheckTimer < diff)
         {
             DoZoneInCombat();
-            CheckTimer = 3000;
+
+            if(m_creature->GetUInt64Value(UNIT_FIELD_TARGET) != m_creature->getVictim()->GetGUID())
+                m_creature->SetUInt64Value(UNIT_FIELD_TARGET, m_creature->getVictim()->GetGUID());
+
+            CheckTimer = 2000;
         }
         else
             CheckTimer -= diff;
@@ -676,10 +644,8 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
             {
                 Creature* Wisp = DoSpawnCreature(CREATURE_ANCIENT_WISP, rand()%40, rand()%40, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
                 if(Wisp)
-                {
                     Wisp->AI()->AttackStart(m_creature);
-                    ((mob_ancient_wispAI*)Wisp->AI())->ArchimondeGUID = m_creature->GetGUID();
-                }
+
                 SummonWispTimer = 1500;
                 ++WispCount;
             }
@@ -699,22 +665,15 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
             }
             else
                 HandOfDeathTimer -= diff;
+
             return;                                         // Don't do anything after this point.
         }
 
-        /*if(SoulChargeCount)
+        if(SoulChargeTimer < diff)
         {
-            if(SoulChargeTimer < diff)
-                UnleashSoulCharge();
-
-            else SoulChargeTimer -= diff;
-        }*/
-
-        if (SoulChargeTimer < diff)
-        {
-            if (SoulChargeUnleash)
+            if(SoulChargeUnleash)
             {
-                if (SoulChargeUnleashTimer < diff)
+                if(SoulChargeUnleashTimer < diff)
                 {
                     while(m_creature->HasAura(chargeSpell, 0))
                     {
@@ -722,7 +681,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
                         m_creature->RemoveSingleAuraFromStack(chargeSpell, 0);
                     }
 
-                    if (SoulChargeCount)
+                    if(SoulChargeCount)
                     {
                         SoulChargeCount--;
                         //DoCast(m_creature->getVictim(), unleashSpell);
@@ -739,7 +698,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
                     SoulChargeUnleashTimer -= diff;
             }
             
-            if (m_creature->HasAura(SPELL_SOUL_CHARGE_YELLOW, 0) && !SoulChargeUnleash)
+            if(m_creature->HasAura(SPELL_SOUL_CHARGE_YELLOW, 0) && !SoulChargeUnleash)
             {
                 SoulChargeUnleash = true;
                 SoulChargeUnleashTimer = rand()%5000+5000;        //5 - 10 seconds
@@ -775,27 +734,35 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
                 //DoCast(target, SPELL_GRIP_OF_THE_LEGION);
 
             GripOfTheLegionTimer = 5000 + rand()%20000;
-        }else GripOfTheLegionTimer -= diff;
+        }
+        else
+            GripOfTheLegionTimer -= diff;
 
         if(AirBurstTimer < diff)
         {
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, 100, true))
+            if(rand()%2 == 0)
+                DoScriptText(SAY_AIR_BURST1, m_creature);
+            else
+                DoScriptText(SAY_AIR_BURST2, m_creature);
+
+            Unit *target = NULL;
+            // aby miec pewnosc, ze naszym targetem nie jest tank
+            while((target = SelectUnit(SELECT_TARGET_RANDOM, 1, 100, true)) && target == m_creature->getVictim());
+
+            if(target)
             {
-                if(rand()%2 == 0)
-                    AddSpellToCastWithScriptText(target, SPELL_AIR_BURST, SAY_AIR_BURST1, m_creature);
-                    //DoScriptText(SAY_AIR_BURST1, m_creature);
-                else
-                    AddSpellToCastWithScriptText(target, SPELL_AIR_BURST, SAY_AIR_BURST2, m_creature);
-                    //DoScriptText(SAY_AIR_BURST2, m_creature);
-                //m_creature->SetUInt64Value(UNIT_FIELD_TARGET, target->GetGUID()); // ustawiamy selekcje na ansz target
-                //DoCast(target, SPELL_AIR_BURST);//not on tank
+                // ustawia target jako aktualny
+                m_creature->SetUInt64Value(UNIT_FIELD_TARGET, target->GetGUID());
+                DoCast(target, SPELL_AIR_BURST);
             }
 
             if( FearTimer < 10000 )
                 FearTimer += 10000;
 
             AirBurstTimer = 25000 + rand()%15000;
-        }else AirBurstTimer -= diff;
+        }
+        else
+            AirBurstTimer -= diff;
 
         if(FearTimer < diff)
         {

@@ -153,6 +153,13 @@ static Yells ThrallQuotes[]=
     {DEATH, -1534017},
 };
 
+typedef struct spells
+{
+    uint32 SpellId;
+    uint32 Cooldown;
+    uint32 TargetType;
+}spells;
+
 struct TRINITY_DLL_DECL hyjalAI : public npc_escortAI
 {
     hyjalAI(Creature *c);
@@ -234,13 +241,7 @@ struct TRINITY_DLL_DECL hyjalAI : public npc_escortAI
         bool DoMassTeleport;
         uint64 DummyGuid;
 
-        struct Spell
-        {
-            uint32 SpellId;
-            uint32 Cooldown;
-            uint32 TargetType;
-        }Spell[3];
-
+        spells Spell[3];
     private:
         uint32 SpellTimer[3];
         //std::list<uint64> CreatureList;

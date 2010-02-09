@@ -134,7 +134,7 @@ struct TRINITY_DLL_DECL boss_doomlordkazzakAI : public ScriptedAI
         //ShadowVolley_Timer
         if (ShadowVolley_Timer < diff)
         {
-            DoCast(m_creature, SPELL_SHADOWVOLLEY);
+            DoCast(m_creature, SPELL_SHADOWVOLLEY, true);
 
             if(Enraged)
             {
@@ -197,7 +197,7 @@ struct TRINITY_DLL_DECL boss_doomlordkazzakAI : public ScriptedAI
         if (Enrage_Timer < diff)
         {
             DoScriptText(EMOTE_FRENZY, m_creature);
-            DoCast(m_creature,SPELL_ENRAGE);
+            DoCast(m_creature,SPELL_ENRAGE,true);
             Enraged = true;
             SVolley_count = 0;
             Enrage_Timer = 40000;
