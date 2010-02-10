@@ -225,6 +225,7 @@ struct TRINITY_DLL_DECL advisorbase_ai : public ScriptedAI
 
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
         m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
+        m_creature->ApplySpellImmune(2, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);	// for Capernian mainly
 
         //reset encounter
         if(pInstance && (pInstance->GetData(DATA_KAELTHASEVENT) == 1 || pInstance->GetData(DATA_KAELTHASEVENT) == 3))
@@ -449,6 +450,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
         m_creature->SetFloatValue(OBJECT_FIELD_SCALE_X, 1.0f);
         m_creature->Relocate(GRAVITY_X, GRAVITY_Y, GRAVITY_Z);
 
+        m_creature->RemoveAllAuras(); //if Reset called while animation
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
         m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
         m_creature->ApplySpellImmune(2, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
@@ -1635,7 +1637,6 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
         if(ArcaneExplosion_Timer < diff)
         {
             bool InMeleeRange = false;
-            Unit *target = NULL;
             std::list<HostilReference*>& m_threatlist = m_creature->getThreatManager().getThreatList();
             for (std::list<HostilReference*>::iterator i = m_threatlist.begin(); i!= m_threatlist.end();++i)
             {
@@ -1644,17 +1645,17 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
                 if(pUnit && pUnit->IsWithinDistInMap(m_creature, 5))
                 {
                     InMeleeRange = true;
-                    target = pUnit;
                     break;
                 }
             }
 
             if(InMeleeRange)
-                DoCast(target, SPELL_ARCANE_EXPLOSION);
+                AddAOESpellToCast(SPELL_ARCANE_EXPLOSION);
 
-            ArcaneExplosion_Timer = 4000+rand()%2000;
+            ArcaneExplosion_Timer = 1000+rand()%2000;
         }else ArcaneExplosion_Timer -= diff;
 
+        CastNextSpellIfAnyAndReady();
         //Do NOT deal any melee damage.
     }
 };
