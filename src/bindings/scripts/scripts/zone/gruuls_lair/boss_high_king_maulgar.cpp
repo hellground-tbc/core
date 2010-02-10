@@ -665,7 +665,7 @@ struct TRINITY_DLL_DECL boss_krosh_firehandAI : public ScriptedAI
 
             if(target)
             {
-                AttackStart(target);
+				AttackStart(target);
             }
         }
 
@@ -681,17 +681,19 @@ struct TRINITY_DLL_DECL boss_krosh_firehandAI : public ScriptedAI
         }
 
         //GreaterFireball_Timer
-        if(GreaterFireball_Timer < diff || m_creature->GetDistance(m_creature->getVictim()) < 30)
+        if(GreaterFireball_Timer < diff && m_creature->GetDistance(m_creature->getVictim()) < 30)
         {
-            DoCast(m_creature->getVictim(), SPELL_GREATER_FIREBALL);
-            GreaterFireball_Timer = 2000;
+            //DoCast(m_creature->getVictim(), SPELL_GREATER_FIREBALL);
+            AddSpellToCast(m_creature->getVictim(), SPELL_GREATER_FIREBALL);
+			GreaterFireball_Timer = 2000;
         }else GreaterFireball_Timer -= diff;
 
         //SpellShield_Timer
         if(SpellShield_Timer < diff)
         {
-            m_creature->InterruptNonMeleeSpells(false);
-            DoCast(m_creature->getVictim(), SPELL_SPELLSHIELD);
+            //m_creature->InterruptNonMeleeSpells(false);
+            //DoCast(m_creature->getVictim(), SPELL_SPELLSHIELD);
+			AddSpellToCast(m_creature->getVictim(), SPELL_SPELLSHIELD);
             SpellShield_Timer = 30000;
         }else SpellShield_Timer -= diff;
 
@@ -713,11 +715,13 @@ struct TRINITY_DLL_DECL boss_krosh_firehandAI : public ScriptedAI
                 target = *(target_list.begin()+rand()%target_list.size());
 
             m_creature->InterruptNonMeleeSpells(false);
-                       DoCast(target, SPELL_BLAST_WAVE);
+                       //DoCast(target, SPELL_BLAST_WAVE);
+						AddSpellToCast(target, SPELL_BLAST_WAVE);
             BlastWave_Timer = 60000;
         }else BlastWave_Timer -= diff;
-
-        DoMeleeAttackIfReady();
+		
+		CastNextSpellIfAnyAndReady();
+        //DoMeleeAttackIfReady();
     }
 };
 
