@@ -665,7 +665,7 @@ struct TRINITY_DLL_DECL boss_krosh_firehandAI : public ScriptedAI
 
             if(target)
             {
-				AttackStart(target);
+                AttackStart(target);
             }
         }
 
@@ -685,7 +685,7 @@ struct TRINITY_DLL_DECL boss_krosh_firehandAI : public ScriptedAI
         {
             //DoCast(m_creature->getVictim(), SPELL_GREATER_FIREBALL);
             AddSpellToCast(m_creature->getVictim(), SPELL_GREATER_FIREBALL);
-			GreaterFireball_Timer = 2000;
+            GreaterFireball_Timer = 2000;
         }else GreaterFireball_Timer -= diff;
 
         //SpellShield_Timer
@@ -693,7 +693,7 @@ struct TRINITY_DLL_DECL boss_krosh_firehandAI : public ScriptedAI
         {
             //m_creature->InterruptNonMeleeSpells(false);
             //DoCast(m_creature->getVictim(), SPELL_SPELLSHIELD);
-			AddSpellToCast(m_creature->getVictim(), SPELL_SPELLSHIELD);
+            AddSpellToCast(m_creature->getVictim(), SPELL_SPELLSHIELD);
             SpellShield_Timer = 30000;
         }else SpellShield_Timer -= diff;
 
@@ -716,11 +716,11 @@ struct TRINITY_DLL_DECL boss_krosh_firehandAI : public ScriptedAI
 
             m_creature->InterruptNonMeleeSpells(false);
                        //DoCast(target, SPELL_BLAST_WAVE);
-						AddSpellToCast(target, SPELL_BLAST_WAVE);
+                        AddSpellToCast(target, SPELL_BLAST_WAVE);
             BlastWave_Timer = 60000;
         }else BlastWave_Timer -= diff;
-		
-		CastNextSpellIfAnyAndReady();
+        
+        CastNextSpellIfAnyAndReady();
         //DoMeleeAttackIfReady();
     }
 };

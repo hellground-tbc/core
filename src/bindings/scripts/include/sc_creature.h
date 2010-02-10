@@ -44,9 +44,9 @@ struct PointMovement
 
 enum interruptSpell
 {
-	DONT_INTERRUPT                = 0,
-	INTERRUPT_AND_CAST            = 1,   //cast when CastNextSpellIfAnyAndReady() is called
-	INTERRUPT_AND_CAST_INSTANTLY  = 2    //cast instantly (CastSpell())
+    DONT_INTERRUPT                = 0,
+    INTERRUPT_AND_CAST            = 1,   //cast when CastNextSpellIfAnyAndReady() is called
+    INTERRUPT_AND_CAST_INSTANTLY  = 2    //cast instantly (CastSpell())
 };
 
 struct SpellToCast
@@ -213,6 +213,7 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
     void ForceSpellCast(Unit* victim, uint32 spellId, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false, Item *castItem = NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0);
     void ForceSpellCastWithScriptText(Unit* victim, uint32 spellId, int32 scriptTextEntry, WorldObject* scriptTextSource, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false, 
                                         Unit* scriptTextTarget = NULL, Item *castItem = NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0);
+    void ForceAOESpellCast(uint32 spellId, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false);
 
     //Forces spell cast by spell info
     void ForceSpellCast(Unit* victim, SpellEntry const *spellInfo, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false, Item *castItem = NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0);
