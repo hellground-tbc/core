@@ -1877,7 +1877,7 @@ static float SuccubPos2[4] = {-3730.46,1041.40,55.95,4.60};
 
 // BT prelude after quest 10944 creatures & spells & emotes
 #define ILLIDAN                     22083
-#define	SEER_OLUM                   22820
+#define    SEER_OLUM                   22820
 #define OLUMS_SPIRIT                22870
 #define SPELL_OLUMS_SACRIFICE       39552
 #define STATE_DROWNED                 383
@@ -2081,7 +2081,7 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
 
         DoPlaySoundToSet(m_creature,BLACK_TEMPLE_PRELUDE_MUSIC);
 
-        Creature* Olum = m_creature->SummonCreature(SEER_OLUM,OlumPos[0],OlumPos[1],OlumPos[2],OlumPos[3],TEMPSUMMON_CORPSE_TIMED_DESPAWN,45000);	// despawn corpse after 45 seconds - Blizzlike
+        Creature* Olum = m_creature->SummonCreature(SEER_OLUM,OlumPos[0],OlumPos[1],OlumPos[2],OlumPos[3],TEMPSUMMON_CORPSE_TIMED_DESPAWN,45000);    // despawn corpse after 45 seconds - Blizzlike
 
         if(!Olum)return;
 
@@ -2140,28 +2140,28 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
                 m_creature->Relocate(AkamaPos[0]+0.1f, AkamaPos[1]-0.1f, AkamaPos[2]);
                 return 2100;
             case 14:
-                m_creature->SendMonsterMove((AkamaPos[0]-0.05f), (AkamaPos[1]), AkamaPos[2], 200);	// just to turn back Akama to Illidan
+                m_creature->SendMonsterMove((AkamaPos[0]-0.05f), (AkamaPos[1]), AkamaPos[2], 200);    // just to turn back Akama to Illidan
                 return 6000;
             case 15:
                 DoScriptText(SAY_DIALOG_PRE_AKAMA_6,m_creature);
                 m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE,68);
                 return 200;
             case 16:
-                if(Illidan)	DoPlaySoundToSet(Illidan,ILLIDAN_APPEARING); return 7000;
+                if(Illidan)    DoPlaySoundToSet(Illidan,ILLIDAN_APPEARING); return 7000;
             case 17:
-                if(Illidan)	DoScriptText(SAY_DIALOG_ILLIDAN_1,(Creature*)Illidan); return 14000;
+                if(Illidan)    DoScriptText(SAY_DIALOG_ILLIDAN_1,(Creature*)Illidan); return 14000;
             case 18:
                 DoScriptText(SAY_DIALOG_PRE_AKAMA_7,m_creature);
                 return 19000;
             case 19:
-                if(Illidan)	DoScriptText(SAY_DIALOG_ILLIDAN_2,(Creature*)Illidan); return 21000;
+                if(Illidan)    DoScriptText(SAY_DIALOG_ILLIDAN_2,(Creature*)Illidan); return 21000;
             case 20:
-                if(Illidan)	DoScriptText(SAY_DIALOG_ILLIDAN_3,(Creature*)Illidan); return 22000;
+                if(Illidan)    DoScriptText(SAY_DIALOG_ILLIDAN_3,(Creature*)Illidan); return 22000;
             case 21:
                 DoScriptText(SAY_DIALOG_PRE_AKAMA_8,m_creature);
                 return 1000;
             case 22:
-                if(Illidan)	Illidan->setDeathState(CORPSE);	return 1000;
+                if(Illidan)    Illidan->setDeathState(CORPSE);    return 1000;
             case 23:
                 PreludeReset();
                 return 100;

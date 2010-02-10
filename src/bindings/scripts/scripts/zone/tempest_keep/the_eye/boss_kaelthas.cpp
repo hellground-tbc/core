@@ -166,8 +166,8 @@ float NetherVaporStartPos[4][2] =                           //spawn positions of
     {803.0, 0.0}
 };
 
-#define TIME_PHASE_2_3			125000 // Phase 2 ends approximately 2 minutes and 5 seconds after it begins
-#define TIME_PHASE_3_4			180000 // Phase 3 ends approximately 3 minutes after it begins
+#define TIME_PHASE_2_3            125000 // Phase 2 ends approximately 2 minutes and 5 seconds after it begins
+#define TIME_PHASE_3_4            180000 // Phase 3 ends approximately 3 minutes after it begins
 
 #define KAEL_VISIBLE_RANGE  50.0f
 
@@ -225,7 +225,7 @@ struct TRINITY_DLL_DECL advisorbase_ai : public ScriptedAI
 
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
         m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
-        m_creature->ApplySpellImmune(2, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);	// for Capernian mainly
+        m_creature->ApplySpellImmune(2, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);    // for Capernian mainly
 
         //reset encounter
         if(pInstance && (pInstance->GetData(DATA_KAELTHASEVENT) == 1 || pInstance->GetData(DATA_KAELTHASEVENT) == 3))
@@ -443,7 +443,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
 
         DeleteLegs();
         summons.DespawnAll();
-        DispellMindControl();	//when reset, dispell Mind Control from players
+        DispellMindControl();    //when reset, dispell Mind Control from players
 
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -602,7 +602,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
     }
 
     uint32 Intro_next(uint32 Step)  //animation sequence when starting phase 5
-    {	/*TODO list:
+    {    /*TODO list:
         - find a proper way to implement netherbeams (36089, 36090)
         - find right spells and animations for an arcane storm (some spells known: 36196, 36197, 36198)
         - find a way of using spells: 36201, 36290, 36291
@@ -672,7 +672,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
         case 15:
             m_creature->SendMonsterMove(GRAVITY_X-1.0f, GRAVITY_Y, GRAVITY_Z, 13000);
             m_creature->Relocate(GRAVITY_X-1.0f, GRAVITY_Y, GRAVITY_Z);
-            return 13000;			
+            return 13000;            
         case 16:
             m_creature->Relocate(GRAVITY_X-1.0f, GRAVITY_Y, GRAVITY_Z);
             m_creature->InterruptNonMeleeSpells(false);
@@ -919,7 +919,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                     if (Phase_Timer < diff)
                 {
                     DoScriptText(SAY_PHASE3_ADVANCE, m_creature);
-                    pInstance->SetData(DATA_KAELTHASEVENT, 4);		// phase 3 = phase 4, to discriminate phase 3 state from DONE
+                    pInstance->SetData(DATA_KAELTHASEVENT, 4);        // phase 3 = phase 4, to discriminate phase 3 state from DONE
                     Phase = 3;
                     PhaseSubphase = 0;
                 }else Phase_Timer -= diff;
@@ -1044,7 +1044,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                               }
                               }
                               MindControl_Timer = 10000;
-                              MC_Done = false;				// for second MC to have a good timer
+                              MC_Done = false;                // for second MC to have a good timer
                             }
                         }
                         else
@@ -1088,7 +1088,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                             }
                         }
                         else
-                            Arcane_Timer2 -= diff;									
+                            Arcane_Timer2 -= diff;                                    
                     }
 
                 //Phase 4 specific spells
@@ -1206,7 +1206,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                                 summons.AuraOnEntry(PHOENIX,SPELL_BANISH,true);
 
                                 if(pInstance)
-                                    pInstance->SetData(DATA_KAELTHASEVENT, 5);	// set KaelthasEventPhase = 5 for Gravity Lapse phase
+                                    pInstance->SetData(DATA_KAELTHASEVENT, 5);    // set KaelthasEventPhase = 5 for Gravity Lapse phase
 
                                 //Cast nether vapor summoning
                                 GravityLapse_Timer = 3000;
@@ -1221,7 +1221,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                                 {
                                 for(uint8 j = 0; j <=6; j +=6)
                                 {
-                                    float z;	//randomize 'z' position of summoned NPC but between 6 and 18 
+                                    float z;    //randomize 'z' position of summoned NPC but between 6 and 18 
                                     z = FloatRand(12.0);
                                     z = z > 6.0 ? (z + j) : (6.0 + j);
                                     m_creature->SummonCreature(NETHER_VAPOR_CLOUD, NetherVaporStartPos[i][0], NetherVaporStartPos[i][1], GRAVITY_Z+z, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 0);
@@ -1236,7 +1236,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                                 InGravityLapse = false;
                                 summons.AuraOnEntry(PHOENIX,SPELL_BANISH,false);
                                 if(pInstance)
-                                    pInstance->SetData(DATA_KAELTHASEVENT, 4);	// after Gravity Lapse set back state 4 of KaelthasPhaseEvent
+                                    pInstance->SetData(DATA_KAELTHASEVENT, 4);    // after Gravity Lapse set back state 4 of KaelthasPhaseEvent
                                 // remove flight aura, can be removed when knockback fixed
                                 for (iter = m_creature->getThreatManager().getThreatList().begin(); iter!= m_creature->getThreatManager().getThreatList().end();)
                                 {
@@ -1244,7 +1244,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                                     ++iter;
                                     if(pUnit && (pUnit->GetTypeId() == TYPEID_PLAYER) && !((Player*)pUnit)->isGameMaster()) //to allow GM's spying :P
                                     {
-                                        WorldPacket data(12);										// when proper knockback effect known this should be removed
+                                        WorldPacket data(12);                                        // when proper knockback effect known this should be removed
                                         data.SetOpcode(SMSG_MOVE_UNSET_CAN_FLY);
                                         data.append(pUnit->GetPackGUID());
                                         data << uint32(0);
@@ -1293,7 +1293,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                                 float tempZ = iPl->GetPositionZ();
                                 if (tempZ < GRAVITY_Z + 7 && !iPl->isGameMaster())
                                     iPl->CastSpell(iPl, SPELL_KNOCKBACK, true);
-                                WorldPacket data(12);										// when proper knockback effect known this should be removed
+                                WorldPacket data(12);                                        // when proper knockback effect known this should be removed
                                 data.SetOpcode(SMSG_MOVE_SET_CAN_FLY);
                                 data.append(pUnit->GetPackGUID());
                                 data << uint32(0);
@@ -1837,7 +1837,7 @@ struct TRINITY_DLL_DECL mob_phoenix_tkAI : public ScriptedAI
     void Reset()
     {
         m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);//birds can fly! :)
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_SCHOOL_IMMUNITY, true);	//immune to players banish effects, but not banishing in phase 5
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_SCHOOL_IMMUNITY, true);    //immune to players banish effects, but not banishing in phase 5
         m_creature->ApplySpellImmune(1, IMMUNITY_STATE, SPELL_AURA_MOD_STUN, true);
         Cycle_Timer = 2000;
         Egg = true;
@@ -1887,14 +1887,14 @@ struct TRINITY_DLL_DECL mob_phoenix_tkAI : public ScriptedAI
                 }
             }
               //spell Burn should possible do this, but it doesn't, so do this for now.
-             uint32 dmg = 0.05*(m_creature->GetMaxHealth());	// burn 5% of phoenix HP each tick
+             uint32 dmg = 0.05*(m_creature->GetMaxHealth());    // burn 5% of phoenix HP each tick
          if(pInstance->GetData(DATA_KAELTHASEVENT) != 5)
          {
              if (m_creature->GetHealth() > dmg)
              {
                  m_creature->SetHealth(uint32(m_creature->GetHealth()-dmg));
-             }			 
-              else m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);	//kill it
+             }             
+              else m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);    //kill it
           Cycle_Timer = 2000;
          }
         }else Cycle_Timer -= diff;

@@ -23,7 +23,7 @@ EndScriptData */
 
 #include "precompiled.h"
 
-#define BOSS_TWILIGHT_CORRUPTER			15625
+#define BOSS_TWILIGHT_CORRUPTER            15625
 
 bool CorrupterSummoned = false;
 

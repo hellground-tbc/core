@@ -101,7 +101,7 @@ TargetedMovementGenerator<T>::_adaptSpeedToTarget(T &owner)
     float lowerCritDist = 3*i_offset;
     float upperCritDist = 6*i_offset;
 
-    float maxSpeed	    = owner.GetMaxSpeedRate(MOVE_RUN);
+    float maxSpeed        = owner.GetMaxSpeedRate(MOVE_RUN);
     float currSpeed     = owner.GetSpeedRate(MOVE_RUN);
     float targetSpeed   = i_target->GetSpeedRate(MOVE_RUN);
     if( targetSpeed > maxSpeed )
