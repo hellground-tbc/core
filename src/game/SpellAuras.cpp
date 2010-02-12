@@ -4230,7 +4230,10 @@ void Aura::HandleAuraModResistanceExclusive(bool apply, bool Real)
 {
     // only positive auras can be exclusive?
     if(!m_positive)
+    {
         HandleAuraModResistance(apply, Real);
+        return;
+    }
 
     for(int8 x = SPELL_SCHOOL_NORMAL; x < MAX_SPELL_SCHOOL;x++)
     {
