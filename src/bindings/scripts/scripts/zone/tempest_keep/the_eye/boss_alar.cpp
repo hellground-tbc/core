@@ -94,13 +94,11 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
 
     float DefaultMoveSpeedRate;
 
-    bool back;
     bool Phase1;
     bool ForceMove;
     uint32 ForceTimer;
     uint32 checkTimer;
 
-    Unit *tank;
     WorldLocation wLoc;
 
     int8 cur_wp;
@@ -114,7 +112,6 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
         Platforms_Move_Timer = 0;
 
         Phase1 = true;
-        back = false;
 
         WaitEvent = WE_NONE;
         WaitTimer = 0;
@@ -122,8 +119,6 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
         ForceMove = false;
         ForceTimer = 5000;
         checkTimer = 3000;
-
-        tank = NULL;
 
         cur_wp = 4;
         m_creature->SetDisplayId(m_creature->GetNativeDisplayId());
@@ -262,7 +257,7 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
             else
                 DoZoneInCombat();
 
-            checkTimer = 3000;
+            checkTimer = 2000;
         }
         else
             checkTimer -= diff;
@@ -271,7 +266,9 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
         {
             m_creature->CastSpell(m_creature, SPELL_BERSERK, true);
             Berserk_Timer = 60000;
-        }else Berserk_Timer -= diff;
+        }
+        else
+            Berserk_Timer -= diff;
 
         if(ForceMove)
         {
@@ -279,7 +276,9 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
             {
                 m_creature->GetMotionMaster()->MovePoint(0, waypoint[cur_wp][0], waypoint[cur_wp][1], waypoint[cur_wp][2]);
                 ForceTimer = 5000;
-            }else ForceTimer -= diff;
+            }
+            else
+                ForceTimer -= diff;
 
         }
 
@@ -411,12 +410,15 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
                         WaitEvent = WE_QUILL;
                     }
                 }
+
                 ForceMove = true;
                 ForceTimer = 5000;
                 m_creature->GetMotionMaster()->MovePoint(0, waypoint[cur_wp][0], waypoint[cur_wp][1], waypoint[cur_wp][2]);
                 WaitTimer = 0;
                 return;
-            }else Platforms_Move_Timer -= diff;
+            }
+            else
+                Platforms_Move_Timer -= diff;
         }
         else
         {
@@ -428,33 +430,22 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
                 if(m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                     m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 
-                if(back)
-                {
-                    if(tank)
-                        AttackStart(tank);
+                if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, 100, true))
+                    DoCast(target, SPELL_CHARGE);
 
-                    tank = NULL;
-                    back = false;
-                    Charge_Timer = 29000;
-                }
-                else
-                {
-                    tank = m_creature->getVictim();
-                    Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, 100, true);
-                    
-                    if(target)
-                        DoCast(target, SPELL_CHARGE);
-
-                    back = true;
-                    Charge_Timer = 1000;
-                }
-            }else Charge_Timer -= diff;
+                DoStartMovement(m_creature->getVictim());
+                Charge_Timer = 30000;
+            }
+            else
+                Charge_Timer -= diff;
 
             if(MeltArmor_Timer < diff)
             {
                 DoCast(m_creature->getVictim(), SPELL_MELT_ARMOR);
                 MeltArmor_Timer = 60000;
-            }else MeltArmor_Timer -= diff;
+            }
+            else
+                MeltArmor_Timer -= diff;
 
             if(DiveBomb_Timer < diff)
             {
@@ -468,14 +459,15 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
                 WaitTimer = 0;
                 DiveBomb_Timer = 40000+rand()%5000;
                 return;
-            }else DiveBomb_Timer -= diff;
+            }
+            else
+                DiveBomb_Timer -= diff;
 
             if(FlamePatch_Timer < diff)
             {
                 if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
                 {
-                    Creature* Summoned = m_creature->SummonCreature(CREATURE_FLAME_PATCH_ALAR, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 120000);
-                    if(Summoned)
+                    if(Creature* Summoned = m_creature->SummonCreature(CREATURE_FLAME_PATCH_ALAR, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 120000))
                     {
                         Summoned->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                         Summoned->SetFloatValue(OBJECT_FIELD_SCALE_X, Summoned->GetFloatValue(OBJECT_FIELD_SCALE_X)*2.5f);
@@ -486,7 +478,9 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
                     }
                 }
                 FlamePatch_Timer = 30000;
-            }else FlamePatch_Timer -= diff;
+            }
+            else
+                FlamePatch_Timer -= diff;
         }
 
         DoMeleeAttackIfReady();
