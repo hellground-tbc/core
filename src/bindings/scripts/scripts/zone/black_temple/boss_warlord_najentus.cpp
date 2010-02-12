@@ -63,6 +63,10 @@ struct TRINITY_DLL_DECL boss_najentusAI : public ScriptedAI
     uint32 ImpalingSpineTimer;
     uint32 CheckTimer;
 
+    uint8 plToNeedle;
+
+    bool checkAura;
+
     WorldLocation wLoc;
 
     //       go_guid, target_guid
@@ -79,6 +83,8 @@ struct TRINITY_DLL_DECL boss_najentusAI : public ScriptedAI
 
         CheckTimer = 3000;
 
+        plToNeedle = 3;
+        checkAura = false;
 
         std::map<uint64, uint64>::iterator spineTarget = SpineTargetMap.begin();
         for(;spineTarget != SpineTargetMap.end(); ++spineTarget)
@@ -145,6 +151,20 @@ struct TRINITY_DLL_DECL boss_najentusAI : public ScriptedAI
         return true;
     }
 
+    bool PlayerInList(std::list<uint64> * list, uint64 target)
+    {
+        if (list->empty())
+            return false;
+
+        for (std::list<uint64>::iterator itr = list->begin(); itr != list->end(); itr++)
+        {
+            if ((*itr) == target)
+                return true;
+        }
+
+        return false;
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim())
@@ -161,32 +181,70 @@ struct TRINITY_DLL_DECL boss_najentusAI : public ScriptedAI
         else
             CheckTimer -= diff;
 
+        if (checkAura)
+        {
+            if(m_creature->HasAura(SPELL_TIDAL_SHIELD, 0))
+                NeedleSpineTimer = 10000;
+            else
+                checkAura = false;
+        }
+
         if(TidalShieldTimer < diff)
         {
             m_creature->CastSpell(m_creature, SPELL_TIDAL_SHIELD, true);
-
-            if(NeedleSpineTimer < 10000)
-                NeedleSpineTimer = 10000;
+            
+            ImpalingSpineTimer = 20000;            
 
             TidalShieldTimer = 60000;
-        }else TidalShieldTimer -= diff;
+            checkAura = true;
+        }
+        else 
+            TidalShieldTimer -= diff;
 
         if(EnrageTimer < diff)
         {
             DoScriptText(SAY_ENRAGE2, m_creature);
             m_creature->CastSpell(m_creature, SPELL_BERSERK, true);
             EnrageTimer = 600000;
-        }else EnrageTimer -= diff;
+        }
+        else 
+            EnrageTimer -= diff;
 
         if(NeedleSpineTimer < diff)
         {
-            Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1);
-            if(!target)
-                target = m_creature->getVictim();
-            if(target)
-                m_creature->CastSpell(target, SPELL_NEEDLE_SPINE, true);
-            NeedleSpineTimer = 15000 + rand()%5*1000;
-        }else NeedleSpineTimer -= diff;
+            Unit *target;
+            std::list<uint64> playerList; 
+            uint8 tempThreatListSize = m_creature->getThreatManager().getThreatList().size();
+            plToNeedle = 3;
+            
+            if (tempThreatListSize < 3)
+                plToNeedle = tempThreatListSize - 1;
+
+            for(uint8 i = 0; i < plToNeedle; i++)
+            {
+                target = NULL;
+                while (true)
+                {
+                    target = SelectUnit(SELECT_TARGET_RANDOM, 1, 150, true);    //target players only
+                    
+                    if (!target)
+                        target = m_creature->getVictim();
+
+                    if (!PlayerInList(&playerList ,target->GetGUID()))
+                        break;
+                }
+
+                if(target)
+                {
+                    playerList.push_back(target->GetGUID());
+                    m_creature->CastSpell(target, SPELL_NEEDLE_SPINE, true);
+                }
+            }
+
+            NeedleSpineTimer = 2000 + rand()%3000;
+        }
+        else 
+            NeedleSpineTimer -= diff;
 
         if(SpecialYellTimer < diff)
         {
@@ -195,12 +253,16 @@ struct TRINITY_DLL_DECL boss_najentusAI : public ScriptedAI
             case 0: DoScriptText(SAY_SPECIAL1, m_creature); break;
             case 1: DoScriptText(SAY_SPECIAL2, m_creature); break;
             }
+
             SpecialYellTimer = 25000 + (rand()%76)*1000;
-        }else SpecialYellTimer -= diff;
+        }
+        else 
+            SpecialYellTimer -= diff;
 
         if(ImpalingSpineTimer < diff)
         {
-            Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1);
+            Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, 150, true);
+
             if(!target)
                 target = m_creature->getVictim();
 
@@ -224,7 +286,9 @@ struct TRINITY_DLL_DECL boss_najentusAI : public ScriptedAI
                 }
             }
             ImpalingSpineTimer = 20000;
-        }else ImpalingSpineTimer -= diff;
+        }
+        else 
+            ImpalingSpineTimer -= diff;
 
         DoMeleeAttackIfReady();
     }
