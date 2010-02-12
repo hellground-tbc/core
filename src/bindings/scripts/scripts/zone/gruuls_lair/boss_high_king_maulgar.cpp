@@ -664,9 +664,7 @@ struct TRINITY_DLL_DECL boss_krosh_firehandAI : public ScriptedAI
             Unit* target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_MAULGAREVENT_TANK));
 
             if(target)
-            {
                 AttackStart(target);
-            }
         }
 
         //Return since we have no target
