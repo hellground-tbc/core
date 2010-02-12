@@ -2724,8 +2724,8 @@ bool InstanceMap::CanEnter(Player *player)
 
     if(!player->isGameMaster() && GetInstanceData() && GetInstanceData()->IsEncounterInProgress() && player->GetMapId() != GetId())
     {
-        sLog.outDebug("MAP: Player '%s' can't enter instance '%s' while an encounter is in progress.", player->GetName(), mapName);
-        player->GetSession()->SendAreaTriggerMessage(player->GetSession()->GetTrinityString(10058), mapName);
+        sLog.outDebug("MAP: Player '%s' can't enter instance '%s' while an encounter is in progress.", player->GetName(),GetMapName());
+        player->GetSession()->SendAreaTriggerMessage(player->GetSession()->GetTrinityString(10058), GetMapName());
         return false;
     }
 
