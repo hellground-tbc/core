@@ -2722,13 +2722,12 @@ bool InstanceMap::CanEnter(Player *player)
         return false;
     }
 
-    /*// cannot enter while players in the instance are in combat
-    Group *pGroup = player->GetGroup();
-    if(!player->isGameMaster() && pGroup && pGroup->InCombatToInstance(GetInstanceId()) && player->GetMapId() != GetId())
+    if(!player->isGameMaster() && GetInstanceData() && GetInstanceData()->IsEncounterInProgress() && player->GetMapId() != GetId())
     {
-        player->SendTransferAborted(GetId(), TRANSFER_ABORT_ZONE_IN_COMBAT);
+        sLog.outDebug("MAP: Player '%s' can't enter instance '%s' while an encounter is in progress.", player->GetName(), mapName);
+        player->GetSession()->SendAreaTriggerMessage(player->GetSession()->GetTrinityString(10058), mapName);
         return false;
-    }*/
+    }
 
     return Map::CanEnter(player);
 }
