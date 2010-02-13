@@ -55,6 +55,7 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
     uint32 SleepTimer;
     uint32 CheckTimer;
     uint32 InfernoTimer;
+    uint32 Visual_Check;
     bool go;
     uint32 pos;
 
@@ -65,6 +66,7 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
         SleepTimer = 60000;
         InfernoTimer = 45000;
         CheckTimer = 3000;
+        Visual_Check = 0;
 
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
         m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
@@ -152,17 +154,33 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
 
         if(CheckTimer < diff)
         {
-            DoZoneInCombat();
+            DoZoneInCombat();          
             CheckTimer = 3000;
         }
         else
             CheckTimer -= diff;
 
+        //back to victim target facing
+        if(Visual_Check && Visual_Check < diff)
+        {
+            if(m_creature->GetUInt64Value(UNIT_FIELD_TARGET) != m_creature->getVictim()->GetGUID())
+                m_creature->SetUInt64Value(UNIT_FIELD_TARGET, m_creature->getVictim()->GetGUID());
+            Visual_Check = NULL;
+        }
+        else
+            Visual_Check -= diff;
+
+
         if(SwarmTimer < diff)
         {
             Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,100,true);
             if(target)
+            {
+                //for proper visual
+                m_creature->SetUInt64Value(UNIT_FIELD_TARGET, target->GetGUID());
                 DoCast(target,SPELL_CARRION_SWARM, true);
+                Visual_Check = 1000;
+            }
 
             SwarmTimer = 12000+rand()%6000;
             
@@ -230,6 +248,7 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
             InfernoTimer -= diff;
 
         DoMeleeAttackIfReady();
+        CastNextSpellIfAnyAndReady();
     }
 };
 
