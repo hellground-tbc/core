@@ -4293,10 +4293,10 @@ uint8 Spell::CanCast(bool strict)
 
                 break;
             }
-            case SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED:
+            /*case SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED:
             case SPELL_AURA_FLY:
             {
-        // not allow cast fly spells at old maps by players (all spells is self target)
+                // not allow cast fly spells at old maps by players (all spells is self target)
                 if(m_caster->GetTypeId() == TYPEID_PLAYER)
                 {
                     int mapID = GetVirtualMapForMapAndZone(m_caster->GetMapId(),m_caster->GetZoneId());
@@ -4304,7 +4304,7 @@ uint8 Spell::CanCast(bool strict)
                         return SPELL_FAILED_NOT_HERE;
                 }
                 break;
-            }
+            }*/
             case SPELL_AURA_PERIODIC_MANA_LEECH:
             {
                 if (!m_targets.getUnitTarget())
