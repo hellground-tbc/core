@@ -62,6 +62,8 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
 
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
         m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
+        m_creature->ApplySpellImmune(2, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
+        m_creature->ApplySpellImmune(3, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
 
         if(pInstance && IsEvent)
             pInstance->SetData(DATA_RAGEWINTERCHILLEVENT, NOT_STARTED);
@@ -71,6 +73,7 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
     {
         if(pInstance && IsEvent)
             pInstance->SetData(DATA_RAGEWINTERCHILLEVENT, IN_PROGRESS);
+
         DoPlaySoundToSet(m_creature, SOUND_ONAGGRO);
         DoYell(SAY_ONAGGRO, LANG_UNIVERSAL, NULL);
     }
@@ -106,6 +109,7 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
         hyjal_trashAI::JustDied(victim);
         if(pInstance && IsEvent)
             pInstance->SetData(DATA_RAGEWINTERCHILLEVENT, DONE);
+
         DoPlaySoundToSet(m_creature, SOUND_ONDEATH);
         DoYell(SAY_ONDEATH, LANG_UNIVERSAL, NULL);
     }
@@ -143,19 +147,23 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
         {
             DoZoneInCombat();
             CheckTimer = 3000;
-        }else
+        }
+        else
             CheckTimer -= diff;
 
         if(FrostArmorTimer < diff)
         {
-            DoCast(m_creature, SPELL_FROST_ARMOR, true);
+            AddSpellToCast(m_creature, SPELL_FROST_ARMOR, true);
             FrostArmorTimer = 11000+rand()%20000;
-        }else FrostArmorTimer -= diff;
+        }
+        else
+            FrostArmorTimer -= diff;
 
         if(DecayTimer < diff)
         {
             if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 70, true))
-                DoCast(target, SPELL_DEATH_AND_DECAY);
+                AddSpellToCast(target, SPELL_DEATH_AND_DECAY);
+            
             DecayTimer = 60000+rand()%20000;
             switch(rand()%2)
             {
@@ -168,12 +176,15 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
                     DoYell(SAY_DECAY2, LANG_UNIVERSAL, NULL);
                     break;
             }
-        }else DecayTimer -= diff;
+        }
+        else
+            DecayTimer -= diff;
 
         if(NovaTimer < diff)
         {
             if(Unit *target = m_creature->getVictim())
-                DoCast(target, SPELL_FROST_NOVA, true);
+                AddSpellToCast(target, SPELL_FROST_NOVA, true);
+
             NovaTimer = 30000+rand()%15000;
 
             if(DecayTimer < 10000)
@@ -190,22 +201,29 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
                     DoYell(SAY_NOVA2, LANG_UNIVERSAL, NULL);
                     break;
             }
-        }else NovaTimer -= diff;
+        }
+        else
+            NovaTimer -= diff;
 
         if(IceboltTimer < diff)
         {
             if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0,40,true))
-                DoCast(target, SPELL_ICEBOLT, true);
+                AddSpellToCast(target, SPELL_ICEBOLT, true);
+
             IceboltTimer = 11000+rand()%20000;
-        }else IceboltTimer -= diff;
+        }
+        else
+            IceboltTimer -= diff;
 
         if(Enrage_Timer < diff)
         {
-            DoCast(m_creature, SPELL_BERSERK);
+            AddSpellToCast(m_creature, SPELL_BERSERK);
             Enrage_Timer = 300000;
         }
-        else Enrage_Timer -= diff;
+        else
+            Enrage_Timer -= diff;
 
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };
