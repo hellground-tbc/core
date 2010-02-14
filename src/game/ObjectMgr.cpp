@@ -917,6 +917,44 @@ bool ObjectMgr::SetCreatureLinkedRespawn(uint32 guid, uint32 linkedGuid)
     return false;
 }
 
+void ObjectMgr::LoadUnqueuedAccountList()
+{
+    m_UnqueuedAccounts.clear();
+    QueryResult *result = WorldDatabase.Query("SELECT accid FROM unqueue_account ORDER BY accid ASC");
+
+    if(!result)
+    {
+        barGoLink bar(1);
+
+        bar.step();
+
+        sLog.outString("");
+        sLog.outErrorDb(">> Loaded 0 unqueued accounts. DB table `unqueue_account` is empty.");
+        return;
+    }
+
+    barGoLink bar(result->GetRowCount());
+
+    do
+    {
+        Field *fields = result->Fetch();
+        bar.step();
+
+        m_UnqueuedAccounts.insert(fields[0].GetUInt32());
+
+    }while (result->NextRow());
+
+    delete result;
+
+    sLog.outString();
+    sLog.outString( ">> Loaded %u unqueued accounts", m_UnqueuedAccounts.size() );
+}
+
+bool ObjectMgr::IsUnqueuedAccount(uint64 accid)
+{
+    return (m_UnqueuedAccounts.count(accid) != 0);
+}
+
 void ObjectMgr::LoadCreatures()
 {
     uint32 count = 0;

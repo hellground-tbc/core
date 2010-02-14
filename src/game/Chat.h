@@ -227,6 +227,7 @@ class ChatHandler
         bool HandleReloadCreatureQuestRelationsCommand(const char* args);
         bool HandleReloadCreatureQuestInvRelationsCommand(const char* args);
         bool HandleReloadCreatureLinkedRespawnCommand(const char* args);
+        bool HandleReloadUnqueuedAccountListCommand(const char* args);
         bool HandleReloadDbScriptStringCommand(const char* args);
         bool HandleReloadGameGraveyardZoneCommand(const char* args);
         bool HandleReloadGameObjectScriptsCommand(const char* args);

@@ -559,6 +559,7 @@ bool ChatHandler::HandleReloadAllCommand(const char*)
     HandleReloadReservedNameCommand("");
     HandleReloadTrinityStringCommand("");
     HandleReloadGameTeleCommand("");
+    HandleReloadUnqueuedAccountListCommand("");
     return true;
 }
 
@@ -709,6 +710,13 @@ bool ChatHandler::HandleReloadCreatureLinkedRespawnCommand(const char* args)
     sLog.outString( "Loading Linked Respawns... (`creature_linked_respawn`)" );
     objmgr.LoadCreatureLinkedRespawn();
     SendGlobalGMSysMessage("DB table `creature_linked_respawn` (creature linked respawns) reloaded.");
+    return true;
+}
+
+bool ChatHandler::HandleReloadUnqueuedAccountListCommand(const char* args)
+{
+    objmgr.LoadUnqueuedAccountList();
+    SendGlobalGMSysMessage("DB table `unqueue_account` reloaded.");
     return true;
 }
 

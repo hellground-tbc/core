@@ -515,6 +515,8 @@ class ObjectMgr
         bool CheckCreatureLinkedRespawn(uint32 guid, uint32 linkedGuid) const;
         bool SetCreatureLinkedRespawn(uint32 guid, uint32 linkedGuid);
         void LoadCreatureRespawnTimes();
+        void LoadUnqueuedAccountList();
+        bool IsUnqueuedAccount(uint64 accid);
         void LoadCreatureAddons();
         void LoadCreatureModelInfo();
         void LoadEquipmentTemplates();
@@ -841,6 +843,7 @@ class ObjectMgr
         std::set<uint32>    m_DisabledPlayerSpells;
         std::set<uint32>    m_DisabledCreatureSpells;
         std::set<uint32>    m_DisabledPetSpells;
+        std::set<uint64>    m_UnqueuedAccounts;
 
         GraveYardMap        mGraveYardMap;
 

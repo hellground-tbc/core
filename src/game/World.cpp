@@ -242,7 +242,7 @@ World::AddSession_ (WorldSession* s)
     if(decrease_session)
         --Sessions;
 
-    if (pLimit > 0 && Sessions >= pLimit && s->GetSecurity () == SEC_PLAYER && !HasRecentlyDisconnected(s) )
+    if (pLimit > 0 && Sessions >= pLimit && s->GetSecurity () == SEC_PLAYER && !HasRecentlyDisconnected(s) && !(objmgr.IsUnqueuedAccount(s->GetAccountId())))
     {
         AddQueuedPlayer (s);
         UpdateMaxSessionCounters ();
@@ -277,14 +277,15 @@ bool World::HasRecentlyDisconnected(WorldSession* session)
 
     if(uint32 tolerance = getConfig(CONFIG_INTERVAL_DISCONNECT_TOLERANCE))
     {
-        for(DisconnectMap::iterator i = m_disconnects.begin(); i != m_disconnects.end();)
+        for(DisconnectMap::iterator next, i = m_disconnects.begin(); i != m_disconnects.end(); i = next)
         {
+            next = i;
+            next++;
+
             if(difftime(i->second, time(NULL)) < tolerance)
             {
                 if(i->first == session->GetAccountId())
                     return true;
-                else
-                    ++i;
             }
             else
                 m_disconnects.erase(i);
@@ -1182,6 +1183,9 @@ void World::SetInitialWorldSettings()
 
     sLog.outString( "Loading Aggro Spells Definitions...");
     spellmgr.LoadSpellThreats();
+
+    sLog.outString( "Loading Unqueued Account List..." );
+    objmgr.LoadUnqueuedAccountList();
 
     sLog.outString( "Loading NPC Texts..." );
     objmgr.LoadGossipText();
