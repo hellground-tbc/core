@@ -937,6 +937,8 @@ void Aura::_AddAura()
     if (getDiminishGroup() != DIMINISHING_NONE )
         m_target->ApplyDiminishingAura(getDiminishGroup(),true);
 
+    int max_slot = m_target->GetTypeId() == TYPEID_PLAYER ? MAX_POSITIVE_AURAS : 16;
+
     // passive auras (except totem auras) do not get placed in the slots
     // area auras with SPELL_AURA_NONE are not shown on target
     if( (!m_isPassive || (caster && caster->GetTypeId() == TYPEID_UNIT && ((Creature*)caster)->isTotem())) &&
@@ -946,7 +948,7 @@ void Aura::_AddAura()
         {
             if (IsPositive())                               // empty positive slot
             {
-                for (uint8 i = 0; i < MAX_POSITIVE_AURAS; i++)
+                for (uint8 i = 0; i < max_slot; i++)
                 {
                     if (m_target->GetUInt32Value((uint16)(UNIT_FIELD_AURA + i)) == 0)
                     {
@@ -957,7 +959,7 @@ void Aura::_AddAura()
             }
             else                                            // empty negative slot
             {
-                for (uint8 i = MAX_POSITIVE_AURAS; i < MAX_AURAS; i++)
+                for (uint8 i = max_slot; i < MAX_AURAS; i++)
                 {
                     if (m_target->GetUInt32Value((uint16)(UNIT_FIELD_AURA + i)) == 0)
                     {
