@@ -42,13 +42,6 @@ enum EncounterState
 
 typedef std::set<GameObject*> DoorSet;
 
-struct BossInfo
-{
-    BossInfo() : state(NOT_STARTED) {}
-    EncounterState state;
-    DoorSet roomDoor, passageDoor;
-};
-
 class TRINITY_DLL_SPEC InstanceData
 {
     public:
@@ -93,29 +86,7 @@ class TRINITY_DLL_SPEC InstanceData
         virtual void SetData(uint32, uint32 data) {}
 
         //Handle open / close objects
-        //use HandleGameObject(NULL,boolen,GO); in OnObjectCreate in instance scripts
-        //use HandleGameObject(GUID,boolen,NULL); in any other script
         void HandleGameObject(uint64 GUID, bool open, GameObject *go = NULL);
-
-    protected:
-        void AddBossRoomDoor(uint32 id, GameObject *door);
-        void AddBossPassageDoor(uint32 id, GameObject *door);
-        void RemoveBossRoomDoor(uint32 id, GameObject *door);
-        void RemoveBossPassageDoor(uint32 id, GameObject *door);
-
-        void SetBossState(uint32 id, EncounterState state);
-
-        std::string GetBossSave()
-        {
-            std::ostringstream saveStream;
-            for(std::vector<BossInfo>::iterator i = bosses.begin(); i != bosses.end(); ++i)
-                saveStream << (uint32)i->state << " ";
-            return saveStream.str();
-        }        
-
-    private:
-        std::vector<BossInfo> bosses;
-
 };
 #endif
 
