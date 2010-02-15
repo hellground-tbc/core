@@ -60,6 +60,9 @@ _logoutTime(0), m_inQueue(false), m_playerLoading(false), m_playerLogout(false),
 /// WorldSession destructor
 WorldSession::~WorldSession()
 {
+    if(objmgr.IsUnqueuedAccount(GetAccountId()))
+        sWorld.unqueuedSessions()--;
+
     ///- unload player if not unloaded
     if (_player)
         LogoutPlayer (true);
@@ -75,7 +78,7 @@ WorldSession::~WorldSession()
     WorldPacket* packet;
     while(_recvQueue.next(packet))
         delete packet;
-
+    
     LoginDatabase.PExecute("UPDATE account SET online = 0 WHERE id = %u;", GetAccountId());
     CharacterDatabase.PExecute("UPDATE characters SET online = 0 WHERE account = %u;", GetAccountId());
 }

@@ -104,6 +104,7 @@ World::World()
     m_startTime=m_gameTime;
     m_maxActiveSessionCount = 0;
     m_maxQueuedSessionCount = 0;
+    m_unqueuedSessions = 0;
     m_resultQueue = NULL;
     m_NextDailyQuestReset = 0;
     m_scheduledScripts = 0;
@@ -242,12 +243,19 @@ World::AddSession_ (WorldSession* s)
     if(decrease_session)
         --Sessions;
 
-    if (pLimit > 0 && Sessions >= pLimit && s->GetSecurity () == SEC_PLAYER && !HasRecentlyDisconnected(s) && !(objmgr.IsUnqueuedAccount(s->GetAccountId())))
+    if (pLimit > 0 && (Sessions - unqueuedSessions()) >= pLimit && s->GetSecurity () == SEC_PLAYER && !HasRecentlyDisconnected(s))
     {
-        AddQueuedPlayer (s);
-        UpdateMaxSessionCounters ();
-        sLog.outDetail ("PlayerQueue: Account id %u is in Queue Position (%u).", s->GetAccountId (), ++QueueSize);
-        return;
+        if(objmgr.IsUnqueuedAccount(s->GetAccountId()))
+        {
+            unqueuedSessions()++;
+        }
+        else
+        {
+            AddQueuedPlayer (s);
+            UpdateMaxSessionCounters ();
+            sLog.outDetail ("PlayerQueue: Account id %u is in Queue Position (%u).", s->GetAccountId (), ++QueueSize);
+            return;
+        }
     }
 
     WorldPacket packet(SMSG_AUTH_RESPONSE, 1 + 4 + 1 + 4 + 1);
@@ -258,7 +266,7 @@ World::AddSession_ (WorldSession* s)
     packet << uint8 (s->Expansion()); // 0 - normal, 1 - TBC, must be set in database manually for each account
     s->SendPacket (&packet);
 
-    UpdateMaxSessionCounters ();
+    UpdateMaxSessionCounters();
 
     // Updates the population
     if (pLimit > 0)
@@ -353,7 +361,7 @@ bool World::RemoveQueuedPlayer(WorldSession* sess)
         --sessions;
 
     // accept first in queue
-    if( (!m_playerLimit || sessions < m_playerLimit) && !m_QueuedPlayer.empty() )
+    if( (!m_playerLimit || (sessions - unqueuedSessions()) < m_playerLimit) && !m_QueuedPlayer.empty() )
     {
         WorldSession* pop_sess = m_QueuedPlayer.front();
         pop_sess->SetInQueue(false);
