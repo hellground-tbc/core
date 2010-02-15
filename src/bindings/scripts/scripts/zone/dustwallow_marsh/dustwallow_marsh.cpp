@@ -194,6 +194,60 @@ bool GossipSelect_npc_nat_pagle(Player *player, Creature *_Creature, uint32 send
 }
 
 /*######
+## npc_theramore_combat_dummy
+######*/
+
+struct TRINITY_DLL_DECL npc_theramore_combat_dummyAI : public Scripted_NoMovementAI
+{
+    npc_theramore_combat_dummyAI(Creature *c) : Scripted_NoMovementAI(c) {}
+
+    uint64 AttackerGUID;
+    uint32 Check_Timer;
+
+    void Reset() 
+    {
+        m_creature->SetNoCallAssistance(true);
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_STUN, true);
+        AttackerGUID = 0;
+        Check_Timer = 0;
+    }
+
+    void Aggro(Unit* who) 
+    {
+        AttackerGUID = ((Player*)who)->GetGUID();
+        m_creature->SetStunned(true);
+    }
+
+    void DamageTaken(Unit *attacker, uint32 &damage)
+    {
+        damage = 0;
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        Player* attacker = Player::GetPlayer(AttackerGUID);
+
+        if (!UpdateVictim())
+            return;
+
+        if (attacker && Check_Timer < diff)
+        {
+            if(m_creature->GetDistance2d(attacker) > 12.0f)
+                EnterEvadeMode();
+                
+            Check_Timer = 3000;
+        }
+        else
+            Check_Timer -= diff;
+    }
+};
+
+CreatureAI* GetAI_npc_theramore_combat_dummy(Creature *_Creature)
+{
+    return new npc_theramore_combat_dummyAI (_Creature);
+}
+
+/*######
 ##
 ######*/
 
@@ -227,6 +281,11 @@ void AddSC_dustwallow_marsh()
     newscript->Name="npc_nat_pagle";
     newscript->pGossipHello = &GossipHello_npc_nat_pagle;
     newscript->pGossipSelect = &GossipSelect_npc_nat_pagle;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_theramore_combat_dummy";
+    newscript->GetAI = &GetAI_npc_theramore_combat_dummy;
     newscript->RegisterSelf();
 }
 
