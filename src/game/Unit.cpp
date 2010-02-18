@@ -736,8 +736,15 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
 
     if(damage || (cleanDamage && cleanDamage->damage))
     {
-        pVictim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_DAMAGE, spellProto ? spellProto->Id : 0);
-        pVictim->RemoveSpellbyDamageTaken(damage, spellProto ? spellProto->Id : 0);
+        if (spellProto && spellProto->Id == 33619)                 //if it's from Reflective Shield 
+        {
+            // don't break cc
+        }
+        else
+        {
+            pVictim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_DAMAGE, spellProto ? spellProto->Id : 0);
+            pVictim->RemoveSpellbyDamageTaken(damage, spellProto ? spellProto->Id : 0);
+        }
          // Rage from physical damage received
         if(!damage)
         {
@@ -875,6 +882,11 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
             //TODO: This is from procflag, I do not know which spell needs this
             //Maim?
             //if (!spellProto || !(spellProto->AuraInterruptFlags&AURA_INTERRUPT_FLAG_DIRECT_DAMAGE))
+            if (spellProto && spellProto->Id == 33619)                 //if it's from Reflective Shield 
+            {
+                // don't break cc
+            }
+            else
                 pVictim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_DIRECT_DAMAGE, spellProto ? spellProto->Id : 0);
         }
 
