@@ -115,7 +115,7 @@ EndScriptData */
 #define SPELL_BELLOWING_ROAR              40636
 
 //Grand Astromancer Capernian spells
-#define CAPERNIAN_DISTANCE                20                //she casts away from the target
+#define CAPERNIAN_DISTANCE                30                //she casts away from the target
 #define SPELL_CAPERNIAN_FIREBALL          36971
 #define SPELL_CONFLAGRATION               37018
 #define SPELL_ARCANE_EXPLOSION            36970
@@ -1536,7 +1536,7 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
 
     void Reset()
     {
-        Fireball_Timer = 2000;
+        Fireball_Timer = 1000;
         Conflagration_Timer = 20000;
         ArcaneExplosion_Timer = 5000;
         Yell_Timer = 2000;
@@ -1551,7 +1551,7 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
         DoScriptText(SAY_CAPERNIAN_DEATH, m_creature);
     }
 
-    void AttackStart(Unit* who)
+    /*void AttackStart(Unit* who)
     {
         if (!who || m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
             return;
@@ -1568,12 +1568,14 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
 
             DoStartMovement(who, CAPERNIAN_DISTANCE, M_PI/2);
         }
-    }
+    }*/
 
     void Aggro(Unit *who)
     {
         if (who || m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
             return;
+
+        DoScriptText(SAY_CAPERNIAN_AGGRO, m_creature);
     }
 
     void UpdateAI(const uint32 diff)
@@ -1585,6 +1587,10 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
         //Return since we have no target
         if (!UpdateVictim() )
             return;
+
+        //cast from 20yd distance
+        if(m_creature->GetDistance2d(m_creature->getVictim()) < CAPERNIAN_DISTANCE)
+                m_creature->StopMoving();
 
         if(Creature* kael = Creature::GetCreature((*m_creature), pInstance->GetData64(DATA_KAELTHAS)))
         {
@@ -1615,9 +1621,12 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
         //Fireball_Timer
         if(Fireball_Timer < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_CAPERNIAN_FIREBALL);
-            Fireball_Timer = 4000;
-        }else Fireball_Timer -= diff;
+            if(m_creature->GetDistance2d(m_creature->getVictim()) < 35.0f)
+                AddSpellToCast(m_creature->getVictim(), SPELL_CAPERNIAN_FIREBALL);
+            Fireball_Timer = 2000;   // spam fireball casts if ready
+        }
+        else 
+            Fireball_Timer -= diff;
 
         //Conflagration_Timer
         if(Conflagration_Timer < diff)
