@@ -286,7 +286,12 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public ScriptedAI
             m_creature->CastSpell(m_creature, SPELL_SHADOW_CAGE, true);
         }
         else if(ClickerNum < CLICKERS_COUNT && m_creature->HasAura(SPELL_SHADOW_CAGE, 0))
+        {
             m_creature->RemoveAurasDueToSpell(SPELL_SHADOW_CAGE);
+
+            if(Unit* victim = m_creature->getVictim())
+                ScriptedAI::AttackStart(victim);
+        }
 
         if(!ClickerNum) NeedCheckCube = false;
     }
