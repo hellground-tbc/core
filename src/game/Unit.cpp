@@ -9623,14 +9623,6 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
     }
 }
 
-void Unit::SetHover(bool on)
-{
-    if(on)
-        CastSpell(this,11010,true);
-    else
-        RemoveAurasDueToSpell(11010);
-}
-
 void Unit::setDeathState(DeathState s)
 {
     if (s != ALIVE && s!= JUST_ALIVED)
@@ -10505,6 +10497,18 @@ void Unit::AddToWorld()
         assert(m_NotifyListPos < 0); //instance : crash
         SetToNotify();
     }
+}
+
+void Unit::setHover(bool val)
+{
+    WorldPacket data;
+    if (val)
+        data.Initialize(SMSG_MOVE_SET_HOVER, 8+4);
+    else
+        data.Initialize(SMSG_MOVE_UNSET_HOVER, 8+4);
+    data.append(GetPackGUID());
+    data << uint32(0);
+    SendMessageToSet(&data, true);
 }
 
 void Unit::RemoveFromWorld()

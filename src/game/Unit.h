@@ -799,6 +799,8 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         void AddToWorld();
         void RemoveFromWorld();
 
+        void setHover(bool val);
+
         void CleanupsBeforeDelete();                        // used in ~Creature/~Player (or before mass creature delete to remove cross-references to already deleted units)
 
         DiminishingLevels GetDiminishing(DiminishingGroup  group);
@@ -1381,9 +1383,6 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         float GetMaxSpeedRate( UnitMoveType mtype ) const { return m_max_speed_rate[mtype]; }
         float GetSpeedRate( UnitMoveType mtype ) const { return m_speed_rate[mtype]; }
         void SetSpeed(UnitMoveType mtype, float rate, bool forced = false);
-
-        void SetHover(bool on);
-        bool isHover() const { return HasAuraType(SPELL_AURA_HOVER); }
 
         void _RemoveAllAuraMods();
         void _ApplyAllAuraMods();

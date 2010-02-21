@@ -2465,14 +2465,7 @@ void Aura::HandleAuraHover(bool apply, bool Real)
     if(!Real)
         return;
 
-    WorldPacket data;
-    if(apply)
-        data.Initialize(SMSG_MOVE_SET_HOVER, 8+4);
-    else
-        data.Initialize(SMSG_MOVE_UNSET_HOVER, 8+4);
-    data.append(m_target->GetPackGUID());
-    data << uint32(0);
-    m_target->SendMessageToSet(&data,true);
+    m_target->setHover(apply);
 }
 
 void Aura::HandleWaterBreathing(bool apply, bool Real)
