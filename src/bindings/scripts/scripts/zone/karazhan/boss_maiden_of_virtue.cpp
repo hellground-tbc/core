@@ -130,6 +130,9 @@ struct TRINITY_DLL_DECL boss_maiden_of_virtueAI : public ScriptedAI
             Holyfire_Timer += 6000;
         }else Repentance_Timer -= diff;
 
+        if(m_creature->getVictim()->HasAura(SPELL_REPENTANCE, 1))
+            m_creature->getVictim()->RemoveAura(SPELL_REPENTANCE, 1);    //remove repentance from victim, to prevent aggro drop
+
         if (Holyfire_Timer < diff)
         {
             if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
