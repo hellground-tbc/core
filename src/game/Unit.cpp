@@ -10529,26 +10529,27 @@ void Unit::RemoveFromWorld()
 
 void Unit::CleanupsBeforeDelete()
 {
-    assert(m_uint32Values);
+    if(m_uint32Values)
+    {
+        //A unit may be in removelist and not in world, but it is still in grid
+        //and may have some references during delete
+        if(isAlive() && HasAuraType(SPELL_AURA_AOE_CHARM))
+            Kill(this,true);
 
-    //A unit may be in removelist and not in world, but it is still in grid
-    //and may have some references during delete
-    if(isAlive() && HasAuraType(SPELL_AURA_AOE_CHARM))
-        Kill(this,true);
+        RemoveAllAuras();
+        InterruptNonMeleeSpells(true);
+        m_Events.KillAllEvents(false);                      // non-delatable (currently casted spells) will not deleted now but it will deleted at call in Map::RemoveAllObjectsInRemoveList
+        CombatStop();
+        ClearComboPointHolders();
+        DeleteThreatList();
+        getHostilRefManager().setOnlineOfflineState(false);
+        RemoveAllGameObjects();
+        RemoveAllDynObjects();
+        GetMotionMaster()->Clear(false);                    // remove different non-standard movement generators.
 
-    RemoveAllAuras();
-    InterruptNonMeleeSpells(true);
-    m_Events.KillAllEvents(false);                      // non-delatable (currently casted spells) will not deleted now but it will deleted at call in Map::RemoveAllObjectsInRemoveList
-    CombatStop();
-    ClearComboPointHolders();
-    DeleteThreatList();
-    getHostilRefManager().setOnlineOfflineState(false);
-    RemoveAllGameObjects();
-    RemoveAllDynObjects();
-    GetMotionMaster()->Clear(false);                    // remove different non-standard movement generators.
-
-    if(IsInWorld())
-        RemoveFromWorld();
+        if(IsInWorld())
+            RemoveFromWorld();
+    }
 }
 
 void Unit::UpdateCharmAI()
