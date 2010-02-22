@@ -393,6 +393,7 @@ void Loot::loadLootFromDB(Creature *pCreature)
 {
     if (!pCreature)
         return;
+
     m_creatureGUID = pCreature->GetGUID();
 
     QueryResult *result = CharacterDatabase.PQuery("SELECT itemId, itemCount FROM group_saved_loot WHERE creatureId='%u' AND instanceId='%u'", pCreature->GetEntry(), pCreature->GetInstanceId());
@@ -417,6 +418,7 @@ void Loot::loadLootFromDB(Creature *pCreature)
         load = true;
 
         // make body visible to loot
+        pCreature->SetCorpseDelay(3600);
         pCreature->setDeathState(JUST_DIED);
         pCreature->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
         pCreature->SetVisibility(VISIBILITY_ON);
