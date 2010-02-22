@@ -12084,7 +12084,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
     //// Prevent killing unit twice (and giving reward from kill twice)
     //if (!pVictim->GetHealth())
     //    return;
-
+    
     pVictim->SetHealth(0);
 
     // find player: owner of controlled `this` or `this` itself maybe
@@ -12222,8 +12222,19 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
             pvp->HandleKill(player, pVictim);
 
     if(pVictim->GetTypeId() == TYPEID_PLAYER)
+    {
         if(OutdoorPvP * pvp = ((Player*)pVictim)->GetOutdoorPvP())
             pvp->HandlePlayerActivityChanged((Player*)pVictim);
+
+        if(Map *pMap = pVictim->GetMap())
+        {
+            if(pMap && (pMap->IsRaid() || pMap->IsDungeon())) 
+            {
+                if((InstanceMap*)pMap->GetInstanceData())
+                    (InstanceMap*)pMap->GetInstanceData()->OnPlayerDeath((Player*)pVictim);
+            }
+        }
+    }
 
     // battleground things (do this at the end, so the death state flag will be properly set to handle in the bg->handlekill)
     if(player && player->InBattleGround())

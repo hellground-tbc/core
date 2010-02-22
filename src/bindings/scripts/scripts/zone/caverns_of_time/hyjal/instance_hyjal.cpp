@@ -91,6 +91,11 @@ struct TRINITY_DLL_DECL instance_mount_hyjal : public ScriptedInstance
         return false;
     }
 
+    void OnPlayerDeath(Player *pVictim)
+    {
+        // dodac kod odpowiedzialny za soulcharge :]
+    }
+
     void OnObjectCreate(GameObject *go)
     {
         switch(go->GetEntry())
