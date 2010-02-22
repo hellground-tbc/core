@@ -1552,12 +1552,13 @@ void Aura::TriggerSpell()
                         int32 value = 250 + rand()%250;
                         float height = caster->GetPositionZ();
                     
-                        if(height < 55)
+                        if(caster->HasAura(34480, 1) && height < 55)
                             {
                                 int32 GLduration = caster->GetAura(34480, 1)->GetAuraDuration();
                                 
                                 caster->CastCustomSpell(m_target, 34480, &value, NULL, NULL, true);  //knockback all that are too low
-                                caster->GetAura(34480, 1)->SetAuraDuration(GLduration);   //do not change spell duration each time knockback is applied
+                                if(Aura *aur = caster->GetAura(34480, 1))
+                                    aur->SetAuraDuration(GLduration);   //do not change spell duration each time knockback is applied
                             }
 
                         if(caster->HasAura(39432, 0) && caster->HasUnitMovementFlag(MOVEMENTFLAG_FALLING) && height < 70)
@@ -1566,7 +1567,8 @@ void Aura::TriggerSpell()
 
                             caster->RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING);    //deal fall damage, and reapply flight aura without duration changes
                             caster->CastSpell(m_target, 39432, true);
-                            caster->GetAura(39432, 0)->SetAuraDuration(FlightDuration);
+                            if(Aura* aur = caster->GetAura(39432, 0))
+                                aur->SetAuraDuration(FlightDuration);
                         }
 
                         break;
