@@ -1546,8 +1546,31 @@ void Aura::TriggerSpell()
                             caster->CastSpell(m_target,spell_id,true);
                         return;
                     }
-//                    // Gravity Lapse
-//                    case 34480: break;
+                    // Gravity Lapse
+                    case 34480:
+                    {
+                        int32 value = 250 + rand()%250;
+                        float height = caster->GetPositionZ();
+                    
+                        if(height < 55)
+                            {
+                                int32 GLduration = caster->GetAura(34480, 1)->GetAuraDuration();
+                                
+                                caster->CastCustomSpell(m_target, 34480, &value, NULL, NULL, true);  //knockback all that are too low
+                                caster->GetAura(34480, 1)->SetAuraDuration(GLduration);   //do not change spell duration each time knockback is applied
+                            }
+
+                        if(caster->HasAura(39432, 0) && caster->HasUnitMovementFlag(MOVEMENTFLAG_FALLING) && height < 70)
+                        {
+                            int32 FlightDuration = caster->GetAura(39432, 0)->GetAuraDuration();
+
+                            caster->RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING);    //deal fall damage, and reapply flight aura without duration changes
+                            caster->CastSpell(m_target, 39432, true);
+                            caster->GetAura(39432, 0)->SetAuraDuration(FlightDuration);
+                        }
+
+                        break;
+                    }
 //                    // Tornado
 //                    case 34683: break;
 //                    // Frostbite Rotate
