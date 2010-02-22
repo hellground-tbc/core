@@ -680,7 +680,7 @@ struct TRINITY_DLL_DECL boss_krosh_firehandAI : public ScriptedAI
 
         //cast from distance
         if(m_creature->GetDistance2d(m_creature->getVictim()) < 20)
-                m_creature->StopMoving();
+            m_creature->StopMoving();
 
         //GreaterFireball_Timer
         if(GreaterFireball_Timer < diff)
@@ -698,7 +698,8 @@ struct TRINITY_DLL_DECL boss_krosh_firehandAI : public ScriptedAI
         {
             ForceSpellCast(m_creature->getVictim(), SPELL_SPELLSHIELD);
             SpellShield_Timer = 31000;
-        }else 
+        }
+        else 
             SpellShield_Timer -= diff;
 
         //BlastWave_Timer

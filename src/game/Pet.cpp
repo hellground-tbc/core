@@ -68,6 +68,7 @@ Pet::Pet(PetType type) : Creature()
     m_name = "Pet";
     m_petType = type;
 
+    m_loading = false;
     m_removed = false;
     m_regenTimer = 4000;
     m_happinessTimer = 7500;
@@ -134,6 +135,8 @@ void Pet::RemoveFromWorld()
 
 bool Pet::LoadPetFromDB( Unit* owner, uint32 petentry, uint32 petnumber, bool current )
 {
+    m_loading = true;
+
     uint32 ownerid = owner->GetGUIDLow();
 
     QueryResult *result;
@@ -390,6 +393,7 @@ bool Pet::LoadPetFromDB( Unit* owner, uint32 petentry, uint32 petnumber, bool cu
    if(owner->GetTypeId() == TYPEID_PLAYER && (owner->getClass() == CLASS_HUNTER || owner->getClass() == CLASS_WARLOCK) && isControlled() && !isTemporarySummoned() && (getPetType() == SUMMON_PET || getPetType() == HUNTER_PET))
        ((Player*)owner)->SetLastPetNumber(pet_number);
 
+    m_loading = false;
     return true;
 }
 
@@ -548,7 +552,7 @@ void Pet::setDeathState(DeathState s)                       // overwrite virtual
 
 void Pet::Update(uint32 diff)
 {
-    if(m_removed)                                           // pet already removed, just wait in remove queue, no updates
+    if(m_removed || m_loading)                                           // pet already removed, just wait in remove queue, no updates
         return;
 
     switch( m_deathState )
