@@ -636,6 +636,9 @@ ChatCommand * ChatHandler::getCommandTable()
         { "bindsight",      SEC_ADMINISTRATOR,  false, &ChatHandler::HandleBindSightCommand,           "", NULL },
         { "unbindsight",    SEC_ADMINISTRATOR,  false, &ChatHandler::HandleUnbindSightCommand,         "", NULL },
 
+        { "bindfollow",      SEC_ADMINISTRATOR,  false, &ChatHandler::HandleBindFollowCommand,         "", NULL },
+        { "unbindfollow",    SEC_ADMINISTRATOR,  false, &ChatHandler::HandleUnbindFollowCommand,       "", NULL },
+
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 
