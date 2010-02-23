@@ -258,6 +258,9 @@ Player::Player (WorldSession *session): Unit()
     m_speakTime = 0;
     m_speakCount = 0;
 
+    m_GMfollowtarget_GUID = 0;
+    m_GMfollow_GUID = 0;
+
     m_objectType |= TYPEMASK_PLAYER;
     m_objectTypeId = TYPEID_PLAYER;
 
@@ -484,7 +487,19 @@ void Player::CleanupsBeforeDelete()
     {
         TradeCancel(false);
         DuelComplete(DUEL_INTERUPTED);
+
+        if (getFollowingGM())
+        {
+            Player *gamemaster = Unit::GetPlayer(getFollowingGM());
+            if (gamemaster)
+            {
+                gamemaster->setFollowTarget(0);
+                gamemaster->GetMotionMaster()->Clear(true);
+            }
+            setGMFollow(0);
+        }
     }
+
     Unit::CleanupsBeforeDelete();
 }
 
@@ -1765,6 +1780,20 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             if(pvpInfo.inHostileArea)
                 CastSpell(this, 2479, true);
         }
+
+        if (getFollowingGM())
+        {
+            Player *gamemaster = Unit::GetPlayer(getFollowingGM());
+            if (gamemaster)
+                gamemaster->TeleportTo(mapid, x, y, z, orientation);
+            else
+                setGMFollow(0);
+        }
+        else if (getFollowTarget())
+        {
+            setFollowTarget(0);
+            GetMotionMaster()->Clear(true);
+        }
     }
     else
     {
@@ -1844,6 +1873,20 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
                 }
                 GetSession()->SendPacket( &data );
                 SendSavedInstances();
+
+                if (getFollowingGM())
+                {
+                    Player *gamemaster = Unit::GetPlayer(getFollowingGM());
+                    if (gamemaster)
+                        gamemaster->TeleportTo(mapid, x, y, z, orientation);
+                    else
+                        setGMFollow(0);
+                }
+                else if (getFollowTarget())
+                {
+                    setFollowTarget(0);
+                    GetMotionMaster()->Clear(true);
+                }
 
                 // remove from old map now
                 if(oldmap) oldmap->Remove(this, false);
