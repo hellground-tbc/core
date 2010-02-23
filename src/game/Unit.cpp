@@ -12212,13 +12212,11 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
             pvp->HandlePlayerActivityChanged((Player*)pVictim);
 
         if(Map *pMap = pVictim->GetMap())
-        {
-            if(pMap && (pMap->IsRaid() || pMap->IsDungeon())) 
+            if(pMap->IsRaid() || pMap->IsDungeon()) 
             {
                 if(((InstanceMap*)pMap)->GetInstanceData())
                     ((InstanceMap*)pMap)->GetInstanceData()->OnPlayerDeath((Player*)pVictim);
             }
-        }
     }
 
     // battleground things (do this at the end, so the death state flag will be properly set to handle in the bg->handlekill)
