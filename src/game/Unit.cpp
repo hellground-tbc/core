@@ -50,8 +50,11 @@
 #include "CreatureGroups.h"
 #include "PetAI.h"
 #include "NullCreatureAI.h"
+#include "InstanceData.h"
 
 #include <math.h>
+
+class InstanceData;
 
 float baseMoveSpeed[MAX_MOVE_TYPE] =
 {
@@ -9517,6 +9520,15 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
     if (GetTypeId()!=TYPEID_PLAYER)
         return;
 
+    if (((Player *)this)->getFollowingGM())
+    {
+        Player *gamemaster = Unit::GetPlayer(((Player *)this)->getFollowingGM());
+        if (gamemaster)
+            gamemaster->SetSpeed(mtype, rate, forced);
+        else // if gm not found, clear followed by gm guid
+            ((Player *)this)->setGMFollow(0);
+    }
+
     WorldPacket data;
     if(!forced)
     {
@@ -12211,13 +12223,11 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
             pvp->HandlePlayerActivityChanged((Player*)pVictim);
 
         if(Map *pMap = pVictim->GetMap())
-        {
-            if(pMap && (pMap->IsRaid() || pMap->IsDungeon())) 
+            if(pMap->IsRaid() || pMap->IsDungeon())
             {
-                if((InstanceMap*)pMap->GetInstanceData())
-                    (InstanceMap*)pMap->GetInstanceData()->OnPlayerDeath((Player*)pVictim);
+                if(InstanceData *pData = ((InstanceMap*)pMap)->GetInstanceData())
+                    pData->OnPlayerDeath((Player*)pVictim);
             }
-        }
     }
 
     // battleground things (do this at the end, so the death state flag will be properly set to handle in the bg->handlekill)
