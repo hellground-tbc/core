@@ -96,6 +96,10 @@ struct TRINITY_DLL_DECL instance_mount_hyjal : public ScriptedInstance
         if(GetData(DATA_ARCHIMONDEEVENT) != NOT_STARTED && GetData(DATA_ARCHIMONDEEVENT) != DONE)
         {
             Unit *Archimonde = Unit::GetUnit((*pVictim), GetData64(DATA_ARCHIMONDE));
+            
+            if(!Archimonde)
+                return;
+
             switch(pVictim->getClass())
             {
                 case CLASS_PRIEST:
