@@ -345,8 +345,8 @@ struct TRINITY_DLL_DECL mob_fiendish_impAI : public ScriptedAI
 
     void Reset()
     {
+        m_creature->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_FIRE, false);
         FireboltTimer = 2000;
-        m_creature->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_FIRE, true);
     }
 
     void Aggro(Unit *who) {}
@@ -361,7 +361,9 @@ struct TRINITY_DLL_DECL mob_fiendish_impAI : public ScriptedAI
         {
             DoCast(m_creature->getVictim(), SPELL_FIREBOLT);
             FireboltTimer = 2200;
-        }else FireboltTimer -= diff;
+        }
+        else
+            FireboltTimer -= diff;
 
         DoMeleeAttackIfReady();
     }

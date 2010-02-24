@@ -63,6 +63,8 @@ struct TRINITY_DLL_DECL boss_maiden_of_virtueAI : public ScriptedAI
         Holyground_Timer    = 3000;
         Enrage_Timer        = 600000;
         CheckTimer = 3000;
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
+        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_ATTACK_ME, true);
 
         Enraged = false;
     }
