@@ -937,7 +937,7 @@ void Aura::_AddAura()
     if (getDiminishGroup() != DIMINISHING_NONE )
         m_target->ApplyDiminishingAura(getDiminishGroup(),true);
 
-    int max_slot = m_target->GetTypeId() == TYPEID_PLAYER ? MAX_POSITIVE_AURAS : 16;
+    int max_slot = m_target->isCharmedOwnedByPlayerOrPlayer() ? MAX_POSITIVE_AURAS : 16;
 
     // passive auras (except totem auras) do not get placed in the slots
     // area auras with SPELL_AURA_NONE are not shown on target
