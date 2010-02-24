@@ -111,13 +111,14 @@ struct TRINITY_DLL_DECL boss_warp_splinterAI : public ScriptedAI
         HeroicMode = c->GetMap()->IsHeroic();
         Treant_Spawn_Pos_X = c->GetPositionX();
         Treant_Spawn_Pos_Y = c->GetPositionY();
+        m_creature->GetPosition(wLoc);
     }
 
     uint32 War_Stomp_Timer;
     uint32 Summon_Treants_Timer;
     uint32 Arcane_Volley_Timer;
-	uint32 Check_Timer;
-	WorldLocation wLoc;
+    uint32 Check_Timer;
+    WorldLocation wLoc;
     bool HeroicMode;
 
     float Treant_Spawn_Pos_X;
@@ -183,17 +184,17 @@ struct TRINITY_DLL_DECL boss_warp_splinterAI : public ScriptedAI
             War_Stomp_Timer = 25000 + rand()%15000;
         }else War_Stomp_Timer -= diff;
 
-		//Check_Timer
+        //Check_Timer
         if(Check_Timer < diff)
-		{
+        {
             if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 30.0f)
-				EnterEvadeMode();
-			else
-				DoZoneInCombat();
-				Check_Timer = 3000;
-			}
-			else 
-				Check_Timer -= diff;
+                EnterEvadeMode();
+            else
+                DoZoneInCombat();
+                Check_Timer = 3000;
+            }
+            else 
+                Check_Timer -= diff;
 
         //Check for Arcane Volley
         if(Arcane_Volley_Timer < diff)
