@@ -535,7 +535,9 @@ void Unit::RemoveMovementImpairingAuras()
 
 void Unit::RemoveSpellsCausingAura(AuraType auraType)
 {
-    if (auraType >= TOTAL_AURAS) return;
+    if (auraType >= TOTAL_AURAS)
+        return;
+
     AuraList::iterator iter, next;
     for (iter = m_modAuras[auraType].begin(); iter != m_modAuras[auraType].end(); iter = next)
     {
@@ -10501,7 +10503,6 @@ void Unit::RemoveFromWorld()
     // cleanup
     if(IsInWorld())
     {
-        RemoveCharmAuras();
         RemoveBindSightAuras();
         RemoveNotOwnSingleTargetAuras();
 
