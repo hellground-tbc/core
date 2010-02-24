@@ -346,7 +346,6 @@ struct TRINITY_DLL_DECL mob_fiendish_impAI : public ScriptedAI
     void Reset()
     {
         FireboltTimer = 2000;
-        m_creature->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_FIRE, true);
     }
 
     void Aggro(Unit *who) {}

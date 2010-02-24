@@ -30,6 +30,7 @@ EndScriptData */
 #define SPELL_DISTRACTING_ASH       30130
 #define SPELL_SMOLDERING_BREATH     30210
 #define SPELL_TAIL_SWEEP            25653
+#define SPELL_CLEAVE                30131
 //phase 2
 #define SPELL_RAIN_OF_BONES         37098
 #define SPELL_SMOKING_BLAST         37057
@@ -80,6 +81,7 @@ struct TRINITY_DLL_DECL boss_nightbaneAI : public ScriptedAI
     uint32 SmokingBlastTimer;
     uint32 FireballBarrageTimer;
     uint32 SearingCindersTimer;
+	uint32 Cleave_Timer;
 
     uint32 FlyCount;
     uint32 FlyTimer;
@@ -103,6 +105,7 @@ struct TRINITY_DLL_DECL boss_nightbaneAI : public ScriptedAI
         FireballBarrageTimer = 13000;
         SearingCindersTimer = 14000;
         WaitTimer = 1000;
+		Cleave_Timer = 6000;
 
         Phase =1;
         FlyCount = 0;
@@ -314,6 +317,12 @@ struct TRINITY_DLL_DECL boss_nightbaneAI : public ScriptedAI
                 DoCast(m_creature->getVictim(),SPELL_SMOLDERING_BREATH);
                 SmolderingBreathTimer = 20000;//timer
             }else SmolderingBreathTimer -= diff;
+
+			if(Cleave_Timer < diff)
+            {
+                DoCast(m_creature->getVictim(), SPELL_CLEAVE);
+                Cleave_Timer = 6000 + rand()%6000;
+            }else Cleave_Timer -= diff;
 
             if (CharredEarthTimer < diff)
             {
