@@ -276,7 +276,8 @@ Unit::~Unit()
     assert(m_attackers.empty());
     assert(m_sharedVision.empty());
 
-    // Need to check iterators in m_modAura list ;]
+    for(int i = 0; i < TOTAL_AURAS; i++)
+        m_modAuras[i].clear();
 }
 
 void Unit::Update( uint32 p_time )
@@ -4473,7 +4474,7 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
     // remove from list before mods removing (prevent cyclic calls, mods added before including to aura list - use reverse order)
     if (Aur->GetModifier()->m_auraname < TOTAL_AURAS)
     {
-        m_modAuras[Aur->GetModifier()->m_auraname].remove(Aur);
+        m_modAuras[Aur->GetModifier()->m_auraname].remove(Aur); //**
 
         if(Aur->GetSpellProto()->AuraInterruptFlags)
         {
