@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<ActiveTarget name="Debug Win32" />
+	<File name="../scripts/zone/coilfang_resevoir/serpent_shrine/boss_hydross_the_unstable.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="7173" topLine="207" />
+	</File>
+	<File name="../scripts/zone/karazhan/chess_event.cpp" open="1" top="0" tabpos="1">
+		<Cursor position="27211" topLine="879" />
+	</File>
+</CodeBlocks_layout_file>

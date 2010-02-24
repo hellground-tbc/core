@@ -1,0 +1,1313 @@
+# HG changeset patch
+# User siof
+# Date 1264718379 -3600
+# Branch trunk
+# Node ID d0fdb5025c93d0781bfa920ed5cc18388ffa8f7b
+# Parent  0d00d977f7b4927b67acba46796262f114ac7452
+Lukaasm: patch 1: Chess Event implementation.
+
+diff -r 0d00d977f7b4 -r d0fdb5025c93 sql/chess_event.sql
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/sql/chess_event.sql	Thu Jan 28 23:39:39 2010 +0100
+@@ -0,0 +1,115 @@
++delete from `creature` where `id` = 22519 and `map` = 532;
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11078.4','-1857.28','220.667','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11071.2','-1865.44','220.667','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11074.7','-1861.32','220.667','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11067.6','-1869.92','220.667','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11082','-1852.62','220.667','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11074.2','-1853.46','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11077.8','-1848.72','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11064','-1874.51','220.667','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11060.9','-1878.79','220.667','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11088.1','-1871.21','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11082.1','-1888.3','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11085.2','-1883.88','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11103.6','-1869.67','220.667','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11092.3','-1875.02','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11095.7','-1870.69','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11099.5','-1866.32','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11079.6','-1864.84','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11083','-1860.62','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11086.5','-1855.82','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11090.6','-1859.26','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11087','-1863.74','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11083.4','-1868.07','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11091.5','-1867.34','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11078.5','-1892.6','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11080.4','-1872.4','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11084.3','-1875.8','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11088.8','-1879.49','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11093.4','-1882.5','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11089.8','-1887.26','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11086','-1891.58','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11083','-1895.89','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11079.3','-1900.4','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11057.2','-1883.18','220.667','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11075','-1897','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11095','-1862.82','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11072.5','-1873.48','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11069.9','-1885.58','220.667','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11069.1','-1877.82','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11077.7','-1884.61','220.667','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11081.1','-1880.24','220.667','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11076.7','-1876.65','220.667','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11065.5','-1882.34','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11062.2','-1886.5','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11073.2','-1881.37','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11076.2','-1868.9','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11074.2','-1888.95','220.667','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11066.2','-1889.93','220.667','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11070.6','-1893.41','220.667','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11071.2','-1857.5','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11067.8','-1861.95','220.667','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11063.5','-1866.52','220.667','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11060.3','-1870.96','220.667','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11057','-1874.88','220.667','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11053.2','-1879.64','220.667','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11083.5','-1903.97','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11087.1','-1899.65','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11090.5','-1895.05','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11094.1','-1890.8','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11097.5','-1886.66','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11100.8','-1881.68','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11104.3','-1877.5','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11108.4','-1873.1','220.668','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11099.9','-1873.89','220.667','0','25','0','0','8','0','0','0');
++insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11096.6','-1878.21','220.667','0','25','0','0','8','0','0','0');
++
++DELETE FROM spell_script_target WHERE `entry` IN(37146,30012,37144,37148,37151,37152,37153);
++INSERT INTO spell_script_target () VALUES (37146,1,22519);
++INSERT INTO spell_script_target () VALUES (30012,1,22519);
++INSERT INTO spell_script_target () VALUES (37144,1,22519);
++INSERT INTO spell_script_target () VALUES (37148,1,22519);
++INSERT INTO spell_script_target () VALUES (37151,1,22519);
++INSERT INTO spell_script_target () VALUES (37152,1,22519);
++INSERT INTO spell_script_target () VALUES (37153,1,22519);
++
++UPDATE creature_template SET spell3=37462, spell4=37465 WHERE entry=21683;
++UPDATE creature_template SET spell2=37148, spell3=37471, spell4=37474 WHERE entry=21684;
++UPDATE creature_template SET spell2=37152, spell3=37455, spell4=37459 WHERE entry=21682;
++UPDATE creature_template SET spell1=30284, spell2=37144, spell3=37453, spell4=37498 WHERE entry=21664;
++UPDATE creature_template SET spell2=37151, spell3=37427, spell4=37432 WHERE entry=21160;
++UPDATE creature_template SET spell2=37146, spell3=37406, spell4=37414 WHERE entry=17211;
++UPDATE creature_template SET spell3=37472, spell4=37476 WHERE entry=21752;
++UPDATE creature_template SET spell3=37463, spell4=37461 WHERE entry=21750;
++UPDATE creature_template SET spell2=37152, spell3=37456, spell4=37461 WHERE entry=21747;
++UPDATE creature_template SET spell1=37339, spell2=37144, spell3=37454, spell4=37502 WHERE entry=21748;
++UPDATE creature_template SET spell2=37151, spell3=37434, spell4=37428 WHERE entry=21726;
++UPDATE creature_template SET spell2=37146, spell3=37413, spell4=37416 WHERE entry=17469;
++
++DELETE FROM script_texts WHERE entry BETWEEN -1650000 and -1650021;
++INSERT INTO script_texts (entry, content_default,sound,type,comment) values('-1650000','Very well. Let the game begin.',10338,0,'Chess Event - Event Start');
++INSERT INTO script_texts (entry, content_default,sound,type,comment) values('-1650001','Yes...all according to plan.',10349,0,'Chess Event - LOSE_KNIGHT_P');
++INSERT INTO script_texts (entry, content_default,sound,type,comment) values('-1650002','Yes...of course.',10350,0,'Chess Event - LOSE_KNIGHT_M');
++INSERT INTO script_texts (entry, content_default,sound,type,comment) values('-1650003','A transparent stratagem.',10339,0,'Chess Event - LOSE_PAWN_P_1');
++INSERT INTO script_texts (entry, content_default,sound,type,comment) values('-1650004','Let us see.',10340,0,'Chess Event - LOSE_PAWN_P_2');
++INSERT INTO script_texts (entry, content_default,sound,type,comment) values('-1650005','Ah, the wheels have begun to turn.',10341,0,'Chess Event - LOSE_PAWN_P_3');
++INSERT INTO script_texts (entry, content_default,sound,type,comment) values('-1650006','Hmm.',10342,0,'Chess Event - LOSE_PAWN_M_1');
++INSERT INTO script_texts (entry, content_default,sound,type,comment) values('-1650007','No matter.',10344,0,'Chess Event - LOSE_PAWN_M_2');
++INSERT INTO script_texts (entry, content_default,sound,type,comment) values('-1650008','Interesting.',10343,0,'Chess Event - LOSE_PAWN_M_3');
++INSERT INTO script_texts (entry, content_default,sound,type,comment) values('-1650009','Now it gets interesting.',10351,0,'Chess Event - LOSE_QUEEN_P');
++INSERT INTO script_texts (entry, content_default,sound,type,comment) values('-1650010','Ahh, I should have known..',10352,0,'Chess Event - LOSE_QUEEN_M');
++INSERT INTO script_texts (entry, content_default,sound,type,comment) values('-1650011','The slightest loss of concentration is all it takes.',10347,0,'Chess Event - LOSE_BISHOP_P');
++INSERT INTO script_texts (entry, content_default,sound,type,comment) values('-1650012','A necessary sacrifice.',10348,0,'Chess Event - LOSE_BISHOP_M');
++INSERT INTO script_texts (entry, content_default,sound,type,comment) values('-1650013','Foolish! Very foolish!',10345,0,'Chess Event - LOSE_ROOK_P');
++INSERT INTO script_texts (entry, content_default,sound,type,comment) values('-1650014','A minor concern.',10346,0,'Chess Event - LOSE_ROOK_M');
++INSERT INTO script_texts (entry, content_default,sound,type,comment) values('-1650015','And so, the end draws near.',10353,0,'Chess Event - PLAYER_CHECK');
++INSERT INTO script_texts (entry, content_default,sound,type,comment) values('-1650016','As it should be.',10354,0,'Chess Event - MEDIVH_CHECK');
++INSERT INTO script_texts (entry, content_default,sound,type,comment) values('-1650017','And so it ends.',10355,0,'Chess Event - PLAYER_WIN');
++INSERT INTO script_texts (entry, content_default,sound,type,comment) values('-1650018','Nothing less than perfection will do.',10356,0,'Chess Event - MEDIVH_WIN');
++INSERT INTO script_texts (entry, content_default,sound,type,comment) values('-1650019','Perhaps a change is in order.',10357,0,'Chess Event - MEDIVH_CHEAT_1');
++INSERT INTO script_texts (entry, content_default,sound,type,comment) values('-1650020','Time for an alternative scenario.',10358,0,'Chess Event - MEDIVH_CHEAT_2');
++INSERT INTO script_texts (entry, content_default,sound,type,comment) values('-1650021','One must not become too complacent.',10359,0,'Chess Event - MEDIVH_CHEAT_3');
++
++update creature_template set scriptname = "npc_chesspiece" where entry in (17469,17211,21748,21664,21750,21683,21747,21682,21726,21160,21752,21684);
++update creature_template set scriptname = "npc_echo_of_medivh" where entry = 16816;
++update creature_template set scriptname = "chess_move_trigger" where entry = 22519;
+\ No newline at end of file
+diff -r 0d00d977f7b4 -r d0fdb5025c93 src/bindings/scripts/CMakeLists.txt
+--- a/src/bindings/scripts/CMakeLists.txt	Thu Jan 28 22:50:40 2010 +0100
++++ b/src/bindings/scripts/CMakeLists.txt	Thu Jan 28 23:39:39 2010 +0100
+@@ -195,6 +195,7 @@
+    scripts/zone/karazhan/boss_shade_of_aran.cpp
+    scripts/zone/karazhan/boss_terestian_illhoof.cpp
+    scripts/zone/karazhan/bosses_opera.cpp
++   scripts/zone/karazhan/chess_event.cpp
+    scripts/zone/karazhan/def_karazhan.h
+    scripts/zone/karazhan/instance_karazhan.cpp
+    scripts/zone/karazhan/karazhan.cpp
+diff -r 0d00d977f7b4 -r d0fdb5025c93 src/bindings/scripts/ScriptMgr.cpp
+--- a/src/bindings/scripts/ScriptMgr.cpp	Thu Jan 28 22:50:40 2010 +0100
++++ b/src/bindings/scripts/ScriptMgr.cpp	Thu Jan 28 23:39:39 2010 +0100
+@@ -359,6 +359,7 @@
+ extern void AddSC_karazhan();
+ extern void AddSC_boss_nightbane();
+ extern void AddSC_boss_netherspite();
++extern void AddSC_chess_event();
+ 
+ //Loch Modan
+ extern void AddSC_loch_modan();
+@@ -1749,6 +1750,7 @@
+     AddSC_karazhan();
+     AddSC_boss_nightbane();
+     AddSC_boss_netherspite();
++    AddSC_chess_event();
+ 
+     //Loch Modan
+     AddSC_loch_modan();
+diff -r 0d00d977f7b4 -r d0fdb5025c93 src/bindings/scripts/VC90/90ScriptDev2.vcproj
+--- a/src/bindings/scripts/VC90/90ScriptDev2.vcproj	Thu Jan 28 22:50:40 2010 +0100
++++ b/src/bindings/scripts/VC90/90ScriptDev2.vcproj	Thu Jan 28 23:39:39 2010 +0100
+@@ -103,6 +103,90 @@
+ 			/>
+ 		</Configuration>
+ 		<Configuration
++			Name="Debug|x64"
++			OutputDirectory="..\..\..\..\bin\$(PlatformName)_$(ConfigurationName)"
++			IntermediateDirectory=".\ScriptDev2__$(PlatformName)_$(ConfigurationName)"
++			ConfigurationType="2"
++			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
++			CharacterSet="2"
++			>
++			<Tool
++				Name="VCPreBuildEventTool"
++				CommandLine=""
++			/>
++			<Tool
++				Name="VCCustomBuildTool"
++			/>
++			<Tool
++				Name="VCXMLDataGeneratorTool"
++			/>
++			<Tool
++				Name="VCWebServiceProxyGeneratorTool"
++			/>
++			<Tool
++				Name="VCMIDLTool"
++				TargetEnvironment="3"
++			/>
++			<Tool
++				Name="VCCLCompilerTool"
++				Optimization="0"
++				AdditionalIncludeDirectories="..\..\..\..\dep\include\;..\..\..\shared\;..\..\..\framework\;..\..\..\game\;..\include\;..\..\..\..\dep\ACE_wrappers"
++				PreprocessorDefinitions="WIN32;_DEBUG;MANGOS_DEBUG;_WINDOWS;_USRDLL;SCRIPT"
++				MinimalRebuild="true"
++				BasicRuntimeChecks="3"
++				RuntimeLibrary="3"
++				UsePrecompiledHeader="2"
++				PrecompiledHeaderThrough="precompiled.h"
++				WarningLevel="3"
++				Detect64BitPortabilityProblems="false"
++				DebugInformationFormat="3"
++			/>
++			<Tool
++				Name="VCManagedResourceCompilerTool"
++			/>
++			<Tool
++				Name="VCResourceCompilerTool"
++			/>
++			<Tool
++				Name="VCPreLinkEventTool"
++			/>
++			<Tool
++				Name="VCLinkerTool"
++				AdditionalDependencies="trinitycore.lib ACEd.lib"
++				OutputFile="$(OutDir)/TrinityScript.dll"
++				LinkIncremental="2"
++				AdditionalLibraryDirectories="..\..\..\..\dep\lib\$(PlatformName)_$(ConfigurationName);..\..\..\..\win\VC90\zthread__$(PlatformName)_$(ConfigurationName);..\..\..\..\win\VC90\trinitycore__$(PlatformName)_$(ConfigurationName)"
++				GenerateDebugInformation="true"
++				ProgramDatabaseFile="$(OutDir)/MaNGOSScript.pdb"
++				SubSystem="2"
++				RandomizedBaseAddress="1"
++				DataExecutionPrevention="0"
++				ImportLibrary="$(OutDir)/TrinityScript.lib"
++				TargetMachine="17"
++			/>
++			<Tool
++				Name="VCALinkTool"
++			/>
++			<Tool
++				Name="VCManifestTool"
++			/>
++			<Tool
++				Name="VCXDCMakeTool"
++			/>
++			<Tool
++				Name="VCBscMakeTool"
++			/>
++			<Tool
++				Name="VCFxCopTool"
++			/>
++			<Tool
++				Name="VCAppVerifierTool"
++			/>
++			<Tool
++				Name="VCPostBuildEventTool"
++			/>
++		</Configuration>
++		<Configuration
+ 			Name="Release|Win32"
+ 			OutputDirectory="..\..\..\..\bin\$(PlatformName)_$(ConfigurationName)"
+ 			IntermediateDirectory=".\ScriptDev2__$(PlatformName)_$(ConfigurationName)"
+@@ -188,87 +272,6 @@
+ 			/>
+ 		</Configuration>
+ 		<Configuration
+-			Name="Debug|x64"
+-			OutputDirectory="..\..\..\..\bin\$(PlatformName)_$(ConfigurationName)"
+-			IntermediateDirectory=".\ScriptDev2__$(PlatformName)_$(ConfigurationName)"
+-			ConfigurationType="2"
+-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+-			CharacterSet="2"
+-			>
+-			<Tool
+-				Name="VCPreBuildEventTool"
+-				CommandLine=""
+-			/>
+-			<Tool
+-				Name="VCCustomBuildTool"
+-			/>
+-			<Tool
+-				Name="VCXMLDataGeneratorTool"
+-			/>
+-			<Tool
+-				Name="VCWebServiceProxyGeneratorTool"
+-			/>
+-			<Tool
+-				Name="VCMIDLTool"
+-				TargetEnvironment="3"
+-			/>
+-			<Tool
+-				Name="VCCLCompilerTool"
+-				Optimization="0"
+-				AdditionalIncludeDirectories="..\..\..\..\dep\include\;..\..\..\shared\;..\..\..\framework\;..\..\..\game\;..\include\;..\..\..\..\dep\ACE_wrappers"
+-				PreprocessorDefinitions="WIN32;_DEBUG;MANGOS_DEBUG;_WINDOWS;_USRDLL;SCRIPT"
+-				MinimalRebuild="true"
+-				BasicRuntimeChecks="3"
+-				RuntimeLibrary="3"
+-				UsePrecompiledHeader="2"
+-				PrecompiledHeaderThrough="precompiled.h"
+-				WarningLevel="3"
+-				Detect64BitPortabilityProblems="false"
+-				DebugInformationFormat="3"
+-			/>
+-			<Tool
+-				Name="VCManagedResourceCompilerTool"
+-			/>
+-			<Tool
+-				Name="VCResourceCompilerTool"
+-			/>
+-			<Tool
+-				Name="VCPreLinkEventTool"
+-			/>
+-			<Tool
+-				Name="VCLinkerTool"
+-				AdditionalDependencies="trinitycore.lib ACEd.lib"
+-				OutputFile="$(OutDir)/TrinityScript.dll"
+-				LinkIncremental="2"
+-				AdditionalLibraryDirectories="..\..\..\..\dep\lib\$(PlatformName)_$(ConfigurationName);..\..\..\..\win\VC90\zthread__$(PlatformName)_$(ConfigurationName);..\..\..\..\win\VC90\trinitycore__$(PlatformName)_$(ConfigurationName)"
+-				GenerateDebugInformation="true"
+-				ProgramDatabaseFile="$(OutDir)/MaNGOSScript.pdb"
+-				SubSystem="2"
+-				RandomizedBaseAddress="1"
+-				DataExecutionPrevention="0"
+-				ImportLibrary="$(OutDir)/TrinityScript.lib"
+-				TargetMachine="17"
+-			/>
+-			<Tool
+-				Name="VCALinkTool"
+-			/>
+-			<Tool
+-				Name="VCManifestTool"
+-			/>
+-			<Tool
+-				Name="VCXDCMakeTool"
+-			/>
+-			<Tool
+-				Name="VCBscMakeTool"
+-			/>
+-			<Tool
+-				Name="VCFxCopTool"
+-			/>
+-			<Tool
+-				Name="VCAppVerifierTool"
+-			/>
+-		</Configuration>
+-		<Configuration
+ 			Name="Release|x64"
+ 			OutputDirectory="..\..\..\..\bin\$(PlatformName)_$(ConfigurationName)"
+ 			IntermediateDirectory=".\ScriptDev2__$(PlatformName)_$(ConfigurationName)"
+@@ -348,6 +351,9 @@
+ 			<Tool
+ 				Name="VCAppVerifierTool"
+ 			/>
++			<Tool
++				Name="VCPostBuildEventTool"
++			/>
+ 		</Configuration>
+ 	</Configurations>
+ 	<References>
+@@ -1747,6 +1753,10 @@
+ 						>
+ 					</File>
+ 					<File
++						RelativePath="..\scripts\zone\karazhan\chess_event.cpp"
++						>
++					</File>
++					<File
+ 						RelativePath="..\scripts\zone\karazhan\def_karazhan.h"
+ 						>
+ 					</File>
+@@ -2412,7 +2422,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Release|Win32"
++					Name="Debug|x64"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+@@ -2420,7 +2430,7 @@
+ 					/>
+ 				</FileConfiguration>
+ 				<FileConfiguration
+-					Name="Debug|x64"
++					Name="Release|Win32"
+ 					>
+ 					<Tool
+ 						Name="VCCLCompilerTool"
+diff -r 0d00d977f7b4 -r d0fdb5025c93 src/bindings/scripts/scripts/zone/karazhan/chess_event.cpp
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/src/bindings/scripts/scripts/zone/karazhan/chess_event.cpp	Thu Jan 28 23:39:39 2010 +0100
+@@ -0,0 +1,650 @@
++/* Copyright (C) 2006 - 2008 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
++ */
++
++/* ScriptData
++SDName: Chess_Event
++SD%Complete: xx
++SDComment: Baset on Hectolight script.
++SDCategory: Karazhan
++
++  I think locking and unlocking cells for unit movement is done. only need to add code to unlock it when creature dies :]
++  
++TODO:
++ - I will fill it soon 
++EndScriptData */
++
++#include "precompiled.h"
++#include "def_karazhan.h"
++
++#define A_FACTION  1690
++#define H_FACTION  1691
++
++#define GOSSIP_POSSES "[ Control this Chesspiece ]"
++
++#define EVENT_START "[PH] Start Chess Event"
++#define NPC_ATTACK_RADIUS 7
++#define TRIGGER_ID 22519
++#define SEARCH_RANGE 5
++#define DUST_COVERED_CHEST 185119
++
++enum SCRIPTTEXTs
++{
++    SCRIPTTEXT_AT_EVENT_START   =  -1650000,
++    SCRIPTTEXT_LOSE_KNIGHT_P    =  -1650001,
++    SCRIPTTEXT_LOSE_KNIGHT_M    =  -1650002,
++    SCRIPTTEXT_LOSE_PAWN_P_1    =  -1650003,
++    SCRIPTTEXT_LOSE_PAWN_P_2    =  -1650004,
++    SCRIPTTEXT_LOSE_PAWN_P_3    =  -1650005,
++    SCRIPTTEXT_LOSE_PAWN_M_1    =  -1650006,
++    SCRIPTTEXT_LOSE_PAWN_M_2    =  -1650007,
++    SCRIPTTEXT_LOSE_PAWN_M_3    =  -1650008,
++    SCRIPTTEXT_LOSE_QUEEN_P     =  -1650009,
++    SCRIPTTEXT_LOSE_QUEEN_M     =  -1650010,
++    SCRIPTTEXT_LOSE_BISHOP_P    =  -1650011,
++    SCRIPTTEXT_LOSE_BISHOP_M    =  -1650012,
++    SCRIPTTEXT_LOSE_ROOK_P      =  -1650013,
++    SCRIPTTEXT_LOSE_ROOK_M      =  -1650014,
++    SCRIPTTEXT_PLAYER_CHECK     =  -1650015,
++    SCRIPTTEXT_MEDIVH_CHECK     =  -1650016,
++    SCRIPTTEXT_PLAYER_WIN       =  -1650017,
++    SCRIPTTEXT_MEDIVH_WIN       =  -1650018,
++    SCRIPTTEXT_MEDIVH_CHEAT_1   =  -1650019,
++    SCRIPTTEXT_MEDIVH_CHEAT_2   =  -1650020,
++    SCRIPTTEXT_MEDIVH_CHEAT_3   =  -1650021
++};
++
++enum NPCs
++{ 
++    NPC_MEDIVH   = 16816,
++    NPC_PAWN_H   = 17469,
++    NPC_PAWN_A   = 17211,
++    NPC_KNIGHT_H = 21748,
++    NPC_KNIGHT_A = 21664,
++    NPC_QUEEN_H  = 21750,
++    NPC_QUEEN_A  = 21683,
++    NPC_BISHOP_H = 21747,
++    NPC_BISHOP_A = 21682,
++    NPC_ROOK_H   = 21726,
++    NPC_ROOK_A   = 21160,
++    NPC_KING_H   = 21752,
++    NPC_KING_A   = 21684
++};
++
++enum SPELLs
++{
++    BISHOP_HEAL_H  = 37456,
++    BISHOP_HEAL_A  = 37455,
++    SPELL_MOVE_1   = 37146,
++    SPELL_MOVE_2   = 30012,
++    SPELL_MOVE_3   = 37144,
++    SPELL_MOVE_4   = 37148,
++    SPELL_MOVE_5   = 37151,
++    SPELL_MOVE_6   = 37152,
++    SPELL_MOVE_7   = 37153,
++
++    SPELL_CHANGE_FACING     = 30284,
++    SPELL_MOVE_MARKER       = 32261,
++    SPELL_POSSES_CHESSPIECE = 30019,
++    SPELL_HAND_OF_MEDIVH    = 39339, // AOE spell
++    SPELL_FURY_OF_MEDIVH    = 39383  // Berserk spell. 3rd cheat is setting all creatures to max health
++};
++
++
++struct TRINITY_DLL_DECL move_triggerAI : public ScriptedAI
++{
++    move_triggerAI(Creature *c) : ScriptedAI(c)
++    {
++        pInstance = ((ScriptedInstance*)m_creature->GetInstanceData());
++    }
++
++    ScriptedInstance* pInstance;
++    
++    Unit *onMarker;
++    bool EndMarker;
++
++    void Reset()
++    {
++        onMarker    = NULL;
++        EndMarker   = false;
++    }
++    void Aggro(Unit *){}
++    void SpellHit(Unit *caster,const SpellEntry *spell)
++    {
++        if(spell->Id == SPELL_CHANGE_FACING)
++            caster->SetInFront(m_creature);
++
++        if(spell->Id == SPELL_MOVE_1 || spell->Id == SPELL_MOVE_2 || spell->Id == SPELL_MOVE_3 || spell->Id == SPELL_MOVE_4 ||
++           spell->Id == SPELL_MOVE_5 || spell->Id == SPELL_MOVE_6 || spell->Id == SPELL_MOVE_7)
++        {
++
++            if(onMarker != NULL || EndMarker)
++                return;
++
++            EndMarker = true;
++            onMarker = caster;
++            
++            DoCast(m_creature,SPELL_MOVE_MARKER);
++            caster->GetMotionMaster()->Clear();
++            caster->GetMotionMaster()->MovePoint(0,m_creature->GetPositionX(),m_creature->GetPositionY(),m_creature->GetPositionZ());
++        }
++    }
++    void UpdateAI(const uint32 diff)
++    {
++    
++        if(pInstance->GetData(DATA_CHESS_EVENT) != IN_PROGRESS)
++            return;
++    }
++};
++struct TRINITY_DLL_DECL npc_chesspieceAI : public Scripted_NoMovementAI
++{
++    npc_chesspieceAI(Creature *c) : Scripted_NoMovementAI(c)
++    {
++        pInstance = ((ScriptedInstance*)m_creature->GetInstanceData());
++
++        SpellEntry *TempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_POSSES_CHESSPIECE);
++        if(TempSpell)
++            TempSpell->Effect[0] = 0;
++    }
++    
++    ScriptedInstance* pInstance;
++    
++    Unit *npc_medivh;
++    
++    bool ReturnToHome;
++    bool InGame;
++    bool CanMove;
++    bool unPossessed;
++    
++    uint32 Heal_Timer;
++    uint32 NextMove_Timer;
++    uint32 PlayerFaction;
++    uint64 MedivhGUID;
++
++    Unit *creaturecharmer;
++    Creature *start_marker, *end_marker;
++
++    std::list<Unit *> PossibleMoveUnits;
++
++    /*void MoveInLineOfSight(Unit *who)
++    {
++        if( !m_creature->getVictim() && who->isTargetableForAttack() && ( m_creature->IsHostileTo( who )))
++        {
++            if (!m_creature->canFly() && m_creature->GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE)
++                return;
++
++            if( m_creature->IsWithinDistInMap(who, NPC_ATTACK_RADIUS) && m_creature->IsWithinLOSInMap(who) && InGame)
++            {
++                who->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
++                AttackStart(who);
++            }
++        }
++    }*/         // For now disabled when I get time I will try to improve/implement creature attack :]
++    void Aggro(Unit *Unit)
++    {
++        MedivhGUID = pInstance->GetData64(DATA_CHESS_ECHO_OF_MEDIVH);
++        npc_medivh = Unit::GetUnit(*m_creature, MedivhGUID);
++        
++        if(npc_medivh)
++        {
++            switch(pInstance->GetData(CHESS_EVENT_TEAM))
++            {
++                case ALLIANCE:
++                    if(m_creature->GetEntry() == NPC_KING_H)
++                        DoScriptText(SCRIPTTEXT_MEDIVH_CHECK,npc_medivh);
++                    else if(m_creature->GetEntry() == NPC_KING_A)
++                        DoScriptText(SCRIPTTEXT_PLAYER_CHECK,npc_medivh);
++                break;
++                case HORDE:
++                    if(m_creature->GetEntry() == NPC_KING_A)
++                        DoScriptText(SCRIPTTEXT_MEDIVH_CHECK,npc_medivh);
++                    else if(m_creature->GetEntry() == NPC_KING_H)
++                        DoScriptText(SCRIPTTEXT_PLAYER_CHECK,npc_medivh);
++                break;
++            }
++        }
++    }
++    void Reset()
++    {
++        ReturnToHome = true;  
++        Heal_Timer = 7000;
++        unPossessed = false;
++        InGame = true;
++        CanMove = false;
++        NextMove_Timer = 4500; // wair 4.5s for first moves
++        m_creature->setActive(true);
++        
++        start_marker = NULL;
++        end_marker = NULL;
++    }
++    void MovementInform(uint32 MovementType, uint32 Data)
++    {
++        if(MovementType != POINT_MOTION_TYPE)
++            return;
++
++        if(start_marker)
++        {
++            ((move_triggerAI*)start_marker->AI())->Reset();
++          //  DoSay("Start Cell - Clear!",LANG_UNIVERSAL,false); // only for debug purposes :]
++        }
++    }
++    void JustRespawned()
++    {
++        //not finally - just a presentation - need 32place two side of chesstable
++        float angle = m_creature->GetOrientation();
++        float pos_x = -11066;
++        float pos_y = -1898;
++        int move_lenght = 2*rand()%10;
++        float new_x = pos_x + move_lenght * cos(angle);
++        float new_y = pos_y + move_lenght * sin(angle);
++        m_creature->Relocate(new_x,new_y,221,2.24);
++        m_creature->CombatStop();
++        m_creature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NOT_SELECTABLE);
++    }
++    /*void JustDied(Unit *Killer)
++    {
++        InGame = false;
++        m_creature->setActive(false);
++        m_creature->Respawn();
++    }*/
++    void OnCharmed(bool apply)
++    {
++        // Place to disable rotate and move for player on possess
++    }
++    void JustDied(Unit* killer)
++    {
++        MedivhGUID = pInstance->GetData64(DATA_CHESS_ECHO_OF_MEDIVH);
++        npc_medivh = Unit::GetUnit(*m_creature, MedivhGUID);
++
++        if(!npc_medivh)
++        {
++            DoSay("Bad Medivh Data",LANG_UNIVERSAL,false);
++            return;
++        }
++
++        if(pInstance->GetData(CHESS_EVENT_TEAM) == HORDE)
++        {
++            switch(m_creature->GetEntry())
++            {
++                case NPC_ROOK_H:   DoScriptText(SCRIPTTEXT_LOSE_ROOK_P,npc_medivh);     break;
++                case NPC_ROOK_A:   DoScriptText(SCRIPTTEXT_LOSE_ROOK_M,npc_medivh);     break;
++                case NPC_QUEEN_H:  DoScriptText(SCRIPTTEXT_LOSE_QUEEN_P,npc_medivh);   break;
++                case NPC_QUEEN_A:  DoScriptText(SCRIPTTEXT_LOSE_QUEEN_M,npc_medivh);   break;
++                case NPC_BISHOP_H: DoScriptText(SCRIPTTEXT_LOSE_BISHOP_P,npc_medivh); break;
++                case NPC_BISHOP_A: DoScriptText(SCRIPTTEXT_LOSE_BISHOP_M,npc_medivh); break;
++                case NPC_KNIGHT_H: DoScriptText(SCRIPTTEXT_LOSE_KNIGHT_P,npc_medivh); break;
++                case NPC_KNIGHT_A: DoScriptText(SCRIPTTEXT_LOSE_KNIGHT_M,npc_medivh); break;
++                case NPC_PAWN_H:
++
++                    switch(rand()%3)
++                    {
++                        case 0: DoScriptText(SCRIPTTEXT_LOSE_PAWN_P_1,npc_medivh);break;
++                        case 1: DoScriptText(SCRIPTTEXT_LOSE_PAWN_P_2,npc_medivh);break;
++                        case 2: DoScriptText(SCRIPTTEXT_LOSE_PAWN_P_3,npc_medivh);break;
++                    }
++                    break;
++
++                case NPC_PAWN_A:
++
++                    switch(rand()%2)
++                    {
++                        case 0: DoScriptText(SCRIPTTEXT_LOSE_PAWN_M_1,npc_medivh);break;
++                        case 1: DoScriptText(SCRIPTTEXT_LOSE_PAWN_M_2,npc_medivh);break;
++                    }
++                    break;
++
++                case NPC_KING_H:
++
++                    DoScriptText(SCRIPTTEXT_MEDIVH_WIN,npc_medivh);
++                    pInstance->SetData(DATA_CHESS_EVENT,FAIL);
++                    break;
++
++                case NPC_KING_A:
++
++                    DoScriptText(SCRIPTTEXT_PLAYER_WIN,npc_medivh);
++                    pInstance->SetData(DATA_CHESS_EVENT,DONE);
++                    m_creature->SummonGameObject(DUST_COVERED_CHEST,-11058,-1903,221,2.24,0,0,0,0,7200000);
++                    break;
++
++                default: break;
++            }
++        }
++        else
++        {
++            switch(m_creature->GetEntry())
++            {
++                case NPC_ROOK_A:   DoScriptText(SCRIPTTEXT_LOSE_ROOK_P,npc_medivh);break;
++                case NPC_ROOK_H:   DoScriptText(SCRIPTTEXT_LOSE_ROOK_M,npc_medivh);break;
++                case NPC_QUEEN_A:  DoScriptText(SCRIPTTEXT_LOSE_QUEEN_P,npc_medivh);break;
++                case NPC_QUEEN_H:  DoScriptText(SCRIPTTEXT_LOSE_QUEEN_M,npc_medivh);break;
++                case NPC_BISHOP_A: DoScriptText(SCRIPTTEXT_LOSE_BISHOP_P,npc_medivh);break;
++                case NPC_BISHOP_H: DoScriptText(SCRIPTTEXT_LOSE_BISHOP_M,npc_medivh);break;
++                case NPC_KNIGHT_A: DoScriptText(SCRIPTTEXT_LOSE_KNIGHT_P,npc_medivh);break;
++                case NPC_KNIGHT_H: DoScriptText(SCRIPTTEXT_LOSE_KNIGHT_M,npc_medivh);break;
++                case NPC_PAWN_A:
++
++                    switch(rand()%3)
++                    {
++                        case 0: DoScriptText(SCRIPTTEXT_LOSE_PAWN_P_1,npc_medivh);break;
++                        case 1: DoScriptText(SCRIPTTEXT_LOSE_PAWN_P_2,npc_medivh);break;
++                        case 2: DoScriptText(SCRIPTTEXT_LOSE_PAWN_P_3,npc_medivh);break;
++                    }
++                    break;
++
++                case NPC_PAWN_H:
++
++                    switch(rand()%2)
++                    {
++                        case 0: DoScriptText(SCRIPTTEXT_LOSE_PAWN_M_1,npc_medivh);break;
++                        case 1: DoScriptText(SCRIPTTEXT_LOSE_PAWN_M_2,npc_medivh);break;
++                    }
++                    break;
++
++                case NPC_KING_A:
++
++                    DoScriptText(SCRIPTTEXT_MEDIVH_WIN,npc_medivh);
++                    pInstance->SetData(DATA_CHESS_EVENT,FAIL);
++                    break;
++
++                case NPC_KING_H:
++
++                    DoScriptText(SCRIPTTEXT_PLAYER_WIN,npc_medivh);
++                    pInstance->SetData(DATA_CHESS_EVENT,DONE);
++                    m_creature->SummonGameObject(DUST_COVERED_CHEST,-11058,-1903,221,2.24,0,0,0,0,7200000);
++                    break;
++
++                default: break;
++            }
++        }
++        
++        if(m_creature->isPossessed())
++        {
++            m_creature->RemoveCharmedOrPossessedBy(m_creature->GetCharmer());
++        }        
++
++    }
++
++    std::list<Unit*> FindPossibleMoveUnits()
++    {
++        CellPair p(Trinity::ComputeCellPair(m_creature->GetPositionX(), m_creature->GetPositionY()));
++        Cell cell(p);
++        cell.data.Part.reserved = ALL_DISTRICT;
++        cell.SetNoCreate();
++
++        std::list<Unit*> pList;
++        std::list<Unit*> returnList;
++        
++        float range = GetStrafeLenght(m_creature->GetEntry())*SEARCH_RANGE;
++
++        Trinity::AllCreaturesOfEntryInRange u_check(m_creature, TRIGGER_ID, range);
++        Trinity::UnitListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(pList, u_check);
++        TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer >  grid_unit_searcher(searcher);
++
++        CellLock<GridReadGuard> cell_lock(cell, p);
++        cell_lock->Visit(cell_lock, grid_unit_searcher, *(m_creature->GetMap()));
++    
++        for(std::list<Unit *>::iterator itr = pList.begin(); itr != pList.end();itr++)
++        {
++            if((*itr)->GetEntry() != TRIGGER_ID || ((move_triggerAI*)((Creature*)(*itr))->AI())->onMarker != NULL || !m_creature->isInFront((*itr),5.0f,2*M_PI/4)) // TODO: Need better check to exclude triggers not in front or not at strafe.
++                continue;
++    
++            returnList.push_back((*itr));
++        }
++    
++        pList.clear();
++        return returnList;
++    }
++    int GetStrafeLenght(uint32 Entry)
++    {
++        if(Entry == NPC_QUEEN_H ||Entry == NPC_QUEEN_A)
++            return 2;
++        
++        return 1;
++    }
++
++    void UpdateAI(const uint32 diff)
++    {
++        if(pInstance->GetData(DATA_CHESS_EVENT) == DONE || pInstance->GetData(DATA_CHESS_EVENT) == FAIL)
++        {
++            if(m_creature->isInCombat())
++                m_creature->CombatStop();            
++
++            if(m_creature->isPossessed())
++                m_creature->RemoveCharmedOrPossessedBy(m_creature->GetCharmer());
++
++            if(m_creature->HasFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NOT_SELECTABLE))
++                m_creature->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NOT_SELECTABLE);
++
++            if(ReturnToHome)
++            {
++                m_creature->GetMotionMaster()->Clear();
++                m_creature->GetMotionMaster()->MoveTargetedHome();
++                ReturnToHome = false;
++            }
++        }
++        
++        if(pInstance->GetData(DATA_CHESS_EVENT) != IN_PROGRESS)
++            return;
++
++        if(!ReturnToHome) // for fail
++            ReturnToHome = true;
++
++        if(!InGame)
++            return;
++
++        if(!m_creature->isPossessed())
++        {
++            if(!CanMove)
++            {
++                if(NextMove_Timer < diff)
++                {
++                    CanMove = true;
++                    
++                    start_marker = end_marker;
++                    end_marker = NULL;
++                    
++                    NextMove_Timer = 10000;
++                }else NextMove_Timer -= diff;
++            }
++
++            if(!m_creature->getVictim())
++            {
++                if(!CanMove)
++                    return;
++
++                PossibleMoveUnits = FindPossibleMoveUnits();
++                
++                if(PossibleMoveUnits.empty())
++                    return;
++                
++                std::list<Unit*>::iterator i = PossibleMoveUnits.begin();
++                advance ( i ,rand()%PossibleMoveUnits.size());
++                
++                end_marker = (Creature*)(*i);
++                
++                if(((move_triggerAI*)end_marker->AI())->onMarker != NULL && !((move_triggerAI*)end_marker->AI())->EndMarker)
++                {             
++                    for(uint8 x = 0; x<PossibleMoveUnits.size();x++)
++                    {
++                        i = PossibleMoveUnits.begin();
++                        advance ( i, x);
++                        
++                        end_marker = (Creature*)(*i);
++                        
++                        if(!((move_triggerAI*)end_marker->AI())->EndMarker)
++                        {
++                            DoCast((*i),SPELL_MOVE_1);
++                            break;
++                        }
++                    }
++                }
++                else
++                    DoCast((*i),SPELL_MOVE_1);
++
++                CanMove = false;
++                NextMove_Timer = 6000;
++            }
++                
++            switch(m_creature->GetEntry())
++            {
++                case NPC_BISHOP_A:
++
++                    if(Heal_Timer <= diff)
++                    {
++                        Unit *target = DoSelectLowestHpFriendly(25,5000); //dont select player controlled unit
++                        
++                        if(target)
++                            DoCast(target,BISHOP_HEAL_A);
++                    
++                        Heal_Timer = 21000;
++                    }else Heal_Timer -= diff;
++                    break;
++
++                case NPC_BISHOP_H:
++
++                    if(Heal_Timer <= diff)
++                    {
++                        Unit *target = DoSelectLowestHpFriendly(25,5000); //dont select player controlled unit
++                        
++                        if(target)
++                            DoCast(target,BISHOP_HEAL_H);
++                    
++                        Heal_Timer = 21000;
++                    }else Heal_Timer -= diff;
++                    break;
++
++                default:        break;
++            }
++            if(m_creature->getVictim() || !m_creature->IsWithinDistInMap(m_creature->getVictim(), NPC_ATTACK_RADIUS))
++            {
++                m_creature->CombatStop();
++                return;
++            }
++        }
++        DoMeleeAttackIfReady();
++    }
++    void SpellHitTarget(Unit *target, const SpellEntry*)
++    {
++        if(target->GetEntry() != TRIGGER_ID)
++            return;
++
++        if(m_creature->isPossessed())
++        {
++            Creature *marker = (Creature*)target;
++            if(marker && ((move_triggerAI*)marker->AI())->onMarker == m_creature)
++            {
++                start_marker = end_marker;
++                end_marker = (Creature*)target;
++            }
++        }
++    }
++};
++
++bool GossipHello_npc_chesspiece(Player* player, Creature* _Creature)
++{
++    ScriptedInstance* pInstance = ((ScriptedInstance*)_Creature->GetInstanceData());
++    
++    if(pInstance->GetData(DATA_CHESS_EVENT) != IN_PROGRESS)
++        return true;
++    
++    if(pInstance->GetData(CHESS_EVENT_TEAM) == ALLIANCE && _Creature->getFaction() != A_FACTION)
++        return true;
++    
++    if(pInstance->GetData(CHESS_EVENT_TEAM) == HORDE && _Creature->getFaction() != H_FACTION)
++        return true;
++    
++    if(!_Creature->isPossessedByPlayer())
++    {
++        player->ADD_GOSSIP_ITEM(0, GOSSIP_POSSES, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
++        player->SEND_GOSSIP_MENU(8990, _Creature->GetGUID());
++    }
++    return true;
++}
++
++bool GossipSelect_npc_chesspiece(Player* player, Creature* _Creature, uint32 sender, uint32 action)
++{
++    if(action == GOSSIP_ACTION_INFO_DEF + 1)
++        player->CastSpell(_Creature,SPELL_POSSES_CHESSPIECE,false);
++
++    player->CLOSE_GOSSIP_MENU();
++    return true;
++}
++bool GossipHello_npc_echo_of_medivh(Player* player, Creature* _Creature)
++{
++    ScriptedInstance* pInstance = ((ScriptedInstance*)_Creature->GetInstanceData());
++    
++    if(pInstance->GetData(DATA_CHESS_EVENT) == FAIL)
++        pInstance->SetData(DATA_CHESS_EVENT,NOT_STARTED);
++
++    if(pInstance->GetData(DATA_CHESS_EVENT) == DONE) //for testing
++        pInstance->SetData(DATA_CHESS_EVENT,NOT_STARTED); 
++
++    if(pInstance->GetData(DATA_CHESS_EVENT) != NOT_STARTED)
++        return true;
++
++    player->ADD_GOSSIP_ITEM(0, EVENT_START, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
++    player->SEND_GOSSIP_MENU(8990, _Creature->GetGUID());
++    return true;
++}
++
++bool GossipSelect_npc_echo_of_medivh(Player* player, Creature* _Creature, uint32 sender, uint32 action)
++{
++    ScriptedInstance* pInstance = ((ScriptedInstance*)_Creature->GetInstanceData());
++
++    if(action == GOSSIP_ACTION_INFO_DEF + 1)
++    {
++        DoScriptText(SCRIPTTEXT_AT_EVENT_START,_Creature);
++        pInstance->SetData(DATA_CHESS_EVENT,IN_PROGRESS);
++        pInstance->SetData(CHESS_EVENT_TEAM,player->GetTeam());
++        _Creature->GetMotionMaster()->MoveConfused();
++        //player->TeleportTo(-11054.032,-1909.979,229.626,2.190);
++    }
++
++    player->CLOSE_GOSSIP_MENU();
++    return true;
++}
++
++CreatureAI* GetAI_npc_chesspiece(Creature *_Creature)
++{
++    return new npc_chesspieceAI (_Creature);
++}
++
++CreatureAI* GetAI_move_trigger(Creature *_Creature)
++{
++    return new move_triggerAI (_Creature);
++}
++
++void AddSC_chess_event()
++{
++    Script* newscript;
++
++    newscript = new Script;
++    newscript->GetAI = &GetAI_npc_chesspiece;
++    newscript->Name = "npc_chesspiece";
++    newscript->pGossipHello = GossipHello_npc_chesspiece;
++    newscript->pGossipSelect = GossipSelect_npc_chesspiece;
++    newscript->RegisterSelf();
++
++    newscript = new Script;
++    newscript->Name = "npc_echo_of_medivh";
++    newscript->pGossipHello = GossipHello_npc_echo_of_medivh;
++    newscript->pGossipSelect = GossipSelect_npc_echo_of_medivh;
++    newscript->RegisterSelf();
++
++    newscript = new Script;
++    newscript->Name = "chess_move_trigger";
++    newscript->GetAI = &GetAI_move_trigger;
++    newscript->RegisterSelf();
++}
+\ No newline at end of file
+diff -r 0d00d977f7b4 -r d0fdb5025c93 src/bindings/scripts/scripts/zone/karazhan/def_karazhan.h
+--- a/src/bindings/scripts/scripts/zone/karazhan/def_karazhan.h	Thu Jan 28 22:50:40 2010 +0100
++++ b/src/bindings/scripts/scripts/zone/karazhan/def_karazhan.h	Thu Jan 28 23:39:39 2010 +0100
+@@ -34,6 +34,8 @@
+ #define DATA_MASTERS_TERRACE_DOOR_1     27
+ #define DATA_MASTERS_TERRACE_DOOR_2     28
+ #define DATA_ARAN                       29
++#define CHESS_EVENT_TEAM                30
++#define DATA_CHESS_ECHO_OF_MEDIVH       31
+ #define SPELL_BROKEN_PACT               30065
+ 
+ // Opera Performances
+diff -r 0d00d977f7b4 -r d0fdb5025c93 src/bindings/scripts/scripts/zone/karazhan/instance_karazhan.cpp
+--- a/src/bindings/scripts/scripts/zone/karazhan/instance_karazhan.cpp	Thu Jan 28 22:50:40 2010 +0100
++++ b/src/bindings/scripts/scripts/zone/karazhan/instance_karazhan.cpp	Thu Jan 28 23:39:39 2010 +0100
+@@ -24,7 +24,7 @@
+ #include "precompiled.h"
+ #include "def_karazhan.h"
+ 
+-#define ENCOUNTERS      12
++#define ENCOUNTERS      13
+ 
+ /*
+ 0  - Attumen + Midnight (optional)
+@@ -39,6 +39,7 @@
+ 9  - Chess Event
+ 10 - Prince Malchezzar
+ 11 - Nightbane
++12 - Chess Event Team
+ */
+ 
+ struct TRINITY_DLL_DECL instance_karazhan : public ScriptedInstance
+@@ -65,6 +66,7 @@
+     uint64 ImageGUID;
+     uint64 AranGUID;
+     uint32 CheckTimer;
++    uint64 MedivhGUID;
+ 
+     bool needRespawn;
+ 
+@@ -93,6 +95,7 @@
+         MastersTerraceDoor[0]= 0;
+         MastersTerraceDoor[1]= 0;
+         ImageGUID = 0;
++        MedivhGUID = 0;
+         CheckTimer = 5000;
+ 
+         needRespawn = true;
+@@ -123,9 +126,10 @@
+             case DATA_CHESS_EVENT:            return Encounters[9];
+             case DATA_MALCHEZZAR_EVENT:       return Encounters[10];
+             case DATA_NIGHTBANE_EVENT:        return Encounters[11];
++            case CHESS_EVENT_TEAM:            return Encounters[12];
+             case DATA_OPERA_PERFORMANCE:      return OperaEvent;
+             case DATA_OPERA_OZ_DEATHCOUNT:    return OzDeathCount;
+-            case DATA_IMAGE_OF_MEDIVH:             return ImageGUID;
++            case DATA_IMAGE_OF_MEDIVH:        return ImageGUID;
+         }
+ 
+         return 0;
+@@ -139,6 +143,7 @@
+             case 15688:   TerestianGUID = creature->GetGUID();   break;
+             case 15687:   MoroesGUID = creature->GetGUID();      break;
+             case 16524:   AranGUID = creature->GetGUID();        break;
++            case 16816:   MedivhGUID = creature->GetGUID();      break;
+         }
+     }
+ 
+@@ -160,6 +165,7 @@
+             case DATA_MASTERS_TERRACE_DOOR_1:      return NetherspaceDoor;
+             case DATA_MASTERS_TERRACE_DOOR_2:      return MastersTerraceDoor[1];
+             case DATA_ARAN:                        return AranGUID;
++            case DATA_CHESS_ECHO_OF_MEDIVH:        return MedivhGUID;
+         }
+ 
+         return 0;
+@@ -209,6 +215,10 @@
+                 if(Encounters[9] != DONE)
+                     Encounters[9] = data;
+                 break;
++            case CHESS_EVENT_TEAM:
++                if(Encounters[12] != DONE)
++                    Encounters[12] = data;
++                break;
+             case DATA_MALCHEZZAR_EVENT:
+                 if(Encounters[10] != DONE)
+                     Encounters[10] = data;
+diff -r 0d00d977f7b4 -r d0fdb5025c93 src/game/SpellAuras.cpp
+--- a/src/game/SpellAuras.cpp	Thu Jan 28 22:50:40 2010 +0100
++++ b/src/game/SpellAuras.cpp	Thu Jan 28 23:39:39 2010 +0100
+@@ -2067,6 +2067,14 @@
+     // AT REMOVE
+     else
+     {
++        // Control Piece - Chess Event
++        if(GetId() == 30019)
++        {
++            Unit *charm = caster->GetCharm();
++            if(charm)
++                charm->RemoveAurasDueToSpell(30019,0);  // Also remove aura from charmed creature, not only from us :]
++        }
++
+         if( m_target->GetTypeId() == TYPEID_PLAYER && GetSpellProto()->Effect[0]==72 )
+         {
+             // spells with SpellEffect=72 and aura=4: 6196, 6197, 21171, 21425
+diff -r 0d00d977f7b4 -r d0fdb5025c93 src/game/Unit.cpp
+--- a/src/game/Unit.cpp	Thu Jan 28 22:50:40 2010 +0100
++++ b/src/game/Unit.cpp	Thu Jan 28 23:39:39 2010 +0100
+@@ -10501,7 +10501,14 @@
+     {
+         if(isCharmed())
+         {
+-            i_disabledAI = i_AI;
++            if(((Creature*)this)->GetScriptName() == "npc_chesspiece") // UGLY AND BAD HACK, Find a way to remove it ;] 
++            {                                                         // Find better way to disalow PossessedAI to override ScriptedAI
++                i_disabledAI = NULL;                                  // or make possibility to script PossessedAI
++                return;
++            }
++            else
++                i_disabledAI = i_AI;
++
+             if(isPossessed())
+                 i_AI = new PossessedAI((Creature*)this);
+             else
+diff -r 0d00d977f7b4 -r d0fdb5025c93 win/chess.sln
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/win/chess.sln	Thu Jan 28 23:39:39 2010 +0100
+@@ -0,0 +1,151 @@
++Microsoft Visual Studio Solution File, Format Version 10.00
++# Visual Studio 2008
++Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "game", "VC90\game.vcproj", "{1DC6C4DA-A028-41F3-877D-D5400C594F88}"
++	ProjectSection(ProjectDependencies) = postProject
++		{90297C34-F231-4DF4-848E-A74BCC0E40ED} = {90297C34-F231-4DF4-848E-A74BCC0E40ED}
++	EndProjectSection
++EndProject
++Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "shared", "VC90\shared.vcproj", "{90297C34-F231-4DF4-848E-A74BCC0E40ED}"
++	ProjectSection(ProjectDependencies) = postProject
++		{BF6F5D0E-33A5-4E23-9E7D-DD481B7B5B9E} = {BF6F5D0E-33A5-4E23-9E7D-DD481B7B5B9E}
++		{8F1DEA42-6A5B-4B62-839D-C141A7BFACF2} = {8F1DEA42-6A5B-4B62-839D-C141A7BFACF2}
++		{803F488E-4C5A-4866-8D5C-1E6C03C007C2} = {803F488E-4C5A-4866-8D5C-1E6C03C007C2}
++		{BD537C9A-FECA-1BAD-6757-8A6348EA12C8} = {BD537C9A-FECA-1BAD-6757-8A6348EA12C8}
++		{8072769E-CF10-48BF-B9E1-12752A5DAC6E} = {8072769E-CF10-48BF-B9E1-12752A5DAC6E}
++	EndProjectSection
++EndProject
++Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "VC90\zlib.vcproj", "{8F1DEA42-6A5B-4B62-839D-C141A7BFACF2}"
++EndProject
++Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "framework", "VC90\framework.vcproj", "{BF6F5D0E-33A5-4E23-9E7D-DD481B7B5B9E}"
++EndProject
++Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "g3dlite", "VC90\g3dlite.vcproj", "{8072769E-CF10-48BF-B9E1-12752A5DAC6E}"
++EndProject
++Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sockets", "VC90\sockets.vcproj", "{04BAF755-0D67-46F8-B1C6-77AE5368F3CB}"
++EndProject
++Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TrinityCore", "VC90\TrinityCore.vcproj", "{A3A04E47-43A2-4C08-90B3-029CEF558594}"
++	ProjectSection(ProjectDependencies) = postProject
++		{563E9905-3657-460C-AE63-0AC39D162E23} = {563E9905-3657-460C-AE63-0AC39D162E23}
++		{90297C34-F231-4DF4-848E-A74BCC0E40ED} = {90297C34-F231-4DF4-848E-A74BCC0E40ED}
++		{04BAF755-0D67-46F8-B1C6-77AE5368F3CB} = {04BAF755-0D67-46F8-B1C6-77AE5368F3CB}
++		{1DC6C4DA-A028-41F3-877D-D5400C594F88} = {1DC6C4DA-A028-41F3-877D-D5400C594F88}
++	EndProjectSection
++EndProject
++Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TrinityRealm", "VC90\TrinityRealm.vcproj", "{563E9905-3657-460C-AE63-0AC39D162E23}"
++	ProjectSection(ProjectDependencies) = postProject
++		{90297C34-F231-4DF4-848E-A74BCC0E40ED} = {90297C34-F231-4DF4-848E-A74BCC0E40ED}
++		{04BAF755-0D67-46F8-B1C6-77AE5368F3CB} = {04BAF755-0D67-46F8-B1C6-77AE5368F3CB}
++	EndProjectSection
++EndProject
++Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TrinityScript", "..\src\bindings\scripts\VC90\90ScriptDev2.vcproj", "{4295C8A9-79B7-4354-8064-F05FB9CA0C96}"
++	ProjectSection(ProjectDependencies) = postProject
++		{A3A04E47-43A2-4C08-90B3-029CEF558594} = {A3A04E47-43A2-4C08-90B3-029CEF558594}
++	EndProjectSection
++EndProject
++Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ACE_Wrappers", "VC90\ACE_vc9.vcproj", "{BD537C9A-FECA-1BAD-6757-8A6348EA12C8}"
++EndProject
++Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "genrevision", "VC90\genrevision.vcproj", "{803F488E-4C5A-4866-8D5C-1E6C03C007C2}"
++EndProject
++Global
++	GlobalSection(SolutionConfigurationPlatforms) = preSolution
++		Debug|Win32 = Debug|Win32
++		Debug|x64 = Debug|x64
++		Release|Win32 = Release|Win32
++		Release|x64 = Release|x64
++	EndGlobalSection
++	GlobalSection(ProjectConfigurationPlatforms) = postSolution
++		{1DC6C4DA-A028-41F3-877D-D5400C594F88}.Debug|Win32.ActiveCfg = Debug|Win32
++		{1DC6C4DA-A028-41F3-877D-D5400C594F88}.Debug|Win32.Build.0 = Debug|Win32
++		{1DC6C4DA-A028-41F3-877D-D5400C594F88}.Debug|x64.ActiveCfg = Debug|x64
++		{1DC6C4DA-A028-41F3-877D-D5400C594F88}.Debug|x64.Build.0 = Debug|x64
++		{1DC6C4DA-A028-41F3-877D-D5400C594F88}.Release|Win32.ActiveCfg = Release|Win32
++		{1DC6C4DA-A028-41F3-877D-D5400C594F88}.Release|Win32.Build.0 = Release|Win32
++		{1DC6C4DA-A028-41F3-877D-D5400C594F88}.Release|x64.ActiveCfg = Release|x64
++		{1DC6C4DA-A028-41F3-877D-D5400C594F88}.Release|x64.Build.0 = Release|x64
++		{90297C34-F231-4DF4-848E-A74BCC0E40ED}.Debug|Win32.ActiveCfg = Debug|Win32
++		{90297C34-F231-4DF4-848E-A74BCC0E40ED}.Debug|Win32.Build.0 = Debug|Win32
++		{90297C34-F231-4DF4-848E-A74BCC0E40ED}.Debug|x64.ActiveCfg = Debug|x64
++		{90297C34-F231-4DF4-848E-A74BCC0E40ED}.Debug|x64.Build.0 = Debug|x64
++		{90297C34-F231-4DF4-848E-A74BCC0E40ED}.Release|Win32.ActiveCfg = Release|Win32
++		{90297C34-F231-4DF4-848E-A74BCC0E40ED}.Release|Win32.Build.0 = Release|Win32
++		{90297C34-F231-4DF4-848E-A74BCC0E40ED}.Release|x64.ActiveCfg = Release|x64
++		{90297C34-F231-4DF4-848E-A74BCC0E40ED}.Release|x64.Build.0 = Release|x64
++		{8F1DEA42-6A5B-4B62-839D-C141A7BFACF2}.Debug|Win32.ActiveCfg = Debug|Win32
++		{8F1DEA42-6A5B-4B62-839D-C141A7BFACF2}.Debug|Win32.Build.0 = Debug|Win32
++		{8F1DEA42-6A5B-4B62-839D-C141A7BFACF2}.Debug|x64.ActiveCfg = Debug|x64
++		{8F1DEA42-6A5B-4B62-839D-C141A7BFACF2}.Debug|x64.Build.0 = Debug|x64
++		{8F1DEA42-6A5B-4B62-839D-C141A7BFACF2}.Release|Win32.ActiveCfg = Release|Win32
++		{8F1DEA42-6A5B-4B62-839D-C141A7BFACF2}.Release|Win32.Build.0 = Release|Win32
++		{8F1DEA42-6A5B-4B62-839D-C141A7BFACF2}.Release|x64.ActiveCfg = Release|x64
++		{8F1DEA42-6A5B-4B62-839D-C141A7BFACF2}.Release|x64.Build.0 = Release|x64
++		{BF6F5D0E-33A5-4E23-9E7D-DD481B7B5B9E}.Debug|Win32.ActiveCfg = Debug|Win32
++		{BF6F5D0E-33A5-4E23-9E7D-DD481B7B5B9E}.Debug|Win32.Build.0 = Debug|Win32
++		{BF6F5D0E-33A5-4E23-9E7D-DD481B7B5B9E}.Debug|x64.ActiveCfg = Debug|x64
++		{BF6F5D0E-33A5-4E23-9E7D-DD481B7B5B9E}.Debug|x64.Build.0 = Debug|x64
++		{BF6F5D0E-33A5-4E23-9E7D-DD481B7B5B9E}.Release|Win32.ActiveCfg = Release|Win32
++		{BF6F5D0E-33A5-4E23-9E7D-DD481B7B5B9E}.Release|Win32.Build.0 = Release|Win32
++		{BF6F5D0E-33A5-4E23-9E7D-DD481B7B5B9E}.Release|x64.ActiveCfg = Release|x64
++		{BF6F5D0E-33A5-4E23-9E7D-DD481B7B5B9E}.Release|x64.Build.0 = Release|x64
++		{8072769E-CF10-48BF-B9E1-12752A5DAC6E}.Debug|Win32.ActiveCfg = Debug|Win32
++		{8072769E-CF10-48BF-B9E1-12752A5DAC6E}.Debug|Win32.Build.0 = Debug|Win32
++		{8072769E-CF10-48BF-B9E1-12752A5DAC6E}.Debug|x64.ActiveCfg = Debug|x64
++		{8072769E-CF10-48BF-B9E1-12752A5DAC6E}.Debug|x64.Build.0 = Debug|x64
++		{8072769E-CF10-48BF-B9E1-12752A5DAC6E}.Release|Win32.ActiveCfg = Release|Win32
++		{8072769E-CF10-48BF-B9E1-12752A5DAC6E}.Release|Win32.Build.0 = Release|Win32
++		{8072769E-CF10-48BF-B9E1-12752A5DAC6E}.Release|x64.ActiveCfg = Release|x64
++		{8072769E-CF10-48BF-B9E1-12752A5DAC6E}.Release|x64.Build.0 = Release|x64
++		{04BAF755-0D67-46F8-B1C6-77AE5368F3CB}.Debug|Win32.ActiveCfg = Debug|Win32
++		{04BAF755-0D67-46F8-B1C6-77AE5368F3CB}.Debug|Win32.Build.0 = Debug|Win32
++		{04BAF755-0D67-46F8-B1C6-77AE5368F3CB}.Debug|x64.ActiveCfg = Debug|x64
++		{04BAF755-0D67-46F8-B1C6-77AE5368F3CB}.Debug|x64.Build.0 = Debug|x64
++		{04BAF755-0D67-46F8-B1C6-77AE5368F3CB}.Release|Win32.ActiveCfg = Release|Win32
++		{04BAF755-0D67-46F8-B1C6-77AE5368F3CB}.Release|Win32.Build.0 = Release|Win32
++		{04BAF755-0D67-46F8-B1C6-77AE5368F3CB}.Release|x64.ActiveCfg = Release|x64
++		{04BAF755-0D67-46F8-B1C6-77AE5368F3CB}.Release|x64.Build.0 = Release|x64
++		{A3A04E47-43A2-4C08-90B3-029CEF558594}.Debug|Win32.ActiveCfg = Debug|Win32
++		{A3A04E47-43A2-4C08-90B3-029CEF558594}.Debug|Win32.Build.0 = Debug|Win32
++		{A3A04E47-43A2-4C08-90B3-029CEF558594}.Debug|x64.ActiveCfg = Debug|x64
++		{A3A04E47-43A2-4C08-90B3-029CEF558594}.Debug|x64.Build.0 = Debug|x64
++		{A3A04E47-43A2-4C08-90B3-029CEF558594}.Release|Win32.ActiveCfg = Release|Win32
++		{A3A04E47-43A2-4C08-90B3-029CEF558594}.Release|Win32.Build.0 = Release|Win32
++		{A3A04E47-43A2-4C08-90B3-029CEF558594}.Release|x64.ActiveCfg = Release|x64
++		{A3A04E47-43A2-4C08-90B3-029CEF558594}.Release|x64.Build.0 = Release|x64
++		{563E9905-3657-460C-AE63-0AC39D162E23}.Debug|Win32.ActiveCfg = Debug|Win32
++		{563E9905-3657-460C-AE63-0AC39D162E23}.Debug|Win32.Build.0 = Debug|Win32
++		{563E9905-3657-460C-AE63-0AC39D162E23}.Debug|x64.ActiveCfg = Debug|x64
++		{563E9905-3657-460C-AE63-0AC39D162E23}.Debug|x64.Build.0 = Debug|x64
++		{563E9905-3657-460C-AE63-0AC39D162E23}.Release|Win32.ActiveCfg = Release|Win32
++		{563E9905-3657-460C-AE63-0AC39D162E23}.Release|Win32.Build.0 = Release|Win32
++		{563E9905-3657-460C-AE63-0AC39D162E23}.Release|x64.ActiveCfg = Release|x64
++		{563E9905-3657-460C-AE63-0AC39D162E23}.Release|x64.Build.0 = Release|x64
++		{4295C8A9-79B7-4354-8064-F05FB9CA0C96}.Debug|Win32.ActiveCfg = Debug|Win32
++		{4295C8A9-79B7-4354-8064-F05FB9CA0C96}.Debug|Win32.Build.0 = Debug|Win32
++		{4295C8A9-79B7-4354-8064-F05FB9CA0C96}.Debug|x64.ActiveCfg = Debug|x64
++		{4295C8A9-79B7-4354-8064-F05FB9CA0C96}.Debug|x64.Build.0 = Debug|x64
++		{4295C8A9-79B7-4354-8064-F05FB9CA0C96}.Release|Win32.ActiveCfg = Release|Win32
++		{4295C8A9-79B7-4354-8064-F05FB9CA0C96}.Release|Win32.Build.0 = Release|Win32
++		{4295C8A9-79B7-4354-8064-F05FB9CA0C96}.Release|x64.ActiveCfg = Release|x64
++		{4295C8A9-79B7-4354-8064-F05FB9CA0C96}.Release|x64.Build.0 = Release|x64
++		{BD537C9A-FECA-1BAD-6757-8A6348EA12C8}.Debug|Win32.ActiveCfg = Debug|Win32
++		{BD537C9A-FECA-1BAD-6757-8A6348EA12C8}.Debug|Win32.Build.0 = Debug|Win32
++		{BD537C9A-FECA-1BAD-6757-8A6348EA12C8}.Debug|x64.ActiveCfg = Debug|x64
++		{BD537C9A-FECA-1BAD-6757-8A6348EA12C8}.Debug|x64.Build.0 = Debug|x64
++		{BD537C9A-FECA-1BAD-6757-8A6348EA12C8}.Release|Win32.ActiveCfg = Release|Win32
++		{BD537C9A-FECA-1BAD-6757-8A6348EA12C8}.Release|Win32.Build.0 = Release|Win32
++		{BD537C9A-FECA-1BAD-6757-8A6348EA12C8}.Release|x64.ActiveCfg = Release|x64
++		{BD537C9A-FECA-1BAD-6757-8A6348EA12C8}.Release|x64.Build.0 = Release|x64
++		{803F488E-4C5A-4866-8D5C-1E6C03C007C2}.Debug|Win32.ActiveCfg = Debug|Win32
++		{803F488E-4C5A-4866-8D5C-1E6C03C007C2}.Debug|Win32.Build.0 = Debug|Win32
++		{803F488E-4C5A-4866-8D5C-1E6C03C007C2}.Debug|x64.ActiveCfg = Debug|x64
++		{803F488E-4C5A-4866-8D5C-1E6C03C007C2}.Debug|x64.Build.0 = Debug|x64
++		{803F488E-4C5A-4866-8D5C-1E6C03C007C2}.Release|Win32.ActiveCfg = Release|Win32
++		{803F488E-4C5A-4866-8D5C-1E6C03C007C2}.Release|Win32.Build.0 = Release|Win32
++		{803F488E-4C5A-4866-8D5C-1E6C03C007C2}.Release|x64.ActiveCfg = Release|x64
++		{803F488E-4C5A-4866-8D5C-1E6C03C007C2}.Release|x64.Build.0 = Release|x64
++	EndGlobalSection
++	GlobalSection(SolutionProperties) = preSolution
++		HideSolutionNode = FALSE
++	EndGlobalSection
++	GlobalSection(DPCodeReviewSolutionGUID) = preSolution
++		DPCodeReviewSolutionGUID = {00000000-0000-0000-0000-000000000000}
++	EndGlobalSection
++EndGlobal

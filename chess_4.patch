@@ -1,0 +1,39 @@
+# HG changeset patch
+# User lukaasm
+# Date 1249813185 -7200
+# Branch trunk
+# Node ID 4a2aef0bda666e36442daab02dbf5597c13b3413
+# Parent  42eaaa6ba75d3c4dc4a5fbb4e97c41f858adaa04
+Change place when we handle unlocking cell when chesspiece is dead :]
+
+diff -r 42eaaa6ba75d -r 4a2aef0bda66 src/bindings/scripts/scripts/zone/karazhan/chess_event.cpp
+--- a/src/bindings/scripts/scripts/zone/karazhan/chess_event.cpp	Sun Aug 09 11:55:31 2009 +0200
++++ b/src/bindings/scripts/scripts/zone/karazhan/chess_event.cpp	Sun Aug 09 12:19:45 2009 +0200
+@@ -152,9 +152,16 @@
+     }
+     void UpdateAI(const uint32 diff)
+     {
+-    
+         if(pInstance->GetData(DATA_CHESS_EVENT) != IN_PROGRESS)
+             return;
++                
++        if(onMarker)
++        {
++            if(onMarker->isAlive()) // Better check it here so we don't need to find start and end marker when wie die in move without reaching destination point :]
++                return;
++            else
++                Reset();
++        }
+     }
+ };
+ struct TRINITY_DLL_DECL npc_chesspieceAI : public Scripted_NoMovementAI
+@@ -265,9 +272,6 @@
+     }
+     void JustDied(Unit* killer)
+     {
+-        if(end_marker)
+-            ((move_triggerAI*)end_marker->AI())->Reset();
+-        
+         MedivhGUID = pInstance->GetData64(DATA_CHESS_ECHO_OF_MEDIVH);
+         npc_medivh = Unit::GetUnit(*m_creature, MedivhGUID);
+ 

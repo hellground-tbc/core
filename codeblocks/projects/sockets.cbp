@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="sockets" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Release Win32">
+				<Option output="./sockets__Linux_Release Win32/libsockets" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="sockets__Linux_Release Win32" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-DWIN32" />
+					<Add option="-DNDEBUG" />
+					<Add option="-D_LIB" />
+					<Add option="-D_CRT_SECURE_NO_DEPRECATE" />
+					<Add option="-W" />
+					<Add directory="../../dep/include/sockets" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="../../dep/include/sockets" />
+				</ResourceCompiler>
+			</Target>
+			<Target title="Debug Win32">
+				<Option output="./sockets__Linux_Debug Win32/libsockets" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="sockets__Linux_Debug Win32" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-DWIN32" />
+					<Add option="-D_DEBUG" />
+					<Add option="-DTRINITY_DEBUG" />
+					<Add option="-D_LIB" />
+					<Add option="-D_CRT_SECURE_NO_DEPRECATE" />
+					<Add option="-W" />
+					<Add option="-O0" />
+					<Add directory="../../dep/include/sockets" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="../../dep/include/sockets" />
+				</ResourceCompiler>
+			</Target>
+			<Target title="Release x64">
+				<Option output="./sockets__Linux_Release x64/libsockets" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="sockets__Linux_Release x64" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-DWIN32" />
+					<Add option="-DNDEBUG" />
+					<Add option="-D_LIB" />
+					<Add option="-D_CRT_SECURE_NO_DEPRECATE" />
+					<Add option="-W" />
+					<Add directory="../../dep/include/sockets" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="../../dep/include/sockets" />
+				</ResourceCompiler>
+			</Target>
+			<Target title="Debug x64">
+				<Option output="./sockets__Linux_Debug x64/libsockets" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="sockets__Linux_Debug x64" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-DWIN32" />
+					<Add option="-D_DEBUG" />
+					<Add option="-DTRINITY_DEBUG" />
+					<Add option="-D_LIB" />
+					<Add option="-D_CRT_SECURE_NO_DEPRECATE" />
+					<Add option="-W" />
+					<Add option="-O0" />
+					<Add directory="../../dep/include/sockets" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="../../dep/include/sockets" />
+				</ResourceCompiler>
+			</Target>
+		</Build>
+		<Unit filename="../../dep/include/sockets/Base64.h" />
+		<Unit filename="../../dep/include/sockets/Exception.h" />
+		<Unit filename="../../dep/include/sockets/File.h" />
+		<Unit filename="../../dep/include/sockets/IFile.h" />
+		<Unit filename="../../dep/include/sockets/ISocketHandler.h" />
+		<Unit filename="../../dep/include/sockets/Ipv4Address.h" />
+		<Unit filename="../../dep/include/sockets/Ipv6Address.h" />
+		<Unit filename="../../dep/include/sockets/ListenSocket.h" />
+		<Unit filename="../../dep/include/sockets/Lock.h" />
+		<Unit filename="../../dep/include/sockets/Mutex.h" />
+		<Unit filename="../../dep/include/sockets/Parse.h" />
+		<Unit filename="../../dep/include/sockets/ResolvServer.h" />
+		<Unit filename="../../dep/include/sockets/ResolvSocket.h" />
+		<Unit filename="../../dep/include/sockets/SctpSocket.h" />
+		<Unit filename="../../dep/include/sockets/Socket.h" />
+		<Unit filename="../../dep/include/sockets/SocketAddress.h" />
+		<Unit filename="../../dep/include/sockets/SocketHandler.h" />
+		<Unit filename="../../dep/include/sockets/StdLog.h" />
+		<Unit filename="../../dep/include/sockets/StdoutLog.h" />
+		<Unit filename="../../dep/include/sockets/StreamSocket.h" />
+		<Unit filename="../../dep/include/sockets/TcpSocket.h" />
+		<Unit filename="../../dep/include/sockets/Thread.h" />
+		<Unit filename="../../dep/include/sockets/UdpSocket.h" />
+		<Unit filename="../../dep/include/sockets/Utility.h" />
+		<Unit filename="../../dep/include/sockets/socket_include.h" />
+		<Unit filename="../../dep/include/sockets/sockets-config.h" />
+		<Unit filename="../../dep/src/sockets/Base64.cpp" />
+		<Unit filename="../../dep/src/sockets/Exception.cpp" />
+		<Unit filename="../../dep/src/sockets/Ipv4Address.cpp" />
+		<Unit filename="../../dep/src/sockets/Ipv6Address.cpp" />
+		<Unit filename="../../dep/src/sockets/Lock.cpp" />
+		<Unit filename="../../dep/src/sockets/Mutex.cpp" />
+		<Unit filename="../../dep/src/sockets/Parse.cpp" />
+		<Unit filename="../../dep/src/sockets/ResolvServer.cpp" />
+		<Unit filename="../../dep/src/sockets/ResolvSocket.cpp" />
+		<Unit filename="../../dep/src/sockets/Socket.cpp" />
+		<Unit filename="../../dep/src/sockets/SocketHandler.cpp" />
+		<Unit filename="../../dep/src/sockets/StdoutLog.cpp" />
+		<Unit filename="../../dep/src/sockets/StreamSocket.cpp" />
+		<Unit filename="../../dep/src/sockets/TcpSocket.cpp" />
+		<Unit filename="../../dep/src/sockets/Thread.cpp" />
+		<Unit filename="../../dep/src/sockets/UdpSocket.cpp" />
+		<Unit filename="../../dep/src/sockets/Utility.cpp" />
+		<Unit filename="../../dep/src/sockets/socket_include.cpp" />
+		<Extensions>
+			<envvars />
+			<code_completion />
+			<debugger />
+			<lib_finder disable_auto="1" />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

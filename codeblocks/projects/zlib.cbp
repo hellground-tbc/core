@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="zlib" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug Win32">
+				<Option output="./zlib__Linux_Debug Win32/libzlib" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="zlib__Linux_Debug Win32" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-DWIN32" />
+					<Add option="-D_DEBUG" />
+					<Add option="-D_LIB" />
+					<Add option="-D_CRT_SECURE_NO_DEPRECATE" />
+					<Add option="-W" />
+					<Add option="-O0" />
+					<Add directory="../../dep/include" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="../../dep/include" />
+				</ResourceCompiler>
+			</Target>
+			<Target title="Release Win32">
+				<Option output="./zlib__Linux_Release Win32/libzlib" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="zlib__Linux_Release Win32" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-DWIN32" />
+					<Add option="-DNDEBUG" />
+					<Add option="-D_LIB" />
+					<Add option="-D_CRT_SECURE_NO_DEPRECATE" />
+					<Add option="-W" />
+					<Add directory="../../dep/include" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="../../dep/include" />
+				</ResourceCompiler>
+			</Target>
+			<Target title="Debug x64">
+				<Option output="./zlib__Linux_Debug x64/libzlib" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="zlib__Linux_Debug x64" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-DWIN32" />
+					<Add option="-D_DEBUG" />
+					<Add option="-D_LIB" />
+					<Add option="-D_CRT_SECURE_NO_DEPRECATE" />
+					<Add option="-W" />
+					<Add option="-O0" />
+					<Add directory="../../dep/include" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="../../dep/include" />
+				</ResourceCompiler>
+			</Target>
+			<Target title="Release x64">
+				<Option output="./zlib__Linux_Release x64/libzlib" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="zlib__Linux_Release x64" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-DWIN32" />
+					<Add option="-DNDEBUG" />
+					<Add option="-D_LIB" />
+					<Add option="-D_CRT_SECURE_NO_DEPRECATE" />
+					<Add option="-W" />
+					<Add directory="../../dep/include" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="../../dep/include" />
+				</ResourceCompiler>
+			</Target>
+		</Build>
+		<Unit filename="../../dep/src/zlib/adler32.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../dep/src/zlib/compress.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../dep/src/zlib/crc32.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../dep/src/zlib/crc32.h" />
+		<Unit filename="../../dep/src/zlib/deflate.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../dep/src/zlib/deflate.h" />
+		<Unit filename="../../dep/src/zlib/example.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../dep/src/zlib/gzio.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../dep/src/zlib/infback.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../dep/src/zlib/inffast.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../dep/src/zlib/inffast.h" />
+		<Unit filename="../../dep/src/zlib/inffixed.h" />
+		<Unit filename="../../dep/src/zlib/inflate.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../dep/src/zlib/inflate.h" />
+		<Unit filename="../../dep/src/zlib/inftrees.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../dep/src/zlib/inftrees.h" />
+		<Unit filename="../../dep/src/zlib/trees.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../dep/src/zlib/trees.h" />
+		<Unit filename="../../dep/src/zlib/uncompr.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../dep/src/zlib/zconf.h" />
+		<Unit filename="../../dep/src/zlib/zlib.h" />
+		<Unit filename="../../dep/src/zlib/zutil.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../dep/src/zlib/zutil.h" />
+		<Extensions>
+			<envvars />
+			<code_completion />
+			<debugger />
+			<lib_finder disable_auto="1" />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

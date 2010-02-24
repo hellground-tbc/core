@@ -1,0 +1,100 @@
+# HG changeset patch
+# User lukaasm
+# Date 1249811731 -7200
+# Branch trunk
+# Node ID 42eaaa6ba75d3c4dc4a5fbb4e97c41f858adaa04
+# Parent  1f1f62bb65d174f670b07947ecde30c012049710
+Add code to clear current cell when chesspiece is dead. (Should work, if not we cane handle itr in updateAI of trigger by using) if(!onMarker->isAlive) Reset();
+
+diff -r 1f1f62bb65d1 -r 42eaaa6ba75d src/bindings/scripts/scripts/zone/karazhan/chess_event.cpp
+--- a/src/bindings/scripts/scripts/zone/karazhan/chess_event.cpp	Sat Aug 08 22:30:34 2009 +0200
++++ b/src/bindings/scripts/scripts/zone/karazhan/chess_event.cpp	Sun Aug 09 11:55:31 2009 +0200
+@@ -28,10 +28,9 @@
+  - Teleport players to the balkony when possesing creature
+  - Improve finding creature in front and strafe ( maybe when rotate will be disabled it won't be needed :])
+  - Update instance_karazhan for now it was done only to start it ;]
+- - Implement Attack Creature In Front or Strafe with proper factions.
+- - Implement in instance_karazhan dead chess_piece count per side to allow Medivh to cheat when is loosing.
+- - Fix Reset() call when player unpossess creature.
+- - Add code to clear current cell when chesspiece is dead.
++ - Implement Attack Creature when is in Front or Strafe(for every chesspieces ??) with proper factions.
++ - Implement in instance_karazhan dead chess_piece count per side to allow Medivh to cheat when is loosing.(Or different terms was used as a treshold for cheat ?)
++ - Prevent Reset() call when player unpossess creature.
+  - Set proper position on left or right site from chess board for killed units.
+  - and many more ...
+ EndScriptData */
+@@ -176,14 +175,11 @@
+     bool ReturnToHome;
+     bool InGame;
+     bool CanMove;
+-    bool unPossessed;
+     
+     uint32 Heal_Timer;
+     uint32 NextMove_Timer;
+-    uint32 PlayerFaction;
+     uint64 MedivhGUID;
+ 
+-    Unit *creaturecharmer;
+     Creature *start_marker, *end_marker;
+ 
+     std::list<Unit *> PossibleMoveUnits;
+@@ -263,28 +259,19 @@
+         m_creature->CombatStop();
+         m_creature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NOT_SELECTABLE);
+     }
+-    /*void JustDied(Unit *Killer)
+-    {
+-        InGame = false;
+-        m_creature->setActive(false);
+-        m_creature->Respawn();
+-    }*/
+     void OnCharmed(bool apply)
+     {
+         // Place to disable rotate and move for player on possess
+     }
+     void JustDied(Unit* killer)
+     {
++        if(end_marker)
++            ((move_triggerAI*)end_marker->AI())->Reset();
++        
+         MedivhGUID = pInstance->GetData64(DATA_CHESS_ECHO_OF_MEDIVH);
+         npc_medivh = Unit::GetUnit(*m_creature, MedivhGUID);
+ 
+-        if(!npc_medivh)
+-        {
+-            DoSay("Bad Medivh Data",LANG_UNIVERSAL,false);
+-            return;
+-        }
+-
+-        if(pInstance->GetData(CHESS_EVENT_TEAM) == HORDE)
++        if(npc_medivh && pInstance->GetData(CHESS_EVENT_TEAM) == HORDE)
+         {
+             switch(m_creature->GetEntry())
+             {
+@@ -331,7 +318,7 @@
+                 default: break;
+             }
+         }
+-        else
++        else if(npc_medivh)
+         {
+             switch(m_creature->GetEntry())
+             {
+@@ -378,11 +365,15 @@
+                 default: break;
+             }
+         }
++        else
++            DoSay("Medivh not found / bad data",LANG_UNIVERSAL,false); // Only for me for debug :]
+         
+         if(m_creature->isPossessed())
+-        {
+             m_creature->RemoveCharmedOrPossessedBy(m_creature->GetCharmer());
+-        }        
++
++        InGame = false;
++        m_creature->setActive(false);
++        m_creature->Respawn();
+ 
+     }
+ 

@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="shared" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Release Win32">
+				<Option output="./shared__Linux_Release Win32/libshared" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="shared__Linux_Release Win32" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-DWIN32" />
+					<Add option="-DNDEBUG" />
+					<Add option="-D_LIB" />
+					<Add option="-D_CRT_SECURE_NO_DEPRECATE" />
+					<Add option="-W" />
+					<Add directory="../../dep/include" />
+					<Add directory="../../dep/include/g3dlite" />
+					<Add directory="../../src/framework" />
+					<Add directory="../../src/shared" />
+					<Add directory="../../dep/ACE_wrappers" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="../../dep/include" />
+					<Add directory="../../dep/include/g3dlite" />
+					<Add directory="../../src/framework" />
+					<Add directory="../../src/shared" />
+					<Add directory="../../dep/ACE_wrappers" />
+				</ResourceCompiler>
+				<Linker>
+					<Add library=".\g3dlite__Linux_Release" />
+					<Add library="Win32\g3dlite" />
+				</Linker>
+			</Target>
+			<Target title="Debug Win32">
+				<Option output="./shared__Linux_Debug Win32/libshared" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="shared__Linux_Debug Win32" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-DWIN32" />
+					<Add option="-D_DEBUG" />
+					<Add option="-DTRINITY_DEBUG" />
+					<Add option="-D_LIB" />
+					<Add option="-D_CRT_SECURE_NO_DEPRECATE" />
+					<Add option="-W" />
+					<Add option="-O0" />
+					<Add directory="../../dep/include" />
+					<Add directory="../../dep/include/g3dlite" />
+					<Add directory="../../src/framework" />
+					<Add directory="../../src/shared" />
+					<Add directory="../../dep/ACE_wrappers" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="../../dep/include" />
+					<Add directory="../../dep/include/g3dlite" />
+					<Add directory="../../src/framework" />
+					<Add directory="../../src/shared" />
+					<Add directory="../../dep/ACE_wrappers" />
+				</ResourceCompiler>
+				<Linker>
+					<Add library=".\g3dlite__Linux_Debug" />
+					<Add library="Win32\g3dlite" />
+				</Linker>
+			</Target>
+			<Target title="Release x64">
+				<Option output="./shared__Linux_Release x64/libshared" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="shared__Linux_Release x64" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-DWIN32" />
+					<Add option="-DNDEBUG" />
+					<Add option="-D_LIB" />
+					<Add option="-D_CRT_SECURE_NO_DEPRECATE" />
+					<Add option="-W" />
+					<Add directory="../../dep/include" />
+					<Add directory="../../dep/include/g3dlite" />
+					<Add directory="../../src/framework" />
+					<Add directory="../../src/shared" />
+					<Add directory="../../dep/ACE_wrappers" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="../../dep/include" />
+					<Add directory="../../dep/include/g3dlite" />
+					<Add directory="../../src/framework" />
+					<Add directory="../../src/shared" />
+					<Add directory="../../dep/ACE_wrappers" />
+				</ResourceCompiler>
+				<Linker>
+					<Add library=".\g3dlite__Linux_Release" />
+					<Add library="x64\g3dlite" />
+				</Linker>
+			</Target>
+			<Target title="Debug x64">
+				<Option output="./shared__Linux_Debug x64/libshared" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="shared__Linux_Debug x64" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-DWIN32" />
+					<Add option="-D_DEBUG" />
+					<Add option="-DTRINITY_DEBUG" />
+					<Add option="-D_LIB" />
+					<Add option="-D_CRT_SECURE_NO_DEPRECATE" />
+					<Add option="-W" />
+					<Add option="-O0" />
+					<Add directory="../../dep/include" />
+					<Add directory="../../dep/include/g3dlite" />
+					<Add directory="../../src/framework" />
+					<Add directory="../../src/shared" />
+					<Add directory="../../dep/ACE_wrappers" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="../../dep/include" />
+					<Add directory="../../dep/include/g3dlite" />
+					<Add directory="../../src/framework" />
+					<Add directory="../../src/shared" />
+					<Add directory="../../dep/ACE_wrappers" />
+				</ResourceCompiler>
+				<Linker>
+					<Add library=".\g3dlite__Linux_Debug" />
+					<Add library="x64\g3dlite" />
+				</Linker>
+			</Target>
+		</Build>
+		<Unit filename="../../dep/include/mersennetwister/MersenneTwister.h" />
+		<Unit filename="../../src/shared/Auth/AuthCrypt.cpp" />
+		<Unit filename="../../src/shared/Auth/AuthCrypt.h" />
+		<Unit filename="../../src/shared/Auth/BigNumber.cpp" />
+		<Unit filename="../../src/shared/Auth/BigNumber.h" />
+		<Unit filename="../../src/shared/Auth/Hmac.cpp" />
+		<Unit filename="../../src/shared/Auth/Hmac.h" />
+		<Unit filename="../../src/shared/Auth/Sha1.cpp" />
+		<Unit filename="../../src/shared/Auth/Sha1.h" />
+		<Unit filename="../../src/shared/Base.cpp" />
+		<Unit filename="../../src/shared/Base.h" />
+		<Unit filename="../../src/shared/ByteBuffer.h" />
+		<Unit filename="../../src/shared/Common.cpp" />
+		<Unit filename="../../src/shared/Common.h" />
+		<Unit filename="../../src/shared/Config/Config.cpp" />
+		<Unit filename="../../src/shared/Config/Config.h" />
+		<Unit filename="../../src/shared/Config/ConfigEnv.h" />
+		<Unit filename="../../src/shared/Config/dotconfpp/dotconfpp.cpp" />
+		<Unit filename="../../src/shared/Config/dotconfpp/dotconfpp.h" />
+		<Unit filename="../../src/shared/Config/dotconfpp/mempool.cpp" />
+		<Unit filename="../../src/shared/Config/dotconfpp/mempool.h" />
+		<Unit filename="../../src/shared/Database/DBCStores.cpp" />
+		<Unit filename="../../src/shared/Database/DBCStores.h" />
+		<Unit filename="../../src/shared/Database/DBCStructure.h" />
+		<Unit filename="../../src/shared/Database/DBCfmt.cpp" />
+		<Unit filename="../../src/shared/Database/Database.cpp" />
+		<Unit filename="../../src/shared/Database/Database.h" />
+		<Unit filename="../../src/shared/Database/DatabaseEnv.h" />
+		<Unit filename="../../src/shared/Database/DatabaseImpl.h" />
+		<Unit filename="../../src/shared/Database/DatabaseMysql.cpp" />
+		<Unit filename="../../src/shared/Database/DatabaseMysql.h" />
+		<Unit filename="../../src/shared/Database/DatabaseSqlite.cpp" />
+		<Unit filename="../../src/shared/Database/DatabaseSqlite.h" />
+		<Unit filename="../../src/shared/Database/Field.cpp" />
+		<Unit filename="../../src/shared/Database/Field.h" />
+		<Unit filename="../../src/shared/Database/MySQLDelayThread.h" />
+		<Unit filename="../../src/shared/Database/QueryResult.h" />
+		<Unit filename="../../src/shared/Database/QueryResultMysql.cpp" />
+		<Unit filename="../../src/shared/Database/QueryResultMysql.h" />
+		<Unit filename="../../src/shared/Database/QueryResultSqlite.cpp" />
+		<Unit filename="../../src/shared/Database/QueryResultSqlite.h" />
+		<Unit filename="../../src/shared/Database/SQLStorage.cpp" />
+		<Unit filename="../../src/shared/Database/SQLStorage.h" />
+		<Unit filename="../../src/shared/Database/SqlDelayThread.cpp" />
+		<Unit filename="../../src/shared/Database/SqlDelayThread.h" />
+		<Unit filename="../../src/shared/Database/SqlOperations.cpp" />
+		<Unit filename="../../src/shared/Database/SqlOperations.h" />
+		<Unit filename="../../src/shared/Database/dbcfile.cpp" />
+		<Unit filename="../../src/shared/Database/dbcfile.h" />
+		<Unit filename="../../src/shared/DelayExecutor.cpp" />
+		<Unit filename="../../src/shared/DelayExecutor.h" />
+		<Unit filename="../../src/shared/Errors.h" />
+		<Unit filename="../../src/shared/Log.cpp" />
+		<Unit filename="../../src/shared/Log.h" />
+		<Unit filename="../../src/shared/Mthread.cpp" />
+		<Unit filename="../../src/shared/Mthread.h" />
+		<Unit filename="../../src/shared/ProgressBar.cpp" />
+		<Unit filename="../../src/shared/ProgressBar.h" />
+		<Unit filename="../../src/shared/ServiceWin32.cpp" />
+		<Unit filename="../../src/shared/ServiceWin32.h" />
+		<Unit filename="../../src/shared/SystemConfig.h" />
+		<Unit filename="../../src/shared/Threading.cpp" />
+		<Unit filename="../../src/shared/Threading.h" />
+		<Unit filename="../../src/shared/Timer.h" />
+		<Unit filename="../../src/shared/Util.cpp" />
+		<Unit filename="../../src/shared/Util.h" />
+		<Unit filename="../../src/shared/revision.h" />
+		<Unit filename="../../src/shared/vmap/AABSPTree.h" />
+		<Unit filename="../../src/shared/vmap/BaseModel.cpp" />
+		<Unit filename="../../src/shared/vmap/BaseModel.h" />
+		<Unit filename="../../src/shared/vmap/CoordModelMapping.cpp" />
+		<Unit filename="../../src/shared/vmap/CoordModelMapping.h" />
+		<Unit filename="../../src/shared/vmap/DebugCmdLogger.cpp" />
+		<Unit filename="../../src/shared/vmap/DebugCmdLogger.h" />
+		<Unit filename="../../src/shared/vmap/IVMapManager.h" />
+		<Unit filename="../../src/shared/vmap/ManagedModelContainer.cpp" />
+		<Unit filename="../../src/shared/vmap/ManagedModelContainer.h" />
+		<Unit filename="../../src/shared/vmap/ModelContainer.cpp" />
+		<Unit filename="../../src/shared/vmap/ModelContainer.h" />
+		<Unit filename="../../src/shared/vmap/NodeValueAccess.h" />
+		<Unit filename="../../src/shared/vmap/ShortBox.h" />
+		<Unit filename="../../src/shared/vmap/ShortVector.h" />
+		<Unit filename="../../src/shared/vmap/SubModel.cpp" />
+		<Unit filename="../../src/shared/vmap/SubModel.h" />
+		<Unit filename="../../src/shared/vmap/TileAssembler.cpp" />
+		<Unit filename="../../src/shared/vmap/TileAssembler.h" />
+		<Unit filename="../../src/shared/vmap/TreeNode.cpp" />
+		<Unit filename="../../src/shared/vmap/TreeNode.h" />
+		<Unit filename="../../src/shared/vmap/VMapDefinitions.h" />
+		<Unit filename="../../src/shared/vmap/VMapFactory.cpp" />
+		<Unit filename="../../src/shared/vmap/VMapFactory.h" />
+		<Unit filename="../../src/shared/vmap/VMapManager.cpp" />
+		<Unit filename="../../src/shared/vmap/VMapManager.h" />
+		<Unit filename="../../src/shared/vmap/VMapTools.h" />
+		<Extensions>
+			<envvars />
+			<code_completion />
+			<debugger />
+			<lib_finder disable_auto="1" />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

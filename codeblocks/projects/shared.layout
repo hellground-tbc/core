@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<ActiveTarget name="Debug x64" />
+	<File name="../../src/shared/Common.h" open="0" top="0" tabpos="0">
+		<Cursor position="2830" topLine="104" />
+	</File>
+	<File name="../../src/shared/Database/DBCStructure.h" open="0" top="0" tabpos="0">
+		<Cursor position="28920" topLine="866" />
+	</File>
+</CodeBlocks_layout_file>

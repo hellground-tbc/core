@@ -1,0 +1,114 @@
+# HG changeset patch
+# User lukaasm
+# Date 1250106116 -7200
+# Branch trunk
+# Node ID b772c56d6cf15680078b2aae0477594439c3c2cb
+# Parent  4a2aef0bda666e36442daab02dbf5597c13b3413
+Few changes
+
+diff -r 4a2aef0bda66 -r b772c56d6cf1 src/bindings/scripts/scripts/zone/karazhan/chess_event.cpp
+--- a/src/bindings/scripts/scripts/zone/karazhan/chess_event.cpp	Sun Aug 09 12:19:45 2009 +0200
++++ b/src/bindings/scripts/scripts/zone/karazhan/chess_event.cpp	Wed Aug 12 21:41:56 2009 +0200
+@@ -41,9 +41,9 @@
+ #define A_FACTION  1690
+ #define H_FACTION  1691
+ 
+-#define GOSSIP_POSSES "[ Control this Chesspiece ]"
++#define GOSSIP_POSSES "[ Control this Chesspiece ]" // Maybe should be different gossip, visuals will be fixed at the end :]
+ 
+-#define EVENT_START "[PH] Start Chess Event"
++#define EVENT_START "[PH] Start Chess Event" // Maybe should be different gossip, visuals will be fixed at the end :]
+ #define NPC_ATTACK_RADIUS 7
+ #define TRIGGER_ID 22519
+ #define SEARCH_RANGE 5
+@@ -107,8 +107,9 @@
+     SPELL_CHANGE_FACING     = 30284,
+     SPELL_MOVE_MARKER       = 32261,
+     SPELL_POSSES_CHESSPIECE = 30019,
+-    SPELL_HAND_OF_MEDIVH    = 39339, // AOE spell
+-    SPELL_FURY_OF_MEDIVH    = 39383  // Berserk spell. 3rd cheat is setting all creatures to max health
++    SPELL_HAND_OF_MEDIVH    = 39339, // 1st cheat: AOE spell burn cell under enemy chesspieces.
++    SPELL_FURY_OF_MEDIVH    = 39383  // 2nd cheat: Berserk own chesspieces.
++    // 3rd cheat: set own creatures to max health
+ };
+ 
+ 
+@@ -157,7 +158,7 @@
+                 
+         if(onMarker)
+         {
+-            if(onMarker->isAlive()) // Better check it here so we don't need to find start and end marker when wie die in move without reaching destination point :]
++            if(onMarker->isAlive()) // Better check it here so we don't need to find start and end marker when chess die in move without reaching destination point :]
+                 return;
+             else
+                 Reset();
+@@ -172,7 +173,7 @@
+ 
+         SpellEntry *TempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_POSSES_CHESSPIECE);
+         if(TempSpell)
+-            TempSpell->Effect[0] = 0;
++            TempSpell->Effect[0] = 0;  // Disable bind sight effect from SPELL_POSSES_CHESSPIECE. We handle all with dummy and charm effect.
+     }
+     
+     ScriptedInstance* pInstance;
+@@ -233,10 +234,9 @@
+     {
+         ReturnToHome = true;  
+         Heal_Timer = 7000;
+-        unPossessed = false;
+         InGame = true;
+         CanMove = false;
+-        NextMove_Timer = 4500; // wair 4.5s for first moves
++        NextMove_Timer = 4500; // wait 4.5s for first moves
+         m_creature->setActive(true);
+         
+         start_marker = NULL;
+@@ -402,7 +402,7 @@
+     
+         for(std::list<Unit *>::iterator itr = pList.begin(); itr != pList.end();itr++)
+         {
+-            if((*itr)->GetEntry() != TRIGGER_ID || ((move_triggerAI*)((Creature*)(*itr))->AI())->onMarker != NULL || !m_creature->isInFront((*itr),5.0f,2*M_PI/4)) // TODO: Need better check to exclude triggers not in front or not at strafe.
++            if((*itr)->GetEntry() != TRIGGER_ID || ((move_triggerAI*)((Creature*)(*itr))->AI())->onMarker != NULL || !m_creature->isInFront((*itr),5.0f,2*M_PI/6)) // TODO: Need better check to exclude triggers not in front or not at strafe.
+                 continue;
+     
+             returnList.push_back((*itr));
+@@ -451,6 +451,9 @@
+ 
+         if(!m_creature->isPossessed())
+         {
++            if(!m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE) && !m_creature->isPossessed())
++                m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE);
++            
+             if(!CanMove)
+             {
+                 if(NextMove_Timer < diff)
+diff -r 4a2aef0bda66 -r b772c56d6cf1 src/game/Creature.cpp
+--- a/src/game/Creature.cpp	Sun Aug 09 12:19:45 2009 +0200
++++ b/src/game/Creature.cpp	Wed Aug 12 21:41:56 2009 +0200
+@@ -610,10 +610,12 @@
+     }
+ 
+     if(i_AI) delete i_AI;
++    
+     i_motionMaster.Initialize();
+     i_AI = ai ? ai : FactorySelector::selectAI(this);
+     IsAIEnabled = true;
+     i_AI->InitializeAI();
++    
+     return true;
+ }
+ 
+diff -r 4a2aef0bda66 -r b772c56d6cf1 src/game/Unit.cpp
+--- a/src/game/Unit.cpp	Sun Aug 09 12:19:45 2009 +0200
++++ b/src/game/Unit.cpp	Wed Aug 12 21:41:56 2009 +0200
+@@ -10502,8 +10502,8 @@
+         if(isCharmed())
+         {
+             if(((Creature*)this)->GetScriptName() == "npc_chesspiece") // UGLY AND BAD HACK, Find a way to remove it ;] 
+-            {                                                         // Find better way to disalow PossessedAI to override ScriptedAI
+-                i_disabledAI = NULL;                                  // or make possibility to script PossessedAI
++            {                                                          // Find better way to disalow PossessedAI to override ScriptedAI
++                i_disabledAI = NULL;                                   // or make possibility to script PossessedAI
+                 return;
+             }
+             else

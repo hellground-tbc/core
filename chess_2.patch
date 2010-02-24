@@ -1,0 +1,30 @@
+# HG changeset patch
+# User lukaasm
+# Date 1249763434 -7200
+# Branch trunk
+# Node ID 1f1f62bb65d174f670b07947ecde30c012049710
+# Parent  d0fdb5025c93d0781bfa920ed5cc18388ffa8f7b
+Fill TODO list.
+
+diff -r d0fdb5025c93 -r 1f1f62bb65d1 src/bindings/scripts/scripts/zone/karazhan/chess_event.cpp
+--- a/src/bindings/scripts/scripts/zone/karazhan/chess_event.cpp	Thu Jan 28 23:39:39 2010 +0100
++++ b/src/bindings/scripts/scripts/zone/karazhan/chess_event.cpp	Sat Aug 08 22:30:34 2009 +0200
+@@ -23,7 +23,17 @@
+   I think locking and unlocking cells for unit movement is done. only need to add code to unlock it when creature dies :]
+   
+ TODO:
+- - I will fill it soon 
++ - Disable rotate for all chess pieces
++ - Disable movement for unit controlled by player
++ - Teleport players to the balkony when possesing creature
++ - Improve finding creature in front and strafe ( maybe when rotate will be disabled it won't be needed :])
++ - Update instance_karazhan for now it was done only to start it ;]
++ - Implement Attack Creature In Front or Strafe with proper factions.
++ - Implement in instance_karazhan dead chess_piece count per side to allow Medivh to cheat when is loosing.
++ - Fix Reset() call when player unpossess creature.
++ - Add code to clear current cell when chesspiece is dead.
++ - Set proper position on left or right site from chess board for killed units.
++ - and many more ...
+ EndScriptData */
+ 
+ #include "precompiled.h"
