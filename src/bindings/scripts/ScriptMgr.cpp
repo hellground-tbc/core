@@ -2109,6 +2109,80 @@ void DoScriptText(int32 textEntry, WorldObject* pSource, Unit* target)
     }
 }
 
+void ScriptText(int32 textEntry, Unit* pSource, Unit* target)
+{
+    if (!pSource)
+    {
+        error_log("TSCR: DoScriptText entry %i, invalid Source pointer.",textEntry);
+        return;
+    }
+
+    if (textEntry >= 0)
+    {
+        error_log("TSCR: DoScriptText with source entry %u (TypeId=%u, guid=%u) attempts to process text entry %i, but text entry must be negative.",pSource->GetEntry(),pSource->GetTypeId(),pSource->GetGUIDLow(),textEntry);
+        return;
+    }
+
+    UNORDERED_MAP<int32, StringTextData>::iterator i = TextMap.find(textEntry);
+
+    if (i == TextMap.end())
+    {
+        error_log("TSCR: DoScriptText with source entry %u (TypeId=%u, guid=%u) could not find text entry %i.",pSource->GetEntry(),pSource->GetTypeId(),pSource->GetGUIDLow(),textEntry);
+        return;
+    }
+
+    debug_log("TSCR: DoScriptText: text entry=%i, Sound=%u, Type=%u, Language=%u, Emote=%u",textEntry,(*i).second.SoundId,(*i).second.Type,(*i).second.Language,(*i).second.Emote);
+
+    if((*i).second.SoundId)
+    {
+        if( GetSoundEntriesStore()->LookupEntry((*i).second.SoundId) )
+        {
+            pSource->SendPlaySound((*i).second.SoundId, false);
+        }
+        else
+            error_log("TSCR: DoScriptText entry %i tried to process invalid sound id %u.",textEntry,(*i).second.SoundId);
+    }
+
+    if((*i).second.Emote)
+    {
+        if (pSource->GetTypeId() == TYPEID_UNIT || pSource->GetTypeId() == TYPEID_PLAYER)
+        {
+            pSource->HandleEmoteCommand((*i).second.Emote);
+        }
+        else
+            error_log("TSCR: DoScriptText entry %i tried to process emote for invalid TypeId (%u).",textEntry,pSource->GetTypeId());
+    }
+
+    switch((*i).second.Type)
+    {
+        case CHAT_TYPE_SAY:
+            pSource->MonsterSay(textEntry, (*i).second.Language, target ? target->GetGUID() : 0);
+            break;
+        case CHAT_TYPE_YELL:
+            pSource->MonsterYell(textEntry, (*i).second.Language, target ? target->GetGUID() : 0);
+            break;
+        case CHAT_TYPE_TEXT_EMOTE:
+            pSource->MonsterTextEmote(textEntry, target ? target->GetGUID() : 0);
+            break;
+        case CHAT_TYPE_BOSS_EMOTE:
+            pSource->MonsterTextEmote(textEntry, target ? target->GetGUID() : 0, true);
+            break;
+        case CHAT_TYPE_WHISPER:
+            {
+                if (target && target->GetTypeId() == TYPEID_PLAYER)
+                    pSource->MonsterWhisper(textEntry, target->GetGUID());
+                else error_log("TSCR: DoScriptText entry %i cannot whisper without target unit (TYPEID_PLAYER).", textEntry);
+            }break;
+        case CHAT_TYPE_BOSS_WHISPER:
+            {
+                if (target && target->GetTypeId() == TYPEID_PLAYER)
+                    pSource->MonsterWhisper(textEntry, target->GetGUID(), true);
+                else error_log("TSCR: DoScriptText entry %i cannot whisper without target unit (TYPEID_PLAYER).", textEntry);
+            }break;
+    }
+}
+
+
 //*********************************
 //*** Functions used internally ***
 

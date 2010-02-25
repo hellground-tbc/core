@@ -204,16 +204,21 @@ void ScriptedAI::CastNextSpellIfAnyAndReady()
     if (!temp || m_creature->hasUnitState(UNIT_STAT_CASTING) && !temp->triggered)
         return;
 
-    if (temp->scriptTextEntry && temp->scriptTextSource)
-        DoScriptText(temp->scriptTextEntry, temp->scriptTextSource, temp->scriptTextTarget);
+    if (temp->scriptTextEntry && temp->scriptTextSourceGUID)
+        ScriptText(temp->scriptTextEntry, m_creature->GetUnit(*m_creature, temp->scriptTextSourceGUID), m_creature->GetUnit(*m_creature, temp->scriptTextTargetGUID));
 
-    if (temp->target || temp->isAOECast)
+    if (temp->targetGUID || temp->isAOECast)
     {
-        if (temp->spellId)
-            m_creature->CastSpell(temp->target, temp->spellId, temp->triggered, temp->castItem, temp->triggeredByAura, temp->originalCaster);
-        else
-            if (temp->spellInfo)
-                m_creature->CastSpell(temp->target, temp->spellInfo, temp->triggered, temp->castItem, temp->triggeredByAura, temp->originalCaster);
+        Unit * tempU = m_creature->GetUnit(*m_creature, temp->targetGUID);
+
+        if (tempU || temp->isAOECast)
+        {
+            if (temp->spellId)
+                m_creature->CastSpell(tempU, temp->spellId, temp->triggered, temp->castItem, temp->triggeredByAura, temp->originalCaster);
+            else
+                if (temp->spellInfo)
+                    m_creature->CastSpell(tempU, temp->spellInfo, temp->triggered, temp->castItem, temp->triggeredByAura, temp->originalCaster);
+        }
     }
     spellList.pop_front();
 }
@@ -249,19 +254,19 @@ void ScriptedAI::AddSpellToCast(Unit* victim, uint32 spellId, bool triggered, It
     if (!victim)
         return;
 
-    SpellToCast temp(victim, spellId, NULL, triggered, 0, NULL, NULL, castItem, triggeredByAura, originalCaster, false);
-    
+    SpellToCast temp(victim->GetGUID(), spellId, NULL, triggered, 0, NULL, NULL, castItem, triggeredByAura, originalCaster, false);
+
     spellList.push_back(temp);
 }
 
-void ScriptedAI::AddSpellToCastWithScriptText(Unit* victim, uint32 spellId, int32 scriptTextEntry, WorldObject* scriptTextSource, bool triggered, 
+void ScriptedAI::AddSpellToCastWithScriptText(Unit* victim, uint32 spellId, int32 scriptTextEntry, Unit* scriptTextSource, bool triggered,
                                                 Unit* scriptTextTarget, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
 {
     if (!victim)
         return;
 
-    SpellToCast temp(victim, spellId, NULL, triggered, scriptTextEntry, scriptTextSource, scriptTextTarget, castItem, triggeredByAura, originalCaster, false);
-    
+    SpellToCast temp(victim->GetGUID(), spellId, NULL, triggered, scriptTextEntry, scriptTextSource->GetGUID(), scriptTextTarget->GetGUID(), castItem, triggeredByAura, originalCaster, false);
+
     spellList.push_back(temp);
 }
 
@@ -270,26 +275,26 @@ void ScriptedAI::AddSpellToCast(Unit* who, SpellEntry const *spellInfo, bool tri
     if (!who || !spellInfo)
         return;
 
-    SpellToCast temp(who, 0, spellInfo, triggered, 0, NULL, NULL, castItem, triggeredByAura, originalCaster, false);
-    
+    SpellToCast temp(who->GetGUID(), 0, spellInfo, triggered, 0, NULL, NULL, castItem, triggeredByAura, originalCaster, false);
+
     spellList.push_back(temp);
 }
 
-void ScriptedAI::AddSpellToCastWithScriptText(Unit* who, SpellEntry const *spellInfo, int32 scriptTextEntry, WorldObject* scriptTextSource, bool triggered, 
+void ScriptedAI::AddSpellToCastWithScriptText(Unit* who, SpellEntry const *spellInfo, int32 scriptTextEntry, Unit* scriptTextSource, bool triggered,
                                                 Unit* scriptTextTarget, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
 {
     if (!who || !spellInfo)
         return;
 
-    SpellToCast temp(who, 0, spellInfo, triggered, scriptTextEntry, scriptTextSource, scriptTextTarget, castItem, triggeredByAura, originalCaster, false);
-    
+    SpellToCast temp(who->GetGUID(), 0, spellInfo, triggered, scriptTextEntry, scriptTextSource->GetGUID(), scriptTextTarget->GetGUID(), castItem, triggeredByAura, originalCaster, false);
+
     spellList.push_back(temp);
 }
 
 void ScriptedAI::AddAOESpellToCast(uint32 spellId, bool triggered)
 {
     SpellToCast temp((Unit*)NULL, spellId, NULL, triggered, 0, NULL, NULL, NULL, NULL, 0, true);
-    
+
     spellList.push_back(temp);
 }
 
@@ -298,8 +303,8 @@ void ScriptedAI::ForceSpellCast(Unit *victim, uint32 spellId, interruptSpell int
     if (!victim)
         return;
 
-    SpellToCast temp(victim, spellId, NULL, triggered, 0, NULL, NULL, castItem, triggeredByAura, originalCaster, false);
-    
+    SpellToCast temp(victim->GetGUID(), spellId, NULL, triggered, 0, NULL, NULL, castItem, triggeredByAura, originalCaster, false);
+
     switch (interruptCurrent)
     {
     case INTERRUPT_AND_CAST:
@@ -320,9 +325,9 @@ void ScriptedAI::ForceSpellCast(Unit *victim, const SpellEntry *spellInfo, inter
     if (!victim)
         return;
 
-    SpellToCast temp(victim, 0, spellInfo, triggered, 0, NULL, NULL, castItem, triggeredByAura, originalCaster, false);
-    
-    switch(interruptCurrent) 
+    SpellToCast temp(victim->GetGUID(), 0, spellInfo, triggered, 0, NULL, NULL, castItem, triggeredByAura, originalCaster, false);
+
+    switch(interruptCurrent)
     {
     case INTERRUPT_AND_CAST:
         m_creature->InterruptNonMeleeSpells(false);
@@ -337,13 +342,13 @@ void ScriptedAI::ForceSpellCast(Unit *victim, const SpellEntry *spellInfo, inter
     spellList.push_front(temp);
 }
 
-void ScriptedAI::ForceSpellCastWithScriptText(Unit *victim, uint32 spellId, int32 scriptTextEntry, WorldObject *scriptTextSource, interruptSpell interruptCurrent, bool triggered, Unit *scriptTextTarget, Item *castItem, Aura *triggeredByAura, uint64 originalCaster)
+void ScriptedAI::ForceSpellCastWithScriptText(Unit *victim, uint32 spellId, int32 scriptTextEntry, Unit *scriptTextSource, interruptSpell interruptCurrent, bool triggered, Unit *scriptTextTarget, Item *castItem, Aura *triggeredByAura, uint64 originalCaster)
 {
     if (!victim)
         return;
 
-    SpellToCast temp(victim, spellId, NULL, triggered, scriptTextEntry, scriptTextSource, scriptTextTarget, castItem, triggeredByAura, originalCaster, false);
-    
+    SpellToCast temp(victim->GetGUID(), spellId, NULL, triggered, scriptTextEntry, scriptTextSource->GetGUID(), scriptTextTarget->GetGUID(), castItem, triggeredByAura, originalCaster, false);
+
     switch(interruptCurrent)
     {
     case INTERRUPT_AND_CAST:
@@ -361,12 +366,12 @@ void ScriptedAI::ForceSpellCastWithScriptText(Unit *victim, uint32 spellId, int3
     spellList.push_front(temp);
 }
 
-void ScriptedAI::ForceSpellCastWithScriptText(Unit *victim, const SpellEntry *spellInfo, int32 scriptTextEntry, WorldObject *scriptTextSource, interruptSpell interruptCurrent, bool triggered, Unit *scriptTextTarget, Item *castItem, Aura *triggeredByAura, uint64 originalCaster)
+void ScriptedAI::ForceSpellCastWithScriptText(Unit *victim, const SpellEntry *spellInfo, int32 scriptTextEntry, Unit *scriptTextSource, interruptSpell interruptCurrent, bool triggered, Unit *scriptTextTarget, Item *castItem, Aura *triggeredByAura, uint64 originalCaster)
 {
     if (!victim)
         return;
 
-    SpellToCast temp(victim, 0, spellInfo, triggered, scriptTextEntry, scriptTextSource, scriptTextTarget, castItem, triggeredByAura, originalCaster, false);
+    SpellToCast temp(victim->GetGUID(), 0, spellInfo, triggered, scriptTextEntry, scriptTextSource->GetGUID(), scriptTextTarget->GetGUID(), castItem, triggeredByAura, originalCaster, false);
 
     switch(interruptCurrent)
     {
@@ -387,8 +392,8 @@ void ScriptedAI::ForceSpellCastWithScriptText(Unit *victim, const SpellEntry *sp
 
 void ScriptedAI::ForceAOESpellCast(uint32 spellId, interruptSpell interruptCurrent, bool triggered)
 {
-    SpellToCast temp(NULL, spellId, NULL, triggered, 0, NULL, NULL, NULL, NULL, 0, true);
-    
+    SpellToCast temp((Unit*)NULL, spellId, NULL, triggered, 0, NULL, NULL, NULL, NULL, 0, true);
+
     switch(interruptCurrent)
     {
     case INTERRUPT_AND_CAST:

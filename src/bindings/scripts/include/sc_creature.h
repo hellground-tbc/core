@@ -52,8 +52,8 @@ enum interruptSpell
 struct SpellToCast
 {
 public:
-    Unit* target;
-    uint32 spellId; 
+    uint64 targetGUID;
+    uint32 spellId;
     SpellEntry const *spellInfo;
     bool triggered;
     Item *castItem;
@@ -61,12 +61,12 @@ public:
     uint64 originalCaster;
     bool isAOECast;
     int32 scriptTextEntry;
-    WorldObject* scriptTextSource;
-    Unit* scriptTextTarget;
+    uint64 scriptTextSourceGUID;
+    uint64 scriptTextTargetGUID;
 
-    SpellToCast(Unit* target, uint32 spellId, SpellEntry const *spellInfo, bool triggered, int32 scriptTextEntry, WorldObject* scriptTextSource, Unit* scriptTextTarget, Item *castItem, Aura* triggeredByAura, uint64 originalCaster, bool isAOECast)
+    SpellToCast(Unit* target, uint32 spellId, SpellEntry const *spellInfo, bool triggered, int32 scriptTextEntry, Unit* scriptTextSource, Unit* scriptTextTarget, Item *castItem, Aura* triggeredByAura, uint64 originalCaster, bool isAOECast)
     {
-        this->target = target;
+        this->targetGUID = target->GetGUID();
         this->spellId = spellId;
         this->spellInfo = spellInfo;
         this->triggered = triggered;
@@ -75,13 +75,28 @@ public:
         this->originalCaster = originalCaster;
         this->isAOECast = isAOECast;
         this->scriptTextEntry = scriptTextEntry;
-        this->scriptTextSource = scriptTextSource;
-        this->scriptTextTarget = scriptTextTarget;
+        this->scriptTextSourceGUID = scriptTextSource->GetGUID();
+        this->scriptTextTargetGUID = scriptTextTarget->GetGUID();
+    }
+
+    SpellToCast(uint64 target, uint32 spellId, SpellEntry const *spellInfo, bool triggered, int32 scriptTextEntry, uint64 scriptTextSource, uint64 scriptTextTarget, Item *castItem, Aura* triggeredByAura, uint64 originalCaster, bool isAOECast)
+    {
+        this->targetGUID = target;
+        this->spellId = spellId;
+        this->spellInfo = spellInfo;
+        this->triggered = triggered;
+        this->castItem = castItem;
+        this->triggeredByAura = triggeredByAura;
+        this->originalCaster = originalCaster;
+        this->isAOECast = isAOECast;
+        this->scriptTextEntry = scriptTextEntry;
+        this->scriptTextSourceGUID = scriptTextSource;
+        this->scriptTextTargetGUID = scriptTextTarget;
     }
 
     SpellToCast()
     {
-        this->target = NULL;
+        this->targetGUID = 0;
         this->spellId = 0;
         this->spellInfo = NULL;
         this->triggered = false;
@@ -90,13 +105,13 @@ public:
         this->originalCaster = 0;
         this->isAOECast = false;
         this->scriptTextEntry = 0;
-        this->scriptTextSource = NULL;
-        this->scriptTextTarget = NULL;
+        this->scriptTextSourceGUID = 0;
+        this->scriptTextTargetGUID = 0;
     }
-    
+
     ~SpellToCast()
     {
-        this->target = NULL;
+        this->targetGUID = 0;
         this->spellId = 0;
         this->spellInfo = NULL;
         this->triggered = false;
@@ -105,8 +120,8 @@ public:
         this->originalCaster = 0;
         this->isAOECast = false;
         this->scriptTextEntry = 0;
-        this->scriptTextSource = NULL;
-        this->scriptTextTarget = NULL;
+        this->scriptTextSourceGUID = 0;
+        this->scriptTextTargetGUID = 0;
     }
 };
 
@@ -205,25 +220,25 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
     void DoCast(Unit* victim, uint32 spellId, bool triggered = false);
     void DoCastAOE(uint32 spellId, bool triggered = false);
     void AddSpellToCast(Unit* victim, uint32 spellId, bool triggered = false, Item *castItem = NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0);
-    void AddSpellToCastWithScriptText(Unit* victim, uint32 spellId, int32 scriptTextEntry, WorldObject* scriptTextSource, bool triggered = false, 
+    void AddSpellToCastWithScriptText(Unit* victim, uint32 spellId, int32 scriptTextEntry, Unit* scriptTextSource, bool triggered = false,
                                         Unit* scriptTextTarget = NULL, Item *castItem = NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0);
     void AddAOESpellToCast(uint32 spellId, bool triggered = false);
-    
+
     //Forces spell cast by Id
     void ForceSpellCast(Unit* victim, uint32 spellId, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false, Item *castItem = NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0);
-    void ForceSpellCastWithScriptText(Unit* victim, uint32 spellId, int32 scriptTextEntry, WorldObject* scriptTextSource, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false, 
+    void ForceSpellCastWithScriptText(Unit* victim, uint32 spellId, int32 scriptTextEntry, Unit* scriptTextSource, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false,
                                         Unit* scriptTextTarget = NULL, Item *castItem = NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0);
     void ForceAOESpellCast(uint32 spellId, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false);
 
     //Forces spell cast by spell info
     void ForceSpellCast(Unit* victim, SpellEntry const *spellInfo, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false, Item *castItem = NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0);
-    void ForceSpellCastWithScriptText(Unit* victim, SpellEntry const *spellInfo, int32 scriptTextEntry, WorldObject* scriptTextSource, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false, 
+    void ForceSpellCastWithScriptText(Unit* victim, SpellEntry const *spellInfo, int32 scriptTextEntry, Unit* scriptTextSource, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false,
                                         Unit* scriptTextTarget = NULL, Item *castItem = NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0);
 
     //Cast spell by spell info
     void DoCastSpell(Unit* who, SpellEntry const *spellInfo, bool triggered = false);
     void AddSpellToCast(Unit* who, SpellEntry const *spellInfo, bool triggered = false, Item *castItem = NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0);
-    void AddSpellToCastWithScriptText(Unit* who, SpellEntry const *spellInfo, int32 scriptTextEntry, WorldObject* scriptTextSource, bool triggered = false, 
+    void AddSpellToCastWithScriptText(Unit* who, SpellEntry const *spellInfo, int32 scriptTextEntry, Unit* scriptTextSource, bool triggered = false,
                                         Unit* scriptTextTarget = NULL, Item *castItem = NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0);
 
     //Creature say
