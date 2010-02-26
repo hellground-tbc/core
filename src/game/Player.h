@@ -2379,6 +2379,8 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         uint64 m_GMfollowtarget_GUID; // za kim chodzi
         uint64 m_GMfollow_GUID;       // gm ktory chodzi za playerem
+
+        bool updateLock;
 };
 
 void AddItemsSetItem(Player*player,Item *item);
