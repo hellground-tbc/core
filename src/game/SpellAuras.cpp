@@ -878,6 +878,7 @@ void Aura::_AddAura()
 {
     if (!GetId())
         return;
+
     if(!m_target)
         return;
 
@@ -891,7 +892,7 @@ void Aura::_AddAura()
         for(Unit::AuraMap::const_iterator itr = m_target->GetAuras().lower_bound(spair); itr != m_target->GetAuras().upper_bound(spair); ++itr)
         {
             // allow use single slot only by auras from same caster
-            if(itr->second->GetCasterGUID()==GetCasterGUID())
+            if(itr->second->GetCasterGUID() == GetCasterGUID())
             {
                 secondaura = true;
                 slot = itr->second->GetAuraSlot();
@@ -1042,7 +1043,7 @@ void Aura::_RemoveAura()
         Unit::spellEffectPair spair = Unit::spellEffectPair(GetId(), i);
         for(Unit::AuraMap::const_iterator itr = m_target->GetAuras().lower_bound(spair); itr != m_target->GetAuras().upper_bound(spair); ++itr)
         {
-            if(itr->second->GetAuraSlot()==slot)
+            if(itr->second->GetAuraSlot() == slot)
             {
                 samespell = true;
 
@@ -1160,6 +1161,37 @@ void Aura::UpdateSlotCounterAndDuration()
         SetAuraApplication(slot, m_stackAmount-1);
 
     UpdateAuraDuration();
+}
+
+bool Aura::isWeaponBuffCoexistableWith(Aura *ref)
+{
+     // Exclude Debuffs
+    if (!ref || !IsPositiveSpell(GetId()))
+        return false;
+
+    // Exclude Non-generic Buffs
+    if (GetSpellProto()->SpellFamilyName != SPELLFAMILY_GENERIC || GetId() == 42976)
+        return false;
+
+    // Exclude Stackable Buffs [ie: Blood Reserve]
+    if (GetSpellProto()->StackAmount)
+        return false;
+
+    if (GetCaster()->GetTypeId() == TYPEID_PLAYER)
+    {
+        if (Item* castItem = ((Player*)GetCaster())->GetItemByGuid(GetCastItemGUID()))
+        {
+            // Limit to Weapon-Slots
+            if (castItem->IsEquipped() &&
+               (castItem->GetSlot() == EQUIPMENT_SLOT_MAINHAND ||
+                castItem->GetSlot() == EQUIPMENT_SLOT_OFFHAND))
+            {
+                if (ref->GetCastItemGUID() != GetCastItemGUID())
+                    return true;
+            }
+        }
+    }
+    return false;
 }
 
 /*********************************************************/
