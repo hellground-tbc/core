@@ -221,7 +221,7 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
     void DoCastAOE(uint32 spellId, bool triggered = false);
     void AddSpellToCast(Unit* victim, uint32 spellId, bool triggered = false, Item *castItem = NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0);
     void AddSpellToCastWithScriptText(Unit* victim, uint32 spellId, int32 scriptTextEntry, Unit* scriptTextSource, bool triggered = false,
-                                        Unit* scriptTextTarget = NULL, Item *castItem = NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0);
+                                      Unit* scriptTextTarget = NULL, Item *castItem = NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0);
     void AddAOESpellToCast(uint32 spellId, bool triggered = false);
 
     //Forces spell cast by Id

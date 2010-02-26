@@ -3343,8 +3343,8 @@ bool Unit::AddAura(Aura *Aur)
             if(i2->second->GetCasterGUID() == Aur->GetCasterGUID() || Aur->StackNotByCaster())
             {
                             
-                if(Aur->isWeaponBuffCoexistableWith(i2->second))
-                    continue;
+                //if(Aur->isWeaponBuffCoexistableWith(i2->second))
+                //    continue;
 
                 if (!stackModified)
                 {
