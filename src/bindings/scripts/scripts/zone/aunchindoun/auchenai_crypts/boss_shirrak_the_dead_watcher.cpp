@@ -85,31 +85,26 @@ struct TRINITY_DLL_DECL boss_shirrak_the_dead_watcherAI : public ScriptedAI
             Map *map = m_creature->GetMap();
             Map::PlayerList const &PlayerList = map->GetPlayers();
             for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+            {
                 if (Player* i_pl = i->getSource())
+                {
                     if (i_pl->isAlive() && (dist = i_pl->GetDistance(m_creature)) <= 45)
                     {
-                        if(dist <=45 && dist >=35)
-                        {
-                            Inhibitmagic_Timer = 4300;
+                        if(dist >= 35)
                             m_creature->AddAura(SPELL_INHIBITMAGIC, i_pl);
-                        }
-                        if(dist <35 && dist >=25)
-                        {
-                            Inhibitmagic_Timer = 3300;
+                        if(dist < 35 && dist >= 25)
                             m_creature->AddAura(SPELL_INHIBITMAGIC, i_pl);
-                        }
-                        if(dist <25 && dist >=15)
-                        {
-                            Inhibitmagic_Timer = 3000;
+                        if(dist < 25 && dist >= 15)
                             m_creature->AddAura(SPELL_INHIBITMAGIC, i_pl);
-                        }
                         if(dist < 15)
-                        {
-                            Inhibitmagic_Timer = 3000;
                             m_creature->AddAura(SPELL_INHIBITMAGIC, i_pl);
-                        }
                     }
-        }else Inhibitmagic_Timer -= diff;
+                }
+            }
+            Inhibitmagic_Timer = 3000;
+        }
+        else
+            Inhibitmagic_Timer -= diff;
 
         //Return since we have no target
         if (!UpdateVictim() )
