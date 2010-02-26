@@ -990,7 +990,8 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                         //Fireball_Timer
                         if(!(pInstance->GetData(DATA_KAELTHASEVENT) == 5) && Fireball_Timer < diff)
                         {
-                            AddSpellToCast(m_creature->getVictim(), SPELL_FIREBALL, false);
+                            //AddSpellToCast(m_creature->getVictim(), SPELL_FIREBALL, false);
+                            DoCast(m_creature->getVictim(), SPELL_FIREBALL, false);
                             Fireball_Timer = 5000+rand()%10000;
                         }
                         else 
@@ -999,7 +1000,8 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                         //Phoenix_Timer
                         if(!(pInstance->GetData(DATA_KAELTHASEVENT) == 5) && Phoenix_Timer < diff)
                         {
-                            AddSpellToCast(m_creature, SPELL_SUMMON_PHOENIX, true);
+                            //AddSpellToCast(m_creature, SPELL_SUMMON_PHOENIX, true);
+                            DoCast(m_creature, SPELL_SUMMON_PHOENIX, true);
                             switch(rand()%2)
                             {
                                 case 0: DoScriptText(SAY_SUMMON_PHOENIX1, m_creature); break;
@@ -1591,7 +1593,8 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
         if(Fireball_Timer < diff)
         {
             if(m_creature->GetDistance2d(m_creature->getVictim()) < 35.0f)
-                AddSpellToCast(m_creature->getVictim(), SPELL_CAPERNIAN_FIREBALL);
+                //AddSpellToCast(m_creature->getVictim(), SPELL_CAPERNIAN_FIREBALL);
+                DoCast(m_creature->getVictim(), SPELL_CAPERNIAN_FIREBALL);
             Fireball_Timer = 2000;   // spam fireball casts if ready
         }
         else 
@@ -1604,12 +1607,16 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
             target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true);
 
             if(target)
-                AddSpellToCast(target, SPELL_CONFLAGRATION);
+                //AddSpellToCast(target, SPELL_CONFLAGRATION);
+                DoCast(target, SPELL_CONFLAGRATION);
             else
-                AddSpellToCast(m_creature->getVictim(), SPELL_CONFLAGRATION);
+                //AddSpellToCast(m_creature->getVictim(), SPELL_CONFLAGRATION);
+                DoCast(m_creature->getVictim(), SPELL_CONFLAGRATION);
 
             Conflagration_Timer = 10000+rand()%5000;
-        }else Conflagration_Timer -= diff;
+        }
+        else
+            Conflagration_Timer -= diff;
 
         //ArcaneExplosion_Timer
         if(ArcaneExplosion_Timer < diff)
@@ -1631,7 +1638,9 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
                 ForceAOESpellCast(SPELL_ARCANE_EXPLOSION);
 
             ArcaneExplosion_Timer = 2000+rand()%2000;
-        }else ArcaneExplosion_Timer -= diff;
+        }
+        else
+            ArcaneExplosion_Timer -= diff;
 
         CastNextSpellIfAnyAndReady();
         //Do NOT deal any melee damage.

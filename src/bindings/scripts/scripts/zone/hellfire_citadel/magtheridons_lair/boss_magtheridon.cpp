@@ -372,7 +372,9 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public ScriptedAI
             // to avoid earthquake interruption
             if(!m_creature->hasUnitState(UNIT_STAT_STUNNED))
             {
-                AddSpellToCastWithScriptText(m_creature, SPELL_BLASTNOVA, EMOTE_BLASTNOVA, m_creature);
+                //AddSpellToCastWithScriptText(m_creature, SPELL_BLASTNOVA, EMOTE_BLASTNOVA, m_creature);
+                DoScriptText(EMOTE_BLASTNOVA, m_creature);
+                DoCast(m_creature, SPELL_BLASTNOVA, true);
                 BlastNova_Timer = 60000;
             }
         }
@@ -381,7 +383,8 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public ScriptedAI
 
         if(Quake_Timer < diff)
         {
-            AddSpellToCast(m_creature, SPELL_QUAKE_TRIGGER);
+            //AddSpellToCast(m_creature, SPELL_QUAKE_TRIGGER);
+            DoCast(m_creature, SPELL_QUAKE_TRIGGER);
             Quake_Timer = 50000;
         }
         else

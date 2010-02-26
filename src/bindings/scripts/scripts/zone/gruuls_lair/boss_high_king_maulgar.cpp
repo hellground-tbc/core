@@ -246,21 +246,27 @@ struct TRINITY_DLL_DECL boss_high_king_maulgarAI : public ScriptedAI
         }else ArcingSmash_Timer -= diff;
 
         //Whirlwind_Timer
-               if (Whirlwind_Timer < diff)
-               {
-                   if(Charging_Timer < 15000)  //prevents casting Charge when in whirlwind
-                       Charging_Timer = 15000+rand()%2000;
+        if (Whirlwind_Timer < diff)
+        {
+            if(Charging_Timer < 15000)  //prevents casting Charge when in whirlwind
+                Charging_Timer = 15000+rand()%2000;
 
-                    AddSpellToCast(m_creature->getVictim(), SPELL_WHIRLWIND);
-                    Whirlwind_Timer = 55000;
-               }else Whirlwind_Timer -= diff;
+            //AddSpellToCast(m_creature->getVictim(), SPELL_WHIRLWIND);
+            DoCast(m_creature->getVictim(),SPELL_WHIRLWIND);
+                    
+            Whirlwind_Timer = 55000;
+        }
+        else
+            Whirlwind_Timer -= diff;
 
         //MightyBlow_Timer
         if (MightyBlow_Timer < diff)
         {
             DoCast(m_creature->getVictim(), SPELL_MIGHTY_BLOW, true);
             MightyBlow_Timer = 30000+rand()%10000;
-        }else MightyBlow_Timer -= diff;
+        }
+        else
+            MightyBlow_Timer -= diff;
 
         //Entering Phase 2
         if(!Phase2 && (m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 50)
@@ -284,17 +290,22 @@ struct TRINITY_DLL_DECL boss_high_king_maulgarAI : public ScriptedAI
                 if (target)
                 {
                     AttackStart(target);
-                    AddSpellToCast(target, SPELL_BERSERKER_C);
+                    //AddSpellToCast(target, SPELL_BERSERKER_C);
+                    DoCast(target,SPELL_BERSERKER_C);
                 }
                 Charging_Timer = 20000;
-            }else Charging_Timer -= diff;
+            }
+            else
+                Charging_Timer -= diff;
 
             //Intimidating Roar
             if(Roar_Timer < diff)
             {
                 DoCast(m_creature, SPELL_ROAR);
                 Roar_Timer = 40000+(rand()%10000);
-            }else Roar_Timer -= diff;
+            }
+            else
+                Roar_Timer -= diff;
         }
 
         DoMeleeAttackIfReady();
@@ -524,6 +535,7 @@ struct TRINITY_DLL_DECL boss_blindeye_the_seerAI : public ScriptedAI
 
     uint32 Shield_PoH_Timer;       // always cast sequence of shield and Prayer of Healing
     uint32 Heal_Timer;
+    bool shieldCasted;
 
     ScriptedInstance* pInstance;
 
@@ -531,6 +543,7 @@ struct TRINITY_DLL_DECL boss_blindeye_the_seerAI : public ScriptedAI
     {
         Shield_PoH_Timer = 15000;
         Heal_Timer = 7000 + rand()%3000;
+        shieldCasted = false;
 
         //reset encounter
         if (pInstance)
@@ -586,9 +599,20 @@ struct TRINITY_DLL_DECL boss_blindeye_the_seerAI : public ScriptedAI
         //GreaterPowerWordShield_Timer
         if(Shield_PoH_Timer < diff)
         {
-            AddSpellToCast(m_creature, SPELL_GREATER_PW_SHIELD);
-            AddSpellToCast(m_creature, SPELL_PRAYEROFHEALING);
-            Shield_PoH_Timer = 30000 + rand()%10000;
+            //AddSpellToCast(m_creature, SPELL_GREATER_PW_SHIELD);
+            if(!shieldCasted)
+            {
+                DoCast(m_creature,SPELL_GREATER_PW_SHIELD);
+                shieldCasted = true;
+                Shield_PoH_Timer = 500;
+            }
+            else
+            {
+                //AddSpellToCast(m_creature, SPELL_PRAYEROFHEALING);
+                DoCast(m_creature, SPELL_PRAYEROFHEALING);
+                shieldCasted = false;
+                Shield_PoH_Timer = 30000 + rand()%10000;
+            }
         }
         else
             Shield_PoH_Timer -= diff;
@@ -596,7 +620,8 @@ struct TRINITY_DLL_DECL boss_blindeye_the_seerAI : public ScriptedAI
         //Heal_Timer
         if(Heal_Timer < diff)
         {
-            AddSpellToCast(m_creature, SPELL_HEAL);
+            //AddSpellToCast(m_creature, SPELL_HEAL);
+            DoCast(m_creature, SPELL_HEAL);
             Heal_Timer = 10000 + rand()%25000;
         }
         else
@@ -687,7 +712,8 @@ struct TRINITY_DLL_DECL boss_krosh_firehandAI : public ScriptedAI
         {
             // will cast only when in range of spell
             if(m_creature->GetDistance2d(m_creature->getVictim()) < 20)
-                AddSpellToCast(m_creature->getVictim(), SPELL_GREATER_FIREBALL);
+                //AddSpellToCast(m_creature->getVictim(), SPELL_GREATER_FIREBALL);
+                DoCast(m_creature->getVictim(), SPELL_GREATER_FIREBALL);
             GreaterFireball_Timer = 3000;
         }
         else 
