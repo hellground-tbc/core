@@ -419,10 +419,10 @@ void CliRunnable::run()
                 continue;
             }
         fflush(stdout);
-         #if PLATFORM != WINDOWS
-            sWorld.QueueCliCommand(&utf8print,command.c_str());
+        sWorld.QueueCliCommand(&utf8print,command.c_str());
+        #if PLATFORM != WINDOWS
         add_history(command.c_str());
-         #endif
+        #endif
 
     }
         else if (feof(stdin))
