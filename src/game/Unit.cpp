@@ -2930,6 +2930,7 @@ void Unit::_UpdateAutoRepeatSpell()
     //apply delay
     if ( m_AutoRepeatFirstCast && getAttackTimer(RANGED_ATTACK) < 500 )
         setAttackTimer(RANGED_ATTACK,500);
+
     m_AutoRepeatFirstCast = false;
 
     //castroutine

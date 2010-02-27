@@ -60,12 +60,24 @@ _logoutTime(0), m_inQueue(false), m_playerLoading(false), m_playerLogout(false),
 /// WorldSession destructor
 WorldSession::~WorldSession()
 {
+    if(!sWorld.RemoveQueuedPlayer(this))
+    {
+        if(sWorld.getConfig(CONFIG_INTERVAL_DISCONNECT_TOLERANCE))
+        {
+            std::pair<uint32, time_t> tPair;
+            tPair.first = GetAccountId();
+            tPair.second = time(NULL);
+
+            sWorld.addDisconnectTime(tPair);
+        }
+    }
+    
     if(objmgr.IsUnqueuedAccount(GetAccountId()))
         sWorld.unqueuedSessions()--;
 
     ///- unload player if not unloaded
     if (_player)
-        LogoutPlayer (true);
+        LogoutPlayer(true);
 
     /// - If have unclosed socket, close it
     if (m_Socket)

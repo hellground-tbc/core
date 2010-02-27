@@ -542,6 +542,7 @@ class World
         char const* GetScriptsVersion() { return m_ScriptsVersion.c_str(); }
 
         void RecordTimeDiff(const char * text, ...);
+        void addDisconnectTime(std::pair<uint32,time_t> tPair){ m_disconnects.insert(tPair); }
         ACE_Thread_Mutex m_spellUpdateLock;
     protected:
         void _UpdateGameTime();

@@ -510,7 +510,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
                         Nordrassil->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                         Nordrassil->SetUInt32Value(UNIT_FIELD_DISPLAYID, 11686);
                         //AddSpellToCast(Nordrassil, SPELL_DRAIN_WORLD_TREE);
-                        CastSpell(Nordrassil, SPELL_DRAIN_WORLD_TREE);
+                        DoCast(Nordrassil, SPELL_DRAIN_WORLD_TREE);
                         IsChanneling = true;
                     }
                 }
