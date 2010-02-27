@@ -102,13 +102,21 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
             pInstance->SetData(DATA_VOIDREAVEREVENT, IN_PROGRESS);
     }
     
-    void SpellHit(Unit* caster,const SpellEntry* spell)
+    void SpellHitTarget(Unit *target, SpellEntry *spell)
     {
-        for(uint8 i = 0; i<3; i++)
-            if(spell->Effect[i] == SPELL_EFFECT_INTERRUPT_CAST)
-                return;
+        if(spell->Id == SPELL_KNOCK_AWAY)
+        {
+            Unit *target = NULL;
+            target = SelectUnit(SELECT_TARGET_TOPAGGRO,0);
+            if(target && DoGetThreat(target))
+                DoModifyThreatPercent(target,-25);
+            
+            target = SelectUnit(SELECT_TARGET_TOPAGGRO,0);
+            if(target)
+                m_creature->Attack(target,true);
+        }
     }
-    
+
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim() )
@@ -123,7 +131,9 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
                 DoZoneInCombat();
             
             Check_Timer = 3000;
-        }else Check_Timer -= diff;
+        }
+        else
+            Check_Timer -= diff;
 
         // Pounding
         if(Pounding_Timer < diff)
@@ -141,7 +151,9 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
                 KnockAway_Timer = 3100;
 
             Pounding_Timer = 15000;                         //cast time(3000) + cooldown time(12000)
-        }else Pounding_Timer -= diff;
+        }
+        else
+            Pounding_Timer -= diff;
 
         // Arcane Orb
         if(ArcaneOrb_Timer < diff)
@@ -168,7 +180,9 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
 
 
             ArcaneOrb_Timer = 3000 + rand()%1001;
-        }else ArcaneOrb_Timer -= diff;
+        }
+        else
+            ArcaneOrb_Timer -= diff;
 
         // Single Target knock back, reduces aggro
         if(KnockAway_Timer < diff)
@@ -176,17 +190,10 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
             m_creature->InterruptNonMeleeSpells(false);
             DoCast(m_creature->getVictim(),SPELL_KNOCK_AWAY);
 
-            Unit *target = NULL;
-            target = SelectUnit(SELECT_TARGET_TOPAGGRO,0);
-            if(DoGetThreat(target))
-                DoModifyThreatPercent(target,-25);
-            
-            target = SelectUnit(SELECT_TARGET_TOPAGGRO,0);
-            if(target)
-                m_creature->Attack(target,true);
-
             KnockAway_Timer = 30000;
-        }else KnockAway_Timer -= diff;
+        }
+        else
+            KnockAway_Timer -= diff;
 
         //Berserk
         if(Berserk_Timer < diff)
@@ -194,7 +201,9 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
             m_creature->InterruptNonMeleeSpells(false);
             DoCast(m_creature,SPELL_BERSERK);
             Berserk_Timer = 600000;
-        }else Berserk_Timer -= diff;
+        }
+        else
+            Berserk_Timer -= diff;
 
         m_creature->RemoveAurasWithDispelType(DISPEL_POISON);
         DoMeleeAttackIfReady();

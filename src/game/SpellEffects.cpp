@@ -708,7 +708,7 @@ void Spell::EffectDummy(uint32 i)
                             GameObject* target = NULL;
                             Trinity::AllGameObjectsWithEntryInGrid go_check(185549);
                             Trinity::GameObjectSearcher<Trinity::AllGameObjectsWithEntryInGrid> searcher(target, go_check);
-                            
+
                             // Find GO that matches this trigger:
                             unitTarget->VisitNearbyGridObject(3, searcher);
 
@@ -735,7 +735,7 @@ void Spell::EffectDummy(uint32 i)
                         }
                     else
                         spell_id = (rand()%2) ? 29848 : 31718;     // Polymorph: Sheep : Enveloping Winds
-                   
+
                     uint8 backfire = rand()%5;
                     if(spell_id == 29848 && !backfire)
                         m_caster->CastSpell(m_caster,spell_id,true); // backfire with poly chance
@@ -958,11 +958,11 @@ void Spell::EffectDummy(uint32 i)
                     WorldLocation wLoc;
                     Creature* cTarget = (Creature*)unitTarget;
                     cTarget->GetPosition(wLoc);
-                    float ang = cTarget->GetAngle(wLoc.x,wLoc.y);                    
-                    
+                    float ang = cTarget->GetAngle(wLoc.x,wLoc.y);
+
                     if(Creature * rat = m_caster->SummonCreature(13017,wLoc.x,wLoc.y,wLoc.z,ang,TEMPSUMMON_TIMED_DESPAWN,600000))
                         rat->GetMotionMaster()->MoveFollow(m_caster, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
-                    
+
                     cTarget->setDeathState(JUST_DIED);
                     cTarget->RemoveCorpse();
                     cTarget->SetHealth(0);                  // just for nice GM-mode view
@@ -1262,7 +1262,7 @@ void Spell::EffectDummy(uint32 i)
                 {
                     if(unitTarget->GetTypeId() != TYPEID_PLAYER)
                         return;
-                    
+
                     m_caster->CastSpell(unitTarget,40932,true);
                     break;
                 }
@@ -1397,6 +1397,124 @@ void Spell::EffectDummy(uint32 i)
 
                     m_caster->CastSpell(m_caster, 30452, true, NULL);
                     return;
+                }
+                case 39992:                                 //Needle Spine Targeting
+                {
+                    printf ("\n1\n");
+                    //create list of players in range
+                    Map::PlayerList const  &pList = m_caster->GetMap()->GetPlayers();
+                    std::list<Unit*> uList;
+                    printf ("\n2\n");
+                    for (Map::PlayerList::const_iterator itr = pList.begin(); itr != pList.end(); ++itr)
+                        if (!itr->getSource()->isGameMaster() && itr->getSource()->isAlive())
+                            uList.push_back((Unit*)(itr->getSource()));
+                    printf ("\n3\n");
+                    for (std::list<Unit*>::iterator itr = uList.begin(); itr != uList.end(); ++itr)
+                        if (((Creature*)(*itr))->GetDistance(m_caster) > 80)        //Needle Spine Targeting range is 80 yd
+                            uList.erase(itr);
+                    printf ("\n4\n");
+                    Unit* targets[3];
+                    //get first target, from this target we will find 2 other targets in cone
+                    uint32 temp = rand()%(uList.size());        //select random target from list
+                    std::list<Unit*>::iterator itr = uList.begin();
+                    uint8 i = 0;
+                    printf ("\n5\n");
+                    while ( i < temp)
+                    {
+                        itr++;
+                        i++;
+                    }
+                    printf ("\n6\n");
+                    if (!(*itr))
+                    {
+                        debug_log("SpellEffects::EffectDummy spell %i selected target0 (temp: %i) don't exist. List size: %i", 39992, temp, uList.size());
+                        break;
+                    }
+                    printf ("\n7\n");
+                    targets[0] = (*itr);
+                    printf ("\n8\n");
+                    if (m_caster->GetUInt64Value(UNIT_FIELD_TARGET) != targets[0]->GetGUID())
+                        m_caster->SetUInt64Value(UNIT_FIELD_TARGET, targets[0]->GetGUID());
+                    printf ("\n9\n");
+                    uList.erase(itr);        //remove first target from list
+                    printf ("\n10\n");
+                    printf ("\nprzed delete %i \n", uList.size());
+                    std::list<Unit*>::iterator toDelete;
+                    for (itr = uList.begin(); itr != uList.end();)
+                    {
+                         if (/*!m_caster->HasInArc(0.3 * M_PI, (*itr))*/ (m_caster->GetAngle((*itr)->GetPositionX(), (*itr)->GetPositionY()) > (0.3 * M_PI)) || (m_caster->GetAngle((*itr)->GetPositionX(), (*itr)->GetPositionY()) < (1.7 * M_PI)))        //remove if not in cone
+                         {
+                             toDelete = itr;
+                             ++itr;
+                             uList.erase(toDelete);
+                         }
+                         else
+                            ++itr;
+                    }
+                    printf ("\npo delete %i \n", uList.size());
+                    printf ("\n0.3 * M_PI: %f\n", 0.3 * M_PI);
+                    printf ("\n1.7 * M_PI: %f\n", 1.7 * M_PI);
+                    printf ("\n11\n");
+                    if (!uList.empty())
+                    {
+                        temp = rand()%(uList.size());
+
+                        itr = uList.begin();
+                        printf ("\n12\n");
+                        i = 0;
+                        while ( i < temp)
+                        {
+                            itr++;
+                            i++;
+                        }
+                        printf ("\n13\n");
+                        targets[1] = (*itr);
+                        printf ("\n14\n");
+                        uList.erase(itr);
+                        printf ("\n15\n");
+                        if (!uList.empty())
+                        {
+                            temp = rand()%(uList.size());
+
+                            itr = uList.begin();
+                            printf ("\n16\n");
+                            i = 0;
+                            while ( i < temp)
+                            {
+                                itr++;
+                                i++;
+                            }
+                            printf ("\n17\n");
+                            targets[2] = (*itr);
+                        }
+                        else
+                            targets[2] = NULL;
+                    }
+                    else
+                        targets[1] = NULL;
+                    printf ("\n18\n");
+                    //const SpellEntry *tempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(39835);
+                    //printf ("\n19\n");
+                    //Spell tmpSpell(m_caster, tempSpell, false);
+                    //printf ("\n20\n");
+                    //for (uint8 i = 0; i < 3; i++)
+                    //    if (targets[i])
+                    //        tmpSpell.AddUnitTarget(targets[i], 0);
+                    printf ("\n21\n");
+                    if (targets[0])
+                        m_caster->CastSpell(targets[0], 39835u, false);
+
+                    if (targets[1])
+                        m_caster->CastSpell(targets[1], 39835u, false);
+
+                    if (targets[2])
+                        m_caster->CastSpell(targets[2], 39835u, false);
+
+                    printf ("\n22\n");
+                    if (m_caster->GetUInt64Value(UNIT_FIELD_TARGET) != m_caster->getVictim()->GetGUID())
+                        m_caster->SetUInt64Value(UNIT_FIELD_TARGET, m_caster->getVictim()->GetGUID());
+                    printf ("\n23\n");
+                    break;
                 }
             }
 
@@ -5817,20 +5935,20 @@ void Spell::EffectMomentMove(uint32 i)
         float dx,dy,dz;
         float angle = unitTarget->GetOrientation();
         unitTarget->GetPosition(cx,cy,cz);
-            
+
         //Check use of vamps//
         bool useVmap = false;
         bool swapZone = true;
 
         if( VMAP::VMapFactory::createOrGetVMapManager()->isHeightCalcEnabled() )
             useVmap = true;
-            
+
         //Going foward 0.5f until max distance
         for(float i=0.5f; i<dis; i+=0.5f)
         {
             unitTarget->GetNearPoint2D(dx,dy,i,angle);
             dz = unitTarget->GetMap()->GetHeight(dx, dy, cz, useVmap);
-               
+
             //Prevent climbing and go around object maybe 2.0f is to small? use 3.0f?
             if( (dz-cz) < 2.0f && (dz-cz) > -2.0f && (unitTarget->IsWithinLOS(dx, dy, dz)))
             {
@@ -5857,7 +5975,7 @@ void Spell::EffectMomentMove(uint32 i)
                 }
             }
         }
-            
+
         //Prevent Falling during swap building/outerspace
         unitTarget->UpdateGroundPositionZ(cx, cy, cz);
 
@@ -6350,8 +6468,8 @@ void Spell::EffectTransmitted(uint32 effIndex)
         {
             fx = 36.69+irand(-8,8);//random place for the bobber
             fy = -416.38+irand(-8,8);
-            fz = -19.9645; //serpentshrine water level        
-        
+            fz = -19.9645; //serpentshrine water level
+
         }
         else if ( !cMap->IsInWater(fx,fy,fz-0.5f)) // Hack to prevent fishing bobber from failing to land on fishing hole
         { // but this is not proper, we really need to ignore not materialized objects

@@ -878,6 +878,7 @@ void Aura::_AddAura()
 {
     if (!GetId())
         return;
+
     if(!m_target)
         return;
 
@@ -891,7 +892,7 @@ void Aura::_AddAura()
         for(Unit::AuraMap::const_iterator itr = m_target->GetAuras().lower_bound(spair); itr != m_target->GetAuras().upper_bound(spair); ++itr)
         {
             // allow use single slot only by auras from same caster
-            if(itr->second->GetCasterGUID()==GetCasterGUID())
+            if(itr->second->GetCasterGUID() == GetCasterGUID())
             {
                 secondaura = true;
                 slot = itr->second->GetAuraSlot();
@@ -937,7 +938,7 @@ void Aura::_AddAura()
     if (getDiminishGroup() != DIMINISHING_NONE )
         m_target->ApplyDiminishingAura(getDiminishGroup(),true);
 
-    int max_slot = m_target->GetTypeId() == TYPEID_PLAYER ? MAX_POSITIVE_AURAS : 16;
+    int max_slot = m_target->isCharmedOwnedByPlayerOrPlayer() ? MAX_POSITIVE_AURAS : 16;
 
     // passive auras (except totem auras) do not get placed in the slots
     // area auras with SPELL_AURA_NONE are not shown on target
@@ -1042,7 +1043,7 @@ void Aura::_RemoveAura()
         Unit::spellEffectPair spair = Unit::spellEffectPair(GetId(), i);
         for(Unit::AuraMap::const_iterator itr = m_target->GetAuras().lower_bound(spair); itr != m_target->GetAuras().upper_bound(spair); ++itr)
         {
-            if(itr->second->GetAuraSlot()==slot)
+            if(itr->second->GetAuraSlot() == slot)
             {
                 samespell = true;
 
@@ -1160,6 +1161,37 @@ void Aura::UpdateSlotCounterAndDuration()
         SetAuraApplication(slot, m_stackAmount-1);
 
     UpdateAuraDuration();
+}
+
+bool Aura::isWeaponBuffCoexistableWith(Aura *ref)
+{
+     // Exclude Debuffs
+    if (!ref || !IsPositiveSpell(GetId()))
+        return false;
+
+    // Exclude Non-generic Buffs
+    if (GetSpellProto()->SpellFamilyName != SPELLFAMILY_GENERIC || GetId() == 42976)
+        return false;
+
+    // Exclude Stackable Buffs [ie: Blood Reserve]
+    if (GetSpellProto()->StackAmount)
+        return false;
+
+    if (GetCaster()->GetTypeId() == TYPEID_PLAYER)
+    {
+        if (Item* castItem = ((Player*)GetCaster())->GetItemByGuid(GetCastItemGUID()))
+        {
+            // Limit to Weapon-Slots
+            if (castItem->IsEquipped() &&
+               (castItem->GetSlot() == EQUIPMENT_SLOT_MAINHAND ||
+                castItem->GetSlot() == EQUIPMENT_SLOT_OFFHAND))
+            {
+                if (ref->GetCastItemGUID() != GetCastItemGUID())
+                    return true;
+            }
+        }
+    }
+    return false;
 }
 
 /*********************************************************/
@@ -1546,8 +1578,33 @@ void Aura::TriggerSpell()
                             caster->CastSpell(m_target,spell_id,true);
                         return;
                     }
-//                    // Gravity Lapse
-//                    case 34480: break;
+                    // Gravity Lapse
+                    case 34480:
+                    {
+                        int32 value = 250 + rand()%250;
+                        float height = caster->GetPositionZ();
+                    
+                        if(caster->HasAura(34480, 1) && height < 55)
+                            {
+                                int32 GLduration = caster->GetAura(34480, 1)->GetAuraDuration();
+                                
+                                caster->CastCustomSpell(m_target, 34480, &value, NULL, NULL, true);  //knockback all that are too low
+                                if(Aura *aur = caster->GetAura(34480, 1))
+                                    aur->SetAuraDuration(GLduration);   //do not change spell duration each time knockback is applied
+                            }
+
+                        if(caster->HasAura(39432, 0) && caster->HasUnitMovementFlag(MOVEMENTFLAG_FALLING) && height < 70)
+                        {
+                            int32 FlightDuration = caster->GetAura(39432, 0)->GetAuraDuration();
+
+                            caster->RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING);    //deal fall damage, and reapply flight aura without duration changes
+                            caster->CastSpell(m_target, 39432, true);
+                            if(Aura* aur = caster->GetAura(39432, 0))
+                                aur->SetAuraDuration(FlightDuration);
+                        }
+
+                        break;
+                    }
 //                    // Tornado
 //                    case 34683: break;
 //                    // Frostbite Rotate
@@ -2465,14 +2522,7 @@ void Aura::HandleAuraHover(bool apply, bool Real)
     if(!Real)
         return;
 
-    WorldPacket data;
-    if(apply)
-        data.Initialize(SMSG_MOVE_SET_HOVER, 8+4);
-    else
-        data.Initialize(SMSG_MOVE_UNSET_HOVER, 8+4);
-    data.append(m_target->GetPackGUID());
-    data << uint32(0);
-    m_target->SendMessageToSet(&data,true);
+    m_target->setHover(apply);
 }
 
 void Aura::HandleWaterBreathing(bool apply, bool Real)
@@ -4243,17 +4293,17 @@ void Aura::HandleAuraModResistanceExclusive(bool apply, bool Real)
         {
             if(apply) 
             {
-                float diff = float(GetModifierValue()) - m_target->GetModifierValue(UnitMods(UNIT_MOD_RESISTANCE_START + x), BASE_VALUE);
+                float diff = float(GetModifierValue()) - m_target->GetModifierValue(UnitMods(UNIT_MOD_RESISTANCE_START + x), TOTAL_VALUE);
                 if(diff > 0)
                 {
-                    m_target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), BASE_VALUE, diff, apply);
+                    m_target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), TOTAL_VALUE, diff, apply);
                     if(m_target->GetTypeId() == TYPEID_PLAYER)
                         m_target->ApplyResistanceBuffModsMod(SpellSchools(x),m_positive,diff, apply);
                 }
             }
             else
             {
-                if( float(GetModifierValue()) >= m_target->GetModifierValue(UnitMods(UNIT_MOD_RESISTANCE_START + x), BASE_VALUE))
+                if( float(GetModifierValue()) >= m_target->GetModifierValue(UnitMods(UNIT_MOD_RESISTANCE_START + x), TOTAL_VALUE))
                 {
                     float maxModifier = 0;
                     Unit::AuraList auraResistanceExclusive = m_target->GetAurasByType(SPELL_AURA_MOD_RESISTANCE_EXCLUSIVE);
@@ -4263,8 +4313,8 @@ void Aura::HandleAuraModResistanceExclusive(bool apply, bool Real)
                             maxModifier = (*it)->GetModifierValue();
                     }
 
-                    float diff = m_target->GetModifierValue(UnitMods(UNIT_MOD_RESISTANCE_START + x), BASE_VALUE) - maxModifier;
-                    m_target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), BASE_VALUE, diff, apply);
+                    float diff = m_target->GetModifierValue(UnitMods(UNIT_MOD_RESISTANCE_START + x), TOTAL_VALUE) - maxModifier;
+                    m_target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), TOTAL_VALUE, diff, apply);
                     if(m_target->GetTypeId() == TYPEID_PLAYER)
                         m_target->ApplyResistanceBuffModsMod(SpellSchools(x),m_positive,diff, apply);
                 }
@@ -4279,7 +4329,7 @@ void Aura::HandleAuraModResistance(bool apply, bool Real)
     {
         if(m_modifier.m_miscvalue & int32(1<<x))
         {
-            m_target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), TOTAL_VALUE, float(GetModifierValue()), apply);
+            m_target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), BASE_VALUE, float(GetModifierValue()), apply);
             if(m_target->GetTypeId() == TYPEID_PLAYER || ((Creature*)m_target)->isPet())
                 m_target->ApplyResistanceBuffModsMod(SpellSchools(x),m_positive,GetModifierValue(), apply);
         }
@@ -4343,7 +4393,7 @@ void Aura::HandleModBaseResistance(bool apply, bool Real)
     {
         for(int i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; i++)
             if(m_modifier.m_miscvalue & (1<<i))
-                m_target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + i), TOTAL_VALUE, float(GetModifierValue()), apply);
+                m_target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + i), BASE_VALUE, float(GetModifierValue()), apply);
     }
 }
 
@@ -5076,7 +5126,7 @@ void Aura::HandleModDamagePercentDone(bool apply, bool Real)
         }
         // For show in client
         if(m_target->GetTypeId() == TYPEID_PLAYER)
-            m_target->ApplyModSignedFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_PCT,m_modifier.m_amount/100.0f,apply);
+            m_target->ApplyModSignedFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_PCT,GetModifierValue()/100.0f,apply);
     }
 
     // Skip non magic case for speedup
@@ -5096,7 +5146,7 @@ void Aura::HandleModDamagePercentDone(bool apply, bool Real)
     // Send info to client
     if(m_target->GetTypeId() == TYPEID_PLAYER)
         for(int i = SPELL_SCHOOL_HOLY; i < MAX_SPELL_SCHOOL; ++i)
-            m_target->ApplyModSignedFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_PCT+i,m_modifier.m_amount/100.0f,apply);
+            m_target->ApplyModSignedFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_PCT+i,GetModifierValue()/100.0f,apply);
 }
 
 void Aura::HandleModOffhandDamagePercent(bool apply, bool Real)

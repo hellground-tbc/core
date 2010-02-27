@@ -53,6 +53,7 @@ struct TRINITY_DLL_DECL boss_pathaleon_the_calculatorAI : public ScriptedAI
     boss_pathaleon_the_calculatorAI(Creature *c) : ScriptedAI(c), summons(m_creature)
     {
         HeroicMode = m_creature->GetMap()->IsHeroic();
+        m_creature->GetPosition(wLoc);
     }
 
     uint32 Summon_Timer;
@@ -61,6 +62,8 @@ struct TRINITY_DLL_DECL boss_pathaleon_the_calculatorAI : public ScriptedAI
     uint32 ArcaneTorrent_Timer;
     uint32 Domination_Timer;
     uint32 ArcaneExplosion_Timer;
+    uint32 Check_Timer;
+    WorldLocation wLoc;
     bool HeroicMode;
     bool Enraged;
 
@@ -121,6 +124,17 @@ struct TRINITY_DLL_DECL boss_pathaleon_the_calculatorAI : public ScriptedAI
             DoScriptText(SAY_SUMMON, m_creature);
             Summon_Timer = 30000 + rand()%15000;
         }else Summon_Timer -= diff;
+        
+        if(Check_Timer < diff)
+        {
+            if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 30.0f)
+                EnterEvadeMode();
+            else
+                DoZoneInCombat();
+                Check_Timer = 3000;
+            }
+            else 
+                Check_Timer -= diff;
 
         if(ManaTap_Timer < diff)
         {

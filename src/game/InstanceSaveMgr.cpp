@@ -138,8 +138,9 @@ void InstanceSaveManager::RemoveInstanceSave(uint32 InstanceId)
         // save the resettime for normal instances only when they get unloaded
         if(time_t resettime = itr->second->GetResetTimeForDB())
             CharacterDatabase.PExecute("UPDATE instance SET resettime = '"I64FMTD"' WHERE id = '%u'", (uint64)resettime, InstanceId);
-        delete itr->second;
+        InstanceSave *temp = itr->second;
         m_instanceSaveById.erase(itr);
+        delete temp;
     }
 }
 

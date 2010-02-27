@@ -258,6 +258,9 @@ Player::Player (WorldSession *session): Unit()
     m_speakTime = 0;
     m_speakCount = 0;
 
+    m_GMfollowtarget_GUID = 0;
+    m_GMfollow_GUID = 0;
+
     m_objectType |= TYPEMASK_PLAYER;
     m_objectTypeId = TYPEID_PLAYER;
 
@@ -428,6 +431,8 @@ Player::Player (WorldSession *session): Unit()
     m_declinedname = NULL;
 
     m_isActive = true;
+    
+    updateLock = false;
 
     m_farsightVision = false;
 
@@ -484,7 +489,19 @@ void Player::CleanupsBeforeDelete()
     {
         TradeCancel(false);
         DuelComplete(DUEL_INTERUPTED);
+
+        if (getFollowingGM())
+        {
+            Player *gamemaster = Unit::GetPlayer(getFollowingGM());
+            if (gamemaster)
+            {
+                gamemaster->setFollowTarget(0);
+                gamemaster->GetMotionMaster()->Clear(true);
+            }
+            setGMFollow(0);
+        }
     }
+
     Unit::CleanupsBeforeDelete();
 }
 
@@ -1102,8 +1119,10 @@ void Player::CharmAI(bool apply)
 
 void Player::Update( uint32 p_time )
 {
-    if(!IsInWorld())
+    if(!IsInWorld() || updateLock)
         return;
+    
+    updateLock = true;
 
     // undelivered mail
     if(m_nextMailDelivereTime && m_nextMailDelivereTime <= time(NULL))
@@ -1116,6 +1135,7 @@ void Player::Update( uint32 p_time )
     }
 
     for(std::map<uint32, uint32>::iterator itr = m_globalCooldowns.begin(); itr != m_globalCooldowns.end(); ++itr)
+    {
         if(itr->second)
         {
             if(itr->second > p_time)
@@ -1123,6 +1143,7 @@ void Player::Update( uint32 p_time )
             else
                 itr->second = 0;
         }
+    }
 
     Unit::Update( p_time );
 
@@ -1392,6 +1413,7 @@ void Player::Update( uint32 p_time )
         RemovePet(pet, PET_SAVE_NOT_IN_SLOT, true);
         return;
     }
+    updateLock = false;
 }
 
 void Player::setDeathState(DeathState s)
@@ -1765,6 +1787,20 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             if(pvpInfo.inHostileArea)
                 CastSpell(this, 2479, true);
         }
+
+        if (getFollowingGM())
+        {
+            Player *gamemaster = Unit::GetPlayer(getFollowingGM());
+            if (gamemaster)
+                gamemaster->TeleportTo(mapid, x, y, z, orientation);
+            else
+                setGMFollow(0);
+        }
+        else if (getFollowTarget())
+        {
+            setFollowTarget(0);
+            GetMotionMaster()->Clear(true);
+        }
     }
     else
     {
@@ -1844,6 +1880,20 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
                 }
                 GetSession()->SendPacket( &data );
                 SendSavedInstances();
+
+                if (getFollowingGM())
+                {
+                    Player *gamemaster = Unit::GetPlayer(getFollowingGM());
+                    if (gamemaster)
+                        gamemaster->TeleportTo(mapid, x, y, z, orientation);
+                    else
+                        setGMFollow(0);
+                }
+                else if (getFollowTarget())
+                {
+                    setFollowTarget(0);
+                    GetMotionMaster()->Clear(true);
+                }
 
                 // remove from old map now
                 if(oldmap) oldmap->Remove(this, false);
@@ -3121,8 +3171,9 @@ void Player::removeSpell(uint32 spell_id, bool disabled)
     {
         if(itr->second->state == PLAYERSPELL_NEW)
         {
-            delete itr->second;
+            PlayerSpell *temp = itr->second;
             m_spells.erase(itr);
+            delete temp;
         }
         else
             itr->second->state = PLAYERSPELL_REMOVED;
@@ -3451,8 +3502,9 @@ bool Player::_removeSpell(uint16 spell_id)
     PlayerSpellMap::iterator itr = m_spells.find(spell_id);
     if (itr != m_spells.end())
     {
-        delete itr->second;
+        PlayerSpell *temp = itr->second;
         m_spells.erase(itr);
+        delete temp;
         return true;
     }
     return false;
@@ -19511,13 +19563,14 @@ void Player::HandleFallDamage(MovementInfo& movementInfo)
 
     // calculate total z distance of the fall
     float z_diff = m_lastFallZ - movementInfo.z;
+    uint32 areaID = GetMap()->GetId();
     sLog.outDebug("zDiff = %f", z_diff);
 
     //Players with low fall distance, Feather Fall or physical immunity (charges used) are ignored
     // 14.57 can be calculated by resolving damageperc formular below to 0
     if (z_diff >= 14.57f && !isDead() && !isGameMaster() &&
         !HasAuraType(SPELL_AURA_HOVER) && !HasAuraType(SPELL_AURA_FEATHER_FALL) &&
-        !HasAuraType(SPELL_AURA_FLY) && !IsImmunedToDamage(SPELL_SCHOOL_MASK_NORMAL,true) )
+        !(HasAuraType(SPELL_AURA_FLY) && areaID != 550) && !IsImmunedToDamage(SPELL_SCHOOL_MASK_NORMAL,true) )  //do not check for fly aura in Tempest Keep:Eye to properly deal fall dmg when after knockback (Gravity Lapse)
     {
         //Safe fall, fall height reduction
         int32 safe_fall = GetTotalAuraModifier(SPELL_AURA_SAFE_FALL);

@@ -153,7 +153,8 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
 
         if(FrostArmorTimer < diff)
         {
-            AddSpellToCast(m_creature, SPELL_FROST_ARMOR, true);
+            //AddSpellToCast(m_creature, SPELL_FROST_ARMOR, true);
+            DoCast(m_creature, SPELL_FROST_ARMOR,true);
             FrostArmorTimer = 11000+rand()%20000;
         }
         else
@@ -162,8 +163,9 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
         if(DecayTimer < diff)
         {
             if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 70, true))
-                AddSpellToCast(target, SPELL_DEATH_AND_DECAY);
-            
+                //AddSpellToCast(target, SPELL_DEATH_AND_DECAY);
+                DoCast(target,SPELL_DEATH_AND_DECAY);
+
             DecayTimer = 60000+rand()%20000;
             switch(rand()%2)
             {
@@ -183,7 +185,8 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
         if(NovaTimer < diff)
         {
             if(Unit *target = m_creature->getVictim())
-                AddSpellToCast(target, SPELL_FROST_NOVA, true);
+                //AddSpellToCast(target, SPELL_FROST_NOVA, true);
+                DoCast(target, SPELL_FROST_NOVA, true);
 
             NovaTimer = 30000+rand()%15000;
 
@@ -208,7 +211,8 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
         if(IceboltTimer < diff)
         {
             if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0,40,true))
-                AddSpellToCast(target, SPELL_ICEBOLT, true);
+                //AddSpellToCast(target, SPELL_ICEBOLT, true);
+                DoCast(target,SPELL_ICEBOLT,true);
 
             IceboltTimer = 11000+rand()%20000;
         }
@@ -217,7 +221,8 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
 
         if(Enrage_Timer < diff)
         {
-            AddSpellToCast(m_creature, SPELL_BERSERK);
+            //AddSpellToCast(m_creature, SPELL_BERSERK);
+            DoCast(m_creature, SPELL_BERSERK);
             Enrage_Timer = 300000;
         }
         else

@@ -68,6 +68,7 @@ Pet::Pet(PetType type) : Creature()
     m_name = "Pet";
     m_petType = type;
 
+    m_loading = false;
     m_removed = false;
     m_regenTimer = 4000;
     m_happinessTimer = 7500;
@@ -134,6 +135,8 @@ void Pet::RemoveFromWorld()
 
 bool Pet::LoadPetFromDB( Unit* owner, uint32 petentry, uint32 petnumber, bool current )
 {
+    m_loading = true;
+
     uint32 ownerid = owner->GetGUIDLow();
 
     QueryResult *result;
@@ -390,6 +393,7 @@ bool Pet::LoadPetFromDB( Unit* owner, uint32 petentry, uint32 petnumber, bool cu
    if(owner->GetTypeId() == TYPEID_PLAYER && (owner->getClass() == CLASS_HUNTER || owner->getClass() == CLASS_WARLOCK) && isControlled() && !isTemporarySummoned() && (getPetType() == SUMMON_PET || getPetType() == HUNTER_PET))
        ((Player*)owner)->SetLastPetNumber(pet_number);
 
+    m_loading = false;
     return true;
 }
 
@@ -548,7 +552,7 @@ void Pet::setDeathState(DeathState s)                       // overwrite virtual
 
 void Pet::Update(uint32 diff)
 {
-    if(m_removed)                                           // pet already removed, just wait in remove queue, no updates
+    if(m_removed || m_loading)                                           // pet already removed, just wait in remove queue, no updates
         return;
 
     switch( m_deathState )
@@ -1523,8 +1527,10 @@ bool Pet::addSpell(uint16 spell_id, uint16 active, PetSpellState state, uint16 s
     {
         if (itr->second->state == PETSPELL_REMOVED)
         {
-            delete itr->second;
+            PetSpell *temp = itr->second;
             m_spells.erase(itr);
+            delete temp;
+
             state = PETSPELL_CHANGED;
         }
         else if (state == PETSPELL_UNCHANGED && itr->second->state != PETSPELL_UNCHANGED)
@@ -1623,8 +1629,9 @@ void Pet::removeSpell(uint16 spell_id)
 
     if(itr->second->state == PETSPELL_NEW)
     {
-        delete itr->second;
+        PetSpell *temp = itr->second;
         m_spells.erase(itr);
+        delete temp;
     }
     else
         itr->second->state = PETSPELL_REMOVED;
@@ -1637,8 +1644,9 @@ bool Pet::_removeSpell(uint16 spell_id)
     PetSpellMap::iterator itr = m_spells.find(spell_id);
     if (itr != m_spells.end())
     {
-        delete itr->second;
+        PetSpell *temp = itr->second;
         m_spells.erase(itr);
+        delete temp;
         return true;
     }
     return false;

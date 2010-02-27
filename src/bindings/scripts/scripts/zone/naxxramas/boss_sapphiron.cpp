@@ -106,7 +106,7 @@ struct TRINITY_DLL_DECL boss_sapphironAI : public ScriptedAI
                         m_creature->AddUnitMovementFlag(MOVEMENTFLAG_LEVITATING + MOVEMENTFLAG_ONTRANSPORT);
                         m_creature->GetMotionMaster()->Clear(false);
                         m_creature->GetMotionMaster()->MoveIdle();
-                        m_creature->SetHover(true);
+                        m_creature->setHover(true);
                         Icebolt_Timer = 4000;
                         Icebolt_Count = 0;
                         IsInFly = true;
@@ -144,7 +144,7 @@ struct TRINITY_DLL_DECL boss_sapphironAI : public ScriptedAI
                         m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_LEVITATING + MOVEMENTFLAG_ONTRANSPORT);
                         m_creature->GetMotionMaster()->Clear(false);
                         m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
-                        m_creature->SetHover(true);
+                        m_creature->setHover(true);
                         land_Timer = 0;
                         Fly_Timer = 67000;
                     }else land_Timer -= diff;

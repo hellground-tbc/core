@@ -303,6 +303,7 @@ class TRINITY_DLL_SPEC Aura
         }
 
         void CleanupTriggeredSpells();
+        bool isWeaponBuffCoexistableWith(Aura *ref);
 
         virtual void Update(uint32 diff);
         void ApplyModifier(bool apply, bool Real = false);

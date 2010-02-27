@@ -72,6 +72,7 @@ struct TRINITY_DLL_DECL boss_azgalorAI : public hyjal_trashAI
     {
         if(pInstance && IsEvent)
             pInstance->SetData(DATA_AZGALOREVENT, IN_PROGRESS);
+
         DoPlaySoundToSet(m_creature, SOUND_ONAGGRO);
         DoYell(SAY_ONAGGRO, LANG_UNIVERSAL, NULL);
     }
