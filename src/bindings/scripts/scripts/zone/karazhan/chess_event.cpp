@@ -125,13 +125,13 @@ enum ChessEventSpells
 
 struct ChessSquere
 {
-	Creature * piece;
-	Creature * trigger;
+	uint64 piece;//GUID;
+	uint64 trigger;//GUID;
 
 	ChessSquere()
 	{
-		piece = NULL;
-		trigger = NULL;
+		piece = 0;
+		trigger = 0;
 	}
 };
 
@@ -716,8 +716,8 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
 	{
 
 	}
-
-	void PrepareBoardForEvent()
+/*
+	void PrepareBoardForEvent2()
 	{
 		DoSay("zaczynam przygotowywanie planszy", LANG_UNIVERSAL, m_creature);
 		if (chessBoard[0][0].trigger != NULL)
@@ -760,14 +760,6 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
 					chessBoard[0][0].piece = current;
 
 				current->CastSpell(current, SPELL_MOVE_MARKER, false);
-
-				/*(*itr) = NULL;
-				tmpList.erase(itr);
-
-				if (second)
-					break;
-
-				second = true;*/
 			}
 		}
 
@@ -797,14 +789,6 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
 						chessBoard[i][0].piece = current;
 
 					current->CastSpell(current, SPELL_MOVE_MARKER, false);
-
-					/*(*itr) = NULL;
-					tmpList.erase(itr);
-
-					if (second)
-						break;
-
-					second = true;*/
 				}
 			}
 		}
@@ -846,31 +830,159 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
 							chessBoard[i][0].piece = current;
 
 						current->CastSpell(current, SPELL_MOVE_MARKER, false);
-
-						/*(*itr) = NULL;
-						tmpList.erase(itr);
-
-						if (second)
-							break;
-
-						second = true;*/
 					}
 				}
 			}
 		}
 
 		printf("\nRozmiary: tmpList: %i, forChessList: %i\n", tmpList.size(), pInstance->forChessList.size());
+	}
+	*/
+	bool IsChessPiece(Unit * unit)
+	{
+        switch (unit->GetEntry())
+        {
+            case NPC_BISHOP_A:
+            case NPC_BISHOP_H:
+            case NPC_KING_A:
+            case NPC_KING_H:
+            case NPC_KNIGHT_A:
+            case NPC_KNIGHT_H:
+            case NPC_PAWN_A:
+            case NPC_PAWN_H:
+            case NPC_QUEEN_A:
+            case NPC_QUEEN_H:
+            case NPC_ROOK_A:
+            case NPC_ROOK_H:
+                return true;
+            default:
+                return false;
+        }
 
-		/*//find chess pieces
-		for (i = 0; i < 8; i++)
+        return false;
+	}
+
+	void PrepareBoardForEvent()
+	{
+	    DoSay("zaczynam przygotowywanie planszy", LANG_UNIVERSAL, m_creature);
+		if (chessBoard[0][0].trigger != 0)
+			return;
+
+		Creature * current;
+		Creature * next;
+		int16 i, j;
+		float posX, posY, posXc, posYc;
+		std::list<Creature*> tmpList;
+
+		printf("\nRozmiary: tmpList: %i, forChessList: %i\n", tmpList.size(), pInstance->forChessList.size());
+
+		for (std::list<uint64>::iterator i = pInstance->forChessList.begin(); i != pInstance->forChessList.end(); i++)
 		{
-			for (j = 0; j < 8; j++)
+			tmpList.push_back(m_creature->GetMap()->GetCreature((*i)));
+			//DoSay(".", LANG_UNIVERSAL, m_creature);
+		}
+
+		printf("\nRozmiary: tmpList: %i, forChessList: %i\n", tmpList.size(), pInstance->forChessList.size());
+
+		//return;
+		DoSay("szukanie pierwszego", LANG_UNIVERSAL, m_creature);
+		//add first trigger to list (from that point we will start searching and adding to chessBoard oder triggers)
+		for (std::list<Creature*>::iterator itr = tmpList.begin(); itr != tmpList.end(); ++itr)
+		{
+			posX = (*itr)->GetPositionX();
+			if (posX < -11050 && posX > -11056)
 			{
+				DoSay("znalazlem pierwszego", LANG_UNIVERSAL, m_creature);
 
+				current = (*itr);
+				posXc = current->GetPositionX();
+				posYc = current->GetPositionY();
 
+				if (current->GetEntry() == TRIGGER_ID)
+					chessBoard[0][0].trigger = current->GetGUID();
+				else
+                    if (IsChessPiece(current))
+                        chessBoard[0][0].piece = current->GetGUID();
 
+				current->CastSpell(current, SPELL_MOVE_MARKER, false);
+				tmpList.erase(itr);
 			}
-		}*/
+		}
+
+        for (int i = 0; i < 7; i++)
+        {
+            if (i < 7 && chessBoard[i][0].trigger != 0)
+                current = m_creature->GetCreature(*m_creature, chessBoard[i][0].trigger);
+
+            if (!current)
+            {
+                DoSay("niema currenta 2", LANG_UNIVERSAL, m_creature);
+                continue;
+            }
+
+            for (std::list<Creature*>::iterator itr = tmpList.begin(); itr != tmpList.end(); ++itr)
+            {
+                next = (*itr);
+                if (!next)
+                {
+                    DoSay("niema Next 1", LANG_UNIVERSAL, m_creature);
+                    continue;
+                }
+
+                if (((next->GetPositionX() < (current->GetPositionX() - 2)) && (next->GetPositionX() > (current->GetPositionX() - 4))) &&
+                    ((next->GetPositionY() > (current->GetPositionY() + 3 )) && (next->GetPositionY() < (current->GetPositionY() + 6))))
+                {
+                    if (next->GetEntry() == TRIGGER_ID)
+                        chessBoard[i][0].trigger = next->GetGUID();
+                    else
+                        if (IsChessPiece(current))
+                            chessBoard[i][0].piece = next->GetGUID();
+
+                    tmpList.erase(itr);
+                }
+            }
+        }
+
+        for (int i = 0; i < 8; i++)
+        {
+            if (chessBoard[i][0].trigger != 0)
+                current = m_creature->GetCreature(*m_creature, chessBoard[i][0].trigger);
+
+            if (!current)
+            {
+                DoSay("niema currenta 3", LANG_UNIVERSAL, m_creature);
+                continue;
+            }
+            for (int j = 0; j < 8; j++)
+            {
+                for (std::list<Creature*>::iterator itr = tmpList.begin(); itr != tmpList.end(); ++itr)
+                {
+                    next = (*itr);
+                    if (!next)
+                        continue;
+
+                    if (((next->GetPositionX() < (current->GetPositionX() - 2)) && (next->GetPositionX() > (current->GetPositionX() - 4))) &&
+                        ((next->GetPositionY() > (current->GetPositionY() - 2)) && (next->GetPositionY() < (current->GetPositionY() - 6))))
+                    {
+                        if (next->GetEntry() == TRIGGER_ID)
+                            chessBoard[i][j].trigger = next->GetGUID();
+                        else
+                            if (IsChessPiece(current))
+                                chessBoard[i][j].piece = next->GetGUID();
+
+                        tmpList.erase(itr);
+                    }
+                }
+                if (j < 7 && chessBoard[i][j].trigger != 0)
+                    current = m_creature->GetCreature(*m_creature, chessBoard[i][j].trigger);
+
+                if (!current)
+                {
+                    DoSay("niema currenta 4", LANG_UNIVERSAL, m_creature);
+                    break;
+                }
+            }
+        }
 	}
 
 	void TeleportPlayer(Player * player)
