@@ -1736,6 +1736,27 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->CastSpell(unitTarget, 5940, true);
                     return;
                 }
+                // slice and dice
+                case 5171:
+                case 6774:
+                {
+                    Unit::AuraList procTriggerAuras = m_caster->GetAurasByType(SPELL_AURA_PROC_TRIGGER_SPELL);
+                    for(Unit::AuraList::iterator i = procTriggerAuras.begin(); i != procTriggerAuras.end(); i++)
+                    {
+                        switch((*i)->GetSpellProto()->Id)
+                        {
+                            // expose weakness
+                            case 31239:
+                            case 31233:
+                            case 31240:
+                            case 31241:
+                            case 31242:
+                                m_caster->CastSpell(unitTarget, (*i)->GetSpellProto()->EffectTriggerSpell[(*i)->GetEffIndex()], true, NULL, (*i));
+                                return;
+                        }
+                    }
+                    return;
+                }
             }
             break;
         case SPELLFAMILY_HUNTER:
