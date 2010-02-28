@@ -646,6 +646,31 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
             return 0;
     }
 
+    // Handle Blessed Life
+    // w combat logu bedzie pokazane zawsze full dmg, ktos wie jak mozna to lepiej zrobic?
+    if(pVictim->GetTypeId() == TYPEID_PLAYER)
+    {
+        AuraList procTriggerAuras = pVictim->GetAurasByType(SPELL_AURA_PROC_TRIGGER_SPELL);
+        for(AuraList::iterator i = procTriggerAuras.begin(); i != procTriggerAuras.end();)
+        {
+            switch((*i)->GetSpellProto()->Id)
+            {
+                 case 31828: // Rank 1
+                 case 31829: // Rank 2
+                 case 31830: // Rank 3
+                 {
+                     if(roll_chance_i((*i)->GetSpellProto()->procChance))
+                     {
+                        damage /= 2;
+                     }
+                     i = procTriggerAuras.end();
+                     continue;
+                 }
+            }
+            i++;
+        }
+    }
+
     //Script Event damage taken
     if( pVictim->GetTypeId()== TYPEID_UNIT && ((Creature *)pVictim)->IsAIEnabled )
     {
@@ -5985,6 +6010,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
      case SPELLFAMILY_PALADIN:
      {
  /*         // Blessed Life
+            // Handled in Unit::DealDamage
          if (auraSpellInfo->SpellIconID == 2137)
          {
              switch (auraSpellInfo->Id)
