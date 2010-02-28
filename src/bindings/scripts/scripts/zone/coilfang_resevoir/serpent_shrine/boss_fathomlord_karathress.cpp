@@ -41,7 +41,7 @@ EndScriptData */
 //Sharkkis spells
 #define SPELL_LEECHING_THROW            29436
 #define SPELL_THE_BEAST_WITHIN          38373
-#define SPELL_MULTISHOT                 29576
+#define SPELL_MULTISHOT                 38366
 #define SPELL_SUMMON_FATHOM_LURKER      38433
 #define SPELL_SUMMON_FATHOM_SPOREBAT    38431
 #define SPELL_PET_ENRAGE                38371
@@ -617,7 +617,7 @@ struct TRINITY_DLL_DECL boss_fathomguard_caribdisAI : public ScriptedAI
         WaterBoltVolley_Timer = 35000;
         TidalSurge_Timer = 15000+rand()%5000;
         Heal_Timer = 55000;
-        Cyclone_Timer = 30000+rand()%10000;
+        Cyclone_Timer = 3000+rand()%10000;
 
         if (pInstance)
             pInstance->SetData(DATA_KARATHRESSEVENT, NOT_STARTED);
@@ -710,20 +710,16 @@ struct TRINITY_DLL_DECL boss_fathomguard_caribdisAI : public ScriptedAI
         {
             //DoCast(m_creature, SPELL_SUMMON_CYCLONE); // Doesn't work
             Cyclone_Timer = 30000+rand()%10000;
-            Creature *Cyclone = m_creature->SummonCreature(CREATURE_CYCLONE, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), (rand()%5), TEMPSUMMON_TIMED_DESPAWN, 15000);
+            Creature *Cyclone = m_creature->SummonCreature(CREATURE_CYCLONE, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), (rand()%5), TEMPSUMMON_TIMED_DESPAWN, 30000);
             if( Cyclone )
             {
                 ((Creature*)Cyclone)->SetFloatValue(OBJECT_FIELD_SCALE_X, 3.0f);
                 Cyclone->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 Cyclone->setFaction(m_creature->getFaction());
-                Cyclone->CastSpell(Cyclone, SPELL_CYCLONE_CYCLONE, true);
-                Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-
-                if( target )
-                    Cyclone->AI()->AttackStart(target);
+                Cyclone->CastSpell(Cyclone, 32332, true);
             }
         }else Cyclone_Timer -= diff;
-
+		
         //Heal_Timer
         if(Heal_Timer < diff)
         {
@@ -740,6 +736,65 @@ struct TRINITY_DLL_DECL boss_fathomguard_caribdisAI : public ScriptedAI
         }else Heal_Timer -= diff;
 
         DoMeleeAttackIfReady();
+    }
+};
+
+struct TRINITY_DLL_DECL mob_Caribdis_CycloneAI : public ScriptedAI
+{
+    mob_Caribdis_CycloneAI(Creature *c) : ScriptedAI(c) {}
+
+    uint32 Check_Timer;
+    uint32 Swap_Timer;
+
+    void Reset()
+    {
+        Check_Timer = 1000;
+        Swap_Timer = 0;
+    }
+
+    void Aggro(Unit *who) 
+    {
+        AttackStart(who);
+    }
+	
+    void UpdateAI(const uint32 diff)
+    {
+        //Return since we have no target
+        if (!UpdateVictim() )
+            return;
+
+        if(Swap_Timer < diff)											
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_FARTHEST, 0, 100, true))
+            {                
+                if(target)
+                {
+                    DoResetThreat();
+                    m_creature->GetMotionMaster()->Clear();
+                    m_creature->GetMotionMaster()->MovePoint(0,target->GetPositionX(),target->GetPositionY(),target->GetPositionZ());
+                }
+                Swap_Timer = 5000;
+            }
+        }else Swap_Timer -= diff;
+
+        if(Check_Timer < diff)
+        {
+            Map* pMap = m_creature->GetMap();
+            Map::PlayerList const &PlayerList = pMap->GetPlayers();                
+            if (!PlayerList.isEmpty())
+            {
+                for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                {
+                    if(m_creature->IsWithinMeleeRange(i->getSource()))
+                    {
+                        Player *p = i->getSource();
+                        if(!p->HasAura(SPELL_CYCLONE_CYCLONE, 0))
+                            DoCast(p, SPELL_CYCLONE_CYCLONE);
+                    }
+                }
+            }
+            Check_Timer = 500;
+        }else Check_Timer -= diff;
     }
 };
 
@@ -763,6 +818,11 @@ CreatureAI* GetAI_boss_fathomguard_caribdis(Creature *_Creature)
     return new boss_fathomguard_caribdisAI (_Creature);
 }
 
+CreatureAI* GetAI_mob_Caribdis_Cyclone(Creature *_Creature)
+{
+    return new mob_Caribdis_CycloneAI (_Creature);
+}
+
 void AddSC_boss_fathomlord_karathress()
 {
     Script *newscript;
@@ -784,6 +844,11 @@ void AddSC_boss_fathomlord_karathress()
     newscript = new Script;
     newscript->Name="boss_fathomguard_caribdis";
     newscript->GetAI = &GetAI_boss_fathomguard_caribdis;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="mob_Caribdis_Cyclone";
+    newscript->GetAI = &GetAI_mob_Caribdis_Cyclone;
     newscript->RegisterSelf();
 }
 

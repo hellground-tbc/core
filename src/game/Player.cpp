@@ -431,6 +431,8 @@ Player::Player (WorldSession *session): Unit()
     m_declinedname = NULL;
 
     m_isActive = true;
+    
+    updateLock = false;
 
     m_farsightVision = false;
 
@@ -1117,8 +1119,10 @@ void Player::CharmAI(bool apply)
 
 void Player::Update( uint32 p_time )
 {
-    if(!IsInWorld())
+    if(!IsInWorld() || updateLock)
         return;
+    
+    updateLock = true;
 
     // undelivered mail
     if(m_nextMailDelivereTime && m_nextMailDelivereTime <= time(NULL))
@@ -1131,6 +1135,7 @@ void Player::Update( uint32 p_time )
     }
 
     for(std::map<uint32, uint32>::iterator itr = m_globalCooldowns.begin(); itr != m_globalCooldowns.end(); ++itr)
+    {
         if(itr->second)
         {
             if(itr->second > p_time)
@@ -1138,6 +1143,7 @@ void Player::Update( uint32 p_time )
             else
                 itr->second = 0;
         }
+    }
 
     Unit::Update( p_time );
 
@@ -1407,6 +1413,7 @@ void Player::Update( uint32 p_time )
         RemovePet(pet, PET_SAVE_NOT_IN_SLOT, true);
         return;
     }
+    updateLock = false;
 }
 
 void Player::setDeathState(DeathState s)
@@ -3164,8 +3171,9 @@ void Player::removeSpell(uint32 spell_id, bool disabled)
     {
         if(itr->second->state == PLAYERSPELL_NEW)
         {
-            delete itr->second;
+            PlayerSpell *temp = itr->second;
             m_spells.erase(itr);
+            delete temp;
         }
         else
             itr->second->state = PLAYERSPELL_REMOVED;
@@ -3494,8 +3502,9 @@ bool Player::_removeSpell(uint16 spell_id)
     PlayerSpellMap::iterator itr = m_spells.find(spell_id);
     if (itr != m_spells.end())
     {
-        delete itr->second;
+        PlayerSpell *temp = itr->second;
         m_spells.erase(itr);
+        delete temp;
         return true;
     }
     return false;

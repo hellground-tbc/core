@@ -1492,7 +1492,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         uint32 m_transform;
         uint32 m_removedAuras;
 
-        AuraList m_modAuras[TOTAL_AURAS];
+        AuraList *m_modAuras;
         AuraList m_scAuras;                        // casted singlecast auras
         AuraList m_interruptableAuras;
         AuraList m_ccAuras;

@@ -364,7 +364,7 @@ void WorldSession::HandleCancelAuraOpcode( WorldPacket& recvPacket)
         Unit::AuraMap::iterator iter;
         while((iter = _player->m_Auras.find(Unit::spellEffectPair(spellId, 1))) != _player->m_Auras.end())
         {
-            _player->m_modAuras[SPELL_AURA_DUMMY].remove(iter->second);
+            _player->m_modAuras[SPELL_AURA_DUMMY].remove(iter->second); //**
 
             Aura* Aur = iter->second;
             _player->m_Auras.erase(iter);

@@ -1527,8 +1527,10 @@ bool Pet::addSpell(uint16 spell_id, uint16 active, PetSpellState state, uint16 s
     {
         if (itr->second->state == PETSPELL_REMOVED)
         {
-            delete itr->second;
+            PetSpell *temp = itr->second;
             m_spells.erase(itr);
+            delete temp;
+
             state = PETSPELL_CHANGED;
         }
         else if (state == PETSPELL_UNCHANGED && itr->second->state != PETSPELL_UNCHANGED)
@@ -1627,8 +1629,9 @@ void Pet::removeSpell(uint16 spell_id)
 
     if(itr->second->state == PETSPELL_NEW)
     {
-        delete itr->second;
+        PetSpell *temp = itr->second;
         m_spells.erase(itr);
+        delete temp;
     }
     else
         itr->second->state = PETSPELL_REMOVED;
@@ -1641,8 +1644,9 @@ bool Pet::_removeSpell(uint16 spell_id)
     PetSpellMap::iterator itr = m_spells.find(spell_id);
     if (itr != m_spells.end())
     {
-        delete itr->second;
+        PetSpell *temp = itr->second;
         m_spells.erase(itr);
+        delete temp;
         return true;
     }
     return false;

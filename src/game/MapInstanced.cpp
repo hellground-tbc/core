@@ -269,8 +269,9 @@ void MapInstanced::DestroyInstance(InstancedMaps::iterator &itr)
         Map::UnloadAll();
     }
     // erase map
-    delete itr->second;
+    Map *temp = itr->second;
     m_InstancedMaps.erase(itr++);
+    delete temp;
 }
 
 bool MapInstanced::CanEnter(Player *player)
