@@ -1788,13 +1788,9 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
                 CastSpell(this, 2479, true);
         }
 
-        if (getFollowingGM())
+        if(getFollowingGM())
         {
-            Player *gamemaster = Unit::GetPlayer(getFollowingGM());
-            if (gamemaster)
-                gamemaster->TeleportTo(mapid, x, y, z, orientation);
-            else
-                setGMFollow(0);
+            setGMFollow(0);
         }
         else if (getFollowTarget())
         {
@@ -1883,11 +1879,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
                 if (getFollowingGM())
                 {
-                    Player *gamemaster = Unit::GetPlayer(getFollowingGM());
-                    if (gamemaster)
-                        gamemaster->TeleportTo(mapid, x, y, z, orientation);
-                    else
-                        setGMFollow(0);
+                    setGMFollow(0);
                 }
                 else if (getFollowTarget())
                 {
