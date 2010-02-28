@@ -648,7 +648,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
 
     // Handle Blessed Life
     // w combat logu bedzie pokazane zawsze full dmg, ktos wie jak mozna to lepiej zrobic?
-    if(pVictim->GetTypeId() == TYPEID_PLAYER)
+    if(pVictim->GetTypeId() == TYPEID_PLAYER && pVictim->getClass() == CLASS_PALADIN)
     {
         AuraList procTriggerAuras = pVictim->GetAurasByType(SPELL_AURA_PROC_TRIGGER_SPELL);
         for(AuraList::iterator i = procTriggerAuras.begin(); i != procTriggerAuras.end();)
@@ -660,9 +660,8 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
                  case 31830: // Rank 3
                  {
                      if(roll_chance_i((*i)->GetSpellProto()->procChance))
-                     {
                         damage /= 2;
-                     }
+
                      i = procTriggerAuras.end();
                      continue;
                  }
