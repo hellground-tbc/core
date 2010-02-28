@@ -5651,7 +5651,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         ? ((Player*)this)->GetItemByGuid(triggeredByAura->GetCastItemGUID()) : NULL;
 
     // Try handle unknown trigger spells
-    if (sSpellStore.LookupEntry(trigger_spell_id)==NULL)
+    if(sSpellStore.LookupEntry(trigger_spell_id) == NULL || trigger_spell_id == 34501) // hack for expose weakness
     switch (auraSpellInfo->SpellFamilyName)
     {
      //=====================================================================
@@ -5963,6 +5963,14 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
      // ......
      //=====================================================================
      case SPELLFAMILY_HUNTER:
+         switch(auraSpellInfo->Id)
+         {
+             case 34500:
+             case 34502:
+             case 34503:
+                 basepoints0 = int32(GetStat(STAT_AGILITY) *0.25);
+             break;
+         }
      break;
      //=====================================================================
      // Paladin
