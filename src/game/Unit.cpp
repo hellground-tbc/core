@@ -156,6 +156,7 @@ Unit::Unit()
 , m_NotifyListPos(-1), m_Notified(false), IsAIEnabled(false), NeedChangeAI(false)
 , i_AI(NULL), i_disabledAI(NULL), m_procDeep(0)
 {
+    m_modAuras = new AuraList[TOTAL_AURAS];
     m_objectType |= TYPEMASK_UNIT;
     m_objectTypeId = TYPEID_UNIT;
                                                             // 2.3.2 - 0x70
@@ -275,9 +276,6 @@ Unit::~Unit()
     assert(!m_attacking);
     assert(m_attackers.empty());
     assert(m_sharedVision.empty());
-
-    for(int i = 0; i < TOTAL_AURAS; i++)
-        m_modAuras[i].clear();
 }
 
 void Unit::Update( uint32 p_time )
@@ -303,7 +301,7 @@ void Unit::Update( uint32 p_time )
         {
             // m_CombatTimer set at aura start and it will be freeze until aura removing
             if ( m_CombatTimer <= p_time )
-                CombatStop();
+                ClearInCombat();
             else
                 m_CombatTimer -= p_time;
         }
