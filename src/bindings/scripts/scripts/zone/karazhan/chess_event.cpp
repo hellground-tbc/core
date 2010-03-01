@@ -94,7 +94,7 @@ enum NPCs
     NPC_ROOK_A   = 21160,
     NPC_KING_H   = 21752,
     NPC_KING_A   = 21684,
-	NPC_STATUS   = 22520
+    NPC_STATUS   = 22520
 };
 
 enum ChessEventSpells
@@ -109,15 +109,15 @@ enum ChessEventSpells
     SPELL_MOVE_6   = 37152,
     SPELL_MOVE_7   = 37153,
 
-	SPELL_MOVE_PREVISUAL = 32745,
-	//SPELL_AI_FACE_NEARBY_ENEMY = 37787,
+    SPELL_MOVE_PREVISUAL = 32745,
+    //SPELL_AI_FACE_NEARBY_ENEMY = 37787,
 
     SPELL_CHANGE_FACING     = 30284,
     SPELL_MOVE_MARKER       = 32261,
     SPELL_POSSES_CHESSPIECE = 30019,
-	SPELL_IN_GAME           = 30532,
-	SPELL_GAME_IN_SESSION   = 39331,
-	SPELL_RECENTLY_IN_GAME  = 30529,
+    SPELL_IN_GAME           = 30532,
+    SPELL_GAME_IN_SESSION   = 39331,
+    SPELL_RECENTLY_IN_GAME  = 30529,
     SPELL_HAND_OF_MEDIVH    = 39339, // 1st cheat: AOE spell burn cell under enemy chesspieces.
     SPELL_FURY_OF_MEDIVH    = 39383  // 2nd cheat: Berserk own chesspieces.
     // 3rd cheat: set own creatures to max health
@@ -125,14 +125,14 @@ enum ChessEventSpells
 
 struct ChessSquere
 {
-	uint64 piece;//GUID;
-	uint64 trigger;//GUID;
+    uint64 piece;//GUID;
+    uint64 trigger;//GUID;
 
-	ChessSquere()
-	{
-		piece = 0;
-		trigger = 0;
-	}
+    ChessSquere()
+    {
+        piece = 0;
+        trigger = 0;
+    }
 };
 
 struct TRINITY_DLL_DECL move_triggerAI : public ScriptedAI
@@ -140,27 +140,27 @@ struct TRINITY_DLL_DECL move_triggerAI : public ScriptedAI
     move_triggerAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = ((ScriptedInstance*)m_creature->GetInstanceData());
-		m_creature->GetPosition(wLoc);
+        m_creature->GetPosition(wLoc);
     }
 
     ScriptedInstance* pInstance;
 
-	WorldLocation wLoc;
+    WorldLocation wLoc;
 
     Unit * onMarker;
     bool EndMarker;
 
-	int32 moveTimer;
-	Unit * unitToMove;
-	bool onMove;
+    int32 moveTimer;
+    Unit * unitToMove;
+    bool onMove;
 
     void Reset()
     {
         onMarker    = NULL;
         EndMarker   = false;
-		moveTimer = 10000;
-		onMove = false;
-		unitToMove = NULL;
+        moveTimer = 10000;
+        onMove = false;
+        unitToMove = NULL;
     }
 
     void Aggro(Unit *){}
@@ -180,42 +180,42 @@ struct TRINITY_DLL_DECL move_triggerAI : public ScriptedAI
             EndMarker = true;
             onMarker = caster;
 
-			if (!onMove)
-			{
-				unitToMove = caster;
-				onMove = true;
-				DoCast(m_creature, SPELL_MOVE_PREVISUAL);
-			}
-		}
+            if (!onMove)
+            {
+                unitToMove = caster;
+                onMove = true;
+                DoCast(m_creature, SPELL_MOVE_PREVISUAL);
+            }
+        }
     }
 
-	void MoveUnit()
-	{
-		moveTimer = 10000;
-		onMove = false;
-		if (!unitToMove)
-			return;
+    void MoveUnit()
+    {
+        moveTimer = 10000;
+        onMove = false;
+        if (!unitToMove)
+            return;
 
-		DoCast(m_creature,SPELL_MOVE_MARKER);
-		unitToMove->StopMoving();
-		unitToMove->GetMotionMaster()->Clear();
-		unitToMove->GetMotionMaster()->MovePoint(0, wLoc.x, wLoc.y, wLoc.z);
+        DoCast(m_creature,SPELL_MOVE_MARKER);
+        unitToMove->StopMoving();
+        unitToMove->GetMotionMaster()->Clear();
+        unitToMove->GetMotionMaster()->MovePoint(0, wLoc.x, wLoc.y, wLoc.z);
 
-		unitToMove = NULL;
-	}
+        unitToMove = NULL;
+    }
 
     void UpdateAI(const uint32 diff)
     {
         if(pInstance->GetData(DATA_CHESS_EVENT) != IN_PROGRESS)
             return;
 
-		if (onMove)
-		{
-			if (moveTimer < diff)
-				MoveUnit();
-			else
-				moveTimer -= diff;
-		}
+        if (onMove)
+        {
+            if (moveTimer < diff)
+                MoveUnit();
+            else
+                moveTimer -= diff;
+        }
 
         if(onMarker)
         {
@@ -237,12 +237,12 @@ struct TRINITY_DLL_DECL npc_chesspieceAI : public Scripted_NoMovementAI
         if(TempSpell)
             TempSpell->Effect[0] = 0;  // Disable bind sight effect from SPELL_POSSES_CHESSPIECE. We handle all with dummy and charm effect.
 
-		/*TempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_IN_GAME);
-		if (TempSpell)
-		{
-			TempSpell->Effect[0] = 0;
-			TempSpell->Effect[1] = 0;
-		}*/
+        /*TempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_IN_GAME);
+        if (TempSpell)
+        {
+            TempSpell->Effect[0] = 0;
+            TempSpell->Effect[1] = 0;
+        }*/
     }
 
     ScriptedInstance* pInstance;
@@ -324,15 +324,15 @@ struct TRINITY_DLL_DECL npc_chesspieceAI : public Scripted_NoMovementAI
         }
     }
 
-	void MoveInLineOfSight(Unit *unit)
-	{
-		if (m_creature->isPossessed())
-		{
-			m_creature->StopMoving();
+    void MoveInLineOfSight(Unit *unit)
+    {
+        if (m_creature->isPossessed())
+        {
+            m_creature->StopMoving();
 
-			return;
-		}
-	}
+            return;
+        }
+    }
 
     void JustRespawned()
     {
@@ -456,10 +456,10 @@ struct TRINITY_DLL_DECL npc_chesspieceAI : public Scripted_NoMovementAI
             DoSay("Medivh not found / bad data",LANG_UNIVERSAL,false); // Only for me for debug :]
 
         /*if(m_creature->isPossessed())
-		{
-			m_creature->RemoveAurasDueToSpell(SPELL_POSSES_CHESSPIECE);
+        {
+            m_creature->RemoveAurasDueToSpell(SPELL_POSSES_CHESSPIECE);
             m_creature->RemoveCharmedOrPossessedBy(m_creature->GetCharmer());
-		}*/
+        }*/
 
         InGame = false;
         m_creature->setActive(false);
@@ -482,7 +482,7 @@ struct TRINITY_DLL_DECL npc_chesspieceAI : public Scripted_NoMovementAI
         Trinity::UnitListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(pList, u_check);
         TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer >  grid_unit_searcher(searcher);
 
-		cell.Visit(p, grid_unit_searcher, *(m_creature->GetMap()));
+        cell.Visit(p, grid_unit_searcher, *(m_creature->GetMap()));
 
         for(std::list<Unit *>::iterator itr = pList.begin(); itr != pList.end();itr++)
         {
@@ -496,25 +496,25 @@ struct TRINITY_DLL_DECL npc_chesspieceAI : public Scripted_NoMovementAI
         return returnList;
     }*/
 
-	bool CanGoTo(Unit* target)
-	{
-		if (!target)
-			return false;
+    bool CanGoTo(Unit* target)
+    {
+        if (!target)
+            return false;
 
-		if (m_creature->isPossessed())
-		{
-			if (((Player*)m_creature->GetCharmer())->GetTeam() == ALLIANCE)
-			{
+        if (m_creature->isPossessed())
+        {
+            if (((Player*)m_creature->GetCharmer())->GetTeam() == ALLIANCE)
+            {
 
-			}
-			else
-			{
+            }
+            else
+            {
 
-			}
-		}
+            }
+        }
 
-		return true;
-	}
+        return true;
+    }
 
     /*int GetStrafeLenght(uint32 Entry)
     {
@@ -548,17 +548,17 @@ struct TRINITY_DLL_DECL npc_chesspieceAI : public Scripted_NoMovementAI
         if(pInstance->GetData(DATA_CHESS_EVENT) != IN_PROGRESS)
             return;
 
-		//if(!m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE))
-		//	m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE); // that state disallow player to use spell's from pet bar. Need to change that and also need to disable move :]
+        //if(!m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE))
+        //    m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE); // that state disallow player to use spell's from pet bar. Need to change that and also need to disable move :]
 
-		if(m_creature->isPossessed())
-		{
-			//m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
-			//m_creature->GetCharmerOrOwner()->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
-			//m_creature->SetControlled(true, UNIT_STAT_ROOT);
+        if(m_creature->isPossessed())
+        {
+            //m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+            //m_creature->GetCharmerOrOwner()->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+            //m_creature->SetControlled(true, UNIT_STAT_ROOT);
 
-			//m_creature->SetUnitMovementFlags(MOVEMENTFLAG_NONE);
-		}
+            //m_creature->SetUnitMovementFlags(MOVEMENTFLAG_NONE);
+        }
 
         if(!ReturnToHome) // for fail
             ReturnToHome = true;
@@ -682,164 +682,164 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
     boss_MedivhAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = ((instance_karazhan*)m_creature->GetInstanceData());
-		m_creature->GetPosition(wLoc);
-		tpLoc.x = -11108.2;
-		tpLoc.y = -1841.56;
-		tpLoc.z = 229.625;
-		tpLoc.o = 5.39745;
+        m_creature->GetPosition(wLoc);
+        tpLoc.x = -11108.2;
+        tpLoc.y = -1841.56;
+        tpLoc.z = 229.625;
+        tpLoc.o = 5.39745;
     }
 
     instance_karazhan* pInstance;
 
-	int16 hordePieces;
-	int16 alliancePieces;
+    int16 hordePieces;
+    int16 alliancePieces;
 
-	ChessSquere chessBoard[8][8];
+    ChessSquere chessBoard[8][8];
 
-	bool eventStarted;
+    bool eventStarted;
 
-	WorldLocation wLoc;
-	WorldLocation tpLoc;
+    WorldLocation wLoc;
+    WorldLocation tpLoc;
 
-	std::list<Player*>tpList;
+    std::list<Player*>tpList;
 
     void Reset()
     {
-		eventStarted = false;
-		hordePieces = 16;
-		alliancePieces = 16;
+        eventStarted = false;
+        hordePieces = 16;
+        alliancePieces = 16;
     }
 
     void Aggro(Unit *){}
 
-	void RemoveChessPieceFromBoard(Unit * piece)
-	{
+    void RemoveChessPieceFromBoard(Unit * piece)
+    {
 
-	}
+    }
 /*
-	void PrepareBoardForEvent2()
-	{
-		DoSay("zaczynam przygotowywanie planszy", LANG_UNIVERSAL, m_creature);
-		if (chessBoard[0][0].trigger != NULL)
-			return;
+    void PrepareBoardForEvent2()
+    {
+        DoSay("zaczynam przygotowywanie planszy", LANG_UNIVERSAL, m_creature);
+        if (chessBoard[0][0].trigger != NULL)
+            return;
 
-		Creature* current;
-		int16 i, j;
-		float posX, posY, posXc, posYc;
-		std::list<Creature*> tmpList;
+        Creature* current;
+        int16 i, j;
+        float posX, posY, posXc, posYc;
+        std::list<Creature*> tmpList;
 
-		printf("\nRozmiary: tmpList: %i, forChessList: %i\n", tmpList.size(), pInstance->forChessList.size());
+        printf("\nRozmiary: tmpList: %i, forChessList: %i\n", tmpList.size(), pInstance->forChessList.size());
 
-		for (std::list<uint64>::iterator i = pInstance->forChessList.begin(); i != pInstance->forChessList.end(); i++)
-		{
-			tmpList.push_back(m_creature->GetMap()->GetCreature((*i)));
-			DoSay(".", LANG_UNIVERSAL, m_creature);
-		}
+        for (std::list<uint64>::iterator i = pInstance->forChessList.begin(); i != pInstance->forChessList.end(); i++)
+        {
+            tmpList.push_back(m_creature->GetMap()->GetCreature((*i)));
+            DoSay(".", LANG_UNIVERSAL, m_creature);
+        }
 
-		printf("\nRozmiary: tmpList: %i, forChessList: %i\n", tmpList.size(), pInstance->forChessList.size());
+        printf("\nRozmiary: tmpList: %i, forChessList: %i\n", tmpList.size(), pInstance->forChessList.size());
 
-		bool second = false;
+        bool second = false;
 
-		//return;
-		DoSay("szukanie pierwszego", LANG_UNIVERSAL, m_creature);
-		//add first trigger to list (from that point we will start searching and adding to chessBoard oder triggers)
-		for (std::list<Creature*>::iterator itr = tmpList.begin(); itr != tmpList.end(); ++itr)
-		{
-			posX = (*itr)->GetPositionX();
-			if (posX < -11050 && posX > -11056)
-			{
-				DoSay("znalazlem pierwszego", LANG_UNIVERSAL, m_creature);
+        //return;
+        DoSay("szukanie pierwszego", LANG_UNIVERSAL, m_creature);
+        //add first trigger to list (from that point we will start searching and adding to chessBoard oder triggers)
+        for (std::list<Creature*>::iterator itr = tmpList.begin(); itr != tmpList.end(); ++itr)
+        {
+            posX = (*itr)->GetPositionX();
+            if (posX < -11050 && posX > -11056)
+            {
+                DoSay("znalazlem pierwszego", LANG_UNIVERSAL, m_creature);
 
-				current = (*itr);
-				posXc = current->GetPositionX();
-				posYc = current->GetPositionY();
+                current = (*itr);
+                posXc = current->GetPositionX();
+                posYc = current->GetPositionY();
 
-				if (current->GetEntry() == TRIGGER_ID)
-					chessBoard[0][0].trigger = current;
-				else
-					chessBoard[0][0].piece = current;
+                if (current->GetEntry() == TRIGGER_ID)
+                    chessBoard[0][0].trigger = current;
+                else
+                    chessBoard[0][0].piece = current;
 
-				current->CastSpell(current, SPELL_MOVE_MARKER, false);
-			}
-		}
+                current->CastSpell(current, SPELL_MOVE_MARKER, false);
+            }
+        }
 
-		printf("\nRozmiary: tmpList: %i, forChessList: %i\n", tmpList.size(), pInstance->forChessList.size());
+        printf("\nRozmiary: tmpList: %i, forChessList: %i\n", tmpList.size(), pInstance->forChessList.size());
 
-		DoSay("szukanie lewej sciany", LANG_UNIVERSAL, m_creature);
-		//find and add left 'wall' of triggers (from that points we will start searching and adding rest of triggers)
-		for (i = 1; i < 8; i++)
-		{
-			second = false;
-			for (std::list<Creature*>::iterator itr = tmpList.begin(); itr != tmpList.end(); itr++)
-			{
-				posX = (*itr)->GetPositionX();
-				posY = (*itr)->GetPositionY();
-				if ((posX < posXc - 1 && posX < posXc - 5) &&
-					(posY > posYc + 2 && posY < posYc + 6))
-				{
-					DoSay("Znalazlem z lewej", LANG_UNIVERSAL, m_creature);
+        DoSay("szukanie lewej sciany", LANG_UNIVERSAL, m_creature);
+        //find and add left 'wall' of triggers (from that points we will start searching and adding rest of triggers)
+        for (i = 1; i < 8; i++)
+        {
+            second = false;
+            for (std::list<Creature*>::iterator itr = tmpList.begin(); itr != tmpList.end(); itr++)
+            {
+                posX = (*itr)->GetPositionX();
+                posY = (*itr)->GetPositionY();
+                if ((posX < posXc - 1 && posX < posXc - 5) &&
+                    (posY > posYc + 2 && posY < posYc + 6))
+                {
+                    DoSay("Znalazlem z lewej", LANG_UNIVERSAL, m_creature);
 
-					current = (*itr);
-					posXc = current->GetPositionX();
-					posYc = current->GetPositionY();
+                    current = (*itr);
+                    posXc = current->GetPositionX();
+                    posYc = current->GetPositionY();
 
-					if (current->GetEntry() == TRIGGER_ID)
-						chessBoard[i][0].trigger = current;
-					else
-						chessBoard[i][0].piece = current;
+                    if (current->GetEntry() == TRIGGER_ID)
+                        chessBoard[i][0].trigger = current;
+                    else
+                        chessBoard[i][0].piece = current;
 
-					current->CastSpell(current, SPELL_MOVE_MARKER, false);
-				}
-			}
-		}
+                    current->CastSpell(current, SPELL_MOVE_MARKER, false);
+                }
+            }
+        }
 
-		DoSay("szukanie reszty", LANG_UNIVERSAL, m_creature);
-		//find and add rest triggers
-		for (i = 0; i < 8; i++)
-		{
-			current = chessBoard[i][0].trigger;
+        DoSay("szukanie reszty", LANG_UNIVERSAL, m_creature);
+        //find and add rest triggers
+        for (i = 0; i < 8; i++)
+        {
+            current = chessBoard[i][0].trigger;
 
-			if (!current)
-			{
-				DoSay("niema currenta", LANG_UNIVERSAL, m_creature);
-				printf("\nRozmiary: tmpList: %i, forChessList: %i\n", tmpList.size(), pInstance->forChessList.size());
-				break;
-			}
-			else
-				DoSay("jest current", LANG_UNIVERSAL, m_creature);
+            if (!current)
+            {
+                DoSay("niema currenta", LANG_UNIVERSAL, m_creature);
+                printf("\nRozmiary: tmpList: %i, forChessList: %i\n", tmpList.size(), pInstance->forChessList.size());
+                break;
+            }
+            else
+                DoSay("jest current", LANG_UNIVERSAL, m_creature);
 
-			posXc = chessBoard[i][0].trigger->GetPositionX();
-			posYc = chessBoard[i][0].trigger->GetPositionY();
+            posXc = chessBoard[i][0].trigger->GetPositionX();
+            posYc = chessBoard[i][0].trigger->GetPositionY();
 
-			for (j = 1; j < 8; j++)
-			{
-				second = false;
-				for (std::list<Creature*>::iterator itr = tmpList.begin(); itr != tmpList.end(); itr++)
-				{
-					posX = (*itr)->GetPositionX();
-					posY = (*itr)->GetPositionY();
-					if ((posX < posXc - 3 && posX > posXc - 7) &&
-						(posY < posYc - 2 && posY > posYc - 6))
-					{
-						current = (*itr);
-						posXc = current->GetPositionX();
-						posYc = current->GetPositionY();
-						if (current->GetEntry() == TRIGGER_ID)
-							chessBoard[i][0].trigger = current;
-						else
-							chessBoard[i][0].piece = current;
+            for (j = 1; j < 8; j++)
+            {
+                second = false;
+                for (std::list<Creature*>::iterator itr = tmpList.begin(); itr != tmpList.end(); itr++)
+                {
+                    posX = (*itr)->GetPositionX();
+                    posY = (*itr)->GetPositionY();
+                    if ((posX < posXc - 3 && posX > posXc - 7) &&
+                        (posY < posYc - 2 && posY > posYc - 6))
+                    {
+                        current = (*itr);
+                        posXc = current->GetPositionX();
+                        posYc = current->GetPositionY();
+                        if (current->GetEntry() == TRIGGER_ID)
+                            chessBoard[i][0].trigger = current;
+                        else
+                            chessBoard[i][0].piece = current;
 
-						current->CastSpell(current, SPELL_MOVE_MARKER, false);
-					}
-				}
-			}
-		}
+                        current->CastSpell(current, SPELL_MOVE_MARKER, false);
+                    }
+                }
+            }
+        }
 
-		printf("\nRozmiary: tmpList: %i, forChessList: %i\n", tmpList.size(), pInstance->forChessList.size());
-	}
-	*/
-	bool IsChessPiece(Unit * unit)
-	{
+        printf("\nRozmiary: tmpList: %i, forChessList: %i\n", tmpList.size(), pInstance->forChessList.size());
+    }
+    */
+    bool IsChessPiece(Unit * unit)
+    {
         switch (unit->GetEntry())
         {
             case NPC_BISHOP_A:
@@ -860,61 +860,61 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
         }
 
         return false;
-	}
+    }
 
-	void PrepareBoardForEvent()
-	{
-	    DoSay("zaczynam przygotowywanie planszy", LANG_UNIVERSAL, m_creature);
-	    printf("\nzaczynam przygotowywanie planszy\n");
-		if (chessBoard[0][0].trigger != 0)
-			return;
+    void PrepareBoardForEvent()
+    {
+        DoSay("zaczynam przygotowywanie planszy", LANG_UNIVERSAL, m_creature);
+        printf("\nzaczynam przygotowywanie planszy\n");
+        if (chessBoard[0][0].trigger != 0)
+            return;
 
-		Creature * current;
-		Creature * next;
-		int16 i, j;
-		float posX, posY, posXc, posYc;
-		std::list<Creature*> tmpList;
+        Creature * current;
+        Creature * next;
+        int16 i, j;
+        float posX, posY, posXc, posYc;
+        std::list<Creature*> tmpList;
 
-		printf("\nRozmiary: tmpList: %i, forChessList: %i\n", tmpList.size(), pInstance->forChessList.size());
+        printf("\nRozmiary: tmpList: %i, forChessList: %i\n", tmpList.size(), pInstance->forChessList.size());
 
-		for (std::list<uint64>::iterator i = pInstance->forChessList.begin(); i != pInstance->forChessList.end(); i++)
-		{
-			tmpList.push_back(m_creature->GetMap()->GetCreature((*i)));
-			//DoSay(".", LANG_UNIVERSAL, m_creature);
-		}
+        for (std::list<uint64>::iterator i = pInstance->forChessList.begin(); i != pInstance->forChessList.end(); i++)
+        {
+            tmpList.push_back(m_creature->GetMap()->GetCreature((*i)));
+            //DoSay(".", LANG_UNIVERSAL, m_creature);
+        }
 
-		printf("\nRozmiary: tmpList: %i, forChessList: %i\n", tmpList.size(), pInstance->forChessList.size());
+        printf("\nRozmiary: tmpList: %i, forChessList: %i\n", tmpList.size(), pInstance->forChessList.size());
 
-		//return;
-		DoSay("szukanie pierwszego", LANG_UNIVERSAL, m_creature);
-		printf("\nszukanie pierwszego\n");
-		//add first trigger to list (from that point we will start searching and adding to chessBoard oder triggers)
-		for (std::list<Creature*>::iterator itr = tmpList.begin(); itr != tmpList.end(); ++itr)
-		{
-		    //printf("\n1\n");
-			posX = (*itr)->GetPositionX();
-			if (posX < -11050 && posX > -11056)
-			{
-			    //printf("\n1.1\n");
-				DoSay("znalazlem pierwszego", LANG_UNIVERSAL, m_creature);
-				printf("\nznalazlem pierwszego\n");
+        //return;
+        DoSay("szukanie pierwszego", LANG_UNIVERSAL, m_creature);
+        printf("\nszukanie pierwszego\n");
+        //add first trigger to list (from that point we will start searching and adding to chessBoard oder triggers)
+        for (std::list<Creature*>::iterator itr = tmpList.begin(); itr != tmpList.end(); ++itr)
+        {
+            //printf("\n1\n");
+            posX = (*itr)->GetPositionX();
+            if (posX < -11050 && posX > -11056)
+            {
+                //printf("\n1.1\n");
+                DoSay("znalazlem pierwszego", LANG_UNIVERSAL, m_creature);
+                printf("\nznalazlem pierwszego\n");
                 //printf("\n1.2\n");
-				current = (*itr);
-				posXc = current->GetPositionX();
-				posYc = current->GetPositionY();
+                current = (*itr);
+                posXc = current->GetPositionX();
+                posYc = current->GetPositionY();
                 //printf("\n1.3\n");
-				if (current->GetEntry() == TRIGGER_ID)
-					chessBoard[0][0].trigger = current->GetGUID();
-				else
+                if (current->GetEntry() == TRIGGER_ID)
+                    chessBoard[0][0].trigger = current->GetGUID();
+                else
                     if (IsChessPiece(current))
                         chessBoard[0][0].piece = current->GetGUID();
                 //printf("\n1.4\n");
-				current->CastSpell(current, SPELL_MOVE_MARKER, true);
-				//tmpList.erase(itr);
-				//printf("\n1.5\n");
-			}
-			//printf("\n2\n");
-		}
+                current->CastSpell(current, SPELL_MOVE_MARKER, true);
+                //tmpList.erase(itr);
+                //printf("\n1.5\n");
+            }
+            //printf("\n2\n");
+        }
 
         for (int i = 0; i < 7; i++)
         {
@@ -1016,30 +1016,30 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
             }
             current = NULL;
         }
-	}
+    }
 
-	void TeleportPlayer(Player * player)
-	{
+    void TeleportPlayer(Player * player)
+    {
         if (player)
             player->TeleportTo(tpLoc);
-	}
+    }
 
-	void TeleportPlayers()
-	{
+    void TeleportPlayers()
+    {
         Map::PlayerList const &pList = m_creature->GetMap()->GetPlayers();
         for (Map::PlayerList::const_iterator itr = pList.begin(); itr != pList.end(); ++itr)
             if (itr->getSource() && itr->getSource()->HasAura(SPELL_POSSES_CHESSPIECE, 0))
                 TeleportPlayer(itr->getSource());
-	}
+    }
 
-	void AddPlayerToTeleportList(Player * player)
-	{
-	    if (player)
+    void AddPlayerToTeleportList(Player * player)
+    {
+        if (player)
             tpList.push_back(player);
-	}
+    }
 
-	void TeleportListedPlayers()
-	{
+    void TeleportListedPlayers()
+    {
         for (std::list<Player*>::iterator itr = tpList.begin(); itr != tpList.end(); ++itr)
         {
             if ((*itr)->HasAura(SPELL_POSSES_CHESSPIECE, 0))
@@ -1048,12 +1048,12 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
                 tpList.erase(itr);
             }
         }
-	}
+    }
 
-	void ApplyDebuffsOnRaidMembers()
-	{
-	    DoSay("ApplyDebuffsOnRaidMembers() poczatek", LANG_UNIVERSAL, m_creature);
-	    Player * tmp;
+    void ApplyDebuffsOnRaidMembers()
+    {
+        DoSay("ApplyDebuffsOnRaidMembers() poczatek", LANG_UNIVERSAL, m_creature);
+        Player * tmp;
         Map::PlayerList const &pList = m_creature->GetMap()->GetPlayers();
         for (Map::PlayerList::const_iterator itr = pList.begin(); itr != pList.end(); ++itr)
         {
@@ -1070,22 +1070,22 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
             }
         }
         DoSay("ApplyDebuffsOnRaidMembers() koniec", LANG_UNIVERSAL, m_creature);
-	}
+    }
 
-	void StartEvent()
-	{
-		DoSay("StartEvent", LANG_UNIVERSAL, m_creature);
-		PrepareBoardForEvent();
-		ApplyDebuffsOnRaidMembers();
+    void StartEvent()
+    {
+        DoSay("StartEvent", LANG_UNIVERSAL, m_creature);
+        PrepareBoardForEvent();
+        ApplyDebuffsOnRaidMembers();
 
-		DoZoneInCombat();
-		eventStarted = true;
-	}
+        DoZoneInCombat();
+        eventStarted = true;
+    }
 
     void UpdateAI(const uint32 diff)
     {
-		if (pInstance->GetData(DATA_CHESS_EVENT) == IN_PROGRESS && !eventStarted)
-			StartEvent();
+        if (pInstance->GetData(DATA_CHESS_EVENT) == IN_PROGRESS && !eventStarted)
+            StartEvent();
         if (!eventStarted)
             return;
     }
@@ -1098,7 +1098,7 @@ bool GossipHello_npc_chesspiece(Player* player, Creature* _Creature)
     if(pInstance->GetData(DATA_CHESS_EVENT) != IN_PROGRESS)
         return true;
 
-	if(pInstance->GetData(CHESS_EVENT_TEAM) == ALLIANCE && _Creature->getFaction() != A_FACTION)
+    if(pInstance->GetData(CHESS_EVENT_TEAM) == ALLIANCE && _Creature->getFaction() != A_FACTION)
         return true;
 
     if(pInstance->GetData(CHESS_EVENT_TEAM) == HORDE && _Creature->getFaction() != H_FACTION)
@@ -1117,11 +1117,11 @@ bool GossipSelect_npc_chesspiece(Player* player, Creature* _Creature, uint32 sen
 {
     if(action == GOSSIP_ACTION_INFO_DEF + 1)
     {
-		player->CastSpell(_Creature, SPELL_POSSES_CHESSPIECE, false);
+        player->CastSpell(_Creature, SPELL_POSSES_CHESSPIECE, false);
 
-		//_Creature->Say("GossipSelect_npc_chesspiece after cast", LANG_UNIVERSAL, player->GetGUID()); //for debug
-		//player->TeleportTo(532,-11087,-1899,221,0,0);
-	}
+        //_Creature->Say("GossipSelect_npc_chesspiece after cast", LANG_UNIVERSAL, player->GetGUID()); //for debug
+        //player->TeleportTo(532,-11087,-1899,221,0,0);
+    }
 
     player->CLOSE_GOSSIP_MENU();
 
@@ -1154,8 +1154,8 @@ bool GossipSelect_npc_echo_of_medivh(Player* player, Creature* _Creature, uint32
     {
         DoScriptText(SCRIPTTEXT_AT_EVENT_START,_Creature);
         pInstance->SetData(DATA_CHESS_EVENT,IN_PROGRESS);
-		pInstance->SetData(CHESS_EVENT_TEAM,player->GetTeam());
-		_Creature->GetMotionMaster()->MoveRandom(10);
+        pInstance->SetData(CHESS_EVENT_TEAM,player->GetTeam());
+        _Creature->GetMotionMaster()->MoveRandom(10);
         //player->TeleportTo(-11054.032,-1909.979,229.626,2.190);
     }
 
@@ -1166,7 +1166,7 @@ bool GossipSelect_npc_echo_of_medivh(Player* player, Creature* _Creature, uint32
 
 CreatureAI* GetAI_npc_Medivh(Creature * _Creature)
 {
-	return new boss_MedivhAI (_Creature);
+    return new boss_MedivhAI (_Creature);
 }
 
 CreatureAI* GetAI_npc_chesspiece(Creature *_Creature)
@@ -1192,7 +1192,7 @@ void AddSC_chess_event()
 
     newscript = new Script;
     newscript->Name = "npc_echo_of_medivh";
-	newscript->GetAI = &GetAI_npc_Medivh;
+    newscript->GetAI = &GetAI_npc_Medivh;
     newscript->pGossipHello = GossipHello_npc_echo_of_medivh;
     newscript->pGossipSelect = GossipSelect_npc_echo_of_medivh;
     newscript->RegisterSelf();
