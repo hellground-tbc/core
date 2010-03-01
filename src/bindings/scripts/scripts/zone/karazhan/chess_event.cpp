@@ -1062,7 +1062,7 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
             if (tmp && !tmp->isGameMaster() && tmp->isAlive())
             {
                 DoSay("ApplyDebuffsOnRaidMembers() if poczatek", LANG_UNIVERSAL, m_creature);
-                tmp->CastSpell(tmp, SPELL_IN_GAME, true);
+                //tmp->CastSpell(tmp, SPELL_IN_GAME, true);
                 //tmp->CastSpell(tmp, SPELL_GAME_IN_SESSION, true);
                 tmp->AddAura(SPELL_GAME_IN_SESSION, tmp);
                 //tmp->SetInCombatWith(m_creature);
