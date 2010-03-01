@@ -375,8 +375,6 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
                             }
                         }
                     }                
-                    if(pPlayer->HasAura(SPELL_SCALDINGWATER,0) && pPlayer->GetPositionZ() > -19.9645f)
-                        pPlayer->RemoveAurasDueToSpell(SPELL_SCALDINGWATER);
                 }
                                     
             }

@@ -557,6 +557,13 @@ void Aura::Update(uint32 diff)
             }
         }
     }
+    
+    // Scalding Water
+    if(GetId() == 37284)
+    {
+        if(!m_target->IsUnderWater())
+            m_target->RemoveAurasDueToSpell(37284);
+    }
 
     // Channeled aura required check distance from caster except in possessed cases
     Unit *pRealTarget = (GetSpellProto()->EffectApplyAuraName[m_effIndex] == SPELL_AURA_PERIODIC_TRIGGER_SPELL &&
