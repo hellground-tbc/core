@@ -219,7 +219,7 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleAuraPowerBurn,                             //162 SPELL_AURA_POWER_BURN_MANA
     &Aura::HandleNoImmediateEffect,                         //163 SPELL_AURA_MOD_CRIT_DAMAGE_BONUS_MELEE
     &Aura::HandleUnused,                                    //164 useless, only one test spell
-    &Aura::HandleNoImmediateEffect,                         //165 SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS implemented in Unit::MeleeDamageBonus
+    &Aura::HandleAuraMeleeAPAttackerBonus,                  //165 SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS used to be implemented in Unit::MeleeDamageBonus
     &Aura::HandleAuraModAttackPowerPercent,                 //166 SPELL_AURA_MOD_ATTACK_POWER_PCT
     &Aura::HandleAuraModRangedAttackPowerPercent,           //167 SPELL_AURA_MOD_RANGED_ATTACK_POWER_PCT
     &Aura::HandleNoImmediateEffect,                         //168 SPELL_AURA_MOD_DAMAGE_DONE_VERSUS            implemented in Unit::SpellDamageBonus, Unit::MeleeDamageBonus
@@ -6553,6 +6553,43 @@ void Aura::HandleArenaPreparation(bool apply, bool Real)
         m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PREPARATION);
     else
         m_target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PREPARATION);
+}
+
+void Aura::HandleAuraMeleeAPAttackerBonus(bool apply, bool Real)
+{
+    if(!Real)
+        return;
+    
+    if(apply)
+    {
+        // Hunter's Mark
+        if(GetSpellProto()->SpellFamilyName == SPELLFAMILY_HUNTER && GetSpellProto()->SpellFamilyFlags == 0x400)
+        {
+            if(Unit* caster = GetCaster())
+            {
+                Unit::AuraList overrideClassScriptAuras = caster->GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
+                for(Unit::AuraList::iterator i = overrideClassScriptAuras.begin(); i != overrideClassScriptAuras.end(); )
+                {
+                    switch((*i)->GetSpellProto()->Id)
+                    {
+                        // Improved Hunter's Mark
+                        case 19421:
+                        case 19422:
+                        case 19423:
+                        case 19424:
+                        case 19425:
+                            if(Aura* huntersMarkAura = m_target->GetAura(GetSpellProto()->Id, 1))
+                                m_modifier.m_amount = huntersMarkAura->GetModifier()->m_amount * (*i)->GetModifierValue() / 100;
+                            i = overrideClassScriptAuras.end();
+                            continue;
+                    }
+                    i++;
+                }
+            }
+        }
+    }
+
+    m_target->ApplyMeleeAPAttackerBonus(GetModifierValue(), apply);
 }
 
 void Aura::UnregisterSingleCastAura()

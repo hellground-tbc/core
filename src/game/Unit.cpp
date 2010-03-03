@@ -250,6 +250,8 @@ Unit::Unit()
     // remove aurastates allowing special moves
     for(int i=0; i < MAX_REACTIVE; ++i)
         m_reactiveTimer[i] = 0;
+
+    m_meleeAPAttackerBonus = 0;
 }
 
 Unit::~Unit()
@@ -8093,7 +8095,7 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage,WeaponAttackType attT
     }
     else
     {
-        APbonus += pVictim->GetTotalAuraModifier(SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS);
+        APbonus += pVictim->GetMeleeApAttackerBonus(); //pVictim->GetTotalAuraModifier(SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS);
 
         // ..done (base at attack power and creature type)
         AuraList const& mCreatureAttackPower = GetAurasByType(SPELL_AURA_MOD_MELEE_ATTACK_POWER_VERSUS);
@@ -11806,4 +11808,9 @@ void Unit::AddAura(uint32 spellId, Unit* target)
             }
         }
     }
+}
+
+void Unit::ApplyMeleeAPAttackerBonus(int32 value, bool apply)
+{
+    m_meleeAPAttackerBonus += apply ? value : -value;
 }
