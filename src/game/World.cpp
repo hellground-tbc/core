@@ -2204,6 +2204,21 @@ void World::UpdateSessions( time_t diff )
         ///- and remove not active sessions from the list
         if(!itr->second->Update(diff))                      // As interval = 0
         {
+            if(!RemoveQueuedPlayer(itr->second))
+            {
+                if(getConfig(CONFIG_INTERVAL_DISCONNECT_TOLERANCE))
+                {
+                    std::pair<uint32, time_t> tPair;
+                    tPair.first = GetAccountId();
+                    tPair.second = time(NULL);
+
+                    addDisconnectTime(tPair);
+                }
+
+                if(objmgr.IsUnqueuedAccount(GetAccountId()))
+                    unqueuedSessions()--;
+            }
+
             WorldSession *temp = itr->second;
             m_sessions.erase(itr);
             delete temp;
