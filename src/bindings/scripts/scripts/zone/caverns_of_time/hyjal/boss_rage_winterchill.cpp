@@ -3,12 +3,12 @@
 #include "def_hyjal.h"
 #include "hyjal_trash.h"
 
-#define SPELL_FROST_ARMOR 31256
-#define SPELL_DEATH_AND_DECAY 31258
+#define SPELL_FROST_ARMOR     31256
+#define SPELL_DEATH_AND_DECAY 39658
 
-#define SPELL_FROST_NOVA 31250
-#define SPELL_ICEBOLT 31249
-#define SPELL_BERSERK 28498
+#define SPELL_FROST_NOVA      31250
+#define SPELL_ICEBOLT         31249
+#define SPELL_BERSERK         28498
 
 #define SAY_ONDEATH "You have won this battle, but not... the... war"
 #define SOUND_ONDEATH 11026
@@ -166,6 +166,9 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
                 //AddSpellToCast(target, SPELL_DEATH_AND_DECAY);
                 DoCast(target,SPELL_DEATH_AND_DECAY);
 
+            if(NovaTimer < 20000)
+                NovaTimer = 20000 +diff;
+
             DecayTimer = 60000+rand()%20000;
             switch(rand()%2)
             {
@@ -191,7 +194,7 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
             NovaTimer = 30000+rand()%15000;
 
             if(DecayTimer < 10000)
-                DecayTimer += 10000%1000;
+                DecayTimer += 10000 +diff;
 
             switch(rand()%2)
             {

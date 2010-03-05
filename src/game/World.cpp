@@ -2209,7 +2209,7 @@ void World::UpdateSessions( time_t diff )
                 if(getConfig(CONFIG_INTERVAL_DISCONNECT_TOLERANCE))
                 {
                     std::pair<uint32, time_t> tPair;
-                    tPair.first = GetAccountId();
+                    tPair.first = itr->second->GetAccountId();
                     tPair.second = time(NULL);
 
                     addDisconnectTime(tPair);
