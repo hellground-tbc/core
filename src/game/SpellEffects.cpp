@@ -4825,6 +4825,14 @@ void Spell::EffectScriptEffect(uint32 effIndex)
     // by spell id
     switch(m_spellInfo->Id)
     {
+        case 25778:
+
+            if(!m_caster->CanHaveThreatList())
+                return;
+
+            m_creature->getThreatManager().modifyThreatPercent(unitTarget, -25);
+        break;
+        
         // PX-238 Winter Wondervolt TRAP
         case 26275:
         {
