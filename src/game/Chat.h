@@ -494,6 +494,9 @@ class ChatHandler
         bool HandleBindSightCommand(const char* args);
         bool HandleUnbindSightCommand(const char* args);
 
+        bool HandleBindFollowCommand(const char* args);
+        bool HandleUnbindFollowCommand(const char* args);
+
         Player*   getSelectedPlayer();
         Creature* getSelectedCreature();
         Unit*     getSelectedUnit();

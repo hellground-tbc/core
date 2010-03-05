@@ -72,6 +72,9 @@ class TRINITY_DLL_SPEC InstanceData
         //Called when a player successfully enters the instance.
         virtual void OnPlayerEnter(Player *) {}
 
+        //Called when player dies in instandce
+        virtual void OnPlayerDeath(Player *) {}
+
         //Called when a gameobject is created
         virtual void OnObjectCreate(GameObject *) {}
 

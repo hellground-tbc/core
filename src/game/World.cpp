@@ -104,7 +104,6 @@ World::World()
     m_startTime=m_gameTime;
     m_maxActiveSessionCount = 0;
     m_maxQueuedSessionCount = 0;
-    m_unqueuedSessions = 0;
     m_resultQueue = NULL;
     m_NextDailyQuestReset = 0;
     m_scheduledScripts = 0;
@@ -123,8 +122,9 @@ World::~World()
     while (!m_sessions.empty())
     {
         // not remove from queue, prevent loading new sessions
-        delete m_sessions.begin()->second;
+        WorldSession *temp = m_sessions.begin()->second;
         m_sessions.erase(m_sessions.begin());
+        delete temp;
     }
 
     ///- Empty the WeatherMap
@@ -198,8 +198,7 @@ void World::AddSession(WorldSession* s)
     addSessQueue.add(s);
 }
 
-void
-World::AddSession_ (WorldSession* s)
+void World::AddSession_ (WorldSession* s)
 {
     ASSERT (s);
 
@@ -243,13 +242,9 @@ World::AddSession_ (WorldSession* s)
     if(decrease_session)
         --Sessions;
 
-    if (pLimit > 0 && (Sessions - unqueuedSessions()) >= pLimit && s->GetSecurity () == SEC_PLAYER && !HasRecentlyDisconnected(s))
+    if (pLimit > 0 && Sessions >= pLimit && s->GetSecurity () == SEC_PLAYER)
     {
-        if(objmgr.IsUnqueuedAccount(s->GetAccountId()))
-        {
-            unqueuedSessions()++;
-        }
-        else
+        if(!objmgr.IsUnqueuedAccount(s->GetAccountId()) && !HasRecentlyDisconnected(s))
         {
             AddQueuedPlayer (s);
             UpdateMaxSessionCounters ();
@@ -281,7 +276,8 @@ World::AddSession_ (WorldSession* s)
 
 bool World::HasRecentlyDisconnected(WorldSession* session)
 {
-    if(!session) return false;
+    if(!session)
+        return false;
 
     if(uint32 tolerance = getConfig(CONFIG_INTERVAL_DISCONNECT_TOLERANCE))
     {
@@ -290,13 +286,13 @@ bool World::HasRecentlyDisconnected(WorldSession* session)
             next = i;
             next++;
 
-            if(difftime(i->second, time(NULL)) < tolerance)
+            if(i->first == session->GetAccountId())
             {
-                if(i->first == session->GetAccountId())
+                if(difftime(i->second, time(NULL)) <= tolerance)
                     return true;
+                else
+                    m_disconnects.erase(i);
             }
-            else
-                m_disconnects.erase(i);
         }
     }
     return false;
@@ -361,7 +357,7 @@ bool World::RemoveQueuedPlayer(WorldSession* sess)
         --sessions;
 
     // accept first in queue
-    if( (!m_playerLimit || (sessions - unqueuedSessions()) < m_playerLimit) && !m_QueuedPlayer.empty() )
+    if( (!m_playerLimit || (sessions < m_playerLimit)) && !m_QueuedPlayer.empty() )
     {
         WorldSession* pop_sess = m_QueuedPlayer.front();
         pop_sess->SetInQueue(false);
@@ -400,8 +396,9 @@ void World::RemoveWeather(uint32 id)
 
     if(itr != m_weathers.end())
     {
-        delete itr->second;
+        Weather *temp = itr->second;
         m_weathers.erase(itr);
+        delete temp;
     }
 }
 
@@ -1552,12 +1549,16 @@ void World::Update(time_t diff)
             ++m_updateTimeCount;
         }
     }
+
     RecordTimeDiff(NULL);
     ///- Update the different timers
     for(int i = 0; i < WUPDATE_COUNT; i++)
+    {
         if(m_timers[i].GetCurrent()>=0)
             m_timers[i].Update(diff);
-    else m_timers[i].SetCurrent(0);
+        else
+            m_timers[i].SetCurrent(0);
+    }
 
     RecordTimeDiff("UpdateTimers");
     ///- Update the game time and check for shutdown time
@@ -1599,7 +1600,7 @@ void World::Update(time_t diff)
 
         UpdateSessions(diff);
         // Update groups
-        for (ObjectMgr::GroupSet::iterator itr = objmgr.GetGroupSetBegin(); itr != objmgr.GetGroupSetEnd(); ++itr)
+        for(ObjectMgr::GroupSet::iterator itr = objmgr.GetGroupSetBegin(); itr != objmgr.GetGroupSetEnd(); ++itr)
             (*itr)->Update(diff);
 
     }
@@ -1617,12 +1618,12 @@ void World::Update(time_t diff)
             next = itr;
             ++next;
 
-            ///- and remove Weather objects for zones with no player
-                                                            //As interval > WorldTick
+            ///- and remove Weather objects for zones with no player as interval > WorldTick
             if(!itr->second->Update(m_timers[WUPDATE_WEATHERS].GetInterval()))
             {
-                delete itr->second;
+                Weather *temp = itr->second;
                 m_weathers.erase(itr);
+                delete temp;
             }
         }
     }
@@ -2198,11 +2199,21 @@ void World::UpdateSessions( time_t diff )
         ///- and remove not active sessions from the list
         if(!itr->second->Update(diff))                      // As interval = 0
         {
-            if(!RemoveQueuedPlayer(itr->second) && itr->second && getConfig(CONFIG_INTERVAL_DISCONNECT_TOLERANCE))
-                m_disconnects[itr->second->GetAccountId()] = time(NULL);
+            if(!RemoveQueuedPlayer(itr->second))
+            {
+                if(getConfig(CONFIG_INTERVAL_DISCONNECT_TOLERANCE))
+                {
+                    std::pair<uint32, time_t> tPair;
+                    tPair.first = itr->second->GetAccountId();
+                    tPair.second = time(NULL);
 
-            delete itr->second;
+                    addDisconnectTime(tPair);
+                }
+            }
+
+            WorldSession *temp = itr->second;
             m_sessions.erase(itr);
+            delete temp;
         }
     }
 }

@@ -632,8 +632,9 @@ void Spell::prepareDataForTriggerSystem()
         m_canTrigger = false;         // Triggered spells can`t trigger another
         switch (m_spellInfo->SpellFamilyName)
         {
-            case SPELLFAMILY_MAGE:    // Arcane Missles / Blizzard triggers need do it
+            case SPELLFAMILY_MAGE:    // Arcane Missles / Blizzard triggers need do it / Molten Armor proc also
                 if (m_spellInfo->SpellFamilyFlags & 0x0000000000200080LL) m_canTrigger = true;
+                if (m_spellInfo->SpellFamilyFlags & 0x800000000LL) m_canTrigger = true; 
             break;
             case SPELLFAMILY_WARLOCK: // For Hellfire Effect / Rain of Fire / Seed of Corruption triggers need do it
                 if (m_spellInfo->SpellFamilyFlags & 0x0000800000000060LL) m_canTrigger = true;
@@ -3140,14 +3141,11 @@ void Spell::SendChannelUpdate(uint32 time)
         m_caster->SetUInt32Value(UNIT_CHANNEL_SPELL,0);
     }
 
-    if (m_caster->GetTypeId() != TYPEID_PLAYER)
-        return;
-
     WorldPacket data( MSG_CHANNEL_UPDATE, 8+4 );
     data.append(m_caster->GetPackGUID());
     data << uint32(time);
 
-    ((Player*)m_caster)->GetSession()->SendPacket( &data );
+    m_caster->SendMessageToSet(&data, true, false);
 }
 
 void Spell::SendChannelStart(uint32 duration)
@@ -3178,15 +3176,12 @@ void Spell::SendChannelStart(uint32 duration)
         }
     }
 
-    if (m_caster->GetTypeId() == TYPEID_PLAYER)
-    {
-        WorldPacket data( MSG_CHANNEL_START, (8+4+4) );
-        data.append(m_caster->GetPackGUID());
-        data << uint32(m_spellInfo->Id);
-        data << uint32(duration);
+    WorldPacket data( MSG_CHANNEL_START, (8+4+4) );
+    data.append(m_caster->GetPackGUID());
+    data << uint32(m_spellInfo->Id);
+    data << uint32(duration);
 
-        ((Player*)m_caster)->GetSession()->SendPacket( &data );
-    }
+    m_caster->SendMessageToSet(&data, true, false);
 
     m_timer = duration;
     if(target)

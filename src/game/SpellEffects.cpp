@@ -1736,6 +1736,27 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->CastSpell(unitTarget, 5940, true);
                     return;
                 }
+                // slice and dice
+                case 5171:
+                case 6774:
+                {
+                    Unit::AuraList procTriggerAuras = m_caster->GetAurasByType(SPELL_AURA_PROC_TRIGGER_SPELL);
+                    for(Unit::AuraList::iterator i = procTriggerAuras.begin(); i != procTriggerAuras.end(); i++)
+                    {
+                        switch((*i)->GetSpellProto()->Id)
+                        {
+                            // expose weakness
+                            case 31239:
+                            case 31233:
+                            case 31240:
+                            case 31241:
+                            case 31242:
+                                m_caster->CastSpell(unitTarget, (*i)->GetSpellProto()->EffectTriggerSpell[(*i)->GetEffIndex()], true, NULL, (*i));
+                                return;
+                        }
+                    }
+                    return;
+                }
             }
             break;
         case SPELLFAMILY_HUNTER:
@@ -4804,6 +4825,14 @@ void Spell::EffectScriptEffect(uint32 effIndex)
     // by spell id
     switch(m_spellInfo->Id)
     {
+        case 25778:
+
+            if(!m_caster->CanHaveThreatList())
+                return;
+
+            m_caster->getThreatManager().modifyThreatPercent(unitTarget, -25);
+        break;
+        
         // PX-238 Winter Wondervolt TRAP
         case 26275:
         {

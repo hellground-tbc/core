@@ -219,7 +219,7 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleAuraPowerBurn,                             //162 SPELL_AURA_POWER_BURN_MANA
     &Aura::HandleNoImmediateEffect,                         //163 SPELL_AURA_MOD_CRIT_DAMAGE_BONUS_MELEE
     &Aura::HandleUnused,                                    //164 useless, only one test spell
-    &Aura::HandleNoImmediateEffect,                         //165 SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS implemented in Unit::MeleeDamageBonus
+    &Aura::HandleAuraMeleeAPAttackerBonus,                  //165 SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS used to be implemented in Unit::MeleeDamageBonus
     &Aura::HandleAuraModAttackPowerPercent,                 //166 SPELL_AURA_MOD_ATTACK_POWER_PCT
     &Aura::HandleAuraModRangedAttackPowerPercent,           //167 SPELL_AURA_MOD_RANGED_ATTACK_POWER_PCT
     &Aura::HandleNoImmediateEffect,                         //168 SPELL_AURA_MOD_DAMAGE_DONE_VERSUS            implemented in Unit::SpellDamageBonus, Unit::MeleeDamageBonus
@@ -557,6 +557,13 @@ void Aura::Update(uint32 diff)
             }
         }
     }
+    
+    // Scalding Water
+    if(GetId() == 37284)
+    {
+        if(!m_target->IsUnderWater())
+            m_target->RemoveAurasDueToSpell(37284);
+    }
 
     // Channeled aura required check distance from caster except in possessed cases
     Unit *pRealTarget = (GetSpellProto()->EffectApplyAuraName[m_effIndex] == SPELL_AURA_PERIODIC_TRIGGER_SPELL &&
@@ -878,6 +885,7 @@ void Aura::_AddAura()
 {
     if (!GetId())
         return;
+
     if(!m_target)
         return;
 
@@ -891,7 +899,7 @@ void Aura::_AddAura()
         for(Unit::AuraMap::const_iterator itr = m_target->GetAuras().lower_bound(spair); itr != m_target->GetAuras().upper_bound(spair); ++itr)
         {
             // allow use single slot only by auras from same caster
-            if(itr->second->GetCasterGUID()==GetCasterGUID())
+            if(itr->second->GetCasterGUID() == GetCasterGUID())
             {
                 secondaura = true;
                 slot = itr->second->GetAuraSlot();
@@ -937,7 +945,7 @@ void Aura::_AddAura()
     if (getDiminishGroup() != DIMINISHING_NONE )
         m_target->ApplyDiminishingAura(getDiminishGroup(),true);
 
-    int max_slot = m_target->GetTypeId() == TYPEID_PLAYER ? MAX_POSITIVE_AURAS : 16;
+    int max_slot = m_target->isCharmedOwnedByPlayerOrPlayer() ? MAX_POSITIVE_AURAS : 16;
 
     // passive auras (except totem auras) do not get placed in the slots
     // area auras with SPELL_AURA_NONE are not shown on target
@@ -1042,7 +1050,7 @@ void Aura::_RemoveAura()
         Unit::spellEffectPair spair = Unit::spellEffectPair(GetId(), i);
         for(Unit::AuraMap::const_iterator itr = m_target->GetAuras().lower_bound(spair); itr != m_target->GetAuras().upper_bound(spair); ++itr)
         {
-            if(itr->second->GetAuraSlot()==slot)
+            if(itr->second->GetAuraSlot() == slot)
             {
                 samespell = true;
 
@@ -1160,6 +1168,37 @@ void Aura::UpdateSlotCounterAndDuration()
         SetAuraApplication(slot, m_stackAmount-1);
 
     UpdateAuraDuration();
+}
+
+bool Aura::isWeaponBuffCoexistableWith(Aura *ref)
+{
+     // Exclude Debuffs
+    if (!ref || !IsPositiveSpell(GetId()))
+        return false;
+
+    // Exclude Non-generic Buffs
+    if (GetSpellProto()->SpellFamilyName != SPELLFAMILY_GENERIC || GetId() == 42976)
+        return false;
+
+    // Exclude Stackable Buffs [ie: Blood Reserve]
+    if (GetSpellProto()->StackAmount)
+        return false;
+
+    if (GetCaster()->GetTypeId() == TYPEID_PLAYER)
+    {
+        if (Item* castItem = ((Player*)GetCaster())->GetItemByGuid(GetCastItemGUID()))
+        {
+            // Limit to Weapon-Slots
+            if (castItem->IsEquipped() &&
+               (castItem->GetSlot() == EQUIPMENT_SLOT_MAINHAND ||
+                castItem->GetSlot() == EQUIPMENT_SLOT_OFFHAND))
+            {
+                if (ref->GetCastItemGUID() != GetCastItemGUID())
+                    return true;
+            }
+        }
+    }
+    return false;
 }
 
 /*********************************************************/
@@ -1546,8 +1585,33 @@ void Aura::TriggerSpell()
                             caster->CastSpell(m_target,spell_id,true);
                         return;
                     }
-//                    // Gravity Lapse
-//                    case 34480: break;
+                    // Gravity Lapse
+                    case 34480:
+                    {
+                        int32 value = 250 + rand()%250;
+                        float height = caster->GetPositionZ();
+                    
+                        if(caster->HasAura(34480, 1) && height < 55)
+                            {
+                                int32 GLduration = caster->GetAura(34480, 1)->GetAuraDuration();
+                                
+                                caster->CastCustomSpell(m_target, 34480, &value, NULL, NULL, true);  //knockback all that are too low
+                                if(Aura *aur = caster->GetAura(34480, 1))
+                                    aur->SetAuraDuration(GLduration);   //do not change spell duration each time knockback is applied
+                            }
+
+                        if(caster->HasAura(39432, 0) && caster->HasUnitMovementFlag(MOVEMENTFLAG_FALLING) && height < 70)
+                        {
+                            int32 FlightDuration = caster->GetAura(39432, 0)->GetAuraDuration();
+
+                            caster->RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING);    //deal fall damage, and reapply flight aura without duration changes
+                            caster->CastSpell(m_target, 39432, true);
+                            if(Aura* aur = caster->GetAura(39432, 0))
+                                aur->SetAuraDuration(FlightDuration);
+                        }
+
+                        break;
+                    }
 //                    // Tornado
 //                    case 34683: break;
 //                    // Frostbite Rotate
@@ -2465,14 +2529,7 @@ void Aura::HandleAuraHover(bool apply, bool Real)
     if(!Real)
         return;
 
-    WorldPacket data;
-    if(apply)
-        data.Initialize(SMSG_MOVE_SET_HOVER, 8+4);
-    else
-        data.Initialize(SMSG_MOVE_UNSET_HOVER, 8+4);
-    data.append(m_target->GetPackGUID());
-    data << uint32(0);
-    m_target->SendMessageToSet(&data,true);
+    m_target->setHover(apply);
 }
 
 void Aura::HandleWaterBreathing(bool apply, bool Real)
@@ -6496,6 +6553,43 @@ void Aura::HandleArenaPreparation(bool apply, bool Real)
         m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PREPARATION);
     else
         m_target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PREPARATION);
+}
+
+void Aura::HandleAuraMeleeAPAttackerBonus(bool apply, bool Real)
+{
+    if(!Real)
+        return;
+    
+    if(apply)
+    {
+        // Hunter's Mark
+        if(GetSpellProto()->SpellFamilyName == SPELLFAMILY_HUNTER && GetSpellProto()->SpellFamilyFlags == 0x400)
+        {
+            if(Unit* caster = GetCaster())
+            {
+                Unit::AuraList overrideClassScriptAuras = caster->GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
+                for(Unit::AuraList::iterator i = overrideClassScriptAuras.begin(); i != overrideClassScriptAuras.end(); )
+                {
+                    switch((*i)->GetSpellProto()->Id)
+                    {
+                        // Improved Hunter's Mark
+                        case 19421:
+                        case 19422:
+                        case 19423:
+                        case 19424:
+                        case 19425:
+                            if(Aura* huntersMarkAura = m_target->GetAura(GetSpellProto()->Id, 1))
+                                m_modifier.m_amount = huntersMarkAura->GetModifier()->m_amount * (*i)->GetModifierValue() / 100;
+                            i = overrideClassScriptAuras.end();
+                            continue;
+                    }
+                    i++;
+                }
+            }
+        }
+    }
+
+    m_target->ApplyMeleeAPAttackerBonus(GetModifierValue(), apply);
 }
 
 void Aura::UnregisterSingleCastAura()

@@ -214,8 +214,9 @@ void PetAI::UpdateAI(const uint32 diff)
         }
         while (!m_targetSpellStore.empty())
         {
-            delete m_targetSpellStore.begin()->second;
+            Spell *temp = m_targetSpellStore.begin()->second;
             m_targetSpellStore.erase(m_targetSpellStore.begin());
+            delete temp;
         }
     }
 }

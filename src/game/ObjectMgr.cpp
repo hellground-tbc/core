@@ -2627,8 +2627,9 @@ void ObjectMgr::LoadGroups()
         if((*itr)->GetMembersCount() < 2)
         {
             (*itr)->Disband();
-            delete *itr;
+            Group *temp = *itr;
             mGroupSet.erase(itr++);
+            delete temp;
         }
         else
             ++itr;

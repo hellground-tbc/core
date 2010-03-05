@@ -60,12 +60,9 @@ _logoutTime(0), m_inQueue(false), m_playerLoading(false), m_playerLogout(false),
 /// WorldSession destructor
 WorldSession::~WorldSession()
 {
-    if(objmgr.IsUnqueuedAccount(GetAccountId()))
-        sWorld.unqueuedSessions()--;
-
     ///- unload player if not unloaded
     if (_player)
-        LogoutPlayer (true);
+        LogoutPlayer(true);
 
     /// - If have unclosed socket, close it
     if (m_Socket)

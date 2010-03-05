@@ -2120,6 +2120,12 @@ class TRINITY_DLL_SPEC Player : public Unit
         bool HasTitle(CharTitlesEntry const* title) { return HasTitle(title->bit_index); }
         void SetTitle(CharTitlesEntry const* title);
 
+        // you can't follow while being followed
+        void setGMFollow(uint64 guid) {m_GMfollow_GUID = guid; m_GMfollowtarget_GUID = 0;}
+        void setFollowTarget(uint64 guid) {m_GMfollowtarget_GUID = guid; m_GMfollow_GUID = 0;}
+        uint64 getFollowTarget() {return m_GMfollowtarget_GUID;}
+        uint64 getFollowingGM() {return m_GMfollow_GUID;}
+
     protected:
 
         /*********************************************************/
@@ -2358,6 +2364,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         bool m_farsightVision;
 
         DeclinedName *m_declinedname;
+
     private:
         // internal common parts for CanStore/StoreItem functions
         uint8 _CanStoreItem_InSpecificSlot( uint8 bag, uint8 slot, ItemPosCountVec& dest, ItemPrototype const *pProto, uint32& count, bool swap, Item *pSrcItem ) const;
@@ -2369,6 +2376,11 @@ class TRINITY_DLL_SPEC Player : public Unit
         MapReference m_mapRef;
 
         PlayerAI *i_AI;
+
+        uint64 m_GMfollowtarget_GUID; // za kim chodzi
+        uint64 m_GMfollow_GUID;       // gm ktory chodzi za playerem
+
+        bool updateLock;
 };
 
 void AddItemsSetItem(Player*player,Item *item);

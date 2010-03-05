@@ -385,7 +385,6 @@ class World
         /// Get the maximum number of parallel sessions on the server since last reboot
         uint32 GetMaxQueuedSessionCount() const { return m_maxQueuedSessionCount; }
         uint32 GetMaxActiveSessionCount() const { return m_maxActiveSessionCount; }
-        uint32 &unqueuedSessions(){ return m_unqueuedSessions; }
         Player* FindPlayerInZone(uint32 zone);
 
         Weather* FindWeather(uint32 id) const;
@@ -542,6 +541,8 @@ class World
         char const* GetScriptsVersion() { return m_ScriptsVersion.c_str(); }
 
         void RecordTimeDiff(const char * text, ...);
+        void addDisconnectTime(std::pair<uint32,time_t> tPair){ m_disconnects.insert(tPair); }
+        ACE_Thread_Mutex m_spellUpdateLock;
     protected:
         void _UpdateGameTime();
         // callback for UpdateRealmCharacters
@@ -575,7 +576,6 @@ class World
         DisconnectMap m_disconnects;
         uint32 m_maxActiveSessionCount;
         uint32 m_maxQueuedSessionCount;
-        uint32 m_unqueuedSessions;
 
         std::string m_newCharString;
 

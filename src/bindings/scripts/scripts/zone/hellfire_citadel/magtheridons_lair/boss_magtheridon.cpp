@@ -238,6 +238,8 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public ScriptedAI
 
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
+        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
         m_creature->CastSpell(m_creature, SPELL_SHADOW_CAGE_C, true);
     }
 
@@ -370,7 +372,9 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public ScriptedAI
             // to avoid earthquake interruption
             if(!m_creature->hasUnitState(UNIT_STAT_STUNNED))
             {
-                AddSpellToCastWithScriptText(m_creature, SPELL_BLASTNOVA, EMOTE_BLASTNOVA, m_creature);
+                //AddSpellToCastWithScriptText(m_creature, SPELL_BLASTNOVA, EMOTE_BLASTNOVA, m_creature);
+                DoScriptText(EMOTE_BLASTNOVA, m_creature);
+                DoCast(m_creature, SPELL_BLASTNOVA, true);
                 BlastNova_Timer = 60000;
             }
         }
@@ -379,7 +383,8 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public ScriptedAI
 
         if(Quake_Timer < diff)
         {
-            AddSpellToCast(m_creature, SPELL_QUAKE_TRIGGER);
+            //AddSpellToCast(m_creature, SPELL_QUAKE_TRIGGER);
+            DoCast(m_creature, SPELL_QUAKE_TRIGGER);
             Quake_Timer = 50000;
         }
         else
