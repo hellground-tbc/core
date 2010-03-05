@@ -4830,7 +4830,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             if(!m_caster->CanHaveThreatList())
                 return;
 
-            m_creature->getThreatManager().modifyThreatPercent(unitTarget, -25);
+            m_caster->getThreatManager().modifyThreatPercent(unitTarget, -25);
         break;
         
         // PX-238 Winter Wondervolt TRAP

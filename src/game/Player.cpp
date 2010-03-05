@@ -10185,6 +10185,10 @@ uint8 Player::CanUnequipItem( uint16 pos, bool swap ) const
                 return EQUIP_ERR_NOT_DURING_ARENA_MATCH;
     }
 
+    // prevent swaping bags if player is trading
+    if (swap && pItem->IsBag() && pTrader)
+        return EQUIP_ERR_ITEMS_CANT_BE_SWAPPED;
+
     if(!swap && pItem->IsBag() && !((Bag*)pItem)->IsEmpty())
         return EQUIP_ERR_CAN_ONLY_DO_WITH_EMPTY_BAGS;
 
