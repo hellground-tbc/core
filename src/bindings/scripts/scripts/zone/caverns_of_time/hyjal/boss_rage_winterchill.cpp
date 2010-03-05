@@ -194,7 +194,7 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
             NovaTimer = 30000+rand()%15000;
 
             if(DecayTimer < 10000)
-                DecayTimer += 10000 +diff;
+                DecayTimer = 10000 +diff;
 
             switch(rand()%2)
             {
