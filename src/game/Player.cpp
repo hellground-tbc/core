@@ -9542,6 +9542,11 @@ uint8 Player::_CanStoreItem( uint8 bag, uint8 slot, ItemPosCountVec &dest, uint3
         // search free slot in bag for place to
         if( bag == INVENTORY_SLOT_BAG_0 )                   // inventory
         {
+            // if src item is bag don't search empty slot to avoid puting bag into self
+            // it can happen because bag is removed after finding free slot which can be in swaping bag
+            if (pItem->IsBag())
+                return EQUIP_ERR_ITEMS_CANT_BE_SWAPPED;
+
             // search free slot - keyring case
             if(pProto->BagFamily & BAG_FAMILY_MASK_KEYS)
             {
