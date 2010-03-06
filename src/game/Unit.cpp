@@ -2448,6 +2448,11 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     bool canDodge = true;
     bool canParry = true;
     bool canBlock = spell->AttributesEx3 & SPELL_ATTR_EX3_UNK3;
+
+    // Creature has unblockable attack info
+    if(pVictim->GetTypeId() == TYPEID_UNIT && ((Creature*)pVictim)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_BLOCK_ON_ATTACK)
+        canBlock = false;
+
     //We use SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY until right Attribute was found
     bool canMiss = !(spell->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY);
 
