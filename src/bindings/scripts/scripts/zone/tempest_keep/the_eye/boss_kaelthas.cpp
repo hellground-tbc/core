@@ -1607,10 +1607,10 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
 
             if(target)
                 //AddSpellToCast(target, SPELL_CONFLAGRATION);
-                DoCast(target, SPELL_CONFLAGRATION);
+                DoCast(target, SPELL_CONFLAGRATION, true);
             else
                 //AddSpellToCast(m_creature->getVictim(), SPELL_CONFLAGRATION);
-                DoCast(m_creature->getVictim(), SPELL_CONFLAGRATION);
+                DoCast(m_creature->getVictim(), SPELL_CONFLAGRATION, true);
 
             Conflagration_Timer = 10000+rand()%5000;
         }
