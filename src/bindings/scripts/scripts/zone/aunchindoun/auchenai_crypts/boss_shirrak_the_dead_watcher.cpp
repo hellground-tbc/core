@@ -60,7 +60,19 @@ struct TRINITY_DLL_DECL boss_shirrak_the_dead_watcherAI : public ScriptedAI
     }
 
     void Aggro(Unit *who)
-    { }
+    {
+    }
+
+    void JustDied(Unit *killer)
+    {
+            Map *map = m_creature->GetMap();
+            Map::PlayerList const &PlayerList = map->GetPlayers();
+            for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+            {
+                if(Player* i_pl = i->getSource())
+                    i_pl->RemoveAurasDueToSpell(SPELL_INHIBITMAGIC,0);
+            }
+    }
 
     void JustSummoned(Creature *summoned)
     {
@@ -90,6 +102,7 @@ struct TRINITY_DLL_DECL boss_shirrak_the_dead_watcherAI : public ScriptedAI
                 {
                     if(i_pl->isAlive() && (dist = i_pl->GetDistance(m_creature)) <= 45)
                     {
+                        i_pl->RemoveAurasDueToSpell(SPELL_INHIBITMAGIC,0);
                         m_creature->AddAura(SPELL_INHIBITMAGIC, i_pl);
                         if(Aura *inh_magic = i_pl->GetAura(SPELL_INHIBITMAGIC,0))
                         {
