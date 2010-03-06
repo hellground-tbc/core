@@ -603,6 +603,7 @@ CreatureAI* GetAI_mob_abomination(Creature* _Creature)
 }
 
 #define SPELL_FRENZY 31540
+#define SPELL_CANNIBALIZE 31537
 
 struct mob_ghoulAI : public hyjal_trashAI
 {
@@ -652,6 +653,11 @@ struct mob_ghoulAI : public hyjal_trashAI
             }
 
         }
+    }
+
+    void KilledUnit(Unit* victim)
+    {
+        DoCast(m_creature,SPELL_CANNIBALIZE);
     }
 
     void Aggro(Unit* who) {}
@@ -706,6 +712,7 @@ CreatureAI* GetAI_mob_ghoul(Creature* _Creature)
 #define SPELL_RAISE_DEAD_2 31624
 #define SPELL_RAISE_DEAD_3 31625
 #define SPELL_SHADOW_BOLT 31627
+#define SPELL_UNHOLY_FRENZY 31626
 
 struct mob_necromancerAI : public hyjal_trashAI
 {
@@ -719,10 +726,12 @@ struct mob_necromancerAI : public hyjal_trashAI
     SummonList summons;
     bool go;
     uint32 ShadowBoltTimer;
+    uint32 UnholyFrenzyTimer;
     uint32 pos;
     void Reset()
     {
         ShadowBoltTimer = 1000+rand()%5000;
+        UnholyFrenzyTimer = 5000;
         summons.DespawnAll();
     }
 
@@ -808,8 +817,14 @@ struct mob_necromancerAI : public hyjal_trashAI
         if(ShadowBoltTimer<diff)
         {
             DoCast(m_creature->getVictim(),SPELL_SHADOW_BOLT);
-            ShadowBoltTimer = 20000+rand()%10000;
+            ShadowBoltTimer = 5000+rand()%5000;
         }else ShadowBoltTimer -= diff;
+
+        if(UnholyFrenzyTimer<diff)
+        {
+            DoCast(m_creature,SPELL_UNHOLY_FRENZY);
+            UnholyFrenzyTimer = 10000+rand()%5000;
+        }else UnholyFrenzyTimer -= diff;
 
         DoMeleeAttackIfReady();
     }
@@ -842,9 +857,9 @@ struct mob_bansheeAI : public hyjal_trashAI
     uint32 pos;
     void Reset()
     {
-        CourseTimer = 20000+rand()%5000;
+        CourseTimer = 10000+rand()%5000;
         WailTimer = 15000+rand()%5000;
-        ShellTimer = 50000+rand()%10000;
+        ShellTimer = 5000+rand()%10000;
     }
 
     void WaypointReached(uint32 i)
@@ -899,18 +914,19 @@ struct mob_bansheeAI : public hyjal_trashAI
             return;
         if(CourseTimer<diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_BANSHEE_CURSE);
+            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 50, true);
+            DoCast(target,SPELL_BANSHEE_CURSE);
             CourseTimer = 20000+rand()%5000;
         }else CourseTimer -= diff;
         if(WailTimer<diff)
         {
             DoCast(m_creature->getVictim(),SPELL_BANSHEE_WAIL);
-            WailTimer = 15000+rand()%5000;
+            WailTimer = 5000+rand()%5000;
         }else WailTimer -= diff;
         if(ShellTimer<diff)
         {
             DoCast(m_creature,SPELL_ANTI_MAGIC_SHELL);
-            ShellTimer = 50000+rand()%10000;
+            ShellTimer = 30000+rand()%10000;
         }else ShellTimer -= diff;
         DoMeleeAttackIfReady();
     }
