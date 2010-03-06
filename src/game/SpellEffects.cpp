@@ -415,7 +415,8 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                     if(unitTarget->HasAuraState(AURA_STATE_IMMOLATE))
                         damage += int32(damage*0.25);
                     // T5 bonus - increase immolate damage on incinerate hit
-                    if(m_caster->HasAura(37384, 0)) {
+                    if(m_caster->HasAura(37384, 0))
+                    {
                         // look for immolate casted by m_caster
                         Unit::AuraList const &mPeriodic = unitTarget->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
                         for(Unit::AuraList::const_iterator i = mPeriodic.begin(); i != mPeriodic.end(); ++i)
@@ -431,9 +432,11 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                     }
                 }
                 // Shadow bolt
-                if (m_spellInfo->SpellFamilyFlags & 1) {
+                if (m_spellInfo->SpellFamilyFlags & 1)
+                {
                     // T5 bonus - increase corruption on shadow bolt hit
-                    if(m_caster->HasAura(37384, 0)) {
+                    if(m_caster->HasAura(37384, 0))
+                    {
                         // look for corruption casted by m_caster
                         Unit::AuraList const &mPeriodic = unitTarget->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
                         for(Unit::AuraList::const_iterator i = mPeriodic.begin(); i != mPeriodic.end(); ++i)
@@ -1746,7 +1749,7 @@ void Spell::EffectDummy(uint32 i)
                     {
                         switch((*i)->GetSpellProto()->Id)
                         {
-                            // expose weakness
+                            // find weakness
                             case 31239:
                             case 31233:
                             case 31240:

@@ -1119,7 +1119,7 @@ void Player::CharmAI(bool apply)
 
 void Player::Update( uint32 p_time )
 {
-    if(!IsInWorld() || updateLock)
+    if(!IsInWorld()/* || updateLock*/)
         return;
     
     updateLock = true;
