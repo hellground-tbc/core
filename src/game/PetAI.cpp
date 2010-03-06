@@ -38,7 +38,7 @@ int PetAI::Permissible(const Creature *creature)
     return PERMIT_BASE_NO;
 }
 
-PetAI::PetAI(Creature *c) : CreatureAI(c), i_pet(*c), i_tracker(TIME_INTERVAL_LOOK)
+PetAI::PetAI(Creature *c) : CreatureAI(c), i_pet(*c), i_tracker(TIME_INTERVAL_LOOK), m_recentlyCastedSpell(false)
 {
     m_AllySet.clear();
     UpdateAllies();
@@ -98,7 +98,7 @@ void PetAI::UpdateAI(const uint32 diff)
     else
         m_updateAlliesTimer -= diff;
 
-    // i_pet.getVictim() can't be used for check in case stop fighting, i_pet.getVictim() clear at Unit death etc.
+   // i_pet.getVictim() can't be used for check in case stop fighting, i_pet.getVictim() clear at Unit death etc.
     if( i_pet.getVictim() )
     {
         if( _needToStop() )
@@ -125,6 +125,8 @@ void PetAI::UpdateAI(const uint32 diff)
 
     if(!me->GetCharmInfo())
         return;
+
+    bool spellCasted = false;
 
     if (i_pet.GetGlobalCooldown() == 0 && !i_pet.hasUnitState(UNIT_STAT_CASTING))
     {
@@ -162,6 +164,7 @@ void PetAI::UpdateAI(const uint32 diff)
             }
             else
             {
+
                 bool spellUsed = false;
                 for(std::set<uint64>::iterator tar = m_AllySet.begin(); tar != m_AllySet.end(); ++tar)
                 {
@@ -210,6 +213,7 @@ void PetAI::UpdateAI(const uint32 diff)
             if(i_pet.isPet())
                 ((Pet*)&i_pet)->CheckLearning(spell->m_spellInfo->Id);
 
+            spellCasted = true;
             spell->prepare(&targets);
         }
         while (!m_targetSpellStore.empty())
@@ -218,6 +222,29 @@ void PetAI::UpdateAI(const uint32 diff)
             m_targetSpellStore.erase(m_targetSpellStore.begin());
             delete temp;
         }
+    }
+    
+    if((i_pet.hasUnitState(UNIT_STAT_CASTING) || spellCasted) && !m_recentlyCastedSpell)
+    {
+        i_pet.clearUnitState(UNIT_STAT_FOLLOW);
+        me->GetMotionMaster()->Clear();
+        me->GetMotionMaster()->MoveIdle();
+        m_recentlyCastedSpell = true;
+    }
+
+    if(!i_pet.hasUnitState(UNIT_STAT_CASTING) && m_recentlyCastedSpell && !spellCasted)
+    {
+        if(owner && i_pet.GetCharmInfo() && i_pet.GetCharmInfo()->HasCommandState(COMMAND_FOLLOW))
+        {
+            i_pet.GetMotionMaster()->MoveFollow(owner,PET_FOLLOW_DIST,PET_FOLLOW_ANGLE);
+        }
+        else
+        {
+            i_pet.clearUnitState(UNIT_STAT_FOLLOW);
+            i_pet.GetMotionMaster()->Clear();
+            i_pet.GetMotionMaster()->MoveIdle();
+        }
+        m_recentlyCastedSpell = false;
     }
 }
 
@@ -250,8 +277,8 @@ void PetAI::UpdateAllies()
             if(!Target || !pGroup->SameSubGroup((Player*)owner, Target))
                 continue;
 
-            if(Target->GetGUID() == owner->GetGUID())
-                continue;
+//            if(Target->GetGUID() == owner->GetGUID())
+//                continue;
 
             m_AllySet.insert(Target->GetGUID());
         }
