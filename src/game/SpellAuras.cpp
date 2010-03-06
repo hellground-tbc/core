@@ -1588,28 +1588,35 @@ void Aura::TriggerSpell()
                     // Gravity Lapse
                     case 34480:
                     {
-                        int32 value = 250 + rand()%250;
+                        int32 duration = caster->GetAura(34480, 1)->GetAuraDuration();
                         float height = caster->GetPositionZ();
-                    
-                        if(caster->HasAura(34480, 1) && height < 55)
-                            {
-                                int32 GLduration = caster->GetAura(34480, 1)->GetAuraDuration();
-                                
-                                caster->CastCustomSpell(m_target, 34480, &value, NULL, NULL, true);  //knockback all that are too low
-                                if(Aura *aur = caster->GetAura(34480, 1))
-                                    aur->SetAuraDuration(GLduration);   //do not change spell duration each time knockback is applied
-                            }
 
-                        if(caster->HasAura(39432, 0) && caster->HasUnitMovementFlag(MOVEMENTFLAG_FALLING) && height < 70)
+                        if(!caster->HasAura(39432, 0) && height > 55)
                         {
-                            int32 FlightDuration = caster->GetAura(39432, 0)->GetAuraDuration();
-
-                            caster->RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING);    //deal fall damage, and reapply flight aura without duration changes
-                            caster->CastSpell(m_target, 39432, true);
+                            caster->AddAura(39432, m_target);
                             if(Aura* aur = caster->GetAura(39432, 0))
-                                aur->SetAuraDuration(FlightDuration);
+                                aur->SetAuraDuration(duration);
                         }
 
+                        if(!caster->HasUnitMovementFlag(MOVEMENTFLAG_FALLING))
+                        {
+                            if(height < 55 && height > 50)
+                                {
+                                    caster->CastSpell(m_target, 34480, true);
+                                    if(Aura* GLapse = caster->GetAura(34480, 1))
+                                        GLapse->SetAuraDuration(duration);
+                                }
+
+                            if(height < 50)
+                                {
+                                    caster->CastSpell(m_target, 34480, true);
+                                    if(Aura* GLapse = caster->GetAura(34480, 1))
+                                        GLapse->SetAuraDuration(duration);
+                                    caster->CastSpell(m_target, 39432, true);
+                                    if(Aura* aur = caster->GetAura(39432, 0))
+                                        aur->SetAuraDuration(duration);
+                                }
+                        }
                         break;
                     }
 //                    // Tornado

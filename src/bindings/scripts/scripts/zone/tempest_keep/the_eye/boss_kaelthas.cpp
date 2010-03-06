@@ -1172,6 +1172,8 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                                 m_creature->GetMotionMaster()->Clear();
                                 m_creature->GetMotionMaster()->MoveIdle();
                                 DoTeleportTo(GRAVITY_X, GRAVITY_Y, GRAVITY_Z);
+                                if(pInstance)
+                                    pInstance->SetData(DATA_KAELTHASEVENT, 5);    // set KaelthasEventPhase = 5 for Gravity Lapse phase
                                 // 1) Kael'thas casts teleportation visual spell on self
                                 m_creature->CastSpell(m_creature, SPELL_GRAVITY_KAEL_VISUAL, false);
                                 switch(rand()%2)
@@ -1198,15 +1200,12 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                                         m_creature->CastSpell(pUnit, glapse_teleport_id, true);  //this should probably go to the core
                                         // 2) At that point he will put a Gravity Lapse debuff on everyone
                                         pUnit->CastSpell(pUnit, SPELL_GRAVITY_LAPSE, false);
-                                        pUnit->CastSpell(pUnit, SPELL_GRAVITY_LAPSE_FLIGHT_AURA, true);
+                                        //pUnit->CastSpell(pUnit, SPELL_GRAVITY_LAPSE_FLIGHT_AURA, true);    //moved to the core
                                         glapse_teleport_id++;
                                     }
                                 }
 
                                 summons.AuraOnEntry(PHOENIX,SPELL_BANISH,true);
-
-                                if(pInstance)
-                                    pInstance->SetData(DATA_KAELTHASEVENT, 5);    // set KaelthasEventPhase = 5 for Gravity Lapse phase
 
                                 //Cast nether vapor summoning
                                 GravityLapse_Timer = 3000;
