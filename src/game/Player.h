@@ -1758,6 +1758,9 @@ class TRINITY_DLL_SPEC Player : public Unit
         void UpdateSkillsToMaxSkillsForLevel();             // for .levelup
         void ModifySkillBonus(uint32 skillid,int32 val, bool talent);
 
+
+        uint32 m_AC_timer;
+
         /*********************************************************/
         /***                  PVP SYSTEM                       ***/
         /*********************************************************/

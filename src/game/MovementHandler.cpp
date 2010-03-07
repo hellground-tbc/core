@@ -316,6 +316,33 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
     data.append(recv_data.contents(), recv_data.size());
     GetPlayer()->SendMessageToSet(&data, false);
 
+    if (GetPlayer()->m_AC_timer == 0)
+        if ((MovementFlags & (MOVEMENTFLAG_JUMPING | MOVEMENTFLAG_FALLING | MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_ONTRANSPORT)) == 0)
+        {
+            if (GetPlayer()->GetMap() && !GetPlayer()->GetMap()->IsBattleGroundOrArena())
+            {
+                float speed;
+                float distance = GetPlayer()->GetDistance2d(movementInfo.x, movementInfo.y);
+                if (MovementFlags & MOVEMENTFLAG_FLYING)
+                    speed = GetPlayer()->GetSpeed(MOVE_FLIGHT);
+                else
+                    speed = GetPlayer()->GetSpeed(MOVE_RUN);
+
+                // czasem UNIT_STAT_CHARGING schodzi póŸniej/wczeœniej ni¿ m_AC_timer
+                if (!GetPlayer()->hasUnitState(UNIT_STAT_CHARGING))
+                    if (distance > (2.0f + ((speed - 7.0f) * 3.5f + 0.2f/* zapas */)))
+                    {
+                        // ~ not dok³adnie taki jak powinien byæ, ale daje bardzo przybli¿ony wynik
+                        float clientspeed = (distance - 2.0f)/3.5f + 7.5f;
+                        float x, y, z;
+                        GetPlayer()->GetPosition(x, y, z);
+                        sLog.outCheat("Player %s moved for distance %f with server speed %f (client speed %f). Player's coord before X:%f Y:%f Z:%f. Player's coord now X:%f Y:%f Z:%f.",
+                                            GetPlayer()->GetName(), distance, speed, clientspeed, x, y, z, movementInfo.x, movementInfo.y, movementInfo.z);
+                        KickPlayer();
+                    }
+            }
+        }
+
     GetPlayer()->SetPosition(movementInfo.x, movementInfo.y, movementInfo.z, movementInfo.o);
     GetPlayer()->m_movementInfo = movementInfo;
     if (GetPlayer()->m_lastFallTime >= movementInfo.fallTime || GetPlayer()->m_lastFallZ <=movementInfo.z || recv_data.GetOpcode() == MSG_MOVE_FALL_LAND)

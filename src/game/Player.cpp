@@ -255,6 +255,8 @@ Player::Player (WorldSession *session): Unit()
 {
     m_transport = 0;
 
+    m_AC_timer = 0;
+
     m_speakTime = 0;
     m_speakCount = 0;
 
@@ -1123,6 +1125,12 @@ void Player::Update( uint32 p_time )
         return;
     
     updateLock = true;
+
+    if (m_AC_timer)
+        if (m_AC_timer < p_time)
+            m_AC_timer = 0;
+        else
+            m_AC_timer -= p_time;
 
     // undelivered mail
     if(m_nextMailDelivereTime && m_nextMailDelivereTime <= time(NULL))

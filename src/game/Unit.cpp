@@ -8838,6 +8838,9 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
     if (m_speed_rate[mtype] == rate)
         return;
 
+    if (GetTypeId() == TYPEID_PLAYER)
+        ((Player *)this)->m_AC_timer = 2000;
+
     m_speed_rate[mtype] = rate;
 
     propagateSpeedChange();
