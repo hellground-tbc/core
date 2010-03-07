@@ -1717,6 +1717,8 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
     SetSemaphoreTeleport(true);
 
+    m_AC_timer = 3000;
+
     // The player was ported to another map and looses the duel immediatly.
     // We have to perform this check before the teleport, otherwise the
     // ObjectAccessor won't find the flag.
