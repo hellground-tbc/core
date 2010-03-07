@@ -6120,7 +6120,7 @@ void Spell::EffectCharge(uint32 /*i*/)
     float x, y, z;
     target->GetContactPoint(m_caster, x, y, z);
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
-            ((Player *)m_caster)->m_AC_timer = 2000;
+            ((Player *)m_caster)->m_AC_timer = 3000;
     m_caster->GetMotionMaster()->MoveCharge(x, y, z);
 
     // not all charge effects used in negative spells

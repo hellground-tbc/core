@@ -8726,6 +8726,9 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
     float stack_bonus     = 1.0f;
     float non_stack_bonus = 1.0f;
 
+    if (GetTypeId() == TYPEID_PLAYER)
+        ((Player *)this)->m_AC_timer = 2000;
+
     switch(mtype)
     {
         case MOVE_WALK:
