@@ -580,26 +580,19 @@ void Aura::Update(uint32 diff)
             m_target->RemoveAura(GetId(),GetEffIndex());
             return;
         }
-
-        // Get spell range
-        float radius;
-        SpellModOp mod;
-        if (m_spellProto->EffectRadiusIndex[GetEffIndex()])
+        if(caster->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT) == target->GetGUID())
         {
-            radius = GetSpellRadius(sSpellRadiusStore.LookupEntry(m_spellProto->EffectRadiusIndex[GetEffIndex()]));
-            mod = SPELLMOD_RADIUS;
-        }
-        else
-        {
-            radius = GetSpellMaxRange(sSpellRangeStore.LookupEntry(m_spellProto->rangeIndex));
-            mod = SPELLMOD_RANGE;
-        }
+            float max_range = GetSpellMaxRange(sSpellRangeStore.LookupEntry(m_spellProto->rangeIndex));
+            
+            if(Player* modOwner = caster->GetSpellModOwner())
+                modOwner->ApplySpellMod(GetId(), SPELLMOD_RANGE, max_range, NULL);
 
-        if(Player* modOwner = caster->GetSpellModOwner())
-            modOwner->ApplySpellMod(GetId(), mod, radius,NULL);
-
-        if(!caster->IsWithinDistInMap(pRealTarget, radius))
-            return;
+            if(!caster->IsWithinDistInMap(m_target, max_range))
+            {
+                m_target->RemoveAura(GetId(), GetEffIndex());
+                return;
+            }
+        }
     }
 
     if(m_isPeriodic && (m_duration >= 0 || m_isPassive || m_permanent))
