@@ -317,12 +317,12 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
     GetPlayer()->SendMessageToSet(&data, false);
 
     if (GetPlayer()->m_AC_timer == 0)
+        if (float distance = GetPlayer()->GetDistance2d(movementInfo.x, movementInfo.y))
         if (GetPlayer->m_taxi.empty() && (MovementFlags & (MOVEMENTFLAG_JUMPING | MOVEMENTFLAG_FALLING | MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_ONTRANSPORT)) == 0)
         {
             if (GetPlayer()->GetMap() && !GetPlayer()->GetMap()->IsBattleGroundOrArena())
             {
                 float speed;
-                float distance = GetPlayer()->GetDistance2d(movementInfo.x, movementInfo.y);
                 if (MovementFlags & MOVEMENTFLAG_FLYING)
                     speed = GetPlayer()->GetSpeed(MOVE_FLIGHT);
                 else
@@ -332,7 +332,7 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
                 if (!GetPlayer()->hasUnitState(UNIT_STAT_CHARGING))
                     if (distance > (2.0f + ((speed - 7.0f) * 3.5f + 0.2f/* zapas */)))
                     {
-                        // ~ not dok³adnie taki jak powinien byæ, ale daje bardzo przybli¿ony wynik
+                        // ~ nie dok³adnie taki jak powinien byæ, ale daje bardzo przybli¿ony wynik
                         float clientspeed = (distance - 2.0f)/3.5f + 7.5f;
                         float x, y, z;
                         GetPlayer()->GetPosition(x, y, z);
