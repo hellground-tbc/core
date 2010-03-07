@@ -580,7 +580,7 @@ void Aura::Update(uint32 diff)
             m_target->RemoveAura(GetId(),GetEffIndex());
             return;
         }
-        if(caster->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT) == target->GetGUID())
+        if(caster->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT) == m_target->GetGUID())
         {
             float max_range = GetSpellMaxRange(sSpellRangeStore.LookupEntry(m_spellProto->rangeIndex));
             
