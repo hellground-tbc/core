@@ -106,15 +106,12 @@ struct TRINITY_DLL_DECL boss_shirrak_the_dead_watcherAI : public ScriptedAI
                         m_creature->AddAura(SPELL_INHIBITMAGIC, i_pl);
                         if(Aura *inh_magic = i_pl->GetAura(SPELL_INHIBITMAGIC,0))
                         {
-                            int stack_amount = 1;
                             if(dist < 35)
-                                stack_amount++;
+                                m_creature->AddAura(SPELL_INHIBITMAGIC, i_pl);
                             if(dist < 25)
-                                stack_amount++;
+                                m_creature->AddAura(SPELL_INHIBITMAGIC, i_pl);
                             if(dist < 15)
-                                stack_amount++;
-
-                            inh_magic->SetStackAmount(stack_amount);
+                               m_creature->AddAura(SPELL_INHIBITMAGIC, i_pl);
                         }                                
                     }
                 }
