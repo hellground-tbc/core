@@ -74,6 +74,41 @@ CreatureAI* GetAI_mob_shattered_rumbler(Creature *_Creature)
 }
 
 /*######
+## mob_ancient_orc_ancestor - this should be done with ACID also
+######*/
+
+struct TRINITY_DLL_DECL mob_ancient_orc_ancestorAI : public ScriptedAI
+{
+    bool Spawn;
+
+    mob_ancient_orc_ancestorAI(Creature *c) : ScriptedAI(c) {}
+
+    void Reset()
+    {
+        Spawn = false;
+    }
+    void Aggro(Unit* who) {}
+
+    void SpellHit(Unit *Hitter, const SpellEntry *Spellkind)
+    {
+        if(Spellkind->Id == 34063 && !Spawn)
+        {
+            float x = m_creature->GetPositionX();
+            float y = m_creature->GetPositionY();
+            float z = m_creature->GetPositionZ();
+            Hitter->SummonCreature(19480,x,y,z,0,TEMPSUMMON_CORPSE_TIMED_DESPAWN,60000);
+            m_creature->setDeathState(CORPSE);
+            Spawn = true;
+        }
+        return;
+    }
+};
+CreatureAI* GetAI_mob_ancient_orc_ancestor(Creature *_Creature)
+{
+    return new mob_ancient_orc_ancestorAI (_Creature);
+}
+
+/*######
 ## mob_lump
 ######*/
 
@@ -667,6 +702,11 @@ void AddSC_nagrand()
     newscript = new Script;
     newscript->Name="mob_shattered_rumbler";
     newscript->GetAI = &GetAI_mob_shattered_rumbler;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="mob_ancient_orc_ancestor";
+    newscript->GetAI = &GetAI_mob_ancient_orc_ancestor;
     newscript->RegisterSelf();
 
     newscript = new Script;
