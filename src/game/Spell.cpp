@@ -4292,7 +4292,7 @@ uint8 Spell::CanCast(bool strict)
             case SPELL_AURA_FLY:
             {
                 // not allow cast fly spells at old maps by players (all spells is self target)
-                if(!m_caster->isGameMaster() && m_caster->GetTypeId() == TYPEID_PLAYER)
+                if(m_caster->GetTypeId() == TYPEID_PLAYER && !((Player*)m_caster)->isGameMaster())
                 {
                     MapEntry const* mapEntry = sMapStore.LookupEntry(m_caster->GetMapId());
                     if(mapEntry && mapEntry->MapID < 530 )
