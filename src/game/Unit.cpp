@@ -11296,7 +11296,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
                     ((InstanceMap*)pMap)->GetInstanceData()->OnPlayerDeath((Player*)pVictim);
             }
         }
-        Uncharm();
+        ((Player*)this)->Uncharm();
     }
 
     // battleground things (do this at the end, so the death state flag will be properly set to handle in the bg->handlekill)
