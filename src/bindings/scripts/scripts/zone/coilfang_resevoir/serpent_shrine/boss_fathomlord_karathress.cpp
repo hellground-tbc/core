@@ -234,8 +234,8 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
     {
         DoScriptText(SAY_DEATH, m_creature);
 
-        if (pInstance)
-            pInstance->SetData(DATA_FATHOMLORDKARATHRESSEVENT, DONE);
+        if(pInstance)
+            pInstance->SetData(DATA_KARATHRESSEVENT, DONE);
 
         //support for quest 10944
         m_creature->SummonCreature(SEER_OLUM, OLUM_X, OLUM_Y, OLUM_Z, OLUM_O, TEMPSUMMON_TIMED_DESPAWN, 3600000);
@@ -630,9 +630,6 @@ struct TRINITY_DLL_DECL boss_fathomguard_caribdisAI : public ScriptedAI
         TidalSurge_Timer = 15000+rand()%5000;
         Heal_Timer = 55000;
         Cyclone_Timer = 3000+rand()%10000;
-
-        if(pInstance)
-            pInstance->SetData(DATA_KARATHRESSEVENT, NOT_STARTED);
     }
 
     Unit* selectAdvisorUnit()

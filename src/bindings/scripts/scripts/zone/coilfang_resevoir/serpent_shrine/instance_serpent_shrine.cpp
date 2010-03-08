@@ -123,7 +123,7 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
     bool IsEncounterInProgress() const
     {
         for(uint8 i = 0; i < ENCOUNTERS; i++)
-            if(Encounters[i] == IN_PROGRESS)
+            if(Encounters[i] != NOT_STARTED && Encounters[i] != DONE)
                 return true;
         return false;
     }
