@@ -12324,7 +12324,12 @@ void Player::PrepareQuestMenu( uint64 guid )
         if (pQuest->IsAutoComplete() && CanTakeQuest(pQuest, false))
             qm.AddMenuItem(quest_id, DIALOG_STATUS_REWARD_REP);
         else if ( status == QUEST_STATUS_NONE && CanTakeQuest( pQuest, false ) )
+        {
+            if(pObject->GetEntry() == 24369 && quest_id != sWorld.heroicQuest)
+                continue;
+
             qm.AddMenuItem(quest_id, DIALOG_STATUS_AVAILABLE);
+        }
     }
 }
 

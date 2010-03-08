@@ -719,6 +719,8 @@ class ObjectMgr
 
         static bool CheckDeclinedNames(std::wstring mainpart, DeclinedName const& names);
 
+        void LoadHeroicQuestEntrys();
+
         void LoadSpellDisabledEntrys();
         bool IsPlayerSpellDisabled(uint32 spellid) { return (m_DisabledPlayerSpells.count(spellid) != 0); }
         bool IsCreatureSpellDisabled(uint32 spellid) { return (m_DisabledCreatureSpells.count(spellid) != 0); }
@@ -785,6 +787,7 @@ class ObjectMgr
         ScriptNameMap &GetScriptNames() { return m_scriptNames; }
         const char * GetScriptName(uint32 id) { return id < m_scriptNames.size() ? m_scriptNames[id].c_str() : ""; }
         uint32 GetScriptId(const char *name);
+        std::vector<uint32> m_heroicQuests;
     protected:
 
         // first free id for selected id type

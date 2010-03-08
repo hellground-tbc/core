@@ -6441,6 +6441,56 @@ const char *ObjectMgr::GetTrinityString(int32 entry, int locale_idx) const
     return "<error>";
 }
 
+void ObjectMgr::LoadHeroicQuestEntrys()
+{
+    m_heroicQuests.clear();
+    QueryResult *result = WorldDatabase.Query("SELECT quest FROM creature_questrelation WHERE id='24369'");
+
+    uint32 total_count = 0;
+
+    if( !result )
+    {
+        barGoLink bar( 1 );
+        bar.step();
+
+        sLog.outString();
+        sLog.outString( ">> Loaded %u heroic quests", total_count );
+        return;
+    }
+
+    barGoLink bar( result->GetRowCount() );
+
+    Field* fields;
+    do
+    {
+        bar.step();
+        fields = result->Fetch();
+        m_heroicQuests.push_back(fields[0].GetUInt32());
+        ++total_count;
+    }while ( result->NextRow() );
+
+    sLog.outString();
+    sLog.outString( ">> Loaded %u heroic quests from `creature_questrelation`", total_count);
+
+    sWorld.hcount = total_count;
+    result = CharacterDatabase.Query("SELECT HeroicQuest FROM saved_variables");
+    uint32 randq = total_count ? m_heroicQuests[rand()%total_count] : 0;
+
+    if(!result)
+        CharacterDatabase.PExecute("INSERT INTO saved_variables VALUES('0','%u')", randq);
+    else
+    {
+        if(!(sWorld.heroicQuest = (*result)[0].GetUInt32()))
+        {
+            sWorld.heroicQuest = randq;
+            CharacterDatabase.PExecute("UPDATE saved_variables set HeroicQuest='%u'", randq);
+        }
+    }
+    
+    if(result)
+        delete result;
+}
+
 void ObjectMgr::LoadSpellDisabledEntrys()
 {
     m_DisabledPlayerSpells.clear();                                // need for reload case

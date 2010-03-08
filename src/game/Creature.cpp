@@ -1486,7 +1486,7 @@ bool Creature::hasQuest(uint32 quest_id) const
     QuestRelations const& qr = objmgr.mCreatureQuestRelations;
     for(QuestRelations::const_iterator itr = qr.lower_bound(GetEntry()); itr != qr.upper_bound(GetEntry()); ++itr)
     {
-        if(itr->second==quest_id)
+        if(itr->second == quest_id)
             return true;
     }
     return false;

@@ -1450,6 +1450,8 @@ void World::SetInitialWorldSettings()
     sLog.outString("Calculate next daily quest reset time..." );
     InitDailyQuestResetTime();
 
+    objmgr.LoadHeroicQuestEntrys();
+
     sLog.outString("Starting Game Event system..." );
     uint32 nextGameEvent = gameeventmgr.Initialize();
     m_timers[WUPDATE_EVENTS].SetInterval(nextGameEvent);    //depend on next event
@@ -2326,6 +2328,15 @@ void World::ResetDailyQuests()
     for(SessionMap::iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
         if(itr->second->GetPlayer())
             itr->second->GetPlayer()->ResetDailyQuestStatus();
+
+    // Losowanie nowego Heroic Daily quest
+    if(hcount)
+    {
+        uint32 qID = objmgr.m_heroicQuests[rand()%hcount];
+        CharacterDatabase.PExecute("UPDATE saved_variables set HeroicQuest='%u'",qID);
+        heroicQuest = qID;
+    }
+
 }
 
 void World::SetPlayerLimit( int32 limit, bool needUpdate )
