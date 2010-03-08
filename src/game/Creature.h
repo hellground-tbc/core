@@ -684,7 +684,6 @@ class TRINITY_DLL_SPEC Creature : public Unit
 
         bool m_AlreadyCallAssistance;
         bool m_regenHealth;
-        bool m_AI_locked;
         bool m_isDeadByDefault;
 
         SpellSchoolMask m_meleeDamageSchoolMask;

@@ -65,6 +65,8 @@
 #include "SocialMgr.h"
 #include "GameEvent.h"
 
+#include "PlayerAI.cpp"
+
 #include <cmath>
 
 #define ZONE_UPDATE_INTERVAL 1000
@@ -484,6 +486,8 @@ Player::~Player ()
             itr->second.save->RemovePlayer(this);
 
     delete m_declinedname;
+
+    DeleteCharmAI();
 }
 
 void Player::CleanupsBeforeDelete()
@@ -1088,36 +1092,18 @@ void Player::CreateCharmAI()
             sLog.outError("Unhandled class type, while creating charmAI");
             break;
     }
-
-    if(i_AI)
-        i_AI->Reset();
 }
 
 void Player::DeleteCharmAI()
 {
     if(i_AI)
-    {
-        CharmAI(false);
         delete i_AI;
-        i_AI = NULL;
-    }
 }
 
 void Player::CharmAI(bool apply)
 {
-    if(apply)
-    {
-        if(!i_AI)
-            CreateCharmAI();
-
-        if(!i_AI)
-            return;
-
+    if(IsAIEnabled = apply)
         i_AI->Reset();
-        IsAIEnabled = true;
-    }
-    else
-        IsAIEnabled = false;
 }
 
 void Player::Update( uint32 p_time )
@@ -1170,8 +1156,13 @@ void Player::Update( uint32 p_time )
 
     CheckExploreSystem();
 
+    // do not allow the AI to be changed during update
     if(IsAIEnabled)
+    {
+        m_AI_locked = true;
         i_AI->UpdateAI(p_time);
+        m_AI_locked = false;
+    }
 
     // Update items that have just a limited lifetime
     if (now>m_Last_tick)
@@ -1263,14 +1254,6 @@ void Player::Update( uint32 p_time )
                     resetAttackTimer(OFF_ATTACK);
                 }
             }
-
-            /*Unit *owner = pVictim->GetOwner();
-            Unit *u = owner ? owner : pVictim;
-            if(u->IsPvP() && (!duel || duel->opponent != u))
-            {
-                UpdatePvP(true);
-                RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_ENTER_PVP_COMBAT);
-            }*/
         }
     }
 

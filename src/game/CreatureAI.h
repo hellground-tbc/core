@@ -81,10 +81,10 @@ class TRINITY_DLL_SPEC UnitAI
 
         virtual void InitializeAI() { Reset(); }
 
-        virtual void Reset() {};
+        virtual void Reset() {}
 
         // Called when unit is charmed
-        virtual void OnCharmed(bool apply) = 0;
+        virtual void OnCharmed(bool apply){}
 
         // Pass parameters between AI
         virtual void DoAction(const int32 param) {}

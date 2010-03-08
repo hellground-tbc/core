@@ -154,7 +154,7 @@ bool IsPassiveStackableSpell( uint32 spellId )
 Unit::Unit()
 : WorldObject(), i_motionMaster(this), m_ThreatManager(this), m_HostilRefManager(this)
 , m_NotifyListPos(-1), m_Notified(false), IsAIEnabled(false), NeedChangeAI(false)
-, i_AI(NULL), i_disabledAI(NULL), m_procDeep(0)
+, i_AI(NULL), i_disabledAI(NULL), m_procDeep(0), m_AI_locked(false)
 {
     m_modAuras = new AuraList[TOTAL_AURAS];
     m_objectType |= TYPEMASK_UNIT;
@@ -11535,8 +11535,8 @@ void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
             ((Player*)this)->ToggleAFK();
         ((Player*)this)->SetViewport(GetGUID(), false);
 
-        /*if(charmer->GetTypeId() == TYPEID_UNIT)
-            ((Player*)this)->CharmAI(true);*/
+        if(charmer->GetTypeId() == TYPEID_UNIT)
+            ((Player*)this)->CharmAI(true);
     }
 
     // Pets already have a properly initialized CharmInfo, don't overwrite it.
@@ -11626,8 +11626,8 @@ void Unit::RemoveCharmedOrPossessedBy(Unit *charmer)
     }
     else
     {
-        /*if(IsAIEnabled)
-            ((Player*)this)->CharmAI(false);*/
+        if(IsAIEnabled)
+            ((Player*)this)->CharmAI(false);
 
         ((Player*)this)->SetViewport(GetGUID(), true);
     }

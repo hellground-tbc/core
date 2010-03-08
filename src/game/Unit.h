@@ -1471,6 +1471,8 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         UnitAI *i_AI, *i_disabledAI;
 
+        bool m_AI_locked;
+
         void _UpdateSpells(uint32 time);
 
         void _UpdateAutoRepeatSpell();

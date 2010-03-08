@@ -1,16 +1,134 @@
-#include "PlayerAI.h"
+#include "CreatureAI.h"
+#include "Unit.h"
 
-bool PlayerAI::UpdateVictim()
+struct WarriorAI: public UnitAI
 {
-    Unit *charmer = me->GetCharmer();
-    if(!charmer || !charmer->isInCombat())
-        return false;
+    WarriorAI(Player *plr): UnitAI((Unit*)plr)
+    {
+    }
 
-    if(me->getVictim() && me->getVictim()->isAlive())
-        return true;
+    void Reset()
+    {
+    }
 
-    if(Unit *victim = me->SelectNearbyTarget(20.0f))
-        AttackStart(victim);
+    void UpdateAI(const uint32 diff)
+    {
+    }
+};
 
-    return me->getVictim();
-}
+struct HunterAI: public UnitAI
+{
+    HunterAI(Player *plr): UnitAI((Unit*)plr)
+    {
+    }
+
+    void Reset()
+    {
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+    }
+};
+struct PaladinAI: public UnitAI
+{
+    PaladinAI(Player *plr): UnitAI((Unit*)plr)
+    {
+    }
+
+    void Reset()
+    {
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+    }
+};
+struct WarlockAI: public UnitAI
+{
+    WarlockAI(Player *plr): UnitAI((Unit*)plr)
+    {
+    }
+
+    void Reset()
+    {
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+    }
+};
+struct DruidAI: public UnitAI
+{
+    DruidAI(Player *plr): UnitAI((Unit*)plr)
+    {
+    }
+
+    void Reset()
+    {
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+    }
+};
+
+struct RogueAI: public UnitAI
+{
+    RogueAI(Player *plr): UnitAI((Unit*)plr)
+    {
+    }
+
+    void Reset()
+    {
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+    }
+};
+
+struct ShamanAI: public UnitAI
+{
+    ShamanAI(Player *plr): UnitAI((Unit*)plr)
+    {
+    }
+
+    void Reset()
+    {
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+    }
+};
+
+struct PriestAI: public UnitAI
+{
+    PriestAI(Player *plr): UnitAI((Unit*)plr)
+    {
+    }
+
+    void Reset()
+    {
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+    }
+};
+
+struct MageAI: public UnitAI
+{
+    MageAI(Player *plr): UnitAI((Unit*)plr)
+    {
+    }
+
+    void Reset()
+    {
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+    }
+};

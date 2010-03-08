@@ -34,7 +34,6 @@
 #include "Bag.h"
 #include "WorldSession.h"
 #include "Pet.h"
-#include "PlayerAI.h"
 #include "MapReference.h"
 #include "Util.h"                                           // for Tokens typedef
 
@@ -2378,8 +2377,6 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         GridReference<Player> m_gridRef;
         MapReference m_mapRef;
-
-        PlayerAI *i_AI;
 
         uint64 m_GMfollowtarget_GUID; // za kim chodzi
         uint64 m_GMfollow_GUID;       // gm ktory chodzi za playerem
