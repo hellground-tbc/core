@@ -324,6 +324,17 @@ enum RealmZone
     REALM_ZONE_CN9           = 29                           // basic-Latin at create, any at login
 };
 
+
+enum SpecialQuest
+{
+    QNORMAL = 0,
+    HEROIC  = 1,
+    COOKING = 2,
+    FISHING = 3,
+    PVPH    = 4,
+    PVPA    = 5
+};
+
 // DB scripting commands
 #define SCRIPT_COMMAND_TALK                  0              // source = unit, target=any, datalong ( 0=say, 1=whisper, 2=yell, 3=emote text)
 #define SCRIPT_COMMAND_EMOTE                 1              // source = unit, datalong = anim_id
@@ -545,8 +556,7 @@ class World
         ACE_Thread_Mutex m_spellUpdateLock;
 
         // available heroic quests
-        uint32 heroicQuest;
-        uint8 hcount;
+        uint32 specialQuest[6];
     protected:
         void _UpdateGameTime();
         // callback for UpdateRealmCharacters

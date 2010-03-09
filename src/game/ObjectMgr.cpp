@@ -6441,49 +6441,57 @@ const char *ObjectMgr::GetTrinityString(int32 entry, int locale_idx) const
     return "<error>";
 }
 
-void ObjectMgr::LoadHeroicQuestEntrys()
+void ObjectMgr::LoadSpecialQuests()
 {
-    m_heroicQuests.clear();
-    QueryResult *result = WorldDatabase.Query("SELECT quest FROM creature_questrelation WHERE id='24369'");
-
-    uint32 total_count = 0;
-
-    if( !result )
-    {
-        barGoLink bar( 1 );
-        bar.step();
-
-        sLog.outString();
-        sLog.outString( ">> Loaded %u heroic quests", total_count );
-        return;
-    }
-
-    barGoLink bar( result->GetRowCount() );
-
-    Field* fields;
-    do
-    {
-        bar.step();
-        fields = result->Fetch();
-        m_heroicQuests.push_back(fields[0].GetUInt32());
-        ++total_count;
-    }while ( result->NextRow() );
-
-    sLog.outString();
-    sLog.outString( ">> Loaded %u heroic quests from `creature_questrelation`", total_count);
-
-    sWorld.hcount = total_count;
-    result = CharacterDatabase.Query("SELECT HeroicQuest FROM saved_variables");
-    uint32 randq = total_count ? m_heroicQuests[rand()%total_count] : 0;
+    QueryResult *result = CharacterDatabase.Query("SELECT * FROM saved_variables");
 
     if(!result)
-        CharacterDatabase.PExecute("INSERT INTO saved_variables VALUES('0','%u')", randq);
+    {
+        CharacterDatabase.PExecute("INSERT INTO saved_variables VALUES('0','0','0','0','0','0','0')");
+        LoadSpecialQuests();
+    }
     else
     {
-        if(!(sWorld.heroicQuest = (*result)[0].GetUInt32()))
+        if(!(sWorld.specialQuest[HEROIC] = (*result)[1].GetUInt32()))
         {
-            sWorld.heroicQuest = randq;
-            CharacterDatabase.PExecute("UPDATE saved_variables set HeroicQuest='%u'", randq);
+            uint32 heroicQuest[15] = { 11369, 11384, 11382, 11363, 11362, 11375, 11354, 11386, 11373, 11378, 11374, 11372, 11368, 11388, 11370 };
+            sWorld.specialQuest[HEROIC] = heroicQuest[rand()%15];
+            CharacterDatabase.PExecute("UPDATE saved_variables set HeroicQuest='%u'", sWorld.specialQuest[HEROIC]);
+        }
+        
+        if(!(sWorld.specialQuest[QNORMAL] = (*result)[2].GetUInt32()))
+        {
+            uint32 normalQuest[8]  = { 11389, 11371, 11376, 11383, 11364, 11500, 11385, 11387 };
+            sWorld.specialQuest[QNORMAL] = normalQuest[rand()%8];
+            CharacterDatabase.PExecute("UPDATE saved_variables set NormalQuest='%u'", sWorld.specialQuest[QNORMAL]);
+        }
+
+        if(!(sWorld.specialQuest[COOKING] = (*result)[3].GetUInt32()))
+        {
+            uint32 cookingQuest[4] = { 11380, 11377, 11381, 11379 };
+            sWorld.specialQuest[COOKING] = cookingQuest[rand()%4];
+            CharacterDatabase.PExecute("UPDATE saved_variables set CookingQuest='%u'", sWorld.specialQuest[COOKING]);
+        }
+
+        if(!(sWorld.specialQuest[FISHING] = (*result)[4].GetUInt32()))
+        {
+            uint32 fishingQuest[5] = { 11666, 11665, 11669,11668, 11667 };
+            sWorld.specialQuest[FISHING] = fishingQuest[rand()%5];
+            CharacterDatabase.PExecute("UPDATE saved_variables set FishingQuest='%u'", sWorld.specialQuest[FISHING]);
+        }
+
+        if(!(sWorld.specialQuest[PVPA] = (*result)[5].GetUInt32()))
+        {
+            uint32 alliancePVP[5]  = { 8385, 11335, 11336, 11337, 11338 };
+            sWorld.specialQuest[PVPA] = alliancePVP[rand()%5];
+            CharacterDatabase.PExecute("UPDATE saved_variables set PVPAlliance='%u'", sWorld.specialQuest[PVPA]);
+        }
+
+        if(!(sWorld.specialQuest[PVPH] = (*result)[6].GetUInt32()))
+        {
+            uint32 hordePVP[5]     = { 8388, 11339, 11340, 11341, 11342 };
+            sWorld.specialQuest[PVPH] = hordePVP[rand()%5];
+            CharacterDatabase.PExecute("UPDATE saved_variables set PVPHorde='%u'", sWorld.specialQuest[PVPH]);
         }
     }
     

@@ -1450,7 +1450,8 @@ void World::SetInitialWorldSettings()
     sLog.outString("Calculate next daily quest reset time..." );
     InitDailyQuestResetTime();
 
-    objmgr.LoadHeroicQuestEntrys();
+    sLog.outString("Loadin special daily quests..." );
+    objmgr.LoadSpecialQuests();
 
     sLog.outString("Starting Game Event system..." );
     uint32 nextGameEvent = gameeventmgr.Initialize();
@@ -2329,14 +2330,21 @@ void World::ResetDailyQuests()
         if(itr->second->GetPlayer())
             itr->second->GetPlayer()->ResetDailyQuestStatus();
 
-    // Losowanie nowego Heroic Daily quest
-    if(hcount)
-    {
-        uint32 qID = objmgr.m_heroicQuests[rand()%hcount];
-        CharacterDatabase.PExecute("UPDATE saved_variables set HeroicQuest='%u'",qID);
-        heroicQuest = qID;
-    }
+    uint32 heroicQuest[15] = { 11369, 11384, 11382, 11363, 11362, 11375, 11354, 11386, 11373, 11378, 11374, 11372, 11368, 11388, 11370 };
+    uint32 normalQuest[8]  = { 11389, 11371, 11376, 11383, 11364, 11500, 11385, 11387 };
+    uint32 cookingQuest[4] = { 11380, 11377, 11381, 11379 };
+    uint32 fishingQuest[5] = { 11666, 11665, 11669,11668, 11667 };
+    uint32 alliancePVP[5]  = { 8385, 11335, 11336, 11337, 11338 };
+    uint32 hordePVP[5]     = { 8388, 11339, 11340, 11341, 11342 };
 
+    specialQuest[HEROIC]  = heroicQuest[rand()%15];
+    specialQuest[QNORMAL]  = normalQuest[rand()%8];
+    specialQuest[COOKING] = cookingQuest[rand()%4];
+    specialQuest[FISHING] = fishingQuest[rand()%5];
+    specialQuest[PVPH]    = hordePVP[rand()%5];
+    specialQuest[PVPA]    = alliancePVP[rand()%5];
+
+    CharacterDatabase.PExecute("UPDATE saved_variables set HeroicQuest='%u', NormalQuest='%u', CookingQuest='%u', FishingQuest='%u', PVPAlliance='%u', PVPHorde='%u',",specialQuest[HEROIC],specialQuest[QNORMAL],specialQuest[COOKING],specialQuest[FISHING],specialQuest[PVPA],specialQuest[PVPH]);
 }
 
 void World::SetPlayerLimit( int32 limit, bool needUpdate )
