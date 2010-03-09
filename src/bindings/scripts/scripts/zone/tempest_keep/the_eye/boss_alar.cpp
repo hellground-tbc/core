@@ -66,7 +66,8 @@ enum WaitEventType
     WE_DIVE     = 8,
     WE_LAND     = 9,
     WE_SUMMON   = 10,
-    WE_TRULY_DIE= 11
+    WE_REBIRTH  = 11,
+    WE_TRULY_DIE= 12
 };
 
 struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
@@ -161,7 +162,7 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
     void JustSummoned(Creature *summon)
     {
         if(summon->GetEntry() == CREATURE_EMBER_OF_ALAR)
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
                 summon->AI()->AttackStart(target);
     }
 
@@ -182,7 +183,7 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
             if(WaitEvent != WE_TRULY_DIE)
             {
                 damage = 0;
-                if (Phase1)
+                if(Phase1)
                 {
                     WaitEvent = WE_DIE;
                     m_creature->SetHealth(0);
@@ -350,11 +351,15 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
                         }
                     case WE_LAND:
                         WaitEvent = WE_SUMMON;
-                        WaitTimer = 5000;
+                        WaitTimer = 3000;
                         return;
                     case WE_SUMMON:
+                        WaitEvent = WE_REBIRTH;
                         for(uint8 i = 0; i < 2; ++i)
                             DoSpawnCreature(CREATURE_EMBER_OF_ALAR, 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+                        WaitTimer = 2000;
+                        return;
+                    case WE_REBIRTH:    
                         m_creature->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 10);
                         m_creature->SetReactState(REACT_AGGRESSIVE);
                         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -373,7 +378,9 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
 
                     WaitEvent = WE_NONE;
                     WaitTimer = 0;
-                }else WaitTimer -= diff;
+                }
+                else
+                    WaitTimer -= diff;
             }
             return;
         }
@@ -465,7 +472,7 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
 
             if(FlamePatch_Timer < diff)
             {
-                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
                 {
                     if(Creature* Summoned = m_creature->SummonCreature(CREATURE_FLAME_PATCH_ALAR, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 120000))
                     {
