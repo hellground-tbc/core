@@ -1,9 +1,42 @@
-#include "CreatureAI.h"
-#include "Unit.h"
+#include "PlayerAI.h"
+#include "Player.h"
+#include "Database/DBCStores.h"
 
-struct WarriorAI: public UnitAI
+class Player;
+struct SpellEntry;
+
+
+SpellEntry const *PlayerAI::selectHighestRank(uint32 spell_id)
 {
-    WarriorAI(Player *plr): UnitAI((Unit*)plr)
+    SpellEntry const *spell_info   = sSpellStore.LookupEntry(spell_id);
+    if (!spell_info)
+        return NULL;
+
+    PlayerSpellMap const &sp_list = me->GetSpellMap();
+
+    SpellEntry const *highest_rank = spell_info;
+    for (PlayerSpellMap::const_iterator itr = sp_list.begin(); itr != sp_list.end(); ++itr)
+    {
+        if(!itr->second->active || itr->second->disabled || itr->second->state == PLAYERSPELL_REMOVED)
+            continue;
+
+        spell_info = sSpellStore.LookupEntry(itr->first);
+        if (!spell_info)
+            continue;
+
+        if (highest_rank->SpellFamilyName == spell_info->SpellFamilyName && (highest_rank->SpellFamilyFlags & spell_info->SpellFamilyFlags))
+        {
+            if (spell_info->spellLevel > highest_rank->spellLevel)
+                highest_rank = spell_info;
+        }
+    }
+    return highest_rank;
+}
+
+// TODO: poprzenosiæ do nowych plików i oskryptowaæ? :P
+struct WarriorAI: public PlayerAI
+{
+    WarriorAI(Player *pPlayer): PlayerAI(pPlayer)
     {
     }
 
@@ -16,9 +49,9 @@ struct WarriorAI: public UnitAI
     }
 };
 
-struct HunterAI: public UnitAI
+struct HunterAI: public PlayerAI
 {
-    HunterAI(Player *plr): UnitAI((Unit*)plr)
+    HunterAI(Player *pPlayer): PlayerAI(pPlayer)
     {
     }
 
@@ -30,9 +63,9 @@ struct HunterAI: public UnitAI
     {
     }
 };
-struct PaladinAI: public UnitAI
+struct PaladinAI: public PlayerAI
 {
-    PaladinAI(Player *plr): UnitAI((Unit*)plr)
+    PaladinAI(Player *pPlayer): PlayerAI(pPlayer)
     {
     }
 
@@ -44,9 +77,9 @@ struct PaladinAI: public UnitAI
     {
     }
 };
-struct WarlockAI: public UnitAI
+struct WarlockAI: public PlayerAI
 {
-    WarlockAI(Player *plr): UnitAI((Unit*)plr)
+    WarlockAI(Player *pPlayer): PlayerAI(pPlayer)
     {
     }
 
@@ -58,24 +91,9 @@ struct WarlockAI: public UnitAI
     {
     }
 };
-struct DruidAI: public UnitAI
+struct DruidAI: public PlayerAI
 {
-    DruidAI(Player *plr): UnitAI((Unit*)plr)
-    {
-    }
-
-    void Reset()
-    {
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-    }
-};
-
-struct RogueAI: public UnitAI
-{
-    RogueAI(Player *plr): UnitAI((Unit*)plr)
+    DruidAI(Player *pPlayer): PlayerAI(pPlayer)
     {
     }
 
@@ -88,9 +106,9 @@ struct RogueAI: public UnitAI
     }
 };
 
-struct ShamanAI: public UnitAI
+struct RogueAI: public PlayerAI
 {
-    ShamanAI(Player *plr): UnitAI((Unit*)plr)
+    RogueAI(Player *pPlayer): PlayerAI(pPlayer)
     {
     }
 
@@ -103,9 +121,9 @@ struct ShamanAI: public UnitAI
     }
 };
 
-struct PriestAI: public UnitAI
+struct ShamanAI: public PlayerAI
 {
-    PriestAI(Player *plr): UnitAI((Unit*)plr)
+    ShamanAI(Player *pPlayer): PlayerAI(pPlayer)
     {
     }
 
@@ -118,9 +136,24 @@ struct PriestAI: public UnitAI
     }
 };
 
-struct MageAI: public UnitAI
+struct PriestAI: public PlayerAI
 {
-    MageAI(Player *plr): UnitAI((Unit*)plr)
+    PriestAI(Player *pPlayer): PlayerAI(pPlayer)
+    {
+    }
+
+    void Reset()
+    {
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+    }
+};
+
+struct MageAI: public PlayerAI
+{
+    MageAI(Player *plr): PlayerAI(plr)
     {
     }
 
