@@ -339,8 +339,8 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
                         float x, y, z;
                         GetPlayer()->GetPosition(x, y, z);
                         uint32 delta = movementInfo.time - GetPlayer()->m_lastmovetime;
-                        sLog.outCheat("Player %s moved for distance %f with server speed %f (client speed %f). Player's coord before X:%f Y:%f Z:%f. Player's coord now X:%f Y:%f Z:%f. HomeBindPosition X:%f Y:%f Z:%f. Time %u / PacketTime %u / DTime %u / getMSTime %u. MOVEMENTFLAGS: %u LATENCY: %u",
-                                            GetPlayer()->GetName(), distance, speed, clientspeed, x, y, z, movementInfo.x, movementInfo.y, movementInfo.z, GetPlayer()->m_homebindX, GetPlayer()->m_homebindY, GetPlayer()->m_homebindZ, GetPlayer()->m_lastmovetime, movementInfo.time, delta, getMSTime(), MovementFlags, GetLatency());
+                        sLog.outCheat("Player %s moved for distance %f with server speed %f (client speed %f). MapID: %u, player's coord before X:%f Y:%f Z:%f. Player's coord now X:%f Y:%f Z:%f. HomeBindPosition X:%f Y:%f Z:%f. Time %u / PacketTime %u / DTime %u / getMSTime %u. MOVEMENTFLAGS: %u LATENCY: %u",
+                                            GetPlayer()->GetName(), distance, speed, clientspeed, GetPlayer()->GetMapId(), x, y, z, movementInfo.x, movementInfo.y, movementInfo.z, GetPlayer()->m_homebindX, GetPlayer()->m_homebindY, GetPlayer()->m_homebindZ, GetPlayer()->m_lastmovetime, movementInfo.time, delta, getMSTime(), MovementFlags, GetLatency());
                         //KickPlayer();
                     }
             }
