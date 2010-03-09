@@ -29,10 +29,91 @@ struct PlayerAI : public UnitAI
 {
     PlayerAI(Player *pPlayer) : UnitAI((Unit *)pPlayer), me(pPlayer) {}
 
-    Player *me;
-
     SpellEntry const *selectHighestRank(uint32 spell_id);
 
+    protected:
+        Player *me;
+};
+
+struct WarriorAI: public PlayerAI
+{
+    WarriorAI(Player *pPlayer): PlayerAI(pPlayer) {}
+
+    void Reset() {}
+
+    void UpdateAI(const uint32 diff);
+};
+
+struct HunterAI: public PlayerAI
+{
+    HunterAI(Player *pPlayer): PlayerAI(pPlayer) {}
+
+    void Reset() {}
+
+    void UpdateAI(const uint32 diff);
+};
+
+struct PaladinAI: public PlayerAI
+{
+    PaladinAI(Player *pPlayer): PlayerAI(pPlayer) {}
+
+    void Reset() {}
+
+    void UpdateAI(const uint32 diff);
+};
+
+struct WarlockAI: public PlayerAI
+{
+    WarlockAI(Player *pPlayer): PlayerAI(pPlayer) {}
+
+    void Reset() {}
+
+    void UpdateAI(const uint32 diff);
+};
+
+struct DruidAI: public PlayerAI
+{
+    DruidAI(Player *pPlayer): PlayerAI(pPlayer) {}
+
+    void Reset() {}
+
+    void UpdateAI(const uint32 diff);
+};
+
+struct RogueAI: public PlayerAI
+{
+    RogueAI(Player *pPlayer): PlayerAI(pPlayer) {}
+
+    void Reset() {}
+
+    void UpdateAI(const uint32 diff);
+};
+
+struct ShamanAI: public PlayerAI
+{
+    ShamanAI(Player *pPlayer): PlayerAI(pPlayer) {}
+
+    void Reset() {}
+
+    void UpdateAI(const uint32 diff);
+};
+
+struct PriestAI: public PlayerAI
+{
+    PriestAI(Player *pPlayer): PlayerAI(pPlayer) {}
+
+    void Reset() {}
+
+    void UpdateAI(const uint32 diff);
+};
+
+struct MageAI: public PlayerAI
+{
+    MageAI(Player *plr): PlayerAI(plr) {}
+
+    void Reset() {}
+
+    void UpdateAI(const uint32 diff);
 };
 
 #endif
