@@ -33,135 +33,40 @@ SpellEntry const *PlayerAI::selectHighestRank(uint32 spell_id)
     return highest_rank;
 }
 
-// TODO: poprzenosiæ do nowych plików i oskryptowaæ? :P
-struct WarriorAI: public PlayerAI
+void WarriorAI::UpdateAI(const uint32 diff)
 {
-    WarriorAI(Player *pPlayer): PlayerAI(pPlayer)
-    {
-    }
+}
 
-    void Reset()
-    {
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-    }
-};
-
-struct HunterAI: public PlayerAI
+void HunterAI::UpdateAI(const uint32 diff)
 {
-    HunterAI(Player *pPlayer): PlayerAI(pPlayer)
-    {
-    }
+}
 
-    void Reset()
-    {
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-    }
-};
-struct PaladinAI: public PlayerAI
+void PaladinAI::UpdateAI(const uint32 diff)
 {
-    PaladinAI(Player *pPlayer): PlayerAI(pPlayer)
-    {
-    }
+}
 
-    void Reset()
-    {
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-    }
-};
-struct WarlockAI: public PlayerAI
+void WarlockAI::UpdateAI(const uint32 diff)
 {
-    WarlockAI(Player *pPlayer): PlayerAI(pPlayer)
-    {
-    }
+}
 
-    void Reset()
-    {
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-    }
-};
-struct DruidAI: public PlayerAI
+void DruidAI::UpdateAI(const uint32 diff)
 {
-    DruidAI(Player *pPlayer): PlayerAI(pPlayer)
-    {
-    }
+}
 
-    void Reset()
-    {
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-    }
-};
-
-struct RogueAI: public PlayerAI
+void RogueAI::UpdateAI(const uint32 diff)
 {
-    RogueAI(Player *pPlayer): PlayerAI(pPlayer)
-    {
-    }
+}
 
-    void Reset()
-    {
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-    }
-};
-
-struct ShamanAI: public PlayerAI
+void ShamanAI::UpdateAI(const uint32 diff)
 {
-    ShamanAI(Player *pPlayer): PlayerAI(pPlayer)
-    {
-    }
+}
 
-    void Reset()
-    {
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-    }
-};
-
-struct PriestAI: public PlayerAI
+void PriestAI::UpdateAI(const uint32 diff)
 {
-    PriestAI(Player *pPlayer): PlayerAI(pPlayer)
-    {
-    }
+}
 
-    void Reset()
-    {
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-    }
-};
-
-struct MageAI: public PlayerAI
+void MageAI::UpdateAI(const uint32 diff)
 {
-    MageAI(Player *plr): PlayerAI(plr)
-    {
-    }
+}
 
-    void Reset()
-    {
-    }
 
-    void UpdateAI(const uint32 diff)
-    {
-    }
-};
