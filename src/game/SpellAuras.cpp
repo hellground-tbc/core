@@ -4336,7 +4336,7 @@ void Aura::HandleAuraModResistance(bool apply, bool Real)
     {
         if(m_modifier.m_miscvalue & int32(1<<x))
         {
-            m_target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), BASE_VALUE, float(GetModifierValue()), apply);
+            m_target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), TOTAL_VALUE, float(GetModifierValue()), apply);
             if(m_target->GetTypeId() == TYPEID_PLAYER || ((Creature*)m_target)->isPet())
                 m_target->ApplyResistanceBuffModsMod(SpellSchools(x),m_positive,GetModifierValue(), apply);
         }
