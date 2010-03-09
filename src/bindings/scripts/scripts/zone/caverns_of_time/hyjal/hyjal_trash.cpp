@@ -4,11 +4,11 @@
 #include "hyjal_trash.h"
 #include "hyjalAI.h"
 
-#define SPELL_METEOR 33814 //infernal visual
-#define SPELL_IMMOLATION 37059
+#define SPELL_METEOR       33814     //infernal visual
+#define SPELL_IMMOLATION   39007
 #define SPELL_FLAME_BUFFET 31724
-#define NPC_TRIGGER  21987 //World Trigger (Tiny)
-#define MODEL_INVIS  11686 //invisible model
+#define NPC_TRIGGER        21987     //World Trigger (Tiny)
+#define MODEL_INVIS        11686     //invisible model
 
 float HordeWPs[8][3]=//basic waypoints from spawn to leader
 {
