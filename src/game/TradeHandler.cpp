@@ -30,6 +30,8 @@
 #include "SocialMgr.h"
 #include "Language.h"
 
+#include "AccountMgr.h"
+
 enum TradeStatus
 {
     TRADE_STATUS_BUSY           = 0,
@@ -290,7 +292,26 @@ void WorldSession::HandleAcceptTradeOpcode(WorldPacket& /*recvPacket*/)
                     return;
                 }
             }
+            else
+            {
+                // if not found item and slot was other than NULL (cheating)
+                // jeszcze jest jeden exploit na trade itemów innych ni¿ s¹ pokazane,
+                // ale te cipy na to nie wpadn¹ jak im ktoœ nie da gotowego hacka
+                SendTradeStatus(TRADE_STATUS_TRADE_CANCELED);
+
+                std::string accountname;
+                if (accmgr.GetName(_player->GetSession()->GetAccountId(), accountname))
+                {
+                    std::string duration = "-1";
+                    std::string reason = "GM INFO - trade hack/exploit";
+                    std::string name = "CONSOLE";
+
+                    sWorld.BanAccount(BAN_ACCOUNT, accountname.c_str(), duration.c_str(), reason.c_str(), name.c_str());
+                }
+                return;
+            }
         }
+
         if(_player->pTrader->tradeItems[i] != NULL_SLOT)
         {
             if(Item* item  =_player->pTrader->GetItemByPos( _player->pTrader->tradeItems[i]) )
@@ -300,6 +321,21 @@ void WorldSession::HandleAcceptTradeOpcode(WorldPacket& /*recvPacket*/)
                     SendTradeStatus(TRADE_STATUS_TRADE_CANCELED);
                     return;
                 }
+            }
+            else
+            {
+                SendTradeStatus(TRADE_STATUS_TRADE_CANCELED);
+
+                std::string accountname;
+                if (accmgr.GetName(_player->GetSession()->GetAccountId(), accountname))
+                {
+                    std::string duration = "-1";
+                    std::string reason = "GM INFO - trade hack/exploit";
+                    std::string name = "CONSOLE";
+
+                    sWorld.BanAccount(BAN_ACCOUNT, accountname.c_str(), duration.c_str(), reason.c_str(), name.c_str());
+                }
+                return;
             }
         }
     }

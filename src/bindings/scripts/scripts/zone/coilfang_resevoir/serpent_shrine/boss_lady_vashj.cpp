@@ -76,20 +76,20 @@ EndScriptData */
 float StriderNagaWP[15][3] =
 {
     // {-82, -899, 17.0}, // [0]Woda
-    {-60, -903, 20.2}, // [1]Woda
-    {-44, -906, 30.7}, // [2]Schody: srodek
-    {-27, -910, 41.0}, // [3]Schody: koniec
-    {  2, -916, 41.5}, // [4]Koniec pierwsze mozliwej trasy
+    {-60, -903, 20.7}, // [1]Woda
+    {-44, -906, 31.2}, // [2]Schody: srodek
+    {-27, -910, 41.5}, // [3]Schody: koniec
+    {  2, -916, 42.0}, // [4]Koniec pierwsze mozliwej trasy
     // {60, -1034, 17.0}, // [5]Woda
-    {57, -1013, 20.2}, // [6]Woda
-    { 49, -990, 33.9}, // [7]Schody: srodek
-    { 46, -978, 41.0}, // [8]Schody: koniec
-    { 38, -950, 41.5}, // [9]Koniec drugiej mozliwej trasy
+    {57, -1013, 20.7}, // [6]Woda
+    { 49, -990, 34.4}, // [7]Schody: srodek
+    { 46, -978, 41.5}, // [8]Schody: koniec
+    { 38, -950, 42.0}, // [9]Koniec drugiej mozliwej trasy
     // { 51, -814, 17.0}, // [10]Woda
-    { 48, -833, 20.2}, // [11]Woda
-    { 43, -850, 31.9}, // [12]Schody: srodek
-    { 40, -867, 41.1}, // [13]Schody: koniec
-    { 35, -895, 41.6}  // [14]Koniec trzeciej mozliwej trasy
+    { 48, -833, 20.7}, // [11]Woda
+    { 43, -850, 32.4}, // [12]Schody: srodek
+    { 40, -867, 41.6}, // [13]Schody: koniec
+    { 35, -895, 42.1}  // [14]Koniec trzeciej mozliwej trasy
 };
 
 float ElementPos[8][4] =

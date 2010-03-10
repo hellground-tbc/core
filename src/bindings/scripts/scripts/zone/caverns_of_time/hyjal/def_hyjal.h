@@ -29,6 +29,10 @@
 #define DATA_RAIDDAMAGE           18
 #define DATA_RESET_RAIDDAMAGE     19
 
+#define SPELL_SOUL_CHARGE_YELLOW    32045
+#define SPELL_SOUL_CHARGE_GREEN     32051
+#define SPELL_SOUL_CHARGE_RED       32052
+
 #define ERROR_INST_DATA     "TSCR: Instance data not set properly for Mount Hyjal. Encounters will be buggy"
 #endif
 

@@ -321,8 +321,9 @@ void MapManager::UnloadAll()
 
     while(!i_maps.empty())
     {
-        delete i_maps.begin()->second;
+        Map *temp = i_maps.begin()->second;
         i_maps.erase(i_maps.begin());
+        delete temp;
     }
 
     if(m_updater.activated())

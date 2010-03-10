@@ -205,6 +205,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "anim",           SEC_GAMEMASTER,     false, &ChatHandler::HandleAnimCommand,                "", NULL },
         { "lootrecipient",  SEC_GAMEMASTER,     false, &ChatHandler::HandleGetLootRecipient,           "", NULL },
         { "arena",          SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugArenaCommand,          "", NULL },
+        { "threatlist",     SEC_GAMEMASTER,     false, &ChatHandler::HandleDebugThreatList,            "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 
@@ -635,6 +636,9 @@ ChatCommand * ChatHandler::getCommandTable()
         { "unpossess",      SEC_ADMINISTRATOR,  false, &ChatHandler::HandleUnPossessCommand,           "", NULL },
         { "bindsight",      SEC_ADMINISTRATOR,  false, &ChatHandler::HandleBindSightCommand,           "", NULL },
         { "unbindsight",    SEC_ADMINISTRATOR,  false, &ChatHandler::HandleUnbindSightCommand,         "", NULL },
+
+        { "bindfollow",     SEC_ADMINISTRATOR,  false, &ChatHandler::HandleBindFollowCommand,         "", NULL },
+        { "unbindfollow",   SEC_ADMINISTRATOR,  false, &ChatHandler::HandleUnbindFollowCommand,       "", NULL },
 
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };

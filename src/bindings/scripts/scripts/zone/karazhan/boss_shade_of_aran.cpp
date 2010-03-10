@@ -460,8 +460,8 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                 if (AvailableSpells)
                 {
                     CurrentNormalSpell = Spells[rand() % AvailableSpells];
-                    //m_creature->CastSpell(target, CurrentNormalSpell,false);
-                    AddSpellToCast(target, CurrentNormalSpell);
+                    DoCast(target, CurrentNormalSpell,false);
+                    //AddSpellToCast(target, CurrentNormalSpell);
                 }
             }
             NormalCastTimer = 1000;
@@ -473,13 +473,13 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
             {
 
                 case 0:
-                    AddSpellToCast(m_creature, SPELL_AOE_CS);
-                    //DoCast(m_creature, SPELL_AOE_CS);
+                    //AddSpellToCast(m_creature, SPELL_AOE_CS);
+                    DoCast(m_creature, SPELL_AOE_CS);
                     break;
                 case 1:
                     if (Unit* pUnit = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                        AddSpellToCast(pUnit, SPELL_CHAINSOFICE);
-                        //DoCast(pUnit, SPELL_CHAINSOFICE);
+                        //AddSpellToCast(pUnit, SPELL_CHAINSOFICE);
+                        DoCast(pUnit, SPELL_CHAINSOFICE);
                     break;
             }
             SecondarySpellTimer = 5000 + (rand()%15000);
@@ -687,8 +687,8 @@ struct TRINITY_DLL_DECL water_elementalAI : public ScriptedAI
 
         if(CastTimer < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_WATERBOLT);
-            //DoCast(m_creature->getVictim(), SPELL_WATERBOLT);
+            //AddSpellToCast(m_creature->getVictim(), SPELL_WATERBOLT);
+            DoCast(m_creature->getVictim(), SPELL_WATERBOLT);
             CastTimer = 2000 + (rand()%3000);
         }
         else 

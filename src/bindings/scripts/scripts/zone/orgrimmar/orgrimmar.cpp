@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Orgrimmar
 SD%Complete: 100
-SDComment: Quest support: 2460, 5727, 6566
+SDComment: Quest support: 2460, 4941, 5727, 6566
 SDCategory: Orgrimmar
 EndScriptData */
 
@@ -25,6 +25,7 @@ EndScriptData */
 npc_neeru_fireblade     npc_text + gossip options text missing
 npc_shenthul
 npc_thrall_warchief
+npc_eitrigg
 EndContentData */
 
 #include "precompiled.h"
@@ -248,6 +249,74 @@ bool GossipSelect_npc_thrall_warchief(Player *player, Creature *_Creature, uint3
     return true;
 }
 
+/*######
+## npc_eitrigg
+######*/
+
+#define GOSSIP_HN "Hello, Eitrigg. I bring news from Blackrock Spire."
+#define GOSSIP_SN1 "There is only one Warchief, Eitrigg!"
+#define GOSSIP_SN2 "What do you mean?"
+#define GOSSIP_SN3 "Hearthglen? But..."
+#define GOSSIP_SN4 "I will take you up on that offer, Eitrigg."
+#define GOSSIP_SN5 "Ah, so that is how they pushed the Dark Iron to the lower parts of the Spire."
+#define GOSSIP_SN6 "Perhaps there exists a way?"
+#define GOSSIP_SN7 "As you wish, Eitrigg."
+
+#define QUEST_EITRIGGS_WISDOM    4941
+
+bool GossipHello_npc_eitrigg(Player *player, Creature *_Creature)
+{
+    if (_Creature->isQuestGiver())
+        player->PrepareQuestMenu( _Creature->GetGUID() );
+
+    if (player->GetQuestStatus(QUEST_EITRIGGS_WISDOM) == QUEST_STATUS_INCOMPLETE)
+        player->ADD_GOSSIP_ITEM( 0, GOSSIP_HN, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+
+    player->SEND_GOSSIP_MENU(3573, _Creature->GetGUID());
+
+    return true;
+}
+
+bool GossipSelect_npc_eitrigg(Player *player, Creature *_Creature, uint32 sender, uint32 action)
+{
+    switch (action)
+    {
+        case GOSSIP_ACTION_INFO_DEF+1:
+            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SN1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+            player->SEND_GOSSIP_MENU(3574, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+2:
+            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SN2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
+            player->SEND_GOSSIP_MENU(3575, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+3:
+            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SN3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+4);
+            player->SEND_GOSSIP_MENU(3576, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+4:
+            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SN4, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);
+            player->SEND_GOSSIP_MENU(3577, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+5:
+            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SN5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+6);
+            player->SEND_GOSSIP_MENU(3578, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+6:
+            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SN6, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+7);
+            player->SEND_GOSSIP_MENU(3579, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+7:
+            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SN7, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+8);
+            player->SEND_GOSSIP_MENU(3580, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+8:
+            player->CLOSE_GOSSIP_MENU();
+            player->AreaExploredOrEventHappens(QUEST_EITRIGGS_WISDOM);
+            break;
+    }
+    return true;
+}
+
 void AddSC_orgrimmar()
 {
     Script *newscript;
@@ -270,6 +339,12 @@ void AddSC_orgrimmar()
     newscript->GetAI = &GetAI_npc_thrall_warchief;
     newscript->pGossipHello =  &GossipHello_npc_thrall_warchief;
     newscript->pGossipSelect = &GossipSelect_npc_thrall_warchief;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_eitrigg";
+    newscript->pGossipHello =  &GossipHello_npc_eitrigg;
+    newscript->pGossipSelect = &GossipSelect_npc_eitrigg;
     newscript->RegisterSelf();
 }
 

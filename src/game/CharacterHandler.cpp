@@ -777,6 +777,8 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     if(pCurrChar->isGameMaster())
         SendNotification(LANG_GM_ON);
 
+    pCurrChar->CreateCharmAI();
+
     std::string IP_str = GetRemoteAddress();
     sLog.outChar("Account: %d (IP: %s) Login Character:[%s] (guid:%u)",
         GetAccountId(),IP_str.c_str(),pCurrChar->GetName() ,pCurrChar->GetGUIDLow());

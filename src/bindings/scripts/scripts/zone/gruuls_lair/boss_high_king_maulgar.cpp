@@ -246,24 +246,34 @@ struct TRINITY_DLL_DECL boss_high_king_maulgarAI : public ScriptedAI
         }else ArcingSmash_Timer -= diff;
 
         //Whirlwind_Timer
-               if (Whirlwind_Timer < diff)
-               {
-                    DoCast(m_creature->getVictim(), SPELL_WHIRLWIND);
-                    Whirlwind_Timer = 55000;
-               }else Whirlwind_Timer -= diff;
+        if (Whirlwind_Timer < diff)
+        {
+            if(Charging_Timer < 15000)  //prevents casting Charge when in whirlwind
+                Charging_Timer = 15000+rand()%2000;
+
+            //AddSpellToCast(m_creature->getVictim(), SPELL_WHIRLWIND);
+            DoCast(m_creature->getVictim(),SPELL_WHIRLWIND);
+                    
+            Whirlwind_Timer = 55000;
+        }
+        else
+            Whirlwind_Timer -= diff;
 
         //MightyBlow_Timer
         if (MightyBlow_Timer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_MIGHTY_BLOW);
+            DoCast(m_creature->getVictim(), SPELL_MIGHTY_BLOW, true);
             MightyBlow_Timer = 30000+rand()%10000;
-        }else MightyBlow_Timer -= diff;
+        }
+        else
+            MightyBlow_Timer -= diff;
 
         //Entering Phase 2
         if(!Phase2 && (m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 50)
         {
             Phase2 = true;
             DoScriptText(SAY_ENRAGE, m_creature);
+            Whirlwind_Timer = 30000;
 
             m_creature->CastSpell(m_creature, SPELL_DUAL_WIELD, true);
             m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY, 0);
@@ -280,20 +290,26 @@ struct TRINITY_DLL_DECL boss_high_king_maulgarAI : public ScriptedAI
                 if (target)
                 {
                     AttackStart(target);
-                    DoCast(target, SPELL_BERSERKER_C);
+                    //AddSpellToCast(target, SPELL_BERSERKER_C);
+                    DoCast(target,SPELL_BERSERKER_C);
                 }
                 Charging_Timer = 20000;
-            }else Charging_Timer -= diff;
+            }
+            else
+                Charging_Timer -= diff;
 
             //Intimidating Roar
             if(Roar_Timer < diff)
             {
                 DoCast(m_creature, SPELL_ROAR);
                 Roar_Timer = 40000+(rand()%10000);
-            }else Roar_Timer -= diff;
+            }
+            else
+                Roar_Timer -= diff;
         }
 
         DoMeleeAttackIfReady();
+        CastNextSpellIfAnyAndReady();
     }
 };
 
@@ -517,17 +533,17 @@ struct TRINITY_DLL_DECL boss_blindeye_the_seerAI : public ScriptedAI
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
     }
 
-    uint32 GreaterPowerWordShield_Timer;
+    uint32 Shield_PoH_Timer;       // always cast sequence of shield and Prayer of Healing
     uint32 Heal_Timer;
-    uint32 PrayerofHealing_Timer;
+    bool shieldCasted;
 
     ScriptedInstance* pInstance;
 
     void Reset()
     {
-        GreaterPowerWordShield_Timer = 5000;
-        Heal_Timer = 25000 + rand()%15000;
-        PrayerofHealing_Timer = 45000 + rand()%10000;
+        Shield_PoH_Timer = 15000;
+        Heal_Timer = 7000 + rand()%3000;
+        shieldCasted = false;
 
         //reset encounter
         if (pInstance)
@@ -566,9 +582,7 @@ struct TRINITY_DLL_DECL boss_blindeye_the_seerAI : public ScriptedAI
             Unit* target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_MAULGAREVENT_TANK));
 
             if(target)
-            {
                 AttackStart(target);
-            }
         }
 
         //Return since we have no target
@@ -583,27 +597,38 @@ struct TRINITY_DLL_DECL boss_blindeye_the_seerAI : public ScriptedAI
         }
 
         //GreaterPowerWordShield_Timer
-        if(GreaterPowerWordShield_Timer < diff)
+        if(Shield_PoH_Timer < diff)
         {
-            DoCast(m_creature, SPELL_GREATER_PW_SHIELD);
-            GreaterPowerWordShield_Timer = 40000;
-        }else GreaterPowerWordShield_Timer -= diff;
+            //AddSpellToCast(m_creature, SPELL_GREATER_PW_SHIELD);
+            if(!shieldCasted)
+            {
+                DoCast(m_creature,SPELL_GREATER_PW_SHIELD);
+                shieldCasted = true;
+                Shield_PoH_Timer = 500;
+            }
+            else
+            {
+                //AddSpellToCast(m_creature, SPELL_PRAYEROFHEALING);
+                DoCast(m_creature, SPELL_PRAYEROFHEALING);
+                shieldCasted = false;
+                Shield_PoH_Timer = 30000 + rand()%10000;
+            }
+        }
+        else
+            Shield_PoH_Timer -= diff;
 
         //Heal_Timer
         if(Heal_Timer < diff)
         {
+            //AddSpellToCast(m_creature, SPELL_HEAL);
             DoCast(m_creature, SPELL_HEAL);
-            Heal_Timer = 15000 + rand()%25000;
-        }else Heal_Timer -= diff;
-        
-        //PrayerofHealing_Timer
-        if (PrayerofHealing_Timer < diff)
-        {
-            DoCast(m_creature, SPELL_PRAYEROFHEALING);
-            PrayerofHealing_Timer = 35000 + rand()%15000;
-        }else PrayerofHealing_Timer -= diff;
+            Heal_Timer = 10000 + rand()%25000;
+        }
+        else
+            Heal_Timer -= diff;
         
         DoMeleeAttackIfReady();
+        CastNextSpellIfAnyAndReady();
     }
 };
 
@@ -623,9 +648,9 @@ struct TRINITY_DLL_DECL boss_krosh_firehandAI : public ScriptedAI
 
     void Reset()
     {
-        GreaterFireball_Timer = 1000;
-        SpellShield_Timer = 5000;
-        BlastWave_Timer = 20000;
+        GreaterFireball_Timer = 500;
+        SpellShield_Timer = 0;
+        BlastWave_Timer = 5000;
 
         //reset encounter
         if (pInstance)
@@ -664,11 +689,11 @@ struct TRINITY_DLL_DECL boss_krosh_firehandAI : public ScriptedAI
             Unit* target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_MAULGAREVENT_TANK));
 
             if(target)
-                AttackStart(target);
+                AttackStart(target, false);
         }
 
         //Return since we have no target
-        if (!UpdateVictim() )
+        if (!UpdateVictim())
             return;
 
         //someone evaded!
@@ -678,45 +703,55 @@ struct TRINITY_DLL_DECL boss_krosh_firehandAI : public ScriptedAI
             return;
         }
 
+        //cast from distance
+        if(m_creature->GetDistance2d(m_creature->getVictim()) < 20)
+            m_creature->StopMoving();
+
         //GreaterFireball_Timer
-        if(GreaterFireball_Timer < diff && m_creature->GetDistance(m_creature->getVictim()) < 30)
+        if(GreaterFireball_Timer < diff)
         {
-            //DoCast(m_creature->getVictim(), SPELL_GREATER_FIREBALL);
-            AddSpellToCast(m_creature->getVictim(), SPELL_GREATER_FIREBALL);
-            GreaterFireball_Timer = 2000;
-        }else GreaterFireball_Timer -= diff;
+            // will cast only when in range of spell
+            if(m_creature->GetDistance2d(m_creature->getVictim()) < 20)
+                //AddSpellToCast(m_creature->getVictim(), SPELL_GREATER_FIREBALL);
+                DoCast(m_creature->getVictim(), SPELL_GREATER_FIREBALL);
+            GreaterFireball_Timer = 3000;
+        }
+        else 
+            GreaterFireball_Timer -= diff;
 
         //SpellShield_Timer
         if(SpellShield_Timer < diff)
         {
-            //m_creature->InterruptNonMeleeSpells(false);
-            //DoCast(m_creature->getVictim(), SPELL_SPELLSHIELD);
-            AddSpellToCast(m_creature->getVictim(), SPELL_SPELLSHIELD);
-            SpellShield_Timer = 30000;
-        }else SpellShield_Timer -= diff;
+            ForceSpellCast(m_creature->getVictim(), SPELL_SPELLSHIELD);
+            SpellShield_Timer = 31000;
+        }
+        else 
+            SpellShield_Timer -= diff;
 
         //BlastWave_Timer
         if(BlastWave_Timer < diff)
         {
-                       Unit *target;
-            std::list<HostilReference *> t_list = m_creature->getThreatManager().getThreatList();
-            std::vector<Unit *> target_list;
-            for(std::list<HostilReference *>::iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
+            bool InRange = false;
+            std::list<HostilReference*>& t_list = m_creature->getThreatManager().getThreatList();
+            for (std::list<HostilReference*>::iterator itr = t_list.begin(); itr!= t_list.end();++itr)
             {
-                target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
-                                                            //15 yard radius minimum
-                if(target && target->GetDistance2d(m_creature) < 15)
-                    target_list.push_back(target);
-                target = NULL;
+                Unit* pUnit = Unit::GetUnit((*m_creature), (*itr)->getUnitGuid());
+                //if in range
+                if(pUnit && pUnit->IsWithinDistInMap(m_creature, 15))
+                {
+                    InRange = true;
+                    break;
+                }
             }
-            if(target_list.size())
-                target = *(target_list.begin()+rand()%target_list.size());
 
-            m_creature->InterruptNonMeleeSpells(false);
-                       //DoCast(target, SPELL_BLAST_WAVE);
-                        AddSpellToCast(target, SPELL_BLAST_WAVE);
-            BlastWave_Timer = 60000;
-        }else BlastWave_Timer -= diff;
+            if(InRange)
+                //ForceAOESpellCast(SPELL_BLAST_WAVE);
+                DoCastAOE(SPELL_BLAST_WAVE);
+
+            BlastWave_Timer = 3000+rand()%2000;
+        }
+        else 
+            BlastWave_Timer -= diff;
         
         CastNextSpellIfAnyAndReady();
         //DoMeleeAttackIfReady();

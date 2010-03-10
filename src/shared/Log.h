@@ -89,6 +89,11 @@ class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ACE_
         if (arenaLogFile != NULL)
             fclose(arenaLogFile);
         arenaLogFile = NULL;
+
+
+        if (cheatLogFile != NULL)
+            fclose(cheatLogFile);
+        cheatLogFile = NULL;
     }
     public:
         void Initialize();
@@ -118,6 +123,7 @@ class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ACE_
         void outCharDump( const char * str, uint32 account_id, uint32 guid, const char * name );
         void outRALog( const char * str, ... )       ATTR_PRINTF(2,3);
         void outArena( const char * str, ... )       ATTR_PRINTF(2,3);
+        void outCheat( const char * str, ... )       ATTR_PRINTF(2,3);
         void outIrc( const char * str, ... )         ATTR_PRINTF(2,3);
         void SetLogLevel(char * Level);
         void SetLogFileLevel(char * Level);
@@ -141,6 +147,7 @@ class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ACE_
         FILE* charLogfile;
         FILE* dberLogfile;
         FILE* arenaLogFile;
+        FILE* cheatLogFile;
 
         // log/console control
         uint32 m_logLevel;

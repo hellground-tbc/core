@@ -1357,7 +1357,7 @@ bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const * spellP
         if (procEvent_procEx & PROC_EX_EX_TRIGGER_ALWAYS)
             return true;
         // Passive spells can`t trigger if need hit
-        if ((procEvent_procEx & PROC_EX_NORMAL_HIT) && !active)
+        if ((procEvent_procEx & PROC_EX_NORMAL_HIT & procExtra) && !active)
             return false;
         // Check Extra Requirement like (hit/crit/miss/resist/parry/dodge/block/immune/reflect/absorb and other)
         if (procEvent_procEx & procExtra)

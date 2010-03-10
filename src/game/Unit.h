@@ -799,6 +799,8 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         void AddToWorld();
         void RemoveFromWorld();
 
+        void setHover(bool val);
+
         void CleanupsBeforeDelete();                        // used in ~Creature/~Player (or before mass creature delete to remove cross-references to already deleted units)
 
         DiminishingLevels GetDiminishing(DiminishingGroup  group);
@@ -1382,9 +1384,6 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         float GetSpeedRate( UnitMoveType mtype ) const { return m_speed_rate[mtype]; }
         void SetSpeed(UnitMoveType mtype, float rate, bool forced = false);
 
-        void SetHover(bool on);
-        bool isHover() const { return HasAuraType(SPELL_AURA_HOVER); }
-
         void _RemoveAllAuraMods();
         void _ApplyAllAuraMods();
 
@@ -1463,11 +1462,16 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         uint32 GetReducedThreatPercent() { return m_reducedThreatPercent; }
         Unit *GetMisdirectionTarget() { return m_misdirectionTargetGUID ? GetUnit(*this, m_misdirectionTargetGUID) : NULL; }
 
+        void ApplyMeleeAPAttackerBonus(int32 value, bool apply);
+        int32 GetMeleeApAttackerBonus() { return m_meleeAPAttackerBonus; }
+
         bool IsAIEnabled, NeedChangeAI;
     protected:
         explicit Unit ();
 
         UnitAI *i_AI, *i_disabledAI;
+
+        bool m_AI_locked;
 
         void _UpdateSpells(uint32 time);
 
@@ -1493,7 +1497,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         uint32 m_transform;
         uint32 m_removedAuras;
 
-        AuraList m_modAuras[TOTAL_AURAS];
+        AuraList *m_modAuras;
         AuraList m_scAuras;                        // casted singlecast auras
         AuraList m_interruptableAuras;
         AuraList m_ccAuras;
@@ -1520,6 +1524,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         ThreatManager m_ThreatManager;
 
+        int32 m_meleeAPAttackerBonus;
     private:
         void SendAttackStop(Unit* victim);                  // only from AttackStop(Unit*)
         //void SendAttackStart(Unit* pVictim);                // only from Unit::AttackStart(Unit*)

@@ -415,7 +415,8 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                     if(unitTarget->HasAuraState(AURA_STATE_IMMOLATE))
                         damage += int32(damage*0.25);
                     // T5 bonus - increase immolate damage on incinerate hit
-                    if(m_caster->HasAura(37384, 0)) {
+                    if(m_caster->HasAura(37384, 0))
+                    {
                         // look for immolate casted by m_caster
                         Unit::AuraList const &mPeriodic = unitTarget->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
                         for(Unit::AuraList::const_iterator i = mPeriodic.begin(); i != mPeriodic.end(); ++i)
@@ -431,9 +432,11 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                     }
                 }
                 // Shadow bolt
-                if (m_spellInfo->SpellFamilyFlags & 1) {
+                if (m_spellInfo->SpellFamilyFlags & 1)
+                {
                     // T5 bonus - increase corruption on shadow bolt hit
-                    if(m_caster->HasAura(37384, 0)) {
+                    if(m_caster->HasAura(37384, 0))
+                    {
                         // look for corruption casted by m_caster
                         Unit::AuraList const &mPeriodic = unitTarget->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
                         for(Unit::AuraList::const_iterator i = mPeriodic.begin(); i != mPeriodic.end(); ++i)
@@ -708,7 +711,7 @@ void Spell::EffectDummy(uint32 i)
                             GameObject* target = NULL;
                             Trinity::AllGameObjectsWithEntryInGrid go_check(185549);
                             Trinity::GameObjectSearcher<Trinity::AllGameObjectsWithEntryInGrid> searcher(target, go_check);
-                            
+
                             // Find GO that matches this trigger:
                             unitTarget->VisitNearbyGridObject(3, searcher);
 
@@ -735,7 +738,7 @@ void Spell::EffectDummy(uint32 i)
                         }
                     else
                         spell_id = (rand()%2) ? 29848 : 31718;     // Polymorph: Sheep : Enveloping Winds
-                   
+
                     uint8 backfire = rand()%5;
                     if(spell_id == 29848 && !backfire)
                         m_caster->CastSpell(m_caster,spell_id,true); // backfire with poly chance
@@ -958,11 +961,11 @@ void Spell::EffectDummy(uint32 i)
                     WorldLocation wLoc;
                     Creature* cTarget = (Creature*)unitTarget;
                     cTarget->GetPosition(wLoc);
-                    float ang = cTarget->GetAngle(wLoc.x,wLoc.y);                    
-                    
+                    float ang = cTarget->GetAngle(wLoc.x,wLoc.y);
+
                     if(Creature * rat = m_caster->SummonCreature(13017,wLoc.x,wLoc.y,wLoc.z,ang,TEMPSUMMON_TIMED_DESPAWN,600000))
                         rat->GetMotionMaster()->MoveFollow(m_caster, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
-                    
+
                     cTarget->setDeathState(JUST_DIED);
                     cTarget->RemoveCorpse();
                     cTarget->SetHealth(0);                  // just for nice GM-mode view
@@ -1262,7 +1265,7 @@ void Spell::EffectDummy(uint32 i)
                 {
                     if(unitTarget->GetTypeId() != TYPEID_PLAYER)
                         return;
-                    
+
                     m_caster->CastSpell(unitTarget,40932,true);
                     break;
                 }
@@ -1397,6 +1400,10 @@ void Spell::EffectDummy(uint32 i)
 
                     m_caster->CastSpell(m_caster, 30452, true, NULL);
                     return;
+                }
+                case 39992:                                 //Needle Spine Targeting
+                {
+                    break;
                 }
             }
 
@@ -1595,27 +1602,46 @@ void Spell::EffectDummy(uint32 i)
                         return;
 
                     // all poison enchantments is temporary
-                    uint32 enchant_id = item->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT);
-                    if(!enchant_id)
-                        return;
-
-                    SpellItemEnchantmentEntry const *pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
-                    if(!pEnchant)
-                        return;
-
-                    for (int s=0;s<3;s++)
+                    if(uint32 enchant_id = item->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT))
                     {
-                        if(pEnchant->type[s]!=ITEM_ENCHANTMENT_TYPE_COMBAT_SPELL)
-                            continue;
+                        if(SpellItemEnchantmentEntry const *pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id))
+                        {
+                            for(int s=0;s<3;s++)
+                            {
+                                if(pEnchant->type[s]!=ITEM_ENCHANTMENT_TYPE_COMBAT_SPELL)
+                                    continue;
 
-                        SpellEntry const* combatEntry = sSpellStore.LookupEntry(pEnchant->spellid[s]);
-                        if(!combatEntry || combatEntry->Dispel != DISPEL_POISON)
-                            continue;
+                                SpellEntry const* combatEntry = sSpellStore.LookupEntry(pEnchant->spellid[s]);
+                                if(!combatEntry || combatEntry->Dispel != DISPEL_POISON)
+                                    continue;
 
-                        m_caster->CastSpell(unitTarget, combatEntry, true, item);
+                                m_caster->CastSpell(unitTarget, combatEntry, true, item);
+                            }
+                        }
                     }
 
                     m_caster->CastSpell(unitTarget, 5940, true);
+                    return;
+                }
+                // slice and dice
+                case 5171:
+                case 6774:
+                {
+                    Unit::AuraList procTriggerAuras = m_caster->GetAurasByType(SPELL_AURA_PROC_TRIGGER_SPELL);
+                    for(Unit::AuraList::iterator i = procTriggerAuras.begin(); i != procTriggerAuras.end(); i++)
+                    {
+                        switch((*i)->GetSpellProto()->Id)
+                        {
+                            // find weakness
+                            case 31239:
+                            case 31233:
+                            case 31240:
+                            case 31241:
+                            case 31242:
+                                m_caster->CastSpell(unitTarget, (*i)->GetSpellProto()->EffectTriggerSpell[(*i)->GetEffIndex()], true, NULL, (*i));
+                                return;
+                        }
+                    }
                     return;
                 }
             }
@@ -4686,6 +4712,14 @@ void Spell::EffectScriptEffect(uint32 effIndex)
     // by spell id
     switch(m_spellInfo->Id)
     {
+        case 25778:
+
+            if(!m_caster->CanHaveThreatList())
+                return;
+
+            m_caster->getThreatManager().modifyThreatPercent(unitTarget, -25);
+        break;
+        
         // PX-238 Winter Wondervolt TRAP
         case 26275:
         {
@@ -5817,20 +5851,20 @@ void Spell::EffectMomentMove(uint32 i)
         float dx,dy,dz;
         float angle = unitTarget->GetOrientation();
         unitTarget->GetPosition(cx,cy,cz);
-            
+
         //Check use of vamps//
         bool useVmap = false;
         bool swapZone = true;
 
         if( VMAP::VMapFactory::createOrGetVMapManager()->isHeightCalcEnabled() )
             useVmap = true;
-            
+
         //Going foward 0.5f until max distance
         for(float i=0.5f; i<dis; i+=0.5f)
         {
             unitTarget->GetNearPoint2D(dx,dy,i,angle);
             dz = unitTarget->GetMap()->GetHeight(dx, dy, cz, useVmap);
-               
+
             //Prevent climbing and go around object maybe 2.0f is to small? use 3.0f?
             if( (dz-cz) < 2.0f && (dz-cz) > -2.0f && (unitTarget->IsWithinLOS(dx, dy, dz)))
             {
@@ -5857,7 +5891,7 @@ void Spell::EffectMomentMove(uint32 i)
                 }
             }
         }
-            
+
         //Prevent Falling during swap building/outerspace
         unitTarget->UpdateGroundPositionZ(cx, cy, cz);
 
@@ -5971,6 +6005,8 @@ void Spell::EffectCharge(uint32 /*i*/)
 
     float x, y, z;
     target->GetContactPoint(m_caster, x, y, z);
+    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+            ((Player *)m_caster)->m_AC_timer = 3000;
     m_caster->GetMotionMaster()->MoveCharge(x, y, z);
 
     // not all charge effects used in negative spells
@@ -6350,8 +6386,8 @@ void Spell::EffectTransmitted(uint32 effIndex)
         {
             fx = 36.69+irand(-8,8);//random place for the bobber
             fy = -416.38+irand(-8,8);
-            fz = -19.9645; //serpentshrine water level        
-        
+            fz = -19.9645; //serpentshrine water level
+
         }
         else if ( !cMap->IsInWater(fx,fy,fz-0.5f)) // Hack to prevent fishing bobber from failing to land on fishing hole
         { // but this is not proper, we really need to ignore not materialized objects
@@ -6562,7 +6598,7 @@ void Spell::EffectStealBeneficialBuff(uint32 i)
         if (aur && (1<<aur->GetSpellProto()->Dispel) & dispelMask)
         {
             // Need check for passive? this
-            if (aur->IsPositive() && !aur->IsPassive())
+            if (aur->IsPositive() && !aur->IsPassive()  && !(aur->GetSpellProto()->AttributesEx4 & SPELL_ATTR_EX4_NOT_STEALABLE))
                 steal_list.push_back(aur);
         }
     }

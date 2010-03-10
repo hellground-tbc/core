@@ -4337,7 +4337,7 @@ bool ChatHandler::HandleHoverCommand(const char* args)
     else
         flag = atoi(px);
 
-    m_session->GetPlayer()->SetHover(flag);
+    m_session->GetPlayer()->setHover(flag);
 
     if (flag)
         SendSysMessage(LANG_HOVER_ENABLED);
@@ -7461,6 +7461,38 @@ bool ChatHandler::HandleUnPossessCommand(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleBindFollowCommand(const char* args)
+{
+    Unit* pUnit = getSelectedUnit();
+    if (!pUnit)
+        return false;
+
+    if (pUnit->GetTypeId() != TYPEID_PLAYER)
+        return false;
+
+    Player *gamemaster = m_session->GetPlayer();
+
+    gamemaster->setFollowTarget(pUnit->GetGUID());
+    ((Player *)pUnit)->setGMFollow(gamemaster->GetGUID());
+    gamemaster->GetMotionMaster()->MoveFollow(pUnit, 1.0f, M_PI);
+    return true;
+}
+
+bool ChatHandler::HandleUnbindFollowCommand(const char* args)
+{
+    Player *gamemaster = m_session->GetPlayer();
+    if (gamemaster->getFollowTarget() == 0)
+        return false;
+
+    Player *pTarget = Unit::GetPlayer(gamemaster->getFollowTarget());
+    if (pTarget)
+        pTarget->setGMFollow(0);
+    gamemaster->setFollowTarget(0);
+    gamemaster->GetMotionMaster()->Clear(true);
+    //gamemaster->GetMotionMaster()->Initialize();
+    return true;
+}
+
 bool ChatHandler::HandleBindSightCommand(const char* args)
 {
     Unit* pUnit = getSelectedUnit();
@@ -7468,8 +7500,6 @@ bool ChatHandler::HandleBindSightCommand(const char* args)
         return false;
 
     m_session->GetPlayer()->SetFarsightTarget(pUnit);
-
-    //pUnit->AddPlayerToVision(m_session->GetPlayer());
     return true;
 }
 

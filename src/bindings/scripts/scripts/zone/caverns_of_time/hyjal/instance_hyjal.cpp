@@ -91,6 +91,36 @@ struct TRINITY_DLL_DECL instance_mount_hyjal : public ScriptedInstance
         return false;
     }
 
+    void OnPlayerDeath(Player *pVictim)
+    {
+        if(GetData(DATA_ARCHIMONDEEVENT) != NOT_STARTED && GetData(DATA_ARCHIMONDEEVENT) != DONE)
+        {
+            Unit *Archimonde = Unit::GetUnit((*pVictim), GetData64(DATA_ARCHIMONDE));
+            
+            if(!Archimonde)
+                return;
+
+            switch(pVictim->getClass())
+            {
+                case CLASS_PRIEST:
+                case CLASS_PALADIN:
+                case CLASS_WARLOCK:
+                    pVictim->CastSpell(Archimonde, SPELL_SOUL_CHARGE_RED, true);
+                    break;
+                case CLASS_MAGE:
+                case CLASS_ROGUE:
+                case CLASS_WARRIOR:
+                    pVictim->CastSpell(Archimonde, SPELL_SOUL_CHARGE_YELLOW, true);
+                    break;
+                case CLASS_DRUID:
+                case CLASS_SHAMAN:
+                case CLASS_HUNTER:
+                    pVictim->CastSpell(Archimonde, SPELL_SOUL_CHARGE_GREEN, true);
+                    break;
+            }
+        }
+    }
+
     void OnObjectCreate(GameObject *go)
     {
         switch(go->GetEntry())
