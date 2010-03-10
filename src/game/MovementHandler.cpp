@@ -316,36 +316,9 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
     data.append(recv_data.contents(), recv_data.size());
     GetPlayer()->SendMessageToSet(&data, false);
 
-    if (GetPlayer()->m_AC_timer == 0)
-        if (float distance = GetPlayer()->GetDistance2d(movementInfo.x, movementInfo.y))
-        if (GetPlayer()->m_taxi.empty() && (MovementFlags & (MOVEMENTFLAG_JUMPING | MOVEMENTFLAG_FALLING | MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_ONTRANSPORT)) == 0)
-        {
-            if (GetPlayer()->GetMap() && !GetPlayer()->GetMap()->IsBattleGroundOrArena())
-            {
-                float speed;
-                if (MovementFlags & MOVEMENTFLAG_FLYING)
-                    speed = GetPlayer()->GetSpeed(MOVE_FLIGHT);
-                else
-                    speed = GetPlayer()->GetSpeed(MOVE_RUN);
-
-                float server_distance = 2.0f + ((speed - 7.0f) * 3.5f + 0.2f/* zapas */);
-
-                // czasem UNIT_STAT_CHARGING schodzi póŸniej/wczeœniej ni¿ m_AC_timer
-                if (server_distance >= 7.0 && !GetPlayer()->hasUnitState(UNIT_STAT_CHARGING))
-                    if (distance > server_distance)
-                    {
-                        // ~ nie dok³adnie taki jak powinien byæ, ale daje bardzo przybli¿ony wynik
-                        float clientspeed = (distance - 2.0f)/3.5f + 7.5f;
-                        float x, y, z;
-                        GetPlayer()->GetPosition(x, y, z);
-                        uint32 delta = movementInfo.time - GetPlayer()->m_lastmovetime;
-                        sLog.outCheat("Player %s moved for distance %f with server speed %f (client speed %f). MapID: %u, player's coord before X:%f Y:%f Z:%f. Player's coord now X:%f Y:%f Z:%f. HomeBindPosition X:%f Y:%f Z:%f. Time %u / PacketTime %u / DTime %u / getMSTime %u. MOVEMENTFLAGS: %u LATENCY: %u",
-                                            GetPlayer()->GetName(), distance, speed, clientspeed, GetPlayer()->GetMapId(), x, y, z, movementInfo.x, movementInfo.y, movementInfo.z, GetPlayer()->m_homebindX, GetPlayer()->m_homebindY, GetPlayer()->m_homebindZ, GetPlayer()->m_lastmovetime, movementInfo.time, delta, getMSTime(), MovementFlags, GetLatency());
-                        //KickPlayer();
-                    }
-            }
-        }
-    GetPlayer()->m_lastmovetime = getMSTime();
+    if (sWorld.m_ac.activated() && GetPlayer()->m_taxi.empty() && !GetPlayer()->isGameMaster() && (GetPlayer()->m_AC_timer == 0))
+        sWorld.m_ac.addRequest(new ACRequest(GetPlayer(), GetAccountId(), GetLatency(),
+                                movementInfo.x, movementInfo.y, movementInfo.z, MovementFlags));
 
     GetPlayer()->SetPosition(movementInfo.x, movementInfo.y, movementInfo.z, movementInfo.o);
     GetPlayer()->m_movementInfo = movementInfo;

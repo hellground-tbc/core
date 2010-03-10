@@ -1460,6 +1460,10 @@ void World::SetInitialWorldSettings()
     sLog.outString("Initialize AuctionHouseBot...");
     auctionbot.Initialize();
 
+    sLog.outString( "Activating AntiCheat" );
+    if (m_ac.activate() == -1)
+        sLog.outString( "Couldn't activate AntiCheat" );
+
     sLog.outString( "WORLD: World initialized" );
 }
 
@@ -1898,7 +1902,7 @@ void World::SendGlobalText(const char* text, WorldSession *self)
     WorldPacket data;
 
     // need copy to prevent corruption by strtok call in LineFromMessage original string
-    char* buf = strdup(text);
+    char* buf = _strdup(text);
     char* pos = buf;
 
     while(char* line = ChatHandler::LineFromMessage(pos))

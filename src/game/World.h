@@ -30,6 +30,7 @@
 #include "Policies/Singleton.h"
 #include "SharedDefines.h"
 #include "ace/Atomic_Op.h"
+#include "AntiCheat.h"
 
 #include <map>
 #include <set>
@@ -45,6 +46,7 @@ struct ScriptInfo;
 class SqlResultQueue;
 class QueryResult;
 class WorldSocket;
+class AntiCheat;
 
 enum ShutdownMask
 {
@@ -380,6 +382,8 @@ struct CliCommandHolder
 class World
 {
     public:
+        AntiCheat m_ac;
+
         static volatile uint32 m_worldLoopCounter;
 
         World();
