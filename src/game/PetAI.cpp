@@ -224,27 +224,31 @@ void PetAI::UpdateAI(const uint32 diff)
         }
     }
     
-    if((i_pet.hasUnitState(UNIT_STAT_CASTING) || spellCasted) && !m_recentlyCastedSpell)
+    // stop imp when he casts fireballs
+    if(me->GetEntry() == 416)
     {
-        i_pet.clearUnitState(UNIT_STAT_FOLLOW);
-        me->GetMotionMaster()->Clear();
-        me->GetMotionMaster()->MoveIdle();
-        m_recentlyCastedSpell = true;
-    }
-
-    if(!i_pet.hasUnitState(UNIT_STAT_CASTING) && m_recentlyCastedSpell && !spellCasted)
-    {
-        if(owner && i_pet.GetCharmInfo() && i_pet.GetCharmInfo()->HasCommandState(COMMAND_FOLLOW))
-        {
-            i_pet.GetMotionMaster()->MoveFollow(owner,PET_FOLLOW_DIST,PET_FOLLOW_ANGLE);
-        }
-        else
+        if((i_pet.hasUnitState(UNIT_STAT_CASTING) || spellCasted) && !m_recentlyCastedSpell)
         {
             i_pet.clearUnitState(UNIT_STAT_FOLLOW);
-            i_pet.GetMotionMaster()->Clear();
-            i_pet.GetMotionMaster()->MoveIdle();
+            me->GetMotionMaster()->Clear();
+            me->GetMotionMaster()->MoveIdle();
+            m_recentlyCastedSpell = true;
         }
-        m_recentlyCastedSpell = false;
+
+        if(!i_pet.hasUnitState(UNIT_STAT_CASTING) && m_recentlyCastedSpell && !spellCasted)
+        {
+            if(owner && i_pet.GetCharmInfo() && i_pet.GetCharmInfo()->HasCommandState(COMMAND_FOLLOW))
+            {
+                i_pet.GetMotionMaster()->MoveFollow(owner,PET_FOLLOW_DIST,PET_FOLLOW_ANGLE);
+            }
+            else
+            {
+                i_pet.clearUnitState(UNIT_STAT_FOLLOW);
+                i_pet.GetMotionMaster()->Clear();
+                i_pet.GetMotionMaster()->MoveIdle();
+            }
+            m_recentlyCastedSpell = false;
+        }
     }
 }
 
