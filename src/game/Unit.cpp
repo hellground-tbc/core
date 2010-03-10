@@ -2682,7 +2682,7 @@ uint32 Unit::GetDefenseSkillValue(Unit const* target) const
     if(GetTypeId() == TYPEID_PLAYER)
     {
         // in PvP use full skill instead current skill value
-        uint32 value = (target && (target->GetTypeId() == TYPEID_PLAYER || ((Creature*)target)->isTotem() || ((Creature*)target)->isPet()))
+        uint32 value = (target && (target->isCharmedOwnedByPlayerOrPlayer()))
             ? ((Player*)this)->GetMaxSkillValue(SKILL_DEFENSE)
             : ((Player*)this)->GetSkillValue(SKILL_DEFENSE);
         value += uint32(((Player*)this)->GetRatingBonusValue(CR_DEFENSE_SKILL));
@@ -11291,7 +11291,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
                     ((InstanceMap*)pMap)->GetInstanceData()->OnPlayerDeath((Player*)pVictim);
             }
         }
-        ((Player*)this)->Uncharm();
+        ((Player*)this)->RemoveCharmAuras();
     }
 
     // battleground things (do this at the end, so the death state flag will be properly set to handle in the bg->handlekill)

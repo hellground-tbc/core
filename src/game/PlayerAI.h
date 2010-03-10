@@ -31,6 +31,8 @@ struct PlayerAI : public UnitAI
 
     SpellEntry const *selectHighestRank(uint32 spell_id);
 
+    bool UpdateVictim(float = 10.0f);
+
     protected:
         Player *me;
 };
