@@ -41,7 +41,10 @@ int AntiCheat::svc()
         {
             ACRequest *req;
             if (_queue.next(req))
+            {
                 req->checkCheating();
+                delete req;
+            }
         }
     }
     return 0;
