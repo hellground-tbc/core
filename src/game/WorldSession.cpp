@@ -157,7 +157,7 @@ void WorldSession::logUnexpectedOpcode(WorldPacket* packet, const char *reason)
 /// Update the WorldSession (triggered by World update)
 bool WorldSession::Update(uint32 diff)
 {
-    if (!m_playerLoading && (!_player || !_player->IsInWorld()))
+    if (!m_inQueue && !m_playerLoading && (!_player || !_player->IsInWorld()))
     {
         if (m_kickTimer < diff)
             KickPlayer();
