@@ -60,7 +60,19 @@ struct TRINITY_DLL_DECL boss_shirrak_the_dead_watcherAI : public ScriptedAI
     }
 
     void Aggro(Unit *who)
-    { }
+    {
+    }
+
+    void JustDied(Unit *killer)
+    {
+            Map *map = m_creature->GetMap();
+            Map::PlayerList const &PlayerList = map->GetPlayers();
+            for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+            {
+                if(Player* i_pl = i->getSource())
+                    i_pl->RemoveAurasDueToSpell(SPELL_INHIBITMAGIC,0);
+            }
+    }
 
     void JustSummoned(Creature *summoned)
     {
@@ -79,7 +91,7 @@ struct TRINITY_DLL_DECL boss_shirrak_the_dead_watcherAI : public ScriptedAI
     void UpdateAI(const uint32 diff)
     {
         //Inhibitmagic_Timer
-        if (Inhibitmagic_Timer < diff)
+        if(Inhibitmagic_Timer < diff)
         {
             float dist;
             Map *map = m_creature->GetMap();
@@ -88,26 +100,29 @@ struct TRINITY_DLL_DECL boss_shirrak_the_dead_watcherAI : public ScriptedAI
             {
                 if (Player* i_pl = i->getSource())
                 {
-                    if (i_pl->isAlive() && (dist = i_pl->GetDistance(m_creature)) <= 45)
+                    if(i_pl->isAlive() && (dist = i_pl->GetDistance(m_creature)) <= 45)
                     {
-                        if(dist >= 35)
-                            m_creature->AddAura(SPELL_INHIBITMAGIC, i_pl);
-                        if(dist < 35 && dist >= 25)
-                            m_creature->AddAura(SPELL_INHIBITMAGIC, i_pl);
-                        if(dist < 25 && dist >= 15)
-                            m_creature->AddAura(SPELL_INHIBITMAGIC, i_pl);
-                        if(dist < 15)
-                            m_creature->AddAura(SPELL_INHIBITMAGIC, i_pl);
+                        i_pl->RemoveAurasDueToSpell(SPELL_INHIBITMAGIC,0);
+                        m_creature->AddAura(SPELL_INHIBITMAGIC, i_pl);
+                        if(Aura *inh_magic = i_pl->GetAura(SPELL_INHIBITMAGIC,0))
+                        {
+                            if(dist < 35)
+                                m_creature->AddAura(SPELL_INHIBITMAGIC, i_pl);
+                            if(dist < 25)
+                                m_creature->AddAura(SPELL_INHIBITMAGIC, i_pl);
+                            if(dist < 15)
+                               m_creature->AddAura(SPELL_INHIBITMAGIC, i_pl);
+                        }                                
                     }
                 }
             }
-            Inhibitmagic_Timer = 3000;
+            Inhibitmagic_Timer = 3500;
         }
         else
             Inhibitmagic_Timer -= diff;
 
         //Return since we have no target
-        if (!UpdateVictim() )
+        if (!UpdateVictim())
             return;
 
         //Attractmagic_Timer
@@ -116,14 +131,18 @@ struct TRINITY_DLL_DECL boss_shirrak_the_dead_watcherAI : public ScriptedAI
             DoCast(m_creature,SPELL_ATTRACTMAGIC);
             Attractmagic_Timer = 30000;
             Carnivorousbite_Timer = 1500;
-        }else Attractmagic_Timer -= diff;
+        }
+        else
+            Attractmagic_Timer -= diff;
 
         //Carnivorousbite_Timer
         if (Carnivorousbite_Timer < diff)
         {
             DoCast(m_creature,SPELL_CARNIVOROUSBITE);
             Carnivorousbite_Timer = 10000;
-        }else Carnivorousbite_Timer -= diff;
+        }
+        else
+            Carnivorousbite_Timer -= diff;
 
         //FocusFire_Timer
         if (FocusFire_Timer < diff)
@@ -143,7 +162,9 @@ struct TRINITY_DLL_DECL boss_shirrak_the_dead_watcherAI : public ScriptedAI
                 delete emote;
             }
             FocusFire_Timer = 15000+(rand()%5000);
-        }else FocusFire_Timer -= diff;
+        }
+        else
+            FocusFire_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }

@@ -374,7 +374,7 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public ScriptedAI
             {
                 //AddSpellToCastWithScriptText(m_creature, SPELL_BLASTNOVA, EMOTE_BLASTNOVA, m_creature);
                 DoScriptText(EMOTE_BLASTNOVA, m_creature);
-                DoCast(m_creature, SPELL_BLASTNOVA, true);
+                DoCast(m_creature, SPELL_BLASTNOVA);
                 BlastNova_Timer = 60000;
             }
         }

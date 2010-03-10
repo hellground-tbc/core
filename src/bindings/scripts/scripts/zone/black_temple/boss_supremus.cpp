@@ -285,9 +285,9 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
     }
 };
 
-struct TRINITY_DLL_DECL npc_volcanoAI : public ScriptedAI
+struct TRINITY_DLL_DECL npc_volcanoAI : public Scripted_NoMovementAI
 {
-    npc_volcanoAI(Creature *c) : ScriptedAI(c)
+    npc_volcanoAI(Creature *c) : Scripted_NoMovementAI(c)
     {
     }
 
@@ -295,8 +295,8 @@ struct TRINITY_DLL_DECL npc_volcanoAI : public ScriptedAI
     {
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-        m_creature->CastSpell(m_creature, 42716, true);
-        m_creature->CastSpell(m_creature, SPELL_VOLCANIC_ERUPTION,true);
+        m_creature->SetStunned(true);
+        m_creature->CastSpell(m_creature, SPELL_VOLCANIC_ERUPTION, false);
     }
 
     void Aggro(Unit *who) {}

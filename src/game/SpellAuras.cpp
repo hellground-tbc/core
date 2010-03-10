@@ -580,26 +580,19 @@ void Aura::Update(uint32 diff)
             m_target->RemoveAura(GetId(),GetEffIndex());
             return;
         }
-
-        // Get spell range
-        float radius;
-        SpellModOp mod;
-        if (m_spellProto->EffectRadiusIndex[GetEffIndex()])
+        if(caster->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT) == m_target->GetGUID())
         {
-            radius = GetSpellRadius(sSpellRadiusStore.LookupEntry(m_spellProto->EffectRadiusIndex[GetEffIndex()]));
-            mod = SPELLMOD_RADIUS;
-        }
-        else
-        {
-            radius = GetSpellMaxRange(sSpellRangeStore.LookupEntry(m_spellProto->rangeIndex));
-            mod = SPELLMOD_RANGE;
-        }
+            float max_range = GetSpellMaxRange(sSpellRangeStore.LookupEntry(m_spellProto->rangeIndex));
+            
+            if(Player* modOwner = caster->GetSpellModOwner())
+                modOwner->ApplySpellMod(GetId(), SPELLMOD_RANGE, max_range, NULL);
 
-        if(Player* modOwner = caster->GetSpellModOwner())
-            modOwner->ApplySpellMod(GetId(), mod, radius,NULL);
-
-        if(!caster->IsWithinDistInMap(pRealTarget, radius))
-            return;
+            if(!caster->IsWithinDistInMap(m_target, max_range))
+            {
+                m_target->RemoveAura(GetId(), GetEffIndex());
+                return;
+            }
+        }
     }
 
     if(m_isPeriodic && (m_duration >= 0 || m_isPassive || m_permanent))
@@ -1588,28 +1581,35 @@ void Aura::TriggerSpell()
                     // Gravity Lapse
                     case 34480:
                     {
-                        int32 value = 250 + rand()%250;
+                        int32 duration = caster->GetAura(34480, 1)->GetAuraDuration();
                         float height = caster->GetPositionZ();
-                    
-                        if(caster->HasAura(34480, 1) && height < 55)
-                            {
-                                int32 GLduration = caster->GetAura(34480, 1)->GetAuraDuration();
-                                
-                                caster->CastCustomSpell(m_target, 34480, &value, NULL, NULL, true);  //knockback all that are too low
-                                if(Aura *aur = caster->GetAura(34480, 1))
-                                    aur->SetAuraDuration(GLduration);   //do not change spell duration each time knockback is applied
-                            }
 
-                        if(caster->HasAura(39432, 0) && caster->HasUnitMovementFlag(MOVEMENTFLAG_FALLING) && height < 70)
+                        if(!caster->HasAura(39432, 0) && height > 55)
                         {
-                            int32 FlightDuration = caster->GetAura(39432, 0)->GetAuraDuration();
-
-                            caster->RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING);    //deal fall damage, and reapply flight aura without duration changes
-                            caster->CastSpell(m_target, 39432, true);
+                            caster->AddAura(39432, m_target);
                             if(Aura* aur = caster->GetAura(39432, 0))
-                                aur->SetAuraDuration(FlightDuration);
+                                aur->SetAuraDuration(duration);
                         }
 
+                        if(!caster->HasUnitMovementFlag(MOVEMENTFLAG_FALLING))
+                        {
+                            if(height < 55 && height > 50)
+                                {
+                                    caster->CastSpell(m_target, 34480, true);
+                                    if(Aura* GLapse = caster->GetAura(34480, 1))
+                                        GLapse->SetAuraDuration(duration);
+                                }
+
+                            if(height < 50)
+                                {
+                                    caster->CastSpell(m_target, 34480, true);
+                                    if(Aura* GLapse = caster->GetAura(34480, 1))
+                                        GLapse->SetAuraDuration(duration);
+                                    caster->CastSpell(m_target, 39432, true);
+                                    if(Aura* aur = caster->GetAura(39432, 0))
+                                        aur->SetAuraDuration(duration);
+                                }
+                        }
                         break;
                     }
 //                    // Tornado
@@ -4298,33 +4298,19 @@ void Aura::HandleAuraModResistanceExclusive(bool apply, bool Real)
     {
         if(m_modifier.m_miscvalue & int32(1<<x))
         {
-            if(apply) 
+            float maxModifier = 0;
+            Unit::AuraList auraResistanceExclusive = m_target->GetAurasByType(SPELL_AURA_MOD_RESISTANCE_EXCLUSIVE);
+            for( Unit::AuraList::iterator it = auraResistanceExclusive.begin(); it != auraResistanceExclusive.end(); it++)
             {
-                float diff = float(GetModifierValue()) - m_target->GetModifierValue(UnitMods(UNIT_MOD_RESISTANCE_START + x), TOTAL_VALUE);
-                if(diff > 0)
-                {
-                    m_target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), TOTAL_VALUE, diff, apply);
-                    if(m_target->GetTypeId() == TYPEID_PLAYER)
-                        m_target->ApplyResistanceBuffModsMod(SpellSchools(x),m_positive,diff, apply);
-                }
+                if(*it != this && ((*it)->GetMiscValue() & int32(1<<x)) && (*it)->GetModifierValue() > maxModifier)
+                    maxModifier = (*it)->GetModifierValue();
             }
-            else
+            float diff = GetModifierValue() - maxModifier;
+            if(diff > 0)
             {
-                if( float(GetModifierValue()) >= m_target->GetModifierValue(UnitMods(UNIT_MOD_RESISTANCE_START + x), TOTAL_VALUE))
-                {
-                    float maxModifier = 0;
-                    Unit::AuraList auraResistanceExclusive = m_target->GetAurasByType(SPELL_AURA_MOD_RESISTANCE_EXCLUSIVE);
-                    for( Unit::AuraList::iterator it = auraResistanceExclusive.begin(); it != auraResistanceExclusive.end(); it++)
-                    {
-                        if(*it != this && ((*it)->GetMiscValue() & int32(1<<x)) && (*it)->GetModifierValue() > maxModifier)
-                            maxModifier = (*it)->GetModifierValue();
-                    }
-
-                    float diff = m_target->GetModifierValue(UnitMods(UNIT_MOD_RESISTANCE_START + x), TOTAL_VALUE) - maxModifier;
-                    m_target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), TOTAL_VALUE, diff, apply);
-                    if(m_target->GetTypeId() == TYPEID_PLAYER)
-                        m_target->ApplyResistanceBuffModsMod(SpellSchools(x),m_positive,diff, apply);
-                }
+                m_target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), BASE_VALUE, diff, apply); // orginalnie w TC bylo BASE_VALUE, czy to ma znaczenie?
+                if(m_target->GetTypeId() == TYPEID_PLAYER || ((Creature*)m_target)->isPet())
+                    m_target->ApplyResistanceBuffModsMod(SpellSchools(x),m_positive,diff, apply);
             }
         }
     }
@@ -4336,7 +4322,7 @@ void Aura::HandleAuraModResistance(bool apply, bool Real)
     {
         if(m_modifier.m_miscvalue & int32(1<<x))
         {
-            m_target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), BASE_VALUE, float(GetModifierValue()), apply);
+            m_target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), TOTAL_VALUE, float(GetModifierValue()), apply);
             if(m_target->GetTypeId() == TYPEID_PLAYER || ((Creature*)m_target)->isPet())
                 m_target->ApplyResistanceBuffModsMod(SpellSchools(x),m_positive,GetModifierValue(), apply);
         }
@@ -4400,7 +4386,7 @@ void Aura::HandleModBaseResistance(bool apply, bool Real)
     {
         for(int i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; i++)
             if(m_modifier.m_miscvalue & (1<<i))
-                m_target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + i), BASE_VALUE, float(GetModifierValue()), apply);
+                m_target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + i), TOTAL_VALUE, float(GetModifierValue()), apply);
     }
 }
 

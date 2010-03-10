@@ -1055,7 +1055,7 @@ void BattleGroundMgr::BuildBattleGroundStatusPacket(WorldPacket *data, BattleGro
     *data << uint32(QueueSlot);                             // queue id (0...2) - player can be in 3 queues in time
     // uint64 in client
     *data << uint64( uint64(arenatype ? arenatype : bg->GetArenaType()) | (uint64(0x0D) << 8) | (uint64(bg->GetTypeID()) << 16) | (uint64(0x1F90) << 48) );
-    *data << uint32(0);                                     // unknown
+    *data << uint32(bg->GetInstanceID()); // instance id
     // alliance/horde for BG and skirmish/rated for Arenas
     *data << uint8(bg->isArena() ? ( israted ? israted : bg->isRated() ) : bg->GetTeamIndexByTeamId(team));
 /*    *data << uint8(arenatype ? arenatype : bg->GetArenaType());                     // team type (0=BG, 2=2x2, 3=3x3, 5=5x5), for arenas    // NOT PROPER VALUE IF ARENA ISN'T RUNNING YET!!!!

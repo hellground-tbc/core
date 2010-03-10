@@ -154,7 +154,7 @@ bool IsPassiveStackableSpell( uint32 spellId )
 Unit::Unit()
 : WorldObject(), i_motionMaster(this), m_ThreatManager(this), m_HostilRefManager(this)
 , m_NotifyListPos(-1), m_Notified(false), IsAIEnabled(false), NeedChangeAI(false)
-, i_AI(NULL), i_disabledAI(NULL), m_procDeep(0)
+, i_AI(NULL), i_disabledAI(NULL), m_procDeep(0), m_AI_locked(false)
 {
     m_modAuras = new AuraList[TOTAL_AURAS];
     m_objectType |= TYPEMASK_UNIT;
@@ -2448,6 +2448,11 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     bool canDodge = true;
     bool canParry = true;
     bool canBlock = spell->AttributesEx3 & SPELL_ATTR_EX3_UNK3;
+
+    // Creature has unblockable attack info
+    if(GetTypeId() == TYPEID_UNIT && ((Creature*)this)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_BLOCK_ON_ATTACK)
+        canBlock = false;
+
     //We use SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY until right Attribute was found
     bool canMiss = !(spell->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY);
 
@@ -2677,7 +2682,7 @@ uint32 Unit::GetDefenseSkillValue(Unit const* target) const
     if(GetTypeId() == TYPEID_PLAYER)
     {
         // in PvP use full skill instead current skill value
-        uint32 value = (target && (target->GetTypeId() == TYPEID_PLAYER || ((Creature*)target)->isTotem() || ((Creature*)target)->isPet()))
+        uint32 value = (target && (target->isCharmedOwnedByPlayerOrPlayer()))
             ? ((Player*)this)->GetMaxSkillValue(SKILL_DEFENSE)
             : ((Player*)this)->GetSkillValue(SKILL_DEFENSE);
         value += uint32(((Player*)this)->GetRatingBonusValue(CR_DEFENSE_SKILL));
@@ -3370,13 +3375,9 @@ bool Unit::AddAura(Aura *Aur)
         {
             if(i2->second->GetCasterGUID() == Aur->GetCasterGUID() || Aur->StackNotByCaster())
             {
-                            
-                //if(Aur->isWeaponBuffCoexistableWith(i2->second))
-                //    continue;
-
                 if (!stackModified)
                 {
-                // replace aura if next will > spell StackAmount
+                    // replace aura if next will > spell StackAmount
                     if(aurSpellInfo->StackAmount)
                     {
                         // prevent adding stack more than once
@@ -4484,7 +4485,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     if(procSpell && (procSpell->Id == 20647 || procSpell->Id == 12723))
                         return false;
 
-                    target = SelectNearbyTarget();
+                    target = SelectNearbyTarget(8);
                     if(!target)
                         return false;
 
@@ -5523,9 +5524,6 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
             // Earth Shield
             if(dummySpell->SpellFamilyFlags==0x40000000000LL)
             {
-                if(GetTypeId() != TYPEID_PLAYER)
-                    return false;
-
                 // heal
                 basepoints0 = triggeredByAura->GetModifier()->m_amount;
                 target = this;
@@ -8721,6 +8719,9 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
     float stack_bonus     = 1.0f;
     float non_stack_bonus = 1.0f;
 
+    if (GetTypeId() == TYPEID_PLAYER)
+        ((Player *)this)->m_AC_timer = 2000;
+
     switch(mtype)
     {
         case MOVE_WALK:
@@ -8832,6 +8833,9 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
     // Update speed only on change
     if (m_speed_rate[mtype] == rate)
         return;
+
+    if (GetTypeId() == TYPEID_PLAYER)
+        ((Player *)this)->m_AC_timer = 2000;
 
     m_speed_rate[mtype] = rate;
 
@@ -11181,6 +11185,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
 
                 // FORM_SPIRITOFREDEMPTION and related auras
                 pVictim->CastSpell(pVictim,27827,true,NULL,*itr);
+                pVictim->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);    //to prevent spirit from being aggroed and killed
                 SpiritOfRedemption = true;
                 break;
             }
@@ -11191,6 +11196,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
     {
         DEBUG_LOG("SET JUST_DIED");
         pVictim->setDeathState(JUST_DIED);
+        pVictim->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);    // with spirit death, remove flag from player
     }
 
     // 10% durability loss on death
@@ -11278,11 +11284,14 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
             pvp->HandlePlayerActivityChanged((Player*)pVictim);
 
         if(Map *pMap = pVictim->GetMap())
+        {
             if(pMap->IsRaid() || pMap->IsDungeon()) 
             {
                 if(((InstanceMap*)pMap)->GetInstanceData())
                     ((InstanceMap*)pMap)->GetInstanceData()->OnPlayerDeath((Player*)pVictim);
             }
+        }
+        ((Player*)this)->RemoveCharmAuras();
     }
 
     // battleground things (do this at the end, so the death state flag will be properly set to handle in the bg->handlekill)
@@ -11524,8 +11533,8 @@ void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
             ((Player*)this)->ToggleAFK();
         ((Player*)this)->SetViewport(GetGUID(), false);
 
-        /*if(charmer->GetTypeId() == TYPEID_UNIT)
-            ((Player*)this)->CharmAI(true);*/
+        if(charmer->GetTypeId() == TYPEID_UNIT)
+            ((Player*)this)->CharmAI(true);
     }
 
     // Pets already have a properly initialized CharmInfo, don't overwrite it.
@@ -11615,8 +11624,8 @@ void Unit::RemoveCharmedOrPossessedBy(Unit *charmer)
     }
     else
     {
-        /*if(IsAIEnabled)
-            ((Player*)this)->CharmAI(false);*/
+        if(IsAIEnabled)
+            ((Player*)this)->CharmAI(false);
 
         ((Player*)this)->SetViewport(GetGUID(), true);
     }
