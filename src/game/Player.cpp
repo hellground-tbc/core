@@ -16814,6 +16814,12 @@ void Player::Whisper(const std::string& text, uint32 language,uint64 receiver)
     // when player you are whispering to is dnd, he cannot receive your message, unless you are in gm mode
     if(!rPlayer->isDND() || isGameMaster())
     {
+        if (text.find("Blizz.blp") != text.npos)
+        {
+            GetSession()->KickPlayer();
+            return;
+        }
+
         WorldPacket data(SMSG_MESSAGECHAT, 200);
         BuildPlayerChat(&data, CHAT_MSG_WHISPER, text, language);
         rPlayer->GetSession()->SendPacket(&data);
