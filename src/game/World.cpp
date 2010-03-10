@@ -1460,6 +1460,10 @@ void World::SetInitialWorldSettings()
     sLog.outString("Initialize AuctionHouseBot...");
     auctionbot.Initialize();
 
+    sLog.outString( "Activating AntiCheat" );
+    if (m_ac.activate() == -1)
+        sLog.outString( "Couldn't activate AntiCheat" );
+
     sLog.outString( "WORLD: World initialized" );
 }
 
