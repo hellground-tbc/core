@@ -4298,33 +4298,19 @@ void Aura::HandleAuraModResistanceExclusive(bool apply, bool Real)
     {
         if(m_modifier.m_miscvalue & int32(1<<x))
         {
-            if(apply) 
+            float maxModifier = 0;
+            Unit::AuraList auraResistanceExclusive = m_target->GetAurasByType(SPELL_AURA_MOD_RESISTANCE_EXCLUSIVE);
+            for( Unit::AuraList::iterator it = auraResistanceExclusive.begin(); it != auraResistanceExclusive.end(); it++)
             {
-                float diff = float(GetModifierValue()) - m_target->GetModifierValue(UnitMods(UNIT_MOD_RESISTANCE_START + x), TOTAL_VALUE);
-                if(diff > 0)
-                {
-                    m_target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), TOTAL_VALUE, diff, apply);
-                    if(m_target->GetTypeId() == TYPEID_PLAYER)
-                        m_target->ApplyResistanceBuffModsMod(SpellSchools(x),m_positive,diff, apply);
-                }
+                if(*it != this && ((*it)->GetMiscValue() & int32(1<<x)) && (*it)->GetModifierValue() > maxModifier)
+                    maxModifier = (*it)->GetModifierValue();
             }
-            else
+            float diff = GetModifierValue() - maxModifier;
+            if(diff > 0)
             {
-                if( float(GetModifierValue()) >= m_target->GetModifierValue(UnitMods(UNIT_MOD_RESISTANCE_START + x), TOTAL_VALUE))
-                {
-                    float maxModifier = 0;
-                    Unit::AuraList auraResistanceExclusive = m_target->GetAurasByType(SPELL_AURA_MOD_RESISTANCE_EXCLUSIVE);
-                    for( Unit::AuraList::iterator it = auraResistanceExclusive.begin(); it != auraResistanceExclusive.end(); it++)
-                    {
-                        if(*it != this && ((*it)->GetMiscValue() & int32(1<<x)) && (*it)->GetModifierValue() > maxModifier)
-                            maxModifier = (*it)->GetModifierValue();
-                    }
-
-                    float diff = m_target->GetModifierValue(UnitMods(UNIT_MOD_RESISTANCE_START + x), TOTAL_VALUE) - maxModifier;
-                    m_target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), TOTAL_VALUE, diff, apply);
-                    if(m_target->GetTypeId() == TYPEID_PLAYER)
-                        m_target->ApplyResistanceBuffModsMod(SpellSchools(x),m_positive,diff, apply);
-                }
+                m_target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), BASE_VALUE, diff, apply); // orginalnie w TC bylo BASE_VALUE, czy to ma znaczenie?
+                if(m_target->GetTypeId() == TYPEID_PLAYER || ((Creature*)m_target)->isPet())
+                    m_target->ApplyResistanceBuffModsMod(SpellSchools(x),m_positive,diff, apply);
             }
         }
     }
@@ -4400,7 +4386,7 @@ void Aura::HandleModBaseResistance(bool apply, bool Real)
     {
         for(int i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; i++)
             if(m_modifier.m_miscvalue & (1<<i))
-                m_target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + i), BASE_VALUE, float(GetModifierValue()), apply);
+                m_target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + i), TOTAL_VALUE, float(GetModifierValue()), apply);
     }
 }
 
