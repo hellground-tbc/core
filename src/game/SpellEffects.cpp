@@ -308,6 +308,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
 {
     if( unitTarget && unitTarget->isAlive())
     {
+        float totalDmgModPct = 1;
         switch(m_spellInfo->SpellFamilyName)
         {
             case SPELLFAMILY_GENERIC:
@@ -508,8 +509,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                                     // Moonfire or Insect Swarm (target debuff from any casters)
                                     if ( (*itr)->GetSpellProto()->SpellFamilyFlags & 0x00200002LL )
                                     {
-                                        int32 mod = (*i)->GetModifier()->m_amount;
-                                        damage += damage*mod/100;
+                                        totalDmgModPct *= 1 + ((*i)->GetModifierValue() / 100.0f);
                                         break;
                                     }
                                 }
@@ -657,6 +657,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
 
         if(m_originalCaster && damage > 0)
             damage = m_originalCaster->SpellDamageBonus(unitTarget, m_spellInfo, (uint32)damage, SPELL_DIRECT_DAMAGE);
+        damage *= totalDmgModPct;
 
         m_damage += damage;
     }
