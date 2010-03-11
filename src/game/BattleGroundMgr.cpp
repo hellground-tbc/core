@@ -1370,6 +1370,8 @@ BattleGround * BattleGroundMgr::CreateNewBattleGround(uint32 bgTypeId)
     // reset the new bg (set status to status_wait_queue from status_none)
     bg->Reset();
 
+    bg->SetHoliday(bg_template->getHonorMode());
+
     /*   will be setup in BG::Update() when the first player is ported in
     if(!(bg->SetupBattleGround()))
     {
