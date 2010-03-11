@@ -9,6 +9,8 @@ SET(game_STAT_SRCS
    AggressorAI.cpp
    AggressorAI.h
    AnimalRandomMovementGenerator.h
+   AntiCheat.cpp
+   AntiCheat.h
    ArenaTeam.cpp
    ArenaTeam.h
    ArenaTeamHandler.cpp

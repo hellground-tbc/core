@@ -256,6 +256,7 @@ class BattleGround
     friend class BattleGroundMgr;
 
     public:
+        uint32 getHonorMode() { return m_HonorMode; }
         /* Construction */
         BattleGround();
         /*BattleGround(const BattleGround& bg);*/
