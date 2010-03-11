@@ -7,8 +7,6 @@ CliRunnable.h
 Main.cpp 
 Master.cpp 
 Master.h 
-RASocket.cpp 
-RASocket.h 
 WorldRunnable.cpp 
 WorldRunnable.h
 )
