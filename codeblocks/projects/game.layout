@@ -1,13 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Debug x64" />
+	<File name="../../src/game/GossipDef.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="2094" topLine="29" />
+	</File>
 	<File name="../../src/game/Player.h" open="0" top="0" tabpos="0">
 		<Cursor position="30584" topLine="908" />
 	</File>
 	<File name="../../src/game/SharedDefines.h" open="0" top="0" tabpos="0">
 		<Cursor position="4302" topLine="128" />
 	</File>
+	<File name="../../src/game/Spell.h" open="0" top="0" tabpos="0">
+		<Cursor position="8240" topLine="234" />
+	</File>
+	<File name="../../src/game/SpellAuras.h" open="0" top="0" tabpos="0">
+		<Cursor position="17851" topLine="369" />
+	</File>
 	<File name="../../src/game/SpellEffects.cpp" open="0" top="0" tabpos="0">
-		<Cursor position="74869" topLine="1383" />
+		<Cursor position="154069" topLine="3438" />
 	</File>
 </CodeBlocks_layout_file>

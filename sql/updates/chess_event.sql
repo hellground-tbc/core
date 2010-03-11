@@ -173,6 +173,9 @@ insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_
 insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('85016','21750','532','1','0','0','-11067','-1861.86','220.667','3.72268','604800','0','0','50000','0','0','0');
 insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('85010','21752','532','1','0','0','-11063.6','-1866.47','220.667','3.84835','604800','0','0','150000','0','0','0');
 
+#--add flags to chess pieces
+UPDATE creature_template SET unit_flags = unit_flags | 528384 WHERE entry IN (17469,17211,21748,21664,21750,21683,21747,21682,21726,21160,21752,21684);
+
 #--add spell_script_target's for spells used in chess event
 DELETE FROM spell_script_target WHERE `entry` IN(37146,30012,37144,37148,37151,37152,37153,30532, 30284, 37462, 
 37471, 37455, 37453, 37427, 37406, 37472, 37463, 37456, 37454, 37434, 37413, 37465, 37474, 37459, 37498, 37432, 37414, 37476, 37461, 37469, 37502, 37428, 37416);

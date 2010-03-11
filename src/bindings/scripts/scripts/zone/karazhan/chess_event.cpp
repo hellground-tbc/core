@@ -697,15 +697,17 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
     ChessSquere chessBoard[8][8];
 
     bool eventStarted;
+    bool debugMode;
 
     WorldLocation wLoc;
     WorldLocation tpLoc;
 
-    std::list<Player*>tpList;
+    std::list<uint64*> tpList;
 
     void Reset()
     {
         eventStarted = false;
+        debugMode = false;
         hordePieces = 16;
         alliancePieces = 16;
     }
@@ -1023,6 +1025,12 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
         if (player)
             player->TeleportTo(tpLoc);
     }
+    void TeleportPlayer(uint64 player)
+    {
+        Player * tmpPlayer = NULL;
+        if (player && tmpPlayer = m_creature->GetCreature(m_creature, player))
+            tmpPlayer->TeleportTo(tpLoc);
+    }
 
     void TeleportPlayers()
     {
@@ -1040,7 +1048,7 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
 
     void TeleportListedPlayers()
     {
-        for (std::list<Player*>::iterator itr = tpList.begin(); itr != tpList.end(); ++itr)
+        for (std::list<uint64>::iterator itr = tpList.begin(); itr != tpList.end(); ++itr)
         {
             if ((*itr)->HasAura(SPELL_POSSES_CHESSPIECE, 0))
             {
@@ -1054,6 +1062,7 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
     {
         DoSay("ApplyDebuffsOnRaidMembers() poczatek", LANG_UNIVERSAL, m_creature);
         Player * tmp;
+        m_creature->CastSpell(m_creature, SPELL_GAME_IN_SESSION, true);
         Map::PlayerList const &pList = m_creature->GetMap()->GetPlayers();
         for (Map::PlayerList::const_iterator itr = pList.begin(); itr != pList.end(); ++itr)
         {
@@ -1064,6 +1073,7 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
                 DoSay("ApplyDebuffsOnRaidMembers() if poczatek", LANG_UNIVERSAL, m_creature);
                 //tmp->CastSpell(tmp, SPELL_IN_GAME, true);
                 //tmp->CastSpell(tmp, SPELL_GAME_IN_SESSION, true);
+                m_creature->CastSpell(tmp, SPELL_GAME_IN_SESSION, true);
                 tmp->AddAura(SPELL_GAME_IN_SESSION, tmp);
                 //tmp->SetInCombatWith(m_creature);
                 DoSay("ApplyDebuffsOnRaidMembers() if koniec", LANG_UNIVERSAL, m_creature);
@@ -1076,6 +1086,7 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
     {
         DoSay("StartEvent", LANG_UNIVERSAL, m_creature);
         PrepareBoardForEvent();
+        TeleportPlayers();
         ApplyDebuffsOnRaidMembers();
 
         DoZoneInCombat();
@@ -1086,6 +1097,7 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
     {
         if (pInstance->GetData(DATA_CHESS_EVENT) == IN_PROGRESS && !eventStarted)
             StartEvent();
+
         if (!eventStarted)
             return;
     }
@@ -1095,8 +1107,8 @@ bool GossipHello_npc_chesspiece(Player* player, Creature* _Creature)
 {
     ScriptedInstance* pInstance = ((ScriptedInstance*)_Creature->GetInstanceData());
 
-    if(pInstance->GetData(DATA_CHESS_EVENT) != IN_PROGRESS)
-        return true;
+    //if(pInstance->GetData(DATA_CHESS_EVENT) != IN_PROGRESS)
+    //    return true;
 
     if(pInstance->GetData(CHESS_EVENT_TEAM) == ALLIANCE && _Creature->getFaction() != A_FACTION)
         return true;
@@ -1137,10 +1149,19 @@ bool GossipHello_npc_echo_of_medivh(Player* player, Creature* _Creature)
     if(pInstance->GetData(DATA_CHESS_EVENT) == DONE) //for testing
         pInstance->SetData(DATA_CHESS_EVENT,NOT_STARTED);
 
+    if(pInstance->GetData(DATA_CHESS_EVENT) == IN_PROGRESS)
+    {
+        //reset event
+    }
+
     if(pInstance->GetData(DATA_CHESS_EVENT) != NOT_STARTED)
         return true;
 
     player->ADD_GOSSIP_ITEM(0, EVENT_START, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+
+    if (player->isGameMaster())
+        player->ADD_GOSSIP_ITEM(2, "Start Debug Mode", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+
     player->SEND_GOSSIP_MENU(8990, _Creature->GetGUID());
 
     return true;
@@ -1157,6 +1178,11 @@ bool GossipSelect_npc_echo_of_medivh(Player* player, Creature* _Creature, uint32
         pInstance->SetData(CHESS_EVENT_TEAM,player->GetTeam());
         _Creature->GetMotionMaster()->MoveRandom(10);
         //player->TeleportTo(-11054.032,-1909.979,229.626,2.190);
+    }
+
+    if (action == GOSSIP_ACTION_INFO_DEF + 2)
+    {
+        ((boss_MedivhAI*)_Creature)->
     }
 
     player->CLOSE_GOSSIP_MENU();
