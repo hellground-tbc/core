@@ -123,7 +123,7 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
     bool IsEncounterInProgress() const
     {
         for(uint8 i = 0; i < ENCOUNTERS; i++)
-            if(Encounters[i] == IN_PROGRESS)
+            if(Encounters[i] != NOT_STARTED && Encounters[i] != DONE)
                 return true;
         return false;
     }
@@ -241,11 +241,26 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
                 OpenDoor(BridgePart[2], true);
             }
             ControlConsole = data;
-        case DATA_HYDROSSTHEUNSTABLEEVENT:  Encounters[0] = data;   break;
-        case DATA_LEOTHERASTHEBLINDEVENT:   Encounters[1] = data;   break;
-        case DATA_THELURKERBELOWEVENT:      Encounters[2] = data;   break;
-        case DATA_KARATHRESSEVENT:          Encounters[3] = data;   break;
-        case DATA_MOROGRIMTIDEWALKEREVENT:  Encounters[4] = data;   break;
+        case DATA_HYDROSSTHEUNSTABLEEVENT:
+            if(Encounters[0] != DONE)
+                Encounters[0] = data;
+            break;
+        case DATA_LEOTHERASTHEBLINDEVENT:
+            if(Encounters[1] != DONE)
+                Encounters[1] = data;
+            break;
+        case DATA_THELURKERBELOWEVENT:
+            if(Encounters[2] != DONE)
+                Encounters[2] = data;
+            break;
+        case DATA_KARATHRESSEVENT:
+            if(Encounters[3] != DONE)
+                Encounters[3] = data;
+            break;
+        case DATA_MOROGRIMTIDEWALKEREVENT:
+            if(Encounters[4] != DONE)
+                Encounters[4] = data;
+            break;
             //Lady Vashj
         case DATA_LADYVASHJEVENT:
             if(data == NOT_STARTED)
@@ -255,14 +270,16 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
                 ShieldGeneratorDeactivated[2] = false;
                 ShieldGeneratorDeactivated[3] = false;
             }
-            Encounters[5] = data;   break;
+            if(Encounters[5] != DONE)
+                Encounters[5] = data;
+            break;
         case DATA_SHIELDGENERATOR1:ShieldGeneratorDeactivated[0] = (data) ? true : false;   break;
         case DATA_SHIELDGENERATOR2:ShieldGeneratorDeactivated[1] = (data) ? true : false;   break;
         case DATA_SHIELDGENERATOR3:ShieldGeneratorDeactivated[2] = (data) ? true : false;   break;
         case DATA_SHIELDGENERATOR4:ShieldGeneratorDeactivated[3] = (data) ? true : false;   break;
         }
 
-        if(data = DONE)
+        if(data == DONE)
             SaveToDB();
     }
 
@@ -375,8 +392,6 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
                             }
                         }
                     }                
-                    if(pPlayer->HasAura(SPELL_SCALDINGWATER,0) && pPlayer->GetPositionZ() > -19.9645f)
-                        pPlayer->RemoveAurasDueToSpell(SPELL_SCALDINGWATER);
                 }
                                     
             }

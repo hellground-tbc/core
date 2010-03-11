@@ -124,18 +124,19 @@ struct GossipOption
 
 enum CreatureFlagsExtra
 {
-    CREATURE_FLAG_EXTRA_INSTANCE_BIND   = 0x00000001,       // creature kill bind instance with killer and killer's group
-    CREATURE_FLAG_EXTRA_CIVILIAN        = 0x00000002,       // not aggro (ignore faction/reputation hostility)
-    CREATURE_FLAG_EXTRA_NO_PARRY        = 0x00000004,       // creature can't parry
-    CREATURE_FLAG_EXTRA_NO_PARRY_HASTEN = 0x00000008,       // creature can't counter-attack at parry
-    CREATURE_FLAG_EXTRA_NO_BLOCK        = 0x00000010,       // creature can't block
-    CREATURE_FLAG_EXTRA_NO_CRUSH        = 0x00000020,       // creature can't do crush attacks
-    CREATURE_FLAG_EXTRA_NO_XP_AT_KILL   = 0x00000040,       // creature kill not provide XP
-    CREATURE_FLAG_EXTRA_TRIGGER         = 0x00000080,       // trigger creature
-    CREATURE_FLAG_EXTRA_WORLDEVENT      = 0x00004000,       // custom flag for world event creatures (left room for merging)
-    //CREATURE_FLAG_EXTRA_CHARM_AI        = 0x00008000,       // use ai when charmed
-    CREATURE_FLAG_EXTRA_NO_TAUNT        = 0x00010000,       // cannot be taunted
-    CREATURE_FLAG_EXTRA_NO_CRIT         = 0x00020000,       // creature can't do critical strikes
+    CREATURE_FLAG_EXTRA_INSTANCE_BIND      = 0x00000001,       // creature kill bind instance with killer and killer's group
+    CREATURE_FLAG_EXTRA_CIVILIAN           = 0x00000002,       // not aggro (ignore faction/reputation hostility)
+    CREATURE_FLAG_EXTRA_NO_PARRY           = 0x00000004,       // creature can't parry
+    CREATURE_FLAG_EXTRA_NO_PARRY_HASTEN    = 0x00000008,       // creature can't counter-attack at parry
+    CREATURE_FLAG_EXTRA_NO_BLOCK           = 0x00000010,       // creature can't block
+    CREATURE_FLAG_EXTRA_NO_CRUSH           = 0x00000020,       // creature can't do crush attacks
+    CREATURE_FLAG_EXTRA_NO_XP_AT_KILL      = 0x00000040,       // creature kill not provide XP
+    CREATURE_FLAG_EXTRA_TRIGGER            = 0x00000080,       // trigger creature
+    CREATURE_FLAG_EXTRA_WORLDEVENT         = 0x00004000,       // custom flag for world event creatures (left room for merging)
+    //CREATURE_FLAG_EXTRA_CHARM_AI         = 0x00008000,       // use ai when charmed
+    CREATURE_FLAG_EXTRA_NO_TAUNT           = 0x00010000,       // cannot be taunted
+    CREATURE_FLAG_EXTRA_NO_CRIT            = 0x00020000,       // creature can't do critical strikes
+    CREATURE_FLAG_EXTRA_NO_BLOCK_ON_ATTACK = 0x00040000        // creature attack's cannot be blocked
 };
 
 // GCC have alternative #pragma pack(N) syntax and old gcc version not support pack(push,N), also any gcc version not support it at some platform
@@ -683,7 +684,6 @@ class TRINITY_DLL_SPEC Creature : public Unit
 
         bool m_AlreadyCallAssistance;
         bool m_regenHealth;
-        bool m_AI_locked;
         bool m_isDeadByDefault;
 
         SpellSchoolMask m_meleeDamageSchoolMask;

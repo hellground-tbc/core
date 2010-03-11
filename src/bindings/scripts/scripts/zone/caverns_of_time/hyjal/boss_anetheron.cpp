@@ -228,7 +228,11 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
         if(InfernoTimer < diff)
         {
             if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0,100,true))
+            {
+                m_creature->SetUInt64Value(UNIT_FIELD_TARGET, target->GetGUID());    //do target inferno victim when casting
                 DoCast(target, SPELL_INFERNO);
+                Visual_Check = 3500;
+            }
 
             InfernoTimer = 45000;
 

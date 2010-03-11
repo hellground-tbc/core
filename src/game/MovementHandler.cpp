@@ -316,6 +316,10 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
     data.append(recv_data.contents(), recv_data.size());
     GetPlayer()->SendMessageToSet(&data, false);
 
+    if (sWorld.m_ac.activated() && GetPlayer()->m_taxi.empty() && !GetPlayer()->isGameMaster() && (GetPlayer()->m_AC_timer == 0))
+        sWorld.m_ac.addRequest(new ACRequest(GetPlayer(), GetAccountId(), GetLatency(),
+                                movementInfo.x, movementInfo.y, movementInfo.z, MovementFlags));
+
     GetPlayer()->SetPosition(movementInfo.x, movementInfo.y, movementInfo.z, movementInfo.o);
     GetPlayer()->m_movementInfo = movementInfo;
     if (GetPlayer()->m_lastFallTime >= movementInfo.fallTime || GetPlayer()->m_lastFallZ <=movementInfo.z || recv_data.GetOpcode() == MSG_MOVE_FALL_LAND)

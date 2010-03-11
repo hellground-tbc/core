@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="Windows-1252"?>
+<?xml version="1.0" encoding="windows-1250"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
@@ -612,6 +612,14 @@
 			Name="Server"
 			>
 			<File
+				RelativePath="..\..\src\game\AntiCheat.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\AntiCheat.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\game\GlobalEvents.cpp"
 				>
 			</File>
@@ -992,14 +1000,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\game\PlayerAI.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\game\PlayerAI.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\game\PossessedAI.cpp"
 				>
 			</File>
@@ -1032,6 +1032,18 @@
 				</File>
 				<File
 					RelativePath="..\..\src\game\AuctionHouseBot.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="PlayerAI"
+				>
+				<File
+					RelativePath="..\..\src\game\PlayerAI.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\game\PlayerAI.h"
 					>
 				</File>
 			</Filter>

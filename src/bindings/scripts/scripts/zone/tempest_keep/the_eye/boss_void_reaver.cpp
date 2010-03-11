@@ -106,14 +106,8 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
     {
         if(spell->Id == SPELL_KNOCK_AWAY)
         {
-            Unit *target = NULL;
-            target = SelectUnit(SELECT_TARGET_TOPAGGRO,0);
-            if(target && DoGetThreat(target))
-                DoModifyThreatPercent(target,-25);
-            
-            target = SelectUnit(SELECT_TARGET_TOPAGGRO,0);
-            if(target)
-                m_creature->Attack(target,true);
+            if(Unit *target = SelectUnit(SELECT_TARGET_TOPAGGRO,0))
+               AttackStart(target, true);
         }
     }
 

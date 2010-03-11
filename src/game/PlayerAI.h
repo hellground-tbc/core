@@ -1,174 +1,121 @@
+/*
+ * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
+ *
+ * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
+
 #ifndef TRINITY_PLAYERAI_H
 #define TRINITY_PLAYERAI_H
 
 #include "CreatureAI.h"
-#include "Unit.h"
 
-class Unit;
+struct SpellEntry;
 
-class TRINITY_DLL_SPEC PlayerAI : public UnitAI
+struct PlayerAI : public UnitAI
 {
+    PlayerAI(Player *pPlayer) : UnitAI((Unit *)pPlayer), me(pPlayer) {}
+
+    SpellEntry const *selectHighestRank(uint32 spell_id);
+
+    bool UpdateVictim(float = 10.0f);
+
     protected:
-        Unit *me;
-
-        void OnCharmed(bool apply){}
-        bool UpdateVictim();
-public:
-        PlayerAI(Player *p) : UnitAI((Unit*)p), me((Unit*)p) {}
+        Player *me;
 };
 
-
-struct TRINITY_DLL_DECL MageAI : public PlayerAI
+struct WarriorAI: public PlayerAI
 {
-    MageAI(Player *p) : PlayerAI(p){}
+    WarriorAI(Player *pPlayer): PlayerAI(pPlayer) {}
 
-    void Reset()
-    {
-    }
+    void Reset() {}
 
-    void UpdateAI(const uint32 diff)
-    {
-        if(!UpdateVictim())
-            return;
-
-        DoMeleeAttackIfReady();
-    }
+    void UpdateAI(const uint32 diff);
 };
 
-struct TRINITY_DLL_DECL RogueAI : public PlayerAI
+struct HunterAI: public PlayerAI
 {
-    RogueAI(Player *p) : PlayerAI(p){}
+    HunterAI(Player *pPlayer): PlayerAI(pPlayer) {}
 
-    void Reset()
-    {
-    }
+    void Reset() {}
 
-    void UpdateAI(const uint32 diff)
-    {
-        if(!UpdateVictim())
-            return;
-
-        DoMeleeAttackIfReady();
-    }
+    void UpdateAI(const uint32 diff);
 };
 
-struct TRINITY_DLL_DECL WarriorAI : public PlayerAI
+struct PaladinAI: public PlayerAI
 {
-    WarriorAI(Player *p) : PlayerAI(p){}
+    PaladinAI(Player *pPlayer): PlayerAI(pPlayer) {}
 
-    void Reset()
-    {
-    }
+    void Reset() {}
 
-    void UpdateAI(const uint32 diff)
-    {
-        if(!UpdateVictim())
-            return;
-
-        DoMeleeAttackIfReady();
-    }
+    void UpdateAI(const uint32 diff);
 };
 
-struct TRINITY_DLL_DECL PaladinAI : public PlayerAI
+struct WarlockAI: public PlayerAI
 {
-    PaladinAI(Player *p) : PlayerAI(p){}
+    WarlockAI(Player *pPlayer): PlayerAI(pPlayer) {}
 
-    void Reset()
-    {
-    }
+    void Reset() {}
 
-    void UpdateAI(const uint32 diff)
-    {
-        if(!UpdateVictim())
-            return;
-
-        DoMeleeAttackIfReady();
-    }
+    void UpdateAI(const uint32 diff);
 };
 
-struct TRINITY_DLL_DECL ShamanAI : public PlayerAI
+struct DruidAI: public PlayerAI
 {
-    ShamanAI(Player *p) : PlayerAI(p){}
+    DruidAI(Player *pPlayer): PlayerAI(pPlayer) {}
 
-    void Reset()
-    {
-    }
+    void Reset() {}
 
-    void UpdateAI(const uint32 diff)
-    {
-        if(!UpdateVictim())
-            return;
-
-        DoMeleeAttackIfReady();
-    }
+    void UpdateAI(const uint32 diff);
 };
 
-struct TRINITY_DLL_DECL DruidAI : public PlayerAI
+struct RogueAI: public PlayerAI
 {
-    DruidAI(Player *p) : PlayerAI(p){}
+    RogueAI(Player *pPlayer): PlayerAI(pPlayer) {}
 
-    void Reset()
-    {
-    }
+    void Reset() {}
 
-    void UpdateAI(const uint32 diff)
-    {
-        if(!UpdateVictim())
-            return;
-
-        DoMeleeAttackIfReady();
-    }
+    void UpdateAI(const uint32 diff);
 };
 
-struct TRINITY_DLL_DECL WarlockAI : public PlayerAI
+struct ShamanAI: public PlayerAI
 {
-    WarlockAI(Player *p) : PlayerAI(p){}
+    ShamanAI(Player *pPlayer): PlayerAI(pPlayer) {}
 
-    void Reset()
-    {
-    }
+    void Reset() {}
 
-    void UpdateAI(const uint32 diff)
-    {
-        if(!UpdateVictim())
-            return;
-
-        DoMeleeAttackIfReady();
-    }
+    void UpdateAI(const uint32 diff);
 };
 
-struct TRINITY_DLL_DECL PriestAI : public PlayerAI
+struct PriestAI: public PlayerAI
 {
-    PriestAI(Player *p) : PlayerAI(p){}
+    PriestAI(Player *pPlayer): PlayerAI(pPlayer) {}
 
-    void Reset()
-    {
-    }
+    void Reset() {}
 
-    void UpdateAI(const uint32 diff)
-    {
-        if(!UpdateVictim())
-            return;
-
-        DoMeleeAttackIfReady();
-    }
+    void UpdateAI(const uint32 diff);
 };
 
-struct TRINITY_DLL_DECL HunterAI : public PlayerAI
+struct MageAI: public PlayerAI
 {
-    HunterAI(Player *p) : PlayerAI(p){}
+    MageAI(Player *plr): PlayerAI(plr) {}
 
-    void Reset()
-    {
-    }
+    void Reset() {}
 
-    void UpdateAI(const uint32 diff)
-    {
-        if(!UpdateVictim())
-            return;
-
-        DoMeleeAttackIfReady();
-    }
+    void UpdateAI(const uint32 diff);
 };
 
 #endif

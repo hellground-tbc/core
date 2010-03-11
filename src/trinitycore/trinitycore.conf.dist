@@ -343,6 +343,7 @@ GmLogTimestamp = 0
 GmLogPerAccount = 0
 RaLogFile = "ra_commands.log"
 ArenaLogFile = ""
+CheatLogFile = "cheat.log"
 LogColors = ""
 
 IrcParser = "parser.trc"

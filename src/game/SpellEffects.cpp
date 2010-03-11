@@ -308,6 +308,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
 {
     if( unitTarget && unitTarget->isAlive())
     {
+        float totalDmgModPct = 1;
         switch(m_spellInfo->SpellFamilyName)
         {
             case SPELLFAMILY_GENERIC:
@@ -415,7 +416,8 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                     if(unitTarget->HasAuraState(AURA_STATE_IMMOLATE))
                         damage += int32(damage*0.25);
                     // T5 bonus - increase immolate damage on incinerate hit
-                    if(m_caster->HasAura(37384, 0)) {
+                    if(m_caster->HasAura(37384, 0))
+                    {
                         // look for immolate casted by m_caster
                         Unit::AuraList const &mPeriodic = unitTarget->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
                         for(Unit::AuraList::const_iterator i = mPeriodic.begin(); i != mPeriodic.end(); ++i)
@@ -431,9 +433,11 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                     }
                 }
                 // Shadow bolt
-                if (m_spellInfo->SpellFamilyFlags & 1) {
+                if (m_spellInfo->SpellFamilyFlags & 1)
+                {
                     // T5 bonus - increase corruption on shadow bolt hit
-                    if(m_caster->HasAura(37384, 0)) {
+                    if(m_caster->HasAura(37384, 0))
+                    {
                         // look for corruption casted by m_caster
                         Unit::AuraList const &mPeriodic = unitTarget->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
                         for(Unit::AuraList::const_iterator i = mPeriodic.begin(); i != mPeriodic.end(); ++i)
@@ -470,10 +474,13 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                 // Ferocious Bite
                 if((m_spellInfo->SpellFamilyFlags & 0x000800000) && m_spellInfo->SpellVisual==6587)
                 {
+                    float ap = m_caster->GetTotalAttackPowerValue(BASE_ATTACK);
                     // converts each extra point of energy into ($f1+$AP/630) additional damage
-                    float multiple = m_caster->GetTotalAttackPowerValue(BASE_ATTACK) / 630 + m_spellInfo->DmgMultiplier[effect_idx];
+                    float multiple = ap / 630 + m_spellInfo->DmgMultiplier[effect_idx];
                     damage += int32(m_caster->GetPower(POWER_ENERGY) * multiple);
                     m_caster->SetPower(POWER_ENERGY,0);
+                    // Not sure if formula is valid
+                    damage += int32(0.1526f * ap);
                 }
                 // Rake
                 else if(m_spellInfo->SpellFamilyFlags & 0x0000000000001000LL)
@@ -502,8 +509,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                                     // Moonfire or Insect Swarm (target debuff from any casters)
                                     if ( (*itr)->GetSpellProto()->SpellFamilyFlags & 0x00200002LL )
                                     {
-                                        int32 mod = (*i)->GetModifier()->m_amount;
-                                        damage += damage*mod/100;
+                                        totalDmgModPct *= 1 + ((*i)->GetModifierValue() / 100.0f);
                                         break;
                                     }
                                 }
@@ -651,6 +657,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
 
         if(m_originalCaster && damage > 0)
             damage = m_originalCaster->SpellDamageBonus(unitTarget, m_spellInfo, (uint32)damage, SPELL_DIRECT_DAMAGE);
+        damage *= totalDmgModPct;
 
         m_damage += damage;
     }
@@ -1400,120 +1407,6 @@ void Spell::EffectDummy(uint32 i)
                 }
                 case 39992:                                 //Needle Spine Targeting
                 {
-                    printf ("\n1\n");
-                    //create list of players in range
-                    Map::PlayerList const  &pList = m_caster->GetMap()->GetPlayers();
-                    std::list<Unit*> uList;
-                    printf ("\n2\n");
-                    for (Map::PlayerList::const_iterator itr = pList.begin(); itr != pList.end(); ++itr)
-                        if (!itr->getSource()->isGameMaster() && itr->getSource()->isAlive())
-                            uList.push_back((Unit*)(itr->getSource()));
-                    printf ("\n3\n");
-                    for (std::list<Unit*>::iterator itr = uList.begin(); itr != uList.end(); ++itr)
-                        if (((Creature*)(*itr))->GetDistance(m_caster) > 80)        //Needle Spine Targeting range is 80 yd
-                            uList.erase(itr);
-                    printf ("\n4\n");
-                    Unit* targets[3];
-                    //get first target, from this target we will find 2 other targets in cone
-                    uint32 temp = rand()%(uList.size());        //select random target from list
-                    std::list<Unit*>::iterator itr = uList.begin();
-                    uint8 i = 0;
-                    printf ("\n5\n");
-                    while ( i < temp)
-                    {
-                        itr++;
-                        i++;
-                    }
-                    printf ("\n6\n");
-                    if (!(*itr))
-                    {
-                        debug_log("SpellEffects::EffectDummy spell %i selected target0 (temp: %i) don't exist. List size: %i", 39992, temp, uList.size());
-                        break;
-                    }
-                    printf ("\n7\n");
-                    targets[0] = (*itr);
-                    printf ("\n8\n");
-                    if (m_caster->GetUInt64Value(UNIT_FIELD_TARGET) != targets[0]->GetGUID())
-                        m_caster->SetUInt64Value(UNIT_FIELD_TARGET, targets[0]->GetGUID());
-                    printf ("\n9\n");
-                    uList.erase(itr);        //remove first target from list
-                    printf ("\n10\n");
-                    printf ("\nprzed delete %i \n", uList.size());
-                    std::list<Unit*>::iterator toDelete;
-                    for (itr = uList.begin(); itr != uList.end();)
-                    {
-                         if (/*!m_caster->HasInArc(0.3 * M_PI, (*itr))*/ (m_caster->GetAngle((*itr)->GetPositionX(), (*itr)->GetPositionY()) > (0.3 * M_PI)) || (m_caster->GetAngle((*itr)->GetPositionX(), (*itr)->GetPositionY()) < (1.7 * M_PI)))        //remove if not in cone
-                         {
-                             toDelete = itr;
-                             ++itr;
-                             uList.erase(toDelete);
-                         }
-                         else
-                            ++itr;
-                    }
-                    printf ("\npo delete %i \n", uList.size());
-                    printf ("\n0.3 * M_PI: %f\n", 0.3 * M_PI);
-                    printf ("\n1.7 * M_PI: %f\n", 1.7 * M_PI);
-                    printf ("\n11\n");
-                    if (!uList.empty())
-                    {
-                        temp = rand()%(uList.size());
-
-                        itr = uList.begin();
-                        printf ("\n12\n");
-                        i = 0;
-                        while ( i < temp)
-                        {
-                            itr++;
-                            i++;
-                        }
-                        printf ("\n13\n");
-                        targets[1] = (*itr);
-                        printf ("\n14\n");
-                        uList.erase(itr);
-                        printf ("\n15\n");
-                        if (!uList.empty())
-                        {
-                            temp = rand()%(uList.size());
-
-                            itr = uList.begin();
-                            printf ("\n16\n");
-                            i = 0;
-                            while ( i < temp)
-                            {
-                                itr++;
-                                i++;
-                            }
-                            printf ("\n17\n");
-                            targets[2] = (*itr);
-                        }
-                        else
-                            targets[2] = NULL;
-                    }
-                    else
-                        targets[1] = NULL;
-                    printf ("\n18\n");
-                    //const SpellEntry *tempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(39835);
-                    //printf ("\n19\n");
-                    //Spell tmpSpell(m_caster, tempSpell, false);
-                    //printf ("\n20\n");
-                    //for (uint8 i = 0; i < 3; i++)
-                    //    if (targets[i])
-                    //        tmpSpell.AddUnitTarget(targets[i], 0);
-                    printf ("\n21\n");
-                    if (targets[0])
-                        m_caster->CastSpell(targets[0], 39835u, false);
-
-                    if (targets[1])
-                        m_caster->CastSpell(targets[1], 39835u, false);
-
-                    if (targets[2])
-                        m_caster->CastSpell(targets[2], 39835u, false);
-
-                    printf ("\n22\n");
-                    if (m_caster->GetUInt64Value(UNIT_FIELD_TARGET) != m_caster->getVictim()->GetGUID())
-                        m_caster->SetUInt64Value(UNIT_FIELD_TARGET, m_caster->getVictim()->GetGUID());
-                    printf ("\n23\n");
                     break;
                 }
             }
@@ -1713,24 +1606,22 @@ void Spell::EffectDummy(uint32 i)
                         return;
 
                     // all poison enchantments is temporary
-                    uint32 enchant_id = item->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT);
-                    if(!enchant_id)
-                        return;
-
-                    SpellItemEnchantmentEntry const *pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
-                    if(!pEnchant)
-                        return;
-
-                    for (int s=0;s<3;s++)
+                    if(uint32 enchant_id = item->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT))
                     {
-                        if(pEnchant->type[s]!=ITEM_ENCHANTMENT_TYPE_COMBAT_SPELL)
-                            continue;
+                        if(SpellItemEnchantmentEntry const *pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id))
+                        {
+                            for(int s=0;s<3;s++)
+                            {
+                                if(pEnchant->type[s]!=ITEM_ENCHANTMENT_TYPE_COMBAT_SPELL)
+                                    continue;
 
-                        SpellEntry const* combatEntry = sSpellStore.LookupEntry(pEnchant->spellid[s]);
-                        if(!combatEntry || combatEntry->Dispel != DISPEL_POISON)
-                            continue;
+                                SpellEntry const* combatEntry = sSpellStore.LookupEntry(pEnchant->spellid[s]);
+                                if(!combatEntry || combatEntry->Dispel != DISPEL_POISON)
+                                    continue;
 
-                        m_caster->CastSpell(unitTarget, combatEntry, true, item);
+                                m_caster->CastSpell(unitTarget, combatEntry, true, item);
+                            }
+                        }
                     }
 
                     m_caster->CastSpell(unitTarget, 5940, true);
@@ -1745,7 +1636,7 @@ void Spell::EffectDummy(uint32 i)
                     {
                         switch((*i)->GetSpellProto()->Id)
                         {
-                            // expose weakness
+                            // find weakness
                             case 31239:
                             case 31233:
                             case 31240:
@@ -4825,6 +4716,14 @@ void Spell::EffectScriptEffect(uint32 effIndex)
     // by spell id
     switch(m_spellInfo->Id)
     {
+        case 25778:
+
+            if(!m_caster->CanHaveThreatList())
+                return;
+
+            m_caster->getThreatManager().modifyThreatPercent(unitTarget, -25);
+        break;
+        
         // PX-238 Winter Wondervolt TRAP
         case 26275:
         {
@@ -6110,6 +6009,8 @@ void Spell::EffectCharge(uint32 /*i*/)
 
     float x, y, z;
     target->GetContactPoint(m_caster, x, y, z);
+    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+            ((Player *)m_caster)->m_AC_timer = 3000;
     m_caster->GetMotionMaster()->MoveCharge(x, y, z);
 
     // not all charge effects used in negative spells
@@ -6701,7 +6602,7 @@ void Spell::EffectStealBeneficialBuff(uint32 i)
         if (aur && (1<<aur->GetSpellProto()->Dispel) & dispelMask)
         {
             // Need check for passive? this
-            if (aur->IsPositive() && !aur->IsPassive())
+            if (aur->IsPositive() && !aur->IsPassive()  && !(aur->GetSpellProto()->AttributesEx4 & SPELL_ATTR_EX4_NOT_STEALABLE))
                 steal_list.push_back(aur);
         }
     }

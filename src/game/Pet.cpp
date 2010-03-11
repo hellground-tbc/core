@@ -1310,7 +1310,8 @@ void Pet::_LoadSpellCooldowns()
 
         if(!m_CreatureSpellCooldowns.empty() && GetOwner())
         {
-            ((Player*)GetOwner())->GetSession()->SendPacket(&data);
+            if(GetOwner()->GetTypeId() == TYPEID_PLAYER)
+                ((Player*)GetOwner())->GetSession()->SendPacket(&data);
         }
     }
 }

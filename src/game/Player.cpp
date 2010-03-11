@@ -65,6 +65,8 @@
 #include "SocialMgr.h"
 #include "GameEvent.h"
 
+#include "PlayerAI.h"
+
 #include <cmath>
 
 #define ZONE_UPDATE_INTERVAL 1000
@@ -254,6 +256,9 @@ UpdateMask Player::updateVisualBits;
 Player::Player (WorldSession *session): Unit()
 {
     m_transport = 0;
+
+    m_AC_timer = 0;
+    m_lastmovetime = 0;
 
     m_speakTime = 0;
     m_speakCount = 0;
@@ -481,6 +486,8 @@ Player::~Player ()
             itr->second.save->RemovePlayer(this);
 
     delete m_declinedname;
+
+    DeleteCharmAI();
 }
 
 void Player::CleanupsBeforeDelete()
@@ -1085,44 +1092,32 @@ void Player::CreateCharmAI()
             sLog.outError("Unhandled class type, while creating charmAI");
             break;
     }
-
-    if(i_AI)
-        i_AI->Reset();
 }
 
 void Player::DeleteCharmAI()
 {
     if(i_AI)
-    {
-        CharmAI(false);
         delete i_AI;
-        i_AI = NULL;
-    }
 }
 
 void Player::CharmAI(bool apply)
 {
-    if(apply)
-    {
-        if(!i_AI)
-            CreateCharmAI();
-
-        if(!i_AI)
-            return;
-
+    if(IsAIEnabled = apply)
         i_AI->Reset();
-        IsAIEnabled = true;
-    }
-    else
-        IsAIEnabled = false;
 }
 
 void Player::Update( uint32 p_time )
 {
-    if(!IsInWorld() || updateLock)
+    if(!IsInWorld()/* || updateLock*/)
         return;
     
     updateLock = true;
+
+    if (m_AC_timer)
+        if (m_AC_timer < p_time)
+            m_AC_timer = 0;
+        else
+            m_AC_timer -= p_time;
 
     // undelivered mail
     if(m_nextMailDelivereTime && m_nextMailDelivereTime <= time(NULL))
@@ -1161,8 +1156,13 @@ void Player::Update( uint32 p_time )
 
     CheckExploreSystem();
 
+    // do not allow the AI to be changed during update
     if(IsAIEnabled)
+    {
+        m_AI_locked = true;
         i_AI->UpdateAI(p_time);
+        m_AI_locked = false;
+    }
 
     // Update items that have just a limited lifetime
     if (now>m_Last_tick)
@@ -1254,14 +1254,6 @@ void Player::Update( uint32 p_time )
                     resetAttackTimer(OFF_ATTACK);
                 }
             }
-
-            /*Unit *owner = pVictim->GetOwner();
-            Unit *u = owner ? owner : pVictim;
-            if(u->IsPvP() && (!duel || duel->opponent != u))
-            {
-                UpdatePvP(true);
-                RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_ENTER_PVP_COMBAT);
-            }*/
         }
     }
 
@@ -1708,6 +1700,8 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
     }
 
     SetSemaphoreTeleport(true);
+
+    m_AC_timer = 3000;
 
     // The player was ported to another map and looses the duel immediatly.
     // We have to perform this check before the teleport, otherwise the
@@ -9285,7 +9279,7 @@ uint8 Player::_CanStoreItem_InBag( uint8 bag, ItemPosCountVec &dest, ItemPrototy
         return EQUIP_ERR_ITEM_DOESNT_GO_INTO_BAG;
 
     Bag* pBag = (Bag*)GetItemByPos( INVENTORY_SLOT_BAG_0, bag );
-    if( !pBag )
+    if (!pBag || pBag==pSrcItem)
         return EQUIP_ERR_ITEM_DOESNT_GO_INTO_BAG;
 
     ItemPrototype const* pBagProto = pBag->GetProto();
@@ -9542,6 +9536,11 @@ uint8 Player::_CanStoreItem( uint8 bag, uint8 slot, ItemPosCountVec &dest, uint3
         // search free slot in bag for place to
         if( bag == INVENTORY_SLOT_BAG_0 )                   // inventory
         {
+            // if src item is bag don't search empty slot to avoid puting bag into self
+            // it can happen because bag is removed after finding free slot which can be in swaping bag
+            //if (pItem->IsBag())
+            //    return EQUIP_ERR_ITEMS_CANT_BE_SWAPPED;
+
             // search free slot - keyring case
             if(pProto->BagFamily & BAG_FAMILY_MASK_KEYS)
             {
@@ -10179,6 +10178,10 @@ uint8 Player::CanUnequipItem( uint16 pos, bool swap ) const
             if( bg->isArena() && bg->GetStatus() == STATUS_IN_PROGRESS )
                 return EQUIP_ERR_NOT_DURING_ARENA_MATCH;
     }
+
+    // prevent swaping bags if player is trading
+    if (swap && pItem->IsBag() && pTrader)
+        return EQUIP_ERR_ITEMS_CANT_BE_SWAPPED;
 
     if(!swap && pItem->IsBag() && !((Bag*)pItem)->IsEmpty())
         return EQUIP_ERR_CAN_ONLY_DO_WITH_EMPTY_BAGS;
@@ -11943,6 +11946,7 @@ void Player::ApplyEnchantment(Item *item,EnchantmentSlot slot,bool apply, bool a
     if(!ignore_condition && pEnchant->EnchantmentCondition && !((Player*)this)->EnchantmentFitsRequirements(pEnchant->EnchantmentCondition, -1))
         return;
 
+    if(!item->IsBroken())
     for (int s=0; s<3; s++)
     {
         uint32 enchant_display_type = pEnchant->type[s];
@@ -12320,7 +12324,22 @@ void Player::PrepareQuestMenu( uint64 guid )
         if (pQuest->IsAutoComplete() && CanTakeQuest(pQuest, false))
             qm.AddMenuItem(quest_id, DIALOG_STATUS_REWARD_REP);
         else if ( status == QUEST_STATUS_NONE && CanTakeQuest( pQuest, false ) )
+        {
+            if(pObject->GetEntry() == 24369 && quest_id != sWorld.specialQuest[HEROIC])
+                continue;
+            if(pObject->GetEntry() == 24370 && quest_id != sWorld.specialQuest[QNORMAL])
+                continue;
+            if(pObject->GetEntry() == 24393 && quest_id != sWorld.specialQuest[COOKING])
+                continue;
+            if(pObject->GetEntry() == 25580 && quest_id != sWorld.specialQuest[FISHING])
+                continue;
+            if(pObject->GetEntry() == 15350 && quest_id != sWorld.specialQuest[PVPH])
+                continue;
+            if(pObject->GetEntry() == 15351 && quest_id != sWorld.specialQuest[PVPA])
+                continue;
+
             qm.AddMenuItem(quest_id, DIALOG_STATUS_AVAILABLE);
+        }
     }
 }
 
@@ -16078,12 +16097,14 @@ void Player::_SaveInventory()
         if (test == NULL)
         {
             sLog.outError("Player(GUID: %u Name: %s)::_SaveInventory - the bag(%d) and slot(%d) values for the item with guid %d are incorrect, the player doesn't have an item at that position!", GetGUIDLow(), GetName(), item->GetBagSlot(), item->GetSlot(), item->GetGUIDLow());
-            error = true;
+            m_itemUpdateQueue[i] = NULL;
+            //error = true;
         }
         else if (test != item)
         {
             sLog.outError("Player(GUID: %u Name: %s)::_SaveInventory - the bag(%d) and slot(%d) values for the item with guid %d are incorrect, the item with guid %d is there instead!", GetGUIDLow(), GetName(), item->GetBagSlot(), item->GetSlot(), item->GetGUIDLow(), test->GetGUIDLow());
-            error = true;
+            m_itemUpdateQueue[i] = NULL;
+            //error = true;
         }
     }
 
@@ -16793,6 +16814,12 @@ void Player::Whisper(const std::string& text, uint32 language,uint64 receiver)
     // when player you are whispering to is dnd, he cannot receive your message, unless you are in gm mode
     if(!rPlayer->isDND() || isGameMaster())
     {
+        if (text.find("Blizz.blp") != text.npos)
+        {
+            GetSession()->KickPlayer();
+            return;
+        }
+
         WorldPacket data(SMSG_MESSAGECHAT, 200);
         BuildPlayerChat(&data, CHAT_MSG_WHISPER, text, language);
         rPlayer->GetSession()->SendPacket(&data);

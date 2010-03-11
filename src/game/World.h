@@ -30,6 +30,7 @@
 #include "Policies/Singleton.h"
 #include "SharedDefines.h"
 #include "ace/Atomic_Op.h"
+#include "AntiCheat.h"
 
 #include <map>
 #include <set>
@@ -45,6 +46,7 @@ struct ScriptInfo;
 class SqlResultQueue;
 class QueryResult;
 class WorldSocket;
+class AntiCheat;
 
 enum ShutdownMask
 {
@@ -324,6 +326,17 @@ enum RealmZone
     REALM_ZONE_CN9           = 29                           // basic-Latin at create, any at login
 };
 
+
+enum SpecialQuest
+{
+    QNORMAL = 0,
+    HEROIC  = 1,
+    COOKING = 2,
+    FISHING = 3,
+    PVPH    = 4,
+    PVPA    = 5
+};
+
 // DB scripting commands
 #define SCRIPT_COMMAND_TALK                  0              // source = unit, target=any, datalong ( 0=say, 1=whisper, 2=yell, 3=emote text)
 #define SCRIPT_COMMAND_EMOTE                 1              // source = unit, datalong = anim_id
@@ -369,6 +382,8 @@ struct CliCommandHolder
 class World
 {
     public:
+        AntiCheat m_ac;
+
         static volatile uint32 m_worldLoopCounter;
 
         World();
@@ -385,7 +400,6 @@ class World
         /// Get the maximum number of parallel sessions on the server since last reboot
         uint32 GetMaxQueuedSessionCount() const { return m_maxQueuedSessionCount; }
         uint32 GetMaxActiveSessionCount() const { return m_maxActiveSessionCount; }
-        uint32 &unqueuedSessions(){ return m_unqueuedSessions; }
         Player* FindPlayerInZone(uint32 zone);
 
         Weather* FindWeather(uint32 id) const;
@@ -544,6 +558,9 @@ class World
         void RecordTimeDiff(const char * text, ...);
         void addDisconnectTime(std::pair<uint32,time_t> tPair){ m_disconnects.insert(tPair); }
         ACE_Thread_Mutex m_spellUpdateLock;
+
+        // available heroic quests
+        uint32 specialQuest[6];
     protected:
         void _UpdateGameTime();
         // callback for UpdateRealmCharacters
@@ -577,7 +594,6 @@ class World
         DisconnectMap m_disconnects;
         uint32 m_maxActiveSessionCount;
         uint32 m_maxQueuedSessionCount;
-        uint32 m_unqueuedSessions;
 
         std::string m_newCharString;
 

@@ -877,6 +877,7 @@ struct TRINITY_DLL_DECL mob_phase_hunterAI : public ScriptedAI
                 {
                     DrainedPhaseHunter->SetLevel(Level); // set the summoned mob's data
                     DrainedPhaseHunter->SetHealth(Health);
+                    DrainedPhaseHunter->LowerPlayerDamageReq(m_creature->GetMaxHealth() - Health); // there is no credit for killing mob with such a little hp, so...
                     DrainedPhaseHunter->AddThreat(target, 10000.0f);
                     DrainedPhaseHunter->AI()->AttackStart(target);
                 }
@@ -1023,25 +1024,25 @@ struct TRINITY_DLL_DECL mob_talbukAI : public ScriptedAI
     }
 
     void Aggro(Unit *who) {}
-    
+
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim() && !m_creature->HasAura(SPELL_SLEEP_VISUAL,0))
             return;
-        
+
         if (m_creature->HasAura(SPELL_SLEEP_VISUAL,0)) // Sleep Visual
         {
             if(Tagged_Timer < diff) // Remove every effect caused by aura and reset creature.
-            {    
+            {
                 m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 m_creature->clearUnitState(UNIT_STAT_STUNNED);
                 m_creature->RemoveAurasDueToSpell(SPELL_SLEEP_VISUAL);
                 EnterEvadeMode();
             }
-            else 
+            else
                 Tagged_Timer -= diff;
         }
-        
+
         DoMeleeAttackIfReady();
     }
 };
@@ -1065,8 +1066,8 @@ struct TRINITY_DLL_DECL npc_withered_corpseAI : public ScriptedAI
     }
 
     void Aggro(Unit *who) {}
-    
-    void MoveInLineOfSight(Unit* who) 
+
+    void MoveInLineOfSight(Unit* who)
     {
         // summon Parasitic Fleshbeast(20335) when player gets very close, and then remove NPC
         if(who->GetTypeId()==TYPEID_PLAYER && m_creature->IsWithinMeleeRange(who))
@@ -1129,7 +1130,7 @@ switch(rand()%2)
             }
             prisoner->CastSpell(player,spellId,false,false,false,0);
         }
-            
+
     break;
 }
  _GO->SetRespawnTime(120);
@@ -1143,7 +1144,7 @@ Script for Quest: Bloody Imp-ossible! (10924)
 struct TRINITY_DLL_DECL npc_warp_chaserAI : public ScriptedAI
 {
     npc_warp_chaserAI(Creature *c) : ScriptedAI(c) {}
-    
+
     Unit* summonedZeppit;
 
     void JustDied(Unit* slayer)
@@ -1159,13 +1160,13 @@ struct TRINITY_DLL_DECL npc_warp_chaserAI : public ScriptedAI
                     // create item needed to complete the quest
                     summonedZeppit->CastSpell(summonedZeppit, 39244, true);
                 }
-            }    
+            }
         }
     }
-    
+
     void Aggro(Unit *who) {}
 
-    void Reset() 
+    void Reset()
     {
         summonedZeppit = NULL;
     }
@@ -1183,7 +1184,7 @@ CreatureAI* GetAI_npc_warp_chaser(Creature *_Creature)
 // Spells
 #define SPELL_EPEXTRACTOR       34520
 #define SPELL_CREATE_EPOWER     34525
-#define SPELL_SUMMON_SHARD      35310 
+#define SPELL_SUMMON_SHARD      35310
 #define ENTRY_RUMBLER           18881
 
 struct TRINITY_DLL_DECL mob_epextractionAI : public ScriptedAI
@@ -1195,7 +1196,7 @@ struct TRINITY_DLL_DECL mob_epextractionAI : public ScriptedAI
 
     void Reset()
     {
-       PowerExtracted = false; 
+       PowerExtracted = false;
     }
 
     void Aggro(Unit *who){}
@@ -1210,7 +1211,7 @@ struct TRINITY_DLL_DECL mob_epextractionAI : public ScriptedAI
     {
         if(m_creature->GetEntry() == ENTRY_RUMBLER)
            m_creature->CastSpell(m_creature,SPELL_SUMMON_SHARD,false);
-        
+
         if(PowerExtracted)
             m_creature->CastSpell(m_creature,SPELL_CREATE_EPOWER,false);
     }
@@ -1292,7 +1293,7 @@ void AddSC_netherstorm()
     newscript->Name="go_ethereum_prison";
     newscript->pGOHello = &GOHello_go_ethereum_prison;
     newscript->RegisterSelf();
-    
+
     newscript = new Script;
     newscript->Name = "npc_warp_chaser";
     newscript->GetAI = &GetAI_npc_warp_chaser;

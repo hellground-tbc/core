@@ -1462,11 +1462,16 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         uint32 GetReducedThreatPercent() { return m_reducedThreatPercent; }
         Unit *GetMisdirectionTarget() { return m_misdirectionTargetGUID ? GetUnit(*this, m_misdirectionTargetGUID) : NULL; }
 
+        void ApplyMeleeAPAttackerBonus(int32 value, bool apply);
+        int32 GetMeleeApAttackerBonus() { return m_meleeAPAttackerBonus; }
+
         bool IsAIEnabled, NeedChangeAI;
     protected:
         explicit Unit ();
 
         UnitAI *i_AI, *i_disabledAI;
+
+        bool m_AI_locked;
 
         void _UpdateSpells(uint32 time);
 
@@ -1519,6 +1524,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         ThreatManager m_ThreatManager;
 
+        int32 m_meleeAPAttackerBonus;
     private:
         void SendAttackStop(Unit* victim);                  // only from AttackStop(Unit*)
         //void SendAttackStart(Unit* pVictim);                // only from Unit::AttackStart(Unit*)
