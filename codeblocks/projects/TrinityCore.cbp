@@ -186,6 +186,127 @@
 					<Add after="copy ..\..\dep\lib\Linux_Debug x64\*.dll ..\..\bin\Linux_Debug x64&#x0D;&#x0A;copy ..\..\src\trinitycore\trinitycore.conf.dist ..\..\bin\Linux_Debug x64\TrinityCore.conf.dist&#x0D;&#x0A;copy ..\..\README.* ..\..\bin\Linux_Debug x64&#x0D;&#x0A;" />
 				</ExtraCommands>
 			</Target>
+			<Target title="Linux Debug x64">
+				<Option platforms="Unix;" />
+				<Option output="../../bin/Linux_Debug x64/TrinityCore" prefix_auto="1" extension_auto="1" />
+				<Option object_output="trinitycore__Linux_Debug x64" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option='-DVERSION=&quot;0.12.0-SVN&quot;' />
+					<Add option="-DWIN32" />
+					<Add option="-D_DEBUG" />
+					<Add option="-DTRINITY_DEBUG" />
+					<Add option="-D_CONSOLE" />
+					<Add option="-DENABLE_CLI" />
+					<Add option="-W" />
+					<Add option="-O0" />
+					<Add directory="../../dep/include" />
+					<Add directory="../../src/framework" />
+					<Add directory="../../src/shared" />
+					<Add directory="../../src/game" />
+					<Add directory="../../src/trinitycore" />
+					<Add directory="../../dep/ACE_wrappers" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="../../dep/include" />
+					<Add directory="../../src/framework" />
+					<Add directory="../../src/shared" />
+					<Add directory="../../src/game" />
+					<Add directory="../../src/trinitycore" />
+					<Add directory="../../dep/ACE_wrappers" />
+				</ResourceCompiler>
+				<Linker>
+					<Add library="libmySQL" />
+					<Add library="libeay32" />
+					<Add library="ws2_32" />
+					<Add library="winmm" />
+					<Add library="odbc32" />
+					<Add library="odbccp32" />
+					<Add library="advapi32" />
+					<Add library="dbghelp" />
+					<Add library="MSVCPRTD" />
+					<Add library="msvcrtd" />
+					<Add directory="../../dep/lib/Linux_Debug x64" />
+				</Linker>
+				<ExtraCommands>
+					<Add after="copy ..\..\dep\lib\Linux_Debug x64\*.dll ..\..\bin\Linux_Debug x64&#x0D;&#x0A;copy ..\..\src\trinitycore\trinitycore.conf.dist ..\..\bin\Linux_Debug x64\TrinityCore.conf.dist&#x0D;&#x0A;copy ..\..\README.* ..\..\bin\Linux_Debug x64&#x0D;&#x0A;" />
+				</ExtraCommands>
+			</Target>
+			<Target title="Linux Release x64">
+				<Option platforms="Unix;" />
+				<Option output="../../bin/Linux_Release x64/TrinityCore" prefix_auto="1" extension_auto="1" />
+				<Option object_output="trinitycore__Linux_Release x64" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-W" />
+					<Add option="-fPIC" />
+					<Add option="-ggdb" />
+					<Add option="-ffast-math" />
+					<Add option="-msse3" />
+					<Add option="-fomit-frame-pointer" />
+					<Add option="-fno-delete-null-pointer-checks" />
+					<Add option="-ftracer" />
+					<Add option="-fno-strict-aliasing" />
+					<Add option="-fno-math-errno" />
+					<Add option="-funsafe-math-optimizations" />
+					<Add option="-funroll-loops" />
+					<Add option='-DVERSION=&quot;0.12.0-SVN&quot;' />
+					<Add option="-DNDEBUG" />
+					<Add option="-D_CONSOLE" />
+					<Add option="-DENABLE_CLI" />
+					<Add option="-DCODEBLOCKS" />
+					<Add option="-DACE_BUILD_DLL" />
+					<Add option="-D_CRT_NONSTDC_NO_WARNINGS" />
+					<Add option="-D_AMD64_" />
+					<Add option="-D_CRT_SECURE_NO_WARNINGS" />
+					<Add option="-D_CRT_SECURE_NO_DEPRECATE" />
+					<Add option="-D_CRT_NONSTDC_NO_DEPRECATE" />
+					<Add directory="../../dep/include" />
+					<Add directory="../../src/framework" />
+					<Add directory="../../src/shared" />
+					<Add directory="../../src/game" />
+					<Add directory="../../src/trinitycore" />
+					<Add directory="../../dep/ACE_wrappers" />
+					<Add directory="../../dep/include/sockets" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="../../dep/include" />
+					<Add directory="../../src/framework" />
+					<Add directory="../../src/shared" />
+					<Add directory="../../src/game" />
+					<Add directory="../../src/trinitycore" />
+					<Add directory="../../dep/ACE_wrappers" />
+				</ResourceCompiler>
+				<Linker>
+					<Add library="libmysqld" />
+					<Add library="libssl" />
+					<Add library="libreadline" />
+					<Add library="libsockets" />
+					<Add library="ACE" />
+					<Add library="libACE-5.7.2" />
+					<Add library="libACE" />
+					<Add library="libframework" />
+					<Add library="libg3dlite" />
+					<Add library="libshared" />
+					<Add library="libgame" />
+					<Add directory="../../dep/lib/Linux_Release x64" />
+					<Add directory="/usr/lib" />
+					<Add directory="/usr/lib64" />
+					<Add directory="g3dlite__Linux_Release x64" />
+					<Add directory="framework__Linux_Release x64" />
+					<Add directory="game__Linux_Release x64" />
+					<Add directory="shared__Linux_Release x64" />
+					<Add directory="sockets__Linux_Release x64" />
+					<Add directory="/usr/local/lib" />
+				</Linker>
+				<ExtraCommands>
+					<Add after="copy ..\..\dep\lib\Linux_Release x64\*.dll ..\..\bin\Linux_Release x64" />
+					<Add after="copy ..\..\src\trinitycore\trinitycore.conf.dist ..\..\bin\Linux_Release x64\TrinityCore.conf.dist" />
+					<Add after="copy ..\..\README.* ..\..\bin\Linux_Release x64" />
+				</ExtraCommands>
+			</Target>
 		</Build>
 		<Unit filename="../../Authors" />
 		<Unit filename="../../ChangeLog" />
@@ -194,8 +315,18 @@
 		<Unit filename="../../News" />
 		<Unit filename="../../Readme" />
 		<Unit filename="../../Thanks" />
-		<Unit filename="../../src/shared/WheatyExceptionReport.cpp" />
-		<Unit filename="../../src/shared/WheatyExceptionReport.h" />
+		<Unit filename="../../src/shared/WheatyExceptionReport.cpp">
+			<Option target="Release Win32" />
+			<Option target="Release x64" />
+			<Option target="Debug Win32" />
+			<Option target="Debug x64" />
+		</Unit>
+		<Unit filename="../../src/shared/WheatyExceptionReport.h">
+			<Option target="Release Win32" />
+			<Option target="Release x64" />
+			<Option target="Debug Win32" />
+			<Option target="Debug x64" />
+		</Unit>
 		<Unit filename="../../src/trinitycore/CliRunnable.cpp" />
 		<Unit filename="../../src/trinitycore/CliRunnable.h" />
 		<Unit filename="../../src/trinitycore/Main.cpp" />
@@ -203,7 +334,12 @@
 		<Unit filename="../../src/trinitycore/Master.h" />
 		<Unit filename="../../src/trinitycore/RASocket.cpp" />
 		<Unit filename="../../src/trinitycore/RASocket.h" />
-		<Unit filename="../../src/trinitycore/TrinityCore.rc" />
+		<Unit filename="../../src/trinitycore/TrinityCore.rc">
+			<Option target="Release Win32" />
+			<Option target="Release x64" />
+			<Option target="Debug Win32" />
+			<Option target="Debug x64" />
+		</Unit>
 		<Unit filename="../../src/trinitycore/WorldRunnable.cpp" />
 		<Unit filename="../../src/trinitycore/WorldRunnable.h" />
 		<Unit filename="../../src/trinitycore/resource.h" />

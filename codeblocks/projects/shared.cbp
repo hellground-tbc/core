@@ -33,8 +33,8 @@
 					<Add directory="../../dep/ACE_wrappers" />
 				</ResourceCompiler>
 				<Linker>
-					<Add library=".\g3dlite__Linux_Release" />
-					<Add library="Win32\g3dlite" />
+					<Add library="./g3dlite__Linux_Release" />
+					<Add library="Win32/g3dlite" />
 				</Linker>
 			</Target>
 			<Target title="Debug Win32">
@@ -66,8 +66,8 @@
 					<Add directory="../../dep/ACE_wrappers" />
 				</ResourceCompiler>
 				<Linker>
-					<Add library=".\g3dlite__Linux_Debug" />
-					<Add library="Win32\g3dlite" />
+					<Add library="./g3dlite__Linux_Debug" />
+					<Add library="Win32/g3dlite" />
 				</Linker>
 			</Target>
 			<Target title="Release x64">
@@ -97,8 +97,8 @@
 					<Add directory="../../dep/ACE_wrappers" />
 				</ResourceCompiler>
 				<Linker>
-					<Add library=".\g3dlite__Linux_Release" />
-					<Add library="x64\g3dlite" />
+					<Add library="./g3dlite__Linux_Release" />
+					<Add library="x64/g3dlite" />
 				</Linker>
 			</Target>
 			<Target title="Debug x64">
@@ -130,8 +130,86 @@
 					<Add directory="../../dep/ACE_wrappers" />
 				</ResourceCompiler>
 				<Linker>
-					<Add library=".\g3dlite__Linux_Debug" />
-					<Add library="x64\g3dlite" />
+					<Add library="./g3dlite__Linux_Debug" />
+					<Add library="x64/g3dlite" />
+				</Linker>
+			</Target>
+			<Target title="Linux Debug x64">
+				<Option platforms="Unix;" />
+				<Option output="./shared__Linux_Debug x64/libshared" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="shared__Linux_Debug x64" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-DWIN32" />
+					<Add option="-D_DEBUG" />
+					<Add option="-DTRINITY_DEBUG" />
+					<Add option="-D_LIB" />
+					<Add option="-D_CRT_SECURE_NO_DEPRECATE" />
+					<Add option="-W" />
+					<Add option="-O0" />
+					<Add directory="../../dep/include" />
+					<Add directory="../../dep/include/g3dlite" />
+					<Add directory="../../src/framework" />
+					<Add directory="../../src/shared" />
+					<Add directory="../../dep/ACE_wrappers" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="../../dep/include" />
+					<Add directory="../../dep/include/g3dlite" />
+					<Add directory="../../src/framework" />
+					<Add directory="../../src/shared" />
+					<Add directory="../../dep/ACE_wrappers" />
+				</ResourceCompiler>
+				<Linker>
+					<Add library="./g3dlite__Linux_Debug" />
+					<Add library="x64/g3dlite" />
+				</Linker>
+			</Target>
+			<Target title="Linux Release x64">
+				<Option platforms="Unix;" />
+				<Option output="./shared__Linux_Release x64/libshared" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="shared__Linux_Release x64" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-O3" />
+					<Add option="-W" />
+					<Add option="-ggdb" />
+					<Add option="-ffast-math" />
+					<Add option="-msse3" />
+					<Add option="-fomit-frame-pointer" />
+					<Add option="-fno-delete-null-pointer-checks" />
+					<Add option="-ftracer" />
+					<Add option="-fno-strict-aliasing" />
+					<Add option="-fno-math-errno" />
+					<Add option="-funsafe-math-optimizations" />
+					<Add option="-funroll-loops" />
+					<Add option="-DNDEBUG" />
+					<Add option="-D_LIB" />
+					<Add option="-D_CRT_SECURE_NO_DEPRECATE" />
+					<Add option="-DCODEBLOCKS" />
+					<Add directory="../../dep/include" />
+					<Add directory="../../dep/include/g3dlite" />
+					<Add directory="../../src/framework" />
+					<Add directory="../../src/shared" />
+					<Add directory="../../dep/ACE_wrappers" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="../../dep/include" />
+					<Add directory="../../dep/include/g3dlite" />
+					<Add directory="../../src/framework" />
+					<Add directory="../../src/shared" />
+					<Add directory="../../dep/ACE_wrappers" />
+				</ResourceCompiler>
+				<Linker>
+					<Add library="./g3dlite__Linux_Release" />
+					<Add library="x64/g3dlite" />
+					<Add library="./g3dlite__Linux_Release x64" />
 				</Linker>
 			</Target>
 		</Build>

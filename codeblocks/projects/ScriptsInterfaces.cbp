@@ -175,6 +175,96 @@
 					<Add directory="./zthread__Linux_Release x64" />
 				</Linker>
 			</Target>
+			<Target title="Linux Debug x64">
+				<Option platforms="Unix;" />
+				<Option output="../../bin/Linux_Debug x64/TrinityScript" prefix_auto="1" extension_auto="1" />
+				<Option object_output="script__Linux_Debug x64" />
+				<Option type="3" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Option createStaticLib="1" />
+				<Compiler>
+					<Add option="-DWIN32" />
+					<Add option="-D_DEBUG" />
+					<Add option="-DTRINITY_DEBUG" />
+					<Add option="-D_WINDOWS" />
+					<Add option="-D_USRDLL" />
+					<Add option="-DSCRIPT" />
+					<Add option="-W" />
+					<Add option="-O0" />
+					<Add directory="../../src/shared" />
+					<Add directory="../../src/framework" />
+					<Add directory="../../dep/include" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="../../src/shared" />
+					<Add directory="../../src/framework" />
+					<Add directory="../../dep/include" />
+				</ResourceCompiler>
+				<Linker>
+					<Add library="trinitycore" />
+					<Add library="zlib" />
+					<Add library="zthread" />
+					<Add library="libmySQL" />
+					<Add library="libeay32" />
+					<Add library="ws2_32" />
+					<Add library="winmm" />
+					<Add library="odbc32" />
+					<Add library="odbccp32" />
+					<Add library="MSVCPRTD" />
+					<Add library="msvcrtd" />
+					<Add directory="./trinitycore__Linux_Debug x64" />
+					<Add directory="../../dep/lib/Linux_Debug x64" />
+					<Add directory="./zlib__Linux_Debug x64" />
+					<Add directory="./zthread__Linux_Debug x64" />
+				</Linker>
+			</Target>
+			<Target title="Linux Release x64">
+				<Option platforms="Unix;" />
+				<Option output="../../bin/Linux_Release x64/TrinityScript" prefix_auto="1" extension_auto="1" />
+				<Option object_output="script__Linux_Release x64" />
+				<Option type="3" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Option createStaticLib="1" />
+				<Compiler>
+					<Add option="-O3" />
+					<Add option="-W" />
+					<Add option="-ggdb" />
+					<Add option="-ffast-math" />
+					<Add option="-msse3" />
+					<Add option="-fomit-frame-pointer" />
+					<Add option="-fno-delete-null-pointer-checks" />
+					<Add option="-ftracer" />
+					<Add option="-fno-strict-aliasing" />
+					<Add option="-fno-math-errno" />
+					<Add option="-funsafe-math-optimizations" />
+					<Add option="-funroll-loops" />
+					<Add option="-DNDEBUG" />
+					<Add option="-D_USRDLL" />
+					<Add option="-DSCRIPT" />
+					<Add option="-DCODEBLOCKS" />
+					<Add directory="../../src/shared" />
+					<Add directory="../../src/framework" />
+					<Add directory="../../dep/include" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="../../src/shared" />
+					<Add directory="../../src/framework" />
+					<Add directory="../../dep/include" />
+				</ResourceCompiler>
+				<Linker>
+					<Add library="trinitycore" />
+					<Add library="libmySQL" />
+					<Add library="odbc32" />
+					<Add library="odbccp32" />
+					<Add directory="./trinitycore__Linux_Release x64" />
+					<Add directory="../../dep/lib/Linux_Release x64" />
+					<Add directory="./zlib__Linux_Release x64" />
+					<Add directory="./zthread__Linux_Release x64" />
+					<Add directory="./shared__Linux_Release x64" />
+				</Linker>
+			</Target>
 		</Build>
 		<Unit filename="../../src/bindings/interface/ScriptMgr.cpp" />
 		<Unit filename="../../src/bindings/interface/ScriptMgr.h" />

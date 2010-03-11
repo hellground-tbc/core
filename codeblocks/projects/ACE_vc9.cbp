@@ -105,6 +105,71 @@
 					<Add directory="../../dep/ACE_wrappers" />
 				</ResourceCompiler>
 			</Target>
+			<Target title="Linux Debug x64">
+				<Option platforms="Unix;" />
+				<Option output="../../dep/lib/Linux_Debug x64/ACEd" prefix_auto="1" extension_auto="1" />
+				<Option object_output="ace__Linux_Debug x64" />
+				<Option type="3" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Option createStaticLib="1" />
+				<Compiler>
+					<Add option="-W" />
+					<Add option="-O0" />
+					<Add option="-DACE_BUILD_DLL" />
+					<Add option="-D_DEBUG" />
+					<Add option="-DWIN32" />
+					<Add option="-D_WINDOWS" />
+					<Add option="-D_CRT_NONSTDC_NO_WARNINGS" />
+					<Add option="-D_AMD64_" />
+					<Add option="-D_CRT_SECURE_NO_WARNINGS" />
+					<Add option="-D_CRT_SECURE_NO_DEPRECATE" />
+					<Add option="-D_CRT_NONSTDC_NO_DEPRECATE" />
+					<Add directory="../../dep/ACE_wrappers" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="../../dep/ACE_wrappers" />
+				</ResourceCompiler>
+			</Target>
+			<Target title="Linux Release x64">
+				<Option platforms="Unix;" />
+				<Option output="../../dep/lib/Linux_Release x64/ACE" prefix_auto="1" extension_auto="1" />
+				<Option object_output="ace__Linux_Release x64" />
+				<Option type="3" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Option createStaticLib="1" />
+				<Compiler>
+					<Add option="-O3" />
+					<Add option="-W" />
+					<Add option="-fPIC" />
+					<Add option="-ggdb" />
+					<Add option="-ffast-math" />
+					<Add option="-msse3" />
+					<Add option="-fomit-frame-pointer" />
+					<Add option="-fno-delete-null-pointer-checks" />
+					<Add option="-ftracer" />
+					<Add option="-fno-strict-aliasing" />
+					<Add option="-fno-math-errno" />
+					<Add option="-funsafe-math-optimizations" />
+					<Add option="-funroll-loops" />
+					<Add option="-DACE_BUILD_DLL" />
+					<Add option="-DNDEBUG" />
+					<Add option="-D_CRT_NONSTDC_NO_WARNINGS" />
+					<Add option="-D_AMD64_" />
+					<Add option="-D_CRT_SECURE_NO_WARNINGS" />
+					<Add option="-D_CRT_SECURE_NO_DEPRECATE" />
+					<Add option="-D_CRT_NONSTDC_NO_DEPRECATE" />
+					<Add directory="../../dep/ACE_wrappers" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="../../dep/ACE_wrappers" />
+				</ResourceCompiler>
+				<Linker>
+					<Add directory="/usr/lib" />
+					<Add directory="/usr/lib64" />
+				</Linker>
+			</Target>
 		</Build>
 		<Unit filename="../../dep/ACE_wrappers/README">
 			<Option target="&lt;{~None~}&gt;" />
@@ -1129,7 +1194,12 @@
 		<Unit filename="../../dep/ACE_wrappers/ace/XTI_ATM_Mcast.cpp" />
 		<Unit filename="../../dep/ACE_wrappers/ace/XTI_ATM_Mcast.h" />
 		<Unit filename="../../dep/ACE_wrappers/ace/XTI_ATM_Mcast.inl" />
-		<Unit filename="../../dep/ACE_wrappers/ace/ace.rc" />
+		<Unit filename="../../dep/ACE_wrappers/ace/ace.rc">
+			<Option target="Debug Win32" />
+			<Option target="Debug x64" />
+			<Option target="Release Win32" />
+			<Option target="Release x64" />
+		</Unit>
 		<Unit filename="../../dep/ACE_wrappers/ace/ace_wchar.cpp" />
 		<Unit filename="../../dep/ACE_wrappers/ace/ace_wchar.h" />
 		<Unit filename="../../dep/ACE_wrappers/ace/ace_wchar.inl" />

@@ -28,7 +28,11 @@
 #include <winsock2.h>
 #include <mysql/mysql.h>
 #else
+#ifdef CODEBLOCKS
+#include <mysql/mysql.h>
+#else
 #include <mysql.h>
+#endif
 #endif
 
 class QueryResultMysql : public QueryResult

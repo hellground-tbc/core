@@ -280,3 +280,19 @@
 1266318933 source:/home/gareth/chess/dep/src/sockets/socket_include.cpp
 	<stdio.h>
 
+1266689897 source:/home/gareth/chess-event/dep/src/sockets/Base64.cpp
+	"Base64.h"
+
+1266689898 /home/gareth/chess-event/dep/include/sockets/Base64.h
+	"sockets-config.h"
+	<stdio.h>
+	<string>
+
+1266689898 /home/gareth/chess-event/dep/include/sockets/sockets-config.h
+
+1266689897 source:/home/gareth/chess-event/dep/src/sockets/Exception.cpp
+	"Exception.h"
+
+1266689898 /home/gareth/chess-event/dep/include/sockets/Exception.h
+	<string>
+

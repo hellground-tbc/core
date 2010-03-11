@@ -179,16 +179,131 @@
 					<Add after="copy ..\..\src\trinityrealm\trinityrealm.conf.dist ..\..\bin\Linux_Debug x64\TrinityRealm.conf.dist" />
 				</ExtraCommands>
 			</Target>
+			<Target title="Linux Debug x64">
+				<Option platforms="Unix;" />
+				<Option output="../../bin/Linux_Debug x64/TrinityRealm" prefix_auto="1" extension_auto="1" />
+				<Option object_output="trinityrealm__Linux_Debug x64" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-W" />
+					<Add option="-O0" />
+					<Add option='-DVERSION=&quot;0.12.0-SVN&quot;' />
+					<Add option="-D_DEBUG" />
+					<Add option="-DTRINITY_DEBUG" />
+					<Add option="-D_CONSOLE" />
+					<Add directory="../../dep/include" />
+					<Add directory="../../src/framework" />
+					<Add directory="../../src/shared" />
+					<Add directory="../../src/realmd" />
+					<Add directory="../../dep/ACE_wrappers" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="../../dep/include" />
+					<Add directory="../../src/framework" />
+					<Add directory="../../src/shared" />
+					<Add directory="../../src/realmd" />
+					<Add directory="../../dep/ACE_wrappers" />
+				</ResourceCompiler>
+				<Linker>
+					<Add library="zthread" />
+					<Add library="libmySQL" />
+					<Add library="libeay32" />
+					<Add library="ws2_32" />
+					<Add library="winmm" />
+					<Add library="odbc32" />
+					<Add library="odbccp32" />
+					<Add library="advapi32" />
+					<Add library="dbghelp" />
+					<Add library="MSVCPRTD" />
+					<Add library="msvcrtd" />
+					<Add directory="../../dep/lib/Linux_Debug x64" />
+					<Add directory="./zthread__Linux_Debug x64" />
+				</Linker>
+				<ExtraCommands>
+					<Add after="copy ..\..\src\trinityrealm\trinityrealm.conf.dist ..\..\bin\Linux_Debug x64\TrinityRealm.conf.dist" />
+				</ExtraCommands>
+			</Target>
+			<Target title="Linux Release x64">
+				<Option platforms="Unix;" />
+				<Option output="../../bin/Linux_Release x64/TrinityRealm" prefix_auto="1" extension_auto="1" />
+				<Option object_output="trinityrealm__Linux_Release x64" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O3" />
+					<Add option="-W" />
+					<Add option="-ggdb" />
+					<Add option="-ffast-math" />
+					<Add option="-msse3" />
+					<Add option="-fomit-frame-pointer" />
+					<Add option="-fno-delete-null-pointer-checks" />
+					<Add option="-ftracer" />
+					<Add option="-fno-strict-aliasing" />
+					<Add option="-fno-math-errno" />
+					<Add option="-funsafe-math-optimizations" />
+					<Add option="-funroll-loops" />
+					<Add option='-DVERSION=&quot;0.12.0-SVN&quot;' />
+					<Add option="-DNDEBUG" />
+					<Add option="-D_CONSOLE" />
+					<Add option="-DCODEBLOCKS" />
+					<Add directory="../../dep/include" />
+					<Add directory="../../src/framework" />
+					<Add directory="../../src/shared" />
+					<Add directory="../../src/realmd" />
+					<Add directory="../../dep/ACE_wrappers" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="../../dep/include" />
+					<Add directory="../../src/framework" />
+					<Add directory="../../src/shared" />
+					<Add directory="../../src/realmd" />
+					<Add directory="../../dep/ACE_wrappers" />
+				</ResourceCompiler>
+				<Linker>
+					<Add library="libmysqld" />
+					<Add library="libssl" />
+					<Add library="libsockets" />
+					<Add library="libshared" />
+					<Add library="libframework" />
+					<Add library="libACE" />
+					<Add directory="../../dep/lib/Linux_Release x64" />
+					<Add directory="/usr" />
+					<Add directory="/usr/lib" />
+					<Add directory="/usr/lib64" />
+					<Add directory="./sockets__Linux_Release x64" />
+					<Add directory="./shared__Linux_Release x64" />
+					<Add directory="./framework__Linux_Release x64" />
+				</Linker>
+				<ExtraCommands>
+					<Add after="cp ..\..\src\trinityrealm\trinityrealm.conf.dist ..\..\bin\Linux_Release x64\TrinityRealm.conf.dist" />
+				</ExtraCommands>
+			</Target>
 		</Build>
-		<Unit filename="../../src/shared/WheatyExceptionReport.cpp" />
-		<Unit filename="../../src/shared/WheatyExceptionReport.h" />
+		<Unit filename="../../src/shared/WheatyExceptionReport.cpp">
+			<Option target="Release Win32" />
+			<Option target="Debug Win32" />
+			<Option target="Release x64" />
+			<Option target="Debug x64" />
+		</Unit>
+		<Unit filename="../../src/shared/WheatyExceptionReport.h">
+			<Option target="Release Win32" />
+			<Option target="Debug Win32" />
+			<Option target="Release x64" />
+			<Option target="Debug x64" />
+		</Unit>
 		<Unit filename="../../src/trinityrealm/AuthCodes.h" />
 		<Unit filename="../../src/trinityrealm/AuthSocket.cpp" />
 		<Unit filename="../../src/trinityrealm/AuthSocket.h" />
 		<Unit filename="../../src/trinityrealm/Main.cpp" />
 		<Unit filename="../../src/trinityrealm/RealmList.cpp" />
 		<Unit filename="../../src/trinityrealm/RealmList.h" />
-		<Unit filename="../../src/trinityrealm/TrinityRealm.rc" />
+		<Unit filename="../../src/trinityrealm/TrinityRealm.rc">
+			<Option target="Release Win32" />
+			<Option target="Debug Win32" />
+			<Option target="Release x64" />
+			<Option target="Debug x64" />
+		</Unit>
 		<Extensions>
 			<envvars />
 			<code_completion />

@@ -34,8 +34,8 @@
 					<Add directory="../../dep/ACE_wrappers" />
 				</ResourceCompiler>
 				<Linker>
-					<Add library=".\shared__Linux_Debug" />
-					<Add library="Win32\shared" />
+					<Add library="./shared__Linux_Debug" />
+					<Add library="Win32/shared" />
 				</Linker>
 			</Target>
 			<Target title="Release Win32">
@@ -64,8 +64,8 @@
 					<Add directory="../../dep/ACE_wrappers" />
 				</ResourceCompiler>
 				<Linker>
-					<Add library=".\shared__Linux_Release" />
-					<Add library="Win32\shared" />
+					<Add library="./shared__Linux_Release" />
+					<Add library="Win32/shared" />
 				</Linker>
 			</Target>
 			<Target title="Debug x64">
@@ -96,8 +96,8 @@
 					<Add directory="../../dep/ACE_wrappers" />
 				</ResourceCompiler>
 				<Linker>
-					<Add library=".\shared__Linux_Debug" />
-					<Add library="x64\shared" />
+					<Add library="./shared__Linux_Debug" />
+					<Add library="x64/shared" />
 				</Linker>
 			</Target>
 			<Target title="Release x64">
@@ -126,8 +126,83 @@
 					<Add directory="../../dep/ACE_wrappers" />
 				</ResourceCompiler>
 				<Linker>
-					<Add library=".\shared__Linux_Release" />
-					<Add library="x64\shared" />
+					<Add library="./shared__Linux_Release" />
+					<Add library="x64/shared" />
+				</Linker>
+			</Target>
+			<Target title="Linux Debug x64">
+				<Option platforms="Unix;" />
+				<Option output="./game__Linux_Debug x64/libgame" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="game__Linux_Debug x64" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-DWIN32" />
+					<Add option="-D_DEBUG" />
+					<Add option="-DTRINITY_DEBUG" />
+					<Add option="-D_LIB" />
+					<Add option="-W" />
+					<Add option="-O0" />
+					<Add directory="../../dep/include" />
+					<Add directory="../../src/framework" />
+					<Add directory="../../src/shared" />
+					<Add directory="../../src/shared/vmap" />
+					<Add directory="../../dep/ACE_wrappers" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="../../dep/include" />
+					<Add directory="../../src/framework" />
+					<Add directory="../../src/shared" />
+					<Add directory="../../src/shared/vmap" />
+					<Add directory="../../dep/ACE_wrappers" />
+				</ResourceCompiler>
+				<Linker>
+					<Add library="./shared__Linux_Debug" />
+					<Add library="x64/shared" />
+				</Linker>
+			</Target>
+			<Target title="Linux Release x64">
+				<Option platforms="Unix;" />
+				<Option output="./game__Linux_Release x64/libgame" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="game__Linux_Release x64" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-O3" />
+					<Add option="-W" />
+					<Add option="-ggdb" />
+					<Add option="-ffast-math" />
+					<Add option="-msse3" />
+					<Add option="-fomit-frame-pointer" />
+					<Add option="-fno-delete-null-pointer-checks" />
+					<Add option="-ftracer" />
+					<Add option="-fno-strict-aliasing" />
+					<Add option="-fno-math-errno" />
+					<Add option="-funsafe-math-optimizations" />
+					<Add option="-funroll-loops" />
+					<Add option="-DNDEBUG" />
+					<Add option="-D_LIB" />
+					<Add option="-DCODEBLOCKS" />
+					<Add directory="../../dep/include" />
+					<Add directory="../../src/framework" />
+					<Add directory="../../src/shared" />
+					<Add directory="../../src/shared/vmap" />
+					<Add directory="../../dep/ACE_wrappers" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="../../dep/include" />
+					<Add directory="../../src/framework" />
+					<Add directory="../../src/shared" />
+					<Add directory="../../src/shared/vmap" />
+					<Add directory="../../dep/ACE_wrappers" />
+				</ResourceCompiler>
+				<Linker>
+					<Add library="./shared__Linux_Release" />
+					<Add library="x64/shared" />
 				</Linker>
 			</Target>
 		</Build>

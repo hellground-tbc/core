@@ -81,6 +81,55 @@
 					<Add directory="../../dep/include/g3dlite" />
 				</ResourceCompiler>
 			</Target>
+			<Target title="Linux Debug x64">
+				<Option platforms="Unix;" />
+				<Option output="./g3dlite__Linux_Debug x64/libg3dlite" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="g3dlite__Linux_Debug x64" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-DWIN32" />
+					<Add option="-D_DEBUG" />
+					<Add option="-D_CONSOLE" />
+					<Add option="-W" />
+					<Add option="-O0" />
+					<Add directory="../../dep/include/g3dlite" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="../../dep/include/g3dlite" />
+				</ResourceCompiler>
+			</Target>
+			<Target title="Linux Release x64">
+				<Option platforms="Unix;" />
+				<Option output="./g3dlite__Linux_Release x64/libg3dlite" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="g3dlite__Linux_Release x64" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-O3" />
+					<Add option="-W" />
+					<Add option="-ggdb" />
+					<Add option="-ffast-math" />
+					<Add option="-msse3" />
+					<Add option="-fomit-frame-pointer" />
+					<Add option="-fno-delete-null-pointer-checks" />
+					<Add option="-ftracer" />
+					<Add option="-fno-strict-aliasing" />
+					<Add option="-fno-math-errno" />
+					<Add option="-funsafe-math-optimizations" />
+					<Add option="-funroll-loops" />
+					<Add option="-DNDEBUG" />
+					<Add option="-D_CONSOLE" />
+					<Add directory="../../dep/include/g3dlite" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="../../dep/include/g3dlite" />
+				</ResourceCompiler>
+			</Target>
 		</Build>
 		<Unit filename="../../dep/include/g3dlite/G3D/AABox.h" />
 		<Unit filename="../../dep/include/g3dlite/G3D/Array.h" />

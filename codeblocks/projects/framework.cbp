@@ -90,6 +90,60 @@
 					<Add directory="../../dep/ACE_wrappers" />
 				</ResourceCompiler>
 			</Target>
+			<Target title="Linux Debug x64">
+				<Option platforms="Unix;" />
+				<Option output="./framework__Linux_Debug x64/libframework" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="framework__Linux_Debug x64" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-DWIN32" />
+					<Add option="-D_DEBUG" />
+					<Add option="-DTRINITY_DEBUG" />
+					<Add option="-D_LIB" />
+					<Add option="-W" />
+					<Add option="-O0" />
+					<Add directory="../../src/framework" />
+					<Add directory="../../dep/ACE_wrappers" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="../../src/framework" />
+					<Add directory="../../dep/ACE_wrappers" />
+				</ResourceCompiler>
+			</Target>
+			<Target title="Linux Release x64">
+				<Option platforms="Unix;" />
+				<Option output="./framework__Linux_Release x64/libframework" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="framework__Linux_Release x64" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-O3" />
+					<Add option="-W" />
+					<Add option="-ggdb" />
+					<Add option="-ffast-math" />
+					<Add option="-msse3" />
+					<Add option="-fomit-frame-pointer" />
+					<Add option="-fno-delete-null-pointer-checks" />
+					<Add option="-ftracer" />
+					<Add option="-fno-strict-aliasing" />
+					<Add option="-fno-math-errno" />
+					<Add option="-funsafe-math-optimizations" />
+					<Add option="-funroll-loops" />
+					<Add option="-DNDEBUG" />
+					<Add option="-D_LIB" />
+					<Add directory="../../src/framework" />
+					<Add directory="../../dep/ACE_wrappers" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="../../src/framework" />
+					<Add directory="../../dep/ACE_wrappers" />
+				</ResourceCompiler>
+			</Target>
 		</Build>
 		<Unit filename="../../src/framework/Dynamic/FactoryHolder.h" />
 		<Unit filename="../../src/framework/Dynamic/ObjectRegistry.h" />
