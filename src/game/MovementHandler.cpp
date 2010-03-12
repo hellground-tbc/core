@@ -31,6 +31,7 @@
 #include "BattleGround.h"
 #include "WaypointMovementGenerator.h"
 #include "InstanceSaveMgr.h"
+#include "AntiCheat.h"
 
 void WorldSession::HandleMoveWorldportAckOpcode( WorldPacket & /*recv_data*/ )
 {
@@ -317,8 +318,8 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
     GetPlayer()->SendMessageToSet(&data, false);
 
     if (sWorld.m_ac.activated() && GetPlayer()->m_taxi.empty() && !GetPlayer()->isGameMaster() && (GetPlayer()->m_AC_timer == 0))
-        sWorld.m_ac.addRequest(new ACRequest(GetPlayer(), GetAccountId(), GetLatency(),
-                                movementInfo.x, movementInfo.y, movementInfo.z, MovementFlags));
+        sWorld.m_ac.execute(new ACRequest(GetPlayer(), GetAccountId(), GetLatency(),
+                            movementInfo.x, movementInfo.y, movementInfo.z, MovementFlags));
 
     GetPlayer()->SetPosition(movementInfo.x, movementInfo.y, movementInfo.z, movementInfo.o);
     GetPlayer()->m_movementInfo = movementInfo;
