@@ -2704,6 +2704,16 @@ void InstanceMap::InitVisibilityDistance()
 /*
     Do map specific checks to see if the player can enter
 */
+bool InstanceMap::EncounterInProgress(Player *player)
+{
+    if(!player->isGameMaster() && GetInstanceData() && GetInstanceData()->IsEncounterInProgress())
+    {
+        sLog.outError("InstanceMap: Player '%s' can't enter instance '%s' while an encounter is in progress.", player->GetName(),GetMapName());
+        player->SendTransferAborted(GetId(),TRANSFER_ABORT_ZONE_IN_COMBAT);
+        return true;
+    }
+    return false;
+}
 bool InstanceMap::CanEnter(Player *player)
 {
     if(player->GetMapRef().getTarget() == this)
@@ -2720,16 +2730,6 @@ bool InstanceMap::CanEnter(Player *player)
         sLog.outDetail("InstanceMap: Instance '%u' of map '%s' cannot have more than '%u' players. Player '%s' rejected", GetInstanceId(), GetMapName(), iTemplate->maxPlayers, player->GetName());
         player->SendTransferAborted(GetId(), TRANSFER_ABORT_MAX_PLAYERS);
         return false;
-    }
-
-    if(!player->isGameMaster() && GetInstanceData() && GetInstanceData()->IsEncounterInProgress())
-    {
-        if(player->GetMap()->GetId() != GetId())
-        {
-            sLog.outError("InstanceMap: Player '%s' can't enter instance '%s' while an encounter is in progress.", player->GetName(),GetMapName());
-            player->SendTransferAborted(GetId(),TRANSFER_ABORT_ZONE_IN_COMBAT);
-            return false;
-        }
     }
 
     return Map::CanEnter(player);

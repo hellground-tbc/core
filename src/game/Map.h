@@ -208,6 +208,7 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         uint32 GetInstanceId() { return i_InstanceId; }
         uint8 GetSpawnMode() { return (i_spawnMode); }
         virtual bool CanEnter(Player* /*player*/) { return true; }
+        virtual bool EncounterInProgress(Player*) { return false; }
         const char* GetMapName() const;
 
         bool Instanceable() const { return i_mapEntry && i_mapEntry->Instanceable(); }
@@ -294,6 +295,8 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         Creature* GetCreature(uint64 guid);
         GameObject* GetGameObject(uint64 guid);
         DynamicObject* GetDynamicObject(uint64 guid);
+
+        ACE_Thread_Mutex m_spellUpdateLock;
 
     private:
         void LoadVMap(int pX, int pY);
@@ -432,6 +435,7 @@ class TRINITY_DLL_SPEC InstanceMap : public Map
         time_t GetResetTime();
         void UnloadAll();
         bool CanEnter(Player* player);
+        bool EncounterInProgress(Player *player);
         void SendResetWarnings(uint32 timeLeft) const;
         void SetResetSchedule(bool on);
         virtual void InitVisibilityDistance();

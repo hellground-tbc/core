@@ -1809,7 +1809,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         // If the map is not created, assume it is possible to enter it.
         // It will be created in the WorldPortAck.
         Map *map = MapManager::Instance().FindMap(mapid);
-        if (!map || map->CanEnter(this))
+        if (!map || (map->CanEnter(this) && !map->EncounterInProgress(this)))
         {
             SetSelection(0);
 
