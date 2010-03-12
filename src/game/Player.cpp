@@ -1706,10 +1706,10 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
     // The player was ported to another map and looses the duel immediatly.
     // We have to perform this check before the teleport, otherwise the
     // ObjectAccessor won't find the flag.
-    if (duel && GetMapId()!=mapid)
+    if (duel && GetMapId() != mapid)
     {
         GameObject* obj = GetMap()->GetGameObject(GetUInt64Value(PLAYER_DUEL_ARBITER));
-        if (obj)
+        if(obj)
             DuelComplete(DUEL_FLED);
     }
 
@@ -1805,16 +1805,27 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             SetSemaphoreTeleport(false);
             return false;
         }
+        
+        if(InstanceGroupBind *igb = GetGroup() ? GetGroup()->GetBoundInstance(mapid, GetDifficulty()) : NULL)
+        {
+            if(Map *iMap = MapManager::Instance().FindMap(mapid,igb->save->GetInstanceId()))
+            {
+                if(iMap->EncounterInProgress(this))
+                {
+                    //sLog.outError("mapid: %u", iMap->GetInstanceId());
+                    SetSemaphoreTeleport(false);
+                    return false;
+                }
+            }
+        }
 
         // If the map is not created, assume it is possible to enter it.
         // It will be created in the WorldPortAck.
         Map *map = MapManager::Instance().FindMap(mapid);
-        if (!map || (map->CanEnter(this) && !map->EncounterInProgress(this)))
+        if(!map || map->CanEnter(this))
         {
             SetSelection(0);
-
             CombatStop();
-
             ResetContestedPvP();
 
             // remove player from battleground on far teleport (when changing maps)
