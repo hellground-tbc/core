@@ -30,7 +30,7 @@ EndContentData */
 #include "precompiled.h"
 #include "def_dark_portal.h"
 
-#define SAY_ENTER               -1269020                    //where does this belong?
+#define SAY_ENTER               -1269020        //intro speach by Medivh whene etnering instance
 #define SAY_INTRO               -1269021
 #define SAY_WEAK75              -1269022
 #define SAY_WEAK50              -1269023
@@ -41,6 +41,7 @@ EndContentData */
 #define SAY_ORCS_ANSWER         -1269028
 
 #define SPELL_CHANNEL           31556
+//shield 40733 ?
 #define SPELL_PORTAL_RUNE       32570                       //aura(portal on ground effect)
 
 #define SPELL_BLACK_CRYSTAL     32563                       //aura
@@ -73,6 +74,8 @@ struct TRINITY_DLL_DECL npc_medivh_bmAI : public ScriptedAI
     bool Life50;
     bool Life25;
 
+    bool Intro;
+
     void Reset()
     {
         SpellCorrupt_Timer = 0;
@@ -81,6 +84,8 @@ struct TRINITY_DLL_DECL npc_medivh_bmAI : public ScriptedAI
         Life75 = true;
         Life50 = true;
         Life25 = true;
+
+        Intro = false;
 
         if (!pInstance)
             return;
@@ -91,12 +96,20 @@ struct TRINITY_DLL_DECL npc_medivh_bmAI : public ScriptedAI
             m_creature->RemoveAura(SPELL_CHANNEL,0);
 
         m_creature->CastSpell(m_creature,SPELL_PORTAL_RUNE,true);
+        m_creature->CastSpell(m_creature,SPELL_CHANNEL,false);
     }
 
     void MoveInLineOfSight(Unit *who)
     {
         if (!pInstance)
             return;
+
+        //say enter phrase when in 50yd distance
+        if (!Intro && pInstance->GetData(TYPE_MEDIVH) != DONE && who->GetTypeId() == TYPEID_PLAYER  && m_creature->IsWithinDistInMap(who, 50.0f))
+        {
+            DoScriptText(SAY_ENTER, m_creature);
+            Intro = true;
+        }
 
         if (pInstance->GetData(TYPE_MEDIVH) != DONE && who->GetTypeId() == TYPEID_PLAYER  && !((Player*)who)->isGameMaster() && m_creature->IsWithinDistInMap(who, 10.0f))
         {
@@ -105,7 +118,6 @@ struct TRINITY_DLL_DECL npc_medivh_bmAI : public ScriptedAI
 
             DoScriptText(SAY_INTRO, m_creature);
             pInstance->SetData(TYPE_MEDIVH,IN_PROGRESS);
-            m_creature->CastSpell(m_creature,SPELL_CHANNEL,false);
             Check_Timer = 5000;
         }
         else if (who->GetTypeId() == TYPEID_UNIT && m_creature->IsWithinDistInMap(who, 15.0f))
@@ -307,6 +319,11 @@ struct TRINITY_DLL_DECL npc_time_riftAI : public ScriptedAI
     }
     void Aggro(Unit *who) {}
 
+    void JustDied(Unit* who)
+    {
+        m_creature->RemoveCorpse();
+    }
+
     void DoSummonAtRift(uint32 creature_entry)
     {
         if (!creature_entry)
@@ -333,8 +350,8 @@ struct TRINITY_DLL_DECL npc_time_riftAI : public ScriptedAI
             Summon->setActive(true);
             if (Unit *temp = Unit::GetUnit(*m_creature,pInstance->GetData64(DATA_MEDIVH)))
             {
-                ((Creature*)Summon)->SetNoCallAssistance(true);
                 Summon->Attack(temp, false);
+                ((Creature*)Summon)->SetNoCallAssistance(true);
             }
         }
     }
@@ -345,8 +362,7 @@ struct TRINITY_DLL_DECL npc_time_riftAI : public ScriptedAI
 
         if ((mRiftWaveCount > 2 && mWaveId < 1) || mRiftWaveCount > 3)
         {
-            if (m_creature->IsNonMeleeSpellCasted(false))
-                m_creature->InterruptNonMeleeSpells(false);    //portal is closing when waves are finished
+            mRiftWaveCount = 0;
         }
 
         entry = PortalWaves[mWaveId].PortalMob[mRiftWaveCount];
@@ -370,16 +386,14 @@ struct TRINITY_DLL_DECL npc_time_riftAI : public ScriptedAI
 
         if (TimeRiftWave_Timer && TimeRiftWave_Timer < diff)
         {
-            if(mPortalCount != 6 && mPortalCount != 12 && mPortalCount != 18)
-                DoSelectSummon();
-            else if (m_creature->IsNonMeleeSpellCasted(false))
-                m_creature->InterruptNonMeleeSpells(false);
+            DoSelectSummon();
 
-            if(mPortalCount > 0 && mPortalCount < 12 && mPortalCount != 6)
+            if(mPortalCount > 0 && mPortalCount < 13)
                 TimeRiftWave_Timer = 12000+rand()%5000;
             if(mPortalCount > 12 && mPortalCount < 18)
                 TimeRiftWave_Timer = 7000+rand()%5000;
-
+            else
+                TimeRiftWave_Timer = 0;
 
         }else TimeRiftWave_Timer -= diff;
 

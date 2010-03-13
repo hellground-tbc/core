@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Instance_Dark_Portal
-SD%Complete: 50
-SDComment: Quest support: 9836, 10297. Currently in progress.
+SD%Complete: 80
+SDComment: Quest support: 9836, 10297. Currently in progress, needs post-event and heroic support
 SDCategory: Caverns of Time, The Dark Portal
 EndScriptData */
 
@@ -71,13 +71,17 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
 
     uint32 NextPortal_Timer;
     uint32 DespawnDelay;
+    uint32 Check_Timer;
 
     uint64 MedivhGUID;
     uint8 CurrentRiftId;
 
+    std::list<uint64> PortalGUID;
+
     void Initialize()
     {
         MedivhGUID          = 0;
+        PortalGUID.clear();
         Clear();
     }
 
@@ -94,6 +98,7 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
         CurrentRiftId = 0;
 
         NextPortal_Timer    = 0;
+        Check_Timer = 0;
         DespawnDelay = 20000;
     }
 
@@ -114,7 +119,6 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
         return NULL;
     }
 
-
     void FailQuests()
     {
         Map::PlayerList const& players = instance->GetPlayers();
@@ -134,6 +138,24 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
         }
         else
             debug_log("TSCR: Instance Black Portal: FailQuests, but PlayerList is empty!");
+    }
+
+    bool IsAnyPortalOpened()
+    {
+        Player* player = GetPlayerInMap();
+
+        if(!player)
+            return false;
+
+        if(!PortalGUID.empty())
+        {
+            for(std::list<uint64>::iterator portalGUID = PortalGUID.begin(); portalGUID != PortalGUID.end(); ++portalGUID)
+            {
+                if(Unit::GetUnit(*player, *portalGUID))
+                    return true;
+            }
+        }
+        return false;
     }
 
     void UpdateBMWorldState(uint32 id, uint32 state)
@@ -208,6 +230,27 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
         }
     }
 
+    uint32 GetTimer(uint32 portal_counter)
+    {
+        switch(portal_counter)
+        {
+        case 1: case 2: case 3: case 4: case 5:
+            return 85000;
+        case 6:
+            return 120000;
+        case 7: case 8: case 9: case 10: case 11:
+            return 70000;
+        case 12:
+            return 120000;
+        case 13: case 14: case 15: case 16: case 17:
+            return 50000;
+        case 18:
+            return 0;
+        default:
+            return 0;
+        }
+    }
+
     void SetData(uint32 type, uint32 data)
     {
         Player *player = GetPlayerInMap();
@@ -254,7 +297,7 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
                     //this may be completed further out in the post-event
                     if (Unit *medivh = Unit::GetUnit(*player,MedivhGUID))
                     {
-                        medivh->RemoveAllAuras();
+                        medivh->RemoveAurasDueToSpell(31556);
                         medivh->SetUInt32Value(UNIT_NPC_EMOTESTATE,EMOTE_STATE_NONE);
                         player->GroupEventHappens(QUEST_OPENING_PORTAL,medivh);
                         player->GroupEventHappens(QUEST_MASTER_TOUCH,medivh);
@@ -274,15 +317,18 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
         case TYPE_RIFT:
             if (data == SPECIAL)
             {
-                if(mRiftPortalCount > 0 && mRiftPortalCount < 12 && mRiftPortalCount != 6)
-                    NextPortal_Timer = 10000;
                 if(mRiftPortalCount == 6 || mRiftPortalCount == 12)
-                    NextPortal_Timer = 120000;
-                if(mRiftPortalCount > 12 && mRiftPortalCount < 18)
-                    NextPortal_Timer = 15000;
-                if(mRiftPortalCount >= 18)
+                {
+                    NextPortal_Timer = 20000;
+                    Check_Timer = 0;
+                }
+                else if(mRiftPortalCount == 18)
+                {
                     NextPortal_Timer = 0;
-
+                    Check_Timer = 0;
+                }
+                else
+                    Check_Timer = 2000;
             }
             else
                 Encounter[1] = data;
@@ -359,7 +405,7 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
                         TEMPSUMMON_CORPSE_DESPAWN,0);
                     if (temp)
                     {
-
+                        PortalGUID.push_back(temp->GetGUID());
                         temp->setActive(true);
                         temp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                         temp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -368,13 +414,14 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
                         if (Unit* boss = SummonedPortalBoss(temp))
                         {
                             boss->setActive(true);
+
                             if (boss->GetEntry() == C_AEONUS)
                             {
-                                boss->Attack(player, false);
+                                boss->Attack(medivh, false);
                             }
                             else
                             {
-                                boss->Attack(player, false);
+                                temp->AddThreat(medivh, 0.0f);
                                 temp->CastSpell(boss,SPELL_RIFT_CHANNEL,false);
                             }
                         }
@@ -413,20 +460,26 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
             return;
         }
 
-        if (NextPortal_Timer)
+        if(Check_Timer && Check_Timer < diff)
         {
-            if (NextPortal_Timer < diff)
-            {
-                ++mRiftPortalCount;
-                UpdateBMWorldState(WORLD_STATE_BM_RIFT,mRiftPortalCount);
+            if(!IsAnyPortalOpened())
+                NextPortal_Timer = 3000;
 
-                DoSpawnPortal();
-                NextPortal_Timer = 0;
-                //NextPortal_Timer = RiftWaves[GetRiftWaveId()].NextPortalTime;
-            }
-            else 
-                NextPortal_Timer -= diff;
+            Check_Timer = 0;
         }
+        else
+            Check_Timer -= diff;
+
+        if (NextPortal_Timer && NextPortal_Timer < diff)
+        {
+            ++mRiftPortalCount;
+            UpdateBMWorldState(WORLD_STATE_BM_RIFT,mRiftPortalCount);
+
+            DoSpawnPortal();
+            NextPortal_Timer = GetTimer(mRiftPortalCount);
+        }
+        else 
+                NextPortal_Timer -= diff;
     }
 };
 
