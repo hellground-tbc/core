@@ -595,7 +595,7 @@ struct TRINITY_DLL_DECL npc_chesspieceAI : public Scripted_NoMovementAI
 
                 CanMove = false;
                 NextMove_Timer = 6000;
-            }*/
+            }
 
             switch(m_creature->GetEntry())
             {
@@ -631,7 +631,7 @@ struct TRINITY_DLL_DECL npc_chesspieceAI : public Scripted_NoMovementAI
             {
                 m_creature->CombatStop();
                 return;
-            }
+            }*/
         }
         //DoMeleeAttackIfReady();
     }
@@ -1014,16 +1014,16 @@ bool GossipHello_npc_echo_of_medivh(Player* player, Creature* _Creature)
 
     if(pInstance->GetData(DATA_CHESS_EVENT) == IN_PROGRESS)
     {
-        //reset event
+        player->ADD_GOSSIP_ITEM(3, "Reset Event", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
     }
 
-    if(pInstance->GetData(DATA_CHESS_EVENT) != NOT_STARTED)
-        return true;
+    if(pInstance->GetData(DATA_CHESS_EVENT) == NOT_STARTED)
+    {
+        player->ADD_GOSSIP_ITEM(0, EVENT_START, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
 
-    player->ADD_GOSSIP_ITEM(0, EVENT_START, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-
-    if (player->isGameMaster())
-        player->ADD_GOSSIP_ITEM(2, "Start Debug Mode", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+        if (player->isGameMaster())
+            player->ADD_GOSSIP_ITEM(2, "Start Debug Mode", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+    }
 
     player->SEND_GOSSIP_MENU(8990, _Creature->GetGUID());
 

@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Linux Release x64" />
+	<File name="../../src/game/BattleGroundHandler.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="10436" topLine="259" />
+	</File>
+	<File name="../../src/game/BattleGroundMgr.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="56261" topLine="1290" />
+	</File>
 	<File name="../../src/game/GossipDef.cpp" open="0" top="0" tabpos="0">
 		<Cursor position="2094" topLine="29" />
 	</File>

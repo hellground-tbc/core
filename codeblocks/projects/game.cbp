@@ -201,8 +201,8 @@
 					<Add directory="../../dep/ACE_wrappers" />
 				</ResourceCompiler>
 				<Linker>
-					<Add library="./shared__Linux_Release" />
-					<Add library="x64/shared" />
+					<Add library="libshared" />
+					<Add directory="shared__Linux_Release x64" />
 				</Linker>
 			</Target>
 		</Build>
