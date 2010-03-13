@@ -334,13 +334,12 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
         {
             if(InnderDemon[i])
             {
-                    //delete creature
-                    Unit* pUnit = Unit::GetUnit((*m_creature), InnderDemon[i]);
-                    if (pUnit && pUnit->isAlive())
-                    {
-                        pUnit->DealDamage(pUnit, pUnit->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-                    }
-                    InnderDemon[i] = 0;
+                //delete creature
+                Unit* pUnit = Unit::GetUnit((*m_creature), InnderDemon[i]);
+                if(pUnit && pUnit->isAlive())
+                    pUnit->Kill(pUnit, false);
+
+                InnderDemon[i] = 0;
             }
         }
 
@@ -358,13 +357,7 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
                 {
                     Unit* pUnit_target = Unit::GetUnit((*pUnit), ((mob_inner_demonAI *)((Creature *)pUnit)->AI())->victimGUID);
                     if( pUnit_target && pUnit_target->isAlive())
-                    {
-                        pUnit->CastSpell(pUnit_target, SPELL_CONSUMING_MADNESS, true);
-                        Unit* random = SelectUnit(SELECT_TARGET_RANDOM,0);
-                        if(random)
-                            pUnit_target->Attack(random,true);
-                        DoModifyThreatPercent(pUnit_target, -100);
-                    }
+                        m_creature->CastSpell(pUnit_target, SPELL_CONSUMING_MADNESS, true);
                 }
             }
         }
@@ -554,7 +547,7 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
                 for(std::list<HostilReference *>::iterator itr = ThreatList.begin(); itr != ThreatList.end(); ++itr)
                 {
                     Unit *tempTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true);
-                    if(tempTarget && !tempTarget->HasAura(SPELL_CONSUMING_MADNESS,0) && tempTarget->GetGUID() != m_creature->getVictim()->GetGUID() && TargetList.size()<5)
+                    if(tempTarget && !tempTarget->HasAura(SPELL_CONSUMING_MADNESS,0) && tempTarget->GetGUID() != m_creature->getVictim()->GetGUID() && std::find(TargetList.begin(), TargetList.end(), tempTarget) == TargetList.end() && TargetList.size() < 5)
                         TargetList.push_back(tempTarget);
                 }
 

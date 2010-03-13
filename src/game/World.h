@@ -30,7 +30,7 @@
 #include "Policies/Singleton.h"
 #include "SharedDefines.h"
 #include "ace/Atomic_Op.h"
-#include "AntiCheat.h"
+#include "DelayExecutor.h"
 
 #include <map>
 #include <set>
@@ -382,7 +382,7 @@ struct CliCommandHolder
 class World
 {
     public:
-        AntiCheat m_ac;
+        DelayExecutor m_ac;
 
         static volatile uint32 m_worldLoopCounter;
 

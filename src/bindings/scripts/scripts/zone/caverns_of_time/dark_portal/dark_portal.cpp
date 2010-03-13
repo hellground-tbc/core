@@ -53,6 +53,8 @@ EndContentData */
 #define SPELL_CORRUPT_AEONUS    37853
 
 #define C_COUNCIL_ENFORCER      17023
+#define C_RIFT_LORD             17839
+#define C_RIFT_KEEPER           21104
 
 struct TRINITY_DLL_DECL npc_medivh_bmAI : public ScriptedAI
 {
@@ -64,6 +66,7 @@ struct TRINITY_DLL_DECL npc_medivh_bmAI : public ScriptedAI
     ScriptedInstance *pInstance;
 
     uint32 SpellCorrupt_Timer;
+    uint32 DamageMelee_Timer;
     uint32 Check_Timer;
 
     bool Life75;
@@ -73,6 +76,11 @@ struct TRINITY_DLL_DECL npc_medivh_bmAI : public ScriptedAI
     void Reset()
     {
         SpellCorrupt_Timer = 0;
+        DamageMelee_Timer = 0;
+
+        Life75 = true;
+        Life50 = true;
+        Life25 = true;
 
         if (!pInstance)
             return;
@@ -90,7 +98,7 @@ struct TRINITY_DLL_DECL npc_medivh_bmAI : public ScriptedAI
         if (!pInstance)
             return;
 
-        if (who->GetTypeId() == TYPEID_PLAYER && m_creature->IsWithinDistInMap(who, 10.0f))
+        if (pInstance->GetData(TYPE_MEDIVH) != DONE && who->GetTypeId() == TYPEID_PLAYER  && !((Player*)who)->isGameMaster() && m_creature->IsWithinDistInMap(who, 10.0f))
         {
             if (pInstance->GetData(TYPE_MEDIVH) == IN_PROGRESS)
                 return;
@@ -141,10 +149,26 @@ struct TRINITY_DLL_DECL npc_medivh_bmAI : public ScriptedAI
             SpellCorrupt_Timer = 3000;
     }
 
+    void DamageTaken(Unit *done_by, uint32 &damage)
+    {
+        if(done_by != m_creature)
+            damage = 0;
+
+        if (DamageMelee_Timer > 0)
+            return;
+
+        if(done_by->GetEntry() == C_RIFT_LORD || done_by->GetEntry() == C_RIFT_KEEPER)
+            DamageMelee_Timer = 5000;
+        else
+            DamageMelee_Timer = 1000;
+    }
+    
+
     void JustDied(Unit* Killer)
     {
-        if (Killer->GetEntry() == m_creature->GetEntry())
-            return;
+        //if (Killer->GetEntry() == m_creature->GetEntry())
+            //return;
+        pInstance->SetData(TYPE_MEDIVH, FAIL);
 
         DoScriptText(SAY_DEATH, m_creature);
     }
@@ -167,6 +191,17 @@ struct TRINITY_DLL_DECL npc_medivh_bmAI : public ScriptedAI
                 else
                     SpellCorrupt_Timer = 0;
             }else SpellCorrupt_Timer -= diff;
+        }
+
+        
+        if (DamageMelee_Timer)
+        {
+            if (DamageMelee_Timer < diff)
+            {
+                pInstance->SetData(TYPE_MEDIVH,SPECIAL);
+                DamageMelee_Timer = 0;
+            }
+            else DamageMelee_Timer -= diff;
         }
 
         if (Check_Timer)
@@ -267,6 +302,8 @@ struct TRINITY_DLL_DECL npc_time_riftAI : public ScriptedAI
             mWaveId = 2;
         else mWaveId = 1;
 
+        m_creature->setActive(true);
+
     }
     void Aggro(Unit *who) {}
 
@@ -295,7 +332,10 @@ struct TRINITY_DLL_DECL npc_time_riftAI : public ScriptedAI
         {
             Summon->setActive(true);
             if (Unit *temp = Unit::GetUnit(*m_creature,pInstance->GetData64(DATA_MEDIVH)))
-                Summon->AddThreat(temp,0.0f);
+            {
+                ((Creature*)Summon)->SetNoCallAssistance(true);
+                Summon->Attack(temp, false);
+            }
         }
     }
 
@@ -304,7 +344,10 @@ struct TRINITY_DLL_DECL npc_time_riftAI : public ScriptedAI
         uint32 entry = 0;
 
         if ((mRiftWaveCount > 2 && mWaveId < 1) || mRiftWaveCount > 3)
-            mRiftWaveCount = 0;
+        {
+            if (m_creature->IsNonMeleeSpellCasted(false))
+                m_creature->InterruptNonMeleeSpells(false);    //portal is closing when waves are finished
+        }
 
         entry = PortalWaves[mWaveId].PortalMob[mRiftWaveCount];
         debug_log("TSCR: npc_time_rift: summoning wave creature (Wave %u, Entry %u).",mRiftWaveCount,entry);
@@ -323,10 +366,21 @@ struct TRINITY_DLL_DECL npc_time_riftAI : public ScriptedAI
         if (!pInstance)
             return;
 
-        if (TimeRiftWave_Timer < diff)
+        mPortalCount = pInstance->GetData(DATA_PORTAL_COUNT);
+
+        if (TimeRiftWave_Timer && TimeRiftWave_Timer < diff)
         {
-            DoSelectSummon();
-            TimeRiftWave_Timer = 15000;
+            if(mPortalCount != 6 && mPortalCount != 12 && mPortalCount != 18)
+                DoSelectSummon();
+            else if (m_creature->IsNonMeleeSpellCasted(false))
+                m_creature->InterruptNonMeleeSpells(false);
+
+            if(mPortalCount > 0 && mPortalCount < 12 && mPortalCount != 6)
+                TimeRiftWave_Timer = 12000+rand()%5000;
+            if(mPortalCount > 12 && mPortalCount < 18)
+                TimeRiftWave_Timer = 7000+rand()%5000;
+
+
         }else TimeRiftWave_Timer -= diff;
 
         if (m_creature->IsNonMeleeSpellCasted(false))
@@ -335,6 +389,7 @@ struct TRINITY_DLL_DECL npc_time_riftAI : public ScriptedAI
         debug_log("TSCR: npc_time_rift: not casting anylonger, i need to die.");
         m_creature->setDeathState(JUST_DIED);
 
+        mRiftWaveCount = 0;
         pInstance->SetData(TYPE_RIFT,SPECIAL);
     }
 };

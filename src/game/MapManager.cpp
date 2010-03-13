@@ -204,7 +204,7 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player)
                 uint32 instance_map = corpse->GetMapId();
                 do
                 {
-                    if(instance_map==mapid)
+                    if(instance_map == mapid)
                         break;
 
                     InstanceTemplate const* instance = objmgr.GetInstanceTemplate(instance_map);
@@ -212,7 +212,7 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player)
                 }
                 while (instance_map);
 
-                if (!instance_map)
+                if(!instance_map)
                 {
                     player->GetSession()->SendAreaTriggerMessage(player->GetSession()->GetTrinityString(811), mapName);
                     sLog.outDebug("MAP: Player '%s' doesn't has a corpse in instance '%s' and can't enter", player->GetName(), mapName);

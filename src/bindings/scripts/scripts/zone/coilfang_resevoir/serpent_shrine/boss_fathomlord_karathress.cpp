@@ -344,6 +344,7 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
         if((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) <= 75 && !BlessingOfTides)
         {
             BlessingOfTides = true;
+            BlessingOfTidesCounter = 0;
             bool continueTriggering = false;
             Creature* Advisor;
             for(uint8 i = 0; i < 4; ++i) 
@@ -363,7 +364,7 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
             }
         }
 
-        if(BlessingOfTidesCounter) 
+        if(BlessingOfTides && BlessingOfTidesCounter) 
         {
             m_creature->CastSpell(m_creature, SPELL_BLESSING_OF_THE_TIDES,false);
             BlessingOfTidesCounter--;

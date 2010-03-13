@@ -58,6 +58,7 @@ struct TRINITY_DLL_DECL boss_temporusAI : public ScriptedAI
 
         Haste_Timer = 20000;
         SpellReflection_Timer = 40000;
+        m_creature->setActive(true);
     }
 
     void Aggro(Unit *who)

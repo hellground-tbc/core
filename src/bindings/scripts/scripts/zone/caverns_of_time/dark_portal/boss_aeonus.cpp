@@ -58,6 +58,7 @@ struct TRINITY_DLL_DECL boss_aeonusAI : public ScriptedAI
         SandBreath_Timer = 30000;
         TimeStop_Timer = 40000;
         Frenzy_Timer = 120000;
+        m_creature->setActive(true);
     }
 
     void Aggro(Unit *who)

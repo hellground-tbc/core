@@ -56,6 +56,7 @@ struct TRINITY_DLL_DECL boss_chrono_lord_dejaAI : public ScriptedAI
     {
         ArcaneBlast_Timer = 20000;
         TimeLapse_Timer = 15000;
+        m_creature->setActive(true);
     }
 
     void Aggro(Unit *who)
