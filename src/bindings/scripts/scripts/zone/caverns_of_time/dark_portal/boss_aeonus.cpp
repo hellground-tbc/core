@@ -49,22 +49,28 @@ struct TRINITY_DLL_DECL boss_aeonusAI : public ScriptedAI
     ScriptedInstance *pInstance;
     bool HeroicMode;
 
+    uint32 Say_Timer;
     uint32 SandBreath_Timer;
     uint32 TimeStop_Timer;
     uint32 Frenzy_Timer;
 
     void Reset()
     {
+        Say_Timer = 20000;
         SandBreath_Timer = 30000;
         TimeStop_Timer = 40000;
         Frenzy_Timer = 120000;
         m_creature->setActive(true);
+
+        SayIntro();
     }
 
-    void Aggro(Unit *who)
+        void SayIntro()
     {
-        DoScriptText(SAY_AGGRO, m_creature);
+        DoScriptText(SAY_ENTER, m_creature);
     }
+
+    void Aggro(Unit *who) {}
 
     void MoveInLineOfSight(Unit *who)
     {
@@ -106,6 +112,15 @@ struct TRINITY_DLL_DECL boss_aeonusAI : public ScriptedAI
         //Return since we have no target
         if (!UpdateVictim() )
             return;
+
+        //Say Aggro
+        if (Say_Timer && Say_Timer < diff)
+        {
+            DoScriptText(SAY_AGGRO, m_creature);
+            Say_Timer = 0;
+        }
+        else
+            Say_Timer -= diff;
 
         //Sand Breath
         if (SandBreath_Timer < diff)
