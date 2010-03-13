@@ -2341,7 +2341,7 @@ void World::ResetDailyQuests()
     uint32 alliancePVP[5]  = { 8385, 11335, 11336, 11337, 11338 };
     uint32 hordePVP[5]     = { 8388, 11339, 11340, 11341, 11342 };
 
-    specialQuest[HEROIC]  = heroicQuest[urand(0,14];
+    specialQuest[HEROIC]  = heroicQuest[urand(0,14)];
     specialQuest[QNORMAL] = normalQuest[urand(0,7)];
     specialQuest[COOKING] = cookingQuest[urand(0,3)];
     specialQuest[FISHING] = fishingQuest[urand(0,4)];
