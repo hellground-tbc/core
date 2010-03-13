@@ -1407,6 +1407,7 @@ void Spell::EffectDummy(uint32 i)
                 }
                 case 39992:                                 //Needle Spine Targeting
                 {
+                    m_caster->CastSpell(unitTarget,39835,true);
                     break;
                 }
             }

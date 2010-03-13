@@ -2421,13 +2421,17 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 41357: // L1 Acane Charge
         case 41376: // Spite
-        case 39992: // Needle Spine
         case 29576: //Multi-Shot
         case 37790: //Spread Shot
         case 46771: //Flame Sear
         case 45248: //Shadow Blades
         case 41303: // Soul Drain
             spellInfo->MaxAffectedTargets = 3;
+            break;
+        case 39992: // Needle Spine
+            spellInfo->MaxAffectedTargets = 3;
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CONE_ENEMY;
+            spellInfo->EffectImplicitTargetB[0] = 0;
             break;
         case 38310: //Multi-Shot
             spellInfo->MaxAffectedTargets = 4;

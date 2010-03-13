@@ -198,47 +198,7 @@ struct TRINITY_DLL_DECL boss_najentusAI : public ScriptedAI
 
         if(NeedleSpineTimer < diff)
         {
-            /*plToNeedle = 3;
-            Map::PlayerList const &pList = m_creature->GetMap()->GetPlayers();
-            std::list<Unit*> uList;
-
-            //for (Map::PlayerList::iterator itr = pList.begin(); itr != pList.end(); itr = itr->next())
-            for(Map::PlayerList::const_iterator itr = pList.begin(); itr != pList.end(); ++itr)
-                if (!itr->getSource()->isGameMaster() && itr->getSource()->isAlive())
-                    uList.push_back((Unit*)(itr->getSource()));
-
-            if (!uList.empty())
-            {
-                if (uList.size() < 3)
-                    plToNeedle = uList.size();
-
-                Unit* target;
-                for (int8 i = 0; i < plToNeedle; i++)
-                {
-                    int8 temp = rand()%(uList.size());
-                    std::list<Unit*>::iterator itr = uList.begin();
-                    int tmpi = 0;
-
-                    while ( tmpi < temp)
-                    {
-                        itr++;
-                        tmpi++;
-                    }
-                    target = (*itr);
-                    uList.erase(itr);
-
-                    m_creature->CastSpell(target, SPELL_NEEDLE_SPINE, false);
-                }
-            }*/
-            m_creature->CastSpell(m_creature->getVictim(), 39992u, true);
-            /*
-            Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1);
-            if(!target)
-                target = m_creature->getVictim();
-
-            if(target)
-                m_creature->CastSpell(target, SPELL_NEEDLE_SPINE, true);
-            */
+            m_creature->CastSpell(m_creature, 39992u, true);
             NeedleSpineTimer = 2000 + rand()%2000;
         }
         else
