@@ -131,12 +131,12 @@ enum ChessPiecesStances
     //PIECE_DIE           = 3
 };
 
-struct ChessSquere
+struct ChessSquare
 {
     uint64 piece;//GUID;
     uint64 trigger;//GUID;
 
-    ChessSquere()
+    ChessSquare()
     {
         piece = 0;
         trigger = 0;
@@ -672,7 +672,7 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
     int16 hordePieces;
     int16 alliancePieces;
 
-    ChessSquere chessBoard[8][8];
+    ChessSquare chessBoard[8][8];
 
     bool eventStarted;
     bool debugMode;
@@ -889,10 +889,12 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
     }
     void TeleportPlayer(uint64 player)
     {
-        Player * tmpPlayer = NULL;
-        if (player)
-            if(tmpPlayer = ((Player*)(m_creature->GetCreature(*m_creature, player))))
-                tmpPlayer->TeleportTo(tpLoc);
+        if(player)
+        {
+            if(Unit *tmpPlayer = Unit::GetUnit(*m_creature, player))
+                if(tmpPlayer->GetTypeId() == TYPEID_PLAYER)
+                    ((Player*)tmpPlayer)->TeleportTo(tpLoc);
+        }
     }
 
     void TeleportPlayers()
@@ -913,8 +915,8 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
     {
         for (std::list<uint64>::iterator itr = tpList.begin(); itr != tpList.end(); ++itr)
         {
-            Player* tmpPl = (Player*)m_creature->GetCreature(*m_creature, (*itr));
-            if (tmpPl && tmpPl->HasAura(SPELL_POSSES_CHESSPIECE, 0))
+            Unit* tmpPl = Unit::GetUnit(*m_creature, (*itr))
+            if (tmpPl && tmPl->GetTypeId() == TYPEID_PLAYER && tmpPl->HasAura(SPELL_POSSES_CHESSPIECE, 0))
             {
                 TeleportPlayer((*itr));
                 tpList.erase(itr);
