@@ -130,6 +130,9 @@ class TRINITY_DLL_SPEC CreatureAI : public UnitAI
         // Called when spell hits a target
         virtual void SpellHitTarget(Unit* target, const SpellEntry*) {}
 
+        //Called when creature deals damage to player
+        virtual void DamageMade(Unit* target, uint32 & , bool direct_damage) {}
+
         // Called when vitim entered water and creature can not enter water
         virtual bool canReachByRangeAttack(Unit*) { return false; }
 

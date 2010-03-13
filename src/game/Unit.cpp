@@ -707,6 +707,20 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         }
     }
 
+    //Script Event damage made on players by Unit
+    if(this->GetTypeId() == TYPEID_UNIT && ((Creature*)this)->IsAIEnabled && pVictim->GetTypeId() == TYPEID_PLAYER)
+    {
+        bool direct_damage;
+
+        if(damagetype == DIRECT_DAMAGE)
+            direct_damage = true;
+        else
+            direct_damage = false;
+
+        if(damage)
+            ((Creature*)this)->AI()->DamageMade(pVictim, damage, direct_damage);
+    }
+
     if(damage || (cleanDamage && cleanDamage->damage))
     {
         if (spellProto && spellProto->Id == 33619)                 //if it's from Reflective Shield 
