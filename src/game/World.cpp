@@ -2341,14 +2341,14 @@ void World::ResetDailyQuests()
     uint32 alliancePVP[5]  = { 8385, 11335, 11336, 11337, 11338 };
     uint32 hordePVP[5]     = { 8388, 11339, 11340, 11341, 11342 };
 
-    specialQuest[HEROIC]  = heroicQuest[rand()%15];
-    specialQuest[QNORMAL]  = normalQuest[rand()%8];
-    specialQuest[COOKING] = cookingQuest[rand()%4];
-    specialQuest[FISHING] = fishingQuest[rand()%5];
-    specialQuest[PVPH]    = hordePVP[rand()%5];
-    specialQuest[PVPA]    = alliancePVP[rand()%5];
+    specialQuest[HEROIC]  = heroicQuest[urand(0,14];
+    specialQuest[QNORMAL] = normalQuest[urand(0,7)];
+    specialQuest[COOKING] = cookingQuest[urand(0,3)];
+    specialQuest[FISHING] = fishingQuest[urand(0,4)];
+    specialQuest[PVPH]    = hordePVP[urand(0,4)];
+    specialQuest[PVPA]    = alliancePVP[urand(0,4)];
 
-    CharacterDatabase.PExecute("UPDATE saved_variables set HeroicQuest='%u', NormalQuest='%u', CookingQuest='%u', FishingQuest='%u', PVPAlliance='%u', PVPHorde='%u',",specialQuest[HEROIC],specialQuest[QNORMAL],specialQuest[COOKING],specialQuest[FISHING],specialQuest[PVPA],specialQuest[PVPH]);
+    CharacterDatabase.PExecute("UPDATE saved_variables set HeroicQuest='%u', NormalQuest='%u', CookingQuest='%u', FishingQuest='%u', PVPAlliance='%u', PVPHorde='%u'",specialQuest[HEROIC],specialQuest[QNORMAL],specialQuest[COOKING],specialQuest[FISHING],specialQuest[PVPA],specialQuest[PVPH]);
 }
 
 void World::SetPlayerLimit( int32 limit, bool needUpdate )
