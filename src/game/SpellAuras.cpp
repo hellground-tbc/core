@@ -3942,6 +3942,14 @@ void Aura::HandleAuraModDispelImmunity(bool apply, bool Real)
         return;
 
     m_target->ApplySpellDispelImmunity(m_spellProto, DispelType(m_modifier.m_miscvalue), apply);
+    if(m_spellProto->Id == 20594) // HACK for stoneform
+    {
+        m_target->ApplySpellDispelImmunity(m_spellProto, DISPEL_DISEASE, apply);       // add disease immunity
+        int32 miscvalue = m_modifier.m_miscvalue;
+        m_modifier.m_miscvalue = MECHANIC_BLEED;
+        HandleModMechanicImmunity(apply, Real);                             // add bleed immunity
+        m_modifier.m_miscvalue = miscvalue;
+    }
 }
 
 void Aura::HandleAuraProcTriggerSpell(bool apply, bool Real)
