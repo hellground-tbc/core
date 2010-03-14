@@ -2341,14 +2341,44 @@ void World::ResetDailyQuests()
     uint32 alliancePVP[5]  = { 8385, 11335, 11336, 11337, 11338 };
     uint32 hordePVP[5]     = { 8388, 11339, 11340, 11341, 11342 };
 
-    specialQuest[HEROIC]  = heroicQuest[urand(0,14)];
-    specialQuest[QNORMAL] = normalQuest[urand(0,7)];
-    specialQuest[COOKING] = cookingQuest[urand(0,3)];
-    specialQuest[FISHING] = fishingQuest[urand(0,4)];
-    specialQuest[PVPH]    = hordePVP[urand(0,4)];
-    specialQuest[PVPA]    = alliancePVP[urand(0,4)];
+    uint32 temp = heroicQuest[urand(0,14)];
+    while(temp && temp == specialQuest[HEROIC])
+        temp = heroicQuest[urand(0,14)];
+
+    specialQuest[HEROIC]  = temp;
+
+    temp = normalQuest[urand(0,7)];
+    while(temp && temp == specialQuest[QNORMAL])
+        temp = normalQuest[urand(0,7)];
+
+    specialQuest[QNORMAL] = temp;
+
+    temp = cookingQuest[urand(0,3)];
+    while(temp && temp == specialQuest[COOKING])
+        temp = cookingQuest[urand(0,3)];
+
+    specialQuest[COOKING] = temp;
+
+    temp = fishingQuest[urand(0,4)];
+    while(temp && temp == specialQuest[COOKING])
+        temp = fishingQuest[urand(0,4)];
+
+    specialQuest[FISHING] = temp;
+
+    temp = hordePVP[urand(0,4)];
+    while(temp && temp == specialQuest[PVPH])
+        temp = hordePVP[urand(0,4)];
+
+    specialQuest[PVPH] = temp;
+
+    temp = alliancePVP[urand(0,4)];
+    while(temp && temp == specialQuest[PVPA])
+        temp = alliancePVP[urand(0,4)];
+
+    specialQuest[PVPA] = temp;
 
     CharacterDatabase.PExecute("UPDATE saved_variables set HeroicQuest='%u', NormalQuest='%u', CookingQuest='%u', FishingQuest='%u', PVPAlliance='%u', PVPHorde='%u'",specialQuest[HEROIC],specialQuest[QNORMAL],specialQuest[COOKING],specialQuest[FISHING],specialQuest[PVPA],specialQuest[PVPH]);
+    //sLog.outString("Performing daily quest reset ... HeroicQuest='%u', NormalQuest='%u', CookingQuest='%u', FishingQuest='%u', PVPAlliance='%u', PVPHorde='%u'",specialQuest[HEROIC],specialQuest[QNORMAL],specialQuest[COOKING],specialQuest[FISHING],specialQuest[PVPA],specialQuest[PVPH]);
 }
 
 void World::SetPlayerLimit( int32 limit, bool needUpdate )
