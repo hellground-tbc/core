@@ -38,16 +38,19 @@ EndScriptData */
 #define SPELL_SAND_BREATH           31914
 #define SPELL_IMPENDING_DEATH       31916
 #define SPELL_MAGIC_DISRUPTION_AURA 33834
-#define SPELL_WING_BUFFET           31475
+#define SPELL_WING_BUFFET           HeroicMode ? 31475:38593
 
 struct TRINITY_DLL_DECL boss_epoch_hunterAI : public ScriptedAI
 {
     boss_epoch_hunterAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        HeroicMode = m_creature->GetMap()->IsHeroic();
     }
 
     ScriptedInstance *pInstance;
+
+    bool HeroicMode;
 
     uint32 SandBreath_Timer;
     uint32 ImpendingDeath_Timer;
@@ -109,26 +112,34 @@ struct TRINITY_DLL_DECL boss_epoch_hunterAI : public ScriptedAI
             }
 
             SandBreath_Timer = 25000+rand()%5000;
-        }else SandBreath_Timer -= diff;
+        }
+        else
+            SandBreath_Timer -= diff;
 
-        if (ImpendingDeath_Timer < diff)
+        if(ImpendingDeath_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_IMPENDING_DEATH);
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0 , 50, true))
+                DoCast(m_creature->getVictim(),SPELL_IMPENDING_DEATH);
             ImpendingDeath_Timer = 30000+rand()%5000;
-        }else ImpendingDeath_Timer -= diff;
+        }
+        else
+            ImpendingDeath_Timer -= diff;
 
-        if (WingBuffet_Timer < diff)
+        if(WingBuffet_Timer < diff)
         {
-            if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0))
-                DoCast(target,SPELL_WING_BUFFET);
+            DoCast(m_creature,SPELL_WING_BUFFET);
             WingBuffet_Timer = 25000+rand()%10000;
-        }else WingBuffet_Timer -= diff;
+        }
+        else
+            WingBuffet_Timer -= diff;
 
-        if (Mda_Timer < diff)
+        if(Mda_Timer < diff)
         {
             DoCast(m_creature,SPELL_MAGIC_DISRUPTION_AURA);
             Mda_Timer = 15000;
-        }else Mda_Timer -= diff;
+        }
+        else
+            Mda_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }

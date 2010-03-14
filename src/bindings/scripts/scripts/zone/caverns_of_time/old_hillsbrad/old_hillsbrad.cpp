@@ -451,11 +451,13 @@ struct TRINITY_DLL_DECL npc_thrall_old_hillsbradAI : public npc_escortAI
         case 2: DoScriptText(SAY_TH_RANDOM_AGGRO3, m_creature); break;
         case 3: DoScriptText(SAY_TH_RANDOM_AGGRO4, m_creature); break;
         }
+
         if( m_creature->IsMounted() )
         {
             DoUnmount();
             HadMount = true;
         }
+        WaitTimer = 4000;
     }
 
     void JustSummoned(Creature* summoned)
@@ -502,6 +504,17 @@ struct TRINITY_DLL_DECL npc_thrall_old_hillsbradAI : public npc_escortAI
 
     void UpdateAI(const uint32 diff)
     {
+        if(!InCombat)
+        {
+            if(WaitTimer > diff)
+            {
+                WaitTimer -= diff;
+                return;
+            }
+            else
+                WaitTimer = 0;
+        }
+
         npc_escortAI::UpdateAI(diff);
 
         if (!UpdateVictim())
