@@ -217,6 +217,7 @@ struct TRINITY_DLL_DECL npc_thrall_old_hillsbradAI : public npc_escortAI
     ScriptedInstance *pInstance;
 
     uint64 TarethaGUID;
+    uint32 WaitTimer;
 
     bool LowHp;
     bool HadMount;

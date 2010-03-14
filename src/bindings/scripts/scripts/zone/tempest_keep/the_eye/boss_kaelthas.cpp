@@ -711,6 +711,8 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                 EnterEvadeMode();
                 return;
             }
+            if(Phase == 1 || Phase ==2 || Phase == 3)		//threat reseting up to phase 4
+                DoResetThreat();
         }
         //Phase 1
         switch (Phase)
@@ -907,7 +909,6 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                         }
                     }
 
-                    m_creature->StopMoving();
                     PhaseSubphase = 2;
                     Phase_Timer = TIME_PHASE_2_3;
                 }
@@ -916,7 +917,6 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                     if (Phase_Timer < diff)
                 {
                     DoScriptText(SAY_PHASE3_ADVANCE, m_creature);
-                    pInstance->SetData(DATA_KAELTHASEVENT, 4);        // phase 3 = phase 4, to discriminate phase 3 state from DONE
                     Phase = 3;
                     PhaseSubphase = 0;
                 }else Phase_Timer -= diff;
@@ -937,7 +937,6 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                             ((advisorbase_ai*)Advisor->AI())->Revive();
                     }
 
-                    m_creature->StopMoving();
                     PhaseSubphase = 1;
                     Phase_Timer = TIME_PHASE_3_4;
                 }
@@ -954,7 +953,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                     m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
 
-                    if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
                     {
                         DoResetThreat();//only healers will be at top threat, so reset(not delete) all players's threat when Kael comes to fight
                         AttackStart(target);
@@ -1319,6 +1318,7 @@ struct TRINITY_DLL_DECL boss_thaladred_the_darkenerAI : public advisorbase_ai
 
         DoScriptText(SAY_THALADRED_AGGRO, m_creature);
         m_creature->AddThreat(who, 5000000.0f);
+        m_creature->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
         m_creature->SetUnitMovementFlags(MOVEMENTFLAG_WALK_MODE);
         m_creature->SetSpeed(MOVE_WALK, 1.5f, true);
     }
@@ -1357,7 +1357,8 @@ struct TRINITY_DLL_DECL boss_thaladred_the_darkenerAI : public advisorbase_ai
                 if(Unit* target = SelectUnit(SELECT_TARGET_TOPAGGRO, 1))
                 {
                     m_creature->AddThreat(target, 5000001.0f);
-                    AttackStart(target);
+                    m_creature->Attack(target, true);
+                    //AttackStart(target);
                 }
             }
         }
@@ -1375,9 +1376,6 @@ struct TRINITY_DLL_DECL boss_thaladred_the_darkenerAI : public advisorbase_ai
         //Gaze_Timer
         if(Gaze_Timer < diff)
         {
-            m_creature->SetUnitMovementFlags(MOVEMENTFLAG_WALK_MODE);
-            m_creature->SetSpeed(MOVE_WALK, 1.5f, true);
-
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
             {                
                 if(target)
@@ -1385,7 +1383,8 @@ struct TRINITY_DLL_DECL boss_thaladred_the_darkenerAI : public advisorbase_ai
                     DoResetThreat();
                     m_creature->AddThreat(target, 5000001.0f);
                     DoScriptText(EMOTE_THALADRED_GAZE, m_creature, target);
-                    AttackStart(target);
+                    //AttackStart(target);
+                    m_creature->Attack(target, true);
                     m_creature->SetSpeed(MOVE_WALK, 1.5f, true);
                 }
                 Gaze_Timer = 8500;
