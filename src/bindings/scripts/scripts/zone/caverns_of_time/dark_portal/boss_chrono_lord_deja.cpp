@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Boss_Chrono_Lord_Deja
-SD%Complete: 65
-SDComment: All abilities not implemented
+SD%Complete: 99
+SDComment: Some timers may not be completely Blizzlike
 SDCategory: Caverns of Time, The Dark Portal
 EndScriptData */
 
@@ -36,7 +36,7 @@ EndScriptData */
 #define SPELL_ARCANE_DISCHARGE      31472
 #define H_SPELL_ARCANE_DISCHARGE    38539
 #define SPELL_TIME_LAPSE            31467
-#define SPELL_ATTRACTION            38540                       //Not Implemented (Heroic mode)
+#define SPELL_ATTRACTION            38540
 
 struct TRINITY_DLL_DECL boss_chrono_lord_dejaAI : public ScriptedAI
 {
@@ -50,12 +50,24 @@ struct TRINITY_DLL_DECL boss_chrono_lord_dejaAI : public ScriptedAI
     bool HeroicMode;
 
     uint32 ArcaneBlast_Timer;
+    uint32 ArcaneDischarge_Timer;
+    uint32 Attraction_Timer;
     uint32 TimeLapse_Timer;
+
+    bool arcane;
 
     void Reset()
     {
-        ArcaneBlast_Timer = 20000;
+        if(HeroicMode)
+        {
+            ArcaneBlast_Timer = 2000;
+            Attraction_Timer = 18000;
+        }
+        else
+            ArcaneBlast_Timer = 20000;
+        ArcaneDischarge_Timer = 10000;
         TimeLapse_Timer = 15000;
+        arcane = false;
         m_creature->setActive(true);
 
         SayIntro();
@@ -109,12 +121,54 @@ struct TRINITY_DLL_DECL boss_chrono_lord_dejaAI : public ScriptedAI
         if (!UpdateVictim() )
             return;
 
-        //Arcane Blast
-        if (ArcaneBlast_Timer < diff)
+        //Arcane Blast && Attraction on heroic mode
+        if(!HeroicMode)
         {
-            DoCast(m_creature->getVictim(), SPELL_ARCANE_BLAST);
-            ArcaneBlast_Timer = 20000+rand()%5000;
-        }else ArcaneBlast_Timer -= diff;
+            if(ArcaneBlast_Timer < diff)
+            {
+                DoCast(m_creature->getVictim(), SPELL_ARCANE_BLAST, true);
+                ArcaneBlast_Timer = 20000+rand()%5000;
+            }
+            else
+                ArcaneBlast_Timer -= diff;
+        }
+        else
+        {
+            if(Attraction_Timer < diff)
+            {
+                if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
+                    if(!arcane)
+                    {
+                        DoCast(target, SPELL_ATTRACTION, true);
+                        arcane = true;
+                    }
+
+                if(ArcaneBlast_Timer < diff)
+                {
+                    DoCast(m_creature->getVictim(), H_SPELL_ARCANE_BLAST, true);
+
+                    arcane = false;
+                    Attraction_Timer = 18000+rand()%5000;;
+                    ArcaneBlast_Timer = 2000;
+                }
+                else
+                    ArcaneBlast_Timer -= diff;
+            }
+            else
+                Attraction_Timer -= diff;
+        }
+
+        //Arcane Discharge
+        if(ArcaneDischarge_Timer < diff)
+        {
+            if(HeroicMode)
+                DoCast(m_creature, H_SPELL_ARCANE_DISCHARGE, false);
+            else
+                DoCast(m_creature, SPELL_ARCANE_DISCHARGE, false);
+            ArcaneDischarge_Timer = 15000+rand()%10000;
+        }
+        else
+            ArcaneDischarge_Timer -= diff;
 
         //Time Lapse
         if (TimeLapse_Timer < diff)
@@ -122,7 +176,9 @@ struct TRINITY_DLL_DECL boss_chrono_lord_dejaAI : public ScriptedAI
             DoScriptText(SAY_BANISH, m_creature);
             DoCast(m_creature, SPELL_TIME_LAPSE);
             TimeLapse_Timer = 15000+rand()%10000;
-        }else TimeLapse_Timer -= diff;
+        }
+        else
+            TimeLapse_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }

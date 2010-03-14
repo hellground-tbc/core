@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Boss_Temporus
-SD%Complete: 75
-SDComment: More abilities need to be implemented
+SD%Complete: 95
+SDComment: Some timers may need to be adjusted
 SDCategory: Caverns of Time, The Dark Portal
 EndScriptData */
 
