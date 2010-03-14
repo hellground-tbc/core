@@ -2750,7 +2750,14 @@ bool IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_id,uint32 z
 
             if(!mapEntry->IsBattleGround())
                 return false;
+            break;
         }
+        // karazhan books
+        case 30562:
+        case 30550:
+        case 30567:
+        case 30557:
+            return map_id == 532;
     }
 
     return true;
