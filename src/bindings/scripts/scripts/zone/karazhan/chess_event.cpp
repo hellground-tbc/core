@@ -915,8 +915,8 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
     {
         for (std::list<uint64>::iterator itr = tpList.begin(); itr != tpList.end(); ++itr)
         {
-            Unit* tmpPl = Unit::GetUnit(*m_creature, (*itr))
-            if (tmpPl && tmPl->GetTypeId() == TYPEID_PLAYER && tmpPl->HasAura(SPELL_POSSES_CHESSPIECE, 0))
+            Unit* tmpPl = Unit::GetUnit(*m_creature, (*itr));
+            if (tmpPl && tmpPl->GetTypeId() == TYPEID_PLAYER && tmpPl->HasAura(SPELL_POSSES_CHESSPIECE, 0))
             {
                 TeleportPlayer((*itr));
                 tpList.erase(itr);
