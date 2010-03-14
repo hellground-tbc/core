@@ -93,7 +93,10 @@ struct TRINITY_DLL_DECL boss_temporusAI : public ScriptedAI
         DoScriptText(SAY_DEATH, m_creature);
 
         if (pInstance)
+        {
             pInstance->SetData(TYPE_RIFT,SPECIAL);
+            pInstance->SetData(TYPE_TEMPORUS,DONE);
+        }
     }
 
     void MoveInLineOfSight(Unit *who)
@@ -164,6 +167,13 @@ struct TRINITY_DLL_DECL boss_temporusAI : public ScriptedAI
             DoCast(m_creature, SPELL_REFLECT);
             SpellReflection_Timer = 40000+rand()%10000;
         }else SpellReflection_Timer -= diff;
+
+        //if event failed, remove boss from instance
+        if(pInstance && pInstance->GetData(TYPE_MEDIVH) == FAIL)
+        {
+            m_creature->Kill(m_creature, false);
+            m_creature->RemoveCorpse();
+        }
 
         DoMeleeAttackIfReady();
     }

@@ -94,9 +94,6 @@ struct TRINITY_DLL_DECL npc_medivh_bmAI : public ScriptedAI
             m_creature->CastSpell(m_creature,SPELL_CHANNEL,true);
         else if (m_creature->HasAura(SPELL_CHANNEL,0))
             m_creature->RemoveAura(SPELL_CHANNEL,0);
-
-        m_creature->CastSpell(m_creature,SPELL_PORTAL_RUNE,true);
-        m_creature->CastSpell(m_creature,SPELL_CHANNEL,false);
     }
 
     void MoveInLineOfSight(Unit *who)
@@ -107,6 +104,8 @@ struct TRINITY_DLL_DECL npc_medivh_bmAI : public ScriptedAI
         //say enter phrase when in 50yd distance
         if (!Intro && pInstance->GetData(TYPE_MEDIVH) != DONE && who->GetTypeId() == TYPEID_PLAYER  && m_creature->IsWithinDistInMap(who, 50.0f))
         {
+            m_creature->CastSpell(m_creature,SPELL_PORTAL_RUNE,true);
+            m_creature->CastSpell(m_creature,SPELL_CHANNEL,false);
             DoScriptText(SAY_ENTER, m_creature);
             Intro = true;
         }
@@ -131,7 +130,7 @@ struct TRINITY_DLL_DECL npc_medivh_bmAI : public ScriptedAI
                 who->StopMoving();
                 who->CastSpell(m_creature,SPELL_CORRUPT,false);
             }
-            else if (entry == C_AEONUS)
+            else if (entry == 20737 || entry == 17881)  //Aeonus
             {
                 who->StopMoving();
                 who->CastSpell(m_creature,SPELL_CORRUPT_AEONUS,false);

@@ -112,7 +112,10 @@ struct TRINITY_DLL_DECL boss_chrono_lord_dejaAI : public ScriptedAI
         DoScriptText(SAY_DEATH, m_creature);
 
         if (pInstance)
+        {
             pInstance->SetData(TYPE_RIFT,SPECIAL);
+            pInstance->SetData(TYPE_C_DEJA,DONE);
+        }
     }
 
     void UpdateAI(const uint32 diff)
@@ -179,6 +182,13 @@ struct TRINITY_DLL_DECL boss_chrono_lord_dejaAI : public ScriptedAI
         }
         else
             TimeLapse_Timer -= diff;
+
+        //if event failed, remove boss from instance
+        if(pInstance && pInstance->GetData(TYPE_MEDIVH) == FAIL)
+        {
+            m_creature->Kill(m_creature, false);
+            m_creature->RemoveCorpse();
+        }
 
         DoMeleeAttackIfReady();
     }

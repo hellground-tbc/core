@@ -7,6 +7,8 @@
 
 #define TYPE_MEDIVH             1
 #define TYPE_RIFT               2
+#define TYPE_C_DEJA             3
+#define TYPE_TEMPORUS           4
 
 #define DATA_MEDIVH             10
 #define DATA_PORTAL_COUNT       11
@@ -22,9 +24,6 @@
 #define C_TIME_KEEPER           17918
 #define C_RKEEP                 21104
 #define C_RLORD                 17839
-#define C_DEJA                  17879
-#define C_TEMPO                 17880
-#define C_AEONUS                17881
 #define C_ASSAS                 17835
 #define C_WHELP                 21818
 #define C_CHRON                 17892

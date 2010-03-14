@@ -164,6 +164,13 @@ struct TRINITY_DLL_DECL boss_aeonusAI : public ScriptedAI
         else
             Frenzy_Timer -= diff;
 
+        //if event failed, remove boss from instance
+        if(pInstance && pInstance->GetData(TYPE_MEDIVH) == FAIL)
+        {
+            m_creature->Kill(m_creature, false);
+            m_creature->RemoveCorpse();
+        }
+
         DoMeleeAttackIfReady();
     }
 };
