@@ -35,7 +35,7 @@ EndScriptData */
 #define SPELL_MORTAL_WOUND      31464
 #define SPELL_WING_BUFFET       31475
 #define H_SPELL_WING_BUFFET     38593
-#define SPELL_REFLECT           38592                       //Not Implemented (Heroic mod)
+#define SPELL_REFLECT           38592
 
 struct TRINITY_DLL_DECL boss_temporusAI : public ScriptedAI
 {
@@ -50,6 +50,7 @@ struct TRINITY_DLL_DECL boss_temporusAI : public ScriptedAI
     bool canApplyWound;
 
     uint32 MortalWound_Timer;
+    uint32 WingBuffet_Timer;
     uint32 Haste_Timer;
     uint32 SpellReflection_Timer;
 
@@ -60,6 +61,7 @@ struct TRINITY_DLL_DECL boss_temporusAI : public ScriptedAI
 
         MortalWound_Timer = 5000;
         canApplyWound = false;
+        WingBuffet_Timer = 10000;
         Haste_Timer = 20000;
         SpellReflection_Timer = 40000;
         m_creature->setActive(true);
@@ -130,6 +132,18 @@ struct TRINITY_DLL_DECL boss_temporusAI : public ScriptedAI
             DoCast(m_creature, SPELL_HASTE);
             Haste_Timer = 20000+rand()%5000;
         }else Haste_Timer -= diff;
+
+        //Wing Buffet
+        if (WingBuffet_Timer < diff)
+        {
+            if(HeroicMode)
+                DoCast(m_creature, H_SPELL_WING_BUFFET);
+            else
+                DoCast(m_creature, SPELL_WING_BUFFET);
+            WingBuffet_Timer = 15000+rand()%10000;
+        }
+        else
+            WingBuffet_Timer -= diff;
 
         //Mortal Wound
         if (MortalWound_Timer < diff)

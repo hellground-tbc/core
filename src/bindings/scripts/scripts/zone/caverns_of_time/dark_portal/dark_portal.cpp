@@ -30,7 +30,7 @@ EndContentData */
 #include "precompiled.h"
 #include "def_dark_portal.h"
 
-#define SAY_ENTER               -1269020        //intro speach by Medivh whene etnering instance
+#define SAY_ENTER               -1269020        //intro speach by Medivh when entering instance
 #define SAY_INTRO               -1269021
 #define SAY_WEAK75              -1269022
 #define SAY_WEAK50              -1269023
