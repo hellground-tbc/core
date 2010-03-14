@@ -70,7 +70,7 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
 {
     instance_dark_portal(Map *map) : ScriptedInstance(map) 
     {
-        HeroicMode = IsMapHeroic();
+        HeroicMode = map->IsHeroic();
         Initialize();
     };
 
@@ -131,14 +131,6 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
 
         debug_log("TSCR: Instance Black Portal: GetPlayerInMap, but PlayerList is empty!");
         return NULL;
-    }
-
-    bool IsMapHeroic()
-    {
-        if(Player* player = GetPlayerInMap())
-            if(player->GetMap()->IsHeroic())
-                return true;
-        return false;
     }
 
     void FailQuests()
@@ -350,14 +342,14 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
                 Encounter[1] = data;
             break;
         case TYPE_C_DEJA:
-            if (data == DONE && IsMapHeroic())
+            if (data == DONE && HeroicMode)
                 Encounter[2] = data;
 
             NextPortal_Timer = 20000;
             Check_Timer = 0;
             break;
         case TYPE_TEMPORUS:
-            if (data == DONE && IsMapHeroic())
+            if (data == DONE && HeroicMode)
                 Encounter[3] = data;
 
             NextPortal_Timer = 20000;
@@ -411,7 +403,7 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
     {
         uint32 entry;
 
-        if(IsMapHeroic())
+        if(HeroicMode)
         {
             if(GetRiftWaveId()== 1 && Encounter[2] == DONE)
                 entry = INF_C_DEJA;
