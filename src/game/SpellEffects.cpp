@@ -477,13 +477,13 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                     float ap = m_caster->GetTotalAttackPowerValue(BASE_ATTACK);
                     // converts each extra point of energy into ($f1+$AP/630) additional damage
                     float multiple = ap / 630 + m_spellInfo->DmgMultiplier[effect_idx];
-                    damage += int32(m_caster->GetPower(POWER_ENERGY) * multiple);
-                    m_caster->SetPower(POWER_ENERGY,0);
+                    damage += int32((m_caster->GetPower(POWER_ENERGY) - GetPowerCost()) * multiple);
+                    m_caster->SetPower(POWER_ENERGY, GetPowerCost());
                     // Not sure if formula is valid
                     damage += int32(0.1526f * ap);
                 }
                 // Rake
-                else if(m_spellInfo->SpellFamilyFlags & 0x0000000000001000LL)
+                else if(m_spellInfo->SpellFamilyFlags & 0x0000000000001000LL && m_spellInfo->SpellIconID == 494)
                 {
                     damage += int32(m_caster->GetTotalAttackPowerValue(BASE_ATTACK) / 100);
                 }
