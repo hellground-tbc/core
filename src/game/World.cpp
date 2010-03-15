@@ -2338,8 +2338,8 @@ void World::ResetDailyQuests()
     uint32 normalQuest[8]  = { 11389, 11371, 11376, 11383, 11364, 11500, 11385, 11387 };
     uint32 cookingQuest[4] = { 11380, 11377, 11381, 11379 };
     uint32 fishingQuest[5] = { 11666, 11665, 11669,11668, 11667 };
-    uint32 alliancePVP[5]  = { 8385, 11335, 11336, 11337, 11338 };
-    uint32 hordePVP[5]     = { 8388, 11339, 11340, 11341, 11342 };
+    uint32 alliancePVP[4]  = { 11335, 11336, 11337, 11338 };
+    uint32 hordePVP[4]     = { 11339, 11340, 11341, 11342 };
 
     uint32 temp = heroicQuest[urand(0,14)];
     while(temp && temp == specialQuest[HEROIC])
@@ -2365,20 +2365,19 @@ void World::ResetDailyQuests()
 
     specialQuest[FISHING] = temp;
 
-    temp = hordePVP[urand(0,4)];
+    temp = hordePVP[urand(0,3)];
     while(temp && temp == specialQuest[PVPH])
-        temp = hordePVP[urand(0,4)];
+        temp = hordePVP[urand(0,3)];
 
     specialQuest[PVPH] = temp;
 
-    temp = alliancePVP[urand(0,4)];
+    temp = alliancePVP[urand(0,3)];
     while(temp && temp == specialQuest[PVPA])
-        temp = alliancePVP[urand(0,4)];
+        temp = alliancePVP[urand(0,3)];
 
     specialQuest[PVPA] = temp;
 
     CharacterDatabase.PExecute("UPDATE saved_variables set HeroicQuest='%u', NormalQuest='%u', CookingQuest='%u', FishingQuest='%u', PVPAlliance='%u', PVPHorde='%u'",specialQuest[HEROIC],specialQuest[QNORMAL],specialQuest[COOKING],specialQuest[FISHING],specialQuest[PVPA],specialQuest[PVPH]);
-    //sLog.outString("Performing daily quest reset ... HeroicQuest='%u', NormalQuest='%u', CookingQuest='%u', FishingQuest='%u', PVPAlliance='%u', PVPHorde='%u'",specialQuest[HEROIC],specialQuest[QNORMAL],specialQuest[COOKING],specialQuest[FISHING],specialQuest[PVPA],specialQuest[PVPH]);
 }
 
 void World::SetPlayerLimit( int32 limit, bool needUpdate )

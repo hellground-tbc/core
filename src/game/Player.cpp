@@ -12344,9 +12344,9 @@ void Player::PrepareQuestMenu( uint64 guid )
                 continue;
             if(pObject->GetEntry() == 25580 && quest_id != sWorld.specialQuest[FISHING])
                 continue;
-            if(pObject->GetEntry() == 15350 && quest_id != sWorld.specialQuest[PVPH])
+            if(pObject->GetEntry() == 15350 && quest != 8388 && quest_id != sWorld.specialQuest[PVPH])
                 continue;
-            if(pObject->GetEntry() == 15351 && quest_id != sWorld.specialQuest[PVPA])
+            if(pObject->GetEntry() == 15351 && quest != 8385 && quest_id != sWorld.specialQuest[PVPA])
                 continue;
 
             qm.AddMenuItem(quest_id, DIALOG_STATUS_AVAILABLE);

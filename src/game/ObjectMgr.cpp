@@ -6482,15 +6482,15 @@ void ObjectMgr::LoadSpecialQuests()
 
         if(!(sWorld.specialQuest[PVPA] = (*result)[5].GetUInt32()))
         {
-            uint32 alliancePVP[5]  = { 8385, 11335, 11336, 11337, 11338 };
-            sWorld.specialQuest[PVPA] = alliancePVP[urand(0,4)];
+            uint32 alliancePVP[4]  = { 11335, 11336, 11337, 11338 };
+            sWorld.specialQuest[PVPA] = alliancePVP[urand(0,3];
             CharacterDatabase.PExecute("UPDATE saved_variables set PVPAlliance='%u'", sWorld.specialQuest[PVPA]);
         }
 
         if(!(sWorld.specialQuest[PVPH] = (*result)[6].GetUInt32()))
         {
-            uint32 hordePVP[5]     = { 8388, 11339, 11340, 11341, 11342 };
-            sWorld.specialQuest[PVPH] = hordePVP[urand(0,4)];
+            uint32 hordePVP[4]     = { 11339, 11340, 11341, 11342 };
+            sWorld.specialQuest[PVPH] = hordePVP[urand(0,3)];
             CharacterDatabase.PExecute("UPDATE saved_variables set PVPHorde='%u'", sWorld.specialQuest[PVPH]);
         }
     }
