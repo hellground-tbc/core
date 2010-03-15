@@ -2360,7 +2360,7 @@ void World::ResetDailyQuests()
     specialQuest[COOKING] = temp;
 
     temp = fishingQuest[urand(0,4)];
-    while(temp && temp == specialQuest[COOKING])
+    while(temp && temp == specialQuest[FISHING])
         temp = fishingQuest[urand(0,4)];
 
     specialQuest[FISHING] = temp;

@@ -1713,11 +1713,6 @@ void Unit::DealMeleeDamage(CalcDamageInfo *damageInfo, bool durabilityLoss)
                SpellEntry const *spellProto = sSpellStore.LookupEntry((*i)->GetId());
                if(!spellProto)
                    continue;
-               //Calculate absorb resist ??? no data in opcode for this possibly unable to absorb or resist?
-               //uint32 absorb;
-               //uint32 resist;
-               //CalcAbsorbResist(pVictim, SpellSchools(spellProto->School), SPELL_DIRECT_DAMAGE, damage, &absorb, &resist);
-               //damage-=absorb + resist;
 
                WorldPacket data(SMSG_SPELLDAMAGESHIELD,(8+8+4+4));
                data << uint64(pVictim->GetGUID());
@@ -1780,7 +1775,7 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
         return;
 
     // Magic damage, check for resists
-    if ((schoolMask & SPELL_SCHOOL_MASK_NORMAL)==0)
+    if (schoolMask & ~SPELL_SCHOOL_MASK_NORMAL)
     {
         // Get base victim resistance for school
         float tmpvalue2 = (float)pVictim->GetResistance(GetFirstSchoolInMask(schoolMask));
@@ -2010,7 +2005,7 @@ bool Unit::CalcBinaryResist(Unit *pVictim, SpellSchoolMask schoolMask) {
         return false;
 
     // Magic damage, check for resists
-    if ((schoolMask & SPELL_SCHOOL_MASK_NORMAL)==0)
+    if (schoolMask & ~SPELL_SCHOOL_MASK_NORMAL)
     {
         // Get base victim resistance for school
         uint32 effectiveResistance = pVictim->GetResistance(GetFirstSchoolInMask(schoolMask));

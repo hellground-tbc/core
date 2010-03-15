@@ -2467,6 +2467,9 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 24905: // Moonkin form -> elune's touch
             spellInfo->EffectImplicitTargetA[2] = TARGET_UNIT_CASTER;
+            break;
+        case 27066: // Trueshot r4 - poprzednie ranki nie maja dispel type: MAGIC o.O
+            spellInfo->Dispel = DISPEL_NONE;
         default:
             break;
         }
