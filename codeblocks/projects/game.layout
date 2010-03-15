@@ -10,6 +10,9 @@
 	<File name="../../src/game/GossipDef.cpp" open="0" top="0" tabpos="0">
 		<Cursor position="2094" topLine="29" />
 	</File>
+	<File name="../../src/game/InstanceData.h" open="0" top="0" tabpos="0">
+		<Cursor position="1094" topLine="17" />
+	</File>
 	<File name="../../src/game/Player.h" open="0" top="0" tabpos="0">
 		<Cursor position="30584" topLine="908" />
 	</File>

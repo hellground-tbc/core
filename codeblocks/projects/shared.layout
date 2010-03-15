@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Linux Release x64" />
+	<File name="../../src/shared/ByteBuffer.h" open="0" top="0" tabpos="0">
+		<Cursor position="8524" topLine="297" />
+	</File>
 	<File name="../../src/shared/Common.h" open="0" top="0" tabpos="0">
 		<Cursor position="3119" topLine="104" />
 	</File>

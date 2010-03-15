@@ -675,7 +675,6 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
     ChessSquare chessBoard[8][8];
 
     bool eventStarted;
-    bool debugMode;
 
     WorldLocation wLoc;
     WorldLocation tpLoc;
@@ -685,7 +684,6 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
     void Reset()
     {
         eventStarted = false;
-        debugMode = false;
         hordePieces = 16;
         alliancePieces = 16;
     }
@@ -1037,15 +1035,15 @@ bool GossipSelect_npc_echo_of_medivh(Player* player, Creature* _Creature, uint32
     if(action == GOSSIP_ACTION_INFO_DEF + 1)
     {
         DoScriptText(SCRIPTTEXT_AT_EVENT_START,_Creature);
-        pInstance->SetData(DATA_CHESS_EVENT,IN_PROGRESS);
-        pInstance->SetData(CHESS_EVENT_TEAM,player->GetTeam());
+        pInstance->SetData(DATA_CHESS_EVENT, IN_PROGRESS);
+        pInstance->SetData(CHESS_EVENT_TEAM, player->GetTeam());
         _Creature->GetMotionMaster()->MoveRandom(10);
     }
 
     if (action == GOSSIP_ACTION_INFO_DEF + 2)
     {
-        ((boss_MedivhAI*)_Creature)->debugMode = true;
-        ((boss_MedivhAI*)_Creature)->DoSay("Debug mode on", LANG_UNIVERSAL, _Creature);
+        pInstance->SetData(DATA_CHESS_EVENT, SPECIAL);
+        ((ScriptedAI*)_Creature)->DoSay("Debug mode on", LANG_UNIVERSAL, _Creature);
     }
 
     player->CLOSE_GOSSIP_MENU();
