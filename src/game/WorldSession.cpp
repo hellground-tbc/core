@@ -159,10 +159,10 @@ bool WorldSession::Update(uint32 diff)
 {
     if (!m_inQueue && !m_playerLoading && (!_player || !_player->IsInWorld()))
     {
-        if (m_kickTimer < diff)
-            KickPlayer();
+        /*if (m_kickTimer < diff)
+           KickPlayer();
         else
-            m_kickTimer -= diff;
+            m_kickTimer -= diff;*/
     }
     else
         m_kickTimer = MINUTE * 15 * 1000;

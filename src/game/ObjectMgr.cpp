@@ -6483,7 +6483,7 @@ void ObjectMgr::LoadSpecialQuests()
         if(!(sWorld.specialQuest[PVPA] = (*result)[5].GetUInt32()))
         {
             uint32 alliancePVP[4]  = { 11335, 11336, 11337, 11338 };
-            sWorld.specialQuest[PVPA] = alliancePVP[urand(0,3];
+            sWorld.specialQuest[PVPA] = alliancePVP[urand(0,3)];
             CharacterDatabase.PExecute("UPDATE saved_variables set PVPAlliance='%u'", sWorld.specialQuest[PVPA]);
         }
 
