@@ -101,9 +101,9 @@ TargetedMovementGenerator<T>::_adaptSpeedToTarget(T &owner)
     float lowerCritDist = 3*i_offset;
     float upperCritDist = 6*i_offset;
 
-    float maxSpeed        = owner.GetMaxSpeedRate(MOVE_RUN);
-    float currSpeed     = owner.GetSpeedRate(MOVE_RUN);
-    float targetSpeed   = i_target->GetSpeedRate(MOVE_RUN);
+    float maxSpeed    = owner.GetMaxSpeedRate(MOVE_RUN);
+    float currSpeed   = owner.GetSpeedRate(MOVE_RUN);
+    float targetSpeed = i_target->GetSpeedRate(MOVE_RUN);
     if( targetSpeed > maxSpeed )
         targetSpeed = maxSpeed;
 
@@ -122,6 +122,7 @@ TargetedMovementGenerator<T>::Initialize(T &owner)
 {
     if(!&owner)
         return;
+
     owner.RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
 
     if (owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->canFly())
@@ -178,6 +179,7 @@ TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
 
     if( !i_destinationHolder.HasDestination() )
         _setTargetLocation(owner);
+
     if( owner.IsStopped() && !i_destinationHolder.HasArrived() )
     {
         owner.addUnitState(UNIT_STAT_CHASE);
@@ -198,12 +200,6 @@ TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
         if( owner.hasUnitState(UNIT_STAT_FOLLOW) )
             _adaptSpeedToTarget(owner);
 
-        //float dist = owner.GetCombatReach() + i_target.getTarget()->GetCombatReach() + sWorld.getRate(RATE_TARGET_POS_RECALCULATION_RANGE);
-
-        //More distance let have better performance, less distance let have more sensitive reaction at target move.
-
-        // try to counter precision differences
-        //if( i_destinationHolder.GetDistance2dFromDestSq(*i_target.getTarget()) >= dist * dist)
         if((i_offset ? !i_target->IsWithinDistInMap(&owner,2*i_offset)
             : !i_target->IsWithinMeleeRange(&owner)) || i_recalculateTravel)
         {

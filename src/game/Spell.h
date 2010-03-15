@@ -679,7 +679,7 @@ namespace Trinity
                             else
                             {
                                 Unit *target = (Unit*)(itr->getSource());
-                                if(!target->HasUnitMovementFlag(MOVEMENTFLAG_FALLING) && target->IsInWater())
+                                if(!target->HasUnitMovementFlag(MOVEMENTFLAG_FALLING) && !target->IsInWater())
                                     i_data->push_back(itr->getSource());
                             }
                         }
