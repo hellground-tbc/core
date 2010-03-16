@@ -87,43 +87,61 @@ struct TRINITY_DLL_DECL boss_murmurAI : public Scripted_NoMovementAI
             SonicBoom = false;
             Resonance_Timer = 1500;
         }
-        if (SonicBoom_Timer < diff)
+
+        if(SonicBoom_Timer < diff)
         {
             DoScriptText(EMOTE_SONIC_BOOM, m_creature);
             DoCast(m_creature, SPELL_SONIC_BOOM_CAST);
             SonicBoom_Timer = 30000;
             SonicBoom = true;
             return;
-        }else SonicBoom_Timer -= diff;
+        }
+        else
+            SonicBoom_Timer -= diff;
 
         // Murmur's Touch
         if (MurmursTouch_Timer < diff)
         {
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,80,true))
                 DoCast(target, SPELL_MURMURS_TOUCH);
+            
             MurmursTouch_Timer = 30000;
-        }else MurmursTouch_Timer -= diff;
+        }
+        else
+            MurmursTouch_Timer -= diff;
 
         // Resonance
-        if (Resonance_Timer < diff)
+        if(Resonance_Timer < diff)
         {
-            if (!m_creature->IsWithinMeleeRange(SelectUnit(SELECT_TARGET_NEAREST,0,20,true)))
-                DoCast(m_creature, SPELL_RESONANCE);
-            Resonance_Timer = 5000;
-        }else Resonance_Timer -= diff;
+            if(!m_creature->hasUnitState(UNIT_STATE_CASTING)
+            {
+                Unit *target = SelectUnit(SELECT_TARGET_NEAREST,0,20,true));
+
+                if(target && !m_creature->IsWithinMeleeRange(target))
+                    DoCast(m_creature, SPELL_RESONANCE);
+
+                Resonance_Timer = 5000;
+            }
+        }
+        else
+            Resonance_Timer -= diff;
 
         // Magnetic Pull
         if (MagneticPull_Timer < diff)
         {
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+            {
                 if (target->GetTypeId() == TYPEID_PLAYER && target->isAlive())
                 {
                     DoCast(target, SPELL_MAGNETIC_PULL);
                     MagneticPull_Timer = 20000+rand()%15000;
                     return;
                 }
+            }
             MagneticPull_Timer = 500;
-        }else MagneticPull_Timer -= diff;
+        }
+        else
+            MagneticPull_Timer -= diff;
 
         if(HeroicMode)
         {
@@ -136,7 +154,9 @@ struct TRINITY_DLL_DECL boss_murmurAI : public Scripted_NoMovementAI
                         if(target->isAlive() && m_creature->GetDistance2d(target) > 35)
                             DoCast(target, SPELL_THUNDERING_STORM, true);
                 ThunderingStorm_Timer = 15000;
-            }else ThunderingStorm_Timer -= diff;
+            }
+            else
+                ThunderingStorm_Timer -= diff;
 
             // Sonic Shock
             if(SonicShock_Timer < diff)
@@ -145,22 +165,29 @@ struct TRINITY_DLL_DECL boss_murmurAI : public Scripted_NoMovementAI
                     if(target->isAlive())
                         DoCast(target, SPELL_SONIC_SHOCK);
                 SonicShock_Timer = 10000+rand()%10000;
-            }else SonicShock_Timer -= diff;
+            }
+            else
+                SonicShock_Timer -= diff;
         }
 
         // Select nearest most aggro target if top aggro too far
         if(!m_creature->isAttackReady())
             return;
+
         if(!m_creature->IsWithinMeleeRange(m_creature->getVictim()))
         {
             std::list<HostilReference*>& m_threatlist = m_creature->getThreatManager().getThreatList();
             for(std::list<HostilReference*>::iterator i = m_threatlist.begin(); i != m_threatlist.end(); ++i)
+            {
                 if(Unit* target = Unit::GetUnit((*m_creature),(*i)->getUnitGuid()))
+                {
                     if(target->isAlive() && m_creature->IsWithinMeleeRange(target))
                     {
                         m_creature->TauntApply(target);
                         break;
                     }
+                }
+            }
         }
 
         DoMeleeAttackIfReady();
