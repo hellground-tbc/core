@@ -27,15 +27,12 @@ EndScriptData */
 #include "Spell.h"
 
 #define SPELL_SPOUT         37433
-#define SPELL_SPOUT_ANIM    42835
-#define SPELL_SPOUT_BREATH  37431
 #define SPELL_KNOCKBACK     19813
 #define SPELL_GEYSER        37478
-#define SPELL_WHIRL         37660
+#define SPELL_WHIRL         37363
 #define SPELL_WATERBOLT     37138
 #define SPELL_SUBMERGE      37550
 #define SPELL_EMERGE        20568
-#define SPELL_SCALDINGWATER 37284
 
 #define EMOTE_SPOUT "takes a deep breath."
 
@@ -200,7 +197,11 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
 
         m_creature->SetUInt64Value(UNIT_FIELD_TARGET,0);
         m_creature->SetOrientation( r_orient );
-        m_creature->StopMoving();
+
+        // and client
+        WorldPacket data;
+        m_creature->BuildHeartBeatMsg(&data);
+        m_creature->SendMessageToSet(&data, false);
 
         DoCast(m_creature, SPELL_SPOUT, true);
 
@@ -232,7 +233,7 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
                     WaitTimer2 = 500;
                 }
 
-                if(!Submerged && WaitTimer2 < diff)//wait 500ms before emerge anim
+                if(!Submerged && WaitTimer2 < diff) //wait 500ms before emerge anim
                 {
                     m_creature->RemoveAllAuras();
                     m_creature->RemoveFlag(UNIT_NPC_EMOTESTATE,EMOTE_STATE_SUBMERGED);

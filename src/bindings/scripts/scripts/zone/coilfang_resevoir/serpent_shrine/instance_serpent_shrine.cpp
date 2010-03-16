@@ -361,21 +361,19 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
             Map::PlayerList const &PlayerList = instance->GetPlayers();
             if (PlayerList.isEmpty())
                 return;
+
             for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
             {
-                if (Player* pPlayer = i->getSource())
+                if(Player* pPlayer = i->getSource())
                 {
-                    if (pPlayer->isAlive() && pPlayer->IsInWater())
+                    if(pPlayer->isAlive() && pPlayer->IsInWater())
                     {
-                        if(pPlayer->HasAura(36945,0))
-                            pPlayer->RemoveAurasDueToSpell(36945);
-                        
                         if(Water == WATERSTATE_SCALDING)
                         {
-
                             if(!pPlayer->HasAura(SPELL_SCALDINGWATER,0))
                             {
-                                pPlayer->CastSpell(pPlayer, SPELL_SCALDINGWATER,true);
+                                int32 bp0 = 500;
+                                pPlayer->CastCustomSpell(pPlayer, SPELL_SCALDINGWATER, &bp0, 0, 0, true); // Gracz nie powinien sam na siebie tego kastowac, bo dostaje bonus z
                             }
                         }
                         else if(Water == WATERSTATE_FRENZY)
@@ -385,23 +383,31 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
                             {
                                 if(Creature* frenzy = pPlayer->SummonCreature(MOB_COILFANG_FRENZY,pPlayer->GetPositionX(),pPlayer->GetPositionY(),pPlayer->GetPositionZ(),pPlayer->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,2000))
                                 {
-                                    frenzy->Attack(pPlayer,false);
                                     frenzy->AddUnitMovementFlag(MOVEMENTFLAG_SWIMMING + MOVEMENTFLAG_LEVITATING);
+                                    frenzy->AI()->AttackStart(pPlayer);
                                 }
                                 DoSpawnFrenzy = false;
                             }
                         }
-                    }                
+                    }   
+                    else
+                        if(pPlayer->GetPositionZ() > -19.9645 && !pPlayer->hasUnitState(MOVEMENTFLAG_JUMPING))
+                            pPlayer->RemoveAurasDueToSpell(SPELL_SCALDINGWATER);
                 }
                                     
             }
             WaterCheckTimer = 500; //remove stress from core
-        }else WaterCheckTimer -= diff;
+        }
+        else
+            WaterCheckTimer -= diff;
+
         if(FrenzySpawnTimer < diff)
         {
             DoSpawnFrenzy = true;
             FrenzySpawnTimer = 2000;
-        }else FrenzySpawnTimer -= diff;
+        }
+        else
+            FrenzySpawnTimer -= diff;
     }
 };
 

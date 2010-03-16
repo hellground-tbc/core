@@ -679,7 +679,7 @@ namespace Trinity
                             else
                             {
                                 Unit *target = (Unit*)(itr->getSource());
-                                if(!target->HasUnitMovementFlag(MOVEMENTFLAG_FALLING) && !target->IsInWater())
+                                if(target->GetTypeId() == TYPEID_PLAYER && !((Player*)target)->IsInWater() && target->GetPositionZ() > -19.9645)
                                     i_data->push_back(itr->getSource());
                             }
                         }
