@@ -113,7 +113,7 @@ struct TRINITY_DLL_DECL boss_blackheart_the_inciterAI : public ScriptedAI
         if (!UpdateVictim() )
             return;
 
-        if (InciteChaos)
+        if(InciteChaos)
         {
             if(InciteChaosWait_Timer < diff)
             {
