@@ -25,7 +25,6 @@ EndScriptData */
 #include "def_shadow_labyrinth.h"
 
 #define SPELL_INCITE_CHAOS    33676
-#define SPELL_INCITE_CHAOS_B  33684                         //debuff applied to each member of party
 #define SPELL_CHARGE          33709
 #define SPELL_WAR_STOMP       33707
 
@@ -116,32 +115,28 @@ struct TRINITY_DLL_DECL boss_blackheart_the_inciterAI : public ScriptedAI
 
         if (InciteChaos)
         {
-            if (InciteChaosWait_Timer < diff)
+            if(InciteChaosWait_Timer < diff)
             {
                 InciteChaos = false;
                 InciteChaosWait_Timer = 15000;
-            }else InciteChaosWait_Timer -= diff;
+            }
+            else
+                InciteChaosWait_Timer -= diff;
 
             return;
         }
 
-        if (InciteChaos_Timer < diff)
+        if(InciteChaos_Timer < diff)
         {
             DoCast(m_creature, SPELL_INCITE_CHAOS);
-
-            std::list<HostilReference *> t_list = m_creature->getThreatManager().getThreatList();
-            for( std::list<HostilReference *>::iterator itr = t_list.begin(); itr!= t_list.end(); ++itr )
-            {
-                Unit* target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
-                if (target && target->GetTypeId() == TYPEID_PLAYER)
-                    target->CastSpell(target,SPELL_INCITE_CHAOS_B,true);
-            }
 
             DoResetThreat();
             InciteChaos = true;
             InciteChaos_Timer = 40000;
             return;
-        }else InciteChaos_Timer -= diff;
+        }
+        else
+            InciteChaos_Timer -= diff;
 
         //Charge_Timer
         if (Charge_Timer < diff)
@@ -149,14 +144,18 @@ struct TRINITY_DLL_DECL boss_blackheart_the_inciterAI : public ScriptedAI
             if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
                 DoCast(target, SPELL_CHARGE);
             Charge_Timer = 25000;
-        }else Charge_Timer -= diff;
+        }
+        else
+            Charge_Timer -= diff;
 
         //Knockback_Timer
         if (Knockback_Timer < diff)
         {
             DoCast(m_creature, SPELL_WAR_STOMP);
             Knockback_Timer = 20000;
-        }else Knockback_Timer -= diff;
+        }
+        else
+            Knockback_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }

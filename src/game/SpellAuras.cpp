@@ -3183,6 +3183,17 @@ void Aura::HandleModCharm(bool apply, bool Real)
     }
     else
         m_target->RemoveCharmedOrPossessedBy(caster);
+
+    if(GetId() == 33684)
+    {
+        if(apply)
+            m_target->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP);
+        else
+        {
+            if(m_target->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP))
+                m_target->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP);
+        }
+    }
 }
 
 void Aura::HandleModConfuse(bool apply, bool Real)

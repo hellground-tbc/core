@@ -4728,7 +4728,6 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         // Incite Chaos
         case 33676:
             m_caster->CastSpell(unitTarget, 33684, true);
-            unitTarget->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP);
         break;
 
         // PX-238 Winter Wondervolt TRAP
