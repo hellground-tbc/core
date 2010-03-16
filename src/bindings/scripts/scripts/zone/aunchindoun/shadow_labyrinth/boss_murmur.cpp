@@ -113,9 +113,9 @@ struct TRINITY_DLL_DECL boss_murmurAI : public Scripted_NoMovementAI
         // Resonance
         if(Resonance_Timer < diff)
         {
-            if(!m_creature->hasUnitState(UNIT_STATE_CASTING)
+            if(!m_creature->hasUnitState(UNIT_STAT_CASTING))
             {
-                Unit *target = SelectUnit(SELECT_TARGET_NEAREST,0,20,true));
+                Unit *target = SelectUnit(SELECT_TARGET_NEAREST,0,20,true);
 
                 if(target && !m_creature->IsWithinMeleeRange(target))
                     DoCast(m_creature, SPELL_RESONANCE);

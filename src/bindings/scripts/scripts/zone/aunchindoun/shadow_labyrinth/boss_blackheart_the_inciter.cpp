@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Boss_Blackheart_the_Inciter
 SD%Complete: 75
-SDComment: Incite Chaos not functional since core lacks Mind Control support
+SDComment: 
 SDCategory: Auchindoun, Shadow Labyrinth
 EndScriptData */
 
