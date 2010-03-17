@@ -6540,20 +6540,55 @@ void Spell::EffectSummonDemon(uint32 i)
     float px = m_targets.m_destX;
     float py = m_targets.m_destY;
     float pz = m_targets.m_destZ;
+    int32 creature_ID = m_spellInfo->EffectMiscValue[i];
 
-    Creature* Charmed = m_caster->SummonCreature(m_spellInfo->EffectMiscValue[i], px, py, pz, m_caster->GetOrientation(),TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,3600000);
+    Creature* Charmed = m_caster->SummonCreature(creature_ID, px, py, pz, m_caster->GetOrientation(),TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,3600000);
     if (!Charmed)
         return;
 
     // might not always work correctly, maybe the creature that dies from CoD casts the effect on itself and is therefore the caster?
     Charmed->SetLevel(m_caster->getLevel());
+    
+    // Add damage/mana/hp according to level
+    //PetLevelInfo const* pInfo = objmgr.GetPetLevelInfo(creature_ID, m_caster->getLevel());
+    if(creature_ID == 89 || creature_ID == 11859)
+    {
+        int lvldiff = (m_caster->getLevel() - 52);
+        if(lvldiff > 0)
+        {
+            std::stringstream ss;
+            ss << "Base HP: " << Charmed->GetMaxHealth() << " Base mana: " << Charmed->GetMaxPower(POWER_MANA) << " Min dmg: " << Charmed->GetWeaponDamageRange(BASE_ATTACK, MINDAMAGE)
+                << " Max dmg: " << Charmed->GetWeaponDamageRange(BASE_ATTACK, MAXDAMAGE) << " AP: " << Charmed->GetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE);
+            Charmed->Say(ss.str().c_str(), 0, 0);
+            
+            if(creature_ID == 89)
+            {
+                Charmed->SetModifierValue(UNIT_MOD_HEALTH, BASE_VALUE, Charmed->GetMaxHealth() + 350 * lvldiff);
+                Charmed->SetModifierValue(UNIT_MOD_MANA, BASE_VALUE, Charmed->GetMaxPower(POWER_MANA) + 80 * lvldiff);
+                Charmed->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, 20 * lvldiff);
+                Charmed->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, 20 * lvldiff);
+                Charmed->SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, Charmed->GetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE) * (1 + lvldiff * 0.1f));
+            }
+            else if(creature_ID == 11859)
+            {
+                Charmed->SetModifierValue(UNIT_MOD_HEALTH, BASE_VALUE, Charmed->GetMaxHealth() + 400 * lvldiff);
+                Charmed->SetModifierValue(UNIT_MOD_MANA, BASE_VALUE, Charmed->GetMaxPower(POWER_MANA) + 100 * lvldiff);
+                Charmed->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, 30 * lvldiff);
+                Charmed->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, 30 * lvldiff);
+                Charmed->SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, Charmed->GetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE) * (1 + lvldiff * 0.1f));                
+            }
 
-    // TODO: Add damage/mana/hp according to level
+            Charmed->UpdateAllStats();
+            Charmed->SetHealth(Charmed->GetMaxHealth());
+            Charmed->SetPower(POWER_MANA, Charmed->GetMaxPower(POWER_MANA));
+        }
+    }
+    
 
-    if (m_spellInfo->EffectMiscValue[i] == 89)              // Inferno summon
+    if (creature_ID == 89)              // Inferno summon
     {
         // Enslave demon effect, without mana cost and cooldown
-        m_caster->CastSpell(Charmed, 20882, true);          // FIXME: enslave does not scale with level, level 62+ minions cannot be enslaved
+        m_caster->CastSpell(Charmed, 20882, true);          
 
         // Inferno effect
         Charmed->CastSpell(Charmed, 22703, true, 0);
