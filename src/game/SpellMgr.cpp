@@ -1525,6 +1525,9 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool
     if(!spellInfo_1 || !spellInfo_2)
         return false;
 
+    if(IsSpecialStackCase(spellId_1, spellId_2, sameCaster))
+        return false;
+
     SpellSpecific spellId_spec_1 = GetSpellSpecific(spellId_1);
     SpellSpecific spellId_spec_2 = GetSpellSpecific(spellId_2);
     if (spellId_spec_1 && spellId_spec_2)
@@ -1596,6 +1599,32 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool
 
     return true;
 }
+
+bool SpellMgr::IsSpecialStackCase(uint32 spellId_1, uint32 spellId_2, bool sameCaster, bool recur) const
+{
+    // put here all spells that should stack, but accoriding to rules in method IsNoStackSpellDueToSpell don't stack
+    SpellEntry const *spellInfo_1 = sSpellStore.LookupEntry(spellId_1);
+    SpellEntry const *spellInfo_2 = sSpellStore.LookupEntry(spellId_2);    
+    
+    // judgement of light stacks with judgement of wisdom
+    if(spellInfo_1->SpellFamilyName == SPELLFAMILY_PALADIN && spellInfo_1->SpellFamilyFlags & 0x80000 && spellInfo_1->SpellIconID == 299 // light
+            && spellInfo_2->SpellFamilyName == SPELLFAMILY_PALADIN && spellInfo_2->SpellFamilyFlags & 0x80000 && spellInfo_2->SpellIconID == 206) // wisdom
+        return !sameCaster;
+
+    // hourglass of unraveller stacks with blood fury
+    if(spellId_1 == 33649 && spellId_2 == 20572)
+        return true;
+
+    // sextant of unstabble currents stacks with Shiffar's Nexus-Horn
+    if(spellId_1 == 38348 && spellId_2 == 34321)
+        return true;
+
+    if(recur)
+        return IsSpecialStackCase(spellId_2, spellId_1, sameCaster, false);
+
+    return false;
+}
+
 bool SpellMgr::IsProfessionSpell(uint32 spellId)
 {
     SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
