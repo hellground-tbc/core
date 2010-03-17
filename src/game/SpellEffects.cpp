@@ -6555,12 +6555,7 @@ void Spell::EffectSummonDemon(uint32 i)
     {
         int lvldiff = (m_caster->getLevel() - 52);
         if(lvldiff > 0)
-        {
-            std::stringstream ss;
-            ss << "Base HP: " << Charmed->GetMaxHealth() << " Base mana: " << Charmed->GetMaxPower(POWER_MANA) << " Min dmg: " << Charmed->GetWeaponDamageRange(BASE_ATTACK, MINDAMAGE)
-                << " Max dmg: " << Charmed->GetWeaponDamageRange(BASE_ATTACK, MAXDAMAGE) << " AP: " << Charmed->GetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE);
-            Charmed->Say(ss.str().c_str(), 0, 0);
-            
+        {   
             if(creature_ID == 89)
             {
                 Charmed->SetModifierValue(UNIT_MOD_HEALTH, BASE_VALUE, Charmed->GetMaxHealth() + 350 * lvldiff);

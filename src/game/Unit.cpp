@@ -620,21 +620,28 @@ void Unit::RemoveSpellbyDamageTaken(uint32 damage, uint32 spell)
     // The chance to dispel an aura depends on the damage taken with respect to the casters level.
     uint32 max_dmg = getLevel() > 8 ? 30 * getLevel() - 100 : 50;
     float chance = float(damage) / max_dmg * 100.0f;
+    bool roll;
 
-    AuraList::iterator i, next;
-    for(i = m_ccAuras.begin(); i != m_ccAuras.end(); i = next)
+    std::list<uint32> aurasToRemove;
+    for(AuraList::iterator i = m_ccAuras.begin(); i != m_ccAuras.end(); i++)
     {
-        next = i;
-        ++next;
-
-        if(*i && (!spell || (*i)->GetId() != spell) && roll_chance_f(chance))
+        if(*i && (!spell || (*i)->GetId() != spell))
         {
-            RemoveAurasDueToSpell((*i)->GetId());
-            if (!m_ccAuras.empty())
-                next = m_ccAuras.begin();
-            else
-                return;
+ /*           if( GetTypeId() != TYPEID_PLAYER && (((*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_PRIEST && (*i)->GetSpellProto()->SpellFamilyFlags == 0x20000) || // Mind Control
+                ((*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && (*i)->GetSpellProto()->SpellFamilyFlags == 0x800)))  // Enslave Demon
+            {
+                roll = roll_chance_f(chance);      // TODO: should chance be lower?
+            }
+            else */
+            roll = roll_chance_f(chance);
+
+            if(roll)
+                aurasToRemove.push_back((*i)->GetId());
         }
+    }
+    for(std::list<uint32>::iterator i = aurasToRemove.begin(); i != aurasToRemove.end(); i++)
+    {
+        RemoveAurasDueToSpell(*i);
     }
 }
 
