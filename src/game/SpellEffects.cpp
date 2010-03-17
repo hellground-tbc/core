@@ -6563,6 +6563,9 @@ void Spell::EffectSummonDemon(uint32 i)
                 Charmed->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, 20 * lvldiff);
                 Charmed->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, 20 * lvldiff);
                 Charmed->SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, Charmed->GetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE) * (1 + lvldiff * 0.1f));
+        
+                m_caster->CastSpell(Charmed, 20882, true);          // Enslave demon effect, without mana cost and cooldown
+                Charmed->CastSpell(Charmed, 22703, true, 0);        // Inferno effect
             }
             else if(creature_ID == 11859)
             {
@@ -6578,16 +6581,7 @@ void Spell::EffectSummonDemon(uint32 i)
             Charmed->SetPower(POWER_MANA, Charmed->GetMaxPower(POWER_MANA));
         }
     }
-    
 
-    if (creature_ID == 89)              // Inferno summon
-    {
-        // Enslave demon effect, without mana cost and cooldown
-        m_caster->CastSpell(Charmed, 20882, true);          
-
-        // Inferno effect
-        Charmed->CastSpell(Charmed, 22703, true, 0);
-    }
 }
 
 /* There is currently no need for this effect. We handle it in BattleGround.cpp
