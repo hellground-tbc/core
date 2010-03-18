@@ -235,7 +235,7 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
             Player* i_pl = i->getSource();
             if (i_pl && i_pl->isAlive() && !i_pl->isGameMaster() &&
                 i_pl->isInCombat() && !i_pl->hasUnitState(UNIT_STAT_DIED) &&
-                i_pl->GetDistance(waypoint[5][0], waypoint[5][1], waypoint[5][2]) < 100)
+                i_pl->GetDistance(waypoint[5][0], waypoint[5][1], waypoint[5][2]) < 135)
                     return true;
         }
 
@@ -250,7 +250,7 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
         if (checkTimer < diff)
         {
 
-            if (m_creature->GetDistance(waypoint[5][0], waypoint[5][1], waypoint[5][2]) >  135 /*|| !CheckPlayersInInstance()*/)
+            if (m_creature->GetDistance(waypoint[5][0], waypoint[5][1], waypoint[5][2]) >  135 || !CheckPlayersInInstance())
             {
                 EnterEvadeMode();
                 return;
