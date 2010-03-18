@@ -1103,7 +1103,7 @@ void Player::DeleteCharmAI()
 void Player::CharmAI(bool apply)
 {
     if(IsAIEnabled = apply)
-        i_AI->Reset();
+        AI()->Reset();
 }
 
 void Player::Update( uint32 p_time )

@@ -1,6 +1,7 @@
 #include "PlayerAI.h"
 #include "Player.h"
 #include "Database/DBCStores.h"
+#include "SpellMgr.h"
 
 class Player;
 struct SpellEntry;
@@ -21,10 +22,16 @@ bool PlayerAI::UpdateVictim(float range)
              }
         }
         else
+        {
             me->RemoveCharmAuras();
+            return false;
+        }
     }
     else
+    {
         me->RemoveCharmAuras();
+        return false;
+    }
 
     if(Unit *target = me->getVictim())
         me->SetOrientation(me->GetAngle(target));
@@ -47,31 +54,16 @@ SpellEntry const *PlayerAI::selectHighestRank(uint32 spell_id)
             continue;
 
         spell_info = sSpellStore.LookupEntry(itr->first);
-        if (!spell_info)
+        if(!spell_info)
             continue;
 
-        if (highest_rank->SpellFamilyName == spell_info->SpellFamilyName && (highest_rank->SpellFamilyFlags & spell_info->SpellFamilyFlags))
+        if(spellmgr.IsRankSpellDueToSpell(highest_rank, itr->first))
         {
-            if (spell_info->spellLevel > highest_rank->spellLevel)
+            if(spell_info->spellLevel > highest_rank->spellLevel)
                 highest_rank = spell_info;
         }
     }
     return highest_rank;
-}
-
-bool PlayerAI::PlayerHasSpell(uint32 spell_id)
-{
-    PlayerSpellMap const &sp_list = me->GetSpellMap();
-    for(PlayerSpellMap::const_iterator itr = sp_list.begin(); itr != sp_list.end(); ++itr)
-    {
-        if(!itr->second->active || itr->second->disabled || itr->second->state == PLAYERSPELL_REMOVED)
-            continue;
-
-        if(itr->first == spell_id)
-            return true;
-    }
-
-    return false;
 }
 
 void WarriorAI::UpdateAI(const uint32 diff)
@@ -126,6 +118,51 @@ void MageAI::UpdateAI(const uint32 diff)
 {
     if(!UpdateVictim())
         return;
+
+
+    if(Blizzard_Timer < diff)
+    {
+        if(CanCast(me, BlizzardSpell, false))
+        {
+            me->CastSpell(me, BlizzardSpell, false);
+            Blizzard_Timer = 24000 +rand()%7000;
+        }
+    }
+    else
+        Blizzard_Timer -= diff;
+
+    if(ConeSpell_Timer < diff)
+    {
+        if(CanCast(me, ConeSpell, false))
+        {
+            me->CastSpell(me->getVictim(), ConeSpell, false);
+            ConeSpell_Timer = ConeSpell->RecoveryTime +diff;
+        }
+    }
+    else
+        ConeSpell_Timer -= diff;
+
+    if(AOESpell_Timer < diff)
+    {
+        if(CanCast(me, AOESpell, false))
+        {
+            me->CastSpell(me, AOESpell, false);
+            AOESpell_Timer = AOESpell->RecoveryTime ? AOESpell->RecoveryTime +diff : 6000;
+        }
+    }
+    else
+        AOESpell_Timer -= diff;
+
+    if(NormalSpell_Timer < diff)
+    {
+        if(CanCast(me->getVictim(), NormalSpell, false))
+        {
+            me->CastSpell(me->getVictim(), NormalSpell, false);
+            NormalSpell_Timer = NormalSpell->RecoveryTime +diff;
+        }
+    }
+    else
+        NormalSpell_Timer -= diff;
 }
 
 

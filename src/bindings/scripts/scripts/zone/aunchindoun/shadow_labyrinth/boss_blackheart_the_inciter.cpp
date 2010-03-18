@@ -23,6 +23,7 @@ EndScriptData */
 
 #include "precompiled.h"
 #include "def_shadow_labyrinth.h"
+#include "PlayerAI.h"
 
 #define SPELL_INCITE_CHAOS    33676
 #define SPELL_CHARGE          33709

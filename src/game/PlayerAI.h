@@ -22,6 +22,7 @@
 #define TRINITY_PLAYERAI_H
 
 #include "CreatureAI.h"
+#include "Player.h"
 
 struct SpellEntry;
 
@@ -30,7 +31,6 @@ struct PlayerAI : public UnitAI
     PlayerAI(Player *pPlayer) : UnitAI((Unit *)pPlayer), me(pPlayer) {}
 
     SpellEntry const *selectHighestRank(uint32 spell_id);
-    bool PlayerHasSpell(uint32 spell_id);
 
     bool UpdateVictim(float = 20.0f);
 
@@ -110,11 +110,74 @@ struct PriestAI: public PlayerAI
     void UpdateAI(const uint32 diff);
 };
 
+#define BLIZZARD_R1     10
+#define CONEOFCOLD_R1   120
+#define DRAGONBREATH_R1 31661
+#define BLASTWAVE_R1    11113
+#define ARCANEEXPLO_R1  1449
+#define FIREBALL_R1     133
+#define FROSTBOLT_R1    116
+
 struct MageAI: public PlayerAI
 {
     MageAI(Player *plr): PlayerAI(plr) {}
 
-    void Reset() {}
+    void Reset()
+    {
+        BlizzardSpell = NULL;
+        ConeSpell = NULL;
+        AOESpell = NULL;
+        NormalSpell = NULL;
+
+        if(me->HasSpell(BLIZZARD_R1))
+        {
+            BlizzardSpell = selectHighestRank(BLIZZARD_R1);
+            Blizzard_Timer = 10000;
+        }
+
+        if(me->HasSpell(DRAGONBREATH_R1))
+        {
+            ConeSpell = selectHighestRank(DRAGONBREATH_R1);
+            ConeSpell_Timer = 5000;
+        }
+        else
+            if(me->HasSpell(CONEOFCOLD_R1))
+            {
+                ConeSpell = selectHighestRank(CONEOFCOLD_R1);
+                ConeSpell_Timer = 5000;
+            }
+       
+        if(me->HasSpell(BLASTWAVE_R1))
+        {
+            AOESpell = selectHighestRank(BLASTWAVE_R1);
+            AOESpell_Timer = 2000;
+        }
+        else
+            if(me->HasSpell(ARCANEEXPLO_R1))
+            {
+                AOESpell = selectHighestRank(ARCANEEXPLO_R1);
+                AOESpell_Timer = 2000;
+            }
+
+        if(me->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_FIRE) > me->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_FROST))
+            NormalSpell = selectHighestRank(FIREBALL_R1);
+        else
+            NormalSpell = selectHighestRank(FROSTBOLT_R1);
+
+        NormalSpell_Timer = 3200;
+    }
+
+    uint32 Blizzard_Timer;
+    SpellEntry const *BlizzardSpell;
+
+    uint32 ConeSpell_Timer;
+    SpellEntry const *ConeSpell;
+
+    uint32 AOESpell_Timer;
+    SpellEntry const *AOESpell;
+
+    uint32 NormalSpell_Timer;
+    SpellEntry const *NormalSpell;
 
     void UpdateAI(const uint32 diff);
 };

@@ -295,9 +295,6 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
 
     //Returns spells that meet the specified criteria from the creatures spell list
     SpellEntry const* SelectSpell(Unit* Target, int32 School, int32 Mechanic, SelectTarget Targets,  uint32 PowerCostMin, uint32 PowerCostMax, float RangeMin, float RangeMax, SelectEffect Effect);
-
-    //Checks if you can cast the specified spell
-    bool CanCast(Unit* Target, SpellEntry const *Spell, bool Triggered = false);
 };
 
 struct TRINITY_DLL_DECL Scripted_NoMovementAI : public ScriptedAI

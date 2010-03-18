@@ -91,6 +91,8 @@ class TRINITY_DLL_SPEC UnitAI
 
         //Do melee swing of current victim if in rnage and ready and not casting
         void DoMeleeAttackIfReady();
+
+        bool CanCast(Unit* Target, SpellEntry const *Spell, bool Triggered);
 };
 
 class TRINITY_DLL_SPEC CreatureAI : public UnitAI

@@ -722,36 +722,6 @@ SpellEntry const* ScriptedAI::SelectSpell(Unit* Target, int32 School, int32 Mech
     return Spell[rand()%SpellCount];
 }
 
-bool ScriptedAI::CanCast(Unit* Target, SpellEntry const *Spell, bool Triggered)
-{
-    //No target so we can't cast
-    if (!Target || !Spell)
-        return false;
-
-    //Silenced so we can't cast
-    if (!Triggered && m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SILENCED))
-        return false;
-
-    //Check for power
-    if (!Triggered && m_creature->GetPower((Powers)Spell->powerType) < Spell->manaCost)
-        return false;
-
-    SpellRangeEntry const *TempRange = NULL;
-
-    TempRange = GetSpellRangeStore()->LookupEntry(Spell->rangeIndex);
-
-    //Spell has invalid range store so we can't use it
-    if (!TempRange)
-        return false;
-
-    //Unit is out of range of this spell
-    if (m_creature->GetDistance(Target) > TempRange->maxRange || m_creature->GetDistance(Target) < TempRange->minRange)
-        return false;
-
-    return true;
-}
-
-
 float GetSpellMaxRange(uint32 id)
 {
     SpellEntry const *spellInfo = GetSpellStore()->LookupEntry(id);
