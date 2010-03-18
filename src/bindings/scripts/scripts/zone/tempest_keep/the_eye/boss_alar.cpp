@@ -473,17 +473,8 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
             if(FlamePatch_Timer < diff)
             {
                 if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
-                {
-                    if(Creature* Summoned = m_creature->SummonCreature(CREATURE_FLAME_PATCH_ALAR, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 120000))
-                    {
-                        Summoned->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                        Summoned->SetFloatValue(OBJECT_FIELD_SCALE_X, Summoned->GetFloatValue(OBJECT_FIELD_SCALE_X)*2.5f);
-                        Summoned->SetDisplayId(11686);
-                        Summoned->setFaction(m_creature->getFaction());
-                        Summoned->SetLevel(m_creature->getLevel());
-                        Summoned->CastSpell(Summoned, SPELL_FLAME_PATCH, false);
-                    }
-                }
+                    m_creature->SummonCreature(CREATURE_FLAME_PATCH_ALAR, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 120000);
+
                 FlamePatch_Timer = 30000;
             }
             else
@@ -547,9 +538,14 @@ struct TRINITY_DLL_DECL mob_ember_of_alarAI : public ScriptedAI
 
     ScriptedInstance *pInstance;
 
-    void Reset() {}
-    void Aggro(Unit *who) {DoZoneInCombat();}
-    void EnterEvadeMode() {m_creature->setDeathState(JUST_DIED);}
+    uint32 CheckTimer;
+
+    void Reset()
+    {
+        CheckTimer = 2000;
+    }
+    void Aggro(Unit *who) { DoZoneInCombat(); }
+    void EnterEvadeMode() { m_creature->setDeathState(JUST_DIED); }
     void JustDied(Unit* killer)
     {
         m_creature->CastSpell(m_creature, SPELL_EMBER_BLAST, true);
@@ -570,6 +566,18 @@ struct TRINITY_DLL_DECL mob_ember_of_alarAI : public ScriptedAI
             }
         }
     }
+    void UpdateAI(const uint32 diff)
+    {
+        if(CheckTimer <= diff)
+        {
+            if(pInstance && (pInstance->GetData(DATA_ALAREVENT) == DONE || pInstance->GetData(DATA_ALAREVENT) == NOT_STARTED))
+                m_creature->Kill(m_creature, false);
+
+            CheckTimer = 2000;
+        }
+        else
+            CheckTimer -= diff;
+    }
 };
 
 CreatureAI* GetAI_mob_ember_of_alar(Creature* pCreature)
@@ -579,12 +587,47 @@ CreatureAI* GetAI_mob_ember_of_alar(Creature* pCreature)
 
 struct TRINITY_DLL_DECL mob_flame_patch_alarAI : public ScriptedAI
 {
-    mob_flame_patch_alarAI(Creature *c) : ScriptedAI(c) {}
-    void Reset() {}
+    mob_flame_patch_alarAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
+
+    ScriptedInstance *pInstance;
+    uint32 CheckTimer;
+
+    bool needCast;
+
+    void Reset()
+    {
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        m_creature->SetFloatValue(OBJECT_FIELD_SCALE_X, m_creature->GetFloatValue(OBJECT_FIELD_SCALE_X)*2.5f);
+        m_creature->SetDisplayId(11686);
+        m_creature->setFaction(16);
+        m_creature->SetLevel(73);
+        needCast = true;
+        CheckTimer = 1000;
+    }
     void Aggro(Unit *who) {}
     void AttackStart(Unit* who) {}
     void MoveInLineOfSight(Unit* who) {}
-    void UpdateAI(const uint32 diff) {}
+    void UpdateAI(const uint32 diff)
+    {
+        if(CheckTimer <= diff)
+        {
+            if(needCast)
+            {
+                m_creature->CastSpell(m_creature, SPELL_FLAME_PATCH, false);
+                needCast = false;
+            }
+
+            if(pInstance && (pInstance->GetData(DATA_ALAREVENT) == DONE || pInstance->GetData(DATA_ALAREVENT) == NOT_STARTED))
+                m_creature->Kill(m_creature, false);
+
+            CheckTimer = 2000;
+        }
+        else
+            CheckTimer -= diff;
+    }
 };
 
 CreatureAI* GetAI_mob_flame_patch_alar(Creature* pCreature)
