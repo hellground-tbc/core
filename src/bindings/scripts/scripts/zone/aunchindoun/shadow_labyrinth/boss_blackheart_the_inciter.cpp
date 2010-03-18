@@ -109,16 +109,12 @@ struct TRINITY_DLL_DECL boss_blackheart_the_inciterAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        //Return since we have no target
-        if (!UpdateVictim() )
-            return;
-
         if(InciteChaos)
         {
             if(InciteChaosWait_Timer < diff)
             {
                 InciteChaos = false;
-                InciteChaosWait_Timer = 15000;
+                DoResetThreat();
             }
             else
                 InciteChaosWait_Timer -= diff;
@@ -126,13 +122,31 @@ struct TRINITY_DLL_DECL boss_blackheart_the_inciterAI : public ScriptedAI
             return;
         }
 
+        if (!UpdateVictim() )
+            return;
+
         if(InciteChaos_Timer < diff)
         {
             DoCast(m_creature, SPELL_INCITE_CHAOS);
 
-            DoResetThreat();
+            Map *map = m_creature->GetMap();
+            Map::PlayerList const &PlayerList = map->GetPlayers();
+
+            if(PlayerList.isEmpty())
+                return;
+
+            for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+            {
+                Player *target = (Player*)SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true);
+                Player *plr = i->getSource();
+                if(plr && plr->IsAIEnabled && plr != target)
+                    plr->AI()->AttackStart(target);                
+            }
+
+            //DoResetThreat();
             InciteChaos = true;
             InciteChaos_Timer = 40000;
+            InciteChaosWait_Timer = 16000;
             return;
         }
         else

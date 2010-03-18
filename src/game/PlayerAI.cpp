@@ -59,6 +59,21 @@ SpellEntry const *PlayerAI::selectHighestRank(uint32 spell_id)
     return highest_rank;
 }
 
+bool PlayerAI::PlayerHasSpell(uint32 spell_id)
+{
+    PlayerSpellMap const &sp_list = me->GetSpellMap();
+    for(PlayerSpellMap::const_iterator itr = sp_list.begin(); itr != sp_list.end(); ++itr)
+    {
+        if(!itr->second->active || itr->second->disabled || itr->second->state == PLAYERSPELL_REMOVED)
+            continue;
+
+        if(itr->first == spell_id)
+            return true;
+    }
+
+    return false;
+}
+
 void WarriorAI::UpdateAI(const uint32 diff)
 {
     if(!UpdateVictim())

@@ -15,6 +15,7 @@
 #include "sc_creature.h"
 #include "sc_gossip.h"
 #include "sc_instance.h"
+#include "PlayerAI.h"
 
 #ifdef WIN32
 #include <windows.h>

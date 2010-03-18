@@ -50,6 +50,7 @@ class Transport;
 class UpdateMask;
 class PlayerSocial;
 class OutdoorPvP;
+struct PlayerAI;
 
 typedef std::deque<Mail*> PlayerMails;
 
@@ -2128,6 +2129,8 @@ class TRINITY_DLL_SPEC Player : public Unit
         void setFollowTarget(uint64 guid) {m_GMfollowtarget_GUID = guid; m_GMfollow_GUID = 0;}
         uint64 getFollowTarget() {return m_GMfollowtarget_GUID;}
         uint64 getFollowingGM() {return m_GMfollow_GUID;}
+
+        PlayerAI *AI() const{ return (PlayerAI*)i_AI; }
 
     protected:
 

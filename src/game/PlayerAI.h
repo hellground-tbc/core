@@ -30,8 +30,9 @@ struct PlayerAI : public UnitAI
     PlayerAI(Player *pPlayer) : UnitAI((Unit *)pPlayer), me(pPlayer) {}
 
     SpellEntry const *selectHighestRank(uint32 spell_id);
+    bool PlayerHasSpell(uint32 spell_id);
 
-    bool UpdateVictim(float = 10.0f);
+    bool UpdateVictim(float = 20.0f);
 
     protected:
         Player *me;
