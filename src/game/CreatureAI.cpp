@@ -40,11 +40,14 @@ void UnitAI::AttackStart(Unit *victim)
 bool UnitAI::CanCast(Unit* Target, SpellEntry const *Spell, bool Triggered)
 {
     //No target so we can't cast
-    if (!Target || !Spell || me->hasUnitState(UNIT_STAT_CASTING)))
+    if (!Target || !Spell || me->hasUnitState(UNIT_STAT_CASTING))
         return false;
 
     //Silenced so we can't cast
-    if (!Triggered && me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SILENCED) && me->HasGlobalCooldown(Spell))
+    if (!Triggered && me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SILENCED))
+        return false;
+
+    if(!Triggered && me->GetTypeId() == TYPEID_PLAYER && ((Player*)me)->HasGlobalCooldown(Spell))
         return false;
 
     //Check for power
