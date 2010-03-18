@@ -2415,6 +2415,8 @@ void SpellMgr::LoadSpellCustomAttr()
 
         switch(i)
         {
+        case 34121: // Al'ar Flame Buffet
+            spellInfo->InterruptFlags &= ~SPELL_INTERRUPT_FLAG_MOVEMENT;
         case 26029: // dark glare
         case 37433: // spout
         case 43140: case 43215: // flame breath

@@ -122,6 +122,9 @@ struct TRINITY_DLL_DECL boss_murmurAI : public Scripted_NoMovementAI
 
                 Resonance_Timer = 5000;
             }
+            else
+                Resonance_Timer = 2000;
+
         }
         else
             Resonance_Timer -= diff;

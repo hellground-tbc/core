@@ -235,7 +235,7 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
             Player* i_pl = i->getSource();
             if (i_pl && i_pl->isAlive() && !i_pl->isGameMaster() &&
                 i_pl->isInCombat() && !i_pl->hasUnitState(UNIT_STAT_DIED) &&
-                !(i_pl->GetDistance(waypoint[5][0], waypoint[5][1], waypoint[5][2]) > 135) )
+                i_pl->GetDistance(waypoint[5][0], waypoint[5][1], waypoint[5][2]) < 100)
                     return true;
         }
 
@@ -250,7 +250,7 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
         if (checkTimer < diff)
         {
 
-            if (m_creature->GetDistance(waypoint[5][0], waypoint[5][1], waypoint[5][2]) >  135 || !CheckPlayersInInstance())
+            if (m_creature->GetDistance(waypoint[5][0], waypoint[5][1], waypoint[5][2]) >  135 /*|| !CheckPlayersInInstance()*/)
             {
                 EnterEvadeMode();
                 return;
@@ -309,6 +309,7 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
                     case WE_DIE:
                         ForceMove = false;
                         m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, PLAYER_STATE_DEAD);
+                        DoTeleportTo(waypoint[5][0], waypoint[5][1], waypoint[5][2] +0.2,0.0f);
                         WaitTimer = 5000;
                         WaitEvent = WE_REVIVE;
                         return;
@@ -324,6 +325,8 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
                         DiveBomb_Timer = 40000+rand()%5000;
                         FlamePatch_Timer = 30000;
                         Phase1 = false;
+                        if(Unit *top = SelectUnit(SELECT_TARGET_TOPAGGRO,0))
+                            AttackStart(top);
                         break;
                     case WE_METEOR:
                         m_creature->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_FIRE, false);
@@ -332,7 +335,7 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
                         WaitTimer = 4000;
                         return;
                     case WE_DIVE:
-                        if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0,160,true))
+                        if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0,120,true))
                         {
                             m_creature->RemoveAurasDueToSpell(SPELL_DIVE_BOMB_VISUAL);
                             m_creature->CastSpell(target, SPELL_DIVE_BOMB, true);
@@ -366,10 +369,12 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
                         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                         m_creature->SetDisplayId(m_creature->GetNativeDisplayId());
                         m_creature->CastSpell(m_creature, SPELL_REBIRTH_2, true);
+                        if(Unit *top = SelectUnit(SELECT_TARGET_TOPAGGRO,0))
+                            AttackStart(top);
                         break;
                     case WE_TRULY_DIE:
                         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                        m_creature->DealDamage(m_creature, 1000, 0, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, 0, false);
+                        m_creature->DealDamage(m_creature, m_creature->GetHealth(), 0, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, 0, false);
                         break;
                     case WE_DUMMY:
                     default:
@@ -402,7 +407,7 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
                 }
                 else
                 {
-                    if(rand()%5) // next platform
+                    if(urand(0,4)) // next platform
                     {
                         DoSpawnCreature(CREATURE_EMBER_OF_ALAR, 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
                         if(cur_wp == 3)
@@ -431,16 +436,11 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
         {
             if(Charge_Timer < diff)
             {
-                if(m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
-                    m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-        
-                if(m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-                    m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                
+                Unit *temp = m_creature->getVictim();
                 if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, 100, true))
                     DoCast(target, SPELL_CHARGE);
 
-                DoStartMovement(m_creature->getVictim());
+                DoStartMovement(temp);
                 Charge_Timer = 30000;
             }
             else
@@ -501,25 +501,32 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
         if(m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
             m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
 
-        if(m_creature->isAttackReady() && !m_creature->IsNonMeleeSpellCasted(false))
+        Unit *temp = m_creature->getVictim();
+
+        if(!temp && !(temp = SelectUnit(SELECT_TARGET_TOPAGGRO,0)))
+            return;
+
+        if(m_creature->IsWithinMeleeRange(temp, 6.0))
         {
-            if(m_creature->IsWithinMeleeRange(m_creature->getVictim()))
+            if(m_creature->hasUnitState(UNIT_STAT_CASTING)) // TO JEST DO POTWIERDZENIA:
+                m_creature->InterruptNonMeleeSpells(true);  // PRZERWAC CASTA FLAME BUFFET, 
+                                                            // GDY CEL ZNAJDZIE SIE W MELEE RANGE CZY NIE !  
+            UnitAI::DoMeleeAttackIfReady();
+        }
+        else
+        {
+            if(Phase1)
             {
-                m_creature->AttackerStateUpdate(m_creature->getVictim());
-                m_creature->resetAttackTimer();
-            }
-            else
-            {
-                Unit *target = NULL;
-                target = m_creature->SelectNearestTarget(6.0f);
-                if(target)
-                    m_creature->AI()->AttackStart(target);
-                else
+                if(Unit *inRange = m_creature->SelectNearbyTarget(6.0))
                 {
-                    m_creature->CastSpell(m_creature, SPELL_FLAME_BUFFET, true); // true no casting time
-                    m_creature->setAttackTimer(BASE_ATTACK, 2000);
+                    AttackStart(inRange);
+                    return;
                 }
             }
+            else
+                AttackStart(temp);
+
+            DoCast(m_creature, SPELL_FLAME_BUFFET);
         }
     }
 };

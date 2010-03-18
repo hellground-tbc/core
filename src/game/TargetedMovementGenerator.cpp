@@ -25,6 +25,7 @@
 #include "MapManager.h"
 #include "DestinationHolderImp.h"
 #include "World.h"
+#include "Spell.h"
 
 #define SMALL_ALPHA 0.05f
 
@@ -164,9 +165,9 @@ TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
         return true;
 
     // prevent movement while casting spells with cast time or channel time
-    if ( owner.IsNonMeleeSpellCasted(false, false,  true))
+    if ( owner.IsNonMeleeSpellCasted(false, false,  true) && (!owner.m_currentSpells[CURRENT_GENERIC_SPELL] || owner.m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT))
     {
-        if (!owner.IsStopped())
+        if(!owner.IsStopped())
             owner.StopMoving();
         return true;
     }

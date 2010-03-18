@@ -2649,11 +2649,6 @@ void Spell::update(uint32 difftime)
         (m_castPositionX != m_caster->GetPositionX() || m_castPositionY != m_caster->GetPositionY() || m_castPositionZ != m_caster->GetPositionZ()) &&
         (m_spellInfo->Effect[0] != SPELL_EFFECT_STUCK || !m_caster->HasUnitMovementFlag(MOVEMENTFLAG_FALLING)))
     {
-        // always cancel for channeled spells
-        //if( m_spellState == SPELL_STATE_CASTING )
-        //    cancel();
-        // don't cancel for melee, autorepeat, triggered and instant spells
-        //else
         if(!IsNextMeleeSwingSpell() && !IsAutoRepeat() && !m_IsTriggeredSpell && (m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT))
             cancel();
     }
@@ -2682,10 +2677,6 @@ void Spell::update(uint32 difftime)
                     // check if player has jumped before the channeling finished
                     if(m_caster->HasUnitMovementFlag(MOVEMENTFLAG_JUMPING))
                         cancel();
-
-                    // check for incapacitating player states
-                    //if( m_caster->hasUnitState(UNIT_STAT_STUNNED | UNIT_STAT_CONFUSED))
-                    //    cancel();
                 }
 
                 // check if there are alive targets left
