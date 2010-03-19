@@ -5,6 +5,7 @@
 
 #include "Common.h"
 #include "Player.h"
+#include "Language.h"
 
 class Player;
 
@@ -46,6 +47,8 @@ class ACRequest : public ACE_Method_Request
             if (distance > server_distance)
             {
                 float clientspeed = (distance - 2.0f)/3.5f + 7.5f;
+                sWorld.SendGMText(LANG_ANTICHEAT, player->GetName());
+                player->m_AC_timer = MINUTE * 1000;
                 sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) moved for distance %f with server speed %f (client speed %f). MapID: %u, player's coord before X:%f Y:%f Z:%f. Player's coord now X:%f Y:%f Z:%f. HomeBindPosition X:%f Y:%f Z:%f MAP: %u. MOVEMENTFLAGS: %u LATENCY: %u",
                               player->GetName(), player->GetGUIDLow(), account_id, distance, speed, clientspeed, mapId, x, y, z, x_pack, y_pack, z_pack, x_bind, y_bind, z_bind, map_bind, movementFlags, latency);
             }
