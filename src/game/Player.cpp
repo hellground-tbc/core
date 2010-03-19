@@ -7300,8 +7300,23 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
         if(!pEnchant) continue;
         for (int s = 0; s < 3; ++s)
         {
+            uint32 spell_id = 0;
             if(pEnchant->type[s] != ITEM_ENCHANTMENT_TYPE_COMBAT_SPELL)
-                continue;
+            {
+                // Flametongue Weapon support
+                switch(pEnchant->ID)
+                {
+                    case 3:    spell_id =  8026; break; // Rank1
+                    case 4:    spell_id =  8028; break; // Rank2
+                    case 5:    spell_id =  8029; break; // Rank3
+                    case 523:  spell_id = 10445; break; // Rank4
+                    case 1665: spell_id = 16343; break; // Rank5
+                    case 1666: spell_id = 16344; break; // Rank6
+                    case 2634: spell_id = 25488; break; // Rank7
+                    default:
+                        continue;
+                } 
+            }
 
             SpellEnchantProcEntry const* entry =  spellmgr.GetSpellEnchantProcEvent(enchant_id);
             if (entry && entry->procEx)
@@ -7317,14 +7332,17 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                     continue;
             }
 
-            SpellEntry const *spellInfo = sSpellStore.LookupEntry(pEnchant->spellid[s]);
+            if(!spell_id)
+                spell_id = pEnchant->spellid[s];
+
+            SpellEntry const *spellInfo = sSpellStore.LookupEntry(spell_id);
             if (!spellInfo)
             {
-                sLog.outError("Player::CastItemCombatSpell Enchant %i, cast unknown spell %i", pEnchant->ID, pEnchant->spellid[s]);
+                sLog.outError("Player::CastItemCombatSpell Enchant %i, cast unknown spell %i", pEnchant->ID, spell_id);
                 continue;
             }
 
-            // do not allow proc windfury totem from yellow attacks
+            // do not allow proc windfury totem from yellow attacks 
             if(spell && spellInfo->SpellFamilyName == SPELLFAMILY_SHAMAN && spellInfo->SpellFamilyFlags & 0x200000000LL)
                 return;
 
@@ -7343,14 +7361,14 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                 chance = entry->customChance;
 
             // Apply spell mods
-            ApplySpellMod(pEnchant->spellid[s],SPELLMOD_CHANCE_OF_SUCCESS,chance);
+            ApplySpellMod(spell_id,SPELLMOD_CHANCE_OF_SUCCESS,chance);
 
             if (roll_chance_f(chance))
             {
-                if(IsPositiveSpell(pEnchant->spellid[s]))
-                    CastSpell(this, pEnchant->spellid[s], true, item);
+                if(IsPositiveSpell(spell_id))
+                    CastSpell(this, spell_id, true, item);
                 else
-                    CastSpell(target, pEnchant->spellid[s], true, item);
+                    CastSpell(target, spell_id, true, item);
             }
         }
     }
@@ -11963,7 +11981,7 @@ void Player::ApplyEnchantment(Item *item,EnchantmentSlot slot,bool apply, bool a
         uint32 enchant_display_type = pEnchant->type[s];
         uint32 enchant_amount = pEnchant->amount[s];
         uint32 enchant_spell_id = pEnchant->spellid[s];
-
+        
         switch(enchant_display_type)
         {
             case ITEM_ENCHANTMENT_TYPE_NONE:
@@ -11982,6 +12000,10 @@ void Player::ApplyEnchantment(Item *item,EnchantmentSlot slot,bool apply, bool a
             case ITEM_ENCHANTMENT_TYPE_EQUIP_SPELL:
                 if(enchant_spell_id)
                 {
+                    SpellEntry const *temp = sSpellStore.LookupEntry(enchant_spell_id);
+                    if(!temp)
+                        break;
+
                     if(apply)
                     {
                         int32 basepoints = 0;

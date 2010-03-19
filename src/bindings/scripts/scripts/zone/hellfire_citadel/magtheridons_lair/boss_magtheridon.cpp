@@ -426,7 +426,7 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public ScriptedAI
         {
             if(Debris_Timer < diff)
             {
-                if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
                 {
                     float x, y, z;
                     target->GetPosition(x, y, z);

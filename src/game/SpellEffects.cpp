@@ -1842,6 +1842,19 @@ void Spell::EffectDummy(uint32 i)
             }
             break;
         case SPELLFAMILY_SHAMAN:
+            
+            // Flametongue Weapon Proc
+            if(m_spellInfo->SpellFamilyFlags & 0x0000000000200000)
+            {
+                if(m_caster->GetTypeId() != TYPEID_PLAYER)
+                    return;
+
+                bp = ((Player*)m_caster)->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_FIRE) *0.1;
+                bp += m_caster->GetAttackTime(BASE_ATTACK) * (m_spellInfo->EffectBasePoints[0]+1) / 100000;
+                spell_id = 10444;
+                break;
+            }
+
             //Shaman Rockbiter Weapon
             if (m_spellInfo->SpellFamilyFlags == 0x400000)
             {
