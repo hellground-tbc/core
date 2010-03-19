@@ -807,9 +807,6 @@ void Spell::EffectDummy(uint32 i)
                 // Demon Broiled Surprise
                 case 43723:
                 {
-                    if(!unitTarget || unitTarget->isAlive() || unitTarget->GetTypeId() != TYPEID_UNIT || unitTarget->GetEntry() != 19973)
-                        return;
-
                     m_caster->CastSpell(m_caster, 43753, false);
                     return;
                 }
