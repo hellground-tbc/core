@@ -308,7 +308,9 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
 {
     if( unitTarget && unitTarget->isAlive())
     {
-        float totalDmgModPct = 1;
+        float totalDmgModPct = 1.0f;
+        float attackPowerCoefficient = 0.0f;
+        float rangedAttackPowerCoefficient = 0.0f;
         switch(m_spellInfo->SpellFamilyName)
         {
             case SPELLFAMILY_GENERIC:
@@ -394,7 +396,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                 // Bloodthirst
                 if(m_spellInfo->SpellFamilyFlags & 0x40000000000LL)
                 {
-                    damage = uint32(damage * (m_caster->GetTotalAttackPowerValue(BASE_ATTACK)) / 100);
+                    damage = uint32(damage * (m_caster->GetTotalAttackPowerValue(BASE_ATTACK)) / 100);  // !?
                 }
                 // Shield Slam
                 else if(m_spellInfo->SpellFamilyFlags & 0x100000000LL)
@@ -402,7 +404,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                 // Victory Rush
                 else if(m_spellInfo->SpellFamilyFlags & 0x10000000000LL)
                 {
-                    damage = uint32(damage * m_caster->GetTotalAttackPowerValue(BASE_ATTACK) / 100);
+                    damage = uint32(damage * m_caster->GetTotalAttackPowerValue(BASE_ATTACK) / 100);    // !?
                     m_caster->ModifyAuraState(AURA_STATE_WARRIOR_VICTORY_RUSH, false);
                 }
                 break;
@@ -474,23 +476,21 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                 // Ferocious Bite
                 if((m_spellInfo->SpellFamilyFlags & 0x000800000) && m_spellInfo->SpellVisual==6587)
                 {
-                    float ap = m_caster->GetTotalAttackPowerValue(BASE_ATTACK);
                     // converts each extra point of energy into ($f1+$AP/630) additional damage
-                    float multiple = ap / 630 + m_spellInfo->DmgMultiplier[effect_idx];
-                    damage += int32((m_caster->GetPower(POWER_ENERGY) - GetPowerCost()) * multiple);
+                    int extraEnergy = (m_caster->GetPower(POWER_ENERGY) - GetPowerCost());
+                    damage += int32(extraEnergy * m_spellInfo->DmgMultiplier[effect_idx]);
                     m_caster->SetPower(POWER_ENERGY, GetPowerCost());
-                    // Not sure if formula is valid
-                    damage += int32(0.1526f * ap);
+                    attackPowerCoefficient += extraEnergy / 630.0f + 0.1526f;
                 }
                 // Rake
                 else if(m_spellInfo->SpellFamilyFlags & 0x0000000000001000LL && m_spellInfo->SpellIconID == 494)
                 {
-                    damage += int32(m_caster->GetTotalAttackPowerValue(BASE_ATTACK) / 100);
+                    attackPowerCoefficient += 0.01f;
                 }
                 // Swipe
                 else if(m_spellInfo->SpellFamilyFlags & 0x0010000000000000LL)
                 {
-                    damage += int32(m_caster->GetTotalAttackPowerValue(BASE_ATTACK)*0.08f);
+                    attackPowerCoefficient += 0.08f;
                 }
                 // Starfire
                 else if ( m_spellInfo->SpellFamilyFlags & 0x0004LL )
@@ -531,7 +531,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                     for(Unit::AuraList::const_iterator i = mDummyAuras.begin(); i != mDummyAuras.end(); ++i)
                         if((*i)->GetSpellProto()->SpellFamilyFlags & 0x0000044000000000LL && (*i)->GetSpellProto()->SpellFamilyName==SPELLFAMILY_DRUID)
                         {
-                            damage = int32(damage*(100.0f+(*i)->GetModifier()->m_amount)/100.0f);
+                            totalDmgModPct *= 1 + (*i)->GetModifierValue() / 100.0f;
                             break;
                         }
                 }
@@ -568,7 +568,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                         }
 
                         damage *= doses;
-                        damage += int32(((Player*)m_caster)->GetTotalAttackPowerValue(BASE_ATTACK) * 0.03f * doses);
+                        attackPowerCoefficient += 0.03f * doses;
 
                         // Eviscerate and Envenom Bonus Damage (item set effect)
                         if(m_caster->GetDummyAura(37169))
@@ -580,7 +580,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                 {
                     if(uint32 combo = ((Player*)m_caster)->GetComboPoints())
                     {
-                        damage += int32(m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * combo * 0.03f);
+                        attackPowerCoefficient += combo * 0.03f;
 
                         // Eviscerate and Envenom Bonus Damage (item set effect)
                         if(m_caster->GetDummyAura(37169))
@@ -594,18 +594,19 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                 // Mongoose Bite
                 if((m_spellInfo->SpellFamilyFlags & 0x000000002) && m_spellInfo->SpellVisual==342)
                 {
-                    damage += int32(m_caster->GetTotalAttackPowerValue(BASE_ATTACK)*0.2);
+                    attackPowerCoefficient += 0.2f;
                 }
                 // Arcane Shot
                 else if((m_spellInfo->SpellFamilyFlags & 0x00000800) && m_spellInfo->maxLevel > 0)
                 {
-                    damage += int32(m_caster->GetTotalAttackPowerValue(RANGED_ATTACK)*0.15);
+                    rangedAttackPowerCoefficient += 0.15f;
                 }
                 // Steady Shot
                 else if(m_spellInfo->SpellFamilyFlags & 0x100000000LL)
                 {
-                  int32 base = m_caster->GetMap()->irand((int32)m_caster->GetWeaponDamageRange(RANGED_ATTACK, MINDAMAGE),(int32)m_caster->GetWeaponDamageRange(RANGED_ATTACK, MAXDAMAGE));
-                    damage += int32(float(base)/m_caster->GetAttackTime(RANGED_ATTACK)*2800 + m_caster->GetTotalAttackPowerValue(RANGED_ATTACK)*0.2f);
+                    int32 base = m_caster->GetMap()->irand((int32)m_caster->GetWeaponDamageRange(RANGED_ATTACK, MINDAMAGE),(int32)m_caster->GetWeaponDamageRange(RANGED_ATTACK, MAXDAMAGE));
+                    damage += int32(float(base)/m_caster->GetAttackTime(RANGED_ATTACK)*2800);
+                    rangedAttackPowerCoefficient =+ 0.2f;
 
                     bool found = false;
 
@@ -627,7 +628,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                 //Explosive Trap Effect
                 else if(m_spellInfo->SpellFamilyFlags & 0x00000004)
                 {
-                    damage += int32(m_caster->GetTotalAttackPowerValue(RANGED_ATTACK)*0.1);
+                    rangedAttackPowerCoefficient += 0.1f;
                 }
                 break;
             }
@@ -657,6 +658,10 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
 
         if(m_originalCaster && damage > 0)
             damage = m_originalCaster->SpellDamageBonus(unitTarget, m_spellInfo, (uint32)damage, SPELL_DIRECT_DAMAGE);
+        if(attackPowerCoefficient)
+            damage += attackPowerCoefficient * (m_caster->GetTotalAttackPowerValue(BASE_ATTACK) + unitTarget->GetMeleeApAttackerBonus());
+        if(rangedAttackPowerCoefficient)
+            damage += rangedAttackPowerCoefficient * (m_caster->GetTotalAttackPowerValue(RANGED_ATTACK) + unitTarget->GetTotalAuraModifier(SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS));
         damage *= totalDmgModPct;
 
         m_damage += damage;
