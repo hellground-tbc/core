@@ -839,12 +839,14 @@ void ScriptedAI::DoZoneInCombat(Unit* pUnit)
     for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
     {
         if(Player* i_pl = i->getSource())
-            if(i_pl->isAlive())
+        {
+            if(i_pl->isAlive() && !i_pl->isGameMaster())
             {
                 pUnit->SetInCombatWith(i_pl);
                 i_pl->SetInCombatWith(pUnit);
                 pUnit->AddThreat(i_pl, 0.0f);
             }
+        }
     }
 }
 
