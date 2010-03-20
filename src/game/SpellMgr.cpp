@@ -2526,6 +2526,10 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 27066: // Trueshot r4 - poprzednie ranki nie maja dispel type: MAGIC o.O
             spellInfo->Dispel = DISPEL_NONE;
+            break;
+        case 31117: // UA dispell effect
+            spellInfo->SpellFamilyFlags = 0x010000000000LL;
+            break;
         default:
             break;
         }

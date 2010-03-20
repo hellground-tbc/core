@@ -3736,7 +3736,7 @@ void Unit::RemoveAurasDueToSpellByDispel(uint32 spellId, uint64 casterGUID, Unit
         {
             // Custom dispel case
             // Unstable Affliction
-            if (aur->GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && (aur->GetSpellProto()->SpellFamilyFlags & 0x010000000000LL))
+            if (aur->GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && (aur->GetSpellProto()->SpellFamilyFlags & 0x010000000000LL) && aur->GetSpellProto()->SpellIconID == 2039)
             {
                 int32 damage = aur->GetModifier()->m_amount*9;
                 uint64 caster_guid = aur->GetCasterGUID();
@@ -7389,9 +7389,9 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
                 CastingTime = damagetype == DOT ? 5000 : 500; // self damage seems to be so
             }
             // Unstable Affliction - 180%
-            else if (spellProto->Id == 31117 && spellProto->SpellIconID == 232)
+            else if (spellProto->Id == 31117)
             {
-                CastingTime = 6300;
+                CastingTime = 6300*118/10;      // HACK: magic 11.8 factor needed to do proper 180% dmg
             }
             // Corruption 93%
             else if ((spellProto->SpellFamilyFlags & 0x2LL) && spellProto->SpellIconID == 313)

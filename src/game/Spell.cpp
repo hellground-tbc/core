@@ -5514,7 +5514,10 @@ void Spell::CalculateDamageDoneForAllTargets()
         if (target.missCondition==SPELL_MISS_NONE)                          // In case spell hit target, do all effect on that target
         {
             target.damage += CalculateDamageDone(unit, mask, multiplier);   
-            target.crit = m_caster->isSpellCrit(unit, m_spellInfo, m_spellSchoolMask, m_attackType);
+            if(m_originalCaster)
+                target.crit = m_originalCaster->isSpellCrit(unit, m_spellInfo, m_spellSchoolMask, m_attackType);
+            else
+                target.crit = m_caster->isSpellCrit(unit, m_spellInfo, m_spellSchoolMask, m_attackType);
         }
         else if (target.missCondition == SPELL_MISS_REFLECT)                // In case spell reflect from target, do all effect on caster (if hit)
         {
