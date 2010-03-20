@@ -65,13 +65,64 @@ struct PaladinAI: public PlayerAI
     void UpdateAI(const uint32 diff);
 };
 
+#define RAINOFFIRE_R1   5740
+#define SHADOWFURY_R1   30283
+#define SHADOWBOLT_R1   686
+#define INCINERATE_R1   29722
+#define CORRUPTION_R1   172
+#define UNSTABLEAFF_R1  30108
+#define IMMOLATE_R1     348
+#define HOWLOFTERROR_R1 5484
+
+
 struct WarlockAI: public PlayerAI
 {
     WarlockAI(Player *pPlayer): PlayerAI(pPlayer) {}
 
-    void Reset() {}
+    void Reset() 
+    {
+        if(!(AOESpell = selectHighestRank(SHADOWFURY_R1)))
+            AOESpell = selectHighestRank(RAINOFFIRE_R1);        
+        
+        bool fire = me->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_FIRE) > me->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_SHADOW);
+
+        DOTSpell = NULL;
+        if(!(DOTSpell = selectHighestRank(UNSTABLEAFF_R1)))
+        {
+            if(fire)
+                DOTSpell = selectHighestRank(IMMOLATE_R1);
+            if(!DOTSpell)
+                DOTSpell = selectHighestRank(CORRUPTION_R1);
+        }
+
+        FearSpell = selectHighestRank(HOWLOFTERROR_R1);
+
+        NormalSpell = NULL;
+        if(fire)
+            NormalSpell = selectHighestRank(INCINERATE_R1);
+        if(!NormalSpell)
+            NormalSpell = selectHighestRank(SHADOWBOLT_R1);
+
+        AOE_Timer = 5000;
+        Fear_Timer = 3000;
+        DOT_Timer = 1500;
+        NormalSpell_Timer = 3500;
+    
+    }
 
     void UpdateAI(const uint32 diff);
+
+    uint32 AOE_Timer;
+    SpellEntry const *AOESpell;
+
+    uint32 DOT_Timer;
+    SpellEntry const *DOTSpell;
+
+    uint32 Fear_Timer;
+    SpellEntry const *FearSpell;
+
+    uint32 NormalSpell_Timer;
+    SpellEntry const *NormalSpell;
 };
 
 struct DruidAI: public PlayerAI

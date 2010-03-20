@@ -88,6 +88,51 @@ void WarlockAI::UpdateAI(const uint32 diff)
 {
     if(!UpdateVictim())
         return;
+
+
+    if(Fear_Timer < diff)
+    {
+        if(CanCast(me, FearSpell, false))
+        {
+            me->CastSpell(me, FearSpell, false);
+            Fear_Timer = FearSpell->RecoveryTime ? FearSpell->RecoveryTime +diff : 15000;
+        }
+    }
+    else
+        Fear_Timer -= diff;
+
+    if(DOT_Timer < diff)
+    {
+        if(CanCast(me->getVictim(), DOTSpell, false))
+        {
+            me->CastSpell(me->getVictim(), DOTSpell, false);
+            DOT_Timer = 15000;
+        }
+    }
+    else
+        DOT_Timer -= diff;
+
+    if(AOE_Timer < diff)
+    {
+        if(CanCast(me->getVictim(), AOESpell, false))
+        {
+            me->CastSpell(me->getVictim(), AOESpell, false);
+            AOE_Timer = AOESpell->RecoveryTime ? AOESpell->RecoveryTime +diff : 10000;
+        }
+    }
+    else
+        AOE_Timer -= diff;
+
+    if(NormalSpell_Timer < diff)
+    {
+        if(CanCast(me->getVictim(), NormalSpell, false))
+        {
+            me->CastSpell(me->getVictim(), NormalSpell, false);
+            NormalSpell_Timer = NormalSpell->RecoveryTime + diff;
+        }
+    }
+    else
+        NormalSpell_Timer -= diff;
 }
 
 void DruidAI::UpdateAI(const uint32 diff)
