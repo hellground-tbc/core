@@ -214,6 +214,8 @@ struct TRINITY_DLL_DECL advisorbase_ai : public ScriptedAI
     ScriptedInstance* pInstance;
     bool SetHP;
 
+    WorldLocation dLoc;
+
     void Reset()
     {
         m_creature->setActive(true);
@@ -262,15 +264,13 @@ struct TRINITY_DLL_DECL advisorbase_ai : public ScriptedAI
         m_creature->setDeathState(ALIVE);
         DoCast(m_creature, SPELL_RES_VISUAL, false);
 
+        if(m_creature->GetDistance2d(dLoc.x,dLoc.y) > 1.0)
+            DoTeleportTo(dLoc.x, dLoc.y, dLoc.z);
+
         DoZoneInCombat(); // So we have now new shiny target list ;]
 
         if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
-        {
-            m_creature->GetMotionMaster()->MoveChase(target);
-            m_creature->AI()->AttackStart(target);
-        }
-        else
-            m_creature->GetMotionMaster()->Initialize();
+            AttackStart(target);
     }
 
     void UpdateMaxHealth(bool twice)
@@ -299,7 +299,7 @@ struct TRINITY_DLL_DECL advisorbase_ai : public ScriptedAI
 
                 m_creature->InterruptNonMeleeSpells(true);
                 m_creature->RemoveAllAuras();
-                m_creature->SetHealth(0);
+                m_creature->SetHealth(1);
                 m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 m_creature->GetMotionMaster()->MovementExpired(false);
@@ -307,6 +307,7 @@ struct TRINITY_DLL_DECL advisorbase_ai : public ScriptedAI
                 m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1,PLAYER_STATE_DEAD);
             
                 UpdateMaxHealth(true);
+                m_creature->GetPosition(dLoc);
             }
         }
     }
@@ -454,8 +455,10 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
         m_creature->ApplySpellImmune(2, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
 
         if(pInstance)
+        {
             pInstance->SetData(DATA_KAELTHASEVENT, NOT_STARTED);
             pInstance->SetData(DATA_EXPLODE, false);
+        }
     }
 
     void PrepareAdvisors()
@@ -697,7 +700,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (reset)
+        if(reset)
         {
             PrepareAdvisors();
             reset = false;
@@ -706,14 +709,28 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
 
         if(pInstance && Phase)
         {
-            if(pInstance->GetData(DATA_KAELTHASEVENT) != DONE && pInstance->GetData(DATA_KAELTHASEVENT) != NOT_STARTED && m_creature->getThreatManager().getThreatList().empty())
+            if(CheckTimer < diff)
             {
-                EnterEvadeMode();
-                return;
+                if(pInstance->GetData(DATA_KAELTHASEVENT) != DONE && pInstance->GetData(DATA_KAELTHASEVENT) != NOT_STARTED)
+                {
+                    if(m_creature->getThreatManager().getThreatList().empty())
+                    {
+                        EnterEvadeMode();
+                        return;
+                    }
+                    else
+                        DoZoneInCombat();
+
+                    CheckTimer = 2000;
+                }
             }
-            if(Phase == 1 || Phase ==2 || Phase == 3)		//threat reseting up to phase 4
+            else
+                CheckTimer -= diff;
+
+            if(Phase == 1 || Phase == 2 || Phase == 3)		//threat reseting up to phase 4
                 DoResetThreat();
         }
+
         //Phase 1
         switch (Phase)
         {
@@ -735,7 +752,9 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                             Phase_Timer = 7000;
 
                             ++PhaseSubphase;
-                        }else Phase_Timer -= diff;
+                        }
+                        else
+                            Phase_Timer -= diff;
                         break;
 
                         //Subphase 1 - Unlock advisor
@@ -823,7 +842,9 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                             }
 
                             ++PhaseSubphase;
-                        }else Phase_Timer -= diff;
+                        }
+                        else
+                            Phase_Timer -= diff;
                         break;
 
                         //Subphase 4 - Start
@@ -859,7 +880,9 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                             Phase_Timer = 3000;
 
                             ++PhaseSubphase;
-                        }else Phase_Timer -= diff;
+                        }
+                        else
+                            Phase_Timer -= diff;
                         break;
 
                         //End of phase 1
@@ -886,7 +909,9 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                     if (Phase_Timer < diff)
                     {
                         PhaseSubphase = 1;
-                    }else Phase_Timer -= diff;
+                    }
+                    else
+                        Phase_Timer -= diff;
                 }
 
                 //Spawn weapons
@@ -921,7 +946,8 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                     PhaseSubphase = 0;
                 }else Phase_Timer -= diff;
                  //missing Resetcheck
-            }break;
+            }
+            break;
 
             case 3:
             {
@@ -959,7 +985,9 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                         AttackStart(target);
                     }
                     Phase_Timer = 30000;
-                }else Phase_Timer -= diff;
+                }
+                else
+                    Phase_Timer -= diff;
             }
             break;
 
@@ -970,17 +998,6 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                 //Return since we have no target
                 if (!UpdateVictim() )
                     return;
-
-                //Check_Timer
-                if(Check_Timer < diff)
-                {
-                    if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 135.0f)
-                        EnterEvadeMode();
-                    else
-                        DoZoneInCombat();
-            
-                    Check_Timer = 3000;
-                }else Check_Timer -= diff;
 
                 if(Phase != 5)
                 {

@@ -571,8 +571,10 @@ struct TRINITY_DLL_DECL mob_ember_of_alarAI : public ScriptedAI
         if(CheckTimer <= diff)
         {
             if(pInstance && (pInstance->GetData(DATA_ALAREVENT) == DONE || pInstance->GetData(DATA_ALAREVENT) == NOT_STARTED))
-                m_creature->Kill(m_creature, false);
-
+            {
+                m_creature->setDeathState(JUST_DIED);
+                m_creature->RemoveCorps();
+            }
             CheckTimer = 2000;
         }
         else
