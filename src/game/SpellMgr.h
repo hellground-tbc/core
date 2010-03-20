@@ -741,9 +741,6 @@ inline bool IsProfessionSkill(uint32 skill)
 #define SPELL_ATTR_CU_MOVEMENT_IMPAIR   0x00004000
 #define SPELL_ATTR_CU_IGNORE_ARMOR      0x00008000
 
-
-typedef std::vector<uint32> SpellCustomAttribute;
-
 typedef std::map<int32, std::vector<int32> > SpellLinkedMap;
 
 class SpellMgr
@@ -984,19 +981,6 @@ class SpellMgr
                 return NULL;
         }
 
-        uint32 GetSpellCustomAttr(uint32 spell_id) const
-        {
-            if(spell_id >= mSpellCustomAttr.size())
-                return 0;
-            else
-                return mSpellCustomAttr[spell_id];
-            /*SpellCustomAttrMap::const_iterator itr = mSpellCustomAttrMap.find(spell_id);
-            if(itr != mSpellCustomAttrMap.end())
-                return itr->second;
-            else
-                return 0;*/
-        }
-
         const std::vector<int32> *GetSpellLinked(int32 spell_id) const
         {
             SpellLinkedMap::const_iterator itr = mSpellLinkedMap.find(spell_id);
@@ -1040,7 +1024,6 @@ class SpellMgr
         SpellProcEventMap  mSpellProcEventMap;
         SkillLineAbilityMap mSkillLineAbilityMap;
         SpellPetAuraMap     mSpellPetAuraMap;
-        SpellCustomAttribute  mSpellCustomAttr;
         SpellLinkedMap      mSpellLinkedMap;
         SpellEnchantProcEventMap     mSpellEnchantProcEventMap;
 };
