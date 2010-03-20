@@ -488,7 +488,7 @@ void Unit::RemoveMovementImpairingAuras()
 {
     for(AuraMap::iterator iter = m_Auras.begin(); iter != m_Auras.end();)
     {
-        if(spellmgr.GetSpellCustomAttr(iter->second->GetId()) & SPELL_ATTR_CU_MOVEMENT_IMPAIR)
+        if(iter->second->GetSpellProto()->AttributesCu & SPELL_ATTR_CU_MOVEMENT_IMPAIR)
             RemoveAura(iter);
         else
             ++iter;
@@ -1310,7 +1310,7 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 dama
     // damage before absorb/resist calculation
     damageInfo->cleanDamage = damage;
 
-    if( damageSchoolMask & SPELL_SCHOOL_MASK_NORMAL  && (spellmgr.GetSpellCustomAttr(spellInfo->Id) & SPELL_ATTR_CU_IGNORE_ARMOR) == 0)
+    if( damageSchoolMask & SPELL_SCHOOL_MASK_NORMAL  && (spellInfo->AttributesCu & SPELL_ATTR_CU_IGNORE_ARMOR) == 0)
         damage = CalcArmorReducedDamage(pVictim, damage);
 
     // Calculate absorb resist
@@ -3496,7 +3496,8 @@ bool Unit::AddAura(Aura *Aur)
     Aur->ApplyModifier(true,true);
 
     uint32 id = Aur->GetId();
-    if(spellmgr.GetSpellCustomAttr(id) & SPELL_ATTR_CU_LINK_AURA)
+    SpellEntry const *spellInfo = Aur->GetSpellProto();
+    if(spellInfo->AttributesCu & SPELL_ATTR_CU_LINK_AURA)
     {
         if(const std::vector<int32> *spell_triggered = spellmgr.GetSpellLinked(id + SPELL_LINK_AURA))
             for(std::vector<int32>::const_iterator itr = spell_triggered->begin(); itr != spell_triggered->end(); ++itr)
@@ -4030,7 +4031,8 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
 
         // Remove Linked Auras
         uint32 id = Aur->GetId();
-        if(spellmgr.GetSpellCustomAttr(id) & SPELL_ATTR_CU_LINK_REMOVE)
+        SpellEntry const *spellInfo = Aur->GetSpellProto();
+        if(spellInfo->AttributesCu & SPELL_ATTR_CU_LINK_REMOVE)
         {
             if(const std::vector<int32> *spell_triggered = spellmgr.GetSpellLinked(-(int32)id))
                 for(std::vector<int32>::const_iterator itr = spell_triggered->begin(); itr != spell_triggered->end(); ++itr)
@@ -4039,7 +4041,7 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
                     else if(Unit* caster = Aur->GetCaster())
                         CastSpell(this, *itr, true, 0, 0, caster->GetGUID());
         }
-        if(spellmgr.GetSpellCustomAttr(id) & SPELL_ATTR_CU_LINK_AURA)
+        if(spellInfo->AttributesCu & SPELL_ATTR_CU_LINK_AURA)
         {
             if(const std::vector<int32> *spell_triggered = spellmgr.GetSpellLinked(id + SPELL_LINK_AURA))
                 for(std::vector<int32>::const_iterator itr = spell_triggered->begin(); itr != spell_triggered->end(); ++itr)
