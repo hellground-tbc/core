@@ -16,7 +16,7 @@
 
 /* ScriptData
 SDName: Boss_Blackheart_the_Inciter
-SD%Complete: 75
+SD%Complete: 100
 SDComment: 
 SDCategory: Auchindoun, Shadow Labyrinth
 EndScriptData */
@@ -140,7 +140,11 @@ struct TRINITY_DLL_DECL boss_blackheart_the_inciterAI : public ScriptedAI
             {
                 Player *target = (Player*)SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true);
                 Player *plr = i->getSource();
-                if(plr && plr->IsAIEnabled && plr != target)
+
+                while(PlayerList.getSize() > 1 && target && target->GetGUID() == plr->GetGUID())
+                    Player *target = (Player*)SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true);
+
+                if(plr && plr->IsAIEnabled && target)
                     plr->AI()->AttackStart(target);                
             }
 
