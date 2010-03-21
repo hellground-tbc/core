@@ -2484,8 +2484,6 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 39992: // Needle Spine
             spellInfo->MaxAffectedTargets = 3;
-            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CONE_ENEMY;
-            spellInfo->EffectImplicitTargetB[0] = 0;
             break;
         case 38310: //Multi-Shot
             spellInfo->MaxAffectedTargets = 4;

@@ -88,13 +88,16 @@ struct TRINITY_DLL_DECL boss_najentusAI : public ScriptedAI
 
         std::map<uint64, uint64>::iterator spineTarget = SpineTargetMap.begin();
         for(;spineTarget != SpineTargetMap.end(); ++spineTarget)
+        {
             if(GameObject *go = GameObject::GetGameObject(*m_creature, spineTarget->first))
             {
                 go->SetLootState(GO_JUST_DEACTIVATED);
                 go->SetRespawnTime(0);
             }
+        }
 
         SpineTargetMap.clear();
+        DestroySpine();
 
         if(pInstance)
             pInstance->SetData(DATA_HIGHWARLORDNAJENTUSEVENT, NOT_STARTED);
@@ -113,6 +116,8 @@ struct TRINITY_DLL_DECL boss_najentusAI : public ScriptedAI
     {
         if(pInstance)
             pInstance->SetData(DATA_HIGHWARLORDNAJENTUSEVENT, DONE);
+
+        DestroySpine();
 
         DoScriptText(SAY_DEATH, m_creature);
     }
@@ -133,6 +138,23 @@ struct TRINITY_DLL_DECL boss_najentusAI : public ScriptedAI
 
         DoScriptText(SAY_AGGRO, m_creature);
         DoZoneInCombat();
+        DestroySpine();
+    }
+
+    void DestroySpine()
+    {
+        Map *pMap = m_creature->GetMap();
+        Map::PlayerList const &PlayerList = pMap->GetPlayers();
+        
+        if(PlayerList.isEmpty())
+            return;
+
+        for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+        {
+            Player *plr = i->getSource();
+            if(plr && plr->HasItemCount(32408,1))
+                plr->DestroyItemCount(32408,1, true);
+        }
     }
 
     bool RemoveImpalingSpine(uint64 go_guid)
