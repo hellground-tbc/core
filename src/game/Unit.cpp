@@ -11181,10 +11181,15 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
     // call kill spell proc event (before real die and combat stop to triggering auras removed at death/combat stop)
     if(bRewardIsAllowed && player && player!=pVictim)
     {
-        if(player->RewardPlayerAndGroupAtKill(pVictim))
-            player->ProcDamageAndSpell(pVictim, PROC_FLAG_KILL_AND_GET_XP, PROC_FLAG_KILLED, PROC_EX_NONE, 0);
+        if(GetTypeId() == TYPEID_PLAYER && (IsInPartyWith(player) || IsInRaidWith(player)))
+        {
+            if(((Player*)this)->RewardPlayerAndGroupAtKill(pVictim))            
+                ProcDamageAndSpell(pVictim, PROC_FLAG_KILL_AND_GET_XP, PROC_FLAG_KILLED, PROC_EX_NONE, 0);
+            else
+                ProcDamageAndSpell(pVictim, PROC_FLAG_NONE, PROC_FLAG_KILLED,PROC_EX_NONE, 0);
+        }
         else
-            player->ProcDamageAndSpell(pVictim, PROC_FLAG_NONE, PROC_FLAG_KILLED,PROC_EX_NONE, 0);
+            player->RewardPlayerAndGroupAtKill(pVictim);             
     }
 
     // if talent known but not triggered (check priest class for speedup check)
