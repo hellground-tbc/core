@@ -157,22 +157,18 @@ struct ShamanAI: public PlayerAI
 
     void Reset()
     {
-           if(Totem = selectHighestRank(30706))
-                ShieldSpell = selectHighestRank(WATER_SHIELD_R1);
-            else if (!(Totem = selectHighestRank(30706)) && !(ShieldSpell = selectHighestRank(EARTH_SHIELD_R1)))
-                ShieldSpell = selectHighestRank(LIGHTNING_SHIELD_R1);
-			else 
-			{
-				heal=true;
-				ShieldSpell = selectHighestRank(EARTH_SHIELD_R1);
-			}
+        if(Totem = selectHighestRank(30706))
+            ShieldSpell = selectHighestRank(WATER_SHIELD_R1);
+        else if(ShieldSpell = selectHighestRank(EARTH_SHIELD_R1))
+            heal = true;
+        else
+            ShieldSpell = selectHighestRank(LIGHTNING_SHIELD_R1);
 
         HealSpell = selectHighestRank(CHAIN_HEAL_R1);
         LightningSpell = selectHighestRank(CHAIN_LIGHTNING_R1);
 
-        BLSpell = NULL;
-        if(!(BLSpell=selectHighestRank(BL)))
-            BLSpell=selectHighestRank(HERO);
+        if(!(BLSpell = selectHighestRank(BL)))
+            BLSpell = selectHighestRank(HERO);
 
         Shield_Timer = 10000;
         Heal_Timer = 15000;
@@ -180,9 +176,9 @@ struct ShamanAI: public PlayerAI
         Lightning_Timer = 17000;
     }
 
-	bool heal;
+    bool heal;
 
-	uint32 Totem_Timer;
+    uint32 Totem_Timer;
     SpellEntry const *Totem;
 
     uint32 Shield_Timer;
@@ -196,9 +192,9 @@ struct ShamanAI: public PlayerAI
 
     uint32 Lightning_Timer;
     SpellEntry const *LightningSpell;
-	
+    
 
-	void UpdateAI(const uint32 diff);
+    void UpdateAI(const uint32 diff);
 };
 
 struct PriestAI: public PlayerAI
