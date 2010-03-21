@@ -339,7 +339,7 @@ void WorldSession::HandleCancelCastOpcode(WorldPacket& recvPacket)
     uint32 spellId;
     recvPacket >> spellId;
 
-    if(_player->IsNonMeleeSpellCasted(false))
+    if(!_player->isCharmed() && !_player->isPossessed() && _player->IsNonMeleeSpellCasted(false))
         _player->InterruptNonMeleeSpells(false,spellId,false);
 }
 
