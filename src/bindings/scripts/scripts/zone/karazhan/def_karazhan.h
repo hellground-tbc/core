@@ -34,6 +34,7 @@
 #define DATA_MASTERS_TERRACE_DOOR_1     27
 #define DATA_MASTERS_TERRACE_DOOR_2     28
 #define DATA_ARAN                       29
+#define DATA_NIGHTBANE                  30
 #define SPELL_BROKEN_PACT               30065
 
 // Opera Performances

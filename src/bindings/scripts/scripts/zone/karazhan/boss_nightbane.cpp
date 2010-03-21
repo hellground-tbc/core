@@ -63,12 +63,14 @@ struct TRINITY_DLL_DECL boss_nightbaneAI : public ScriptedAI
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
         Intro = true;
+        Summoned = true;
     }
 
     ScriptedInstance* pInstance;
 
     uint32 Phase;
-
+    
+    bool Summoned;
     bool RainBones;
     bool Skeletons;
 
@@ -95,6 +97,17 @@ struct TRINITY_DLL_DECL boss_nightbaneAI : public ScriptedAI
 
     void Reset()
     {
+        if(Summoned)
+        {
+            if(pInstance->GetData64(DATA_NIGHTBANE))
+            {
+                m_creature->setDeathState(JUST_DIED);
+                m_creature->RemoveCorpse();
+            }
+            else
+                pInstance->SetData64(DATA_NIGHTBANE, m_creature->GetGUID());
+        }
+
         BellowingRoarTimer = 30000;
         CharredEarthTimer = 15000;
         DistractingAshTimer = 20000;
@@ -118,16 +131,8 @@ struct TRINITY_DLL_DECL boss_nightbaneAI : public ScriptedAI
         m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
         m_creature->setActive(true);
 
-        if(pInstance->GetData(DATA_NIGHTBANE_EVENT) == DONE || pInstance->GetData(DATA_NIGHTBANE_EVENT) == IN_PROGRESS)
-        {
-            m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-            m_creature->RemoveCorpse();
-        }
-        else
-        {
-            if(pInstance)
-                pInstance->SetData(DATA_NIGHTBANE_EVENT, NOT_STARTED);
-        }
+        if(pInstance)
+            pInstance->SetData(DATA_NIGHTBANE_EVENT, NOT_STARTED);
 
         HandleTerraceDoors(true);
 
@@ -139,6 +144,8 @@ struct TRINITY_DLL_DECL boss_nightbaneAI : public ScriptedAI
             m_creature->SetHomePosition(IntroWay[7][0],IntroWay[7][1],IntroWay[7][2],0);
             m_creature->GetMotionMaster()->MoveTargetedHome();
         }
+
+        Summoned = false;
     }
 
     void HandleTerraceDoors(bool open)

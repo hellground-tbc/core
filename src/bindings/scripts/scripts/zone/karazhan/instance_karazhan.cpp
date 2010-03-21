@@ -55,6 +55,7 @@ struct TRINITY_DLL_DECL instance_karazhan : public ScriptedInstance
     uint64 StageDoorRightGUID;
     uint64 KilrekGUID;
     uint64 TerestianGUID;
+    uint64 NightbaneGUID;
     uint64 MoroesGUID;
     uint64 LibraryDoor;                                     // Door at Shade of Aran
     uint64 MassiveDoor;                                     // Door at Netherspite
@@ -85,6 +86,8 @@ struct TRINITY_DLL_DECL instance_karazhan : public ScriptedInstance
         MoroesGUID          = 0;
         AranGUID            = 0;
 
+        NightbaneGUID       = 0;
+
         LibraryDoor         = 0;
         MassiveDoor         = 0;
         GamesmansDoor       = 0;
@@ -101,7 +104,7 @@ struct TRINITY_DLL_DECL instance_karazhan : public ScriptedInstance
     bool IsEncounterInProgress() const
     {
         for (uint8 i = 0; i < ENCOUNTERS; ++i)
-            if (Encounters[i] == IN_PROGRESS)
+            if (Encounters[i] != DONE && Encounters[i] != NOT_STARTED)
                 return true;
 
         return false;
@@ -149,6 +152,7 @@ struct TRINITY_DLL_DECL instance_karazhan : public ScriptedInstance
             case DATA_KILREK:                      return KilrekGUID;
             case DATA_TERESTIAN:                   return TerestianGUID;
             case DATA_MOROES:                      return MoroesGUID;
+            case DATA_NIGHTBANE:                   return NightbaneGUID;
             case DATA_GAMEOBJECT_STAGEDOORLEFT:    return StageDoorLeftGUID;
             case DATA_GAMEOBJECT_STAGEDOORRIGHT:   return StageDoorRightGUID;
             case DATA_GAMEOBJECT_CURTAINS:         return CurtainGUID;
