@@ -168,6 +168,8 @@ struct PriestAI: public PlayerAI
 #define ARCANEEXPLO_R1  1449
 #define FIREBALL_R1     133
 #define FROSTBOLT_R1    116
+#define EVOCATION       12051
+#define FLAMESTRIKE_R1  2120
 
 struct MageAI: public PlayerAI
 {
@@ -175,7 +177,13 @@ struct MageAI: public PlayerAI
 
     void Reset()
     {
-        BlizzardSpell = selectHighestRank(BLIZZARD_R1);
+        bool FireMage = me->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_FIRE) > me->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_FROST);
+        bool Special = false;
+
+        if(FireMage)
+            MassiveAOESpell = selectHighestRank(FLAMESTRIKE_R1);
+        else
+            MassiveAOESpell = selectHighestRank(BLIZZARD_R1);
         
         if(!(ConeSpell = selectHighestRank(DRAGONBREATH_R1)))
             ConeSpell = selectHighestRank(CONEOFCOLD_R1);
@@ -184,19 +192,21 @@ struct MageAI: public PlayerAI
             AOESpell = selectHighestRank(ARCANEEXPLO_R1);
 
         ConeSpell_Timer = 5000;
-        Blizzard_Timer = 10000;
+        MassiveAOE_Timer = 10000;
         AOESpell_Timer = 2000;
 
-        if(me->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_FIRE) > me->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_FROST))
+        if(FireMage)
             NormalSpell = selectHighestRank(FIREBALL_R1);
         else
             NormalSpell = selectHighestRank(FROSTBOLT_R1);
 
+        SpecialSpell = selectHighestRank(EVOCATION);
+
         NormalSpell_Timer = 3200;
     }
 
-    uint32 Blizzard_Timer;
-    SpellEntry const *BlizzardSpell;
+    uint32 MassiveAOE_Timer;
+    SpellEntry const *MassiveAOESpell;
 
     uint32 ConeSpell_Timer;
     SpellEntry const *ConeSpell;
@@ -206,6 +216,9 @@ struct MageAI: public PlayerAI
 
     uint32 NormalSpell_Timer;
     SpellEntry const *NormalSpell;
+    
+    bool Special;
+    SpellEntry const *SpecialSpell;
 
     void UpdateAI(const uint32 diff);
 };
