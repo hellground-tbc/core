@@ -163,18 +163,27 @@ void MageAI::UpdateAI(const uint32 diff)
 {
     if(!UpdateVictim())
         return;
-
-
-    if(Blizzard_Timer < diff)
+    
+    if(!Special && (me->GetPower(POWER_MANA)*100 / me->GetMaxPower(POWER_MANA) < 20))
     {
-        if(CanCast(me, BlizzardSpell, false))
+        if(CanCast(me, SpecialSpell, false))
         {
-            me->CastSpell(me, BlizzardSpell, false);
-            Blizzard_Timer = 24000 +rand()%7000;
+            me->CastSpell(me, SpecialSpell, false);
+            Special = true;
+        }
+    }
+
+    if(MassiveAOE_Timer < diff)
+    {
+        if(Unit *target = me->SelectNearbyTarget(25.0))
+        if(CanCast(target, MassiveAOESpell, false))
+        {
+            me->CastSpell(target, MassiveAOESpell, false);
+            MassiveAOE_Timer = 20000 +rand()%7000;
         }
     }
     else
-        Blizzard_Timer -= diff;
+        MassiveAOE_Timer -= diff;
 
     if(ConeSpell_Timer < diff)
     {
