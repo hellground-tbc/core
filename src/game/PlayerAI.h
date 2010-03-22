@@ -197,11 +197,66 @@ struct ShamanAI: public PlayerAI
     void UpdateAI(const uint32 diff);
 };
 
+#define MINDBLAST_R1	8092
+#define VAMPIRIC		15286
+#define MINDFLY_R1		15407
+#define SMITE_R1		585
+#define FLASH_R1		2061
+#define NOVA_R1			15237
+#define HOLY_FIRE_R1	14914
+#define PW_SHIELD_R1	17
+
 struct PriestAI: public PlayerAI
 {
     PriestAI(Player *pPlayer): PlayerAI(pPlayer) {}
 
-    void Reset() {}
+    void Reset()
+    {
+        if (VampiricSpell = selectHighestRank(VAMPIRIC)) 
+			vampiric = true;
+
+        if (!(DOTSpell = selectHighestRank(MINDFLY_R1))) 
+			DOTSpell = selectHighestRank(HOLY_FIRE_R1);   
+
+		DmgSpell = selectHighestRank(SMITE_R1);
+		if (vampiric == true)	   
+			DmgSpell = selectHighestRank(MINDBLAST_R1);
+
+		FlashSpell = selectHighestRank(FLASH_R1);
+
+		if (NovaSpell = selectHighestRank(NOVA_R1))
+			holynova = true;
+
+		PWShieldSpell = selectHighestRank(PW_SHIELD_R1);
+
+		Vampiric_Timer = 500;
+		DmgSpell_Timer = 1500;
+		Flash_Timer = 0;
+		Nova_Timer = 500;
+        DOTSpell_Timer = 4000;
+		PWShield_Timer = 2000;
+    }
+
+    bool vampiric;
+	bool holynova;
+
+    uint32 Vampiric_Timer;
+    SpellEntry const *VampiricSpell;
+
+    uint32 DmgSpell_Timer;
+    SpellEntry const *DmgSpell;
+
+    uint32 Flash_Timer;
+    SpellEntry const *FlashSpell;
+
+    uint32 Nova_Timer;
+    SpellEntry const *NovaSpell;
+
+    uint32 DOTSpell_Timer;
+    SpellEntry const *DOTSpell;
+
+	uint32 PWShield_Timer;
+    SpellEntry const *PWShieldSpell;
 
     void UpdateAI(const uint32 diff);
 };

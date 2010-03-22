@@ -206,6 +206,78 @@ void PriestAI::UpdateAI(const uint32 diff)
 {
     if(!UpdateVictim())
         return;
+
+	if((vampiric==true) && Vampiric_Timer < diff)
+    {
+		if(CanCast(me->getVictim(), VampiricSpell, false))
+        {
+            me->CastSpell(me->getVictim(), VampiricSpell, false);
+            Vampiric_Timer = 30000;
+        }
+    }
+    else
+        Vampiric_Timer -= diff;
+
+	if(DmgSpell_Timer < diff)
+    {
+        if(CanCast(me->getVictim(), DmgSpell, false))
+        {
+            me->CastSpell(me->getVictim(), DmgSpell, false);
+            DmgSpell_Timer = 2500;
+			if (vampiric == true) DmgSpell_Timer +=3500;
+        }
+    }
+    else
+        DmgSpell_Timer -= diff;
+	
+    if(Flash_Timer < diff)
+    {
+        if(CanCast(me->GetCharmer(), FlashSpell, false))
+        {
+			me->RemoveAurasDueToSpell(15473);
+            me->CastSpell(me->GetCharmer(), FlashSpell, false);
+			if (!vampiric)
+				Flash_Timer = 3000;
+			else 
+				Flash_Timer = 10000;
+        }
+    }
+    else
+        Flash_Timer -= diff;
+
+	if(holynova && Nova_Timer < diff)
+    {
+		if(CanCast(me, NovaSpell, false))
+        {
+            me->CastSpell(me, NovaSpell, false);
+            Nova_Timer = 5000;
+        }
+    }
+    else
+        Nova_Timer -= diff;
+
+	if(DOTSpell_Timer < diff)
+    {
+        if(CanCast(me->getVictim(), DOTSpell, false))
+        {
+            me->CastSpell(me->getVictim(), DOTSpell, false);
+			DOTSpell_Timer = 15000;
+			if (vampiric == true) DOTSpell_Timer/=5;
+        }
+    }
+    else
+        DOTSpell_Timer -= diff;
+
+    if(PWShield_Timer < diff)
+    {
+        if(CanCast(me->GetCharmer(), PWShieldSpell, false))
+        {
+            me->CastSpell(me->GetCharmer(), PWShieldSpell, false);
+            PWShield_Timer = 16000;
+        }
+    }
+    else
+        PWShield_Timer -= diff;
 }
 
 void MageAI::UpdateAI(const uint32 diff)
