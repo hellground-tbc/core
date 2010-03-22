@@ -822,20 +822,21 @@ void Aura::UpdateAuraDuration()
     if(m_auraSlot >= MAX_AURAS || m_isPassive)
         return;
 
+    WorldPacket data;
     if( m_target->GetTypeId() == TYPEID_PLAYER)
     {
-        WorldPacket data(SMSG_UPDATE_AURA_DURATION, 5);
+        data.Initialize(SMSG_UPDATE_AURA_DURATION, 5);
         data << (uint8)m_auraSlot << (uint32)m_duration;
-        ((Player*)m_target)->SendDirectMessage(&data);
-
-        data.Initialize(SMSG_SET_EXTRA_AURA_INFO, (8+1+4+4+4));
-        data.append(m_target->GetPackGUID());
-        data << uint8(m_auraSlot);
-        data << uint32(GetId());
-        data << uint32(GetAuraMaxDuration());
-        data << uint32(GetAuraDuration());
-        ((Player*)m_target)->SendDirectMessage(&data);
+        ((Player *)m_target)->SendDirectMessage(&data);
     }
+
+    data.Initialize(SMSG_SET_EXTRA_AURA_INFO, (8+1+4+4+4));
+    data.append(m_target->GetPackGUID());
+    data << uint8(m_auraSlot);
+    data << uint32(GetId());
+    data << uint32(GetAuraMaxDuration());
+    data << uint32(GetAuraDuration());
+    m_target->SendMessageToSet(&data, false);
 
     // not send in case player loading (will not work anyway until player not added to map), sent in visibility change code
     if(m_target->GetTypeId() == TYPEID_PLAYER && ((Player*)m_target)->GetSession()->PlayerLoading())

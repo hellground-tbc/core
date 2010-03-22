@@ -23,11 +23,20 @@
 #define MAX_AURAS 56          // max display aura slots controlled by client
 #define MAX_POSITIVE_AURAS 40 // default: 40
 
-enum AURA_FLAGS
+enum AuraFlags
 {
-    AFLAG_NEGATIVE          = 0x09,
-    AFLAG_POSITIVE          = 0x1F,
-    AFLAG_MASK              = 0xFF
+    AFLAG_NONE              = 0x00,
+    AFLAG_VISIBLE           = 0x01,
+    AFLAG_EFF_INDEX_1       = 0x02,
+    AFLAG_EFF_INDEX_2       = 0x04,
+    AFLAG_NOT_GUID          = 0x08,
+    AFLAG_CANCELABLE        = 0x10,
+    AFLAG_HAS_DURATION      = 0x20,
+    AFLAG_UNK2              = 0x40,
+//    AFLAG_NEGATIVE0         = 0x80, 3.0?
+    AFLAG_NEGATIVE          = AFLAG_VISIBLE | AFLAG_NOT_GUID,
+    AFLAG_POSITIVE          = AFLAG_VISIBLE | AFLAG_EFF_INDEX_1 | AFLAG_EFF_INDEX_2 | AFLAG_NOT_GUID | AFLAG_CANCELABLE,
+    AFLAG_MASK              = 0xFF,
 };
 
 //m_schoolAbsorb
