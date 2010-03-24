@@ -22,13 +22,6 @@
 #define QUEST_MASTER_TOUCH      9836
 
 #define C_TIME_KEEPER           17918
-#define C_RKEEP                 21104
-#define C_RLORD                 17839
-#define C_ASSAS                 17835
-#define C_WHELP                 21818
-#define C_CHRON                 17892
-#define C_EXECU                 18994
-#define C_VANQU                 18995
 
 #endif
 
