@@ -568,6 +568,8 @@ struct TRINITY_DLL_DECL mob_ember_of_alarAI : public ScriptedAI
     }
     void UpdateAI(const uint32 diff)
     {
+        UpdateVictim();
+        
         if(CheckTimer <= diff)
         {
             if(pInstance && (pInstance->GetData(DATA_ALAREVENT) == DONE || pInstance->GetData(DATA_ALAREVENT) == NOT_STARTED))
