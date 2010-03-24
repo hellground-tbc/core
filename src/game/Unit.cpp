@@ -2007,7 +2007,7 @@ void Unit::CalcAbsorb(Unit *pVictim,SpellSchoolMask schoolMask, const uint32 dam
 }
 
 bool Unit::CalcBinaryResist(Unit *pVictim, SpellSchoolMask schoolMask) {
-    
+
     if(!pVictim || !pVictim->isAlive())
         return false;
 
@@ -2015,15 +2015,17 @@ bool Unit::CalcBinaryResist(Unit *pVictim, SpellSchoolMask schoolMask) {
     if (schoolMask & ~SPELL_SCHOOL_MASK_NORMAL)
     {
         // Get base victim resistance for school
-        uint32 effectiveResistance = pVictim->GetResistance(GetFirstSchoolInMask(schoolMask));
+        int32 effectiveResistance = pVictim->GetResistance(GetFirstSchoolInMask(schoolMask));
         // Ignore resistance by self SPELL_AURA_MOD_TARGET_RESISTANCE aura
         effectiveResistance += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, schoolMask);
 
         effectiveResistance = effectiveResistance * 15 / getLevel();
+
         if (effectiveResistance < 0)
             effectiveResistance = 0;
         if (effectiveResistance > 75)
             effectiveResistance = 75;
+
         uint32 ran = GetMap()->urand(0, 100);
         return ran < effectiveResistance;
     }
