@@ -2906,6 +2906,14 @@ void Spell::EffectEnergize(uint32 i)
         if(unitTarget->HasAura(37447, 0))
             unitTarget->CastSpell(unitTarget,37445,true);
 
+    // Alchemist Stone
+    if(m_spellInfo->SpellFamilyName == SPELLFAMILY_POTION)
+        if(Aura *aura = unitTarget->GetAura(17619, 0))
+        {
+            int32 bp = damage * 4 / 10;
+            unitTarget->CastCustomSpell(unitTarget,21400,&bp,NULL,NULL,true,NULL,aura);
+        }
+
     // Some level depends spells
     int multiplier = 0;
     int level_diff = 0;
