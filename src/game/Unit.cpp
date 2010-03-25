@@ -6053,6 +6053,14 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                      sLog.outError("Unit::HandleProcTriggerSpell: Spell %u miss posibly Judgement of Light/Wisdom", auraSpellInfo->Id);
                  return false;
              }
+
+             if(auraSpellInfo->SpellIconID == 299)                      // Improved Judgement of Light: bonus heal from t4 set
+                 if(Unit *caster = triggeredByAura->GetCaster())
+                    if(Aura *aur = caster->GetAura(37182, 0))
+                    {
+                        int bp = aur->GetModifierValue();
+                        pVictim->CastCustomSpell(pVictim, trigger_spell_id, &bp, NULL, NULL, TRUE, castItem, triggeredByAura);
+                    }
              pVictim->CastSpell(pVictim, trigger_spell_id, true, castItem, triggeredByAura);
              return true;                        // no hidden cooldown
          }
