@@ -2902,7 +2902,7 @@ void Spell::EffectEnergize(uint32 i)
         return;
 
     //Serpent Coil Braid
-    if(m_spellInfo->Id == 27103)
+    if(m_spellInfo->SpellFamilyName == SPELLFAMILY_MAGE && m_spellInfo->SpellFamilyFlags == 0x10000000000LL)
         if(unitTarget->HasAura(37447, 0))
             unitTarget->CastSpell(unitTarget,37445,true);
 
