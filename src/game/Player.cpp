@@ -7824,7 +7824,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             {
                 if(Group* group = GetGroup())
                 {
-                    if( group == recipient->GetGroup() )
+                    if( group == recipient->GetGroup() && creature->IsPlayerAllowedToLoot(this))
                     {
                         if(group->GetLootMethod() == FREE_FOR_ALL)
                             permission = ALL_PERMISSION;
@@ -14777,14 +14777,7 @@ bool Player::isAllowedToLoot(Creature* creature)
     {
         if (recipient == this)
             return true;
-        if( Group* otherGroup = recipient->GetGroup())
-        {
-            Group* thisGroup = GetGroup();
-            if(!thisGroup)
-                return false;
-            return thisGroup == otherGroup;
-        }
-        return false;
+        return IsInSameGroupWith(recipient) && creature->IsPlayerAllowedToLoot(this);
     }
     else
         // prevent other players from looting if the recipient got disconnected

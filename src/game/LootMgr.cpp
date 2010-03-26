@@ -380,9 +380,19 @@ void Loot::AddItem(LootStoreItem const & item)
     }
 }
 
+bool Loot::IsPlayerAllowedToLoot(Player *player)
+{
+    return players_allowed_to_loot.find(player->GetGUID()) != players_allowed_to_loot.end();
+}
+
 void Loot::setCreatureGUID(Creature *pCreature)
 {
-    if (!pCreature || !pCreature->isWorldBoss())
+    if (!pCreature)
+        return;
+
+    pCreature->FillPlayersAllowedToLoot(&players_allowed_to_loot);
+
+    if (!pCreature->isWorldBoss())
         return;
 
     save = true;
