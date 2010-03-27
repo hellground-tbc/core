@@ -1152,12 +1152,10 @@ void Creature::SetLootRecipient(Unit *unit)
     if (!unit)
     {
         m_lootRecipient = 0;
+        m_playersAllowedToLoot.clear();
+
         RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
         RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_OTHER_TAGGER);
-
-        if(!m_playersAllowedToLoot.empty())
-            Say("Unbinding loot", 0, 0);
-        m_playersAllowedToLoot.clear();
 
         return;
     }
@@ -1167,18 +1165,18 @@ void Creature::SetLootRecipient(Unit *unit)
         return;
 
     m_lootRecipient = player->GetGUID();
-    SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_OTHER_TAGGER);
 
     if(Map* map = GetMap())
         if(map->IsDungeon() && isWorldBoss())
         {
-            Say("Binding loot to players in instance", 0, 0);
-            Map::PlayerList players = map->GetPlayers();
-            for(Map::PlayerList::iterator i = players.begin(); i != players.end(); ++i)
+            Map::PlayerList const &PlayerList = map->GetPlayers();
+            for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                 if(Player* i_pl = i->getSource())
                     if(i_pl->IsInSameGroupWith(player))
                         m_playersAllowedToLoot.insert(i_pl->GetGUID());
         }
+
+    SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_OTHER_TAGGER);
 }
 
 void Creature::SaveToDB()

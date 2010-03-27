@@ -14777,7 +14777,14 @@ bool Player::isAllowedToLoot(Creature* creature)
     {
         if (recipient == this)
             return true;
-        return IsInSameGroupWith(recipient) && creature->IsPlayerAllowedToLoot(this);
+        if( Group* otherGroup = recipient->GetGroup())
+        {
+            Group* thisGroup = GetGroup();
+            if(!thisGroup)
+                return false;
+            return thisGroup == otherGroup && creature->IsPlayerAllowedToLoot(this);
+        }
+        return false;
     }
     else
         // prevent other players from looting if the recipient got disconnected
