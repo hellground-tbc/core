@@ -314,6 +314,84 @@ void DruidAI::UpdateAI(const uint32 diff)
 {
     if(!UpdateVictim())
         return;
+
+	if(Heal_Timer < diff && me->HasAura(TREE, 0))
+    {
+		int heal=urand(0, 2);
+        if(heal==0 && CanCast(me->GetCharmer(), Heal1Spell, false))
+        {
+            me->CastSpell(me->GetCharmer(), Heal1Spell, false);
+            Heal_Timer = 9000;
+        }
+		else if(heal==1 && CanCast(me->GetCharmer(), Heal2Spell, false))
+        {
+            me->CastSpell(me->GetCharmer(), Heal2Spell, false);
+            Heal_Timer = 6000;
+        }
+		else if(heal==2 && CanCast(me->GetCharmer(), Heal3Spell, false))
+        {
+            me->CastSpell(me->GetCharmer(), Heal3Spell, false);
+            Heal_Timer = 12000;
+        }
+    }
+    else
+        Heal_Timer -= diff;
+
+	if(Dmg_Timer < diff && me->HasAura(MOONKIN, 0))
+    {
+		int dmg=urand(0, 2);
+        if(dmg==0 && CanCast(me->getVictim(), Dmg1Spell, false))
+        {
+            me->CastSpell(me->getVictim(), Dmg1Spell, false);
+            Dmg_Timer = 3000 + urand(0, 2000);
+        }
+		else if(dmg==1 && CanCast(me->getVictim(), Dmg2Spell, false))
+        {
+            me->CastSpell(me->getVictim(), Dmg2Spell, false);
+            Dmg_Timer = 3000 + urand(0, 3000);
+        }
+		else if(dmg==2 && CanCast(me->getVictim(), Dmg3Spell, false))
+        {
+            me->CastSpell(me->getVictim(), Dmg3Spell, false);
+            Dmg_Timer = 3000 + urand(0, 2000);
+        }
+    }
+    else
+        Dmg_Timer -= diff;
+
+	if (feral!=false && MangleB_Timer < diff && me->HasAura(DIREBEAR, 0))
+	{
+		if(CanCast(me->getVictim(), MangleBSpell, false))
+			{
+				me->CastSpell(me->getVictim(), MangleBSpell, false);
+				MangleB_Timer = 7000;
+			}
+	}
+	else 
+		MangleB_Timer -= diff;
+
+	if (feral!=false && Demo_Timer < diff && me->HasAura(DIREBEAR, 0))
+	{
+		if(CanCast(me, DemoSpell, false))
+			{
+				me->CastSpell(me, DemoSpell, false);
+				Demo_Timer = 9000;
+			}
+	}
+	else 
+		Demo_Timer -= diff;
+
+	if (feral!=false && MangleC_Timer < diff && me->HasAura(CAT, 0))
+	{
+		if(CanCast(me->getVictim(), MangleCSpell, false))
+			{
+				me->CastSpell(me->getVictim(), MangleCSpell, false);
+				MangleC_Timer = 6000;
+			}
+	}
+	else
+		MangleC_Timer -= diff;
+
 }
 
 void RogueAI::UpdateAI(const uint32 diff)

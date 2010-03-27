@@ -239,6 +239,10 @@ struct WarlockAI: public PlayerAI
     SpellEntry const *NormalSpell;
 };
 
+#define DIREBEAR			9635				
+#define CAT					3025
+#define MOONKIN				24905
+#define TREE				33891
 #define MANGLE_C_R1			33876
 #define MANGLE_B_R1			33878
 #define DEMOROAR_R1			99
@@ -255,9 +259,57 @@ struct DruidAI: public PlayerAI
 {
     DruidAI(Player *pPlayer): PlayerAI(pPlayer) {}
 
-	void Reset() {}
+	void Reset()
+	{
+		if (!(MangleBSpell = selectHighestRank(MANGLE_B_R1)))
+					feral=false;
+
+		DemoSpell = selectHighestRank(DEMOROAR_R1);
+		MangleBSpell = selectHighestRank(MANGLE_B_R1);
+		MangleCSpell = selectHighestRank(MANGLE_C_R1);
+		Heal1Spell = selectHighestRank(REJUVENATION_R1);
+		Heal2Spell = selectHighestRank(LIFEBLOOM);
+		Heal3Spell = selectHighestRank(REGROWTH_R1);
+		Dmg1Spell = selectHighestRank(WRATH_R1);
+		Dmg2Spell = selectHighestRank(STARFIRE_R1);
+		Dmg3Spell = selectHighestRank(MOONFIRE_R1);
+		HurricaneSpell = selectHighestRank(TREE);
+
+		Demo_Timer = 500;
+		MangleB_Timer = 1000;
+		MangleC_Timer = 1000;
+		Heal_Timer = 3000;
+		Dmg_Timer = 2000;
+		Hurricane_Timer = 15000;
+
+	}
 
     void UpdateAI(const uint32 diff);
+
+	bool feral;
+
+	uint32 Demo_Timer;
+    SpellEntry const *DemoSpell;
+
+	uint32 MangleB_Timer;
+    SpellEntry const *MangleBSpell;
+
+	uint32 MangleC_Timer;
+    SpellEntry const *MangleCSpell;
+
+	uint32 Heal_Timer;
+    SpellEntry const *Heal1Spell;
+    SpellEntry const *Heal2Spell;
+    SpellEntry const *Heal3Spell;
+
+	uint32 Dmg_Timer;
+	SpellEntry const *Dmg1Spell;
+	SpellEntry const *Dmg2Spell;
+	SpellEntry const *Dmg3Spell;
+
+	uint32 Hurricane_Timer;
+    SpellEntry const *HurricaneSpell;
+
 };
 
 #define BLADE_FLURRY	13877
