@@ -7824,7 +7824,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             {
                 if(Group* group = GetGroup())
                 {
-                    if( group == recipient->GetGroup() )
+                    if( group == recipient->GetGroup() && creature->IsPlayerAllowedToLoot(this))
                     {
                         if(group->GetLootMethod() == FREE_FOR_ALL)
                             permission = ALL_PERMISSION;
@@ -14782,7 +14782,7 @@ bool Player::isAllowedToLoot(Creature* creature)
             Group* thisGroup = GetGroup();
             if(!thisGroup)
                 return false;
-            return thisGroup == otherGroup;
+            return thisGroup == otherGroup && creature->IsPlayerAllowedToLoot(this);
         }
         return false;
     }
