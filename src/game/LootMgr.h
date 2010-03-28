@@ -224,6 +224,7 @@ struct Loot
 
     std::vector<LootItem> items;
     std::vector<LootItem> quest_items;
+    std::set<uint64> players_allowed_to_loot;           
     uint32 gold;
     uint8 unlootedCount;
 
@@ -273,6 +274,8 @@ struct Loot
     void saveLootToDB(Player *owner);
     void loadLootFromDB(Creature *pCreature);
     void removeItemFromSavedLoot(uint8 lootIndex);
+
+    bool IsPlayerAllowedToLoot(Player *player);
 
     // Inserts the item into the loot (called by LootTemplate processors)
     void AddItem(LootStoreItem const & item);
