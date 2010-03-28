@@ -1172,7 +1172,7 @@ void Creature::SetLootRecipient(Unit *unit)
             Map::PlayerList const &PlayerList = map->GetPlayers();
             for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                 if(Player* i_pl = i->getSource())
-                    if(i_pl->IsInSameGroupWith(player))
+                    if(i_pl->GetGroup() == player->GetGroup())
                         m_playersAllowedToLoot.insert(i_pl->GetGUID());
         }
 

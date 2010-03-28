@@ -552,7 +552,6 @@ class TRINITY_DLL_SPEC Creature : public Unit
         bool hasLootRecipient() const { return m_lootRecipient!=0; }
         bool IsPlayerAllowedToLoot(Unit *unit) const { return m_playersAllowedToLoot.empty() || m_playersAllowedToLoot.find(unit->GetGUID()) != m_playersAllowedToLoot.end(); }
         void FillPlayersAllowedToLoot(std::set<uint64> *s) const { *s = m_playersAllowedToLoot; }
-        bool HasPlayersAllowedToLootList() const { return m_playersAllowedToLoot.empty(); }
 
         void SetLootRecipient (Unit* unit);
         void AllLootRemovedFromCorpse();

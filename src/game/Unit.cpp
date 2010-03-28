@@ -11175,7 +11175,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
     // call kill spell proc event (before real die and combat stop to triggering auras removed at death/combat stop)
     if(bRewardIsAllowed && player && player!=pVictim)
     {
-        if(GetTypeId() == TYPEID_PLAYER && ((Player*)this)->IsInSameGroupWith(player))
+        if(GetTypeId() == TYPEID_PLAYER && (IsInPartyWith(player) || IsInRaidWith(player)))
         {
             if(((Player*)this)->RewardPlayerAndGroupAtKill(pVictim))            
                 ProcDamageAndSpell(pVictim, PROC_FLAG_KILL_AND_GET_XP, PROC_FLAG_KILLED, PROC_EX_NONE, 0);
