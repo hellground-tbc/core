@@ -32,7 +32,7 @@ update `instance_template` set `script`='instance_blackrock_depths' where `map`=
 #include "precompiled.h"
 #include "def_blackrock_depths.h"
 
-#define ENCOUNTERS              6
+#define ENCOUNTERS              12
 
 #define C_EMPEROR               9019
 #define C_PHALANX               9502
@@ -82,6 +82,8 @@ struct TRINITY_DLL_DECL instance_blackrock_depths : public ScriptedInstance
     uint64 GoGolemNGUID;
     uint64 GoGolemSGUID;
     uint64 GoThoneGUID;
+
+    uint64 PlayerGUID;
 
     uint32 BarAleCount;
 
@@ -199,6 +201,27 @@ struct TRINITY_DLL_DECL instance_blackrock_depths : public ScriptedInstance
         case TYPE_IRON_HALL:
             Encounter[5] = data;
             break;
+        case DATA_QUEST_JAIL_BREAK:
+            Encounter[6] = data;
+            break;
+        case DATA_SHILL:
+            Encounter[7] = data;
+            break;
+        case DATA_DUGHAL:
+            Encounter[8] = data;
+            break;
+        case DATA_CREST:
+            Encounter[9] = data;
+            break;
+        case DATA_JAZ:
+            Encounter[10] = data;
+            break;
+        case DATA_TOBIAS:
+            Encounter[11] = data;
+            break;
+        case DATA_SUPPLY_ROOM:
+            Encounter[12] = data;
+            break;
         }
 
         if (data == DONE)
@@ -216,6 +239,11 @@ struct TRINITY_DLL_DECL instance_blackrock_depths : public ScriptedInstance
         }
     }
 
+    void SetData64(uint32 type, uint64 data)
+    {
+        if(type == Q_STARTER)
+            PlayerGUID = data;
+    }
     uint32 GetData(uint32 type)
     {
         switch(type)
@@ -235,6 +263,20 @@ struct TRINITY_DLL_DECL instance_blackrock_depths : public ScriptedInstance
             return Encounter[4];
         case TYPE_IRON_HALL:
             return Encounter[5];
+        case DATA_QUEST_JAIL_BREAK:
+            return Encounter[6];
+        case DATA_SHILL:
+            return Encounter[7];
+        case DATA_DUGHAL:
+            return Encounter[8];
+        case DATA_CREST:
+            return Encounter[9];
+        case DATA_JAZ:
+            return Encounter[10];
+        case DATA_TOBIAS:
+            return Encounter[11];
+        case DATA_SUPPLY_ROOM:
+            return Encounter[12];
         }
         return 0;
     }
@@ -261,6 +303,8 @@ struct TRINITY_DLL_DECL instance_blackrock_depths : public ScriptedInstance
             return GoBarKegTrapGUID;
         case DATA_GO_BAR_DOOR:
             return GoBarDoorGUID;
+        case Q_STARTER:
+            return PlayerGUID;
         }
         return 0;
     }
