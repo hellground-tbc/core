@@ -727,7 +727,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
             else
                 Check_Timer -= diff;
 
-            if(Phase == 1 || Phase == 2 || Phase == 3)		//threat reseting up to phase 4
+            if(Phase == 1 || Phase == 2 || Phase == 3)        //threat reseting up to phase 4
                 DoResetThreat();
         }
 

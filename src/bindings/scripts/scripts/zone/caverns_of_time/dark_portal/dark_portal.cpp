@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Dark_Portal
-SD%Complete: 30
-SDComment: Misc NPC's and mobs for instance. Most here far from complete.
+SD%Complete: 90
+SDComment: Still post-event needed and support for Time Keepers
 SDCategory: Caverns of Time, The Dark Portal
 EndScriptData */
 
@@ -55,27 +55,13 @@ EndContentData */
 
 #define C_COUNCIL_ENFORCER      17023
 
-#define C_RKEEP_N 21104
-#define C_RKEEP_H 22170
-#define C_RKEEP                 (HeroicMode ? C_RKEEP_H : C_RKEEP_N)
-#define C_RLORD_N 17839
-#define C_RLORD_H 20744
-#define C_RLORD                 (HeroicMode ? C_RLORD_H : C_RLORD_N)
-#define C_ASSAS_N 17835
-#define C_ASSAS_H 20740 
-#define C_ASSAS                 (HeroicMode ? C_ASSAS_N : C_ASSAS_H)
-#define C_WHELP_N 21818
-#define C_WHELP_H 22169
-#define C_WHELP                 (HeroicMode ? C_WHELP_H : C_WHELP_N)
-#define C_CHRON_N 17892
-#define C_CHRON_H 20741
-#define C_CHRON                 (HeroicMode ? C_CHRON_H : C_CHRON_N)
-#define C_EXECU_N 18994
-#define C_EXECU_H 20742
-#define C_EXECU                 (HeroicMode ? C_EXECU_H: C_EXECU_N)
-#define C_VANQU_N 18995
-#define C_VANQU_H 20743
-#define C_VANQU                 (HeroicMode ? C_VANQU_H : C_VANQU_N)
+#define C_RKEEP 21104
+#define C_RLORD 17839
+#define C_ASSAS 17835
+#define C_WHELP 21818
+#define C_CHRON 17892
+#define C_EXECU 18994
+#define C_VANQU 18995
 
 struct TRINITY_DLL_DECL npc_medivh_bmAI : public ScriptedAI
 {
@@ -456,7 +442,7 @@ struct TRINITY_DLL_DECL rift_summonAI : public ScriptedAI
 
         switch(m_creature->GetEntry())
         {
-            case C_RKEEP_N: case C_RKEEP_H:
+        case C_RKEEP:
                 if(Type)    //mage
                 {
                     Spell_Timer1 = 1000;                                   //Frostbolt
@@ -472,7 +458,7 @@ struct TRINITY_DLL_DECL rift_summonAI : public ScriptedAI
                 }
                 frenzy = false;
             break;
-            case C_RLORD_N: case C_RLORD_H:
+        case C_RLORD:
                 if(Type)    //protection type
                 {
                     Spell_Timer1 = 6000+rand()%6000;    //sunder armor
@@ -485,7 +471,7 @@ struct TRINITY_DLL_DECL rift_summonAI : public ScriptedAI
                     Spell_Timer3 = HeroicMode ? 4600+rand()%11100 : 7200+rand()%4600;     //harmstring
                 }
             break;
-            case C_ASSAS_N: case C_ASSAS_H:
+        case C_ASSAS:
                 if(Type)    //combat
                 {
                     Spell_Timer1 = HeroicMode ? 500+rand()%6800 : 1200+rand()%9900;    //sinister strike
@@ -499,9 +485,9 @@ struct TRINITY_DLL_DECL rift_summonAI : public ScriptedAI
                     Spell_Timer3 = 0;                                    //backstab
                 }
             break;
-            case C_WHELP_N: case C_WHELP_H:
+        case C_WHELP:
             break;
-            case C_CHRON_N: case C_CHRON_H:
+        case C_CHRON:
                 if(Type)    //frost
                 {
                     Spell_Timer1 = 0;    //frostbolt
@@ -513,12 +499,12 @@ struct TRINITY_DLL_DECL rift_summonAI : public ScriptedAI
                     Spell_Timer2 = 8600+rand()%9600;    //arcane explosion
                 }
             break;
-            case C_EXECU_N: case C_EXECU_H:
+        case C_EXECU:
                 Spell_Timer1 = HeroicMode ? 2000+rand()%9700 : 7300+rand()%6700;    //cleave
                 Spell_Timer2 = HeroicMode ? 2000+rand()%1900 : 7200;    //strike
                 Spell_Timer3 = HeroicMode ? 600+rand()%9600 : 0;    //harmstring
             break;
-            case C_VANQU_N: case C_VANQU_H:
+        case C_VANQU:
                 Spell_Timer1 = 1000;    //scorch + shadow bolt
                 Spell_Timer2 = 5900+rand()%100;    //fire blast
             break;
@@ -568,9 +554,11 @@ struct TRINITY_DLL_DECL rift_summonAI : public ScriptedAI
         if (!pInstance)
             return;
 
+      if(m_creature->getVictim() && m_creature->getVictim()->GetTypeId() == TYPEID_PLAYER)
+      {
         switch(m_creature->GetEntry())
         {
-            case C_RKEEP_N: case C_RKEEP_H:
+            case C_RKEEP:
                 if(Type)    //mage
                 {
                     if(Spell_Timer1 < diff)   //frostbolt
@@ -589,7 +577,11 @@ struct TRINITY_DLL_DECL rift_summonAI : public ScriptedAI
                             Spell_Timer2 = 3000;
                         else
                         {
-                            DoCast(m_creature->getVictim(), HeroicMode?38535:36277);
+                            Unit* target = SelectUnit(SELECT_TARGET_NEAREST,0,70,true,m_creature->getVictim());
+                            if(target)
+                                DoCast(target, HeroicMode?38535:36277);
+                            else if(target = m_creature->getVictim())
+                                DoCast(target, HeroicMode?38535:36277);
                             Spell_Timer2 = HeroicMode ? 14000+rand()%10000 : 12000+rand()%5000;
                         }
                     }
@@ -606,7 +598,7 @@ struct TRINITY_DLL_DECL rift_summonAI : public ScriptedAI
 
                     if(HeroicMode && Spell_Timer4 < diff)    //polymorph
                     {
-                        Unit* target = SelectUnit(SELECT_TARGET_FARTHEST,0,70,true);
+                        Unit* target = SelectUnit(SELECT_TARGET_NEAREST,0,70,true,m_creature->getVictim());
                         if(target)
                             DoCast(target, 13323);
                         Spell_Timer4 = 30000;
@@ -656,7 +648,7 @@ struct TRINITY_DLL_DECL rift_summonAI : public ScriptedAI
                     }
                 }
             break;
-            case C_RLORD_N: case C_RLORD_H:
+            case C_RLORD:
                 if(Type)    //protection type
                 {
                     if(Spell_Timer1 < diff)   //sunder armor
@@ -708,7 +700,7 @@ struct TRINITY_DLL_DECL rift_summonAI : public ScriptedAI
                     frenzy = true;
                 }
             break;
-            case C_ASSAS_N: case C_ASSAS_H:
+            case C_ASSAS:
                 if(Type)    //combat
                 {
                     if(Spell_Timer1 < diff)   //sinister strike
@@ -763,9 +755,9 @@ struct TRINITY_DLL_DECL rift_summonAI : public ScriptedAI
                 }
              break;
             break;
-            case C_WHELP_N: case C_WHELP_H:
+            case C_WHELP:
             break;
-            case C_CHRON_N: case C_CHRON_H:
+            case C_CHRON:
                 if(m_creature->GetPower(POWER_MANA)*100/m_creature->GetMaxPower(POWER_MANA) > 15)
                 {
                     if(Type)    //frost
@@ -806,7 +798,7 @@ struct TRINITY_DLL_DECL rift_summonAI : public ScriptedAI
                     }
                 }
             break;
-            case C_EXECU_N: case C_EXECU_H:
+            case C_EXECU:
                 if(Spell_Timer1 < diff)   //cleave
                 {
                     DoCast(m_creature->getVictim(), 15496, true);
@@ -831,7 +823,7 @@ struct TRINITY_DLL_DECL rift_summonAI : public ScriptedAI
                 else
                     Spell_Timer3 -= diff;
             break;
-            case C_VANQU_N: case C_VANQU_H:
+            case C_VANQU:
                 if(m_creature->GetPower(POWER_MANA)*100/m_creature->GetMaxPower(POWER_MANA) > 15)
                 {
                     if(Spell_Timer1 < diff)   //scorch + shadow bolt
@@ -856,6 +848,8 @@ struct TRINITY_DLL_DECL rift_summonAI : public ScriptedAI
                 }
             break;
         }
+       DoMeleeAttackIfReady();
+      }
 
         if(pInstance->GetData(TYPE_MEDIVH) == FAIL)
         {

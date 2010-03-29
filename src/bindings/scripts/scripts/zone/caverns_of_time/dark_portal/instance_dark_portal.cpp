@@ -33,19 +33,16 @@ EndScriptData */
 
 #define RIFT_BOSS               1
 
-#define C_DEJA                  Heroic ? 20738:17879
+#define C_DEJA                  17879
 #define INF_C_DEJA              21697
-#define C_TEMPO                 Heroic ? 20745:17880
+#define C_TEMPO                 17880
 #define INF_TIMEREAVER          21698
-#define C_AEONUS                Heroic ? 20737:17881
+#define C_AEONUS                17881
 
 #define C_RKEEP                 21104
-#define C_RKEEP_H               22170
 #define C_RLORD                 17839
-#define C_RLORD_H               20744
 
 inline uint32 RandRiftBoss() { return rand()%2 ? C_RKEEP : C_RLORD; }
-inline uint32 HeroicRandRiftBoss() { return rand()%2 ? C_RKEEP_H : C_RLORD_H; }
 
 float PortalLocation[4][4]=
 {
@@ -423,7 +420,7 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
             entry = RiftWaves[GetRiftWaveId()].PortalBoss;
 
         if (entry == RIFT_BOSS)
-            Heroic ? entry = HeroicRandRiftBoss() : entry = RandRiftBoss();
+            entry = RandRiftBoss();
 
         float x,y,z;
         source->GetRandomPoint(source->GetPositionX(),source->GetPositionY(),source->GetPositionZ(),10.0f,x,y,z);

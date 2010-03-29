@@ -298,11 +298,8 @@ void Unit::Update( uint32 p_time )
     lMap->m_spellUpdateLock.release();
 
     // update combat timer only for players and pets
-    if (isInCombat() && (GetTypeId() == TYPEID_PLAYER || ((Creature*)this)->isPet() || ((Creature*)this)->isCharmed()))
+    if (isInCombat() && isCharmedOwnedByPlayerOrPlayer())
     {
-        // Check UNIT_STAT_MELEE_ATTACKING or UNIT_STAT_CHASE (without UNIT_STAT_FOLLOW in this case) so pets can reach far away
-        // targets without stopping half way there and running off.
-        // These flags are reset after target dies or another command is given.
         if( m_HostilRefManager.isEmpty() )
         {
             // m_CombatTimer set at aura start and it will be freeze until aura removing
@@ -6059,7 +6056,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                     if(Aura *aur = caster->GetAura(37182, 0))
                     {
                         int bp = aur->GetModifierValue();
-                        pVictim->CastCustomSpell(pVictim, trigger_spell_id, &bp, NULL, NULL, TRUE, castItem, triggeredByAura);
+                        pVictim->CastCustomSpell(pVictim, trigger_spell_id, &bp, NULL, NULL, true, castItem, triggeredByAura);
                     }
              pVictim->CastSpell(pVictim, trigger_spell_id, true, castItem, triggeredByAura);
              return true;                        // no hidden cooldown
@@ -11550,6 +11547,7 @@ void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
     {
         if(((Player*)this)->isAFK())
             ((Player*)this)->ToggleAFK();
+
         ((Player*)this)->SetViewport(GetGUID(), false);
 
         if(charmer->GetTypeId() == TYPEID_UNIT)

@@ -38,9 +38,9 @@ struct PlayerAI : public UnitAI
         Player *me;
 };
 
-#define THUNDERCLAP_R1		6343
-#define BLOODRAGE			2687
-#define DEMORALIZING_R1		1160
+#define THUNDERCLAP_R1        6343
+#define BLOODRAGE            2687
+#define DEMORALIZING_R1        1160
 
 struct WarriorAI: public PlayerAI
 {
@@ -50,7 +50,7 @@ void Reset()
     {
         TCSpell = selectHighestRank(THUNDERCLAP_R1);
         BloodrageSpell = selectHighestRank(BLOODRAGE);
-		DemoSpell = selectHighestRank(DEMORALIZING_R1);
+        DemoSpell = selectHighestRank(DEMORALIZING_R1);
         
         TC_Timer = 3000+urand(0, 10000);
         Bloodrage_Timer = 3000+urand(0, 10000);
@@ -69,13 +69,13 @@ void Reset()
     SpellEntry const *DemoSpell;
 };
 
-#define STEADY_R1		34120
-#define ARCANE_R1		3044
-#define MULTI_R1		2643
-#define VOLLEY_R1		1510
-#define RAPIDFIRE		3045
-#define BESTIAL			19574
-#define AUTO			75
+#define STEADY_R1        34120
+#define ARCANE_R1        3044
+#define MULTI_R1        2643
+#define VOLLEY_R1        1510
+#define RAPIDFIRE        3045
+#define BESTIAL            19574
+#define AUTO            75
 
 struct HunterAI: public PlayerAI
 {
@@ -85,24 +85,24 @@ void Reset()
     {
         SteadySpell = selectHighestRank(STEADY_R1);
         ArcaneSpell = selectHighestRank(ARCANE_R1);
-		MultiSpell = selectHighestRank(MULTI_R1);
-		VolleySpell = selectHighestRank(VOLLEY_R1);
-		RapidSpell = selectHighestRank(RAPIDFIRE);
-		AutoSpell = selectHighestRank(AUTO);
+        MultiSpell = selectHighestRank(MULTI_R1);
+        VolleySpell = selectHighestRank(VOLLEY_R1);
+        RapidSpell = selectHighestRank(RAPIDFIRE);
+        AutoSpell = selectHighestRank(AUTO);
         if(!(BestialSpell = selectHighestRank(BESTIAL)))
-			bestial = false;
+            bestial = false;
 
         Steady_Timer = 1000+urand(0, 4000);
         Arcane_Timer = 1000+urand(0, 6000);
         Multi_Timer = 1000+urand(0, 7000);
-		Volley_Timer = 1000+urand(0, 10000);
-		Rapid_Timer = urand(0, 20000);
-		Bestial_Timer = urand(0, 20000);
-		Auto_Timer=500;
+        Volley_Timer = 1000+urand(0, 10000);
+        Rapid_Timer = urand(0, 20000);
+        Bestial_Timer = urand(0, 20000);
+        Auto_Timer=500;
     }
 
     void UpdateAI(const uint32 diff);
-	bool bestial;
+    bool bestial;
 
     uint32 Steady_Timer;
     SpellEntry const *SteadySpell;
@@ -113,25 +113,25 @@ void Reset()
     uint32 Multi_Timer;
     SpellEntry const *MultiSpell;
 
-	uint32 Volley_Timer;
+    uint32 Volley_Timer;
     SpellEntry const *VolleySpell;
 
-	uint32 Rapid_Timer;
+    uint32 Rapid_Timer;
     SpellEntry const *RapidSpell;
 
-	uint32 Bestial_Timer;
+    uint32 Bestial_Timer;
     SpellEntry const *BestialSpell;
 
-	uint32 Auto_Timer;
-	SpellEntry const *AutoSpell;
+    uint32 Auto_Timer;
+    SpellEntry const *AutoSpell;
 };
 
-#define AVENGING			31884
-#define CRUSADER_R1			35395
-#define CONSECRATION_R1		26573
-#define JUDGEMENT			20271
-#define HOLY_SHOCK_R1		20473
-#define FLASH_R1			19750
+#define AVENGING            31884
+#define CRUSADER_R1            35395
+#define CONSECRATION_R1        26573
+#define JUDGEMENT            20271
+#define HOLY_SHOCK_R1        20473
+#define FLASH_R1            19750
 
 struct PaladinAI: public PlayerAI
 {
@@ -141,24 +141,24 @@ void Reset()
     {
         AvengingSpell = selectHighestRank(AVENGING);
         if (!(CrusaderSpell = selectHighestRank(CRUSADER_R1)))
-			crusader=false;
-		ConsecrationSpell = selectHighestRank(CONSECRATION_R1);
-		JudgementSpell = selectHighestRank(JUDGEMENT);
-		if (!(ShockSpell = selectHighestRank(HOLY_SHOCK_R1)))
-			shock=false;
-		FlashSpell = selectHighestRank(FLASH_R1);
+            crusader=false;
+        ConsecrationSpell = selectHighestRank(CONSECRATION_R1);
+        JudgementSpell = selectHighestRank(JUDGEMENT);
+        if (!(ShockSpell = selectHighestRank(HOLY_SHOCK_R1)))
+            shock=false;
+        FlashSpell = selectHighestRank(FLASH_R1);
 
         Avenging_Timer = urand (0, 35000);
         Crusader_Timer = 1000+urand(0, 6000);
-		Consecration_Timer = 1000+urand(0, 8000);
+        Consecration_Timer = 1000+urand(0, 8000);
         Judgement_Timer = 1000+urand(0, 4000);
-		Shock_Timer = 1000+urand(0, 12000);
-		Flash_Timer = 1000+urand(0, 6000);
+        Shock_Timer = 1000+urand(0, 12000);
+        Flash_Timer = 1000+urand(0, 6000);
     }
 
     void UpdateAI(const uint32 diff);
-	bool crusader;
-	bool shock;
+    bool crusader;
+    bool shock;
 
     uint32 Avenging_Timer;
     SpellEntry const *AvengingSpell;
@@ -169,13 +169,13 @@ void Reset()
     uint32 Consecration_Timer;
     SpellEntry const *ConsecrationSpell;
 
-	uint32 Judgement_Timer;
+    uint32 Judgement_Timer;
     SpellEntry const *JudgementSpell;
 
-	uint32 Shock_Timer;
+    uint32 Shock_Timer;
     SpellEntry const *ShockSpell;
 
-	uint32 Flash_Timer;
+    uint32 Flash_Timer;
     SpellEntry const *FlashSpell;
 };
 
@@ -239,82 +239,82 @@ struct WarlockAI: public PlayerAI
     SpellEntry const *NormalSpell;
 };
 
-#define DIREBEAR			9635				
-#define CAT					3025
-#define MOONKIN				24905
-#define TREE				33891
-#define MANGLE_C_R1			33876
-#define MANGLE_B_R1			33878
-#define DEMOROAR_R1			99
-#define REJUVENATION_R1		774
-#define LIFEBLOOM			33763
-#define REGROWTH_R1			8936
-#define MOONFIRE_R1			8921
-#define WRATH_R1			5176
-#define STARFIRE_R1			2912
-#define HURRICANE_R1		16914
+#define DIREBEAR            9635                
+#define CAT                    3025
+#define MOONKIN                24905
+#define TREE                33891
+#define MANGLE_C_R1            33876
+#define MANGLE_B_R1            33878
+#define DEMOROAR_R1            99
+#define REJUVENATION_R1        774
+#define LIFEBLOOM            33763
+#define REGROWTH_R1            8936
+#define MOONFIRE_R1            8921
+#define WRATH_R1            5176
+#define STARFIRE_R1            2912
+#define HURRICANE_R1        16914
 
 
 struct DruidAI: public PlayerAI
 {
     DruidAI(Player *pPlayer): PlayerAI(pPlayer) {}
 
-	void Reset()
-	{
-		if (!(MangleBSpell = selectHighestRank(MANGLE_B_R1)))
-					feral=false;
+    void Reset()
+    {
+        if (!(MangleBSpell = selectHighestRank(MANGLE_B_R1)))
+                    feral=false;
 
-		DemoSpell = selectHighestRank(DEMOROAR_R1);
-		MangleBSpell = selectHighestRank(MANGLE_B_R1);
-		MangleCSpell = selectHighestRank(MANGLE_C_R1);
-		Heal1Spell = selectHighestRank(REJUVENATION_R1);
-		Heal2Spell = selectHighestRank(LIFEBLOOM);
-		Heal3Spell = selectHighestRank(REGROWTH_R1);
-		Dmg1Spell = selectHighestRank(WRATH_R1);
-		Dmg2Spell = selectHighestRank(STARFIRE_R1);
-		Dmg3Spell = selectHighestRank(MOONFIRE_R1);
-		HurricaneSpell = selectHighestRank(TREE);
+        DemoSpell = selectHighestRank(DEMOROAR_R1);
+        MangleBSpell = selectHighestRank(MANGLE_B_R1);
+        MangleCSpell = selectHighestRank(MANGLE_C_R1);
+        Heal1Spell = selectHighestRank(REJUVENATION_R1);
+        Heal2Spell = selectHighestRank(LIFEBLOOM);
+        Heal3Spell = selectHighestRank(REGROWTH_R1);
+        Dmg1Spell = selectHighestRank(WRATH_R1);
+        Dmg2Spell = selectHighestRank(STARFIRE_R1);
+        Dmg3Spell = selectHighestRank(MOONFIRE_R1);
+        HurricaneSpell = selectHighestRank(TREE);
 
-		Demo_Timer = 500;
-		MangleB_Timer = 1000;
-		MangleC_Timer = 1000;
-		Heal_Timer = 3000;
-		Dmg_Timer = 2000;
-		Hurricane_Timer = 15000;
+        Demo_Timer = 500;
+        MangleB_Timer = 1000;
+        MangleC_Timer = 1000;
+        Heal_Timer = 3000;
+        Dmg_Timer = 2000;
+        Hurricane_Timer = 15000;
 
-	}
+    }
 
     void UpdateAI(const uint32 diff);
 
-	bool feral;
+    bool feral;
 
-	uint32 Demo_Timer;
+    uint32 Demo_Timer;
     SpellEntry const *DemoSpell;
 
-	uint32 MangleB_Timer;
+    uint32 MangleB_Timer;
     SpellEntry const *MangleBSpell;
 
-	uint32 MangleC_Timer;
+    uint32 MangleC_Timer;
     SpellEntry const *MangleCSpell;
 
-	uint32 Heal_Timer;
+    uint32 Heal_Timer;
     SpellEntry const *Heal1Spell;
     SpellEntry const *Heal2Spell;
     SpellEntry const *Heal3Spell;
 
-	uint32 Dmg_Timer;
-	SpellEntry const *Dmg1Spell;
-	SpellEntry const *Dmg2Spell;
-	SpellEntry const *Dmg3Spell;
+    uint32 Dmg_Timer;
+    SpellEntry const *Dmg1Spell;
+    SpellEntry const *Dmg2Spell;
+    SpellEntry const *Dmg3Spell;
 
-	uint32 Hurricane_Timer;
+    uint32 Hurricane_Timer;
     SpellEntry const *HurricaneSpell;
 
 };
 
-#define BLADE_FLURRY	13877
-#define GOUGE_R1		1776
-#define SINISTER_R1		1752
+#define BLADE_FLURRY    13877
+#define GOUGE_R1        1776
+#define SINISTER_R1        1752
 
 struct RogueAI: public PlayerAI
 {
@@ -323,26 +323,26 @@ struct RogueAI: public PlayerAI
 void Reset()
     {
         if (!(FlurrySpell = selectHighestRank(BLADE_FLURRY)))
-			blade=false;
+            blade=false;
         GougeSpell = selectHighestRank(GOUGE_R1);
         SinisterSpell = selectHighestRank(SINISTER_R1);
 
         Flurry_Timer = 3000+urand(0, 30000);
         Gouge_Timer = 3000+urand(0, 10000);
-		Sinister_Timer = 2000+urand(0, 3000);
+        Sinister_Timer = 2000+urand(0, 3000);
     }
 
     void UpdateAI(const uint32 diff);
-	
-	bool blade;
+    
+    bool blade;
     uint32 Flurry_Timer;
     SpellEntry const *FlurrySpell;
 
     uint32 Gouge_Timer;
     SpellEntry const *GougeSpell;
 
-	uint32 Sinister_Timer;
-	SpellEntry const *SinisterSpell;
+    uint32 Sinister_Timer;
+    SpellEntry const *SinisterSpell;
 
 };
 
@@ -400,14 +400,14 @@ struct ShamanAI: public PlayerAI
     void UpdateAI(const uint32 diff);
 };
 
-#define MINDBLAST_R1	8092
-#define VAMPIRIC		15286
-#define MINDFLY_R1		15407
-#define SMITE_R1		585
-#define FLASH_R1		2061
-#define NOVA_R1			15237
-#define HOLY_FIRE_R1	14914
-#define PW_SHIELD_R1	17
+#define MINDBLAST_R1    8092
+#define VAMPIRIC        15286
+#define MINDFLY_R1        15407
+#define SMITE_R1        585
+#define FLASH_R1        2061
+#define NOVA_R1            15237
+#define HOLY_FIRE_R1    14914
+#define PW_SHIELD_R1    17
 
 struct PriestAI: public PlayerAI
 {
@@ -416,32 +416,32 @@ struct PriestAI: public PlayerAI
     void Reset()
     {
         if (VampiricSpell = selectHighestRank(VAMPIRIC)) 
-			vampiric = true;
+            vampiric = true;
 
         if (!(DOTSpell = selectHighestRank(MINDFLY_R1))) 
-			DOTSpell = selectHighestRank(HOLY_FIRE_R1);   
+            DOTSpell = selectHighestRank(HOLY_FIRE_R1);   
 
-		DmgSpell = selectHighestRank(SMITE_R1);
-		if (vampiric == true)	   
-			DmgSpell = selectHighestRank(MINDBLAST_R1);
+        DmgSpell = selectHighestRank(SMITE_R1);
+        if (vampiric == true)       
+            DmgSpell = selectHighestRank(MINDBLAST_R1);
 
-		FlashSpell = selectHighestRank(FLASH_R1);
+        FlashSpell = selectHighestRank(FLASH_R1);
 
-		if (NovaSpell = selectHighestRank(NOVA_R1))
-			holynova = true;
+        if (NovaSpell = selectHighestRank(NOVA_R1))
+            holynova = true;
 
-		PWShieldSpell = selectHighestRank(PW_SHIELD_R1);
+        PWShieldSpell = selectHighestRank(PW_SHIELD_R1);
 
-		Vampiric_Timer = 500;
-		DmgSpell_Timer = 1500;
-		Flash_Timer = 0;
-		Nova_Timer = 500;
+        Vampiric_Timer = 500;
+        DmgSpell_Timer = 1500;
+        Flash_Timer = 0;
+        Nova_Timer = 500;
         DOTSpell_Timer = 4000;
-		PWShield_Timer = 2000;
+        PWShield_Timer = 2000;
     }
 
     bool vampiric;
-	bool holynova;
+    bool holynova;
 
     uint32 Vampiric_Timer;
     SpellEntry const *VampiricSpell;
@@ -458,7 +458,7 @@ struct PriestAI: public PlayerAI
     uint32 DOTSpell_Timer;
     SpellEntry const *DOTSpell;
 
-	uint32 PWShield_Timer;
+    uint32 PWShield_Timer;
     SpellEntry const *PWShieldSpell;
 
     void UpdateAI(const uint32 diff);
