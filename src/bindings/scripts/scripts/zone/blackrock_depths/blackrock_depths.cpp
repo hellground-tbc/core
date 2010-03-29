@@ -914,7 +914,7 @@ struct TRINITY_DLL_DECL npc_marshal_reginald_windsorAI : public npc_escortAI
                 if(Unit *qstarter = Unit::GetUnit(*m_creature, pInstance->GetData64(Q_STARTER)))
                     ((Player*)qstarter)->GroupEventHappens(QUEST_JAIL_BREAK, m_creature);
 
-                m_creature->setDeathState(DIED);
+                m_creature->setDeathState(DEAD);
                 m_creature->RemoveCorpse();
             break;
         }
