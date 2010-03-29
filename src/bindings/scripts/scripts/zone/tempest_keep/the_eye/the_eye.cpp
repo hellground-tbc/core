@@ -163,7 +163,7 @@ struct TRINITY_DLL_DECL mob_phoenixhawk_hatchlingAI : public ScriptedAI
 
     uint32 Silence_Timer;
     uint32 WingBuffet_Timer;
-	
+    
     void Reset()
     {
         Silence_Timer = 2000;
@@ -212,7 +212,7 @@ struct TRINITY_DLL_DECL mob_phoenix_hawkAI : public ScriptedAI
 
     uint32 ManaBurn_Timer;
     uint32 Dive_Timer;
-	
+    
     void Reset()
     {
         ManaBurn_Timer = 15000;
@@ -256,8 +256,8 @@ CreatureAI* GetAI_mob_phoenix_hawk(Creature *_Creature)
 
 #define SPELL_FIRESHIELD       37318
 #define SPELL_IMMOLATIONARROW  37154
-#define SPELL_KNOCKBACK		   37317
-#define SPELL_SHOOT			   39079
+#define SPELL_KNOCKBACK           37317
+#define SPELL_SHOOT               39079
 
 struct TRINITY_DLL_DECL mob_tempest_falconerAI : public ScriptedAI
 {
@@ -267,7 +267,7 @@ struct TRINITY_DLL_DECL mob_tempest_falconerAI : public ScriptedAI
     uint32 ImmolationArrow_Timer;
     uint32 Knockback_Timer;
     uint32 Shoot_Timer;
-	
+    
     void Reset()
     {
         FireShield_Timer = 2000;
@@ -339,7 +339,7 @@ struct TRINITY_DLL_DECL mob_crimson_hand_blood_knightAI : public ScriptedAI
     uint32 HammerofJustice_Timer;
     uint32 HammerofWrath_Timer;
     uint32 Renew_Timer;
-	
+    
     void Reset()
     {
         Cleanse_Timer = 20000;

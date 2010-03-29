@@ -582,7 +582,7 @@ struct TRINITY_DLL_DECL mob_ember_of_alarAI : public ScriptedAI
         else
             CheckTimer -= diff;
         DoMeleeAttackIfReady();
-	}
+    }
 };
 
 CreatureAI* GetAI_mob_ember_of_alar(Creature* pCreature)

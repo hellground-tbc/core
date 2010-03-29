@@ -735,7 +735,7 @@ struct TRINITY_DLL_DECL boss_fathomguard_caribdisAI : public ScriptedAI
         }
         else
             Cyclone_Timer -= diff;
-		
+        
         //Heal_Timer
         if(Heal_Timer < diff)
         {
@@ -774,14 +774,14 @@ struct TRINITY_DLL_DECL mob_caribdis_cycloneAI : public ScriptedAI
     {
         AttackStart(who);
     }
-	
+    
     void UpdateAI(const uint32 diff)
     {
         //Return since we have no target
         if (!UpdateVictim() )
             return;
 
-        if(Swap_Timer < diff)											
+        if(Swap_Timer < diff)                                            
         {
             if(Unit* target = SelectUnit(SELECT_TARGET_FARTHEST, 0, 100, true))
             {                
