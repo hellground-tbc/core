@@ -313,6 +313,7 @@ SpellSpecific GetSpellSpecific(uint32 spellId);
 // Different spell properties
 inline float GetSpellRadius(SpellRadiusEntry const *radius) { return (radius ? radius->Radius : 0); }
 uint32 GetSpellCastTime(SpellEntry const* spellInfo, Spell const* spell = NULL);
+uint32 GetSpellBaseCastTime(SpellEntry const *spellInfo);
 inline float GetSpellMinRange(SpellRangeEntry const *range) { return (range ? range->minRange : 0); }
 inline float GetSpellMaxRange(SpellRangeEntry const *range) { return (range ? range->maxRange : 0); }
 inline uint32 GetSpellRangeType(SpellRangeEntry const *range) { return (range ? range->type : 0); }
@@ -578,6 +579,15 @@ struct SpellEnchantProcEntry
 };
 
 typedef UNORDERED_MAP<uint32, SpellEnchantProcEntry> SpellEnchantProcEventMap;
+
+struct SpellBonusData
+{
+    float    direct_co;
+    float       dot_co;
+    float direct_ap_co;
+    float    dot_ap_co;
+};
+typedef std::map<uint32, SpellBonusData> SpellBonusDataMap;
 
 #define ELIXIR_BATTLE_MASK    0x1
 #define ELIXIR_GUARDIAN_MASK  0x2
@@ -989,6 +999,12 @@ class SpellMgr
             return itr != mSpellLinkedMap.end() ? &(itr->second) : NULL;
         }
 
+        const SpellBonusData *getSpellBonusData(uint32 spell_id)
+        {
+            SpellBonusDataMap::const_iterator itr = mSpellBonusDataMap.find(spell_id);
+            return itr != mSpellBonusDataMap.end() ? &(itr->second) : NULL;
+        }
+
         SpellEffectTargetTypes EffectTargetType[TOTAL_SPELL_EFFECTS];
         SpellSelectTargetTypes SpellTargetType[TOTAL_SPELL_TARGETS];
 
@@ -1012,6 +1028,7 @@ class SpellMgr
         void LoadSpellCustomAttr();
         void LoadSpellLinked();
         void LoadSpellEnchantProcData();
+        void LoadSpellBonusData();
 
     private:
         SpellScriptTarget  mSpellScriptTarget;
@@ -1028,6 +1045,7 @@ class SpellMgr
         SpellPetAuraMap     mSpellPetAuraMap;
         SpellLinkedMap      mSpellLinkedMap;
         SpellEnchantProcEventMap     mSpellEnchantProcEventMap;
+        SpellBonusDataMap    mSpellBonusDataMap;
 };
 
 #define spellmgr SpellMgr::Instance()

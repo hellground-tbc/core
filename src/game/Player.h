@@ -37,6 +37,8 @@
 #include "MapReference.h"
 #include "Util.h"                                           // for Tokens typedef
 
+#include "SpellMgr.h"       // for GetSpellBaseCastTime
+
 #include<string>
 #include<vector>
 
@@ -2414,12 +2416,8 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
 
             // special case (skip > 10sec spell casts for instant cast setting)
             if (mod->op == SPELLMOD_CASTING_TIME)
-            {
-                SpellCastTimesEntry const *spellCastTimeEntry = sSpellCastTimesStore.LookupEntry(spellInfo->CastingTimeIndex);
-                if (spellCastTimeEntry->CastTime >= T(10000))
+                if (GetSpellBaseCastTime(spellInfo) >= T(10000))
                     continue;
-            }
-
             totalpct += mod->value;
         }
 

@@ -5624,24 +5624,8 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
         {
             if (dummySpell->Id == 17619)
             {
-                if (procSpell->SpellFamilyName == SPELLFAMILY_POTION)
-                {
-                    for (uint8 i=0;i<3;i++)
-                    {
-                        if (procSpell->Effect[i]==SPELL_EFFECT_HEAL)
-                        {
-                            triggered_spell_id = 21399;
-                        }
-                        else if (procSpell->Effect[i]==SPELL_EFFECT_ENERGIZE)
-                        {
-                            triggered_spell_id = 21400;
-                        }
-                        else continue;
-                        basepoints0 = CalculateSpellDamage(procSpell,i,procSpell->EffectBasePoints[i],this) * 0.4f;
-                        CastCustomSpell(this,triggered_spell_id,&basepoints0,NULL,NULL,true,castItem,triggeredByAura);
-                    }
-                    return true;
-                }
+                basepoints0 = damage * 4 / 10;
+                triggered_spell_id = 21399;
             }
         }
         default:
@@ -6069,6 +6053,14 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                      sLog.outError("Unit::HandleProcTriggerSpell: Spell %u miss posibly Judgement of Light/Wisdom", auraSpellInfo->Id);
                  return false;
              }
+
+             if(auraSpellInfo->SpellIconID == 299)                      // Improved Judgement of Light: bonus heal from t4 set
+                 if(Unit *caster = triggeredByAura->GetCaster())
+                    if(Aura *aur = caster->GetAura(37182, 0))
+                    {
+                        int bp = aur->GetModifierValue();
+                        pVictim->CastCustomSpell(pVictim, trigger_spell_id, &bp, NULL, NULL, TRUE, castItem, triggeredByAura);
+                    }
              pVictim->CastSpell(pVictim, trigger_spell_id, true, castItem, triggeredByAura);
              return true;                        // no hidden cooldown
          }
@@ -7148,7 +7140,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
     }
 
     // Damage Done
-    uint32 CastingTime = !IsChanneledSpell(spellProto) ? GetSpellCastTime(spellProto) : GetSpellDuration(spellProto);
+    uint32 CastingTime = !IsChanneledSpell(spellProto) ? GetSpellBaseCastTime(spellProto) : GetSpellDuration(spellProto);
 
     // Taken/Done fixed damage bonus auras
     int32 DoneAdvertisedBenefit  = SpellBaseDamageBonus(GetSpellSchoolMask(spellProto))+BonusDamage;

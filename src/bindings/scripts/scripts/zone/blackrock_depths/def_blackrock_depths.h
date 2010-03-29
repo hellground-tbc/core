@@ -23,5 +23,16 @@
 #define DATA_GO_BAR_KEG         16
 #define DATA_GO_BAR_KEG_TRAP    17
 #define DATA_GO_BAR_DOOR        18
-#endif
 
+#define DATA_QUEST_JAIL_BREAK   19
+#define DATA_DUGHAL             20
+
+#define DATA_SUPPLY_ROOM        21
+#define DATA_SHILL              22
+#define DATA_JAZ                23
+#define DATA_TOBIAS             24
+#define DATA_CREST              25
+
+#define Q_STARTER               26
+
+#endif

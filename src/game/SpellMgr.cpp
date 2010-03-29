@@ -257,15 +257,21 @@ int32 GetSpellMaxDuration(SpellEntry const *spellInfo)
     return (du->Duration[2] == -1) ? -1 : abs(du->Duration[2]);
 }
 
-uint32 GetSpellCastTime(SpellEntry const* spellInfo, Spell const* spell)
+uint32 GetSpellBaseCastTime(SpellEntry const *spellInfo)
 {
     SpellCastTimesEntry const *spellCastTimeEntry = sSpellCastTimesStore.LookupEntry(spellInfo->CastingTimeIndex);
-
-    // not all spells have cast time index and this is all is pasiive abilities
-    if(!spellCastTimeEntry)
+    if (!spellCastTimeEntry)
         return 0;
+    return spellCastTimeEntry->CastTime;
+}
 
-    int32 castTime = spellCastTimeEntry->CastTime;
+uint32 GetSpellCastTime(SpellEntry const* spellInfo, Spell const* spell)
+{
+    int32 castTime = GetSpellBaseCastTime(spellInfo);
+
+    // if castTime == 0 no sense to apply modifiers
+    if (!castTime)
+        return 0;
 
     if (spell)
     {
@@ -1449,6 +1455,58 @@ void SpellMgr::LoadSpellThreats()
 
     sLog.outString( ">> Loaded %u aggro generating spells", sSpellThreatStore.RecordCount );
     sLog.outString();
+}
+
+void SpellMgr::LoadSpellBonusData()
+{
+    mSpellBonusDataMap.clear();
+    uint32 count = 0;
+
+    //                                                0      1          2       3             4
+    QueryResult *result = WorldDatabase.Query("SELECT entry, direct_co, dot_co, direct_ap_co, dot_ap_co, FROM spell_bonus_data");
+    if( !result )
+    {
+
+        barGoLink bar( 1 );
+
+        bar.step();
+
+        sLog.outString();
+        sLog.outString( ">> Loaded %u spell bonus data info", count );
+        return;
+    }
+
+    barGoLink bar( result->GetRowCount() );
+    do
+    {
+        Field *fields = result->Fetch();
+
+        bar.step();
+
+        uint32 entry        = fields[0].GetUInt32();
+
+        SpellEntry const *spellInfo = sSpellStore.LookupEntry(entry);
+        if (!spellInfo)
+        {
+            sLog.outErrorDb("Spell %u listed in `spell_bonus_data` does not exist", entry);
+            continue;
+        }
+
+        SpellBonusData bd;
+        bd.direct_co    = fields[1].GetFloat();
+        bd.dot_co       = fields[2].GetFloat();
+        bd.direct_ap_co = fields[3].GetFloat();
+        bd.dot_ap_co    = fields[4].GetFloat();
+
+        mSpellBonusDataMap[entry] = bd;
+
+        ++count;
+    }
+    while( result->NextRow() );
+
+    delete result;
+
+    sLog.outString( ">> Loaded %u spell bonus data definitions", count);
 }
 
 void SpellMgr::LoadSpellEnchantProcData()
