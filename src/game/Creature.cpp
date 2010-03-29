@@ -516,6 +516,7 @@ void Creature::Update(uint32 diff)
                 else
                     m_regenTimer -= diff;
             }
+
             if (m_regenTimer != 0)
                 break;
 
@@ -523,6 +524,7 @@ void Creature::Update(uint32 diff)
             {
                 if(HasFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_OTHER_TAGGER))
                     SetUInt32Value(UNIT_DYNAMIC_FLAGS, GetCreatureInfo()->dynamicflags);
+
                 RegenerateHealth();
             }
             else if(IsPolymorphed())
