@@ -339,14 +339,14 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
             if (data == DONE && Heroic)
                 Encounter[2] = data;
 
-            NextPortal_Timer = 20000;
+            NextPortal_Timer = 30000;
             Check_Timer = 0;
             break;
         case TYPE_TEMPORUS:
             if (data == DONE && Heroic)
                 Encounter[3] = data;
 
-            NextPortal_Timer = 20000;
+            NextPortal_Timer = 30000;
             Check_Timer = 0;
             break;
         }
@@ -430,7 +430,7 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
         debug_log("TSCR: Instance Dark Portal: Summoning rift boss entry %u.",entry);
 
         Unit *Summon = source->SummonCreature(entry,x,y,z,source->GetOrientation(),
-            TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,600000);
+            TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,300000);
 
         if (Summon)
             return Summon;
@@ -519,7 +519,7 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
         if(Check_Timer && Check_Timer < diff)
         {
             if(!IsAnyPortalOpened())
-                NextPortal_Timer = 3000;
+                NextPortal_Timer = 13000;
 
             Check_Timer = 0;
         }
