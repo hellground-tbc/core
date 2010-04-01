@@ -335,7 +335,9 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                 DoZoneInCombat();
 
             CheckTimer = 3000;
-        }else CheckTimer -= diff;
+        }
+        else
+            CheckTimer -= diff;
 
         if(CloseDoorTimer)
         {
@@ -347,7 +349,9 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                         Door->SetGoState(1);
                     CloseDoorTimer = 0;
                 }
-            }else CloseDoorTimer -= diff;
+            }
+            else
+                CloseDoorTimer -= diff;
         }
 
         //Cooldowns for casts
@@ -355,7 +359,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         {
             if (ArcaneCooldown >= diff)
                 ArcaneCooldown -= diff;
-            else 
+            else
                 ArcaneCooldown = 0;
         }
 
@@ -371,7 +375,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         {
             if (FrostCooldown >= diff)
                 FrostCooldown -= diff;
-            else 
+            else
                 FrostCooldown = 0;
         }
 
@@ -433,6 +437,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
             {
                 Unit* target = NULL;
                 target = SelectUnit(SELECT_TARGET_RANDOM, 0);
+
                 if (!target)
                     return;
 
@@ -445,11 +450,13 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                     Spells[AvailableSpells] = SPELL_ARCMISSLE;
                     AvailableSpells++;
                 }
+
                 if (!FireCooldown)
                 {
                     Spells[AvailableSpells] = SPELL_FIREBALL;
                     AvailableSpells++;
                 }
+
                 if (!FrostCooldown)
                 {
                     Spells[AvailableSpells] = SPELL_FROSTBOLT;
@@ -460,12 +467,14 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                 if (AvailableSpells)
                 {
                     CurrentNormalSpell = Spells[rand() % AvailableSpells];
-                    DoCast(target, CurrentNormalSpell,false);
-                    //AddSpellToCast(target, CurrentNormalSpell);
+                    //DoCast(target, CurrentNormalSpell,false);
+                    AddSpellToCast(target, CurrentNormalSpell);
                 }
             }
             NormalCastTimer = 1000;
-        }else NormalCastTimer -= diff;
+        }
+        else
+            NormalCastTimer -= diff;
 
         if(SecondarySpellTimer < diff)
         {
@@ -473,17 +482,19 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
             {
 
                 case 0:
-                    //AddSpellToCast(m_creature, SPELL_AOE_CS);
-                    DoCast(m_creature, SPELL_AOE_CS);
+                    AddSpellToCast(m_creature, SPELL_AOE_CS);
+                    //DoCast(m_creature, SPELL_AOE_CS);
                     break;
                 case 1:
                     if(Unit* pUnit = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_CHAINSOFICE), true))
-                        //AddSpellToCast(pUnit, SPELL_CHAINSOFICE);
-                        DoCast(pUnit, SPELL_CHAINSOFICE);
+                        AddSpellToCast(pUnit, SPELL_CHAINSOFICE);
+                        //DoCast(pUnit, SPELL_CHAINSOFICE);
                     break;
             }
             SecondarySpellTimer = 5000 + (rand()%15000);
-        }else SecondarySpellTimer -= diff;
+        }
+        else
+            SecondarySpellTimer -= diff;
 
         if(SuperCastTimer < diff)
         {
@@ -558,6 +569,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                     if (Spawn)
                     {
                         Spawn->setFaction(m_creature->getFaction());
+                        Spawn->SetLevel(73);
                         Spawn->CastSpell(Spawn, SPELL_CIRCULAR_BLIZZARD, false);
                     }
                     break;
@@ -567,7 +579,9 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                 SuperCastTimer = 11000;
             else
                 SuperCastTimer = 30000 + (rand()%5000);
-        }else SuperCastTimer -= diff;
+        }
+        else
+            SuperCastTimer -= diff;
 
         if(!ElementalsSpawned && m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 40)
         {
@@ -602,7 +616,9 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
             DoScriptText(SAY_TIMEOVER, m_creature);
 
             BerserkTimer = 60000;
-        }else BerserkTimer -= diff;
+        }
+        else
+            BerserkTimer -= diff;
 
         //Flame Wreath check
         if (FlameWreathTimer)
@@ -629,8 +645,9 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                 FlameWreathCheckTime = 500;
             }else FlameWreathCheckTime -= diff;
         }
-        
+
         CastNextSpellIfAnyAndReady();
+
         if (ArcaneCooldown && FireCooldown && FrostCooldown)
             DoMeleeAttackIfReady();
     }
@@ -660,9 +677,17 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
 
         switch (CurrentNormalSpell)
         {
-            case SPELL_ARCMISSLE: ArcaneCooldown = 5000; break;
-            case SPELL_FIREBALL: FireCooldown = 5000; break;
-            case SPELL_FROSTBOLT: FrostCooldown = 5000; break;
+            case SPELL_ARCMISSLE:
+                ArcaneCooldown = 5000;
+                break;
+            case SPELL_FIREBALL:
+                FireCooldown = 5000;
+                break;
+            case SPELL_FROSTBOLT:
+                FrostCooldown = 5000;
+                break;
+            default:
+                break;
         }
     }
 };
@@ -691,7 +716,7 @@ struct TRINITY_DLL_DECL water_elementalAI : public ScriptedAI
             DoCast(m_creature->getVictim(), SPELL_WATERBOLT);
             CastTimer = 2000 + (rand()%3000);
         }
-        else 
+        else
             CastTimer -= diff;
 
         CastNextSpellIfAnyAndReady();
@@ -731,7 +756,9 @@ struct TRINITY_DLL_DECL shadow_of_aranAI : public ScriptedAI
             default:
                 break;
             }
-        }else CastTimer -= diff;
+        }
+        else
+            CastTimer -= diff;
     }
 };
 
@@ -794,7 +821,8 @@ struct TRINITY_DLL_DECL circular_blizzardAI : public ScriptedAI
             m_creature->GetMotionMaster()->MovePoint(currentWaypoint, wLoc.x, wLoc.y, wLoc.z);
             waypointTimer = 3000;
         }
-        else waypointTimer -= diff;
+        else
+            waypointTimer -= diff;
     }
 };
 
