@@ -168,7 +168,7 @@ struct TRINITY_DLL_DECL boss_kazrogalAI : public hyjal_trashAI
 
         if(CrippleTimer < diff)
         {
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,1,90,true, m_creature->getVictim()))
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,1,20,true))
                 DoCast(target, SPELL_CRIPPLE);
 
             CrippleTimer = 20000+rand()%10000;
@@ -181,8 +181,18 @@ struct TRINITY_DLL_DECL boss_kazrogalAI : public hyjal_trashAI
 
         if(MarkTimer < diff)
         {
-            m_creature->CastSpell(m_creature, SPELL_MARK, false);
-
+            Map* pMap = m_creature->GetMap();
+            Map::PlayerList const &PlayerList = pMap->GetPlayers();                
+            if (!PlayerList.isEmpty())
+            {
+                for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                {
+                    Player *p = i->getSource();
+                    if(p->getPowerType() == POWER_MANA)
+                        m_creature->AddAura(SPELL_MARK,p);
+                }
+            }
+            
             MarkTimerBase -= 5000;
 
             if(MarkTimerBase < 5500)

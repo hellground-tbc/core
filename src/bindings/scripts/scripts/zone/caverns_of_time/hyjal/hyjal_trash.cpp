@@ -708,11 +708,12 @@ CreatureAI* GetAI_mob_ghoul(Creature* _Creature)
     return new mob_ghoulAI(_Creature);
 }
 
-#define SPELL_RAISE_DEAD_1 31617
-#define SPELL_RAISE_DEAD_2 31624
-#define SPELL_RAISE_DEAD_3 31625
-#define SPELL_SHADOW_BOLT 31627
+#define SPELL_RAISE_DEAD_1  31617
+#define SPELL_RAISE_DEAD_2  31624
+#define SPELL_RAISE_DEAD_3  31625
+#define SPELL_SHADOW_BOLT   31627
 #define SPELL_UNHOLY_FRENZY 31626
+#define SPELL_CRIPPLE       33787
 
 struct mob_necromancerAI : public hyjal_trashAI
 {
@@ -727,11 +728,13 @@ struct mob_necromancerAI : public hyjal_trashAI
     bool go;
     uint32 ShadowBoltTimer;
     uint32 UnholyFrenzyTimer;
+    uint32 CrippleTimer;
     uint32 pos;
     void Reset()
     {
         ShadowBoltTimer = 1000+rand()%5000;
         UnholyFrenzyTimer = 5000;
+        CrippleTimer = 4000;
         summons.DespawnAll();
     }
 
@@ -825,6 +828,16 @@ struct mob_necromancerAI : public hyjal_trashAI
             DoCast(m_creature,SPELL_UNHOLY_FRENZY);
             UnholyFrenzyTimer = 10000+rand()%5000;
         }else UnholyFrenzyTimer -= diff;
+        
+        if(CrippleTimer<diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true))
+            {
+                DoCast(target,SPELL_CRIPPLE);
+                CrippleTimer = 10000+rand()%5000;
+            }
+        }
+        else CrippleTimer -= diff;
 
         DoMeleeAttackIfReady();
     }
