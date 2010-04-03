@@ -7,6 +7,12 @@
 	<File name="../../src/game/BattleGroundMgr.cpp" open="0" top="0" tabpos="0">
 		<Cursor position="56261" topLine="1290" />
 	</File>
+	<File name="../../src/game/CreatureAI.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="2748" topLine="61" />
+	</File>
+	<File name="../../src/game/CreatureAI.h" open="0" top="0" tabpos="0">
+		<Cursor position="2976" topLine="93" />
+	</File>
 	<File name="../../src/game/GossipDef.cpp" open="0" top="0" tabpos="0">
 		<Cursor position="2094" topLine="29" />
 	</File>
@@ -27,5 +33,11 @@
 	</File>
 	<File name="../../src/game/SpellEffects.cpp" open="0" top="0" tabpos="0">
 		<Cursor position="154069" topLine="3438" />
+	</File>
+	<File name="../../src/game/Unit.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="37119" topLine="1015" />
+	</File>
+	<File name="../../src/game/Unit.h" open="0" top="0" tabpos="0">
+		<Cursor position="44132" topLine="1031" />
 	</File>
 </CodeBlocks_layout_file>

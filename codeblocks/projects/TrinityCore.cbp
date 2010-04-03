@@ -278,6 +278,12 @@
 					<Add directory="../../dep/ACE_wrappers" />
 					<Add directory="../../dep/include/g3dlite" />
 					<Add directory="../../dep/include/sockets" />
+					<Add directory="../../src/shared/Database" />
+					<Add directory="../../src/shared/vmap" />
+					<Add directory="../../src/bindings/scripts/scripts" />
+					<Add directory="../../src/bindings/scripts/include" />
+					<Add directory="/usr/include/mysql" />
+					<Add directory="../.." />
 				</ResourceCompiler>
 				<Linker>
 					<Add library="libmysqld" />
@@ -304,6 +310,9 @@
 					<Add directory="../../dep/include/g3dlite" />
 					<Add directory="../../dep/include/sockets" />
 					<Add directory="../../src/game" />
+					<Add directory="../../src/bindings/scripts" />
+					<Add directory="../../src/bindings/scripts/include" />
+					<Add directory="../../src/bindings/scripts/scripts" />
 				</Linker>
 				<ExtraCommands>
 					<Add after="copy ..\..\dep\lib\Linux_Release x64\*.dll ..\..\bin\Linux_Release x64" />
