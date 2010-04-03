@@ -28,11 +28,20 @@
 	<File name="../../src/game/Spell.h" open="0" top="0" tabpos="0">
 		<Cursor position="8240" topLine="234" />
 	</File>
+	<File name="../../src/game/SpellAuras.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="50319" topLine="828" />
+	</File>
 	<File name="../../src/game/SpellAuras.h" open="0" top="0" tabpos="0">
 		<Cursor position="17851" topLine="369" />
 	</File>
 	<File name="../../src/game/SpellEffects.cpp" open="0" top="0" tabpos="0">
 		<Cursor position="154069" topLine="3438" />
+	</File>
+	<File name="../../src/game/SpellMgr.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="9324" topLine="197" />
+	</File>
+	<File name="../../src/game/SpellMgr.h" open="0" top="0" tabpos="0">
+		<Cursor position="32199" topLine="969" />
 	</File>
 	<File name="../../src/game/Unit.cpp" open="0" top="0" tabpos="0">
 		<Cursor position="37119" topLine="1015" />

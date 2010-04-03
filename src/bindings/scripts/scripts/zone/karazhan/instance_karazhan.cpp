@@ -24,13 +24,15 @@ EndScriptData */
 #include "precompiled.h"
 #include "instance_karazhan.h"
 
+instance_karazhan::instance_karazhan(Map* map) : ScriptedInstance(map) {Initialize();}
+
 void instance_karazhan::Initialize()
 {
     for (uint8 i = 0; i < ENCOUNTERS; ++i)
         Encounters[i] = NOT_STARTED;
 
     OperaEvent          = urand(1,3);                   // 1 - OZ, 2 - HOOD, 3 - RAJ, this never gets altered.
-    OzDeathCount    = 0;
+    OzDeathCount        = 0;
 
     CurtainGUID         = 0;
     StageDoorLeftGUID   = 0;
@@ -50,11 +52,11 @@ void instance_karazhan::Initialize()
     NetherspaceDoor     = 0;
     MastersTerraceDoor[0]= 0;
     MastersTerraceDoor[1]= 0;
-    ImageGUID = 0;
-    MedivhGUID = 0;
-    CheckTimer = 5000;
+    ImageGUID           = 0;
+    MedivhGUID          = 0;
+    CheckTimer          = 5000;
 
-    needRespawn = true;
+    needRespawn         = true;
 }
 
 bool instance_karazhan::IsEncounterInProgress() const
@@ -217,7 +219,7 @@ void instance_karazhan::SetData64(uint32 identifier, uint64 data)
     case DATA_IMAGE_OF_MEDIVH:
 		ImageGUID = data;
 		break;
-    case DATA_NIGHTBANE;
+    case DATA_NIGHTBANE:
         NightbaneGUID = data;
         break;
     default:
