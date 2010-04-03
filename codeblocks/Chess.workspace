@@ -10,7 +10,7 @@
 		<Project filename="projects/game.cbp" />
 		<Project filename="projects/ScriptsInterfaces.cbp" />
 		<Project filename="projects/TrinityRealm.cbp" />
-		<Project filename="../src/bindings/scripts/vc90/90ScriptDev2.cbp" />
-		<Project filename="projects/TrinityCore.cbp" active="1" />
+		<Project filename="../src/bindings/scripts/codeblocks/90ScriptDev2.cbp" active="1" />
+		<Project filename="projects/TrinityCore.cbp" />
 	</Workspace>
 </CodeBlocks_workspace_file>

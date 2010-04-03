@@ -443,8 +443,10 @@
 		<Unit filename="../scripts/zone/karazhan/boss_terestian_illhoof.cpp" />
 		<Unit filename="../scripts/zone/karazhan/bosses_opera.cpp" />
 		<Unit filename="../scripts/zone/karazhan/chess_event.cpp" />
+		<Unit filename="../scripts/zone/karazhan/chess_event.h" />
 		<Unit filename="../scripts/zone/karazhan/def_karazhan.h" />
 		<Unit filename="../scripts/zone/karazhan/instance_karazhan.cpp" />
+		<Unit filename="../scripts/zone/karazhan/instance_karazhan.h" />
 		<Unit filename="../scripts/zone/karazhan/karazhan.cpp" />
 		<Unit filename="../scripts/zone/loch_modan/loch_modan.cpp" />
 		<Unit filename="../scripts/zone/magisters_terrace/boss_felblood_kaelthas.cpp" />
