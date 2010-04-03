@@ -42,6 +42,9 @@
 #include "Language.h"
 #include "Chat.h"
 #include "SystemConfig.h"
+#include "GameEvent.h"
+
+class GameEvent;
 
 class LoginQueryHolder : public SqlQueryHolder
 {
@@ -561,6 +564,12 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
             chH.PSendSysMessage(_FULLVERSION);
 
         DEBUG_LOG( "WORLD: Sent server info" );
+    }
+
+    {
+        // active game events info
+        const char *active_events = gameeventmgr.getActiveEventsString();
+        ChatHandler(this).SendSysMessage(active_events);//ChatHandler::FillMessageData(&data, this, CHAT_MSG_SYSTEM, LANG_UNIVERSAL, NULL, GetPlayer()->GetGUID(), active_events, NULL);
     }
 
     //QueryResult *result = CharacterDatabase.PQuery("SELECT guildid,rank FROM guild_member WHERE guid = '%u'",pCurrChar->GetGUIDLow());

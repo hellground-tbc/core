@@ -2338,17 +2338,46 @@ void World::ResetDailyQuests()
     uint32 normalQuest[8]  = { 11389, 11371, 11376, 11383, 11364, 11500, 11385, 11387 };
     uint32 cookingQuest[4] = { 11380, 11377, 11381, 11379 };
     uint32 fishingQuest[5] = { 11666, 11665, 11669,11668, 11667 };
-    uint32 alliancePVP[5]  = { 8385, 11335, 11336, 11337, 11338 };
-    uint32 hordePVP[5]     = { 8388, 11339, 11340, 11341, 11342 };
+    uint32 alliancePVP[4]  = { 11335, 11336, 11337, 11338 };
+    uint32 hordePVP[4]     = { 11339, 11340, 11341, 11342 };
 
-    specialQuest[HEROIC]  = heroicQuest[rand()%15];
-    specialQuest[QNORMAL]  = normalQuest[rand()%8];
-    specialQuest[COOKING] = cookingQuest[rand()%4];
-    specialQuest[FISHING] = fishingQuest[rand()%5];
-    specialQuest[PVPH]    = hordePVP[rand()%5];
-    specialQuest[PVPA]    = alliancePVP[rand()%5];
+    uint32 temp = heroicQuest[urand(0,14)];
+    while(temp && temp == specialQuest[HEROIC])
+        temp = heroicQuest[urand(0,14)];
 
-    CharacterDatabase.PExecute("UPDATE saved_variables set HeroicQuest='%u', NormalQuest='%u', CookingQuest='%u', FishingQuest='%u', PVPAlliance='%u', PVPHorde='%u',",specialQuest[HEROIC],specialQuest[QNORMAL],specialQuest[COOKING],specialQuest[FISHING],specialQuest[PVPA],specialQuest[PVPH]);
+    specialQuest[HEROIC]  = temp;
+
+    temp = normalQuest[urand(0,7)];
+    while(temp && temp == specialQuest[QNORMAL])
+        temp = normalQuest[urand(0,7)];
+
+    specialQuest[QNORMAL] = temp;
+
+    temp = cookingQuest[urand(0,3)];
+    while(temp && temp == specialQuest[COOKING])
+        temp = cookingQuest[urand(0,3)];
+
+    specialQuest[COOKING] = temp;
+
+    temp = fishingQuest[urand(0,4)];
+    while(temp && temp == specialQuest[FISHING])
+        temp = fishingQuest[urand(0,4)];
+
+    specialQuest[FISHING] = temp;
+
+    temp = hordePVP[urand(0,3)];
+    while(temp && temp == specialQuest[PVPH])
+        temp = hordePVP[urand(0,3)];
+
+    specialQuest[PVPH] = temp;
+
+    temp = alliancePVP[urand(0,3)];
+    while(temp && temp == specialQuest[PVPA])
+        temp = alliancePVP[urand(0,3)];
+
+    specialQuest[PVPA] = temp;
+
+    CharacterDatabase.PExecute("UPDATE saved_variables set HeroicQuest='%u', NormalQuest='%u', CookingQuest='%u', FishingQuest='%u', PVPAlliance='%u', PVPHorde='%u'",specialQuest[HEROIC],specialQuest[QNORMAL],specialQuest[COOKING],specialQuest[FISHING],specialQuest[PVPA],specialQuest[PVPH]);
 }
 
 void World::SetPlayerLimit( int32 limit, bool needUpdate )

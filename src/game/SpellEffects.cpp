@@ -308,7 +308,9 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
 {
     if( unitTarget && unitTarget->isAlive())
     {
-        float totalDmgModPct = 1;
+        float totalDmgModPct = 1.0f;
+        float attackPowerCoefficient = 0.0f;
+        float rangedAttackPowerCoefficient = 0.0f;
         switch(m_spellInfo->SpellFamilyName)
         {
             case SPELLFAMILY_GENERIC:
@@ -320,7 +322,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                 }
 
                 // Meteor like spells (divided damage to targets)
-                if(m_customAttr & SPELL_ATTR_CU_SHARE_DAMAGE)
+                if(m_spellInfo->AttributesCu & SPELL_ATTR_CU_SHARE_DAMAGE)
                 {
                     uint32 count = 0;
                     for(std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin();ihit != m_UniqueTargetInfo.end();++ihit)
@@ -394,7 +396,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                 // Bloodthirst
                 if(m_spellInfo->SpellFamilyFlags & 0x40000000000LL)
                 {
-                    damage = uint32(damage * (m_caster->GetTotalAttackPowerValue(BASE_ATTACK)) / 100);
+                    damage = uint32(damage * (m_caster->GetTotalAttackPowerValue(BASE_ATTACK)) / 100);  // !?
                 }
                 // Shield Slam
                 else if(m_spellInfo->SpellFamilyFlags & 0x100000000LL)
@@ -402,7 +404,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                 // Victory Rush
                 else if(m_spellInfo->SpellFamilyFlags & 0x10000000000LL)
                 {
-                    damage = uint32(damage * m_caster->GetTotalAttackPowerValue(BASE_ATTACK) / 100);
+                    damage = uint32(damage * m_caster->GetTotalAttackPowerValue(BASE_ATTACK) / 100);    // !?
                     m_caster->ModifyAuraState(AURA_STATE_WARRIOR_VICTORY_RUSH, false);
                 }
                 break;
@@ -474,23 +476,21 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                 // Ferocious Bite
                 if((m_spellInfo->SpellFamilyFlags & 0x000800000) && m_spellInfo->SpellVisual==6587)
                 {
-                    float ap = m_caster->GetTotalAttackPowerValue(BASE_ATTACK);
                     // converts each extra point of energy into ($f1+$AP/630) additional damage
-                    float multiple = ap / 630 + m_spellInfo->DmgMultiplier[effect_idx];
-                    damage += int32(m_caster->GetPower(POWER_ENERGY) * multiple);
-                    m_caster->SetPower(POWER_ENERGY,0);
-                    // Not sure if formula is valid
-                    damage += int32(0.1526f * ap);
+                    int extraEnergy = (m_caster->GetPower(POWER_ENERGY) - GetPowerCost());
+                    damage += int32(extraEnergy * m_spellInfo->DmgMultiplier[effect_idx]);
+                    m_caster->SetPower(POWER_ENERGY, GetPowerCost());
+                    attackPowerCoefficient += extraEnergy / 630.0f + 0.1526f;
                 }
                 // Rake
-                else if(m_spellInfo->SpellFamilyFlags & 0x0000000000001000LL)
+                else if(m_spellInfo->SpellFamilyFlags & 0x0000000000001000LL && m_spellInfo->SpellIconID == 494)
                 {
-                    damage += int32(m_caster->GetTotalAttackPowerValue(BASE_ATTACK) / 100);
+                    attackPowerCoefficient += 0.01f;
                 }
                 // Swipe
                 else if(m_spellInfo->SpellFamilyFlags & 0x0010000000000000LL)
                 {
-                    damage += int32(m_caster->GetTotalAttackPowerValue(BASE_ATTACK)*0.08f);
+                    attackPowerCoefficient += 0.08f;
                 }
                 // Starfire
                 else if ( m_spellInfo->SpellFamilyFlags & 0x0004LL )
@@ -531,7 +531,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                     for(Unit::AuraList::const_iterator i = mDummyAuras.begin(); i != mDummyAuras.end(); ++i)
                         if((*i)->GetSpellProto()->SpellFamilyFlags & 0x0000044000000000LL && (*i)->GetSpellProto()->SpellFamilyName==SPELLFAMILY_DRUID)
                         {
-                            damage = int32(damage*(100.0f+(*i)->GetModifier()->m_amount)/100.0f);
+                            totalDmgModPct *= 1 + (*i)->GetModifierValue() / 100.0f;
                             break;
                         }
                 }
@@ -568,7 +568,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                         }
 
                         damage *= doses;
-                        damage += int32(((Player*)m_caster)->GetTotalAttackPowerValue(BASE_ATTACK) * 0.03f * doses);
+                        attackPowerCoefficient += 0.03f * doses;
 
                         // Eviscerate and Envenom Bonus Damage (item set effect)
                         if(m_caster->GetDummyAura(37169))
@@ -580,7 +580,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                 {
                     if(uint32 combo = ((Player*)m_caster)->GetComboPoints())
                     {
-                        damage += int32(m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * combo * 0.03f);
+                        attackPowerCoefficient += combo * 0.03f;
 
                         // Eviscerate and Envenom Bonus Damage (item set effect)
                         if(m_caster->GetDummyAura(37169))
@@ -594,18 +594,19 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                 // Mongoose Bite
                 if((m_spellInfo->SpellFamilyFlags & 0x000000002) && m_spellInfo->SpellVisual==342)
                 {
-                    damage += int32(m_caster->GetTotalAttackPowerValue(BASE_ATTACK)*0.2);
+                    attackPowerCoefficient += 0.2f;
                 }
                 // Arcane Shot
                 else if((m_spellInfo->SpellFamilyFlags & 0x00000800) && m_spellInfo->maxLevel > 0)
                 {
-                    damage += int32(m_caster->GetTotalAttackPowerValue(RANGED_ATTACK)*0.15);
+                    rangedAttackPowerCoefficient += 0.15f;
                 }
                 // Steady Shot
                 else if(m_spellInfo->SpellFamilyFlags & 0x100000000LL)
                 {
-                  int32 base = m_caster->GetMap()->irand((int32)m_caster->GetWeaponDamageRange(RANGED_ATTACK, MINDAMAGE),(int32)m_caster->GetWeaponDamageRange(RANGED_ATTACK, MAXDAMAGE));
-                    damage += int32(float(base)/m_caster->GetAttackTime(RANGED_ATTACK)*2800 + m_caster->GetTotalAttackPowerValue(RANGED_ATTACK)*0.2f);
+                    int32 base = m_caster->GetMap()->irand((int32)m_caster->GetWeaponDamageRange(RANGED_ATTACK, MINDAMAGE),(int32)m_caster->GetWeaponDamageRange(RANGED_ATTACK, MAXDAMAGE));
+                    damage += int32(float(base)/m_caster->GetAttackTime(RANGED_ATTACK)*2800);
+                    rangedAttackPowerCoefficient =+ 0.2f;
 
                     bool found = false;
 
@@ -627,7 +628,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                 //Explosive Trap Effect
                 else if(m_spellInfo->SpellFamilyFlags & 0x00000004)
                 {
-                    damage += int32(m_caster->GetTotalAttackPowerValue(RANGED_ATTACK)*0.1);
+                    rangedAttackPowerCoefficient += 0.1f;
                 }
                 break;
             }
@@ -657,6 +658,10 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
 
         if(m_originalCaster && damage > 0)
             damage = m_originalCaster->SpellDamageBonus(unitTarget, m_spellInfo, (uint32)damage, SPELL_DIRECT_DAMAGE);
+        if(attackPowerCoefficient)
+            damage += attackPowerCoefficient * (m_caster->GetTotalAttackPowerValue(BASE_ATTACK) + unitTarget->GetMeleeApAttackerBonus());
+        if(rangedAttackPowerCoefficient)
+            damage += rangedAttackPowerCoefficient * (m_caster->GetTotalAttackPowerValue(RANGED_ATTACK) + unitTarget->GetTotalAuraModifier(SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS));
         damage *= totalDmgModPct;
 
         m_damage += damage;
@@ -807,18 +812,7 @@ void Spell::EffectDummy(uint32 i)
                 // Demon Broiled Surprise
                 case 43723:
                 {
-                    if (!unitTarget || unitTarget->isAlive() || unitTarget->GetTypeId() != TYPEID_UNIT ||
-                        ((Creature*)unitTarget)->isPet()) return;
-
-                    Player *player = (Player*)m_caster;
-
-                    if (!player) return;
-
-                    player->CastSpell(unitTarget, 43753, true);
-
-                    if (player->GetQuestStatus(11379) == QUEST_STATUS_INCOMPLETE && unitTarget->GetEntry() == 19973)
-                        player->CastedCreatureOrGO(19973, unitTarget->GetGUID(), 43723);
-
+                    m_caster->CastSpell(m_caster, 43753, false);
                     return;
                 }
                 case 8063:                                  // Deviate Fish
@@ -1850,6 +1844,32 @@ void Spell::EffectDummy(uint32 i)
             }
             break;
         case SPELLFAMILY_SHAMAN:
+            
+            // Flametongue Weapon Proc
+            if(m_spellInfo->SpellFamilyFlags & 0x200000)
+            {
+                if(m_caster->GetTypeId() != TYPEID_PLAYER)
+                    return;
+
+                bool mainhand = false;
+
+                if(m_CastItem && m_CastItem->GetSlot() == EQUIPMENT_SLOT_MAINHAND)
+                    mainhand = true;
+
+                bp = ((Player*)m_caster)->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_FIRE) *0.1;
+                bp += m_caster->GetAttackTime(mainhand ? BASE_ATTACK : OFF_ATTACK) * (m_spellInfo->EffectBasePoints[0]+1) / 100000;
+                spell_id = 10444;
+                break;
+            }
+
+            // Flametongue Totem Proc
+            if(m_spellInfo->SpellFamilyFlags & 0x400000000)
+            {
+                bp = m_caster->GetAttackTime(BASE_ATTACK) * (m_spellInfo->EffectBasePoints[0]+1) / 100000;
+                spell_id = 16368;
+                break;
+            }
+
             //Shaman Rockbiter Weapon
             if (m_spellInfo->SpellFamilyFlags == 0x400000)
             {
@@ -2882,9 +2902,17 @@ void Spell::EffectEnergize(uint32 i)
         return;
 
     //Serpent Coil Braid
-    if(m_spellInfo->Id == 27103)
+    if(m_spellInfo->SpellFamilyName == SPELLFAMILY_MAGE && m_spellInfo->SpellFamilyFlags == 0x10000000000LL)
         if(unitTarget->HasAura(37447, 0))
             unitTarget->CastSpell(unitTarget,37445,true);
+
+    // Alchemist Stone
+    if(m_spellInfo->SpellFamilyName == SPELLFAMILY_POTION)
+        if(Aura *aura = unitTarget->GetAura(17619, 0))
+        {
+            int32 bp = damage * 4 / 10;
+            unitTarget->CastCustomSpell(unitTarget,21400,&bp,NULL,NULL,true,NULL,aura);
+        }
 
     // Some level depends spells
     int multiplier = 0;
@@ -4714,9 +4742,9 @@ void Spell::EffectScriptEffect(uint32 effIndex)
 {
     // TODO: we must implement hunter pet summon at login there (spell 6962)
 
-    // by spell id
     switch(m_spellInfo->Id)
     {
+        // Void Reaver: Knock Back
         case 25778:
 
             if(!m_caster->CanHaveThreatList())
@@ -4724,7 +4752,12 @@ void Spell::EffectScriptEffect(uint32 effIndex)
 
             m_caster->getThreatManager().modifyThreatPercent(unitTarget, -25);
         break;
-        
+
+        // Incite Chaos
+        case 33676:
+            m_caster->CastSpell(unitTarget, 33684, true);
+        break;
+
         // PX-238 Winter Wondervolt TRAP
         case 26275:
         {
@@ -6535,24 +6568,48 @@ void Spell::EffectSummonDemon(uint32 i)
     float px = m_targets.m_destX;
     float py = m_targets.m_destY;
     float pz = m_targets.m_destZ;
+    int32 creature_ID = m_spellInfo->EffectMiscValue[i];
 
-    Creature* Charmed = m_caster->SummonCreature(m_spellInfo->EffectMiscValue[i], px, py, pz, m_caster->GetOrientation(),TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,3600000);
+    Creature* Charmed = m_caster->SummonCreature(creature_ID, px, py, pz, m_caster->GetOrientation(),TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,3600000);
     if (!Charmed)
         return;
 
     // might not always work correctly, maybe the creature that dies from CoD casts the effect on itself and is therefore the caster?
     Charmed->SetLevel(m_caster->getLevel());
-
-    // TODO: Add damage/mana/hp according to level
-
-    if (m_spellInfo->EffectMiscValue[i] == 89)              // Inferno summon
+    
+    // Add damage/mana/hp according to level
+    //PetLevelInfo const* pInfo = objmgr.GetPetLevelInfo(creature_ID, m_caster->getLevel());
+    if(creature_ID == 89 || creature_ID == 11859)
     {
-        // Enslave demon effect, without mana cost and cooldown
-        m_caster->CastSpell(Charmed, 20882, true);          // FIXME: enslave does not scale with level, level 62+ minions cannot be enslaved
+        int lvldiff = (m_caster->getLevel() - 52);
+        if(lvldiff > 0)
+        {   
+            if(creature_ID == 89)
+            {
+                Charmed->SetModifierValue(UNIT_MOD_HEALTH, BASE_VALUE, Charmed->GetMaxHealth() + 350 * lvldiff);
+                Charmed->SetModifierValue(UNIT_MOD_MANA, BASE_VALUE, Charmed->GetMaxPower(POWER_MANA) + 80 * lvldiff);
+                Charmed->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, 20 * lvldiff);
+                Charmed->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, 20 * lvldiff);
+                Charmed->SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, Charmed->GetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE) * (1 + lvldiff * 0.1f));
+        
+                m_caster->CastSpell(Charmed, 20882, true);          // Enslave demon effect, without mana cost and cooldown
+                Charmed->CastSpell(Charmed, 22703, true, 0);        // Inferno effect
+            }
+            else if(creature_ID == 11859)
+            {
+                Charmed->SetModifierValue(UNIT_MOD_HEALTH, BASE_VALUE, Charmed->GetMaxHealth() + 400 * lvldiff);
+                Charmed->SetModifierValue(UNIT_MOD_MANA, BASE_VALUE, Charmed->GetMaxPower(POWER_MANA) + 100 * lvldiff);
+                Charmed->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, 30 * lvldiff);
+                Charmed->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, 30 * lvldiff);
+                Charmed->SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, Charmed->GetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE) * (1 + lvldiff * 0.1f));                
+            }
 
-        // Inferno effect
-        Charmed->CastSpell(Charmed, 22703, true, 0);
+            Charmed->UpdateAllStats();
+            Charmed->SetHealth(Charmed->GetMaxHealth());
+            Charmed->SetPower(POWER_MANA, Charmed->GetMaxPower(POWER_MANA));
+        }
     }
+
 }
 
 /* There is currently no need for this effect. We handle it in BattleGround.cpp

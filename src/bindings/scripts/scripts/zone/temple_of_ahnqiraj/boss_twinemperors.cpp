@@ -563,7 +563,7 @@ struct TRINITY_DLL_DECL boss_veklorAI : public boss_twinemperorsAI
         if (Blizzard_Timer < diff)
         {
             Unit* target = NULL;
-            target = SelectUnit(SELECT_TARGET_RANDOM, 0, 45, true);
+            target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_BLIZZARD), true);
             if (target)
                 DoCast(target,SPELL_BLIZZARD);
             Blizzard_Timer = 15000+rand()%15000;

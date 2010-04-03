@@ -268,11 +268,13 @@ struct TRINITY_DLL_DECL boss_terestianAI : public ScriptedAI
                 DoZoneInCombat();
             
             CheckTimer = 3000;
-        }else CheckTimer -= diff;
+        }
+        else
+            CheckTimer -= diff;
         
         if(SacrificeTimer < diff)
         {
-            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1);
+            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_SACRIFICE), true, m_creature->getVictim());
             if(target && target->isAlive() && target->GetTypeId() == TYPEID_PLAYER)
             {
                 DoCast(target, SPELL_SACRIFICE, true);
@@ -289,13 +291,19 @@ struct TRINITY_DLL_DECL boss_terestianAI : public ScriptedAI
                     SacrificeTimer = 30000;
                 }
             }
-        }else SacrificeTimer -= diff;
+        }
+        else
+            SacrificeTimer -= diff;
 
         if(ShadowboltTimer < diff)
         {
-            DoCast(SelectUnit(SELECT_TARGET_TOPAGGRO, 0), SPELL_SHADOW_BOLT);
+            if(Unit *target = SelectUnit(SELECT_TARGET_TOPAGGRO,0, GetSpellMaxRange(SPELL_SHADOW_BOLT), true))
+                DoCast(target, SPELL_SHADOW_BOLT);
+
             ShadowboltTimer = 10000;
-        }else ShadowboltTimer -= diff;
+        }
+        else
+            ShadowboltTimer -= diff;
 
         if(SummonTimer < diff)
         {
@@ -319,10 +327,13 @@ struct TRINITY_DLL_DECL boss_terestianAI : public ScriptedAI
             if(Imp)
             {
                 Imp->AddThreat(m_creature->getVictim(), 1.0f);
-                Imp->AI()->AttackStart(SelectUnit(SELECT_TARGET_RANDOM, 1));
+                if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, 200, true, m_creature->getVictim()))
+                    Imp->AI()->AttackStart(target);
             }
             SummonTimer = 5000;
-        }else SummonTimer -= diff;
+        }
+        else
+            SummonTimer -= diff;
 
         if(!Berserk)
         {
@@ -330,7 +341,9 @@ struct TRINITY_DLL_DECL boss_terestianAI : public ScriptedAI
             {
                 DoCast(m_creature, SPELL_BERSERK);
                 Berserk = true;
-            }else BerserkTimer -= diff;
+            }
+            else
+                BerserkTimer -= diff;
         }
 
         DoMeleeAttackIfReady();

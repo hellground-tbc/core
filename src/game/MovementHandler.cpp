@@ -317,7 +317,7 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
     data.append(recv_data.contents(), recv_data.size());
     GetPlayer()->SendMessageToSet(&data, false);
 
-    if (sWorld.m_ac.activated() && GetPlayer()->m_taxi.empty() && !GetPlayer()->isGameMaster() && (GetPlayer()->m_AC_timer == 0))
+    if (sWorld.m_ac.activated() && GetPlayer()->m_taxi.empty() && !GetPlayer()->hasUnitState(UNIT_STAT_LOST_CONTROL) && !GetPlayer()->isGameMaster() && (GetPlayer()->m_AC_timer == 0))
         sWorld.m_ac.execute(new ACRequest(GetPlayer(), GetAccountId(), GetLatency(),
                             movementInfo.x, movementInfo.y, movementInfo.z, MovementFlags));
 

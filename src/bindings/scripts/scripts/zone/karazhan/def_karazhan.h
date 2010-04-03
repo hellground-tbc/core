@@ -34,9 +34,10 @@
 #define DATA_MASTERS_TERRACE_DOOR_1     27
 #define DATA_MASTERS_TERRACE_DOOR_2     28
 #define DATA_ARAN                       29
+#define DATA_NIGHTBANE                  30
 #define SPELL_BROKEN_PACT               30065
-#define CHESS_EVENT_TEAM                30
-#define DATA_CHESS_ECHO_OF_MEDIVH       31
+#define CHESS_EVENT_TEAM                31
+#define DATA_CHESS_ECHO_OF_MEDIVH       32
 
 // Opera Performances
 #define EVENT_OZ        1

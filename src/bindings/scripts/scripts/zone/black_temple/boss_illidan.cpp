@@ -778,7 +778,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
 
             case EVENT_PARASITIC_SHADOWFIEND:
                 {
-                    if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, 200, true))
+                    if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, 200, true, m_creature->getVictim()))
                         m_creature->CastSpell(target, SPELL_PARASITIC_SHADOWFIEND, true);
                     Timer[EVENT_PARASITIC_SHADOWFIEND] = 35000 + rand()%10000;
                 }break;
@@ -794,7 +794,8 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
 
                 //PHASE_NORMAL_2
             case EVENT_AGONIZING_FLAMES:
-                DoCast(SelectUnit(SELECT_TARGET_RANDOM,0), SPELL_AGONIZING_FLAMES);
+                if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0, 60, true))
+                    DoCast(target, SPELL_AGONIZING_FLAMES);
                 Timer[EVENT_AGONIZING_FLAMES] = 0;
                 break;
 
@@ -819,12 +820,14 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
             switch(Event)
             {
             case EVENT_FIREBALL:
-                DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_FIREBALL);
+                if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 60, true))
+                    DoCast(target, SPELL_FIREBALL);
                 Timer[EVENT_FIREBALL] = 3000;
                 break;
 
             case EVENT_DARK_BARRAGE:
-                DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_DARK_BARRAGE);
+                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 60, true))
+                    DoCast(target, SPELL_DARK_BARRAGE);
                 Timer[EVENT_DARK_BARRAGE] = 0;
                 break;
 
@@ -919,8 +922,7 @@ struct TRINITY_DLL_DECL flame_of_azzinothAI : public ScriptedAI
                 Glaive->InterruptNonMeleeSpells(true);
                 DoCast(m_creature, SPELL_FLAME_ENRAGE, true);
                 DoResetThreat();
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                if(target && target->isAlive())
+                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
                 {
                     m_creature->AddThreat(m_creature->getVictim(), 5000000.0f);
                     AttackStart(m_creature->getVictim());
@@ -1477,9 +1479,9 @@ struct TRINITY_DLL_DECL boss_maievAI : public ScriptedAI
     {
         if(GETCRE(Illidan, IllidanGUID))
         {
-            Unit* target = ((boss_illidan_stormrageAI*)Illidan->AI())->SelectUnit(SELECT_TARGET_RANDOM, 0);
+            Unit* target = ((boss_illidan_stormrageAI*)Illidan->AI())->SelectUnit(SELECT_TARGET_RANDOM, 0, 20, true);
 
-            if(!target || !m_creature->IsWithinDistInMap(target, 80) || Illidan->IsWithinDistInMap(target, 20))
+            if(!target || !m_creature->IsWithinDistInMap(target, 80))
             {
                 uint8 pos = rand()%4;
                 BlinkTo(HoverPosition[pos].x, HoverPosition[pos].y, HoverPosition[pos].z);

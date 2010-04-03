@@ -257,15 +257,21 @@ int32 GetSpellMaxDuration(SpellEntry const *spellInfo)
     return (du->Duration[2] == -1) ? -1 : abs(du->Duration[2]);
 }
 
-uint32 GetSpellCastTime(SpellEntry const* spellInfo, Spell const* spell)
+uint32 GetSpellBaseCastTime(SpellEntry const *spellInfo)
 {
     SpellCastTimesEntry const *spellCastTimeEntry = sSpellCastTimesStore.LookupEntry(spellInfo->CastingTimeIndex);
-
-    // not all spells have cast time index and this is all is pasiive abilities
-    if(!spellCastTimeEntry)
+    if (!spellCastTimeEntry)
         return 0;
+    return spellCastTimeEntry->CastTime;
+}
 
-    int32 castTime = spellCastTimeEntry->CastTime;
+uint32 GetSpellCastTime(SpellEntry const* spellInfo, Spell const* spell)
+{
+    int32 castTime = GetSpellBaseCastTime(spellInfo);
+
+    // if castTime == 0 no sense to apply modifiers
+    if (!castTime)
+        return 0;
 
     if (spell)
     {
@@ -867,6 +873,32 @@ uint8 GetErrorAtShapeshiftedCast (SpellEntry const *spellInfo, uint32 form)
 
 bool IsBinaryResistable(SpellEntry const* spellInfo)
 {
+    if(spellInfo->SchoolMask & SPELL_SCHOOL_MASK_HOLY)                  // can't resist holy spells
+        return false;
+
+    if(!(spellInfo->AttributesEx2 & SPELL_ATTR_EX2_UNK2))               // this should filter out all spells used by bosses - they probably doesn't use simple rules for binary resist
+    {
+        for(int eff = 0; eff < 3; eff++)
+        {
+            if(!spellInfo->Effect[eff])
+                continue;
+
+            switch(spellInfo->Effect[eff])
+            {
+                case SPELL_EFFECT_SCHOOL_DAMAGE:
+                    break;
+                case SPELL_EFFECT_APPLY_AURA:
+                case SPELL_EFFECT_APPLY_AREA_AURA_ENEMY:
+                    if(spellInfo->EffectApplyAuraName[eff] != SPELL_AURA_PERIODIC_DAMAGE)       // spells that apply aura other then DOT are binary resistable
+                        return true;
+                    break;
+                default:                            
+                    return true;                                                                // spells that have other effects then damage or apply aura are binary resistable
+            }
+        }
+    }
+
+    // special cases and bosses spells
     switch(spellInfo->Id)
     {
         case 31344:     // Howl of Azgalor
@@ -889,11 +921,10 @@ bool IsPartialyResistable(SpellEntry const* spellInfo)
         case 36805:     // Kael'thas - Fireball
         case 36819:     // Kael'thas - Pyroblast
         case 38145:     // Vashj - Forked Lightning
-        case 38441:     // Fathom - Cataclysm bolt
             return false;
     }
 
-    if(spellInfo->SchoolMask & SPELL_SCHOOL_MASK_HOLY)
+    if(spellInfo->SchoolMask & SPELL_SCHOOL_MASK_HOLY || IsBinaryResistable(spellInfo))     // holy spells and binary resistable spells cant be partialy resisted
         return false;
     else
         return true;
@@ -1426,6 +1457,58 @@ void SpellMgr::LoadSpellThreats()
     sLog.outString();
 }
 
+void SpellMgr::LoadSpellBonusData()
+{
+    mSpellBonusDataMap.clear();
+    uint32 count = 0;
+
+    //                                                0      1          2       3             4
+    QueryResult *result = WorldDatabase.Query("SELECT entry, direct_co, dot_co, direct_ap_co, dot_ap_co, FROM spell_bonus_data");
+    if( !result )
+    {
+
+        barGoLink bar( 1 );
+
+        bar.step();
+
+        sLog.outString();
+        sLog.outString( ">> Loaded %u spell bonus data info", count );
+        return;
+    }
+
+    barGoLink bar( result->GetRowCount() );
+    do
+    {
+        Field *fields = result->Fetch();
+
+        bar.step();
+
+        uint32 entry        = fields[0].GetUInt32();
+
+        SpellEntry const *spellInfo = sSpellStore.LookupEntry(entry);
+        if (!spellInfo)
+        {
+            sLog.outErrorDb("Spell %u listed in `spell_bonus_data` does not exist", entry);
+            continue;
+        }
+
+        SpellBonusData bd;
+        bd.direct_co    = fields[1].GetFloat();
+        bd.dot_co       = fields[2].GetFloat();
+        bd.direct_ap_co = fields[3].GetFloat();
+        bd.dot_ap_co    = fields[4].GetFloat();
+
+        mSpellBonusDataMap[entry] = bd;
+
+        ++count;
+    }
+    while( result->NextRow() );
+
+    delete result;
+
+    sLog.outString( ">> Loaded %u spell bonus data definitions", count);
+}
+
 void SpellMgr::LoadSpellEnchantProcData()
 {
     mSpellEnchantProcEventMap.clear();                             // need for reload case
@@ -1525,6 +1608,9 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool
     if(!spellInfo_1 || !spellInfo_2)
         return false;
 
+    if(IsSpecialStackCase(spellId_1, spellId_2, sameCaster))
+        return false;
+
     SpellSpecific spellId_spec_1 = GetSpellSpecific(spellId_1);
     SpellSpecific spellId_spec_2 = GetSpellSpecific(spellId_2);
     if (spellId_spec_1 && spellId_spec_2)
@@ -1596,6 +1682,32 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool
 
     return true;
 }
+
+bool SpellMgr::IsSpecialStackCase(uint32 spellId_1, uint32 spellId_2, bool sameCaster, bool recur) const
+{
+    // put here all spells that should stack, but accoriding to rules in method IsNoStackSpellDueToSpell don't stack
+    SpellEntry const *spellInfo_1 = sSpellStore.LookupEntry(spellId_1);
+    SpellEntry const *spellInfo_2 = sSpellStore.LookupEntry(spellId_2);    
+    
+    // judgement of light stacks with judgement of wisdom
+    if(spellInfo_1->SpellFamilyName == SPELLFAMILY_PALADIN && spellInfo_1->SpellFamilyFlags & 0x80000 && spellInfo_1->SpellIconID == 299 // light
+            && spellInfo_2->SpellFamilyName == SPELLFAMILY_PALADIN && spellInfo_2->SpellFamilyFlags & 0x80000 && spellInfo_2->SpellIconID == 206) // wisdom
+        return !sameCaster;
+
+    // hourglass of unraveller stacks with blood fury
+    if(spellId_1 == 33649 && spellId_2 == 20572)
+        return true;
+
+    // sextant of unstabble currents stacks with Shiffar's Nexus-Horn
+    if(spellId_1 == 38348 && spellId_2 == 34321)
+        return true;
+
+    if(recur)
+        return IsSpecialStackCase(spellId_2, spellId_1, sameCaster, false);
+
+    return false;
+}
+
 bool SpellMgr::IsProfessionSpell(uint32 spellId)
 {
     SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
@@ -2279,15 +2391,13 @@ void SpellMgr::LoadSpellPetAuras()
 // set data in core for now
 void SpellMgr::LoadSpellCustomAttr()
 {
-    mSpellCustomAttr.resize(GetSpellStore()->GetNumRows());
-
     SpellEntry *spellInfo;
     for(uint32 i = 0; i < GetSpellStore()->GetNumRows(); ++i)
     {
-        mSpellCustomAttr[i] = 0;
         spellInfo = (SpellEntry*)GetSpellStore()->LookupEntry(i);
         if(!spellInfo)
             continue;
+        spellInfo->AttributesCu = 0;
 
         bool auraSpell = true;
         for(uint32 j = 0; j < 3; ++j)
@@ -2302,7 +2412,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 }
         }
         if(auraSpell)
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_AURA_SPELL;
+            spellInfo->AttributesCu |= SPELL_ATTR_CU_AURA_SPELL;
 
         for(uint32 j = 0; j < 3; ++j)
         {
@@ -2311,18 +2421,18 @@ void SpellMgr::LoadSpellCustomAttr()
                 case SPELL_AURA_PERIODIC_DAMAGE:
                 case SPELL_AURA_PERIODIC_DAMAGE_PERCENT:
                 case SPELL_AURA_PERIODIC_LEECH:
-                    mSpellCustomAttr[i] |= SPELL_ATTR_CU_AURA_DOT;
+                    spellInfo->AttributesCu |= SPELL_ATTR_CU_AURA_DOT;
                     break;
                 case SPELL_AURA_PERIODIC_HEAL:
                 case SPELL_AURA_OBS_MOD_HEALTH:
-                    mSpellCustomAttr[i] |= SPELL_ATTR_CU_AURA_HOT;
+                    spellInfo->AttributesCu |= SPELL_ATTR_CU_AURA_HOT;
                     break;
                 case SPELL_AURA_MOD_ROOT:
-                    mSpellCustomAttr[i] |= SPELL_ATTR_CU_AURA_CC;
-                    mSpellCustomAttr[i] |= SPELL_ATTR_CU_MOVEMENT_IMPAIR;
+                    spellInfo->AttributesCu |= SPELL_ATTR_CU_AURA_CC;
+                    spellInfo->AttributesCu |= SPELL_ATTR_CU_MOVEMENT_IMPAIR;
                     break;
                 case SPELL_AURA_MOD_DECREASE_SPEED:
-                    mSpellCustomAttr[i] |= SPELL_ATTR_CU_MOVEMENT_IMPAIR;
+                    spellInfo->AttributesCu |= SPELL_ATTR_CU_MOVEMENT_IMPAIR;
                     break;
                 default:
                     break;
@@ -2336,12 +2446,12 @@ void SpellMgr::LoadSpellCustomAttr()
                 case SPELL_EFFECT_NORMALIZED_WEAPON_DMG:
                 case SPELL_EFFECT_WEAPON_PERCENT_DAMAGE:
                 case SPELL_EFFECT_HEAL:
-                    mSpellCustomAttr[i] |= SPELL_ATTR_CU_DIRECT_DAMAGE;
+                    spellInfo->AttributesCu |= SPELL_ATTR_CU_DIRECT_DAMAGE;
                     break;
                 case SPELL_EFFECT_CHARGE:
                     if(!spellInfo->speed && !spellInfo->SpellFamilyName)
                         spellInfo->speed = SPEED_CHARGE;
-                    mSpellCustomAttr[i] |= SPELL_ATTR_CU_CHARGE;
+                    spellInfo->AttributesCu |= SPELL_ATTR_CU_CHARGE;
                     break;
                 case SPELL_EFFECT_TRIGGER_SPELL:
                     if (IsPositionTarget(spellInfo->EffectImplicitTargetA[j]) ||
@@ -2361,17 +2471,17 @@ void SpellMgr::LoadSpellCustomAttr()
                 case SPELL_AURA_MOD_CHARM:
                 case SPELL_AURA_MOD_FEAR:
                 case SPELL_AURA_MOD_STUN:
-                    mSpellCustomAttr[i] |= SPELL_ATTR_CU_AURA_CC;
-                    mSpellCustomAttr[i] &= ~SPELL_ATTR_CU_MOVEMENT_IMPAIR;
+                    spellInfo->AttributesCu |= SPELL_ATTR_CU_AURA_CC;
+                    spellInfo->AttributesCu &= ~SPELL_ATTR_CU_MOVEMENT_IMPAIR;
                     break;
             }
         }
 
         if(spellInfo->SpellVisual == 3879)
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_CONE_BACK;
+            spellInfo->AttributesCu |= SPELL_ATTR_CU_CONE_BACK;
 
         if(spellInfo->SpellFamilyName == SPELLFAMILY_DRUID && spellInfo->SpellFamilyFlags & 0x1000LL && spellInfo->SpellIconID == 494)
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
+            spellInfo->AttributesCu |= SPELL_ATTR_CU_IGNORE_ARMOR;
 
         // Modify SchoolMask to allow them critically heal
         // Healthstones
@@ -2386,10 +2496,12 @@ void SpellMgr::LoadSpellCustomAttr()
 
         switch(i)
         {
+        case 34121: // Al'ar Flame Buffet
+            spellInfo->InterruptFlags &= ~SPELL_INTERRUPT_FLAG_MOVEMENT;
         case 26029: // dark glare
         case 37433: // spout
         case 43140: case 43215: // flame breath
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_CONE_LINE;
+            spellInfo->AttributesCu |= SPELL_ATTR_CU_CONE_LINE;
             break;
         case 24340: case 26558: case 28884:     // Meteor
         case 36837: case 38903: case 41276:     // Meteor
@@ -2399,7 +2511,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 40810: case 43267: case 43268:     // Saber Lash
         case 42384:                             // Brutal Swipe
         case 45150:                             // Meteor Slash
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_SHARE_DAMAGE;
+            spellInfo->AttributesCu |= SPELL_ATTR_CU_SHARE_DAMAGE;
             switch(i) // Saber Lash Targets
             {
             case 40810:             spellInfo->MaxAffectedTargets = 3; break;
@@ -2430,8 +2542,6 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 39992: // Needle Spine
             spellInfo->MaxAffectedTargets = 3;
-            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CONE_ENEMY;
-            spellInfo->EffectImplicitTargetB[0] = 0;
             break;
         case 38310: //Multi-Shot
             spellInfo->MaxAffectedTargets = 4;
@@ -2462,11 +2572,18 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->Effect[1] = NULL;
             break;
         case 12723: // Sweeping Strikes proc
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
+            spellInfo->AttributesCu |= SPELL_ATTR_CU_IGNORE_ARMOR;
             spellInfo->Attributes |= SPELL_ATTR_IMPOSSIBLE_DODGE_PARRY_BLOCK;
             break;
         case 24905: // Moonkin form -> elune's touch
             spellInfo->EffectImplicitTargetA[2] = TARGET_UNIT_CASTER;
+            break;
+        case 27066: // Trueshot r4 - poprzednie ranki nie maja dispel type: MAGIC o.O
+            spellInfo->Dispel = DISPEL_NONE;
+            break;
+        case 31117: // UA dispell effect
+            spellInfo->SpellFamilyFlags = 0x010000000000LL;
+            break;
         default:
             break;
         }
@@ -2501,14 +2618,14 @@ void SpellMgr::LoadSpellLinked()
         int32 effect = fields[1].GetInt32();
         int32 type = fields[2].GetInt32();
 
-        SpellEntry const* spellInfo = sSpellStore.LookupEntry(abs(trigger));
-        if (!spellInfo)
+        SpellEntry *strigger = (SpellEntry *)sSpellStore.LookupEntry(abs(trigger));
+        if (!strigger)
         {
             sLog.outErrorDb("Spell %u listed in `spell_linked_spell` does not exist", abs(trigger));
             continue;
         }
-        spellInfo = sSpellStore.LookupEntry(abs(effect));
-        if (!spellInfo)
+        SpellEntry *seffect = (SpellEntry *)sSpellStore.LookupEntry(abs(effect));
+        if (!seffect)
         {
             sLog.outErrorDb("Spell %u listed in `spell_linked_spell` does not exist", abs(effect));
             continue;
@@ -2518,14 +2635,14 @@ void SpellMgr::LoadSpellLinked()
         {
             switch(type)
             {
-                case 0: mSpellCustomAttr[trigger] |= SPELL_ATTR_CU_LINK_CAST; break;
-                case 1: mSpellCustomAttr[trigger] |= SPELL_ATTR_CU_LINK_HIT;  break;
-                case 2: mSpellCustomAttr[trigger] |= SPELL_ATTR_CU_LINK_AURA; break;
+                case 0: strigger->AttributesCu |= SPELL_ATTR_CU_LINK_CAST; break;
+                case 1: strigger->AttributesCu |= SPELL_ATTR_CU_LINK_HIT;  break;
+                case 2: strigger->AttributesCu |= SPELL_ATTR_CU_LINK_AURA; break;
             }
         }
         else
         {
-            mSpellCustomAttr[-trigger] |= SPELL_ATTR_CU_LINK_REMOVE;
+            strigger->AttributesCu |= SPELL_ATTR_CU_LINK_REMOVE;
         }
 
         if(type) //we will find a better way when more types are needed
@@ -2750,7 +2867,14 @@ bool IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_id,uint32 z
 
             if(!mapEntry->IsBattleGround())
                 return false;
+            break;
         }
+        // karazhan books
+        case 30562:
+        case 30550:
+        case 30567:
+        case 30557:
+            return map_id == 532;
     }
 
     return true;

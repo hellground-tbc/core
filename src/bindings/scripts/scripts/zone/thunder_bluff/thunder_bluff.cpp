@@ -63,7 +63,7 @@ struct TRINITY_DLL_DECL npc_cairne_bloodhoofAI : public ScriptedAI
 
         if( BerserkerCharge_Timer < diff )
         {
-            Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0);
+            Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,GetSpellMaxRange(SPELL_BERSERKER_CHARGE), true);
             if( target )
                 DoCast(target,SPELL_BERSERKER_CHARGE);
             BerserkerCharge_Timer = 25000;

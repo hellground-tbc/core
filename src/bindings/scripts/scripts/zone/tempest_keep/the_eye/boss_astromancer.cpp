@@ -213,52 +213,74 @@ struct TRINITY_DLL_DECL boss_high_astromancer_solarianAI : public ScriptedAI
         //Check_Timer
         if(Check_Timer < diff)
         {
+            if(!m_creature->IsNonMeleeSpellCasted(false))
+            {
+                if(m_creature->GetUInt64Value(UNIT_FIELD_TARGET) != m_creature->getVictim()->GetGUID())
+                    m_creature->SetUInt64Value(UNIT_FIELD_TARGET, m_creature->getVictim()->GetGUID());
+            }
+
             if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 135.0f)
                 EnterEvadeMode();
             else
                 DoZoneInCombat();
             
             Check_Timer = 3000;
-        }else Check_Timer -= diff;
+        }
+        else
+            Check_Timer -= diff;
 
-        if (AppearDelay)
+        if(AppearDelay)
         {
             m_creature->StopMoving();
             m_creature->AttackStop();
-            if (AppearDelay_Timer < diff)
+
+            if(AppearDelay_Timer < diff)
             {
                 AppearDelay = false;
-                if (Phase == 2)
+
+                if(Phase == 2)
                 {
                     m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     m_creature->SetVisibility(VISIBILITY_OFF);
                 }
                 AppearDelay_Timer = 2000;
-            }else AppearDelay_Timer -= diff;
+            }
+            else
+                AppearDelay_Timer -= diff;
         }
 
-        if (Phase == 1)
+        if(Phase == 1)
         {
-            if (BlindingLight_Timer < diff){
+            if(BlindingLight_Timer < diff)
+            {
                 BlindingLight = true;
                 BlindingLight_Timer = 45000;
-            }else BlindingLight_Timer -= diff;
+            }
+            else
+                BlindingLight_Timer -= diff;
 
-            if( Wrath_Timer < diff)
+            if(Wrath_Timer < diff)
             {
                 m_creature->InterruptNonMeleeSpells(false);
-                DoCast(SelectUnit(SELECT_TARGET_RANDOM,1,100,true), SPELL_WRATH_OF_THE_ASTROMANCER, true);
-                Wrath_Timer = 20000+rand()%5000;
-            }else Wrath_Timer -= diff;
 
-            if (ArcaneMissiles_Timer < diff)
+                if(Unit *target =  SelectUnit(SELECT_TARGET_RANDOM,1, GetSpellMaxRange(SPELL_WRATH_OF_THE_ASTROMANCER), true, m_creature->getVictim()))
+                    DoCast(target, SPELL_WRATH_OF_THE_ASTROMANCER, true);
+
+                Wrath_Timer = 20000+rand()%5000;
+            }
+            else
+                Wrath_Timer -= diff;
+
+            if(ArcaneMissiles_Timer < diff)
             {
                 if(BlindingLight)
                 {
                     DoCast(m_creature->getVictim(), SPELL_BLINDING_LIGHT);
                     BlindingLight = false;
-                }else{
-                    Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                }
+                else
+                {
+                    Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_ARCANE_MISSILES), true);
 
                     if(!m_creature->HasInArc(2.5f, target))
                         target = m_creature->getVictim();
@@ -274,7 +296,7 @@ struct TRINITY_DLL_DECL boss_high_astromancer_solarianAI : public ScriptedAI
             else
                 ArcaneMissiles_Timer -= diff;
 
-            if (MarkOfTheSolarian_Timer < diff)
+            if(MarkOfTheSolarian_Timer < diff)
             {
                 DoCast(m_creature->getVictim(), MARK_OF_SOLARIAN);
                 MarkOfTheSolarian_Timer = 45000;
@@ -282,19 +304,22 @@ struct TRINITY_DLL_DECL boss_high_astromancer_solarianAI : public ScriptedAI
             else
                 MarkOfTheSolarian_Timer -= diff;
 
-            if (MarkOfTheAstromancer_Timer < diff) //A debuff that lasts for 5 seconds, cast several times each phase on a random raid member, but not the main tank
+            if(MarkOfTheAstromancer_Timer < diff) //A debuff that lasts for 5 seconds, cast several times each phase on a random raid member, but not the main tank
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, 100, true);
+                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_MARK_OF_THE_ASTROMANCER), true, m_creature->getVictim());
+                
                 if(target)
                     DoCast(target, SPELL_MARK_OF_THE_ASTROMANCER);
-                else DoCast(m_creature->getVictim(), SPELL_MARK_OF_THE_ASTROMANCER);
+                else
+                    DoCast(m_creature->getVictim(), SPELL_MARK_OF_THE_ASTROMANCER);
+
                 MarkOfTheAstromancer_Timer = 15000;
             }
             else
                 MarkOfTheAstromancer_Timer -= diff;
 
             //Phase1_Timer
-            if (Phase1_Timer < diff)
+            if(Phase1_Timer < diff)
             {
                 Phase = 2;
                 Phase1_Timer = 50000;
@@ -304,7 +329,7 @@ struct TRINITY_DLL_DECL boss_high_astromancer_solarianAI : public ScriptedAI
                 
                 for(int i=0; i<=2; ++i)
                 {
-                    if (!i)
+                    if(!i)
                     {
                         Portals[i][0] = Portal_X(SMALL_PORTAL_RADIUS);
                         Portals[i][1] = Portal_Y(Portals[i][0], SMALL_PORTAL_RADIUS);
@@ -327,7 +352,7 @@ struct TRINITY_DLL_DECL boss_high_astromancer_solarianAI : public ScriptedAI
                     Portals[2][1] = Portal_Y(Portals[2][0], LARGE_PORTAL_RADIUS);
                 }
 
-                for (int i=0; i<=2; i++)
+                for(int i=0; i<=2; i++)
                 {
                     Creature* Summoned = m_creature->SummonCreature(ASTROMANCER_SOLARIAN_SPOTLIGHT, Portals[i][0], Portals[i][1], Portals[i][2], CENTER_O, TEMPSUMMON_TIMED_DESPAWN, Phase2_Timer+Phase3_Timer+AppearDelay_Timer+1700);
                     if(Summoned)

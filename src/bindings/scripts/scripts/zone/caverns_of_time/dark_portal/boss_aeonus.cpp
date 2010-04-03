@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Boss_Aeonus
-SD%Complete: 80
-SDComment: Some spells not implemented
+SD%Complete: 99
+SDComment: Some timers may not be proper
 SDCategory: Caverns of Time, The Dark Portal
 EndScriptData */
 
@@ -49,22 +49,30 @@ struct TRINITY_DLL_DECL boss_aeonusAI : public ScriptedAI
     ScriptedInstance *pInstance;
     bool HeroicMode;
 
+    uint32 Say_Timer;
+    uint32 Cleave_Timer;
     uint32 SandBreath_Timer;
     uint32 TimeStop_Timer;
     uint32 Frenzy_Timer;
 
     void Reset()
     {
+        Say_Timer = 20000;
+        Cleave_Timer = 5000;
         SandBreath_Timer = 30000;
         TimeStop_Timer = 40000;
         Frenzy_Timer = 120000;
         m_creature->setActive(true);
+
+        SayIntro();
     }
 
-    void Aggro(Unit *who)
+        void SayIntro()
     {
-        DoScriptText(SAY_AGGRO, m_creature);
+        DoScriptText(SAY_ENTER, m_creature);
     }
+
+    void Aggro(Unit *who) {}
 
     void MoveInLineOfSight(Unit *who)
     {
@@ -83,13 +91,14 @@ struct TRINITY_DLL_DECL boss_aeonusAI : public ScriptedAI
 
     void JustDied(Unit *victim)
     {
-        DoScriptText(SAY_DEATH, m_creature);
+        if(pInstance)
+        {
+            if(pInstance->GetData(TYPE_MEDIVH) != FAIL)
+                DoScriptText(SAY_DEATH, m_creature);
 
-         if (pInstance)
-         {
-             pInstance->SetData(TYPE_RIFT,DONE);
-             pInstance->SetData(TYPE_MEDIVH,DONE);//FIXME: later should be removed
-         }
+            pInstance->SetData(TYPE_RIFT,DONE);
+            pInstance->SetData(TYPE_MEDIVH,DONE);//FIXME: later should be removed
+        }
     }
 
     void KilledUnit(Unit *victim)
@@ -107,19 +116,44 @@ struct TRINITY_DLL_DECL boss_aeonusAI : public ScriptedAI
         if (!UpdateVictim() )
             return;
 
+        //Say Aggro
+        if (Say_Timer && Say_Timer < diff)
+        {
+            DoScriptText(SAY_AGGRO, m_creature);
+            Say_Timer = 0;
+        }
+        else
+            Say_Timer -= diff;
+
+        //Cleave
+        if (Cleave_Timer < diff)
+        {
+            DoCast(m_creature->getVictim(), SPELL_CLEAVE);
+            Cleave_Timer = 6000+rand()%4000;
+        }
+        else
+            Cleave_Timer -= diff;
+
         //Sand Breath
         if (SandBreath_Timer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_SAND_BREATH);
+            if(!HeroicMode)
+                DoCast(m_creature->getVictim(), SPELL_SAND_BREATH);
+            else
+                DoCast(m_creature->getVictim(), H_SPELL_SAND_BREATH);
             SandBreath_Timer = 30000;
-        }else SandBreath_Timer -= diff;
+        }
+        else
+            SandBreath_Timer -= diff;
 
         //Time Stop
         if (TimeStop_Timer < diff)
         {
             DoCast(m_creature->getVictim(), SPELL_TIME_STOP);
             TimeStop_Timer = 40000;
-        }else TimeStop_Timer -= diff;
+        }
+        else
+            TimeStop_Timer -= diff;
 
         //Frenzy
         if (Frenzy_Timer < diff)
@@ -127,7 +161,16 @@ struct TRINITY_DLL_DECL boss_aeonusAI : public ScriptedAI
             DoScriptText(EMOTE_FRENZY, m_creature);
             DoCast(m_creature, SPELL_ENRAGE);
             Frenzy_Timer = 120000;
-        }else Frenzy_Timer -= diff;
+        }
+        else
+            Frenzy_Timer -= diff;
+
+        //if event failed, remove boss from instance
+        if(pInstance && pInstance->GetData(TYPE_MEDIVH) == FAIL)
+        {
+            m_creature->Kill(m_creature, false);
+            m_creature->RemoveCorpse();
+        }
 
         DoMeleeAttackIfReady();
     }

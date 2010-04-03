@@ -16,16 +16,16 @@
 
 /* ScriptData
 SDName: Boss_Blackheart_the_Inciter
-SD%Complete: 75
-SDComment: Incite Chaos not functional since core lacks Mind Control support
+SD%Complete: 100
+SDComment: 
 SDCategory: Auchindoun, Shadow Labyrinth
 EndScriptData */
 
 #include "precompiled.h"
 #include "def_shadow_labyrinth.h"
+#include "PlayerAI.h"
 
 #define SPELL_INCITE_CHAOS    33676
-#define SPELL_INCITE_CHAOS_B  33684                         //debuff applied to each member of party
 #define SPELL_CHARGE          33709
 #define SPELL_WAR_STOMP       33707
 
@@ -110,53 +110,68 @@ struct TRINITY_DLL_DECL boss_blackheart_the_inciterAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        //Return since we have no target
-        if (!UpdateVictim() )
-            return;
-
-        if (InciteChaos)
+        if(InciteChaos)
         {
-            if (InciteChaosWait_Timer < diff)
+            if(InciteChaosWait_Timer < diff)
             {
                 InciteChaos = false;
-                InciteChaosWait_Timer = 15000;
-            }else InciteChaosWait_Timer -= diff;
+                DoResetThreat();
+            }
+            else
+                InciteChaosWait_Timer -= diff;
 
             return;
         }
 
-        if (InciteChaos_Timer < diff)
+        if (!UpdateVictim() )
+            return;
+
+        if(InciteChaos_Timer < diff)
         {
             DoCast(m_creature, SPELL_INCITE_CHAOS);
 
-            std::list<HostilReference *> t_list = m_creature->getThreatManager().getThreatList();
-            for( std::list<HostilReference *>::iterator itr = t_list.begin(); itr!= t_list.end(); ++itr )
+            Map *map = m_creature->GetMap();
+            Map::PlayerList const &PlayerList = map->GetPlayers();
+
+            if(PlayerList.isEmpty())
+                return;
+
+            for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
             {
-                Unit* target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
-                if (target && target->GetTypeId() == TYPEID_PLAYER)
-                    target->CastSpell(target,SPELL_INCITE_CHAOS_B,true);
+                Player *plr = i->getSource();
+                Player *target = (Player*)SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true, plr);
+
+                if(plr && plr->IsAIEnabled && target)
+                    plr->AI()->AttackStart(target);                
             }
 
-            DoResetThreat();
+            //DoResetThreat();
             InciteChaos = true;
             InciteChaos_Timer = 40000;
+            InciteChaosWait_Timer = 16000;
             return;
-        }else InciteChaos_Timer -= diff;
+        }
+        else
+            InciteChaos_Timer -= diff;
 
         //Charge_Timer
         if (Charge_Timer < diff)
         {
-            if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 50, true))
                 DoCast(target, SPELL_CHARGE);
             Charge_Timer = 25000;
-        }else Charge_Timer -= diff;
+        }
+        else
+            Charge_Timer -= diff;
 
         //Knockback_Timer
         if (Knockback_Timer < diff)
         {
             DoCast(m_creature, SPELL_WAR_STOMP);
             Knockback_Timer = 20000;
-        }else Knockback_Timer -= diff;
+        }
+        else
+            Knockback_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }

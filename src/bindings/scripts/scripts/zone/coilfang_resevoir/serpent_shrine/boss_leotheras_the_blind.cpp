@@ -181,7 +181,6 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
     bool NeedThreatReset;
     bool DemonForm;
     bool IsFinalForm;
-    bool EnrageUsed;
     float x,y,z;
 
     uint64 InnderDemon[5];
@@ -205,7 +204,6 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
         DemonForm = false;
         IsFinalForm = false;
         NeedThreatReset = false;
-        EnrageUsed = false;
         InnderDemon_Count = 0;
         m_creature->SetSpeed( MOVE_RUN, 2.0f, true);
         m_creature->SetUInt32Value(UNIT_FIELD_DISPLAYID, MODEL_NIGHTELF);
@@ -474,7 +472,7 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
         if(Berserk_Timer < diff)
         {
             DoCast(m_creature, SPELL_BERSERK);
-            EnrageUsed = true;
+            Berserk_Timer = 600000;
         }
         else
             Berserk_Timer -= diff;
@@ -786,10 +784,8 @@ struct TRINITY_DLL_DECL mob_greyheart_spellbinderAI : public ScriptedAI
 
         if(Mindblast_Timer < diff)
         {
-            Unit* target = NULL;
-            target = SelectUnit(SELECT_TARGET_RANDOM,0);
-
-            if ( target )DoCast(target, SPELL_MINDBLAST);
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0, GetSpellMaxRange(SPELL_MINDBLAST), true))
+                DoCast(target, SPELL_MINDBLAST);
 
             Mindblast_Timer = 10000 + rand()%5000;
         }else Mindblast_Timer -= diff;

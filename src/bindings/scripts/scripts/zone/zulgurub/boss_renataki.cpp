@@ -58,11 +58,11 @@ struct TRINITY_DLL_DECL boss_renatakiAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!UpdateVictim())
+        if(!UpdateVictim())
             return;
 
         //Invisible_Timer
-        if (Invisible_Timer < diff)
+        if(Invisible_Timer < diff)
         {
             m_creature->InterruptSpell(CURRENT_GENERIC_SPELL);
             m_creature->SetUInt32Value( UNIT_VIRTUAL_ITEM_SLOT_DISPLAY, 0);
@@ -73,15 +73,15 @@ struct TRINITY_DLL_DECL boss_renatakiAI : public ScriptedAI
             Invisible = true;
 
             Invisible_Timer = 15000 + rand()%15000;
-        }else Invisible_Timer -= diff;
+        }
+        else
+            Invisible_Timer -= diff;
 
-        if (Invisible)
+        if(Invisible)
         {
-            if (Ambush_Timer < diff)
+            if(Ambush_Timer < diff)
             {
-                Unit* target = NULL;
-                target = SelectUnit(SELECT_TARGET_RANDOM,0);
-                if (target)
+                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
                 {
                     DoTeleportTo(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
                     DoCast(target,SPELL_AMBUSH);
@@ -89,7 +89,9 @@ struct TRINITY_DLL_DECL boss_renatakiAI : public ScriptedAI
 
                 Ambushed = true;
                 Ambush_Timer = 3000;
-            }else Ambush_Timer -= diff;
+            }
+            else
+                Ambush_Timer -= diff;
         }
 
         if (Ambushed)
@@ -106,31 +108,36 @@ struct TRINITY_DLL_DECL boss_renatakiAI : public ScriptedAI
                 Invisible = false;
 
                 Visible_Timer = 4000;
-            }else Visible_Timer -= diff;
+            }
+            else
+                Visible_Timer -= diff;
         }
 
         //Resetting some aggro so he attacks other gamers
         if(!Invisible)
-            if (Aggro_Timer < diff)
         {
-            Unit* target = NULL;
-            target = SelectUnit(SELECT_TARGET_RANDOM,1);
+            if(Aggro_Timer < diff)
+            {
+                Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1, 200, true, m_creature->getVictim());
+                if(DoGetThreat(m_creature->getVictim()))
+                    DoModifyThreatPercent(m_creature->getVictim(),-50);
 
-            if(DoGetThreat(m_creature->getVictim()))
-                DoModifyThreatPercent(m_creature->getVictim(),-50);
+                if(target)
+                    AttackStart(target);
 
-            if (target)
-                AttackStart(target);
+                Aggro_Timer = 7000 + rand()%13000;
+            }
+            else
+                Aggro_Timer -= diff;
 
-            Aggro_Timer = 7000 + rand()%13000;
-        }else Aggro_Timer -= diff;
-
-        if (!Invisible)
             if(ThousandBlades_Timer < diff)
-        {
-            DoCast(m_creature->getVictim(), SPELL_THOUSANDBLADES);
-            ThousandBlades_Timer = 7000 + rand()%5000;
-        }else ThousandBlades_Timer -= diff;
+            {
+                DoCast(m_creature->getVictim(), SPELL_THOUSANDBLADES);
+                ThousandBlades_Timer = 7000 + rand()%5000;
+            }
+            else
+                ThousandBlades_Timer -= diff;
+        }
 
         DoMeleeAttackIfReady();
     }

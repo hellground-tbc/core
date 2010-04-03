@@ -94,7 +94,8 @@ struct TRINITY_DLL_DECL mob_doom_blossomAI : public ScriptedAI
 
         if(ShadowBoltTimer < diff && InCombat)
         {
-            DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_SHADOWBOLT);
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
+                DoCast(target, SPELL_SHADOWBOLT);
             ShadowBoltTimer = 10000;
         }else ShadowBoltTimer -= diff;
         return;
@@ -358,7 +359,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
                     Construct->CastSpell(Construct, SPELL_PASSIVE_SHADOWFORM, true);
                     SetThreatList(Construct);               // Use same function as Doom Blossom to set Threat List.
                     ((mob_shadowy_constructAI*)Construct->AI())->GhostGUID = GhostGUID;
-                    Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1);
+                    Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, 200, true, m_creature->getVictim());
                     if(!target)                             // someone's trying to solo.
                         target = m_creature->getVictim();
 
@@ -421,7 +422,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
                 Shadow = m_creature->SummonCreature(CREATURE_SHADOWY_CONSTRUCT, X, m_creature->GetPositionY(), m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 0);
                 if(Shadow)
                 {
-                    Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1);
+                    Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, 200, true, m_creature->getVictim());
                     if(!target)
                         target = m_creature->getVictim();
 
@@ -456,7 +457,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
 
         if(IncinerateTimer < diff)
         {
-            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1);
+            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, 200, true, m_creature->getVictim());
             if(!target)
                 target = m_creature->getVictim();
 
@@ -474,8 +475,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
 
         if(CrushingShadowsTimer < diff)
         {
-            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-            if(target && target->isAlive())
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
                 DoCast(target, SPELL_CRUSHING_SHADOWS);
             CrushingShadowsTimer = 10000 + rand()%16 * 1000;
         }else CrushingShadowsTimer -= diff;

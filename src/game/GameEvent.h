@@ -88,6 +88,7 @@ class Player;
 class GameEvent
 {
     public:
+        const char *getActiveEventsString();
         GameEvent();
         ~GameEvent() {};
         typedef std::set<uint16> ActiveEvents;

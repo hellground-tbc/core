@@ -275,7 +275,9 @@ struct TRINITY_DLL_DECL boss_moroesAI : public ScriptedAI
                 }
             }
             CheckAdds_Timer = 5000;
-        }else CheckAdds_Timer -= diff;
+        }
+        else
+            CheckAdds_Timer -= diff;
 
         if (!Enrage)
         {
@@ -286,27 +288,32 @@ struct TRINITY_DLL_DECL boss_moroesAI : public ScriptedAI
                 InVanish = true;
                 Vanish_Timer = 30000;
                 Wait_Timer = 5000;
-            }else Vanish_Timer -= diff;
+            }
+            else
+                Vanish_Timer -= diff;
 
-            if (Gouge_Timer < diff)
+            if(Gouge_Timer < diff)
             {
                 DoCast(m_creature->getVictim(), SPELL_GOUGE);
                 Gouge_Timer = 40000;
-            }else Gouge_Timer -= diff;
+            }
+            else
+                Gouge_Timer -= diff;
 
-            if (Blind_Timer < diff)
+            if(Blind_Timer < diff)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 5, true);
-                if (target && m_creature->IsWithinMeleeRange(target))
+                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_BLIND), true))
                     DoCast(target, SPELL_BLIND);
 
                 Blind_Timer = 40000;
-            }else Blind_Timer -= diff;
+            }
+            else
+                Blind_Timer -= diff;
         }
 
-        if (InVanish)
+        if(InVanish)
         {
-            if (Wait_Timer < diff)
+            if(Wait_Timer < diff)
             {
                 switch(rand()%2)
                 {
@@ -318,10 +325,12 @@ struct TRINITY_DLL_DECL boss_moroesAI : public ScriptedAI
                    target->CastSpell(target, SPELL_GARROTE,true);
 
                 InVanish = false;
-            }else Wait_Timer -= diff;
+            }
+            else
+                Wait_Timer -= diff;
         }
 
-        if (!InVanish)
+        if(!InVanish)
             DoMeleeAttackIfReady();
     }
 };

@@ -590,7 +590,6 @@ class Spell
         // and in same time need aura data and after aura deleting.
         SpellEntry const* m_triggeredByAuraSpell;
 
-        uint32 m_customAttr;
         bool m_skipCheck;
 };
 
@@ -673,7 +672,16 @@ namespace Trinity
                         break;
                     case PUSH_IN_LINE:
                         if(i_caster->isInLine((Unit*)(itr->getSource()), i_radius ))
-                            i_data->push_back(itr->getSource());
+                        {
+                            if(i_spell.m_spellInfo->Id != 37433)                      
+                                i_data->push_back(itr->getSource());
+                            else
+                            {
+                                Unit *target = (Unit*)(itr->getSource());
+                                if(target->GetTypeId() == TYPEID_PLAYER && !((Player*)target)->IsInWater() && target->GetPositionZ() > -19.9645)
+                                    i_data->push_back(itr->getSource());
+                            }
+                        }
                         break;
                     default:
                         if(i_TargetType != SPELL_TARGETS_ENTRY && i_push_type == PUSH_SRC_CENTER && i_caster) // if caster then check distance from caster to target (because of model collision)

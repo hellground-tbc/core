@@ -158,7 +158,9 @@ struct TRINITY_DLL_DECL mob_ashtongue_sorcererAI : public ScriptedAI
                 }
             }
             CheckTimer = 2000;
-        }else CheckTimer -= diff;
+        }
+        else
+            CheckTimer -= diff;
     }
 };
 
@@ -168,7 +170,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
         AkamaGUID = pInstance ? pInstance->GetData64(DATA_AKAMA_SHADE) : 0;
-        m_creature->setActive(true);//if view distance is too low
+        m_creature->setActive(true); //if view distance is too low
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
         m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
         m_creature->GetPosition(wLoc);
@@ -347,8 +349,8 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
                 {
                     Spawn->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
                     Spawn->GetMotionMaster()->MovePoint(0, AGGRO_X, AGGRO_Y, AGGRO_Z);
-                    Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1);
-                    Spawn->AI()->AttackStart(target);
+                    if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, 200, true, m_creature->getVictim()))
+                        Spawn->AI()->AttackStart(target);
                 }
             }
         }

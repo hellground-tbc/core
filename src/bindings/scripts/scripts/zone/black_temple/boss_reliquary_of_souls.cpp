@@ -185,7 +185,7 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public ScriptedAI
         float y = Coords[random].y;
         Creature* Soul = m_creature->SummonCreature(CREATURE_ENSLAVED_SOUL, x, y, m_creature->GetPositionZ(), m_creature->GetOrientation(), TEMPSUMMON_CORPSE_DESPAWN, 0);
         if(!Soul) return false;
-        if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+        if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
         {
             ((npc_enslaved_soulAI*)Soul->AI())->ReliquaryGUID = m_creature->GetGUID();
             Soul->AI()->AttackStart(target);
@@ -433,7 +433,8 @@ struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
 
         if(SoulDrainTimer < diff)
         {
-            DoCast(SelectUnit(SELECT_TARGET_RANDOM,0), SPELL_SOUL_DRAIN);
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0, 200, true))
+                DoCast(target, SPELL_SOUL_DRAIN);
             SoulDrainTimer = 60000;
         }else SoulDrainTimer -= diff;
 

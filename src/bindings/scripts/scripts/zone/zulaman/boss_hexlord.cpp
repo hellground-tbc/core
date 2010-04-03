@@ -387,7 +387,7 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
 
         if(SiphonSoul_Timer < diff)
         {
-            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 70, true);
+            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_SIPHON_SOUL), true);
             Unit *trigger = DoSpawnCreature(MOB_TEMP_TRIGGER, 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN, 30000);
             if(!target || !trigger)
             {
@@ -571,7 +571,7 @@ struct TRINITY_DLL_DECL boss_alyson_antilleAI : public boss_hexlord_addAI
                     if(Unit* target = DoSelectLowestHpFriendly(50, 0))
                         m_creature->CastSpell(target, SPELL_DISPEL_MAGIC, false);
                 }
-                else if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                else if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_DISPEL_MAGIC), true))
                     m_creature->CastSpell(target, SPELL_DISPEL_MAGIC, false);
             }
             flashheal_timer = 2500;
@@ -757,7 +757,7 @@ struct TRINITY_DLL_DECL boss_slitherAI : public boss_hexlord_addAI
 
         if (venomspit_timer < diff)
         {
-            if(Unit* victim = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if(Unit* victim = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_VENOM_SPIT), true))
                 m_creature->CastSpell(victim,SPELL_VENOM_SPIT, false);
             venomspit_timer = 2500;
         }else venomspit_timer -= diff;
@@ -830,7 +830,7 @@ struct TRINITY_DLL_DECL boss_koraggAI : public boss_hexlord_addAI
         }
         if (coldstare_timer < diff)
         {
-            if(Unit* victim = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if(Unit* victim = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_COLD_STARE), true))
                 m_creature->CastSpell(victim,SPELL_COLD_STARE, false);
             coldstare_timer = 12000;
         }

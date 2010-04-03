@@ -85,6 +85,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
     uint32 SummonFlameTimer;
     uint32 SwitchTargetTimer;
     uint32 PhaseSwitchTimer;
+    uint32 MoltenPunch_Timer;
     uint32 SummonVolcanoTimer;
     uint32 HatefulStrikeTimer;
     uint32 BerserkTimer;
@@ -112,6 +113,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
         HatefulStrikeTimer = 5000;
         SummonFlameTimer = 20000;
         SwitchTargetTimer = 90000;
+        MoltenPunch_Timer = 4000;
         PhaseSwitchTimer = 60000;
         SummonVolcanoTimer = 5000;
         BerserkTimer = 900000;                              // 15 minute enrage
@@ -141,8 +143,10 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
 
         if(GameObject* Doors = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_GAMEOBJECT_SUPREMUS_DOORS)))
         {
-            if(close) Doors->SetGoState(1);                 // Closed
-            else Doors->SetGoState(0);                      // Open
+            if(close)
+                Doors->SetGoState(1);                 // Closed
+            else
+                Doors->SetGoState(0);                      // Open
         }
     }
 
@@ -190,11 +194,12 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
 
         if (CheckTimer < diff)
         {
-            if (m_creature->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 100)
+            if (m_creature->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 200)
                 EnterEvadeMode();
             else
                 DoZoneInCombat();
-            CheckTimer = 3000;
+
+            CheckTimer = 2000;
         }
         else 
             CheckTimer -= diff;
@@ -203,12 +208,13 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
         {
             if(BerserkTimer < diff)
                 DoCast(m_creature, SPELL_BERSERK);
-            else BerserkTimer -= diff;
+            else
+                BerserkTimer -= diff;
         }
 
         if(SummonFlameTimer < diff)
         {
-            Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, 100.0f, true);
+            Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, 100.0f, true, m_creature->getVictim());
             if(!target)
                 target = m_creature->getVictim();
 
@@ -236,7 +242,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
         {
             if(SwitchTargetTimer < diff)
             {
-                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, 100, true))
+                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, 100, true, m_creature->getVictim()))
                 {
                     DoResetThreat();
                     m_creature->AddThreat(target, 5000000.0f);
@@ -246,6 +252,19 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
             }
             else
                 SwitchTargetTimer -= diff;
+            
+            if(MoltenPunch_Timer < diff)
+            {
+                if(m_creature->IsWithinDistInMap(m_creature->getVictim(), 40))
+                {
+                    DoCast(m_creature->getVictim(), SPELL_CHARGE, false);
+                    MoltenPunch_Timer = 8000 +diff;
+                }
+                else
+                    MoltenPunch_Timer = 2000;
+            }
+            else
+                MoltenPunch_Timer -= diff;
 
             if(SummonVolcanoTimer < diff)
             {
@@ -281,7 +300,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
                 SwitchTargetTimer = 10000;
                 SummonVolcanoTimer = 2000;
                 PhaseSwitchTimer = 60000;
-                m_creature->SetSpeed(MOVE_RUN, 0.9f);
+                m_creature->SetSpeed(MOVE_RUN, 0.75f);
                 DoZoneInCombat();
                 m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
                 m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);

@@ -90,24 +90,28 @@ struct TRINITY_DLL_DECL boss_marliAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!UpdateVictim())
+        if(!UpdateVictim())
             return;
 
-        if( m_creature->getVictim() && m_creature->isAlive())
+        if(m_creature->getVictim() && m_creature->isAlive())
         {
-            if (PoisonVolley_Timer < diff)
+            if(PoisonVolley_Timer < diff)
             {
                 DoCast(m_creature->getVictim(),SPELL_POISONVOLLEY);
                 PoisonVolley_Timer = 10000 + rand()%10000;
-            }else PoisonVolley_Timer -= diff;
+            }
+            else
+                PoisonVolley_Timer -= diff;
 
-            if (!PhaseTwo && Aspect_Timer < diff)
+            if(!PhaseTwo && Aspect_Timer < diff)
             {
                 DoCast(m_creature->getVictim(),SPELL_ASPECT_OF_MARLI);
                 Aspect_Timer = 13000 + rand()%5000;
-            }else Aspect_Timer -= diff;
+            }
+            else
+                Aspect_Timer -= diff;
 
-            if (!Spawned && SpawnStartSpiders_Timer < diff)
+            if(!Spawned && SpawnStartSpiders_Timer < diff)
             {
                 DoScriptText(SAY_SPIDER_SPAWN, m_creature);
 
@@ -129,9 +133,11 @@ struct TRINITY_DLL_DECL boss_marliAI : public ScriptedAI
                     Spider->AI()->AttackStart(target);
 
                 Spawned = true;
-            }else SpawnStartSpiders_Timer -= diff;
+            }
+            else
+                SpawnStartSpiders_Timer -= diff;
 
-            if (SpawnSpider_Timer < diff)
+            if(SpawnSpider_Timer < diff)
             {
                 Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0);
                 if(!target)
@@ -141,7 +147,9 @@ struct TRINITY_DLL_DECL boss_marliAI : public ScriptedAI
                 if(Spider)
                     Spider->AI()->AttackStart(target);
                 SpawnSpider_Timer = 12000 + rand()%5000;
-            }else SpawnSpider_Timer -= diff;
+            }
+            else
+                SpawnSpider_Timer -= diff;
 
             if(!PhaseTwo && Transform_Timer < diff)
             {
@@ -158,23 +166,26 @@ struct TRINITY_DLL_DECL boss_marliAI : public ScriptedAI
 
                 PhaseTwo = true;
                 Transform_Timer = 35000 + rand()%25000;
-            }else Transform_Timer -= diff;
+            }
+            else
+                Transform_Timer -= diff;
 
-            if (PhaseTwo)
+            if(PhaseTwo)
             {
-                if (Charge_Timer < diff)
+                if(Charge_Timer < diff)
                 {
                     Unit* target = NULL;
                     int i = 0 ;
                     while (i < 3)                           // max 3 tries to get a random target with power_mana
                     {
                         ++i;                                //not aggro leader
-                        target = SelectUnit(SELECT_TARGET_RANDOM,1);
-                        if (target)
+                        target = SelectUnit(SELECT_TARGET_RANDOM,1, GetSpellMaxRange(SPELL_CHARGE), true, m_creature->getVictim());
+                        if(target)
                             if (target->getPowerType() == POWER_MANA)
                                 i=3;
                     }
-                    if (target)
+
+                    if(target)
                     {
                         DoCast(target, SPELL_CHARGE);
                         //m_creature->Relocate(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0);
@@ -183,9 +194,11 @@ struct TRINITY_DLL_DECL boss_marliAI : public ScriptedAI
                     }
 
                     Charge_Timer = 8000;
-                }else Charge_Timer -= diff;
+                }
+                else
+                    Charge_Timer -= diff;
 
-                if (TransformBack_Timer < diff)
+                if(TransformBack_Timer < diff)
                 {
                     m_creature->SetUInt32Value(UNIT_FIELD_DISPLAYID,15220);
                     const CreatureInfo *cinfo = m_creature->GetCreatureInfo();
@@ -195,7 +208,9 @@ struct TRINITY_DLL_DECL boss_marliAI : public ScriptedAI
 
                     PhaseTwo = false;
                     TransformBack_Timer = 25000 + rand()%15000;
-                }else TransformBack_Timer -= diff;
+                }
+                else
+                    TransformBack_Timer -= diff;
 
             }
 

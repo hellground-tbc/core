@@ -142,21 +142,27 @@ struct TRINITY_DLL_DECL boss_thekalAI : public ScriptedAI
                 }
 
                 Check_Timer = 5000;
-            }else Check_Timer -= diff;
+            }
+            else
+                Check_Timer -= diff;
 
             if (!PhaseTwo && MortalCleave_Timer < diff)
             {
                 DoCast(m_creature->getVictim(),SPELL_MORTALCLEAVE);
                 MortalCleave_Timer = 15000 + rand()%5000;
-            }else MortalCleave_Timer -= diff;
+            }
+            else
+                MortalCleave_Timer -= diff;
 
-            if (!PhaseTwo && Silence_Timer < diff)
+            if(!PhaseTwo && Silence_Timer < diff)
             {
                 DoCast(m_creature->getVictim(),SPELL_SILENCE);
                 Silence_Timer = 20000 + rand()%5000;
-            }else Silence_Timer -= diff;
+            }
+            else
+                Silence_Timer -= diff;
 
-            if (!PhaseTwo && !WasDead && m_creature->GetHealth() <= m_creature->GetMaxHealth() * 0.05)
+            if(!PhaseTwo && !WasDead && m_creature->GetHealth() <= m_creature->GetMaxHealth() * 0.05)
             {
                 m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, 3);
@@ -171,7 +177,7 @@ struct TRINITY_DLL_DECL boss_thekalAI : public ScriptedAI
             //Thekal will transform to Tiger if he died and was not resurrected after 10 seconds.
             if(!PhaseTwo && WasDead)
             {
-                if (Resurrect_Timer < diff)
+                if(Resurrect_Timer < diff)
                 {
                     DoCast(m_creature,SPELL_TIGER_FORM);
                     m_creature->SetFloatValue(OBJECT_FIELD_SCALE_X, 2.00f);
@@ -184,7 +190,9 @@ struct TRINITY_DLL_DECL boss_thekalAI : public ScriptedAI
                     m_creature->UpdateDamagePhysical(BASE_ATTACK);
                     DoResetThreat();
                     PhaseTwo = true;
-                }else Resurrect_Timer -= diff;
+                }
+                else
+                    Resurrect_Timer -= diff;
             }
 
             if ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth() == 100) && WasDead)
@@ -192,39 +200,46 @@ struct TRINITY_DLL_DECL boss_thekalAI : public ScriptedAI
                 WasDead = false;
             }
 
-            if (PhaseTwo)
+            if(PhaseTwo)
             {
-                if (Charge_Timer < diff)
+                if(Charge_Timer < diff)
                 {
-                    if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+                    if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0, GetSpellMaxRange(SPELL_CHARGE), true))
                     {
                         DoCast(target,SPELL_CHARGE);
                         DoResetThreat();
                         AttackStart(target);
                     }
-
                     Charge_Timer = 15000 + rand()%7000;
-                }else Charge_Timer -= diff;
+                }
+                else
+                    Charge_Timer -= diff;
 
-                if (Frenzy_Timer < diff)
+                if(Frenzy_Timer < diff)
                 {
                     DoCast(m_creature,SPELL_FRENZY);
                     Frenzy_Timer = 30000;
-                }else Frenzy_Timer -= diff;
+                }
+                else
+                    Frenzy_Timer -= diff;
 
-                if (ForcePunch_Timer < diff)
+                if(ForcePunch_Timer < diff)
                 {
                     DoCast(m_creature->getVictim(),SPELL_SILENCE);
                     ForcePunch_Timer = 16000 + rand()%5000;
-                }else ForcePunch_Timer -= diff;
+                }
+                else
+                    ForcePunch_Timer -= diff;
 
-                if (SummonTigers_Timer < diff)
+                if(SummonTigers_Timer < diff)
                 {
                     DoCast(m_creature->getVictim(),SPELL_SUMMONTIGERS);
                     SummonTigers_Timer = 10000 + rand()%4000;
-                }else SummonTigers_Timer -= diff;
+                }
+                else
+                    SummonTigers_Timer -= diff;
 
-                if ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 11) && !Enraged)
+                if((m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 11) && !Enraged)
                 {
                     DoCast(m_creature, SPELL_ENRAGE);
                     Enraged = true;

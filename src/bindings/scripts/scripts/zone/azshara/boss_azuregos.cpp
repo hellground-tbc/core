@@ -110,7 +110,7 @@ struct TRINITY_DLL_DECL boss_azuregosAI : public ScriptedAI
         //ManaStorm_Timer
         if (ManaStorm_Timer < diff)
         {
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0, 60, true))
                 DoCast(target,SPELL_MANASTORM);
             ManaStorm_Timer = 7500 + rand()%5000;
         }else ManaStorm_Timer -= diff;

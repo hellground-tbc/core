@@ -250,7 +250,7 @@ struct TRINITY_DLL_DECL boss_exarch_maladaarAI : public ScriptedAI
 
         if (StolenSoul_Timer < diff)
         {
-            if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0, 100, true))
             {
                 if (target->GetTypeId() == TYPEID_PLAYER)
                 {
@@ -277,7 +277,7 @@ struct TRINITY_DLL_DECL boss_exarch_maladaarAI : public ScriptedAI
 
         if (Ribbon_of_Souls_timer < diff)
         {
-            if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0, 100, true))
                 DoCast(target,SPELL_RIBBON_OF_SOULS);
 
             Ribbon_of_Souls_timer = 5000 + (rand()%20 * 1000);

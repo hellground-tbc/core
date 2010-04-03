@@ -160,7 +160,7 @@ struct TRINITY_DLL_DECL boss_azgalorAI : public hyjal_trashAI
 
         if(DoomTimer < diff)
         {
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,1,100,true))
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,1,100,true, m_creature->getVictim()))
                 DoCast(target, SPELL_DOOM);//never on tank
             DoomTimer = 45000+rand()%5000;
         }else DoomTimer -= diff;

@@ -313,6 +313,7 @@ SpellSpecific GetSpellSpecific(uint32 spellId);
 // Different spell properties
 inline float GetSpellRadius(SpellRadiusEntry const *radius) { return (radius ? radius->Radius : 0); }
 uint32 GetSpellCastTime(SpellEntry const* spellInfo, Spell const* spell = NULL);
+uint32 GetSpellBaseCastTime(SpellEntry const *spellInfo);
 inline float GetSpellMinRange(SpellRangeEntry const *range) { return (range ? range->minRange : 0); }
 inline float GetSpellMaxRange(SpellRangeEntry const *range) { return (range ? range->maxRange : 0); }
 inline uint32 GetSpellRangeType(SpellRangeEntry const *range) { return (range ? range->type : 0); }
@@ -579,6 +580,15 @@ struct SpellEnchantProcEntry
 
 typedef UNORDERED_MAP<uint32, SpellEnchantProcEntry> SpellEnchantProcEventMap;
 
+struct SpellBonusData
+{
+    float    direct_co;
+    float       dot_co;
+    float direct_ap_co;
+    float    dot_ap_co;
+};
+typedef std::map<uint32, SpellBonusData> SpellBonusDataMap;
+
 #define ELIXIR_BATTLE_MASK    0x1
 #define ELIXIR_GUARDIAN_MASK  0x2
 #define ELIXIR_FLASK_MASK     (ELIXIR_BATTLE_MASK|ELIXIR_GUARDIAN_MASK)
@@ -724,25 +734,24 @@ inline bool IsProfessionSkill(uint32 skill)
     return  IsPrimaryProfessionSkill(skill) || skill == SKILL_FISHING || skill == SKILL_COOKING || skill == SKILL_FIRST_AID;
 }
 
-//#define SPELL_ATTR_CU_PLAYERS_ONLY      0x00000001
-#define SPELL_ATTR_CU_CONE_BACK         0x00000002
-#define SPELL_ATTR_CU_CONE_LINE         0x00000004
-#define SPELL_ATTR_CU_SHARE_DAMAGE      0x00000008
-#define SPELL_ATTR_CU_AURA_HOT          0x00000010
-#define SPELL_ATTR_CU_AURA_DOT          0x00000020
-#define SPELL_ATTR_CU_AURA_CC           0x00000040
-#define SPELL_ATTR_CU_AURA_SPELL        0x00000080
-#define SPELL_ATTR_CU_DIRECT_DAMAGE     0x00000100
-#define SPELL_ATTR_CU_CHARGE            0x00000200
-#define SPELL_ATTR_CU_LINK_CAST         0x00000400
-#define SPELL_ATTR_CU_LINK_HIT          0x00000800
-#define SPELL_ATTR_CU_LINK_AURA         0x00001000
-#define SPELL_ATTR_CU_LINK_REMOVE       0x00002000
-#define SPELL_ATTR_CU_MOVEMENT_IMPAIR   0x00004000
-#define SPELL_ATTR_CU_IGNORE_ARMOR      0x00008000
-
-
-typedef std::vector<uint32> SpellCustomAttribute;
+enum AttributesCu
+{
+    SPELL_ATTR_CU_IGNORE_ARMOR    = 0x00000001,
+    SPELL_ATTR_CU_CONE_BACK       = 0x00000002,
+    SPELL_ATTR_CU_CONE_LINE       = 0x00000004,
+    SPELL_ATTR_CU_SHARE_DAMAGE    = 0x00000008,
+    SPELL_ATTR_CU_AURA_HOT        = 0x00000010,
+    SPELL_ATTR_CU_AURA_DOT        = 0x00000020,
+    SPELL_ATTR_CU_AURA_CC         = 0x00000040,
+    SPELL_ATTR_CU_AURA_SPELL      = 0x00000080,
+    SPELL_ATTR_CU_DIRECT_DAMAGE   = 0x00000100,
+    SPELL_ATTR_CU_CHARGE          = 0x00000200,
+    SPELL_ATTR_CU_LINK_CAST       = 0x00000400,
+    SPELL_ATTR_CU_LINK_HIT        = 0x00000800,
+    SPELL_ATTR_CU_LINK_AURA       = 0x00001000,
+    SPELL_ATTR_CU_LINK_REMOVE     = 0x00002000,
+    SPELL_ATTR_CU_MOVEMENT_IMPAIR = 0x00004000,
+};
 
 typedef std::map<int32, std::vector<int32> > SpellLinkedMap;
 
@@ -908,6 +917,7 @@ class SpellMgr
         bool IsRankSpellDueToSpell(SpellEntry const *spellInfo_1,uint32 spellId_2) const;
         static bool canStackSpellRanks(SpellEntry const *spellInfo);
         bool IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool sameCaster) const;
+        bool IsSpecialStackCase(uint32 spellId_1, uint32 spellId_2, bool sameCaster, bool recur = true) const;
 
         SpellEntry const* SelectAuraRankForPlayerLevel(SpellEntry const* spellInfo, uint32 playerLevel) const;
 
@@ -983,23 +993,16 @@ class SpellMgr
                 return NULL;
         }
 
-        uint32 GetSpellCustomAttr(uint32 spell_id) const
-        {
-            if(spell_id >= mSpellCustomAttr.size())
-                return 0;
-            else
-                return mSpellCustomAttr[spell_id];
-            /*SpellCustomAttrMap::const_iterator itr = mSpellCustomAttrMap.find(spell_id);
-            if(itr != mSpellCustomAttrMap.end())
-                return itr->second;
-            else
-                return 0;*/
-        }
-
         const std::vector<int32> *GetSpellLinked(int32 spell_id) const
         {
             SpellLinkedMap::const_iterator itr = mSpellLinkedMap.find(spell_id);
             return itr != mSpellLinkedMap.end() ? &(itr->second) : NULL;
+        }
+
+        const SpellBonusData *getSpellBonusData(uint32 spell_id)
+        {
+            SpellBonusDataMap::const_iterator itr = mSpellBonusDataMap.find(spell_id);
+            return itr != mSpellBonusDataMap.end() ? &(itr->second) : NULL;
         }
 
         SpellEffectTargetTypes EffectTargetType[TOTAL_SPELL_EFFECTS];
@@ -1025,6 +1028,7 @@ class SpellMgr
         void LoadSpellCustomAttr();
         void LoadSpellLinked();
         void LoadSpellEnchantProcData();
+        void LoadSpellBonusData();
 
     private:
         SpellScriptTarget  mSpellScriptTarget;
@@ -1039,9 +1043,9 @@ class SpellMgr
         SpellProcEventMap  mSpellProcEventMap;
         SkillLineAbilityMap mSkillLineAbilityMap;
         SpellPetAuraMap     mSpellPetAuraMap;
-        SpellCustomAttribute  mSpellCustomAttr;
         SpellLinkedMap      mSpellLinkedMap;
         SpellEnchantProcEventMap     mSpellEnchantProcEventMap;
+        SpellBonusDataMap    mSpellBonusDataMap;
 };
 
 #define spellmgr SpellMgr::Instance()

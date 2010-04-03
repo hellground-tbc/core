@@ -183,7 +183,7 @@ struct TRINITY_DLL_DECL boss_doomlordkazzakAI : public ScriptedAI
         //MarkOfKazzak_Timer
         if(MarkOfKazzak_Timer < diff)
         {
-            Unit* victim = SelectUnit(SELECT_TARGET_RANDOM, 0);
+            Unit* victim = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_MARKOFKAZZAK), true);
             if(victim->GetPower(POWER_MANA))
             {
                 DoCast(victim, SPELL_MARKOFKAZZAK);
@@ -207,7 +207,8 @@ struct TRINITY_DLL_DECL boss_doomlordkazzakAI : public ScriptedAI
 
         if(Twisted_Reflection_Timer < diff)
         {
-            DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_TWISTEDREFLECTION);
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_TWISTEDREFLECTION), true))
+                DoCast(target, SPELL_TWISTEDREFLECTION);
             Twisted_Reflection_Timer = 15000;
         }
         else

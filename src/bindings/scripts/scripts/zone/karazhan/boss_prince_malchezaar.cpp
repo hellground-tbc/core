@@ -565,13 +565,19 @@ struct TRINITY_DLL_DECL boss_malchezaarAI : public ScriptedAI
                         }
                     }
                 }
-            } else AxesTargetSwitchTimer -= diff;
+            }
+            else
+                AxesTargetSwitchTimer -= diff;
 
             if(AmplifyDamageTimer < diff)
             {
-                DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_AMPLIFY_DAMAGE);
+                if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_AMPLIFY_DAMAGE), true))
+                    DoCast(target, SPELL_AMPLIFY_DAMAGE);
+
                 AmplifyDamageTimer = 20000 + rand()%10000;
-            }else AmplifyDamageTimer -= diff;
+            }
+            else
+                AmplifyDamageTimer -= diff;
         }
 
         //Time for global and double timers
@@ -579,13 +585,17 @@ struct TRINITY_DLL_DECL boss_malchezaarAI : public ScriptedAI
         {
             SummonInfernal(diff);
             InfernalTimer =  phase == 3 ? 15000 : 45000;    //15 secs in phase 3, 45 otherwise
-        }else InfernalTimer -= diff;
+        }
+        else
+            InfernalTimer -= diff;
 
         if(ShadowNovaTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_SHADOWNOVA);
+            DoCast(m_creature, SPELL_SHADOWNOVA);
             ShadowNovaTimer = phase == 3 ? 35000 : -1;
-        }else ShadowNovaTimer -= diff;
+        }
+        else
+            ShadowNovaTimer -= diff;
 
         if(phase != 2)
         {
@@ -595,13 +605,15 @@ struct TRINITY_DLL_DECL boss_malchezaarAI : public ScriptedAI
                 if(phase == 1)
                     target = m_creature->getVictim();       // the tank
                 else                                        //anyone but the tank
-                    target = SelectUnit(SELECT_TARGET_RANDOM, 1);
+                    target = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_SW_PAIN), true, m_creature->getVictim());
 
                 if (target)
                     DoCast(target, SPELL_SW_PAIN);
 
                 SWPainTimer = 20000;
-            }else SWPainTimer -= diff;
+            }
+            else
+                SWPainTimer -= diff;
         }
 
         if(phase != 3)
@@ -612,7 +624,9 @@ struct TRINITY_DLL_DECL boss_malchezaarAI : public ScriptedAI
                 EnfeebleTimer = 30000;
                 ShadowNovaTimer = 5000;
                 EnfeebleResetTimer = 9000;
-            }else EnfeebleTimer -= diff;
+            }
+            else
+                EnfeebleTimer -= diff;
         }
 
         if(phase==2)

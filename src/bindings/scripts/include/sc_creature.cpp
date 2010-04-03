@@ -196,6 +196,10 @@ void ScriptedAI::DoStopAttack()
 
 void ScriptedAI::CastNextSpellIfAnyAndReady()
 {
+    //clear spell list if caster isn't alive
+    if (!m_creature->isAlive())
+        spellList.clear();
+
     if (spellList.empty())
         return;
 
@@ -204,22 +208,24 @@ void ScriptedAI::CastNextSpellIfAnyAndReady()
     if (!temp || m_creature->hasUnitState(UNIT_STAT_CASTING) && !temp->triggered)
         return;
 
-    if (temp->scriptTextEntry && temp->scriptTextSourceGUID)
-        ScriptText(temp->scriptTextEntry, m_creature->GetUnit(*m_creature, temp->scriptTextSourceGUID), m_creature->GetUnit(*m_creature, temp->scriptTextTargetGUID));
+    if (temp->scriptTextEntry)
+        DoScriptText(temp->scriptTextEntry, m_creature, m_creature->getVictim());
 
-    if (temp->targetGUID || temp->isAOECast)
+    if (temp->targetGUID)
     {
         Unit * tempU = m_creature->GetUnit(*m_creature, temp->targetGUID);
 
-        if (tempU || temp->isAOECast)
-        {
+        if (tempU && tempU->isAlive())
             if (temp->spellId)
-                m_creature->CastSpell(tempU, temp->spellId, temp->triggered, temp->castItem, temp->triggeredByAura, temp->originalCaster);
-            else
-                if (temp->spellInfo)
-                    m_creature->CastSpell(tempU, temp->spellInfo, temp->triggered, temp->castItem, temp->triggeredByAura, temp->originalCaster);
-        }
+                m_creature->CastSpell(tempU, temp->spellId, temp->triggered);
     }
+    else
+    {
+        if (temp->isAOECast)
+            if (temp->spellId)
+                m_creature->CastSpell(m_creature, temp->spellId, temp->triggered);
+    }
+
     spellList.pop_front();
 }
 
@@ -249,61 +255,44 @@ void ScriptedAI::DoCastSpell(Unit* who,SpellEntry const *spellInfo, bool trigger
     m_creature->CastSpell(who, spellInfo, triggered);
 }
 
-void ScriptedAI::AddSpellToCast(Unit* victim, uint32 spellId, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
+void ScriptedAI::AddSpellToCast(Unit* victim, uint32 spellId, bool triggered)
 {
     if (!victim)
         return;
 
-    SpellToCast temp(victim->GetGUID(), spellId, NULL, triggered, 0, NULL, NULL, castItem, triggeredByAura, originalCaster, false);
+    SpellToCast temp(victim->GetGUID(), spellId, triggered, 0, false);
 
     spellList.push_back(temp);
 }
 
-void ScriptedAI::AddSpellToCastWithScriptText(Unit* victim, uint32 spellId, int32 scriptTextEntry, Unit* scriptTextSource, bool triggered,
-                                                Unit* scriptTextTarget, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
+void ScriptedAI::AddSpellToCastWithScriptText(Unit* victim, uint32 spellId, int32 scriptTextEntry, bool triggered)
 {
     if (!victim)
         return;
 
-    SpellToCast temp(victim->GetGUID(), spellId, NULL, triggered, scriptTextEntry, scriptTextSource->GetGUID(), scriptTextTarget->GetGUID(), castItem, triggeredByAura, originalCaster, false);
-
-    spellList.push_back(temp);
-}
-
-void ScriptedAI::AddSpellToCast(Unit* who, SpellEntry const *spellInfo, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
-{
-    if (!who || !spellInfo)
-        return;
-
-    SpellToCast temp(who->GetGUID(), 0, spellInfo, triggered, 0, NULL, NULL, castItem, triggeredByAura, originalCaster, false);
-
-    spellList.push_back(temp);
-}
-
-void ScriptedAI::AddSpellToCastWithScriptText(Unit* who, SpellEntry const *spellInfo, int32 scriptTextEntry, Unit* scriptTextSource, bool triggered,
-                                                Unit* scriptTextTarget, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
-{
-    if (!who || !spellInfo)
-        return;
-
-    SpellToCast temp(who->GetGUID(), 0, spellInfo, triggered, scriptTextEntry, scriptTextSource->GetGUID(), scriptTextTarget->GetGUID(), castItem, triggeredByAura, originalCaster, false);
+    SpellToCast temp(victim->GetGUID(), spellId, triggered, scriptTextEntry, false);
 
     spellList.push_back(temp);
 }
 
 void ScriptedAI::AddAOESpellToCast(uint32 spellId, bool triggered)
 {
-    SpellToCast temp((Unit*)NULL, spellId, NULL, triggered, 0, NULL, NULL, NULL, NULL, 0, true);
+    SpellToCast temp(m_creature, spellId, triggered, 0, true);
 
     spellList.push_back(temp);
 }
 
-void ScriptedAI::ForceSpellCast(Unit *victim, uint32 spellId, interruptSpell interruptCurrent, bool triggered, Item *castItem, Aura *triggeredByAura, uint64 originalCaster)
+void ScriptedAI::AddAOESpellToCastWithScriptText(uint32 spellId, int32 scriptTextEntry, bool triggered)
+{
+    SpellToCast temp(m_creature, spellId, triggered, scriptTextEntry, true);
+
+    spellList.push_back(temp);
+}
+
+void ScriptedAI::ForceSpellCast(Unit *victim, uint32 spellId, interruptSpell interruptCurrent, bool triggered)
 {
     if (!victim)
         return;
-
-    SpellToCast temp(victim->GetGUID(), spellId, NULL, triggered, 0, NULL, NULL, castItem, triggeredByAura, originalCaster, false);
 
     switch (interruptCurrent)
     {
@@ -311,21 +300,21 @@ void ScriptedAI::ForceSpellCast(Unit *victim, uint32 spellId, interruptSpell int
         m_creature->InterruptNonMeleeSpells(false);
         break;
     case INTERRUPT_AND_CAST_INSTANTLY:
-        m_creature->CastSpell(victim, spellId, triggered, castItem, triggeredByAura, originalCaster);
+        m_creature->CastSpell(victim, spellId, triggered);
         return;
     default:
         break;
     }
 
+    SpellToCast temp(victim->GetGUID(), spellId, triggered, 0, false);
+
     spellList.push_front(temp);
 }
 
-void ScriptedAI::ForceSpellCast(Unit *victim, const SpellEntry *spellInfo, interruptSpell interruptCurrent, bool triggered, Item *castItem, Aura *triggeredByAura, uint64 originalCaster)
+void ScriptedAI::ForceSpellCastWithScriptText(Unit *victim, uint32 spellId, int32 scriptTextEntry, interruptSpell interruptCurrent, bool triggered)
 {
     if (!victim)
         return;
-
-    SpellToCast temp(victim->GetGUID(), 0, spellInfo, triggered, 0, NULL, NULL, castItem, triggeredByAura, originalCaster, false);
 
     switch(interruptCurrent)
     {
@@ -333,78 +322,55 @@ void ScriptedAI::ForceSpellCast(Unit *victim, const SpellEntry *spellInfo, inter
         m_creature->InterruptNonMeleeSpells(false);
         break;
     case INTERRUPT_AND_CAST_INSTANTLY:
-        m_creature->CastSpell(victim, spellInfo, triggered, castItem, triggeredByAura, originalCaster);
+        if (scriptTextEntry)
+            DoScriptText(scriptTextEntry, m_creature, victim);
+        m_creature->CastSpell(victim, spellId, triggered);
         return;
     default:
         break;
     }
 
-    spellList.push_front(temp);
-}
-
-void ScriptedAI::ForceSpellCastWithScriptText(Unit *victim, uint32 spellId, int32 scriptTextEntry, Unit *scriptTextSource, interruptSpell interruptCurrent, bool triggered, Unit *scriptTextTarget, Item *castItem, Aura *triggeredByAura, uint64 originalCaster)
-{
-    if (!victim)
-        return;
-
-    SpellToCast temp(victim->GetGUID(), spellId, NULL, triggered, scriptTextEntry, scriptTextSource->GetGUID(), scriptTextTarget->GetGUID(), castItem, triggeredByAura, originalCaster, false);
-
-    switch(interruptCurrent)
-    {
-    case INTERRUPT_AND_CAST:
-        m_creature->InterruptNonMeleeSpells(false);
-        break;
-    case INTERRUPT_AND_CAST_INSTANTLY:
-        if (scriptTextEntry && scriptTextSource)
-            DoScriptText(scriptTextEntry, scriptTextSource, scriptTextTarget);
-        m_creature->CastSpell(victim, spellId, triggered, castItem, triggeredByAura, originalCaster);
-        return;
-    default:
-        break;
-    }
-
-    spellList.push_front(temp);
-}
-
-void ScriptedAI::ForceSpellCastWithScriptText(Unit *victim, const SpellEntry *spellInfo, int32 scriptTextEntry, Unit *scriptTextSource, interruptSpell interruptCurrent, bool triggered, Unit *scriptTextTarget, Item *castItem, Aura *triggeredByAura, uint64 originalCaster)
-{
-    if (!victim)
-        return;
-
-    SpellToCast temp(victim->GetGUID(), 0, spellInfo, triggered, scriptTextEntry, scriptTextSource->GetGUID(), scriptTextTarget->GetGUID(), castItem, triggeredByAura, originalCaster, false);
-
-    switch(interruptCurrent)
-    {
-    case INTERRUPT_AND_CAST:
-        m_creature->InterruptNonMeleeSpells(false);
-        break;
-    case INTERRUPT_AND_CAST_INSTANTLY:
-        if (scriptTextEntry && scriptTextSource)
-            DoScriptText(scriptTextEntry, scriptTextSource, scriptTextTarget);
-        m_creature->CastSpell(victim, spellInfo, triggered, castItem, triggeredByAura, originalCaster);
-        return;
-    default:
-        break;
-    }
+    SpellToCast temp(victim->GetGUID(), spellId, triggered, scriptTextEntry, false);
 
     spellList.push_front(temp);
 }
 
 void ScriptedAI::ForceAOESpellCast(uint32 spellId, interruptSpell interruptCurrent, bool triggered)
 {
-    SpellToCast temp((Unit*)NULL, spellId, NULL, triggered, 0, NULL, NULL, NULL, NULL, 0, true);
-
     switch(interruptCurrent)
     {
     case INTERRUPT_AND_CAST:
         m_creature->InterruptNonMeleeSpells(false);
         break;
     case INTERRUPT_AND_CAST_INSTANTLY:
-        m_creature->CastSpell((Unit*)NULL, spellId, triggered);
+        m_creature->CastSpell(m_creature, spellId, triggered);
         return;
     default:
         break;
     }
+
+    SpellToCast temp(m_creature, spellId, triggered, 0, true);
+
+    spellList.push_front(temp);
+}
+
+void ScriptedAI::ForceAOESpellCastWithScriptText(uint32 spellId, int32 scriptTextEntry, interruptSpell interruptCurrent, bool triggered)
+{
+    switch(interruptCurrent)
+    {
+    case INTERRUPT_AND_CAST:
+        m_creature->InterruptNonMeleeSpells(false);
+        break;
+    case INTERRUPT_AND_CAST_INSTANTLY:
+        if (m_creature->getVictim() && scriptTextEntry)
+            DoScriptText(scriptTextEntry, m_creature, m_creature->getVictim());
+        m_creature->CastSpell(m_creature, spellId, triggered);
+        return;
+    default:
+        break;
+    }
+
+    SpellToCast temp(m_creature, spellId, triggered, scriptTextEntry, true);
 
     spellList.push_front(temp);
 }
@@ -504,7 +470,7 @@ struct TargetDistanceOrder : public std::binary_function<const Unit, const Unit,
     }
 };
 
-Unit* ScriptedAI::SelectUnit(SelectAggroTarget targetType, uint32 position, float dist, bool playerOnly)
+Unit* ScriptedAI::SelectUnit(SelectAggroTarget targetType, uint32 position, float dist, bool playerOnly, Unit *exclude)
 {
     if(targetType == SELECT_TARGET_NEAREST || targetType == SELECT_TARGET_FARTHEST)
     {
@@ -517,7 +483,8 @@ Unit* ScriptedAI::SelectUnit(SelectAggroTarget targetType, uint32 position, floa
             Unit *target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
             if(!target
                 || playerOnly && target->GetTypeId() != TYPEID_PLAYER
-                || dist && !m_creature->IsWithinCombatRange(target, dist))
+                || dist && !m_creature->IsWithinCombatRange(target, dist)
+                || exclude && exclude->GetGUID() == target->GetGUID())
             {
                 continue;
             }
@@ -525,7 +492,9 @@ Unit* ScriptedAI::SelectUnit(SelectAggroTarget targetType, uint32 position, floa
         }
         if(position >= targetList.size())
             return NULL;
+
         targetList.sort(TargetDistanceOrder(m_creature));
+
         if(targetType == SELECT_TARGET_NEAREST)
         {
             std::list<Unit*>::iterator i = targetList.begin();
@@ -564,7 +533,8 @@ Unit* ScriptedAI::SelectUnit(SelectAggroTarget targetType, uint32 position, floa
             if(!target
                 || !target->isAlive()
                 || playerOnly && target->GetTypeId() != TYPEID_PLAYER
-                || dist && !m_creature->IsWithinCombatRange(target, dist))
+                || dist && !m_creature->IsWithinCombatRange(target, dist)
+                || exclude && exclude->GetGUID() == target->GetGUID())
             {
                 m_threatlist.erase(i);
             }
@@ -722,36 +692,6 @@ SpellEntry const* ScriptedAI::SelectSpell(Unit* Target, int32 School, int32 Mech
     return Spell[rand()%SpellCount];
 }
 
-bool ScriptedAI::CanCast(Unit* Target, SpellEntry const *Spell, bool Triggered)
-{
-    //No target so we can't cast
-    if (!Target || !Spell)
-        return false;
-
-    //Silenced so we can't cast
-    if (!Triggered && m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SILENCED))
-        return false;
-
-    //Check for power
-    if (!Triggered && m_creature->GetPower((Powers)Spell->powerType) < Spell->manaCost)
-        return false;
-
-    SpellRangeEntry const *TempRange = NULL;
-
-    TempRange = GetSpellRangeStore()->LookupEntry(Spell->rangeIndex);
-
-    //Spell has invalid range store so we can't use it
-    if (!TempRange)
-        return false;
-
-    //Unit is out of range of this spell
-    if (m_creature->GetDistance(Target) > TempRange->maxRange || m_creature->GetDistance(Target) < TempRange->minRange)
-        return false;
-
-    return true;
-}
-
-
 float GetSpellMaxRange(uint32 id)
 {
     SpellEntry const *spellInfo = GetSpellStore()->LookupEntry(id);
@@ -869,12 +809,14 @@ void ScriptedAI::DoZoneInCombat(Unit* pUnit)
     for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
     {
         if(Player* i_pl = i->getSource())
-            if(i_pl->isAlive())
+        {
+            if(i_pl->isAlive() && !i_pl->isGameMaster())
             {
                 pUnit->SetInCombatWith(i_pl);
                 i_pl->SetInCombatWith(pUnit);
                 pUnit->AddThreat(i_pl, 0.0f);
             }
+        }
     }
 }
 

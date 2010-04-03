@@ -268,7 +268,7 @@ struct TRINITY_DLL_DECL boss_halazziAI : public ScriptedAI
 
             if(ShockTimer < diff)
             {
-                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,GetSpellMaxRange(SPELL_EARTHSHOCK), true))
                 {
                     if(target->IsNonMeleeSpellCasted(false))
                         DoCast(target,SPELL_EARTHSHOCK);

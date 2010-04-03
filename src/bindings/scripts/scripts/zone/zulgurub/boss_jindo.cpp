@@ -104,9 +104,9 @@ struct TRINITY_DLL_DECL boss_jindoAI : public ScriptedAI
         }else Hex_Timer -= diff;
 
         //Casting the delusion curse with a shade. So shade will attack the same target with the curse.
-        if (Delusions_Timer < diff)
+        if(Delusions_Timer < diff)
         {
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0, GetSpellMaxRange(SPELL_DELUSIONSOFJINDO), true))
             {
                 DoCast(target, SPELL_DELUSIONSOFJINDO);
 
@@ -114,16 +114,15 @@ struct TRINITY_DLL_DECL boss_jindoAI : public ScriptedAI
                 if(Shade)
                     Shade->AI()->AttackStart(target);
             }
-
             Delusions_Timer = 4000 + rand()%8000;
-        }else Delusions_Timer -= diff;
+        }
+        else
+            Delusions_Timer -= diff;
 
         //Teleporting a random gamer and spawning 9 skeletons that will attack this gamer
-        if (Teleport_Timer < diff)
+        if(Teleport_Timer < diff)
         {
-            Unit* target = NULL;
-            target = SelectUnit(SELECT_TARGET_RANDOM,0);
-            if (target && target->GetTypeId() == TYPEID_PLAYER)
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0, 200, true))
             {
                 DoTeleportPlayer(target, -11583.7783,-1249.4278,77.5471,4.745);
 
@@ -160,7 +159,9 @@ struct TRINITY_DLL_DECL boss_jindoAI : public ScriptedAI
             }
 
             Teleport_Timer = 15000 + rand()%8000;
-        }else Teleport_Timer -= diff;
+        }
+        else
+            Teleport_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }

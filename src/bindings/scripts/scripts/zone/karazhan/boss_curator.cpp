@@ -154,7 +154,7 @@ struct TRINITY_DLL_DECL boss_curatorAI : public ScriptedAI
             if (HatefulBoltTimer < diff)
             {
                 Unit* target = NULL;
-                target = SelectUnit(SELECT_TARGET_TOPAGGRO, 1);
+                target = SelectUnit(SELECT_TARGET_TOPAGGRO, 1, GetSpellMaxRange(SPELL_HATEFUL_BOLT), m_creature->getVictim());
                 if(target)
                     DoCast(target, SPELL_HATEFUL_BOLT);
 

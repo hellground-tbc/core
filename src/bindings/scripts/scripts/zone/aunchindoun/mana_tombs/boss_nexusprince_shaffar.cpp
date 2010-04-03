@@ -161,7 +161,7 @@ struct TRINITY_DLL_DECL boss_nexusprince_shaffarAI : public ScriptedAI
         {
             summoned->CastSpell(summoned,SPELL_ETHEREAL_BEACON_VISUAL,false);
 
-            if( Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0) )
+            if( Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0, 60, true) )
                 summoned->AI()->AttackStart(target);
         }
     }

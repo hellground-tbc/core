@@ -70,7 +70,7 @@ struct TRINITY_DLL_DECL boss_the_black_stalkerAI : public ScriptedAI
         if(summon && summon->GetEntry() == ENTRY_SPORE_STRIDER)
         {
             Striders.push_back(summon->GetGUID());
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,1))
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,1, 200, true, m_creature->getVictim()))
                 summon->AI()->AttackStart(target);
             else
                 if(m_creature->getVictim())
@@ -144,7 +144,7 @@ struct TRINITY_DLL_DECL boss_the_black_stalkerAI : public ScriptedAI
         }
         if(Levitate_Timer < diff)
         {
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,1))
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,1, 200, true, m_creature->getVictim()))
             {
                 DoCast(target, SPELL_LEVITATE);
                 LevitatedTarget = target->GetGUID();

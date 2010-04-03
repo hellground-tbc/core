@@ -112,23 +112,27 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
     void UpdateAI(const uint32 diff)
     {
         //Return since we have no target
-        if (!UpdateVictim() )
+        if(!UpdateVictim())
             return;
 
         if(Combat_Timer < diff)
         {
             DoZoneInCombat();
             Combat_Timer= 5000;
-        }else Combat_Timer -= diff;
+        }
+        else
+            Combat_Timer -= diff;
 
         // Growth
         // Gruul can cast this spell up to 30 times
-        if (Growth_Timer < diff)
+        if(Growth_Timer < diff)
         {
             DoCast(m_creature,SPELL_GROWTH);
             DoScriptText(EMOTE_GROW, m_creature);
             Growth_Timer = 30000;
-        }else Growth_Timer -= diff;
+        }
+        else
+            Growth_Timer -= diff;
 
         if(PerformingGroundSlam)
         {
@@ -250,34 +254,40 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
             if (HurtfulStrike_Timer < diff)
             {
                 Unit* target = NULL;
-                target = SelectUnit(SELECT_TARGET_TOPAGGRO,1);
+                target = SelectUnit(SELECT_TARGET_TOPAGGRO,1,GetSpellMaxRange(SPELL_HURTFUL_STRIKE), true);
 
-                if (target && m_creature->IsWithinMeleeRange(m_creature->getVictim()))
+                if(target)
                     DoCast(target,SPELL_HURTFUL_STRIKE);
                 else
                     DoCast(m_creature->getVictim(),SPELL_HURTFUL_STRIKE);
 
                 HurtfulStrike_Timer= 8000;
-            }else HurtfulStrike_Timer -= diff;
+            }
+            else
+                HurtfulStrike_Timer -= diff;
 
             // Reverberation
-            if (Reverberation_Timer < diff)
+            if(Reverberation_Timer < diff)
             {
                 DoCast(m_creature->getVictim(), SPELL_REVERBERATION, true);
                 Reverberation_Timer = 30000;
-            }else Reverberation_Timer -= diff;
+            }
+            else
+                Reverberation_Timer -= diff;
 
             // Cave In
-            if (CaveIn_Timer < diff)
+            if(CaveIn_Timer < diff)
             {
-                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0, GetSpellMaxRange(SPELL_CAVE_IN), true))
                     DoCast(target,SPELL_CAVE_IN);
 
                 CaveIn_Timer = 20000;
-            }else CaveIn_Timer -= diff;
+            }
+            else
+                CaveIn_Timer -= diff;
 
             // Ground Slam, Gronn Lord's Grasp, Stoned, Shatter
-            if (GroundSlamTimer < diff)
+            if(GroundSlamTimer < diff)
             {
                 m_creature->GetMotionMaster()->Clear();
                 m_creature->GetMotionMaster()->MoveIdle();
@@ -287,7 +297,9 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
                 GroundSlamTimer = 0;
                 GroundSlamStage = 0;
                 DoCast(m_creature->getVictim(), SPELL_GROUND_SLAM);
-            } else GroundSlamTimer -=diff;
+            }
+            else
+                GroundSlamTimer -=diff;
 
             DoMeleeAttackIfReady();
         }

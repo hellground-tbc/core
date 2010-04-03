@@ -295,9 +295,10 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
         {
             if (TidalSurge_Timer < diff)
             {
-                Unit *who = SelectUnit(SELECT_TARGET_RANDOM, 1);
+                Unit *who = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_TIDAL_SURGE), true, m_creature->getVictim());
                                             
-                if(who && who->isAlive()){
+                if(who && who->isAlive())
+                {
                     DoCast(who, SPELL_TIDAL_SURGE);
                     who->CastSpell( who, SPELL_TIDAL_SURGE_FREEZE, true );
                 }
@@ -312,7 +313,7 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
         if(CataclysmicBolt_Timer < diff)
         {
             //if there aren't other units, cast on the tank
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1))
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_CATACLYSMIC_BOLT), true, m_creature->getVictim()))
                 DoCast(target, SPELL_CATACLYSMIC_BOLT);
             else
                 DoCast(m_creature->getVictim(), SPELL_CATACLYSMIC_BOLT);
@@ -456,7 +457,7 @@ struct TRINITY_DLL_DECL boss_fathomguard_sharkkisAI : public ScriptedAI
         //LeechingThrow_Timer
         if(LeechingThrow_Timer < diff)
         {
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0,GetSpellMaxRange(SPELL_LEECHING_THROW),true))
                 DoCast(target, SPELL_LEECHING_THROW);
 
             LeechingThrow_Timer = 20000;
@@ -734,7 +735,7 @@ struct TRINITY_DLL_DECL boss_fathomguard_caribdisAI : public ScriptedAI
         }
         else
             Cyclone_Timer -= diff;
-		
+        
         //Heal_Timer
         if(Heal_Timer < diff)
         {
@@ -773,14 +774,14 @@ struct TRINITY_DLL_DECL mob_caribdis_cycloneAI : public ScriptedAI
     {
         AttackStart(who);
     }
-	
+    
     void UpdateAI(const uint32 diff)
     {
         //Return since we have no target
         if (!UpdateVictim() )
             return;
 
-        if(Swap_Timer < diff)											
+        if(Swap_Timer < diff)                                            
         {
             if(Unit* target = SelectUnit(SELECT_TARGET_FARTHEST, 0, 100, true))
             {                

@@ -130,7 +130,7 @@ struct TRINITY_DLL_DECL boss_hakkarAI : public ScriptedAI
         //WillOfHakkar_Timer
         if (WillOfHakkar_Timer < diff)
         {
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,GetSpellMaxRange(SPELL_WILLOFHAKKAR), true))
                 DoCast(target,SPELL_WILLOFHAKKAR);
 
             WillOfHakkar_Timer = 25000 + rand()%10000;

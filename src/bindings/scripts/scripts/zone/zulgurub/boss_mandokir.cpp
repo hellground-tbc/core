@@ -145,7 +145,7 @@ struct TRINITY_DLL_DECL boss_mandokirAI : public ScriptedAI
                 CombatStart = true;
             }
 
-            if (Watch_Timer < diff)                         //Every 20 Sec Mandokir will check this
+            if(Watch_Timer < diff)                         //Every 20 Sec Mandokir will check this
             {
                 if(WatchTarget)                             //If someone is watched and If the Position of the watched target is different from the one stored, or are attacking, mandokir will charge him
                 {
@@ -171,11 +171,13 @@ struct TRINITY_DLL_DECL boss_mandokirAI : public ScriptedAI
                 }
                 someWatched = false;
                 Watch_Timer = 20000;
-            }else Watch_Timer -= diff;
+            }
+            else
+                Watch_Timer -= diff;
 
             if ((Watch_Timer < 8000) && !someWatched)       //8 sec(cast time + expire time) before the check for the watch effect mandokir will cast watch debuff on a random target
             {
-                if (Unit* p = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if(Unit* p = SelectUnit(SELECT_TARGET_RANDOM,0, GetSpellMaxRange(SPELL_WATCH), true))
                 {
                     DoScriptText(SAY_WATCH, m_creature, p);
                     DoCast(p, SPELL_WATCH);

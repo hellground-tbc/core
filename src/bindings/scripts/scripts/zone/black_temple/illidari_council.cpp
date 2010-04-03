@@ -540,7 +540,7 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public boss_illidari_coun
 
         if(HammerOfJusticeTimer < diff)
         {
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
             {
                 // is in ~10-40 yd range
                 if(m_creature->GetDistance2d(target) > 10 && m_creature->GetDistance2d(target) < 40)
@@ -658,7 +658,7 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public boss_illidari_
 
         if(BlizzardTimer < diff)
         {
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
             {
                 DoCast(target, SPELL_BLIZZARD);
                 BlizzardTimer = 45000 + rand()%46 * 1000;
@@ -669,7 +669,7 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public boss_illidari_
 
         if(FlamestrikeTimer < diff)
         {
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
             {
                 DoCast(target, SPELL_FLAMESTRIKE);
                 FlamestrikeTimer = 55000 + rand()%46 * 1000;
@@ -731,7 +731,7 @@ struct TRINITY_DLL_DECL boss_lady_malandeAI : public boss_illidari_councilAI
 
         if(EmpoweredSmiteTimer < diff)
         {
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
             {
                 DoCast(target, SPELL_EMPOWERED_SMITE);
                 EmpoweredSmiteTimer = 38000;
@@ -746,7 +746,7 @@ struct TRINITY_DLL_DECL boss_lady_malandeAI : public boss_illidari_councilAI
 
         if(DivineWrathTimer < diff)
         {
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
             {
                 DoCast(target, SPELL_DIVINE_WRATH);
                 DivineWrathTimer = 40000 + rand()%41 * 1000;
@@ -836,7 +836,7 @@ struct TRINITY_DLL_DECL boss_veras_darkshadowAI : public boss_illidari_councilAI
 
             if(VanishTimer < diff)                          // Disappear and stop attacking, but follow a random unit
             {
-                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
                 {
                     VanishTimer = 30000;
                     AppearEnvenomTimer= 28000;

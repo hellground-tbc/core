@@ -38,14 +38,20 @@ EndScriptData */
 #define SPELL_DEVOTION_AURA         8258
 #define SPELL_CONSECRATION          38385
 
+#define C_WARDEN  17833
+#define C_VETERAN 17860
+
 struct TRINITY_DLL_DECL boss_captain_skarlocAI : public ScriptedAI
 {
     boss_captain_skarlocAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        HeroicMode = m_creature->GetMap()->IsHeroic();
     }
 
     ScriptedInstance *pInstance;
+
+    bool HeroicMode;
 
     uint32 Holy_Light_Timer;
     uint32 Cleanse_Timer;
@@ -66,6 +72,12 @@ struct TRINITY_DLL_DECL boss_captain_skarlocAI : public ScriptedAI
 
     void Aggro(Unit *who)
     {
+        if(Creature *tAdd1 = DoSpawnCreature( C_WARDEN, 2, 2, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 6000))
+            tAdd1->AI()->AttackStart(who);
+
+        if(Creature *tAdd2 = DoSpawnCreature( C_VETERAN, -2, -2, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 6000))
+            tAdd2->AI()->AttackStart(who);
+
         //This is not correct. Should taunt Thrall before engage in combat
         DoScriptText(SAY_TAUNT1, m_creature);
         DoScriptText(SAY_TAUNT2, m_creature);
@@ -99,42 +111,54 @@ struct TRINITY_DLL_DECL boss_captain_skarlocAI : public ScriptedAI
         {
             DoCast(m_creature, SPELL_HOLY_LIGHT);
             Holy_Light_Timer = 30000;
-        }else Holy_Light_Timer -= diff;
+        }
+        else
+            Holy_Light_Timer -= diff;
 
         //Cleanse
         if(Cleanse_Timer  < diff)
         {
             DoCast(m_creature, SPELL_CLEANSE);
             Cleanse_Timer = 10000;
-        } else Cleanse_Timer -= diff;
+        }
+        else
+            Cleanse_Timer -= diff;
 
         //Hammer of Justice
         if (HammerOfJustice_Timer < diff)
         {
             DoCast(m_creature->getVictim(), SPELL_HAMMER_OF_JUSTICE);
             HammerOfJustice_Timer = 60000;
-        }else HammerOfJustice_Timer -= diff;
+        }
+        else
+            HammerOfJustice_Timer -= diff;
 
         //Holy Shield
-        if (HolyShield_Timer < diff)
+        if(HolyShield_Timer < diff)
         {
             DoCast(m_creature, SPELL_HOLY_SHIELD);
             HolyShield_Timer = 240000;
-        }else HolyShield_Timer -= diff;
+        }
+        else
+            HolyShield_Timer -= diff;
 
         //Devotion_Aura
         if (DevotionAura_Timer < diff)
         {
             DoCast(m_creature, SPELL_DEVOTION_AURA);
             DevotionAura_Timer = 60000;
-        }else DevotionAura_Timer -= diff;
+        }
+        else
+            DevotionAura_Timer -= diff;
 
-        //Consecration
-        if (Consecration_Timer < diff)
+        if(HeroicMode)
+        if(Consecration_Timer < diff)
         {
-            //DoCast(m_creature->getVictim(), SPELL_CONSECRATION);
+            DoCast(m_creature, SPELL_CONSECRATION);
             Consecration_Timer = 8000;
-        }else Consecration_Timer -= diff;
+        }
+        else
+            Consecration_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }

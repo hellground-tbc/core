@@ -1040,6 +1040,15 @@ void GameEvent::UnApplyEvent(uint16 event_id)
     UpdateBattleGroundSettings();
 }
 
+const char *GameEvent::getActiveEventsString()
+{
+    std::stringstream eventstring;
+    eventstring << "Active events:\n";
+    for (ActiveEvents::const_iterator active = m_ActiveEvents.begin(); active != m_ActiveEvents.end(); ++active)
+        eventstring << mGameEvent[*active].description.c_str() << "\n";
+    return eventstring.str().c_str();
+}
+
 void GameEvent::ApplyNewEvent(uint16 event_id)
 {
     switch(sWorld.getConfig(CONFIG_EVENT_ANNOUNCE))

@@ -427,7 +427,7 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
                 //Static Charge
                 //Used on random people (only 1 person at any given time) in Phases 1 and 3, it's a debuff doing 2775 to 3225 Nature damage to the target and everybody in about 5 yards around it, every 1 seconds for 30 seconds. It can be removed by Cloak of Shadows, Iceblock, Divine Shield, etc, but not by Cleanse or Dispel Magic.
                 Unit *target = NULL;
-                target = SelectUnit(SELECT_TARGET_RANDOM, 0, 150, true);
+                target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_STATIC_CHARGE_TRIGGER), true);
 
                 if(target && !target->HasAura(SPELL_STATIC_CHARGE_TRIGGER, 0))
                     DoCast(target, SPELL_STATIC_CHARGE_TRIGGER);
@@ -491,9 +491,7 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
 
                     if(Sporebat)
                     {
-                        Unit *target = NULL;
-                        target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                        if(target)
+                        if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
                             Sporebat->AI()->AttackStart(target);
                     }
 
@@ -546,8 +544,7 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
             {
                 //Forked Lightning
                 //Used constantly in Phase 2, it shoots out completely randomly targeted bolts of lightning which hit everybody in a roughtly 60 degree cone in front of Vashj for 2313-2687 nature damage.
-                Unit *target = NULL;
-                target = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_FORKED_LIGHTNING), true);
 
                 if(!target)
                     target = m_creature->getVictim();
@@ -762,7 +759,7 @@ struct TRINITY_DLL_DECL mob_tainted_elementalAI : public Scripted_NoMovementAI
     void Reset()
     {
         PoisonBolt_Timer = 5000+rand()%5000;
-        Despawn_Timer = 15000;
+        Despawn_Timer = 16000;
     }
 
     void JustDied(Unit *killer)
@@ -787,10 +784,7 @@ struct TRINITY_DLL_DECL mob_tainted_elementalAI : public Scripted_NoMovementAI
         //PoisonBolt_Timer
         if(PoisonBolt_Timer < diff)
         {
-            Unit *target = NULL;
-            target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-
-            if(target && target->IsWithinDistInMap(m_creature, 30))
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_POISON_BOLT), true))
                 DoCast(target, SPELL_POISON_BOLT);
 
             PoisonBolt_Timer = 5000+rand()%5000;
@@ -877,12 +871,9 @@ struct TRINITY_DLL_DECL mob_toxic_sporebatAI : public ScriptedAI
         //toxic spores
         if(bolt_timer < diff)
         {
-            Unit *target = NULL;
-            target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-            if(target)
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 300, true))
             {
-                Creature* trig = m_creature->SummonCreature(TOXIC_SPORES_TRIGGER,target->GetPositionX(),target->GetPositionY(),target->GetPositionZ(),0,TEMPSUMMON_TIMED_DESPAWN,30000);
-                if(trig)
+                if(Creature* trig = m_creature->SummonCreature(TOXIC_SPORES_TRIGGER,target->GetPositionX(),target->GetPositionY(),target->GetPositionZ(),0,TEMPSUMMON_TIMED_DESPAWN,30000))
                 {
                     trig->setFaction(14);
                     trig->CastSpell(trig, SPELL_TOXIC_SPORES,true);

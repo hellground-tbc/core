@@ -281,7 +281,7 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-   if(!UpdateVictim())
+  if(!UpdateVictim())
        return;
         
   if(ExhaustCheckTimer < diff) {
@@ -290,14 +290,20 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
             ExhaustHandler(i);
         }
         ExhaustCheckTimer = 1000;
-    }else ExhaustCheckTimer -= diff;
+    }
+    else
+        ExhaustCheckTimer -= diff;
 
    // Void Zone
    if(VoidZoneTimer < diff)
    {
-       DoCast(SelectUnit(SELECT_TARGET_RANDOM,1,GetSpellMaxRange(SPELL_VOIDZONE),true),SPELL_VOIDZONE,true);
+       if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,1,GetSpellMaxRange(SPELL_VOIDZONE),true, m_creature->getVictim()))  
+           DoCast(target,SPELL_VOIDZONE,true);
+
        VoidZoneTimer = 15000;
-   }else VoidZoneTimer -= diff;
+   }
+   else
+       VoidZoneTimer -= diff;
 
    // NetherInfusion Berserk
    if(!Berserk && NetherInfusionTimer < diff)
@@ -305,7 +311,9 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
        m_creature->AddAura(SPELL_NETHER_INFUSION, m_creature);
        DoCast(m_creature, SPELL_NETHERSPITE_ROAR);
        Berserk = true;
-   }else NetherInfusionTimer -= diff;
+   }
+   else
+       NetherInfusionTimer -= diff;
 
    if(PortalPhase) // PORTAL PHASE
    {
@@ -314,7 +322,9 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
        {
            UpdatePortals();
            PortalTimer = 1000;
-       }else PortalTimer -= diff;
+       }
+       else
+           PortalTimer -= diff;
 
        // Empowerment & Nether Burn
        if(EmpowermentTimer < diff)
@@ -322,7 +332,9 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
            DoCast(m_creature, SPELL_EMPOWERMENT);
            m_creature->AddAura(SPELL_NETHERBURN_AURA, m_creature);
            EmpowermentTimer = 90000;
-       }else EmpowermentTimer -= diff;
+       }
+       else
+           EmpowermentTimer -= diff;
       
        if(PhaseTimer < diff)
        {
@@ -331,7 +343,9 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
                SwitchToBanishPhase();
                return;
            }
-       }else PhaseTimer -= diff;
+       }
+       else
+           PhaseTimer -= diff;
    }
    else // BANISH PHASE
    {
@@ -340,20 +354,28 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
        {
            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,GetSpellMaxRange(SPELL_NETHERBREATH),true))
                DoCast(target,SPELL_NETHERBREATH);
+
            NetherbreathTimer = 5000+rand()%2000;
-            }else NetherbreathTimer -= diff;
+            
+       }
+       else
+           NetherbreathTimer -= diff;
 
-            if(PhaseTimer < diff)
-            {
-                if(!m_creature->IsNonMeleeSpellCasted(false))
-                {
-                    SwitchToPortalPhase();
-                    return;
-                }
-            }else PhaseTimer -= diff;
-        }
-
-        DoMeleeAttackIfReady();
+            
+       if(PhaseTimer < diff)
+       {
+           if(!m_creature->IsNonMeleeSpellCasted(false))
+           {
+               SwitchToPortalPhase();
+               return;
+           }
+       }
+       else
+           PhaseTimer -= diff;
+        
+   }
+   DoMeleeAttackIfReady();
+    
     }
 };
 

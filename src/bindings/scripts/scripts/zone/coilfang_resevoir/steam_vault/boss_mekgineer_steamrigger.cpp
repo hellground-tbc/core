@@ -137,7 +137,7 @@ struct TRINITY_DLL_DECL boss_mekgineer_steamriggerAI : public ScriptedAI
 
         if (Saw_Blade_Timer < diff)
         {
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1))
+            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1, 200, true, m_creature->getVictim()))
                 DoCast(target,SPELL_SAW_BLADE);
             else
                 DoCast(m_creature->getVictim(),SPELL_SAW_BLADE);

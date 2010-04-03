@@ -269,8 +269,7 @@ struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public ScriptedAI
             switch(rand()%2)
             {
                 case 0:                                     // stalk player
-                    target = SelectUnit(SELECT_TARGET_RANDOM, 1);
-                    if(target && target->isAlive())
+                    if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, 200, true, m_creature->getVictim()))
                     {
                         m_creature->AddThreat(target, DoGetThreat(m_creature->getVictim()));
                         m_creature->GetMotionMaster()->MoveChase(target);
@@ -700,9 +699,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
             Unit *target = NULL;
             // aby miec pewnosc, ze naszym targetem nie jest tank
-            while((target = SelectUnit(SELECT_TARGET_RANDOM, 1, 100, true)) && target == m_creature->getVictim());
-
-            if(target)
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, 100, true, m_creature->getVictim()))
             {
                 // ustawia target jako aktualny
                 m_creature->SetUInt64Value(UNIT_FIELD_TARGET, target->GetGUID());
@@ -728,7 +725,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
         if(DoomfireTimer < diff)
         {
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, 150, true))
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, 150, true, m_creature->getVictim()))
                 SummonDoomfire(target);
 
             DoomfireTimer = 40000;

@@ -883,6 +883,11 @@ void Pet::UpdateResistances(uint32 school)
         if(owner && (getPetType() == HUNTER_PET || getPetType() == SUMMON_PET && owner->getClass() == CLASS_WARLOCK))
             value += float(owner->GetResistance(SpellSchools(school))) * 0.4f;
 
+        // Void Star Talisman's resistance bonus
+        if(owner && getPetType() == SUMMON_PET && owner->getClass() == CLASS_WARLOCK)
+            if(Aura *aura = owner->GetAura(37386, 0))
+                value += float(aura->GetModifierValue());
+
         SetResistance(SpellSchools(school), int32(value));
     }
     else

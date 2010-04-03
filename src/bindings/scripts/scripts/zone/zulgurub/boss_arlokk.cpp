@@ -100,19 +100,23 @@ struct TRINITY_DLL_DECL boss_arlokkAI : public ScriptedAI
 
         if( m_creature->getVictim() && m_creature->isAlive())
         {
-            if (!PhaseTwo && ShadowWordPain_Timer < diff)
+            if(!PhaseTwo && ShadowWordPain_Timer < diff)
             {
                 DoCast(m_creature->getVictim(),SPELL_SHADOWWORDPAIN);
                 ShadowWordPain_Timer = 15000;
-            }else ShadowWordPain_Timer -= diff;
+            }
+            else
+                ShadowWordPain_Timer -= diff;
 
-            if (!PhaseTwo && Mark_Timer < diff)
+            if(!PhaseTwo && Mark_Timer < diff)
             {
-                markedTarget = SelectUnit(SELECT_TARGET_RANDOM,0);
+                markedTarget = SelectUnit(SELECT_TARGET_RANDOM,0,GetSpellMaxRange(SPELL_MARK), true);
 
                 DoCast(markedTarget,SPELL_MARK);
                 Mark_Timer = 15000;
-            }else Mark_Timer -= diff;
+            }
+            else
+                Mark_Timer -= diff;
 
             if (Summon_Timer < diff && Counter < 31)
             {

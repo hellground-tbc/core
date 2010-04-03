@@ -299,7 +299,7 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
         {
             if(Phase1)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true);
                 if(target && target->isAlive())
                 {
                     Phase1 = false;

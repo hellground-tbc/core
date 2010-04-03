@@ -148,7 +148,7 @@ struct TRINITY_DLL_DECL boss_shirrak_the_dead_watcherAI : public ScriptedAI
         if (FocusFire_Timer < diff)
         {
             // Summon Focus Fire & Emote
-            Unit *target = SelectUnit(SELECT_TARGET_RANDOM,1);
+            Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0,60, true, m_creature->getVictim());
             if (target && target->GetTypeId() == TYPEID_PLAYER && target->isAlive())
             {
                 focusedTarget = target;

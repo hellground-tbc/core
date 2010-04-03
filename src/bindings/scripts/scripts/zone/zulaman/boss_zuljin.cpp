@@ -370,7 +370,8 @@ struct TRINITY_DLL_DECL boss_zuljinAI : public ScriptedAI
                         Vortex->CastSpell(Vortex, SPELL_CYCLONE_VISUAL, true);
                         Vortex->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                         Vortex->SetSpeed(MOVE_RUN, 1.0f);
-                        Vortex->AI()->AttackStart(SelectUnit(SELECT_TARGET_RANDOM, 0));
+                        if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                            Vortex->AI()->AttackStart(target);
                         DoZoneInCombat(Vortex);
                     }
                 }
@@ -441,7 +442,7 @@ struct TRINITY_DLL_DECL boss_zuljinAI : public ScriptedAI
 
             if(Grievous_Throw_Timer < diff)
             {
-                if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_GRIEVOUS_THROW), true))
                     m_creature->CastSpell(target, SPELL_GRIEVOUS_THROW, false);
                 Grievous_Throw_Timer = 10000;
             }else Grievous_Throw_Timer -= diff;
@@ -484,8 +485,12 @@ struct TRINITY_DLL_DECL boss_zuljinAI : public ScriptedAI
                     if(Claw_Loop_Timer < diff)
                     {
                         Unit* target = m_creature->getVictim();
-                        if(!target || !target->isTargetableForAttack()) target = Unit::GetUnit(*m_creature, TankGUID);
-                        if(!target || !target->isTargetableForAttack()) target = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                        if(!target || !target->isTargetableForAttack())
+                            target = Unit::GetUnit(*m_creature, TankGUID);
+
+                        if(!target || !target->isTargetableForAttack())
+                            target = SelectUnit(SELECT_TARGET_RANDOM, 0);
+
                         if(target)
                         {
                             AttackStart(target);
@@ -532,9 +537,10 @@ struct TRINITY_DLL_DECL boss_zuljinAI : public ScriptedAI
                     Unit* target = m_creature->getVictim();
                     if(!target || !target->isTargetableForAttack())
                     {
-                        target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                        AttackStart(target);
+                        if(target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                            AttackStart(target);
                     }
+
                     if(target)
                     {
                         if(m_creature->IsWithinMeleeRange(target))
@@ -549,7 +555,10 @@ struct TRINITY_DLL_DECL boss_zuljinAI : public ScriptedAI
                                 TankGUID = 0;
                             }
                             else
-                                AttackStart(SelectUnit(SELECT_TARGET_RANDOM, 0));
+                            { 
+                                if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                                    AttackStart(target);
+                            }
                         }
                     }
                     else
@@ -570,7 +579,7 @@ struct TRINITY_DLL_DECL boss_zuljinAI : public ScriptedAI
 
             if(Pillar_Of_Fire_Timer < diff)
             {
-                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_SUMMON_PILLAR), true))
                     DoCast(target, SPELL_SUMMON_PILLAR);
                 Pillar_Of_Fire_Timer = 10000;
             }else Pillar_Of_Fire_Timer -= diff;
@@ -615,8 +624,11 @@ struct TRINITY_DLL_DECL feather_vortexAI : public ScriptedAI
     void UpdateAI(const uint32 diff)
     {
         //if the vortex reach the target, it change his target to another player
-        if( m_creature->IsWithinMeleeRange(m_creature->getVictim()))
-            AttackStart(SelectUnit(SELECT_TARGET_RANDOM, 0));
+        if(m_creature->IsWithinMeleeRange(m_creature->getVictim()))
+        {
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0))
+                AttackStart(target);
+        }
     }
 };
 

@@ -41,6 +41,8 @@ void instance_karazhan::Initialize()
     MoroesGUID          = 0;
     AranGUID            = 0;
 
+    NightbaneGUID       = 0;
+
     LibraryDoor         = 0;
     MassiveDoor         = 0;
     GamesmansDoor       = 0;
@@ -125,6 +127,7 @@ uint64 instance_karazhan::GetData64(uint32 data)
         case DATA_KILREK:                      return KilrekGUID;
         case DATA_TERESTIAN:                   return TerestianGUID;
         case DATA_MOROES:                      return MoroesGUID;
+        case DATA_NIGHTBANE:                   return NightbaneGUID;
         case DATA_GAMEOBJECT_STAGEDOORLEFT:    return StageDoorLeftGUID;
         case DATA_GAMEOBJECT_STAGEDOORRIGHT:   return StageDoorRightGUID;
         case DATA_GAMEOBJECT_CURTAINS:         return CurtainGUID;
@@ -211,8 +214,14 @@ void instance_karazhan::SetData64(uint32 identifier, uint64 data)
 {
     switch(identifier)
     {
-    case DATA_IMAGE_OF_MEDIVH: 
+    case DATA_IMAGE_OF_MEDIVH:
 		ImageGUID = data;
+		break;
+    case DATA_NIGHTBANE;
+        NightbaneGUID = data;
+        break;
+    default:
+        break;
     }
 }
 
@@ -220,36 +229,36 @@ void instance_karazhan::OnObjectCreate(GameObject* go)
 {
     switch(go->GetEntry())
     {
-    case 183932:   
-		CurtainGUID           = go->GetGUID();         
-		break;
-    case 184278:   
-		StageDoorLeftGUID     = go->GetGUID();         
-		break;
-    case 184279:   
-		StageDoorRightGUID    = go->GetGUID();         
-		break;
-    case 184517:   
-		LibraryDoor           = go->GetGUID();         
-		break;
-    case 185521:   
-		MassiveDoor           = go->GetGUID();         
-		break;
-    case 184276:   
-		GamesmansDoor         = go->GetGUID();        
-		break;
-    case 184277:   
-		GamesmansExitDoor     = go->GetGUID();         
-		break;
-    case 185134:   
-		NetherspaceDoor       = go->GetGUID();         
-		break;
-    case 184274:   
-		MastersTerraceDoor[0] = go->GetGUID();  
-		break;
-    case 184280:   
-		MastersTerraceDoor[1] = go->GetGUID();  
-		break;
+    case 183932:
+        CurtainGUID           = go->GetGUID();
+        break;
+    case 184278:
+        StageDoorLeftGUID     = go->GetGUID();
+        break;
+    case 184279:
+        StageDoorRightGUID    = go->GetGUID();
+        break;
+    case 184517:
+        LibraryDoor           = go->GetGUID();
+        break;
+    case 185521:
+        MassiveDoor           = go->GetGUID();
+        break;
+    case 184276:
+        GamesmansDoor         = go->GetGUID();
+        break;
+    case 184277:
+        GamesmansExitDoor     = go->GetGUID();
+        break;
+    case 185134:
+        NetherspaceDoor       = go->GetGUID();
+        break;
+    case 184274:
+        MastersTerraceDoor[0] = go->GetGUID();
+        break;
+    case 184280:
+        MastersTerraceDoor[1] = go->GetGUID();
+        break;
     }
 
     switch(OperaEvent)
@@ -312,7 +321,7 @@ void instance_karazhan::Update(uint32 diff)
             {
                 Kilrek->Respawn();
                 needRespawn = false;
-                
+
                 Creature *Terestian = instance->GetCreature(TerestianGUID);
                 if(Terestian && Terestian->isAlive())
                     Terestian->RemoveAurasDueToSpell(SPELL_BROKEN_PACT);

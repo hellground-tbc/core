@@ -35,6 +35,7 @@ struct TRINITY_DLL_DECL instance_karazhan : public ScriptedInstance
     uint64 StageDoorRightGUID;
     uint64 KilrekGUID;
     uint64 TerestianGUID;
+    uint64 NightbaneGUID;
     uint64 MoroesGUID;
     uint64 LibraryDoor;                                     // Door at Shade of Aran
     uint64 MassiveDoor;                                     // Door at Netherspite

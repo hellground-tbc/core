@@ -102,7 +102,7 @@ struct TRINITY_DLL_DECL boss_jeklikAI : public ScriptedAI
             {
                 if (Charge_Timer < diff)
                 {
-                    if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+                    if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,GetSpellMaxRange(SPELL_CHARGE), true))
                     {
                         DoCast(target,SPELL_CHARGE);
                         AttackStart(target);
@@ -154,7 +154,7 @@ struct TRINITY_DLL_DECL boss_jeklikAI : public ScriptedAI
                 {
                     if(PhaseTwo && ShadowWordPain_Timer < diff)
                     {
-                        if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+                        if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,GetSpellMaxRange(SPELL_SHADOW_WORD_PAIN), true))
                         {
                             DoCast(target, SPELL_SHADOW_WORD_PAIN);
                             ShadowWordPain_Timer = 12000 + rand()%6000;
@@ -238,7 +238,7 @@ struct TRINITY_DLL_DECL mob_batriderAI : public ScriptedAI
         //Bomb_Timer
         if(Bomb_Timer < diff)
         {
-            if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_BOMB), true))
             {
                 DoCast(target, SPELL_BOMB);
                 Bomb_Timer = 5000;

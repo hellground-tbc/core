@@ -147,7 +147,10 @@ struct TRINITY_DLL_DECL boss_lajAI : public ScriptedAI
     void JustSummoned(Creature *summon)
     {
         if(summon && m_creature->getVictim())
-            summon->AI()->AttackStart(SelectUnit(SELECT_TARGET_RANDOM, 0));
+        {
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0 ))
+                summon->AI()->AttackStart(target);
+        }
     }
 
     void UpdateAI(const uint32 diff)

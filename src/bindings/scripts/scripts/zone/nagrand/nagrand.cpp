@@ -17,12 +17,13 @@
 /* ScriptData
 SDName: Nagrand
 SD%Complete: 90
-SDComment: Quest support: 9849, 9918, 9874, 9991, 10107, 10108, 10044, 10172, 10646, 10085, 10987. TextId's unknown for altruis_the_sufferer and greatmother_geyah (npc_text)
+SDComment: Quest support: 9849, 9918, 9874, 9991, 10107, 10108, 10044, 10168, 10172, 10646, 10085, 10987. TextId's unknown for altruis_the_sufferer and greatmother_geyah (npc_text)
 SDCategory: Nagrand
 EndScriptData */
 
 /* ContentData
 mob_shattered_rumbler
+mob_ancient_orc_ancestor
 mob_lump
 mob_sunspring_villager
 npc_altruis_the_sufferer

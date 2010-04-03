@@ -124,7 +124,7 @@ struct TRINITY_DLL_DECL boss_watchkeeper_gargolmarAI : public ScriptedAI
         {
             DoScriptText(SAY_SURGE, m_creature);
 
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,GetSpellMaxRange(SPELL_SURGE), true))
                 DoCast(target,SPELL_SURGE);
 
             Surge_Timer = 5000+rand()%8000;

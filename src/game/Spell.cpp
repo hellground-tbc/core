@@ -288,7 +288,6 @@ Spell::Spell( Unit* Caster, SpellEntry const *info, bool triggered, uint64 origi
 , m_caster(Caster)
 {
     m_spellState = SPELL_STATE_NULL;
-    m_customAttr = spellmgr.GetSpellCustomAttr(m_spellInfo->Id);
     m_skipCheck = skipCheck;
     m_selfContainer = NULL;
     m_triggeringContainer = triggeringContainer;
@@ -1110,7 +1109,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         {
             m_caster->CombatStart(unit);
         }
-        else if(m_customAttr & SPELL_ATTR_CU_AURA_CC)
+        else if(m_spellInfo->AttributesCu & SPELL_ATTR_CU_AURA_CC)
         {
             if(!unit->IsStandState())
                 unit->SetStandState(PLAYER_STATE_NONE);
@@ -1175,7 +1174,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
                 return;
             }
             unit->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_HITBYSPELL);
-            if(m_customAttr & SPELL_ATTR_CU_AURA_CC)
+            if(m_spellInfo->AttributesCu & SPELL_ATTR_CU_AURA_CC)
                 unit->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_CC);
         }
         else
@@ -1202,7 +1201,6 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
             }
         }
     }
-
 
     // Get Data Needed for Diminishing Returns, some effects may have multiple auras, so this must be done on spell hit, not aura add
     if(m_diminishGroup = GetDiminishingReturnsGroupForSpell(m_spellInfo, m_triggeredByAuraSpell))
@@ -1264,7 +1262,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         }
     }
 
-    if(m_customAttr & SPELL_ATTR_CU_LINK_HIT)
+    if(m_spellInfo->AttributesCu & SPELL_ATTR_CU_LINK_HIT)
     {
         if(const std::vector<int32> *spell_triggered = spellmgr.GetSpellLinked(m_spellInfo->Id + SPELL_LINK_HIT))
             for(std::vector<int32>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i)
@@ -1273,15 +1271,6 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
                 else
                     unit->CastSpell(unit, *i, true, 0, 0, m_caster->GetGUID());
     }
-
-    //This is not needed with procflag patch
-    /*if(m_originalCaster)
-    {
-        if(m_customAttr & SPELL_ATTR_CU_EFFECT_HEAL)
-            m_originalCaster->ProcDamageAndSpell(unit, PROC_FLAG_HEAL, PROC_FLAG_NONE, 0, GetSpellSchoolMask(m_spellInfo), m_spellInfo);
-        if(m_originalCaster != unit && (m_customAttr & SPELL_ATTR_CU_EFFECT_DAMAGE))
-            m_originalCaster->ProcDamageAndSpell(unit, PROC_FLAG_HIT_SPELL, PROC_FLAG_STRUCK_SPELL, 0, GetSpellSchoolMask(m_spellInfo), m_spellInfo);
-    }*/
 }
 
 void Spell::DoAllEffectOnTarget(GOTargetInfo *target)
@@ -1718,9 +1707,9 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             break;
 
         case TARGET_TYPE_AREA_CONE:
-            if(m_customAttr & SPELL_ATTR_CU_CONE_BACK)
+            if(m_spellInfo->AttributesCu & SPELL_ATTR_CU_CONE_BACK)
                 pushType = PUSH_IN_BACK;
-            else if(m_customAttr & SPELL_ATTR_CU_CONE_LINE)
+            else if(m_spellInfo->AttributesCu & SPELL_ATTR_CU_CONE_LINE)
                 pushType = PUSH_IN_LINE;
             else
                 pushType = PUSH_IN_FRONT;
@@ -2331,7 +2320,7 @@ void Spell::cast(bool skipCheck)
     //SendCastResult(castResult);
     SendSpellGo();                                          // we must send smsg_spell_go packet before m_castItem delete in TakeCastItem()...
 
-    if(m_customAttr & SPELL_ATTR_CU_DIRECT_DAMAGE)
+    if(m_spellInfo->AttributesCu & SPELL_ATTR_CU_DIRECT_DAMAGE)
         CalculateDamageDoneForAllTargets();
 
     //handle SPELL_AURA_ADD_TARGET_TRIGGER auras
@@ -2352,7 +2341,7 @@ void Spell::cast(bool skipCheck)
         }
     }
 
-    if(m_customAttr & SPELL_ATTR_CU_CHARGE)
+    if(m_spellInfo->AttributesCu & SPELL_ATTR_CU_CHARGE)
         EffectCharge(0);
 
     // Okay, everything is prepared. Now we need to distinguish between immediate and evented delayed spells
@@ -2379,7 +2368,7 @@ void Spell::cast(bool skipCheck)
         TakePower();
     }
 
-    if(m_customAttr & SPELL_ATTR_CU_LINK_CAST)
+    if(m_spellInfo->AttributesCu & SPELL_ATTR_CU_LINK_CAST)
     {
         if(const std::vector<int32> *spell_triggered = spellmgr.GetSpellLinked(m_spellInfo->Id))
             for(std::vector<int32>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i)
@@ -2649,11 +2638,6 @@ void Spell::update(uint32 difftime)
         (m_castPositionX != m_caster->GetPositionX() || m_castPositionY != m_caster->GetPositionY() || m_castPositionZ != m_caster->GetPositionZ()) &&
         (m_spellInfo->Effect[0] != SPELL_EFFECT_STUCK || !m_caster->HasUnitMovementFlag(MOVEMENTFLAG_FALLING)))
     {
-        // always cancel for channeled spells
-        //if( m_spellState == SPELL_STATE_CASTING )
-        //    cancel();
-        // don't cancel for melee, autorepeat, triggered and instant spells
-        //else
         if(!IsNextMeleeSwingSpell() && !IsAutoRepeat() && !m_IsTriggeredSpell && (m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT))
             cancel();
     }
@@ -2682,10 +2666,6 @@ void Spell::update(uint32 difftime)
                     // check if player has jumped before the channeling finished
                     if(m_caster->HasUnitMovementFlag(MOVEMENTFLAG_JUMPING))
                         cancel();
-
-                    // check for incapacitating player states
-                    //if( m_caster->hasUnitState(UNIT_STAT_STUNNED | UNIT_STAT_CONFUSED))
-                    //    cancel();
                 }
 
                 // check if there are alive targets left
@@ -5523,7 +5503,10 @@ void Spell::CalculateDamageDoneForAllTargets()
         if (target.missCondition==SPELL_MISS_NONE)                          // In case spell hit target, do all effect on that target
         {
             target.damage += CalculateDamageDone(unit, mask, multiplier);   
-            target.crit = m_caster->isSpellCrit(unit, m_spellInfo, m_spellSchoolMask, m_attackType);
+            if(m_originalCaster)
+                target.crit = m_originalCaster->isSpellCrit(unit, m_spellInfo, m_spellSchoolMask, m_attackType);
+            else
+                target.crit = m_caster->isSpellCrit(unit, m_spellInfo, m_spellSchoolMask, m_attackType);
         }
         else if (target.missCondition == SPELL_MISS_REFLECT)                // In case spell reflect from target, do all effect on caster (if hit)
         {

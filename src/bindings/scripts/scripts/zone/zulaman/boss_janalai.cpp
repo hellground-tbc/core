@@ -446,7 +446,7 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
 
         if(FireBreathTimer < diff)
         {
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0, GetSpellMaxRange(SPELL_FLAME_BREATH), true))
             {
                 m_creature->AttackStop();
                 m_creature->GetMotionMaster()->Clear();

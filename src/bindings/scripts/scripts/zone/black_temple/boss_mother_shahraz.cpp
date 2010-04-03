@@ -163,8 +163,7 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         float Z = TeleportPoint[random].z;
         for(uint8 i = 0; i < 3; i++)
         {
-            Unit* pUnit = SelectUnit(SELECT_TARGET_RANDOM, 1);
-            if(pUnit && pUnit->isAlive() && (pUnit->GetTypeId() == TYPEID_PLAYER))
+            if(Unit* pUnit = SelectUnit(SELECT_TARGET_RANDOM, 1, 300, true, m_creature->getVictim()))
             {
                 TargetGUID[i] = pUnit->GetGUID();
                 pUnit->CastSpell(pUnit, SPELL_TELEPORT_VISUAL, true);
@@ -199,8 +198,8 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         //Randomly cast one beam.
         if(BeamTimer < diff)
         {
-            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-            if(!target || !target->isAlive())
+            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true);
+            if(!target)
                 return;
 
             BeamTimer = 9000;

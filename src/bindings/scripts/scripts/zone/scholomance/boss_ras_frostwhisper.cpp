@@ -73,8 +73,9 @@ struct TRINITY_DLL_DECL boss_rasfrostAI : public ScriptedAI
         if (Frostbolt_Timer < diff)
         {
             Unit* target = NULL;
-            target = SelectUnit(SELECT_TARGET_RANDOM,0);
-            if (target) DoCast(target,SPELL_FROSTBOLT);
+            target = SelectUnit(SELECT_TARGET_RANDOM,0, GetSpellMaxRange(SPELL_FROSTBOLT), true);
+            if (target)
+                DoCast(target,SPELL_FROSTBOLT);
 
             Frostbolt_Timer = 8000;
         }else Frostbolt_Timer -= diff;
