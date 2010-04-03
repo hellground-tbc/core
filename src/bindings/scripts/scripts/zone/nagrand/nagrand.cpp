@@ -277,7 +277,7 @@ struct TRINITY_DLL_DECL mob_kilsorrow_agentAI : public ScriptedAI
 };
 CreatureAI* GetAI_mob_kilsorrow_agent(Creature *_Creature)
 {
-    return new mob_kilsorrow_agent (_Creature);
+    return new mob_kilsorrow_agentAI (_Creature);
 }
 
 /*####
@@ -747,7 +747,7 @@ void AddSC_nagrand()
 
     newscript = new Script;
     newscript->Name="mob_kilsorrow_agent";
-    newscript->GetAI = &GetAI_mobs_bladespire_ogre;
+    newscript->GetAI = &GetAI_mob_kilsorrow_agent;
     newscript->RegisterSelf();
 
     newscript = new Script;
