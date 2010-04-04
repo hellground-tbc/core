@@ -5187,7 +5187,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         }
     }
 
-    if(!unitTarget || (unitTarget && !(unitTarget->isAlive())) // can we remove this check?
+    if(!unitTarget || !unitTarget->isAlive()) // can we remove this check?
     {
         sLog.outError("Spell %u in EffectScriptEffect does not have unitTarget", m_spellInfo->Id);
         return;
