@@ -2077,6 +2077,8 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 Trinity::RandomResizeList(unitList, m_spellValue->MaxAffectedTargets);
             }else if(m_spellInfo->Id == 27285) // Seed of Corruption proc spell
                 unitList.remove(m_targets.getUnitTarget());
+            else if(m_spellInfo->Id == 39968) // Needle Spine Explosion proc
+                unitList.remove(m_targets.getUnitTarget());
 
             for(std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
                 AddUnitTarget(*itr, i);
