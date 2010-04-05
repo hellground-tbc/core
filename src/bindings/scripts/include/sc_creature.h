@@ -246,6 +246,12 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
     //Returns friendly unit with the most amount of hp missing from max hp
     Unit* DoSelectLowestHpFriendly(float range, uint32 MinHPDiff = 1);
 
+    //Returns a list of creatures with specified entry in range
+    std::list<Creature*> DoFindAllCreaturesWithEntry(uint32 entry, float range);
+
+    //Returns a list of all friendly units in grid within range
+    std::list<Creature*> DoFindAllFriendlyInGrid(float range);
+
     //Returns a list of friendly CC'd units within range
     std::list<Creature*> DoFindFriendlyCC(float range);
 
