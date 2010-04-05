@@ -25,6 +25,7 @@ EndScriptData */
 mob_shattered_rumbler
 mob_ancient_orc_ancestor
 mob_lump
+mob_kilsorrow_agent
 mob_sunspring_villager
 npc_altruis_the_sufferer
 npc_greatmother_geyah
@@ -250,6 +251,33 @@ bool GossipSelect_mob_lump(Player *player, Creature *_Creature, uint32 sender, u
             break;
     }
     return true;
+}
+
+/*######
+## mob_kilsorrow_agent
+######*/
+
+struct TRINITY_DLL_DECL mob_kilsorrow_agentAI : public ScriptedAI
+{
+    mob_kilsorrow_agentAI(Creature *c) : ScriptedAI(c) {}
+
+    void Reset()
+    {
+    }
+
+    void Aggro(Unit* who)
+    {
+    }
+
+    void JustDied(Unit* Killer)
+    {
+        if (Killer->GetTypeId() == TYPEID_PLAYER)
+            ((Player*)Killer)->KilledMonster(21276, m_creature->GetGUID());
+    }
+};
+CreatureAI* GetAI_mob_kilsorrow_agent(Creature *_Creature)
+{
+    return new mob_kilsorrow_agentAI (_Creature);
 }
 
 /*####
@@ -715,6 +743,11 @@ void AddSC_nagrand()
     newscript->GetAI = &GetAI_mob_lump;
     newscript->pGossipHello =  &GossipHello_mob_lump;
     newscript->pGossipSelect = &GossipSelect_mob_lump;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="mob_kilsorrow_agent";
+    newscript->GetAI = &GetAI_mob_kilsorrow_agent;
     newscript->RegisterSelf();
 
     newscript = new Script;

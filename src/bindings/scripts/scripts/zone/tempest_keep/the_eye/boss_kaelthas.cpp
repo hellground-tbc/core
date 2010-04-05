@@ -1321,7 +1321,7 @@ struct TRINITY_DLL_DECL boss_thaladred_the_darkenerAI : public advisorbase_ai
         Check_Timer2 = 3000;
 
         m_creature->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
-        m_creature->SetSpeed(MOVE_WALK, 1.5f, false);
+        m_creature->SetSpeed(MOVE_WALK, 2.0f, false);
 
         advisorbase_ai::Reset();
     }
@@ -1338,7 +1338,7 @@ struct TRINITY_DLL_DECL boss_thaladred_the_darkenerAI : public advisorbase_ai
 
         ScriptedAI::AttackStart(who);
         m_creature->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
-        m_creature->SetSpeed(MOVE_WALK, 1.5f, false);
+        m_creature->SetSpeed(MOVE_WALK, 2.0f, false);
     }*/
 
     void Aggro(Unit *who)
@@ -1582,7 +1582,7 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
         if (!UpdateVictim() )
             return;
 
-        //cast from 20yd distance
+        //cast from 30yd distance
         if(m_creature->GetDistance2d(m_creature->getVictim()) < CAPERNIAN_DISTANCE)
                 m_creature->StopMoving();
 

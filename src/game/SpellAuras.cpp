@@ -2240,6 +2240,19 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 m_target->ModifyAuraState(AURA_STATE_WARRIOR_VICTORY_RUSH, apply);
                 return;
             }
+            //Mark of Malice
+            if(GetId()==33493)
+            {
+                if(apply)       // set 5 stacks
+                {
+                    m_target->AddAura(33493, 0);
+                    if(Aura* MarkOfMalice = m_target->GetAura(33493, 0))
+                        MarkOfMalice->SetStackAmount(5);
+                }
+                else
+                    m_target->CastSpell(m_target, 33494, true);
+                return;
+            }
             //Summon Fire Elemental
             if (GetId() == 40133 && caster)
             {
@@ -5716,7 +5729,7 @@ void Aura::PeriodicTick()
             // ignore non positive values (can be result apply spellmods to aura damage
             uint32 amount = GetModifierValuePerStack() > 0 ? GetModifierValuePerStack() : 0;
 
-            CleanDamage cleanDamage =  CleanDamage(0, BASE_ATTACK, MELEE_HIT_NORMAL );
+            CleanDamage cleanDamage =  CleanDamage(0, BASE_ATTACK);
 
             uint32 pdamage;
 
@@ -5831,7 +5844,7 @@ void Aura::PeriodicTick()
 
             uint32 pdamage = GetModifierValuePerStack() > 0 ? GetModifierValuePerStack() : 0;
 
-            CleanDamage cleanDamage =  CleanDamage(pdamage, BASE_ATTACK, MELEE_HIT_NORMAL );
+            CleanDamage cleanDamage =  CleanDamage(pdamage, BASE_ATTACK);
 
             pdamage = pCaster->SpellDamageBonus(m_target,GetSpellProto(),pdamage,DOT);
 
@@ -6035,7 +6048,7 @@ void Aura::PeriodicTick()
                 {
                     pCaster->SendSpellNonMeleeDamageLog(pCaster, GetId(), gain, GetSpellSchoolMask(GetSpellProto()), 0, 0, false, 0, false);
 
-                    CleanDamage cleanDamage =  CleanDamage(0, BASE_ATTACK, MELEE_HIT_NORMAL );
+                    CleanDamage cleanDamage =  CleanDamage(0, BASE_ATTACK);
                     pCaster->DealDamage(pCaster, gain, &cleanDamage, NODAMAGE, GetSpellSchoolMask(GetSpellProto()), GetSpellProto(), true);
                 }
             }

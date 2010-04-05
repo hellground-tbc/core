@@ -1844,7 +1844,7 @@ void Spell::EffectDummy(uint32 i)
             }
             break;
         case SPELLFAMILY_SHAMAN:
-            
+
             // Flametongue Weapon Proc
             if(m_spellInfo->SpellFamilyFlags & 0x200000)
             {
@@ -6576,14 +6576,14 @@ void Spell::EffectSummonDemon(uint32 i)
 
     // might not always work correctly, maybe the creature that dies from CoD casts the effect on itself and is therefore the caster?
     Charmed->SetLevel(m_caster->getLevel());
-    
+
     // Add damage/mana/hp according to level
     //PetLevelInfo const* pInfo = objmgr.GetPetLevelInfo(creature_ID, m_caster->getLevel());
     if(creature_ID == 89 || creature_ID == 11859)
     {
         int lvldiff = (m_caster->getLevel() - 52);
         if(lvldiff > 0)
-        {   
+        {
             if(creature_ID == 89)
             {
                 Charmed->SetModifierValue(UNIT_MOD_HEALTH, BASE_VALUE, Charmed->GetMaxHealth() + 350 * lvldiff);
@@ -6591,7 +6591,7 @@ void Spell::EffectSummonDemon(uint32 i)
                 Charmed->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, 20 * lvldiff);
                 Charmed->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, 20 * lvldiff);
                 Charmed->SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, Charmed->GetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE) * (1 + lvldiff * 0.1f));
-        
+
                 m_caster->CastSpell(Charmed, 20882, true);          // Enslave demon effect, without mana cost and cooldown
                 Charmed->CastSpell(Charmed, 22703, true, 0);        // Inferno effect
             }
@@ -6601,7 +6601,7 @@ void Spell::EffectSummonDemon(uint32 i)
                 Charmed->SetModifierValue(UNIT_MOD_MANA, BASE_VALUE, Charmed->GetMaxPower(POWER_MANA) + 100 * lvldiff);
                 Charmed->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, 30 * lvldiff);
                 Charmed->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, 30 * lvldiff);
-                Charmed->SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, Charmed->GetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE) * (1 + lvldiff * 0.1f));                
+                Charmed->SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, Charmed->GetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE) * (1 + lvldiff * 0.1f));
             }
 
             Charmed->UpdateAllStats();

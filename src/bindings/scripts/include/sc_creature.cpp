@@ -915,6 +915,24 @@ Unit* ScriptedAI::DoSelectLowestHpFriendly(float range, uint32 MinHPDiff)
     return pUnit;
 }
 
+std::list<Creature*> ScriptedAI::DoFindAllCreaturesWithEntry(uint32 entry, float range)
+{
+    std::list<Creature*> pList;
+    Trinity::AllCreaturesOfEntryInRange u_check(m_creature, entry, range);
+    Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(pList, u_check);
+    m_creature->VisitNearbyObject(range, searcher);
+    return pList;
+}
+
+std::list<Creature*> ScriptedAI::DoFindAllFriendlyInGrid(float range)
+{
+    std::list<Creature*> pList;
+    Trinity::AllFriendlyCreaturesInGrid u_check(m_creature);
+    Trinity::CreatureListSearcher<Trinity::AllFriendlyCreaturesInGrid> searcher(pList, u_check);
+    m_creature->VisitNearbyGridObject(range, searcher);
+    return pList;
+}
+
 std::list<Creature*> ScriptedAI::DoFindFriendlyCC(float range)
 {
     std::list<Creature*> pList;
