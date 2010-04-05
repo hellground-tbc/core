@@ -608,19 +608,15 @@ struct DiminishingReturn
     uint32                  hitCount;
 };
 
-enum MeleeHitOutcome
-{
-    MELEE_HIT_EVADE, MELEE_HIT_MISS, MELEE_HIT_DODGE, MELEE_HIT_BLOCK, MELEE_HIT_PARRY,
-    MELEE_HIT_GLANCING, MELEE_HIT_CRIT, MELEE_HIT_CRUSHING, MELEE_HIT_NORMAL, MELEE_HIT_BLOCK_CRIT
-};
+
+// po co to? oO
 struct CleanDamage
 {
-    CleanDamage(uint32 _damage, WeaponAttackType _attackType, MeleeHitOutcome _hitOutCome) :
-    damage(_damage), attackType(_attackType), hitOutCome(_hitOutCome) {}
+    CleanDamage(uint32 _damage, WeaponAttackType _attackType) :
+    damage(_damage), attackType(_attackType) {}
 
     uint32 damage;
     WeaponAttackType attackType;
-    MeleeHitOutcome hitOutCome;
 };
 
 // Struct for use in Unit::CalculateMeleeDamage
@@ -642,7 +638,7 @@ struct CalcDamageInfo
     uint32 procVictim;
     uint32 procEx;
     uint32 cleanDamage;          // Used only fo rage calcultion
-    MeleeHitOutcome hitOutCome;  // TODO: remove this field (need use TargetState)
+    //MeleeHitOutcome hitOutCome;  // TODO: remove this field (need use TargetState)
 };
 
 // Spell damage info structure based on structure sending in SMSG_SPELLNONMELEEDAMAGELOG opcode
@@ -981,8 +977,8 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         float GetWeaponProcChance() const;
         float GetPPMProcChance(uint32 WeaponSpeed, float PPM) const;
 
-        MeleeHitOutcome RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttackType attType) const;
-        MeleeHitOutcome RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttackType attType, int32 crit_chance, int32 miss_chance, int32 dodge_chance, int32 parry_chance, int32 block_chance, bool SpellCasted ) const;
+        void RollMeleeHit(CalcDamageInfo *) const;
+        void RollMeleeHit(CalcDamageInfo *, int32 crit_chance, int32 miss_chance, int32 dodge_chance, int32 parry_chance, int32 block_chance) const;
 
         bool isVendor()       const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_VENDOR ); }
         bool isTrainer()      const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_TRAINER ); }

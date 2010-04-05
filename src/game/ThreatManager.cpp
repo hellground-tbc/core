@@ -278,7 +278,7 @@ bool DropAggro(Creature* pAttacker, Unit * target)
     if (target->hasUnitState(UNIT_STAT_CONFUSED))
         return true;
 
-    if (target->isCharmed());
+    if (target->isCharmed())
         return true;
 
     // target is stunned from Lady Vashj Shockblast
