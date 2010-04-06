@@ -5619,12 +5619,12 @@ void Aura::HandleSchoolAbsorb(bool apply, bool Real)
                         break;
                     }
                     break;
-                case SPELLFAMILY_WARLOCK:
-                    if(m_spellProto->SpellFamilyFlags == 0x00)
+                case SPELLFAMILY_GENERIC:
+                    if(m_spellProto->SpellFamilyFlags == 0x00 && m_spellProto->SpellIconID == 207)
                     {
-                        //shadow ward
-                        //+10% from +spd bonus
-                        DoneActualBenefit = caster->SpellBaseDamageBonus(GetSpellSchoolMask(m_spellProto)) * 0.1f;
+                        //warlock's shadow ward
+                        //+30% from +spd bonus
+                        DoneActualBenefit = caster->SpellBaseDamageBonus(GetSpellSchoolMask(m_spellProto)) * 0.3f;
                         break;
                     }
                     break;
