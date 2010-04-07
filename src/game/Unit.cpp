@@ -2154,12 +2154,12 @@ void Unit::CalcAbsorb(Unit *pVictim,SpellSchoolMask schoolMask, const uint32 dam
             RemainingDamage -= currentAbsorb;
 
             SpellDamageLog damageInfo((*i)->GetSpellProto()->Id, this, caster, (*i)->GetSpellProto()->SchoolMask);
-            damageInfo->damage = currentAbsorb;
+            damageInfo.damage = currentAbsorb;
 
 //            SendSpellNonMeleeDamageLog(caster, (*i)->GetSpellProto()->Id, currentAbsorb, schoolMask, 0, 0, false, 0, false);
 
             CleanDamage cleanDamage = CleanDamage(currentAbsorb, BASE_ATTACK);
-            DealDamage(damageInfo, &cleanDamage, DOT, schoolMask, (*i)->GetSpellProto(), false);
+            DealDamage(&damageInfo, &cleanDamage, DOT, (*i)->GetSpellProto(), false);
         }
 
         AuraList const& vSplitDamagePct = pVictim->GetAurasByType(SPELL_AURA_SPLIT_DAMAGE_PCT);
@@ -2181,12 +2181,12 @@ void Unit::CalcAbsorb(Unit *pVictim,SpellSchoolMask schoolMask, const uint32 dam
             RemainingDamage -= splitted;
 
             SpellDamageLog damageInfo((*i)->GetSpellProto()->Id, this, caster, (*i)->GetSpellProto()->SchoolMask);
-            damageInfo->damage = splitted;
+            damageInfo.damage = splitted;
 
 //            SendSpellNonMeleeDamageLog(caster, (*i)->GetSpellProto()->Id, splitted, schoolMask, 0, 0, false, 0, false);
 
             CleanDamage cleanDamage = CleanDamage(splitted, BASE_ATTACK);
-            DealDamage(damageInfo, &cleanDamage, DOT, schoolMask, (*i)->GetSpellProto(), false);
+            DealDamage(&damageInfo, &cleanDamage, DOT, (*i)->GetSpellProto(), false);
         }
     }
 
@@ -2385,11 +2385,7 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo, int32 crit_chance, int32 mis
 
     if (parry_chance)
     {
-        if (((Creature*)pVictim)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_PARRY)
-            parry_chance = 0;
-        else
-            parry_chance -= expertise_reduction + skillBonus;
-
+        parry_chance -= expertise_reduction + skillBonus;
         if (parry_chance > 0)
         {
             sum += parry_chance;
@@ -2405,13 +2401,12 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo, int32 crit_chance, int32 mis
         }
     }
 
+    if (GetTypeId() == TYPEID_UNIT && ((Creature *)this)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_BLOCK_ON_ATTACK)
+        block_chance = 0;
+
     if (block_chance)
     {
-        if (((Creature*)pVictim)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_BLOCK)
-            block_chance = 0;
-        else
-            block_chance -= skillBonus;
-
+        block_chance -= skillBonus;
         if (block_chance > 0)
         {
             sum += block_chance;
@@ -2438,11 +2433,7 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo, int32 crit_chance, int32 mis
 
     if (crit_chance)
     {
-        if(GetTypeId() == TYPEID_UNIT && (((Creature*)this)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_CRIT))
-            crit_chance = 0;
-        else
-            crit_chance += skillBonus2;
-
+        crit_chance += skillBonus2;
         if (crit_chance > 0)
         {
 
@@ -3025,6 +3016,9 @@ float Unit::GetUnitParryChance() const
     }
     else if(GetTypeId() == TYPEID_UNIT)
     {
+        if (((Creature*)this)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_PARRY)
+            return 0.0f;
+
         if(GetCreatureType() == CREATURE_TYPE_HUMANOID)
         {
             chance = 5.0f;
@@ -3054,7 +3048,7 @@ float Unit::GetUnitBlockChance() const
     }
     else
     {
-        if(((Creature const*)this)->isTotem())
+        if (((Creature const*)this)->isTotem() || ((Creature*)this)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_BLOCK)
             return 0.0f;
         else
         {
@@ -3090,6 +3084,10 @@ float Unit::GetUnitCriticalChance(WeaponAttackType attackType, const Unit *pVict
     }
     else
     {
+        // unit case
+        if (((Creature*)this)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_CRIT)
+            return 0.0f;
+
         crit = 5.0f;
         crit += GetTotalAuraModifier(SPELL_AURA_MOD_CRIT_PERCENT);
     }
