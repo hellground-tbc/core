@@ -1977,7 +1977,7 @@ void Unit::RollMeleeHit(CalcDamageInfo *damageInfo, int32 crit_chance, int32 mis
     Unit *pVictim = damageInfo->target;
     WeaponAttackType attType =  damageInfo->attackType;
 
-    if(pVictim->GetTypeId()==TYPEID_UNIT && ((Creature*)pVictim)->IsInEvadeMode())
+    if(pVictim->GetTypeId()== TYPEID_UNIT && ((Creature*)pVictim)->IsInEvadeMode())
     {
         damageInfo->HitInfo    |= HITINFO_MISS|HITINFO_SWINGNOHITSOUND;
         damageInfo->TargetState = VICTIMSTATE_EVADES;
@@ -2035,6 +2035,7 @@ void Unit::RollMeleeHit(CalcDamageInfo *damageInfo, int32 crit_chance, int32 mis
     {
         if (pVictim->GetTypeId() == TYPEID_PLAYER)
             dodge_chance = 0;
+
         parry_chance = 0;
         block_chance = 0;
     }
@@ -2071,7 +2072,7 @@ void Unit::RollMeleeHit(CalcDamageInfo *damageInfo, int32 crit_chance, int32 mis
 
     if (parry_chance)
     {
-        if (((Creature*)pVictim)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_PARRY)
+        if (pVictim->GetTypeId()== TYPEID_UNIT && ((Creature*)pVictim)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_PARRY)
             parry_chance = 0;
         else
             parry_chance -= expertise_reduction + skillBonus;
@@ -2093,7 +2094,7 @@ void Unit::RollMeleeHit(CalcDamageInfo *damageInfo, int32 crit_chance, int32 mis
 
     if (block_chance)
     {
-        if (((Creature*)pVictim)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_BLOCK)
+        if (pVictim->GetTypeId()== TYPEID_UNIT && ((Creature*)pVictim)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_BLOCK)
             block_chance = 0;
         else
             block_chance -= skillBonus;
