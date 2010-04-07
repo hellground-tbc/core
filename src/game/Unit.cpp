@@ -2153,10 +2153,13 @@ void Unit::CalcAbsorb(Unit *pVictim,SpellSchoolMask schoolMask, const uint32 dam
 
             RemainingDamage -= currentAbsorb;
 
-            SendSpellNonMeleeDamageLog(caster, (*i)->GetSpellProto()->Id, currentAbsorb, schoolMask, 0, 0, false, 0, false);
+            SpellDamageLog damageInfo((*i)->GetSpellProto()->Id, this, caster, (*i)->GetSpellProto()->SchoolMask);
+            damageInfo->damage = currentAbsorb;
+
+//            SendSpellNonMeleeDamageLog(caster, (*i)->GetSpellProto()->Id, currentAbsorb, schoolMask, 0, 0, false, 0, false);
 
             CleanDamage cleanDamage = CleanDamage(currentAbsorb, BASE_ATTACK);
-            DealDamage(caster, currentAbsorb, &cleanDamage, DOT, schoolMask, (*i)->GetSpellProto(), false);
+            DealDamage(damageInfo, &cleanDamage, DOT, schoolMask, (*i)->GetSpellProto(), false);
         }
 
         AuraList const& vSplitDamagePct = pVictim->GetAurasByType(SPELL_AURA_SPLIT_DAMAGE_PCT);
@@ -2177,10 +2180,13 @@ void Unit::CalcAbsorb(Unit *pVictim,SpellSchoolMask schoolMask, const uint32 dam
 
             RemainingDamage -= splitted;
 
-            SendSpellNonMeleeDamageLog(caster, (*i)->GetSpellProto()->Id, splitted, schoolMask, 0, 0, false, 0, false);
+            SpellDamageLog damageInfo((*i)->GetSpellProto()->Id, this, caster, (*i)->GetSpellProto()->SchoolMask);
+            damageInfo->damage = splitted;
+
+//            SendSpellNonMeleeDamageLog(caster, (*i)->GetSpellProto()->Id, splitted, schoolMask, 0, 0, false, 0, false);
 
             CleanDamage cleanDamage = CleanDamage(splitted, BASE_ATTACK);
-            DealDamage(caster, splitted, &cleanDamage, DOT, schoolMask, (*i)->GetSpellProto(), false);
+            DealDamage(damageInfo, &cleanDamage, DOT, schoolMask, (*i)->GetSpellProto(), false);
         }
     }
 
