@@ -2091,6 +2091,8 @@ void Unit::RollMeleeHit(CalcDamageInfo *damageInfo, int32 crit_chance, int32 mis
             }
         }
     }
+    if(GetTypeId() == TYPEID_UNIT && ((Creature*)this)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_BLOCK_ON_ATTACK)
+        block_chance = 0;
 
     if (block_chance)
     {
