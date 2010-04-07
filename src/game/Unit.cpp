@@ -2039,7 +2039,8 @@ void Unit::RollMeleeHit(CalcDamageInfo *damageInfo, int32 crit_chance, int32 mis
         parry_chance = 0;
         block_chance = 0;
     }
-    else if (damageInfo->attackType == RANGED_ATTACK)
+
+    if (damageInfo->attackType == RANGED_ATTACK)
     {
         // this is not matrix :/
         dodge_chance = 0;
@@ -2091,12 +2092,10 @@ void Unit::RollMeleeHit(CalcDamageInfo *damageInfo, int32 crit_chance, int32 mis
             }
         }
     }
-    if(GetTypeId() == TYPEID_UNIT && ((Creature*)this)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_BLOCK_ON_ATTACK)
-        block_chance = 0;
 
     if (block_chance)
     {
-        if (pVictim->GetTypeId()== TYPEID_UNIT && ((Creature*)pVictim)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_BLOCK)
+        if (pVictim->GetTypeId()== TYPEID_UNIT && ((Creature*)pVictim)->GetCreatureInfo()->flags_extra & (CREATURE_FLAG_EXTRA_NO_BLOCK | CREATURE_FLAG_EXTRA_NO_BLOCK_ON_ATTACK))
             block_chance = 0;
         else
             block_chance -= skillBonus;
