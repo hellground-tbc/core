@@ -79,9 +79,9 @@ bool AreaTrigger_at_ring_of_law(Player *player, AreaTriggerEntry *at)
 {
     ScriptedInstance* pInstance = ((ScriptedInstance*)player->GetInstanceData());
 
-    if (pInstance)
+    if(pInstance)
     {
-        if (pInstance->GetData(TYPE_RING_OF_LAW) == IN_PROGRESS || pInstance->GetData(TYPE_RING_OF_LAW) == DONE)
+        if(pInstance->GetData(TYPE_RING_OF_LAW) == IN_PROGRESS || pInstance->GetData(TYPE_RING_OF_LAW) == DONE)
             return false;
 
         pInstance->SetData(TYPE_RING_OF_LAW,IN_PROGRESS);
@@ -581,10 +581,10 @@ struct TRINITY_DLL_DECL npc_dughal_stormwingAI : public npc_escortAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(pInstance->GetData(DATA_QUEST_JAIL_BREAK) == NOT_STARTED)
+        if(!pInstance || pInstance->GetData(DATA_QUEST_JAIL_BREAK) == NOT_STARTED)
             return;
 
-        if( pInstance->GetData(DATA_QUEST_JAIL_BREAK) && pInstance->GetData(DATA_DUGHAL) == DONE )
+        if(pInstance->GetData(DATA_QUEST_JAIL_BREAK) && pInstance->GetData(DATA_DUGHAL) == DONE )
         {
             m_creature->SetVisibility(VISIBILITY_OFF);
             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -743,7 +743,7 @@ struct TRINITY_DLL_DECL npc_marshal_windsorAI : public npc_escortAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(pInstance->GetData(DATA_QUEST_JAIL_BREAK) == NOT_STARTED)
+        if(!pInstance || pInstance->GetData(DATA_QUEST_JAIL_BREAK) == NOT_STARTED)
             return;
         
         switch(WaitEvent)
@@ -911,8 +911,11 @@ struct TRINITY_DLL_DECL npc_marshal_reginald_windsorAI : public npc_escortAI
             case 32:
                 m_creature->Say(SAY_REGINALD_WINDSOR_20_2, LANG_UNIVERSAL, PlayerGUID);
 
-                if(Unit *qstarter = Unit::GetUnit(*m_creature, pInstance->GetData64(Q_STARTER)))
-                    ((Player*)qstarter)->GroupEventHappens(QUEST_JAIL_BREAK, m_creature);
+                if(pInstance)
+                {
+                    if(Unit *qstarter = Unit::GetUnit(*m_creature, pInstance->GetData64(Q_STARTER)))
+                        ((Player*)qstarter)->GroupEventHappens(QUEST_JAIL_BREAK, m_creature);
+                }
 
                 m_creature->setDeathState(DEAD);
                 m_creature->RemoveCorpse();
@@ -956,12 +959,13 @@ struct TRINITY_DLL_DECL npc_marshal_reginald_windsorAI : public npc_escortAI
 
     void JustDied(Unit *slayer)
     {
-        pInstance->SetData(DATA_QUEST_JAIL_BREAK, FAIL);
+        if(pInstance) 
+            pInstance->SetData(DATA_QUEST_JAIL_BREAK, FAIL);
     }
 
     void UpdateAI(const uint32 diff)
     {
-        if(pInstance->GetData(DATA_QUEST_JAIL_BREAK) == NOT_STARTED)
+        if(!pInstance || pInstance->GetData(DATA_QUEST_JAIL_BREAK) == NOT_STARTED)
             return;
 
         switch(WaitEvent)
@@ -1106,7 +1110,9 @@ struct TRINITY_DLL_DECL npc_tobias_seecherAI : public npc_escortAI
             m_creature->SetVisibility(VISIBILITY_OFF);
             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-            pInstance->SetData(DATA_TOBIAS,DONE);
+            
+            if(pInstance)
+                pInstance->SetData(DATA_TOBIAS,DONE);
         }
     }
 
@@ -1130,10 +1136,10 @@ struct TRINITY_DLL_DECL npc_tobias_seecherAI : public npc_escortAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(pInstance->GetData(DATA_QUEST_JAIL_BREAK) == NOT_STARTED)
+        if(!pInstance || pInstance->GetData(DATA_QUEST_JAIL_BREAK) == NOT_STARTED)
             return;
 
-        if( (pInstance->GetData(DATA_QUEST_JAIL_BREAK) == IN_PROGRESS || pInstance->GetData(DATA_QUEST_JAIL_BREAK) == FAIL || pInstance->GetData(DATA_QUEST_JAIL_BREAK) == DONE)&& pInstance->GetData(DATA_TOBIAS) == DONE )
+        if((pInstance->GetData(DATA_QUEST_JAIL_BREAK) == IN_PROGRESS || pInstance->GetData(DATA_QUEST_JAIL_BREAK) == FAIL || pInstance->GetData(DATA_QUEST_JAIL_BREAK) == DONE) && pInstance->GetData(DATA_TOBIAS) == DONE )
         {
             m_creature->SetVisibility(VISIBILITY_OFF);
             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
