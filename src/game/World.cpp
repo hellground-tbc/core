@@ -1549,6 +1549,9 @@ void World::Update(time_t diff)
 
             m_updateTimeSum = m_updateTime;
             m_updateTimeCount = 1;
+            
+            if(GetUptime() > 43200)
+                ShutdownServ(1, SHUTDOWN_MASK_RESTART, RESTART_EXIT_CODE);
         }
         else
         {
