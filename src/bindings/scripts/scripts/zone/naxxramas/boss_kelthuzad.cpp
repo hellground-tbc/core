@@ -192,7 +192,7 @@ struct TRINITY_DLL_DECL boss_kelthuzadAI : public ScriptedAI
             //delete creature
             Unit* pUnit = Unit::GetUnit((*m_creature), GuardiansOfIcecrown[i]);
             if (pUnit && pUnit->isAlive())
-                pUnit->DealDamage(pUnit, pUnit->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                pUnit->DealDamage(pUnit, pUnit->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
             GuardiansOfIcecrown[i] = 0;
         }
         }

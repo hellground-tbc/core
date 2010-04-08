@@ -370,7 +370,7 @@ struct TRINITY_DLL_DECL eye_of_cthunAI : public Scripted_NoMovementAI
             //Dead phase
             case 5:
             {
-                m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
+                m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
             }
         }
     }
@@ -927,7 +927,7 @@ struct TRINITY_DLL_DECL eye_tentacleAI : public Scripted_NoMovementAI
     {
         Unit* p = Unit::GetUnit(*m_creature, Portal);
         if (p)
-            p->DealDamage(p, p->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
+            p->DealDamage(p, p->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
     }
 
     void Reset()
@@ -953,7 +953,7 @@ struct TRINITY_DLL_DECL eye_tentacleAI : public Scripted_NoMovementAI
         //KillSelfTimer
         if (KillSelfTimer < diff)
         {
-            m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
+            m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
 
             return;
         }else KillSelfTimer -= diff;
@@ -990,7 +990,7 @@ struct TRINITY_DLL_DECL claw_tentacleAI : public Scripted_NoMovementAI
     {
         Unit* p = Unit::GetUnit(*m_creature, Portal);
         if (p)
-            p->DealDamage(p, p->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
+            p->DealDamage(p, p->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
     }
 
     void Reset()
@@ -1018,7 +1018,7 @@ struct TRINITY_DLL_DECL claw_tentacleAI : public Scripted_NoMovementAI
         {
             Unit* p = Unit::GetUnit(*m_creature, Portal);
             if (p)
-                p->DealDamage(p, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
+                p->DealDamage(p, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
 
             //Dissapear and reappear at new position
             m_creature->SetVisibility(VISIBILITY_OFF);
@@ -1027,7 +1027,7 @@ struct TRINITY_DLL_DECL claw_tentacleAI : public Scripted_NoMovementAI
             target = SelectUnit(SELECT_TARGET_RANDOM,0);
             if (!target)
             {
-                m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
+                m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
                 return;
             }
 
@@ -1085,7 +1085,7 @@ struct TRINITY_DLL_DECL giant_claw_tentacleAI : public Scripted_NoMovementAI
     {
         Unit* p = Unit::GetUnit(*m_creature, Portal);
         if (p)
-            p->DealDamage(p, p->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
+            p->DealDamage(p, p->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
     }
 
     void Reset()
@@ -1114,7 +1114,7 @@ struct TRINITY_DLL_DECL giant_claw_tentacleAI : public Scripted_NoMovementAI
         {
             Unit* p = Unit::GetUnit(*m_creature, Portal);
             if (p)
-                p->DealDamage(p, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
+                p->DealDamage(p, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
 
             //Dissapear and reappear at new position
             m_creature->SetVisibility(VISIBILITY_OFF);
@@ -1123,7 +1123,7 @@ struct TRINITY_DLL_DECL giant_claw_tentacleAI : public Scripted_NoMovementAI
             target = SelectUnit(SELECT_TARGET_RANDOM, 0);
             if (!target)
             {
-                m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
+                m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
                 return;
             }
 
@@ -1186,7 +1186,7 @@ struct TRINITY_DLL_DECL giant_eye_tentacleAI : public Scripted_NoMovementAI
     {
         Unit* p = Unit::GetUnit(*m_creature, Portal);
         if (p)
-            p->DealDamage(p, p->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
+            p->DealDamage(p, p->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
     }
 
     void Reset()
@@ -1235,7 +1235,7 @@ void flesh_tentacleAI::UpdateAI(const uint32 diff)
         if (!pUnit || !pUnit->isAlive() || !pUnit->isInCombat())
         {
             Parent = 0;
-            m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
+            m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
             return;
         }
 

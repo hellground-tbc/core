@@ -983,7 +983,7 @@ struct TRINITY_DLL_DECL mob_volatile_felfire_fiendAI : public ScriptedAI
         else if(m_creature->IsWithinDistInMap(m_creature->getVictim(), 3)) // Explode if it's close enough to it's target
         {
             DoCast(m_creature->getVictim(), SPELL_FELFIRE_FISSION);
-            m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+            m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         }
     }
 };
@@ -1027,7 +1027,7 @@ struct TRINITY_DLL_DECL mob_armageddonAI : public Scripted_NoMovementAI
                     Timer = 5000;
                     break;
                 case 3:
-                    m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                    m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                     m_creature->RemoveCorpse();
                     break;
             }

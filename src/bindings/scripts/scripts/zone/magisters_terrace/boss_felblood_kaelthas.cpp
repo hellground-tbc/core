@@ -486,7 +486,7 @@ struct TRINITY_DLL_DECL mob_felkael_flamestrikeAI : public ScriptedAI
         if(FlameStrikeTimer < diff)
         {
             DoCast(m_creature, Heroic ? SPELL_FLAMESTRIKE1_HEROIC : SPELL_FLAMESTRIKE1_NORMAL, true);
-            m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+            m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         }else FlameStrikeTimer -= diff;
     }
 };
@@ -536,7 +536,7 @@ struct TRINITY_DLL_DECL mob_felkael_phoenixAI : public ScriptedAI
                     if(boss->isDead() || !boss->isInCombat())
                     {
                         end = true;
-                        m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_FIRE, NULL, false);//temphack, hellfire is not damaging self
+                        m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_FIRE, NULL, false);//temphack, hellfire is not damaging self
                     }
                 }
             }
@@ -551,7 +551,7 @@ struct TRINITY_DLL_DECL mob_felkael_phoenixAI : public ScriptedAI
             if(!phase)
             {
                 DoCast(m_creature, SPELL_PHOENIX_BURN);
-                m_creature->DealDamage(m_creature, 1500, NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_FIRE, NULL, false);//temphack, hellfire is not damaging self
+                m_creature->DealDamage(m_creature, 1500, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_FIRE, NULL, false);//temphack, hellfire is not damaging self
             }
             else
             {
@@ -594,7 +594,7 @@ struct TRINITY_DLL_DECL mob_felkael_phoenix_eggAI : public Scripted_NoMovementAI
                     bird->GetMotionMaster()->MoveChase(boss->getVictim());
                 }
             }
-            m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+            m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         }else HatchTimer -= diff;
     }
 };
@@ -638,7 +638,7 @@ struct TRINITY_DLL_DECL mob_arcane_sphereAI : public ScriptedAI
     void UpdateAI(const uint32 diff)
     {
         if(DespawnTimer < diff)
-            m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+            m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         else DespawnTimer -= diff;
 
         if(!UpdateVictim())
@@ -693,7 +693,7 @@ bool GOHello_go_movie_orb(Player *player, GameObject* _GO)
         {
             Unit *qUnit = player->SummonCreature(25042,player->GetPositionX(),player->GetPositionY(),player->GetPositionZ()-10,0,TEMPSUMMON_CORPSE_DESPAWN,0);
             if(qUnit)
-                player->DealDamage(qUnit, qUnit->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                player->DealDamage(qUnit, qUnit->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         }
     }
     return true;

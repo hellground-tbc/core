@@ -397,7 +397,7 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
             pUnit = Unit::GetUnit((*m_creature), Demon);
 
             if (pUnit)
-                pUnit->DealDamage(pUnit, pUnit->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                pUnit->DealDamage(pUnit, pUnit->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         }
         if (pInstance)
             pInstance->SetData(DATA_LEOTHERASTHEBLINDEVENT, DONE);

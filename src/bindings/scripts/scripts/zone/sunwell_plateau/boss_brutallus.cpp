@@ -219,7 +219,7 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
                 ++IntroPhase;
                 break;
             case 7:
-                m_creature->DealDamage(Madrigosa, Madrigosa->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, true);
+                m_creature->DealDamage(Madrigosa, Madrigosa->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, true);
                 DoScriptText(YELL_MADR_DEATH, Madrigosa);
                 m_creature->SetHealth(m_creature->GetMaxHealth());
                 m_creature->AttackStop();

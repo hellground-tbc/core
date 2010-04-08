@@ -487,7 +487,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
                     if(Akama && Akama->isAlive())
                     {
                         //10 % less health every few seconds.
-                        m_creature->DealDamage(Akama, Akama->GetMaxHealth()/10, NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                        m_creature->DealDamage(Akama, Akama->GetMaxHealth()/10, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                         ReduceHealthTimer = 12000;
                     }
                 }

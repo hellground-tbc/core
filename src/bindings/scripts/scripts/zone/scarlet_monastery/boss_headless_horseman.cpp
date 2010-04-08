@@ -264,7 +264,7 @@ struct TRINITY_DLL_DECL mob_headAI : public ScriptedAI
     void JustDied(Unit *killer)
     {
         Creature* horseman = Creature::GetCreature((*m_creature), pInstance->GetData64(DATA_HORSEMAN_EVENT));
-        horseman->DealDamage(horseman, horseman->GetHealth(), 0, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, 0, false);
+        horseman->DealDamage(horseman, horseman->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
     }
 
     void SpellHit(Unit *caster, const SpellEntry* spell)
@@ -319,7 +319,7 @@ struct TRINITY_DLL_DECL mob_headAI : public ScriptedAI
                     die = false;
                     Unit *body = Unit::GetUnit((*m_creature),bodyGUID);
                     if (body)
-                        body->DealDamage(body, body->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                        body->DealDamage(body, body->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                     m_creature->setDeathState(JUST_DIED);
                 } else wait -= diff;
             }

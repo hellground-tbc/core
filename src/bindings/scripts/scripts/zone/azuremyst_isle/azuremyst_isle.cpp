@@ -540,7 +540,7 @@ struct TRINITY_DLL_DECL npc_geezleAI : public ScriptedAI
             return 20000;
         case 10:
             if(Spark)
-                Spark->DealDamage(Spark,Spark->GetHealth(),NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                Spark->DealDamage(Spark,Spark->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
             //DespawnNagaFlag(false);
             m_creature->SetVisibility(VISIBILITY_OFF);
         default: return 99999999;
@@ -631,7 +631,7 @@ struct TRINITY_DLL_DECL mob_nestlewood_owlkinAI : public ScriptedAI
     {
         if(ChannelTimer < diff && !Channeled && Hitted)
         {
-            m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+            m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
             m_creature->RemoveCorpse();
             m_creature->SummonCreature(INOCULATED_OWLKIN, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 180000);
             Channeled = true;

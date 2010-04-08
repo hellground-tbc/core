@@ -112,7 +112,7 @@ struct TRINITY_DLL_DECL boss_nazanAI : public ScriptedAI
             {
                 m_creature->SetLootRecipient(NULL);
                 m_creature->SetVisibility(VISIBILITY_OFF);
-                m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 m_creature->RemoveCorpse();
             }else UnsummonCheck -= diff;
             return;
@@ -229,7 +229,7 @@ struct TRINITY_DLL_DECL boss_vazrudenAI : public ScriptedAI
                 }
                 m_creature->SetLootRecipient(NULL);
                 m_creature->SetVisibility(VISIBILITY_OFF);
-                m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 m_creature->RemoveCorpse();
             }else UnsummonCheck -= diff;
             return;
@@ -285,7 +285,7 @@ struct TRINITY_DLL_DECL boss_vazruden_the_heraldAI : public ScriptedAI
             {
                 Nazan->SetLootRecipient(NULL);
                 Nazan->SetVisibility(VISIBILITY_OFF);
-                Nazan->DealDamage(Nazan, Nazan->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                Nazan->DealDamage(Nazan, Nazan->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 Nazan->RemoveCorpse();
                 NazanGUID = 0;
             }
@@ -293,7 +293,7 @@ struct TRINITY_DLL_DECL boss_vazruden_the_heraldAI : public ScriptedAI
             {
                 Vazruden->SetLootRecipient(NULL);
                 Vazruden->SetVisibility(VISIBILITY_OFF);
-                Vazruden->DealDamage(Vazruden, Vazruden->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                Vazruden->DealDamage(Vazruden, Vazruden->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 Vazruden->RemoveCorpse();
                 VazrudenGUID = 0;
             }
@@ -399,7 +399,7 @@ struct TRINITY_DLL_DECL boss_vazruden_the_heraldAI : public ScriptedAI
                 {
                     m_creature->SummonGameObject(ENTRY_REINFORCED_FEL_IRON_CHEST,VazrudenMiddle[0],VazrudenMiddle[1],VazrudenMiddle[2],0,0,0,0,0,0);
                     m_creature->SetLootRecipient(NULL);
-                    m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                    m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 }
                 check = 2000;
             }else check -= diff;

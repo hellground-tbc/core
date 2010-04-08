@@ -883,7 +883,7 @@ void Player::EnvironmentalDamage(uint64 guid, EnviromentalDamage type, uint32 da
     data << (uint32)0;
     SendMessageToSet(&data, true);
 
-    DealDamage(this, damage, NULL, SELF_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+    DealDamage(this, damage, SELF_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
 
     if(type==DAMAGE_FALL && !isAlive())                     // DealDamage not apply item durability loss at self damage
     {

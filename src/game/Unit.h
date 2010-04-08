@@ -609,22 +609,11 @@ struct DiminishingReturn
     uint32                  hitCount;
 };
 
-
-// po co to? oO
-struct CleanDamage
-{
-    CleanDamage(uint32 _damage, WeaponAttackType _attackType) :
-    damage(_damage), attackType(_attackType) {}
-
-    uint32 damage;
-    WeaponAttackType attackType;
-};
-
 struct DamageLog
 {
-    DamageLog(uint32 op, Unit *attacker, Unit *victim, uint8 school_mask = SPELL_SCHOOL_NORMAL) :
-              opcode(op), source(attacker), target(victim), schoolMask(school_mask),
-              damage(0), absorb(0), resist(0), blocked(0), hitInfo(0), cleanDamage(0) {}
+    DamageLog(uint32 op, Unit *attacker, Unit *victim, uint8 school_mask = SPELL_SCHOOL_NORMAL, WeaponAttackType attType = BASE_ATTACK) :
+              opcode(op), source(attacker), target(victim), schoolMask(school_mask), attackType(attType),
+              damage(0), absorb(0), resist(0), blocked(0), hitInfo(0), rageDamage(0) {}
 
     uint32 opcode;
     Unit *source;
@@ -638,13 +627,14 @@ struct DamageLog
     uint32 blocked;
 
     uint32 hitInfo;
-    uint32 cleanDamage;
+    uint32 rageDamage;
+    WeaponAttackType attackType;
 };
 
 struct SpellDamageLog : public DamageLog
 {
     SpellDamageLog(uint32 spellId, Unit *attacker, Unit *victim, uint8 school_mask = SPELL_SCHOOL_NORMAL, uint8 dmgType = 0) :
-         DamageLog(SMSG_SPELLNONMELEEDAMAGELOG, attacker, victim, school_mask), spell_id(spellId), damageType(dmgType) {}
+         DamageLog(SMSG_SPELLNONMELEEDAMAGELOG, attacker, victim, school_mask, BASE_ATTACK), spell_id(spellId), damageType(dmgType) {}
 
     uint8 damageType;
     uint32 spell_id;
@@ -653,11 +643,10 @@ struct SpellDamageLog : public DamageLog
 struct MeleeDamageLog : public DamageLog
 {
     MeleeDamageLog(Unit *attacker, Unit *victim, uint8 school_mask = SPELL_SCHOOL_NORMAL, WeaponAttackType attType = BASE_ATTACK) :
-         DamageLog(SMSG_ATTACKERSTATEUPDATE, attacker, victim, school_mask), targetState(0),
-                   procAttacker(0), procVictim(0), procEx(0),  attackType(attType) {}
+         DamageLog(SMSG_ATTACKERSTATEUPDATE, attacker, victim, school_mask, attType), targetState(0),
+                   procAttacker(0), procVictim(0), procEx(0) {}
 
     uint32 targetState;
-    WeaponAttackType attackType;
 
     // helpers
     uint32 procAttacker;
@@ -949,9 +938,9 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         void SendDamageLog(DamageLog *damageInfo);
 
-        uint32 DealDamage(DamageLog *damageInfo, CleanDamage const* cleanDamage = NULL, DamageEffectType damagetype = DIRECT_DAMAGE, SpellEntry const *spellProto = NULL, bool durabilityLoss = true);
+        uint32 DealDamage(DamageLog *damageInfo, DamageEffectType damagetype = DIRECT_DAMAGE, SpellEntry const *spellProto = NULL, bool durabilityLoss = true);
 
-        uint32 DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDamage = NULL, DamageEffectType damagetype = DIRECT_DAMAGE, SpellSchoolMask damageSchoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellEntry const *spellProto = NULL, bool durabilityLoss = true);
+        uint32 DealDamage(Unit *pVictim, uint32 damage, DamageEffectType damagetype = DIRECT_DAMAGE, SpellSchoolMask damageSchoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellEntry const *spellProto = NULL, bool durabilityLoss = true);
         void Kill(Unit *pVictim, bool durabilityLoss = true);
 
         void ProcDamageAndSpell(Unit *pVictim, uint32 procAttacker, uint32 procVictim, uint32 procEx, uint32 amount, WeaponAttackType attType = BASE_ATTACK, SpellEntry const *procSpell = NULL, bool canTrigger = true);

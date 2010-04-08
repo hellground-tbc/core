@@ -280,7 +280,7 @@ void Spell::EffectInstaKill(uint32 /*i*/)
         finish();
 
     uint32 health = unitTarget->GetHealth();
-    m_caster->DealDamage(unitTarget, health, NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+    m_caster->DealDamage(unitTarget, health, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
 }
 
 void Spell::EffectEnvirinmentalDMG(uint32 i)
@@ -727,7 +727,7 @@ void Spell::EffectDummy(uint32 i)
                             // Add q objective and clean up
                             if(target)
                             {
-                                m_caster->DealDamage(unitTarget, unitTarget->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                                m_caster->DealDamage(unitTarget, unitTarget->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                                 // TODO: Zrobic tak zeby GO zniknal, ale tak zeby sie zrespil normalnie po swoim czasie (3 min w bazie ma)
                                 // target->  ??????
                             }
@@ -775,7 +775,7 @@ void Spell::EffectDummy(uint32 i)
                             {
                                 Unit* casttarget = Unit::GetUnit((*unitTarget), ihit->targetGUID);
                                 if(casttarget)
-                                    m_caster->DealDamage(casttarget, damage, NULL, SPELL_DIRECT_DAMAGE, SPELL_SCHOOL_MASK_ARCANE, spellInfo, false);
+                                    m_caster->DealDamage(casttarget, damage, SPELL_DIRECT_DAMAGE, SPELL_SCHOOL_MASK_ARCANE, spellInfo, false);
                             }
                 }
                 // Encapsulate Voidwalker
@@ -2597,7 +2597,8 @@ void Spell::EffectPowerBurn(uint32 i)
     //TODO: no log
     //unitTarget->ModifyHealth(-new_damage);
     if(m_originalCaster)
-        m_originalCaster->DealDamage(unitTarget, new_damage);
+        m_damage = new_damage;
+        //m_originalCaster->DealDamage(unitTarget, new_damage);
 }
 
 void Spell::EffectHeal( uint32 /*i*/ )

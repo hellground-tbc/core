@@ -277,7 +277,7 @@ struct TRINITY_DLL_DECL boss_muruAI : public Scripted_NoMovementAI
                         break;
                     case DONE:
                         Phase = 4;
-                        m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                        m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                         m_creature->RemoveCorpse();
                         break;
                 }
@@ -427,7 +427,7 @@ struct TRINITY_DLL_DECL npc_dark_fiendAI : public ScriptedAI
     void SpellHit(Unit* caster, const SpellEntry* Spell){
         for(uint8 i = 0; i < 3; ++i)
             if(Spell->Effect[i] == 38){
-                m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 m_creature->RemoveCorpse();
             }
     }
@@ -455,7 +455,7 @@ struct TRINITY_DLL_DECL npc_dark_fiendAI : public ScriptedAI
                 if(m_creature->GetDistance(m_creature->getVictim()) < 5)
                 {
                     DoCastAOE(SPELL_DARKFIEND_AOE, false);
-                    m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                    m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                     m_creature->RemoveCorpse();
                 }
                 WaitTimer = 500;
@@ -581,7 +581,7 @@ struct TRINITY_DLL_DECL npc_blackholeAI : public ScriptedAI
         }else SpellTimer -= diff;
 
         if (DespawnTimer < diff){
-            m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+            m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
             m_creature->RemoveCorpse();
         }else DespawnTimer -= diff;
     }

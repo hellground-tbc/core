@@ -2617,21 +2617,19 @@ void Map::ScriptsProcess()
             {
                 if(!source || ((Creature*)source)->isDead())
                     break;
-                
+
                 switch(step.script->datalong)
                 {
+                    default: // backward compatibility (defaults to 0)
                     case 0: // source kills source
-                        ((Creature*)source)->DealDamage(((Creature*)source), ((Creature*)source)->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                        ((Creature*)source)->DealDamage(((Creature*)source), ((Creature*)source)->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                         break;
                     case 1: // target kills source
-                        ((Creature*)target)->DealDamage(((Creature*)source), ((Creature*)source)->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                        ((Creature*)target)->DealDamage(((Creature*)source), ((Creature*)source)->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                         break;
                     case 2: // source kills target
                         if(target)
-                            ((Creature*)source)->DealDamage(((Creature*)target), ((Creature*)target)->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-                        break;
-                    default: // backward compatibility (defaults to 0)
-                        ((Creature*)source)->DealDamage(((Creature*)source), ((Creature*)source)->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                            ((Creature*)source)->DealDamage(((Creature*)target), ((Creature*)target)->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                         break;
                 }
                 
