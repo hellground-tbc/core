@@ -867,6 +867,32 @@ uint8 GetErrorAtShapeshiftedCast (SpellEntry const *spellInfo, uint32 form)
 
 bool IsBinaryResistable(SpellEntry const* spellInfo)
 {
+    if(spellInfo->SchoolMask & SPELL_SCHOOL_MASK_HOLY)                  // can't resist holy spells
+        return false;
+
+    if(!(spellInfo->AttributesEx2 & SPELL_ATTR_EX2_UNK2))               // this should filter out all spells used by bosses - they probably doesn't use simple rules for binary resist
+    {
+        for(int eff = 0; eff < 3; eff++)
+        {
+            if(!spellInfo->Effect[eff])
+                continue;
+
+            switch(spellInfo->Effect[eff])
+            {
+                case SPELL_EFFECT_SCHOOL_DAMAGE:
+                    break;
+                case SPELL_EFFECT_APPLY_AURA:
+                case SPELL_EFFECT_APPLY_AREA_AURA_ENEMY:
+                    if(spellInfo->EffectApplyAuraName[eff] != SPELL_AURA_PERIODIC_DAMAGE)       // spells that apply aura other then DOT are binary resistable
+                        return true;
+                    break;
+                default:                            
+                    return true;                                                                // spells that have other effects then damage or apply aura are binary resistable
+            }
+        }
+    }
+
+    // special cases and bosses spells
     switch(spellInfo->Id)
     {
         case 31344:     // Howl of Azgalor
@@ -889,11 +915,10 @@ bool IsPartialyResistable(SpellEntry const* spellInfo)
         case 36805:     // Kael'thas - Fireball
         case 36819:     // Kael'thas - Pyroblast
         case 38145:     // Vashj - Forked Lightning
-        case 38441:     // Fathom - Cataclysm bolt
             return false;
     }
 
-    if(spellInfo->SchoolMask & SPELL_SCHOOL_MASK_HOLY)
+    if(spellInfo->SchoolMask & SPELL_SCHOOL_MASK_HOLY || IsBinaryResistable(spellInfo))     // holy spells and binary resistable spells cant be partialy resisted
         return false;
     else
         return true;
