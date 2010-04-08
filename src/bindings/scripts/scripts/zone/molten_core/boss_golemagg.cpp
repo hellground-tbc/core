@@ -162,7 +162,7 @@ struct TRINITY_DLL_DECL mob_core_ragerAI : public ScriptedAI
                 Unit *pGolemagg = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_GOLEMAGG));
                 if(!pGolemagg || !pGolemagg->isAlive())
                 {
-                    m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, true);
+                    m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, true);
                 }
             }
 

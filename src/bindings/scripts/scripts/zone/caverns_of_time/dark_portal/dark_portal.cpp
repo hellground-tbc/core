@@ -262,7 +262,7 @@ struct TRINITY_DLL_DECL npc_medivh_bmAI : public ScriptedAI
                 //if we reach this it means event was running but at some point reset.
                 if (pInstance->GetData(TYPE_MEDIVH) == NOT_STARTED)
                 {
-                    m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                    m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                     m_creature->RemoveCorpse();
                     m_creature->Respawn();
                     return;

@@ -282,7 +282,7 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
                     {
                         if (medivh->isAlive())
                         {
-                            medivh->DealDamage(medivh, medivh->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                            medivh->DealDamage(medivh, medivh->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                             Encounter[0] = FAIL;
                             Encounter[1] = NOT_STARTED;
                         }

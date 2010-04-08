@@ -1639,7 +1639,7 @@ struct TRINITY_DLL_DECL cage_trap_triggerAI : public ScriptedAI
     {
         if(DespawnTimer)
             if(DespawnTimer < diff)
-                m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
             else DespawnTimer -= diff;
 
             //if(IllidanGUID && !SummonedBeams)
@@ -1960,7 +1960,7 @@ void boss_illidan_stormrageAI::HandleTalkSequence()
         }
         break;
     case 21: // Kill ourself.
-        m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+        m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         break;
     default:
         break;

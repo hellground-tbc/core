@@ -235,7 +235,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 summon->CastSpell(summon, SPELL_FOG_CHARM, true);
                 summon->CastSpell(summon, SPELL_FOG_CHARM2, true);
             }
-            m_creature->DealDamage(caster, caster->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+            m_creature->DealDamage(caster, caster->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         }
     }
 

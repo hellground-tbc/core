@@ -60,7 +60,7 @@ struct TRINITY_DLL_DECL mob_treantAI  : public ScriptedAI
                     {
                         int32 CurrentHP_Treant = (int32)m_creature->GetHealth();
                         Warp->CastCustomSpell(Warp,SPELL_HEAL_FATHER,&CurrentHP_Treant, 0, 0, true,0 ,0, m_creature->GetGUID());
-                        m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                        m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                         return;
                     }
                     m_creature->GetMotionMaster()->MoveFollow(Warp,0,0);

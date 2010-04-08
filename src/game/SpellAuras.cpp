@@ -1539,7 +1539,7 @@ void Aura::TriggerSpell()
                     case 31347:
                     {
                         m_target->CastSpell(m_target,31350,true);
-                        m_target->DealDamage(m_target, m_target->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                        m_target->DealDamage(m_target, m_target->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                         return;
                     }
                     // Spellcloth
@@ -5723,78 +5723,70 @@ void Aura::PeriodicTick()
                 }
             }
 
-            uint32 absorb=0;
-            uint32 resist=0;
-
             // ignore non positive values (can be result apply spellmods to aura damage
             uint32 amount = GetModifierValuePerStack() > 0 ? GetModifierValuePerStack() : 0;
 
-            CleanDamage cleanDamage =  CleanDamage(0, BASE_ATTACK);
-
-            uint32 pdamage;
+            DamageLog damageInfo(SMSG_PERIODICAURALOG, GetCaster(), GetTarget(), GetSpellProto()->SchoolMask);
 
             if(m_modifier.m_auraname == SPELL_AURA_PERIODIC_DAMAGE)
             {
-                pdamage = pCaster->SpellDamageBonus(m_target,GetSpellProto(),amount,DOT);
+                damageInfo.damage = pCaster->SpellDamageBonus(m_target,GetSpellProto(), amount,DOT);
 
                 // Calculate armor mitigation if it is a physical spell
                 // But not for bleed mechanic spells
                 if ( GetSpellSchoolMask(GetSpellProto()) & SPELL_SCHOOL_MASK_NORMAL &&
                      GetEffectMechanic(GetSpellProto(), m_effIndex) != MECHANIC_BLEED)
                 {
-                    uint32 pdamageReductedArmor = pCaster->CalcArmorReducedDamage(m_target, pdamage);
-                    cleanDamage.damage += pdamage - pdamageReductedArmor;
-                    pdamage = pdamageReductedArmor;
+                    damageInfo.damage = pCaster->CalcArmorReducedDamage(m_target, damageInfo.damage);
                 }
 
-                //pdamage = pCaster->SpellDamageBonus(m_target,GetSpellProto(),pdamage,DOT);
-
                 // Curse of Agony damage-per-tick calculation
-                if (GetSpellProto()->SpellFamilyName==SPELLFAMILY_WARLOCK && (GetSpellProto()->SpellFamilyFlags & 0x0000000000000400LL) && GetSpellProto()->SpellIconID==544)
+                if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && (GetSpellProto()->SpellFamilyFlags & 0x0000000000000400LL) && GetSpellProto()->SpellIconID==544)
                 {
                     uint32 totalTick = m_maxduration / m_modifier.periodictime;
                     // 1..4 ticks, 1/2 from normal tick damage
                     if(m_tickNumber <= totalTick / 3)
-                        pdamage = pdamage/2;
+                        damageInfo.damage = damageInfo.damage/2;
                     // 9..12 ticks, 3/2 from normal tick damage
                     else if(m_tickNumber > totalTick * 2 / 3)
-                        pdamage += (pdamage+1)/2;           // +1 prevent 0.5 damage possible lost at 1..4 ticks
+                        damageInfo.damage += (damageInfo.damage+1)/2;           // +1 prevent 0.5 damage possible lost at 1..4 ticks
                     // 5..8 ticks have normal tick damage
                 }
                 
                 // Corruption and Immolate bonus damage from t5 set
                 if(GetSpellProto()->SpellFamilyName==SPELLFAMILY_WARLOCK && (GetSpellProto()->SpellFamilyFlags & 6))
                 {
-                    pdamage += pdamage * GetModifier()->m_miscvalue / 10;
+                    damageInfo.damage += damageInfo.damage * GetModifier()->m_miscvalue / 10;
                 }
 
             }
             else
-                pdamage = uint32(m_target->GetMaxHealth()*amount/100);
+                damageInfo.damage = uint32(m_target->GetMaxHealth()*amount/100);
 
             //As of 2.2 resilience reduces damage from DoT ticks as much as the chance to not be critically hit
             // Reduce dot damage from resilience for players
             if (m_target->GetTypeId()==TYPEID_PLAYER)
-                pdamage-=((Player*)m_target)->GetDotDamageReduction(pdamage);
+                damageInfo.damage -=((Player*)m_target)->GetDotDamageReduction(damageInfo.damage);
 
-            pdamage *= GetStackAmount();
+            damageInfo.damage *= GetStackAmount();
 
-            if(!cleanDamage.damage)
-                cleanDamage.damage = pdamage;
+            damageInfo.rageDamage = damageInfo.damage;
 
             if(IsPartialyResistable(GetSpellProto()))
             {
-                pCaster->CalcAbsorbResist(m_target, GetSpellSchoolMask(GetSpellProto()), DOT, pdamage, &absorb, &resist);
+                pCaster->CalcAbsorbResist(m_target, GetSpellSchoolMask(GetSpellProto()), DOT, damageInfo.damage, &damageInfo.absorb, &damageInfo.resist);
             }
             else
             {
-                resist = 0;
-                pCaster->CalcAbsorb(m_target, GetSpellSchoolMask(GetSpellProto()), pdamage, &absorb, &resist);
+                pCaster->CalcAbsorb(m_target, GetSpellSchoolMask(GetSpellProto()), damageInfo.damage, &damageInfo.absorb, &damageInfo.resist);
+                damageInfo.resist = 0;
             }
-            pdamage = (pdamage <= absorb+resist) ? 0 : (pdamage-absorb-resist);
+
+            damageInfo.rageDamage = damageInfo.rageDamage <= damageInfo.absorb ? 0 : damageInfo.rageDamage - damageInfo.absorb;
+            damageInfo.damage = (damageInfo.damage <= damageInfo.absorb + damageInfo.resist) ? 0 : (damageInfo.damage - damageInfo.absorb - damageInfo.resist);
 
             sLog.outDetail("PeriodicTick: %u (TypeId: %u) attacked %u (TypeId: %u) for %u dmg inflicted by %u abs is %u",
-                GUID_LOPART(GetCasterGUID()), GuidHigh2TypeId(GUID_HIPART(GetCasterGUID())), m_target->GetGUIDLow(), m_target->GetTypeId(), pdamage, GetId(),absorb);
+                GUID_LOPART(GetCasterGUID()), GuidHigh2TypeId(GUID_HIPART(GetCasterGUID())), m_target->GetGUIDLow(), m_target->GetTypeId(), damageInfo.damage, GetId(), damageInfo.absorb);
 
             WorldPacket data(SMSG_PERIODICAURALOG, (21+16));// we guess size
             data.append(m_target->GetPackGUID());
@@ -5802,10 +5794,10 @@ void Aura::PeriodicTick()
             data << uint32(GetId());
             data << uint32(1);
             data << uint32(m_modifier.m_auraname);
-            data << (uint32)pdamage;
+            data << (uint32)damageInfo.damage;
             data << (uint32)GetSpellSchoolMask(GetSpellProto()); // will be mask in 2.4.x
-            data << (uint32)absorb;
-            data << (uint32)resist;
+            data << (uint32)damageInfo.absorb;
+            data << (uint32)damageInfo.resist;
             m_target->SendMessageToSet(&data,true);
 
             Unit* target = m_target;                        // aura can be deleted in DealDamage
@@ -5815,11 +5807,11 @@ void Aura::PeriodicTick()
             uint32 procAttacker = PROC_FLAG_ON_DO_PERIODIC;
             uint32 procVictim   = PROC_FLAG_ON_TAKE_PERIODIC;
             uint32 procEx = PROC_EX_INTERNAL_DOT | PROC_EX_NORMAL_HIT;
-            if (pdamage)
+            if (damageInfo.damage)
                 procVictim |= PROC_FLAG_TAKEN_ANY_DAMAGE;
-            pCaster->ProcDamageAndSpell(target, procAttacker, procVictim, procEx, pdamage, BASE_ATTACK, spellProto);
 
-            pCaster->DealDamage(target, pdamage, &cleanDamage, DOT, GetSpellSchoolMask(spellProto), spellProto, true);
+            pCaster->DealDamage(&damageInfo, DOT, spellProto, true);
+            pCaster->ProcDamageAndSpell(target, procAttacker, procVictim, procEx, damageInfo.damage, BASE_ATTACK, spellProto);
             break;
         }
         case SPELL_AURA_PERIODIC_LEECH:
@@ -5839,22 +5831,15 @@ void Aura::PeriodicTick()
             if(m_target->IsImmunedToDamage(GetSpellSchoolMask(GetSpellProto())))
                 return;
 
-            uint32 absorb=0;
-            uint32 resist=0;
+            SpellDamageLog damageInfo(GetId(), GetCaster(), GetTarget(), GetSpellProto()->SchoolMask, 1);
 
-            uint32 pdamage = GetModifierValuePerStack() > 0 ? GetModifierValuePerStack() : 0;
+            damageInfo.damage = GetModifierValuePerStack() > 0 ? GetModifierValuePerStack() : 0;
 
-            CleanDamage cleanDamage =  CleanDamage(pdamage, BASE_ATTACK);
-
-            pdamage = pCaster->SpellDamageBonus(m_target,GetSpellProto(),pdamage,DOT);
+            damageInfo.damage = pCaster->SpellDamageBonus(m_target, GetSpellProto(), damageInfo.damage,DOT);
 
             //Calculate armor mitigation if it is a physical spell
             if (GetSpellSchoolMask(GetSpellProto()) & SPELL_SCHOOL_MASK_NORMAL)
-            {
-                uint32 pdamageReductedArmor = pCaster->CalcArmorReducedDamage(m_target, pdamage);
-                cleanDamage.damage += pdamage - pdamageReductedArmor;
-                pdamage = pdamageReductedArmor;
-            }
+                damageInfo.damage = pCaster->CalcArmorReducedDamage(m_target, damageInfo.damage);
 
             //pdamage = pCaster->SpellDamageBonus(m_target,GetSpellProto(),pdamage,DOT);
 
@@ -5905,7 +5890,7 @@ void Aura::PeriodicTick()
                                 }
                             }
                         }
-                        pdamage += (pdamage*modPercent/100);
+                        damageInfo.damage += (damageInfo.damage*modPercent/100);
                         break;
                     }
                 }
@@ -5914,27 +5899,27 @@ void Aura::PeriodicTick()
             //As of 2.2 resilience reduces damage from DoT ticks as much as the chance to not be critically hit
             // Reduce dot damage from resilience for players
             if (m_target->GetTypeId()==TYPEID_PLAYER)
-                pdamage-=((Player*)m_target)->GetDotDamageReduction(pdamage);
+                damageInfo.damage -= ((Player*)m_target)->GetDotDamageReduction(damageInfo.damage);
 
-            pdamage *= GetStackAmount();
+            damageInfo.damage *= GetStackAmount();
 
             if(IsPartialyResistable(GetSpellProto()))
             {
-                pCaster->CalcAbsorbResist(m_target, GetSpellSchoolMask(GetSpellProto()), DOT, pdamage, &absorb, &resist);
+                pCaster->CalcAbsorbResist(m_target, GetSpellSchoolMask(GetSpellProto()), DOT, damageInfo.damage, &damageInfo.absorb, &damageInfo.resist);
             } 
             else
             {
-                resist = 0;
-                pCaster->CalcAbsorb(m_target, GetSpellSchoolMask(GetSpellProto()), pdamage, &absorb, &resist);
+                pCaster->CalcAbsorb(m_target, GetSpellSchoolMask(GetSpellProto()), damageInfo.damage, &damageInfo.absorb, &damageInfo.resist);
+                damageInfo.resist = 0;
             }
 
-            if(m_target->GetHealth() < pdamage)
-                pdamage = uint32(m_target->GetHealth());
+            if(m_target->GetHealth() < damageInfo.damage)
+                damageInfo.damage = uint32(m_target->GetHealth());
 
             sLog.outDetail("PeriodicTick: %u (TypeId: %u) health leech of %u (TypeId: %u) for %u dmg inflicted by %u abs is %u",
-                GUID_LOPART(GetCasterGUID()), GuidHigh2TypeId(GUID_HIPART(GetCasterGUID())), m_target->GetGUIDLow(), m_target->GetTypeId(), pdamage, GetId(),absorb);
+                GUID_LOPART(GetCasterGUID()), GuidHigh2TypeId(GUID_HIPART(GetCasterGUID())), m_target->GetGUIDLow(), m_target->GetTypeId(), damageInfo.damage, GetId(), damageInfo.absorb);
 
-            pCaster->SendSpellNonMeleeDamageLog(m_target, GetId(), pdamage, GetSpellSchoolMask(GetSpellProto()), absorb, resist, false, 0);
+//            pCaster->SendSpellNonMeleeDamageLog(m_target, GetId(), pdamage, GetSpellSchoolMask(GetSpellProto()), absorb, resist, false, 0);
 
 
             Unit* target = m_target;                        // aura can be deleted in DealDamage
@@ -5945,11 +5930,15 @@ void Aura::PeriodicTick()
             uint32 procAttacker = PROC_FLAG_ON_DO_PERIODIC;
             uint32 procVictim   = PROC_FLAG_ON_TAKE_PERIODIC;
             uint32 procEx = PROC_EX_INTERNAL_DOT | PROC_EX_NORMAL_HIT;
-            pdamage = (pdamage <= absorb+resist) ? 0 : (pdamage-absorb-resist);
-            if (pdamage)
-                procVictim|=PROC_FLAG_TAKEN_ANY_DAMAGE;
-            pCaster->ProcDamageAndSpell(target, procAttacker, procVictim, procEx, pdamage, BASE_ATTACK, spellProto);
-            int32 new_damage = pCaster->DealDamage(target, pdamage, &cleanDamage, DOT, GetSpellSchoolMask(spellProto), spellProto, false);
+
+            damageInfo.damage = (damageInfo.damage <= damageInfo.absorb + damageInfo.resist) ? 0 : (damageInfo.damage - damageInfo.absorb - damageInfo.resist);
+            damageInfo.rageDamage = damageInfo.rageDamage <= damageInfo.absorb ? 0 : damageInfo.rageDamage - damageInfo.absorb;
+
+            if (damageInfo.damage)
+                procVictim |= PROC_FLAG_TAKEN_ANY_DAMAGE;
+
+            pCaster->ProcDamageAndSpell(target, procAttacker, procVictim, procEx, damageInfo.damage, BASE_ATTACK, spellProto);
+            uint32 new_damage = pCaster->DealDamage(&damageInfo, DOT, spellProto, false);
 
             if (!target->isAlive() && pCaster->IsNonMeleeSpellCasted(false))
             {
@@ -5969,6 +5958,7 @@ void Aura::PeriodicTick()
             int32 gain = pCaster->ModifyHealth(heal);
             pCaster->getHostilRefManager().threatAssist(pCaster, gain * 0.5f, spellProto);
 
+            // change it
             pCaster->SendHealSpellLog(pCaster, spellProto->Id, heal);
             break;
         }
@@ -6046,10 +6036,10 @@ void Aura::PeriodicTick()
                 }
                 else
                 {
-                    pCaster->SendSpellNonMeleeDamageLog(pCaster, GetId(), gain, GetSpellSchoolMask(GetSpellProto()), 0, 0, false, 0, false);
-
-                    CleanDamage cleanDamage =  CleanDamage(0, BASE_ATTACK);
-                    pCaster->DealDamage(pCaster, gain, &cleanDamage, NODAMAGE, GetSpellSchoolMask(GetSpellProto()), GetSpellProto(), true);
+                    SpellDamageLog damageInfo(GetId(), GetCaster(), GetTarget(), GetSpellProto()->SchoolMask);
+                    damageInfo.damage = gain;
+                    //pCaster->SendSpellNonMeleeDamageLog(pCaster, GetId(), gain, GetSpellSchoolMask(GetSpellProto()), 0, 0, false, 0, false);
+                    pCaster->DealDamage(&damageInfo, NODAMAGE, GetSpellProto(), true);
                 }
             }
 

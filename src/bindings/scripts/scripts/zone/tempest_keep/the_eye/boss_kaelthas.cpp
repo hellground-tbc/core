@@ -1825,7 +1825,7 @@ struct TRINITY_DLL_DECL mob_kael_flamestrikeAI : public Scripted_NoMovementAI
             {
                 m_creature->InterruptNonMeleeSpells(false);
                 DoCast(m_creature, SPELL_FLAME_STRIKE_DMG);
-            }else m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+            }else m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
 
             KillSelf = true;
             Timer = 1000;
@@ -1905,7 +1905,7 @@ struct TRINITY_DLL_DECL mob_phoenix_tkAI : public ScriptedAI
              {
                  m_creature->SetHealth(uint32(m_creature->GetHealth()-dmg));
              }             
-              else m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);    //kill it
+              else m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);    //kill it
           Cycle_Timer = 2000;
          }
         }else Cycle_Timer -= diff;

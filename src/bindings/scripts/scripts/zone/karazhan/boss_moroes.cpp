@@ -218,7 +218,7 @@ struct TRINITY_DLL_DECL boss_moroesAI : public ScriptedAI
                 if (Temp && Temp->isAlive())
                 {
                     (*Temp).GetMotionMaster()->Clear(true);
-                    Temp->DealDamage(Temp, Temp->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                    Temp->DealDamage(Temp, Temp->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                     Temp->RemoveCorpse();
                 }
 

@@ -105,7 +105,7 @@ struct TRINITY_DLL_DECL npc_the_scourge_cauldronAI : public ScriptedAI
     void DoDie()
     {
         //summoner dies here
-        m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+        m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         //override any database `spawntimesecs` to prevent duplicated summons
         uint32 rTime = m_creature->GetRespawnDelay();
         if( rTime<600 )
