@@ -6744,10 +6744,9 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
         ((Creature*)this)->CallAssistance();
 
         // should not let player enter combat by right clicking target
-        CombatStart(victim);
-        //SetInCombatWith(victim);
-        //if(victim->GetTypeId() == TYPEID_PLAYER)
-        //    victim->SetInCombatWith(this);
+        SetInCombatWith(victim);
+        if(victim->GetTypeId() == TYPEID_PLAYER)
+            victim->SetInCombatWith(this);
         AddThreat(victim, 0.0f);
     }
 
