@@ -1540,7 +1540,7 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
         Yell = false;
         Check_Timer = 3000;
 
-        m_creature->SetSpeed(MOVE_RUN, 2.0f);
+        m_creature->SetSpeed(MOVE_RUN, 1.8f);
 
         advisorbase_ai::Reset();
     }
@@ -2170,7 +2170,7 @@ struct TRINITY_DLL_DECL weapon_advisorAI : public ScriptedAI
             for(uint8 i = 0; i < 7; ++i)
             {
                 if(Unit* adv = Unit::GetUnit((*m_creature), ((boss_kaelthasAI*)kael->AI())->WeaponGuid[i]))
-                    if (adv->isAlive() && adv->GetHealth() / adv->GetMaxHealth() < .2)
+                    if(adv->isAlive() && adv->GetHealth() / adv->GetMaxHealth() < .2)
                         return adv; 
             } 
         }
@@ -2179,7 +2179,6 @@ struct TRINITY_DLL_DECL weapon_advisorAI : public ScriptedAI
     
     void UpdateAI(const uint32 diff)
     {
-      
         if(!UpdateVictim())
             return;
 
