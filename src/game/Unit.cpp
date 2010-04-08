@@ -657,6 +657,7 @@ void Unit::SendDamageLog(DamageLog *damageInfo)
             break;
         default:
             sLog.outError("Unsupported opcode in SendDamageLog!");
+        case 1: // dealdamage ktory nie powinien wysylac loga
             break;
     }
 }
@@ -967,7 +968,7 @@ uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, cons
 
 uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, DamageEffectType damagetype, SpellSchoolMask damageSchoolMask, SpellEntry const *spellProto, bool durabilityLoss)
 {
-    DamageLog damageInfo(0, this, pVictim, damageSchoolMask);
+    DamageLog damageInfo(1, this, pVictim, damageSchoolMask);
     damageInfo.damage = damage;
     return DealDamage(&damageInfo, damagetype, spellProto, durabilityLoss);
 }
@@ -1774,9 +1775,12 @@ void Unit::CalcAbsorb(Unit *pVictim,SpellSchoolMask schoolMask, const uint32 dam
         if(Player *modOwner = GetSpellModOwner())
             modOwner->ApplySpellMod((*i)->GetId(), SPELLMOD_MULTIPLE_VALUE, manaMultiplier);
 
-        int32 maxAbsorb = int32(pVictim->GetPower(POWER_MANA) / manaMultiplier);
-        if (currentAbsorb > maxAbsorb)
-            currentAbsorb = maxAbsorb;
+        if(manaMultiplier)
+        {
+            int32 maxAbsorb = int32(pVictim->GetPower(POWER_MANA) / manaMultiplier);
+            if (currentAbsorb > maxAbsorb)
+                currentAbsorb = maxAbsorb;
+        }
 
         (*i)->GetModifier()->m_amount -= currentAbsorb;
         if((*i)->GetModifier()->m_amount <= 0)
@@ -1790,7 +1794,6 @@ void Unit::CalcAbsorb(Unit *pVictim,SpellSchoolMask schoolMask, const uint32 dam
 
         RemainingDamage -= currentAbsorb;
     }
-
     // only split damage if not damaging yourself
     if(pVictim != this)
     {
