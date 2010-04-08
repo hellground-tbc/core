@@ -7696,6 +7696,17 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
             }
         }
     }
+    // Lesser Healing Wave
+    if (spellProto->SpellFamilyName == SPELLFAMILY_SHAMAN && spellProto->SpellFamilyFlags & 0x80)
+    {
+        AuraList const& classScriptsAuras = GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
+        for(AuraList::const_iterator i = classScriptsAuras.begin(); i != classScriptsAuras.end(); i++)
+        {
+            // Increased Lesser Healing Wave (few items has this effect)
+            if((*i)->GetMiscValue() == 3736)
+                AdvertisedBenefit += (*i)->GetModifierValue();
+        }
+    }
 
     float ActualBenefit = 0.0f;
 
