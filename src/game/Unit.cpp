@@ -656,7 +656,7 @@ void Unit::SendDamageLog(DamageLog *damageInfo)
             // TODO
             break;
         default:
-            sLog.outError("Unsupported opcode in SendDamageLog!");
+            sLog.outError("Unsupported opcode in SendDamageLog: %d!", damageInfo->opcode);
         case 1: // dealdamage ktory nie powinien wysylac loga
             break;
     }
@@ -1762,7 +1762,7 @@ void Unit::CalcAbsorb(Unit *pVictim,SpellSchoolMask schoolMask, const uint32 dam
         next = i; ++next;
 
         // check damage school mask
-        if(((*i)->GetModifier()->m_miscvalue & schoolMask)==0)
+        if((*i)->GetModifier()->m_miscvalue & ~schoolMask)
             continue;
 
         int32 currentAbsorb;
@@ -1803,7 +1803,7 @@ void Unit::CalcAbsorb(Unit *pVictim,SpellSchoolMask schoolMask, const uint32 dam
             next = i; ++next;
 
             // check damage school mask
-            if(((*i)->GetModifier()->m_miscvalue & schoolMask)==0)
+            if((*i)->GetModifier()->m_miscvalue & ~schoolMask)
                 continue;
 
             // Damage can be splitted only if aura has an alive caster
@@ -1833,7 +1833,7 @@ void Unit::CalcAbsorb(Unit *pVictim,SpellSchoolMask schoolMask, const uint32 dam
             next = i; ++next;
 
             // check damage school mask
-            if(((*i)->GetModifier()->m_miscvalue & schoolMask)==0)
+            if((*i)->GetModifier()->m_miscvalue & ~schoolMask)
                 continue;
 
             // Damage can be splitted only if aura has an alive caster

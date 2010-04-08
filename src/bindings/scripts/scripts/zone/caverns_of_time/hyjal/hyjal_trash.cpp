@@ -898,8 +898,10 @@ struct mob_bansheeAI : public hyjal_trashAI
     void UpdateAI(const uint32 diff)
     {
         hyjal_trashAI::UpdateAI(diff);
+
         if(IsEvent || IsOverrun)
             npc_escortAI::UpdateAI(diff);
+
         if (IsEvent)
         {
             if(!go)
@@ -946,7 +948,7 @@ struct mob_bansheeAI : public hyjal_trashAI
 
         if(ShellTimer<diff)
         {
-            DoCast(m_creature,SPELL_ANTI_MAGIC_SHELL);
+            DoCast(m_creature, SPELL_ANTI_MAGIC_SHELL);
             ShellTimer = 30000+rand()%10000;
         }
         else
@@ -1224,7 +1226,7 @@ struct mob_frost_wyrmAI : public hyjal_trashAI
         {
             if(MoveTimer < diff)
             {
-                m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
+                m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim(),20);
                 MoveTimer = 2000;
             }
             else
@@ -1240,7 +1242,9 @@ struct mob_frost_wyrmAI : public hyjal_trashAI
                 m_creature->GetMotionMaster()->Clear();
                 FrostBreathTimer = 4000;
             }
-        }else FrostBreathTimer -= diff;
+        }
+        else
+            FrostBreathTimer -= diff;
     }
 };
 

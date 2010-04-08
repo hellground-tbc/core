@@ -421,7 +421,7 @@ struct TRINITY_DLL_DECL boss_fathomguard_sharkkisAI : public ScriptedAI
         if (pInstance)
         {
             Creature *Karathress = NULL;
-            Karathress = (Creature*)(Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_KARATHRESS)));
+            Karathress = Unit::GetCreature((*m_creature), pInstance->GetData64(DATA_KARATHRESS));
 
             if (Karathress && Karathress->isAlive())
                 ((boss_fathomlord_karathressAI*)Karathress->AI())->EventAdvisorDeath(0);

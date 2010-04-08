@@ -342,7 +342,8 @@ CreatureAI* GetAI_boss_muru(Creature *_Creature)
 
 struct TRINITY_DLL_DECL npc_muru_portalAI : public Scripted_NoMovementAI
 {
-    npc_muru_portalAI(Creature *c) : Scripted_NoMovementAI(c), Summons(m_creature){
+    npc_muru_portalAI(Creature *c) : Scripted_NoMovementAI(c), Summons(m_creature)
+    {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
     }
 
@@ -353,7 +354,8 @@ struct TRINITY_DLL_DECL npc_muru_portalAI : public Scripted_NoMovementAI
     bool InAction;
     uint32 SummonTimer;
 
-    void Reset(){
+    void Reset()
+    {
         m_creature->addUnitState(UNIT_STAT_STUNNED);
         SummonTimer = 5000;
         InAction = false;
@@ -363,14 +365,17 @@ struct TRINITY_DLL_DECL npc_muru_portalAI : public Scripted_NoMovementAI
 
     void Aggro(Unit *who) {}
 
-    void JustSummoned(Creature* summoned){
-        Player* Target;
-        Target = (Player*)(Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_PLAYER_GUID)));
-        if(Target)summoned->AI()->AttackStart(Target);
+    void JustSummoned(Creature* summoned)
+    {
+        Unit* target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_PLAYER_GUID));
+        if(target)
+            summoned->AI()->AttackStart(target);
+
         Summons.Summon(summoned);
     }
 
-    void SpellHit(Unit* caster, const SpellEntry* Spell){
+    void SpellHit(Unit* caster, const SpellEntry* Spell)
+    {
         float x,y,z,o;
         m_creature->GetHomePosition(x,y,z,o);
         DoTeleportTo(x,y,z);
@@ -386,7 +391,8 @@ struct TRINITY_DLL_DECL npc_muru_portalAI : public Scripted_NoMovementAI
         }
     }
 
-    void UpdateAI(const uint32 diff){
+    void UpdateAI(const uint32 diff)
+    {
         if(!SummonSentinel){
             if(InAction && pInstance->GetData(DATA_MURU_EVENT) == NOT_STARTED)Reset();
             return;
