@@ -799,17 +799,17 @@ uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, cons
         // Rage from Damage made (only from direct weapon damage)
         if (damageInfo->damage && damagetype == DIRECT_DAMAGE && this != pVictim && GetTypeId() == TYPEID_PLAYER && (getPowerType() == POWER_RAGE))
         {
-            uint32 weaponSpeedHitFactor;
-
             switch(damageInfo->attackType)
             {
                 default:
                 {
-                    float factor = OFF_ATTACK ? 1.75f : 3.5f;
-                    // if crit then damage is doubled so we don't need to multiply twice
-                    //if(cleanDamage->hitOutCome == MELEE_HIT_CRIT)
-                    //    factor *= 2.0f;
-                    weaponSpeedHitFactor = uint32(GetAttackTime(damageInfo->attackType)/1000.0f * factor);
+                    float factor = damageInfo->attackType == OFF_ATTACK ? 1.75f : 3.5f;
+
+                    if (damageInfo->opcode == SMSG_ATTACKERSTATEUPDATE)
+                        if(((MeleeDamageLog *)damageInfo)->procEx & PROC_EX_CRITICAL_HIT)
+                            factor *= 2.0f;
+
+                    uint32 weaponSpeedHitFactor = uint32(GetAttackTime(damageInfo->attackType)/1000.0f * factor);
                     ((Player*)this)->RewardRage(damageInfo->damage, weaponSpeedHitFactor, true);
                 }
                 break;
@@ -889,13 +889,6 @@ uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, cons
             }
             else                                                // victim is a player
             {
-                // Rage from damage received
-                if(this != pVictim && pVictim->getPowerType() == POWER_RAGE)
-                {
-                    //if it's not from Reflective Shield
-                    if (!spellProto || (spellProto && spellProto->Id != 33619))
-                        ((Player*)pVictim)->RewardRage(damageInfo->rageDamage, 0, false);
-                }
 
                 // random durability for items (HIT TAKEN)
                 if (roll_chance_f(sWorld.getRate(RATE_DURABILITY_LOSS_DAMAGE)))
