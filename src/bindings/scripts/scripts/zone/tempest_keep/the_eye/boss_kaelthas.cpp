@@ -879,7 +879,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
 
                         //End of phase 1
                     case 8:
-                        Advisor = (Creature*)(Unit::GetUnit((*m_creature), AdvisorGuid[3]));
+                        Advisor = Unit::GetCreature((*m_creature), AdvisorGuid[3]);
                         if(Advisor && (Advisor->GetUInt32Value(UNIT_FIELD_BYTES_1) == PLAYER_STATE_DEAD))
                         {
                             Phase = 2;
