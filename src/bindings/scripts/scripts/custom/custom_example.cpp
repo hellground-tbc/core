@@ -265,6 +265,7 @@ bool ReceiveEmote_custom_example(Player *player, Creature *_Creature, uint32 emo
 //newscript->ReciveEmote = My_Emote_Function;
 void AddSC_custom_example()
 {
+/*
     Script *newscript;
 
     newscript = new Script;
@@ -274,5 +275,6 @@ void AddSC_custom_example()
     newscript->pGossipSelect = &GossipSelect_custom_example;
     newscript->pReceiveEmote = &ReceiveEmote_custom_example;
     newscript->RegisterSelf();
+*/
 }
 
