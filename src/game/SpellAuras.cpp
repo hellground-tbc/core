@@ -5779,8 +5779,8 @@ void Aura::PeriodicTick()
             }
             else
             {
-                pCaster->CalcAbsorb(m_target, GetSpellSchoolMask(GetSpellProto()), damageInfo.damage, &damageInfo.absorb, &damageInfo.resist);
                 damageInfo.resist = 0;
+                pCaster->CalcAbsorb(m_target, GetSpellSchoolMask(GetSpellProto()), damageInfo.damage, &damageInfo.absorb, &damageInfo.resist);
             }
 
             damageInfo.rageDamage = damageInfo.rageDamage <= damageInfo.absorb ? 0 : damageInfo.rageDamage - damageInfo.absorb;
@@ -6037,7 +6037,7 @@ void Aura::PeriodicTick()
                 }
                 else
                 {
-                    SpellDamageLog damageInfo(GetId(), GetCaster(), GetTarget(), GetSpellProto()->SchoolMask);
+                    SpellDamageLog damageInfo(GetId(), GetTarget(), GetCaster(), GetSpellProto()->SchoolMask, 1);
                     damageInfo.damage = gain;
                     //pCaster->SendSpellNonMeleeDamageLog(pCaster, GetId(), gain, GetSpellSchoolMask(GetSpellProto()), 0, 0, false, 0, false);
                     pCaster->DealDamage(&damageInfo, NODAMAGE, GetSpellProto(), true);

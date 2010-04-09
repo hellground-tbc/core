@@ -1397,7 +1397,7 @@ void Unit::CalculateMeleeDamage(MeleeDamageLog *damageInfo)
        damageInfo->hitInfo       |= HITINFO_NORMALSWING;
        damageInfo->targetState    = VICTIMSTATE_IS_IMMUNE;
 
-       damageInfo->procEx |=PROC_EX_IMMUNE;
+       damageInfo->procEx |= PROC_EX_IMMUNE;
        damageInfo->damage         = 0;
        damageInfo->rageDamage     = 0;
        return;
@@ -1762,7 +1762,7 @@ void Unit::CalcAbsorb(Unit *pVictim,SpellSchoolMask schoolMask, const uint32 dam
         next = i; ++next;
 
         // check damage school mask
-        if((*i)->GetModifier()->m_miscvalue & ~schoolMask)
+        if (((*i)->GetModifier()->m_miscvalue & schoolMask)==0)
             continue;
 
         int32 currentAbsorb;
@@ -1803,7 +1803,7 @@ void Unit::CalcAbsorb(Unit *pVictim,SpellSchoolMask schoolMask, const uint32 dam
             next = i; ++next;
 
             // check damage school mask
-            if((*i)->GetModifier()->m_miscvalue & ~schoolMask)
+            if (((*i)->GetModifier()->m_miscvalue & schoolMask)==0)
                 continue;
 
             // Damage can be splitted only if aura has an alive caster
@@ -1822,7 +1822,7 @@ void Unit::CalcAbsorb(Unit *pVictim,SpellSchoolMask schoolMask, const uint32 dam
             SpellDamageLog damageInfo((*i)->GetSpellProto()->Id, this, caster, (*i)->GetSpellProto()->SchoolMask);
             damageInfo.damage = currentAbsorb;
 
-//            SendSpellNonMeleeDamageLog(caster, (*i)->GetSpellProto()->Id, currentAbsorb, schoolMask, 0, 0, false, 0, false);
+            SendSpellNonMeleeDamageLog(caster, (*i)->GetSpellProto()->Id, currentAbsorb, schoolMask, 0, 0, false, 0, false);
 
             DealDamage(&damageInfo, DOT, (*i)->GetSpellProto(), false);
         }
@@ -1833,8 +1833,8 @@ void Unit::CalcAbsorb(Unit *pVictim,SpellSchoolMask schoolMask, const uint32 dam
             next = i; ++next;
 
             // check damage school mask
-            if((*i)->GetModifier()->m_miscvalue & ~schoolMask)
-                continue;
+            if (((*i)->GetModifier()->m_miscvalue & schoolMask)==0)
+               continue;
 
             // Damage can be splitted only if aura has an alive caster
             Unit *caster = (*i)->GetCaster();
@@ -4233,7 +4233,7 @@ void Unit::SendSpellNonMeleeDamageLog(SpellDamageLog *log)
     data << uint8 (log->damageType);                         // damsge type? flag
     data << uint8 (0);                                       //unused
     data << uint32(log->blocked);                            //blocked
-    data << uint32(log->hitInfo);
+    data << uint32(log->hitInfo & SPELL_HIT_TYPE_CRIT ? 0x27 : 0x25);
     data << uint8 (0);                                       // flag to use extend data
     SendMessageToSet( &data, true );
 }
@@ -8477,7 +8477,7 @@ bool Unit::isAttackableByAOE() const
 int32 Unit::ModifyHealth(int32 dVal)
 {
     if (GetTypeId() == TYPEID_UNIT && (((Creature *)this)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_DAMAGE_TAKEN))
-        return;
+        return 0;
 
     int32 gain = 0;
 
