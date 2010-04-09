@@ -199,7 +199,13 @@ bool GossipSelect_npc_nat_pagle(Player *player, Creature *_Creature, uint32 send
 
 struct TRINITY_DLL_DECL npc_theramore_combat_dummyAI : public Scripted_NoMovementAI
 {
-    npc_theramore_combat_dummyAI(Creature *c) : Scripted_NoMovementAI(c) {}
+    npc_theramore_combat_dummyAI(Creature *c) : Scripted_NoMovementAI(c)
+    {
+        // niech ktoœ to przepisze na zapytanie plx
+        CreatureInfo *cInfo = (CreatureInfo *)m_creature->GetCreatureInfo();
+        if (cInfo)
+            cInfo->flags_extra |= CREATURE_FLAG_EXTRA_NO_DAMAGE_TAKEN;
+    }
 
     uint64 AttackerGUID;
     uint32 Check_Timer;
@@ -220,7 +226,6 @@ struct TRINITY_DLL_DECL npc_theramore_combat_dummyAI : public Scripted_NoMovemen
 
     void DamageTaken(Unit *attacker, uint32 &damage)
     {
-        damage = 0;
     }
 
     void UpdateAI(const uint32 diff)

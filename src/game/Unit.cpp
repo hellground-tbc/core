@@ -8476,6 +8476,9 @@ bool Unit::isAttackableByAOE() const
 
 int32 Unit::ModifyHealth(int32 dVal)
 {
+    if (GetTypeId() == TYPEID_UNIT && (((Creature *)this)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_DAMAGE_TAKEN))
+        return;
+
     int32 gain = 0;
 
     if(dVal==0)
