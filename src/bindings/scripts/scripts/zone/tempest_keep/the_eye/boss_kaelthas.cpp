@@ -1031,7 +1031,8 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                         Arcane1 = true;
 
                         if (Unit* pUnit = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_FLAME_STRIKE), true))
-                        DoCast(pUnit, SPELL_FLAME_STRIKE);
+                        //DoCast(pUnit, SPELL_FLAME_STRIKE);
+                        AddSpellToCast(pUnit, SPELL_FLAME_STRIKE);
 
                         // MC after 20 sec from Pyros chain (4 Phase)
                         if(Phase == 4)
@@ -1051,7 +1052,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                                     target = m_creature->getVictim();
 
                                 if(target)
-                                    DoCast(target, SPELL_MIND_CONTROL);
+                                    DoCast(target, SPELL_MIND_CONTROL, true);
                             }
                           }
                           MindControl_Timer = 10000;
@@ -1080,7 +1081,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                                  if(!target)
                                      target = m_creature->getVictim();
                                  if(target)
-                                    DoCast(target, SPELL_MIND_CONTROL);
+                                    DoCast(target, SPELL_MIND_CONTROL, true);
                              }
                             }
                             MC_Done = true;
@@ -1095,7 +1096,8 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                             Arcane2 = true;
 
                             if (Unit* pUnit = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_FLAME_STRIKE), true))
-                                DoCast(pUnit, SPELL_FLAME_STRIKE);
+                                //DoCast(pUnit, SPELL_FLAME_STRIKE);
+                                AddSpellToCast(pUnit, SPELL_FLAME_STRIKE);
                         }
                     }
                     else
@@ -1194,7 +1196,6 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                             case 0:
                                 m_creature->GetMotionMaster()->Clear();
                                 m_creature->GetMotionMaster()->MoveIdle();
-                                m_creature->SetStunned(true);
                                 if(pInstance)
                                     pInstance->SetData(DATA_KAELTHASEVENT, 5);    // set KaelthasEventPhase = 5 for Gravity Lapse phase
                                 // 1) Kael'thas casts teleportation visual spell on self
@@ -1228,6 +1229,8 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                                 }
 
                                 summons.AuraOnEntry(PHOENIX,SPELL_BANISH,true);
+                                m_creature->GetMotionMaster()->Clear();
+                                m_creature->GetMotionMaster()->MoveIdle();
 
                                 //Cast nether vapor summoning
                                 GravityLapse_Timer = 3000;
@@ -1238,6 +1241,9 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                             case 2:
                                 //Summon Nether Vapor clouds NPC's and cast Nether Vapor aura on self
                                 DoCast(m_creature, SPELL_NETHER_VAPOR);
+                                m_creature->GetMotionMaster()->Clear();
+                                m_creature->GetMotionMaster()->MoveIdle();
+
                                 for(uint8 i = 0; i < 4; i++)
                                 {
                                 for(uint8 j = 0; j <=6; j +=6)
@@ -1461,7 +1467,6 @@ struct TRINITY_DLL_DECL boss_lord_sanguinarAI : public advisorbase_ai
 
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
         m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
-        m_creature->SetSpeed(MOVE_RUN, 1.4f);
 
         advisorbase_ai::Reset();
     }
@@ -1539,8 +1544,6 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
         Yell_Timer = 2000;
         Yell = false;
         Check_Timer = 3000;
-
-        m_creature->SetSpeed(MOVE_RUN, 1.8f);
 
         advisorbase_ai::Reset();
     }
@@ -2029,11 +2032,14 @@ struct TRINITY_DLL_DECL mob_nether_vaporAI : public ScriptedAI
     //ignore
     void MoveInLineOfSight(Unit* who) { return; }
 
-    void Aggro(Unit *who) { return; }
+    void Aggro(Unit *who)
+    {
+        EnterEvadeMode();
+        return; 
+    }
 
     void UpdateAI(const uint32 diff)
     {
-
         if(Move_Timer < diff)
         {
             float newX, newY, newZ;

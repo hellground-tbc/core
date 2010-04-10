@@ -1589,7 +1589,10 @@ void Aura::TriggerSpell()
                         {
                             caster->AddAura(39432, m_target);
                             if(Aura* aur = caster->GetAura(39432, 0))
+                            {
                                 aur->SetAuraDuration(duration);
+                                aur->UpdateAuraDuration();
+                            }
                         }
 
                         if(!caster->HasUnitMovementFlag(MOVEMENTFLAG_FALLING))
@@ -1598,17 +1601,26 @@ void Aura::TriggerSpell()
                                 {
                                     caster->CastSpell(m_target, 34480, true);
                                     if(Aura* GLapse = caster->GetAura(34480, 1))
+                                    {
                                         GLapse->SetAuraDuration(duration);
+                                        GLapse->UpdateAuraDuration();
+                                    }
                                 }
 
                             if(height < 50)
                                 {
                                     caster->CastSpell(m_target, 34480, true);
                                     if(Aura* GLapse = caster->GetAura(34480, 1))
+                                    {
                                         GLapse->SetAuraDuration(duration);
+                                        GLapse->UpdateAuraDuration();
+                                    }
                                     caster->CastSpell(m_target, 39432, true);
                                     if(Aura* aur = caster->GetAura(39432, 0))
+                                    {
                                         aur->SetAuraDuration(duration);
+                                        aur->UpdateAuraDuration();
+                                    }
                                 }
                         }
                         break;
