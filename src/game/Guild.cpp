@@ -1237,7 +1237,8 @@ void Guild::LoadGuildBankFromDB()
         uint32 ItemGuid = fields[3].GetUInt32();
         uint32 ItemEntry = fields[4].GetUInt32();
 
-        if (TabId >= purchased_tabs || TabId >= GUILD_BANK_MAX_TABS)
+        // sprawdzamy rozmiar tab ? moze byc rozny od purchased_tabs? oO
+        if (TabId >= m_TabListMap.size() || TabId >= purchased_tabs || TabId >= GUILD_BANK_MAX_TABS)
         {
             sLog.outError( "Guild::LoadGuildBankFromDB: Invalid tab for item (GUID: %u id: #%u) in guild bank, skipped.", ItemGuid,ItemEntry);
             continue;
