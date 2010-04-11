@@ -1157,7 +1157,16 @@ struct TRINITY_DLL_DECL Mob_EventAI : public ScriptedAI
         if (!pUnit)
             return;
 
+        //set level and hp summoned unit
+        uint32 startHp = pUnit->GetMaxHealth();
+
+                                  //dest lvl                        start lvl
+        uint32 destHp = startHp * (m_creature->getLevel() / ((float)pUnit->getLevel()));
+
         pUnit->SetLevel(m_creature->getLevel());
+
+        pUnit->SetHealth((uint32)destHp);
+        pUnit->SetMaxHealth((uint32)destHp);
 
         for (std::list<EventHolder>::iterator i = EventList.begin(); i != EventList.end(); ++i)
         {
