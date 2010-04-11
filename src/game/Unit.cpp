@@ -3363,6 +3363,12 @@ bool Unit::AddAura(Aura *Aur)
                     ++i2;
                     continue;
             }
+            if( GetSpellMaxDuration(aurSpellInfo) > Aur->GetAuraMaxDuration() &&        // HACK check for spellsteal case
+                Aur->GetAuraDuration() < (*i2).second->GetAuraDuration())               // don't override longer bufs when spellstealing
+            {
+                delete Aur;
+                return false;
+            }
             RemoveAura(i2,AURA_REMOVE_BY_STACK);
             i2=m_Auras.lower_bound(spair);
             continue;
@@ -3579,22 +3585,22 @@ bool Unit::RemoveNoStackAurasDueToAura(Aura *Aur)
                     continue;
                 }
 
-            uint64 caster = (*i).second->GetCasterGUID();
-            // Remove all auras by aura caster
-            for (uint8 a=0;a<3;++a)
-            {
-                spellEffectPair spair = spellEffectPair(i_spellId, a);
-                for(AuraMap::iterator iter = m_Auras.lower_bound(spair); iter != m_Auras.upper_bound(spair);)
+                uint64 caster = (*i).second->GetCasterGUID();
+                // Remove all auras by aura caster
+                for (uint8 a=0;a<3;++a)
                 {
-                    if(iter->second->GetCasterGUID()==caster)
+                    spellEffectPair spair = spellEffectPair(i_spellId, a);
+                    for(AuraMap::iterator iter = m_Auras.lower_bound(spair); iter != m_Auras.upper_bound(spair);)
                     {
-                        RemoveAura(iter, AURA_REMOVE_BY_STACK);
-                        iter = m_Auras.lower_bound(spair);
+                        if(iter->second->GetCasterGUID()==caster)
+                        {
+                            RemoveAura(iter, AURA_REMOVE_BY_STACK);
+                            iter = m_Auras.lower_bound(spair);
+                        }
+                        else
+                            ++iter;
                     }
-                    else
-                        ++iter;
                 }
-            }
 
                 if( m_Auras.empty() )
                     break;
