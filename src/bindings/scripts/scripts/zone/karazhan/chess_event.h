@@ -179,6 +179,12 @@ struct ChessSquare
         piece = 0;
         trigger = 0;
     }
+
+    ChessSquare(uint64 piece, uint64 trigger)
+    {
+        this->piece = piece;
+        this->trigger = trigger;
+    }
 };
 
 float hordeSideDeadWP[2][16] = {{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},         //X coord
@@ -198,6 +204,8 @@ struct TRINITY_DLL_DECL move_triggerAI : public ScriptedAI
 
     //Unit * onMarker;
     //bool EndMarker;
+
+    uint64 medivhGuid;
 
     int32 moveTimer;
     Unit * unitToMove;
@@ -266,19 +274,23 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
 
     instance_karazhan* pInstance;
 
-    int16 hordePieces;
-    int16 alliancePieces;
+    int16 hordePieces;      //count of alive horde side pieces
+    int16 alliancePieces;   //count of alive alliance side pieces
+
+    int16 chanceToMove;     //random chance for medivh to move piece when player moved
+                            //when player want to move his piece medivh tests if he can move too
 
     ChessSquare chessBoard[8][8];
 
-    std::list<int64> medivhSidePieces; //alive pieces guids
+    std::list<uint64> medivhSidePieces; //alive pieces guids
 
     bool eventStarted;
 
-    WorldLocation wLoc;
-    WorldLocation tpLoc;
+    WorldLocation wLoc;     //location of medivh
+    WorldLocation tpLoc;    //location of player teleport point
 
     std::list<uint64> tpList;
+    std::list<ChessSquare> moveList; //list of triggers to make move
 
     void Reset();
 
@@ -286,21 +298,21 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
 
     void SayChessPieceDied(Unit * piece);
 
-    void RemoveChessPieceFromBoard(uint64 piece);
+    void RemoveChessPieceFromBoard(uint64 piece);   //removes dead piece from chess board
 
-    void RemoveChessPieceFromBoard(Unit * piece);
+    void RemoveChessPieceFromBoard(Unit * piece);   //and spawn them in position near board
 
     bool IsChessPiece(Unit * unit);
 
     bool IsMedivhsPiece(Unit * unit);
 
-    void PrepareBoardForEvent();
+    void PrepareBoardForEvent();    //search for pieces, triggers and save them in chessBoard table
 
-    void TeleportPlayer(Player * player);
+    void TeleportPlayer(Player * player);   //teleport player to tpLoc
 
     void TeleportPlayer(uint64 player);
 
-    void TeleportPlayers();
+    void TeleportPlayers(); //teleport in game players to tpLoc
 
     void AddPlayerToTeleportList(Player * player);
 
@@ -309,6 +321,16 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
     void ApplyDebuffsOnRaidMembers();
 
     void StartEvent();
+
+    bool ChessSquereIsEmpty(uint64 trigger);
+
+    bool CanMoveTo(uint64 trigger, uint64 piece);   //check if player can move to trigger - prevent cheating
+
+    bool AddTriggerToMove(uint64 trigger, uint64 piece, bool player);
+
+    Unit * FindTrigger(uint64 piece);   //find trigger where piece actually should be
+
+    void MakeMove();
 
     void UpdateAI(const uint32 diff);
 };

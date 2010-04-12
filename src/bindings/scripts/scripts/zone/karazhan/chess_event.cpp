@@ -16,11 +16,12 @@ void move_triggerAI::Reset()
     moveTimer   = 10000;
     pieceStance = PIECE_NONE;
     unitToMove = NULL;
+    medivhGuid = pInstance->GetData64(DATA_CHESS_ECHO_OF_MEDIVH);
 }
 
 void move_triggerAI::SpellHit(Unit *caster,const SpellEntry *spell)
 {
-    if (pieceStance != PIECE_NONE)
+    if (pieceStance != PIECE_NONE || !medivhGuid)
         return;
 
     if(spell->Id == SPELL_MOVE_1 || spell->Id == SPELL_MOVE_2 || spell->Id == SPELL_MOVE_3 || spell->Id == SPELL_MOVE_4 ||
@@ -33,14 +34,25 @@ void move_triggerAI::SpellHit(Unit *caster,const SpellEntry *spell)
         //EndMarker = true;
         //onMarker = caster;
 
-        DoCast(m_creature, SPELL_MOVE_PREVISUAL);
+        boss_MedivhAI * medivh = (boss_MedivhAI*)(m_creature->GetUnit(*m_creature, medivhGuid));
+        if (medivh)
+        {
+            if (medivh->CanMoveTo(m_creature->GetGUID(), caster->GetGUID()))
+            {
+                medivh->AddTriggerToMove(m_creature->GetGUID(), caster->GetGUID(), caster->GetTypeId() == TYPEID_PLAYER ? true : false);
 
-        unitToMove = caster;
+                DoCast(m_creature, SPELL_MOVE_PREVISUAL);
 
-        if (spell->Id == SPELL_CHANGE_FACING)
-            pieceStance = PIECE_CHANGE_FACING;
+                unitToMove = caster;
+
+                if (spell->Id == SPELL_CHANGE_FACING)
+                    pieceStance = PIECE_CHANGE_FACING;
+                else
+                    pieceStance = PIECE_MOVE;
+            }
+        }
         else
-            pieceStance = PIECE_MOVE;
+            DoSay("Medivh not found ... you can't move", LANG_UNIVERSAL, m_creature);
     }
 }
 
@@ -51,7 +63,7 @@ void move_triggerAI::MakeMove()
     moveTimer = 10000;
     pieceStance = PIECE_NONE;
 
-    if (!unitToMove || (unitToMove && !unitToMove->isAlive()))
+    if (!unitToMove || !unitToMove->isAlive())
         return;
 
     switch (tmpStance)
@@ -76,6 +88,8 @@ void move_triggerAI::MakeMove()
 
 void move_triggerAI::UpdateAI(const uint32 diff)
 {
+    //to prevent situation when in some case trigger isn't in move list and never move
+
     if(pInstance->GetData(DATA_CHESS_EVENT) != IN_PROGRESS)
         return;
 
@@ -123,7 +137,7 @@ npc_chesspieceAI::npc_chesspieceAI(Creature *c) : Scripted_NoMovementAI(c)
 void npc_chesspieceAI::Aggro(Unit *Unit)
 {
     MedivhGUID = pInstance->GetData64(DATA_CHESS_ECHO_OF_MEDIVH);
-    npc_medivh = Unit::GetUnit(*m_creature, MedivhGUID);
+    npc_medivh = m_creature->GetUnit(*m_creature, MedivhGUID);
 
     if(npc_medivh)
     {
@@ -394,6 +408,8 @@ void boss_MedivhAI::Reset()
     hordePieces = 16;
     alliancePieces = 16;
     medivhSidePieces.clear();
+    tpList.clear();
+    moveList.clear();
 }
 
 void boss_MedivhAI::SayChessPieceDied(Unit * piece)
@@ -865,6 +881,102 @@ void boss_MedivhAI::UpdateAI(const uint32 diff)
         return;
 
 
+}
+
+Unit * boss_MedivhAI::FindTrigger(uint64 piece)
+{
+    for (int8 i = 0; i < 8; i++)
+    {
+        for (int8 j = 0; j < 8; j++)
+        {
+            if (chessBoard[i][j].piece == piece)
+                return m_creature->GetUnit(*m_creature, chessBoard[i][j].trigger);
+        }
+    }
+
+    return NULL;
+}
+
+bool boss_MedivhAI::ChessSquereIsEmpty(uint64 trigger)
+{
+    for (int8 i = 0; i < 8; i++)
+    {
+        for (int8 j = 0; j < 8; j++)
+        {
+            if (chessBoard[i][j].trigger == trigger)
+            {
+                if (chessBoard[i][j].piece)
+                    return false;
+                else
+                    return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+bool boss_MedivhAI::CanMoveTo(uint64 trigger, uint64 piece)
+{
+    Creature * cTrigger = m_creature->GetCreature(*m_creature, trigger);
+
+    if (!cTrigger || !ChessSquereIsEmpty(trigger))
+        return false;
+
+    Unit * cPieceTrigger = FindTrigger(piece);
+    Unit * cPiece = m_creature->GetUnit(*m_creature, piece);
+
+    if (!cPieceTrigger)
+        return false;
+
+    bool canMove = false;
+
+    switch (cPiece->GetEntry())
+    {
+        case NPC_PAWN_A:
+        case NPC_PAWN_H:
+        case NPC_KING_A:
+        case NPC_KING_H:
+        case NPC_BISHOP_A:
+        case NPC_BISHOP_H:
+        case NPC_ROOK_A:
+        case NPC_ROOK_H:
+            if (cTrigger->GetDistance(cPieceTrigger) <= 8)
+                canMove = true;
+            break;
+        case NPC_KNIGHT_A:
+        case NPC_KNIGHT_H:
+            if (cTrigger->GetDistance(cPieceTrigger) <= 15)
+                canMove = true;
+            break;
+        case NPC_QUEEN_A:
+        case NPC_QUEEN_H:
+            if (cTrigger->GetDistance(cPieceTrigger) <= 20)
+                canMove = true;
+            break;
+        default:
+            canMove = false;
+            break;
+    }
+
+    return canMove;
+}
+
+bool boss_MedivhAI::AddTriggerToMove(uint64 trigger, uint64 piece, bool player)
+{
+    ChessSquare tmp;
+    tmp.piece = piece;
+    tmp.trigger = trigger;
+
+    moveList.push_back(tmp);
+
+    uint16 tmpChance = urand(0, 100);
+
+    //check, if tmpChance is higher than chanceToMove then medivh also can move one of his pieces
+    if (player && tmpChance > chanceToMove)
+    {
+
+    }
 }
 
 
