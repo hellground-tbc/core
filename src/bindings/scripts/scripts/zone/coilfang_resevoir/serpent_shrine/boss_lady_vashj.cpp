@@ -370,7 +370,7 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
             }
         }
         //to prevent abuses during phase 2
-        Unit *nearTarget = SelectUnit(SELECT_TARGET_NEAREST,0,80.0f,true);
+        Unit *nearTarget = SelectUnit(SELECT_TARGET_NEAREST,0,100.0f,true);
         if(Phase == 2 && !nearTarget && InCombat)
         {
             EnterEvadeMode();

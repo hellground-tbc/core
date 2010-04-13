@@ -710,8 +710,14 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                         EnterEvadeMode();
                         return;
                     }
-                    else if(!m_creature->IsInEvadeMode())
+                    else
                         DoZoneInCombat();
+
+                    if(pInstance->GetData(DATA_KAELTHASEVENT) == 5)
+                    { 
+                        if(m_creature->hasUnitState(UNIT_STAT_CHASE))
+                            m_creature->GetMotionMaster()->Clear();
+                    }
 
                     Check_Timer = 2000;
                 }
@@ -1202,8 +1208,8 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                                 m_creature->CastSpell(m_creature, SPELL_GRAVITY_KAEL_VISUAL, false);
                                 switch(rand()%2)
                                 {
-                                case 0: DoScriptText(SAY_GRAVITYLAPSE1, m_creature); break;
-                                case 1: DoScriptText(SAY_GRAVITYLAPSE2, m_creature); break;
+                                    case 0: DoScriptText(SAY_GRAVITYLAPSE1, m_creature); break;
+                                    case 1: DoScriptText(SAY_GRAVITYLAPSE2, m_creature); break;
                                 }
                                 GravityLapse_Timer = 2000;
                                 ++GravityLapse_Phase;
@@ -1215,11 +1221,11 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
 
                             case 1:
                                 // 2) Kael'thas will portal the whole raid near to his position
-                                for (iter = m_creature->getThreatManager().getThreatList().begin(); iter!= m_creature->getThreatManager().getThreatList().end();)
+                                for(iter = m_creature->getThreatManager().getThreatList().begin(); iter != m_creature->getThreatManager().getThreatList().end();)
                                 {
                                     Unit* pUnit = Unit::GetUnit((*m_creature), (*iter)->getUnitGuid());
                                     ++iter;
-                                    if(pUnit && pUnit->IsInMap(m_creature) && pUnit->GetTypeId() == TYPEID_PLAYER && !((Player*)pUnit)->isGameMaster()) //to allow GM's spying :P
+                                    if(pUnit && pUnit->IsInWorld() && pUnit->IsInMap(m_creature) && pUnit->GetTypeId() == TYPEID_PLAYER && !((Player*)pUnit)->isGameMaster()) //to allow GM's spying :P
                                     {
                                         m_creature->CastSpell(pUnit, glapse_teleport_id, true);  //this should probably go to the core
                                         // 2) At that point he will put a Gravity Lapse debuff on everyone
@@ -1230,7 +1236,6 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
 
                                 summons.AuraOnEntry(PHOENIX,SPELL_BANISH,true);
                                 m_creature->GetMotionMaster()->Clear();
-                                m_creature->GetMotionMaster()->MoveIdle();
 
                                 //Cast nether vapor summoning
                                 GravityLapse_Timer = 3000;
