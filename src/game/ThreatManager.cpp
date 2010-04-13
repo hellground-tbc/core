@@ -281,6 +281,10 @@ bool DropAggro(Creature* pAttacker, Unit * target)
     if (target->isCharmed() && pAttacker->IsFriendlyTo(target))
         return true;
 
+    //target has Spirit of Redemption aura (shapeshift effect)
+    if (target->HasAura(27827, 2))
+        return true;
+
     // target is stunned from Lady Vashj Shockblast
     if (target->HasAura(38509,1))
         return true;

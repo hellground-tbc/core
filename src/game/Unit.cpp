@@ -285,7 +285,7 @@ void Unit::Update( uint32 p_time )
     // WARNING! Order of execution here is important, do not change.
     // Spells must be processed with event system BEFORE they go to _UpdateSpells.
     // Or else we may have some SPELL_STATE_FINISHED spells stalled in pointers, that is bad.
-    
+
     Map *lMap = GetMap();
     if(!lMap)
         return;
@@ -666,7 +666,7 @@ void Unit::SendDamageLog(DamageLog *damageInfo)
 uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, const SpellEntry *spellProto, bool durabilityLoss)
 {
     Unit *pVictim = damageInfo->target;
-    if (!pVictim->isAlive() || pVictim->isInFlight() || pVictim->GetTypeId() == TYPEID_UNIT && ((Creature*)pVictim)->IsInEvadeMode())
+    if (!pVictim->isAlive() || pVictim->isInFlight() || pVictim->GetTypeId() == TYPEID_UNIT && ((Creature*)pVictim)->IsInEvadeMode() || pVictim->HasAura(27827, 2))
         return 0;
 
     //You don't lose health from damage taken from another player while in a sanctuary
@@ -737,7 +737,7 @@ uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, cons
 
     if(damageInfo->damage || damageInfo->rageDamage)
     {
-        if (spellProto && spellProto->Id == 33619)                 //if it's from Reflective Shield 
+        if (spellProto && spellProto->Id == 33619)                 //if it's from Reflective Shield
         {
             // don't break cc
         }
@@ -865,7 +865,7 @@ uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, cons
                 //TODO: This is from procflag, I do not know which spell needs this
                 //Maim?
                 //if (!spellProto || !(spellProto->AuraInterruptFlags&AURA_INTERRUPT_FLAG_DIRECT_DAMAGE))
-                if (spellProto && spellProto->Id == 33619)                 //if it's from Reflective Shield 
+                if (spellProto && spellProto->Id == 33619)                 //if it's from Reflective Shield
                 {
                     // don't break cc
                 }
@@ -3041,7 +3041,7 @@ bool Unit::IsNonMeleeSpellCasted(bool withDelayed, bool skipChanneled, bool skip
     // Maybe later some special spells will be excluded too.
 
     // generic spells are casted when they are not finished and not delayed
-    if ( m_currentSpells[CURRENT_GENERIC_SPELL] && 
+    if ( m_currentSpells[CURRENT_GENERIC_SPELL] &&
         (m_currentSpells[CURRENT_GENERIC_SPELL]->getState() != SPELL_STATE_FINISHED) &&
         (withDelayed || m_currentSpells[CURRENT_GENERIC_SPELL]->getState() != SPELL_STATE_DELAYED) )
         return(true);
@@ -3100,7 +3100,7 @@ bool Unit::isInLine(Unit const* target, float distance) const
 {
     if(!HasInArc(M_PI, target) || !IsWithinDistInMap(target, distance))
         return false;
-    
+
     float width = GetEntry() == 21217 ? 2 : GetObjectSize() + target->GetObjectSize() * 0.5f;
     float angle = GetAngle(target) - GetOrientation();
     return abs(sin(angle)) * GetExactDistance2d(target->GetPositionX(), target->GetPositionY()) < width;
@@ -6229,7 +6229,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         // Finish movies that add combo
         case 14189: // Seal Fate (Netherblade set)
         case 14157: // Ruthlessness
-        {            
+        {
             // Need add combopoint AFTER finish movie (or they dropped in finish phase)
             if(GetTypeId()==TYPEID_PLAYER && procSpell->SpellFamilyFlags & SPELLFAMILYFLAG_ROGUE__FINISHING_MOVE)
             {
@@ -6241,7 +6241,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                 }
                 else
                     return false;
-                
+
             }
             break;
         }
@@ -9275,7 +9275,7 @@ void Unit::ApplyDiminishingToDuration(DiminishingGroup group, int32 &duration,Un
         return;
 
     // test pet/charm masters instead pets/charmedsz
-    Unit const* targetOwner = GetCharmerOrOwner(); 
+    Unit const* targetOwner = GetCharmerOrOwner();
     Unit const* casterOwner = caster->GetCharmerOrOwner();
 
     // Duration of crowd control abilities on pvp target is limited by 10 sec. (2.2.0)
@@ -11126,13 +11126,13 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
     {
         if(GetTypeId() == TYPEID_PLAYER && (IsInPartyWith(player) || IsInRaidWith(player)))
         {
-            if(((Player*)this)->RewardPlayerAndGroupAtKill(pVictim))            
+            if(((Player*)this)->RewardPlayerAndGroupAtKill(pVictim))
                 ProcDamageAndSpell(pVictim, PROC_FLAG_KILL_AND_GET_XP, PROC_FLAG_KILLED, PROC_EX_NONE, 0);
             else
                 ProcDamageAndSpell(pVictim, PROC_FLAG_NONE, PROC_FLAG_KILLED,PROC_EX_NONE, 0);
         }
         else
-            player->RewardPlayerAndGroupAtKill(pVictim);             
+            player->RewardPlayerAndGroupAtKill(pVictim);
     }
 
     // if talent known but not triggered (check priest class for speedup check)
@@ -11253,7 +11253,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
 
         if(Map *pMap = pVictim->GetMap())
         {
-            if(pMap->IsRaid() || pMap->IsDungeon()) 
+            if(pMap->IsRaid() || pMap->IsDungeon())
             {
                 if(((InstanceMap*)pMap)->GetInstanceData())
                     ((InstanceMap*)pMap)->GetInstanceData()->OnPlayerDeath((Player*)pVictim);
