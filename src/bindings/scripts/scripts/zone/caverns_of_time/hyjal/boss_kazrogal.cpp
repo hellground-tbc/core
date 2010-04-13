@@ -32,6 +32,12 @@ struct TRINITY_DLL_DECL boss_kazrogalAI : public hyjal_trashAI
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
         go = false;
         pos = 0;
+
+        SpellEntry *TempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_WARSTOMP);
+        if(TempSpell)
+        {
+            TempSpell->Effect[1] = 2;
+        }
     }
 
     uint32 CleaveTimer;

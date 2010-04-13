@@ -222,7 +222,7 @@ struct TRINITY_DLL_DECL advisorbase_ai : public ScriptedAI
         m_creature->ApplySpellImmune(2, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);    // for Capernian mainly
 
         //reset encounter
-        if(pInstance && (pInstance->GetData(DATA_KAELTHASEVENT) == 1 || pInstance->GetData(DATA_KAELTHASEVENT) == 3))
+        if(pInstance && pInstance->GetData(DATA_KAELTHASEVENT))
         {
             if(Creature *Kaelthas = Unit::GetCreature((*m_creature), pInstance->GetData64(DATA_KAELTHAS)))
                 Kaelthas->AI()->EnterEvadeMode();
@@ -1279,7 +1279,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                     else 
                         GravityLapse_Timer -= diff;
 
-                    if((pInstance->GetData(DATA_KAELTHASEVENT) == 5))
+                    if(pInstance->GetData(DATA_KAELTHASEVENT) == 5))
                     {
                         //ShockBarrier_Timer in 5th phase only
                         if(ShockBarrier_Timer < diff)
@@ -1370,13 +1370,8 @@ struct TRINITY_DLL_DECL boss_thaladred_the_darkenerAI : public advisorbase_ai
             //Check_Timer
             if(Check_Timer2 < diff)
             {
-                WorldLocation wLoc = ((boss_kaelthasAI*)kael->AI())->wLoc;
-                if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 200.0f)
-                    EnterEvadeMode();
-                else
-                    DoZoneInCombat();
-            
-                 Check_Timer2 = 3000;
+                DoZoneInCombat();
+                Check_Timer2 = 3000;
             }
             else
                 Check_Timer2 -= diff;
@@ -1499,13 +1494,8 @@ struct TRINITY_DLL_DECL boss_lord_sanguinarAI : public advisorbase_ai
             //Check_Timer
             if(Check_Timer < diff)
             {
-                WorldLocation wLoc = ((boss_kaelthasAI*)kael->AI())->wLoc;
-                if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 200.0f)
-                    EnterEvadeMode();
-                else
-                    DoZoneInCombat();
-            
-                 Check_Timer = 3000;
+                DoZoneInCombat();
+                Check_Timer = 3000;
             }
             else
                 Check_Timer -= diff;
@@ -1580,14 +1570,11 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
             //Check_Timer
             if(Check_Timer < diff)
             {
-                WorldLocation wLoc = ((boss_kaelthasAI*)kael->AI())->wLoc;
-                if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 200.0f)
-                    EnterEvadeMode();
-                else
-                    DoZoneInCombat();
-            
-                 Check_Timer = 3000;
-             }else Check_Timer -= diff;
+                DoZoneInCombat();
+                Check_Timer = 3000;
+            }
+            else
+                Check_Timer -= diff;
         }
 
         //Yell_Timer
@@ -1739,13 +1726,8 @@ struct TRINITY_DLL_DECL boss_master_engineer_telonicusAI : public advisorbase_ai
             //Check_Timer
             if(Check_Timer < diff)
             {
-                WorldLocation wLoc = ((boss_kaelthasAI*)kael->AI())->wLoc;
-                if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 200.0f)
-                    EnterEvadeMode();
-                else
-                    DoZoneInCombat();
-            
-                 Check_Timer = 3000;
+                DoZoneInCombat();
+                Check_Timer = 3000;
             }
             else
                 Check_Timer -= diff;
@@ -1859,7 +1841,7 @@ struct TRINITY_DLL_DECL mob_phoenix_tkAI : public ScriptedAI
         float x,y,z;
 
         m_creature->GetPosition(x,y,z);
-        Creature * phoenixEgg = Egg ? m_creature->SummonCreature(PHOENIX_EGG,x,y,z,0,TEMPSUMMON_CORPSE_TIMED_DESPAWN,60000) : NULL;
+        Creature * phoenixEgg = Egg ? m_creature->SummonCreature(PHOENIX_EGG,x,y,z+1.0f,0,TEMPSUMMON_CORPSE_TIMED_DESPAWN,60000) : NULL;
         m_creature->CastSpell(m_creature, SPELL_EMBER_BLAST, true);
         if(phoenixEgg)
         {
