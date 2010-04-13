@@ -1284,7 +1284,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                     else 
                         GravityLapse_Timer -= diff;
 
-                    if(pInstance->GetData(DATA_KAELTHASEVENT) == 5))
+                    if(pInstance->GetData(DATA_KAELTHASEVENT) == 5)
                     {
                         //ShockBarrier_Timer in 5th phase only
                         if(ShockBarrier_Timer < diff)
