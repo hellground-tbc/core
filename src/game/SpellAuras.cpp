@@ -1582,6 +1582,8 @@ void Aura::TriggerSpell()
                     // Gravity Lapse
                     case 34480:
                     {
+                      if(caster->HasAura(34480, 1))
+                      {
                         int32 duration = caster->GetAura(34480, 1)->GetAuraDuration();
                         float height = caster->GetPositionZ();
 
@@ -1624,6 +1626,7 @@ void Aura::TriggerSpell()
                                 }
                         }
                         break;
+                      }
                     }
 //                    // Tornado
 //                    case 34683: break;
