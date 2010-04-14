@@ -949,7 +949,7 @@ struct TRINITY_DLL_DECL boss_julianneAI : public ScriptedAI
             if(Unit* Romulo = Unit::GetUnit(*m_creature, RomuloGUID))
             {
                 Romulo->SetVisibility(VISIBILITY_OFF);
-                Romulo->DealDamage(Romulo, Romulo->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                Romulo->DealDamage(Romulo, Romulo->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
             }
         }
 

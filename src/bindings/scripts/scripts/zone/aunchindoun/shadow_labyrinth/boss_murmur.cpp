@@ -71,7 +71,7 @@ struct TRINITY_DLL_DECL boss_murmurAI : public Scripted_NoMovementAI
     void SpellHitTarget(Unit *target, const SpellEntry *spell)
     {
         if(target && target->isAlive() && spell && spell->Id == SPELL_SONIC_BOOM_EFFECT)
-            m_creature->DealDamage(target,(target->GetHealth()*90)/100,NULL,SPELL_DIRECT_DAMAGE,SPELL_SCHOOL_MASK_NATURE,spell);
+            m_creature->DealDamage(target,(target->GetHealth()*90)/100,SPELL_DIRECT_DAMAGE,SPELL_SCHOOL_MASK_NATURE,spell);
     }
 
     void UpdateAI(const uint32 diff)

@@ -280,7 +280,7 @@ void Spell::EffectInstaKill(uint32 /*i*/)
         finish();
 
     uint32 health = unitTarget->GetHealth();
-    m_caster->DealDamage(unitTarget, health, NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+    m_caster->DealDamage(unitTarget, health, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
 }
 
 void Spell::EffectEnvirinmentalDMG(uint32 i)
@@ -727,7 +727,7 @@ void Spell::EffectDummy(uint32 i)
                             // Add q objective and clean up
                             if(target)
                             {
-                                m_caster->DealDamage(unitTarget, unitTarget->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                                m_caster->DealDamage(unitTarget, unitTarget->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                                 // TODO: Zrobic tak zeby GO zniknal, ale tak zeby sie zrespil normalnie po swoim czasie (3 min w bazie ma)
                                 // target->  ??????
                             }
@@ -775,7 +775,7 @@ void Spell::EffectDummy(uint32 i)
                             {
                                 Unit* casttarget = Unit::GetUnit((*unitTarget), ihit->targetGUID);
                                 if(casttarget)
-                                    m_caster->DealDamage(casttarget, damage, NULL, SPELL_DIRECT_DAMAGE, SPELL_SCHOOL_MASK_ARCANE, spellInfo, false);
+                                    m_caster->DealDamage(casttarget, damage, SPELL_DIRECT_DAMAGE, SPELL_SCHOOL_MASK_ARCANE, spellInfo, false);
                             }
                 }
                 // Encapsulate Voidwalker
@@ -1844,7 +1844,7 @@ void Spell::EffectDummy(uint32 i)
             }
             break;
         case SPELLFAMILY_SHAMAN:
-            
+
             // Flametongue Weapon Proc
             if(m_spellInfo->SpellFamilyFlags & 0x200000)
             {
@@ -2597,7 +2597,8 @@ void Spell::EffectPowerBurn(uint32 i)
     //TODO: no log
     //unitTarget->ModifyHealth(-new_damage);
     if(m_originalCaster)
-        m_originalCaster->DealDamage(unitTarget, new_damage);
+        m_damage = new_damage;
+        //m_originalCaster->DealDamage(unitTarget, new_damage);
 }
 
 void Spell::EffectHeal( uint32 /*i*/ )
@@ -6576,14 +6577,14 @@ void Spell::EffectSummonDemon(uint32 i)
 
     // might not always work correctly, maybe the creature that dies from CoD casts the effect on itself and is therefore the caster?
     Charmed->SetLevel(m_caster->getLevel());
-    
+
     // Add damage/mana/hp according to level
     //PetLevelInfo const* pInfo = objmgr.GetPetLevelInfo(creature_ID, m_caster->getLevel());
     if(creature_ID == 89 || creature_ID == 11859)
     {
         int lvldiff = (m_caster->getLevel() - 52);
         if(lvldiff > 0)
-        {   
+        {
             if(creature_ID == 89)
             {
                 Charmed->SetModifierValue(UNIT_MOD_HEALTH, BASE_VALUE, Charmed->GetMaxHealth() + 350 * lvldiff);
@@ -6591,7 +6592,7 @@ void Spell::EffectSummonDemon(uint32 i)
                 Charmed->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, 20 * lvldiff);
                 Charmed->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, 20 * lvldiff);
                 Charmed->SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, Charmed->GetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE) * (1 + lvldiff * 0.1f));
-        
+
                 m_caster->CastSpell(Charmed, 20882, true);          // Enslave demon effect, without mana cost and cooldown
                 Charmed->CastSpell(Charmed, 22703, true, 0);        // Inferno effect
             }
@@ -6601,7 +6602,7 @@ void Spell::EffectSummonDemon(uint32 i)
                 Charmed->SetModifierValue(UNIT_MOD_MANA, BASE_VALUE, Charmed->GetMaxPower(POWER_MANA) + 100 * lvldiff);
                 Charmed->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, 30 * lvldiff);
                 Charmed->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, 30 * lvldiff);
-                Charmed->SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, Charmed->GetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE) * (1 + lvldiff * 0.1f));                
+                Charmed->SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, Charmed->GetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE) * (1 + lvldiff * 0.1f));
             }
 
             Charmed->UpdateAllStats();
@@ -6667,16 +6668,29 @@ void Spell::EffectStealBeneficialBuff(uint32 i)
     // Ok if exist some buffs for dispel try dispel it
     if (!steal_list.empty())
     {
-        std::list < std::pair<uint32,uint64> > success_list;
+        std::list < std::pair<uint32,uint64> > success_list;    // (spellId, casterGUID)
+        std::list < uint32 > fail_list;                         // spellId
         int32 list_size = steal_list.size();
         // dispel N = damage buffs (or while exist buffs for dispel)
         for (int32 count=0; count < damage && list_size > 0; ++count)
         {
             // Random select buff for dispel
-          Aura *aur = steal_list[m_caster->GetMap()->urand(0, list_size-1)];
-            // Not use chance for steal
-            // TODO possible need do it
-            success_list.push_back( std::pair<uint32,uint64>(aur->GetId(),aur->GetCasterGUID()));
+            Aura *aur = steal_list[m_caster->GetMap()->urand(0, list_size-1)];
+
+            // Base dispel chance
+            // TODO: possible chance depend from spell level??
+            int32 miss_chance = 0;
+            // Apply dispel mod from aura caster
+            if (Unit *caster = aur->GetCaster())
+            {
+                if ( Player* modOwner = caster->GetSpellModOwner() )
+                    modOwner->ApplySpellMod(aur->GetSpellProto()->Id, SPELLMOD_RESIST_DISPEL_CHANCE, miss_chance, this);
+            }
+            // Try dispel
+            if (roll_chance_i(miss_chance))
+                fail_list.push_back(aur->GetId());
+            else
+                success_list.push_back( std::pair<uint32,uint64>(aur->GetId(),aur->GetCasterGUID())); 
 
             // Remove buff from list for prevent doubles
             for (std::vector<Aura *>::iterator j = steal_list.begin(); j != steal_list.end(); )
@@ -6708,6 +6722,19 @@ void Spell::EffectStealBeneficialBuff(uint32 i)
                 data << uint8(0);                    // 0 - steals !=0 transfers
                 unitTarget->RemoveAurasDueToSpellBySteal(spellInfo->Id, j->second, m_caster);
             }
+            m_caster->SendMessageToSet(&data, true);
+        }
+        // Is there other way to send spellsteal resists?
+        // Send fail log to client
+        if (!fail_list.empty())
+        {
+            // Failed to dispell
+            WorldPacket data(SMSG_DISPEL_FAILED, 8+8+4+4*fail_list.size());
+            data << uint64(m_caster->GetGUID());            // Caster GUID
+            data << uint64(unitTarget->GetGUID());          // Victim GUID
+            data << uint32(m_spellInfo->Id);                // dispel spell id
+            for (std::list< uint32 >::iterator j = fail_list.begin(); j != fail_list.end(); ++j)
+                data << uint32(*j);                         // Spell Id
             m_caster->SendMessageToSet(&data, true);
         }
     }

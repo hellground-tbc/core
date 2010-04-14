@@ -858,83 +858,6 @@ void Spell::AddItemTarget(Item* pitem, uint32 effIndex)
     target.effectMask = 1<<effIndex;
     m_UniqueItemInfo.push_back(target);
 }
-/*
-void Spell::doTriggers(SpellMissInfo missInfo, uint32 damage, SpellSchoolMask damageSchoolMask, uint32 block, uint32 absorb, bool crit)
-{
-    // Do triggers depends from hit result (triggers on hit do in effects)
-    // Set aura states depends from hit result
-    if (missInfo!=SPELL_MISS_NONE)
-    {
-        // Miss/dodge/parry/block only for melee based spells
-        // Resist only for magic based spells
-        switch (missInfo)
-        {
-            case SPELL_MISS_MISS:
-                if(m_caster->GetTypeId()== TYPEID_PLAYER)
-                    ((Player*)m_caster)->UpdateWeaponSkill(BASE_ATTACK);
-
-                m_caster->CastMeleeProcDamageAndSpell(unitTarget, 0, damageSchoolMask, m_attackType, MELEE_HIT_MISS, m_spellInfo, m_IsTriggeredSpell);
-                break;
-            case SPELL_MISS_RESIST:
-                m_caster->ProcDamageAndSpell(unitTarget, PROC_FLAG_TARGET_RESISTS, PROC_FLAG_RESIST_SPELL, 0, damageSchoolMask, m_spellInfo, m_IsTriggeredSpell);
-                break;
-            case SPELL_MISS_DODGE:
-                if(unitTarget->GetTypeId() == TYPEID_PLAYER)
-                    ((Player*)unitTarget)->UpdateDefense();
-
-                // Overpower
-                if (m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->getClass() == CLASS_WARRIOR)
-                {
-                    ((Player*) m_caster)->AddComboPoints(unitTarget, 1);
-                    m_caster->StartReactiveTimer( REACTIVE_OVERPOWER );
-                }
-
-                // Riposte
-                if (unitTarget->getClass() != CLASS_ROGUE)
-                {
-                    unitTarget->ModifyAuraState(AURA_STATE_DEFENSE, true);
-                    unitTarget->StartReactiveTimer( REACTIVE_DEFENSE );
-                }
-
-                m_caster->CastMeleeProcDamageAndSpell(unitTarget, 0, damageSchoolMask, m_attackType, MELEE_HIT_DODGE, m_spellInfo, m_IsTriggeredSpell);
-                break;
-            case SPELL_MISS_PARRY:
-                // Update victim defense ?
-                if(unitTarget->GetTypeId() == TYPEID_PLAYER)
-                    ((Player*)unitTarget)->UpdateDefense();
-                // Mongoose bite - set only Counterattack here
-                if (unitTarget->getClass() == CLASS_HUNTER)
-                {
-                    unitTarget->ModifyAuraState(AURA_STATE_HUNTER_PARRY,true);
-                    unitTarget->StartReactiveTimer( REACTIVE_HUNTER_PARRY );
-                }
-                else
-                {
-                    unitTarget->ModifyAuraState(AURA_STATE_DEFENSE, true);
-                    unitTarget->StartReactiveTimer( REACTIVE_DEFENSE );
-                }
-                m_caster->CastMeleeProcDamageAndSpell(unitTarget, 0, damageSchoolMask, m_attackType, MELEE_HIT_PARRY, m_spellInfo, m_IsTriggeredSpell);
-                break;
-            case SPELL_MISS_BLOCK:
-                unitTarget->ModifyAuraState(AURA_STATE_DEFENSE, true);
-                unitTarget->StartReactiveTimer( REACTIVE_DEFENSE );
-
-                m_caster->CastMeleeProcDamageAndSpell(unitTarget, 0, damageSchoolMask, m_attackType, MELEE_HIT_BLOCK, m_spellInfo, m_IsTriggeredSpell);
-                break;
-                // Trigger from this events not supported
-            case SPELL_MISS_EVADE:
-            case SPELL_MISS_IMMUNE:
-            case SPELL_MISS_IMMUNE2:
-            case SPELL_MISS_DEFLECT:
-            case SPELL_MISS_ABSORB:
-                // Trigger from reflects need do after get reflect result
-            case SPELL_MISS_REFLECT:
-                break;
-            default:
-                break;
-        }
-    }
-}*/
 
 void Spell::DoAllEffectOnTarget(TargetInfo *target)
 {
@@ -1029,13 +952,13 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     else if (m_damage > 0)
     {
         // Fill base damage struct (unitTarget - is real spell target)
-        SpellNonMeleeDamage damageInfo(caster, unitTarget, m_spellInfo->Id, m_spellSchoolMask);
+        SpellDamageLog damageInfo(m_spellInfo->Id, caster, unitTarget, m_spellSchoolMask);
 
         // Add bonuses and fill damageInfo struct
         caster->CalculateSpellDamageTaken(&damageInfo, m_damage, m_spellInfo, m_attackType,  target->crit);
 
         // Send log damage message to client
-        caster->SendSpellNonMeleeDamageLog(&damageInfo);
+//        caster->SendSpellNonMeleeDamageLog(&damageInfo);
 
         procEx = createProcExtendMask(&damageInfo, missInfo);
         procVictim |= PROC_FLAG_TAKEN_ANY_DAMAGE;
@@ -1087,7 +1010,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     else
     {
         // Fill base damage struct (unitTarget - is real spell target)
-        SpellNonMeleeDamage damageInfo(caster, unitTarget, m_spellInfo->Id, m_spellSchoolMask);
+        SpellDamageLog damageInfo(m_spellInfo->Id, caster, unitTarget, m_spellSchoolMask);
         procEx = createProcExtendMask(&damageInfo, missInfo);
         // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)
         if (missInfo != SPELL_MISS_REFLECT)
@@ -2077,6 +2000,8 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 Trinity::RandomResizeList(unitList, m_spellValue->MaxAffectedTargets);
             }else if(m_spellInfo->Id == 27285) // Seed of Corruption proc spell
                 unitList.remove(m_targets.getUnitTarget());
+            else if(m_spellInfo->Id == 39968) // Needle Spine Explosion proc
+                unitList.remove(m_targets.getUnitTarget());
 
             for(std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
                 AddUnitTarget(*itr, i);
@@ -2633,8 +2558,8 @@ void Spell::update(uint32 difftime)
         return;
     }
 
-    // check if the player caster has moved before the spell finished
-    if ((m_caster->GetTypeId() == TYPEID_PLAYER && m_timer != 0) &&
+    // check if caster has moved before the spell finished
+    if (m_timer != 0 &&
         (m_castPositionX != m_caster->GetPositionX() || m_castPositionY != m_caster->GetPositionY() || m_castPositionZ != m_caster->GetPositionZ()) &&
         (m_spellInfo->Effect[0] != SPELL_EFFECT_STUCK || !m_caster->HasUnitMovementFlag(MOVEMENTFLAG_FALLING)))
     {

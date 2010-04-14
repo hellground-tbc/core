@@ -158,14 +158,6 @@ float KaelthasWeapons[7][5] =
 #define GRAVITY_Y 0.0f
 #define GRAVITY_Z 49.0f
 
-float NetherVaporStartPos[4][2] =                           //spawn positions of Nether Vapor clouds in phase 5
-{
-    {787.0, 0.0},
-    {795.0, -8.0},
-    {795.0, 8.0},
-    {803.0, 0.0}
-};
-
 #define TIME_PHASE_2_3            125000 // Phase 2 ends approximately 2 minutes and 5 seconds after it begins
 #define TIME_PHASE_3_4            180000 // Phase 3 ends approximately 3 minutes after it begins
 
@@ -230,9 +222,9 @@ struct TRINITY_DLL_DECL advisorbase_ai : public ScriptedAI
         m_creature->ApplySpellImmune(2, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);    // for Capernian mainly
 
         //reset encounter
-        if(pInstance && (pInstance->GetData(DATA_KAELTHASEVENT) == 1 || pInstance->GetData(DATA_KAELTHASEVENT) == 3))
+        if(pInstance && pInstance->GetData(DATA_KAELTHASEVENT))
         {
-            if(Creature *Kaelthas = (Creature*)Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_KAELTHAS)))
+            if(Creature *Kaelthas = Unit::GetCreature((*m_creature), pInstance->GetData64(DATA_KAELTHAS)))
                 Kaelthas->AI()->EnterEvadeMode();
         }
 
@@ -408,7 +400,8 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
         for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
         {
             Player* i_pl = i->getSource();
-            i_pl->RemoveAurasDueToSpell(SPELL_MIND_CONTROL);
+            i_pl->RemoveAurasDueToSpell(SPELL_MIND_CONTROL); // Mind Control
+            i_pl->RemoveAurasDueToSpell(36480); // Mental Protection Field
         }
     }
 
@@ -465,7 +458,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
     {
         for(uint8 i = 0; i < 4; ++i)
         {
-            if(Creature *pCreature = (Creature*)Unit::GetUnit((*m_creature), AdvisorGuid[i]))
+            if(Creature *pCreature = Unit::GetCreature((*m_creature), AdvisorGuid[i]))
             {
                 pCreature->Respawn();
                 pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -721,6 +714,12 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                     else
                         DoZoneInCombat();
 
+                    if(pInstance->GetData(DATA_KAELTHASEVENT) == 5)
+                    { 
+                        if(m_creature->hasUnitState(UNIT_STAT_CHASE))
+                            m_creature->GetMotionMaster()->Clear();
+                    }
+
                     Check_Timer = 2000;
                 }
             }
@@ -761,7 +760,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                     case 1:
                         if(Phase_Timer < diff)
                         {
-                            Advisor = (Creature*)(Unit::GetUnit((*m_creature), AdvisorGuid[0]));
+                            Advisor = Unit::GetCreature((*m_creature), AdvisorGuid[0]);
 
                             if(Advisor)
                             {
@@ -779,7 +778,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
 
                         //Subphase 2 - Start
                     case 2:
-                        Advisor = (Creature*)(Unit::GetUnit((*m_creature), AdvisorGuid[0]));
+                        Advisor = Unit::GetCreature((*m_creature), AdvisorGuid[0]);
                         if(Advisor && (Advisor->GetUInt32Value(UNIT_FIELD_BYTES_1) == PLAYER_STATE_DEAD))
                         {
                             DoScriptText(SAY_INTRO_SANGUINAR, m_creature);
@@ -795,7 +794,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                     case 3:
                         if(Phase_Timer < diff)
                         {
-                            Advisor = (Creature*)(Unit::GetUnit((*m_creature), AdvisorGuid[1]));
+                            Advisor = Unit::GetCreature((*m_creature), AdvisorGuid[1]);
 
                             if(Advisor)
                             {
@@ -813,7 +812,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
 
                         //Subphase 3 - Start
                     case 4:
-                        Advisor = (Creature*)(Unit::GetUnit((*m_creature), AdvisorGuid[1]));
+                        Advisor = Unit::GetCreature((*m_creature), AdvisorGuid[1]);
                         if(Advisor && (Advisor->GetUInt32Value(UNIT_FIELD_BYTES_1) == PLAYER_STATE_DEAD))
                         {
                             DoScriptText(SAY_INTRO_CAPERNIAN, m_creature);
@@ -829,7 +828,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                     case 5:
                         if(Phase_Timer < diff)
                         {
-                            Advisor = (Creature*)(Unit::GetUnit((*m_creature), AdvisorGuid[2]));
+                            Advisor = Unit::GetCreature((*m_creature), AdvisorGuid[2]);
 
                             if(Advisor)
                             {
@@ -849,7 +848,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
 
                         //Subphase 4 - Start
                     case 6:
-                        Advisor = (Creature*)(Unit::GetUnit((*m_creature), AdvisorGuid[2]));
+                        Advisor = Unit::GetCreature((*m_creature), AdvisorGuid[2]);
                         if(Advisor && (Advisor->GetUInt32Value(UNIT_FIELD_BYTES_1) == PLAYER_STATE_DEAD))
                         {
                             DoScriptText(SAY_INTRO_TELONICUS, m_creature);
@@ -865,7 +864,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                     case 7:
                         if(Phase_Timer < diff)
                         {
-                            Advisor = (Creature*)(Unit::GetUnit((*m_creature), AdvisorGuid[3]));
+                            Advisor = Unit::GetCreature((*m_creature), AdvisorGuid[3]);
 
                             if(Advisor)
                             {
@@ -887,7 +886,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
 
                         //End of phase 1
                     case 8:
-                        Advisor = (Creature*)(Unit::GetUnit((*m_creature), AdvisorGuid[3]));
+                        Advisor = Unit::GetCreature((*m_creature), AdvisorGuid[3]);
                         if(Advisor && (Advisor->GetUInt32Value(UNIT_FIELD_BYTES_1) == PLAYER_STATE_DEAD))
                         {
                             Phase = 2;
@@ -956,7 +955,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                     Creature* Advisor;
                     for (uint32 i = 0; i < 4; ++i)
                     {
-                        Advisor = (Creature*)(Unit::GetUnit((*m_creature), AdvisorGuid[i]));
+                        Advisor = Unit::GetCreature((*m_creature), AdvisorGuid[i]);
                         if (!Advisor)
                             error_log("TSCR: Kael'Thas Advisor %u does not exist. Possibly despawned? Incorrectly Killed?", i);
                         else
@@ -974,6 +973,8 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
 
                     pInstance->SetData(DATA_KAELTHASEVENT, 4);
 
+                    if(m_creature->GetHealth() != m_creature->GetMaxHealth())   //in case of any issues with HP reseting on reset
+                        m_creature->SetHealth(m_creature->GetMaxHealth());
                     DoResetThreat();
                     DoZoneInCombat();
                     m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -1006,8 +1007,8 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                         //Fireball_Timer
                         if(!(pInstance->GetData(DATA_KAELTHASEVENT) == 5) && Fireball_Timer < diff)
                         {
-                            //AddSpellToCast(m_creature->getVictim(), SPELL_FIREBALL, false);
-                            DoCast(m_creature->getVictim(), SPELL_FIREBALL, false);
+                            AddSpellToCast(m_creature->getVictim(), SPELL_FIREBALL, false);
+                            //DoCast(m_creature->getVictim(), SPELL_FIREBALL, false);
                             Fireball_Timer = 5000+rand()%10000;
                         }
                         else 
@@ -1016,8 +1017,8 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                         //Phoenix_Timer
                         if(!(pInstance->GetData(DATA_KAELTHASEVENT) == 5) && Phoenix_Timer < diff)
                         {
-                            //AddSpellToCast(m_creature, SPELL_SUMMON_PHOENIX, true);
-                            DoCast(m_creature, SPELL_SUMMON_PHOENIX, true);
+                            AddSpellToCast(m_creature, SPELL_SUMMON_PHOENIX, true);
+                            //DoCast(m_creature, SPELL_SUMMON_PHOENIX, true);
                             switch(rand()%2)
                             {
                                 case 0: DoScriptText(SAY_SUMMON_PHOENIX1, m_creature); break;
@@ -1037,7 +1038,8 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                         Arcane1 = true;
 
                         if (Unit* pUnit = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_FLAME_STRIKE), true))
-                        DoCast(pUnit, SPELL_FLAME_STRIKE);
+                        //DoCast(pUnit, SPELL_FLAME_STRIKE);
+                        AddSpellToCast(pUnit, SPELL_FLAME_STRIKE);
 
                         // MC after 20 sec from Pyros chain (4 Phase)
                         if(Phase == 4)
@@ -1052,12 +1054,12 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                             
                             for (uint32 i = 0; i < 3; i++)
                             {
-                                Unit* target =SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_MIND_CONTROL), true, m_creature->getVictim());
+                                Unit* target =SelectUnit(SELECT_TARGET_RANDOM, 1, 80.0, true, m_creature->getVictim());
                                 if(!target)
                                     target = m_creature->getVictim();
 
                                 if(target)
-                                    DoCast(target, SPELL_MIND_CONTROL);                                      
+                                    DoCast(target, SPELL_MIND_CONTROL, true);
                             }
                           }
                           MindControl_Timer = 10000;
@@ -1082,11 +1084,11 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                              for (uint32 i = 0; i < 3; i++)
                              {
 
-                                 Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_MIND_CONTROL), true, m_creature->getVictim());
+                                 Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, 80.0, true, m_creature->getVictim());
                                  if(!target)
                                      target = m_creature->getVictim();
                                  if(target)
-                                    DoCast(target, SPELL_MIND_CONTROL);                                   
+                                    DoCast(target, SPELL_MIND_CONTROL, true);
                              }
                             }
                             MC_Done = true;
@@ -1101,7 +1103,8 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                             Arcane2 = true;
 
                             if (Unit* pUnit = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_FLAME_STRIKE), true))
-                                DoCast(pUnit, SPELL_FLAME_STRIKE);
+                                //DoCast(pUnit, SPELL_FLAME_STRIKE);
+                                AddSpellToCast(pUnit, SPELL_FLAME_STRIKE);
                         }
                     }
                     else
@@ -1182,20 +1185,32 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                         std::list<HostilReference*>::iterator iter = m_creature->getThreatManager().getThreatList().begin();
                         uint32 glapse_teleport_id = 35966;
 
+                        float X, Y, Z;
+                        X = m_creature->GetPositionX();
+                        Y = m_creature->GetPositionY();
+                        Z = m_creature->GetPositionZ();
+
+                        float NetherVaporStartPos[4][2] =
+                        {
+                            {(X-8), Y},
+                            {X, (Y-8)},
+                            {X, (Y+8)},
+                            {(X+8), Y}
+                        };
+
                         switch(GravityLapse_Phase)
                         {
                             case 0:
                                 m_creature->GetMotionMaster()->Clear();
                                 m_creature->GetMotionMaster()->MoveIdle();
-                                DoTeleportTo(GRAVITY_X, GRAVITY_Y, GRAVITY_Z);
                                 if(pInstance)
                                     pInstance->SetData(DATA_KAELTHASEVENT, 5);    // set KaelthasEventPhase = 5 for Gravity Lapse phase
                                 // 1) Kael'thas casts teleportation visual spell on self
                                 m_creature->CastSpell(m_creature, SPELL_GRAVITY_KAEL_VISUAL, false);
                                 switch(rand()%2)
                                 {
-                                case 0: DoScriptText(SAY_GRAVITYLAPSE1, m_creature); break;
-                                case 1: DoScriptText(SAY_GRAVITYLAPSE2, m_creature); break;
+                                    case 0: DoScriptText(SAY_GRAVITYLAPSE1, m_creature); break;
+                                    case 1: DoScriptText(SAY_GRAVITYLAPSE2, m_creature); break;
                                 }
                                 GravityLapse_Timer = 2000;
                                 ++GravityLapse_Phase;
@@ -1207,21 +1222,21 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
 
                             case 1:
                                 // 2) Kael'thas will portal the whole raid near to his position
-                                for (iter = m_creature->getThreatManager().getThreatList().begin(); iter!= m_creature->getThreatManager().getThreatList().end();)
+                                for(iter = m_creature->getThreatManager().getThreatList().begin(); iter != m_creature->getThreatManager().getThreatList().end();)
                                 {
                                     Unit* pUnit = Unit::GetUnit((*m_creature), (*iter)->getUnitGuid());
                                     ++iter;
-                                    if(pUnit && (pUnit->GetTypeId() == TYPEID_PLAYER) && !((Player*)pUnit)->isGameMaster()) //to allow GM's spying :P
+                                    if(pUnit && pUnit->IsInWorld() && pUnit->IsInMap(m_creature) && pUnit->GetTypeId() == TYPEID_PLAYER && !((Player*)pUnit)->isGameMaster()) //to allow GM's spying :P
                                     {
                                         m_creature->CastSpell(pUnit, glapse_teleport_id, true);  //this should probably go to the core
                                         // 2) At that point he will put a Gravity Lapse debuff on everyone
                                         pUnit->CastSpell(pUnit, SPELL_GRAVITY_LAPSE, false);
-                                        //pUnit->CastSpell(pUnit, SPELL_GRAVITY_LAPSE_FLIGHT_AURA, true);    //moved to the core
                                         glapse_teleport_id++;
                                     }
                                 }
 
                                 summons.AuraOnEntry(PHOENIX,SPELL_BANISH,true);
+                                m_creature->GetMotionMaster()->Clear();
 
                                 //Cast nether vapor summoning
                                 GravityLapse_Timer = 3000;
@@ -1232,6 +1247,9 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                             case 2:
                                 //Summon Nether Vapor clouds NPC's and cast Nether Vapor aura on self
                                 DoCast(m_creature, SPELL_NETHER_VAPOR);
+                                m_creature->GetMotionMaster()->Clear();
+                                m_creature->GetMotionMaster()->MoveIdle();
+
                                 for(uint8 i = 0; i < 4; i++)
                                 {
                                 for(uint8 j = 0; j <=6; j +=6)
@@ -1248,9 +1266,11 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
 
                             case 3:
                                 m_creature->RemoveAurasDueToSpell(SPELL_NETHER_VAPOR);
+                                m_creature->SetStunned(false);
                                 summons.AuraOnEntry(PHOENIX,SPELL_BANISH,false);
                                 if(pInstance)
                                     pInstance->SetData(DATA_KAELTHASEVENT, 4);    // after Gravity Lapse set back state 4 of KaelthasPhaseEvent
+                                
                                 GravityLapse_Timer = 58000;
                                 GravityLapse_Phase = 0;
                                 Phoenix_Timer = 5000 + rand()%5000;
@@ -1265,7 +1285,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                     else 
                         GravityLapse_Timer -= diff;
 
-                    if((pInstance->GetData(DATA_KAELTHASEVENT) == 5))
+                    if(pInstance->GetData(DATA_KAELTHASEVENT) == 5)
                     {
                         //ShockBarrier_Timer in 5th phase only
                         if(ShockBarrier_Timer < diff)
@@ -1321,7 +1341,7 @@ struct TRINITY_DLL_DECL boss_thaladred_the_darkenerAI : public advisorbase_ai
         Check_Timer2 = 3000;
 
         m_creature->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
-        m_creature->SetSpeed(MOVE_WALK, 1.5f, false);
+        m_creature->SetSpeed(MOVE_WALK, 2.0f, false);
 
         advisorbase_ai::Reset();
     }
@@ -1331,16 +1351,6 @@ struct TRINITY_DLL_DECL boss_thaladred_the_darkenerAI : public advisorbase_ai
         DoScriptText(SAY_THALADRED_DEATH, m_creature);
     }
     
-    /*void AttackStart(Unit *who)
-    {
-        if(!who || m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-            return;
-
-        ScriptedAI::AttackStart(who);
-        m_creature->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
-        m_creature->SetSpeed(MOVE_WALK, 1.5f, false);
-    }*/
-
     void Aggro(Unit *who)
     {
         if(!who || m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
@@ -1361,18 +1371,13 @@ struct TRINITY_DLL_DECL boss_thaladred_the_darkenerAI : public advisorbase_ai
         if (!UpdateVictim() )
             return;
 
-        if(Creature* kael = Creature::GetCreature((*m_creature), pInstance->GetData64(DATA_KAELTHAS)))
+        if(Creature* kael = Unit::GetCreature((*m_creature), pInstance->GetData64(DATA_KAELTHAS)))
         {
             //Check_Timer
             if(Check_Timer2 < diff)
             {
-                WorldLocation wLoc = ((boss_kaelthasAI*)kael->AI())->wLoc;
-                if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 200.0f)
-                    EnterEvadeMode();
-                else
-                    DoZoneInCombat();
-            
-                 Check_Timer2 = 3000;
+                DoZoneInCombat();
+                Check_Timer2 = 3000;
             }
             else
                 Check_Timer2 -= diff;
@@ -1403,7 +1408,7 @@ struct TRINITY_DLL_DECL boss_thaladred_the_darkenerAI : public advisorbase_ai
         //Gaze_Timer
         if(Gaze_Timer < diff)
         {
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true, m_creature->getVictim()))
             {                
                 if(target)
                 {
@@ -1490,27 +1495,26 @@ struct TRINITY_DLL_DECL boss_lord_sanguinarAI : public advisorbase_ai
         if (!UpdateVictim() )
             return;
 
-        if(Creature* kael = Creature::GetCreature((*m_creature), pInstance->GetData64(DATA_KAELTHAS)))
+        if(Creature* kael = Unit::GetCreature((*m_creature), pInstance->GetData64(DATA_KAELTHAS)))
         {
             //Check_Timer
             if(Check_Timer < diff)
             {
-                WorldLocation wLoc = ((boss_kaelthasAI*)kael->AI())->wLoc;
-                if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 200.0f)
-                    EnterEvadeMode();
-                else
-                    DoZoneInCombat();
-            
-                 Check_Timer = 3000;
-             }else Check_Timer -= diff;
+                DoZoneInCombat();
+                Check_Timer = 3000;
+            }
+            else
+                Check_Timer -= diff;
         }
 
         //Fear_Timer
         if(Fear_Timer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_BELLOWING_ROAR);
+            DoCast(m_creature, SPELL_BELLOWING_ROAR);
             Fear_Timer = 25000+rand()%10000;                //approximately every 30 seconds
-        }else Fear_Timer -= diff;
+        }
+        else
+            Fear_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }
@@ -1545,25 +1549,6 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
         DoScriptText(SAY_CAPERNIAN_DEATH, m_creature);
     }
 
-    /*void AttackStart(Unit* who)
-    {
-        if (!who || m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-            return;
-
-        if (m_creature->Attack(who, true))
-        {
-            m_creature->AddThreat(who, 0.0f);
-
-            if (!InCombat)
-            {
-                InCombat = true;
-                Aggro(who);
-            }
-
-            DoStartMovement(who, CAPERNIAN_DISTANCE, M_PI/2);
-        }
-    }*/
-
     void Aggro(Unit *who)
     {
         if (who || m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
@@ -1582,23 +1567,20 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
         if (!UpdateVictim() )
             return;
 
-        //cast from 20yd distance
+        //cast from 30yd distance
         if(m_creature->GetDistance2d(m_creature->getVictim()) < CAPERNIAN_DISTANCE)
                 m_creature->StopMoving();
 
-        if(Creature* kael = Creature::GetCreature((*m_creature), pInstance->GetData64(DATA_KAELTHAS)))
+        if(Creature* kael = Unit::GetCreature((*m_creature), pInstance->GetData64(DATA_KAELTHAS)))
         {
             //Check_Timer
             if(Check_Timer < diff)
             {
-                WorldLocation wLoc = ((boss_kaelthasAI*)kael->AI())->wLoc;
-                if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 200.0f)
-                    EnterEvadeMode();
-                else
-                    DoZoneInCombat();
-            
-                 Check_Timer = 3000;
-             }else Check_Timer -= diff;
+                DoZoneInCombat();
+                Check_Timer = 3000;
+            }
+            else
+                Check_Timer -= diff;
         }
 
         //Yell_Timer
@@ -1616,8 +1598,8 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
         if(Fireball_Timer < diff)
         {
             if(m_creature->GetDistance2d(m_creature->getVictim()) < 35.0f)
-                //AddSpellToCast(m_creature->getVictim(), SPELL_CAPERNIAN_FIREBALL);
-                DoCast(m_creature->getVictim(), SPELL_CAPERNIAN_FIREBALL);
+                AddSpellToCast(m_creature->getVictim(), SPELL_CAPERNIAN_FIREBALL);
+                //DoCast(m_creature->getVictim(), SPELL_CAPERNIAN_FIREBALL);
             Fireball_Timer = 2000;   // spam fireball casts if ready
         }
         else 
@@ -1630,11 +1612,11 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
             target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_CONFLAGRATION), true);
 
             if(target)
-                //AddSpellToCast(target, SPELL_CONFLAGRATION);
-                DoCast(target, SPELL_CONFLAGRATION, true);
+                AddSpellToCast(target, SPELL_CONFLAGRATION);
+                //DoCast(target, SPELL_CONFLAGRATION, true);
             else
-                //AddSpellToCast(m_creature->getVictim(), SPELL_CONFLAGRATION);
-                DoCast(m_creature->getVictim(), SPELL_CONFLAGRATION, true);
+                AddSpellToCast(m_creature->getVictim(), SPELL_CONFLAGRATION);
+                //DoCast(m_creature->getVictim(), SPELL_CONFLAGRATION, true);
 
             Conflagration_Timer = 10000+rand()%5000;
         }
@@ -1728,38 +1710,33 @@ struct TRINITY_DLL_DECL boss_master_engineer_telonicusAI : public advisorbase_ai
             return;
 
         //Return since we have no target
-        if (!UpdateVictim() )
+        if(!UpdateVictim())
             return;
 
-        if( Unit *hunter = m_creature->getVictim() )
+        if(Unit *hunter = m_creature->getVictim())
         {
-            if( hunter->getClass() == CLASS_HUNTER )
+            if(hunter->getClass() == CLASS_HUNTER)
             {
-                if( m_creature->GetDistance2d(hunter) > 30.0f )
-                {
+                if(m_creature->GetDistance2d(hunter) > 30.0f)
                     DoStartMovement(hunter, 28.0f, 2*M_PI);
-                }
-                else if( m_creature->hasUnitState(UNIT_STAT_CHASE) )
+                else if( m_creature->hasUnitState(UNIT_STAT_CHASE))
                     m_creature->StopMoving();
             }
             else
-                if( !m_creature->hasUnitState(UNIT_STAT_CHASE) )
+                if(!m_creature->hasUnitState(UNIT_STAT_CHASE) )
                     ScriptedAI::AttackStart(hunter, true);
         }
 
-        if(Creature* kael = Creature::GetCreature((*m_creature), pInstance->GetData64(DATA_KAELTHAS)))
+        if(Creature* kael = Unit::GetCreature((*m_creature), pInstance->GetData64(DATA_KAELTHAS)))
         {
             //Check_Timer
             if(Check_Timer < diff)
             {
-                WorldLocation wLoc = ((boss_kaelthasAI*)kael->AI())->wLoc;
-                if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 200.0f)
-                    EnterEvadeMode();
-                else
-                    DoZoneInCombat();
-            
-                 Check_Timer = 3000;
-             }else Check_Timer -= diff;
+                DoZoneInCombat();
+                Check_Timer = 3000;
+            }
+            else
+                Check_Timer -= diff;
         }
 
         //RemoteToy_Timer
@@ -1769,7 +1746,9 @@ struct TRINITY_DLL_DECL boss_master_engineer_telonicusAI : public advisorbase_ai
                 DoCast(target, SPELL_REMOTE_TOY);
 
             RemoteToy_Timer = 10000+rand()%5000;
-        }else RemoteToy_Timer -= diff;
+        }
+        else
+            RemoteToy_Timer -= diff;
 
         //Bomb_Timer
         if(Bomb_Timer < diff)
@@ -1777,7 +1756,9 @@ struct TRINITY_DLL_DECL boss_master_engineer_telonicusAI : public advisorbase_ai
             m_creature->CastSpell(m_creature->getVictim(), SPELL_BOMB, false);
             Bomb_Timer = 2000+rand()%6000;
             return;
-        }else Bomb_Timer -= diff;
+        }
+        else
+            Bomb_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }
@@ -1821,15 +1802,19 @@ struct TRINITY_DLL_DECL mob_kael_flamestrikeAI : public Scripted_NoMovementAI
         //Timer
         if(Timer < diff)
         {
-            if (!KillSelf)
+            if(!KillSelf)
             {
                 m_creature->InterruptNonMeleeSpells(false);
                 DoCast(m_creature, SPELL_FLAME_STRIKE_DMG);
-            }else m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+            }
+            else
+                m_creature->Kill(m_creature, false);
 
             KillSelf = true;
             Timer = 1000;
-        }else Timer -= diff;
+        }
+        else
+            Timer -= diff;
     }
 };
 
@@ -1855,20 +1840,20 @@ struct TRINITY_DLL_DECL mob_phoenix_tkAI : public ScriptedAI
         m_creature->CastSpell(m_creature,SPELL_BURN,true);
     }
 
-    void Aggro(Unit *who) { }
+    void Aggro(Unit *who){}
 
     void JustDied(Unit* Killer)
     {
         float x,y,z;
 
         m_creature->GetPosition(x,y,z);
-        Creature * phoenixEgg = Egg ? m_creature->SummonCreature(PHOENIX_EGG,x,y,z,0,TEMPSUMMON_CORPSE_TIMED_DESPAWN,60000) : NULL;
+        Creature * phoenixEgg = Egg ? m_creature->SummonCreature(PHOENIX_EGG,x,y,z+1.0f,0,TEMPSUMMON_CORPSE_TIMED_DESPAWN,60000) : NULL;
         m_creature->CastSpell(m_creature, SPELL_EMBER_BLAST, true);
         if(phoenixEgg)
-          {
+        {
             phoenixEgg->setFaction(m_creature->getFaction());
             phoenixEgg = NULL;
-          }
+        }
         m_creature->RemoveCorpse();
     }
 
@@ -1879,40 +1864,41 @@ struct TRINITY_DLL_DECL mob_phoenix_tkAI : public ScriptedAI
             if(spell->EffectMechanic[i] == MECHANIC_BANISH && spell->Id != SPELL_BANISH)
                 m_creature->RemoveAurasDueToSpell(spell->Id);
         }
-
     }
 
     void UpdateAI(const uint32 diff)
     {
-        if (Cycle_Timer < diff)
-        {
-            if(pInstance)//check for boss reset
-            {
-                Creature* Kael = Unit::GetCreature((*m_creature), pInstance->GetData64(DATA_KAELTHAS));
-                if (Kael && Kael->getThreatManager().getThreatList().empty())
-                {
-                    Egg = false;
-                    m_creature->Kill(m_creature, false);
-                    Cycle_Timer = 2000;
-                    return;
-                }
-            }
-              //spell Burn should possible do this, but it doesn't, so do this for now.
-             uint32 dmg = 0.05*(m_creature->GetMaxHealth());    // burn 5% of phoenix HP each tick
-         if(pInstance->GetData(DATA_KAELTHASEVENT) != 5)
-         {
-             if (m_creature->GetHealth() > dmg)
-             {
-                 m_creature->SetHealth(uint32(m_creature->GetHealth()-dmg));
-             }             
-              else m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);    //kill it
-          Cycle_Timer = 2000;
-         }
-        }else Cycle_Timer -= diff;
+        if(!pInstance)
+            return;
 
+        if(Cycle_Timer < diff)
+        {
+            Creature* Kael = Unit::GetCreature((*m_creature), pInstance->GetData64(DATA_KAELTHAS));
+            if(Kael && Kael->getThreatManager().getThreatList().empty())
+            {
+                Egg = false;
+                m_creature->Kill(m_creature, false);
+                Cycle_Timer = 2000;
+                return;
+            }
+
+             //spell Burn should possible do this, but it doesn't, so do this for now.
+             uint32 dmg = 0.05*(m_creature->GetMaxHealth());    // burn 5% of phoenix HP each tick
+             if(pInstance->GetData(DATA_KAELTHASEVENT) != 5)
+             {
+                 if(m_creature->GetHealth() > dmg)
+                     m_creature->SetHealth(uint32(m_creature->GetHealth()-dmg));
+                 else
+                     m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);    //kill it
+             }
+             Cycle_Timer = 2000;
+        }
+        else
+            Cycle_Timer -= diff;
 
         if (!UpdateVictim())
             return;
+
         DoMeleeAttackIfReady();
     }
 };
@@ -1939,9 +1925,9 @@ struct TRINITY_DLL_DECL mob_phoenix_egg_tkAI : public ScriptedAI
 
     void AttackStart(Unit* who)
     {
-        if (m_creature->Attack(who, false))
+        if(m_creature->Attack(who, false))
         {
-            if (!InCombat)
+            if(!InCombat)
             {
                 InCombat = true;
                 Aggro(who);
@@ -2034,11 +2020,14 @@ struct TRINITY_DLL_DECL mob_nether_vaporAI : public ScriptedAI
     //ignore
     void MoveInLineOfSight(Unit* who) { return; }
 
-    void Aggro(Unit *who) { return; }
+    void Aggro(Unit *who)
+    {
+        EnterEvadeMode();
+        return; 
+    }
 
     void UpdateAI(const uint32 diff)
     {
-
         if(Move_Timer < diff)
         {
             float newX, newY, newZ;
@@ -2151,7 +2140,9 @@ struct TRINITY_DLL_DECL weapon_advisorAI : public ScriptedAI
         {
             DoCast(m_creature->getVictim(),SPELL_BOW_SHOOT,false);
             Shoot_Timer = 2000;
-        }else Shoot_Timer -= diff;
+        }
+        else
+            Shoot_Timer -= diff;
     }
     
     void DamageTaken(Unit* done_by, uint32 &damage)
@@ -2168,12 +2159,12 @@ struct TRINITY_DLL_DECL weapon_advisorAI : public ScriptedAI
         if(!pInstance)
             return NULL;
 
-        if(Creature* kael = Creature::GetCreature((*m_creature), pInstance->GetData64(DATA_KAELTHAS)))
+        if(Creature* kael = Unit::GetCreature((*m_creature), pInstance->GetData64(DATA_KAELTHAS)))
         {
             for(uint8 i = 0; i < 7; ++i)
             {
                 if(Unit* adv = Unit::GetUnit((*m_creature), ((boss_kaelthasAI*)kael->AI())->WeaponGuid[i]))
-                    if (adv->isAlive() && adv->GetHealth() / adv->GetMaxHealth() < .2)
+                    if(adv->isAlive() && adv->GetHealth() / adv->GetMaxHealth() < .2)
                         return adv; 
             } 
         }
@@ -2182,11 +2173,10 @@ struct TRINITY_DLL_DECL weapon_advisorAI : public ScriptedAI
     
     void UpdateAI(const uint32 diff)
     {
-      
         if(!UpdateVictim())
             return;
 
-        if(Creature* kael = Creature::GetCreature((*m_creature), pInstance->GetData64(DATA_KAELTHAS)))
+        if(Creature* kael = Unit::GetCreature((*m_creature), pInstance->GetData64(DATA_KAELTHAS)))
         {
             //Check_Timer
             if(Check_Timer < diff)
@@ -2198,9 +2188,10 @@ struct TRINITY_DLL_DECL weapon_advisorAI : public ScriptedAI
                     DoZoneInCombat();
             
                  Check_Timer = 3000;
-             }else Check_Timer -= diff;
+             }
+            else
+                Check_Timer -= diff;
         }
-
 
         switch(m_creature->GetEntry())
         {
@@ -2211,7 +2202,9 @@ struct TRINITY_DLL_DECL weapon_advisorAI : public ScriptedAI
                     // DoCast(m_creature,SPELL_BOW_BLINK); ! Need to manualy relocate it xF
                     DoCast(m_creature->getVictim(),SPELL_BOW_MULTISHOOT,false);
                     MultiShoot_Timer = 15000;
-                }else MultiShoot_Timer -= diff;
+                }
+                else
+                    MultiShoot_Timer -= diff;
                 
                 DoRangedAttackIfReady(diff);
             break;
@@ -2219,9 +2212,11 @@ struct TRINITY_DLL_DECL weapon_advisorAI : public ScriptedAI
 
                 if(Whirlwind_Timer < diff)
                 {
-                    DoCast(m_creature,SPELL_DEVASTATION_WW,false);
+                    DoCast(m_creature, SPELL_DEVASTATION_WW,false);
                     Whirlwind_Timer = 30000;
-                }else Whirlwind_Timer -= diff; 
+                }
+                else
+                    Whirlwind_Timer -= diff; 
                 
                 DoMeleeAttackIfReady();
             break;                
@@ -2233,14 +2228,20 @@ struct TRINITY_DLL_DECL weapon_advisorAI : public ScriptedAI
                     {
                         DoCast(adv,SPELL_INFUSER_HEAL,false);
                         Heal_Timer = 10000;
-                    }else Heal_Timer = 5000;                     
-                }else Heal_Timer -= diff;
+                    }
+                    else
+                        Heal_Timer = 5000;                     
+                }
+                else
+                    Heal_Timer -= diff;
                 
                 if(HNova_Timer < diff)
                 {
                     DoCast(m_creature,SPELL_INFUSER_HNOVA,false);
                     HNova_Timer = 10000+rand()%10000; 
-                }else HNova_Timer -= diff;
+                }
+                else
+                    HNova_Timer -= diff;
                 
                 DoMeleeAttackIfReady();
             break;
@@ -2250,7 +2251,9 @@ struct TRINITY_DLL_DECL weapon_advisorAI : public ScriptedAI
                 {
                     m_creature->CastSpell(m_creature,SPELL_BLADE_TRASH,false);
                     Thrash_Timer = 10000;
-                }else Thrash_Timer -= diff;
+                }
+                else
+                    Thrash_Timer -= diff;
                 
                 DoMeleeAttackIfReady();
             break;
@@ -2262,7 +2265,9 @@ struct TRINITY_DLL_DECL weapon_advisorAI : public ScriptedAI
                         m_creature->CastSpell(random,SPELL_BULWARK_SBASH,false);
 
                     SBash_Timer = 12000;
-                }else SBash_Timer -= diff;
+                }
+                else
+                    SBash_Timer -= diff;
 
                 DoMeleeAttackIfReady();
             break;
@@ -2277,13 +2282,17 @@ struct TRINITY_DLL_DECL weapon_advisorAI : public ScriptedAI
                     if(WBolt_count > 3) 
                         WBolt_count = 0;
                 
-                }else WBolt_Timer -= diff;
+                }
+                else
+                    WBolt_Timer -= diff;
 
                 if(FNova_Timer < diff)
                 {
                     DoCast(m_creature,SPELL_STAFF_FNOVA,false);
                     FNova_Timer = 18000;
-                }else FNova_Timer -= diff;
+                }
+                else
+                    FNova_Timer -= diff;
                  
                 DoMeleeAttackIfReady();
             break;
@@ -2297,7 +2306,9 @@ struct TRINITY_DLL_DECL weapon_advisorAI : public ScriptedAI
                       if(aur && aur->GetStackAmount() == 10)
                           aur->SetStackAmount(9);
                     Rend_Timer = 2500;
-                }else Rend_Timer -= diff;
+                }
+                else
+                    Rend_Timer -= diff;
                 
                 DoMeleeAttackIfReady();
             break;

@@ -37,7 +37,7 @@ EndScriptData */
 
 #define SAY_DEATH       -1555007
 
-#define SPELL_BANISH            30231
+#define SPELL_BANISH            42354
 #define SPELL_CORROSIVE_ACID    33551
 #define SPELL_FEAR              33547
 #define SPELL_ENRAGE            0                           //need to find proper spell

@@ -101,7 +101,7 @@ struct TRINITY_DLL_DECL instance_scarlet_monastery : public ScriptedInstance
                 {
                     Creature* add = instance->GetCreature(*itr);
                     if(add && add->isAlive())
-                        add->DealDamage(add, add->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                        add->DealDamage(add, add->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 }
                 HorsemanAdds.clear();
                 GameObject *Shrine = instance->GetGameObject(PumpkinShrineGUID);

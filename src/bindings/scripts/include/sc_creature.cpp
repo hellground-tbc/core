@@ -799,11 +799,14 @@ void ScriptedAI::DoZoneInCombat(Unit* pUnit)
         return;
     }
 
-    if (!pUnit->CanHaveThreatList() || !pUnit->isAlive() /*pUnit->getThreatManager().isThreatListEmpty()*/)
+    if(!pUnit->CanHaveThreatList() || !pUnit->isAlive() /*pUnit->getThreatManager().isThreatListEmpty()*/)
     {
         error_log("TSCR: DoZoneInCombat called for creature that either cannot have threat list or has empty threat list (pUnit entry = %d)", pUnit->GetTypeId() == TYPEID_UNIT ? ((Creature*)pUnit)->GetEntry() : 0);
         return;
     }
+
+    if(pUnit->GetTypeId() == TYPEID_UNIT && ((Creature*)pUnit)->IsInEvadeMode())
+        return;
 
     Map::PlayerList const &PlayerList = map->GetPlayers();
     for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
@@ -913,6 +916,24 @@ Unit* ScriptedAI::DoSelectLowestHpFriendly(float range, uint32 MinHPDiff)
     Trinity::UnitLastSearcher<Trinity::MostHPMissingInRange> searcher(pUnit, u_check);
     m_creature->VisitNearbyObject(range, searcher);
     return pUnit;
+}
+
+std::list<Creature*> ScriptedAI::DoFindAllCreaturesWithEntry(uint32 entry, float range)
+{
+    std::list<Creature*> pList;
+    Trinity::AllCreaturesOfEntryInRange u_check(m_creature, entry, range);
+    Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(pList, u_check);
+    m_creature->VisitNearbyObject(range, searcher);
+    return pList;
+}
+
+std::list<Creature*> ScriptedAI::DoFindAllFriendlyInGrid(float range)
+{
+    std::list<Creature*> pList;
+    Trinity::AllFriendlyCreaturesInGrid u_check(m_creature);
+    Trinity::CreatureListSearcher<Trinity::AllFriendlyCreaturesInGrid> searcher(pList, u_check);
+    m_creature->VisitNearbyGridObject(range, searcher);
+    return pList;
 }
 
 std::list<Creature*> ScriptedAI::DoFindFriendlyCC(float range)

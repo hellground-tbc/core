@@ -70,6 +70,7 @@ bool GossipSelectWithCode_custom_gossip_codebox( Player *player, Creature *_Crea
 
 void AddSC_custom_gossip_codebox()
 {
+/*
     Script *newscript;
 
     newscript = new Script;
@@ -78,5 +79,6 @@ void AddSC_custom_gossip_codebox()
     newscript->pGossipSelect =          &GossipSelect_custom_gossip_codebox;
     newscript->pGossipSelectWithCode =  &GossipSelectWithCode_custom_gossip_codebox;
     newscript->RegisterSelf();
+*/
 }
 

@@ -865,7 +865,7 @@ struct TRINITY_DLL_DECL mob_phase_hunterAI : public ScriptedAI
                 Level = m_creature->getLevel();
 
                 m_creature->AttackStop(); // delete the normal mob
-                m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 m_creature->RemoveCorpse();
 
                 Creature* DrainedPhaseHunter = NULL;
@@ -1073,7 +1073,7 @@ struct TRINITY_DLL_DECL npc_withered_corpseAI : public ScriptedAI
         if(who->GetTypeId()==TYPEID_PLAYER && m_creature->IsWithinMeleeRange(who))
         {
             m_creature->SummonCreature(20335, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), m_creature->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 0);
-            m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+            m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
             m_creature->RemoveCorpse();
         }
     }
@@ -1082,7 +1082,7 @@ struct TRINITY_DLL_DECL npc_withered_corpseAI : public ScriptedAI
     {
         if(spell->Id == 35372)
         {
-            m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+            m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
             m_creature->RemoveCorpse();
         }
     }

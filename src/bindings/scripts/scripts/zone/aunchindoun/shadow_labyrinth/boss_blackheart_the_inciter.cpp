@@ -51,6 +51,17 @@ EndScriptData */
 #define SAY2_HELP           -1555026
 #define SAY2_DEATH          -1555027
 
+static uint32 trashEntry[]=
+{
+    18631,
+    18633,
+    18635,
+    18637,
+    18640,
+    18642,
+    18848
+};
+
 struct TRINITY_DLL_DECL boss_blackheart_the_inciterAI : public ScriptedAI
 {
     boss_blackheart_the_inciterAI(Creature *c) : ScriptedAI(c)
@@ -95,6 +106,30 @@ struct TRINITY_DLL_DECL boss_blackheart_the_inciterAI : public ScriptedAI
             pInstance->SetData(DATA_BLACKHEARTTHEINCITEREVENT, DONE);
     }
 
+    void TrashAggro()
+    {
+        std::list<Creature*> TrashEntryList;
+        std::list<Creature*> TrashList;
+
+        TrashList.clear();
+
+        for(uint8 i = 0; i < 7; ++i)
+        {
+            TrashEntryList.clear();
+            TrashEntryList = DoFindAllCreaturesWithEntry(trashEntry[i], 100.0f);
+
+            for(std::list<Creature*>::iterator iter = TrashEntryList.begin(); iter != TrashEntryList.end(); ++iter)
+                TrashList.push_back(*iter);
+        }
+
+        if(!TrashList.empty())
+             for(std::list<Creature*>::iterator i = TrashList.begin(); i != TrashList.end(); ++i)
+             {
+                 (*i)->setActive(true);
+                 (*i)->AI()->AttackStart(m_creature->getVictim());
+             }
+    }
+
     void Aggro(Unit *who)
     {
         switch(rand()%3)
@@ -103,6 +138,8 @@ struct TRINITY_DLL_DECL boss_blackheart_the_inciterAI : public ScriptedAI
             case 1: DoScriptText(SAY_AGGRO2, m_creature); break;
             case 2: DoScriptText(SAY_AGGRO3, m_creature); break;
         }
+
+        TrashAggro();
 
         if (pInstance)
             pInstance->SetData(DATA_BLACKHEARTTHEINCITEREVENT, IN_PROGRESS);
@@ -123,8 +160,10 @@ struct TRINITY_DLL_DECL boss_blackheart_the_inciterAI : public ScriptedAI
             return;
         }
 
-        if (!UpdateVictim() )
+        if (!UpdateVictim())
             return;
+        else
+            TrashAggro();
 
         if(InciteChaos_Timer < diff)
         {
@@ -142,7 +181,7 @@ struct TRINITY_DLL_DECL boss_blackheart_the_inciterAI : public ScriptedAI
                 Player *target = (Player*)SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true, plr);
 
                 if(plr && plr->IsAIEnabled && target)
-                    plr->AI()->AttackStart(target);                
+                    plr->AI()->AttackStart(target);
             }
 
             //DoResetThreat();

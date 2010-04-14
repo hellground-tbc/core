@@ -160,7 +160,7 @@ struct TRINITY_DLL_DECL boss_warchief_kargath_bladefistAI : public ScriptedAI
             if(temp && temp->isAlive())
             {
                 (*temp).GetMotionMaster()->Clear(true);
-                m_creature->DealDamage(temp,temp->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                m_creature->DealDamage(temp,temp->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 ((Creature*)temp)->RemoveCorpse();
             }
         }
@@ -172,7 +172,7 @@ struct TRINITY_DLL_DECL boss_warchief_kargath_bladefistAI : public ScriptedAI
             if(temp && temp->isAlive())
             {
                 (*temp).GetMotionMaster()->Clear(true);
-                m_creature->DealDamage(temp,temp->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                m_creature->DealDamage(temp,temp->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 ((Creature*)temp)->RemoveCorpse();
             }
         }

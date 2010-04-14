@@ -50,34 +50,34 @@ struct TRINITY_DLL_DECL mob_crystalcore_devastatorAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!UpdateVictim())
+        if(!UpdateVictim())
             return;
 
         //Check if we have a current target
         //Knockaway_Timer
-        if (Knockaway_Timer < diff)
+        if(Knockaway_Timer < diff)
         {
-            m_creature->CastSpell(m_creature->getVictim(),SPELL_KNOCKAWAY, true);
+            m_creature->CastSpell(m_creature->getVictim(), SPELL_KNOCKAWAY, true);
 
             // current aggro target is knocked away pick new target
-            Unit* Target = SelectUnit(SELECT_TARGET_TOPAGGRO, 0);
+            Unit* target = SelectUnit(SELECT_TARGET_TOPAGGRO, 0, 60, true, m_creature->getVictim());
 
-            if (!Target || Target == m_creature->getVictim())
-                Target = SelectUnit(SELECT_TARGET_TOPAGGRO, 1);
-
-            if (Target)
-                m_creature->TauntApply(Target);
+            if(target)
+                m_creature->TauntApply(target);
 
             Knockaway_Timer = 23000;
         }
-        else Knockaway_Timer -= diff;
+        else
+            Knockaway_Timer -= diff;
 
         //Countercharge_Timer
         if (Countercharge_Timer < diff)
         {
-            DoCast(this->m_creature,SPELL_COUNTERCHARGE);
+            DoCast(m_creature, SPELL_COUNTERCHARGE);
             Countercharge_Timer = 45000;
-        }else Countercharge_Timer -= diff;
+        }
+        else 
+            Countercharge_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }
@@ -121,27 +121,34 @@ struct TRINITY_DLL_DECL mob_crystalcore_mechanicAI : public ScriptedAI
             {
                 DoCast(target,SPELL_RECHARGE);
                 Recharge_Timer = 30000+rand()%10000;
-            }else if(Unit* target = FindCreature(20041, 100, m_creature)){
+            }
+            else if(Unit* target = FindCreature(20041, 100, m_creature))
+            {
                 DoCast(target,SPELL_RECHARGE);
                 Recharge_Timer = 30000+rand()%10000;
             }
         }
-        else Recharge_Timer -= diff;
+        else
+            Recharge_Timer -= diff;
 
-        if (Sawblade_Timer < diff)
+        if(Sawblade_Timer < diff)
         {
-            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true,0);
-            DoCast(target,SPELL_SAWBLADE);
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true, NULL))
+                DoCast(target,SPELL_SAWBLADE);
+
             Saw_count++;
             if(Saw_count < 3)
                 Sawblade_Timer = 2000;
-            else{
-                    Saw_count=0;
-                    Sawblade_Timer = 6000+rand()%4000;
-                }
-         }else Sawblade_Timer -= diff;
+            else
+            {
+                Saw_count = 0;
+                Sawblade_Timer = 6000+rand()%4000;
+             }
+        }
+        else
+            Sawblade_Timer -= diff;
 
-         DoMeleeAttackIfReady();
+        DoMeleeAttackIfReady();
     }
 };
 
@@ -176,21 +183,24 @@ struct TRINITY_DLL_DECL mob_phoenixhawk_hatchlingAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!UpdateVictim())
+        if(!UpdateVictim())
             return;
 
-        if (Silence_Timer < diff)
+        if(Silence_Timer < diff)
         {
             DoCast(m_creature,SPELL_SILENCE);
             Silence_Timer = 6000+rand()%4000;
         }
-        else Silence_Timer -= diff;
+        else
+            Silence_Timer -= diff;
 
-        if (WingBuffet_Timer < diff)
+        if(WingBuffet_Timer < diff)
         {
             DoCast(m_creature,SPELL_WINGBUFFET); 
             WingBuffet_Timer = 6000+rand()%4000;
-        }else WingBuffet_Timer -= diff;
+        }
+        else
+            WingBuffet_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }
@@ -228,20 +238,25 @@ struct TRINITY_DLL_DECL mob_phoenix_hawkAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
-        if (ManaBurn_Timer < diff)
+        if(ManaBurn_Timer < diff)
         {
-            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true,0);
-            DoCast(target,SPELL_MANABURNE);
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true, NULL))
+                DoCast(target,SPELL_MANABURNE);
+
             ManaBurn_Timer = 10000+rand()%4000;
         }
-        else ManaBurn_Timer -= diff;
+        else
+            ManaBurn_Timer -= diff;
 
-        if (Dive_Timer < diff)
+        if(Dive_Timer < diff)
         {
-            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true,0);
-            DoCast(target,SPELL_DIVE); 
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true, NULL))
+                DoCast(target,SPELL_DIVE); 
+
             Dive_Timer = 6000+rand()%4000;
-        }else Dive_Timer -= diff;
+        }
+        else
+            Dive_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }
@@ -282,36 +297,42 @@ struct TRINITY_DLL_DECL mob_tempest_falconerAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!UpdateVictim())
+        if(!UpdateVictim())
             return;
 
-        if (FireShield_Timer < diff)
+        if(FireShield_Timer < diff)
         {
             DoCast(m_creature,SPELL_FIRESHIELD);
             FireShield_Timer = 60000;
         }
-        else FireShield_Timer -= diff;
+        else
+            FireShield_Timer -= diff;
 
-        if (ImmolationArrow_Timer < diff)
+        if(ImmolationArrow_Timer < diff)
         {
-            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true,0);
-            DoCast(target,SPELL_IMMOLATIONARROW); 
-            ImmolationArrow_Timer = 10000+rand()%4000;
-        }else ImmolationArrow_Timer -= diff;
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true, NULL))
+                DoCast(target,SPELL_IMMOLATIONARROW); 
 
-        if (Knockback_Timer < diff)
+            ImmolationArrow_Timer = 10000+rand()%4000;
+        }
+        else
+            ImmolationArrow_Timer -= diff;
+
+        if(Knockback_Timer < diff)
         {
             DoCast(m_creature,SPELL_KNOCKBACK);
             Knockback_Timer = 8000;
         }
-        else Knockback_Timer -= diff;
+        else
+            Knockback_Timer -= diff;
 
-        if (Shoot_Timer < diff)
+        if(Shoot_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_SHOOT);
             Shoot_Timer = 3000+rand()%2000;
         }
-        else Shoot_Timer -= diff;
+        else
+            Shoot_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }
@@ -361,59 +382,71 @@ struct TRINITY_DLL_DECL mob_crimson_hand_blood_knightAI : public ScriptedAI
         if (Cleanse_Timer < diff )
         {
             std::list<Creature*> pList = DoFindFriendlyCC(30);
-            if (!pList.empty())
+            if(!pList.empty())
             {
                 Unit* target = *(pList.begin());
                 DoCast(target,SPELL_CLEANSE);  
             }
             Cleanse_Timer = 3000+rand()%1000;
         }
-        else Cleanse_Timer -= diff;
+        else
+            Cleanse_Timer -= diff;
 
-        if (FlashofLight_Timer < diff)
+        if(FlashofLight_Timer < diff)
         {
             Unit* target = DoSelectLowestHpFriendly(50, 1000);
             if(target)
             {
                 DoCast(target,SPELL_FLASHOFLIGHT);
+                if(target->GetHealth() <= target->GetMaxHealth()*0.5)
+                    FlashofLight_Timer = 0;
+                else
+                    FlashofLight_Timer = rand()%7000;
             }
-            FlashofLight_Timer = 5000+rand()%3000;
-        }else FlashofLight_Timer -= diff;
+            FlashofLight_Timer += 2000;
+        }
+        else
+            FlashofLight_Timer -= diff;
 
-        if (HammerofJustice_Timer < diff)
+        if(HammerofJustice_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_HAMMEROFJUSTICE);
             HammerofJustice_Timer = 18000;
         }
-        else HammerofJustice_Timer -= diff;
+        else
+            HammerofJustice_Timer -= diff;
 
-        if (HammerofWrath_Timer < diff)
+        if(HammerofWrath_Timer < diff)
         {
             Map* pMap = m_creature->GetMap();
             Map::PlayerList const &PlayerList = pMap->GetPlayers();                
-            if (!PlayerList.isEmpty())
+            if(!PlayerList.isEmpty())
             {
                 for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                 {
                     Player *p = i->getSource();
-                    if(p->GetHealth() <= p->GetMaxHealth()*0.5)
+                    if(p->isAlive() && p->GetHealth() <= p->GetMaxHealth()*0.2)
                     {
                         DoCast(p, SPELL_HAMMEROFWRATH);
-                        i= PlayerList.end();
+                        break;
                     }
                 }
             }
             HammerofWrath_Timer = 3000+rand()%2000;
         }
-        else HammerofWrath_Timer -= diff;
+        else
+            HammerofWrath_Timer -= diff;
 
-        if (Renew_Timer < diff)
+        if(Renew_Timer < diff)
         {
-            if(m_creature->GetHealth() <= m_creature->GetMaxHealth()*0.75)
-                DoCast(m_creature,SPELL_RENEW);
-            Renew_Timer = 3000+rand()%2000;
+            Unit* target = DoSelectLowestHpFriendly(50, 1000);
+            if(target)
+                DoCast(target,SPELL_RENEW);
+
+            Renew_Timer = 10000+rand()%2000;
         }
-        else Renew_Timer -= diff;
+        else 
+            Renew_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }
@@ -422,6 +455,207 @@ struct TRINITY_DLL_DECL mob_crimson_hand_blood_knightAI : public ScriptedAI
 CreatureAI* GetAI_mob_crimson_hand_blood_knight(Creature *_Creature)
 {
     return new mob_crimson_hand_blood_knightAI (_Creature);
+}
+
+//Bloodwarder Squire
+
+#define SPELL_CLEANSE          39078
+#define SPELL_FLASHOFLIGHT     37254
+#define SPELL_HAMMEROFJUSTICE  39077
+#define SPELL_HAMMEROFWRATH    37255
+
+struct TRINITY_DLL_DECL mob_Bloodwarder_SquireAI : public ScriptedAI
+{
+    mob_Bloodwarder_SquireAI(Creature *c) : ScriptedAI(c) {}
+
+    uint32 Cleanse_Timer;
+    uint32 FlashofLight_Timer;
+    uint32 HammerofJustice_Timer;
+    uint32 HammerofWrath_Timer;
+    
+    void Reset()
+    {
+        Cleanse_Timer = 20000;
+        FlashofLight_Timer = 10000+rand()%4000;
+        HammerofJustice_Timer = 3000;
+        HammerofWrath_Timer = 5000;
+    }
+
+    void Aggro(Unit *who)
+    {
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim())
+            return;
+
+        if (Cleanse_Timer < diff )
+        {
+            std::list<Creature*> pList = DoFindFriendlyCC(30);
+            if (!pList.empty())
+            {
+                Unit* target = *(pList.begin());
+                DoCast(target,SPELL_CLEANSE);  
+            }
+            Cleanse_Timer = 3000+rand()%1000;
+        }
+        else
+            Cleanse_Timer -= diff;
+
+        if(FlashofLight_Timer < diff)
+        {
+            Unit* target = DoSelectLowestHpFriendly(50, 1000);
+            if(target)
+            {
+                DoCast(target,SPELL_FLASHOFLIGHT);
+
+                if(target->GetHealth() <= target->GetMaxHealth()*0.5)
+                    FlashofLight_Timer = 0;
+                else
+                    FlashofLight_Timer = rand()%7000; 
+            }
+            FlashofLight_Timer+=2000;
+        }
+        else
+            FlashofLight_Timer -= diff;
+
+        if(HammerofJustice_Timer < diff)
+        {
+            DoCast(m_creature->getVictim(),SPELL_HAMMEROFJUSTICE);
+            HammerofJustice_Timer = 18000;
+        }
+        else
+            HammerofJustice_Timer -= diff;
+
+        if(HammerofWrath_Timer < diff)
+        {
+            Map* pMap = m_creature->GetMap();
+            Map::PlayerList const &PlayerList = pMap->GetPlayers();                
+            if(!PlayerList.isEmpty())
+            {
+                for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                {
+                    Player *p = i->getSource();
+                    if(p->isAlive() && p->GetHealth() <= p->GetMaxHealth()*0.2)
+                    {
+                        DoCast(p, SPELL_HAMMEROFWRATH); 
+                        break;
+                    }
+                }
+            }
+            HammerofWrath_Timer = 3000+rand()%2000;
+        }
+        else
+            HammerofWrath_Timer -= diff;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_Bloodwarder_Squire(Creature *_Creature)
+{
+    return new mob_Bloodwarder_SquireAI (_Creature);
+}
+
+//Bloodwarder Vindicator
+
+#define SPELL_CLEANSE          39078
+#define SPELL_FLASHOFLIGHT     37249
+#define SPELL_HAMMEROFJUSTICE  13005
+#define SPELL_HAMMEROFWRATH    37251
+
+struct TRINITY_DLL_DECL mob_Bloodwarder_VindicatorAI : public ScriptedAI
+{
+    mob_Bloodwarder_VindicatorAI(Creature *c) : ScriptedAI(c) {}
+
+    uint32 Cleanse_Timer;
+    uint32 FlashofLight_Timer;
+    uint32 HammerofJustice_Timer;
+    uint32 HammerofWrath_Timer;
+    
+    void Reset()
+    {
+        Cleanse_Timer = 20000;
+        FlashofLight_Timer = 10000+rand()%4000;
+        HammerofJustice_Timer = 3000;
+        HammerofWrath_Timer = 5000;
+    }
+
+    void Aggro(Unit *who)
+    {
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(Cleanse_Timer < diff )
+        {
+            std::list<Creature*> pList = DoFindFriendlyCC(30);
+            if (!pList.empty())
+            {
+                Unit* target = *(pList.begin());
+                DoCast(target,SPELL_CLEANSE);  
+            }
+            Cleanse_Timer = 3000+rand()%1000;
+        }
+        else
+            Cleanse_Timer -= diff;
+
+        if(FlashofLight_Timer < diff)
+        {
+            Unit* target = DoSelectLowestHpFriendly(50, 1000);
+            if(target)
+            {
+                DoCast(target,SPELL_FLASHOFLIGHT);
+            
+                if(target->GetHealth() <= target->GetMaxHealth()*0.5)
+                    FlashofLight_Timer = 2000;
+                else
+                    FlashofLight_Timer = 2000 +rand()%7000;
+            }
+        }
+        else
+            FlashofLight_Timer -= diff;
+
+        if(HammerofJustice_Timer < diff)
+        {
+            DoCast(m_creature->getVictim(),SPELL_HAMMEROFJUSTICE);
+            HammerofJustice_Timer = 18000;
+        }
+        else
+            HammerofJustice_Timer -= diff;
+
+        if(HammerofWrath_Timer < diff)
+        {
+            Map* pMap = m_creature->GetMap();
+            Map::PlayerList const &PlayerList = pMap->GetPlayers();                
+            if (!PlayerList.isEmpty())
+            {
+                for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                {
+                    Player *p = i->getSource();
+                    if(p->isAlive() && p->GetHealth() <= p->GetMaxHealth()*0.2)
+                    {
+                        DoCast(p, SPELL_HAMMEROFWRATH);
+                        break;
+                    }
+                }
+            }
+            HammerofWrath_Timer = 3000+rand()%2000;
+        }
+        else
+            HammerofWrath_Timer -= diff;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_Bloodwarder_Vindicator(Creature *_Creature)
+{
+    return new mob_Bloodwarder_VindicatorAI (_Creature);
 }
 
 //Tempest-Smith
@@ -454,56 +688,62 @@ struct TRINITY_DLL_DECL mob_tempest_smithAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!UpdateVictim())
+        if(!UpdateVictim())
             return;
 
-        if (Fragmentation_Bomb_Timer < diff )
+        if(Fragmentation_Bomb_Timer < diff )
         {
-            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true,0);;
+            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true, NULL);
             if(target)
-            { 
                 DoCast(target,SPELL_FEAGMENTATIONBOMB);  
-            }
+
             Fragmentation_Bomb_Timer = 5000+rand()%3000;
         }
-        else Fragmentation_Bomb_Timer -= diff;
+        else
+            Fragmentation_Bomb_Timer -= diff;
 
-        if (Golem_Repair_Timer < diff)
+        if(Golem_Repair_Timer < diff)
         {
-            if(Unit* target = FindCreature(20040, 100, m_creature))
+            if(Unit* target = FindCreature(20040, 25, m_creature))
             {
                 DoCast(target,SPELL_RECHARGE);
                 Golem_Repair_Timer = 30000+rand()%10000;
-            }else if(Unit* target = FindCreature(20041, 100, m_creature)){
+            }
+            else if(Unit* target = FindCreature(20041, 25, m_creature))
+            {
                 DoCast(target,SPELL_RECHARGE);
                 Golem_Repair_Timer = 30000+rand()%10000;
             }
-        }else Golem_Repair_Timer -= diff;
-
-        if (Power_Up_Timer < diff)
-        {
-            if(Unit* target = FindCreature(20040, 100, m_creature))
-            {
-                DoCast(target,SPELL_POWERUP);
-                Power_Up_Timer = 20000+rand()%5000;
-            }else if(Unit* target = FindCreature(20041, 100, m_creature)){
-                DoCast(target,SPELL_POWERUP);
-                Power_Up_Timer = 20000+rand()%5000;
-            }
-			
         }
-        else Power_Up_Timer -= diff;
+        else
+            Golem_Repair_Timer -= diff;
 
-        if (Shell_Shock_Timer < diff)
+        if(Power_Up_Timer < diff)
         {
-            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true,0);
+            if(Unit* target = FindCreature(20040, 25, m_creature))
+            {
+                DoCast(target,SPELL_POWERUP);
+                Power_Up_Timer = 20000+rand()%5000;
+            }
+            else if(Unit* target = FindCreature(20041, 25, m_creature))
+            {
+                DoCast(target,SPELL_POWERUP);
+                Power_Up_Timer = 20000+rand()%5000;
+            }
+        }
+        else
+            Power_Up_Timer -= diff;
+
+        if(Shell_Shock_Timer < diff)
+        {
+            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true, NULL);
             if(target)
-            { 
                 DoCast(target,SPELL_SHELLSHOCK);  
-            }           
+      
             Shell_Shock_Timer = 8000+rand()%8000;
         }
-        else Shell_Shock_Timer -= diff;
+        else
+            Shell_Shock_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }
@@ -544,47 +784,49 @@ struct TRINITY_DLL_DECL mob_novice_astromancerAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!UpdateVictim())
+        if(!UpdateVictim())
             return;
 
-        if (Fire_Nova_Timer < diff )
+        if(Fire_Nova_Timer < diff )
         {
             Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true,0);
             if(target)
-            { 
                 DoCast(target,SPELL_FIRENOVA);  
-            }
+
             Fire_Nova_Timer = 5000+rand()%3000;
         }
-        else Fire_Nova_Timer -= diff;
+        else
+            Fire_Nova_Timer -= diff;
 
-        if (Fire_Shield_Timer < diff)
+        if(Fire_Shield_Timer < diff)
         {
             DoCast(m_creature,SPELL_FIRESHIELD);  
             Fire_Shield_Timer = 60000;
-        }else Fire_Shield_Timer -= diff;
+        }
+        else
+            Fire_Shield_Timer -= diff;
 
-        if (Fireball_Timer < diff)
+        if(Fireball_Timer < diff)
         {
-            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 50, true,0);
+            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 50, true, NULL);
             if(target)
-            { 
                 DoCast(target,SPELL_FIREBALL);
-            }
+
             Fireball_Timer = 2000+rand()%2000;
         }
-        else Fireball_Timer -= diff;
+        else
+            Fireball_Timer -= diff;
 
-        if (Rain_of_Fire_Timer < diff)
+        if(Rain_of_Fire_Timer < diff)
         {
-            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true,0);
+            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true, NULL);
             if(target)
-            { 
                 DoCast(target,SPELL_RAINOFFIRE);  
-            }           
+         
             Rain_of_Fire_Timer = 8000+rand()%3000;
         }
-        else Rain_of_Fire_Timer -= diff;
+        else
+            Rain_of_Fire_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }
@@ -637,5 +879,14 @@ void AddSC_the_eye()
     newscript->Name="mob_novice_astromancer";
     newscript->GetAI = &GetAI_mob_novice_astromancer;
     newscript->RegisterSelf();
-}
 
+    newscript = new Script;
+    newscript->Name="mob_Bloodwarder_Squire";
+    newscript->GetAI = &GetAI_mob_Bloodwarder_Squire;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="mob_Bloodwarder_Vindicator";
+    newscript->GetAI = &GetAI_mob_Bloodwarder_Vindicator;
+    newscript->RegisterSelf();
+}

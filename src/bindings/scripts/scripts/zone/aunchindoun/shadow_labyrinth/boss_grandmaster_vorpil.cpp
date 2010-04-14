@@ -91,7 +91,7 @@ struct TRINITY_DLL_DECL mob_voidtravelerAI : public ScriptedAI
     {
         if(!Vorpil)
         {
-            m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+            m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
             return;
         }
         if(move < diff)
@@ -106,7 +106,7 @@ struct TRINITY_DLL_DECL mob_voidtravelerAI : public ScriptedAI
                     Vorpil->ModifyHealth(Vorpil->GetMaxHealth()/25);
                 
                 DoCast(m_creature, SPELL_SHADOW_NOVA, true);
-                m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 return;
             }
             m_creature->GetMotionMaster()->MoveFollow(Vorpil,0,0);
@@ -119,7 +119,7 @@ struct TRINITY_DLL_DECL mob_voidtravelerAI : public ScriptedAI
             }
             if(!Vorpil->isInCombat() || Vorpil->isDead())
             {
-                m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 return;
             }
             move = 1000;
@@ -192,7 +192,7 @@ struct TRINITY_DLL_DECL boss_grandmaster_vorpilAI : public ScriptedAI
             {
                 Unit *Portal = Unit::GetUnit((*m_creature), PortalsGuid[i]);
                 if (Portal && Portal->isAlive())
-                    Portal->DealDamage(Portal, Portal->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                    Portal->DealDamage(Portal, Portal->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 PortalsGuid[i] = 0;
             }
             sumportals = false;

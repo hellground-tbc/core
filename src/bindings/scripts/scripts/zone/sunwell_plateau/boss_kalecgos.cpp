@@ -383,7 +383,7 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
                 {
                     if(((boss_kalecgosAI*)((Creature*)Kalecgos)->AI())->isBanished)
                     {
-                        m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                        m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                         return;
                     }
                     else
@@ -582,7 +582,7 @@ void boss_kalecgosAI::UpdateAI(const uint32 diff)
                  {
                      if(((boss_sathrovarrAI*)((Creature*)Sath)->AI())->isBanished)
                      {
-                         Sath->DealDamage(Sath, Sath->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                         Sath->DealDamage(Sath, Sath->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                          return;
                      }
                      else

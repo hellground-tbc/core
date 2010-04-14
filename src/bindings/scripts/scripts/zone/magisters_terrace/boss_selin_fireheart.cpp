@@ -177,7 +177,7 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
             //Creature* pCrystal = (Unit::GetCreature(*m_creature, FelCrystals[i]));
             Creature* pCrystal = (Unit::GetCreature(*m_creature, *itr));
             if( pCrystal && pCrystal->isAlive())
-                pCrystal->DealDamage(pCrystal, pCrystal->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                pCrystal->DealDamage(pCrystal, pCrystal->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         }
     }
 
@@ -313,7 +313,7 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
                             Unit* CrystalChosen = Unit::GetUnit(*m_creature, CrystalGUID);
                             if( CrystalChosen && CrystalChosen->isAlive() )
                                 // Use Deal Damage to kill it, not setDeathState.
-                                CrystalChosen->DealDamage(CrystalChosen, CrystalChosen->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                                CrystalChosen->DealDamage(CrystalChosen, CrystalChosen->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                             CrystalGUID = 0;
 
                             m_creature->GetMotionMaster()->Clear();

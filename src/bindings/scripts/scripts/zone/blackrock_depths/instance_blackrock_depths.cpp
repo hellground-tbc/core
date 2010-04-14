@@ -32,7 +32,7 @@ update `instance_template` set `script`='instance_blackrock_depths' where `map`=
 #include "precompiled.h"
 #include "def_blackrock_depths.h"
 
-#define ENCOUNTERS              12
+#define ENCOUNTERS              13
 
 #define C_EMPEROR               9019
 #define C_PHALANX               9502

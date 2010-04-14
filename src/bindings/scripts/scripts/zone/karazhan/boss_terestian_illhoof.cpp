@@ -191,7 +191,7 @@ struct TRINITY_DLL_DECL boss_terestianAI : public ScriptedAI
             {
                 Unit* Portal = Unit::GetUnit((*m_creature), PortalGUID[i]);
                 if(Portal)
-                    Portal->DealDamage(Portal, Portal->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                    Portal->DealDamage(Portal, Portal->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
 
                 PortalGUID[i] = 0;
             }
@@ -242,7 +242,7 @@ struct TRINITY_DLL_DECL boss_terestianAI : public ScriptedAI
             {
                 Unit* Portal = Unit::GetUnit((*m_creature), PortalGUID[i]);
                 if(Portal)
-                    Portal->DealDamage(Portal, Portal->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                    Portal->DealDamage(Portal, Portal->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
 
                 PortalGUID[i] = 0;
             }

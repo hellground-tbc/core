@@ -370,7 +370,7 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
             }
         }
         //to prevent abuses during phase 2
-        Unit *nearTarget = SelectUnit(SELECT_TARGET_NEAREST,0,80.0f,true);
+        Unit *nearTarget = SelectUnit(SELECT_TARGET_NEAREST,0,100.0f,true);
         if(Phase == 2 && !nearTarget && InCombat)
         {
             EnterEvadeMode();
@@ -729,13 +729,13 @@ struct TRINITY_DLL_DECL mob_enchanted_elementalAI : public ScriptedAI
                             Vashj->AddAura(new VashjSurgeAura(spell, i, NULL, Vashj, Vashj));
                         }
                     }
-                    m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                    m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 }
             }
             if(((boss_lady_vashjAI*)((Creature*)Vashj)->AI())->InCombat == false || ((boss_lady_vashjAI*)((Creature*)Vashj)->AI())->Phase != 2 || Vashj->isDead())
             {
                 //call Unsummon()
-                m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
             }
             move = 1000;
         }else move -= diff;
@@ -766,8 +766,7 @@ struct TRINITY_DLL_DECL mob_tainted_elementalAI : public Scripted_NoMovementAI
     {
         if(pInstance)
         {
-            Creature *Vashj = NULL;
-            Vashj = (Creature*)(Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_LADYVASHJ)));
+            Creature *Vashj = Unit::GetCreature((*m_creature), pInstance->GetData64(DATA_LADYVASHJ));
 
             if(Vashj)
                 ((boss_lady_vashjAI*)Vashj->AI())->EventTaintedElementalDeath();
@@ -1203,8 +1202,7 @@ bool ItemUse_item_tainted_core(Player *player, Item* _Item, SpellCastTargets con
         return true;
     }
 
-    Creature *Vashj = NULL;
-    Vashj = (Creature*)(Unit::GetUnit((*player), pInstance->GetData64(DATA_LADYVASHJ)));
+    Creature *Vashj = Unit::GetCreature((*player), pInstance->GetData64(DATA_LADYVASHJ));
     if(Vashj && ((boss_lady_vashjAI*)Vashj->AI())->Phase == 2)
     {
         if(targets.getGOTarget() && targets.getGOTarget()->GetTypeId()==TYPEID_GAMEOBJECT)

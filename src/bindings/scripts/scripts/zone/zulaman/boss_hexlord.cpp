@@ -294,7 +294,7 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
         {
             Unit* Temp = Unit::GetUnit((*m_creature),AddGUID[i]);
             if(Temp && Temp->isAlive())
-                Temp->DealDamage(Temp, Temp->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                Temp->DealDamage(Temp, Temp->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         }
     }
 

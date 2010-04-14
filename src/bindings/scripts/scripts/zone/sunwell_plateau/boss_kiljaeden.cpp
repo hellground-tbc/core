@@ -702,11 +702,14 @@ struct TRINITY_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
         }
 
         //Phase 5 specific spells all we can
-        if(Phase <= PHASE_ARMAGEDDON){
-            if(Phase == PHASE_ARMAGEDDON && ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 25)){
+        if(Phase <= PHASE_ARMAGEDDON)
+        {
+            if(Phase == PHASE_ARMAGEDDON && ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 25))
+            {
                 Phase = PHASE_SACRIFICE;
-                Creature* Anveena = (Creature*)(Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_ANVEENA)));
-                if (Anveena)Anveena->CastSpell(m_creature, SPELL_SACRIFICE_OF_ANVEENA, false);
+                Creature* Anveena = Unit::GetCreature((*m_creature), pInstance->GetData64(DATA_ANVEENA));
+                if(Anveena)
+                    Anveena->CastSpell(m_creature, SPELL_SACRIFICE_OF_ANVEENA, false);
                 OrbActivated = false;
                 ChangeTimers(true, 10000);// He shouldn't cast spells for ~10 seconds after Anveena's sacrifice. This will be done within Anveena's script
             }
@@ -983,7 +986,7 @@ struct TRINITY_DLL_DECL mob_volatile_felfire_fiendAI : public ScriptedAI
         else if(m_creature->IsWithinDistInMap(m_creature->getVictim(), 3)) // Explode if it's close enough to it's target
         {
             DoCast(m_creature->getVictim(), SPELL_FELFIRE_FISSION);
-            m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+            m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         }
     }
 };
@@ -1027,7 +1030,7 @@ struct TRINITY_DLL_DECL mob_armageddonAI : public Scripted_NoMovementAI
                     Timer = 5000;
                     break;
                 case 3:
-                    m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                    m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                     m_creature->RemoveCorpse();
                     break;
             }

@@ -235,7 +235,7 @@ struct TRINITY_DLL_DECL boss_akilzonAI : public ScriptedAI
             m_creature->InterruptNonMeleeSpells(false);
             CloudGUID = 0;
             if (Cloud)
-                Cloud->DealDamage(Cloud, Cloud->GetHealth(),NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                Cloud->DealDamage(Cloud, Cloud->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
             SetWeather(WEATHER_STATE_FINE, 0.0f);
             isRaining = false;
         }

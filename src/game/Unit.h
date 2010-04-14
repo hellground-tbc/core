@@ -231,6 +231,7 @@ enum HitInfo
     HITINFO_UNK1                = 0x00000001,               // req correct packet structure
     HITINFO_NORMALSWING2        = 0x00000002,
     HITINFO_LEFTSWING           = 0x00000004,
+    HITINFO_RANGED              = 0x00000008,               // test
     HITINFO_MISS                = 0x00000010,
     HITINFO_ABSORB              = 0x00000020,               // plays absorb sound
     HITINFO_RESIST              = 0x00000040,               // resisted at least some damage
@@ -608,64 +609,52 @@ struct DiminishingReturn
     uint32                  hitCount;
 };
 
-enum MeleeHitOutcome
+struct DamageLog
 {
-    MELEE_HIT_EVADE, MELEE_HIT_MISS, MELEE_HIT_DODGE, MELEE_HIT_BLOCK, MELEE_HIT_PARRY,
-    MELEE_HIT_GLANCING, MELEE_HIT_CRIT, MELEE_HIT_CRUSHING, MELEE_HIT_NORMAL, MELEE_HIT_BLOCK_CRIT
-};
-struct CleanDamage
-{
-    CleanDamage(uint32 _damage, WeaponAttackType _attackType, MeleeHitOutcome _hitOutCome) :
-    damage(_damage), attackType(_attackType), hitOutCome(_hitOutCome) {}
+    DamageLog(uint32 op, Unit *attacker, Unit *victim, uint8 school_mask = SPELL_SCHOOL_NORMAL, WeaponAttackType attType = BASE_ATTACK) :
+              opcode(op), source(attacker), target(victim), schoolMask(school_mask), attackType(attType),
+              damage(0), absorb(0), resist(0), blocked(0), hitInfo(0), rageDamage(0) {}
+
+    uint32 opcode;
+    Unit *source;
+    Unit *target;
+    uint8 schoolMask;
 
     uint32 damage;
-    WeaponAttackType attackType;
-    MeleeHitOutcome hitOutCome;
-};
 
-// Struct for use in Unit::CalculateMeleeDamage
-// Need create structure like in SMSG_ATTACKERSTATEUPDATE opcode
-struct CalcDamageInfo
-{
-    Unit  *attacker;             // Attacker
-    Unit  *target;               // Target for damage
-    uint32 damageSchoolMask;
-    uint32 damage;
     uint32 absorb;
     uint32 resist;
-    uint32 blocked_amount;
-    uint32 HitInfo;
-    uint32 TargetState;
-// Helper
-    WeaponAttackType attackType; //
+    uint32 blocked;
+
+    uint32 hitInfo;
+    uint32 rageDamage;
+    WeaponAttackType attackType;
+};
+
+struct SpellDamageLog : public DamageLog
+{
+    SpellDamageLog(uint32 spellId, Unit *attacker, Unit *victim, uint8 school_mask = SPELL_SCHOOL_NORMAL, uint8 dmgType = 0) :
+         DamageLog(SMSG_SPELLNONMELEEDAMAGELOG, attacker, victim, school_mask, BASE_ATTACK), spell_id(spellId), damageType(dmgType) {}
+
+    uint8 damageType;
+    uint32 spell_id;
+};
+
+struct MeleeDamageLog : public DamageLog
+{
+    MeleeDamageLog(Unit *attacker, Unit *victim, uint8 school_mask = SPELL_SCHOOL_NORMAL, WeaponAttackType attType = BASE_ATTACK) :
+         DamageLog(SMSG_ATTACKERSTATEUPDATE, attacker, victim, school_mask, attType), targetState(0),
+                   procAttacker(0), procVictim(0), procEx(0) {}
+
+    uint32 targetState;
+
+    // helpers
     uint32 procAttacker;
     uint32 procVictim;
     uint32 procEx;
-    uint32 cleanDamage;          // Used only fo rage calcultion
-    MeleeHitOutcome hitOutCome;  // TODO: remove this field (need use TargetState)
 };
 
-// Spell damage info structure based on structure sending in SMSG_SPELLNONMELEEDAMAGELOG opcode
-struct SpellNonMeleeDamage{
- SpellNonMeleeDamage(Unit *_attacker, Unit *_target, uint32 _SpellID, uint32 _schoolMask) :
-    attacker(_attacker), target(_target), SpellID(_SpellID), damage(0), schoolMask(_schoolMask),
-    absorb(0), resist(0), phusicalLog(false), unused(false), blocked(0), HitInfo(0), cleanDamage(0) {}
- Unit   *target;
- Unit   *attacker;
- uint32 SpellID;
- uint32 damage;
- uint32 schoolMask;
- uint32 absorb;
- uint32 resist;
- bool   phusicalLog;
- bool   unused;
- uint32 blocked;
- uint32 HitInfo;
- // Used for help
- uint32 cleanDamage;
-};
-
-uint32 createProcExtendMask(SpellNonMeleeDamage *damageInfo, SpellMissInfo missCondition);
+uint32 createProcExtendMask(SpellDamageLog *damageInfo, SpellMissInfo missCondition);
 
 struct UnitActionBarEntry
 {
@@ -946,7 +935,12 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         uint16 GetMaxSkillValueForLevel(Unit const* target = NULL) const { return (target ? getLevelForTarget(target) : getLevel()) * 5; }
         void RemoveSpellbyDamageTaken(uint32 damage, uint32 spell);
-        uint32 DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDamage = NULL, DamageEffectType damagetype = DIRECT_DAMAGE, SpellSchoolMask damageSchoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellEntry const *spellProto = NULL, bool durabilityLoss = true);
+
+        void SendDamageLog(DamageLog *damageInfo);
+
+        uint32 DealDamage(DamageLog *damageInfo, DamageEffectType damagetype = DIRECT_DAMAGE, SpellEntry const *spellProto = NULL, bool durabilityLoss = true);
+
+        uint32 DealDamage(Unit *pVictim, uint32 damage, DamageEffectType damagetype = DIRECT_DAMAGE, SpellSchoolMask damageSchoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellEntry const *spellProto = NULL, bool durabilityLoss = true);
         void Kill(Unit *pVictim, bool durabilityLoss = true);
 
         void ProcDamageAndSpell(Unit *pVictim, uint32 procAttacker, uint32 procVictim, uint32 procEx, uint32 amount, WeaponAttackType attType = BASE_ATTACK, SpellEntry const *procSpell = NULL, bool canTrigger = true);
@@ -957,11 +951,11 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         //float MeleeMissChanceCalc(const Unit *pVictim, WeaponAttackType attType) const;
 
-        void CalculateMeleeDamage(Unit *pVictim, uint32 damage, CalcDamageInfo *damageInfo, WeaponAttackType attackType = BASE_ATTACK);
-        void DealMeleeDamage(CalcDamageInfo *damageInfo, bool durabilityLoss);
+        void CalculateMeleeDamage(MeleeDamageLog *damageInfo);
+        void DealMeleeDamage(MeleeDamageLog *damageInfo, bool durabilityLoss);
 
-        void CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 damage, SpellEntry const *spellInfo, WeaponAttackType attackType = BASE_ATTACK, bool crit = false);
-        void DealSpellDamage(SpellNonMeleeDamage *damageInfo, bool durabilityLoss);
+        void CalculateSpellDamageTaken(SpellDamageLog *damageInfo, int32 damage, SpellEntry const *spellInfo, WeaponAttackType attackType = BASE_ATTACK, bool crit = false);
+        void DealSpellDamage(SpellDamageLog *damageInfo, bool durabilityLoss);
 
         float MeleeSpellMissChance(const Unit *pVictim, WeaponAttackType attType, int32 skillDiff, uint32 spellId) const;
         SpellMissInfo MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell);
@@ -981,8 +975,8 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         float GetWeaponProcChance() const;
         float GetPPMProcChance(uint32 WeaponSpeed, float PPM) const;
 
-        MeleeHitOutcome RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttackType attType) const;
-        MeleeHitOutcome RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttackType attType, int32 crit_chance, int32 miss_chance, int32 dodge_chance, int32 parry_chance, int32 block_chance, bool SpellCasted ) const;
+        void RollMeleeHit(MeleeDamageLog *) const;
+        void RollMeleeHit(MeleeDamageLog *, int32 crit_chance, int32 miss_chance, int32 dodge_chance, int32 parry_chance, int32 block_chance) const;
 
         bool isVendor()       const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_VENDOR ); }
         bool isTrainer()      const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_TRAINER ); }
@@ -1064,9 +1058,9 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         void DeMorph();
 
         void SendAttackStart(Unit* pVictim);
-        void SendAttackStateUpdate(CalcDamageInfo *damageInfo);
+        void SendAttackStateUpdate(MeleeDamageLog *damageInfo);
         void SendAttackStateUpdate(uint32 HitInfo, Unit *target, uint8 SwingType, SpellSchoolMask damageSchoolMask, uint32 Damage, uint32 AbsorbDamage, uint32 Resist, VictimState TargetState, uint32 BlockedAmount);
-        void SendSpellNonMeleeDamageLog(SpellNonMeleeDamage *log);
+        void SendSpellNonMeleeDamageLog(SpellDamageLog *log);
         void SendSpellNonMeleeDamageLog(Unit *target,uint32 SpellID,uint32 Damage, SpellSchoolMask damageSchoolMask,uint32 AbsorbedDamage, uint32 Resist,bool PhysicalDamage, uint32 Blocked, bool CriticalHit = false);
         void SendSpellMiss(Unit *target, uint32 spellID, SpellMissInfo missInfo);
 

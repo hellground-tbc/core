@@ -37,7 +37,7 @@ float ThreatCalcHelper::calcThreat(Unit* pHatedUnit, Unit* pHatingUnit, float pT
 {
     if(pThreatSpell)
     {
-        if( Player* modOwner = pHatingUnit->GetSpellModOwner() )
+        if( Player* modOwner = pHatedUnit->GetSpellModOwner() )
             modOwner->ApplySpellMod(pThreatSpell->Id, SPELLMOD_THREAT, pThreat);
     }
 
@@ -263,6 +263,35 @@ void ThreatContainer::update()
 // return the next best victim
 // could be the current victim
 
+bool DropAggro(Creature* pAttacker, Unit * target)
+{
+    if (!target)
+        return false;
+
+    if (pAttacker && target->IsImmunedToDamage(pAttacker->GetMeleeDamageSchoolMask(), false))
+        return true;
+
+    /*if (target->hasNegativeAuraWithInterruptFlag(AURA_INTERRUPT_FLAG_DAMAGE) && target->hasUnitState(UNIT_STAT_LOST_CONTROL))
+        return true;*/
+
+    //disorient and confuse effects
+    if (target->hasUnitState(UNIT_STAT_CONFUSED))
+        return true;
+
+    if (target->isCharmed() && pAttacker->IsFriendlyTo(target))
+        return true;
+
+    //target has Spirit of Redemption aura (shapeshift effect)
+    if (target->HasAura(27827, 2))
+        return true;
+
+    // target is stunned from Lady Vashj Shockblast
+    if (target->HasAura(38509,1))
+        return true;
+
+    return false;
+}
+
 HostilReference* ThreatContainer::selectNextVictim(Creature* pAttacker, HostilReference* pCurrentVictim)
 {
     HostilReference* currentRef = NULL;
@@ -280,7 +309,7 @@ HostilReference* ThreatContainer::selectNextVictim(Creature* pAttacker, HostilRe
         assert(target);                                     // if the ref has status online the target must be there !
 
         // some units are preferred in comparison to others
-        if(!noPriorityTargetFound && (target->IsImmunedToDamage(pAttacker->GetMeleeDamageSchoolMask(), false) /*|| (target->hasNegativeAuraWithInterruptFlag(AURA_INTERRUPT_FLAG_DAMAGE) && target->hasUnitState(UNIT_STAT_LOST_CONTROL))*/ || target->HasAura(38509,1) ) )
+        if(!noPriorityTargetFound && DropAggro(pAttacker, target))
         {
             if(iter != lastRef)
             {

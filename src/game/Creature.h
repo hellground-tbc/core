@@ -136,7 +136,8 @@ enum CreatureFlagsExtra
     //CREATURE_FLAG_EXTRA_CHARM_AI         = 0x00008000,       // use ai when charmed
     CREATURE_FLAG_EXTRA_NO_TAUNT           = 0x00010000,       // cannot be taunted
     CREATURE_FLAG_EXTRA_NO_CRIT            = 0x00020000,       // creature can't do critical strikes
-    CREATURE_FLAG_EXTRA_NO_BLOCK_ON_ATTACK = 0x00040000        // creature attack's cannot be blocked
+    CREATURE_FLAG_EXTRA_NO_BLOCK_ON_ATTACK = 0x00040000,       // creature attack's cannot be blocked
+    CREATURE_FLAG_EXTRA_NO_DAMAGE_TAKEN    = 0x00080000
 };
 
 // GCC have alternative #pragma pack(N) syntax and old gcc version not support pack(push,N), also any gcc version not support it at some platform

@@ -190,6 +190,7 @@ bool GossipSelect_npc_test(Player *player, Creature *_Creature, uint32 sender, u
 
 void AddSC_test()
 {
+/*
     Script *newscript;
     newscript = new Script;
     newscript->Name="test";
@@ -197,5 +198,6 @@ void AddSC_test()
     newscript->pGossipHello          = &GossipHello_npc_test;
     newscript->pGossipSelect         = &GossipSelect_npc_test;
     newscript->RegisterSelf();
+*/
 }
 

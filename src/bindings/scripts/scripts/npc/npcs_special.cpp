@@ -1131,7 +1131,8 @@ CreatureAI* GetAI_npc_snake_trap_serpents(Creature *_Creature)
 # Flight Master  #
 ################*/
 
-uint32 ADVISOR[] = {
+uint32 ADVISOR[] =
+{
     9297,      // ENRAGED_WYVERN
     9526,      // ENRAGED_GRYPHON
     9521,      // ENRAGED_FELBAT
@@ -1154,6 +1155,7 @@ struct TRINITY_DLL_DECL npc_flight_masterAI : public ScriptedAI
             {
                DoSpawnCreature(ADVISOR[i], 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1);
                DoSpawnCreature(ADVISOR[i], 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1);
+               break;
             }
         }
     }
