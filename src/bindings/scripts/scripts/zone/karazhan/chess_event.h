@@ -60,6 +60,14 @@ EndScriptData */
 #define hordeSideDeadOrientation        1
 #define POSITION_Z                      221
 
+#define START_PRIORITY          100
+
+#define ABILITY_CHANCE_MAX      100
+#define ABILITY_1_CHANCE_MIN    25
+#define ABILITY_1_CHANCE_MAX    66
+#define ABILITY_2_CHANCE_MIN    25
+#define ABILITY_2_CHANCE_MAX    66
+
 enum SCRIPTTEXTs
 {
     SCRIPTTEXT_AT_EVENT_START   =  -1650000,
@@ -106,8 +114,8 @@ enum NPCs
 
 enum ChessEventSpells
 {
-    BISHOP_HEAL_H  = 37456,
-    BISHOP_HEAL_A  = 37455,
+    //BISHOP_HEAL_H  = 37456,
+    //BISHOP_HEAL_A  = 37455,
     SPELL_MOVE_1   = 37146,
     SPELL_MOVE_2   = 30012,
     SPELL_MOVE_3   = 37144,
@@ -136,6 +144,56 @@ enum ChessEventSpells
     ACTION_TIMER            = 37504,
     GET_EMPTY_SQUARE        = 30418
 };
+
+enum ChessPIecesSpells
+{
+    //ability 1
+    SPELL_KING_H_1    = 37476,    //Cleave
+    SPELL_KING_A_1    = 37474,    //Sweep
+    SPELL_QUEEN_H_1   = 37463,    //Fireball
+    SPELL_QUEEN_A_1   = 37462,    //Elemental Blast
+    SPELL_BISHOP_H_1  = 37456,    //Shadow Mend
+    SPELL_BISHOP_A_1  = 37455,    //Healing
+    SPELL_KNIGHT_H_1  = 37454,    //Bite
+    SPELL_KNIGHT_A_1  = 37453,    //Smash
+    SPELL_ROOK_H_1    = 37428,    //Hellfire
+    SPELL_ROOK_A_1    = 37427,    //Geyser
+    SPELL_PAWN_H_1    = 37413,    //Vicious Strike
+    SPELL_PAWN_A_1    = 37406,    //Heroic Blow
+
+    //ability 2
+    SPELL_KING_H_2    = 37472,    //Bloodlust
+    SPELL_KING_A_2    = 37471,    //Heroism
+    SPELL_QUEEN_H_2   = 37469,    //Poison Cloud
+    SPELL_QUEEN_A_2   = 37465,    //Rain of Fire
+    SPELL_BISHOP_H_2  = 37461,    //Shadow Spear
+    SPELL_BISHOP_A_2  = 37459,    //Holy Lance
+    SPELL_KNIGHT_H_2  = 37502,    //Howl
+    SPELL_KNIGHT_A_2  = 37498,    //Stomp
+    SPELL_ROOK_H_2    = 37434,    //Fire Shield
+    SPELL_ROOK_A_2    = 37432,    //Water Shield
+    SPELL_PAWN_H_2    = 37416,    //Weapon Deflection
+    SPELL_PAWN_A_2    = 37414     //Shield Block
+};
+
+enum AbilityCooldowns
+{
+    //ability 1
+    CD_KING_1    = 5000,
+    CD_QUEEN_1   = 5000,
+    CD_BISHOP_1  = 20000,
+    CD_KNIGHT_1  = 5000,
+    CD_ROOK_1    = 5000,
+    CD_PAWN_1    = 5000,
+
+    //ability 2
+    CD_KING_2    = 15000,
+    CD_QUEEN_2   = 15000,
+    CD_BISHOP_2  = 5000,
+    CD_KNIGHT_2  = 5000,
+    CD_ROOK_2    = 5000,
+    CD_PAWN_2    = 5000
+}
 
 enum AttackSpells
 {
@@ -186,6 +244,32 @@ struct ChessSquare
         this->trigger = trigger;
     }
 };
+
+struct Priority
+{
+    uint64 GUID;
+    int prior;
+
+    Priority()
+    {
+        guid = 0;
+        prior = 0;
+    }
+
+    Priority(uint64 GUID, int priority)
+    {
+        this->GUIS = GUID;
+        this->prior = priority;
+    }
+};
+
+int8 offsetTab8[8][2] = {{-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {1, 0}, {-1, 1}, {0, 1}, {1, 1}};
+
+int8 offsetTab15[][] =
+
+int8 offsetTab20[][] =
+
+int8 offsetTab25[][] =
 
 float hordeSideDeadWP[2][16] = {{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},         //X coord
                                 {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}};        //Y coord
@@ -238,6 +322,19 @@ struct TRINITY_DLL_DECL npc_chesspieceAI : public Scripted_NoMovementAI
     //uint32 NextMove_Timer;
     uint64 MedivhGUID;
 
+    int ability1Chance;     //chance to cast spell
+    int ability2Chance;
+
+    int32 ability1Timer;
+    int32 ability1Cooldown;
+    int32 ability2Timer;
+    int32 ability2Cooldown;
+
+    int32 nextTryTimer;     //try to cast spell after some time
+
+    uint32 ability1ID;
+    uint32 ability2ID;
+
 
     //Creature *start_marker, *end_marker;
 
@@ -248,6 +345,12 @@ struct TRINITY_DLL_DECL npc_chesspieceAI : public Scripted_NoMovementAI
     void Aggro(Unit *Unit);
 
     void EnterEvadeMode();
+
+    void SetSpellsAndCooldowns();
+
+    bool IsHealingSpell(uint32);
+
+    int GetAbilityRange(uint32);
 
     void Reset();
 
@@ -326,11 +429,19 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
 
     bool CanMoveTo(uint64 trigger, uint64 piece);   //check if player can move to trigger - prevent cheating
 
-    bool AddTriggerToMove(uint64 trigger, uint64 piece, bool player);
+    void AddTriggerToMove(uint64 trigger, uint64 piece, bool player);
 
     Unit * FindTrigger(uint64 piece);   //find trigger where piece actually should be
 
     void MakeMove();
+
+    int GetMoveRange(uint64 piece);
+
+    int GetMoveRange(Unit * piece);
+
+    int GetCountOfEnemyInMelee(uint64 piece);
+
+    uint64 GetSpellTarget(uint64 caster, int range);
 
     void UpdateAI(const uint32 diff);
 };

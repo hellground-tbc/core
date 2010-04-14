@@ -169,6 +169,179 @@ void npc_chesspieceAI::EnterEvadeMode()
     ScriptedAI::EnterEvadeMode();
 }
 
+bool npc_chesspieceAI::IsHealingSpell(uint32 spell)
+{
+    if (spell == SPELL_BISHOP_A_1 || spell == SPELL_BISHOP_H_1)
+        return true;
+
+    return false;
+}
+
+int npc_chesspieceAI::GetAbilityRange(uint32 spell)
+{
+    switch(spell)
+    {
+        /*
+        case SPELL_KING_H_1:
+        case SPELL_KING_A_1:
+        case SPELL_KNIGHT_H_1:
+        case SPELL_KNIGHT_A_1:
+        case SPELL_ROOK_H_1:
+        case SPELL_ROOK_A_1:
+        case SPELL_PAWN_H_1:
+        case SPELL_PAWN_A_1:
+        case SPELL_KING_H_2:
+        case SPELL_KING_A_2:
+        case SPELL_BISHOP_H_2:
+        case SPELL_BISHOP_A_2:
+        case SPELL_KNIGHT_H_2:
+        case SPELL_KNIGHT_A_2:
+        case SPELL_ROOK_H_2:
+        case SPELL_ROOK_A_2:
+        case SPELL_PAWN_H_2:
+        case SPELL_PAWN_A_2:
+            return 0;*/
+
+        case SPELL_QUEEN_H_1:
+        case SPELL_QUEEN_A_1:
+            return 20;
+
+        case SPELL_BISHOP_H_1:
+        case SPELL_BISHOP_A_1:
+        case SPELL_QUEEN_H_2:
+        case SPELL_QUEEN_A_2:
+            return 25;
+        default:
+            return 0;
+    }
+}
+
+void npc_chesspieceAI::SetSpellsAndCooldowns()
+{
+    switch(m_creature->GetEntry())
+    {
+        case NPC_KING_A:
+            ability1ID = SPELL_KING_A_1;
+            ability1Timer = CD_KING_1;
+            ability1Cooldown = CD_KING_1;
+
+            ability2ID = SPELL_KING_A_2;
+            ability2Timer = CD_KING_2;
+            ability2Cooldown = CD_KING_2;
+            break;
+
+        case NPC_KING_H:
+            ability1ID = SPELL_KING_H_1 ;
+            ability1Timer = CD_KING_1;
+            ability1Cooldown = CD_KING_1;
+
+            ability2ID = SPELL_KING_H_2;
+            ability2Timer = CD_KING_2;
+            ability2Cooldown = CD_KING_2;
+            break;
+        case NPC_QUEEN_A:
+            ability1ID = SPELL_QUEEN_A_1 ;
+            ability1Timer = CD_QUEEN_1;
+            ability1Cooldown = CD_QUEEN_1;
+
+            ability2ID = SPELL_QUEEN_A_2;
+            ability2Timer = CD_QUEEN_2;
+            ability2Cooldown = CD_QUEEN_2;
+            break;
+        case NPC_QUEEN_H:
+            ability1ID = SPELL_QUEEN_H_1 ;
+            ability1Timer = CD_QUEEN_1;
+            ability1Cooldown = CD_QUEEN_1;
+
+            ability2ID = SPELL_QUEEN_H_2;
+            ability2Timer = CD_QUEEN_2;
+            ability2Cooldown = CD_QUEEN_2;
+            break;
+
+        case NPC_BISHOP_A:
+            ability1ID = SPELL_BISHOP_A_1 ;
+            ability1Timer = CD_BISHOP_1;
+            ability1Cooldown = CD_BISHOP_1;
+
+            ability2ID = SPELL_BISHOP_A_2;
+            ability2Timer = CD_BISHOP_2;
+            ability2Cooldown = CD_BISHOP_2;
+            break;
+
+        case NPC_BISHOP_H:
+            ability1ID = SPELL_BISHOP_H_1 ;
+            ability1Timer = CD_BISHOP_1;
+            ability1Cooldown = CD_BISHOP_1;
+
+            ability2ID = SPELL_BISHOP_H_2;
+            ability2Timer = CD_BISHOP_2;
+            ability2Cooldown = CD_BISHOP_2;
+            break;
+
+        case NPC_KNIGHT_A:
+            ability1ID = SPELL_KNIGHT_A_1 ;
+            ability1Timer = CD_KNIGHT_1;
+            ability1Cooldown = CD_KNIGHT_1;
+
+            ability2ID = SPELL_KNIGHT_A_2;
+            ability2Timer = CD_KNIGHT_2;
+            ability2Cooldown = CD_KNIGHT_2;
+            break;
+
+        case NPC_KNIGHT_H:
+            ability1ID = SPELL_KNIGHT_H_1 ;
+            ability1Timer = CD_KNIGHT_1;
+            ability1Cooldown = CD_KNIGHT_1;
+
+            ability2ID = SPELL_KNIGHT_H_2;
+            ability2Timer = CD_KNIGHT_2;
+            ability2Cooldown = CD_KNIGHT_2;
+            break;
+
+        case NPC_ROOK_A:
+            ability1ID = SPELL_ROOK_A_1 ;
+            ability1Timer = CD_ROOK_1;
+            ability1Cooldown = CD_ROOK_1;
+
+            ability2ID = SPELL_ROOK_A_2;
+            ability2Timer = CD_ROOK_2;
+            ability2Cooldown = CD_ROOK_2;
+            break;
+
+        case NPC_ROOK_H:
+            ability1ID = SPELL_ROOK_H_1 ;
+            ability1Timer = CD_ROOK_1;
+            ability1Cooldown = CD_ROOK_1;
+
+            ability2ID = SPELL_ROOK_H_2;
+            ability2Timer = CD_ROOK_2;
+            ability2Cooldown = CD_ROOK_2;
+            break;
+
+        case NPC_PAWN_A:
+            ability1ID = SPELL_PAWN_A_1 ;
+            ability1Timer = CD_PAWN_1;
+            ability1Cooldown = CD_PAWN_1;
+
+            ability2ID = SPELL_PAWN_H_2;
+            ability2Timer = CD_PAWN_2;
+            ability2Cooldown = CD_PAWN_2;
+            break;
+
+        case NPC_PAWN_H:
+            ability1ID = SPELL_PAWN_H_1 ;
+            ability1Timer = CD_PAWN_1;
+            ability1Cooldown = CD_PAWN_1;
+
+            ability2ID = SPELL_PAWN_H_2;
+            ability2Timer = CD_PAWN_2;
+            ability2Cooldown = CD_PAWN_2;
+            break;
+        default:
+            break;
+    }
+}
+
 void npc_chesspieceAI::Reset()
 {
     ReturnToHome = true;
@@ -180,6 +353,13 @@ void npc_chesspieceAI::Reset()
 
     /*start_marker = NULL;
     end_marker = NULL;*/
+
+    SetSpellsAndCooldowns();
+
+    ability1Chance = urand(ABILITY_1_CHANCE_MIN, ABILITY_1_CHANCE_MAX);
+    ability2Chance = urand(ABILITY_2_CHANCE_MIN, ABILITY_2_CHANCE_MAX);
+
+    nextTryTimer = urand(500, 5000);
 }
 
 void npc_chesspieceAI::MovementInform(uint32 MovementType, uint32 Data)
@@ -225,6 +405,7 @@ void npc_chesspieceAI::JustRespawned()
 void npc_chesspieceAI::OnCharmed(bool apply)
 {
     // Place to disable rotate and move for player on possess
+    m_creature->SetInCombatState(false);
 }
 
 void npc_chesspieceAI::UpdateAI(const uint32 diff)
@@ -348,8 +529,25 @@ void npc_chesspieceAI::UpdateAI(const uint32 diff)
             m_creature->CombatStop();
             return;
         }*/
+
+        if (ability1Timer < diff)
+        {
+            if (urand(0, ABILITY_CHANCE_MAX) > ability1Chance)
+            {
+                Unit * medivh = m_creature->GetUnit(*m_creature, medivhGuid);
+                if (!medivh)
+                    return;
+
+                unit64 victim = ((boss_MedivhAI*)medivh)->GetSpellTarget(m_creature->GetGUID(), GetAbilityRange(ability1ID), IsHealingSpell(ability1ID));
+
+                //AddSpellToCast();
+            }
+        }
+
     }
     //DoMeleeAttackIfReady();
+
+    CastNextSpellIfAnyAndReady();
 }
 
 void npc_chesspieceAI::SpellHitTarget(Unit *target, const SpellEntry *spell)
@@ -400,6 +598,164 @@ boss_MedivhAI::boss_MedivhAI(Creature *c) : ScriptedAI(c)
     tpLoc.y = -1841.56;
     tpLoc.z = 229.625;
     tpLoc.o = 5.39745;
+}
+
+int boss_MedivhAI::GetMoveRange(Unit * piece)
+{
+    if (!Unit)
+        return 0;
+
+    switch (piece->GetEntry())
+    {
+        case NPC_PAWN_A:
+        case NPC_PAWN_H:
+        case NPC_KING_A:
+        case NPC_KING_H:
+        case NPC_BISHOP_A:
+        case NPC_BISHOP_H:
+        case NPC_ROOK_A:
+        case NPC_ROOK_H:
+            return 8;
+
+        case NPC_KNIGHT_A:
+        case NPC_KNIGHT_H:
+            return 15;
+
+        case NPC_QUEEN_A:
+        case NPC_QUEEN_H:
+            return 20;
+
+        default:
+            break;
+    }
+
+    return 0;
+}
+
+int boss_MedivhAI::GetCountOfEnemyInMelee(uint64 piece)
+{
+    int tmpCount = 0;
+
+
+    int tmpI = -1, tmpJ = -1;
+
+    //search for position in tab of piece
+
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 8; j++)
+        {
+            if (chessBoard[i][j].piece == piece)
+            {
+                tmpI = i; tmpJ = j;
+                break;
+            }
+        }
+        //if we find location of piece
+        if (tmpI >= 0 && tmpJ >= 0)
+            break;
+    }
+
+    if (tmpI+1 < 8)
+        if (chessBoard[tmpI+1][tmpJ].piece)
+            tmpCount++;
+
+    if (tmpI-1 >= 0)
+        if (chessBoard[tmpI-1][tmpJ].piece)
+            tmpCount++;
+
+    if (tmpJ+1 < 8)
+        if (chessBoard[tmpI][tmpJ+1].piece)
+            tmpCount++;
+
+    if (tmpJ-1 >= 0)
+        if (chessBoard[tmpI][tmpJ-1].piece)
+            tmpCount++;
+
+    return tmpCount;
+}
+
+uint64 boss_MedivhAI::GetSpellTarget(uint64 caster, int range, bool heal)
+{
+    if (!range)
+        return caster;
+
+    int8 tmpI = -1, tmpJ = -1;
+
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 8; j++)
+        {
+            if (chessBoard[i][j].piece == piece)
+            {
+                tmpI = i; tmpJ = j;
+                break;
+            }
+        }
+        //if we find location of piece
+        if (tmpI >= 0 && tmpJ >= 0)
+            break;
+    }
+
+    int priority = START_PRIORITY;
+
+    Unit * tmpCaster = m_creature->GetUnit(*m_creature, caster);
+
+    if (!tmpCaster)
+        return 0;
+
+    std::list<Priority> tmpPriorityList;
+
+    if (heal)
+    {
+
+    }
+    else
+    {
+
+    }
+
+}
+
+bool boss_MedivhAI::IsChessPiece(Unit * unit)
+{
+    switch (unit->GetEntry())
+    {
+        case NPC_BISHOP_A:
+        case NPC_BISHOP_H:
+        case NPC_KING_A:
+        case NPC_KING_H:
+        case NPC_KNIGHT_A:
+        case NPC_KNIGHT_H:
+        case NPC_PAWN_A:
+        case NPC_PAWN_H:
+        case NPC_QUEEN_A:
+        case NPC_QUEEN_H:
+        case NPC_ROOK_A:
+        case NPC_ROOK_H:
+            return true;
+        default:
+            return false;
+    }
+
+    return false;
+}
+
+bool boss_MedivhAI::IsMedivhsPiece(Unit * unit)
+{
+    switch (pInstance->GetData(CHESS_EVENT_TEAM))
+    {
+        case ALLIANCE:
+            if (unit->getFaction() == H_FACTION)
+                return true;
+            break;
+        case HORDE:
+            if (unit->getFaction() == A_FACTION)
+                return true;
+            break;
+    }
+
+    return false;
 }
 
 void boss_MedivhAI::Reset()
@@ -585,46 +941,7 @@ void boss_MedivhAI::RemoveChessPieceFromBoard(Unit * piece)
             }
 }
 
-bool boss_MedivhAI::IsChessPiece(Unit * unit)
-{
-    switch (unit->GetEntry())
-    {
-        case NPC_BISHOP_A:
-        case NPC_BISHOP_H:
-        case NPC_KING_A:
-        case NPC_KING_H:
-        case NPC_KNIGHT_A:
-        case NPC_KNIGHT_H:
-        case NPC_PAWN_A:
-        case NPC_PAWN_H:
-        case NPC_QUEEN_A:
-        case NPC_QUEEN_H:
-        case NPC_ROOK_A:
-        case NPC_ROOK_H:
-            return true;
-        default:
-            return false;
-    }
 
-    return false;
-}
-
-bool boss_MedivhAI::IsMedivhsPiece(Unit * unit)
-{
-    switch (pInstance->GetData(CHESS_EVENT_TEAM))
-    {
-        case ALLIANCE:
-            if (unit->getFaction() == H_FACTION)
-                return true;
-            break;
-        case HORDE:
-            if (unit->getFaction() == A_FACTION)
-                return true;
-            break;
-    }
-
-    return false;
-}
 
 void boss_MedivhAI::PrepareBoardForEvent()
 {
@@ -880,7 +1197,7 @@ void boss_MedivhAI::UpdateAI(const uint32 diff)
     if (!eventStarted)
         return;
 
-
+    //add piece move ai
 }
 
 Unit * boss_MedivhAI::FindTrigger(uint64 piece)
@@ -962,7 +1279,7 @@ bool boss_MedivhAI::CanMoveTo(uint64 trigger, uint64 piece)
     return canMove;
 }
 
-bool boss_MedivhAI::AddTriggerToMove(uint64 trigger, uint64 piece, bool player)
+void boss_MedivhAI::AddTriggerToMove(uint64 trigger, uint64 piece, bool player)
 {
     ChessSquare tmp;
     tmp.piece = piece;
@@ -975,7 +1292,58 @@ bool boss_MedivhAI::AddTriggerToMove(uint64 trigger, uint64 piece, bool player)
     //check, if tmpChance is higher than chanceToMove then medivh also can move one of his pieces
     if (player && tmpChance > chanceToMove)
     {
+        std::list<int> tmpList;
+        stf::list<uint64> emptySquareList;
 
+        //start priority
+        int tempPriority = 100;
+
+        //Select Medivh piece to move
+        //tmpList used to store move priority
+        for (std::list<uint64>::iterator i = medivhSidePieces.begin(); i != medivhSidePieces.end(); ++i)
+        {
+            //check neighbours and modify priority
+            //higher priority for pieces with more than 1 enemy in melee range
+            //higher priority for healers if enemy in melee range
+            //set priority 0 for pieces which can't move anywhere
+
+            //search for any empty place in range
+
+            Unit * tmpPieceTrigger = FindTrigger(*i);
+            Unit * tmpTrigger;
+
+            if (!tmpPieceTrigger)
+                return;
+
+            bool finish = false;
+            for (int8 i = 0; i < 8; i++)
+            {
+                for (int8 j = 0; j < 8; j++)
+                {
+                    tmpTrigger = m_creature->GetUnit(*m_creature, chessBoard[i][j].trigger);
+                    if (tmpTrigger && tmpPieceTrigger->GetDistance(tmpTrigger) <= GetMoveRange(tmpPieceTrigger))
+                    {
+                        finish = true;  //if we find any empty place then stop searching
+                        break;
+                    }
+                }
+
+                if (finish)
+                    break;
+            }
+
+            if (finish)
+            {
+
+                //if piece can move anywhere then modify move priority
+                //switch()
+
+            }
+            else
+                tempPriority = 0;
+
+            tmpList.push_back(tempProirity);
+        }
     }
 }
 
