@@ -542,6 +542,36 @@ bool GossipSelect_go_skull_pile(Player *player, GameObject* _GO, uint32 sender, 
     return true;
 }
 
+/*######
+## go_ancient_skull_pile
+######*/
+#define GOSSIP_S_TEROKK         "Summon Terokk"
+
+bool GossipHello_go_ancient_skull_pile(Player *player, GameObject* _GO)
+{
+    player->ADD_GOSSIP_ITEM(0, GOSSIP_S_TEROKK, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+    player->SEND_GOSSIP_MENU(_GO->GetGOInfo()->questgiver.gossipID, _GO->GetGUID());
+    return true;
+}
+
+bool GossipSelect_go_ancient_skull_pile(Player *player, GameObject* _GO, uint32 sender, uint32 action )
+{
+    switch(sender)
+    {
+        case GOSSIP_SENDER_MAIN:
+            // player->CastSpell(player,41004,false); 
+            // terokk should be summoned by above spell, but it doesn't work; summoninng him in other way
+            if(player->HasItemCount(32720, 1))
+            {
+                player->DestroyItemCount(32720, 1, true);
+                player->SummonCreature(21838, _GO->GetPositionX(), _GO->GetPositionY(), _GO->GetPositionZ(), player->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 0);
+                //_GO->Delete(); despawn _GO here
+            }
+            break;
+    }
+    return true;
+}
+
 /***
 Script for Quest: Hungry Nether Rays (11093)
 ***/
@@ -624,6 +654,12 @@ void AddSC_terokkar_forest()
     newscript->Name="go_skull_pile";
     newscript->pGOHello  = &GossipHello_go_skull_pile;
     newscript->pGOSelect = &GossipSelect_go_skull_pile;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="go_ancient_skull_pile";
+    newscript->pGOHello  = &GossipHello_go_ancient_skull_pile;
+    newscript->pGOSelect = &GossipSelect_go_ancient_skull_pile;
     newscript->RegisterSelf();
 
     newscript = new Script;
