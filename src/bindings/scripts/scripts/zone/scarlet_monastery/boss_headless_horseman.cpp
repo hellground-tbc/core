@@ -721,7 +721,7 @@ struct TRINITY_DLL_DECL boss_headless_horsemanAI : public ScriptedAI
                 if(cleave < diff)
                 {
                     DoCast(m_creature->getVictim(),SPELL_CLEAVE);
-                    cleave = 2000 +rand()4000;       //1 cleave per 2.0-6.0sec
+                    cleave = 2000 +rand()%4000;       //1 cleave per 2.0-6.0sec
                 }
                 else
                     cleave -= diff;

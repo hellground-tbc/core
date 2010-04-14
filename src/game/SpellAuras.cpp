@@ -1425,11 +1425,12 @@ void Aura::TriggerSpell()
                     // Nitrous Boost
                     case 27746:
                     {
-                        if (caster->GetPower(POWER_MANA) >= 10)
+                        if(caster->GetPower(POWER_MANA) >= 10)
                         {
                             caster->ModifyPower( POWER_MANA, -10 );
                             caster->SendEnergizeSpellLog(caster, 27746, -10, POWER_MANA);
-                        } else
+                        }
+                        else
                         {
                             caster->RemoveAurasDueToSpell(27746);
                             return;
@@ -1555,8 +1556,10 @@ void Aura::TriggerSpell()
                     case 31944:
                     {
                         int32 damage = 2250 - (150 * m_tickNumber-1);
-                        if(damage < 0) damage = 0;
-                            m_target->CastCustomSpell(m_target, 31969, &damage, NULL, NULL, true, 0, this, originalCasterGUID);
+                        if(damage < 0)
+                            damage = 0;
+
+                        m_target->CastCustomSpell(m_target, 31969, &damage, NULL, NULL, true, 0, this, originalCasterGUID);
                         return;
                     }
 //                    // Teleport Test
@@ -1600,30 +1603,31 @@ void Aura::TriggerSpell()
                         if(!caster->HasUnitMovementFlag(MOVEMENTFLAG_FALLING))
                         {
                             if(height < 55 && height > 50)
+                            {
+                                caster->CastSpell(m_target, 34480, true);
+                                if(Aura* GLapse = caster->GetAura(34480, 1))
                                 {
-                                    caster->CastSpell(m_target, 34480, true);
-                                    if(Aura* GLapse = caster->GetAura(34480, 1))
-                                    {
-                                        GLapse->SetAuraDuration(duration);
-                                        GLapse->UpdateAuraDuration();
-                                    }
+                                    GLapse->SetAuraDuration(duration);
+                                    GLapse->UpdateAuraDuration();
                                 }
+                            }
 
                             if(height < 50)
+                            {
+                                caster->CastSpell(m_target, 34480, true);
+                                if(Aura* GLapse = caster->GetAura(34480, 1))
                                 {
-                                    caster->CastSpell(m_target, 34480, true);
-                                    if(Aura* GLapse = caster->GetAura(34480, 1))
-                                    {
-                                        GLapse->SetAuraDuration(duration);
-                                        GLapse->UpdateAuraDuration();
-                                    }
-                                    caster->CastSpell(m_target, 39432, true);
-                                    if(Aura* aur = caster->GetAura(39432, 0))
-                                    {
-                                        aur->SetAuraDuration(duration);
-                                        aur->UpdateAuraDuration();
-                                    }
+                                    GLapse->SetAuraDuration(duration);
+                                    GLapse->UpdateAuraDuration();
                                 }
+                             
+                                caster->CastSpell(m_target, 39432, true);
+                                if(Aura* aur = caster->GetAura(39432, 0))
+                                {
+                                    aur->SetAuraDuration(duration);
+                                    aur->UpdateAuraDuration();
+                                }
+                            }
                         }
                         break;
                       }

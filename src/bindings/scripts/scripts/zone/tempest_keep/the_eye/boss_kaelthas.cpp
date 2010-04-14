@@ -400,7 +400,8 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
         for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
         {
             Player* i_pl = i->getSource();
-            i_pl->RemoveAurasDueToSpell(SPELL_MIND_CONTROL);
+            i_pl->RemoveAurasDueToSpell(SPELL_MIND_CONTROL); // Mind Control
+            i_pl->RemoveAurasDueToSpell(36480); // Mental Protection Field
         }
     }
 
