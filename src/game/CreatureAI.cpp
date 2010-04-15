@@ -50,6 +50,9 @@ bool UnitAI::CanCast(Unit* Target, SpellEntry const *Spell, bool Triggered)
     if(!Triggered && me->GetTypeId() == TYPEID_PLAYER && ((Player*)me)->HasGlobalCooldown(Spell))
         return false;
 
+    if(!Triggered && me->GetTypeId() == TYPEID_PLAYER && ((Player*)me)->HasSpellCooldown(Spell->Id))
+        return false;
+
     //Check for power
     if (!Triggered && me->GetPower((Powers)Spell->powerType) < Spell->manaCost)
         return false;
