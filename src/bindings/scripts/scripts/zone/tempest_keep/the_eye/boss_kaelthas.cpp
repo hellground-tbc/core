@@ -478,36 +478,20 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
         AdvisorGuid[2] = pInstance->GetData64(DATA_GRANDASTROMANCERCAPERNIAN);
         AdvisorGuid[3] = pInstance->GetData64(DATA_MASTERENGINEERTELONICUS);
 
-        if(!AdvisorGuid[0] || !AdvisorGuid[1] || !AdvisorGuid[2] || !AdvisorGuid[3])
-        {
-            error_log("TSCR: Kael'Thas One or more advisors missing, Skipping Phases 1-3");
-            DoYell("TSCR: Kael'Thas One or more advisors missing, Skipping Phases 1-3", LANG_UNIVERSAL, NULL);
+        if(!AdvisorGuid[0] || !AdvisorGuid[1] || !AdvisorGuid[2] || AdvisorGuid[3])
+            return;
 
-            DoScriptText(SAY_PHASE4_INTRO2, m_creature);
-            Phase = 4;
+        PrepareAdvisors();
+        DeleteLegs();
+        DoScriptText(SAY_INTRO, m_creature);
 
-            pInstance->SetData(DATA_KAELTHASEVENT, 4);
+        pInstance->SetData(DATA_KAELTHASEVENT, IN_PROGRESS);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
 
-            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-            m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                AttackStart(target);
-            }
-        else
-        {
-            PrepareAdvisors();
-            DeleteLegs();
-
-            DoScriptText(SAY_INTRO, m_creature);
-
-            pInstance->SetData(DATA_KAELTHASEVENT, IN_PROGRESS);
-            m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-
-            PhaseSubphase = 0;
-            Phase_Timer = 23000;
-            Phase = 1;
-        }
+        PhaseSubphase = 0;
+        Phase_Timer = 23000;
+        Phase = 1;
+        DoZoneInCombat();
     }
     void MoveInLineOfSight(Unit *who)
     {
@@ -700,28 +684,24 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
             return;
         }
 
-        if(pInstance && Phase)
+        if(pInstance && pInstance->GetData(DATA_KAELTHASEVENT) != NOT_STARTED)
         {
             if(Check_Timer < diff)
             {
-                if(pInstance->GetData(DATA_KAELTHASEVENT) != DONE && pInstance->GetData(DATA_KAELTHASEVENT) != NOT_STARTED)
+                if(m_creature->getThreatManager().getThreatList().empty())
                 {
-                    if(m_creature->getThreatManager().getThreatList().empty())
-                    {
-                        EnterEvadeMode();
-                        return;
-                    }
-                    else
-                        DoZoneInCombat();
-
-                    if(pInstance->GetData(DATA_KAELTHASEVENT) == 5)
-                    { 
-                        if(m_creature->hasUnitState(UNIT_STAT_CHASE))
-                            m_creature->GetMotionMaster()->Clear();
-                    }
-
-                    Check_Timer = 2000;
+                    EnterEvadeMode();
+                    return;
                 }
+                else
+                    DoZoneInCombat();
+
+                if(pInstance->GetData(DATA_KAELTHASEVENT) == 5)
+                { 
+                    if(m_creature->hasUnitState(UNIT_STAT_CHASE))
+                        m_creature->GetMotionMaster()->Clear();
+                }
+                Check_Timer = 1000;
             }
             else
                 Check_Timer -= diff;
