@@ -516,6 +516,13 @@ bool GossipHello_go_skull_pile(Player *player, GameObject* _GO)
 
 void SendActionMenu_go_skull_pile(Player *player, GameObject* _GO, uint32 action)
 {
+    // GO should be despawned by spell casted below, but it's not working :(
+    if(player->HasItemCount(32620, 10))
+    {
+        _GO->SetGoState(0);
+        _GO->SetRespawnTime(600);
+    }
+
     switch(action)
     {
         case GOSSIP_ACTION_INFO_DEF + 1:
@@ -565,12 +572,339 @@ bool GossipSelect_go_ancient_skull_pile(Player *player, GameObject* _GO, uint32 
             {
                 player->DestroyItemCount(32720, 1, true);
                 player->SummonCreature(21838, _GO->GetPositionX(), _GO->GetPositionY(), _GO->GetPositionZ(), player->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 0);
-                //_GO->Delete(); despawn _GO here
+                _GO->SetGoState(0);
+                _GO->SetRespawnTime(600);
             }
             break;
     }
     return true;
 }
+
+/*######
+## mob_terokk
+######*/
+
+#define SPELL_SHADOW_BOLT_VOLLEY    40721
+#define SPELL_CLEAVE                15284
+#define SPELL_DIVINE_SHIELD         40733
+#define SPELL_ENRAGE                28747   
+#define SPELL_WILL_OF_ARRAKOA_GOD   40722
+#define SPELL_CHOSEN_ONE            40726
+#define SPELL_ANCIENT_FLAMES        40657
+#define SPELL_SKYGUARD_FLARE_TARGET 40656
+#define SPELL_SKYGUARD_FLARE        40655
+
+float skyguardAltitude = 324;
+float groundAltitiude = 286;
+
+float skyguardSpawn[3][2] = {
+    { -3660, 3535 },
+    { -3685, 3523 },
+    { -3694, 3554 }
+};
+
+float skyguardWPStart[3][2] = {
+    { -3761, 3515 },
+    { -3786, 3527 },
+    { -3795, 3534 }
+};
+
+float skyguardWPMiddle[3] = {
+    -3785, 3507, 305
+};
+
+float skyguardWPs[3][2] = {
+    { -3777, 3474 },
+    { -3823, 3499 },
+    { -3807, 3532 }
+};
+
+struct TRINITY_DLL_DECL mob_terokkAI : public ScriptedAI
+{
+    mob_terokkAI(Creature* c) : ScriptedAI(c) {}
+
+    uint32 ShadowBoltVolley_Timer;
+    uint32 Cleave_Timer;
+    uint32 ChosenOne_Timer;
+    uint32 ChosenOneActive_Timer;
+    uint32 SkyguardFlare_Timer;
+    uint64 ChosenOneTarget;
+    uint64 SkyguardGUIDs[3];
+    uint32 CheckTimer;
+    uint8 phase;            // 0: 100% to 70% hp, 1: under 30% hp and shield up, 2: under 30% hp and shield down
+
+    void Reset()
+    {
+        ResetSkyguards();
+        ShadowBoltVolley_Timer = 5000;
+        Cleave_Timer = 7000;
+        ChosenOne_Timer = 30000;
+        ChosenOneActive_Timer = 0;
+        ChosenOneTarget = 0;
+        phase = 0;
+        for(int i = 0; i < 3; i++)
+            SkyguardGUIDs[i] = 0;
+    }
+
+    void Aggro(Unit *who) {}
+
+    void Despawn(Unit *unit)
+    {
+        unit->CombatStop();
+        unit->CleanupsBeforeDelete();
+        unit->AddObjectToRemoveList();
+    }
+
+    void ResetSkyguards()
+    {
+        for(int i = 0; i < 3; i++)
+        {
+            if(SkyguardGUIDs[i])
+                if(Creature* skyguard = Creature::GetCreature(*m_creature, SkyguardGUIDs[i]))            
+                    skyguard->GetMotionMaster()->MovePoint(4, skyguardSpawn[i][0], skyguardSpawn[i][1], skyguardAltitude);
+            SkyguardGUIDs[i] = 0;
+        }
+    }
+
+    void EnterEvadeMode()
+    {
+        ResetSkyguards();
+        ScriptedAI::EnterEvadeMode();
+    }
+
+    void JustDied(Unit *)
+    {
+        ResetSkyguards();
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if( ShadowBoltVolley_Timer < diff )
+        {
+            DoCast(m_creature, SPELL_SHADOW_BOLT_VOLLEY);
+            ShadowBoltVolley_Timer = 10000 + rand()%5000;
+        }
+        else
+            ShadowBoltVolley_Timer -= diff;
+
+        if( Cleave_Timer < diff )
+        {
+            DoCast(m_creature->getVictim(), SPELL_CLEAVE);
+            Cleave_Timer = 7000 + rand() % 2000;
+        }
+        else 
+            Cleave_Timer -= diff;
+
+        if( ChosenOneTarget )
+        {
+            if( ChosenOneActive_Timer < diff )
+            {
+                if(m_creature->getVictim()->GetGUID() == ChosenOneTarget)
+                    m_creature->AddThreat(m_creature->getVictim(), -500000.0f);
+                m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
+                ChosenOneActive_Timer = 0;
+                ChosenOneTarget = 0;
+            }
+            else
+                ChosenOneActive_Timer -= diff;
+        }
+
+        if(phase == 0)
+        {
+            if( ChosenOne_Timer < diff )
+            {
+                if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                {
+                    DoCast(target,SPELL_CHOSEN_ONE);
+                    m_creature->AddThreat(target, 500000.0f);
+                    m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
+                    ChosenOneTarget = target->GetGUID();
+                    ChosenOneActive_Timer = 12000;
+                    ChosenOne_Timer = 30000 + rand() % 20000;
+                }
+            }
+            else
+                ChosenOne_Timer -= diff;
+        }
+
+        if(phase == 0 && m_creature->GetHealth() / (float)m_creature->GetMaxHealth() < 0.30f)
+        {
+            phase = 1;
+            DoCast(m_creature, SPELL_DIVINE_SHIELD, true);
+            for(int i = 0; i < 3; i++)
+                if(Creature *skyguard = m_creature->SummonCreature(23377, skyguardSpawn[i][0], skyguardSpawn[i][1], skyguardAltitude, 3.30f, TEMPSUMMON_MANUAL_DESPAWN, 0))
+                {
+                    SkyguardGUIDs[i] = skyguard->GetGUID();
+                    skyguard->setActive(true);
+                    skyguard->GetMotionMaster()->MovePoint(0, skyguardWPStart[i][0], skyguardWPStart[i][1], skyguardAltitude );
+                    skyguard->Mount(21158);
+                }
+            
+            CheckTimer = 2000;
+            SkyguardFlare_Timer = 25000;
+        }
+
+        if(phase > 0)
+        {
+            if(CheckTimer < diff)
+            {
+                std::list<Creature*> skyguardTargets = DoFindAllCreaturesWithEntry(23277, 5);
+                if(phase == 1)
+                {
+                    if(!skyguardTargets.empty())
+                    {
+                        m_creature->RemoveAurasDueToSpell(SPELL_DIVINE_SHIELD);
+                        DoCast(m_creature, SPELL_ENRAGE, true);
+                        phase = 2;
+                    }
+                }
+                else    // phase == 2
+                {
+                    if(skyguardTargets.empty())
+                    {
+                        m_creature->RemoveAurasDueToSpell(SPELL_ENRAGE);
+                        DoCast(m_creature, SPELL_DIVINE_SHIELD, true);
+                        phase = 1;
+                    }
+                }
+                CheckTimer = 2000;
+            }
+            else
+                CheckTimer -= diff;
+
+            if(SkyguardFlare_Timer < diff)
+            {
+                if(Creature *skyguard = Creature::GetCreature(*m_creature, SkyguardGUIDs[rand() % 3]))
+                    skyguard->GetMotionMaster()->MovePoint(3, skyguardWPMiddle[0], skyguardWPMiddle[1], skyguardWPMiddle[2]);
+                SkyguardFlare_Timer = 30000;
+            }
+            else
+                SkyguardFlare_Timer -= diff;
+
+        }
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_terokk(Creature *_Creature)
+{
+    return new mob_terokkAI (_Creature);
+}
+
+/*
+* npc_skyguard_ace
+*/
+
+struct TRINITY_DLL_DECL npc_skyguard_aceAI : public ScriptedAI
+{
+    
+    npc_skyguard_aceAI(Creature* c) : ScriptedAI(c) {}
+
+    uint64 TargetGUID;
+    uint32 TargetLifetime;
+    uint32 Move_Timer;
+    int NextWP;
+
+    void Reset()
+    {
+        TargetGUID = 0;
+        TargetLifetime = 0;
+        Move_Timer = -1;
+    }
+
+     void Aggro(Unit *who) {}
+
+    void MovementInform(uint32 type, uint32 id)
+    {
+        if(type != POINT_MOTION_TYPE)
+            return;
+        
+        switch(id)
+        {
+            case 0:
+            case 1:
+            case 2:
+                NextWP = (id + 1)%3;
+                Move_Timer = 1;
+                break;
+            case 3:
+                DoCast(me, SPELL_SKYGUARD_FLARE, false);
+                NextWP = rand() % 3;
+                Move_Timer = 9000;
+                break;
+            case 4:
+                me->CombatStop();
+                me->CleanupsBeforeDelete();
+                me->AddObjectToRemoveList();
+                break;
+        }
+    }
+
+    void SpellHitTarget(Unit *target, const SpellEntry* spell)
+    {
+        if(spell->Id == SPELL_ANCIENT_FLAMES)
+        {
+            if(Unit* unit = me->GetMap()->GetCreature(TargetGUID))
+            {
+                unit->CastSpell(unit, SPELL_ANCIENT_FLAMES, true);
+            }
+        }
+    }
+
+    void JustSummoned(Creature *creature)
+    {
+        if(creature->GetEntry() == 23277)
+        {
+            float x, y, z;
+            creature->GetPosition(x, y, z);
+            z = groundAltitiude;
+            creature->Relocate(x, y, z);
+            TargetGUID = creature->GetGUID();
+            TargetLifetime = 21000;
+            DoCast(creature, SPELL_ANCIENT_FLAMES, false);
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(TargetGUID)
+        {
+            if(TargetLifetime < diff)
+            {
+                if(Unit* unit = me->GetMap()->GetCreature(TargetGUID))
+                {
+                    unit->CombatStop();
+                    unit->CleanupsBeforeDelete();
+                    unit->AddObjectToRemoveList();
+                }
+                TargetGUID = 0;
+            }
+            else
+                TargetLifetime -= diff;
+        }
+        
+        if(Move_Timer >= 0)
+        {
+            if(Move_Timer < diff)
+            {
+                me->GetMotionMaster()->MovePoint(NextWP, skyguardWPs[NextWP][0], skyguardWPs[NextWP][1], skyguardAltitude);
+                Move_Timer = -1;
+            }
+            else
+                Move_Timer -= diff;
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_skyguard_ace(Creature *_Creature)
+{
+    return new npc_skyguard_aceAI (_Creature);
+}
+
 
 /***
 Script for Quest: Hungry Nether Rays (11093)
@@ -660,6 +994,16 @@ void AddSC_terokkar_forest()
     newscript->Name="go_ancient_skull_pile";
     newscript->pGOHello  = &GossipHello_go_ancient_skull_pile;
     newscript->pGOSelect = &GossipSelect_go_ancient_skull_pile;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="mob_terokk";
+    newscript->GetAI = &GetAI_mob_terokk;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_skyguard_ace";
+    newscript->GetAI = &GetAI_npc_skyguard_ace;
     newscript->RegisterSelf();
 
     newscript = new Script;
