@@ -1051,8 +1051,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                               case 0: DoScriptText(SAY_MINDCONTROL1, m_creature); break;
                               case 1: DoScriptText(SAY_MINDCONTROL2, m_creature); break;
                             }
-                            
-                            for (uint32 i = 0; i < 3; i++)
+                            for (uint32 i = 0; i < urand(2, 3); i++)
                             {
                                 Unit* target =SelectUnit(SELECT_TARGET_RANDOM, 1, 80.0, true, m_creature->getVictim());
                                 if(!target)
@@ -1081,7 +1080,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                                 case 0: DoScriptText(SAY_MINDCONTROL1, m_creature); break;
                                 case 1: DoScriptText(SAY_MINDCONTROL2, m_creature); break;
                               }
-                             for (uint32 i = 0; i < 3; i++)
+                             for (uint32 i = 0; i < urand(2, 3); i++)
                              {
 
                                  Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, 80.0, true, m_creature->getVictim());
