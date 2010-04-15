@@ -425,7 +425,8 @@ void WorldSession::HandleLogoutCancelOpcode( WorldPacket & /*recv_data*/ )
         GetPlayer()->SetStandState(PLAYER_STATE_NONE);
 
         //! DISABLE_ROTATE
-        GetPlayer()->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE);
+        if(!GetPlayer()->isCharmed())
+            GetPlayer()->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE);
     }
 
     sLog.outDebug( "WORLD: sent SMSG_LOGOUT_CANCEL_ACK Message" );

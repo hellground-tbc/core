@@ -251,7 +251,7 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
         return;
     }
 
-    if (GetPlayer()->GetDontMove())
+    if (GetPlayer()->GetDontMove() || GetPlayer()->isCharmed())
         return;
 
     //Save movement flags
