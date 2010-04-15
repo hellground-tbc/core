@@ -1596,10 +1596,9 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
         //Fireball_Timer
         if(Fireball_Timer < diff)
         {
-            if(m_creature->GetDistance2d(m_creature->getVictim()) < 35.0f)
-                AddSpellToCast(m_creature->getVictim(), SPELL_CAPERNIAN_FIREBALL);
-                //DoCast(m_creature->getVictim(), SPELL_CAPERNIAN_FIREBALL);
-            Fireball_Timer = 2000;   // spam fireball casts if ready
+            if(!m_creature->IsNonMeleeSpellCasted(false) && m_creature->GetDistance2d(m_creature->getVictim()) < 35.0f)
+                DoCast(m_creature->getVictim(), SPELL_CAPERNIAN_FIREBALL);
+            Fireball_Timer = 2000+diff;   // spam fireball casts if ready
         }
         else 
             Fireball_Timer -= diff;
@@ -1611,11 +1610,9 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
             target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_CONFLAGRATION), true);
 
             if(target)
-                AddSpellToCast(target, SPELL_CONFLAGRATION);
-                //DoCast(target, SPELL_CONFLAGRATION, true);
+                DoCast(target, SPELL_CONFLAGRATION, true);
             else
-                AddSpellToCast(m_creature->getVictim(), SPELL_CONFLAGRATION);
-                //DoCast(m_creature->getVictim(), SPELL_CONFLAGRATION, true);
+                DoCast(m_creature->getVictim(), SPELL_CONFLAGRATION, true);
 
             Conflagration_Timer = 10000+rand()%5000;
         }
@@ -1639,8 +1636,8 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
             }
 
             if(InMeleeRange)
-                //ForceAOESpellCast(SPELL_ARCANE_EXPLOSION);
-                DoCastAOE(SPELL_ARCANE_EXPLOSION);
+                ForceAOESpellCast(SPELL_ARCANE_EXPLOSION);
+                //DoCastAOE(SPELL_ARCANE_EXPLOSION);
 
             ArcaneExplosion_Timer = 2000+rand()%2000;
         }
