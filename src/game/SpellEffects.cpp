@@ -891,6 +891,33 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->CastCustomSpell(m_caster, 12976, &healthModSpellBasePoints0, NULL, NULL, true, NULL);
                     return;
                 }
+                case 13006:                                 // gnomish shrink ray
+                {
+                    if(!unitTarget)
+                        return;
+
+                    if(urand(0, 99) > 10)
+                        m_caster->CastSpell(unitTarget, 13003, true);
+                    else                                    // 10% (?guessed) chance for malfunction
+                    {
+                        switch(urand(0, 3))
+                        {
+                            case 0:
+                                m_caster->CastSpell(unitTarget, 13004, true);
+                                break;
+                            case 1:
+                                m_caster->CastSpell(m_caster, 13003, true);
+                                break;
+                            case 2:
+                                m_caster->CastSpell(m_caster, 13004, true);
+                                break;
+                            case 3:
+                                m_caster->CastSpell(m_caster, 13010, true);
+                                break;
+                        }
+                    }
+                    return;
+                }
                 case 13120:                                 // net-o-matic
                 {
                     if(!unitTarget)
