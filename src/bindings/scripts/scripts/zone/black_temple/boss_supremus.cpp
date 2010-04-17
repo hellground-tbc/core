@@ -117,7 +117,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
         PhaseSwitchTimer = 60000;
         SummonVolcanoTimer = 5000;
         BerserkTimer = 900000;                              // 15 minute enrage
-        CheckTimer = 3000;
+        CheckTimer = 1000;
 
         WorldLocation wLoc;
 
@@ -188,18 +188,13 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-
-        if (!UpdateVictim())
+        if(!UpdateVictim())
             return;
 
-        if (CheckTimer < diff)
+        if(CheckTimer < diff)
         {
-            if (m_creature->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 200)
-                EnterEvadeMode();
-            else
-                DoZoneInCombat();
-
-            CheckTimer = 2000;
+            DoZoneInCombat();
+            CheckTimer = 1000;
         }
         else 
             CheckTimer -= diff;
@@ -218,7 +213,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
             if(!target)
                 target = m_creature->getVictim();
 
-            DoCast(m_creature, SPELL_MOLTEN_PUNCH);
+            AddSpellToCast(m_creature, SPELL_MOLTEN_PUNCH);
             SummonFlameTimer = 20000;
         }
         else
@@ -230,7 +225,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
             {
                 if(Unit* target = CalculateHatefulStrikeTarget())
                 {
-                    DoCast(target, SPELL_HATEFUL_STRIKE);
+                    AddSpellToCast(target, SPELL_HATEFUL_STRIKE);
                     HatefulStrikeTimer = 8000;
                 }
             }
@@ -253,7 +248,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
             else
                 SwitchTargetTimer -= diff;
             
-            if(MoltenPunch_Timer < diff)
+            /*if(MoltenPunch_Timer < diff)
             {
                 if(m_creature->IsWithinDistInMap(m_creature->getVictim(), 40))
                 {
@@ -261,10 +256,10 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
                     MoltenPunch_Timer = 8000 +diff;
                 }
                 else
-                    MoltenPunch_Timer = 2000;
+                    MoltenPunch_Timer = 1000;
             }
             else
-                MoltenPunch_Timer -= diff;
+                MoltenPunch_Timer -= diff;*/
 
             if(SummonVolcanoTimer < diff)
             {
