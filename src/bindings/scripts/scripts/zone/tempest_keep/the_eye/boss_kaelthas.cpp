@@ -478,8 +478,8 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
         AdvisorGuid[2] = pInstance->GetData64(DATA_GRANDASTROMANCERCAPERNIAN);
         AdvisorGuid[3] = pInstance->GetData64(DATA_MASTERENGINEERTELONICUS);
 
-        if(!AdvisorGuid[0] || !AdvisorGuid[1] || !AdvisorGuid[2] || AdvisorGuid[3])
-            return;
+        //if(!AdvisorGuid[0] || !AdvisorGuid[1] || !AdvisorGuid[2] || AdvisorGuid[3]) // somehow cannot be checked here cause event is always returning
+            //return;
 
         PrepareAdvisors();
         DeleteLegs();
@@ -1810,7 +1810,6 @@ struct TRINITY_DLL_DECL mob_phoenix_tkAI : public ScriptedAI
     {
         m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);//birds can fly! :)
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_SCHOOL_IMMUNITY, true);    //immune to players banish effects, but not banishing in phase 5
-        m_creature->ApplySpellImmune(1, IMMUNITY_STATE, SPELL_AURA_MOD_STUN, true);
         Cycle_Timer = 2000;
         Egg = true;
         m_creature->CastSpell(m_creature,SPELL_BURN,true);
