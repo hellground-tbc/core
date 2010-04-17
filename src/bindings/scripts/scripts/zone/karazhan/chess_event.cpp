@@ -786,6 +786,50 @@ int boss_MedivhAI::GetLifePriority(uint64 piece)
     return tmpPriority;
 }
 
+int boss_MedivhAI::GetAttackPriority(uint64 piece)
+{
+    Unit * uPiece = m_creature->GetUnit(*m_creature, piece);
+
+    if (!uPiece)
+        return 0;
+
+    int tmpPriority = 0;
+
+    switch (uPiece->GetEntry())
+    {
+        case NPC_PAWN_A:
+        case NPC_PAWN_H:
+            tmpPriority += 5;
+            break;
+        case NPC_KING_A:
+        case NPC_KING_H:
+            tmpPriority += 15;
+            break;
+        case NPC_BISHOP_A:
+        case NPC_BISHOP_H:
+            tmpPriority += 15;
+            break;
+        case NPC_ROOK_A:
+        case NPC_ROOK_H:
+            tmpPriority += 5;
+            break;
+        case NPC_KNIGHT_A:
+        case NPC_KNIGHT_H:
+            tmpPriority += 5;
+            break;
+        case NPC_QUEEN_A:
+        case NPC_QUEEN_H:
+            tmpPriority += 10;
+            break;
+        default:
+            break;
+    }
+
+    tmpPriority *= (1- (uPiece->GetHealth()/uPiece->GetMaxHealth()));
+
+    return tmpPriority;
+}
+
 bool boss_MedivhAI::IsEmptySquareInRange(uint64 piece, int range)
 {
     if (!piece || !range)
@@ -897,7 +941,7 @@ uint64 boss_MedivhAI::GetSpellTarget(uint64 caster, int range, bool heal)
 
     int priority = START_PRIORITY, prevPriority = 0;
 
-    std::list<Priority> tmpPriorityList;
+    std::list<Priority> tmpList;
     std::list<uint64> tmpPossibleTargetsList;
     uint64 tmpGUID;
 
@@ -977,8 +1021,28 @@ uint64 boss_MedivhAI::GetSpellTarget(uint64 caster, int range, bool heal)
 
         // calculate and add priority
 
+        int prioritySum = 0;
 
+        for (std::list<uint64>::iterator i = tmpPossibleTargetsList.begin(); i != tmpPossibleTargetsList.end(); ++i)
+        {
+            Priority tempPriority;
+            tempPriority.prior = START_PRIORITY;
+            tempPriority.GUID = *i;
 
+            tempPriority.prior += GetCountOfEnemyInMelee(*i) * MELEE_PRIORITY + urand(0, RAND_PRIORITY) + GetLifePriority(*i);
+
+            prioritySum += tempPriority.prior;
+            tmpList.push_back(tempProirity);
+        }
+
+        int chosen = urand(0, prioritySum), prevPrior = 0;
+
+        for (std::list<Priority>::iterator i = tmpList.begin(); i!= tmpList.end(); ++i)
+        {
+            if (prevPrior < chosen && (*i).prior >= chosen)
+                return (*i).GUID;
+            prevPrior = (*i).prior;
+        }
     }
     else        //if !heal
     {
@@ -1052,6 +1116,29 @@ uint64 boss_MedivhAI::GetSpellTarget(uint64 caster, int range, bool heal)
         }
 
         // calculate and add priority
+
+        int prioritySum = 0;
+
+        for (std::list<uint64>::iterator i = tmpPossibleTargetsList.begin(); i != tmpPossibleTargetsList.end(); ++i)
+        {
+            Priority tempPriority;
+            tempPriority.prior = START_PRIORITY;
+            tempPriority.GUID = *i;
+
+            tempPriority.prior += GetCountOfEnemyInMelee(*i) * MELEE_PRIORITY + urand(0, RAND_PRIORITY) + GetAttackPriority(*i);
+
+            prioritySum += tempPriority.prior;
+            tmpList.push_back(tempProirity);
+        }
+
+        int chosen = urand(0, prioritySum), prevPrior = 0;
+
+        for (std::list<Priority>::iterator i = tmpList.begin(); i!= tmpList.end(); ++i)
+        {
+            if (prevPrior < chosen && (*i).prior >= chosen)
+                return (*i).GUID;
+            prevPrior = (*i).prior;
+        }
     }
 }
 
@@ -1792,25 +1879,148 @@ void boss_MedivhAI::AddTriggerToMove(uint64 trigger, uint64 piece, bool player)
             tmpList.push_back(tempProirity);
         }
 
-        int choice = urand(0, prioritySum), prevPrior = 0;
-        uint64 choiceGUID = 0;
+        int chosen = urand(0, prioritySum), prevPrior = 0;
+        uint64 chosenGUID = 0;
 
         for (std::list<Priority>::iterator i = tmpList.begin(); i!= tmpList.end(); ++i)
         {
-            if (prevPrior < choice && (*i).prior >= choice)
+            if (prevPrior < chosen && (*i).prior >= chosen)
             {
-                choiceGUID = (*i).GUID;
+                chosenGUID = (*i).GUID;
                 break;
             }
+            prevPrior = (*i).prior;
         }
 
-        // make empty square list
+        // create empty square list
+
+        int8 tmpI = -1, tmpJ = -1, i, j, tmpOffsetI, tmpOffsetJ;
+
+        for (i = 0; i < 8; i++)
+        {
+            for (j = 0; j < 8; j++)
+            {
+                if (chessBoard[i][j].piece == chosenGUID)
+                {
+                    tmpI = i; tmpJ = j;
+                    break;
+                }
+            }
+            //if we find location of piece
+            if (tmpI >= 0 && tmpJ >= 0)
+                break;
+        }
+
+        if (tmpI < 0 || tmpJ < 0)
+        {
+            Unit * uCaster = m_creature->GetUnit(*m_creature, caster);
+            if (uCaster)
+                ((ScriptedAI*)uCaster)->DoSay("AddTriggerToMove(..) : Nie znaleziono mnie na planszy !!", LANG_UNIVERSAL);
+            return false;
+        }
+
+        switch (GetMoveRange(chosenGUID))
+        {
+            case 20:
+                for (i = 0; i < OFFSET20COUNT; i++)
+                {
+                    tmpOffsetI = offsetTab20[i][0];
+                    tmpOffsetJ = offsetTab20[i][1];
+
+                    if (tmpI + tmpOffsetI >= 0 && tmpI + tmpOffsetI < 8 &&
+                        tmpJ + tmpOffsetJ >= 0 && tmpJ + tmpOffsetJ < 8)
+                    {
+                       if (ChessSquareIsEmpty(chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].trigger))
+                            emptySquareList.push_back(chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].trigger);
+                    }
+                }
+            case 15:
+                for (i = 0; i < OFFSET15COUNT; i++)
+                {
+                    tmpOffsetI = offsetTab15[i][0];
+                    tmpOffsetJ = offsetTab15[i][1];
+
+                    if (tmpI + tmpOffsetI >= 0 && tmpI + tmpOffsetI < 8 &&
+                        tmpJ + tmpOffsetJ >= 0 && tmpJ + tmpOffsetJ < 8)
+                    {
+                        if (ChessSquareIsEmpty(chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].trigger))
+                            emptySquareList.push_back(chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].trigger);
+                    }
+                }
+            case 8:
+                for (i = 0; i < OFFSET8COUNT; i++)
+                {
+                    tmpOffsetI = offsetTab8[i][0];
+                    tmpOffsetJ = offsetTab8[i][1];
+
+                    if (tmpI + tmpOffsetI >= 0 && tmpI + tmpOffsetI < 8 &&
+                        tmpJ + tmpOffsetJ >= 0 && tmpJ + tmpOffsetJ < 8)
+                    {
+                       if (ChessSquareIsEmpty(chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].trigger))
+                            emptySquareList.push_back(chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].trigger);
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+
+        if (emptySquareList.empty())
+            return;
 
         // calculate and add square move priority
+        tmpList.clear();
+        prioritySum = 0;
 
+        for (std::list<uint64>::iterator i = emptySquareList.begin(); i != emptySquareList.end(); ++)
+        {
+            Priority tmpPrior;
+            tmpPrior.prior = START_PRIORITY;
+            tmpPrior.GUID = (*i);
+
+            switch (GetCountOfEnemyInMelee(*i))
+            {
+                case 1:
+                    tmpPrior.prior += 25;
+                    break;
+                case 2:
+                    tmpPrior.prior += 10;
+                    break;
+                case 3:
+                    tmpPrior.prior -= 10;
+                    break;
+                case 4:
+                    tmpPrior.prior -= 25;
+                    break;
+                default:
+                    break;
+            }
+            //add bonus prior if *i is heal/king ??
+            prioritySum += tmpPrior.prior;
+            tmpList.push_back(tmpPrior);
+        }
+
+        chosen = urand(0, prioritySum);
+        prevPrior = 0;
+        uint64 chosenTriggerGUID = 0;
+
+        for (std::list<Priority>::iterator i = tmpList.begin(); i!= tmpList.end(); ++i)
+        {
+            if (prevPrior < chosen && (*i).prior >= chosen)
+            {
+                chosenTriggerGUID = (*i).GUID;
+                break;
+            }
+            prevPrior = (*i).prior;
+        }
+
+        ChessSquare temp;
+        temp.piece = chosenGUID;
+        temp.trigger = chosenTriggerGUID;
+
+        moveList.push_back(temp);
     }
 }
-
 
 //other
 

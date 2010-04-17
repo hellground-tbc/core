@@ -464,6 +464,8 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
 
     int GetLifePriority (uint64 piece);
 
+    int GetAttackPriority (uint64 piece);
+
     uint64 GetSpellTarget(uint64 caster, int range);
 
     void UpdateAI(const uint32 diff);
