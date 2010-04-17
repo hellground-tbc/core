@@ -33,7 +33,6 @@ TODO:
  - Update instance_karazhan for now it was done only to start it ;]
  - Implement Attack Creature when is in Front or Strafe(for every chesspieces ??) with proper factions.
  - Implement in instance_karazhan dead chess_piece count per side to allow Medivh to cheat when is loosing.(Or different terms was used as a treshold for cheat ?)
- - Prevent Reset() call when player unpossess creature.
  - Set proper position on left or right side from chess board for killed units.
  - and many more ...
 EndScriptData */
@@ -61,6 +60,8 @@ EndScriptData */
 #define POSITION_Z                      221
 
 #define START_PRIORITY          100
+#define RAND_PRIORITY           100
+#define MELEE_PRIORITY          50      // use: + number of melee * MELEE_PRIORITY
 
 #define ABILITY_CHANCE_MAX      100
 #define ABILITY_1_CHANCE_MIN    25
@@ -237,12 +238,6 @@ struct ChessSquare
         piece = 0;
         trigger = 0;
     }
-
-    ChessSquare(uint64 piece, uint64 trigger)
-    {
-        this->piece = piece;
-        this->trigger = trigger;
-    }
 };
 
 struct Priority
@@ -263,13 +258,29 @@ struct Priority
     }
 };
 
+#define OFFSET8COUNT    8
+#define OFFSET15COUNT   12
+#define OFFSET20COUNT   24
+#define OFFSET25COUNT   4
+
+// 0 - caster; 1 - 8yd range; 2 - 15yd range; 3 - 20 yd range; 4 - 25 yd range
+//
+// 4 3 3 3 3 3 4
+// 3 3 2 2 2 3 3
+// 3 2 1 1 1 2 3
+// 3 2 1 0 1 2 3
+// 3 2 1 1 1 2 3
+// 3 3 2 2 2 3 3
+// 4 3 3 3 3 3 4
+//
+
 int8 offsetTab8[8][2] = {{-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {1, 0}, {-1, 1}, {0, 1}, {1, 1}};
 
-int8 offsetTab15[][] =
+int8 offsetTab15[12][2] = {{-2, 0}, {-2, -1}, {-1, -2}, {0. -2}, {1, -2}, {2, -1}, {2, 0}, {2, 1}, {1, 2}, {0, 2}, {-1, 2}. {-1, 2}};
 
-int8 offsetTab20[][] =
+int8 offsetTab20[24][2] = {{-3, 0}, {-3, -1}, {-3, -2}, {-2, -2}, {-2, -3}, {-1, -3}, {0, -3}, {1, -3}, {2, -3}, {2, -2}, {3, -2}, {3, -1}, {3, 0}, {3, -1}, {3, -2}, {2, -2}, {3, -2}, {3, -1}, {3, 0}, {3, -1}, {3, -2}, {2, -2}, {2, -3}, {1, -3}};
 
-int8 offsetTab25[][] =
+int8 offsetTab25[4][2] = {{-3, -3}, {3, -3}, {3, 3}, {-3, 3}};
 
 float hordeSideDeadWP[2][16] = {{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},         //X coord
                                 {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}};        //Y coord
@@ -329,12 +340,14 @@ struct TRINITY_DLL_DECL npc_chesspieceAI : public Scripted_NoMovementAI
     int32 ability1Cooldown;
     int32 ability2Timer;
     int32 ability2Cooldown;
+    int32 attackTimer;
+    int32 attackCooldown = 3000; // ?
 
     int32 nextTryTimer;     //try to cast spell after some time
 
     uint32 ability1ID;
     uint32 ability2ID;
-
+    uint32 attackSpellID;
 
     //Creature *start_marker, *end_marker;
 
@@ -409,6 +422,14 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
 
     bool IsMedivhsPiece(Unit * unit);
 
+    bool IsMedivhsPiece(uint64 unit);
+
+    bool IsEmptySquareInRange(uint64 piece, int range);
+
+    bool IsInMoveList(uint64 unit, bool trigger = false);
+
+    bool IsInRange(uint64 from, uint64 to, int range);
+
     void PrepareBoardForEvent();    //search for pieces, triggers and save them in chessBoard table
 
     void TeleportPlayer(Player * player);   //teleport player to tpLoc
@@ -440,6 +461,8 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
     int GetMoveRange(Unit * piece);
 
     int GetCountOfEnemyInMelee(uint64 piece);
+
+    int GetLifePriority (uint64 piece);
 
     uint64 GetSpellTarget(uint64 caster, int range);
 
