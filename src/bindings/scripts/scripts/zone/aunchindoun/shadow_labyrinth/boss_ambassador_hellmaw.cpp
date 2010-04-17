@@ -105,6 +105,7 @@ struct TRINITY_DLL_DECL boss_ambassador_hellmawAI : public ScriptedAI
         if(IsBanished)
             EnterEvadeMode();
 
+        m_creature->GetMotionMaster()->Clear();
         switch(rand()%3)
         {
             case 0: DoScriptText(SAY_AGGRO1, m_creature); break;
@@ -168,7 +169,7 @@ struct TRINITY_DLL_DECL boss_ambassador_hellmawAI : public ScriptedAI
             patrol = false;
         }
 
-        if (!patrol && OnPath_Delay < diff)
+        if (!InCombat && !patrol && OnPath_Delay < diff)
         {
             m_creature->GetMotionMaster()->Clear();
             m_creature->GetMotionMaster()->MovePath(PATH_FINAL, true);
