@@ -7702,6 +7702,13 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
                 else if ((spellProto->SpellFamilyFlags & 0x0000000080000000LL) && (*i)->GetEffIndex() == 0)
                     AdvertisedBenefit += (*i)->GetModifier()->m_amount;
             }
+            // Blessed Book of Nagrand bonus
+            if((*i)->GetSpellProto()->Id == 32403)
+            {
+                // Flash of Light
+                if ((spellProto->SpellFamilyFlags & 0x0000000040000000LL))
+                    AdvertisedBenefit += (*i)->GetModifier()->m_amount;    
+            }
         }
     }
     // Lesser Healing Wave
