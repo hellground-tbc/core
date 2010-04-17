@@ -45,17 +45,24 @@ struct TRINITY_DLL_DECL instance_shadow_labyrinth : public ScriptedInstance
 
     uint64 RefectoryDoorGUID;
     uint64 ScreamingHallDoorGUID;
+    std::list<uint64> RitualistGUIDList;
 
     uint64 GrandmasterVorpil;
-    uint32 FelOverseerCount;
+    uint32 RitualistCount;
+
+    bool check;
 
     void Initialize()
     {
         RefectoryDoorGUID = 0;
         ScreamingHallDoorGUID = 0;
 
+        RitualistGUIDList.clear();
+
         GrandmasterVorpil = 0;
-        FelOverseerCount = 0;
+        RitualistCount = 0;
+
+        check = false;
 
         for(uint8 i = 0; i < ENCOUNTERS; i++)
             Encounter[i] = NOT_STARTED;
@@ -85,9 +92,11 @@ struct TRINITY_DLL_DECL instance_shadow_labyrinth : public ScriptedInstance
             case 18732:
                 GrandmasterVorpil = creature->GetGUID();
                 break;
-            case 18796:
-                ++FelOverseerCount;
-                debug_log("TSCR: Shadow Labyrinth: counting %u Fel Overseers.",FelOverseerCount);
+            case 18794:
+            //case 20645:
+                RitualistGUIDList.push_back(creature->GetGUID());
+                ++RitualistCount;
+                SetData(TYPE_RITUALIST, NOT_STARTED);
                 break;
         }
     }
@@ -131,19 +140,13 @@ struct TRINITY_DLL_DECL instance_shadow_labyrinth : public ScriptedInstance
                 Encounter[0] = data;
                 break;
 
-            case TYPE_OVERSEER:
-                if( data != DONE )
-                    error_log("TSCR: Shadow Labyrinth: TYPE_OVERSEER did not expect other data than DONE");
-                if( FelOverseerCount )
-                {
-                    --FelOverseerCount;
-                    debug_log("TSCR: Shadow Labyrinth: %u Fel Overseers left to kill.",FelOverseerCount);
-                }
-                if( FelOverseerCount == 0 )
-                {
+            case TYPE_RITUALIST:
+                if(data == NOT_STARTED)
+                    Encounter[1] = NOT_STARTED;
+                if(data == DONE && RitualistCount)
+                    --RitualistCount;
+                if( RitualistCount == 0 )
                     Encounter[1] = DONE;
-                    debug_log("TSCR: Shadow Labyrinth: TYPE_OVERSEER == DONE");
-                }
                 break;
 
             case DATA_BLACKHEARTTHEINCITEREVENT:
@@ -169,7 +172,7 @@ struct TRINITY_DLL_DECL instance_shadow_labyrinth : public ScriptedInstance
 
         if (data == DONE)
         {
-            if (type == TYPE_OVERSEER && FelOverseerCount != 0)
+            if (type == TYPE_RITUALIST && RitualistCount != 0)
                 return;
 
             OUT_SAVE_INST_DATA;
@@ -190,7 +193,7 @@ struct TRINITY_DLL_DECL instance_shadow_labyrinth : public ScriptedInstance
         switch( type )
         {
             case TYPE_HELLMAW: return Encounter[0];
-            case TYPE_OVERSEER: return Encounter[1];
+            case TYPE_RITUALIST: return Encounter[1];
             case DATA_GRANDMASTERVORPILEVENT: return Encounter[3];
             case DATA_MURMUREVENT: return Encounter[4];
         }
@@ -203,6 +206,24 @@ struct TRINITY_DLL_DECL instance_shadow_labyrinth : public ScriptedInstance
             return GrandmasterVorpil;
 
         return 0;
+    }
+
+    void Update (uint32 diff)
+    {
+        Player *player = GetPlayerInMap();
+
+        if(!check && !RitualistGUIDList.empty())
+        {
+            for(std::list<uint64>::iterator iter = RitualistGUIDList.begin(); iter != RitualistGUIDList.end(); ++iter)
+            {
+                Creature* ritualist = Creature::GetCreature(*player, *iter);
+                if(ritualist && ritualist->isDead())
+                    --RitualistCount;
+            }
+            if(!RitualistCount)
+                Encounter[1] = DONE;
+            check = true;
+        }
     }
 
     const char* Save()

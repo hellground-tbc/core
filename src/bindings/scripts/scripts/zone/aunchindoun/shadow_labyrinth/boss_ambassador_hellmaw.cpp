@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Boss_Ambassador_Hellmaw
-SD%Complete: 75
-SDComment: Waypoints after Intro not implemented. Enrage spell missing/not known
+SD%Complete: 99
+SDComment: It appears that it's done now.
 SDCategory: Auchindoun, Shadow Labyrinth
 EndScriptData */
 
@@ -40,7 +40,10 @@ EndScriptData */
 #define SPELL_BANISH            42354
 #define SPELL_CORROSIVE_ACID    33551
 #define SPELL_FEAR              33547
-#define SPELL_ENRAGE            0                           //need to find proper spell
+#define SPELL_ENRAGE            26662
+
+#define PATH_PATROL              2100
+#define PATH_FINAL               2101
 
 struct TRINITY_DLL_DECL boss_ambassador_hellmawAI : public ScriptedAI
 {
@@ -54,15 +57,19 @@ struct TRINITY_DLL_DECL boss_ambassador_hellmawAI : public ScriptedAI
     bool HeroicMode;
 
     uint32 EventCheck_Timer;
+    uint32 Banish_Timer;
     uint32 CorrosiveAcid_Timer;
     uint32 Fear_Timer;
     uint32 Enrage_Timer;
+    uint32 OnPath_Delay;
     bool Intro;
     bool IsBanished;
+    bool patrol;
 
     void Reset()
     {
         EventCheck_Timer = 5000;
+        Banish_Timer = 0;
         CorrosiveAcid_Timer = 25000;
         Fear_Timer = 40000;
         Enrage_Timer = 180000;
@@ -71,33 +78,12 @@ struct TRINITY_DLL_DECL boss_ambassador_hellmawAI : public ScriptedAI
 
         if (pInstance)
         {
-            if (pInstance->GetData(TYPE_HELLMAW) == NOT_STARTED)
+            if (pInstance->GetData(TYPE_HELLMAW) ==  NOT_STARTED)
             {
-                DoCast(m_creature,SPELL_BANISH);
+                DoCast(m_creature,SPELL_BANISH, true);
                 IsBanished = true;
             }
-            else pInstance->SetData(TYPE_HELLMAW,FAIL);
-            if (pInstance->GetData(TYPE_OVERSEER) == DONE)
-            {
-                if (m_creature->HasAura(SPELL_BANISH,0))
-                    m_creature->RemoveAurasDueToSpell(SPELL_BANISH);
-                Intro = true;
-            }
         }
-    }
-
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (m_creature->HasAura(SPELL_BANISH,0))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
-    }
-
-    void MovementInform(uint32 type, uint32 id)
-    {
-        if (type != POINT_MOTION_TYPE)
-            return;
     }
 
     void DoIntro()
@@ -116,6 +102,9 @@ struct TRINITY_DLL_DECL boss_ambassador_hellmawAI : public ScriptedAI
 
     void Aggro(Unit *who)
     {
+        if(IsBanished)
+            EnterEvadeMode();
+
         switch(rand()%3)
         {
             case 0: DoScriptText(SAY_AGGRO1, m_creature); break;
@@ -143,53 +132,80 @@ struct TRINITY_DLL_DECL boss_ambassador_hellmawAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
+        if(!pInstance)
+            return;
+
+        if(IsBanished)
+        {
+             if(Banish_Timer < diff)
+             {
+                 DoCast(m_creature,SPELL_BANISH, true);
+                 Banish_Timer = 40000;
+             }
+             else
+                 Banish_Timer -= diff;
+        }
+
         if (!Intro)
         {
             if (EventCheck_Timer < diff)
             {
-                if(pInstance)
+                if(pInstance->GetData(TYPE_RITUALIST) == DONE)
                 {
-                    if (pInstance->GetData(TYPE_OVERSEER) == DONE)
+                        OnPath_Delay = 0;
                         DoIntro();
                 }
                 EventCheck_Timer = 5000;
-            }else EventCheck_Timer -= diff;
+            }
+            else
+                EventCheck_Timer -= diff;
         }
 
-        if (!InCombat && !IsBanished)
+        if (!InCombat && !IsBanished && !OnPath_Delay)
         {
-            //this is where we add MovePoint()
-            //DoWhine("I haz no mount!", LANG_UNIVERSAL, NULL);
+            m_creature->GetMotionMaster()->MovePath(PATH_PATROL, false);
+            OnPath_Delay = 55000;
+            patrol = false;
         }
+
+        if (!patrol && OnPath_Delay < diff)
+        {
+            m_creature->GetMotionMaster()->Clear();
+            m_creature->GetMotionMaster()->MovePath(PATH_FINAL, true);
+            patrol = true;
+        }
+        else
+            OnPath_Delay -= diff;
 
         if (!UpdateVictim() )
             return;
-
-        if(m_creature->HasAura(SPELL_BANISH, 0))
-        {
-            EnterEvadeMode();
-            return;
-        }
 
         if (CorrosiveAcid_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_CORROSIVE_ACID);
             CorrosiveAcid_Timer = 25000;
-        }else CorrosiveAcid_Timer -= diff;
+        }
+        else
+            CorrosiveAcid_Timer -= diff;
 
         if (Fear_Timer < diff)
         {
             DoCast(m_creature,SPELL_FEAR);
-            Fear_Timer = 35000;
-        }else Fear_Timer -= diff;
+            Fear_Timer = 25000;
+        }
+        else
+            Fear_Timer -= diff;
 
-        /*if (HeroicMode)
+        if (HeroicMode)
         {
             if (Enrage_Timer < diff)
             {
                 DoCast(m_creature,SPELL_ENRAGE);
-            }else Enrage_Timer -= diff;
-        }*/
+                Enrage_Timer = 5*MINUTE*1000;
+            }
+            else 
+                Enrage_Timer -= diff;
+        }
 
         DoMeleeAttackIfReady();
     }
