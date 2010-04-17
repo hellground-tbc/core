@@ -478,8 +478,8 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
         AdvisorGuid[2] = pInstance->GetData64(DATA_GRANDASTROMANCERCAPERNIAN);
         AdvisorGuid[3] = pInstance->GetData64(DATA_MASTERENGINEERTELONICUS);
 
-        //if(!AdvisorGuid[0] || !AdvisorGuid[1] || !AdvisorGuid[2] || AdvisorGuid[3]) // somehow cannot be checked here cause event is always returning
-            //return;
+        if(!AdvisorGuid[0] || !AdvisorGuid[1] || !AdvisorGuid[2] || !AdvisorGuid[3])
+            return;
 
         PrepareAdvisors();
         DeleteLegs();
