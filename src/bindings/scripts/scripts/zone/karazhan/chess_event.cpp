@@ -829,8 +829,7 @@ bool boss_MedivhAI::IsEmptySquareInRange(uint64 piece, int range)
                 if (tmpI + tmpOffsetI >= 0 && tmpI + tmpOffsetI < 8 &&
                     tmpJ + tmpOffsetJ >= 0 && tmpJ + tmpOffsetJ < 8)
                 {
-                    if (!chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].piece &&
-                        !chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].trigger)
+                    if (!chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].piece)
                         return true;
                 }
             }
@@ -842,8 +841,7 @@ bool boss_MedivhAI::IsEmptySquareInRange(uint64 piece, int range)
                 if (tmpI + tmpOffsetI >= 0 && tmpI + tmpOffsetI < 8 &&
                     tmpJ + tmpOffsetJ >= 0 && tmpJ + tmpOffsetJ < 8)
                 {
-                    if (!chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].piece &&
-                        !chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].trigger)
+                    if (!chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].piece)
                         return true;
                 }
             }
@@ -855,8 +853,7 @@ bool boss_MedivhAI::IsEmptySquareInRange(uint64 piece, int range)
                 if (tmpI + tmpOffsetI >= 0 && tmpI + tmpOffsetI < 8 &&
                     tmpJ + tmpOffsetJ >= 0 && tmpJ + tmpOffsetJ < 8)
                 {
-                    if (!chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].piece &&
-                        !chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].trigger)
+                    if (!chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].piece)
                         return true;
                 }
             }

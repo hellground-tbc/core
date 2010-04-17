@@ -61,7 +61,7 @@ EndScriptData */
 
 #define START_PRIORITY          100
 #define RAND_PRIORITY           100
-#define MELEE_PRIORITY          50      // use: + number of melee * MELEE_PRIORITY
+#define MELEE_PRIORITY          50      // use: + melee count * MELEE_PRIORITY
 
 #define ABILITY_CHANCE_MAX      100
 #define ABILITY_1_CHANCE_MIN    25
