@@ -134,8 +134,8 @@ enum ChessEventSpells
     SPELL_IN_GAME           = 30532,
     SPELL_GAME_IN_SESSION   = 39331,
     SPELL_RECENTLY_IN_GAME  = 30529,
-    SPELL_HAND_OF_MEDIVH    = 39339, // 1st cheat: AOE spell burn cell under enemy chesspieces.
-    SPELL_FURY_OF_MEDIVH    = 39383,  // 2nd cheat: Berserk own chesspieces.
+    SPELL_HAND_OF_MEDIVH    = 39339,  // 1st cheat: Berserk own chesspieces.
+    SPELL_FURY_OF_MEDIVH    = 39383,  // 2nd cheat: AOE spell burn cell under enemy chesspieces.
     // 3rd cheat: set own creatures to max health
 
 
