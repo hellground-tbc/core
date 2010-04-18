@@ -123,8 +123,10 @@
        return new boss_lady_blaumeuxAI (_Creature);
    }
 
-  //baron rivendare
-   #define SAY_RIVE_AGGRO1             -1533065
+  //baron rivendare  == boss_highlord_mograineAI on PRE-TBC, needs cleanup and many fixes!!
+  //shouldnt be here, comment it for now
+
+/* #define SAY_RIVE_AGGRO1             -1533065
    #define SAY_RIVE_AGGRO2             -1533066
    #define SAY_RIVE_AGGRO3             -1533067
    #define SAY_RIVE_SLAY1              -1533068
@@ -186,7 +188,7 @@
    {
        return new boss_rivendare_naxxAI (_Creature);
    }
-
+*/
    //thane korthazz
    #define SAY_KORT_AGGRO              -1533051
    #define SAY_KORT_TAUNT1             -1533052
@@ -383,12 +385,12 @@
        newscript->Name = "boss_lady_blaumeux";
        newscript->GetAI = &GetAI_boss_lady_blaumeux;
        newscript->RegisterSelf();
-
+/*
        newscript = new Script;
        newscript->Name = "boss_rivendare_naxx";
        newscript->GetAI = &GetAI_boss_rivendare_naxx;
        newscript->RegisterSelf();
-
+*/
        newscript = new Script;
        newscript->Name = "boss_thane_korthazz";
        newscript->GetAI = &GetAI_boss_thane_korthazz;

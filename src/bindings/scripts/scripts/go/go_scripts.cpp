@@ -163,13 +163,13 @@ bool GOHello_go_tablet_of_the_seven(Player *player, GameObject* _GO)
 /*######
 ## go_teleporter
 ######*/
-
-bool GOHello_go_teleporter(Player *player, GameObject* _GO)
+/*
+bool GOHello_go_teleporter(Player *player, GameObject* _GO) // localisation not known, comment for now
 {
     player->TeleportTo(0, 1807.07f,336.105f,70.3975f,0.0f);
     return false;
 }
-
+*/
 /*#####
 ## go_jump_a_tron
 ######*/
@@ -323,12 +323,12 @@ void AddSC_go_scripts()
     newscript->Name="go_tablet_of_the_seven";
     newscript->pGOHello =           &GOHello_go_tablet_of_the_seven;
     newscript->RegisterSelf();
-
+/*
     newscript = new Script;
     newscript->Name="go_teleporter";
     newscript->pGOHello =           &GOHello_go_teleporter;
     newscript->RegisterSelf();
-
+*/
     newscript = new Script;
     newscript->Name="go_jump_a_tron";
     newscript->pGOHello =           &GOHello_go_jump_a_tron;
