@@ -52,15 +52,17 @@ struct TRINITY_DLL_DECL molten_flameAI : public NullCreatureAI
 
     void Punch()
     {
-        m_creature->SetSpeed(MOVE_WALK, 4.0f, true);
-        m_creature->SetSpeed(MOVE_RUN, 4.0f, true);
+        m_creature->SetSpeed(MOVE_WALK, 3.5f, true);
         if(pInstance)
         {
             Unit *supremus = Unit::GetUnit(*m_creature, pInstance->GetData64(DATA_SUPREMUS));
+            Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, 100.0f, true, m_creature->getVictim());
+            if(!target)
+                target = m_creature->getVictim();
             if(supremus)
             {
                 m_creature->setFaction(supremus->getFaction());
-                float angle = supremus->GetAngle(m_creature);
+                float angle = supremus->GetAngle(target);
                 float x = m_creature->GetPositionX() + 100.0f * cos(angle);
                 float y = m_creature->GetPositionY() + 100.0f * sin(angle);
                 float z = m_creature->GetMap()->GetHeight(x, y, MAX_HEIGHT, true);
@@ -205,10 +207,6 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
 
         if(SummonFlameTimer < diff)
         {
-            Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, 100.0f, true, m_creature->getVictim());
-            if(!target)
-                target = m_creature->getVictim();
-
             AddSpellToCast(m_creature, SPELL_MOLTEN_PUNCH);
             SummonFlameTimer = 20000;
         }
@@ -303,6 +301,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
             PhaseSwitchTimer -= diff;
 
         DoMeleeAttackIfReady();
+        CastNextSpellIfAnyAndReady();
     }
 };
 

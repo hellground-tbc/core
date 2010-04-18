@@ -206,8 +206,12 @@ inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
         return;
     // Apply PersistentAreaAura on target
    
-    if(spellInfo->Id == 38575)
+    if(spellInfo->Id == 38575)  //Toxic Spores
         if(target->HasAura(38575,eff_index))
+            return;
+
+    if(spellInfo->Id == 40253)  //Molten Flame
+        if(target->HasAura(40253,eff_index))
             return;
 
     PersistentAreaAura* Aur = new PersistentAreaAura(spellInfo, eff_index, NULL, target, i_dynobject.GetCaster(), NULL, i_dynobject.GetGUID());
