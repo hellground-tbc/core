@@ -166,6 +166,7 @@ bool OutdoorPvPObjective::AddCreature(uint32 type, uint32 entry, uint32 teamval,
     pCreature->AIM_Initialize();
 
     pCreature->Relocate(x, y, z, o);
+    pCreature->SetHomePosition(x, y, z, o);
 
     if(!pCreature->IsPositionValid())
     {

@@ -451,11 +451,13 @@ struct TRINITY_DLL_DECL boss_headless_horsemanAI : public ScriptedAI
         case 0:
             m_creature->SetVisibility(VISIBILITY_ON);break;
         case 1:
+            {
             Creature *smoke = m_creature->SummonCreature(HELPER,Spawn[1].x,Spawn[1].y,Spawn[1].z,0,TEMPSUMMON_TIMED_DESPAWN,20000);
             if(smoke)
                 ((mob_wisp_invisAI*)smoke->AI())->SetType(3);
             DoCast(m_creature,SPELL_RHYME_BIG);
             break;
+            }
         case 6:
             if(pInstance)
                 pInstance->SetData(GAMEOBJECT_PUMPKIN_SHRINE, 0);   //hide gameobject
@@ -463,6 +465,7 @@ struct TRINITY_DLL_DECL boss_headless_horsemanAI : public ScriptedAI
         case 19:
             m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_FLYING2);break;
         case 20:
+            {
             Phase = 1;
             IsFlying = false;
             wp_reached = false;
@@ -472,6 +475,7 @@ struct TRINITY_DLL_DECL boss_headless_horsemanAI : public ScriptedAI
             if(plr)
                 AttackStart(plr);
             break;
+            }
         }
         ++id;
     }

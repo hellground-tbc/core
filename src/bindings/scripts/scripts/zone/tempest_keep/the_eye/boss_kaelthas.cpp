@@ -479,35 +479,19 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
         AdvisorGuid[3] = pInstance->GetData64(DATA_MASTERENGINEERTELONICUS);
 
         if(!AdvisorGuid[0] || !AdvisorGuid[1] || !AdvisorGuid[2] || !AdvisorGuid[3])
-        {
-            error_log("TSCR: Kael'Thas One or more advisors missing, Skipping Phases 1-3");
-            DoYell("TSCR: Kael'Thas One or more advisors missing, Skipping Phases 1-3", LANG_UNIVERSAL, NULL);
+            return;
 
-            DoScriptText(SAY_PHASE4_INTRO2, m_creature);
-            Phase = 4;
+        PrepareAdvisors();
+        DeleteLegs();
+        DoScriptText(SAY_INTRO, m_creature);
 
-            pInstance->SetData(DATA_KAELTHASEVENT, 4);
+        pInstance->SetData(DATA_KAELTHASEVENT, IN_PROGRESS);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
 
-            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-            m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                AttackStart(target);
-            }
-        else
-        {
-            PrepareAdvisors();
-            DeleteLegs();
-
-            DoScriptText(SAY_INTRO, m_creature);
-
-            pInstance->SetData(DATA_KAELTHASEVENT, IN_PROGRESS);
-            m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-
-            PhaseSubphase = 0;
-            Phase_Timer = 23000;
-            Phase = 1;
-        }
+        PhaseSubphase = 0;
+        Phase_Timer = 23000;
+        Phase = 1;
+        DoZoneInCombat();
     }
     void MoveInLineOfSight(Unit *who)
     {
@@ -700,28 +684,24 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
             return;
         }
 
-        if(pInstance && Phase)
+        if(pInstance && pInstance->GetData(DATA_KAELTHASEVENT) != NOT_STARTED)
         {
             if(Check_Timer < diff)
             {
-                if(pInstance->GetData(DATA_KAELTHASEVENT) != DONE && pInstance->GetData(DATA_KAELTHASEVENT) != NOT_STARTED)
+                if(m_creature->getThreatManager().getThreatList().empty())
                 {
-                    if(m_creature->getThreatManager().getThreatList().empty())
-                    {
-                        EnterEvadeMode();
-                        return;
-                    }
-                    else
-                        DoZoneInCombat();
-
-                    if(pInstance->GetData(DATA_KAELTHASEVENT) == 5)
-                    { 
-                        if(m_creature->hasUnitState(UNIT_STAT_CHASE))
-                            m_creature->GetMotionMaster()->Clear();
-                    }
-
-                    Check_Timer = 2000;
+                    EnterEvadeMode();
+                    return;
                 }
+                else
+                    DoZoneInCombat();
+
+                if(pInstance->GetData(DATA_KAELTHASEVENT) == 5)
+                { 
+                    if(m_creature->hasUnitState(UNIT_STAT_CHASE))
+                        m_creature->GetMotionMaster()->Clear();
+                }
+                Check_Timer = 1000;
             }
             else
                 Check_Timer -= diff;
@@ -1051,8 +1031,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                               case 0: DoScriptText(SAY_MINDCONTROL1, m_creature); break;
                               case 1: DoScriptText(SAY_MINDCONTROL2, m_creature); break;
                             }
-                            
-                            for (uint32 i = 0; i < 3; i++)
+                            for (uint32 i = 0; i < urand(2, 3); i++)
                             {
                                 Unit* target =SelectUnit(SELECT_TARGET_RANDOM, 1, 80.0, true, m_creature->getVictim());
                                 if(!target)
@@ -1081,7 +1060,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                                 case 0: DoScriptText(SAY_MINDCONTROL1, m_creature); break;
                                 case 1: DoScriptText(SAY_MINDCONTROL2, m_creature); break;
                               }
-                             for (uint32 i = 0; i < 3; i++)
+                             for (uint32 i = 0; i < urand(2, 3); i++)
                              {
 
                                  Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, 80.0, true, m_creature->getVictim());
@@ -1597,10 +1576,9 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
         //Fireball_Timer
         if(Fireball_Timer < diff)
         {
-            if(m_creature->GetDistance2d(m_creature->getVictim()) < 35.0f)
-                AddSpellToCast(m_creature->getVictim(), SPELL_CAPERNIAN_FIREBALL);
-                //DoCast(m_creature->getVictim(), SPELL_CAPERNIAN_FIREBALL);
-            Fireball_Timer = 2000;   // spam fireball casts if ready
+            if(!m_creature->IsNonMeleeSpellCasted(false) && m_creature->GetDistance2d(m_creature->getVictim()) < 35.0f)
+                DoCast(m_creature->getVictim(), SPELL_CAPERNIAN_FIREBALL);
+            Fireball_Timer = 2000+diff;   // spam fireball casts if ready
         }
         else 
             Fireball_Timer -= diff;
@@ -1612,11 +1590,9 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
             target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_CONFLAGRATION), true);
 
             if(target)
-                AddSpellToCast(target, SPELL_CONFLAGRATION);
-                //DoCast(target, SPELL_CONFLAGRATION, true);
+                DoCast(target, SPELL_CONFLAGRATION, true);
             else
-                AddSpellToCast(m_creature->getVictim(), SPELL_CONFLAGRATION);
-                //DoCast(m_creature->getVictim(), SPELL_CONFLAGRATION, true);
+                DoCast(m_creature->getVictim(), SPELL_CONFLAGRATION, true);
 
             Conflagration_Timer = 10000+rand()%5000;
         }
@@ -1640,8 +1616,8 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
             }
 
             if(InMeleeRange)
-                //ForceAOESpellCast(SPELL_ARCANE_EXPLOSION);
-                DoCastAOE(SPELL_ARCANE_EXPLOSION);
+                ForceAOESpellCast(SPELL_ARCANE_EXPLOSION);
+                //DoCastAOE(SPELL_ARCANE_EXPLOSION);
 
             ArcaneExplosion_Timer = 2000+rand()%2000;
         }
@@ -1834,7 +1810,6 @@ struct TRINITY_DLL_DECL mob_phoenix_tkAI : public ScriptedAI
     {
         m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);//birds can fly! :)
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_SCHOOL_IMMUNITY, true);    //immune to players banish effects, but not banishing in phase 5
-        m_creature->ApplySpellImmune(1, IMMUNITY_STATE, SPELL_AURA_MOD_STUN, true);
         Cycle_Timer = 2000;
         Egg = true;
         m_creature->CastSpell(m_creature,SPELL_BURN,true);
