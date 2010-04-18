@@ -663,7 +663,6 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public boss_illidari_
         if(DampenMagicTimer < diff)
         {
             DoCast(m_creature, SPELL_DAMPEN_MAGIC);
-            Cooldown = 1000;
             DampenMagicTimer = 67200;                      // almost 1,12 minutes
             ArcaneBoltTimer += 1000;                        // Give the Mage some time to spellsteal Dampen.
         }
@@ -787,7 +786,7 @@ struct TRINITY_DLL_DECL boss_lady_malandeAI : public boss_illidari_councilAI
         {
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
             {
-                AddSpellCast(target, SPELL_DIVINE_WRATH);
+                AddSpellToCast(target, SPELL_DIVINE_WRATH);
                 DivineWrathTimer = 20000 + rand()%20000;
             }
         }

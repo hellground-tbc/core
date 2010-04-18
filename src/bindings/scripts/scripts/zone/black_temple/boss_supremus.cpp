@@ -102,11 +102,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
         if(pInstance)
         {
             if(m_creature->isAlive())
-            {
                 pInstance->SetData(DATA_SUPREMUSEVENT, NOT_STARTED);
-                //ToggleDoors(true);
-            }
-            //else ToggleDoors(false);
         }
 
         MoltenFlameTimer = 10000;
@@ -232,8 +228,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
             else
                 HatefulStrikeTimer -= diff;
         }
-
-        if(!Phase1)
+        else
         {
             if(SwitchTargetTimer < diff)
             {
@@ -248,18 +243,21 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
             else
                 SwitchTargetTimer -= diff;
             
-            /*if(MoltenPunch_Timer < diff)
+            if(MoltenPunch_Timer < diff)
             {
-                if(m_creature->IsWithinDistInMap(m_creature->getVictim(), 40))
+                Unit *target = m_creature->getVictim();
+                if(!m_creature->IsWithinDistInMap(target, 40))
                 {
-                    DoCast(m_creature->getVictim(), SPELL_CHARGE, false);
+                    WorldLocation temp;
+                    target->GetClosePoint(temp.x, temp.y, temp.z, 20.0f, false, m_creature->GetOrientation());
+                    m_creature->CastSpell(temp.x,temp.y,temp.z, SPELL_CHARGE, false);
                     MoltenPunch_Timer = 8000 +diff;
                 }
                 else
                     MoltenPunch_Timer = 1000;
             }
             else
-                MoltenPunch_Timer -= diff;*/
+                MoltenPunch_Timer -= diff;
 
             if(SummonVolcanoTimer < diff)
             {
