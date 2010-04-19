@@ -38,6 +38,10 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
         go = false;
         pos = 0;
+
+        SpellEntry *decaySpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_DEATH_AND_DECAY);
+        if(decaySpell)
+            decaySpell->AttributesEx |= SPELL_ATTR_EX_CHANNELED_1;
     }
 
     uint32 FrostArmorTimer;

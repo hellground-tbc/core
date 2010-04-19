@@ -204,8 +204,8 @@ inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
     // Check target immune to spell or aura
     if (target->IsImmunedToSpell(spellInfo) || target->IsImmunedToSpellEffect(spellInfo->Effect[eff_index], spellInfo->EffectMechanic[eff_index]))
         return;
+
     // Apply PersistentAreaAura on target
-   
     if(spellInfo->Id == 38575)  //Toxic Spores
         if(target->HasAura(38575,eff_index))
             return;

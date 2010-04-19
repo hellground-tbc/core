@@ -96,7 +96,6 @@ namespace VMAP
             */
             virtual void preventMapsFromBeingUsed(const char* pMapIdString) =0;
     };
-
 }
 #endif
 
