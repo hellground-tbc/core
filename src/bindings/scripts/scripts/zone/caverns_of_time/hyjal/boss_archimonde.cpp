@@ -411,44 +411,14 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
     bool CanUseFingerOfDeath()
     {
-        /*
-        // First we check if our current victim is in melee range or not.
-        Unit* victim = m_creature->getVictim();
-        if(victim && m_creature->IsWithinDistInMap(victim, m_creature->GetAttackDistance(victim)))
-            return false;
-
-        std::list<HostilReference*>& m_threatlist = m_creature->getThreatManager().getThreatList();
-        if(m_threatlist.empty())
-            return false;
-
-        std::list<Unit*> targets;
-        std::list<HostilReference*>::iterator itr = m_threatlist.begin();
-        for( ; itr != m_threatlist.end(); ++itr)
-        {
-            Unit* pUnit = Unit::GetUnit((*m_creature), (*itr)->getUnitGuid());
-            if(pUnit && pUnit->isAlive())
-                targets.push_back(pUnit);
-        }
-
-        if(targets.empty())
-            return false;
-
-        targets.sort(TargetDistanceOrder(m_creature));
-        Unit* target = targets.front();
-        if(target)
-        {
-            if(!m_creature->IsWithinDistInMap(target, m_creature->GetAttackDistance(target)))
-                return true;                                // Cast Finger of Death
-            else                                            // This target is closest, he is our new tank
-                m_creature->AddThreat(target, DoGetThreat(m_creature->getVictim()));
-        }*/
-        Unit *target = NULL;
-        target = m_creature->SelectNearestTarget(m_creature->GetAttackDistance(m_creature->getVictim()));
+        if(m_creature->getVictim() && m_creature->IsWithinDistInMap(m_creature->getVictim(), 5.0)
+            return;
+            
+        Unit *target = m_creature->SelectNearestTarget(m_creature->GetAttackDistance(m_creature->getVictim()));
         
-        if (target)
+        if(m_creature->getVictim() && target)
         {
-            if (m_creature->getVictim() && target != m_creature->getVictim())
-                m_creature->AddThreat(target, DoGetThreat(m_creature->getVictim()));
+            m_creature->AddThreat(target, DoGetThreat(m_creature->getVictim()));
             return false;
         }
         
@@ -536,7 +506,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
             if(m_creature->GetUInt64Value(UNIT_FIELD_TARGET) != m_creature->getVictim()->GetGUID())
                 m_creature->SetUInt64Value(UNIT_FIELD_TARGET, m_creature->getVictim()->GetGUID());
 
-            CheckTimer = 2000;
+            CheckTimer = 1000;
         }
         else
             CheckTimer -= diff;
@@ -566,7 +536,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
                 if(Check)
                 {
                     Check->SetVisibility(VISIBILITY_OFF);
-                    if(m_creature->IsWithinDistInMap(Check, 75))
+                    if(m_creature->IsWithinDistInMap(Check, 100.0))
                     {
                         m_creature->GetMotionMaster()->Clear(false);
                         m_creature->GetMotionMaster()->MoveIdle();
@@ -684,6 +654,9 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
             if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
                 //AddSpellToCast(target, SPELL_GRIP_OF_THE_LEGION);
                 DoCast(target, SPELL_GRIP_OF_THE_LEGION);
+            
+            if(AirBurstTimer < 3000)
+                AirBurstTimer = 3000;
 
             GripOfTheLegionTimer = 5000 + rand()%20000;
         }
