@@ -16,12 +16,12 @@ void move_triggerAI::Reset()
     moveTimer   = 10000;
     pieceStance = PIECE_NONE;
     unitToMove = NULL;
-    medivhGuid = pInstance->GetData64(DATA_CHESS_ECHO_OF_MEDIVH);
+    MedivhGUID = pInstance->GetData64(DATA_CHESS_ECHO_OF_MEDIVH);
 }
 
 void move_triggerAI::SpellHit(Unit *caster,const SpellEntry *spell)
 {
-    if (pieceStance != PIECE_NONE || !medivhGuid)
+    if (pieceStance != PIECE_NONE || !MedivhGUID)
         return;
 
     if(spell->Id == SPELL_MOVE_1 || spell->Id == SPELL_MOVE_2 || spell->Id == SPELL_MOVE_3 || spell->Id == SPELL_MOVE_4 ||
@@ -34,7 +34,7 @@ void move_triggerAI::SpellHit(Unit *caster,const SpellEntry *spell)
         //EndMarker = true;
         //onMarker = caster;
 
-        boss_MedivhAI * medivh = (boss_MedivhAI*)(m_creature->GetUnit(*m_creature, medivhGuid));
+        boss_MedivhAI * medivh = (boss_MedivhAI*)(m_creature->GetUnit(*m_creature, MedivhGUID));
         if (medivh)
         {
             if (medivh->CanMoveTo(m_creature->GetGUID(), caster->GetGUID()))
@@ -562,11 +562,11 @@ void npc_chesspieceAI::UpdateAI(const uint32 diff)
         {
             if (urand(0, ABILITY_CHANCE_MAX) > ability1Chance)
             {
-                Unit * medivh = m_creature->GetUnit(*m_creature, medivhGuid);
+                Unit * medivh = m_creature->GetUnit(*m_creature, MedivhGUID);
                 if (!medivh)
                     return;
 
-                unit64 victim = ((boss_MedivhAI*)medivh)->GetSpellTarget(m_creature->GetGUID(), GetAbilityRange(ability1ID), IsHealingSpell(ability1ID));
+                uint64 victim = ((boss_MedivhAI*)medivh)->GetSpellTarget(m_creature->GetGUID(), GetAbilityRange(ability1ID), IsHealingSpell(ability1ID));
 
                 Unit * uVictim = m_creature->GetUnit(*m_creature, victim);
                 AddSpellToCast(uVictim, ability1ID);
@@ -580,13 +580,13 @@ void npc_chesspieceAI::UpdateAI(const uint32 diff)
 
         if (ability2Timer < diff)
         {
-            if (urand(0, ABILITY_CHANCE_MAX) > abilityChance)
+            if (urand(0, ABILITY_CHANCE_MAX) > ability2Chance)
             {
-                Unit * medivh = m_creature->GetUnit(*m_creature, medivhGuid);
+                Unit * medivh = m_creature->GetUnit(*m_creature, this->MedivhGUID);
                 if (!medivh)
                     return;
 
-                unit64 victim = ((boss_MedivhAI*)medivh)->GetSpellTarget(m_creature->GetGUID(), GetAbilityRange(ability2ID), IsHealingSpell(ability2ID));
+                uint64 victim = ((boss_MedivhAI*)medivh)->GetSpellTarget(m_creature->GetGUID(), GetAbilityRange(ability2ID), IsHealingSpell(ability2ID));
 
                 Unit * uVictim = m_creature->GetUnit(*m_creature, victim);
                 AddSpellToCast(uVictim, ability2ID);
@@ -664,12 +664,12 @@ boss_MedivhAI::boss_MedivhAI(Creature *c) : ScriptedAI(c)
 
 int boss_MedivhAI::GetMoveRange(uint64 piece)
 {
-    return GetMoveRange(m_creature->GetUnit(*m_creature, piece));
+    return (GetMoveRange(m_creature->GetUnit(*m_creature, piece)));
 }
 
 int boss_MedivhAI::GetMoveRange(Unit * piece)
 {
-    if (!Unit)
+    if (!piece)
         return 0;
 
     switch (piece->GetEntry())
@@ -857,9 +857,10 @@ bool boss_MedivhAI::IsEmptySquareInRange(uint64 piece, int range)
 
     if (tmpI < 0 || tmpJ < 0)
     {
-        Unit * uCaster = m_creature->GetUnit(*m_creature, caster);
-        if (uCaster)
-            ((ScriptedAI*)uCaster)->DoSay("IsEmptySquareInRange(..) : Nie znaleziono mnie na planszy !!", LANG_UNIVERSAL);
+        Unit * uPiece = m_creature->GetUnit(*m_creature, piece);
+
+        if (uPiece)
+            ((ScriptedAI*)uPiece)->DoSay("IsEmptySquareInRange(..) : Nie znaleziono mnie na planszy !!", LANG_UNIVERSAL, uPiece,  false);
         return false;
     }
 
@@ -920,7 +921,7 @@ uint64 boss_MedivhAI::GetSpellTarget(uint64 caster, int range, bool heal)
     {
         for (int j = 0; j < 8; j++)
         {
-            if (chessBoard[i][j].piece == piece)
+            if (chessBoard[i][j].piece == caster)
             {
                 tmpI = i; tmpJ = j;
                 break;
@@ -935,7 +936,7 @@ uint64 boss_MedivhAI::GetSpellTarget(uint64 caster, int range, bool heal)
     {
         Unit * uCaster = m_creature->GetUnit(*m_creature, caster);
         if (uCaster)
-            ((ScriptedAI*)uCaster)->DoSay("GetSpellTarget(..) : Nie znaleziono mnie na planszy !!", LANG_UNIVERSAL);
+            ((ScriptedAI*)uCaster)->DoSay("GetSpellTarget(..) : Nie znaleziono mnie na planszy !!", LANG_UNIVERSAL, uCaster, false);
         return 0;
     }
 
@@ -962,7 +963,7 @@ uint64 boss_MedivhAI::GetSpellTarget(uint64 caster, int range, bool heal)
                     {
                         tmpGUID = chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].piece;
 
-                        if (tmpGUID &&  IsMedivhPiece(tmpGUID))
+                        if (tmpGUID && IsMedivhsPiece(tmpGUID))
                             tmpPossibleTargetsList.push_back(tmpGUID);
                     }
                 }
@@ -977,7 +978,7 @@ uint64 boss_MedivhAI::GetSpellTarget(uint64 caster, int range, bool heal)
                     {
                         tmpGUID = chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].piece;
 
-                        if (tmpGUID && IsMedivhPiece(tmpGUID))
+                        if (tmpGUID && IsMedivhsPiece(tmpGUID))
                             tmpPossibleTargetsList.push_back(tmpGUID);
                     }
                 }
@@ -992,7 +993,7 @@ uint64 boss_MedivhAI::GetSpellTarget(uint64 caster, int range, bool heal)
                     {
                         tmpGUID = chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].piece;
 
-                        if (tmpGUID && IsMedivhPiece(tmpGUID))
+                        if (tmpGUID && IsMedivhsPiece(tmpGUID))
                             tmpPossibleTargetsList.push_back(tmpGUID);
                     }
                 }
@@ -1007,7 +1008,7 @@ uint64 boss_MedivhAI::GetSpellTarget(uint64 caster, int range, bool heal)
                     {
                         tmpGUID = chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].piece;
 
-                        if (tmpGUID && IsMedivhPiece(tmpGUID))
+                        if (tmpGUID && IsMedivhsPiece(tmpGUID))
                             tmpPossibleTargetsList.push_back(tmpGUID);
                     }
                 }
@@ -1032,7 +1033,7 @@ uint64 boss_MedivhAI::GetSpellTarget(uint64 caster, int range, bool heal)
             tempPriority.prior += GetCountOfEnemyInMelee(*i) * MELEE_PRIORITY + urand(0, RAND_PRIORITY) + GetLifePriority(*i);
 
             prioritySum += tempPriority.prior;
-            tmpList.push_back(tempProirity);
+            tmpList.push_back(tempPriority);
         }
 
         int chosen = urand(0, prioritySum), prevPrior = 0;
@@ -1061,7 +1062,7 @@ uint64 boss_MedivhAI::GetSpellTarget(uint64 caster, int range, bool heal)
                     {
                         tmpGUID = chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].piece;
 
-                        if (tmpGUID && !IsMedivhPiece(tmpGUID))
+                        if (tmpGUID && !IsMedivhsPiece(tmpGUID))
                             tmpPossibleTargetsList.push_back(tmpGUID);
                     }
                 }
@@ -1076,7 +1077,7 @@ uint64 boss_MedivhAI::GetSpellTarget(uint64 caster, int range, bool heal)
                     {
                         tmpGUID = chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].piece;
 
-                        if (tmpGUID && !IsMedivhPiece(tmpGUID))
+                        if (tmpGUID && !IsMedivhsPiece(tmpGUID))
                             tmpPossibleTargetsList.push_back(tmpGUID);
                     }
                 }
@@ -1091,7 +1092,7 @@ uint64 boss_MedivhAI::GetSpellTarget(uint64 caster, int range, bool heal)
                     {
                         tmpGUID = chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].piece;
 
-                        if (tmpGUID && !IsMedivhPiece(tmpGUID))
+                        if (tmpGUID && !IsMedivhsPiece(tmpGUID))
                             tmpPossibleTargetsList.push_back(tmpGUID);
                     }
                 }
@@ -1106,7 +1107,7 @@ uint64 boss_MedivhAI::GetSpellTarget(uint64 caster, int range, bool heal)
                     {
                         tmpGUID = chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].piece;
 
-                        if (tmpGUID && !IsMedivhPiece(tmpGUID))
+                        if (tmpGUID && !IsMedivhsPiece(tmpGUID))
                             tmpPossibleTargetsList.push_back(tmpGUID);
                     }
                 }
@@ -1128,7 +1129,7 @@ uint64 boss_MedivhAI::GetSpellTarget(uint64 caster, int range, bool heal)
             tempPriority.prior += GetCountOfEnemyInMelee(*i) * MELEE_PRIORITY + urand(0, RAND_PRIORITY) + GetAttackPriority(*i);
 
             prioritySum += tempPriority.prior;
-            tmpList.push_back(tempProirity);
+            tmpList.push_back(tempPriority);
         }
 
         int chosen = urand(0, prioritySum), prevPrior = 0;
@@ -1185,7 +1186,7 @@ bool boss_MedivhAI::IsMedivhsPiece(Unit * unit)
 
 bool boss_MedivhAI::IsMedivhsPiece(uint64 unit)
 {
-    for (std::list<uint64>::iterator i = medivhSidePieces.begin(); i != medivhSidePieces.end(); ++)
+    for (std::list<uint64>::iterator i = medivhSidePieces.begin(); i != medivhSidePieces.end(); ++i)
     {
         if (*i == unit)
             return true;
@@ -1240,9 +1241,9 @@ bool boss_MedivhAI::IsInRange(uint64 from, uint64 to, int range)
 
     if (tmpI < 0 || tmpJ < 0)
     {
-        Unit * uCaster = m_creature->GetUnit(*m_creature, caster);
-        if (uCaster)
-            ((ScriptedAI*)uCaster)->DoSay("GetSpellTarget(..) : Nie znaleziono mnie na planszy !!", LANG_UNIVERSAL);
+        Unit * uFrom = m_creature->GetUnit(*m_creature, from);
+        if (uFrom)
+            ((ScriptedAI*)uFrom)->DoSay("GetSpellTarget(..) : Nie znaleziono mnie na planszy !!", LANG_UNIVERSAL, uFrom, false);
         return false;
     }
 
@@ -1769,7 +1770,7 @@ Unit * boss_MedivhAI::FindTrigger(uint64 piece)
     return NULL;
 }
 
-bool boss_MedivhAI::ChessSquereIsEmpty(uint64 trigger)
+bool boss_MedivhAI::ChessSquareIsEmpty(uint64 trigger)
 {
     for (int8 i = 0; i < 8; i++)
     {
@@ -1833,7 +1834,7 @@ bool boss_MedivhAI::CanMoveTo(uint64 trigger, uint64 piece)
 
     return canMove;*/
 
-    return (IsInRange(piece, trigger) && ChessSquereIsEmpty(trigger));
+    return (IsInRange(piece, trigger, GetMoveRange(piece)) && ChessSquareIsEmpty(trigger));
 }
 
 void boss_MedivhAI::AddTriggerToMove(uint64 trigger, uint64 piece, bool player)
@@ -1850,7 +1851,7 @@ void boss_MedivhAI::AddTriggerToMove(uint64 trigger, uint64 piece, bool player)
     if (player && tmpChance > chanceToMove)
     {
         std::list<Priority> tmpList;
-        stf::list<uint64> emptySquareList;
+        std::list<uint64> emptySquareList;
 
         int prioritySum = 0;
 
@@ -1873,10 +1874,10 @@ void boss_MedivhAI::AddTriggerToMove(uint64 trigger, uint64 piece, bool player)
                 tempPriority.prior += GetCountOfEnemyInMelee(*i) * MELEE_PRIORITY + urand(0, RAND_PRIORITY) + GetLifePriority(*i);
             }
             else
-                tempPriority = 0;
+                tempPriority.prior = 0;
 
             prioritySum += tempPriority.prior;
-            tmpList.push_back(tempProirity);
+            tmpList.push_back(tempPriority);
         }
 
         int chosen = urand(0, prioritySum), prevPrior = 0;
@@ -1913,10 +1914,10 @@ void boss_MedivhAI::AddTriggerToMove(uint64 trigger, uint64 piece, bool player)
 
         if (tmpI < 0 || tmpJ < 0)
         {
-            Unit * uCaster = m_creature->GetUnit(*m_creature, caster);
-            if (uCaster)
-                ((ScriptedAI*)uCaster)->DoSay("AddTriggerToMove(..) : Nie znaleziono mnie na planszy !!", LANG_UNIVERSAL);
-            return false;
+            Unit * uChosen = m_creature->GetUnit(*m_creature, chosenGUID);
+            if (uChosen)
+                ((ScriptedAI*)uChosen)->DoSay("AddTriggerToMove(..) : Nie znaleziono mnie na planszy !!", LANG_UNIVERSAL, uChosen, false);
+            return;
         }
 
         switch (GetMoveRange(chosenGUID))
@@ -1972,7 +1973,7 @@ void boss_MedivhAI::AddTriggerToMove(uint64 trigger, uint64 piece, bool player)
         tmpList.clear();
         prioritySum = 0;
 
-        for (std::list<uint64>::iterator i = emptySquareList.begin(); i != emptySquareList.end(); ++)
+        for (std::list<uint64>::iterator i = emptySquareList.begin(); i != emptySquareList.end(); ++i)
         {
             Priority tmpPrior;
             tmpPrior.prior = START_PRIORITY;

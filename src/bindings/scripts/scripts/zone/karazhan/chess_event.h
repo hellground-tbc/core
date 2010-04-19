@@ -69,6 +69,8 @@ EndScriptData */
 #define ABILITY_2_CHANCE_MIN    25
 #define ABILITY_2_CHANCE_MAX    66
 
+#define attackCooldown          3000
+
 enum SCRIPTTEXTs
 {
     SCRIPTTEXT_AT_EVENT_START   =  -1650000,
@@ -194,7 +196,7 @@ enum AbilityCooldowns
     CD_KNIGHT_2  = 5000,
     CD_ROOK_2    = 5000,
     CD_PAWN_2    = 5000
-}
+};
 
 enum AttackSpells
 {
@@ -247,14 +249,8 @@ struct Priority
 
     Priority()
     {
-        guid = 0;
+        GUID = 0;
         prior = 0;
-    }
-
-    Priority(uint64 GUID, int priority)
-    {
-        this->GUIS = GUID;
-        this->prior = priority;
     }
 };
 
@@ -276,7 +272,7 @@ struct Priority
 
 int8 offsetTab8[8][2] = {{-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {1, 0}, {-1, 1}, {0, 1}, {1, 1}};
 
-int8 offsetTab15[12][2] = {{-2, 0}, {-2, -1}, {-1, -2}, {0. -2}, {1, -2}, {2, -1}, {2, 0}, {2, 1}, {1, 2}, {0, 2}, {-1, 2}. {-1, 2}};
+int8 offsetTab15[12][2] = {{-2, 0}, {-2, -1}, {-1, -2}, {0. -2}, {1, -2}, {2, -1}, {2, 0}, {2, 1}, {1, 2}, {0, 2}, {-1, 2}, {-1, 2}};
 
 int8 offsetTab20[24][2] = {{-3, 0}, {-3, -1}, {-3, -2}, {-2, -2}, {-2, -3}, {-1, -3}, {0, -3}, {1, -3}, {2, -3}, {2, -2}, {3, -2}, {3, -1}, {3, 0}, {3, -1}, {3, -2}, {2, -2}, {3, -2}, {3, -1}, {3, 0}, {3, -1}, {3, -2}, {2, -2}, {2, -3}, {1, -3}};
 
@@ -300,7 +296,7 @@ struct TRINITY_DLL_DECL move_triggerAI : public ScriptedAI
     //Unit * onMarker;
     //bool EndMarker;
 
-    uint64 medivhGuid;
+    uint64 MedivhGUID;
 
     int32 moveTimer;
     Unit * unitToMove;
@@ -341,7 +337,6 @@ struct TRINITY_DLL_DECL npc_chesspieceAI : public Scripted_NoMovementAI
     int32 ability2Timer;
     int32 ability2Cooldown;
     int32 attackTimer;
-    int32 attackCooldown = 3000; // ?
 
     int32 nextTryTimer;     //try to cast spell after some time
 
@@ -446,7 +441,7 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
 
     void StartEvent();
 
-    bool ChessSquereIsEmpty(uint64 trigger);
+    bool ChessSquareIsEmpty(uint64 trigger);
 
     bool CanMoveTo(uint64 trigger, uint64 piece);   //check if player can move to trigger - prevent cheating
 
@@ -466,7 +461,7 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
 
     int GetAttackPriority (uint64 piece);
 
-    uint64 GetSpellTarget(uint64 caster, int range);
+    uint64 GetSpellTarget(uint64 caster, int range, bool heal);
 
     void UpdateAI(const uint32 diff);
 };
