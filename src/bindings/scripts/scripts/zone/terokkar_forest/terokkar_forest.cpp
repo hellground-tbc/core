@@ -521,6 +521,7 @@ void SendActionMenu_go_skull_pile(Player *player, GameObject* _GO, uint32 action
     {
         _GO->SetGoState(0);
         _GO->SetRespawnTime(600);
+        player->CLOSE_GOSSIP_MENU();
     }
 
     switch(action)
@@ -572,6 +573,7 @@ bool GossipSelect_go_ancient_skull_pile(Player *player, GameObject* _GO, uint32 
             {
                 player->DestroyItemCount(32720, 1, true);
                 player->SummonCreature(21838, _GO->GetPositionX(), _GO->GetPositionY(), _GO->GetPositionZ(), player->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 0);
+                player->CLOSE_GOSSIP_MENU();
                 _GO->SetGoState(0);
                 _GO->SetRespawnTime(600);
             }
