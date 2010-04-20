@@ -411,8 +411,8 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
     bool CanUseFingerOfDeath()
     {
-        if(m_creature->getVictim() && m_creature->IsWithinDistInMap(m_creature->getVictim(), 5.0)
-            return;
+        if(m_creature->getVictim() && m_creature->IsWithinDistInMap(m_creature->getVictim(), 5.0))
+            return false;
             
         Unit *target = m_creature->SelectNearestTarget(m_creature->GetAttackDistance(m_creature->getVictim()));
         
