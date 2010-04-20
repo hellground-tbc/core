@@ -1809,7 +1809,6 @@ struct TRINITY_DLL_DECL mob_phoenix_tkAI : public ScriptedAI
     void Reset()
     {
         m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);//birds can fly! :)
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_SCHOOL_IMMUNITY, true);    //immune to players banish effects, but not banishing in phase 5
         Cycle_Timer = 2000;
         Egg = true;
         m_creature->CastSpell(m_creature,SPELL_BURN,true);
@@ -1832,19 +1831,15 @@ struct TRINITY_DLL_DECL mob_phoenix_tkAI : public ScriptedAI
         m_creature->RemoveCorpse();
     }
 
-    void SpellHit(Unit *caster, SpellEntry* spell)
-    {
-        for(int i = 0; i < 3; i++)
-        {
-            if(spell->EffectMechanic[i] == MECHANIC_BANISH && spell->Id != SPELL_BANISH)
-                m_creature->RemoveAurasDueToSpell(spell->Id);
-        }
-    }
-
     void UpdateAI(const uint32 diff)
     {
         if(!pInstance)
             return;
+
+        if(pInstance->GetData(DATA_KAELTHASEVENT) == 5)
+            m_creature->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_BANISH, false);
+        else
+            m_creature->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_BANISH, true);
 
         if(Cycle_Timer < diff)
         {
