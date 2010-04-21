@@ -205,6 +205,7 @@ struct TRINITY_DLL_DECL advisorbase_ai : public ScriptedAI
 
     ScriptedInstance* pInstance;
     bool SetHP;
+    bool CanDie;
 
     WorldLocation dLoc;
 
@@ -229,6 +230,7 @@ struct TRINITY_DLL_DECL advisorbase_ai : public ScriptedAI
         }
 
         UpdateMaxHealth(false);
+        CanDie = false;
     }
 
     void MoveInLineOfSight(Unit *who)
@@ -263,6 +265,7 @@ struct TRINITY_DLL_DECL advisorbase_ai : public ScriptedAI
 
         if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
             AttackStart(target);
+        CanDie = true;
     }
 
     void UpdateMaxHealth(bool twice)
@@ -284,8 +287,8 @@ struct TRINITY_DLL_DECL advisorbase_ai : public ScriptedAI
     {
         if(damage >= m_creature->GetHealth())
         {
-            //Don't really die in phase 1 & 3, only die after that
-            if(pInstance && pInstance->GetData(DATA_KAELTHASEVENT) != 0)
+            //Don't really die in phase 1 only die after revive
+            if(pInstance && pInstance->GetData(DATA_KAELTHASEVENT) != NOT_STARTED && !CanDie)
             {
                 damage = 0;
 
@@ -483,6 +486,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
 
         PrepareAdvisors();
         DeleteLegs();
+        DispellMindControl();
         DoScriptText(SAY_INTRO, m_creature);
 
         pInstance->SetData(DATA_KAELTHASEVENT, IN_PROGRESS);
