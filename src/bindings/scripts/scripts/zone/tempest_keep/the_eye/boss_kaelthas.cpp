@@ -688,7 +688,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
             return;
         }
 
-        if(pInstance && pInstance->GetData(DATA_KAELTHASEVENT) != NOT_STARTED)
+        if(pInstance && Phase/*pInstance->GetData(DATA_KAELTHASEVENT) != NOT_STARTED*/)  //temporary, maybe can help with combat drop issue
         {
             if(Check_Timer < diff)
             {
@@ -705,12 +705,12 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                     if(m_creature->hasUnitState(UNIT_STAT_CHASE))
                         m_creature->GetMotionMaster()->Clear();
                 }
-                Check_Timer = 1000;
+                Check_Timer = 3000;  //temporary, lets see if lowers stress a bit
             }
             else
                 Check_Timer -= diff;
 
-            if(Phase == 1 || Phase == 2 || Phase == 3)        //threat reseting up to phase 4
+            if(!m_creature->getThreatManager().getThreatList().empty() && (Phase == 1 || Phase == 2 || Phase == 3))        //threat reseting up to phase 4
                 DoResetThreat();
         }
 
