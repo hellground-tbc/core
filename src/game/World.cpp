@@ -166,6 +166,52 @@ Player* World::FindPlayerInZone(uint32 zone)
     return NULL;
 }
 
+enum
+{
+    CMD_AUTH = 'A',
+    VAL_AUTH_OK = 'o',
+
+    CMD_KICK = 'K',
+    VAL_KICK_LAUNCHER_EXIT  = 'e',
+    VAL_KICK_CHEAT_DETECTED = 'c'
+};
+
+void World::ProcessAnticheat(char *cmd, char *val, std::string ip)
+{
+    switch (*cmd)
+    {
+        case CMD_AUTH:
+            break;
+        case CMD_KICK:
+            if (*val == VAL_KICK_CHEAT_DETECTED)
+            {
+                QueryResult *result = LoginDatabase.PQuery("SELECT id FROM account WHERE last_ip = '%s'", ip.c_str());
+                if (!result)
+                {
+                    sLog.outError("ANTICHEAT: Couldn't find accounts with last_ip = '%s'", ip.c_str());
+                    return;
+                }
+
+                do
+                {
+                    Field *acc_field = result->Fetch();
+                    uint32 account = acc_field->GetUInt32();
+
+                    if (WorldSession* sess = FindSession(account))
+                    {
+                        sLog.outString("KICKING PLAYER %s", sess->GetPlayerName());
+                        sess->KickPlayer();
+                    }
+                }
+                while (result->NextRow());
+            }
+            break;
+        default:
+            sLog.outError("Unknown CMD in World::ProcessAnticheat()");
+            break;
+    }
+}
+
 /// Find a session by its id
 WorldSession* World::FindSession(uint32 id) const
 {
@@ -1905,7 +1951,7 @@ void World::SendGlobalText(const char* text, WorldSession *self)
     WorldPacket data;
 
     // need copy to prevent corruption by strtok call in LineFromMessage original string
-    char* buf = strdup(text);
+    char* buf = _strdup(text);
     char* pos = buf;
 
     while(char* line = ChatHandler::LineFromMessage(pos))

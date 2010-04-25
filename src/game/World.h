@@ -382,6 +382,8 @@ struct CliCommandHolder
 class World
 {
     public:
+        void ProcessAnticheat(char *cmd, char *val, std::string ip);
+
         DelayExecutor m_ac;
 
         static volatile uint32 m_worldLoopCounter;
