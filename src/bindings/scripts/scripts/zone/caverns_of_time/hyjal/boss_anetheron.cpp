@@ -154,7 +154,8 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
 
         if(CheckTimer < diff)
         {
-            DoZoneInCombat();          
+            DoZoneInCombat();
+            m_creature->SetSpeed(MOVE_RUN, 3.0);
             CheckTimer = 3000;
         }
         else

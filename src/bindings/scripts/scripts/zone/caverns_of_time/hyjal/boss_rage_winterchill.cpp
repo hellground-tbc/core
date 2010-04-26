@@ -150,6 +150,7 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
         if(CheckTimer < diff)
         {
             DoZoneInCombat();
+            m_creature->SetSpeed(MOVE_RUN, 3.0);
             CheckTimer = 3000;
         }
         else
