@@ -2225,8 +2225,377 @@ bool ChooseReward_npc_Akama(Player *player, Creature *_Creature, const Quest *_Q
 }
 
 /*#####
-#
+# Quest: The Ata'mal Terrace
+#####*/
+
+/* ContentData
+npc_shadowlord_trigger : trigger that brings Deathwail when dies, spawns trash
+mob_shadowlord_deathwail : main boss, spams fel seeds when soulstelers aggroed, goes down when trigger dies
+mob_shadowmoon_soulstealer : not moves, when aggro spawns Retainers
+felfire_summoner : invisible NPC to set fel fireball visuals
+TO DO: make Heart of Fury GO despawn when Deathwail lands
+TO DO: re-check all timers and "crush" test event
+EndContentData */
+
+/*#####
+# npc_shadowlord_trigger
 ######*/
+
+struct TRINITY_DLL_DECL npc_shadowlord_triggerAI : public Scripted_NoMovementAI
+{
+    npc_shadowlord_triggerAI(Creature* c) : Scripted_NoMovementAI(c) 
+    {
+        x = m_creature->GetPositionX();
+        y = m_creature->GetPositionY();
+        z = m_creature->GetPositionZ();
+    }
+
+    std::list<Creature*> SoulstealerList;
+    uint32 Check_Timer;
+    uint32 Wave_Timer;
+    uint32 Reset_Timer;
+    uint32 counter;         //is alive counter
+    uint32 Ccounter;        //is in combat counter
+    float x, y, z;
+
+    static const int32 
+        SpawnX = -3249,
+        SpawnY = 347,
+        SpawnZ = 127;
+
+    void Reset()
+    {
+        Reset_Timer = 0;
+        Check_Timer = 0;
+        Wave_Timer = 0;
+        SoulstealerList.clear();
+        SoulstealerList = DoFindAllCreaturesWithEntry(22061, 80.0f);
+        m_creature->Relocate(x, y, z);
+        InCombat = false;
+    }
+
+    void Aggro(Unit* who)
+    {
+        m_creature->GetMotionMaster()->Clear();
+        m_creature->GetMotionMaster()->MoveIdle();
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!InCombat)
+            return;
+
+        if(Check_Timer < diff)
+        {
+            SoulstealerList.clear();
+            counter = 0;
+            Ccounter = 0;
+            m_creature->CallAssistance();
+            SoulstealerList = DoFindAllCreaturesWithEntry(22061, 80.0f);
+            if(!SoulstealerList.empty())
+                for(std::list<Creature*>::iterator i = SoulstealerList.begin(); i != SoulstealerList.end(); ++i)
+                {
+                    if((*i)->isAlive())
+                        counter++;
+                    if((*i)->isInCombat())
+                        ++Ccounter;
+                }
+            Check_Timer = 5000;
+
+            float NewX, NewY, NewZ;
+            m_creature->GetRandomPoint(x, y, z, 14.0, NewX, NewY, NewZ);
+            NewZ = 137.15;  //normalize Z
+            DoTeleportTo(NewX, NewY, NewZ);
+            m_creature->Relocate(NewX, NewY, NewZ);
+            if(!Ccounter && counter && !Reset_Timer)
+                Reset_Timer = 20000;
+        }
+        else
+            Check_Timer -= diff;
+
+        if(counter)
+        {
+            if(Wave_Timer < diff)
+            {
+                float x,y,z;
+                for(uint8 i = 0; i < 3; ++i)
+                {
+                    m_creature->GetRandomPoint(SpawnX,SpawnY,SpawnZ,3.0f,x,y,z);
+                    z = SpawnZ;
+                    Unit *Retainer = m_creature->SummonCreature(22102,x,y,z,m_creature->GetOrientation(),
+                    TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,80000);
+                    Retainer->GetMotionMaster()->MovePath(2096+i, false);
+                }
+                Wave_Timer = 25000;
+            }
+            else
+                Wave_Timer -= diff;
+        }
+        else
+        {
+            Unit* HeartVisual = FindCreature(22058, 80.0, m_creature);
+            if(HeartVisual)
+            {
+                HeartVisual->Kill(HeartVisual, false);
+                ((Creature*)HeartVisual)->RemoveCorpse();
+            }
+            m_creature->Kill(m_creature, false);
+            m_creature->RemoveCorpse();
+        }
+
+        if(Reset_Timer)
+        {
+            if(Reset_Timer < diff)
+            {
+                EnterEvadeMode();
+                Reset_Timer = 0;
+            }
+            else
+                Reset_Timer -= diff;
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_shadowlord_trigger(Creature *_Creature)
+{
+    return new npc_shadowlord_triggerAI(_Creature);
+}
+
+/*#####
+# mob_shadowlord_deathwail
+######*/
+
+#define DEATHWAIL_FLYPATH            2095
+#define SPELL_SHADOWBOLT            12471
+#define SPELL_SHADOWBOLT_VALLEY     15245
+#define SPELL_DEATHCOIL             32709
+#define SPELL_FEAR                  27641
+#define SPELL_FEL_FIREBALL          38312
+
+struct TRINITY_DLL_DECL mob_shadowlord_deathwailAI : public ScriptedAI
+{
+    mob_shadowlord_deathwailAI(Creature* c) : ScriptedAI(c) {}
+
+    CreatureInfo* cInfo;
+    uint32 Check_Timer;
+    uint32 Patrol_Timer;
+    uint32 Shadowbolt_Timer;
+    uint32 ShadowboltVoley_Timer;
+    uint32 Fear_Timer;
+    uint32 Deathcoil_Timer;
+
+    uint64 HeartGUID;
+
+    bool landed;
+    bool flying;
+    bool felfire;
+
+    void Reset()
+    {
+        m_creature->SetNoCallAssistance(true);
+        Check_Timer = 2000;
+        landed = true;
+        felfire = false;
+
+        Shadowbolt_Timer = 4000;
+        ShadowboltVoley_Timer = 13000;
+        Fear_Timer = 20000;
+        Deathcoil_Timer = 8000;
+
+        Unit* trigger = FindCreature(22096, 100, m_creature);
+        if(trigger)
+        {
+            if(trigger->isAlive())
+            {
+                m_creature->GetMotionMaster()->Initialize();
+                m_creature->SetUnitMovementFlags(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
+                m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                m_creature->GetMotionMaster()->MovePath(DEATHWAIL_FLYPATH, true);
+                landed = false;
+                flying = false;
+            }
+            else
+            {
+                m_creature->SetUnitMovementFlags(MOVEMENTFLAG_WALK_MODE);
+                m_creature->SetSpeed(MOVE_RUN, 1.4);
+                m_creature->GetMotionMaster()->MovePoint(1, -3247, 284, 138.1);
+            }
+        }
+    }
+
+    void Aggro(Unit *who) 
+    {
+        if(!flying)
+            return;
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if(!flying)
+            return;
+    }
+
+    void AttackStart(Unit* who)
+    {
+        if(!flying)
+            return;
+        else if (m_creature->Attack(who, true))
+        {
+            m_creature->AddThreat(who, 0.0f);
+            m_creature->SetInCombatWith(who);
+            who->SetInCombatWith(m_creature);
+
+            DoStartMovement(who);
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(Check_Timer < diff)
+        {
+            Unit* trigger = FindCreature(22096, 100, m_creature);
+
+            if(trigger && !trigger->isAlive() && !landed)
+            {
+                m_creature->setFaction(1813);
+                m_creature->GetMotionMaster()->Initialize();
+                m_creature->SetUnitMovementFlags(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
+                m_creature->GetMotionMaster()->MovePoint(1, -3247, 284, 138.1);
+                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                landed = true;
+                flying = true;
+                felfire = false;
+            }
+            if(!InCombat && landed && trigger && trigger->isAlive())
+                Reset();
+
+            if(!m_creature->HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE) && m_creature->GetPositionZ() < 142)
+            {
+                m_creature->SetUnitMovementFlags(MOVEMENTFLAG_WALK_MODE);
+                m_creature->SetSpeed(MOVE_WALK, 4.0);
+                m_creature->SetSpeed(MOVE_RUN, 2.0);
+            }
+            if(felfire && trigger && ((npc_shadowlord_triggerAI*)((Creature*) trigger)->AI())->InCombat == false)
+                felfire = false;
+            if(felfire)
+                AddSpellToCast(m_creature, SPELL_FEL_FIREBALL);
+            Check_Timer = 5000;
+        }
+        else
+            Check_Timer -= diff;
+
+        if(flying && UpdateVictim())
+        {
+            if(Shadowbolt_Timer < diff)
+            {
+                AddSpellToCast(m_creature->getVictim(), SPELL_SHADOWBOLT);
+                Shadowbolt_Timer = 12000+rand()%6000;
+            }
+            else
+                Shadowbolt_Timer -= diff;
+
+            if(ShadowboltVoley_Timer < diff)
+            {
+                AddSpellToCast(m_creature->getVictim(), SPELL_SHADOWBOLT);
+                ShadowboltVoley_Timer = 25000+rand()%15000;
+            }
+            else
+                ShadowboltVoley_Timer -= diff;
+
+            if(Fear_Timer < diff)
+            {
+                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0, true))
+                    AddSpellToCast(target, SPELL_FEAR);
+                Fear_Timer = 10000+rand()%20000;
+            }
+            else
+                Fear_Timer -= diff;
+
+            if(Deathcoil_Timer < diff)
+            {
+                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0, true, m_creature->getVictim()))
+                    AddSpellToCast(target, SPELL_DEATHCOIL);
+                else
+                    AddSpellToCast(m_creature->getVictim(), SPELL_DEATHCOIL);
+                Deathcoil_Timer = 15000+rand()%30000;
+            }
+            else
+                Deathcoil_Timer -= diff;
+        }
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_shadowlord_deathwail(Creature *_Creature)
+{
+    return new mob_shadowlord_deathwailAI(_Creature);
+}
+
+/*#####
+# mob_shadowmoon_soulstealer
+######*/
+
+struct TRINITY_DLL_DECL mob_shadowmoon_soulstealerAI : public Scripted_NoMovementAI
+{
+    mob_shadowmoon_soulstealerAI(Creature* c) : Scripted_NoMovementAI(c) {}
+
+    void Reset()
+    {
+        DoCast(m_creature, 38250);
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        std::list<Unit*> party;
+
+        if(!InCombat && who->GetTypeId() == TYPEID_PLAYER  && m_creature->IsWithinDistInMap(who, 15.0f))
+        {
+            who->GetPartyMember(party, 50.0f);
+            for(std::list<Unit*>::iterator i = party.begin(); i != party.end(); ++i)
+            {
+                AttackStart(*i);
+            }
+        }
+        
+    }
+
+    void Aggro(Unit* who)
+    {
+        m_creature->SetStunned(true);
+        m_creature->CombatStart(who);
+        if(Unit* EventTrigger = FindCreature(22096, 80.0, m_creature))
+            ((npc_shadowlord_triggerAI*)((Creature*) EventTrigger)->AI())->InCombat = true;
+        if(Unit* Deathwail = FindCreature(22006, 100.0, m_creature))
+            ((mob_shadowlord_deathwailAI*)((Creature*) Deathwail)->AI())->felfire = true;
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+    }
+};
+
+CreatureAI* GetAI_mob_shadowmoon_soulstealer(Creature *_Creature)
+{
+    return new mob_shadowmoon_soulstealerAI(_Creature);
+}
+
+/*#####
+# felfire_summoner
+######*/
+
+struct TRINITY_DLL_DECL felfire_summonerAI : public NullCreatureAI
+{
+    felfire_summonerAI(Creature *c) : NullCreatureAI(c) {}
+};
+
+CreatureAI* GetAI_felfire_summoner(Creature *_Creature)
+{
+    return new felfire_summonerAI (_Creature);
+}
 
 void AddSC_shadowmoon_valley()
 {
@@ -2329,6 +2698,26 @@ void AddSC_shadowmoon_valley()
     newscript->Name = "npc_Akama";
     newscript->GetAI = &GetAI_npc_Akama;
     newscript->pChooseReward = &ChooseReward_npc_Akama;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_shadowlord_trigger";
+    newscript->GetAI = &GetAI_npc_shadowlord_trigger;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_shadowmoon_soulstealer";
+    newscript->GetAI = &GetAI_mob_shadowmoon_soulstealer;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_shadowlord_deathwail";
+    newscript->GetAI = &GetAI_mob_shadowlord_deathwail;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="felfire_summoner";
+    newscript->GetAI = &GetAI_felfire_summoner;
     newscript->RegisterSelf();
 }
 
