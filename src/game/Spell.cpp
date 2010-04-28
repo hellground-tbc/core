@@ -3349,8 +3349,11 @@ uint8 Spell::CanCast(bool strict)
        // if(m_triggeredByAuraSpell)
        //     return SPELL_FAILED_DONT_REPORT;
        // else
-            return SPELL_FAILED_NOT_READY;
+       return SPELL_FAILED_NOT_READY;
     }
+
+    if (m_spellInfo->Attributes & SPELL_ATTR_DISABLED_WHILE_ACTIVE && m_caster->HasAura(m_spellInfo->Id, 0))
+       return SPELL_FAILED_NOT_READY;
 
     // only allow triggered spells if at an ended battleground
     if( !m_IsTriggeredSpell && m_caster->GetTypeId() == TYPEID_PLAYER)
