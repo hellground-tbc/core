@@ -137,11 +137,11 @@ EAIErrorLevel = 2
 #        Default: 1 (true)
 #                 0 (false)
 #
-#    vmap.ignoreMapIds
-#        Map id that will be ignored by VMaps
-#        List of ids with delimiter ','
-#        If more then one id is defined and spaces are included, the string has to be enclosed by "
-#        Example: "369,0,1,530"
+#    vmap.losMaps
+#        Map ids where LOS calculations will be enabled.
+#
+#    vmap.heightMaps
+#        Map ids where height calculations will be enabled. 
 #
 #    vmap.ignoreSpellIds
 #        These spells are ignored for LoS calculation
@@ -205,7 +205,10 @@ PlayerSaveInterval = 900000
 DisconnectToleranceInterval = 0
 vmap.enableLOS = 0
 vmap.enableHeight = 0
-vmap.ignoreMapIds = "369"
+
+vmap.losMaps = ""
+vmap.heightMaps = ""
+
 vmap.ignoreSpellIds = "7720"
 vmap.petLOS = 0
 vmap.totem = 0

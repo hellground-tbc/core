@@ -132,7 +132,8 @@ namespace VMAP
             // Tree to check collision
             G3D::Table<unsigned int , MapTree *> iInstanceMapTrees;
             G3D::Table<unsigned int , bool> iMapsSplitIntoTiles;
-            G3D::Table<unsigned int , bool> iIgnoreMapIds;
+            G3D::Table<unsigned int , bool> mapsWithLOS;
+            G3D::Table<unsigned int , bool> mapsWithHeight;
 
 #ifdef _VMAP_LOG_DEBUG
             CommandFileRW iCommandLogger;
@@ -169,7 +170,9 @@ namespace VMAP
 
             bool processCommand(char *pCommand);            // for debug and extensions
 
-            void preventMapsFromBeingUsed(const char* pMapIdString);
+            //void preventMapsFromBeingUsed(const char* pMapIdString);
+            void setLOSonmaps(const char* pMapIdString);
+            void setHeightonmaps(const char* pMapIdString);
     };
 }
 #endif

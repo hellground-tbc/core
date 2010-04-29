@@ -638,7 +638,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
         case 10:
             m_creature->RemoveAllAuras();
             if(pInstance)
-            pInstance->SetData(DATA_EXPLODE, true);
+                pInstance->SetData(DATA_EXPLODE, true);
             return 1000;
         case 11:
             DoCast(m_creature, SPELL_EXPLODE);
@@ -705,13 +705,14 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                     if(m_creature->hasUnitState(UNIT_STAT_CHASE))
                         m_creature->GetMotionMaster()->Clear();
                 }
+
+                if(!m_creature->getThreatManager().getThreatList().empty() && (Phase == 1 || Phase == 2 || Phase == 3))        //threat reseting up to phase 4
+                    DoResetThreat();
+
                 Check_Timer = 3000;  //temporary, lets see if lowers stress a bit
             }
             else
                 Check_Timer -= diff;
-
-            if(!m_creature->getThreatManager().getThreatList().empty() && (Phase == 1 || Phase == 2 || Phase == 3))        //threat reseting up to phase 4
-                DoResetThreat();
         }
 
         //Phase 1

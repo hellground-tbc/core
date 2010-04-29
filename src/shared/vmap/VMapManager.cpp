@@ -176,7 +176,7 @@ namespace VMAP
     e.g.: "0,1,590"
     */
 
-    void VMapManager::preventMapsFromBeingUsed(const char* pMapIdString)
+    void VMapManager::setLOSonmaps(const char* pMapIdString)
     {
         if(pMapIdString != NULL)
         {
@@ -186,7 +186,22 @@ namespace VMAP
             chompAndTrim(confString);
             while(getNextMapId(confString, pos, id))
             {
-                iIgnoreMapIds.set(id, true);
+                mapsWithLOS.set(id, true);
+            }
+        }
+    }
+
+    void VMapManager::setHeightonmaps(const char* pMapIdString)
+    {
+        if(pMapIdString != NULL)
+        {
+            unsigned int pos =0;
+            unsigned int id;
+            std::string confString(pMapIdString);
+            chompAndTrim(confString);
+            while(getNextMapId(confString, pos, id))
+            {
+                mapsWithHeight.set(id, true);
             }
         }
     }
@@ -196,7 +211,7 @@ namespace VMAP
     int VMapManager::loadMap(const char* pBasePath, unsigned int pMapId, int x, int y)
     {
         int result = VMAP_LOAD_RESULT_IGNORED;
-        if(isMapLoadingEnabled() && !iIgnoreMapIds.containsKey(pMapId))
+        if(isMapLoadingEnabled() && (mapsWithHeight.containsKey(pMapId) || mapsWithLOS.containsKey(pMapId)))
         {
             bool loaded = _loadMap(pBasePath, pMapId, x, y, false);
             if(!loaded)
@@ -392,7 +407,7 @@ namespace VMAP
     bool VMapManager::isInLineOfSight(unsigned int pMapId, float x1, float y1, float z1, float x2, float y2, float z2)
     {
         bool result = true;
-        if(isLineOfSightCalcEnabled() && iInstanceMapTrees.containsKey(pMapId))
+        if(isLineOfSightCalcEnabled() && mapsWithLOS.containsKey(pMapId) && iInstanceMapTrees.containsKey(pMapId))
         {
             Vector3 pos1 = convertPositionToInternalRep(x1,y1,z1);
             Vector3 pos2 = convertPositionToInternalRep(x2,y2,z2);
@@ -453,7 +468,7 @@ namespace VMAP
     float VMapManager::getHeight(unsigned int pMapId, float x, float y, float z)
     {
         float height = VMAP_INVALID_HEIGHT_VALUE;           //no height
-        if(isHeightCalcEnabled() && iInstanceMapTrees.containsKey(pMapId))
+        if(isHeightCalcEnabled() && mapsWithHeight.containsKey(pMapId) && iInstanceMapTrees.containsKey(pMapId))
         {
             Vector3 pos = convertPositionToInternalRep(x,y,z);
             MapTree* mapTree = iInstanceMapTrees.get(pMapId);
