@@ -273,7 +273,7 @@ void World::AddSession_ (WorldSession* s)
         return;
     }
 
-    m_ac_auth[s->GetRemoteAddress().c_str()] = 15000;
+    m_ac_auth[s->GetRemoteAddress()] = 15000;
 
     // decrease session counts only at not reconnection case
     bool decrease_session = true;
@@ -2267,11 +2267,11 @@ void World::UpdateSessions( time_t diff )
         if(!itr->second)
             continue;
 
-        if (m_ac_auth[itr->second->GetRemoteAddress().c_str()] < diff)
+        if (m_ac_auth[itr->second->GetRemoteAddress()] < diff)
         {
             //sLog.outString("KICKING PLAYER %s", itr->second->GetRemoteAddress().c_str());
             itr->second->KickPlayer();
-            m_ac_auth.erase(itr->second->GetRemoteAddress().c_str());
+            m_ac_auth.erase(itr->second->GetRemoteAddress());
         }
         else
         {
