@@ -209,7 +209,7 @@ void World::ProcessAnticheat(char *cmd, char *val, std::string ip)
     {
         case CMD_KEEP_ALIVE:
         {
-            m_ac_auth[ip] = KICK_TIME;
+            //m_ac_auth[ip] = KICK_TIME;
         }
         break;
         case CMD_KICK:
@@ -217,7 +217,7 @@ void World::ProcessAnticheat(char *cmd, char *val, std::string ip)
             {
                 kick_player(ip);
                 // delete from auth list
-                m_ac_auth.erase(ip.c_str());
+                //m_ac_auth.erase(ip.c_str());
             }
             break;
         default:
@@ -273,7 +273,7 @@ void World::AddSession_ (WorldSession* s)
         return;
     }
 
-    m_ac_auth[s->GetRemoteAddress()] = 15000;
+    //m_ac_auth[s->GetRemoteAddress()] = 15000;
 
     // decrease session counts only at not reconnection case
     bool decrease_session = true;
