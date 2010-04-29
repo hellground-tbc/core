@@ -171,39 +171,53 @@ enum
     CMD_AUTH = 'A',
     VAL_AUTH_OK = 'o',
 
+    CMD_KEEP_ALIVE = 'P',
+
     CMD_KICK = 'K',
     VAL_KICK_LAUNCHER_EXIT  = 'e',
-    VAL_KICK_CHEAT_DETECTED = 'c'
+    VAL_KICK_CHEAT_DETECTED = 'c',
+
+    KICK_TIME = 15000,
 };
+
+void kick_player(std::string ip)
+{
+    QueryResult *result = LoginDatabase.PQuery("SELECT id FROM account WHERE last_ip = '%s'", ip.c_str());
+    if (!result)
+    {
+        sLog.outError("ANTICHEAT: Couldn't find accounts with last_ip = '%s'", ip.c_str());
+        return;
+    }
+
+    do
+    {
+        Field *acc_field = result->Fetch();
+        uint32 account = acc_field->GetUInt32();
+
+        if (WorldSession* sess = sWorld.FindSession(account))
+        {
+            sLog.outString("KICKING PLAYER %s", sess->GetPlayerName());
+            sess->KickPlayer();
+        }
+    }
+    while (result->NextRow());
+}
 
 void World::ProcessAnticheat(char *cmd, char *val, std::string ip)
 {
     switch (*cmd)
     {
-        case CMD_AUTH:
-            break;
+        case CMD_KEEP_ALIVE:
+        {
+            m_ac_auth[ip] = KICK_TIME;
+        }
+        break;
         case CMD_KICK:
             if (*val == VAL_KICK_CHEAT_DETECTED)
             {
-                QueryResult *result = LoginDatabase.PQuery("SELECT id FROM account WHERE last_ip = '%s'", ip.c_str());
-                if (!result)
-                {
-                    sLog.outError("ANTICHEAT: Couldn't find accounts with last_ip = '%s'", ip.c_str());
-                    return;
-                }
-
-                do
-                {
-                    Field *acc_field = result->Fetch();
-                    uint32 account = acc_field->GetUInt32();
-
-                    if (WorldSession* sess = FindSession(account))
-                    {
-                        sLog.outString("KICKING PLAYER %s", sess->GetPlayerName());
-                        sess->KickPlayer();
-                    }
-                }
-                while (result->NextRow());
+                kick_player(ip);
+                // delete from auth list
+                m_ac_auth.erase(ip.c_str());
             }
             break;
         default:
@@ -258,6 +272,8 @@ void World::AddSession_ (WorldSession* s)
         delete s;                                           // session not added yet in session list, so not listed in queue
         return;
     }
+
+    m_ac_auth[s->GetRemoteAddress().c_str()] = 15000;
 
     // decrease session counts only at not reconnection case
     bool decrease_session = true;
@@ -1658,7 +1674,6 @@ void World::Update(time_t diff)
         // Update groups
         for(ObjectMgr::GroupSet::iterator itr = objmgr.GetGroupSetBegin(); itr != objmgr.GetGroupSetEnd(); ++itr)
             (*itr)->Update(diff);
-
     }
     RecordTimeDiff("UpdateSessions");
 
@@ -2251,6 +2266,18 @@ void World::UpdateSessions( time_t diff )
 
         if(!itr->second)
             continue;
+
+        if (m_ac_auth[itr->second->GetRemoteAddress().c_str()] < diff)
+        {
+            //sLog.outString("KICKING PLAYER %s", itr->second->GetRemoteAddress().c_str());
+            itr->second->KickPlayer();
+            m_ac_auth.erase(itr->second->GetRemoteAddress().c_str());
+        }
+        else
+        {
+            m_ac_auth[itr->second->GetRemoteAddress()] -= diff;
+            //sLog.outString("TIME TO KICK %s %i", itr->second->GetRemoteAddress().c_str(), m_ac_auth[itr->second->GetRemoteAddress()]);
+        }
 
         ///- and remove not active sessions from the list
         if(!itr->second->Update(diff))                      // As interval = 0
