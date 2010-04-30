@@ -638,7 +638,7 @@ struct mob_ghoulAI : public hyjal_trashAI
                 if (target && target->isAlive())
                 {
                     m_creature->AddThreat(target,0.0);
-                    AtackStart(target);
+                    AttackStart(target);
                 }
                 else
                 {
@@ -652,7 +652,7 @@ struct mob_ghoulAI : public hyjal_trashAI
                 if(target && target->isAlive())
                 {
                     m_creature->AddThreat(target,0.0);
-                    AtackStart(target);
+                    AttackStart(target);
                 }
                 else
                 {
