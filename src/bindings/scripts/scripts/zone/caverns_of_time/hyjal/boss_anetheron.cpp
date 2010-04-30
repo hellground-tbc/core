@@ -110,7 +110,15 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
         {
             Unit* target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_JAINAPROUDMOORE));
             if (target && target->isAlive())
+            {
                 m_creature->AddThreat(target,0.0);
+                AttackStart(target);
+            }
+            else
+            {
+                if(target = m_creature->SelectNearbyTarget(200.0))
+                    AttackStart(target);
+            }
         }
     }
 

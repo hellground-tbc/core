@@ -806,7 +806,10 @@ void ScriptedAI::DoZoneInCombat(Unit* pUnit)
     }
 
     if(pUnit->GetTypeId() == TYPEID_UNIT && ((Creature*)pUnit)->IsInEvadeMode())
+    {
+        error_log("TSCR: DoZoneInCombat called for creature that isInEvadeMode() pUnit entry = %d)", pUnit->GetTypeId() == TYPEID_UNIT ? ((Creature*)pUnit)->GetEntry() : 0);
         return;
+    }
 
     Map::PlayerList const &PlayerList = map->GetPlayers();
     for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)

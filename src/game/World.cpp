@@ -209,7 +209,7 @@ void World::ProcessAnticheat(char *cmd, char *val, std::string ip)
     {
         case CMD_KEEP_ALIVE:
         {
-            m_ac_auth[ip] = KICK_TIME;
+            //m_ac_auth[ip] = KICK_TIME;
         }
         break;
         case CMD_KICK:
@@ -217,7 +217,7 @@ void World::ProcessAnticheat(char *cmd, char *val, std::string ip)
             {
                 kick_player(ip);
                 // delete from auth list
-                m_ac_auth.erase(ip.c_str());
+                //m_ac_auth.erase(ip.c_str());
             }
             break;
         default:
@@ -273,7 +273,7 @@ void World::AddSession_ (WorldSession* s)
         return;
     }
 
-    m_ac_auth[s->GetRemoteAddress()] = 15000;
+    //m_ac_auth[s->GetRemoteAddress()] = 15000;
 
     // decrease session counts only at not reconnection case
     bool decrease_session = true;
@@ -1095,11 +1095,13 @@ void World::LoadConfigSettings(bool reload)
 
     bool enableLOS = sConfig.GetBoolDefault("vmap.enableLOS", false);
     bool enableHeight = sConfig.GetBoolDefault("vmap.enableHeight", false);
-    std::string ignoreMapIds = sConfig.GetStringDefault("vmap.ignoreMapIds", "");
+    std::string losMaps = sConfig.GetStringDefault("vmap.losMaps", "");
+    std::string heightMaps = sConfig.GetStringDefault("vmap.heightMaps", "");
     std::string ignoreSpellIds = sConfig.GetStringDefault("vmap.ignoreSpellIds", "");
     VMAP::VMapFactory::createOrGetVMapManager()->setEnableLineOfSightCalc(enableLOS);
     VMAP::VMapFactory::createOrGetVMapManager()->setEnableHeightCalc(enableHeight);
-    VMAP::VMapFactory::createOrGetVMapManager()->preventMapsFromBeingUsed(ignoreMapIds.c_str());
+    VMAP::VMapFactory::createOrGetVMapManager()->setLOSonmaps(losMaps.c_str());
+    VMAP::VMapFactory::createOrGetVMapManager()->setHeightonmaps(heightMaps.c_str());
     VMAP::VMapFactory::preventSpellsFromBeingTestedForLoS(ignoreSpellIds.c_str());
     sLog.outString( "WORLD: VMap support included. LineOfSight:%i, getHeight:%i",enableLOS, enableHeight);
     sLog.outString( "WORLD: VMap data directory is: %svmaps",m_dataPath.c_str());
