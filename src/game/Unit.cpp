@@ -8399,6 +8399,9 @@ void Unit::SetInCombatState(bool PvP)
             if(m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->Attributes & SPELL_ATTR_CANT_USED_IN_COMBAT)
                 InterruptSpell(CURRENT_GENERIC_SPELL);
         }
+        
+        if(!isCharmed())
+            return;
     }
     else
     {
@@ -8411,9 +8414,8 @@ void Unit::SetInCombatState(bool PvP)
             UpdateSpeed(MOVE_SWIM, true);
             UpdateSpeed(MOVE_FLIGHT, true);
         }
-        else if(!isCharmed())
-            return;
     }
+
     SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_IN_COMBAT);
 }
 
