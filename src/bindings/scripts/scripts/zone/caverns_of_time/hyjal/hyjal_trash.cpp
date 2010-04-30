@@ -638,12 +638,12 @@ struct mob_ghoulAI : public hyjal_trashAI
                 if (target && target->isAlive())
                 {
                     m_creature->AddThreat(target,0.0);
-                    m_creature->AtackStart(target);
+                    AtackStart(target);
                 }
                 else
                 {
                     if(target = m_creature->SelectNearbyTarget(200.0))
-                        m_creature->AttackStart(target);
+                        AttackStart(target);
                 }
             }
             else
@@ -652,12 +652,12 @@ struct mob_ghoulAI : public hyjal_trashAI
                 if(target && target->isAlive())
                 {
                     m_creature->AddThreat(target,0.0);
-                    m_creature->AtackStart(target);
+                    AtackStart(target);
                 }
                 else
                 {
                     if(target = m_creature->SelectNearbyTarget(200.0))
-                        m_creature->AttackStart(target);
+                        AttackStart(target);
                 }
             }
         }
