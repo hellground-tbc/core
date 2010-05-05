@@ -891,6 +891,50 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->CastCustomSpell(m_caster, 12976, &healthModSpellBasePoints0, NULL, NULL, true, NULL);
                     return;
                 }
+                case 8344:                                  // Universal Remote
+                {
+                    if(!unitTarget)
+                        return;
+
+                    if(urand(0, 99) > 20)
+                        m_caster->CastSpell(unitTarget, 8345, true);
+                    else                                    // 20% (?guessed) chance for malfunction
+                    {
+                        switch(urand(0, 1))
+                        {
+                            case 0:
+                                m_caster->CastSpell(unitTarget, 8346, true);
+                                break;
+                            case 1:
+                                m_caster->CastSpell(unitTarget, 8347, true);
+                                break;
+                        }
+                    }
+                    return;
+                }
+                /*
+                Placeholder for Gnomish Death Ray support.
+                Maybe spells ids after case should be swaped.
+                case 13280:                                 
+                    m_caster->CastSpell(m_caster, 13493, true);     // Gnomish Death Ray periodic damage
+                    return;
+                case 13278:                                 
+                    m_caster->CastSpell(unitTarget, 13279, true);  // Gnomish Death Ray effect
+                    return;
+                */
+                case 13180:                                 // Gnomish Mind Control Cap
+                {
+                    if(!unitTarget)
+                        return;
+                    
+                    int32 failureChance = unitTarget->getLevel() > 60 ? 20 : 5;            // guessed chance of failure
+                    if(urand(0, 99) > failureChance)
+                        m_caster->CastSpell(unitTarget, 13181, true);
+                    else
+                        unitTarget->CastSpell(m_caster, 13181, true);
+
+                    return;
+                }
                 case 13006:                                 // gnomish shrink ray
                 {
                     if(!unitTarget)
