@@ -397,6 +397,105 @@ bool QuestAccept_npc_wounded_blood_elf(Player* player, Creature* creature, Quest
     return true;
 }
 
+
+/*######
+## npc_demoniac_scryer
+######*/
+
+#define FINISHED_WHISPER "Thank you for allowing me to visit, $N. You have a very colorful soul, but it's a little brighter than I prefer... or I might have stayed longer!"
+
+struct TRINITY_DLL_DECL npc_demoniac_scryerAI : public  Scripted_NoMovementAI
+{
+    npc_demoniac_scryerAI(Creature *c) :  Scripted_NoMovementAI(c) {}
+
+    uint32 Lifespan_Timer;
+    uint32 Imps_Timer;
+    uint32 Warlock_Timer;
+    std::list<uint64> PlayersWithQuestList;
+    bool Spawns;
+
+    void Reset()
+    {
+        Lifespan_Timer = 120000;
+        Imps_Timer = 20000;
+        Warlock_Timer = 10000;
+        Spawns = true;
+        PlayersWithQuestList.clear();
+
+        std::list<Unit*> PlayerList;
+        uint32 questDist = 60;                      // sWorld.getConfig(CONFIG_GROUP_XP_DISTANCE);
+        Trinity::AnyUnitInObjectRangeCheck  check(me, questDist);
+        Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck > searcher(PlayerList, check);
+        me->VisitNearbyWorldObject(questDist, searcher);
+
+        for(std::list<Unit*>::iterator i = PlayerList.begin(); i != PlayerList.end(); i++)
+        {
+            if((*i)->GetTypeId() != TYPEID_PLAYER)
+                continue;
+            Player *player = (Player*)(*i);
+            if(player->GetQuestStatus(10838) == QUEST_STATUS_INCOMPLETE)
+                PlayersWithQuestList.push_back(player->GetGUID());
+        }
+    }
+
+    void JustRespawned()
+    {
+        Reset();
+    }
+
+    void Aggro(Unit *) {}
+
+    void JustSummoned(Creature* summoned)
+    {
+        summoned->getThreatManager().addThreat(me, 1);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(Spawns)
+        {
+            if(Imps_Timer < diff)
+            {
+                me->SummonCreature(22259, me->GetPositionX() - 3, me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN , 120000);
+                me->SummonCreature(22259, me->GetPositionX() + 3, me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN , 120000);
+                Imps_Timer = 30000;
+            }
+            else
+                Imps_Timer -= diff;
+
+            if(Warlock_Timer < diff)
+            {
+                me->SummonCreature(22273, me->GetPositionX(), me->GetPositionY() + 3, me->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 120000);
+                Warlock_Timer = 20000;
+            }
+            else
+                Warlock_Timer -= diff;
+
+            if(Lifespan_Timer < diff)
+            {
+                Spawns = false;
+                for(std::list<uint64>::iterator i = PlayersWithQuestList.begin(); i != PlayersWithQuestList.end(); i++)
+                {
+                    if(Unit* player = Unit::GetUnit(*me, (*i)))
+                    {
+                        me->CastSpell(player, 38708, true);        
+                        me->Whisper(FINISHED_WHISPER, (*i));  
+                    }
+                }
+            }
+            else
+                Lifespan_Timer -= diff;
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_demoniac_scryer(Creature *_Creature)
+{
+    CreatureAI* newAI = new npc_demoniac_scryerAI(_Creature);
+    return newAI;
+}
+
+
 /*######
 ##
 ######*/
@@ -437,6 +536,11 @@ void AddSC_hellfire_peninsula()
     newscript->Name="npc_wounded_blood_elf";
     newscript->GetAI = &GetAI_npc_wounded_blood_elf;
     newscript->pQuestAccept = &QuestAccept_npc_wounded_blood_elf;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_demoniac_scryer";
+    newscript->GetAI = &GetAI_npc_demoniac_scryer;
     newscript->RegisterSelf();
 }
 
