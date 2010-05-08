@@ -105,17 +105,17 @@ struct TRINITY_DLL_DECL instance_mount_hyjal : public ScriptedInstance
                 case CLASS_PRIEST:
                 case CLASS_PALADIN:
                 case CLASS_WARLOCK:
-                    pVictim->CastSpell(Archimonde, SPELL_SOUL_CHARGE_RED, true);
+                    Archimonde->CastSpell(Archimonde, SPELL_SOUL_CHARGE_RED, true);
                     break;
                 case CLASS_MAGE:
                 case CLASS_ROGUE:
                 case CLASS_WARRIOR:
-                    pVictim->CastSpell(Archimonde, SPELL_SOUL_CHARGE_YELLOW, true);
+                    Archimonde->CastSpell(Archimonde, SPELL_SOUL_CHARGE_YELLOW, true);
                     break;
                 case CLASS_DRUID:
                 case CLASS_SHAMAN:
                 case CLASS_HUNTER:
-                    pVictim->CastSpell(Archimonde, SPELL_SOUL_CHARGE_GREEN, true);
+                    Archimonde->CastSpell(Archimonde, SPELL_SOUL_CHARGE_GREEN, true);
                     break;
             }
         }

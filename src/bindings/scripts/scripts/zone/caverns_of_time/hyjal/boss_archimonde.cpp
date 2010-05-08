@@ -265,6 +265,7 @@ struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public ScriptedAI
 
         if(ChangeTargetTimer < diff)
         {
+            DoZoneInCombat();
             Unit* target = NULL;
             switch(rand()%2)
             {
@@ -411,12 +412,13 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
     bool CanUseFingerOfDeath()
     {
-        if(m_creature->getVictim() && m_creature->IsWithinDistInMap(m_creature->getVictim(), 5.0))
+        if(!m_creature->getVictim())
+            return true;
+
+        if(m_creature->IsWithinDistInMap(m_creature->getVictim(), 5.0))
             return false;
             
-        Unit *target = m_creature->SelectNearestTarget(m_creature->GetAttackDistance(m_creature->getVictim()));
-        
-        if(m_creature->getVictim() && target)
+        if(Unit *target = m_creature->SelectNearestTarget(m_creature->GetAttackDistance(m_creature->getVictim())))
         {
             m_creature->AddThreat(target, DoGetThreat(m_creature->getVictim()));
             return false;
@@ -431,11 +433,6 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         {
             Doomfire->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             Doomfire->setFaction(m_creature->getFaction());
-
-            // Give Doomfire a taste of everyone in the threatlist = more targets to chase.
-            std::list<HostilReference*>::iterator itr;
-            for(itr = m_creature->getThreatManager().getThreatList().begin(); itr != m_creature->getThreatManager().getThreatList().end(); ++itr)
-                Doomfire->AddThreat(Unit::GetUnit(*m_creature, (*itr)->getUnitGuid()), 1.0f);
 
             ForceSpellCast(Doomfire, SPELL_DOOMFIRE_SPAWN);
             Doomfire->CastSpell(Doomfire, SPELL_DOOMFIRE_VISUAL, true);
@@ -582,7 +579,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         {
             if(HandOfDeathTimer < diff)
             {
-                ForceSpellCast(m_creature->getVictim(), SPELL_HAND_OF_DEATH, INTERRUPT_AND_CAST_INSTANTLY);
+                ForceSpellCast(m_creature, SPELL_HAND_OF_DEATH, INTERRUPT_AND_CAST_INSTANTLY);
                 HandOfDeathTimer = 2000;
             }
             else
@@ -620,31 +617,32 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
                     SoulChargeUnleashTimer -= diff;
             }
             
-            if(m_creature->HasAura(SPELL_SOUL_CHARGE_YELLOW, 0) && !SoulChargeUnleash)
+            if(!SoulChargeUnleash)
             {
-                SoulChargeUnleash = true;
-                SoulChargeUnleashTimer = rand()%5000+5000;        //5 - 10 seconds
-                chargeSpell = SPELL_SOUL_CHARGE_YELLOW;
-                unleashSpell = SPELL_UNLEASH_SOUL_YELLOW;
-            }
-            
-            if (m_creature->HasAura(SPELL_SOUL_CHARGE_RED, 0) && !SoulChargeUnleash)
-            {
-                SoulChargeUnleash = true;
-                SoulChargeUnleashTimer = rand()%5000+5000;        //5 - 10 seconds
-                chargeSpell = SPELL_SOUL_CHARGE_RED;
-                unleashSpell = SPELL_UNLEASH_SOUL_RED;
+                if(m_creature->HasAura(SPELL_SOUL_CHARGE_YELLOW, 0))
+                {
+                    SoulChargeUnleash = true;
+                    chargeSpell = SPELL_SOUL_CHARGE_YELLOW;
+                    unleashSpell = SPELL_UNLEASH_SOUL_YELLOW;
+                }
+                else if(m_creature->HasAura(SPELL_SOUL_CHARGE_RED, 0))
+                {
+                    SoulChargeUnleash = true;
+                    chargeSpell = SPELL_SOUL_CHARGE_RED;
+                    unleashSpell = SPELL_UNLEASH_SOUL_RED;
+                }
+                else if(m_creature->HasAura(SPELL_SOUL_CHARGE_GREEN, 0))
+                {
+                    SoulChargeUnleash = true;
+                    chargeSpell = SPELL_SOUL_CHARGE_GREEN;
+                    unleashSpell = SPELL_UNLEASH_SOUL_GREEN;
+                }
             }
 
-            if (m_creature->HasAura(SPELL_SOUL_CHARGE_GREEN, 0) && !SoulChargeUnleash)
-            {
-                SoulChargeUnleash = true;
-                SoulChargeUnleashTimer = rand()%5000+5000;        //5 - 10 seconds
-                chargeSpell = SPELL_SOUL_CHARGE_GREEN;
-                unleashSpell = SPELL_UNLEASH_SOUL_GREEN;
-            }
-            if (!SoulChargeUnleash)
+            if(!SoulChargeUnleash)
                 SoulChargeTimer = 2000;
+            else
+                SoulChargeUnleashTimer = rand()%5000+5000;
         }
         else
             SoulChargeTimer -= diff;
