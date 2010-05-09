@@ -24,8 +24,8 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_black_temple.h"
 
-#define EMOTE_NEW_TARGET            -1564010
-#define EMOTE_PUNCH_GROUND          -1564011                //DoScriptText(EMOTE_PUNCH_GROUND, m_creature);
+#define EMOTE_NEW_TARGET            -1564010    //all emotes should be fixed in DB not to double or use "Supremus" name
+#define EMOTE_PUNCH_GROUND          -1564011
 #define EMOTE_GROUND_CRACK          -1564012
 
 //Spells
@@ -50,19 +50,21 @@ struct TRINITY_DLL_DECL molten_flameAI : public NullCreatureAI
 
     ScriptedInstance *pInstance;
 
+    float FloatRandRange(float min, float max)
+    {
+        return ((max-min)*((float)rand()/RAND_MAX))+min;
+    }
+
     void Punch()
     {
         m_creature->SetSpeed(MOVE_WALK, 3.5f, true);
         if(pInstance)
         {
             Unit *supremus = Unit::GetUnit(*m_creature, pInstance->GetData64(DATA_SUPREMUS));
-            Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, 100.0f, true, m_creature->getVictim());
-            if(!target)
-                target = m_creature->getVictim();
             if(supremus)
             {
                 m_creature->setFaction(supremus->getFaction());
-                float angle = supremus->GetAngle(target);
+                float angle = FloatRandRange(0, 2*M_PI);    //randomise angle of Punch, geting angle from player not working like should
                 float x = m_creature->GetPositionX() + 100.0f * cos(angle);
                 float y = m_creature->GetPositionY() + 100.0f * sin(angle);
                 float z = m_creature->GetMap()->GetHeight(x, y, MAX_HEIGHT, true);
@@ -96,6 +98,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
     WorldLocation wLoc;
 
     bool Phase1;
+    bool DoEmote;
 
     SummonList summons;
 
@@ -120,6 +123,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
         WorldLocation wLoc;
 
         Phase1 = true;
+        DoEmote = false;
         summons.DespawnAll();
 
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
@@ -213,6 +217,12 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
         else
             SummonFlameTimer -= diff;
 
+        if(DoEmote)
+        {
+            DoScriptText(EMOTE_PUNCH_GROUND, m_creature);
+            DoEmote = false;
+        }
+
         if(Phase1)
         {
             if(HatefulStrikeTimer < diff)
@@ -240,19 +250,22 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
             }
             else
                 SwitchTargetTimer -= diff;
-            
+
             if(MoltenPunch_Timer < diff)
             {
                 Unit *target = m_creature->getVictim();
-                if(!m_creature->IsWithinDistInMap(target, 40))
+                if(m_creature->IsWithinDistInMap(target, 40))
                 {
-                    WorldLocation temp;
-                    target->GetClosePoint(temp.x, temp.y, temp.z, 20.0f, false, m_creature->GetOrientation());
-                    m_creature->CastSpell(temp.x,temp.y,temp.z, SPELL_CHARGE, false);
-                    MoltenPunch_Timer = 8000 +diff;
+                    m_creature->CastSpell(target, SPELL_CHARGE, false); //must have single player target
+                    MoltenPunch_Timer = 8000+rand()%4000;
                 }
                 else
+                {
+                    WorldLocation temp;
+                    target->GetClosePoint(temp.x, temp.y, temp.z, 20.0f, false, m_creature->GetOrientation());  //if boss >40yd from victim make him run fast till 20yd and charge after 1 sec
+                    m_creature->SendMonsterMoveWithSpeed(temp.x, temp.y, temp.z, MOVEMENTFLAG_WALK_MODE);
                     MoltenPunch_Timer = 1000;
+                }
             }
             else
                 MoltenPunch_Timer -= diff;
@@ -261,9 +274,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
             {
                 if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 999, true))
                 {
-                    float x, y, z;
-                    target->GetClosePoint(x, y, z, 5.0f, false, m_creature->GetOrientation());
-                    m_creature->CastSpell(x, y, z, SPELL_VOLCANIC_SUMMON, true);
+                    m_creature->CastSpell(target, SPELL_VOLCANIC_SUMMON, true);      //must have target for not to do DB errors
                     DoScriptText(EMOTE_GROUND_CRACK, m_creature);
                     SummonVolcanoTimer = 10000;
                 }
@@ -277,6 +288,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
             if(!Phase1)
             {
                 Phase1 = true;
+                DoEmote = true;
                 DoResetThreat();
                 PhaseSwitchTimer = 60000;
                 m_creature->SetSpeed(MOVE_RUN, 1.2f);
