@@ -875,6 +875,7 @@ bool IsBinaryResistable(SpellEntry const* spellInfo)
 {
     switch(spellInfo->Id)
     {
+        case 31306:     // Anetheron - Carrion Swarm
         case 31344:     // Howl of Azgalor
         case 31447:     // Mark of Kaz'Rogal
         case 34190:     // Void - Arcane Orb
@@ -894,12 +895,10 @@ bool IsPartialyResistable(SpellEntry const* spellInfo)
         case 33051:     // Krosh Firehand - Greater Fireball
         case 36805:     // Kael'thas - Fireball
         case 36819:     // Kael'thas - Pyroblast
-        case 38145:     // Vashj - Forked Lightning
-        case 38441:     // Fathom - Cataclysm bolt
             return false;
     }
 
-    if(spellInfo->SchoolMask & SPELL_SCHOOL_MASK_HOLY)
+    if(spellInfo->SchoolMask & SPELL_SCHOOL_MASK_HOLY || IsBinaryResistable(spellInfo))
         return false;
     else
         return true;
