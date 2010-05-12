@@ -1672,8 +1672,10 @@ bool SpellMgr::IsSpecialStackCase(uint32 spellId_1, uint32 spellId_2, bool sameC
     if(spellId_1 == 33649 && spellId_2 == 20572)
         return true;
 
-    // sextant of unstabble currents stacks with Shiffar's Nexus-Horn
-    if(spellId_1 == 38348 && spellId_2 == 34321)
+    // sextant of unstabble currents, Shiffar's Nexus-Hornand and Band of Ethernal Sage stacks with each other
+    if( (spellId_1 == 38348 || spellId_1 == 34321 || spellId_1 == 35084) &&
+            (spellId_2 == 38348 || spellId_2 == 34321 || spellId_2 == 35084) &&
+            (spellId_1 != spellId_2) )
         return true;
 
     if(recur)
