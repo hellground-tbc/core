@@ -1911,7 +1911,6 @@ void Unit::AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType, bool ex
         return;
     }
 
-
     MeleeDamageLog damageInfo(this, pVictim, GetMeleeDamageSchoolMask(), attType);
     CalculateMeleeDamage(&damageInfo);
 
@@ -8375,7 +8374,6 @@ void Unit::CombatStart(Unit* target)
         me->UpdatePvP(true);
         me->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_ENTER_PVP_COMBAT);
     }
-
 }
 
 void Unit::SetInCombatState(bool PvP)

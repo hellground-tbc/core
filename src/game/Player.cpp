@@ -2547,6 +2547,12 @@ void Player::InitStatsForLevel(bool reapplyMods)
     for(uint16 index = PLAYER_FIELD_COMBAT_RATING_1; index < PLAYER_FIELD_COMBAT_RATING_1 + MAX_COMBAT_RATING; ++index)
         SetUInt32Value(index, 0);
 
+    for(int i = 0; i < MAX_SPELL_SCHOOL; ++i)
+    {
+        SetInt32Value(UNIT_FIELD_POWER_COST_MODIFIER+i, 0);
+        SetFloatValue(UNIT_FIELD_POWER_COST_MULTIPLIER+i, 0.0f);
+    }
+
     SetUInt32Value(PLAYER_FIELD_MOD_HEALING_DONE_POS,0);
     for (int i = 0; i < 7; i++)
     {
@@ -2604,11 +2610,7 @@ void Player::InitStatsForLevel(bool reapplyMods)
 
     SetUInt32Value(PLAYER_FIELD_MOD_TARGET_RESISTANCE,0);
     SetUInt32Value(PLAYER_FIELD_MOD_TARGET_PHYSICAL_RESISTANCE,0);
-    for(int i = 0; i < MAX_SPELL_SCHOOL; ++i)
-    {
-        SetFloatValue(UNIT_FIELD_POWER_COST_MODIFIER+i,0.0f);
-        SetFloatValue(UNIT_FIELD_POWER_COST_MULTIPLIER+i,0.0f);
-    }
+
     // Init data for form but skip reapply item mods for form
     InitDataForForm(reapplyMods);
 
