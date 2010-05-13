@@ -1212,6 +1212,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                                     ++iter;
                                     if(pUnit && pUnit->IsInWorld() && pUnit->IsInMap(m_creature) && pUnit->GetTypeId() == TYPEID_PLAYER && !((Player*)pUnit)->isGameMaster()) //to allow GM's spying :P
                                     {
+                                        pUnit->RemoveAurasDueToSpell(SPELL_ARCANE_DISRUPTION);
                                         m_creature->CastSpell(pUnit, glapse_teleport_id, true);  //this should probably go to the core
                                         // 2) At that point he will put a Gravity Lapse debuff on everyone
                                         pUnit->CastSpell(pUnit, SPELL_GRAVITY_LAPSE, false);
