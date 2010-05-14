@@ -79,6 +79,7 @@ struct TRINITY_DLL_DECL boss_hydross_the_unstableAI : public ScriptedAI
     boss_hydross_the_unstableAI(Creature *c) : ScriptedAI(c), Summons(m_creature)
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        m_creature->GetPosition(wLoc);
     }
 
     ScriptedInstance* pInstance;
@@ -95,6 +96,8 @@ struct TRINITY_DLL_DECL boss_hydross_the_unstableAI : public ScriptedAI
     bool CorruptedForm;
     bool beam;
     SummonList Summons;
+
+    WorldLocation wLoc;
 
     void Reset()
     {
@@ -228,8 +231,14 @@ struct TRINITY_DLL_DECL boss_hydross_the_unstableAI : public ScriptedAI
             return;
 
         if(PulseCombat_Timer < diff)
-            DoZoneInCombat();
-        else PulseCombat_Timer -= diff;
+        {
+            if(m_creature->IsWithinDistInMap(wLoc, 100.0f))
+                DoZoneInCombat();
+            else
+                EnterEvadeMode();
+        }
+        else
+            PulseCombat_Timer -= diff;
 
         // corrupted form
         if (CorruptedForm)
@@ -251,14 +260,16 @@ struct TRINITY_DLL_DECL boss_hydross_the_unstableAI : public ScriptedAI
                         case 5: mark_spell = SPELL_MARK_OF_CORRUPTION6; break;
                     }
 
-                    DoCast(m_creature->getVictim(), mark_spell);
+                    DoCast(m_creature, mark_spell);
 
                     if (MarkOfCorruption_Count < 5)
                         MarkOfCorruption_Count++;
                 }
 
                 MarkOfCorruption_Timer = 15000;
-            }else MarkOfCorruption_Timer -= diff;
+            }
+            else
+                MarkOfCorruption_Timer -= diff;
 
             //VileSludge_Timer
             if (VileSludge_Timer < diff)
@@ -267,7 +278,9 @@ struct TRINITY_DLL_DECL boss_hydross_the_unstableAI : public ScriptedAI
                     DoCast(target, SPELL_VILE_SLUDGE);
 
                 VileSludge_Timer = 15000;
-            }else VileSludge_Timer -= diff;
+            }
+            else
+                VileSludge_Timer -= diff;
 
             //PosCheck_Timer
             if (PosCheck_Timer < diff)
@@ -295,7 +308,9 @@ struct TRINITY_DLL_DECL boss_hydross_the_unstableAI : public ScriptedAI
                 }
 
                 PosCheck_Timer = 2500;
-            }else PosCheck_Timer -=diff;
+            }
+            else
+                PosCheck_Timer -=diff;
         }
         // clean form
         else
@@ -317,7 +332,7 @@ struct TRINITY_DLL_DECL boss_hydross_the_unstableAI : public ScriptedAI
                         case 5:  mark_spell = SPELL_MARK_OF_HYDROSS6; break;
                     }
 
-                    DoCast(m_creature->getVictim(), mark_spell);
+                    DoCast(m_creature, mark_spell);
 
                     if (MarkOfHydross_Count < 5)
                         MarkOfHydross_Count++;
