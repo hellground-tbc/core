@@ -1802,7 +1802,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
 
         case TARGET_TYPE_CHANNEL:
         {
-            if(!m_originalCaster || !m_originalCaster->m_currentSpells[CURRENT_CHANNELED_SPELL])
+            if(m_spellInfo->Id != 38700 && !m_originalCaster || !m_originalCaster->m_currentSpells[CURRENT_CHANNELED_SPELL])
             {
                 sLog.outError( "SPELL: no current channeled spell for spell ID %u", m_spellInfo->Id );
                 break;

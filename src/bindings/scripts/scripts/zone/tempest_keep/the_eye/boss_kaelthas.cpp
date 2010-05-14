@@ -314,7 +314,6 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
     boss_kaelthasAI(Creature *c) : ScriptedAI(c), summons(m_creature)
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
-        m_creature->GetPosition(wLoc);
 
         for(int i = 0; i < 4; i++)
             AdvisorGuid[i] = 0;
@@ -443,7 +442,8 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->SetFloatValue(OBJECT_FIELD_SCALE_X, 1.0f);
-        m_creature->Relocate(wLoc.x, wLoc.y, wLoc.z);
+        m_creature->SendMonsterMove(GRAVITY_X, GRAVITY_Y, GRAVITY_Z, 0);
+        m_creature->Relocate(GRAVITY_X, GRAVITY_Y, GRAVITY_Z);
 
         m_creature->RemoveAllAuras(); //if Reset called while animation
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);

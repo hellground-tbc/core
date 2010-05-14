@@ -1615,7 +1615,10 @@ void World::Update(time_t diff)
             m_updateTimeCount = 1;
             
             if(GetUptime() > 43200)
-                ShutdownServ(1, SHUTDOWN_MASK_RESTART, RESTART_EXIT_CODE);
+            { 
+                SendWorldText(LANG_SYSTEMMESSAGE, "Autorestart in: 10 min");
+                ShutdownServ(600, SHUTDOWN_MASK_RESTART, RESTART_EXIT_CODE);
+            }
         }
         else
         {
