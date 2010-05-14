@@ -982,7 +982,7 @@ void WorldSession::HandleGuildBankDeposit( WorldPacket & recv_data )
     CharacterDatabase.CommitTransaction();
 
     // logging money
-    if(_player->GetSession()->GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_LOG_TRADE))
+    if(_player->FlaggedToCheck() || _player->GetSession()->GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_LOG_TRADE))
     {
         sLog.outCommand(_player->GetSession()->GetAccountId(),"GM %s (Account: %u) deposit money (Amount: %u) to guild bank (Guild ID %u)",
             _player->GetName(),_player->GetSession()->GetAccountId(),money,GuildId);
@@ -1380,7 +1380,7 @@ void WorldSession::HandleGuildBankDepositItem( WorldPacket & recv_data )
                 if(pItemChar)
                 {
                     // logging item move to bank
-                    if(_player->GetSession()->GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_LOG_TRADE))
+                    if(_player->FlaggedToCheck() || _player->GetSession()->GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_LOG_TRADE))
                     {
                         sLog.outCommand(_player->GetSession()->GetAccountId(),"GM %s (Account: %u) deposit item: %s (Entry: %d Count: %u) to guild bank (Guild ID: %u )",
                             _player->GetName(),_player->GetSession()->GetAccountId(),
@@ -1449,7 +1449,7 @@ void WorldSession::HandleGuildBankDepositItem( WorldPacket & recv_data )
         }
 
         // logging item move to bank (before items merge
-        if(_player->GetSession()->GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_LOG_TRADE))
+        if(_player->FlaggedToCheck() || _player->GetSession()->GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_LOG_TRADE))
         {
             sLog.outCommand(_player->GetSession()->GetAccountId(),"GM %s (Account: %u) deposit item: %s (Entry: %d Count: %u) to guild bank (Guild ID: %u )",
                 _player->GetName(),_player->GetSession()->GetAccountId(),
@@ -1475,7 +1475,7 @@ void WorldSession::HandleGuildBankDepositItem( WorldPacket & recv_data )
         if( msg == EQUIP_ERR_OK )                           // merge
         {
             // logging item move to bank
-            if(_player->GetSession()->GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_LOG_TRADE))
+            if(_player->FlaggedToCheck() || _player->GetSession()->GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_LOG_TRADE))
             {
                 sLog.outCommand(_player->GetSession()->GetAccountId(),"GM %s (Account: %u) deposit item: %s (Entry: %d Count: %u) to guild bank (Guild ID: %u )",
                     _player->GetName(),_player->GetSession()->GetAccountId(),
@@ -1525,7 +1525,7 @@ void WorldSession::HandleGuildBankDepositItem( WorldPacket & recv_data )
             }
 
             // logging item move to bank
-            if(_player->GetSession()->GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_LOG_TRADE))
+            if(_player->FlaggedToCheck() || _player->GetSession()->GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_LOG_TRADE))
             {
                 sLog.outCommand(_player->GetSession()->GetAccountId(),"GM %s (Account: %u) deposit item: %s (Entry: %d Count: %u) to guild bank (Guild ID: %u )",
                     _player->GetName(),_player->GetSession()->GetAccountId(),

@@ -917,6 +917,8 @@ class TRINITY_DLL_SPEC Player : public Unit
         void AddToWorld();
         void RemoveFromWorld();
 
+        bool FlaggedToCheck(){ return m_check; }
+
         void SetViewport(uint64 guid, bool movable);
         void StopCastingCharm() { Uncharm(); }
         void StopCastingBindSight();
@@ -2297,9 +2299,11 @@ class TRINITY_DLL_SPEC Player : public Unit
         time_t m_nextThinkTime;
 
         uint32 m_Tutorials[8];
-        bool   m_TutorialsChanged;
+        bool m_TutorialsChanged;
 
-        bool   m_DailyQuestChanged;
+        bool m_check;
+
+        bool m_DailyQuestChanged;
         time_t m_lastDailyQuestTime;
 
         uint32 m_regenTimer;

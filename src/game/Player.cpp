@@ -373,6 +373,8 @@ Player::Player (WorldSession *session): Unit()
     m_canDualWield = false;
     m_ammoDPS = 0.0f;
 
+    m_check = false;
+
     m_temporaryUnsummonedPetNumber = 0;
     //cache for UNIT_CREATED_BY_SPELL to allow
     //returning reagents for temporarily removed pets
@@ -16121,12 +16123,14 @@ void Player::_SaveInventory()
         {
             sLog.outError("Player(GUID: %u Name: %s)::_SaveInventory - the bag(%d) and slot(%d) values for the item with guid %d are incorrect, the player doesn't have an item at that position!", GetGUIDLow(), GetName(), item->GetBagSlot(), item->GetSlot(), item->GetGUIDLow());
             m_itemUpdateQueue[i] = NULL;
+            m_check = true;
             //error = true;
         }
         else if (test != item)
         {
             sLog.outError("Player(GUID: %u Name: %s)::_SaveInventory - the bag(%d) and slot(%d) values for the item with guid %d are incorrect, the item with guid %d is there instead!", GetGUIDLow(), GetName(), item->GetBagSlot(), item->GetSlot(), item->GetGUIDLow(), test->GetGUIDLow());
             m_itemUpdateQueue[i] = NULL;
+            m_check = true;
             //error = true;
         }
     }
