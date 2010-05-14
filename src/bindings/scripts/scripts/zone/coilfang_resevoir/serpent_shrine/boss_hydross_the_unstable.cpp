@@ -232,7 +232,7 @@ struct TRINITY_DLL_DECL boss_hydross_the_unstableAI : public ScriptedAI
 
         if(PulseCombat_Timer < diff)
         {
-            if(m_creature->IsWithinDistInMap(wLoc, 100.0f))
+            if(m_creature->GetDistance2d(wLoc.x, wLoc.y) < 100.0)
                 DoZoneInCombat();
             else
                 EnterEvadeMode();
@@ -339,10 +339,12 @@ struct TRINITY_DLL_DECL boss_hydross_the_unstableAI : public ScriptedAI
                 }
 
                 MarkOfHydross_Timer = 15000;
-            }else MarkOfHydross_Timer -= diff;
+            }
+            else
+                MarkOfHydross_Timer -= diff;
 
             //WaterTomb_Timer
-            if (WaterTomb_Timer < diff)
+            if(WaterTomb_Timer < diff)
             {
                 if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0,GetSpellMaxRange(SPELL_WATER_TOMB), true))
                     DoCast(target, SPELL_WATER_TOMB);
