@@ -64,7 +64,7 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
         damageTaken = 0;
         SwarmTimer = 10000;
         SleepTimer = 60000;
-        InfernoTimer = 45000;
+        InfernoTimer = 60000;
         CheckTimer = 3000;
         Visual_Check = 0;
 
@@ -241,7 +241,7 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
                 Visual_Check = 3500;
             }
 
-            InfernoTimer = 45000;
+            InfernoTimer = 60000;
 
             switch(rand()%2)
             {
