@@ -182,7 +182,7 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
 
         if(SwarmTimer < diff)
         {
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,100,true))
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,65,true))
             {
                 //for proper visual
                 m_creature->SetUInt64Value(UNIT_FIELD_TARGET, target->GetGUID());
@@ -211,7 +211,7 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
         {
             for(uint8 i=0;i<3;++i)
             {
-                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,100,true))
+                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,55,true))
                     target->CastSpell(target,SPELL_SLEEP,true);
             }
 
