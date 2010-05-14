@@ -46,6 +46,7 @@ struct TRINITY_DLL_DECL mob_crystalcore_devastatorAI : public ScriptedAI
 
     void Aggro(Unit *who)
     {
+        m_creature->CombatStart(who);
     }
 
     void UpdateAI(const uint32 diff)
@@ -108,6 +109,7 @@ struct TRINITY_DLL_DECL mob_crystalcore_mechanicAI : public ScriptedAI
 
     void Aggro(Unit *who)
     {
+        m_creature->CombatStart(who);
     }
 
     void UpdateAI(const uint32 diff)
@@ -179,6 +181,7 @@ struct TRINITY_DLL_DECL mob_phoenixhawk_hatchlingAI : public ScriptedAI
 
     void Aggro(Unit *who)
     {
+        m_creature->CombatStart(who);
     }
 
     void UpdateAI(const uint32 diff)
@@ -197,7 +200,7 @@ struct TRINITY_DLL_DECL mob_phoenixhawk_hatchlingAI : public ScriptedAI
         if(WingBuffet_Timer < diff)
         {
             DoCast(m_creature,SPELL_WINGBUFFET); 
-            WingBuffet_Timer = 6000+rand()%4000;
+            WingBuffet_Timer = 16000+rand()%14000;
         }
         else
             WingBuffet_Timer -= diff;
@@ -231,6 +234,7 @@ struct TRINITY_DLL_DECL mob_phoenix_hawkAI : public ScriptedAI
 
     void Aggro(Unit *who)
     {
+        m_creature->CombatStart(who);
     }
 
     void UpdateAI(const uint32 diff)
@@ -243,7 +247,7 @@ struct TRINITY_DLL_DECL mob_phoenix_hawkAI : public ScriptedAI
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true, NULL))
                 DoCast(target,SPELL_MANABURNE);
 
-            ManaBurn_Timer = 10000+rand()%4000;
+            ManaBurn_Timer = 20000+rand()%14000;
         }
         else
             ManaBurn_Timer -= diff;
@@ -253,7 +257,7 @@ struct TRINITY_DLL_DECL mob_phoenix_hawkAI : public ScriptedAI
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true, NULL))
                 DoCast(target,SPELL_DIVE); 
 
-            Dive_Timer = 6000+rand()%4000;
+            Dive_Timer = 16000+rand()%4000;
         }
         else
             Dive_Timer -= diff;
@@ -293,6 +297,7 @@ struct TRINITY_DLL_DECL mob_tempest_falconerAI : public ScriptedAI
 
     void Aggro(Unit *who)
     {
+        m_creature->CombatStart(who);
     }
 
     void UpdateAI(const uint32 diff)
@@ -372,6 +377,7 @@ struct TRINITY_DLL_DECL mob_crimson_hand_blood_knightAI : public ScriptedAI
 
     void Aggro(Unit *who)
     {
+        m_creature->CombatStart(who);
     }
 
     void UpdateAI(const uint32 diff)
@@ -483,6 +489,7 @@ struct TRINITY_DLL_DECL mob_Bloodwarder_SquireAI : public ScriptedAI
 
     void Aggro(Unit *who)
     {
+        m_creature->CombatStart(who);
     }
 
     void UpdateAI(const uint32 diff)
@@ -584,6 +591,7 @@ struct TRINITY_DLL_DECL mob_Bloodwarder_VindicatorAI : public ScriptedAI
 
     void Aggro(Unit *who)
     {
+        m_creature->CombatStart(who);
     }
 
     void UpdateAI(const uint32 diff)
@@ -684,6 +692,7 @@ struct TRINITY_DLL_DECL mob_tempest_smithAI : public ScriptedAI
 
     void Aggro(Unit *who)
     {
+        m_creature->CombatStart(who);
     }
 
     void UpdateAI(const uint32 diff)
@@ -780,6 +789,7 @@ struct TRINITY_DLL_DECL mob_novice_astromancerAI : public ScriptedAI
 
     void Aggro(Unit *who)
     {
+        m_creature->CombatStart(who);
     }
 
     void UpdateAI(const uint32 diff)
