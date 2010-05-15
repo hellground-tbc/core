@@ -43,12 +43,6 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
         go = false;
         pos = 0;
-        SpellEntry *TempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_SLEEP);
-        if(TempSpell && TempSpell->EffectImplicitTargetA[0] != 1)
-        {
-            TempSpell->EffectImplicitTargetA[0] = 1;
-            TempSpell->EffectImplicitTargetB[0] = 0;
-        }
     }
 
     uint32 SwarmTimer;
@@ -209,11 +203,7 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
 
         if(SleepTimer < diff)
         {
-            for(uint8 i=0;i<3;++i)
-            {
-                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,55,true))
-                    target->CastSpell(target,SPELL_SLEEP,true);
-            }
+            DoCast(m_creature, SPELL_SLEEP, true);
 
             SleepTimer = 60000;
 
