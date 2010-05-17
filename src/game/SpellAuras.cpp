@@ -1555,7 +1555,7 @@ void Aura::TriggerSpell()
                     // Doomfire
                     case 31944:
                     {
-                        int32 damage = 2250 - (150 * m_tickNumber-1);
+                        int32 damage = 2400 - (150 * m_tickNumber);
                         if(damage < 0)
                             damage = 0;
 
