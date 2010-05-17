@@ -235,7 +235,10 @@ void ScriptedAI::DoCast(Unit* victim, uint32 spellId, bool triggered)
         return;
 
     //m_creature->StopMoving();
-    m_creature->CastSpell(victim, spellId, triggered);
+    if(GetSpellMaxRange(spellId))
+        m_creature->CastSpell(victim, spellId, triggered);
+    else 
+        DoCastAOE(spellId, triggered);
 }
 
 void ScriptedAI::DoCastAOE(uint32 spellId, bool triggered)
