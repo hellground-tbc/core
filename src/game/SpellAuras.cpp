@@ -2974,6 +2974,8 @@ void Aura::HandleAuraTransform(bool apply, bool Real)
         }
         else
         {
+            m_target->setTransForm(0);
+            
             // look for other transform auras
             Aura* handledAura = *otherTransforms.begin();
             for(Unit::AuraList::const_iterator i = otherTransforms.begin();i != otherTransforms.end(); ++i)

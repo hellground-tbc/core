@@ -360,8 +360,6 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
     uint32 Anim_Timer;
     uint32 Step;
 
-    WorldLocation wLoc;
-
     bool Arcane1;
     bool Arcane2;
     bool MC_Done;
@@ -442,8 +440,6 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->SetFloatValue(OBJECT_FIELD_SCALE_X, 1.0f);
-        m_creature->SendMonsterMove(GRAVITY_X, GRAVITY_Y, GRAVITY_Z, 0);
-        m_creature->Relocate(GRAVITY_X, GRAVITY_Y, GRAVITY_Z);
 
         m_creature->RemoveAllAuras(); //if Reset called while animation
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
@@ -2160,14 +2156,9 @@ struct TRINITY_DLL_DECL weapon_advisorAI : public ScriptedAI
             //Check_Timer
             if(Check_Timer < diff)
             {
-                WorldLocation wLoc = ((boss_kaelthasAI*)kael->AI())->wLoc;
-                if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 200.0f)
-                    EnterEvadeMode();
-                else
-                    DoZoneInCombat();
-            
-                 Check_Timer = 3000;
-             }
+                DoZoneInCombat();
+                Check_Timer = 3000;
+            }
             else
                 Check_Timer -= diff;
         }
