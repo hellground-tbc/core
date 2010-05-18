@@ -367,7 +367,7 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
 
         if(BlessingOfTides && BlessingOfTidesCounter) 
         {
-            m_creature->CastSpell(m_creature, SPELL_BLESSING_OF_THE_TIDES,false);
+            m_creature->CastSpell(m_creature, SPELL_BLESSING_OF_THE_TIDES,true);
             BlessingOfTidesCounter--;
         }
 
@@ -492,7 +492,8 @@ struct TRINITY_DLL_DECL boss_fathomguard_sharkkisAI : public ScriptedAI
             if(Pet_Timer < diff)
             {
                 pet = true;
-                DoCast(m_creature, SpellID[rand()%2]);
+//                me->Say("Summoning pet", 0, 0);
+                DoCast(m_creature, SpellID[rand()%2], true);
             }
             else
                 Pet_Timer -= diff;
