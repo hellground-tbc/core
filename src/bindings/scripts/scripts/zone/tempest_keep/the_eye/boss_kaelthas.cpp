@@ -1241,7 +1241,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                                     float z;    //randomize 'z' position of summoned NPC but between 6 and 18 
                                     z = FloatRand(12.0);
                                     z = z > 6.0 ? (z + j) : (6.0 + j);
-                                    m_creature->SummonCreature(NETHER_VAPOR_CLOUD, NetherVaporStartPos[i][0], NetherVaporStartPos[i][1], GRAVITY_Z+z, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 0);
+                                    m_creature->SummonCreature(NETHER_VAPOR_CLOUD, NetherVaporStartPos[i][0], NetherVaporStartPos[i][1], GRAVITY_Z+z, 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 27000);
                                 }
                                 }
                                 GravityLapse_Timer = 27000;
