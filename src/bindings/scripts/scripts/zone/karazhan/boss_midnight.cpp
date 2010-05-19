@@ -22,6 +22,7 @@ SDCategory: Karazhan
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_karazhan.h"
 
 #define SAY_MIDNIGHT_KILL           -1532000
 #define SAY_APPEAR1                 -1532001
@@ -48,6 +49,7 @@ struct TRINITY_DLL_DECL boss_midnightAI : public ScriptedAI
 {
     boss_midnightAI(Creature *c) : ScriptedAI(c) 
     {
+        pInstance = ((ScriptedInstance*)c->GetInstanceData());
         m_creature->GetPosition(wLoc);
     }
 
@@ -56,6 +58,7 @@ struct TRINITY_DLL_DECL boss_midnightAI : public ScriptedAI
     uint32 Mount_Timer;
     uint32 CheckTimer;
 
+    ScriptedInstance *pInstance;
     WorldLocation wLoc;
 
     void Reset()
@@ -67,9 +70,21 @@ struct TRINITY_DLL_DECL boss_midnightAI : public ScriptedAI
 
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->SetVisibility(VISIBILITY_ON);
+
+        if(pInstance && pInstance->GetData(DATA_ATTUMEN_EVENT) != DONE)
+            pInstance->SetData(DATA_ATTUMEN_EVENT, NOT_STARTED);
+        else
+        {
+            m_creature->Kill(m_creature, false);
+            m_creature->RemoveCorpse();
+        }
     }
 
-    void Aggro(Unit* who) {}
+    void Aggro(Unit* who)
+    {
+        if(pInstance)
+            pInstance->SetData(DATA_ATTUMEN_EVENT, IN_PROGRESS);
+    }
 
     void KilledUnit(Unit *victim)
     {
@@ -93,7 +108,9 @@ struct TRINITY_DLL_DECL boss_midnightAI : public ScriptedAI
                 DoZoneInCombat();
             
             CheckTimer = 3000;
-        }else CheckTimer -= diff;
+        }
+        else
+            CheckTimer -= diff;
 
         if(Phase == 1 && (m_creature->GetHealth()*100)/m_creature->GetMaxHealth() < 95)
         {
@@ -182,6 +199,7 @@ struct TRINITY_DLL_DECL boss_attumenAI : public ScriptedAI
 {
     boss_attumenAI(Creature *c) : ScriptedAI(c)
     {
+        pInstance = ((ScriptedInstance*)c->GetInstanceData());
         Phase = 1;
 
         CleaveTimer = 10000 + (rand()%6)*1000;
@@ -190,6 +208,8 @@ struct TRINITY_DLL_DECL boss_attumenAI : public ScriptedAI
         ChargeTimer = 20000;
         ResetTimer = 0;
     }
+
+    ScriptedInstance *pInstance;
 
     uint64 Midnight;
     uint8 Phase;
@@ -220,6 +240,9 @@ struct TRINITY_DLL_DECL boss_attumenAI : public ScriptedAI
         DoScriptText(SAY_DEATH, m_creature);
         if (Unit *pMidnight = Unit::GetUnit(*m_creature, Midnight))
             pMidnight->DealDamage(pMidnight, pMidnight->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+        
+        if(pInstance)
+            pInstance->SetData(DATA_ATTUMEN_EVENT, DONE);
     }
 
     void UpdateAI(const uint32 diff)
@@ -252,13 +275,17 @@ struct TRINITY_DLL_DECL boss_attumenAI : public ScriptedAI
         {
             DoCast(m_creature->getVictim(), SPELL_SHADOWCLEAVE);
             CleaveTimer = 10000 + (rand()%6)*1000;
-        } else CleaveTimer -= diff;
+        }
+        else
+            CleaveTimer -= diff;
 
         if(CurseTimer < diff)
         {
             DoCast(m_creature->getVictim(), SPELL_INTANGIBLE_PRESENCE);
             CurseTimer = 30000;
-        } else CurseTimer -= diff;
+        }
+        else
+            CurseTimer -= diff;
 
         if(RandomYellTimer < diff)
         {
@@ -268,7 +295,9 @@ struct TRINITY_DLL_DECL boss_attumenAI : public ScriptedAI
             case 1: DoScriptText(SAY_RANDOM2, m_creature); break;
             }
             RandomYellTimer = 30000 + (rand()%31)*1000;
-        } else RandomYellTimer -= diff;
+        }
+        else
+            RandomYellTimer -= diff;
 
         if(m_creature->GetUInt32Value(UNIT_FIELD_DISPLAYID) == MOUNTED_DISPLAYID)
         {
@@ -289,7 +318,9 @@ struct TRINITY_DLL_DECL boss_attumenAI : public ScriptedAI
 
                 DoCast(target, SPELL_BERSERKER_CHARGE);
                 ChargeTimer = 20000;
-            } else ChargeTimer -= diff;
+            }
+            else
+                ChargeTimer -= diff;
         }
         else
         {
