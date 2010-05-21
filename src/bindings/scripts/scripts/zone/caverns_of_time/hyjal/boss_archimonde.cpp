@@ -256,9 +256,9 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         AirBurstTimer = 30000;
         GripOfTheLegionTimer = 5000 + rand()%20000;
         DoomfireTimer = 20000;
-        SoulChargeTimer = 2000 + rand()%27000;
+        SoulChargeTimer = 3000;
         SoulChargeCount = 0;
-        SoulChargeUnleashTimer = 0;
+        SoulChargeUnleashTimer = 5000;
         MeleeRangeCheckTimer = 15000;
         HandOfDeathTimer = 2000;
         WispCount = 0;                                      // When ~30 wisps are summoned, Archimonde dies
@@ -337,9 +337,9 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
             if(target)
                 Doomfire->AI()->AttackStart(target);
 
-            if(rand()%2 == 0)
+            if(rand()%10 == 0)  //10% chance on yell
                 DoScriptText(SAY_DOOMFIRE1, m_creature);
-            else
+            else if(rand()%10 == 1) //10% chance on other yell
                 DoScriptText(SAY_DOOMFIRE2, m_creature);
         }
     }
@@ -487,33 +487,6 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
         if(SoulChargeTimer < diff)
         {
-            if(SoulChargeUnleash)
-            {
-                if(SoulChargeUnleashTimer < diff)
-                {
-                    while(m_creature->HasAura(chargeSpell, 0))
-                    {
-                        SoulChargeCount++;
-                        m_creature->RemoveSingleAuraFromStack(chargeSpell, 0);
-                    }
-
-                    if(SoulChargeCount)
-                    {
-                        SoulChargeCount--;
-                        DoCast(m_creature->getVictim(), unleashSpell);
-                        //AddSpellToCast(m_creature->getVictim(), unleashSpell);
-                        SoulChargeTimer = 1000;
-                    }
-                    else
-                    {
-                        SoulChargeUnleash = false;
-                        SoulChargeTimer = 4000;
-                    }                    
-                }
-                else
-                    SoulChargeUnleashTimer -= diff;
-            }
-            
             if(!SoulChargeUnleash)
             {
                 if(m_creature->HasAura(SPELL_SOUL_CHARGE_YELLOW, 0))
@@ -521,28 +494,53 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
                     SoulChargeUnleash = true;
                     chargeSpell = SPELL_SOUL_CHARGE_YELLOW;
                     unleashSpell = SPELL_UNLEASH_SOUL_YELLOW;
+                    SoulChargeUnleashTimer = rand()%5000+5000;
                 }
                 else if(m_creature->HasAura(SPELL_SOUL_CHARGE_RED, 0))
                 {
                     SoulChargeUnleash = true;
                     chargeSpell = SPELL_SOUL_CHARGE_RED;
                     unleashSpell = SPELL_UNLEASH_SOUL_RED;
+                    SoulChargeUnleashTimer = rand()%5000+5000;
                 }
                 else if(m_creature->HasAura(SPELL_SOUL_CHARGE_GREEN, 0))
                 {
                     SoulChargeUnleash = true;
                     chargeSpell = SPELL_SOUL_CHARGE_GREEN;
                     unleashSpell = SPELL_UNLEASH_SOUL_GREEN;
+                    SoulChargeUnleashTimer = rand()%5000+5000;
                 }
+                SoulChargeTimer = 3000;
             }
-
-            if(!SoulChargeUnleash)
-                SoulChargeTimer = 2000;
-            else
-                SoulChargeUnleashTimer = rand()%5000+5000;
         }
         else
             SoulChargeTimer -= diff;
+
+        if(SoulChargeUnleash)
+        {
+            if(SoulChargeUnleashTimer < diff)
+            {
+                while(m_creature->HasAura(chargeSpell, 0))
+                {
+                    SoulChargeCount++;
+                    m_creature->RemoveSingleAuraFromStack(chargeSpell, 0);
+                }
+                if(SoulChargeCount)
+                {
+                    SoulChargeCount--;
+                    DoCast(m_creature/*->getVictim()*/, unleashSpell);
+                    //AddSpellToCast(m_creature->getVictim(), unleashSpell);
+                    SoulChargeTimer = 1000;
+                }
+                else
+                {
+                    SoulChargeUnleash = false;
+                    SoulChargeTimer = 4000;
+                }
+            }
+            else
+                SoulChargeUnleashTimer -= diff;
+        }
 
         if(GripOfTheLegionTimer < diff)
         {
@@ -594,8 +592,6 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         if(DoomfireTimer < diff)
         {
             if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, 150, true, m_creature->getVictim()))
-                SummonDoomfire(target);
-            else if (Unit* target = m_creature->getVictim()) // only for testing purposes
                 SummonDoomfire(target);
 
             DoomfireTimer = 9000+rand()%3000;
