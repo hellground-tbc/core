@@ -1475,6 +1475,11 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->CastSpell(unitTarget,39835,true);
                     break;
                 }
+                case 40870:
+                {
+                    m_caster->CastSpell(unitTarget,40871,true);
+                    break;
+                }
             }
 
             //All IconID Check in there
