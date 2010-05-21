@@ -214,6 +214,10 @@ inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
         if(target->HasAura(40253,eff_index))
             return;
 
+    if(spellInfo->Id == 31943)  //Doomfire
+        if(target->HasAura(31943,eff_index))
+            return;
+
     PersistentAreaAura* Aur = new PersistentAreaAura(spellInfo, eff_index, NULL, target, i_dynobject.GetCaster(), NULL, i_dynobject.GetGUID());
 
     target->AddAura(Aur);
