@@ -326,14 +326,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
         }
         SpellEntry *MCTempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_MIND_CONTROL);
         if(MCTempSpell)
-        {
-            MCTempSpell->MaxAffectedTargets = 1;
-            for(uint8 i = 0; i<3; i++)
-            {
-                MCTempSpell->EffectImplicitTargetA[i] = TARGET_UNIT_TARGET_ENEMY;
-                MCTempSpell->EffectImplicitTargetB[i] = NULL;
-            }
-        }
+            MCTempSpell->MaxAffectedTargets = 2+rand()%2;   //zeby gracze sie nie pluli ze zawsze jest 2 lub 3 :P
     }
 
     ScriptedInstance* pInstance;
@@ -1028,25 +1021,14 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                         // MC after 20 sec from Pyros chain (4 Phase)
                         if(Phase == 4)
                         {
-                          if(m_creature->getThreatManager().getThreatList().size() >= 2)
-                          {
                             switch(rand()%2)
                             {
-                              case 0: DoScriptText(SAY_MINDCONTROL1, m_creature); break;
-                              case 1: DoScriptText(SAY_MINDCONTROL2, m_creature); break;
+                                case 0: DoScriptText(SAY_MINDCONTROL1, m_creature); break;
+                                case 1: DoScriptText(SAY_MINDCONTROL2, m_creature); break;
                             }
-                            for (uint32 i = 0; i < urand(2, 3); i++)
-                            {
-                                Unit* target =SelectUnit(SELECT_TARGET_RANDOM, 1, 80.0, true, m_creature->getVictim());
-                                if(!target)
-                                    target = m_creature->getVictim();
-
-                                if(target)
-                                    DoCast(target, SPELL_MIND_CONTROL, true);
-                            }
-                          }
-                          MindControl_Timer = 10000;
-                          MC_Done = false;                // for second MC to have a good timer
+                            DoCast(m_creature, SPELL_MIND_CONTROL, true);
+                            MindControl_Timer = 10000;
+                            MC_Done = false;                // for second MC to have a good timer
                        }
                     }
                     else
@@ -1057,23 +1039,12 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                         // MC after 50 sec from Pyros chain (4 Phase)
                         if(Phase == 4 && !MC_Done && MindControl_Timer < diff)
                         {
-                            if(m_creature->getThreatManager().getThreatList().size() >= 2)
+                            switch(rand()%2)
                             {
-                              switch(rand()%2)
-                              {
                                 case 0: DoScriptText(SAY_MINDCONTROL1, m_creature); break;
                                 case 1: DoScriptText(SAY_MINDCONTROL2, m_creature); break;
-                              }
-                             for (uint32 i = 0; i < urand(2, 3); i++)
-                             {
-
-                                 Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, 80.0, true, m_creature->getVictim());
-                                 if(!target)
-                                     target = m_creature->getVictim();
-                                 if(target)
-                                    DoCast(target, SPELL_MIND_CONTROL, true);
-                             }
                             }
+                            DoCast(m_creature, SPELL_MIND_CONTROL, true);
                             MC_Done = true;
                         }
                         else
