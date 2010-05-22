@@ -216,13 +216,9 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
 
         if(CheckTimer < diff)
         {
-            if (m_creature->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 100)
-                EnterEvadeMode();
-            else
-            {
-                CheckAttractionTargets();
-                DoZoneInCombat();
-            }
+            CheckAttractionTargets();
+            DoZoneInCombat();
+
             CheckTimer = 1500;
         }
         else 
@@ -299,7 +295,7 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         if(ShriekTimer < diff)
         {
             DoCast(m_creature->getVictim(), SPELL_SILENCING_SHRIEK);
-            ShriekTimer = 25000+rand()%10 * 1000;
+            ShriekTimer = 25000 +rand()%101000;
         }
         else
             ShriekTimer -= diff;
@@ -307,7 +303,7 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         if(SaberTimer < diff)
         {
             DoCast(m_creature->getVictim(), SPELL_SABER_LASH);
-            SaberTimer = 25000+rand()%10 * 1000;
+            SaberTimer = 25000 +rand()%10000;
         }
         else
             SaberTimer -= diff;
@@ -327,11 +323,11 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         {
             switch(rand()%3)
             {
-            case 0: DoScriptText(SAY_TAUNT1, m_creature); break;
-            case 1: DoScriptText(SAY_TAUNT2, m_creature); break;
-            case 2: DoScriptText(SAY_TAUNT3, m_creature); break;
+                case 0: DoScriptText(SAY_TAUNT1, m_creature); break;
+                case 1: DoScriptText(SAY_TAUNT2, m_creature); break;
+                case 2: DoScriptText(SAY_TAUNT3, m_creature); break;
             }
-            RandomYellTimer = 60000 + rand()%91 * 1000;
+            RandomYellTimer = 60000 +rand()%91000;
         }
         else
             RandomYellTimer -= diff;
