@@ -597,6 +597,16 @@ void Pet::Update(uint32 diff)
                 }
             }
 
+            if(getPetType() == SUMMON_PET && owner->getClass() == CLASS_WARLOCK)
+            {
+                for(PetAuraSet::iterator i = owner->m_petAuras.begin(); i != owner->m_petAuras.end(); i++)
+                    if((*i)->GetAura(GetEntry()) == 35696)
+                    {
+                        CastPetAura(*i);
+                        break;
+                    }
+            }
+
             if(getPetType() != HUNTER_PET)
                 break;
 
@@ -1862,6 +1872,15 @@ void Pet::CastPetAura(PetAura const* aura)
     if(auraId == 35696)                                       // Demonic Knowledge
     {
         int32 basePoints = int32(aura->GetDamage() * (GetStat(STAT_STAMINA) + GetStat(STAT_INTELLECT)) / 100);
+        Unit *owner = GetOwner();
+        Aura *aura = owner->GetAura(35696, 0);
+        if(aura)
+        {
+            if(aura->GetModifierValue() == basePoints)
+                return;
+            else
+                owner->RemoveAurasDueToSpell(35696);
+        }
         CastCustomSpell(this, auraId, &basePoints, NULL, NULL, true);
     }
     else
