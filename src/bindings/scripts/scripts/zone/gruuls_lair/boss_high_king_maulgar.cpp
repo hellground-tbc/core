@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Boss_High_King_Maulgar
 SD%Complete: 90
-SDComment: Correct timers, after whirlwind melee attack bug, prayer of healing
+SDComment:
 SDCategory: Gruul's Lair
 EndScriptData */
 
@@ -42,7 +42,7 @@ EndScriptData */
 #define SPELL_BERSERKER_C       26561
 #define SPELL_ROAR              16508
 #define SPELL_FLURRY            33232
-#define SPELL_DUAL_WIELD        29651 //used in phase
+#define SPELL_DUAL_WIELD        29651
 
 // Olm the Summoner
 #define SPELL_DARK_DECAY        33129
@@ -50,15 +50,15 @@ EndScriptData */
 #define SPELL_SUMMON_WFH        33131
 
 //Kiggler the Craed
-#define SPELL_GREATER_POLYMORPH     33173
-#define SPELL_LIGHTNING_BOLT        36152
-#define SPELL_ARCANE_SHOCK          33175
-#define SPELL_ARCANE_EXPLOSION      33237
+#define SPELL_GREATER_POLYMORPH 33173
+#define SPELL_LIGHTNING_BOLT    36152
+#define SPELL_ARCANE_SHOCK      33175
+#define SPELL_ARCANE_EXPLOSION  33237
 
 //Blindeye the Seer
-#define SPELL_GREATER_PW_SHIELD         33147
-#define SPELL_HEAL                      33144
-#define SPELL_PRAYEROFHEALING           33152
+#define SPELL_GREATER_PW_SHIELD 33147
+#define SPELL_HEAL              33144
+#define SPELL_PRAYEROFHEALING   33152
 
 //Krosh Firehand
 #define SPELL_GREATER_FIREBALL  33051
@@ -172,17 +172,16 @@ struct TRINITY_DLL_DECL boss_high_king_maulgarAI : public ScriptedAI
         if(pInstance)
             pInstance->SetData(DATA_MAULGAREVENT, DONE);
     }
-       void AddDeath()
-       {
-            switch(rand()%4)
-            {
-                case 0: DoScriptText(SAY_OGRE_DEATH1, m_creature);break;
-                case 1: DoScriptText(SAY_OGRE_DEATH2, m_creature);break;
-                case 2: DoScriptText(SAY_OGRE_DEATH3, m_creature);break;
-                case 3: DoScriptText(SAY_OGRE_DEATH4, m_creature);break;
-            }
-       }
-
+    void AddDeath()
+    {
+        switch(rand()%4)
+        {
+            case 0: DoScriptText(SAY_OGRE_DEATH1, m_creature);break;
+            case 1: DoScriptText(SAY_OGRE_DEATH2, m_creature);break;
+            case 2: DoScriptText(SAY_OGRE_DEATH3, m_creature);break;
+            case 3: DoScriptText(SAY_OGRE_DEATH4, m_creature);break;
+        }
+    }
 
     void Aggro(Unit *who)
     {
@@ -218,9 +217,7 @@ struct TRINITY_DLL_DECL boss_high_king_maulgarAI : public ScriptedAI
         //Only if not incombat check if the event is started
         if(!InCombat && pInstance && pInstance->GetData(DATA_MAULGAREVENT))
         {
-            Unit* target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_MAULGAREVENT_TANK));
-
-            if(target)
+            if(Unit* target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_MAULGAREVENT_TANK)))
             {
                 AttackStart(target);
                 GetCouncil();
@@ -244,10 +241,12 @@ struct TRINITY_DLL_DECL boss_high_king_maulgarAI : public ScriptedAI
             //DoCast(m_creature->getVictim(), SPELL_ARCING_SMASH);
             AddSpellToCast(m_creature->getVictim(), SPELL_ARCING_SMASH);
             ArcingSmash_Timer = 10000;
-        }else ArcingSmash_Timer -= diff;
+        }
+        else
+            ArcingSmash_Timer -= diff;
 
         //Whirlwind_Timer
-        if (Whirlwind_Timer < diff)
+        if(Whirlwind_Timer < diff)
         {
             if(Charging_Timer < 15000)  //prevents casting Charge when in whirlwind
                 Charging_Timer = 15000+rand()%2000;
@@ -289,7 +288,7 @@ struct TRINITY_DLL_DECL boss_high_king_maulgarAI : public ScriptedAI
             {
                 Unit* target = NULL;
                 target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_BERSERKER_C), true);
-                if (target)
+                if(target)
                 {
                     AttackStart(target);
                     AddSpellToCast(target, SPELL_BERSERKER_C);
@@ -311,8 +310,8 @@ struct TRINITY_DLL_DECL boss_high_king_maulgarAI : public ScriptedAI
                 Roar_Timer -= diff;
         }
 
-        DoMeleeAttackIfReady();
         CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
     }
 };
 
@@ -324,11 +323,11 @@ struct TRINITY_DLL_DECL boss_olm_the_summonerAI : public ScriptedAI
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
     }
 
+    ScriptedInstance* pInstance;
+
     uint32 DarkDecay_Timer;
     uint32 Summon_Timer;
-       uint32 DeathCoil_Timer;
-
-    ScriptedInstance* pInstance;
+    uint32 DeathCoil_Timer;
 
     void Reset()
     {
@@ -369,12 +368,8 @@ struct TRINITY_DLL_DECL boss_olm_the_summonerAI : public ScriptedAI
         //Only if not incombat check if the event is started
         if(!InCombat && pInstance && pInstance->GetData(DATA_MAULGAREVENT))
         {
-            Unit* target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_MAULGAREVENT_TANK));
-
-            if(target)
-            {
+            if(Unit* target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_MAULGAREVENT_TANK)))
                 AttackStart(target);
-            }
         }
 
         //Return since we have no target
@@ -481,12 +476,8 @@ struct TRINITY_DLL_DECL boss_kiggler_the_crazedAI : public ScriptedAI
         //Only if not incombat check if the event is started
         if(!InCombat && pInstance && pInstance->GetData(DATA_MAULGAREVENT))
         {
-            Unit* target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_MAULGAREVENT_TANK));
-
-            if(target)
-            {
+            if(Unit* target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_MAULGAREVENT_TANK)))
                 AttackStart(target);
-            }
         }
 
         //Return since we have no target
@@ -503,8 +494,7 @@ struct TRINITY_DLL_DECL boss_kiggler_the_crazedAI : public ScriptedAI
         //GreaterPolymorph_Timer
         if(GreaterPolymorph_Timer < diff)
         {
-            Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_GREATER_POLYMORPH), true);
-            if(target)
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_GREATER_POLYMORPH), true))
                 //DoCast(target, SPELL_GREATER_POLYMORPH);
                 AddSpellToCast(target, SPELL_GREATER_POLYMORPH);
 
@@ -543,8 +533,8 @@ struct TRINITY_DLL_DECL boss_kiggler_the_crazedAI : public ScriptedAI
         else
             ArcaneExplosion_Timer -= diff;
 
-        DoMeleeAttackIfReady();
         CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
     }
 };
 
@@ -586,9 +576,7 @@ struct TRINITY_DLL_DECL boss_blindeye_the_seerAI : public ScriptedAI
     {
         if(pInstance)
         {
-            Creature *Maulgar = Unit::GetCreature((*m_creature), pInstance->GetData64(DATA_MAULGAR));
-
-            if(Maulgar)
+            if(Creature *Maulgar = Unit::GetCreature((*m_creature), pInstance->GetData64(DATA_MAULGAR)))
                 ((boss_high_king_maulgarAI*)Maulgar->AI())->AddDeath();
 
             if(CheckAllBossDied(pInstance, m_creature))
@@ -601,9 +589,7 @@ struct TRINITY_DLL_DECL boss_blindeye_the_seerAI : public ScriptedAI
         //Only if not incombat check if the event is started
         if(!InCombat && pInstance && pInstance->GetData(DATA_MAULGAREVENT))
         {
-            Unit* target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_MAULGAREVENT_TANK));
-
-            if(target)
+            if(Unit* target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_MAULGAREVENT_TANK)))
                 AttackStart(target);
         }
 
@@ -624,20 +610,6 @@ struct TRINITY_DLL_DECL boss_blindeye_the_seerAI : public ScriptedAI
             AddSpellToCast(m_creature, SPELL_GREATER_PW_SHIELD);
             AddSpellToCast(m_creature, SPELL_PRAYEROFHEALING);
             Shield_PoH_Timer = 30000 + rand()%10000;
-
-            /*if(!shieldCasted)
-            {
-                DoCast(m_creature,SPELL_GREATER_PW_SHIELD);
-                shieldCasted = true;
-                Shield_PoH_Timer = 500;
-            }
-            else
-            {
-                //AddSpellToCast(m_creature, SPELL_PRAYEROFHEALING);
-                DoCast(m_creature, SPELL_PRAYEROFHEALING);
-                shieldCasted = false;
-                Shield_PoH_Timer = 30000 + rand()%10000;
-            }*/
         }
         else
             Shield_PoH_Timer -= diff;
@@ -652,8 +624,8 @@ struct TRINITY_DLL_DECL boss_blindeye_the_seerAI : public ScriptedAI
         else
             Heal_Timer -= diff;
 
-        DoMeleeAttackIfReady();
         CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
     }
 };
 
@@ -673,7 +645,7 @@ struct TRINITY_DLL_DECL boss_krosh_firehandAI : public ScriptedAI
 
     void Reset()
     {
-        GreaterFireball_Timer = 500;
+        GreaterFireball_Timer = 4000;
         SpellShield_Timer = 0;
         BlastWave_Timer = 5000;
 
@@ -695,9 +667,7 @@ struct TRINITY_DLL_DECL boss_krosh_firehandAI : public ScriptedAI
     {
         if(pInstance)
         {
-            Creature *Maulgar = Unit::GetCreature((*m_creature), pInstance->GetData64(DATA_MAULGAR));
-
-            if(Maulgar)
+            if(Creature *Maulgar = Unit::GetCreature((*m_creature), pInstance->GetData64(DATA_MAULGAR)))
                 ((boss_high_king_maulgarAI*)Maulgar->AI())->AddDeath();
 
             if(CheckAllBossDied(pInstance, m_creature))
@@ -710,9 +680,7 @@ struct TRINITY_DLL_DECL boss_krosh_firehandAI : public ScriptedAI
         //Only if not incombat check if the event is started
         if(!InCombat && pInstance && pInstance->GetData(DATA_MAULGAREVENT))
         {
-            Unit* target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_MAULGAREVENT_TANK));
-
-            if(target)
+            if(Unit* target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_MAULGAREVENT_TANK)))
                 AttackStart(target, false);
         }
 
@@ -735,7 +703,7 @@ struct TRINITY_DLL_DECL boss_krosh_firehandAI : public ScriptedAI
         if(GreaterFireball_Timer < diff)
         {
             // will cast only when in range of spell
-            if(m_creature->GetDistance2d(m_creature->getVictim()) < 20)
+            if(m_creature->GetDistance2d(m_creature->getVictim()) < 30 && !m_creature->hasUnitState(UNIT_STAT_CASTING))
                 AddSpellToCast(m_creature->getVictim(), SPELL_GREATER_FIREBALL);
                 //DoCast(m_creature->getVictim(), SPELL_GREATER_FIREBALL);
             GreaterFireball_Timer = 3000;
@@ -746,7 +714,7 @@ struct TRINITY_DLL_DECL boss_krosh_firehandAI : public ScriptedAI
         //SpellShield_Timer
         if(SpellShield_Timer < diff)
         {
-            ForceSpellCast(m_creature->getVictim(), SPELL_SPELLSHIELD);
+            ForceSpellCast(m_creature, SPELL_SPELLSHIELD);
             SpellShield_Timer = 31000;
         }
         else
@@ -772,13 +740,12 @@ struct TRINITY_DLL_DECL boss_krosh_firehandAI : public ScriptedAI
                 ForceAOESpellCast(SPELL_BLAST_WAVE);
                 //DoCastAOE(SPELL_BLAST_WAVE);
 
-            BlastWave_Timer = 3000+rand()%2000;
+            BlastWave_Timer = 3000 +rand()%2000;
         }
         else
             BlastWave_Timer -= diff;
 
         CastNextSpellIfAnyAndReady();
-        //DoMeleeAttackIfReady();
     }
 };
 
