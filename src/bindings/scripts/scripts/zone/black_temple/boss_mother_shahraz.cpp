@@ -43,21 +43,22 @@ EndScriptData */
 #define SPELL_BEAM_WICKED       40861
 #define SPELL_BEAM_SINFUL       40827
 #define SPELL_ATTRACTION        41001
+#define SPELL_ATTRACTION_CHAIN  40870
 #define SPELL_SILENCING_SHRIEK  40823
 #define SPELL_ENRAGE            23537
-#define SPELL_SABER_LASH        40810//43267
+#define SPELL_SABER_LASH        40810
 #define SPELL_SABER_LASH_IMM    43690
 #define SPELL_TELEPORT_VISUAL   40869
 #define SPELL_BERSERK           45078
 
 uint32 PrismaticAuras[]=
 {
-    40880,                                                  // Shadow
-    40882,                                                  // Fire
-    40883,                                                  // Nature
-    40891,                                                  // Arcane
-    40896,                                                  // Frost
-    40897,                                                  // Holy
+    40880, // Shadow
+    40882, // Fire
+    40883, // Nature
+    40891, // Arcane
+    40896, // Frost
+    40897, // Holy
 };
 
 struct Locations
@@ -82,6 +83,10 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
         m_creature->GetPosition(wLoc);
+
+        SpellEntry *tempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_ATTRACTION);
+        if(tempSpell)
+            tempSpell->EffectTriggerSpell[1] = 40871;
     }
 
     ScriptedInstance* pInstance;
@@ -95,7 +100,6 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
     uint32 SaberTimer;
     uint32 RandomYellTimer;
     uint32 EnrageTimer;
-    uint32 ExplosionCount;
 
     uint64 FatalTargetGUID[3];
 
@@ -121,9 +125,8 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         SaberTimer = 35000;
         RandomYellTimer = 70000 + rand()%41 * 1000;
         EnrageTimer = 600000;
-        ExplosionCount = 0;
 
-        CheckTimer = 3000;
+        CheckTimer = 1100;
 
         Enraged = false;
     }
@@ -205,6 +208,12 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
                 
                 for(uint8 i = 0; i < 3; i++)
                     FatalTargetGUID[i] = NULL;
+            }
+            else
+            {
+                t1->CastSpell(t2, SPELL_ATTRACTION_CHAIN,true);
+                t2->CastSpell(t3, SPELL_ATTRACTION_CHAIN,true);
+                t3->CastSpell(t1, SPELL_ATTRACTION_CHAIN,true);
             }
         }
 
