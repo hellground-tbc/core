@@ -396,6 +396,7 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
     std::list<uint64> medivhSidePieces; //alive pieces guids
 
     bool eventStarted;
+    bool enabled;
 
     WorldLocation wLoc;     //location of medivh
     WorldLocation tpLoc;    //location of player teleport point

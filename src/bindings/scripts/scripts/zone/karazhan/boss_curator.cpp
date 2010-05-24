@@ -22,6 +22,7 @@ SDCategory: Karazhan
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_karazhan.h"
 
 #define SAY_AGGRO                       -1532057
 #define SAY_SUMMON1                     -1532058
@@ -50,6 +51,7 @@ struct TRINITY_DLL_DECL boss_curatorAI : public ScriptedAI
     boss_curatorAI(Creature *c) : ScriptedAI(c) 
     {
         m_creature->GetPosition(wLoc);
+        pInstance = ((ScriptedInstance*)c->GetInstanceData());
     }
 
     uint32 AddTimer;
@@ -61,6 +63,10 @@ struct TRINITY_DLL_DECL boss_curatorAI : public ScriptedAI
 
     bool Enraged;
     bool Evocating;
+
+    bool Enabled;
+
+    ScriptedInstance * pInstance;
 
     void Reset()
     {
@@ -77,6 +83,10 @@ struct TRINITY_DLL_DECL boss_curatorAI : public ScriptedAI
         m_creature->ApplySpellImmune(4, IMMUNITY_STATE, SPELL_AURA_PERIODIC_MANA_LEECH, true);
         m_creature->ApplySpellImmune(5, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
         m_creature->ApplySpellImmune(6, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
+
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        Enabled = false;
     }
 
     void KilledUnit(Unit *victim)
@@ -100,6 +110,13 @@ struct TRINITY_DLL_DECL boss_curatorAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
+        if (!Enabled && pInstance->GetData(DATA_OPERA_EVENT) == DONE)
+        {
+            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            Enabled = true;
+        }
+
         if (!UpdateVictim() )
             return;
 

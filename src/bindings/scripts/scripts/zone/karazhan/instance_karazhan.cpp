@@ -217,8 +217,8 @@ void instance_karazhan::SetData64(uint32 identifier, uint64 data)
     switch(identifier)
     {
     case DATA_IMAGE_OF_MEDIVH:
-		ImageGUID = data;
-		break;
+        ImageGUID = data;
+        break;
     case DATA_NIGHTBANE:
         NightbaneGUID = data;
         break;

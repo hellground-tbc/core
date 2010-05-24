@@ -1,3 +1,4 @@
+#include "precompiled.h"
 #include "chess_event.h"
 
 
@@ -1321,6 +1322,10 @@ void boss_MedivhAI::Reset()
     medivhSidePieces.clear();
     tpList.clear();
     moveList.clear();
+
+    //m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+    //m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+    //enabled = false;
 }
 
 void boss_MedivhAI::SayChessPieceDied(Unit * piece)
@@ -1747,6 +1752,13 @@ void boss_MedivhAI::StartEvent()
 
 void boss_MedivhAI::UpdateAI(const uint32 diff)
 {
+    /*if (!enabled && pInstance->GetData(DATA_CURATOR_EVENT) == DONE)
+    {
+        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        enabled = true;
+    }*/
+
     if (pInstance->GetData(DATA_CHESS_EVENT) == IN_PROGRESS && !eventStarted)
         StartEvent();
 

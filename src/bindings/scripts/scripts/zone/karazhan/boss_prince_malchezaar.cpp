@@ -187,6 +187,8 @@ struct TRINITY_DLL_DECL boss_malchezaarAI : public ScriptedAI
 
     uint32 phase;
 
+    bool Enabled;
+
     void Reset()
     {
         AxesCleanup();
@@ -223,6 +225,10 @@ struct TRINITY_DLL_DECL boss_malchezaarAI : public ScriptedAI
                 Door->SetGoState(0);
            }
         }
+
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        Enabled = false;
     }
 
     void KilledUnit(Unit *victim)
@@ -417,6 +423,13 @@ struct TRINITY_DLL_DECL boss_malchezaarAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
+        if (!Enabled && pInstance->GetData(DATA_OPERA_EVENT) == DONE)
+        {
+            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            Enabled = true;
+        }
+
         if (!UpdateVictim() )
             return;
 
