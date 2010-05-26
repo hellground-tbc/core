@@ -39,7 +39,7 @@ enum LogType
 const int LogType_count = int(LogError) +1;
 
 Log::Log() :
-    raLogfile(NULL), logfile(NULL), gmLogfile(NULL), charLogfile(NULL),
+    raLogfile(NULL), logfile(NULL), gmLogfile(NULL), charLogfile(NULL), specialLogFile(NULL),
     dberLogfile(NULL), arenaLogFile(NULL), cheatLogFile(NULL), m_colored(false), m_includeTime(false), m_gmlog_per_account(false)
 {
     Initialize();
@@ -212,7 +212,7 @@ void Log::Initialize()
                 if(m_gmlog_timestamp)
                     m_gmlog_filename_format.insert(dot_pos,m_logsTimestamp);
 
-                m_gmlog_filename_format.insert(dot_pos,"_#%u");
+                m_gmlog_filename_format.insert(dot_pos,"_%u");
             }
             else
             {
@@ -230,6 +230,8 @@ void Log::Initialize()
 
     dberLogfile = openLogFile("DBErrorLogFile",NULL,"a");
     raLogfile = openLogFile("RaLogFile",NULL,"a");
+
+    specialLogFile = openLogFile("SpecialLogFile",NULL,"a");
 
     arenaLogFile = openLogFile("ArenaLogFile",NULL,"a");
 
@@ -727,6 +729,22 @@ void Log::outChar(const char * str, ... )
         fprintf(charLogfile, "\n" );
         va_end(ap);
         fflush(charLogfile);
+    }
+}
+void Log::outSpecial(const char * str, ... )
+{
+    if (!str)
+        return;
+
+    if(specialLogFile)
+    {
+        va_list ap;
+        outTimestamp(specialLogFile);
+        va_start(ap, str);
+        vfprintf(specialLogFile, str, ap);
+        fprintf(specialLogFile, "\n" );
+        va_end(ap);
+        fflush(specialLogFile);
     }
 }
 

@@ -232,15 +232,21 @@ void WorldSession::HandleAuctionSellItem( WorldPacket & recv_data )
 
     //we have to take deposit :
     uint32 deposit = auctionmgr.GetAuctionDeposit( auctionHouseEntry, etime, it );
-    if ( pl->GetMoney() < deposit )
+    if(pl->GetMoney() < deposit )
     {
         SendAuctionCommandResult(0, AUCTION_SELL_ITEM, AUCTION_NOT_ENOUGHT_MONEY);
         return;
     }
 
-    if( GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_LOG_TRADE) )
+    if(GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_LOG_TRADE) )
     {
         sLog.outCommand(GetAccountId(),"GM %s (Account: %u) create auction: %s (Entry: %u Count: %u)",
+            GetPlayerName(),GetAccountId(),it->GetProto()->Name1,it->GetEntry(),it->GetCount());
+    }
+
+    if(_player->GetSession()->SpecialLog())
+    {
+        sLog.outSpecial("Player %s (Account: %u) create auction: %s (Entry: %u Count: %u)",
             GetPlayerName(),GetAccountId(),it->GetProto()->Name1,it->GetEntry(),it->GetCount());
     }
 

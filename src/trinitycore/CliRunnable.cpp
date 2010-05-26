@@ -308,6 +308,30 @@ bool ChatHandler::HandleAccountCreateCommand(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleAccountSpecialLogCommand(const char* args)
+{
+    if(!*args)
+        return false;
+
+    ///- %Parse the command line arguments
+    char *szAcc = strtok((char*)args, " ");
+
+    // normilized in accmgr.CreateAccount
+    std::string account_name = szAcc;
+    uint64 account_id = accmgr.GetId(szAcc);
+    if(account_id)
+    {
+        if(WorldSession *s = sWorld.FindSession(account_id))
+            s->SetSpecialLog(!s->SpecialLog());
+
+        LoginDatabase.PExecute("UPDATE account SET speciallog = !speciallog WHERE username = '%s'", account_name);
+    }
+    else
+        return false;
+
+    return true;
+}
+
 /// Set the level of logging
 bool ChatHandler::HandleServerSetLogLevelCommand(const char *args)
 {
