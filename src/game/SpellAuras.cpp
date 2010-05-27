@@ -3668,6 +3668,12 @@ void Aura::HandleModTaunt(bool apply, bool Real)
     if(!m_target->isAlive())
         return;
 
+    if(!m_target->CanHaveThreatList())
+    {
+        if(m_target->GetTypeId() != TYPEID_UNIT || !((Creature*)m_target)->isPet())
+            return;
+    }
+
     Unit* caster = GetCaster();
 
     if(!caster || !caster->isAlive() || caster->GetTypeId() != TYPEID_PLAYER)
