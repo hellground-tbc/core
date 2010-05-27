@@ -227,7 +227,7 @@ void WorldSession::moveItems(Item* myItems[], Item* hisItems[])
                         _player->GetName(),_player->GetSession()->GetAccountId());
                 }
 
-                if(_player->pTrader->SpecialLog())
+                if(_player->pTrader->GetSession()->SpecialLog())
                 {
                     sLog.outSpecial("Player %s (Account: %u) trade: %s (Entry: %d Count: %u) to player: %s (Account: %u)",
                         _player->pTrader->GetName(),_player->pTrader->GetSession()->GetAccountId(),

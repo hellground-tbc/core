@@ -73,7 +73,7 @@ class TRINITY_DLL_SPEC WorldSession
 {
     friend class CharacterHandler;
     public:
-        WorldSession(uint32 id, WorldSocket *sock, uint32 sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint8 speciallog = 0);
+        WorldSession(uint32 id, WorldSocket *sock, uint32 sec, uint8 expansion, time_t mute_time, LocaleConstant locale, bool speciallog = false);
         ~WorldSession();
 
         bool PlayerLoading() const { return m_playerLoading; }

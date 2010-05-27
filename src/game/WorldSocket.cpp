@@ -684,18 +684,18 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
 
     QueryResult *result =
           LoginDatabase.PQuery ("SELECT "
-                                "id, " //0
-                                "gmlevel, " //1
-                                "sessionkey, " //2
-                                "last_ip, " //3
-                                "locked, " //4
+                                "id, "            //0
+                                "gmlevel, "       //1
+                                "sessionkey, "    //2
+                                "last_ip, "       //3
+                                "locked, "        //4
                                 "sha_pass_hash, " //5
-                                "v, " //6
-                                "s, " //7
-                                "expansion, " //8
-                                "mutetime, " //9
-                                "locale," //10
-                                "speciallog"
+                                "v, "             //6
+                                "s, "             //7
+                                "expansion, "     //8
+                                "mutetime, "      //9
+                                "locale, "         //10
+                                "speciallog "     //11
                                 "FROM account "
                                 "WHERE username = '%s'",
                                 safe_account.c_str ());
@@ -797,7 +797,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
     if (locale >= MAX_LOCALE)
         locale = LOCALE_enUS;
 
-    uint8 speciallog = fields[11].GetUInt8();
+    bool speciallog = fields[11].GetBool();
 
     delete result;
 

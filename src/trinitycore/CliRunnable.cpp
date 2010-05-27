@@ -313,21 +313,22 @@ bool ChatHandler::HandleAccountSpecialLogCommand(const char* args)
     if(!*args)
         return false;
 
-    ///- %Parse the command line arguments
-    char *szAcc = strtok((char*)args, " ");
-
-    // normilized in accmgr.CreateAccount
-    std::string account_name = szAcc;
-    uint64 account_id = accmgr.GetId(szAcc);
-    if(account_id)
+    if(uint32 account_id = accmgr.GetId(args))
     {
         if(WorldSession *s = sWorld.FindSession(account_id))
-            s->SetSpecialLog(!s->SpecialLog());
-
-        LoginDatabase.PExecute("UPDATE account SET speciallog = !speciallog WHERE username = '%s'", account_name);
+        {
+            s->SetSpecialLog(!(s->SpecialLog()));
+        }
+       
+        LoginDatabase.PExecute("UPDATE account SET speciallog = !speciallog WHERE id = '%u'", account_id);
+        PSendSysMessage("SpecialLog has been updated.");
     }
     else
+    {
+        PSendSysMessage("Specified account not found.");
+        SetSentErrorMessage(true);
         return false;
+    }
 
     return true;
 }
