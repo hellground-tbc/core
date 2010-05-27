@@ -60,7 +60,20 @@ namespace FactorySelector
             if( creature->isGuard() )
                 ai_factory = ai_registry.GetRegistryItem("GuardAI");
             else if(creature->isPet() || (creature->isCharmed() && !creature->isPossessed()))
-                ai_factory = ai_registry.GetRegistryItem("PetAI");
+            {
+                switch(creature->GetEntry())
+                {
+                    case 416:
+                        ai_factory = ai_registry.GetRegistryItem("ImpAI");
+                        break;
+                    case 417:
+                        ai_factory = ai_registry.GetRegistryItem("FelhunterAI");
+                        break;
+                    default:
+                        ai_factory = ai_registry.GetRegistryItem("PetAI");
+                        break;
+                }
+            }
             else if(creature->isTotem())
                 ai_factory = ai_registry.GetRegistryItem("TotemAI");
             else if(creature->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER)

@@ -684,17 +684,18 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
 
     QueryResult *result =
           LoginDatabase.PQuery ("SELECT "
-                                "id, " //0
-                                "gmlevel, " //1
-                                "sessionkey, " //2
-                                "last_ip, " //3
-                                "locked, " //4
+                                "id, "            //0
+                                "gmlevel, "       //1
+                                "sessionkey, "    //2
+                                "last_ip, "       //3
+                                "locked, "        //4
                                 "sha_pass_hash, " //5
-                                "v, " //6
-                                "s, " //7
-                                "expansion, " //8
-                                "mutetime, " //9
-                                "locale " //10
+                                "v, "             //6
+                                "s, "             //7
+                                "expansion, "     //8
+                                "mutetime, "      //9
+                                "locale, "         //10
+                                "speciallog "     //11
                                 "FROM account "
                                 "WHERE username = '%s'",
                                 safe_account.c_str ());
@@ -796,6 +797,8 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
     if (locale >= MAX_LOCALE)
         locale = LOCALE_enUS;
 
+    bool speciallog = fields[11].GetBool();
+
     delete result;
 
     // Re-check account ban (same check as in realmd)
@@ -876,7 +879,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
                             safe_account.c_str ());
 
     // NOTE ATM the socket is singlethreaded, have this in mind ...
-    ACE_NEW_RETURN (m_Session, WorldSession (id, this, security, expansion, mutetime, locale), -1);
+    ACE_NEW_RETURN (m_Session, WorldSession (id, this, security, expansion, mutetime, locale, speciallog), -1);
 
     m_Crypt.SetKey (&K);
     m_Crypt.Init ();

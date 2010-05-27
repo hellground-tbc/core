@@ -2472,6 +2472,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
         switch(i)
         {
+        case 33824:
+            spellInfo->Effect[2] = 0;
+            break;
         case 34121: // Al'ar Flame Buffet
             spellInfo->InterruptFlags &= ~SPELL_INTERRUPT_FLAG_MOVEMENT;
         case 26029: // dark glare
@@ -2559,9 +2562,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 31117: // UA dispell effect
             spellInfo->SpellFamilyFlags = 0x010000000000LL;
             break;
-        case 32045:
-        case 32051:
-        case 32052:
+        case 32045: // Archimonde: Soul Charge - yellow
+        case 32051: // Archimonde: Soul Charge - green
+        case 32052: // Archimonde: Soul Charge - red
             spellInfo->procCharges = 0;
             spellInfo->procChance = 101;
             spellInfo->procFlags = 0;

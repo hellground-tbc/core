@@ -644,8 +644,8 @@ void LoadDatabase()
     }
 
     //Initialize connection to DB
-    if (dbstring && TScriptDB.Initialize(dbstring) )
-        outstring_log("TSCR: TrinityScript database: %s",dbstring);
+    if (dbstring && TScriptDB.Initialize(dbstring) );
+        //outstring_log("TSCR: TrinityScript database: %s",dbstring);
     else
     {
         error_log("TSCR: Unable to connect to Database. Load database aborted.");

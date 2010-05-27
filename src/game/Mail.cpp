@@ -231,9 +231,15 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data )
 
                 mailItem.item_template = mailItem.item ? mailItem.item->GetEntry() : 0;
 
-                if(_player->FlaggedToCheck() || GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_LOG_TRADE) )
+                if(GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_LOG_TRADE) )
                 {
                     sLog.outCommand(GetAccountId(), "GM %s (Account: %u) mail item: %s (Entry: %u Count: %u) to player: %s (Account: %u)",
+                        GetPlayerName(), GetAccountId(), mailItem.item->GetProto()->Name1, mailItem.item->GetEntry(), mailItem.item->GetCount(), receiver.c_str(), rc_account);
+                }
+
+                if(_player->GetSession()->SpecialLog())
+                {
+                    sLog.outSpecial("Player %s (Account: %u) mail item: %s (Entry: %u Count: %u) to player: %s (Account: %u)",
                         GetPlayerName(), GetAccountId(), mailItem.item->GetProto()->Name1, mailItem.item->GetEntry(), mailItem.item->GetCount(), receiver.c_str(), rc_account);
                 }
 
@@ -250,10 +256,19 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data )
             needItemDelay = pl->GetSession()->GetAccountId() != rc_account;
         }
 
-        if(money > 0 && (_player->FlaggedToCheck() || GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_LOG_TRADE)))
+        if(money > 0)
         {
-            sLog.outCommand(GetAccountId(),"GM %s (Account: %u) mail money: %u to player: %s (Account: %u)",
-                GetPlayerName(), GetAccountId(), money, receiver.c_str(), rc_account);
+            if(GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_LOG_TRADE))
+            {
+                sLog.outCommand(GetAccountId(),"GM %s (Account: %u) mail money: %u to player: %s (Account: %u)",
+                    GetPlayerName(), GetAccountId(), money, receiver.c_str(), rc_account);
+            }
+
+            if(_player->GetSession()->SpecialLog())
+            {
+                sLog.outSpecial("Player %s (Account: %u) mail money: %u to player: %s (Account: %u)",
+                    GetPlayerName(), GetAccountId(), money, receiver.c_str(), rc_account);
+            }
         }
     }
 
@@ -452,7 +467,7 @@ void WorldSession::HandleTakeItem(WorldPacket & recv_data )
 
             uint32 sender_accId = 0;
 
-            if(_player->FlaggedToCheck() || GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_LOG_TRADE) )
+            if(_player->GetSession()->SpecialLog() || GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_LOG_TRADE))
             {
                 std::string sender_name;
                 if(receive)
@@ -468,8 +483,17 @@ void WorldSession::HandleTakeItem(WorldPacket & recv_data )
                     if(!objmgr.GetPlayerNameByGUID(sender_guid,sender_name))
                         sender_name = objmgr.GetTrinityStringForDBCLocale(LANG_UNKNOWN);
                 }
-                sLog.outCommand(GetAccountId(),"GM %s (Account: %u) receive mail item: %s (Entry: %u Count: %u) and send COD money: %u to player: %s (Account: %u)",
-                    GetPlayerName(),GetAccountId(),it->GetProto()->Name1,it->GetEntry(),it->GetCount(),m->COD,sender_name.c_str(),sender_accId);
+
+                if(_player->GetSession()->SpecialLog())
+                {
+                    sLog.outCommand(GetAccountId(),"Player %s (Account: %u) receive mail item: %s (Entry: %u Count: %u) and send COD money: %u to player: %s (Account: %u)",
+                        GetPlayerName(),GetAccountId(),it->GetProto()->Name1,it->GetEntry(),it->GetCount(),m->COD,sender_name.c_str(),sender_accId);
+                }
+                else
+                {
+                    sLog.outCommand(GetAccountId(),"GM %s (Account: %u) receive mail item: %s (Entry: %u Count: %u) and send COD money: %u to player: %s (Account: %u)",
+                        GetPlayerName(),GetAccountId(),it->GetProto()->Name1,it->GetEntry(),it->GetCount(),m->COD,sender_name.c_str(),sender_accId);
+                }
             }
             else if(!receive)
                 sender_accId = objmgr.GetPlayerAccountIdByGUID(sender_guid);

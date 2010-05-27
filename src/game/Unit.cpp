@@ -9017,7 +9017,7 @@ void Unit::DeleteThreatList()
 
 void Unit::TauntApply(Unit* taunter)
 {
-    assert(GetTypeId()== TYPEID_UNIT);
+    assert(GetTypeId() == TYPEID_UNIT);
 
     if(!taunter || (taunter->GetTypeId() == TYPEID_PLAYER && ((Player*)taunter)->isGameMaster()))
         return;
@@ -11758,22 +11758,37 @@ void Unit::GetPartyMember(std::list<Unit*> &TagUnitMap, float radius)
             // IsHostileTo check duel and controlled by enemy
             if( Target && Target->GetSubGroup()==subgroup && !IsHostileTo(Target) )
             {
-                if(Target->isAlive() && IsWithinDistInMap(Target, radius) )
-                    TagUnitMap.push_back(Target);
+                if(Target->isAlive() && IsWithinDistInMap(Target, radius))
+                {
+                    if(IsWithinLOSInMap(Target))
+                        TagUnitMap.push_back(Target);
+                }
 
                 if(Pet* pet = Target->GetPet())
-                    if(pet->isAlive() &&  IsWithinDistInMap(pet, radius) )
-                        TagUnitMap.push_back(pet);
+                {
+                    if(pet->isAlive() && IsWithinDistInMap(pet, radius))
+                        if(IsWithinLOSInMap(Target))
+                            TagUnitMap.push_back(pet);
+                }
             }
         }
     }
     else
     {
         if(owner->isAlive() && (owner == this || IsWithinDistInMap(owner, radius)))
-            TagUnitMap.push_back(owner);
+        {
+            if(IsWithinLOSInMap(owner))
+                TagUnitMap.push_back(owner);
+        }
+
         if(Pet* pet = owner->GetPet())
+        {
             if(pet->isAlive() && (pet == this && IsWithinDistInMap(pet, radius)))
-                TagUnitMap.push_back(pet);
+            {
+                if(IsWithinLOSInMap(pet))
+                    TagUnitMap.push_back(pet);
+            }
+        }
     }
 }
 

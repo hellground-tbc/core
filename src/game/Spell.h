@@ -686,8 +686,16 @@ namespace Trinity
                     default:
                         if(i_TargetType != SPELL_TARGETS_ENTRY && i_push_type == PUSH_SRC_CENTER && i_caster) // if caster then check distance from caster to target (because of model collision)
                         {
-                            if(i_caster->IsWithinDistInMap( itr->getSource(), i_radius) )
-                                i_data->push_back(itr->getSource());
+                            if(i_caster->IsWithinDistInMap(itr->getSource(), i_radius))
+                            {
+                                if(i_caster->GetTypeId() == TYPEID_UNIT && ((Creature*)i_caster)->isTotem())
+                                {
+                                    if(i_caster->IsWithinLOSInMap(itr->getSource()))
+                                        i_data->push_back(itr->getSource());
+                                }
+                                else
+                                    i_data->push_back(itr->getSource());
+                            }
                         }
                         else
                         {

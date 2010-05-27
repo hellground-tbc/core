@@ -308,6 +308,31 @@ bool ChatHandler::HandleAccountCreateCommand(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleAccountSpecialLogCommand(const char* args)
+{
+    if(!*args)
+        return false;
+
+    if(uint32 account_id = accmgr.GetId(args))
+    {
+        if(WorldSession *s = sWorld.FindSession(account_id))
+        {
+            s->SetSpecialLog(!(s->SpecialLog()));
+        }
+       
+        LoginDatabase.PExecute("UPDATE account SET speciallog = !speciallog WHERE id = '%u'", account_id);
+        PSendSysMessage("SpecialLog has been updated.");
+    }
+    else
+    {
+        PSendSysMessage("Specified account not found.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    return true;
+}
+
 /// Set the level of logging
 bool ChatHandler::HandleServerSetLogLevelCommand(const char *args)
 {
