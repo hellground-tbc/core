@@ -149,12 +149,25 @@ struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public ScriptedAI
             {
                 Unit* Archimonde = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_ARCHIMONDE));
                 if(Archimonde && Archimonde->isAlive())
-                    SummonTimer = 1000;
+                    SummonTimer = 500;
                 else
                     m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
             }
             else
                 m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+
+            float x = m_creature->GetPositionX();
+            float y = m_creature->GetPositionY();
+            float z = m_creature->GetPositionZ();
+            float Ground_Z = m_creature->GetMap()->GetHeight(x, y, MAX_HEIGHT, true);
+            float diff_Z = (z-Ground_Z) > 0 ? (z-Ground_Z) : (Ground_Z-z);
+            if(diff_Z > 2)
+            {
+                m_creature->GetMotionMaster()->Clear();
+                m_creature->GetMotionMaster()->MoveCharge(x+3.0, y+3.0, Ground_Z);
+                m_creature->Relocate(x+2.0, y+2.0, Ground_Z);
+                ChangeTargetTimer = 0;
+            }
         }
         else
             SummonTimer -= diff;
@@ -180,6 +193,8 @@ struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public ScriptedAI
                     float y = 0;
                     float z = 0;
                     m_creature->GetRandomPoint(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), 40, x, y, z);
+                    // normalise Z for actual position
+                    z = m_creature->GetMap()->GetHeight(x, y, MAX_HEIGHT, true);
                     m_creature->GetMotionMaster()->MovePoint(0, x, y, z);
                     break;
             }
@@ -275,8 +290,16 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         IsChanneling = false;
         SoulChargeUnleash = false;
 
+        RemoveSoulCharges();
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
         m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
+    }
+
+    void RemoveSoulCharges()
+    {
+        m_creature->RemoveAurasDueToSpell(SPELL_SOUL_CHARGE_YELLOW);
+        m_creature->RemoveAurasDueToSpell(SPELL_SOUL_CHARGE_GREEN);
+        m_creature->RemoveAurasDueToSpell(SPELL_SOUL_CHARGE_RED);
     }
 
     void Aggro(Unit *who)
