@@ -2472,6 +2472,8 @@ void SpellMgr::LoadSpellCustomAttr()
 
         switch(i)
         {
+        case 33824:
+            spellInfo->Effect[2] = 0;
         case 34121: // Al'ar Flame Buffet
             spellInfo->InterruptFlags &= ~SPELL_INTERRUPT_FLAG_MOVEMENT;
         case 26029: // dark glare
