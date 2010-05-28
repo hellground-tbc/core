@@ -203,7 +203,7 @@ void ScriptedAI::CastNextSpellIfAnyAndReady()
     if (spellList.empty())
         return;
 
-    SpellToCast * temp = &spellList.front();
+    SpellToCast *temp = &spellList.front();
 
     if (!temp || m_creature->hasUnitState(UNIT_STAT_CASTING) && !temp->triggered)
         return;
@@ -215,7 +215,7 @@ void ScriptedAI::CastNextSpellIfAnyAndReady()
     {
         Unit * tempU = m_creature->GetUnit(*m_creature, temp->targetGUID);
 
-        if (tempU && tempU->isAlive())
+        if (tempU && tempU->IsInWorld() && tempU->isAlive() && tempU->IsInMap(m_creature))
             if (temp->spellId)
                 m_creature->CastSpell(tempU, temp->spellId, temp->triggered);
     }

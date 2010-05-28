@@ -324,6 +324,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
             TempSpell->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
             TempSpell->EffectImplicitTargetB[0] = 0;
         }
+
         SpellEntry *MCTempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_MIND_CONTROL);
         if(MCTempSpell)
         {
@@ -1295,8 +1296,8 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
 
                 if (Phase != 5 && !(pInstance->GetData(DATA_KAELTHASEVENT) == 5))
                 {
-                    DoMeleeAttackIfReady();
                     CastNextSpellIfAnyAndReady();
+                    DoMeleeAttackIfReady();
                 }
             }
         }
