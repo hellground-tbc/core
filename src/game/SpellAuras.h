@@ -239,6 +239,8 @@ class TRINITY_DLL_SPEC Aura
                 m_permanent=false;
         }
         time_t GetAuraApplyTime() { return m_applyTime; }
+
+        bool IsExpired() const { return !GetAuraDuration() && !(IsPermanent() || IsPassive()); }
         void UpdateAuraDuration();
         void SendAuraDurationForCaster(Player* caster);
         void UpdateSlotCounterAndDuration();
@@ -370,6 +372,7 @@ class TRINITY_DLL_SPEC Aura
         bool m_isPersistent:1;
         bool m_isDeathPersist:1;
         bool m_isRemovedOnShapeLost:1;
+        bool m_isRemoved:1;
         bool m_updated:1;
         bool m_in_use:1;                                    // true while in Aura::ApplyModifier call
         bool m_isSingleTargetAura:1;                        // true if it's a single target spell and registered at caster - can change at spell steal for example
