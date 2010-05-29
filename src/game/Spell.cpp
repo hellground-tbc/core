@@ -2594,10 +2594,17 @@ void Spell::update(uint32 difftime)
                 }
 
                 // check if there are alive targets left
-                if (!IsAliveUnitPresentInTargetList())
+                if(!IsAliveUnitPresentInTargetList())
                 {
                     SendChannelUpdate(0);
                     finish();
+                }
+
+                if(IsChanneledSpell(m_spellInfo))
+                {
+                    SpellRangeEntry const *range = sSpellRangeStore.LookupEntry(m_spellInfo->rangeIndex);
+                    if(!m_caster->IsWithinDistInMap(m_targets.getUnitTarget(), range->maxRange))
+                        cancel();
                 }
 
                 if(difftime >= m_timer)

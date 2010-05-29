@@ -589,7 +589,6 @@ void Aura::Update(uint32 diff)
 
             if(!caster->IsWithinDistInMap(m_target, max_range))
             {
-                caster->InterruptSpell(CURRENT_CHANNELED_SPELL);
                 m_target->RemoveAura(GetId(), GetEffIndex());
                 return;
             }
