@@ -2600,7 +2600,7 @@ void Spell::update(uint32 difftime)
                     finish();
                 }
 
-                if(IsChanneledSpell(m_spellInfo))
+                if(IsChanneledSpell(m_spellInfo) && !IsAreaOfEffectSpell(m_spellInfo))
                 {
                     SpellRangeEntry const *range = sSpellRangeStore.LookupEntry(m_spellInfo->rangeIndex);
                     if(!m_caster->IsWithinDistInMap(m_targets.getUnitTarget(), range->maxRange))
