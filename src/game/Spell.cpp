@@ -1802,7 +1802,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
 
         case TARGET_TYPE_CHANNEL:
         {
-            if(m_spellInfo->Id != 38700 && !m_originalCaster || !m_originalCaster->m_currentSpells[CURRENT_CHANNELED_SPELL])
+            if(m_spellInfo->Id != 38700 && (!m_originalCaster || !m_originalCaster->m_currentSpells[CURRENT_CHANNELED_SPELL]))
             {
                 sLog.outError( "SPELL: no current channeled spell for spell ID %u", m_spellInfo->Id );
                 break;
@@ -2024,7 +2024,7 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
     m_castOrientation = m_caster->GetOrientation();
 
     if(triggeredByAura)
-        m_triggeredByAuraSpell  = triggeredByAura->GetSpellProto();
+        m_triggeredByAuraSpell = triggeredByAura->GetSpellProto();
 
     // create and add update event for this spell
     SpellEvent* Event = new SpellEvent(this);
