@@ -1689,6 +1689,9 @@ void Unit::CalcAbsorb(Unit *pVictim,SpellSchoolMask schoolMask, const uint32 dam
         if (((*i)->GetModifier()->m_miscvalue & schoolMask)==0)
             continue;
 
+        if((*i)->GetId() == 40251)  //for NOT remove Shadow of Death aura when dmg > absorb value
+            continue;
+
         // Cheat Death
         if((*i)->GetSpellProto()->SpellFamilyName==SPELLFAMILY_ROGUE && (*i)->GetSpellProto()->SpellIconID == 2109)
         {
@@ -9962,7 +9965,27 @@ void CharmInfo::InitEmptyActionBar(bool withAttack)
 
 void CharmInfo::InitPossessCreateSpells()
 {
+    uint32 SpiritSpellID[5] =   //Vengeful Spirit's spells
+    {
+        40325,
+        40157,
+        40175,
+        40314,
+        40322
+    };
+
     InitEmptyActionBar();
+
+    if(m_unit->GetEntry() == 23109)     //HACK to allow proper spells for Vengeful Spirit
+    {
+        for(uint32 i = 0; i < 5; ++i)
+        {
+            uint32 spellid = SpiritSpellID[i];
+            AddSpellToAB(0,spellid, ACT_CAST);
+        }
+        return;
+    }
+
     if(m_unit->GetTypeId() == TYPEID_UNIT)
     {
         for(uint32 i = 0; i < CREATURE_MAX_SPELLS; ++i)

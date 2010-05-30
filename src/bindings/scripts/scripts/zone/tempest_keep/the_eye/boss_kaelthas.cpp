@@ -1038,7 +1038,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                             }
                             for (uint32 i = 0; i < urand(2, 3); i++)
                             {
-                                Unit* target =SelectUnit(SELECT_TARGET_RANDOM, 1, 80.0, true, m_creature->getVictim());
+                                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, 80.0, true, m_creature->getVictim());
                                 if(!target)
                                     target = m_creature->getVictim();
 
