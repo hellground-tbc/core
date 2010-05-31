@@ -1631,6 +1631,7 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
     {
         if(GetTypeId() == TYPEID_UNIT || GetTypeId() == TYPEID_PLAYER)
             pCreature->setFaction(((Unit*)this)->getFaction());
+
         pCreature->CastSpell(pCreature, pCreature->m_spells[0], false, 0, 0, GetGUID());
     }
 
