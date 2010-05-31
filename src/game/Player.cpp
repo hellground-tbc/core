@@ -3781,7 +3781,7 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
 {
     uint32 guid = GUID_LOPART(playerguid);
 
-    if(player->getLevel() >= 40)
+    if(getLevel() >= 40)
     {
         CharacterDatabase.PExecute("UPDATE characters SET account = '1' WHERE guid ='%u'", guid);
         return;
