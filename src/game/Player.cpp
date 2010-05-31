@@ -3781,6 +3781,12 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
 {
     uint32 guid = GUID_LOPART(playerguid);
 
+    if(player->getLevel() >= 40)
+    {
+        CharacterDatabase.PExecute("UPDATE characters SET account = '1' WHERE guid ='%u'", guid);
+        return;
+    }
+    
     // convert corpse to bones if exist (to prevent exiting Corpse in World without DB entry)
     // bones will be deleted by corpse/bones deleting thread shortly
     ObjectAccessor::Instance().ConvertCorpseForPlayer(playerguid);
