@@ -3781,9 +3781,12 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
 {
     uint32 guid = GUID_LOPART(playerguid);
 
-    if(getLevel() >= 40)
+    // PCachePlayerInfo jest budowane tylko RAZ podczas rozruchu. Nie otrzymamy wskaŸnika dla nowo utworzonych postaci :]
+    PCachePlayerInfo pInfo = objmgr.GetPlayerInfoFromCache(guid);
+    if(pInfo && pInfo->unLevel >= 40)
     {
         CharacterDatabase.PExecute("UPDATE characters SET account = '1' WHERE guid ='%u'", guid);
+        if(updateRealmChars) sWorld.UpdateRealmCharCount(accountId);
         return;
     }
     

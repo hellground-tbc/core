@@ -353,6 +353,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         if(Creature* Doomfire = DoSpawnCreature(CREATURE_DOOMFIRE_TARGETING, rand()%30, rand()%30, 1, 0, TEMPSUMMON_TIMED_DESPAWN, 60000))
         {
             Doomfire->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            Doomfire->SetLevel(m_creature->getLevel());
             Doomfire->setFaction(m_creature->getFaction());
 
             ForceSpellCast(Doomfire, SPELL_DOOMFIRE_SPAWN);
@@ -588,7 +589,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
             Unit *target = NULL;
             // aby miec pewnosc, ze naszym targetem nie jest tank
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, 100, true, m_creature->getVictim()))
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 3, 100, true, m_creature->getVictim()))
             {
                 // ustawia target jako aktualny
                 m_creature->SetUInt64Value(UNIT_FIELD_TARGET, target->GetGUID());
