@@ -895,6 +895,10 @@ bool IsPartialyResistable(SpellEntry const* spellInfo)
         case 33051:     // Krosh Firehand - Greater Fireball
         case 36805:     // Kael'thas - Fireball
         case 36819:     // Kael'thas - Pyroblast
+        case 31944:     // Archimond - Doomfire
+        case 32053:     // Archimond - Soul Charge, red
+        case 32054:     // Archimond - Soul Charge, yellow
+        case 32057:     // Archimond - Soul Charge, green
             return false;
     }
 
