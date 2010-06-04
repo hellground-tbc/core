@@ -116,9 +116,9 @@ struct mob_ancient_wispAI : public ScriptedAI
 };
 
 /* This is the script for the Doomfire Targetting Mob. This mob simply follows players and/or travels in random directions and spawns Doomfire Persistent Area Aura which deals dmg to players in range.  */
-struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public ScriptedAI
+struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public NullCreatureAI
 {
-    mob_doomfire_targettingAI(Creature* c) : ScriptedAI(c)
+    mob_doomfire_targettingAI(Creature* c) : NullCreatureAI(c)
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
     }
@@ -131,74 +131,46 @@ struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public ScriptedAI
 
     void Reset()
     {
-        ChangeTargetTimer = 5000;
+        ChangeTargetTimer = 0;
         SummonTimer = 1000;
         DoCast(m_creature, SPELL_DOOMFIRE);
     }
 
-    void Aggro(Unit* who) {}
+    float FloatRandRange(float min, float max)
+    {
+        return ((max-min)*((float)rand()/RAND_MAX))+min;
+    }
 
     void UpdateAI(const uint32 diff)
     {
-        if(!UpdateVictim())
-            return;
-
         if(SummonTimer < diff)
         {
             if(pInstance)
             {
                 Unit* Archimonde = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_ARCHIMONDE));
                 if(Archimonde && Archimonde->isAlive())
-                    SummonTimer = 500;
+                    SummonTimer = 2000;
                 else
                     m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
             }
             else
                 m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-
-            float x = m_creature->GetPositionX();
-            float y = m_creature->GetPositionY();
-            float z = m_creature->GetPositionZ();
-            float Ground_Z = m_creature->GetMap()->GetHeight(x, y, MAX_HEIGHT, true);
-            float diff_Z = (z-Ground_Z) > 0 ? (z-Ground_Z) : (Ground_Z-z);
-            if(diff_Z > 2)
-            {
-                m_creature->GetMotionMaster()->Clear();
-                m_creature->GetMotionMaster()->MoveCharge(x+3.0, y+3.0, Ground_Z);
-                m_creature->Relocate(x+2.0, y+2.0, Ground_Z);
-                ChangeTargetTimer = 0;
-            }
         }
         else
             SummonTimer -= diff;
 
-        if(ChangeTargetTimer < diff)
+        if(ChangeTargetTimer < diff)    //only random linear movement, no player chasing!!
         {
-            DoZoneInCombat();
-            m_creature->SetSpeed(MOVE_RUN, 0.5);
-            m_creature->SetSpeed(MOVE_WALK, 0.5);
-            Unit* target = NULL;
-            switch(rand()%2)    //!!TODO: force Doomfire to ONLY "walk" on the ground; the problem is when chasing players that have air burst, also looking for random Z position
-            {
-                case 0:                                     // stalk player
-                    if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, 200, true, m_creature->getVictim()))
-                    {
-                        m_creature->AddThreat(target, DoGetThreat(m_creature->getVictim()));
-                        m_creature->GetMotionMaster()->MoveChase(target);
-                    }
-                    break;
+            m_creature->SetSpeed(MOVE_RUN, 1);
+            m_creature->SetSpeed(MOVE_WALK, 2);
 
-                case 1:                                     // random location
-                    float x = 0;
-                    float y = 0;
-                    float z = 0;
-                    m_creature->GetRandomPoint(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), 40, x, y, z);
-                    // normalise Z for actual position
-                    z = m_creature->GetMap()->GetHeight(x, y, MAX_HEIGHT, true);
-                    m_creature->GetMotionMaster()->MovePoint(0, x, y, z);
-                    break;
-            }
-            ChangeTargetTimer = 5000;
+            float angle = FloatRandRange(0, 2*M_PI);    //randomise angle
+            float x = m_creature->GetPositionX() + 40.0f * cos(angle);
+            float y = m_creature->GetPositionY() + 40.0f * sin(angle);
+            float z = m_creature->GetMap()->GetHeight(x, y, MAX_HEIGHT, true);
+            m_creature->GetGroundPoint(x, y, z, 5, angle);  //find point on the ground 5 yd from first destination location
+            m_creature->GetMotionMaster()->MovePoint(0, x, y, z);
+            ChangeTargetTimer = 7000;
         }
         else
             ChangeTargetTimer -= diff;
@@ -306,6 +278,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
     {
         m_creature->InterruptSpell(CURRENT_CHANNELED_SPELL);
         DoScriptText(SAY_AGGRO, m_creature);
+        RemoveSoulCharges();
         DoZoneInCombat();
 
         if(pInstance)
@@ -338,19 +311,29 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
         if(m_creature->IsWithinDistInMap(m_creature->getVictim(), 5.0))
             return false;
-            
+
         if(Unit *target = m_creature->SelectNearestTarget(m_creature->GetAttackDistance(m_creature->getVictim())))
         {
             m_creature->AddThreat(target, DoGetThreat(m_creature->getVictim()));
             return false;
         }
-        
+
+        float BossDiffZ = (m_creature->GetPositionZ() - m_creature->GetMap()->GetHeight(m_creature->GetPositionX(), m_creature->GetPositionY(), MAX_HEIGHT, true));
+
+        if(BossDiffZ > 4 || BossDiffZ < -4) // do not use finger of death when walking above ground level
+            return false;
+
         return true;
     }
 
     void SummonDoomfire(Unit* target)
     {
-        if(Creature* Doomfire = DoSpawnCreature(CREATURE_DOOMFIRE_TARGETING, rand()%30, rand()%30, 1, 0, TEMPSUMMON_TIMED_DESPAWN, 60000))
+      if(target)
+      {
+        float x = m_creature->GetPositionX() + ((-1)^rand()%2)*rand()%8;
+        float y = m_creature->GetPositionY() + ((-1)^rand()%2)*rand()%8;
+        float z = m_creature->GetMap()->GetHeight(x, y, MAX_HEIGHT, true);
+        if(Creature* Doomfire = m_creature->SummonCreature(CREATURE_DOOMFIRE_TARGETING, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN, 60000))
         {
             Doomfire->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             Doomfire->SetLevel(m_creature->getLevel());
@@ -358,14 +341,12 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
             ForceSpellCast(Doomfire, SPELL_DOOMFIRE_SPAWN);
 
-            if(target)
-                Doomfire->AI()->AttackStart(target);
-
             if(rand()%10 == 0)  //10% chance on yell
                 DoScriptText(SAY_DOOMFIRE1, m_creature);
             else if(rand()%10 == 1) //10% chance on other yell
                 DoScriptText(SAY_DOOMFIRE2, m_creature);
         }
+      }
     }
 
     void UpdateAI(const uint32 diff)
