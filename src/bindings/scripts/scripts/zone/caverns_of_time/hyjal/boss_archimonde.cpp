@@ -536,7 +536,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
                     DoCast(m_creature/*->getVictim()*/, unleashSpell);
                     //AddSpellToCast(m_creature->getVictim(), unleashSpell);
                     SoulChargeTimer = 1000;
-                    SoulChargeUnleashTimer = rand()%3000+3000;
+                    SoulChargeUnleashTimer = 1500;
                 }
                 else
                 {
