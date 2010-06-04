@@ -164,7 +164,7 @@ struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public NullCreatureAI
             m_creature->SetSpeed(MOVE_RUN, 1);
             m_creature->SetSpeed(MOVE_WALK, 2);
 
-            float angle = FloatRandRange(0, 2*M_PI);    //randomise angle
+            float angle = FloatRandRange(0, M_PI);    //randomise angle
             float x = m_creature->GetPositionX() + 40.0f * cos(angle);
             float y = m_creature->GetPositionY() + 40.0f * sin(angle);
             float z = m_creature->GetMap()->GetHeight(x, y, MAX_HEIGHT, true);
@@ -326,27 +326,23 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         return true;
     }
 
-    void SummonDoomfire(Unit* target)
+    void SummonDoomfire()
     {
-      if(target)
-      {
-        float x = m_creature->GetPositionX() + ((-1)^rand()%2)*rand()%8;
-        float y = m_creature->GetPositionY() + ((-1)^rand()%2)*rand()%8;
+        float x = m_creature->GetPositionX() + ((-1)^rand()%2)*(rand()%10 + 10);
+        float y = m_creature->GetPositionY() + ((-1)^rand()%2)*(rand()%10 + 10);
         float z = m_creature->GetMap()->GetHeight(x, y, MAX_HEIGHT, true);
         if(Creature* Doomfire = m_creature->SummonCreature(CREATURE_DOOMFIRE_TARGETING, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN, 60000))
         {
             Doomfire->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             Doomfire->SetLevel(m_creature->getLevel());
             Doomfire->setFaction(m_creature->getFaction());
-
-            ForceSpellCast(Doomfire, SPELL_DOOMFIRE_SPAWN);
+            Doomfire->CastSpell(Doomfire, SPELL_DOOMFIRE_SPAWN, true);
 
             if(rand()%10 == 0)  //10% chance on yell
                 DoScriptText(SAY_DOOMFIRE1, m_creature);
             else if(rand()%10 == 1) //10% chance on other yell
                 DoScriptText(SAY_DOOMFIRE2, m_creature);
         }
-      }
     }
 
     void UpdateAI(const uint32 diff)
@@ -597,9 +593,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
         if(DoomfireTimer < diff)
         {
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, 150, true, m_creature->getVictim()))
-                SummonDoomfire(target);
-
+            SummonDoomfire();
             DoomfireTimer = 9000+rand()%3000;
         }
         else
