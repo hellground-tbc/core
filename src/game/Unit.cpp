@@ -9974,17 +9974,20 @@ void CharmInfo::InitPossessCreateSpells()
         40322
     };
 
-    InitEmptyActionBar();
-
     if(m_unit->GetEntry() == 23109)     //HACK to allow proper spells for Vengeful Spirit
     {
+        InitEmptyActionBar(false);
+
         for(uint32 i = 0; i < 5; ++i)
         {
             uint32 spellid = SpiritSpellID[i];
-            AddSpellToAB(0,spellid, ACT_CAST);
+            AddSpellToAB(0, spellid, ACT_CAST);
         }
         return;
     }
+
+
+    InitEmptyActionBar();
 
     if(m_unit->GetTypeId() == TYPEID_UNIT)
     {
