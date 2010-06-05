@@ -965,6 +965,7 @@ BattleGroundMgr::BattleGroundMgr()
     m_NextRatingDiscardUpdate = m_RatingDiscardTimer;
     m_AutoDistributionTimeChecker = 0;
     m_ArenaTesting = false;
+    m_ApAnnounce = false;
 }
 
 BattleGroundMgr::~BattleGroundMgr()
@@ -1029,11 +1030,19 @@ void BattleGroundMgr::Update(time_t diff)
         {
             if(time(NULL) > m_NextAutoDistributionTime)
             {
+                if(!m_ApAnnounce)
+                {
+                    sWorld.SendWorldText(LANG_SYSTEMMESSAGE, "Distributing arena points to players will be performed in 2 minutes.");
+                    m_AutoDistributionTimeChecker = 120000;
+                    m_ApAnnounce = true;
+                    return;
+                }
+
                 DistributeArenaPoints();
-                m_NextAutoDistributionTime = time(NULL) + BATTLEGROUND_ARENA_POINT_DISTRIBUTION_DAY * sWorld.getConfig(CONFIG_ARENA_AUTO_DISTRIBUTE_INTERVAL_DAYS);
+                m_NextAutoDistributionTime = m_NextAutoDistributionTime + BATTLEGROUND_ARENA_POINT_DISTRIBUTION_DAY * sWorld.getConfig(CONFIG_ARENA_AUTO_DISTRIBUTE_INTERVAL_DAYS);
                 CharacterDatabase.PExecute("UPDATE saved_variables SET NextArenaPointDistributionTime = '"I64FMTD"'", m_NextAutoDistributionTime);
             }
-            m_AutoDistributionTimeChecker = 600000; // check 10 minutes
+            m_AutoDistributionTimeChecker = 600000; // check in 10 minutes
         }
         else
             m_AutoDistributionTimeChecker -= diff;

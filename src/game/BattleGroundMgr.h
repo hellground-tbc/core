@@ -248,6 +248,7 @@ class BattleGroundMgr
         uint32 m_AutoDistributionTimeChecker;
         uint32 m_PrematureFinishTimer;
         bool   m_ArenaTesting;
+        bool   m_ApAnnounce;
 };
 
 #define sBattleGroundMgr Trinity::Singleton<BattleGroundMgr>::Instance()
