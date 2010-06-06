@@ -68,6 +68,8 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
     uint64 IllidanGate;
     uint64 IllidanDoor[2];
 
+    uint32 EnslavedSoulsCount;
+
     uint32 Encounters[ENCOUNTERS];
     std::string str_data;
 
@@ -99,6 +101,8 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         IllidanGate     = 0;
         IllidanDoor[0]  = 0;
         IllidanDoor[1]  = 0;
+
+        EnslavedSoulsCount = 0;
 
         for(uint8 i = 0; i < ENCOUNTERS; ++i)
             Encounters[i] = NOT_STARTED;
@@ -312,6 +316,11 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
             if(Encounters[8] != DONE)
                 Encounters[8] = data;
             break;
+        case DATA_ENSLAVED_SOUL:
+            if(data)
+                EnslavedSoulsCount++;
+            else
+                EnslavedSoulsCount = 0;
         }
 
         if (data == DONE)
@@ -344,6 +353,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         case DATA_MOTHERSHAHRAZEVENT:               return Encounters[6];
         case DATA_ILLIDARICOUNCILEVENT:             return Encounters[7];
         case DATA_ILLIDANSTORMRAGEEVENT:            return Encounters[8];
+        case DATA_ENSLAVED_SOUL:                    return EnslavedSoulsCount;
         }
 
         return 0;
