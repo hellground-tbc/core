@@ -3888,6 +3888,13 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
 {
     Aura* Aur = i->second;
 
+    // HACK: teleport players that leave Incite Chaos 2yds up to prevent falling into textures
+    if(Aur->GetId() == 33684)
+    {
+        if(this->GetTypeId() == TYPEID_PLAYER)
+            ((Player*)this)->TeleportTo(this->GetMapId(), this->GetPositionX(), this->GetPositionY(), (this->GetPositionZ() + 2.0), this->GetOrientation());
+    }
+
     // if unit currently update aura list then make safe update iterator shift to next
     if (m_AurasUpdateIterator == i)
         ++m_AurasUpdateIterator;
