@@ -3347,7 +3347,7 @@ bool Unit::AddAura(Aura *Aur)
                 i2=m_Auras.lower_bound(spair);
                 continue;
             }
-            if(i2->second->GetCasterGUID() == Aur->GetCasterGUID() || Aur->StackNotByCaster())
+            if(i2->second->GetCasterGUID() == Aur->GetCasterGUID() || Aur->StackNotByCaster() || Aur->GetCaster()->GetTypeId() != TYPEID_PLAYER)    // always stack auras from different creatures
             {
                 if (!stackModified)
                 {
@@ -3881,7 +3881,6 @@ void Unit::RemoveNotOwnSingleTargetAuras()
                 iter = scAuras.begin();
         }
     }
-
 }
 
 void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
