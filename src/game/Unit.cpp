@@ -6145,7 +6145,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
     if ( triggerEntry == NULL )
     {
         // Not cast unknown spell
-        sLog.outDebug("Unit::HandleProcTriggerSpell: Spell %u have 0 in EffectTriggered[%d], not handled custom case?",auraSpellInfo->Id,triggeredByAura->GetEffIndex());
+        sLog.outError("Unit::HandleProcTriggerSpell: Spell %u have 0 in EffectTriggered[%d], not handled custom case?",auraSpellInfo->Id,triggeredByAura->GetEffIndex());
         return false;
     }
 
@@ -9971,12 +9971,14 @@ void CharmInfo::InitEmptyActionBar(bool withAttack)
 
 void CharmInfo::InitPossessCreateSpells()
 {
-    uint32 SpiritSpellID[5] =   //Vengeful Spirit's spells
+    uint32 SpiritSpellID[7] =   //Vengeful Spirit's spells
     {
         40325,
+        60000,  //to make empty slot
         40157,
         40175,
         40314,
+        60000,  //to make empty slot
         40322
     };
 
@@ -9984,7 +9986,7 @@ void CharmInfo::InitPossessCreateSpells()
     {
         InitEmptyActionBar(false);
 
-        for(uint32 i = 0; i < 5; ++i)
+        for(uint32 i = 0; i < 7; ++i)
         {
             uint32 spellid = SpiritSpellID[i];
             AddSpellToAB(0, spellid, ACT_CAST);
