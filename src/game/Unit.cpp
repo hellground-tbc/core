@@ -3887,8 +3887,16 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
 {
     Aura* Aur = i->second;
 
+    // ugly HACK for removing 40251 (Shadow of Death) :P
+    if(Aur && Aur->GetId() == 40251 && !this->HasAura(40282, 0))
+    {
+        Kill(this, false);
+        Aur->SetAuraDuration(5000);     //prevent crash from _UpdateSpells
+        return;
+    }
+
     // HACK: teleport players that leave Incite Chaos 2yds up to prevent falling into textures
-    if(Aur->GetId() == 33684)
+    if(Aur && Aur->GetId() == 33684)
     {
         if(this->GetTypeId() == TYPEID_PLAYER)
             ((Player*)this)->TeleportTo(this->GetMapId(), this->GetPositionX(), this->GetPositionY(), (this->GetPositionZ() + 2.0), this->GetOrientation());
@@ -4025,6 +4033,14 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
                     else
                         RemoveAurasDueToSpell(*itr);
         }
+    }
+
+    // if controlling Vengeance Spirit expires, kill player
+    if(Aur && Aur->GetId() == 40268)
+    {
+        if(this->HasAura(40282, 0))
+            this->RemoveAurasDueToSpell(40282);
+        Kill(this, false);
     }
 
     if(statue)
@@ -6712,6 +6728,10 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
 
     // dead units can neither attack nor be attacked
     if(!isAlive() || !victim->IsInWorld() || !victim->isAlive())
+        return false;
+
+    // do not attack players when controlling Vengeful Spirit (with Possess Spirit Immune aura)
+    if(victim->GetTypeId() == TYPEID_PLAYER && ((Player*)victim)->HasAura(40282, 0))
         return false;
 
     // player cannot attack in mount state
@@ -11168,6 +11188,23 @@ void Unit::SetToNotify()
 
 void Unit::Kill(Unit *pVictim, bool durabilityLoss)
 {
+    // OnPlayerDeath function called before player auras are removed, to allow check for auras in scripts
+    if(pVictim->GetTypeId() == TYPEID_PLAYER)
+    {
+      if(Map *pMap = pVictim->GetMap())
+      {
+        if(pMap->IsRaid() || pMap->IsDungeon())
+        {
+            if(((InstanceMap*)pMap)->GetInstanceData())
+                ((InstanceMap*)pMap)->GetInstanceData()->OnPlayerDeath((Player*)pVictim);
+
+            // if player has aura Shadow of Death do not really dies, return here
+            if(pVictim->HasAura(40251, 0) || pVictim->HasAura(40282, 0))
+                return;
+        }
+      }
+    }
+
     pVictim->SetHealth(0);
 
     // find player: owner of controlled `this` or `this` itself maybe
@@ -11314,14 +11351,6 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
         if(OutdoorPvP * pvp = ((Player*)pVictim)->GetOutdoorPvP())
             pvp->HandlePlayerActivityChanged((Player*)pVictim);
 
-        if(Map *pMap = pVictim->GetMap())
-        {
-            if(pMap->IsRaid() || pMap->IsDungeon())
-            {
-                if(((InstanceMap*)pMap)->GetInstanceData())
-                    ((InstanceMap*)pMap)->GetInstanceData()->OnPlayerDeath((Player*)pVictim);
-            }
-        }
         ((Player*)this)->RemoveCharmAuras();
     }
 

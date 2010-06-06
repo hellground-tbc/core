@@ -285,12 +285,12 @@ class TRINITY_DLL_SPEC Aura
         bool IsInUse() const { return m_in_use;}
         bool StackNotByCaster()
         { 
-            return (GetId() == 22959 || 
-                    GetId() == 12579 ||
-                    GetId() == 15258 ||
-                    GetId() == 25225 ||
-                    GetId() == 36478 || 
-                    GetId() == 36482
+            return (GetId() == 22959 ||     // Improved Scorch
+                    GetId() == 12579 ||     // Winter's Chill
+                    GetId() == 15258 ||     // Shadow Weaving
+                    GetId() == 25225 ||     // Sunder Armor
+                    GetId() == 36478 ||     // Magic Disruption
+                    GetId() == 36482        // Armor Disruption
                     );
         }
 

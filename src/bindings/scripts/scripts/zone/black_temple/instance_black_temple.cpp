@@ -46,6 +46,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
     uint64 Akama;                                           // This is the Akama that starts the Illidan encounter.
     uint64 Akama_Shade;                                     // This is the Akama that starts the Shade of Akama encounter.
     uint64 ShadeOfAkama;
+    uint64 Teron;
     uint64 Supremus;
     uint64 LadyMalande;
     uint64 GathiosTheShatterer;
@@ -79,6 +80,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         Akama = 0;
         Akama_Shade = 0;
         ShadeOfAkama = 0;
+        Teron = 0;
         Supremus = 0;
         LadyMalande = 0;
         GathiosTheShatterer = 0;
@@ -141,6 +143,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         case 23089:    Akama = creature->GetGUID();                     break;
         case 22990:    Akama_Shade = creature->GetGUID();               break;
         case 22841:    ShadeOfAkama = creature->GetGUID();              break;
+        case 22871:    Teron = creature->GetGUID();                     break;
         case 22898:    Supremus = creature->GetGUID();                  break;
         case 22917:    IllidanStormrage = creature->GetGUID();          break;
         case 22949:    GathiosTheShatterer = creature->GetGUID();       break;
@@ -149,6 +152,24 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         case 22952:    VerasDarkshadow = creature->GetGUID();           break;
         case 23426:    IllidariCouncil = creature->GetGUID();           break;
         case 23499:    BloodElfCouncilVoice = creature->GetGUID();      break;
+        }
+    }
+
+    void OnPlayerDeath(Player *pVictim)
+    {
+        if(GetData(DATA_TERONGOREFIENDEVENT) != NOT_STARTED && GetData(DATA_TERONGOREFIENDEVENT) != DONE)
+        {
+            if(pVictim->HasAura(40251, 0))
+            {
+                pVictim->SetHealth(pVictim->GetMaxHealth());
+                pVictim->CastSpell(pVictim, 40266, true);   //summon Vengeful Spirit and 4 Shadowy Constructs
+                pVictim->CastSpell(pVictim, 40282, true);   //Possess Spirit Immune -> IMPORTANT to properly remove 40251
+
+                if(Unit* Ghost = FindCreature(23109, 10.0, pVictim))    //we look for Vengeful Spirit to posess
+                    pVictim->CastSpell(Ghost, 40268, false);
+
+                pVictim->RemoveAurasDueToSpell(40251);
+            }
         }
     }
 
@@ -224,6 +245,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         case DATA_AKAMA:                       return Akama;
         case DATA_AKAMA_SHADE:                 return Akama_Shade;
         case DATA_SHADEOFAKAMA:                return ShadeOfAkama;
+        case DATA_TERONGOREFIENDEVENT:         return Teron;
         case DATA_SUPREMUS:                    return Supremus;
         case DATA_ILLIDANSTORMRAGE:            return IllidanStormrage;
         case DATA_GATHIOSTHESHATTERER:         return GathiosTheShatterer;
@@ -277,7 +299,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
                 HandleGameObject(TeronDoor, true);
                 HandleGameObject(CommonDoor, true);
             }
-            if(Encounters[3] != DONE)     
+            if(Encounters[3] != DONE)
                 Encounters[3] = data;
             break;
         case DATA_GURTOGGBLOODBOILEVENT:
