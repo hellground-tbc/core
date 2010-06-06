@@ -3899,7 +3899,7 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
     if(Aur && Aur->GetId() == 33684)
     {
         if(this->GetTypeId() == TYPEID_PLAYER)
-            ((Player*)this)->TeleportTo(this->GetMapId(), this->GetPositionX(), this->GetPositionY(), (this->GetPositionZ() + 2.0), this->GetOrientation());
+            ((Player*)this)->TeleportTo(this->GetMapId(), this->GetPositionX(), this->GetPositionY(), (this->GetPositionZ() + 2.0), this->GetOrientation(), TELE_TO_NOT_LEAVE_COMBAT);
     }
 
     // if unit currently update aura list then make safe update iterator shift to next
