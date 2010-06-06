@@ -461,7 +461,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
         {
             Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, 100, true, m_creature->getVictim());
 
-            if(target && target->isAlive() && !target->HasAura(SPELL_SHADOW_OF_DEATH, 0))
+            if(target && target->isAlive() && !target->HasAura(SPELL_SHADOW_OF_DEATH, 0) && !target->HasAura(40282, 0) )
             {
                 DoCast(target, SPELL_SHADOW_OF_DEATH);
                 ShadowOfDeathTimer = 30000;
