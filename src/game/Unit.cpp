@@ -3347,7 +3347,7 @@ bool Unit::AddAura(Aura *Aur)
                 i2=m_Auras.lower_bound(spair);
                 continue;
             }
-            if(i2->second->GetCasterGUID() == Aur->GetCasterGUID() || Aur->StackNotByCaster() || Aur->GetCaster()->GetTypeId() != TYPEID_PLAYER)    // always stack auras from different creatures
+            if(i2->second->GetCasterGUID() == Aur->GetCasterGUID() || Aur->StackNotByCaster() || (Aur->GetCaster() && Aur->GetCaster()->GetTypeId() != TYPEID_PLAYER))    // always stack auras from different creatures
             {
                 if (!stackModified)
                 {
@@ -4815,6 +4815,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 triggered_spell_id = 29077;
                 break;
             }
+            
             // Incanter's Regalia set (add trigger chance to Mana Shield)
             if (dummySpell->SpellFamilyFlags & 0x0000000000008000LL)
             {
