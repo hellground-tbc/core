@@ -2036,7 +2036,7 @@ void ScriptsInit(char const* cfg_file = "trinitycore.conf")
 //*********************************
 //*** Functions used globally ***
 
-void DoScriptText(int32 textEntry, WorldObject* pSource, Unit* target)
+void DoScriptText(int32 textEntry, WorldObject* pSource, Unit* target, bool withoutPrename)
 {
     if (!pSource)
     {
@@ -2092,7 +2092,7 @@ void DoScriptText(int32 textEntry, WorldObject* pSource, Unit* target)
             pSource->MonsterTextEmote(textEntry, target ? target->GetGUID() : 0);
             break;
         case CHAT_TYPE_BOSS_EMOTE:
-            pSource->MonsterTextEmote(textEntry, target ? target->GetGUID() : 0, true);
+            pSource->MonsterTextEmote(textEntry, target ? target->GetGUID() : 0, true, withoutPrename);
             break;
         case CHAT_TYPE_WHISPER:
             {
