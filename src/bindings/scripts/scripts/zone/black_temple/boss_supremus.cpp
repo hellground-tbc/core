@@ -219,7 +219,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
 
         if(DoEmote)
         {
-            DoScriptText(EMOTE_PUNCH_GROUND, m_creature);
+            DoScriptText(EMOTE_PUNCH_GROUND, m_creature, 0, true);
             DoEmote = false;
         }
 
@@ -244,7 +244,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
                 {
                     DoResetThreat();
                     m_creature->AddThreat(target, 5000000.0f);
-                    DoScriptText(EMOTE_NEW_TARGET, m_creature);
+                    DoScriptText(EMOTE_NEW_TARGET, m_creature, 0, true);
                     SwitchTargetTimer = 10000;
                 }
             }
@@ -275,7 +275,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
                 if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 999, true))
                 {
                     m_creature->CastSpell(target, SPELL_VOLCANIC_SUMMON, true);      //must have target for not to do DB errors
-                    DoScriptText(EMOTE_GROUND_CRACK, m_creature);
+                    DoScriptText(EMOTE_GROUND_CRACK, m_creature, 0, true);
                     SummonVolcanoTimer = 10000;
                 }
             }
