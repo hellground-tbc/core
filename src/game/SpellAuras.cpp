@@ -3758,8 +3758,13 @@ void Aura::HandleAuraModDecreaseSpeed(bool /*apply*/, bool Real)
     if(!Real)
         return;
 
-    if(m_spellProto->Id == 12323)
-        m_target->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
+    switch(m_spellProto->Id)
+    {
+        case 12323: // Warrior: Piercing Howl
+        case 18223: // Warlock: Curse of Exhaustion
+            m_target->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
+            break;
+    }
 
     m_target->UpdateSpeed(MOVE_RUN, true);
     m_target->UpdateSpeed(MOVE_SWIM, true);
@@ -4995,24 +5000,29 @@ void Aura::HandleAuraModAttackPower(bool apply, bool Real)
 {
     m_target->HandleStatModifier(UNIT_MOD_ATTACK_POWER, TOTAL_VALUE, float(GetModifierValue()), apply);
     if(apply)
-    switch(m_spellProto->Id){
-        // Warrior & Druid Demoshout should remove stealth
-        case 1160:
-        case 6190:
-        case 11554:
-        case 11555:
-        case 11556:
-        case 25202:
-        case 25203:
-        case 47437:  //WotLK spell
-        case 99:
-        case 1735:
-        case 9490:
-        case 9747:
-        case 9898:
-        case 26998:
-        case 48559:  //WotLK spell
-        case 48560:  //WotLK spell
+    switch(m_spellProto->Id)
+    {
+        case 1160:  // Warrior: Demoralizing Shout r1
+        case 6190:  // Warrior: Demoralizing Shout r2
+        case 11554: // Warrior: Demoralizing Shout r3
+        case 11555: // Warrior: Demoralizing Shout r4
+        case 11556: // Warrior: Demoralizing Shout r5
+        case 25202: // Warrior: Demoralizing Shout r6
+        case 25203: // Warrior: Demoralizing Shout r7
+        case 99:    // Druid: Demoralizing Roar r1
+        case 1735:  // Druid: Demoralizing Roar r2
+        case 9490:  // Druid: Demoralizing Roar r3
+        case 9747:  // Druid: Demoralizing Roar r4
+        case 9898:  // Druid: Demoralizing Roar r5
+        case 26998: // Druid: Demoralizing Roar r6
+        case 702:   // Warlock: Curse of Weakness r1
+        case 1108:  // Warlock: Curse of Weakness r2
+        case 6205:  // Warlock: Curse of Weakness r3
+        case 7646:  // Warlock: Curse of Weakness r4
+        case 11707: // Warlock: Curse of Weakness r5
+        case 11708: // Warlock: Curse of Weakness r6
+        case 27224: // Warlock: Curse of Weakness r7
+        case 30909: // Warlock: Curse of Weakness r8
             m_target->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
             break;
     }
