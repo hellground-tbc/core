@@ -3570,6 +3570,12 @@ void Spell::EffectDispel(uint32 i)
     if(!unitTarget)
         return;
 
+    if(unitTarget->IsHostileTo(m_caster))
+    {
+        m_caster->SetInCombatWith(unitTarget);
+        unitTarget->SetInCombatWith(m_caster);
+    }
+ 
     // Fill possible dispel list
     std::vector <Aura *> dispel_list;
 
