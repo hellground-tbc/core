@@ -14390,13 +14390,8 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
 
     m_class = fields[5].GetUInt8();
 
-    PlayerInfo const *info = objmgr.GetPlayerInfo(m_race, m_class);
-    if(!info)
-    {
-        sLog.outError("Player have incorrect race/class pair. Can't be loaded.");
-        delete result;
+    if (!_LoadHomeBind(holder->GetResult(PLAYER_LOGIN_QUERY_LOADHOMEBIND)))
         return false;
-    }
 
     InitPrimaryProffesions();                               // to max set before any spell loaded
 
@@ -14404,6 +14399,7 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
     Relocate(fields[6].GetFloat(),fields[7].GetFloat(),fields[8].GetFloat(),fields[10].GetFloat());
     SetFallInformation(0, fields[8].GetFloat());
     SetMapId(fields[9].GetUInt32());
+    SetInstanceId(fields[34].GetFloat());
     SetDifficulty(fields[32].GetUInt32());                  // may be changed in _LoadGroup
 
     _LoadGroup(holder->GetResult(PLAYER_LOGIN_QUERY_LOADGROUP));
@@ -14438,8 +14434,7 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
     {
         sLog.outError("ERROR: Player (guidlow %d) have invalid coordinates (X: %f Y: %f Z: %f O: %f). Teleport to default race/class locations.",guid,GetPositionX(),GetPositionY(),GetPositionZ(),GetOrientation());
 
-        SetMapId(info->mapId);
-        Relocate(info->positionX,info->positionY,info->positionZ,0.0f);
+        RelocateToHomebind();
 
         transGUID = 0;
 
@@ -14448,9 +14443,6 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
         m_movementInfo.t_z = 0.0f;
         m_movementInfo.t_o = 0.0f;
     }
-
-    if(!_LoadHomeBind(holder->GetResult(PLAYER_LOGIN_QUERY_LOADHOMEBIND)))
-        return false;
 
     ////                                                     0     1       2      3    4    5    6
     //QueryResult *result = CharacterDatabase.PQuery("SELECT bgid, bgteam, bgmap, bgx, bgy, bgz, bgo FROM character_bgcoord WHERE guid = '%u'", GUID_LOPART(m_guid));
@@ -14488,47 +14480,6 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
         }
     }
 
-    // load the player's map here if it's not already loaded
-    Map *map = GetMap();
-    if (!map)
-    {
-        AreaTrigger const* at = objmgr.GetGoBackTrigger(GetMapId());
-        if(at)
-        {
-            SetMapId(at->target_mapId);
-            Relocate(at->target_X, at->target_Y, at->target_Z, GetOrientation());
-            sLog.outError("Player (guidlow %d) is teleported to gobacktrigger (Map: %u X: %f Y: %f Z: %f O: %f).",guid,GetMapId(),GetPositionX(),GetPositionY(),GetPositionZ(),GetOrientation());
-        }
-        else
-        {
-            SetMapId(m_homebindMapId);
-            Relocate(m_homebindX, m_homebindY, m_homebindZ, GetOrientation());
-            sLog.outError("Player (guidlow %d) is teleported to home (Map: %u X: %f Y: %f Z: %f O: %f).",guid,GetMapId(),GetPositionX(),GetPositionY(),GetPositionZ(),GetOrientation());
-        }
-
-        map = GetMap();
-        if(!map)
-        {
-            sLog.outError("ERROR: Player (guidlow %d) have invalid coordinates (X: %f Y: %f Z: %f O: %f). Teleport to default race/class locations.",guid,GetPositionX(),GetPositionY(),GetPositionZ(),GetOrientation());
-
-            SetMapId(info->mapId);
-            Relocate(info->positionX,info->positionY,info->positionZ,0.0f);
-
-            map = GetMap();
-            if(!map)
-            {
-                sLog.outError("ERROR: Player (guidlow %d) have invalid coordinates (X: %f Y: %f Z: %f O: %f). Teleport to default race/class locations.",guid,GetPositionX(),GetPositionY(),GetPositionZ(),GetOrientation());
-                sLog.outError("CRASH.");
-                assert(false);
-            }
-        }
-    }
-    // since the player may not be bound to the map yet, make sure subsequent
-    // getmap calls won't create new maps
-    SetInstanceId(map->GetInstanceId());
-
-    SaveRecallPosition();
-
     if (transGUID != 0)
     {
         m_movementInfo.t_x = fields[20].GetFloat();
@@ -14546,8 +14497,7 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
                 guid,GetPositionX()+m_movementInfo.t_x,GetPositionY()+m_movementInfo.t_y,
                 GetPositionZ()+m_movementInfo.t_z,GetOrientation()+m_movementInfo.t_o);
 
-            SetMapId(info->mapId);
-            Relocate(info->positionX,info->positionY,info->positionZ,0.0f);
+            RelocateToHomebind();
 
             m_movementInfo.t_x = 0.0f;
             m_movementInfo.t_y = 0.0f;
@@ -14576,8 +14526,7 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
             sLog.outError("ERROR: Player (guidlow %d) have invalid transport guid (%u). Teleport to default race/class locations.",
                 guid,transGUID);
 
-            SetMapId(info->mapId);
-            Relocate(info->positionX,info->positionY,info->positionZ,0.0f);
+            RelocateToHomebind();
 
             m_movementInfo.t_x = 0.0f;
             m_movementInfo.t_y = 0.0f;
@@ -14587,6 +14536,58 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
             transGUID = 0;
         }
     }
+
+    if(InstanceSave *pSave = GetInstanceSave(GetMapId()))
+        if(pSave->GetInstanceId() != GetInstanceId())
+            SetInstanceId(pSave->GetInstanceId());
+
+    // load the player's map here if it's not already loaded
+    Map *map = GetMap();
+    if (!map)
+    {
+        AreaTrigger const* at = objmgr.GetGoBackTrigger(GetMapId());
+        if(at)
+        {
+            SetMapId(at->target_mapId);
+            Relocate(at->target_X, at->target_Y, at->target_Z, GetOrientation());
+            sLog.outError("Player (guidlow %d) is teleported to gobacktrigger (Map: %u X: %f Y: %f Z: %f O: %f).",guid,GetMapId(),GetPositionX(),GetPositionY(),GetPositionZ(),GetOrientation());
+        }
+        else
+        {
+            SetMapId(m_homebindMapId);
+            Relocate(m_homebindX, m_homebindY, m_homebindZ, GetOrientation());
+            sLog.outError("Player (guidlow %d) is teleported to home (Map: %u X: %f Y: %f Z: %f O: %f).",guid,GetMapId(),GetPositionX(),GetPositionY(),GetPositionZ(),GetOrientation());
+        }
+
+        map = GetMap();
+        if(!map)
+        {
+            sLog.outError("ERROR: Player (guidlow %d) have invalid coordinates (X: %f Y: %f Z: %f O: %f). Teleport to default race/class locations.",guid,GetPositionX(),GetPositionY(),GetPositionZ(),GetOrientation());
+
+            RelocateToHomebind();
+
+            map = GetMap();
+            if(!map)
+            {
+                sLog.outError("ERROR: Player (guidlow %d) have invalid coordinates (X: %f Y: %f Z: %f O: %f). Teleport to default race/class locations.",guid,GetPositionX(),GetPositionY(),GetPositionZ(),GetOrientation());
+                sLog.outError("CRASH.");
+                assert(false);
+            }
+        }
+    }
+
+    SetInstanceId(map->GetInstanceId());
+
+    if (GetInstanceId() && !sInstanceSaveManager.GetInstanceSave(GetInstanceId()))
+    {
+        AreaTrigger const* at = objmgr.GetMapEntranceTrigger(GetMapId());
+        if(at)
+             Relocate(at->target_X, at->target_Y, at->target_Z, at->target_Orientation);
+        else
+             sLog.outError("Player %s(GUID: %u) logged in to a reset instance (map: %u) and there is no area-trigger leading to this map. Thus he can't be ported back to the entrance. This _might_ be an exploit attempt.", GetName(), GetGUIDLow(), GetMapId());
+    }
+
+    SaveRecallPosition();
 
     time_t now = time(NULL);
     time_t logoutTime = time_t(fields[16].GetUInt64());
@@ -15608,6 +15609,19 @@ InstancePlayerBind* Player::GetBoundInstance(uint32 mapid, uint8 difficulty)
     else
         return NULL;
 }
+ 	
+InstanceSave * Player::GetInstanceSave(uint32 mapid)
+{
+    InstancePlayerBind *pBind = GetBoundInstance(mapid, GetDifficulty());
+    InstanceSave *pSave = pBind ? pBind->save : NULL;
+    if (!pBind || !pBind->perm)
+    {
+        if (Group *group = GetGroup())
+            if (InstanceGroupBind *groupBind = group->GetBoundInstance(mapid, GetDifficulty()))
+                pSave = groupBind->save;
+    }
+    return pSave;
+}
 
 void Player::UnbindInstance(uint32 mapid, uint8 difficulty, bool unload)
 {
@@ -15830,6 +15844,13 @@ bool Player::Satisfy(AccessRequirement const *ar, uint32 target_map, bool report
 
 bool Player::_LoadHomeBind(QueryResult *result)
 {
+    PlayerInfo const *info = objmgr.GetPlayerInfo(getRace(), getClass());
+    if (!info)
+    {        
+        sLog.outError("Player have incorrect race/class pair. Can't be loaded.");
+        return false;
+    }
+
     bool ok = false;
     //QueryResult *result = CharacterDatabase.PQuery("SELECT map,zone,position_x,position_y,position_z FROM character_homebind WHERE guid = '%u'", GUID_LOPART(playerGuid));
     if (result)
@@ -15854,9 +15875,6 @@ bool Player::_LoadHomeBind(QueryResult *result)
 
     if(!ok)
     {
-        PlayerInfo const *info = objmgr.GetPlayerInfo(getRace(), getClass());
-        if(!info) return false;
-
         m_homebindMapId = info->mapId;
         m_homebindZoneId = info->zoneId;
         m_homebindX = info->positionX;
@@ -15921,7 +15939,7 @@ void Player::SaveToDB()
 
     std::ostringstream ss;
     ss << "REPLACE INTO characters (guid,account,name,race,class,"
-        "map, dungeon_difficulty, position_x, position_y, position_z, orientation, data, "
+        "map, instance_id, dungeon_difficulty, position_x, position_y, position_z, orientation, data, "
         "taximask, online, cinematic, "
         "totaltime, leveltime, rest_bonus, logout_time, is_logout_resting, resettalents_cost, resettalents_time, "
         "trans_x, trans_y, trans_z, trans_o, transguid, extra_flags, stable_slots, at_login, zone, "
@@ -15944,6 +15962,7 @@ void Player::SaveToDB()
     if(!save_to_dest)
     {
         ss << GetMapId() << ", "
+        << (uint32)GetInstanceId() << ", "
         << (uint32)GetDifficulty() << ", "
         << finiteAlways(GetPositionX()) << ", "
         << finiteAlways(GetPositionY()) << ", "
@@ -15953,6 +15972,7 @@ void Player::SaveToDB()
     else
     {
         ss << GetTeleportDest().mapid << ", "
+        << (uint32)0 << ", "
         << (uint32)GetDifficulty() << ", "
         << finiteAlways(GetTeleportDest().x) << ", "
         << finiteAlways(GetTeleportDest().y) << ", "

@@ -2037,6 +2037,8 @@ class TRINITY_DLL_SPEC Player : public Unit
         float m_homebindY;
         float m_homebindZ;
 
+        void RelocateToHomebind() { SetMapId(m_homebindMapId); Relocate(m_homebindX,m_homebindY,m_homebindZ); }
+
         // currently visible objects at player client
         typedef std::set<uint64> ClientGUIDs;
         ClientGUIDs m_clientGUIDs;
@@ -2085,6 +2087,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         BoundInstancesMap m_boundInstances[TOTAL_DIFFICULTIES];
         InstancePlayerBind* GetBoundInstance(uint32 mapid, uint8 difficulty);
         BoundInstancesMap& GetBoundInstances(uint8 difficulty) { return m_boundInstances[difficulty]; }
+        InstanceSave * GetInstanceSave(uint32 mapid);
         void UnbindInstance(uint32 mapid, uint8 difficulty, bool unload = false);
         void UnbindInstance(BoundInstancesMap::iterator &itr, uint8 difficulty, bool unload = false);
         InstancePlayerBind* BindToInstance(InstanceSave *save, bool permanent, bool load = false);
