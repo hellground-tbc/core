@@ -4312,7 +4312,16 @@ void Spell::EffectSummonPet(uint32 i)
     }
 
     float x, y, z;
-    owner->GetClosePoint(x, y, z, owner->GetObjectSize());
+    if(petentry == 19668) // Shadowfiend: summon at target feet !;p
+    {
+        if(Unit *target = m_targets.getUnitTarget())
+            target->GetClosePoint(x, y, z, target->GetObjectSize());
+        else
+            owner->GetClosePoint(x, y, z, owner->GetObjectSize());
+    }
+    else
+        owner->GetClosePoint(x, y, z, owner->GetObjectSize());
+
     Pet* pet = owner->SummonPet(petentry, x, y, z, owner->GetOrientation(), SUMMON_PET, 0);
     if(!pet)
         return;
