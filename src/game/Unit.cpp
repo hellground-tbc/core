@@ -6775,6 +6775,7 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
 
     if(meleeAttack)
         addUnitState(UNIT_STAT_MELEE_ATTACKING);
+
     m_attacking = victim;
     m_attacking->_addAttacker(this);
 

@@ -155,6 +155,12 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
         {
             if(Visual_Check < diff)
             {
+                if(!m_creature->getVictim())
+                {
+                    Visual_Check = NULL;
+                    return;
+                }
+
                 if(m_creature->GetUInt64Value(UNIT_FIELD_TARGET) != m_creature->getVictim()->GetGUID())
                     m_creature->SetUInt64Value(UNIT_FIELD_TARGET, m_creature->getVictim()->GetGUID());
 
@@ -326,7 +332,9 @@ struct TRINITY_DLL_DECL mob_towering_infernalAI : public ScriptedAI
                 }
             }
             CheckTimer = 5000;
-        }else CheckTimer -= diff;
+        }
+        else
+            CheckTimer -= diff;
 
         //Return since we have no target
         if (!UpdateVictim())
