@@ -6361,12 +6361,16 @@ void Spell::EffectSummonDeadPet(uint32 /*i*/)
 {
     if(m_caster->GetTypeId() != TYPEID_PLAYER)
         return;
+    
     Player *_player = (Player*)m_caster;
+    
     Pet *pet = _player->GetPet();
     if(!pet)
         return;
+    
     if(pet->isAlive())
         return;
+
     if(damage < 0)
         return;
 

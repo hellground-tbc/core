@@ -150,9 +150,22 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
             }
         }
 
-        //Return since we have no target
-        if (!UpdateVictim() )
-            return;
+        //back to victim target facing
+        if(Visual_Check)
+        {
+            if(Visual_Check < diff)
+            {
+                if(m_creature->GetUInt64Value(UNIT_FIELD_TARGET) != m_creature->getVictim()->GetGUID())
+                    m_creature->SetUInt64Value(UNIT_FIELD_TARGET, m_creature->getVictim()->GetGUID());
+
+                Visual_Check = NULL;
+            }
+            else
+                Visual_Check -= diff;
+        }
+        else
+            if (!UpdateVictim() )
+                return;
 
         if(CheckTimer < diff)
         {
@@ -162,17 +175,6 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
         }
         else
             CheckTimer -= diff;
-
-        //back to victim target facing
-        if(Visual_Check && Visual_Check < diff)
-        {
-            if(m_creature->GetUInt64Value(UNIT_FIELD_TARGET) != m_creature->getVictim()->GetGUID())
-                m_creature->SetUInt64Value(UNIT_FIELD_TARGET, m_creature->getVictim()->GetGUID());
-            Visual_Check = NULL;
-        }
-        else
-            Visual_Check -= diff;
-
 
         if(SwarmTimer < diff)
         {
