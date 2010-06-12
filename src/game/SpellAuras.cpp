@@ -1912,13 +1912,13 @@ void Aura::TriggerSpell()
                 break;
             }
 
-//            case SPELLFAMILY_HUNTER:
-//            {
-//                switch(auraId)
-//                {
-//                    //Frost Trap Aura
-//                    case 13810:
-//                        return;
+            case SPELLFAMILY_HUNTER:
+            {
+                switch(auraId)
+                {
+                    //Frost Trap Aura
+                    case 13810:
+                        return;
 //                    //Rizzle's Frost Trap
 //                    case 39900:
 //                        return;
@@ -1942,11 +1942,11 @@ void Aura::TriggerSpell()
 //                    case 30648:         // Tame Greater Timberstrider
 //                    case 30652:         // Tame Nightstalker
 //                        return;
-//                    default:
-//                        break;
-//                }
-//                break;
-//            }
+                    default:
+                        break;
+                }
+                break;
+            }
             case SPELLFAMILY_SHAMAN:
             {
                 switch(auraId)
