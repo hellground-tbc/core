@@ -6918,12 +6918,12 @@ void Player::_ApplyItemBonuses(ItemPrototype const *proto,uint8 slot,bool apply)
             case ITEM_MOD_HIT_RATING:
                 ApplyRatingMod(CR_HIT_MELEE, int32(val), apply);
                 ApplyRatingMod(CR_HIT_RANGED, int32(val), apply);
-                ApplyRatingMod(CR_HIT_SPELL, int32(val), apply);
+                //ApplyRatingMod(CR_HIT_SPELL, int32(val), apply);
                 break;
             case ITEM_MOD_CRIT_RATING:
                 ApplyRatingMod(CR_CRIT_MELEE, int32(val), apply);
                 ApplyRatingMod(CR_CRIT_RANGED, int32(val), apply);
-                ApplyRatingMod(CR_CRIT_SPELL, int32(val), apply);
+                //ApplyRatingMod(CR_CRIT_SPELL, int32(val), apply);
                 break;
             case ITEM_MOD_HIT_TAKEN_RATING:
                 ApplyRatingMod(CR_HIT_TAKEN_MELEE, int32(val), apply);
@@ -6943,7 +6943,7 @@ void Player::_ApplyItemBonuses(ItemPrototype const *proto,uint8 slot,bool apply)
             case ITEM_MOD_HASTE_RATING:
                 ApplyRatingMod(CR_HASTE_MELEE, int32(val), apply);
                 ApplyRatingMod(CR_HASTE_RANGED, int32(val), apply);
-                ApplyRatingMod(CR_HASTE_SPELL, int32(val), apply);
+                //ApplyRatingMod(CR_HASTE_SPELL, int32(val), apply);
                 break;
             case ITEM_MOD_EXPERTISE_RATING:
                 ApplyRatingMod(CR_EXPERTISE, int32(val), apply);
@@ -12270,13 +12270,13 @@ void Player::ApplyEnchantment(Item *item,EnchantmentSlot slot,bool apply, bool a
                     case ITEM_MOD_HIT_RATING:
                         ((Player*)this)->ApplyRatingMod(CR_HIT_MELEE, enchant_amount, apply);
                         ((Player*)this)->ApplyRatingMod(CR_HIT_RANGED, enchant_amount, apply);
-                        ((Player*)this)->ApplyRatingMod(CR_HIT_SPELL, enchant_amount, apply);
+                        //((Player*)this)->ApplyRatingMod(CR_HIT_SPELL, enchant_amount, apply);
                         sLog.outDebug("+ %u HIT", enchant_amount);
                         break;
                     case ITEM_MOD_CRIT_RATING:
                         ((Player*)this)->ApplyRatingMod(CR_CRIT_MELEE, enchant_amount, apply);
                         ((Player*)this)->ApplyRatingMod(CR_CRIT_RANGED, enchant_amount, apply);
-                        ((Player*)this)->ApplyRatingMod(CR_CRIT_SPELL, enchant_amount, apply);
+                        //((Player*)this)->ApplyRatingMod(CR_CRIT_SPELL, enchant_amount, apply);
                         sLog.outDebug("+ %u CRITICAL", enchant_amount);
                         break;
 //                    Values ITEM_MOD_HIT_TAKEN_RATING and ITEM_MOD_CRIT_TAKEN_RATING are never used in Enchantment
