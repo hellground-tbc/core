@@ -813,7 +813,7 @@ CreatureAI* GetAI_npc_marshal_windsor(Creature *_Creature)
 
 bool QuestAccept_npc_marshal_windsor(Player *player, Creature *creature, Quest const *quest )
 {
-    if( quest->GetQuestId() == 4322 )
+    if( quest->GetQuestId() == QUEST_JAIL_BREAK )
     {
         ScriptedInstance *pInstance = ((ScriptedInstance*)creature->GetInstanceData());
 
@@ -823,7 +823,7 @@ bool QuestAccept_npc_marshal_windsor(Player *player, Creature *creature, Quest c
         if( pInstance->GetData(DATA_QUEST_JAIL_BREAK) == NOT_STARTED )
         {
             ((npc_escortAI*)(creature->AI()))->Start(true, true, false, player->GetGUID());
-            pInstance->SetData(Q_STARTER, player->GetGUID());
+            pInstance->SetData64(Q_STARTER, player->GetGUID());
             pInstance->SetData(DATA_QUEST_JAIL_BREAK, IN_PROGRESS);
             creature->setFaction(11);
         }
@@ -930,7 +930,7 @@ struct TRINITY_DLL_DECL npc_marshal_reginald_windsorAI : public npc_escortAI
 
         if( who->GetTypeId() == TYPEID_PLAYER )
         {
-            if( ((Player*)who)->GetQuestStatus(4322) == QUEST_STATUS_INCOMPLETE )
+            if( ((Player*)who)->GetQuestStatus(QUEST_JAIL_BREAK) == QUEST_STATUS_INCOMPLETE )
             {
                 float Radius = 10.0;
                 if( m_creature->IsWithinDistInMap(who, Radius) )
