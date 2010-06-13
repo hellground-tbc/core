@@ -5600,6 +5600,7 @@ void Aura::HandleSpiritOfRedemption( bool apply, bool Real )
         }
 
         m_target->SetHealth(1);
+        m_target->SetPower(POWER_MANA, m_target->GetMaxPower(POWER_MANA));
     }
     // die at aura end
     else

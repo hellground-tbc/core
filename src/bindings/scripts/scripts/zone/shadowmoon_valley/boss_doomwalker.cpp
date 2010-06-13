@@ -97,7 +97,7 @@ struct TRINITY_DLL_DECL boss_doomwalkerAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit* who)
     {
-        if(who->HasAura(SPELL_MARK_DEATH,0))
+        if(who->HasAura(SPELL_MARK_DEATH,0) && !who->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION))
             m_creature->Kill(who,true);
        
         ScriptedAI::MoveInLineOfSight(who);
