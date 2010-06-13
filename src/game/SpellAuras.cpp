@@ -5678,7 +5678,7 @@ void Aura::HandleSchoolAbsorb(bool apply, bool Real)
                     }
                     break;
                 case SPELLFAMILY_MAGE:
-                    if(m_spellProto->SpellFamilyFlags == 0x80100 || m_spellProto->SpellFamilyFlags == 0x8 || m_spellProto->SpellFamilyFlags == 0x100000000LL)
+                    if(m_spellProto->SpellFamilyFlags == 0x100080108LL)
                     {
                         //frost ward, fire ward, ice barrier
                         //+10% from +spd bonus
