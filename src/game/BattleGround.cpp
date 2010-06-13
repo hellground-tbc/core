@@ -898,6 +898,7 @@ void BattleGround::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
         plr->SetBattleGroundId(0);                          // We're not in BG.
         // reset destination bg team
         plr->SetBGTeam(0);
+        plr->GetMotionMaster()->MovementExpired();
 
         if(Transport)
         {
