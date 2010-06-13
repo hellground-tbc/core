@@ -4835,6 +4835,9 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 case 12847:
                 case 12848:
                 {
+                    if(procSpell && procSpell->Id == 34913) // Don't proc from Molten Armor
+                        return false;
+
                     switch (dummySpell->Id)
                     {
                         case 11119: basepoints0 = damage *0.04f; break;
