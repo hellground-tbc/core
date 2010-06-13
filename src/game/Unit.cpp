@@ -9350,7 +9350,7 @@ void Unit::ApplyDiminishingToDuration(DiminishingGroup group, int32 &duration,Un
         {
             duration = 10000;
             if(tSpell && tSpell->SpellFamilyName == SPELLFAMILY_HUNTER && tSpell->SpellFamilyFlags & 0x8LL)
-                ((Player const*)source)->ApplySpellMod(tSpell->Id, SPELLMOD_DURATION, duration);
+                ((Player*)source)->ApplySpellMod(tSpell->Id, SPELLMOD_DURATION, duration);
         }
     }
 
