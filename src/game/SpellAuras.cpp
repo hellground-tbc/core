@@ -1916,9 +1916,33 @@ void Aura::TriggerSpell()
             {
                 switch(auraId)
                 {
-                    //Frost Trap Aura
-                    case 13810:
-                        return;
+                   //Frost Trap Aura
+                   case 13810:
+                        if(caster->GetTypeId() == TYPEID_PLAYER)
+                        {
+                            float f_chance = 0;
+                            Unit::AuraList const& auraTriggerSpell = caster->GetAurasByType(SPELL_AURA_PROC_TRIGGER_SPELL);
+                            for(Unit::AuraList::const_iterator itr = auraTriggerSpell.begin(); itr != auraTriggerSpell.end(); ++itr)
+                            {
+                                switch((*itr)->GetSpellProto()->Id)
+                                {
+                                    case 19384:
+                                    case 19387:
+                                    case 19388:
+                                        f_chance = (*itr)->GetSpellProto()->procChance;
+                                        break;
+                                }
+                            }
+
+                            if(roll_chance_f(f_chance))
+                            {
+                                target = m_target;
+                                trigger_spell_id = 19185;
+                            }
+                            else
+                                return;
+                        }
+                        break;
 //                    //Rizzle's Frost Trap
 //                    case 39900:
 //                        return;
