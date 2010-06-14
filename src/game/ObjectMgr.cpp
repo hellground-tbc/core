@@ -3341,36 +3341,6 @@ void ObjectMgr::LoadQuests()
             qinfo->SetFlag(QUEST_TRINITY_FLAGS_TIMED);
     }
 
-    // check QUEST_TRINITY_FLAGS_EXPLORATION_OR_EVENT for spell with SPELL_EFFECT_QUEST_COMPLETE
-    for (uint32 i = 0; i < sSpellStore.GetNumRows(); ++i)
-    {
-        SpellEntry const *spellInfo = sSpellStore.LookupEntry(i);
-        if(!spellInfo)
-            continue;
-
-        for(int j = 0; j < 3; ++j)
-        {
-            if(spellInfo->Effect[j] != SPELL_EFFECT_QUEST_COMPLETE)
-                continue;
-
-            uint32 quest_id = spellInfo->EffectMiscValue[j];
-
-            Quest const* quest = GetQuestTemplate(quest_id);
-
-            // some quest referenced in spells not exist (outdated spells)
-            if(!quest)
-                continue;
-
-            if(!quest->HasFlag(QUEST_TRINITY_FLAGS_EXPLORATION_OR_EVENT))
-            {
-                //sLog.outErrorDb("Spell (id: %u) have SPELL_EFFECT_QUEST_COMPLETE for quest %u , but quest not have flag QUEST_TRINITY_FLAGS_EXPLORATION_OR_EVENT. Quest flags must be fixed, quest modified to enable objective.",spellInfo->Id,quest_id);
-
-                // this will prevent quest completing without objective
-                //const_cast<Quest*>(quest)->SetFlag(QUEST_TRINITY_FLAGS_EXPLORATION_OR_EVENT);
-            }
-        }
-    }
-
     sLog.outString();
     sLog.outString( ">> Loaded %u quests definitions", mQuestTemplates.size() );
 }

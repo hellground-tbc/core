@@ -121,9 +121,27 @@ bool ItemUse_item_attuned_crystal_cores(Player *player, Item* _Item, SpellCastTa
 
 bool ItemUse_item_blackwhelp_net(Player *player, Item* _Item, SpellCastTargets const& targets)
 {
-    if( targets.getUnitTarget() && targets.getUnitTarget()->GetTypeId()==TYPEID_UNIT &&
-        targets.getUnitTarget()->GetEntry() == 21387 )
+    Unit *target = targets.getUnitTarget();
+
+    if(!target || target->GetTypeId() != TYPEID_UNIT || target->GetEntry() != 21397)
+        return true;
+    else
+    {
+        ItemPosCountVec dest;
+        uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 31130, 1);
+        if( msg == EQUIP_ERR_OK )
+        {
+            Item* item = player->StoreNewItem(dest,31130,true);
+            if( item )
+                player->SendNewItem(item,1,false,true);
+            else
+                player->SendEquipError(msg,NULL,NULL);
+
+            target->Kill(target, false);
+            ((Creature*)target)->RemoveCorpse();
+        }
         return false;
+    }
 
     player->SendEquipError(EQUIP_ERR_YOU_CAN_NEVER_USE_THAT_ITEM,_Item,NULL);
     return true;
