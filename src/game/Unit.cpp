@@ -9141,23 +9141,9 @@ Unit* Creature::SelectVictim()
     {
         if(!hasUnitState(UNIT_STAT_STUNNED))
             SetInFront(target);
+
         return target;
     }
-
-    // last case when creature don't must go to evade mode:
-    // it in combat but attacker not make any damage and not enter to aggro radius to have record in threat list
-    // for example at owner command to pet attack some far away creature
-    // Note: creature not have targeted movement generator but have attacker in this case
-    //if(m_attackers.size())
-    //    return NULL;
-    /*if( GetMotionMaster()->GetCurrentMovementGeneratorType() != TARGETED_MOTION_TYPE )
-    {
-        for(AttackerSet::const_iterator itr = m_attackers.begin(); itr != m_attackers.end(); ++itr)
-        {
-            if( (*itr)->IsInMap(this) && canAttack(*itr) && (*itr)->isInAccessiblePlaceFor((Creature*)this) )
-                return NULL;
-        }
-    }*/
 
     // search nearby enemy before enter evade mode
     if(HasReactState(REACT_AGGRESSIVE))

@@ -120,6 +120,9 @@ bool CreatureAI::UpdateVictim()
     if(!me->isInCombat())
         return false;
 
+    if(me->getVictim() && me->hasUnitState(UNIT_STAT_CASTING))
+        return me->getVictim();
+
     if(Unit *victim = me->SelectVictim())
         AttackStart(victim);
 
