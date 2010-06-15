@@ -7715,8 +7715,9 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             bones->lootForBody = true;
             uint32 pLevel = bones->loot.gold;
             bones->loot.clear();
-            if(GetBattleGround()->GetTypeID() == BATTLEGROUND_AV)
-                loot->FillLoot(1, LootTemplates_Creature, this);
+            if (BattleGround *bg = GetBattleGround())
+                if (bg->GetTypeID() == BATTLEGROUND_AV)
+                    loot->FillLoot(1, LootTemplates_Creature, this);
             // It may need a better formula
             // Now it works like this: lvl10: ~6copper, lvl70: ~9silver
             bones->loot.gold = (uint32)( GetMap()->urand(50, 150) * 0.016f * pow( ((float)pLevel)/5.76f, 2.5f) * sWorld.getRate(RATE_DROP_MONEY) );
