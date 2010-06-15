@@ -9856,6 +9856,9 @@ void Unit::RemoveFromWorld()
 
 void Unit::CleanupsBeforeDelete()
 {
+    if(IsInWorld())
+        RemoveFromWorld();
+
     if(m_uint32Values)
     {
         //A unit may be in removelist and not in world, but it is still in grid
@@ -9873,9 +9876,6 @@ void Unit::CleanupsBeforeDelete()
         RemoveAllGameObjects();
         RemoveAllDynObjects();
         GetMotionMaster()->Clear(false);                    // remove different non-standard movement generators.
-
-        if(IsInWorld())
-            RemoveFromWorld();
     }
 }
 
