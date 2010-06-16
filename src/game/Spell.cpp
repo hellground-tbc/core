@@ -2607,6 +2607,14 @@ void Spell::update(uint32 difftime)
                     SendChannelUpdate(0);
                     finish();
                 }
+                
+                if(m_spellInfo->SpellFamilyName == SPELLFAMILY_MAGE && m_spellInfo->SpellFamilyFlags & 0x800 )
+                {
+                    float max_range = GetSpellMaxRange(sSpellRangeStore.LookupEntry(m_spellInfo->rangeIndex));
+
+                    if(!m_targets.getUnitTarget() || !m_caster->IsWithinDistInMap(m_targets.getUnitTarget(), max_range +3.0))
+                        cancel();
+                }
 
                 if(difftime >= m_timer)
                     m_timer = 0;
