@@ -49,6 +49,7 @@
 #include "BattleGround.h"
 #include "Util.h"
 #include "TemporarySummon.h"
+#include "PetAI.h"
 
 #define SPELL_CHANNEL_UPDATE_INTERVAL 1000
 
@@ -2191,6 +2192,15 @@ void Spell::cast(bool skipCheck)
             return;
         }
 
+    if (m_caster->GetTypeId() == TYPEID_UNIT && ((Creature *)m_caster)->isPet())
+    {
+        if (((Creature *)m_caster)->IsAIEnabled && ((PetAI *)((Creature *)m_caster)->AI())->targetHasInterruptableAura(m_targets.getUnitTarget()))
+        {
+            finish(false);
+            return;
+        }
+    }
+
     SetExecutedCurrently(true);
     uint8 castResult = 0;
 
@@ -2681,10 +2691,10 @@ void Spell::finish(bool ok)
     if(!m_caster->IsNonMeleeSpellCasted(false, false, true))
         m_caster->clearUnitState(UNIT_STAT_CASTING);
 
-    if(!ok && !IsChanneledSpell(m_spellInfo))
+    if(!ok)
     {
         //restore spell mods
-        if (m_caster->GetTypeId() == TYPEID_PLAYER)
+        if (m_caster->GetTypeId() == TYPEID_PLAYER && !IsChanneledSpell(m_spellInfo))
             ((Player*)m_caster)->RestoreSpellMods(this);
         return;
     }

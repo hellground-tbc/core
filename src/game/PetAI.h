@@ -39,9 +39,17 @@ class TRINITY_DLL_DECL PetAI : public CreatureAI
         void UpdateAI(const uint32);
         static int Permissible(const Creature *);
 
+        void AttackStart(Unit *target)
+        {
+            m_forceTimer = 5000;
+            CreatureAI::AttackStart(target);
+        }
+
         virtual void PrepareSpellForAutocast(uint32 spellId);
         virtual void AddSpellForAutocast(uint32 spellId, Unit* target);
         virtual void AutocastPreparedSpells();
+
+        bool targetHasInterruptableAura(Unit *target) const;
 
     protected:
 
@@ -57,6 +65,7 @@ class TRINITY_DLL_DECL PetAI : public CreatureAI
         TimeTracker i_tracker;
         std::set<uint64> m_AllySet;
         uint32 m_updateAlliesTimer;
+        uint32 m_forceTimer;
 
         typedef std::pair<Unit*, Spell*> TargetSpellPair;
         std::vector<TargetSpellPair> m_targetSpellStore;

@@ -39,7 +39,7 @@ int PetAI::Permissible(const Creature *creature)
     return PERMIT_BASE_NO;
 }
 
-PetAI::PetAI(Creature *c) : CreatureAI(c), i_pet(*c), i_tracker(TIME_INTERVAL_LOOK)
+PetAI::PetAI(Creature *c) : CreatureAI(c), i_pet(*c), i_tracker(TIME_INTERVAL_LOOK), m_forceTimer(0)
 {
     m_AllySet.clear();
     m_owner = i_pet.GetCharmerOrOwner();
@@ -50,13 +50,30 @@ void PetAI::EnterEvadeMode()
 {
 }
 
+bool PetAI::targetHasInterruptableAura(Unit *target) const
+{
+    if (!target)
+        return false;
+
+    if (m_forceTimer)
+        return false;
+
+    Unit::AuraMap const &auramap = target->GetAuras();
+    for (Unit::AuraMap::const_iterator itr = auramap.begin(); itr != auramap.end(); ++itr)
+    {
+        if (itr->second && (itr->second->GetSpellProto()->AuraInterruptFlags & (AURA_INTERRUPT_FLAG_DIRECT_DAMAGE | AURA_INTERRUPT_FLAG_HITBYSPELL | AURA_INTERRUPT_FLAG_DAMAGE)))
+            return true;
+    }
+    return false;
+}
+
 bool PetAI::_needToStop() const
 {
     // This is needed for charmed creatures, as once their target was reset other effects can trigger threat
     if(i_pet.isCharmed() && i_pet.getVictim() == i_pet.GetCharmer())
         return true;
 
-    return !i_pet.canAttack(i_pet.getVictim());
+    return targetHasInterruptableAura(i_pet.getVictim()) || !i_pet.canAttack(i_pet.getVictim());
 }
 
 void PetAI::_stopAttack()
@@ -213,6 +230,14 @@ void PetAI::UpdateAI(const uint32 diff)
     else
         m_updateAlliesTimer -= diff;
 
+    if (m_forceTimer)
+    {
+        if (m_forceTimer < diff)
+            m_forceTimer = 0;
+        else
+            m_forceTimer -= diff;
+    }
+
    // i_pet.getVictim() can't be used for check in case stop fighting, i_pet.getVictim() clear at Unit death etc.
     if( i_pet.getVictim() )
     {
@@ -318,6 +343,14 @@ void ImpAI::UpdateAI(const uint32 diff)
         UpdateAllies();
     else
         m_updateAlliesTimer -= diff;
+
+    if (m_forceTimer)
+    {
+        if (m_forceTimer < diff)
+            m_forceTimer = 0;
+        else
+            m_forceTimer -= diff;
+    }
 
    // i_pet.getVictim() can't be used for check in case stop fighting, i_pet.getVictim() clear at Unit death etc.
     if( Unit *target = i_pet.getVictim() )
