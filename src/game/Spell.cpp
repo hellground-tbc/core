@@ -2673,7 +2673,7 @@ void Spell::finish(bool ok)
     if(!m_caster->IsNonMeleeSpellCasted(false, false, true))
         m_caster->clearUnitState(UNIT_STAT_CASTING);
 
-    if(!ok)
+    if(!ok && !IsChanneledSpell(m_spellInfo))
     {
         //restore spell mods
         if (m_caster->GetTypeId() == TYPEID_PLAYER)
