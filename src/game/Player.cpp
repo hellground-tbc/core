@@ -19929,17 +19929,25 @@ bool Player::isTotalImmunity()
 
 void Player::AddGlobalCooldown(SpellEntry const *spellInfo, Spell const *spell)
 {
-    if(!spellInfo || !spellInfo->StartRecoveryTime)
+    if(!spellInfo || (!spellInfo->StartRecoveryTime && !spell->m_CastItem))
         return;
 
-    uint32 cdTime = spellInfo->StartRecoveryTime;
+    uint32 cdTime = 0;
+    if(!spellInfo->StartRecoveryTime)
+        cdTime = 50;
+    else
+    {
+        cdTime = spellInfo->StartRecoveryTime;
 
-    if( !(spellInfo->Attributes & (SPELL_ATTR_UNK4|SPELL_ATTR_UNK5)) )
-        cdTime *= GetFloatValue(UNIT_MOD_CAST_SPEED);
-    else if (spell->IsRangedSpell() && !spell->IsAutoRepeat())
-        cdTime *= m_modAttackSpeedPct[RANGED_ATTACK];
+        if( !(spellInfo->Attributes & (SPELL_ATTR_UNK4|SPELL_ATTR_UNK5)) )
+            cdTime *= GetFloatValue(UNIT_MOD_CAST_SPEED);
+        else if (spell->IsRangedSpell() && !spell->IsAutoRepeat())
+            cdTime *= m_modAttackSpeedPct[RANGED_ATTACK];
 
-    m_globalCooldowns[spellInfo->StartRecoveryCategory] = ((cdTime<1000 || cdTime>1500) ? 1000 : cdTime);
+        cdTime = (cdTime < 1000 || cdTime > 1500) ? 1000 : cdTime;
+    }
+
+    m_globalCooldowns[spellInfo->StartRecoveryCategory] = cdTime;
 }
 
 bool Player::HasGlobalCooldown(SpellEntry const *spellInfo) const
