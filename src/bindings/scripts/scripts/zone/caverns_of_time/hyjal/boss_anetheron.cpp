@@ -157,8 +157,13 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
         if(CheckTimer < diff)
         {
             DoZoneInCombat();
+            if(!m_creature->hasUnitState(UNIT_STAT_CASTING))
+            {
+                if(m_creature->GetUInt64Value(UNIT_FIELD_TARGET) != m_creature->getVictim()->GetGUID())
+                    m_creature->SetUInt64Value(UNIT_FIELD_TARGET, m_creature->getVictim()->GetGUID());
+            }
             m_creature->SetSpeed(MOVE_RUN, 3.0);
-            CheckTimer = 3000;
+            CheckTimer = 2000;
         }
         else
             CheckTimer -= diff;
@@ -170,6 +175,7 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
                 //for proper visual
                 m_creature->SetUInt64Value(UNIT_FIELD_TARGET, target->GetGUID());
                 DoCast(target,SPELL_CARRION_SWARM, true);
+                CheckTimer = 1000;
             }
 
             SwarmTimer = 12000+rand()%6000;
@@ -212,11 +218,12 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
 
         if(InfernoTimer < diff)
         {
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0,100,true))
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0,200,true))
             {
                 m_creature->SetUInt64Value(UNIT_FIELD_TARGET, target->GetGUID());    //do target inferno victim when casting
                 m_creature->CastStop();
                 DoCast(target, SPELL_INFERNO);
+                CheckTimer = 3600;
             }
 
             InfernoTimer = 60000;
