@@ -83,10 +83,6 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
         m_creature->GetPosition(wLoc);
-
-        SpellEntry *tempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_ATTRACTION);
-        if(tempSpell)
-            tempSpell->EffectTriggerSpell[1] = 40871;
     }
 
     ScriptedInstance* pInstance;
@@ -167,24 +163,26 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         float Y = TeleportPoint[random].y;
         float Z = TeleportPoint[random].z;
 
-        for(int i = 0; i < 3; i++)
+        for(int i = 0; i < 3;)
         {
+            if(m_creature->GetMap()->GetPlayersCountExceptGMs() < 7) // Just in case, we don't love freezed world ;] 3 immune tanks +3 target's for attraction + 1 for offset.
+                break;
+
             if(Unit* pUnit = SelectUnit(SELECT_TARGET_RANDOM, 0, 300, true, m_creature->getVictim()))
             {
+                if(pUnit->HasAura(SPELL_SABER_LASH_IMM,0))
+                    continue;
+                    
                 if(FatalTargetGUID[0] != pUnit->GetGUID() && FatalTargetGUID[1] != pUnit->GetGUID() && FatalTargetGUID[2] != pUnit->GetGUID())
                     FatalTargetGUID[i] = pUnit->GetGUID();
                 else
-                {
-                    if(m_creature->GetMap()->GetPlayersCountExceptGMs() > 3)
-                    {
-                        --i;
-                        continue;
-                    }
-                }
+                    continue;
+
 
                 pUnit->CastSpell(pUnit, SPELL_TELEPORT_VISUAL, true);
                 DoCast(pUnit,SPELL_ATTRACTION,true);
                 DoTeleportPlayer(pUnit, X, Y, Z, pUnit->GetOrientation());
+                i++;
             }
         }
     }

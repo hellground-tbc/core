@@ -2575,6 +2575,13 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->procChance = 101;
             spellInfo->procFlags = 0;
             break;
+        case 41001:
+            spellInfo->EffectTriggerSpell[1] = 40871;
+            break;
+        case 40870:
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ALLY;
+            spellInfo->EffectImplicitTargetB[0] = 0;
+            break;
         default:
             break;
         }
