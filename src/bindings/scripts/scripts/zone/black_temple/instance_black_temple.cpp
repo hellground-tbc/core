@@ -155,25 +155,6 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         }
     }
 
-    void OnPlayerDeath(Player *pVictim)
-    {
-    // !! DO NOT RESPAWN KILLED BOSS WITH SAVED ID (state == DONE) CAUSE THIS CHECK WONT ALLOW TO AURAS WORK PROPERLY !!
-        if(GetData(DATA_TERONGOREFIENDEVENT) != NOT_STARTED && GetData(DATA_TERONGOREFIENDEVENT) != DONE)
-        {
-            if(pVictim->HasAura(40251, 0))
-            {
-                pVictim->SetHealth(pVictim->GetMaxHealth());
-                pVictim->CastSpell(pVictim, 40266, true);   //summon Vengeful Spirit and 4 Shadowy Constructs
-                pVictim->CastSpell(pVictim, 40282, true);   //Possess Spirit Immune -> IMPORTANT to properly remove 40251
-
-                if(Unit* Ghost = FindCreature(23109, 10.0, pVictim))    //we look for Vengeful Spirit to posess
-                    pVictim->CastSpell(Ghost, 40268, false);
-
-                pVictim->RemoveAurasDueToSpell(40251);
-            }
-        }
-    }
-
     void OnObjectCreate(GameObject* go)
     {
         switch(go->GetEntry())

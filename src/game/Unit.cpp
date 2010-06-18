@@ -3889,14 +3889,6 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
 {
     Aura* Aur = i->second;
 
-    // ugly HACK for removing 40251 (Shadow of Death) :P
-    if(Aur && Aur->GetId() == 40251 && !this->HasAura(40282, 0))
-    {
-        Kill(this, false);
-        Aur->SetAuraDuration(5000);     //prevent crash from _UpdateSpells
-        return;
-    }
-
     // HACK: teleport players that leave Incite Chaos 2yds up to prevent falling into textures
     if(Aur && Aur->GetId() == 33684)
     {
@@ -4035,14 +4027,6 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
                     else
                         RemoveAurasDueToSpell(*itr);
         }
-    }
-
-    // if controlling Vengeance Spirit expires, kill player
-    if(Aur && Aur->GetId() == 40268)
-    {
-        if(this->HasAura(40282, 0))
-            this->RemoveAurasDueToSpell(40282);
-        Kill(this, false);
     }
 
     if(statue)
@@ -11185,23 +11169,6 @@ void Unit::SetToNotify()
 
 void Unit::Kill(Unit *pVictim, bool durabilityLoss)
 {
-    // OnPlayerDeath function called before player auras are removed, to allow check for auras in scripts
-    if(pVictim->GetTypeId() == TYPEID_PLAYER)
-    {
-      if(Map *pMap = pVictim->GetMap())
-      {
-        if(pMap->IsRaid() || pMap->IsDungeon())
-        {
-            if(((InstanceMap*)pMap)->GetInstanceData())
-                ((InstanceMap*)pMap)->GetInstanceData()->OnPlayerDeath((Player*)pVictim);
-
-            // if player has aura Shadow of Death do not really dies, return here
-            if(pVictim->HasAura(40251, 0) || pVictim->HasAura(40282, 0))
-                return;
-        }
-      }
-    }
-
     pVictim->SetHealth(0);
 
     // find player: owner of controlled `this` or `this` itself maybe
@@ -11258,7 +11225,31 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
         }
     }
 
-    if(!SpiritOfRedemption)
+    bool VengeanceSpirit = false;
+    if(pVictim->GetTypeId()==TYPEID_PLAYER)
+    {
+        AuraList const& vDummyAuras = pVictim->GetAurasByType(SPELL_AURA_DUMMY);
+        for(AuraList::const_iterator itr = vDummyAuras.begin(); itr != vDummyAuras.end(); ++itr)
+        {
+            if((*itr)->GetSpellProto()->Id == 40251)
+            {
+                // save value before aura remove
+                uint32 ressSpellId = pVictim->GetUInt32Value(PLAYER_SELF_RES_SPELL);
+                if(!ressSpellId)
+                    ressSpellId = ((Player*)pVictim)->GetResurrectionSpellId();
+                //Remove all expected to remove at death auras (most important negative case like DoT or periodic triggers)
+                pVictim->RemoveAllAurasOnDeath();
+                // restore for use at real death
+                pVictim->SetUInt32Value(PLAYER_SELF_RES_SPELL,ressSpellId);
+
+                pVictim->CastSpell(pVictim, 40282, true);   //Possess Spirit Immune
+                VengeanceSpirit = true;
+                break;
+            }
+        }
+    }
+
+    if(!SpiritOfRedemption && !VengeanceSpirit)
     {
         DEBUG_LOG("SET JUST_DIED");
         pVictim->setDeathState(JUST_DIED);
@@ -11347,6 +11338,15 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
     {
         if(OutdoorPvP * pvp = ((Player*)pVictim)->GetOutdoorPvP())
             pvp->HandlePlayerActivityChanged((Player*)pVictim);
+
+        if(Map *pMap = pVictim->GetMap())       // call OnPlayerDeath function
+        {
+            if(pMap->IsRaid() || pMap->IsDungeon())
+            {
+                if(((InstanceMap*)pMap)->GetInstanceData())
+                    ((InstanceMap*)pMap)->GetInstanceData()->OnPlayerDeath((Player*)pVictim);
+            }
+        }
 
         ((Player*)this)->RemoveCharmAuras();
     }

@@ -2241,6 +2241,24 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             m_target->SetReducedThreatPercent(0, 0);
             return;
         }
+
+        // Vengeful Spirit
+        if(GetId()==40251)
+        {
+            m_target->SetHealth(m_target->GetMaxHealth());
+
+            m_target->CastSpell(m_target, 40266, true);   //summon Vengeful Spirit and 4 Shadowy Constructs
+            m_target->CastSpell(m_target, 40282, true);   //Possess Spirit Immune
+
+            Creature* Ghost = NULL;
+            Trinity::AllCreaturesOfEntryInRange check(m_target, 23109, 3.0);
+            Trinity::CreatureSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(Ghost, check);
+            m_target->VisitNearbyObject(3.0, searcher);
+
+            if(Ghost)
+                m_target->CastSpell(Ghost, 40268, false);
+        }
+
     }
 
     // AT APPLY & REMOVE
@@ -3197,7 +3215,12 @@ void Aura::HandleModPossess(bool apply, bool Real)
         m_target->SetCharmedOrPossessedBy(caster, true);
     }
     else
+    {
+        if(this->GetId() == 40268)
+            m_target->setDeathState(JUST_DIED);
+
         m_target->RemoveCharmedOrPossessedBy(caster);
+    }
 }
 
 void Aura::HandleModPossessPet(bool apply, bool Real)

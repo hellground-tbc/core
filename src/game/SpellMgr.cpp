@@ -2582,6 +2582,9 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ALLY;
             spellInfo->EffectImplicitTargetB[0] = 0;
             break;
+        case 40251:
+            spellInfo->EffectApplyAuraName[1] = SPELL_AURA_DUMMY;
+            break;
         default:
             break;
         }
