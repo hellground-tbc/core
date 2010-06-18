@@ -35,11 +35,11 @@ EndScriptData */
 #define SAY_DEATH               -1564036
 
 //Spells diff in p1 and p2
-#define SPELL_ARCING_SMASH       (Phase1 ? 40599 : 40457)
-#define SPELL_FELBREATH          (Phase1 ? 40508 : 40595)
-#define SPELL_EJECT              (Phase1 ? 40486 : 40597)
+#define SPELL_ARCING_SMASH          (Phase1 ? 40599 : 40457)
+#define SPELL_FELBREATH             (Phase1 ? 40508 : 40595)
+#define SPELL_EJECT                 (Phase1 ? 40486 : 40597)
 
-#define SPELL_ACIDIC_WOUND       40484 //Trigger Aura
+#define SPELL_ACIDIC_WOUND          40484 //Trigger Aura
 
 // Phase1
 #define SPELL_BEWILDERING_STRIKE    40491
@@ -135,8 +135,8 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
 
         DoCast(m_creature,SPELL_ACIDIC_WOUND,true);
 
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
-        m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, false);
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
+        m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
     }
 
     void Aggro(Unit *who)
@@ -217,6 +217,8 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
         {
             DoZoneInCombat();
             CheckTimer = 3000;
+            if(!Phase1)
+                m_creature->SetSpeed(MOVE_RUN, 3.0);
         }
         else 
             CheckTimer -= diff;
@@ -323,8 +325,6 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
 
                     m_creature->AddThreat(target, 50000000.0f);
                     target->CastSpell(m_creature, SPELL_TAUNT_GURTOGG, true);
-                    m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
-                    m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
 
                     DoCast(m_creature, SPELL_INSIGNIFIGANCE, true);
                     DoCast(target,SPELL_FEL_RAGE_1, true);
@@ -341,7 +341,7 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
                         case 1: DoScriptText(SAY_SPECIAL2, m_creature); break;
                     }
 
-                     FelGeyserTimer = 1000;
+                    FelGeyserTimer = 1000;
                     PhaseChangeTimer = 30000;
                 }
             }
@@ -357,8 +357,6 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
                 FelBreathTimer += 2000;
                 EjectTimer += 2000;
                 PhaseChangeTimer = 65000;
-                m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
-                m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, false);
             }
         }
         else
