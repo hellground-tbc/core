@@ -176,11 +176,14 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
             {
                 if (Player* i_pl = i->getSource())
                 {
-                    if(i_pl && i_pl->isAlive())
+                    if(i_pl && i_pl->isAlive() && !i_pl->isGameMaster())
                         targets.push_back(i_pl);
                 }
             }
         }
+
+        if(targets.empty())
+            return; 
 
         targets.sort(ObjectDistanceOrderReversed(m_creature));
         targets.resize(5);
@@ -305,9 +308,9 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
             else
                 FelGeyserTimer -= diff;
 
-            if(Unit *target = m_creature->getVictim())
-                if(target->IsImmunedToDamage(SPELL_SCHOOL_MASK_ALL,true))
-                    m_creature->getThreatManager().modifyThreatPercent(target,-100);
+          //  if(Unit *target = m_creature->getVictim())
+          //      if(target->IsImmunedToDamage(SPELL_SCHOOL_MASK_ALL,true))
+          //          m_creature->getThreatManager().modifyThreatPercent(target,-100);
         }
 
         if(PhaseChangeTimer < diff)
