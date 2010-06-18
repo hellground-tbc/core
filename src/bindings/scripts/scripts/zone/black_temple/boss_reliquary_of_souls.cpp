@@ -364,7 +364,12 @@ struct TargetDistanceOrder : public std::binary_function<const Unit, const Unit,
 
 struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
 {
-    boss_essence_of_sufferingAI(Creature *c) : ScriptedAI(c) {}
+    boss_essence_of_sufferingAI(Creature *c) : ScriptedAI(c)
+    {
+        SpellEntry *tempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(ESSENCE_OF_SUFFERING_PASSIVE);
+        if(tempSpell)
+            tempSpell->EffectTriggerSpell[1] = 0;
+    }
 
     uint64 StatAuraGUID;
 
@@ -427,17 +432,19 @@ struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
 
     void CastFixate()
     {
-        std::list<HostilReference*>& m_threatlist = m_creature->getThreatManager().getThreatList();
-        if(m_threatlist.empty())
-            return; // No point continuing if empty threatlist.
-
-        std::list<Unit*> targets;
-        std::list<HostilReference*>::iterator itr = m_threatlist.begin();
-        for( ; itr != m_threatlist.end(); ++itr)
+        std::list<Unit *> targets;
+        Map *map = m_creature->GetMap();
+        if(map->IsDungeon())
         {
-            Unit* pUnit = Unit::GetUnit((*m_creature), (*itr)->getUnitGuid());
-            if(pUnit && pUnit->isAlive() && (pUnit->GetTypeId() == TYPEID_PLAYER)) // Only alive players
-                targets.push_back(pUnit);
+            InstanceMap::PlayerList const &PlayerList = ((InstanceMap*)map)->GetPlayers();
+            for (InstanceMap::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+            {
+                if (Player* i_pl = i->getSource())
+                {
+                    if(i_pl && i_pl->isAlive() && !i_pl->isGameMaster())
+                        targets.push_back(i_pl);
+                }
+            }
         }
 
         if(targets.empty())
@@ -449,9 +456,10 @@ struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
         Unit* target = targets.front();
         if(target)
         {
-            target->CastSpell(m_creature, SPELL_FIXATE_TAUNT, true);
-
             DoResetThreat();
+
+            target->CastSpell(m_creature, SPELL_FIXATE_TAUNT, true);
+            m_creature->AddAura(SPELL_FIXATE_TARGET, target);
             m_creature->AddThreat(target, 1000000.0f);
         }
     }
@@ -523,9 +531,6 @@ struct TRINITY_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
 
     void DamageTaken(Unit *done_by, uint32 &damage)
     {
-        if(done_by == m_creature)
-            return;
-
         if(damage >= m_creature->GetHealth())
         {
             damage = 0;
