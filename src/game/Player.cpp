@@ -3781,13 +3781,21 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
 {
     uint32 guid = GUID_LOPART(playerguid);
 
-    // PCachePlayerInfo jest budowane tylko RAZ podczas rozruchu. Nie otrzymamy wskaŸnika dla nowo utworzonych postaci :]
-    PCachePlayerInfo pInfo = objmgr.GetPlayerInfoFromCache(guid);
-    if(pInfo && pInfo->unLevel >= 40)
+    if(QueryResult *result = CharacterDatabase.PQuery("SELECT data FROM characters WHERE guid='%u'",guid))
     {
-        CharacterDatabase.PExecute("UPDATE characters SET account = '1' WHERE guid ='%u'", guid);
-        if(updateRealmChars) sWorld.UpdateRealmCharCount(accountId);
-        return;
+        Field *fields = result->Fetch();
+
+        Tokens data = StrSplit(fields[0].GetCppString(), " ");
+        uint32 plLevel = Player::GetUInt32ValueFromArray(data,UNIT_FIELD_LEVEL); 
+
+        delete result;
+
+        if(plLevel >= 40)
+        {
+            CharacterDatabase.PExecute("UPDATE characters SET account = '1' WHERE guid ='%u'", guid);
+            if(updateRealmChars) sWorld.UpdateRealmCharCount(accountId);
+            return;
+        }
     }
     
     // convert corpse to bones if exist (to prevent exiting Corpse in World without DB entry)
