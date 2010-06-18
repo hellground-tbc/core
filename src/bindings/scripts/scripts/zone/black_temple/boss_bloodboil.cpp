@@ -305,8 +305,9 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
             else
                 FelGeyserTimer -= diff;
 
-            if(m_creature->getVictim()->IsImmunedToDamage(SPELL_SCHOOL_MASK_ALL,true))
-                m_creature->getThreatManager().modifyThreatPercent(m_creature->getVictim(),-100);
+            if(Unit *target = m_creature->getVictim())
+                if(t->IsImmunedToDamage(SPELL_SCHOOL_MASK_ALL,true))
+                    m_creature->getThreatManager().modifyThreatPercent(m_creature->getVictim(),-100);
         }
 
         if(PhaseChangeTimer < diff)
