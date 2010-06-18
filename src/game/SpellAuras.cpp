@@ -6239,6 +6239,15 @@ void Aura::PeriodicTick()
         {
             // ignore non positive values (can be result apply spellmods to aura damage
             uint32 pdamage = GetModifierValue() > 0 ? GetModifierValue() : 0;
+    
+            // Alchemist Stone
+            if(GetSpellProto()->SpellFamilyName == SPELLFAMILY_POTION)
+                if(Aura *aura = m_target->GetAura(17619, 0))
+                {
+                    int32 bp = pdamage * 4 / 10;
+                    m_target->CastCustomSpell(m_target,21400,&bp,NULL,NULL,true,NULL,aura);
+                }
+
 
             sLog.outDetail("PeriodicTick: %u (TypeId: %u) energize %u (TypeId: %u) for %u dmg inflicted by %u",
                 GUID_LOPART(GetCasterGUID()), GuidHigh2TypeId(GUID_HIPART(GetCasterGUID())), m_target->GetGUIDLow(), m_target->GetTypeId(), pdamage, GetId());
