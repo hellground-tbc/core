@@ -4634,7 +4634,7 @@ uint32 Player::GetShieldBlockValue() const
 {
     BaseModGroup modGroup = SHIELD_BLOCK_VALUE;
 
-    float value = (m_auraBaseMod[SHIELD_BLOCK_VALUE][FLAT_MOD] + GetStat(STAT_STRENGTH) * 0.5f - 10)*m_auraBaseMod[SHIELD_BLOCK_VALUE][PCT_MOD];
+    float value = (m_auraBaseMod[SHIELD_BLOCK_VALUE][FLAT_MOD] + GetStat(STAT_STRENGTH) * 0.05f - 1)*m_auraBaseMod[SHIELD_BLOCK_VALUE][PCT_MOD];
 
     value = (value < 0) ? 0 : value;
 
