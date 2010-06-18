@@ -4831,19 +4831,25 @@ void Spell::EffectScriptEffect(uint32 effIndex)
 
     switch(m_spellInfo->Id)
     {
+        // Gurtogg Bloodboil: Eject
+        case 40486:
+        case 40597:
         // Void Reaver: Knock Back
         case 25778:
-
+        {
             if(!m_caster->CanHaveThreatList())
                 return;
 
             m_caster->getThreatManager().modifyThreatPercent(unitTarget, -25);
-        break;
+            break;
+        }
 
         // Incite Chaos
         case 33676:
+        {
             m_caster->CastSpell(unitTarget, 33684, true);
-        break;
+            break;
+        }
 
         // PX-238 Winter Wondervolt TRAP
         case 26275:
