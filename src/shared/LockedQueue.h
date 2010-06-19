@@ -39,15 +39,20 @@ namespace ACE_Based
         StorageType _queue;
 
         //! Cancellation flag
-        bool _canceled;
+        volatile bool _canceled;
 
         public:
 
             //! Create a LockedQueue
-            LockedQueue() : _canceled(false) {}
+            LockedQueue() :
+              _canceled(false)
+            {
+            }
 
             //! Destroy a LockedQueue
-            virtual ~LockedQueue() { }
+            virtual ~LockedQueue()
+            {
+            }
 
             /**
              * @see Queue::add(const T& item)
@@ -55,12 +60,13 @@ namespace ACE_Based
             //! Adds an item to the queue.
              void add(const T& item)
              {
-                 ACE_Guard<LockType> g(this->_lock);
+                 lock();
  
-                //ASSERT(!this->_canceled);
-                // throw Cancellation_Exception();
- 
-                _queue.push_back(item);
+                 //ASSERT(!this->_canceled);
+                 // throw Cancellation_Exception();
+                 _queue.push_back(item);
+             
+                 unlock();
              }
  
             //! Gets the next result in the queue, if any.
@@ -78,23 +84,44 @@ namespace ACE_Based
                 _queue.pop_front();
  
                 return true;
-             }
- 
+            }
+            
+            //! Peeks at the top of the queue. Remember to unlock after use.
+            T& peek()
+            {
+                lock();
+                T& result = _queue.front();
+                return result;
+            }
+
             //! Cancels the queue.
-             void cancel()
-             {
-                 ACE_Guard<LockType> g(this->_lock);
+            void cancel()
+            {
+                lock();
  
                 _canceled = true;
-             }
+                unlock();
+            }
  
             //! Checks if the queue is cancelled.
             bool cancelled()
-             {
-                 ACE_Guard<LockType> g(this->_lock);
+            {
+                ACE_Guard<LockType> g(this->_lock);
 
                 return _canceled;
-             }
+            }
+
+            //! Locks the queue for access.
+            void lock()
+            {
+                this->_lock.acquire();
+            }
+
+            //! Unlocks the queue.
+            void unlock()
+            {
+                this->_lock.release();
+            }
      };
 
 

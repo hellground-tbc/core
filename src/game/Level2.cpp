@@ -2774,14 +2774,14 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
         PSendSysMessage("|cff00ff00DEBUG: wp on, PathID: |cff00ffff%u|r", pathid);
 
         // Delete all visuals for this NPC
-        result = WorldDatabase.PQuery( "SELECT wpguid FROM waypoint_data WHERE id = '%u' and wpguid <> 0", pathid);
+         QueryResult_AutoPtr result2 = WorldDatabase.PQuery( "SELECT wpguid FROM waypoint_data WHERE id = '%u' and wpguid <> 0", pathid);
 
-        if(result)
+        if(result2)
         {
             bool hasError = false;
             do
             {
-                Field *fields = result->Fetch();
+                Field *fields = result2->Fetch();
                 uint32 wpguid = fields[0].GetUInt32();
                 Creature* pCreature = m_session->GetPlayer()->GetMap()->GetCreature(MAKE_NEW_GUID(wpguid,VISUAL_WAYPOINT,HIGHGUID_UNIT));
 
@@ -2798,7 +2798,7 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
                     pCreature->AddObjectToRemoveList();
                 }
 
-            }while( result->NextRow() );
+            }while( result2->NextRow() );
 
             if( hasError )
             {

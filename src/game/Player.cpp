@@ -15532,7 +15532,7 @@ InstancePlayerBind* Player::GetBoundInstance(uint32 mapid, uint8 difficulty)
     else
         return NULL;
 }
- 	
+     
 InstanceSave * Player::GetInstanceSave(uint32 mapid)
 {
     InstancePlayerBind *pBind = GetBoundInstance(mapid, GetDifficulty());

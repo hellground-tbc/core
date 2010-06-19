@@ -681,7 +681,7 @@ struct TRINITY_DLL_DECL mob_tempest_smithAI : public ScriptedAI
     uint32 Golem_Repair_Timer;
     uint32 Power_Up_Timer;
     uint32 Shell_Shock_Timer;
-	
+    
     void Reset()
     {
         Fragmentation_Bomb_Timer= 7000;
@@ -778,7 +778,7 @@ struct TRINITY_DLL_DECL mob_novice_astromancerAI : public ScriptedAI
     uint32 Fire_Shield_Timer;
     uint32 Fireball_Timer;
     uint32 Rain_of_Fire_Timer;
-	
+    
     void Reset()
     {
         Fire_Nova_Timer= 7000+rand()%2000;

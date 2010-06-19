@@ -217,7 +217,7 @@ int Master::Run()
     _HookSignals();
 
     ///- Launch WorldRunnable thread
-    ACE_Based::Thread t(*new WorldRunnable);
+    ACE_Based::Thread t(new WorldRunnable);
     t.setPriority(ACE_Based::Highest);
 
     // set server online
@@ -230,7 +230,7 @@ int Master::Run()
 #endif
     {
         ///- Launch CliRunnable thread
-        ACE_Based::Thread td1(*new CliRunnable);
+        ACE_Based::Thread td1(new CliRunnable);
     }
 
     ///- Handle affinity for multiple processors and process priority on Windows
@@ -292,7 +292,7 @@ int Master::Run()
     {
         FreezeDetectorRunnable *fdr = new FreezeDetectorRunnable();
         fdr->SetDelayTime(freeze_delay*1000);
-        ACE_Based::Thread t(*fdr);
+        ACE_Based::Thread t(fdr);
         t.setPriority(ACE_Based::Highest);
     }
 

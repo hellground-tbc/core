@@ -128,18 +128,23 @@ class SqlAsyncTask : public ACE_Method_Request
         SqlAsyncTask(Database * db, SqlOperation * op) : m_db(db), m_op(op) {}
         ~SqlAsyncTask() { if(!m_op) return; delete m_op; }
 
-    int call()
-    {
-        if (this == NULL || !m_db || !m_op)
-            return -1;
-
-        m_op->Execute(m_db);
-        return 0;
-    }
-
+        int call()
+        {
+            if(m_db == NULL || m_op == NULL)
+                return -1;
+        
+            try
+            {
+                m_op->Execute(m_db);
+            }
+            catch(...)
+            {
+                return -1;
+            }
+            return 0;
+        }
     private:
         Database * m_db;
         SqlOperation * m_op;
 };
-
 #endif                                                      //__SQLOPERATIONS_H

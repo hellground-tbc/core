@@ -11,13 +11,10 @@ SET(trinitydatabase_STAT_SRCS
    DatabaseMysql.h
    Field.cpp
    Field.h
-   MySQLDelayThread.h
-   PGSQLDelayThread.h
    QueryResult.h
-   QueryResultMysql.cpp
-   QueryResultMysql.h
    SQLStorage.cpp
    SQLStorage.h
+   SQLStorageImpl.h
    SqlDelayThread.cpp
    SqlDelayThread.h
    SqlOperations.cpp

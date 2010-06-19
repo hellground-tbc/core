@@ -117,19 +117,19 @@ void MapManager::LoadTransports()
     sLog.outString( ">> Loaded %u transports", count );
 
     // check transport data DB integrity
-    QueryResult_AutoPtr result2= WorldDatabase.Query("SELECT gameobject.guid,gameobject.id,transports.name FROM gameobject,transports WHERE gameobject.id = transports.entry");
+    result = WorldDatabase.Query("SELECT gameobject.guid,gameobject.id,transports.name FROM gameobject,transports WHERE gameobject.id = transports.entry");
     if(result)                                              // wrong data found
     {
         do
         {
-            Field *fields = result2->Fetch();
+            Field *fields = result->Fetch();
 
             uint32 guid  = fields[0].GetUInt32();
             uint32 entry = fields[1].GetUInt32();
             std::string name = fields[2].GetCppString();
             sLog.outErrorDb("Transport %u '%s' have record (GUID: %u) in `gameobject`. Transports DON'T must have any records in `gameobject` or its behavior will be unpredictable/bugged.",entry,name.c_str(),guid);
         }
-        while(result2->NextRow());
+        while(result->NextRow());
     }
 }
 
