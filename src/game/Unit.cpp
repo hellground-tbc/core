@@ -5339,7 +5339,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                         if(GetTypeId() == TYPEID_PLAYER)
                             sealAura->SendAuraDurationForCaster((Player*)this);
 
-                        int32 bp0 = 24;
+                        int32 bp0 = 120;
                         CastCustomSpell(pVictim, 42463, &bp0, 0,0, true);
                         return true;
                     }
@@ -7420,6 +7420,10 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             {
                 DotFactor = 0.85f;
                 CastingTime = 3500;
+            }
+            else if(spellProto->Id == 42463)
+            {
+                CastingTime = 160;
             }
             // Holy shield - 5% of Holy Damage
             else if ((spellProto->SpellFamilyFlags & 0x4000000000LL) && spellProto->SpellIconID == 453)
