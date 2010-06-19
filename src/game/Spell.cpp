@@ -2343,6 +2343,9 @@ void Spell::handle_immediate()
             m_caster->AddInterruptMask(m_spellInfo->ChannelInterruptFlags);
             SendChannelStart(duration);
         }
+
+        if(m_caster->GetTypeId() == TYPEID_PLAYER)
+            ((Player*)m_caster)->RemoveSpellMods(this);
     }
 
     // process immediate effects (items, ground, etc.) also initialize some variables
@@ -2696,19 +2699,14 @@ void Spell::finish(bool ok)
     if(!ok)
     {
         //restore spell mods
-        if (m_caster->GetTypeId() == TYPEID_PLAYER)
-        {
-            if(IsChanneledSpell(m_spellInfo))
-                ((Player*)m_caster)->RemoveSpellMods(this);
-            else
-                ((Player*)m_caster)->RestoreSpellMods(this);
-        }
+        if (m_caster->GetTypeId() == TYPEID_PLAYER && !IsChanneledSpell(m_spellInfo))
+            ((Player*)m_caster)->RestoreSpellMods(this);
         return;
     }
     // other code related only to successfully finished spells
 
     //remove spell mods
-    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+    if (m_caster->GetTypeId() == TYPEID_PLAYER && !IsChanneledSpell(m_spellInfo))
         ((Player*)m_caster)->RemoveSpellMods(this);
 
     // Okay to remove extra attacks
