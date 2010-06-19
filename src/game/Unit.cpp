@@ -2828,7 +2828,7 @@ uint32 Unit::GetWeaponSkillValue (WeaponAttackType attType, Unit const* target) 
             return GetMaxSkillValueForLevel();              // always maximized SKILL_FERAL_COMBAT in fact
 
         // weapon skill or (unarmed for base attack)
-        uint32  skill = item ? item->GetSkill() : SKILL_UNARMED;
+        uint32  skill = item && item->GetSkill() != SKILL_FIST_WEAPONS ? item->GetSkill() : SKILL_UNARMED;
 
         // in PvP use full skill instead current skill value
         value = (target && target->isCharmedOwnedByPlayerOrPlayer())

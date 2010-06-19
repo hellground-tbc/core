@@ -4928,6 +4928,9 @@ bool Player::UpdateSkill(uint32 skill_id, uint32 step)
     if(!skill_id)
         return false;
 
+    if (skill_id == SKILL_FIST_WEAPONS)
+        skill_id = SKILL_UNARMED;
+
     uint16 i=0;
     for (; i < PLAYER_MAX_SKILLS; i++)
         if ((GetUInt32Value(PLAYER_SKILL_INDEX(i)) & 0x0000FFFF) == skill_id)
@@ -19359,7 +19362,7 @@ uint32 Player::GetBaseWeaponSkillValue (WeaponAttackType attType) const
         return 0;
 
     // weapon skill or (unarmed for base attack)
-    uint32  skill = item ? item->GetSkill() : SKILL_UNARMED;
+    uint32  skill = (item && item->GetSkill() != SKILL_FIST_WEAPONS) ? item->GetSkill() : uint32(SKILL_UNARMED);
     return GetBaseSkillValue(skill);
 }
 
