@@ -129,7 +129,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/MP"
-				AdditionalIncludeDirectories="..\..\..\..\dep\include\;..\..\..\shared\;..\..\..\framework\;..\..\..\game\;..\include\;..\..\..\..\dep\ACE_wrappers"
+				AdditionalIncludeDirectories="..\..\..\..\dep\include\;..\..\..\shared\;..\..\..\shared\Database;..\..\..\framework\;..\..\..\game\;..\include\;..\scripts\npc\;..\..\..\..\dep\ACE_wrappers"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SCRIPT"
 				MinimalRebuild="false"
 				RuntimeLibrary="2"
