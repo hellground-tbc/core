@@ -5313,6 +5313,36 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                         return false;
 
                     triggered_spell_id = 31803;
+
+                     // Only Autoattack can stack debuff and deal bonus damage
+                    if (procFlag & PROC_FLAG_SUCCESSFUL_MELEE_SPELL_HIT)
+                        return false;
+
+                    // On target with 5 stacks of Holy Vengeance direct damage is done
+                    Aura* sealAura = NULL;
+                    Unit::AuraList const& auras = pVictim->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
+                    for(Unit::AuraList::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
+                    {
+                        if((*itr)->GetId() == 31803 && (*itr)->GetCasterGUID() == GetGUID())
+                        {
+                            if((*itr)->GetStackAmount() >= 5)
+                                sealAura = *itr;
+
+                            break;
+                        }
+                    }
+
+                    if(sealAura)
+                    {
+                        sealAura->SetAuraDuration(sealAura->GetAuraMaxDuration());
+
+                        if(GetTypeId() == TYPEID_PLAYER)
+                            sealAura->SendAuraDurationForCaster((Player*)this);
+
+                        int32 bp0 = 24;
+                        CastCustomSpell(pVictim, 42463, &bp0, 0,0, true);
+                        return true;
+                    }
                     break;
                 }
                 // Spiritual Att.
