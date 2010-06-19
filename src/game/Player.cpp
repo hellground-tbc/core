@@ -19894,7 +19894,7 @@ void Player::AddGlobalCooldown(SpellEntry const *spellInfo, Spell const *spell)
 
     uint32 cdTime = 0;
     if(!spellInfo->StartRecoveryTime)
-        cdTime = 50;
+        cdTime = 300;
     else
     {
         cdTime = spellInfo->StartRecoveryTime;
