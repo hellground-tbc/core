@@ -21,6 +21,11 @@
 #if !defined(QUERYRESULT_H)
 #define QUERYRESULT_H
 
+#include <ace/Refcounted_Auto_Ptr.h>
+#include <ace/Null_Mutex.h>
+
+#include "Field.h"
+
 class TRINITY_DLL_SPEC QueryResult
 {
     public:
@@ -44,6 +49,7 @@ class TRINITY_DLL_SPEC QueryResult
         uint64 mRowCount;
 };
 
+typedef ACE_Refcounted_Auto_Ptr<QueryResult, ACE_Null_Mutex> QueryResult_AutoPtr;
 typedef std::vector<std::string> QueryFieldNames;
 
 class TRINITY_DLL_SPEC QueryNamedResult

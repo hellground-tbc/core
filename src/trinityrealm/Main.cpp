@@ -292,7 +292,7 @@ extern int main(int argc, char **argv)
             last_ping_time = now;
             loopCounter = 0;
             sLog.outDetail("Ping MySQL to keep connection alive");
-            delete LoginDatabase.Query("SELECT 1 FROM realmlist LIMIT 1");
+            LoginDatabase.Query("SELECT 1 FROM realmlist LIMIT 1");
         }
 
         // FG: clear flood protect buffer periodically

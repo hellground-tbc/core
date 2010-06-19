@@ -653,7 +653,7 @@ void LoadDatabase()
     }
 
     //***Preform all DB queries here***
-    QueryResult *result;
+    QueryResult_AutoPtr result;
 
     //Get Version information
     result = TScriptDB.PQuery("SELECT script_version FROM version LIMIT 1");
@@ -663,9 +663,9 @@ void LoadDatabase()
         Field *fields = result->Fetch();
         outstring_log("TSCR: Database version is: %s", fields[0].GetString());
         outstring_log("");
-        delete result;
 
-    }else
+    }
+    else
     {
         error_log("TSCR: Missing `version.script_version` information.");
         outstring_log("");
@@ -728,11 +728,10 @@ void LoadDatabase()
             ++count;
         } while (result->NextRow());
 
-        delete result;
-
         outstring_log("");
         outstring_log(">> TSCR: Loaded %u additional EventAI Texts data.", count);
-    }else
+    }
+    else
     {
         barGoLink bar(1);
         bar.step();
@@ -793,11 +792,10 @@ void LoadDatabase()
             ++count;
         } while (result->NextRow());
 
-        delete result;
-
         outstring_log("");
         outstring_log(">> TSCR: Loaded %u additional Script Texts data.", count);
-    }else
+    }
+    else
     {
         barGoLink bar(1);
         bar.step();
@@ -858,11 +856,10 @@ void LoadDatabase()
             ++count;
         } while (result->NextRow());
 
-        delete result;
-
         outstring_log("");
         outstring_log(">> Loaded %u additional Custom Texts data.", count);
-    }else
+    }
+    else
     {
         barGoLink bar(1);
         bar.step();
@@ -878,7 +875,6 @@ void LoadDatabase()
     if (result)
     {
         uiCreatureCount = result->GetRowCount();
-        delete result;
     }
 
     outstring_log("TSC: Loading Script Waypoints for %u creature(s)...", uiCreatureCount);
@@ -917,8 +913,6 @@ void LoadDatabase()
             PointMovementMap[uiCreatureEntry].push_back(pTemp);
             ++uiNodeCount;
         } while (result->NextRow());
-
-        delete result;
 
         outstring_log("");
         outstring_log(">> Loaded %u Script Waypoint nodes.", uiNodeCount);
@@ -962,11 +956,10 @@ void LoadDatabase()
             ++Count;
         }while (result->NextRow());
 
-        delete result;
-
         outstring_log("");
         outstring_log(">> Loaded %u EventAI summon definitions", Count);
-    }else
+    }
+    else
     {
         barGoLink bar(1);
         bar.step();
@@ -1370,11 +1363,10 @@ void LoadDatabase()
             ++Count;
         } while (result->NextRow());
 
-        delete result;
-
         outstring_log("");
         outstring_log(">> Loaded %u EventAI scripts", Count);
-    }else
+    }
+    else
     {
         barGoLink bar(1);
         bar.step();

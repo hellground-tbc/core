@@ -99,17 +99,14 @@ bool LoginQueryHolder::Initialize()
 class CharacterHandler
 {
     public:
-        void HandleCharEnumCallback(QueryResult * result, uint32 account)
+        void HandleCharEnumCallback(QueryResult_AutoPtr result, uint32 account)
         {
             WorldSession * session = sWorld.FindSession(account);
             if(!session)
-            {
-                delete result;
                 return;
-            }
             session->HandleCharEnum(result);
         }
-        void HandlePlayerLoginCallback(QueryResult * /*dummy*/, SqlQueryHolder * holder)
+        void HandlePlayerLoginCallback(QueryResult_AutoPtr /*dummy*/, SqlQueryHolder * holder)
         {
             if (!holder) return;
             WorldSession *session = sWorld.FindSession(((LoginQueryHolder*)holder)->GetAccountId());
@@ -122,7 +119,7 @@ class CharacterHandler
         }
 } chrHandler;
 
-void WorldSession::HandleCharEnum(QueryResult * result)
+void WorldSession::HandleCharEnum(QueryResult_AutoPtr result)
 {
     // keys can be non cleared if player open realm list and close it by 'cancel'
     LoginDatabase.PExecute("UPDATE account SET v = '0', s = '0' WHERE id = '%u'", GetAccountId());
@@ -150,7 +147,6 @@ void WorldSession::HandleCharEnum(QueryResult * result)
         while( result->NextRow() );
 
         delete plr;
-        delete result;
     }
 
     data.put<uint8>(0, num);
@@ -284,12 +280,11 @@ void WorldSession::HandleCharCreateOpcode( WorldPacket & recv_data )
         return;
     }
 
-    QueryResult *resultacct = LoginDatabase.PQuery("SELECT SUM(numchars) FROM realmcharacters WHERE acctid = '%d'", GetAccountId());
+    QueryResult_AutoPtr resultacct = LoginDatabase.PQuery("SELECT SUM(numchars) FROM realmcharacters WHERE acctid = '%d'", GetAccountId());
     if ( resultacct )
     {
         Field *fields=resultacct->Fetch();
         uint32 acctcharcount = fields[0].GetUInt32();
-        delete resultacct;
 
         if (acctcharcount >= sWorld.getConfig(CONFIG_CHARACTERS_PER_ACCOUNT))
         {
@@ -299,13 +294,12 @@ void WorldSession::HandleCharCreateOpcode( WorldPacket & recv_data )
         }
     }
 
-    QueryResult *result = CharacterDatabase.PQuery("SELECT COUNT(guid) FROM characters WHERE account = '%d'", GetAccountId());
+    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT COUNT(guid) FROM characters WHERE account = '%d'", GetAccountId());
     uint8 charcount = 0;
     if ( result )
     {
         Field *fields=result->Fetch();
         charcount = fields[0].GetUInt8();
-        delete result;
 
         if (charcount >= sWorld.getConfig(CONFIG_CHARACTERS_PER_REALM))
         {
@@ -321,7 +315,7 @@ void WorldSession::HandleCharCreateOpcode( WorldPacket & recv_data )
     bool have_same_race = false;
     if(!AllowTwoSideAccounts || skipCinematics == 1)
     {
-        QueryResult *result2 = CharacterDatabase.PQuery("SELECT DISTINCT race FROM characters WHERE account = '%u' %s", GetAccountId(),skipCinematics == 1 ? "" : "LIMIT 1");
+        QueryResult_AutoPtr result2 = CharacterDatabase.PQuery("SELECT DISTINCT race FROM characters WHERE account = '%u' %s", GetAccountId(),skipCinematics == 1 ? "" : "LIMIT 1");
         if(result2)
         {
             uint32 team_= Player::TeamForRace(race_);
@@ -341,7 +335,6 @@ void WorldSession::HandleCharCreateOpcode( WorldPacket & recv_data )
                 {
                     data << (uint8)CHAR_CREATE_PVP_TEAMS_VIOLATION;
                     SendPacket( &data );
-                    delete result2;
                     return;
                 }
             }
@@ -356,7 +349,6 @@ void WorldSession::HandleCharCreateOpcode( WorldPacket & recv_data )
                 }
                 have_same_race = race_ == race;
             }
-            delete result2;
         }
     }
 
@@ -429,13 +421,12 @@ void WorldSession::HandleCharDeleteOpcode( WorldPacket & recv_data )
         return;
     }
 
-    QueryResult *result = CharacterDatabase.PQuery("SELECT account,name FROM characters WHERE guid='%u'", GUID_LOPART(guid));
+    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT account,name FROM characters WHERE guid='%u'", GUID_LOPART(guid));
     if(result)
     {
         Field *fields = result->Fetch();
         accountId = fields[0].GetUInt32();
         name = fields[1].GetCppString();
-        delete result;
     }
 
     // prevent deleting other players' characters using cheating tools
@@ -572,15 +563,13 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         ChatHandler(this).SendSysMessage(active_events);//ChatHandler::FillMessageData(&data, this, CHAT_MSG_SYSTEM, LANG_UNIVERSAL, NULL, GetPlayer()->GetGUID(), active_events, NULL);
     }
 
-    //QueryResult *result = CharacterDatabase.PQuery("SELECT guildid,rank FROM guild_member WHERE guid = '%u'",pCurrChar->GetGUIDLow());
-    QueryResult *resultGuild = holder->GetResult(PLAYER_LOGIN_QUERY_LOADGUILD);
+    QueryResult_AutoPtr resultGuild = holder->GetResult(PLAYER_LOGIN_QUERY_LOADGUILD);
 
     if(resultGuild)
     {
         Field *fields = resultGuild->Fetch();
         pCurrChar->SetInGuild(fields[0].GetUInt32());
         pCurrChar->SetRank(fields[1].GetUInt32());
-        delete resultGuild;
     }
     else if(pCurrChar->GetGuildId())                        // clear guild related fields in case wrong data about non existed membership
     {
@@ -976,14 +965,11 @@ void WorldSession::HandleChangePlayerNameOpcode(WorldPacket& recv_data)
     );
 }
 
-void WorldSession::HandleChangePlayerNameOpcodeCallBack(QueryResult *result, uint32 accountId, std::string newname)
+void WorldSession::HandleChangePlayerNameOpcodeCallBack(QueryResult_AutoPtr result, uint32 accountId, std::string newname)
 {
     WorldSession * session = sWorld.FindSession(accountId);
     if(!session)
-    {
-        if(result) delete result;
         return;
-    }
 
     if (!result)
     {
@@ -996,8 +982,6 @@ void WorldSession::HandleChangePlayerNameOpcodeCallBack(QueryResult *result, uin
     uint32 guidLow = result->Fetch()[0].GetUInt32();
     uint64 guid = MAKE_NEW_GUID(guidLow, 0, HIGHGUID_PLAYER);
     std::string oldname = result->Fetch()[1].GetCppString();
-
-    delete result;
 
     CharacterDatabase.PExecute("UPDATE characters set name = '%s', at_login = at_login & ~ %u WHERE guid ='%u'", newname.c_str(), uint32(AT_LOGIN_RENAME), guidLow);
     CharacterDatabase.PExecute("DELETE FROM character_declinedname WHERE guid ='%u'", guidLow);

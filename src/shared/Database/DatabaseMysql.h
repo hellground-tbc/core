@@ -18,8 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef DO_POSTGRESQL
-
 #ifndef _DATABASEMYSQL_H
 #define _DATABASEMYSQL_H
 
@@ -49,7 +47,7 @@ class TRINITY_DLL_SPEC DatabaseMysql : public Database
         bool Initialize(const char *infoString);
         void InitDelayThread();
         void HaltDelayThread();
-        QueryResult* Query(const char *sql);
+        QueryResult_AutoPtr Query(const char *sql);
         QueryNamedResult* QueryNamed(const char *sql);
         bool Execute(const char *sql);
         bool DirectExecute(const char* sql);
@@ -78,6 +76,5 @@ class TRINITY_DLL_SPEC DatabaseMysql : public Database
         bool _TransactionCmd(const char *sql);
         bool _Query(const char *sql, MYSQL_RES **pResult, MYSQL_FIELD **pFields, uint64* pRowCount, uint32* pFieldCount);
 };
-#endif
 #endif
 

@@ -181,12 +181,11 @@ bool Guild::LoadGuildFromDB(uint32 GuildId)
     if(!LoadMembersFromDB(GuildId))
         return false;
 
-    QueryResult *result = CharacterDatabase.PQuery("SELECT MAX(TabId) FROM guild_bank_tab WHERE guildid='%u'", GuildId);
+    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT MAX(TabId) FROM guild_bank_tab WHERE guildid='%u'", GuildId);
     if(result)
     {
         Field *fields = result->Fetch();
         purchased_tabs = fields[0].GetUInt8()+1;            // Because TabId begins at 0
-        delete result;
     }
     else
         purchased_tabs = 0;
@@ -217,8 +216,6 @@ bool Guild::LoadGuildFromDB(uint32 GuildId)
     uint64 time = fields[10].GetUInt64();                   //datetime is uint64 type ... YYYYmmdd:hh:mm:ss
     guildbank_money = fields[11].GetUInt64();
 
-    delete result;
-
     uint64 dTime = time /1000000;
     CreatedDay   = dTime%100;
     CreatedMonth = (dTime/100)%100;
@@ -246,7 +243,7 @@ bool Guild::LoadGuildFromDB(uint32 GuildId)
 bool Guild::LoadRanksFromDB(uint32 GuildId)
 {
     Field *fields;
-    QueryResult *result = CharacterDatabase.PQuery("SELECT rname,rights,BankMoneyPerDay,rid FROM guild_rank WHERE guildid = '%u' ORDER BY rid ASC", GuildId);
+    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT rname,rights,BankMoneyPerDay,rid FROM guild_rank WHERE guildid = '%u' ORDER BY rid ASC", GuildId);
 
     if(!result)
         return false;
@@ -270,7 +267,6 @@ bool Guild::LoadRanksFromDB(uint32 GuildId)
 
         AddRank(rankName,rankRights,rankMoney);
     }while( result->NextRow() );
-    delete result;
 
     if(m_ranks.size()==0)                                   // empty rank table?
     {
@@ -301,7 +297,7 @@ bool Guild::LoadRanksFromDB(uint32 GuildId)
 bool Guild::LoadMembersFromDB(uint32 GuildId)
 {
     //                                                     0                 1     2      3        4                  5
-    QueryResult *result = CharacterDatabase.PQuery("SELECT guild_member.guid,rank, pnote, offnote, BankResetTimeMoney,BankRemMoney,"
+    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT guild_member.guid,rank, pnote, offnote, BankResetTimeMoney,BankRemMoney,"
     //   6                  7                 8                  9                 10                 11
         "BankResetTimeTab0, BankRemSlotsTab0, BankResetTimeTab1, BankRemSlotsTab1, BankResetTimeTab2, BankRemSlotsTab2,"
     //   12                 13                14                 15                16                 17
@@ -336,7 +332,6 @@ bool Guild::LoadMembersFromDB(uint32 GuildId)
         members[GUID_LOPART(guid)]      = newmember;
 
     }while( result->NextRow() );
-    delete result;
 
     if(members.empty())
         return false;
@@ -361,7 +356,7 @@ bool Guild::FillPlayerData(uint64 guid, MemberSlot* memslot)
     }
     else
     {
-        QueryResult *result = CharacterDatabase.PQuery("SELECT name,data,zone,class FROM characters WHERE guid = '%u'", GUID_LOPART(guid));                                 // player doesn't exist
+        QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT name,data,zone,class FROM characters WHERE guid = '%u'", GUID_LOPART(guid));                                 // player doesn't exist
         if (!result)
             return false;
 
@@ -373,8 +368,6 @@ bool Guild::FillPlayerData(uint64 guid, MemberSlot* memslot)
 
         plZone = fields[2].GetUInt32();
         plClass = fields[3].GetUInt32();
-
-        delete result;
 
         if(plLevel<1||plLevel>STRONG_MAX_LEVEL)             // can be at broken `data` field
         {
@@ -842,7 +835,7 @@ void Guild::LoadGuildEventLogFromDB()
     if (m_eventlogloaded)
         return;
 
-    QueryResult *result = CharacterDatabase.PQuery("SELECT LogGuid, EventType, PlayerGuid1, PlayerGuid2, NewRank, TimeStamp FROM guild_eventlog WHERE guildid=%u ORDER BY LogGuid DESC LIMIT %u", Id, GUILD_EVENTLOG_MAX_ENTRIES);
+    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT LogGuid, EventType, PlayerGuid1, PlayerGuid2, NewRank, TimeStamp FROM guild_eventlog WHERE guildid=%u ORDER BY LogGuid DESC LIMIT %u", Id, GUILD_EVENTLOG_MAX_ENTRIES);
     if(!result)
         return;
     do
@@ -860,7 +853,6 @@ void Guild::LoadGuildEventLogFromDB()
         m_GuildEventlog.push_front(NewEvent);
 
     } while( result->NextRow() );
-    delete result;
 
     // Check lists size in case to many event entries in db
     // This cases can happen only if a crash occured somewhere and table has too many log entries
@@ -892,25 +884,15 @@ void Guild::UnloadGuildEventlog()
 // This will renum guids used at load to prevent always going up until infinit
 void Guild::RenumGuildEventlog()
 {
-    /*QueryResult *result = CharacterDatabase.PQuery("SELECT Min(LogGuid), Max(LogGuid) FROM guild_eventlog WHERE guildid = %u", Id);
-    if(!result)
-        return;
-
-    Field *fields = result->Fetch();
-    CharacterDatabase.PExecute("UPDATE guild_eventlog SET LogGuid=LogGuid-%u+1 WHERE guildid=%u ORDER BY LogGuid %s",fields[0].GetUInt32(), Id, fields[0].GetUInt32()?"ASC":"DESC");
-    GuildEventlogMaxGuid = fields[1].GetUInt32()+1;*/
-
     CharacterDatabase.PExecute("UPDATE guild_eventlog AS target INNER JOIN ( SELECT *, (SELECT @COUNT := -1) FROM guild_eventlog WHERE guildid = %u ORDER BY logguid ASC) "
                                    "AS source ON source.logguid = target.logguid AND source.guildid = target.guildid SET target.logguid = (@COUNT := @COUNT + 1);", Id);
 
-    QueryResult *result = CharacterDatabase.PQuery("SELECT Max(LogGuid) FROM guild_eventlog WHERE guildid = %u", Id);
+    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT Max(LogGuid) FROM guild_eventlog WHERE guildid = %u", Id);
     if(!result)
         return;
 
     Field *fields = result->Fetch();
     GuildEventlogMaxGuid = fields[0].GetUInt32()+1;
-
-    delete result;
 }
 
 // Add entry to guild eventlog
@@ -1182,7 +1164,7 @@ void Guild::LoadGuildBankFromDB()
     LoadGuildBankEventLogFromDB();
 
     //                                                     0      1        2        3
-    QueryResult *result = CharacterDatabase.PQuery("SELECT TabId, TabName, TabIcon, TabText FROM guild_bank_tab WHERE guildid='%u' ORDER BY TabId", Id);
+    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT TabId, TabName, TabIcon, TabText FROM guild_bank_tab WHERE guildid='%u' ORDER BY TabId", Id);
     if(!result)
     {
         purchased_tabs = 0;
@@ -1204,8 +1186,6 @@ void Guild::LoadGuildBankFromDB()
 
         m_TabListMap[TabId] = NewTab;
     }while( result->NextRow() );
-
-    delete result;
 
     // data needs to be at first place for Item::LoadFromDB
     //                                        0     1      2       3          4
@@ -1254,8 +1234,6 @@ void Guild::LoadGuildBankFromDB()
         pItem->AddToWorld();
         m_TabListMap[TabId]->Slots[SlotId] = pItem;
     }while( result->NextRow() );
-
-    delete result;
 }
 
 // This unload should be called when the last member of the guild gets offline
@@ -1474,7 +1452,7 @@ uint32 Guild::GetBankSlotPerDay(uint32 rankId, uint8 TabId)
 void Guild::LoadBankRightsFromDB(uint32 GuildId)
 {
     //                                                     0      1    2        3
-    QueryResult *result = CharacterDatabase.PQuery("SELECT TabId, rid, gbright, SlotPerDay FROM guild_bank_right WHERE guildid = '%u' ORDER BY TabId", GuildId);
+    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT TabId, rid, gbright, SlotPerDay FROM guild_bank_right WHERE guildid = '%u' ORDER BY TabId", GuildId);
 
     if(!result)
         return;
@@ -1490,7 +1468,6 @@ void Guild::LoadBankRightsFromDB(uint32 GuildId)
         SetBankRightsAndSlots(rankId, TabId, right, SlotPerDay, false);
 
     }while( result->NextRow() );
-    delete result;
 
     return;
 }
@@ -1502,7 +1479,7 @@ void Guild::LoadGuildBankEventLogFromDB()
 {
     // We can't add a limit as in Guild::LoadGuildEventLogFromDB since we fetch both money and bank log and know nothing about the composition
     //                                                     0        1         2      3           4            5               6          7
-    QueryResult *result = CharacterDatabase.PQuery("SELECT LogGuid, LogEntry, TabId, PlayerGuid, ItemOrMoney, ItemStackCount, DestTabId, TimeStamp FROM guild_bank_eventlog WHERE guildid='%u' ORDER BY TimeStamp DESC", Id);
+    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT LogGuid, LogEntry, TabId, PlayerGuid, ItemOrMoney, ItemStackCount, DestTabId, TimeStamp FROM guild_bank_eventlog WHERE guildid='%u' ORDER BY TimeStamp DESC", Id);
     if(!result)
         return;
 
@@ -1538,7 +1515,6 @@ void Guild::LoadGuildBankEventLogFromDB()
             m_GuildBankEventLog_Item[TabId].push_front(NewEvent);
 
     }while( result->NextRow() );
-    delete result;
 
     // Check lists size in case to many event entries in db for a tab or for money
     // This cases can happen only if a crash occured somewhere and table has too many log entries
@@ -1667,25 +1643,15 @@ void Guild::LogBankEvent(uint8 LogEntry, uint8 TabId, uint32 PlayerGuidLow, uint
 // This will renum guids used at load to prevent always going up until infinit
 void Guild::RenumBankLogs()
 {
-    /*QueryResult *result = CharacterDatabase.PQuery("SELECT Min(LogGuid), Max(LogGuid) FROM guild_bank_eventlog WHERE guildid = %u", Id);
-    if(!result)
-        return;
-
-    Field *fields = result->Fetch();
-    CharacterDatabase.PExecute("UPDATE guild_bank_eventlog SET LogGuid=LogGuid-%u+1 WHERE guildid=%u ORDER BY LogGuid %s",fields[0].GetUInt32(), Id, fields[0].GetUInt32()?"ASC":"DESC");
-    LogMaxGuid = fields[1].GetUInt32()+1;*/
-
     CharacterDatabase.PExecute("UPDATE guild_bank_eventlog AS target INNER JOIN ( SELECT *, (SELECT @COUNT := -1) FROM guild_bank_eventlog WHERE guildid = %u ORDER BY logguid ASC) "
                                    "AS source ON source.logguid = target.logguid AND source.guildid = target.guildid SET target.logguid = (@COUNT := @COUNT + 1);", Id);
 
-    QueryResult *result = CharacterDatabase.PQuery("SELECT Max(LogGuid) FROM guild_bank_eventlog WHERE guildid = %u", Id);
+    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT Max(LogGuid) FROM guild_bank_eventlog WHERE guildid = %u", Id);
     if(!result)
         return;
 
     Field *fields = result->Fetch();
     LogMaxGuid = fields[0].GetUInt32()+1;
-
-    delete result;
 }
 
 bool Guild::AddGBankItemToDB(uint32 GuildId, uint32 BankTab , uint32 BankTabSlot , uint32 GUIDLow, uint32 Entry )

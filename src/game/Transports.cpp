@@ -33,7 +33,7 @@
 
 void MapManager::LoadTransports()
 {
-    QueryResult *result = WorldDatabase.Query("SELECT entry, name, period FROM transports");
+    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT entry, name, period FROM transports");
 
     uint32 count = 0;
 
@@ -112,27 +112,24 @@ void MapManager::LoadTransports()
         //MapManager::Instance().GetMap(t->GetMapId())->Add<GameObject>((GameObject *)t);
         ++count;
     } while(result->NextRow());
-    delete result;
 
     sLog.outString();
     sLog.outString( ">> Loaded %u transports", count );
 
     // check transport data DB integrity
-    result = WorldDatabase.Query("SELECT gameobject.guid,gameobject.id,transports.name FROM gameobject,transports WHERE gameobject.id = transports.entry");
+    QueryResult_AutoPtr result2= WorldDatabase.Query("SELECT gameobject.guid,gameobject.id,transports.name FROM gameobject,transports WHERE gameobject.id = transports.entry");
     if(result)                                              // wrong data found
     {
         do
         {
-            Field *fields = result->Fetch();
+            Field *fields = result2->Fetch();
 
             uint32 guid  = fields[0].GetUInt32();
             uint32 entry = fields[1].GetUInt32();
             std::string name = fields[2].GetCppString();
             sLog.outErrorDb("Transport %u '%s' have record (GUID: %u) in `gameobject`. Transports DON'T must have any records in `gameobject` or its behavior will be unpredictable/bugged.",entry,name.c_str(),guid);
         }
-        while(result->NextRow());
-
-        delete result;
+        while(result2->NextRow());
     }
 }
 

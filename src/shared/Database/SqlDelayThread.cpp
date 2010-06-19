@@ -30,9 +30,7 @@ void SqlDelayThread::run()
 {
     SqlAsyncTask * s = NULL;
 
-    #ifndef DO_POSTGRESQL
     mysql_thread_init();
-    #endif
 
     // lets wait for next async task no more than 2 secs...
     ACE_Time_Value _time(2);
@@ -48,9 +46,7 @@ void SqlDelayThread::run()
         }
     }
 
-    #ifndef DO_POSTGRESQL
     mysql_thread_end();
-    #endif
 }
 
 void SqlDelayThread::Stop()
