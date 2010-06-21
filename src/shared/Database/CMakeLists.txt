@@ -7,10 +7,9 @@ SET(trinitydatabase_STAT_SRCS
    Database.h
    DatabaseEnv.h
    DatabaseImpl.h
-   DatabaseMysql.cpp
-   DatabaseMysql.h
    Field.cpp
    Field.h
+   QueryResult.cpp
    QueryResult.h
    SQLStorage.cpp
    SQLStorage.h
