@@ -1343,7 +1343,7 @@ void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uin
         {
             next = tempUnitMap.begin();
             while(cur->GetDistance(*next) > CHAIN_SPELL_JUMP_RADIUS
-                || !cur->IsWithinLOSInMap(*next))
+                || !cur->IsWithinLOSInMap(*next) || (*next)->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_PL_SPELL_TARGET))
             {
                 ++next;
                 if(next == tempUnitMap.end())

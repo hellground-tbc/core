@@ -491,7 +491,7 @@ enum UnitFlags
     UNIT_FLAG_SILENCED            = 0x00002000,                // silenced, 2.1.1
     UNIT_FLAG_UNKNOWN4            = 0x00004000,                // 2.0.8
     UNIT_FLAG_UNKNOWN13           = 0x00008000,
-    UNIT_FLAG_ONLY_NEGATIVE_SPELL = 0x00010000,                // player can't cast positive spells on friendly/neutral NPC with that flag.
+    UNIT_FLAG_NOT_PL_SPELL_TARGET = 0x00010000,                // player can't cast spells on NPC with that flag.
     UNIT_FLAG_PACIFIED            = 0x00020000,
     UNIT_FLAG_DISABLE_ROTATE      = 0x00040000,                // stunned, 2.1.1
     UNIT_FLAG_IN_COMBAT           = 0x00080000,
