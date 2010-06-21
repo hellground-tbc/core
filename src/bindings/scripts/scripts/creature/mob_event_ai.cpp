@@ -1273,7 +1273,7 @@ struct TRINITY_DLL_DECL Mob_EventAI : public ScriptedAI
 
         if(m_creature->canStartAttack(who))
         {
-            m_creature->CombatStart(who);
+            who->CombatStart(m_creature);
             AttackStart(who);
         }
     }
