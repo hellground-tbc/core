@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2010 Trinity <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -59,27 +59,18 @@
 #undef VERSION
 #endif //HAVE_CONFIG_H
 
-#include "Platform/Define.h"
-
 #if COMPILER == COMPILER_MICROSOFT
-
-#pragma warning(disable:4996)
-
+#   pragma warning(disable:4996)                            // 'function': was declared deprecated
 #ifndef __SHOW_STUPID_WARNINGS__
-
-#pragma warning(disable:4244)
-
-#pragma warning(disable:4267)
-
-#pragma warning(disable:4800)
-
-#pragma warning(disable:4018)
-
-#pragma warning(disable:4311)
-
-#pragma warning(disable:4305)
-
-#pragma warning(disable:4005)
+#   pragma warning(disable:4005)                            // 'identifier' : macro redefinition
+#   pragma warning(disable:4018)                            // 'expression' : signed/unsigned mismatch
+#   pragma warning(disable:4244)                            // 'argument' : conversion from 'type1' to 'type2', possible loss of data
+#   pragma warning(disable:4267)                            // 'var' : conversion from 'size_t' to 'type', possible loss of data
+#   pragma warning(disable:4305)                            // 'identifier' : truncation from 'type1' to 'type2'
+#   pragma warning(disable:4311)                            // 'variable' : pointer truncation from 'type' to 'type'
+#   pragma warning(disable:4355)                            // 'this' : used in base member initializer list
+#   pragma warning(disable:4800)                            // 'type' : forcing value to bool 'true' or 'false' (performance warning)
+#   pragma warning(disable:4522)                            //warning when class has 2 constructors
 #endif                                                      // __SHOW_STUPID_WARNINGS__
 #endif                                                      // __GNUC__
 
@@ -110,10 +101,10 @@
 #include "LockedQueue.h"
 #include "Threading.h"
 
+#include <ace/Basic_Types.h>
 #include <ace/Guard_T.h>
 #include <ace/RW_Thread_Mutex.h>
 #include <ace/Thread_Mutex.h>
-
 
 #if PLATFORM == PLATFORM_WINDOWS
 #  define FD_SETSIZE 4096
@@ -136,9 +127,8 @@
 
 #include <float.h>
 
+#define I32FMT "%08I32X"
 #define I64FMT "%016I64X"
-#define I64FMTD "%I64u"
-#define SI64FMTD "%I64d"
 #define snprintf _snprintf
 #define atoll __atoi64
 #define vsnprintf _vsnprintf
@@ -149,10 +139,18 @@
 
 #define stricmp strcasecmp
 #define strnicmp strncasecmp
+#define I32FMT "%08X"
 #define I64FMT "%016llX"
-#define I64FMTD "%llu"
-#define SI64FMTD "%lld"
+
 #endif
+
+#define UI64FMTD ACE_UINT64_FORMAT_SPECIFIER
+#define UI64LIT(N) ACE_UINT64_LITERAL(N)
+
+#define SI64FMTD ACE_INT64_FORMAT_SPECIFIER
+#define SI64LIT(N) ACE_INT64_LITERAL(N)
+
+#define SIZEFMTD ACE_SIZE_T_FORMAT_SPECIFIER
 
 inline float finiteAlways(float f) { return finite(f) ? f : 0.0f; }
 
@@ -165,7 +163,10 @@ enum TimeConstants
     MINUTE = 60,
     HOUR   = MINUTE*60,
     DAY    = HOUR*24,
-    MONTH  = DAY*30
+    WEEK   = DAY*7,
+    MONTH  = DAY*30,
+    YEAR   = MONTH*12,
+    IN_MILISECONDS = 1000
 };
 
 enum AccountTypes
@@ -190,13 +191,13 @@ enum LocaleConstant
     LOCALE_ruRU = 8
 };
 
-#define MAX_LOCALE 9
+const uint8 MAX_LOCALE = 9;
 
 extern char const* localeNames[MAX_LOCALE];
 
 LocaleConstant GetLocaleByName(const std::string& name);
 
-// we always use stdlibc++ std::max/std::min, undefine some not C++ standard defines (Win API and some pother platforms)
+// we always use stdlibc++ std::max/std::min, undefine some not C++ standard defines (Win API and some other platforms)
 #ifdef max
 #undef max
 #endif
@@ -210,4 +211,3 @@ LocaleConstant GetLocaleByName(const std::string& name);
 #endif
 
 #endif
-

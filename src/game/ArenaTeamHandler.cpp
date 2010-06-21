@@ -37,7 +37,7 @@ void WorldSession::HandleInspectArenaStatsOpcode(WorldPacket & recv_data)
 
     uint64 guid;
     recv_data >> guid;
-    sLog.outDebug("Inspect Arena stats " I64FMTD, guid);
+    sLog.outDebug("Inspect Arena stats " UI64FMTD, guid);
 
     if(Player *plr = objmgr.GetPlayer(guid))
     {
