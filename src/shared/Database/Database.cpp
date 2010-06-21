@@ -193,7 +193,7 @@ void Database::ThreadStart()
 
 void Database::ThreadEnd()
 {
-     mysql_thread_end();
+    mysql_thread_end();
 }
 
 void Database::escape_string(std::string& str)
@@ -389,11 +389,11 @@ bool Database::Execute(const char *sql)
     if (!mMysql)
         return false;
 
-    nMutex.acquire();
     // don't use queued execution if it has not been initialized
     if (!m_threadBody)
         return DirectExecute(sql);
 
+    nMutex.acquire();
     tranThread = ACE_Based::Thread::current();              // owner of this transaction
 
     TransactionQueues::iterator i = m_tranQueues.find(tranThread);
@@ -554,8 +554,6 @@ bool Database::CommitTransaction()
         m_tranQueues.erase(i);
         _res = true;
     }
-    else
-        return false;
 
     nMutex.release();
     return _res;
