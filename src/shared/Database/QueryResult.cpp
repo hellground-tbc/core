@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
- * Copyright (C) 2008 Oregon <http://www.oregoncore.com/>
+ * Copyright (C) 2008-2010 Trinity <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,10 +21,11 @@
 #include "DatabaseEnv.h"
 
 QueryResult::QueryResult(MYSQL_RES *result, MYSQL_FIELD *fields, uint64 rowCount, uint32 fieldCount)
-    : mResult(result), mFieldCount(fieldCount), mRowCount(rowCount)
+: mResult(result)
+, mFieldCount(fieldCount)
+, mRowCount(rowCount)
 {
     mCurrentRow = new Field[mFieldCount];
-
     ASSERT(mCurrentRow);
 
     for (uint32 i = 0; i < mFieldCount; i++)
@@ -86,20 +87,18 @@ enum Field::DataTypes QueryResult::ConvertNativeType(enum_field_types mysqlType)
         case FIELD_TYPE_SET:
         case FIELD_TYPE_NULL:
             return Field::DB_TYPE_STRING;
-
         case FIELD_TYPE_TINY:
+
         case FIELD_TYPE_SHORT:
         case FIELD_TYPE_LONG:
         case FIELD_TYPE_INT24:
         case FIELD_TYPE_LONGLONG:
         case FIELD_TYPE_ENUM:
             return Field::DB_TYPE_INTEGER;
-
         case FIELD_TYPE_DECIMAL:
         case FIELD_TYPE_FLOAT:
         case FIELD_TYPE_DOUBLE:
             return Field::DB_TYPE_FLOAT;
-
         default:
             return Field::DB_TYPE_UNKNOWN;
     }
