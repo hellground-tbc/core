@@ -31,6 +31,7 @@ go_orb_of_command
 go_tablet_of_madness
 go_tablet_of_the_seven
 go_teleporter
+go_hive_pod
 EndContentData */
 
 #include "precompiled.h"
@@ -280,6 +281,26 @@ bool GOHello_go_darkmoon_cannon(Player *player, GameObject* _GO)
     player->CastSpell(player,SPELL_WINGS,true);
     return false;
 }
+
+/*######
+## go_hive_pod (Quest 1126: Hive in the Tower)
+######*/
+
+enum eHives
+{
+    QUEST_HIVE_IN_THE_TOWER                       = 1126,
+    NPC_HIVE_AMBUSHER                             = 13301
+};
+
+bool GOHello_go_hive_pod(Player *pPlayer, GameObject *pGO)
+{
+    pPlayer->SendLoot(pGO->GetGUID(), LOOT_CORPSE);
+    pGO->SummonCreature(NPC_HIVE_AMBUSHER,pGO->GetPositionX()-1,pGO->GetPositionY(),pGO->GetPositionZ(),pGO->GetAngle(pPlayer),TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 60000);
+    pGO->SummonCreature(NPC_HIVE_AMBUSHER,pGO->GetPositionX(),pGO->GetPositionY()-1,pGO->GetPositionZ(),pGO->GetAngle(pPlayer),TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 60000);
+
+    return false;
+}
+
 void AddSC_go_scripts()
 {
     Script *newscript;
@@ -358,6 +379,11 @@ void AddSC_go_scripts()
     newscript = new Script;
     newscript->Name = "go_darkmoon_cannon";
     newscript->pGOHello =           &GOHello_go_darkmoon_cannon;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "go_hive_pod";
+    newscript->pGOHello = &GOHello_go_hive_pod;
     newscript->RegisterSelf();
 }
 
