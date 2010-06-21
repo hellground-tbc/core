@@ -144,6 +144,8 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public ScriptedAI
     uint32 SoulCount;
     uint32 SoulDeathCount;
 
+    uint32 CheckTimer;
+
     void Reset()
     {
         if(pInstance)
@@ -160,6 +162,8 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public ScriptedAI
         }
 
         Phase = 0;
+
+        CheckTimer = 2000;
 
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_ONESHOT_NONE);
@@ -240,6 +244,14 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public ScriptedAI
             EnterEvadeMode();
             return;
         }
+
+        if(CheckTimer < diff)
+        {
+            DoZoneInCombat();
+            CheckTimer = 2000;
+        }
+        else
+            CheckTimer -= diff;
 
         Creature* Essence;
         if(EssenceGUID)
