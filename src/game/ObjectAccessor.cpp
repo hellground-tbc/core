@@ -78,11 +78,15 @@ namespace Trinity
     };
 }
 
-ObjectAccessor::ObjectAccessor() {}
-ObjectAccessor::~ObjectAccessor() {}
+ObjectAccessor::ObjectAccessor()
+{
+}
 
-Creature*
-ObjectAccessor::GetCreatureOrPet(WorldObject const &u, uint64 guid)
+ObjectAccessor::~ObjectAccessor()
+{
+}
+
+Creature* ObjectAccessor::GetCreatureOrPet(WorldObject const &u, uint64 guid)
 {
     if(IS_PLAYER_GUID(guid))
         return NULL;
@@ -93,8 +97,7 @@ ObjectAccessor::GetCreatureOrPet(WorldObject const &u, uint64 guid)
     return u.GetMap()->GetCreature(guid);
 }
 
-Unit*
-ObjectAccessor::GetUnit(WorldObject const &u, uint64 guid)
+Unit* ObjectAccessor::GetUnit(WorldObject const &u, uint64 guid)
 {
     if(!guid)
         return NULL;
@@ -105,11 +108,18 @@ ObjectAccessor::GetUnit(WorldObject const &u, uint64 guid)
     return GetCreatureOrPet(u, guid);
 }
 
-Corpse*
-ObjectAccessor::GetCorpse(WorldObject const &u, uint64 guid)
+Corpse* ObjectAccessor::GetCorpse(WorldObject const &u, uint64 guid)
 {
     Corpse * ret = GetObjectInWorld(guid, (Corpse*)NULL);
-    if(ret && ret->GetMapId() != u.GetMapId()) ret = NULL;
+    if(!ret)
+        return NULL;
+
+    if(ret->GetMapId() != u.GetMapId())
+        return NULL;
+
+    if(ret->GetInstanceId() != u.GetInstanceId())
+        return NULL;
+
     return ret;
 }
 
@@ -150,8 +160,7 @@ Object* ObjectAccessor::GetObjectByTypeMask(Player const &p, uint64 guid, uint32
     return NULL;
 }
 
-Player*
-ObjectAccessor::FindPlayer(uint64 guid)
+Player* ObjectAccessor::FindPlayer(uint64 guid)
 {
     Player * plr = GetObjectInWorld(guid, (Player*)NULL);
     if(!plr || !plr->IsInWorld())
@@ -160,30 +169,26 @@ ObjectAccessor::FindPlayer(uint64 guid)
     return plr;
 }
 
-Player*
-ObjectAccessor::FindPlayerByName(const char *name)
+Player* ObjectAccessor::FindPlayerByName(const char *name)
 {
-    //TODO: Player Guard
+    Guard guard(*HashMapHolder<Player>::GetLock());
     HashMapHolder<Player>::MapType& m = HashMapHolder<Player>::GetContainer();
-    HashMapHolder<Player>::MapType::iterator iter = m.begin();
-    for(; iter != m.end(); ++iter)
-        if( iter->second->IsInWorld() && ( ::strcmp(name, iter->second->GetName()) == 0 ) )
+    for(HashMapHolder<Player>::MapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+        if(iter->second->IsInWorld() && strcmp(name, iter->second->GetName()) == 0)
             return iter->second;
+
     return NULL;
 }
 
-void
-ObjectAccessor::SaveAllPlayers()
+void ObjectAccessor::SaveAllPlayers()
 {
     Guard guard(*HashMapHolder<Player*>::GetLock());
     HashMapHolder<Player>::MapType& m = HashMapHolder<Player>::GetContainer();
-    HashMapHolder<Player>::MapType::iterator itr = m.begin();
-    for(; itr != m.end(); ++itr)
+    for (HashMapHolder<Player>::MapType::iterator itr = m.begin(); itr != m.end(); ++itr)
         itr->second->SaveToDB();
 }
 
-void
-ObjectAccessor::UpdateObject(Object* obj, Player* exceptPlayer)
+void ObjectAccessor::UpdateObject(Object* obj, Player* exceptPlayer)
 {
     UpdateDataMapType update_players;
     obj->BuildUpdate(update_players);
@@ -200,15 +205,13 @@ ObjectAccessor::UpdateObject(Object* obj, Player* exceptPlayer)
     }
 }
 
-void
-ObjectAccessor::AddUpdateObject(Object *obj)
+void ObjectAccessor::AddUpdateObject(Object *obj)
 {
     Guard guard(i_updateGuard);
     i_objects.insert(obj);
 }
 
-void
-ObjectAccessor::RemoveUpdateObject(Object *obj)
+void ObjectAccessor::RemoveUpdateObject(Object *obj)
 {
     Guard guard(i_updateGuard);
     std::set<Object *>::iterator iter = i_objects.find(obj);
@@ -216,8 +219,7 @@ ObjectAccessor::RemoveUpdateObject(Object *obj)
         i_objects.erase( iter );
 }
 
-void
-ObjectAccessor::_buildUpdateObject(Object *obj, UpdateDataMapType &update_players)
+void ObjectAccessor::_buildUpdateObject(Object *obj, UpdateDataMapType &update_players)
 {
     bool build_for_all = true;
     Player *pl = NULL;
@@ -245,8 +247,7 @@ ObjectAccessor::_buildUpdateObject(Object *obj, UpdateDataMapType &update_player
     }
 }
 
-void
-ObjectAccessor::_buildPacket(Player *pl, Object *obj, UpdateDataMapType &update_players)
+void ObjectAccessor::_buildPacket(Player *pl, Object *obj, UpdateDataMapType &update_players)
 {
     UpdateDataMapType::iterator iter = update_players.find(pl);
 
@@ -260,8 +261,7 @@ ObjectAccessor::_buildPacket(Player *pl, Object *obj, UpdateDataMapType &update_
     obj->BuildValuesUpdateBlockForPlayer(&iter->second, iter->first);
 }
 
-void
-ObjectAccessor::_buildChangeObjectForPlayer(WorldObject *obj, UpdateDataMapType &update_players)
+void ObjectAccessor::_buildChangeObjectForPlayer(WorldObject *obj, UpdateDataMapType &update_players)
 {
     CellPair p = Trinity::ComputeCellPair(obj->GetPositionX(), obj->GetPositionY());
     Cell cell(p);
@@ -274,14 +274,12 @@ ObjectAccessor::_buildChangeObjectForPlayer(WorldObject *obj, UpdateDataMapType 
     cell.Visit(p, player_notifier, map, *obj, map.GetVisibilityDistance());
 }
 
-Pet*
-ObjectAccessor::GetPet(uint64 guid)
+Pet* ObjectAccessor::GetPet(uint64 guid)
 {
     return GetObjectInWorld(guid, (Pet*)NULL);
 }
 
-Corpse*
-ObjectAccessor::GetCorpseForPlayerGUID(uint64 guid)
+Corpse* ObjectAccessor::GetCorpseForPlayerGUID(uint64 guid)
 {
     Guard guard(i_corpseGuard);
 
@@ -293,8 +291,7 @@ ObjectAccessor::GetCorpseForPlayerGUID(uint64 guid)
     return iter->second;
 }
 
-void
-ObjectAccessor::RemoveCorpse(Corpse *corpse)
+void ObjectAccessor::RemoveCorpse(Corpse *corpse)
 {
     assert(corpse && corpse->GetType() != CORPSE_BONES);
 
@@ -313,8 +310,7 @@ ObjectAccessor::RemoveCorpse(Corpse *corpse)
     i_player2corpse.erase(iter);
 }
 
-void
-ObjectAccessor::AddCorpse(Corpse *corpse)
+void ObjectAccessor::AddCorpse(Corpse *corpse)
 {
     assert(corpse && corpse->GetType() != CORPSE_BONES);
 
@@ -329,8 +325,7 @@ ObjectAccessor::AddCorpse(Corpse *corpse)
     objmgr.AddCorpseCellData(corpse->GetMapId(),cell_id,corpse->GetOwnerGUID(),corpse->GetInstanceId());
 }
 
-void
-ObjectAccessor::AddCorpsesToGrid(GridPair const& gridpair,GridType& grid,Map* map)
+void ObjectAccessor::AddCorpsesToGrid(GridPair const& gridpair,GridType& grid,Map* map)
 {
     Guard guard(i_corpseGuard);
     for(Player2CorpsesMapType::iterator iter = i_player2corpse.begin(); iter != i_player2corpse.end(); ++iter)
@@ -351,8 +346,7 @@ ObjectAccessor::AddCorpsesToGrid(GridPair const& gridpair,GridType& grid,Map* ma
     }
 }
 
-Corpse*
-ObjectAccessor::ConvertCorpseForPlayer(uint64 player_guid, bool insignia)
+Corpse* ObjectAccessor::ConvertCorpseForPlayer(uint64 player_guid, bool insignia)
 {
     Corpse *corpse = GetCorpseForPlayerGUID(player_guid);
     if(!corpse)
@@ -417,8 +411,7 @@ ObjectAccessor::ConvertCorpseForPlayer(uint64 player_guid, bool insignia)
     return bones;
 }
 
-void
-ObjectAccessor::Update(uint32 diff)
+void ObjectAccessor::Update(uint32 diff)
 {
     UpdateDataMapType update_players;
     {
@@ -443,17 +436,7 @@ ObjectAccessor::Update(uint32 diff)
     }
 }
 
-void
-ObjectAccessor::UpdatePlayers(uint32 diff)
-{
-    HashMapHolder<Player>::MapType& playerMap = HashMapHolder<Player>::GetContainer();
-    for(HashMapHolder<Player>::MapType::iterator iter = playerMap.begin(); iter != playerMap.end(); ++iter)
-        if(iter->second->IsInWorld())
-            iter->second->Update(diff);
-}
-
-void
-ObjectAccessor::WorldObjectChangeAccumulator::Visit(PlayerMapType &m)
+void ObjectAccessor::WorldObjectChangeAccumulator::Visit(PlayerMapType &m)
 {
     for(PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
@@ -467,8 +450,7 @@ ObjectAccessor::WorldObjectChangeAccumulator::Visit(PlayerMapType &m)
     }
 }
 
-void
-ObjectAccessor::WorldObjectChangeAccumulator::Visit(CreatureMapType &m)
+void ObjectAccessor::WorldObjectChangeAccumulator::Visit(CreatureMapType &m)
 {
     for(CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
@@ -481,8 +463,7 @@ ObjectAccessor::WorldObjectChangeAccumulator::Visit(CreatureMapType &m)
     }
 }
 
-void
-ObjectAccessor::WorldObjectChangeAccumulator::Visit(DynamicObjectMapType &m)
+void ObjectAccessor::WorldObjectChangeAccumulator::Visit(DynamicObjectMapType &m)
 {
     for(DynamicObjectMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
@@ -495,8 +476,7 @@ ObjectAccessor::WorldObjectChangeAccumulator::Visit(DynamicObjectMapType &m)
     }
 }
 
-void
-ObjectAccessor::WorldObjectChangeAccumulator::BuildPacket(Player* plr)
+void ObjectAccessor::WorldObjectChangeAccumulator::BuildPacket(Player* plr)
 {
     // Only send update once to a player
     if (plr_list.find(plr->GetGUID()) == plr_list.end() && plr->HaveAtClient(&i_object))
@@ -506,24 +486,13 @@ ObjectAccessor::WorldObjectChangeAccumulator::BuildPacket(Player* plr)
     }
 }
 
-void
-ObjectAccessor::UpdateObjectVisibility(WorldObject *obj)
+void ObjectAccessor::UpdateObjectVisibility(WorldObject *obj)
 {
     CellPair p = Trinity::ComputeCellPair(obj->GetPositionX(), obj->GetPositionY());
     Cell cell(p);
 
     obj->GetMap()->UpdateObjectVisibility(obj,cell,p);
 }
-
-/*void ObjectAccessor::UpdateVisibilityForPlayer( Player* player )
-{
-    CellPair p = Trinity::ComputeCellPair(player->GetPositionX(), player->GetPositionY());
-    Cell cell(p);
-    Map* m = player->GetMap();
-
-    m->UpdatePlayerVisibility(player,cell,p);
-    m->UpdateObjectsVisibilityFor(player,cell,p);
-}*/
 
 /// Define the static member of HashMapHolder
 

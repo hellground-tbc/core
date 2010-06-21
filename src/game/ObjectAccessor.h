@@ -188,7 +188,6 @@ class TRINITY_DLL_DECL ObjectAccessor : public Trinity::Singleton<ObjectAccessor
         void RemoveUpdateObject(Object *obj);
 
         void Update(uint32 diff);
-        void UpdatePlayers(uint32 diff);
 
         Corpse* GetCorpseForPlayerGUID(uint64 guid);
         void RemoveCorpse(Corpse *corpse);

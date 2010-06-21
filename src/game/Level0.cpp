@@ -96,15 +96,7 @@ bool ChatHandler::HandleServerInfoCommand(const char* /*args*/)
     std::string str = secsToTimeString(sWorld.GetUptime());
     uint32 updateTime = sWorld.GetUpdateTime();
 
-    PSendSysMessage(_FULLVERSION);
-    //if(m_session)
-    //    full = _FULLVERSION(REVISION_DATE,REVISION_TIME,"|cffffffff|Hurl:" REVISION_ID "|h" REVISION_ID "|h|r");
-    //else
-    //    full = _FULLVERSION(REVISION_DATE,REVISION_TIME,REVISION_ID);
-
-    //SendSysMessage(full);
-    //PSendSysMessage(LANG_USING_SCRIPT_LIB,sWorld.GetScriptsVersion());
-    //PSendSysMessage(LANG_USING_WORLD_DB,sWorld.GetDBVersion());
+    PSendSysMessage("Hellground.pl - rev: "_REVISION);
     PSendSysMessage(LANG_CONNECTED_USERS, activeClientsNum, maxActiveClientsNum, queuedClientsNum, maxQueuedClientsNum);
     PSendSysMessage(LANG_UPTIME, str.c_str());
     PSendSysMessage("Diff: %u.", updateTime);
@@ -158,9 +150,9 @@ bool ChatHandler::HandleGMListIngameCommand(const char* /*args*/)
 {
     bool first = true;
 
-    HashMapHolder<Player>::MapType &m = HashMapHolder<Player>::GetContainer();
-    HashMapHolder<Player>::MapType::iterator itr = m.begin();
-    for(; itr != m.end(); ++itr)
+    ObjectAccessor::Guard guard(*HashMapHolder<Player>::GetLock());
+    HashMapHolder<Player>::MapType &m = ObjectAccessor::Instance().GetPlayers();
+    for (HashMapHolder<Player>::MapType::const_iterator itr = m.begin(); itr != m.end(); ++itr)
     {
         if (itr->second->GetSession()->GetSecurity() &&
             (itr->second->isGameMaster() || sWorld.getConfig(CONFIG_GM_IN_GM_LIST)) &&
