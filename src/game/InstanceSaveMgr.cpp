@@ -137,7 +137,7 @@ void InstanceSaveManager::RemoveInstanceSave(uint32 InstanceId)
     {
         // save the resettime for normal instances only when they get unloaded
         if(time_t resettime = itr->second->GetResetTimeForDB())
-            CharacterDatabase.PExecute("UPDATE instance SET resettime = '"I64FMTD"' WHERE id = '%u'", (uint64)resettime, InstanceId);
+            CharacterDatabase.PExecute("UPDATE instance SET resettime = '"UI64FMTD"' WHERE id = '%u'", (uint64)resettime, InstanceId);
         InstanceSave *temp = itr->second;
         m_instanceSaveById.erase(itr);
         delete temp;
@@ -177,7 +177,7 @@ void InstanceSave::SaveToDB()
         }
     }
 
-    CharacterDatabase.PExecute("INSERT INTO instance VALUES ('%u', '%u', '"I64FMTD"', '%u', '%s')", m_instanceid, GetMapId(), (uint64)GetResetTimeForDB(), GetDifficulty(), data.c_str());
+    CharacterDatabase.PExecute("INSERT INTO instance VALUES ('%u', '%u', '"UI64FMTD"', '%u', '%s')", m_instanceid, GetMapId(), (uint64)GetResetTimeForDB(), GetDifficulty(), data.c_str());
 }
 
 time_t InstanceSave::GetResetTimeForDB()
@@ -230,7 +230,7 @@ void InstanceSaveManager::_DelHelper(DatabaseType &db, const char *fields, const
     int res = vsnprintf( szQueryTail, MAX_QUERY_LEN, queryTail, ap );
     va_end(ap);
 
-    QueryResult *result = db.PQuery("SELECT %s FROM %s %s", fields, table, szQueryTail);
+    QueryResult_AutoPtr result = db.PQuery("SELECT %s FROM %s %s", fields, table, szQueryTail);
     if(result)
     {
         do
@@ -245,7 +245,6 @@ void InstanceSaveManager::_DelHelper(DatabaseType &db, const char *fields, const
             }
             db.DirectPExecute("DELETE FROM %s WHERE %s", table, ss.str().c_str());
         } while (result->NextRow());
-        delete result;
     }
 }
 
@@ -273,7 +272,7 @@ void InstanceSaveManager::CleanupInstances()
     // creature_respawn and gameobject_respawn are in another database
     // first, obtain total instance set
     std::set< uint32 > InstanceSet;
-    QueryResult *result = CharacterDatabase.Query("SELECT id FROM instance");
+    QueryResult_AutoPtr result = CharacterDatabase.Query("SELECT id FROM instance");
     if( result )
     {
         do
@@ -282,7 +281,6 @@ void InstanceSaveManager::CleanupInstances()
             InstanceSet.insert(fields[0].GetUInt32());
         }
         while (result->NextRow());
-        delete result;
     }
 
     // creature_respawn
@@ -296,7 +294,6 @@ void InstanceSaveManager::CleanupInstances()
                 WorldDatabase.DirectPExecute("DELETE FROM creature_respawn WHERE instance = '%u'", fields[0].GetUInt32());
         }
         while (result->NextRow());
-        delete result;
     }
 
     // gameobject_respawn
@@ -310,7 +307,6 @@ void InstanceSaveManager::CleanupInstances()
                 WorldDatabase.DirectPExecute("DELETE FROM gameobject_respawn WHERE instance = '%u'", fields[0].GetUInt32());
         }
         while (result->NextRow());
-        delete result;
     }
 
     bar.step();
@@ -329,7 +325,7 @@ void InstanceSaveManager::PackInstances()
     // all valid ids are in the instance table
     // any associations to ids not in this table are assumed to be
     // cleaned already in CleanupInstances
-    QueryResult *result = CharacterDatabase.Query("SELECT id FROM instance");
+    QueryResult_AutoPtr result = CharacterDatabase.Query("SELECT id FROM instance");
     if( result )
     {
         do
@@ -338,7 +334,6 @@ void InstanceSaveManager::PackInstances()
             InstanceSet.insert(fields[0].GetUInt32());
         }
         while (result->NextRow());
-        delete result;
     }
 
     barGoLink bar( InstanceSet.size() + 1);
@@ -357,6 +352,8 @@ void InstanceSaveManager::PackInstances()
             CharacterDatabase.PExecute("UPDATE character_instance SET instance = '%u' WHERE instance = '%u'", InstanceNumber, *i);
             CharacterDatabase.PExecute("UPDATE instance SET id = '%u' WHERE id = '%u'", InstanceNumber, *i);
             CharacterDatabase.PExecute("UPDATE group_instance SET instance = '%u' WHERE instance = '%u'", InstanceNumber, *i);
+            CharacterDatabase.PExecute("UPDATE group_saved_loot SET instanceId = '%u' WHERE instanceId = '%u'", InstanceNumber, *i);
+            CharacterDatabase.PExecute("UPDATE characters SET instance_id = '%u' WHERE instance_id = '%u'", InstanceNumber, *i);
         }
 
         ++InstanceNumber;
@@ -379,7 +376,7 @@ void InstanceSaveManager::LoadResetTimes()
     // resettime = 0 in the DB for raid/heroic instances so those are skipped
     typedef std::map<uint32, std::pair<uint32, uint64> > ResetTimeMapType;
     ResetTimeMapType InstResetTime;
-    QueryResult *result = CharacterDatabase.Query("SELECT id, map, resettime FROM instance WHERE resettime > 0");
+    QueryResult_AutoPtr result = CharacterDatabase.Query("SELECT id, map, resettime FROM instance WHERE resettime > 0");
     if( result )
     {
         do
@@ -392,7 +389,6 @@ void InstanceSaveManager::LoadResetTimes()
             }
         }
         while (result->NextRow());
-        delete result;
 
         // update reset time for normal instances with the max creature respawn time + X hours
         result = WorldDatabase.Query("SELECT MAX(respawntime), instance FROM creature_respawn WHERE instance > 0 GROUP BY instance");
@@ -406,12 +402,11 @@ void InstanceSaveManager::LoadResetTimes()
                 ResetTimeMapType::iterator itr = InstResetTime.find(instance);
                 if(itr != InstResetTime.end() && itr->second.second != resettime)
                 {
-                    CharacterDatabase.DirectPExecute("UPDATE instance SET resettime = '"I64FMTD"' WHERE id = '%u'", resettime, instance);
+                    CharacterDatabase.DirectPExecute("UPDATE instance SET resettime = '"UI64FMTD"' WHERE id = '%u'", resettime, instance);
                     itr->second.second = resettime;
                 }
             }
             while (result->NextRow());
-            delete result;
         }
 
         // schedule the reset times
@@ -441,16 +436,15 @@ void InstanceSaveManager::LoadResetTimes()
             uint64 oldresettime = fields[1].GetUInt64();
             uint64 newresettime = (oldresettime / DAY) * DAY + diff;
             if(oldresettime != newresettime)
-                CharacterDatabase.DirectPExecute("UPDATE instance_reset SET resettime = '"I64FMTD"' WHERE mapid = '%u'", newresettime, mapid);
+                CharacterDatabase.DirectPExecute("UPDATE instance_reset SET resettime = '"UI64FMTD"' WHERE mapid = '%u'", newresettime, mapid);
 
             m_resetTimeByMapId[mapid] = newresettime;
         } while(result->NextRow());
-        delete result;
     }
 
     // clean expired instances, references to them will be deleted in CleanupInstances
     // must be done before calculating new reset times
-    _DelHelper(CharacterDatabase, "id, map, difficulty", "instance", "LEFT JOIN instance_reset ON mapid = map WHERE (instance.resettime < '"I64FMTD"' AND instance.resettime > '0') OR (NOT instance_reset.resettime IS NULL AND instance_reset.resettime < '"I64FMTD"')",  (uint64)now, (uint64)now);
+    _DelHelper(CharacterDatabase, "id, map, difficulty", "instance", "LEFT JOIN instance_reset ON mapid = map WHERE (instance.resettime < '"UI64FMTD"' AND instance.resettime > '0') OR (NOT instance_reset.resettime IS NULL AND instance_reset.resettime < '"UI64FMTD"')",  (uint64)now, (uint64)now);
 
     // calculate new global reset times for expired instances and those that have never been reset yet
     // add the global reset times to the priority queue
@@ -470,7 +464,7 @@ void InstanceSaveManager::LoadResetTimes()
         {
             // initialize the reset time
             t = today + period + diff;
-            CharacterDatabase.DirectPExecute("INSERT INTO instance_reset VALUES ('%u','"I64FMTD"')", i, (uint64)t);
+            CharacterDatabase.DirectPExecute("INSERT INTO instance_reset VALUES ('%u','"UI64FMTD"')", i, (uint64)t);
         }
 
         if(t < now)
@@ -479,7 +473,7 @@ void InstanceSaveManager::LoadResetTimes()
             // calculate the next reset time
             t = (t / DAY) * DAY;
             t += ((today - t) / period + 1) * period + diff;
-            CharacterDatabase.DirectPExecute("UPDATE instance_reset SET resettime = '"I64FMTD"' WHERE mapid = '%u'", (uint64)t, i);
+            CharacterDatabase.DirectPExecute("UPDATE instance_reset SET resettime = '"UI64FMTD"' WHERE mapid = '%u'", (uint64)t, i);
         }
 
         m_resetTimeByMapId[temp->map] = t;
@@ -621,7 +615,7 @@ void InstanceSaveManager::_ResetOrWarnAll(uint32 mapid, bool warn, uint32 timeLe
         uint32 period = temp->reset_delay * DAY;
         uint64 next_reset = ((now + timeLeft + MINUTE) / DAY * DAY) + period + diff;
         // update it in the DB
-        CharacterDatabase.PExecute("UPDATE instance_reset SET resettime = '"I64FMTD"' WHERE mapid = '%d'", next_reset, mapid);
+        CharacterDatabase.PExecute("UPDATE instance_reset SET resettime = '"UI64FMTD"' WHERE mapid = '%d'", next_reset, mapid);
 
         // schedule next reset.
         m_resetTimeByMapId[mapid] = (time_t) next_reset;

@@ -203,7 +203,7 @@ void ScriptedAI::CastNextSpellIfAnyAndReady()
     if (spellList.empty())
         return;
 
-    SpellToCast * temp = &spellList.front();
+    SpellToCast *temp = &spellList.front();
 
     if (!temp || m_creature->hasUnitState(UNIT_STAT_CASTING) && !temp->triggered)
         return;
@@ -215,7 +215,7 @@ void ScriptedAI::CastNextSpellIfAnyAndReady()
     {
         Unit * tempU = m_creature->GetUnit(*m_creature, temp->targetGUID);
 
-        if (tempU && tempU->isAlive())
+        if (tempU && tempU->IsInWorld() && tempU->isAlive() && tempU->IsInMap(m_creature))
             if (temp->spellId)
                 m_creature->CastSpell(tempU, temp->spellId, temp->triggered);
     }
@@ -615,11 +615,9 @@ SpellEntry const* ScriptedAI::SelectSpell(Unit* Target, int32 School, int32 Mech
         return false;
 
     //Using the extended script system we first create a list of viable spells
-    SpellEntry const* Spell[4];
-    Spell[0] = 0;
-    Spell[1] = 0;
-    Spell[2] = 0;
-    Spell[3] = 0;
+    SpellEntry const* Spell[CREATURE_MAX_SPELLS];
+    for( int i = 0; i < CREATURE_MAX_SPELLS; i++)
+        Spell[i] = 0;
 
     uint32 SpellCount = 0;
 
@@ -627,7 +625,7 @@ SpellEntry const* ScriptedAI::SelectSpell(Unit* Target, int32 School, int32 Mech
     SpellRangeEntry const* TempRange;
 
     //Check if each spell is viable(set it to null if not)
-    for (uint32 i = 0; i < 4; i++)
+    for (uint32 i = 0; i < CREATURE_MAX_SPELLS; i++)
     {
         TempSpell = GetSpellStore()->LookupEntry(m_creature->m_spells[i]);
 
@@ -806,7 +804,10 @@ void ScriptedAI::DoZoneInCombat(Unit* pUnit)
     }
 
     if(pUnit->GetTypeId() == TYPEID_UNIT && ((Creature*)pUnit)->IsInEvadeMode())
+    {
+        error_log("TSCR: DoZoneInCombat called for creature that isInEvadeMode() pUnit entry = %d)", pUnit->GetTypeId() == TYPEID_UNIT ? ((Creature*)pUnit)->GetEntry() : 0);
         return;
+    }
 
     Map::PlayerList const &PlayerList = map->GetPlayers();
     for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)

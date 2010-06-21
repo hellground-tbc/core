@@ -965,6 +965,7 @@ BattleGroundMgr::BattleGroundMgr()
     m_NextRatingDiscardUpdate = m_RatingDiscardTimer;
     m_AutoDistributionTimeChecker = 0;
     m_ArenaTesting = false;
+    m_ApAnnounce = false;
 }
 
 BattleGroundMgr::~BattleGroundMgr()
@@ -1029,11 +1030,19 @@ void BattleGroundMgr::Update(time_t diff)
         {
             if(time(NULL) > m_NextAutoDistributionTime)
             {
+                if(!m_ApAnnounce)
+                {
+                    sWorld.SendWorldText(LANG_SYSTEMMESSAGE, "Distributing arena points to players will be performed in 2 minutes.");
+                    m_AutoDistributionTimeChecker = 120000;
+                    m_ApAnnounce = true;
+                    return;
+                }
+
                 DistributeArenaPoints();
-                m_NextAutoDistributionTime = time(NULL) + BATTLEGROUND_ARENA_POINT_DISTRIBUTION_DAY * sWorld.getConfig(CONFIG_ARENA_AUTO_DISTRIBUTE_INTERVAL_DAYS);
-                CharacterDatabase.PExecute("UPDATE saved_variables SET NextArenaPointDistributionTime = '"I64FMTD"'", m_NextAutoDistributionTime);
+                m_NextAutoDistributionTime = m_NextAutoDistributionTime + BATTLEGROUND_ARENA_POINT_DISTRIBUTION_DAY * sWorld.getConfig(CONFIG_ARENA_AUTO_DISTRIBUTE_INTERVAL_DAYS);
+                CharacterDatabase.PExecute("UPDATE saved_variables SET NextArenaPointDistributionTime = '"UI64FMTD"'", m_NextAutoDistributionTime);
             }
-            m_AutoDistributionTimeChecker = 600000; // check 10 minutes
+            m_AutoDistributionTimeChecker = 600000; // check in 10 minutes
         }
         else
             m_AutoDistributionTimeChecker -= diff;
@@ -1450,8 +1459,8 @@ void BattleGroundMgr::CreateInitialBattleGrounds()
 
     uint32 count = 0;
 
-    //                                                0   1                 2                 3      4      5                6              7             8
-    QueryResult *result = WorldDatabase.Query("SELECT id, MinPlayersPerTeam,MaxPlayersPerTeam,MinLvl,MaxLvl,AllianceStartLoc,AllianceStartO,HordeStartLoc,HordeStartO FROM battleground_template");
+    //                                                       0   1                 2                 3      4      5                6              7             8
+    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT id, MinPlayersPerTeam,MaxPlayersPerTeam,MinLvl,MaxLvl,AllianceStartLoc,AllianceStartO,HordeStartLoc,HordeStartO FROM battleground_template");
 
     if(!result)
     {
@@ -1551,8 +1560,6 @@ void BattleGroundMgr::CreateInitialBattleGrounds()
         ++count;
     } while (result->NextRow());
 
-    delete result;
-
     sLog.outString();
     sLog.outString( ">> Loaded %u battlegrounds", count );
 }
@@ -1562,18 +1569,16 @@ void BattleGroundMgr::InitAutomaticArenaPointDistribution()
     if(m_AutoDistributePoints)
     {
         sLog.outDebug("Initializing Automatic Arena Point Distribution");
-        QueryResult * result = CharacterDatabase.Query("SELECT NextArenaPointDistributionTime FROM saved_variables");
+        QueryResult_AutoPtr result = CharacterDatabase.Query("SELECT NextArenaPointDistributionTime FROM saved_variables");
         if(!result)
         {
             sLog.outDebug("Battleground: Next arena point distribution time not found in SavedVariables, reseting it now.");
             m_NextAutoDistributionTime = time(NULL) + BATTLEGROUND_ARENA_POINT_DISTRIBUTION_DAY * sWorld.getConfig(CONFIG_ARENA_AUTO_DISTRIBUTE_INTERVAL_DAYS);
-            CharacterDatabase.PExecute("INSERT INTO saved_variables (NextArenaPointDistributionTime) VALUES ('"I64FMTD"')", m_NextAutoDistributionTime);
+            CharacterDatabase.PExecute("INSERT INTO saved_variables (NextArenaPointDistributionTime) VALUES ('"UI64FMTD"')", m_NextAutoDistributionTime);
         }
         else
-        {
             m_NextAutoDistributionTime = (*result)[0].GetUInt64();
-            delete result;
-        }
+
         sLog.outDebug("Automatic Arena Point Distribution initialized.");
     }
 }

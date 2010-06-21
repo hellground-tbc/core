@@ -33,29 +33,39 @@ void SqlStatement::Execute(Database *db)
 
 void SqlTransaction::Execute(Database *db)
 {
+    const char* sql;
+    m_Mutex.acquire();
+
     if(m_queue.empty())
+    {
+        m_Mutex.release();
         return;
+    }
+
     db->DirectExecute("START TRANSACTION");
     while(!m_queue.empty())
     {
-        char const *sql = m_queue.front();
-        m_queue.pop();
+        sql = m_queue.front();
 
         if(!db->DirectExecute(sql))
         {
             free((void*)const_cast<char*>(sql));
+            m_queue.pop();
             db->DirectExecute("ROLLBACK");
             while(!m_queue.empty())
             {
                 free((void*)const_cast<char*>(m_queue.front()));
                 m_queue.pop();
             }
+            m_Mutex.release();
             return;
         }
 
         free((void*)const_cast<char*>(sql));
+        m_queue.pop();
     }
     db->DirectExecute("COMMIT");
+    m_Mutex.release();
 }
 
 /// ---- ASYNC QUERIES ----
@@ -109,7 +119,7 @@ bool SqlQueryHolder::SetQuery(size_t index, const char *sql)
     }
 
     /// not executed yet, just stored (it's not called a holder for nothing)
-    m_queries[index] = SqlResultPair(strdup(sql), NULL);
+    m_queries[index] = SqlResultPair(strdup(sql), QueryResult_AutoPtr(NULL));
     return true;
 }
 
@@ -136,7 +146,7 @@ bool SqlQueryHolder::SetPQuery(size_t index, const char *format, ...)
     return SetQuery(index,szQuery);
 }
 
-QueryResult* SqlQueryHolder::GetResult(size_t index)
+QueryResult_AutoPtr SqlQueryHolder::GetResult(size_t index)
 {
     if(index < m_queries.size())
     {
@@ -150,10 +160,10 @@ QueryResult* SqlQueryHolder::GetResult(size_t index)
         return m_queries[index].second;
     }
     else
-        return NULL;
+        return QueryResult_AutoPtr(NULL);
 }
 
-void SqlQueryHolder::SetResult(size_t index, QueryResult *result)
+void SqlQueryHolder::SetResult(size_t index, QueryResult_AutoPtr result)
 {
     /// store the result in the holder
     if(index < m_queries.size())
@@ -167,11 +177,7 @@ SqlQueryHolder::~SqlQueryHolder()
         /// if the result was never used, free the resources
         /// results used already (getresult called) are expected to be deleted
         if(m_queries[i].first != NULL)
-        {
             free((void*)(const_cast<char*>(m_queries[i].first)));
-            if(m_queries[i].second)
-                delete m_queries[i].second;
-        }
     }
 }
 
@@ -199,4 +205,3 @@ void SqlQueryHolderEx::Execute(Database *db)
     /// sync with the caller thread
     m_queue->add(m_callback);
 }
-

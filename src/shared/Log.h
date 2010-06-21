@@ -86,10 +86,13 @@ class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ACE_
             fclose(ircParser);
         ircParser = NULL;
 
+        if (specialLogFile != NULL)
+            fclose(specialLogFile);
+        specialLogFile = NULL;
+
         if (arenaLogFile != NULL)
             fclose(arenaLogFile);
         arenaLogFile = NULL;
-
 
         if (cheatLogFile != NULL)
             fclose(cheatLogFile);
@@ -119,6 +122,7 @@ class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ACE_
         void outErrorDb( const char * str, ... )     ATTR_PRINTF(2,3);
                                                             // any log level
         void outChar( const char * str, ... )        ATTR_PRINTF(2,3);
+        void outSpecial( const char * str, ... )     ATTR_PRINTF(2,3);
                                                             // any log level
         void outCharDump( const char * str, uint32 account_id, uint32 guid, const char * name );
         void outRALog( const char * str, ... )       ATTR_PRINTF(2,3);
@@ -148,6 +152,7 @@ class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ACE_
         FILE* dberLogfile;
         FILE* arenaLogFile;
         FILE* cheatLogFile;
+        FILE* specialLogFile;
 
         // log/console control
         uint32 m_logLevel;

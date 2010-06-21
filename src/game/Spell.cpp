@@ -49,6 +49,7 @@
 #include "BattleGround.h"
 #include "Util.h"
 #include "TemporarySummon.h"
+#include "PetAI.h"
 
 #define SPELL_CHANNEL_UPDATE_INTERVAL 1000
 
@@ -637,6 +638,13 @@ void Spell::prepareDataForTriggerSystem()
             break;
             case SPELLFAMILY_WARLOCK: // For Hellfire Effect / Rain of Fire / Seed of Corruption triggers need do it
                 if (m_spellInfo->SpellFamilyFlags & 0x0000800000000060LL) m_canTrigger = true;
+                if (m_spellInfo->SpellFamilyFlags & 0x0000008000000060LL)
+                {
+                    m_procAttacker = PROC_FLAG_ON_DO_PERIODIC;
+                    m_procVictim   = PROC_FLAG_ON_TAKE_PERIODIC;
+                    m_canTrigger = true;
+                    return;
+                }
             break;
             case SPELLFAMILY_HUNTER:  // Hunter Explosive Trap Effect/Immolation Trap Effect/Frost Trap Aura/Snake Trap Effect
                 if (m_spellInfo->SpellFamilyFlags & 0x0000200000000014LL) m_canTrigger = true;
@@ -731,7 +739,8 @@ void Spell::AddUnitTarget(Unit* pVictim, uint32 effIndex)
     // Calculate hit result
     if(m_originalCaster)
     {
-        target.missCondition = m_originalCaster->SpellHitResult(pVictim, m_spellInfo, m_canReflect);
+        bool canMiss = (m_triggeredByAuraSpell || !m_IsTriggeredSpell);
+        target.missCondition = m_originalCaster->SpellHitResult(pVictim, m_spellInfo, m_canReflect, canMiss);
         if(m_skipCheck && target.missCondition != SPELL_MISS_IMMUNE)
             target.missCondition = SPELL_MISS_NONE;
     }
@@ -1334,7 +1343,7 @@ void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uin
         {
             next = tempUnitMap.begin();
             while(cur->GetDistance(*next) > CHAIN_SPELL_JUMP_RADIUS
-                || !cur->IsWithinLOSInMap(*next))
+                || !cur->IsWithinLOSInMap(*next) || (*next)->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_PL_SPELL_TARGET))
             {
                 ++next;
                 if(next == tempUnitMap.end())
@@ -1802,7 +1811,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
 
         case TARGET_TYPE_CHANNEL:
         {
-            if(!m_originalCaster || !m_originalCaster->m_currentSpells[CURRENT_CHANNELED_SPELL])
+            if(m_spellInfo->Id != 38700 && !m_originalCaster || !m_originalCaster->m_currentSpells[CURRENT_CHANNELED_SPELL])
             {
                 sLog.outError( "SPELL: no current channeled spell for spell ID %u", m_spellInfo->Id );
                 break;
@@ -2002,6 +2011,8 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 unitList.remove(m_targets.getUnitTarget());
             else if(m_spellInfo->Id == 39968) // Needle Spine Explosion proc
                 unitList.remove(m_targets.getUnitTarget());
+            else if(m_spellInfo->Id == 37019) // Conflagration proc (Capernian)
+                unitList.remove(m_targets.getUnitTarget());
 
             for(std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
                 AddUnitTarget(*itr, i);
@@ -2024,7 +2035,7 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
     m_castOrientation = m_caster->GetOrientation();
 
     if(triggeredByAura)
-        m_triggeredByAuraSpell  = triggeredByAura->GetSpellProto();
+        m_triggeredByAuraSpell = triggeredByAura->GetSpellProto();
 
     // create and add update event for this spell
     SpellEvent* Event = new SpellEvent(this);
@@ -2183,6 +2194,15 @@ void Spell::cast(bool skipCheck)
             return;
         }
 
+    if (m_caster->GetTypeId() == TYPEID_UNIT && ((Creature *)m_caster)->isPet())
+    {
+        if (((Creature *)m_caster)->IsAIEnabled && ((PetAI *)((Creature *)m_caster)->AI())->targetHasInterruptableAura(m_targets.getUnitTarget()))
+        {
+            finish(false);
+            return;
+        }
+    }
+
     SetExecutedCurrently(true);
     uint8 castResult = 0;
 
@@ -2323,6 +2343,9 @@ void Spell::handle_immediate()
             m_caster->AddInterruptMask(m_spellInfo->ChannelInterruptFlags);
             SendChannelStart(duration);
         }
+
+        if(m_caster->GetTypeId() == TYPEID_PLAYER)
+            ((Player*)m_caster)->RemoveSpellMods(this);
     }
 
     // process immediate effects (items, ground, etc.) also initialize some variables
@@ -2594,10 +2617,18 @@ void Spell::update(uint32 difftime)
                 }
 
                 // check if there are alive targets left
-                if (!IsAliveUnitPresentInTargetList())
+                if(!IsAliveUnitPresentInTargetList())
                 {
                     SendChannelUpdate(0);
                     finish();
+                }
+                
+                if(m_spellInfo->SpellFamilyName == SPELLFAMILY_MAGE && m_spellInfo->SpellFamilyFlags & 0x800 )
+                {
+                    float max_range = GetSpellMaxRange(sSpellRangeStore.LookupEntry(m_spellInfo->rangeIndex));
+
+                    if(!m_targets.getUnitTarget() || !m_caster->IsWithinDistInMap(m_targets.getUnitTarget(), max_range +3.0))
+                        cancel();
                 }
 
                 if(difftime >= m_timer)
@@ -2668,14 +2699,14 @@ void Spell::finish(bool ok)
     if(!ok)
     {
         //restore spell mods
-        if (m_caster->GetTypeId() == TYPEID_PLAYER)
+        if (m_caster->GetTypeId() == TYPEID_PLAYER && !IsChanneledSpell(m_spellInfo))
             ((Player*)m_caster)->RestoreSpellMods(this);
         return;
     }
     // other code related only to successfully finished spells
 
     //remove spell mods
-    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+    if (m_caster->GetTypeId() == TYPEID_PLAYER && !IsChanneledSpell(m_spellInfo))
         ((Player*)m_caster)->RemoveSpellMods(this);
 
     // Okay to remove extra attacks
@@ -3349,8 +3380,11 @@ uint8 Spell::CanCast(bool strict)
        // if(m_triggeredByAuraSpell)
        //     return SPELL_FAILED_DONT_REPORT;
        // else
-            return SPELL_FAILED_NOT_READY;
+       return SPELL_FAILED_NOT_READY;
     }
+
+    if (m_spellInfo->Attributes & SPELL_ATTR_DISABLED_WHILE_ACTIVE && m_caster->HasAura(m_spellInfo->Id, 0))
+       return SPELL_FAILED_NOT_READY;
 
     // only allow triggered spells if at an ended battleground
     if( !m_IsTriggeredSpell && m_caster->GetTypeId() == TYPEID_PLAYER)

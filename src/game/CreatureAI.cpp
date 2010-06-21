@@ -108,7 +108,10 @@ void CreatureAI::MoveInLineOfSight(Unit *who)
         return;
 
     if(me->canStartAttack(who))
+    {
         AttackStart(who);
+        who->CombatStart(me);
+    }
     else if(who->getVictim() && me->IsFriendlyTo(who)
         && me->IsWithinDistInMap(who, sWorld.getConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS))
         && me->canAttack(who->getVictim()))
@@ -119,6 +122,9 @@ bool CreatureAI::UpdateVictim()
 {
     if(!me->isInCombat())
         return false;
+
+    if(me->getVictim() && me->hasUnitState(UNIT_STAT_CASTING))
+        return me->getVictim();
 
     if(Unit *victim = me->SelectVictim())
         AttackStart(victim);

@@ -97,8 +97,8 @@ void LootStore::LoadLootTable()
 
     sLog.outString( "%s :", GetName());
 
-    //                                                 0      1     2                    3        4              5         6              7                 8
-    QueryResult *result = WorldDatabase.PQuery("SELECT entry, item, ChanceOrQuestChance, groupid, mincountOrRef, maxcount, lootcondition, condition_value1, condition_value2 FROM %s",GetName());
+    //                                                        0      1     2                    3        4              5         6              7                 8
+    QueryResult_AutoPtr result = WorldDatabase.PQuery("SELECT entry, item, ChanceOrQuestChance, groupid, mincountOrRef, maxcount, lootcondition, condition_value1, condition_value2 FROM %s",GetName());
 
     if (result)
     {
@@ -153,8 +153,6 @@ void LootStore::LoadLootTable()
             ++count;
 
         } while (result->NextRow());
-
-        delete result;
 
         Verify();                                           // Checks validity of the loot store
 
@@ -406,7 +404,7 @@ void Loot::loadLootFromDB(Creature *pCreature)
 
     m_creatureGUID = pCreature->GetGUID();
 
-    QueryResult *result = CharacterDatabase.PQuery("SELECT itemId, itemCount FROM group_saved_loot WHERE creatureId='%u' AND instanceId='%u'", pCreature->GetEntry(), pCreature->GetInstanceId());
+    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT itemId, itemCount FROM group_saved_loot WHERE creatureId='%u' AND instanceId='%u'", pCreature->GetEntry(), pCreature->GetInstanceId());
     if (result)
     {
         do
@@ -423,7 +421,6 @@ void Loot::loadLootFromDB(Creature *pCreature)
             }
         }
         while (result->NextRow());
-        delete result;
 
         load = true;
 
@@ -456,7 +453,7 @@ void Loot::removeItemFromSavedLoot(uint8 lootIndex)
     if (!pCreature)
         return;
 
-    QueryResult *result = CharacterDatabase.PQuery("SELECT itemCount FROM group_saved_loot WHERE itemId='%u' AND instanceId='%u' AND creatureId='%u'", item->itemid, pCreature->GetInstanceId(), pCreature->GetEntry());
+    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT itemCount FROM group_saved_loot WHERE itemId='%u' AND instanceId='%u' AND creatureId='%u'", item->itemid, pCreature->GetInstanceId(), pCreature->GetEntry());
     if (!result)
         return;
 
@@ -466,7 +463,6 @@ void Loot::removeItemFromSavedLoot(uint8 lootIndex)
         Field *fields = result->Fetch();
         count = fields[0].GetUInt32();
     }
-    delete result;
 
     CharacterDatabase.BeginTransaction();
     if (count != 1)

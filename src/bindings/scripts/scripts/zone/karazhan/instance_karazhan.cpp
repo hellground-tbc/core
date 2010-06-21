@@ -62,7 +62,7 @@ void instance_karazhan::Initialize()
 bool instance_karazhan::IsEncounterInProgress() const
 {
     for (uint8 i = 0; i < ENCOUNTERS; ++i)
-        if (Encounters[i] == IN_PROGRESS)
+        if (Encounters[i] != DONE && Encounters[i] != NOT_STARTED)
             return true;
 
     return false;
@@ -204,8 +204,8 @@ void instance_karazhan::SetData(uint32 type, uint32 data)
             Encounters[1] = data;
         break;
     case DATA_OPERA_OZ_DEATHCOUNT:
-		++OzDeathCount;
-		break;
+        ++OzDeathCount;
+        break;
     }
 
     if(data == DONE)

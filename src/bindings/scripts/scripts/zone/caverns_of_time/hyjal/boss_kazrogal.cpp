@@ -102,7 +102,15 @@ struct TRINITY_DLL_DECL boss_kazrogalAI : public hyjal_trashAI
         {
             Unit* target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_THRALL));
             if (target && target->isAlive())
+            {
                 m_creature->AddThreat(target,0.0);
+                AttackStart(target);
+            }
+            else
+            {
+                if(target = m_creature->SelectNearbyTarget(200.0))
+                    AttackStart(target);
+            }
         }
     }
 
@@ -146,8 +154,10 @@ struct TRINITY_DLL_DECL boss_kazrogalAI : public hyjal_trashAI
         if(CheckTimer < diff)
         {
             DoZoneInCombat();
+            m_creature->SetSpeed(MOVE_RUN, 3.0);
             CheckTimer = 3000;
-        }else
+        }
+        else
             CheckTimer -= diff;
 
         if(CleaveTimer < diff)

@@ -38,6 +38,10 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
         go = false;
         pos = 0;
+
+        SpellEntry *decaySpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_DEATH_AND_DECAY);
+        if(decaySpell)
+            decaySpell->AttributesEx |= SPELL_ATTR_EX_CHANNELED_1;
     }
 
     uint32 FrostArmorTimer;
@@ -100,7 +104,15 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
         {
             Unit* target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_JAINAPROUDMOORE));
             if (target && target->isAlive())
+            {
                 m_creature->AddThreat(target,0.0);
+                AttackStart(target);
+            }
+            else
+            {
+                if(target = m_creature->SelectNearbyTarget(200.0))
+                    AttackStart(target);
+            }
         }
     }
 
@@ -146,6 +158,7 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
         if(CheckTimer < diff)
         {
             DoZoneInCombat();
+            m_creature->SetSpeed(MOVE_RUN, 3.0);
             CheckTimer = 3000;
         }
         else

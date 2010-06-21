@@ -40,7 +40,7 @@ class Totem : public Creature
         void Update( uint32 time );
         void Summon(Unit* owner);
         void UnSummon();
-        uint32 GetSpell() const { return m_spells[0]; }
+        uint32 GetSpell(uint8 slot = 0) const { return m_spells[slot]; }
         uint32 GetTotemDuration() const { return m_duration; }
         Unit *GetOwner();
         TotemType GetTotemType() const { return m_type; }

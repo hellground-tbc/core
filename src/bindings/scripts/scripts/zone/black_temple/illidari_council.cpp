@@ -606,6 +606,7 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public boss_illidari_coun
             AuraTimer -= diff;
 
         DoMeleeAttackIfReady();
+        CastNextSpellIfAnyAndReady();
     }
 };
 
@@ -711,6 +712,8 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public boss_illidari_
         }
         else
             ArcaneBoltTimer -= diff;
+
+        CastNextSpellIfAnyAndReady();
     }
 };
 
@@ -802,6 +805,7 @@ struct TRINITY_DLL_DECL boss_lady_malandeAI : public boss_illidari_councilAI
             ReflectiveShieldTimer -= diff;
 
         DoMeleeAttackIfReady();
+        CastNextSpellIfAnyAndReady();
     }
 };
 
@@ -907,6 +911,8 @@ struct TRINITY_DLL_DECL boss_veras_darkshadowAI : public boss_illidari_councilAI
                 }
             }else EnvenomTimer -= diff;
         }
+
+        CastNextSpellIfAnyAndReady();
     }
 };
 

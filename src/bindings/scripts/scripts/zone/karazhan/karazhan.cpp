@@ -145,7 +145,7 @@ struct TRINITY_DLL_DECL npc_barnesAI : public npc_escortAI
             Event = pInstance->GetData(DATA_OPERA_PERFORMANCE);
 
              if (GameObject* Door = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_STAGEDOORLEFT)))
-                Door->SetGoState(1);
+                 Door->SetGoState(pInstance->GetData(DATA_OPERA_EVENT) == DONE ? 0 : 1);
 
              if (GameObject* Curtain = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_CURTAINS)))
                 Curtain->SetGoState(1);
@@ -374,7 +374,7 @@ bool GossipHello_npc_barnes(Player* player, Creature* _Creature)
 {
     // Check for death of Moroes.
     ScriptedInstance* pInstance = ((ScriptedInstance*)_Creature->GetInstanceData());
-    if(pInstance && (pInstance->GetData(DATA_MOROES_EVENT) >= DONE))
+    if(pInstance && (pInstance->GetData(DATA_MOROES_EVENT) >= DONE && pInstance->GetData(DATA_OPERA_EVENT) != DONE))
     {
         player->ADD_GOSSIP_ITEM(0, OZ_GOSSIP1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
 

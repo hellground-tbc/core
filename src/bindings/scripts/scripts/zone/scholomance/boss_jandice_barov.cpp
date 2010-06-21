@@ -24,10 +24,9 @@ EndScriptData */
 #include "precompiled.h"
 
 #define SPELL_CURSEOFBLOOD          24673
-//#define SPELL_ILLUSION              17773
 
-//Spells of Illusion of Jandice Barov
-#define SPELL_CLEAVE                15584
+//#define SPELL_BANISH                8994
+//#define SPELL_ILLUSION              17773
 
 struct TRINITY_DLL_DECL boss_jandicebarovAI : public ScriptedAI
 {
@@ -163,11 +162,8 @@ struct TRINITY_DLL_DECL mob_illusionofjandicebarovAI : public ScriptedAI
 {
     mob_illusionofjandicebarovAI(Creature *c) : ScriptedAI(c) {}
 
-    uint32 Cleave_Timer;
-
     void Reset()
     {
-        Cleave_Timer = 2000 + rand()%6000;
         m_creature->ApplySpellImmune(0, IMMUNITY_DAMAGE, SPELL_SCHOOL_MASK_MAGIC, true);
     }
 
@@ -180,16 +176,6 @@ struct TRINITY_DLL_DECL mob_illusionofjandicebarovAI : public ScriptedAI
         //Return since we have no target
         if (!UpdateVictim())
             return;
-
-        //Cleave_Timer
-        if (Cleave_Timer < diff)
-        {
-            //Cast
-            DoCast(m_creature->getVictim(),SPELL_CLEAVE);
-
-            //5-8 seconds
-            Cleave_Timer = 5000 + rand()%3000;
-        }else Cleave_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }

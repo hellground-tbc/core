@@ -435,12 +435,13 @@ bool GossipHello_boss_gloomrel(Player *player, Creature *_Creature)
 
     if (player->GetQuestRewardStatus(4083) == 0 && player->GetSkillValue(SKILL_MINING) >= 230)
         player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_TRIBUTE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
-
+    player->SEND_GOSSIP_MENU(2601, _Creature->GetGUID());
     return true;
 }
 
 bool GossipSelect_boss_gloomrel(Player *player, Creature *_Creature, uint32 sender, uint32 action )
 {
+    static uint64 SpectralChaliceGUID = 0;
     switch (action)
     {
         case GOSSIP_ACTION_INFO_DEF+1:
@@ -457,7 +458,12 @@ bool GossipSelect_boss_gloomrel(Player *player, Creature *_Creature, uint32 send
             break;
         case GOSSIP_ACTION_INFO_DEF+22:
             player->CLOSE_GOSSIP_MENU();
-            //re-spawn object here
+            if(!_Creature->GetMap()->GetGameObject(SpectralChaliceGUID))
+            {
+                GameObject *spectralChalice = _Creature->SummonGameObject(164869, 1232, -239, -85, 4.05, 0, 0, 0, 0, 0);
+                if(spectralChalice)
+                    SpectralChaliceGUID = spectralChalice->GetGUID();
+            }
             break;
     }
     return true;

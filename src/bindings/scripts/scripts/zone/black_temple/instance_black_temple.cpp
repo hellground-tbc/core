@@ -46,6 +46,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
     uint64 Akama;                                           // This is the Akama that starts the Illidan encounter.
     uint64 Akama_Shade;                                     // This is the Akama that starts the Shade of Akama encounter.
     uint64 ShadeOfAkama;
+    uint64 Teron;
     uint64 Supremus;
     uint64 LadyMalande;
     uint64 GathiosTheShatterer;
@@ -68,6 +69,8 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
     uint64 IllidanGate;
     uint64 IllidanDoor[2];
 
+    uint32 EnslavedSoulsCount;
+
     uint32 Encounters[ENCOUNTERS];
     std::string str_data;
 
@@ -77,6 +80,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         Akama = 0;
         Akama_Shade = 0;
         ShadeOfAkama = 0;
+        Teron = 0;
         Supremus = 0;
         LadyMalande = 0;
         GathiosTheShatterer = 0;
@@ -99,6 +103,8 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         IllidanGate     = 0;
         IllidanDoor[0]  = 0;
         IllidanDoor[1]  = 0;
+
+        EnslavedSoulsCount = 0;
 
         for(uint8 i = 0; i < ENCOUNTERS; ++i)
             Encounters[i] = NOT_STARTED;
@@ -137,6 +143,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         case 23089:    Akama = creature->GetGUID();                     break;
         case 22990:    Akama_Shade = creature->GetGUID();               break;
         case 22841:    ShadeOfAkama = creature->GetGUID();              break;
+        case 22871:    Teron = creature->GetGUID();                     break;
         case 22898:    Supremus = creature->GetGUID();                  break;
         case 22917:    IllidanStormrage = creature->GetGUID();          break;
         case 22949:    GathiosTheShatterer = creature->GetGUID();       break;
@@ -220,6 +227,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         case DATA_AKAMA:                       return Akama;
         case DATA_AKAMA_SHADE:                 return Akama_Shade;
         case DATA_SHADEOFAKAMA:                return ShadeOfAkama;
+        case DATA_TERONGOREFIENDEVENT:         return Teron;
         case DATA_SUPREMUS:                    return Supremus;
         case DATA_ILLIDANSTORMRAGE:            return IllidanStormrage;
         case DATA_GATHIOSTHESHATTERER:         return GathiosTheShatterer;
@@ -273,7 +281,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
                 HandleGameObject(TeronDoor, true);
                 HandleGameObject(CommonDoor, true);
             }
-            if(Encounters[3] != DONE)     
+            if(Encounters[3] != DONE)
                 Encounters[3] = data;
             break;
         case DATA_GURTOGGBLOODBOILEVENT:
@@ -312,6 +320,11 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
             if(Encounters[8] != DONE)
                 Encounters[8] = data;
             break;
+        case DATA_ENSLAVED_SOUL:
+            if(data)
+                EnslavedSoulsCount++;
+            else
+                EnslavedSoulsCount = 0;
         }
 
         if (data == DONE)
@@ -344,6 +357,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         case DATA_MOTHERSHAHRAZEVENT:               return Encounters[6];
         case DATA_ILLIDARICOUNCILEVENT:             return Encounters[7];
         case DATA_ILLIDANSTORMRAGEEVENT:            return Encounters[8];
+        case DATA_ENSLAVED_SOUL:                    return EnslavedSoulsCount;
         }
 
         return 0;

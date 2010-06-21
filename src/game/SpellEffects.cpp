@@ -891,6 +891,77 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->CastCustomSpell(m_caster, 12976, &healthModSpellBasePoints0, NULL, NULL, true, NULL);
                     return;
                 }
+                case 8344:                                  // Universal Remote
+                {
+                    if(!unitTarget)
+                        return;
+
+                    if(urand(0, 99) > 20)
+                        m_caster->CastSpell(unitTarget, 8345, true);
+                    else                                    // 20% (?guessed) chance for malfunction
+                    {
+                        switch(urand(0, 1))
+                        {
+                            case 0:
+                                m_caster->CastSpell(unitTarget, 8346, true);
+                                break;
+                            case 1:
+                                m_caster->CastSpell(unitTarget, 8347, true);
+                                break;
+                        }
+                    }
+                    return;
+                }
+                /*
+                Placeholder for Gnomish Death Ray support.
+                Maybe spells ids after case should be swaped.
+                case 13280:                                 
+                    m_caster->CastSpell(m_caster, 13493, true);     // Gnomish Death Ray periodic damage
+                    return;
+                case 13278:                                 
+                    m_caster->CastSpell(unitTarget, 13279, true);  // Gnomish Death Ray effect
+                    return;
+                */
+                case 13180:                                 // Gnomish Mind Control Cap
+                {
+                    if(!unitTarget)
+                        return;
+                    
+                    int32 failureChance = unitTarget->getLevel() > 60 ? 20 : 5;            // guessed chance of failure
+                    if(urand(0, 99) > failureChance)
+                        m_caster->CastSpell(unitTarget, 13181, true);
+                    else
+                        unitTarget->CastSpell(m_caster, 13181, true);
+
+                    return;
+                }
+                case 13006:                                 // gnomish shrink ray
+                {
+                    if(!unitTarget)
+                        return;
+
+                    if(urand(0, 99) > 10)
+                        m_caster->CastSpell(unitTarget, 13003, true);
+                    else                                    // 10% (?guessed) chance for malfunction
+                    {
+                        switch(urand(0, 3))
+                        {
+                            case 0:
+                                m_caster->CastSpell(unitTarget, 13004, true);
+                                break;
+                            case 1:
+                                m_caster->CastSpell(m_caster, 13003, true);
+                                break;
+                            case 2:
+                                m_caster->CastSpell(m_caster, 13004, true);
+                                break;
+                            case 3:
+                                m_caster->CastSpell(m_caster, 13010, true);
+                                break;
+                        }
+                    }
+                    return;
+                }
                 case 13120:                                 // net-o-matic
                 {
                     if(!unitTarget)
@@ -3543,7 +3614,12 @@ void Spell::EffectDispel(uint32 i)
 {
     if(!unitTarget)
         return;
-
+    if(unitTarget->IsHostileTo(m_caster))
+    {
+        m_caster->SetInCombatWith(unitTarget);
+        unitTarget->SetInCombatWith(m_caster);
+    }
+ 
     // Fill possible dispel list
     std::vector <Aura *> dispel_list;
 
@@ -4286,7 +4362,16 @@ void Spell::EffectSummonPet(uint32 i)
     }
 
     float x, y, z;
-    owner->GetClosePoint(x, y, z, owner->GetObjectSize());
+    if(petentry == 19668) // Shadowfiend: summon at target feet !;p
+    {
+        if(Unit *target = m_targets.getUnitTarget())
+            target->GetClosePoint(x, y, z, target->GetObjectSize());
+        else
+            owner->GetClosePoint(x, y, z, owner->GetObjectSize());
+    }
+    else
+        owner->GetClosePoint(x, y, z, owner->GetObjectSize());
+
     Pet* pet = owner->SummonPet(petentry, x, y, z, owner->GetOrientation(), SUMMON_PET, 0);
     if(!pet)
         return;
@@ -4790,19 +4875,25 @@ void Spell::EffectScriptEffect(uint32 effIndex)
 
     switch(m_spellInfo->Id)
     {
+        // Gurtogg Bloodboil: Eject
+        case 40486:
+        case 40597:
         // Void Reaver: Knock Back
         case 25778:
-
+        {
             if(!m_caster->CanHaveThreatList())
                 return;
 
             m_caster->getThreatManager().modifyThreatPercent(unitTarget, -25);
-        break;
+            break;
+        }
 
         // Incite Chaos
         case 33676:
+        {
             m_caster->CastSpell(unitTarget, 33684, true);
-        break;
+            break;
+        }
 
         // PX-238 Winter Wondervolt TRAP
         case 26275:

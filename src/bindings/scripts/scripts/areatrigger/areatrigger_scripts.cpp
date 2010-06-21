@@ -16,13 +16,15 @@
 
 /* ScriptData
 SDName: Areatrigger_Scripts
-SD%Complete: 100
+SD%Complete: ?
 SDComment: Scripts for areatriggers
 SDCategory: Areatrigger
 EndScriptData */
 
 /* ContentData
 at_legion_teleporter    4560 Teleporter TO Invasion Point: Cataclysm
+at_scent_larkorwi       quest 4291
+
 at_test                 script test only
 EndContentData */
 
@@ -56,6 +58,29 @@ bool AreaTrigger_at_legion_teleporter(Player *player, AreaTriggerEntry *at)
     return false;
 }
 
+/*######
+## at_scent_larkorwi
+######*/
+
+enum eScentLarkorwi
+{
+    QUEST_SCENT_OF_LARKORWI               = 4291,
+    NPC_LARKORWI_MATE                     = 9683
+};
+
+bool AreaTrigger_at_scent_larkorwi(Player* player, AreaTriggerEntry* trigger)
+{
+    if (!player->isDead() && player->GetQuestStatus(QUEST_SCENT_OF_LARKORWI) == QUEST_STATUS_INCOMPLETE)
+    {
+        Unit* LarkorwiMate = FindCreature(NPC_LARKORWI_MATE, 15.0, player);
+            if(!LarkorwiMate)
+                player->SummonCreature(NPC_LARKORWI_MATE, player->GetPositionX()+5, player->GetPositionY(), player->GetPositionZ(), 3.3, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 100000);
+    }
+
+    return false;
+}
+
+
 bool ATtest(Player *player, AreaTriggerEntry *at)
 {
     player->Say("Hi!",LANG_UNIVERSAL);
@@ -70,6 +95,12 @@ void AddSC_areatrigger_scripts()
     newscript->Name = "at_legion_teleporter";
     newscript->pAreaTrigger = &AreaTrigger_at_legion_teleporter;
     newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "at_scent_larkorwi";
+    newscript->pAreaTrigger = &AreaTrigger_at_scent_larkorwi;
+    newscript->RegisterSelf();
+
 /*
     newscript = new Script;
     newscript->Name="at_test";

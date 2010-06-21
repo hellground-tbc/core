@@ -166,6 +166,66 @@ Player* World::FindPlayerInZone(uint32 zone)
     return NULL;
 }
 
+enum
+{
+    CMD_AUTH = 'A',
+    VAL_AUTH_OK = 'o',
+
+    CMD_KEEP_ALIVE = 'P',
+
+    CMD_KICK = 'K',
+    VAL_KICK_LAUNCHER_EXIT  = 'e',
+    VAL_KICK_CHEAT_DETECTED = 'c',
+
+    KICK_TIME = 15000,
+};
+
+void kick_player(std::string ip)
+{
+    QueryResult_AutoPtr result = LoginDatabase.PQuery("SELECT id FROM account WHERE last_ip = '%s'", ip.c_str());
+    if (!result)
+    {
+        sLog.outError("ANTICHEAT: Couldn't find accounts with last_ip = '%s'", ip.c_str());
+        return;
+    }
+
+    do
+    {
+        Field *acc_field = result->Fetch();
+        uint32 account = acc_field->GetUInt32();
+
+        if (WorldSession* sess = sWorld.FindSession(account))
+        {
+            sLog.outString("KICKING PLAYER %s", sess->GetPlayerName());
+            sess->KickPlayer();
+        }
+    }
+    while (result->NextRow());
+}
+
+void World::ProcessAnticheat(char *cmd, char *val, std::string ip)
+{
+    switch (*cmd)
+    {
+        case CMD_KEEP_ALIVE:
+        {
+            //m_ac_auth[ip] = KICK_TIME;
+        }
+        break;
+        case CMD_KICK:
+            if (*val == VAL_KICK_CHEAT_DETECTED)
+            {
+                kick_player(ip);
+                // delete from auth list
+                //m_ac_auth.erase(ip.c_str());
+            }
+            break;
+        default:
+            sLog.outError("Unknown CMD in World::ProcessAnticheat()");
+            break;
+    }
+}
+
 /// Find a session by its id
 WorldSession* World::FindSession(uint32 id) const
 {
@@ -212,6 +272,8 @@ void World::AddSession_ (WorldSession* s)
         delete s;                                           // session not added yet in session list, so not listed in queue
         return;
     }
+
+    //m_ac_auth[s->GetRemoteAddress()] = 15000;
 
     // decrease session counts only at not reconnection case
     bool decrease_session = true;
@@ -1033,11 +1095,13 @@ void World::LoadConfigSettings(bool reload)
 
     bool enableLOS = sConfig.GetBoolDefault("vmap.enableLOS", false);
     bool enableHeight = sConfig.GetBoolDefault("vmap.enableHeight", false);
-    std::string ignoreMapIds = sConfig.GetStringDefault("vmap.ignoreMapIds", "");
+    std::string losMaps = sConfig.GetStringDefault("vmap.losMaps", "");
+    std::string heightMaps = sConfig.GetStringDefault("vmap.heightMaps", "");
     std::string ignoreSpellIds = sConfig.GetStringDefault("vmap.ignoreSpellIds", "");
     VMAP::VMapFactory::createOrGetVMapManager()->setEnableLineOfSightCalc(enableLOS);
     VMAP::VMapFactory::createOrGetVMapManager()->setEnableHeightCalc(enableHeight);
-    VMAP::VMapFactory::createOrGetVMapManager()->preventMapsFromBeingUsed(ignoreMapIds.c_str());
+    VMAP::VMapFactory::createOrGetVMapManager()->setLOSonmaps(losMaps.c_str());
+    VMAP::VMapFactory::createOrGetVMapManager()->setHeightonmaps(heightMaps.c_str());
     VMAP::VMapFactory::preventSpellsFromBeingTestedForLoS(ignoreSpellIds.c_str());
     sLog.outString( "WORLD: VMap support included. LineOfSight:%i, getHeight:%i",enableLOS, enableHeight);
     sLog.outString( "WORLD: VMap data directory is: %svmaps",m_dataPath.c_str());
@@ -1161,9 +1225,6 @@ void World::SetInitialWorldSettings()
 
     sLog.outString( "Loading Page Texts..." );
     objmgr.LoadPageTexts();
-
-    sLog.outString( "Loading Player info in cache..." );
-    objmgr.LoadPlayerInfoInCache();
 
     sLog.outString( "Loading Game Object Templates..." );   // must be after LoadPageTexts
     objmgr.LoadGameobjectInfo();
@@ -1401,7 +1462,7 @@ void World::SetInitialWorldSettings()
     sprintf( isoDate, "%04d-%02d-%02d %02d:%02d:%02d",
         local.tm_year+1900, local.tm_mon+1, local.tm_mday, local.tm_hour, local.tm_min, local.tm_sec);
 
-    WorldDatabase.PExecute("INSERT INTO uptime (startstring, starttime, uptime) VALUES('%s', " I64FMTD ", 0)",
+    WorldDatabase.PExecute("INSERT INTO uptime (startstring, starttime, uptime) VALUES('%s', " UI64FMTD ", 0)",
         isoDate, uint64(m_startTime));
 
     m_timers[WUPDATE_OBJECTS].SetInterval(0);
@@ -1550,8 +1611,11 @@ void World::Update(time_t diff)
             m_updateTimeSum = m_updateTime;
             m_updateTimeCount = 1;
             
-            if(GetUptime() > 43200)
-                ShutdownServ(1, SHUTDOWN_MASK_RESTART, RESTART_EXIT_CODE);
+            if(GetUptime() > 43000 && !m_ShutdownTimer)
+            { 
+                SendWorldText(LANG_SYSTEMMESSAGE, "Autorestart in 10 mins");
+                ShutdownServ(600, SHUTDOWN_MASK_RESTART, RESTART_EXIT_CODE);
+            }
         }
         else
         {
@@ -1612,7 +1676,6 @@ void World::Update(time_t diff)
         // Update groups
         for(ObjectMgr::GroupSet::iterator itr = objmgr.GetGroupSetBegin(); itr != objmgr.GetGroupSetEnd(); ++itr)
             (*itr)->Update(diff);
-
     }
     RecordTimeDiff("UpdateSessions");
 
@@ -1644,7 +1707,7 @@ void World::Update(time_t diff)
         uint32 maxClientsNum = sWorld.GetMaxActiveSessionCount();
 
         m_timers[WUPDATE_UPTIME].Reset();
-        WorldDatabase.PExecute("UPDATE uptime SET uptime = %d, maxplayers = %d WHERE starttime = " I64FMTD, tmpDiff, maxClientsNum, uint64(m_startTime));
+        WorldDatabase.PExecute("UPDATE uptime SET uptime = %d, maxplayers = %d WHERE starttime = " UI64FMTD, tmpDiff, maxClientsNum, uint64(m_startTime));
     }
 
     RecordTimeDiff(NULL);
@@ -1996,7 +2059,7 @@ BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, std::string dura
     LoginDatabase.escape_string(safe_author);
 
     uint32 duration_secs = TimeStringToSecs(duration);
-    QueryResult *resultAccounts = NULL;                     //used for kicking
+    QueryResult_AutoPtr resultAccounts = QueryResult_AutoPtr(NULL);                     //used for kicking
 
     ///- Update the database with ban information
     switch(mode)
@@ -2045,7 +2108,6 @@ BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, std::string dura
     }
     while( resultAccounts->NextRow() );
 
-    delete resultAccounts;
     return BAN_SUCCESS;
 }
 
@@ -2206,6 +2268,20 @@ void World::UpdateSessions( time_t diff )
         if(!itr->second)
             continue;
 
+#ifdef ANTICHEAT_SOCK
+        if (m_ac_auth[itr->second->GetRemoteAddress()] < diff)
+        {
+            //sLog.outString("KICKING PLAYER %s", itr->second->GetRemoteAddress().c_str());
+            itr->second->KickPlayer();
+            m_ac_auth.erase(itr->second->GetRemoteAddress());
+        }
+        else
+        {
+            m_ac_auth[itr->second->GetRemoteAddress()] -= diff;
+            //sLog.outString("TIME TO KICK %s %i", itr->second->GetRemoteAddress().c_str(), m_ac_auth[itr->second->GetRemoteAddress()]);
+        }
+#endif // ANTICHEAT_SOCK
+
         ///- and remove not active sessions from the list
         if(!itr->second->Update(diff))                      // As interval = 0
         {
@@ -2267,13 +2343,12 @@ void World::UpdateRealmCharCount(uint32 accountId)
         "SELECT COUNT(guid) FROM characters WHERE account = '%u'", accountId);
 }
 
-void World::_UpdateRealmCharCount(QueryResult *resultCharCount, uint32 accountId)
+void World::_UpdateRealmCharCount(QueryResult_AutoPtr resultCharCount, uint32 accountId)
 {
     if (resultCharCount)
     {
         Field *fields = resultCharCount->Fetch();
         uint32 charCount = fields[0].GetUInt32();
-        delete resultCharCount;
         LoginDatabase.PExecute("DELETE FROM realmcharacters WHERE acctid= '%d' AND realmid = '%d'", accountId, realmID);
         LoginDatabase.PExecute("INSERT INTO realmcharacters (numchars, acctid, realmid) VALUES (%u, %u, %u)", charCount, accountId, realmID);
     }
@@ -2283,13 +2358,12 @@ void World::InitDailyQuestResetTime()
 {
     time_t mostRecentQuestTime;
 
-    QueryResult* result = CharacterDatabase.Query("SELECT MAX(time) FROM character_queststatus_daily");
+    QueryResult_AutoPtr result = CharacterDatabase.Query("SELECT MAX(time) FROM character_queststatus_daily");
     if(result)
     {
         Field *fields = result->Fetch();
 
         mostRecentQuestTime = (time_t)fields[0].GetUInt64();
-        delete result;
     }
     else
         mostRecentQuestTime = 0;
@@ -2320,12 +2394,11 @@ void World::InitDailyQuestResetTime()
 
 void World::UpdateAllowedSecurity()
 {
-     QueryResult *result = LoginDatabase.PQuery("SELECT allowedSecurityLevel from realmlist WHERE id = '%d'", realmID);
+     QueryResult_AutoPtr result = LoginDatabase.PQuery("SELECT allowedSecurityLevel from realmlist WHERE id = '%d'", realmID);
      if (result)
      {
         m_allowedSecurityLevel = AccountTypes(result->Fetch()->GetUInt16());
         sLog.outDebug("Allowed Level: %u Result %u", m_allowedSecurityLevel, result->Fetch()->GetUInt16());
-        delete result;
      }
 }
 
@@ -2396,13 +2469,12 @@ void World::UpdateMaxSessionCounters()
 
 void World::LoadDBVersion()
 {
-    QueryResult* result = WorldDatabase.Query("SELECT db_version FROM version LIMIT 1");
+    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT db_version FROM version LIMIT 1");
     if(result)
     {
         Field* fields = result->Fetch();
 
         m_DBVersion = fields[0].GetString();
-        delete result;
     }
     else
         m_DBVersion = "unknown world database";

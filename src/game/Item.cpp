@@ -331,18 +331,14 @@ void Item::SaveToDB()
     SetState(ITEM_UNCHANGED);
 }
 
-bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResult *result)
+bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResult_AutoPtr result)
 {
     // create item before any checks for store correct guid
     // and allow use "FSetState(ITEM_REMOVED); SaveToDB();" for deleting item from DB
     Object::_Create(guid, 0, HIGHGUID_ITEM);
 
-    bool delete_result = false;
     if(!result)
-    {
         result = CharacterDatabase.PQuery("SELECT data FROM item_instance WHERE guid = '%u'", guid);
-        delete_result = true;
-    }
 
     if (!result)
     {
@@ -355,7 +351,6 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResult *result)
     if(!LoadValues(fields[0].GetString()))
     {
         sLog.outError("ERROR: Item #%d have broken data in `data` field. Can't be loaded.",guid);
-        if (delete_result) delete result;
         return false;
     }
 
@@ -368,8 +363,6 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResult *result)
         SetUInt64Value(OBJECT_FIELD_GUID, MAKE_NEW_GUID(guid,0, HIGHGUID_ITEM));
         need_save = true;
     }
-
-    if (delete_result) delete result;
 
     ItemPrototype const* proto = GetProto();
     if(!proto)
@@ -441,10 +434,10 @@ uint32 Item::GetSkill()
 {
     const static uint32 item_weapon_skills[MAX_ITEM_SUBCLASS_WEAPON] =
     {
-        SKILL_AXES,     SKILL_2H_AXES,  SKILL_BOWS,          SKILL_GUNS,      SKILL_MACES,
-        SKILL_2H_MACES, SKILL_POLEARMS, SKILL_SWORDS,        SKILL_2H_SWORDS, 0,
-        SKILL_STAVES,   0,              0,                   SKILL_UNARMED,   0,
-        SKILL_DAGGERS,  SKILL_THROWN,   SKILL_ASSASSINATION, SKILL_CROSSBOWS, SKILL_WANDS,
+        SKILL_AXES,     SKILL_2H_AXES,  SKILL_BOWS,          SKILL_GUNS         , SKILL_MACES,
+        SKILL_2H_MACES, SKILL_POLEARMS, SKILL_SWORDS,        SKILL_2H_SWORDS    , 0,
+        SKILL_STAVES,   0,              0,                   SKILL_FIST_WEAPONS , 0,
+        SKILL_DAGGERS,  SKILL_THROWN,   SKILL_ASSASSINATION, SKILL_CROSSBOWS    , SKILL_WANDS,
         SKILL_FISHING
     };
 

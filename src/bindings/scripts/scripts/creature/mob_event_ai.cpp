@@ -1272,7 +1272,10 @@ struct TRINITY_DLL_DECL Mob_EventAI : public ScriptedAI
         //    return;
 
         if(m_creature->canStartAttack(who))
+        {
+            who->CombatStart(m_creature);
             AttackStart(who);
+        }
     }
 
     void SpellHit(Unit* pUnit, const SpellEntry* pSpell)

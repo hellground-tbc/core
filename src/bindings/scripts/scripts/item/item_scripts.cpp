@@ -121,9 +121,27 @@ bool ItemUse_item_attuned_crystal_cores(Player *player, Item* _Item, SpellCastTa
 
 bool ItemUse_item_blackwhelp_net(Player *player, Item* _Item, SpellCastTargets const& targets)
 {
-    if( targets.getUnitTarget() && targets.getUnitTarget()->GetTypeId()==TYPEID_UNIT &&
-        targets.getUnitTarget()->GetEntry() == 21387 )
+    Unit *target = targets.getUnitTarget();
+
+    if(!target || target->GetTypeId() != TYPEID_UNIT || target->GetEntry() != 21397)
+        return true;
+    else
+    {
+        ItemPosCountVec dest;
+        uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 31130, 1);
+        if( msg == EQUIP_ERR_OK )
+        {
+            Item* item = player->StoreNewItem(dest,31130,true);
+            if( item )
+                player->SendNewItem(item,1,false,true);
+            else
+                player->SendEquipError(msg,NULL,NULL);
+
+            target->Kill(target, false);
+            ((Creature*)target)->RemoveCorpse();
+        }
         return false;
+    }
 
     player->SendEquipError(EQUIP_ERR_YOU_CAN_NEVER_USE_THAT_ITEM,_Item,NULL);
     return true;
@@ -137,12 +155,25 @@ bool ItemUse_item_blackwhelp_net(Player *player, Item* _Item, SpellCastTargets c
 //Creature/Item are in fact created before spell are sucessfully casted, without any checks at all to ensure proper/expected behavior.
 bool ItemUse_item_draenei_fishing_net(Player *player, Item* _Item, SpellCastTargets const& targets)
 {
-    //if( targets.getGOTarget() && targets.getGOTarget()->GetTypeId() == TYPEID_GAMEOBJECT &&
-    //targets.getGOTarget()->GetGOInfo()->type == GAMEOBJECT_TYPE_SPELL_FOCUS && targets.getGOTarget()->GetEntry() == 181616 )
-    //{
     if( player->GetQuestStatus(9452) == QUEST_STATUS_INCOMPLETE )
     {
-        if( rand()%100 < 35 )
+        GameObject* pGo = NULL;
+
+        CellPair pair(Trinity::ComputeCellPair(player->GetPositionX(), player->GetPositionY()));
+        Cell cell(pair);
+        cell.data.Part.reserved = ALL_DISTRICT;
+        cell.SetNoCreate();
+
+        Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*player, 181616, 10);
+        Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher(pGo, go_check);
+        TypeContainerVisitor<Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck>, GridTypeMapContainer> go_searcher(searcher);
+
+        cell.Visit(pair, go_searcher,*(player->GetMap()));
+
+        if(!pGo)
+            return true;
+
+        if( roll_chance_i(35) )
         {
             Creature *Murloc = player->SummonCreature(17102,player->GetPositionX() ,player->GetPositionY()+20, player->GetPositionZ(), 0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,10000);
             if( Murloc )
@@ -161,7 +192,6 @@ bool ItemUse_item_draenei_fishing_net(Player *player, Item* _Item, SpellCastTarg
             player->SendEquipError(msg,NULL,NULL);
         }
     }
-    //}
     return false;
 }
 

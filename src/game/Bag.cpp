@@ -100,7 +100,7 @@ void Bag::SaveToDB()
     Item::SaveToDB();
 }
 
-bool Bag::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResult *result)
+bool Bag::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResult_AutoPtr result)
 {
     if(!Item::LoadFromDB(guid, owner_guid, result))
         return false;
@@ -153,7 +153,7 @@ void Bag::StoreItem( uint8 slot, Item *pItem, bool /*update*/ )
 {
     if(slot > MAX_BAG_SIZE)
     {
-        sLog.outError("Player GUID " I64FMTD " tried to manipulate packets and crash the server.", GetOwnerGUID());
+        sLog.outError("Player GUID " UI64FMTD " tried to manipulate packets and crash the server.", GetOwnerGUID());
         return;
     }
 

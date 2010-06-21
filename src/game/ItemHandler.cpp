@@ -853,6 +853,9 @@ void WorldSession::HandleAutoBankItemOpcode(WorldPacket& recvPacket)
 {
     CHECK_PACKET_SIZE(recvPacket,1+1);
 
+    if (_player->GetLootGUID())
+        return;
+
     sLog.outDebug("WORLD: CMSG_AUTOBANK_ITEM");
     uint8 srcbag, srcslot;
 

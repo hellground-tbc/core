@@ -239,6 +239,8 @@ class TRINITY_DLL_SPEC Aura
                 m_permanent=false;
         }
         time_t GetAuraApplyTime() { return m_applyTime; }
+
+        bool IsExpired() const { return !GetAuraDuration() && !(IsPermanent() || IsPassive()); }
         void UpdateAuraDuration();
         void SendAuraDurationForCaster(Player* caster);
         void UpdateSlotCounterAndDuration();
@@ -283,12 +285,12 @@ class TRINITY_DLL_SPEC Aura
         bool IsInUse() const { return m_in_use;}
         bool StackNotByCaster()
         { 
-            return (GetId() == 22959 || 
-                    GetId() == 12579 ||
-                    GetId() == 15258 ||
-                    GetId() == 25225 ||
-                    GetId() == 36478 || 
-                    GetId() == 36482
+            return (GetId() == 22959 ||     // Improved Scorch
+                    GetId() == 12579 ||     // Winter's Chill
+                    GetId() == 15258 ||     // Shadow Weaving
+                    GetId() == 25225 ||     // Sunder Armor
+                    GetId() == 36478 ||     // Magic Disruption
+                    GetId() == 36482        // Armor Disruption
                     );
         }
 
@@ -370,6 +372,7 @@ class TRINITY_DLL_SPEC Aura
         bool m_isPersistent:1;
         bool m_isDeathPersist:1;
         bool m_isRemovedOnShapeLost:1;
+        bool m_isRemoved:1;
         bool m_updated:1;
         bool m_in_use:1;                                    // true while in Aura::ApplyModifier call
         bool m_isSingleTargetAura:1;                        // true if it's a single target spell and registered at caster - can change at spell steal for example

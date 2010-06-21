@@ -28,6 +28,7 @@
 #include "LockedQueue.h"
 #include <queue>
 #include "Utilities/Callback.h"
+#include "QueryResult.h"
 
 /// ---- BASE ---
 
@@ -57,10 +58,21 @@ class SqlStatement : public SqlOperation
 class SqlTransaction : public SqlOperation
 {
     private:
-        std::queue<const char *> m_queue;
+        std::queue<const char*> m_queue;
+        ACE_Thread_Mutex m_Mutex;
     public:
         SqlTransaction() {}
-        void DelayExecute(const char *sql) { m_queue.push(strdup(sql)); }
+        void DelayExecute(const char *sql)
+        {
+            m_Mutex.acquire();
+            
+            char* _sql = strdup(sql);
+            if (_sql)
+                m_queue.push(_sql);
+
+            m_Mutex.release();
+        }
+
         void Execute(Database *db);
 };
 
@@ -96,7 +108,7 @@ class SqlQueryHolder
 {
     friend class SqlQueryHolderEx;
     private:
-        typedef std::pair<const char*, QueryResult*> SqlResultPair;
+        typedef std::pair<const char*, QueryResult_AutoPtr> SqlResultPair;
         std::vector<SqlResultPair> m_queries;
     public:
         SqlQueryHolder() {}
@@ -104,8 +116,8 @@ class SqlQueryHolder
         bool SetQuery(size_t index, const char *sql);
         bool SetPQuery(size_t index, const char *format, ...) ATTR_PRINTF(3,4);
         void SetSize(size_t size);
-        QueryResult* GetResult(size_t index);
-        void SetResult(size_t index, QueryResult *result);
+        QueryResult_AutoPtr GetResult(size_t index);
+        void SetResult(size_t index, QueryResult_AutoPtr result);
         bool Execute(Trinity::IQueryCallback * callback, SqlDelayThread *thread, SqlResultQueue *queue);
 };
 
@@ -124,21 +136,33 @@ class SqlQueryHolderEx : public SqlOperation
 class SqlAsyncTask : public ACE_Method_Request
 {
     public:
-        SqlAsyncTask(Database * db, SqlOperation * op) : m_db(db), m_op(op) {}
-        ~SqlAsyncTask() { if(!m_op) return; delete m_op; }
+        SqlAsyncTask(Database * db, SqlOperation * op) : m_db(db), m_op(op){}
+        ~SqlAsyncTask()
+        {
+            if (!m_op)
+                return;
 
-    int call()
-    {
-        if (this == NULL || !m_db || !m_op)
-            return -1;
+            delete m_op;
+            m_op = NULL;
+        }
 
-        m_op->Execute(m_db);
-        return 0;
-    }
-
+        int call()
+        {
+            if(m_db == NULL || m_op == NULL)
+                return -1;
+        
+            try
+            {
+                m_op->Execute(m_db);
+            }
+            catch(...)
+            {
+                return -1;
+            }
+            return 0;
+        }
     private:
         Database * m_db;
         SqlOperation * m_op;
 };
-
 #endif                                                      //__SQLOPERATIONS_H

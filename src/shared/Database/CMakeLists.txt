@@ -8,24 +8,13 @@ SET(trinitydatabase_STAT_SRCS
    DatabaseEnv.h
    DatabaseImpl.h
    DatabaseMysql.cpp
-   DatabasePostgre.cpp
    DatabaseMysql.h
-   DatabasePostgre.h
-   DatabaseSqlite.cpp
-   DatabaseSqlite.h
    Field.cpp
    Field.h
-   MySQLDelayThread.h
-   PGSQLDelayThread.h
    QueryResult.h
-   QueryResultMysql.cpp
-   QueryResultMysql.h
-   QueryResultPostgre.cpp
-   QueryResultPostgre.h
-   QueryResultSqlite.cpp
-   QueryResultSqlite.h
    SQLStorage.cpp
    SQLStorage.h
+   SQLStorageImpl.h
    SqlDelayThread.cpp
    SqlDelayThread.h
    SqlOperations.cpp

@@ -59,7 +59,18 @@ class Field
             if(mValue)
             {
                 uint64 value;
-                sscanf(mValue,I64FMTD,&value);
+                sscanf(mValue,UI64FMTD,&value);
+                return value;
+            }
+            else
+                return 0;
+        }
+        uint64 GetInt64() const
+        {
+            if(mValue)
+            {
+                int64 value;
+                sscanf(mValue,SI64FMTD,&value);
                 return value;
             }
             else

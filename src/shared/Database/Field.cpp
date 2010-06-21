@@ -31,8 +31,12 @@ Field::Field(Field &f)
 
     value = f.GetString();
 
-    if (value && (mValue = new char[strlen(value) + 1]))
-        strcpy(mValue, value);
+    if (value)
+    {
+        mValue = new char[strlen(value) + 1];
+        if (mValue)
+            strcpy(mValue, value);
+    }
     else
         mValue = NULL;
 
@@ -42,20 +46,26 @@ Field::Field(Field &f)
 Field::Field(const char *value, enum Field::DataTypes type) :
 mType(type)
 {
-    if (value && (mValue = new char[strlen(value) + 1]))
-        strcpy(mValue, value);
+    if (value)
+    {
+        mValue = new char[strlen(value) + 1];
+        if (mValue)
+            strcpy(mValue, value);
+    }
     else
         mValue = NULL;
 }
 
 Field::~Field()
 {
-    if(mValue) delete [] mValue;
+    if (mValue)
+        delete [] mValue;
 }
 
 void Field::SetValue(const char *value)
 {
-    if(mValue) delete [] mValue;
+    if (mValue)
+        delete [] mValue;
 
     if (value)
     {
@@ -65,4 +75,3 @@ void Field::SetValue(const char *value)
     else
         mValue = NULL;
 }
-

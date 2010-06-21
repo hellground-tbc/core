@@ -21,14 +21,10 @@
 #include "SQLStorage.h"
 #include "SQLStorageImpl.h"
 
-#ifdef DO_POSTGRESQL
-extern DatabasePostgre  WorldDatabase;
-#else
-extern DatabaseMysql  WorldDatabase;
-#endif
+extern Database WorldDatabase;
 
-const char CreatureInfosrcfmt[]="iiiiiisssiiiiiiiiiiffiffiiiiiiiiiiiffiiiiiiiiiiiiiiiiiiisiilliiis";
-const char CreatureInfodstfmt[]="iiiiiisssiiiiiiiiiiffiffiiiiiiiiiiiffiiiiiiiiiiiiiiiiiiisiilliiii";
+const char CreatureInfosrcfmt[]="iiiiiisssiiiiiiiiiiffiffiiiiiiiiiiiffiiiiiiiiiiiiiiiiiiiisiilliiis";
+const char CreatureInfodstfmt[]="iiiiiisssiiiiiiiiiiffiffiiiiiiiiiiiffiiiiiiiiiiiiiiiiiiiisiilliiii";
 const char CreatureDataAddonInfofmt[]="iiiiiiiis";
 const char CreatureModelfmt[]="iffbi";
 const char CreatureInfoAddonInfofmt[]="iiiiiiiis";

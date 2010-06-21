@@ -103,7 +103,15 @@ struct TRINITY_DLL_DECL boss_azgalorAI : public hyjal_trashAI
         {
             Unit* target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_THRALL));
             if (target && target->isAlive())
+            {
                 m_creature->AddThreat(target,0.0);
+                AttackStart(target);
+            }
+            else
+            {
+                if(target = m_creature->SelectNearbyTarget(200.0))
+                    AttackStart(target);
+            }
         }
     }
 
@@ -147,8 +155,10 @@ struct TRINITY_DLL_DECL boss_azgalorAI : public hyjal_trashAI
         if(CheckTimer < diff)
         {
             DoZoneInCombat();
+            m_creature->SetSpeed(MOVE_RUN, 3.0);
             CheckTimer = 3000;
-        }else
+        }
+        else
             CheckTimer -= diff;
 
         if(RainTimer < diff)
@@ -160,7 +170,7 @@ struct TRINITY_DLL_DECL boss_azgalorAI : public hyjal_trashAI
 
         if(DoomTimer < diff)
         {
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,1,100,true, m_creature->getVictim()))
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,3,100,true, m_creature->getVictim()))
                 DoCast(target, SPELL_DOOM);//never on tank
             DoomTimer = 45000+rand()%5000;
         }else DoomTimer -= diff;

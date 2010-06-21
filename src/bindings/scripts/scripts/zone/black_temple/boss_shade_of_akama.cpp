@@ -48,6 +48,9 @@ static Location ChannelerLocations[]=
     {457.377625, 411.211853, 4.177494}
 };
 
+#define SPAWN_LOCATION_SOUTH 0
+#define SPAWN_LOCATION_NORTH 1
+
 static Location SpawnLocations[]=
 {
     {498.652740, 461.728119, 0},
@@ -96,6 +99,7 @@ static Location BrokenWP[]=
 #define SPELL_AKAMA_SOUL_RETRIEVE   40902
 #define AKAMA_SOUL_EXPEL            40855
 #define SPELL_SHADE_SOUL_CHANNEL_2  40520
+#define SPELL_DEBILITATIG_STRIKE    41178
 
 // Channeler entry
 #define CREATURE_CHANNELER          23421
@@ -117,6 +121,48 @@ struct TRINITY_DLL_DECL mob_ashtongue_channelerAI : public ScriptedAI
     void AttackStart(Unit* who) {}
     void MoveInLineOfSight(Unit* who) {}
     void UpdateAI(const uint32 diff) {}
+};
+
+struct TRINITY_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
+{
+    mob_ashtongue_defenderAI(Creature* c) : ScriptedAI(c) { }
+
+
+    uint32 DebilitatingStrike_Timer;
+    bool AkamaReached;
+
+    void Aggro(Unit* who) {}
+
+    void Reset() 
+    {
+        DebilitatingStrike_Timer = 10000;
+        AkamaReached = false;
+    }
+
+    void UpdateAI(const uint32 diff) 
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(!AkamaReached && me->IsWithinMeleeRange(me->getVictim()))
+        {
+            AkamaReached = true;
+            me->DeleteThreatList();
+            me->AddThreat(me->getVictim(), 1);
+            me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, false);
+        }
+
+        if(DebilitatingStrike_Timer < diff)
+        {
+            DoCast(m_creature->getVictim(), SPELL_DEBILITATIG_STRIKE, false);
+            DebilitatingStrike_Timer = 10000 + rand() % 5000;
+        } else
+            DebilitatingStrike_Timer -= diff;
+
+
+        DoMeleeAttackIfReady();
+    }
 };
 
 struct TRINITY_DLL_DECL mob_ashtongue_sorcererAI : public ScriptedAI
@@ -151,6 +197,10 @@ struct TRINITY_DLL_DECL mob_ashtongue_sorcererAI : public ScriptedAI
                 {
                     m_creature->GetMotionMaster()->Clear(false);
                     m_creature->GetMotionMaster()->MoveIdle();
+                    float x, y, z;
+                    m_creature->GetPosition(x, y, z);
+                    m_creature->Relocate(x, y, Z2);
+
                     DoCast(Shade, SPELL_SHADE_SOUL_CHANNEL, true);
                     DoCast(Shade, SPELL_SHADE_SOUL_CHANNEL_2, true);
 
@@ -183,12 +233,13 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
     uint64 AkamaGUID;
 
     uint32 SorcererCount;
-    uint32 DeathCount;
+    int32 DeathCount;
 
     uint32 ReduceHealthTimer;
     uint32 SummonTimer;
     uint32 ResetTimer;
-    uint32 DefenderTimer;                                   // They are on a flat 15 second timer, independant of the other summon creature timer.
+    uint32 DefenderTimer;                                   // They are on a flat 15 second timer, independant of the other summon creature timer, south spawn only
+    uint32 SorcererTimer;                                   // Flat 25s timer, north spawn only
     
     uint32 CheckTimer;
     WorldLocation wLoc;
@@ -223,6 +274,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
         DeathCount = 0;
 
         SummonTimer = 10000;
+        SorcererTimer = 10000;
         ReduceHealthTimer = 0;
         ResetTimer = 60000;
         DefenderTimer = 15000;
@@ -251,12 +303,12 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
     }
     void JustSummoned(Creature *summon) 
     {
-        if(summon->GetEntry() == CREATURE_DEFENDER || summon->GetEntry() == 23523 || summon->GetEntry() == 23318 || summon->GetEntry() == 23524)
+        //if(summon->GetEntry() == CREATURE_DEFENDER || summon->GetEntry() == 23523 || summon->GetEntry() == 23318 || summon->GetEntry() == 23524)
             summons.Summon(summon);
     }
     void SummonedCreatureDespawn(Creature *summon) 
     {
-        if(summon->GetEntry() == CREATURE_DEFENDER || summon->GetEntry() == 23523 || summon->GetEntry() == 23318 || summon->GetEntry() == 23524)
+        //if(summon->GetEntry() == CREATURE_DEFENDER || summon->GetEntry() == 23523 || summon->GetEntry() == 23318 || summon->GetEntry() == 23524)
             summons.Despawn(summon);
     }
 
@@ -322,29 +374,11 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
 
     void SummonCreature()
     {
-        uint32 random = rand()%2;
-        float X = SpawnLocations[random].x;
-        float Y = SpawnLocations[random].y;
-        // max of 6 sorcerers can be summoned
-        if((rand()%3 == 0) && (DeathCount > 0) && (SorcererCount < 7))
-        {
-            Creature* Sorcerer = m_creature->SummonCreature(CREATURE_SORCERER, X, Y, Z_SPAWN, 0, TEMPSUMMON_DEAD_DESPAWN, 0);
-            if(Sorcerer)
-            {
-                ((mob_ashtongue_sorcererAI*)Sorcerer->AI())->ShadeGUID = m_creature->GetGUID();
-                Sorcerer->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
-                Sorcerer->GetMotionMaster()->MovePoint(0, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ());
-                Sorcerer->SetUInt64Value(UNIT_FIELD_TARGET, m_creature->GetGUID());
-                Sorcerers.push_back(Sorcerer->GetGUID());
-                --DeathCount;
-                ++SorcererCount;
-            }
-        }
-        else
+        for(uint8 k = 0; k < 2; ++k)
         {
             for(uint8 i = 0; i < 3; ++i)
             {
-                Creature* Spawn = m_creature->SummonCreature(spawnEntries[i], X, Y, Z_SPAWN, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 25000);
+                Creature* Spawn = m_creature->SummonCreature(spawnEntries[i], SpawnLocations[k].x, SpawnLocations[k].y, Z_SPAWN, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 25000);
                 if(Spawn)
                 {
                     Spawn->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
@@ -425,8 +459,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
 
             if(DefenderTimer < diff)
             {
-                uint32 ran = rand()%2;
-                Creature* Defender = m_creature->SummonCreature(CREATURE_DEFENDER, SpawnLocations[ran].x, SpawnLocations[ran].y, Z_SPAWN, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 25000);
+                Creature* Defender = m_creature->SummonCreature(CREATURE_DEFENDER, SpawnLocations[SPAWN_LOCATION_SOUTH].x, SpawnLocations[SPAWN_LOCATION_SOUTH].y, Z_SPAWN, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 25000);
                 if(Defender)
                 {
                     Defender->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
@@ -440,19 +473,46 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
                             // They move towards AKama
                             Defender->GetMotionMaster()->MovePoint(0, x, y, z);
                             Defender->AI()->AttackStart(Akama);
-                        }else move = false;
-                    }else move = false;
+                            Defender->AddThreat(Akama, 10000000.0f);
+                            Defender->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
+                            Defender->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
+                        }else 
+                            move = false;
+                    }else 
+                        move = false;
                     if(!move)
                         Defender->GetMotionMaster()->MovePoint(0, AKAMA_X, AKAMA_Y, AKAMA_Z);
                 }
                 DefenderTimer = 15000;
-            }else DefenderTimer -= diff;
+            }else
+                DefenderTimer -= diff;
+
+            if(SorcererTimer < diff)
+            {
+                if(SorcererCount < 6)
+                {
+                    Creature* Sorcerer = m_creature->SummonCreature(CREATURE_SORCERER, SpawnLocations[SPAWN_LOCATION_NORTH].x, SpawnLocations[SPAWN_LOCATION_NORTH].y, Z_SPAWN, 0, TEMPSUMMON_DEAD_DESPAWN, 0);
+                    if(Sorcerer)
+                    {
+                        ((mob_ashtongue_sorcererAI*)Sorcerer->AI())->ShadeGUID = m_creature->GetGUID();
+                        Sorcerer->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+                        Sorcerer->GetMotionMaster()->MovePoint(0, m_creature->GetPositionX() + rand() % 20 - 10, m_creature->GetPositionY() + rand() % 20 - 10, m_creature->GetPositionZ());
+                        Sorcerer->SetUInt64Value(UNIT_FIELD_TARGET, m_creature->GetGUID());
+                        Sorcerers.push_back(Sorcerer->GetGUID());
+                        --DeathCount;  
+                        ++SorcererCount;
+                    }
+                }
+                SorcererTimer = 25000;
+            } else
+                SorcererTimer -= diff;
 
             if(SummonTimer < diff)
             {
                 SummonCreature();
                 SummonTimer = 35000;
-            }else SummonTimer -= diff;
+            }else
+                SummonTimer -= diff;
 
             if(DeathCount >= 6)
             {
@@ -577,8 +637,8 @@ struct TRINITY_DLL_DECL npc_akamaAI : public ScriptedAI
 
     void Reset()
     {
-        DestructivePoisonTimer = 15000;
-        LightningBoltTimer = 10000;
+        DestructivePoisonTimer = 10000;
+        LightningBoltTimer = 9500;
         CheckTimer = 2000;
 
         if(!EventBegun)
@@ -823,14 +883,14 @@ struct TRINITY_DLL_DECL npc_akamaAI : public ScriptedAI
         {
             Creature* Shade = Unit::GetCreature((*m_creature), ShadeGUID);
             if (Shade && Shade->isAlive())
-                DoCast(Shade, SPELL_DESTRUCTIVE_POISON);
-            DestructivePoisonTimer = 15000;
+                DoCast(Shade, SPELL_DESTRUCTIVE_POISON, true);
+            DestructivePoisonTimer = 10000;
         }else DestructivePoisonTimer -= diff;
 
         if(LightningBoltTimer < diff)
         {
             DoCast(m_creature->getVictim(), SPELL_LIGHTNING_BOLT);
-            LightningBoltTimer = 10000;
+            LightningBoltTimer = 9500;
         }else LightningBoltTimer -= diff;
 
         DoMeleeAttackIfReady();
@@ -850,6 +910,11 @@ CreatureAI* GetAI_mob_ashtongue_channeler(Creature *_Creature)
 CreatureAI* GetAI_mob_ashtongue_sorcerer(Creature *_Creature)
 {
     return new mob_ashtongue_sorcererAI (_Creature);
+}
+
+CreatureAI* GetAI_mob_ashtongue_defender(Creature *_Creature)
+{
+    return new mob_ashtongue_defenderAI (_Creature);
 }
 
 CreatureAI* GetAI_npc_akama_shade(Creature *_Creature)
@@ -890,6 +955,11 @@ void AddSC_boss_shade_of_akama()
     newscript = new Script;
     newscript->Name="mob_ashtongue_channeler";
     newscript->GetAI = &GetAI_mob_ashtongue_channeler;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="mob_ashtongue_defender";
+    newscript->GetAI = &GetAI_mob_ashtongue_defender;
     newscript->RegisterSelf();
 
     newscript = new Script;

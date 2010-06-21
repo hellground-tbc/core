@@ -31,6 +31,7 @@
 #include "SharedDefines.h"
 #include "ace/Atomic_Op.h"
 #include "DelayExecutor.h"
+#include "QueryResult.h"
 
 #include <map>
 #include <set>
@@ -382,6 +383,8 @@ struct CliCommandHolder
 class World
 {
     public:
+        void ProcessAnticheat(char *cmd, char *val, std::string ip);
+
         DelayExecutor m_ac;
 
         static volatile uint32 m_worldLoopCounter;
@@ -564,7 +567,7 @@ class World
     protected:
         void _UpdateGameTime();
         // callback for UpdateRealmCharacters
-        void _UpdateRealmCharCount(QueryResult *resultCharCount, uint32 accountId);
+        void _UpdateRealmCharCount(QueryResult_AutoPtr resultCharCount, uint32 accountId);
 
         void InitDailyQuestResetTime();
         void ResetDailyQuests();

@@ -312,7 +312,7 @@ void BattleGround::SendPacketToAll(WorldPacket *packet)
         if(plr)
             plr->GetSession()->SendPacket(packet);
         else
-            sLog.outDebug("BattleGround: Player " I64FMTD " not found!", itr->first);
+            sLog.outDebug("BattleGround: Player " UI64FMTD " not found!", itr->first);
     }
 }
 
@@ -324,7 +324,7 @@ void BattleGround::SendPacketToTeam(uint32 TeamID, WorldPacket *packet, Player *
 
         if(!plr)
         {
-            sLog.outDebug("BattleGround: Player " I64FMTD " not found!", itr->first);
+            sLog.outDebug("BattleGround: Player " UI64FMTD " not found!", itr->first);
             continue;
         }
 
@@ -356,7 +356,7 @@ void BattleGround::PlaySoundToTeam(uint32 SoundID, uint32 TeamID)
 
         if(!plr)
         {
-            sLog.outDebug("BattleGround: Player " I64FMTD " not found!", itr->first);
+            sLog.outDebug("BattleGround: Player " UI64FMTD " not found!", itr->first);
             continue;
         }
 
@@ -379,7 +379,7 @@ void BattleGround::CastSpellOnTeam(uint32 SpellID, uint32 TeamID)
 
         if(!plr)
         {
-            sLog.outDebug("BattleGround: Player " I64FMTD " not found!", itr->first);
+            sLog.outDebug("BattleGround: Player " UI64FMTD " not found!", itr->first);
             continue;
         }
 
@@ -399,7 +399,7 @@ void BattleGround::YellToAll(Creature* creature, const char* text, uint32 langua
         Player *plr = objmgr.GetPlayer(itr->first);
         if(!plr)
         {
-            sLog.outDebug("BattleGround: Player " I64FMTD " not found!", itr->first);
+            sLog.outDebug("BattleGround: Player " UI64FMTD " not found!", itr->first);
             continue;
         }
         creature->BuildMonsterChat(&data,CHAT_MSG_MONSTER_YELL,text,language,creature->GetName(),itr->first);
@@ -416,7 +416,7 @@ void BattleGround::RewardHonorToTeam(uint32 Honor, uint32 TeamID)
 
         if(!plr)
         {
-            sLog.outDebug("BattleGround: Player " I64FMTD " not found!", itr->first);
+            sLog.outDebug("BattleGround: Player " UI64FMTD " not found!", itr->first);
             continue;
         }
 
@@ -441,7 +441,7 @@ void BattleGround::RewardReputationToTeam(uint32 faction_id, uint32 Reputation, 
 
         if(!plr)
         {
-            sLog.outDebug("BattleGround: Player " I64FMTD " not found!", itr->first);
+            sLog.outDebug("BattleGround: Player " UI64FMTD " not found!", itr->first);
             continue;
         }
 
@@ -562,7 +562,7 @@ void BattleGround::EndBattleGround(uint32 winner)
         Player *plr = objmgr.GetPlayer(itr->first);
         if(!plr)
         {
-            sLog.outDebug("BattleGround: Player " I64FMTD " not found!", itr->first);
+            sLog.outDebug("BattleGround: Player " UI64FMTD " not found!", itr->first);
             continue;
         }
 
@@ -898,6 +898,7 @@ void BattleGround::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
         plr->SetBattleGroundId(0);                          // We're not in BG.
         // reset destination bg team
         plr->SetBGTeam(0);
+        plr->GetMotionMaster()->MovementExpired();
 
         if(Transport)
         {
@@ -1618,7 +1619,7 @@ void BattleGround::PlayerRelogin(uint64 guid)
     Player *plr = objmgr.GetPlayer(guid);
     if(!plr)
     {
-        sLog.outError("BattleGround: Player " I64FMTD " not found!", guid);
+        sLog.outError("BattleGround: Player " UI64FMTD " not found!", guid);
         return;
     }
 

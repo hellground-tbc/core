@@ -567,6 +567,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 31582:                                         // Arcane Empowerment Rank2
         case 31583:                                         // Arcane Empowerment Rank3
         case 37441:                                         // Improved Arcane Blast
+        case 40268:                                         // Spiritual Vengeance
             return true;
         case 46392:                                         // Focused Assault
         case 46393:                                         // Brutal Assault
@@ -875,6 +876,7 @@ bool IsBinaryResistable(SpellEntry const* spellInfo)
 {
     switch(spellInfo->Id)
     {
+        case 31306:     // Anetheron - Carrion Swarm
         case 31344:     // Howl of Azgalor
         case 31447:     // Mark of Kaz'Rogal
         case 34190:     // Void - Arcane Orb
@@ -894,12 +896,15 @@ bool IsPartialyResistable(SpellEntry const* spellInfo)
         case 33051:     // Krosh Firehand - Greater Fireball
         case 36805:     // Kael'thas - Fireball
         case 36819:     // Kael'thas - Pyroblast
-        case 38145:     // Vashj - Forked Lightning
-        case 38441:     // Fathom - Cataclysm bolt
+        case 31944:     // Archimond - Doomfire
+        case 31972:     // Archimond - Grip of the Legion
+        case 32053:     // Archimond - Soul Charge, red
+        case 32054:     // Archimond - Soul Charge, yellow
+        case 32057:     // Archimond - Soul Charge, green
             return false;
     }
 
-    if(spellInfo->SchoolMask & SPELL_SCHOOL_MASK_HOLY)
+    if(spellInfo->SchoolMask & SPELL_SCHOOL_MASK_HOLY || IsBinaryResistable(spellInfo))
         return false;
     else
         return true;
@@ -911,8 +916,8 @@ void SpellMgr::LoadSpellTargetPositions()
 
     uint32 count = 0;
 
-    //                                                0   1           2                  3                  4                  5
-    QueryResult *result = WorldDatabase.Query("SELECT id, target_map, target_position_x, target_position_y, target_position_z, target_orientation FROM spell_target_position");
+    //                                                       0   1           2                  3                  4                  5
+    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT id, target_map, target_position_x, target_position_y, target_position_z, target_orientation FROM spell_target_position");
     if( !result )
     {
 
@@ -984,8 +989,6 @@ void SpellMgr::LoadSpellTargetPositions()
 
     } while( result->NextRow() );
 
-    delete result;
-
     sLog.outString();
     sLog.outString( ">> Loaded %u spell teleport coordinates", count );
 }
@@ -996,8 +999,8 @@ void SpellMgr::LoadSpellAffects()
 
     uint32 count = 0;
 
-    //                                                0      1         2
-    QueryResult *result = WorldDatabase.Query("SELECT entry, effectId, SpellFamilyMask FROM spell_affect");
+    //                                                       0      1         2
+    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT entry, effectId, SpellFamilyMask FROM spell_affect");
     if( !result )
     {
 
@@ -1068,8 +1071,6 @@ void SpellMgr::LoadSpellAffects()
         ++count;
     } while( result->NextRow() );
 
-    delete result;
-
     sLog.outString();
     sLog.outString( ">> Loaded %u spell affect definitions", count );
 
@@ -1136,8 +1137,8 @@ void SpellMgr::LoadSpellProcEvents()
 
     uint32 count = 0;
 
-    //                                                0      1           2                3                4          5       6        7             8
-    QueryResult *result = WorldDatabase.Query("SELECT entry, SchoolMask, SpellFamilyName, SpellFamilyMask, procFlags, procEx, ppmRate, CustomChance, Cooldown FROM spell_proc_event");
+    //                                                       0      1           2                3                4          5       6        7             8
+    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT entry, SchoolMask, SpellFamilyName, SpellFamilyMask, procFlags, procEx, ppmRate, CustomChance, Cooldown FROM spell_proc_event");
     if( !result )
     {
 
@@ -1191,8 +1192,6 @@ void SpellMgr::LoadSpellProcEvents()
         }
         ++count;
     } while( result->NextRow() );
-
-    delete result;
 
     sLog.outString();
     if (customProc)
@@ -1378,8 +1377,8 @@ void SpellMgr::LoadSpellElixirs()
 
     uint32 count = 0;
 
-    //                                                0      1
-    QueryResult *result = WorldDatabase.Query("SELECT entry, mask FROM spell_elixir");
+    //                                                       0      1
+    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT entry, mask FROM spell_elixir");
     if( !result )
     {
 
@@ -1416,8 +1415,6 @@ void SpellMgr::LoadSpellElixirs()
         ++count;
     } while( result->NextRow() );
 
-    delete result;
-
     sLog.outString();
     sLog.outString( ">> Loaded %u spell elixir definitions", count );
 }
@@ -1438,7 +1435,7 @@ void SpellMgr::LoadSpellBonusData()
     uint32 count = 0;
 
     //                                                0      1          2       3             4
-    QueryResult *result = WorldDatabase.Query("SELECT entry, direct_co, dot_co, direct_ap_co, dot_ap_co, FROM spell_bonus_data");
+    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT entry, direct_co, dot_co, direct_ap_co, dot_ap_co, FROM spell_bonus_data");
     if( !result )
     {
 
@@ -1479,8 +1476,6 @@ void SpellMgr::LoadSpellBonusData()
     }
     while( result->NextRow() );
 
-    delete result;
-
     sLog.outString( ">> Loaded %u spell bonus data definitions", count);
 }
 
@@ -1490,8 +1485,8 @@ void SpellMgr::LoadSpellEnchantProcData()
 
     uint32 count = 0;
 
-    //                                                0      1             2          3
-    QueryResult *result = WorldDatabase.Query("SELECT entry, customChance, PPMChance, procEx FROM spell_enchant_proc_data");
+    //                                                       0      1             2          3
+    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT entry, customChance, PPMChance, procEx FROM spell_enchant_proc_data");
     if( !result )
     {
 
@@ -1530,8 +1525,6 @@ void SpellMgr::LoadSpellEnchantProcData()
 
         ++count;
     } while( result->NextRow() );
-
-    delete result;
 
     sLog.outString( ">> Loaded %u enchant proc data definitions", count);
 }
@@ -1673,8 +1666,10 @@ bool SpellMgr::IsSpecialStackCase(uint32 spellId_1, uint32 spellId_2, bool sameC
     if(spellId_1 == 33649 && spellId_2 == 20572)
         return true;
 
-    // sextant of unstabble currents stacks with Shiffar's Nexus-Horn
-    if(spellId_1 == 38348 && spellId_2 == 34321)
+    // Sextant of Unstable Currents, Shiffar's Nexus-Hornand and Band of the Ethernal Sage stacks with each other
+    if( (spellId_1 == 38348 || spellId_1 == 34321 || spellId_1 == 35084) &&
+            (spellId_2 == 38348 || spellId_2 == 34321 || spellId_2 == 35084) &&
+            (spellId_1 != spellId_2) )
         return true;
 
     if(recur)
@@ -1761,7 +1756,7 @@ void SpellMgr::LoadSpellRequired()
     mSpellsReqSpell.clear();                                   // need for reload case
     mSpellReq.clear();                                         // need for reload case
 
-    QueryResult *result = WorldDatabase.Query("SELECT spell_id, req_spell from spell_required");
+    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT spell_id, req_spell from spell_required");
 
     if(result == NULL)
     {
@@ -1788,7 +1783,6 @@ void SpellMgr::LoadSpellRequired()
         mSpellReq[spell_id] = spell_req;
         ++rows;
     } while( result->NextRow() );
-    delete result;
 
     sLog.outString();
     sLog.outString( ">> Loaded %u spell required records", rows );
@@ -2058,7 +2052,7 @@ void SpellMgr::LoadSpellLearnSpells()
 {
     mSpellLearnSpells.clear();                              // need for reload case
 
-    QueryResult *result = WorldDatabase.Query("SELECT entry, SpellID FROM spell_learn_spell");
+    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT entry, SpellID FROM spell_learn_spell");
     if(!result)
     {
         barGoLink bar( 1 );
@@ -2100,8 +2094,6 @@ void SpellMgr::LoadSpellLearnSpells()
 
         ++count;
     } while( result->NextRow() );
-
-    delete result;
 
     // search auto-learned spells and add its to map also for use in unlearn spells/talents
     uint32 dbc_count = 0;
@@ -2154,7 +2146,7 @@ void SpellMgr::LoadSpellScriptTarget()
 
     uint32 count = 0;
 
-    QueryResult *result = WorldDatabase.Query("SELECT entry,type,targetEntry FROM spell_script_target");
+    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT entry,type,targetEntry FROM spell_script_target");
 
     if(!result)
     {
@@ -2254,8 +2246,6 @@ void SpellMgr::LoadSpellScriptTarget()
         ++count;
     } while (result->NextRow());
 
-    delete result;
-
     // Check all spells
     /* Disabled (lot errors at this moment)
     for(uint32 i = 1; i < sSpellStore.nCount; ++i)
@@ -2291,8 +2281,8 @@ void SpellMgr::LoadSpellPetAuras()
 
     uint32 count = 0;
 
-    //                                                0      1    2
-    QueryResult *result = WorldDatabase.Query("SELECT spell, pet, aura FROM spell_pet_auras");
+    //                                                       0      1    2
+    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT spell, pet, aura FROM spell_pet_auras");
     if( !result )
     {
 
@@ -2356,8 +2346,6 @@ void SpellMgr::LoadSpellPetAuras()
 
         ++count;
     } while( result->NextRow() );
-
-    delete result;
 
     sLog.outString();
     sLog.outString( ">> Loaded %u spell pet auras", count );
@@ -2471,6 +2459,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
         switch(i)
         {
+        case 33824:
+            spellInfo->Effect[2] = 0;
+            break;
         case 34121: // Al'ar Flame Buffet
             spellInfo->InterruptFlags &= ~SPELL_INTERRUPT_FLAG_MOVEMENT;
         case 26029: // dark glare
@@ -2513,9 +2504,8 @@ void SpellMgr::LoadSpellCustomAttr()
         case 46771: //Flame Sear
         case 45248: //Shadow Blades
         case 41303: // Soul Drain
-            spellInfo->MaxAffectedTargets = 3;
-            break;
-        case 39992: // Needle Spine
+        case 31298: // Anetheron: Sleep
+        case 39992: // Najentus: Needle Spine
             spellInfo->MaxAffectedTargets = 3;
             break;
         case 38310: //Multi-Shot
@@ -2559,6 +2549,23 @@ void SpellMgr::LoadSpellCustomAttr()
         case 31117: // UA dispell effect
             spellInfo->SpellFamilyFlags = 0x010000000000LL;
             break;
+        case 32045: // Archimonde: Soul Charge - yellow
+        case 32051: // Archimonde: Soul Charge - green
+        case 32052: // Archimonde: Soul Charge - red
+            spellInfo->procCharges = 0;
+            spellInfo->procChance = 101;
+            spellInfo->procFlags = 0;
+            break;
+        case 41001:
+            spellInfo->EffectTriggerSpell[1] = 40871;
+            break;
+        case 40870:
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ALLY;
+            spellInfo->EffectImplicitTargetB[0] = 0;
+            break;
+        case 40251:
+            spellInfo->EffectApplyAuraName[1] = SPELL_AURA_DUMMY;
+            break;
         default:
             break;
         }
@@ -2570,8 +2577,8 @@ void SpellMgr::LoadSpellLinked()
     mSpellLinkedMap.clear();    // need for reload case
     uint32 count = 0;
 
-    //                                                0              1             2
-    QueryResult *result = WorldDatabase.Query("SELECT spell_trigger, spell_effect, type FROM spell_linked_spell");
+    //                                                       0              1             2
+    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT spell_trigger, spell_effect, type FROM spell_linked_spell");
     if( !result )
     {
         barGoLink bar( 1 );
@@ -2631,8 +2638,6 @@ void SpellMgr::LoadSpellLinked()
 
         ++count;
     } while( result->NextRow() );
-
-    delete result;
 
     sLog.outString();
     sLog.outString( ">> Loaded %u linked spells", count );

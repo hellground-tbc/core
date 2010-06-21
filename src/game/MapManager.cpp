@@ -18,7 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include <omp.h>
 #include "MapManager.h"
 #include "InstanceSaveMgr.h"
 #include "Policies/SingletonImp.h"
@@ -334,12 +333,9 @@ void MapManager::InitMaxInstanceId()
 {
     i_MaxInstanceId = 0;
 
-    QueryResult *result = CharacterDatabase.Query( "SELECT MAX(id) FROM instance" );
+    QueryResult_AutoPtr result = CharacterDatabase.Query( "SELECT MAX(id) FROM instance" );
     if( result )
-    {
         i_MaxInstanceId = result->Fetch()[0].GetUInt32();
-        delete result;
-    }
 }
 
 uint32 MapManager::GetNumInstances()

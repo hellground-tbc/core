@@ -108,7 +108,7 @@ bool Group::Create(const uint64 &guid, const char * name)
         CharacterDatabase.PExecute("DELETE FROM groups WHERE leaderGuid ='%u'", GUID_LOPART(m_leaderGuid));
         CharacterDatabase.PExecute("DELETE FROM group_member WHERE leaderGuid ='%u'", GUID_LOPART(m_leaderGuid));
         CharacterDatabase.PExecute("INSERT INTO groups(leaderGuid,mainTank,mainAssistant,lootMethod,looterGuid,lootThreshold,icon1,icon2,icon3,icon4,icon5,icon6,icon7,icon8,isRaid,difficulty) "
-            "VALUES('%u','%u','%u','%u','%u','%u','" I64FMTD "','" I64FMTD "','" I64FMTD "','" I64FMTD "','" I64FMTD "','" I64FMTD "','" I64FMTD "','" I64FMTD "','%u','%u')",
+            "VALUES('%u','%u','%u','%u','%u','%u','" UI64FMTD "','" UI64FMTD "','" UI64FMTD "','" UI64FMTD "','" UI64FMTD "','" UI64FMTD "','" UI64FMTD "','" UI64FMTD "','%u','%u')",
             GUID_LOPART(m_leaderGuid), GUID_LOPART(m_mainTank), GUID_LOPART(m_mainAssistant), uint32(m_lootMethod),
             GUID_LOPART(m_looterGuid), uint32(m_lootThreshold), m_targetIcons[0], m_targetIcons[1], m_targetIcons[2], m_targetIcons[3], m_targetIcons[4], m_targetIcons[5], m_targetIcons[6], m_targetIcons[7], isRaidGroup(), m_difficulty);
     }
@@ -121,7 +121,7 @@ bool Group::Create(const uint64 &guid, const char * name)
     return true;
 }
 
-bool Group::LoadGroupFromDB(const uint64 &leaderGuid, QueryResult *result, bool loadMembers)
+bool Group::LoadGroupFromDB(const uint64 &leaderGuid, QueryResult_AutoPtr result, bool loadMembers)
 {
     if(isBGGroup())
         return false;
@@ -142,7 +142,6 @@ bool Group::LoadGroupFromDB(const uint64 &leaderGuid, QueryResult *result, bool 
     // group leader not exist
     if(!objmgr.GetPlayerNameByGUID(m_leaderGuid, m_leaderName))
     {
-        if(!external) delete result;
         return false;
     }
 
@@ -160,7 +159,6 @@ bool Group::LoadGroupFromDB(const uint64 &leaderGuid, QueryResult *result, bool 
 
     for(int i=0; i<TARGETICONCOUNT; i++)
         m_targetIcons[i] = (*result)[5+i].GetUInt64();
-    if(!external) delete result;
 
     if(loadMembers)
     {
@@ -172,7 +170,6 @@ bool Group::LoadGroupFromDB(const uint64 &leaderGuid, QueryResult *result, bool 
         {
             LoadMemberFromDB((*result)[0].GetUInt32(), (*result)[2].GetUInt8(), (*result)[1].GetBool());
         } while( result->NextRow() );
-        delete result;
         // group too small
         if(GetMembersCount() < 2)
             return false;

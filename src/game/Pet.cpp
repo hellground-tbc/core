@@ -139,7 +139,7 @@ bool Pet::LoadPetFromDB( Unit* owner, uint32 petentry, uint32 petnumber, bool cu
 
     uint32 ownerid = owner->GetGUIDLow();
 
-    QueryResult *result;
+    QueryResult_AutoPtr result;
 
     if(petnumber)
         // known petnumber entry                  0   1      2      3        4      5    6           7              8        9           10    11    12       13         14       15            16      17              18        19                 20                 21              22
@@ -164,10 +164,7 @@ bool Pet::LoadPetFromDB( Unit* owner, uint32 petentry, uint32 petnumber, bool cu
     // update for case of current pet "slot = 0"
     petentry = fields[1].GetUInt32();
     if(!petentry)
-    {
-        delete result;
         return false;
-    }
 
     uint32 summon_spell_id = fields[21].GetUInt32();
     SpellEntry const* spellInfo = sSpellStore.LookupEntry(summon_spell_id);
@@ -176,19 +173,13 @@ bool Pet::LoadPetFromDB( Unit* owner, uint32 petentry, uint32 petnumber, bool cu
 
     // check temporary summoned pets like mage water elemental
     if(current && is_temporary_summoned)
-    {
-        delete result;
         return false;
-    }
 
     Map *map = owner->GetMap();
     uint32 guid = objmgr.GenerateLowGuid(HIGHGUID_PET);
     uint32 pet_number = fields[0].GetUInt32();
     if(!Create(guid, map, petentry, pet_number))
-    {
-        delete result;
         return false;
-    }
 
     float px, py, pz;
     owner->GetClosePoint(px, py, pz, GetObjectSize(), PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
@@ -199,7 +190,6 @@ bool Pet::LoadPetFromDB( Unit* owner, uint32 petentry, uint32 petnumber, bool cu
     {
         sLog.outError("ERROR: Pet (guidlow %d, entry %d) not loaded. Suggested coordinates isn't valid (X: %f Y: %f)",
             GetGUIDLow(), GetEntry(), GetPositionX(), GetPositionY());
-        delete result;
         return false;
     }
 
@@ -212,7 +202,6 @@ bool Pet::LoadPetFromDB( Unit* owner, uint32 petentry, uint32 petnumber, bool cu
     {
         AIM_Initialize();
         map->Add((Creature*)this);
-        delete result;
         return true;
     }
     if(getPetType()==HUNTER_PET || (getPetType()==SUMMON_PET && cinfo->type == CREATURE_TYPE_DEMON && owner->getClass() == CLASS_WARLOCK))
@@ -283,10 +272,7 @@ bool Pet::LoadPetFromDB( Unit* owner, uint32 petentry, uint32 petnumber, bool cu
         Tokens tokens = StrSplit(fields[16].GetString(), " ");
 
         if(tokens.size() != 20)
-        {
-            delete result;
             return false;
-        }
 
         int index;
         Tokens::iterator iter;
@@ -319,8 +305,6 @@ bool Pet::LoadPetFromDB( Unit* owner, uint32 petentry, uint32 petnumber, bool cu
 
     // since last save (in seconds)
     uint32 timediff = (time(NULL) - fields[18].GetUInt32());
-
-    delete result;
 
     //load spells/cooldowns/auras
     SetCanModifyStats(true);
@@ -595,6 +579,16 @@ void Pet::Update(uint32 diff)
                     Remove(getPetType() != SUMMON_PET ? PET_SAVE_AS_DELETED:PET_SAVE_NOT_IN_SLOT);
                     return;
                 }
+            }
+
+            if(getPetType() == SUMMON_PET && owner->getClass() == CLASS_WARLOCK)
+            {
+                for(PetAuraSet::iterator i = owner->m_petAuras.begin(); i != owner->m_petAuras.end(); i++)
+                    if((*i)->GetAura(GetEntry()) == 35696)
+                    {
+                        CastPetAura(*i);
+                        break;
+                    }
             }
 
             if(getPetType() != HUNTER_PET)
@@ -1270,7 +1264,7 @@ void Pet::_LoadSpellCooldowns()
     m_CreatureSpellCooldowns.clear();
     m_CreatureCategoryCooldowns.clear();
 
-    QueryResult *result = CharacterDatabase.PQuery("SELECT spell,time FROM pet_spell_cooldown WHERE guid = '%u'",m_charmInfo->GetPetNumber());
+    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT spell,time FROM pet_spell_cooldown WHERE guid = '%u'",m_charmInfo->GetPetNumber());
 
     if(result)
     {
@@ -1306,8 +1300,6 @@ void Pet::_LoadSpellCooldowns()
         }
         while( result->NextRow() );
 
-        delete result;
-
         if(!m_CreatureSpellCooldowns.empty() && GetOwner())
         {
             if(GetOwner()->GetTypeId() == TYPEID_PLAYER)
@@ -1329,7 +1321,7 @@ void Pet::_SaveSpellCooldowns()
             m_CreatureSpellCooldowns.erase(itr++);
         else
         {
-            CharacterDatabase.PExecute("INSERT INTO pet_spell_cooldown (guid,spell,time) VALUES ('%u', '%u', '" I64FMTD "')", m_charmInfo->GetPetNumber(), itr->first, uint64(itr->second));
+            CharacterDatabase.PExecute("INSERT INTO pet_spell_cooldown (guid,spell,time) VALUES ('%u', '%u', '" UI64FMTD "')", m_charmInfo->GetPetNumber(), itr->first, uint64(itr->second));
             ++itr;
         }
     }
@@ -1337,7 +1329,7 @@ void Pet::_SaveSpellCooldowns()
 
 void Pet::_LoadSpells()
 {
-    QueryResult *result = CharacterDatabase.PQuery("SELECT spell,slot,active FROM pet_spell WHERE guid = '%u'",m_charmInfo->GetPetNumber());
+    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT spell,slot,active FROM pet_spell WHERE guid = '%u'",m_charmInfo->GetPetNumber());
 
     if(result)
     {
@@ -1348,8 +1340,6 @@ void Pet::_LoadSpells()
             addSpell(fields[0].GetUInt16(), fields[2].GetUInt16(), PETSPELL_UNCHANGED, fields[1].GetUInt16());
         }
         while( result->NextRow() );
-
-        delete result;
     }
 }
 
@@ -1381,7 +1371,7 @@ void Pet::_LoadAuras(uint32 timediff)
     for(int i = UNIT_FIELD_AURA; i <= UNIT_FIELD_AURASTATE; ++i)
         SetUInt32Value(i, 0);
 
-    QueryResult *result = CharacterDatabase.PQuery("SELECT caster_guid,spell,effect_index,stackcount,amount,maxduration,remaintime,remaincharges FROM pet_aura WHERE guid = '%u'",m_charmInfo->GetPetNumber());
+    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT caster_guid,spell,effect_index,stackcount,amount,maxduration,remaintime,remaincharges FROM pet_aura WHERE guid = '%u'",m_charmInfo->GetPetNumber());
 
     if(result)
     {
@@ -1443,8 +1433,6 @@ void Pet::_LoadAuras(uint32 timediff)
             }
         }
         while( result->NextRow() );
-
-        delete result;
     }
 }
 
@@ -1483,7 +1471,7 @@ void Pet::_SaveAuras()
                     if (i == 3)
                     {
                         CharacterDatabase.PExecute("INSERT INTO pet_aura (guid,caster_guid,spell,effect_index,stackcount,amount,maxduration,remaintime,remaincharges) "
-                            "VALUES ('%u', '" I64FMTD "', '%u', '%u', '%u', '%d', '%d', '%d', '%d')",
+                            "VALUES ('%u', '" UI64FMTD "', '%u', '%u', '%u', '%d', '%d', '%d', '%d')",
                             m_charmInfo->GetPetNumber(), itr2->second->GetCasterGUID(),(uint32)itr2->second->GetId(), (uint32)itr2->second->GetEffIndex(), (uint32)itr2->second->GetStackAmount(), itr2->second->GetModifier()->m_amount,int(itr2->second->GetAuraMaxDuration()),int(itr2->second->GetAuraDuration()),int(itr2->second->m_procCharges));
                     }
                 }
@@ -1862,6 +1850,15 @@ void Pet::CastPetAura(PetAura const* aura)
     if(auraId == 35696)                                       // Demonic Knowledge
     {
         int32 basePoints = int32(aura->GetDamage() * (GetStat(STAT_STAMINA) + GetStat(STAT_INTELLECT)) / 100);
+        Unit *owner = GetOwner();
+        Aura *aura = owner->GetAura(35696, 0);
+        if(aura)
+        {
+            if(aura->GetModifierValue() == basePoints)
+                return;
+            else
+                owner->RemoveAurasDueToSpell(35696);
+        }
         CastCustomSpell(this, auraId, &basePoints, NULL, NULL, true);
     }
     else

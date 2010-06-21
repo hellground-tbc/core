@@ -485,7 +485,7 @@ bool ChatHandler::HandleGMTicketAssignToCommand(const char* args)
     }
     uint64 tarGUID = objmgr.GetPlayerGUIDByName(targm.c_str());
     uint64 accid = objmgr.GetPlayerAccountIdByGUID(tarGUID);
-    QueryResult *result = LoginDatabase.PQuery("SELECT `gmlevel` FROM `account` WHERE `id` = '%u'", accid);
+    QueryResult_AutoPtr result = LoginDatabase.PQuery("SELECT `gmlevel` FROM `account` WHERE `id` = '%u'", accid);
     if(!tarGUID|| !result || result->Fetch()->GetUInt32() < SEC_MODERATOR)
     {
         SendSysMessage(LANG_COMMAND_TICKETASSIGNERROR_A);
@@ -1043,7 +1043,7 @@ bool ChatHandler::HandleModifyKnownTitlesCommand(const char* args)
 
     uint64 titles = 0;
 
-    sscanf((char*)args, I64FMTD, &titles);
+    sscanf((char*)args, UI64FMTD, &titles);
 
     Player *chr = getSelectedPlayer();
     if (!chr)

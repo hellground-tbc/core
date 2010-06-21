@@ -51,10 +51,10 @@ EndScriptData */
 #define SPELL_HAND_OF_DEATH         35354
 #define SPELL_AIR_BURST             32014
 #define SPELL_GRIP_OF_THE_LEGION    31972
-#define SPELL_DOOMFIRE_STRIKE       31903                   //summons two creatures
-#define SPELL_DOOMFIRE_SPAWN        32074
-#define SPELL_DOOMFIRE_VISUAL       42344                   // This is actually a Zul'Aman spell, but the proper Doomfire spell sometimes freezes the server if a player stands in it for too long
-#define SPELL_DOOMFIRE_DAMAGE       31944
+#define SPELL_DOOMFIRE_STRIKE       31903                   //summons two creatures - not working properly, not used
+#define SPELL_DOOMFIRE_SPAWN        32074                   //visual
+#define SPELL_DOOMFIRE              31945
+#define SPELL_DOOMFIRE_DAMAGE       31944                   //triggered by doomfire persistent aura
 #define SPELL_UNLEASH_SOUL_YELLOW   32054
 #define SPELL_UNLEASH_SOUL_GREEN    32057
 #define SPELL_UNLEASH_SOUL_RED      32053
@@ -115,95 +115,10 @@ struct mob_ancient_wispAI : public ScriptedAI
     }
 };
 
-/* This script controls the Doomfire mob. Unlike the other Doomfire mob, this one does not stalk players.
-   Instead, this doomfire will simply stand in one place after spawning and deal damage to any players that
-   are within 3 yards. Another creature called Doomfire Targetting spawns this creature as well as stalks. */
-struct TRINITY_DLL_DECL mob_doomfireAI : public ScriptedAI
+/* This is the script for the Doomfire Targetting Mob. This mob simply follows players and/or travels in random directions and spawns Doomfire Persistent Area Aura which deals dmg to players in range.  */
+struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public NullCreatureAI
 {
-    mob_doomfireAI(Creature* c) : ScriptedAI(c)
-    {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
-    }
-
-    ScriptedInstance *pInstance;
-
-    uint32 CheckTimer;
-    uint32 RefreshTimer;
-
-    bool TargetSelected;
-
-    uint64 TargetGUID;
-
-    void Reset()
-    {
-        CheckTimer = 5000;
-        RefreshTimer = 0;
-
-        TargetSelected = false;
-
-        TargetGUID = 0;
-    }
-
-    void DamageTaken(Unit *done_by, uint32 &damage) { damage = 0; }
-
-    void Aggro(Unit* who) { }
-
-    void MoveInLineOfSight(Unit* who)
-    {
-        // Do not do anything if who does not exist, or we are refreshing our timer, or who is Doomfire, Archimonde or Doomfire targetting
-        if(!who || who == m_creature || RefreshTimer || who->GetEntry() == CREATURE_ANCIENT_WISP ||
-            who->GetEntry() == CREATURE_ARCHIMONDE || who->GetEntry() == CREATURE_DOOMFIRE ||
-            who->GetEntry() == CREATURE_DOOMFIRE_TARGETING || !who->isTargetableForAttack())
-            return;
-
-        if(m_creature->IsWithinDistInMap(who, 3))
-        {
-            TargetSelected = true;
-            TargetGUID = who->GetGUID();
-            RefreshTimer = 2000;
-        }
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-        if(RefreshTimer < diff)
-            RefreshTimer = 0;
-        else
-            RefreshTimer -= diff;
-
-        if(TargetSelected && TargetGUID)
-        {
-            Unit* target = Unit::GetUnit((*m_creature), TargetGUID);
-            if(target && target->isAlive())
-            {
-                target->CastSpell(target, SPELL_DOOMFIRE_DAMAGE, true);
-                TargetGUID = 0;
-                TargetSelected = false;
-            }
-        }
-
-        if(CheckTimer < diff)
-        {
-            if(pInstance)
-            {
-                Unit* Archimonde = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_ARCHIMONDE));
-                if(!Archimonde || !Archimonde->isAlive())
-                    m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-                
-                CheckTimer = 5000;
-            }
-            else
-                m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-        }
-        else
-            CheckTimer -= diff;
-    }
-};
-
-/* This is the script for the Doomfire Targetting Mob. This mob simply follows players and/or travels in random directions and spawns the actual Doomfire which does damage to anyone that moves close.  */
-struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public ScriptedAI
-{
-    mob_doomfire_targettingAI(Creature* c) : ScriptedAI(c)
+    mob_doomfire_targettingAI(Creature* c) : NullCreatureAI(c)
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
     }
@@ -211,49 +126,30 @@ struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public ScriptedAI
     ScriptedInstance *pInstance;
 
     uint32 ChangeTargetTimer;
-    uint32 SummonTimer;                                     // This timer will serve as both a summon timer for the doomfire that does damage as well as to check on Archionde
+    uint32 SummonTimer;                                     // This timer will serve to check on Archionde
 
 
     void Reset()
     {
-        ChangeTargetTimer = 5000;
+        ChangeTargetTimer = 0;
         SummonTimer = 1000;
+        DoCast(m_creature, SPELL_DOOMFIRE);
     }
 
-    void Aggro(Unit* who) {}
-
-    void MoveInLineOfSight(Unit* who)
+    float FloatRandRange(float min, float max)
     {
-        // Do not do anything if who does not exist, or who is Doomfire, Archimonde or Doomfire targetting
-        if(!who || who == m_creature || who->GetEntry() == CREATURE_ARCHIMONDE
-            || who->GetEntry() == CREATURE_DOOMFIRE || who->GetEntry() == CREATURE_DOOMFIRE_TARGETING || !who->isTargetableForAttack())
-            return;
-
-        m_creature->AddThreat(who, 0.0f);
+        return ((max-min)*((float)rand()/RAND_MAX))+min;
     }
-
-    void DamageTaken(Unit *done_by, uint32 &damage) { damage = 0; }
 
     void UpdateAI(const uint32 diff)
     {
-        if(!UpdateVictim())
-            return;
-
         if(SummonTimer < diff)
         {
             if(pInstance)
             {
                 Unit* Archimonde = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_ARCHIMONDE));
                 if(Archimonde && Archimonde->isAlive())
-                {
-                    Creature* Doomfire = DoSpawnCreature(CREATURE_DOOMFIRE, 0, 0, 2, 0, TEMPSUMMON_TIMED_DESPAWN, 30000);
-                    if(Doomfire)
-                    {
-                        Doomfire->CastSpell(Doomfire, SPELL_DOOMFIRE_VISUAL, true);
-                        Doomfire->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                    }
-                    SummonTimer = 500;
-                }
+                    SummonTimer = 2000;
                 else
                     m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
             }
@@ -263,28 +159,18 @@ struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public ScriptedAI
         else
             SummonTimer -= diff;
 
-        if(ChangeTargetTimer < diff)
+        if(ChangeTargetTimer < diff)    //only random linear movement, no player chasing!!
         {
-            Unit* target = NULL;
-            switch(rand()%2)
-            {
-                case 0:                                     // stalk player
-                    if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, 200, true, m_creature->getVictim()))
-                    {
-                        m_creature->AddThreat(target, DoGetThreat(m_creature->getVictim()));
-                        m_creature->GetMotionMaster()->MoveChase(target);
-                    }
-                    break;
+            m_creature->SetSpeed(MOVE_RUN, 1);
+            m_creature->SetSpeed(MOVE_WALK, 2);
 
-                case 1:                                     // random location
-                    float x = 0;
-                    float y = 0;
-                    float z = 0;
-                    m_creature->GetRandomPoint(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), 40, x, y, z);
-                    m_creature->GetMotionMaster()->MovePoint(0, x, y, z);
-                    break;
-            }
-            ChangeTargetTimer = 5000;
+            float angle = FloatRandRange(0, M_PI);    //randomise angle
+            float x = m_creature->GetPositionX() + 40.0f * cos(angle);
+            float y = m_creature->GetPositionY() + 40.0f * sin(angle);
+            float z = m_creature->GetMap()->GetHeight(x, y, MAX_HEIGHT, true);
+            m_creature->GetGroundPoint(x, y, z, 5, angle);  //find point on the ground 5 yd from first destination location
+            m_creature->GetMotionMaster()->MovePoint(0, x, y, z);
+            ChangeTargetTimer = 7000;
         }
         else
             ChangeTargetTimer -= diff;
@@ -357,9 +243,9 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         AirBurstTimer = 30000;
         GripOfTheLegionTimer = 5000 + rand()%20000;
         DoomfireTimer = 20000;
-        SoulChargeTimer = 2000 + rand()%27000;
+        SoulChargeTimer = 3000;
         SoulChargeCount = 0;
-        SoulChargeUnleashTimer = 0;
+        SoulChargeUnleashTimer = 5000;
         MeleeRangeCheckTimer = 15000;
         HandOfDeathTimer = 2000;
         WispCount = 0;                                      // When ~30 wisps are summoned, Archimonde dies
@@ -376,14 +262,23 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         IsChanneling = false;
         SoulChargeUnleash = false;
 
+        RemoveSoulCharges();
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
         m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
+    }
+
+    void RemoveSoulCharges()
+    {
+        m_creature->RemoveAurasDueToSpell(SPELL_SOUL_CHARGE_YELLOW);
+        m_creature->RemoveAurasDueToSpell(SPELL_SOUL_CHARGE_GREEN);
+        m_creature->RemoveAurasDueToSpell(SPELL_SOUL_CHARGE_RED);
     }
 
     void Aggro(Unit *who)
     {
         m_creature->InterruptSpell(CURRENT_CHANNELED_SPELL);
         DoScriptText(SAY_AGGRO, m_creature);
+        RemoveSoulCharges();
         DoZoneInCombat();
 
         if(pInstance)
@@ -411,71 +306,41 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
     bool CanUseFingerOfDeath()
     {
-        /*
-        // First we check if our current victim is in melee range or not.
-        Unit* victim = m_creature->getVictim();
-        if(victim && m_creature->IsWithinDistInMap(victim, m_creature->GetAttackDistance(victim)))
+        if(!m_creature->getVictim())
+            return true;
+
+        if(m_creature->IsWithinDistInMap(m_creature->getVictim(), 5.0))
             return false;
 
-        std::list<HostilReference*>& m_threatlist = m_creature->getThreatManager().getThreatList();
-        if(m_threatlist.empty())
-            return false;
-
-        std::list<Unit*> targets;
-        std::list<HostilReference*>::iterator itr = m_threatlist.begin();
-        for( ; itr != m_threatlist.end(); ++itr)
+        if(Unit *target = m_creature->SelectNearestTarget(m_creature->GetAttackDistance(m_creature->getVictim())))
         {
-            Unit* pUnit = Unit::GetUnit((*m_creature), (*itr)->getUnitGuid());
-            if(pUnit && pUnit->isAlive())
-                targets.push_back(pUnit);
+            m_creature->AddThreat(target, DoGetThreat(m_creature->getVictim()));
+            return false;
         }
 
-        if(targets.empty())
+        float BossDiffZ = (m_creature->GetPositionZ() - m_creature->GetMap()->GetHeight(m_creature->GetPositionX(), m_creature->GetPositionY(), MAX_HEIGHT, true));
+
+        if(BossDiffZ > 4 || BossDiffZ < -4) // do not use finger of death when walking above ground level
             return false;
 
-        targets.sort(TargetDistanceOrder(m_creature));
-        Unit* target = targets.front();
-        if(target)
-        {
-            if(!m_creature->IsWithinDistInMap(target, m_creature->GetAttackDistance(target)))
-                return true;                                // Cast Finger of Death
-            else                                            // This target is closest, he is our new tank
-                m_creature->AddThreat(target, DoGetThreat(m_creature->getVictim()));
-        }*/
-        Unit *target = NULL;
-        target = m_creature->SelectNearestTarget(m_creature->GetAttackDistance(m_creature->getVictim()));
-        
-        if (target)
-        {
-            if (m_creature->getVictim() && target != m_creature->getVictim())
-                m_creature->AddThreat(target, DoGetThreat(m_creature->getVictim()));
-            return false;
-        }
-        
         return true;
     }
 
-    void SummonDoomfire(Unit* target)
+    void SummonDoomfire()
     {
-        if(Creature* Doomfire = DoSpawnCreature(CREATURE_DOOMFIRE_TARGETING, rand()%30, rand()%30, 1, 0, TEMPSUMMON_TIMED_DESPAWN, 30000))
+        float x = m_creature->GetPositionX() + ((-1)^rand()%2)*(rand()%10 + 10);
+        float y = m_creature->GetPositionY() + ((-1)^rand()%2)*(rand()%10 + 10);
+        float z = m_creature->GetMap()->GetHeight(x, y, MAX_HEIGHT, true);
+        if(Creature* Doomfire = m_creature->SummonCreature(CREATURE_DOOMFIRE_TARGETING, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN, 60000))
         {
             Doomfire->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            Doomfire->SetLevel(m_creature->getLevel());
             Doomfire->setFaction(m_creature->getFaction());
+            Doomfire->CastSpell(Doomfire, SPELL_DOOMFIRE_SPAWN, true);
 
-            // Give Doomfire a taste of everyone in the threatlist = more targets to chase.
-            std::list<HostilReference*>::iterator itr;
-            for(itr = m_creature->getThreatManager().getThreatList().begin(); itr != m_creature->getThreatManager().getThreatList().end(); ++itr)
-                Doomfire->AddThreat(Unit::GetUnit(*m_creature, (*itr)->getUnitGuid()), 1.0f);
-
-            ForceSpellCast(Doomfire, SPELL_DOOMFIRE_SPAWN);
-            Doomfire->CastSpell(Doomfire, SPELL_DOOMFIRE_VISUAL, true);
-
-            if(target)
-                Doomfire->AI()->AttackStart(target);
-
-            if(rand()%2 == 0)
+            if(rand()%10 == 0)  //10% chance on yell
                 DoScriptText(SAY_DOOMFIRE1, m_creature);
-            else
+            else if(rand()%10 == 1) //10% chance on other yell
                 DoScriptText(SAY_DOOMFIRE2, m_creature);
         }
     }
@@ -536,7 +401,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
             if(m_creature->GetUInt64Value(UNIT_FIELD_TARGET) != m_creature->getVictim()->GetGUID())
                 m_creature->SetUInt64Value(UNIT_FIELD_TARGET, m_creature->getVictim()->GetGUID());
 
-            CheckTimer = 2000;
+            CheckTimer = 1000;
         }
         else
             CheckTimer -= diff;
@@ -566,7 +431,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
                 if(Check)
                 {
                     Check->SetVisibility(VISIBILITY_OFF);
-                    if(m_creature->IsWithinDistInMap(Check, 75))
+                    if(m_creature->IsWithinDistInMap(Check, 100.0))
                     {
                         m_creature->GetMotionMaster()->Clear(false);
                         m_creature->GetMotionMaster()->MoveIdle();
@@ -612,7 +477,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         {
             if(HandOfDeathTimer < diff)
             {
-                ForceSpellCast(m_creature->getVictim(), SPELL_HAND_OF_DEATH, INTERRUPT_AND_CAST_INSTANTLY);
+                ForceSpellCast(m_creature, SPELL_HAND_OF_DEATH, INTERRUPT_AND_CAST_INSTANTLY);
                 HandOfDeathTimer = 2000;
             }
             else
@@ -623,67 +488,70 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
         if(SoulChargeTimer < diff)
         {
-            if(SoulChargeUnleash)
+            if(!SoulChargeUnleash)
             {
-                if(SoulChargeUnleashTimer < diff)
+                if(m_creature->HasAura(SPELL_SOUL_CHARGE_YELLOW, 0))
                 {
-                    while(m_creature->HasAura(chargeSpell, 0))
-                    {
-                        SoulChargeCount++;
-                        m_creature->RemoveSingleAuraFromStack(chargeSpell, 0);
-                    }
-
-                    if(SoulChargeCount)
-                    {
-                        SoulChargeCount--;
-                        DoCast(m_creature->getVictim(), unleashSpell);
-                        //AddSpellToCast(m_creature->getVictim(), unleashSpell);
-                        SoulChargeTimer = 1000;
-                    }
-                    else
-                    {
-                        SoulChargeUnleash = false;
-                        SoulChargeTimer = 4000;
-                    }                    
+                    SoulChargeUnleash = true;
+                    chargeSpell = SPELL_SOUL_CHARGE_YELLOW;
+                    unleashSpell = SPELL_UNLEASH_SOUL_YELLOW;
+                    SoulChargeUnleashTimer = rand()%5000+5000;
                 }
-                else
-                    SoulChargeUnleashTimer -= diff;
+                else if(m_creature->HasAura(SPELL_SOUL_CHARGE_RED, 0))
+                {
+                    SoulChargeUnleash = true;
+                    chargeSpell = SPELL_SOUL_CHARGE_RED;
+                    unleashSpell = SPELL_UNLEASH_SOUL_RED;
+                    SoulChargeUnleashTimer = rand()%5000+5000;
+                }
+                else if(m_creature->HasAura(SPELL_SOUL_CHARGE_GREEN, 0))
+                {
+                    SoulChargeUnleash = true;
+                    chargeSpell = SPELL_SOUL_CHARGE_GREEN;
+                    unleashSpell = SPELL_UNLEASH_SOUL_GREEN;
+                    SoulChargeUnleashTimer = rand()%5000+5000;
+                }
+                SoulChargeTimer = 3000;
             }
-            
-            if(m_creature->HasAura(SPELL_SOUL_CHARGE_YELLOW, 0) && !SoulChargeUnleash)
-            {
-                SoulChargeUnleash = true;
-                SoulChargeUnleashTimer = rand()%5000+5000;        //5 - 10 seconds
-                chargeSpell = SPELL_SOUL_CHARGE_YELLOW;
-                unleashSpell = SPELL_UNLEASH_SOUL_YELLOW;
-            }
-            
-            if (m_creature->HasAura(SPELL_SOUL_CHARGE_RED, 0) && !SoulChargeUnleash)
-            {
-                SoulChargeUnleash = true;
-                SoulChargeUnleashTimer = rand()%5000+5000;        //5 - 10 seconds
-                chargeSpell = SPELL_SOUL_CHARGE_RED;
-                unleashSpell = SPELL_UNLEASH_SOUL_RED;
-            }
-
-            if (m_creature->HasAura(SPELL_SOUL_CHARGE_GREEN, 0) && !SoulChargeUnleash)
-            {
-                SoulChargeUnleash = true;
-                SoulChargeUnleashTimer = rand()%5000+5000;        //5 - 10 seconds
-                chargeSpell = SPELL_SOUL_CHARGE_GREEN;
-                unleashSpell = SPELL_UNLEASH_SOUL_GREEN;
-            }
-            if (!SoulChargeUnleash)
-                SoulChargeTimer = 2000;
         }
         else
             SoulChargeTimer -= diff;
+
+        if(SoulChargeUnleash)
+        {
+            if(SoulChargeUnleashTimer < diff)
+            {
+                while(m_creature->HasAura(chargeSpell, 0))
+                {
+                    SoulChargeCount++;
+                    m_creature->RemoveSingleAuraFromStack(chargeSpell, 0);
+                }
+                if(SoulChargeCount)
+                {
+                    SoulChargeCount--;
+                    DoCast(m_creature/*->getVictim()*/, unleashSpell);
+                    //AddSpellToCast(m_creature->getVictim(), unleashSpell);
+                    SoulChargeTimer = 1000;
+                    SoulChargeUnleashTimer = 1500;
+                }
+                else
+                {
+                    SoulChargeUnleash = false;
+                    SoulChargeTimer = 4000;
+                }
+            }
+            else
+                SoulChargeUnleashTimer -= diff;
+        }
 
         if(GripOfTheLegionTimer < diff)
         {
             if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
                 //AddSpellToCast(target, SPELL_GRIP_OF_THE_LEGION);
                 DoCast(target, SPELL_GRIP_OF_THE_LEGION);
+            
+            if(AirBurstTimer < 3000)
+                AirBurstTimer = 3000;
 
             GripOfTheLegionTimer = 5000 + rand()%20000;
         }
@@ -699,7 +567,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
             Unit *target = NULL;
             // aby miec pewnosc, ze naszym targetem nie jest tank
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, 100, true, m_creature->getVictim()))
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 3, 100, true, m_creature->getVictim()))
             {
                 // ustawia target jako aktualny
                 m_creature->SetUInt64Value(UNIT_FIELD_TARGET, target->GetGUID());
@@ -725,10 +593,8 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
         if(DoomfireTimer < diff)
         {
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, 150, true, m_creature->getVictim()))
-                SummonDoomfire(target);
-
-            DoomfireTimer = 40000;
+            SummonDoomfire();
+            DoomfireTimer = 9000+rand()%3000;
         }
         else
             DoomfireTimer -= diff;
@@ -760,11 +626,6 @@ CreatureAI* GetAI_boss_archimonde(Creature *_Creature)
     return new boss_archimondeAI (_Creature);
 }
 
-CreatureAI* GetAI_mob_doomfire(Creature* _Creature)
-{
-    return new mob_doomfireAI(_Creature);
-}
-
 CreatureAI* GetAI_mob_doomfire_targetting(Creature* _Creature)
 {
     return new mob_doomfire_targettingAI(_Creature);
@@ -781,11 +642,6 @@ void AddSC_boss_archimonde()
     newscript = new Script;
     newscript->Name="boss_archimonde";
     newscript->GetAI = &GetAI_boss_archimonde;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name = "mob_doomfire";
-    newscript->GetAI = &GetAI_mob_doomfire;
     newscript->RegisterSelf();
 
     newscript = new Script;

@@ -39,7 +39,22 @@ class TRINITY_DLL_DECL PetAI : public CreatureAI
         void UpdateAI(const uint32);
         static int Permissible(const Creature *);
 
-    private:
+        void AttackStart(Unit *target)
+        {
+            m_forceTimer = 5000;
+            CreatureAI::AttackStart(target);
+        }
+
+        virtual void PrepareSpellForAutocast(uint32 spellId);
+        virtual void AddSpellForAutocast(uint32 spellId, Unit* target);
+        virtual void AutocastPreparedSpells();
+
+        bool targetHasInterruptableAura(Unit *target) const;
+
+    protected:
+
+        void UpdateMotionMaster();
+
         bool _isVisible(Unit *) const;
         bool _needToStop(void) const;
         void _stopAttack(void);
@@ -50,10 +65,33 @@ class TRINITY_DLL_DECL PetAI : public CreatureAI
         TimeTracker i_tracker;
         std::set<uint64> m_AllySet;
         uint32 m_updateAlliesTimer;
-        bool m_recentlyCastedSpell;
+        uint32 m_forceTimer;
 
         typedef std::pair<Unit*, Spell*> TargetSpellPair;
         std::vector<TargetSpellPair> m_targetSpellStore;
+
+        Unit* m_owner;              // pointer updated every UpdateAI call
 };
+
+class TRINITY_DLL_DECL ImpAI : public PetAI
+{
+    public:
+        ImpAI(Creature *c) : PetAI(c), m_chasing(false) {}
+        void UpdateAI(const uint32);
+        void AttackStart(Unit *);
+        static int Permissible(const Creature *);
+    protected:
+        bool m_chasing;
+};
+
+class TRINITY_DLL_DECL FelhunterAI : public PetAI
+{
+    public:
+        FelhunterAI(Creature *c) : PetAI(c) {}
+        static int Permissible(const Creature *);
+        void PrepareSpellForAutocast(uint32 spellId);
+
+};
+
 #endif
 

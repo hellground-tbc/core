@@ -25,6 +25,7 @@
 #include "Object.h"
 #include "LootMgr.h"
 #include "ItemPrototype.h"
+#include "QueryResult.h"
 
 struct SpellEntry;
 class Bag;
@@ -214,7 +215,7 @@ class TRINITY_DLL_SPEC Item : public Object
         bool IsBindedNotWith(uint64 guid) const { return IsSoulBound() && GetOwnerGUID()!= guid; }
         bool IsBoundByEnchant() const;
         virtual void SaveToDB();
-        virtual bool LoadFromDB(uint32 guid, uint64 owner_guid, QueryResult *result = NULL);
+        virtual bool LoadFromDB(uint32 guid, uint64 owner_guid, QueryResult_AutoPtr result = QueryResult_AutoPtr(NULL));
         virtual void DeleteFromDB();
         void DeleteFromInventoryDB();
 

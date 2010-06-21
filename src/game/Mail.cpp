@@ -148,12 +148,11 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data )
     else
     {
         rc_team = objmgr.GetPlayerTeamByGUID(rc);
-        QueryResult* result = CharacterDatabase.PQuery("SELECT COUNT(*) FROM mail WHERE receiver = '%u'", GUID_LOPART(rc));
+        QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT COUNT(*) FROM mail WHERE receiver = '%u'", GUID_LOPART(rc));
         if(result)
         {
             Field *fields = result->Fetch();
             mails_count = fields[0].GetUInt32();
-            delete result;
         }
     }
     //do not allow to have more than 100 mails in mailbox.. mails count is in opcode uint8!!! - so max can be 255..
@@ -231,9 +230,15 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data )
 
                 mailItem.item_template = mailItem.item ? mailItem.item->GetEntry() : 0;
 
-                if( GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_LOG_TRADE) )
+                if(GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_LOG_TRADE) )
                 {
                     sLog.outCommand(GetAccountId(), "GM %s (Account: %u) mail item: %s (Entry: %u Count: %u) to player: %s (Account: %u)",
+                        GetPlayerName(), GetAccountId(), mailItem.item->GetProto()->Name1, mailItem.item->GetEntry(), mailItem.item->GetCount(), receiver.c_str(), rc_account);
+                }
+
+                if(_player->GetSession()->SpecialLog())
+                {
+                    sLog.outSpecial("Player %s (Account: %u) mail item: %s (Entry: %u Count: %u) to player: %s (Account: %u)",
                         GetPlayerName(), GetAccountId(), mailItem.item->GetProto()->Name1, mailItem.item->GetEntry(), mailItem.item->GetCount(), receiver.c_str(), rc_account);
                 }
 
@@ -250,10 +255,19 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data )
             needItemDelay = pl->GetSession()->GetAccountId() != rc_account;
         }
 
-        if(money > 0 &&  GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_LOG_TRADE))
+        if(money > 0)
         {
-            sLog.outCommand(GetAccountId(),"GM %s (Account: %u) mail money: %u to player: %s (Account: %u)",
-                GetPlayerName(), GetAccountId(), money, receiver.c_str(), rc_account);
+            if(GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_LOG_TRADE))
+            {
+                sLog.outCommand(GetAccountId(),"GM %s (Account: %u) mail money: %u to player: %s (Account: %u)",
+                    GetPlayerName(), GetAccountId(), money, receiver.c_str(), rc_account);
+            }
+
+            if(_player->GetSession()->SpecialLog())
+            {
+                sLog.outSpecial("Player %s (Account: %u) mail money: %u to player: %s (Account: %u)",
+                    GetPlayerName(), GetAccountId(), money, receiver.c_str(), rc_account);
+            }
         }
     }
 
@@ -452,7 +466,7 @@ void WorldSession::HandleTakeItem(WorldPacket & recv_data )
 
             uint32 sender_accId = 0;
 
-            if( GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_LOG_TRADE) )
+            if(_player->GetSession()->SpecialLog() || GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_LOG_TRADE))
             {
                 std::string sender_name;
                 if(receive)
@@ -468,8 +482,17 @@ void WorldSession::HandleTakeItem(WorldPacket & recv_data )
                     if(!objmgr.GetPlayerNameByGUID(sender_guid,sender_name))
                         sender_name = objmgr.GetTrinityStringForDBCLocale(LANG_UNKNOWN);
                 }
-                sLog.outCommand(GetAccountId(),"GM %s (Account: %u) receive mail item: %s (Entry: %u Count: %u) and send COD money: %u to player: %s (Account: %u)",
-                    GetPlayerName(),GetAccountId(),it->GetProto()->Name1,it->GetEntry(),it->GetCount(),m->COD,sender_name.c_str(),sender_accId);
+
+                if(_player->GetSession()->SpecialLog())
+                {
+                    sLog.outCommand(GetAccountId(),"Player %s (Account: %u) receive mail item: %s (Entry: %u Count: %u) and send COD money: %u to player: %s (Account: %u)",
+                        GetPlayerName(),GetAccountId(),it->GetProto()->Name1,it->GetEntry(),it->GetCount(),m->COD,sender_name.c_str(),sender_accId);
+                }
+                else
+                {
+                    sLog.outCommand(GetAccountId(),"GM %s (Account: %u) receive mail item: %s (Entry: %u Count: %u) and send COD money: %u to player: %s (Account: %u)",
+                        GetPlayerName(),GetAccountId(),it->GetProto()->Name1,it->GetEntry(),it->GetCount(),m->COD,sender_name.c_str(),sender_accId);
+                }
             }
             else if(!receive)
                 sender_accId = objmgr.GetPlayerAccountIdByGUID(sender_guid);
@@ -847,7 +870,7 @@ void WorldSession::SendMailTo(Player* receiver, uint8 messageType, uint8 station
     CharacterDatabase.BeginTransaction();
     CharacterDatabase.escape_string(subject);
     CharacterDatabase.PExecute("INSERT INTO mail (id,messageType,stationery,mailTemplateId,sender,receiver,subject,itemTextId,has_items,expire_time,deliver_time,money,cod,checked) "
-        "VALUES ('%u', '%u', '%u', '%u', '%u', '%u', '%s', '%u', '%u', '" I64FMTD "','" I64FMTD "', '%u', '%u', '%d')",
+        "VALUES ('%u', '%u', '%u', '%u', '%u', '%u', '%s', '%u', '%u', '" UI64FMTD "','" UI64FMTD "', '%u', '%u', '%d')",
         mailId, messageType, stationery, mailTemplateId, sender_guidlow_or_entry, receiver_guidlow, subject.c_str(), itemTextId, (mi && !mi->empty() ? 1 : 0), (uint64)expire_time, (uint64)deliver_time, money, COD, checked);
 
     if(mi)

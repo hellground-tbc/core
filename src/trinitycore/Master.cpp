@@ -52,10 +52,64 @@
 extern int m_ServiceStatus;
 #endif
 
+//#define ANTICHEAT_SOCK
+
 /// \todo Warning disabling not useful under VC++2005. Can somebody say on which compiler it is useful?
 #pragma warning(disable:4305)
 
 INSTANTIATE_SINGLETON_1( Master );
+
+#ifdef ANTICHEAT_SOCK
+class AntiCheatSocket : public TcpSocket
+{
+    public:
+        AntiCheatSocket(ISocketHandler &h) : TcpSocket(h) {}
+    private:
+        void OnRead()
+        {
+            TcpSocket::OnRead();
+            if (ibuf.GetLength() != 2)
+            {
+                //sLog.outString("wrong packet size %i", ibuf.GetLength());
+                sLog.outError("Invalid packet size in AntiCheatSocket::OnRead()!");
+                ibuf.Remove(ibuf.GetLength());
+                return;
+            }
+
+            char cmd;
+            char val;
+            ibuf.Read(&cmd, 1);
+            ibuf.Read(&val, 1);
+            //sLog.outString("Processing %c %c", cmd, val);
+            sWorld.ProcessAnticheat(&cmd, &val, GetRemoteAddress());
+        }
+};
+
+class AntiCheatRunnable : public ACE_Based::Runnable
+{
+    public:
+        AntiCheatRunnable() {}
+
+        void run()
+        {
+            sLog.outString("Starting up anti-cheat socket.");
+            SocketHandler h;
+            ListenSocket<AntiCheatSocket> lsock(h);
+
+            if (lsock.Bind(5600))
+            {
+                sLog.outError("Failed to bind anti-cheat listening socket!.");
+                return;
+            }
+
+            h.Add(&lsock);
+            while (1)
+            {
+                h.Select(0, 500000);
+            }
+        }
+};
+#endif//anticheatsock
 
 volatile uint32 Master::m_masterLoopCounter = 0;
 
@@ -163,7 +217,7 @@ int Master::Run()
     _HookSignals();
 
     ///- Launch WorldRunnable thread
-    ACE_Based::Thread t(*new WorldRunnable);
+    ACE_Based::Thread t(new WorldRunnable);
     t.setPriority(ACE_Based::Highest);
 
     // set server online
@@ -176,7 +230,7 @@ int Master::Run()
 #endif
     {
         ///- Launch CliRunnable thread
-        ACE_Based::Thread td1(*new CliRunnable);
+        ACE_Based::Thread td1(new CliRunnable);
     }
 
     ///- Handle affinity for multiple processors and process priority on Windows
@@ -238,19 +292,25 @@ int Master::Run()
     {
         FreezeDetectorRunnable *fdr = new FreezeDetectorRunnable();
         fdr->SetDelayTime(freeze_delay*1000);
-        ACE_Based::Thread t(*fdr);
+        ACE_Based::Thread t(fdr);
         t.setPriority(ACE_Based::Highest);
     }
 
-    ///- Launch the world listener socket
-  port_t wsport = sWorld.getConfig (CONFIG_PORT_WORLD);
-  std::string bind_ip = sConfig.GetStringDefault ("BindIP", "0.0.0.0");
+#ifdef ANTICHEAT_SOCK
+    AntiCheatRunnable *acr = new AntiCheatRunnable();
+    if (acr)
+        ACE_Based::Thread t2(*acr);
+#endif
 
-  if (sWorldSocketMgr->StartNetwork (wsport, bind_ip.c_str ()) == -1)
+    ///- Launch the world listener socket
+    port_t wsport = sWorld.getConfig (CONFIG_PORT_WORLD);
+    std::string bind_ip = sConfig.GetStringDefault ("BindIP", "0.0.0.0");
+
+    if (sWorldSocketMgr->StartNetwork (wsport, bind_ip.c_str ()) == -1)
     {
-      sLog.outError ("Failed to start network");
-      World::StopNow(ERROR_EXIT_CODE);
-      // go down and shutdown the server
+        sLog.outError ("Failed to start network");
+        World::StopNow(ERROR_EXIT_CODE);
+        // go down and shutdown the server
     }
 
     sWorldSocketMgr->Wait ();

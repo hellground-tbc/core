@@ -83,6 +83,7 @@
 				Name="VCLibrarianTool"
 				AdditionalDependencies=".\g3dlite__$(PlatformName)_$(ConfigurationName)\g3dlite.lib"
 				OutputFile=".\shared__$(PlatformName)_$(ConfigurationName)\shared.lib"
+				AdditionalLibraryDirectories="dep\lib\$(PlatformName)_$(ConfigurationName)"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -372,22 +373,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\shared\Database\DatabaseMysql.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\shared\Database\DatabaseMysql.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\shared\Database\DatabaseSqlite.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\shared\Database\DatabaseSqlite.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\shared\Database\Field.cpp"
 				>
 			</File>
@@ -400,23 +385,11 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\shared\Database\QueryResult.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\shared\Database\QueryResult.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\shared\Database\QueryResultMysql.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\shared\Database\QueryResultMysql.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\shared\Database\QueryResultSqlite.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\shared\Database\QueryResultSqlite.h"
 				>
 			</File>
 			<File
@@ -441,6 +414,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\shared\Database\SQLStorage.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\shared\Database\SQLStorageImpl.h"
 				>
 			</File>
 			<Filter

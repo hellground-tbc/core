@@ -96,6 +96,7 @@ class ChatHandler
         bool HandleAccountSetAddonCommand(const char* args);
         bool HandleAccountSetGmLevelCommand(const char* args);
         bool HandleAccountSetPasswordCommand(const char* args);
+        bool HandleAccountSpecialLogCommand(const char* args);
 
         bool HandleHelpCommand(const char* args);
         bool HandleAHBotOptionsCommand(const char * args);
@@ -509,8 +510,8 @@ class ChatHandler
         GameObject* GetObjectGlobalyWithGuidOrNearWithDbGuid(uint32 lowguid,uint32 entry);
 
         // Utility methods for commands
-        bool LookupPlayerSearchCommand(QueryResult* result, int32 limit);
-        bool HandleBanListHelper(QueryResult* result);
+        bool LookupPlayerSearchCommand(QueryResult_AutoPtr result, int32 limit);
+        bool HandleBanListHelper(QueryResult_AutoPtr result);
         bool HandleBanHelper(BanMode mode,char const* args);
         bool HandleBanInfoHelper(uint32 accountid, char const* accountname);
         bool HandleUnBanHelper(BanMode mode,char const* args);

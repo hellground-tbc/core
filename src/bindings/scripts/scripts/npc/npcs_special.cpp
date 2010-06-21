@@ -309,6 +309,8 @@ const uint32 HordeSoldierId[3] =
 
 struct TRINITY_DLL_DECL npc_doctorAI : public ScriptedAI
 {
+    npc_doctorAI(Creature *c) : ScriptedAI(c) {}
+
     uint64 Playerguid;
 
     uint32 SummonPatient_Timer;
@@ -321,9 +323,15 @@ struct TRINITY_DLL_DECL npc_doctorAI : public ScriptedAI
     std::list<uint64> Patients;
     std::vector<Location*> Coordinates;
 
-    npc_doctorAI(Creature *c) : ScriptedAI(c) {}
-
-    void Reset(){}
+    void Reset()
+    {
+        Event = false;
+        SummonPatient_Timer = 10000;
+        PatientSavedCount = 0;
+        PatientDiedCount = 0;
+        Playerguid = 0;
+        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+    }
 
     void BeginEvent(Player* player);
     void PatientDied(Location* Point);
@@ -386,7 +394,7 @@ struct TRINITY_DLL_DECL npc_injured_patientAI : public ScriptedAI
             {
                 if(Doctorguid)
                 {
-                    Creature* Doctor = (Unit::GetCreature((*m_creature), Doctorguid));
+                    Creature* Doctor = Unit::GetCreature((*m_creature), Doctorguid);
                     if(Doctor)
                         ((npc_doctorAI*)Doctor->AI())->PatientSaved(m_creature, ((Player*)caster), Coord);
                 }
@@ -497,6 +505,8 @@ void npc_doctorAI::PatientDied(Location* Point)
 
         Coordinates.push_back(Point);
     }
+    else
+         Reset();
 }
 
 void npc_doctorAI::PatientSaved(Creature* soldier, Player* player, Location* Point)
@@ -513,7 +523,7 @@ void npc_doctorAI::PatientSaved(Creature* soldier, Player* player, Location* Poi
                     std::list<uint64>::iterator itr;
                     for(itr = Patients.begin(); itr != Patients.end(); ++itr)
                     {
-                        Creature* Patient = (Unit::GetCreature((*m_creature), *itr));
+                        Creature* Patient = Unit::GetCreature((*m_creature), *itr);
                         if( Patient )
                             Patient->setDeathState(JUST_DIED);
                     }
@@ -524,22 +534,20 @@ void npc_doctorAI::PatientSaved(Creature* soldier, Player* player, Location* Poi
                 else if(player->GetQuestStatus(6622) == QUEST_STATUS_INCOMPLETE)
                     player->AreaExploredOrEventHappens(6622);
 
-                Event = false;
-                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                Reset();
             }
 
             Coordinates.push_back(Point);
         }
     }
+    else
+         Reset();
 }
 
 void npc_doctorAI::UpdateAI(const uint32 diff)
 {
     if(Event && SummonPatientCount >= 20)
-    {
-        Event = false;
-        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-    }
+         Reset();
 
     if(Event)
         if(SummonPatient_Timer < diff)
@@ -576,7 +584,9 @@ void npc_doctorAI::UpdateAI(const uint32 diff)
         }
         SummonPatient_Timer = 10000;
         SummonPatientCount++;
-    }else SummonPatient_Timer -= diff;
+    }
+    else
+        SummonPatient_Timer -= diff;
 }
 
 bool QuestAccept_npc_doctor(Player *player, Creature *creature, Quest const *quest )

@@ -88,7 +88,7 @@ Object::~Object( )
         if(IsInWorld())
         {
             ///- Do NOT call RemoveFromWorld here, if the object is a player it will crash
-            sLog.outError("Object::~Object - guid="I64FMTD", typeid=%d deleted but still in world!!", GetGUID(), GetTypeId());
+            sLog.outError("Object::~Object - guid="UI64FMTD", typeid=%d deleted but still in world!!", GetGUID(), GetTypeId());
             assert(false);
         }
 
@@ -1149,6 +1149,29 @@ float WorldObject::GetDistance(const WorldObject* obj) const
     return ( dist > 0 ? dist : 0);
 }
 
+bool WorldObject::GetDistanceOrder(WorldObject const* obj1, WorldObject const* obj2, bool is3D /* = true */) const
+{
+    float dx1 = GetPositionX() - obj1->GetPositionX();
+    float dy1 = GetPositionY() - obj1->GetPositionY();
+    float distsq1 = dx1*dx1 + dy1*dy1;
+    if (is3D)
+    {
+        float dz1 = GetPositionZ() - obj1->GetPositionZ();
+        distsq1 += dz1*dz1;
+    }
+
+    float dx2 = GetPositionX() - obj2->GetPositionX();
+    float dy2 = GetPositionY() - obj2->GetPositionY();
+    float distsq2 = dx2*dx2 + dy2*dy2;
+    if (is3D)
+    {
+        float dz2 = GetPositionZ() - obj2->GetPositionZ();
+        distsq2 += dz2*dz2;
+    }
+
+    return distsq1 < distsq2;
+}
+
 float WorldObject::GetDistance2d(float x, float y) const
 {
     float dx = GetPositionX() - x;
@@ -1375,9 +1398,9 @@ namespace Trinity
     class MessageChatLocaleCacheDo
     {
         public:
-            MessageChatLocaleCacheDo(WorldObject const& obj, ChatMsg msgtype, int32 textId, uint32 language, uint64 targetGUID, float dist)
+            MessageChatLocaleCacheDo(WorldObject const& obj, ChatMsg msgtype, int32 textId, uint32 language, uint64 targetGUID, float dist, bool withoutPrename = false)
                 : i_object(obj), i_msgtype(msgtype), i_textId(textId), i_language(language),
-                i_targetGUID(targetGUID), i_dist(dist)
+                i_targetGUID(targetGUID), i_dist(dist), i_withoutPrename(withoutPrename)
             {
             }
 
@@ -1408,7 +1431,7 @@ namespace Trinity
                     data = new WorldPacket(SMSG_MESSAGECHAT, 200);
 
                     // TODO: i_object.GetName() also must be localized?
-                    i_object.BuildMonsterChat(data,i_msgtype,text,i_language,i_object.GetNameForLocaleIdx(loc_idx),i_targetGUID);
+                    i_object.BuildMonsterChat(data,i_msgtype,text,i_language,i_object.GetNameForLocaleIdx(loc_idx),i_targetGUID, i_withoutPrename);
 
                     i_data_cache[cache_idx] = data;
                 }
@@ -1425,6 +1448,7 @@ namespace Trinity
             uint32 i_language;
             uint64 i_targetGUID;
             float i_dist;
+            bool i_withoutPrename;
             std::vector<WorldPacket*> i_data_cache;             // 0 = default, i => i-1 locale index
     };
 }                                                           // namespace Trinity
@@ -1459,7 +1483,7 @@ void WorldObject::MonsterYell(int32 textId, uint32 language, uint64 TargetGuid)
     cell.Visit(p, message, *GetMap(), *this, sWorld.getConfig(CONFIG_LISTEN_RANGE_YELL));
 }
 
-void WorldObject::MonsterTextEmote(int32 textId, uint64 TargetGuid, bool IsBossEmote)
+void WorldObject::MonsterTextEmote(int32 textId, uint64 TargetGuid, bool IsBossEmote, bool withoutPrename)
 {
     CellPair p = Trinity::ComputeCellPair(GetPositionX(), GetPositionY());
 
@@ -1467,7 +1491,7 @@ void WorldObject::MonsterTextEmote(int32 textId, uint64 TargetGuid, bool IsBossE
     cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
 
-    Trinity::MessageChatLocaleCacheDo say_do(*this, IsBossEmote ? CHAT_MSG_RAID_BOSS_EMOTE : CHAT_MSG_MONSTER_EMOTE, textId,LANG_UNIVERSAL,TargetGuid,sWorld.getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE));
+    Trinity::MessageChatLocaleCacheDo say_do(*this, IsBossEmote ? CHAT_MSG_RAID_BOSS_EMOTE : CHAT_MSG_MONSTER_EMOTE, textId,LANG_UNIVERSAL,TargetGuid,sWorld.getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE),withoutPrename);
     Trinity::PlayerWorker<Trinity::MessageChatLocaleCacheDo> say_worker(say_do);
     TypeContainerVisitor<Trinity::PlayerWorker<Trinity::MessageChatLocaleCacheDo>, WorldTypeMapContainer > message(say_worker);
     //cell_lock->Visit(cell_lock, message, *GetMap());
@@ -1489,9 +1513,9 @@ void WorldObject::MonsterWhisper(int32 textId, uint64 receiver, bool IsBossWhisp
     player->GetSession()->SendPacket(&data);
 }
 
-void WorldObject::BuildMonsterChat(WorldPacket *data, uint8 msgtype, char const* text, uint32 language, char const* name, uint64 targetGuid) const
+void WorldObject::BuildMonsterChat(WorldPacket *data, uint8 msgtype, char const* text, uint32 language, char const* name, uint64 targetGuid, bool withoutPrename) const
 {
-    bool pre = (msgtype==CHAT_MSG_MONSTER_EMOTE || msgtype==CHAT_MSG_RAID_BOSS_EMOTE);
+    bool pre = withoutPrename ? false : (msgtype==CHAT_MSG_MONSTER_EMOTE || msgtype==CHAT_MSG_RAID_BOSS_EMOTE);
 
     *data << (uint8)msgtype;
     *data << (uint32)language;
@@ -1631,6 +1655,7 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
     {
         if(GetTypeId() == TYPEID_UNIT || GetTypeId() == TYPEID_PLAYER)
             pCreature->setFaction(((Unit*)this)->getFaction());
+
         pCreature->CastSpell(pCreature, pCreature->m_spells[0], false, 0, 0, GetGUID());
     }
 

@@ -150,7 +150,7 @@ m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),m_creatureInfo(NULL), m_DBTabl
 {
     m_valuesCount = UNIT_END;
 
-    for(int i =0; i<4; ++i)
+    for(int i =0; i < CREATURE_MAX_SPELLS; ++i)
         m_spells[i] = 0;
 
     m_CreatureSpellCooldowns.clear();
@@ -318,6 +318,7 @@ bool Creature::InitEntry(uint32 Entry, uint32 team, const CreatureData *data )
     m_spells[1] = GetCreatureInfo()->spell2;
     m_spells[2] = GetCreatureInfo()->spell3;
     m_spells[3] = GetCreatureInfo()->spell4;
+    m_spells[4] = GetCreatureInfo()->spell5;
 
     return true;
 }
@@ -1056,15 +1057,13 @@ void Creature::OnPoiSelect(Player* player, GossipOption const *gossip)
 
 uint32 Creature::GetGossipTextId(uint32 action, uint32 zoneid)
 {
-    QueryResult *result= WorldDatabase.PQuery("SELECT textid FROM npc_gossip_textid WHERE action = '%u' AND zoneid ='%u'", action, zoneid );
+    QueryResult_AutoPtr result= WorldDatabase.PQuery("SELECT textid FROM npc_gossip_textid WHERE action = '%u' AND zoneid ='%u'", action, zoneid );
 
     if(!result)
         return 0;
 
     Field *fields = result->Fetch();
     uint32 id = fields[0].GetUInt32();
-
-    delete result;
 
     return id;
 }

@@ -25,7 +25,7 @@ EndScriptData */
 #include "def_scholomance.h"
 
 #define SPELL_REND              18106
-#define SPELL_CLEAVE            15584
+#define SPELL_BLACKHAND         18103
 #define SPELL_FRENZY            28371
 
 struct TRINITY_DLL_DECL boss_theolenkrastinovAI : public ScriptedAI
@@ -33,13 +33,13 @@ struct TRINITY_DLL_DECL boss_theolenkrastinovAI : public ScriptedAI
     boss_theolenkrastinovAI(Creature *c) : ScriptedAI(c) {}
 
     uint32 Rend_Timer;
-    uint32 Cleave_Timer;
+    uint32 Blackhand_Timer;
     uint32 Frenzy_Timer;
 
     void Reset()
     {
         Rend_Timer = 8000;
-        Cleave_Timer = 9000;
+        Blackhand_Timer = 9000;
         Frenzy_Timer =0;
     }
 
@@ -71,12 +71,11 @@ struct TRINITY_DLL_DECL boss_theolenkrastinovAI : public ScriptedAI
             Rend_Timer = 10000;
         }else Rend_Timer -= diff;
 
-        //Cleave_Timer
-        if (Cleave_Timer < diff)
+        if (Blackhand_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_CLEAVE);
-            Cleave_Timer = 10000;
-        }else Cleave_Timer -= diff;
+            DoCast(m_creature->getVictim(), SPELL_BLACKHAND);
+            Blackhand_Timer = 10000;
+        }else Blackhand_Timer -= diff;
 
         //Frenzy_Timer
         if ( m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 26 )

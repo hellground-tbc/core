@@ -94,9 +94,10 @@ namespace VMAP
             parameter: String of map ids. Delimiter = ","
             e.g.: "0,1,530"
             */
-            virtual void preventMapsFromBeingUsed(const char* pMapIdString) =0;
+            //virtual void preventMapsFromBeingUsed(const char* pMapIdString) =0;
+            virtual void setLOSonmaps(const char* pMapIdString) =0;
+            virtual void setHeightonmaps(const char* pMapIdString) =0;
     };
-
 }
 #endif
 
