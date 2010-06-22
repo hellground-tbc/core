@@ -731,7 +731,7 @@ uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, cons
             ((Creature*)this)->AI()->DamageMade(pVictim, damageInfo->damage, damagetype == DIRECT_DAMAGE);
     }
 
-    if(damageInfo->damage || damageInfo->rageDamage)
+    if(damageInfo->damage || damageInfo->absorb)
     {
         if (spellProto && spellProto->Id == 33619)                 //if it's from Reflective Shield
         {
