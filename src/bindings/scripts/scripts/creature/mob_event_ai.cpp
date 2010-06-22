@@ -1120,7 +1120,29 @@ struct TRINITY_DLL_DECL Mob_EventAI : public ScriptedAI
         InCombat = false;
         IsFleeing = false;
         Reset();
-
+        if (killer->GetTypeId() == TYPEID_PLAYER)
+        {
+            int ID= m_creature->GetEntry();
+            switch (ID) 
+            {
+                //Burden of Souls
+            case 16870:
+            case 16878:
+            case 19410:
+            case 19411:
+            case 19415:
+            case 19413:
+            case 19414:
+                ((Player*)killer)->KilledMonster(22334, m_creature->GetGUID());
+                break;
+                //Wanted: Giselda te Crone
+            case 17416:
+            case 17417:
+            case 17418:
+                ((Player*)killer)->KilledMonster(21276, m_creature->GetGUID());
+                break;
+            }
+        }
         //Handle Evade events
         for (std::list<EventHolder>::iterator i = EventList.begin(); i != EventList.end(); ++i)
         {
