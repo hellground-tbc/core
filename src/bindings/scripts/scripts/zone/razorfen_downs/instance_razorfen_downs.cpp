@@ -46,7 +46,7 @@ struct instance_razorfen_downs : public ScriptedInstance
         memset(&m_auiEncounter, 0, sizeof(m_auiEncounter));
     }
 
-    std::string GetSaveData()
+    const char* Save()
     {
         OUT_SAVE_INST_DATA;
 
@@ -58,7 +58,7 @@ struct instance_razorfen_downs : public ScriptedInstance
         str_data = saveStream.str();
 
         OUT_SAVE_INST_DATA_COMPLETE;
-        return str_data;
+        return str_data.c_str();
     }
 
     void Load(const char* in)
@@ -91,7 +91,7 @@ struct instance_razorfen_downs : public ScriptedInstance
         OUT_LOAD_INST_DATA_COMPLETE;
     }
 
-    void OnGameObjectCreate(GameObject* pGo, bool bAdd)
+    void OnObjectCreate(GameObject* pGo)
     {
         switch(pGo->GetEntry())
         {

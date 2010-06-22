@@ -129,7 +129,9 @@ struct npc_tomb_creatureAI : public ScriptedAI
             {
                 DoCast(m_creature->getVictim(), SPELL_WEB);
                 uiWebTimer = urand(7000,16000);
-            } else uiWebTimer -= uiDiff;
+            }
+            else
+                uiWebTimer -= uiDiff;
         }
 
         DoMeleeAttackIfReady();
@@ -138,7 +140,13 @@ struct npc_tomb_creatureAI : public ScriptedAI
     void JustDied(Unit* pKiller)
     {
         if (pInstance)
+        {
             pInstance->SetData(DATA_GONG_WAVES,pInstance->GetData(DATA_GONG_WAVES)+1);
+
+            if(m_creature->GetEntry() == CREATURE_TUTEN_KASH)
+                pInstance->SetData(BOSS_TUTEN_KASH, DONE);
+        }
+
     }
 };
 
