@@ -5694,12 +5694,12 @@ void Spell::EffectSummonTotem(uint32 i)
 
     if(slot < MAX_TOTEM && m_caster->GetTypeId() == TYPEID_PLAYER)
     {
-        WorldPacket data(SMSG_TOTEM_CREATED, 1+8+4+4);
-        data << uint8(slot);
-        data << uint64(pTotem->GetGUID());
-        data << uint32(duration);
-        data << uint32(m_spellInfo->Id);
-        ((Player*)m_caster)->SendDirectMessage(&data);
+        WorldPacket data(SMSG_TOTEM_CREATED, 17);
+	    data << uint8(slot);
+	    data << uint64(pTotem->GetGUID());
+	    data << uint32(GetDuration());
+	    data << uint32(GetProto()->Id);
+	    m_caster->GetSession()->SendPacket(&data);
     }
 }
 
