@@ -88,6 +88,7 @@ bool GOHello_go_gong(Player* pPlayer, GameObject* pGO)
     if (pInstance)
     {
         pInstance->SetData(DATA_GONG_WAVES,pInstance->GetData(DATA_GONG_WAVES)+1);
+        pPlayer->PlaySoundA(4654, false);   //gong sound
         return true;
     }
 
@@ -96,7 +97,9 @@ bool GOHello_go_gong(Player* pPlayer, GameObject* pGO)
 
 enum eTombCreature
 {
-    SPELL_WEB                   = 745
+    SPELL_WEB                   = 745,
+    SPELL_CURSE_OF_TUTENKASH    = 12255,
+    SPELL_WEB_SPRAY             = 12252
 };
 
 struct npc_tomb_creatureAI : public ScriptedAI
@@ -109,10 +112,14 @@ struct npc_tomb_creatureAI : public ScriptedAI
     ScriptedInstance* pInstance;
 
     uint32 uiWebTimer;
+    uint32 uiCurseTimer;
+    uint32 uiWebSprayTimer;
 
     void Reset()
     {
         uiWebTimer = urand(5000,8000);
+        uiCurseTimer = 16000;
+        uiWebSprayTimer = 5000;
     }
 
     void Aggro(Unit* who) {}
@@ -132,6 +139,26 @@ struct npc_tomb_creatureAI : public ScriptedAI
             }
             else
                 uiWebTimer -= uiDiff;
+        }
+
+        //Tuten'Kash timers
+        if (m_creature->GetEntry() == CREATURE_TUTEN_KASH)
+        {
+            if (uiCurseTimer < uiDiff)
+            {
+                DoCast(m_creature, SPELL_CURSE_OF_TUTENKASH);
+                uiCurseTimer = urand(40000,60000);
+            }
+            else
+                uiCurseTimer -= uiDiff;
+
+            if (uiWebSprayTimer < uiDiff)
+            {
+                DoCast(m_creature, SPELL_WEB_SPRAY);
+                uiWebSprayTimer = urand(17000,25000);
+            }
+            else
+                uiWebSprayTimer -= uiDiff;
         }
 
         DoMeleeAttackIfReady();
