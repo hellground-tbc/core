@@ -9356,7 +9356,7 @@ void Unit::ApplyDiminishingToDuration(DiminishingGroup group, int32 &duration,Un
         if(target->GetTypeId() == TYPEID_PLAYER && source->GetTypeId() == TYPEID_PLAYER)
         {
             duration = 10000;
-            if(tSpell && tSpell->SpellFamilyName == SPELLFAMILY_HUNTER && tSpell->SpellFamilyFlags & 0x8LL)
+            if(tSpell)
                 ((Player*)source)->ApplySpellMod(tSpell->Id, SPELLMOD_DURATION, duration);
         }
     }

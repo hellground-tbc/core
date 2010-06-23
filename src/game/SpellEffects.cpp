@@ -2446,7 +2446,7 @@ void Spell::EffectApplyAura(uint32 i)
     int32 duration = Aur->GetAuraMaxDuration();
     if(!IsPositiveSpell(m_spellInfo->Id))
     {
-        unitTarget->ApplyDiminishingToDuration(m_diminishGroup,duration,caster,m_diminishLevel);
+        unitTarget->ApplyDiminishingToDuration(m_diminishGroup,duration,caster,m_diminishLevel, m_spellInfo);
         Aur->setDiminishGroup(m_diminishGroup);
     }
 
