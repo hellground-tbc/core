@@ -22,14 +22,21 @@ SDCategory: Game Objects
 EndScriptData */
 
 /* ContentData
+go_cat_figurine
 go_northern_crystal_pylon
 go_eastern_crystal_pylon
 go_western_crystal_pylon
 go_barov_journal
-go_field_repair_bot_74A
+go_gilded_brazier - implemented at ghostlands.cpp
 go_orb_of_command
 go_tablet_of_madness
 go_tablet_of_the_seven
+go_jump_a_trone
+go_ethereum_prison - implemented at netherstorm.cpp
+go_ethereum_stasis
+go_resonite_cask
+go_sacred_fire_of_life
+go_field_repair_bot_74A
 go_teleporter
 go_hive_pod
 EndContentData */
@@ -269,6 +276,28 @@ bool GOHello_go_ethereum_stasis(Player* pPlayer, GameObject* pGo)
     pGo->SetRespawnTime(120);
     return false;
 }
+
+/*######
+## go_resonite_cask
+######*/
+
+enum eResoniteCask
+{
+    NPC_GOGGEROC    = 11920
+};
+
+bool GOHello_go_resonite_cask(Player *pPlayer, GameObject *pGO)
+{
+    if (pGO->GetGoType() == GAMEOBJECT_TYPE_GOOBER)
+    {
+        Unit* Goggeroc = FindCreature(NPC_GOGGEROC, 10.0, pPlayer); //prevent multiple summoning
+        if(!Goggeroc)
+            pGO->SummonCreature(NPC_GOGGEROC, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 300000);
+    }
+
+    return false;
+}
+
 /*######
 ## go_darkmoon_cannon
 ######*/
@@ -375,7 +404,12 @@ void AddSC_go_scripts()
     newscript->Name = "go_ethereum_stasis";
     newscript->pGOHello =           &GOHello_go_ethereum_stasis;
     newscript->RegisterSelf();
-   
+
+    newscript = new Script;
+    newscript->Name = "go_resonite_cask";
+    newscript->pGOHello =           &GOHello_go_resonite_cask;
+    newscript->RegisterSelf();
+
     newscript = new Script;
     newscript->Name = "go_darkmoon_cannon";
     newscript->pGOHello =           &GOHello_go_darkmoon_cannon;
