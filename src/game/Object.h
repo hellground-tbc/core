@@ -156,12 +156,11 @@ class TRINITY_DLL_SPEC Object
         bool isType(uint16 mask) const { return (mask & m_objectType); }
 
         virtual void BuildCreateUpdateBlockForPlayer( UpdateData *data, Player *target ) const;
-        void SendUpdateToPlayer(Player* player);
+        void SendCreateUpdateToPlayer(Player* player);
 
         void BuildValuesUpdateBlockForPlayer( UpdateData *data, Player *target ) const;
         void BuildOutOfRangeUpdateBlock( UpdateData *data ) const;
         void BuildMovementUpdateBlock( UpdateData * data, uint32 flags = 0 ) const;
-        void BuildUpdate(UpdateDataMapType &);
 
         virtual void DestroyForPlayer( Player *target ) const;
 
@@ -299,7 +298,6 @@ class TRINITY_DLL_SPEC Object
         }
 
         void ClearUpdateMask(bool remove);
-        void SendUpdateObjectToAllExcept(Player* exceptPlayer);
 
         bool LoadValues(const char* data);
 
@@ -475,6 +473,7 @@ class TRINITY_DLL_SPEC WorldObject : public Object
         virtual void SaveRespawnTime() {}
 
         void AddObjectToRemoveList();
+        void UpdateObjectVisibility();
 
         // main visibility check function in normal case (ignore grey zone distance check)
         bool isVisibleFor(Player const* u) const { return isVisibleForInState(u,false); }

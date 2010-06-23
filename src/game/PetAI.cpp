@@ -197,10 +197,10 @@ void PetAI::AutocastPreparedSpells()
         {
             i_pet.SetInFront(target);
             if( target->GetTypeId() == TYPEID_PLAYER )
-                i_pet.SendUpdateToPlayer( (Player*)target );
+                i_pet.SendCreateUpdateToPlayer( (Player*)target );
 
             if(m_owner && m_owner->GetTypeId() == TYPEID_PLAYER)
-                i_pet.SendUpdateToPlayer( (Player*)m_owner );
+                i_pet.SendCreateUpdateToPlayer( (Player*)m_owner );
         }
 
         i_pet.AddCreatureSpellCooldown(spell->m_spellInfo->Id);

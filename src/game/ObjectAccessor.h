@@ -218,10 +218,7 @@ class ObjectAccessor : public Trinity::Singleton<ObjectAccessor, Trinity::ClassL
         void AddCorpsesToGrid(GridPair const& gridpair,GridType& grid,Map* map);
         Corpse* ConvertCorpseForPlayer(uint64 player_guid, bool insignia = false);
 
-        static void UpdateObject(Object* obj, Player* exceptPlayer);
         static void _buildUpdateObject(Object* obj, UpdateDataMapType &);
-
-        static void UpdateObjectVisibility(WorldObject* obj);
 
         typedef ACE_Thread_Mutex LockType;
         typedef Trinity::GeneralLock<LockType> Guard;

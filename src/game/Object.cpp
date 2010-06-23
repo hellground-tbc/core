@@ -199,18 +199,9 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) c
     data->AddUpdateBlock(buf);
 }
 
-void Object::BuildUpdate(UpdateDataMapType &update_players)
+void Object::SendCreateUpdateToPlayer(Player* player)
 {
-    ObjectAccessor::_buildUpdateObject(this,update_players);
-    ClearUpdateMask(true);
-}
-
-void Object::SendUpdateToPlayer(Player* player)
-{
-    // send update to another players
-    SendUpdateObjectToAllExcept(player);
-
-    // send create update to player
+     // send create update to player
     UpdateData upd;
     WorldPacket packet;
 
@@ -725,19 +716,6 @@ void Object::ClearUpdateMask(bool remove)
     }
 }
 
-// Send current value fields changes to all viewers
-void Object::SendUpdateObjectToAllExcept(Player* exceptPlayer)
-{
-    // changes will be send in create packet
-    if(!IsInWorld())
-        return;
-
-    // nothing do
-    if(!m_objectUpdated)
-        return;
-
-    ObjectAccessor::UpdateObject(this,exceptPlayer);
-}
 
 bool Object::LoadValues(const char* data)
 {
@@ -1846,5 +1824,10 @@ void WorldObject::GetGroundPoint(float &x, float &y, float &z, float dist, float
     UpdateGroundPositionZ(x, y, z);
 }
 
+void WorldObject::UpdateObjectVisibility()
+{
+    CellPair p = Trinity::ComputeCellPair(GetPositionX(), GetPositionY());
+    Cell cell(p);
 
-
+    GetMap()->UpdateObjectVisibility(this, cell, p);
+}

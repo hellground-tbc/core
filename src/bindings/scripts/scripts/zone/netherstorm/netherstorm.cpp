@@ -435,10 +435,10 @@ struct TRINITY_DLL_DECL npc_commander_dawnforgeAI : public ScriptedAI
 
         //Turn Dawnforge and update
         m_creature->SetOrientation(angle_dawnforge);
-        m_creature->SendUpdateToPlayer(player);
+        m_creature->SendCreateUpdateToPlayer(player);
         //Turn Ardonis and update
         ardonis->SetOrientation(angle_ardonis);
-        ardonis->SendUpdateToPlayer(player);
+        ardonis->SendCreateUpdateToPlayer(player);
 
         //Set them to kneel
         m_creature->SetStandState(PLAYER_STATE_KNEEL);
@@ -460,10 +460,10 @@ struct TRINITY_DLL_DECL npc_commander_dawnforgeAI : public ScriptedAI
 
             //Turn Dawnforge and update
             m_creature->SetOrientation(angle_dawnforge);
-            m_creature->SendUpdateToPlayer(player);
+            m_creature->SendCreateUpdateToPlayer(player);
             //Turn Ardonis and update
             ardonis->SetOrientation(angle_ardonis);
-            ardonis->SendUpdateToPlayer(player);
+            ardonis->SendCreateUpdateToPlayer(player);
 
             //Set state
             m_creature->SetStandState(PLAYER_STATE_NONE);

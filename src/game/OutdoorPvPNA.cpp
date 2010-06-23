@@ -645,7 +645,7 @@ bool OutdoorPvPObjectiveNA::Update(uint32 diff)
             if(flag)
             {
                 flag->SetGoArtKit(artkit);
-                flag->SendUpdateObjectToAllExcept(NULL);
+                //flag->SendUpdateObjectToAllExcept(NULL);
             }
 
             UpdateHalaaWorldState();

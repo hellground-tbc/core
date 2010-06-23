@@ -222,7 +222,7 @@ void Creature::RemoveCorpse()
 
     m_deathTimer = 0;
     setDeathState(DEAD);
-    ObjectAccessor::UpdateObjectVisibility(this);
+    UpdateObjectVisibility();
     loot.clear();
     m_respawnTime = time(NULL) + m_respawnDelay;
 
@@ -1711,9 +1711,9 @@ void Creature::Respawn()
     // forced recreate creature object at clients
     UnitVisibility currentVis = GetVisibility();
     SetVisibility(VISIBILITY_RESPAWN);
-    ObjectAccessor::UpdateObjectVisibility(this);
+    UpdateObjectVisibility();
     SetVisibility(currentVis);                              // restore visibility state
-    ObjectAccessor::UpdateObjectVisibility(this);
+    UpdateObjectVisibility();
 
     if(getDeathState()==DEAD)
     {

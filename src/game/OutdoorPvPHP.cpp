@@ -251,12 +251,12 @@ bool OutdoorPvPObjectiveHP::Update(uint32 diff)
             if(flag)
             {
                 flag->SetGoArtKit(artkit);
-                flag->SendUpdateObjectToAllExcept(NULL);
+                //flag->SendUpdateObjectToAllExcept(NULL);
             }
             if(flag2)
             {
                 flag2->SetGoArtKit(artkit2);
-                flag2->SendUpdateObjectToAllExcept(NULL);
+                //flag2->SendUpdateObjectToAllExcept(NULL);
             }
 
             // send world state update

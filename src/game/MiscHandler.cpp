@@ -1444,9 +1444,7 @@ void WorldSession::HandleFarSightOpcode( WorldPacket & recv_data )
             sLog.outDebug("Unhandled mode in CMSG_FAR_SIGHT: %u", apply);
             return;
     }
-    // Update visibility after vision change
-    //Cell cell(pair);
-    //GetPlayer()->GetMap()->UpdateObjectsVisibilityFor(_player, cell, pair);
+
     GetPlayer()->SetToNotify();
 }
 
