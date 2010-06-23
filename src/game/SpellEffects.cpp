@@ -6098,8 +6098,6 @@ void Spell::EffectSelfResurrect(uint32 i)
     plr->SetPower(POWER_ENERGY, plr->GetMaxPower(POWER_ENERGY) );
 
     plr->SpawnCorpseBones();
-
-    plr->SaveToDB();
 }
 
 void Spell::EffectSkinning(uint32 /*i*/)
