@@ -153,7 +153,7 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         
         bool IsLoaded(float x, float y) const
         {
-            GridPair p = TRINITY::ComputeGridPair(x, y);
+            GridPair p = Trinity::ComputeGridPair(x, y);
             return loaded(p);
         }
 
