@@ -302,6 +302,16 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         GameObject* GetGameObject(uint64 guid);
         DynamicObject* GetDynamicObject(uint64 guid);
 
+        void AddUpdateObject(Object *obj)
+        {
+            i_objectsToClientUpdate.insert(obj);
+        }
+
+        void RemoveUpdateObject(Object *obj)
+        {
+            i_objectsToClientUpdate.erase( obj );
+        }
+
         ACE_Thread_Mutex m_spellUpdateLock;
 
     private:
@@ -341,7 +351,10 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         void ScriptsProcess();
         void setNGrid(NGridType* grid, uint32 x, uint32 y);
 
+        void SendObjectUpdates();
         void UpdateActiveCells(const float &x, const float &y, const uint32 &t_diff);
+
+        std::set<Object *> i_objectsToClientUpdate;
     protected:
         void SetUnloadReferenceLock(const GridPair &p, bool on) { getNGrid(p.x_coord, p.y_coord)->setUnloadReferenceLock(on); }
 

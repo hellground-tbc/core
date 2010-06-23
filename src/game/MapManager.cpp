@@ -273,8 +273,6 @@ MapManager::Update(time_t diff)
         m_updater.wait();
 
     checkAndCorrectGridStatesArray();
-    ObjectAccessor::Instance().Update(i_timer.GetCurrent());
-    //sWorld.RecordTimeDiff("UpdateObjectAccessor");
 
     for(MapMapType::iterator iter = i_maps.begin(); iter != i_maps.end(); ++iter)
         iter->second->DelayedUpdate(i_timer.GetCurrent());

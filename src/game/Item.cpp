@@ -270,6 +270,19 @@ bool Item::Create( uint32 guidlow, uint32 itemid, Player const* owner)
     return true;
 }
 
+
+void Item::AddToClientUpdateList()
+{
+    if (Player* pl = GetOwner())
+        pl->GetMap()->AddUpdateObject(this);
+}
+
+void Item::RemoveFromClientUpdateList()
+{
+    if (Player* pl = GetOwner())
+        pl->GetMap()->RemoveUpdateObject(this);
+}
+
 void Item::BuildUpdate(UpdateDataMapType& data_map)
 {
     if (Player* pl = GetOwner())

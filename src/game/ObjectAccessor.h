@@ -190,26 +190,9 @@ class ObjectAccessor : public Trinity::Singleton<ObjectAccessor, Trinity::ClassL
         void RemoveObject(Player *pl)
         {
             HashMapHolder<Player>::Remove(pl);
-
-            Guard guard(i_updateGuard);
-            i_objects.erase((Object*)pl);
         }
 
         void SaveAllPlayers();
-
-        void AddUpdateObject(Object *obj)
-        {
-            Guard guard(i_updateGuard);
-            i_objects.insert(obj);
-        }
-
-        void RemoveUpdateObject(Object *obj)
-        {
-            Guard guard(i_updateGuard);
-            i_objects.erase(obj);
-        }
-
-        void Update(uint32 diff);
 
         Corpse* GetCorpseForPlayerGUID(uint64 guid);
         void RemoveCorpse(Corpse *corpse);
@@ -224,9 +207,7 @@ class ObjectAccessor : public Trinity::Singleton<ObjectAccessor, Trinity::ClassL
         Player2CorpsesMapType   i_player2corpse;
 
         void _update(void);
-        std::set<Object *> i_objects;
         LockType i_playerGuard;
-        LockType i_updateGuard;
         LockType i_corpseGuard;
 };
 #endif

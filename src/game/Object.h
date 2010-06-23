@@ -131,7 +131,7 @@ class TRINITY_DLL_SPEC Object
             m_inWorld = true;
 
             // synchronize values mirror with values array (changes will send in updatecreate opcode any way
-            ClearUpdateMask(true);
+            ClearUpdateMask(false);
         }
         virtual void RemoveFromWorld()
         {
@@ -308,6 +308,9 @@ class TRINITY_DLL_SPEC Object
 
         virtual void BuildUpdate(UpdateDataMapType& ) {}
         void BuildFieldsUpdate(Player *, UpdateDataMapType &) const;
+
+        virtual void AddToClientUpdateList() =0;
+        virtual void RemoveFromClientUpdateList() =0;
 
         // FG: some hacky helpers
         void ForceValuesUpdateAtIndex(uint32);
@@ -497,6 +500,8 @@ class TRINITY_DLL_SPEC WorldObject : public Object
         Map const* GetBaseMap() const;
 
         void BuildUpdateData(UpdateDataMapType &);
+        void AddToClientUpdateList();
+        void RemoveFromClientUpdateList();
 
         Creature* SummonCreature(uint32 id, float x, float y, float z, float ang,TempSummonType spwtype,uint32 despwtime);
         GameObject* SummonGameObject(uint32 entry, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime);
