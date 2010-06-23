@@ -50,7 +50,7 @@ SpellEntry const *PlayerAI::selectHighestRank(uint32 spell_id)
     SpellEntry const *highest_rank = spell_info;
     for (PlayerSpellMap::const_iterator itr = sp_list.begin(); itr != sp_list.end(); ++itr)
     {
-        if(!itr->second->active || itr->second->disabled || itr->second->state == PLAYERSPELL_REMOVED)
+        if(!itr->second.active || itr->second.disabled || itr->second.state == PLAYERSPELL_REMOVED)
             continue;
 
         spell_info = sSpellStore.LookupEntry(itr->first);
