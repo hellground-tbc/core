@@ -168,16 +168,6 @@ bool GOHello_go_tablet_of_the_seven(Player *player, GameObject* _GO)
     return true;
 }
 
-/*######
-## go_teleporter
-######*/
-/*
-bool GOHello_go_teleporter(Player *player, GameObject* _GO) // localisation not known, comment for now
-{
-    player->TeleportTo(0, 1807.07f,336.105f,70.3975f,0.0f);
-    return false;
-}
-*/
 /*#####
 ## go_jump_a_tron
 ######*/
@@ -259,6 +249,80 @@ bool GOSelect_go_crystalforge(Player* pPlayer, GameObject* pGO, uint32 Sender, u
     pPlayer->CLOSE_GOSSIP_MENU();
     return true;
 }
+
+/*######
+## matrix_punchograph
+######*/
+
+enum eMatrixPunchograph
+{
+    ITEM_WHITE_PUNCH_CARD = 9279,
+    ITEM_YELLOW_PUNCH_CARD = 9280,
+    ITEM_BLUE_PUNCH_CARD = 9282,
+    ITEM_RED_PUNCH_CARD = 9281,
+    ITEM_PRISMATIC_PUNCH_CARD = 9316,
+    SPELL_YELLOW_PUNCH_CARD = 11512,
+    SPELL_BLUE_PUNCH_CARD = 11525,
+    SPELL_RED_PUNCH_CARD = 11528,
+    SPELL_PRISMATIC_PUNCH_CARD = 11545,
+    MATRIX_PUNCHOGRAPH_3005_A = 142345,
+    MATRIX_PUNCHOGRAPH_3005_B = 142475,
+    MATRIX_PUNCHOGRAPH_3005_C = 142476,
+    MATRIX_PUNCHOGRAPH_3005_D = 142696,
+};
+
+bool GOHello_go_matrix_punchograph(Player *pPlayer, GameObject *pGO)
+{
+    switch(pGO->GetEntry())
+    {
+        case MATRIX_PUNCHOGRAPH_3005_A:
+            if (pPlayer->HasItemCount(ITEM_WHITE_PUNCH_CARD, 1))
+            {
+                pPlayer->CastSpell(pPlayer,SPELL_YELLOW_PUNCH_CARD,true);
+                pPlayer->DestroyItemCount(ITEM_WHITE_PUNCH_CARD, 1, true);
+            }
+            break;
+        case MATRIX_PUNCHOGRAPH_3005_B:
+            if (pPlayer->HasItemCount(ITEM_YELLOW_PUNCH_CARD, 1))
+            {
+                pPlayer->CastSpell(pPlayer,SPELL_BLUE_PUNCH_CARD,true);
+                pPlayer->DestroyItemCount(ITEM_YELLOW_PUNCH_CARD, 1, true);
+            }
+            break;
+        case MATRIX_PUNCHOGRAPH_3005_C:
+            if (pPlayer->HasItemCount(ITEM_BLUE_PUNCH_CARD, 1))
+            {
+                pPlayer->CastSpell(pPlayer,SPELL_RED_PUNCH_CARD,true);
+                pPlayer->DestroyItemCount(ITEM_BLUE_PUNCH_CARD, 1, true);
+            }
+            break;
+        case MATRIX_PUNCHOGRAPH_3005_D:
+            if (pPlayer->HasItemCount(ITEM_RED_PUNCH_CARD, 1))
+            {
+                pPlayer->CastSpell(pPlayer, SPELL_PRISMATIC_PUNCH_CARD, true);
+                pPlayer->DestroyItemCount(ITEM_RED_PUNCH_CARD, 1, true);
+            }
+            break;
+        default:
+            break;
+    }
+    return false;
+}
+
+/*######
+## go_blood_filled_orb
+######*/
+
+#define NPC_ZELEMAR  17830
+
+bool GOHello_go_blood_filled_orb(Player *pPlayer, GameObject *pGO)
+{
+    if (pGO->GetGoType() == GAMEOBJECT_TYPE_GOOBER)
+        pPlayer->SummonCreature(NPC_ZELEMAR, -369.746, 166.759, -21.50, 5.235, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+
+    return true;
+}
+
 
 /*######
 ## go_ethereum_stasis
@@ -373,12 +437,7 @@ void AddSC_go_scripts()
     newscript->Name="go_tablet_of_the_seven";
     newscript->pGOHello =           &GOHello_go_tablet_of_the_seven;
     newscript->RegisterSelf();
-/*
-    newscript = new Script;
-    newscript->Name="go_teleporter";
-    newscript->pGOHello =           &GOHello_go_teleporter;
-    newscript->RegisterSelf();
-*/
+
     newscript = new Script;
     newscript->Name="go_jump_a_tron";
     newscript->pGOHello =           &GOHello_go_jump_a_tron;
@@ -396,10 +455,20 @@ void AddSC_go_scripts()
     newscript->RegisterSelf();
 
     newscript = new Script;
+    newscript->Name = "go_matrix_punchograph";
+    newscript->pGOHello =           &GOHello_go_matrix_punchograph;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
     newscript->Name = "go_cat_figurine";
     newscript->pGOHello =           &GOHello_go_cat_figurine;
     newscript->RegisterSelf();
     
+    newscript = new Script;
+    newscript->Name = "go_blood_filled_orb";
+    newscript->pGOHello =           &GOHello_go_blood_filled_orb;
+    newscript->RegisterSelf();
+
     newscript = new Script;
     newscript->Name = "go_ethereum_stasis";
     newscript->pGOHello =           &GOHello_go_ethereum_stasis;
