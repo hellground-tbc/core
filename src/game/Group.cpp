@@ -953,11 +953,17 @@ void Group::SendUpdate()
         {
             if(citr->guid == citr2->guid)
                 continue;
+            
+            Player* member = objmgr.GetPlayer(citr2->guid);
+            uint8 onlineState = MEMBER_STATUS_OFFLINE; //by default members are offline
+            if(member && (!member->GetSession()->PlayerLogout()))
+                onlineState = MEMBER_STATUS_ONLINE; //when player is login out member exists.
+            
+            // onlineState = onlineState | ((isBGGroup()) ? MEMBER_STATUS_PVP : 0);
 
             data << citr2->name;
             data << (uint64)citr2->guid;
-                                                            // online-state
-            data << (uint8)(objmgr.GetPlayer(citr2->guid) ? 1 : 0);
+            data << (uint8)(onlineState);                   // online-state
             data << (uint8)(citr2->group);                  // groupid
             data << (uint8)(citr2->assistant?0x01:0);       // 0x2 main assist, 0x4 main tank
         }
@@ -972,6 +978,12 @@ void Group::SendUpdate()
 
         }
         player->GetSession()->SendPacket( &data );
+        //when player is loading we need a stats update
+        if(player->GetSession()->PlayerLoading())
+        {
+            player->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_MAX_HP|GROUP_UPDATE_FLAG_MAX_POWER|GROUP_UPDATE_FLAG_LEVEL);
+            UpdatePlayerOutOfRange(player);
+        }
     }
 }
 

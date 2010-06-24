@@ -635,7 +635,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
             case SPELLFAMILY_PALADIN:
             {
                 //Judgement of Vengeance
-                if((m_spellInfo->SpellFamilyFlags & 0x800000000LL) && m_spellInfo->SpellIconID==2292)
+                if((m_spellInfo->SpellFamilyFlags & 0x800000000LL) && m_spellInfo->SpellIconID==2292 && m_spellInfo->Id != 42463)
                 {
                     uint32 stacks = 0;
                     Unit::AuraList const& auras = unitTarget->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
@@ -2163,7 +2163,7 @@ void Spell::EffectTriggerSpell(uint32 i)
             for (PlayerSpellMap::const_iterator itr = sp_list.begin(); itr != sp_list.end(); ++itr)
             {
                 // only highest rank is shown in spell book, so simply check if shown in spell book
-                if(!itr->second->active || itr->second->disabled || itr->second->state == PLAYERSPELL_REMOVED)
+                if(!itr->second.active || itr->second.disabled || itr->second.state == PLAYERSPELL_REMOVED)
                     continue;
 
                 spellInfo = sSpellStore.LookupEntry(itr->first);
@@ -2491,7 +2491,7 @@ void Spell::EffectApplyAura(uint32 i)
     int32 duration = Aur->GetAuraMaxDuration();
     if(!IsPositiveSpell(m_spellInfo->Id))
     {
-        unitTarget->ApplyDiminishingToDuration(m_diminishGroup,duration,caster,m_diminishLevel);
+        unitTarget->ApplyDiminishingToDuration(m_diminishGroup,duration,caster,m_diminishLevel, m_spellInfo);
         Aur->setDiminishGroup(m_diminishGroup);
     }
 
@@ -4524,7 +4524,7 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
                     for (PlayerSpellMap::const_iterator itr = sp_list.begin(); itr != sp_list.end(); ++itr)
                     {
                         // only highest rank is shown in spell book, so simply check if shown in spell book
-                        if(!itr->second->active || itr->second->disabled || itr->second->state == PLAYERSPELL_REMOVED)
+                        if(!itr->second.active || itr->second.disabled || itr->second.state == PLAYERSPELL_REMOVED)
                             continue;
 
                         SpellEntry const *spellInfo = sSpellStore.LookupEntry(itr->first);
@@ -5738,7 +5738,7 @@ void Spell::EffectSummonTotem(uint32 i)
 
     if(slot < MAX_TOTEM && m_caster->GetTypeId() == TYPEID_PLAYER)
     {
-        WorldPacket data(SMSG_TOTEM_CREATED, 1+8+4+4);
+        WorldPacket data(SMSG_TOTEM_CREATED, 17);
         data << uint8(slot);
         data << uint64(pTotem->GetGUID());
         data << uint32(duration);
@@ -6433,7 +6433,6 @@ void Spell::EffectSummonDeadPet(uint32 /*i*/)
 
     pet->AIM_Initialize();
 
-    _player->PetSpellInitialize();
     pet->SavePetToDB(PET_SAVE_AS_CURRENT);
 }
 
@@ -6826,7 +6825,7 @@ void Spell::EffectStealBeneficialBuff(uint32 i)
             if (roll_chance_i(miss_chance))
                 fail_list.push_back(aur->GetId());
             else
-                success_list.push_back( std::pair<uint32,uint64>(aur->GetId(),aur->GetCasterGUID()));
+                success_list.push_back( std::pair<uint32,uint64>(aur->GetId(),aur->GetCasterGUID())); 
 
             // Remove buff from list for prevent doubles
             for (std::vector<Aura *>::iterator j = steal_list.begin(); j != steal_list.end(); )

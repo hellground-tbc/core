@@ -96,7 +96,7 @@ struct SpellModifier
     Spell const* lastAffected;
 };
 
-typedef UNORDERED_MAP<uint16, PlayerSpell*> PlayerSpellMap;
+typedef UNORDERED_MAP<uint16, PlayerSpell> PlayerSpellMap;
 typedef std::list<SpellModifier*> SpellModList;
 
 struct SpellCooldown
@@ -2391,7 +2391,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         uint64 m_GMfollowtarget_GUID; // za kim chodzi
         uint64 m_GMfollow_GUID;       // gm ktory chodzi za playerem
 
-        bool updateLock;
+        ACE_Thread_Mutex saveMutex;
 };
 
 void AddItemsSetItem(Player*player,Item *item);

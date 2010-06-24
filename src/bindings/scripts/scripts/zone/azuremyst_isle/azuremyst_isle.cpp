@@ -29,6 +29,7 @@ npc_magwin
 npc_susurrus
 npc_geezle
 mob_nestlewood_owlkin
+mob_siltfin_murloc
 EndContentData */
 
 #include "precompiled.h"
@@ -646,6 +647,36 @@ CreatureAI* GetAI_mob_nestlewood_owlkinAI(Creature *_Creature)
     return new mob_nestlewood_owlkinAI (_Creature);
 }
 
+/*######
+## mob_siltfin_murloc
+######*/
+
+struct TRINITY_DLL_DECL mob_siltfin_murlocAI : public ScriptedAI
+{
+    mob_siltfin_murlocAI(Creature *c) : ScriptedAI(c) {}
+
+    void Aggro(Unit *who){}
+
+    void JustDied(Unit *player)
+    {
+        player = player->GetCharmerOrOwnerPlayerOrPlayerItself();
+         
+        if(roll_chance_i(20) && player)
+        {
+            if(((Player*)player)->GetQuestStatus(9595) == QUEST_STATUS_INCOMPLETE)
+            {
+                 Unit* summon = m_creature->SummonCreature(17612, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                 player->CastSpell(summon, 30790, false);
+            }
+        }
+     }
+    
+};
+
+CreatureAI* GetAI_mob_siltfin_murlocAI(Creature *_Creature)
+{
+    return new mob_siltfin_murlocAI (_Creature);
+}
 void AddSC_azuremyst_isle()
 {
     Script *newscript;
@@ -687,6 +718,11 @@ void AddSC_azuremyst_isle()
     newscript = new Script;
     newscript->Name="mob_nestlewood_owlkin";
     newscript->GetAI = &GetAI_mob_nestlewood_owlkinAI;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="mob_siltfin_murloc";
+    newscript->GetAI = &GetAI_mob_siltfin_murlocAI;
     newscript->RegisterSelf();
 
 }

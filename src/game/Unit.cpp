@@ -731,7 +731,7 @@ uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, cons
             ((Creature*)this)->AI()->DamageMade(pVictim, damageInfo->damage, damagetype == DIRECT_DAMAGE);
     }
 
-    if(damageInfo->damage || damageInfo->rageDamage)
+    if(damageInfo->damage || damageInfo->absorb)
     {
         if (spellProto && spellProto->Id == 33619)                 //if it's from Reflective Shield
         {
@@ -6935,9 +6935,13 @@ void Unit::ModifyAuraState(AuraState flag, bool apply)
                 const PlayerSpellMap& sp_list = ((Player*)this)->GetSpellMap();
                 for (PlayerSpellMap::const_iterator itr = sp_list.begin(); itr != sp_list.end(); ++itr)
                 {
-                    if(itr->second && itr->second->state == PLAYERSPELL_REMOVED) continue;
+                    if(itr->second.state == PLAYERSPELL_REMOVED)
+                        continue;
+
                     SpellEntry const *spellInfo = sSpellStore.LookupEntry(itr->first);
-                    if (!spellInfo || !IsPassiveSpell(itr->first)) continue;
+                    if (!spellInfo || !IsPassiveSpell(itr->first))
+                        continue;
+
                     if (spellInfo->CasterAuraState == flag)
                         CastSpell(this, itr->first, true, NULL);
                 }
@@ -9356,7 +9360,7 @@ void Unit::ApplyDiminishingToDuration(DiminishingGroup group, int32 &duration,Un
         if(target->GetTypeId() == TYPEID_PLAYER && source->GetTypeId() == TYPEID_PLAYER)
         {
             duration = 10000;
-            if(tSpell && tSpell->SpellFamilyName == SPELLFAMILY_HUNTER && tSpell->SpellFamilyFlags & 0x8LL)
+            if(tSpell)
                 ((Player*)source)->ApplySpellMod(tSpell->Id, SPELLMOD_DURATION, duration);
         }
     }

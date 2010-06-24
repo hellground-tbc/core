@@ -28,6 +28,8 @@ npc_daranelle
 npc_overseer_nuaar
 npc_saikkal_the_elder
 npc_skyguard_handler_irena
+npc_bloodmaul_brutebane
+npc_ogre_brute
 EndContentData */
 
 #include "precompiled.h"
@@ -392,6 +394,105 @@ bool GossipSelect_npc_skyguard_handler_irena(Player *player, Creature *_Creature
 }
 
 /*######
+## npc_bloodmaul_brutebane
+######*/
+
+
+enum eBloodmaul
+{
+    QUEST_GETTING_THE_BLADESPIRE_TANKED  = 10512,
+    NPC_OGRE_BRUTE                       = 19995,
+    NPC_QUEST_CREDIT                     = 21241,
+    GO_KEG                               = 184315
+};
+
+struct npc_bloodmaul_brutebaneAI : public ScriptedAI
+{
+    npc_bloodmaul_brutebaneAI(Creature *c) : ScriptedAI(c)
+    {
+       if(Unit* Ogre = FindCreature(NPC_OGRE_BRUTE, 50, m_creature))
+       {
+           ((Creature*)Ogre)->SetReactState(REACT_DEFENSIVE);
+           Ogre->GetMotionMaster()->MovePoint(1, m_creature->GetPositionX()-1, m_creature->GetPositionY()+1, m_creature->GetPositionZ());
+       }
+    }
+
+    uint64 OgreGUID;
+
+    void Reset()
+    {
+        OgreGUID = 0;
+    }
+
+    void Aggro(Unit* who) {}
+
+    void UpdateAI(const uint32 uiDiff) {}
+};
+
+CreatureAI* GetAI_npc_bloodmaul_brutebane(Creature* pCreature)
+{
+    return new npc_bloodmaul_brutebaneAI (pCreature);
+}
+
+/*######
+## npc_ogre_brute
+######*/
+
+struct npc_ogre_bruteAI : public ScriptedAI
+{
+    npc_ogre_bruteAI(Creature *c) : ScriptedAI(c) {}
+
+    uint64 PlayerGUID;
+
+    void Reset()
+    {
+        PlayerGUID = 0;
+    }
+
+    void Aggro(Unit* who) {}
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!who || (!who->isAlive())) return;
+
+        if (m_creature->IsWithinDistInMap(who, 50.0f) && (who->GetTypeId() == TYPEID_PLAYER) && ((Player*)who)->GetQuestStatus(QUEST_GETTING_THE_BLADESPIRE_TANKED) == QUEST_STATUS_INCOMPLETE)
+        {
+            PlayerGUID = who->GetGUID();
+        }
+    }
+
+    void MovementInform(uint32 type, uint32 id)
+    {
+        Player* player = Unit::GetPlayer(PlayerGUID);
+        if(id == 1)
+        {
+            GameObject* Keg = FindGameObject(GO_KEG, 20.0, m_creature);
+            if(Keg)
+                Keg->Delete();
+            m_creature->HandleEmoteCommand(7);
+            m_creature->SetReactState(REACT_AGGRESSIVE);
+            m_creature->GetMotionMaster()->MoveTargetedHome();
+            Unit* Credit = FindCreature(NPC_QUEST_CREDIT, 50, m_creature);
+            if(player && Credit)
+                player->KilledMonster(NPC_QUEST_CREDIT, Credit->GetGUID());
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim())
+            return;
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_ogre_brute(Creature* pCreature)
+{
+    return new npc_ogre_bruteAI(pCreature);
+}
+
+
+/*######
 ## AddSC
 ######*/
 
@@ -431,5 +532,16 @@ void AddSC_blades_edge_mountains()
     newscript->pGossipHello =  &GossipHello_npc_skyguard_handler_irena;
     newscript->pGossipSelect = &GossipSelect_npc_skyguard_handler_irena;
     newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_bloodmaul_brutebane";
+    newscript->GetAI = &GetAI_npc_bloodmaul_brutebane;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_ogre_brute";
+    newscript->GetAI = &GetAI_npc_ogre_brute;
+    newscript->RegisterSelf();
+
 }
 

@@ -429,7 +429,8 @@ extern void AddSC_orgrimmar();
 
 //Ragefire Chasm
 //Razorfen Downs
-extern void AddSC_boss_amnennar_the_coldbringer();
+extern void AddSC_razorfen_downs();
+extern void AddSC_instance_razorfen_downs();
 
 //Razorfen Kraul
 extern void AddSC_razorfen_kraul();
@@ -1814,7 +1815,8 @@ void ScriptsInit(char const* cfg_file = "trinitycore.conf")
 
     //Ragefire Chasm
     //Razorfen Downs
-    AddSC_boss_amnennar_the_coldbringer();
+    AddSC_razorfen_downs();
+    AddSC_instance_razorfen_downs();
 
     //Razorfen Kraul
     AddSC_razorfen_kraul();

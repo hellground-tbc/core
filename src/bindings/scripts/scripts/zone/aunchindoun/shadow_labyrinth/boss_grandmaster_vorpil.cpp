@@ -74,13 +74,13 @@ struct TRINITY_DLL_DECL mob_voidtravelerAI : public ScriptedAI
     }
 
     bool HeroicMode;
-    Unit *Vorpil;
+    uint64 VorpilGUID;
     uint32 move;
     bool sacrificed;
 
     void Reset()
     {
-        Vorpil = NULL;
+        VorpilGUID = NULL;
         move = 0;
         sacrificed = false;
     }
@@ -89,17 +89,22 @@ struct TRINITY_DLL_DECL mob_voidtravelerAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(!Vorpil)
+        if(Unit *Vorpil = Unit::GetUnit(*m_creature, VorpilGUID))
         {
             m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
             return;
         }
+
         if(move < diff)
         {
+            Unit *Vorpil = Unit::GetUnit(*m_creature, VorpilGUID);
+            if(!Vorpil)
+                return;
+
             if(sacrificed)
             {
                 SpellEntry *spell = (SpellEntry *)GetSpellStore()->LookupEntry(HeroicMode?H_SPELL_EMPOWERING_SHADOWS:SPELL_EMPOWERING_SHADOWS);
-                if( spell )
+                if(spell)
                     Vorpil->AddAura(new EmpoweringShadowsAura(spell, 0, NULL, Vorpil, m_creature));
                 
                 if(Vorpil->isAlive())
@@ -109,6 +114,7 @@ struct TRINITY_DLL_DECL mob_voidtravelerAI : public ScriptedAI
                 m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 return;
             }
+
             m_creature->GetMotionMaster()->MoveFollow(Vorpil,0,0);
             if(m_creature->GetDistance(Vorpil) < 3)
             {
@@ -123,7 +129,9 @@ struct TRINITY_DLL_DECL mob_voidtravelerAI : public ScriptedAI
                 return;
             }
             move = 1000;
-        }else move -= diff;
+        }
+        else
+            move -= diff;
     }
 };
 CreatureAI* GetAI_mob_voidtraveler(Creature *_Creature)
@@ -213,7 +221,7 @@ struct TRINITY_DLL_DECL boss_grandmaster_vorpilAI : public ScriptedAI
     void JustSummoned(Creature *summoned)
     {
         if (summoned && summoned->GetEntry() == MOB_VOID_TRAVELER)
-            ((mob_voidtravelerAI*)summoned->AI())->Vorpil = m_creature;
+            ((mob_voidtravelerAI*)summoned->AI())->VorpilGUID = m_creature->GetGUID();
     }
 
     void KilledUnit(Unit *victim)

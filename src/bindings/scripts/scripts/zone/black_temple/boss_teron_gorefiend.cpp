@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Boss_Teron_Gorefiend
-SD%Complete: 90
-SDComment: Needs intensive tests and few more improvements/cleanups.
+SD%Complete: 95
+SDComment: Needs tests and probably some minor changes
 SDCategory: Black Temple
 EndScriptData */
 
@@ -101,7 +101,6 @@ struct TRINITY_DLL_DECL mob_doom_blossomAI : public NullCreatureAI
                     Despawn();
 
                 float newX, newY, newZ;
-                //m_creature->Relocate(m_creature->GetPositionX(),m_creature->GetPositionY(),m_creature->GetPositionZ());
                 m_creature->GetRandomPoint(m_creature->GetPositionX(),m_creature->GetPositionY(),m_creature->GetPositionZ(), 3.0, newX, newY, newZ);
                 newZ = (newZ < 200.0) ? (newZ + 1.0) : newZ;
                 m_creature->GetMotionMaster()->MovePoint(1, newX, newY, newZ);
@@ -126,18 +125,6 @@ struct TRINITY_DLL_DECL mob_doom_blossomAI : public NullCreatureAI
         return;
     }
 };
-/*
-//This is used to sort the players by distance for Constructs to see who to cast Atrophy on
-struct TargetDistanceOrder : public std::binary_function<const Unit, const Unit, bool>
-{
-    const Unit* MainTarget;
-    TargetDistanceOrder(const Unit* Target) : MainTarget(Target) {};
-    // functor for operator "<"
-    bool operator()(const Unit* _Left, const Unit* _Right) const
-    {
-        return (MainTarget->GetDistance(_Left) < MainTarget->GetDistance(_Right));
-    }
-};*/
 
 struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
 {
@@ -273,7 +260,14 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
 
     uint64 AggroTargetGUID;
 
-    bool Intro;
+    enum eIntro
+    {
+        INTRO_NOT_STARTED,
+        INTRO_IN_PROGRESS,
+        INTRO_DONE
+    };
+
+    uint8 Intro;
 
     void Reset()
     {
@@ -290,16 +284,21 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
 
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_STUN, true);
 
-        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         // Start off unattackable so that the intro is done properly
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
 
         AggroTimer = 20000;
         AggroTargetGUID = 0;
-        Intro = false;
+        Intro = INTRO_NOT_STARTED;
     }
 
-    void Aggro(Unit *who) {}
+    void Aggro(Unit *who)
+    {
+        DoScriptText(SAY_AGGRO, m_creature);
+
+        if(pInstance)
+            pInstance->SetData(DATA_TERONGOREFIENDEVENT, IN_PROGRESS);
+    }
 
     void MoveInLineOfSight(Unit *who)
     {
@@ -309,22 +308,19 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
         {
             float attackRadius = m_creature->GetAttackDistance(who);
 
-            if (m_creature->IsWithinDistInMap(who, attackRadius) && m_creature->GetDistanceZ(who) <= CREATURE_Z_ATTACK_RANGE && m_creature->IsWithinLOSInMap(who))
+            if (Intro == INTRO_DONE && m_creature->IsWithinDistInMap(who, attackRadius) && m_creature->GetDistanceZ(who) <= CREATURE_Z_ATTACK_RANGE && m_creature->IsWithinLOSInMap(who))
             {
-                m_creature->AddThreat(who, 1.0f);
+                AttackStart(who);
+                DoZoneInCombat();
             }
 
-            if(!InCombat && !Intro && m_creature->IsWithinDistInMap(who, 60.0f) && (who->GetTypeId() == TYPEID_PLAYER))
+            if(!InCombat && Intro == INTRO_NOT_STARTED && m_creature->IsWithinDistInMap(who, 60.0f) && (who->GetTypeId() == TYPEID_PLAYER))
             {
-                if(pInstance)
-                    pInstance->SetData(DATA_TERONGOREFIENDEVENT, IN_PROGRESS);
-
                 m_creature->GetMotionMaster()->Clear(false);
-                m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 DoScriptText(SAY_INTRO, m_creature);
                 m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_TALK);
                 AggroTargetGUID = who->GetGUID();
-                Intro = true;
+                Intro = INTRO_IN_PROGRESS;
             }
         }
     }
@@ -380,32 +376,19 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(Intro)
+        if(Intro == INTRO_IN_PROGRESS)
         {
             if(AggroTimer < diff)
             {
-                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                DoScriptText(SAY_AGGRO, m_creature);
                 m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_NONE);
-                Intro = false;
-                if(Unit* victim = SelectUnit(SELECT_TARGET_RANDOM, 0, 50, true))
-                {
-                    AttackStart(victim);
-
-                    DoZoneInCombat();
-                }
-                else
-                {
-                    EnterEvadeMode();
-                    return;
-                }
+                Intro = INTRO_DONE;
             }
             else
                 AggroTimer -= diff;
         }
 
-        if(!UpdateVictim() || Intro)
+        if(!UpdateVictim() || Intro == INTRO_IN_PROGRESS)
             return;
 
         if (CheckTimer < diff)

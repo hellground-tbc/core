@@ -11,6 +11,7 @@ SET(trinitydatabase_STAT_SRCS
    Field.h
    QueryResult.cpp
    QueryResult.h
+   QueryResult.cpp
    SQLStorage.cpp
    SQLStorage.h
    SQLStorageImpl.h

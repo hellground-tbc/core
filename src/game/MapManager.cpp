@@ -261,10 +261,6 @@ MapManager::Update(time_t diff)
     if( !i_timer.Passed() )
         return;
 
-    sWorld.RecordTimeDiff(NULL);
-    ObjectAccessor::Instance().UpdatePlayers(i_timer.GetCurrent());
-    sWorld.RecordTimeDiff("UpdatePlayers");
-
     for(MapMapType::iterator iter=i_maps.begin(); iter != i_maps.end(); ++iter)
     {
         if (m_updater.activated())
@@ -277,8 +273,6 @@ MapManager::Update(time_t diff)
         m_updater.wait();
 
     checkAndCorrectGridStatesArray();
-    ObjectAccessor::Instance().Update(i_timer.GetCurrent());
-    //sWorld.RecordTimeDiff("UpdateObjectAccessor");
 
     for(MapMapType::iterator iter = i_maps.begin(); iter != i_maps.end(); ++iter)
         iter->second->DelayedUpdate(i_timer.GetCurrent());

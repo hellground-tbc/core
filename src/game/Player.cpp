@@ -437,8 +437,6 @@ Player::Player (WorldSession *session): Unit()
 
     m_isActive = true;
     
-    updateLock = false;
-
     m_farsightVision = false;
 
     m_globalCooldowns.clear();
@@ -458,9 +456,6 @@ Player::~Player ()
             delete m_items[i];
     }
     CleanupChannels();
-
-    for (PlayerSpellMap::const_iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
-        delete itr->second;
 
     //all mailed items should be deleted, also all mail should be deallocated
     for (PlayerMails::iterator itr =  m_mail.begin(); itr != m_mail.end();++itr)
@@ -1110,11 +1105,9 @@ void Player::CharmAI(bool apply)
 
 void Player::Update( uint32 p_time )
 {
-    if(!IsInWorld()/* || updateLock*/)
+    if(!IsInWorld())
         return;
     
-    updateLock = true;
-
     if (m_AC_timer)
         if (m_AC_timer < p_time)
             m_AC_timer = 0;
@@ -1407,7 +1400,6 @@ void Player::Update( uint32 p_time )
         RemovePet(pet, PET_SAVE_NOT_IN_SLOT, true);
         return;
     }
-    updateLock = false;
 }
 
 void Player::setDeathState(DeathState s)
@@ -2664,10 +2656,10 @@ void Player::SendInitialSpells()
 
     for (PlayerSpellMap::const_iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
     {
-        if(!itr->second || itr->second->state == PLAYERSPELL_REMOVED)
+        if(itr->second.state == PLAYERSPELL_REMOVED)
             continue;
 
-        if(!itr->second->active || itr->second->disabled)
+        if(!itr->second.active || itr->second.disabled)
             continue;
 
         data << uint16(itr->first);
@@ -2822,15 +2814,15 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
     if (itr != m_spells.end())
     {
         // update active state for known spell
-        if(itr->second->active != active && itr->second->state != PLAYERSPELL_REMOVED && !itr->second->disabled)
+        if(itr->second.active != active && itr->second.state != PLAYERSPELL_REMOVED && !itr->second.disabled)
         {
-            itr->second->active = active;
+            itr->second.active = active;
 
             // loading && !learning == explicitly load from DB and then exist in it already and set correctly
             if(loading && !learning)
-                itr->second->state = PLAYERSPELL_UNCHANGED;
-            else if(itr->second->state != PLAYERSPELL_NEW)
-                itr->second->state = PLAYERSPELL_CHANGED;
+                itr->second.state = PLAYERSPELL_UNCHANGED;
+            else if(itr->second.state != PLAYERSPELL_NEW)
+                itr->second.state = PLAYERSPELL_CHANGED;
 
             if(!active)
             {
@@ -2841,26 +2833,25 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
             return active;                                  // learn (show in spell book if active now)
         }
 
-        if(itr->second->disabled != disabled && itr->second->state != PLAYERSPELL_REMOVED)
+        if(itr->second.disabled != disabled && itr->second.state != PLAYERSPELL_REMOVED)
         {
-            if(itr->second->state != PLAYERSPELL_NEW)
-                itr->second->state = PLAYERSPELL_CHANGED;
-            itr->second->disabled = disabled;
+            if(itr->second.state != PLAYERSPELL_NEW)
+                itr->second.state = PLAYERSPELL_CHANGED;
+
+            itr->second.disabled = disabled;
 
             if(disabled)
                 return false;
 
             disabled_case = true;
         }
-        else switch(itr->second->state)
+        else switch(itr->second.state)
         {
             case PLAYERSPELL_UNCHANGED:                     // known saved spell
                 return false;
             case PLAYERSPELL_REMOVED:                       // re-learning removed not saved spell
             {
-                PlayerSpell *spell = itr->second;
                 m_spells.erase(itr);
-                delete spell;
                 state = PLAYERSPELL_CHANGED;
                 break;                                      // need re-add
             }
@@ -2868,7 +2859,7 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
             {
                 // can be in case spell loading but learned at some previous spell loading
                 if(loading && !learning)
-                    itr->second->state = PLAYERSPELL_UNCHANGED;
+                    itr->second.state = PLAYERSPELL_UNCHANGED;
 
                 return false;
             }
@@ -2906,23 +2897,24 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
                 learnSpell(prev_spell);
         }
 
-        PlayerSpell *newspell = new PlayerSpell;
-        newspell->active = active;
-        newspell->state = state;
-        newspell->disabled = disabled;
+        PlayerSpell newspell;
+        newspell.active = active;
+        newspell.state = state;
+        newspell.disabled = disabled;
 
         // replace spells in action bars and spellbook to bigger rank if only one spell rank must be accessible
-        if(newspell->active && !newspell->disabled && !SpellMgr::canStackSpellRanks(spellInfo) && spellmgr.GetSpellRank(spellInfo->Id) != 0)
+        if(newspell.active && !newspell.disabled && !SpellMgr::canStackSpellRanks(spellInfo) && spellmgr.GetSpellRank(spellInfo->Id) != 0)
         {
             for( PlayerSpellMap::iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr )
             {
-                if(itr->second->state == PLAYERSPELL_REMOVED) continue;
+                if(itr->second.state == PLAYERSPELL_REMOVED) continue;
                 SpellEntry const *i_spellInfo = sSpellStore.LookupEntry(itr->first);
-                if(!i_spellInfo) continue;
+                if(!i_spellInfo)
+                    continue;
 
                 if( spellmgr.IsRankSpellDueToSpell(spellInfo,itr->first) )
                 {
-                    if(itr->second->active)
+                    if(itr->second.active)
                     {
                         if(spellmgr.IsHighRankOfSpell(spell_id,itr->first))
                         {
@@ -2935,8 +2927,8 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
                             }
 
                             // mark old spell as disable (SMSG_SUPERCEDED_SPELL replace it in client by new)
-                            itr->second->active = false;
-                            itr->second->state = PLAYERSPELL_CHANGED;
+                            itr->second.active = false;
+                            itr->second.state = PLAYERSPELL_CHANGED;
                             superceded_old = true;          // new spell replace old in action bars and spell book.
                         }
                         else if(spellmgr.IsHighRankOfSpell(itr->first,spell_id))
@@ -2950,9 +2942,9 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
                             }
 
                             // mark new spell as disable (not learned yet for client and will not learned)
-                            newspell->active = false;
-                            if(newspell->state != PLAYERSPELL_NEW)
-                                newspell->state = PLAYERSPELL_CHANGED;
+                            newspell.active = false;
+                            if(newspell.state != PLAYERSPELL_NEW)
+                                newspell.state = PLAYERSPELL_CHANGED;
                         }
                     }
                 }
@@ -2967,19 +2959,19 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
             PlayerSpellMap::iterator itr;
             for (itr = m_spells.begin(); itr != m_spells.end(); ++itr)
             {
-                if(itr->second->state == PLAYERSPELL_REMOVED)
+                if(itr->second.state == PLAYERSPELL_REMOVED)
                     continue;
-                if (itr->second->slotId > maxid)
-                    maxid = itr->second->slotId;
+                if (itr->second.slotId > maxid)
+                    maxid = itr->second.slotId;
             }
             tmpslot = maxid + 1;
         }
 
-        newspell->slotId = tmpslot;
+        newspell.slotId = tmpslot;
         m_spells[spell_id] = newspell;
 
         // return false if spell disabled
-        if (newspell->disabled)
+        if (newspell.disabled)
             return false;
     }
 
@@ -3111,8 +3103,8 @@ void Player::learnSpell(uint32 spell_id)
 {
     PlayerSpellMap::iterator itr = m_spells.find(spell_id);
 
-    bool disabled = (itr != m_spells.end()) ? itr->second->disabled : false;
-    bool active = disabled ? itr->second->active : true;
+    bool disabled = (itr != m_spells.end()) ? itr->second.disabled : false;
+    bool active = disabled ? itr->second.active : true;
 
     bool learning = addSpell(spell_id,active);
 
@@ -3121,7 +3113,7 @@ void Player::learnSpell(uint32 spell_id)
     if (node)
     {
         PlayerSpellMap::iterator iter = m_spells.find(node->next);
-        if (disabled && iter != m_spells.end() && iter->second->disabled )
+        if (disabled && iter != m_spells.end() && iter->second.disabled )
             learnSpell(node->next);
     }
 
@@ -3140,7 +3132,7 @@ void Player::removeSpell(uint32 spell_id, bool disabled)
     if (itr == m_spells.end())
         return;
 
-    if(itr->second->state == PLAYERSPELL_REMOVED || disabled && itr->second->disabled)
+    if(itr->second.state == PLAYERSPELL_REMOVED || disabled && itr->second.disabled)
         return;
 
     // unlearn non talent higher ranks (recursive)
@@ -3163,20 +3155,16 @@ void Player::removeSpell(uint32 spell_id, bool disabled)
 
     if (disabled)
     {
-        itr->second->disabled = disabled;
-        if(itr->second->state != PLAYERSPELL_NEW)
-            itr->second->state = PLAYERSPELL_CHANGED;
+        itr->second.disabled = disabled;
+        if(itr->second.state != PLAYERSPELL_NEW)
+            itr->second.state = PLAYERSPELL_CHANGED;
     }
     else
     {
-        if(itr->second->state == PLAYERSPELL_NEW)
-        {
-            PlayerSpell *temp = itr->second;
+        if(itr->second.state == PLAYERSPELL_NEW)
             m_spells.erase(itr);
-            delete temp;
-        }
         else
-            itr->second->state = PLAYERSPELL_REMOVED;
+            itr->second.state = PLAYERSPELL_REMOVED;
     }
 
     RemoveAurasDueToSpell(spell_id);
@@ -3457,7 +3445,7 @@ bool Player::resetTalents(bool no_cost)
         {
             for(PlayerSpellMap::iterator itr = GetSpellMap().begin(); itr != GetSpellMap().end();)
             {
-                if(itr->second->state == PLAYERSPELL_REMOVED || itr->second->disabled)
+                if(itr->second.state == PLAYERSPELL_REMOVED || itr->second.disabled)
                 {
                     ++itr;
                     continue;
@@ -3500,9 +3488,7 @@ bool Player::_removeSpell(uint16 spell_id)
     PlayerSpellMap::iterator itr = m_spells.find(spell_id);
     if (itr != m_spells.end())
     {
-        PlayerSpell *temp = itr->second;
         m_spells.erase(itr);
-        delete temp;
         return true;
     }
     return false;
@@ -3653,16 +3639,15 @@ void Player::InitVisibleBits()
 
 void Player::BuildCreateUpdateBlockForPlayer( UpdateData *data, Player *target ) const
 {
-    for(int i = 0; i < EQUIPMENT_SLOT_END; i++)
-    {
-        if(m_items[i] == NULL)
-            continue;
-
-        m_items[i]->BuildCreateUpdateBlockForPlayer( data, target );
-    }
-
     if(target == this)
     {
+        for(int i = 0; i < EQUIPMENT_SLOT_END; i++)
+        {
+            if(m_items[i] == NULL)
+                continue;
+
+            m_items[i]->BuildCreateUpdateBlockForPlayer( data, target );
+        }
 
         for(int i = INVENTORY_SLOT_BAG_START; i < BANK_SLOT_BAG_END; i++)
         {
@@ -3717,7 +3702,7 @@ void Player::DestroyForPlayer( Player *target ) const
 bool Player::HasSpell(uint32 spell) const
 {
     PlayerSpellMap::const_iterator itr = m_spells.find((uint16)spell);
-    return (itr != m_spells.end() && itr->second->state != PLAYERSPELL_REMOVED && !itr->second->disabled);
+    return (itr != m_spells.end() && itr->second.state != PLAYERSPELL_REMOVED && !itr->second.disabled);
 }
 
 TrainerSpellState Player::GetTrainerSpellState(TrainerSpell const* trainer_spell) const
@@ -4063,7 +4048,6 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
     }
 
     // update visibility
-    //ObjectAccessor::UpdateVisibilityForPlayer(this);
     SetToNotify();
 
     // some items limited to specific map
@@ -4121,7 +4105,7 @@ void Player::KillPlayer()
     // don't create corpse at this moment, player might be falling
 
     // update visibility
-    ObjectAccessor::UpdateObjectVisibility(this);
+    UpdateObjectVisibility();
 }
 
 void Player::CreateCorpse()
@@ -5262,7 +5246,7 @@ void Player::SetSkill(uint32 id, uint16 currVal, uint16 maxVal)
             for (PlayerSpellMap::const_iterator itr = m_spells.begin(), next = m_spells.begin(); itr != m_spells.end(); itr = next)
             {
                 ++next;
-                if(itr->second->state == PLAYERSPELL_REMOVED)
+                if(itr->second.state == PLAYERSPELL_REMOVED)
                     continue;
 
                 SkillLineAbilityMap::const_iterator lower = spellmgr.GetBeginSkillLineAbilityMap(itr->first);
@@ -10618,7 +10602,7 @@ Item* Player::_StoreItem( uint16 pos, Item *pItem, uint32 count, bool clone, boo
             if( IsInWorld() && update )
             {
                 pItem->AddToWorld();
-                pItem->SendUpdateToPlayer( this );
+                pItem->SendCreateUpdateToPlayer( this );
             }
 
             pItem->SetState(ITEM_CHANGED, this);
@@ -10632,7 +10616,7 @@ Item* Player::_StoreItem( uint16 pos, Item *pItem, uint32 count, bool clone, boo
                 if( IsInWorld() && update )
                 {
                     pItem->AddToWorld();
-                    pItem->SendUpdateToPlayer( this );
+                    pItem->SendCreateUpdateToPlayer( this );
                 }
                 pItem->SetState(ITEM_CHANGED, this);
                 pBag->SetState(ITEM_CHANGED, this);
@@ -10653,7 +10637,7 @@ Item* Player::_StoreItem( uint16 pos, Item *pItem, uint32 count, bool clone, boo
 
         pItem2->SetCount( pItem2->GetCount() + count );
         if( IsInWorld() && update )
-            pItem2->SendUpdateToPlayer( this );
+            pItem2->SendCreateUpdateToPlayer( this );
 
         if(!clone)
         {
@@ -10746,7 +10730,7 @@ Item* Player::EquipItem( uint16 pos, Item *pItem, bool update )
             if( IsInWorld() && update )
             {
                 pItem->AddToWorld();
-                pItem->SendUpdateToPlayer( this );
+                pItem->SendCreateUpdateToPlayer( this );
             }
 
             ApplyEquipCooldown(pItem);
@@ -10760,7 +10744,7 @@ Item* Player::EquipItem( uint16 pos, Item *pItem, bool update )
         {
             pItem2->SetCount( pItem2->GetCount() + pItem->GetCount() );
             if( IsInWorld() && update )
-                pItem2->SendUpdateToPlayer( this );
+                pItem2->SendCreateUpdateToPlayer( this );
 
             // delete item (it not in any slot currently)
             //pItem->DeleteFromDB();
@@ -10799,7 +10783,7 @@ void Player::QuickEquipItem( uint16 pos, Item *pItem)
         if( IsInWorld() )
         {
             pItem->AddToWorld();
-            pItem->SendUpdateToPlayer( this );
+            pItem->SendCreateUpdateToPlayer( this );
         }
     }
 }
@@ -10931,7 +10915,7 @@ void Player::RemoveItem( uint8 bag, uint8 slot, bool update )
         // pItem->SetUInt64Value( ITEM_FIELD_OWNER, 0 ); not clear owner at remove (it will be set at store). This used in mail and auction code
         pItem->SetSlot( NULL_SLOT );
         if( IsInWorld() && update )
-            pItem->SendUpdateToPlayer( this );
+            pItem->SendCreateUpdateToPlayer( this );
 
         if( slot == EQUIPMENT_SLOT_MAINHAND )
             UpdateExpertise(BASE_ATTACK);
@@ -11068,7 +11052,7 @@ void Player::DestroyItemCount( uint32 item, uint32 count, bool update, bool uneq
                 ItemRemovedQuestCheck( pItem->GetEntry(), count - remcount );
                 pItem->SetCount( pItem->GetCount() - count + remcount );
                 if( IsInWorld() & update )
-                    pItem->SendUpdateToPlayer( this );
+                    pItem->SendCreateUpdateToPlayer( this );
                 pItem->SetState(ITEM_CHANGED, this);
                 return;
             }
@@ -11093,7 +11077,7 @@ void Player::DestroyItemCount( uint32 item, uint32 count, bool update, bool uneq
                 ItemRemovedQuestCheck( pItem->GetEntry(), count - remcount );
                 pItem->SetCount( pItem->GetCount() - count + remcount );
                 if( IsInWorld() & update )
-                    pItem->SendUpdateToPlayer( this );
+                    pItem->SendCreateUpdateToPlayer( this );
                 pItem->SetState(ITEM_CHANGED, this);
                 return;
             }
@@ -11124,7 +11108,7 @@ void Player::DestroyItemCount( uint32 item, uint32 count, bool update, bool uneq
                         ItemRemovedQuestCheck( pItem->GetEntry(), count - remcount );
                         pItem->SetCount( pItem->GetCount() - count + remcount );
                         if( IsInWorld() && update )
-                            pItem->SendUpdateToPlayer( this );
+                            pItem->SendCreateUpdateToPlayer( this );
                         pItem->SetState(ITEM_CHANGED, this);
                         return;
                     }
@@ -11155,7 +11139,7 @@ void Player::DestroyItemCount( uint32 item, uint32 count, bool update, bool uneq
                 ItemRemovedQuestCheck( pItem->GetEntry(), count - remcount );
                 pItem->SetCount( pItem->GetCount() - count + remcount );
                 if( IsInWorld() & update )
-                    pItem->SendUpdateToPlayer( this );
+                    pItem->SendCreateUpdateToPlayer( this );
                 pItem->SetState(ITEM_CHANGED, this);
                 return;
             }
@@ -11268,7 +11252,7 @@ void Player::DestroyItemCount( Item* pItem, uint32 &count, bool update )
         pItem->SetCount( pItem->GetCount() - count );
         count = 0;
         if( IsInWorld() & update )
-            pItem->SendUpdateToPlayer( this );
+            pItem->SendCreateUpdateToPlayer( this );
         pItem->SetState(ITEM_CHANGED, this);
     }
 }
@@ -11333,7 +11317,7 @@ void Player::SplitItem( uint16 src, uint16 dst, uint32 count )
         }
 
         if( IsInWorld() )
-            pSrcItem->SendUpdateToPlayer( this );
+            pSrcItem->SendCreateUpdateToPlayer( this );
         pSrcItem->SetState(ITEM_CHANGED, this);
         StoreItem( dest, pNewItem, true);
     }
@@ -11353,7 +11337,7 @@ void Player::SplitItem( uint16 src, uint16 dst, uint32 count )
         }
 
         if( IsInWorld() )
-            pSrcItem->SendUpdateToPlayer( this );
+            pSrcItem->SendCreateUpdateToPlayer( this );
         pSrcItem->SetState(ITEM_CHANGED, this);
         BankItem( dest, pNewItem, true);
     }
@@ -11373,7 +11357,7 @@ void Player::SplitItem( uint16 src, uint16 dst, uint32 count )
         }
 
         if( IsInWorld() )
-            pSrcItem->SendUpdateToPlayer( this );
+            pSrcItem->SendCreateUpdateToPlayer( this );
         pSrcItem->SetState(ITEM_CHANGED, this);
         EquipItem( dest, pNewItem, true);
         AutoUnequipOffhandIfNeed();
@@ -11541,8 +11525,8 @@ void Player::SwapItem( uint16 src, uint16 dst )
                 pDstItem->SetState(ITEM_CHANGED, this);
                 if (IsInWorld())
                 {
-                    pSrcItem->SendUpdateToPlayer(this);
-                    pDstItem->SendUpdateToPlayer(this);
+                    pSrcItem->SendCreateUpdateToPlayer(this);
+                    pDstItem->SendCreateUpdateToPlayer(this);
                 }
             }
             return;
@@ -15430,8 +15414,6 @@ void Player::_LoadReputation(QueryResult_AutoPtr result)
 
 void Player::_LoadSpells(QueryResult_AutoPtr result)
 {
-    for (PlayerSpellMap::iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
-        delete itr->second;
     m_spells.clear();
 
     //QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT spell,slot,active FROM character_spell WHERE guid = '%u'",GetGUIDLow());
@@ -15820,6 +15802,8 @@ bool Player::_LoadHomeBind(QueryResult_AutoPtr result)
 
 void Player::SaveToDB()
 {
+    saveMutex.acquire();
+
     // delay auto save at any saves (manual, in code, or autosave)
     m_nextSave = sWorld.getConfig(CONFIG_INTERVAL_SAVE);
 
@@ -15830,7 +15814,10 @@ void Player::SaveToDB()
     const MapEntry * me = sMapStore.LookupEntry(mapid);
     // players aren't saved on arena maps
     if(!me || me->IsBattleArena())
+    {
+        saveMutex.release();
         return;
+    }
 
     int is_save_resting = HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING) ? 1 : 0;
                                                             //save, far from tavern/city
@@ -16001,6 +15988,8 @@ void Player::SaveToDB()
     // save pet (hunter pet level and experience and all type pets health/mana).
     if(Pet* pet = GetPet())
         pet->SavePetToDB(PET_SAVE_AS_CURRENT);
+
+    saveMutex.release();
 }
 
 // fast save function for item/money cheating preventing - save only inventory and money state
@@ -16313,22 +16302,19 @@ void Player::_SaveReputation()
 
 void Player::_SaveSpells()
 {
-    for (PlayerSpellMap::const_iterator itr = m_spells.begin(), next = m_spells.begin(); itr != m_spells.end(); itr = next)
+    for (PlayerSpellMap::iterator itr = m_spells.begin(), next = m_spells.begin(); itr != m_spells.end(); itr = next)
     {
         ++next;
 
-        if(!itr->second)
-            continue;
-
-        if(itr->second->state == PLAYERSPELL_REMOVED || itr->second->state == PLAYERSPELL_CHANGED)
+        if(itr->second.state == PLAYERSPELL_REMOVED || itr->second.state == PLAYERSPELL_CHANGED)
             CharacterDatabase.PExecute("DELETE FROM character_spell WHERE guid = '%u' and spell = '%u'", GetGUIDLow(), itr->first);
-        if(itr->second->state == PLAYERSPELL_NEW || itr->second->state == PLAYERSPELL_CHANGED)
-            CharacterDatabase.PExecute("INSERT INTO character_spell (guid,spell,slot,active,disabled) VALUES ('%u', '%u', '%u','%u','%u')", GetGUIDLow(), itr->first, itr->second->slotId,itr->second->active ? 1 : 0,itr->second->disabled ? 1 : 0);
+        if(itr->second.state == PLAYERSPELL_NEW || itr->second.state == PLAYERSPELL_CHANGED)
+            CharacterDatabase.PExecute("INSERT INTO character_spell (guid,spell,slot,active,disabled) VALUES ('%u', '%u', '%u','%u','%u')", GetGUIDLow(), itr->first, itr->second.slotId, itr->second.active ? 1 : 0, itr->second.disabled ? 1 : 0);
 
-        if (itr->second->state == PLAYERSPELL_REMOVED)
+        if (itr->second.state == PLAYERSPELL_REMOVED)
             _removeSpell(itr->first);
         else
-            itr->second->state = PLAYERSPELL_UNCHANGED;
+            itr->second.state = PLAYERSPELL_UNCHANGED;
     }
 }
 
@@ -17315,7 +17301,7 @@ void Player::HandleStealthedUnitsDetection()
         {
             if(!hasAtClient)
             {
-                (*i)->SendUpdateToPlayer(this);
+                (*i)->SendCreateUpdateToPlayer(this);
                 m_clientGUIDs.insert((*i)->GetGUID());
 
                 // target aura duration for caster show only if target exist at caster client
@@ -17486,7 +17472,7 @@ void Player::ProhibitSpellScholl(SpellSchoolMask idSchoolMask, uint32 unTimeMs )
     time_t curTime = time(NULL);
     for(PlayerSpellMap::const_iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
     {
-        if (itr->second->state == PLAYERSPELL_REMOVED)
+        if (itr->second.state == PLAYERSPELL_REMOVED)
             continue;
         uint32 unSpellId = itr->first;
         SpellEntry const *spellInfo = sSpellStore.LookupEntry(unSpellId);
@@ -18316,7 +18302,7 @@ void Player::UpdateVisibilityOf(WorldObject* target)
     {
         if(target->isVisibleForInState(this,false))
         {
-            target->SendUpdateToPlayer(this);
+            target->SendCreateUpdateToPlayer(this);
             if(target->GetTypeId()!=TYPEID_GAMEOBJECT||!((GameObject*)target)->IsTransport())
                 m_clientGUIDs.insert(target->GetGUID());
 
@@ -18391,41 +18377,6 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<WorldObjec
         }
     }
 }
-
-/*template<>
-void Player::UpdateVisibilityOf<Creature>(Creature* target, UpdateData& data, UpdateDataMapType& data_updates, std::set<WorldObject*>& visibleNow)
-{
-    if(HaveAtClient(target))
-    {
-        if(!target->isVisibleForInState(this,true))
-        {
-            target->DestroyForPlayer(this);
-            target->BuildOutOfRangeUpdateBlock(&data);
-            m_clientGUIDs.erase(target->GetGUID());
-
-            #ifdef TRINITY_DEBUG
-            if((sLog.getLogFilter() & LOG_FILTER_VISIBILITY_CHANGES)==0)
-                sLog.outDebug("Object %u (Type: %u, Entry: %u) is out of range for player %u. Distance = %f",target->GetGUIDLow(),target->GetTypeId(),target->GetEntry(),GetGUIDLow(),GetDistance(target));
-            #endif
-        }
-    }
-    else
-    {
-        if(target->isVisibleForInState(this,false))
-        {
-            visibleNow.insert(target);
-            target->BuildUpdate(data_updates);
-            target->SendUpdateToPlayer(this);
-            target->SendMonsterMoveWithSpeedToCurrentDestination(this);
-            UpdateVisibilityOf_helper(m_clientGUIDs,target);
-
-            #ifdef TRINITY_DEBUG
-            if((sLog.getLogFilter() & LOG_FILTER_VISIBILITY_CHANGES)==0)
-                sLog.outDebug("Object %u (Type: %u, Entry: %u) is visible now for player %u. Distance = %f",target->GetGUIDLow(),target->GetTypeId(),target->GetEntry(),GetGUIDLow(),GetDistance(target));
-            #endif
-        }
-    }
-}*/
 
 template void Player::UpdateVisibilityOf(Player*        target, UpdateData& data, std::set<WorldObject*>& visibleNow);
 template void Player::UpdateVisibilityOf(Creature*      target, UpdateData& data, std::set<WorldObject*>& visibleNow);
@@ -18782,7 +18733,7 @@ void Player::learnQuestRewardedSpells(Quest const* quest)
             // search other specialization for same prof
             for(PlayerSpellMap::const_iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
             {
-                if(itr->second->state == PLAYERSPELL_REMOVED || itr->first==learned_0)
+                if(itr->second.state == PLAYERSPELL_REMOVED || itr->first==learned_0)
                     continue;
 
                 SpellEntry const *itrInfo = sSpellStore.LookupEntry(itr->first);

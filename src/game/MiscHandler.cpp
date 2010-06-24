@@ -237,7 +237,7 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recv_data )
     data << clientcount;                                    // clientcount place holder
     data << clientcount;                                    // clientcount place holder
 
-    //TODO: Guard Player map
+    ObjectAccessor::Guard guard(*HashMapHolder<Player>::GetLock());
     HashMapHolder<Player>::MapType& m = ObjectAccessor::Instance().GetPlayers();
     for(HashMapHolder<Player>::MapType::iterator itr = m.begin(); itr != m.end(); ++itr)
     {
@@ -782,8 +782,6 @@ void WorldSession::HandleCorpseReclaimOpcode(WorldPacket &recv_data)
 
     // spawn bones
     GetPlayer()->SpawnCorpseBones();
-
-    GetPlayer()->SaveToDB();
 }
 
 void WorldSession::HandleResurrectResponseOpcode(WorldPacket & recv_data)
@@ -810,7 +808,6 @@ void WorldSession::HandleResurrectResponseOpcode(WorldPacket & recv_data)
         return;
 
     GetPlayer()->ResurectUsingRequestData();
-    GetPlayer()->SaveToDB();
 }
 
 void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recv_data)
@@ -1447,9 +1444,7 @@ void WorldSession::HandleFarSightOpcode( WorldPacket & recv_data )
             sLog.outDebug("Unhandled mode in CMSG_FAR_SIGHT: %u", apply);
             return;
     }
-    // Update visibility after vision change
-    //Cell cell(pair);
-    //GetPlayer()->GetMap()->UpdateObjectsVisibilityFor(_player, cell, pair);
+
     GetPlayer()->SetToNotify();
 }
 

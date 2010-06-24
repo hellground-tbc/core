@@ -364,10 +364,19 @@ void WorldSession::LogoutPlayer(bool Save)
         ///- If the player is in a group (or invited), remove him. If the group if then only 1 person, disband the group.
         _player->UninviteFromGroup();
 
-        // remove player from the group if he is:
-        // a) in group; b) not in raid group; c) logging out normally (not being kicked or disconnected)
-        //if(_player->GetGroup() && !_player->GetGroup()->isRaidGroup() && m_Socket)
-        //    _player->RemoveFromGroup();
+        ///- Send update to group
+        if(_player->GetGroup())
+        {
+            _player->GetGroup()->CheckLeader(_player->GetGUID(), true); //logout check leader
+            _player->GetGroup()->SendUpdate();
+        }
+
+        ///- Broadcast a logout message to the player's friends
+        sSocialMgr.SendFriendStatus(_player, FRIEND_OFFLINE, _player->GetGUIDLow(), true);
+        sSocialMgr.RemovePlayerSocial (_player->GetGUIDLow ());
+        
+        ///- Delete the player object
+        _player->CleanupsBeforeDelete();  
 
         ///- Remove the player from the world
         // the player may not be in the world when logging out
@@ -377,21 +386,6 @@ void WorldSession::LogoutPlayer(bool Save)
         // RemoveFromWorld does cleanup that requires the player to be in the accessor
         ObjectAccessor::Instance().RemoveObject(_player);
 
-        ///- Inform the group about leaving and send update to other members
-        if(_player->GetGroup())
-        {
-            _player->GetGroup()->CheckLeader(_player->GetGUID(), true); //logout check leader
-            _player->GetGroup()->SendUpdate();
-        }
-
-
-        ///- Broadcast a logout message to the player's friends
-        sSocialMgr.SendFriendStatus(_player, FRIEND_OFFLINE, _player->GetGUIDLow(), true);
-
-        ///- Delete the player object
-        _player->CleanupsBeforeDelete();                    // do some cleanup before deleting to prevent crash at crossreferences to already deleted data
-
-        sSocialMgr.RemovePlayerSocial (_player->GetGUIDLow ());
         delete _player;
         _player = NULL;
 

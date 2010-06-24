@@ -302,8 +302,7 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
 
             if(pInstance && pInstance->GetData64(DATA_LEOTHERAS_EVENT_STARTER))
             {
-                Unit *victim = NULL;
-                victim = Unit::GetUnit(*m_creature, pInstance->GetData64(DATA_LEOTHERAS_EVENT_STARTER));
+                Unit *victim = Unit::GetUnit(*m_creature, pInstance->GetData64(DATA_LEOTHERAS_EVENT_STARTER));
                 if(victim)
                     m_creature->getThreatManager().addThreat(victim, 1);
                 StartEvent();
@@ -393,9 +392,7 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
         //despawn copy
         if (Demon)
         {
-            Unit *pUnit = NULL;
-            pUnit = Unit::GetUnit((*m_creature), Demon);
-
+            Unit *pUnit = Unit::GetUnit((*m_creature), Demon);
             if (pUnit)
                 pUnit->DealDamage(pUnit, pUnit->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         }
@@ -763,8 +760,7 @@ struct TRINITY_DLL_DECL mob_greyheart_spellbinderAI : public ScriptedAI
 
             if(!InCombat && pInstance->GetData64(DATA_LEOTHERAS_EVENT_STARTER))
             {
-                Unit *victim = NULL;
-                victim = Unit::GetUnit(*m_creature, pInstance->GetData64(DATA_LEOTHERAS_EVENT_STARTER));
+                Unit *victim = Unit::GetUnit(*m_creature, pInstance->GetData64(DATA_LEOTHERAS_EVENT_STARTER));
                 if(victim)
                     AttackStart(victim);
             }

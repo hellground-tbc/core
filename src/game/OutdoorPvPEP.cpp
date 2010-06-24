@@ -95,12 +95,12 @@ bool OutdoorPvPObjectiveEP_EWT::Update(uint32 diff)
             if(flag)
             {
                 flag->SetGoArtKit(artkit);
-                flag->SendUpdateObjectToAllExcept(NULL);
+                //flag->SendUpdateObjectToAllExcept(NULL);
             }
             if(flag2)
             {
                 flag2->SetGoArtKit(artkit);
-                flag2->SendUpdateObjectToAllExcept(NULL);
+                //flag2->SendUpdateObjectToAllExcept(NULL);
             }
 
 
@@ -271,12 +271,12 @@ bool OutdoorPvPObjectiveEP_NPT::Update(uint32 diff)
             if(flag)
             {
                 flag->SetGoArtKit(artkit);
-                flag->SendUpdateObjectToAllExcept(NULL);
+                //flag->SendUpdateObjectToAllExcept(NULL);
             }
             if(flag2)
             {
                 flag2->SetGoArtKit(artkit);
-                flag2->SendUpdateObjectToAllExcept(NULL);
+                //flag2->SendUpdateObjectToAllExcept(NULL);
             }
 
             UpdateTowerState();
@@ -438,12 +438,12 @@ bool OutdoorPvPObjectiveEP_CGT::Update(uint32 diff)
             if(flag)
             {
                 flag->SetGoArtKit(artkit);
-                flag->SendUpdateObjectToAllExcept(NULL);
+                //flag->SendUpdateObjectToAllExcept(NULL);
             }
             if(flag2)
             {
                 flag2->SetGoArtKit(artkit);
-                flag2->SendUpdateObjectToAllExcept(NULL);
+                //flag2->SendUpdateObjectToAllExcept(NULL);
             }
 
             UpdateTowerState();
@@ -604,12 +604,12 @@ bool OutdoorPvPObjectiveEP_PWT::Update(uint32 diff)
             if(flag)
             {
                 flag->SetGoArtKit(artkit);
-                flag->SendUpdateObjectToAllExcept(NULL);
+                //flag->SendUpdateObjectToAllExcept(NULL);
             }
             if(flag2)
             {
                 flag2->SetGoArtKit(artkit);
-                flag2->SendUpdateObjectToAllExcept(NULL);
+                //flag2->SendUpdateObjectToAllExcept(NULL);
             }
 
             UpdateTowerState();
