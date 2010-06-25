@@ -33,12 +33,14 @@
 #include "SharedDefines.h"
 #include "GameSystem/GridRefManager.h"
 #include "MapRefManager.h"
+#include "Utilities/TypeList.h"
 #include "mersennetwister/MersenneTwister.h"
 
 #include <bitset>
 #include <list>
 
 class Unit;
+class Creature;
 class WorldPacket;
 class InstanceData;
 class Group;
@@ -299,8 +301,12 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         }
 
         Creature* GetCreature(uint64 guid);
+        Pet* GetPet(uint64 guid);
+        Creature* GetCreatureOrPet(uint64 guid);
+        Corpse* GetCorpse(uint64 guid);
         GameObject* GetGameObject(uint64 guid);
         DynamicObject* GetDynamicObject(uint64 guid);
+        WorldObject* GetWorldObject(uint64 guid);
 
         void AddUpdateObject(Object *obj)
         {
@@ -312,8 +318,9 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
             i_objectsToClientUpdate.erase( obj );
         }
 
-        ACE_Thread_Mutex m_spellUpdateLock;
+        TypeUnorderedMapContainer<AllMapStoredObjectTypes>& GetObjectsStore() { return m_objectsStore; }
 
+        ACE_Thread_Mutex m_spellUpdateLock;
     private:
         void LoadVMap(int pX, int pY);
         void LoadMap(uint32 mapid, uint32 instanceid, int x,int y);
@@ -373,8 +380,7 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         typedef std::set<WorldObject*> ActiveNonPlayers;
         ActiveNonPlayers m_activeNonPlayers;
         ActiveNonPlayers::iterator m_activeNonPlayersIter;
-
-
+        TypeUnorderedMapContainer<AllMapStoredObjectTypes> m_objectsStore;
     private:
         NGridType* i_grids[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
         GridMap *GridMaps[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
