@@ -417,7 +417,7 @@ bool OutdoorPvPObjectiveZM_GraveYard::HandleGossipOption(Player *plr, uint64 gui
     std::map<uint64,uint32>::iterator itr = m_CreatureTypes.find(guid);
     if(itr != m_CreatureTypes.end())
     {
-        Creature * cr = HashMapHolder<Creature>::Find(guid);
+        Creature * cr = plr->GetMap()->GetCreature(guid);
         if(!cr)
             return true;
         // if the flag is already taken, then return

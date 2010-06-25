@@ -90,8 +90,8 @@ bool OutdoorPvPObjectiveEP_EWT::Update(uint32 diff)
                 break;
             }
 
-            GameObject* flag = HashMapHolder<GameObject>::Find(m_CapturePoint);
-            GameObject* flag2 = HashMapHolder<GameObject>::Find(m_Objects[EP_EWT_FLAGS]);
+            GameObject* flag = ObjectAccessor::GetGameObjectInWorld(m_CapturePoint);
+            GameObject* flag2 = ObjectAccessor::GetGameObjectInWorld(m_Objects[EP_EWT_FLAGS]);
             if(flag)
             {
                 flag->SetGoArtKit(artkit);
@@ -266,8 +266,8 @@ bool OutdoorPvPObjectiveEP_NPT::Update(uint32 diff)
                 break;
             }
 
-            GameObject* flag = HashMapHolder<GameObject>::Find(m_CapturePoint);
-            GameObject* flag2 = HashMapHolder<GameObject>::Find(m_Objects[EP_NPT_FLAGS]);
+            GameObject* flag = ObjectAccessor::GetGameObjectInWorld(m_CapturePoint);
+            GameObject* flag2 = ObjectAccessor::GetGameObjectInWorld(m_Objects[EP_NPT_FLAGS]);
             if(flag)
             {
                 flag->SetGoArtKit(artkit);
@@ -364,7 +364,7 @@ void OutdoorPvPObjectiveEP_NPT::SummonGO(uint32 team)
         m_SummonedGOSide = team;
         DelObject(EP_NPT_BUFF);
         AddObject(EP_NPT_BUFF,EP_NPT_LordaeronShrine.entry,EP_NPT_LordaeronShrine.map,EP_NPT_LordaeronShrine.x,EP_NPT_LordaeronShrine.y,EP_NPT_LordaeronShrine.z,EP_NPT_LordaeronShrine.o,EP_NPT_LordaeronShrine.rot0,EP_NPT_LordaeronShrine.rot1,EP_NPT_LordaeronShrine.rot2,EP_NPT_LordaeronShrine.rot3);
-        GameObject * go = HashMapHolder<GameObject>::Find(m_Objects[EP_NPT_BUFF]);
+        GameObject * go = ObjectAccessor::GetGameObjectInWorld(m_Objects[EP_NPT_BUFF]);
         if(go)
             go->SetUInt32Value(GAMEOBJECT_FACTION,(team == ALLIANCE ? 84 : 83));
     }
@@ -433,8 +433,8 @@ bool OutdoorPvPObjectiveEP_CGT::Update(uint32 diff)
                 break;
             }
 
-            GameObject* flag = HashMapHolder<GameObject>::Find(m_CapturePoint);
-            GameObject* flag2 = HashMapHolder<GameObject>::Find(m_Objects[EP_CGT_FLAGS]);
+            GameObject* flag = ObjectAccessor::GetGameObjectInWorld(m_CapturePoint);
+            GameObject* flag2 = ObjectAccessor::GetGameObjectInWorld(m_Objects[EP_CGT_FLAGS]);
             if(flag)
             {
                 flag->SetGoArtKit(artkit);
@@ -599,8 +599,8 @@ bool OutdoorPvPObjectiveEP_PWT::Update(uint32 diff)
                 break;
             }
 
-            GameObject* flag = HashMapHolder<GameObject>::Find(m_CapturePoint);
-            GameObject* flag2 = HashMapHolder<GameObject>::Find(m_Objects[EP_PWT_FLAGS]);
+            GameObject* flag = ObjectAccessor::GetGameObjectInWorld(m_CapturePoint);
+            GameObject* flag2 = ObjectAccessor::GetGameObjectInWorld(m_Objects[EP_PWT_FLAGS]);
             if(flag)
             {
                 flag->SetGoArtKit(artkit);
@@ -697,7 +697,7 @@ void OutdoorPvPObjectiveEP_PWT::SummonFlightMaster(uint32 team)
         m_FlightMasterSpawned = team;
         DelCreature(EP_PWT_FLIGHTMASTER);
         AddCreature(EP_PWT_FLIGHTMASTER,EP_PWT_FlightMaster.entry,team,EP_PWT_FlightMaster.map,EP_PWT_FlightMaster.x,EP_PWT_FlightMaster.y,EP_PWT_FlightMaster.z,EP_PWT_FlightMaster.o);
-        Creature * c = HashMapHolder<Creature>::Find(m_Creatures[EP_PWT_FLIGHTMASTER]);
+        Creature * c = ObjectAccessor::GetCreatureInWorld(m_Creatures[EP_PWT_FLIGHTMASTER]);
         if(c)
         {
             GossipOption gso;
@@ -742,7 +742,7 @@ bool OutdoorPvPObjectiveEP_PWT::HandleGossipOption(Player *plr, uint64 guid, uin
     std::map<uint64,uint32>::iterator itr = m_CreatureTypes.find(guid);
     if(itr != m_CreatureTypes.end())
     {
-        Creature * cr = HashMapHolder<Creature>::Find(guid);
+        Creature * cr = plr->GetMap()->GetCreature(guid);
         if(!cr)
             return true;
         if(itr->second == EP_PWT_FLIGHTMASTER)

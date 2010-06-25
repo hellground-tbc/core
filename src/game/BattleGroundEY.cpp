@@ -29,6 +29,7 @@
 #include "Language.h"
 #include "World.h"
 #include "Util.h"
+#include "MapManager.h"
 
 // these variables aren't used outside of this file, so declare them only here
 uint32 BG_EY_HonorScoreTicks[BG_HONOR_MODE_NUM] = {
@@ -181,7 +182,7 @@ void BattleGroundEY::CheckSomeoneJoinedPoint()
     GameObject *obj = NULL;
     for (uint8 i = 0; i < EY_POINTS_MAX; ++i)
     {
-        obj = HashMapHolder<GameObject>::Find(m_BgObjects[BG_EY_OBJECT_TOWER_CAP_FEL_REALVER + i]);
+        obj = GetBgMap()->GetGameObject(m_BgObjects[BG_EY_OBJECT_TOWER_CAP_FEL_REALVER + i]);
         if (obj)
         {
             uint8 j = 0;
@@ -221,7 +222,7 @@ void BattleGroundEY::CheckSomeoneLeftPoint()
     GameObject *obj = NULL;
     for(uint8 i = 0; i < EY_POINTS_MAX; ++i)
     {
-        obj = HashMapHolder<GameObject>::Find(m_BgObjects[BG_EY_OBJECT_TOWER_CAP_FEL_REALVER + i]);
+        obj = GetBgMap()->GetGameObject(m_BgObjects[BG_EY_OBJECT_TOWER_CAP_FEL_REALVER + i]);
         if(obj)
         {
             uint8 j = 0;
@@ -573,7 +574,7 @@ void BattleGroundEY::RespawnFlagAfterDrop()
 {
     RespawnFlag(true);
 
-    GameObject *obj = HashMapHolder<GameObject>::Find(GetDroppedFlagGUID());
+    GameObject *obj = GetBgMap()->GetGameObject(GetDroppedFlagGUID());
     if(obj)
         obj->Delete();
     else

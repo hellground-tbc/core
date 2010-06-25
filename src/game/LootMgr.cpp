@@ -449,7 +449,7 @@ void Loot::removeItemFromSavedLoot(uint8 lootIndex)
     if (!pPlayer)
         return;
 
-    Creature *pCreature = ObjectAccessor::GetCreatureOrPet(*pPlayer, m_creatureGUID);
+    Unit* pCreature = pPlayer->GetMap()->GetCreatureOrPet(m_creatureGUID);
     if (!pCreature)
         return;
 
@@ -480,7 +480,7 @@ void Loot::saveLootToDB(Player *owner)
     if (!m_creatureGUID)
         return;
 
-    Creature *pCreature = ObjectAccessor::GetCreatureOrPet(*owner, m_creatureGUID);
+    Unit* pCreature = owner->GetMap()->GetCreatureOrPet(m_creatureGUID);
     if (!pCreature)
         return;
 
