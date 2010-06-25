@@ -321,25 +321,11 @@ public:
 
     void Aggro(Unit* who) {}
 
-    void MoveInLineOfSight(Unit *who)
+    void Reset()
     {
-        if( IsBeingEscorted )
-            return;
-
-        if( who->GetTypeId() == TYPEID_PLAYER )
-        {
-            if( ((Player*)who)->GetQuestStatus(10211) == QUEST_STATUS_INCOMPLETE )
-            {
-                float Radius = 10.0;
-                if( m_creature->IsWithinDistInMap(who, Radius) )
-                {
-                    ((npc_escortAI*)(m_creature->AI()))->Start(false, false, false, who->GetGUID());
-                }
-            }
-        }
+        m_creature->SetReactState(REACT_PASSIVE);
+        ((npc_escortAI*)(m_creature->AI()))->Start(false, false, false, m_creature->GetCharmerOrOwnerGUID());
     }
-
-    void Reset() {}
 
     void UpdateAI(const uint32 diff)
     {
@@ -371,7 +357,7 @@ CreatureAI* GetAI_npc_kservantAI(Creature *_Creature)
     kservantAI->AddWaypoint(18, -1607.630981, 5293.983398, -38.577045, 5000);
     kservantAI->AddWaypoint(19, -1607.630981, 5293.983398, -38.577045, 5000);
     kservantAI->AddWaypoint(20, -1622.140869, 5301.955566, -40.208897);
-    kservantAI->AddWaypoint(21, -1621.131836, 5333.112793, -40.208897);
+    kservantAI->AddWaypoint(21, -1625.131836, 5329.112793, -40.208897);
     kservantAI->AddWaypoint(22, -1637.598999, 5342.134277, -40.208790);
     kservantAI->AddWaypoint(23, -1648.521606, 5352.309570, -47.496170);
     kservantAI->AddWaypoint(24, -1654.606934, 5357.419434, -45.870892);

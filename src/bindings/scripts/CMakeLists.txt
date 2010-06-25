@@ -197,6 +197,7 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/karazhan/boss_terestian_illhoof.cpp
    scripts/zone/karazhan/bosses_opera.cpp
    scripts/zone/karazhan/def_karazhan.h
+   scripts/zone/karazhan/instance_karazhan.h
    scripts/zone/karazhan/instance_karazhan.cpp
    scripts/zone/karazhan/karazhan.cpp
    scripts/zone/loch_modan/loch_modan.cpp
