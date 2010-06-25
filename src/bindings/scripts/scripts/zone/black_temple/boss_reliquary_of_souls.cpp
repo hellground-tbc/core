@@ -228,7 +228,7 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public ScriptedAI
         for(std::list<HostilReference*>::iterator itr = m_threatlist.begin(); itr != m_threatlist.end(); ++itr)
         {
             Unit* pUnit = Unit::GetUnit((*m_creature), (*itr)->getUnitGuid());
-            if(pUnit && pUnit->isAlive() && pUnit->IsWithinDistInMap(m_creature, 200.0f)) 
+            if(pUnit && pUnit->isAlive() && m_creature->canAttack(pUnit) && pUnit->IsWithinDistInMap(m_creature, 200.0f)) 
                 return true;
         }
         return false;
@@ -239,15 +239,13 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public ScriptedAI
         if(!Phase)
             return;
 
-        if(!FindPlayers()) // Reset if event is begun and we don't have a threatlist
-        {
-            EnterEvadeMode();
-            return;
-        }
-
         if(CheckTimer < diff)
         {
-            DoZoneInCombat();
+            if(FindPlayers())
+                DoZoneInCombat();
+            else
+                EnterEvadeMode();
+
             CheckTimer = 2000;
         }
         else
@@ -398,7 +396,7 @@ struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
         StatAuraGUID = 0;
 
         AggroYellTimer = 5000;
-        FixateTimer = 8000;
+        FixateTimer = 5000;
         EnrageTimer = 30000;
         SoulDrainTimer = 45000;
         AuraTimer = 5000;
@@ -619,6 +617,9 @@ struct TRINITY_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
         {
             DoCast(m_creature->getVictim(), SPELL_SOUL_SHOCK);
             SoulShockTimer = 5000;
+
+            if(DeadenTimer < 1200)
+                DeadenTimer = 1200;
         }
         else
             SoulShockTimer -= diff;
