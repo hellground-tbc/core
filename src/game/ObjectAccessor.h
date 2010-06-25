@@ -122,8 +122,8 @@ class ObjectAccessor : public Trinity::Singleton<ObjectAccessor, Trinity::ClassL
         void RemoveObject(Corpse *object) { HashMapHolder<Corpse>::Remove(object); }
         void RemoveObject(Player *object) { HashMapHolder<Player>::Remove(object); }
 
-        static void LinkMap(Map* map)   { i_mapList.push_back(map); }
-        static void DelinkMap(Map* map) { i_mapList.remove(map); }
+        static void LinkMap(Map* map)   { ACE_Guard<ACE_Thread_Mutex> guard(m_Lock); i_mapList.push_back(map); }
+        static void DelinkMap(Map* map) { ACE_Guard<ACE_Thread_Mutex> guard(m_Lock); i_mapList.remove(map); }
 
         Corpse* GetCorpseForPlayerGUID(uint64 guid);
         static Corpse* GetCorpseInMap(uint64 guid, uint32 mapid);
@@ -135,8 +135,11 @@ class ObjectAccessor : public Trinity::Singleton<ObjectAccessor, Trinity::ClassL
         typedef ACE_Thread_Mutex LockType;
         typedef Trinity::GeneralLock<LockType> Guard;
     private:
+        static ACE_Thread_Mutex m_Lock;
+
         template <class OBJECT> static OBJECT* FindHelper(uint64 guid)
         {
+            ACE_Guard<ACE_Thread_Mutex> guard(m_Lock);
             for (std::list<Map*>::const_iterator i = i_mapList.begin() ; i != i_mapList.end(); ++i)
             {
                 if (OBJECT* ret = (*i)->GetObjectsStore().find(guid, (OBJECT*)NULL))
