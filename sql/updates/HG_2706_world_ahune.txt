@@ -1,0 +1,172 @@
+UPDATE creature_template
+SET faction_A = 14, faction_H = 14, armor = 6500
+WHERE entry IN (25755, 25756, 25757, 25740, 25865, 26342, 26340, 26341, 26339);
+
+UPDATE creature_template
+SET minlevel = 70, maxlevel = 70, scriptName = 'mob_eventai' WHERE entry IN (25755, 25756, 25757, 26342, 26340, 26341);
+
+UPDATE creature_template
+SET minlevel = 73, maxlevel = 73, minhealth = 150000, maxhealth = 150000, ScriptName='boss_lord_ahune_core' WHERE entry = 25865;
+
+UPDATE creature_template
+SET minlevel = 73, maxlevel = 73, minhealth = 230000, maxhealth = 230000, ScriptName='boss_lord_ahune_core' WHERE entry = 26339;
+
+UPDATE creature_template
+SET ScriptName = 'boss_lord_ahune', lootid=25740, heroic_entry=26338 WHERE entry = 25740;
+
+UPDATE creature_template
+SET ScriptName = 'boss_lord_ahune', lootid=26338, rank=1 WHERE entry = 26338;
+
+UPDATE creature_template
+SET minhealth = 60000, maxhealth = 60000 WHERE entry = 25755;
+
+UPDATE creature_template
+SET minhealth = 80000, maxhealth = 80000 WHERE entry = 26342;
+
+UPDATE creature_template
+SET minhealth = 1600, maxhealth = 2100 WHERE entry IN (25756, 25757);
+
+UPDATE creature_template
+SET minhealth = 2100, maxhealth = 2600 WHERE entry IN (26340, 26341);
+
+UPDATE `creature_template` SET 
+    `mindmg` = 2000, 
+    `maxdmg` = 4000, 
+    `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
+    `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
+    `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) ,
+     baseattacktime = 2000
+WHERE entry = 26342;
+
+UPDATE `creature_template` SET 
+    `mindmg` = 2000, 
+    `maxdmg` = 4000, 
+    `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
+    `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
+    `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) ,
+     baseattacktime = 2000
+WHERE entry = 25755;
+
+UPDATE `creature_template` SET 
+    `mindmg` = 1000, 
+    `maxdmg` = 2000, 
+    `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
+    `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
+    `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) ,
+     baseattacktime = 2000
+WHERE entry IN (25757, 26341);
+
+UPDATE `creature_template` SET 
+    `mindmg` = 100, 
+    `maxdmg` = 200, 
+    `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
+    `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
+    `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) ,
+     baseattacktime = 2000
+WHERE entry IN (25756, 26340);
+
+DELETE FROM reference_loot_template WHERE entry = 50029;
+
+INSERT INTO reference_loot_template VALUES
+(50029, 35494, 0, 1, 1, 1, 0, 0, 0),
+(50029, 35495, 0, 1, 1, 1, 0, 0, 0),
+(50029, 35496, 0, 1, 1, 1, 0, 0, 0),
+(50029, 35497, 0, 1, 1, 1, 0, 0, 0),
+(50029, 35507, 0, 2, 1, 1, 0, 0, 0),
+(50029, 35508, 0, 2, 1, 1, 0, 0, 0),
+(50029, 35509, 0, 2, 1, 1, 0, 0, 0),
+(50029, 35511, 0, 2, 1, 1, 0, 0, 0),
+(50029, 35514, 0, 3, 1, 1, 0, 0, 0),
+(50029, 35498, 0, 3, 1, 1, 0, 0, 0),
+(50029, 35955, 0, 3, 1, 1, 0, 0, 0);
+
+DELETE FROM creature_loot_template WHERE entry IN (25740, 26338);
+
+
+INSERT INTO creature_loot_template VALUES
+(25740, 500291, 100, 1, -50029, 1, 0, 0, 0),
+(25740, 500293, 8, 3, -50029, 1, 0, 0, 0),
+(25740, 35723, 100, 1, -50029, 1, 0, 0, 0),
+
+(26338, 500291, 100, 1, -50029, 1, 0, 0, 0),
+(26338, 500292, 100, 2, -50029, 1, 0, 0, 0),
+(26338, 500293, 20, 3, -50029, 1, 0, 0, 0),
+(26338, 35723, 100, 1, -50029, 1, 0, 0, 0);
+
+UPDATE creature_template SET ScriptName='npc_ice_spear_bunny', flags_extra = 128
+WHERE entry = 25985;
+
+DELETE FROM eventai_scripts WHERE creature_id IN (25757, 25755, 25756, 26342, 26340, 26341);
+
+ INSERT INTO eventai_scripts VALUES
+-- ahunite frostwind
+(DEFAULT, 25757, 4, 0, 100, 0, 0, 0, 0, 0,
+11, 12550, 0, 0,
+0, 0, 0, 0, 
+0, 0, 0, 0, 'frostwind casts lightning shield'),
+(DEFAULT, 25757, 0, 0, 100, 1, 1000, 1000, 3000, 5000,
+11, 46568, 1, 0,
+0, 0, 0, 0,
+0, 0, 0, 0, 'frostwind casts wind buffet'),
+
+(DEFAULT, 26341, 4, 0, 100, 0, 0, 0, 0, 0,
+11, 12550, 0, 0,
+0, 0, 0, 0, 
+0, 0, 0, 0, 'frostwind casts lightning shield'),
+(DEFAULT, 26341, 0, 0, 100, 1, 1000, 1000, 3000, 5000,
+11, 46568, 1, 0,
+0, 0, 0, 0,
+0, 0, 0, 0, 'frostwind casts wind buffet'),
+-- ahunite hailstone
+(DEFAULT, 25755, 4, 0, 100, 0, 0, 0, 0, 0,
+11, 46542, 0, 0,
+0, 0, 0, 0,
+0, 0, 0, 0, 'hailstone casts chilling aura'),
+(DEFAULT, 25755, 13, 0, 100, 1, 10000, 15000, 0, 0,
+11, 2676, 1, 0,
+0, 0, 0, 0,
+0, 0, 0, 0, 'hailsotne casts pulverize'),
+
+(DEFAULT, 26342, 4, 0, 100, 0, 0, 0, 0, 0,
+11, 46542, 0, 0,
+0, 0, 0, 0,
+0, 0, 0, 0, 'hailstone casts chilling aura'),
+(DEFAULT, 26342, 13, 0, 100, 1, 10000, 15000, 0, 0,
+11, 2676, 1, 0,
+0, 0, 0, 0,
+0, 0, 0, 0, 'hailsotne casts pulverize'),
+-- ahunite coldwave
+(DEFAULT, 25756, 4, 0, 100, 0, 0, 0, 0, 0,
+29, 10, 0, 0,
+0, 0, 0, 0,
+0, 0, 0, 0, 'coldwave ranged movement'),
+(DEFAULT, 25756, 0, 0, 100,1,  500, 500, 1200, 1200,
+11, 46406, 1, 0,
+0, 0, 0, 0,
+0, 0, 0, 0, 'coldwave casts bitter blast'),
+
+(DEFAULT, 26340, 4, 0, 100, 0, 0, 0, 0, 0,
+29, 10, 0, 0,
+0, 0, 0, 0,
+0, 0, 0, 0, 'coldwave ranged movement'),
+(DEFAULT, 26340, 0, 0, 100,1,  500, 500, 1200, 1200,
+11, 46406, 1, 0,
+0, 0, 0, 0,
+0, 0, 0, 0, 'coldwave casts bitter blast');
+
+INSERT INTO creature VALUES 
+(DEFAULT, 25710, 547, 1, 0, 0, 114, -107, -1.59, 0.97, 60, 0, 0, 1, 0, 0, 0);
+
+INSERT INTO game_event_creature VALUES
+(@@identity, 1);
+
+INSERT INTO creature VALUES 
+(DEFAULT, 25697, 547, 1, 0, 0, -89, -111, -3, 3.33, 60, 0, 0, 1, 0, 0, 0);
+
+INSERT INTO game_event_creature VALUES
+(@@identity, 1);
+
+
+
+
+
