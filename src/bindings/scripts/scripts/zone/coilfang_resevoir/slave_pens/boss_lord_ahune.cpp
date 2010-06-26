@@ -58,7 +58,7 @@ struct TRINITY_DLL_DECL boss_lord_ahune_coreAI : public Scripted_NoMovementAI
             {
                 ahune->SetVisibility(VISIBILITY_ON);
                 ahune->RemoveAurasDueToSpell(SPELL_AHUNE_SELF_STUN);
-                ahune->ModifyHealth(- (int32)(ahune->GetHealth() - 1));
+                u->DealDamage(ahune, ahune->GetHealth() - 1);
             }
                
     }
@@ -223,6 +223,8 @@ struct TRINITY_DLL_DECL boss_lord_ahuneAI : public Scripted_NoMovementAI
                     me->RemoveAurasDueToSpell(SPELL_GHOST_DISGUISE);
                     me->RemoveAurasDueToSpell(SPELL_AHUNE_SELF_STUN);
                     me->SetVisibility(VISIBILITY_ON);
+                    DoCast(me, SPELL_AHUNE_SHIELD, true);
+                    DoCast(me, SPELL_SLIPPERY_FLOOR, true);
                     DoCast(me, SPELL_AHUNE_RESURFACES, true);
                 }
                 else
