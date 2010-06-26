@@ -260,6 +260,7 @@ extern void AddSC_instance_serpentshrine_cavern();
 extern void AddSC_boss_the_lurker_below();
 
 //--Slave Pens
+extern void AddSC_boss_lord_ahune();
 
 //--Steam Vault
 extern void AddSC_boss_hydromancer_thespia();
@@ -1646,6 +1647,8 @@ void ScriptsInit(char const* cfg_file = "trinitycore.conf")
     AddSC_boss_the_lurker_below();
 
     //--Slave Pens
+    AddSC_boss_lord_ahune();
+
     //--Steam Vault
     AddSC_boss_hydromancer_thespia();
     AddSC_boss_mekgineer_steamrigger();
