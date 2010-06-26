@@ -2378,6 +2378,8 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         DeclinedName *m_declinedname;
 
+        ACE_Thread_Mutex saveMutex;
+
     private:
         // internal common parts for CanStore/StoreItem functions
         uint8 _CanStoreItem_InSpecificSlot( uint8 bag, uint8 slot, ItemPosCountVec& dest, ItemPrototype const *pProto, uint32& count, bool swap, Item *pSrcItem ) const;
@@ -2390,8 +2392,6 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         uint64 m_GMfollowtarget_GUID; // za kim chodzi
         uint64 m_GMfollow_GUID;       // gm ktory chodzi za playerem
-
-        ACE_Thread_Mutex saveMutex;
 };
 
 void AddItemsSetItem(Player*player,Item *item);
