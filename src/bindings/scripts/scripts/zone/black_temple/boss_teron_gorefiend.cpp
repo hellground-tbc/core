@@ -304,17 +304,17 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
     {
         if(!who || (!who->isAlive())) return;
 
-        if(who->isTargetableForAttack() && who->isInAccessiblePlaceFor(m_creature) && m_creature->IsHostileTo(who))
+        if(!InCombat && who->isTargetableForAttack() && who->isInAccessiblePlaceFor(m_creature) && m_creature->IsHostileTo(who))
         {
             float attackRadius = m_creature->GetAttackDistance(who);
 
-            if (!InCombat && Intro == INTRO_DONE && m_creature->IsWithinDistInMap(who, attackRadius) && m_creature->GetDistanceZ(who) <= CREATURE_Z_ATTACK_RANGE && m_creature->IsWithinLOSInMap(who))
+            if (Intro == INTRO_DONE && m_creature->IsWithinDistInMap(who, attackRadius) && m_creature->GetDistanceZ(who) <= CREATURE_Z_ATTACK_RANGE && m_creature->IsWithinLOSInMap(who))
             {
                 AttackStart(who);
                 DoZoneInCombat();
             }
 
-            if(!InCombat && Intro == INTRO_NOT_STARTED && m_creature->IsWithinDistInMap(who, 60.0f) && (who->GetTypeId() == TYPEID_PLAYER))
+            if(Intro == INTRO_NOT_STARTED && m_creature->IsWithinDistInMap(who, 60.0f) && (who->GetTypeId() == TYPEID_PLAYER))
             {
                 m_creature->GetMotionMaster()->Clear(false);
                 DoScriptText(SAY_INTRO, m_creature);
