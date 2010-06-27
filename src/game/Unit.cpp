@@ -6049,13 +6049,28 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                  return false;
              }
 
-             if(auraSpellInfo->SpellIconID == 299)                      // Improved Judgement of Light: bonus heal from t4 set
-                 if(Unit *caster = triggeredByAura->GetCaster())
-                    if(Aura *aur = caster->GetAura(37182, 0))
-                    {
-                        int bp = aur->GetModifierValue();
-                        pVictim->CastCustomSpell(pVictim, trigger_spell_id, &bp, NULL, NULL, true, castItem, triggeredByAura);
-                    }
+             if(Unit *caster = triggeredByAura->GetCaster())
+             {
+                 if(caster->GetTypeId() == TYPEID_PLAYER)
+                 {
+                     if(((Player*)caster)->HasSpellCooldown(trigger_spell_id))
+                         return false;
+
+                     ((Player*)caster)->AddSpellCooldown(trigger_spell_id, NULL, time(NULL) +4);
+                 }
+             }
+             else
+                 return false;
+             
+             // Improved Judgement of Light: bonus heal from t4 set
+             if(auraSpellInfo->SpellIconID == 299)    
+             {
+                 if(Aura *aur = caster->GetAura(37182, 0))
+                 {
+                     int bp = aur->GetModifierValue();
+                     pVictim->CastCustomSpell(pVictim, trigger_spell_id, &bp, NULL, NULL, true, castItem, triggeredByAura);
+                 }
+             }
              pVictim->CastSpell(pVictim, trigger_spell_id, true, castItem, triggeredByAura);
              return true;                        // no hidden cooldown
          }
