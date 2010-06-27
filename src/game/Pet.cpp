@@ -106,6 +106,7 @@ Pet::~Pet()
     {
         for (PetSpellMap::iterator i = m_spells.begin(); i != m_spells.end(); ++i)
             delete i->second;
+        ObjectAccessor::Instance().RemoveObject(this);
     }
 
     delete m_declinedname;
@@ -116,7 +117,7 @@ void Pet::AddToWorld()
     ///- Register the pet for guid lookup
     if(!IsInWorld())
     {   
-        GetMap()->GetObjectsStore().insert<Pet>(GetGUID(), (Pet*)this);
+        ObjectAccessor::Instance().AddObject(this);
         Unit::AddToWorld();
     }
 }
@@ -126,8 +127,7 @@ void Pet::RemoveFromWorld()
     ///- Remove the pet from the accessor
     if(IsInWorld())
     {
-        GetMap()->GetObjectsStore().erase<Pet>(GetGUID(), (Pet*)NULL);
-
+        ObjectAccessor::Instance().RemoveObject(this);
         ///- Don't call the function for Creature, normal mobs + totems go in a different storage
         Unit::RemoveFromWorld();
     }
@@ -938,7 +938,7 @@ bool Pet::CreateBaseAtCreature(Creature* creature)
         sLog.outError("CRITICAL ERROR: NULL pointer parsed into CreateBaseAtCreature()");
         return false;
     }
-    uint32 guid = objmgr.GenerateLowGuid(HIGHGUID_PET);
+    uint32 guid=objmgr.GenerateLowGuid(HIGHGUID_PET);
 
     sLog.outDebug("SetInstanceID()");
     SetInstanceId(creature->GetInstanceId());

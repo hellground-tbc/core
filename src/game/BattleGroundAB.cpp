@@ -29,7 +29,6 @@
 #include "Language.h"
 #include "World.h"
 #include "Util.h"
-#include "MapManager.h"
 
 // these variables aren't used outside of this file, so declare them only here
 uint32 BG_AB_HonorScoreTicks[BG_HONOR_MODE_NUM] = {
@@ -452,11 +451,11 @@ void BattleGroundAB::EventPlayerClickedOnFlag(Player *source, GameObject* /*targ
         return;
 
     uint8 node = BG_AB_NODE_STABLES;
-    GameObject* obj = GetBgMap()->GetGameObject(m_BgObjects[node*8+7]);
+    GameObject* obj=HashMapHolder<GameObject>::Find(m_BgObjects[node*8+7]);
     while ( (node < BG_AB_DYNAMIC_NODES_COUNT) && ((!obj) || (!source->IsWithinDistInMap(obj,10))))
     {
         ++node;
-        obj = GetBgMap()->GetGameObject(m_BgObjects[node*8+BG_AB_OBJECT_AURA_CONTESTED]);
+        obj=HashMapHolder<GameObject>::Find(m_BgObjects[node*8+BG_AB_OBJECT_AURA_CONTESTED]);
     }
 
     if( node == BG_AB_DYNAMIC_NODES_COUNT)

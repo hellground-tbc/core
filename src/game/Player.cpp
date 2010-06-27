@@ -7679,7 +7679,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
     }
     else if (IS_CORPSE_GUID(guid))                          // remove insignia
     {
-        Corpse *bones = GetMap()->GetCorpse(guid);
+        Corpse *bones = ObjectAccessor::GetCorpse(*this, guid);
 
         if (!bones || !((loot_type == LOOT_CORPSE) || (loot_type == LOOT_INSIGNIA)) || (bones->GetType() != CORPSE_BONES) )
         {
@@ -16768,8 +16768,7 @@ Pet* Player::GetMiniPet()
 {
     if(!m_miniPet)
         return NULL;
-
-    return GetMap()->GetPet(m_miniPet);
+    return ObjectAccessor::GetPet(m_miniPet);
 }
 
 void Player::RemoveGuardians()
@@ -16777,7 +16776,7 @@ void Player::RemoveGuardians()
     while(!m_guardianPets.empty())
     {
         uint64 guid = *m_guardianPets.begin();
-        if(Pet* pet = GetMap()->GetPet(guid))
+        if(Pet* pet = ObjectAccessor::GetPet(guid))
             pet->Remove(PET_SAVE_AS_DELETED);
 
         m_guardianPets.erase(guid);
@@ -18987,7 +18986,7 @@ void Player::UpdateForQuestsGO()
     {
         if(IS_GAMEOBJECT_GUID(*itr))
         {
-            GameObject *obj = GetMap()->GetGameObject(*itr);
+            GameObject *obj = HashMapHolder<GameObject>::Find(*itr);
             if(obj)
                 obj->BuildValuesUpdateBlockForPlayer(&udata,this);
         }

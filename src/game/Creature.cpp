@@ -179,7 +179,7 @@ void Creature::AddToWorld()
     ///- Register the creature for guid lookup
     if(!IsInWorld())
     {
-        GetMap()->GetObjectsStore().insert<Creature>(GetGUID(), (Creature*)this);
+        ObjectAccessor::Instance().AddObject(this);
         Unit::AddToWorld();
         SearchFormation();
     }
@@ -193,11 +193,9 @@ void Creature::RemoveFromWorld()
         if(Map *map = FindMap())
             if(map->IsDungeon() && ((InstanceMap*)map)->GetInstanceData())
                 ((InstanceMap*)map)->GetInstanceData()->OnCreatureRemove(this);
-
         if(m_formation)
             formation_mgr.RemoveCreatureFromGroup(m_formation, this);
-
-        GetMap()->GetObjectsStore().erase<Creature>(GetGUID(), (Creature*)NULL);
+        ObjectAccessor::Instance().RemoveObject(this);
         Unit::RemoveFromWorld();
     }
 }

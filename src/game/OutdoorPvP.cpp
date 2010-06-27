@@ -55,7 +55,7 @@ void OutdoorPvPObjective::HandlePlayerLeave(Player * plr)
 void OutdoorPvPObjective::HandlePlayerActivityChanged(Player * plr)
 {
     if(m_CapturePointCreature)
-        if(Creature * c = plr->GetMap()->GetCreature(m_CapturePointCreature))
+        if(Creature * c = HashMapHolder<Creature>::Find(m_CapturePointCreature))
             if(c->IsAIEnabled)
                 c->AI()->MoveInLineOfSight(plr);
 }
@@ -302,7 +302,7 @@ bool OutdoorPvPObjective::DelCreature(uint32 type)
         return false;
     }
 
-    Creature *cr = ObjectAccessor::GetCreatureInWorld(m_Creatures[type]);
+    Creature *cr = HashMapHolder<Creature>::Find(m_Creatures[type]);
     if(!cr)
     {
         // can happen when closing the core
@@ -334,7 +334,7 @@ bool OutdoorPvPObjective::DelObject(uint32 type)
     if(!m_Objects[type])
         return false;
 
-    GameObject *obj = ObjectAccessor::GetGameObjectInWorld(m_Objects[type]);
+    GameObject *obj = HashMapHolder<GameObject>::Find(m_Objects[type]);
     if(!obj)
     {
         m_Objects[type] = 0;
@@ -353,7 +353,7 @@ bool OutdoorPvPObjective::DelCapturePoint()
 {
     if(m_CapturePoint)
     {
-        GameObject *obj = ObjectAccessor::GetGameObjectInWorld(m_CapturePoint);
+        GameObject *obj = HashMapHolder<GameObject>::Find(m_CapturePoint);
         if(obj)
         {
             uint32 guid = obj->GetDBTableGUIDLow();
@@ -365,7 +365,7 @@ bool OutdoorPvPObjective::DelCapturePoint()
     }
     if(m_CapturePointCreature)
     {
-        Creature *cr = ObjectAccessor::GetCreatureInWorld(m_CapturePointCreature);
+        Creature *cr = HashMapHolder<Creature>::Find(m_CapturePointCreature);
         if(cr)
         {
             uint32 guid = cr->GetDBTableGUIDLow();
@@ -445,7 +445,7 @@ bool OutdoorPvP::Update(uint32 diff)
 
 void OutdoorPvPObjective::UpdateActivePlayerProximityCheck()
 {
-    if(GameObject *cp = ObjectAccessor::GetGameObjectInWorld(m_CapturePoint))
+    if(GameObject *cp = HashMapHolder<GameObject>::Find(m_CapturePoint))
     {
         for(int team = 0; team < 2; ++team)
         {
@@ -550,7 +550,7 @@ bool OutdoorPvPObjective::HandleCaptureCreaturePlayerMoveInLos(Player * p, Creat
         return false;
 
     // check if capture point go is spawned
-    GameObject * cp = p->GetMap()->GetGameObject(m_CapturePoint);
+    GameObject * cp = HashMapHolder<GameObject>::Find(m_CapturePoint);
     if(!cp)
         return false;
 

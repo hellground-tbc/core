@@ -447,7 +447,6 @@ class BattleGround
 
         void HandleTriggerBuff(uint64 const& go_guid);
         void SetHoliday(bool is_holiday);
-        Map* GetBgMap();
 
         // TODO: make this protected:
         typedef std::vector<uint64> BGObjects;

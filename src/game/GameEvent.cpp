@@ -1060,7 +1060,7 @@ void GameEvent::UpdateEventNPCFlags(uint16 event_id)
         // get the creature data from the low guid to get the entry, to be able to find out the whole guid
         if( CreatureData const* data = objmgr.GetCreatureData(itr->first) )
         {
-            Creature * cr = ObjectAccessor::GetCreatureInWorld(MAKE_NEW_GUID(itr->first,data->id,HIGHGUID_UNIT));
+            Creature * cr = HashMapHolder<Creature>::Find(MAKE_NEW_GUID(itr->first,data->id,HIGHGUID_UNIT));
             // if we found the creature, modify its npcflag
             if(cr)
             {
@@ -1189,7 +1189,7 @@ void GameEvent::GameEventUnspawn(int16 event_id)
         {
             objmgr.RemoveCreatureFromGrid(*itr, data);
 
-            if( Creature* pCreature = ObjectAccessor::Instance().GetCreatureInWorld(MAKE_NEW_GUID(*itr, data->id, HIGHGUID_UNIT)))
+            if( Creature* pCreature = ObjectAccessor::Instance().GetObjectInWorld(MAKE_NEW_GUID(*itr, data->id, HIGHGUID_UNIT), (Creature*)NULL) )
             {
                 pCreature->CleanupsBeforeDelete();
                 pCreature->AddObjectToRemoveList();
@@ -1213,7 +1213,7 @@ void GameEvent::GameEventUnspawn(int16 event_id)
         {
             objmgr.RemoveGameobjectFromGrid(*itr, data);
 
-            if( GameObject* pGameobject = ObjectAccessor::Instance().GetGameObjectInWorld(MAKE_NEW_GUID(*itr, data->id, HIGHGUID_GAMEOBJECT)))
+            if( GameObject* pGameobject = ObjectAccessor::Instance().GetObjectInWorld(MAKE_NEW_GUID(*itr, data->id, HIGHGUID_GAMEOBJECT), (GameObject*)NULL) )
                 pGameobject->AddObjectToRemoveList();
         }
     }
@@ -1229,7 +1229,7 @@ void GameEvent::ChangeEquipOrModel(int16 event_id, bool activate)
             continue;
 
         // Update if spawned
-        Creature* pCreature = ObjectAccessor::Instance().GetCreatureInWorld(MAKE_NEW_GUID(itr->first, data->id,HIGHGUID_UNIT));
+        Creature* pCreature = ObjectAccessor::Instance().GetObjectInWorld(MAKE_NEW_GUID(itr->first, data->id,HIGHGUID_UNIT), (Creature*)NULL);
         if (pCreature)
         {
             if (activate)

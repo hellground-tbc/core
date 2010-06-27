@@ -6998,7 +6998,7 @@ Player* Unit::GetCharmerOrOwnerPlayerOrPlayerItself() const
 {
     uint64 guid = GetCharmerOrOwnerGUID();
     if(IS_PLAYER_GUID(guid))
-        return ObjectAccessor::FindPlayer(guid);
+        return ObjectAccessor::GetPlayer(*this, guid);
 
     return GetTypeId()==TYPEID_PLAYER ? (Player*)this : NULL;
 }
@@ -7007,7 +7007,7 @@ Pet* Unit::GetPet() const
 {
     if(uint64 pet_guid = GetPetGUID())
     {
-        if(Pet* pet = GetMap()->GetPet(pet_guid))
+        if(Pet* pet = ObjectAccessor::GetPet(pet_guid))
             return pet;
 
         sLog.outError("Unit::GetPet: Pet %u not exist.",GUID_LOPART(pet_guid));

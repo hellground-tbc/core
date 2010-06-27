@@ -340,7 +340,7 @@ bool OutdoorPvPObjectiveTF::Update(uint32 diff)
                 break;
             }
 
-            GameObject* flag = ObjectAccessor::GetGameObjectInWorld(m_CapturePoint);
+            GameObject* flag = HashMapHolder<GameObject>::Find(m_CapturePoint);
             if(flag)
             {
                 flag->SetGoArtKit(artkit);

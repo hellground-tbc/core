@@ -64,7 +64,6 @@ class Player;
 // Creature used instead pet to simplify *::Visit templates (not required duplicate code for Creature->Pet case)
 typedef TYPELIST_4(Player, Creature/*pets*/, Corpse/*resurrectable*/, DynamicObject/*farsight target*/) AllWorldObjectTypes;
 typedef TYPELIST_4(GameObject, Creature/*except pets*/, DynamicObject, Corpse/*Bones*/) AllGridObjectTypes;
-typedef TYPELIST_5(Creature, Pet, Corpse, GameObject, DynamicObject)                   AllMapStoredObjectTypes;
 
 typedef GridRefManager<Corpse>          CorpseMapType;
 typedef GridRefManager<Creature>        CreatureMapType;

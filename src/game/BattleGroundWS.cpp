@@ -28,7 +28,6 @@
 #include "MapManager.h"
 #include "Language.h"
 #include "World.h"
-#include "MapManager.h"
 
 // these variables aren't used outside of this file, so declare them only here
 enum BG_WSG_Rewards
@@ -263,7 +262,7 @@ void BattleGroundWS::RespawnFlagAfterDrop(uint32 team)
 
     PlaySoundToAll(BG_WS_SOUND_FLAGS_RESPAWNED);
 
-    GameObject *obj = GetBgMap()->GetGameObject(GetDroppedFlagGUID(team));
+    GameObject *obj = HashMapHolder<GameObject>::Find(GetDroppedFlagGUID(team));
     if(obj)
         obj->Delete();
     else

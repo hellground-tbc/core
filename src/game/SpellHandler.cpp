@@ -391,7 +391,8 @@ void WorldSession::HandlePetCancelAuraOpcode( WorldPacket& recvPacket)
         return;
     }
 
-    Creature* pet = _player->GetMap()->GetCreatureOrPet(guid);
+    Creature* pet=ObjectAccessor::GetCreatureOrPet(*_player,guid);
+
     if(!pet)
     {
         sLog.outError( "Pet %u not exist.", uint32(GUID_LOPART(guid)) );

@@ -118,7 +118,7 @@ void Corpse::SaveToDB()
 void Corpse::DeleteBonesFromWorld()
 {
     assert(GetType()==CORPSE_BONES);
-    Corpse* corpse = GetMap()->GetCorpse(GetGUID());
+    Corpse* corpse = ObjectAccessor::GetCorpse(*this, GetGUID());
 
     if (!corpse)
     {
