@@ -1,5 +1,5 @@
 UPDATE world.creature_template set ScriptName='npc_prospector_remtravel' where entry=2917;
-insert into world.script_texts VALUES (-1581001, "Ok, $n, let's go find where I left that mysterious fossil. Follow me!", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0,0,0,0, "Prospector Remtravel on q begin");  )
+insert into world.script_texts VALUES (-1581001, "Ok, $n, let's go find where I left that mysterious fossil. Follow me!", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0,0,0,0, "Prospector Remtravel on q begin");
 insert into world.script_texts VALUES (-1581002, "Now where did I put that mysterious fossil? Ah, maybe up there...", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0,0,0,0, "Prospector Remtravel");
 insert into world.script_texts VALUES (-1581003, "Hmm, nothing up here..", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0,0,0,0, "Prospector Remtravel");
 insert into world.script_texts VALUES (-1581004, "No mysterious fossil here...Ah, but my copy of Green Hills of Stranglethorn. What a good book!", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0,0,0,0, "Prospector Remtravel");
