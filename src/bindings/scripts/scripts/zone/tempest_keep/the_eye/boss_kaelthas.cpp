@@ -105,6 +105,7 @@ EndScriptData */
 #define SPELL_EXPLODE_SHAKE2              36375
 #define SPELL_EXPLODE_SHAKE3              36354
 #define SPELL_EXPLODE_SHAKE4              36376
+#define SPELL_NETHER_VAPOR_LIGHTNING      45960
 
 //Thaladred the Darkener spells
 #define SPELL_PSYCHIC_BLOW                36966     //10689  change for proper spell
@@ -1990,6 +1991,7 @@ struct TRINITY_DLL_DECL mob_nether_vaporAI : public ScriptedAI
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->CastSpell(m_creature, SPELL_NETHER_VAPOR, false);
+        m_creature->CastSpell(m_creature, SPELL_NETHER_VAPOR_LIGHTNING, false);
         m_creature->StopMoving();
     }
 
