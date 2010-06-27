@@ -21,6 +21,7 @@
 // #define CREATURE_FROSTWIND_HEROIC   26341
 //#define CREATURE_
 
+#define GO_ICE_SPEAR                188077
 // #define GO_ICE_CHEST                    187892
 
 struct TRINITY_DLL_DECL boss_lord_ahune_coreAI : public Scripted_NoMovementAI
@@ -279,10 +280,18 @@ struct TRINITY_DLL_DECL npc_ice_spear_bunnyAI : public Scripted_NoMovementAI
     npc_ice_spear_bunnyAI(Creature *c) : Scripted_NoMovementAI(c)  {}
 
     uint32 Timer;
+    uint64 IceSpear;
+    bool Init;
+    bool Knockback;
+    bool Despawn;
 
     void Reset()
     {
         Timer = 0;
+        IceSpear = 0;
+        Init = false;
+        Knockback = false;
+        Despawn = false;
     }
 
     void Aggro(Unit *) {}
@@ -304,14 +313,34 @@ struct TRINITY_DLL_DECL npc_ice_spear_bunnyAI : public Scripted_NoMovementAI
 
     void UpdateAI(const uint32 diff)
     {
-
-        if(Timer > 2500)
+        if(!Init)
         {
+            Init = true;
+            float x, y, z;
+            me->GetPosition(x,y,z);
+            GameObject* iceSpear = me->SummonGameObject(GO_ICE_SPEAR, x, y, z, 0, 0, 0, 0, 0, 0);
+            if(iceSpear)
+                IceSpear = iceSpear->GetGUID();
+
+        }
+        if(Timer > 2500 && !Knockback)
+        {
+            if(IceSpear)
+                if(GameObject *iceSpear = me->GetMap()->GetGameObject(IceSpear))
+                    iceSpear->Use(me);
+            Knockback = true;
             KnockbackPlayers();
+            
+        }
+
+        if(Timer > 6000)
+        {
+            if(IceSpear)
+                if(GameObject *iceSpear = me->GetMap()->GetGameObject(IceSpear))
+                    iceSpear->Delete();
             me->setDeathState(JUST_DIED);
             me->RemoveCorpse();
         }
-         
         Timer += diff;
     }
 

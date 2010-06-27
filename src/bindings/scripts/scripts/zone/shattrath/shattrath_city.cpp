@@ -709,7 +709,7 @@ struct TRINITY_DLL_DECL npc_kaelthas_imageAI : public ScriptedAI
     bool Init;
     std::string Defeater_Name;
     std::string Defeater_Gender;
-    GameObject *FireGO;
+    uint64 FireGO;
 
     void Reset()
     {
@@ -722,6 +722,13 @@ struct TRINITY_DLL_DECL npc_kaelthas_imageAI : public ScriptedAI
 
     void Aggro(Unit* who){}
 
+
+    void YellTo(Creature* sender, const char* text, Player *target)
+    {
+        WorldPacket data(SMSG_MESSAGECHAT, 200);
+        sender->BuildMonsterChat(&data,CHAT_MSG_MONSTER_YELL,text,0,me->GetName(), target->GetGUID());
+        target->GetSession()->SendPacket(&data);
+    }
 
     void UpdateAI(const uint32 diff)
     {
@@ -783,7 +790,8 @@ struct TRINITY_DLL_DECL npc_kaelthas_imageAI : public ScriptedAI
                 case 2:
                     s = std::string() + ADAL_WHISPER3_1 + Defeater_Name + ADAL_WHISPER3_2 + Defeater_Gender + ADAL_WHISPER3_3;
                     for(std::list<uint64>::iterator i = PlayersInCity.begin(); i != PlayersInCity.end(); i++)
-                        adal->Yell(s.c_str(), 0, (*i));
+                        if(Unit *u = me->GetUnit(*me, (*i)))
+                            YellTo(adal, s.c_str(), (Player*)u);
                     break;
                 case 3:
                     for(std::list<uint64>::iterator i = PlayersInCity.begin(); i != PlayersInCity.end(); i++)
@@ -791,7 +799,7 @@ struct TRINITY_DLL_DECL npc_kaelthas_imageAI : public ScriptedAI
                         if(Unit *u = me->GetUnit(*me, (*i)))
                         {
                             u->CastSpell(u, 39953, true);
-                            adal->Yell(ADAL_WHISPER4, 0, (*i));
+                            YellTo(adal, ADAL_WHISPER4, (Player*)u);
                         }
                     }
                     me->SetVisibility(VISIBILITY_ON);
@@ -811,7 +819,8 @@ struct TRINITY_DLL_DECL npc_kaelthas_imageAI : public ScriptedAI
                     break;
                 case 8:
                     if(FireGO)
-                        FireGO->Delete();
+                        if(GameObject* fire = me->GetMap()->GetGameObject(FireGO))
+                            fire->Delete();
                     break;
 
             }
@@ -833,14 +842,12 @@ bool ChooseReward_npc_Adal(Player *player, Creature *_Creature, const Quest *_Qu
     if(_Quest->GetQuestId() == QUEST_VERDANT_SPHERE)
     {
         GameObject *fire = _Creature->SummonGameObject(185170, -1831.9, 5429.7, -1.5, 0, 0, 0, 0, 0, 0);
-       // if(fire)
-       //     _Creature->CastSpell(fire, SPELL_MARK_OF_KAELTHAS, true);
-
         Creature* kael = _Creature->SummonCreature( CREATURE_KAEL, -1839.6, 5429.8, -1.5, 3.1214, TEMPSUMMON_TIMED_DESPAWN, 100000);
         
         ((npc_kaelthas_imageAI*)kael->AI())->Defeater_Name = player->GetName();
         ((npc_kaelthas_imageAI*)kael->AI())->Defeater_Gender = player->getGender() == GENDER_MALE ? "his" : "her";
-        ((npc_kaelthas_imageAI*)kael->AI())->FireGO = fire;
+        if(fire)
+            ((npc_kaelthas_imageAI*)kael->AI())->FireGO = fire->GetGUID();
     }
     return false;
 }
