@@ -273,6 +273,7 @@ extern void AddSC_boss_hungarfen();
 extern void AddSC_boss_the_black_stalker();
 
 //Darkshore
+extern void AddSC_darkshore();
 //Darnassus
 //Deadmines
 extern void AddSC_instance_deadmines();
@@ -1660,6 +1661,7 @@ void ScriptsInit(char const* cfg_file = "trinitycore.conf")
     AddSC_boss_the_black_stalker();
 
     //Darkshore
+	AddSC_darkshore();
     //Darnassus
     //Deadmines
     AddSC_instance_deadmines();
