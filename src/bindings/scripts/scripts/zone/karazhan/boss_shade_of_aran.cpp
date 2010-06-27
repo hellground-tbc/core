@@ -72,7 +72,6 @@ EndScriptData */
 //Creatures
 #define CREATURE_WATER_ELEMENTAL         17167
 #define CREATURE_SHADOW_OF_ARAN          18254
-#define CREATURE_ARAN_BLIZZARD           17161
 
 enum SuperSpell
 {
@@ -467,7 +466,6 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                 if (AvailableSpells)
                 {
                     CurrentNormalSpell = Spells[rand() % AvailableSpells];
-                    //DoCast(target, CurrentNormalSpell,false);
                     AddSpellToCast(target, CurrentNormalSpell);
                 }
             }
@@ -483,12 +481,10 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
 
                 case 0:
                     AddSpellToCast(m_creature, SPELL_AOE_CS);
-                    //DoCast(m_creature, SPELL_AOE_CS);
                     break;
                 case 1:
                     if(Unit* pUnit = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_CHAINSOFICE), true))
                         AddSpellToCast(pUnit, SPELL_CHAINSOFICE);
-                        //DoCast(pUnit, SPELL_CHAINSOFICE);
                     break;
             }
             SecondarySpellTimer = 5000 + (rand()%15000);
@@ -563,15 +559,14 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                     else
                         DoScriptText(SAY_BLIZZARD2, m_creature);
 
-                    Creature* Spawn = NULL;
-                    ChangeBlizzardWaypointsOrder(rand()%8);
-                    Spawn = DoSpawnCreature(CREATURE_ARAN_BLIZZARD, 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN, 25000);
-                    if (Spawn)
+                    Creature * blizzard = Unit::GetCreature(*m_creature, pInstance->GetData64(DATA_BLIZZARD));
+
+                    if(blizzard)
                     {
-                        Spawn->setFaction(m_creature->getFaction());
-                        Spawn->SetLevel(73);
-                        Spawn->CastSpell(Spawn, SPELL_CIRCULAR_BLIZZARD, false);
+                        ChangeBlizzardWaypointsOrder(urand(0, 7));
+                        blizzard->CastSpell(blizzard, SPELL_CIRCULAR_BLIZZARD, true);
                     }
+
                     break;
             }
 
@@ -767,31 +762,17 @@ struct TRINITY_DLL_DECL circular_blizzardAI : public ScriptedAI
     circular_blizzardAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
-        if(pInstance)
-            AranGUID = pInstance->GetData64(DATA_ARAN);
     }
 
     uint16 currentWaypoint;
     uint16 waypointTimer;
-    uint64 AranGUID;
     WorldLocation wLoc;
     ScriptedInstance *pInstance;
+    bool move;
 
     void Reset()
     {
-        if(AranGUID)
-        {
-            Creature *pAran = Unit::GetCreature(*m_creature, AranGUID);
-            if(pAran)
-            {
-                wLoc.x = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[0][0];
-                wLoc.y = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[1][0];
-                wLoc.z = pAran->GetPositionZ();
-            }
-        }
-        if(wLoc.x || wLoc.y || wLoc.z)
-            DoTeleportTo(wLoc.x, wLoc.y, wLoc.z);
-
+        move = false;
         currentWaypoint = 0;
         waypointTimer = 0;
     }
@@ -800,24 +781,49 @@ struct TRINITY_DLL_DECL circular_blizzardAI : public ScriptedAI
 
     void JustDied(Unit* killer){}
 
+    void SpellHit(Unit * caster, const SpellEntry * spell)
+    {
+        if (pInstance && spell->Id == SPELL_CIRCULAR_BLIZZARD)
+        {
+            Creature *pAran = Unit::GetCreature(*m_creature, pInstance->GetData64(DATA_ARAN));
+            if(pAran)
+            {
+                wLoc.x = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[0][0];
+                wLoc.y = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[1][0];
+                wLoc.z = pAran->GetPositionZ();
+            }
+
+            if(wLoc.x || wLoc.y || wLoc.z)
+                DoTeleportTo(wLoc.x, wLoc.y, wLoc.z);
+
+            currentWaypoint = 0;
+            waypointTimer = 0;
+            move = true;
+        }
+    }
+
     void UpdateAI(const uint32 diff)
     {
+        if (!move)
+            return;
+
         if (waypointTimer < diff)
         {
             if (currentWaypoint < 7)
                 ++currentWaypoint;
             else
-                currentWaypoint = 0;
-
-            if(AranGUID)
             {
-                Creature *pAran = Unit::GetCreature(*m_creature, AranGUID);
-                if(pAran)
-                {
-                    wLoc.x = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[0][currentWaypoint];
-                    wLoc.y = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[1][currentWaypoint];
-                }
+                currentWaypoint = 0;
+                move = false;
             }
+
+            Creature *pAran = Unit::GetCreature(*m_creature, pInstance->GetData64(DATA_ARAN));
+            if(pAran)
+            {
+                wLoc.x = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[0][currentWaypoint];
+                wLoc.y = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[1][currentWaypoint];
+            }
+
             m_creature->GetMotionMaster()->MovePoint(currentWaypoint, wLoc.x, wLoc.y, wLoc.z);
             waypointTimer = 3000;
         }

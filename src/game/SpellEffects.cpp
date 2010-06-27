@@ -915,10 +915,10 @@ void Spell::EffectDummy(uint32 i)
                 /*
                 Placeholder for Gnomish Death Ray support.
                 Maybe spells ids after case should be swaped.
-                case 13280:                                 
+                case 13280:
                     m_caster->CastSpell(m_caster, 13493, true);     // Gnomish Death Ray periodic damage
                     return;
-                case 13278:                                 
+                case 13278:
                     m_caster->CastSpell(unitTarget, 13279, true);  // Gnomish Death Ray effect
                     return;
                 */
@@ -926,7 +926,7 @@ void Spell::EffectDummy(uint32 i)
                 {
                     if(!unitTarget)
                         return;
-                    
+
                     int32 failureChance = unitTarget->getLevel() > 60 ? 20 : 5;            // guessed chance of failure
                     if(urand(0, 99) > failureChance)
                         m_caster->CastSpell(unitTarget, 13181, true);
@@ -3575,7 +3575,7 @@ void Spell::EffectDispel(uint32 i)
         m_caster->SetInCombatWith(unitTarget);
         unitTarget->SetInCombatWith(m_caster);
     }
- 
+
     // Fill possible dispel list
     std::vector <Aura *> dispel_list;
 
@@ -5225,6 +5225,18 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             unitTarget->CastSpell(unitTarget, spellId, true);
             break;
         }
+        // Chilling Burst
+        case 46541:
+        {
+            if(!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+            int32 ChillDamage = urand(490, 670);
+            Aura* ChillingAura = m_caster->GetAuraByCasterSpell(46542, m_caster->GetGUID());
+
+            unitTarget->CastCustomSpell(unitTarget, 46576, &ChillDamage, NULL, NULL, true, 0, ChillingAura, m_caster->GetGUID());
+            break;
+        }
         case 48025:                                     // Headless Horseman's Mount
         {
                 if(!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
@@ -6365,13 +6377,13 @@ void Spell::EffectSummonDeadPet(uint32 /*i*/)
 {
     if(m_caster->GetTypeId() != TYPEID_PLAYER)
         return;
-    
+
     Player *_player = (Player*)m_caster;
-    
+
     Pet *pet = _player->GetPet();
     if(!pet)
         return;
-    
+
     if(pet->isAlive())
         return;
 
@@ -6783,7 +6795,7 @@ void Spell::EffectStealBeneficialBuff(uint32 i)
             if (roll_chance_i(miss_chance))
                 fail_list.push_back(aur->GetId());
             else
-                success_list.push_back( std::pair<uint32,uint64>(aur->GetId(),aur->GetCasterGUID())); 
+                success_list.push_back( std::pair<uint32,uint64>(aur->GetId(),aur->GetCasterGUID()));
 
             // Remove buff from list for prevent doubles
             for (std::vector<Aura *>::iterator j = steal_list.begin(); j != steal_list.end(); )

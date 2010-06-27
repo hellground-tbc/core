@@ -2194,7 +2194,7 @@ void Spell::cast(bool skipCheck)
             return;
         }
 
-    if (m_caster->GetTypeId() == TYPEID_UNIT && ((Creature *)m_caster)->isPet())
+    if (m_casttime && m_caster->GetTypeId() == TYPEID_UNIT && ((Creature *)m_caster)->isPet())
     {
         if (((Creature *)m_caster)->IsAIEnabled && ((PetAI *)((Creature *)m_caster)->AI())->targetHasInterruptableAura(m_targets.getUnitTarget()))
         {

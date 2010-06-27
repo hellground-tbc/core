@@ -46,6 +46,8 @@
 INSTANTIATE_SINGLETON_2(ObjectAccessor, CLASS_LOCK);
 INSTANTIATE_CLASS_MUTEX(ObjectAccessor, ACE_Thread_Mutex);
 
+ACE_Thread_Mutex ObjectAccessor::m_Lock;
+
 /*namespace Trinity
 {
     struct TRINITY_DLL_DECL BuildUpdateForPlayer

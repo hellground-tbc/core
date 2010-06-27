@@ -4140,11 +4140,14 @@ void Unit::RemoveDynObject(uint32 spellid)
 
 void Unit::RemoveAllDynObjects()
 {
+    if(Map *map = GetMap())
     while(!m_dynObjGUIDs.empty())
     {
-        DynamicObject* dynObj = GetMap()->GetDynamicObject(*m_dynObjGUIDs.begin());
+        DynamicObject* dynObj = map->GetDynamicObject(*m_dynObjGUIDs.begin());
+        
         if(dynObj)
             dynObj->Delete();
+
         m_dynObjGUIDs.erase(m_dynObjGUIDs.begin());
     }
 }
@@ -8857,6 +8860,8 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
 
     // Apply strongest slow aura mod to speed
     int32 slow = GetMaxNegativeAuraModifier(SPELL_AURA_MOD_DECREASE_SPEED);
+    int32 slow_non_stack = GetMaxNegativeAuraModifier(SPELL_AURA_MOD_SPEED_NOT_STACK);
+    slow = slow < slow_non_stack ? slow : slow_non_stack;
     if (slow)
         speed *=(100.0f + slow)/100.0f;
 

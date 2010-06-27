@@ -24,6 +24,7 @@ EndScriptData */
 /* ContentData
 at_legion_teleporter    4560 Teleporter TO Invasion Point: Cataclysm
 at_scent_larkorwi       quest 4291
+at_nats_landing         quest 11209
 
 at_test                 script test only
 EndContentData */
@@ -80,11 +81,41 @@ bool AreaTrigger_at_scent_larkorwi(Player* player, AreaTriggerEntry* trigger)
     return false;
 }
 
+/*######
+## at_nats_landing
+######*/
 
-bool ATtest(Player *player, AreaTriggerEntry *at)
+enum eNatBargain
 {
-    player->Say("Hi!",LANG_UNIVERSAL);
-    return true;
+    QUEST_NATS_BARGAIN          = 11209,
+    AURA_PAGLE_FISH_PASTE       = 42644,
+    NPC_LURKING_SHARK           = 23928
+};
+float SharkPos[3] =
+{
+    -4246.243,
+    -3922.356,
+    -7.488
+};
+
+bool AreaTrigger_at_nats_landing(Player* player, AreaTriggerEntry* trigger)
+{
+    if (player->GetQuestStatus(QUEST_NATS_BARGAIN) == QUEST_STATUS_INCOMPLETE && player->HasAura(AURA_PAGLE_FISH_PASTE, 0))
+    {
+        Unit* shark = FindCreature(NPC_LURKING_SHARK, 20.0, player);
+        if(shark)
+        {
+            ((Creature*)shark)->AI()->AttackStart(player);
+            return false;
+        }
+        else
+        {
+            Creature* Shark = player->SummonCreature(NPC_LURKING_SHARK, SharkPos[0], SharkPos[1], SharkPos[2], 5.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 100000);
+            Shark->AI()->AttackStart(player);
+            return true;
+        }
+    }
+    return false;
 }
 
 void AddSC_areatrigger_scripts()
@@ -101,11 +132,10 @@ void AddSC_areatrigger_scripts()
     newscript->pAreaTrigger = &AreaTrigger_at_scent_larkorwi;
     newscript->RegisterSelf();
 
-/*
     newscript = new Script;
-    newscript->Name="at_test";
-    newscript->pAreaTrigger = &ATtest;
+    newscript->Name = "at_nats_landing";
+    newscript->pAreaTrigger = &AreaTrigger_at_nats_landing;
     newscript->RegisterSelf();
-*/
+
 }
 
