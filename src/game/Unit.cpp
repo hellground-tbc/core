@@ -7755,7 +7755,15 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
         if(Unit* owner = GetOwner())
             return owner->SpellHealingBonus(spellProto, healamount, damagetype, pVictim);
 
-    // Healing Done
+    float TotalMod = 1.0f;
+    // Healing taken percent
+    float minval = pVictim->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
+    if(minval)
+        TotalMod *= (100.0f + minval) / 100.0f;
+
+    float maxval = pVictim->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
+    if(maxval)
+        TotalMod *= (100.0f + maxval) / 100.0f;
 
     // These Spells are doing fixed amount of healing (TODO found less hack-like check)
     if (spellProto->Id == 15290 || spellProto->Id == 39373 ||
@@ -7765,7 +7773,7 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
         spellProto->Id == 34299 || spellProto->Id == 27813 ||
         spellProto->Id == 27817 || spellProto->Id == 27818 ||
         spellProto->Id == 5707)
-        return healamount;
+        return healamount*TotalMod;
 
     int32 AdvertisedBenefit = SpellBaseHealingBonus(GetSpellSchoolMask(spellProto));
     uint32 CastingTime = !IsChanneledSpell(spellProto) ? GetSpellCastTime(spellProto) : GetSpellDuration(spellProto);
@@ -7958,15 +7966,7 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
             heal = heal * (100 + pctMod) / 100;
     }
 
-    // Healing taken percent
-    float minval = pVictim->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
-    if(minval)
-        heal *= (100.0f + minval) / 100.0f;
-
-    float maxval = pVictim->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
-    if(maxval)
-        heal *= (100.0f + maxval) / 100.0f;
-
+    heal = heal*TotalMod;
     if (heal < 0) heal = 0;
 
     return uint32(heal);
