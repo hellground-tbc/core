@@ -1,0 +1,3 @@
+insert into `gameobject` (`guid`, `id`, `map`, `spawnMask`, `position_x`, `position_y`, `position_z`, `orientation`, `rotation0`, `rotation1`, `rotation2`, `rotation3`, `spawntimesecs`, `animprogress`, `state`) values(@@identity,'184702','556','1','-161.807','157.934','0.0107645','5.38677','0','0','0.43335','-0.901226','25','0','1');
+insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values(@@identity,'18956','556','1','0','0','-161.807','157.934','0.0107645','0.548719','300','0','0','8700','0','0','0');
+update `creature_template` set ScriptName='npc_lakka';
