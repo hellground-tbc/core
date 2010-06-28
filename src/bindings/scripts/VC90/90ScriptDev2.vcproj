@@ -2021,6 +2021,10 @@
 							RelativePath="..\scripts\zone\coilfang_resevoir\slave_pens\boss_lord_ahune.cpp"
 							>
 						</File>
+						<File
+							RelativePath="..\scripts\zone\coilfang_resevoir\slave_pens\instance_slave_pens.cpp"
+							>
+						</File>
 					</Filter>
 					<Filter
 						Name="Steam Vault"

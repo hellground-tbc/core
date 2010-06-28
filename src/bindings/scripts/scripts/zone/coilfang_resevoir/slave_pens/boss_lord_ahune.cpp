@@ -1,4 +1,22 @@
+/* Copyright (C) 2008 - 2010 HellgroundDev <http://gamefreedom.pl/>
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU General Public License for more details.
+*
+*/
+
+/* ScriptData
+SDName: Lord Ahune
+SD%Complete: 80
+SDComment: Lord Ahune in Midsummer Festival
+SDCategory: Slave Pens
+EndScriptData */
+
 #include "precompiled.h"
+
+#define DATA_AHUNEEVENT     1
 
 //#define SPELL_
 
@@ -106,7 +124,7 @@ CreatureAI* GetAI_boss_lord_ahune_core(Creature *_Creature)
 
 struct TRINITY_DLL_DECL boss_lord_ahuneAI : public Scripted_NoMovementAI
 {
-
+    ScriptedInstance* pInstance;
     SummonList Summons;
 
     uint8 Phase;            // 1, 2
@@ -122,11 +140,15 @@ struct TRINITY_DLL_DECL boss_lord_ahuneAI : public Scripted_NoMovementAI
 
     boss_lord_ahuneAI(Creature *c) : Scripted_NoMovementAI(c), Summons(m_creature)
     {
+        pInstance = ((ScriptedInstance*)c->GetInstanceData());
         HeroicMode = m_creature->GetMap()->IsHeroic();
     }
 
     void Reset()
     {
+        if(pInstance)
+            pInstance->SetData(DATA_AHUNEEVENT, NOT_STARTED);
+
         FirstPhase = true;
         Phase = 1;
         Core = 0;
@@ -141,6 +163,9 @@ struct TRINITY_DLL_DECL boss_lord_ahuneAI : public Scripted_NoMovementAI
 
     void Aggro(Unit *who)
     {
+        if(pInstance)
+            pInstance->SetData(DATA_AHUNEEVENT, IN_PROGRESS);
+
         DoCast(me, SPELL_AHUNE_SHIELD, true);
         DoCast(me, SPELL_SLIPPERY_FLOOR, true);
         float x, y, z;
@@ -175,6 +200,8 @@ struct TRINITY_DLL_DECL boss_lord_ahuneAI : public Scripted_NoMovementAI
 
     void JustDied(Unit *victim)
     {
+        if(pInstance)
+            pInstance->SetData(DATA_AHUNEEVENT, DONE);
 //        float x, y, z;
 //        victim->GetPosition(x, y, z);
 //        victim->SummonGameObject(GO_ICE_CHEST, x, y, z, 0, 0, 0, 0, 0, 0);

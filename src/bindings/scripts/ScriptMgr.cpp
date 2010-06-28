@@ -261,6 +261,7 @@ extern void AddSC_boss_the_lurker_below();
 
 //--Slave Pens
 extern void AddSC_boss_lord_ahune();
+extern void AddSC_instance_slave_pens();
 
 //--Steam Vault
 extern void AddSC_boss_hydromancer_thespia();
@@ -1649,6 +1650,7 @@ void ScriptsInit(char const* cfg_file = "trinitycore.conf")
 
     //--Slave Pens
     AddSC_boss_lord_ahune();
+    AddSC_instance_slave_pens();
 
     //--Steam Vault
     AddSC_boss_hydromancer_thespia();

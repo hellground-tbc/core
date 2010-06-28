@@ -70,8 +70,9 @@ InstanceData* GetInstanceData_instance_sethekk_halls(Map* map)
 bool GossipHello_npc_lakka(Player *player, Creature *_Creature)
 {
     if(player->GetQuestStatus(Q_BAB) == QUEST_STATUS_INCOMPLETE)
-        player->ADD_GOSSIP_ITEM(0, GOSSIP_FREE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_FREE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
+    player->SEND_GOSSIP_MENU(68, _Creature->GetGUID());
     return true;
 }
 
@@ -81,7 +82,7 @@ bool GossipSelect_npc_lakka(Player *player, Creature *_Creature, uint32 sender, 
     {
         player->CLOSE_GOSSIP_MENU();
         player->GroupEventHappens(Q_BAB, _Creature);
-        _Creature->Kill(_Creature);
+        player->DealDamage(_Creature, _Creature->GetMaxHealth());
         _Creature->RemoveCorpse();
     }
 
