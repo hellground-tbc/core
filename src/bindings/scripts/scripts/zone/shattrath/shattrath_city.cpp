@@ -686,8 +686,8 @@ bool GossipSelect_npc_khadgar(Player *player, Creature *creature, uint32 sender,
 #define SPELL_OTHERWORLDLY_PORTAL           39952
 #define SPELL_MARK_OF_KAELTHAS              37364
 
-#define ADAL_WHISPER1                       -1645011
-#define ADAL_WHISPER2                       -1645012
+#define ADAL_WHISPER1                       "Silence descends upon Shattrath"
+#define ADAL_WHISPER2                       "A'dal's thoughts invade your mind"
 #define ADAL_WHISPER3_1                     "Kael'thas Sunstrider has been defeated by "
 #define ADAL_WHISPER3_2                     " and "
 #define ADAL_WHISPER3_3                     " allies"
@@ -722,11 +722,17 @@ struct TRINITY_DLL_DECL npc_kaelthas_imageAI : public ScriptedAI
 
     void Aggro(Unit* who){}
 
+    void EmoteTo(Creature* sender, const char *text, Player *target)
+    {
+        WorldPacket data(SMSG_MESSAGECHAT, 200);
+        sender->BuildMonsterChat(&data,CHAT_MSG_MONSTER_EMOTE,text,0,sender->GetName(), target->GetGUID(), true);
+        target->GetSession()->SendPacket(&data);
+    }
 
     void YellTo(Creature* sender, const char* text, Player *target)
     {
         WorldPacket data(SMSG_MESSAGECHAT, 200);
-        sender->BuildMonsterChat(&data,CHAT_MSG_MONSTER_YELL,text,0,me->GetName(), target->GetGUID());
+        sender->BuildMonsterChat(&data,CHAT_MSG_MONSTER_YELL,text,0,sender->GetName(), target->GetGUID());
         target->GetSession()->SendPacket(&data);
     }
 
@@ -778,13 +784,13 @@ struct TRINITY_DLL_DECL npc_kaelthas_imageAI : public ScriptedAI
                 case 0:
                     for(std::list<uint64>::iterator i = PlayersInCity.begin(); i != PlayersInCity.end(); i++)
                         if(Unit *u = me->GetUnit(*me, (*i)))
-                            DoScriptText( ADAL_WHISPER1, adal, u, true);
+                            EmoteTo(adal, ADAL_WHISPER1, (Player*)u);
                     NextStep_Timer = 7000;
                     break;
                 case 1:
                     for(std::list<uint64>::iterator i = PlayersInCity.begin(); i != PlayersInCity.end(); i++)
                         if(Unit *u = me->GetUnit(*me, (*i)))
-                            DoScriptText(ADAL_WHISPER2, adal, u, true);
+                            EmoteTo(adal, ADAL_WHISPER2, (Player*)u);
                     NextStep_Timer = 7000;
                     break;
                 case 2:

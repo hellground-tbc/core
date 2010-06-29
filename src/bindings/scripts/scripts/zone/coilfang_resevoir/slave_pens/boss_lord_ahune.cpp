@@ -34,13 +34,8 @@ EndScriptData */
 #define CREATURE_HAILSTONE          25755
 #define CREATURE_COLDWAVE           25756
 #define CREATURE_FROSTWIND          25757
-// #define CREATURE_HAILSTONE_HEROIC   26342
-// #define CREATURE_COLDWAVE_HEROIC    26340
-// #define CREATURE_FROSTWIND_HEROIC   26341
-//#define CREATURE_
 
 #define GO_ICE_SPEAR                188077
-// #define GO_ICE_CHEST                    187892
 
 struct TRINITY_DLL_DECL boss_lord_ahune_coreAI : public Scripted_NoMovementAI
 {
@@ -75,9 +70,8 @@ struct TRINITY_DLL_DECL boss_lord_ahune_coreAI : public Scripted_NoMovementAI
        if(Ahune)
             if(Unit *ahune = me->GetUnit(*me, Ahune))
             {
-                ahune->SetVisibility(VISIBILITY_ON);
                 ahune->RemoveAurasDueToSpell(SPELL_AHUNE_SELF_STUN);
-                u->DealDamage(ahune, ahune->GetHealth() - 1);
+                ahune->SetHealth(1);
             }
                
     }
@@ -131,12 +125,13 @@ struct TRINITY_DLL_DECL boss_lord_ahuneAI : public Scripted_NoMovementAI
     uint64 Core;            // GUID of core creature
 
     uint32 Phase_Timer;
-    bool FirstPhase;
+    uint8 PhaseCounter;
     bool HeroicMode;
    
     uint32 IceSpear_Timer; 
     uint32 Elementals_Timer;
     uint32 Hailstone_Timer;
+    uint32 Death_Timer;
 
     boss_lord_ahuneAI(Creature *c) : Scripted_NoMovementAI(c), Summons(m_creature)
     {
@@ -149,7 +144,7 @@ struct TRINITY_DLL_DECL boss_lord_ahuneAI : public Scripted_NoMovementAI
         if(pInstance)
             pInstance->SetData(DATA_AHUNEEVENT, NOT_STARTED);
 
-        FirstPhase = true;
+        PhaseCounter = 0;
         Phase = 1;
         Core = 0;
         Phase_Timer = 60000;
@@ -159,6 +154,8 @@ struct TRINITY_DLL_DECL boss_lord_ahuneAI : public Scripted_NoMovementAI
         Elementals_Timer = 5000;
         Hailstone_Timer = 3000;
         IceSpear_Timer = 5000;
+        Death_Timer = 1000;
+        me->LowerPlayerDamageReq(me->GetHealth() / 2 + 1);
     }
 
     void Aggro(Unit *who)
@@ -177,8 +174,7 @@ struct TRINITY_DLL_DECL boss_lord_ahuneAI : public Scripted_NoMovementAI
             core->SetVisibility(VISIBILITY_OFF);
             Core = core->GetGUID();
         }
-//        else
-//            EnterEvadeMode();
+        
     }
 
     void KilledUnit(Unit *victim)
@@ -186,9 +182,20 @@ struct TRINITY_DLL_DECL boss_lord_ahuneAI : public Scripted_NoMovementAI
 
     }
 
+    void UpdateHealth(Unit *core)
+    {
+        if(!me->getVictim())
+            return;
+
+        if(me->GetHealth() > core->GetHealth())
+            me->SetHealth(core->GetHealth());
+        else
+            core->SetHealth(me->GetHealth());
+    }
 
     void JustSummoned(Creature* summoned)
     {
+        DoZoneInCombat(summoned);
         Summons.Summon(summoned);
     }
 
@@ -202,20 +209,6 @@ struct TRINITY_DLL_DECL boss_lord_ahuneAI : public Scripted_NoMovementAI
     {
         if(pInstance)
             pInstance->SetData(DATA_AHUNEEVENT, DONE);
-//        float x, y, z;
-//        victim->GetPosition(x, y, z);
-//        victim->SummonGameObject(GO_ICE_CHEST, x, y, z, 0, 0, 0, 0, 0, 0);
-    }
-
-    void SummonAtRandomPlayer(uint32 entry)
-    {
-        Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-        float x, y, z;
-        if(target)
-            target->GetPosition(x, y, z);
-        else
-            me->GetPosition(x, y, z);
-         me->SummonCreature(entry, x, y, z, 0, TEMPSUMMON_MANUAL_DESPAWN, 0);
     }
 
     void UpdateAI(const uint32 diff)
@@ -223,42 +216,49 @@ struct TRINITY_DLL_DECL boss_lord_ahuneAI : public Scripted_NoMovementAI
         if(!UpdateVictim())
             return;
 
+        if(me->GetHealth() == 1)            // to ensure nice death animation
+        {
+            me->SetVisibility(VISIBILITY_ON);
+            if(Death_Timer < diff)
+            {
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                me->DealDamage(me, 1);
+            } else
+                Death_Timer -= diff;
+            return;
+        }
+
         if(Phase_Timer < diff)
         {
+            
             if(Phase == 1)
             {
                 Phase = 2;
                 if(Unit *core = me->GetUnit(*me, Core))
                 {
+                    UpdateHealth(core);
                     core->SetVisibility(VISIBILITY_ON);
                     me->SetVisibility(VISIBILITY_OFF);
+                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     DoCast(me, SPELL_GHOST_DISGUISE, true);
-                }
-                else
-                {
- //                   EnterEvadeMode();
-                    return;
                 }
                 Phase_Timer = 30000;
             }
             else
             {
-                FirstPhase = false;
+                PhaseCounter++;
                 Phase = 1;
                 if(Unit *core = me->GetUnit(*me, Core))
                 {
+                    UpdateHealth(core);
                     core->SetVisibility(VISIBILITY_OFF);
                     me->RemoveAurasDueToSpell(SPELL_GHOST_DISGUISE);
                     me->RemoveAurasDueToSpell(SPELL_AHUNE_SELF_STUN);
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     me->SetVisibility(VISIBILITY_ON);
                     DoCast(me, SPELL_AHUNE_SHIELD, true);
                     DoCast(me, SPELL_SLIPPERY_FLOOR, true);
                     DoCast(me, SPELL_AHUNE_RESURFACES, true);
-                }
-                else
-                {
-  //                  EnterEvadeMode();
-                    return;
                 }
                 Phase_Timer = 60000;
             }
@@ -267,19 +267,25 @@ struct TRINITY_DLL_DECL boss_lord_ahuneAI : public Scripted_NoMovementAI
 
         if(Phase == 1)
         {
+            float x, y, z;
+            me->GetPosition(x, y, z);
+
+            if(me->GetVisibility() != VISIBILITY_ON)
+                me->SetVisibility(VISIBILITY_ON);
+
             if(Hailstone_Timer < diff)
             {
-                SummonAtRandomPlayer(CREATURE_HAILSTONE);
+                me->SummonCreature(CREATURE_HAILSTONE, x, y, z, 0, TEMPSUMMON_DEAD_DESPAWN, 0);
                 Hailstone_Timer = 60000;
             } else
                 Hailstone_Timer -= diff;
 
             if(Elementals_Timer < diff)
             {
-                SummonAtRandomPlayer(CREATURE_COLDWAVE);
-                SummonAtRandomPlayer(CREATURE_COLDWAVE);
-                if(!FirstPhase)
-                    SummonAtRandomPlayer(CREATURE_FROSTWIND);
+                me->SummonCreature(CREATURE_COLDWAVE, x, y, z, 0, TEMPSUMMON_DEAD_DESPAWN, 0);
+                me->SummonCreature(CREATURE_COLDWAVE, x, y, z, 0, TEMPSUMMON_DEAD_DESPAWN, 0);
+                for(int i = 0; i < PhaseCounter; i++)
+                    me->SummonCreature(CREATURE_FROSTWIND, x, y, z, 0, TEMPSUMMON_DEAD_DESPAWN, 0);
                 Elementals_Timer = 8000;
             } else
                 Elementals_Timer -= diff;
@@ -292,7 +298,7 @@ struct TRINITY_DLL_DECL boss_lord_ahuneAI : public Scripted_NoMovementAI
             }else
                 IceSpear_Timer -= diff;
         }
-        
+        DoMeleeAttackIfReady();
     }
 };
 
@@ -326,7 +332,7 @@ struct TRINITY_DLL_DECL npc_ice_spear_bunnyAI : public Scripted_NoMovementAI
     void KnockbackPlayers()
     {
         std::list<Unit*> PlayerList;
-        uint32 knockbackRadius = 5;
+        uint32 knockbackRadius = 3;
         Trinity::AnyUnitInObjectRangeCheck  check(me, knockbackRadius);
         Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck > searcher(PlayerList, check);
         me->VisitNearbyWorldObject(knockbackRadius, searcher);
@@ -350,7 +356,7 @@ struct TRINITY_DLL_DECL npc_ice_spear_bunnyAI : public Scripted_NoMovementAI
                 IceSpear = iceSpear->GetGUID();
 
         }
-        if(Timer > 2500 && !Knockback)
+        if(Timer > 3000 && !Knockback)
         {
             if(IceSpear)
                 if(GameObject *iceSpear = me->GetMap()->GetGameObject(IceSpear))
@@ -364,7 +370,10 @@ struct TRINITY_DLL_DECL npc_ice_spear_bunnyAI : public Scripted_NoMovementAI
         {
             if(IceSpear)
                 if(GameObject *iceSpear = me->GetMap()->GetGameObject(IceSpear))
-                    iceSpear->Delete();
+                {
+                    iceSpear->SendObjectDeSpawnAnim(iceSpear->GetGUID());
+                    iceSpear->AddObjectToRemoveList();
+                }
             me->setDeathState(JUST_DIED);
             me->RemoveCorpse();
         }
