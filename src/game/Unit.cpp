@@ -11246,13 +11246,25 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
     {
         if(GetTypeId() == TYPEID_PLAYER && (IsInPartyWith(player) || IsInRaidWith(player)))
         {
+            uint32 procFlag = 0;
             if(((Player*)this)->RewardPlayerAndGroupAtKill(pVictim))
-                ProcDamageAndSpell(pVictim, PROC_FLAG_KILL_AND_GET_XP, PROC_FLAG_KILLED, PROC_EX_NONE, 0);
+                procFlag = PROC_FLAG_KILL_AND_GET_XP;
             else
-                ProcDamageAndSpell(pVictim, PROC_FLAG_NONE, PROC_FLAG_KILLED,PROC_EX_NONE, 0);
+                procFlag = PROC_FLAG_NONE;
+
+            ProcDamageAndSpell(pVictim, procFlag, PROC_FLAG_KILLED, PROC_EX_NONE, 0);
         }
         else
-            player->RewardPlayerAndGroupAtKill(pVictim);
+        {
+            uint32 procFlag = 0;
+            if(player->RewardPlayerAndGroupAtKill(pVictim) && (IsInPartyWith(player) || IsInRaidWith(player)))
+                procFlag = PROC_FLAG_KILL_AND_GET_XP;
+            else
+                procFlag = PROC_FLAG_NONE;
+
+            if(Unit *owner = GetCharmerOrOwner())
+                owner->ProcDamageAndSpell(pVictim, procFlag, PROC_FLAG_KILLED, PROC_EX_NONE, 0);
+        }
     }
 
     // if talent known but not triggered (check priest class for speedup check)
