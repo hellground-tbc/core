@@ -184,17 +184,20 @@
 				<Option createDefFile="1" />
 				<Option createStaticLib="1" />
 				<Compiler>
+					<Add option="-W" />
+					<Add option="-O0" />
 					<Add option="-DWIN32" />
 					<Add option="-D_DEBUG" />
 					<Add option="-DTRINITY_DEBUG" />
 					<Add option="-D_WINDOWS" />
 					<Add option="-D_USRDLL" />
 					<Add option="-DSCRIPT" />
-					<Add option="-W" />
-					<Add option="-O0" />
 					<Add directory="../../src/shared" />
 					<Add directory="../../src/framework" />
 					<Add directory="../../dep/include" />
+					<Add directory="../../src/shared/Database" />
+					<Add directory="/usr/include/mysql" />
+					<Add directory="../../src/game" />
 				</Compiler>
 				<ResourceCompiler>
 					<Add directory="../../src/shared" />
@@ -228,12 +231,12 @@
 				<Option createDefFile="1" />
 				<Option createStaticLib="1" />
 				<Compiler>
+					<Add option="-fomit-frame-pointer" />
 					<Add option="-O3" />
 					<Add option="-W" />
 					<Add option="-ggdb" />
 					<Add option="-ffast-math" />
 					<Add option="-msse3" />
-					<Add option="-fomit-frame-pointer" />
 					<Add option="-fno-delete-null-pointer-checks" />
 					<Add option="-ftracer" />
 					<Add option="-fno-strict-aliasing" />
@@ -247,6 +250,9 @@
 					<Add directory="../../src/shared" />
 					<Add directory="../../src/framework" />
 					<Add directory="../../dep/include" />
+					<Add directory="../../src/shared/Database" />
+					<Add directory="/usr/include/mysql" />
+					<Add directory="../../src/game" />
 				</Compiler>
 				<ResourceCompiler>
 					<Add directory="../../src/shared" />

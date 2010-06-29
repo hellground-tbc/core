@@ -193,20 +193,21 @@
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
+					<Add option="-W" />
+					<Add option="-O0" />
 					<Add option='-DVERSION=&quot;0.12.0-SVN&quot;' />
 					<Add option="-DWIN32" />
 					<Add option="-D_DEBUG" />
 					<Add option="-DTRINITY_DEBUG" />
 					<Add option="-D_CONSOLE" />
 					<Add option="-DENABLE_CLI" />
-					<Add option="-W" />
-					<Add option="-O0" />
 					<Add directory="../../dep/include" />
 					<Add directory="../../src/framework" />
 					<Add directory="../../src/shared" />
 					<Add directory="../../src/game" />
 					<Add directory="../../src/trinitycore" />
 					<Add directory="../../dep/ACE_wrappers" />
+					<Add directory="/usr/include/mysql" />
 				</Compiler>
 				<ResourceCompiler>
 					<Add directory="../../dep/include" />
@@ -230,7 +231,9 @@
 					<Add directory="../../dep/lib/Linux_Debug x64" />
 				</Linker>
 				<ExtraCommands>
-					<Add after="copy ..\..\dep\lib\Linux_Debug x64\*.dll ..\..\bin\Linux_Debug x64&#x0D;&#x0A;copy ..\..\src\trinitycore\trinitycore.conf.dist ..\..\bin\Linux_Debug x64\TrinityCore.conf.dist&#x0D;&#x0A;copy ..\..\README.* ..\..\bin\Linux_Debug x64&#x0D;&#x0A;" />
+					<Add after="copy ..\..\dep\lib\Linux_Debug x64\*.dll ..\..\bin\Linux_Debug x64" />
+					<Add after="copy ..\..\src\trinitycore\trinitycore.conf.dist ..\..\bin\Linux_Debug x64\TrinityCore.conf.dist" />
+					<Add after="copy ..\..\README.* ..\..\bin\Linux_Debug x64" />
 				</ExtraCommands>
 			</Target>
 			<Target title="Linux Release x64">
@@ -240,11 +243,11 @@
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
+					<Add option="-fomit-frame-pointer" />
 					<Add option="-W" />
 					<Add option="-ggdb" />
 					<Add option="-ffast-math" />
 					<Add option="-msse3" />
-					<Add option="-fomit-frame-pointer" />
 					<Add option="-fno-delete-null-pointer-checks" />
 					<Add option="-ftracer" />
 					<Add option="-fno-strict-aliasing" />
@@ -268,6 +271,7 @@
 					<Add directory="../../src/bindings/scripts" />
 					<Add directory="../../src/trinitycore" />
 					<Add directory="../../dep/ACE_wrappers" />
+					<Add directory="/usr/include/mysql" />
 				</Compiler>
 				<ResourceCompiler>
 					<Add directory="../../dep/include" />
@@ -291,21 +295,17 @@
 					<Add library="libreadline" />
 					<Add library="libsockets" />
 					<Add library="libcrypto" />
+					<Add library="libgame" />
 					<Add library="ACE" />
 					<Add library="libACE" />
 					<Add library="libshared" />
 					<Add library="libframework" />
 					<Add library="libg3dlite" />
 					<Add library="libgame" />
-					<Add directory="game__Linux_Release x64" />
-					<Add directory="shared__Linux_Release x64" />
-					<Add directory="framework__Linux_Release x64" />
-					<Add directory="sockets__Linux_Release x64" />
-					<Add directory="../../dep/lib/Linux_Release x64" />
-					<Add directory="g3dlite__Linux_Release x64" />
 					<Add directory="/usr/lib" />
 					<Add directory="/usr/lib64" />
 					<Add directory="/usr/local/lib" />
+					<Add directory="../../dep/lib/Linux_Release x64" />
 					<Add directory="../../dep/include" />
 					<Add directory="../../dep/include/g3dlite" />
 					<Add directory="../../dep/include/sockets" />
@@ -313,6 +313,11 @@
 					<Add directory="../../src/bindings/scripts" />
 					<Add directory="../../src/bindings/scripts/include" />
 					<Add directory="../../src/bindings/scripts/scripts" />
+					<Add directory="shared__Linux_Release x64" />
+					<Add directory="framework__Linux_Release x64" />
+					<Add directory="sockets__Linux_Release x64" />
+					<Add directory="g3dlite__Linux_Release x64" />
+					<Add directory="game__Linux_Release x64" />
 				</Linker>
 				<ExtraCommands>
 					<Add after="copy ..\..\dep\lib\Linux_Release x64\*.dll ..\..\bin\Linux_Release x64" />

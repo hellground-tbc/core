@@ -28,7 +28,6 @@ void move_triggerAI::SpellHit(Unit *caster,const SpellEntry *spell)
     if(spell->Id == SPELL_MOVE_1 || spell->Id == SPELL_MOVE_2 || spell->Id == SPELL_MOVE_3 || spell->Id == SPELL_MOVE_4 ||
        spell->Id == SPELL_MOVE_5 || spell->Id == SPELL_MOVE_6 || spell->Id == SPELL_MOVE_7 || spell->Id == SPELL_CHANGE_FACING)
     {
-
         //if(onMarker != NULL || EndMarker)
         //    return;
 

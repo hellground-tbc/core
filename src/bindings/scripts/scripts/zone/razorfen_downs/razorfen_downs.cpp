@@ -88,7 +88,7 @@ bool GOHello_go_gong(Player* pPlayer, GameObject* pGO)
     if (pInstance)
     {
         pInstance->SetData(DATA_GONG_WAVES,pInstance->GetData(DATA_GONG_WAVES)+1);
-        pPlayer->PlaySoundA(4654, false);   //gong sound
+        pPlayer->PlaySound(4654, false);   //gong sound
         return true;
     }
 

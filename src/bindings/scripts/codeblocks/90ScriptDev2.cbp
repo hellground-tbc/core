@@ -166,20 +166,22 @@
 				<Option createDefFile="1" />
 				<Option createStaticLib="1" />
 				<Compiler>
+					<Add option="-W" />
+					<Add option="-O0" />
 					<Add option="-DWIN32" />
 					<Add option="-D_DEBUG" />
 					<Add option="-DMANGOS_DEBUG" />
 					<Add option="-D_WINDOWS" />
 					<Add option="-D_USRDLL" />
 					<Add option="-DSCRIPT" />
-					<Add option="-W" />
-					<Add option="-O0" />
 					<Add directory="../../../../dep/include/" />
 					<Add directory="../../../shared/" />
 					<Add directory="../../../framework/" />
 					<Add directory="../../../game/" />
 					<Add directory="../include/" />
 					<Add directory="../../../../dep/ACE_wrappers" />
+					<Add directory="/usr/include/mysql" />
+					<Add directory="../../../shared/Database" />
 				</Compiler>
 				<ResourceCompiler>
 					<Add directory="../../../../dep/include/" />
@@ -206,13 +208,13 @@
 				<Option createDefFile="1" />
 				<Option createStaticLib="1" />
 				<Compiler>
+					<Add option="-fomit-frame-pointer" />
 					<Add option="-O3" />
 					<Add option="-W" />
 					<Add option="-fPIC" />
 					<Add option="-ggdb" />
 					<Add option="-ffast-math" />
 					<Add option="-msse3" />
-					<Add option="-fomit-frame-pointer" />
 					<Add option="-fno-delete-null-pointer-checks" />
 					<Add option="-ftracer" />
 					<Add option="-fno-strict-aliasing" />
@@ -229,6 +231,8 @@
 					<Add directory="../../../game/" />
 					<Add directory="../include/" />
 					<Add directory="../../../../dep/ACE_wrappers" />
+					<Add directory="/usr/include/mysql" />
+					<Add directory="../../../shared/Database" />
 				</Compiler>
 				<ResourceCompiler>
 					<Add directory="../../../../dep/include/" />
@@ -399,6 +403,7 @@
 		<Unit filename="../scripts/zone/darkshore/darkshore.cpp" />
 		<Unit filename="../scripts/zone/deadmines/deadmines.cpp" />
 		<Unit filename="../scripts/zone/deadmines/def_deadmines.h" />
+		<Unit filename="../scripts/zone/deadmines/instance_deadmines.cpp" />
 		<Unit filename="../scripts/zone/dun_morogh/dun_morogh.cpp" />
 		<Unit filename="../scripts/zone/duskwood/duskwood.cpp" />
 		<Unit filename="../scripts/zone/dustwallow_marsh/dustwallow_marsh.cpp" />
@@ -495,7 +500,9 @@
 		<Unit filename="../scripts/zone/netherstorm/netherstorm.cpp" />
 		<Unit filename="../scripts/zone/onyxias_lair/boss_onyxia.cpp" />
 		<Unit filename="../scripts/zone/orgrimmar/orgrimmar.cpp" />
-		<Unit filename="../scripts/zone/razorfen_downs/boss_amnennar_the_coldbringer.cpp" />
+		<Unit filename="../scripts/zone/razorfen_downs/instance_razorfen_downs.cpp" />
+		<Unit filename="../scripts/zone/razorfen_downs/razorfen_downs.cpp" />
+		<Unit filename="../scripts/zone/razorfen_downs/razorfen_downs.h" />
 		<Unit filename="../scripts/zone/razorfen_kraul/def_razorfen_kraul.h" />
 		<Unit filename="../scripts/zone/razorfen_kraul/instance_razorfen_kraul.cpp" />
 		<Unit filename="../scripts/zone/razorfen_kraul/razorfen_kraul.cpp" />
@@ -607,6 +614,7 @@
 		<Unit filename="../scripts/zone/tirisfal_glades/tirisfal_glades.cpp" />
 		<Unit filename="../scripts/zone/uldaman/boss_archaedas.cpp" />
 		<Unit filename="../scripts/zone/uldaman/boss_ironaya.cpp" />
+		<Unit filename="../scripts/zone/uldaman/def_uldaman.h" />
 		<Unit filename="../scripts/zone/uldaman/instance_uldaman.cpp" />
 		<Unit filename="../scripts/zone/uldaman/uldaman.cpp" />
 		<Unit filename="../scripts/zone/undercity/undercity.cpp" />

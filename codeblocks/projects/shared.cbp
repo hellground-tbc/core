@@ -143,18 +143,20 @@
 				<Option compiler="gcc" />
 				<Option createDefFile="1" />
 				<Compiler>
+					<Add option="-W" />
+					<Add option="-O0" />
 					<Add option="-DWIN32" />
 					<Add option="-D_DEBUG" />
 					<Add option="-DTRINITY_DEBUG" />
 					<Add option="-D_LIB" />
 					<Add option="-D_CRT_SECURE_NO_DEPRECATE" />
-					<Add option="-W" />
-					<Add option="-O0" />
 					<Add directory="../../dep/include" />
 					<Add directory="../../dep/include/g3dlite" />
 					<Add directory="../../src/framework" />
 					<Add directory="../../src/shared" />
 					<Add directory="../../dep/ACE_wrappers" />
+					<Add directory="/usr/include/mysql" />
+					<Add directory="../../src/shared/Database" />
 				</Compiler>
 				<ResourceCompiler>
 					<Add directory="../../dep/include" />
@@ -177,12 +179,12 @@
 				<Option compiler="gcc" />
 				<Option createDefFile="1" />
 				<Compiler>
+					<Add option="-fomit-frame-pointer" />
 					<Add option="-O3" />
 					<Add option="-W" />
 					<Add option="-ggdb" />
 					<Add option="-ffast-math" />
 					<Add option="-msse3" />
-					<Add option="-fomit-frame-pointer" />
 					<Add option="-fno-delete-null-pointer-checks" />
 					<Add option="-ftracer" />
 					<Add option="-fno-strict-aliasing" />
@@ -198,6 +200,8 @@
 					<Add directory="../../src/framework" />
 					<Add directory="../../src/shared" />
 					<Add directory="../../dep/ACE_wrappers" />
+					<Add directory="/usr/include/mysql" />
+					<Add directory="../../src/shared/Database" />
 				</Compiler>
 				<ResourceCompiler>
 					<Add directory="../../dep/include" />
@@ -222,6 +226,10 @@
 		<Unit filename="../../src/shared/Auth/Hmac.h" />
 		<Unit filename="../../src/shared/Auth/Sha1.cpp" />
 		<Unit filename="../../src/shared/Auth/Sha1.h" />
+		<Unit filename="../../src/shared/Auth/md5.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/shared/Auth/md5.h" />
 		<Unit filename="../../src/shared/Base.cpp" />
 		<Unit filename="../../src/shared/Base.h" />
 		<Unit filename="../../src/shared/ByteBuffer.h" />
@@ -234,6 +242,7 @@
 		<Unit filename="../../src/shared/Config/dotconfpp/dotconfpp.h" />
 		<Unit filename="../../src/shared/Config/dotconfpp/mempool.cpp" />
 		<Unit filename="../../src/shared/Config/dotconfpp/mempool.h" />
+		<Unit filename="../../src/shared/Database/DBCEnums.h" />
 		<Unit filename="../../src/shared/Database/DBCStores.cpp" />
 		<Unit filename="../../src/shared/Database/DBCStores.h" />
 		<Unit filename="../../src/shared/Database/DBCStructure.h" />
@@ -242,20 +251,18 @@
 		<Unit filename="../../src/shared/Database/Database.h" />
 		<Unit filename="../../src/shared/Database/DatabaseEnv.h" />
 		<Unit filename="../../src/shared/Database/DatabaseImpl.h" />
-		<Unit filename="../../src/shared/Database/DatabaseMysql.cpp" />
 		<Unit filename="../../src/shared/Database/DatabaseMysql.h" />
-		<Unit filename="../../src/shared/Database/DatabaseSqlite.cpp" />
 		<Unit filename="../../src/shared/Database/DatabaseSqlite.h" />
 		<Unit filename="../../src/shared/Database/Field.cpp" />
 		<Unit filename="../../src/shared/Database/Field.h" />
 		<Unit filename="../../src/shared/Database/MySQLDelayThread.h" />
+		<Unit filename="../../src/shared/Database/QueryResult.cpp" />
 		<Unit filename="../../src/shared/Database/QueryResult.h" />
-		<Unit filename="../../src/shared/Database/QueryResultMysql.cpp" />
 		<Unit filename="../../src/shared/Database/QueryResultMysql.h" />
-		<Unit filename="../../src/shared/Database/QueryResultSqlite.cpp" />
 		<Unit filename="../../src/shared/Database/QueryResultSqlite.h" />
 		<Unit filename="../../src/shared/Database/SQLStorage.cpp" />
 		<Unit filename="../../src/shared/Database/SQLStorage.h" />
+		<Unit filename="../../src/shared/Database/SQLStorageImpl.h" />
 		<Unit filename="../../src/shared/Database/SqlDelayThread.cpp" />
 		<Unit filename="../../src/shared/Database/SqlDelayThread.h" />
 		<Unit filename="../../src/shared/Database/SqlOperations.cpp" />
@@ -265,6 +272,7 @@
 		<Unit filename="../../src/shared/DelayExecutor.cpp" />
 		<Unit filename="../../src/shared/DelayExecutor.h" />
 		<Unit filename="../../src/shared/Errors.h" />
+		<Unit filename="../../src/shared/LockedQueue.h" />
 		<Unit filename="../../src/shared/Log.cpp" />
 		<Unit filename="../../src/shared/Log.h" />
 		<Unit filename="../../src/shared/Mthread.cpp" />
@@ -279,6 +287,13 @@
 		<Unit filename="../../src/shared/Timer.h" />
 		<Unit filename="../../src/shared/Util.cpp" />
 		<Unit filename="../../src/shared/Util.h" />
+		<Unit filename="../../src/shared/WheatyExceptionReport.h">
+			<Option target="Release Win32" />
+			<Option target="Debug Win32" />
+			<Option target="Release x64" />
+			<Option target="Debug x64" />
+		</Unit>
+		<Unit filename="../../src/shared/WorldPacket.h" />
 		<Unit filename="../../src/shared/revision.h" />
 		<Unit filename="../../src/shared/vmap/AABSPTree.h" />
 		<Unit filename="../../src/shared/vmap/BaseModel.cpp" />

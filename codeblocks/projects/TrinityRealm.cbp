@@ -197,6 +197,7 @@
 					<Add directory="../../src/shared" />
 					<Add directory="../../src/realmd" />
 					<Add directory="../../dep/ACE_wrappers" />
+					<Add directory="/usr/local/mysql" />
 				</Compiler>
 				<ResourceCompiler>
 					<Add directory="../../dep/include" />
@@ -221,7 +222,7 @@
 					<Add directory="./zthread__Linux_Debug x64" />
 				</Linker>
 				<ExtraCommands>
-					<Add after="copy ..\..\src\trinityrealm\trinityrealm.conf.dist ..\..\bin\Linux_Debug x64\TrinityRealm.conf.dist" />
+					<Add after="copy ..\..\src\trinityrealm\trinityrealm.conf.dist ..\..\bin\Linux_Debug x64\" />
 				</ExtraCommands>
 			</Target>
 			<Target title="Linux Release x64">
@@ -231,12 +232,12 @@
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
+					<Add option="-fomit-frame-pointer" />
 					<Add option="-O3" />
 					<Add option="-W" />
 					<Add option="-ggdb" />
 					<Add option="-ffast-math" />
 					<Add option="-msse3" />
-					<Add option="-fomit-frame-pointer" />
 					<Add option="-fno-delete-null-pointer-checks" />
 					<Add option="-ftracer" />
 					<Add option="-fno-strict-aliasing" />
@@ -252,6 +253,7 @@
 					<Add directory="../../src/shared" />
 					<Add directory="../../src/realmd" />
 					<Add directory="../../dep/ACE_wrappers" />
+					<Add directory="/usr/include/mysql" />
 				</Compiler>
 				<ResourceCompiler>
 					<Add directory="../../dep/include" />
@@ -276,7 +278,7 @@
 					<Add directory="./framework__Linux_Release x64" />
 				</Linker>
 				<ExtraCommands>
-					<Add after="cp ..\..\src\trinityrealm\trinityrealm.conf.dist ..\..\bin\Linux_Release x64\TrinityRealm.conf.dist" />
+					<Add after="cp ..\..\src\trinityrealm\trinityrealm.conf.dist ..\..\bin\Linux_Release x64\" />
 				</ExtraCommands>
 			</Target>
 		</Build>
