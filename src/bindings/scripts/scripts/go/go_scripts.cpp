@@ -33,7 +33,9 @@ go_tablet_of_madness
 go_tablet_of_the_seven
 go_jump_a_trone
 go_ethereum_prison - implemented at netherstorm.cpp
+go_blood_filled_orb
 go_ethereum_stasis
+matrix_punchograph
 go_resonite_cask
 go_sacred_fire_of_life
 go_field_repair_bot_74A
@@ -320,7 +322,7 @@ bool GOHello_go_blood_filled_orb(Player *pPlayer, GameObject *pGO)
     if (pGO->GetGoType() == GAMEOBJECT_TYPE_GOOBER)
         pPlayer->SummonCreature(NPC_ZELEMAR, -369.746, 166.759, -21.50, 5.235, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
 
-    return true;
+    return false;
 }
 
 

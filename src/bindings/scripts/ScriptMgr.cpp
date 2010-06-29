@@ -260,6 +260,8 @@ extern void AddSC_instance_serpentshrine_cavern();
 extern void AddSC_boss_the_lurker_below();
 
 //--Slave Pens
+extern void AddSC_boss_lord_ahune();
+extern void AddSC_instance_slave_pens();
 
 //--Steam Vault
 extern void AddSC_boss_hydromancer_thespia();
@@ -272,6 +274,7 @@ extern void AddSC_boss_hungarfen();
 extern void AddSC_boss_the_black_stalker();
 
 //Darkshore
+extern void AddSC_darkshore();
 //Darnassus
 //Deadmines
 extern void AddSC_instance_deadmines();
@@ -1647,6 +1650,9 @@ void ScriptsInit(char const* cfg_file = "trinitycore.conf")
     AddSC_boss_the_lurker_below();
 
     //--Slave Pens
+    AddSC_boss_lord_ahune();
+    AddSC_instance_slave_pens();
+
     //--Steam Vault
     AddSC_boss_hydromancer_thespia();
     AddSC_boss_mekgineer_steamrigger();
@@ -1658,6 +1664,7 @@ void ScriptsInit(char const* cfg_file = "trinitycore.conf")
     AddSC_boss_the_black_stalker();
 
     //Darkshore
+	AddSC_darkshore();
     //Darnassus
     //Deadmines
     AddSC_instance_deadmines();
@@ -2085,7 +2092,7 @@ void DoScriptText(int32 textEntry, WorldObject* pSource, Unit* target, bool with
             pSource->MonsterYell(textEntry, (*i).second.Language, target ? target->GetGUID() : 0);
             break;
         case CHAT_TYPE_TEXT_EMOTE:
-            pSource->MonsterTextEmote(textEntry, target ? target->GetGUID() : 0);
+            pSource->MonsterTextEmote(textEntry, target ? target->GetGUID() : 0,false, withoutPrename);
             break;
         case CHAT_TYPE_BOSS_EMOTE:
             pSource->MonsterTextEmote(textEntry, target ? target->GetGUID() : 0, true, withoutPrename);

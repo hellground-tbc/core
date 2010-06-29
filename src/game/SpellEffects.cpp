@@ -3614,6 +3614,7 @@ void Spell::EffectDispel(uint32 i)
 {
     if(!unitTarget)
         return;
+
     if(unitTarget->IsHostileTo(m_caster))
     {
         m_caster->SetInCombatWith(unitTarget);
@@ -5269,6 +5270,18 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             unitTarget->CastSpell(unitTarget, spellId, true);
             break;
         }
+        // Chilling Burst
+        case 46541:
+        {
+            if(!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+            int32 ChillDamage = urand(490, 670);
+            Aura* ChillingAura = m_caster->GetAuraByCasterSpell(46542, m_caster->GetGUID());
+
+            unitTarget->CastCustomSpell(unitTarget, 46576, &ChillDamage, NULL, NULL, true, 0, ChillingAura, m_caster->GetGUID());
+            break;
+        }
         case 48025:                                     // Headless Horseman's Mount
         {
                 if(!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
@@ -6142,8 +6155,6 @@ void Spell::EffectSelfResurrect(uint32 i)
     plr->SetPower(POWER_ENERGY, plr->GetMaxPower(POWER_ENERGY) );
 
     plr->SpawnCorpseBones();
-
-    plr->SaveToDB();
 }
 
 void Spell::EffectSkinning(uint32 /*i*/)
@@ -6411,12 +6422,16 @@ void Spell::EffectSummonDeadPet(uint32 /*i*/)
 {
     if(m_caster->GetTypeId() != TYPEID_PLAYER)
         return;
+
     Player *_player = (Player*)m_caster;
+
     Pet *pet = _player->GetPet();
     if(!pet)
         return;
+
     if(pet->isAlive())
         return;
+
     if(damage < 0)
         return;
 

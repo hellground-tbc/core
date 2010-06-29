@@ -4140,11 +4140,14 @@ void Unit::RemoveDynObject(uint32 spellid)
 
 void Unit::RemoveAllDynObjects()
 {
+    if(Map *map = GetMap())
     while(!m_dynObjGUIDs.empty())
     {
-        DynamicObject* dynObj = GetMap()->GetDynamicObject(*m_dynObjGUIDs.begin());
+        DynamicObject* dynObj = map->GetDynamicObject(*m_dynObjGUIDs.begin());
+        
         if(dynObj)
             dynObj->Delete();
+
         m_dynObjGUIDs.erase(m_dynObjGUIDs.begin());
     }
 }
@@ -6046,15 +6049,28 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                  return false;
              }
 
-             if(auraSpellInfo->SpellIconID == 299)                      // Improved Judgement of Light: bonus heal from t4 set
-                 if(Unit *caster = triggeredByAura->GetCaster())
-                    if(Aura *aur = caster->GetAura(37182, 0))
-                    {
-                        int bp = aur->GetModifierValue();
-                        pVictim->CastCustomSpell(pVictim, trigger_spell_id, &bp, NULL, NULL, true, castItem, triggeredByAura);
-                    }
-             pVictim->CastSpell(pVictim, trigger_spell_id, true, castItem, triggeredByAura);
-             return true;                        // no hidden cooldown
+             if(Unit *caster = triggeredByAura->GetCaster())
+             {
+                 if(caster->GetTypeId() == TYPEID_PLAYER)
+                 {
+                     if(((Player*)caster)->HasSpellCooldown(trigger_spell_id))
+                         return false;
+
+                     ((Player*)caster)->AddSpellCooldown(trigger_spell_id, NULL, time(NULL) +4);
+                 }
+             
+                 // Improved Judgement of Light: bonus heal from t4 set
+                 if(auraSpellInfo->SpellIconID == 299)    
+                 {
+                     if(Aura *aur = caster->GetAura(37182, 0))
+                     {
+                         int bp = aur->GetModifierValue();
+                         pVictim->CastCustomSpell(pVictim, trigger_spell_id, &bp, NULL, NULL, true, castItem, triggeredByAura);
+                     }
+                 }
+                 pVictim->CastSpell(pVictim, trigger_spell_id, true, castItem, triggeredByAura);
+                 return true;                        // no hidden cooldown
+             }    
          }
          // Illumination
          else if (auraSpellInfo->SpellIconID==241)
@@ -7739,7 +7755,15 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
         if(Unit* owner = GetOwner())
             return owner->SpellHealingBonus(spellProto, healamount, damagetype, pVictim);
 
-    // Healing Done
+    float TotalMod = 1.0f;
+    // Healing taken percent
+    float minval = pVictim->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
+    if(minval)
+        TotalMod *= (100.0f + minval) / 100.0f;
+
+    float maxval = pVictim->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
+    if(maxval)
+        TotalMod *= (100.0f + maxval) / 100.0f;
 
     // These Spells are doing fixed amount of healing (TODO found less hack-like check)
     if (spellProto->Id == 15290 || spellProto->Id == 39373 ||
@@ -7749,7 +7773,7 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
         spellProto->Id == 34299 || spellProto->Id == 27813 ||
         spellProto->Id == 27817 || spellProto->Id == 27818 ||
         spellProto->Id == 5707)
-        return healamount;
+        return healamount*TotalMod;
 
     int32 AdvertisedBenefit = SpellBaseHealingBonus(GetSpellSchoolMask(spellProto));
     uint32 CastingTime = !IsChanneledSpell(spellProto) ? GetSpellCastTime(spellProto) : GetSpellDuration(spellProto);
@@ -7942,15 +7966,7 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
             heal = heal * (100 + pctMod) / 100;
     }
 
-    // Healing taken percent
-    float minval = pVictim->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
-    if(minval)
-        heal *= (100.0f + minval) / 100.0f;
-
-    float maxval = pVictim->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
-    if(maxval)
-        heal *= (100.0f + maxval) / 100.0f;
-
+    heal = heal*TotalMod;
     if (heal < 0) heal = 0;
 
     return uint32(heal);
@@ -8857,6 +8873,8 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
 
     // Apply strongest slow aura mod to speed
     int32 slow = GetMaxNegativeAuraModifier(SPELL_AURA_MOD_DECREASE_SPEED);
+    int32 slow_non_stack = GetMaxNegativeAuraModifier(SPELL_AURA_MOD_SPEED_NOT_STACK);
+    slow = slow < slow_non_stack ? slow : slow_non_stack;
     if (slow)
         speed *=(100.0f + slow)/100.0f;
 
@@ -11235,13 +11253,25 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
     {
         if(GetTypeId() == TYPEID_PLAYER && (IsInPartyWith(player) || IsInRaidWith(player)))
         {
+            uint32 procFlag = 0;
             if(((Player*)this)->RewardPlayerAndGroupAtKill(pVictim))
-                ProcDamageAndSpell(pVictim, PROC_FLAG_KILL_AND_GET_XP, PROC_FLAG_KILLED, PROC_EX_NONE, 0);
+                procFlag = PROC_FLAG_KILL_AND_GET_XP;
             else
-                ProcDamageAndSpell(pVictim, PROC_FLAG_NONE, PROC_FLAG_KILLED,PROC_EX_NONE, 0);
+                procFlag = PROC_FLAG_NONE;
+
+            ProcDamageAndSpell(pVictim, procFlag, PROC_FLAG_KILLED, PROC_EX_NONE, 0);
         }
         else
-            player->RewardPlayerAndGroupAtKill(pVictim);
+        {
+            uint32 procFlag = 0;
+            if(player->RewardPlayerAndGroupAtKill(pVictim) && (IsInPartyWith(player) || IsInRaidWith(player)))
+                procFlag = PROC_FLAG_KILL_AND_GET_XP;
+            else
+                procFlag = PROC_FLAG_NONE;
+
+            if(Unit *owner = GetCharmerOrOwner())
+                owner->ProcDamageAndSpell(pVictim, procFlag, PROC_FLAG_KILLED, PROC_EX_NONE, 0);
+        }
     }
 
     // if talent known but not triggered (check priest class for speedup check)

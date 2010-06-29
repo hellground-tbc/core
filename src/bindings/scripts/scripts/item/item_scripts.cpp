@@ -123,7 +123,7 @@ bool ItemUse_item_blackwhelp_net(Player *player, Item* _Item, SpellCastTargets c
 {
     Unit *target = targets.getUnitTarget();
 
-    if(!target || target->GetTypeId() != TYPEID_UNIT || target->GetEntry() != 21397)
+    if(!target || target->GetTypeId() != TYPEID_UNIT || target->GetEntry() != 21387)
         return true;
     else
     {

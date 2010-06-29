@@ -1,0 +1,1 @@
+UPDATE instance_template SET script="instance_slave_pens" WHERE map=547;

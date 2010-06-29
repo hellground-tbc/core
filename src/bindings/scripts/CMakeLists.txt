@@ -150,6 +150,8 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/coilfang_resevoir/steam_vault/instance_steam_vault.cpp
    scripts/zone/coilfang_resevoir/underbog/boss_hungarfen.cpp
    scripts/zone/coilfang_resevoir/underbog/boss_the_black_stalker.cpp
+   scripts/zone/coilfang_resevoir/slave_pens/instance_slave_pens.cpp
+   scripts/zone/coilfang_resevoir/slave_pens/boss_lord_ahune.cpp
    scripts/zone/darkshore/darkshore.cpp
    scripts/zone/deadmines/def_deadmines.h
    scripts/zone/deadmines/deadmines.cpp
@@ -198,6 +200,7 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/karazhan/bosses_opera.cpp
    scripts/zone/karazhan/chess_event.cpp
    scripts/zone/karazhan/def_karazhan.h
+   scripts/zone/karazhan/instance_karazhan.h
    scripts/zone/karazhan/instance_karazhan.cpp
    scripts/zone/karazhan/karazhan.cpp
    scripts/zone/loch_modan/loch_modan.cpp

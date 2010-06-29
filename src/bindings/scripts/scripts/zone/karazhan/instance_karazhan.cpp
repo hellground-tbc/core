@@ -328,15 +328,19 @@ void instance_karazhan::Update(uint32 diff)
                 if(Terestian && Terestian->isAlive())
                     Terestian->RemoveAurasDueToSpell(SPELL_BROKEN_PACT);
             }
+
             if(Kilrek && !Kilrek->isAlive() && !needRespawn)
             {
                 needRespawn = true;
                 CheckTimer = 45000;
-            }else CheckTimer = 5000;
-        }else CheckTimer -= diff;
+            }
+            else
+                CheckTimer = 5000;
+        }
+        else
+            CheckTimer -= diff;
     }
 }
-
 
 InstanceData* GetInstanceData_instance_karazhan(Map* map)
 {

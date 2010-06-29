@@ -6575,11 +6575,28 @@ void Aura::PeriodicDummyTick()
 //        // Ahune - Summoning Rhyme Aura
 //        case 45926: break;
 //        // Ahune - Slippery Floor
-//        case 45945: break;
+        case 45945:
+        {
+            if(m_target->GetTypeId() == TYPEID_PLAYER)
+            {
+                if(roll_chance_i(50) && !m_target->HasAura(45946, 0))   // 50% chance on getting slowed and warned
+                    m_target->CastSpell(m_target, 45946, true, 0, this, this->GetCasterGUID());
+                if(((Player*)m_target)->isMoving() && m_target->HasAura(45946, 0) && roll_chance_i(50))  // if slowed and moving 50% on slip
+                {
+                    m_target->CastSpell(m_target, 45947, true, 0, this, this->GetCasterGUID());
+                    m_target->RemoveAurasDueToSpell(45946);
+                }
+            }
+            break;
+        }
 //        // Ahune's Shield
 //        case 45954: break;
-//        // Nether Vapor Lightning
-//        case 45960: break;
+        // Nether Vapor Lightning
+        case 45960:
+        {
+            m_target->CastSpell(m_target, 45959, true);
+            break;
+        }
 //        // Darkness
 //        case 45996: break;
 //        // Summon Blood Elves Periodic

@@ -385,7 +385,7 @@ void WorldSession::LogoutPlayer(bool Save)
         if(_player->IsInWorld()) _player->GetMap()->Remove(_player, false);
         // RemoveFromWorld does cleanup that requires the player to be in the accessor
         ObjectAccessor::Instance().RemoveObject(_player);
-
+        _player->saveMutex.acquire();
         delete _player;
         _player = NULL;
 

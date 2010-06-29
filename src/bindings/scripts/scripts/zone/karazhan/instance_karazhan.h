@@ -48,7 +48,7 @@ struct TRINITY_DLL_DECL instance_karazhan : public ScriptedInstance
     uint64 MedivhGUID;
     uint32 CheckTimer;
 
-	std::list<uint64> forChessList;
+    std::list<uint64> forChessList;
 
     bool needRespawn;
 

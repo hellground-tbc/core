@@ -64,12 +64,43 @@ InstanceData* GetInstanceData_instance_sethekk_halls(Map* map)
     return new instance_sethekk_halls(map);
 }
 
+#define GOSSIP_FREE "Free me, hero."
+#define Q_BAB 10097
+
+bool GossipHello_npc_lakka(Player *player, Creature *_Creature)
+{
+    if(player->GetQuestStatus(Q_BAB) == QUEST_STATUS_INCOMPLETE)
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_FREE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+
+    player->SEND_GOSSIP_MENU(68, _Creature->GetGUID());
+    return true;
+}
+
+bool GossipSelect_npc_lakka(Player *player, Creature *_Creature, uint32 sender, uint32 action)
+{
+    if (action == GOSSIP_ACTION_INFO_DEF+1)
+    {
+        player->CLOSE_GOSSIP_MENU();
+        player->GroupEventHappens(Q_BAB, _Creature);
+        player->DealDamage(_Creature, _Creature->GetMaxHealth());
+        _Creature->RemoveCorpse();
+    }
+
+    return true;
+}
+
 void AddSC_instance_sethekk_halls()
 {
     Script *newscript;
     newscript = new Script;
     newscript->Name = "instance_sethekk_halls";
     newscript->GetInstanceData = &GetInstanceData_instance_sethekk_halls;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_lakka";
+    newscript->pGossipHello =  &GossipHello_npc_lakka;
+    newscript->pGossipSelect = &GossipSelect_npc_lakka;
     newscript->RegisterSelf();
 }
 

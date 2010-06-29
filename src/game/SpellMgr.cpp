@@ -568,6 +568,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 31583:                                         // Arcane Empowerment Rank3
         case 37441:                                         // Improved Arcane Blast
         case 40268:                                         // Spiritual Vengeance
+        case 40322:                                         // Spirit Shield
             return true;
         case 46392:                                         // Focused Assault
         case 46393:                                         // Brutal Assault
