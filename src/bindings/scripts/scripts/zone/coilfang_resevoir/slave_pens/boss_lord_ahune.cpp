@@ -196,6 +196,8 @@ struct TRINITY_DLL_DECL boss_lord_ahuneAI : public Scripted_NoMovementAI
     void JustSummoned(Creature* summoned)
     {
         DoZoneInCombat(summoned);
+        if(summoned->AI() && me->getVictim())
+            summoned->AI()->AttackStart(me->getVictim());
         Summons.Summon(summoned);
     }
 
@@ -297,8 +299,10 @@ struct TRINITY_DLL_DECL boss_lord_ahuneAI : public Scripted_NoMovementAI
                 IceSpear_Timer = 5500;
             }else
                 IceSpear_Timer -= diff;
+
+            DoMeleeAttackIfReady();
         }
-        DoMeleeAttackIfReady();
+
     }
 };
 
