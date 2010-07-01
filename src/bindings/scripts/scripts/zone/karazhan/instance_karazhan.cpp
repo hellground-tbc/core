@@ -95,7 +95,6 @@ uint32 instance_karazhan::GetData(uint32 identifier)
 
 void instance_karazhan::OnCreatureCreate(Creature *creature, uint32 entry)
 {
-	uint64 temp;
     switch (creature->GetEntry())
     {
         case 17229:   KilrekGUID = creature->GetGUID();      break;
