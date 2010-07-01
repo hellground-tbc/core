@@ -1,5 +1,6 @@
 add_subdirectory(updates)
 add_subdirectory(tools)
+add_subdirectory(HG_updates)
 
 
 ########### install files ###############
