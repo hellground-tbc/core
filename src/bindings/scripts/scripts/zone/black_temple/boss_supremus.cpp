@@ -233,7 +233,6 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
                 if(Unit* target = CalculateHatefulStrikeTarget())
                 {
                     AddSpellToCast(target, SPELL_HATEFUL_STRIKE);
-                    m_creature->DealDamage(target, 5250, SPELL_DIRECT_DAMAGE); // test
                     HatefulStrikeTimer = 8000;
                 }
             }
@@ -258,19 +257,22 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
             if(MoltenPunch_Timer < diff)
             {
                 Unit *target = m_creature->getVictim();
-                if(target && m_creature->IsWithinDistInMap(target, 40))
+                if(target)
                 {
-                    //workaround to make dmg after knockback when distance < 40yd
-                    int32 damage = 5600;
-                    int32 knock = 175;
-                    m_creature->CastCustomSpell(target, SPELL_DIVE_CUSTOM, NULL, &damage, &knock, false);
-                }
-                else
-                {
-                    WorldLocation temp;
-                    target->GetClosePoint(temp.x, temp.y, temp.z, 20.0f, false, m_creature->GetOrientation());  //if boss >40yd from victim make him run fast till 20yd and charge without damage
-                    m_creature->SendMonsterMoveWithSpeed(temp.x, temp.y, temp.z, MOVEMENTFLAG_WALK_MODE);
-                    m_creature->CastSpell(target, SPELL_CHARGE, false);
+                    if(m_creature->IsWithinDistInMap(target, 40))
+                    {
+                        //workaround to make dmg after knockback when distance < 40yd
+                        int32 damage = 5600;
+                        int32 knock = 175;
+                        m_creature->CastCustomSpell(target, SPELL_DIVE_CUSTOM, NULL, &damage, &knock, false);
+                    }
+                    else
+                    {
+                        WorldLocation temp;
+                        target->GetClosePoint(temp.x, temp.y, temp.z, 20.0f, false, m_creature->GetOrientation());  //if boss >40yd from victim make him run fast till 20yd and charge without damage
+                        m_creature->SendMonsterMoveWithSpeed(temp.x, temp.y, temp.z, MOVEMENTFLAG_WALK_MODE);
+                        m_creature->CastSpell(target, SPELL_CHARGE, false);
+                    }
                 }
                 MoltenPunch_Timer = 8000+rand()%4000;
             }
