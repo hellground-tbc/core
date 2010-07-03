@@ -17,12 +17,13 @@
 /* ScriptData
 SDName: Darkshore
 SD%Complete: 0
-SDComment: Placeholder Quest support 731
+SDComment: Placeholder Quest support 731, 945
 SDCategory: Darkshore
 EndScriptData */
 
 /* ContentData
 npc_prospector_remtravel
+npc_therylune
 EndContentData */
 
 #include "precompiled.h"
@@ -190,6 +191,101 @@ CreatureAI* GetAI_npc_prospector_remtravel(Creature *_Creature)
 }
 
 /*######
+## npc_therylune
+######*/
+
+#define Q_Therylune_Escape 945
+#define SAY_therylune_ACC     -1581014
+#define SAY_therylune_COMP    -1581015
+
+struct TRINITY_DLL_DECL npc_therylune : public npc_escortAI
+{
+	npc_therylune(Creature *c) : npc_escortAI(c) {}
+
+	void WaypointReached(uint32 i)
+	{
+		Player* player = Unit::GetPlayer(PlayerGUID);
+
+		if (!player)
+			return;
+
+		switch(i) {  		
+		case 20:
+			DoScriptText(SAY_therylune_COMP, m_creature, player);
+			player->GroupEventHappens(Q_Therylune_Escape, m_creature);
+			break;
+		}
+	}
+
+	void Reset(){}
+
+	void Aggro(Unit* who)
+	{
+		m_creature->Attack(who, true);
+	}
+
+	void JustDied(Unit* killer)
+	{
+		if (PlayerGUID)
+		{
+			if (Player* player = Unit::GetPlayer(PlayerGUID))
+				player->FailQuest(Q_Therylune_Escape);
+		}
+	}
+
+
+	void UpdateAI(const uint32 diff)
+	{
+		npc_escortAI::UpdateAI(diff);
+		if (!UpdateVictim())
+			return;
+	}
+};
+
+bool QuestAccept_npc_therylune(Player* player, Creature* creature, Quest const* quest)
+{
+	if (quest->GetQuestId() == Q_Therylune_Escape)
+	{
+		creature->setFaction(113);
+		creature->SetHealth(creature->GetMaxHealth());
+		creature->SetUInt32Value(UNIT_FIELD_BYTES_1,0);
+		creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
+		DoScriptText(SAY_therylune_ACC, creature, player);
+		((npc_escortAI*)(creature->AI()))->Start(true, true, false, player->GetGUID());
+
+	}
+	return true;
+}
+
+CreatureAI* GetAI_npc_therylune(Creature *_Creature)
+{
+	npc_therylune* therylune = new npc_therylune(_Creature);
+
+	therylune->AddWaypoint(0, 4520.4, 420.235, 33.5284);
+	therylune->AddWaypoint(1,  4512.26, 408.881, 32.9308);
+	therylune->AddWaypoint(2,  4507.94, 396.47, 32.9476);
+	therylune->AddWaypoint(3,  4507.53, 383.781, 32.995);
+	therylune->AddWaypoint(4,  4512.1, 374.02, 33.166);
+	therylune->AddWaypoint(5,  4519.75, 373.241, 33.1574);
+	therylune->AddWaypoint(6, 4592.41, 369.127, 31.4893);
+	therylune->AddWaypoint(7,  4598.55, 364.801, 31.4947);
+	therylune->AddWaypoint(8,  4602.76, 357.649, 32.9265);
+	therylune->AddWaypoint(9,  4597.88, 352.629, 34.0317);
+	therylune->AddWaypoint(10,  4590.23, 350.9, 36.2977);
+	therylune->AddWaypoint(11,  4581.5, 348.254, 38.3878);
+	therylune->AddWaypoint(12,  4572.05, 348.059, 42.3539);
+	therylune->AddWaypoint(13,  4564.75, 344.041, 44.2463);
+	therylune->AddWaypoint(14,  4556.63, 341.003, 47.6755);
+	therylune->AddWaypoint(15,  4554.38, 334.968, 48.8003);
+	therylune->AddWaypoint(16,  4557.63, 329.783, 49.9532);
+	therylune->AddWaypoint(17,  4563.32, 316.829, 53.2409);
+	therylune->AddWaypoint(18,  4566.09, 303.127, 55.0396);
+	therylune->AddWaypoint(19, 4561.65, 295.456, 57.0984);
+	therylune->AddWaypoint(20,  4551.03, 293.333, 57.1534);
+	return (CreatureAI*)therylune;
+}
+
+/*######
 ## AddSC
 ######*/
 
@@ -201,5 +297,11 @@ void AddSC_darkshore()
 	newscript->Name="npc_prospector_remtravel";
 	newscript->GetAI = &GetAI_npc_prospector_remtravel;
 	newscript->pQuestAccept = &QuestAccept_npc_prospector_remtravel;
+	newscript->RegisterSelf();
+
+	newscript = new Script;
+	newscript->Name="npc_therylune";
+	newscript->GetAI = &GetAI_npc_therylune;
+	newscript->pQuestAccept = &QuestAccept_npc_therylune;
 	newscript->RegisterSelf();
 }

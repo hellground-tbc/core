@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Boss_Archimonde
-SD%Complete: 85
-SDComment: Doomfires not completely offlike due to core limitations for random moving. Tyrande and second phase not fully implemented.
+SD%Complete: 90
+SDComment: Doomfires not completely offlike, draining tree visuals to me fixed. Tyrande and second phase not fully implemented.
 SDCategory: Caverns of Time, Mount Hyjal
 EndScriptData */
 
@@ -84,7 +84,7 @@ struct mob_ancient_wispAI : public ScriptedAI
     {
         CheckTimer = 1000;
 
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        //m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
     }
 
     void Aggro(Unit* who) {}
@@ -100,12 +100,10 @@ struct mob_ancient_wispAI : public ScriptedAI
                 Unit* Archimonde = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_ARCHIMONDE));
                 if(Archimonde)
                 {
-                    if((((Archimonde->GetHealth()*100) / Archimonde->GetMaxHealth()) < 2) || !Archimonde->isAlive())
-                        //AddSpellToCast(m_creature, SPELL_DENOUEMENT_WISP);
-                        DoCast(m_creature, SPELL_DENOUEMENT_WISP);
-                    else
-                        //AddSpellToCast(Archimonde, SPELL_ANCIENT_SPARK);
+                    if(Archimonde->isAlive())
                         DoCast(Archimonde, SPELL_ANCIENT_SPARK);
+                    else
+                        EnterEvadeMode();
                 }
             }
             CheckTimer = 1000;
@@ -164,13 +162,38 @@ struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public NullCreatureAI
             m_creature->SetSpeed(MOVE_RUN, 1);
             m_creature->SetSpeed(MOVE_WALK, 2);
 
-            float angle = FloatRandRange(0, M_PI);    //randomise angle
-            float x = m_creature->GetPositionX() + 40.0f * cos(angle);
-            float y = m_creature->GetPositionY() + 40.0f * sin(angle);
-            float z = m_creature->GetMap()->GetHeight(x, y, MAX_HEIGHT, true);
-            m_creature->GetGroundPoint(x, y, z, 5, angle);  //find point on the ground 5 yd from first destination location
-            m_creature->GetMotionMaster()->MovePoint(0, x, y, z);
-            ChangeTargetTimer = 7000;
+            Unit* Archimonde = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_ARCHIMONDE));
+            if(Archimonde && Archimonde->isAlive())
+            {
+                float angle = FloatRandRange(0, 3.0);    //randomise angle, a bit less than M_PI
+
+                float ArchiX = Archimonde->GetPositionX();
+                float ArchiY = Archimonde->GetPositionY();
+                float x = m_creature->GetPositionX();
+                float y = m_creature->GetPositionY();
+                float diffX = x - ArchiX;
+                float diffY = -y + ArchiY;  // position Y is here below 0
+                if(diffX > 0)   // make doomfire move away from actual boss position
+                {
+                    if(diffY > 0)
+                        angle = (angle > 3*M_PI/4) ? (2*M_PI - angle) : angle;
+                    else
+                        angle = (angle > M_PI/4) ? (2*M_PI - angle) : angle;
+                }
+                else
+                {
+                    if(diffY > 0)
+                        angle = (angle < M_PI/4) ? (M_PI + angle) : angle;
+                    else
+                        angle = (angle < 3*M_PI/4) ? (2*M_PI - angle) : angle;
+                }
+                (diffX > 0) ? x += (40.0f * cos(angle)) : x -= (40.0f * cos(angle));
+                (diffY > 0) ? y += (40.0f * cos(angle)) : y -= (40.0f * cos(angle));
+                float z = m_creature->GetMap()->GetHeight(x, y, MAX_HEIGHT, true);
+                m_creature->GetGroundPoint(x, y, z, 5, angle);  //find point on the ground 5 yd from first destination location
+                m_creature->GetMotionMaster()->MovePoint(0, x, y, z);
+                ChangeTargetTimer = 7000;
+            }
         }
         else
             ChangeTargetTimer -= diff;
@@ -182,9 +205,7 @@ struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public NullCreatureAI
    The only complicated aspect of the battle is Finger of Death and Doomfire, with Doomfire being the
    hardest bit to code. Finger of Death is simply a distance check - if no one is in melee range, then
    select a random target and cast the spell on them. However, if someone IS in melee range, and this
-   is NOT the main tank (creature's victim), then we aggro that player and they become the new victim.
-   For Doomfire, we summon a mob (Doomfire Targetting) that summons another mob (Doomfire every second)
-   Doomfire Targetting 'stalks' players whilst Doomfire damages player that are within range. */
+   is NOT the main tank (creature's victim), then we aggro that player and they become the new victim. */
 
 // This is used to sort by distance in order to see who is the closest target, when checking for Finger of Death
 struct TargetDistanceOrder : public std::binary_function<const Unit, const Unit, bool>
@@ -328,8 +349,8 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
     void SummonDoomfire()
     {
-        float x = m_creature->GetPositionX() + ((-1)^rand()%2)*(rand()%10 + 10);
-        float y = m_creature->GetPositionY() + ((-1)^rand()%2)*(rand()%10 + 10);
+        float x = rand()%2 ? (m_creature->GetPositionX() + rand()%10 + 10) : (m_creature->GetPositionX() - rand()%10 - 10);
+        float y = rand()%2 ? (m_creature->GetPositionY() + rand()%10 + 10) : (m_creature->GetPositionY() - rand()%10 - 10);;
         float z = m_creature->GetMap()->GetHeight(x, y, MAX_HEIGHT, true);
         if(Creature* Doomfire = m_creature->SummonCreature(CREATURE_DOOMFIRE_TARGETING, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN, 60000))
         {
@@ -391,7 +412,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
                 DrainNordrassilTimer -= diff;
         }
 
-        if(!UpdateVictim())
+        if(!UpdateVictim() && !BelowTenPercent)
             return;
 
         if(CheckTimer < diff)
@@ -470,7 +491,13 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
                 SummonWispTimer -= diff;
 
             if(WispCount >= 30)
-                m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+            {
+                Unit* wisp = FindCreature(CREATURE_ANCIENT_WISP, 100, m_creature);
+                if(wisp)
+                    wisp->CastSpell(m_creature, SPELL_DENOUEMENT_WISP, false);
+                else
+                    m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+            }
         }
 
         if(Enraged)
@@ -529,7 +556,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
                 if(SoulChargeCount)
                 {
                     SoulChargeCount--;
-                    DoCast(m_creature/*->getVictim()*/, unleashSpell);
+                    DoCast(m_creature, unleashSpell);
                     //AddSpellToCast(m_creature->getVictim(), unleashSpell);
                     SoulChargeTimer = 1000;
                     SoulChargeUnleashTimer = 1500;

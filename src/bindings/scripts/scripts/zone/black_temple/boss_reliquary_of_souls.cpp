@@ -417,6 +417,7 @@ struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
     }
 
     uint64 StatAuraGUID;
+    uint64 FixateVictimGUID;
 
     uint32 AggroYellTimer;
     uint32 FixateTimer;
@@ -430,6 +431,7 @@ struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
     void Reset()
     {
         StatAuraGUID = 0;
+        FixateVictimGUID = 0;
 
         AggroYellTimer = 5000;
         FixateTimer = 5000;
@@ -467,6 +469,9 @@ struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
 
     void KilledUnit(Unit *victim)
     {
+        if(victim->GetGUID() == FixateVictimGUID)
+            FixateTimer = 0;
+
         switch(rand()%3)
         {
             case 0: DoScriptText(SUFF_SAY_SLAY1, m_creature); break;
@@ -501,6 +506,7 @@ struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
         Unit* target = targets.front();
         if(target)
         {
+            FixateVictimGUID = target->GetGUID();
             DoResetThreat();
 
             target->CastSpell(m_creature, SPELL_FIXATE_TAUNT, true);
