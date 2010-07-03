@@ -198,6 +198,7 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/karazhan/boss_shade_of_aran.cpp
    scripts/zone/karazhan/boss_terestian_illhoof.cpp
    scripts/zone/karazhan/bosses_opera.cpp
+   scripts/zone/karazhan/chess_event.h
    scripts/zone/karazhan/chess_event.cpp
    scripts/zone/karazhan/def_karazhan.h
    scripts/zone/karazhan/instance_karazhan.h

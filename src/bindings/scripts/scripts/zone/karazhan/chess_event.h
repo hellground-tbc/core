@@ -29,7 +29,6 @@ TODO:
  - Disable rotate for all chess pieces
  - Disable movement for unit controlled by player
  - Teleport players to the balkony when possesing creature
- - Improve finding creature in front and strafe ( maybe when rotate will be disabled it won't be needed :])
  - Update instance_karazhan for now it was done only to start it ;]
  - Implement Attack Creature when is in Front or Strafe(for every chesspieces ??) with proper factions.
  - Implement in instance_karazhan dead chess_piece count per side to allow Medivh to cheat when is loosing.(Or different terms was used as a treshold for cheat ?)
@@ -205,21 +204,21 @@ enum AttackSpells
     TAKE_ACTION         = 32225,
 
     //ally
-    ELEMENTAL_ATTACK    = 37142,
-    ELEMENTAL_ATTACK2   = 37143,
-    FOOTMAN_ATTACK_DMG  = 32247,
-    FOOTMAN_ATTACK      = 32227,
-    CLERIC_ATTACK       = 37147,
-    CONJURER_ATTACK     = 37149,
-    KING_LLANE_ATTACK   = 37150,
+    ELEMENTAL_ATTACK    = 750,//37142,
+    ELEMENTAL_ATTACK2   = 0,//37143,
+    FOOTMAN_ATTACK_DMG  = 0,//32247,
+    FOOTMAN_ATTACK      = 500,//32227,
+    CLERIC_ATTACK       = 1250,//37147,
+    CONJURER_ATTACK     = 1500,//37149,
+    KING_LLANE_ATTACK   = 1750,//37150,
 
     //horde
-    GRUNT_ATTACK        = 32228,
-    NECROLYTE_ATTACK    = 37337,
-    WARLOCK_ATTACK      = 37345,
-    WOLF_ATTACK         = 37339,
-    DEMON_ATTACK        = 37220,
-    WARCHIEF_ATTACK     = 37348
+    GRUNT_ATTACK        = 500,//32228,
+    NECROLYTE_ATTACK    = 1250,//37337,
+    WARLOCK_ATTACK      = 1500,//37345,
+    WOLF_ATTACK         = 1000,//37339,
+    DEMON_ATTACK        = 750,//37220,
+    WARCHIEF_ATTACK     = 1750//37348
 };
 
 enum ChessPiecesStances
@@ -230,15 +229,26 @@ enum ChessPiecesStances
     //PIECE_DIE           = 3
 };
 
+enum ChessOrientation
+{
+    CHESS_ORI_N      = 0,   //Horde side
+    CHESS_ORI_E      = 1,   //Doors to Prince
+    CHESS_ORI_S      = 2,   //Alliance side
+    CHESS_ORI_W      = 3,   //Medivh side
+    CHESS_ORI_CHOOSE = 4    //simple use script to choose orientation
+};
+
 struct ChessSquare
 {
-    uint64 piece;//GUID;
-    uint64 trigger;//GUID;
+    uint64 piece;           //GUID;
+    uint64 trigger;         //GUID;
+    ChessOrientation ori;   //Orientation for GetMeleeTarget(), updated by medivh function SetOrientation();
 
     ChessSquare()
     {
         piece = 0;
         trigger = 0;
+        ori = CHESS_ORI_CHOOSE;
     }
 };
 
@@ -299,7 +309,7 @@ struct TRINITY_DLL_DECL move_triggerAI : public ScriptedAI
     uint64 MedivhGUID;
 
     int32 moveTimer;
-    Unit * unitToMove;
+    uint64 unitToMove;
     ChessPiecesStances pieceStance;
 
     void Reset();
@@ -331,6 +341,7 @@ struct TRINITY_DLL_DECL npc_chesspieceAI : public Scripted_NoMovementAI
 
     int ability1Chance;     //chance to cast spell
     int ability2Chance;
+    int attackDamage;
 
     int32 ability1Timer;
     int32 ability1Cooldown;
@@ -342,7 +353,6 @@ struct TRINITY_DLL_DECL npc_chesspieceAI : public Scripted_NoMovementAI
 
     uint32 ability1ID;
     uint32 ability2ID;
-    uint32 attackSpellID;
 
     //Creature *start_marker, *end_marker;
 
@@ -404,66 +414,62 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
     std::list<uint64> tpList;
     std::list<ChessSquare> moveList; //list of triggers to make move
 
-    void Reset();
-
-    void Aggro(Unit *){}
+    //remove chesspieces
 
     void SayChessPieceDied(Unit * piece);
-
     void RemoveChessPieceFromBoard(uint64 piece);   //removes dead piece from chess board
-
     void RemoveChessPieceFromBoard(Unit * piece);   //and spawn them in position near board
 
+    //check
+
     bool IsChessPiece(Unit * unit);
-
     bool IsMedivhsPiece(Unit * unit);
-
     bool IsMedivhsPiece(uint64 unit);
-
     bool IsEmptySquareInRange(uint64 piece, int range);
-
     bool IsInMoveList(uint64 unit, bool trigger = false);
-
     bool IsInRange(uint64 from, uint64 to, int range);
 
-    void PrepareBoardForEvent();    //search for pieces, triggers and save them in chessBoard table
+    //teleport
 
     void TeleportPlayer(Player * player);   //teleport player to tpLoc
-
     void TeleportPlayer(uint64 player);
-
     void TeleportPlayers(); //teleport in game players to tpLoc
-
     void AddPlayerToTeleportList(Player * player);
-
     void TeleportListedPlayers();
 
-    void ApplyDebuffsOnRaidMembers();
+    //event starting
 
+    void ApplyDebuffsOnRaidMembers();
+    void PrepareBoardForEvent();    //search for pieces, triggers and save them in chessBoard table
     void StartEvent();
 
+    //move
+
     bool ChessSquareIsEmpty(uint64 trigger);
-
     bool CanMoveTo(uint64 trigger, uint64 piece);   //check if player can move to trigger - prevent cheating
-
     void AddTriggerToMove(uint64 trigger, uint64 piece, bool player);
-
     Unit * FindTrigger(uint64 piece);   //find trigger where piece actually should be
-
     void MakeMove();
-
     int GetMoveRange(uint64 piece);
-
     int GetMoveRange(Unit * piece);
 
+    //priority
+
     int GetCountOfEnemyInMelee(uint64 piece);
-
     int GetLifePriority (uint64 piece);
-
     int GetAttackPriority (uint64 piece);
 
-    uint64 GetSpellTarget(uint64 caster, int range, bool heal);
+    //target
 
+    uint64 GetSpellTarget(uint64 caster, int range, bool heal);
+    uint64 GetMeleeTarget(uint64 piece);
+
+    //other
+
+    void SetOrientation(uint64 piece, ChessOrientation ori = CHESS_ORI_CHOOSE);
+
+    void Reset();
+    void Aggro(Unit *){}
     void UpdateAI(const uint32 diff);
 };
 

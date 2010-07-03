@@ -16,7 +16,7 @@ void move_triggerAI::Reset()
     //EndMarker   = false;
     moveTimer   = 10000;
     pieceStance = PIECE_NONE;
-    unitToMove = NULL;
+    unitToMove = 0;
     MedivhGUID = pInstance->GetData64(DATA_CHESS_ECHO_OF_MEDIVH);
 }
 
@@ -43,13 +43,15 @@ void move_triggerAI::SpellHit(Unit *caster,const SpellEntry *spell)
 
                 DoCast(m_creature, SPELL_MOVE_PREVISUAL);
 
-                unitToMove = caster;
+                unitToMove = caster->GetGUID();
 
                 if (spell->Id == SPELL_CHANGE_FACING)
                     pieceStance = PIECE_CHANGE_FACING;
                 else
                     pieceStance = PIECE_MOVE;
             }
+            else
+                m_creature->Say("You can't move to me", LANG_UNIVERSAL, caster->GetGUID());
         }
         else
             DoSay("Medivh not found ... you can't move", LANG_UNIVERSAL, m_creature);
@@ -62,17 +64,21 @@ void move_triggerAI::MakeMove()
 
     moveTimer = 10000;
     pieceStance = PIECE_NONE;
+    Unit * temp = m_creature->GetUnit(*m_creature, unitToMove);
 
-    if (!unitToMove || !unitToMove->isAlive())
+    if (!temp || !temp->isAlive())
+    {
+        unitToMove = 0;
         return;
+    }
 
     switch (tmpStance)
     {
     case PIECE_MOVE:
         DoCast(m_creature,SPELL_MOVE_MARKER);
-        unitToMove->StopMoving();
-        unitToMove->GetMotionMaster()->Clear();
-        unitToMove->GetMotionMaster()->MovePoint(0, wLoc.x, wLoc.y, wLoc.z);
+        temp->StopMoving();
+        temp->GetMotionMaster()->Clear();
+        temp->GetMotionMaster()->MovePoint(0, wLoc.x, wLoc.y, wLoc.z);
         break;
     case PIECE_CHANGE_FACING:
         //unitToMove->SetInFront(m_creature);
@@ -83,7 +89,7 @@ void move_triggerAI::MakeMove()
         break;
     }
 
-    unitToMove = NULL;
+    unitToMove = 0;
 }
 
 void move_triggerAI::UpdateAI(const uint32 diff)
@@ -134,7 +140,7 @@ npc_chesspieceAI::npc_chesspieceAI(Creature *c) : Scripted_NoMovementAI(c)
     }
 }*/
 
-void npc_chesspieceAI::Aggro(Unit *Unit)
+/*void npc_chesspieceAI::Aggro(Unit *Unit)
 {
     MedivhGUID = pInstance->GetData64(DATA_CHESS_ECHO_OF_MEDIVH);
     npc_medivh = m_creature->GetUnit(*m_creature, MedivhGUID);
@@ -145,19 +151,19 @@ void npc_chesspieceAI::Aggro(Unit *Unit)
         {
             case ALLIANCE:
                 if(m_creature->GetEntry() == NPC_KING_H)
-                    DoScriptText(SCRIPTTEXT_MEDIVH_CHECK,npc_medivh);
+                    DoScriptText(SCRIPTTEXT_MEDIVH_CHECK, npc_medivh);
                 else if(m_creature->GetEntry() == NPC_KING_A)
-                    DoScriptText(SCRIPTTEXT_PLAYER_CHECK,npc_medivh);
+                    DoScriptText(SCRIPTTEXT_PLAYER_CHECK, npc_medivh);
             break;
             case HORDE:
                 if(m_creature->GetEntry() == NPC_KING_A)
-                    DoScriptText(SCRIPTTEXT_MEDIVH_CHECK,npc_medivh);
+                    DoScriptText(SCRIPTTEXT_MEDIVH_CHECK, npc_medivh);
                 else if(m_creature->GetEntry() == NPC_KING_H)
-                    DoScriptText(SCRIPTTEXT_PLAYER_CHECK,npc_medivh);
+                    DoScriptText(SCRIPTTEXT_PLAYER_CHECK, npc_medivh);
             break;
         }
     }
-}
+}*/
 
 void npc_chesspieceAI::EnterEvadeMode()
 {
@@ -229,7 +235,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_KING_2;
             ability2Cooldown = CD_KING_2;
 
-            attackSpellID = KING_LLANE_ATTACK;
+            attackDamage = KING_LLANE_ATTACK;
             break;
 
         case NPC_KING_H:
@@ -241,7 +247,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_KING_2;
             ability2Cooldown = CD_KING_2;
 
-            attackSpellID = WARCHIEF_ATTACK;
+            attackDamage = WARCHIEF_ATTACK;
             break;
 
         case NPC_QUEEN_A:
@@ -253,7 +259,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_QUEEN_2;
             ability2Cooldown = CD_QUEEN_2;
 
-            attackSpellID = CONJURER_ATTACK;
+            attackDamage = CONJURER_ATTACK;
             break;
 
         case NPC_QUEEN_H:
@@ -265,7 +271,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_QUEEN_2;
             ability2Cooldown = CD_QUEEN_2;
 
-            attackSpellID = WARLOCK_ATTACK;
+            attackDamage = WARLOCK_ATTACK;
             break;
 
         case NPC_BISHOP_A:
@@ -277,7 +283,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_BISHOP_2;
             ability2Cooldown = CD_BISHOP_2;
 
-            attackSpellID = CLERIC_ATTACK;
+            attackDamage = CLERIC_ATTACK;
             break;
 
         case NPC_BISHOP_H:
@@ -289,7 +295,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_BISHOP_2;
             ability2Cooldown = CD_BISHOP_2;
 
-            attackSpellID = NECROLYTE_ATTACK;
+            attackDamage = NECROLYTE_ATTACK;
             break;
 
         case NPC_KNIGHT_A:
@@ -301,7 +307,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_KNIGHT_2;
             ability2Cooldown = CD_KNIGHT_2;
 
-            attackSpellID = ELEMENTAL_ATTACK2;  //?
+            attackDamage = ELEMENTAL_ATTACK2;  //?
             break;
 
         case NPC_KNIGHT_H:
@@ -313,7 +319,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_KNIGHT_2;
             ability2Cooldown = CD_KNIGHT_2;
 
-            attackSpellID = WOLF_ATTACK;
+            attackDamage = WOLF_ATTACK;
             break;
 
         case NPC_ROOK_A:
@@ -325,7 +331,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_ROOK_2;
             ability2Cooldown = CD_ROOK_2;
 
-            attackSpellID = ELEMENTAL_ATTACK;
+            attackDamage = ELEMENTAL_ATTACK;
             break;
 
         case NPC_ROOK_H:
@@ -337,7 +343,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_ROOK_2;
             ability2Cooldown = CD_ROOK_2;
 
-            attackSpellID = DEMON_ATTACK;
+            attackDamage = DEMON_ATTACK;
             break;
 
         case NPC_PAWN_A:
@@ -349,7 +355,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_PAWN_2;
             ability2Cooldown = CD_PAWN_2;
 
-            attackSpellID = FOOTMAN_ATTACK;
+            attackDamage = FOOTMAN_ATTACK;
             break;
 
         case NPC_PAWN_H:
@@ -361,7 +367,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_PAWN_2;
             ability2Cooldown = CD_PAWN_2;
 
-            attackSpellID = GRUNT_ATTACK;
+            attackDamage = GRUNT_ATTACK;
             break;
         default:
             break;
@@ -392,12 +398,12 @@ void npc_chesspieceAI::Reset()
 
 void npc_chesspieceAI::MovementInform(uint32 MovementType, uint32 Data)
 {
-    if (m_creature->isPossessed() && MovementType != POINT_MOTION_TYPE)
-    {
-        m_creature->StopMoving();
-
+    if (MovementType != POINT_MOTION_TYPE)
         return;
-    }
+
+    this->npc_medivh = m_creature->GetMap()->GetCreature(this->MedivhGUID);
+    if (npc_medivh)
+        ((boss_MedivhAI*)npc_medivh)->SetOrientation(m_creature->GetGUID());
 
     /*if(start_marker)
     {
@@ -558,6 +564,7 @@ void npc_chesspieceAI::UpdateAI(const uint32 diff)
             return;
         }*/
 
+        //TO DO: add shared cooldown for some spells
         if (ability1Timer < diff)
         {
             if (urand(0, ABILITY_CHANCE_MAX) > ability1Chance)
@@ -600,8 +607,15 @@ void npc_chesspieceAI::UpdateAI(const uint32 diff)
 
         if (attackTimer < diff)
         {
-            ForceAOESpellCast(attackSpellID);
             attackTimer = attackCooldown;
+            Unit * medivh = m_creature->GetUnit(*m_creature, this->MedivhGUID);
+
+            if (!medivh)
+                return;
+
+            Unit * uVictim = m_creature->GetUnit(*m_creature, ((boss_MedivhAI*)medivh)->GetMeleeTarget(m_creature->GetGUID()));
+            if (uVictim)
+                m_creature->DealDamage(uVictim, attackDamage, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         }
         else
             attackTimer -= diff;
@@ -634,7 +648,7 @@ void npc_chesspieceAI::DamageTaken(Unit * done_by, uint32 &damage)
 {
     if (damage > m_creature->GetHealth())
     {
-        damage = 0;
+        //damage = 0;
         if (m_creature->isPossessed())
             m_creature->RemoveAurasDueToSpell(SPELL_POSSES_CHESSPIECE);
 
@@ -644,7 +658,7 @@ void npc_chesspieceAI::DamageTaken(Unit * done_by, uint32 &damage)
         else
         {
             DoSay("I'm dying ... but Medivh not found ...", LANG_UNIVERSAL, m_creature, false);
-            damage = m_creature->GetHealth() + 1;
+            //damage = m_creature->GetHealth() + 1;
         }
     }
 }
@@ -1141,7 +1155,96 @@ uint64 boss_MedivhAI::GetSpellTarget(uint64 caster, int range, bool heal)
             prevPrior = (*i).prior;
         }
     }
+
+    return 0;
 }
+
+uint64 boss_MedivhAI::GetMeleeTarget(uint64 piece)
+{
+    int8 tmpi, tmpj;    //temporary piece position
+
+    for (int8 i = 0; i < 8; i++)
+    {
+        for (int8 j = 0; j < 8; j++)
+        {
+            if (chessBoard[i][j].piece == piece)
+            {
+                tmpi = j;
+                tmpj = j;
+                break;
+            }
+        }
+    }
+
+    switch (chessBoard[tmpi][tmpj].ori)
+    {
+        case CHESS_ORI_N:
+            if (tmpi < 7)
+            {
+                //front
+                if (chessBoard[tmpi + 1][tmpj].piece)
+                    return chessBoard[tmpi + 1][tmpj].piece;
+
+                //strafe
+                if (tmpj < 7 && chessBoard[tmpi + 1][tmpj + 1].piece)
+                    return chessBoard[tmpi + 1][tmpj + 1].piece;
+
+                if (tmpj > 0 && chessBoard[tmpi + 1][tmpj - 1].piece)
+                    return chessBoard[tmpi + 1][tmpj - 1].piece;
+            }
+            break;
+        case CHESS_ORI_E:
+            if (tmpj < 7)
+            {
+                //front
+                if (chessBoard[tmpi][tmpj + 1].piece)
+                    return chessBoard[tmpi][tmpj + 1].piece;
+
+                //strafe
+                if (tmpi < 7 && chessBoard[tmpi + 1][tmpj + 1].piece)
+                    return chessBoard[tmpi + 1][tmpj + 1].piece;
+
+                if (tmpi > 0 && chessBoard[tmpi - 1][tmpj + 1].piece)
+                    return chessBoard[tmpi - 1][tmpj + 1].piece;
+            }
+            break;
+        case CHESS_ORI_S:
+            if (tmpi > 0)
+            {
+                //front
+                if (chessBoard[tmpi - 1][tmpj].piece)
+                    return chessBoard[tmpi - 1][tmpj].piece;
+
+                //strafe
+                if (tmpj < 7 && chessBoard[tmpi - 1][tmpj + 1].piece)
+                    return chessBoard[tmpi - 1][tmpj + 1].piece;
+
+                if (tmpj > 0 && chessBoard[tmpi - 1][tmpj - 1].piece)
+                    return chessBoard[tmpi - 1][tmpj - 1].piece;
+            }
+            break;
+        case CHESS_ORI_W:
+            if (tmpj > 0)
+            {
+                //front
+                if (chessBoard[tmpi][tmpj - 1].piece)
+                    return chessBoard[tmpi][tmpj - 1].piece;
+
+                //strafe
+                if (tmpi < 7 && chessBoard[tmpi + 1][tmpj - 1].piece)
+                    return chessBoard[tmpi + 1][tmpj - 1].piece;
+
+                if (tmpi > 0 && chessBoard[tmpi - 1][tmpj - 1].piece)
+                    return chessBoard[tmpi - 1][tmpj - 1].piece;
+            }
+            break;
+        default:
+            break;
+    }
+
+    return 0;
+}
+
 
 bool boss_MedivhAI::IsChessPiece(Unit * unit)
 {
@@ -1504,14 +1607,13 @@ void boss_MedivhAI::RemoveChessPieceFromBoard(Unit * piece)
 
 void boss_MedivhAI::PrepareBoardForEvent()
 {
-    DoSay("zaczynam przygotowywanie planszy", LANG_UNIVERSAL, m_creature);
-    printf("\nzaczynam przygotowywanie planszy\n");
+    //DoSay("zaczynam przygotowywanie planszy", LANG_UNIVERSAL, m_creature);
+    //printf("\nzaczynam przygotowywanie planszy\n");
     if (chessBoard[0][0].trigger != 0)
         return;
 
     Creature * current;
     Creature * next;
-    int16 i, j;
     float posX, posY, posXc, posYc;
     std::list<Creature*> tmpList;
 
@@ -1526,7 +1628,7 @@ void boss_MedivhAI::PrepareBoardForEvent()
     //printf("\nRozmiary: tmpList: %i, forChessList: %i\n", tmpList.size(), pInstance->forChessList.size());
 
     //return;
-    DoSay("szukanie pierwszego", LANG_UNIVERSAL, m_creature);
+    //DoSay("szukanie pierwszego", LANG_UNIVERSAL, m_creature);
     //printf("\nszukanie pierwszego\n");
     //add first trigger to list (from that point we will start searching and adding to chessBoard oder triggers)
     for (std::list<Creature*>::iterator itr = tmpList.begin(); itr != tmpList.end(); ++itr)
@@ -1536,7 +1638,7 @@ void boss_MedivhAI::PrepareBoardForEvent()
         if (posX < -11050 && posX > -11056)
         {
             //printf("\n1.1\n");
-            DoSay("znalazlem pierwszego", LANG_UNIVERSAL, m_creature);
+            //DoSay("znalazlem pierwszego", LANG_UNIVERSAL, m_creature);
             //printf("\nznalazlem pierwszego\n");
             //printf("\n1.2\n");
             current = (*itr);
@@ -1546,14 +1648,25 @@ void boss_MedivhAI::PrepareBoardForEvent()
             if (current->GetEntry() == TRIGGER_ID)
                 chessBoard[0][0].trigger = current->GetGUID();
             else
+            {
                 if (IsChessPiece(current))
+                {
                     chessBoard[0][0].piece = current->GetGUID();
+
+                    if (IsMedivhsPiece(current))
+                        medivhSidePieces.push_back(current->GetGUID());
+
+                    if (current->getFaction() == A_FACTION)
+                        chessBoard[0][0].ori = CHESS_ORI_N;
+                    else
+                        chessBoard[0][0].ori = CHESS_ORI_S;
+                }
+            }
             //printf("\n1.4\n");
             //current->CastSpell(current, SPELL_MOVE_MARKER, true);
 
-            if (IsChessPiece(current))
-                if (IsMedivhsPiece(current))
-                    medivhSidePieces.push_back(current->GetGUID());
+
+
 
             //tmpList.erase(itr);
             //printf("\n1.5\n");
@@ -1569,7 +1682,7 @@ void boss_MedivhAI::PrepareBoardForEvent()
 
         if (!current)
         {
-            DoSay("niema currenta 2", LANG_UNIVERSAL, m_creature);
+            //DoSay("niema currenta 2", LANG_UNIVERSAL, m_creature);
             //printf("\nniema currenta 2\n");
             continue;
         }
@@ -1581,7 +1694,7 @@ void boss_MedivhAI::PrepareBoardForEvent()
             //printf("\n4\n");
             if (!next)
             {
-                DoSay("niema Next 1", LANG_UNIVERSAL, m_creature);
+                //DoSay("niema Next 1", LANG_UNIVERSAL, m_creature);
                 //printf("\nniema next 1\n");
                 continue;
             }
@@ -1594,13 +1707,20 @@ void boss_MedivhAI::PrepareBoardForEvent()
                     chessBoard[i + 1][0].trigger = next->GetGUID();
                 else
                     if (IsChessPiece(current))
+                    {
                         chessBoard[i + 1][0].piece = next->GetGUID();
+
+                        if (IsMedivhsPiece(next))
+                            medivhSidePieces.push_back(next->GetGUID());
+
+                        if (current->getFaction() == A_FACTION)
+                            chessBoard[i + 1][0].ori = CHESS_ORI_N;
+                        else
+                            chessBoard[i + 1][0].ori = CHESS_ORI_S;
+                    }
                 //next->CastSpell(next, SPELL_MOVE_MARKER, true);
                 //printf("\nznalazlem z lewej: %i   n: %s\n", i, next->GetName());
 
-                if (IsChessPiece(next))
-                    if (IsMedivhsPiece(next))
-                        medivhSidePieces.push_back(next->GetGUID());
                 //printf("\n5.2\n");
                 //tmpList.erase(itr);
                 //printf("\n5.3\n");
@@ -1618,7 +1738,7 @@ void boss_MedivhAI::PrepareBoardForEvent()
 
         if (!current)
         {
-            DoSay("niema currenta 3", LANG_UNIVERSAL, m_creature);
+            //DoSay("niema currenta 3", LANG_UNIVERSAL, m_creature);
             //printf("\nniema currenta 3\n");
             continue;
         }
@@ -1640,14 +1760,22 @@ void boss_MedivhAI::PrepareBoardForEvent()
                     if (next->GetEntry() == TRIGGER_ID)
                         chessBoard[i][j].trigger = next->GetGUID();
                     else
-                        if (IsChessPiece(current))
+                        if (IsChessPiece(next))
+                        {
                             chessBoard[i][j].piece = next->GetGUID();
+
+                            if (IsMedivhsPiece(next))
+                                medivhSidePieces.push_back(next->GetGUID());
+
+                            if (next->getFaction() == A_FACTION)
+                                chessBoard[i][j].ori = CHESS_ORI_N;
+                            else
+                                chessBoard[i][j].ori = CHESS_ORI_S;
+                        }
+
                     //next->CastSpell(next, SPELL_MOVE_MARKER, true);
                     //printf("\nznalazlem z reszty: [%i][%i]\n", i, j);
 
-                    if (IsChessPiece(next))
-                        if (IsMedivhsPiece(next))
-                            medivhSidePieces.push_back(next->GetGUID());
                     //printf("\n10.2\n");
                     //tmpList.erase(itr);
                     //printf("\n10.3\n");
@@ -1662,7 +1790,7 @@ void boss_MedivhAI::PrepareBoardForEvent()
             //printf("\n13\n");
             if (j < 7 && !current)
             {
-                DoSay("niema currenta 4", LANG_UNIVERSAL, m_creature);
+                //DoSay("niema currenta 4", LANG_UNIVERSAL, m_creature);
                 //printf("\nniema currenta 4\n");
                 break;
             }
@@ -1758,13 +1886,97 @@ void boss_MedivhAI::UpdateAI(const uint32 diff)
         enabled = true;
     }*/
 
-    if (pInstance->GetData(DATA_CHESS_EVENT) == IN_PROGRESS && !eventStarted)
+    if (!eventStarted && pInstance->GetData(DATA_CHESS_EVENT) == IN_PROGRESS)
+    {
         StartEvent();
+        return;
+    }
 
     if (!eventStarted)
         return;
 
-    //add piece move ai
+    //TODO: add piece move ai
+}
+
+void boss_MedivhAI::SetOrientation(uint64 piece, ChessOrientation ori)
+{
+    int8 tmpi = -1, tmpj = -1;    //temp piece location in array
+
+    for (int8 i = 0; i < 8; i++)
+    {
+        for(int8 j = 0; j < 8; j++)
+        {
+            if (chessBoard[i][j].piece == piece)
+            {
+                tmpi = i;
+                tmpj = j;
+                break;
+            }
+        }
+        if (tmpi > -1)
+            break;
+    }
+
+    if (tmpi < 0 || tmpj < 0)
+        return;
+
+    if (ori == CHESS_ORI_CHOOSE)
+    {
+        float tmpN, tmpS, tmpE, tmpW;
+        float pieceOri;
+
+        Unit * tmpPiece = m_creature->GetUnit(*m_creature, piece);
+        if (tmpPiece)
+        {
+            pieceOri = tmpPiece->GetOrientation();
+
+            if (pieceOri > CHESS_ORI_N)
+                tmpN = pieceOri - CHESS_ORI_N;
+            else
+                tmpN = CHESS_ORI_N - pieceOri;
+
+            if (pieceOri > CHESS_ORI_E)
+                tmpE = pieceOri - CHESS_ORI_E;
+            else
+                tmpE = CHESS_ORI_E - pieceOri;
+
+            if (pieceOri > CHESS_ORI_S)
+                tmpS = pieceOri - CHESS_ORI_S;
+            else
+                tmpS = CHESS_ORI_S - pieceOri;
+
+            if (pieceOri > CHESS_ORI_W)
+                tmpW = pieceOri - CHESS_ORI_W;
+            else
+                tmpW = CHESS_ORI_W - pieceOri;
+
+            ChessOrientation tmpOri = CHESS_ORI_N;
+            float min = tmpN;
+
+            if (tmpE < min)
+            {
+                min = tmpE;
+                tmpOri = CHESS_ORI_E;
+            }
+
+            if (tmpS < min)
+            {
+                min = tmpS;
+                tmpOri = CHESS_ORI_S;
+            }
+
+            if (tmpW < min)
+            {
+                min = tmpW;
+                tmpOri = CHESS_ORI_W;
+            }
+
+            chessBoard[tmpi][tmpj].ori = tmpOri;
+            tmpPiece->SetOrientation(tmpOri);
+        }
+    }
+    else
+        chessBoard[tmpi][tmpj].ori = ori;
 }
 
 Unit * boss_MedivhAI::FindTrigger(uint64 piece)
@@ -1845,7 +2057,13 @@ bool boss_MedivhAI::CanMoveTo(uint64 trigger, uint64 piece)
 
     return canMove;*/
 
-    return (IsInRange(piece, trigger, GetMoveRange(piece)) && ChessSquareIsEmpty(trigger));
+    int moveRange = GetMoveRange(piece);
+    bool isInRange = IsInRange(piece, trigger, moveRange);
+    bool isEmpty = ChessSquareIsEmpty(trigger);
+
+    printf("\nCanMoveTo: moveRange %i, isInRange %i, isEmpty %i", moveRange, isInRange, isEmpty);
+
+    return isInRange && isEmpty;
 }
 
 void boss_MedivhAI::AddTriggerToMove(uint64 trigger, uint64 piece, bool player)
