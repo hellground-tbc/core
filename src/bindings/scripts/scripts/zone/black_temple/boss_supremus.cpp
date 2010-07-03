@@ -36,6 +36,7 @@ EndScriptData */
 #define SPELL_VOLCANIC_SUMMON       40276
 #define SPELL_BERSERK               45078
 #define SPELL_CHARGE                41581
+#define SPELL_DIVE_CUSTOM           40279
 
 #define CREATURE_VOLCANO            23085
 #define CREATURE_STALKER            23095
@@ -126,6 +127,8 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
         DoEmote = false;
         summons.DespawnAll();
 
+        m_creature->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 15);   //custom, should be verified
+        m_creature->SetFloatValue(UNIT_FIELD_COMBATREACH, 15);
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
         m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, false);
     }
@@ -230,6 +233,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
                 if(Unit* target = CalculateHatefulStrikeTarget())
                 {
                     AddSpellToCast(target, SPELL_HATEFUL_STRIKE);
+                    m_creature->DealDamage(target, 5250, SPELL_DIRECT_DAMAGE); // test
                     HatefulStrikeTimer = 8000;
                 }
             }
@@ -254,18 +258,21 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
             if(MoltenPunch_Timer < diff)
             {
                 Unit *target = m_creature->getVictim();
-                if(m_creature->IsWithinDistInMap(target, 40))
+                if(target && m_creature->IsWithinDistInMap(target, 40))
                 {
-                    m_creature->CastSpell(target, SPELL_CHARGE, false); //must have single player target
-                    MoltenPunch_Timer = 8000+rand()%4000;
+                    //workaround to make dmg after knockback when distance < 40yd
+                    int32 damage = 5600;
+                    int32 knock = 175;
+                    m_creature->CastCustomSpell(target, SPELL_DIVE_CUSTOM, NULL, &damage, &knock, false);
                 }
                 else
                 {
                     WorldLocation temp;
-                    target->GetClosePoint(temp.x, temp.y, temp.z, 20.0f, false, m_creature->GetOrientation());  //if boss >40yd from victim make him run fast till 20yd and charge after 1 sec
+                    target->GetClosePoint(temp.x, temp.y, temp.z, 20.0f, false, m_creature->GetOrientation());  //if boss >40yd from victim make him run fast till 20yd and charge without damage
                     m_creature->SendMonsterMoveWithSpeed(temp.x, temp.y, temp.z, MOVEMENTFLAG_WALK_MODE);
-                    MoltenPunch_Timer = 1000;
+                    m_creature->CastSpell(target, SPELL_CHARGE, false);
                 }
+                MoltenPunch_Timer = 8000+rand()%4000;
             }
             else
                 MoltenPunch_Timer -= diff;
