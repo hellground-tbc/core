@@ -22,6 +22,10 @@ void move_triggerAI::Reset()
 
 void move_triggerAI::SpellHit(Unit *caster,const SpellEntry *spell)
 {
+    if (!MedivhGUID)
+        MedivhGUID = pInstance->GetData64(DATA_CHESS_ECHO_OF_MEDIVH);
+
+    printf("\nmove_triggerAI:SpellHit(...): stance: %i, medivh: %u, id: %i\n", pieceStance, MedivhGUID, spell->Id);
     if (pieceStance != PIECE_NONE || !MedivhGUID)
         return;
 
@@ -37,9 +41,10 @@ void move_triggerAI::SpellHit(Unit *caster,const SpellEntry *spell)
         boss_MedivhAI * medivh = (boss_MedivhAI*)(m_creature->GetUnit(*m_creature, MedivhGUID));
         if (medivh)
         {
-            if (medivh->CanMoveTo(m_creature->GetGUID(), caster->GetGUID()))
+            printf("\ntypeid: %i | unit: %i | player: %i\n", caster->GetTypeId(), TYPEID_UNIT, TYPEID_PLAYER);
+            if (/*caster->GetTypeId() == TYPEID_UNIT && */medivh->CanMoveTo(m_creature->GetGUID(), ((Creature*)caster)->GetGUID()))
             {
-                medivh->AddTriggerToMove(m_creature->GetGUID(), caster->GetGUID(), caster->GetTypeId() == TYPEID_PLAYER ? true : false);
+                medivh->AddTriggerToMove(m_creature->GetGUID(), caster->GetGUID(), caster->isPossessedByPlayer() ? true : false);
 
                 DoCast(m_creature, SPELL_MOVE_PREVISUAL);
 
@@ -2014,56 +2019,131 @@ bool boss_MedivhAI::ChessSquareIsEmpty(uint64 trigger)
 
 bool boss_MedivhAI::CanMoveTo(uint64 trigger, uint64 piece)
 {
-    /*Creature * cTrigger = m_creature->GetCreature(*m_creature, trigger);
+    printf("\nCanMoveTo: trigger %u, piece %u", trigger, piece);
 
-    if (!cTrigger || !ChessSquereIsEmpty(trigger))
+    if (!trigger || !piece)
         return false;
 
-    Unit * cPieceTrigger = FindTrigger(piece);
-    Unit * cPiece = m_creature->GetUnit(*m_creature, piece);
+    int moveRange = GetMoveRange(piece);
+    bool inRange = IsInRange(piece, trigger, moveRange);//false;
 
-    if (!cPieceTrigger)
-        return false;
+    /*int8 tmpI = -1, tmpJ = -1, i, tmpOffsetI, tmpOffsetJ;
 
-    bool canMove = false;
-
-    switch (cPiece->GetEntry())
+    for (int i = 0; i < 8; i++)
     {
-        case NPC_PAWN_A:
-        case NPC_PAWN_H:
-        case NPC_KING_A:
-        case NPC_KING_H:
-        case NPC_BISHOP_A:
-        case NPC_BISHOP_H:
-        case NPC_ROOK_A:
-        case NPC_ROOK_H:
-            if (cTrigger->GetDistance(cPieceTrigger) <= 8)
-                canMove = true;
-            break;
-        case NPC_KNIGHT_A:
-        case NPC_KNIGHT_H:
-            if (cTrigger->GetDistance(cPieceTrigger) <= 15)
-                canMove = true;
-            break;
-        case NPC_QUEEN_A:
-        case NPC_QUEEN_H:
-            if (cTrigger->GetDistance(cPieceTrigger) <= 20)
-                canMove = true;
-            break;
-        default:
-            canMove = false;
+        for (int j = 0; j < 8; j++)
+        {
+            printf ("\n i %i, j %i | G: %u | G2: %u", i, j, chessBoard[i][j].piece, chessBoard[i][j].trigger);
+            if (chessBoard[i][j].piece == piece)
+            {
+                tmpI = i;
+                tmpJ = j;
+                break;
+            }
+        }
+        //if we find location of piece
+        if (tmpI >= 0 && tmpJ >= 0)
             break;
     }
 
-    return canMove;*/
+    printf("\nCanMoveTo: tmpI %i, tmpJ %i", tmpI, tmpJ);
+    if (tmpI < 0 || tmpJ < 0)
+    {
+        Unit * uPiece = m_creature->GetUnit(*m_creature, piece);
+        if (uPiece)
+            ((ScriptedAI*)uPiece)->DoSay("CanMoveTo(..) : Nie znaleziono mnie na planszy !!", LANG_UNIVERSAL, uPiece, false);
+        return false;
+    }
 
-    int moveRange = GetMoveRange(piece);
-    bool isInRange = IsInRange(piece, trigger, moveRange);
+    switch (moveRange)
+    {
+        case 25:
+            for (i = 0; i < OFFSET25COUNT; i++)
+            {
+                tmpOffsetI = offsetTab25[i][0];
+                tmpOffsetJ = offsetTab25[i][1];
+
+                if (tmpI + tmpOffsetI >= 0 && tmpI + tmpOffsetI < 8 &&
+                    tmpJ + tmpOffsetJ >= 0 && tmpJ + tmpOffsetJ < 8)
+                {
+                    if (chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].piece == trigger ||
+                        chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].trigger == trigger)
+                        {
+                            inRange = true;
+                            break;
+                        }
+                }
+            }
+        case 20:
+            if (!inRange)
+            {
+                for (i = 0; i < OFFSET20COUNT; i++)
+                {
+                    tmpOffsetI = offsetTab20[i][0];
+                    tmpOffsetJ = offsetTab20[i][1];
+
+                    if (tmpI + tmpOffsetI >= 0 && tmpI + tmpOffsetI < 8 &&
+                        tmpJ + tmpOffsetJ >= 0 && tmpJ + tmpOffsetJ < 8)
+                    {
+                       if (chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].piece == trigger ||
+                            chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].trigger == trigger)
+                            {
+                                inRange = true;
+                                break;
+                            }
+                    }
+                }
+            }
+        case 15:
+            if (!inRange)
+            {
+                for (i = 0; i < OFFSET15COUNT; i++)
+                {
+                    tmpOffsetI = offsetTab15[i][0];
+                    tmpOffsetJ = offsetTab15[i][1];
+
+                    if (tmpI + tmpOffsetI >= 0 && tmpI + tmpOffsetI < 8 &&
+                        tmpJ + tmpOffsetJ >= 0 && tmpJ + tmpOffsetJ < 8)
+                    {
+                        if (chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].piece == trigger ||
+                            chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].trigger == trigger)
+                            {
+                                inRange = true;
+                                break;
+                            }
+                    }
+                }
+            }
+        case 8:
+            if (!inRange)
+            {
+                for (i = 0; i < OFFSET8COUNT; i++)
+                {
+                    tmpOffsetI = offsetTab8[i][0];
+                    tmpOffsetJ = offsetTab8[i][1];
+
+                    if (tmpI + tmpOffsetI >= 0 && tmpI + tmpOffsetI < 8 &&
+                        tmpJ + tmpOffsetJ >= 0 && tmpJ + tmpOffsetJ < 8)
+                    {
+                       if (chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].piece == trigger ||
+                            chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].trigger == trigger)
+                            {
+                                inRange = true;
+                                break;
+                            }
+                    }
+                }
+            }
+            break;
+        default:
+            break;
+    }*/
+
     bool isEmpty = ChessSquareIsEmpty(trigger);
 
-    printf("\nCanMoveTo: moveRange %i, isInRange %i, isEmpty %i", moveRange, isInRange, isEmpty);
+    printf("\nCanMoveTo: moveRange %i, isInRange %i, isEmpty %i", moveRange, inRange, isEmpty);
 
-    return isInRange && isEmpty;
+    return inRange && isEmpty;
 }
 
 void boss_MedivhAI::AddTriggerToMove(uint64 trigger, uint64 piece, bool player)

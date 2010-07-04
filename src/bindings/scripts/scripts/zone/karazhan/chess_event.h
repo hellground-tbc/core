@@ -295,10 +295,9 @@ float allianceSideDeadWP[2][16] =  {{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},     //Xco
                                     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}};    //Ycoord
 
 
-struct TRINITY_DLL_DECL move_triggerAI : public ScriptedAI
+class TRINITY_DLL_DECL move_triggerAI : public ScriptedAI
 {
-    move_triggerAI(Creature *c);
-
+private:
     ScriptedInstance* pInstance;
 
     WorldLocation wLoc;
@@ -312,6 +311,9 @@ struct TRINITY_DLL_DECL move_triggerAI : public ScriptedAI
     uint64 unitToMove;
     ChessPiecesStances pieceStance;
 
+public:
+    move_triggerAI(Creature *c);
+
     void Reset();
 
     void Aggro(Unit *){}
@@ -323,16 +325,14 @@ struct TRINITY_DLL_DECL move_triggerAI : public ScriptedAI
     void UpdateAI(const uint32 diff);
 };
 
-struct TRINITY_DLL_DECL npc_chesspieceAI : public Scripted_NoMovementAI
+class TRINITY_DLL_DECL npc_chesspieceAI : public Scripted_NoMovementAI
 {
-    npc_chesspieceAI(Creature *c);
-
+private:
     ScriptedInstance* pInstance;
 
     Unit *npc_medivh;
 
     bool ReturnToHome;
-    bool InGame;
     bool CanMove;
 
     //uint32 Heal_Timer;
@@ -360,7 +360,12 @@ struct TRINITY_DLL_DECL npc_chesspieceAI : public Scripted_NoMovementAI
 
     //void MoveInLineOfSight(Unit *who);
 
-    void Aggro(Unit *Unit);
+public:
+    bool InGame;
+
+    npc_chesspieceAI(Creature *c);
+
+    void Aggro(Unit *Unit){};
 
     void EnterEvadeMode();
 
@@ -389,10 +394,9 @@ struct TRINITY_DLL_DECL npc_chesspieceAI : public Scripted_NoMovementAI
     void DamageTaken(Unit * done_by, uint32 &damage);
 };
 
-struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
+class TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
 {
-    boss_MedivhAI(Creature *c);
-
+private:
     instance_karazhan* pInstance;
 
     int16 hordePieces;      //count of alive horde side pieces
@@ -415,6 +419,8 @@ struct TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
     std::list<ChessSquare> moveList; //list of triggers to make move
 
     //remove chesspieces
+public:
+    boss_MedivhAI(Creature *c);
 
     void SayChessPieceDied(Unit * piece);
     void RemoveChessPieceFromBoard(uint64 piece);   //removes dead piece from chess board
