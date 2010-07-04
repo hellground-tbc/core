@@ -1522,9 +1522,9 @@ void boss_MedivhAI::Reset()
     allowedPositions[NPC_BISHOP_A].push_back(std::pair<int, int>(0, 2));
     allowedPositions[NPC_BISHOP_A].push_back(std::pair<int, int>(0, 5));
     // Alliance Queen
-    allowedPositions[NPC_QUEEN_A].push_back(std::pair<int, int>(0, 1));
+    allowedPositions[NPC_QUEEN_A].push_back(std::pair<int, int>(0, 3));
     // Alliance King
-    allowedPositions[NPC_KING_A].push_back(std::pair<int, int>(0, 6));
+    allowedPositions[NPC_KING_A].push_back(std::pair<int, int>(0, 4));
     // Alliance Pawn
     allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(1, 0));
     allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(1, 1));
