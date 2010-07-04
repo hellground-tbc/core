@@ -3,7 +3,6 @@
 
 
 //trigger AI
-
 move_triggerAI::move_triggerAI(Creature *c) : ScriptedAI(c)
 {
     pInstance = ((ScriptedInstance*)m_creature->GetInstanceData());
@@ -679,6 +678,85 @@ boss_MedivhAI::boss_MedivhAI(Creature *c) : ScriptedAI(c)
     tpLoc.y = -1841.56;
     tpLoc.z = 229.625;
     tpLoc.o = 5.39745;
+
+    /*
+          A  B  C  D  E  F  G  H
+        0 A  A  A  A  A  A  A  A
+        1 A  A  A  A  A  A  A  A
+        2 E  E  E  E  E  E  E  E
+        3 E  E  E  E  E  E  E  E
+        4 E  E  E  E  E  E  E  E
+        5 E  E  E  E  E  E  E  E
+        6 H  H  H  H  H  H  H  H
+        7 H  H  H  H  H  H  H  H
+    */
+
+    // Alliance
+    // A0
+    chessBoard[0][0].position.x = 0.0f;
+    chessBoard[0][0].position.y = 0.0;
+
+    // B0
+    chessBoard[0][1].position.x = 0.0;
+    chessBoard[0][1].position.y = 0.0;
+
+    // C0
+    chessBoard[0][2].position.x = 0.0;
+    chessBoard[0][2].position.y = 0.0;
+
+    // D0
+    chessBoard[0][3].position.x = 0.0;
+    chessBoard[0][3].position.y = 0.0;
+
+    // E0
+    chessBoard[0][4].position.x = 0.0;
+    chessBoard[0][4].position.y = 0.0;
+
+    // F0
+    chessBoard[0][5].position.x = 0.0;
+    chessBoard[0][5].position.y = 0.0;
+
+    // G0
+    chessBoard[0][6].position.x = 0.0;
+    chessBoard[0][6].position.y = 0.0;
+
+    // H0
+    chessBoard[0][7].position.x = 0.0;
+    chessBoard[0][7].position.y = 0.0;
+
+    // A1
+    chessBoard[1][0].position.x = 0.0;
+    chessBoard[1][0].position.y = 0.0;
+
+    // B1
+    chessBoard[1][1].position.x = 0.0;
+    chessBoard[1][1].position.y = 0.0;
+
+    // C1
+    chessBoard[1][2].position.x = 0.0;
+    chessBoard[1][2].position.y = 0.0;
+
+    // D1
+    chessBoard[1][3].position.x = 0.0;
+    chessBoard[1][3].position.y = 0.0;
+
+    // E1
+    chessBoard[1][4].position.x = 0.0;
+    chessBoard[1][4].position.y = 0.0;
+
+    // F1
+    chessBoard[1][5].position.x = 0.0;
+    chessBoard[1][5].position.y = 0.0;
+
+    // G1
+    chessBoard[1][6].position.x = 0.0;
+    chessBoard[1][6].position.y = 0.0;
+
+    // H1
+    chessBoard[1][7].position.x = 0.0;
+    chessBoard[1][7].position.y = 0.0;
+    // end Alliance
+    // itd. dokonczyc
 }
 
 int boss_MedivhAI::GetMoveRange(uint64 piece)
@@ -1307,7 +1385,7 @@ bool boss_MedivhAI::IsInMoveList(uint64 unit, bool trigger)
 {
     if (!trigger)
     {
-        for (std::list<ChessSquare>::iterator i = moveList.begin(); i != moveList.end(); ++i)
+        for (std::list<ChessTile>::iterator i = moveList.begin(); i != moveList.end(); ++i)
         {
             if ((*i).piece == unit)
                 return true;
@@ -1315,7 +1393,7 @@ bool boss_MedivhAI::IsInMoveList(uint64 unit, bool trigger)
     }
     else
     {
-        for (std::list<ChessSquare>::iterator i = moveList.begin(); i != moveList.end(); ++i)
+        for (std::list<ChessTile>::iterator i = moveList.begin(); i != moveList.end(); ++i)
         {
             if ((*i).trigger == unit)
                 return true;
@@ -1433,6 +1511,29 @@ void boss_MedivhAI::Reset()
     //m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
     //m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
     //enabled = false;
+
+    // Alliance Tower
+    allowedPositions[NPC_ROOK_A].push_back(std::pair<int, int>(0, 0));
+    allowedPositions[NPC_ROOK_A].push_back(std::pair<int, int>(0, 7));
+    // Alliance Horse
+    allowedPositions[NPC_KNIGHT_A].push_back(std::pair<int, int>(0, 1));
+    allowedPositions[NPC_KNIGHT_A].push_back(std::pair<int, int>(0, 6));
+    // Alliance Laufer
+    allowedPositions[NPC_BISHOP_A].push_back(std::pair<int, int>(0, 2));
+    allowedPositions[NPC_BISHOP_A].push_back(std::pair<int, int>(0, 5));
+    // Alliance Queen
+    allowedPositions[NPC_QUEEN_A].push_back(std::pair<int, int>(0, 1));
+    // Alliance King
+    allowedPositions[NPC_KING_A].push_back(std::pair<int, int>(0, 6));
+    // Alliance Pawn
+    allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(1, 0));
+    allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(1, 1));
+    allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(1, 2));
+    allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(1, 3));
+    allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(1, 4));
+    allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(1, 5));
+    allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(1, 6));
+    allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(1, 7));
 }
 
 void boss_MedivhAI::SayChessPieceDied(Unit * piece)
@@ -1626,10 +1727,24 @@ void boss_MedivhAI::PrepareBoardForEvent()
 
     for (std::list<uint64>::iterator i = pInstance->forChessList.begin(); i != pInstance->forChessList.end(); i++)
     {
-        tmpList.push_back(m_creature->GetMap()->GetCreature((*i)));
-        //DoSay(".", LANG_UNIVERSAL, m_creature);
+        Creature *temp = m_creature->GetMap()->GetCreature(*i);
+        if (temp)
+        {
+            std::list<std::pair<int, int>>::iterator iter = allowedPositions[temp->GetEntry()].begin();
+            if (iter != allowedPositions[temp->GetEntry()].end())
+            {
+                float x = chessBoard[iter->first][iter->second].position.x;
+                float y = chessBoard[iter->first][iter->second].position.y;
+                float z = chessBoard[iter->first][iter->second].position.z;
+                temp->Relocate(x, y, z, temp->GetOrientation());
+                chessBoard[iter->first][iter->second].piece = temp->GetGUID();
+
+                allowedPositions[temp->GetEntry()].erase(iter);
+            }
+        }
     }
 
+    /// DALEJ NIEPOTRZEBNE ALE NIE KASOWA£EM
     //printf("\nRozmiary: tmpList: %i, forChessList: %i\n", tmpList.size(), pInstance->forChessList.size());
 
     //return;
@@ -2148,7 +2263,7 @@ bool boss_MedivhAI::CanMoveTo(uint64 trigger, uint64 piece)
 
 void boss_MedivhAI::AddTriggerToMove(uint64 trigger, uint64 piece, bool player)
 {
-    ChessSquare tmp;
+    ChessTile tmp;
     tmp.piece = piece;
     tmp.trigger = trigger;
 
@@ -2324,7 +2439,7 @@ void boss_MedivhAI::AddTriggerToMove(uint64 trigger, uint64 piece, bool player)
             prevPrior = (*i).prior;
         }
 
-        ChessSquare temp;
+        ChessTile temp;
         temp.piece = chosenGUID;
         temp.trigger = chosenTriggerGUID;
 

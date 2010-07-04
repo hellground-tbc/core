@@ -238,17 +238,20 @@ enum ChessOrientation
     CHESS_ORI_CHOOSE = 4    //simple use script to choose orientation
 };
 
-struct ChessSquare
+struct ChessTile
 {
+
+    WorldLocation position;
     uint64 piece;           //GUID;
     uint64 trigger;         //GUID;
     ChessOrientation ori;   //Orientation for GetMeleeTarget(), updated by medivh function SetOrientation();
 
-    ChessSquare()
+    ChessTile()
     {
         piece = 0;
         trigger = 0;
         ori = CHESS_ORI_CHOOSE;
+        position.z = 220.66f;
     }
 };
 
@@ -405,7 +408,11 @@ private:
     int16 chanceToMove;     //random chance for medivh to move piece when player moved
                             //when player want to move his piece medivh tests if he can move too
 
-    ChessSquare chessBoard[8][8];
+    ChessTile chessBoard[8][8];
+
+     // entry, index_list
+     std::map<int, std::list<std::pair<int, int>>> allowedPositions; // tylko do ustawienia
+
 
     std::list<uint64> medivhSidePieces; //alive pieces guids
 
@@ -416,7 +423,7 @@ private:
     WorldLocation tpLoc;    //location of player teleport point
 
     std::list<uint64> tpList;
-    std::list<ChessSquare> moveList; //list of triggers to make move
+    std::list<ChessTile> moveList; //list of triggers to make move
 
     //remove chesspieces
 public:
