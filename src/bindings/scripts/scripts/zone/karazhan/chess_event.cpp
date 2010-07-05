@@ -85,9 +85,13 @@ void move_triggerAI::MakeMove()
         temp->GetMotionMaster()->MovePoint(0, wLoc.x, wLoc.y, wLoc.z);
         break;
     case PIECE_CHANGE_FACING:
-        //unitToMove->SetInFront(m_creature);
-        //unitToMove->SetUInt64Value(UNIT_FIELD_TARGET, m_creature->GetGUID());
-        //unitToMove->
+        temp->SetInFront(m_creature);
+        temp = NULL;
+        temp = m_creature->GetUnit(*m_creature, MedivhGUID);
+        if (temp)
+        {
+            ((boss_MedivhAI*)temp)->SetOrientation(unitToMove);
+        }
         break;
     default:
         break;
@@ -679,84 +683,282 @@ boss_MedivhAI::boss_MedivhAI(Creature *c) : ScriptedAI(c)
     tpLoc.z = 229.625;
     tpLoc.o = 5.39745;
 
+    this->chanceToMove = urand(MIN_MOVE_CHANCE, MAX_MOVE_CHANCE);
+
     /*
           A  B  C  D  E  F  G  H
-        0 A  A  A  A  A  A  A  A
-        1 A  A  A  A  A  A  A  A
+        0 H  H  H  H  H  H  H  H
+        1 H  H  H  H  H  H  H  H
         2 E  E  E  E  E  E  E  E
         3 E  E  E  E  E  E  E  E
         4 E  E  E  E  E  E  E  E
         5 E  E  E  E  E  E  E  E
-        6 H  H  H  H  H  H  H  H
-        7 H  H  H  H  H  H  H  H
+        6 A  A  A  A  A  A  A  A
+        7 A  A  A  A  A  A  A  A
     */
 
-    // Alliance
+    // Horde
     // A0
-    chessBoard[0][0].position.x = 0.0f;
-    chessBoard[0][0].position.y = 0.0;
+    chessBoard[0][0].position.x = -11077.7;
+    chessBoard[0][0].position.y = -1849.0;
 
     // B0
-    chessBoard[0][1].position.x = 0.0;
-    chessBoard[0][1].position.y = 0.0;
+    chessBoard[0][1].position.x = -11074.0;
+    chessBoard[0][1].position.y = -1853.3;
 
     // C0
-    chessBoard[0][2].position.x = 0.0;
-    chessBoard[0][2].position.y = 0.0;
+    chessBoard[0][2].position.x = -11070.8;
+    chessBoard[0][2].position.y = -1857.7;
 
     // D0
-    chessBoard[0][3].position.x = 0.0;
-    chessBoard[0][3].position.y = 0.0;
+    chessBoard[0][3].position.x = -11067.0;
+    chessBoard[0][3].position.y = -1861.9;
 
     // E0
-    chessBoard[0][4].position.x = 0.0;
-    chessBoard[0][4].position.y = 0.0;
+    chessBoard[0][4].position.x = -11063.6;
+    chessBoard[0][4].position.y = -1866.5;
 
     // F0
-    chessBoard[0][5].position.x = 0.0;
-    chessBoard[0][5].position.y = 0.0;
+    chessBoard[0][5].position.x = -11060.3;
+    chessBoard[0][5].position.y = -1870.8;
 
     // G0
-    chessBoard[0][6].position.x = 0.0;
-    chessBoard[0][6].position.y = 0.0;
+    chessBoard[0][6].position.x = -11056.7;
+    chessBoard[0][6].position.y = -1875.0;
 
     // H0
-    chessBoard[0][7].position.x = 0.0;
-    chessBoard[0][7].position.y = 0.0;
+    chessBoard[0][7].position.x = -11053.4;
+    chessBoard[0][7].position.y = -1879.6;
 
     // A1
-    chessBoard[1][0].position.x = 0.0;
-    chessBoard[1][0].position.y = 0.0;
+    chessBoard[1][0].position.x = -11082.1;
+    chessBoard[1][0].position.y = -1852.4;
 
     // B1
-    chessBoard[1][1].position.x = 0.0;
-    chessBoard[1][1].position.y = 0.0;
+    chessBoard[1][1].position.x = -11078.5;
+    chessBoard[1][1].position.y = -1856.9;
 
     // C1
-    chessBoard[1][2].position.x = 0.0;
-    chessBoard[1][2].position.y = 0.0;
+    chessBoard[1][2].position.x = -11075.0;
+    chessBoard[1][2].position.y = -1861.1;
 
     // D1
-    chessBoard[1][3].position.x = 0.0;
-    chessBoard[1][3].position.y = 0.0;
+    chessBoard[1][3].position.x = -11071.5;
+    chessBoard[1][3].position.y = -1865.5;
 
     // E1
-    chessBoard[1][4].position.x = 0.0;
-    chessBoard[1][4].position.y = 0.0;
+    chessBoard[1][4].position.x = -11067.8;
+    chessBoard[1][4].position.y = -1869.9;
 
     // F1
-    chessBoard[1][5].position.x = 0.0;
-    chessBoard[1][5].position.y = 0.0;
+    chessBoard[1][5].position.x = -11064.3;
+    chessBoard[1][5].position.y = -1874.3;
 
     // G1
-    chessBoard[1][6].position.x = 0.0;
-    chessBoard[1][6].position.y = 0.0;
+    chessBoard[1][6].position.x = -11061.0;
+    chessBoard[1][6].position.y = -1878.6;
 
     // H1
-    chessBoard[1][7].position.x = 0.0;
-    chessBoard[1][7].position.y = 0.0;
-    // end Alliance
-    // itd. dokonczyc
+    chessBoard[1][7].position.x = -11057.4;
+    chessBoard[1][7].position.y = -1883.0;
+    // end Horde
+
+    // Empty
+    // A2
+    chessBoard[2][0].position.x = -11086.5;
+    chessBoard[2][0].position.y = -1855.8;
+
+    // B2
+    chessBoard[2][1].position.x = -11083.0;
+    chessBoard[2][1].position.y = -1860.6;
+
+    // C2
+    chessBoard[2][2].position.x = -11079.6;
+    chessBoard[2][2].position.y = -1864.8;
+
+    // D2
+    chessBoard[2][3].position.x = -11076.2;
+    chessBoard[2][3].position.y = -1868.9;
+
+    // E2
+    chessBoard[2][4].position.x = -11072.5;
+    chessBoard[2][4].position.y = -1873.5;
+
+    // F2
+    chessBoard[2][5].position.x = -11069.1;
+    chessBoard[2][5].position.y = -1877.8;
+
+    // G2
+    chessBoard[2][6].position.x = -11065.5;
+    chessBoard[2][6].position.y = -1882.3;
+
+    // H2
+    chessBoard[2][7].position.x = -11062.2;
+    chessBoard[2][7].position.y = -1886.5;
+
+    // A3
+    chessBoard[2][0].position.x = -11090.6;
+    chessBoard[2][0].position.y = -1859.3;
+
+    // B3
+    chessBoard[3][1].position.x = -11087.0;
+    chessBoard[3][1].position.y = -1863.7;
+
+    // C3
+    chessBoard[3][2].position.x = -11083.4;
+    chessBoard[3][2].position.y = -1868.1;
+
+    // D3
+    chessBoard[3][3].position.x = -11080.4;
+    chessBoard[3][3].position.y = -1872.4;
+
+    // E3
+    chessBoard[3][4].position.x = -11076.7;
+    chessBoard[3][4].position.y = -1876.7;
+
+    // F3
+    chessBoard[3][5].position.x = -11073.2;
+    chessBoard[3][5].position.y = -1889.4;
+
+    // G3
+    chessBoard[3][6].position.x = -11069.9;
+    chessBoard[3][6].position.y = -1885.6;
+
+    // H3
+    chessBoard[3][7].position.x = -11066.2;
+    chessBoard[3][7].position.y = -1889.9;
+
+    // A4
+    chessBoard[4][0].position.x = -11095.0;
+    chessBoard[4][0].position.y = -1862.8;
+
+    // B4
+    chessBoard[4][1].position.x = -11091.5;
+    chessBoard[4][1].position.y = -1867.3;
+
+    // C4
+    chessBoard[4][2].position.x = -11088.1;
+    chessBoard[4][2].position.y = -1871.2;
+
+    // D4
+    chessBoard[4][3].position.x = -11084.3;
+    chessBoard[4][3].position.y = -1875.8;
+
+    // E4
+    chessBoard[4][4].position.x = -11081.1;
+    chessBoard[4][4].position.y = -1880.2;
+
+    // F4
+    chessBoard[4][5].position.x = -11077.7;
+    chessBoard[4][5].position.y = -1884.6;
+
+    // G4
+    chessBoard[4][6].position.x = -11074.2;
+    chessBoard[4][6].position.y = -1888.9;
+
+    // H4
+    chessBoard[4][7].position.x = -11070.6;
+    chessBoard[4][7].position.y = -1893.4;
+
+    // A5
+    chessBoard[5][0].position.x = -11099.5;
+    chessBoard[5][0].position.y = -1866.3;
+
+    // B5
+    chessBoard[5][1].position.x = -11095.7;
+    chessBoard[5][1].position.y = -1870.7;
+
+    // C5
+    chessBoard[5][2].position.x = -11092.3;
+    chessBoard[5][2].position.y = -1875.0;
+
+    // D5
+    chessBoard[5][3].position.x = -11088.8;
+    chessBoard[5][3].position.y = -1879.5;
+
+    // E5
+    chessBoard[5][4].position.x = -11085.2;
+    chessBoard[5][4].position.y = -1883.9;
+
+    // F5
+    chessBoard[5][5].position.x = -11082.1;
+    chessBoard[5][5].position.y = -1888.3;
+
+    // G5
+    chessBoard[5][6].position.x = -11078.5;
+    chessBoard[5][6].position.y = -1892.5;
+
+    // H5
+    chessBoard[5][7].position.x = -11075.0;
+    chessBoard[5][7].position.y = -1897.0;
+    // end Empty
+
+    // Alliance
+    // A6
+    chessBoard[6][0].position.x = -11103.7;
+    chessBoard[6][0].position.y = -1869.6;
+
+    // B6
+    chessBoard[6][1].position.x = -11100.2;
+    chessBoard[6][1].position.y = -1874.0;
+
+    // C6
+    chessBoard[6][2].position.x = -11096.8;
+    chessBoard[6][2].position.y = -1878.2;
+
+    // D6
+    chessBoard[6][3].position.x = -11093.4;
+    chessBoard[6][3].position.y = -1882.6;
+
+    // E6
+    chessBoard[6][4].position.x = -11089.7;
+    chessBoard[6][4].position.y = -1887.0;
+
+    // F6
+    chessBoard[6][5].position.x = -11086.2;
+    chessBoard[6][5].position.y = -1891.5;
+
+    // G6
+    chessBoard[6][6].position.x = -11082.9;
+    chessBoard[6][6].position.y = -1895.8;
+
+    // H6
+    chessBoard[6][7].position.x = -11079.4;
+    chessBoard[6][7].position.y = -1900.2;
+
+    // A7
+    chessBoard[7][0].position.x = -11108.1;
+    chessBoard[7][0].position.y = -1872.9;
+
+    // B7
+    chessBoard[7][1].position.x = -11104.4;
+    chessBoard[7][1].position.y = -1877.7;
+
+    // C7
+    chessBoard[7][2].position.x = -11101.0;
+    chessBoard[7][2].position.y = -1881.2;
+
+    // D7
+    chessBoard[7][3].position.x = -11097.6;
+    chessBoard[7][3].position.y = -1886.4;
+
+    // E7
+    chessBoard[7][4].position.x = -11094.1;
+    chessBoard[7][4].position.y = -1890.6;
+
+    // F7
+    chessBoard[7][5].position.x = -11090.5;
+    chessBoard[7][5].position.y = -1895.0;
+
+    // G7
+    chessBoard[7][6].position.x = -11087.2;
+    chessBoard[7][6].position.y = -1899.6;
+
+    // H7
+    chessBoard[7][7].position.x = -11083.7;
+    chessBoard[7][7].position.y = -1903.9;
+
+    //end Alliance
 }
 
 int boss_MedivhAI::GetMoveRange(uint64 piece)
@@ -1718,10 +1920,10 @@ void boss_MedivhAI::PrepareBoardForEvent()
     if (chessBoard[0][0].trigger != 0)
         return;
 
-    Creature * current;
+    /*Creature * current;
     Creature * next;
     float posX, posY, posXc, posYc;
-    std::list<Creature*> tmpList;
+    std::list<Creature*> tmpList;*/
 
     //printf("\nRozmiary: tmpList: %i, forChessList: %i\n", tmpList.size(), pInstance->forChessList.size());
 
@@ -1730,7 +1932,7 @@ void boss_MedivhAI::PrepareBoardForEvent()
         Creature *temp = m_creature->GetMap()->GetCreature(*i);
         if (temp)
         {
-            std::list<std::pair<int, int>>::iterator iter = allowedPositions[temp->GetEntry()].begin();
+            std::list< std::pair<int, int> >::iterator iter = allowedPositions[temp->GetEntry()].begin();
             if (iter != allowedPositions[temp->GetEntry()].end())
             {
                 float x = chessBoard[iter->first][iter->second].position.x;
@@ -1740,11 +1942,16 @@ void boss_MedivhAI::PrepareBoardForEvent()
                 chessBoard[iter->first][iter->second].piece = temp->GetGUID();
 
                 allowedPositions[temp->GetEntry()].erase(iter);
+
+                if (temp->getFaction() == A_FACTION)
+                    chessBoard[iter->first][iter->second].ori = CHESS_ORI_N;
+                else
+                    chessBoard[iter->first][iter->second].ori = CHESS_ORI_S;
             }
         }
     }
-
-    /// DALEJ NIEPOTRZEBNE ALE NIE KASOWA£EM
+    /*
+    /// DALEJ NIEPOTRZEBNE ALE NIE KASOWAÅEM
     //printf("\nRozmiary: tmpList: %i, forChessList: %i\n", tmpList.size(), pInstance->forChessList.size());
 
     //return;
@@ -1917,7 +2124,7 @@ void boss_MedivhAI::PrepareBoardForEvent()
             //printf("\n14\n");
         }
         current = NULL;
-    }
+    }*/
 }
 
 void boss_MedivhAI::TeleportPlayer(Player * player)
@@ -2092,7 +2299,25 @@ void boss_MedivhAI::SetOrientation(uint64 piece, ChessOrientation ori)
             }
 
             chessBoard[tmpi][tmpj].ori = tmpOri;
-            tmpPiece->SetOrientation(tmpOri);
+
+            switch (tmpOri)
+            {
+                case CHESS_ORI_N:
+                    tmpPiece->SetOrientation(ORI_N);
+                    break;
+                case CHESS_ORI_E:
+                    tmpPiece->SetOrientation(ORI_E);
+                    break;
+                case CHESS_ORI_S:
+                    tmpPiece->SetOrientation(ORI_S);
+                    break;
+                case CHESS_ORI_W:
+                    tmpPiece->SetOrientation(ORI_W);
+                    break;
+                default:
+                    break;
+            }
+
         }
     }
     else
@@ -2272,7 +2497,7 @@ void boss_MedivhAI::AddTriggerToMove(uint64 trigger, uint64 piece, bool player)
     uint16 tmpChance = urand(0, 100);
 
     //check, if tmpChance is higher than chanceToMove then medivh also can move one of his pieces
-    if (player && tmpChance > chanceToMove)
+    if (player && tmpChance < chanceToMove)
     {
         std::list<Priority> tmpList;
         std::list<uint64> emptySquareList;

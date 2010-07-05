@@ -68,7 +68,15 @@ EndScriptData */
 #define ABILITY_2_CHANCE_MIN    25
 #define ABILITY_2_CHANCE_MAX    66
 
+#define MIN_MOVE_CHANCE         33
+#define MAX_MOVE_CHANCE         90
+
 #define attackCooldown          3000
+
+#define ORI_N   0.670312
+#define ORI_E   5.38343
+#define ORI_S   3.805620
+#define ORI_W   2.242677
 
 enum SCRIPTTEXTs
 {
@@ -410,8 +418,8 @@ private:
 
     ChessTile chessBoard[8][8];
 
-     // entry, index_list
-     std::map<int, std::list<std::pair<int, int>>> allowedPositions; // tylko do ustawienia
+    // entry, index_list
+    std::map< int, std::list < std::pair<int, int> > > allowedPositions; // tylko do ustawienia
 
 
     std::list<uint64> medivhSidePieces; //alive pieces guids
@@ -425,9 +433,11 @@ private:
     std::list<uint64> tpList;
     std::list<ChessTile> moveList; //list of triggers to make move
 
-    //remove chesspieces
+
 public:
     boss_MedivhAI(Creature *c);
+
+    //remove
 
     void SayChessPieceDied(Unit * piece);
     void RemoveChessPieceFromBoard(uint64 piece);   //removes dead piece from chess board
