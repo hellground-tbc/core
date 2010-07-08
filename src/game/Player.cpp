@@ -436,7 +436,7 @@ Player::Player (WorldSession *session): Unit()
     m_declinedname = NULL;
 
     m_isActive = true;
-    
+
     m_farsightVision = false;
 
     m_globalCooldowns.clear();
@@ -1107,7 +1107,7 @@ void Player::Update( uint32 p_time )
 {
     if(!IsInWorld())
         return;
-    
+
     if (m_AC_timer)
         if (m_AC_timer < p_time)
             m_AC_timer = 0;
@@ -1798,7 +1798,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             SetSemaphoreTeleport(false);
             return false;
         }
-        
+
         if(InstanceGroupBind *igb = GetGroup() ? GetGroup()->GetBoundInstance(mapid, GetDifficulty()) : NULL)
         {
             if(Map *iMap = MapManager::Instance().FindMap(mapid,igb->save->GetInstanceId()))
@@ -2143,7 +2143,7 @@ Creature* Player::GetNPCIfCanInteractWith(uint64 guid, uint32 npcflagmask)
 
     if(IsHostileTo(unit))
         return NULL;
-    
+
     // appropriate npc type
     if(npcflagmask && !unit->HasFlag( UNIT_NPC_FLAGS, npcflagmask ))
         return NULL;
@@ -3768,7 +3768,7 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
         Field *fields = result->Fetch();
 
         Tokens data = StrSplit(fields[0].GetCppString(), " ");
-        uint32 plLevel = Player::GetUInt32ValueFromArray(data,UNIT_FIELD_LEVEL); 
+        uint32 plLevel = Player::GetUInt32ValueFromArray(data,UNIT_FIELD_LEVEL);
 
         if(plLevel >= 40)
         {
@@ -3777,7 +3777,7 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
             return;
         }
     }
-    
+
     // convert corpse to bones if exist (to prevent exiting Corpse in World without DB entry)
     // bones will be deleted by corpse/bones deleting thread shortly
     ObjectAccessor::Instance().ConvertCorpseForPlayer(playerguid);
@@ -7293,7 +7293,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                     case 2634: spell_id = 25488; break; // Rank7
                     default:
                         continue;
-                } 
+                }
             }
 
             SpellEnchantProcEntry const* entry =  spellmgr.GetSpellEnchantProcEvent(enchant_id);
@@ -7320,7 +7320,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                 continue;
             }
 
-            // do not allow proc windfury totem from yellow attacks 
+            // do not allow proc windfury totem from yellow attacks
             if(spell && spellInfo->SpellFamilyName == SPELLFAMILY_SHAMAN && spellInfo->SpellFamilyFlags & 0x200000000LL)
                 return;
 
@@ -12060,7 +12060,7 @@ void Player::ApplyEnchantment(Item *item,EnchantmentSlot slot,bool apply, bool a
         uint32 enchant_display_type = pEnchant->type[s];
         uint32 enchant_amount = pEnchant->amount[s];
         uint32 enchant_spell_id = pEnchant->spellid[s];
-        
+
         switch(enchant_display_type)
         {
             case ITEM_ENCHANTMENT_TYPE_NONE:
@@ -15517,7 +15517,7 @@ InstancePlayerBind* Player::GetBoundInstance(uint32 mapid, uint8 difficulty)
     else
         return NULL;
 }
-     
+
 InstanceSave * Player::GetInstanceSave(uint32 mapid)
 {
     InstancePlayerBind *pBind = GetBoundInstance(mapid, GetDifficulty());
@@ -15754,7 +15754,7 @@ bool Player::_LoadHomeBind(QueryResult_AutoPtr result)
 {
     PlayerInfo const *info = objmgr.GetPlayerInfo(getRace(), getClass());
     if (!info)
-    {        
+    {
         sLog.outError("Player have incorrect race/class pair. Can't be loaded.");
         return false;
     }
@@ -18454,7 +18454,7 @@ void Player::ClearComboPoints()
 
     if(target)
         target->RemoveComboPointHolder(GetGUIDLow());
-    
+
     m_comboTarget = 0;
 }
 
@@ -19792,7 +19792,7 @@ void Player::AddGlobalCooldown(SpellEntry const *spellInfo, Spell const *spell)
     {
         cdTime = spellInfo->StartRecoveryTime;
 
-        if( !(spellInfo->Attributes & (SPELL_ATTR_UNK4|SPELL_ATTR_UNK5)) )
+        if( !(spellInfo->Attributes & (SPELL_ATTR_UNK4|SPELL_ATTR_TRADESPELL)) )
             cdTime *= GetFloatValue(UNIT_MOD_CAST_SPEED);
         else if (spell->IsRangedSpell() && !spell->IsAutoRepeat())
             cdTime *= m_modAttackSpeedPct[RANGED_ATTACK];

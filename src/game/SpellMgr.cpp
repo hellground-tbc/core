@@ -278,7 +278,7 @@ uint32 GetSpellCastTime(SpellEntry const* spellInfo, Spell const* spell)
         if(Player* modOwner = spell->GetCaster()->GetSpellModOwner())
             modOwner->ApplySpellMod(spellInfo->Id, SPELLMOD_CASTING_TIME, castTime, spell);
 
-        if( !(spellInfo->Attributes & (SPELL_ATTR_UNK4|SPELL_ATTR_UNK5)) )
+        if( !(spellInfo->Attributes & (SPELL_ATTR_UNK4|SPELL_ATTR_TRADESPELL)) )
             castTime = int32(castTime * spell->GetCaster()->GetFloatValue(UNIT_MOD_CAST_SPEED));
         else
         {
@@ -1656,8 +1656,8 @@ bool SpellMgr::IsSpecialStackCase(uint32 spellId_1, uint32 spellId_2, bool sameC
 {
     // put here all spells that should stack, but accoriding to rules in method IsNoStackSpellDueToSpell don't stack
     SpellEntry const *spellInfo_1 = sSpellStore.LookupEntry(spellId_1);
-    SpellEntry const *spellInfo_2 = sSpellStore.LookupEntry(spellId_2);    
-    
+    SpellEntry const *spellInfo_2 = sSpellStore.LookupEntry(spellId_2);
+
     // judgement of light stacks with judgement of wisdom
     if(spellInfo_1->SpellFamilyName == SPELLFAMILY_PALADIN && spellInfo_1->SpellFamilyFlags & 0x80000 && spellInfo_1->SpellIconID == 299 // light
             && spellInfo_2->SpellFamilyName == SPELLFAMILY_PALADIN && spellInfo_2->SpellFamilyFlags & 0x80000 && spellInfo_2->SpellIconID == 206) // wisdom
@@ -2801,7 +2801,7 @@ bool IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_id,uint32 z
             MapEntry const* mapEntry = sMapStore.LookupEntry(map_id);
             if(!mapEntry)
                 return false;
-            
+
             //the follow code doesn't work.
             //if(!mapEntry->IsBattleArena())
             //    return false;
