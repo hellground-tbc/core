@@ -1704,6 +1704,8 @@ bool boss_MedivhAI::IsInRange(uint64 from, uint64 to, int range)
 void boss_MedivhAI::Reset()
 {
     eventStarted = false;
+    boardPrepared = false;
+    prepareTimer = 10000;
     hordePieces = 16;
     alliancePieces = 16;
     medivhSidePieces.clear();
@@ -1713,29 +1715,6 @@ void boss_MedivhAI::Reset()
     //m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
     //m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
     //enabled = false;
-
-    // Alliance Tower
-    allowedPositions[NPC_ROOK_A].push_back(std::pair<int, int>(0, 0));
-    allowedPositions[NPC_ROOK_A].push_back(std::pair<int, int>(0, 7));
-    // Alliance Horse
-    allowedPositions[NPC_KNIGHT_A].push_back(std::pair<int, int>(0, 1));
-    allowedPositions[NPC_KNIGHT_A].push_back(std::pair<int, int>(0, 6));
-    // Alliance Laufer
-    allowedPositions[NPC_BISHOP_A].push_back(std::pair<int, int>(0, 2));
-    allowedPositions[NPC_BISHOP_A].push_back(std::pair<int, int>(0, 5));
-    // Alliance Queen
-    allowedPositions[NPC_QUEEN_A].push_back(std::pair<int, int>(0, 3));
-    // Alliance King
-    allowedPositions[NPC_KING_A].push_back(std::pair<int, int>(0, 4));
-    // Alliance Pawn
-    allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(1, 0));
-    allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(1, 1));
-    allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(1, 2));
-    allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(1, 3));
-    allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(1, 4));
-    allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(1, 5));
-    allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(1, 6));
-    allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(1, 7));
 }
 
 void boss_MedivhAI::SayChessPieceDied(Unit * piece)
@@ -1917,19 +1896,73 @@ void boss_MedivhAI::PrepareBoardForEvent()
 {
     //DoSay("zaczynam przygotowywanie planszy", LANG_UNIVERSAL, m_creature);
     //printf("\nzaczynam przygotowywanie planszy\n");
-    if (chessBoard[0][0].trigger != 0)
-        return;
+
+    // Horde Tower
+    allowedPositions[NPC_ROOK_H].push_back(std::pair<int, int>(0, 0));
+    allowedPositions[NPC_ROOK_H].push_back(std::pair<int, int>(0, 7));
+    // Horde Horse
+    allowedPositions[NPC_KNIGHT_H].push_back(std::pair<int, int>(0, 1));
+    allowedPositions[NPC_KNIGHT_H].push_back(std::pair<int, int>(0, 6));
+    // Horde Laufer
+    allowedPositions[NPC_BISHOP_H].push_back(std::pair<int, int>(0, 2));
+    allowedPositions[NPC_BISHOP_H].push_back(std::pair<int, int>(0, 5));
+    // Horde Queen
+    allowedPositions[NPC_QUEEN_H].push_back(std::pair<int, int>(0, 3));
+    // Horde King
+    allowedPositions[NPC_KING_H].push_back(std::pair<int, int>(0, 4));
+    // Horde Pawn
+    allowedPositions[NPC_PAWN_H].push_back(std::pair<int, int>(1, 0));
+    allowedPositions[NPC_PAWN_H].push_back(std::pair<int, int>(1, 1));
+    allowedPositions[NPC_PAWN_H].push_back(std::pair<int, int>(1, 2));
+    allowedPositions[NPC_PAWN_H].push_back(std::pair<int, int>(1, 3));
+    allowedPositions[NPC_PAWN_H].push_back(std::pair<int, int>(1, 4));
+    allowedPositions[NPC_PAWN_H].push_back(std::pair<int, int>(1, 5));
+    allowedPositions[NPC_PAWN_H].push_back(std::pair<int, int>(1, 6));
+    allowedPositions[NPC_PAWN_H].push_back(std::pair<int, int>(1, 7));
+
+    // Alliance Tower
+    allowedPositions[NPC_ROOK_A].push_back(std::pair<int, int>(7, 0));
+    allowedPositions[NPC_ROOK_A].push_back(std::pair<int, int>(7, 7));
+    // Alliance Horse
+    allowedPositions[NPC_KNIGHT_A].push_back(std::pair<int, int>(7, 1));
+    allowedPositions[NPC_KNIGHT_A].push_back(std::pair<int, int>(7, 6));
+    // Alliance Laufer
+    allowedPositions[NPC_BISHOP_A].push_back(std::pair<int, int>(7, 2));
+    allowedPositions[NPC_BISHOP_A].push_back(std::pair<int, int>(7, 5));
+    // Alliance Queen
+    allowedPositions[NPC_QUEEN_A].push_back(std::pair<int, int>(7, 3));
+    // Alliance King
+    allowedPositions[NPC_KING_A].push_back(std::pair<int, int>(7, 4));
+    // Alliance Pawn
+    allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(6, 0));
+    allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(6, 1));
+    allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(6, 2));
+    allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(6, 3));
+    allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(6, 4));
+    allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(6, 5));
+    allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(6, 6));
+    allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(6, 7));
+
+    // Triggers
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 8; j++)
+        {
+            allowedPositions[TRIGGER_ID].push_back(std::pair<int, int>(i, j));
+        }
+    }
 
     /*Creature * current;
     Creature * next;
     float posX, posY, posXc, posYc;
     std::list<Creature*> tmpList;*/
 
-    //printf("\nRozmiary: tmpList: %i, forChessList: %i\n", tmpList.size(), pInstance->forChessList.size());
+    printf("\nRozmiar forChessList: %i\n", pInstance->forChessList.size());
 
     for (std::list<uint64>::iterator i = pInstance->forChessList.begin(); i != pInstance->forChessList.end(); i++)
     {
-        Creature *temp = m_creature->GetMap()->GetCreature(*i);
+        printf("\n| %u", (*i));
+        Creature *temp = m_creature->GetMap()->GetCreature(*i); //GetCreature(*m_creature, (*i));
         if (temp)
         {
             std::list< std::pair<int, int> >::iterator iter = allowedPositions[temp->GetEntry()].begin();
@@ -1939,7 +1972,11 @@ void boss_MedivhAI::PrepareBoardForEvent()
                 float y = chessBoard[iter->first][iter->second].position.y;
                 float z = chessBoard[iter->first][iter->second].position.z;
                 temp->Relocate(x, y, z, temp->GetOrientation());
-                chessBoard[iter->first][iter->second].piece = temp->GetGUID();
+
+                if (IsChessPiece(temp))
+                    chessBoard[iter->first][iter->second].piece = temp->GetGUID();
+                else
+                    chessBoard[iter->first][iter->second].trigger = temp->GetGUID();
 
                 allowedPositions[temp->GetEntry()].erase(iter);
 
@@ -1948,8 +1985,13 @@ void boss_MedivhAI::PrepareBoardForEvent()
                 else
                     chessBoard[iter->first][iter->second].ori = CHESS_ORI_S;
             }
+            else
+                printf("     -     iter to end !!");
         }
+        else
+            printf("  -   nima tempa hahahaha");
     }
+
     /*
     /// DALEJ NIEPOTRZEBNE ALE NIE KASOWAŁEM
     //printf("\nRozmiary: tmpList: %i, forChessList: %i\n", tmpList.size(), pInstance->forChessList.size());
@@ -2196,7 +2238,7 @@ void boss_MedivhAI::ApplyDebuffsOnRaidMembers()
 void boss_MedivhAI::StartEvent()
 {
     //DoSay("StartEvent", LANG_UNIVERSAL, m_creature);
-    PrepareBoardForEvent();
+    //PrepareBoardForEvent();
     TeleportPlayers();
     ApplyDebuffsOnRaidMembers();
 
@@ -2212,6 +2254,17 @@ void boss_MedivhAI::UpdateAI(const uint32 diff)
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         enabled = true;
     }*/
+
+    if(!boardPrepared)
+    {
+        if (prepareTimer < diff)
+        {
+            PrepareBoardForEvent();
+            boardPrepared = true;
+        }
+        else
+            prepareTimer -= diff;
+    }
 
     if (!eventStarted && pInstance->GetData(DATA_CHESS_EVENT) == IN_PROGRESS)
     {
@@ -2482,6 +2535,15 @@ bool boss_MedivhAI::CanMoveTo(uint64 trigger, uint64 piece)
     bool isEmpty = ChessSquareIsEmpty(trigger);
 
     printf("\nCanMoveTo: moveRange %i, isInRange %i, isEmpty %i", moveRange, inRange, isEmpty);
+
+    printf("\ntablica: \n");
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 8; j++)
+        {
+            printf("i: %i |j: %i|piece: %u|trigger: %u\n", i, j, chessBoard[i][j].piece, chessBoard[i][j].trigger);
+        }
+    }
 
     return inRange && isEmpty;
 }

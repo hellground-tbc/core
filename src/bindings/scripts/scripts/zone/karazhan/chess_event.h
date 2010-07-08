@@ -426,6 +426,9 @@ private:
 
     bool eventStarted;
     bool enabled;
+    bool boardPrepared;
+
+    int prepareTimer;
 
     WorldLocation wLoc;     //location of medivh
     WorldLocation tpLoc;    //location of player teleport point

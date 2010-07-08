@@ -102,7 +102,7 @@ void instance_karazhan::OnCreatureCreate(Creature *creature, uint32 entry)
         case 15688:   TerestianGUID = creature->GetGUID();   break;
         case 15687:   MoroesGUID = creature->GetGUID();      break;
         case 16524:   AranGUID = creature->GetGUID();        break;
-        case 16816:   MedivhGUID = creature->GetGUID();      break;
+        case 16816:   MedivhGUID = creature->GetGUID(); creature->SetReactState(REACT_PASSIVE);      break;
 		case 22519:
 		case 17469:
 		case 17211:
@@ -118,6 +118,8 @@ void instance_karazhan::OnCreatureCreate(Creature *creature, uint32 entry)
 		case 21684:
 			temp = creature->GetGUID();
 			forChessList.push_back(temp);
+			printf("\n||%u", creature->GetGUID());
+			creature->SetReactState(REACT_PASSIVE);
 			break;
     }
 }
