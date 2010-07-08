@@ -49,7 +49,7 @@ class CreatureGroup
 {
     private:
         Creature *m_leader; //Important do not forget sometimes to work with pointers instead synonims :D:D
-        typedef std::map<Creature*, FormationInfo*>  CreatureGroupMemberType;
+        typedef std::map<uint64, FormationInfo *>  CreatureGroupMemberType;
         CreatureGroupMemberType m_members;
 
         uint32 m_groupID;

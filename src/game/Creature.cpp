@@ -207,7 +207,7 @@ void Creature::SearchFormation()
 
     uint32 lowguid = GetDBTableGUIDLow();
     if(!lowguid)
-    return;
+        return;
 
     CreatureGroupInfoType::iterator frmdata = CreatureGroupMap.find(lowguid);
     if(frmdata != CreatureGroupMap.end())

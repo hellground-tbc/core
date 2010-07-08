@@ -148,7 +148,7 @@ void CreatureGroup::AddMember(Creature *member)
         m_leader = member;
     }
 
-    m_members[member] = CreatureGroupMap.find(member->GetDBTableGUIDLow())->second;
+    m_members[member->GetGUID()] = CreatureGroupMap.find(member->GetDBTableGUIDLow())->second;
     member->SetFormation(this);
 }
 
@@ -157,7 +157,7 @@ void CreatureGroup::RemoveMember(Creature *member)
     if(m_leader == member)
         m_leader = NULL;
 
-    m_members.erase(member);
+    m_members.erase(member->GetGUID());
     member->SetFormation(NULL);
 }
 
@@ -183,31 +183,40 @@ void CreatureGroup::MemberAttackStart(Creature *member, Unit *target)
         //sLog.outDebug("AI:%u:Group member found: %u, attacked by %s.", groupAI, itr->second->GetGUIDLow(), member->getVictim()->GetName());
 
         //Skip one check
-        if(!itr->first || itr->first == member)
+        if(itr->first == member->GetGUID())
             continue;
 
-        if(!itr->first->isAlive())
-            continue;
+        if (Creature *mem = member->GetMap()->GetCreature(itr->first))
+        {
+            if (!mem->isAlive())
+                continue;
 
-        if(itr->first->getVictim())
-            continue;
+            if (mem->getVictim())
+                continue;
 
-        if(itr->first->canAttack(target))
-            itr->first->AI()->AttackStart(target);
+            if (mem->canAttack(target))
+                mem->AI()->AttackStart(target);
+        }
     }
 }
 
 void CreatureGroup::FormationReset(bool dismiss)
 {
-    for(CreatureGroupMemberType::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
+    for (CreatureGroupMemberType::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
     {
-        if(itr->first != m_leader && itr->first->isAlive())
+        if (itr->first != m_leader->GetGUID())
         {
-            if(dismiss)
-                itr->first->GetMotionMaster()->Initialize();
-            else
-                itr->first->GetMotionMaster()->MoveIdle(MOTION_SLOT_IDLE);
-            sLog.outDebug("Set %s movement for member GUID: %u", dismiss ? "default" : "idle", itr->first->GetGUIDLow());
+            if (Creature *mem = m_leader->GetMap()->GetCreature(itr->first))
+            {
+                if (!mem->isAlive())
+                    continue;
+
+                if (dismiss)
+                    mem->GetMotionMaster()->Initialize();
+                else
+                    mem->GetMotionMaster()->MoveIdle(MOTION_SLOT_IDLE);
+                sLog.outDebug("Set %s movement for member GUID: %u", dismiss ? "default" : "idle", mem->GetGUIDLow());
+            }
         }
     }
     m_Formed = !dismiss;
@@ -222,12 +231,12 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z)
 
     for(CreatureGroupMemberType::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
     {
-        Creature *member = itr->first;
+        Creature *member = m_leader->GetMap()->GetCreature(itr->first);
         if(member == m_leader || !member->isAlive() || member->getVictim())
             continue;
 
         float angle = itr->second->follow_angle;
-        float dist = itr->second->follow_dist;    
+        float dist = itr->second->follow_dist;
 
         float dx = x + cos(angle + pathangle) * dist;
         float dy = y + sin(angle + pathangle) * dist;

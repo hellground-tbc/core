@@ -8435,14 +8435,18 @@ void Unit::CombatStart(Unit* target)
     if(!target->IsStandState()/* && !target->hasUnitState(UNIT_STAT_STUNNED)*/)
         target->SetStandState(PLAYER_STATE_NONE);
 
-    if(!target->isInCombat() && target->GetTypeId() != TYPEID_PLAYER
-        && !((Creature*)target)->HasReactState(REACT_PASSIVE) && ((Creature*)target)->IsAIEnabled)
+    if(!target->isInCombat() && target->GetTypeId() != TYPEID_PLAYER)
     {
-        ((Creature*)target)->AI()->AttackStart(this);
-        if(((Creature*)target)->GetFormation())
+        if (!((Creature*)target)->HasReactState(REACT_PASSIVE))
         {
-            ((Creature*)target)->GetFormation()->MemberAttackStart((Creature*)target, this);
-            sLog.outDebug("Unit::CombatStart() calls CreatureGroups::MemberHasAttacked(this);");
+            if (((Creature*)target)->IsAIEnabled)
+                ((Creature*)target)->AI()->AttackStart(this);
+
+            if (((Creature*)target)->GetFormation())
+            {
+                ((Creature*)target)->GetFormation()->MemberAttackStart((Creature*)target, this);
+                sLog.outDebug("Unit::CombatStart() calls CreatureGroups::MemberHasAttacked(this);");
+            }
         }
     }
 
