@@ -148,7 +148,9 @@ void CreatureGroup::AddMember(Creature *member)
         m_leader = member;
     }
 
-    m_members[member->GetGUID()] = CreatureGroupMap.find(member->GetDBTableGUIDLow())->second;
+    CreatureGroupInfoType::iterator iter = CreatureGroupMap.find(member->GetDBTableGUIDLow());
+
+    m_members[member->GetGUID()] = iter->second;
     member->SetFormation(this);
 }
 
@@ -232,7 +234,7 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z)
     for(CreatureGroupMemberType::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
     {
         Creature *member = m_leader->GetMap()->GetCreature(itr->first);
-        if(member == m_leader || !member->isAlive() || member->getVictim())
+        if(!member || member == m_leader || !member->isAlive() || member->getVictim())
             continue;
 
         float angle = itr->second->follow_angle;
@@ -250,7 +252,12 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z)
         if(member->GetDistance(m_leader) < dist + MAX_DESYNC)
             member->SetUnitMovementFlags(m_leader->GetUnitMovementFlags());
         else
-            member->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+        {
+            if (member->GetDistance(m_leader) > 40.0f)
+                member->Relocate(m_leader->GetPositionX(), m_leader->GetPositionY(), m_leader->GetPositionZ(), 0.0f);
+            else
+                member->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+        }
 
         member->GetMotionMaster()->MovePoint(0, dx, dy, dz);
         member->SetHomePosition(dx, dy, dz, pathangle);
