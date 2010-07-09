@@ -115,7 +115,7 @@ void CreatureGroupManager::LoadCreatureFormations()
         if(group_member->leaderGUID != memberGUID)
         {
             group_member->follow_dist            = fields[2].GetUInt32();
-            group_member->follow_angle            = fields[3].GetUInt32();
+            group_member->follow_angle            = fields[3].GetFloat();
         }
 
         // check data correctness
@@ -229,7 +229,7 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z)
     if(!m_leader)
         return;
 
-    float pathangle    = atan2(m_leader->GetPositionY() - y, m_leader->GetPositionX() - x);
+    float pathangle = atan2(m_leader->GetPositionY() - y, m_leader->GetPositionX() - x);
 
     for(CreatureGroupMemberType::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
     {
