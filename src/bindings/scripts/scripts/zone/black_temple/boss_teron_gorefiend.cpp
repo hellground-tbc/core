@@ -146,6 +146,9 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
         DoCast(m_creature, SPELL_PASSIVE_SHADOWFORM, false);
         DoCast(m_creature, 40334, false);
 
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
+        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
+
         DoZoneInCombat();
         AtrophyTimer = 2000;
         CheckTeronTimer = 5000;
@@ -178,10 +181,10 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
             damage = 0;                                         // Only the ghost can deal damage.
     }
 
-    void SpellHit(Unit* caster, const SpellEntry*)  //probably wont work this way, TODO other way!!
+    void SpellHit(Unit* caster, const SpellEntry* spell)  // Prevent players to hit ghosts by any spell
     {
-        if(caster->HasAura(40268, 0) || caster->HasAura(40268, 2))
-            return;                                         // Prevent players to cast any spells on Constructs
+        if(caster->GetTypeId() == TYPEID_PLAYER)
+            m_creature->RemoveAurasByCasterSpell(spell->Id, caster->GetGUID());
     }
 
 
@@ -340,6 +343,19 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
             pInstance->SetData(DATA_TERONGOREFIENDEVENT, DONE);
 
         DoScriptText(SAY_DEATH, m_creature);
+    }
+
+    void DamageTaken(Unit* done_by, uint32 &damage)
+    {
+        if(done_by->GetTypeId() == TYPEID_UNIT && done_by->isPossessedByPlayer())
+            damage = 0;                                         // Boss cannot be damaged by ghosts.
+    }
+
+    void SpellHit(Unit* caster, const SpellEntry* spell)    // Ghosts spells cant be applied on Teron
+    {
+        if(caster->GetTypeId() == TYPEID_UNIT && caster->isPossessedByPlayer())
+            m_creature->RemoveAurasByCasterSpell(spell->Id, caster->GetGUID());
+
     }
 
     float CalculateRandomLocation(float Loc, uint32 radius)
