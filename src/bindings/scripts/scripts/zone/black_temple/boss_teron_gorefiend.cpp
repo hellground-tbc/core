@@ -49,6 +49,16 @@ EndScriptData */
 #define CREATURE_DOOM_BLOSSOM       23123
 #define CREATURE_SHADOWY_CONSTRUCT  23111
 
+uint32 GhostSpell[5] = 
+{
+    40314,
+    40325,
+    40157,
+    40175,
+    40322
+    };
+
+
 struct TRINITY_DLL_DECL mob_doom_blossomAI : public NullCreatureAI
 {
     mob_doom_blossomAI(Creature *c) : NullCreatureAI(c)
@@ -181,12 +191,16 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
             damage = 0;                                         // Only the ghost can deal damage.
     }
 
-    void SpellHit(Unit* caster, const SpellEntry* spell)  // Prevent players to hit ghosts by any spell
+    void OnAuraApply(Aura* aura, Unit* caster)  // Only ghost spells are working
     {
-        if(caster->GetTypeId() == TYPEID_PLAYER)
-            m_creature->RemoveAurasByCasterSpell(spell->Id, caster->GetGUID());
+        for(uint8 i = 0; i<5; ++i)
+        {
+            if(aura->GetId() == GhostSpell[i])
+                return;
+        }
+        if(aura->GetId() != SPELL_PASSIVE_SHADOWFORM)
+            m_creature->RemoveAurasByCasterSpell(aura->GetId(), caster->GetGUID());
     }
-
 
     void CheckPlayers()
     {

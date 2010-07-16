@@ -2247,6 +2247,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
         {
             m_target->SetHealth(m_target->GetMaxHealth());
 
+            m_target->RemoveAllAurasOnDeath();  //prevent spell immunities from cloak of shadows and others
             m_target->CastSpell(m_target, 40266, true);   //summon Vengeful Spirit and 4 Shadowy Constructs
             m_target->CastSpell(m_target, 40282, true);   //Possess Spirit Immune
 
