@@ -30,6 +30,7 @@
 class Unit;
 class Creature;
 class Player;
+class Aura;
 struct SpellEntry;
 
 #define TIME_INTERVAL_LOOK   5000
@@ -128,6 +129,9 @@ class TRINITY_DLL_SPEC CreatureAI : public UnitAI
 
         // Called when hit by a spell
         virtual void SpellHit(Unit*, const SpellEntry*) {}
+
+        // Called when aura is applied
+        virtual void OnAuraApply(Aura* aura, Unit* caster) {}
 
         // Called when spell hits a target
         virtual void SpellHitTarget(Unit* target, const SpellEntry*) {}
