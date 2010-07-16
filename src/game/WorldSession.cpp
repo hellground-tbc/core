@@ -76,7 +76,7 @@ WorldSession::~WorldSession()
     WorldPacket* packet;
     while(_recvQueue.next(packet))
         delete packet;
-    
+
     LoginDatabase.PExecute("UPDATE account SET online = 0 WHERE id = %u;", GetAccountId());
     CharacterDatabase.PExecute("UPDATE characters SET online = 0 WHERE account = %u;", GetAccountId());
 }
@@ -374,9 +374,9 @@ void WorldSession::LogoutPlayer(bool Save)
         ///- Broadcast a logout message to the player's friends
         sSocialMgr.SendFriendStatus(_player, FRIEND_OFFLINE, _player->GetGUIDLow(), true);
         sSocialMgr.RemovePlayerSocial (_player->GetGUIDLow ());
-        
+
         ///- Delete the player object
-        _player->CleanupsBeforeDelete();  
+        _player->CleanupsBeforeDelete();
 
         ///- Remove the player from the world
         // the player may not be in the world when logging out
@@ -385,7 +385,7 @@ void WorldSession::LogoutPlayer(bool Save)
         if(_player->IsInWorld()) _player->GetMap()->Remove(_player, false);
         // RemoveFromWorld does cleanup that requires the player to be in the accessor
         ObjectAccessor::Instance().RemoveObject(_player);
-        _player->saveMutex.acquire();
+        _player->updateMutex.acquire();
         delete _player;
         _player = NULL;
 

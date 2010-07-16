@@ -287,11 +287,13 @@ void Unit::Update( uint32 p_time )
     // Or else we may have some SPELL_STATE_FINISHED spells stalled in pointers, that is bad.
 
     sWorld.m_spellUpdateLock.acquire();
-    {
         m_Events.Update( p_time );
-        _UpdateSpells( p_time );
-    }
     sWorld.m_spellUpdateLock.release();
+
+    if (!IsInWorld())
+        return;
+
+    _UpdateSpells( p_time );
 
     // update combat timer only for players and pets
     if (isInCombat() && isCharmedOwnedByPlayerOrPlayer())
@@ -2874,11 +2876,17 @@ void Unit::_UpdateSpells( uint32 time )
 
     // update auras
     // m_AurasUpdateIterator can be updated in inderect called code at aura remove to skip next planned to update but removed auras
+    AuraMap::iterator eraseIter;
     for (m_AurasUpdateIterator = m_Auras.begin(); m_AurasUpdateIterator != m_Auras.end(); )
     {
         Aura* i_aura = m_AurasUpdateIterator->second;
+        eraseIter = m_AurasUpdateIterator;
         ++m_AurasUpdateIterator;                            // need shift to next for allow update if need into aura update
-        i_aura->Update(time);
+
+        if (i_aura)
+            i_aura->Update(time);
+        else
+            m_Auras.erase(eraseIter);
     }
 
     // remove expired auras
@@ -3986,7 +3994,7 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
     Aur->ApplyModifier(false,true);
 
     Aur->SetStackAmount(0);
-    
+
     // set aura to be removed during unit::_updatespells
     m_removedAuras.push_back(Aur);
 
@@ -4144,7 +4152,7 @@ void Unit::RemoveAllDynObjects()
     while(!m_dynObjGUIDs.empty())
     {
         DynamicObject* dynObj = map->GetDynamicObject(*m_dynObjGUIDs.begin());
-        
+
         if(dynObj)
             dynObj->Delete();
 
@@ -4804,7 +4812,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 triggered_spell_id = 29077;
                 break;
             }
-            
+
             // Incanter's Regalia set (add trigger chance to Mana Shield)
             if (dummySpell->SpellFamilyFlags & 0x0000000000008000LL)
             {
@@ -6058,9 +6066,9 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
 
                      ((Player*)caster)->AddSpellCooldown(trigger_spell_id, NULL, time(NULL) +4);
                  }
-             
+
                  // Improved Judgement of Light: bonus heal from t4 set
-                 if(auraSpellInfo->SpellIconID == 299)    
+                 if(auraSpellInfo->SpellIconID == 299)
                  {
                      if(Aura *aur = caster->GetAura(37182, 0))
                      {
@@ -6070,7 +6078,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                  }
                  pVictim->CastSpell(pVictim, trigger_spell_id, true, castItem, triggeredByAura);
                  return true;                        // no hidden cooldown
-             }    
+             }
          }
          // Illumination
          else if (auraSpellInfo->SpellIconID==241)
@@ -7802,7 +7810,7 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
     // Blessed Book of Nagrand healing done for Flash of Light
     if (spellProto->SpellFamilyName == SPELLFAMILY_PALADIN && (spellProto->SpellFamilyFlags & 0x0000000040000000LL))
         if(Aura *aura = GetAura(32403, 0))
-            AdvertisedBenefit += aura->GetModifierValue();    
+            AdvertisedBenefit += aura->GetModifierValue();
 
     // Lesser Healing Wave
     if (spellProto->SpellFamilyName == SPELLFAMILY_SHAMAN && spellProto->SpellFamilyFlags & 0x80)
@@ -8488,7 +8496,7 @@ void Unit::SetInCombatState(bool PvP)
             if(m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->Attributes & SPELL_ATTR_CANT_USED_IN_COMBAT)
                 InterruptSpell(CURRENT_GENERIC_SPELL);
         }
-        
+
         if(!isCharmed())
             return;
     }

@@ -2378,7 +2378,7 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         DeclinedName *m_declinedname;
 
-        ACE_Thread_Mutex saveMutex;
+        ACE_Thread_Mutex updateMutex;
 
     private:
         // internal common parts for CanStore/StoreItem functions

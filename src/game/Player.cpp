@@ -1105,8 +1105,12 @@ void Player::CharmAI(bool apply)
 
 void Player::Update( uint32 p_time )
 {
+    updateMutex.acquire();
     if(!IsInWorld())
+    {
+        updateMutex.release();
         return;
+    }
 
     if (m_AC_timer)
         if (m_AC_timer < p_time)
@@ -1398,8 +1402,9 @@ void Player::Update( uint32 p_time )
     if(pet && !IsWithinDistInMap(pet, OWNER_MAX_DISTANCE) && !pet->isPossessed())
     {
         RemovePet(pet, PET_SAVE_NOT_IN_SLOT, true);
-        return;
+        //return;
     }
+    updateMutex.release();
 }
 
 void Player::setDeathState(DeathState s)
@@ -15802,8 +15807,6 @@ bool Player::_LoadHomeBind(QueryResult_AutoPtr result)
 
 void Player::SaveToDB()
 {
-    saveMutex.acquire();
-
     // delay auto save at any saves (manual, in code, or autosave)
     m_nextSave = sWorld.getConfig(CONFIG_INTERVAL_SAVE);
 
@@ -15814,10 +15817,7 @@ void Player::SaveToDB()
     const MapEntry * me = sMapStore.LookupEntry(mapid);
     // players aren't saved on arena maps
     if(!me || me->IsBattleArena())
-    {
-        saveMutex.release();
         return;
-    }
 
     int is_save_resting = HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING) ? 1 : 0;
                                                             //save, far from tavern/city
@@ -15988,8 +15988,6 @@ void Player::SaveToDB()
     // save pet (hunter pet level and experience and all type pets health/mana).
     if(Pet* pet = GetPet())
         pet->SavePetToDB(PET_SAVE_AS_CURRENT);
-
-    saveMutex.release();
 }
 
 // fast save function for item/money cheating preventing - save only inventory and money state
