@@ -1718,33 +1718,47 @@ void Unit::CalcAbsorb(Unit *pVictim,SpellSchoolMask schoolMask, const uint32 dam
         int32 currentAbsorb;
 
         //Reflective Shield
-        if ((pVictim != this) && (*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_PRIEST && (*i)->GetSpellProto()->SpellFamilyFlags == 0x1)
+        if ((pVictim != this))
         {
-            if(Unit* caster = (*i)->GetCaster())
+            if ((*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_PRIEST && (*i)->GetSpellProto()->SpellFamilyFlags == 0x1)
             {
-                AuraList const& vOverRideCS = caster->GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
-                for(AuraList::const_iterator k = vOverRideCS.begin(); k != vOverRideCS.end(); ++k)
+                if(Unit* caster = (*i)->GetCaster())
                 {
-                    switch((*k)->GetModifier()->m_miscvalue)
+                    AuraList const& vOverRideCS = caster->GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
+                    for(AuraList::const_iterator k = vOverRideCS.begin(); k != vOverRideCS.end(); ++k)
                     {
-                        case 5065:                          // Rank 1
-                        case 5064:                          // Rank 2
-                        case 5063:                          // Rank 3
-                        case 5062:                          // Rank 4
-                        case 5061:                          // Rank 5
+                        switch((*k)->GetModifier()->m_miscvalue)
                         {
-                            if(RemainingDamage >= *p_absorbAmount)
-                                reflectDamage = *p_absorbAmount * (*k)->GetModifier()->m_amount/100;
-                            else
-                                reflectDamage = (*k)->GetModifier()->m_amount * RemainingDamage/100;
-                            reflectAura = *i;
+                            case 5065:                          // Rank 1
+                            case 5064:                          // Rank 2
+                            case 5063:                          // Rank 3
+                            case 5062:                          // Rank 4
+                            case 5061:                          // Rank 5
+                            {
+                                if(RemainingDamage >= *p_absorbAmount)
+                                    reflectDamage = *p_absorbAmount * (*k)->GetModifier()->m_amount/100;
+                                else
+                                    reflectDamage = (*k)->GetModifier()->m_amount * RemainingDamage/100;
+                                reflectAura = *i;
 
-                        } break;
-                        default: break;
+                            } break;
+                            default: break;
+                        }
+
+                        if(reflectDamage)
+                            break;
                     }
-
-                    if(reflectDamage)
-                        break;
+                }
+            }
+            else
+            {                       //Lady Malandes Reflective Shield
+                if ((*i)->GetSpellProto()->Id == 41475)
+                {
+                    if(RemainingDamage >= *p_absorbAmount)
+                        reflectDamage = *p_absorbAmount * 0.5;
+                    else
+                        reflectDamage = RemainingDamage * 0.5;
+                    reflectAura = *i;
                 }
             }
         }
