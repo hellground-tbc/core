@@ -252,9 +252,42 @@ CreatureAI* GetAI_npc_theramore_combat_dummy(Creature *_Creature)
     return new npc_theramore_combat_dummyAI (_Creature);
 }
 
+#define QUEST_THE_GRIMTOTEM_WEAPON      11169
+#define AURA_CAPTURED_TOTEM             42454
+#define NPC_CAPTURED_TOTEM              23811
+
 /*######
-##
+## mob_mottled_drywallow_crocolisks
 ######*/
+
+struct TRINITY_DLL_DECL mob_mottled_drywallow_crocolisksAI : public ScriptedAI
+{
+   mob_mottled_drywallow_crocolisksAI(Creature *c) : ScriptedAI(c) {}
+
+    void Reset() {}
+    void JustDied (Unit* killer)
+    {
+        Player* pl = (Player*)killer;
+        if(pl && pl->GetQuestStatus(QUEST_THE_GRIMTOTEM_WEAPON) == QUEST_STATUS_INCOMPLETE)
+        {
+            Unit* totem = FindCreature(NPC_CAPTURED_TOTEM, 20.0, m_creature);   //blizzlike(?) check by dummy aura is NOT working, mysteriously...
+            if(totem)
+                pl->KilledMonster(NPC_CAPTURED_TOTEM, pl->GetGUID());
+        }
+    }
+    void Aggro(Unit* who) {}
+    void UpdateAI(const uint32 diff) 
+    {
+        if(!UpdateVictim()) { return; }
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_mottled_drywallow_crocolisks(Creature *_Creature)
+{
+    return new mob_mottled_drywallow_crocolisksAI (_Creature);
+}
 
 void AddSC_dustwallow_marsh()
 {
@@ -291,6 +324,11 @@ void AddSC_dustwallow_marsh()
     newscript = new Script;
     newscript->Name="npc_theramore_combat_dummy";
     newscript->GetAI = &GetAI_npc_theramore_combat_dummy;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="mob_mottled_drywallow_crocolisks";
+    newscript->GetAI = &GetAI_mob_mottled_drywallow_crocolisks;
     newscript->RegisterSelf();
 }
 
