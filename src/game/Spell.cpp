@@ -888,7 +888,8 @@ void Spell::AddItemTarget(Item* pitem, uint32 effIndex)
 
 void Spell::DoAllEffectOnTarget(TargetInfo *target)
 {
-    if (this->m_spellInfo->Id <= 0 || this->m_spellInfo->Id > MAX_SPELL_ID ||  m_spellInfo->Id == 32 || m_spellInfo->Id == 80)
+    // useless? nie da rady wycastowac spella ktory nie jest w spell.dbc
+    if (m_spellInfo->Id > MAX_SPELL_ID)
         return;
 
     if (!target || target == (TargetInfo*)0x10 || target->processed)    // Check target
