@@ -170,6 +170,7 @@ extern void AddSC_boss_teron_gorefiend();
 extern void AddSC_boss_najentus();
 extern void AddSC_boss_illidari_council();
 extern void AddSC_instance_black_temple();
+extern void AddSC_black_temple_trash();
 
 //Blackfathom Depths
 //Blackrock Depths
@@ -1559,6 +1560,7 @@ void ScriptsInit(char const* cfg_file = "trinitycore.conf")
     AddSC_boss_najentus();
     AddSC_boss_illidari_council();
     AddSC_instance_black_temple();
+    AddSC_black_temple_trash();
 
     //Blackfathom Depths
     //Blackrock Depths

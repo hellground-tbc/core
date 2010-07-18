@@ -1539,6 +1539,10 @@
 						>
 					</File>
 					<File
+						RelativePath="..\scripts\zone\black_temple\black_temple_trash.cpp"
+						>
+					</File>
+					<File
 						RelativePath="..\scripts\zone\black_temple\boss_bloodboil.cpp"
 						>
 					</File>
