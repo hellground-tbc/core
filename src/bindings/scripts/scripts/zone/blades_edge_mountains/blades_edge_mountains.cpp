@@ -215,7 +215,7 @@ struct TRINITY_DLL_DECL mobs_nether_drakeAI : public ScriptedAI
                             break;
                         case 5:
                             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                                                            // + MOVEMENTFLAG_LEVITATING
+                                                            // | MOVEMENTFLAG_LEVITATING
                             m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT);
                             //then take off to random location. creature is initially summoned, so don't bother do anything else.
                             m_creature->GetMotionMaster()->MovePoint(0, m_creature->GetPositionX()+100, m_creature->GetPositionY(), m_creature->GetPositionZ()+100);

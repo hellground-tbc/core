@@ -224,17 +224,17 @@ bool WorldSession::Update(uint32 diff)
         delete packet;
     }
 
-    ///- Cleanup socket pointer if need
-    if (m_Socket && m_Socket->IsClosed ())
-    {
-        m_Socket->RemoveReference ();
-        m_Socket = NULL;
-    }
-
     ///- If necessary, log the player out
     time_t currTime = time(NULL);
     if (!m_Socket || (ShouldLogOut(currTime) && !m_playerLoading))
         LogoutPlayer(true);
+
+    ///- Cleanup socket pointer if need
+    if (m_Socket && m_Socket->IsClosed())
+    {
+        m_Socket->RemoveReference();
+        m_Socket = NULL;
+    }
 
     if (!m_Socket)
         return false;                                       //Will remove this session from the world session map
@@ -382,9 +382,12 @@ void WorldSession::LogoutPlayer(bool Save)
         // the player may not be in the world when logging out
         // e.g if he got disconnected during a transfer to another map
         // calls to GetMap in this case may cause crashes
-        if(_player->IsInWorld()) _player->GetMap()->Remove(_player, false);
+        if(_player->IsInWorld())
+            _player->GetMap()->Remove(_player, false);
+
         // RemoveFromWorld does cleanup that requires the player to be in the accessor
         ObjectAccessor::Instance().RemoveObject(_player);
+
         _player->updateMutex.acquire();
         delete _player;
         _player = NULL;

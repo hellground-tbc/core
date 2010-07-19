@@ -753,7 +753,7 @@ struct TRINITY_DLL_DECL npc_kaelthas_imageAI : public ScriptedAI
                 PlayersInCity.push_back((*i)->GetGUID());
             }
 
-            me->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
+            me->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
             me->SetVisibility(VISIBILITY_OFF);
             me->StopMoving();
             //DoCast(me, SPELL_OTHERWORLDLY_PORTAL, true);

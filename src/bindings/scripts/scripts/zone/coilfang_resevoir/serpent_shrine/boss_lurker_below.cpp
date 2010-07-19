@@ -101,7 +101,7 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
 
     void Reset()
     {
-        m_creature->AddUnitMovementFlag(MOVEMENTFLAG_SWIMMING + MOVEMENTFLAG_LEVITATING);        
+        m_creature->AddUnitMovementFlag(MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_LEVITATING);        
         RotTimer = 0;
         WaterboltTimer = 15000;
         SpoutTimer  = 45000;

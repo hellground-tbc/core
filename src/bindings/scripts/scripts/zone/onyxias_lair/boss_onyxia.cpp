@@ -126,7 +126,7 @@ struct TRINITY_DLL_DECL boss_onyxiaAI : public ScriptedAI
         {
             Phase = 2;
             m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
-            m_creature->AddUnitMovementFlag(MOVEMENTFLAG_LEVITATING + MOVEMENTFLAG_ONTRANSPORT);
+            m_creature->AddUnitMovementFlag(MOVEMENTFLAG_LEVITATING | MOVEMENTFLAG_ONTRANSPORT);
             m_creature->setHover(true);
             m_creature->GetMotionMaster()->Clear(false);
             m_creature->GetMotionMaster()->MoveIdle();
@@ -136,7 +136,7 @@ struct TRINITY_DLL_DECL boss_onyxiaAI : public ScriptedAI
         if(((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 40) && (Phase == 2))
         {
             Phase = 3;
-            m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_LEVITATING + MOVEMENTFLAG_ONTRANSPORT);
+            m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_LEVITATING | MOVEMENTFLAG_ONTRANSPORT);
             m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
             m_creature->setHover(false);
             m_creature->GetMotionMaster()->MovePoint(0, -10.6155, -219.357, -87.7344);
