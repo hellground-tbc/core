@@ -40,7 +40,7 @@ EndScriptData */
 * ============================*/
 
 /* Content Data
-    *  Bonechewer Taskmaster
+    * Bonechewer Taskmaster
     * Bonechewer Worker
     * Dragonmaw Sky Stalker
     * Dragonmaw Wind Reaver

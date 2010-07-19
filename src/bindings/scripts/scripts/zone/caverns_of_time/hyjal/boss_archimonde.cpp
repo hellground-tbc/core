@@ -224,9 +224,11 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
     boss_archimondeAI(Creature *c) : hyjal_trashAI(c)
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        m_creature->GetPosition(wLoc);
     }
 
     ScriptedInstance* pInstance;
+    WorldLocation wLoc;
 
     uint32 DrainNordrassilTimer;
     uint32 FearTimer;
@@ -415,6 +417,9 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         if(!UpdateVictim() && !BelowTenPercent)
             return;
 
+        if(m_creature->GetSpeed(MOVE_RUN) < 2.0)            //test it and probably not working well
+            m_creature->SetSpeed(MOVE_RUN, 2.0, true);
+
         if(CheckTimer < diff)
         {
             DoZoneInCombat();
@@ -447,6 +452,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
             if(CheckDistanceTimer < diff)
             {
+                /*
                 // To simplify the check, we simply summon a creature in the location and then check how far we are from the creature
                 Creature* Check = m_creature->SummonCreature(CREATURE_CHANNEL_TARGET, NORDRASSIL_X, NORDRASSIL_Y, NORDRASSIL_Z, 0, TEMPSUMMON_TIMED_DESPAWN, 2000);
                 if(Check)
@@ -459,6 +465,14 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
                         Enraged = true;
                         DoScriptText(SAY_ENRAGE, m_creature);
                     }
+                }*/
+                if(m_creature->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 70.0)
+                {
+                    m_creature->GetMotionMaster()->Clear(false);
+                    m_creature->GetMotionMaster()->MoveIdle();
+                    Enraged = true;
+                    if(m_creature->GetPositionX() < 5580.0f)    // if near to the tree, do say enrage yell
+                        DoScriptText(SAY_ENRAGE, m_creature);
                 }
                 CheckDistanceTimer = 5000;
             }
