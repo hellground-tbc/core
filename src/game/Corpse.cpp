@@ -60,11 +60,11 @@ void Corpse::AddToWorld()
 
 void Corpse::RemoveFromWorld()
 {
-    Object::RemoveFromWorld();
-
     ///- Remove the corpse from the accessor
     if(IsInWorld())
         ObjectAccessor::Instance().RemoveObject(this);
+
+    Object::RemoveFromWorld();
 }
 
 bool Corpse::Create( uint32 guidlow )
