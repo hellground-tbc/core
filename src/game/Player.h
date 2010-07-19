@@ -1309,6 +1309,7 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         bool m_mailsLoaded;
         bool m_mailsUpdated;
+        bool saving;
 
         void SetBindPoint(uint64 guid);
         void SendTalentWipeConfirm(uint64 guid);

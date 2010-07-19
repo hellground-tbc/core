@@ -272,7 +272,7 @@ struct TRINITY_DLL_DECL npc_secondTrialAI : public ScriptedAI
               m_creature->setFaction(FACTION_HOSTILE);
               questPhase = 0;
 
-              Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0);
+              Unit *target = m_creature->SelectNearbyTarget(30);//SelectUnit(SELECT_TARGET_RANDOM, 0);
               if(target && target->GetTypeId() == TYPEID_PLAYER) // only on players.
               {
                 m_creature->AddThreat(target, 5000000.0f);
@@ -345,82 +345,104 @@ struct TRINITY_DLL_DECL master_kelerun_bloodmournAI : public ScriptedAI
     uint8  questPhase;
     uint8  paladinPhase;
     uint32 timer;
+    uint32 resetTimer;
+
+    bool toReset;
 
     uint64 paladinGuid[4];
 
-    void Reset() {
-
-      questPhase = 0;
-      timer = 60000;
-      paladinPhase = 0;
-      uint64 paladinGuid[] = {0,0,0,0};
-
+    void Reset()
+    {
+        questPhase = 0;
+        timer = 60000;
+        paladinPhase = 0;
+        uint64 paladinGuid[] = {0,0,0,0};
+        resetTimer = timer + 5 * OFFSET_NEXT_ATTACK;
+        toReset = false;
     }
 
     void Aggro(Unit *who) {}
 
     void UpdateAI(const uint32 diff)
     {
-      // Quest accepted but object not activated, object despawned (if in sync 1 minute! )
-      if ( questPhase == 1 ) {
-         if ( timer < diff ) Reset();
-         else timer -= diff;
-      }
-      // fight the 4 paladin mobs phase
-      else if ( questPhase == 2 ) {
+        if (toReset)
+        {
+            if (resetTimer < diff)
+                Reset();
+            else
+                resetTimer -= diff;
+        }
 
-        if ( timer < diff ) {
+        // Quest accepted but object not activated, object despawned (if in sync 1 minute! )
+        if ( questPhase == 1 )
+        {
+            if ( timer < diff )
+                Reset();
+            else
+                timer -= diff;
+        }
+        // fight the 4 paladin mobs phase
+        else if ( questPhase == 2 )
+        {
+            if ( timer < diff )
+            {
+                Creature* paladinSpawn;
+                paladinSpawn = (Unit::GetCreature((*m_creature), paladinGuid[paladinPhase]));
+                if ( paladinSpawn )
+                {
+                    ((npc_secondTrialAI*)paladinSpawn->AI())->Activate(m_creature->GetGUID());
 
-          Creature* paladinSpawn;
-          paladinSpawn = (Unit::GetCreature((*m_creature), paladinGuid[paladinPhase]));
-            if ( paladinSpawn ) {
-               ((npc_secondTrialAI*)paladinSpawn->AI())->Activate(m_creature->GetGUID());
+                    switch(paladinPhase)
+                    {
+                        case 0:
+                            DoScriptText(TEXT_SECOND_TRIAL_1,m_creature);
+                            break;
+                        case 1:
+                            DoScriptText(TEXT_SECOND_TRIAL_2,m_creature);
+                            break;
+                        case 2:
+                            DoScriptText(TEXT_SECOND_TRIAL_3,m_creature);
+                            break;
+                        case 3:
+                            DoScriptText(TEXT_SECOND_TRIAL_4,m_creature);
+                            break;
+                    }
+                }
+                else
+                    Reset();
 
-               switch(paladinPhase) {
-                 case 0:
-                  DoScriptText(TEXT_SECOND_TRIAL_1,m_creature);
-                 break;
-                 case 1:
-                   DoScriptText(TEXT_SECOND_TRIAL_2,m_creature);
-                 break;
-                 case 2:
-                  DoScriptText(TEXT_SECOND_TRIAL_3,m_creature);
-                 break;
-                 case 3:
-                  DoScriptText(TEXT_SECOND_TRIAL_4,m_creature);
-                 break;
-               }
+                questPhase=4;
+                timer = OFFSET_NEXT_ATTACK;
             }
             else
-              Reset();
-
-            questPhase=4;
-            timer = OFFSET_NEXT_ATTACK;
+                timer -= diff;
         }
-         else timer -= diff;
-      }
 
-      if (!UpdateVictim())
-          return;
+        if (!UpdateVictim())
+            return;
 
-      DoMeleeAttackIfReady();
+        DoMeleeAttackIfReady();
     }
 
     void StartEvent()
     {
+        if ( questPhase == 1 ) // no player check, quest can be finished as group, so no complex playerguid/group search code
+        {
+            for (int i = 0; i<4; i++)
+            {
+                Creature* Summoned;
+                Summoned = DoSpawnCreature(PaladinEntry[i], SpawnPosition[i].x, SpawnPosition[i].y, SpawnPosition[i].z, SpawnPosition[i].o, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 180000);
 
-      if ( questPhase == 1 ) { // no player check, quest can be finished as group, so no complex playerguid/group search code
+                if(Summoned)
+                {
+                    paladinGuid[i] = Summoned->GetGUID();
+                    Summoned->setFaction(FACTION_FRIENDLY);
+                }
+            }
 
-        for (int i = 0; i<4; i++) {
-          Creature* Summoned;
-          Summoned = DoSpawnCreature(PaladinEntry[i], SpawnPosition[i].x, SpawnPosition[i].y, SpawnPosition[i].z, SpawnPosition[i].o, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 180000);
-
-          if(Summoned)
-            paladinGuid[i] = Summoned->GetGUID();
-        }
-
-        timer = OFFSET_NEXT_ATTACK;
-        questPhase = 2;
+            timer = OFFSET_NEXT_ATTACK;
+            questPhase = 2;
+            paladinPhase = 0;
         }
     }
 
@@ -472,7 +494,7 @@ void npc_secondTrialAI::JustDied(Unit* Killer) {
       if (Killer->GetTypeId() == TYPEID_PLAYER)
       {
           Creature* Summoner;
-          Summoner = (Unit::GetCreature((*m_creature), summonerGuid));
+          Summoner = m_creature->GetMap()->GetCreature(summonerGuid);//(Unit::GetCreature((*m_creature), summonerGuid));
 
           if ( Summoner )
             ((master_kelerun_bloodmournAI*)Summoner->AI())->SecondTrialKill();
@@ -544,7 +566,10 @@ bool GOHello_go_second_trial(Player *player, GameObject* _GO)
     cell.Visit(p, grid_unit_searcher, *(_GO->GetMap()));
 
     if ( event_controller )
+    {
        ((master_kelerun_bloodmournAI*)event_controller->AI())->StartEvent();
+        ((master_kelerun_bloodmournAI*)event_controller->AI())->toReset = true;
+    }
 
     return true;
 }
