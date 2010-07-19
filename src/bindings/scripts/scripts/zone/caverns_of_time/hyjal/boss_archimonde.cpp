@@ -417,15 +417,14 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         if(!UpdateVictim() && !BelowTenPercent)
             return;
 
-        if(m_creature->GetSpeed(MOVE_RUN) < 2.0)            //test it and probably not working well
-            m_creature->SetSpeed(MOVE_RUN, 2.0, true);
-
         if(CheckTimer < diff)
         {
             DoZoneInCombat();
 
             if(m_creature->GetUInt64Value(UNIT_FIELD_TARGET) != m_creature->getVictim()->GetGUID())
                 m_creature->SetUInt64Value(UNIT_FIELD_TARGET, m_creature->getVictim()->GetGUID());
+
+            m_creature->SetSpeed(MOVE_RUN, 3.0);
 
             CheckTimer = 1000;
         }
