@@ -193,10 +193,12 @@ void Creature::RemoveFromWorld()
         if(Map *map = FindMap())
             if(map->IsDungeon() && ((InstanceMap*)map)->GetInstanceData())
                 ((InstanceMap*)map)->GetInstanceData()->OnCreatureRemove(this);
+
         if(m_formation)
             formation_mgr.RemoveCreatureFromGroup(m_formation, this);
-        ObjectAccessor::Instance().RemoveObject(this);
+
         Unit::RemoveFromWorld();
+        ObjectAccessor::Instance().RemoveObject(this);
     }
 }
 
