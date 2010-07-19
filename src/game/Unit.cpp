@@ -11269,9 +11269,10 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
 
     if(bRewardIsAllowed && pVictim->GetTypeId() == TYPEID_UNIT && ((Creature*)pVictim)->GetLootRecipient())
         player = ((Creature*)pVictim)->GetLootRecipient();
+
     // Reward player, his pets, and group/raid members
     // call kill spell proc event (before real die and combat stop to triggering auras removed at death/combat stop)
-    if(bRewardIsAllowed && player && player!=pVictim)
+    if(bRewardIsAllowed && player && player != pVictim)
     {
         if(GetTypeId() == TYPEID_PLAYER && (IsInPartyWith(player) || IsInRaidWith(player)))
         {

@@ -153,6 +153,7 @@ struct CreatureInfo
 {
     uint32  Entry;
     uint32  HeroicEntry;
+    uint32  KillCredit;
     uint32  Modelid_A1;
     uint32  Modelid_A2;
     uint32  Modelid_H1;

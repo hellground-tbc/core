@@ -109,11 +109,11 @@ class TRINITY_DLL_DECL MapManager : public Trinity::Singleton<MapManager, Trinit
             if(o < 0)
             {
                 float mod = o *-1;
-                mod = fmod(mod, 2.0f*M_PI_F);
-                mod = -mod+2.0f*M_PI_F;
+                mod = fmod(mod, float(2.0f * M_PI));
+                mod = -mod + 2.0f * M_PI;
                 return mod;
             }
-            return fmod(o, 2.0f*M_PI_F);
+            return fmod(o, float(2.0f * M_PI));
         }
 
         void DoDelayedMovesAndRemoves();

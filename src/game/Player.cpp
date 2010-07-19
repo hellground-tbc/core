@@ -3768,7 +3768,7 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
 {
     uint32 guid = GUID_LOPART(playerguid);
 
-    if(QueryResult_AutoPtr result= CharacterDatabase.PQuery("SELECT data FROM characters WHERE guid='%u'",guid))
+    /*if(QueryResult_AutoPtr result= CharacterDatabase.PQuery("SELECT data FROM characters WHERE guid='%u'",guid))
     {
         Field *fields = result->Fetch();
 
@@ -3781,7 +3781,7 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
             if(updateRealmChars) sWorld.UpdateRealmCharCount(accountId);
             return;
         }
-    }
+    }*/
 
     // convert corpse to bones if exist (to prevent exiting Corpse in World without DB entry)
     // bones will be deleted by corpse/bones deleting thread shortly
@@ -19258,8 +19258,13 @@ bool Player::RewardPlayerAndGroupAtKill(Unit* pVictim)
                     if(pGroupGuy->isAlive()|| !pGroupGuy->GetCorpse())
                     {
                         // normal creature (not pet/etc) can be only in !PvP case
-                        if(pVictim->GetTypeId()==TYPEID_UNIT)
+                        if(pVictim->GetTypeId() == TYPEID_UNIT)
+                        {
                             pGroupGuy->KilledMonster(pVictim->GetEntry(), pVictim->GetGUID());
+
+                            if(uint32 KillCredit = ((Creature*)pVictim)->GetCreatureInfo()->KillCredit)
+                                pGroupGuy->KilledMonster(KillCredit, pVictim->GetGUID());
+                        }
                     }
                 }
             }
@@ -19284,7 +19289,12 @@ bool Player::RewardPlayerAndGroupAtKill(Unit* pVictim)
 
             // normal creature (not pet/etc) can be only in !PvP case
             if(pVictim->GetTypeId()==TYPEID_UNIT)
+            {
                 KilledMonster(pVictim->GetEntry(),pVictim->GetGUID());
+
+                if(uint32 KillCredit = ((Creature*)pVictim)->GetCreatureInfo()->KillCredit)
+                    KilledMonster(KillCredit, pVictim->GetGUID());
+            }
         }
     }
     return xp || honored_kill;
