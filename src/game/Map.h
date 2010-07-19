@@ -202,21 +202,6 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
             return GetZoneId(GetAreaFlag(x,y),i_id);
         }
 
-        // modulos a radian orientation to the range of 0..2PI
-        static float NormalizeOrientation(float o)
-        {
-            // fmod only supports positive numbers. Thus we have
-            // to emulate negative numbers
-            if(o < 0)
-            {
-                float mod = o *-1;
-                mod = fmod(mod, 2.0f*M_PI_F);
-                mod = -mod+2.0f*M_PI_F;
-                return mod;
-            }
-            return fmod(o, 2.0f*M_PI_F);
-        }
-
         void MoveAllCreaturesInMoveList();
         void RemoveAllObjectsInRemoveList();
         void RelocationNotify();

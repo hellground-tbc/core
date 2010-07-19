@@ -101,6 +101,21 @@ class TRINITY_DLL_DECL MapManager : public Trinity::Singleton<MapManager, Trinit
             return IsValidMAP(mapid) && Trinity::IsValidMapCoord(x,y,z,o);
         }
 
+        // modulos a radian orientation to the range of 0..2PI
+        static float NormalizeOrientation(float o)
+        {
+            // fmod only supports positive numbers. Thus we have
+            // to emulate negative numbers
+            if(o < 0)
+            {
+                float mod = o *-1;
+                mod = fmod(mod, 2.0f*M_PI_F);
+                mod = -mod+2.0f*M_PI_F;
+                return mod;
+            }
+            return fmod(o, 2.0f*M_PI_F);
+        }
+
         void DoDelayedMovesAndRemoves();
 
         void LoadTransports();
