@@ -288,6 +288,8 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         RemoveSoulCharges();
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
         m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
+        m_creature->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 10);   //custom, should be verified
+        m_creature->SetFloatValue(UNIT_FIELD_COMBATREACH, 12);
     }
 
     void RemoveSoulCharges()
@@ -306,6 +308,12 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
         if(pInstance)
             pInstance->SetData(DATA_ARCHIMONDEEVENT, IN_PROGRESS);
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (m_creature->GetDistance(who) <= 70 && !InCombat && m_creature->IsHostileTo(who))
+            m_creature->AI()->AttackStart(who);
     }
 
     void KilledUnit(Unit *victim)
@@ -370,6 +378,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
     void UpdateAI(const uint32 diff)
     {
+        
         if(!InCombat)
         {
             if(pInstance)
@@ -407,7 +416,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
                     Nordrassil->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     Nordrassil->SetUInt32Value(UNIT_FIELD_DISPLAYID, 11686);
                     Nordrassil->CastSpell(m_creature, SPELL_DRAIN_WORLD_TREE_2, true);
-                    DrainNordrassilTimer = 1000;
+                    DrainNordrassilTimer = 5000;
                 }
             }
             else
@@ -451,21 +460,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
             if(CheckDistanceTimer < diff)
             {
-                /*
-                // To simplify the check, we simply summon a creature in the location and then check how far we are from the creature
-                Creature* Check = m_creature->SummonCreature(CREATURE_CHANNEL_TARGET, NORDRASSIL_X, NORDRASSIL_Y, NORDRASSIL_Z, 0, TEMPSUMMON_TIMED_DESPAWN, 2000);
-                if(Check)
-                {
-                    Check->SetVisibility(VISIBILITY_OFF);
-                    if(m_creature->IsWithinDistInMap(Check, 100.0))
-                    {
-                        m_creature->GetMotionMaster()->Clear(false);
-                        m_creature->GetMotionMaster()->MoveIdle();
-                        Enraged = true;
-                        DoScriptText(SAY_ENRAGE, m_creature);
-                    }
-                }*/
-                if(m_creature->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 70.0)
+                if(m_creature->GetDistance2d(wLoc.x, wLoc.y) > 80.0)
                 {
                     m_creature->GetMotionMaster()->Clear(false);
                     m_creature->GetMotionMaster()->MoveIdle();
