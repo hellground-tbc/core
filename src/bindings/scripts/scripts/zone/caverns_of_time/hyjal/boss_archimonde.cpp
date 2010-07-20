@@ -428,7 +428,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
         if(CheckTimer < diff)
         {
-            if (m_creature->GetDistance(wLoc) > 125)
+            if (m_creature->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 125)
             {
                 EnterEvadeMode();
                 return;
