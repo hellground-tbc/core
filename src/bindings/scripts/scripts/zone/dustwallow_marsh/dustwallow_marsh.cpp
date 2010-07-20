@@ -210,7 +210,7 @@ struct TRINITY_DLL_DECL npc_theramore_combat_dummyAI : public Scripted_NoMovemen
     uint64 AttackerGUID;
     uint32 Check_Timer;
 
-    void Reset() 
+    void Reset()
     {
         m_creature->SetNoCallAssistance(true);
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_STUN, true);
@@ -218,7 +218,7 @@ struct TRINITY_DLL_DECL npc_theramore_combat_dummyAI : public Scripted_NoMovemen
         Check_Timer = 0;
     }
 
-    void Aggro(Unit* who) 
+    void Aggro(Unit* who)
     {
         AttackerGUID = ((Player*)who)->GetGUID();
         m_creature->SetStunned(true);
@@ -239,7 +239,7 @@ struct TRINITY_DLL_DECL npc_theramore_combat_dummyAI : public Scripted_NoMovemen
         {
             if(m_creature->GetDistance2d(attacker) > 12.0f)
                 EnterEvadeMode();
-                
+
             Check_Timer = 3000;
         }
         else
@@ -267,16 +267,24 @@ struct TRINITY_DLL_DECL mob_mottled_drywallow_crocolisksAI : public ScriptedAI
     void Reset() {}
     void JustDied (Unit* killer)
     {
-        Player* pl = (Player*)killer;
-        if(pl && pl->GetQuestStatus(QUEST_THE_GRIMTOTEM_WEAPON) == QUEST_STATUS_INCOMPLETE)
+        if (killer)
         {
-            Unit* totem = FindCreature(NPC_CAPTURED_TOTEM, 20.0, m_creature);   //blizzlike(?) check by dummy aura is NOT working, mysteriously...
-            if(totem)
-                pl->KilledMonster(NPC_CAPTURED_TOTEM, pl->GetGUID());
+            Player* pl;
+            if (killer->GetTypeId() != TYPEID_PLAYER)
+                pl = (Player*)m_creature->GetUnit(*m_creature, killer->GetOwnerGUID());
+            else
+                pl = (Player*)killer;
+
+            if(pl->GetTypeId() == TYPEID_PLAYER && pl->GetQuestStatus(QUEST_THE_GRIMTOTEM_WEAPON) == QUEST_STATUS_INCOMPLETE)
+            {
+                Unit* totem = FindCreature(NPC_CAPTURED_TOTEM, 20.0, m_creature);   //blizzlike(?) check by dummy aura is NOT working, mysteriously...
+                if(totem)
+                    pl->KilledMonster(NPC_CAPTURED_TOTEM, pl->GetGUID());
+            }
         }
     }
     void Aggro(Unit* who) {}
-    void UpdateAI(const uint32 diff) 
+    void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim()) { return; }
 
