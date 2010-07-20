@@ -288,12 +288,8 @@ void Unit::Update( uint32 p_time )
 
     sWorld.m_spellUpdateLock.acquire();
         m_Events.Update( p_time );
+        _UpdateSpells( p_time );
     sWorld.m_spellUpdateLock.release();
-
-    if (!IsInWorld())
-        return;
-
-    _UpdateSpells( p_time );
 
     // update combat timer only for players and pets
     if (isInCombat() && isCharmedOwnedByPlayerOrPlayer())
