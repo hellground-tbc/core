@@ -30,7 +30,7 @@ EndScriptData */
     * Coilskar Soothsayer
     * Coilskar Wrangler
     * Dragon Turtle
-    * Leviathan 
+    * Leviathan
 */
 
 /* ============================
@@ -47,6 +47,464 @@ EndScriptData */
     * Dragonmaw Wyrmcaller
     * Illidari Fearbringer
 */
+
+#define SPELL_BONECHEWER_DISGRUNTLED        40851
+#define SPELL_BONECHEWER_FURY               40845
+
+#define SPELL_WORKER_THROW_PICK             40844
+
+#define SPELL_SKYSTALKER_SHOOT              40873
+#define SPELL_SKYSTALKER_IMMOLATION         40872
+
+#define SPELL_WINDREAVER_DOOM_BOLT          40876
+#define SPELL_WINDREAVER_FIREBALL           40877
+#define SPELL_WINDREAVER_FREEZE             40875
+
+#define SPELL_WYRMCALLER_CLEAVE             15284
+#define SPELL_WYRMCALLER_FIXATE             40892
+#define SPELL_WYRMCALLER_JAB                40895
+#define AURA_WYRMCALLER_FIXATED             40893
+
+#define SPELL_FEARBRINGER_ILLIDARI_FLAMES   40938
+#define SPELL_FEARBRINGER_RAIN_OF_CHAOS     40946
+#define SPELL_FEARBRINGER_WAR_STOMP         40936
+
+/*#####
+##  mob Bonechewer Taskmaster - id 23028
+###########*/
+
+struct TRINITY_DLL_DECL mobBonechewerTaskmasterAI : public ScriptedAI
+{
+    mobBonechewerTaskmasterAI(Creature *c) : ScriptedAI(c){}
+
+    uint32 furyTimer;
+    uint32 disgruntledTimer;
+    bool furyCasted;
+    bool disgruntledCasted;
+
+    void Reset()
+    {
+        furyTimer = 20000;
+        disgruntledTimer = 30000;
+        furyCasted = false;
+        disgruntledCasted = false;
+    }
+
+    void Aggro(Unit *who)
+    {
+        if (urand(0, 100) < 25)
+        {
+            m_creature->CastSpell(m_creature, SPELL_BONECHEWER_DISGRUNTLED, false);
+            disgruntledCasted = true;
+        }
+    }
+
+    void JustDied(Unit *victim){}
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if (!furyCasted)
+        {
+            if (m_creature->GetHealth() < m_creature->GetMaxHealth() * 0.5 || furyTimer < diff)
+            {
+                m_creature->CastSpell(m_creature, SPELL_BONECHEWER_FURY, false);
+                furyCasted = true;
+            }
+            else
+                furyTimer -= diff;
+        }
+
+        if (!disgruntledCasted)
+        {
+            if (disgruntledTimer < diff)
+            {
+                m_creature->CastSpell(m_creature, SPELL_BONECHEWER_DISGRUNTLED, false);
+                disgruntledCasted = true;
+            }
+            else
+                disgruntledTimer -= diff;
+        }
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+/*#####
+##  mob Bonechewer Worker - id 22963
+###########*/
+
+struct TRINITY_DLL_DECL mobBonechewerWorkerAI : public ScriptedAI
+{
+    mobBonechewerWorkerAI(Creature *c) : ScriptedAI(c){}
+
+    uint32 throwTimer;
+
+    void Reset()
+    {
+        throwTimer = 15000 + urand(0, 10000);
+    }
+
+    void Aggro(Unit *who)
+    {
+        if (who)
+        {
+            if (urand(0, 100) < 20)
+            {
+                m_creature->CastSpell(who, SPELL_WORKER_THROW_PICK, false);
+            }
+        }
+    }
+
+    void JustDied(Unit *victim){}
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if (throwTimer < diff)
+        {
+            Unit * victim = SelectUnit(SELECT_TARGET_RANDOM, 0, 35, true);
+
+            if (victim)
+                m_creature->CastSpell(victim, SPELL_WORKER_THROW_PICK, false);
+
+            throwTimer = 15000 + urand(0, 10000);
+        }
+        else
+            throwTimer -= diff;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+/*#####
+##  mob Dragonmaw Sky Stalker - id 23030
+###########*/
+
+struct TRINITY_DLL_DECL mobDragonmawSkyStalkerAI : public ScriptedAI
+{
+    mobDragonmawSkyStalkerAI(Creature *c) : ScriptedAI(c){}
+
+    uint32 shootTimer;
+    uint32 immolationArrowTimer;
+
+    void Reset()
+    {
+        shootTimer = 2000 + urand(0, 2000);
+        immolationArrowTimer = 15000 + urand(0, 15000);
+    }
+
+    void Aggro(Unit *who){}
+
+    void JustDied(Unit *victim){}
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        Unit * victim = m_creature->getVictim();
+
+        if (!victim)
+            return;
+
+        if (m_creature->GetDistance(victim) > 37)
+        {
+            m_creature->GetMotionMaster()->Clear();
+            m_creature->GetMotionMaster()->MoveChase(victim, 25, 0);
+        }
+
+        if (shootTimer < diff)
+        {
+            AddSpellToCast(victim, SPELL_SKYSTALKER_SHOOT);
+            shootTimer = 2000 + urand(0, 2000);
+        }
+        else
+            shootTimer -= diff;
+
+        if (immolationArrowTimer < diff)
+        {
+            ForceSpellCast(SelectUnit(SELECT_TARGET_RANDOM, 0, 60, true), SPELL_SKYSTALKER_IMMOLATION);
+            immolationArrowTimer = 15000 + urand(0, 15000);
+        }
+        else
+            immolationArrowTimer -= diff;
+
+        CastNextSpellIfAnyAndReady();
+    }
+};
+
+/*#####
+##  mob Dragonmaw Wind Reaver - id 23330
+###########*/
+
+struct TRINITY_DLL_DECL mobDragonmawWindReaverAI : public ScriptedAI
+{
+    mobDragonmawWindReaverAI(Creature *c) : ScriptedAI(c){}
+
+    uint32 fireballTimer;
+    uint32 doomBoltTimer;
+    uint32 freezeTimer;
+
+    void Reset()
+    {
+        fireballTimer = 2000 + urand(0, 2000);
+        doomBoltTimer = 15000 + urand(0, 10000);
+        freezeTimer = 20000 + urand(0, 15000);
+    }
+
+    void Aggro(Unit *who){}
+
+    void JustDied(Unit *victim){}
+
+    Unit * CheckMeleeRange()
+    {
+        Map::PlayerList const &PlayerList = ((InstanceMap*)m_creature->GetMap())->GetPlayers();
+        for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+        {
+            Player* i_pl = i->getSource();
+            if (i_pl && i_pl->isAlive() && m_creature->GetDistance(i_pl) < 6)
+                return (Unit*)i_pl;
+        }
+
+        return NULL;
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        Unit * victim = m_creature->getVictim();
+
+        if (!victim)
+            return;
+
+        if (m_creature->GetDistance(victim) > 37)
+        {
+            m_creature->GetMotionMaster()->Clear();
+            m_creature->GetMotionMaster()->MoveChase(victim, 25, 0);
+        }
+
+        if (fireballTimer < diff)
+        {
+            AddSpellToCast(victim, SPELL_WINDREAVER_FIREBALL);
+            fireballTimer = 3000 + urand(0, 2000);
+        }
+        else
+            fireballTimer -= diff;
+
+        if (doomBoltTimer < diff)
+        {
+            AddSpellToCast(SelectUnit(SELECT_TARGET_RANDOM, 0, 40, true), SPELL_WINDREAVER_DOOM_BOLT);
+            doomBoltTimer = 15000 + urand(0, 10000);
+        }
+        else
+            doomBoltTimer -= diff;
+
+        if (freezeTimer < diff)
+        {
+            Unit * tmpTarget = CheckMeleeRange();
+            if (tmpTarget)
+            {
+                ForceSpellCast(tmpTarget, SPELL_WINDREAVER_FREEZE);
+                m_creature->GetMotionMaster()->Clear();
+                m_creature->GetMotionMaster()->MoveChase(tmpTarget, 15, 0);
+            }
+            else
+            {
+                ForceSpellCast(SelectUnit(SELECT_TARGET_RANDOM, 0, 60, true), SPELL_WINDREAVER_FREEZE);
+            }
+
+            freezeTimer = 20000 + urand(0, 15000);
+        }
+        else
+            freezeTimer -= diff;
+
+        CastNextSpellIfAnyAndReady();
+    }
+};
+
+/*#####
+##  mob Dragonmaw Wyrmcaller - id 22960
+###########*/
+
+struct TRINITY_DLL_DECL mobDragonmawWyrmcallerAI : public ScriptedAI
+{
+    mobDragonmawWyrmcallerAI(Creature *c) : ScriptedAI(c){}
+
+    uint32 cleaveTimer;
+    uint32 fixateTimer;
+    uint32 jabTimer;
+
+    void Reset()
+    {
+        cleaveTimer = 10000 + urand(0, 10000);
+        fixateTimer = 20000 + urand(0, 10000);
+        jabTimer = 5000 + urand(0, 15000);
+    }
+
+    void Aggro(Unit *who) {}
+
+    void JustDied(Unit *victim) {}
+
+    void OnAuraApply(Aura * aur, Unit * caster)
+    {
+        if (aur->GetId() == AURA_WYRMCALLER_FIXATED)
+        {
+            m_creature->AddThreat(caster, 1000000, SPELL_SCHOOL_MASK_NORMAL, NULL);
+            m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
+            m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_ATTACK_ME, true);
+        }
+    }
+
+    void OnAuraRemove(Aura * aur, Unit * caster)
+    {
+        if (aur->GetId() == AURA_WYRMCALLER_FIXATED)
+        {
+            m_creature->AddThreat(aur->GetCaster(), -1000000, SPELL_SCHOOL_MASK_NORMAL, NULL);
+            m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
+            m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_ATTACK_ME, false);
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        Unit * victim = m_creature->getVictim();
+
+        if (!victim)
+            return;
+
+        if (cleaveTimer < diff)
+        {
+            m_creature->CastSpell(victim, SPELL_WYRMCALLER_CLEAVE, false);
+            cleaveTimer = 10000 + urand(0, 10000);
+        }
+        else
+            cleaveTimer -= diff;
+
+        if (jabTimer < diff)
+        {
+            m_creature->CastSpell(victim, SPELL_WYRMCALLER_JAB, false);
+            jabTimer = 5000 + urand(0, 15000);
+        }
+        else
+            jabTimer -= diff;
+
+        if (fixateTimer < diff)
+        {
+            victim = SelectUnit(SELECT_TARGET_RANDOM, 0, 60, true);
+            if (victim)
+                victim->CastSpell(m_creature, SPELL_WYRMCALLER_FIXATE, false);
+
+            fixateTimer = 20000 + urand(0, 10000);
+        }
+        else
+            fixateTimer -= diff;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+/*#####
+##  mob Illidari Fearbringer - id 22954
+###########*/
+
+struct TRINITY_DLL_DECL mobIllidariFearbringerAI : public ScriptedAI
+{
+    mobIllidariFearbringerAI(Creature *c) : ScriptedAI(c){}
+
+    uint32 flamesTimer;
+    uint32 rainTimer;
+    uint32 stompTimer;
+
+    void Reset()
+    {
+        flamesTimer = 10000 + urand(0, 10000);
+        rainTimer = 20000 + urand(0, 10000);
+        stompTimer = 15000 + urand(0, 10000);
+    }
+
+    void Aggro(Unit *who){}
+
+    void JustDied(Unit *victim){}
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if (flamesTimer < diff)
+        {
+            AddSpellToCast(m_creature->getVictim(), SPELL_FEARBRINGER_ILLIDARI_FLAMES);
+            flamesTimer = 10000 + urand(0, 10000);
+        }
+        else
+            flamesTimer -= diff;
+
+        if (rainTimer < diff)
+        {
+            AddSpellToCast(SelectUnit(SELECT_TARGET_RANDOM, 0, 60, true), SPELL_FEARBRINGER_RAIN_OF_CHAOS);
+            rainTimer = 20000 + urand(0, 10000);
+        }
+        else
+            rainTimer -= diff;
+
+        if (stompTimer < diff)
+        {
+            AddSpellToCast(m_creature, SPELL_FEARBRINGER_WAR_STOMP);
+
+            stompTimer = 15000 + urand(0, 10000);
+        }
+        else
+            stompTimer -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+/*####
+##  GetAI's
+###########*/
+
+CreatureAI* GetAI_mobBonechewerTaskmaster(Creature *_Creature)
+{
+    return new mobBonechewerTaskmasterAI (_Creature);
+}
+
+CreatureAI* GetAI_mobBonechewerWorker(Creature *_Creature)
+{
+    return new mobBonechewerWorkerAI (_Creature);
+}
+
+CreatureAI* GetAI_mobDragonmawSkyStalker(Creature *_Creature)
+{
+    return new mobDragonmawSkyStalkerAI (_Creature);
+}
+
+CreatureAI* GetAI_mobDragonmawWindReaver(Creature *_Creature)
+{
+    return new mobDragonmawWindReaverAI (_Creature);
+}
+
+CreatureAI* GetAI_mobDragonmawWyrmcaller(Creature *_Creature)
+{
+    return new mobDragonmawWyrmcallerAI (_Creature);
+}
+
+CreatureAI* GetAI_mobIllidariFearbringer(Creature *_Creature)
+{
+    return new mobIllidariFearbringerAI (_Creature);
+}
+
 
 /* ============================
 *
@@ -147,7 +605,7 @@ EndScriptData */
     * Charming Courtesan
     * Spellbound Attendent
     * Enslaved Servant
-    * Temple Concubine 
+    * Temple Concubine
 */
 
 /* ============================
@@ -161,7 +619,7 @@ EndScriptData */
     * Illidari Assassin
     * Illidari Battle-mage
     * Illidari Blood Lord
-    * Promenade Sentinel 
+    * Promenade Sentinel
 */
 
 void AddSC_black_temple_trash()
