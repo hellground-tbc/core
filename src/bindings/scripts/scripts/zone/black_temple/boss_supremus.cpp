@@ -94,7 +94,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
     uint32 SummonVolcanoTimer;
     uint32 HatefulStrikeTimer;
     uint32 BerserkTimer;
-    
+
     uint32 CheckTimer;
     WorldLocation wLoc;
 
@@ -201,7 +201,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
             DoZoneInCombat();
             CheckTimer = 1000;
         }
-        else 
+        else
             CheckTimer -= diff;
 
         if(!m_creature->HasAura(SPELL_BERSERK, 0))

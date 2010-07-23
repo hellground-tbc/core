@@ -5290,6 +5290,10 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             }
             break;
         }
+        case 40893:
+        {
+            m_caster->AddAura(40893, unitTarget);
+        }
     }
 
     if(!unitTarget || !unitTarget->isAlive()) // can we remove this check?
