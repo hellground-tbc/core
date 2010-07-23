@@ -46,7 +46,7 @@ EndContentData */
 #define THUG_SPAWN_Y 1581
 #define THUG_SPAWN_Z 59.018
 #define THUG_SPAWN_O 4.164382
-#define THUG_SPAWN_R  5 
+#define THUG_SPAWN_R  5
 
 //Speech
 #define SAY_KILL_HER "Kill her! Take the farm!"
@@ -64,8 +64,8 @@ struct TRINITY_DLL_DECL npc_daphne_stilwellAI : public npc_escortAI
     }
 
 
-    std::vector<uint64> enemies;       
-    uint8 thug_wave;                   
+    std::vector<uint64> enemies;
+    uint8 thug_wave;
     bool IsWalking;
     bool initial_movement;
     bool real_event_started;
@@ -407,6 +407,39 @@ CreatureAI* GetAI_npc_defias_traitor(Creature *_Creature)
     return (CreatureAI*)thisAI;
 }
 
+//#####
+//# NPC Mikhail - q 1249
+//########
+
+bool QuestAccept_npc_Mikhail(Player* player, Creature* creature, Quest const* quest)
+{
+    if (quest->GetQuestId() == 1249)
+    {
+        Creature* trigger = NULL;
+
+        CellPair pair(Trinity::ComputeCellPair(x, y));
+        Cell cell(pair);
+        cell.data.Part.reserved = ALL_DISTRICT;
+        cell.SetNoCreate();
+
+        Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck check(*creature, 4962, true, 10);
+        Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(trigger, check);
+
+        TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> cSearcher(searcher);
+
+        cell.Visit(pair, cSearcher, *(creature->GetMap()));
+
+        if(trigger)
+        {
+            trigger->setFaction(FACTION_HOSTILE);
+            trigger->Attack(player, true);
+            trigger->GetMotionMaster()->MoveChase(player, 0, 0);
+        }
+    }
+
+    return true;
+}
+
 void AddSC_westfall()
 {
     Script *newscript;
@@ -422,6 +455,12 @@ void AddSC_westfall()
     newscript->Name="npc_defias_traitor";
     newscript->GetAI = &GetAI_npc_defias_traitor;
     newscript->pQuestAccept = &QuestAccept_npc_defias_traitor;
+    newscript->RegisterSelf();
+
+
+    newscript = new Script;
+    newscript->Name = "npc_Mikhail";
+    newscript->pQuestAccept = &QuestAccept_npc_Mikhail;
     newscript->RegisterSelf();
 }
 
