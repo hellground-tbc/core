@@ -417,6 +417,9 @@ bool QuestAccept_npc_Mikhail(Player* player, Creature* creature, Quest const* qu
     {
         Creature* trigger = NULL;
 
+        float x, y, z;
+        creature->GetPosition(x, y, z);
+
         CellPair pair(Trinity::ComputeCellPair(x, y));
         Cell cell(pair);
         cell.data.Part.reserved = ALL_DISTRICT;
@@ -431,7 +434,7 @@ bool QuestAccept_npc_Mikhail(Player* player, Creature* creature, Quest const* qu
 
         if(trigger)
         {
-            trigger->setFaction(FACTION_HOSTILE);
+            trigger->setFaction(14);
             trigger->Attack(player, true);
             trigger->GetMotionMaster()->MoveChase(player, 0, 0);
         }
