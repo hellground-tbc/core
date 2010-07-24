@@ -24,7 +24,7 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_black_temple.h"
 
-#define EMOTE_NEW_TARGET            -1564010    //all emotes should be fixed in DB not to double or use "Supremus" name
+#define EMOTE_NEW_TARGET            -1564010
 #define EMOTE_PUNCH_GROUND          -1564011
 #define EMOTE_GROUND_CRACK          -1564012
 

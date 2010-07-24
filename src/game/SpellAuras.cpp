@@ -201,7 +201,7 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleNoImmediateEffect,                         //144 SPELL_AURA_SAFE_FALL                  implemented in WorldSession::HandleMovementOpcodes
     &Aura::HandleUnused,                                    //145 SPELL_AURA_CHARISMA obsolete?
     &Aura::HandleUnused,                                    //146 SPELL_AURA_PERSUADED obsolete?
-    &Aura::HandleNULL,                                      //147 SPELL_AURA_ADD_CREATURE_IMMUNITY
+    &Aura::HandleModStateImmunityMask,                      //147 SPELL_AURA_ADD_CREATURE_IMMUNITY
     &Aura::HandleAuraRetainComboPoints,                     //148 SPELL_AURA_RETAIN_COMBO_POINTS
     &Aura::HandleNoImmediateEffect,                         //149 SPELL_AURA_RESIST_PUSHBACK
     &Aura::HandleShieldBlockValue,                          //150 SPELL_AURA_MOD_SHIELD_BLOCKVALUE_PCT
@@ -2271,6 +2271,14 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             if(Ghost)
                 m_target->CastSpell(Ghost, 40268, false);
         }
+/*
+        // Shade Soul Channel
+        if(GetId()==40401 && GetEffIndex()==0 && !caster->isAlive())
+        {
+            std::cout << "zdejmujemy aure dummy, i stack" << std::endl;
+            if(m_target->HasAura(40520, 0))
+                m_target->RemoveSingleAuraFromStack(40520, 0);
+        }*/
 
     }
 
@@ -2560,8 +2568,6 @@ void Aura::HandleAuraPeriodicDummy(bool apply, bool Real)
                 TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> visitor(searcher);
 
                 cell.Visit(pair, visitor, *(m_target->GetMap()));
-
-                bool tauntReset = false;
 
                 if(!TurtleList.empty())
                 {
@@ -3894,6 +3900,97 @@ void Aura::HandleAuraModUseNormalSpeed(bool /*apply*/, bool Real)
 /*********************************************************/
 /***                     IMMUNITY                      ***/
 /*********************************************************/
+
+void Aura::HandleModStateImmunityMask(bool apply, bool Real)
+{
+    if (!Real)
+        return;
+
+    if(!m_target)
+        return;
+
+    //proper flags unknown, uncomment this when verified
+    /*
+    std::list <AuraType> immunity_list;
+
+    if (GetMiscValue() & (1<<10))
+        immunity_list.push_back(SPELL_AURA_MOD_STUN);
+    if (GetMiscValue() & (1<<7))
+        immunity_list.push_back(SPELL_AURA_MOD_DISARM);
+    if (GetMiscValue() & (1<<1))
+        immunity_list.push_back(SPELL_AURA_TRANSFORM);
+
+    // These flag can be recognized wrong:
+    if (GetMiscValue() & (1<<5))
+        immunity_list.push_back(SPELL_AURA_MOD_TAUNT);
+    if (GetMiscValue() & (1<<6))
+        immunity_list.push_back(SPELL_AURA_MOD_DECREASE_SPEED);
+    if (GetMiscValue() & (1<<0))
+        immunity_list.push_back(SPELL_AURA_MOD_ROOT);
+    if (GetMiscValue() & (1<<2))
+        immunity_list.push_back(SPELL_AURA_MOD_CONFUSE);
+    if (GetMiscValue() & (1<<9))
+        immunity_list.push_back(SPELL_AURA_MOD_FEAR);
+
+    if (apply)
+    {
+        for (std::list <AuraType>::iterator iter = immunity_list.begin(); iter != immunity_list.end(); ++iter)
+            m_target->RemoveAurasByType(*iter);
+    }
+
+    for (std::list <AuraType>::iterator iter = immunity_list.begin(); iter != immunity_list.end(); ++iter)
+    {
+        m_target->ApplySpellImmune(GetId(),IMMUNITY_STATE,*iter, apply);
+    }
+    */
+    std::list<uint32> IncapacitateMechanics;    //workaround for spell 40081
+
+    if(GetMiscValue() & ((1<<5) | (1<<6)))  //workaround for spell 40081
+    {
+        IncapacitateMechanics.push_front(MECHANIC_CHARM);
+        IncapacitateMechanics.push_front(MECHANIC_CONFUSED);
+        IncapacitateMechanics.push_front(MECHANIC_FEAR);
+        IncapacitateMechanics.push_front(MECHANIC_ROOT);
+        IncapacitateMechanics.push_front(MECHANIC_PACIFY);
+        IncapacitateMechanics.push_front(MECHANIC_SLEEP);
+        IncapacitateMechanics.push_front(MECHANIC_SNARE);
+        IncapacitateMechanics.push_front(MECHANIC_STUN);
+        IncapacitateMechanics.push_front(MECHANIC_FREEZE);
+        IncapacitateMechanics.push_front(MECHANIC_KNOCKOUT);
+        IncapacitateMechanics.push_front(MECHANIC_POLYMORPH);
+        IncapacitateMechanics.push_front(MECHANIC_BANISH);
+        IncapacitateMechanics.push_front(MECHANIC_HORROR);
+    }
+
+    if(apply && GetId() == 40081)
+    {
+        uint32 mechanic = IMMUNE_TO_INCAPACITATE_MASK;
+        Unit::AuraMap& Auras = m_target->GetAuras();
+        for(Unit::AuraMap::iterator iter = Auras.begin(), next; iter != Auras.end(); iter = next)
+        {
+            next = iter;
+            ++next;
+            SpellEntry const *spell = iter->second->GetSpellProto();
+            if (!iter->second->IsPositive() && spell->Id != 40081)
+            {
+                //check for mechanic mask
+                if(GetSpellMechanicMask(spell, iter->second->GetEffIndex()) & mechanic)
+                {
+                    m_target->RemoveAurasDueToSpell(spell->Id);
+                    if(Auras.empty())
+                        break;
+                    else
+                        next = Auras.begin();
+                }
+            }
+        }
+    }
+    //for 40081
+    for (std::list <uint32>::iterator iter = IncapacitateMechanics.begin(); iter != IncapacitateMechanics.end(); ++iter)
+    {
+        m_target->ApplySpellImmune(GetId(),IMMUNITY_MECHANIC,*iter, apply);
+    }
+}
 
 void Aura::HandleModMechanicImmunity(bool apply, bool Real)
 {
