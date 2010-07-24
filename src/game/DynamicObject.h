@@ -50,6 +50,11 @@ class DynamicObject : public WorldObject
         void Delay(int32 delaytime);
         bool isVisibleForInState(Player const* u, bool inVisibleList) const;
 
+        float GetObjectBoundingRadius() const               // overwrite WorldObject version
+        {
+            return 0.0f;                                    // dynamic object not have real interact size
+        }
+
         void Say(const char* text, uint32 language, uint64 TargetGuid) { MonsterSay(text,language,TargetGuid); }
         void Yell(const char* text, uint32 language, uint64 TargetGuid) { MonsterYell(text,language,TargetGuid); }
         void TextEmote(const char* text, uint64 TargetGuid) { MonsterTextEmote(text,TargetGuid); }

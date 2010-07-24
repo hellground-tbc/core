@@ -771,7 +771,7 @@ bool ObjectMgr::CheckCreatureLinkedRespawn(uint32 guid, uint32 linkedGuid) const
 {
     const CreatureData* const slave = GetCreatureData(guid);
     const CreatureData* const master = GetCreatureData(linkedGuid);
-    
+
     if(!slave || !master) // they must have a corresponding entry in db
     {
         sLog.outError("LinkedRespawn: Creature '%u' linking to '%u' which doesn't exist",guid,linkedGuid);
@@ -779,7 +779,7 @@ bool ObjectMgr::CheckCreatureLinkedRespawn(uint32 guid, uint32 linkedGuid) const
     }
 
     const MapEntry* const map = sMapStore.LookupEntry(master->mapid);
-        
+
     if(master->mapid != slave->mapid        // link only to same map
         && (!map || map->Instanceable()))   // or to unistanced world
     {
@@ -1098,6 +1098,12 @@ void ObjectMgr::LoadGameobjects()
         if(!gInfo)
         {
             sLog.outErrorDb("Table `gameobject` have gameobject (GUID: %u) with not existed gameobject entry %u, skipped.",guid,data.id );
+            continue;
+        }
+
+        if (gInfo->displayId && !sGameObjectDisplayInfoStore.LookupEntry(gInfo->displayId))
+        {
+            sLog.outErrorDb("Gameobject (GUID: %u Entry %u GoType: %u) have invalid displayId (%u), not loaded.",guid, entry, gInfo->type, gInfo->displayId);
             continue;
         }
 
@@ -4731,7 +4737,7 @@ void ObjectMgr::LoadAreaTriggerTeleports()
 
     uint32 count = 0;
 
-    //                                                       0       1           2              3               4                   5                   6  
+    //                                                       0       1           2              3               4                   5                   6
     QueryResult_AutoPtr result = WorldDatabase.Query("SELECT id, access_id, target_map, target_position_x, target_position_y, target_position_z, target_orientation FROM areatrigger_teleport");
     if( !result )
     {
@@ -4772,7 +4778,7 @@ void ObjectMgr::LoadAreaTriggerTeleports()
             sLog.outErrorDb("Area trigger (ID:%u) does not exist in `AreaTrigger.dbc`.",Trigger_ID);
             continue;
         }
-        
+
         MapEntry const* mapEntry = sMapStore.LookupEntry(at.target_mapId);
         if(!mapEntry)
         {
@@ -6242,7 +6248,7 @@ void ObjectMgr::LoadSpecialQuests()
             sWorld.specialQuest[HEROIC] = heroicQuest[urand(0,14)];
             CharacterDatabase.PExecute("UPDATE saved_variables set HeroicQuest='%u'", sWorld.specialQuest[HEROIC]);
         }
-        
+
         if(!(sWorld.specialQuest[QNORMAL] = (*result)[2].GetUInt32()))
         {
             uint32 normalQuest[8]  = { 11389, 11371, 11376, 11383, 11364, 11500, 11385, 11387 };
