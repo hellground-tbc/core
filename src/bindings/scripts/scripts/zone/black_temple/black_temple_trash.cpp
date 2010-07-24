@@ -7,7 +7,7 @@
 
 /* ScriptData
 SDName: Black_Temple_Trash
-SD%Complete: 0
+SD%Complete: 13% (9/68)
 SDComment: Trash NPCs divided by to boss links
 SDCategory: Black Temple
 EndScriptData */
@@ -34,7 +34,7 @@ EndScriptData */
 */
 
 /****************
-* Aqueous Lord
+* Aqueous Lord - id 22878
 *****************/
 
 #define SPELL_VILE_SLIME        40099
@@ -106,13 +106,8 @@ struct TRINITY_DLL_DECL mob_aqueous_lordAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_mob_aqueous_lord(Creature *_Creature)
-{
-    return new mob_aqueous_lordAI(_Creature);
-}
-
 /****************
-* Aqueous Spawn
+* Aqueous Spawn - id 22883
 *****************/
 
 #define SPELL_SLUDGE_NOVA       40102
@@ -167,13 +162,8 @@ struct TRINITY_DLL_DECL mob_aqueous_spawnAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_mob_aqueous_spawn(Creature *_Creature)
-{
-    return new mob_aqueous_spawnAI(_Creature);
-}
-
 /****************
-* Coilscar General
+* Coilscar General - id 22873
 *****************/
 
 #define SAY_FREE_FRIEND             -1650022
@@ -258,13 +248,8 @@ struct TRINITY_DLL_DECL mob_coilskar_generalAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_mob_coilskar_general(Creature *_Creature)
-{
-    return new mob_coilskar_generalAI(_Creature);
-}
-
 /****************
-* Coilscar Harpooner
+* Coilscar Harpooner - id 22874
 *****************/
 
 
@@ -294,6 +279,26 @@ struct TRINITY_DLL_DECL mob_coilskar_wranglerAI : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 };
+
+/*####
+##  GetAI's
+###########*/
+
+CreatureAI* GetAI_mob_aqueous_lord(Creature *_Creature)
+{
+    return new mob_aqueous_lordAI(_Creature);
+}
+
+CreatureAI* GetAI_mob_aqueous_spawn(Creature *_Creature)
+{
+    return new mob_aqueous_spawnAI(_Creature);
+}
+
+CreatureAI* GetAI_mob_coilskar_general(Creature *_Creature)
+{
+    return new mob_coilskar_generalAI(_Creature);
+}
+
 
 /* ============================
 *
@@ -335,9 +340,9 @@ struct TRINITY_DLL_DECL mob_coilskar_wranglerAI : public ScriptedAI
 ##  mob Bonechewer Taskmaster - id 23028
 ###########*/
 
-struct TRINITY_DLL_DECL mobBonechewerTaskmasterAI : public ScriptedAI
+struct TRINITY_DLL_DECL mob_bonechewer_taskmasterAI : public ScriptedAI
 {
-    mobBonechewerTaskmasterAI(Creature *c) : ScriptedAI(c){}
+    mob_bonechewer_taskmasterAI(Creature *c) : ScriptedAI(c){}
 
     uint32 furyTimer;
     uint32 disgruntledTimer;
@@ -398,9 +403,9 @@ struct TRINITY_DLL_DECL mobBonechewerTaskmasterAI : public ScriptedAI
 ##  mob Bonechewer Worker - id 22963
 ###########*/
 
-struct TRINITY_DLL_DECL mobBonechewerWorkerAI : public ScriptedAI
+struct TRINITY_DLL_DECL mob_bonechewer_workerAI : public ScriptedAI
 {
-    mobBonechewerWorkerAI(Creature *c) : ScriptedAI(c){}
+    mob_bonechewer_workerAI(Creature *c) : ScriptedAI(c){}
 
     uint32 throwTimer;
 
@@ -447,9 +452,9 @@ struct TRINITY_DLL_DECL mobBonechewerWorkerAI : public ScriptedAI
 ##  mob Dragonmaw Sky Stalker - id 23030
 ###########*/
 
-struct TRINITY_DLL_DECL mobDragonmawSkyStalkerAI : public ScriptedAI
+struct TRINITY_DLL_DECL mob_dragonmaw_skystalkerAI : public ScriptedAI
 {
-    mobDragonmawSkyStalkerAI(Creature *c) : ScriptedAI(c){}
+    mob_dragonmaw_skystalkerAI(Creature *c) : ScriptedAI(c){}
 
     uint32 shootTimer;
     uint32 immolationArrowTimer;
@@ -504,9 +509,9 @@ struct TRINITY_DLL_DECL mobDragonmawSkyStalkerAI : public ScriptedAI
 ##  mob Dragonmaw Wind Reaver - id 23330
 ###########*/
 
-struct TRINITY_DLL_DECL mobDragonmawWindReaverAI : public ScriptedAI
+struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
 {
-    mobDragonmawWindReaverAI(Creature *c) : ScriptedAI(c){}
+    mob_dragonmaw_windreaverAI(Creature *c) : ScriptedAI(c){}
 
     uint32 fireballTimer;
     uint32 doomBoltTimer;
@@ -595,9 +600,9 @@ struct TRINITY_DLL_DECL mobDragonmawWindReaverAI : public ScriptedAI
 ##  mob Dragonmaw Wyrmcaller - id 22960
 ###########*/
 
-struct TRINITY_DLL_DECL mobDragonmawWyrmcallerAI : public ScriptedAI
+struct TRINITY_DLL_DECL mob_dragonmaw_wyrmcallerAI : public ScriptedAI
 {
-    mobDragonmawWyrmcallerAI(Creature *c) : ScriptedAI(c){}
+    mob_dragonmaw_wyrmcallerAI(Creature *c) : ScriptedAI(c){}
 
     uint32 cleaveTimer;
     uint32 fixateTimer;
@@ -679,9 +684,9 @@ struct TRINITY_DLL_DECL mobDragonmawWyrmcallerAI : public ScriptedAI
 ##  mob Illidari Fearbringer - id 22954
 ###########*/
 
-struct TRINITY_DLL_DECL mobIllidariFearbringerAI : public ScriptedAI
+struct TRINITY_DLL_DECL mob_illidari_fearbringerAI : public ScriptedAI
 {
-    mobIllidariFearbringerAI(Creature *c) : ScriptedAI(c){}
+    mob_illidari_fearbringerAI(Creature *c) : ScriptedAI(c){}
 
     uint32 flamesTimer;
     uint32 rainTimer;
@@ -737,34 +742,34 @@ struct TRINITY_DLL_DECL mobIllidariFearbringerAI : public ScriptedAI
 ##  GetAI's
 ###########*/
 
-CreatureAI* GetAI_mobBonechewerTaskmaster(Creature *_Creature)
+CreatureAI* GetAI_mob_bonechewer_taskmaster(Creature *_Creature)
 {
-    return new mobBonechewerTaskmasterAI (_Creature);
+    return new mob_bonechewer_taskmasterAI (_Creature);
 }
 
-CreatureAI* GetAI_mobBonechewerWorker(Creature *_Creature)
+CreatureAI* GetAI_mob_bonechewer_worker(Creature *_Creature)
 {
-    return new mobBonechewerWorkerAI (_Creature);
+    return new mob_bonechewer_workerAI (_Creature);
 }
 
-CreatureAI* GetAI_mobDragonmawSkyStalker(Creature *_Creature)
+CreatureAI* GetAI_mob_dragonmaw_skystalker(Creature *_Creature)
 {
-    return new mobDragonmawSkyStalkerAI (_Creature);
+    return new mob_dragonmaw_skystalkerAI (_Creature);
 }
 
-CreatureAI* GetAI_mobDragonmawWindReaver(Creature *_Creature)
+CreatureAI* GetAI_mob_dragonmaw_windreaver(Creature *_Creature)
 {
-    return new mobDragonmawWindReaverAI (_Creature);
+    return new mob_dragonmaw_windreaverAI (_Creature);
 }
 
-CreatureAI* GetAI_mobDragonmawWyrmcaller(Creature *_Creature)
+CreatureAI* GetAI_mob_dragonmaw_wyrmcaller(Creature *_Creature)
 {
-    return new mobDragonmawWyrmcallerAI (_Creature);
+    return new mob_dragonmaw_wyrmcallerAI (_Creature);
 }
 
-CreatureAI* GetAI_mobIllidariFearbringer(Creature *_Creature)
+CreatureAI* GetAI_mob_illidari_fearbringer(Creature *_Creature)
 {
-    return new mobIllidariFearbringerAI (_Creature);
+    return new mob_illidari_fearbringerAI (_Creature);
 }
 
 
@@ -888,6 +893,7 @@ void AddSC_black_temple_trash()
 {
     Script *newscript;
 
+    //Najentus
     newscript = new Script;
     newscript->Name = "mob_aqueous_lord";
     newscript->GetAI = &GetAI_mob_aqueous_lord;
@@ -901,5 +907,36 @@ void AddSC_black_temple_trash()
     newscript = new Script;
     newscript->Name = "mob_coilskar_general";
     newscript->GetAI = &GetAI_mob_coilskar_general;
+    newscript->RegisterSelf();
+
+    //Supremus
+    newscript = new Script;
+    newscript->Name = "mob_bonechewer_taskmaster";
+    newscript->GetAI = &GetAI_mob_bonechewer_taskmaster;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "mob_bonechewer_worker";
+    newscript->GetAI = &GetAI_mob_bonechewer_worker;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_dragonmaw_skystalker";
+    newscript->GetAI = &GetAI_mob_dragonmaw_skystalker;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_dragonmaw_windreaver";
+    newscript->GetAI = &GetAI_mob_dragonmaw_windreaver;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "mob_dragonmaw_wyrmcaller";
+    newscript->GetAI = &GetAI_mob_dragonmaw_wyrmcaller;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_illidari_fearbringer";
+    newscript->GetAI = &GetAI_mob_illidari_fearbringer;
     newscript->RegisterSelf();
 }
