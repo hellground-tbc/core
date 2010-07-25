@@ -338,7 +338,7 @@ void GameObject::Update(uint32 diff)
                     TypeContainerVisitor<Trinity::UnitSearcher<Trinity::AnyUnfriendlyNoTotemUnitInObjectRangeCheck>, GridTypeMapContainer > grid_object_checker(checker);
                     //cell_lock->Visit(cell_lock, grid_object_checker, *MapManager::Instance().GetMap(GetMapId(), this));
                     cell.Visit(p, grid_object_checker, *GetMap(), *this, radius);
-                    
+
                     // or unfriendly player/pet
                     if(!ok)
                     {
@@ -1373,3 +1373,13 @@ const char* GameObject::GetNameForLocaleIdx(int32 loc_idx) const
     return GetName();
 }
 
+float GameObject::GetObjectBoundingRadius() const
+{
+    //FIXME:
+    // 1. This is clearly hack way because GameObjectDisplayInfoEntry have 6 floats related to GO sizes, but better that use DEFAULT_WORLD_OBJECT_SIZE
+    // 2. In some cases this must be only interactive size, not GO size, current way can affect creature target point auto-selection in strange ways for big underground/virtual GOs
+    if (GameObjectDisplayInfoEntry const* dispEntry = sGameObjectDisplayInfoStore.LookupEntry(GetGOInfo()->displayId))
+        return fabs(dispEntry->unknown12) * GetGOInfo()->size;
+
+    return DEFAULT_WORLD_OBJECT_SIZE;
+}

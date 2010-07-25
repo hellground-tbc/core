@@ -2132,6 +2132,9 @@ class TRINITY_DLL_SPEC Player : public Unit
         bool HasTitle(CharTitlesEntry const* title) { return HasTitle(title->bit_index); }
         void SetTitle(CharTitlesEntry const* title);
 
+        void ResetTimeSync();
+        void SendTimeSync();
+
         // you can't follow while being followed
         void setGMFollow(uint64 guid) {m_GMfollow_GUID = guid; m_GMfollowtarget_GUID = 0;}
         void setFollowTarget(uint64 guid) {m_GMfollowtarget_GUID = guid; m_GMfollow_GUID = 0;}
@@ -2393,6 +2396,11 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         uint64 m_GMfollowtarget_GUID; // za kim chodzi
         uint64 m_GMfollow_GUID;       // gm ktory chodzi za playerem
+
+        uint32 m_timeSyncCounter;
+        uint32 m_timeSyncTimer;
+        uint32 m_timeSyncClient;
+        uint32 m_timeSyncServer;
 };
 
 void AddItemsSetItem(Player*player,Item *item);

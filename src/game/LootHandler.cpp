@@ -383,9 +383,11 @@ void WorldSession::DoLootRelease( uint64 lguid )
         Item *pItem = player->GetItemByGuid(lguid );
         if(!pItem)
             return;
-        if( (pItem->GetProto()->BagFamily & BAG_FAMILY_MASK_MINING_SUPP) &&
-            pItem->GetProto()->Class == ITEM_CLASS_TRADE_GOODS &&
-            pItem->GetCount() >= 5)
+
+        ItemPrototype const* proto = pItem->GetProto();
+        // destroy only 5 items from stack in case prospecting and milling
+        if((proto->BagFamily & BAG_FAMILY_MASK_MINING_SUPP) &&
+            proto->Class == ITEM_CLASS_TRADE_GOODS)
         {
             pItem->m_lootGenerated = false;
             pItem->loot.clear();

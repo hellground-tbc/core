@@ -53,6 +53,8 @@
 
 #include <math.h>
 
+using namespace std;
+
 float baseMoveSpeed[MAX_MOVE_TYPE] =
 {
     2.5f,                                                   // MOVE_WALK
@@ -1017,7 +1019,6 @@ void Unit::CastSpell(Unit* Victim,SpellEntry const *spellInfo, bool triggered, I
                 break;
         }
     }
-    targets.setUnitTarget(Victim);
 
     if(targetMask & (TARGET_FLAG_SOURCE_LOCATION|TARGET_FLAG_DEST_LOCATION))
     {
@@ -1036,6 +1037,12 @@ void Unit::CastSpell(Unit* Victim,SpellEntry const *spellInfo, bool triggered, I
         originalCaster = triggeredByAura->GetCasterGUID();
 
     Spell *spell = new Spell(this, spellInfo, triggered, originalCaster );
+
+    if(Victim)
+        targets.setUnitTarget(Victim);
+    else
+        spell->FillTargetMap();
+        targets = spell->m_targets;
 
     spell->m_CastItem = castItem;
     spell->prepare(&targets, triggeredByAura);
@@ -1798,13 +1805,33 @@ void Unit::CalcAbsorb(Unit *pVictim,SpellSchoolMask schoolMask, const uint32 dam
     for(AuraList::const_iterator i = vManaShield.begin(), next; i != vManaShield.end() && RemainingDamage > 0; i = next)
     {
         next = i; ++next;
-        int32 *p_absorbAmount = &(*i)->GetModifier()->m_amount;
 
         // check damage school mask
         if (((*i)->GetModifier()->m_miscvalue & schoolMask)==0)
             continue;
 
-        int32 currentAbsorb;
+        // base_amount + spell_bonus_coeff
+        int32 *p_absorbAmount = &(*i)->GetModifier()->m_amount;
+
+        int32 base_absorb =  (*i)->GetSpellProto()->EffectBasePoints[(*i)->GetEffIndex()] + (*i)->GetSpellProto()->EffectDieSides[(*i)->GetEffIndex()];
+        int32 bonus_absorb  = *p_absorbAmount - base_absorb; // spell power part
+
+        if (bonus_absorb > 0)
+        {
+            if (RemainingDamage >= bonus_absorb)
+            {
+                *p_absorbAmount -= bonus_absorb;
+                RemainingDamage -= bonus_absorb;
+            }
+            else
+            {
+                *p_absorbAmount -= RemainingDamage;
+                RemainingDamage = 0;
+                continue;
+            }
+        }
+
+        int32 currentAbsorb = 0;
         if (RemainingDamage >= *p_absorbAmount)
             currentAbsorb = *p_absorbAmount;
         else

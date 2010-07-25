@@ -164,6 +164,7 @@ class TRINITY_DLL_SPEC Aura
         void HandleModPowerCost(bool Apply, bool Real);
         void HandleFarSight(bool Apply, bool Real);
         void HandleModPossessPet(bool Apply, bool Real);
+        void HandleModStateImmunityMask(bool Apply, bool Real);
         void HandleModMechanicImmunity(bool Apply, bool Real);
         void HandleAuraModSkill(bool Apply, bool Real);
         void HandleModDamagePercentDone(bool Apply, bool Real);

@@ -43,11 +43,11 @@
 #include "SocialMgr.h"
 
 /// WorldSession constructor
-WorldSession::WorldSession(uint32 id, WorldSocket *sock, uint32 sec, uint8 expansion, time_t mute_time, LocaleConstant locale, bool speciallog) :
+WorldSession::WorldSession(uint32 id, WorldSocket *sock, uint32 sec, uint8 expansion, time_t mute_time, LocaleConstant locale, bool speciallog, uint16 opcDisabled) :
 LookingForGroup_auto_join(false), LookingForGroup_auto_add(false), m_muteTime(mute_time),
-_player(NULL), m_Socket(sock), _security(sec), _accountId(id), m_expansion(expansion),
+_player(NULL), m_Socket(sock), _security(sec), _accountId(id), m_expansion(expansion), m_opcodesDisabled(opcDisabled),
 m_sessionDbcLocale(sWorld.GetAvailableDbcLocale(locale)), m_sessionDbLocaleIndex(objmgr.GetIndexForLocale(locale)),
-_logoutTime(0), m_inQueue(false), m_playerLoading(false), m_playerLogout(false), m_playerRecentlyLogout(false), m_latency(0),
+_logoutTime(0), m_inQueue(false), m_playerLoading(false), m_playerLogout(false), m_playerSave(false), m_playerRecentlyLogout(false), m_latency(0),
 m_kickTimer(MINUTE * 15 * 1000), m_speciallog(speciallog)
 {
     if (sock)
@@ -91,6 +91,18 @@ void WorldSession::SizeError(WorldPacket const& packet, uint32 size) const
 char const* WorldSession::GetPlayerName() const
 {
     return GetPlayer() ? GetPlayer()->GetName() : "<none>";
+}
+
+void WorldSession::SetOpcodeDisableFlag(uint16 flag)
+{
+    m_opcodesDisabled |= flag;
+    LoginDatabase.PExecute("UPDATE account SET opcodesDisabled ='%u' WHERE id = '%u'", m_opcodesDisabled, GetAccountId());
+}
+
+void WorldSession::RemoveOpcodeDisableFlag(uint16 flag)
+{
+    m_opcodesDisabled &= ~flag;
+    LoginDatabase.PExecute("UPDATE account SET opcodesDisabled ='%u' WHERE id = '%u'", m_opcodesDisabled, GetAccountId());
 }
 
 /// Send a packet to the client
@@ -170,7 +182,7 @@ bool WorldSession::Update(uint32 diff)
     ///- Retrieve packets from the receive queue and call the appropriate handlers
     /// not proccess packets if socket already closed
     WorldPacket* packet;
-    while (_recvQueue.next(packet) && m_Socket && !m_Socket->IsClosed ())
+    while (m_Socket && !m_Socket->IsClosed() && _recvQueue.next(packet))
     {
         if(packet->GetOpcode() >= NUM_MSG_TYPES)
         {
@@ -250,6 +262,7 @@ void WorldSession::LogoutPlayer(bool Save)
         HandleMoveWorldportAckOpcode();
 
     m_playerLogout = true;
+    m_playerSave = Save;
 
     if (_player)
     {
@@ -281,8 +294,8 @@ void WorldSession::LogoutPlayer(bool Save)
                         aset.insert((Player*)owner);
                 }
                 else
-                if((*itr)->GetTypeId()==TYPEID_PLAYER)
-                    aset.insert((Player*)(*itr));
+                    if((*itr)->GetTypeId()==TYPEID_PLAYER)
+                        aset.insert((Player*)(*itr));
             }
 
             _player->SetPvPDeath(!aset.empty());
@@ -333,10 +346,10 @@ void WorldSession::LogoutPlayer(bool Save)
             guild->UpdateLogoutTime(_player->GetGUID());
 
             WorldPacket data(SMSG_GUILD_EVENT, (1+1+12+8)); // name limited to 12 in character table.
-            data<<(uint8)GE_SIGNED_OFF;
-            data<<(uint8)1;
-            data<<_player->GetName();
-            data<<_player->GetGUID();
+            data << uint8(GE_SIGNED_OFF);
+            data << uint8(1);
+            data << _player->GetName();
+            data << _player->GetGUID();
             guild->BroadcastPacket(&data);
         }
 
@@ -373,7 +386,7 @@ void WorldSession::LogoutPlayer(bool Save)
 
         ///- Broadcast a logout message to the player's friends
         sSocialMgr.SendFriendStatus(_player, FRIEND_OFFLINE, _player->GetGUIDLow(), true);
-        sSocialMgr.RemovePlayerSocial (_player->GetGUIDLow ());
+        sSocialMgr.RemovePlayerSocial(_player->GetGUIDLow ());
 
         ///- Delete the player object
         _player->CleanupsBeforeDelete();
@@ -404,6 +417,7 @@ void WorldSession::LogoutPlayer(bool Save)
     }
 
     m_playerLogout = false;
+    m_playerSave = false;
     m_playerRecentlyLogout = true;
     LogoutRequest(0);
 }

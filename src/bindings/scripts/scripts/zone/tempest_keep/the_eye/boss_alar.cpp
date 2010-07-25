@@ -123,7 +123,7 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
 
         cur_wp = 4;
         m_creature->SetDisplayId(m_creature->GetNativeDisplayId());
-        m_creature->SetSpeed(MOVE_RUN, DefaultMoveSpeedRate);
+        m_creature->SetSpeed(MOVE_RUN, 3.0);
         m_creature->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_FIRE, true);
         m_creature->SetUnitMovementFlags(MOVEMENTFLAG_LEVITATING);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -136,6 +136,7 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
         if(pInstance)
             pInstance->SetData(DATA_ALAREVENT, IN_PROGRESS);
 
+        m_creature->SetSpeed(MOVE_RUN, DefaultMoveSpeedRate);
         m_creature->SetUnitMovementFlags(MOVEMENTFLAG_LEVITATING); // after enterevademode will be set walk movement
         m_creature->setActive(true);
         DoZoneInCombat();
@@ -362,7 +363,7 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
                             DoSpawnCreature(CREATURE_EMBER_OF_ALAR, 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
                         WaitTimer = 2000;
                         return;
-                    case WE_REBIRTH:    
+                    case WE_REBIRTH:
                         m_creature->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 10);
                         m_creature->SetReactState(REACT_AGGRESSIVE);
                         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -488,7 +489,7 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
     {
         if(m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
             m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-        
+
         if(m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
             m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
 
@@ -500,8 +501,8 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
         if(m_creature->IsWithinMeleeRange(temp, 6.0))
         {
             if(m_creature->hasUnitState(UNIT_STAT_CASTING)) // TO JEST DO POTWIERDZENIA:
-                m_creature->InterruptNonMeleeSpells(true);  // PRZERWAC CASTA FLAME BUFFET, 
-                                                            // GDY CEL ZNAJDZIE SIE W MELEE RANGE CZY NIE !  
+                m_creature->InterruptNonMeleeSpells(true);  // PRZERWAC CASTA FLAME BUFFET,
+                                                            // GDY CEL ZNAJDZIE SIE W MELEE RANGE CZY NIE !
             UnitAI::DoMeleeAttackIfReady();
         }
         else
@@ -549,7 +550,7 @@ struct TRINITY_DLL_DECL mob_ember_of_alarAI : public ScriptedAI
     void JustDied(Unit* killer)
     {
         m_creature->CastSpell(m_creature, SPELL_EMBER_BLAST, true);
-            
+
         if(pInstance)
         {
             if(Creature* Alar = Creature::GetCreature((*m_creature), pInstance->GetData64(DATA_ALAR)))
@@ -569,7 +570,7 @@ struct TRINITY_DLL_DECL mob_ember_of_alarAI : public ScriptedAI
     void UpdateAI(const uint32 diff)
     {
         UpdateVictim();
-        
+
         if(CheckTimer <= diff)
         {
             if(pInstance && (pInstance->GetData(DATA_ALAREVENT) == DONE || pInstance->GetData(DATA_ALAREVENT) == NOT_STARTED))

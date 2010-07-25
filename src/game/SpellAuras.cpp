@@ -201,7 +201,7 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleNoImmediateEffect,                         //144 SPELL_AURA_SAFE_FALL                  implemented in WorldSession::HandleMovementOpcodes
     &Aura::HandleUnused,                                    //145 SPELL_AURA_CHARISMA obsolete?
     &Aura::HandleUnused,                                    //146 SPELL_AURA_PERSUADED obsolete?
-    &Aura::HandleNULL,                                      //147 SPELL_AURA_ADD_CREATURE_IMMUNITY
+    &Aura::HandleModStateImmunityMask,                      //147 SPELL_AURA_ADD_CREATURE_IMMUNITY
     &Aura::HandleAuraRetainComboPoints,                     //148 SPELL_AURA_RETAIN_COMBO_POINTS
     &Aura::HandleNoImmediateEffect,                         //149 SPELL_AURA_RESIST_PUSHBACK
     &Aura::HandleShieldBlockValue,                          //150 SPELL_AURA_MOD_SHIELD_BLOCKVALUE_PCT
@@ -531,6 +531,9 @@ void Aura::SetModifier(AuraType t, int32 a, uint32 pt, int32 miscValue)
 
 void Aura::Update(uint32 diff)
 {
+    if (!m_target)
+        return;
+
     if (m_duration > 0)
     {
         m_duration -= diff;
@@ -557,7 +560,7 @@ void Aura::Update(uint32 diff)
             }
         }
     }
-    
+
     // Scalding Water
     if(GetId() == 37284)
     {
@@ -583,7 +586,7 @@ void Aura::Update(uint32 diff)
         if(caster->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT) == m_target->GetGUID())
         {
             float max_range = GetSpellMaxRange(sSpellRangeStore.LookupEntry(m_spellProto->rangeIndex));
-            
+
             if(Player* modOwner = caster->GetSpellModOwner())
                 modOwner->ApplySpellMod(GetId(), SPELLMOD_RANGE, max_range, NULL);
 
@@ -781,7 +784,7 @@ void PersistentAreaAura::Update(uint32 diff)
         DynamicObject *dynObj = NULL;
         if (m_dynamicObjectGUID)
             //dynObj = ObjectAccessor::GetDynamicObject(*caster, m_dynamicObjectGUID); // try to get linked dynamic object
-            dynObj = caster->GetMap()->GetDynamicObject(m_dynamicObjectGUID); //prev version commented, delete one 
+            dynObj = caster->GetMap()->GetDynamicObject(m_dynamicObjectGUID); //prev version commented, delete one
         else
             dynObj = caster->GetDynObject(GetId(), GetEffIndex()); // old way - do we need it?
 
@@ -1050,10 +1053,10 @@ void Aura::_RemoveAura()
             if(itr->second->GetAuraSlot() == slot)
             {
                 samespell = true;
-
                 break;
             }
         }
+
         if(samespell)
             break;
     }
@@ -1080,7 +1083,7 @@ void Aura::_RemoveAura()
             {
                  if((*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && (*i)->GetCasterGUID() != GetCasterGUID() && ((*i)->GetSpellProto()->SpellFamilyFlags & 4))
                  {
-                     m_target->ModifyAuraState(AURA_STATE_IMMOLATE, true); 
+                     m_target->ModifyAuraState(AURA_STATE_IMMOLATE, true);
                      break;
                  }
                  m_target->ModifyAuraState(AURA_STATE_IMMOLATE, false);
@@ -1624,7 +1627,7 @@ void Aura::TriggerSpell()
                                     GLapse->SetAuraDuration(duration);
                                     GLapse->UpdateAuraDuration();
                                 }
-                             
+
                                 caster->CastSpell(m_target, 39432, true);
                                 if(Aura* aur = caster->GetAura(39432, 0))
                                 {
@@ -1738,7 +1741,16 @@ void Aura::TriggerSpell()
 //                    // Murmur's Touch
 //                    case 38794: break;
 //                    // Activate Nether-wraith Beacon (31742 Nether-wraith Beacon item)
-//                    case 39105: break;
+                    case 39105:
+                    {
+                        if(!target)
+                            return;
+
+                        float fX, fY, fZ;
+                        target->GetClosePoint(fX, fY, fZ, target->GetObjectBoundingRadius(), 20.0f);
+                        target->SummonCreature(22408, fX, fY, fZ, target->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 0);
+                        return;
+                    }
 //                    // Drain World Tree Visual
 //                    case 39140: break;
 //                    // Quest - Dustin's Undead Dragon Visual aura
@@ -2259,6 +2271,14 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             if(Ghost)
                 m_target->CastSpell(Ghost, 40268, false);
         }
+/*
+        // Shade Soul Channel
+        if(GetId()==40401 && GetEffIndex()==0 && !caster->isAlive())
+        {
+            std::cout << "zdejmujemy aure dummy, i stack" << std::endl;
+            if(m_target->HasAura(40520, 0))
+                m_target->RemoveSingleAuraFromStack(40520, 0);
+        }*/
 
     }
 
@@ -2534,7 +2554,7 @@ void Aura::HandleAuraPeriodicDummy(bool apply, bool Real)
             }
 
             // Harpooner's Mark
-            if(spell->Id == 40084 && !apply)
+            if(spell->Id == 40084)
             {
                 CellPair pair(Trinity::ComputeCellPair(m_target->GetPositionX(), m_target->GetPositionY()));
                 Cell cell(pair);
@@ -2549,35 +2569,64 @@ void Aura::HandleAuraPeriodicDummy(bool apply, bool Real)
 
                 cell.Visit(pair, visitor, *(m_target->GetMap()));
 
-                bool tauntReset = false;
-
-                if(!TurtleList.empty())
+                if(apply)     //force any dragon turlte in range to attack victim with mark
                 {
-                    for(std::list<Creature*>::iterator itr = TurtleList.begin(); itr !=TurtleList.end(); ++itr)     // when removing mark, set back threat to normal values
+                    if(!TurtleList.empty())
                     {
-                      if(*itr)
-                      {
-                          Creature* turtle = *itr;
-                          if(turtle->isInCombat())
-                          {
-                              turtle->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
-                              turtle->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, false);
-                              if(!turtle->getThreatManager().getOnlineContainer().empty())
-                              {
-                                if(HostilReference* forcedVictim = turtle->getThreatManager().getOnlineContainer().getReferenceByTarget(m_target))
+                        for(std::list<Creature*>::iterator itr = TurtleList.begin(); itr !=TurtleList.end(); ++itr)
+                        {
+                            if(Creature* turtle = *itr)
+                            {
+                                if(turtle->isInCombat())
                                 {
-                                    if(forcedVictim->getThreat() >= 1000000)
+                                    turtle->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
+                                    turtle->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
+                                    if(!turtle->getThreatManager().getOnlineContainer().empty())
                                     {
-                                        turtle->getThreatManager().addThreat(m_target, -1000000);
-                                        HostilReference* newTarget = turtle->getThreatManager().getOnlineContainer().getMostHated();
-                                        turtle->getThreatManager().setCurrentVictim(newTarget);
+                                        if(HostilReference* forcedVictim = turtle->getThreatManager().getOnlineContainer().getReferenceByTarget(m_target))
+                                        {
+                                            if(forcedVictim->getThreat() < 100000)
+                                            {
+                                                turtle->AI()->AttackStart(m_target);
+                                                turtle->getThreatManager().setCurrentVictim(forcedVictim);
+                                                turtle->getThreatManager().addThreat(m_target, 1000000);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                else     // when removing mark, set back threat to normal values
+                {
+                    if(!TurtleList.empty())
+                    {
+                        for(std::list<Creature*>::iterator itr = TurtleList.begin(); itr !=TurtleList.end(); ++itr)
+                        {
+                          if(Creature* turtle = *itr)
+                          {
+                            if(turtle->isInCombat())
+                            {
+                                turtle->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
+                                turtle->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, false);
+                                if(!turtle->getThreatManager().getOnlineContainer().empty())
+                                {
+                                    if(HostilReference* forcedVictim = turtle->getThreatManager().getOnlineContainer().getReferenceByTarget(m_target))
+                                    {
+                                        if(forcedVictim->getThreat() >= 1000000)
+                                        {
+                                            turtle->getThreatManager().addThreat(m_target, -1000000);
+                                            HostilReference* newTarget = turtle->getThreatManager().getOnlineContainer().getMostHated();
+                                            turtle->getThreatManager().setCurrentVictim(newTarget);
+                                        }
                                     }
                                 }
                             }
                           }
-                      }
+                        }
+                    }
                 }
-            }
             }
             break;
         }
@@ -3071,7 +3120,7 @@ void Aura::HandleAuraTransform(bool apply, bool Real)
         else
         {
             m_target->setTransForm(0);
-            
+
             // look for other transform auras
             Aura* handledAura = *otherTransforms.begin();
             for(Unit::AuraList::const_iterator i = otherTransforms.begin();i != otherTransforms.end(); ++i)
@@ -3883,6 +3932,97 @@ void Aura::HandleAuraModUseNormalSpeed(bool /*apply*/, bool Real)
 /***                     IMMUNITY                      ***/
 /*********************************************************/
 
+void Aura::HandleModStateImmunityMask(bool apply, bool Real)
+{
+    if (!Real)
+        return;
+
+    if(!m_target)
+        return;
+
+    //proper flags unknown, uncomment this when verified
+    /*
+    std::list <AuraType> immunity_list;
+
+    if (GetMiscValue() & (1<<10))
+        immunity_list.push_back(SPELL_AURA_MOD_STUN);
+    if (GetMiscValue() & (1<<7))
+        immunity_list.push_back(SPELL_AURA_MOD_DISARM);
+    if (GetMiscValue() & (1<<1))
+        immunity_list.push_back(SPELL_AURA_TRANSFORM);
+
+    // These flag can be recognized wrong:
+    if (GetMiscValue() & (1<<5))
+        immunity_list.push_back(SPELL_AURA_MOD_TAUNT);
+    if (GetMiscValue() & (1<<6))
+        immunity_list.push_back(SPELL_AURA_MOD_DECREASE_SPEED);
+    if (GetMiscValue() & (1<<0))
+        immunity_list.push_back(SPELL_AURA_MOD_ROOT);
+    if (GetMiscValue() & (1<<2))
+        immunity_list.push_back(SPELL_AURA_MOD_CONFUSE);
+    if (GetMiscValue() & (1<<9))
+        immunity_list.push_back(SPELL_AURA_MOD_FEAR);
+
+    if (apply)
+    {
+        for (std::list <AuraType>::iterator iter = immunity_list.begin(); iter != immunity_list.end(); ++iter)
+            m_target->RemoveAurasByType(*iter);
+    }
+
+    for (std::list <AuraType>::iterator iter = immunity_list.begin(); iter != immunity_list.end(); ++iter)
+    {
+        m_target->ApplySpellImmune(GetId(),IMMUNITY_STATE,*iter, apply);
+    }
+    */
+    std::list<uint32> IncapacitateMechanics;    //workaround for spell 40081
+
+    if(GetMiscValue() & ((1<<5) | (1<<6)))  //workaround for spell 40081
+    {
+        IncapacitateMechanics.push_front(MECHANIC_CHARM);
+        IncapacitateMechanics.push_front(MECHANIC_CONFUSED);
+        IncapacitateMechanics.push_front(MECHANIC_FEAR);
+        IncapacitateMechanics.push_front(MECHANIC_ROOT);
+        IncapacitateMechanics.push_front(MECHANIC_PACIFY);
+        IncapacitateMechanics.push_front(MECHANIC_SLEEP);
+        IncapacitateMechanics.push_front(MECHANIC_SNARE);
+        IncapacitateMechanics.push_front(MECHANIC_STUN);
+        IncapacitateMechanics.push_front(MECHANIC_FREEZE);
+        IncapacitateMechanics.push_front(MECHANIC_KNOCKOUT);
+        IncapacitateMechanics.push_front(MECHANIC_POLYMORPH);
+        IncapacitateMechanics.push_front(MECHANIC_BANISH);
+        IncapacitateMechanics.push_front(MECHANIC_HORROR);
+    }
+
+    if(apply && GetId() == 40081)
+    {
+        uint32 mechanic = IMMUNE_TO_INCAPACITATE_MASK;
+        Unit::AuraMap& Auras = m_target->GetAuras();
+        for(Unit::AuraMap::iterator iter = Auras.begin(), next; iter != Auras.end(); iter = next)
+        {
+            next = iter;
+            ++next;
+            SpellEntry const *spell = iter->second->GetSpellProto();
+            if (!iter->second->IsPositive() && spell->Id != 40081)
+            {
+                //check for mechanic mask
+                if(GetSpellMechanicMask(spell, iter->second->GetEffIndex()) & mechanic)
+                {
+                    m_target->RemoveAurasDueToSpell(spell->Id);
+                    if(Auras.empty())
+                        break;
+                    else
+                        next = Auras.begin();
+                }
+            }
+        }
+    }
+    //for 40081
+    for (std::list <uint32>::iterator iter = IncapacitateMechanics.begin(); iter != IncapacitateMechanics.end(); ++iter)
+    {
+        m_target->ApplySpellImmune(GetId(),IMMUNITY_MECHANIC,*iter, apply);
+    }
+}
+
 void Aura::HandleModMechanicImmunity(bool apply, bool Real)
 {
     uint32 mechanic = 1 << m_modifier.m_miscvalue;
@@ -4123,6 +4263,17 @@ void Aura::HandleAuraProcTriggerSpell(bool apply, bool Real)
         if(Pet* pet = m_target->GetPet())
             for (int i = SPELL_SCHOOL_FIRE; i < MAX_SPELL_SCHOOL; i++)
                 pet->UpdateResistances(i);
+    }
+
+    // Leggings of Beast Mastery stats
+    if(GetId() == 38297)
+    {
+        if(Pet* pet = m_target->GetPet())
+        {
+            pet->UpdateAttackPowerAndDamage();
+            pet->UpdateArmor();
+            pet->UpdateAllStats();
+        }
     }
 }
 
@@ -4796,7 +4947,7 @@ void Aura::HandleModPowerRegen(bool apply, bool Real)       // drinking
         Powers pt = m_target->getPowerType();
         if (pt == POWER_RAGE)
             m_periodicTimer = 3000;
-        else 
+        else
             m_periodicTimer = 2000;
 
         if(int32(pt) != m_modifier.m_miscvalue)
@@ -4815,7 +4966,7 @@ void Aura::HandleModPowerRegen(bool apply, bool Real)       // drinking
 
         // Warrior talent, gain 1 rage every 3 seconds while in combat
         // Anger Menagement
-        // amount = 1+ 16 = 17 = 3,4*5 = 10,2*5/3 
+        // amount = 1+ 16 = 17 = 3,4*5 = 10,2*5/3
         // so 17 is rounded amount for 5 sec tick grow ~ 1 range grow in 3 sec
         if(pt == POWER_RAGE)
         {
@@ -5058,7 +5209,10 @@ void Aura::HandleModMeleeRangedSpeedPct(bool apply, bool Real)
 
 void Aura::HandleModCombatSpeedPct(bool apply, bool Real)
 {
-    m_target->ApplyCastTimePercentMod(GetModifierValue(),apply);
+    if(GetId() == 40087)    //for Shell Shield, casting speed increases equally as melee attack speed decreases
+        m_target->ApplyCastTimePercentMod(-GetModifierValue(),apply);
+    else
+        m_target->ApplyCastTimePercentMod(GetModifierValue(),apply);
     m_target->ApplyAttackTimePercentMod(BASE_ATTACK,GetModifierValue(),apply);
     m_target->ApplyAttackTimePercentMod(OFF_ATTACK,GetModifierValue(),apply);
     m_target->ApplyAttackTimePercentMod(RANGED_ATTACK, GetModifierValue(), apply);
@@ -5520,8 +5674,8 @@ void Aura::HandleAuraModPacify(bool apply, bool Real)
         m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED);
     else
         m_target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED);
-        
-    
+
+
      if(m_spellProto->Id == 45839){
         if(apply){
             m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -5896,7 +6050,7 @@ void Aura::PeriodicTick()
                         damageInfo.damage += (damageInfo.damage+1)/2;           // +1 prevent 0.5 damage possible lost at 1..4 ticks
                     // 5..8 ticks have normal tick damage
                 }
-                
+
                 // Corruption and Immolate bonus damage from t5 set
                 if(GetSpellProto()->SpellFamilyName==SPELLFAMILY_WARLOCK && (GetSpellProto()->SpellFamilyFlags & 6))
                 {
@@ -6050,7 +6204,7 @@ void Aura::PeriodicTick()
             if(IsPartialyResistable(GetSpellProto()))
             {
                 pCaster->CalcAbsorbResist(m_target, GetSpellSchoolMask(GetSpellProto()), DOT, damageInfo.damage, &damageInfo.absorb, &damageInfo.resist);
-            } 
+            }
             else
             {
                 pCaster->CalcAbsorb(m_target, GetSpellSchoolMask(GetSpellProto()), damageInfo.damage, &damageInfo.absorb, &damageInfo.resist);
@@ -6293,7 +6447,7 @@ void Aura::PeriodicTick()
         {
             // ignore non positive values (can be result apply spellmods to aura damage
             uint32 pdamage = GetModifierValue() > 0 ? GetModifierValue() : 0;
-    
+
             // Alchemist Stone
             if(GetSpellProto()->SpellFamilyName == SPELLFAMILY_POTION)
                 if(Aura *aura = m_target->GetAura(17619, 0))
@@ -6520,52 +6674,8 @@ void Aura::PeriodicDummyTick()
 //        case 36207: break;
 //        // Simon Game START timer, (DND)
 //        case 39993: break;
-//        // Harpooner's Mark
-        case 40084:
-        {
-            CellPair pair(Trinity::ComputeCellPair(m_target->GetPositionX(), m_target->GetPositionY()));
-            Cell cell(pair);
-            cell.data.Part.reserved = ALL_DISTRICT;
-            cell.SetNoCreate();
-
-            std::list<Creature*> TurtleList;
-
-            Trinity::AllCreaturesOfEntryInRange check(m_target, 22885, 80);     //Find and Dragon Turtle in 80yd range
-            Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(TurtleList, check);
-            TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> visitor(searcher);
-
-            cell.Visit(pair, visitor, *(m_target->GetMap()));
-
-            if(!TurtleList.empty())
-            {
-                for(std::list<Creature*>::iterator itr = TurtleList.begin(); itr !=TurtleList.end(); ++itr)     //force any dragon turlte in range to attack victim with mark
-                {
-                    if(*itr)
-                    {
-                        Creature* turtle = *itr;
-
-                        if(turtle->isInCombat())
-                        {
-                            turtle->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
-                            turtle->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
-                            if(!turtle->getThreatManager().getOnlineContainer().empty())
-                            {
-                                if(HostilReference* forcedVictim = turtle->getThreatManager().getOnlineContainer().getReferenceByTarget(m_target))
-                                {
-                                    if(forcedVictim->getThreat() < 100000)
-                                    {
-                                        turtle->AI()->AttackStart(m_target);
-                                        turtle->getThreatManager().setCurrentVictim(forcedVictim);
-                                        turtle->getThreatManager().addThreat(m_target, 1000000);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            break;
-        }
+//        // Harpooner's Mark - apply and remove implemented in HandleAuraPeriodicDummy
+//        case 40084: break;
 //        // Knockdown Fel Cannon: break; The Aggro Burst
 //        case 40119: break;
 //        // Old Mount Spell
@@ -6786,7 +6896,7 @@ void Aura::HandleAuraMeleeAPAttackerBonus(bool apply, bool Real)
 {
     if(!Real)
         return;
-    
+
     if(apply)
     {
         // Hunter's Mark

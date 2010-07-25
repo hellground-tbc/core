@@ -513,6 +513,8 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
         uint32 GetGoAnimProgress() const { return GetUInt32Value(GAMEOBJECT_ANIMPROGRESS); }
         void SetGoAnimProgress(uint32 animprogress) { SetUInt32Value(GAMEOBJECT_ANIMPROGRESS, animprogress); }
 
+        float GetObjectBoundingRadius() const;              // overwrite WorldObject version
+
         void Use(Unit* user);
 
         LootState getLootState() const { return m_lootState; }

@@ -87,6 +87,29 @@ bool ChatHandler::HandleStartCommand(const char* /*args*/)
     return true;
 }
 
+bool ChatHandler::HandleAccountWeatherCommand(const char* args)
+{
+    if (!*args)
+    {
+        SendSysMessage(LANG_USE_BOL);
+        return true;
+    }
+
+    std::string argstr = (char*)args;
+    if (argstr == "on")
+        m_session->SetOpcodeDisableFlag(OPC_DISABLE_WEATHER);
+    else if (argstr == "off")
+        m_session->RemoveOpcodeDisableFlag(OPC_DISABLE_WEATHER);
+    else
+    {
+        SendSysMessage(LANG_USE_BOL);
+        return true;
+    }
+
+    PSendSysMessage(LANG_SET_WEATHER, argstr.c_str());
+    return true;
+}
+
 bool ChatHandler::HandleServerInfoCommand(const char* /*args*/)
 {
     uint32 activeClientsNum = sWorld.GetActiveSessionCount();
