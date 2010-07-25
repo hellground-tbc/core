@@ -4191,7 +4191,10 @@ void Player::CreateCorpse()
 void Player::SpawnCorpseBones()
 {
     if(ObjectAccessor::Instance().ConvertCorpseForPlayer(GetGUID()))
-        SaveToDB();                                         // prevent loading as ghost without corpse
+    {
+        if(!GetSession()->PlayerLogoutWithSave())
+            SaveToDB();                                         // prevent loading as ghost without corpse
+    }
 }
 
 Corpse* Player::GetCorpse() const

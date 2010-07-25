@@ -84,6 +84,7 @@ class TRINITY_DLL_SPEC WorldSession
 
         bool PlayerLoading() const { return m_playerLoading; }
         bool PlayerLogout() const { return m_playerLogout; }
+        bool PlayerLogoutWithSave() const { return m_playerLogout && m_playerSave; }
 
         void SizeError(WorldPacket const& packet, uint32 size) const;
 
@@ -658,6 +659,7 @@ class TRINITY_DLL_SPEC WorldSession
         time_t _logoutTime;
         bool m_inQueue;                                     // session wait in auth.queue
         bool m_playerLoading;                               // code processed in LoginPlayer
+        bool m_playerSave;
         bool m_playerLogout;                                // code processed in LogoutPlayer
         bool m_playerRecentlyLogout;
         bool m_speciallog;
