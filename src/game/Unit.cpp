@@ -53,6 +53,8 @@
 
 #include <math.h>
 
+using namespace std;
+
 float baseMoveSpeed[MAX_MOVE_TYPE] =
 {
     2.5f,                                                   // MOVE_WALK
@@ -1017,7 +1019,6 @@ void Unit::CastSpell(Unit* Victim,SpellEntry const *spellInfo, bool triggered, I
                 break;
         }
     }
-    targets.setUnitTarget(Victim);
 
     if(targetMask & (TARGET_FLAG_SOURCE_LOCATION|TARGET_FLAG_DEST_LOCATION))
     {
@@ -1036,6 +1037,12 @@ void Unit::CastSpell(Unit* Victim,SpellEntry const *spellInfo, bool triggered, I
         originalCaster = triggeredByAura->GetCasterGUID();
 
     Spell *spell = new Spell(this, spellInfo, triggered, originalCaster );
+
+    if(Victim)
+        targets.setUnitTarget(Victim);
+    else
+        spell->FillTargetMap();
+        targets = spell->m_targets;
 
     spell->m_CastItem = castItem;
     spell->prepare(&targets, triggeredByAura);

@@ -222,8 +222,12 @@ void ScriptedAI::CastNextSpellIfAnyAndReady()
     else
     {
         if (temp->isAOECast)
+        {
             if (temp->spellId)
                 m_creature->CastSpell(m_creature, temp->spellId, temp->triggered);
+        }
+        else
+            m_creature->CastSpell((Unit*)NULL, temp->spellId, temp->triggered);
     }
 
     spellList.pop_front();
@@ -231,7 +235,7 @@ void ScriptedAI::CastNextSpellIfAnyAndReady()
 
 void ScriptedAI::DoCast(Unit* victim, uint32 spellId, bool triggered)
 {
-    if (!victim || m_creature->hasUnitState(UNIT_STAT_CASTING) && !triggered)
+    if (/*!victim || */m_creature->hasUnitState(UNIT_STAT_CASTING) && !triggered)
         return;
 
     //m_creature->StopMoving();
@@ -248,7 +252,7 @@ void ScriptedAI::DoCastAOE(uint32 spellId, bool triggered)
 
 void ScriptedAI::DoCastSpell(Unit* who,SpellEntry const *spellInfo, bool triggered)
 {
-    if (!who || m_creature->IsNonMeleeSpellCasted(false))
+    if (/*!who || */m_creature->IsNonMeleeSpellCasted(false))
         return;
 
     m_creature->StopMoving();
@@ -257,20 +261,20 @@ void ScriptedAI::DoCastSpell(Unit* who,SpellEntry const *spellInfo, bool trigger
 
 void ScriptedAI::AddSpellToCast(Unit* victim, uint32 spellId, bool triggered)
 {
-    if (!victim)
-        return;
+    /*if (!victim)
+        return;*/
 
-    SpellToCast temp(victim->GetGUID(), spellId, triggered, 0, false);
+    SpellToCast temp(victim ? victim->GetGUID() : NULL, spellId, triggered, 0, false);
 
     spellList.push_back(temp);
 }
 
 void ScriptedAI::AddSpellToCastWithScriptText(Unit* victim, uint32 spellId, int32 scriptTextEntry, bool triggered)
 {
-    if (!victim)
-        return;
+    /*if (!victim)
+        return;*/
 
-    SpellToCast temp(victim->GetGUID(), spellId, triggered, scriptTextEntry, false);
+    SpellToCast temp(victim ? victim->GetGUID() : NULL, spellId, triggered, scriptTextEntry, false);
 
     spellList.push_back(temp);
 }
@@ -291,8 +295,8 @@ void ScriptedAI::AddAOESpellToCastWithScriptText(uint32 spellId, int32 scriptTex
 
 void ScriptedAI::ForceSpellCast(Unit *victim, uint32 spellId, interruptSpell interruptCurrent, bool triggered)
 {
-    if (!victim)
-        return;
+    /*if (!victim)
+        return;*/
 
     switch (interruptCurrent)
     {
@@ -306,15 +310,15 @@ void ScriptedAI::ForceSpellCast(Unit *victim, uint32 spellId, interruptSpell int
         break;
     }
 
-    SpellToCast temp(victim->GetGUID(), spellId, triggered, 0, false);
+    SpellToCast temp(victim ? victim->GetGUID() : NULL, spellId, triggered, 0, false);
 
     spellList.push_front(temp);
 }
 
 void ScriptedAI::ForceSpellCastWithScriptText(Unit *victim, uint32 spellId, int32 scriptTextEntry, interruptSpell interruptCurrent, bool triggered)
 {
-    if (!victim)
-        return;
+    /*if (!victim)
+        return;*/
 
     switch(interruptCurrent)
     {
@@ -330,7 +334,7 @@ void ScriptedAI::ForceSpellCastWithScriptText(Unit *victim, uint32 spellId, int3
         break;
     }
 
-    SpellToCast temp(victim->GetGUID(), spellId, triggered, scriptTextEntry, false);
+    SpellToCast temp(victim ? victim->GetGUID() : NULL, spellId, triggered, scriptTextEntry, false);
 
     spellList.push_front(temp);
 }
