@@ -2554,7 +2554,7 @@ void Aura::HandleAuraPeriodicDummy(bool apply, bool Real)
             }
 
             // Harpooner's Mark
-            if(spell->Id == 40084 && !apply)
+            if(spell->Id == 40084)
             {
                 CellPair pair(Trinity::ComputeCellPair(m_target->GetPositionX(), m_target->GetPositionY()));
                 Cell cell(pair);
@@ -2569,33 +2569,64 @@ void Aura::HandleAuraPeriodicDummy(bool apply, bool Real)
 
                 cell.Visit(pair, visitor, *(m_target->GetMap()));
 
-                if(!TurtleList.empty())
+                if(apply)     //force any dragon turlte in range to attack victim with mark
                 {
-                    for(std::list<Creature*>::iterator itr = TurtleList.begin(); itr !=TurtleList.end(); ++itr)     // when removing mark, set back threat to normal values
+                    if(!TurtleList.empty())
                     {
-                      if(*itr)
-                      {
-                          Creature* turtle = *itr;
-                          if(turtle->isInCombat())
-                          {
-                              turtle->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
-                              turtle->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, false);
-                              if(!turtle->getThreatManager().getOnlineContainer().empty())
-                              {
-                                if(HostilReference* forcedVictim = turtle->getThreatManager().getOnlineContainer().getReferenceByTarget(m_target))
+                        for(std::list<Creature*>::iterator itr = TurtleList.begin(); itr !=TurtleList.end(); ++itr)
+                        {
+                            if(Creature* turtle = *itr)
+                            {
+                                if(turtle->isInCombat())
                                 {
-                                    if(forcedVictim->getThreat() >= 1000000)
+                                    turtle->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
+                                    turtle->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
+                                    if(!turtle->getThreatManager().getOnlineContainer().empty())
                                     {
-                                        turtle->getThreatManager().addThreat(m_target, -1000000);
-                                        HostilReference* newTarget = turtle->getThreatManager().getOnlineContainer().getMostHated();
-                                        turtle->getThreatManager().setCurrentVictim(newTarget);
+                                        if(HostilReference* forcedVictim = turtle->getThreatManager().getOnlineContainer().getReferenceByTarget(m_target))
+                                        {
+                                            if(forcedVictim->getThreat() < 100000)
+                                            {
+                                                turtle->AI()->AttackStart(m_target);
+                                                turtle->getThreatManager().setCurrentVictim(forcedVictim);
+                                                turtle->getThreatManager().addThreat(m_target, 1000000);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                else     // when removing mark, set back threat to normal values
+                {
+                    if(!TurtleList.empty())
+                    {
+                        for(std::list<Creature*>::iterator itr = TurtleList.begin(); itr !=TurtleList.end(); ++itr)
+                        {
+                          if(Creature* turtle = *itr)
+                          {
+                            if(turtle->isInCombat())
+                            {
+                                turtle->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
+                                turtle->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, false);
+                                if(!turtle->getThreatManager().getOnlineContainer().empty())
+                                {
+                                    if(HostilReference* forcedVictim = turtle->getThreatManager().getOnlineContainer().getReferenceByTarget(m_target))
+                                    {
+                                        if(forcedVictim->getThreat() >= 1000000)
+                                        {
+                                            turtle->getThreatManager().addThreat(m_target, -1000000);
+                                            HostilReference* newTarget = turtle->getThreatManager().getOnlineContainer().getMostHated();
+                                            turtle->getThreatManager().setCurrentVictim(newTarget);
+                                        }
                                     }
                                 }
                             }
                           }
-                      }
+                        }
+                    }
                 }
-            }
             }
             break;
         }
@@ -6643,52 +6674,8 @@ void Aura::PeriodicDummyTick()
 //        case 36207: break;
 //        // Simon Game START timer, (DND)
 //        case 39993: break;
-//        // Harpooner's Mark
-        case 40084:
-        {
-            CellPair pair(Trinity::ComputeCellPair(m_target->GetPositionX(), m_target->GetPositionY()));
-            Cell cell(pair);
-            cell.data.Part.reserved = ALL_DISTRICT;
-            cell.SetNoCreate();
-
-            std::list<Creature*> TurtleList;
-
-            Trinity::AllCreaturesOfEntryInRange check(m_target, 22885, 80);     //Find and Dragon Turtle in 80yd range
-            Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(TurtleList, check);
-            TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> visitor(searcher);
-
-            cell.Visit(pair, visitor, *(m_target->GetMap()));
-
-            if(!TurtleList.empty())
-            {
-                for(std::list<Creature*>::iterator itr = TurtleList.begin(); itr !=TurtleList.end(); ++itr)     //force any dragon turlte in range to attack victim with mark
-                {
-                    if(*itr)
-                    {
-                        Creature* turtle = *itr;
-
-                        if(turtle->isInCombat())
-                        {
-                            turtle->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
-                            turtle->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
-                            if(!turtle->getThreatManager().getOnlineContainer().empty())
-                            {
-                                if(HostilReference* forcedVictim = turtle->getThreatManager().getOnlineContainer().getReferenceByTarget(m_target))
-                                {
-                                    if(forcedVictim->getThreat() < 100000)
-                                    {
-                                        turtle->AI()->AttackStart(m_target);
-                                        turtle->getThreatManager().setCurrentVictim(forcedVictim);
-                                        turtle->getThreatManager().addThreat(m_target, 1000000);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            break;
-        }
+//        // Harpooner's Mark - apply and remove implemented in HandleAuraPeriodicDummy
+//        case 40084: break;
 //        // Knockdown Fel Cannon: break; The Aggro Burst
 //        case 40119: break;
 //        // Old Mount Spell
