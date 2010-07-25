@@ -260,7 +260,8 @@ MapManager::Update(time_t diff)
     i_timer.Update(diff);
     if( !i_timer.Passed() )
         return;
-
+    
+    sWorld.RecordTimeDiff(NULL);
     for(MapMapType::iterator iter=i_maps.begin(); iter != i_maps.end(); ++iter)
     {
         if (m_updater.activated())
@@ -272,14 +273,18 @@ MapManager::Update(time_t diff)
     if (m_updater.activated())
         m_updater.wait();
 
+    sWorld.RecordTimeDiff("UpdateMaps");
+    
     checkAndCorrectGridStatesArray();
-
     for(MapMapType::iterator iter = i_maps.begin(); iter != i_maps.end(); ++iter)
         iter->second->DelayedUpdate(i_timer.GetCurrent());
 
+    sWorld.RecordTimeDiff("Delayed update");
+
     for (TransportSet::iterator iter = m_Transports.begin(); iter != m_Transports.end(); ++iter)
         (*iter)->Update(i_timer.GetCurrent());
-    //sWorld.RecordTimeDiff("UpdateTransports");
+    
+    sWorld.RecordTimeDiff("UpdateTransports");
 
     i_timer.SetCurrent(0);
 }

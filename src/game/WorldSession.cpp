@@ -293,8 +293,8 @@ void WorldSession::LogoutPlayer(bool Save)
                         aset.insert((Player*)owner);
                 }
                 else
-                if((*itr)->GetTypeId()==TYPEID_PLAYER)
-                    aset.insert((Player*)(*itr));
+                    if((*itr)->GetTypeId()==TYPEID_PLAYER)
+                        aset.insert((Player*)(*itr));
             }
 
             _player->SetPvPDeath(!aset.empty());
