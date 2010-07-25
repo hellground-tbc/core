@@ -338,6 +338,150 @@ struct TRINITY_DLL_DECL mob_coilskar_harpoonerAI : public ScriptedAI
 };
 
 /****************
+* Coilskar Sea-Caller - id 22875
+*****************/
+
+#define SPELL_FORKED_LIGHTNING         40088
+#define SPELL_HURRICANE                40090
+#define SPELL_SUMMON_GEYSER            40091
+
+struct TRINITY_DLL_DECL mob_coilskar_seacallerAI : public ScriptedAI
+{
+    mob_coilskar_seacallerAI(Creature *c) : ScriptedAI(c)
+    {
+        SpellEntry* hurricaneSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_HURRICANE);
+        if(hurricaneSpell)
+            hurricaneSpell->AttributesEx |= SPELL_ATTR_EX_CHANNELED_1;
+    }
+
+    uint32 ForkedLightning;
+    uint32 Hurricane;
+    uint32 SummonGeyser;
+
+    void Reset()
+    {
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
+        ForkedLightning = urand(1000, 3000);
+        Hurricane = urand(20000, 30000);
+        SummonGeyser = urand(3000, 8000);
+    }
+    void Aggro(Unit*) {}
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(ForkedLightning < diff)
+        {
+            Unit* target = NULL;
+            AddSpellToCast(target, SPELL_FORKED_LIGHTNING);
+            ForkedLightning = urand(10000, 20000);
+        }
+        else
+            ForkedLightning -= diff;
+
+        if(Hurricane < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 40, true))
+                AddSpellToCast(target, SPELL_HURRICANE);
+            Hurricane = urand(40000, 60000);
+        }
+        else
+            Hurricane -= diff;
+
+        if(SummonGeyser < diff)
+        {
+            AddSpellToCast(m_creature, SPELL_SUMMON_GEYSER);
+            SummonGeyser = urand(8000, 16000);
+        }
+        else
+            SummonGeyser -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+/***
+* Coilskar Geyser - id 23080
+****/
+
+#define SPELL_GEYSER                   40089
+
+#define MOB_COILSCAR_SEACALLER         22875
+
+struct TRINITY_DLL_DECL mob_coilskar_geyserAI : public Scripted_NoMovementAI
+{
+    mob_coilskar_geyserAI(Creature *c) : Scripted_NoMovementAI(c) {}
+
+    void Reset()
+    {
+        Unit* SeaCaller = FindCreature(MOB_COILSCAR_SEACALLER, 20, m_creature);
+        if(SeaCaller)
+        {
+            m_creature->SetLevel(SeaCaller->getLevel());
+            m_creature->setFaction(SeaCaller->getFaction());
+        }
+        else
+        {
+            m_creature->SetLevel(71);
+            m_creature->setFaction(14);
+        }
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        m_creature->CastSpell(m_creature, SPELL_GEYSER, false);
+    }
+    void Aggro(Unit*) {}
+};
+
+/****************
+* Coilskar Soothsayer - id 22876
+*****************/
+
+#define SPELL_HOLY_NOVA                40096
+#define SPELL_RESTORATION              40097
+
+struct TRINITY_DLL_DECL mob_coilskar_soothsayerAI : public ScriptedAI
+{
+    mob_coilskar_soothsayerAI(Creature *c) : ScriptedAI(c) {}
+
+    uint32 HolyNova;
+    uint32 Restoration;
+
+    void Reset()
+    {
+        HolyNova = urand(5000, 15000);
+        Restoration = (8000, 12000);
+    }
+    void Aggro(Unit*) {}
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(HolyNova < diff)
+        {
+            DoCastAOE(SPELL_HOLY_NOVA);
+            HolyNova = urand(9000, 14000);
+        }
+        else
+            HolyNova -= diff;
+
+        if(Restoration < diff)
+        {
+            Unit* healTarget = DoSelectLowestHpFriendly(40.0f);
+            if(healTarget)
+                AddSpellToCast(healTarget, SPELL_RESTORATION);
+            Restoration = urand(15000, 20000);     //check targets each 15-20s
+        }
+        else
+            Restoration -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+/****************
 * Coilscar Wrangler - id 22877
 *****************/
 
@@ -378,7 +522,6 @@ struct TRINITY_DLL_DECL mob_coilskar_wranglerAI : public ScriptedAI
         if(ElectricSpur && ElectricSpur < diff)
         {
             Unit* target = NULL;
-            std::cout << "cast electric spura" << std::endl;
             AddSpellToCast(target, SPELL_ELECTRIC_SPUR, false);
             ElectricSpur = 0;
         }
@@ -552,6 +695,21 @@ CreatureAI* GetAI_mob_coilskar_general(Creature *_Creature)
 CreatureAI* GetAI_mob_coilskar_harpooner(Creature *_Creature)
 {
     return new mob_coilskar_harpoonerAI(_Creature);
+}
+
+CreatureAI* GetAI_mob_coilskar_seacaller(Creature *_Creature)
+{
+    return new mob_coilskar_seacallerAI(_Creature);
+}
+
+CreatureAI* GetAI_mob_coilskar_geyser(Creature *_Creature)
+{
+    return new mob_coilskar_geyserAI(_Creature);
+}
+
+CreatureAI* GetAI_mob_coilskar_soothsayer(Creature *_Creature)
+{
+    return new mob_coilskar_soothsayerAI(_Creature);
 }
 
 CreatureAI* GetAI_mob_coilskar_wrangler(Creature *_Creature)
@@ -1182,6 +1340,21 @@ void AddSC_black_temple_trash()
     newscript = new Script;
     newscript->Name = "mob_coilskar_harpooner";
     newscript->GetAI = &GetAI_mob_coilskar_harpooner;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_coilskar_seacaller";
+    newscript->GetAI = &GetAI_mob_coilskar_seacaller;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_coilskar_geyser";
+    newscript->GetAI = &GetAI_mob_coilskar_geyser;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_coilskar_soothsayer";
+    newscript->GetAI = &GetAI_mob_coilskar_soothsayer;
     newscript->RegisterSelf();
 
     newscript = new Script;
