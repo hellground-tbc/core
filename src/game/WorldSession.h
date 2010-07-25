@@ -48,6 +48,11 @@ class CharacterHandler;
 
 #define CHECK_PACKET_SIZE(P,S) if((P).size() < (S)) return SizeError((P),(S));
 
+enum OpcodeDisabled
+{
+    OPC_DISABLE_WEATHER  = 0x01
+};
+
 enum PartyOperation
 {
     PARTY_OP_INVITE = 0,
@@ -74,7 +79,7 @@ class TRINITY_DLL_SPEC WorldSession
 {
     friend class CharacterHandler;
     public:
-        WorldSession(uint32 id, WorldSocket *sock, uint32 sec, uint8 expansion, time_t mute_time, LocaleConstant locale, bool speciallog = false);
+        WorldSession(uint32 id, WorldSocket *sock, uint32 sec, uint8 expansion, time_t mute_time, LocaleConstant locale, bool speciallog = false, uint16 opcDisabled = 0);
         ~WorldSession();
 
         bool PlayerLoading() const { return m_playerLoading; }
@@ -100,6 +105,11 @@ class TRINITY_DLL_SPEC WorldSession
         uint8 Expansion() const { return m_expansion; }
         bool SpecialLog() const { return m_speciallog; }
         void SetSpecialLog(bool log){ m_speciallog = log; }
+
+        void SetOpcodeDisableFlag(uint16 flag);
+        void RemoveOpcodeDisableFlag(uint16 flag);
+        uint16 GetOpcodesDisabledFlag() { return m_opcodesDisabled;}
+
 
         /// Session in auth.queue currently
         void SetInQueue(bool state) { m_inQueue = state; }
@@ -327,7 +337,6 @@ class TRINITY_DLL_SPEC WorldSession
         void HandleMovementOpcodes(WorldPacket& recvPacket);
         void HandlePossessedMovement(WorldPacket& recv_data, MovementInfo& movementInfo, uint32& MovementFlags);
         void HandleSetActiveMoverOpcode(WorldPacket &recv_data);
-        void HandleNotActiveMoverOpcode(WorldPacket &recv_data);
         void HandleMoveTimeSkippedOpcode(WorldPacket &recv_data);
 
         void HandleRequestRaidInfoOpcode( WorldPacket & recv_data );
@@ -586,7 +595,7 @@ class TRINITY_DLL_SPEC WorldSession
         void HandleNewUnknownOpcode(WorldPacket& recv_data);
         void HandleChooseTitleOpcode(WorldPacket& recv_data);
         void HandleRealmStateRequestOpcode(WorldPacket& recv_data);
-        void HandleAllowMoveAckOpcode(WorldPacket& recv_data);
+        void HandleTimeSyncResp(WorldPacket& recv_data);
         void HandleWhoisOpcode(WorldPacket& recv_data);
         void HandleResetInstancesOpcode(WorldPacket& recv_data);
 
@@ -656,6 +665,8 @@ class TRINITY_DLL_SPEC WorldSession
         int m_sessionDbLocaleIndex;
         uint32 m_latency;
         uint32 m_kickTimer;
+
+        uint16 m_opcodesDisabled;
 
         ACE_Based::LockedQueue<WorldPacket*, ACE_Thread_Mutex> _recvQueue;
 };

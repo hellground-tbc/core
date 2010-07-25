@@ -1311,15 +1311,19 @@ void Player::Update( uint32 p_time )
             m_zoneUpdateTimer -= p_time;
     }
 
-    if (isAlive())
+    if (m_timeSyncTimer > 0)
     {
-        RegenerateAll();
+        if (p_time >= m_timeSyncTimer)
+            SendTimeSync();
+        else
+            m_timeSyncTimer -= p_time;
     }
 
+    if (isAlive())
+        RegenerateAll();
+
     if (m_deathState == JUST_DIED)
-    {
         KillPlayer();
-    }
 
     if(m_nextSave > 0)
     {
@@ -1330,9 +1334,7 @@ void Player::Update( uint32 p_time )
             sLog.outDetail("Player '%s' (GUID: %u) saved", GetName(), GetGUIDLow());
         }
         else
-        {
             m_nextSave -= p_time;
-        }
     }
 
     //Breathtimer
@@ -1342,7 +1344,6 @@ void Player::Update( uint32 p_time )
             m_breathTimer = 0;
         else
             m_breathTimer -= p_time;
-
     }
 
     //Handle Water/drowning
@@ -18531,6 +18532,9 @@ void Player::SendInitialPacketsBeforeAddToMap()
 
 void Player::SendInitialPacketsAfterAddToMap()
 {
+    ResetTimeSync();
+    SendTimeSync();
+
     CastSpell(this, 836, true);                             // LOGINEFFECT
 
     // set some aura effects that send packet to player client after add player to map
@@ -19842,4 +19846,23 @@ void Player::RemoveGlobalCooldown(SpellEntry const *spellInfo)
         return;
 
     m_globalCooldowns[spellInfo->StartRecoveryCategory] = 0;
+}
+
+void Player::ResetTimeSync()
+{
+    m_timeSyncCounter = 0;
+    m_timeSyncTimer = 0;
+    m_timeSyncClient = 0;
+    m_timeSyncServer = getMSTime();
+}
+
+void Player::SendTimeSync()
+{
+    WorldPacket data(SMSG_TIME_SYNC_REQ, 4);
+    data << uint32(m_timeSyncCounter++);
+    GetSession()->SendPacket(&data);
+
+    // Schedule next sync in 10 sec
+    m_timeSyncTimer = 10000;
+    m_timeSyncServer = getMSTime();
 }

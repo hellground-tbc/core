@@ -1469,26 +1469,32 @@ void WorldSession::HandleChooseTitleOpcode( WorldPacket & recv_data )
     GetPlayer()->SetUInt32Value(PLAYER_CHOSEN_TITLE, title);
 }
 
-void WorldSession::HandleAllowMoveAckOpcode( WorldPacket & recv_data )
+void WorldSession::HandleTimeSyncResp( WorldPacket & recv_data )
 {
     CHECK_PACKET_SIZE(recv_data, 4+4);
 
-    sLog.outDebug("CMSG_ALLOW_MOVE_ACK");
+    sLog.outDebug("CMSG_TIME_SYNC_RESP");
 
-    uint32 counter, time_;
-    recv_data >> counter >> time_;
+    uint32 counter, clientTicks;
+    recv_data >> counter >> clientTicks;
 
-    // time_ seems always more than getMSTime()
-    uint32 diff = getMSTimeDiff(getMSTime(),time_);
+    if(counter != _player->m_timeSyncCounter - 1)
+        sLog.outDebug("Wrong time sync counter from player %s (cheater?)", _player->GetName());
 
-    sLog.outDebug("response sent: counter %u, time %u (HEX: %X), ms. time %u, diff %u", counter, time_, time_, getMSTime(), diff);
+    sLog.outDebug("Time sync received: counter %u, client ticks %u, time since last sync %u", counter, clientTicks, clientTicks - _player->m_timeSyncClient);
+    
+    uint32 ourTicks = clientTicks + (getMSTime() - _player->m_timeSyncServer);
+
+    // diff should be small
+    sLog.outDebug("Our ticks: %u, diff %u, latency %u", ourTicks, ourTicks - clientTicks, GetLatency());
+
+    _player->m_timeSyncClient = clientTicks;
 }
 
 void WorldSession::HandleResetInstancesOpcode( WorldPacket & /*recv_data*/ )
 {
     sLog.outDebug("WORLD: CMSG_RESET_INSTANCES");
-    Group *pGroup = _player->GetGroup();
-    if(pGroup)
+    if (Group *pGroup = _player->GetGroup())
     {
         if(pGroup->IsLeader(_player->GetGUID()))
             pGroup->ResetInstances(INSTANCE_RESET_ALL, _player);

@@ -671,6 +671,8 @@ void Spell::prepareDataForTriggerSystem()
     {
         case SPELL_DAMAGE_CLASS_MELEE:
             m_procAttacker = PROC_FLAG_SUCCESSFUL_MELEE_SPELL_HIT;
+            if (m_attackType == OFF_ATTACK)
+                m_procAttacker |= PROC_FLAG_SUCCESSFUL_OFFHAND_HIT;
             m_procVictim   = PROC_FLAG_TAKEN_MELEE_SPELL_HIT;
             break;
         case SPELL_DAMAGE_CLASS_RANGED:
@@ -928,8 +930,8 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     uint32 procVictim   = m_procVictim;
     uint32 procEx       = PROC_EX_NONE;
 
-                            //Spells with this flag cannot trigger if effect is casted on self
-                            // Slice and Dice, relentless strikes, eviscerate
+    //Spells with this flag cannot trigger if effect is casted on self
+    // Slice and Dice, relentless strikes, eviscerate
     //bool canEffectTrigger = (m_spellInfo->AttributesEx4 & (SPELL_ATTR_EX4_CANT_PROC_FROM_SELFCAST | SPELL_ATTR_EX4_UNK4) ? m_caster!=unitTarget : true)
     //    && m_canTrigger;
 
@@ -990,7 +992,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         caster->CalculateSpellDamageTaken(&damageInfo, m_damage, m_spellInfo, m_attackType,  target->crit);
 
         // Send log damage message to client
-//        caster->SendSpellNonMeleeDamageLog(&damageInfo);
+        // caster->SendSpellNonMeleeDamageLog(&damageInfo);
 
         procEx = createProcExtendMask(&damageInfo, missInfo);
         procVictim |= PROC_FLAG_TAKEN_ANY_DAMAGE;

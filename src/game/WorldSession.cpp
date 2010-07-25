@@ -43,9 +43,9 @@
 #include "SocialMgr.h"
 
 /// WorldSession constructor
-WorldSession::WorldSession(uint32 id, WorldSocket *sock, uint32 sec, uint8 expansion, time_t mute_time, LocaleConstant locale, bool speciallog) :
+WorldSession::WorldSession(uint32 id, WorldSocket *sock, uint32 sec, uint8 expansion, time_t mute_time, LocaleConstant locale, bool speciallog, uint16 opcDisabled) :
 LookingForGroup_auto_join(false), LookingForGroup_auto_add(false), m_muteTime(mute_time),
-_player(NULL), m_Socket(sock), _security(sec), _accountId(id), m_expansion(expansion),
+_player(NULL), m_Socket(sock), _security(sec), _accountId(id), m_expansion(expansion), m_opcodesDisabled(opcDisabled),
 m_sessionDbcLocale(sWorld.GetAvailableDbcLocale(locale)), m_sessionDbLocaleIndex(objmgr.GetIndexForLocale(locale)),
 _logoutTime(0), m_inQueue(false), m_playerLoading(false), m_playerLogout(false), m_playerRecentlyLogout(false), m_latency(0),
 m_kickTimer(MINUTE * 15 * 1000), m_speciallog(speciallog)
@@ -91,6 +91,18 @@ void WorldSession::SizeError(WorldPacket const& packet, uint32 size) const
 char const* WorldSession::GetPlayerName() const
 {
     return GetPlayer() ? GetPlayer()->GetName() : "<none>";
+}
+
+void WorldSession::SetOpcodeDisableFlag(uint16 flag)
+{
+    m_opcodesDisabled |= flag;
+    LoginDatabase.PExecute("UPDATE account SET opcodesDisabled ='%u' WHERE id = '%u'", m_opcodesDisabled, GetAccountId());
+}
+
+void WorldSession::RemoveOpcodeDisableFlag(uint16 flag)
+{
+    m_opcodesDisabled &= ~flag;
+    LoginDatabase.PExecute("UPDATE account SET opcodesDisabled ='%u' WHERE id = '%u'", m_opcodesDisabled, GetAccountId());
 }
 
 /// Send a packet to the client
@@ -281,8 +293,8 @@ void WorldSession::LogoutPlayer(bool Save)
                         aset.insert((Player*)owner);
                 }
                 else
-                if((*itr)->GetTypeId()==TYPEID_PLAYER)
-                    aset.insert((Player*)(*itr));
+                    if((*itr)->GetTypeId()==TYPEID_PLAYER)
+                        aset.insert((Player*)(*itr));
             }
 
             _player->SetPvPDeath(!aset.empty());

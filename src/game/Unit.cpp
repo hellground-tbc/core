@@ -1805,13 +1805,33 @@ void Unit::CalcAbsorb(Unit *pVictim,SpellSchoolMask schoolMask, const uint32 dam
     for(AuraList::const_iterator i = vManaShield.begin(), next; i != vManaShield.end() && RemainingDamage > 0; i = next)
     {
         next = i; ++next;
-        int32 *p_absorbAmount = &(*i)->GetModifier()->m_amount;
 
         // check damage school mask
         if (((*i)->GetModifier()->m_miscvalue & schoolMask)==0)
             continue;
 
-        int32 currentAbsorb;
+        // base_amount + spell_bonus_coeff
+        int32 *p_absorbAmount = &(*i)->GetModifier()->m_amount;
+
+        int32 base_absorb =  (*i)->GetSpellProto()->EffectBasePoints[(*i)->GetEffIndex()] + (*i)->GetSpellProto()->EffectDieSides[(*i)->GetEffIndex()];
+        int32 bonus_absorb  = *p_absorbAmount - base_absorb; // spell power part
+
+        if (bonus_absorb > 0)
+        {
+            if (RemainingDamage >= bonus_absorb)
+            {
+                *p_absorbAmount -= bonus_absorb;
+                RemainingDamage -= bonus_absorb;
+            }
+            else
+            {
+                *p_absorbAmount -= RemainingDamage;
+                RemainingDamage = 0;
+                continue;
+            }
+        }
+
+        int32 currentAbsorb = 0;
         if (RemainingDamage >= *p_absorbAmount)
             currentAbsorb = *p_absorbAmount;
         else
@@ -3886,27 +3906,6 @@ void Unit::RemoveAurasDueToItemSpell(Item* castItem,uint32 spellId)
     }
 }
 
-void Unit::RemoveAurasByType(AuraType auraType, uint64 casterGUID, Aura * except, bool negative, bool positive)
-{
-    if (auraType >= TOTAL_AURAS)
-        return;
-
-    for (AuraList::iterator iter = m_modAuras[auraType].begin(); iter != m_modAuras[auraType].end();)
-    {
-        Aura * aura = *iter;
-
-        ++iter;
-        if (aura != except && (!casterGUID || aura->GetCasterGUID() == casterGUID)
-            && ((negative && !aura->IsPositive()) || (positive && aura->IsPositive())))
-        {
-            uint32 removedAuras = m_removedAurasCount;
-            RemoveAurasDueToSpell(aura->GetId());
-            if (m_removedAurasCount > removedAuras + 1)
-                iter = m_modAuras[auraType].begin();
-        }
-    }
-}
-
 void Unit::RemoveNotOwnSingleTargetAuras()
 {
     // single target auras from other casters
@@ -3939,14 +3938,10 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
     Aura* Aur = i->second;
 
     // HACK: teleport players that leave Incite Chaos 2yds up to prevent falling into textures
-    if(Aur)
+    if(Aur && Aur->GetId() == 33684)
     {
-        if (Aur->GetId() == 33684)
-            if(this->GetTypeId() == TYPEID_PLAYER)
-                ((Player*)this)->TeleportTo(this->GetMapId(), this->GetPositionX(), this->GetPositionY(), (this->GetPositionZ() + 2.0), this->GetOrientation(), TELE_TO_NOT_LEAVE_COMBAT);
-
-        if(this->GetTypeId() == TYPEID_UNIT && this->IsAIEnabled)
-            ((Creature*)this)->AI()->OnAuraRemove(Aur);
+        if(this->GetTypeId() == TYPEID_PLAYER)
+            ((Player*)this)->TeleportTo(this->GetMapId(), this->GetPositionX(), this->GetPositionY(), (this->GetPositionZ() + 2.0), this->GetOrientation(), TELE_TO_NOT_LEAVE_COMBAT);
     }
 
     // if unit currently update aura list then make safe update iterator shift to next
