@@ -189,6 +189,9 @@ bool Weather::ReGenerate()
 
 void Weather::SendWeatherUpdateToPlayer(Player *player)
 {
+    if (player->GetSession()->GetOpcodesDisabledFlag() & OPC_DISABLE_WEATHER)
+        return;
+
     WorldPacket data( SMSG_WEATHER, (4+4+4) );
 
     data << uint32(GetWeatherState()) << (float)m_grade << uint8(0);
@@ -197,6 +200,9 @@ void Weather::SendWeatherUpdateToPlayer(Player *player)
 
 void Weather::SendFineWeatherUpdateToPlayer(Player *player)
 {
+    if (player->GetSession()->GetOpcodesDisabledFlag() & OPC_DISABLE_WEATHER)
+        return;
+
     WorldPacket data( SMSG_WEATHER, (4+4+4) );
 
     data << (uint32)WEATHER_STATE_FINE << (float)0.0f << uint8(0);
@@ -208,6 +214,9 @@ bool Weather::UpdateWeather()
 {
     Player* player = sWorld.FindPlayerInZone(m_zone);
     if(!player)
+        return false;
+
+    if (player->GetSession()->GetOpcodesDisabledFlag() & OPC_DISABLE_WEATHER)
         return false;
 
     ///- Send the weather packet to all players in this zone
