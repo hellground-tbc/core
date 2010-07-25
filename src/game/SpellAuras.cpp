@@ -5178,7 +5178,10 @@ void Aura::HandleModMeleeRangedSpeedPct(bool apply, bool Real)
 
 void Aura::HandleModCombatSpeedPct(bool apply, bool Real)
 {
-    m_target->ApplyCastTimePercentMod(GetModifierValue(),apply);
+    if(GetId() == 40087)    //for Shell Shield, casting speed increases equally as melee attack speed decreases
+        m_target->ApplyCastTimePercentMod(-GetModifierValue(),apply);
+    else
+        m_target->ApplyCastTimePercentMod(GetModifierValue(),apply);
     m_target->ApplyAttackTimePercentMod(BASE_ATTACK,GetModifierValue(),apply);
     m_target->ApplyAttackTimePercentMod(OFF_ATTACK,GetModifierValue(),apply);
     m_target->ApplyAttackTimePercentMod(RANGED_ATTACK, GetModifierValue(), apply);
