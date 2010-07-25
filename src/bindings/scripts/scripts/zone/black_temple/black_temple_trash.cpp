@@ -112,22 +112,25 @@ struct TRINITY_DLL_DECL mob_aqueous_lordAI : public ScriptedAI
 
 #define SPELL_SLUDGE_NOVA       40102
 #define SPELL_MERGE             40106
+#define SPELL_MERGE_TRIGGERED   40105
 
 #define NPC_AQUEOUS_LORD       22878
+
+// TODO: Merge, needs casting targts verification, something is NOT GOOD...
 
 struct TRINITY_DLL_DECL mob_aqueous_spawnAI : public ScriptedAI
 {
     mob_aqueous_spawnAI(Creature *c) : ScriptedAI(c) {}
 
     uint32 SludgeNova;
-    uint32 MergeTimer;
-    bool merging;
+    //uint32 MergeTimer;
+    //bool merging;
 
     void Reset()
     {
         SludgeNova = 5000;
-        MergeTimer = urand(10000, 50000);
-        merging = false;
+        //MergeTimer = urand(10000, 50000);
+        //merging = false;
 
     }
     void Aggro(Unit*) {}
@@ -145,17 +148,15 @@ struct TRINITY_DLL_DECL mob_aqueous_spawnAI : public ScriptedAI
         else
             SludgeNova -= diff;
 
+        /*
         if(!merging && MergeTimer < diff)
         {
-            std::cout << "merge" << std::endl;
-            Unit* Lord = FindCreature(NPC_AQUEOUS_LORD, 80.0, m_creature);
-                if(Lord)
-                    AddSpellToCast(Lord, SPELL_MERGE);
-            //AddSpellToCast(m_creature, SPELL_MERGE);
-                merging = true;
+            Unit* target = NULL;
+            AddSpellToCast(target, SPELL_MERGE);
+            merging = true;
         }
         else
-            MergeTimer -= diff;
+            MergeTimer -= diff;*/
 
         CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
@@ -252,33 +253,282 @@ struct TRINITY_DLL_DECL mob_coilskar_generalAI : public ScriptedAI
 * Coilscar Harpooner - id 22874
 *****************/
 
+#define SPELL_HARPOONERS_MARK          40084
+#define SPELL_HOOKED_NET               40082
+#define SPELL_SPEAR_THROW              40083
 
 struct TRINITY_DLL_DECL mob_coilskar_harpoonerAI : public ScriptedAI
 {
     mob_coilskar_harpoonerAI(Creature *c) : ScriptedAI(c) {}
 
+    uint32 SpearThrow;
+    uint32 HookedNet;
+    uint32 HarpoonersMark;
+
+    void Reset()
+    {
+        SpearThrow = urand(1000, 5000);
+        HookedNet = urand(15000, 20000);
+        HarpoonersMark = urand(100, 5000);
+    }
+
+    bool CanCastMark()
+    {
+        Map::PlayerList const& pList = m_creature->GetMap()->GetPlayers();       // only one Harpooner's Mark on players at a time
+        if(!pList.isEmpty())
+        {
+            for(Map::PlayerList::const_iterator i = pList.begin(); i != pList.end(); ++i)
+            {
+                Player* pl = i->getSource();
+                if(pl && pl->HasAura(SPELL_HARPOONERS_MARK, 0))
+                    return false;
+            }
+        }
+        return true;
+    }
+
     void Aggro(Unit*) {}
+
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
             return;
 
+        if(HarpoonersMark < diff)
+        {
+            if(CanCastMark())
+            {
+                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 80, true))
+                {
+                    AttackStart(target);
+                    m_creature->getThreatManager().addThreat(target, 5000);     //we attack target with a Mark, but in contrast to turtle, we can be overaggroed and/or taunted
+                    HostilReference* aggroTarget = m_creature->getThreatManager().getOnlineContainer().getReferenceByTarget(target);
+                    if(aggroTarget)
+                        m_creature->getThreatManager().setCurrentVictim(aggroTarget);
+                    AddSpellToCast(target, SPELL_HARPOONERS_MARK);
+                }
+            }
+            else
+                HarpoonersMark = urand(10000,30000);     //every 10-30 sec check if we can cast new mark
+        }
+        else
+            HarpoonersMark -= diff;
+
+        if(HookedNet < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true))
+                AddSpellToCast(target, SPELL_HOOKED_NET);
+            HookedNet = urand(10000, 20000);
+        }
+        else
+            HookedNet -= diff;
+
+        if(SpearThrow < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 40, true))
+                AddSpellToCast(target, SPELL_SPEAR_THROW);
+            SpearThrow = urand(5000, 15000);
+        }
+        else
+            SpearThrow -= diff;
 
         CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };
 
+/****************
+* Coilscar Wrangler - id 22877
+*****************/
+
+#define SPELL_CLEAVE                   15284
+#define SPELL_ELECTRIC_SPUR            40076
+#define SPELL_LIGHTNING_PROD           40066
+
+#define MOB_LEVIATHAN                  22884
+
 struct TRINITY_DLL_DECL mob_coilskar_wranglerAI : public ScriptedAI
 {
     mob_coilskar_wranglerAI(Creature *c) : ScriptedAI(c) {}
 
+    uint32 Cleave;
+    uint32 ElectricSpur;
+    uint32 LightningProd;
+
+    void Reset()
+    {
+        Cleave = urand(2000, 6000);
+        ElectricSpur = urand(15000, 40000);
+        LightningProd = urand(8000, 15000);
+    }
     void Aggro(Unit*) {}
     void UpdateAI(const uint32 diff)
     {
+        if(!UpdateVictim())
+            return;
+
+        if(Cleave < diff)
+        {
+            AddSpellToCast(m_creature->getVictim(), SPELL_CLEAVE);
+            Cleave = urand(10000, 15000);
+        }
+        else
+            Cleave -= diff;
+
+        if(ElectricSpur && ElectricSpur < diff)
+        {
+            Unit* target = NULL;
+            std::cout << "cast electric spura" << std::endl;
+            AddSpellToCast(target, SPELL_ELECTRIC_SPUR, false);
+            ElectricSpur = 0;
+        }
+        else
+            ElectricSpur -= diff;
+
+        if(LightningProd < diff)
+        {
+            AddSpellToCast(m_creature->getVictim(), SPELL_LIGHTNING_PROD);
+            LightningProd = urand(10000, 20000);
+        }
+        else
+            LightningProd -= diff;
+
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };
+
+/****************
+* Dragon Turtle - id 22885
+*****************/
+
+#define SPELL_SHELL_SHIELD             40087
+#define SPELL_WATER_SPIT               40086
+
+struct TRINITY_DLL_DECL mob_dragon_turtleAI : public ScriptedAI
+{
+    mob_dragon_turtleAI(Creature *c) : ScriptedAI(c) {}
+
+    bool CanBeShielded;
+    uint32 ShellShield;
+    uint32 WaterSpit;
+
+    void Reset()
+    {
+        WaterSpit = urand(2000, 10000);
+        ShellShield = 3000;
+        CanBeShielded = false;
+    }
+    void Aggro(Unit*) {}
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(ShellShield < diff)
+        {
+            if(!CanBeShielded)
+            {
+                if(m_creature->GetHealth()/m_creature->GetMaxHealth()*100 < 50)
+                    CanBeShielded = true;
+                ShellShield = 3000;
+            }
+            else
+            {
+                AddSpellToCast(m_creature, SPELL_SHELL_SHIELD);
+                ShellShield = urand(20000, 30000);
+            }
+        }
+        else
+            ShellShield -= diff;
+
+        if(WaterSpit < diff)
+        {
+            if(!CanBeShielded)
+            {
+                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 40, true))
+                    AddSpellToCast(target, SPELL_WATER_SPIT);
+                WaterSpit = urand(8000,12000);
+            }
+            else
+            {
+                if(!urand(0, 2))    //30% on cast to random player
+                {
+                    if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 40, true))
+                        AddSpellToCast(target, SPELL_WATER_SPIT);
+                }
+                else
+                    AddSpellToCast(m_creature->getVictim(), SPELL_WATER_SPIT);
+                WaterSpit = urand(2500, 3500);
+            }
+        }
+        else
+            WaterSpit -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+/****************
+* Leviathan - id 22884
+*****************/
+
+#define SPELL_DEBILITATING_SPRAY       40079
+#define SPELL_POISON_SPIT              40078
+#define SPELL_TAIL_SWEEP               40077
+
+struct TRINITY_DLL_DECL mob_leviathanAI : public ScriptedAI
+{
+    mob_leviathanAI(Creature *c) : ScriptedAI(c) {}
+
+    uint32 DebilitatingSpray;
+    uint32 PoisonSpit;
+    uint32 TailSweep;
+
+    void Reset()
+    {
+        DebilitatingSpray = urand(3000, 9000);
+        PoisonSpit = urand(6000, 15000);
+        TailSweep = 6000;
+    }
+    void Aggro(Unit*) {}
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(DebilitatingSpray < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 45, true))
+                AddSpellToCast(target, SPELL_DEBILITATING_SPRAY);
+            DebilitatingSpray = urand(10000, 20000);
+        }
+        else
+            DebilitatingSpray -= diff;
+
+        if(PoisonSpit < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true))
+                AddSpellToCast(target, SPELL_POISON_SPIT);
+            PoisonSpit = urand(12000, 18000);
+        }
+        else
+            PoisonSpit -= diff;
+
+        if(TailSweep < diff)
+        {
+            AddSpellToCast((Unit*)NULL, SPELL_TAIL_SWEEP);
+            TailSweep = urand(5000, 8000);
+        }
+        else
+            TailSweep -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
 
 /*####
 ##  GetAI's
@@ -297,6 +547,26 @@ CreatureAI* GetAI_mob_aqueous_spawn(Creature *_Creature)
 CreatureAI* GetAI_mob_coilskar_general(Creature *_Creature)
 {
     return new mob_coilskar_generalAI(_Creature);
+}
+
+CreatureAI* GetAI_mob_coilskar_harpooner(Creature *_Creature)
+{
+    return new mob_coilskar_harpoonerAI(_Creature);
+}
+
+CreatureAI* GetAI_mob_coilskar_wrangler(Creature *_Creature)
+{
+    return new mob_coilskar_wranglerAI(_Creature);
+}
+
+CreatureAI* GetAI_mob_dragon_turtle(Creature *_Creature)
+{
+    return new mob_dragon_turtleAI(_Creature);
+}
+
+CreatureAI* GetAI_mob_leviathan(Creature *_Creature)
+{
+    return new mob_leviathanAI(_Creature);
 }
 
 
@@ -907,6 +1177,26 @@ void AddSC_black_temple_trash()
     newscript = new Script;
     newscript->Name = "mob_coilskar_general";
     newscript->GetAI = &GetAI_mob_coilskar_general;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_coilskar_harpooner";
+    newscript->GetAI = &GetAI_mob_coilskar_harpooner;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_coilskar_wrangler";
+    newscript->GetAI = &GetAI_mob_coilskar_wrangler;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_dragon_turtle";
+    newscript->GetAI = &GetAI_mob_dragon_turtle;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_leviathan";
+    newscript->GetAI = &GetAI_mob_leviathan;
     newscript->RegisterSelf();
 
     //Supremus
