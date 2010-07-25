@@ -1671,7 +1671,7 @@ void Pet::InitPetCreateSpells()
             {
                 petspellid = learn_spellproto->EffectTriggerSpell[0];
                 
-                if(p_owner && !p_owner->HasSpell(learn_spellproto->Id)))
+                if(p_owner && !p_owner->HasSpell(learn_spellproto->Id))
                 {
                     if(IsPassiveSpell(petspellid))          //learn passive skills when tamed, not sure if thats right
                         p_owner->learnSpell(learn_spellproto->Id);

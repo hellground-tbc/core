@@ -105,22 +105,23 @@ void UpdateData::Compress(void* dst, uint32 *dst_size, void* src, int src_size)
 
 bool UpdateData::BuildPacket(WorldPacket *packet, bool hasTransport)
 {
-    ByteBuffer buf(m_data.size() + 10 + m_outOfRangeGUIDs.size()*8);
+    //ByteBuffer buf(m_data.size() + 10 + m_outOfRangeGUIDs.size()*8);
+    ByteBuffer buf(4 + 1 + (m_outOfRangeGUIDs.empty() ? 0 : 1 + 4 + 9 * m_outOfRangeGUIDs.size()) + m_data.size());
 
-    buf << (uint32) (!m_outOfRangeGUIDs.empty() ? m_blockCount + 1 : m_blockCount);
-    buf << (uint8) (hasTransport ? 1 : 0);
+    buf << uint32(!m_outOfRangeGUIDs.empty() ? m_blockCount + 1 : m_blockCount);
+    buf << uint8(hasTransport ? 1 : 0);
 
     if(!m_outOfRangeGUIDs.empty())
     {
-        buf << (uint8) UPDATETYPE_OUT_OF_RANGE_OBJECTS;
-        buf << (uint32) m_outOfRangeGUIDs.size();
+        buf << uint8(UPDATETYPE_OUT_OF_RANGE_OBJECTS);
+        buf << uint32(m_outOfRangeGUIDs.size());
 
         for(std::set<uint64>::const_iterator i = m_outOfRangeGUIDs.begin();
             i != m_outOfRangeGUIDs.end(); i++)
         {
             //buf.appendPackGUID(*i);
-            buf << (uint8)0xFF;
-            buf << (uint64) *i;
+            buf << uint8(0xFF);
+            buf << uint64(*i);
         }
     }
 
