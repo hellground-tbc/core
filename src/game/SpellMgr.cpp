@@ -301,6 +301,11 @@ bool IsPassiveSpell(uint32 spellId)
     return (spellInfo->Attributes & SPELL_ATTR_PASSIVE) != 0;
 }
 
+bool IsPassiveSpell(SpellEntry const *spellInfo)
+{
+    return (spellInfo->Attributes & SPELL_ATTR_PASSIVE) != 0;
+}
+
 /*bool IsNoStackAuraDueToAura(uint32 spellId_1, uint32 effIndex_1, uint32 spellId_2, uint32 effIndex_2)
 {
     SpellEntry const *spellInfo_1 = sSpellStore.LookupEntry(spellId_1);
