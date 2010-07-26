@@ -401,22 +401,20 @@ bool GOHello_go_hive_pod(Player *pPlayer, GameObject *pGO)
 ## go_warmaul_prison
 ######*/
 
-
 bool GOHello_go_warmaul_prison(Player* pPlayer, GameObject* pGO)
 {
     //Working, but still count while the cage is empty. Any ideas?
-    Unit *Prisoner = NULL;
-    Prisoner = FindCreature(18428, 4.0f, pPlayer);
+    Unit *Prisoner = FindCreature(18428, 4.0f, pPlayer);
+    if(!Prisoner)
+        return true;
+
     if (pGO->GetGoType() == GAMEOBJECT_TYPE_DOOR)
-        {
-            if (Prisoner!=NULL)
-            {
-            DoScriptText(-1600000-urand(0, 3), Prisoner, pPlayer);
-            pPlayer->CastedCreatureOrGO(18428, Prisoner->GetGUID(), 32347);
-            Prisoner->Kill(Prisoner, false);
-            ((Creature*)Prisoner)->RemoveCorpse(); 
-            }
-        }
+    {
+        DoScriptText(-1600000-urand(0, 3), Prisoner, pPlayer);
+        pPlayer->CastedCreatureOrGO(18428, Prisoner->GetGUID(), 32347);
+        Prisoner->Kill(Prisoner, false);
+        ((Creature*)Prisoner)->RemoveCorpse(); 
+    }
         
     return false;
 }
