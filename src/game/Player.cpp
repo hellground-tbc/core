@@ -9751,9 +9751,11 @@ uint8 Player::_CanStoreItem( uint8 bag, uint8 slot, ItemPosCountVec &dest, uint3
         }
     }
 
+/*  TODO: rewrite to avoid crash when adding any item to bag
     // Normally it would be impossible to autostore not empty bags
     if(pItem->IsBag() && !((Bag*)pItem)->IsEmpty())
         return EQUIP_ERR_NONEMPTY_BAG_OVER_OTHER_BAG;
+*/
 
     // search free slot
     res = _CanStoreItem_InInventorySlots(INVENTORY_SLOT_ITEM_START,INVENTORY_SLOT_ITEM_END,dest,pProto,count,false,pItem,bag,slot);
