@@ -2557,6 +2557,13 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->procChance = 101;
             spellInfo->procFlags = 0;
             break;
+        case 40105:
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER;
+            spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_CASTER;
+            spellInfo->Effect[2] = NULL;
+        case 40106:
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
+            spellInfo->EffectTriggerSpell[0] = NULL;
         case 41001:
             spellInfo->EffectTriggerSpell[1] = 40871;
             break;

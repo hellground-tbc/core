@@ -4308,6 +4308,14 @@ void Aura::HandlePeriodicTriggerSpell(bool apply, bool Real)
 
     m_isPeriodic = apply;
 
+    if(!apply && m_target && m_spellProto->Id == 40106)
+    {
+        m_target->CastSpell(m_target, 40105, true); //Aqueous Lord is self casting debuff
+        Unit* caster = GetCaster();
+        if(caster)
+            caster->DealDamage(caster, caster->GetHealth());    //self kill Aqueous Spawn when aura is removed
+    }
+
     // Curse of the Plaguebringer
     if (!apply && m_spellProto->Id == 29213 && m_removeMode!=AURA_REMOVE_BY_DISPEL)
     {

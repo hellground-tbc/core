@@ -55,7 +55,7 @@ struct TRINITY_DLL_DECL mob_aqueous_lordAI : public ScriptedAI
     void Reset()
     {
         VileSlime = 5000;
-        SummonTimer = 10000;
+        SummonTimer = urand(5000,10000);
         CrashingWave = 15000;
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);        //not tauntable
         m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
@@ -88,7 +88,7 @@ struct TRINITY_DLL_DECL mob_aqueous_lordAI : public ScriptedAI
                     Spawn->AI()->AttackStart(target);
                 }
             }
-            SummonTimer = 60000;
+            SummonTimer = urand(20000, 40000);
         }
         else
             SummonTimer -= diff;
@@ -112,31 +112,28 @@ struct TRINITY_DLL_DECL mob_aqueous_lordAI : public ScriptedAI
 
 #define SPELL_SLUDGE_NOVA       40102
 #define SPELL_MERGE             40106
-#define SPELL_MERGE_TRIGGERED   40105
 
 #define NPC_AQUEOUS_LORD       22878
-
-// TODO: Merge, needs casting targts verification, something is NOT GOOD...
 
 struct TRINITY_DLL_DECL mob_aqueous_spawnAI : public ScriptedAI
 {
     mob_aqueous_spawnAI(Creature *c) : ScriptedAI(c) {}
 
     uint32 SludgeNova;
-    //uint32 MergeTimer;
-    //bool merging;
+    uint32 MergeTimer;
+    bool merging;
 
     void Reset()
     {
         SludgeNova = 5000;
-        //MergeTimer = urand(10000, 50000);
-        //merging = false;
+        MergeTimer = urand(10000, 50000);
+        merging = false;
 
     }
     void Aggro(Unit*) {}
     void UpdateAI(const uint32 diff)
     {
-        if(!UpdateVictim())
+        if(!UpdateVictim() && !merging)
             return;
 
         if(SludgeNova < diff)
@@ -148,15 +145,18 @@ struct TRINITY_DLL_DECL mob_aqueous_spawnAI : public ScriptedAI
         else
             SludgeNova -= diff;
 
-        /*
+        
         if(!merging && MergeTimer < diff)
         {
-            Unit* target = NULL;
-            AddSpellToCast(target, SPELL_MERGE);
+            if(Unit* Lord = FindCreature(NPC_AQUEOUS_LORD, 80, m_creature))
+            {
+                m_creature->SetUInt64Value(UNIT_FIELD_TARGET, Lord->GetGUID());
+                AddSpellToCast(Lord, SPELL_MERGE);
+            }
             merging = true;
         }
         else
-            MergeTimer -= diff;*/
+            MergeTimer -= diff;
 
         CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
