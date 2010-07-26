@@ -1256,11 +1256,11 @@ struct TRINITY_DLL_DECL mob_dr_boomAI : public Scripted_NoMovementAI
             {
                 if(Unit* target = Unit::GetUnit(*m_creature, targetGUID[rand()%targetGUID.size()]))
                 {
-                    if(Unit* bot = DoSpawnCreature(BOOM_BOT, 0, 0, 0, 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 30))
+                    if(Unit* bot = DoSpawnCreature(BOOM_BOT, 0, 0, 0, 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 30000))
                         bot->GetMotionMaster()->MovePoint(0, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
                 }
             }
-            SummonTimer = 2500;
+            SummonTimer = 3000;
         }
         else
             SummonTimer -= diff;
@@ -1268,9 +1268,15 @@ struct TRINITY_DLL_DECL mob_dr_boomAI : public Scripted_NoMovementAI
         if(!UpdateVictim())
             return;
 
+        if(!m_creature->IsWithinDistInMap(m_creature->getVictim(), 30.0f))
+        {
+            EnterEvadeMode();
+            return;
+        }
+
         if(m_creature->isAttackReady())
         {
-            DoCast(m_creature, 35276, true);
+            DoCast(m_creature->getVictim(), 35276, true);
             m_creature->resetAttackTimer();
         }
     }
