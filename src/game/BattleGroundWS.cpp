@@ -580,22 +580,22 @@ void BattleGroundWS::RemovePlayer(Player *plr, uint64 guid)
         if(!plr)
         {
             sLog.outError("BattleGroundWS: Removing offline player who has the FLAG!!");
-            this->SetAllianceFlagPicker(0);
-            this->RespawnFlag(ALLIANCE, false);
+            SetAllianceFlagPicker(0);
+            RespawnFlag(ALLIANCE, false);
         }
         else
-            this->EventPlayerDroppedFlag(plr);
+            EventPlayerDroppedFlag(plr);
     }
     if(IsHordeFlagPickedup() && m_FlagKeepers[BG_TEAM_HORDE] == guid)
     {
         if(!plr)
         {
             sLog.outError("BattleGroundWS: Removing offline player who has the FLAG!!");
-            this->SetHordeFlagPicker(0);
-            this->RespawnFlag(HORDE, false);
+            SetHordeFlagPicker(0);
+            RespawnFlag(HORDE, false);
         }
         else
-            this->EventPlayerDroppedFlag(plr);
+            EventPlayerDroppedFlag(plr);
     }
 }
 

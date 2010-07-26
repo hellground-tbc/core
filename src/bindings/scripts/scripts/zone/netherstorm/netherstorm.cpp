@@ -1222,6 +1222,109 @@ CreatureAI* GetAI_mob_epextraction(Creature *_Creature)
 {
     return new mob_epextractionAI (_Creature);
 }
+
+#define BOOM_BOT_TARGET 20392
+#define BOOM_BOT 19692
+
+struct TRINITY_DLL_DECL mob_dr_boomAI : public Scripted_NoMovementAI
+{
+    mob_dr_boomAI(Creature *c) : Scripted_NoMovementAI(c) {}
+
+    std::vector<uint64> targetGUID;
+
+    uint32 SummonTimer;
+
+    void Reset()
+    {
+        SummonTimer = 2000;
+
+        std::list<Creature*> temp = DoFindAllCreaturesWithEntry(BOOM_BOT_TARGET, 30.0f);
+
+        targetGUID.clear();
+
+        for(std::list<Creature*>::iterator it = temp.begin(); it != temp.end(); it++)
+            targetGUID.push_back((*it)->GetGUID());
+    }
+
+    void Aggro(Unit* who){}
+
+    void UpdateAI(const uint32 diff)
+    { 
+        if(SummonTimer <= diff)
+        {
+            if(targetGUID.size())
+            {
+                if(Unit* target = Unit::GetUnit(*m_creature, targetGUID[rand()%targetGUID.size()]))
+                {
+                    if(Unit* bot = DoSpawnCreature(BOOM_BOT, 0, 0, 0, 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 30))
+                        bot->GetMotionMaster()->MovePoint(0, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
+                }
+            }
+            SummonTimer = 2500;
+        }
+        else
+            SummonTimer -= diff;
+
+        if(!UpdateVictim())
+            return;
+
+        if(m_creature->isAttackReady())
+        {
+            DoCast(m_creature, 35276, true);
+            m_creature->resetAttackTimer();
+        }
+    }
+};
+
+CreatureAI* GetAI_mob_dr_boom(Creature *_Creature)
+{
+    return new mob_dr_boomAI (_Creature);
+}
+
+struct TRINITY_DLL_DECL mob_boom_botAI : public ScriptedAI
+{
+    mob_boom_botAI(Creature *c) : ScriptedAI(c) {}
+
+    void Reset()
+    {
+    }
+    
+    void Aggro(Unit *who){ return; }
+
+    void MovementInform(uint32 type, uint32 id)
+    {
+        if (type != POINT_MOTION_TYPE)
+            return;
+
+        DoCast(m_creature, 34096, true);
+        m_creature->Kill(m_creature, false);
+        m_creature->RemoveCorpse();
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if(m_creature->IsWithinDistInMap(who, 6.0f, false))
+        {
+            DoCast(m_creature, 35276, true);
+            m_creature->Kill(m_creature, false);
+            m_creature->RemoveCorpse();
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_boom_bot(Creature *_Creature)
+{
+    return new mob_boom_botAI (_Creature);
+}
+
 /*######
 ## AddSC_netherstrom
 ######*/
@@ -1303,6 +1406,16 @@ void AddSC_netherstorm()
     newscript = new Script;
     newscript->Name = "mob_epextraction";
     newscript->GetAI = &GetAI_npc_warp_chaser;
+    newscript->RegisterSelf();
+    newscript = new Script;
+
+    newscript->Name = "mob_dr_boom";
+    newscript->GetAI = &GetAI_mob_talbuk;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_boom_bot";
+    newscript->GetAI = &GetAI_mob_talbuk;
     newscript->RegisterSelf();
 }
 
