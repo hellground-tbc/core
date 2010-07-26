@@ -6,8 +6,6 @@ USE `world`;
 -- ------------------------------------------------------
 -- Server version	5.1.46-log
 
--- Struktura na rev 2746
-
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
@@ -754,6 +752,7 @@ DROP TABLE IF EXISTS `creature_template`;
 CREATE TABLE `creature_template` (
   `entry` int(11) DEFAULT NULL,
   `heroic_entry` int(11) DEFAULT NULL,
+  `KillCredit` int(11) DEFAULT NULL,
   `modelid_A` int(11) DEFAULT NULL,
   `modelid_A2` int(11) DEFAULT NULL,
   `modelid_H` int(11) DEFAULT NULL,
@@ -1647,7 +1646,7 @@ CREATE TABLE `game_tele` (
   `map` smallint(5) unsigned NOT NULL DEFAULT '0',
   `name` varchar(100) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=535 DEFAULT CHARSET=utf8 COMMENT='Tele Command';
+) ENGINE=InnoDB AUTO_INCREMENT=536 DEFAULT CHARSET=utf8 COMMENT='Tele Command';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1866,7 +1865,7 @@ CREATE TABLE `creature` (
   PRIMARY KEY (`guid`),
   KEY `idx_map` (`map`),
   KEY `idx_id` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=16777014 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Creature System';
+) ENGINE=InnoDB AUTO_INCREMENT=16777015 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Creature System';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2858,4 +2857,4 @@ CREATE TABLE `reserved_name` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2010-07-01 10:57:39
+-- Dump completed on 2010-07-26 10:24:53
