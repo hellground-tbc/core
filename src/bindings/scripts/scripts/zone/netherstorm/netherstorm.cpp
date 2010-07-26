@@ -1410,12 +1410,12 @@ void AddSC_netherstorm()
     newscript = new Script;
 
     newscript->Name = "mob_dr_boom";
-    newscript->GetAI = &GetAI_mob_talbuk;
+    newscript->GetAI = &GetAI_mob_dr_boom;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "mob_boom_bot";
-    newscript->GetAI = &GetAI_mob_talbuk;
+    newscript->GetAI = &GetAI_mob_boom_bot;
     newscript->RegisterSelf();
 }
 
