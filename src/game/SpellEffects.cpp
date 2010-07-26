@@ -5292,7 +5292,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         }
         case 40893:
         {
-            m_caster->AddAura(40893, unitTarget);
+            m_caster->CastSpell(m_caster, 40893, false);
         }
     }
 

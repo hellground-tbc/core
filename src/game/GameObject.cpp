@@ -287,7 +287,7 @@ void GameObject::Update(uint32 diff)
 
             // traps can have time and can not have
             GameObjectInfo const* goInfo = GetGOInfo();
-            if(goInfo->type == GAMEOBJECT_TYPE_TRAP)
+            if(goInfo && goInfo->type == GAMEOBJECT_TYPE_TRAP)
             {
                 // traps
                 Unit* owner = GetOwner();
