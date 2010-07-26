@@ -41,6 +41,7 @@ go_sacred_fire_of_life
 go_field_repair_bot_74A
 go_teleporter
 go_hive_pod
+go_warmaul_prison
 EndContentData */
 
 #include "precompiled.h"
@@ -396,6 +397,30 @@ bool GOHello_go_hive_pod(Player *pPlayer, GameObject *pGO)
     return false;
 }
 
+/*######
+## go_warmaul_prison
+######*/
+
+
+bool GOHello_go_warmaul_prison(Player* pPlayer, GameObject* pGO)
+{
+    //Working, but still count while the cage is empty. Any ideas?
+    Unit *Prisoner = NULL;
+    Prisoner = FindCreature(18428, 4.0f, pPlayer);
+    if (pGO->GetGoType() == GAMEOBJECT_TYPE_DOOR)
+        {
+            if (Prisoner!=NULL)
+            {
+            DoScriptText(-1600000-urand(0, 3), Prisoner, pPlayer);
+            pPlayer->CastedCreatureOrGO(18428, Prisoner->GetGUID(), 32347);
+            Prisoner->Kill(Prisoner, false);
+            ((Creature*)Prisoner)->RemoveCorpse(); 
+            }
+        }
+        
+    return false;
+}
+
 void AddSC_go_scripts()
 {
     Script *newscript;
@@ -489,6 +514,11 @@ void AddSC_go_scripts()
     newscript = new Script;
     newscript->Name = "go_hive_pod";
     newscript->pGOHello = &GOHello_go_hive_pod;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "go_warmaul_prison";
+    newscript->pGOHello = &GOHello_go_warmaul_prison;
     newscript->RegisterSelf();
 }
 
