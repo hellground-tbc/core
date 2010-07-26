@@ -4276,7 +4276,7 @@ void Aura::HandleAuraProcTriggerSpell(bool apply, bool Real)
                 pet->UpdateResistances(i);
     }
 
-    // Leggings of Beast Mastery stats
+    /*// Leggings of Beast Mastery stats
     if(GetId() == 38297)
     {
         if(Pet* pet = m_target->GetPet())
@@ -4285,7 +4285,7 @@ void Aura::HandleAuraProcTriggerSpell(bool apply, bool Real)
             pet->UpdateArmor();
             pet->UpdateAllStats();
         }
-    }
+    }*/
 }
 
 void Aura::HandleAuraModStalked(bool apply, bool Real)
