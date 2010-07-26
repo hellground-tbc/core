@@ -55,7 +55,7 @@ struct TRINITY_DLL_DECL mob_aqueous_lordAI : public ScriptedAI
     void Reset()
     {
         VileSlime = 5000;
-        SummonTimer = 10000;
+        SummonTimer = urand(5000,10000);
         CrashingWave = 15000;
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);        //not tauntable
         m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
@@ -88,7 +88,7 @@ struct TRINITY_DLL_DECL mob_aqueous_lordAI : public ScriptedAI
                     Spawn->AI()->AttackStart(target);
                 }
             }
-            SummonTimer = 60000;
+            SummonTimer = urand(20000, 40000);
         }
         else
             SummonTimer -= diff;
@@ -112,31 +112,28 @@ struct TRINITY_DLL_DECL mob_aqueous_lordAI : public ScriptedAI
 
 #define SPELL_SLUDGE_NOVA       40102
 #define SPELL_MERGE             40106
-#define SPELL_MERGE_TRIGGERED   40105
 
 #define NPC_AQUEOUS_LORD       22878
-
-// TODO: Merge, needs casting targts verification, something is NOT GOOD...
 
 struct TRINITY_DLL_DECL mob_aqueous_spawnAI : public ScriptedAI
 {
     mob_aqueous_spawnAI(Creature *c) : ScriptedAI(c) {}
 
     uint32 SludgeNova;
-    //uint32 MergeTimer;
-    //bool merging;
+    uint32 MergeTimer;
+    bool merging;
 
     void Reset()
     {
         SludgeNova = 5000;
-        //MergeTimer = urand(10000, 50000);
-        //merging = false;
+        MergeTimer = urand(10000, 50000);
+        merging = false;
 
     }
     void Aggro(Unit*) {}
     void UpdateAI(const uint32 diff)
     {
-        if(!UpdateVictim())
+        if(!UpdateVictim() && !merging)
             return;
 
         if(SludgeNova < diff)
@@ -148,15 +145,18 @@ struct TRINITY_DLL_DECL mob_aqueous_spawnAI : public ScriptedAI
         else
             SludgeNova -= diff;
 
-        /*
+        
         if(!merging && MergeTimer < diff)
         {
-            Unit* target = NULL;
-            AddSpellToCast(target, SPELL_MERGE);
+            if(Unit* Lord = FindCreature(NPC_AQUEOUS_LORD, 80, m_creature))
+            {
+                m_creature->SetUInt64Value(UNIT_FIELD_TARGET, Lord->GetGUID());
+                AddSpellToCast(Lord, SPELL_MERGE);
+            }
             merging = true;
         }
         else
-            MergeTimer -= diff;*/
+            MergeTimer -= diff;
 
         CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
@@ -890,7 +890,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_skystalkerAI : public ScriptedAI
     void Reset()
     {
         shootTimer = 2000 + urand(0, 2000);
-        immolationArrowTimer = 15000 + urand(0, 15000);
+        immolationArrowTimer = 15000 + urand(0, 5000);
     }
 
     void Aggro(Unit *who){}
@@ -909,8 +909,18 @@ struct TRINITY_DLL_DECL mob_dragonmaw_skystalkerAI : public ScriptedAI
 
         if (m_creature->GetDistance(victim) > 37)
         {
+            m_creature->StopMoving();
             m_creature->GetMotionMaster()->Clear();
             m_creature->GetMotionMaster()->MoveChase(victim, 25, 0);
+        }
+        else
+        {
+            if (m_creature->GetDistance(victim) < 15)
+            {
+                m_creature->StopMoving();
+                m_creature->GetMotionMaster()->Clear();
+                m_creature->GetMotionMaster()->MoveChase(victim, 25, 0);
+            }
         }
 
         if (shootTimer < diff)
@@ -924,7 +934,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_skystalkerAI : public ScriptedAI
         if (immolationArrowTimer < diff)
         {
             ForceSpellCast(SelectUnit(SELECT_TARGET_RANDOM, 0, 60, true), SPELL_SKYSTALKER_IMMOLATION);
-            immolationArrowTimer = 15000 + urand(0, 15000);
+            immolationArrowTimer = 15000 + urand(0, 5000);
         }
         else
             immolationArrowTimer -= diff;
@@ -981,8 +991,18 @@ struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
 
         if (m_creature->GetDistance(victim) > 37)
         {
+            m_creature->StopMoving();
             m_creature->GetMotionMaster()->Clear();
             m_creature->GetMotionMaster()->MoveChase(victim, 25, 0);
+        }
+        else
+        {
+            if (m_creature->GetDistance(victim) < 15)
+            {
+                m_creature->StopMoving();
+                m_creature->GetMotionMaster()->Clear();
+                m_creature->GetMotionMaster()->MoveChase(victim, 25, 0);
+            }
         }
 
         if (fireballTimer < diff)
@@ -1049,7 +1069,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_wyrmcallerAI : public ScriptedAI
 
     void OnAuraApply(Aura * aur, Unit * caster)
     {
-        if (aur->GetId() == AURA_WYRMCALLER_FIXATED)
+        if (aur->GetId() == SPELL_WYRMCALLER_FIXATE)
         {
             m_creature->AddThreat(caster, 1000000, SPELL_SCHOOL_MASK_NORMAL, NULL);
             m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
@@ -1057,13 +1077,14 @@ struct TRINITY_DLL_DECL mob_dragonmaw_wyrmcallerAI : public ScriptedAI
         }
     }
 
-    void OnAuraRemove(Aura * aur, Unit * caster)
+    void OnAuraRemove(Aura * aur)
     {
-        if (aur->GetId() == AURA_WYRMCALLER_FIXATED)
+        if (aur->GetId() == SPELL_WYRMCALLER_FIXATE)
         {
             m_creature->AddThreat(aur->GetCaster(), -1000000, SPELL_SCHOOL_MASK_NORMAL, NULL);
             m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
             m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_ATTACK_ME, false);
+
         }
     }
 
@@ -1122,9 +1143,9 @@ struct TRINITY_DLL_DECL mob_illidari_fearbringerAI : public ScriptedAI
 
     void Reset()
     {
-        flamesTimer = 10000 + urand(0, 10000);
-        rainTimer = 20000 + urand(0, 10000);
-        stompTimer = 15000 + urand(0, 10000);
+        flamesTimer = 5000 + urand(0, 10000);
+        rainTimer = 15000 + urand(0, 10000);
+        stompTimer = 10000 + urand(0, 10000);
     }
 
     void Aggro(Unit *who){}
@@ -1146,7 +1167,7 @@ struct TRINITY_DLL_DECL mob_illidari_fearbringerAI : public ScriptedAI
 
         if (rainTimer < diff)
         {
-            AddSpellToCast(SelectUnit(SELECT_TARGET_RANDOM, 0, 60, true), SPELL_FEARBRINGER_RAIN_OF_CHAOS);
+            AddSpellToCast(SelectUnit(SELECT_TARGET_RANDOM, 0, 50, true), SPELL_FEARBRINGER_RAIN_OF_CHAOS);
             rainTimer = 20000 + urand(0, 10000);
         }
         else
@@ -1326,7 +1347,7 @@ void AddSC_black_temple_trash()
     newscript->Name = "mob_aqueous_lord";
     newscript->GetAI = &GetAI_mob_aqueous_lord;
     newscript->RegisterSelf();
-    
+
     newscript = new Script;
     newscript->Name = "mob_aqueous_spawn";
     newscript->GetAI = &GetAI_mob_aqueous_spawn;
@@ -1377,7 +1398,7 @@ void AddSC_black_temple_trash()
     newscript->Name = "mob_bonechewer_taskmaster";
     newscript->GetAI = &GetAI_mob_bonechewer_taskmaster;
     newscript->RegisterSelf();
-    
+
     newscript = new Script;
     newscript->Name = "mob_bonechewer_worker";
     newscript->GetAI = &GetAI_mob_bonechewer_worker;
@@ -1392,7 +1413,7 @@ void AddSC_black_temple_trash()
     newscript->Name = "mob_dragonmaw_windreaver";
     newscript->GetAI = &GetAI_mob_dragonmaw_windreaver;
     newscript->RegisterSelf();
-    
+
     newscript = new Script;
     newscript->Name = "mob_dragonmaw_wyrmcaller";
     newscript->GetAI = &GetAI_mob_dragonmaw_wyrmcaller;
