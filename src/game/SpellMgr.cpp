@@ -625,7 +625,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
                         return false;
                     break;
                 case SPELL_AURA_MOD_SPELL_CRIT_CHANCE:
-                    if(spellproto->CalculateSimpleValue(effIndex) > 0)
+                    if(spellproto->EffectBasePoints[effIndex] > 0)
                         return true;
                     break;
                 case SPELL_AURA_ADD_TARGET_TRIGGER:
