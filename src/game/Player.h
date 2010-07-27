@@ -1746,7 +1746,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         bool SetFactionReputation(uint32 FactionTemplateId, int32 standing);
         bool SetFactionReputation(FactionEntry const* factionEntry, int32 standing);
         bool SetOneFactionReputation(FactionEntry const* factionEntry, int32 standing);
-        int32 CalculateReputationGain(uint32 creatureOrQuestLevel, int32 rep, bool for_quest);
+        int32 CalculateReputationGain(uint32 creatureOrQuestLevel, int32 rep, int32 faction, bool for_quest);
         void RewardReputation(Unit *pVictim, float rate);
         void RewardReputation(Quest const *pQuest);
         void SetInitialFactions();
