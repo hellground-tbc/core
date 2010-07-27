@@ -3915,52 +3915,61 @@ void Aura::HandleModStateImmunityMask(bool apply, bool Real)
         m_target->ApplySpellImmune(GetId(),IMMUNITY_STATE,*iter, apply);
     }
     */
-    std::list<uint32> IncapacitateMechanics;    //workaround for spell 40081
+    std::list<uint32> immunity;
 
     if(GetMiscValue() & ((1<<5) | (1<<6)))  //workaround for spell 40081
     {
-        IncapacitateMechanics.push_front(MECHANIC_CHARM);
-        IncapacitateMechanics.push_front(MECHANIC_CONFUSED);
-        IncapacitateMechanics.push_front(MECHANIC_FEAR);
-        IncapacitateMechanics.push_front(MECHANIC_ROOT);
-        IncapacitateMechanics.push_front(MECHANIC_PACIFY);
-        IncapacitateMechanics.push_front(MECHANIC_SLEEP);
-        IncapacitateMechanics.push_front(MECHANIC_SNARE);
-        IncapacitateMechanics.push_front(MECHANIC_STUN);
-        IncapacitateMechanics.push_front(MECHANIC_FREEZE);
-        IncapacitateMechanics.push_front(MECHANIC_KNOCKOUT);
-        IncapacitateMechanics.push_front(MECHANIC_POLYMORPH);
-        IncapacitateMechanics.push_front(MECHANIC_BANISH);
-        IncapacitateMechanics.push_front(MECHANIC_HORROR);
+        immunity.push_front(MECHANIC_CHARM);
+        immunity.push_front(MECHANIC_CONFUSED);
+        immunity.push_front(MECHANIC_FEAR);
+        immunity.push_front(MECHANIC_ROOT);
+        immunity.push_front(MECHANIC_PACIFY);
+        immunity.push_front(MECHANIC_SLEEP);
+        immunity.push_front(MECHANIC_SNARE);
+        immunity.push_front(MECHANIC_STUN);
+        immunity.push_front(MECHANIC_FREEZE);
+        immunity.push_front(MECHANIC_KNOCKOUT);
+        immunity.push_front(MECHANIC_POLYMORPH);
+        immunity.push_front(MECHANIC_BANISH);
+        immunity.push_front(MECHANIC_HORROR);
     }
 
-    if(apply && GetId() == 40081)
+    if(GetId() == 40081)
     {
-        uint32 mechanic = IMMUNE_TO_INCAPACITATE_MASK;
-        Unit::AuraMap& Auras = m_target->GetAuras();
-        for(Unit::AuraMap::iterator iter = Auras.begin(), next; iter != Auras.end(); iter = next)
+        if(apply)
         {
-            next = iter;
-            ++next;
-            SpellEntry const *spell = iter->second->GetSpellProto();
-            if (!iter->second->IsPositive() && spell->Id != 40081)
+            uint32 mechanic = IMMUNE_TO_INCAPACITATE_MASK;
+            Unit::AuraMap& Auras = m_target->GetAuras();
+            for(Unit::AuraMap::iterator iter = Auras.begin(), next; iter != Auras.end(); iter = next)
             {
-                //check for mechanic mask
-                if(GetSpellMechanicMask(spell, iter->second->GetEffIndex()) & mechanic)
+                next = iter;
+                ++next;
+                SpellEntry const *spell = iter->second->GetSpellProto();
+                if (!iter->second->IsPositive() && spell->Id != 40081)
                 {
-                    m_target->RemoveAurasDueToSpell(spell->Id);
-                    if(Auras.empty())
-                        break;
-                    else
-                        next = Auras.begin();
+                    //check for mechanic mask
+                    if(GetSpellMechanicMask(spell, iter->second->GetEffIndex()) & mechanic)
+                    {
+                        m_target->RemoveAurasDueToSpell(spell->Id);
+                        if(Auras.empty())
+                            break;
+                        else
+                            next = Auras.begin();
+                    }
                 }
             }
         }
+        //for 40081
+        for (std::list <uint32>::iterator iter = immunity.begin(); iter != immunity.end(); ++iter)
+        {
+            m_target->ApplySpellImmune(GetId(),IMMUNITY_MECHANIC,*iter, apply);
+        }
     }
-    //for 40081
-    for (std::list <uint32>::iterator iter = IncapacitateMechanics.begin(); iter != IncapacitateMechanics.end(); ++iter)
+
+    if(GetMiscValue() == 1694)      //immune to taunt effect and aura
     {
-        m_target->ApplySpellImmune(GetId(),IMMUNITY_MECHANIC,*iter, apply);
+        m_target->ApplySpellImmune(GetId(),IMMUNITY_STATE,SPELL_AURA_MOD_TAUNT, apply);
+        m_target->ApplySpellImmune(GetId(),IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, apply);
     }
 }
 
