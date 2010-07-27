@@ -61,7 +61,7 @@ struct TRINITY_DLL_DECL mob_aqueous_lordAI : public ScriptedAI
         m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
 
     }
-    void Aggro(Unit*) {}
+    void Aggro(Unit*) { DoZoneInCombat(); }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -130,7 +130,7 @@ struct TRINITY_DLL_DECL mob_aqueous_spawnAI : public ScriptedAI
         merging = false;
 
     }
-    void Aggro(Unit*) {}
+    void Aggro(Unit*) { DoZoneInCombat(); }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim() && !merging)
@@ -188,7 +188,7 @@ struct TRINITY_DLL_DECL mob_coilskar_generalAI : public ScriptedAI
         BoomingVoice = 40000;
     }
 
-    void Aggro(Unit*) {}
+    void Aggro(Unit*) { DoZoneInCombat(); }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -231,7 +231,7 @@ struct TRINITY_DLL_DECL mob_coilskar_generalAI : public ScriptedAI
                     }
                 }
             }
-            FreeFriend = urand(3000, 4000);
+            FreeFriend = urand(10000, 15000);
         }
         else
             FreeFriend -= diff;
@@ -265,29 +265,28 @@ struct TRINITY_DLL_DECL mob_coilskar_harpoonerAI : public ScriptedAI
     uint32 HookedNet;
     uint32 HarpoonersMark;
 
+    uint64 MarkTargetGUID;
+
     void Reset()
     {
         SpearThrow = urand(1000, 5000);
         HookedNet = urand(15000, 20000);
-        HarpoonersMark = urand(100, 5000);
+        HarpoonersMark = 15000;
+        MarkTargetGUID = 0;
     }
 
-    bool CanCastMark()
+    void Aggro(Unit* who)
     {
-        Map::PlayerList const& pList = m_creature->GetMap()->GetPlayers();       // only one Harpooner's Mark on players at a time
-        if(!pList.isEmpty())
+        DoZoneInCombat();
+        if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 80, true))
         {
-            for(Map::PlayerList::const_iterator i = pList.begin(); i != pList.end(); ++i)
+            if(!target->HasAura(40084, 0))
             {
-                Player* pl = i->getSource();
-                if(pl && pl->HasAura(SPELL_HARPOONERS_MARK, 0))
-                    return false;
+                DoCast(target, SPELL_HARPOONERS_MARK, true);
+                MarkTargetGUID = target->GetGUID();     //constant target for Mark per creature, selected at aggro
             }
         }
-        return true;
     }
-
-    void Aggro(Unit*) {}
 
     void UpdateAI(const uint32 diff)
     {
@@ -296,20 +295,12 @@ struct TRINITY_DLL_DECL mob_coilskar_harpoonerAI : public ScriptedAI
 
         if(HarpoonersMark < diff)
         {
-            if(CanCastMark())
+            if(Player* target = m_creature->GetPlayer(MarkTargetGUID))
             {
-                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 80, true))
-                {
-                    AttackStart(target);
-                    m_creature->getThreatManager().addThreat(target, 5000);     //we attack target with a Mark, but in contrast to turtle, we can be overaggroed and/or taunted
-                    HostilReference* aggroTarget = m_creature->getThreatManager().getOnlineContainer().getReferenceByTarget(target);
-                    if(aggroTarget)
-                        m_creature->getThreatManager().setCurrentVictim(aggroTarget);
-                    AddSpellToCast(target, SPELL_HARPOONERS_MARK);
-                }
+                if(!target->HasAura(40084, 0))
+                    DoCast(target, SPELL_HARPOONERS_MARK, true);
             }
-            else
-                HarpoonersMark = urand(10000,30000);     //every 10-30 sec check if we can cast new mark
+            HarpoonersMark = 15000;     //check Mark each 15s
         }
         else
             HarpoonersMark -= diff;
@@ -365,7 +356,7 @@ struct TRINITY_DLL_DECL mob_coilskar_seacallerAI : public ScriptedAI
         Hurricane = urand(20000, 30000);
         SummonGeyser = urand(3000, 8000);
     }
-    void Aggro(Unit*) {}
+    void Aggro(Unit*) { DoZoneInCombat(); }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -430,7 +421,7 @@ struct TRINITY_DLL_DECL mob_coilskar_geyserAI : public Scripted_NoMovementAI
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->CastSpell(m_creature, SPELL_GEYSER, false);
     }
-    void Aggro(Unit*) {}
+    void Aggro(Unit*) { DoZoneInCombat(); }
 };
 
 /****************
@@ -452,7 +443,7 @@ struct TRINITY_DLL_DECL mob_coilskar_soothsayerAI : public ScriptedAI
         HolyNova = urand(5000, 15000);
         Restoration = (8000, 12000);
     }
-    void Aggro(Unit*) {}
+    void Aggro(Unit*) { DoZoneInCombat(); }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -505,7 +496,7 @@ struct TRINITY_DLL_DECL mob_coilskar_wranglerAI : public ScriptedAI
         ElectricSpur = urand(15000, 40000);
         LightningProd = urand(8000, 15000);
     }
-    void Aggro(Unit*) {}
+    void Aggro(Unit*) { DoZoneInCombat(); }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -562,7 +553,7 @@ struct TRINITY_DLL_DECL mob_dragon_turtleAI : public ScriptedAI
         ShellShield = 3000;
         CanBeShielded = false;
     }
-    void Aggro(Unit*) {}
+    void Aggro(Unit*) { DoZoneInCombat(); }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -635,7 +626,7 @@ struct TRINITY_DLL_DECL mob_leviathanAI : public ScriptedAI
         PoisonSpit = urand(6000, 15000);
         TailSweep = 6000;
     }
-    void Aggro(Unit*) {}
+    void Aggro(Unit*) { DoZoneInCombat(); }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -756,7 +747,8 @@ CreatureAI* GetAI_mob_leviathan(Creature *_Creature)
 #define SPELL_WINDREAVER_FREEZE             40875
 
 #define SPELL_WYRMCALLER_CLEAVE             15284
-#define SPELL_WYRMCALLER_FIXATE             40892
+#define SPELL_WYRMCALLER_FIXATE             40892   //not used
+#define SPELL_WYRMCALLER_FIXATE_TRIGGER     40893
 #define SPELL_WYRMCALLER_JAB                40895
 #define AURA_WYRMCALLER_FIXATED             40893
 
@@ -787,6 +779,7 @@ struct TRINITY_DLL_DECL mob_bonechewer_taskmasterAI : public ScriptedAI
 
     void Aggro(Unit *who)
     {
+        DoZoneInCombat();
         if (urand(0, 100) < 25)
         {
             m_creature->CastSpell(m_creature, SPELL_BONECHEWER_DISGRUNTLED, false);
@@ -844,6 +837,7 @@ struct TRINITY_DLL_DECL mob_bonechewer_workerAI : public ScriptedAI
 
     void Aggro(Unit *who)
     {
+        DoZoneInCombat();
         if (who)
         {
             if (urand(0, 100) < 20)
@@ -893,7 +887,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_skystalkerAI : public ScriptedAI
         immolationArrowTimer = 15000 + urand(0, 5000);
     }
 
-    void Aggro(Unit *who){}
+    void Aggro(Unit *who) { DoZoneInCombat(); }
 
     void JustDied(Unit *victim){}
 
@@ -962,7 +956,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
         freezeTimer = 20000 + urand(0, 15000);
     }
 
-    void Aggro(Unit *who){}
+    void Aggro(Unit *who) { DoZoneInCombat(); }
 
     void JustDied(Unit *victim){}
 
@@ -1063,30 +1057,9 @@ struct TRINITY_DLL_DECL mob_dragonmaw_wyrmcallerAI : public ScriptedAI
         jabTimer = 5000 + urand(0, 15000);
     }
 
-    void Aggro(Unit *who) {}
+    void Aggro(Unit *who) { DoZoneInCombat(); }
 
     void JustDied(Unit *victim) {}
-
-    void OnAuraApply(Aura * aur, Unit * caster)
-    {
-        if (aur->GetId() == SPELL_WYRMCALLER_FIXATE)
-        {
-            m_creature->AddThreat(caster, 1000000, SPELL_SCHOOL_MASK_NORMAL, NULL);
-            m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
-            m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_ATTACK_ME, true);
-        }
-    }
-
-    void OnAuraRemove(Aura * aur)
-    {
-        if (aur->GetId() == SPELL_WYRMCALLER_FIXATE)
-        {
-            m_creature->AddThreat(aur->GetCaster(), -1000000, SPELL_SCHOOL_MASK_NORMAL, NULL);
-            m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
-            m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_ATTACK_ME, false);
-
-        }
-    }
 
     void UpdateAI(const uint32 diff)
     {
@@ -1117,8 +1090,17 @@ struct TRINITY_DLL_DECL mob_dragonmaw_wyrmcallerAI : public ScriptedAI
         if (fixateTimer < diff)
         {
             victim = SelectUnit(SELECT_TARGET_RANDOM, 0, 60, true);
-            if (victim)
-                victim->CastSpell(m_creature, SPELL_WYRMCALLER_FIXATE, false);
+            std::list<Creature*> FriendlyList = DoFindAllFriendlyInGrid(100);
+            std::vector<Creature*> Friendly;
+
+            for(std::list<Creature*>::iterator i = FriendlyList.begin(); i != FriendlyList.end(); ++i)
+                if((*i)->isInCombat() && (*i)->IsAIEnabled)
+                    Friendly.push_back(*i);
+
+            Unit* target = *(Friendly.begin() + rand()%Friendly.size());
+
+            if (victim && target)
+                victim->CastSpell(target, SPELL_WYRMCALLER_FIXATE_TRIGGER, true);
 
             fixateTimer = 20000 + urand(0, 10000);
         }
@@ -1148,7 +1130,7 @@ struct TRINITY_DLL_DECL mob_illidari_fearbringerAI : public ScriptedAI
         stompTimer = 10000 + urand(0, 10000);
     }
 
-    void Aggro(Unit *who){}
+    void Aggro(Unit *who) { DoZoneInCombat(); }
 
     void JustDied(Unit *victim){}
 
