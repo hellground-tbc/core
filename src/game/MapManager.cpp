@@ -273,7 +273,7 @@ MapManager::Update(time_t diff)
     if (m_updater.activated())
         m_updater.wait();
 
-    sWorld.RecordTimeDiff("UpdateMaps");
+    sWorld.RecordTimeDiff("UpdateMaps, hash_map size: %u", i_maps.size());
     
     checkAndCorrectGridStatesArray();
     for(MapMapType::iterator iter = i_maps.begin(); iter != i_maps.end(); ++iter)

@@ -490,7 +490,7 @@ const char * WorldSession::GetTrinityString( int32 entry ) const
 
 void WorldSession::Handle_NULL( WorldPacket& recvPacket )
 {
-    sLog.outError( "SESSION: received unhandled opcode %s (0x%.4X)",
+    sLog.outDebug( "SESSION: received unhandled opcode %s (0x%.4X)",
         LookupOpcodeName(recvPacket.GetOpcode()),
         recvPacket.GetOpcode());
 }
