@@ -65,8 +65,6 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
         KnockAway_Timer = 30000;
         Berserk_Timer = 600000;
         Check_Timer = 3000;
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
-        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
         m_creature->ApplySpellImmune(2, IMMUNITY_EFFECT, SPELL_EFFECT_HEALTH_LEECH, true);
         m_creature->ApplySpellImmune(3, IMMUNITY_STATE, SPELL_AURA_PERIODIC_LEECH, true);
         m_creature->ApplySpellImmune(4, IMMUNITY_STATE, SPELL_AURA_PERIODIC_MANA_LEECH, true);

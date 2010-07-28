@@ -57,9 +57,6 @@ struct TRINITY_DLL_DECL mob_aqueous_lordAI : public ScriptedAI
         VileSlime = 5000;
         SummonTimer = urand(5000,10000);
         CrashingWave = 15000;
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);        //not tauntable
-        m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
-
     }
     void Aggro(Unit*) { DoZoneInCombat(); }
     void UpdateAI(const uint32 diff)
