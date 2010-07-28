@@ -101,34 +101,15 @@ struct TRINITY_DLL_DECL instance_shadow_labyrinth : public ScriptedInstance
         }
     }
 
-    Player* GetPlayerInMap()
-    {
-        Map::PlayerList const& players = instance->GetPlayers();
-
-        if (!players.isEmpty())
-        {
-            for(Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-            {
-                if (Player* plr = itr->getSource())
-                    return plr;
-            }
-        }
-
-        debug_log("TSCR: Instance Shadow Labyrinth: GetPlayerInMap, but PlayerList is empty!");
-        return NULL;
-    }
-
     void HandleGameObject(uint64 guid, uint32 state)
     {
-        Player *player = GetPlayerInMap();
-
-        if (!player || !guid)
+        if (!guid)
         {
             debug_log("TSCR: Shadow Labyrinth: HandleGameObject fail");
             return;
         }
 
-        if (GameObject *go = GameObject::GetGameObject(*player,guid))
+        if (GameObject *go = instance->GetGameObject(guid))
             go->SetGoState(state);
     }
 
@@ -210,18 +191,18 @@ struct TRINITY_DLL_DECL instance_shadow_labyrinth : public ScriptedInstance
 
     void Update (uint32 diff)
     {
-        Player *player = GetPlayerInMap();
-
         if(!check && !RitualistGUIDList.empty())
         {
             for(std::list<uint64>::iterator iter = RitualistGUIDList.begin(); iter != RitualistGUIDList.end(); ++iter)
             {
-                Creature* ritualist = Creature::GetCreature(*player, *iter);
+                Creature* ritualist = instance->GetCreature(*iter);
                 if(ritualist && ritualist->isDead())
                     --RitualistCount;
             }
+
             if(!RitualistCount)
                 Encounter[1] = DONE;
+
             check = true;
         }
     }
