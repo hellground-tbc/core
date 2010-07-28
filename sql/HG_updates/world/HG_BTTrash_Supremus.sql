@@ -251,6 +251,64 @@ INSERT INTO `creature_formations` VALUES ('52887', '52888', '5', '1.57', '2');
 INSERT INTO `creature_formations` VALUES ('52887', '53842', '0', '0', '2');
 INSERT INTO `creature_formations` VALUES ('52887', '12737', '0', '0', '2');
 
--- TODO Cosmetic Waypoints
--- 53841 53830 12738
--- 12740 53843
+-- Cosmetic Waypoints
+UPDATE `creature` SET `movementType`='2' WHERE `guid`='53841';
+UPDATE `creature` SET `movementType`='2' WHERE `guid`='53830';
+UPDATE `creature` SET `movementType`='2' WHERE `guid`='12738';
+
+UPDATE `creature` SET `movementType`='2' WHERE `guid`='12740';
+UPDATE `creature` SET `movementType`='2' WHERE `guid`='53843';
+
+DELETE FROM `creature_addon` WHERE `guid`='53843';
+DELETE FROM `creature_addon` WHERE `guid`='53841';
+DELETE FROM `creature_addon` WHERE `guid`='53830';
+DELETE FROM `creature_addon` WHERE `guid`='12738';
+DELETE FROM `creature_addon` WHERE `guid`='12740';
+INSERT INTO `creature_addon` VALUES ('53841', '53841', '24725', '512', '0', '4097', '0', '1024', '0');
+INSERT INTO `creature_addon` VALUES ('53830', '53841', '24725', '512', '0', '4097', '0', '1024', '0');
+INSERT INTO `creature_addon` VALUES ('12738', '53841', '24725', '512', '0', '4097', '0', '1024', '0');
+INSERT INTO `creature_addon` VALUES ('12740', '53843', '24725', '512', '0', '4097', '0', '1024', '0');
+INSERT INTO `creature_addon` VALUES ('53843', '53843', '24725', '512', '0', '4097', '0', '1024', '0');
+
+UPDATE `creature` SET `currentwaypoint`='5' WHERE `guid`='53843';
+UPDATE `creature` SET `position_x`='716.84', `position_y`='957.54', `position_z`='93.71' WHERE `guid`='53843';
+
+DELETE FROM `waypoint_data` WHERE `id`='53843';
+INSERT INTO `waypoint_data` VALUES ('53843', '1', '730.61', '895.86', '96.11', '0', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('53843', '2', '781.42', '903.52', '103.74', '0', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('53843', '3', '818.07', '933.99', '106.47', '0', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('53843', '4', '774.08', '963.71', '108.19', '0', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('53843', '5', '716.84', '957.54', '93.71', '0', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('53843', '6', '648.28', '955.66', '87.82', '0', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('53843', '7', '587.57', '940.85', '86.85', '0', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('53843', '8', '599.13', '900.72', '89.70', '0', '0', '0', '100', '0');
+
+UPDATE `creature` SET `currentwaypoint`='3' WHERE `guid`='53841';
+UPDATE `creature` SET `currentwaypoint`='6' WHERE `guid`='53830';
+
+UPDATE `creature` SET `position_x`='617.46', `position_y`='722.55', `position_z`='91.81' WHERE `guid`='53841';
+UPDATE `creature` SET `position_x`='785.94', `position_y`='755.67', `position_z`='102.68' WHERE `guid`='53830';
+
+DELETE FROM `waypoint_data` WHERE `id`='53841';
+INSERT INTO `waypoint_data` VALUES ('53841', '1', '608.30', '851.51', '92.82', '0', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('53841', '2', '605.32', '787.61', '94.12', '0', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('53841', '3', '617.46', '722.55', '91.81', '0', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('53841', '4', '705.74', '686.65', '88.12', '0', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('53841', '5', '777.94', '722.87', '86.95','0', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('53841', '6', '785.94', '755.67', '102.68', '0', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('53841', '7', '789.39', '827.16', '82.32', '0', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('53841', '8', '720.72', '837.32', '81.65', '0', '0', '0', '100', '0');
+
+UPDATE `creature` SET `movementType`='2' WHERE `guid`='53914';
+UPDATE `creature` SET `movementType`='2' WHERE `guid`='53827';
+
+DELETE FROM `creature_addon` WHERE `guid`='53827';
+DELETE FROM `creature_addon` WHERE `guid`='53914';
+INSERT INTO `creature_addon` VALUES ('53827', '53827', '24725', '512', '0', '4097', '0', '1024', '0');
+INSERT INTO `creature_addon` VALUES ('53914', '53827', '24725', '512', '0', '4097', '0', '1024', '0');
+
+INSERT INTO `waypoint_data` VALUES ('53827', '1', '703.92', '966.50', '110.94', '0', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('53827', '2', '644.17', '921.75', '110.92','0', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('53827', '3', '653.95', '857.93', '110.91', '0', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('53827', '4', '724.63', '857.33', '110.89', '0', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('53827', '5', '786.70', '919.08', '110.87','0', '0', '0', '100', '0');
