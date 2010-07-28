@@ -41,6 +41,7 @@ EndScriptData */
 #define SPELL_CRUSHING_SHADOWS          40243
 #define SPELL_SHADOWBOLT                40185
 #define SPELL_PASSIVE_SHADOWFORM        40326
+#define SPELL_SHADOW_STRIKES            40334
 #define SPELL_SHADOW_OF_DEATH           40251
 #define SPELL_BERSERK                   45078
 
@@ -154,10 +155,7 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
     void Reset()
     {
         DoCast(m_creature, SPELL_PASSIVE_SHADOWFORM, false);
-        DoCast(m_creature, 40334, false);
-
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
-        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
+        DoCast(m_creature, SPELL_SHADOW_STRIKES, false);
 
         DoZoneInCombat();
         AtrophyTimer = 2000;
@@ -191,6 +189,12 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
             damage = 0;                                         // Only the ghost can deal damage.
     }
 
+    void DamageMade(Unit* target, uint32 &dmg, bool direct)
+    {
+        if(dmg && direct)
+            DoCast(target, SPELL_ATROPHY);
+    }
+
     void OnAuraApply(Aura* aura, Unit* caster)  // Only ghost spells are working
     {
         for(uint8 i = 0; i<5; ++i)
@@ -198,7 +202,7 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
             if(aura->GetId() == GhostSpell[i])
                 return;
         }
-        if(aura->GetId() != SPELL_PASSIVE_SHADOWFORM)
+        if(aura->GetId() != SPELL_PASSIVE_SHADOWFORM && aura->GetId() != SPELL_SHADOW_STRIKES)
             m_creature->RemoveAurasByCasterSpell(aura->GetId(), caster->GetGUID());
     }
 
@@ -218,9 +222,6 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
 
                 if(!m_creature->getVictim())
                     AttackStart(target);
-
-                if(!target->HasAura(40282, 0) && m_creature->IsWithinDistInMap(target, m_creature->GetAttackDistance(target)))
-                    DoCast(target, SPELL_ATROPHY);
             }
         }
     }
