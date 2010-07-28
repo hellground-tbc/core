@@ -145,7 +145,7 @@ struct TRINITY_DLL_DECL mob_aqueous_spawnAI : public ScriptedAI
         else
             SludgeNova -= diff;
 
-        
+
         if(!merging && MergeTimer < diff)
         {
             if(Unit* Lord = FindCreature(NPC_AQUEOUS_LORD, 80, m_creature))
@@ -734,6 +734,8 @@ CreatureAI* GetAI_mob_leviathan(Creature *_Creature)
     * Illidari Fearbringer
 */
 
+#define BONECHEWER_ID                       23028
+
 #define SPELL_BONECHEWER_DISGRUNTLED        40851
 #define SPELL_BONECHEWER_FURY               40845
 
@@ -747,7 +749,7 @@ CreatureAI* GetAI_mob_leviathan(Creature *_Creature)
 #define SPELL_WINDREAVER_FREEZE             40875
 
 #define SPELL_WYRMCALLER_CLEAVE             15284
-#define SPELL_WYRMCALLER_FIXATE             40892   //not used
+#define SPELL_WYRMCALLER_FIXATE             40892
 #define SPELL_WYRMCALLER_FIXATE_TRIGGER     40893
 #define SPELL_WYRMCALLER_JAB                40895
 #define AURA_WYRMCALLER_FIXATED             40893
@@ -764,16 +766,12 @@ struct TRINITY_DLL_DECL mob_bonechewer_taskmasterAI : public ScriptedAI
 {
     mob_bonechewer_taskmasterAI(Creature *c) : ScriptedAI(c){}
 
-    uint32 furyTimer;
     uint32 disgruntledTimer;
-    bool furyCasted;
     bool disgruntledCasted;
 
     void Reset()
     {
-        furyTimer = 20000;
-        disgruntledTimer = 30000;
-        furyCasted = false;
+        disgruntledTimer = 20000;
         disgruntledCasted = false;
     }
 
@@ -789,25 +787,19 @@ struct TRINITY_DLL_DECL mob_bonechewer_taskmasterAI : public ScriptedAI
 
     void JustDied(Unit *victim){}
 
+    void WorkerDied()
+    {
+        m_creature->CastSpell(m_creature, SPELL_BONECHEWER_FURY, false);
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
             return;
 
-        if (!furyCasted)
-        {
-            if (m_creature->GetHealth() < m_creature->GetMaxHealth() * 0.5 || furyTimer < diff)
-            {
-                m_creature->CastSpell(m_creature, SPELL_BONECHEWER_FURY, false);
-                furyCasted = true;
-            }
-            else
-                furyTimer -= diff;
-        }
-
         if (!disgruntledCasted)
         {
-            if (disgruntledTimer < diff)
+            if (disgruntledTimer < diff || m_creature->GetHealth()*100/m_creature->GetMaxHealth() < 75)
             {
                 m_creature->CastSpell(m_creature, SPELL_BONECHEWER_DISGRUNTLED, false);
                 disgruntledCasted = true;
@@ -847,7 +839,19 @@ struct TRINITY_DLL_DECL mob_bonechewer_workerAI : public ScriptedAI
         }
     }
 
-    void JustDied(Unit *victim){}
+    void JustDied(Unit *victim)
+    {
+        std::list<Creature*> tmp = DoFindAllCreaturesWithEntry(BONECHEWER_ID, 20.0);
+
+        if (tmp.empty())
+            return;
+
+        for (std::list<Creature*>::iterator itr = tmp.begin(); itr != tmp.end(); ++itr)
+        {
+            if((*itr) && (*itr)->isAlive())
+                ((mob_bonechewer_taskmasterAI*)(*itr)->AI())->WorkerDied();
+        }
+    }
 
     void UpdateAI(const uint32 diff)
     {
@@ -880,11 +884,15 @@ struct TRINITY_DLL_DECL mob_dragonmaw_skystalkerAI : public ScriptedAI
 
     uint32 shootTimer;
     uint32 immolationArrowTimer;
+    uint32 distCheckTimer;
 
     void Reset()
     {
         shootTimer = 2000 + urand(0, 2000);
         immolationArrowTimer = 15000 + urand(0, 5000);
+        distCheckTimer = 3000;
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
+        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
     }
 
     void Aggro(Unit *who) { DoZoneInCombat(); }
@@ -901,21 +909,27 @@ struct TRINITY_DLL_DECL mob_dragonmaw_skystalkerAI : public ScriptedAI
         if (!victim)
             return;
 
-        if (m_creature->GetDistance(victim) > 37)
+        if (distCheckTimer < diff)
         {
-            m_creature->StopMoving();
-            m_creature->GetMotionMaster()->Clear();
-            m_creature->GetMotionMaster()->MoveChase(victim, 25, 0);
-        }
-        else
-        {
-            if (m_creature->GetDistance(victim) < 15)
+            if (m_creature->GetDistance(victim) > 37)
             {
                 m_creature->StopMoving();
                 m_creature->GetMotionMaster()->Clear();
                 m_creature->GetMotionMaster()->MoveChase(victim, 25, 0);
             }
+            else
+            {
+                if (m_creature->GetDistance(victim) < 15)
+                {
+                    m_creature->StopMoving();
+                    m_creature->GetMotionMaster()->Clear();
+                    m_creature->GetMotionMaster()->MoveChase(victim, 25, 0);
+                }
+            }
+            distCheckTimer = 3000;
         }
+        else
+            distCheckTimer -= diff;
 
         if (shootTimer < diff)
         {
@@ -948,12 +962,16 @@ struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
     uint32 fireballTimer;
     uint32 doomBoltTimer;
     uint32 freezeTimer;
+    uint32 distCheckTimer;
 
     void Reset()
     {
         fireballTimer = 2000 + urand(0, 2000);
         doomBoltTimer = 15000 + urand(0, 10000);
         freezeTimer = 20000 + urand(0, 15000);
+        distCheckTimer = 3000;
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
+        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
     }
 
     void Aggro(Unit *who) { DoZoneInCombat(); }
@@ -983,21 +1001,27 @@ struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
         if (!victim)
             return;
 
-        if (m_creature->GetDistance(victim) > 37)
+        if (distCheckTimer < diff)
         {
-            m_creature->StopMoving();
-            m_creature->GetMotionMaster()->Clear();
-            m_creature->GetMotionMaster()->MoveChase(victim, 25, 0);
-        }
-        else
-        {
-            if (m_creature->GetDistance(victim) < 15)
+            if (m_creature->GetDistance(victim) > 37)
             {
                 m_creature->StopMoving();
                 m_creature->GetMotionMaster()->Clear();
                 m_creature->GetMotionMaster()->MoveChase(victim, 25, 0);
             }
+            else
+            {
+                if (m_creature->GetDistance(victim) < 15)
+                {
+                    m_creature->StopMoving();
+                    m_creature->GetMotionMaster()->Clear();
+                    m_creature->GetMotionMaster()->MoveChase(victim, 25, 0);
+                }
+            }
+            distCheckTimer = 3000;
         }
+        else
+            distCheckTimer -= diff;
 
         if (fireballTimer < diff)
         {
@@ -1023,6 +1047,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
                 ForceSpellCast(tmpTarget, SPELL_WINDREAVER_FREEZE);
                 m_creature->GetMotionMaster()->Clear();
                 m_creature->GetMotionMaster()->MoveChase(tmpTarget, 15, 0);
+                distCheckTimer = 5000;
             }
             else
             {
@@ -1128,6 +1153,8 @@ struct TRINITY_DLL_DECL mob_illidari_fearbringerAI : public ScriptedAI
         flamesTimer = 5000 + urand(0, 10000);
         rainTimer = 15000 + urand(0, 10000);
         stompTimer = 10000 + urand(0, 10000);
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
+        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
     }
 
     void Aggro(Unit *who) { DoZoneInCombat(); }

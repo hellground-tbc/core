@@ -3883,6 +3883,29 @@ void Aura::HandleModStateImmunityMask(bool apply, bool Real)
 
     //proper flags unknown, uncomment this when verified
     /*
+    miscVal i spelle którym są przypisane + immune wg TC2
+
+     TC2       S F ? d D T ? ? C t R
+    96      -  0 0 0 0 1 1 0 0 0 0 0  - Free Friend - niby disspeluje incapacitate
+    679     -  0 1 0 1 0 1 0 0 1 1 1  - MC
+    817     -  0 1 1 0 0 1 1 0 0 0 1  - Blue Dragon Immunity
+    878     -  0 1 1 0 1 1 0 1 1 1 0  - Whirlwind, Fog of Corruption
+    1557    -  1 1 0 0 0 0 1 0 1 0 1  - Starling Roar - niby disspeluje snare, cc, stun, (mc nie)
+    1615    -  1 1 0 0 1 0 0 1 1 1 1  - Incite Frenzy
+    1676    -  1 1 0 1 0 0 0 1 1 1 1  - Red Riding Hood
+    1694    -  1 1 0 1 0 0 1 1 1 1 0  - Fixated
+
+    R - root
+    t - transform
+    C - confuse
+    T - taunt
+    D - decrese speed
+    d - disarm
+    F - fear
+    S - stun
+    ? - unknown
+
+
     std::list <AuraType> immunity_list;
 
     if (GetMiscValue() & (1<<10))

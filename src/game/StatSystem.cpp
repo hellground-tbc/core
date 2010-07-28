@@ -713,7 +713,11 @@ void Creature::UpdateArmor()
 void Creature::UpdateMaxHealth()
 {
     float value = GetTotalAuraModValue(UNIT_MOD_HEALTH);
+    float hpDiff = GetMaxHealth() - GetHealth();
     SetMaxHealth((uint32)value);
+
+    if (GetTypeId() == TYPEID_UNIT)
+        SetHealth((uint32)(value - hpDiff));
 }
 
 void Creature::UpdateMaxPower(Powers power)

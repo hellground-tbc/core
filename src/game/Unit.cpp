@@ -659,7 +659,7 @@ void Unit::SendDamageLog(DamageLog *damageInfo)
     }
 }
 
-// tymczasowo to kopia starej funkcji - trzeba zmieniæ
+// tymczasowo to kopia starej funkcji - trzeba zmieniÃ¦
 uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, const SpellEntry *spellProto, bool durabilityLoss)
 {
     Unit *pVictim = damageInfo->target;
@@ -1258,7 +1258,7 @@ void Unit::CalculateSpellDamageTaken(SpellDamageLog *damageInfo, int32 damage, S
                 if (pVictim->GetTypeId()==TYPEID_PLAYER)
                     damage -= ((Player*)pVictim)->GetMeleeCritDamageReduction(damage);
 
-                // je¿eli crit to zmieniamy
+                // jeÂ¿eli crit to zmieniamy
                 damageInfo->rageDamage = damage;
             }
             // Spell weapon based damage CAN BE crit & blocked at same time
