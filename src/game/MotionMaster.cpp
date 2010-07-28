@@ -51,17 +51,18 @@ MotionMaster::Initialize()
     }
 
     // set new default movement generator
+    InitDefault();
+}
+
+void MotionMaster::InitDefault()
+{
     if(i_owner->GetTypeId() == TYPEID_UNIT)
     {
         MovementGenerator* movement = FactorySelector::selectMovementGenerator((Creature*)i_owner);
-        push(  movement == NULL ? &si_idleMovement : movement );
-        InitTop();
+        Mutate(movement == NULL ? &si_idleMovement : movement, MOTION_SLOT_IDLE);
     }
     else
-    {
-        push(&si_idleMovement);
-        needInit[MOTION_SLOT_IDLE] = false;
-    }
+        Mutate(&si_idleMovement, MOTION_SLOT_IDLE);
 }
 
 MotionMaster::~MotionMaster()
@@ -394,6 +395,7 @@ void MotionMaster::Mutate(MovementGenerator *m, MovementSlot slot)
 {
     if(MovementGenerator *curr = Impl[slot])
     {
+        Impl[slot] = NULL; // in case a new one is generated in this slot during directdelete
         if(i_top == slot && (m_cleanFlag & MMCF_UPDATE))
             DelayedDelete(curr);
         else
@@ -436,6 +438,14 @@ void MotionMaster::MovePath(uint32 path_id, bool repeatable)
     DEBUG_LOG("%s (GUID: %u) start moving over path(Id:%u, repeatable: %s)",
         i_owner->GetTypeId()==TYPEID_PLAYER ? "Player" : "Creature",
         i_owner->GetGUIDLow(), path_id, repeatable ? "YES" : "NO" );
+}
+
+void MotionMaster::MoveRotate(uint32 time, RotateDirection direction)
+{
+    if (!time)
+        return;
+
+    Mutate(new RotateMovementGenerator(time, direction), MOTION_SLOT_ACTIVE);
 }
 
 void MotionMaster::propagateSpeedChange()

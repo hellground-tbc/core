@@ -47,7 +47,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zl /MP"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\framework;..\..\dep\ACE_wrappers"
+				AdditionalIncludeDirectories="..\..\src\framework;..\..\dep\ACE_wrappers;..\..\dep\tbb\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;TRINITY_DEBUG;_LIB"
 				MinimalRebuild="false"
 				BasicRuntimeChecks="3"

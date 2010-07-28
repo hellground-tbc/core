@@ -28,62 +28,65 @@ template<class T>
 void
 ConfusedMovementGenerator<T>::Initialize(T &unit)
 {
-    const float wander_distance = 5.0f;
+    const float wander_distance = 11;
     float x,y,z;
     x = unit.GetPositionX();
     y = unit.GetPositionY();
     z = unit.GetPositionZ();
-    uint32 mapid=unit.GetMapId();
 
-    Map const *map = unit.GetBaseMap();
+    Map const* map = unit.GetBaseMap();
 
     i_nextMove = 1;
 
     bool is_water_ok, is_land_ok;
     _InitSpecific(unit, is_water_ok, is_land_ok);
 
-    for(unsigned int idx = 0; idx < MAX_CONF_WAYPOINTS+1; ++idx)
+    for (uint8 idx = 0; idx <= MAX_CONF_WAYPOINTS; ++idx)
     {
-        const float wanderX = wander_distance*rand_norm();
-        const float wanderY = wander_distance*rand_norm();
+        float wanderX = x + wander_distance*rand_norm() - wander_distance/2;
+        float wanderY = y + wander_distance*rand_norm() - wander_distance/2;
+        Trinity::NormalizeMapCoord(wanderX);
+        Trinity::NormalizeMapCoord(wanderY);
 
-        i_waypoints[idx][0] = x + wanderX;
-        i_waypoints[idx][1] = y + wanderY;
-
-        // prevent invalid coordinates generation
-        Trinity::NormalizeMapCoord(i_waypoints[idx][0]);
-        Trinity::NormalizeMapCoord(i_waypoints[idx][1]);
-
-
-        float ground, floor;
-        ground = map->GetHeight(i_waypoints[idx][0], i_waypoints[idx][1], MAX_HEIGHT, true);
-        floor  = map->GetHeight(i_waypoints[idx][0], i_waypoints[idx][1], z, true);
-        i_waypoints[idx][2] = fabs(ground - z) <= fabs(floor - z) ? ground : floor;
-
-        bool is_water = map->IsInWater(i_waypoints[idx][0],i_waypoints[idx][1], z);
-        // if in water set higher z coord
-        if(is_water)
-            i_waypoints[idx][2] = (z >= i_waypoints[idx][2]) ? z : i_waypoints[idx][2];
-
-        // if generated wrong path just ignore
-        if( is_water && !is_water_ok || !is_water && !is_land_ok ||
-            !Trinity::IsValidMapCoord(i_waypoints[idx][0], i_waypoints[idx][1]) ||
-            fabs(i_waypoints[idx][2] - z) > 2.0f)
+        float new_z = map->GetHeight(wanderX, wanderY, z, true);
+        if (new_z > INVALID_HEIGHT && unit.IsWithinLOS(wanderX, wanderY, new_z))
+        {
+            // Don't move in water if we're not already in
+            // Don't move on land if we're not already on it either
+            bool is_water_now = map->IsInWater(x, y, z);
+            bool is_water_next = map->IsInWater(wanderX, wanderY, new_z);
+            if ((is_water_now && !is_water_next && !is_land_ok) || (!is_water_now && is_water_next && !is_water_ok))
+            {
+                i_waypoints[idx][0] = idx > 0 ? i_waypoints[idx-1][0] : x; // Back to previous location
+                i_waypoints[idx][1] = idx > 0 ? i_waypoints[idx-1][1] : y;
+                i_waypoints[idx][2] = idx > 0 ? i_waypoints[idx-1][2] : z;
+                continue;
+            }
+            
+            // Taken from FleeingMovementGenerator
+            if (!(new_z - z) || wander_distance / fabs(new_z - z) > 1.0f)
+            {
+                i_waypoints[idx][0] = wanderX;
+                i_waypoints[idx][1] = wanderY;
+                i_waypoints[idx][2] = new_z;
+                continue;
+            }
+        }
+        else    // Back to previous location
         {
             i_waypoints[idx][0] = idx > 0 ? i_waypoints[idx-1][0] : x;
             i_waypoints[idx][1] = idx > 0 ? i_waypoints[idx-1][1] : y;
             i_waypoints[idx][2] = idx > 0 ? i_waypoints[idx-1][2] : z;
+            continue;
         }
-        unit.UpdateGroundPositionZ(i_waypoints[idx][0], i_waypoints[idx][1], i_waypoints[idx][2]);
     }
 
+    unit.SetUInt64Value(UNIT_FIELD_TARGET, 0);
+    unit.SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
     unit.CastStop();
     unit.StopMoving();
     unit.RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
-    unit.addUnitState(UNIT_STAT_CONFUSED); //.cast back 12824 triggered
-    unit.SetUInt64Value(UNIT_FIELD_TARGET, 0);
-    unit.SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
-
+    unit.addUnitState(UNIT_STAT_CONFUSED);
 }
 
 template<>

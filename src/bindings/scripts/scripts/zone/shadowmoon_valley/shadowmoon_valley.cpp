@@ -747,6 +747,7 @@ struct TRINITY_DLL_DECL npc_overlord_morghorAI : public ScriptedAI
         resetTimer = 180000;
 
         Event = false;
+        m_creature->SetUInt32Value(UNIT_NPC_FLAGS, 2);
     }
 
     void Aggro(Unit* who){}

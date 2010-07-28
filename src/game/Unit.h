@@ -388,6 +388,7 @@ enum UnitState
     UNIT_STAT_POSSESSED       = 0x00010000,
     UNIT_STAT_CHARGING        = 0x00020000,
     UNIT_STAT_MOVE            = 0x00040000,
+    UNIT_STAT_ROTATING        = 0x00080000,
     UNIT_STAT_MOVING          = (UNIT_STAT_ROAMING | UNIT_STAT_CHASE),
     UNIT_STAT_LOST_CONTROL    = (UNIT_STAT_CONFUSED | UNIT_STAT_STUNNED | UNIT_STAT_FLEEING | UNIT_STAT_CHARGING),
     UNIT_STAT_SIGHTLESS       = (UNIT_STAT_LOST_CONTROL),
@@ -1170,6 +1171,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         void RemoveAurasByType(AuraType auraType, uint64 casterGUID = 0, Aura * except = NULL, bool negative = true, bool positive = true);
         void RemoveRankAurasDueToSpell(uint32 spellId);
         bool RemoveNoStackAurasDueToAura(Aura *Aur);
+        void RemoveAurasWithAttribute(uint32 flags);
         void RemoveAurasWithInterruptFlags(uint32 flags, uint32 except = 0);
         void RemoveAurasWithDispelType( DispelType type );
         void RemoveMovementImpairingAuras();
@@ -1283,7 +1285,6 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         // function for low level grid visibility checks in player/creature cases
         virtual bool IsVisibleInGridForPlayer(Player const* pl) const = 0;
 
-        bool waterbreath;
         AuraList      & GetSingleCastAuras()       { return m_scAuras; }
         AuraList const& GetSingleCastAuras() const { return m_scAuras; }
         SpellImmuneList m_spellImmune[MAX_SPELL_IMMUNITY];
@@ -1372,7 +1373,6 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         bool IsImmunedToDamage(SpellSchoolMask meleeSchoolMask, bool useCharges = false);
         virtual bool IsImmunedToSpellEffect(uint32 effect, uint32 mechanic) const;
                                                             // redefined in Creature
-
         uint32 CalcArmorReducedDamage(Unit* pVictim, const uint32 damage);
         void CalcAbsorbResist(Unit *pVictim, SpellSchoolMask schoolMask, DamageEffectType damagetype, const uint32 damage, uint32 *absorb, uint32 *resist);
         void CalcAbsorb(Unit *pVictim, SpellSchoolMask schoolMask, const uint32 damage, uint32 *absorb, uint32 *resist);
@@ -1383,6 +1383,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         float GetMaxSpeedRate( UnitMoveType mtype ) const { return m_max_speed_rate[mtype]; }
         float GetSpeedRate( UnitMoveType mtype ) const { return m_speed_rate[mtype]; }
         void SetSpeed(UnitMoveType mtype, float rate, bool forced = false);
+        void SendMovementFlagUpdate();
 
         void KnockBackFrom(Unit* target, float horizintalSpeed, float verticalSpeed);
 

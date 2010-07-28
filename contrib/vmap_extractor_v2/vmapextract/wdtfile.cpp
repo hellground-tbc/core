@@ -1,8 +1,7 @@
-#define __STORMLIB_SELF__
-
+#include "vmapexport.h"
 #include "wdtfile.h"
 #include "adtfile.h"
-
+#include <cstdio>
 
 char * wdtGetPlainName(char * FileName)
 {
@@ -18,28 +17,25 @@ WDTFile::WDTFile(char* file_name, char* file_name1):WDT(file_name)
     filename.append(file_name1,strlen(file_name1));
 }
 
-bool WDTFile::init(char *map_id)
+bool WDTFile::init(char *map_id, unsigned int mapID)
 {
-
     if (WDT.isEof())
     {
-    //printf("Can't find WDT file.\n");
-    return false;
-    }
-
-    char fourcc[5];
-    size_t size;
-
-
-    const char dirname[] = "buildings\\dir";
-    FILE *dirfile;
-    dirfile = fopen(dirname, "ab");
-    if(!dirfile)
-    {
-        printf("Can't open dirfile!'%s'\n");
+        //printf("Can't find WDT file.\n");
         return false;
     }
 
+    char fourcc[5];
+    uint32 size;
+
+    std::string dirname = std::string(szWorkDirWmo) + "/dir_bin";
+    FILE *dirfile;
+    dirfile = fopen(dirname.c_str(), "ab");
+    if(!dirfile)
+    {
+        printf("Can't open dirfile!'%s'\n", dirname.c_str());
+        return false;
+    }
 
     while (!WDT.isEof())
     {
@@ -75,8 +71,7 @@ bool WDTFile::init(char *map_id)
                 delete[] buf;
             }
         }
-        else
-        if (!strcmp(fourcc,"MODF"))
+        else if (!strcmp(fourcc,"MODF"))
         {
             // global wmo instance data
             if (size)
@@ -87,13 +82,13 @@ bool WDTFile::init(char *map_id)
                 fake_mapname = "65 65 ";
                 //gWMO_mapname = fake_mapname + filename;
                 gWMO_mapname = fake_mapname + std::string(map_id);
-                for (int i=0; i<gnWMO; i++)
+                for (int i=0; i<gnWMO; ++i)
                 {
                     int id;
                     WDT.read(&id, 4);
-                    WMOInstance inst(WDT,gWmoInstansName[id].c_str(),gWMO_mapname.c_str(), dirfile);
+                    WMOInstance inst(WDT,gWmoInstansName[id].c_str(),mapID, 65, 65, dirfile);
                 }
-            delete[] gWmoInstansName;
+                delete[] gWmoInstansName;
             }
         }
         WDT.seek((int)nextpos);
@@ -111,11 +106,11 @@ WDTFile::~WDTFile(void)
 
 ADTFile* WDTFile::GetMap(int x, int z)
 {
-    if(!(x>=0 && z >= 0 && x<64 && z<64)) return NULL;
+    if(!(x>=0 && z >= 0 && x<64 && z<64))
+        return NULL;
 
     char name[512];
 
     sprintf(name,"World\\Maps\\%s\\%s_%d_%d.adt", filename.c_str(), filename.c_str(), x, z);
     return new ADTFile(name);
 }
-
