@@ -204,7 +204,7 @@ INSERT INTO `creature_formations` VALUES ('52860', '53917', '0', '0', '2');
 
 -- Wyrmcaller Formation #7
 DELETE FROM `creature_addon` WHERE `guid`='12739';
-INSERT INTO `creature_addon` VALUES ('12739', '12739', '24725', '512', '0', '4097', '0', '0', '0');
+INSERT INTO `creature_addon` VALUES ('12739', '12739', '24725', '512', '0', '4097', '0', '1024', '0');
 
 UPDATE `creature` SET `movementType`='2' WHERE `guid`='12739';
 
@@ -218,7 +218,7 @@ DELETE FROM `creature_formations` WHERE `leaderguid`='52861';
 INSERT INTO `creature_formations` VALUES ('52861', '52861', '0', '0', '2');
 INSERT INTO `creature_formations` VALUES ('52861', '12739', '0', '0', '2');
 
--- Wyrmcaller Formation #8 TODO THIS
+-- Wyrmcaller Formation #8
 DELETE FROM `creature_addon` WHERE `guid`='52887';
 INSERT INTO `creature_addon` VALUES ('52887', '52887', '0', '0', '0', '0', '0', '0', '0');
 
