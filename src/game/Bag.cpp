@@ -53,7 +53,7 @@ void Bag::AddToWorld()
         {
             if (m_bagslot[i] == this)
             {
-                sLog.outError("Bag in bag crash alert!");
+                sLog.outError("Bag has singned self in own slot: %u, bag size: %u, owner: " I64FMT, GetSlotByItemGUID(m_bagslot[i]->GetGUID()), GetBagSize(), GetOwnerGUID());
                 continue;
             }
             m_bagslot[i]->AddToWorld();
