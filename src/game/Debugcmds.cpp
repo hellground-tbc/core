@@ -53,7 +53,7 @@ bool ChatHandler::HandleDebugWPCommand(const char* args)
         float z = m_session->GetPlayer()->GetMap()->GetHeight(x, y, m_session->GetPlayer()->GetPositionZ(), false);
         file << "'" << x << "', '" << y << "', '" << z << "'" << std::endl;
     }
-
+    file.close();
     return true;
 }
 

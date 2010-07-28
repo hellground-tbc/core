@@ -50,7 +50,14 @@ void Bag::AddToWorld()
 
     for(uint32 i = 0;  i < GetBagSize(); ++i)
         if(m_bagslot[i])
+        {
+            if (m_bagslot[i] == this)
+            {
+                sLog.outError("Bag in bag crash alert!");
+                continue;
+            }
             m_bagslot[i]->AddToWorld();
+        }
 }
 
 void Bag::RemoveFromWorld()
