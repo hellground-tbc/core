@@ -191,7 +191,6 @@ Unit::Unit()
     //m_AurasCheck = 2000;
     //m_removeAuraTimer = 4;
     //tmpAura = NULL;
-    waterbreath = false;
 
     m_AurasUpdateIterator = m_Auras.end();
     m_Visibility = VISIBILITY_ON;
@@ -3566,8 +3565,6 @@ bool Unit::RemoveNoStackAurasDueToAura(Aura *Aur)
 
     uint32 spellId = Aur->GetId();
     uint32 effIndex = Aur->GetEffIndex();
-
-    SpellSpecific spellId_spec = GetSpellSpecific(spellId);
 
     AuraMap::iterator i,next;
     for (i = m_Auras.begin(); i != m_Auras.end(); i = next)
@@ -11797,6 +11794,7 @@ void Unit::RemoveCharmedOrPossessedBy(Unit *charmer)
     DeleteThreatList();
     SetCharmerGUID(0);
     RestoreFaction();
+    GetMotionMaster()->InitDefault();
 
     if(possess)
     {
@@ -12038,6 +12036,13 @@ void Unit::ApplyMeleeAPAttackerBonus(int32 value, bool apply)
     m_meleeAPAttackerBonus += apply ? value : -value;
 }
 
+void Unit::SendMovementFlagUpdate()
+{
+    WorldPacket data;
+    BuildHeartBeatMsg(&data);
+    SendMessageToSet(&data, false);
+}
+
 void Unit::KnockBackFrom(Unit* target, float horizintalSpeed, float verticalSpeed)
 {
     float angle = this == target ? GetOrientation() + M_PI : target->GetAngle(this);
@@ -12079,5 +12084,17 @@ void Unit::KnockBackFrom(Unit* target, float horizintalSpeed, float verticalSpee
         //FIXME: this mostly hack, must exist some packet for proper creature move at client side
         //       with CreatureRelocation at server side
         GetMap()->CreatureRelocation(((Creature*)this), fx, fy, fz, GetOrientation());
+    }
+}
+
+void Unit::RemoveAurasWithAttribute(uint32 flags)
+{
+    for (AuraMap::iterator iter = m_Auras.begin(); iter != m_Auras.end();)
+    {
+        SpellEntry const *spell = iter->second->GetSpellProto();
+        if (spell->Attributes & flags)
+            RemoveAura(iter);
+        else
+            ++iter;
     }
 }

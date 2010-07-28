@@ -45,9 +45,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/MP /openmp"
+				AdditionalOptions="/MP"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\shared\vmap;..\..\dep\ACE_wrappers"
+				AdditionalIncludeDirectories="..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\shared\Database;..\..\src\shared\vmap;..\..\dep\ACE_wrappers;..\..\src\game\"
 				PreprocessorDefinitions="WIN32;_DEBUG;TRINITY_DEBUG;_LIB;"
 				StringPooling="false"
 				MinimalRebuild="false"
@@ -83,6 +83,7 @@
 				AdditionalDependencies=".\shared__$(PlatformName)_$(ConfigurationName)\shared.lib"
 				OutputFile=".\game__$(PlatformName)_$(ConfigurationName)\game.lib"
 				SuppressStartupBanner="true"
+				IgnoreDefaultLibraryNames=""
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -127,9 +128,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/MP /openmp"
+				AdditionalOptions="/MP"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\shared\Database;..\..\src\shared\vmap;..\..\dep\ACE_wrappers;..\..\src\game\"
+				AdditionalIncludeDirectories="..\..\dep\include; ..\..\src\framework; ..\..\src\shared;..\..\src\shared\Database;..\..\src\shared\vmap;..\..\dep\ACE_wrappers; ..\..\src\game\"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -210,9 +211,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/MP /openmp"
+				AdditionalOptions="/MP"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\shared\vmap;..\..\dep\ACE_wrappers"
+				AdditionalIncludeDirectories="..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\shared\Database;..\..\src\shared\vmap;..\..\dep\ACE_wrappers;..\..\src\game\"
 				PreprocessorDefinitions="WIN32;_DEBUG;TRINITY_DEBUG;_LIB;"
 				StringPooling="false"
 				MinimalRebuild="false"
@@ -293,9 +294,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/MP /openmp"
+				AdditionalOptions="/MP"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\shared\vmap;..\..\dep\ACE_wrappers"
+				AdditionalIncludeDirectories="..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\shared\Database;..\..\src\shared\vmap;..\..\dep\ACE_wrappers;..\..\src\game\"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;"
 				StringPooling="true"
 				RuntimeLibrary="2"

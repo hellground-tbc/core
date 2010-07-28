@@ -1093,6 +1093,7 @@ void World::LoadConfigSettings(bool reload)
         sLog.outString("Using DataDir %s",m_dataPath.c_str());
     }
 
+    m_configs[CONFIG_VMAP_INDOOR_CHECK] = sConfig.GetBoolDefault("vmap.enableIndoorCheck", 0);
     bool enableLOS = sConfig.GetBoolDefault("vmap.enableLOS", false);
     bool enableHeight = sConfig.GetBoolDefault("vmap.enableHeight", false);
     std::string losMaps = sConfig.GetStringDefault("vmap.losMaps", "");
@@ -1100,8 +1101,8 @@ void World::LoadConfigSettings(bool reload)
     std::string ignoreSpellIds = sConfig.GetStringDefault("vmap.ignoreSpellIds", "");
     VMAP::VMapFactory::createOrGetVMapManager()->setEnableLineOfSightCalc(enableLOS);
     VMAP::VMapFactory::createOrGetVMapManager()->setEnableHeightCalc(enableHeight);
-    VMAP::VMapFactory::createOrGetVMapManager()->setLOSonmaps(losMaps.c_str());
-    VMAP::VMapFactory::createOrGetVMapManager()->setHeightonmaps(heightMaps.c_str());
+    //VMAP::VMapFactory::createOrGetVMapManager()->setLOSonmaps(losMaps.c_str());
+    //VMAP::VMapFactory::createOrGetVMapManager()->setHeightonmaps(heightMaps.c_str());
     VMAP::VMapFactory::preventSpellsFromBeingTestedForLoS(ignoreSpellIds.c_str());
     sLog.outString( "WORLD: VMap support included. LineOfSight:%i, getHeight:%i",enableLOS, enableHeight);
     sLog.outString( "WORLD: VMap data directory is: %svmaps",m_dataPath.c_str());
