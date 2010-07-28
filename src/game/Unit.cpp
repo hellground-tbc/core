@@ -2359,6 +2359,9 @@ bool Unit::isSpellBlocked(Unit *pVictim, SpellEntry const *spellProto, WeaponAtt
 {
     if (pVictim->HasInArc(M_PI,this))
     {
+        if (spellProto && spellProto->Attributes & SPELL_ATTR_IMPOSSIBLE_DODGE_PARRY_BLOCK)
+            return false;
+
         float blockChance = GetUnitBlockChance();
         blockChance += (GetWeaponSkillValue(attackType) - pVictim->GetMaxSkillValueForLevel() )*0.04;
         if (roll_chance_f(blockChance))
