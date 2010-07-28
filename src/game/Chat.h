@@ -307,6 +307,8 @@ class ChatHandler
         bool HandleSendQuestPartyMsgCommand(const char* args);
         bool HandleSendQuestInvalidMsgCommand(const char* args);
 
+        bool HandleDebugWPCommand(const char* args);
+
         bool HandleDebugInArcCommand(const char* args);
         bool HandleDebugSpellFailCommand(const char* args);
 

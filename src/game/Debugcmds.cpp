@@ -36,6 +36,27 @@
 #include <fstream>
 #include "ObjectMgr.h"
 
+bool ChatHandler::HandleDebugWPCommand(const char* args)
+{
+    std::fstream file;
+    file.open("waypoints.txt", std::ios_base::app);
+    if (file.fail())
+        return false;
+
+    file << "'" << m_session->GetPlayer()->GetPositionX() << "', '" << m_session->GetPlayer()->GetPositionY() << "', '" << m_session->GetPlayer()->GetPositionZ() << "'" << std::endl;
+
+    if (*args)
+    {
+        int dist = atoi((char*)args);
+        float x = m_session->GetPlayer()->GetPositionX() + dist*cos(m_session->GetPlayer()->GetOrientation());
+        float y = m_session->GetPlayer()->GetPositionY() + dist*sin(m_session->GetPlayer()->GetOrientation());
+        float z = m_session->GetPlayer()->GetMap()->GetHeight(x, y, m_session->GetPlayer()->GetPositionZ(), false);
+        file << "'" << x << "', '" << y << "', '" << z << "'" << std::endl;
+    }
+
+    return true;
+}
+
 bool ChatHandler::HandleDebugInArcCommand(const char* /*args*/)
 {
     Object *obj = getSelectedUnit();
