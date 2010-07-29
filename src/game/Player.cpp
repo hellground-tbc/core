@@ -341,12 +341,10 @@ Player::Player (WorldSession *session): Unit()
     m_DailyQuestChanged = false;
     m_lastDailyQuestTime = 0;
 
-    for (uint8 i=0; i<MAX_TIMERS; i++)
-        m_MirrorTimer[i] = DISABLED_MIRROR_TIMER;
-
-    m_MirrorTimerFlags = UNDERWATER_NONE;
-    m_MirrorTimerFlagsLast = UNDERWATER_NONE;
-
+    m_regenTimer = 0;
+    m_weaponChangeTimer = 0;
+    m_breathTimer = 0;
+    m_isunderwater = 0;
     m_isInWater = false;
     m_drunkTimer = 0;
     m_drunk = 0;
@@ -833,56 +831,53 @@ bool Player::StoreNewItemInBestSlots(uint32 titem_id, uint32 titem_amount)
     return false;
 }
 
-void Player::SendMirrorTimer(MirrorTimerType Type, uint32 MaxValue, uint32 CurrentValue, int32 Regen)
+void Player::StartMirrorTimer(MirrorTimerType Type, uint32 MaxValue)
 {
-    if (int(MaxValue) == DISABLED_MIRROR_TIMER)
-    {
-        if (int(CurrentValue) != DISABLED_MIRROR_TIMER)
-            StopMirrorTimer(Type);
-        return;
-    }
+    uint32 BreathRegen = (uint32)-1;
 
     WorldPacket data(SMSG_START_MIRROR_TIMER, (21));
-    data << uint32(Type);
+    data << (uint32)Type;
+    data << MaxValue;
+    data << MaxValue;
+    data << BreathRegen;
+    data << (uint8)0;
+    data << (uint32)0;                                      // spell id
+    GetSession()->SendPacket(&data);
+}
+
+void Player::ModifyMirrorTimer(MirrorTimerType Type, uint32 MaxValue, uint32 CurrentValue, uint32 Regen)
+{
+    if(Type==BREATH_TIMER)
+        m_breathTimer = ((MaxValue + 1000) - CurrentValue) / Regen;
+
+    WorldPacket data(SMSG_START_MIRROR_TIMER, (21));
+    data << (uint32)Type;
     data << CurrentValue;
     data << MaxValue;
     data << Regen;
-    data << uint8(0);
-    data << uint32(0);                                      // spell id
+    data << (uint8)0;
+    data << (uint32)0;                                      // spell id
     GetSession()->SendPacket( &data );
 }
 
 void Player::StopMirrorTimer(MirrorTimerType Type)
 {
-    m_MirrorTimer[Type] = DISABLED_MIRROR_TIMER;
+    if(Type==BREATH_TIMER)
+        m_breathTimer = 0;
 
     WorldPacket data(SMSG_STOP_MIRROR_TIMER, 4);
     data << (uint32)Type;
     GetSession()->SendPacket( &data );
 }
 
-void Player::EnvironmentalDamage(EnviromentalDamage type, uint32 damage)
+void Player::EnvironmentalDamage(uint64 guid, EnviromentalDamage type, uint32 damage)
 {
-    if(!isAlive() || isGameMaster())
-        return;
-
-    // Absorb, resist some environmental damage type
-    uint32 absorb = 0;
-    uint32 resist = 0;
-
-    if (type == DAMAGE_LAVA)
-        CalcAbsorbResist(this, SPELL_SCHOOL_MASK_FIRE, DIRECT_DAMAGE, damage, &absorb, &resist);
-    else if (type == DAMAGE_SLIME)
-        CalcAbsorbResist(this, SPELL_SCHOOL_MASK_NATURE, DIRECT_DAMAGE, damage, &absorb, &resist);
-
-    damage-=absorb+resist;
-
     WorldPacket data(SMSG_ENVIRONMENTALDAMAGELOG, (21));
-    data << uint64(GetGUID());
-    data << uint8(type != DAMAGE_FALL_TO_VOID ? type : DAMAGE_FALL);
-    data << uint32(damage);
-    data << uint32(absorb);
-    data << uint32(resist);
+    data << (uint64)guid;
+    data << (uint8)(type!=DAMAGE_FALL_TO_VOID ? type : DAMAGE_FALL);
+    data << (uint32)damage;
+    data << (uint32)0;
+    data << (uint32)0;
     SendMessageToSet(&data, true);
 
     DealDamage(this, damage, SELF_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
@@ -897,152 +892,120 @@ void Player::EnvironmentalDamage(EnviromentalDamage type, uint32 damage)
     }
 }
 
-
-int32 Player::getMaxTimer(MirrorTimerType timer)
+void Player::HandleDrowning()
 {
-    switch (timer)
-    {
-        case FATIGUE_TIMER:
-            return MINUTE*IN_MILISECONDS;
-        case BREATH_TIMER:
-        {
-            if (!isAlive() || HasAuraType(SPELL_AURA_WATER_BREATHING) || GetSession()->GetSecurity() >= sWorld.getConfig(CONFIG_DISABLE_BREATHING))
-                return DISABLED_MIRROR_TIMER;
-            int32 UnderWaterTime = MINUTE*IN_MILISECONDS;
-            AuraList const& mModWaterBreathing = GetAurasByType(SPELL_AURA_MOD_WATER_BREATHING);
-            for (AuraList::const_iterator i = mModWaterBreathing.begin(); i != mModWaterBreathing.end(); ++i)
-                UnderWaterTime = uint32(UnderWaterTime * (100.0f + (*i)->GetModifierValue()) / 100.0f);
-            return UnderWaterTime;
-        }
-        case FIRE_TIMER:
-        {
-            if (!isAlive())
-                return DISABLED_MIRROR_TIMER;
-            return IN_MILISECONDS;
-        }
-        default:
-            return 0;
-    }
-}
-
-void Player::UpdateMirrorTimers()
-{
-    // Desync flags for update on next HandleDrowning
-    if (m_MirrorTimerFlags)
-        m_MirrorTimerFlagsLast = ~m_MirrorTimerFlags;
-}
-
-void Player::HandleDrowning(uint32 time_diff)
-{
-    if (!m_MirrorTimerFlags)
+    if(!m_isunderwater)
         return;
 
-    // In water
-    if (m_MirrorTimerFlags & UNDERWATER_INWATER)
+    //if player is GM, have waterbreath, is dead or if breathing is disabled then return
+    if(waterbreath || isGameMaster() || !isAlive() || GetSession()->GetSecurity() >= sWorld.getConfig(CONFIG_DISABLE_BREATHING))
     {
-        // Breath timer not activated - activate it
-        if (m_MirrorTimer[BREATH_TIMER] == DISABLED_MIRROR_TIMER)
-        {
-            m_MirrorTimer[BREATH_TIMER] = getMaxTimer(BREATH_TIMER);
-            SendMirrorTimer(BREATH_TIMER, m_MirrorTimer[BREATH_TIMER], m_MirrorTimer[BREATH_TIMER], -1);
-        }
-        else                                                              // If activated - do tick
-        {
-            m_MirrorTimer[BREATH_TIMER] -= time_diff;
-            // Timer limit - need deal damage
-            if (m_MirrorTimer[BREATH_TIMER] < 0)
-            {
-                m_MirrorTimer[BREATH_TIMER]+= 1*IN_MILISECONDS;
-                // Calculate and deal damage
-                // TODO: Check this formula
-                uint32 damage = GetMaxHealth() / 5 + GetMap()->urand(0, getLevel()-1);
-                EnvironmentalDamage(DAMAGE_DROWNING, damage);
-            }
-            else if (!(m_MirrorTimerFlagsLast & UNDERWATER_INWATER))      // Update time in client if need
-                SendMirrorTimer(BREATH_TIMER, getMaxTimer(BREATH_TIMER), m_MirrorTimer[BREATH_TIMER], -1);
-        }
-    }
-    else if (m_MirrorTimer[BREATH_TIMER] != DISABLED_MIRROR_TIMER)        // Regen timer
-    {
-        int32 UnderWaterTime = getMaxTimer(BREATH_TIMER);
-        // Need breath regen
-        m_MirrorTimer[BREATH_TIMER]+=10*time_diff;
-        if (m_MirrorTimer[BREATH_TIMER] >= UnderWaterTime || !isAlive())
-            StopMirrorTimer(BREATH_TIMER);
-        else if (m_MirrorTimerFlagsLast & UNDERWATER_INWATER)
-            SendMirrorTimer(BREATH_TIMER, UnderWaterTime, m_MirrorTimer[BREATH_TIMER], 10);
+        StopMirrorTimer(BREATH_TIMER);
+        m_isunderwater = 0;
+        return;
     }
 
-    // In dark water
-    if (m_MirrorTimerFlags & UNDERWATER_INDARKWATER)
-    {
-        // Fatigue timer not activated - activate it
-        if (m_MirrorTimer[FATIGUE_TIMER] == DISABLED_MIRROR_TIMER)
-        {
-            m_MirrorTimer[FATIGUE_TIMER] = getMaxTimer(FATIGUE_TIMER);
-            SendMirrorTimer(FATIGUE_TIMER, m_MirrorTimer[FATIGUE_TIMER], m_MirrorTimer[FATIGUE_TIMER], -1);
-        }
-        else
-        {
-            m_MirrorTimer[FATIGUE_TIMER]-=time_diff;
-            // Timer limit - need deal damage or teleport ghost to graveyard
-            if (m_MirrorTimer[FATIGUE_TIMER] < 0)
-            {
-                m_MirrorTimer[FATIGUE_TIMER]+= 1*IN_MILISECONDS;
-                if (isAlive())                                            // Calculate and deal damage
-                {
-                    uint32 damage = GetMaxHealth() / 5 + GetMap()->urand(0, getLevel()-1);
-                    EnvironmentalDamage(DAMAGE_EXHAUSTED, damage);
-                }
-                else if (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST))       // Teleport ghost to graveyard
-                    RepopAtGraveyard();
-            }
-            else if (!(m_MirrorTimerFlagsLast & UNDERWATER_INDARKWATER))
-                SendMirrorTimer(FATIGUE_TIMER, getMaxTimer(FATIGUE_TIMER), m_MirrorTimer[FATIGUE_TIMER], -1);
-        }
-    }
-    else if (m_MirrorTimer[FATIGUE_TIMER] != DISABLED_MIRROR_TIMER)       // Regen timer
-    {
-        int32 DarkWaterTime = getMaxTimer(FATIGUE_TIMER);
-        m_MirrorTimer[FATIGUE_TIMER]+=10*time_diff;
-        if (m_MirrorTimer[FATIGUE_TIMER] >= DarkWaterTime || !isAlive())
-            StopMirrorTimer(FATIGUE_TIMER);
-        else if (m_MirrorTimerFlagsLast & UNDERWATER_INDARKWATER)
-            SendMirrorTimer(FATIGUE_TIMER, DarkWaterTime, m_MirrorTimer[FATIGUE_TIMER], 10);
-    }
+    uint32 UnderWaterTime = 1*MINUTE*1000;                  // default length 1 min
 
-    if (m_MirrorTimerFlags & (UNDERWATER_INLAVA|UNDERWATER_INSLIME))
+    AuraList const& mModWaterBreathing = GetAurasByType(SPELL_AURA_MOD_WATER_BREATHING);
+    for(AuraList::const_iterator i = mModWaterBreathing.begin(); i != mModWaterBreathing.end(); ++i)
+        UnderWaterTime = uint32(UnderWaterTime * (100.0f + (*i)->GetModifierValue()) / 100.0f);
+
+    if ((m_isunderwater & 0x01) && !(m_isunderwater & 0x80) && isAlive())
     {
-        // Breath timer not activated - activate it
-        if (m_MirrorTimer[FIRE_TIMER] == DISABLED_MIRROR_TIMER)
-            m_MirrorTimer[FIRE_TIMER] = getMaxTimer(FIRE_TIMER);
-        else
+        //single trigger timer
+        if (!(m_isunderwater & 0x02))
         {
-            m_MirrorTimer[FIRE_TIMER]-=time_diff;
-            if (m_MirrorTimer[FIRE_TIMER] < 0)
-            {
-                m_MirrorTimer[FIRE_TIMER]+= 1*IN_MILISECONDS;
-                // Calculate and deal damage
-                // TODO: Check this formula
-                uint32 damage = GetMap()->urand(600, 700);
-                if (m_MirrorTimerFlags & UNDERWATER_INLAVA)
-                    EnvironmentalDamage(DAMAGE_LAVA, damage);
-                else if (m_zoneUpdateId != 1497)
-                    EnvironmentalDamage(DAMAGE_SLIME, damage);
-            }
+            m_isunderwater|= 0x02;
+            m_breathTimer = UnderWaterTime + 1000;
+        }
+        //single trigger "Breathbar"
+        if ( m_breathTimer <= UnderWaterTime && !(m_isunderwater & 0x04))
+        {
+            m_isunderwater|= 0x04;
+            StartMirrorTimer(BREATH_TIMER, UnderWaterTime);
+        }
+        //continuous trigger drowning "Damage"
+        if ((m_breathTimer == 0) && (m_isunderwater & 0x01))
+        {
+            //TODO: Check this formula
+            uint64 guid = GetGUID();
+            uint32 damage = GetMaxHealth() / 5 + GetMap()->urand(0, getLevel()-1);
+
+            EnvironmentalDamage(guid, DAMAGE_DROWNING,damage);
+            m_breathTimer = 2000;
         }
     }
-    else
-        m_MirrorTimer[FIRE_TIMER] = DISABLED_MIRROR_TIMER;
+    //single trigger retract bar
+    else if (!(m_isunderwater & 0x01) && !(m_isunderwater & 0x08) && (m_isunderwater & 0x02) && (m_breathTimer > 0) && isAlive())
+    {
+        m_isunderwater = 0x08;
 
-    // Recheck timers flag
-    for (uint8 i = 0; i< MAX_TIMERS; ++i)
-        if (m_MirrorTimer[i] != DISABLED_MIRROR_TIMER)
+        uint32 BreathRegen = 10;
+        ModifyMirrorTimer(BREATH_TIMER, UnderWaterTime, m_breathTimer,BreathRegen);
+        m_isunderwater = 0x10;
+    }
+    //remove bar
+    else if ((m_breathTimer < 50) && !(m_isunderwater & 0x01) && (m_isunderwater == 0x10))
+    {
+        StopMirrorTimer(BREATH_TIMER);
+        m_isunderwater = 0;
+    }
+}
+
+void Player::HandleLava()
+{
+    bool ValidArea = false;
+
+    if ((m_isunderwater & 0x80) && isAlive())
+    {
+        //Single trigger Set BreathTimer
+        if (!(m_isunderwater & 0x80))
         {
-            m_MirrorTimerFlags|=UNDERWATER_EXIST_TIMERS;
-            break;
+            m_isunderwater|= 0x04;
+            m_breathTimer = 1000;
         }
-    m_MirrorTimerFlagsLast = m_MirrorTimerFlags;
+        //Reset BreathTimer and still in the lava
+        if (!m_breathTimer)
+        {
+            uint64 guid = GetGUID();
+            uint32 damage = GetMap()->urand(600, 700);                // TODO: Get more detailed information about lava damage
+            uint32 dmgZone = GetZoneId();                   // TODO: Find correct "lava dealing zone" flag in Area Table
+
+            // Deal lava damage only in lava zones.
+            switch(dmgZone)
+            {
+                case 0x8D:
+                    ValidArea = false;
+                    break;
+                case 0x94:
+                    ValidArea = false;
+                    break;
+                case 0x2CE:
+                    ValidArea = false;
+                    break;
+                case 0x2CF:
+                    ValidArea = false;
+                    break;
+                default:
+                    if (dmgZone / 5 & 0x408)
+                        ValidArea = true;
+            }
+
+            // if is valid area and is not gamemaster then deal damage
+            if ( ValidArea && !isGameMaster() )
+                EnvironmentalDamage(guid, DAMAGE_LAVA, damage);
+
+            m_breathTimer = 1000;
+        }
+
+    }
+    //Death timer disabled and WaterFlags reset
+    else if (m_deathState == DEAD)
+    {
+        m_breathTimer = 0;
+        m_isunderwater = 0;
+    }
 }
 
 ///The player sobers by 256 every 10 seconds
@@ -1191,6 +1154,8 @@ void Player::Update( uint32 p_time )
     CheckDuelDistance(now);
 
     UpdateAfkReport(now);
+
+    CheckExploreSystem();
 
     // do not allow the AI to be changed during update
     if(IsAIEnabled)
@@ -1372,8 +1337,20 @@ void Player::Update( uint32 p_time )
             m_nextSave -= p_time;
     }
 
+    //Breathtimer
+    if(m_breathTimer > 0)
+    {
+        if(p_time >= m_breathTimer)
+            m_breathTimer = 0;
+        else
+            m_breathTimer -= p_time;
+    }
+
     //Handle Water/drowning
-    HandleDrowning(p_time);
+    HandleDrowning();
+
+    //Handle lava
+    HandleLava();
 
     //Handle detect stealth players
     if (m_DetectInvTimer > 0)
@@ -1509,7 +1486,7 @@ void Player::BuildEnumData( QueryResult_AutoPtr result, WorldPacket * p_data )
 
     *p_data << uint8(getLevel());                           // player level
     // do not use GetMap! it will spawn a new instance since the bound instances are not loaded
-    uint32 zoneId = MapManager::Instance().GetZoneId(GetMapId(), GetPositionX(),GetPositionY(),GetPositionY());
+    uint32 zoneId = MapManager::Instance().GetZoneId(GetMapId(), GetPositionX(),GetPositionY());
     sLog.outDebug("Player::BuildEnumData: m:%u, x:%f, y:%f, z:%f zone:%u", GetMapId(), GetPositionX(), GetPositionY(), GetPositionZ(), zoneId);
     *p_data << zoneId;
     *p_data << GetMapId();
@@ -5568,9 +5545,9 @@ bool Player::SetPosition(float x, float y, float z, float orientation, bool tele
     }
 
     // code block for underwater state update
-    UpdateUnderwaterState(GetMap(), GetPositionX(), GetPositionY(), GetPositionZ());
+    UpdateUnderwaterState(m, x, y, z);
 
-    CheckAreaExploreAndOutdoor();
+    CheckExploreSystem();
 
     return true;
 }
@@ -5604,7 +5581,7 @@ void Player::SendDirectMessage(WorldPacket *data)
     GetSession()->SendPacket(data);
 }
 
-void Player::CheckAreaExploreAndOutdoor()
+void Player::CheckExploreSystem()
 {
     if (!isAlive())
         return;
@@ -5612,15 +5589,9 @@ void Player::CheckAreaExploreAndOutdoor()
     if (isInFlight())
         return;
 
-    bool isOutdoor;
-    uint16 areaFlag = GetBaseMap()->GetAreaFlag(GetPositionX(),GetPositionY(),GetPositionZ(), &isOutdoor);
-
-    if (sWorld.getConfig(CONFIG_VMAP_INDOOR_CHECK) && !isOutdoor)
-        RemoveAurasWithAttribute(SPELL_ATTR_OUTDOORS_ONLY);
-
-    if (areaFlag==0xffff)
+    uint16 areaFlag = GetBaseMap()->GetAreaFlag(GetPositionX(),GetPositionY());
+    if(areaFlag==0xffff)
         return;
-
     int offset = areaFlag / 32;
 
     if(offset >= 128)
@@ -6513,7 +6484,7 @@ uint32 Player::GetZoneIdFromDB(uint64 guid)
     {
         // stored zone is zero, use generic and slow zone detection
         ss.str("");
-        ss<<"SELECT map,position_x,position_y,position_z FROM characters WHERE guid='"<<GUID_LOPART(guid)<<"'";
+        ss<<"SELECT map,position_x,position_y FROM characters WHERE guid='"<<GUID_LOPART(guid)<<"'";
         result = CharacterDatabase.Query(ss.str().c_str());
         if( !result )
             return 0;
@@ -6521,9 +6492,8 @@ uint32 Player::GetZoneIdFromDB(uint64 guid)
         uint32 map  = fields[0].GetUInt32();
         float posx = fields[1].GetFloat();
         float posy = fields[2].GetFloat();
-        float posz = fields[3].GetFloat();
 
-        zone = MapManager::Instance().GetZoneId(map,posx,posy,posz);
+        zone = MapManager::Instance().GetZoneId(map,posx,posy);
 
         ss.str("");
         ss << "UPDATE characters SET zone='"<<zone<<"' WHERE guid='"<<GUID_LOPART(guid)<<"'";
@@ -19619,50 +19589,21 @@ PartyResult Player::CanUninviteFromGroup() const
     return PARTY_RESULT_OK;
 }
 
-void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
+void Player::UpdateUnderwaterState( Map* m, float x, float y, float z )
 {
-    LiquidData liquid_status;
-    ZLiquidStatus res = m->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &liquid_status);
-    if (!res)
-    {
-        m_MirrorTimerFlags &= ~(UNDERWATER_INWATER|UNDERWATER_INLAVA|UNDERWATER_INSLIME|UNDERWATER_INDARKWATER);
-        // Small hack for enable breath in WMO
-        if (IsInWater())
-           m_MirrorTimerFlags|=UNDERWATER_INWATER;
-        return;
-    }
- 
-    // All liquids type - check under water position
-    if (liquid_status.type&(MAP_LIQUID_TYPE_WATER|MAP_LIQUID_TYPE_OCEAN|MAP_LIQUID_TYPE_MAGMA|MAP_LIQUID_TYPE_SLIME))
-    {
-         if (res & LIQUID_MAP_UNDER_WATER)
-            m_MirrorTimerFlags |= UNDERWATER_INWATER;
-        else
-            m_MirrorTimerFlags &= ~UNDERWATER_INWATER;
-    }
+    float water_z  = m->GetWaterLevel(x,y);
+    float height_z = m->GetHeight(x,y,z, false);            // use .map base surface height
+    uint8 flag1    = m->GetTerrainType(x,y);
 
-    // Allow travel in dark water on taxi or transport
-    if ((liquid_status.type & MAP_LIQUID_TYPE_DARK_WATER) && !isInFlight() && !GetTransport())
-        m_MirrorTimerFlags |= UNDERWATER_INDARKWATER;
-    else
-        m_MirrorTimerFlags &= ~UNDERWATER_INDARKWATER;
+    //!Underwater check, not in water if underground or above water level
+    if (height_z <= INVALID_HEIGHT || z < (height_z-2) || z > (water_z - 2) )
+        m_isunderwater &= 0x7A;
+    else if ((z < (water_z - 2)) && (flag1 & 0x01))
+        m_isunderwater |= 0x01;
 
-    // in lava check, anywhere in lava level
-    if (liquid_status.type&MAP_LIQUID_TYPE_MAGMA)
-     {
-         if (res & (LIQUID_MAP_UNDER_WATER|LIQUID_MAP_IN_WATER|LIQUID_MAP_WATER_WALK))
-            m_MirrorTimerFlags |= UNDERWATER_INLAVA;
-        else
-            m_MirrorTimerFlags &= ~UNDERWATER_INLAVA;
-    }
-    // in slime check, anywhere in slime level
-    if (liquid_status.type&MAP_LIQUID_TYPE_SLIME)
-    {
-        if (res & (LIQUID_MAP_UNDER_WATER|LIQUID_MAP_IN_WATER|LIQUID_MAP_WATER_WALK))
-            m_MirrorTimerFlags |= UNDERWATER_INSLIME;
-        else
-            m_MirrorTimerFlags &= ~UNDERWATER_INSLIME;
-    }
+    //!in lava check, anywhere under lava level
+    if ((height_z <= INVALID_HEIGHT || z < (height_z - 0)) && (flag1 == 0x00) && IsInWater())
+        m_isunderwater |= 0x80;
 }
 
 void Player::SetCanParry( bool value )
@@ -19733,7 +19674,7 @@ void Player::HandleFallDamage(MovementInfo& movementInfo)
                 if (GetDummyAura(43621))
                     damage = GetMaxHealth()/2;
 
-                EnvironmentalDamage(DAMAGE_FALL, damage);
+                EnvironmentalDamage(GetGUID(), DAMAGE_FALL, damage);
             }
 
             //Z given by moveinfo, LastZ, FallTime, WaterZ, MapZ, Damage, Safefall reduction
@@ -19757,7 +19698,7 @@ void Player::HandleFallUnderMap()
         // TODO: discard movement packets after the player is rooted
         if(isAlive())
         {
-            EnvironmentalDamage(DAMAGE_FALL_TO_VOID, GetMaxHealth());
+            EnvironmentalDamage(GetGUID(),DAMAGE_FALL_TO_VOID, GetMaxHealth());
             // change the death state to CORPSE to prevent the death timer from
             // starting in the next player update
             KillPlayer();

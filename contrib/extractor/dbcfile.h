@@ -10,7 +10,7 @@ public:
     ~DBCFile();
 
     // Open database. It must be openened before it can be used.
-    bool open();
+    void open();
 
     // Database exceptions
     class Exception
