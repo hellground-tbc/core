@@ -1,5 +1,7 @@
 /*
-* Copyright (C) 2005-2010 MaNGOS <http://getmangos.com/>
+* Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
+*
+* Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -8,12 +10,12 @@
 *
 * This program is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 * GNU General Public License for more details.
 *
 * You should have received a copy of the GNU General Public License
 * along with this program; if not, write to the Free Software
-* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
 
 #ifndef _VMAPTOOLS_H
@@ -62,7 +64,7 @@ namespace VMAP
         {
 
             // Integer representation of a floating-point value.
-#define IR(x)   (reinterpret_cast<G3D::uint32 const&>(x))
+#define IR(x)   ((G3D::uint32&)x)
 
             Inside = true;
             const G3D::Vector3& MinB = box.low();
@@ -148,3 +150,4 @@ namespace VMAP
     };
 }
 #endif
+

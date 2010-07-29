@@ -49,6 +49,7 @@ RandomMovementGenerator<Creature>::_setRandomLocation(Creature &creature)
     creature.GetHomePosition(X, Y, Z, ori);
 
     z = creature.GetPositionZ();
+
     Map const* map = creature.GetBaseMap();
 
     // For 2D/3D system selection

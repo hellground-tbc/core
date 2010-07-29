@@ -82,18 +82,6 @@ struct PlayerSpell
     bool disabled          : 1;
 };
 
-enum PlayerUnderwaterState
-{
-    UNDERWATER_NONE                     = 0x00,
-    UNDERWATER_INWATER                  = 0x01,             // terrain type is water and player is afflicted by it
-    UNDERWATER_INLAVA                   = 0x02,             // terrain type is lava and player is afflicted by it
-    UNDERWATER_INSLIME                  = 0x04,             // terrain type is lava and player is afflicted by it
-    UNDERWATER_INDARKWATER              = 0x08,             // terrain type is dark water and player is afflicted by it
-
-    UNDERWATER_EXIST_TIMERS             = 0x10
-};
-#define DISABLED_MIRROR_TIMER   -1
-
 #define SPELL_WITHOUT_SLOT_ID uint16(-1)
 
 struct SpellModifier
@@ -506,7 +494,6 @@ enum MirrorTimerType
     BREATH_TIMER       = 1,
     FIRE_TIMER         = 2
 };
-#define MAX_TIMERS      3
 
 // 2^n values
 enum PlayerExtraFlags
@@ -1696,7 +1683,6 @@ class TRINITY_DLL_SPEC Player : public Unit
         uint32 DurabilityRepairAll(bool cost, float discountMod, bool guildBank);
         uint32 DurabilityRepair(uint16 pos, bool cost, float discountMod, bool guildBank);
 
-        void UpdateMirrorTimers();
         void StopMirrorTimers()
         {
             StopMirrorTimer(FATIGUE_TIMER);
@@ -1730,7 +1716,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         void SetDontMove(bool dontMove);
         bool GetDontMove() const { return m_dontMove; }
 
-        void CheckAreaExploreAndOutdoor(void);
+        void CheckExploreSystem(void);
 
         static uint32 TeamForRace(uint8 race);
         uint32 GetTeam() const { return m_team; }
@@ -1988,7 +1974,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         /***              ENVIROMENTAL SYSTEM                  ***/
         /*********************************************************/
 
-        void EnvironmentalDamage(EnviromentalDamage type, uint32 damage);
+        void EnvironmentalDamage(uint64 guid, EnviromentalDamage type, uint32 damage);
 
         /*********************************************************/
         /***               FLOOD FILTER SYSTEM                 ***/
@@ -2015,6 +2001,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         bool CanFly() const { return HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY); }
         bool IsFlying() const { return HasUnitMovementFlag(MOVEMENTFLAG_FLYING); }
 
+        void HandleDrowning();
         void HandleFallDamage(MovementInfo& movementInfo);
         void HandleFallUnderMap();
 
@@ -2238,11 +2225,13 @@ class TRINITY_DLL_SPEC Player : public Unit
         /*********************************************************/
         /***              ENVIRONMENTAL SYSTEM                 ***/
         /*********************************************************/
+        void HandleLava();
         void HandleSobering();
-        void SendMirrorTimer(MirrorTimerType Type, uint32 MaxValue, uint32 CurrentValue, int32 Regen);
+        void StartMirrorTimer(MirrorTimerType Type, uint32 MaxValue);
+        void ModifyMirrorTimer(MirrorTimerType Type, uint32 MaxValue, uint32 CurrentValue, uint32 Regen);
         void StopMirrorTimer(MirrorTimerType Type);
-        int32 getMaxTimer(MirrorTimerType timer);
-        void HandleDrowning(uint32 time_diff);
+        uint8 m_isunderwater;
+        bool m_isInWater;
 
         /*********************************************************/
         /***                  HONOR SYSTEM                     ***/
@@ -2404,11 +2393,6 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         GridReference<Player> m_gridRef;
         MapReference m_mapRef;
-
-        int32 m_MirrorTimer[MAX_TIMERS];
-        uint8 m_MirrorTimerFlags;
-        uint8 m_MirrorTimerFlagsLast;
-        bool m_isInWater;
 
         uint64 m_GMfollowtarget_GUID; // za kim chodzi
         uint64 m_GMfollow_GUID;       // gm ktory chodzi za playerem
