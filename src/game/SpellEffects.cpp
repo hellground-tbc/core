@@ -712,6 +712,9 @@ void Spell::EffectDummy(uint32 i)
                  // Skyguard Blasting Charge (for quest Fires Over Skettis - 11008)
                 case 39844:
                 {
+                    if(m_caster->GetTypeId() != TYPEID_PLAYER)
+                        return;
+
                     if(((Player*)m_caster)->GetQuestStatus(11008) == QUEST_STATUS_INCOMPLETE)
                     {
                         if(unitTarget && unitTarget->GetEntry() == 22991) // trigger
@@ -726,15 +729,11 @@ void Spell::EffectDummy(uint32 i)
 
                             // Add q objective and clean up
                             if(target)
-                            {
                                 m_caster->DealDamage(unitTarget, unitTarget->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-                                // TODO: Zrobic tak zeby GO zniknal, ale tak zeby sie zrespil normalnie po swoim czasie (3 min w bazie ma)
-                                // target->  ??????
-                            }
                         }
                     }
                 }
-                // Six Demon Bag, TODO: Seatrch and add more spells to cast with normal dmg ( 100 ~ 200 ), Shadow bolt, Fireball, Summon Felhunter
+                // Six Demon Bag, TODO: Search and add more spells to cast with normal dmg ( 100 ~ 200 ), Shadow bolt, Fireball, Summon Felhunter
                 case 14537:
                 {
                     int32 spell_id = 0;
@@ -781,12 +780,14 @@ void Spell::EffectDummy(uint32 i)
                 // Encapsulate Voidwalker
                 case 29364:
                 {
-                    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_UNIT || ((Creature*)unitTarget)->isPet()) return;
+                    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_UNIT || ((Creature*)unitTarget)->isPet())
+                        return;
 
                     Creature* creatureTarget = (Creature*)unitTarget;
                     GameObject* pGameObj = new GameObject;
 
-                    if (!creatureTarget || !pGameObj) return;
+                    if (!creatureTarget || !pGameObj)
+                        return;
 
                     if (!pGameObj->Create(objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT), 181574, creatureTarget->GetMap(),
                         creatureTarget->GetPositionX(), creatureTarget->GetPositionY(), creatureTarget->GetPositionZ(),
@@ -853,6 +854,7 @@ void Spell::EffectDummy(uint32 i)
                 {
                     if(!unitTarget || unitTarget->GetTypeId()!=TYPEID_UNIT)
                         return;
+
                     ((Creature*)unitTarget)->setDeathState(JUST_ALIVED);
                     return;
                 }
@@ -973,9 +975,9 @@ void Spell::EffectDummy(uint32 i)
 
                     if(roll < 2)                            // 2% for 30 sec self root (off-like chance unknown)
                         spell_id = 16566;
-                    else if(roll < 4)                       // 2% for 20 sec root, charge to target (off-like chance unknown)
+                    else if(roll < 10)                      // 8% for 20 sec root, charge to target (off-like chance unknown)
                         spell_id = 13119;
-                    else                                    // normal root
+                    else
                         spell_id = 13099;
 
                     m_caster->CastSpell(unitTarget,spell_id,true,NULL);
@@ -1275,7 +1277,7 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->CastSpell(m_caster,spell_id,true,NULL);
                     return;
                 }
-                case 35745:
+                case 35745:                                 // Socrethar's Stone
                 {
                     uint32 spell_id;
                     switch(m_caster->GetAreaId())
@@ -1338,17 +1340,6 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->CastSpell(unitTarget,40932,true);
                     break;
                 }
-                // Demon Broiled Surprise
-                /* FIX ME: Required for correct work implementing implicit target 7 (in pair (22,7))
-                case 43723:
-                {
-                    if (m_caster->GetTypeId() != TYPEID_PLAYER)
-                        return;
-
-                    ((Player*)m_caster)->CastSpell(unitTarget, 43753, true);
-                    return;
-                }
-                */
                 case 44875:                                 // Complete Raptor Capture
                 {
                     if(!unitTarget || unitTarget->GetTypeId() != TYPEID_UNIT)
@@ -1366,7 +1357,7 @@ void Spell::EffectDummy(uint32 i)
                 }
                 case 37573:                                 //Temporal Phase Modulator
                 {
-                    if(!unitTarget)
+                    if(!unitTarget || unitTarget->GetTypeId() != TYPEID_UNIT)
                         return;
 
                     TemporarySummon* tempSummon = dynamic_cast<TemporarySummon*>(unitTarget);
