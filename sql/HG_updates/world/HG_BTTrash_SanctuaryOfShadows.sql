@@ -144,3 +144,31 @@ UPDATE `creature_addon` SET `path_id`='12796' WHERE `guid`='12794';
 UPDATE `creature` SET `movementtype`='2' WHERE `guid`='12794';
 UPDATE `creature` SET `currentwaypoint`='10' WHERE `guid`='12794';
 
+-- The Refectory - Shade of Akama room
+DELETE FROM `creature_formations` WHERE `leaderguid`='12782';
+INSERT INTO `creature_formations` VALUES ('12782', '12782', '0', '0', '2');
+INSERT INTO `creature_formations` VALUES ('12782', '12815', '0', '0', '2');
+INSERT INTO `creature_formations` VALUES ('12782', '12793', '0', '0', '2');
+INSERT INTO `creature_formations` VALUES ('12782', '12807', '0', '0', '2');
+
+DELETE FROM `creature_formations` WHERE `leaderguid`='12781';
+INSERT INTO `creature_formations` VALUES ('12781', '12781', '0', '0', '2');
+INSERT INTO `creature_formations` VALUES ('12781', '12800', '0', '0', '2');
+INSERT INTO `creature_formations` VALUES ('12781', '12799', '0', '0', '2');
+INSERT INTO `creature_formations` VALUES ('12781', '12792', '0', '0', '2');
+
+DELETE FROM `creature_formations` WHERE `leaderguid`='12798';
+INSERT INTO `creature_formations` VALUES ('12798', '12798', '0', '0', '2');
+INSERT INTO `creature_formations` VALUES ('12798', '12779', '0', '0', '2');
+INSERT INTO `creature_formations` VALUES ('12798', '12778', '0', '0', '2');
+INSERT INTO `creature_formations` VALUES ('12798', '12790', '0', '0', '2');
+
+DELETE FROM `creature_formations` WHERE `leaderguid`='12780';
+INSERT INTO `creature_formations` VALUES ('12780', '12780', '0', '0', '2');
+INSERT INTO `creature_formations` VALUES ('12780', '12814', '0', '0', '2');
+INSERT INTO `creature_formations` VALUES ('12780', '12791', '0', '0', '2');
+INSERT INTO `creature_formations` VALUES ('12780', '12804', '0', '0', '2');
+
+DELETE FROM `creature_formations` WHERE `leaderguid`='12805';
+INSERT INTO `creature_formations` VALUES ('12805', '12805', '0', '0', '2');
+INSERT INTO `creature_formations` VALUES ('12805', '12806', '0', '0', '2');
