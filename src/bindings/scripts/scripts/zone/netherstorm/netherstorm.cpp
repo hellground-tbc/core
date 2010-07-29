@@ -1260,6 +1260,9 @@ struct TRINITY_DLL_DECL mob_dr_boomAI : public Scripted_NoMovementAI
                         bot->GetMotionMaster()->MovePoint(0, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
                 }
             }
+            else
+                Reset();
+
             SummonTimer = 3000;
         }
         else
@@ -1302,16 +1305,19 @@ struct TRINITY_DLL_DECL mob_boom_botAI : public ScriptedAI
         if (type != POINT_MOTION_TYPE)
             return;
 
-        DoCast(m_creature, 34096, true);
+        DoCast(m_creature, 30687, true);
         m_creature->Kill(m_creature, false);
         m_creature->RemoveCorpse();
     }
 
     void MoveInLineOfSight(Unit *who)
     {
+        if(!who->isCharmedOwnedByPlayerOrPlayer())
+            return;
+
         if(m_creature->IsWithinDistInMap(who, 6.0f, false))
         {
-            DoCast(m_creature, 35276, true);
+            DoCast(m_creature, 30687, true);
             m_creature->Kill(m_creature, false);
             m_creature->RemoveCorpse();
         }
