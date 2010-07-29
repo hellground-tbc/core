@@ -184,7 +184,6 @@ ChatCommand * ChatHandler::getCommandTable()
 
     static ChatCommand debugCommandTable[] =
     {
-        { "wp",             SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugWPCommand,             "", NULL },
         { "inarc",          SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugInArcCommand,          "", NULL },
         { "spellfail",      SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugSpellFailCommand,      "", NULL },
         { "setpoi",         SEC_ADMINISTRATOR,  false, &ChatHandler::HandleSetPoiCommand,              "", NULL },
