@@ -1,5 +1,7 @@
 /*
- * Copyright (C) 2005-2010 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
+ *
+ * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -8,22 +10,25 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef _TILEASSEMBLER_H_
 #define _TILEASSEMBLER_H_
 
-#include <G3D/Vector3.h>
-#include <G3D/Matrix3.h>
-#include <map>
+// load our modified version first !!
+#include "AABSPTree.h"
 
-#include "ModelInstance.h"
+#include <G3D/Vector3.h>
+
+#include "CoordModelMapping.h"
+#include "SubModel.h"
+#include "ModelContainer.h"
 
 namespace VMAP
 {
@@ -36,54 +41,56 @@ namespace VMAP
     class ModelPosition
     {
         private:
-            G3D::Matrix3 iRotation;
+            G3D::Matrix3 ixMatrix;
+            G3D::Matrix3 iyMatrix;
+            G3D::Matrix3 izMatrix;
         public:
             G3D::Vector3 iPos;
             G3D::Vector3 iDir;
             float iScale;
             void init()
             {
-                iRotation = G3D::Matrix3::fromEulerAnglesZYX(G3D::pi()*iDir.y/180.f, G3D::pi()*iDir.x/180.f, G3D::pi()*iDir.z/180.f);
+
+                // Swap x and y the raw data uses the axis differently
+                ixMatrix = G3D::Matrix3::fromAxisAngle(G3D::Vector3::unitY(),-(G3D::pi()*iDir.x/180.0));
+                iyMatrix = G3D::Matrix3::fromAxisAngle(G3D::Vector3::unitX(),-(G3D::pi()*iDir.y/180.0));
+                izMatrix = G3D::Matrix3::fromAxisAngle(G3D::Vector3::unitZ(),-(G3D::pi()*iDir.z/180.0));
+
             }
             G3D::Vector3 transform(const G3D::Vector3& pIn) const;
             void moveToBasePos(const G3D::Vector3& pBasePos) { iPos -= pBasePos; }
     };
-
-    typedef std::map<uint32, ModelSpawn> UniqueEntryMap;
-    typedef std::multimap<uint32, uint32> TileMap;
-
-    struct MapSpawns
-    {
-        UniqueEntryMap UniqueEntries;
-        TileMap TileEntries;
-    };
-
-    typedef std::map<uint32, MapSpawns*> MapData;
     //===============================================
 
     class TileAssembler
     {
         private:
+            CoordModelMapping *iCoordModelMapping;
             std::string iDestDir;
             std::string iSrcDir;
             bool (*iFilterMethod)(char *pName);
             G3D::Table<std::string, unsigned int > iUniqueNameIds;
             unsigned int iCurrentUniqueNameId;
-            MapData mapData;
 
         public:
             TileAssembler(const std::string& pSrcDirName, const std::string& pDestDirName);
             virtual ~TileAssembler();
 
-            bool convertWorld2();
-            bool readMapSpawns();
-            bool calculateTransformedBound(ModelSpawn &spawn);
+            bool fillModelContainerArray(const std::string& pDirFileName, unsigned int pMapId, int pXPos, int pYPos, G3D::Array<ModelContainer*>& pMC);
+            ModelContainer* processNames(const G3D::Array<std::string>& pPosFileNames, const char* pDestFileName);
 
-            bool convertRawFile(const std::string& pModelFilename);
+            void init();
+            bool convertWorld();
+
+            bool fillModelIntoTree(G3D::AABSPTree<SubModel *> *pMainTree, const G3D::Vector3& pBasePos, std::string& pPosFilename, std::string& pModelFilename);
+            void getModelPosition(std::string& pPosString, ModelPosition& pModelPosition);
+            bool readRawFile(std::string& pModelFilename,  ModelPosition& pModelPosition, G3D::AABSPTree<SubModel *> *pMainTree);
+            void addWorldAreaMapId(unsigned int pMapId) { iCoordModelMapping->addWorldAreaMap(pMapId); }
             void setModelNameFilterMethod(bool (*pFilterMethod)(char *pName)) { iFilterMethod = pFilterMethod; }
             std::string getDirEntryNameFromModName(unsigned int pMapId, const std::string& pModPosName);
             unsigned int getUniqueNameId(const std::string pName);
     };
-
+    //===============================================
 }                                                           // VMAP
 #endif                                                      /*_TILEASSEMBLER_H_*/
+

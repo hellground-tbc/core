@@ -6,9 +6,9 @@ $r_db = "realmd";
 // IP (and port).
 $ip = "127.0.0.1:3306";
 // Username.
-$user = "oregon";
+$user = "trinity";
 // Password.
-$pass = "oregon";
+$pass = "trinity";
 // Site title.
 $title = "Registration Form";
 $title2 = "Some Server";

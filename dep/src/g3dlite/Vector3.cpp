@@ -1,84 +1,44 @@
 /**
  @file Vector3.cpp
- 
+
  3D vector class
- 
- @maintainer Morgan McGuire, http://graphics.cs.williams.edu
- 
+
+ @maintainer Morgan McGuire, matrix@graphics3d.com
+
  @cite Portions based on Dave Eberly's Magic Software Library at http://www.magic-software.com
- 
+
  @created 2001-06-02
- @edited  2009-11-27
+ @edited  2006-01-30
  */
 
 #include <limits>
 #include <stdlib.h>
 #include "G3D/Vector3.h"
 #include "G3D/g3dmath.h"
+#include "G3D/format.h"
 #include "G3D/stringutils.h"
-#include "G3D/BinaryInput.h"
-#include "G3D/BinaryOutput.h"
-#include "G3D/TextInput.h"
-#include "G3D/TextOutput.h"
 #include "G3D/Vector3int16.h"
 #include "G3D/Matrix3.h"
 #include "G3D/Vector2.h"
-#include "G3D/Color3.h"
-#include "G3D/Vector4int8.h"
-#include "G3D/Vector3int32.h"
-#include "G3D/Any.h"
- 
+
 namespace G3D {
 
-Vector3::Vector3(const Any& any) {
-    any.verifyName("Vector3");
-    any.verifyType(Any::TABLE, Any::ARRAY);
-    any.verifySize(3);
+Vector3 Vector3::dummy;
 
-    if (any.type() == Any::ARRAY) {
-        x = any[0];
-        y = any[1];
-        z = any[2];
-    } else {
-        // Table
-        x = any["x"];
-        y = any["y"];
-        z = any["z"];
-    }
-}
-
-Vector3::operator Any() const {
-    Any any(Any::ARRAY, "Vector3");
-    any.append(x, y, z);
-    return any;
-}
-
-Vector3::Vector3(const class Color3& v) : x(v.r), y(v.g), z(v.b) {}
-
-Vector3::Vector3(const class Vector3int32& v) : x((float)v.x), y((float)v.y), z((float)v.z) {}
-
-Vector3::Vector3(const Vector4int8& v) : x(v.x / 127.0f), y(v.y / 127.0f), z(v.z / 127.0f) {}
+// Deprecated.
+const Vector3 Vector3::ZERO(0, 0, 0);
+const Vector3 Vector3::ZERO3(0, 0, 0);
+const Vector3 Vector3::UNIT_X(1, 0, 0);
+const Vector3 Vector3::UNIT_Y(0, 1, 0);
+const Vector3 Vector3::UNIT_Z(0, 0, 1);
+const Vector3 Vector3::INF3((float)G3D::inf(), (float)G3D::inf(), (float)G3D::inf());
+const Vector3 Vector3::NAN3((float)G3D::nan(), (float)G3D::nan(), (float)G3D::nan());
 
 Vector3::Vector3(const class Vector2& v, float _z) : x(v.x), y(v.y), z(_z) {
 }
 
-Vector3& Vector3::ignore() {
-    static Vector3 v;
-    return v;
-}
-
-const Vector3& Vector3::zero() { static const Vector3 v(0, 0, 0); return v; }
-const Vector3& Vector3::one()      { static const Vector3 v(1, 1, 1); return v; }
-const Vector3& Vector3::unitX()    { static const Vector3 v(1, 0, 0); return v; }
-const Vector3& Vector3::unitY()    { static const Vector3 v(0, 1, 0); return v; }
-const Vector3& Vector3::unitZ()    { static const Vector3 v(0, 0, 1); return v; }
-const Vector3& Vector3::inf()      { static const Vector3 v((float)G3D::finf(), (float)G3D::finf(), (float)G3D::finf()); return v; }
-const Vector3& Vector3::nan()      { static const Vector3 v((float)G3D::fnan(), (float)G3D::fnan(), (float)G3D::fnan()); return v; }
-const Vector3& Vector3::minFinite(){ static const Vector3 v(-FLT_MAX, -FLT_MAX, -FLT_MAX); return v; }
-const Vector3& Vector3::maxFinite(){ static const Vector3 v(FLT_MAX, FLT_MAX, FLT_MAX); return v; }
-
 Vector3::Axis Vector3::primaryAxis() const {
-    
+
     Axis a = X_AXIS;
 
     double nx = abs(x);
@@ -103,7 +63,7 @@ Vector3::Axis Vector3::primaryAxis() const {
 }
 
 
-size_t Vector3::hashCode() const {
+unsigned int Vector3::hashCode() const {
     unsigned int xhash = (*(int*)(void*)(&x));
     unsigned int yhash = (*(int*)(void*)(&y));
     unsigned int zhash = (*(int*)(void*)(&z));
@@ -122,14 +82,6 @@ double frand() {
     return rand() / (double) RAND_MAX;
 }
 
-Vector3::Vector3(TextInput& t) {
-	deserialize(t);
-}
-
-Vector3::Vector3(BinaryInput& b) {
-    deserialize(b);
-}
-
 
 Vector3::Vector3(const class Vector3int16& v) {
     x = v.x;
@@ -138,50 +90,53 @@ Vector3::Vector3(const class Vector3int16& v) {
 }
 
 
-void Vector3::deserialize(BinaryInput& b) {
-    x = b.readFloat32();
-    y = b.readFloat32();
-    z = b.readFloat32();
-}
-
-
-void Vector3::deserialize(TextInput& t) {
-    t.readSymbol("(");
-    x = (float)t.readNumber();
-    t.readSymbol(",");
-    y = (float)t.readNumber();
-    t.readSymbol(",");
-    z = (float)t.readNumber();
-    t.readSymbol(")");
-}
-
-
-void Vector3::serialize(TextOutput& t) const {
-   t.writeSymbol("(");
-   t.writeNumber(x);
-   t.writeSymbol(",");
-   t.writeNumber(y);
-   t.writeSymbol(",");
-   t.writeNumber(z);
-   t.writeSymbol(")");
-}
-
-
-void Vector3::serialize(BinaryOutput& b) const {
-    b.writeFloat32(x);
-    b.writeFloat32(y);
-    b.writeFloat32(z);
-}
-
-
-Vector3 Vector3::random(Random& r) {
+Vector3 Vector3::random() {
     Vector3 result;
-    r.sphere(result.x, result.y, result.z);
+
+    do {
+        result = Vector3(uniformRandom(-1.0, 1.0),
+                         uniformRandom(-1.0, 1.0),
+                         uniformRandom(-1.0, 1.0));
+    } while (result.squaredMagnitude() >= 1.0f);
+
+    result.unitize();
+
     return result;
 }
 
+//----------------------------------------------------------------------------
+Vector3 Vector3::operator/ (float fScalar) const {
+    Vector3 kQuot;
 
-float Vector3::unitize(float fTolerance) {
+    if ( fScalar != 0.0 ) {
+        float fInvScalar = 1.0f / fScalar;
+        kQuot.x = fInvScalar * x;
+        kQuot.y = fInvScalar * y;
+        kQuot.z = fInvScalar * z;
+        return kQuot;
+    } else {
+        return Vector3::inf();
+    }
+}
+
+//----------------------------------------------------------------------------
+Vector3& Vector3::operator/= (float fScalar) {
+    if (fScalar != 0.0) {
+        float fInvScalar = 1.0f / fScalar;
+        x *= fInvScalar;
+        y *= fInvScalar;
+        z *= fInvScalar;
+    } else {
+        x = (float)G3D::inf();
+        y = (float)G3D::inf();
+        z = (float)G3D::inf();
+    }
+
+    return *this;
+}
+
+//----------------------------------------------------------------------------
+float Vector3::unitize (float fTolerance) {
     float fMagnitude = magnitude();
 
     if (fMagnitude > fTolerance) {
@@ -196,8 +151,10 @@ float Vector3::unitize(float fTolerance) {
     return fMagnitude;
 }
 
+//----------------------------------------------------------------------------
 
 Vector3 Vector3::reflectAbout(const Vector3& normal) const {
+
     Vector3 out;
 
     Vector3 N = normal.direction();
@@ -206,49 +163,36 @@ Vector3 Vector3::reflectAbout(const Vector3& normal) const {
     return N * 2 * this->dot(N) - *this;
 }
 
+//----------------------------------------------------------------------------
+#if 0
+Vector3 Vector3::cosRandom(const Vector3& normal) {
+    double e1 = G3D::random(0, 1);
+    double e2 = G3D::random(0, 1);
 
-Vector3 Vector3::cosHemiRandom(const Vector3& normal, Random& r) {
-    debugAssertM(G3D::fuzzyEq(normal.length(), 1.0f), 
-                 "cosHemiRandom requires its argument to have unit length");
+    // Angle from normal
+    double theta = acos(sqrt(e1));
 
-    float x, y, z;
-    r.cosHemi(x, y, z);
-
-    // Make a coordinate system
-    const Vector3& Z = normal;
-
-    Vector3 X, Y;
-    normal.getTangents(X, Y);
-
-    return 
-        x * X +
-        y * Y +
-        z * Z;
-}
-
-
-Vector3 Vector3::cosPowHemiRandom(const Vector3& normal, const float k, Random& r) {
-    debugAssertM(G3D::fuzzyEq(normal.length(), 1.0f), 
-                 "cosPowHemiRandom requires its argument to have unit length");
-
-    float x, y, z;
-    r.cosPowHemi(k, x, y, z);
+    // Angle about normal
+    double phi   = 2 * G3D_PI * e2;
 
     // Make a coordinate system
-    const Vector3& Z = normal;
+    Vector3 U = normal.direction();
+    Vector3 V = Vector3::unitX();
 
-    Vector3 X, Y;
-    normal.getTangents(X, Y);
+    if (abs(U.dot(V)) > .9) {
+        V = Vector3::unitY();
+    }
 
-    return 
-        x * X +
-        y * Y +
-        z * Z;
+    Vector3 W = U.cross(V).direction();
+    V = W.cross(U);
+
+    // Convert to rectangular form
+    return cos(theta) * U + sin(theta) * (cos(phi) * V + sin(phi) * W);
 }
+//----------------------------------------------------------------------------
 
-
-Vector3 Vector3::hemiRandom(const Vector3& normal, Random& r) {
-    const Vector3& V = Vector3::random(r);
+Vector3 Vector3::hemiRandom(const Vector3& normal) {
+    Vector3 V = Vector3::random();
 
     if (V.dot(normal) < 0) {
         return -V;
@@ -256,7 +200,7 @@ Vector3 Vector3::hemiRandom(const Vector3& normal, Random& r) {
         return V;
     }
 }
-
+#endif
 //----------------------------------------------------------------------------
 
 Vector3 Vector3::reflectionDirection(const Vector3& normal) const {
@@ -316,12 +260,12 @@ void Vector3::orthonormalize (Vector3 akVector[3]) {
     akVector[0].unitize();
 
     // compute u1
-	float fDot0 = akVector[0].dot(akVector[1]);
+    float fDot0 = akVector[0].dot(akVector[1]);
     akVector[1] -= akVector[0] * fDot0;
     akVector[1].unitize();
 
     // compute u2
-	float fDot1 = akVector[1].dot(akVector[2]);
+    float fDot1 = akVector[1].dot(akVector[2]);
     fDot0 = akVector[0].dot(akVector[2]);
     akVector[2] -= akVector[0] * fDot0 + akVector[1] * fDot1;
     akVector[2].unitize();
@@ -363,14 +307,6 @@ Matrix3 Vector3::cross() const {
                    -y,  x,  0);
 }
 
-
-void serialize(const Vector3::Axis& a, class BinaryOutput& bo) {
-    bo.writeUInt8((uint8)a);
-}
-
-void deserialize(Vector3::Axis& a, class BinaryInput& bi) {
-    a = (Vector3::Axis)bi.readUInt8();
-}
 
 //----------------------------------------------------------------------------
 // 2-char swizzles
@@ -505,3 +441,4 @@ Vector4 Vector3::zzzz() const  { return Vector4       (z, z, z, z); }
 
 
 } // namespace
+

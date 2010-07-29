@@ -1,10 +1,10 @@
 /**
  @file stringutils.h
- 
- @maintainer Morgan McGuire, http://graphics.cs.williams.edu
- 
+
+ @maintainer Morgan McGuire, matrix@graphics3d.com
+
  @author  2000-09-09
- @edited  2008-08-05
+ @edited  2002-11-30
  */
 
 #ifndef G3D_STRINGUTILS_H
@@ -12,21 +12,11 @@
 
 #include "G3D/platform.h"
 #include "G3D/Array.h"
-#include <cstring>
+#include <string>
 
 namespace G3D {
 
 extern const char* NEWLINE;
-
-/** Separates a comma-separated line, properly escaping commas within
-    double quotes (") and super quotes ("""). This matches Microsoft Excel's 
-    CSV output.
-
-    \param stripQuotes If true, strips leading and trailing " and """
-
-    \sa G3D::stringSplit, G3D::TextInput, G3D::readWholeFile
-*/
-void parseCommaSeparated(const std::string s, Array<std::string>& array, bool stripQuotes = true);
 
 /**
  Returns true if the test string begins with the pattern string.
@@ -101,40 +91,41 @@ std::string trimWhitespace(
 /** These standard C functions are renamed for clarity/naming
    conventions and to return bool, not int.
    */
-inline bool isWhiteSpace(const unsigned char c) {
+inline bool isWhiteSpace(const char c) {
     return isspace(c) != 0;
 }
 
 /** These standard C functions are renamed for clarity/naming
    conventions and to return bool, not int.
    */
-inline bool isNewline(const unsigned char c) {
+inline bool isNewline(const char c) {
     return (c == '\n') || (c == '\r');
 }
 
 /** These standard C functions are renamed for clarity/naming
    conventions and to return bool, not int.
    */
-inline bool isDigit(const unsigned char c) {
+inline bool isDigit(const char c) {
     return isdigit(c) != 0;
 }
 
 /** These standard C functions are renamed for clarity/naming
    conventions and to return bool, not int.
    */
-inline bool isLetter(const unsigned char c) {
+inline bool isLetter(const char c) {
     return isalpha(c) != 0;
 }
 
-inline bool isSlash(const unsigned char c) {
+inline bool isSlash(const char c) {
     return (c == '\\') || (c == '/');
 }
 
-inline bool isQuote(const unsigned char c) {
+inline bool isQuote(const char c) {
     return (c == '\'') || (c == '\"');
 }
 
 }; // namespace
 
 #endif
+
 

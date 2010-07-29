@@ -483,8 +483,8 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     uint64 playerGuid = holder->GetGuid();
 
     Player* pCurrChar = new Player(this);
-
-    // for send server info and strings (config)
+    pCurrChar->GetMotionMaster()->Initialize();
+     // for send server info and strings (config)
     ChatHandler chH = ChatHandler(pCurrChar);
 
     // "GetAccountId()==db stored account id" checked in LoadFromDB (prevent login not own character using cheating tools)
@@ -497,7 +497,6 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         return;
     }
 
-    pCurrChar->GetMotionMaster()->Initialize();
     SetPlayer(pCurrChar);
 
     pCurrChar->SendDungeonDifficulty(false);
