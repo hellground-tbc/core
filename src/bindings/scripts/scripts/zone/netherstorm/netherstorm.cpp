@@ -1305,7 +1305,7 @@ struct TRINITY_DLL_DECL mob_boom_botAI : public ScriptedAI
         if (type != POINT_MOTION_TYPE)
             return;
 
-        DoCast(m_creature, 30687, true);
+        DoCast(m_creature, 13259, true);
         m_creature->Kill(m_creature, false);
         m_creature->RemoveCorpse();
     }
@@ -1317,7 +1317,7 @@ struct TRINITY_DLL_DECL mob_boom_botAI : public ScriptedAI
 
         if(m_creature->IsWithinDistInMap(who, 6.0f, false))
         {
-            DoCast(m_creature, 30687, true);
+            DoCast(m_creature, 13259, true);
             m_creature->Kill(m_creature, false);
             m_creature->RemoveCorpse();
         }
