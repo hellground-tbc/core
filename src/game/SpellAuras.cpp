@@ -4270,25 +4270,42 @@ void Aura::HandlePeriodicTriggerSpell(bool apply, bool Real)
 
     m_isPeriodic = apply;
 
-    if(!apply && m_target && m_spellProto->Id == 40106)
+    if(!apply)
     {
-        m_target->CastSpell(m_target, 40105, true); //Aqueous Lord is self casting debuff
-        Unit* caster = GetCaster();
-        if(caster)
-            caster->DealDamage(caster, caster->GetHealth());    //self kill Aqueous Spawn when aura is removed
-    }
+        switch(m_spellProto->Id)
+        {
+            case 40106: // Merge
+            {
+                if(!m_target)
+                    return;
 
-    // Curse of the Plaguebringer
-    if (!apply && m_spellProto->Id == 29213 && m_removeMode!=AURA_REMOVE_BY_DISPEL)
-    {
-        // Cast Wrath of the Plaguebringer if not dispelled
-        m_target->CastSpell(m_target, 29214, true, 0, this);
-    }
+                m_target->CastSpell(m_target, 40105, true); //Aqueous Lord is self casting debuff
+                if(Unit* caster = GetCaster())
+                    caster->DealDamage(caster, caster->GetHealth());    //self kill Aqueous Spawn when aura is removed
 
-    // Wrath of the Astromancer
-    if(!apply && m_spellProto->Id == 42783)
-    {
-        m_target->CastSpell(m_target, 42787, true, 0, this);
+                break;
+            }
+            case 29213: // Curse of the Plaguebringer
+            {
+                if (m_removeMode != AURA_REMOVE_BY_DISPEL)  // Cast Wrath of the Plaguebringer if not dispelled
+                    m_target->CastSpell(m_target, 29214, true, 0, this);
+
+                break;
+            }
+            case 42783: // Wrath of the Astromancer
+            {
+                m_target->CastSpell(m_target, 42787, true, 0, this);
+                break;
+            }
+            case 35460: // Fury of the Dreghood Elders
+            {
+                if(!m_target || m_target->GetTypeId() != TYPEID_UNIT)
+                    return;
+
+                ((Creature*)m_target)->UpdateEntry(20680); // Transform into Arzeth the Powerless
+                break;
+            }
+        }
     }
 }
 

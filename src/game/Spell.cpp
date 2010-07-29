@@ -2465,6 +2465,9 @@ uint64 Spell::handle_delayed(uint64 t_offset)
     // now recheck gameobject targeting correctness
     for(std::list<GOTargetInfo>::iterator ighit= m_UniqueGOTargetInfo.begin(); ighit != m_UniqueGOTargetInfo.end();++ighit)
     {
+        if (ighit->deleted)
+            continue;
+
         if (ighit->processed == false)
         {
             if ( single_missile || ighit->timeDelay <= t_offset )

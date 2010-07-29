@@ -375,9 +375,7 @@ enum aliveMask
 
 bool ItemUse_item_specific_target(Player *player, Item* _Item, SpellCastTargets const& targets)
 {
-    Unit* uTarget = targets.getUnitTarget();
-    if(!uTarget)
-        uTarget = Unit::GetUnit(*player, player->GetSelection());
+    Unit *uTarget = targets.getUnitTarget() ? targets.getUnitTarget() : Unit::GetUnit(*player, player->GetSelection());
 
     uint32 iEntry = _Item->GetEntry();
     uint32 cEntry[MAX_TARGETS] = { 0, 0, 0, 0 };

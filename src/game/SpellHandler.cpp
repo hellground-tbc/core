@@ -122,6 +122,31 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     if(!targets.read(&recvPacket, pUser))
         return;
 
+    if(!targets.getUnitTarget())
+    {
+        for(int i = 0; i < 5; ++i)
+        {
+            _Spell const& spellData = pItem->GetProto()->Spells[i];
+            if(!spellData.SpellId)
+                continue;
+
+            // wrong triggering type
+            if( spellData.SpellTrigger != ITEM_SPELLTRIGGER_ON_USE && spellData.SpellTrigger != ITEM_SPELLTRIGGER_ON_NO_DELAY_USE)
+                continue;
+
+            SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellData.SpellId);
+            if(!spellInfo)
+            {
+                sLog.outError("Item (Entry: %u) in have wrong spell id %u, ignoring ",proto->ItemId, spellData.SpellId);
+                continue;
+            }
+
+            if(spellInfo->EffectImplicitTargetA[0] == 6 || spellInfo->EffectImplicitTargetA[1] == 6 || spellInfo->EffectImplicitTargetA[2] == 6)
+                if(Unit *tUnit = Unit::GetUnit(*GetPlayer(), GetPlayer()->GetSelection()))
+                    targets.setUnitTarget(tUnit);
+        }
+    }
+
     //Note: If script stop casting it must send appropriate data to client to prevent stuck item in gray state.
     if(!Script->ItemUse(pUser,pItem,targets))
     {

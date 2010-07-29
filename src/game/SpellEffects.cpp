@@ -326,8 +326,13 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                 {
                     uint32 count = 0;
                     for(std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin();ihit != m_UniqueTargetInfo.end();++ihit)
+                    {
+                        if (ihit->deleted)
+                            continue;
+
                         if(ihit->effectMask & (1<<effect_idx))
                             ++count;
+                    }
 
                     damage /= count;                    // divide to all targets
                 }
@@ -760,8 +765,13 @@ void Spell::EffectDummy(uint32 i)
                 {
                     uint32 count = 0;
                     for(std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin();ihit != m_UniqueTargetInfo.end();++ihit)
+                    {
+                        if (ihit->deleted)
+                            continue;
+
                         if(ihit->effectMask & (1<<i))
                             ++count;
+                    }
 
                     damage = 12000; // maybe wrong value
                     damage /= count;
@@ -770,12 +780,17 @@ void Spell::EffectDummy(uint32 i)
 
                      // now deal the damage
                     for(std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin();ihit != m_UniqueTargetInfo.end();++ihit)
+                    {
+                        if (ihit->deleted)
+                            continue;
+
                         if(ihit->effectMask & (1<<i))
-                            {
-                                Unit* casttarget = Unit::GetUnit((*unitTarget), ihit->targetGUID);
-                                if(casttarget)
-                                    m_caster->DealDamage(casttarget, damage, SPELL_DIRECT_DAMAGE, SPELL_SCHOOL_MASK_ARCANE, spellInfo, false);
-                            }
+                        {
+                            Unit* casttarget = Unit::GetUnit((*unitTarget), ihit->targetGUID);
+                            if(casttarget)
+                                m_caster->DealDamage(casttarget, damage, SPELL_DIRECT_DAMAGE, SPELL_SCHOOL_MASK_ARCANE, spellInfo, false);
+                        }
+                    }
                 }
                 // Encapsulate Voidwalker
                 case 29364:
@@ -1866,7 +1881,12 @@ void Spell::EffectDummy(uint32 i)
                     // Righteous Defense (step 2) (in old version 31980 dummy effect)
                     // Clear targets for eff 1
                     for(std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin();ihit != m_UniqueTargetInfo.end();++ihit)
+                    {
+                        if (ihit->deleted)
+                            continue;
+
                         ihit->effectMask &= ~(1<<1);
+                    }
 
                     // not empty (checked)
                     Unit::AttackerSet const& attackers = unitTarget->getAttackers();
