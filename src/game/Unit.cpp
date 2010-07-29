@@ -3390,7 +3390,7 @@ bool Unit::AddAura(Aura *Aur)
 
     bool stackModified=false;
     // passive and persistent auras can stack with themselves any number of times
-    if (!Aur->IsPassive() && !Aur->IsPersistent())
+    if (!Aur->IsPassive() && !Aur->IsPersistent() && !Aur->DiffPerCaster())
     {
         for(AuraMap::iterator i2 = m_Auras.lower_bound(spair); i2 != m_Auras.upper_bound(spair);)
         {

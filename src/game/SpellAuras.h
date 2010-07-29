@@ -295,6 +295,17 @@ class TRINITY_DLL_SPEC Aura
                     );
         }
 
+        bool DiffPerCaster()
+        {
+            if( this->GetSpellProto()->SpellFamilyFlags & 0x800000LL && this->GetSpellProto()->SpellIconID == 548 ) // Mind Flay
+                return true;
+
+            if( this->GetSpellProto()->SpellFamilyFlags & 0x40000000000LL ) // Vampiric Touch
+                return false;
+
+            return false;
+        }
+
         void CleanupTriggeredSpells();
         bool isWeaponBuffCoexistableWith(Aura *ref);
 
