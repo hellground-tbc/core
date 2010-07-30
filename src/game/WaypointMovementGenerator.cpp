@@ -84,9 +84,6 @@ void WaypointMovementGenerator<Creature>::InitTraveller(Creature &unit, const Wa
     unit.SetUInt32Value(UNIT_NPC_EMOTESTATE, 0);
     unit.SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
 
-    if(unit.canFly())
-        unit.AddUnitMovementFlag(MOVEMENTFLAG_FLYING2);
-
     unit.addUnitState(UNIT_STAT_ROAMING);
 }
 
@@ -205,7 +202,7 @@ WaypointMovementGenerator<Creature>::Update(Creature &unit, const uint32 &diff)
 
             MovementInform(unit);
             unit.UpdateWaypointID(i_currentNode);
-            unit.clearUnitState(UNIT_STAT_MOVING);
+            unit.clearUnitState(UNIT_STAT_ROAMING);
             unit.Relocate(node->x, node->y, node->z);
         }
     }

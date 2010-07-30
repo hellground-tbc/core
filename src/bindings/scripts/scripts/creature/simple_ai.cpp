@@ -70,7 +70,7 @@ void SimpleAI::Reset()
 {
 }
 
-void SimpleAI::Aggro(Unit *who)
+void SimpleAI::EnterCombat(Unit *who)
 {
             //Reset cast timers
             if (Spell[0].First_Cast >= 0)

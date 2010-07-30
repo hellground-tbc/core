@@ -60,6 +60,7 @@ struct TRINITY_DLL_DECL boss_chrono_lord_dejaAI : public ScriptedAI
     {
         if(HeroicMode)
         {
+            GetSpellRangeStore();
             ArcaneBlast_Timer = 2000;
             Attraction_Timer = 18000;
         }
@@ -78,7 +79,7 @@ struct TRINITY_DLL_DECL boss_chrono_lord_dejaAI : public ScriptedAI
         DoScriptText(SAY_ENTER, m_creature);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
     }

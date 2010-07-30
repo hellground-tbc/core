@@ -70,7 +70,6 @@ struct TRINITY_DLL_DECL boss_archaedasAI : public ScriptedAI
         Awaken_Timer = 0;
         WallMinionTimer = 10000;
 
-        InCombat = false;
         wakingUp = false;
         guardiansAwake = false;
         vaultWalkersAwake = false;
@@ -94,7 +93,7 @@ struct TRINITY_DLL_DECL boss_archaedasAI : public ScriptedAI
     }
 
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         m_creature->setFaction (14);
         m_creature->RemoveFlag (UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -226,7 +225,6 @@ struct TRINITY_DLL_DECL mob_archaedas_minionsAI : public ScriptedAI
         Arcing_Timer = 3000;
         Awaken_Timer = 0;
 
-        InCombat = false;
         wakingUp = false;
         amIAwake = false;
 
@@ -236,7 +234,7 @@ struct TRINITY_DLL_DECL mob_archaedas_minionsAI : public ScriptedAI
         m_creature->RemoveAllAuras();
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         m_creature->setFaction (14);
         m_creature->RemoveAllAuras();
@@ -367,19 +365,17 @@ struct TRINITY_DLL_DECL mob_stonekeepersAI : public ScriptedAI
         pInstance = ((ScriptedInstance*)m_creature->GetInstanceData());
     }
 
-    bool InCombat;
     ScriptedInstance* pInstance;
 
     void Reset()
     {
-        InCombat = false;
         m_creature->setFaction(35);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
         m_creature->RemoveAllAuras();
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         m_creature->setFaction (14);
         m_creature->RemoveFlag (UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -396,7 +392,8 @@ struct TRINITY_DLL_DECL mob_stonekeepersAI : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 
-    void JustDied (Unit *killer) {
+    void JustDied (Unit *killer)
+    {
         DoCast (m_creature, SPELL_SELF_DESTRUCT,true);
         if(pInstance)
             pInstance->SetData(DATA_STONE_KEEPERS, IN_PROGRESS);    // activate next stonekeeper

@@ -71,7 +71,7 @@ struct TRINITY_DLL_DECL boss_temporusAI : public ScriptedAI
         DoScriptText(SAY_ENTER, m_creature);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
     }

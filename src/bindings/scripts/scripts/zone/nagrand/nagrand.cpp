@@ -50,8 +50,6 @@ struct TRINITY_DLL_DECL mob_shattered_rumblerAI : public ScriptedAI
         Spawn = false;
     }
 
-    void Aggro(Unit* who) {}
-
     void SpellHit(Unit *Hitter, const SpellEntry *Spellkind)
     {
         if(Spellkind->Id == 32001 && !Spawn)
@@ -88,7 +86,6 @@ struct TRINITY_DLL_DECL mob_ancient_orc_ancestorAI : public ScriptedAI
     {
         Spawn = false;
     }
-    void Aggro(Unit* who) {}
 
     void SpellHit(Unit *Hitter, const SpellEntry *Spellkind)
     {
@@ -168,7 +165,7 @@ struct TRINITY_DLL_DECL mob_lumpAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if (m_creature->HasAura(SPELL_VISUAL_SLEEP,0))
             m_creature->RemoveAura(SPELL_VISUAL_SLEEP,0);
@@ -266,7 +263,7 @@ struct TRINITY_DLL_DECL mob_sunspring_villagerAI : public ScriptedAI
         m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1,7);   // lay down
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void SpellHit(Unit *caster, const SpellEntry *spell)
     {
@@ -562,8 +559,6 @@ struct TRINITY_DLL_DECL npc_creditmarker_visit_with_ancestorsAI : public Scripte
 
     void Reset() {}
 
-    void Aggro(Unit* who) {}
-
     void MoveInLineOfSight(Unit *who)
     {
         if(!who)
@@ -620,8 +615,6 @@ struct TRINITY_DLL_DECL mob_sparrowhawkAI : public ScriptedAI
 
         ScriptedAI::AttackStart(who);
     }
-
-    void Aggro(Unit* who) {}
 
     void MoveInLineOfSight(Unit *who)
     {

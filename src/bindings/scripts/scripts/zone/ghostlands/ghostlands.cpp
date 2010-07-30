@@ -29,7 +29,7 @@ npc_ranger_lilatha
 EndContentData */
 
 #include "precompiled.h"
-#include "../../npc/npc_escortAI.h"
+#include "escort_ai.h"
 
 /*######
 ## npc_blood_knight_dawnstar
@@ -155,8 +155,7 @@ struct TRINITY_DLL_DECL npc_ranger_lilathaAI : public npc_escortAI
 
     void WaypointReached(uint32 i)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
-
+        Player* player = GetPlayerForEscort();
         if (!player)
             return;
 
@@ -209,40 +208,26 @@ struct TRINITY_DLL_DECL npc_ranger_lilathaAI : public npc_escortAI
         }
     }
 
-    void Aggro(Unit* who) {}
-
     void Reset()
     {
-        if (!IsBeingEscorted)
+        if (!HasEscortState(STATE_ESCORT_ESCORTING))
             m_creature->setFaction(1602);
 
         GameObject* Cage = FindGameObject(GO_CAGE, 20, m_creature);
         if(Cage)
-        Cage->SetGoState(1);
+            Cage->SetGoState(1);
     }
 
-    void JustDied(Unit* killer)
-    {
-        if (PlayerGUID)
-        {
-            Player* player = Unit::GetPlayer(PlayerGUID);
-            if (player)
-                player->FailQuest(QUEST_ESCAPE_FROM_THE_CATACOMBS);
-        }
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-        npc_escortAI::UpdateAI(diff);
-    }
 };
 
 bool QuestAccept_npc_ranger_lilatha(Player* player, Creature* creature, Quest const* quest)
 {
     if (quest->GetQuestId() == QUEST_ESCAPE_FROM_THE_CATACOMBS)
     {
-        creature->setFaction(113);
-        ((npc_escortAI*)(creature->AI()))->Start(true, true, false, player->GetGUID());
+        creature->setFaction(113); //check this later...
+
+        if (npc_escortAI* pEscortAI = CAST_AI(npc_ranger_lilathaAI, creature->AI()))
+            pEscortAI->Start(true, false, player->GetGUID(), quest);
     }
     return true;
 }

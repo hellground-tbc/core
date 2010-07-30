@@ -5,6 +5,8 @@
 #ifndef SC_PRECOMPILED_H
 #define SC_PRECOMPILED_H
 
+#include "Database/DBCStores.h"
+
 #include "../ScriptMgr.h"
 #include "Cell.h"
 #include "CellImpl.h"
@@ -12,9 +14,12 @@
 #include "GridNotifiersImpl.h"
 #include "Unit.h"
 #include "GameObject.h"
+#include "SpellMgr.h"
 #include "sc_creature.h"
 #include "sc_gossip.h"
 #include "sc_instance.h"
+#include "CombatAI.h"
+#include "PassiveAI.h"
 
 #ifdef WIN32
 #include <windows.h>

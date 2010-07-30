@@ -936,11 +936,11 @@
 			Name="Artificial Intelligence"
 			>
 			<File
-				RelativePath="..\..\src\game\AggressorAI.cpp"
+				RelativePath="..\..\src\game\CombatAI.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\game\AggressorAI.h"
+				RelativePath="..\..\src\game\CombatAI.h"
 				>
 			</File>
 			<File
@@ -949,6 +949,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\game\CreatureAI.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\CreatureAIFactory.h"
 				>
 			</File>
 			<File
@@ -972,6 +976,22 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\game\CreatureEventAI.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\CreatureEventAI.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\CreatureEventAIMgr.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\CreatureEventAIMgr.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\game\GuardAI.cpp"
 				>
 			</File>
@@ -980,11 +1000,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\game\NullCreatureAI.cpp"
+				RelativePath="..\..\src\game\PassiveAI.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\game\NullCreatureAI.h"
+				RelativePath="..\..\src\game\PassiveAI.h"
 				>
 			</File>
 			<File
@@ -993,14 +1013,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\game\PetAI.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\game\PossessedAI.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\game\PossessedAI.h"
 				>
 			</File>
 			<File
@@ -1017,6 +1029,14 @@
 			</File>
 			<File
 				RelativePath="..\..\src\game\TotemAI.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\UnitAI.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\UnitAI.h"
 				>
 			</File>
 			<Filter

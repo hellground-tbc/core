@@ -41,14 +41,11 @@ EndScriptData */
 #define H_SPELL_SHADOW_BOLT         39297
 #define SPELL_SUMMON_FIENDISH_HOUND 30707
 
-struct TRINITY_DLL_DECL boss_omor_the_unscarredAI : public Scripted_NoMovementAI
+struct TRINITY_DLL_DECL boss_omor_the_unscarredAI : public ScriptedAI
 {
-    boss_omor_the_unscarredAI(Creature *c) : Scripted_NoMovementAI(c)
+    boss_omor_the_unscarredAI(Creature *c) : ScriptedAI(c)
     {
-        HeroicMode = m_creature->GetMap()->IsHeroic();
     }
-
-    bool HeroicMode;
 
     uint32 OrbitalStrike_Timer;
     uint32 ShadowWhip_Timer;
@@ -75,7 +72,7 @@ struct TRINITY_DLL_DECL boss_omor_the_unscarredAI : public Scripted_NoMovementAI
         CanPullBack = false;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         switch(rand()%3)
         {
@@ -119,9 +116,11 @@ struct TRINITY_DLL_DECL boss_omor_the_unscarredAI : public Scripted_NoMovementAI
             if (Summon_Timer < diff)
             {
                 m_creature->InterruptNonMeleeSpells(false);
-                DoCast(m_creature,SPELL_SUMMON_FIENDISH_HOUND);
+                DoCast(m_creature, SPELL_SUMMON_FIENDISH_HOUND);
                 Summon_Timer = 15000+rand()%15000;
-            }else Summon_Timer -= diff;
+            }
+            else
+                Summon_Timer -= diff;
         }
 
         if (CanPullBack)
@@ -140,14 +139,17 @@ struct TRINITY_DLL_DECL boss_omor_the_unscarredAI : public Scripted_NoMovementAI
                 playerGUID = 0;
                 ShadowWhip_Timer = 2000;
                 CanPullBack = false;
-            }else ShadowWhip_Timer -= diff;
+            }
+            else
+                ShadowWhip_Timer -= diff;
         }
         else if (OrbitalStrike_Timer < diff)
         {
             Unit* temp = NULL;
             if (m_creature->IsWithinMeleeRange(m_creature->getVictim()))
                 temp = m_creature->getVictim();
-            else temp = SelectUnit(SELECT_TARGET_RANDOM,0);
+            else
+                temp = SelectUnit(SELECT_TARGET_RANDOM,0);
 
             if (temp && temp->GetTypeId() == TYPEID_PLAYER)
             {
@@ -158,7 +160,9 @@ struct TRINITY_DLL_DECL boss_omor_the_unscarredAI : public Scripted_NoMovementAI
                 if (playerGUID)
                     CanPullBack = true;
             }
-        }else OrbitalStrike_Timer -= diff;
+        }
+        else
+            OrbitalStrike_Timer -= diff;
 
         if ((m_creature->GetHealth()*100) / m_creature->GetMaxHealth() < 20)
         {
@@ -166,7 +170,9 @@ struct TRINITY_DLL_DECL boss_omor_the_unscarredAI : public Scripted_NoMovementAI
             {
                 DoCast(m_creature,SPELL_DEMONIC_SHIELD);
                 DemonicShield_Timer = 15000;
-            }else DemonicShield_Timer -= diff;
+            }
+            else
+                DemonicShield_Timer -= diff;
         }
 
         if (Aura_Timer < diff)
@@ -178,7 +184,9 @@ struct TRINITY_DLL_DECL boss_omor_the_unscarredAI : public Scripted_NoMovementAI
                 DoCast(target,HeroicMode ? H_SPELL_BANE_OF_TREACHERY : SPELL_TREACHEROUS_AURA);
                 Aura_Timer = 8000+rand()%8000;
             }
-        }else Aura_Timer -= diff;
+        }
+        else
+            Aura_Timer -= diff;
 
         if (Shadowbolt_Timer < diff)
         {
@@ -190,7 +198,9 @@ struct TRINITY_DLL_DECL boss_omor_the_unscarredAI : public Scripted_NoMovementAI
                 DoCast(target,HeroicMode ? H_SPELL_SHADOW_BOLT : SPELL_SHADOW_BOLT);
                 Shadowbolt_Timer = 4000+rand()%2500;
             }
-        }else Shadowbolt_Timer -= diff;
+        }
+        else
+            Shadowbolt_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }

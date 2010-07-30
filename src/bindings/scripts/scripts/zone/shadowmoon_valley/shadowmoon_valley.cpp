@@ -40,7 +40,7 @@ npc_enraged_spirit
 EndContentData */
 
 #include "precompiled.h"
-#include "../../npc/npc_escortAI.h"
+#include "escort_ai.h"
 
 /*#####
 # mob_mature_netherwing_drake
@@ -77,8 +77,6 @@ struct TRINITY_DLL_DECL mob_mature_netherwing_drakeAI : public ScriptedAI
         EatTimer = 5000;
         CastTimer = 5000;
     }
-
-    void Aggro(Unit* who) { }
 
     void MoveInLineOfSight(Unit* who)
     {
@@ -198,8 +196,6 @@ struct TRINITY_DLL_DECL mob_enslaved_netherwing_drakeAI : public ScriptedAI
         m_creature->SetVisibility(VISIBILITY_ON);
     }
 
-    void Aggro(Unit* who) { }
-
     void SpellHit(Unit* caster, const SpellEntry* spell)
     {
         if(!caster)
@@ -317,8 +313,6 @@ struct TRINITY_DLL_DECL mob_dragonmaw_peonAI : public ScriptedAI
         Tapped = false;
         PoisonTimer = 0;
     }
-
-    void Aggro(Unit* who) { }
 
     void SpellHit(Unit* caster, const SpellEntry* spell)
     {
@@ -750,8 +744,6 @@ struct TRINITY_DLL_DECL npc_overlord_morghorAI : public ScriptedAI
         m_creature->SetUInt32Value(UNIT_NPC_FLAGS, 2);
     }
 
-    void Aggro(Unit* who){}
-
     void StartEvent()
     {
         m_creature->SetUInt32Value(UNIT_NPC_FLAGS, 0);
@@ -936,13 +928,14 @@ struct TRINITY_DLL_DECL npc_earthmender_wildaAI : public npc_escortAI
 
     bool Completed;
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
+        Player* player = GetPlayerForEscort();
 
         if(who->GetTypeId() == TYPEID_UNIT && who->GetEntry() == NPC_COILSKAR_ASSASSIN)
             DoScriptText(SAY_AGGRO2, m_creature, player);
-        else DoScriptText(SAY_AGGRO1, m_creature, player);
+        else
+            DoScriptText(SAY_AGGRO1, m_creature, player);
     }
 
     void Reset()
@@ -953,8 +946,7 @@ struct TRINITY_DLL_DECL npc_earthmender_wildaAI : public npc_escortAI
 
     void WaypointReached(uint32 i)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
-
+        Player* player = GetPlayerForEscort();
         if (!player)
             return;
 
@@ -1022,7 +1014,7 @@ struct TRINITY_DLL_DECL npc_earthmender_wildaAI : public npc_escortAI
 
        void SummonAssassin()
        {
-           Player* player = Unit::GetPlayer(PlayerGUID);
+           Player* player = GetPlayerForEscort();
 
            Unit* CoilskarAssassin = m_creature->SummonCreature(NPC_COILSKAR_ASSASSIN, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), m_creature->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 0);
            if( CoilskarAssassin )
@@ -1039,9 +1031,9 @@ struct TRINITY_DLL_DECL npc_earthmender_wildaAI : public npc_escortAI
 
        void JustDied(Unit* killer)
        {
-           if (PlayerGUID && !Completed)
+           if (!Completed)
            {
-               Player* player = Unit::GetPlayer(PlayerGUID);
+               Player* player = GetPlayerForEscort();
                if (player)
                    player->FailQuest(QUEST_ESCAPE_FROM_COILSKAR_CISTERN);
            }
@@ -1118,7 +1110,8 @@ bool QuestAccept_npc_earthmender_wilda(Player* player, Creature* creature, Quest
     if (quest->GetQuestId() == QUEST_ESCAPE_FROM_COILSKAR_CISTERN)
     {
         creature->setFaction(113);
-        ((npc_escortAI*)(creature->AI()))->Start(true, true, false, player->GetGUID());
+        if (npc_earthmender_wildaAI* pEscortAI = CAST_AI(npc_earthmender_wildaAI, creature->AI()))
+            pEscortAI->Start(false, false, player->GetGUID(), quest);
     }
     return true;
 }
@@ -1237,7 +1230,7 @@ struct TRINITY_DLL_DECL mob_illidari_spawnAI : public ScriptedAI
         Timers = false;
     }
 
-    void Aggro(Unit* who) {}
+    void EnterCombat(Unit* who) {}
     void JustDied(Unit* slayer);
 
     void UpdateAI(const uint32 diff)
@@ -1349,8 +1342,6 @@ struct TRINITY_DLL_DECL mob_torloth_the_magnificentAI : public ScriptedAI
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->SetUInt64Value(UNIT_FIELD_TARGET, 0);
     }
-
-    void Aggro(Unit* who){}
 
     void HandleAnimation()
     {
@@ -1505,7 +1496,6 @@ struct TRINITY_DLL_DECL npc_lord_illidan_stormrageAI : public ScriptedAI
         m_creature->SetVisibility(VISIBILITY_OFF);
     }
 
-    void Aggro(Unit* who) {}
     void MoveInLineOfSight(Unit* who) {}
     void AttackStart(Unit* who) {}
 
@@ -1764,7 +1754,7 @@ struct TRINITY_DLL_DECL npc_enraged_spiritAI : public ScriptedAI
 
     void Reset()   { }
 
-    void Aggro(Unit *who){}
+    void EnterCombat(Unit *who){}
 
     void JustDied(Unit* killer)
     {
@@ -1936,8 +1926,6 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
         PreludeEventStarted = false;
 
     }
-
-    void Aggro(Unit* who){}
 
     void BuildNearbyUnitsList()
     {
@@ -2275,10 +2263,9 @@ struct TRINITY_DLL_DECL npc_shadowlord_triggerAI : public Scripted_NoMovementAI
         SoulstealerList.clear();
         SoulstealerList = DoFindAllCreaturesWithEntry(22061, 80.0f);
         m_creature->Relocate(x, y, z);
-        InCombat = false;
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         m_creature->GetMotionMaster()->Clear();
         m_creature->GetMotionMaster()->MoveIdle();
@@ -2286,7 +2273,7 @@ struct TRINITY_DLL_DECL npc_shadowlord_triggerAI : public Scripted_NoMovementAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(!InCombat)
+        if(!m_creature->isInCombat())
             return;
 
         if(Check_Timer < diff)
@@ -2427,7 +2414,7 @@ struct TRINITY_DLL_DECL mob_shadowlord_deathwailAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if(!flying)
             return;
@@ -2470,7 +2457,7 @@ struct TRINITY_DLL_DECL mob_shadowlord_deathwailAI : public ScriptedAI
                 flying = true;
                 felfire = false;
             }
-            if(!InCombat && landed && trigger && trigger->isAlive())
+            if(!m_creature->isInCombat() && landed && trigger && trigger->isAlive())
                 Reset();
 
             if(!m_creature->HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE) && m_creature->GetPositionZ() < 142)
@@ -2479,7 +2466,7 @@ struct TRINITY_DLL_DECL mob_shadowlord_deathwailAI : public ScriptedAI
                 m_creature->SetSpeed(MOVE_WALK, 4.0);
                 m_creature->SetSpeed(MOVE_RUN, 2.0);
             }
-            if(felfire && trigger && ((npc_shadowlord_triggerAI*)((Creature*) trigger)->AI())->InCombat == false)
+            if(felfire && trigger && !trigger->isInCombat())
                 felfire = false;
             if(felfire)
                 AddSpellToCast(m_creature, SPELL_FEL_FIREBALL);
@@ -2554,7 +2541,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_soulstealerAI : public Scripted_NoMovemen
     {
         std::list<Unit*> party;
 
-        if(!InCombat && who->GetTypeId() == TYPEID_PLAYER  && m_creature->IsWithinDistInMap(who, 15.0f))
+        if(!m_creature->isInCombat() && who->GetTypeId() == TYPEID_PLAYER  && m_creature->IsWithinDistInMap(who, 15.0f))
         {
             who->GetPartyMember(party, 50.0f);
             for(std::list<Unit*>::iterator i = party.begin(); i != party.end(); ++i)
@@ -2565,12 +2552,10 @@ struct TRINITY_DLL_DECL mob_shadowmoon_soulstealerAI : public Scripted_NoMovemen
 
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         m_creature->SetStunned(true);
         m_creature->CombatStart(who);
-        if(Unit* EventTrigger = FindCreature(22096, 80.0, m_creature))
-            ((npc_shadowlord_triggerAI*)((Creature*) EventTrigger)->AI())->InCombat = true;
         if(Unit* Deathwail = FindCreature(22006, 100.0, m_creature))
             ((mob_shadowlord_deathwailAI*)((Creature*) Deathwail)->AI())->felfire = true;
     }

@@ -47,10 +47,6 @@ struct TRINITY_DLL_DECL mobs_bladespire_ogreAI : public ScriptedAI
     {
     }
 
-    void Aggro(Unit* who)
-    {
-    }
-
     void JustDied(Unit* Killer)
     {
         if (Killer->GetTypeId() == TYPEID_PLAYER)
@@ -100,19 +96,19 @@ struct TRINITY_DLL_DECL mobs_nether_drakeAI : public ScriptedAI
     {
         NihilSpeech_Timer = 2000;
         IsNihil = false;
+
         if( m_creature->GetEntry() == ENTRY_NIHIL )
         {
             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             IsNihil = true;
         }
+
         NihilSpeech_Phase = 1;
 
         ArcaneBlast_Timer = 7500;
         ManaBurn_Timer = 10000;
         IntangiblePresence_Timer = 15000;
     }
-
-    void Aggro(Unit* who) { }
 
     void SpellHit(Unit *caster, const SpellEntry *spell)
     {
@@ -179,8 +175,7 @@ struct TRINITY_DLL_DECL mobs_nether_drakeAI : public ScriptedAI
                     m_creature->InterruptNonMeleeSpells(true);
                     m_creature->RemoveAllAuras();
                     m_creature->DeleteThreatList();
-                    m_creature->CombatStop();
-                    InCombat = false;
+                    m_creature->CombatStop(true);
                     Reset();
                 }
             }
@@ -223,7 +218,9 @@ struct TRINITY_DLL_DECL mobs_nether_drakeAI : public ScriptedAI
                             break;
                     }
                     NihilSpeech_Timer = 5000;
-                }else NihilSpeech_Timer -=diff;
+                }
+                else
+                    NihilSpeech_Timer -=diff;
             }
             return;                                         //anything below here is not interesting for Nihil, so skip it
         }
@@ -235,7 +232,9 @@ struct TRINITY_DLL_DECL mobs_nether_drakeAI : public ScriptedAI
         {
             DoCast(m_creature->getVictim(),SPELL_INTANGIBLE_PRESENCE);
             IntangiblePresence_Timer = 15000+rand()%15000;
-        }else IntangiblePresence_Timer -= diff;
+        }
+        else
+            IntangiblePresence_Timer -= diff;
 
         if( ManaBurn_Timer <= diff )
         {
@@ -243,13 +242,17 @@ struct TRINITY_DLL_DECL mobs_nether_drakeAI : public ScriptedAI
             if( target && target->getPowerType() == POWER_MANA )
                 DoCast(target,SPELL_MANA_BURN);
             ManaBurn_Timer = 8000+rand()%8000;
-        }else ManaBurn_Timer -= diff;
+        }
+        else
+            ManaBurn_Timer -= diff;
 
         if( ArcaneBlast_Timer <= diff )
         {
             DoCast(m_creature->getVictim(),SPELL_ARCANE_BLAST);
             ArcaneBlast_Timer = 2500+rand()%5000;
-        }else ArcaneBlast_Timer -= diff;
+        }
+        else
+            ArcaneBlast_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }
@@ -270,10 +273,6 @@ struct TRINITY_DLL_DECL npc_daranelleAI : public ScriptedAI
     npc_daranelleAI(Creature *c) : ScriptedAI(c) {}
 
     void Reset()
-    {
-    }
-
-    void Aggro(Unit* who)
     {
     }
 
@@ -424,8 +423,6 @@ struct npc_bloodmaul_brutebaneAI : public ScriptedAI
         OgreGUID = 0;
     }
 
-    void Aggro(Unit* who) {}
-
     void UpdateAI(const uint32 uiDiff) {}
 };
 
@@ -448,8 +445,6 @@ struct npc_ogre_bruteAI : public ScriptedAI
     {
         PlayerGUID = 0;
     }
-
-    void Aggro(Unit* who) {}
 
     void MoveInLineOfSight(Unit *who)
     {

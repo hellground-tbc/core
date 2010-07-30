@@ -23,7 +23,7 @@ EndScriptData */
 
 #include "precompiled.h"
 #include "def_serpent_shrine.h"
-#include "../../../npc/npc_escortAI.h"
+#include "escort_ai.h"
 
 #define SAY_AGGRO                   -1548021
 #define SAY_GAIN_BLESSING           -1548022
@@ -241,7 +241,7 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
         m_creature->SummonCreature(SEER_OLUM, OLUM_X, OLUM_Y, OLUM_Z, OLUM_O, TEMPSUMMON_TIMED_DESPAWN, 3600000);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         StartEvent(who);
     }
@@ -249,7 +249,7 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
     void UpdateAI(const uint32 diff)
     {
         //Only if not incombat check if the event is started
-        if (!InCombat && pInstance && pInstance->GetData(DATA_KARATHRESSEVENT))
+        if (!m_creature->isInCombat() && pInstance && pInstance->GetData(DATA_KARATHRESSEVENT))
         {
             Unit* target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_KARATHRESSEVENT_STARTER));
 
@@ -428,7 +428,7 @@ struct TRINITY_DLL_DECL boss_fathomguard_sharkkisAI : public ScriptedAI
        }
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if(pInstance)
             pInstance->SetData64(DATA_KARATHRESSEVENT_STARTER, who->GetGUID());
@@ -437,7 +437,7 @@ struct TRINITY_DLL_DECL boss_fathomguard_sharkkisAI : public ScriptedAI
     void UpdateAI(const uint32 diff)
     {
         //Only if not incombat check if the event is started
-        if (!InCombat && pInstance && pInstance->GetData(DATA_KARATHRESSEVENT))
+        if (!m_creature->isInCombat() && pInstance && pInstance->GetData(DATA_KARATHRESSEVENT))
         {
             if(Unit* target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_KARATHRESSEVENT_STARTER)))
                 AttackStart(target);
@@ -537,7 +537,7 @@ struct TRINITY_DLL_DECL boss_fathomguard_tidalvessAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if (pInstance)
             pInstance->SetData64(DATA_KARATHRESSEVENT_STARTER, who->GetGUID());
@@ -548,7 +548,7 @@ struct TRINITY_DLL_DECL boss_fathomguard_tidalvessAI : public ScriptedAI
     void UpdateAI(const uint32 diff)
     {
         //Only if not incombat check if the event is started
-        if (!InCombat && pInstance && pInstance->GetData(DATA_KARATHRESSEVENT))
+        if (!m_creature->isInCombat() && pInstance && pInstance->GetData(DATA_KARATHRESSEVENT))
         {
             if(Unit* target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_KARATHRESSEVENT_STARTER)))
                 AttackStart(target);
@@ -672,7 +672,7 @@ struct TRINITY_DLL_DECL boss_fathomguard_caribdisAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if(pInstance)
             pInstance->SetData64(DATA_KARATHRESSEVENT_STARTER, who->GetGUID());
@@ -681,7 +681,7 @@ struct TRINITY_DLL_DECL boss_fathomguard_caribdisAI : public ScriptedAI
     void UpdateAI(const uint32 diff)
     {
         //Only if not incombat check if the event is started
-        if(pInstance && !InCombat && pInstance->GetData(DATA_KARATHRESSEVENT))
+        if(pInstance && !m_creature->isInCombat() && pInstance->GetData(DATA_KARATHRESSEVENT))
         {
             if(Unit* target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_KARATHRESSEVENT_STARTER)))
                 AttackStart(target);
@@ -771,7 +771,7 @@ struct TRINITY_DLL_DECL mob_caribdis_cycloneAI : public ScriptedAI
         Swap_Timer = 0;
     }
 
-    void Aggro(Unit *who) 
+    void EnterCombat(Unit *who) 
     {
         AttackStart(who);
     }

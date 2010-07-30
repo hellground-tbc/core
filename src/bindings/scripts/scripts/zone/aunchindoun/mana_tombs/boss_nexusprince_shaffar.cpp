@@ -140,7 +140,7 @@ struct TRINITY_DLL_DECL boss_nexusprince_shaffarAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         switch(rand()%3)
         {
@@ -269,7 +269,7 @@ struct TRINITY_DLL_DECL mob_ethereal_beaconAI : public ScriptedAI
         Check_Timer = 1000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         // Send Shaffar to fight
         Unit* Shaffar = FindCreature(ENTRY_SHAFFAR, 100, m_creature);
@@ -351,8 +351,6 @@ struct TRINITY_DLL_DECL mob_ethereal_apprenticeAI : public ScriptedAI
         Cast_Timer = 3000;
         isFireboltTurn = true;
     }
-
-    void Aggro(Unit* who) {}
 
     void UpdateAI(const uint32 diff)
     {

@@ -26,6 +26,7 @@
 #include "DestinationHolderImp.h"
 #include "Map.h"
 #include "Util.h"
+#include "CreatureGroups.h"
 
 #define RUNNING_CHANCE_RANDOMMV 20                                  //will be "1 / RUNNING_CHANCE_RANDOMMV"
 
@@ -123,12 +124,12 @@ RandomMovementGenerator<Creature>::Initialize(Creature &creature)
     if(!creature.isAlive())
         return;
 
-    wander_distance = creature.GetRespawnRadius();
+    if(!wander_distance)
+        wander_distance = creature.GetRespawnRadius();
 
-    if (creature.canFly())
-        creature.AddUnitMovementFlag(MOVEMENTFLAG_FLYING2);
-    else
-      creature.SetUnitMovementFlags(creature.GetMap()->irand(0,RUNNING_CHANCE_RANDOMMV) > 0 ? MOVEMENTFLAG_WALK_MODE : MOVEMENTFLAG_NONE );
+    if(irand(0,RUNNING_CHANCE_RANDOMMV) > 0)
+        creature.AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+
     _setRandomLocation(creature);
 }
 
@@ -174,7 +175,7 @@ RandomMovementGenerator<Creature>::Update(Creature &creature, const uint32 &diff
               creature.SetUnitMovementFlags(creature.GetMap()->irand(0,RUNNING_CHANCE_RANDOMMV) > 0 ? MOVEMENTFLAG_WALK_MODE : MOVEMENTFLAG_NONE);
             _setRandomLocation(creature);
         }
-        else if(creature.isPet() && creature.GetOwner() && creature.GetDistance(creature.GetOwner()) > PET_FOLLOW_DIST+2.5f)
+        else if(creature.isPet() && creature.GetOwner() && !creature.IsWithinDist(creature.GetOwner(),PET_FOLLOW_DIST+2.5f))
         {
            creature.SetUnitMovementFlags(MOVEMENTFLAG_NONE);
            _setRandomLocation(creature);

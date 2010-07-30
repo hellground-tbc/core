@@ -453,7 +453,11 @@ Unit *caster, Item* castItem) : Aura(spellproto, eff, currentBasePoints, target,
     // caster==NULL in constructor args if target==caster in fact
     Unit* caster_ptr = caster ? caster : target;
 
-    m_radius = GetSpellRadius(sSpellRadiusStore.LookupEntry(GetSpellProto()->EffectRadiusIndex[m_effIndex]));
+    if (spellproto->Effect[eff] == SPELL_EFFECT_APPLY_AREA_AURA_ENEMY)
+        m_radius = GetSpellRadius(spellproto,m_effIndex,false);
+    else
+        m_radius = GetSpellRadius(spellproto,m_effIndex,true);
+    
     if(Player* modOwner = caster_ptr->GetSpellModOwner())
         modOwner->ApplySpellMod(GetId(), SPELLMOD_RADIUS, m_radius);
 
@@ -5716,6 +5720,9 @@ void Aura::HandleAuraAllowFlight(bool apply, bool Real)
     // all applied/removed only at real aura add/remove
     if(!Real)
         return;
+
+    if(m_target->GetTypeId() == TYPEID_UNIT)
+        m_target->SetFlying(apply);
 
     // allow fly
     WorldPacket data;

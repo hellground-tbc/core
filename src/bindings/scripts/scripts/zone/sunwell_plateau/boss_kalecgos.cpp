@@ -165,12 +165,15 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             damage = 0;
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         m_creature->SetStandState(PLAYER_STATE_NONE);
         DoScriptText(SAY_EVIL_AGGRO, m_creature);
+
         GameObject *Door = GameObject::GetGameObject(*m_creature, DoorGUID);
-        if(Door) Door->SetLootState(GO_ACTIVATED);
+        if(Door)
+            Door->SetLootState(GO_ACTIVATED);
+
         DoZoneInCombat();
 
         if(pInstance)
@@ -188,7 +191,14 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
 
     void MovementInform(uint32 type,uint32 id)
     {
+        if(type != POINT_MOTION_TYPE)
+            return;
+
+        if(id != 1)
+            return;
+
         m_creature->SetVisibility(VISIBILITY_OFF);
+        
         if(isFriendly)
             m_creature->setDeathState(JUST_DIED);
         else
@@ -293,7 +303,7 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
             pInstance->SetData(DATA_KALECGOS_EVENT, NOT_STARTED);
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         Creature *Kalec = m_creature->SummonCreature(MOB_KALEC, m_creature->GetPositionX() + 10, m_creature->GetPositionY() + 5, m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 0);
         if(Kalec)
@@ -473,8 +483,6 @@ struct TRINITY_DLL_DECL boss_kalecAI : public ScriptedAI
 
         isEnraged = false;
     }
-
-    void Aggro(Unit* who) {}
 
     void DamageTaken(Unit *done_by, uint32 &damage)
     {

@@ -110,7 +110,7 @@ struct TRINITY_DLL_DECL npc_enslaved_soulAI : public ScriptedAI
 
     void Reset(){}
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         DoCast(m_creature, ENSLAVED_SOUL_PASSIVE, true);
     }
@@ -170,7 +170,7 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public ScriptedAI
         m_creature->RemoveAurasDueToSpell(SPELL_SUBMERGE);
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         m_creature->AddThreat(who, 10000.0f);
         DoZoneInCombat();
@@ -181,15 +181,6 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public ScriptedAI
         Phase = 1;
         Counter = 0;
         Timer = 0;
-    }
-
-    void AttackStart(Unit* who)
-    {
-        if (!InCombat)
-        {
-            Aggro(who);
-            InCombat = true;
-        }
     }
 
     bool SummonSoul()
@@ -215,8 +206,6 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public ScriptedAI
     {
         if(pInstance)
             pInstance->SetData(DATA_RELIQUARYOFSOULSEVENT, DONE);
-
-        InCombat = false;
     }
 
     bool FindPlayers()
@@ -458,7 +447,7 @@ struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoZoneInCombat();
         DoScriptText(SUFF_SAY_FREED, m_creature);
@@ -517,7 +506,7 @@ struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(InCombat)
+        if(m_creature->isInCombat())
         {
             //Supposed to be cast on nearest target
             if(FixateTimer < diff)
@@ -621,7 +610,7 @@ struct TRINITY_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if(m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
              return;
@@ -713,7 +702,7 @@ struct TRINITY_DLL_DECL boss_essence_of_angerAI : public ScriptedAI
         CheckedAggro = false;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         switch(rand()%2)
         {

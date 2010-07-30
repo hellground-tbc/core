@@ -27,7 +27,7 @@ npc_kaya_flathoof
 EndContentData */
 
 #include "precompiled.h"
-#include "../../npc/npc_escortAI.h"
+#include "escort_ai.h"
 
 /*######
 ## npc_braug_dimspirit
@@ -95,7 +95,7 @@ struct TRINITY_DLL_DECL npc_kaya_flathoofAI : public npc_escortAI
 
     void WaypointReached(uint32 i)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
+        Player* player = GetPlayerForEscort();
 
         if(!player)
             return;
@@ -121,30 +121,15 @@ struct TRINITY_DLL_DECL npc_kaya_flathoofAI : public npc_escortAI
     }
 
     void Reset(){}
-
-    void Aggro(Unit* who){}
-
-    void JustDied(Unit* killer)
-    {
-        if (PlayerGUID)
-        {
-            Player* player = Unit::GetPlayer(PlayerGUID);
-            if (player)
-                player->FailQuest(QUEST_PK);
-        }
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-        npc_escortAI::UpdateAI(diff);
-    }
 };
 
 bool QuestAccept_npc_kaya_flathoof(Player* player, Creature* creature, Quest const* quest)
 {
     if (quest->GetQuestId() == QUEST_PK)
     {
-        ((npc_escortAI*)(creature->AI()))->Start(true, true, false, player->GetGUID());
+        if (npc_escortAI* pEscortAI = CAST_AI(npc_kaya_flathoofAI, creature->AI()))
+            pEscortAI->Start(true, true, player->GetGUID(), quest);
+
         DoScriptText(SAY_START, creature);
         creature->setFaction(113);
         creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);

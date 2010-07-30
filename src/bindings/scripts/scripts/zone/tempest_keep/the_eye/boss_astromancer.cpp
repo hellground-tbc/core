@@ -168,7 +168,7 @@ struct TRINITY_DLL_DECL boss_high_astromancer_solarianAI : public ScriptedAI
             pInstance->SetData(DATA_HIGHASTROMANCERSOLARIANEVENT, DONE);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         StartEvent();
     }
@@ -474,7 +474,7 @@ struct TRINITY_DLL_DECL mob_solarium_priestAI : public ScriptedAI
         aoesilenceTimer = 15000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
     }
 

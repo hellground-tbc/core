@@ -26,7 +26,7 @@ npc_willix
 EndContentData */
 
 #include "precompiled.h"
-#include "../../npc/npc_escortAI.h"
+#include "escort_ai.h"
 #include "def_razorfen_kraul.h"
 
 #define SAY_READY -1047000
@@ -51,7 +51,7 @@ struct TRINITY_DLL_DECL npc_willixAI : public npc_escortAI
 
     void WaypointReached(uint32 i)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
+        Player* player = GetPlayerForEscort();
 
         if (!player)
             return;
@@ -101,7 +101,7 @@ struct TRINITY_DLL_DECL npc_willixAI : public npc_escortAI
 
     void Reset() {}
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         DoScriptText(SAY_AGGRO1, m_creature, NULL);
     }
@@ -113,11 +113,8 @@ struct TRINITY_DLL_DECL npc_willixAI : public npc_escortAI
 
     void JustDied(Unit* killer)
     {
-        if (PlayerGUID)
-        {
-            if (Player* player = Unit::GetPlayer(PlayerGUID))
-                player->FailQuest(QUEST_WILLIX_THE_IMPORTER);
-        }
+        if (Player* pPlayer = GetPlayerForEscort())
+            CAST_PLR(pPlayer)->FailQuest(QUEST_WILLIX_THE_IMPORTER);
     }
 
     void UpdateAI(const uint32 diff)
@@ -130,7 +127,7 @@ bool QuestAccept_npc_willix(Player* player, Creature* creature, Quest const* que
 {
     if (quest->GetQuestId() == QUEST_WILLIX_THE_IMPORTER)
     {
-        ((npc_escortAI*)(creature->AI()))->Start(true, true, false, player->GetGUID());
+        CAST_AI(npc_escortAI, (creature->AI()))->Start(true, false, player->GetGUID());
         DoScriptText(SAY_READY, creature, player);
         creature->setFaction(113);
     }
@@ -154,7 +151,7 @@ struct TRINITY_DLL_DECL npc_deaths_head_ward_keeperAI : public ScriptedAI
         QuillboarChanneling_Timer = 1500;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
     }
 

@@ -85,7 +85,7 @@ struct TRINITY_DLL_DECL mob_voidtravelerAI : public ScriptedAI
         sacrificed = false;
     }
 
-    void Aggro(Unit *who){}
+    void EnterCombat(Unit *who){}
 
     void UpdateAI(const uint32 diff)
     {
@@ -242,7 +242,7 @@ struct TRINITY_DLL_DECL boss_grandmaster_vorpilAI : public ScriptedAI
             pInstance->SetData(DATA_GRANDMASTERVORPILEVENT, DONE);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         switch(rand()%3)
         {

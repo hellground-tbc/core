@@ -19,87 +19,83 @@
  */
 
 #include "CreatureAI.h"
+#include "CreatureAIImpl.h"
 #include "Creature.h"
-#include "Player.h"
-#include "Pet.h"
-#include "SpellAuras.h"
 #include "World.h"
-
-void UnitAI::AttackStart(Unit *victim)
-{
-    if(!victim)
-        return;
-
-    if(me->Attack(victim, true))
-    {
-        //DEBUG_LOG("Creature %s tagged a victim to kill [guid=%u]", me->GetName(), victim->GetGUIDLow());
-        me->GetMotionMaster()->MoveChase(victim);
-    }
-}
-
-bool UnitAI::CanCast(Unit* Target, SpellEntry const *Spell, bool Triggered)
-{
-    //No target so we can't cast
-    if (!Target || !Spell || me->hasUnitState(UNIT_STAT_CASTING))
-        return false;
-
-    //Silenced so we can't cast
-    if (!Triggered && me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SILENCED))
-        return false;
-
-    if(!Triggered && me->GetTypeId() == TYPEID_PLAYER && ((Player*)me)->HasGlobalCooldown(Spell))
-        return false;
-
-    if(!Triggered && me->GetTypeId() == TYPEID_PLAYER && ((Player*)me)->HasSpellCooldown(Spell->Id))
-        return false;
-
-    //Check for power
-    if (!Triggered && me->GetPower((Powers)Spell->powerType) < Spell->manaCost)
-        return false;
-
-    SpellRangeEntry const *TempRange = NULL;
-
-    TempRange = GetSpellRangeStore()->LookupEntry(Spell->rangeIndex);
-
-    //Spell has invalid range store so we can't use it
-    if (!TempRange)
-        return false;
-
-    //Unit is out of range of this spell
-    if (me->GetDistance(Target) > TempRange->maxRange || me->GetDistance(Target) < TempRange->minRange)
-        return false;
-
-    return true;
-}
-
-void UnitAI::DoMeleeAttackIfReady()
-{
-    //Make sure our attack is ready and we aren't currently casting before checking distance
-    if (me->isAttackReady() && !me->hasUnitState(UNIT_STAT_CASTING))
-    {
-        //If we are within range melee the target
-        if (me->IsWithinMeleeRange(me->getVictim()))
-        {
-            me->AttackerStateUpdate(me->getVictim());
-            me->resetAttackTimer();
-        }
-    }
-    if (me->haveOffhandWeapon() && me->isAttackReady(OFF_ATTACK) && !me->hasUnitState(UNIT_STAT_CASTING))
-    {
-        //If we are within range melee the target
-        if (me->IsWithinMeleeRange(me->getVictim()))
-        {
-            me->AttackerStateUpdate(me->getVictim(), OFF_ATTACK);
-            me->resetAttackTimer(OFF_ATTACK);
-        }
-    }
-}
-
+#include "SpellMgr.h"
 
 void CreatureAI::OnCharmed(bool apply)
 {
     me->NeedChangeAI = true;
     me->IsAIEnabled = false;
+}
+
+AISpellInfoType * UnitAI::AISpellInfo;
+TRINITY_DLL_SPEC AISpellInfoType * GetAISpellInfo(uint32 i) { return &CreatureAI::AISpellInfo[i]; }
+
+void CreatureAI::DoZoneInCombat(Creature* creature)
+{
+    if (!creature)
+        creature = me;
+
+    if(!creature->CanHaveThreatList())
+        return;
+
+    Map *map = creature->GetMap();
+    if (!map->IsDungeon())                                  //use IsDungeon instead of Instanceable, in case battlegrounds will be instantiated
+    {
+        sLog.outError("DoZoneInCombat call for map that isn't an instance (creature entry = %d)", creature->GetTypeId() == TYPEID_UNIT ? ((Creature*)creature)->GetEntry() : 0);
+        return;
+    }
+
+    if(!creature->HasReactState(REACT_PASSIVE) && !creature->getVictim())
+    {
+        if(Unit *target = creature->SelectNearestTarget(50))
+            creature->AI()->AttackStart(target);
+        else if(Unit *summoner = creature->GetOwner())
+        {
+                Unit *target = summoner->getAttackerForHelper();
+                if(!target && summoner->CanHaveThreatList() && !summoner->getThreatManager().isThreatListEmpty())
+                    target = summoner->getThreatManager().getHostilTarget();
+                if(target && (creature->IsFriendlyTo(summoner) || creature->IsHostileTo(target)))
+                    creature->AI()->AttackStart(target);
+        }
+    }
+
+    if(!creature->HasReactState(REACT_PASSIVE) && !creature->getVictim())
+    {
+        sLog.outError("DoZoneInCombat called for creature that has empty threat list (creature entry = %u)", creature->GetEntry());
+        return;
+    }
+
+    Map::PlayerList const &PlList = map->GetPlayers();
+
+    if(PlList.isEmpty())
+        return;
+
+    for(Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
+    {
+        if(Player* pPlayer = i->getSource())
+        {
+            if(pPlayer->isGameMaster())
+                continue;
+
+            if(pPlayer->isAlive())
+            {
+                creature->SetInCombatWith(pPlayer);
+                pPlayer->SetInCombatWith(creature);
+                creature->AddThreat(pPlayer, 0.0f);
+            }
+
+            /* Causes certain things to never leave the threat list (Priest Lightwell, etc):
+            for(Unit::ControlList::const_iterator itr = pPlayer->m_Controlled.begin(); itr != pPlayer->m_Controlled.end(); ++itr)
+            {
+                creature->SetInCombatWith(*itr);
+                (*itr)->SetInCombatWith(creature);
+                creature->AddThreat(*itr, 0.0f);
+            }*/
+        }
+    }
 }
 
 void CreatureAI::MoveInLineOfSight(Unit *who)
@@ -112,35 +108,41 @@ void CreatureAI::MoveInLineOfSight(Unit *who)
         AttackStart(who);
         who->CombatStart(me);
     }
-    else if(who->getVictim() && me->IsFriendlyTo(who)
-        && me->IsWithinDistInMap(who, sWorld.getConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS))
-        && me->canAttack(who->getVictim()))
-        AttackStart(who->getVictim());
+    //else if(who->getVictim() && me->IsFriendlyTo(who)
+    //    && me->IsWithinDistInMap(who, sWorld.getConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS))
+    //    && me->canAttack(who->getVictim()))
+    //    AttackStart(who->getVictim());
 }
 
-bool CreatureAI::UpdateVictim()
+void CreatureAI::SelectNearestTarget(Unit *who)
 {
-    if(!me->isInCombat())
-        return false;
-
-    if(me->getVictim() && me->hasUnitState(UNIT_STAT_CASTING))
-        return me->getVictim();
-
-    if(Unit *victim = me->SelectVictim())
-        AttackStart(victim);
-
-    return me->getVictim();
+    if(me->getVictim() && me->GetDistanceOrder(who, me->getVictim()) && me->canAttack(who))
+    {
+        me->getThreatManager().modifyThreatPercent(me->getVictim(), -100);
+        me->AddThreat(who, 1000000.0f);
+    }
 }
 
 void CreatureAI::EnterEvadeMode()
 {
-    me->RemoveAllAuras();
-    me->DeleteThreatList();
-    me->CombatStop();
-    me->LoadCreaturesAddon();
-    me->SetLootRecipient(NULL);
-    me->ResetPlayerDamageReq();
+    if(!_EnterEvadeMode())
+        return;
 
-    if(me->isAlive())
-        me->GetMotionMaster()->MoveTargetedHome();
+    sLog.outDebug("Creature %u enters evade mode.", me->GetEntry());
+
+    if(Unit *owner = me->GetCharmerOrOwner())
+    {
+        me->GetMotionMaster()->Clear(false);
+        me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, m_creature->GetFollowAngle(), MOTION_SLOT_ACTIVE);
+    }
+    else
+         me->GetMotionMaster()->MoveTargetedHome();
+
+    Reset();
 }
+
+/*void CreatureAI::AttackedBy( Unit* attacker )
+ {
+    if(!m_creature->getVictim())
+        AttackStart(attacker);
+}*/

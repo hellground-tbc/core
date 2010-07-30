@@ -70,7 +70,7 @@ struct TRINITY_DLL_DECL boss_captain_skarlocAI : public ScriptedAI
         Consecration_Timer = 8000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if(Creature *tAdd1 = DoSpawnCreature( C_WARDEN, 2, 2, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 6000))
             tAdd1->AI()->AttackStart(who);

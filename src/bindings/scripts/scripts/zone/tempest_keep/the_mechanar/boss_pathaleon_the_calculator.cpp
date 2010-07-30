@@ -82,7 +82,7 @@ struct TRINITY_DLL_DECL boss_pathaleon_the_calculatorAI : public ScriptedAI
         Counter = 0;
         summons.DespawnAll();
     }
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
     }
@@ -209,7 +209,7 @@ struct TRINITY_DLL_DECL mob_nether_wraithAI : public ScriptedAI
 
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
     }
 

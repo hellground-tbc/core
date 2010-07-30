@@ -32,7 +32,7 @@ go_landmark_treasure
 EndContentData */
 
 #include "precompiled.h"
-#include "../../npc/npc_escortAI.h"
+#include "escort_ai.h"
 
 /*######
 ## mob_aquementas
@@ -79,7 +79,7 @@ struct TRINITY_DLL_DECL mob_aquementasAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         DoScriptText(AGGRO_YELL_AQUE, m_creature, who);
     }
@@ -153,7 +153,7 @@ struct TRINITY_DLL_DECL npc_custodian_of_timeAI : public npc_escortAI
 
     void WaypointReached(uint32 i)
     {
-        Player *pTemp = Unit::GetPlayer(PlayerGUID);
+        Player *pTemp = GetPlayerForEscort();
         if( !pTemp )
             return;
 
@@ -187,7 +187,7 @@ struct TRINITY_DLL_DECL npc_custodian_of_timeAI : public npc_escortAI
 
     void MoveInLineOfSight(Unit *who)
     {
-        if( IsBeingEscorted )
+        if(HasEscortState(STATE_ESCORT_ESCORTING))
             return;
 
         if( who->GetTypeId() == TYPEID_PLAYER )
@@ -197,13 +197,13 @@ struct TRINITY_DLL_DECL npc_custodian_of_timeAI : public npc_escortAI
                 float Radius = 10.0;
                 if( m_creature->IsWithinDistInMap(who, Radius) )
                 {
-                    ((npc_escortAI*)(m_creature->AI()))->Start(false, false, false, who->GetGUID());
+                    if (npc_escortAI* pEscortAI = CAST_AI(npc_custodian_of_timeAI, m_creature->AI()))
+                        pEscortAI->Start(false, false, who->GetGUID());
                 }
             }
         }
     }
 
-    void Aggro(Unit* who) { }
     void Reset() { }
 
     void UpdateAI(const uint32 diff)
@@ -388,7 +388,7 @@ struct TRINITY_DLL_DECL npc_OOX17AI : public npc_escortAI
 
     void WaypointReached(uint32 i)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
+        Player* player = GetPlayerForEscort();
 
         if (!player)
             return;
@@ -421,7 +421,7 @@ struct TRINITY_DLL_DECL npc_OOX17AI : public npc_escortAI
 
     void Reset(){}
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         switch (rand()%2)
         {
@@ -434,24 +434,7 @@ struct TRINITY_DLL_DECL npc_OOX17AI : public npc_escortAI
     {
         summoned->AI()->AttackStart(m_creature);
     }
-
-    void JustDied(Unit* killer)
-    {
-        if (PlayerGUID)
-        {
-            if (Player* player = Unit::GetPlayer(PlayerGUID))
-                player->FailQuest(Q_OOX17);
-        }
-    }
-
-
-    void UpdateAI(const uint32 diff)
-    {
-        npc_escortAI::UpdateAI(diff);
-        if (!UpdateVictim())
-            return;
-    }
-    };
+};
 
 bool QuestAccept_npc_OOX17(Player* player, Creature* creature, Quest const* quest)
 {
@@ -462,7 +445,8 @@ bool QuestAccept_npc_OOX17(Player* player, Creature* creature, Quest const* ques
         creature->SetUInt32Value(UNIT_FIELD_BYTES_1,0);
         creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
         DoScriptText(SAY_CHICKEN_ACC, creature);
-        ((npc_escortAI*)(creature->AI()))->Start(true, true, false, player->GetGUID());
+        if (npc_escortAI* pEscortAI = CAST_AI(npc_OOX17AI, creature->AI()))
+            pEscortAI->Start(true, true, player->GetGUID(), quest);
 
     }
     return true;
@@ -621,9 +605,7 @@ struct TRINITY_DLL_DECL npc_anachronosAI : public ScriptedAI
 {
     npc_anachronosAI(Creature *c) : ScriptedAI(c) {}
 
-    void Aggro(Unit* who){}
-
-    void UpdateAI(const uint32 diff)
+   void UpdateAI(const uint32 diff)
    {
         if (!UpdateVictim() )
             return;

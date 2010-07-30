@@ -72,7 +72,7 @@ struct TRINITY_DLL_DECL boss_aeonusAI : public ScriptedAI
         DoScriptText(SAY_ENTER, m_creature);
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void MoveInLineOfSight(Unit *who)
     {

@@ -75,7 +75,7 @@ struct TRINITY_DLL_DECL boss_twilight_corrupterAI : public ScriptedAI
         CreatureOfNightmare_Timer = 30000;
         KillCount = 0;
     }
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         m_creature->MonsterYell("The Nightmare cannot be stopped!",0,m_creature->GetGUID());
     }

@@ -29,7 +29,7 @@ npc_taretha
 EndContentData */
 
 #include "precompiled.h"
-#include "../../../npc/npc_escortAI.h"
+#include "escort_ai.h"
 #include "def_old_hillsbrad.h"
 
 #define QUEST_ENTRY_HILLSBRAD   10282
@@ -211,6 +211,7 @@ struct TRINITY_DLL_DECL npc_thrall_old_hillsbradAI : public npc_escortAI
     npc_thrall_old_hillsbradAI(Creature *c) : npc_escortAI(c)
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        HadMount = false;
         m_creature->setActive(true);
     }
 
@@ -235,7 +236,6 @@ struct TRINITY_DLL_DECL npc_thrall_old_hillsbradAI : public npc_escortAI
                 break;
             case 9:
                 DoScriptText(SAY_TH_ARMORY, m_creature);
-                SetRun(false);
                 m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY, THRALL_WEAPON_MODEL);
                 m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO, THRALL_WEAPON_INFO);
                 m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO+1, 781);
@@ -244,7 +244,7 @@ struct TRINITY_DLL_DECL npc_thrall_old_hillsbradAI : public npc_escortAI
                 m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO+3, 1038);
                 break;
             case 10:
-                m_creature->SetUInt32Value(UNIT_FIELD_DISPLAYID, THRALL_MODEL_EQUIPPED);
+                m_creature->SetDisplayId(THRALL_MODEL_EQUIPPED);
                 break;
             case 11:
                 SetRun();
@@ -273,13 +273,12 @@ struct TRINITY_DLL_DECL npc_thrall_old_hillsbradAI : public npc_escortAI
                 //temporary,skarloc should rather be triggered to walk up to thrall
                 break;
             case 30:
-                IsOnHold = true;
+                SetEscortPaused(true);
                 m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                 SetRun(false);
                 break;
             case 31:
                 DoScriptText(SAY_TH_MOUNTS_UP, m_creature);
-                m_creature->HandleEmoteCommand(EMOTE_ONESHOT_TALK);
                 DoMount();
                 SetRun();
                 break;
@@ -298,7 +297,7 @@ struct TRINITY_DLL_DECL npc_thrall_old_hillsbradAI : public npc_escortAI
             case 60:
                 m_creature->HandleEmoteCommand(EMOTE_ONESHOT_EXCLAMATION);
                 //make horsie run off
-                IsOnHold = true;
+                SetEscortPaused(true);
                 m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                 pInstance->SetData(TYPE_THRALL_PART2, DONE);
                 SetRun();
@@ -347,15 +346,13 @@ struct TRINITY_DLL_DECL npc_thrall_old_hillsbradAI : public npc_escortAI
             case 95:
                 DoScriptText(SAY_TH_MEET_TARETHA, m_creature);
                 pInstance->SetData(TYPE_THRALL_PART3,DONE);
-                IsOnHold = true;
+                SetEscortPaused(true);
                 break;
             case 96:
                 DoScriptText(SAY_TH_EPOCH_WONDER, m_creature);
-                 m_creature->HandleEmoteCommand(EMOTE_ONESHOT_TALK);
                 break;
             case 97:
                 DoScriptText(SAY_TH_EPOCH_KILL_TARETHA, m_creature);
-                m_creature->HandleEmoteCommand(EMOTE_ONESHOT_EXCLAMATION);
                 SetRun();
                 break;
             case 98:
@@ -365,20 +362,20 @@ struct TRINITY_DLL_DECL npc_thrall_old_hillsbradAI : public npc_escortAI
 
             case 106:
                 {
-                    if (!PlayerGUID)
-                        break;
-
                     //trigger taretha to run down outside
                     if (uint64 TarethaGUID = pInstance->GetData64(DATA_TARETHA))
                     {
                         if (Creature* Taretha = (Unit::GetCreature(*m_creature, TarethaGUID)))
-                            ((npc_escortAI*)(Taretha->AI()))->Start(false, false, true, PlayerGUID);
+                        {
+                            if (Player* pPlayer = GetPlayerForEscort())
+                                CAST_AI(npc_escortAI, (Taretha->AI()))->Start(false, true, pPlayer->GetGUID());
+                        }
                     }
 
-                    //kill credit creature for quest
-                    Map *map = m_creature->GetMap();
-                    Map::PlayerList const& players = map->GetPlayers();
-                    if (!players.isEmpty() && map->IsDungeon())
+                    //kill credit Creature for quest
+                    Map* pMap = m_creature->GetMap();
+                    Map::PlayerList const& players = pMap->GetPlayers();
+                    if (!players.isEmpty() && pMap->IsDungeon())
                     {
                         for(Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                         {
@@ -406,7 +403,7 @@ struct TRINITY_DLL_DECL npc_thrall_old_hillsbradAI : public npc_escortAI
         if( HadMount )
             DoMount();
 
-        if( !IsBeingEscorted )
+        if (!HasEscortState(STATE_ESCORT_ESCORTING))
         {
             DoUnmount();
             HadMount = false;
@@ -418,7 +415,8 @@ struct TRINITY_DLL_DECL npc_thrall_old_hillsbradAI : public npc_escortAI
             m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO+3, 0);
             m_creature->SetUInt32Value(UNIT_FIELD_DISPLAYID, THRALL_MODEL_UNEQUIPPED);
         }
-        if( IsBeingEscorted )
+
+        if (HasEscortState(STATE_ESCORT_ESCORTING))
         {
             switch(rand()%3)
             {
@@ -431,7 +429,7 @@ struct TRINITY_DLL_DECL npc_thrall_old_hillsbradAI : public npc_escortAI
     void StartWP()
     {
         m_creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-        IsOnHold = false;
+        SetEscortPaused(false);
     }
     void DoMount()
     {
@@ -443,7 +441,7 @@ struct TRINITY_DLL_DECL npc_thrall_old_hillsbradAI : public npc_escortAI
         m_creature->Unmount();
         m_creature->SetSpeed(MOVE_RUN,SPEED_RUN);
     }
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         switch(rand()%4)
         {
@@ -505,7 +503,7 @@ struct TRINITY_DLL_DECL npc_thrall_old_hillsbradAI : public npc_escortAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(!InCombat)
+        if(!m_creature->isInCombat())
         {
             if(WaitTimer > diff)
             {
@@ -736,8 +734,7 @@ bool GossipSelect_npc_thrall_old_hillsbrad(Player *player, Creature *_Creature, 
             }
 
             DoScriptText(SAY_TH_START_EVENT_PART1, _Creature);
-
-            ((npc_escortAI*)(_Creature->AI()))->Start(true, true, true, player->GetGUID());
+            CAST_AI(npc_escortAI, (_Creature->AI()))->Start(true, true, player->GetGUID());
             ((npc_escortAI*)(_Creature->AI()))->SetMaxPlayerDistance(100.0f);//not really needed, because it will not despawn if player is too far
             ((npc_escortAI*)(_Creature->AI()))->SetDespawnAtEnd(false);
             ((npc_escortAI*)(_Creature->AI()))->SetDespawnAtFar(false);
@@ -800,7 +797,7 @@ struct TRINITY_DLL_DECL npc_tarethaAI : public npc_escortAI
         }
     }
     void Reset() {}
-    void Aggro(Unit* who) {}
+    void EnterCombat(Unit* who) {}
 
     void UpdateAI(const uint32 diff)
     {

@@ -21,7 +21,7 @@
 #ifndef TRINITY_PLAYERAI_H
 #define TRINITY_PLAYERAI_H
 
-#include "CreatureAI.h"
+#include "UnitAI.h"
 #include "Player.h"
 
 struct SpellEntry;
@@ -33,6 +33,7 @@ struct PlayerAI : public UnitAI
     SpellEntry const *selectHighestRank(uint32 spell_id);
 
     bool UpdateVictim(float = 20.0f);
+    void OnCharmed(bool){}
 
     protected:
         Player *me;

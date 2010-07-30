@@ -28,7 +28,6 @@ npc_plains_vision
 EndContentData */
 
 #include "precompiled.h"
-#include "../../npc/npc_escortAI.h"
 
 /*######
 # npc_skorn_whitecloud
@@ -75,8 +74,6 @@ struct TRINITY_DLL_DECL npc_kyle_frenziedAI : public ScriptedAI
         m_creature->SetDefaultMovementType(WAYPOINT_MOTION_TYPE);
         m_creature->GetMotionMaster()->Initialize();
     }
-    void Aggro(Unit* who){}
-
     void SpellHit(Unit *caster, const SpellEntry* spell)
     {   // we can feed him without any quest
         if(spell->Id == 42222 && caster->GetTypeId() == TYPEID_PLAYER && ((Player*)caster)->GetTeam() == HORDE)
@@ -232,8 +229,6 @@ struct TRINITY_DLL_DECL npc_plains_visionAI  : public ScriptedAI
         newWaypoint = true;
         amountWP  = 49;
     }
-
-    void Aggro(Unit* who){}
 
     void MovementInform(uint32 type, uint32 id)
     {

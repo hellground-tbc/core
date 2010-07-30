@@ -73,7 +73,7 @@ struct TRINITY_DLL_DECL boss_marliAI : public ScriptedAI
         PhaseTwo = false;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
     }
@@ -228,7 +228,7 @@ struct TRINITY_DLL_DECL mob_spawn_of_marliAI : public ScriptedAI
         LevelUp_Timer = 3000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
     }
 

@@ -520,7 +520,8 @@ void WorldSession::HandleStandStateChangeOpcode( WorldPacket & recv_data )
     uint8 animstate;
     recv_data >> animstate;
 
-    _player->SetStandState(animstate);
+    if(!GetPlayer()->isPossessed())
+        _player->SetStandState(animstate);
 }
 
 void WorldSession::HandleFriendListOpcode( WorldPacket & recv_data )

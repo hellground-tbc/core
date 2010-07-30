@@ -100,7 +100,7 @@ struct TRINITY_DLL_DECL boss_kelidan_the_breakerAI : public ScriptedAI
         SummonChannelers();
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_WAKE, m_creature);
         if (m_creature->IsNonMeleeSpellCasted(false))
@@ -293,12 +293,13 @@ struct TRINITY_DLL_DECL mob_shadowmoon_channelerAI : public ScriptedAI
             m_creature->InterruptNonMeleeSpells(true);
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         if(Creature *Kelidan = (Creature *)FindCreature(ENTRY_KELIDAN, 100, m_creature))
             ((boss_kelidan_the_breakerAI*)Kelidan->AI())->ChannelerEngaged(who);
         if (m_creature->IsNonMeleeSpellCasted(false))
             m_creature->InterruptNonMeleeSpells(true);
+
         DoStartMovement(who);
     }
 

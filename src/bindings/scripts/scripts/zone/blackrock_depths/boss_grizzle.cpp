@@ -39,7 +39,7 @@ struct TRINITY_DLL_DECL boss_grizzleAI : public ScriptedAI
         Frenzy_Timer =0;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
     }
 

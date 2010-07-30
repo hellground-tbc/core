@@ -118,7 +118,7 @@ struct TRINITY_DLL_DECL boss_akilzonAI : public ScriptedAI
         checkTimer = 3000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoYell(SAY_ONAGGRO, LANG_UNIVERSAL, NULL);
         DoPlaySoundToSet(m_creature, SOUND_ONAGGRO);
@@ -397,16 +397,7 @@ struct TRINITY_DLL_DECL mob_soaring_eagleAI : public ScriptedAI
         m_creature->SetUnitMovementFlags(MOVEMENTFLAG_LEVITATING);
     }
 
-    void Aggro(Unit *who) {DoZoneInCombat();}
-
-    void AttackStart(Unit *who)
-    {
-        if (!InCombat)
-        {
-            Aggro(who);
-            InCombat = true;
-        }
-    }
+    void EnterCombat(Unit *who) {DoZoneInCombat();}
 
     void MoveInLineOfSight(Unit *) {}
 

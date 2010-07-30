@@ -29,7 +29,7 @@ npc_infused_crystal
 EndContentData */
 
 #include "precompiled.h"
-#include "../../npc/npc_escortAI.h"
+#include "escort_ai.h"
 
 /*######
 ## mobs_mana_tapped
@@ -41,7 +41,7 @@ struct TRINITY_DLL_DECL mobs_mana_tappedAI : public ScriptedAI
 
     void Reset() { }
 
-    void Aggro(Unit *who) { }
+    void EnterCombat(Unit *who) { }
 
     void SpellHit(Unit *caster, const SpellEntry *spell)
     {
@@ -76,34 +76,29 @@ struct TRINITY_DLL_DECL npc_prospector_anvilwardAI : public npc_escortAI
     // Pure Virtual Functions
     void WaypointReached(uint32 i)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
+       Player* pPlayer = GetPlayerForEscort();
 
-        if(!player)
+        if(!pPlayer)
             return;
 
         switch (i)
         {
-            case 0: DoScriptText(SAY_PR_1, m_creature, player); break;
-            case 5: DoScriptText(SAY_PR_2, m_creature, player); break;
+            case 0: DoScriptText(SAY_PR_1, m_creature, pPlayer); break;
+            case 5: DoScriptText(SAY_PR_2, m_creature, pPlayer); break;
             case 6: m_creature->setFaction(24); break;
         }
     }
 
-    void Aggro(Unit* who) { }
+    void EnterCombat(Unit* who) { }
 
     void Reset()
     {
-        m_creature->setFaction(35);
+        me->RestoreFaction();
     }
 
     void JustDied(Unit* killer)
     {
-        m_creature->setFaction(35);
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-        npc_escortAI::UpdateAI(diff);
+        me->RestoreFaction();
     }
 };
 
@@ -123,26 +118,27 @@ CreatureAI* GetAI_npc_prospector_anvilward(Creature *_Creature)
     return (CreatureAI*)thisAI;
 }
 
-bool GossipHello_npc_prospector_anvilward(Player *player, Creature *_Creature)
+bool GossipHello_npc_prospector_anvilward(Player* pPlayer, Creature* pCreature)
 {
-    if( player->GetQuestStatus(QUEST_THE_DWARVEN_SPY) == QUEST_STATUS_INCOMPLETE )
-        player->ADD_GOSSIP_ITEM(0, GOSSIP_HELLO, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+    if (pPlayer->GetQuestStatus(QUEST_THE_DWARVEN_SPY) == QUEST_STATUS_INCOMPLETE)
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HELLO, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
-    player->SEND_GOSSIP_MENU(8239, _Creature->GetGUID());
+    pPlayer->SEND_GOSSIP_MENU(8239, pCreature->GetGUID());
     return true;
 }
 
-bool GossipSelect_npc_prospector_anvilward(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+bool GossipSelect_npc_prospector_anvilward(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
 {
-    switch(action)
+    switch(uiAction)
     {
         case GOSSIP_ACTION_INFO_DEF+1:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SELECT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
-            player->SEND_GOSSIP_MENU(8240, _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM( 0, GOSSIP_SELECT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+            pPlayer->SEND_GOSSIP_MENU(8240, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+2:
-            player->CLOSE_GOSSIP_MENU();
-            ((npc_escortAI*)(_Creature->AI()))->Start(true, true, false, player->GetGUID());
+            pPlayer->CLOSE_GOSSIP_MENU();
+            if (npc_escortAI* pEscortAI = CAST_AI(npc_prospector_anvilwardAI, pCreature->AI()))
+                pEscortAI->Start(true, false, pPlayer->GetGUID());
             break;
     }
     return true;
@@ -261,7 +257,7 @@ struct TRINITY_DLL_DECL npc_secondTrialAI : public ScriptedAI
       }
     }
 
-    void Aggro(Unit *who) { }
+    void EnterCombat(Unit *who) { }
 
     void UpdateAI(const uint32 diff)
     {
@@ -361,7 +357,7 @@ struct TRINITY_DLL_DECL master_kelerun_bloodmournAI : public ScriptedAI
         toReset = false;
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void UpdateAI(const uint32 diff)
     {
@@ -599,8 +595,6 @@ struct TRINITY_DLL_DECL npc_apprentice_mirvedaAI : public ScriptedAI
         Summon = false;
     }
 
-    void Aggro(Unit* who){}
-
     void JustSummoned(Creature *summoned)
     {
         summoned->AI()->AttackStart(m_creature);
@@ -753,7 +747,9 @@ struct TRINITY_DLL_DECL npc_infused_crystalAI : public Scripted_NoMovementAI
             }
             m_creature->DealDamage(m_creature,m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
             m_creature->RemoveCorpse();
-        }else EndTimer -= diff;
+        }
+        else
+            EndTimer -= diff;
 
         if(WaveTimer < diff && !Completed && Progress)
         {

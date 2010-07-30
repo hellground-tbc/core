@@ -81,7 +81,7 @@ struct TRINITY_DLL_DECL mob_webwrapAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
     }
 
@@ -115,7 +115,7 @@ struct TRINITY_DLL_DECL boss_maexxnaAI : public ScriptedAI
         Enraged = false;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
     }
 

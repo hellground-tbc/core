@@ -90,7 +90,7 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
             pInstance->SetData(DATA_GRUULEVENT, DONE);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
         DoZoneInCombat();

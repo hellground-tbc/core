@@ -175,7 +175,7 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if(pInstance)
             pInstance->SetData(DATA_JANALAIEVENT, IN_PROGRESS);
@@ -476,7 +476,7 @@ struct TRINITY_DLL_DECL mob_janalai_firebombAI : public ScriptedAI
             m_creature->CastSpell(m_creature, SPELL_FIRE_BOMB_DUMMY, true);
     }
 
-    void Aggro(Unit* who) {}
+    void EnterCombat(Unit* who) {}
 
     void AttackStart(Unit* who) {}
 
@@ -554,7 +554,7 @@ struct TRINITY_DLL_DECL mob_amanishi_hatcherAI : public ScriptedAI
             return true;
     }
 
-    void Aggro(Unit* who) {}
+    void EnterCombat(Unit* who) {}
     void AttackStart(Unit*) {}
     void MoveInLineOfSight(Unit*) {}
     void MovementInform(uint32, uint32)
@@ -641,7 +641,7 @@ struct TRINITY_DLL_DECL mob_hatchlingAI : public ScriptedAI
         m_creature->SetUnitMovementFlags(MOVEMENTFLAG_LEVITATING);
     }
 
-    void Aggro(Unit *who) {/*DoZoneInCombat();*/}
+    void EnterCombat(Unit *who) {/*DoZoneInCombat();*/}
 
     void UpdateAI(const uint32 diff)
     {
@@ -674,7 +674,7 @@ struct TRINITY_DLL_DECL mob_eggAI : public ScriptedAI
 {
     mob_eggAI(Creature *c) : ScriptedAI(c){}
     void Reset() {}
-    void Aggro(Unit* who) {}
+    void EnterCombat(Unit* who) {}
     void AttackStart(Unit* who) {}
     void MoveInLineOfSight(Unit* who) {}
     void UpdateAI(const uint32 diff) {}

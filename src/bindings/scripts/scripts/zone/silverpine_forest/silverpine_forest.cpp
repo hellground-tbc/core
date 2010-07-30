@@ -27,7 +27,7 @@ npc_deathstalker_erland
 EndContentData */
 
 #include "precompiled.h"
-#include "../../npc/npc_escortAI.h"
+#include "escort_ai.h"
 
 /*######
 ## npc_astor_hadren
@@ -42,10 +42,6 @@ struct TRINITY_DLL_DECL npc_astor_hadrenAI : public ScriptedAI
     void Reset()
     {
         m_creature->setFaction(68);
-    }
-
-    void Aggro(Unit* who)
-    {
     }
 
     void JustDied(Unit *who)
@@ -116,7 +112,7 @@ struct TRINITY_DLL_DECL npc_deathstalker_erlandAI : public npc_escortAI
 
     void WaypointReached(uint32 i)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
+        Player* player = GetPlayerForEscort();
 
         if (!player)
             return;
@@ -148,7 +144,7 @@ struct TRINITY_DLL_DECL npc_deathstalker_erlandAI : public npc_escortAI
 
     void Reset() {}
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         switch(rand()%2)
         {
@@ -163,12 +159,14 @@ struct TRINITY_DLL_DECL npc_deathstalker_erlandAI : public npc_escortAI
     }
 };
 
-bool QuestAccept_npc_deathstalker_erland(Player* player, Creature* creature, Quest const* quest)
+bool QuestAccept_npc_deathstalker_erland(Player* pPlayer, Creature* pCreature, Quest const* quest)
 {
     if (quest->GetQuestId() == QUEST_ESCORTING)
     {
-        DoScriptText(SAY_QUESTACCEPT, creature, player);
-        ((npc_escortAI*)(creature->AI()))->Start(true, true, false, player->GetGUID());
+        DoScriptText(SAY_QUESTACCEPT, pCreature, pPlayer);
+
+        if (npc_escortAI* pEscortAI = CAST_AI(npc_deathstalker_erlandAI, pCreature->AI()))
+            pEscortAI->Start(true, false, pPlayer->GetGUID());
     }
 
     return true;
@@ -264,7 +262,7 @@ struct TRINITY_DLL_DECL pyrewood_ambushAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit *who){}
+    void EnterCombat(Unit *who){}
 
     void JustSummoned(Creature *pSummoned)
     {

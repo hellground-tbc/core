@@ -70,14 +70,13 @@ struct TRINITY_DLL_DECL boss_drektharAI : public ScriptedAI
     CheckTimer              = 2000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoScriptText(YELL_AGGRO, m_creature);
     }
 
     void JustRespawned()
     {
-        InCombat = false;
         Reset();
         DoScriptText(YELL_RESPAWN, m_creature);
     }

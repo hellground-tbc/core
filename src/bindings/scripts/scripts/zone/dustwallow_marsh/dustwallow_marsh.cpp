@@ -52,8 +52,6 @@ struct TRINITY_DLL_DECL mobs_risen_husk_spiritAI : public ScriptedAI
         IntangiblePresence_Timer = 5000;
     }
 
-    void Aggro(Unit* who) { }
-
     void DamageTaken(Unit *done_by, uint32 &damage)
     {
         if( done_by->GetTypeId() == TYPEID_PLAYER )
@@ -114,8 +112,6 @@ struct TRINITY_DLL_DECL npc_deserter_agitatorAI : public ScriptedAI
     {
         m_creature->setFaction(894);
     }
-
-    void Aggro(Unit* who) {}
 };
 
 CreatureAI* GetAI_npc_deserter_agitator(Creature *_Creature)
@@ -218,7 +214,7 @@ struct TRINITY_DLL_DECL npc_theramore_combat_dummyAI : public Scripted_NoMovemen
         Check_Timer = 0;
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         AttackerGUID = ((Player*)who)->GetGUID();
         m_creature->SetStunned(true);
@@ -288,10 +284,10 @@ struct TRINITY_DLL_DECL mob_mottled_drywallow_crocolisksAI : public ScriptedAI
                 pPlayer->KilledMonster(NPC_CAPTURED_TOTEM, pPlayer->GetGUID());
         }
     }
-    void Aggro(Unit* who) {}
     void UpdateAI(const uint32 diff)
     {
-        if(!UpdateVictim()) { return; }
+        if(!UpdateVictim())
+            return;
 
         DoMeleeAttackIfReady();
     }
