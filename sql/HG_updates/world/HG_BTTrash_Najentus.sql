@@ -1,5 +1,5 @@
 -- Leviathan #1 Formation
-DELETE FROM `creature_formations` WHERE `leaderguid`='1489';
+DELETE FROM `creature_formations` WHERE `leaderguid`='14869';
 INSERT INTO `creature_formations` VALUES ('14869', '14869', '0', '0', '2');
 INSERT INTO `creature_formations` VALUES ('14869', '12857', '0', '0', '2');
 INSERT INTO `creature_formations` VALUES ('14869', '12858', '0', '0', '2');
@@ -22,16 +22,23 @@ UPDATE `creature` SET `position_x`='242.88', `position_y`='886.12', `position_z`
 
 -- Aqueous Lord #1 Formation
 DELETE FROM `creature_formations` WHERE `leaderguid`='12869';
-INSERT INTO `creature_formations` VALUES ('12869', '12854', '10', '4.71', '2');
-INSERT INTO `creature_formations` VALUES ('12869', '12853', '10', '1.57', '2');
+INSERT INTO `creature_formations` VALUES ('12869', '12854', '5', '4.71', '2');
+INSERT INTO `creature_formations` VALUES ('12869', '12853', '5', '1.57', '2');
 INSERT INTO `creature_formations` VALUES ('12869', '12869', '0', '0', '2');
 
 -- Aqueous Lord #1 Waypoints
 UPDATE `creature` SET `MovementType`='2' WHERE `guid`='12869';
 
 DELETE FROM `waypoint_data` WHERE `id`='12869';
-INSERT INTO `waypoint_data` VALUES ('12869', '1', '252.88', '886.13', '-27.00', '0', '0', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('12869', '2', '252.73', '960.71', '-62.63', '0', '0', '0', '100', '0');
+
+INSERT INTO `waypoint_data` VALUES ('12869', '1', '252.709', '958.494', '-62.6302', '0', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('12869', '2', '252.587', '968.839', '-62.6023', '3000', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('12869', '3', '252.701', '957.457', '-62.3789', '1500', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('12869', '4', '252.71', '888.408', '-28.1103', '0', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('12869', '5', '252.661', '875.529', '-27.0654', '3000', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('12869', '6', '252.7', '885.73', '-27.0029', '1500', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('12869', '7', '253.269', '956.57', '-61.8392', '0', '0', '0', '100', '0');
+
 
 UPDATE `creature_addon` SET `path_id`='12869' WHERE `guid`='12869';
 
@@ -45,8 +52,13 @@ INSERT INTO `creature_formations` VALUES ('12866', '12866', '0', '0', '2');
 UPDATE `creature` SET `MovementType`='2' WHERE `guid`='12866';
 
 DELETE FROM `waypoint_data` WHERE `id`='12866';
-INSERT INTO `waypoint_data` VALUES ('12866', '1', '295.96', '813.46', '-24.52', '0', '0', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('12866', '2', '394.70', '812.89', '13.26', '0', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('12866', '1', '292.382', '813.447', '-24.9904', '0', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('12866', '2', '287.959', '813.539', '-26.3545', '3000', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('12866', '3', '294.848', '813.389', '-24.9712', '1500', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('12866', '4', '388.426', '813.013', '12.3755', '0', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('12866', '5', '398.672', '812.828', '13.0056', '3000', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('12866', '6', '389.801', '812.61', '12.6924', '1500', '0', '0', '100', '0');
+
 
 UPDATE `creature_addon` SET `path_id`='12866' WHERE `guid`='12866';
 
@@ -179,6 +191,7 @@ INSERT INTO `creature_formations` VALUES ('13412', '13413', '3', '0', '2');
 UPDATE `creature_addon` SET `path_id`='12873' WHERE `guid`='13412';
 UPDATE `creature` SET `MovementType`='2' WHERE `guid`='13412';
 
+DELETE FROM `waypoint_data` WHERE `id`='12873';
 INSERT INTO `waypoint_data` VALUES ('12873', '1', '279.07', '799.00', '-24.25', '0', '0', '0', '100', '0');
 INSERT INTO `waypoint_data` VALUES ('12873', '2', '289.22', '799.62', '-24.23', '0', '0', '0', '100', '0');
 INSERT INTO `waypoint_data` VALUES ('12873', '3', '346.48', '799.92', '-0.28', '0', '0', '0', '100', '0');

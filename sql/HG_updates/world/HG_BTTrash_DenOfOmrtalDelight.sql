@@ -91,7 +91,7 @@ INSERT INTO `creature_formations` VALUES ('52819', '52818', '0', '0', '2');
 INSERT INTO `creature_formations` VALUES ('52819', '52710', '0', '0', '2');
 
 -- Poduchy #3
-UPDATE `creature` SET `position_x`='918.685', `position_y`='392.497', `position_z`='121.234' WHERE `guid`='52841';
+UPDATE `creature` SET `position_x`='918.685', `position_y`='392.497', `position_z`='121.234' WHERE `guid`='2841';
 UPDATE `creature` SET `orientation`='3.04' WHERE `guid`='52841';
 
 UPDATE `creature` SET `orientation`='5.59' WHERE `guid`='52737';
@@ -170,7 +170,7 @@ INSERT INTO `waypoint_data` VALUES ('52854', '16', '932.055', '366.82', '112.768
 INSERT INTO `waypoint_data` VALUES ('52854', '17', '923.917', '363.463', '112.768', '0', '0', '0', '100', '0');
 
 -- Enslaved Man #1
-UPDATE `creature` SET `position_x`='959.683', `position_y`='392.263', `position_z`='112.768' WHERE `guid`='0';
+UPDATE `creature` SET `position_x`='959.683', `position_y`='392.263', `position_z`='112.768' WHERE `guid`='530625';
 
 DELETE FROM `creature_formations` WHERE `leaderguid`='53062';
 INSERT INTO `creature_formations` VALUES ('53062', '53062', '0', '0', '2');
