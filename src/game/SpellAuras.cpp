@@ -2277,24 +2277,8 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             m_target->RemoveAllAurasOnDeath();  //prevent spell immunities from cloak of shadows and others
             m_target->CastSpell(m_target, 40266, true);   //summon Vengeful Spirit and 4 Shadowy Constructs
             m_target->CastSpell(m_target, 40282, true);   //Possess Spirit Immune
-
-            Creature* Ghost = NULL;
-            Trinity::AllCreaturesOfEntryInRange check(m_target, 23109, 3.0);
-            Trinity::CreatureSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(Ghost, check);
-            m_target->VisitNearbyObject(3.0, searcher);
-
-            if(Ghost)
-                m_target->CastSpell(Ghost, 40268, false);
+            m_target->CastSpell((Unit*)NULL, 40268, false); //Possess Vengeful Spirit
         }
-/*
-        // Shade Soul Channel
-        if(GetId()==40401 && GetEffIndex()==0 && !caster->isAlive())
-        {
-            std::cout << "zdejmujemy aure dummy, i stack" << std::endl;
-            if(m_target->HasAura(40520, 0))
-                m_target->RemoveSingleAuraFromStack(40520, 0);
-        }*/
-
     }
 
     // AT APPLY & REMOVE

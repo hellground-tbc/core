@@ -16,7 +16,7 @@
 
 /* ScriptData
 SDName: Boss_Teron_Gorefiend
-SD%Complete: 95
+SD%Complete: 99.99%
 SDComment: Needs tests and probably some minor changes
 SDCategory: Black Temple
 EndScriptData */
