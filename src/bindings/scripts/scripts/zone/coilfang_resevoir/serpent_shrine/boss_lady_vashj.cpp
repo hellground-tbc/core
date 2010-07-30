@@ -192,7 +192,6 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
         Intro = false;
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE); //set it only once on creature create (no need do intro if wiped)
         Entangle = false;
-        InCombat = false;
         CanAttack = false;
 
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
@@ -277,7 +276,7 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
             pInstance->SetData(DATA_LADYVASHJEVENT, IN_PROGRESS);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if (pInstance)
         {
@@ -295,7 +294,7 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
         if(Phase != 2)
             AttackStart(who);
 
-        if(!InCombat)
+        if(!m_creature->isInCombat())
             StartEvent();
     }
 
@@ -322,7 +321,7 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
                 if(Phase != 2)
                     AttackStart(who);
 
-                if(!InCombat)
+                if(!m_creature->isInCombat())
                     StartEvent();
             }
         }
@@ -682,7 +681,7 @@ struct TRINITY_DLL_DECL mob_enchanted_elementalAI : public ScriptedAI
             Vashj = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_LADYVASHJ));
     }
 
-    void Aggro(Unit *who) { return; }
+    void EnterCombat(Unit *who) { return; }
 
     void MoveInLineOfSight(Unit *who){return;}
 
@@ -772,7 +771,7 @@ struct TRINITY_DLL_DECL mob_tainted_elementalAI : public Scripted_NoMovementAI
         }
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         m_creature->AddThreat(who, 0.1f);
     }
@@ -833,7 +832,7 @@ struct TRINITY_DLL_DECL mob_toxic_sporebatAI : public ScriptedAI
         Check_Timer = 1000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
 
     }
@@ -939,8 +938,6 @@ struct TRINITY_DLL_DECL mob_coilfang_eliteAI : public ScriptedAI
         
         m_creature->GetMotionMaster()->MovePoint(MoveWP,StriderNagaWP[4*path_nr + 1][0],StriderNagaWP[4*path_nr + 1][1],StriderNagaWP[4*path_nr + 1][2]);
     }
-
-    void Aggro(Unit* who){}
 
     void MoveInLineOfSight(Unit* who)
     {
@@ -1059,8 +1056,6 @@ struct TRINITY_DLL_DECL mob_coilfang_striderAI : public ScriptedAI
         m_creature->GetMotionMaster()->MovePoint(MoveWP,StriderNagaWP[4*path_nr + 1][0],StriderNagaWP[4*path_nr + 1][1],StriderNagaWP[4*path_nr + 1][2]);
     }
 
-    void Aggro(Unit* who){}
-
     void MoveInLineOfSight(Unit* who)
     {
         if(OnPath)
@@ -1153,7 +1148,7 @@ struct TRINITY_DLL_DECL mob_shield_generator_channelAI : public ScriptedAI
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
     }
 
-    void Aggro(Unit *who) { return; }
+    void EnterCombat(Unit *who) { return; }
 
     void MoveInLineOfSight(Unit *who) { return; }
 

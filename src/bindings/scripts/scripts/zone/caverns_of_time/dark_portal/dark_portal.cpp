@@ -155,7 +155,7 @@ struct TRINITY_DLL_DECL npc_medivh_bmAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void SpellHit(Unit* caster, const SpellEntry* spell)
     {
@@ -328,7 +328,7 @@ struct TRINITY_DLL_DECL npc_time_riftAI : public ScriptedAI
         m_creature->setActive(true);
 
     }
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void JustDied(Unit* who)
     {
@@ -529,7 +529,7 @@ struct TRINITY_DLL_DECL rift_summonAI : public ScriptedAI
         }
 
     }
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if(who->GetTypeId() == TYPEID_UNIT)
             aggro = false;

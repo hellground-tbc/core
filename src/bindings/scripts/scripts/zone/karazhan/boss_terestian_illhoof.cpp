@@ -86,7 +86,7 @@ struct TRINITY_DLL_DECL mob_kilrekAI : public ScriptedAI
         AmplifyTimer = 2000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if(!pInstance)
         {
@@ -145,7 +145,6 @@ struct TRINITY_DLL_DECL mob_demon_chainAI : public Scripted_NoMovementAI
         SacrificeGUID = 0;
     }
 
-    void Aggro(Unit* who) {}
     void AttackStart(Unit* who) {}
     void MoveInLineOfSight(Unit* who) {}
 
@@ -210,7 +209,7 @@ struct TRINITY_DLL_DECL boss_terestianAI : public ScriptedAI
             pInstance->SetData(DATA_TERESTIAN_EVENT, NOT_STARTED);
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
 
@@ -222,7 +221,9 @@ struct TRINITY_DLL_DECL boss_terestianAI : public ScriptedAI
                 Kilrek->AddThreat(who, 1.0f);
 
             pInstance->SetData(DATA_TERESTIAN_EVENT, IN_PROGRESS);
-        }else ERROR_INST_DATA(m_creature);
+        }
+        else
+            ERROR_INST_DATA(m_creature);
     }
 
     void KilledUnit(Unit *victim)
@@ -361,7 +362,7 @@ struct TRINITY_DLL_DECL mob_fiendish_impAI : public ScriptedAI
         FireboltTimer = 2000;
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void UpdateAI(const uint32 diff)
     {

@@ -32,6 +32,7 @@
 #include "GameObject.h"
 #include "Player.h"
 #include "Unit.h"
+#include "CreatureAI.h"
 
 class Player;
 //class Map;
@@ -397,7 +398,7 @@ namespace Trinity
     };
 
     template<class Check>
-        struct TRINITY_DLL_DECL CreatureListSearcher
+    struct TRINITY_DLL_DECL CreatureListSearcher
     {
         std::list<Creature*> &i_objects;
         Check& i_check;
@@ -405,6 +406,23 @@ namespace Trinity
         CreatureListSearcher(std::list<Creature*> &objects, Check & check) : i_objects(objects),i_check(check) {}
 
         void Visit(CreatureMapType &m);
+
+        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
+    };
+
+    template<class Do>
+    struct TRINITY_DLL_DECL CreatureWorker
+    {
+        Do& i_do;
+
+        CreatureWorker(WorldObject const* searcher, Do& _do)
+            : i_do(_do) {}
+
+        void Visit(CreatureMapType &m)
+        {
+            for(CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+                    i_do(itr->getSource());
+        }
 
         template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
     };
@@ -709,6 +727,38 @@ namespace Trinity
             bool i_targetForPlayer;
             WorldObject const* i_obj;
             Unit const* i_funit;
+            float i_range;
+    };
+    
+    // do attack at call of help to friendly crearture
+    class CallOfHelpCreatureInRangeDo
+    {
+        public:
+            CallOfHelpCreatureInRangeDo(Unit* funit, Unit* enemy, float range)
+                : i_funit(funit), i_enemy(enemy), i_range(range)
+            {}
+            void operator()(Creature* u)
+            {
+                if (u == i_funit)
+                    return;
+
+                if (!u->CanAssistTo(i_funit, i_enemy, false))
+                    return;
+
+                // too far
+                if (!i_funit->IsWithinDistInMap(u, i_range))
+                    return;
+
+                // only if see assisted creature
+                if (!i_funit->IsWithinLOSInMap(u))
+                    return;
+
+                if (u->AI())
+                    u->AI()->AttackStart(i_enemy);
+            }
+        private:
+            Unit* const i_funit;
+            Unit* const i_enemy;
             float i_range;
     };
 

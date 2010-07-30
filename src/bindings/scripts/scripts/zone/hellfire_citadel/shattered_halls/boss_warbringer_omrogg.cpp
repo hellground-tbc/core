@@ -103,7 +103,6 @@ struct TRINITY_DLL_DECL mob_omrogg_headsAI : public ScriptedAI
     uint32 Death_Timer;
 
     void Reset() {}
-    void Aggro(Unit* who) { }
 
     void DoDeathYell()
     {
@@ -120,7 +119,9 @@ struct TRINITY_DLL_DECL mob_omrogg_headsAI : public ScriptedAI
         {
             DoScriptText(YELL_DIE_R, m_creature);
             DeathYell = false;
-        }else Death_Timer -= diff;
+        }
+        else
+            Death_Timer -= diff;
     }
 };
 
@@ -197,7 +198,7 @@ struct TRINITY_DLL_DECL boss_warbringer_omroggAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoSpawnCreature(ENTRY_LEFT_HEAD,0,0,0,0,TEMPSUMMON_TIMED_DESPAWN,1800000);
         DoSpawnCreature(ENTRY_RIGHT_HEAD,0,0,0,0,TEMPSUMMON_TIMED_DESPAWN,1800000);

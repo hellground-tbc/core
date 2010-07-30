@@ -48,7 +48,7 @@ struct TRINITY_DLL_DECL boss_interrogator_vishasAI : public ScriptedAI
         PowerWordShield_Timer = 60000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoYell(SAY_AGGRO,LANG_UNIVERSAL,NULL);
         DoPlaySoundToSet(m_creature,SOUND_AGGRO);

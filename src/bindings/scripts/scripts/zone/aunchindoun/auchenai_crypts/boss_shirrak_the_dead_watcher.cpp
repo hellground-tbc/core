@@ -59,7 +59,7 @@ struct TRINITY_DLL_DECL boss_shirrak_the_dead_watcherAI : public ScriptedAI
         focusedTarget = NULL;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
     }
 
@@ -192,7 +192,7 @@ struct TRINITY_DLL_DECL mob_focus_fireAI : public ScriptedAI
         fiery1 = fiery2 = true;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     { }
 
     void UpdateAI(const uint32 diff)

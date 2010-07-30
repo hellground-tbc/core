@@ -87,8 +87,6 @@ struct mob_ancient_wispAI : public ScriptedAI
         //m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
     }
 
-    void Aggro(Unit* who) {}
-
     void DamageTaken(Unit* done_by, uint32 &damage) { damage = 0; }
 
     void UpdateAI(const uint32 diff)
@@ -299,7 +297,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         m_creature->RemoveAurasDueToSpell(SPELL_SOUL_CHARGE_RED);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         m_creature->InterruptSpell(CURRENT_CHANNELED_SPELL);
         DoScriptText(SAY_AGGRO, m_creature);
@@ -312,7 +310,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
     void MoveInLineOfSight(Unit *who)
     {
-        if (m_creature->GetDistance(who) <= 70 && !InCombat && m_creature->IsHostileTo(who))
+        if (m_creature->GetDistance(who) <= 70 && !m_creature->isInCombat() && m_creature->IsHostileTo(who))
             m_creature->AI()->AttackStart(who);
     }
 
@@ -379,7 +377,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
     void UpdateAI(const uint32 diff)
     {
 
-        if(!InCombat)
+        if(!m_creature->isInCombat())
         {
             if(pInstance)
             {

@@ -117,7 +117,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_channelerAI : public ScriptedAI
 
     void Reset() {}
     void JustDied(Unit* killer);
-    void Aggro(Unit* who) {}
+    void EnterCombat(Unit* who) {}
     void AttackStart(Unit* who) {}
     void MoveInLineOfSight(Unit* who) {}
     void UpdateAI(const uint32 diff) {}
@@ -130,8 +130,6 @@ struct TRINITY_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
 
     uint32 DebilitatingStrike_Timer;
     bool AkamaReached;
-
-    void Aggro(Unit* who) {}
 
     void Reset() 
     {
@@ -180,7 +178,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_sorcererAI : public ScriptedAI
     }
 
     void JustDied(Unit* killer);
-    void Aggro(Unit* who) {}
+    void EnterCombat(Unit* who) {}
     void AttackStart(Unit* who) {}
     void MoveInLineOfSight(Unit* who) {}
     void UpdateAI(const uint32 diff)
@@ -346,8 +344,6 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit* who) { }
-
     void AttackStart(Unit* who)
     {
         if(!who || IsBanished) return;
@@ -434,7 +430,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(!InCombat)
+        if(!m_creature->isInCombat())
             return;
 
         if (CheckTimer < diff)
@@ -504,14 +500,16 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
                     }
                 }
                 SorcererTimer = 25000;
-            } else
+            }
+            else
                 SorcererTimer -= diff;
 
             if(SummonTimer < diff)
             {
                 SummonCreature();
                 SummonTimer = 35000;
-            }else
+            }
+            else
                 SummonTimer -= diff;
 
             if(DeathCount >= 6)
@@ -551,7 +549,9 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
                         ReduceHealthTimer = 12000;
                     }
                 }
-            }else ReduceHealthTimer -= diff;
+            }
+            else
+                ReduceHealthTimer -= diff;
 
             if(HasKilledAkama)
             {
@@ -565,11 +565,14 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
                     m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     m_creature->GetMotionMaster()->MoveTargetedHome();
                 }
+
                 if(ResetTimer < diff)
                 {
                     EnterEvadeMode();// Reset a little while after killing Akama, evade and respawn Akama
                     return;
-                }else ResetTimer -= diff;
+                }
+                else
+                    ResetTimer -= diff;
             }
 
             DoMeleeAttackIfReady();
@@ -579,18 +582,20 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
 
 void mob_ashtongue_channelerAI::JustDied(Unit* killer)
 {
-    Creature* Shade = (Unit::GetCreature((*m_creature), ShadeGUID));
+    Creature* Shade = Unit::GetCreature((*m_creature), ShadeGUID);
     if(Shade && Shade->isAlive())
         ((boss_shade_of_akamaAI*)Shade->AI())->IncrementDeathCount();
-    else error_log("SD2 ERROR: Channeler dead but unable to increment DeathCount for Shade of Akama.");
+    else
+        error_log("SD2 ERROR: Channeler dead but unable to increment DeathCount for Shade of Akama.");
 }
 
 void mob_ashtongue_sorcererAI::JustDied(Unit* killer)
 {
-    Creature* Shade = (Unit::GetCreature((*m_creature), ShadeGUID));
+    Creature* Shade = Unit::GetCreature((*m_creature), ShadeGUID);
     if(Shade && Shade->isAlive())
         ((boss_shade_of_akamaAI*)Shade->AI())->IncrementDeathCount(m_creature->GetGUID());
-    else error_log("SD2 ERROR: Sorcerer dead but unable to increment DeathCount for Shade of Akama.");
+    else
+        error_log("SD2 ERROR: Sorcerer dead but unable to increment DeathCount for Shade of Akama.");
 }
 
 struct TRINITY_DLL_DECL npc_akamaAI : public ScriptedAI
@@ -660,8 +665,6 @@ struct TRINITY_DLL_DECL npc_akamaAI : public ScriptedAI
             summons.Despawn(summon);
     }
 
-    void Aggro(Unit* who) {}
-
     void BeginEvent(Player* pl)
     {
         if(!pInstance)
@@ -679,7 +682,6 @@ struct TRINITY_DLL_DECL npc_akamaAI : public ScriptedAI
             m_creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
             ((boss_shade_of_akamaAI*)Shade->AI())->SetAkamaGUID(m_creature->GetGUID());
             ((boss_shade_of_akamaAI*)Shade->AI())->SetSelectableChannelers();
-            ((boss_shade_of_akamaAI*)Shade->AI())->InCombat = true;
             Shade->AddThreat(m_creature, 1000000.0f);
             Shade->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_NONE);
             Shade->SetUInt64Value(UNIT_FIELD_TARGET, m_creature->GetGUID());

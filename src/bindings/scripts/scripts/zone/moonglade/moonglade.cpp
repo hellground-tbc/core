@@ -30,7 +30,7 @@ npc_clintar_dreamwalker
 EndContentData */
 
 #include "precompiled.h"
-#include "../../npc/npc_escortAI.h"
+#include "escort_ai.h"
 
 /*######
 ## npc_bunthen_plainswind
@@ -297,10 +297,10 @@ public:
         if(!PlayerGUID)
             return;
 
-        Player *player = (Player *)Unit::GetUnit((*m_creature), PlayerGUID);
-        if(player && player->GetQuestStatus(10965) == QUEST_STATUS_INCOMPLETE)
+        Player* pPlayer = Unit::GetPlayer(PlayerGUID);
+        if (pPlayer && pPlayer->GetQuestStatus(10965) == QUEST_STATUS_INCOMPLETE)
         {
-            player->FailQuest(10965);
+            pPlayer->FailQuest(10965);
             PlayerGUID = 0;
             Reset();
         }
@@ -308,16 +308,16 @@ public:
 
     void EnterEvadeMode()
     {
-        Player *player = (Player *)Unit::GetUnit((*m_creature), PlayerGUID);
-        if(player && player->isInCombat() && player->getAttackerForHelper())
+        Player* pPlayer = Unit::GetPlayer(PlayerGUID);
+        if (pPlayer && pPlayer->isInCombat() && pPlayer->getAttackerForHelper())
         {
-            AttackStart(player->getAttackerForHelper());
+            AttackStart(pPlayer->getAttackerForHelper());
             return;
         }
         npc_escortAI::EnterEvadeMode();
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         uint32 rnd = rand()%2;
         switch(rnd)
@@ -327,18 +327,19 @@ public:
         }
     }
 
-    void StartEvent(Player *player)
+    void StartEvent(Player* pPlayer)
     {
-        if(!player)
+        if(!pPlayer)
             return;
-        if(player->GetQuestStatus(10965) == QUEST_STATUS_INCOMPLETE)
+
+        if(pPlayer->GetQuestStatus(10965) == QUEST_STATUS_INCOMPLETE)
         {
             for(uint8 i = 0; i < 41; ++i)
             {
                 AddWaypoint(i, Clintar_spirit_WP[i][0], Clintar_spirit_WP[i][1], Clintar_spirit_WP[i][2], (uint32)Clintar_spirit_WP[i][4]);
             }
-            PlayerGUID = player->GetGUID();
-            Start(true,true,false,PlayerGUID);
+            PlayerGUID = pPlayer->GetGUID();
+            Start(true,false,PlayerGUID);
         }
         return;
     }
@@ -353,19 +354,24 @@ public:
             return;
         }
 
-        if(!InCombat && !Event_onWait && checkPlayer_Timer < diff)
+        if (!m_creature->isInCombat() && !Event_onWait)
         {
-            Player *player = (Player *)Unit::GetUnit((*m_creature), PlayerGUID);
-            if(player && player->isInCombat() && player->getAttackerForHelper())
-                AttackStart(player->getAttackerForHelper());
-            checkPlayer_Timer = 1000;
-        } else if(!InCombat && !Event_onWait) checkPlayer_Timer -= diff;
+            if (checkPlayer_Timer < diff)
+            {
+                Player* pPlayer = Unit::GetPlayer(PlayerGUID);
+                if (pPlayer && pPlayer->isInCombat() && pPlayer->getAttackerForHelper())
+                    AttackStart(pPlayer->getAttackerForHelper());
+
+                checkPlayer_Timer = 1000;
+            }
+            else
+                checkPlayer_Timer -= diff;
+        }
 
         if(Event_onWait && Event_Timer < diff)
         {
-
-            Player *player = (Player *)Unit::GetUnit((*m_creature), PlayerGUID);
-            if(!player || (player && player->GetQuestStatus(10965) == QUEST_STATUS_NONE))
+            Player* pPlayer = Unit::GetPlayer(PlayerGUID);
+            if (!pPlayer || (pPlayer && pPlayer->GetQuestStatus(10965) == QUEST_STATUS_NONE))
             {
                 m_creature->setDeathState(JUST_DIED);
                 return;
@@ -396,7 +402,7 @@ public:
                             break;
                         case 1:
                             m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE, 0);
-                            DoScriptText(CLINTAR_SPIRIT_SAY_GET_ONE, m_creature, player);
+                            DoScriptText(CLINTAR_SPIRIT_SAY_GET_ONE, m_creature, pPlayer);
                             Event_onWait = false;
                             break;
                     }
@@ -419,7 +425,7 @@ public:
                     switch(Step)
                     {
                         case 0:
-                            DoScriptText(CLINTAR_SPIRIT_SAY_GET_TWO, m_creature, player);
+                            DoScriptText(CLINTAR_SPIRIT_SAY_GET_TWO, m_creature, pPlayer);
                             Event_Timer = 15000;
                             Step = 1;
                             break;
@@ -466,7 +472,7 @@ public:
                     switch(Step)
                     {
                         case 0:
-                            DoScriptText(CLINTAR_SPIRIT_SAY_GET_THREE, m_creature, player);
+                            DoScriptText(CLINTAR_SPIRIT_SAY_GET_THREE, m_creature, pPlayer);
                             Event_Timer = 4000;
                             Step = 1;
                             break;
@@ -480,8 +486,8 @@ public:
                     {
                         case 0:
                             m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE, 2);
-                            DoScriptText(CLINTAR_SPIRIT_SAY_GET_FINAL, m_creature, player);
-                            player->CompleteQuest(10965);
+                            DoScriptText(CLINTAR_SPIRIT_SAY_GET_FINAL, m_creature, pPlayer);
+                            pPlayer->CompleteQuest(10965);
                             Event_Timer = 1500;
                             Step = 1;
                             break;
@@ -491,7 +497,7 @@ public:
                             Step = 2;
                             break;
                         case 2:
-                            player->TalkedToCreature(m_creature->GetEntry(), m_creature->GetGUID());
+                            pPlayer->TalkedToCreature(m_creature->GetEntry(), m_creature->GetGUID());
                             PlayerGUID = 0;
                             Reset();
                             m_creature->setDeathState(JUST_DIED);

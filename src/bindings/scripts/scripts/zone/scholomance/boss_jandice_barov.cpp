@@ -50,7 +50,7 @@ struct TRINITY_DLL_DECL boss_jandicebarovAI : public ScriptedAI
         Invisible = false;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
     }
 
@@ -167,7 +167,7 @@ struct TRINITY_DLL_DECL mob_illusionofjandicebarovAI : public ScriptedAI
         m_creature->ApplySpellImmune(0, IMMUNITY_DAMAGE, SPELL_SCHOOL_MASK_MAGIC, true);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
     }
 

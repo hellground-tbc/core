@@ -46,7 +46,7 @@ struct TRINITY_DLL_DECL boss_broggokAI : public ScriptedAI
         PoisonBolt_Timer = 7000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
     }

@@ -27,7 +27,7 @@ npc_plucky
 EndContentData */
 
 #include "precompiled.h"
-#include "../../npc/npc_escortAI.h"
+#include "escort_ai.h"
 
 /*#####
 # npc_swiftmountain
@@ -46,7 +46,7 @@ npc_swiftmountainAI(Creature *c) : npc_escortAI(c) {}
 
     void WaypointReached(uint32 i)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
+        Player* player = GetPlayerForEscort();
 
         if (!player)
             return;
@@ -74,25 +74,11 @@ npc_swiftmountainAI(Creature *c) : npc_escortAI(c) {}
         m_creature->setFaction(104);
     }
 
-    void Aggro(Unit* who){}
+    void EnterCombat(Unit* who){}
 
     void JustSummoned(Creature* summoned)
     {
         summoned->AI()->AttackStart(m_creature);
-    }
-
-    void JustDied(Unit* killer)
-    {
-        if (PlayerGUID)
-        {
-            if (Player* player = Unit::GetPlayer(PlayerGUID))
-                player->FailQuest(QUEST_HOMEWARD_BOUND);
-        }
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-        npc_escortAI::UpdateAI(diff);
     }
 };
 
@@ -100,7 +86,9 @@ bool QuestAccept_npc_swiftmountain(Player* player, Creature* creature, Quest con
 {
     if (quest->GetQuestId() == QUEST_HOMEWARD_BOUND)
     {
-        ((npc_escortAI*)(creature->AI()))->Start(true, true, false, player->GetGUID());
+        if (npc_escortAI* pEscortAI = CAST_AI(npc_swiftmountainAI, creature->AI()))
+            pEscortAI->Start(true, true, player->GetGUID(), quest);
+
         DoScriptText(SAY_READY, creature, player);
         creature->setFaction(113);
     }
@@ -216,7 +204,7 @@ struct TRINITY_DLL_DECL npc_pluckyAI : public ScriptedAI
        ChickenTimer = 0;
        }
 
-    void Aggro(Unit *who){}
+    void EnterCombat(Unit *who){}
 
     void TransformHuman(uint32 emoteid)
     {

@@ -45,7 +45,7 @@ struct TRINITY_DLL_DECL boss_high_interrogator_gerstahnAI : public ScriptedAI
         ShadowShield_Timer = 8000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
     }
 
@@ -62,7 +62,9 @@ struct TRINITY_DLL_DECL boss_high_interrogator_gerstahnAI : public ScriptedAI
             target = SelectUnit(SELECT_TARGET_RANDOM,0);
             if (target)DoCast(target,SPELL_SHADOWWORDPAIN);
             ShadowWordPain_Timer = 7000;
-        }else ShadowWordPain_Timer -= diff;
+        }
+        else
+            ShadowWordPain_Timer -= diff;
 
         //ManaBurn_Timer
         if (ManaBurn_Timer < diff)

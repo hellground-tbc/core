@@ -181,7 +181,7 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         m_creature->SetPower(POWER_MANA, 0);
         DoScriptText(SAY_AGGRO, m_creature);
@@ -338,7 +338,6 @@ struct TRINITY_DLL_DECL mob_fel_crystalAI : public ScriptedAI
     mob_fel_crystalAI(Creature *c) : ScriptedAI(c) {}
 
     void Reset() {}
-    void Aggro(Unit* who) {}
     void AttackStart(Unit* who) {}
     void MoveInLineOfSight(Unit* who) {}
     void UpdateAI(const uint32 diff) {}

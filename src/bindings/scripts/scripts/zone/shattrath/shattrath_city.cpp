@@ -33,7 +33,7 @@ npc_khadgar
 EndContentData */
 
 #include "precompiled.h"
-#include "../../npc/npc_escortAI.h"
+#include "escort_ai.h"
 
 /*######
 ## npc_raliq_the_drunk
@@ -58,7 +58,7 @@ struct TRINITY_DLL_DECL npc_raliq_the_drunkAI : public ScriptedAI
         m_creature->setFaction(FACTION_FRIENDLY_RD);
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void UpdateAI(const uint32 diff)
     {
@@ -121,7 +121,7 @@ struct TRINITY_DLL_DECL npc_salsalabimAI : public ScriptedAI
         m_creature->setFaction(FACTION_FRIENDLY_SA);
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void DamageTaken(Unit *done_by, uint32 &damage)
     {
@@ -280,8 +280,7 @@ public:
 
     void WaypointReached(uint32 i)
     {
-        Unit *pTemp = Unit::GetUnit(*m_creature,PlayerGUID);
-
+        Player* pTemp = GetPlayerForEscort();
         if( !pTemp )
             return;
 
@@ -308,28 +307,19 @@ public:
             case 53: DoScriptText(WHISP18, m_creature, pTemp); break;
             case 54: DoScriptText(WHISP19, m_creature, pTemp); break;
             case 55: DoScriptText(WHISP20, m_creature, pTemp); break;
-            case 56: DoScriptText(WHISP21, m_creature, pTemp);
-               if( PlayerGUID )
-                {
-                    Player* player = (Unit::GetPlayer(PlayerGUID));
-                    if( player )
-                        (player)->GroupEventHappens(10211,m_creature);
-                }
+            case 56:
+                DoScriptText(WHISP21, m_creature, pTemp);
+                pTemp->GroupEventHappens(10211,m_creature);
                 break;
         }
     }
 
-    void Aggro(Unit* who) {}
+    void EnterCombat(Unit* who) {}
 
     void Reset()
     {
         m_creature->SetReactState(REACT_PASSIVE);
-        ((npc_escortAI*)(m_creature->AI()))->Start(false, false, false, m_creature->GetCharmerOrOwnerGUID());
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-        npc_escortAI::UpdateAI(diff);
+        Start(false, false, m_creature->GetCharmerOrOwnerGUID());
     }
 };
 CreatureAI* GetAI_npc_kservantAI(Creature *_Creature)
@@ -458,18 +448,20 @@ struct TRINITY_DLL_DECL npc_dirty_larryAI : public ScriptedAI
 
     uint32 NextStep(uint32 Step)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
-
+        Player *player = Unit::GetPlayer(PlayerGUID);
         switch(Step)
         {
-        case 0:{ m_creature->SetInFront(player);
+        case 0:
+        {
+            m_creature->SetInFront(player);
             Unit* Creepjack = FindCreature(NPC_CREEPJACK, 20, m_creature);
             if(Creepjack)
                 Creepjack->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
             Unit* Malone = FindCreature(NPC_MALONE, 20, m_creature);
             if(Malone)
                 Malone->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
-            m_creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP); }return 2000;
+            m_creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+        }return 2000;
         case 1: DoScriptText(SAY_1, m_creature, player); return 3000;
         case 2: DoScriptText(SAY_2, m_creature, player); return 5000;
         case 3: DoScriptText(SAY_3, m_creature, player); return 2000;
@@ -480,10 +472,9 @@ struct TRINITY_DLL_DECL npc_dirty_larryAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit* who){}
-
     void UpdateAI(const uint32 diff)
     {
+        Player *player = Unit::GetPlayer(PlayerGUID);
         if(SayTimer < diff)
         {
             if(Event)
@@ -492,7 +483,6 @@ struct TRINITY_DLL_DECL npc_dirty_larryAI : public ScriptedAI
 
         if(Attack)
         {
-            Player* player = Unit::GetPlayer(PlayerGUID);
             m_creature->setFaction(14);
             m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             if(player)
@@ -719,8 +709,6 @@ struct TRINITY_DLL_DECL npc_kaelthas_imageAI : public ScriptedAI
         Init = false;
         FireGO = 0;
     }
-
-    void Aggro(Unit* who){}
 
     void EmoteTo(Creature* sender, const char *text, Player *target)
     {

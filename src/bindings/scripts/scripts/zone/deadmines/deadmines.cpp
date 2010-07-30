@@ -233,5 +233,3 @@ void AddSC_instance_deadmines()
     newscript->pItemUse = &ItemUse_item_defias_gunpowder;
     newscript->RegisterSelf();
 }
-
-

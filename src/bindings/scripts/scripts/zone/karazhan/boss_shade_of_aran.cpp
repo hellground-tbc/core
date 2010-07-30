@@ -244,7 +244,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         return false;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if (PlayerHaveAtiesh())
         {
@@ -698,8 +698,6 @@ struct TRINITY_DLL_DECL water_elementalAI : public ScriptedAI
         CastTimer = 2000 + (rand()%3000);
     }
 
-    void Aggro(Unit* who) {}
-
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim() )
@@ -728,8 +726,6 @@ struct TRINITY_DLL_DECL shadow_of_aranAI : public ScriptedAI
     {
         CastTimer = 2000;
     }
-
-    void Aggro(Unit* who) {}
 
     void UpdateAI(const uint32 diff)
     {
@@ -776,8 +772,6 @@ struct TRINITY_DLL_DECL circular_blizzardAI : public ScriptedAI
         currentWaypoint = 0;
         waypointTimer = 0;
     }
-
-    void Aggro(Unit* who){}
 
     void JustDied(Unit* killer){}
 

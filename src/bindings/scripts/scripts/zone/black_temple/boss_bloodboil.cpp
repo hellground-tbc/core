@@ -136,7 +136,7 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
         DoCast(m_creature,SPELL_ACIDIC_WOUND,true);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoZoneInCombat();
         DoScriptText(SAY_AGGRO, m_creature);

@@ -26,7 +26,7 @@ npc_defias_traitor
 EndContentData */
 
 #include "precompiled.h"
-#include "../../npc/npc_escortAI.h"
+#include "escort_ai.h"
 
 /*#####
 # npc_daphne_stilwell
@@ -84,7 +84,7 @@ struct TRINITY_DLL_DECL npc_daphne_stilwellAI : public npc_escortAI
 
     void WaypointReached(uint32 i)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
+        Player* player = GetPlayerForEscort();
 
         if (!player)
             return;
@@ -114,10 +114,9 @@ struct TRINITY_DLL_DECL npc_daphne_stilwellAI : public npc_escortAI
             IsWalking = true;
             break;
         case 11:
-            if (PlayerGUID && thug_wave > 3)
+            if (thug_wave > 3)
             {
-                if (Player* player = Unit::GetPlayer(PlayerGUID))
-                    player->CompleteQuest(QUEST_PROTECT_DAPHNE);
+                player->CompleteQuest(QUEST_PROTECT_DAPHNE);
             }
             if (player && player->GetTypeId() == TYPEID_PLAYER)
                 ((Player*)player)->GroupEventHappens(QUEST_PROTECT_DAPHNE,m_creature);
@@ -129,7 +128,7 @@ struct TRINITY_DLL_DECL npc_daphne_stilwellAI : public npc_escortAI
         }
     }
 
-    void Aggro(Unit* who){}
+    void EnterCombat(Unit* who){}
 
     void Reset()
     {
@@ -143,11 +142,8 @@ struct TRINITY_DLL_DECL npc_daphne_stilwellAI : public npc_escortAI
 
     void JustDied(Unit* killer)
     {
-        if (PlayerGUID)
-        {
-            if (Player* player = Unit::GetPlayer(PlayerGUID))
+        if (Player* player = GetPlayerForEscort())
                 player->FailQuest(QUEST_PROTECT_DAPHNE);
-        }
     }
 
     void UpdateAI(const uint32 diff)
@@ -160,19 +156,15 @@ struct TRINITY_DLL_DECL npc_daphne_stilwellAI : public npc_escortAI
                 initial_movement = false;
             }
 
-            if (PlayerGUID)
+            Player* player = GetPlayerForEscort();
+            if (player)
             {
-                Player* player = Unit::GetPlayer(PlayerGUID);
-
-                if (player)
+                if(player->isDead())
                 {
-                    if(player->isDead())
-                    {
-                        player->FailQuest(QUEST_PROTECT_DAPHNE);
-                        SetVariables();
-                    }
+                    player->FailQuest(QUEST_PROTECT_DAPHNE);
+                    SetVariables();
                 }
-
+           
                 if(m_creature->isDead() && player)
                     player->FailQuest(QUEST_PROTECT_DAPHNE);
             }
@@ -248,8 +240,11 @@ bool QuestAccept_npc_daphne_stilwell(Player* player, Creature* creature, Quest c
 {
     if (quest->GetQuestId() == QUEST_PROTECT_DAPHNE)
     {
-        ((npc_escortAI*)(creature->AI()))->Start(true, true, true, player->GetGUID());
-        ((npc_escortAI*)(creature->AI()))->DoSay(SAY_MOVE, LANG_UNIVERSAL, NULL);
+        if (npc_escortAI* pEscortAI = CAST_AI(npc_daphne_stilwellAI, creature->AI()))
+        {
+            pEscortAI->Start(true, true, player->GetGUID(), quest);
+            pEscortAI->DoSay(SAY_MOVE, LANG_UNIVERSAL, NULL);
+        }
     }
 
     return true;
@@ -296,7 +291,7 @@ struct TRINITY_DLL_DECL npc_defias_traitorAI : public npc_escortAI
 
     void WaypointReached(uint32 i)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
+        Player* player = GetPlayerForEscort();
 
         if (!player || player->GetTypeId() != TYPEID_PLAYER)
             return;
@@ -317,7 +312,7 @@ struct TRINITY_DLL_DECL npc_defias_traitorAI : public npc_escortAI
                 break;
         }
     }
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         switch(rand()%2)
         {
@@ -330,11 +325,8 @@ struct TRINITY_DLL_DECL npc_defias_traitorAI : public npc_escortAI
 
     void JustDied(Unit* killer)
     {
-        if (PlayerGUID)
-        {
-            if (Player* player = Unit::GetPlayer(PlayerGUID))
-                player->FailQuest(QUEST_DEFIAS_BROTHERHOOD);
-        }
+        if (Player* player = GetPlayerForEscort())
+            player->FailQuest(QUEST_DEFIAS_BROTHERHOOD);
     }
 
     void UpdateAI(const uint32 diff)
@@ -347,7 +339,8 @@ bool QuestAccept_npc_defias_traitor(Player* player, Creature* creature, Quest co
 {
     if (quest->GetQuestId() == QUEST_DEFIAS_BROTHERHOOD)
     {
-        ((npc_escortAI*)(creature->AI()))->Start(true, true, true, player->GetGUID());
+        if (npc_escortAI* pEscortAI = CAST_AI(npc_defias_traitorAI, creature->AI()))
+            pEscortAI->Start(true, true, player->GetGUID(), quest);
         DoScriptText(SAY_START, creature, player);
     }
 

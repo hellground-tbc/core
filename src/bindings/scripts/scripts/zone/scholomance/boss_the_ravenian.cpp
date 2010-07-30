@@ -62,7 +62,7 @@ struct TRINITY_DLL_DECL boss_theravenianAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoYell(SAY_AGGRO1, LANG_UNIVERSAL, NULL);
     }

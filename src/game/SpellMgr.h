@@ -311,7 +311,8 @@ enum SpellLinkedType
 SpellSpecific GetSpellSpecific(uint32 spellId);
 
 // Different spell properties
-inline float GetSpellRadius(SpellRadiusEntry const *radius) { return (radius ? radius->Radius : 0); }
+inline float GetSpellRadiusForHostile(SpellRadiusEntry const *radius) { return (radius ? radius->radiusHostile : 0); }
+inline float GetSpellRadiusForFriend(SpellRadiusEntry const *radius) { return (radius ? radius->radiusFriend : 0); }
 uint32 GetSpellCastTime(SpellEntry const* spellInfo, Spell const* spell = NULL);
 uint32 GetSpellBaseCastTime(SpellEntry const *spellInfo);
 inline float GetSpellMinRange(SpellRangeEntry const *range) { return (range ? range->minRange : 0); }
@@ -320,6 +321,37 @@ inline uint32 GetSpellRangeType(SpellRangeEntry const *range) { return (range ? 
 inline uint32 GetSpellRecoveryTime(SpellEntry const *spellInfo) { return spellInfo->RecoveryTime > spellInfo->CategoryRecoveryTime ? spellInfo->RecoveryTime : spellInfo->CategoryRecoveryTime; }
 int32 GetSpellDuration(SpellEntry const *spellInfo);
 int32 GetSpellMaxDuration(SpellEntry const *spellInfo);
+
+inline float GetSpellRadius(SpellEntry const *spellInfo, uint32 effectIdx, bool positive)
+{
+    return positive
+        ? GetSpellRadiusForFriend(sSpellRadiusStore.LookupEntry(spellInfo->EffectRadiusIndex[effectIdx]))
+        : GetSpellRadiusForHostile(sSpellRadiusStore.LookupEntry(spellInfo->EffectRadiusIndex[effectIdx]));
+}
+
+inline float GetSpellMaxRange(SpellEntry const *spellInfo)
+{
+    return GetSpellMaxRange(sSpellRangeStore.LookupEntry(spellInfo->rangeIndex));
+}
+
+inline float GetSpellMinRange(SpellEntry const *spellInfo)
+{
+    return GetSpellMinRange(sSpellRangeStore.LookupEntry(spellInfo->rangeIndex));
+}
+
+inline float GetSpellMinRange(uint32 id)
+{
+    SpellEntry const *spellInfo = GetSpellStore()->LookupEntry(id);
+    if(!spellInfo) return 0;
+    return GetSpellMinRange(spellInfo);
+}
+
+inline float GetSpellMaxRange(uint32 id)
+{
+    SpellEntry const *spellInfo = GetSpellStore()->LookupEntry(id);
+    if(!spellInfo) return 0;
+    return GetSpellMaxRange(spellInfo);
+}
 
 inline bool IsSpellHaveEffect(SpellEntry const *spellInfo, SpellEffects effect)
 {
@@ -344,6 +376,7 @@ inline bool IsElementalShield(SpellEntry const *spellInfo)
     return (spellInfo->SpellFamilyFlags & 0x42000000400LL) || spellInfo->Id == 23552;
 }
 
+uint32 CalculatePowerCost(SpellEntry const * spellInfo, Unit const * caster, SpellSchoolMask schoolMask);
 int32 CompareAuraRanks(uint32 spellId_1, uint32 effIndex_1, uint32 spellId_2, uint32 effIndex_2);
 bool IsSingleFromSpellSpecificPerCaster(uint32 spellSpec1, uint32 spellSpec2);
 bool IsSingleFromSpellSpecificPerTarget(uint32 spellSpec1, uint32 spellSpec2);

@@ -92,6 +92,7 @@ struct TRINITY_DLL_DECL mob_doom_blossomAI : public NullCreatureAI
         m_creature->SetSpeed(MOVE_RUN, 0.2);
     }
 
+    void EnterCombat(Unit *who){ return; }
     void Despawn()
     {
         m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
@@ -127,7 +128,11 @@ struct TRINITY_DLL_DECL mob_doom_blossomAI : public NullCreatureAI
 
         if(ShadowBoltTimer < diff)
         {
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
+            Creature* Teron = (Unit::GetCreature((*m_creature), TeronGUID));
+            if(!Teron)
+                return;
+
+            if(Unit *target = ((ScriptedAI*)Teron->AI())->SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
                 DoCast(target, SPELL_SHADOWBOLT);
             ShadowBoltTimer = 1500+rand()%1000;
         }
@@ -162,8 +167,6 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
         CheckTeronTimer = 5000;
     }
 
-    void Aggro(Unit* who) { }
-
     void AttackStart(Unit* who)
     {
         if (!who)
@@ -172,13 +175,6 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
         if (m_creature->Attack(who, true))
         {
             m_creature->AddThreat(who, 100000.0f);
-
-            if (!InCombat)
-            {
-                InCombat = true;
-                Aggro(who);
-            }
-
             DoStartMovement(who);
         }
     }
@@ -310,7 +306,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
         Intro = INTRO_NOT_STARTED;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
 
@@ -322,7 +318,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
     {
         if(!who || (!who->isAlive())) return;
 
-        if(!InCombat && who->isTargetableForAttack() && who->isInAccessiblePlaceFor(m_creature) && m_creature->IsHostileTo(who))
+        if(!m_creature->isInCombat() && who->isTargetableForAttack() && who->isInAccessiblePlaceFor(m_creature) && m_creature->IsHostileTo(who))
         {
             float attackRadius = m_creature->GetAttackDistance(who);
 

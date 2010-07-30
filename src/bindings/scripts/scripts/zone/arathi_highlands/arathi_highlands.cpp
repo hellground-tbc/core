@@ -26,7 +26,7 @@ npc_professor_phizzlethorpe
 EndContentData */
 
 #include "precompiled.h"
-#include "../../npc/npc_escortAI.h"
+#include "escort_ai.h"
 
 /*######
 ## npc_professor_phizzlethorpe
@@ -49,12 +49,10 @@ EndContentData */
 struct TRINITY_DLL_DECL npc_professor_phizzlethorpeAI : public npc_escortAI
 {
     npc_professor_phizzlethorpeAI(Creature *c) : npc_escortAI(c) {}
-
-    bool Completed;
-
+  
     void WaypointReached(uint32 i)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
+        Player* player = GetPlayerForEscort();
 
         switch(i)
         {
@@ -73,7 +71,6 @@ struct TRINITY_DLL_DECL npc_professor_phizzlethorpeAI : public npc_escortAI
         case 20:
             DoScriptText(EMOTE_PROGRESS_8, m_creature);
             DoScriptText(SAY_PROGRESS_9, m_creature, player);
-            Completed = true;
             if(player)
                 player->GroupEventHappens(QUEST_SUNKEN_TREASURE, m_creature);
             break;
@@ -85,40 +82,22 @@ struct TRINITY_DLL_DECL npc_professor_phizzlethorpeAI : public npc_escortAI
         summoned->AI()->AttackStart(m_creature);
     }
 
-    void Reset()
+    void EnterCombat(Unit* pWho)
     {
-        Completed = true;
         m_creature->setFaction(35);
-    }
-
-    void Aggro(Unit* who)
-    {
-        DoScriptText(SAY_AGGRO, m_creature, NULL);
-    }
-
-    void JustDied(Unit* killer)
-    {
-        if (PlayerGUID && !Completed )
-        {
-            Player* player = Unit::GetPlayer(PlayerGUID);
-            if (player)
-                player->FailQuest(QUEST_SUNKEN_TREASURE);
-        }
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-        npc_escortAI::UpdateAI(diff);
+        DoScriptText(SAY_AGGRO, m_creature);
     }
 };
 
-bool QuestAccept_npc_professor_phizzlethorpe(Player* player, Creature* creature, Quest const* quest)
+bool QuestAccept_npc_professor_phizzlethorpe(Player* pPlayer, Creature* pCreature, Quest const* quest)
 {
     if (quest->GetQuestId() == QUEST_SUNKEN_TREASURE)
     {
-        DoScriptText(SAY_PROGRESS_1, creature, player);
-        ((npc_escortAI*)(creature->AI()))->Start(false, false, false, player->GetGUID());
-        creature->setFaction(113);
+        DoScriptText(SAY_PROGRESS_1, pCreature, pPlayer);
+        if (npc_escortAI* pEscortAI = CAST_AI(npc_professor_phizzlethorpeAI, (pCreature->AI())))
+            pEscortAI->Start(false, false, pPlayer->GetGUID(), quest);
+
+        pCreature->setFaction(113);
     }
     return true;
 }

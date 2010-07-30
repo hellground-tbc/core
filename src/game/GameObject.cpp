@@ -307,7 +307,7 @@ void GameObject::Update(uint32 diff)
                     {
                         // try to read radius from trap spell
                         if(const SpellEntry *spellEntry = sSpellStore.LookupEntry(goInfo->trap.spellId))
-                            radius = GetSpellRadius(sSpellRadiusStore.LookupEntry(spellEntry->EffectRadiusIndex[0]));
+                            radius = GetSpellRadius(spellEntry,0,false);
 
                         if(!radius)
                             break;

@@ -67,14 +67,13 @@ struct TRINITY_DLL_DECL boss_vanndarAI : public ScriptedAI
         CheckTimer              = 2000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoScriptText(YELL_AGGRO, m_creature);
     }
 
     void JustRespawned()
     {
-        InCombat = false;
         Reset();
         switch(rand()%1)
         {

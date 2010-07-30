@@ -129,7 +129,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/MP"
-				AdditionalIncludeDirectories="..\..\..\..\dep\include\;..\..\..\shared\;..\..\..\shared\Database;..\..\..\framework\;..\..\..\game\;..\include\;..\scripts\npc\;..\..\..\..\dep\ACE_wrappers"
+				AdditionalIncludeDirectories="..\..\..\..\dep\include\;..\scripts\npc;..\..\..\shared\;..\..\..\shared\Database;..\..\..\framework\;..\..\..\game\;..\include\;..\scripts\npc\;..\..\..\..\dep\ACE_wrappers;..\system"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SCRIPT"
 				MinimalRebuild="false"
 				RuntimeLibrary="2"
@@ -380,14 +380,6 @@
 				Name="creature"
 				>
 				<File
-					RelativePath="..\scripts\creature\mob_event_ai.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\scripts\creature\mob_event_ai.h"
-					>
-				</File>
-				<File
 					RelativePath="..\scripts\creature\mob_generic_creature.cpp"
 					>
 				</File>
@@ -424,11 +416,11 @@
 				Name="npc"
 				>
 				<File
-					RelativePath="..\scripts\npc\npc_escortAI.cpp"
+					RelativePath="..\scripts\npc\escort_ai.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\scripts\npc\npc_escortAI.h"
+					RelativePath="..\scripts\npc\escort_ai.h"
 					>
 				</File>
 				<File
@@ -2485,6 +2477,26 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="System"
+			>
+			<File
+				RelativePath="..\system\ScriptLoader.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\system\ScriptLoader.h"
+				>
+			</File>
+			<File
+				RelativePath="..\system\system.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\system\system.h"
+				>
+			</File>
+		</Filter>
 		<File
 			RelativePath="..\config.h"
 			>
@@ -2499,10 +2511,6 @@
 		</File>
 		<File
 			RelativePath="..\svn_revision.h"
-			>
-		</File>
-		<File
-			RelativePath="..\system.cpp"
 			>
 		</File>
 		<File

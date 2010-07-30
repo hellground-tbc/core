@@ -270,7 +270,7 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
                 ShieldGeneratorDeactivated[2] = false;
                 ShieldGeneratorDeactivated[3] = false;
             }
-            if(Encounters[5] != DONE)
+            //if(Encounters[5] != DONE)
                 Encounters[5] = data;
             break;
         case DATA_SHIELDGENERATOR1:ShieldGeneratorDeactivated[0] = (data) ? true : false;   break;

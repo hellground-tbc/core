@@ -73,7 +73,7 @@ struct TRINITY_DLL_DECL boss_taerarAI : public ScriptedAI
         Shades = false;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
     }
 
@@ -256,7 +256,7 @@ struct TRINITY_DLL_DECL boss_shadeoftaerarAI : public ScriptedAI
         PosionBreath_Timer = 12000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
     }
 

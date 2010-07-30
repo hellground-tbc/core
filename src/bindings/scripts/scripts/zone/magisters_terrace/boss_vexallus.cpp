@@ -100,7 +100,7 @@ struct TRINITY_DLL_DECL boss_vexallusAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
         if (pInstance)
@@ -195,7 +195,7 @@ struct TRINITY_DLL_DECL mob_pure_energyAI : public ScriptedAI
         slayer->CastSpell(slayer, SPELL_ENERGY_FEEDBACK, true, 0, 0, m_creature->GetGUID());
     }
 
-    void Aggro(Unit *who){}
+    void EnterCombat(Unit *who){}
 
     void UpdateAI(const uint32 diff)
     {

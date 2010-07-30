@@ -24,6 +24,7 @@
 #include "CreatureAI.h"
 #include "MapManager.h"
 #include "DestinationHolderImp.h"
+#include "World.h"
 
 //----- Point Movement Generator
 template<class T>
@@ -32,9 +33,6 @@ void PointMovementGenerator<T>::Initialize(T &unit)
     unit.StopMoving();
     Traveller<T> traveller(unit);
     i_destinationHolder.SetDestination(traveller,i_x,i_y,i_z);
-
-    if (unit.GetTypeId() == TYPEID_UNIT && ((Creature*)&unit)->canFly())
-        unit.AddUnitMovementFlag(MOVEMENTFLAG_FLYING2);
 }
 
 template<class T>
@@ -69,8 +67,9 @@ template<class T>
 void PointMovementGenerator<T>:: Finalize(T &unit)
 {
     if(unit.hasUnitState(UNIT_STAT_CHARGING))
-        unit.clearUnitState(UNIT_STAT_CHARGING);
-    else if(arrived)
+        unit.clearUnitState(UNIT_STAT_CHARGING | UNIT_STAT_JUMPING);
+
+    if(arrived) // without this crash!
         MovementInform(unit);
 }
 
@@ -79,8 +78,16 @@ void PointMovementGenerator<T>::MovementInform(T &unit)
 {
 }
 
-template <> void PointMovementGenerator<Creature>::MovementInform(Creature &unit)
+template <>
+void PointMovementGenerator<Creature>::MovementInform(Creature &unit)
 {
+    if(id == EVENT_FALL_GROUND)
+    {
+        unit.setDeathState(JUST_DIED);
+        //TODO: SKY FIX TEMP!!!
+        unit.SetFlying(true);
+        //unit.AddUnitMovementFlag(MOVEMENTFLAG_FLYING2);
+    }
     unit.AI()->MovementInform(POINT_MOTION_TYPE, id);
 }
 
@@ -92,3 +99,11 @@ template void PointMovementGenerator<Player>::Finalize(Player&);
 template void PointMovementGenerator<Creature>::Initialize(Creature&);
 template bool PointMovementGenerator<Creature>::Update(Creature&, const uint32 &diff);
 template void PointMovementGenerator<Creature>::Finalize(Creature&);
+
+void AssistanceMovementGenerator::Finalize(Unit &unit)
+{
+    ((Creature*)&unit)->SetNoCallAssistance(false);
+    ((Creature*)&unit)->CallAssistance();
+    if (unit.isAlive())
+        unit.GetMotionMaster()->MoveSeekAssistanceDistract(sWorld.getConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_DELAY));
+}

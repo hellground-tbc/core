@@ -45,7 +45,7 @@ struct TRINITY_DLL_DECL boss_ironayaAI : public ScriptedAI
         hasCastedWstomp = false;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoYell(SAY_AGGRO,LANG_UNIVERSAL,NULL);
         DoPlaySoundToSet(m_creature,SOUND_AGGRO);

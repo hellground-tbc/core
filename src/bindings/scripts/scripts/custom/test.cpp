@@ -22,8 +22,8 @@ SDCategory: Script Examples
 EndScriptData */
 
 #include "precompiled.h"
-#include "../npc/npc_escortAI.h"
-
+#include "escort_ai.h"
+/*
 struct TRINITY_DLL_DECL npc_testAI : public npc_escortAI
 {
     public:
@@ -68,9 +68,9 @@ struct TRINITY_DLL_DECL npc_testAI : public npc_escortAI
             }
         }
 
-        void Aggro(Unit*)
+        void Aggro(Unit* who)
         {
-            if (IsBeingEscorted)
+            if (HasEscortState(STATE_ESCORT_ESCORTING))
                 m_creature->Say("Help $N! I'm under attack!", LANG_UNIVERSAL, PlayerGUID);
             else m_creature->Say("Die scum!", LANG_UNIVERSAL, 0);
         }
@@ -83,12 +83,12 @@ struct TRINITY_DLL_DECL npc_testAI : public npc_escortAI
 
         void JustDied(Unit* killer)
         {
-            if (IsBeingEscorted)
+            if (HasEscortState(STATE_ESCORT_ESCORTING))
             {
                 //killer = m_creature when player got to far from creature
                 if (killer == m_creature)
                 {
-                    Unit *pTemp = Unit::GetUnit(*m_creature,PlayerGUID);
+                    Unit *pTemp = GetPlayerForEscort();
                     if( pTemp )
                         DoWhisper("How dare you leave me like that! I hate you! =*(", pTemp);
                 }
@@ -115,7 +115,7 @@ struct TRINITY_DLL_DECL npc_testAI : public npc_escortAI
             }else
             {
                 //Out of combat but being escorted
-                if (IsBeingEscorted)
+                if (HasEscortState(STATE_ESCORT_ESCORTING))
                     if (ChatTimer < diff)
                 {
                     if (m_creature->HasAura(3593, 0))
@@ -190,7 +190,6 @@ bool GossipSelect_npc_test(Player *player, Creature *_Creature, uint32 sender, u
 
 void AddSC_test()
 {
-/*
     Script *newscript;
     newscript = new Script;
     newscript->Name="test";
@@ -198,6 +197,5 @@ void AddSC_test()
     newscript->pGossipHello          = &GossipHello_npc_test;
     newscript->pGossipSelect         = &GossipSelect_npc_test;
     newscript->RegisterSelf();
-*/
 }
-
+*/

@@ -6,8 +6,6 @@ SET(game_STAT_SRCS
    AccountMgr.h
    AddonHandler.cpp
    AddonHandler.h
-   AggressorAI.cpp
-   AggressorAI.h
    AnimalRandomMovementGenerator.h
    AntiCheat.h
    ArenaTeam.cpp
@@ -51,6 +49,8 @@ SET(game_STAT_SRCS
    Chat.cpp
    Chat.h
    ChatHandler.cpp
+   CombatAI.cpp
+   CombatAI.h
    CombatHandler.cpp
    ConfusedMovementGenerator.cpp
    ConfusedMovementGenerator.h
@@ -58,11 +58,14 @@ SET(game_STAT_SRCS
    Corpse.h
    CreatureAI.cpp
    CreatureAI.h
+   CreatureAIFactory.h
    CreatureAIImpl.h
    CreatureAIRegistry.cpp
    CreatureAIRegistry.h
    CreatureAISelector.cpp
    CreatureAISelector.h
+   CreatureEventAI.cpp
+   CreatureEventAIMgr.cpp
    Creature.cpp
    Creature.h
    CreatureGroups.cpp
@@ -143,8 +146,6 @@ SET(game_STAT_SRCS
    MapUpdater.h
    NPCHandler.cpp
    NPCHandler.h
-   NullCreatureAI.cpp
-   NullCreatureAI.h
    ObjectAccessor.cpp
    ObjectAccessor.h
    Object.cpp
@@ -174,6 +175,8 @@ SET(game_STAT_SRCS
    OutdoorPvPTF.h
    OutdoorPvPZM.cpp
    OutdoorPvPZM.h
+   PassiveAI.cpp
+   PassiveAI.h
    Path.h
    PetAI.cpp
    PetAI.h
@@ -189,8 +192,6 @@ SET(game_STAT_SRCS
    PlayerDump.h
    PointMovementGenerator.cpp
    PointMovementGenerator.h
-   PossessedAI.cpp
-   PossessedAI.h
    QueryHandler.cpp
    QuestDef.cpp
    QuestDef.h
@@ -241,6 +242,8 @@ SET(game_STAT_SRCS
    Traveller.h
    Unit.cpp
    Unit.h
+   UnitAI.cpp
+   UnitAI.h
    UnitEvents.h
    UpdateData.cpp
    UpdateData.h

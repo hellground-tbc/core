@@ -44,7 +44,7 @@ struct TRINITY_DLL_DECL mob_treantAI  : public ScriptedAI
         check_Timer = 0;
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void MoveInLineOfSight(Unit*) {}
 
@@ -133,7 +133,7 @@ struct TRINITY_DLL_DECL boss_warp_splinterAI : public ScriptedAI
         m_creature->SetSpeed( MOVE_RUN, 0.7f, true);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
     }

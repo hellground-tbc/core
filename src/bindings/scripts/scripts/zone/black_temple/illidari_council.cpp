@@ -151,8 +151,6 @@ struct TRINITY_DLL_DECL mob_blood_elf_council_voice_triggerAI : public ScriptedA
             error_log(ERROR_INST_DATA);
     }
 
-    void Aggro(Unit* who) {}
-
     void AttackStart(Unit* who) {}
 
     void MoveInLineOfSight(Unit* who) {}
@@ -256,7 +254,7 @@ struct TRINITY_DLL_DECL mob_illidari_councilAI : public ScriptedAI
         m_creature->SetDisplayId(11686);
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
     void AttackStart(Unit* who) {}
     void MoveInLineOfSight(Unit* who) {}
 
@@ -312,7 +310,7 @@ struct TRINITY_DLL_DECL mob_illidari_councilAI : public ScriptedAI
                             VoiceTrigger->DealDamage(VoiceTrigger, VoiceTrigger->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
 
                         pInstance->SetData(DATA_ILLIDARICOUNCILEVENT, DONE);
-                        m_creature->SummonCreature(AKAMAID,746.466980f,304.394989f,311.90208f,6.272870f,TEMPSUMMON_DEAD_DESPAWN,0);
+                        //m_creature->SummonCreature(AKAMAID,746.466980f,304.394989f,311.90208f,6.272870f,TEMPSUMMON_DEAD_DESPAWN,0);
                     }
                     m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                     return;
@@ -383,7 +381,7 @@ struct TRINITY_DLL_DECL boss_illidari_councilAI : public ScriptedAI
 
     bool LoadedGUIDs;
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         if(pInstance)
         {

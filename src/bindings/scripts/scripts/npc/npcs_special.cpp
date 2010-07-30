@@ -63,7 +63,7 @@ struct TRINITY_DLL_DECL npc_chicken_cluckAI : public ScriptedAI
         m_creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void UpdateAI(const uint32 diff)
     {
@@ -174,8 +174,6 @@ struct TRINITY_DLL_DECL npc_dancing_flamesAI : public ScriptedAI
             }else can_iteract -= diff;
         }
     }
-
-    void Aggro(Unit* who){}
 };
 
 CreatureAI* GetAI_npc_dancing_flames(Creature *_Creature)
@@ -337,8 +335,6 @@ struct TRINITY_DLL_DECL npc_doctorAI : public ScriptedAI
     void PatientDied(Location* Point);
     void PatientSaved(Creature* soldier, Player* player, Location* Point);
     void UpdateAI(const uint32 diff);
-
-    void Aggro(Unit* who){}
 };
 
 /*#####
@@ -383,8 +379,6 @@ struct TRINITY_DLL_DECL npc_injured_patientAI : public ScriptedAI
                 break;
         }
     }
-
-    void Aggro(Unit* who){}
 
     void SpellHit(Unit *caster, const SpellEntry *spell)
     {
@@ -618,7 +612,7 @@ struct TRINITY_DLL_DECL npc_guardianAI : public ScriptedAI
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoYell(SAY_AGGRO,LANG_UNIVERSAL,NULL);
     }
@@ -912,7 +906,7 @@ struct TRINITY_DLL_DECL npc_steam_tonkAI : public ScriptedAI
     npc_steam_tonkAI(Creature *c) : ScriptedAI(c) {}
 
     void Reset() {}
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void OnPossess(bool apply)
     {
@@ -951,7 +945,7 @@ struct TRINITY_DLL_DECL npc_tonk_mineAI : public ScriptedAI
         ExplosionTimer = 3000;
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
     void AttackStart(Unit *who) {}
     void MoveInLineOfSight(Unit *who) {}
 
@@ -1030,7 +1024,7 @@ struct TRINITY_DLL_DECL npc_snake_trap_serpentsAI : public ScriptedAI
     Unit *Owner;
     bool IsViper;
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void Reset()
     {
@@ -1048,9 +1042,6 @@ struct TRINITY_DLL_DECL npc_snake_trap_serpentsAI : public ScriptedAI
         uint32 delta = (rand() % 7) *100;
         m_creature->SetStatFloatValue(UNIT_FIELD_BASEATTACKTIME, Info->baseattacktime + delta);
         m_creature->SetStatFloatValue(UNIT_FIELD_RANGED_ATTACK_POWER , Info->attackpower);
-
-        InCombat = false;
-
     }
 
     //Redefined for random target selection:
@@ -1072,7 +1063,6 @@ struct TRINITY_DLL_DECL npc_snake_trap_serpentsAI : public ScriptedAI
                     m_creature->setAttackTimer(BASE_ATTACK, (rand() % 10) * 100);
                     SpellTimer = (rand() % 10) * 100;
                     AttackStart(who);
-                    InCombat = true;
                 }
             }
         }
@@ -1084,7 +1074,7 @@ struct TRINITY_DLL_DECL npc_snake_trap_serpentsAI : public ScriptedAI
             return;
 
         //Follow if not in combat
-        if (!m_creature->hasUnitState(UNIT_STAT_FOLLOW)&& !InCombat)
+        if (!m_creature->hasUnitState(UNIT_STAT_FOLLOW) && !m_creature->isInCombat())
         {
             m_creature->GetMotionMaster()->Clear();
             m_creature->GetMotionMaster()->MoveFollow(Owner,PET_FOLLOW_DIST,PET_FOLLOW_ANGLE);
@@ -1093,10 +1083,8 @@ struct TRINITY_DLL_DECL npc_snake_trap_serpentsAI : public ScriptedAI
         //No victim -> get new from owner (need this because MoveInLineOfSight won't work while following -> corebug)
         if (!m_creature->getVictim())
         {
-            if (InCombat)
+            if (m_creature->isInCombat())
                 DoStopAttack();
-
-            InCombat = false;
 
             if(Owner->getAttackerForHelper())
                 AttackStart(Owner->getAttackerForHelper());
@@ -1179,7 +1167,7 @@ struct TRINITY_DLL_DECL npc_flight_masterAI : public ScriptedAI
        }
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         SummonAdvisor();
     }
@@ -1264,14 +1252,14 @@ struct TRINITY_DLL_DECL npc_garments_of_questsAI : public ScriptedAI
         m_creature->SetVisibility(VISIBILITY_ON);
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void SpellHit(Unit* pCaster, const SpellEntry *Spell)
     {
         if(Spell->Id == SPELL_LESSER_HEAL_R2 || Spell->Id == SPELL_FORTITUDE_R1)
         {
             //not while in combat
-            if(InCombat)
+            if(m_creature->isInCombat())
                 return;
 
             //nothing to be done now
@@ -1395,7 +1383,7 @@ struct TRINITY_DLL_DECL npc_garments_of_questsAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (CanRun && !InCombat)
+        if (CanRun && !m_creature->isInCombat())
         {
             if (RunAwayTimer <= diff)
             {
@@ -1455,7 +1443,7 @@ struct TRINITY_DLL_DECL npc_lazy_peonAI : public ScriptedAI
         reAuraTimer = urand(MIN_TIME_TO_GO_ASLEEP, MAX_TIME_TO_GO_ASLEEP);
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void SpellHit(Unit* pCaster, const SpellEntry *spell)
     {

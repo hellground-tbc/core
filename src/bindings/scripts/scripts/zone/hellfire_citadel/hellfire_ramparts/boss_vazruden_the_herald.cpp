@@ -85,8 +85,6 @@ struct TRINITY_DLL_DECL boss_nazanAI : public ScriptedAI
         UnsummonCheck = 5000;
     }
 
-    void Aggro(Unit* who) {}
-
     void JustSummoned(Creature *summoned)
     {
         if(summoned && summoned->GetEntry() == ENTRY_LIQUID_FIRE)
@@ -190,7 +188,7 @@ struct TRINITY_DLL_DECL boss_vazrudenAI : public ScriptedAI
         WipeSaid = false;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         switch(rand()%3)
         {
@@ -319,7 +317,7 @@ struct TRINITY_DLL_DECL boss_vazruden_the_heraldAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if(phase==0)
         {
@@ -418,8 +416,6 @@ struct TRINITY_DLL_DECL mob_hellfire_sentryAI : public ScriptedAI
     {
         KidneyShot_Timer = 3000+rand()%4000;
     }
-
-    void Aggro(Unit* who) {}
 
     void JustDied(Unit* who)
     {

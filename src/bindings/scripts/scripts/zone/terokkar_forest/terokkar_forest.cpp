@@ -32,7 +32,7 @@ npc_isla_starmane
 EndContentData */
 
 #include "precompiled.h"
-#include "../../npc/npc_escortAI.h"
+#include "escort_ai.h"
 
 /*######
 ## mob_unkor_the_ruthless
@@ -64,7 +64,7 @@ struct TRINITY_DLL_DECL mob_unkor_the_ruthlessAI : public ScriptedAI
         m_creature->setFaction(FACTION_HOSTILE);
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void DoNice()
     {
@@ -152,7 +152,7 @@ struct TRINITY_DLL_DECL mob_infested_root_walkerAI : public ScriptedAI
     mob_infested_root_walkerAI(Creature *c) : ScriptedAI(c) {}
 
     void Reset() { }
-    void Aggro(Unit *who) { }
+    void EnterCombat(Unit *who) { }
 
     void DamageTaken(Unit *done_by, uint32 &damage)
     {
@@ -177,7 +177,7 @@ struct TRINITY_DLL_DECL mob_rotting_forest_ragerAI : public ScriptedAI
     mob_rotting_forest_ragerAI(Creature *c) : ScriptedAI(c) {}
 
     void Reset() { }
-    void Aggro(Unit *who) { }
+    void EnterCombat(Unit *who) { }
 
     void DamageTaken(Unit *done_by, uint32 &damage)
     {
@@ -209,7 +209,7 @@ struct TRINITY_DLL_DECL mob_netherweb_victimAI : public ScriptedAI
     mob_netherweb_victimAI(Creature *c) : ScriptedAI(c) {}
 
     void Reset() { }
-    void Aggro(Unit *who) { }
+    void EnterCombat(Unit *who) { }
     void MoveInLineOfSight(Unit *who) { }
 
     void JustDied(Unit* Killer)
@@ -269,7 +269,7 @@ struct TRINITY_DLL_DECL npc_floonAI : public ScriptedAI
         m_creature->setFaction(FACTION_FRIENDLY_FL);
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void UpdateAI(const uint32 diff)
     {
@@ -379,7 +379,7 @@ struct TRINITY_DLL_DECL npc_isla_starmaneAI : public npc_escortAI
 
     void WaypointReached(uint32 i)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
+        Player* player = GetPlayerForEscort();
 
         if(!player)
             return;
@@ -416,20 +416,17 @@ struct TRINITY_DLL_DECL npc_isla_starmaneAI : public npc_escortAI
         m_creature->setFaction(1660);
     }
 
-    void Aggro(Unit* who){}
+    void EnterCombat(Unit* who){}
 
     void JustDied(Unit* killer)
     {
-        if (PlayerGUID)
+        Player* player = GetPlayerForEscort();
+        if (player && !Completed)
         {
-            Player* player = Unit::GetPlayer(PlayerGUID);
-            if (player && !Completed)
-            {
-                if(player->GetTeam() == ALLIANCE)
-                    player->FailQuest(QUEST_EFTW_A);
-                else if(player->GetTeam() == HORDE)
-                    player->FailQuest(QUEST_EFTW_H);
-            }
+            if(player->GetTeam() == ALLIANCE)
+                player->FailQuest(QUEST_EFTW_A);
+            else if(player->GetTeam() == HORDE)
+                player->FailQuest(QUEST_EFTW_H);
         }
     }
 
@@ -443,7 +440,8 @@ bool QuestAccept_npc_isla_starmane(Player* player, Creature* creature, Quest con
 {
     if (quest->GetQuestId() == QUEST_EFTW_H || quest->GetQuestId() == QUEST_EFTW_A)
     {
-        ((npc_escortAI*)(creature->AI()))->Start(true, true, false, player->GetGUID());
+        if (npc_escortAI* pEscortAI = CAST_AI(npc_isla_starmaneAI, creature->AI()))
+            pEscortAI->Start(true, true, player->GetGUID(), quest);
         creature->setFaction(113);
     }
     return true;
@@ -658,7 +656,7 @@ struct TRINITY_DLL_DECL mob_terokkAI : public ScriptedAI
             SkyguardGUIDs[i] = 0;
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void Despawn(Unit *unit)
     {
@@ -831,7 +829,7 @@ struct TRINITY_DLL_DECL npc_skyguard_aceAI : public ScriptedAI
         AncientFlame_Timer = -1;
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void MovementInform(uint32 type, uint32 id)
     {
@@ -955,7 +953,7 @@ struct TRINITY_DLL_DECL npc_blackwing_warp_chaser : public ScriptedAI
         }
     }
     
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void Reset() 
     {

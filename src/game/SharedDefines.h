@@ -1992,6 +1992,9 @@ enum PetDiet
 
 #define MAX_PET_DIET 9
 
+#define PET_FOLLOW_DIST  1
+#define PET_FOLLOW_ANGLE (M_PI/2)
+
 #define CHAIN_SPELL_JUMP_RADIUS 10
 
 // Max values for Guild & Guild Bank
@@ -2076,6 +2079,13 @@ enum SummonType
     SUMMON_TYPE_UNKNOWN5    = 409,
     SUMMON_TYPE_POSESSED3   = 427,
     SUMMON_TYPE_POSESSED2   = 428
+};
+
+enum EventId
+{
+    EVENT_SPELLCLICK        = 1001,
+    EVENT_FALL_GROUND       = 1002,
+    EVENT_CHARGE            = 1003,
 };
 
 enum ResponseCodes

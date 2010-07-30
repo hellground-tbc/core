@@ -52,7 +52,7 @@ struct TRINITY_DLL_DECL boss_razorgoreAI : public ScriptedAI
         Conflagration_Timer = 12000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoZoneInCombat();
     }

@@ -184,7 +184,7 @@ struct TRINITY_DLL_DECL boss_hexlord_addAI : public ScriptedAI
 
     void Reset() {}
 
-    void Aggro(Unit* who) {DoZoneInCombat();}
+    void EnterCombat(Unit* who) {DoZoneInCombat();}
 
     void UpdateAI(const uint32 diff)
     {
@@ -245,7 +245,7 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
         m_creature->SetByteValue(UNIT_FIELD_BYTES_2, 0, SHEATH_STATE_MELEE );
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         if(pInstance)
             pInstance->SetData(DATA_HEXLORDEVENT, IN_PROGRESS);
@@ -537,11 +537,8 @@ struct TRINITY_DLL_DECL boss_alyson_antilleAI : public boss_hexlord_addAI
                 m_creature->AddThreat(who, 0.0f);
             }
 
-            if (!InCombat)
-            {
-                Aggro(who);
-                InCombat = true;
-            }
+            if (!m_creature->isInCombat())
+                EnterCombat(who);
         }
     }
 
@@ -622,11 +619,8 @@ struct TRINITY_DLL_DECL boss_gazakrothAI : public boss_hexlord_addAI
                 m_creature->AddThreat(who, 0.0f);
             }
 
-            if (!InCombat)
-            {
-                Aggro(who);
-                InCombat = true;
-            }
+            if (!m_creature->isInCombat())
+                EnterCombat(who);
         }
     }
 
@@ -742,11 +736,8 @@ struct TRINITY_DLL_DECL boss_slitherAI : public boss_hexlord_addAI
                 m_creature->AddThreat(who, 0.0f);
             }
 
-            if (!InCombat)
-            {
-                Aggro(who);
-                InCombat = true;
-            }
+            if (!m_creature->isInCombat())
+                EnterCombat(who);
         }
     }
 

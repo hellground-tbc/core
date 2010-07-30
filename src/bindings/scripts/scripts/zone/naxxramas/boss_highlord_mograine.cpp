@@ -74,7 +74,7 @@ struct TRINITY_DLL_DECL boss_highlord_mograineAI : public ScriptedAI
 
     void InitialYell()
     {
-        if(!InCombat)
+        if(!m_creature->isInCombat())
         {
             switch(rand()%3)
             {
@@ -115,7 +115,7 @@ struct TRINITY_DLL_DECL boss_highlord_mograineAI : public ScriptedAI
         DoPlaySoundToSet(m_creature, SOUND_DEATH);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         InitialYell();
     }

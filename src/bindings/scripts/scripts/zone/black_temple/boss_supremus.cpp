@@ -133,7 +133,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
         m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, false);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoZoneInCombat();
 
@@ -340,7 +340,7 @@ struct TRINITY_DLL_DECL npc_volcanoAI : public Scripted_NoMovementAI
         m_creature->CastSpell(m_creature, SPELL_VOLCANIC_ERUPTION, false);
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void MoveInLineOfSight(Unit *who) {}
 

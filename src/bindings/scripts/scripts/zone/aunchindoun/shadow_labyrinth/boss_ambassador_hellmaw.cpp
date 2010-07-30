@@ -100,7 +100,7 @@ struct TRINITY_DLL_DECL boss_ambassador_hellmawAI : public ScriptedAI
             pInstance->SetData(TYPE_HELLMAW, IN_PROGRESS);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if(IsBanished)
             EnterEvadeMode();
@@ -162,14 +162,14 @@ struct TRINITY_DLL_DECL boss_ambassador_hellmawAI : public ScriptedAI
                 EventCheck_Timer -= diff;
         }
 
-        if (!InCombat && !IsBanished && !OnPath_Delay)
+        if (!m_creature->isInCombat() && !IsBanished && !OnPath_Delay)
         {
             m_creature->GetMotionMaster()->MovePath(PATH_PATROL, false);
             OnPath_Delay = 55000;
             patrol = false;
         }
 
-        if (!InCombat && !patrol && OnPath_Delay < diff)
+        if (!m_creature->isInCombat() && !patrol && OnPath_Delay < diff)
         {
             m_creature->GetMotionMaster()->Clear();
             m_creature->GetMotionMaster()->MovePath(PATH_FINAL, true);

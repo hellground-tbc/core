@@ -26,7 +26,7 @@ npc_a-me
 EndContentData */
 
 #include "precompiled.h"
-#include "../../npc/npc_escortAI.h"
+#include "escort_ai.h"
 
 #define SAY_READY -1000200
 #define SAY_AGGRO1 -1000201
@@ -51,7 +51,7 @@ struct TRINITY_DLL_DECL npc_ameAI : public npc_escortAI
 
     void WaypointReached(uint32 i)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
+        Player* player = GetPlayerForEscort();
 
         if (!player)
             return;
@@ -87,8 +87,7 @@ struct TRINITY_DLL_DECL npc_ameAI : public npc_escortAI
       DEMORALIZINGSHOUT_Timer = 5000;
     }
 
-    void Aggro(Unit* who)
-    {}
+    void EnterCombat(Unit* who){}
 
     void JustSummoned(Creature* summoned)
     {
@@ -97,11 +96,8 @@ struct TRINITY_DLL_DECL npc_ameAI : public npc_escortAI
 
     void JustDied(Unit* killer)
     {
-        if (PlayerGUID)
-        {
-            if (Player* player = Unit::GetPlayer(PlayerGUID))
-                player->FailQuest(QUEST_CHASING_AME);
-        }
+        if (Player* player = GetPlayerForEscort())
+            player->FailQuest(QUEST_CHASING_AME);
     }
 
     void UpdateAI(const uint32 diff)
@@ -123,7 +119,9 @@ bool QuestAccept_npc_ame(Player* player, Creature* creature, Quest const* quest)
 {
     if (quest->GetQuestId() == QUEST_CHASING_AME)
     {
-        ((npc_escortAI*)(creature->AI()))->Start(false, true, false, player->GetGUID());
+        if (npc_escortAI* pEscortAI = CAST_AI(npc_ameAI, creature->AI()))
+            pEscortAI->Start(false, true, player->GetGUID(), quest);
+
         DoScriptText(SAY_READY, creature, player);
         creature->SetUInt32Value(UNIT_FIELD_BYTES_1,0);
         // Change faction so mobs attack

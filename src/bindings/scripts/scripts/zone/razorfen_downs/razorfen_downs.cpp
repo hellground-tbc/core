@@ -122,8 +122,6 @@ struct npc_tomb_creatureAI : public ScriptedAI
         uiWebSprayTimer = 5000;
     }
 
-    void Aggro(Unit* who) {}
-
     void UpdateAI(const uint32 uiDiff)
     {
         if (!UpdateVictim())

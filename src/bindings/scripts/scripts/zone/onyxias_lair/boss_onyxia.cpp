@@ -99,7 +99,7 @@ struct TRINITY_DLL_DECL boss_onyxiaAI : public ScriptedAI
         InitialSpawn = true;
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
         DoZoneInCombat();

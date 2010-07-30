@@ -80,7 +80,7 @@ struct TRINITY_DLL_DECL boss_midnightAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         if(pInstance)
             pInstance->SetData(DATA_ATTUMEN_EVENT, IN_PROGRESS);
@@ -223,8 +223,6 @@ struct TRINITY_DLL_DECL boss_attumenAI : public ScriptedAI
     {
         ResetTimer = 2000;
     }
-
-    void Aggro(Unit* who) {}
 
     void KilledUnit(Unit *victim)
     {
