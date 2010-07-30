@@ -287,10 +287,9 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
     SpellEntry const* SelectSpell(Unit* Target, int32 School, int32 Mechanic, SelectTargetType Targets,  uint32 PowerCostMin, uint32 PowerCostMax, float RangeMin, float RangeMax, SelectEffect Effect);
     float GetSpellMaxRange(uint32 id);
 
-    private:
-        bool m_bCombatMovement;
-        bool HeroicMode;
-        uint32 m_uiEvadeCheckCooldown;
+    bool m_bCombatMovement;
+    bool HeroicMode;
+    uint32 m_uiEvadeCheckCooldown;
 };
 
 struct TRINITY_DLL_DECL Scripted_NoMovementAI : public ScriptedAI

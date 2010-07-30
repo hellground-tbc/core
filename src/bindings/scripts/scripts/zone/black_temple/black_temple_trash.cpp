@@ -1325,6 +1325,11 @@ struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
 
     void Reset()
     {
+        if (!soldiersList.empty())
+        {
+            m_nextMove = 1000;
+            m_nextId   = 0;
+        }
     }
 
     void MovementInform(uint32 type, uint32 id)
@@ -1364,8 +1369,11 @@ struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
                     for (int i = DATA_WEAPONMASTER_SOLDIER; i < DATA_WEAPONMASTER_SOLDIER+8; ++i)
                     {
                         soldiersList.push_back(pInstance->GetData64(i));
-                        if (Unit *soldier = m_creature->GetUnit(*m_creature, pInstance->GetData64(i)))
+                        if (Creature *soldier = m_creature->GetMap()->GetCreature(pInstance->GetData64(i)))
+                        {
                             soldier->Relocate(fieldPositions[i-30][0], fieldPositions[i-30][1], _HEIGHT, 0);
+                            soldier->SetHomePosition(fieldPositions[i-30][0], fieldPositions[i-30][1], _HEIGHT, 0);
+                        }
                     }
                     m_nextMove = 1000;
                     m_nextId   = 0;
