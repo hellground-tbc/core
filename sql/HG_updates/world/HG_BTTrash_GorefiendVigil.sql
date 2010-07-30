@@ -121,4 +121,6 @@ INSERT INTO `creature_formations` VALUES ('52767', '52750', '0', '0', '2');
 INSERT INTO `creature_formations` VALUES ('52767', '52751', '0', '0', '2');
 INSERT INTO `creature_formations` VALUES ('52767', '13234', '0', '0', '2');
 
-
+-- Weapon Master Script
+UPDATE `creature_template` SET `scriptName`="mob_shadowmoon_weapon_master" WHERE `entry`='23049';
+UPDATE `creature_template` SET `scriptName`="mob_shadowmoon_soldier" WHERE `entry`='23047';

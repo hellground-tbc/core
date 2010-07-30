@@ -1284,6 +1284,206 @@ CreatureAI* GetAI_mob_illidari_fearbringer(Creature *_Creature)
     * Wrathbone Flayer
 */
 
+/****************
+* Shadowmoon Weapon Master - id 23049
+*****************/
+
+static float fieldPositions [8][2] = 
+{
+    {448.26, 195.74},
+    {448.66, 191.27},
+    {449.34, 187.12},
+    {449.50, 182.92},
+    {442.48, 195.18},
+    {442.90, 191.00},
+    {443.34, 186.51},
+    {443.84, 182.04}
+};
+
+#define DISTANCE_TO_MOVE   40.00f
+#define _HEIGHT           163.98f
+
+#define WEAPON_X          454.35f
+#define WEAPON_Y          190.09f
+
+
+struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
+{
+    mob_shadowmoon_weapon_masterAI(Creature *c) : ScriptedAI(c)
+    {
+        m_nextMove = 0;
+        m_nextId = -1;
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+        Reset();
+    }
+
+    ScriptedInstance *pInstance;
+    std::vector<uint64> soldiersList;
+
+    uint32 m_nextMove;
+    int32  m_nextId;
+
+    void Reset()
+    {
+    }
+
+    void MovementInform(uint32 type, uint32 id)
+    {
+        if (type != POINT_MOTION_TYPE)
+            return;
+
+        switch (id)
+        {
+            case 0:
+            {
+                m_nextMove = 3000;
+                m_nextId   = 1;
+                m_creature->HandleEmoteCommand(EMOTE_ONESHOT_POINT_NOSHEATHE);
+            }
+            break;
+            case 1:
+            {
+                m_nextMove = 3000;
+                m_nextId = 0;
+            }
+            break;
+            default:   break;
+        }
+    }
+
+    void Aggro(Unit*) { DoZoneInCombat(); }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (soldiersList.empty())
+        {
+            if (pInstance)
+            {
+                if (pInstance->GetData(DATA_WEAPONMASTER_LIST_SIZE) == 8)
+                {
+                    for (int i = DATA_WEAPONMASTER_SOLDIER; i < DATA_WEAPONMASTER_SOLDIER+8; ++i)
+                    {
+                        soldiersList.push_back(pInstance->GetData64(i));
+                        if (Unit *soldier = m_creature->GetUnit(*m_creature, pInstance->GetData64(i)))
+                            soldier->Relocate(fieldPositions[i-30][0], fieldPositions[i-30][1], _HEIGHT, 0);
+                    }
+                    m_nextMove = 1000;
+                    m_nextId   = 0;
+                }
+            }
+        }
+
+        if(!UpdateVictim())
+        {
+            if (m_nextId >= 0)
+            {
+                if (m_nextMove)
+                {
+                    if (m_nextMove <= diff)
+                    {
+                        m_nextMove = 0;
+                        int id = m_nextId;
+                        m_nextId = -1;
+
+                        float x = 0;
+                        float y = 0;
+
+                        switch (id)
+                        {
+                            case 0:
+                            {
+                                for (int i = 0; i < 8; ++i)
+                                {
+                                    if (Unit *soldier = m_creature->GetUnit(*m_creature, soldiersList[i]))
+                                    {
+                                        x = soldier->GetPositionX() + DISTANCE_TO_MOVE * cos(0.0f);
+                                        y = soldier->GetPositionY() + DISTANCE_TO_MOVE * sin(0.0f);
+                                        soldier->GetMotionMaster()->MovePoint(0, x, y, _HEIGHT);
+                                    }
+                                }
+                                x = m_creature->GetPositionX() + DISTANCE_TO_MOVE * cos(0.0f);
+                                y = m_creature->GetPositionY() + DISTANCE_TO_MOVE * sin(0.0f);
+                            }
+                            break;
+                            case 1:
+                            {
+                                for (int i = 0; i < 8; ++i)
+                                {
+                                    if (Unit *soldier = m_creature->GetUnit(*m_creature, soldiersList[i]))
+                                        soldier->GetMotionMaster()->MovePoint(1, fieldPositions[i][0], fieldPositions[i][1], _HEIGHT);
+                                }
+                                x = WEAPON_X;
+                                y = WEAPON_Y;
+                            }
+                            break;
+                        }
+                        m_creature->GetMotionMaster()->MovePoint(id, x, y, _HEIGHT);
+                    }
+                    else m_nextMove -= diff;
+                }
+            }
+            return;
+        }
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+
+/****************
+* Shadowmoon Soldier - id 23047
+*****************/
+
+#define SPELL_STRIKE        11976
+
+struct TRINITY_DLL_DECL mob_shadowmoon_soldierAI: public ScriptedAI
+{
+    mob_shadowmoon_soldierAI(Creature *c) : ScriptedAI(c) { }
+
+    void Reset()
+    {
+    }
+
+    void MovementInform(uint32 type, uint32 id)
+    {
+        if (type != POINT_MOTION_TYPE)
+            return;
+
+        switch (id)
+        {
+            case 0:
+                m_creature->HandleEmoteCommand(EMOTE_ONESHOT_SALUTE);
+            break;
+        }
+    }
+
+    void DoMeleeAttackIfReady()
+    {
+        }
+
+    void Aggro(Unit*) { DoZoneInCombat(); }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_shadowmoon_weapon_master(Creature *_Creature)
+{
+    return new mob_shadowmoon_weapon_masterAI(_Creature);
+}
+
+CreatureAI* GetAI_mob_shadowmoon_soldier(Creature *_Creature)
+{
+    return new mob_shadowmoon_soldierAI(_Creature);
+}
+
+
 /* ============================
 *
 *      GURTOGG  BLOODBOIL
@@ -1428,5 +1628,15 @@ void AddSC_black_temple_trash()
     newscript = new Script;
     newscript->Name = "mob_illidari_fearbringer";
     newscript->GetAI = &GetAI_mob_illidari_fearbringer;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_shadowmoon_weapon_master";
+    newscript->GetAI = &GetAI_mob_shadowmoon_weapon_master;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_shadowmoon_soldier";
+    newscript->GetAI = &GetAI_mob_shadowmoon_soldier;
     newscript->RegisterSelf();
 }

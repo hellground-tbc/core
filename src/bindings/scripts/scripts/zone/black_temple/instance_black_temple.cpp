@@ -74,6 +74,8 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
     uint32 Encounters[ENCOUNTERS];
     std::string str_data;
 
+    std::vector<uint64> weaponmasterList;
+
     void Initialize()
     {
         Najentus = 0;
@@ -152,6 +154,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         case 22952:    VerasDarkshadow = creature->GetGUID();           break;
         case 23426:    IllidariCouncil = creature->GetGUID();           break;
         case 23499:    BloodElfCouncilVoice = creature->GetGUID();      break;
+        case 23047:    weaponmasterList.push_back(creature->GetGUID()); break;
         }
     }
 
@@ -241,6 +244,15 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         case DATA_GAMEOBJECT_ILLIDAN_DOOR_L:   return IllidanDoor[1];
         case DATA_GAMEOBJECT_SUPREMUS_DOORS:   return MainTempleDoors;
         case DATA_BLOOD_ELF_COUNCIL_VOICE:     return BloodElfCouncilVoice;
+        case DATA_WEAPONMASTER_SOLDIER:
+        case DATA_WEAPONMASTER_SOLDIER+1:
+        case DATA_WEAPONMASTER_SOLDIER+2:
+        case DATA_WEAPONMASTER_SOLDIER+3:
+        case DATA_WEAPONMASTER_SOLDIER+4:
+        case DATA_WEAPONMASTER_SOLDIER+5:
+        case DATA_WEAPONMASTER_SOLDIER+6:
+        case DATA_WEAPONMASTER_SOLDIER+7:
+            return weaponmasterList[identifier-30];
         }
 
         return 0;
@@ -358,8 +370,8 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         case DATA_ILLIDARICOUNCILEVENT:             return Encounters[7];
         case DATA_ILLIDANSTORMRAGEEVENT:            return Encounters[8];
         case DATA_ENSLAVED_SOUL:                    return EnslavedSoulsCount;
+        case DATA_WEAPONMASTER_LIST_SIZE:           return weaponmasterList.size();
         }
-
         return 0;
     }
 
