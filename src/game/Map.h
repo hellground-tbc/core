@@ -608,7 +608,7 @@ class TRINITY_DLL_SPEC BattleGroundMap : public Map
         bool Add(Player *);
         void Remove(Player *, bool);
         bool CanEnter(Player* player);
-        void Update(uint32);
+        void Update(const uint32&);
         virtual void InitVisibilityDistance();
         void SetUnload();
         void UnloadAll();

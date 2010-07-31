@@ -18915,7 +18915,7 @@ void Player::ResetDailyQuestStatus()
 
 BattleGround* Player::GetBattleGround() const
 {
-    if(GetBattleGroundId()==0)
+    if(GetBattleGroundId() == 0)
         return NULL;
 
     return sBattleGroundMgr.GetBattleGround(GetBattleGroundId());

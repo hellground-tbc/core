@@ -3458,10 +3458,11 @@ bool BattleGroundMap::CanEnter(Player * player)
     return Map::CanEnter(player);
 }
 
-void BattleGroundMap::Update(uint32 diff)
+void BattleGroundMap::Update(const uint32& t_diff)
 {
-    Map::Update(diff);
-    m_bg->Update(time_t(diff));
+    Map::Update(t_diff);
+
+    m_bg->Update(time_t(t_diff));
 }
 
 bool BattleGroundMap::Add(Player * player)
