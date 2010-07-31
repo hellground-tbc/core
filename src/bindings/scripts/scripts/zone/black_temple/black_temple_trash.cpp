@@ -1356,7 +1356,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
         }
     }
 
-    void Aggro(Unit*) { DoZoneInCombat(); }
+    void EnterCombat(Unit*) { DoZoneInCombat(); }
 
     void UpdateAI(const uint32 diff)
     {
@@ -1467,9 +1467,9 @@ struct TRINITY_DLL_DECL mob_shadowmoon_soldierAI: public ScriptedAI
 
     void DoMeleeAttackIfReady()
     {
-        }
+    }
 
-    void Aggro(Unit*) { DoZoneInCombat(); }
+    void EnterCombat(Unit*) { DoZoneInCombat(); }
 
     void UpdateAI(const uint32 diff)
     {

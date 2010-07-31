@@ -440,6 +440,7 @@ bool OutdoorPvP::Update(uint32 diff)
     bool objective_changed = false;
     for(OutdoorPvPObjectiveSet::iterator itr = m_OutdoorPvPObjectives.begin(); itr != m_OutdoorPvPObjectives.end(); ++itr)
         objective_changed |= (*itr)->Update(diff);
+
     return objective_changed;
 }
 

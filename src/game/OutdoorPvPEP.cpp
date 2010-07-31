@@ -804,12 +804,14 @@ bool OutdoorPvPEP::Update(uint32 diff)
     {
         m_AllianceTowersControlled = 0;
         m_HordeTowersControlled = 0;
+
         for(int i = 0; i < EP_TOWER_NUM; ++i)
         {
             if(EP_Controls[i] == ALLIANCE)
                 ++m_AllianceTowersControlled;
             else if(EP_Controls[i] == HORDE)
                 ++m_HordeTowersControlled;
+
             SendUpdateWorldState(EP_UI_TOWER_COUNT_A,m_AllianceTowersControlled);
             SendUpdateWorldState(EP_UI_TOWER_COUNT_H,m_HordeTowersControlled);
             BuffTeams();
