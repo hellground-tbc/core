@@ -37,6 +37,7 @@
 #include "Group.h"
 #include "MapRefManager.h"
 #include "WaypointManager.h"
+#include "BattleGround.h"
 
 #include "MapInstanced.h"
 #include "InstanceSaveMgr.h"
@@ -3421,9 +3422,9 @@ void InstanceMap::SetResetSchedule(bool on)
 
 /* ******* Battleground Instance Maps ******* */
 
-BattleGroundMap::BattleGroundMap(uint32 id, time_t expiry, uint32 InstanceId)
-  : Map(id, expiry, InstanceId, DIFFICULTY_NORMAL)
+BattleGroundMap::BattleGroundMap(uint32 id, time_t expiry, uint32 InstanceId, BattleGround *bg): Map(id, expiry, InstanceId, DIFFICULTY_NORMAL)
 {
+    m_bg = bg;
     BattleGroundMap::InitVisibilityDistance();
 }
 
@@ -3455,6 +3456,12 @@ bool BattleGroundMap::CanEnter(Player * player)
     // player number limit is checked in bgmgr, no need to do it here
 
     return Map::CanEnter(player);
+}
+
+void BattleGroundMap::Update(uint32 diff)
+{
+    Map::Update(diff);
+    m_bg->Update(time_t(diff));
 }
 
 bool BattleGroundMap::Add(Player * player)

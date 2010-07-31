@@ -130,7 +130,7 @@ Map* MapInstanced::GetInstance(const WorldObject* obj)
              if (Map *map = _FindMap(instanceId))
                  return map;
              else
-                 return CreateBattleGround(instanceId);
+                 return CreateBattleGround(instanceId, player->GetBattleGround());
         }
         else
              return NULL;
@@ -194,14 +194,14 @@ InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave *save,
     return map;
 }
 
-BattleGroundMap* MapInstanced::CreateBattleGround(uint32 InstanceId)
+BattleGroundMap* MapInstanced::CreateBattleGround(uint32 InstanceId, BattleGround* bg)
 {
     // load/create a map
     Guard guard(*this);
 
     sLog.outDebug("MapInstanced::CreateBattleGround: map bg %d for %d created.", InstanceId, GetId());
 
-    BattleGroundMap *map = new BattleGroundMap(GetId(), GetGridExpiry(), InstanceId);
+    BattleGroundMap *map = new BattleGroundMap(GetId(), GetGridExpiry(), InstanceId, bg);
     assert(map->IsBattleGroundOrArena());
 
     m_InstancedMaps[InstanceId] = map;

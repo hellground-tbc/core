@@ -999,7 +999,8 @@ void BattleGroundMgr::Update(time_t diff)
     {
         next = itr;
         ++next;
-        itr->second->Update(diff);
+        
+        //itr->second->Update(diff);
         // use the SetDeleteThis variable
         // direct deletion caused crashes
         if(itr->second->m_SetDeleteThis)
