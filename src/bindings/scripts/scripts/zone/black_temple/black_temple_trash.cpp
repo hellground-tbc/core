@@ -1181,7 +1181,11 @@ struct TRINITY_DLL_DECL mob_dragonmaw_wyrmcallerAI : public ScriptedAI
             Unit* target = *(Friendly.begin() + rand()%Friendly.size());
 
             if (victim && target)
+            {
+                target->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
+                target->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, false);
                 victim->CastSpell(target, SPELL_WYRMCALLER_FIXATE_TRIGGER, true);
+            }
 
             fixateTimer = 15000 + urand(0, 10000);
         }
