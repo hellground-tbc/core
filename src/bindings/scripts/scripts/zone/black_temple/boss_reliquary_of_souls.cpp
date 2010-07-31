@@ -424,8 +424,8 @@ struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
 
         AggroYellTimer = 5000;
         FixateTimer = 5000;
-        EnrageTimer = 30000;
-        SoulDrainTimer = 45000;
+        EnrageTimer = 44000 +rand()%3000;
+        SoulDrainTimer = 20000 +rand()%5000;
         AuraTimer = 5000;
 
         emoteDone = false;
@@ -461,12 +461,7 @@ struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
         if(victim->GetGUID() == FixateVictimGUID)
             FixateTimer = 0;
 
-        switch(rand()%3)
-        {
-            case 0: DoScriptText(SUFF_SAY_SLAY1, m_creature); break;
-            case 1: DoScriptText(SUFF_SAY_SLAY2, m_creature); break;
-            case 2: DoScriptText(SUFF_SAY_SLAY3, m_creature); break;
-        }
+        DoScriptText(RAND(SUFF_SAY_SLAY1, SUFF_SAY_SLAY2, SUFF_SAY_SLAY3), m_creature);
     }
 
     void CastFixate()
@@ -529,17 +524,16 @@ struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
         {
             DoCast(m_creature, SPELL_ENRAGE, true);
             DoScriptText(SUFF_EMOTE_ENRAGE, m_creature);
-            EnrageTimer = 60000;
+            EnrageTimer = 44000 +rand()%3000;
         }
         else
             EnrageTimer -= diff;
 
         if(SoulDrainTimer < diff)
         {
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0, 200, true))
-                DoCast(target, SPELL_SOUL_DRAIN);
+            DoCast(m_creature, SPELL_SOUL_DRAIN);
 
-            SoulDrainTimer = 60000;
+            SoulDrainTimer = 20000 +rand()%5000;
         }
         else
             SoulDrainTimer -= diff;
@@ -556,15 +550,17 @@ struct TRINITY_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
     uint32 RuneShieldTimer;
     uint32 DeadenTimer;
     uint32 SoulShockTimer;
+    uint32 GlobalCooldown;
 
     bool emoteDone;
     bool backToCage;
 
     void Reset()
     {
-        RuneShieldTimer = 60000;
+        RuneShieldTimer = 15000;
         DeadenTimer = 30000;
         SoulShockTimer = 5000;
+        GlobalCooldown = 0;
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
 
         emoteDone = false;
@@ -622,12 +618,7 @@ struct TRINITY_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
 
     void KilledUnit(Unit *victim)
     {
-        switch(rand()%3)
-        {
-            case 0: DoScriptText(DESI_SAY_SLAY1, m_creature); break;
-            case 1: DoScriptText(DESI_SAY_SLAY2, m_creature); break;
-            case 2: DoScriptText(DESI_SAY_SLAY3, m_creature); break;
-        }
+        DoScriptText(RAND(DESI_SAY_SLAY1, DESI_SAY_SLAY2, DESI_SAY_SLAY3), m_creature);
     }
 
     void UpdateAI(const uint32 diff)
@@ -635,13 +626,22 @@ struct TRINITY_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
+        if(GlobalCooldown > diff)
+        {
+            GlobalCooldown -= diff;
+            if(!backToCage)
+                DoMeleeAttackIfReady();
+
+            return;
+        }
+
         if(RuneShieldTimer < diff)
         {
             m_creature->InterruptNonMeleeSpells(false);
             DoCast(m_creature, SPELL_RUNE_SHIELD, true);
-            SoulShockTimer += 2000;
-            DeadenTimer += 2000;
-            RuneShieldTimer = 60000;
+            
+            GlobalCooldown = 1000;
+            RuneShieldTimer = 15000;
         }
         else
             RuneShieldTimer -= diff;
@@ -649,10 +649,8 @@ struct TRINITY_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
         if(SoulShockTimer < diff)
         {
             DoCast(m_creature->getVictim(), SPELL_SOUL_SHOCK);
+            GlobalCooldown = 1000;
             SoulShockTimer = 5000;
-
-            if(DeadenTimer < 1200)
-                DeadenTimer = 1200;
         }
         else
             SoulShockTimer -= diff;
@@ -665,7 +663,8 @@ struct TRINITY_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
             if(urand(0,1))
                 DoScriptText(DESI_SAY_SPEC, m_creature);
 
-            DeadenTimer = 25000 + rand()%10000;
+            GlobalCooldown = 1000;
+            DeadenTimer = 30000;
         }
         else
             DeadenTimer -= diff;
@@ -704,11 +703,7 @@ struct TRINITY_DLL_DECL boss_essence_of_angerAI : public ScriptedAI
 
     void EnterCombat(Unit *who)
     {
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(ANGER_SAY_FREED, m_creature); break;
-        case 1: DoScriptText(ANGER_SAY_FREED2, m_creature); break;
-        }
+        DoScriptText(RAND(ANGER_SAY_FREED, ANGER_SAY_FREED2), m_creature);
 
         DoZoneInCombat();
         DoCast(m_creature, AURA_OF_ANGER, true);
@@ -721,11 +716,7 @@ struct TRINITY_DLL_DECL boss_essence_of_angerAI : public ScriptedAI
 
     void KilledUnit(Unit *victim)
     {
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(ANGER_SAY_SLAY1, m_creature); break;
-        case 1: DoScriptText(ANGER_SAY_SLAY2, m_creature); break;
-        }
+        DoScriptText(RAND(ANGER_SAY_SLAY1, ANGER_SAY_SLAY2), m_creature);
     }
 
     void UpdateAI(const uint32 diff)
@@ -760,7 +751,7 @@ struct TRINITY_DLL_DECL boss_essence_of_angerAI : public ScriptedAI
             if(!urand(0,2))
                 DoScriptText(ANGER_SAY_SPEC, m_creature);
             
-            SoulScreamTimer = 9000 + rand()%2000;
+            SoulScreamTimer = 10000;
         }
         else
             SoulScreamTimer -= diff;
