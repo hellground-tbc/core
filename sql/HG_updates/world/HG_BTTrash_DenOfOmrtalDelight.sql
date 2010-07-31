@@ -91,7 +91,7 @@ INSERT INTO `creature_formations` VALUES ('52819', '52818', '0', '0', '2');
 INSERT INTO `creature_formations` VALUES ('52819', '52710', '0', '0', '2');
 
 -- Poduchy #3
-UPDATE `creature` SET `position_x`='918.685', `position_y`='392.497', `position_z`='121.234' WHERE `guid`='5x2841';
+UPDATE `creature` SET `position_x`='918.685', `position_y`='392.497', `position_z`='121.234' WHERE `guid`='52841';
 UPDATE `creature` SET `orientation`='3.04' WHERE `guid`='52841';
 
 UPDATE `creature` SET `orientation`='5.59' WHERE `guid`='52737';

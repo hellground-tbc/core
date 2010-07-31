@@ -821,7 +821,7 @@ struct TRINITY_DLL_DECL mob_bonechewer_workerAI : public ScriptedAI
 
     void Reset()
     {
-        throwTimer = 15000 + urand(0, 5000);
+        throwTimer = 15000 + urand(0, 10000);
     }
 
     void EnterCombat(Unit *who)
@@ -862,7 +862,7 @@ struct TRINITY_DLL_DECL mob_bonechewer_workerAI : public ScriptedAI
             if (victim)
                 m_creature->CastSpell(victim, SPELL_WORKER_THROW_PICK, false);
 
-            throwTimer = 15000 + urand(0, 5000);
+            throwTimer = 15000 + urand(0, 10000);
         }
         else
             throwTimer -= diff;
@@ -879,52 +879,22 @@ struct TRINITY_DLL_DECL mob_dragonmaw_skystalkerAI : public ScriptedAI
 {
     mob_dragonmaw_skystalkerAI(Creature *c) : ScriptedAI(c){}
 
+    uint32 shootTimer;
     uint32 immolationArrowTimer;
     uint32 distCheckTimer;
 
     void Reset()
     {
-        immolationArrowTimer = 10000 + urand(0, 5000);
-        distCheckTimer = 1000;
+        shootTimer = 2000 + urand(0, 2000);
+        immolationArrowTimer = 15000 + urand(0, 5000);
+        distCheckTimer = 3000;
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
         m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
-        SetAutocast(SPELL_SKYSTALKER_SHOOT, 2500, true);
     }
 
-    void EnterCombat(Unit *who)
-    {
-        DoZoneInCombat();
-        m_creature->StopMoving();
-        m_creature->GetMotionMaster()->Clear();
-        m_creature->GetMotionMaster()->MoveChase(who, 15);
-    }
+    void EnterCombat(Unit *who) { DoZoneInCombat(); }
 
     void JustDied(Unit *victim){}
-
-    Unit * GetNewTarget()
-    {
-        Map::PlayerList const &PlayerList = ((InstanceMap*)m_creature->GetMap())->GetPlayers();
-        std::list<Unit*> rangedList;
-        for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-        {
-            Player* i_pl = i->getSource();
-            if (i_pl && i_pl->isAlive() && !i_pl->isGameMaster() && m_creature->GetDistance(i_pl) >15 && m_creature->GetDistance(i_pl) < 40)
-                rangedList.push_back((Unit*)i_pl);
-        }
-
-        if (rangedList.empty())
-            return NULL;
-
-        int n = urand(1, rangedList.size()) - 1;
-
-        for (int i = 0; i < n; i++)
-            rangedList.pop_front();
-
-        if (!rangedList.empty())
-            return rangedList.front();
-
-        return NULL;
-    }
 
     void UpdateAI(const uint32 diff)
     {
@@ -942,22 +912,15 @@ struct TRINITY_DLL_DECL mob_dragonmaw_skystalkerAI : public ScriptedAI
             {
                 m_creature->StopMoving();
                 m_creature->GetMotionMaster()->Clear();
-                m_creature->GetMotionMaster()->MoveChase(victim, 25);
+                m_creature->GetMotionMaster()->MoveChase(victim, 25, 0);
             }
             else
             {
-                if (m_creature->GetDistance(victim) < 10)
+                if (m_creature->GetDistance(victim) < 15)
                 {
-                    DoResetThreat();
-                    victim = GetNewTarget();
-
-                    if (!victim)
-                    {
-                        victim = SelectUnit(SELECT_TARGET_RANDOM, 0, 40, true);
-                        m_creature->StopMoving();
-                        m_creature->GetMotionMaster()->Clear();
-                        m_creature->GetMotionMaster()->MoveChase(victim, 25);
-                    }
+                    m_creature->StopMoving();
+                    m_creature->GetMotionMaster()->Clear();
+                    m_creature->GetMotionMaster()->MoveChase(victim, 25, 0);
                 }
             }
             distCheckTimer = 3000;
@@ -965,15 +928,23 @@ struct TRINITY_DLL_DECL mob_dragonmaw_skystalkerAI : public ScriptedAI
         else
             distCheckTimer -= diff;
 
+        if (shootTimer < diff)
+        {
+            AddSpellToCast(victim, SPELL_SKYSTALKER_SHOOT);
+            shootTimer = 2000 + urand(0, 2000);
+        }
+        else
+            shootTimer -= diff;
+
         if (immolationArrowTimer < diff)
         {
             ForceSpellCast(SelectUnit(SELECT_TARGET_RANDOM, 0, 60, true), SPELL_SKYSTALKER_IMMOLATION);
-            immolationArrowTimer = 10000 + urand(0, 5000);
+            immolationArrowTimer = 15000 + urand(0, 5000);
         }
         else
             immolationArrowTimer -= diff;
 
-        CastNextSpellIfAnyAndReady(diff);
+        CastNextSpellIfAnyAndReady();
     }
 };
 
@@ -985,27 +956,22 @@ struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
 {
     mob_dragonmaw_windreaverAI(Creature *c) : ScriptedAI(c){}
 
+    uint32 fireballTimer;
     uint32 doomBoltTimer;
     uint32 freezeTimer;
     uint32 distCheckTimer;
 
     void Reset()
     {
-        doomBoltTimer = 5000 + urand(0, 5000);
-        freezeTimer = 10000 + urand(0, 5000);
+        fireballTimer = 2000 + urand(0, 2000);
+        doomBoltTimer = 15000 + urand(0, 10000);
+        freezeTimer = 20000 + urand(0, 15000);
         distCheckTimer = 3000;
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
         m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
-        SetAutocast(SPELL_WINDREAVER_FIREBALL, 2500, true);
     }
 
-    void EnterCombat(Unit *who)
-    {
-        DoZoneInCombat();
-        m_creature->StopMoving();
-        m_creature->GetMotionMaster()->Clear();
-        m_creature->GetMotionMaster()->MoveChase(who, 15);
-    }
+    void EnterCombat(Unit *who) { DoZoneInCombat(); }
 
     void JustDied(Unit *victim){}
 
@@ -1015,34 +981,9 @@ struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
         for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
         {
             Player* i_pl = i->getSource();
-            if (i_pl && i_pl->isAlive() && !i_pl->isGameMaster() && m_creature->GetDistance(i_pl) < 6)
+            if (i_pl && i_pl->isAlive() && m_creature->GetDistance(i_pl) < 6)
                 return (Unit*)i_pl;
         }
-
-        return NULL;
-    }
-
-    Unit * GetNewTarget()
-    {
-        Map::PlayerList const &PlayerList = ((InstanceMap*)m_creature->GetMap())->GetPlayers();
-        std::list<Unit*> rangedList;
-        for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-        {
-            Player* i_pl = i->getSource();
-            if (i_pl && i_pl->isAlive() && !i_pl->isGameMaster() && m_creature->GetDistance(i_pl) >15 && m_creature->GetDistance(i_pl) < 40)
-                rangedList.push_back((Unit*)i_pl);
-        }
-
-        if (rangedList.empty())
-            return NULL;
-
-        int n = urand(0, rangedList.size() - 1) ;
-
-        for (int i = 0; i < n; i++)
-            rangedList.pop_front();
-
-        if (!rangedList.empty())
-            return rangedList.front();
 
         return NULL;
     }
@@ -1063,22 +1004,15 @@ struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
             {
                 m_creature->StopMoving();
                 m_creature->GetMotionMaster()->Clear();
-                m_creature->GetMotionMaster()->MoveChase(victim, 25);
+                m_creature->GetMotionMaster()->MoveChase(victim, 25, 0);
             }
             else
             {
-                if (m_creature->GetDistance(victim) < 10)
+                if (m_creature->GetDistance(victim) < 15)
                 {
-                    DoResetThreat();
-                    victim = GetNewTarget();
-
-                    if (!victim)
-                    {
-                        victim = SelectUnit(SELECT_TARGET_RANDOM, 0, 40, true);
-                        m_creature->StopMoving();
-                        m_creature->GetMotionMaster()->Clear();
-                        m_creature->GetMotionMaster()->MoveChase(victim, 25);
-                    }
+                    m_creature->StopMoving();
+                    m_creature->GetMotionMaster()->Clear();
+                    m_creature->GetMotionMaster()->MoveChase(victim, 25, 0);
                 }
             }
             distCheckTimer = 3000;
@@ -1086,10 +1020,18 @@ struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
         else
             distCheckTimer -= diff;
 
+        if (fireballTimer < diff)
+        {
+            AddSpellToCast(victim, SPELL_WINDREAVER_FIREBALL);
+            fireballTimer = 3000 + urand(0, 2000);
+        }
+        else
+            fireballTimer -= diff;
+
         if (doomBoltTimer < diff)
         {
             AddSpellToCast(SelectUnit(SELECT_TARGET_RANDOM, 0, 40, true), SPELL_WINDREAVER_DOOM_BOLT);
-            doomBoltTimer = 5000 + urand(0, 5000);
+            doomBoltTimer = 15000 + urand(0, 10000);
         }
         else
             doomBoltTimer -= diff;
@@ -1099,10 +1041,9 @@ struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
             Unit * tmpTarget = CheckMeleeRange();
             if (tmpTarget)
             {
-                m_creature->CastSpell(tmpTarget, SPELL_WINDREAVER_FREEZE, false);
-                m_creature->StopMoving();
+                ForceSpellCast(tmpTarget, SPELL_WINDREAVER_FREEZE);
                 m_creature->GetMotionMaster()->Clear();
-                m_creature->GetMotionMaster()->MoveChase(tmpTarget, 15);
+                m_creature->GetMotionMaster()->MoveChase(tmpTarget, 15, 0);
                 distCheckTimer = 5000;
             }
             else
@@ -1110,12 +1051,12 @@ struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
                 ForceSpellCast(SelectUnit(SELECT_TARGET_RANDOM, 0, 60, true), SPELL_WINDREAVER_FREEZE);
             }
 
-            freezeTimer = 10000 + urand(0, 5000);
+            freezeTimer = 20000 + urand(0, 15000);
         }
         else
             freezeTimer -= diff;
 
-        CastNextSpellIfAnyAndReady(diff);
+        CastNextSpellIfAnyAndReady();
     }
 };
 
@@ -1133,9 +1074,9 @@ struct TRINITY_DLL_DECL mob_dragonmaw_wyrmcallerAI : public ScriptedAI
 
     void Reset()
     {
-        cleaveTimer = 5000 + urand(0, 10000);
-        fixateTimer = 15000 + urand(0, 10000);
-        jabTimer = 5000 + urand(0, 5000);
+        cleaveTimer = 10000 + urand(0, 10000);
+        fixateTimer = 20000 + urand(0, 10000);
+        jabTimer = 5000 + urand(0, 15000);
     }
 
     void EnterCombat(Unit *who) { DoZoneInCombat(); }
@@ -1155,7 +1096,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_wyrmcallerAI : public ScriptedAI
         if (cleaveTimer < diff)
         {
             m_creature->CastSpell(victim, SPELL_WYRMCALLER_CLEAVE, false);
-            cleaveTimer = 5000 + urand(0, 10000);
+            cleaveTimer = 10000 + urand(0, 10000);
         }
         else
             cleaveTimer -= diff;
@@ -1163,7 +1104,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_wyrmcallerAI : public ScriptedAI
         if (jabTimer < diff)
         {
             m_creature->CastSpell(victim, SPELL_WYRMCALLER_JAB, false);
-            jabTimer = 5000 + urand(0, 5000);
+            jabTimer = 5000 + urand(0, 15000);
         }
         else
             jabTimer -= diff;
@@ -1183,7 +1124,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_wyrmcallerAI : public ScriptedAI
             if (victim && target)
                 victim->CastSpell(target, SPELL_WYRMCALLER_FIXATE_TRIGGER, true);
 
-            fixateTimer = 15000 + urand(0, 10000);
+            fixateTimer = 20000 + urand(0, 10000);
         }
         else
             fixateTimer -= diff;
@@ -1347,7 +1288,7 @@ CreatureAI* GetAI_mob_illidari_fearbringer(Creature *_Creature)
 * Shadowmoon Weapon Master - id 23049
 *****************/
 
-static float fieldPositions [8][2] =
+static float fieldPositions [8][2] = 
 {
     {448.26, 195.74},
     {448.66, 191.27},
@@ -1386,8 +1327,8 @@ struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
     {
         if (!soldiersList.empty())
         {
-            m_nextMove = 1000;
-            m_nextId   = 0;
+            m_nextMove = 2000;
+            m_nextId   = 1;
         }
     }
 
@@ -1400,14 +1341,14 @@ struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
         {
             case 0:
             {
-                m_nextMove = 3000;
+                m_nextMove = 2300;
                 m_nextId   = 1;
-                m_creature->HandleEmoteCommand(EMOTE_ONESHOT_POINT_NOSHEATHE);
+                m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_ONESHOT_POINT_NOSHEATHE);
             }
             break;
             case 1:
             {
-                m_nextMove = 3000;
+                m_nextMove = 5000;
                 m_nextId = 0;
             }
             break;
@@ -1415,7 +1356,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
         }
     }
 
-    void EnterCombat(Unit*) { DoZoneInCombat(); }
+    void EnterCombat(Unit *) { DoZoneInCombat(); }
 
     void UpdateAI(const uint32 diff)
     {
@@ -1474,6 +1415,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
                             break;
                             case 1:
                             {
+                                m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE, 0);
                                 for (int i = 0; i < 8; ++i)
                                 {
                                     if (Unit *soldier = m_creature->GetUnit(*m_creature, soldiersList[i]))
@@ -1524,11 +1466,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_soldierAI: public ScriptedAI
         }
     }
 
-    void DoMeleeAttackIfReady()
-    {
-    }
-
-    void EnterCombat(Unit*) { DoZoneInCombat(); }
+    void EnterCombat(Unit *) { DoZoneInCombat(); }
 
     void UpdateAI(const uint32 diff)
     {
@@ -1540,6 +1478,93 @@ struct TRINITY_DLL_DECL mob_shadowmoon_soldierAI: public ScriptedAI
     }
 };
 
+/****************
+* Shadowmoon Blood Mage - id 22945
+*****************/
+
+// zle id ale wyglada podobnie
+#define SPELL_GREEN_BEAM        38909
+#define MOB_SKELETON            22953
+
+struct TRINITY_DLL_DECL mob_shadowmoon_blood_mageAI: public ScriptedAI
+{
+    mob_shadowmoon_blood_mageAI(Creature *c) : ScriptedAI(c) { }
+
+    void Reset()
+    {
+    }
+
+    void EnterCombat(Unit *)
+    {
+        m_creature->InterruptNonMeleeSpells(false, SPELL_GREEN_BEAM);
+        DoZoneInCombat();
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+        {
+            if (!m_creature->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT))
+            {
+                if (Unit *skeleton = FindCreature(MOB_SKELETON, 20.0f, m_creature))
+                {
+                    if (skeleton->isAlive())
+                        DoCast(skeleton, SPELL_GREEN_BEAM);
+                }
+            }
+            return;
+        }
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+
+/****************
+* Shadowmoon Deathshaper - id 22882
+*****************/
+
+struct TRINITY_DLL_DECL mob_shadowmoon_deathshaperAI: public ScriptedAI
+{
+    mob_shadowmoon_deathshaperAI(Creature *c) : ScriptedAI(c) { }
+
+    void Reset()
+    {
+    }
+
+    void EnterCombat(Unit *)
+    {
+        m_creature->InterruptNonMeleeSpells(false, SPELL_GREEN_BEAM);
+        DoZoneInCombat();
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+        {
+            if (!m_creature->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT))
+            {
+                if (Unit *skeleton = FindCreature(MOB_SKELETON, 20.0f, m_creature))
+                {
+                    if (skeleton->isAlive())
+                        DoCast(skeleton, SPELL_GREEN_BEAM);
+                }
+            }
+            return;
+        }
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+
+CreatureAI* GetAI_mob_shadowmoon_deathshaper(Creature *_Creature)
+{
+    return new mob_shadowmoon_deathshaperAI(_Creature);
+}
+
 CreatureAI* GetAI_mob_shadowmoon_weapon_master(Creature *_Creature)
 {
     return new mob_shadowmoon_weapon_masterAI(_Creature);
@@ -1550,6 +1575,10 @@ CreatureAI* GetAI_mob_shadowmoon_soldier(Creature *_Creature)
     return new mob_shadowmoon_soldierAI(_Creature);
 }
 
+CreatureAI* GetAI_mob_shadowmoon_blood_mage(Creature *_Creature)
+{
+    return new mob_shadowmoon_blood_mageAI(_Creature);
+}
 
 /* ============================
 *
@@ -1695,5 +1724,25 @@ void AddSC_black_temple_trash()
     newscript = new Script;
     newscript->Name = "mob_illidari_fearbringer";
     newscript->GetAI = &GetAI_mob_illidari_fearbringer;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_shadowmoon_weapon_master";
+    newscript->GetAI = &GetAI_mob_shadowmoon_weapon_master;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_shadowmoon_soldier";
+    newscript->GetAI = &GetAI_mob_shadowmoon_soldier;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_shadowmoon_blood_mage";
+    newscript->GetAI = &GetAI_mob_shadowmoon_blood_mage;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_shadowmoon_deathshaper";
+    newscript->GetAI = &GetAI_mob_shadowmoon_deathshaper;
     newscript->RegisterSelf();
 }
