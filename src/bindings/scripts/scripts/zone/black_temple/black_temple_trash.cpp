@@ -821,7 +821,7 @@ struct TRINITY_DLL_DECL mob_bonechewer_workerAI : public ScriptedAI
 
     void Reset()
     {
-        throwTimer = 15000 + urand(0, 10000);
+        throwTimer = 15000 + urand(0, 5000);
     }
 
     void EnterCombat(Unit *who)
