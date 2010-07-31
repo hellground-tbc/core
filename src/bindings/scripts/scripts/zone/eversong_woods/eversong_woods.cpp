@@ -698,8 +698,6 @@ struct TRINITY_DLL_DECL npc_infused_crystalAI : public Scripted_NoMovementAI
         WaveTimer = 0;
     }
 
-    void Aggro(Unit* who){}
-
     void MoveInLineOfSight(Unit* who)
     {
         if( who->GetTypeId() == TYPEID_PLAYER && !m_creature->canStartAttack(who) && !Progress)

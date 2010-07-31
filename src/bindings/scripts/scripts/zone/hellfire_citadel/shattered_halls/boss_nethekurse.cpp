@@ -335,7 +335,8 @@ struct TRINITY_DLL_DECL mob_fel_orc_convertAI : public ScriptedAI
 
                     if (pInstance->GetData(TYPE_NETHEKURSE) == IN_PROGRESS)
                         return;
-                    else pInstance->SetData(TYPE_NETHEKURSE,IN_PROGRESS);
+                    else
+                        pInstance->SetData(TYPE_NETHEKURSE,IN_PROGRESS);
                 }
             }
         }

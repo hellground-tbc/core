@@ -291,7 +291,8 @@ class TRINITY_DLL_SPEC Aura
                     GetId() == 15258 ||     // Shadow Weaving
                     GetId() == 25225 ||     // Sunder Armor
                     GetId() == 36478 ||     // Magic Disruption
-                    GetId() == 36482        // Armor Disruption
+                    GetId() == 36482 ||     // Armor Disruption
+                    GetId() == 27189
                     );
         }
 

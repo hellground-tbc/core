@@ -2145,6 +2145,11 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 if( caster && m_target->CanHaveThreatList())
                     m_target->AddThreat(caster, 10.0f);
                 return;
+            case 7057:                                      // Haunting Spirits
+                m_isPeriodic = true;
+                m_modifier.periodictime = 30*IN_MILISECONDS;
+                m_periodicTimer = m_modifier.periodictime;
+                return;
             case 13139:                                     // net-o-matic
                 // root to self part of (root_target->charge->root_self sequence
                 if(caster)
@@ -2245,39 +2250,50 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             return;
         }
 
-        // Waiting to Resurrect
-        if(GetId()==2584)
-        {
-            // Waiting to resurrect spell cancel, we must remove player from resurrect queue
-            if(m_target->GetTypeId() == TYPEID_PLAYER)
-                if(BattleGround *bg = ((Player*)m_target)->GetBattleGround())
-                    bg->RemovePlayerFromResurrectQueue(m_target->GetGUID());
-            return;
-        }
+        // AT REMOVE
+        switch(GetId())
+        {                 
+            case 2584:          // Waiting to Resurrect
+            {
+                // Waiting to resurrect spell cancel, we must remove player from resurrect queue
+                if(m_target->GetTypeId() == TYPEID_PLAYER)
+                    if(BattleGround *bg = ((Player*)m_target)->GetBattleGround())
+                        bg->RemovePlayerFromResurrectQueue(m_target->GetGUID());
+                return;
+            }
+            case 28169:        // Mutating Injection
+            {
+                // Mutagen Explosion
+                m_target->CastSpell(m_target, 28206, true, NULL, this);
+                // Poison Cloud
+                m_target->CastSpell(m_target, 28240, true, NULL, this);
+                return;
+            }
+            case 45934:        // Dark Fiend
+            {
+                if (m_removeMode == AURA_REMOVE_BY_DISPEL)
+                    m_target->Kill(m_target, true);
+                return;
+            }
+            case 46308:        // Burning Winds                                
+            {
+                m_target->CastSpell(m_target,47287,true,NULL,this); // casted only at creatures at spawn
+                return;
+            }
+            case 34477:        // Misdirection
+            {
+                m_target->SetReducedThreatPercent(0, 0);
+                return;
+            }
+            case 40251:        // Vengeful Spirit
+            {
+                m_target->SetHealth(m_target->GetMaxHealth());
 
-        // Burning Winds
-        if(GetId()==46308)                                  // casted only at creatures at spawn
-        {
-            m_target->CastSpell(m_target,47287,true,NULL,this);
-            return;
-        }
-
-        // Misdirection
-        if(GetId()==34477)
-        {
-            m_target->SetReducedThreatPercent(0, 0);
-            return;
-        }
-
-        // Vengeful Spirit
-        if(GetId()==40251)
-        {
-            m_target->SetHealth(m_target->GetMaxHealth());
-
-            m_target->RemoveAllAurasOnDeath();  //prevent spell immunities from cloak of shadows and others
-            m_target->CastSpell(m_target, 40266, true);   //summon Vengeful Spirit and 4 Shadowy Constructs
-            m_target->CastSpell(m_target, 40282, true);   //Possess Spirit Immune
-            m_target->CastSpell((Unit*)NULL, 40268, false); //Possess Vengeful Spirit
+                m_target->RemoveAllAurasOnDeath();  //prevent spell immunities from cloak of shadows and others
+                m_target->CastSpell(m_target, 40266, true);   //summon Vengeful Spirit and 4 Shadowy Constructs
+                m_target->CastSpell(m_target, 40282, true);   //Possess Spirit Immune
+                m_target->CastSpell((Unit*)NULL, 40268, false); //Possess Vengeful Spirit
+            }
         }
     }
 
@@ -6554,22 +6570,18 @@ void Aura::PeriodicTick()
             pCaster->ProcDamageAndSpell(damageInfo.target, procAttacker, procVictim, procEx, damageInfo.damage, BASE_ATTACK, spellProto);
             break;
         }
+
         // Here tick dummy auras
+        case SPELL_AURA_DUMMY:                              // some spells have dummy aura
         case SPELL_AURA_PERIODIC_DUMMY:
-        {
             PeriodicDummyTick();
             break;
-        }
         case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
-        {
             TriggerSpell();
             break;
-        }
         case SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE:
-        {
             TriggerSpellWithValue();
             break;
-        }
         default:
             break;
     }
@@ -6644,6 +6656,12 @@ void Aura::PeriodicDummyTick()
             }
             return;
         }
+        case 7057:                                  // Haunting Spirits
+        {
+            if (roll_chance_i(33))
+                m_target->CastSpell(m_target,m_modifier.m_amount,true,NULL,this);
+            return;
+        }
 //        // Panda
 //        case 19230: break;
 //        // Master of Subtlety
@@ -6659,20 +6677,26 @@ void Aura::PeriodicDummyTick()
         {
             if (m_target->GetTypeId() != TYPEID_PLAYER)
                 return;
+            
             // Should be manauser
-            if (m_target->getPowerType()!=POWER_MANA)
+            if (m_target->getPowerType() != POWER_MANA)
                 return;
+            
             Unit *caster = GetCaster();
             if (!caster)
                 return;
+            
             // Regen amount is max (100% from spell) on 21% or less mana and min on 92.5% or greater mana (20% from spell)
             int mana = m_target->GetPower(POWER_MANA);
             int max_mana = m_target->GetMaxPower(POWER_MANA);
             int32 base_regen = caster->CalculateSpellDamage(m_spellProto, m_effIndex, m_currentBasePoints, m_target);
             float regen_pct = 1.20f - 1.1f * mana / max_mana;
-            if      (regen_pct > 1.0f) regen_pct = 1.0f;
+            
+            if (regen_pct > 1.0f)
+                regen_pct = 1.0f;
             else if (regen_pct < 0.2f) regen_pct = 0.2f;
-            m_modifier.m_amount = int32 (base_regen * regen_pct);
+                m_modifier.m_amount = int32 (base_regen * regen_pct);
+
             ((Player*)m_target)->UpdateManaRegen();
             return;
         }
@@ -6804,7 +6828,13 @@ void Aura::PeriodicDummyTick()
 //        // Darkness
 //        case 45996: break;
 //        // Summon Blood Elves Periodic
-//        case 46041: break;
+        case 46041:
+        {
+            m_target->CastSpell(m_target, 46037, true, NULL, this);
+            m_target->CastSpell(m_target, roll_chance_i(50) ? 46038 : 46039, true, NULL, this);
+            m_target->CastSpell(m_target, 46040, true, NULL, this);
+            break;
+        }
 //        // Transform Visual Missile Periodic
 //        case 46205: break;
 //        // Find Opening Beam End
