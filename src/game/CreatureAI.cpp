@@ -48,7 +48,7 @@ void CreatureAI::DoZoneInCombat(Creature* creature)
         return;
     }
 
-    if(!creature->HasReactState(REACT_PASSIVE) && !creature->getVictim())
+    /*if(!creature->HasReactState(REACT_PASSIVE) && !creature->getVictim())
     {
         if(Unit *target = creature->SelectNearestTarget(50))
             creature->AI()->AttackStart(target);
@@ -60,7 +60,7 @@ void CreatureAI::DoZoneInCombat(Creature* creature)
                 if(target && (creature->IsFriendlyTo(summoner) || creature->IsHostileTo(target)))
                     creature->AI()->AttackStart(target);
         }
-    }
+    }*/
 
     Map::PlayerList const &PlList = map->GetPlayers();
 
