@@ -255,7 +255,7 @@ struct TRINITY_DLL_DECL npc_grimstoneAI : public npc_escortAI
                 case 0:
                     DoScriptText(-1000000, m_creature);//1
                     DoGate(DATA_ARENA4,1);
-                    Start(false, false, false);
+                    Start(false, false);
                     CanWalk = true;
                     Event_Timer = 0;
                     break;
