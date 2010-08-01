@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2009 Trinity <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,11 +39,9 @@ class TRINITY_DLL_DECL PetAI : public CreatureAI
         void UpdateAI(const uint32);
         static int Permissible(const Creature *);
 
-        void AttackStart(Unit *target)
-        {
-            m_forceTimer = 5000;
-            CreatureAI::AttackStart(target);
-        }
+        void KilledUnit(Unit *victim);
+        void AttackStart(Unit *target);
+        void MovementInform(uint32 moveType, uint32 data);
 
         virtual void PrepareSpellForAutocast(uint32 spellId);
         virtual void AddSpellForAutocast(uint32 spellId, Unit* target);
@@ -51,9 +49,9 @@ class TRINITY_DLL_DECL PetAI : public CreatureAI
 
         bool targetHasInterruptableAura(Unit *target) const;
 
-    protected:
-
-        void UpdateMotionMaster();
+   protected:
+    
+        Unit* m_owner;              // pointer updated every UpdateAI call
 
         bool _isVisible(Unit *) const;
         bool _needToStop(void) const;
@@ -64,12 +62,17 @@ class TRINITY_DLL_DECL PetAI : public CreatureAI
         TimeTracker i_tracker;
         std::set<uint64> m_AllySet;
         uint32 m_updateAlliesTimer;
-        uint32 m_forceTimer;
 
+        Unit *SelectNextTarget();
+        void HandleReturnMovement();
+        void DoAttack(Unit *target, bool chase);
+        bool _CanAttack(Unit *target);
+
+        uint32 m_forceTimer;
+        bool inCombat;
+ 
         typedef std::pair<Unit*, Spell*> TargetSpellPair;
         std::vector<TargetSpellPair> m_targetSpellStore;
-
-        Unit* m_owner;              // pointer updated every UpdateAI call
 };
 
 class TRINITY_DLL_DECL ImpAI : public PetAI
@@ -91,6 +94,5 @@ class TRINITY_DLL_DECL FelhunterAI : public PetAI
         void PrepareSpellForAutocast(uint32 spellId);
 
 };
-
 #endif
 

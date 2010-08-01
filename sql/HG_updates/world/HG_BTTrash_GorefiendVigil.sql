@@ -1,4 +1,4 @@
--- Shadowmoon Champion Formation #1
+a-- Shadowmoon Champion Formation #1
 DELETE FROM `creature_formations` WHERE `leaderguid`='12882';
 INSERT INTO `creature_formations` VALUES ('12882', '12882', '0', '0', '2');
 INSERT INTO `creature_formations` VALUES ('12882', '12874', '0', '0', '2');
@@ -16,12 +16,26 @@ INSERT INTO `creature_addon` VALUES ('53800', '53800', '14334', '0', '0', '0', '
 UPDATE `creature` SET `movementtype`='2' WHERE `guid`='53800';
 
 DELETE FROM `waypoint_data` WHERE `id`='53800';
-INSERT INTO `waypoint_data` VALUES ('53800', '1', '581.336', '111.016', '139.311', '3000', '0', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('53800', '2', '575.414', '111.236', '139.436', '0', '0', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('53800', '3', '542.094', '111.295', '165.938', '0', '0', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('53800', '4', '514.463', '112.324', '164.771', '0', '0', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('53800', '5', '514.762', '170.275', '163.981', '0', '0', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('53800', '6', '473.248', '173.234', '163.981', '3000', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('53800', '1', '580.792', '110.936', '139.309', '0', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('53800', '2', '575.315', '111.152', '139.533', '0', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('53800', '3', '542.062', '112.266', '165.934', '0', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('53800', '4', '514.303', '113.248', '164.771', '0', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('53800', '5', '517.399', '158.256', '164.771', '0', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('53800', '6', '517.954', '111.149', '164.771', '0', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('53800', '7', '542.029', '111.178', '165.934', '0', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('53800', '8', '575.737', '111.131', '139.306', '0', '0', '0', '100', '0');
+
+-- Wolf Patrol #2
+DELETE FROM `creature_addon` WHERE `guid`='53799';
+INSERT INTO `creature_addon` VALUES ('53799', '53799', '14334', '0', '0', '0', '0', '0', '0');
+
+UPDATE `creature` SET `movementtype`='2' WHERE `guid`='53799';
+
+DELETE FROM `waypoint_data` WHERE `id`='53799';
+INSERT INTO `waypoint_data` VALUES ('53799', '1', '437.309', '172.865', '163.981', '0', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('53799', '2', '530.899', '170.463', '164.771', '0', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('53799', '3', '529.428', '210.116', '164.771', '0', '0', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('53799', '4', '435.828', '209.889', '163.981', '0', '0', '0', '100', '0');
 
 -- Shadowmoon BloodMage #1
 DELETE FROM `creature_formations` WHERE `leaderguid`='12871';
@@ -59,11 +73,6 @@ INSERT INTO `creature_formations` VALUES ('52766', '12890', '0', '0', '2');
 INSERT INTO `creature_formations` VALUES ('52766', '52746', '0', '0', '2');
 INSERT INTO `creature_formations` VALUES ('52766', '12891', '0', '0', '2');
 
--- Shadowmoon Houndmaster #1
-DELETE FROM `creature_formations` WHERE `leaderguid`='52440';
-INSERT INTO `creature_formations` VALUES ('52440', '52440', '0', '0', '2');
-INSERT INTO `creature_formations` VALUES ('52440', '53799', '0', '0', '2');
-
 -- Shadowmoon Champion #3
 DELETE FROM `creature_formations` WHERE `leaderguid`='12873';
 INSERT INTO `creature_formations` VALUES ('12873', '12873', '0', '0', '2');
@@ -71,7 +80,7 @@ INSERT INTO `creature_formations` VALUES ('12873', '12881', '0', '0', '2');
 INSERT INTO `creature_formations` VALUES ('12873', '12872', '0', '0', '2');
 INSERT INTO `creature_formations` VALUES ('12873', '12880', '0', '0', '2');
 
--- Shadowmoon Houndmaster #2 Patrol
+-- Shadowmoon Houndmaster #1 Patrol
 UPDATE `creature` SET `position_x`='435.145', `position_y`='239.251', `position_z`='164.766' WHERE `guid`='53798';
 UPDATE `creature` SET `position_x`='439.471', `position_y`='239.271', `position_z`='164.766' WHERE `guid`='53797';
 UPDATE `creature` SET `position_x`='430.601', `position_y`='240.918', `position_z`='164.764' WHERE `guid`='53796';
@@ -122,5 +131,19 @@ INSERT INTO `creature_formations` VALUES ('52767', '52751', '0', '0', '2');
 INSERT INTO `creature_formations` VALUES ('52767', '13234', '0', '0', '2');
 
 -- Weapon Master Script
+DELETE FROM `creature_formations` WHERE `leaderguid`='12726';
+INSERT INTO `creature_formations` VALUES ('12726', '12726', '0', '0', '2');
+INSERT INTO `creature_formations` VALUES ('12726', '7400', '0', '0', '2');
+INSERT INTO `creature_formations` VALUES ('12726', '12718', '0', '0', '2');
+INSERT INTO `creature_formations` VALUES ('12726', '12720', '0', '0', '2');
+INSERT INTO `creature_formations` VALUES ('12726', '12721', '0', '0', '2');
+INSERT INTO `creature_formations` VALUES ('12726', '12725', '0', '0', '2');
+INSERT INTO `creature_formations` VALUES ('12726', '12724', '0', '0', '2');
+INSERT INTO `creature_formations` VALUES ('12726', '12723', '0', '0', '2');
+INSERT INTO `creature_formations` VALUES ('12726', '12722', '0', '0', '2');
+
+
+UPDATE `creature_template` SET `scriptName`="mob_shadowmoon_deathshaper" WHERE `entry`='22882';
+UPDATE `creature_template` SET `scriptName`="mob_shadowmoon_blood_mage" WHERE `entry`='22945';
 UPDATE `creature_template` SET `scriptName`="mob_shadowmoon_weapon_master" WHERE `entry`='23049';
 UPDATE `creature_template` SET `scriptName`="mob_shadowmoon_soldier" WHERE `entry`='23047';

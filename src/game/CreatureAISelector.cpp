@@ -44,12 +44,12 @@ namespace FactorySelector
                 return scriptedAI;
 
         // AIname in db
-        std::string ainame=creature->GetAIName();
-        if(!ainame.empty())
+        std::string ainame = creature->GetAIName();
+        if(!ai_factory && !ainame.empty())
             ai_factory = ai_registry.GetRegistryItem( ainame.c_str() );
 
         // select by NPC flags
-        if (!ai_factory)
+        if (!ai_factory || creature->isPet())
         {
             if (creature->isGuard() && creature->GetOwner() && creature->GetOwner()->GetTypeId() == TYPEID_PLAYER)
                 ai_factory = ai_registry.GetRegistryItem("PetAI");

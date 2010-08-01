@@ -165,43 +165,95 @@ void ScriptedAI::DoStopAttack()
         m_creature->AttackStop();
 }
 
-void ScriptedAI::CastNextSpellIfAnyAndReady()
+void ScriptedAI::CastNextSpellIfAnyAndReady(uint32 diff)
 {
     //clear spell list if caster isn't alive
     if (!m_creature->isAlive())
+    {
         spellList.clear();
-
-    if (spellList.empty())
+        autocast = false;
         return;
-
-    SpellToCast *temp = &spellList.front();
-
-    if (!temp || m_creature->hasUnitState(UNIT_STAT_CASTING) && !temp->triggered)
-        return;
-
-    if (temp->scriptTextEntry)
-        DoScriptText(temp->scriptTextEntry, m_creature, m_creature->getVictim());
-
-    if (temp->targetGUID)
-    {
-        Unit * tempU = m_creature->GetUnit(*m_creature, temp->targetGUID);
-
-        if (tempU && tempU->IsInWorld() && tempU->isAlive() && tempU->IsInMap(m_creature))
-            if (temp->spellId)
-                m_creature->CastSpell(tempU, temp->spellId, temp->triggered);
     }
-    else
+
+    bool casted = false;
+
+    if (m_creature->hasUnitState(UNIT_STAT_CASTING))
+        casted = true;
+
+    if (!spellList.empty() && !casted)
     {
-        if (temp->isAOECast)
+        SpellToCast *temp = &spellList.front();
+
+        if (!temp && !temp->triggered)
+            return;
+
+        if (temp->scriptTextEntry)
+            DoScriptText(temp->scriptTextEntry, m_creature, m_creature->getVictim());
+
+        if (temp->targetGUID)
         {
-            if (temp->spellId)
-                m_creature->CastSpell(m_creature, temp->spellId, temp->triggered);
+            Unit * tempU = m_creature->GetUnit(*m_creature, temp->targetGUID);
+
+            if (tempU && tempU->IsInWorld() && tempU->isAlive() && tempU->IsInMap(m_creature))
+                if (temp->spellId)
+                    m_creature->CastSpell(tempU, temp->spellId, temp->triggered);
         }
         else
-            m_creature->CastSpell((Unit*)NULL, temp->spellId, temp->triggered);
+        {
+            if (temp->isAOECast)
+            {
+                if (temp->spellId)
+                    m_creature->CastSpell(m_creature, temp->spellId, temp->triggered);
+            }
+            else
+                m_creature->CastSpell((Unit*)NULL, temp->spellId, temp->triggered);
+        }
+
+        spellList.pop_front();
+        casted = true;
     }
 
-    spellList.pop_front();
+    if (autocast)
+    {
+        if (autocastTimer < diff)
+        {
+            if (!casted)
+            {
+                Unit * victim = NULL;
+
+                switch(autocastMode)
+                {
+                    case AUTOCAST_TANK:
+                        victim = m_creature->getVictim();
+                        break;
+                    case AUTOCAST_NULL:
+                        m_creature->CastSpell((Unit*)NULL, autocastId, false);
+                        break;
+                    case AUTOCAST_RANDOM:
+                        victim = SelectUnit(SELECT_TARGET_RANDOM, 0, autocastTargetRange, autocastTargetPlayer);
+                        break;
+                    case AUTOCAST_RANDOM_WITHOUT_TANK:
+                        victim = SelectUnit(SELECT_TARGET_RANDOM, 1, autocastTargetRange, autocastTargetPlayer);
+                        break;
+                    case AUTOCAST_SELF:
+                        victim = m_creature;
+                        break;
+                    default:    //unsupported autocast, stop
+                        {
+                            autocast = false;
+                            return;
+                        }
+                }
+
+                if (victim)
+                    m_creature->CastSpell(victim, autocastId, false);
+
+                autocastTimer = autocastTimerDef;
+            }
+        }
+        else
+            autocastTimer -= diff;
+    }
 }
 
 void ScriptedAI::DoCast(Unit* victim, uint32 spellId, bool triggered)
@@ -348,6 +400,23 @@ void ScriptedAI::ForceAOESpellCastWithScriptText(uint32 spellId, int32 scriptTex
     SpellToCast temp(m_creature, spellId, triggered, scriptTextEntry, true);
 
     spellList.push_front(temp);
+}
+
+void ScriptedAI::SetAutocast (uint32 spellId, uint32 timer, bool startImmediately, autocastTargetMode mode, uint32 range, bool player)
+{
+    if (!spellId)
+        return;
+
+    autocastId = spellId;
+
+    autocastTimer = timer;
+    autocastTimerDef = timer;
+
+    autocastMode = mode;
+    autocastTargetRange = range;
+    autocastTargetPlayer = player;
+
+    autocast = startImmediately;
 }
 
 void ScriptedAI::DoSay(const char* text, uint32 language, Unit* target, bool SayEmote)
