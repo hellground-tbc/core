@@ -618,9 +618,6 @@ struct TRINITY_DLL_DECL boss_gazakrothAI : public boss_hexlord_addAI
                 m_creature->GetMotionMaster()->MoveChase(who, 20);
                 m_creature->AddThreat(who, 0.0f);
             }
-
-            if (!m_creature->isInCombat())
-                EnterCombat(who);
         }
     }
 
@@ -735,9 +732,6 @@ struct TRINITY_DLL_DECL boss_slitherAI : public boss_hexlord_addAI
                 m_creature->GetMotionMaster()->MoveChase(who, 20);
                 m_creature->AddThreat(who, 0.0f);
             }
-
-            if (!m_creature->isInCombat())
-                EnterCombat(who);
         }
     }
 

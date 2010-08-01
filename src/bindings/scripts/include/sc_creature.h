@@ -210,7 +210,7 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
     virtual void Reset(){}
 
     //Called at creature aggro either by MoveInLOS or Attack Start
-    void EnterCombat(Unit* who) {}
+    virtual void EnterCombat(Unit* who) {}
 
     //*************
     //AI Helper Functions

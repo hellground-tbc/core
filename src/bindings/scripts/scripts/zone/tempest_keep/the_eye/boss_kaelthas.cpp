@@ -519,6 +519,12 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
         }
     }
 
+    void AttackStart(Unit *who)
+    {
+        if(Phase >= 4)
+            ScriptedAI::AttackStart(who);
+    }    
+
     void EnterCombat(Unit *who)
     {
         if (pInstance && !pInstance->GetData(DATA_KAELTHASEVENT) && !Phase)

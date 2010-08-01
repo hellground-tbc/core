@@ -291,11 +291,11 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
                 }
             }
         }
+
         if(Phase != 2)
             AttackStart(who);
 
-        if(!m_creature->isInCombat())
-            StartEvent();
+        StartEvent();
     }
 
     void MoveInLineOfSight(Unit *who)
@@ -307,6 +307,7 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
         }
         if (!CanAttack)
             return;
+
         if (!who || m_creature->getVictim())
             return;
 
@@ -465,7 +466,7 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
                     //Phase 2 begins when Vashj hits 70%. She will run to the middle of her platform and surround herself in a shield making her invulerable.
                     Phase = 2;
 
-                    m_creature->GetMotionMaster()->Clear();
+                    m_creature->GetMotionMaster()->MovementExpired();
                     DoTeleportTo(MIDDLE_X, MIDDLE_Y, MIDDLE_Z);
 
                     Creature *pCreature;
@@ -475,6 +476,8 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
                         if (pCreature)
                             ShieldGeneratorChannel[i] = pCreature->GetGUID();
                     }
+
+                    m_creature->CastSpell(m_creature, SPELL_MAGIC_BARRIER,true);
                     DoScriptText(SAY_PHASE2, m_creature);
                 }
             }
@@ -853,10 +856,6 @@ struct TRINITY_DLL_DECL mob_toxic_sporebatAI : public ScriptedAI
 
     void UpdateAI (const uint32 diff)
     {
-
-        /*if(!m_creature->isInCombat())
-            m_creature->SetInCombatState(false);*/
-
         //Random movement
         if (movement_timer < diff)
         {
