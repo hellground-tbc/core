@@ -45,7 +45,6 @@ template<>
 void
 RandomMovementGenerator<Creature>::_setRandomLocation(Creature &creature)
 {
-    return;
     float X,Y,Z,z,nx,ny,nz,ori,dist;
 
     creature.GetHomePosition(X, Y, Z, ori);

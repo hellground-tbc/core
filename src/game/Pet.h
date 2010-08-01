@@ -127,6 +127,8 @@ extern const uint32 LevelStartLoyalty[6];
 
 #define ACTIVE_SPELLS_MAX           4
 
+#define OWNER_MAX_DISTANCE 200
+
 class Pet : public Creature
 {
     public:
