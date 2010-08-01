@@ -2062,7 +2062,13 @@ void Player::Regenerate(Powers power)
         case POWER_RAGE:                                    // Regenerate rage
         {
             float RageDecreaseRate = sWorld.getRate(RATE_POWER_RAGE_LOSS);
-            addvalue = 30 * RageDecreaseRate;               // 3 rage by tick
+
+            int mult = 30;
+            const AuraList &auras = GetAurasByType(SPELL_AURA_MOD_POWER_REGEN);
+            for (AuraList::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
+                if ((*itr)->GetSpellProto()->Id == 12296)
+                    mult = 20;
+            addvalue = mult * RageDecreaseRate;               // 3 rage by tick
         }   break;
         case POWER_ENERGY:                                  // Regenerate energy (rogue)
             addvalue = 20;
