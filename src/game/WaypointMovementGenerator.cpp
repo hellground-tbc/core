@@ -84,6 +84,9 @@ void WaypointMovementGenerator<Creature>::InitTraveller(Creature &unit, const Wa
     unit.SetUInt32Value(UNIT_NPC_EMOTESTATE, 0);
     unit.SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
 
+    if (unit.canFly())
+         unit.AddUnitMovementFlag(MOVEMENTFLAG_FLYING2);
+
     unit.addUnitState(UNIT_STAT_ROAMING);
 }
 
@@ -102,9 +105,9 @@ WaypointMovementGenerator<Creature>::Initialize(Creature &u)
     if(waypoints && waypoints->size())
     {
         if (CreatureData const *cdata = objmgr.GetCreatureData(u.GetDBTableGUIDLow()))
-            i_currentNode = cdata->currentwaypoint;
+            i_currentNode = cdata->currentwaypoint-1;
 
-        if (i_currentNode >= waypoints->size() - 1)
+        if (i_currentNode > waypoints->size() - 1)
             i_currentNode = 0;
 
         node = waypoints->at(i_currentNode);

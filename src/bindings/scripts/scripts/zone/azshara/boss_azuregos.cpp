@@ -84,7 +84,9 @@ struct TRINITY_DLL_DECL boss_azuregosAI : public ScriptedAI
 
             DoResetThreat();
             Teleport_Timer = 30000;
-        }else Teleport_Timer -= diff;
+        }
+        else
+            Teleport_Timer -= diff;
 
         //        //MarkOfFrost_Timer
         //        if (MarkOfFrost_Timer < diff)

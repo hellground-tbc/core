@@ -93,7 +93,7 @@ class TRINITY_DLL_SPEC UnitAI
         void DoMeleeAttackIfReady();
         bool DoSpellAttackIfReady(uint32 spell);
 
-        inline Unit *SelectUnit(AttackingTarget target, uint32 position);
+        Unit *SelectUnit(AttackingTarget target, uint32 position);
 
         static AISpellInfoType *AISpellInfo;
         static void FillAISpellInfo();

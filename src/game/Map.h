@@ -47,6 +47,7 @@ class Object;
 class Player;
 class WorldObject;
 class CreatureGroup;
+class BattleGround;
 
 struct ScriptInfo;
 struct ScriptAction;
@@ -601,15 +602,18 @@ class TRINITY_DLL_SPEC InstanceMap : public Map
 class TRINITY_DLL_SPEC BattleGroundMap : public Map
 {
     public:
-        BattleGroundMap(uint32 id, time_t, uint32 InstanceId);
+        BattleGroundMap(uint32 id, time_t, uint32 InstanceId, BattleGround *bg);
         ~BattleGroundMap();
 
         bool Add(Player *);
         void Remove(Player *, bool);
         bool CanEnter(Player* player);
+        void Update(const uint32&);
         virtual void InitVisibilityDistance();
         void SetUnload();
         void UnloadAll();
+    private:
+        BattleGround *m_bg;
 };
 
 /*inline

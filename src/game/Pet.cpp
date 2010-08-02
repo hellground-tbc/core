@@ -41,17 +41,6 @@ char const* petTypeSuffix[MAX_PET_TYPE] =
     "'s Companion"                                          // MINI_PET
 };
 
-//numbers represent minutes * 100 while happy (you get 100 loyalty points per min while happy)
-uint32 const LevelUpLoyalty[6] =
-{
-    5500,
-    11500,
-    17000,
-    23500,
-    31000,
-    39500,
-};
-
 uint32 const LevelStartLoyalty[6] =
 {
     2000,
@@ -829,6 +818,20 @@ int32 Pet::GetTPForSpell(uint32 spellid)
 
 uint32 Pet::GetMaxLoyaltyPoints(uint32 level)
 {
+    //numbers represent minutes * 100 while happy (you get 100 loyalty points per min while happy)
+    uint32 LevelUpLoyalty[6] =
+    {
+        5500,
+        11500,
+        17000,
+        23500,
+        31000,
+        39500,
+    };
+
+    if( level -1 > 5)
+        return LevelUpLoyalty[5];
+
     return LevelUpLoyalty[level - 1];
 }
 

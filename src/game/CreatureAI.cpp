@@ -38,7 +38,7 @@ void CreatureAI::DoZoneInCombat(Creature* creature)
     if (!creature)
         creature = me;
 
-    if(!creature->CanHaveThreatList())
+    if(!creature->CanHaveThreatList() || creature->IsInEvadeMode())
         return;
 
     Map *map = creature->GetMap();
@@ -48,7 +48,7 @@ void CreatureAI::DoZoneInCombat(Creature* creature)
         return;
     }
 
-    if(!creature->HasReactState(REACT_PASSIVE) && !creature->getVictim())
+    /*if(!creature->HasReactState(REACT_PASSIVE) && !creature->getVictim())
     {
         if(Unit *target = creature->SelectNearestTarget(50))
             creature->AI()->AttackStart(target);
@@ -60,13 +60,7 @@ void CreatureAI::DoZoneInCombat(Creature* creature)
                 if(target && (creature->IsFriendlyTo(summoner) || creature->IsHostileTo(target)))
                     creature->AI()->AttackStart(target);
         }
-    }
-
-    if(!creature->HasReactState(REACT_PASSIVE) && !creature->getVictim())
-    {
-        sLog.outError("DoZoneInCombat called for creature that has empty threat list (creature entry = %u)", creature->GetEntry());
-        return;
-    }
+    }*/
 
     Map::PlayerList const &PlList = map->GetPlayers();
 

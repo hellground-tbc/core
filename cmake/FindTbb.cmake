@@ -7,29 +7,29 @@
 MACRO(FIND_TBB LIBNAME)
     GET_FILENAME_COMPONENT(parent_dir_ "${PROJECT_SOURCE_DIR}/.." ABSOLUTE)
     FIND_PATH(
-        ACE_INCLUDE_DIR tbb/tbb.h
-        PATHS /usr/include /usr/local/include /opt/intel/tbb /root/tbb /usr/include/tbb /usr/local/include/tbb 
+        TBB_INCLUDE_DIR tbb/tbb.h
+        PATHS /usr/include /usr/local/include /opt/intel/tbb /root/tbb /root/tbb/include /usr/include/tbb /usr/local/include/tbb 
         "${CMAKE_INSTALL_PREFIX}/include" "${parent_dir_}/tbb"
         DOC "Path to tbb/tbb.h"
     )
 
     FIND_LIBRARY(
         TBB_LIBRARY "${LIBNAME}"
-        PATHS /usr/lib /usr/local/lib /usr/lib64
+        PATHS /usr/lib /usr/local/lib /usr/lib64 /root/tbb
         "${CMAKE_INSTALL_PREFIX}/lib" "${parent_dir_}/tbb/build"
         DOC "Path to tbb libraries"
     )
 
     FIND_LIBRARY(
         TBB_LIBRARY_MALLOC "${LIBNAME}malloc"
-        PATHS /usr/lib /usr/local/lib /usr/lib64
+        PATHS /usr/lib /usr/local/lib /usr/lib64 /root/tbb
         "${CMAKE_INSTALL_PREFIX}/lib" "${parent_dir_}/tbb/build"
         DOC "Path to tbb libraries"
     )
 
     FIND_LIBRARY(
         TBB_LIBRARY_MALLOC_PROXY "${LIBNAME}malloc_proxy"
-        PATHS /usr/lib /usr/local/lib /usr/lib64
+        PATHS /usr/lib /usr/local/lib /usr/lib64 /root/tbb
         "${CMAKE_INSTALL_PREFIX}/lib" "${parent_dir_}/tbb/build"
         DOC "Path to tbb libraries"
     )

@@ -187,7 +187,8 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
                 if(Phase1)
                 {
                     WaitEvent = WE_DIE;
-                    m_creature->SetHealth(0);
+                    m_creature->SetHealth(1);
+                    m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, PLAYER_STATE_DEAD);
                     WaitTimer = 0;
                 }
                 else
@@ -202,8 +203,11 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
                 m_creature->AttackStop();
                 m_creature->SetUInt64Value(UNIT_FIELD_TARGET, 0);
                 m_creature->SetSpeed(MOVE_RUN, 5.0f);
-                m_creature->GetMotionMaster()->Clear();
-                m_creature->GetMotionMaster()->MovePoint(0, waypoint[5][0], waypoint[5][1], waypoint[5][2]);
+                ForceMove = true;
+                ForceTimer = 0;
+                cur_wp = 5;
+                //m_creature->GetMotionMaster()->Clear();
+                //m_creature->GetMotionMaster()->MovePoint(0, waypoint[5][0], waypoint[5][1], waypoint[5][2]);
             }
         }
     }
@@ -309,7 +313,6 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
                         return;
                     case WE_DIE:
                         ForceMove = false;
-                        m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, PLAYER_STATE_DEAD);
                         DoTeleportTo(waypoint[5][0], waypoint[5][1], waypoint[5][2] +0.2,0.0f);
                         WaitTimer = 5000;
                         WaitEvent = WE_REVIVE;

@@ -331,7 +331,7 @@ void UnitAI::FillAISpellInfo()
     }
 }
 
-inline Unit* UnitAI::SelectUnit(AttackingTarget target, uint32 position)
+Unit* UnitAI::SelectUnit(AttackingTarget target, uint32 position)
 {
     //ThreatList m_threatlist;
     std::list<HostilReference*>& m_threatlist = me->getThreatManager().getThreatList();

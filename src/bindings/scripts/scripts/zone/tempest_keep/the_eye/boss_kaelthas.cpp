@@ -519,6 +519,12 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
         }
     }
 
+    void AttackStart(Unit *who)
+    {
+        if(Phase >= 4)
+            ScriptedAI::AttackStart(who);
+    }    
+
     void EnterCombat(Unit *who)
     {
         if (pInstance && !pInstance->GetData(DATA_KAELTHASEVENT) && !Phase)
@@ -1667,11 +1673,11 @@ struct TRINITY_DLL_DECL boss_master_engineer_telonicusAI : public advisorbase_ai
 
         if(who->getClass() == CLASS_HUNTER)
         {
-            ScriptedAI::AttackStart(who,true);
+            ScriptedAI::AttackStart(who);
             DoStartMovement(who, 28.0f, 2*M_PI);
         }
         else
-            ScriptedAI::AttackStart(who,true);
+            ScriptedAI::AttackStart(who);
     }
 
     void EnterCombat(Unit *who)
@@ -1703,7 +1709,7 @@ struct TRINITY_DLL_DECL boss_master_engineer_telonicusAI : public advisorbase_ai
             }
             else
                 if(!m_creature->hasUnitState(UNIT_STAT_CHASE) )
-                    ScriptedAI::AttackStart(hunter, true);
+                    ScriptedAI::AttackStart(hunter);
         }
 
         if(Creature* kael = Unit::GetCreature((*m_creature), pInstance->GetData64(DATA_KAELTHAS)))

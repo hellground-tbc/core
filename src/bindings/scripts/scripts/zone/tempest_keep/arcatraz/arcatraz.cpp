@@ -104,9 +104,6 @@ struct TRINITY_DLL_DECL npc_millhouse_manastormAI : public ScriptedAI
         {
             m_creature->AddThreat(who, 0.0f);
 
-            if (!m_creature->isInCombat())
-                EnterCombat(who);
-
             //TODO: Make it so he moves when target out of range
             DoStartNoMovement(who);
         }

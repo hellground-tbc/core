@@ -62,6 +62,15 @@ enum interruptSpell
     INTERRUPT_AND_CAST_INSTANTLY  = 2    //cast instantly (CastSpell())
 };
 
+enum autocastTargetMode
+{
+    AUTOCAST_TANK                   = 0,    //cast on GetVictim() target
+    AUTOCAST_NULL                   = 1,    //cast on (Unit*)NULL target
+    AUTOCAST_RANDOM                 = 2,    //cast on SelectUnit(SELECT_TARGET_RANDOM) target (needs additionals: range, only player)
+    AUTOCAST_RANDOM_WITHOUT_TANK    = 3,    //same as AUTOCAST_RANDOM but without tank
+    AUTOCAST_SELF                   = 4     //target is m_creature
+};
+
 class SpellToCast
 {
 public:
@@ -179,6 +188,20 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
     //Spell list to cast
     std::list<SpellToCast> spellList;
 
+    //Spell id which should be autocast
+    uint32 autocastId;
+
+    //timer for autocast spell
+    uint32 autocastTimer;
+    uint32 autocastTimerDef;
+
+    autocastTargetMode autocastMode;
+    uint32 autocastTargetRange;
+    bool autocastTargetPlayer;
+
+    //True if autocast is enabled
+    bool autocast;
+
     //*************
     //Pure virtual functions
     //*************
@@ -187,7 +210,7 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
     virtual void Reset(){}
 
     //Called at creature aggro either by MoveInLOS or Attack Start
-    void EnterCombat(Unit* who) {}
+    virtual void EnterCombat(Unit* who) {}
 
     //*************
     //AI Helper Functions
@@ -203,7 +226,7 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
     void DoStopAttack();
 
     //Cast next spell from list
-    void CastNextSpellIfAnyAndReady();
+    void CastNextSpellIfAnyAndReady(uint32 diff = 0);
 
     //Cast spell by Id
     void DoCast(Unit* victim, uint32 spellId, bool triggered = false);
@@ -218,6 +241,11 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
     void ForceSpellCastWithScriptText(Unit* victim, uint32 spellId, int32 scriptTextEntry, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false);
     void ForceAOESpellCast(uint32 spellId, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false);
     void ForceAOESpellCastWithScriptText(uint32 spellId, int32 scriptTextEntry, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false);
+
+    //Autocast
+    void SetAutocast (uint32 spellId, uint32 timer, bool startImmediately = false, autocastTargetMode mode = AUTOCAST_TANK, uint32 range = 0, bool player = false);
+    void StartAutocast() { autocast = true; }
+    void StopAutocast() { autocast = false; }
 
     //Cast spell by spell info
     void DoCastSpell(Unit* who, SpellEntry const *spellInfo, bool triggered = false);
