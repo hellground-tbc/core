@@ -9308,6 +9308,9 @@ Unit* Creature::SelectVictim()
             return target;
     }
 
+    if(m_attackers.size())
+        return NULL;
+
     if(m_invisibilityMask)
     {
         Unit::AuraList const& iAuras = GetAurasByType(SPELL_AURA_MOD_INVISIBILITY);
