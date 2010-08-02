@@ -2558,6 +2558,8 @@ struct TRINITY_DLL_DECL mob_shadowmoon_soulstealerAI : public Scripted_NoMovemen
         m_creature->CombatStart(who);
         if(Unit* Deathwail = FindCreature(22006, 100.0, m_creature))
             ((mob_shadowlord_deathwailAI*)((Creature*) Deathwail)->AI())->felfire = true;
+        if(Unit* trigger = FindCreature(22096, 100.0, m_creature))
+            ((npc_shadowlord_triggerAI*)((Creature*) trigger)->AI())->AttackStart(who);
     }
 
     void UpdateAI(const uint32 diff)
