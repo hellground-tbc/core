@@ -105,7 +105,7 @@ WaypointMovementGenerator<Creature>::Initialize(Creature &u)
     if(waypoints && waypoints->size())
     {
         if (CreatureData const *cdata = objmgr.GetCreatureData(u.GetDBTableGUIDLow()))
-            i_currentNode = cdata->currentwaypoint-1;
+            i_currentNode = cdata->currentwaypoint - 1;
 
         if (i_currentNode > waypoints->size() - 1)
             i_currentNode = 0;

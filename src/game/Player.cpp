@@ -2066,8 +2066,13 @@ void Player::Regenerate(Powers power)
             int mult = 30;
             const AuraList &auras = GetAurasByType(SPELL_AURA_MOD_POWER_REGEN);
             for (AuraList::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
+            {
                 if ((*itr)->GetSpellProto()->Id == 12296)
+                {
                     mult = 20;
+                    break;
+                }
+            }
             addvalue = mult * RageDecreaseRate;               // 3 rage by tick
         }   break;
         case POWER_ENERGY:                                  // Regenerate energy (rogue)
