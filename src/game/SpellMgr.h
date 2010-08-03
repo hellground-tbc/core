@@ -305,6 +305,7 @@ enum SpellLinkedType
     SPELL_LINK_CAST     = 0,            // +: cast; -: remove
     SPELL_LINK_HIT      = 1 * 200000,
     SPELL_LINK_AURA     = 2 * 200000,   // +: aura; -: immune
+    SPELL_LINK_PRECAST  = 3 * 200000,
     SPELL_LINK_REMOVE   = 0,
 };
 
@@ -795,11 +796,12 @@ enum AttributesCu
     SPELL_ATTR_CU_AURA_SPELL      = 0x00000080,
     SPELL_ATTR_CU_DIRECT_DAMAGE   = 0x00000100,
     SPELL_ATTR_CU_CHARGE          = 0x00000200,
-    SPELL_ATTR_CU_LINK_CAST       = 0x00000400,
+    SPELL_ATTR_CU_LINK_CAST       = 0x00000400,     // after cast bar
     SPELL_ATTR_CU_LINK_HIT        = 0x00000800,
     SPELL_ATTR_CU_LINK_AURA       = 0x00001000,
     SPELL_ATTR_CU_LINK_REMOVE     = 0x00002000,
-    SPELL_ATTR_CU_MOVEMENT_IMPAIR = 0x00004000,
+    SPELL_ATRR_CU_LINK_PRECAST    = 0x00004000,     // before cast barem
+    SPELL_ATTR_CU_MOVEMENT_IMPAIR = 0x00008000,
 };
 
 typedef std::map<int32, std::vector<int32> > SpellLinkedMap;

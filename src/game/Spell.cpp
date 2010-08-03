@@ -253,7 +253,7 @@ void SpellCastTargets::write ( WorldPacket * data )
             else
                 *data << uint8(0);
         }
-        else if( m_targetMask & ( TARGET_FLAG_OBJECT | TARGET_FLAG_OBJECT_UNK ) )
+        else if( m_targetMask & ( TARGET_FLAG_OBJECT | TARGET_FLAG_OBJECT_UNK) )
         {
             if(m_GOTarget)
                 data->append(m_GOTarget->GetPackGUID());
@@ -2133,6 +2133,11 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
 
     // set timer base at cast time
     ReSetTimer();
+
+    if(m_spellInfo->AttributesCu & SPELL_ATRR_CU_LINK_PRECAST)
+        if(const std::vector<int32> *spell_triggered = spellmgr.GetSpellLinked(m_spellInfo->Id + SPELL_LINK_PRECAST))
+            for(std::vector<int32>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i)
+                m_caster->CastSpell(m_targets.getUnitTarget() ? m_targets.getUnitTarget() : m_caster, *i, true);
 
     if(m_IsTriggeredSpell)
         cast(true);
