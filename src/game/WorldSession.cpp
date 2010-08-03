@@ -257,6 +257,9 @@ bool WorldSession::Update(uint32 diff)
 /// %Log the player out
 void WorldSession::LogoutPlayer(bool Save)
 {
+    if (m_playerRecentlyLogout)
+        return;
+
     // finish pending transfers before starting the logout
     while(_player && _player->IsBeingTeleported())
         HandleMoveWorldportAckOpcode();
