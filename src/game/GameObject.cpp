@@ -1241,26 +1241,32 @@ void GameObject::Use(Unit* user)
 
         case GAMEOBJECT_TYPE_FLAGSTAND:                     // 24
         {
-            if(user->GetTypeId()!=TYPEID_PLAYER)
+            if(user->GetTypeId() != TYPEID_PLAYER)
                 return;
 
             Player* player = (Player*)user;
 
-            if( player->isAllowUseBattleGroundObject() )
+            //if( player->isAllowUseBattleGroundObject() )
             {
                 // in battleground check
                 BattleGround *bg = player->GetBattleGround();
-                if(!bg)
-                    return;
-                // BG flag click
-                // AB:
-                // 15001
-                // 15002
-                // 15003
-                // 15004
-                // 15005
-                bg->EventPlayerClickedOnFlag(player, this);
-                return;                                     //we don;t need to delete flag ... it is despawned!
+                //if(!bg)
+                //    return;
+
+                switch (GetEntry())
+                {
+                    case 179830: // Silverwing Flag
+                    case 179831: // Warsong Flag
+                    case 15001:  // AB Flags
+                    case 15002:
+                    case 15003:
+                    case 15004:
+                    case 15005:
+                        bg->EventPlayerClickedOnFlag(player, this);
+                        return;    //we don;t need to delete flag ... it is despawned!
+                    default:    break;
+                }
+                return;
             }
             break;
         }
