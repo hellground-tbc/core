@@ -8539,6 +8539,7 @@ void Unit::CombatStart(Unit* target, bool initialAggro)
             {   
                 ((Creature*)target)->GetFormation()->MemberAttackStart((Creature*)target, this);
                 sLog.outDebug("Unit::CombatStart() calls CreatureGroups::MemberHasAttacked(this);");
+                SetNoCallAssistance(true);
             }
         }
         SetInCombatWith(target);
