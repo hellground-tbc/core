@@ -221,7 +221,7 @@ void PetAI::AutocastPreparedSpells()
 
 void PetAI::UpdateAI(const uint32 diff)
 {
-    Unit* owner = m_creature->GetCharmerOrOwner();
+    m_owner = m_creature->GetCharmerOrOwner();
 
     if (m_updateAlliesTimer <= diff)
         // UpdateAllies self set update timer

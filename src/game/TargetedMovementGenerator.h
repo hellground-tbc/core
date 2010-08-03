@@ -53,8 +53,6 @@ class TRINITY_DLL_SPEC TargetedMovementGenerator
         bool Update(T &, const uint32 &);
         MovementGeneratorType GetMovementGeneratorType() { return TARGETED_MOTION_TYPE; }
 
-        void MovementInform(T &);
-
         Unit* GetTarget() const;
 
         bool GetDestination(float &x, float &y, float &z) const
@@ -67,7 +65,7 @@ class TRINITY_DLL_SPEC TargetedMovementGenerator
         void unitSpeedChanged() { i_recalculateTravel=true; }
     private:
 
-        bool _setTargetLocation(T &);
+        void _setTargetLocation(T &);
         void _adaptSpeedToTarget(T &);
 
         float i_offset;
