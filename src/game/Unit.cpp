@@ -280,6 +280,17 @@ Unit::~Unit()
         m_charmInfo = NULL;
     }
 
+    for (int i = 0; i < TOTAL_AURAS; i++)
+    {
+        while (!m_modAuras[i].empty())
+        {
+            delete m_modAuras[i].front();
+            m_modAuras[i].pop_front();
+        }
+    }
+
+    delete [] m_modAuras;
+
     assert(!m_attacking);
     assert(m_attackers.empty());
     assert(m_sharedVision.empty());
