@@ -1979,15 +1979,24 @@ Unit* Creature::SelectNearestTarget(float dist) const
 
 void Creature::CallAssistance()
 {
-    if (!m_AlreadyCallAssistance && getVictim() && !isPet() && !isCharmed())
+    if (!getVictim() || isPet() || isCharmed())
+        return;
+
+    if(CreatureGroup *formation = GetFormation())
     {
+        formation->MemberAttackStart(this, getVictim());
+    }
+    else
+    {
+        if (m_AlreadyCallAssistance)
+            return;
+
         SetNoCallAssistance(true);
 
         float radius = sWorld.getConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS);
         if(radius > 0)
         {
             std::list<Creature*> assistList;
-
             {
                 CellPair p(Trinity::ComputeCellPair(GetPositionX(), GetPositionY()));
                 Cell cell(p);
@@ -1999,7 +2008,6 @@ void Creature::CallAssistance()
 
                 TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AnyAssistCreatureInRangeCheck>, GridTypeMapContainer >  grid_creature_searcher(searcher);
 
-                //cell_lock->Visit(cell_lock, grid_creature_searcher, *MapManager::Instance().GetMap(GetMapId(), this));
                 cell.Visit(p, grid_creature_searcher, *GetMap(), *this, radius);
             }
 

@@ -8535,12 +8535,6 @@ void Unit::CombatStart(Unit* target, bool initialAggro)
             && !((Creature*)target)->HasReactState(REACT_PASSIVE) && ((Creature*)target)->IsAIEnabled)
         {
             ((Creature*)target)->AI()->AttackStart(this);
-            if(((Creature*)target)->GetFormation())
-            {   
-                ((Creature*)target)->GetFormation()->MemberAttackStart((Creature*)target, this);
-                sLog.outDebug("Unit::CombatStart() calls CreatureGroups::MemberHasAttacked(this);");
-                SetNoCallAssistance(true);
-            }
         }
         SetInCombatWith(target);
         target->SetInCombatWith(this);
