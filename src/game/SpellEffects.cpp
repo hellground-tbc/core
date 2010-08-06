@@ -688,6 +688,12 @@ void Spell::EffectDummy(uint32 i)
         {
             switch(m_spellInfo->Id )
             {
+                // Fatal Attraction
+                case 40869:
+                {
+                    m_caster->CastSpell(unitTarget, 41001, true);
+                }
+                break;
                 // Tag Subbued Talbuk (for Quest Creatures of the Eco-Domes - 10427)
                 case 35771:
                 {

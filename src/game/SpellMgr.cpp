@@ -2645,8 +2645,9 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectTriggerSpell[1] = 0;
             break;
         case 40869: // Fatal Attraction
-            spellInfo->EffectRadiusIndex[0] = 20;
-            spellInfo->EffectRadiusIndex[1] = 20;
+            spellInfo->EffectRadiusIndex[0] = 12;
+            spellInfo->EffectRadiusIndex[1] = 12;
+            spellInfo->MaxAffectedTargets = 3;
             break;
         case 40870: // Fatal Attraction Trigger
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ALLY;

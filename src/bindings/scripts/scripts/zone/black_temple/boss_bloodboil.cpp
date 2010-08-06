@@ -186,7 +186,7 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
         {
             Unit* target = *itr;
             if(target && target->isAlive())
-                ForceSpellCast(target, SPELL_BLOODBOIL, INTERRUPT_AND_CAST, true);
+                ForceSpellCast(target, SPELL_BLOODBOIL, INTERRUPT_AND_CAST_INSTANTLY, true);
         }
         targets.clear();
     }
@@ -228,7 +228,7 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
                     case 0: text = SAY_ENRAGE1; break;
                     case 1: text = SAY_ENRAGE2; break;
                 }
-                ForceSpellCastWithScriptText(m_creature, SPELL_BERSERK, text, INTERRUPT_AND_CAST);
+                ForceSpellCastWithScriptText(m_creature, SPELL_BERSERK, text, INTERRUPT_AND_CAST_INSTANTLY);
             }
             else
                 EnrageTimer -= diff;
@@ -298,12 +298,12 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
 
                     switch (rand()%2)
                     {
-                        case 0: ForceSpellCast(target, SPELL_FEL_RAGE_1, INTERRUPT_AND_CAST, true); break;
-                        case 1: ForceSpellCast(target, SPELL_FEL_RAGE_2, INTERRUPT_AND_CAST, true); break;
+                        case 0: ForceSpellCast(target, SPELL_FEL_RAGE_1, INTERRUPT_AND_CAST_INSTANTLY, true); break;
+                        case 1: ForceSpellCast(target, SPELL_FEL_RAGE_2, INTERRUPT_AND_CAST_INSTANTLY, true); break;
                     }
 
-                    ForceSpellCast(target, SPELL_FEL_RAGE_3, INTERRUPT_AND_CAST, true);
-                    ForceSpellCast(target, SPELL_FEL_RAGE_SCALE, INTERRUPT_AND_CAST, true);
+                    ForceSpellCast(target, SPELL_FEL_RAGE_3, INTERRUPT_AND_CAST_INSTANTLY, true);
+                    ForceSpellCast(target, SPELL_FEL_RAGE_SCALE, INTERRUPT_AND_CAST_INSTANTLY, true);
 
                     //Cast this without triggered so that it appears in combat logs and shows visual.
                     ForceSpellCast(m_creature, SPELL_FEL_RAGE_SELF, INTERRUPT_AND_CAST);
