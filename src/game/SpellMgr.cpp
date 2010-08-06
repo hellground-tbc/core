@@ -2711,6 +2711,7 @@ void SpellMgr::LoadSpellLinked()
                 case 0: strigger->AttributesCu |= SPELL_ATTR_CU_LINK_CAST; break;
                 case 1: strigger->AttributesCu |= SPELL_ATTR_CU_LINK_HIT;  break;
                 case 2: strigger->AttributesCu |= SPELL_ATTR_CU_LINK_AURA; break;
+                case 3: strigger->AttributesCu |= SPELL_ATRR_CU_LINK_PRECAST; break;
             }
         }
         else
