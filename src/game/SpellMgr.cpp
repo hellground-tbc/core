@@ -2641,10 +2641,14 @@ void SpellMgr::LoadSpellCustomAttr()
         case 40106:
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
             spellInfo->EffectTriggerSpell[0] = NULL;
-        case 41001:
-            spellInfo->EffectTriggerSpell[1] = 40871;
+        case 41001: // Fatal Attraction Aura
+            spellInfo->EffectTriggerSpell[1] = 0;
             break;
-        case 40870:
+        case 40869: // Fatal Attraction
+            spellInfo->EffectRadiusIndex[0] = 20;
+            spellInfo->EffectRadiusIndex[1] = 20;
+            break;
+        case 40870: // Fatal Attraction Trigger
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ALLY;
             spellInfo->EffectImplicitTargetB[0] = 0;
             break;

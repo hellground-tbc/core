@@ -1800,7 +1800,44 @@ void Aura::TriggerSpell()
                         case 4: trigger_spell_id = 40896; break;
                         case 5: trigger_spell_id = 40897; break;
                         }
-                    }break;
+                    }
+                    break;
+                    case 41001:
+                    {
+                        if (Unit *target = GetTarget())
+                        {
+                            //if (target->GetMap()->IsDungeon())
+                            {
+                                const Map::PlayerList &players = caster->GetMap()->GetPlayers();
+                                bool attraction = true;
+                                for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                                {
+                                    Player *p = itr->getSource();
+                                    if (!p || !p->isAlive() || p->isGameMaster())
+                                        continue;
+
+                                    if (p == target)
+                                        continue;
+
+                                    if (p->HasAura(GetSpellProto()->Id, 1))
+                                    {
+                                        if (p->IsWithinDistInMap(target, 25.0f, false))
+                                        {
+                                            target->CastSpell(p, 40870, true);
+                                            attraction = false;
+                                        }
+                                    }
+                                }
+                                if (attraction)
+                                {
+                                    target->RemoveAurasDueToSpell(GetSpellProto()->Id);
+                                    return;
+                                }
+                            }
+                        }
+                        trigger_spell_id = 40871;
+                    }
+                    break;
                     // Aura of Desire
                     case 41350:
                     {

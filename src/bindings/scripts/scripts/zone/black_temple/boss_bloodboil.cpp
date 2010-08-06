@@ -228,7 +228,7 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
                     case 0: text = SAY_ENRAGE1; break;
                     case 1: text = SAY_ENRAGE2; break;
                 }
-                ForceSpellCastWithScriptText(m_creature, SPELL_ENRAGE, text, INTERRUPT_AND_CAST);
+                ForceSpellCastWithScriptText(m_creature, SPELL_BERSERK, text, INTERRUPT_AND_CAST);
             }
             else
                 EnrageTimer -= diff;
@@ -271,7 +271,6 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
             if (BloodboilTimer < diff)
             {
                 CastBloodboil();
-                ++BloodboilCount;
                 BloodboilTimer = 10000;
             }
             else
