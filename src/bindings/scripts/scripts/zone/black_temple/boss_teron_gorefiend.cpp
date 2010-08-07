@@ -432,7 +432,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
 
         if(SummonDoomBlossomTimer < diff)
         {
-            DoCast(m_creature, 40188);
+            AddSpellToCast(m_creature, 40188);
             SummonDoomBlossomTimer = 35000+rand()%10000;
         }
         else
@@ -451,7 +451,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
                 case 0: DoScriptText(SAY_SPECIAL1, m_creature); break;
                 case 1: DoScriptText(SAY_SPECIAL2, m_creature); break;
                 }
-                DoCast(target, SPELL_INCINERATE);
+                AddSpellToCast(target, SPELL_INCINERATE);
                 IncinerateTimer = 30000;
             }
         }
@@ -460,7 +460,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
 
         if(CrushingShadowsTimer < diff)
         {
-            DoCast(m_creature, SPELL_CRUSHING_SHADOWS);
+            AddSpellToCast(m_creature, SPELL_CRUSHING_SHADOWS);
             CrushingShadowsTimer = 25000 + rand()%10000;
         }
         else
@@ -473,7 +473,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
 
             if(target && target->isAlive() && !target->HasAura(SPELL_SHADOW_OF_DEATH, 0) && !target->HasAura(40282, 0) )
             {
-                DoCast(target, SPELL_SHADOW_OF_DEATH);
+                AddSpellToCast(target, SPELL_SHADOW_OF_DEATH);
                 ShadowOfDeathTimer = 30000;
             }
         }
@@ -496,13 +496,14 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
         {
             if(EnrageTimer < diff)
             {
-                DoCast(m_creature, SPELL_BERSERK);
+                AddSpellToCast(m_creature, SPELL_BERSERK);
                 DoScriptText(SAY_ENRAGE, m_creature);
             }
             else
                 EnrageTimer -= diff;
         }
 
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };
