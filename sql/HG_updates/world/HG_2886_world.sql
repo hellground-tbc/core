@@ -1,0 +1,1 @@
+DELETE FROM `eventai_scripts` where id = 1935403;

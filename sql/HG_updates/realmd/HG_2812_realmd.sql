@@ -1,0 +1,1 @@
+ALTER TABLE `account` ADD COLUMN `opcodesDisabled` INT(11) NOT NULL AFTER `locale`;

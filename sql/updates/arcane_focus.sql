@@ -1,0 +1,1 @@
+ UPDATE `spell_affect` SET `spellFamilyMask`=`spellFamilyMask`|0x200000 WHERE `entry` IN ('11222', '12839', '12840', '12841', '12842');
