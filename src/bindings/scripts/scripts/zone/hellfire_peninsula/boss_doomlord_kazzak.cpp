@@ -184,7 +184,7 @@ struct TRINITY_DLL_DECL boss_doomlordkazzakAI : public ScriptedAI
         if(MarkOfKazzak_Timer < diff)
         {
             Unit* victim = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_MARKOFKAZZAK), true);
-            if(victim->GetPower(POWER_MANA))
+            if(victim && victim->GetPower(POWER_MANA))
             {
                 DoCast(victim, SPELL_MARKOFKAZZAK);
                 MarkOfKazzak_Timer = 20000;
