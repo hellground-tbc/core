@@ -209,13 +209,18 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true, Teron->getVictim()))
             {
                 if(target->HasAura(40282, 0))
+                {
+                    m_creature->getThreatManager().modifyThreatPercent(target, -100);
                     if(Unit* NewTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true, target))
                     {
-                        m_creature->getThreatManager().modifyThreatPercent(target, -100);
-                        target = NewTarget;
-                        AttackStart(target);
+                        if(NewTarget != Teron->getVictim())
+                        {
+                            target = NewTarget;
+                            AttackStart(target);
+                            return;
+                        }
                     }
-
+                }
                 if(!m_creature->getVictim())
                     AttackStart(target);
             }
