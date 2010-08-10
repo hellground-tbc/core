@@ -158,10 +158,10 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
     void SpellHit(Unit* caster, const SpellEntry*) {}
 
     // Called when aura is applied
-    void OnAuraApply(Aura* aur, Unit* caster) {}
+    void OnAuraApply(Aura* aur, Unit* caster, bool stackApply) {}
 
     // Called when aura is removed
-    void OnAuraRemove(Aura* aur) {}
+    void OnAuraRemove(Aura* aur, bool stackRemove) {}
 
     //Called when creature deals damage to player
     void DamageMade(Unit* target, uint32 & damage, bool direct_damage) {}

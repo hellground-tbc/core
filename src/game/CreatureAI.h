@@ -121,10 +121,10 @@ class TRINITY_DLL_SPEC CreatureAI : public UnitAI
         virtual void SpellHit(Unit*, const SpellEntry*) {}
 
         // Called when aura is applied
-        virtual void OnAuraApply(Aura* aura, Unit* caster) {}
+        virtual void OnAuraApply(Aura* aura, Unit* caster, bool addStack) {}
 
         // Called when aura is removed
-        virtual void OnAuraRemove(Aura* aur) {}
+        virtual void OnAuraRemove(Aura* aur, bool removeStack) {}
 
         // Called when spell hits a target
         virtual void SpellHitTarget(Unit* target, const SpellEntry*) {}

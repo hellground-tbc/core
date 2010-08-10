@@ -296,12 +296,8 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
 
                     ForceSpellCast(m_creature, SPELL_INSIGNIFIGANCE, INTERRUPT_AND_CAST, true);
 
-                    switch (rand()%2)
-                    {
-                        case 0: ForceSpellCast(target, SPELL_FEL_RAGE_1, INTERRUPT_AND_CAST_INSTANTLY, true); break;
-                        case 1: ForceSpellCast(target, SPELL_FEL_RAGE_2, INTERRUPT_AND_CAST_INSTANTLY, true); break;
-                    }
-
+                    ForceSpellCast(target, SPELL_FEL_RAGE_1, INTERRUPT_AND_CAST_INSTANTLY, true);
+                    ForceSpellCast(target, SPELL_FEL_RAGE_2, INTERRUPT_AND_CAST_INSTANTLY, true);
                     ForceSpellCast(target, SPELL_FEL_RAGE_3, INTERRUPT_AND_CAST_INSTANTLY, true);
                     ForceSpellCast(target, SPELL_FEL_RAGE_SCALE, INTERRUPT_AND_CAST_INSTANTLY, true);
 
