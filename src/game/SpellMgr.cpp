@@ -2667,6 +2667,10 @@ void SpellMgr::LoadSpellCustomAttr()
         case 40251:
             spellInfo->EffectApplyAuraName[1] = SPELL_AURA_DUMMY;
             break;
+        case 36819: //Kael Pyroblast
+            spellInfo->rangeIndex = 6;  // from 40yd to 100yd to avoid running from dmg
+        case 40334:
+            spellInfo->procFlags = PROC_FLAG_SUCCESSFUL_MELEE_HIT;
         default:
             break;
         }

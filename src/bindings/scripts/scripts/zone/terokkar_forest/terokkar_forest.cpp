@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Terokkar_Forest
 SD%Complete: 80
-SDComment: Quest support: 9889, 10009, 10873, 10896, 11096, 10052, 10051. Skettis->Ogri'la Flight
+SDComment: Quest support: 9889, 10009, 10051, 10052, 10873, 10896, 11085, 11096. Skettis->Ogri'la Flight
 SDCategory: Terokkar Forest
 EndScriptData */
 
@@ -29,6 +29,7 @@ mob_netherweb_victim
 npc_floon
 npc_skyguard_handler_deesak
 npc_isla_starmane
+npc_skyguard_prisoner
 EndContentData */
 
 #include "precompiled.h"
@@ -965,6 +966,107 @@ CreatureAI* GetAI_npc_blackwing_warp_chaser(Creature *_Creature)
 {
     return new npc_blackwing_warp_chaser(_Creature);
 }
+/*######
+## npc_skyguard_prisoner
+######*/
+
+#define SAY_PROGRESS_1  -1600004 //"Thanks for your help. Let's get out of here!"
+#define SAY_PROGRESS_2  -1600005 //"Let's keep moving. I don't like this place."
+#define SAY_PROGRESS_3  -1600006 //"Thanks again. Sergant Doryn will be glad to hear he has one less scout to replace this week."
+
+#define GO_CAGE 185952
+#define QUEST_ESC   11085
+#define SKETTIS_AMBUSH  21644
+
+struct TRINITY_DLL_DECL npc_skyguard_prisonerAI : public npc_escortAI
+{
+    npc_skyguard_prisonerAI(Creature* c) : npc_escortAI(c) {}
+
+    bool Cpl;
+
+    void Reset()
+    {
+        Cpl = false;
+    }
+
+    void Aggro(Unit* who) {}
+
+    void JustSummoned(Creature *summoned)
+    {
+        summoned->AI()->AttackStart(m_creature);
+    }
+
+    void WaypointReached(uint32 i)
+    {
+        Player* player = GetPlayerForEscort();
+
+        switch(i)
+        {
+        case 0: 
+            {
+            GameObject* Cage = FindGameObject(GO_CAGE, 10, m_creature);
+            if(Cage)
+                Cage->SetGoState(0);
+            DoScriptText(SAY_PROGRESS_1, m_creature, player);
+            }
+            break;
+        case 10: m_creature->SummonCreature(SKETTIS_AMBUSH, -4182.85, 3075.50, 333.15, 5.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+            m_creature->SummonCreature(SKETTIS_AMBUSH, -4180.54, 3075.50, 333.15, 5.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+            break;
+        case 11: DoScriptText(SAY_PROGRESS_2, m_creature, player);
+            break;
+        case 12: DoScriptText(SAY_PROGRESS_3, m_creature, player);
+            Cpl=true;
+            if(player)
+                player->GroupEventHappens(QUEST_ESC, m_creature);
+            break;
+        }
+    }
+
+    void JustDied(Unit* killer)
+    {
+        Player* player = GetPlayerForEscort();
+        if (player && !Cpl)
+        {
+                player->FailQuest(QUEST_ESC);
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        npc_escortAI::UpdateAI(diff);
+    }
+};
+
+bool QuestAccept_npc_skyguard_prisoner(Player* player, Creature* creature, Quest const* quest)
+{
+    if (quest->GetQuestId() == QUEST_ESC)
+    {
+        ((npc_escortAI*)(creature->AI()))->Start(true, false, player->GetGUID(), quest);
+    }
+    return true;
+}
+
+CreatureAI* GetAI_npc_skyguard_prisonerAI(Creature* _Creature)
+{
+    npc_skyguard_prisonerAI* thisAI = new npc_skyguard_prisonerAI(_Creature);
+
+    thisAI->AddWaypoint(0, -4109.57, 3032.77, 344.76, 3000);//SAY_PROGRESS_1
+    thisAI->AddWaypoint(1, -4118.01, 3033.23, 344.10);
+    thisAI->AddWaypoint(2, -4123.30, 3025.59, 344.15);
+    thisAI->AddWaypoint(3, -4128.86, 3026.66, 344.03);
+    thisAI->AddWaypoint(4, -4150.29, 3030.85, 336.91);
+    thisAI->AddWaypoint(5, -4172.36, 3034.88, 343.17);
+    thisAI->AddWaypoint(6, -4174.32, 3037.06, 343.44);
+    thisAI->AddWaypoint(7, -4177.75, 3053.99, 344.08);
+    thisAI->AddWaypoint(8, -4184.69, 3058.26, 344.15);
+    thisAI->AddWaypoint(9, -4183.33, 3066.00, 342.27);
+    thisAI->AddWaypoint(10, -4182.44, 3071.66, 336.59, 5000);//Ambush
+    thisAI->AddWaypoint(11, -4182.44, 3071.66, 336.59, 5000);//SAY_PROGRESS_2
+    thisAI->AddWaypoint(12, -4178.90, 3093.35, 323.98, 6000);//SAY_PROGRESS_3
+
+    return (CreatureAI*)thisAI;
+}
 
 void AddSC_terokkar_forest()
 {
@@ -1035,5 +1137,10 @@ void AddSC_terokkar_forest()
     newscript->GetAI = &GetAI_npc_blackwing_warp_chaser;
     newscript->RegisterSelf();
 
+    newscript = new Script;
+    newscript->Name= "npc_skyguard_prisoner";
+    newscript->GetAI = &GetAI_npc_skyguard_prisonerAI;
+    newscript->pQuestAccept = &QuestAccept_npc_skyguard_prisoner;
+    newscript->RegisterSelf();
 }
 

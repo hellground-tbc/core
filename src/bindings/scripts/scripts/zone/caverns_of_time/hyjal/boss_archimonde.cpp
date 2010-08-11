@@ -377,8 +377,8 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         {
             if(pInstance)
             {
-                // Do not let the raid skip straight to Archimonde. Visible and hostile ONLY if Azagalor is finished.
-                if((pInstance->GetData(DATA_AZGALOREVENT) < DONE) && ((m_creature->GetVisibility() != VISIBILITY_OFF) || (m_creature->getFaction() != 35)))
+                // Do not let the raid skip straight to Archimonde. Visible and hostile ONLY if Azagalor is finished and Archimond is not saved as done.
+                if((pInstance->GetData(DATA_AZGALOREVENT) < DONE || pInstance->GetData(DATA_ARCHIMONDEEVENT) >= DONE) && ((m_creature->GetVisibility() != VISIBILITY_OFF) || (m_creature->getFaction() != 35)))
                 {
                     m_creature->SetVisibility(VISIBILITY_OFF);
                     m_creature->setFaction(35);

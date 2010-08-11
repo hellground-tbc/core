@@ -6279,15 +6279,15 @@ void ObjectMgr::LoadSpecialQuests()
     {
         if(!(sWorld.specialQuest[HEROIC] = (*result)[1].GetUInt32()))
         {
-            uint32 heroicQuest[15] = { 11369, 11384, 11382, 11363, 11362, 11375, 11354, 11386, 11373, 11378, 11374, 11372, 11368, 11388, 11370 };
-            sWorld.specialQuest[HEROIC] = heroicQuest[urand(0,14)];
+            uint32 heroicQuest[15] = { 11369, 11384, 11382, 11363, 11362, 11375, 11354, 11386, 11373/*, 11378 OHF*/, 11374, 11372, 11368, 11388, 11370 };
+            sWorld.specialQuest[HEROIC] = heroicQuest[urand(0,13)];
             CharacterDatabase.PExecute("UPDATE saved_variables set HeroicQuest='%u'", sWorld.specialQuest[HEROIC]);
         }
 
         if(!(sWorld.specialQuest[QNORMAL] = (*result)[2].GetUInt32()))
         {
-            uint32 normalQuest[8]  = { 11389, 11371, 11376, 11383, 11364, 11500, 11385, 11387 };
-            sWorld.specialQuest[QNORMAL] = normalQuest[urand(0,7)];
+            uint32 normalQuest[8]  = { 11389, 11371, 11376, 11383, 11364/*11500 MGT normal*/, 11385, 11387 };
+            sWorld.specialQuest[QNORMAL] = normalQuest[urand(0,6)];
             CharacterDatabase.PExecute("UPDATE saved_variables set NormalQuest='%u'", sWorld.specialQuest[QNORMAL]);
         }
 
