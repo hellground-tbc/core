@@ -47,7 +47,7 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_midnightAI : public ScriptedAI
 {
-    boss_midnightAI(Creature *c) : ScriptedAI(c) 
+    boss_midnightAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
         m_creature->GetPosition(wLoc);
@@ -106,7 +106,7 @@ struct TRINITY_DLL_DECL boss_midnightAI : public ScriptedAI
                 EnterEvadeMode();
             else
                 DoZoneInCombat();
-            
+
             CheckTimer = 3000;
         }
         else
@@ -115,7 +115,7 @@ struct TRINITY_DLL_DECL boss_midnightAI : public ScriptedAI
         if(Phase == 1 && (m_creature->GetHealth()*100)/m_creature->GetMaxHealth() < 95)
         {
             Phase = 2;
-            Creature *pAttumen = DoSpawnCreature(SUMMON_ATTUMEN, 0, 0, 0, 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 30000);
+            Creature *pAttumen = m_creature->SummonCreature(SUMMON_ATTUMEN, 0, 0, 0, 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 30000); //DoSpawnCreature(SUMMON_ATTUMEN, 0, 0, 0, 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 30000);
             if(pAttumen)
             {
                 Attumen = pAttumen->GetGUID();
@@ -238,7 +238,7 @@ struct TRINITY_DLL_DECL boss_attumenAI : public ScriptedAI
         DoScriptText(SAY_DEATH, m_creature);
         if (Unit *pMidnight = Unit::GetUnit(*m_creature, Midnight))
             pMidnight->DealDamage(pMidnight, pMidnight->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-        
+
         if(pInstance)
             pInstance->SetData(DATA_ATTUMEN_EVENT, DONE);
     }
