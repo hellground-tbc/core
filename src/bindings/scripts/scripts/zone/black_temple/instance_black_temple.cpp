@@ -279,7 +279,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
                 HandleGameObject(ShadeOfAkamaDoor, false);
             else
                 HandleGameObject(ShadeOfAkamaDoor, true);
-            if(Encounters[2] != DONE)
+            //if(Encounters[2] != DONE)
                 Encounters[2] = data;
             break;
         case DATA_TERONGOREFIENDEVENT:

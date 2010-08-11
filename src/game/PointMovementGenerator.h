@@ -41,8 +41,6 @@ class TRINITY_DLL_SPEC PointMovementGenerator
 
         void MovementInform(T &);
 
-        uint32 GetCurrentId() {return id;}
-
         MovementGeneratorType GetMovementGeneratorType() { return POINT_MOTION_TYPE; }
 
         bool GetDestination(float& x, float& y, float& z) const { x=i_x; y=i_y; z=i_z; return true; }

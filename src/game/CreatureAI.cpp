@@ -128,11 +128,10 @@ void CreatureAI::EnterEvadeMode()
     {
         me->GetMotionMaster()->Clear(false);
         me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, m_creature->GetFollowAngle(), MOTION_SLOT_ACTIVE);
+        Reset();
     }
     else
-         me->GetMotionMaster()->MoveTargetedHome();
-
-    Reset();
+         me->GetMotionMaster()->MoveTargetedHome(); // reset called when reaching home position
 }
 
 /*void CreatureAI::AttackedBy( Unit* attacker )
