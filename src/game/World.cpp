@@ -1453,7 +1453,7 @@ void World::SetInitialWorldSettings()
 
     sLog.outString( "Loading CreatureEventAI Summons...");
     CreatureEAI_Mgr.LoadCreatureEventAI_Summons(false);     // false, will checked in LoadCreatureEventAI_Scripts
- 
+
     sLog.outString( "Loading CreatureEventAI Scripts...");
     CreatureEAI_Mgr.LoadCreatureEventAI_Scripts();
 
@@ -1623,11 +1623,11 @@ void World::Update(time_t diff)
             m_updateTimeSum = m_updateTime;
             m_updateTimeCount = 1;
 
-            if(GetUptime() > 43000 && !m_ShutdownTimer)
-            {
-                SendWorldText(LANG_SYSTEMMESSAGE, "Autorestart in 10 mins");
-                ShutdownServ(600, SHUTDOWN_MASK_RESTART, RESTART_EXIT_CODE);
-            }
+            //if(GetUptime() > 43000 && !m_ShutdownTimer)
+            //{
+            //    SendWorldText(LANG_SYSTEMMESSAGE, "Autorestart in 10 mins");
+            //    ShutdownServ(600, SHUTDOWN_MASK_RESTART, RESTART_EXIT_CODE);
+            //}
         }
         else
         {
@@ -2063,14 +2063,17 @@ bool World::KickPlayer(const std::string& playerName)
 }
 
 /// Ban an account or ban an IP address, duration will be parsed using TimeStringToSecs if it is positive, otherwise permban
-BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, std::string duration, std::string reason, std::string author)
+BanReturn World::BanAccount(BanMode mode, std::string nameIPOrMail, std::string duration, std::string reason, std::string author)
 {
-    LoginDatabase.escape_string(nameOrIP);
+    LoginDatabase.escape_string(nameIPOrMail);
     LoginDatabase.escape_string(reason);
     std::string safe_author=author;
     LoginDatabase.escape_string(safe_author);
 
-    uint32 duration_secs = TimeStringToSecs(duration);
+    uint32 duration_secs = 0;
+    if (mode != BAN_EMAIL)
+        duration_secs = TimeStringToSecs(duration);
+
     QueryResult_AutoPtr resultAccounts = QueryResult_AutoPtr(NULL);                     //used for kicking
 
     ///- Update the database with ban information
@@ -2078,16 +2081,20 @@ BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, std::string dura
     {
         case BAN_IP:
             //No SQL injection as strings are escaped
-            resultAccounts = LoginDatabase.PQuery("SELECT id FROM account WHERE last_ip = '%s'",nameOrIP.c_str());
-            LoginDatabase.PExecute("INSERT INTO ip_banned VALUES ('%s',UNIX_TIMESTAMP(),UNIX_TIMESTAMP()+%u,'%s','%s')",nameOrIP.c_str(),duration_secs,safe_author.c_str(),reason.c_str());
+            resultAccounts = LoginDatabase.PQuery("SELECT id FROM account WHERE last_ip = '%s'",nameIPOrMail.c_str());
+            LoginDatabase.PExecute("INSERT INTO ip_banned VALUES ('%s',UNIX_TIMESTAMP(),UNIX_TIMESTAMP()+%u,'%s','%s')",nameIPOrMail.c_str(),duration_secs,safe_author.c_str(),reason.c_str());
             break;
         case BAN_ACCOUNT:
             //No SQL injection as string is escaped
-            resultAccounts = LoginDatabase.PQuery("SELECT id FROM account WHERE username = '%s'",nameOrIP.c_str());
+            resultAccounts = LoginDatabase.PQuery("SELECT id FROM account WHERE username = '%s'",nameIPOrMail.c_str());
             break;
         case BAN_CHARACTER:
             //No SQL injection as string is escaped
-            resultAccounts = CharacterDatabase.PQuery("SELECT account FROM characters WHERE name = '%s'",nameOrIP.c_str());
+            resultAccounts = CharacterDatabase.PQuery("SELECT account FROM characters WHERE name = '%s'",nameIPOrMail.c_str());
+            break;
+        case BAN_EMAIL:
+            resultAccounts = LoginDatabase.PQuery("SELECT account FROM account WHERE email = %s",nameIPOrMail.c_str());
+            LoginDatabase.PExecute("INSERT INTO email_banned VALUES ('%s',UNIX_TIMESTAMP(),'%s','%s')",nameIPOrMail.c_str(),safe_author.c_str(),reason.c_str());
             break;
         default:
             return BAN_SYNTAX_ERROR;
@@ -2095,10 +2102,10 @@ BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, std::string dura
 
     if(!resultAccounts)
     {
-        if(mode==BAN_IP)
+        if(mode == BAN_IP or mode == BAN_EMAIL)
             return BAN_SUCCESS;                             // ip correctly banned but nobody affected (yet)
         else
-            return BAN_NOTFOUND;                                // Nobody to ban
+            return BAN_NOTFOUND;                            // Nobody to ban
     }
 
     ///- Disconnect all affected players (for IP it can be several)
@@ -2107,7 +2114,7 @@ BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, std::string dura
         Field* fieldsAccount = resultAccounts->Fetch();
         uint32 account = fieldsAccount->GetUInt32();
 
-        if(mode!=BAN_IP)
+        if(mode != BAN_IP && mode != BAN_EMAIL)
         {
             //No SQL injection as strings are escaped
             LoginDatabase.PExecute("INSERT INTO account_banned VALUES ('%u', UNIX_TIMESTAMP(), UNIX_TIMESTAMP()+%u, '%s', '%s', '1')",
@@ -2124,27 +2131,38 @@ BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, std::string dura
 }
 
 /// Remove a ban from an account or IP address
-bool World::RemoveBanAccount(BanMode mode, std::string nameOrIP)
+bool World::RemoveBanAccount(BanMode mode, std::string nameIPOrMail)
 {
-    if (mode == BAN_IP)
+    std::cout << "test5  " << mode  << "  " << nameIPOrMail << std::endl;
+    switch(mode)
     {
-        LoginDatabase.escape_string(nameOrIP);
-        LoginDatabase.PExecute("DELETE FROM ip_banned WHERE ip = '%s'",nameOrIP.c_str());
-    }
-    else
-    {
-        uint32 account = 0;
-        if (mode == BAN_ACCOUNT)
-            account = accmgr.GetId (nameOrIP);
-        else if (mode == BAN_CHARACTER)
-            account = objmgr.GetPlayerAccountIdByPlayerName (nameOrIP);
+        BAN_IP:
+            LoginDatabase.escape_string(nameIPOrMail);
+            LoginDatabase.PExecute("DELETE FROM ip_banned WHERE ip = '%s'",nameIPOrMail.c_str());
+            break;
+        BAN_EMAIL:
+            LoginDatabase.escape_string(nameIPOrMail);
+            LoginDatabase.PExecute("DELETE FROM email_banned WHERE email = '%s'",nameIPOrMail.c_str());
+            std::cout << "test6  " << mode  << "  " << nameIPOrMail << std::endl;
+            break;
+        BAN_ACCOUNT:
+        BAN_CHARACTER:
+            std::cout << "test7  " << mode  << "  " << nameIPOrMail << std::endl;
+            uint32 account = 0;
+            if (mode == BAN_ACCOUNT)
+                account = accmgr.GetId (nameIPOrMail);
+            else if (mode == BAN_CHARACTER)
+                account = objmgr.GetPlayerAccountIdByPlayerName (nameIPOrMail);
 
-        if (!account)
-            return false;
+            if (!account)
+                return false;
 
-        //NO SQL injection as account is uint32
-        LoginDatabase.PExecute("UPDATE account_banned SET active = '0' WHERE id = '%u'",account);
+            //NO SQL injection as account is uint32
+            LoginDatabase.PExecute("UPDATE account_banned SET active = '0' WHERE id = '%u'",account);
+            break;
     }
+    std::cout << "test8  " << mode  << "  " << nameIPOrMail << std::endl;
+
     return true;
 }
 
