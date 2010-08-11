@@ -874,7 +874,12 @@ enum TrinityStrings
     // Use for custom patches             11000-11999
     LANG_BG_START_ANNOUNCE              = 11000,
     LANG_ANTICHEAT                      = 11001,
-    LANG_SET_WEATHER                    = 11002
+    LANG_SET_WEATHER                    = 11002,
+    LANG_BANINFO_NOEMAIL                = 11003,
+    LANG_BANINFO_EMAILENTRY             = 11004,
+    LANG_BANLIST_NOEMAIL                = 11005,
+    LANG_BANLIST_MATCHINGEMAIL          = 11006,
+
 
     // NOT RESERVED IDS                   12000-1999999999
     // `db_script_string` table index     2000000000-2000009999 (MIN_DB_SCRIPT_STRING_ID-MAX_DB_SCRIPT_STRING_ID)
