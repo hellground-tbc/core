@@ -91,16 +91,15 @@ static float SpawnLocations[2][2]=
 #define AGGRO_Y         401.270172
 #define AGGRO_Z         112.783928
 
-#define AKAMA_X 488.25
+/*#define AKAMA_X 488.25
 #define AKAMA_Y 401.22
 #define AKAMA_Z         112.78
+*/
 
-/*
 #define AKAMA_X         514.78
 #define AKAMA_Y         400.79
 #define AKAMA_Z         112.78
 
-*/
 // Spells
 #define SPELL_VERTEX_SHADE_BLACK    39833
 
@@ -346,7 +345,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
 
     void ProcessSpawning(const uint32 diff)
     {
-        if (0)//(m_waveTimer < diff)
+        if (m_waveTimer < diff)
         {
             Creature *akama = m_creature->GetCreature(*m_creature, AkamaGUID);
             for (int i = 0; i < 2; ++i)
@@ -367,7 +366,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
         else
             m_waveTimer -= diff;
 
-        if (0)//(m_guardTimer < diff)
+        if (m_guardTimer < diff)
         {
             Creature *mob = m_creature->SummonCreature(CREATURE_DEFENDER, SpawnLocations[0][0], SpawnLocations[0][1], SPAWN_Z, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
             if (mob)
@@ -381,7 +380,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
         else
             m_guardTimer -= diff;
 
-        if (0)//(m_sorcTimer < diff)
+        if (m_sorcTimer < diff)
         {
             if (!m_freeSlot)
             {
