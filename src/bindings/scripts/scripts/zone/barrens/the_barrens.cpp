@@ -242,16 +242,21 @@ struct TRINITY_DLL_DECL npc_twiggy_flatheadAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (EventInProgress) {
+        if (EventInProgress)
+        {
             Player* pWarrior = NULL;
 
             if(PlayerGUID)
                 pWarrior = Unit::GetPlayer(PlayerGUID);
 
             if(!pWarrior)
+            {
+                Reset();
                 return;
+            }
 
-            if(!pWarrior->isAlive() && pWarrior->GetQuestStatus(1719) == QUEST_STATUS_INCOMPLETE) {
+            if(!pWarrior->isAlive() && pWarrior->GetQuestStatus(1719) == QUEST_STATUS_INCOMPLETE)
+            {
                 EventInProgress = false;
                 DoScriptText(SAY_TWIGGY_FLATHEAD_DOWN, m_creature);
                 pWarrior->FailQuest(1719);
@@ -261,7 +266,8 @@ struct TRINITY_DLL_DECL npc_twiggy_flatheadAI : public ScriptedAI
                     if (AffrayChallenger[i])
                     {
                         Creature* pCreature = Unit::GetCreature((*m_creature), AffrayChallenger[i]);
-                        if(pCreature) {
+                        if(pCreature)
+                        {
                             if(pCreature->isAlive())
                             {
                                 pCreature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
@@ -277,8 +283,10 @@ struct TRINITY_DLL_DECL npc_twiggy_flatheadAI : public ScriptedAI
                 if (BigWill)
                 {
                     Creature* pCreature = Unit::GetCreature((*m_creature), BigWill);
-                    if(pCreature) {
-                        if(pCreature->isAlive()) {
+                    if(pCreature)
+                    {
+                        if(pCreature->isAlive())
+                        {
                             pCreature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
                             pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                             pCreature->setDeathState(JUST_DIED);
@@ -302,6 +310,7 @@ struct TRINITY_DLL_DECL npc_twiggy_flatheadAI : public ScriptedAI
                         Creature* pCreature = m_creature->SummonCreature(AFFRAY_CHALLENGER, AffrayChallengerLoc[i][0], AffrayChallengerLoc[i][1], AffrayChallengerLoc[i][2], AffrayChallengerLoc[i][3], TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 600000);
                         if(!pCreature)
                             continue;
+
                         pCreature->setFaction(35);
                         pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                         pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -330,7 +339,9 @@ struct TRINITY_DLL_DECL npc_twiggy_flatheadAI : public ScriptedAI
                         }
                     }
                     Challenger_checker = 1000;
-                } else Challenger_checker -= diff;
+                }
+                else
+                    Challenger_checker -= diff;
 
                 if(Wave_Timer < diff)
                 {
@@ -349,7 +360,8 @@ struct TRINITY_DLL_DECL npc_twiggy_flatheadAI : public ScriptedAI
                             Wave_Timer = 20000;
                         }
                     }
-                    else if (Wave >= 6 && !EventBigWill) {
+                    else if (Wave >= 6 && !EventBigWill)
+                    {
                         if(Creature* pCreature = m_creature->SummonCreature(BIG_WILL, -1722, -4341, 6.12, 6.26, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 480000))
                         {
                             BigWill = pCreature->GetGUID();
@@ -375,7 +387,9 @@ struct TRINITY_DLL_DECL npc_twiggy_flatheadAI : public ScriptedAI
                             Wave = 0;
                         }
                     }
-                } else Wave_Timer -= diff;
+                }
+                else
+                    Wave_Timer -= diff;
             }
         }
     }

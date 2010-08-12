@@ -409,7 +409,7 @@ bool AuthSocket::_HandleLogonChallenge()
         ///- Get the account details from the account table
         // No SQL injection (escaped user name)
 
-        result = LoginDatabase.PQuery("SELECT sha_pass_hash,id,locked,last_ip,gmlevel FROM account WHERE username = '%s'",_safelogin.c_str ());
+        result = LoginDatabase.PQuery("SELECT sha_pass_hash, id, locked, last_ip, gmlevel, email FROM account WHERE username = '%s'",_safelogin.c_str ());
         if( result )
         {
             ///- If the IP is 'locked', check that the player comes indeed from the correct IP address
@@ -455,40 +455,50 @@ bool AuthSocket::_HandleLogonChallenge()
                 }
                 else
                 {
-                    ///- Get the password from the account table, upper it, and make the SRP6 calculation
-                    std::string rI = (*result)[0].GetCppString();
-                    _SetVSFields(rI);
+                    QueryResult_AutoPtr emailbanresult = LoginDatabase.PQuery("SELECT email FROM email_banned WHERE email = %s;", (*result)[5].GetString());
+                    if(emailbanresult)
+                    {
+                        pkt << (uint8) REALM_AUTH_ACCOUNT_BANNED;
+                        sLog.outBasic("[AuthChallenge] Account %s with banned email %s tries to login! Banning this acc",_login.c_str (), (*emailbanresult)[0].GetString());
 
-                    b.SetRand(19 * 8);
-                    BigNumber gmod=g.ModExp(b, N);
-                    B = ((v * 3) + gmod) % N;
+                    }
+                    else
+                    {
+                        ///- Get the password from the account table, upper it, and make the SRP6 calculation
+                        std::string rI = (*result)[0].GetCppString();
+                        _SetVSFields(rI);
 
-                    ASSERT(gmod.GetNumBytes() <= 32);
+                        b.SetRand(19 * 8);
+                        BigNumber gmod=g.ModExp(b, N);
+                        B = ((v * 3) + gmod) % N;
 
-                    BigNumber unk3;
-                    unk3.SetRand(16*8);
+                        ASSERT(gmod.GetNumBytes() <= 32);
 
-                    ///- Fill the response packet with the result
-                    pkt << (uint8)REALM_AUTH_SUCCESS;
+                        BigNumber unk3;
+                        unk3.SetRand(16*8);
 
-                    // B may be calculated < 32B so we force minnimal length to 32B
-                    pkt.append(B.AsByteArray(32), 32);   // 32 bytes
-                    pkt << (uint8)1;
-                    pkt.append(g.AsByteArray(), 1);
-                    pkt << (uint8)32;
-                    pkt.append(N.AsByteArray(), 32);
-                    pkt.append(s.AsByteArray(), s.GetNumBytes());   // 32 bytes
-                    pkt.append(unk3.AsByteArray(), 16);
-                    pkt << (uint8)0;                    // Added in 1.12.x client branch
+                        ///- Fill the response packet with the result
+                        pkt << (uint8)REALM_AUTH_SUCCESS;
 
-                    uint8 secLevel = (*result)[4].GetUInt8();
-                    _accountSecurityLevel = secLevel <= SEC_ADMINISTRATOR ? AccountTypes(secLevel) : SEC_ADMINISTRATOR;
+                        // B may be calculated < 32B so we force minnimal length to 32B
+                        pkt.append(B.AsByteArray(32), 32);   // 32 bytes
+                        pkt << (uint8)1;
+                        pkt.append(g.AsByteArray(), 1);
+                        pkt << (uint8)32;
+                        pkt.append(N.AsByteArray(), 32);
+                        pkt.append(s.AsByteArray(), s.GetNumBytes());   // 32 bytes
+                        pkt.append(unk3.AsByteArray(), 16);
+                        pkt << (uint8)0;                    // Added in 1.12.x client branch
 
-                    _localizationName.resize(4);
-                    for(int i = 0; i <4; ++i)
-                        _localizationName[i] = ch->country[4-i-1];
+                        uint8 secLevel = (*result)[4].GetUInt8();
+                        _accountSecurityLevel = secLevel <= SEC_ADMINISTRATOR ? AccountTypes(secLevel) : SEC_ADMINISTRATOR;
 
-                    sLog.outBasic("[AuthChallenge] account %s is using '%c%c%c%c' locale (%u)", _login.c_str (), ch->country[3],ch->country[2],ch->country[1],ch->country[0], GetLocaleByName(_localizationName));
+                        _localizationName.resize(4);
+                        for(int i = 0; i <4; ++i)
+                            _localizationName[i] = ch->country[4-i-1];
+
+                        sLog.outBasic("[AuthChallenge] account %s is using '%c%c%c%c' locale (%u)", _login.c_str (), ch->country[3],ch->country[2],ch->country[1],ch->country[0], GetLocaleByName(_localizationName));
+                    }
                 }
             }
         }

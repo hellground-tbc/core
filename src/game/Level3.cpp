@@ -4005,6 +4005,42 @@ bool ChatHandler::HandleReviveCommand(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleReviveGroupCommand(const char* args)
+{
+    Player* gm = m_session->GetPlayer();
+
+    if(!gm)
+        return false;
+
+    Group * tmpG = gm->GetGroup();
+
+    if (!tmpG)
+    {
+        PSendSysMessage(LANG_NOT_IN_GROUP, gm->GetName());
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    for(GroupReference *itr = tmpG->GetFirstMember(); itr != NULL; itr = itr->next())
+    {
+        Player *pl = itr->getSource();
+
+        if (!pl || pl->isAlive() || pl->GetMapId() != gm->GetMapId())
+            continue;
+
+        // before GM
+        float x,y,z;
+        gm->GetClosePoint(x, y, z, pl->GetObjectSize());
+        pl->TeleportTo(gm->GetMapId(), x, y, z, pl->GetOrientation());
+
+        pl->ResurrectPlayer(0.5f);
+        pl->SpawnCorpseBones();
+        pl->SaveToDB();
+    }
+
+    return true;
+}
+
 bool ChatHandler::HandleAuraCommand(const char* args)
 {
     char* px = strtok((char*)args, " ");
@@ -5175,7 +5211,7 @@ bool ChatHandler::HandleResetAllCommand(const char * args)
     }
 
     CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '%u' WHERE (at_login & '%u') = '0'",atLogin,atLogin);
-    
+
     ObjectAccessor::Guard guard(*HashMapHolder<Player>::GetLock());
     HashMapHolder<Player>::MapType const& plist = ObjectAccessor::Instance().GetPlayers();
     for(HashMapHolder<Player>::MapType::const_iterator itr = plist.begin(); itr != plist.end(); ++itr)
@@ -5540,20 +5576,29 @@ bool ChatHandler::HandleBanIPCommand(const char* args)
     return HandleBanHelper(BAN_IP,args);
 }
 
+bool ChatHandler::HandleBanEmailCommand(const char* args)
+{
+    return HandleBanHelper(BAN_EMAIL,args);
+}
+
 bool ChatHandler::HandleBanHelper(BanMode mode, const char* args)
 {
     if(!args)
         return false;
 
-    char* cnameOrIP = strtok ((char*)args, " ");
-    if (!cnameOrIP)
+    char* cnameIPOrMail = strtok ((char*)args, " ");
+    if (!cnameIPOrMail)
         return false;
 
-    std::string nameOrIP = cnameOrIP;
+    std::string nameIPOrMail = cnameIPOrMail;
 
-    char* duration = strtok (NULL," ");
-    if(!duration || !atoi(duration))
-        return false;
+    char* duration;
+    if (mode != BAN_EMAIL)
+    {
+        duration = strtok (NULL," ");
+        if(!duration || !atoi(duration))
+            return false;
+    }
 
     char* reason = strtok (NULL,"");
     if(!reason)
@@ -5562,15 +5607,15 @@ bool ChatHandler::HandleBanHelper(BanMode mode, const char* args)
     switch(mode)
     {
         case BAN_ACCOUNT:
-            if(!AccountMgr::normilizeString(nameOrIP))
+            if(!AccountMgr::normilizeString(nameIPOrMail))
             {
-                PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,nameOrIP.c_str());
+                PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,nameIPOrMail.c_str());
                 SetSentErrorMessage(true);
                 return false;
             }
             break;
         case BAN_CHARACTER:
-            if(!normalizePlayerName(nameOrIP))
+            if(!normalizePlayerName(nameIPOrMail))
             {
                 SendSysMessage(LANG_PLAYER_NOT_FOUND);
                 SetSentErrorMessage(true);
@@ -5578,18 +5623,18 @@ bool ChatHandler::HandleBanHelper(BanMode mode, const char* args)
             }
             break;
         case BAN_IP:
-            if(!IsIPAddress(nameOrIP.c_str()))
+            if(!IsIPAddress(nameIPOrMail.c_str()))
                 return false;
             break;
     }
 
-    switch(sWorld.BanAccount(mode, nameOrIP, duration, reason,m_session ? m_session->GetPlayerName() : ""))
+    switch(sWorld.BanAccount(mode, nameIPOrMail, duration, reason,m_session ? m_session->GetPlayerName() : ""))
     {
         case BAN_SUCCESS:
-            if(atoi(duration)>0)
-                PSendSysMessage(LANG_BAN_YOUBANNED,nameOrIP.c_str(),secsToTimeString(TimeStringToSecs(duration),true).c_str(),reason);
+            if(mode != BAN_EMAIL && atoi(duration)>0)
+                PSendSysMessage(LANG_BAN_YOUBANNED,nameIPOrMail.c_str(),secsToTimeString(TimeStringToSecs(duration),true).c_str(),reason);
             else
-                PSendSysMessage(LANG_BAN_YOUPERMBANNED,nameOrIP.c_str(),reason);
+                PSendSysMessage(LANG_BAN_YOUPERMBANNED,nameIPOrMail.c_str(),reason);
             break;
         case BAN_SYNTAX_ERROR:
             return false;
@@ -5597,13 +5642,16 @@ bool ChatHandler::HandleBanHelper(BanMode mode, const char* args)
             switch(mode)
             {
                 default:
-                    PSendSysMessage(LANG_BAN_NOTFOUND,"account",nameOrIP.c_str());
+                    PSendSysMessage(LANG_BAN_NOTFOUND,"account",nameIPOrMail.c_str());
                     break;
                 case BAN_CHARACTER:
-                    PSendSysMessage(LANG_BAN_NOTFOUND,"character",nameOrIP.c_str());
+                    PSendSysMessage(LANG_BAN_NOTFOUND,"character",nameIPOrMail.c_str());
                     break;
                 case BAN_IP:
-                    PSendSysMessage(LANG_BAN_NOTFOUND,"ip",nameOrIP.c_str());
+                    PSendSysMessage(LANG_BAN_NOTFOUND,"ip",nameIPOrMail.c_str());
+                    break;
+                case BAN_EMAIL:
+                    PSendSysMessage(LANG_BAN_NOTFOUND,"email",nameIPOrMail.c_str());
                     break;
             }
             SetSentErrorMessage(true);
@@ -5628,29 +5676,36 @@ bool ChatHandler::HandleUnBanIPCommand(const char* args)
     return HandleUnBanHelper(BAN_IP,args);
 }
 
+bool ChatHandler::HandleUnBanEmailCommand(const char* args)
+{
+    return HandleUnBanHelper(BAN_EMAIL,args);
+}
+
 bool ChatHandler::HandleUnBanHelper(BanMode mode, const char* args)
 {
+    std::cout << "test1  " << mode << "  " << args << std::endl;
     if(!args)
         return false;
 
-    char* cnameOrIP = strtok ((char*)args, " ");
-    if(!cnameOrIP)
+    char* cnameIPOrMail = strtok ((char*)args, " ");
+    std::cout << "test2  " << mode << "  " << args  << "  " << cnameIPOrMail << std::endl;
+    if(!cnameIPOrMail)
         return false;
 
-    std::string nameOrIP = cnameOrIP;
+    std::string nameIPOrMail = cnameIPOrMail;
 
     switch(mode)
     {
         case BAN_ACCOUNT:
-            if(!AccountMgr::normilizeString(nameOrIP))
+            if(!AccountMgr::normilizeString(nameIPOrMail))
             {
-                PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,nameOrIP.c_str());
+                PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,nameIPOrMail.c_str());
                 SetSentErrorMessage(true);
                 return false;
             }
             break;
         case BAN_CHARACTER:
-            if(!normalizePlayerName(nameOrIP))
+            if(!normalizePlayerName(nameIPOrMail))
             {
                 SendSysMessage(LANG_PLAYER_NOT_FOUND);
                 SetSentErrorMessage(true);
@@ -5658,16 +5713,16 @@ bool ChatHandler::HandleUnBanHelper(BanMode mode, const char* args)
             }
             break;
         case BAN_IP:
-            if(!IsIPAddress(nameOrIP.c_str()))
+            if(!IsIPAddress(nameIPOrMail.c_str()))
                 return false;
             break;
     }
-
-    if(sWorld.RemoveBanAccount(mode,nameOrIP))
-        PSendSysMessage(LANG_UNBAN_UNBANNED,nameOrIP.c_str());
+    std::cout << "test3  " << mode << "  " << args  << "  " << cnameIPOrMail << std::endl;
+    if(sWorld.RemoveBanAccount(mode,nameIPOrMail))
+        PSendSysMessage(LANG_UNBAN_UNBANNED,nameIPOrMail.c_str());
     else
-        PSendSysMessage(LANG_UNBAN_ERROR,nameOrIP.c_str());
-
+        PSendSysMessage(LANG_UNBAN_ERROR,nameIPOrMail.c_str());
+    std::cout << "test4  " << mode << "  " << args  << "  " << cnameIPOrMail << std::endl;
     return true;
 }
 
@@ -5787,6 +5842,31 @@ bool ChatHandler::HandleBanInfoIPCommand(const char* args)
     PSendSysMessage(LANG_BANINFO_IPENTRY,
         fields[0].GetString(), fields[1].GetString(), permanent ? GetTrinityString(LANG_BANINFO_NEVER):fields[2].GetString(),
         permanent ? GetTrinityString(LANG_BANINFO_INFINITE):secsToTimeString(fields[3].GetUInt64(), true).c_str(), fields[4].GetString(), fields[5].GetString());
+    return true;
+}
+
+bool ChatHandler::HandleBanInfoEmailCommand(const char* args)
+{
+    if(!args)
+        return false;
+
+    char* cEmail = strtok ((char*)args, "");
+    if(!cEmail)
+        return false;
+
+    std::string email = cEmail;
+
+    LoginDatabase.escape_string(email);
+    QueryResult_AutoPtr result = LoginDatabase.PQuery("SELECT email, FROM_UNIXTIME(bandate), banreason, bannedby FROM email_banned WHERE email = '%s'", email.c_str());
+    if(!result)
+    {
+        PSendSysMessage(LANG_BANINFO_NOEMAIL);
+        return true;
+    }
+
+    Field *fields = result->Fetch();
+    PSendSysMessage(LANG_BANINFO_EMAILENTRY,
+        fields[0].GetString(), fields[1].GetString(), fields[2].GetString(), fields[3].GetString());
     return true;
 }
 
@@ -5988,6 +6068,44 @@ bool ChatHandler::HandleBanListIPCommand(const char* args)
 
     return true;
 }
+
+bool ChatHandler::HandleBanListEmailCommand(const char* args)
+{
+    char* cFilter = strtok((char*)args, " ");
+    std::string filter = cFilter ? cFilter : "";
+    LoginDatabase.escape_string(filter);
+
+    QueryResult_AutoPtr result;
+
+    if(filter.empty())
+    {
+        result = LoginDatabase.Query ("SELECT email, bandate, bannedby, banreason FROM email_banned"
+            " ORDER BY bandate ASC" );
+    }
+    else
+    {
+        result = LoginDatabase.PQuery( "SELECT email, bandate, bannedby, banreason FROM email_banned"
+            " WHERE email LIKE CONCAT('%', '%s', '%')"
+            " ORDER BY bandate ASC" , filter.c_str() );
+    }
+
+    if(!result)
+    {
+        PSendSysMessage(LANG_BANLIST_NOEMAIL);
+        return true;
+    }
+
+    PSendSysMessage(LANG_BANLIST_MATCHINGEMAIL);
+
+    do
+    {
+        Field* fields = result->Fetch();
+        PSendSysMessage("%s",fields[0].GetString());
+    } while (result->NextRow());
+
+    return true;
+}
+
 
 bool ChatHandler::HandleRespawnCommand(const char* /*args*/)
 {
@@ -6688,6 +6806,41 @@ bool ChatHandler::HandleInstanceUnbindCommand(const char* args)
         }
         PSendSysMessage("instances unbound: %d", counter);
     }
+    else
+    {
+        Player* player = getSelectedPlayer();
+        if (!player) player = m_session->GetPlayer();
+        uint32 unbInst = 0;
+        for(uint8 i = 0; i < TOTAL_DIFFICULTIES; i++)
+        {
+            Player::BoundInstancesMap &binds = player->GetBoundInstances(i);
+            for(Player::BoundInstancesMap::iterator itr = binds.begin(); itr != binds.end(); ++itr)
+            {
+                if(itr->first != player->GetMapId())
+                {
+                    InstanceSave *save = itr->second.save;
+                    char * tmp = new char[20];
+                    sprintf(tmp, "%u", save->GetInstanceId());
+                    std::string instId = tmp;
+
+                    if (cmd == instId)
+                    {
+                        unbInst = save->GetInstanceId();
+                        std::string timeleft = GetTimeString(save->GetResetTime() - time(NULL));
+                        PSendSysMessage("unbinding map: %d inst: %d perm: %s diff: %s canReset: %s TTR: %s", itr->first, save->GetInstanceId(), itr->second.perm ? "yes" : "no",  save->GetDifficulty() == DIFFICULTY_NORMAL ? "normal" : "heroic", save->CanReset() ? "yes" : "no", timeleft.c_str());
+                        player->UnbindInstance(itr, i);
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (unbInst)
+            PSendSysMessage("instance unbound: %d", unbInst);
+        else
+            PSendSysMessage("instance id %s not found or player in instance", args);
+    }
+
     return true;
 }
 

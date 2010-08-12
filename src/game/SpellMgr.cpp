@@ -2646,12 +2646,23 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 40869: // Fatal Attraction
             spellInfo->EffectRadiusIndex[0] = 12;
-            spellInfo->EffectRadiusIndex[1] = 12;
             spellInfo->MaxAffectedTargets = 3;
+            spellInfo->Effect[1] = 0;
             break;
         case 40870: // Fatal Attraction Trigger
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ALLY;
             spellInfo->EffectImplicitTargetB[0] = 0;
+            break;
+        case 40594: // Fel Rage
+            spellInfo->EffectBasePoints[1] = 99;
+            break;
+        case 40855: // Akama Soul Expel
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
+            break;
+        case 40401: // Shade of Akama Channeling
+            spellInfo->Effect[2] = spellInfo->Effect[0];
+            spellInfo->EffectApplyAuraName[2] = spellInfo->EffectApplyAuraName[0];
+            spellInfo->EffectImplicitTargetA[2] = TARGET_UNIT_CASTER;
             break;
         case 40251:
             spellInfo->EffectApplyAuraName[1] = SPELL_AURA_DUMMY;

@@ -764,11 +764,9 @@ uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, cons
     }
 
     //Script Event damage made on players by Unit
-    if(GetTypeId() == TYPEID_UNIT && ((Creature*)this)->IsAIEnabled && pVictim->GetTypeId() == TYPEID_PLAYER)
-    {
+    if(GetTypeId() == TYPEID_UNIT && ((Creature*)this)->IsAIEnabled)
         if(damageInfo->damage)
             ((Creature*)this)->AI()->DamageMade(pVictim, damageInfo->damage, damagetype == DIRECT_DAMAGE);
-    }
 
     if(damageInfo->damage || damageInfo->absorb)
     {
@@ -3457,7 +3455,9 @@ bool Unit::AddAura(Aura *Aur)
                         stackModified=true;
                         Aur->SetStackAmount(i2->second->GetStackAmount());
                         if(Aur->GetStackAmount() < aurSpellInfo->StackAmount)
+                        {
                             Aur->SetStackAmount(Aur->GetStackAmount()+1);
+                        }
                     }
                     RemoveAura(i2,AURA_REMOVE_BY_STACK);
                     i2=m_Auras.lower_bound(spair);
@@ -3572,7 +3572,7 @@ bool Unit::AddAura(Aura *Aur)
     }
 
     if(GetTypeId() == TYPEID_UNIT && this->IsAIEnabled)
-        ((Creature*)this)->AI()->OnAuraApply(Aur, Aur->GetCaster());
+        ((Creature*)this)->AI()->OnAuraApply(Aur, Aur->GetCaster(), stackModified);
 
     sLog.outDebug("Aura %u now is in use", Aur->GetModifier()->m_auraname);
     return true;
@@ -3927,6 +3927,9 @@ void Unit::RemoveSingleAuraFromStack(uint32 spellId, uint32 effindex)
             iter->second->SetStackAmount(iter->second->GetStackAmount()-1);
             iter->second->ApplyModifier(true,true);
 
+            if (GetTypeId() == TYPEID_UNIT && IsAIEnabled)
+                ((Creature *)this)->AI()->OnAuraRemove(iter->second, true);
+
             iter->second->UpdateSlotCounterAndDuration();
             return; // not remove aura if stack amount > 1
         }
@@ -3988,6 +3991,10 @@ void Unit::RemoveNotOwnSingleTargetAuras()
 void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
 {
     Aura* Aur = i->second;
+
+    if (this->GetTypeId() == TYPEID_UNIT && this->IsAIEnabled)
+        ((Creature *)this)->AI()->OnAuraRemove(Aur, false);
+
 
     // HACK: teleport players that leave Incite Chaos 2yds up to prevent falling into textures
     if(Aur && Aur->GetId() == 33684)

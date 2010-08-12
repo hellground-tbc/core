@@ -330,6 +330,15 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public ScriptedAI
         DoScriptText(SAY_FREED, m_creature);
    }
 
+    void OnAuraRemove(Aura* aur)
+    {
+        if(aur->GetId() == 30205)
+        {
+            m_creature->SetHealth(m_creature->GetMaxHealth());
+            DoResetThreat();
+        }
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if (!m_creature->isInCombat())

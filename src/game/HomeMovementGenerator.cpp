@@ -28,6 +28,13 @@
 #include "WorldPacket.h"
 
 void
+HomeMovementGenerator<Creature>::Finalize(Creature & owner)
+{
+    //if (owner.IsAIEnabled)
+    //    owner.AI()->Reset();
+}
+
+void
 HomeMovementGenerator<Creature>::Initialize(Creature & owner)
 {
     owner.RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);

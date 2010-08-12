@@ -1716,27 +1716,6 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             }
 
             m_caster->GetGroundPointAroundUnit(x, y, z, dist, angle);
-            if (m_spellInfo->Id == 40869)
-            {
-                if (x > 980.0f || x < 920.0f ||
-                    y > 310.0f || y < 180.0f)
-                {
-                    float positions[7][2] = 
-                    {
-                        {930.846, 251.67},
-                        {961.344, 266.64},
-                        {966.432, 237.126},
-                        {925.918, 232.24},
-                        {930.789, 203.531},
-                        {959.605, 198.873},
-                        {943.938, 181.519},
-                    };
-                    int i = rand()%7;
-                    x = positions[i][0];
-                    y = positions[i][1];
-                }
-                z = 192.82;
-            }
             m_targets.setDestination(x, y, z);
             break;
         }
