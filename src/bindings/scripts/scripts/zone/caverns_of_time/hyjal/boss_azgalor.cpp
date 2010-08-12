@@ -166,27 +166,37 @@ struct TRINITY_DLL_DECL boss_azgalorAI : public hyjal_trashAI
             if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0,30,true))    
                 DoCast(target, SPELL_RAIN_OF_FIRE);
             RainTimer = 20000+rand()%15000;
-        }else RainTimer -= diff;
+        }
+        else
+            RainTimer -= diff;
 
+        //only set timer when target exist, cause with exclude defined we return NULL that now can be acceptable spell target
         if(DoomTimer < diff)
         {
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,3,100,true, m_creature->getVictim()))
+            {
                 DoCast(target, SPELL_DOOM);//never on tank
-            DoomTimer = 45000+rand()%5000;
-        }else DoomTimer -= diff;
+                DoomTimer = 45000+rand()%5000;
+            }
+        }
+        else
+            DoomTimer -= diff;
 
         if(HowlTimer < diff)
         {
             DoCast(m_creature, SPELL_HOWL_OF_AZGALOR);
             HowlTimer = 30000;
-        }else HowlTimer -= diff;
+        }
+        else
+            HowlTimer -= diff;
 
         if(CleaveTimer < diff)
         {
             if(Unit *target = m_creature->getVictim())
                 DoCast(target, SPELL_CLEAVE);
             CleaveTimer = 10000+rand()%5000;
-        }else CleaveTimer -= diff;
+        }
+        else
+            CleaveTimer -= diff;
 
         if(EnrageTimer < diff && !enraged)
         {
@@ -194,7 +204,9 @@ struct TRINITY_DLL_DECL boss_azgalorAI : public hyjal_trashAI
             DoCast(m_creature, SPELL_BERSERK, true);
             enraged = true;
             EnrageTimer = 600000;
-        }else EnrageTimer -= diff;
+        }
+        else
+            EnrageTimer -= diff;
 
         DoMeleeAttackIfReady();
     }
