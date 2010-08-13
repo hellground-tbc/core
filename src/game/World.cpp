@@ -2102,7 +2102,7 @@ BanReturn World::BanAccount(BanMode mode, std::string nameIPOrMail, std::string 
 
     if(!resultAccounts)
     {
-        if(mode == BAN_IP or mode == BAN_EMAIL)
+        if(mode == BAN_IP || mode == BAN_EMAIL)
             return BAN_SUCCESS;                             // ip correctly banned but nobody affected (yet)
         else
             return BAN_NOTFOUND;                            // Nobody to ban
@@ -2136,17 +2136,17 @@ bool World::RemoveBanAccount(BanMode mode, std::string nameIPOrMail)
     std::cout << "test5  " << mode  << "  " << nameIPOrMail << std::endl;
     switch(mode)
     {
-        BAN_IP:
+        case BAN_IP:
             LoginDatabase.escape_string(nameIPOrMail);
             LoginDatabase.PExecute("DELETE FROM ip_banned WHERE ip = '%s'",nameIPOrMail.c_str());
             break;
-        BAN_EMAIL:
+        case BAN_EMAIL:
             LoginDatabase.escape_string(nameIPOrMail);
             LoginDatabase.PExecute("DELETE FROM email_banned WHERE email = '%s'",nameIPOrMail.c_str());
             std::cout << "test6  " << mode  << "  " << nameIPOrMail << std::endl;
             break;
-        BAN_ACCOUNT:
-        BAN_CHARACTER:
+        case BAN_ACCOUNT:
+        case BAN_CHARACTER:
             std::cout << "test7  " << mode  << "  " << nameIPOrMail << std::endl;
             uint32 account = 0;
             if (mode == BAN_ACCOUNT)
@@ -2161,7 +2161,7 @@ bool World::RemoveBanAccount(BanMode mode, std::string nameIPOrMail)
             LoginDatabase.PExecute("UPDATE account_banned SET active = '0' WHERE id = '%u'",account);
             break;
     }
-    std::cout << "test8  " << mode  << "  " << nameIPOrMail << std::endl;
+    //std::cout << "test8  " << mode  << "  " << nameIPOrMail << std::endl;
 
     return true;
 }
