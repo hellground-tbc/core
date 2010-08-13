@@ -34,7 +34,7 @@ EndScriptData */
 #define SPELL_MOLTEN_FLAME          40980
 #define SPELL_VOLCANIC_ERUPTION     40117
 #define SPELL_VOLCANIC_SUMMON       40276
-#define SPELL_BERSERK               45078
+#define SPELL_BERSERK               27680//45078
 #define SPELL_CHARGE                41581
 #define SPELL_DIVE_CUSTOM           40279
 
@@ -127,10 +127,10 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
         DoEmote = false;
         summons.DespawnAll();
 
-        m_creature->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 15);   //custom, should be verified
-        m_creature->SetFloatValue(UNIT_FIELD_COMBATREACH, 15);
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
-        m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, false);
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
+        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
+        m_creature->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 30);   //custom, should be verified
+        m_creature->SetFloatValue(UNIT_FIELD_COMBATREACH, 8);
     }
 
     void EnterCombat(Unit *who)
@@ -139,6 +139,12 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
 
         if(pInstance)
             pInstance->SetData(DATA_SUPREMUSEVENT, IN_PROGRESS);
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (m_creature->GetDistance(who) <= 50 && !m_creature->isInCombat() && m_creature->IsHostileTo(who))
+            m_creature->AI()->AttackStart(who);
     }
 
     void ToggleDoors(bool close)
@@ -196,14 +202,6 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
         if(!UpdateVictim())
             return;
 
-        if(CheckTimer < diff)
-        {
-            DoZoneInCombat();
-            CheckTimer = 1000;
-        }
-        else
-            CheckTimer -= diff;
-
         if(!m_creature->HasAura(SPELL_BERSERK, 0))
         {
             if(BerserkTimer < diff)
@@ -228,12 +226,21 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
 
         if(Phase1)
         {
+            if(CheckTimer < diff)
+            {
+                DoZoneInCombat();
+                m_creature->SetSpeed(MOVE_RUN, 2.5f);
+                CheckTimer = 1000;
+            }
+            else
+                CheckTimer -= diff;
+
             if(HatefulStrikeTimer < diff)
             {
                 if(Unit* target = CalculateHatefulStrikeTarget())
                 {
                     AddSpellToCast(target, SPELL_HATEFUL_STRIKE);
-                    HatefulStrikeTimer = 8000;
+                    HatefulStrikeTimer = 5000;
                 }
             }
             else
@@ -241,6 +248,15 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
         }
         else
         {
+            if(CheckTimer < diff)
+            {
+                DoZoneInCombat();
+                m_creature->SetSpeed(MOVE_RUN, 0.90f);
+                CheckTimer = 1000;
+            }
+            else
+                CheckTimer -= diff;
+
             if(SwitchTargetTimer < diff)
             {
                 if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, 100, true, m_creature->getVictim()))
@@ -300,10 +316,8 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
                 DoEmote = true;
                 DoResetThreat();
                 PhaseSwitchTimer = 60000;
-                m_creature->SetSpeed(MOVE_RUN, 1.2f);
+                m_creature->SetSpeed(MOVE_RUN, 2.5f);
                 DoZoneInCombat();
-                m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
-                m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, false);
             }
             else
             {
@@ -312,10 +326,8 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
                 SwitchTargetTimer = 10000;
                 SummonVolcanoTimer = 2000;
                 PhaseSwitchTimer = 60000;
-                m_creature->SetSpeed(MOVE_RUN, 0.75f);
+                m_creature->SetSpeed(MOVE_RUN, 0.90f);
                 DoZoneInCombat();
-                m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
-                m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
             }
         }
         else
@@ -328,16 +340,16 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
 
 struct TRINITY_DLL_DECL npc_volcanoAI : public Scripted_NoMovementAI
 {
-    npc_volcanoAI(Creature *c) : Scripted_NoMovementAI(c)
-    {
-    }
+    npc_volcanoAI(Creature *c) : Scripted_NoMovementAI(c) { }
+
+    uint32 CastTimer;
 
     void Reset()
     {
+        CastTimer = 1000;
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->SetStunned(true);
-        m_creature->CastSpell(m_creature, SPELL_VOLCANIC_ERUPTION, false);
     }
 
     void EnterCombat(Unit *who) {}
@@ -346,6 +358,13 @@ struct TRINITY_DLL_DECL npc_volcanoAI : public Scripted_NoMovementAI
 
     void UpdateAI(const uint32 diff)
     {
+        if(CastTimer && CastTimer < diff)
+        {
+            m_creature->CastSpell(m_creature, SPELL_VOLCANIC_ERUPTION, false);
+            CastTimer = 0;
+        }
+        else
+            CastTimer -= diff;
     }
 };
 
