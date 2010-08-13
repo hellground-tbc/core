@@ -173,6 +173,7 @@ struct TRINITY_DLL_DECL boss_azgalorAI : public hyjal_trashAI
         //only set timer when target exist, cause with exclude defined we return NULL that now can be acceptable spell target
         if(DoomTimer < diff)
         {
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,3,100,true, m_creature->getVictim()))
             {
                 DoCast(target, SPELL_DOOM);//never on tank
                 DoomTimer = 45000+rand()%5000;
