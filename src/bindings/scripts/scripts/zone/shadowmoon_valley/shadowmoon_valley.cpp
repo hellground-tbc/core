@@ -42,6 +42,31 @@ EndContentData */
 #include "precompiled.h"
 #include "escort_ai.h"
 
+/*######
+## mobs_shadowmoon_valley_wildlife
+######*/
+
+struct TRINITY_DLL_DECL mobs_shadowmoon_valley_wildlifeAI : public ScriptedAI
+{
+    mobs_shadowmoon_valley_wildlifeAI(Creature *c) : ScriptedAI(c) {}
+
+    void Reset()
+    {
+    }
+
+    void JustDied(Unit* killer)
+    {
+		killer = killer->GetCharmerOrOwnerPlayerOrPlayerItself();
+        if (killer)
+            ((Player*)killer)->KilledMonster(21978, m_creature->GetGUID());
+    }
+};
+CreatureAI* GetAI_mobs_shadowmoon_valley_wildlife(Creature *_Creature)
+{
+    return new mobs_shadowmoon_valley_wildlifeAI (_Creature);
+}
+
+
 /*#####
 # mob_mature_netherwing_drake
 #####*/
@@ -2709,6 +2734,11 @@ void AddSC_shadowmoon_valley()
     newscript = new Script;
     newscript->Name="felfire_summoner";
     newscript->GetAI = &GetAI_felfire_summoner;
+    newscript->RegisterSelf();
+
+	newscript = new Script;
+    newscript->Name="mobs_shadowmoon_valley_wildlife";
+    newscript->GetAI = &GetAI_mobs_shadowmoon_valley_wildlife;
     newscript->RegisterSelf();
 }
 
