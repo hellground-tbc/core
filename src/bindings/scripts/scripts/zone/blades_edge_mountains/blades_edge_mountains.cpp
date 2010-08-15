@@ -35,30 +35,6 @@ EndContentData */
 #include "precompiled.h"
 
 /*######
-## mobs_bladespire_ogre
-######*/
-
-//TODO: add support for quest 10512 + creature abilities
-struct TRINITY_DLL_DECL mobs_bladespire_ogreAI : public ScriptedAI
-{
-    mobs_bladespire_ogreAI(Creature *c) : ScriptedAI(c) {}
-
-    void Reset()
-    {
-    }
-
-    void JustDied(Unit* Killer)
-    {
-        if (Killer->GetTypeId() == TYPEID_PLAYER)
-            ((Player*)Killer)->KilledMonster(19995, m_creature->GetGUID());
-    }
-};
-CreatureAI* GetAI_mobs_bladespire_ogre(Creature *_Creature)
-{
-    return new mobs_bladespire_ogreAI (_Creature);
-}
-
-/*######
 ## mobs_nether_drake
 ######*/
 
@@ -496,11 +472,6 @@ void AddSC_blades_edge_mountains()
     Script *newscript;
 
     newscript = new Script;
-    newscript->Name="mobs_bladespire_ogre";
-    newscript->GetAI = &GetAI_mobs_bladespire_ogre;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
     newscript->Name="mobs_nether_drake";
     newscript->GetAI = &GetAI_mobs_nether_drake;
     newscript->RegisterSelf();
@@ -537,6 +508,5 @@ void AddSC_blades_edge_mountains()
     newscript->Name = "npc_ogre_brute";
     newscript->GetAI = &GetAI_npc_ogre_brute;
     newscript->RegisterSelf();
-
 }
 
