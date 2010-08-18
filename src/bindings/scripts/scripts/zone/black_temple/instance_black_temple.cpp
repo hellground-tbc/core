@@ -164,12 +164,12 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         {
         case 185483:
             NajentusGate = go->GetGUID();// Gate past Naj'entus (at the entrance to Supermoose's courtyards)
-            //if(Encounters[0] == DONE)
+            if(Encounters[0] == DONE)
                 HandleGameObject(NULL,true,go);
             break;
         case 185882:
             MainTempleDoors = go->GetGUID();// Main Temple Doors - right past Supermoose (Supremus)
-            //if(Encounters[1] == DONE)
+            if(Encounters[1] == DONE)
                 HandleGameObject(NULL,true,go);
             break;
         case 185478:

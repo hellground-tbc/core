@@ -129,7 +129,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
 
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
         m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
-        m_creature->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 30);   //custom, should be verified
+        m_creature->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 50);   //custom, should be verified
         m_creature->SetFloatValue(UNIT_FIELD_COMBATREACH, 8);
     }
 
