@@ -2588,6 +2588,583 @@ CreatureAI* GetAI_felfire_summoner(Creature *_Creature)
     return new felfire_summonerAI (_Creature);
 }
 
+/*#####
+# Quest: A Distraction for Akama
+#####*/
+
+/* ContentData
+
+npc_maiev_BT_attu
+npc_akama_BT_attu
+npc_ashtongue_deathsworn
+mob_vagath
+mob_illidari_shadowlord
+npc_xiri
+Xi'ri gossips
+
+EndContentData */
+
+//NPC Entries
+#define NPC_MAIEV_SHADOWSONG        22989
+#define NPC_AKAMA_BT                22990
+#define NPC_ASHTONGUE_DEATHSWORN    21701
+#define MOB_VAGATH                  23152
+#define MOB_ILLIDARI_SHADOWLORD     22988
+
+//NPC Spells
+#define SPELL_FAN_OF_BLADES         39954
+#define SPELL_STEALTH               34189
+#define CHAIN_LIGHTNING             39945
+#define SPELL_BLINGING_LIGHT        36950   //not used
+#define SPELL_LIGHT_OF_THE_NAARU_1  39828
+#define SPELL_LIGHT_OF_THE_NAARU_2  39831   //spell_linked
+#define SPELL_CARRION_SWARM         39942
+#define SPELL_INFERNO               39941
+#define SPELL_SLEEP                 12098
+
+//NPC text's
+#define MAIEV_YELL        "I've waited for this moment for years. Illidan and his lapdogs will be destroyed! "
+#define AKAMA_START       "Now it's the time, Maiev! Unleash your wrath!"
+#define AKAMA_YELL        "Slay all who see us! Word must not get back to Illidan."
+#define AKAMA_KILL        "Akama has no master. Not anymore."
+#define VAGATH_AGGRO      "Pitiful wretches. You dared to assault Illidan's temple? Very well, I shall make it your death bed!"
+#define VAGATH_INTRO      "A miserable defense from Light-swollen fools. Xi'ri, I will consume you myself! "
+#define VAGATH_DEATH      "You'ves sealed your fate, Akama! The master will learn of your betrayal! "
+#define XIRI_GOSSIP_HELLO "I am ready to join your forces in Battle Xi'ri"
+
+//NPC spawn positions and Waypoints
+static float MaievBT[4] = 
+{
+    -3554.0, 740.0, -15.4, 4.70
+};
+
+static float MaievWaypoint[][3] = 
+{
+    {-3554.0, 731.0, -15.0},
+    {-3554.0, 700.0, - 9.3},
+    {-3554.0, 650.0,  1.71},
+    {-3554.0, 600.0,  9.30},
+    {-3554.0, 540.0,  16.5},
+    {-3561.8, 523.0,  17.9},
+    {-3556.4, 490.0,  22.0},
+    {-3570.0, 462.0,  24.5},
+    {-3576.6, 428.7,  28.6},
+    {-3586.0, 414.2,  31.2},
+    {-3593.0, 382.6,  34.0},
+    {-3599.1, 362.4,  35.2},
+    {-3606.4, 345.7,  39.3},
+    {-3633.1, 327.7,  38.8}
+};
+
+static float AkamaBT[4] =
+{
+    -3570.2, 684.5, -5.22, 4.70
+};
+
+static float AkamaWaypoint[][3] = 
+{
+    {-3570.2, 654.5, 0.76},
+    {-3570.2, 624.5, 5.78},
+    {-3570.2, 594.5, 9.71},
+    {-3570.2, 564.5, 12.7},
+    {-3559.8, 534.5, 16.9},
+    {-3559.8, 473.0, 23.3},
+    {-3568.5, 423.0, 28.4},
+    {-3568.0, 375.0, 32.7},
+    {-3614.5, 330.2, 40.3},
+    {-3644.6, 315.4, 37.4}
+};
+
+static float Deathsworn[8][4] =
+{
+    {-3561.0, 720.0, -12.0, 1.56},
+    {-3557.0, 730.0, -13.6, 1.56},
+    {-3553.0, 735.0, -15.8, 1.56},
+    {-3549.0, 740.0, -16.7, 1.56},
+    {-3546.0, 745.0, -16.7, 1.56},
+    {-3565.0, 733.0, -13.0, 1.56},
+    {-3569.0, 738.0, -12.6, 1.56},
+    {-3573.0, 743.0, -11.9, 1.56}
+};
+
+static float DeathswornPath[8][3] =
+{
+    {-3561.0, 600.0, 9.20},
+    {-3557.0, 610.0, 8.00},
+    {-3553.0, 615.0, 7.60},
+    {-3549.0, 620.0, 7.30},
+    {-3545.0, 625.0, 7.10},
+    {-3565.0, 613.0, 7.40},
+    {-3569.0, 618.0, 6.80},
+    {-3573.0, 623.0, 6.10}
+};
+
+static float DeathswornWaypoint[][3] = 
+{
+    {-3561.3, 537.2, 16.6},
+    {-3553.4, 500.9, 20.0},
+    {-3566.0, 484.6, 22.4},
+    {-3567.3, 457.0, 25.1},
+    {-3571.0, 417.7, 28.9},
+    {-3562.5, 379.2, 32.2},
+    {-3603.7, 346.0, 39.2},
+    {-3631.7, 327.1, 38.8}
+};
+
+static float Vagath[4] =
+{
+    -3570.7, 453.4, 25.72, 1.56
+};
+
+static float ShadowlordPos[6][4] =
+{
+    {-3555.9, 522.2, 18.20, 1.64},
+    {-3549.0, 519.4, 19.00, 1.54},
+    {-3540.5, 517.0, 20.30, 1.73},
+    {-3572.6, 486.4, 22.50, 1.34},
+    {-3582.3, 489.8, 23.29, 1.30},
+    {-3592.0, 487.5, 24.23, 1.25}
+};
+
+/*#####
+# npc_maiev_BT_attu
+######*/
+
+struct TRINITY_DLL_DECL npc_maiev_BT_attuAI : public npc_escortAI
+{
+    npc_maiev_BT_attuAI(Creature* c) : npc_escortAI(c) {}
+
+    bool moving;
+    uint32 FanOfBlades;
+
+    void Reset()
+    {
+        moving = false;
+        FanOfBlades = urand(2000, 6000);
+    }
+
+    void MoveInLineOfSight(Unit* who)
+    {
+        if(!m_creature->isInCombat() && (who->GetEntry() == 22988 || who->GetEntry() == 23152) && m_creature->GetDistance(who) <= 20)
+            m_creature->AI()->AttackStart(who);
+    }
+
+    void WaypointReached(uint32 id)
+    {
+        if(id == 3)
+            DoYell(MAIEV_YELL, 0, 0);
+        if(id == 10)
+            DoCast(m_creature, SPELL_STEALTH);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        npc_escortAI::UpdateAI(diff);
+
+        if(!moving)
+        {
+            if(!HasEscortState(STATE_ESCORT_ESCORTING))
+                npc_escortAI::Start(true, true);
+            moving = true;
+        }
+
+        if(UpdateVictim())
+        {
+            if(FanOfBlades < diff)
+            {
+                DoCast(m_creature->getVictim(), SPELL_FAN_OF_BLADES);
+                FanOfBlades = urand(8000, 16000);
+            }
+            else
+                FanOfBlades -= diff;
+        }
+    }
+
+};
+
+CreatureAI* GetAI_npc_maiev_BT_attu(Creature *_Creature)
+{
+    npc_maiev_BT_attuAI* Maiev_BTattu_AI = new npc_maiev_BT_attuAI (_Creature);
+
+    for(uint32 i = 0; i < 14; ++i)
+    {
+        Maiev_BTattu_AI->AddWaypoint(i+1, MaievWaypoint[i][0], MaievWaypoint[i][1], MaievWaypoint[i][2]);
+    }
+
+    return (CreatureAI*)Maiev_BTattu_AI;
+}
+
+/*#####
+# npc_akama_BT_attu
+######*/
+
+struct TRINITY_DLL_DECL npc_akama_BT_attuAI : public npc_escortAI
+{
+    npc_akama_BT_attuAI(Creature* c) : npc_escortAI(c) {}
+
+    bool moving;
+    bool yell;
+    bool say;
+    uint32 ChainLightning;
+    uint32 YellCounter;
+    uint32 KillSayTimer;
+
+    void Reset()
+    {
+        ChainLightning = 1000;
+        moving = false;
+        say = false;
+        yell = false;
+    }
+
+    void MoveInLineOfSight(Unit* who)
+    {
+        if(!m_creature->isInCombat() && (who->GetEntry() == 22988 || who->GetEntry() == 23152) && m_creature->GetDistance(who) <= 20)
+            m_creature->AI()->AttackStart(who);
+    }
+
+    void WaypointReached(uint32 id)
+    {
+        if(id == 2)
+            DoYell(AKAMA_START, 0, 0);
+        if(id == 4)
+        {
+            yell = true;
+            YellCounter = 10000;
+        }
+        if(id == 7)
+        {
+            say = true;
+            KillSayTimer = 3000;
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        npc_escortAI::UpdateAI(diff);
+
+        if(yell && YellCounter < diff)
+        {
+            DoYell(AKAMA_YELL, 0, 0);
+            yell = false;
+        }
+        else
+            YellCounter -= diff;
+
+        if(say && KillSayTimer < diff)
+        {
+            DoSay(AKAMA_KILL, 0, 0);
+            say = false;
+        }
+        else
+            KillSayTimer -= diff;
+
+        if(!moving)
+        {
+            if(!HasEscortState(STATE_ESCORT_ESCORTING))
+                npc_escortAI::Start(true, true);
+            moving = true;
+        }
+
+        if(UpdateVictim())
+        {
+            if(ChainLightning < diff)
+            {
+                DoCast(m_creature->getVictim(), CHAIN_LIGHTNING);
+                ChainLightning = urand(5000, 10000);
+            }
+            else
+                ChainLightning -= diff;
+        }
+    }
+
+};
+
+CreatureAI* GetAI_npc_akama_BT_attu(Creature *_Creature)
+{
+    npc_akama_BT_attuAI* Akama_BTattu_AI = new npc_akama_BT_attuAI (_Creature);
+
+    for(uint32 i = 0; i < 3; ++i)
+    {
+        Akama_BTattu_AI->AddWaypoint(i+1, AkamaWaypoint[i][0], AkamaWaypoint[i][1], AkamaWaypoint[i][2]);
+    }
+    Akama_BTattu_AI->AddWaypoint(4, AkamaWaypoint[3][0], AkamaWaypoint[3][1], AkamaWaypoint[3][2], 15000);
+    for(uint32 i = 4; i < 6; ++i)
+    {
+        Akama_BTattu_AI->AddWaypoint(i+1, AkamaWaypoint[i][0], AkamaWaypoint[i][1], AkamaWaypoint[i][2]);
+    }
+    Akama_BTattu_AI->AddWaypoint(7, AkamaWaypoint[6][0], AkamaWaypoint[6][1], AkamaWaypoint[6][2], 5000);
+    for(uint32 i = 7; i < 10; ++i)
+    {
+        Akama_BTattu_AI->AddWaypoint(i+1, AkamaWaypoint[i][0], AkamaWaypoint[i][1], AkamaWaypoint[i][2]);
+    }
+    return (CreatureAI*)Akama_BTattu_AI;
+}
+
+/*#####
+# npc_ashtongue_deathsworn
+######*/
+
+struct TRINITY_DLL_DECL npc_ashtongue_deathswornAI : public npc_escortAI
+{
+    npc_ashtongue_deathswornAI(Creature* c) : npc_escortAI(c) {}
+
+    uint32 AttackTimer;
+    bool intro;
+
+    void Reset()
+    {
+        if(!HasEscortState(STATE_ESCORT_ESCORTING))
+        {
+            AttackTimer = 25000;
+            intro = false;
+        }
+    }
+
+    void MoveInLineOfSight(Unit* who)
+    {
+        if(!m_creature->isInCombat() && (who->GetEntry() == 22988 || who->GetEntry() == 23152 || who->GetEntry() == 21166) && m_creature->GetDistance(who) <= 30)
+            m_creature->AI()->AttackStart(who);
+    }
+
+    void WaypointReached(uint32) { }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!intro && AttackTimer < diff)
+        {
+            intro = true;
+            if(!HasEscortState(STATE_ESCORT_ESCORTING))
+                npc_escortAI::Start(true, true);
+        }
+        else
+            AttackTimer -= diff;
+
+        npc_escortAI::UpdateAI(diff);
+    }
+};
+
+CreatureAI* GetAI_npc_ashtongue_deathsworn(Creature *_Creature)
+{
+    npc_ashtongue_deathswornAI* Deathsworn_AI = new npc_ashtongue_deathswornAI (_Creature);
+
+    for(uint32 i = 0; i < 8; ++i)
+    {
+        Deathsworn_AI->AddWaypoint(i+2, DeathswornWaypoint[i][0], DeathswornWaypoint[i][1], DeathswornWaypoint[i][2]);
+    }
+    return (CreatureAI*)Deathsworn_AI;
+}
+
+/*#####
+# mob_vagath
+######*/
+
+struct TRINITY_DLL_DECL mob_vagathAI : public ScriptedAI
+{
+    mob_vagathAI(Creature* c) : ScriptedAI(c) {}
+
+    void Reset()
+    {
+        DoYell(VAGATH_INTRO, 0, 0);
+    }
+
+    void EnterCombat(Unit* who)
+    {
+        DoYell(VAGATH_AGGRO, 0, 0);
+    }
+
+    void JustDied(Unit* killer)
+    {
+        DoYell(VAGATH_DEATH, 0, 0);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(UpdateVictim())
+            DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_vagath(Creature* _Creature)
+{
+    return new mob_vagathAI(_Creature);
+}
+
+/*#####
+# mob_illidari_shadowlord
+######*/
+
+struct TRINITY_DLL_DECL mob_illidari_shadowlordAI : public ScriptedAI
+{
+    mob_illidari_shadowlordAI(Creature* c) : ScriptedAI(c) {}
+
+    uint32 CarrionSwarm;
+    uint32 Inferno;
+    uint32 Sleep;
+
+    void Reset()
+    {
+        CarrionSwarm = urand(4000, 10000);
+        Inferno = urand(6000, 15000);
+        Sleep = urand(2000, 30000);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(UpdateVictim())
+        {
+            if(CarrionSwarm < diff)
+            {
+                DoCast(m_creature->getVictim(), SPELL_CARRION_SWARM);
+                CarrionSwarm = urand(8000, 16000);
+            }
+            else
+                CarrionSwarm -= diff;
+
+            if(Inferno < diff)
+            {
+                DoCast(m_creature->getVictim(), SPELL_INFERNO);
+                Inferno = urand(35000, 50000);
+            }
+            else
+                Inferno -= diff;
+
+            if(Sleep < diff)
+            {
+                if(!urand(0, 3))
+                    DoCast(m_creature->getVictim(), SPELL_SLEEP);
+                Sleep = 60000;
+            }
+            else
+                Sleep -= diff;
+
+            DoMeleeAttackIfReady();
+        }
+    }
+};
+
+CreatureAI* GetAI_mob_illidari_shadowlord(Creature* _Creature)
+{
+    return new mob_illidari_shadowlordAI(_Creature);
+}
+
+/*#####
+# npc_xiri
+######*/
+
+struct TRINITY_DLL_DECL npc_xiriAI : public Scripted_NoMovementAI
+{
+    npc_xiriAI(Creature* c) : Scripted_NoMovementAI(c) {}
+
+    bool EventStarted;
+    uint64 PlayerGUID;
+    uint32 QuestTimer;
+
+    void Reset()
+    {
+        QuestTimer = 140000;
+        PlayerGUID = 0;
+        EventStarted = false;
+    }
+
+    void StartEvent()
+    {
+        DoPlaySoundToSet(m_creature,BLACK_TEMPLE_PRELUDE_MUSIC);
+        SummonEnemies();
+        SummonAttackers();
+        DoCast(m_creature, SPELL_LIGHT_OF_THE_NAARU_1);
+        EventStarted = true;
+    }
+
+    void SummonEnemies()
+    {
+        //Summon Shadowlords
+        for(uint32 i = 0; i < 6; i++)
+            m_creature->SummonCreature(MOB_ILLIDARI_SHADOWLORD, ShadowlordPos[i][0], ShadowlordPos[i][1], ShadowlordPos[i][2], ShadowlordPos[i][3], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);
+        //Summon Vagath
+        m_creature->SummonCreature(MOB_VAGATH, Vagath[0], Vagath[1], Vagath[2], Vagath[3], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 30000);
+    }
+
+    void SummonAttackers()
+    {
+        //Summon Akama
+        m_creature->SummonCreature(NPC_AKAMA_BT, AkamaBT[0], AkamaBT[1], AkamaBT[2], AkamaBT[3], TEMPSUMMON_CORPSE_DESPAWN, 0);
+        //Summon Maiev
+        m_creature->SummonCreature(NPC_MAIEV_SHADOWSONG, MaievBT[0], MaievBT[1], MaievBT[2], MaievBT[3], TEMPSUMMON_CORPSE_DESPAWN, 0);
+        //Summon Ashtongue Deathsworns
+        for(uint32 i = 0; i < 8; ++i)
+        {
+            Unit* DeathswornAttacker = m_creature->SummonCreature(NPC_ASHTONGUE_DEATHSWORN, Deathsworn[i][0], Deathsworn[i][1], Deathsworn[i][2], Deathsworn[i][3], TEMPSUMMON_CORPSE_DESPAWN, 0);
+            if(DeathswornAttacker)
+            {
+                if(DeathswornAttacker->HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))
+                    DeathswornAttacker->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+                DeathswornAttacker->GetMotionMaster()->MovePoint(1, DeathswornPath[i][0], DeathswornPath[i][1], DeathswornPath[i][2]);
+            }
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(EventStarted)
+        {
+            if(QuestTimer < diff)
+            {
+                Player* pl = m_creature->GetPlayer(PlayerGUID);
+                if(pl && pl->GetQuestStatus(10985) == QUEST_STATUS_INCOMPLETE)
+                    pl->GroupEventHappens(10985, m_creature);
+                Reset();
+            }
+            else
+                QuestTimer -= diff;
+        }
+        
+    }
+};
+
+CreatureAI* GetAI_npc_xiri(Creature *_Creature)
+{
+    return new npc_xiriAI (_Creature);
+}
+
+/*#####
+# Xi'ri gossips
+######*/
+
+bool GossipHello_npc_xiri(Player *player, Creature *_Creature)
+{
+    bool EventStarted = ((npc_xiriAI*)_Creature->AI())->EventStarted;
+
+    if(EventStarted)
+        return false;
+
+    if (_Creature->isQuestGiver())
+        player->PrepareQuestMenu( _Creature->GetGUID() );
+
+    if (player->GetQuestStatus(10985) == QUEST_STATUS_INCOMPLETE)
+    {
+        player->ADD_GOSSIP_ITEM( 0, XIRI_GOSSIP_HELLO, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+        player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+    }
+    else
+        player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+
+    return true;
+}
+
+bool GossipSelect_npc_xiri(Player *player, Creature *_Creature, uint32 sender, uint32 action)
+{
+    switch(action)
+    {
+        case GOSSIP_ACTION_INFO_DEF:
+            player->CLOSE_GOSSIP_MENU();
+            ((npc_xiriAI*)_Creature->AI())->StartEvent();
+            ((npc_xiriAI*)_Creature->AI())->PlayerGUID = player->GetGUID();
+            break;
+    }
+    return true;
+}
+
 void AddSC_shadowmoon_valley()
 {
     Script *newscript;
@@ -2709,6 +3286,38 @@ void AddSC_shadowmoon_valley()
     newscript = new Script;
     newscript->Name="felfire_summoner";
     newscript->GetAI = &GetAI_felfire_summoner;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_maiev_BT_attu";
+    newscript->GetAI = &GetAI_npc_maiev_BT_attu;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_akama_BT_attu";
+    newscript->GetAI = &GetAI_npc_akama_BT_attu;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_ashtongue_deathsworn";
+    newscript->GetAI = &GetAI_npc_ashtongue_deathsworn;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="mob_vagath";
+    newscript->GetAI = &GetAI_mob_vagath;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="mob_illidari_shadowlord";
+    newscript->GetAI = &GetAI_mob_illidari_shadowlord;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_xiri";
+    newscript->pGossipHello =  &GossipHello_npc_xiri;
+    newscript->pGossipSelect = &GossipSelect_npc_xiri;
+    newscript->GetAI = &GetAI_npc_xiri;
     newscript->RegisterSelf();
 }
 
