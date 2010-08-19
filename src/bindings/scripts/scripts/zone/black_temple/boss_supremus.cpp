@@ -262,6 +262,8 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
                 if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, 100, true, m_creature->getVictim()))
                 {
                     DoResetThreat();
+                    m_creature->getThreatManager().setCurrentVictim((HostilReference*)target);
+                    m_creature->AI()->AttackStart(target);
                     m_creature->AddThreat(target, 5000000.0f);
                     DoScriptText(EMOTE_NEW_TARGET, m_creature, 0, true);
                     SwitchTargetTimer = 10000;

@@ -279,7 +279,7 @@ struct TRINITY_DLL_DECL mob_coilskar_harpoonerAI : public ScriptedAI
         {
             if(!target->HasAura(40084, 0))
             {
-                DoCast(target, SPELL_HARPOONERS_MARK, true);
+                DoCast(target, SPELL_HARPOONERS_MARK, false);
                 MarkTargetGUID = target->GetGUID();     //constant target for Mark per creature, selected at aggro
             }
         }
