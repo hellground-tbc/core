@@ -30,8 +30,8 @@
 void
 HomeMovementGenerator<Creature>::Finalize(Creature & owner)
 {
-    //if (owner.IsAIEnabled)
-    //    owner.AI()->Reset();
+    if (owner.IsAIEnabled)
+        owner.AI()->MovementInform(HOME_MOTION_TYPE, RAND_MAX);
 }
 
 void

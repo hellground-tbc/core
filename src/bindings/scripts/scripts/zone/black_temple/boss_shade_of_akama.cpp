@@ -291,6 +291,24 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
         m_creature->GetPosition(wLoc);
     }
 
+    void EnterEvadeMode()
+    {
+        if(!_EnterEvadeMode())
+            return;
+
+        TurnOffChanneling();
+
+        sLog.outDebug("Creature %u enters evade mode.", me->GetEntry());
+        if(Unit *owner = me->GetCharmerOrOwner())
+        {
+            me->GetMotionMaster()->Clear(false);
+            me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, m_creature->GetFollowAngle(), MOTION_SLOT_ACTIVE);
+            Reset();
+        }
+        else
+             me->GetMotionMaster()->MoveTargetedHome();
+    }
+
     ScriptedInstance* pInstance;
 
     std::list<uint64> m_channelers;
@@ -467,6 +485,12 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
 
     void MovementInform(uint32 type, uint32 id)
     {
+        if (type == HOME_MOTION_TYPE)
+        {
+            Reset();
+            return;
+        }
+
         if (type != POINT_MOTION_TYPE)
             return;
 
