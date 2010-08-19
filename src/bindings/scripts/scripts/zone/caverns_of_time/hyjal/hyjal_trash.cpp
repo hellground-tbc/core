@@ -1509,7 +1509,9 @@ struct mob_gargoyleAI : public hyjal_trashAI
             {
                 if(StrikeTimer<diff)
                 {
-                    m_creature->CastSpell(DummyTarget[0],DummyTarget[1],DummyTarget[2],SPELL_GARGOYLE_STRIKE,false);
+                    Creature* dummyTarget = m_creature->SummonTrigger(DummyTarget[0],DummyTarget[1],DummyTarget[2], 0, 3000);
+                    if(dummyTarget)
+                        m_creature->CastSpell(dummyTarget,SPELL_GARGOYLE_STRIKE,false);
                     StrikeTimer = 2000+rand()%1000;
                 }
                 else
