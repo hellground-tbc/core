@@ -946,7 +946,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_skystalkerAI : public ScriptedAI
             }
             else
             {
-                if (m_creature->GetDistance(victim) < 10)
+                if (m_creature->GetDistance(victim) < 10 && !m_creature->IsNonMeleeSpellCasted(false))
                 {
                     DoResetThreat();
                     victim = GetNewTarget();
@@ -1067,7 +1067,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
             }
             else
             {
-                if (m_creature->GetDistance(victim) < 10)
+                if (m_creature->GetDistance(victim) < 10 && !m_creature->IsNonMeleeSpellCasted(false))
                 {
                     DoResetThreat();
                     victim = GetNewTarget();
@@ -1207,9 +1207,11 @@ struct TRINITY_DLL_DECL mob_illidari_fearbringerAI : public ScriptedAI
     uint32 flamesTimer;
     uint32 rainTimer;
     uint32 stompTimer;
+    uint32 checkTimer;
 
     void Reset()
     {
+        checkTimer = 2000;
         flamesTimer = 5000 + urand(0, 10000);
         rainTimer = 15000 + urand(0, 10000);
         stompTimer = 10000 + urand(0, 10000);
@@ -1226,6 +1228,13 @@ struct TRINITY_DLL_DECL mob_illidari_fearbringerAI : public ScriptedAI
         if(!UpdateVictim())
             return;
 
+        if(checkTimer < diff)
+        {
+            m_creature->SetSpeed(MOVE_RUN, 2.5);
+            checkTimer = 2000;
+        }
+        else
+            checkTimer -= diff;
         if (flamesTimer < diff)
         {
             AddSpellToCast(m_creature->getVictim(), SPELL_FEARBRINGER_ILLIDARI_FLAMES);
