@@ -412,6 +412,10 @@ void Creature::Update(uint32 diff)
     else
         m_GlobalCooldown -= diff;
 
+    if (m_respawnTime && m_deathState != DEAD)
+        sLog.outError("Creature %u has respawn time with deathstate %u", GetDBTableGUIDLow(), m_deathState);
+
+
     switch( m_deathState )
     {
         case JUST_ALIVED:

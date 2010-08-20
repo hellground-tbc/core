@@ -296,9 +296,8 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
         if(!_EnterEvadeMode())
             return;
 
-        TurnOffChanneling();
+        DespawnChannelersAndSorcerers();
 
-        sLog.outDebug("Creature %u enters evade mode.", me->GetEntry());
         if(Unit *owner = me->GetCharmerOrOwner())
         {
             me->GetMotionMaster()->Clear(false);
