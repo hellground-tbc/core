@@ -2164,6 +2164,12 @@ void Spell::EffectTriggerSpell(uint32 i)
     // special cases
     switch(triggered_spell_id)
     {
+        //Explosives with self-kill when triggered
+        case 3617:
+        {
+            if(m_caster->GetTypeId() == TYPEID_UNIT)
+                m_caster->Kill(m_caster, false);
+        }
         // Vanish
         case 18461:
         {
