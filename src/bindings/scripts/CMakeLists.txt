@@ -152,6 +152,7 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/coilfang_resevoir/slave_pens/instance_slave_pens.cpp
    scripts/zone/coilfang_resevoir/slave_pens/boss_lord_ahune.cpp
    scripts/zone/darkshore/darkshore.cpp
+   scripts/zone/desolace/desolace.cpp
    scripts/zone/deadmines/def_deadmines.h
    scripts/zone/deadmines/deadmines.cpp
    scripts/zone/dun_morogh/dun_morogh.cpp

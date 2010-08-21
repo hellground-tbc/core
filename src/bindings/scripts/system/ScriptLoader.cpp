@@ -215,6 +215,7 @@ extern void AddSC_instance_deadmines();
 
 //Deadwind pass
 //Desolace
+extern void AddSC_desolace();
 //Dire Maul
 //Dun Morogh
 extern void AddSC_dun_morogh();
@@ -781,13 +782,14 @@ void AddScripts()
     AddSC_boss_the_black_stalker();
 
     //Darkshore
-	AddSC_darkshore();
+    AddSC_darkshore();
     //Darnassus
     //Deadmines
     AddSC_instance_deadmines();
 
     //Deadwind pass
     //Desolace
+    AddSC_desolace();
     //Dire Maul
     //Dun Morogh
     AddSC_dun_morogh();
