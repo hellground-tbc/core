@@ -312,9 +312,7 @@ bool ChatHandler::HandleAccountSpecialLogCommand(const char* args)
     if(uint32 account_id = accmgr.GetId(args))
     {
         if(WorldSession *s = sWorld.FindSession(account_id))
-        {
             s->SetSpecialLog(!(s->SpecialLog()));
-        }
 
         LoginDatabase.PExecute("UPDATE account SET speciallog = !speciallog WHERE id = '%u'", account_id);
         PSendSysMessage("SpecialLog has been updated.");

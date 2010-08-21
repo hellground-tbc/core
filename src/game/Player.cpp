@@ -16206,10 +16206,9 @@ void Player::_SaveInventory()
         sLog.outError("Player::_SaveInventory - one or more errors occurred save aborted!");
         ChatHandler(this).SendSysMessage(LANG_ITEM_SAVE_FAILED);
         if(!GetSession()->SpecialLog())
-        {
             LoginDatabase.PExecute("UPDATE account SET speciallog = '1' WHERE id = '%u'", GetSession()->GetAccountId());
-            GetSession()->KickPlayer();
-        }
+
+        GetSession()->KickPlayer();
         return;
     }
 

@@ -3117,7 +3117,7 @@ bool InstanceMap::EncounterInProgress(Player *player)
 {
     if(!player->isGameMaster() && GetInstanceData() && GetInstanceData()->IsEncounterInProgress())
     {
-        sLog.outError("InstanceMap: Player '%s' can't enter instance '%s' while an encounter is in progress.", player->GetName(),GetMapName());
+        sLog.outDebug("InstanceMap: Player '%s' can't enter instance '%s' while an encounter is in progress.", player->GetName(),GetMapName());
         player->SendTransferAborted(GetId(),TRANSFER_ABORT_ZONE_IN_COMBAT);
         return true;
     }
@@ -3416,7 +3416,7 @@ void InstanceMap::SetResetSchedule(bool on)
     {
         InstanceSave *save = sInstanceSaveManager.GetInstanceSave(GetInstanceId());
         if(!save)
-            sLog.outError("InstanceMap::SetResetSchedule: cannot turn schedule %s, no save available for instance %d of %d", on ? "on" : "off", GetInstanceId(), GetId());
+            sLog.outError("InstanceMap::SetResetSchedule: cannot turn schedule %s, no save available for instance %d (mapid: %d)", on ? "on" : "off", GetInstanceId(), GetId());
         else
             sInstanceSaveManager.ScheduleReset(on, save->GetResetTime(), InstanceSaveManager::InstResetEvent(0, GetId(), GetInstanceId()));
     }

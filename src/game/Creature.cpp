@@ -2180,7 +2180,7 @@ bool Creature::LoadCreaturesAddon(bool reload)
             if(HasAura(cAura->spell_id,cAura->effect_idx))
             {
                 if(!reload)
-                    sLog.outErrorDb("Creature (GUIDLow: %u Entry: %u ) has duplicate aura (spell %u effect %u) in `auras` field.",GetGUIDLow(),GetEntry(),cAura->spell_id,cAura->effect_idx);
+                    sLog.outDebug("Creature (GUIDLow: %u Entry: %u ) has duplicate aura (spell %u effect %u) in `auras` field.",GetGUIDLow(),GetEntry(),cAura->spell_id,cAura->effect_idx);
 
                 continue;
             }
