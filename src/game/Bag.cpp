@@ -53,7 +53,7 @@ void Bag::AddToWorld()
         {
             if (m_bagslot[i] == this)
             {
-                sLog.outError("Bag has singned self in own slot: %u, bag size: %u, owner: " I64FMT, GetSlotByItemGUID(m_bagslot[i]->GetGUID()), GetBagSize(), GetOwnerGUID());
+                sLog.outError("Bag has self in slot: %u, bag size: %u, owner: " I64FMT, GetSlotByItemGUID(m_bagslot[i]->GetGUID()), GetBagSize(), GetOwnerGUID());
                 continue;
             }
             m_bagslot[i]->AddToWorld();
@@ -63,7 +63,7 @@ void Bag::AddToWorld()
 void Bag::RemoveFromWorld()
 {
     for(uint32 i = 0; i < GetBagSize(); ++i)
-        if(m_bagslot[i])
+        if(m_bagslot[i] && m_bagslot[i] != this)
             m_bagslot[i]->RemoveFromWorld();
 
     Item::RemoveFromWorld();

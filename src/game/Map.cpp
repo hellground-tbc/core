@@ -3415,8 +3415,10 @@ void InstanceMap::SetResetSchedule(bool on)
     if(!HavePlayers() && !IsRaid() && !IsHeroic())
     {
         InstanceSave *save = sInstanceSaveManager.GetInstanceSave(GetInstanceId());
-        if(!save) sLog.outError("InstanceMap::SetResetSchedule: cannot turn schedule %s, no save available for instance %d of %d", on ? "on" : "off", GetInstanceId(), GetId());
-        else sInstanceSaveManager.ScheduleReset(on, save->GetResetTime(), InstanceSaveManager::InstResetEvent(0, GetId(), GetInstanceId()));
+        if(!save)
+            sLog.outError("InstanceMap::SetResetSchedule: cannot turn schedule %s, no save available for instance %d of %d", on ? "on" : "off", GetInstanceId(), GetId());
+        else
+            sInstanceSaveManager.ScheduleReset(on, save->GetResetTime(), InstanceSaveManager::InstResetEvent(0, GetId(), GetInstanceId()));
     }
 }
 

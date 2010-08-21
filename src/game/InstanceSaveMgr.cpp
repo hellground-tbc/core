@@ -140,6 +140,7 @@ void InstanceSaveManager::RemoveInstanceSave(uint32 InstanceId)
         // save the resettime for normal instances only when they get unloaded
         if(time_t resettime = itr->second->GetResetTimeForDB())
             CharacterDatabase.PExecute("UPDATE instance SET resettime = '"UI64FMTD"' WHERE id = '%u'", (uint64)resettime, InstanceId);
+        
         InstanceSave *temp = itr->second;
         m_instanceSaveById.erase(itr);
         delete temp;
@@ -215,6 +216,7 @@ bool InstanceSave::UnloadIfEmpty()
     {
         if(!sInstanceSaveManager.lock_instLists)
             sInstanceSaveManager.RemoveInstanceSave(GetInstanceId());
+
         return false;
     }
     else
@@ -567,17 +569,28 @@ void InstanceSaveManager::_ResetSave(InstanceSaveHashMap::iterator &itr)
 void InstanceSaveManager::_ResetInstance(uint32 mapid, uint32 instanceId)
 {
     sLog.outDebug("InstanceSaveMgr::_ResetInstance %u, %u", mapid, instanceId);
+
     Map *map = (MapInstanced*)MapManager::Instance().CreateBaseMap(mapid);
     if(!map->Instanceable())
         return;
 
     InstanceSaveHashMap::iterator itr = m_instanceSaveById.find(instanceId);
-    if(itr != m_instanceSaveById.end()) _ResetSave(itr);
+    if(itr != m_instanceSaveById.end())
+    {
+        const MapEntry *mapEntry = sMapStore.LookupEntry(mapid);
+        if(mapEntry->IsRaid())
+            sLog.outError("Called _ResetInstance for mapid: %u, canreset: %B", mapid, itr->second->CanReset());
+
+        _ResetSave(itr);
+    }
+
     DeleteInstanceFromDB(instanceId);                       // even if save not loaded
 
     Map* iMap = ((MapInstanced*)map)->FindMap(instanceId);
-    if(iMap && iMap->IsDungeon()) ((InstanceMap*)iMap)->Reset(INSTANCE_RESET_RESPAWN_DELAY);
-    else objmgr.DeleteRespawnTimeForInstance(instanceId);   // even if map is not loaded
+    if(iMap && iMap->IsDungeon())
+        ((InstanceMap*)iMap)->Reset(INSTANCE_RESET_RESPAWN_DELAY);
+    else
+        objmgr.DeleteRespawnTimeForInstance(instanceId);   // even if map is not loaded
 }
 
 void InstanceSaveManager::_ResetOrWarnAll(uint32 mapid, bool warn, uint32 timeLeft)
