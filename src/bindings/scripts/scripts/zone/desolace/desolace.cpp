@@ -159,10 +159,8 @@ bool GossipHello_npc_aged_dying_ancient_kodo(Player* pPlayer, Creature* pCreatur
 
 bool GOHello_go_iruxos(Player *pPlayer, GameObject* pGO)
 {
-        std::cout << "Wchodzimy w Hello" << std::endl;
         if (pPlayer->GetQuestStatus(5381) == QUEST_STATUS_INCOMPLETE)
         {
-            std::cout << "Sumonujemy creature" << std::endl;
             Creature* Demon = pPlayer->SummonCreature(11876, pPlayer->GetInnPosX(),pPlayer->GetInnPosY(),pPlayer->GetInnPosZ(),0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,10000);
             if(Demon)
             {
@@ -260,5 +258,4 @@ void AddSC_desolace()
     newscript->GetAI = &GetAI_npc_dalinda;
     newscript->pQuestAccept = &QuestAccept_npc_dalinda;
     newscript->RegisterSelf();
-
 }
