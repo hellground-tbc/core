@@ -1509,14 +1509,14 @@ void WorldSession::HandleResetInstancesOpcode( WorldPacket & /*recv_data*/ )
                 if(mapEntry->IsRaid())
                 {
                     sLog.outError("WorldSession::HandleResetInstancesOpcode: player %d tried to reset instances while player %d inside raid instance!", _player->GetGUIDLow(), pl->GetGUIDLow());
-                    _player->SendResetInstanceFailed(0, pl->GetMapId());
+                    //_player->SendResetInstanceFailed(0, pl->GetMapId());
                     return;
                 }
             }
             else
             {
                 sLog.outError("WorldSession::HandleResetInstancesOpcode: player %d tried to reset instances while player %d offline!", _player->GetGUIDLow(), citr->guid);
-                _player->SendResetInstanceFailed(0, pl->GetMapId());
+                //_player->SendResetInstanceFailed(0, pl->GetMapId());
                 return;
             }
         }
