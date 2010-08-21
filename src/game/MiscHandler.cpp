@@ -1496,33 +1496,33 @@ void WorldSession::HandleTimeSyncResp( WorldPacket & recv_data )
 void WorldSession::HandleResetInstancesOpcode( WorldPacket & /*recv_data*/ )
 {
     sLog.outDebug("WORLD: CMSG_RESET_INSTANCES");
-    if (Group *pGroup = _player->GetGroup())
+    if(Group *pGroup = _player->GetGroup())
     {
-        std::list<GroupMemberSlot> memberSlotList = pGroup->GetMemberSlots();
+        if(!pGroup->IsLeader(_player->GetGUID()))
+            return;
 
+        std::list<GroupMemberSlot> memberSlotList = pGroup->GetMemberSlots();
         for(std::list<GroupMemberSlot>::const_iterator citr = memberSlotList.begin(); citr != memberSlotList.end(); ++citr)
         {
-            Player * pl = objmgr.GetPlayer(citr->guid);
-            if (pl)
+            if(Player *pl = objmgr.GetPlayer(citr->guid))
             {
                 const MapEntry *mapEntry = sMapStore.LookupEntry(pl->GetMapId());
                 if(mapEntry->IsRaid())
                 {
                     sLog.outError("WorldSession::HandleResetInstancesOpcode: player %d tried to reset instances while player %d inside raid instance!", _player->GetGUIDLow(), pl->GetGUIDLow());
-                    //_player->SendResetInstanceFailed(0, pl->GetMapId());
+                    _player->SendResetInstanceFailed(0, pl->GetMapId());
                     return;
                 }
             }
             else
             {
                 sLog.outError("WorldSession::HandleResetInstancesOpcode: player %d tried to reset instances while player %d offline!", _player->GetGUIDLow(), citr->guid);
-                //_player->SendResetInstanceFailed(0, pl->GetMapId());
+                //_player->SendResetInstanceFailed(0, /* mapid pl ktorego nie ma ;] */);
                 return;
             }
         }
 
-        if(pGroup->IsLeader(_player->GetGUID()))
-            pGroup->ResetInstances(INSTANCE_RESET_ALL, _player);
+        pGroup->ResetInstances(INSTANCE_RESET_ALL, _player);
     }
     else
         _player->ResetInstances(INSTANCE_RESET_ALL);

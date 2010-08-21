@@ -1492,17 +1492,14 @@ void Aura::TriggerSpell()
                     case 30427:
                     {
                         // move loot to player inventory and despawn target
-                        if(caster->GetTypeId() ==TYPEID_PLAYER &&
-                                target->GetTypeId() == TYPEID_UNIT &&
-                                ((Creature*)target)->GetCreatureInfo()->type == CREATURE_TYPE_GAS_CLOUD)
+                        if(caster->GetTypeId() ==TYPEID_PLAYER && target->GetTypeId() == TYPEID_UNIT && ((Creature*)target)->GetCreatureInfo()->type == CREATURE_TYPE_GAS_CLOUD)
                         {
                             Player* player = (Player*)caster;
                             Creature* creature = (Creature*)target;
                             // missing lootid has been reported on startup - just return
                             if (!creature->GetCreatureInfo()->SkinLootId)
-                            {
                                 return;
-                            }
+
                             Loot *loot = &creature->loot;
                             loot->clear();
                             loot->FillLoot(creature->GetCreatureInfo()->SkinLootId, LootTemplates_Skinning, NULL);
@@ -1520,9 +1517,8 @@ void Aura::TriggerSpell()
                                 else
                                     player->SendEquipError( msg, NULL, NULL );
                             }
-                            creature->setDeathState(JUST_DIED);
+                            creature->Kill(creature, false);
                             creature->RemoveCorpse();
-                            creature->SetHealth(0);         // just for nice GM-mode view
                         }
                         return;
                         break;
