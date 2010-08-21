@@ -46,7 +46,7 @@ void LoadDatabase()
         pSystemMgr.LoadVersion();
         pSystemMgr.LoadScriptTexts();
         pSystemMgr.LoadScriptTextsCustom();
-        // pSystemMgr.LoadScriptWaypoints(); [TZERO] to implement
+        pSystemMgr.LoadScriptWaypoints(); //[TZERO] to implement
     }
     else
     {
