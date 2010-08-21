@@ -47,6 +47,7 @@
 #include "SocialMgr.h"
 #include "CellImpl.h"
 #include "AccountMgr.h"
+#include "Group.h"
 
 void WorldSession::HandleRepopRequestOpcode( WorldPacket & /*recv_data*/ )
 {
@@ -567,12 +568,12 @@ void WorldSession::HandleAddFriendOpcodeCallBack(QueryResult_AutoPtr result, uin
     uint64 friendAcctid;
     uint32 team;
     FriendsResult friendResult;
- 
+
     WorldSession * session = sWorld.FindSession(accountId);
 
     if(!session || !session->GetPlayer())
         return;
- 
+
     friendResult = FRIEND_NOT_FOUND;
     friendGuid = 0;
 
@@ -655,12 +656,12 @@ void WorldSession::HandleAddIgnoreOpcodeCallBack(QueryResult_AutoPtr result, uin
 {
     uint64 IgnoreGuid;
     FriendsResult ignoreResult;
- 
+
     WorldSession * session = sWorld.FindSession(accountId);
 
     if(!session || !session->GetPlayer())
         return;
- 
+
     ignoreResult = FRIEND_IGNORE_NOT_FOUND;
     IgnoreGuid = 0;
 
@@ -677,7 +678,7 @@ void WorldSession::HandleAddIgnoreOpcodeCallBack(QueryResult_AutoPtr result, uin
             else
             {
                 ignoreResult = FRIEND_IGNORE_ADDED;
- 
+
                 // ignore list full
                 if(!session->GetPlayer()->GetSocial()->AddToSocialList(GUID_LOPART(IgnoreGuid), true))
                     ignoreResult = FRIEND_IGNORE_FULL;
@@ -1483,7 +1484,7 @@ void WorldSession::HandleTimeSyncResp( WorldPacket & recv_data )
         sLog.outDebug("Wrong time sync counter from player %s (cheater?)", _player->GetName());
 
     sLog.outDebug("Time sync received: counter %u, client ticks %u, time since last sync %u", counter, clientTicks, clientTicks - _player->m_timeSyncClient);
-    
+
     uint32 ourTicks = clientTicks + (getMSTime() - _player->m_timeSyncServer);
 
     // diff should be small
@@ -1497,6 +1498,29 @@ void WorldSession::HandleResetInstancesOpcode( WorldPacket & /*recv_data*/ )
     sLog.outDebug("WORLD: CMSG_RESET_INSTANCES");
     if (Group *pGroup = _player->GetGroup())
     {
+        std::list<GroupMemberSlot> memberSlotList = pGroup->GetMemberSlots();
+
+        for(std::list<GroupMemberSlot>::const_iterator citr = memberSlotList.begin(); citr != memberSlotList.end(); ++citr)
+        {
+            Player * pl = objmgr.GetPlayer(citr->guid);
+            if (pl)
+            {
+                const MapEntry *mapEntry = sMapStore.LookupEntry(pl->GetMapId());
+                if(mapEntry->IsRaid())
+                {
+                    sLog.outError("WorldSession::HandleResetInstancesOpcode: player %d tried to reset instances while player %d inside raid instance!", _player->GetGUIDLow(), pl->GetGUIDLow());
+                    _player->SendResetInstanceFailed(0, pl->GetMapId());
+                    return;
+                }
+            }
+            else
+            {
+                sLog.outError("WorldSession::HandleResetInstancesOpcode: player %d tried to reset instances while player %d offline!", _player->GetGUIDLow(), citr->guid);
+                _player->SendResetInstanceFailed(0, pl->GetMapId());
+                return;
+            }
+        }
+
         if(pGroup->IsLeader(_player->GetGUID()))
             pGroup->ResetInstances(INSTANCE_RESET_ALL, _player);
     }
@@ -1535,6 +1559,29 @@ void WorldSession::HandleDungeonDifficultyOpcode( WorldPacket & recv_data )
     Group *pGroup = _player->GetGroup();
     if(pGroup)
     {
+        std::list<GroupMemberSlot> memberSlotList = pGroup->GetMemberSlots();
+
+        for(std::list<GroupMemberSlot>::const_iterator citr = memberSlotList.begin(); citr != memberSlotList.end(); ++citr)
+        {
+            Player * pl = objmgr.GetPlayer(citr->guid);
+            if (pl)
+            {
+                const MapEntry *mapEntry = sMapStore.LookupEntry(pl->GetMapId());
+                if(mapEntry->IsRaid())
+                {
+                    sLog.outError("WorldSession::HandleDungeonDifficultyOpcode: player %d tried to change difficulty while player %d inside raid instance!", _player->GetGUIDLow(), pl->GetGUIDLow());
+                    ChatHandler(this).SendSysMessage(LANG_CHANGE_DIFFICULTY_INSIDE);
+                    return;
+                }
+            }
+            else
+            {
+                sLog.outError("WorldSession::HandleDungeonDifficultyOpcode: player %d tried to change difficulty while player %d offline!", _player->GetGUIDLow(), citr->guid);
+                ChatHandler(this).SendSysMessage(LANG_CHANGE_DIFFICULTY_OFFLINE);
+                return;
+            }
+        }
+
         if(pGroup->IsLeader(_player->GetGUID()))
         {
             // the difficulty is set even if the instances can't be reset

@@ -102,7 +102,7 @@ bool Group::Create(const uint64 &guid, const char * name)
     m_looterGuid = guid;
 
     m_difficulty = DIFFICULTY_NORMAL;
-    
+
     if(!isBGGroup())
     {
         Player *leader = objmgr.GetPlayer(guid);
@@ -176,7 +176,7 @@ bool Group::LoadGroupFromDB(const uint64 &leaderGuid, QueryResult_AutoPtr result
         {
             LoadMemberFromDB((*result)[0].GetUInt32(), (*result)[2].GetUInt8(), (*result)[1].GetBool());
         } while( result->NextRow() );
-        
+
         // group too small
         if(GetMembersCount() < 2)
             return false;
@@ -186,7 +186,7 @@ bool Group::LoadGroupFromDB(const uint64 &leaderGuid, QueryResult_AutoPtr result
 
 bool Group::LoadMemberFromDB(uint32 guidLow, uint8 subgroup, bool assistant)
 {
-    MemberSlot member;
+    GroupMemberSlot member;
     member.guid      = MAKE_NEW_GUID(guidLow, 0, HIGHGUID_PLAYER);
 
     // skip non-existed member
@@ -379,7 +379,7 @@ void Group::CheckLeader(const uint64 &guid, bool isLogout)
         if(!isLogout && !m_leaderLogoutTime) //normal member logins
         {
             Player *leader = NULL;
-            
+
             //find the leader from group members
             for(GroupReference *itr = GetFirstMember(); itr != NULL; itr = itr->next())
             {
@@ -962,12 +962,12 @@ void Group::SendUpdate()
         {
             if(citr->guid == citr2->guid)
                 continue;
-            
+
             Player* member = objmgr.GetPlayer(citr2->guid);
             uint8 onlineState = MEMBER_STATUS_OFFLINE; //by default members are offline
             if(member && (!member->GetSession()->PlayerLogout()))
                 onlineState = MEMBER_STATUS_ONLINE; //when player is login out member exists.
-            
+
             // onlineState = onlineState | ((isBGGroup()) ? MEMBER_STATUS_PVP : 0);
 
             data << citr2->name;
@@ -1002,7 +1002,7 @@ void Group::Update(time_t diff)
     if (m_leaderLogoutTime)
     {
         time_t thisTime = time(NULL);
-    
+
         if (thisTime > m_leaderLogoutTime + sWorld.getConfig(CONFIG_GROUPLEADER_RECONNECT_PERIOD))
         {
             ChangeLeaderToFirstOnlineMember();
@@ -1100,7 +1100,7 @@ bool Group::_addMember(const uint64 &guid, const char* name, bool isAssistant, u
 
     Player *player = objmgr.GetPlayer(guid);
 
-    MemberSlot member;
+    GroupMemberSlot member;
     member.guid      = guid;
     member.name      = name;
     member.group     = group;
@@ -1543,11 +1543,11 @@ void Group::ResetInstances(uint8 method, Player* SendMsgTo)
                 p->DeleteFromDB();
             else
                 CharacterDatabase.PExecute("DELETE FROM group_instance WHERE instance = '%u'", p->GetInstanceId());
-            
+
             // i don't know for sure if hash_map iterators
             m_boundInstances[dif].erase(itr);
             itr = m_boundInstances[dif].begin();
-            
+
             // this unloads the instance save unless online players are bound to it
             // (eg. permanent binds or GM solo binds)
             p->RemoveGroup(this);
@@ -1598,7 +1598,7 @@ InstanceGroupBind* Group::BindToInstance(InstanceSave *save, bool permanent, boo
         bind.perm = permanent;
         if(!load)
             sLog.outDebug("Group::BindToInstance: %d is now bound to map %d, instance %d, difficulty %d", GUID_LOPART(GetLeaderGUID()), save->GetMapId(), save->GetInstanceId(), save->GetDifficulty());
-        
+
         return &bind;
     }
     else
@@ -1612,7 +1612,7 @@ void Group::UnbindInstance(uint32 mapid, uint8 difficulty, bool unload)
     {
         if(!unload)
             CharacterDatabase.PExecute("DELETE FROM group_instance WHERE leaderGuid = '%u' AND instance = '%u'", GUID_LOPART(GetLeaderGUID()), itr->second.save->GetInstanceId());
-       
+
         CharacterDatabase.PExecute("DELETE FROM group_saved_loot WHERE instanceId='%u'", (*itr).second.save->GetInstanceId());
         itr->second.save->RemoveGroup(this);                // save can become invalid
         m_boundInstances[difficulty].erase(itr);
