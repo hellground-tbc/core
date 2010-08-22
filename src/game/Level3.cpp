@@ -4284,7 +4284,7 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     {
         SendSysMessage(LANG_NPCINFO_TRAINER);
     }
-    PSendSysMessage("m_isDeadByDefault: %i", (int)m_isDeadByDefault);
+    PSendSysMessage("m_isDeadByDefault: %i", (int)target->m_isDeadByDefault);
 
     return true;
 }
