@@ -412,9 +412,10 @@ void Creature::Update(uint32 diff)
     else
         m_GlobalCooldown -= diff;
 
-    if (m_respawnTime && m_deathState != DEAD)
-        sLog.outError("Creature %u has respawn time with deathstate %u", GetDBTableGUIDLow(), m_deathState);
-
+    if (this->GetRespawnTimeEx()-time(NULL) > this->GetRespawnDelay())
+    {
+        sLog.outDebug("Creature %u has respawn greater than RespawnDelay!", GetDBTableGUIDLow());
+    }
 
     switch( m_deathState )
     {
@@ -2361,7 +2362,8 @@ void Creature::GetRespawnCoord( float &x, float &y, float &z, float* ori, float*
 
 void Creature::AllLootRemovedFromCorpse()
 {
-    if (!HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE))
+    // for test
+    //if (!HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE))
     {
         uint32 nDeathTimer;
 
