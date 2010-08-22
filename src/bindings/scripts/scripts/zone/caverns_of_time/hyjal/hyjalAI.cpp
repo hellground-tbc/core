@@ -306,7 +306,7 @@ float HordeFirePos[65][8]=//spawn points for the fire visuals (GO) in the horde 
     {5545.43,    -2647.82,    1483.05,    5.38848,    0,    0,    0.432578,    -0.901596}
 };
 
-hyjalAI::hyjalAI(Creature *c) : npc_escortAI(c), Summons(m_creature)
+hyjalAI::hyjalAI(Creature *c) : npc_escortAI(c), Summons(m_creature), TempSummons(m_creature)
 {
     pInstance = ((ScriptedInstance*)c->GetInstanceData());
     VeinsSpawned[0] = false;
@@ -326,16 +326,25 @@ hyjalAI::hyjalAI(Creature *c) : npc_escortAI(c), Summons(m_creature)
     DoHide = false;
     MassTeleportTimer = 0;
     DoMassTeleport = false;
+
+    //Initialize spells
+    memset(Spell, 0, sizeof(Spell));
 }
 
 void hyjalAI::JustSummoned(Creature *summoned)
 {
-    Summons.Summon(summoned);
+    if(summoned->GetEntry() == 17854 || summoned->GetEntry() == 18001)
+        TempSummons.Summon(summoned);
+    else
+        Summons.Summon(summoned);
 }
 
 void hyjalAI::SummonedCreatureDespawn(Creature* summoned)
 {
-    Summons.Despawn(summoned);
+    if(summoned->GetEntry() == 17854 || summoned->GetEntry() == 18001)
+        TempSummons.Despawn(summoned);
+    else
+        Summons.Despawn(summoned);
 }
 
 void hyjalAI::Reset()
@@ -384,11 +393,6 @@ void hyjalAI::Reset()
     //Flags
     m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
 
-    //Initialize spells
-    memset(Spell, 0, sizeof(Spell));
-
-
-
     //Reset Instance Data for trash count
     if(pInstance)
     {
@@ -423,10 +427,17 @@ void hyjalAI::EnterEvadeMode()
 
 void hyjalAI::EnterCombat(Unit *who)
 {
-    if(IsDummy)return;
+    if(IsDummy)
+        return;
+    
     for(uint8 i = 0; i < 2; ++i)
-        if(Spell[i].Cooldown)
-            SpellTimer[i] = Spell[i].Cooldown;
+    {
+        
+        if(Spell[i].CooldownStart)
+            SpellTimer[i] = Spell[i].CooldownStart;
+        else if(Spell[i].CooldownMin)
+            SpellTimer[i] = Spell[i].CooldownMin + rand() % (Spell[i].CooldownMax - Spell[i].CooldownMin);
+    }
 
     Talk(ATTACKED);
 }
@@ -917,7 +928,10 @@ void hyjalAI::UpdateAI(const uint32 diff)
         CheckTimer -= diff;
 
     if(!UpdateVictim())
+    {
+        TempSummons.DespawnAll();
         return;
+    }
 
     for(uint8 i = 0; i < 3; ++i)
     {
@@ -925,8 +939,8 @@ void hyjalAI::UpdateAI(const uint32 diff)
         {
             if(SpellTimer[i] < diff)
             {
-                if(m_creature->IsNonMeleeSpellCasted(false))
-                    m_creature->InterruptNonMeleeSpells(false);
+                //if(m_creature->IsNonMeleeSpellCasted(false))
+                    //m_creature->InterruptNonMeleeSpells(false);
 
                 Unit* target = NULL;
 
@@ -939,8 +953,8 @@ void hyjalAI::UpdateAI(const uint32 diff)
 
                 if(target && target->isAlive())
                 {
-                    DoCast(target, Spell[i].SpellId);
-                    SpellTimer[i] = Spell[i].Cooldown;
+                    AddSpellToCast(target, Spell[i].SpellId);
+                    SpellTimer[i] = Spell[i].CooldownMin + rand() % (Spell[i].CooldownMax - Spell[i].CooldownMin);
                 }
             }
             else
@@ -948,6 +962,7 @@ void hyjalAI::UpdateAI(const uint32 diff)
         }
     }
 
+    CastNextSpellIfAnyAndReady();
     DoMeleeAttackIfReady();
 }
 

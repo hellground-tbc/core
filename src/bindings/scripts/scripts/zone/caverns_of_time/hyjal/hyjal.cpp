@@ -49,17 +49,21 @@ CreatureAI* GetAI_npc_jaina_proudmoore(Creature *_Creature)
     ai->Reset();
     ai->EnterEvadeMode();
 
-    ai->Spell[0].SpellId = SPELL_BLIZZARD;
-    ai->Spell[0].Cooldown = 15000 + rand()%20000;
-    ai->Spell[0].TargetType = TARGETTYPE_RANDOM;
+    ai->Spell[0].SpellId = SPELL_SUMMON_ELEMENTALS;
+    ai->Spell[0].CooldownStart = 10000;
+    ai->Spell[0].CooldownMin = 100000;
+    ai->Spell[0].CooldownMax = 140000;
+    ai->Spell[0].TargetType = TARGETTYPE_SELF;
 
-    ai->Spell[1].SpellId = SPELL_PYROBLAST;
-    ai->Spell[1].Cooldown = 5500 + rand()%4000;
+    ai->Spell[1].SpellId = SPELL_BLIZZARD;
+    ai->Spell[1].CooldownMin = 15000;
+    ai->Spell[1].CooldownMax = 35000;
     ai->Spell[1].TargetType = TARGETTYPE_RANDOM;
 
-    ai->Spell[2].SpellId = SPELL_SUMMON_ELEMENTALS;
-    ai->Spell[2].Cooldown = 15000 + rand()%30000;
-    ai->Spell[2].TargetType = TARGETTYPE_SELF;
+    ai->Spell[2].SpellId = SPELL_PYROBLAST;
+    ai->Spell[2].CooldownMin = 5500;
+    ai->Spell[2].CooldownMax = 9000;
+    ai->Spell[2].TargetType = TARGETTYPE_RANDOM;
 
     return ai;
 }
@@ -117,13 +121,16 @@ CreatureAI* GetAI_npc_thrall(Creature *_Creature)
     ai->Reset();
     ai->EnterEvadeMode();
 
-    ai->Spell[0].SpellId = SPELL_CHAIN_LIGHTNING;
-    ai->Spell[0].Cooldown = 3000 + rand()%5000;
-    ai->Spell[0].TargetType = TARGETTYPE_VICTIM;
+    ai->Spell[1].SpellId = SPELL_CHAIN_LIGHTNING;
+    ai->Spell[1].CooldownMin = 3000;
+    ai->Spell[1].CooldownMax = 8000;
+    ai->Spell[1].TargetType = TARGETTYPE_VICTIM;
 
-    ai->Spell[1].SpellId = SPELL_SUMMON_DIRE_WOLF;
-    ai->Spell[1].Cooldown = 6000 + rand()%35000;
-    ai->Spell[1].TargetType = TARGETTYPE_RANDOM;
+    ai->Spell[0].SpellId = SPELL_SUMMON_DIRE_WOLF;
+    ai->Spell[0].CooldownStart = 9000;
+    ai->Spell[0].CooldownMin = 40000;
+    ai->Spell[0].CooldownMax = 80000;
+    ai->Spell[0].TargetType = TARGETTYPE_RANDOM;
 
     return ai;
 }

@@ -156,7 +156,9 @@ static Yells ThrallQuotes[]=
 typedef struct spells
 {
     uint32 SpellId;
-    uint32 Cooldown;
+    uint32 CooldownMin;
+    uint32 CooldownMax;
+    uint32 CooldownStart;
     uint32 TargetType;
 }spells;
 
@@ -226,6 +228,7 @@ struct TRINITY_DLL_DECL hyjalAI : public npc_escortAI
         bool VeinsSpawned[2];
         uint8 InfernalCount;
         SummonList Summons;
+        SummonList TempSummons;
         bool Overrun;
         bool Teleported;
         bool WaitForTeleport;
