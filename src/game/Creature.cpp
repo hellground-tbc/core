@@ -1663,9 +1663,11 @@ void Creature::setDeathState(DeathState s)
         if(m_formation && m_formation->getLeader() == this)
             m_formation->FormationReset(true);
 
-        // test
-        //if (canFly() && FallGround())
-        //    return;
+        if (canFly() && FallGround())
+        {
+            sLog.outDebug("Creature %u couldn't fall to ground level.", this->GetDBTableGUIDLow());
+            //return;
+        }
     }
     Unit::setDeathState(s);
 
@@ -1681,9 +1683,11 @@ void Creature::setDeathState(DeathState s)
                 SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
 
         // test
-        //if (canFly() && FallGround())
+        if (canFly() && FallGround())
+        {
+            sLog.outDebug("Creature %u couldn't fall to ground level.", this->GetDBTableGUIDLow());
         //    return;
-
+        }
         Unit::setDeathState(CORPSE);
     }
     if(s == JUST_ALIVED)
