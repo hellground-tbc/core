@@ -537,6 +537,9 @@ inline bool CreatureAI::UpdateVictim()
     if(!me->isInCombat())
         return false;
 
+    if(me->hasUnitState(UNIT_STAT_CASTING) && me->getVictim())
+        return me->getVictim();
+
     if(!me->HasReactState(REACT_PASSIVE))
     {
         if(Unit *victim = me->SelectVictim())
