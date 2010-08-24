@@ -266,6 +266,7 @@ struct TRINITY_DLL_DECL mob_towering_infernalAI : public ScriptedAI
     }
 
     uint32 CheckTimer;
+    uint32 WaitTimer;
     uint64 AnetheronGUID;
     ScriptedInstance* pInstance;
 
@@ -276,21 +277,7 @@ struct TRINITY_DLL_DECL mob_towering_infernalAI : public ScriptedAI
         m_creature->setFaction(1720);
         m_creature->ApplySpellImmune(2, IMMUNITY_MECHANIC, MECHANIC_BANISH, true);
         CheckTimer = 5000;
-    }
-
-    void EnterCombat(Unit *who)
-    {
-
-    }
-
-    void KilledUnit(Unit *victim)
-    {
-
-    }
-
-    void JustDied(Unit *victim)
-    {
-
+        WaitTimer = 3500;
     }
 
     void MoveInLineOfSight(Unit *who)
@@ -324,6 +311,12 @@ struct TRINITY_DLL_DECL mob_towering_infernalAI : public ScriptedAI
         //Return since we have no target
         if (!UpdateVictim())
             return;
+        
+        if(WaitTimer > diff)
+        {
+            WaitTimer -= diff;
+            return;
+        }
 
         DoMeleeAttackIfReady();
     }
