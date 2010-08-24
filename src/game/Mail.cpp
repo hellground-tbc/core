@@ -584,6 +584,9 @@ void WorldSession::HandleGetMail(WorldPacket & recv_data )
 
     for(PlayerMails::iterator itr = pl->GetmailBegin(); itr != pl->GetmailEnd(); ++itr)
     {
+        if(mails_count >= 254)
+            break;
+
         // skip deleted or not delivered (deliver delay not expired) mails
         if ((*itr)->state == MAIL_STATE_DELETED || cur_time < (*itr)->deliver_time)
             continue;
