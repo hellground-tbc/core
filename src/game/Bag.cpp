@@ -164,7 +164,7 @@ void Bag::StoreItem( uint8 slot, Item *pItem, bool /*update*/ )
         return;
     }
 
-    if( pItem )
+    if(pItem && pItem->GetGUID() != GetGUID())
     {
         m_bagslot[slot] = pItem;
         SetUInt64Value(CONTAINER_FIELD_SLOT_1 + (slot * 2), pItem->GetGUID());
