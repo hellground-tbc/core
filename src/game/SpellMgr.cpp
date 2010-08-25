@@ -2521,12 +2521,6 @@ void SpellMgr::LoadSpellCustomAttr()
         // Healthstones
         if(spellInfo->SpellFamilyName == SPELLFAMILY_WARLOCK && spellInfo->SpellFamilyFlags & 0x10000LL)
             spellInfo->SchoolMask = SPELL_SCHOOL_MASK_SHADOW;
-        // Earth Shield proc
-        else if (spellInfo->Id == 379)
-        {
-            spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
-            spellInfo->SchoolMask = SPELL_SCHOOL_MASK_NATURE;
-        }
 
         switch(i)
         {

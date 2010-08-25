@@ -6467,9 +6467,10 @@ void Aura::PeriodicTick()
             }
 
             // Mark of Kaz'rogal
-            if(GetId() == 31447 && m_target->GetPower(power) == 0)
+            if(GetId() == 31447 && m_target->GetMaxPower(POWER_MANA) && !m_target->GetPower(POWER_MANA))
             {
                 m_target->CastSpell(m_target, 31463, true, 0, this);
+                
                 // Remove aura
                 SetAuraDuration(0);
             }
