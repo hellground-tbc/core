@@ -4545,12 +4545,13 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
     SpellEntry const *dummySpell = triggeredByAura->GetSpellProto ();
     uint32 effIndex = triggeredByAura->GetEffIndex ();
 
-    Item* castItem = triggeredByAura->GetCastItemGUID() && GetTypeId()==TYPEID_PLAYER
+    Item* castItem = triggeredByAura->GetCastItemGUID() && GetTypeId() == TYPEID_PLAYER
         ? ((Player*)this)->GetItemByGuid(triggeredByAura->GetCastItemGUID()) : NULL;
 
     uint32 triggered_spell_id = 0;
     Unit* target = pVictim;
     int32 basepoints0 = 0;
+    uint64 originalCaster = 0;
 
     switch(dummySpell->SpellFamilyName)
     {
@@ -5646,7 +5647,8 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
             // Earth Shield
             if(dummySpell->SpellFamilyFlags==0x40000000000LL)
             {
-                // heal
+                // Now correctly uses the Shaman's own spell critical strike chance to determine the chance of a critical heal.
+                originalCaster = triggeredByAura->GetCasterGUID();
                 basepoints0 = triggeredByAura->GetModifier()->m_amount;
                 target = this;
                 triggered_spell_id = 379;
@@ -5754,11 +5756,11 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
         return false;
 
     if(basepoints0)
-        CastCustomSpell(target,triggered_spell_id,&basepoints0,NULL,NULL,true,castItem,triggeredByAura);
+        CastCustomSpell(target, triggered_spell_id, &basepoints0, NULL, NULL, true, castItem, triggeredByAura, originalCaster);
     else
-        CastSpell(target,triggered_spell_id,true,castItem,triggeredByAura);
+        CastSpell(target, triggered_spell_id, true, castItem, triggeredByAura, originalCaster);
 
-    if( cooldown && GetTypeId()==TYPEID_PLAYER )
+    if( cooldown && GetTypeId() == TYPEID_PLAYER )
         ((Player*)this)->AddSpellCooldown(triggered_spell_id,0,time(NULL) + cooldown);
 
     return true;
@@ -7772,7 +7774,8 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
     switch(spellProto->DmgClass)
     {
         case SPELL_DAMAGE_CLASS_NONE:
-            return false;
+            if (spellProto->Id != 379 && spellProto->Id != 33778) // We need more spells to find a general way (if there is any)
+                return false;
         case SPELL_DAMAGE_CLASS_MAGIC:
         {
             if (schoolMask & SPELL_SCHOOL_MASK_NORMAL)
