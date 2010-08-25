@@ -8602,7 +8602,7 @@ void Unit::SetInCombatState(bool PvP, Unit* enemy)
 
     if(isInCombat())
         return;
-    
+
     SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
 
     if(GetTypeId() == TYPEID_PLAYER)
@@ -8618,11 +8618,11 @@ void Unit::SetInCombatState(bool PvP, Unit* enemy)
     }
     else
     {
-        if ((IsAIEnabled && ((Creature*)this)->AI()->IsEscorted()) || 
+        if ((IsAIEnabled && ((Creature*)this)->AI()->IsEscorted()) ||
             GetMotionMaster()->GetCurrentMovementGeneratorType() == WAYPOINT_MOTION_TYPE ||
             GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE)
             ((Creature*)this)->SetHomePosition(GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation());
-        
+
          if(enemy)
          {
             if(((Creature*)this)->AI())
@@ -8656,7 +8656,7 @@ void Unit::ClearInCombat()
         Creature* creature = (Creature*)this;
         if (creature->GetCreatureInfo() && creature->GetCreatureInfo()->unit_flags & UNIT_FLAG_NOT_ATTACKABLE_2)
             SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
-  
+
         clearUnitState(UNIT_STAT_ATTACK_PLAYER);
     }
 
@@ -9340,8 +9340,12 @@ Unit* Creature::SelectVictim()
             return target;
     }
 
-    if(m_attackers.size())
-        return NULL;
+    for (AttackerSet::const_iterator itr = m_attackers.begin(); itr != m_attackers.end(); ++itr)
+    {
+        if ((*itr) && !IsOutOfThreatArea(*itr))
+            return *itr;
+    }
+
 
     if(m_invisibilityMask)
     {

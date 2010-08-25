@@ -522,6 +522,7 @@ void WorldSession::HandleRaidConvertOpcode( WorldPacket & /*recv_data*/ )
 
     // everything's fine, do it (is it 0 (PARTY_OP_INVITE) correct code)
     SendPartyResult(PARTY_OP_INVITE, "", PARTY_RESULT_OK);
+    group->SetDifficulty(DIFFICULTY_NORMAL);
     group->ConvertToRaid();
 }
 

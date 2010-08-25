@@ -1559,6 +1559,13 @@ void WorldSession::HandleDungeonDifficultyOpcode( WorldPacket & recv_data )
     Group *pGroup = _player->GetGroup();
     if(pGroup)
     {
+        if (pGroup->isRaidGroup())
+        {
+            sLog.outError("WorldSession::HandleDungeonDifficultyOpcode: player %d tried to change difficulty while in raid group!", _player->GetGUIDLow());
+            ChatHandler(this).SendSysMessage(LANG_CHANGE_DIFFICULTY_RAID);
+            return;
+        }
+
         std::list<GroupMemberSlot> memberSlotList = pGroup->GetMemberSlots();
 
         for(std::list<GroupMemberSlot>::const_iterator citr = memberSlotList.begin(); citr != memberSlotList.end(); ++citr)
