@@ -1675,8 +1675,8 @@ void Creature::setDeathState(DeathState s)
 
 //        if (canFly() && FallGround())
 
-        if (this->GetCreatureInfo()->
-        Unit::setDeathState(CORPSE);
+        if (this->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_INSTANCE_BIND)
+            Unit::setDeathState(CORPSE);
     }
     if(s == JUST_ALIVED)
     {
@@ -1931,7 +1931,7 @@ void Creature::DoFleeToGetAssistance()
 
     if(HasAuraType(SPELL_AURA_PREVENTS_FLEEING))
         return;
-    
+
     float radius = sWorld.getConfig(CONFIG_CREATURE_FAMILY_FLEE_ASSISTANCE_RADIUS);
     if (radius >0)
     {
