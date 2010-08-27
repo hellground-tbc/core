@@ -412,11 +412,6 @@ void Creature::Update(uint32 diff)
     else
         m_GlobalCooldown -= diff;
 
-    if (this->GetRespawnTimeEx()-time(NULL) > this->GetRespawnDelay())
-    {
-        sLog.outDebug("Creature %u has respawn greater than RespawnDelay!", GetDBTableGUIDLow());
-    }
-
     switch( m_deathState )
     {
         case JUST_ALIVED:
@@ -2538,7 +2533,7 @@ time_t Creature::GetLinkedCreatureRespawnTime() const
             if(data->mapid == GetMapId())   // look up on the same map
                 targetMap = GetMap();
             else                            // it shouldn't be instanceable map here
-                targetMap = MapManager::Instance().FindMap(data->mapid);
+                return 0;//targetMap = MapManager::Instance().FindMap(data->mapid);
         }
         if(targetMap)
             return objmgr.GetCreatureRespawnTime(targetGuid,targetMap->GetInstanceId());
