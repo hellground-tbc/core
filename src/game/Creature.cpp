@@ -1658,11 +1658,7 @@ void Creature::setDeathState(DeathState s)
         if(m_formation && m_formation->getLeader() == this)
             m_formation->FormationReset(true);
 
-        if (canFly() && FallGround())
-        {
-            sLog.outDebug("Creature %u couldn't fall to ground level.", this->GetDBTableGUIDLow());
-            //return;
-        }
+//        if (canFly() && FallGround())
     }
     Unit::setDeathState(s);
 
@@ -1677,12 +1673,9 @@ void Creature::setDeathState(DeathState s)
             if ( LootTemplates_Skinning.HaveLootFor(GetCreatureInfo()->SkinLootId) )
                 SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
 
-        // test
-        if (canFly() && FallGround())
-        {
-            sLog.outDebug("Creature %u couldn't fall to ground level.", this->GetDBTableGUIDLow());
-        //    return;
-        }
+//        if (canFly() && FallGround())
+
+        if (this->GetCreatureInfo()->
         Unit::setDeathState(CORPSE);
     }
     if(s == JUST_ALIVED)
@@ -1721,8 +1714,11 @@ bool Creature::FallGround()
     return true;
 }
 
-void Creature::Respawn()
+void Creature::Respawn(bool command)
 {
+    if (!command && this->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_INSTANCE_BIND)
+        return;
+
     RemoveCorpse();
 
     // forced recreate creature object at clients
@@ -2533,7 +2529,7 @@ time_t Creature::GetLinkedCreatureRespawnTime() const
             if(data->mapid == GetMapId())   // look up on the same map
                 targetMap = GetMap();
             else                            // it shouldn't be instanceable map here
-                return 0;//targetMap = MapManager::Instance().FindMap(data->mapid);
+                targetMap = MapManager::Instance().FindMap(data->mapid);
         }
         if(targetMap)
             return objmgr.GetCreatureRespawnTime(targetGuid,targetMap->GetInstanceId());
