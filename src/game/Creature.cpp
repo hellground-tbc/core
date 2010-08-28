@@ -1715,9 +1715,6 @@ bool Creature::FallGround()
 
 void Creature::Respawn(bool command)
 {
-    if (!command && this->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_INSTANCE_BIND)
-        return;
-
     RemoveCorpse();
 
     // forced recreate creature object at clients
