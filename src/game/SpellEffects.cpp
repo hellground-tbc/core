@@ -2272,6 +2272,21 @@ void Spell::EffectTriggerSpell(uint32 i)
                 pet->CastSpell(pet, 28305, true);
             return;
         }
+        // Support for quest To Legion Hold
+        case 37492:
+        {
+            std::list<Creature*> pList;
+            Trinity::AllCreaturesOfEntryInRange u_check(m_caster, 21633, 70);
+            Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(pList, u_check);
+            m_caster->VisitNearbyObject(70, searcher);
+            if(pList.size() == 0)
+            {
+                Creature * summon = m_caster->SummonCreature(21633, -3361, 2962, 170, 5.83, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 90000);
+                if(summon)
+                    summon->setActive(true);
+            }
+            return;
+        }
     }
 
     // normal case

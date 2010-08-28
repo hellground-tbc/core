@@ -3165,6 +3165,208 @@ bool GossipSelect_npc_xiri(Player *player, Creature *_Creature, uint32 sender, u
     return true;
 }
 
+/*#######
+# Quest: To Legion Hold
+########*/
+
+/*#####
+# mob_deathbringer_joovan
+######*/
+
+#define IMAGE_OF_WARBRINGER     21502
+
+#define DEATHBRINGER_SAY1   "Everything is in readiness, warbringer."
+#define WARBRINGER_SAY1     "Doom Lord Kazzak will be pleased. You are to increase the pace of your attacks. Destroy the orcish and dwarven strongholds with all haste."
+#define DEATHBRINGER_SAY2   "Warbringer, that will require the use of all the hold's infernals. It may leave us vulnerable to a counterattack."
+#define WARBRINGER_SAY2     "Don't worry about that. I've increased production at the Deathforge. You'll have all the infernals you need to carry out your orders. Don't fail, Jovaan."
+#define DEATHBRINGER_SAY3   "It shall be as you say, warbringer. One last question, if I may..."
+#define WARBRINGER_SAY3     "Yes?"
+#define DEATHBRINGER_SAY4   "What's in the crate?"
+#define WARBRINGER_SAY4     "Crate? I didn't send you a crate, Jovaan. Don't you have more important things to worry about? Go see to them!"
+
+float deathbringer_joovanWP[2][3] = {
+    { -3320, 2948, 172 },
+    { -3304, 2931, 171 }
+};
+
+float imageOfWarbringerSP[4] = { -3300, 2927, 173.4, 2.40 };
+
+struct TRINITY_DLL_DECL mob_deathbringer_joovanAI : public ScriptedAI
+{
+    bool EventStarted;
+    bool ContinueMove;
+    uint64 ImageOfWarbringerGUID;
+    uint32 EventTimer;
+    uint8 EventCounter;
+
+    mob_deathbringer_joovanAI(Creature* c) : ScriptedAI(c) 
+    {
+        ImageOfWarbringerGUID = 0;
+    }
+    
+
+    void Reset()
+    {
+        me->GetMotionMaster()->MovePoint(0, deathbringer_joovanWP[0][0], deathbringer_joovanWP[0][1], deathbringer_joovanWP[0][2]);
+        EventStarted = false;
+
+        if(ImageOfWarbringerGUID)
+        {
+            if(Unit* unit = me->GetUnit(*me, ImageOfWarbringerGUID))
+            {
+                unit->CombatStop();
+                unit->CleanupsBeforeDelete();
+                unit->AddObjectToRemoveList();
+            }
+            ImageOfWarbringerGUID = 0;
+        }
+        ContinueMove = false;
+    }
+
+    void JustSummoned(Creature *creature)
+    {
+        ImageOfWarbringerGUID = creature->GetGUID();
+        EventStarted = true;
+        EventTimer = 0;
+        EventCounter = 0;
+    }
+
+    void MovementInform(uint32 type, uint32 id)
+    {
+        if(type != POINT_MOTION_TYPE)
+            return;
+
+        switch(id)
+        {
+            case 0:
+                ContinueMove = true;
+                break;
+            case 1:
+                me->SummonCreature(IMAGE_OF_WARBRINGER, imageOfWarbringerSP[0], imageOfWarbringerSP[1], imageOfWarbringerSP[2], imageOfWarbringerSP[3], TEMPSUMMON_TIMED_DESPAWN, 120000);
+                me->SetStandState(PLAYER_STATE_KNEEL);
+                break;
+            case 2:
+            {
+                if(Creature* warbringer = (Creature*)me->GetUnit(*me, ImageOfWarbringerGUID))
+                {
+                    warbringer->CombatStop();
+                    warbringer->CleanupsBeforeDelete();
+                    warbringer->AddObjectToRemoveList();                
+                }
+                me->CombatStop();
+                me->CleanupsBeforeDelete();
+                me->AddObjectToRemoveList();
+                break;
+            }
+            
+        }
+    }
+
+    void WarbringerSay(const char* text)
+    {
+        if(Creature* unit = (Creature*)me->GetUnit(*me, ImageOfWarbringerGUID))
+            unit->Say(text, 0, 0);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(ContinueMove)
+        {
+            me->GetMotionMaster()->MovePoint(1, deathbringer_joovanWP[1][0], deathbringer_joovanWP[1][1], deathbringer_joovanWP[1][2]);
+            ContinueMove = false;
+        }
+
+        if(EventStarted)
+        {
+            if(EventTimer < diff)
+            {
+                switch(EventCounter)
+                {
+                    case 0:
+                        me->Say(DEATHBRINGER_SAY1, 0, 0);
+                        break;
+                    case 1:
+                        WarbringerSay(WARBRINGER_SAY1);
+                        break;
+                    case 2:
+                        me->Say(DEATHBRINGER_SAY2, 0, 0);
+                        break;
+                    case 3:
+                        WarbringerSay(WARBRINGER_SAY2);
+                        break;
+                    case 4:
+                        me->Say(DEATHBRINGER_SAY3, 0, 0);
+                        break;
+                    case 5:
+                        WarbringerSay(WARBRINGER_SAY3);
+                        break;
+                    case 6:
+                        me->Say(DEATHBRINGER_SAY4, 0, 0);
+                        break;
+                    case 7:
+                    {
+                        WarbringerSay(WARBRINGER_SAY4);
+                    
+                        std::list<Unit*> pList;
+                        Trinity::AnyUnitInObjectRangeCheck u_check(me, 20);
+                        Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(pList, u_check);
+                        me->VisitNearbyObject(20, searcher);
+
+                        Creature* warbringer = (Creature*)me->GetUnit(*me, ImageOfWarbringerGUID);
+                        if(!warbringer)
+                            break;
+
+                        for(std::list<Unit*>::iterator it = pList.begin(); it != pList.end(); it++)
+                        {
+                            if((*it)->GetTypeId() == TYPEID_PLAYER)
+                            {
+                                Player *p = (Player*)(*it);
+                                if(p->HasAura(37097, 0))
+                                {
+                                    // event happens nie dziala, a powinien!
+                                    p->AreaExploredOrEventHappens(10596);  
+                                    p->AreaExploredOrEventHappens(10563);
+                                    // dlatego recznie musimy complete quest dac
+                                    p->CompleteQuest(10596);
+                                    p->CompleteQuest(10563);
+                                }
+                            }
+                        }
+                        break;
+                    }
+                    case 8:
+                    {
+                        me->GetMotionMaster()->MovePoint(2, deathbringer_joovanWP[0][0], deathbringer_joovanWP[0][1], deathbringer_joovanWP[0][2]);
+                        break;
+                    }
+                }
+                EventCounter++;
+                if(EventCounter == 8)
+                    EventTimer = 1000;
+                else
+                    EventTimer = 4000;
+            } 
+            else
+                EventTimer -= diff;
+        }    
+/*
+        if(!UpdateVictim())
+            return;
+
+        me->Say("Deathbringer victim found, stopping event", 0, 0);
+
+        EventStarted = false;
+       DoMeleeAttackIfReady();*/
+    }
+};
+
+CreatureAI* GetAI_mob_deathbringer_joovanAI(Creature *_Creature)
+{
+    return new mob_deathbringer_joovanAI(_Creature);
+}
+
+
+
 void AddSC_shadowmoon_valley()
 {
     Script *newscript;
@@ -3318,6 +3520,12 @@ void AddSC_shadowmoon_valley()
     newscript->pGossipHello =  &GossipHello_npc_xiri;
     newscript->pGossipSelect = &GossipSelect_npc_xiri;
     newscript->GetAI = &GetAI_npc_xiri;
+    newscript->RegisterSelf();
+
+
+    newscript = new Script;
+    newscript->Name="mob_deathbringer_joovan";
+    newscript->GetAI = &GetAI_mob_deathbringer_joovanAI;
     newscript->RegisterSelf();
 }
 
