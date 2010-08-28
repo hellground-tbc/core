@@ -1675,8 +1675,7 @@ void Creature::setDeathState(DeathState s)
 
 //        if (canFly() && FallGround())
 
-        if (this->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_INSTANCE_BIND)
-            Unit::setDeathState(CORPSE);
+        Unit::setDeathState(CORPSE);
     }
     if(s == JUST_ALIVED)
     {
