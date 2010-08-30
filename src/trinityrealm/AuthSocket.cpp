@@ -455,7 +455,7 @@ bool AuthSocket::_HandleLogonChallenge()
                 }
                 else
                 {
-                    QueryResult_AutoPtr emailbanresult = LoginDatabase.PQuery("SELECT email FROM email_banned WHERE email = %s;", (*result)[5].GetString());
+                    QueryResult_AutoPtr emailbanresult = LoginDatabase.PQuery("SELECT email FROM email_banned WHERE email = '%s'", (*result)[5].GetString());
                     if(emailbanresult)
                     {
                         pkt << (uint8) REALM_AUTH_ACCOUNT_BANNED;

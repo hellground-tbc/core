@@ -2093,7 +2093,7 @@ BanReturn World::BanAccount(BanMode mode, std::string nameIPOrMail, std::string 
             resultAccounts = CharacterDatabase.PQuery("SELECT account FROM characters WHERE name = '%s'",nameIPOrMail.c_str());
             break;
         case BAN_EMAIL:
-            resultAccounts = LoginDatabase.PQuery("SELECT account FROM account WHERE email = %s",nameIPOrMail.c_str());
+            resultAccounts = LoginDatabase.PQuery("SELECT account FROM account WHERE email = '%s'",nameIPOrMail.c_str());
             LoginDatabase.PExecute("INSERT INTO email_banned VALUES ('%s',UNIX_TIMESTAMP(),'%s','%s')",nameIPOrMail.c_str(),safe_author.c_str(),reason.c_str());
             break;
         default:
