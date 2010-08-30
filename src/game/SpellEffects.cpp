@@ -1706,6 +1706,8 @@ void Spell::EffectDummy(uint32 i)
                 {
                     // Tree of Life area effect
                     int32 health_mod = int32(m_caster->GetStat(STAT_SPIRIT)/4);
+                    if(Aura *aur = m_caster->GetAura(39926, 0))         // Idol of the Raven Goddess
+                        health_mod += aur->GetModifierValue();
                     m_caster->CastCustomSpell(m_caster,34123,&health_mod,NULL,NULL,true,NULL);
                     return;
                 }

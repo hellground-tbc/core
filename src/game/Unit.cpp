@@ -6119,21 +6119,6 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
      //=====================================================================
      case SPELLFAMILY_PALADIN:
      {
- /*         // Blessed Life
-            // Handled in Unit::DealDamage
-         if (auraSpellInfo->SpellIconID == 2137)
-         {
-             switch (auraSpellInfo->Id)
-             {
-                 case 31828: // Rank 1
-                 case 31829: // Rank 2
-                 case 31830: // Rank 3
-                 break;
-                 default:
-                     sLog.outError("Unit::HandleProcTriggerSpell: Spell %u miss posibly Blessed Life", auraSpellInfo->Id);
-                 return false;
-             }
-         }*/
          // Healing Discount
          if (auraSpellInfo->Id==37705)
          {
@@ -6161,17 +6146,17 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                  return false;
              }
 
+             if(pVictim->GetTypeId() == TYPEID_PLAYER)
+             {
+                 if(((Player*)pVictim)->HasSpellCooldown(trigger_spell_id))
+                     return false;
+
+                 ((Player*)pVictim)->AddSpellCooldown(trigger_spell_id, NULL, time(NULL) +4);
+             }
+
+             // Improved Judgement of Light: bonus heal from t4 set
              if(Unit *caster = triggeredByAura->GetCaster())
              {
-                 if(caster->GetTypeId() == TYPEID_PLAYER)
-                 {
-                     if(((Player*)caster)->HasSpellCooldown(trigger_spell_id))
-                         return false;
-
-                     ((Player*)caster)->AddSpellCooldown(trigger_spell_id, NULL, time(NULL) +4);
-                 }
-
-                 // Improved Judgement of Light: bonus heal from t4 set
                  if(auraSpellInfo->SpellIconID == 299)
                  {
                      if(Aura *aur = caster->GetAura(37182, 0))
@@ -6180,9 +6165,9 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                          pVictim->CastCustomSpell(pVictim, trigger_spell_id, &bp, NULL, NULL, true, castItem, triggeredByAura);
                      }
                  }
-                 pVictim->CastSpell(pVictim, trigger_spell_id, true, castItem, triggeredByAura);
-                 return true;                        // no hidden cooldown
              }
+             pVictim->CastSpell(pVictim, trigger_spell_id, true, castItem, triggeredByAura);
+             return true;                        // no hidden cooldown
          }
          // Illumination
          else if (auraSpellInfo->SpellIconID==241)
@@ -9340,15 +9325,10 @@ Unit* Creature::SelectVictim()
             return target;
     }
 
-    if (m_attackers.size())
+    for (AttackerSet::const_iterator itr = m_attackers.begin(); itr != m_attackers.end(); ++itr)
     {
-        for (AttackerSet::const_iterator itr = m_attackers.begin(); itr != m_attackers.end(); ++itr)
-        {
-            if ((*itr) && (*itr)->HasAura(21009, 0))
-                return *itr;
-        }
-
-        return NULL;
+        if ((*itr) && !IsOutOfThreatArea(*itr))
+            return *itr;
     }
 
     if(m_invisibilityMask)
@@ -9357,6 +9337,9 @@ Unit* Creature::SelectVictim()
         for(Unit::AuraList::const_iterator itr = iAuras.begin(); itr != iAuras.end(); ++itr)
             if((*itr)->IsPermanent())
             {
+                if (m_attackers.size())
+                    return NULL;
+
                 AI()->EnterEvadeMode();
                 break;
             }
