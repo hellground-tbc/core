@@ -302,7 +302,7 @@ class TRINITY_DLL_SPEC Aura
                 return true;
 
             if( this->GetSpellProto()->SpellFamilyFlags & 0x40000000000LL ) // Vampiric Touch
-                return false;
+                return true;
 
             return false;
         }
