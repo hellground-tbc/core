@@ -3444,6 +3444,14 @@ bool Unit::AddAura(Aura *Aur)
                 i2=m_Auras.lower_bound(spair);
                 continue;
             }
+            if(aurSpellInfo->Id == 28093)       // Allow mongoose procs from different weapons stack
+            {
+                if(Aur->GetCastItemGUID() != i2->second->GetCastItemGUID())
+                {
+                    i2++;
+                    continue;
+                }
+            }
             if(i2->second->GetCasterGUID() == Aur->GetCasterGUID() || Aur->StackNotByCaster() || (Aur->GetCaster() && Aur->GetCaster()->GetTypeId() != TYPEID_PLAYER))    // always stack auras from different creatures
             {
                 if (!stackModified)
