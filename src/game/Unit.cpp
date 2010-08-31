@@ -3439,9 +3439,13 @@ bool Unit::AddAura(Aura *Aur)
         {
             if(Aur->DiffPerCaster() && Aur->GetCasterGUID() != i2->second->GetCasterGUID())
             {
-                i2++;
-                continue;
+                //if(!GetAuraByCasterSpell(Aur->GetId(), Aur->GetCasterGUID()))
+                {
+                    i2++;
+                    continue;
+                }
             }
+
             if(i2->second->GetId() == 31944)    //HACK check for Doomfire DoT stacking
             {
                 RemoveAura(i2,AURA_REMOVE_BY_STACK);

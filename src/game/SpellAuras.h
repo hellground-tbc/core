@@ -298,10 +298,10 @@ class TRINITY_DLL_SPEC Aura
 
         bool DiffPerCaster()
         {
-            if( this->GetSpellProto()->SpellFamilyFlags & 0x800000LL && this->GetSpellProto()->SpellIconID == 548 ) // Mind Flay
+            if(GetSpellProto()->SpellFamilyName == SPELLFAMILY_PRIEST && GetSpellProto()->SpellFamilyFlags & 0x800000LL) // Mind Flay
                 return true;
 
-            if( this->GetSpellProto()->SpellFamilyFlags & 0x40000000000LL ) // Vampiric Touch
+            if(GetSpellProto()->SpellFamilyName == SPELLFAMILY_PRIEST && GetSpellProto()->SpellFamilyFlags & 0x40000000000LL) // Vampiric Touch
                 return true;
 
             return false;
