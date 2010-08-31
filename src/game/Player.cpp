@@ -1374,7 +1374,7 @@ void Player::Update( uint32 p_time )
         {
 
             HandleStealthedUnitsDetection();
-            m_DetectInvTimer = 3000;
+            m_DetectInvTimer = InArena() ? 1000 : 3000;
         }
         else
             m_DetectInvTimer -= p_time;
