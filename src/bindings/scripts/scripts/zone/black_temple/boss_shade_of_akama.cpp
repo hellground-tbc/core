@@ -282,7 +282,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
     {
         m_creature->setActive(true);
         pInstance = (ScriptedInstance*)c->GetInstanceData();
-        AkamaGUID = pInstance ? pInstance->GetData64(DATA_AKAMA_SHADE) : 0;
+        AkamaGUID = pInstance ? pInstance->GetData64(DATA_AKAMA) : 0;
 
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
         m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
@@ -606,7 +606,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
         if (!event_phase)
         {
             if (!AkamaGUID && pInstance)
-                AkamaGUID = pInstance->GetData64(DATA_AKAMA_SHADE);
+                AkamaGUID = pInstance->GetData64(DATA_AKAMA);
         }
         else
         {
