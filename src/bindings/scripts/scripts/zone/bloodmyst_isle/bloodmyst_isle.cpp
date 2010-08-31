@@ -17,13 +17,14 @@
 /* ScriptData
 SDName: Bloodmyst_Isle
 SD%Complete: 80
-SDComment: Quest support: 9670, 9756(gossip items text needed).
+SDComment: Quest support: 9670, 9756.
 SDCategory: Bloodmyst Isle
 EndScriptData */
 
 /* ContentData
 mob_webbed_creature
 npc_captured_sunhawk_agent
+npc_exarch_admetius
 EndContentData */
 
 #include "precompiled.h"
@@ -75,11 +76,20 @@ CreatureAI* GetAI_mob_webbed_creature(Creature *_Creature)
 
 #define C_SUNHAWK_TRIGGER 17974
 
+#define GOSSIP_ITEM1 "I'm a prisoner, what does it look like? The draenei filth captured me as I exited the sun gate. They killed our portal controllers and destroyed the gate. The Sun King will be most displeased with this turn of events."
+
+#define GOSSIP_ITEM2 "Ah yes, Sironas. I had nearly forgoten that Sironas was here. I served under Sironas back on Outland. I hadn't heard of this abomination though; those damnable draenei captured me before I even fully materialized on this world."
+#define GOSSIP_ITEM3 "Incredible. How did Sironas accomplish such a thing?"
+#define GOSSIP_ITEM4 "Sironas is an eredar... I mean, yes, obviously."
+#define GOSSIP_ITEM5 "The Vector Coil is massive. I hope we have more than one abomination guarding the numerous weak points."
+#define GOSSIP_ITEM6 "I did and you believed me. Thank you for the information, blood elf. You have helped us more than you could know."
+#define say_captured_sunhawk_agent "Treacherous whelp! Sironas will destroy you and your people!"
+
 bool GossipHello_npc_captured_sunhawk_agent(Player *player, Creature *_Creature)
 {
     if (player->HasAura(31609,1) && player->GetQuestStatus(9756) == QUEST_STATUS_INCOMPLETE)
     {
-        player->ADD_GOSSIP_ITEM( 0, "[PH] ", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
         player->SEND_GOSSIP_MENU(9136, _Creature->GetGUID());
     }
     else
@@ -93,29 +103,59 @@ bool GossipSelect_npc_captured_sunhawk_agent(Player *player, Creature *_Creature
     switch (action)
     {
         case GOSSIP_ACTION_INFO_DEF+1:
-            player->ADD_GOSSIP_ITEM( 0, "[PH] ", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
             player->SEND_GOSSIP_MENU(9137, _Creature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+2:
-            player->ADD_GOSSIP_ITEM( 0, "[PH] ", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
+            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
             player->SEND_GOSSIP_MENU(9138, _Creature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+3:
-            player->ADD_GOSSIP_ITEM( 0, "[PH] ", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+4);
+            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM4, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+4);
             player->SEND_GOSSIP_MENU(9139, _Creature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+4:
-            player->ADD_GOSSIP_ITEM( 0, "[PH] ", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);
+            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);
             player->SEND_GOSSIP_MENU(9140, _Creature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+5:
-            player->ADD_GOSSIP_ITEM( 0, "[PH] ", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+6);
+            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM6, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+6);
             player->SEND_GOSSIP_MENU(9141, _Creature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+6:
             player->CLOSE_GOSSIP_MENU();
+            _Creature->Say(say_captured_sunhawk_agent,LANG_UNIVERSAL,player->GetGUID() );
             player->TalkedToCreature(C_SUNHAWK_TRIGGER, _Creature->GetGUID());
             break;
+    }
+    return true;
+}
+
+/*######
+## npc_exarch_admetius
+######*/
+
+#define GOSSIP_ITEM_EXARCH "Create bloodelf disguise."
+
+bool GossipHello_npc_exarch_admetius(Player *player, Creature *_Creature)
+{
+    if (_Creature->isQuestGiver())
+        player->PrepareQuestMenu( _Creature->GetGUID() );
+
+    if( player->GetQuestStatus(9756) == QUEST_STATUS_INCOMPLETE )
+        player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_EXARCH, GOSSIP_SENDER_MAIN, GOSSIP_SENDER_INFO );
+
+    player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+
+    return true;
+}
+
+bool GossipSelect_npc_exarch_admetius(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+{
+    if( action == GOSSIP_SENDER_INFO )
+    {
+        player->CastSpell( player, 31609, false);
+        player->AddAura( 31609, player );
     }
     return true;
 }
@@ -133,6 +173,12 @@ void AddSC_bloodmyst_isle()
     newscript->Name="npc_captured_sunhawk_agent";
     newscript->pGossipHello =  &GossipHello_npc_captured_sunhawk_agent;
     newscript->pGossipSelect = &GossipSelect_npc_captured_sunhawk_agent;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name="npc_exarch_admetius";
+    newscript->pGossipHello =  &GossipHello_npc_exarch_admetius;
+    newscript->pGossipSelect = &GossipSelect_npc_exarch_admetius;
     newscript->RegisterSelf();
 }
 
