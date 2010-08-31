@@ -66,6 +66,18 @@ enum SpellModType
     SPELLMOD_PCT          = 108                             // SPELL_AURA_ADD_PCT_MODIFIER
 };
 
+// 2^n values, Player::m_isunderwater is a bitmask. These are internal values, they are never send to any client
+enum PlayerUnderwaterState
+{
+    UNDERWATER_NONE                     = 0x00,
+    UNDERWATER_INWATER                  = 0x01,             // terrain type is water and player is afflicted by it
+    UNDERWATER_INLAVA                   = 0x02,             // terrain type is lava and player is afflicted by it
+    UNDERWATER_INSLIME                  = 0x04,             // terrain type is lava and player is afflicted by it
+    UNDERWATER_INDARKWATER              = 0x08,             // terrain type is dark water and player is afflicted by it
+
+    UNDERWATER_EXIST_TIMERS             = 0x10
+};
+
 enum PlayerSpellState
 {
     PLAYERSPELL_UNCHANGED = 0,
@@ -494,6 +506,8 @@ enum MirrorTimerType
     BREATH_TIMER       = 1,
     FIRE_TIMER         = 2
 };
+#define MAX_TIMERS      3
+#define DISABLED_MIRROR_TIMER   -1
 
 // 2^n values
 enum PlayerExtraFlags
@@ -1683,6 +1697,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         uint32 DurabilityRepairAll(bool cost, float discountMod, bool guildBank);
         uint32 DurabilityRepair(uint16 pos, bool cost, float discountMod, bool guildBank);
 
+        void UpdateMirrorTimers();
         void StopMirrorTimers()
         {
             StopMirrorTimer(FATIGUE_TIMER);
@@ -1975,7 +1990,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         /***              ENVIROMENTAL SYSTEM                  ***/
         /*********************************************************/
 
-        void EnvironmentalDamage(uint64 guid, EnviromentalDamage type, uint32 damage);
+        void EnvironmentalDamage(EnviromentalDamage type, uint32 damage);
 
         /*********************************************************/
         /***               FLOOD FILTER SYSTEM                 ***/
@@ -2002,7 +2017,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         bool CanFly() const { return HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY); }
         bool IsFlying() const { return HasUnitMovementFlag(MOVEMENTFLAG_FLYING2); }
 
-        void HandleDrowning();
+        void HandleDrowning(uint32 time_diff);
         void HandleFallDamage(MovementInfo& movementInfo);
         void HandleFallUnderMap();
 
@@ -2226,13 +2241,10 @@ class TRINITY_DLL_SPEC Player : public Unit
         /*********************************************************/
         /***              ENVIRONMENTAL SYSTEM                 ***/
         /*********************************************************/
-        void HandleLava();
         void HandleSobering();
-        void StartMirrorTimer(MirrorTimerType Type, uint32 MaxValue);
-        void ModifyMirrorTimer(MirrorTimerType Type, uint32 MaxValue, uint32 CurrentValue, uint32 Regen);
+        void SendMirrorTimer(MirrorTimerType Type, uint32 MaxValue, uint32 CurrentValue, int32 Regen);
         void StopMirrorTimer(MirrorTimerType Type);
-        uint8 m_isunderwater;
-        bool m_isInWater;
+        int32 getMaxTimer(MirrorTimerType timer);
 
         /*********************************************************/
         /***                  HONOR SYSTEM                     ***/
@@ -2313,7 +2325,6 @@ class TRINITY_DLL_SPEC Player : public Unit
         time_t m_lastDailyQuestTime;
 
         uint32 m_regenTimer;
-        uint32 m_breathTimer;
         uint32 m_drunkTimer;
         uint16 m_drunk;
         uint32 m_weaponChangeTimer;
@@ -2392,6 +2403,11 @@ class TRINITY_DLL_SPEC Player : public Unit
         uint8 _CanStoreItem_InInventorySlots( uint8 slot_begin, uint8 slot_end, ItemPosCountVec& dest, ItemPrototype const *pProto, uint32& count, bool merge, Item *pSrcItem, uint8 skip_bag, uint8 skip_slot ) const;
         Item* _StoreItem( uint16 pos, Item *pItem, uint32 count, bool clone, bool update );
 
+        int32 m_MirrorTimer[MAX_TIMERS];
+        uint8 m_MirrorTimerFlags;
+        uint8 m_MirrorTimerFlagsLast;
+        bool m_isInWater;
+        
         GridReference<Player> m_gridRef;
         MapReference m_mapRef;
 

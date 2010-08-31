@@ -297,7 +297,7 @@ void Spell::EffectEnvirinmentalDMG(uint32 i)
 
     m_caster->SendSpellNonMeleeDamageLog(m_caster, m_spellInfo->Id, damage, GetSpellSchoolMask(m_spellInfo), absorb, resist, false, 0, false);
     if(m_caster->GetTypeId() == TYPEID_PLAYER)
-        ((Player*)m_caster)->EnvironmentalDamage(m_caster->GetGUID(),DAMAGE_FIRE,damage);
+        ((Player*)m_caster)->EnvironmentalDamage(DAMAGE_FIRE,damage);
 }
 
 void Spell::EffectSchoolDMG(uint32 effect_idx)
@@ -611,7 +611,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                 {
                     int32 base = m_caster->GetMap()->irand((int32)m_caster->GetWeaponDamageRange(RANGED_ATTACK, MINDAMAGE),(int32)m_caster->GetWeaponDamageRange(RANGED_ATTACK, MAXDAMAGE));
                     damage += int32(float(base)/m_caster->GetAttackTime(RANGED_ATTACK)*2800);
-                    rangedAttackPowerCoefficient =+ 0.2f;
+                    rangedAttackPowerCoefficient += 0.2f;
 
                     bool found = false;
 
