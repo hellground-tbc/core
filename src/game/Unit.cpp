@@ -7923,10 +7923,17 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
         }
     }
 
-    // Blessed Book of Nagrand healing done for Flash of Light
+    // Flash of Light
     if (spellProto->SpellFamilyName == SPELLFAMILY_PALADIN && (spellProto->SpellFamilyFlags & 0x0000000040000000LL))
-        if(Aura *aura = GetAura(32403, 0))
-            AdvertisedBenefit += aura->GetModifierValue();
+    {
+        AuraList const& dummyAuras = GetAurasByType(SPELL_AURA_DUMMY);
+        for(AuraList::const_iterator i = dummyAuras.begin(); i != dummyAuras.end(); i++)
+        {
+            uint32 id = (*i)->GetSpellProto()->Id;
+            if(id == 28851 || id == 28853 || id == 32403)   // bonuses from various librams
+                AdvertisedBenefit += (*i)->GetModifierValue();
+        }
+    }
 
     // Lesser Healing Wave
     if (spellProto->SpellFamilyName == SPELLFAMILY_SHAMAN && spellProto->SpellFamilyFlags & 0x80)
