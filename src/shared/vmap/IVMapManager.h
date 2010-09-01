@@ -1,7 +1,5 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2010 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -10,18 +8,20 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 #ifndef _IVMAPMANAGER_H
 #define _IVMAPMANAGER_H
 
-#include<string>
+#include <string>
+#include <Platform/Define.h>
+#include <G3D/Table.h>
 
 //===========================================================
 
@@ -32,7 +32,7 @@ This is the minimum interface to the VMapMamager.
 namespace VMAP
 {
 
-    enum VMAP_LOAD_RESULT
+    enum VMAPLoadResult
     {
         VMAP_LOAD_RESULT_ERROR,
         VMAP_LOAD_RESULT_OK,
@@ -48,13 +48,15 @@ namespace VMAP
         private:
             bool iEnableLineOfSightCalc;
             bool iEnableHeightCalc;
-
+        protected:
+            G3D::Table<unsigned int , bool> mapsWithLOS;
+            G3D::Table<unsigned int , bool> mapsWithHeight;
         public:
             IVMapManager() : iEnableLineOfSightCalc(true), iEnableHeightCalc(true) {}
 
             virtual ~IVMapManager(void) {}
 
-            virtual int loadMap(const char* pBasePath, unsigned int pMapId, int x, int y) = 0;
+            virtual VMAPLoadResult loadMap(const char* pBasePath, unsigned int pMapId, int x, int y) = 0;
 
             virtual bool existsMap(const char* pBasePath, unsigned int pMapId, int x, int y) = 0;
 
@@ -62,7 +64,7 @@ namespace VMAP
             virtual void unloadMap(unsigned int pMapId) = 0;
 
             virtual bool isInLineOfSight(unsigned int pMapId, float x1, float y1, float z1, float x2, float y2, float z2) = 0;
-            virtual float getHeight(unsigned int pMapId, float x, float y, float z) = 0;
+            virtual float getHeight(unsigned int pMapId, float x, float y, float z, float maxSearchDist) = 0;
             /**
             test if we hit an object. return true if we hit one. rx,ry,rz will hold the hit position or the dest position, if no intersection was found
             return a position, that is pReduceDist closer to the origin
@@ -84,9 +86,9 @@ namespace VMAP
             */
             void setEnableHeightCalc(bool pVal) { iEnableHeightCalc = pVal; }
 
-            bool isLineOfSightCalcEnabled() const { return(iEnableLineOfSightCalc); }
-            bool isHeightCalcEnabled() const { return(iEnableHeightCalc); }
-            bool isMapLoadingEnabled() const { return(iEnableLineOfSightCalc || iEnableHeightCalc  ); }
+            bool isLineOfSightCalcEnabled(unsigned int pMapId) const { return(iEnableLineOfSightCalc && mapsWithLOS.containsKey(pMapId)); }
+            bool isHeightCalcEnabled(unsigned int pMapId) const { return(iEnableHeightCalc && mapsWithHeight.containsKey(pMapId)); }
+            bool isMapLoadingEnabled(unsigned int pMapId) const { return((iEnableLineOfSightCalc || iEnableHeightCalc) && (mapsWithHeight.containsKey(pMapId) || mapsWithLOS.containsKey(pMapId))); }
 
             virtual std::string getDirFileName(unsigned int pMapId, int x, int y) const =0;
             /**
@@ -97,7 +99,12 @@ namespace VMAP
             //virtual void preventMapsFromBeingUsed(const char* pMapIdString) =0;
             virtual void setLOSonmaps(const char* pMapIdString) =0;
             virtual void setHeightonmaps(const char* pMapIdString) =0;
+            /**
+            Query world model area info.
+            \param z gets adjusted to the ground height for which this are info is valid
+            */
+            virtual bool getAreaInfo(unsigned int pMapId, float x, float y, float &z, uint32 &flags, int32 &adtId, int32 &rootId, int32 &groupId) const=0;
+            virtual bool GetLiquidLevel(uint32 pMapId, float x, float y, float z, uint8 ReqLiquidType, float &level, float &floor, uint32 &type) const=0;
     };
 }
 #endif
-

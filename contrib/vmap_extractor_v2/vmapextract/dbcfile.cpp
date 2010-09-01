@@ -1,7 +1,9 @@
 #include "dbcfile.h"
-#include "mpq.h"
-#include "Stormlib.h"
-#define __STORMLIB_SELF__
+#include "mpq_libmpq04.h"
+#undef min
+#undef max
+
+#include <cstdio>
 
 DBCFile::DBCFile(const std::string &filename) : filename(filename)
 {
@@ -22,8 +24,8 @@ bool DBCFile::open()
 
     f.read(header,4); // File Header
 
-    if (header[0]!='W' || header[1]!='D' || header[2]!='B' || header[3] != 'C') {
-
+    if (header[0]!='W' || header[1]!='D' || header[2]!='B' || header[3] != 'C')
+    {
         f.close();
         data = NULL;
         printf("Critical Error: An error occured while trying to read the DBCFile %s.", filename.c_str());
@@ -67,10 +69,9 @@ DBCFile::Iterator DBCFile::begin()
     assert(data);
     return Iterator(*this, data);
 }
+
 DBCFile::Iterator DBCFile::end()
 {
     assert(data);
     return Iterator(*this, stringTable);
 }
-
-

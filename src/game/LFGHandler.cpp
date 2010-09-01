@@ -91,7 +91,7 @@ static void AttemptAddMore(Player* _player)
     if(!_player->m_lookingForGroup.more.canAutoJoin())
         return;
 
-    ObjectAccessor::Guard guard(*HashMapHolder<Player>::GetLock());
+    //ObjectAccessor::Guard guard(*HashMapHolder<Player>::GetLock());
     HashMapHolder<Player>::MapType const& players = ObjectAccessor::Instance().GetPlayers();
     for(HashMapHolder<Player>::MapType::const_iterator iter = players.begin(); iter != players.end(); ++iter)
     {
