@@ -1513,6 +1513,9 @@ bool Pet::addSpell(uint16 spell_id, uint16 active, PetSpellState state, uint16 s
     if (spellInfo->AttributesEx & SPELL_ATTR_EX_UNAUTOCASTABLE_BY_PET)
         active = ACT_CAST;
 
+    if (spellInfo->Id == 31707)
+        active = ACT_ENABLED;
+
     PetSpellMap::iterator itr = m_spells.find(spell_id);
     if (itr != m_spells.end())
     {
