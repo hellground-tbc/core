@@ -630,6 +630,18 @@ void Aura::Update(uint32 diff)
 
 bool AreaAura::CheckTarget(Unit *target)
 {
+
+    // Special case: Healing stream totem, totem of wrath and grounding totem stacks if from different casters
+    if(GetSpellProto()->SpellFamilyName == SPELLFAMILY_SHAMAN && (GetSpellProto()->SpellIconID == 1677 ||
+        GetSpellProto()->SpellIconID == 1647 || GetSpellProto()->SpellIconID == 2019 ))
+    {
+        Unit::spellEffectPair spair = Unit::spellEffectPair(GetId(), GetEffIndex());
+        for(Unit::AuraMap::iterator it = target->GetAuras().lower_bound(spair); it != target->GetAuras().upper_bound(spair); it++)
+            if(it->second->GetCasterGUID() == GetCasterGUID())
+                return false;
+        return true;
+    }
+
     if(target->HasAura(GetId(), m_effIndex))
         return false;
 
@@ -669,6 +681,7 @@ bool AreaAura::CheckTarget(Unit *target)
         default:
             break;
     }
+
     return true;
 }
 
