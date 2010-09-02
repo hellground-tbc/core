@@ -337,12 +337,12 @@ void Log::outTitle( const char * str)
         SetColor(true,WHITE);
 
     // not expected utf8 and then send as-is
-    printf( str );
+    //printf( str );
 
     if(m_colored)
         ResetColor(true);
 
-    printf( "\n" );
+    //printf( "\n" );
     if(logfile)
     {
         fprintf(logfile, str);
@@ -350,7 +350,7 @@ void Log::outTitle( const char * str)
         fflush(logfile);
     }
 
-    fflush(stdout);
+    //flush(stdout);
 }
 
 void Log::outString()
@@ -410,7 +410,7 @@ void Log::outError( const char * err, ... )
     if(m_includeTime)
         outTime();
 
-    UTF8PRINTF(stderr,err,);
+    //UTF8PRINTF(stderr,err,);
 
     if(m_colored)
         ResetColor(false);
@@ -447,7 +447,7 @@ void Log::outBoss(const char *str, ...)
         va_end(ap);
         fflush(bossLogFile);
     }
-    fflush(stdout);
+    //fflush(stdout);
 }
 
 void Log::outArena( const char * str, ... )
@@ -465,7 +465,7 @@ void Log::outArena( const char * str, ... )
         va_end(ap);
         fflush(arenaLogFile);
     }
-    fflush(stdout);
+    //fflush(stdout);
 }
 
 
@@ -484,7 +484,7 @@ void Log::outCheat( const char * str, ... )
         va_end(ap);
         fflush(cheatLogFile);
     }
-    fflush(stdout);
+    //fflush(stdout);
 }
 
 void Log::outErrorDb( const char * err, ... )
@@ -547,12 +547,12 @@ void Log::outBasic( const char * str, ... )
         if(m_includeTime)
             outTime();
 
-        UTF8PRINTF(stdout,str,);
+        //UTF8PRINTF(stdout,str,);
 
         if(m_colored)
             ResetColor(true);
 
-        printf( "\n" );
+        //printf( "\n" );
     }
 
     if(logfile && m_logFileLevel > 0)
@@ -565,7 +565,7 @@ void Log::outBasic( const char * str, ... )
         va_end(ap);
         fflush(logfile);
     }
-    fflush(stdout);
+    //fflush(stdout);
 }
 void Log::outIrc(const char * str, ... )
 {
@@ -598,7 +598,7 @@ void Log::outDetail( const char * str, ... )
         if(m_includeTime)
             outTime();
 
-        UTF8PRINTF(stdout,str,);
+        //UTF8PRINTF(stdout,str,);
 
         if(m_colored)
             ResetColor(true);
@@ -616,7 +616,7 @@ void Log::outDetail( const char * str, ... )
         fflush(logfile);
     }
 
-    fflush(stdout);
+    //fflush(stdout);
 }
 
 void Log::outDebugInLine( const char * str, ... )
@@ -628,7 +628,7 @@ void Log::outDebugInLine( const char * str, ... )
         if(m_colored)
             SetColor(true,m_colors[LogDebug]);
 
-        UTF8PRINTF(stdout,str,);
+        //UTF8PRINTF(stdout,str,);
 
         if(m_colored)
             ResetColor(true);
@@ -654,12 +654,12 @@ void Log::outDebug( const char * str, ... )
         if(m_includeTime)
             outTime();
 
-        UTF8PRINTF(stdout,str,);
+        //UTF8PRINTF(stdout,str,);
 
         if(m_colored)
             ResetColor(true);
 
-        printf( "\n" );
+        //printf( "\n" );
     }
     if(logfile && m_logFileLevel > 2)
     {
@@ -673,7 +673,7 @@ void Log::outDebug( const char * str, ... )
         fprintf(logfile, "\n" );
         fflush(logfile);
     }
-    fflush(stdout);
+    //fflush(stdout);
 }
 
 void Log::outCommand( uint32 account, const char * str, ... )
@@ -689,12 +689,12 @@ void Log::outCommand( uint32 account, const char * str, ... )
         if(m_includeTime)
             outTime();
 
-        UTF8PRINTF(stdout,str,);
+        //UTF8PRINTF(stdout,str,);
 
         if(m_colored)
             ResetColor(true);
 
-        printf( "\n" );
+        //printf( "\n" );
     }
     if(logfile && m_logFileLevel > 1)
     {
@@ -731,7 +731,7 @@ void Log::outCommand( uint32 account, const char * str, ... )
         fflush(gmLogfile);
     }
 
-    fflush(stdout);
+    //fflush(stdout);
 }
 
 void Log::outChar(const char * str, ... )
@@ -787,7 +787,7 @@ void Log::outMenu( const char * str, ... )
     if(m_includeTime)
         outTime();
 
-    UTF8PRINTF(stdout,str,);
+    //UTF8PRINTF(stdout,str,);
 
     ResetColor(true);
 
@@ -803,7 +803,7 @@ void Log::outMenu( const char * str, ... )
         fprintf(logfile, "\n" );
         fflush(logfile);
     }
-    fflush(stdout);
+    //fflush(stdout);
 }
 
 void Log::outRALog(    const char * str, ... )
@@ -820,7 +820,7 @@ void Log::outRALog(    const char * str, ... )
         va_end(ap);
         fflush(raLogfile);
     }
-    fflush(stdout);
+    //fflush(stdout);
 }
 
 void outstring_log(const char * str, ...)
