@@ -61,7 +61,7 @@ struct TRINITY_DLL_DECL mob_crystalcore_devastatorAI : public ScriptedAI
             m_creature->CastSpell(m_creature->getVictim(), SPELL_KNOCKAWAY, true);
 
             // current aggro target is knocked away pick new target
-            Unit* target = SelectUnit(SELECT_TARGET_TOPAGGRO, 0, 60, true, m_creature->getVictim());
+            Unit* target = SelectUnit(SELECT_TARGET_TOPAGGRO, 0, 60, true, m_creature->getVictimGUID());
 
             if(target)
                 m_creature->TauntApply(target);

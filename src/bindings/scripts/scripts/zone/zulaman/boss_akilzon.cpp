@@ -283,7 +283,7 @@ struct TRINITY_DLL_DECL boss_akilzonAI : public ScriptedAI
         }else Enrage_Timer -= diff;
 
         if (StaticDisruption_Timer < diff) {
-            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_STATIC_DISRUPTION), true, m_creature->getVictim());
+            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_STATIC_DISRUPTION), true, m_creature->getVictimGUID());
             if(!target) target = m_creature->getVictim();
             TargetGUID = target->GetGUID();
             m_creature->CastSpell(target, SPELL_STATIC_DISRUPTION, false);
@@ -296,7 +296,7 @@ struct TRINITY_DLL_DECL boss_akilzonAI : public ScriptedAI
         }else StaticDisruption_Timer -= diff;
 
         if (GustOfWind_Timer < diff) {
-            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_GUST_OF_WIND), true, m_creature->getVictim());
+            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_GUST_OF_WIND), true, m_creature->getVictimGUID());
             if(!target) target = m_creature->getVictim();
             DoCast(target, SPELL_GUST_OF_WIND);
             GustOfWind_Timer = (20+rand()%10)*1000; //20 to 30 seconds(bosskillers)

@@ -605,7 +605,7 @@ struct TRINITY_DLL_DECL boss_malchezaarAI : public ScriptedAI
                 if(phase == 1)
                     target = m_creature->getVictim();       // the tank
                 else                                        //anyone but the tank
-                    target = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_SW_PAIN), true, m_creature->getVictim());
+                    target = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_SW_PAIN), true, m_creature->getVictimGUID());
 
                 if (target)
                     DoCast(target, SPELL_SW_PAIN);

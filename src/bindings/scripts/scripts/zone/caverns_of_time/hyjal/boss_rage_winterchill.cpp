@@ -224,7 +224,7 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
 
         if(IceboltTimer < diff)
         {
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0,40,true))
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 40, true))
                 //AddSpellToCast(target, SPELL_ICEBOLT, true);
                 DoCast(target,SPELL_ICEBOLT,true);
 

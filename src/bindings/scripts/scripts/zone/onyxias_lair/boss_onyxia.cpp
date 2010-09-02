@@ -152,7 +152,7 @@ struct TRINITY_DLL_DECL boss_onyxiaAI : public ScriptedAI
 
             if(TailSweepTimer < diff)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, 200, true, m_creature->getVictim());
+                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, 200, true, m_creature->getVictimGUID());
                 if(target && !m_creature->HasInArc(M_PI, target))
                     DoCast(target, SPELL_TAILSWEEP);
 

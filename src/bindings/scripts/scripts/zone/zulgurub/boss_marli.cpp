@@ -176,7 +176,7 @@ struct TRINITY_DLL_DECL boss_marliAI : public ScriptedAI
                     while (i < 3)                           // max 3 tries to get a random target with power_mana
                     {
                         ++i;                                //not aggro leader
-                        target = SelectUnit(SELECT_TARGET_RANDOM,1, GetSpellMaxRange(SPELL_CHARGE), true, m_creature->getVictim());
+                        target = SelectUnit(SELECT_TARGET_RANDOM,1, GetSpellMaxRange(SPELL_CHARGE), true, m_creature->getVictimGUID());
                         if(target)
                             if (target->getPowerType() == POWER_MANA)
                                 i=3;

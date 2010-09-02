@@ -441,7 +441,7 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
             if(Charge_Timer < diff)
             {
                 Unit *temp = m_creature->getVictim();
-                if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_CHARGE), true, m_creature->getVictim()))
+                if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_CHARGE), true, m_creature->getVictimGUID()))
                     DoCast(target, SPELL_CHARGE);
 
                 DoStartMovement(temp);

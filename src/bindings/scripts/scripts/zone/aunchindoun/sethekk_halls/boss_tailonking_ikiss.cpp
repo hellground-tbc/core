@@ -157,7 +157,7 @@ struct TRINITY_DLL_DECL boss_talon_king_ikissAI : public ScriptedAI
         {
             //second top aggro target in normal, random target in heroic correct?
             Unit *target = NULL;
-            target = HeroicMode ? SelectUnit(SELECT_TARGET_RANDOM,0, 60, true) : SelectUnit(SELECT_TARGET_TOPAGGRO,1, 60, true, m_creature->getVictim());
+            target = HeroicMode ? SelectUnit(SELECT_TARGET_RANDOM,0, 60, true) : SelectUnit(SELECT_TARGET_TOPAGGRO,1, 60, true, m_creature->getVictimGUID());
             if (target)
                 DoCast(target,HeroicMode ? H_SPELL_POLYMORPH : SPELL_POLYMORPH);
             Sheep_Timer = 15000+rand()%2500;

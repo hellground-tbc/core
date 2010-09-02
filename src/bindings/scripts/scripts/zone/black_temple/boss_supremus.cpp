@@ -259,7 +259,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
 
             if(SwitchTargetTimer < diff)
             {
-                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, 100, true, m_creature->getVictim()))
+                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true, m_creature->getVictimGUID()))
                 {
                     DoResetThreat();
                     m_creature->getThreatManager().setCurrentVictim((HostilReference*)target);

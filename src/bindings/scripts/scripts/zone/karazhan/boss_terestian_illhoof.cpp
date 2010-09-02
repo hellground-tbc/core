@@ -275,7 +275,7 @@ struct TRINITY_DLL_DECL boss_terestianAI : public ScriptedAI
         
         if(SacrificeTimer < diff)
         {
-            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_SACRIFICE), true, m_creature->getVictim());
+            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_SACRIFICE), true, m_creature->getVictimGUID());
             if(target && target->isAlive() && target->GetTypeId() == TYPEID_PLAYER)
             {
                 DoCast(target, SPELL_SACRIFICE, true);
@@ -328,7 +328,7 @@ struct TRINITY_DLL_DECL boss_terestianAI : public ScriptedAI
             if(Imp)
             {
                 Imp->AddThreat(m_creature->getVictim(), 1.0f);
-                if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, 200, true, m_creature->getVictim()))
+                if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, 200, true, m_creature->getVictimGUID()))
                     Imp->AI()->AttackStart(target);
             }
             SummonTimer = 5000;

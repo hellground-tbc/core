@@ -686,7 +686,7 @@ struct TRINITY_DLL_DECL boss_headless_horsemanAI : public ScriptedAI
             case 2:
                 if(conflagrate < diff)
                 {
-                    Unit *plr = SelectUnit(SELECT_TARGET_RANDOM, 1,30,true, m_creature->getVictim());
+                    Unit *plr = SelectUnit(SELECT_TARGET_RANDOM, 1,30,true, m_creature->getVictimGUID());
                     if(!plr)
                         plr = m_creature->getVictim();
 

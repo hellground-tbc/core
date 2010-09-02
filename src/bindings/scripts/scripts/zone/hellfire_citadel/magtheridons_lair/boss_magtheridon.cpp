@@ -531,7 +531,7 @@ struct TRINITY_DLL_DECL mob_hellfire_channelerAI : public ScriptedAI
 
         if(Fear_Timer < diff)
         {
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_FEAR), true, m_creature->getVictim()))
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_FEAR), true, m_creature->getVictimGUID()))
                 DoCast(target, SPELL_FEAR);
 
             Fear_Timer = 25000 + rand()%15000;

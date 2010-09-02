@@ -515,7 +515,7 @@ Unit* ScriptedAI::SelectUnit(SelectAggroTarget target, uint32 position)
     return NULL;
 }
 
-Unit* ScriptedAI::SelectUnit(SelectAggroTarget targetType, uint32 position, float dist, bool playerOnly, Unit *exclude)
+Unit* ScriptedAI::SelectUnit(SelectAggroTarget targetType, uint32 position, float dist, bool playerOnly, uint64 exclude)
 {
     if(targetType == SELECT_TARGET_NEAREST || targetType == SELECT_TARGET_FARTHEST)
     {
@@ -529,7 +529,7 @@ Unit* ScriptedAI::SelectUnit(SelectAggroTarget targetType, uint32 position, floa
             if(!target
                 || playerOnly && target->GetTypeId() != TYPEID_PLAYER
                 || dist && !m_creature->IsWithinCombatRange(target, dist)
-                || exclude && exclude->GetGUID() == target->GetGUID())
+                || exclude && exclude == target->GetGUID())
             {
                 continue;
             }
@@ -579,7 +579,7 @@ Unit* ScriptedAI::SelectUnit(SelectAggroTarget targetType, uint32 position, floa
                 || !target->isAlive()
                 || playerOnly && target->GetTypeId() != TYPEID_PLAYER
                 || dist && !m_creature->IsWithinCombatRange(target, dist)
-                || exclude && exclude->GetGUID() == target->GetGUID())
+                || exclude && exclude == target->GetGUID())
             {
                 m_threatlist.erase(i);
             }

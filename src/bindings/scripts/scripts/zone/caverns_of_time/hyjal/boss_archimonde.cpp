@@ -310,7 +310,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
     void MoveInLineOfSight(Unit *who)
     {
-        if (m_creature->GetDistance(who) <= 70 && !m_creature->isInCombat() && m_creature->IsHostileTo(who))
+        if (m_creature->GetDistance(who) <= 50 && !m_creature->isInCombat() && m_creature->IsHostileTo(who))
             m_creature->AI()->AttackStart(who);
     }
 
@@ -601,7 +601,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
             Unit *target = NULL;
             // aby miec pewnosc, ze naszym targetem nie jest tank
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 3, 100, true, m_creature->getVictim()))
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true, m_creature->getVictimGUID()))
             {
                 // ustawia target jako aktualny
                 m_creature->SetUInt64Value(UNIT_FIELD_TARGET, target->GetGUID());
@@ -609,7 +609,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
             }
 
             if(FearTimer < 10000)
-                FearTimer += 10000;
+                FearTimer = 10000;
 
             AirBurstTimer = 25000 + rand()%15000;
         }

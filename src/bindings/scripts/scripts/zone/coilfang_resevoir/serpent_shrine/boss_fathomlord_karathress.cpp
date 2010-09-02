@@ -295,7 +295,7 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
         {
             if (TidalSurge_Timer < diff)
             {
-                Unit *who = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_TIDAL_SURGE), true, m_creature->getVictim());
+                Unit *who = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_TIDAL_SURGE), true, m_creature->getVictimGUID());
                                             
                 if(who && who->isAlive())
                 {
@@ -313,7 +313,7 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
         if(CataclysmicBolt_Timer < diff)
         {
             //if there aren't other units, cast on the tank
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_CATACLYSMIC_BOLT), true, m_creature->getVictim()))
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_CATACLYSMIC_BOLT), true, m_creature->getVictimGUID()))
                 DoCast(target, SPELL_CATACLYSMIC_BOLT);
             else
                 DoCast(m_creature->getVictim(), SPELL_CATACLYSMIC_BOLT);

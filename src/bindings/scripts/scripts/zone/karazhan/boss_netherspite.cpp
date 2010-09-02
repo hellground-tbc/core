@@ -323,7 +323,7 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
         // Void Zone
         if(VoidZoneTimer < diff)
         {
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,1,GetSpellMaxRange(SPELL_VOIDZONE),true, m_creature->getVictim()))  
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,1,GetSpellMaxRange(SPELL_VOIDZONE),true, m_creature->getVictimGUID()))  
                 DoCast(target,SPELL_VOIDZONE,true);
 
             VoidZoneTimer = 15000;

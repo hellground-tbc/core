@@ -167,7 +167,7 @@ struct TRINITY_DLL_DECL boss_doomwalkerAI : public ScriptedAI
         if (Chain_Timer < diff)
         {
             Unit* target = NULL;
-            target = SelectUnit(SELECT_TARGET_RANDOM,1, GetSpellMaxRange(SPELL_CHAIN_LIGHTNING), true, m_creature->getVictim());
+            target = SelectUnit(SELECT_TARGET_RANDOM,1, GetSpellMaxRange(SPELL_CHAIN_LIGHTNING), true, m_creature->getVictimGUID());
 
             if (!target)
                 target = m_creature->getVictim();

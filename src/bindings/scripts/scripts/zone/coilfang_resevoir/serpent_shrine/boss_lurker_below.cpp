@@ -333,7 +333,7 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
 
             if(GeyserTimer < diff)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_GEYSER), true, m_creature->getVictim());
+                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_GEYSER), true, m_creature->getVictimGUID());
                 if(!target && m_creature->getVictim())
                     target = m_creature->getVictim();
                 if(target)

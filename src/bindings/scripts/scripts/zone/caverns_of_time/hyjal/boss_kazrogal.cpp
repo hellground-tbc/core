@@ -178,7 +178,7 @@ struct TRINITY_DLL_DECL boss_kazrogalAI : public hyjal_trashAI
 
         if(CrippleTimer < diff)
         {
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,1,20,true))
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, 20, true))
                 DoCast(target, SPELL_CRIPPLE);
 
             CrippleTimer = 20000+rand()%10000;

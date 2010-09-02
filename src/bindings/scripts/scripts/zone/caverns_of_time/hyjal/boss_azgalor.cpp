@@ -163,7 +163,7 @@ struct TRINITY_DLL_DECL boss_azgalorAI : public hyjal_trashAI
 
         if(RainTimer < diff)
         {
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0,30,true))    
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true))    
                 DoCast(target, SPELL_RAIN_OF_FIRE);
             RainTimer = 20000+rand()%15000;
         }
@@ -173,7 +173,7 @@ struct TRINITY_DLL_DECL boss_azgalorAI : public hyjal_trashAI
         //only set timer when target exist, cause with exclude defined we return NULL that now can be acceptable spell target
         if(DoomTimer < diff)
         {
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,3,100,true, m_creature->getVictim()))
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true, m_creature->getVictimGUID()))
             {
                 DoCast(target, SPELL_DOOM);//never on tank
                 DoomTimer = 45000+rand()%5000;

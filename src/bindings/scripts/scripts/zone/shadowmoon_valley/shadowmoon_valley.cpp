@@ -2504,7 +2504,7 @@ struct TRINITY_DLL_DECL mob_shadowlord_deathwailAI : public ScriptedAI
 
             if(Deathcoil_Timer < diff)
             {
-                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0, true, m_creature->getVictim()))
+                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0, true, m_creature->getVictimGUID()))
                     AddSpellToCast(target, SPELL_DEATHCOIL);
                 else
                     AddSpellToCast(m_creature->getVictim(), SPELL_DEATHCOIL);

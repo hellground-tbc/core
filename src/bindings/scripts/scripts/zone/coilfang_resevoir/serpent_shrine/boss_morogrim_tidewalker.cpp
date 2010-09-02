@@ -256,7 +256,7 @@ struct TRINITY_DLL_DECL boss_morogrim_tidewalkerAI : public ScriptedAI
                     counter = 0;
                     do
                     {
-                        target = SelectUnit(SELECT_TARGET_RANDOM, 1, 50, true, m_creature->getVictim());    //target players only
+                        target = SelectUnit(SELECT_TARGET_RANDOM, 0, 50, true, m_creature->getVictimGUID());    //target players only
                         if(counter < Playercount)
                             break;
 

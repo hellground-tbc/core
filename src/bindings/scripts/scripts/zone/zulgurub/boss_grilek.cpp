@@ -57,7 +57,7 @@ struct TRINITY_DLL_DECL boss_grilekAI : public ScriptedAI
             DoCast(m_creature, SPELL_AVARTAR);
             Unit* target = NULL;
 
-            target = SelectUnit(SELECT_TARGET_RANDOM,1, 200, true, m_creature->getVictim());
+            target = SelectUnit(SELECT_TARGET_RANDOM,1, 200, true, m_creature->getVictimGUID());
 
             if(DoGetThreat(m_creature->getVictim()))
                 DoModifyThreatPercent(m_creature->getVictim(),-50);

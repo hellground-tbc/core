@@ -595,7 +595,7 @@ struct TRINITY_DLL_DECL rift_summonAI : public ScriptedAI
                             Spell_Timer2 = 3000;
                         else
                         {
-                            Unit* target = SelectUnit(SELECT_TARGET_NEAREST,0,70,true,m_creature->getVictim());
+                            Unit* target = SelectUnit(SELECT_TARGET_NEAREST, 0, 70, true, m_creature->getVictimGUID());
                             if(target)
                                 DoCast(target, HeroicMode?38535:36277);
                             else if(target = m_creature->getVictim())
@@ -616,7 +616,7 @@ struct TRINITY_DLL_DECL rift_summonAI : public ScriptedAI
 
                     if(HeroicMode && Spell_Timer4 < diff)    //polymorph
                     {
-                        Unit* target = SelectUnit(SELECT_TARGET_NEAREST,0,70,true,m_creature->getVictim());
+                        Unit* target = SelectUnit(SELECT_TARGET_NEAREST, 0, 70, true, m_creature->getVictimGUID());
                         if(target)
                             DoCast(target, 13323);
                         Spell_Timer4 = 30000;

@@ -94,7 +94,7 @@ struct TRINITY_DLL_DECL boss_sarturaAI : public ScriptedAI
             if (WhirlWindRandom_Timer < diff)
             {
                 //Attack random Gamers
-                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1, 200, true, m_creature->getVictim()))
+                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1, 200, true, m_creature->getVictimGUID()))
                     AttackStart(target);
 
                 WhirlWindRandom_Timer = 3000 + rand()%4000;
@@ -119,7 +119,7 @@ struct TRINITY_DLL_DECL boss_sarturaAI : public ScriptedAI
             if (AggroReset_Timer < diff)
             {
                 //Attack random Gamers
-                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1, 200, true, m_creature->getVictim()))
+                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1, 200, true, m_creature->getVictimGUID()))
                     m_creature->TauntApply(target);
 
                     AggroReset = true;
@@ -211,7 +211,7 @@ struct TRINITY_DLL_DECL mob_sartura_royal_guardAI : public ScriptedAI
             if (WhirlWindRandom_Timer < diff)
             {
                 //Attack random Gamers
-                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1, 200, true, m_creature->getVictim()))
+                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1, 200, true, m_creature->getVictimGUID()))
                     m_creature->TauntApply(target);
 
                 WhirlWindRandom_Timer = 3000 + rand()%4000;
@@ -228,7 +228,7 @@ struct TRINITY_DLL_DECL mob_sartura_royal_guardAI : public ScriptedAI
             if (AggroReset_Timer < diff)
             {
                 //Attack random Gamers
-                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1, 200, true, m_creature->getVictim()))
+                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1, 200, true, m_creature->getVictimGUID()))
                     AttackStart(target);
 
                 AggroReset = true;

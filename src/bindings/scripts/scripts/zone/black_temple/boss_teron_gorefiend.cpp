@@ -206,12 +206,12 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
     {
         if(Creature* Teron = (Unit::GetCreature((*m_creature), TeronGUID)))
         {
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true, Teron->getVictim()))
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true, Teron->getVictimGUID()))
             {
                 if(target->HasAura(40282, 0))
                 {
                     m_creature->getThreatManager().modifyThreatPercent(target, -100);
-                    if(Unit* NewTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true, target))
+                    if(Unit* NewTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true, target->GetGUID()))
                     {
                         if(NewTarget != Teron->getVictim())
                         {
@@ -445,7 +445,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
 
         if(IncinerateTimer < diff)
         {
-            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, 200, true, m_creature->getVictim());
+            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true, m_creature->getVictimGUID());
             if(!target)
                 target = m_creature->getVictim();
 
@@ -474,7 +474,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
 
         if(ShadowOfDeathTimer < diff)
         {
-            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, 100, true, m_creature->getVictim());
+            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true, m_creature->getVictimGUID());
 
             if(target && target->isAlive() && !target->HasAura(SPELL_SHADOW_OF_DEATH, 0) && !target->HasAura(40282, 0) )
             {
