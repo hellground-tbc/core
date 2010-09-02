@@ -70,7 +70,7 @@ struct TRINITY_DLL_DECL mob_treantAI  : public ScriptedAI
             return;
         }
 
-        if (m_creature->getVictim()->GetGUID() !=  WarpGuid)
+        if (m_creature->getVictimGUID() !=  WarpGuid)
             DoMeleeAttackIfReady();
     }
 };

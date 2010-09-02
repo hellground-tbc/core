@@ -2011,7 +2011,7 @@ void Creature::CallAssistance()
 
             if (!assistList.empty())
             {
-                AssistDelayEvent *e = new AssistDelayEvent(getVictim()->GetGUID(), *this);
+                AssistDelayEvent *e = new AssistDelayEvent(getVictimGUID(), *this);
                 while (!assistList.empty())
                 {
                     // Pushing guids because in delay can happen some creature gets despawned => invalid pointer

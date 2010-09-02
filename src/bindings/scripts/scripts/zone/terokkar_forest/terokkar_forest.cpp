@@ -713,7 +713,7 @@ struct TRINITY_DLL_DECL mob_terokkAI : public ScriptedAI
         {
             if( ChosenOneActive_Timer < diff )
             {
-                if(m_creature->getVictim()->GetGUID() == ChosenOneTarget)
+                if(m_creature->getVictimGUID() == ChosenOneTarget)
                     m_creature->AddThreat(m_creature->getVictim(), -500000.0f);
                 m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
                 ChosenOneActive_Timer = 0;

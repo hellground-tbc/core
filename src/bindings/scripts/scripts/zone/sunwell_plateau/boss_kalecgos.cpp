@@ -418,7 +418,7 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
             {
                 for(std::list<HostilReference*>::iterator itr = m_creature->getThreatManager().getThreatList().begin(); itr != m_creature->getThreatManager().getThreatList().end(); ++itr)
                 {
-                    if(((*itr)->getUnitGuid()) ==  (m_creature->getVictim()->GetGUID()))
+                    if(((*itr)->getUnitGuid()) ==  (m_creature->getVictimGUID()))
                     {
                         (*itr)->removeReference();
                         break;

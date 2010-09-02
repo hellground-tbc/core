@@ -727,17 +727,17 @@ struct TRINITY_DLL_DECL boss_essence_of_angerAI : public ScriptedAI
 
         if(!CheckedAggro)
         {
-            AggroTargetGUID = m_creature->getVictim()->GetGUID();
+            AggroTargetGUID = m_creature->getVictimGUID();
             CheckedAggro = true;
         }
 
         if(CheckTankTimer < diff)
         {
-            if(m_creature->getVictim()->GetGUID() != AggroTargetGUID)
+            if(m_creature->getVictimGUID() != AggroTargetGUID)
             {
                 DoScriptText(ANGER_SAY_BEFORE, m_creature);
                 DoCast(m_creature, SPELL_SELF_SEETHE, true);
-                AggroTargetGUID = m_creature->getVictim()->GetGUID();
+                AggroTargetGUID = m_creature->getVictimGUID();
             }
             CheckTankTimer = 2000;
         }

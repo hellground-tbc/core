@@ -117,7 +117,7 @@ struct TRINITY_DLL_DECL mob_inner_demonAI : public ScriptedAI
 
         if(Unit* owner = Unit::GetUnit((*m_creature),victimGUID))
         {
-            if(m_creature->getVictim()->GetGUID() != victimGUID)
+            if(m_creature->getVictimGUID() != victimGUID)
             { 
                 if(owner->isAlive())
                     AttackStart(owner);
@@ -540,7 +540,7 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
                 for(std::list<HostilReference *>::iterator itr = ThreatList.begin(); itr != ThreatList.end(); ++itr)
                 {
                     Unit *tempTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true);
-                    if(tempTarget && !tempTarget->HasAura(SPELL_CONSUMING_MADNESS,0) && tempTarget->GetGUID() != m_creature->getVictim()->GetGUID() && std::find(TargetList.begin(), TargetList.end(), tempTarget) == TargetList.end() && TargetList.size() < 5)
+                    if(tempTarget && !tempTarget->HasAura(SPELL_CONSUMING_MADNESS,0) && tempTarget->GetGUID() != m_creature->getVictimGUID() && std::find(TargetList.begin(), TargetList.end(), tempTarget) == TargetList.end() && TargetList.size() < 5)
                         TargetList.push_back(tempTarget);
                 }
 

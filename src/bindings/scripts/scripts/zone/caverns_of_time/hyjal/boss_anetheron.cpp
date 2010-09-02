@@ -157,10 +157,10 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
         if(CheckTimer < diff)
         {
             DoZoneInCombat();
-            if(!m_creature->hasUnitState(UNIT_STAT_CASTING))
+            if(!m_creature->IsNonMeleeSpellCasted(true))
             {
-                if(m_creature->GetUInt64Value(UNIT_FIELD_TARGET) != m_creature->getVictim()->GetGUID())
-                    m_creature->SetUInt64Value(UNIT_FIELD_TARGET, m_creature->getVictim()->GetGUID());
+                if(m_creature->GetUInt64Value(UNIT_FIELD_TARGET) != m_creature->getVictimGUID())
+                    m_creature->SetUInt64Value(UNIT_FIELD_TARGET, m_creature->getVictimGUID());
             }
             m_creature->SetSpeed(MOVE_RUN, 3.0);
             CheckTimer = 2000;
@@ -220,8 +220,8 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
         {
             if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0,200,true))
             {
-                m_creature->SetUInt64Value(UNIT_FIELD_TARGET, target->GetGUID());    //do target inferno victim when casting
                 m_creature->CastStop();
+                m_creature->SetUInt64Value(UNIT_FIELD_TARGET, target->GetGUID());    //do target inferno victim when casting
                 DoCast(target, SPELL_INFERNO);
                 CheckTimer = 3600;
             }

@@ -233,7 +233,7 @@ FleeingMovementGenerator<T>::Finalize(T &owner)
     owner.RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
     owner.clearUnitState(UNIT_STAT_FLEEING | UNIT_STAT_ROAMING);
     if(owner.GetTypeId() == TYPEID_UNIT && owner.getVictim())
-        owner.SetUInt64Value(UNIT_FIELD_TARGET, owner.getVictim()->GetGUID());
+        owner.SetUInt64Value(UNIT_FIELD_TARGET, owner.getVictimGUID());
 }
 
 template<class T>

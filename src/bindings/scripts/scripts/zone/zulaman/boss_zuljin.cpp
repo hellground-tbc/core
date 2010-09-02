@@ -472,7 +472,7 @@ struct TRINITY_DLL_DECL boss_zuljinAI : public ScriptedAI
                 {
                     if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
                     {
-                        TankGUID = m_creature->getVictim()->GetGUID();
+                        TankGUID = m_creature->getVictimGUID();
                         m_creature->SetSpeed(MOVE_RUN, 5.0f);
                         AttackStart(target); // change victim
                         Claw_Rage_Timer = 0;
@@ -525,7 +525,7 @@ struct TRINITY_DLL_DECL boss_zuljinAI : public ScriptedAI
                 {
                     if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
                     {
-                        TankGUID = m_creature->getVictim()->GetGUID();
+                        TankGUID = m_creature->getVictimGUID();
                         m_creature->SetSpeed(MOVE_RUN, 5.0f);
                         AttackStart(target); // change victim
                         Lynx_Rush_Timer = 0;

@@ -143,7 +143,7 @@ ConfusedMovementGenerator<T>::Finalize(T &unit)
     unit.RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
     unit.clearUnitState(UNIT_STAT_CONFUSED);
     if(unit.GetTypeId() == TYPEID_UNIT && unit.getVictim())
-        unit.SetUInt64Value(UNIT_FIELD_TARGET, unit.getVictim()->GetGUID());
+        unit.SetUInt64Value(UNIT_FIELD_TARGET, unit.getVictimGUID());
 }
 
 template void ConfusedMovementGenerator<Player>::Initialize(Player &player);

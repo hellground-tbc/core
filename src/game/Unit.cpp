@@ -11728,7 +11728,7 @@ void Unit::SetStunned(bool apply)
     else
     {
         if(isAlive() && getVictim())
-            SetUInt64Value(UNIT_FIELD_TARGET, getVictim()->GetGUID());
+            SetUInt64Value(UNIT_FIELD_TARGET, getVictimGUID());
 
         // don't remove UNIT_FLAG_DISABLE_ROTATE for pet when owner is mounted (disabled pet's interface)
         Unit *pOwner = GetOwner();
@@ -11810,7 +11810,7 @@ void Unit::SetFeared(bool apply)
             if(GetMotionMaster()->GetCurrentMovementGeneratorType() == FLEEING_MOTION_TYPE)
                 GetMotionMaster()->MovementExpired();
             if(getVictim())
-                SetUInt64Value(UNIT_FIELD_TARGET, getVictim()->GetGUID());
+                SetUInt64Value(UNIT_FIELD_TARGET, getVictimGUID());
         }
     }
 

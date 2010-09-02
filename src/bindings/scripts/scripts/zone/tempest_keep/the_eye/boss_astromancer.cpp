@@ -215,8 +215,8 @@ struct TRINITY_DLL_DECL boss_high_astromancer_solarianAI : public ScriptedAI
         {
             if(!m_creature->IsNonMeleeSpellCasted(false))
             {
-                if(m_creature->GetUInt64Value(UNIT_FIELD_TARGET) != m_creature->getVictim()->GetGUID())
-                    m_creature->SetUInt64Value(UNIT_FIELD_TARGET, m_creature->getVictim()->GetGUID());
+                if(m_creature->GetUInt64Value(UNIT_FIELD_TARGET) != m_creature->getVictimGUID())
+                    m_creature->SetUInt64Value(UNIT_FIELD_TARGET, m_creature->getVictimGUID());
             }
 
             if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 135.0f)

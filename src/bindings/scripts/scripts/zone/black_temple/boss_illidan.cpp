@@ -1748,7 +1748,7 @@ struct TRINITY_DLL_DECL shadow_demonAI : public ScriptedAI
 
         if(!m_creature->getVictim()->HasAura(SPELL_PARALYZE, 0))
         {
-            TargetGUID = m_creature->getVictim()->GetGUID();
+            TargetGUID = m_creature->getVictimGUID();
             m_creature->AddThreat(m_creature->getVictim(), 10000000.0f);
             DoCast(m_creature->getVictim(), SPELL_PURPLE_BEAM, true);
             DoCast(m_creature->getVictim(), SPELL_PARALYZE, true);

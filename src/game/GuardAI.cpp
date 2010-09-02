@@ -112,7 +112,7 @@ void GuardAI::UpdateAI(const uint32 /*diff*/)
     if(!UpdateVictim())
         return;
 
-    i_victimGuid = m_creature->getVictim()->GetGUID();
+    i_victimGuid = m_creature->getVictimGUID();
 
     if(m_creature->isAttackReady())
     {
