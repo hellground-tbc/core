@@ -213,6 +213,7 @@ bool GossipHello_npc_cenarion_scout_jalia(Player *player, Creature *_Creature)
         player->PrepareQuestMenu( _Creature->GetGUID() );
 
     if( player->GetQuestStatus(8739) == QUEST_STATUS_INCOMPLETE )
+	if(!player->HasItemCount(21161,1))	
         player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_JALIA, GOSSIP_SENDER_MAIN, GOSSIP_SENDER_INFO );
 
     player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
