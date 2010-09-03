@@ -1038,10 +1038,10 @@ void BattleGround::AddPlayer(Player *plr)
                 (plr)->SetTemporaryUnsummonedPetNumber(pet->GetCharmInfo()->GetPetNumber());
                 (plr)->SetOldPetSpell(pet->GetUInt32Value(UNIT_CREATED_BY_SPELL));
             }
-            (plr)->RemovePet(NULL,PET_SAVE_NOT_IN_SLOT);
+            plr->RemovePet(NULL,PET_SAVE_NOT_IN_SLOT);
         }
-    else
-            (plr)->SetTemporaryUnsummonedPetNumber(0);
+        else
+            plr->SetTemporaryUnsummonedPetNumber(0);
 
         if(GetStatus() == STATUS_WAIT_JOIN)                 // not started yet
         {
@@ -1049,6 +1049,9 @@ void BattleGround::AddPlayer(Player *plr)
 
             plr->SetHealth(plr->GetMaxHealth());
             plr->SetPower(POWER_MANA, plr->GetMaxPower(POWER_MANA));
+            
+            if(plr->GetPower(POWER_RAGE))
+                plr->SetPower(POWER_RAGE, 0);
         }
     }
     else
