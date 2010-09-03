@@ -82,7 +82,7 @@ EndScriptData */
 #define SPELL_SUBMERGE                  37550 //dropout 'head'
 
 #define CREATURE_ENSLAVED_SOUL          23469
-#define NUMBER_ENSLAVED_SOUL            8
+#define NUMBER_ENSLAVED_SOUL            16
 
 struct Position
 {
@@ -125,9 +125,9 @@ struct TRINITY_DLL_DECL npc_enslaved_soulAI : public ScriptedAI
 
 };
 
-struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public ScriptedAI
+struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
 {
-    boss_reliquary_of_soulsAI(Creature *c) : ScriptedAI(c)
+    boss_reliquary_of_soulsAI(Creature *c) : Scripted_NoMovementAI(c)
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
         EssenceGUID = 0;
@@ -746,7 +746,7 @@ struct TRINITY_DLL_DECL boss_essence_of_angerAI : public ScriptedAI
 
         if(SoulScreamTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_SOUL_SCREAM);
+            DoCast(m_creature, SPELL_SOUL_SCREAM);
 
             if(!urand(0,2))
                 DoScriptText(ANGER_SAY_SPEC, m_creature);

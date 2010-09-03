@@ -6258,8 +6258,8 @@ void Aura::PeriodicTick()
             }
             else
             {
-                pCaster->CalcAbsorb(m_target, GetSpellSchoolMask(GetSpellProto()), damageInfo.damage, &damageInfo.absorb, &damageInfo.resist);
                 damageInfo.resist = 0;
+                pCaster->CalcAbsorb(m_target, GetSpellSchoolMask(GetSpellProto()), damageInfo.damage, &damageInfo.absorb, &damageInfo.resist);
             }
 
             if(m_target->GetHealth() < damageInfo.damage)

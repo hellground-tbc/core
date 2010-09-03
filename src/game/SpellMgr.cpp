@@ -972,6 +972,10 @@ bool IsPartialyResistable(SpellEntry const* spellInfo)
         case 32053:     // Archimond - Soul Charge, red
         case 32054:     // Archimond - Soul Charge, yellow
         case 32057:     // Archimond - Soul Charge, green
+        case 41545:     // RoS: Soul Scream
+        case 41376:     // RoS: Spite
+        case 41352:     // RoS: Aura of Desire dmg back
+        case 41337:     // RoS: Aura of Anger
             return false;
     }
 
