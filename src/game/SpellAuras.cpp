@@ -568,7 +568,7 @@ void Aura::Update(uint32 diff)
     // Scalding Water
     if(GetId() == 37284)
     {
-        if(!m_target->IsUnderWater())
+        if(!m_target->IsInWater())
             m_target->RemoveAurasDueToSpell(37284);
     }
 
@@ -1983,7 +1983,7 @@ void Aura::TriggerSpell()
                             {
                                 switch((*itr)->GetSpellProto()->Id)
                                 {
-                                    case 19384:
+                                    case 19184:
                                     case 19387:
                                     case 19388:
                                         f_chance = (*itr)->GetSpellProto()->procChance;
