@@ -1734,7 +1734,7 @@ bool Creature::FallGround()
     // the visual appear to be fairly close to the expected.
 
     GetMap()->CreatureRelocation(this, GetPositionX(), GetPositionY(), tz, GetOrientation());
-    SendMonsterMove(GetPositionX(), GetPositionY(), tz, travelTime, speed);
+    SendMonsterMove(GetPositionX(), GetPositionY(), tz,MOVEMENTFLAG_WALK_MODE, travelTime, speed);
     return true;
 }
 
