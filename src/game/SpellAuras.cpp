@@ -568,7 +568,7 @@ void Aura::Update(uint32 diff)
     // Scalding Water
     if(GetId() == 37284)
     {
-        if(!m_target->IsUnderWater())
+        if(!m_target->IsInWater())
             m_target->RemoveAurasDueToSpell(37284);
     }
 
@@ -1983,7 +1983,7 @@ void Aura::TriggerSpell()
                             {
                                 switch((*itr)->GetSpellProto()->Id)
                                 {
-                                    case 19384:
+                                    case 19184:
                                     case 19387:
                                     case 19388:
                                         f_chance = (*itr)->GetSpellProto()->procChance;
@@ -4762,6 +4762,13 @@ void Aura::HandleAuraModStat(bool apply, bool Real)
     {
         sLog.outError("WARNING: Spell %u effect %u have unsupported misc value (%i) for SPELL_AURA_MOD_STAT ",GetId(),GetEffIndex(),m_modifier.m_miscvalue);
         return;
+    }
+
+    if(apply && GetId() == 20007) // Crusader enchant proc: Holy Strength
+    {
+        uint32 lvldiff = m_target->getLevel() - 60;
+        uint32 diff = lvldiff > 0 ? lvldiff*4 : 0;
+        m_modifier.m_amount = GetModifierValue() - diff;
     }
 
     for(int32 i = STAT_STRENGTH; i < MAX_STATS; i++)

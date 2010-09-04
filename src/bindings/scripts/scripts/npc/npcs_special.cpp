@@ -34,6 +34,7 @@ npc_sayge               100%    Darkmoon event fortune teller, buff player based
 npc_snake_trap_serpents 80%     AI for snakes that summoned by Snake Trap
 npc_flight_master       100%    AI for flight masters.
 npc_lazy_peon                   AI for peons for quest 5441 (Lazy Peons)
+npc_mojo                %       AI for companion Mojo (summoned by item: 33993)
 EndContentData */
 
 #include "precompiled.h"
@@ -1142,7 +1143,7 @@ const char type[] = "WGBHD";
 struct TRINITY_DLL_DECL npc_flight_masterAI : public ScriptedAI
 {
     npc_flight_masterAI(Creature *c) : ScriptedAI(c) {}
-    
+
     void Reset(){}
     void SummonAdvisor()
     {
@@ -1175,7 +1176,7 @@ struct TRINITY_DLL_DECL npc_flight_masterAI : public ScriptedAI
     {
         if(!UpdateVictim())
             return;
-        
+
         DoMeleeAttackIfReady();
     }
 };
@@ -1429,6 +1430,10 @@ CreatureAI* GetAI_npc_garments_of_quests(Creature* pCreature)
     return new npc_garments_of_questsAI(pCreature);
 }
 
+/*########
+# npc_lazy_peon
+#########*/
+
 #define MIN_TIME_TO_GO_ASLEEP    60000         //1 minute
 #define MAX_TIME_TO_GO_ASLEEP    600000        //10 minutes
 
@@ -1438,7 +1443,7 @@ struct TRINITY_DLL_DECL npc_lazy_peonAI : public ScriptedAI
 
     uint32 reAuraTimer;
 
-    void Reset() 
+    void Reset()
     {
         reAuraTimer = urand(MIN_TIME_TO_GO_ASLEEP, MAX_TIME_TO_GO_ASLEEP);
     }
@@ -1462,7 +1467,7 @@ struct TRINITY_DLL_DECL npc_lazy_peonAI : public ScriptedAI
             {
                 m_creature->CastSpell(m_creature, 17743, true);
                 reAuraTimer = urand(MIN_TIME_TO_GO_ASLEEP, MAX_TIME_TO_GO_ASLEEP);
-                
+
                 return;
             }
         }
@@ -1476,6 +1481,161 @@ struct TRINITY_DLL_DECL npc_lazy_peonAI : public ScriptedAI
 CreatureAI* GetAI_npc_lazy_peon(Creature* pCreature)
 {
     return new npc_lazy_peonAI(pCreature);
+}
+
+
+/*########
+# npc_mojo
+#########*/
+
+#define SPELL_FEELING_FROGGY    43906
+#define SPELL_HEARTS            20372   //wrong ?
+#define MOJO_WHISPS_COUNT       8
+
+struct TRINITY_DLL_DECL npc_mojoAI : public ScriptedAI
+{
+    npc_mojoAI(Creature *c) : ScriptedAI(c) {}
+
+    uint32 heartsResetTimer;
+    bool hearts;
+
+    void Reset()
+    {
+        heartsResetTimer = 15000;
+        hearts = false;
+        m_creature->GetMotionMaster()->Clear();
+        m_creature->GetMotionMaster()->MoveFollow(m_creature->GetOwner(), 2.0, M_PI/2);
+    }
+
+    void EnterCombat(Unit *who) {}
+
+    void OnAuraApply(Aura* aur, Unit* caster, bool stackApply)
+    {
+        if (aur->GetId() == SPELL_HEARTS)
+        {
+            hearts = true;
+            heartsResetTimer = 15000;
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (hearts)
+        {
+            if (heartsResetTimer <= diff)
+            {
+                m_creature->RemoveAurasDueToSpell(SPELL_HEARTS);
+                hearts = false;
+                m_creature->GetMotionMaster()->Clear(true);
+                m_creature->GetMotionMaster()->MoveFollow(m_creature->GetOwner(), 2.0, M_PI/2);
+                m_creature->SetFlag64(UNIT_FIELD_TARGET, NULL);
+            }
+            else
+                heartsResetTimer -= diff;
+        }
+    }
+};
+
+bool ReceiveEmote_npc_mojo( Player *player, Creature *_Creature, uint32 emote )
+{
+    if( emote == TEXTEMOTE_KISS )
+    {
+        if (!_Creature->HasAura(SPELL_HEARTS, 0))
+        {
+            //affect only the same conflict side (horde -> horde or ally -> ally)
+            if( player->GetTeam() == _Creature->GetCharmerOrOwnerPlayerOrPlayerItself()->GetTeam() )
+            {
+                player->CastSpell(player, SPELL_FEELING_FROGGY, false);
+                _Creature->CastSpell(_Creature, SPELL_HEARTS, false);
+                _Creature->SetFlag64(UNIT_FIELD_TARGET, player->GetGUID());
+                _Creature->StopMoving();
+                _Creature->GetMotionMaster()->Clear();
+                _Creature->GetMotionMaster()->MoveFollow(player, 1.0, 0);
+
+                char * text;
+
+                switch (urand(0, MOJO_WHISPS_COUNT))
+                {
+                    case 0:
+                        text = "Now that's what I call froggy-style!";
+                        break;
+                    case 1:
+                        text = "Your lily pad or mine?";
+                        break;
+                    case 2:
+                        text = "This won't take long, did it?";
+                        break;
+                    case 3:
+                        text = "I thought you'd never ask!";
+                        break;
+                    case 4:
+                        text = "I promise not to give you warts...";
+                        break;
+                    case 5:
+                        text = "Feelin' a little froggy, are ya?";
+                        break;
+                    case 6:
+                        text = "Listen, $n, I know of a little swamp not too far from here....";
+                        break;
+                    default:
+                        text = "There's just never enough Mojo to go around...";
+                        break;
+                }
+
+                _Creature->Whisper(text, player->GetGUID(), false);
+            }
+        }
+    }
+
+    return true;
+}
+
+CreatureAI* GetAI_npc_mojo(Creature *_Creature)
+{
+    return new npc_mojoAI(_Creature);
+}
+
+
+/*########
+# npc_woeful_healer
+#########*/
+
+#define SPELL_PREYER_OF_HEALING     30604
+
+struct TRINITY_DLL_DECL npc_woeful_healerAI : public ScriptedAI
+{
+    npc_woeful_healerAI(Creature *c) : ScriptedAI(c) {Reset();}
+
+    uint32 healTimer;
+
+    void Reset()
+    {
+        healTimer = urand(2500, 7500);
+        m_creature->GetMotionMaster()->MoveFollow(m_creature->GetOwner(), 2.0, M_PI/2);
+    }
+
+    void EnterCombat(Unit *who) {}
+
+    void UpdateAI(const uint32 diff)
+    {
+        Unit * owner = m_creature->GetCharmerOrOwner();
+
+        if (healTimer <= diff)
+        {
+            if (!owner || !owner->isInCombat())
+                return;
+
+            m_creature->CastSpell(m_creature, SPELL_PREYER_OF_HEALING, false);
+            healTimer = urand(2500, 7500);
+        }
+        else
+            healTimer -= diff;
+    }
+};
+
+CreatureAI* GetAI_npc_woeful_healer(Creature* pCreature)
+{
+    return new npc_woeful_healerAI(pCreature);
 }
 
 void AddSC_npcs_special()
@@ -1568,6 +1728,17 @@ void AddSC_npcs_special()
     newscript = new Script;
     newscript->Name="npc_lazy_peon";
     newscript->GetAI = &GetAI_npc_lazy_peon;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_mojo";
+    newscript->GetAI = &GetAI_npc_mojo;
+    newscript->pReceiveEmote =  &ReceiveEmote_npc_mojo;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_woeful_healer";
+    newscript->GetAI = &GetAI_npc_woeful_healer;
     newscript->RegisterSelf();
 }
 
