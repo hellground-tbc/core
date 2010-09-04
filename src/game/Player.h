@@ -1808,7 +1808,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         /*********************************************************/
         void UpdateArenaFields();
         void UpdateHonorFields();
-        bool RewardHonor(Unit *pVictim, uint32 groupsize, float honor = -1, bool pvptoken = false, bool killer = false);
+        bool RewardHonor(Unit *pVictim, uint32 groupsize, float honor = -1, bool pvptoken = false, bool killer = true);
         uint32 GetHonorPoints() { return GetUInt32Value(PLAYER_FIELD_HONOR_CURRENCY); }
         uint32 GetArenaPoints() { return GetUInt32Value(PLAYER_FIELD_ARENA_CURRENCY); }
         void ModifyHonorPoints( int32 value );
