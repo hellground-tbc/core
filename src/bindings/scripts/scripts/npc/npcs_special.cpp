@@ -1430,6 +1430,10 @@ CreatureAI* GetAI_npc_garments_of_quests(Creature* pCreature)
     return new npc_garments_of_questsAI(pCreature);
 }
 
+/*########
+# npc_lazy_peon
+#########*/
+
 #define MIN_TIME_TO_GO_ASLEEP    60000         //1 minute
 #define MAX_TIME_TO_GO_ASLEEP    600000        //10 minutes
 
@@ -1481,7 +1485,7 @@ CreatureAI* GetAI_npc_lazy_peon(Creature* pCreature)
 
 
 /*########
-# npc_chicken_cluck
+# npc_mojo
 #########*/
 
 #define SPELL_FEELING_FROGGY    43906
@@ -1592,6 +1596,48 @@ CreatureAI* GetAI_npc_mojo(Creature *_Creature)
 }
 
 
+/*########
+# npc_woeful_healer
+#########*/
+
+#define SPELL_PREYER_OF_HEALING     30604
+
+struct TRINITY_DLL_DECL npc_woeful_healerAI : public ScriptedAI
+{
+    npc_woeful_healerAI(Creature *c) : ScriptedAI(c) {Reset();}
+
+    uint32 healTimer;
+
+    void Reset()
+    {
+        healTimer = urand(2500, 7500);
+        m_creature->GetMotionMaster()->MoveFollow(m_creature->GetOwner(), 2.0, M_PI/2);
+    }
+
+    void EnterCombat(Unit *who) {}
+
+    void UpdateAI(const uint32 diff)
+    {
+        Unit * owner = m_creature->GetCharmerOrOwner();
+
+        if (healTimer <= diff)
+        {
+            if (!owner || !owner->isInCombat())
+                return;
+
+            m_creature->CastSpell(m_creature, SPELL_PREYER_OF_HEALING, false);
+            healTimer = urand(2500, 7500);
+        }
+        else
+            healTimer -= diff;
+    }
+};
+
+CreatureAI* GetAI_npc_woeful_healer(Creature* pCreature)
+{
+    return new npc_woeful_healerAI(pCreature);
+}
+
 void AddSC_npcs_special()
 {
     Script *newscript;
@@ -1688,6 +1734,11 @@ void AddSC_npcs_special()
     newscript->Name="npc_mojo";
     newscript->GetAI = &GetAI_npc_mojo;
     newscript->pReceiveEmote =  &ReceiveEmote_npc_mojo;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_woeful_healer";
+    newscript->GetAI = &GetAI_npc_woeful_healer;
     newscript->RegisterSelf();
 }
 
