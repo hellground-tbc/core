@@ -128,7 +128,7 @@ World::World()
     m_honorRanks[9] = 40000;
     m_honorRanks[10] = 50000;
     m_honorRanks[11] = 60000;
-    m_honorRanks[12] = 750000;
+    m_honorRanks[12] = 75000;
     m_honorRanks[13] = 100000;
 }
 
