@@ -2036,22 +2036,19 @@ uint32 Map::GetZoneId(uint16 areaflag,uint32 map_id)
 bool Map::IsInWater(float x, float y, float pZ, LiquidData *data) const
 {
     // Check surface in x, y point for liquid
-    if (GridMap* gmap = const_cast<Map*>(this)->GetGrid(x, y))
+    if (const_cast<Map*>(this)->GetGrid(x, y))
     {
         LiquidData liquid_status;
         LiquidData *liquid_ptr = data ? data : &liquid_status;
         if (getLiquidStatus(x, y, pZ, MAP_ALL_LIQUIDS, liquid_ptr))
-        {
-            if (liquid_status.level - liquid_status.depth_level > 2)
                 return true;
-        }
     }
     return false;
 }
 
 bool Map::IsUnderWater(float x, float y, float z) const
 {
-    if (GridMap* gmap = const_cast<Map*>(this)->GetGrid(x, y))
+    if (const_cast<Map*>(this)->GetGrid(x, y))
     {
         if (getLiquidStatus(x, y, z, MAP_LIQUID_TYPE_WATER|MAP_LIQUID_TYPE_OCEAN)&LIQUID_MAP_UNDER_WATER)
             return true;
