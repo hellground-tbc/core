@@ -462,7 +462,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
 
             if(target)
             {
-                AddSpellToCastWithScriptText(target, SPELL_INCINERATE, rand()%2 ? SAY_SPECIAL1 : SAY_SPECIAL2));
+                AddSpellToCastWithScriptText(target, SPELL_INCINERATE, RAND(SAY_SPECIAL1, SAY_SPECIAL2));
                 IncinerateTimer = urand(5000, 35000);
             }
         }
