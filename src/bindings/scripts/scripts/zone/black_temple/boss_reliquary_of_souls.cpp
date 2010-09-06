@@ -100,8 +100,12 @@ struct TRINITY_DLL_DECL npc_enslaved_soulAI : public ScriptedAI
     }
 
     ScriptedInstance *pInstance;
+    uint32 checkTimer;
 
-    void Reset(){}
+    void Reset()
+    {
+        checkTimer = 3000;
+    }
 
     void EnterCombat(Unit* who)
     {
@@ -112,8 +116,7 @@ struct TRINITY_DLL_DECL npc_enslaved_soulAI : public ScriptedAI
     {
         if(pInstance)
         {
-            DoZoneInCombat();
-            Unit * target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true);
+            Unit * target = m_creature->SelectNearbyTarget(200);
 
             if (target)
                 AttackStart(target);
@@ -128,6 +131,28 @@ struct TRINITY_DLL_DECL npc_enslaved_soulAI : public ScriptedAI
         DoCast(m_creature, SPELL_SOUL_RELEASE, true);
     }
 
+    void UpdateAI(const uint32 diff)
+    {
+        if (checkTimer <= diff)
+        {
+            if (pInstance)
+            {
+                if (pInstance->GetData(DATA_RELIQUARYOFSOULSEVENT) != IN_PROGRESS)
+                    m_creature->Kill(m_creature, false);
+            }
+            else
+                m_creature->Kill(m_creature, false);
+
+            checkTimer = 3000;
+        }
+        else
+            checkTimer -= diff;
+
+        if (!UpdateVictim())
+            return;
+
+        DoMeleeAttackIfReady();
+    }
 };
 
 struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
@@ -425,6 +450,8 @@ struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
 
         emoteDone = false;
         backToCage = false;
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
+        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
     }
 
     void DamageTaken(Unit *done_by, uint32 &damage)
@@ -545,7 +572,6 @@ struct TRINITY_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
     uint32 RuneShieldTimer;
     uint32 DeadenTimer;
     uint32 SoulShockTimer;
-    uint32 GlobalCooldown;
 
     bool emoteDone;
     bool backToCage;
@@ -555,7 +581,6 @@ struct TRINITY_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
         RuneShieldTimer = 15000;
         DeadenTimer = 30000;
         SoulShockTimer = 5000;
-        GlobalCooldown = 0;
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
 
         emoteDone = false;
@@ -621,21 +646,10 @@ struct TRINITY_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
-        if(GlobalCooldown > diff)
-        {
-            GlobalCooldown -= diff;
-            if(!backToCage)
-                DoMeleeAttackIfReady();
-
-            return;
-        }
-
         if(RuneShieldTimer < diff)
         {
-            m_creature->InterruptNonMeleeSpells(false);
-            DoCast(m_creature, SPELL_RUNE_SHIELD, true);
+            AddSpellToCast(m_creature, SPELL_RUNE_SHIELD, true);
 
-            GlobalCooldown = 1000;
             RuneShieldTimer = 15000;
         }
         else
@@ -643,8 +657,7 @@ struct TRINITY_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
 
         if(SoulShockTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_SOUL_SHOCK);
-            GlobalCooldown = 1000;
+            AddSpellToCast(m_creature->getVictim(), SPELL_SOUL_SHOCK);
             SoulShockTimer = 5000;
         }
         else
@@ -652,20 +665,21 @@ struct TRINITY_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
 
         if(DeadenTimer < diff)
         {
-            m_creature->InterruptNonMeleeSpells(false);
-            DoCast(m_creature->getVictim(), SPELL_DEADEN);
-
             if(urand(0,1))
-                DoScriptText(DESI_SAY_SPEC, m_creature);
+                AddSpellToCastWithScriptText()(m_creature->getVictim(), SPELL_DEADEN, DESI_SAY_SPEC);
+            else
+                AddSpellToCast(m_creature->getVictim(), SPELL_DEADEN);
 
-            GlobalCooldown = 1000;
             DeadenTimer = 30000;
         }
         else
             DeadenTimer -= diff;
 
         if(!backToCage)
+        {
+            CastNextSpellIfAnyAndReady();
             DoMeleeAttackIfReady();
+        }
     }
 };
 
@@ -694,6 +708,8 @@ struct TRINITY_DLL_DECL boss_essence_of_angerAI : public ScriptedAI
         SpiteTargetGUID.clear();
 
         CheckedAggro = false;
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
+        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
     }
 
     void EnterCombat(Unit *who)
