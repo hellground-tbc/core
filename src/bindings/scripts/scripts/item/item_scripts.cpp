@@ -401,6 +401,7 @@ bool ItemUse_item_specific_target(Player *player, Item* _Item, SpellCastTargets 
         case 29513: cEntry[0] = 19354; break; // Staff of the Dreghood Elders
         case 32680: cEntry[0] = 23311; targetState = T_ALIVE; break; // Booterang
         case 30251: cEntry[0] = 20058; break; // Rina's Diminution Powder
+        case 23417: cEntry[0] = 16975; break; // Sanctified Crystal
     }
 
     if(uTarget && uTarget->GetTypeId() == TYPEID_UNIT)
