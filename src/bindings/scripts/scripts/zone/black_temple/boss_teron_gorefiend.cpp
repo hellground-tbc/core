@@ -143,7 +143,7 @@ struct TRINITY_DLL_DECL mob_doom_blossomAI : public NullCreatureAI
 
         if (despawnTimer <= diff)
         {
-            m_creature->InterruptNonMeleeSpells();
+            m_creature->InterruptNonMeleeSpells(false);
             Despawn();
         }
         else

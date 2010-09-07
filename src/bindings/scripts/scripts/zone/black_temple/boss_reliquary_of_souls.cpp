@@ -666,7 +666,7 @@ struct TRINITY_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
         if(DeadenTimer < diff)
         {
             if(urand(0,1))
-                AddSpellToCastWithScriptText()(m_creature->getVictim(), SPELL_DEADEN, DESI_SAY_SPEC);
+                AddSpellToCastWithScriptText(m_creature->getVictim(), SPELL_DEADEN, DESI_SAY_SPEC);
             else
                 AddSpellToCast(m_creature->getVictim(), SPELL_DEADEN);
 
