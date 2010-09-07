@@ -76,18 +76,23 @@ struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
 
     void OnCreatureCreate(Creature *creature, uint32 creature_entry)
     {
+        uint32 data = 0;
         switch(creature->GetEntry())
         {
-        case 17257:
-            MagtheridonGUID = creature->GetGUID();
-            break;
-        case 17256:
-            ChannelerGUID.insert(creature->GetGUID());
-            break;
-        case 666:
-            STCasterGUID = creature->GetGUID();
-            break;
+            case 17257:
+                data = DATA_MAGTHERIDON_EVENT;
+                MagtheridonGUID = creature->GetGUID();
+                break;
+            case 17256:
+                ChannelerGUID.insert(creature->GetGUID());
+                break;
+            case 666:
+                STCasterGUID = creature->GetGUID();
+                break;
         }
+
+        if(data && creature->isAlive() && GetData(data) == DONE)
+            creature->Kill(creature, false);
     }
 
     void OnObjectCreate(GameObject *go)
