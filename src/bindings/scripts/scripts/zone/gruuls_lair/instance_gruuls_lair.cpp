@@ -73,14 +73,36 @@ struct TRINITY_DLL_DECL instance_gruuls_lair : public ScriptedInstance
 
     void OnCreatureCreate(Creature *creature, uint32 creature_entry)
     {
+        uint32 data = 0;
         switch(creature_entry)
         {
-            case 18835: KigglerTheCrazed = creature->GetGUID(); break;
-            case 18836: BlindeyeTheSeer = creature->GetGUID();  break;
-            case 18834: OlmTheSummoner = creature->GetGUID();   break;
-            case 18832: KroshFirehand = creature->GetGUID();    break;
-            case 18831: Maulgar = creature->GetGUID();          break;
+            case 18835:
+                data = DATA_MAULGAREVENT; 
+                KigglerTheCrazed = creature->GetGUID();
+                break;
+            case 18836:
+                data = DATA_MAULGAREVENT; 
+                BlindeyeTheSeer = creature->GetGUID();
+                break;
+            case 18834:
+                data = DATA_MAULGAREVENT; 
+                OlmTheSummoner = creature->GetGUID();
+                break;
+            case 18832:
+                data = DATA_MAULGAREVENT; 
+                KroshFirehand = creature->GetGUID();
+                break;
+            case 18831:
+                data = DATA_MAULGAREVENT;
+                Maulgar = creature->GetGUID();
+                break;
+            case 19044:
+                data = DATA_GRUULEVENT;
+                break;
         }
+
+        if(data && creature->isAlive() && GetData(data) == DONE)
+            creature->Kill(creature, false);
     }
 
     void OnObjectCreate(GameObject* go)
