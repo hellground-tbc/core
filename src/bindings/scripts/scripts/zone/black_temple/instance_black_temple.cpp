@@ -139,23 +139,73 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
 
     void OnCreatureCreate(Creature *creature, uint32 creature_entry)
     {
+        uint32 data = 0;
+
         switch(creature_entry)
         {
-        case 22887:    Najentus = creature->GetGUID();                  break;
-        case 23089:    Akama = creature->GetGUID();                     break;
-        case 23191:    Akama_Shade = creature->GetGUID();               break;
-        case 22841:    ShadeOfAkama = creature->GetGUID();              break;
-        case 22871:    Teron = creature->GetGUID();                     break;
-        case 22898:    Supremus = creature->GetGUID();                  break;
-        case 22917:    IllidanStormrage = creature->GetGUID();          break;
-        case 22949:    GathiosTheShatterer = creature->GetGUID();       break;
-        case 22950:    HighNethermancerZerevor = creature->GetGUID();   break;
-        case 22951:    LadyMalande = creature->GetGUID();               break;
-        case 22952:    VerasDarkshadow = creature->GetGUID();           break;
-        case 23426:    IllidariCouncil = creature->GetGUID();           break;
-        case 23499:    BloodElfCouncilVoice = creature->GetGUID();      break;
-        case 23047:    weaponmasterList.push_back(creature->GetGUID()); break;
+            case 22887: // High Warlord Naj'entus
+                data = DATA_HIGHWARLORDNAJENTUSEVENT;
+                Najentus = creature->GetGUID();
+                break;
+            case 23089:
+                Akama = creature->GetGUID();
+                break;
+            case 23191:
+                Akama_Shade = creature->GetGUID(); 
+                break;
+            case 22841: // Shade of Akama
+                data = DATA_SHADEOFAKAMAEVENT;
+                ShadeOfAkama = creature->GetGUID();
+                break;
+            case 22871: // Teron Gorefiend
+                data = DATA_TERONGOREFIENDEVENT;
+                Teron = creature->GetGUID();   
+                break;
+            case 22898: // Supremus
+                data = DATA_SUPREMUSEVENT;
+                Supremus = creature->GetGUID();   
+                break;
+            case 22917: // Illidan Stormrage
+                data = DATA_ILLIDANSTORMRAGEEVENT;
+                IllidanStormrage = creature->GetGUID();  
+                break;
+            case 22947:
+                data = DATA_MOTHERSHAHRAZEVENT;
+            case 22948: // Gurtogg Bloodboil
+                data = DATA_GURTOGGBLOODBOILEVENT;
+                break;
+            case 22949:
+                data = DATA_ILLIDARICOUNCILEVENT;
+                GathiosTheShatterer = creature->GetGUID();  
+                break;
+            case 22950:
+                data = DATA_ILLIDARICOUNCILEVENT;
+                HighNethermancerZerevor = creature->GetGUID();
+                break;
+            case 22951: 
+                data = DATA_ILLIDARICOUNCILEVENT;
+                LadyMalande = creature->GetGUID(); 
+                break;
+            case 22952:
+                data = DATA_ILLIDARICOUNCILEVENT;
+                VerasDarkshadow = creature->GetGUID();    
+                break;
+            case 23426:  
+                IllidariCouncil = creature->GetGUID();     
+                break;
+            case 23418: // Reliquary of the Lost
+                data = DATA_RELIQUARYOFSOULSEVENT;
+                break;
+            case 23499:  
+                BloodElfCouncilVoice = creature->GetGUID(); 
+                break;
+            case 23047: 
+                weaponmasterList.push_back(creature->GetGUID());
+                break;
         }
+
+        if(data && creature->isAlive() && GetData(data) == DONE)
+            creature->Kill(creature, false);
     }
 
     void OnObjectCreate(GameObject* go)

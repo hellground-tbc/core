@@ -1399,9 +1399,7 @@ bool Creature::CreateFromProto(uint32 guidlow, uint32 Entry, uint32 team, const 
     //Normally non-players do not teleport to other maps.
     Map *map = FindMap();
     if(map && map->IsDungeon() && ((InstanceMap*)map)->GetInstanceData())
-    {
         ((InstanceMap*)map)->GetInstanceData()->OnCreatureCreate(this, Entry);
-    }
 
     return true;
 }
