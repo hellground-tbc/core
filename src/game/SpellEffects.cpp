@@ -4924,7 +4924,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             if(!m_caster->CanHaveThreatList())
                 return;
 
-            m_caster->getThreatManager().modifyThreatPercent(unitTarget, -(urand(1, 25)));
+            m_caster->getThreatManager().modifyThreatPercent(unitTarget, -urand(1, 25));
             break;
         }
         // Void Reaver: Knock Back

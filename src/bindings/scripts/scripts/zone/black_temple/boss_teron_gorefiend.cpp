@@ -174,7 +174,8 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
         DoCast(m_creature, SPELL_SHADOW_STRIKES, false);
 
         DoZoneInCombat();
-        AtrophyTimer = 2000;
+        CheckPlayers();
+        AtrophyTimer = 3000;
         CheckTeronTimer = 5000;
     }
 
@@ -216,7 +217,7 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
 
     void CheckPlayers()
     {
-        if(Creature* Teron = (Unit::GetCreature((*m_creature), TeronGUID)))
+        if(Creature* Teron = Unit::GetCreature((*m_creature), TeronGUID))
         {
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true, Teron->getVictimGUID()))
             {
@@ -233,6 +234,7 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
                         }
                     }
                 }
+
                 if(!m_creature->getVictim())
                     AttackStart(target);
             }
@@ -254,6 +256,7 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
             Creature* Teron = (Unit::GetCreature((*m_creature), TeronGUID));
             if(Teron && !Teron->isInCombat())
                  m_creature->Kill(m_creature, false);
+
             CheckTeronTimer = 5000;
         }
         else

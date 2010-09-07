@@ -116,9 +116,9 @@ struct TRINITY_DLL_DECL npc_enslaved_soulAI : public ScriptedAI
     {
         if(pInstance)
         {
-            Unit * target = m_creature->SelectNearbyTarget(200);
+            DoZoneInCombat();
 
-            if (target)
+            if(Unit * target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
                 AttackStart(target);
         }
     }
