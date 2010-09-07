@@ -3756,14 +3756,27 @@ void Aura::HandleModThreat(bool apply, bool Real)
             multiplier = 1;
             break;
     }
-    if (level_diff > 0)
+    if (apply && level_diff > 0)
         m_modifier.m_amount += multiplier * level_diff;
 
     if(m_target->GetTypeId() == TYPEID_PLAYER)
     {
         for(int8 x=0;x < MAX_SPELL_SCHOOL;x++)
             if(m_modifier.m_miscvalue & int32(1<<x))
-                ApplyPercentModFloatVar(m_target->m_threatModifier[x], m_modifier.m_amount, apply);
+            {
+                if(!apply && !m_target->m_threatModifier[x])
+                {
+                    m_target->m_threatModifier[x] = 1.0f;
+                    Unit::AuraList const& threatAuras = m_target->GetAurasByType(SPELL_AURA_MOD_THREAT);
+                    for(Unit::AuraList::const_iterator i = threatAuras.begin();i != threatAuras.end(); ++i)
+                    {
+                        if((*i)->GetModifier()->m_miscvalue & int32(1<<x) && (*i) != this)
+                            ApplyPercentModFloatVar(m_target->m_threatModifier[x], (*i)->GetModifier()->m_amount, !apply);
+                    }
+                }
+                else
+                    ApplyPercentModFloatVar(m_target->m_threatModifier[x], m_modifier.m_amount, apply);
+            }
     }
 }
 
