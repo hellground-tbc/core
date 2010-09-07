@@ -1708,6 +1708,9 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
     if(GetTypeId()==TYPEID_UNIT && ((Creature*)this)->IsAIEnabled)
         ((Creature*)this)->AI()->JustSummoned(pCreature);
 
+    if(pCreature->IsAIEnabled)
+        pCreature->AI()->JustRespawned();
+
     if(pCreature->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER && pCreature->m_spells[0])
     {
         if(GetTypeId() == TYPEID_UNIT || GetTypeId() == TYPEID_PLAYER)
