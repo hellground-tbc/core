@@ -200,17 +200,28 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
         m_creature->RemoveAurasDueToSpell(SPELL_SUBMERGE);
     }
 
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat())
+        {
+            if (m_creature->GetDistance(who) <= 65 && m_creature->IsHostileTo(who))
+            {
+                m_creature->AddThreat(who, 10000.0f);
+                DoZoneInCombat();
+
+                if(pInstance)
+                    pInstance->SetData(DATA_RELIQUARYOFSOULSEVENT, IN_PROGRESS);
+
+                Phase = 1;
+                Counter = 0;
+                Timer = 0;
+            }
+        }
+    }
+
     void EnterCombat(Unit* who)
     {
-        m_creature->AddThreat(who, 10000.0f);
-        DoZoneInCombat();
-
-        if(pInstance)
-            pInstance->SetData(DATA_RELIQUARYOFSOULSEVENT, IN_PROGRESS);
-
-        Phase = 1;
-        Counter = 0;
-        Timer = 0;
+        m_creature->SetUInt64Value(UNIT_FIELD_TARGET, NULL);
     }
 
     void SummonSouls()
@@ -275,6 +286,8 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
                 EnterEvadeMode();
                 return;
             }
+
+            m_creature->SetUInt64Value(UNIT_FIELD_TARGET, NULL);
 
             CheckTimer = 2000;
         }
@@ -433,6 +446,7 @@ struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
     uint32 EnrageTimer;
     uint32 SoulDrainTimer;
     uint32 AuraTimer;
+    uint32 checkTimer;
 
     bool emoteDone;
     bool backToCage;
@@ -447,6 +461,7 @@ struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
         EnrageTimer = 44000 +rand()%3000;
         SoulDrainTimer = 20000 +rand()%5000;
         AuraTimer = 5000;
+        checkTimer = 3000;
 
         emoteDone = false;
         backToCage = false;
@@ -542,6 +557,14 @@ struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
+        if (checkTimer <= diff)
+        {
+            m_creature->SetSpeed(MOVE_RUN, 2.5);
+            checkTimer = 3000;
+        }
+        else
+            checkTimer -= diff;
+
         if(EnrageTimer < diff)
         {
             DoCast(m_creature, SPELL_ENRAGE, true);
@@ -572,6 +595,7 @@ struct TRINITY_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
     uint32 RuneShieldTimer;
     uint32 DeadenTimer;
     uint32 SoulShockTimer;
+    uint32 checkTimer;
 
     bool emoteDone;
     bool backToCage;
@@ -581,6 +605,7 @@ struct TRINITY_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
         RuneShieldTimer = 15000;
         DeadenTimer = 30000;
         SoulShockTimer = 5000;
+        checkTimer = 3000;
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
 
         emoteDone = false;
@@ -645,6 +670,14 @@ struct TRINITY_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
     {
         if (!UpdateVictim())
             return;
+
+        if (checkTimer <= diff)
+        {
+            m_creature->SetSpeed(MOVE_RUN, 2.5);
+            checkTimer = 3000;
+        }
+        else
+            checkTimer -= diff;
 
         if(RuneShieldTimer < diff)
         {
@@ -750,6 +783,9 @@ struct TRINITY_DLL_DECL boss_essence_of_angerAI : public ScriptedAI
                 DoCast(m_creature, SPELL_SELF_SEETHE, true);
                 AggroTargetGUID = m_creature->getVictimGUID();
             }
+
+            m_creature->SetSpeed(MOVE_RUN, 2.5);
+
             CheckTankTimer = 2000;
         }
         else
