@@ -3587,7 +3587,7 @@ bool Unit::AddAura(Aura *Aur)
                     caster->AddAura(*itr, this);
     }
 
-    if(GetTypeId() == TYPEID_UNIT && this->IsAIEnabled)
+    if(GetTypeId() == TYPEID_UNIT && IsAIEnabled)
         ((Creature*)this)->AI()->OnAuraApply(Aur, Aur->GetCaster(), stackModified);
 
     sLog.outDebug("Aura %u now is in use", Aur->GetModifier()->m_auraname);
