@@ -57,7 +57,7 @@ uint32 GhostSpell[5] =
     40157,
     40175,
     40322
-    };
+};
 
 
 struct TRINITY_DLL_DECL mob_doom_blossomAI : public NullCreatureAI
@@ -202,13 +202,14 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
             DoCast(target, SPELL_ATROPHY);
     }
 
-    void OnAuraApply(Aura* aura, Unit* caster)  // Only ghost spells are working
+    void OnAuraApply(Aura* aura, Unit* caster, bool addStack)  // Only ghost spells are working
     {
-        for(uint8 i = 0; i<5; ++i)
+        for(uint8 i = 0; i < 5; ++i)
         {
             if(aura->GetId() == GhostSpell[i])
                 return;
         }
+
         if(aura->GetId() != SPELL_PASSIVE_SHADOWFORM && aura->GetId() != SPELL_SHADOW_STRIKES)
             m_creature->RemoveAurasByCasterSpell(aura->GetId(), caster->GetGUID());
     }

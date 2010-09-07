@@ -217,6 +217,7 @@ inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
     if(spellInfo->Id == 31943)  //Doomfire
         if(target->HasAura(31943,eff_index))
             return;
+
     if(target->GetTypeId() == TYPEID_UNIT && target->GetEntry() == 23111)
         return;
 
