@@ -72,7 +72,6 @@ struct TRINITY_DLL_DECL mob_doom_blossomAI : public NullCreatureAI
 
     uint32 CheckTeronTimer;
     uint32 ShadowBoltTimer;
-    uint32 despawnTimer;
     uint64 TeronGUID;
 
     void Reset()
@@ -91,7 +90,6 @@ struct TRINITY_DLL_DECL mob_doom_blossomAI : public NullCreatureAI
         newZ = 196.0;
         m_creature->GetMotionMaster()->MovePoint(0, newX, newY, newZ);
         m_creature->SetSpeed(MOVE_RUN, 0.2);
-        despawnTimer = 145000;
     }
 
     void EnterCombat(Unit *who){ return; }
@@ -140,14 +138,6 @@ struct TRINITY_DLL_DECL mob_doom_blossomAI : public NullCreatureAI
         }
         else
             ShadowBoltTimer -= diff;
-
-        if (despawnTimer <= diff)
-        {
-            m_creature->InterruptNonMeleeSpells(false);
-            Despawn();
-        }
-        else
-            despawnTimer -= diff;
 
         return;
     }
@@ -445,6 +435,8 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
             else
                 DoZoneInCombat();
 
+            m_creature->SetSpeed(SPEED_RUN, 2.5);
+
             CheckTimer = 1500;
         }
         else
@@ -467,7 +459,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
             if(target)
             {
                 AddSpellToCastWithScriptText(target, SPELL_INCINERATE, RAND(SAY_SPECIAL1, SAY_SPECIAL2));
-                IncinerateTimer = urand(5000, 35000);
+                IncinerateTimer = urand(5000, 40000);
             }
         }
         else
