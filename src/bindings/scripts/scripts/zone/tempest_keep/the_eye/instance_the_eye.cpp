@@ -82,16 +82,44 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
 
     void OnCreatureCreate(Creature *creature, uint32 creature_entry)
     {
+        uint32 data = 0;
         switch(creature_entry)
         {
-            case 20064: ThaladredTheDarkener = creature->GetGUID(); break;
-            case 20063: MasterEngineerTelonicus = creature->GetGUID(); break;
-            case 20062: GrandAstromancerCapernian = creature->GetGUID(); break;
-            case 20060: LordSanguinar = creature->GetGUID(); break;
-            case 19622: Kaelthas = creature->GetGUID(); break;
-            case 18805: Astromancer = creature->GetGUID(); break;
-            case 19514: Alar = creature->GetGUID(); break;
+            case 20064: 
+                data = DATA_KAELTHASEVENT;
+                ThaladredTheDarkener = creature->GetGUID();
+                break;
+            case 20063:
+                data = DATA_KAELTHASEVENT;
+                MasterEngineerTelonicus = creature->GetGUID();
+                break;
+            case 20062:
+                data = DATA_KAELTHASEVENT;
+                GrandAstromancerCapernian = creature->GetGUID();
+                break;
+            case 20060:
+                data = DATA_KAELTHASEVENT;
+                LordSanguinar = creature->GetGUID(); 
+                break;
+            case 19622:
+                data = DATA_KAELTHASEVENT;
+                Kaelthas = creature->GetGUID(); 
+                break;
+            case 18805:
+                data = DATA_HIGHASTROMANCERSOLARIANEVENT;
+                Astromancer = creature->GetGUID();
+                break;
+            case 19514:
+                data = DATA_ALAREVENT;
+                Alar = creature->GetGUID();
+                break;
+            case 19516:
+                data = DATA_VOIDREAVEREVENT;
+                break;
         }
+
+        if(data && creature->isAlive() && GetData(data) == DONE)
+            creature->Kill(creature);
     }
 
     void OnObjectCreate(GameObject *go)
