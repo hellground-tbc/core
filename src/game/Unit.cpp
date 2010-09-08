@@ -6955,7 +6955,8 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
     }
 
     //Set our target
-    SetUInt64Value(UNIT_FIELD_TARGET, victim->GetGUID());
+    if(!hasUnitState(UNIT_STAT_CASTING) && GetUInt64Value(UNIT_FIELD_TARGET))
+        SetUInt64Value(UNIT_FIELD_TARGET, victim->GetGUID());
 
     if(meleeAttack)
         addUnitState(UNIT_STAT_MELEE_ATTACKING);
@@ -11503,6 +11504,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
                 uint32 ressSpellId = pVictim->GetUInt32Value(PLAYER_SELF_RES_SPELL);
                 if(!ressSpellId)
                     ressSpellId = ((Player*)pVictim)->GetResurrectionSpellId();
+                
                 //Remove all expected to remove at death auras (most important negative case like DoT or periodic triggers)
                 pVictim->RemoveAllAurasOnDeath();
                 // restore for use at real death

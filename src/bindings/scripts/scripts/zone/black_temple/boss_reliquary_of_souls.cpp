@@ -202,9 +202,9 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
 
     void MoveInLineOfSight(Unit *who)
     {
-        if (!m_creature->isInCombat())
+        if (!m_creature->isInCombat() && who->GetTypeId() == TYPEID_PLAYER)
         {
-            if (m_creature->GetDistance(who) <= 65 && m_creature->IsHostileTo(who))
+            if (m_creature->GetDistance(who) <= 85 && m_creature->IsHostileTo(who))
             {
                 m_creature->AddThreat(who, 10000.0f);
                 DoZoneInCombat();
@@ -257,7 +257,7 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
         for(std::list<HostilReference*>::iterator itr = m_threatlist.begin(); itr != m_threatlist.end(); ++itr)
         {
             Unit* pUnit = Unit::GetUnit((*m_creature), (*itr)->getUnitGuid());
-            if(pUnit && pUnit->isAlive() && pUnit->isInCombat() && m_creature->canAttack(pUnit) && pUnit->IsWithinDistInMap(m_creature, 200.0f))
+            if(pUnit && pUnit->isAlive() && pUnit->isInCombat() && m_creature->canAttack(pUnit) && pUnit->IsWithinDistInMap(m_creature, 85.0f))
                 return true;
         }
         return false;
