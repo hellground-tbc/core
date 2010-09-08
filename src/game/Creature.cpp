@@ -162,7 +162,7 @@ m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),m_creatureInfo(NULL), m_DBTabl
     m_CreatureSpellCooldowns.clear();
     m_CreatureCategoryCooldowns.clear();
     m_GlobalCooldown = 0;
-    m_unit_movement_flags = MOVEMENTFLAG_WALK_MODE;
+    m_unit_movement_flags = GetEntry() == 23109 ? 0 : MOVEMENTFLAG_WALK_MODE;
     DisableReputationGain = false;
 }
 

@@ -157,16 +157,26 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
 
     uint32 AtrophyTimer;
     uint32 CheckTeronTimer;
+    uint32 InvisibilityTimer;
 
     void Reset()
     {
         DoCast(m_creature, SPELL_PASSIVE_SHADOWFORM, false);
         DoCast(m_creature, SPELL_SHADOW_STRIKES, false);
 
-        DoZoneInCombat();
-        CheckPlayers();
         AtrophyTimer = 3000;
         CheckTeronTimer = 5000;
+        InvisibilityTimer = 1000;
+
+        me->SetVisibility(VISIBILITY_OFF);
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if(me->GetVisibility() == VISIBILITY_OFF || who->GetTypeId() == TYPEID_UNIT)
+            return;
+
+        ScriptedAI::MoveInLineOfSight(who);
     }
 
     void AttackStart(Unit* who)
@@ -233,9 +243,22 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
+        if(InvisibilityTimer > diff)
+        {
+            InvisibilityTimer -= diff;
+            return;
+        }
+        else
+        {
+            me->SetVisibility(VISIBILITY_ON);
+            CheckPlayers();
+        }
+
         if(AtrophyTimer < diff)
         {
+            DoZoneInCombat();
             CheckPlayers();
+            me->SetSpeed(MOVE_RUN, 1.0f);
             AtrophyTimer = 3000;
         }
         else
@@ -351,11 +374,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
 
     void KilledUnit(Unit *victim)
     {
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(SAY_SLAY1, m_creature); break;
-        case 1: DoScriptText(SAY_SLAY2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), m_creature);
     }
 
     void JustDied(Unit *victim)
