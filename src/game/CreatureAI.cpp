@@ -74,7 +74,7 @@ void CreatureAI::DoZoneInCombat(Creature* creature)
             if(pPlayer->isGameMaster())
                 continue;
 
-            if(pPlayer->isAlive())
+            if(pPlayer->isAlive() && m_creature->IsWithinDistInMap(pPlayer. 250))
             {
                 creature->SetInCombatWith(pPlayer);
                 pPlayer->SetInCombatWith(creature);
