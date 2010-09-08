@@ -435,7 +435,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
             else
                 DoZoneInCombat();
 
-            m_creature->SetSpeed(SPEED_RUN, 2.5);
+            m_creature->SetSpeed(MOVE_RUN, 2.5);
 
             CheckTimer = 1500;
         }
