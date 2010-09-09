@@ -162,7 +162,7 @@ m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),m_creatureInfo(NULL), m_DBTabl
     m_CreatureSpellCooldowns.clear();
     m_CreatureCategoryCooldowns.clear();
     m_GlobalCooldown = 0;
-    m_unit_movement_flags = MOVEMENTFLAG_WALK_MODE;
+    m_unit_movement_flags = GetEntry() == 23109 ? 0 : MOVEMENTFLAG_WALK_MODE;
     DisableReputationGain = false;
 }
 
@@ -1662,10 +1662,10 @@ void Creature::setDeathState(DeathState s)
 
     if(s == JUST_DIED)
     {
-        SetUInt64Value (UNIT_FIELD_TARGET,0);               // remove target selection in any cases (can be set at aura remove in Unit::setDeathState)
+        SetUInt64Value(UNIT_FIELD_TARGET,0);               // remove target selection in any cases (can be set at aura remove in Unit::setDeathState)
         SetUInt32Value(UNIT_NPC_FLAGS, 0);
-        //if(!isPet())
-            setActive(false);
+
+        setActive(false);
 
         if(!isPet() && GetCreatureInfo()->SkinLootId)
             if ( LootTemplates_Skinning.HaveLootFor(GetCreatureInfo()->SkinLootId) )

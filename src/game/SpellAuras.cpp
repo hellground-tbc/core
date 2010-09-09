@@ -2146,10 +2146,7 @@ void Aura::TriggerSpell()
 
 Unit* Aura::GetTriggerTarget() const
 {
-    Unit* target = ObjectAccessor::GetUnit(*m_target,
-        /*m_target->GetTypeId()==TYPEID_PLAYER ?
-        ((Player*)m_target)->GetSelection() :*/
-        m_target->GetUInt64Value(UNIT_FIELD_TARGET));
+    Unit* target = ObjectAccessor::GetUnit(*m_target, m_target->GetUInt64Value(UNIT_FIELD_TARGET));
     return target ? target : m_target;
 }
 

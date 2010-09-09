@@ -161,6 +161,17 @@ struct TRINITY_DLL_DECL boss_dorotheeAI : public ScriptedAI
         ScriptedAI::MoveInLineOfSight(who);
     }
 
+    void EnterEvadeMode()
+    {
+        ScriptedAI::EnterEvadeMode();
+
+        if(pInstance)
+            pInstance->SetData(DATA_OPERA_EVENT, NOT_STARTED);
+
+        me->Kill(me, false);
+        me->RemoveCorpse();
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if(AggroTimer)
@@ -282,6 +293,17 @@ struct TRINITY_DLL_DECL boss_strawmanAI : public ScriptedAI
         ScriptedAI::AttackStart(who);
     }
 
+    void EnterEvadeMode()
+    {
+        ScriptedAI::EnterEvadeMode();
+
+        if(pInstance)
+            pInstance->SetData(DATA_OPERA_EVENT, NOT_STARTED);
+
+        me->Kill(me, false);
+        me->RemoveCorpse();
+    }
+
     void MoveInLineOfSight(Unit* who)
     {
         if(m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
@@ -366,6 +388,17 @@ struct TRINITY_DLL_DECL boss_tinheadAI : public ScriptedAI
         RustTimer   = 30000;
 
         RustCount   = 0;
+    }
+
+    void EnterEvadeMode()
+    {
+        ScriptedAI::EnterEvadeMode();
+
+        if(pInstance)
+            pInstance->SetData(DATA_OPERA_EVENT, NOT_STARTED);
+
+        me->Kill(me, false);
+        me->RemoveCorpse();
     }
 
     void EnterCombat(Unit* who)
@@ -467,6 +500,17 @@ struct TRINITY_DLL_DECL boss_roarAI : public ScriptedAI
         ScriptedAI::MoveInLineOfSight(who);
     }
 
+    void EnterEvadeMode()
+    {
+        ScriptedAI::EnterEvadeMode();
+
+        if(pInstance)
+            pInstance->SetData(DATA_OPERA_EVENT, NOT_STARTED);
+
+        me->Kill(me, false);
+        me->RemoveCorpse();
+    }
+
     void AttackStart(Unit* who)
     {
         if(m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
@@ -555,6 +599,17 @@ struct TRINITY_DLL_DECL boss_croneAI : public ScriptedAI
 
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
+    }
+
+    void EnterEvadeMode()
+    {
+        ScriptedAI::EnterEvadeMode();
+
+        if(pInstance)
+            pInstance->SetData(DATA_OPERA_EVENT, NOT_STARTED);
+
+        me->Kill(me, false);
+        me->RemoveCorpse();
     }
 
     void JustDied(Unit* killer)
@@ -742,6 +797,17 @@ struct TRINITY_DLL_DECL boss_bigbadwolfAI : public ScriptedAI
         TempThreat = 0;
 
         IsChasing = false;
+    }
+
+    void EnterEvadeMode()
+    {
+        ScriptedAI::EnterEvadeMode();
+
+        if(pInstance)
+            pInstance->SetData(DATA_OPERA_EVENT, NOT_STARTED);
+
+        me->Kill(me, false);
+        me->RemoveCorpse();
     }
 
     void EnterCombat(Unit* who)
@@ -978,6 +1044,17 @@ struct TRINITY_DLL_DECL boss_julianneAI : public ScriptedAI
         ScriptedAI::AttackStart(who);
     }
 
+    void EnterEvadeMode()
+    {
+        ScriptedAI::EnterEvadeMode();
+
+        if(pInstance)
+            pInstance->SetData(DATA_OPERA_EVENT, NOT_STARTED);
+
+        me->Kill(me, false);
+        me->RemoveCorpse();
+    }
+
     void MoveInLineOfSight(Unit* who)
     {
         if(m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
@@ -1061,6 +1138,17 @@ struct TRINITY_DLL_DECL boss_romuloAI : public ScriptedAI
     }
 
     void DamageTaken(Unit* done_by, uint32 &damage);
+
+    void EnterEvadeMode()
+    {
+        ScriptedAI::EnterEvadeMode();
+
+        if(pInstance)
+            pInstance->SetData(DATA_OPERA_EVENT, NOT_STARTED);
+
+        me->Kill(me, false);
+        me->RemoveCorpse();
+    }
 
     void EnterCombat(Unit* who)
     {

@@ -175,15 +175,47 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
 
     void OnCreatureCreate(Creature *creature, uint32 creature_entry)
     {
+        uint32 data = 0;
         switch(creature_entry)
         {
-            case 21212: LadyVashj = creature->GetGUID();            break;
-            case 21214: Karathress = creature->GetGUID();           break;
-            case 21966: Sharkkis = creature->GetGUID();             break;
-            case 21217: LurkerBelow = creature->GetGUID();          break;
-            case 21965: Tidalvess = creature->GetGUID();            break;
-            case 21964: Caribdis = creature->GetGUID();             break;
-            case 21215: LeotherasTheBlind = creature->GetGUID();    break;}
+            case 21212:
+                data = DATA_LADYVASHJEVENT;
+                LadyVashj = creature->GetGUID();
+                break;
+            case 21214:
+                data = DATA_KARATHRESSEVENT;
+                Karathress = creature->GetGUID();  
+                break;
+            case 21966:
+                data = DATA_KARATHRESSEVENT;
+                Sharkkis = creature->GetGUID();  
+                break;
+            case 21217:
+                data = DATA_THELURKERBELOWEVENT;
+                LurkerBelow = creature->GetGUID(); 
+                break;
+            case 21965:
+                data = DATA_KARATHRESSEVENT;
+                Tidalvess = creature->GetGUID();
+                break;
+            case 21964:
+                data = DATA_KARATHRESSEVENT;
+                Caribdis = creature->GetGUID();
+                break;
+            case 21215:
+                data = DATA_LEOTHERASTHEBLINDEVENT;
+                LeotherasTheBlind = creature->GetGUID(); 
+                break;
+            case 21213:
+                data = DATA_MOROGRIMTIDEWALKEREVENT;
+                break;
+            case 21216:
+                data = DATA_HYDROSSTHEUNSTABLEEVENT;
+                break;
+        }
+
+        if(data && creature->isAlive() && GetData(data) == DONE)
+            creature->Kill(creature, false);
     }
 
     void SetData64(uint32 type, uint64 data)

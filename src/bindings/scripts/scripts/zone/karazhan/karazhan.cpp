@@ -128,6 +128,14 @@ struct TRINITY_DLL_DECL npc_barnesAI : public npc_escortAI
     bool RaidWiped;
     bool IsTalking;
 
+    void EnterEvadeMode()
+    {
+        npc_escortAI::EnterEvadeMode();
+
+        if(pInstance)
+            pInstance->SetData(DATA_OPERA_EVENT, NOT_STARTED);
+    }
+
     void Reset()
     {
         TalkCount = 0;
