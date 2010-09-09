@@ -167,7 +167,8 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
         AtrophyTimer = 3000;
         CheckTeronTimer = 5000;
         InvisibilityTimer = 1000;
-
+        
+        me->DestroyForNearbyPlayers();
         me->SetVisibility(VISIBILITY_OFF);
     }
 
