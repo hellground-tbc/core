@@ -78,11 +78,7 @@ struct TRINITY_DLL_DECL boss_temporusAI : public ScriptedAI
 
     void KilledUnit(Unit *victim)
     {
-        switch(rand()%2)
-        {
-            case 0: DoScriptText(SAY_SLAY1, m_creature); break;
-            case 1: DoScriptText(SAY_SLAY2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), m_creature);
     }
 
     void JustDied(Unit *victim)
@@ -113,7 +109,7 @@ struct TRINITY_DLL_DECL boss_temporusAI : public ScriptedAI
         ScriptedAI::MoveInLineOfSight(who);
     }
 
-    void DamageMade(Unit* target, uint32 & damage, bool direct_damage) 
+    void DamageMade(Unit* target, uint32 & damage, bool direct_damage)
     {
         if(canApplyWound)
             DoCast(target, SPELL_MORTAL_WOUND);

@@ -84,21 +84,7 @@ struct TRINITY_DLL_DECL npc_draenei_survivorAI : public ScriptedAI
     {
         if (CanSayHelp && who->GetTypeId() == TYPEID_PLAYER && m_creature->IsFriendlyTo(who) && m_creature->IsWithinDistInMap(who, 25.0f))
         {
-            switch (rand()%4)                               //Random switch between 4 texts
-            {
-                case 0:
-                    DoScriptText(HELP1, m_creature);
-                    break;
-                case 1:
-                    DoScriptText(HELP2, m_creature);
-                    break;
-                case 2:
-                    DoScriptText(HELP3, m_creature);
-                    break;
-                case 3:
-                    DoScriptText(HELP4, m_creature);
-                    break;
-            }
+            DoScriptText(RAND(HELP1, HELP2, HELP3, HELP4), m_creature);
 
             SayHelpTimer = 20000;
             CanSayHelp = false;
@@ -132,24 +118,20 @@ struct TRINITY_DLL_DECL npc_draenei_survivorAI : public ScriptedAI
                     if (pPlayer->GetTypeId() != TYPEID_PLAYER)
                         return;
 
-                    switch (rand()%4)
-                    {
-                        case 0: DoScriptText(SAY_HEAL1, m_creature, pPlayer); break;
-                        case 1: DoScriptText(SAY_HEAL2, m_creature, pPlayer); break;
-                        case 2: DoScriptText(SAY_HEAL3, m_creature, pPlayer); break;
-                        case 3: DoScriptText(SAY_HEAL4, m_creature, pPlayer); break;
-                    }
+                    DoScriptText(RAND(SAY_HEAL1, SAY_HEAL2, SAY_HEAL3, SAY_HEAL4), m_creature, pPlayer);
 
                     pPlayer->TalkedToCreature(m_creature->GetEntry(),m_creature->GetGUID());
                 }
-            
+
                 m_creature->GetMotionMaster()->Clear();
                 m_creature->GetMotionMaster()->MovePoint(0, -4115.053711f, -13754.831055f, 73.508949f);
                 RunAwayTimer = 10000;
                 SayThanksTimer = 0;
 
-            }else SayThanksTimer -= diff;
-            
+            }
+            else
+                SayThanksTimer -= diff;
+
             return;
         }
 
@@ -165,8 +147,10 @@ struct TRINITY_DLL_DECL npc_draenei_survivorAI : public ScriptedAI
                 m_creature->CombatStop();
                 m_creature->DeleteThreatList();
                 m_creature->RemoveCorpse();
-            }else RunAwayTimer -= diff;
-            
+            }
+            else
+                RunAwayTimer -= diff;
+
             return;
         }
 
@@ -174,7 +158,9 @@ struct TRINITY_DLL_DECL npc_draenei_survivorAI : public ScriptedAI
         {
             CanSayHelp = true;
             SayHelpTimer = 20000;
-        }else SayHelpTimer -= diff;
+        }
+        else
+            SayHelpTimer -= diff;
     }
 };
 CreatureAI* GetAI_npc_draenei_survivor(Creature *_Creature)
@@ -277,11 +263,8 @@ struct TRINITY_DLL_DECL npc_injured_draeneiAI : public ScriptedAI
     {
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
         m_creature->SetHealth(int(m_creature->GetMaxHealth()*.15));
-        switch (rand()%2)
-        {
-            case 0: m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, PLAYER_STATE_SIT); break;
-            case 1: m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, PLAYER_STATE_SLEEP); break;
-        }
+
+        m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, RAND(PLAYER_STATE_SIT, PLAYER_STATE_SLEEP));
     }
 
     void EnterCombat(Unit *who) {}
@@ -314,7 +297,7 @@ enum eMagwin
     SAY_END1                    = -1000114,
     SAY_END2                    = -1000115,
     EMOTE_HUG                   = -1000116,
- 
+
     QUEST_A_CRY_FOR_SAY_HELP    = 9528
 };
 
@@ -558,7 +541,9 @@ struct TRINITY_DLL_DECL npc_geezleAI : public ScriptedAI
                 else
                     (*itr)->Respawn();
             }
-        } else error_log("SD2 ERROR: FlagList is empty!");
+        }
+        else
+            error_log("SD2 ERROR: FlagList is empty!");
     }
 
     void UpdateAI(const uint32 diff)
@@ -569,7 +554,9 @@ struct TRINITY_DLL_DECL npc_geezleAI : public ScriptedAI
             {
                 SayTimer = NextStep(++Step);
             }
-        }else SayTimer -= diff;
+        }
+        else
+            SayTimer -= diff;
     }
 };
 
@@ -622,7 +609,9 @@ struct TRINITY_DLL_DECL mob_nestlewood_owlkinAI : public ScriptedAI
             m_creature->RemoveCorpse();
             m_creature->SummonCreature(INOCULATED_OWLKIN, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 180000);
             Channeled = true;
-        }else ChannelTimer -= diff;
+        }
+        else
+            ChannelTimer -= diff;
 
         DoMeleeAttackIfReady();
     }
@@ -646,7 +635,7 @@ struct TRINITY_DLL_DECL mob_siltfin_murlocAI : public ScriptedAI
     void JustDied(Unit *player)
     {
         player = player->GetCharmerOrOwnerPlayerOrPlayerItself();
-         
+
         if(roll_chance_i(20) && player)
         {
             if(((Player*)player)->GetQuestStatus(9595) == QUEST_STATUS_INCOMPLETE)
@@ -656,7 +645,7 @@ struct TRINITY_DLL_DECL mob_siltfin_murlocAI : public ScriptedAI
             }
         }
      }
-    
+
 };
 
 CreatureAI* GetAI_mob_siltfin_murlocAI(Creature *_Creature)

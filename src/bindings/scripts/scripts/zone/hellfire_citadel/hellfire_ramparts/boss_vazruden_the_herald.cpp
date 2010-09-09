@@ -190,22 +190,13 @@ struct TRINITY_DLL_DECL boss_vazrudenAI : public ScriptedAI
 
     void EnterCombat(Unit *who)
     {
-        switch(rand()%3)
-        {
-            case 0: DoScriptText(SAY_AGGRO_1, m_creature); break;
-            case 1: DoScriptText(SAY_AGGRO_2, m_creature); break;
-            default: DoScriptText(SAY_AGGRO_3, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), m_creature);
     }
 
     void KilledUnit(Unit* who)
     {
         if(who && who->GetEntry()!=ENTRY_VAZRUDEN)
-            switch(rand()%2)
-            {
-                case 0: DoScriptText(SAY_KILL_1, m_creature); break;
-                default: DoScriptText(SAY_KILL_2, m_creature); break;
-            }
+            DoScriptText(RAND(SAY_KILL_1, SAY_KILL_2), m_creature);
     }
 
     void JustDied(Unit* who)

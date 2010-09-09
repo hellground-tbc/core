@@ -112,7 +112,7 @@ struct TRINITY_DLL_DECL boss_shirrak_the_dead_watcherAI : public ScriptedAI
                                 m_creature->AddAura(SPELL_INHIBITMAGIC, i_pl);
                             if(dist < 15)
                                m_creature->AddAura(SPELL_INHIBITMAGIC, i_pl);
-                        }                                
+                        }
                     }
                 }
             }
@@ -206,11 +206,16 @@ struct TRINITY_DLL_DECL mob_focus_fireAI : public ScriptedAI
         {
             DoCast(m_creature,SPELL_FIERY_BLAST);
 
-            if(fiery1) fiery1 = false;
-            else if(fiery2) fiery2 = false;
+            if(fiery1)
+                fiery1 = false;
+            else
+                if(fiery2)
+                    fiery2 = false;
 
             FieryBlast_Timer = 1000;
-        }else FieryBlast_Timer -= diff;
+        }
+        else
+            FieryBlast_Timer -= diff;
 
         //DoMeleeAttackIfReady();
     }

@@ -73,29 +73,18 @@ struct TRINITY_DLL_DECL boss_anubrekhanAI : public ScriptedAI
 
     void EnterCombat(Unit *who)
     {
-        switch(rand()%3)
-        {
-        case 0: DoScriptText(SAY_AGGRO1, m_creature); break;
-        case 1: DoScriptText(SAY_AGGRO2, m_creature); break;
-        case 2: DoScriptText(SAY_AGGRO3, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), m_creature);
     }
 
     void MoveInLineOfSight(Unit *who)
     {
+        if (!HasTaunted && m_creature->IsWithinDistInMap(who, 60.0f))
+        {
+            DoScriptText(RAND(SAY_GREET, SAY_TAUNT1, SAY_TAUNT2, SAY_TAUNT3, SAY_TAUNT4), m_creature);
 
-            if (!HasTaunted && m_creature->IsWithinDistInMap(who, 60.0f))
-            {
-                switch(rand()%5)
-                {
-                case 0: DoScriptText(SAY_GREET, m_creature); break;
-                case 1: DoScriptText(SAY_TAUNT1, m_creature); break;
-                case 2: DoScriptText(SAY_TAUNT2, m_creature); break;
-                case 3: DoScriptText(SAY_TAUNT3, m_creature); break;
-                case 4: DoScriptText(SAY_TAUNT4, m_creature); break;
-                }
-                HasTaunted = true;
-            }
+            HasTaunted = true;
+        }
+
         ScriptedAI::MoveInLineOfSight(who);
     }
 

@@ -170,8 +170,9 @@ bool ItemUse_item_draenei_fishing_net(Player *player, Item* _Item, SpellCastTarg
                 Item* item = player->StoreNewItem(dest,23614,true);
                 if( item )
                     player->SendNewItem(item,1,false,true);
-            }else
-            player->SendEquipError(msg,NULL,NULL);
+            }
+            else
+                player->SendEquipError(msg,NULL,NULL);
         }
     }
     return false;
@@ -387,12 +388,12 @@ bool ItemUse_item_specific_target(Player *player, Item* _Item, SpellCastTargets 
     {
         case 8149:  cEntry[0] = 7318; targetState = T_DEAD; break; // Voodoo Charm
         case 22783: cEntry[0] = 16329; break; // Sunwell Blade
-        case 22784: cEntry[0] = 16329; break; // Sunwell Orb 
+        case 22784: cEntry[0] = 16329; break; // Sunwell Orb
         case 22962: cEntry[0] = 16518; break; // Inoculating Crystal
         case 30259: cEntry[0] = 20132; break; // Voren'thal's Presence
         case 30656: cEntry[0] = 21729; break; // Protovoltaic Magneto Collector
         case 31463: cEntry[0] = 19440; break; // Zezzak's Shard
-        case 32321: cEntry[0] = 22979; break; // Sparrowhawk Net           
+        case 32321: cEntry[0] = 22979; break; // Sparrowhawk Net
         case 32825: cEntry[0] = 22357; break; // Soul Cannon
         case 34255: cEntry[0] = 24922; break; // Razorthorn Flayer Gland
         case 25552: cEntry[0] = 17148; cEntry[1] = 17147; cEntry[2] = 17146; targetState = T_DEAD; removeCorpse = true; break; // Warmaul Ogre Banner
@@ -417,7 +418,7 @@ bool ItemUse_item_specific_target(Player *player, Item* _Item, SpellCastTargets 
         }
 
         if(properTarget)
-        { 
+        {
             switch(targetState)
             {
                 case(T_ALIVE & T_DEAD):

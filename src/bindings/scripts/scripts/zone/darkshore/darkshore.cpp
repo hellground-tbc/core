@@ -51,19 +51,19 @@ struct TRINITY_DLL_DECL npc_prospector_remtravel : public npc_escortAI
 		if (!player)
 			return;
 
-		switch(i) {  
+		switch(i) {
 		case 10: DoScriptText(-1581002, m_creature);break;
 		case 12: DoScriptText(-1581003, m_creature);break;
 		case 14: DoScriptText(-1581004, m_creature);break;
-		case 16: DoScriptText(-1581005, m_creature);break;	
-		case 17:  
+		case 16: DoScriptText(-1581005, m_creature);break;
+		case 17:
 			DoScriptText(-1581006, m_creature);
 			m_creature->SummonCreature(2158, 4628.38, 638.456, 6.402, 6.20, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
 			m_creature->SummonCreature(2158, 4625.13, 645.962, 6.73182, 6.27, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
 			break;
 		case 25: DoScriptText(-1581007, m_creature);break;
 		case 32: DoScriptText(-1581008, m_creature);break;
-		case 35:                 
+		case 35:
 			m_creature->SummonCreature(2158, 4570.04, 557.292, 1.989, 6.20, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
 			m_creature->SummonCreature(2159, 4573.17, 557.583, 3.328, 6.27, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
 			m_creature->SummonCreature(2160, 4564.94, 551.357, 5.91, 6.27, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
@@ -80,12 +80,8 @@ struct TRINITY_DLL_DECL npc_prospector_remtravel : public npc_escortAI
 
 	void EnterCombat(Unit* who)
 	{
-		switch (rand()%3)
-		{
-		case 0: DoScriptText(SAY_prospector_AGGRO_1, m_creature); break;
-		case 1: DoScriptText(SAY_prospector_AGGRO_2, m_creature); break;
-		case 2: DoScriptText(SAY_prospector_AGGRO_3, m_creature); break;
-		}
+		DoScriptText(RAND(SAY_prospector_AGGRO_1, SAY_prospector_AGGRO_2, SAY_prospector_AGGRO_3), m_creature);
+
 		m_creature->Attack(who, true);
 	}
 
@@ -191,7 +187,7 @@ struct TRINITY_DLL_DECL npc_therylune : public npc_escortAI
 		if (!player)
 			return;
 
-		switch(i) {  		
+		switch(i) {
 		case 20:
 			DoScriptText(SAY_therylune_COMP, m_creature, player);
 			player->GroupEventHappens(Q_Therylune_Escape, m_creature);

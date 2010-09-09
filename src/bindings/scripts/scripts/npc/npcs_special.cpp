@@ -75,7 +75,9 @@ struct TRINITY_DLL_DECL npc_chicken_cluckAI : public ScriptedAI
             {
                 EnterEvadeMode();
                 return;
-            }else ResetFlagTimer -= diff;
+            }
+            else
+                ResetFlagTimer -= diff;
         }
 
         if(UpdateVictim())
@@ -172,7 +174,9 @@ struct TRINITY_DLL_DECL npc_dancing_flamesAI : public ScriptedAI
                 active = true;
                 can_iteract = 3500;
                 m_creature->HandleEmoteCommand(EMOTE_ONESHOT_DANCE);
-            }else can_iteract -= diff;
+            }
+            else
+                can_iteract -= diff;
         }
     }
 };
@@ -1116,7 +1120,10 @@ struct TRINITY_DLL_DECL npc_snake_trap_serpentsAI : public ScriptedAI
                     DoCast(m_creature->getVictim(),SPELL_DEADLY_POISON);
                 SpellTimer = VENOMOUS_SNAKE_TIMER + (rand() %5)*100;
             }
-        }else SpellTimer-=diff;
+        }
+        else
+            SpellTimer-=diff;
+
         DoMeleeAttackIfReady();
     }
 };
@@ -1418,7 +1425,9 @@ struct TRINITY_DLL_DECL npc_garments_of_questsAI : public ScriptedAI
                     EnterEvadeMode();                       //something went wrong
 
                 RunAwayTimer = 30000;
-            }else RunAwayTimer -= diff;
+            }
+            else
+                RunAwayTimer -= diff;
         }
 
        DoMeleeAttackIfReady();

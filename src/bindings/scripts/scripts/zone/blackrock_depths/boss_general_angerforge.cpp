@@ -111,21 +111,27 @@ struct TRINITY_DLL_DECL boss_general_angerforgeAI : public ScriptedAI
         {
             DoCast(m_creature->getVictim(),SPELL_MIGHTYBLOW);
             MightyBlow_Timer = 18000;
-        }else MightyBlow_Timer -= diff;
+        }
+        else
+            MightyBlow_Timer -= diff;
 
         //HamString_Timer
         if (HamString_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_HAMSTRING);
             HamString_Timer = 15000;
-        }else HamString_Timer -= diff;
+        }
+        else
+            HamString_Timer -= diff;
 
         //Cleave_Timer
         if (Cleave_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_CLEAVE);
             Cleave_Timer = 9000;
-        }else Cleave_Timer -= diff;
+        }
+        else
+            Cleave_Timer -= diff;
 
         //Adds_Timer
         if ( m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 21 )
@@ -138,7 +144,9 @@ struct TRINITY_DLL_DECL boss_general_angerforgeAI : public ScriptedAI
                 SummonAdds(m_creature->getVictim());
 
                 Adds_Timer = 25000;
-            } else Adds_Timer -= diff;
+            }
+            else
+                Adds_Timer -= diff;
         }
 
         //Summon Medics

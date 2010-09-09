@@ -47,7 +47,7 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_curatorAI : public ScriptedAI
 {
-    boss_curatorAI(Creature *c) : ScriptedAI(c) 
+    boss_curatorAI(Creature *c) : ScriptedAI(c)
     {
         m_creature->GetPosition(wLoc);
     }
@@ -79,11 +79,7 @@ struct TRINITY_DLL_DECL boss_curatorAI : public ScriptedAI
 
     void KilledUnit(Unit *victim)
     {
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(SAY_KILL1, m_creature); break;
-        case 1: DoScriptText(SAY_KILL2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_KILL1,SAY_KILL2), m_creature);
     }
 
     void JustDied(Unit *victim)
@@ -107,7 +103,7 @@ struct TRINITY_DLL_DECL boss_curatorAI : public ScriptedAI
                 EnterEvadeMode();
             else
                 DoZoneInCombat();
-            
+
             CheckTimer = 3000;
         }else CheckTimer -= diff;
 
@@ -141,23 +137,27 @@ struct TRINITY_DLL_DECL boss_curatorAI : public ScriptedAI
                 //Reduce Mana by 10%
                 int32 mana = (int32)(0.1f*(m_creature->GetMaxPower(POWER_MANA)));
                 m_creature->ModifyPower(POWER_MANA, -mana);
-                switch(rand()%4)
-                {
-                    case 0: DoScriptText(SAY_SUMMON1, m_creature);break;
-                    case 1: DoScriptText(SAY_SUMMON2, m_creature);break;
-                }
+
+                if(rand()%2)
+                    DoScriptText(RAND(SAY_SUMMON1, SAY_SUMMON2), m_creature);
+
                 AddTimer = 10000;
-            }else AddTimer -= diff;
+            }
+            else
+                AddTimer -= diff;
 
             if (HatefulBoltTimer < diff)
             {
                 Unit* target = NULL;
                 target = SelectUnit(SELECT_TARGET_TOPAGGRO, 1, GetSpellMaxRange(SPELL_HATEFUL_BOLT), m_creature->getVictim());
+
                 if(target)
                     DoCast(target, SPELL_HATEFUL_BOLT);
 
                 HatefulBoltTimer = (Enraged) ? 7000 : 15000;
-            }else HatefulBoltTimer -= diff;
+            }
+            else
+                HatefulBoltTimer -= diff;
 
             if (m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 15)
             {
@@ -171,7 +171,9 @@ struct TRINITY_DLL_DECL boss_curatorAI : public ScriptedAI
         {
             DoCast(m_creature, SPELL_BERSERK);
             DoScriptText(SAY_ENRAGE, m_creature);
-        }else BerserkTimer -= diff;
+        }
+        else
+            BerserkTimer -= diff;
 
         DoMeleeAttackIfReady();
     }

@@ -39,7 +39,7 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_maiden_of_virtueAI : public ScriptedAI
 {
-    boss_maiden_of_virtueAI(Creature *c) : ScriptedAI(c) 
+    boss_maiden_of_virtueAI(Creature *c) : ScriptedAI(c)
     {
         m_creature->GetPosition(wLoc);
     }
@@ -72,12 +72,7 @@ struct TRINITY_DLL_DECL boss_maiden_of_virtueAI : public ScriptedAI
         if(rand()%2)
             return;
 
-        switch(rand()%3)
-        {
-        case 0: DoScriptText(SAY_SLAY1, m_creature);break;
-        case 1: DoScriptText(SAY_SLAY2, m_creature);break;
-        case 2: DoScriptText(SAY_SLAY3, m_creature);break;
-        }
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2, SAY_SLAY3), m_creature);
     }
 
     void JustDied(Unit* Killer)
@@ -87,7 +82,7 @@ struct TRINITY_DLL_DECL boss_maiden_of_virtueAI : public ScriptedAI
 
     void EnterCombat(Unit *who)
     {
-         DoScriptText(SAY_AGGRO, m_creature);
+        DoScriptText(SAY_AGGRO, m_creature);
     }
 
     void UpdateAI(const uint32 diff)
@@ -101,7 +96,7 @@ struct TRINITY_DLL_DECL boss_maiden_of_virtueAI : public ScriptedAI
                 EnterEvadeMode();
             else
                 DoZoneInCombat();
-            
+
             CheckTimer = 3000;
         }
         else
@@ -127,11 +122,8 @@ struct TRINITY_DLL_DECL boss_maiden_of_virtueAI : public ScriptedAI
         {
             DoCast(m_creature->getVictim(),SPELL_REPENTANCE);
 
-            switch(rand()%2)
-            {
-                case 0: DoScriptText(SAY_REPENTANCE1, m_creature);break;
-                case 1: DoScriptText(SAY_REPENTANCE2, m_creature);break;
-            }
+            DoScriptText(RAND(SAY_REPENTANCE1, SAY_REPENTANCE2), m_creature);
+
             Repentance_Timer = 30000 + rand()%15000;        //A little randomness on that spell
             Holyfire_Timer += 6000;
         }

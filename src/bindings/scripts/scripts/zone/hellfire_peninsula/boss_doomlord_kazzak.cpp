@@ -87,11 +87,7 @@ struct TRINITY_DLL_DECL boss_doomlordkazzakAI : public ScriptedAI
 
     void EnterCombat(Unit *who)
     {
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(SAY_AGGRO1, m_creature); break;
-        case 1: DoScriptText(SAY_AGGRO2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2), m_creature);
     }
 
     void KilledUnit(Unit* victim)
@@ -100,14 +96,9 @@ struct TRINITY_DLL_DECL boss_doomlordkazzakAI : public ScriptedAI
          if (victim->GetTypeId() != TYPEID_PLAYER)
              return;
 
-            DoCast(m_creature,SPELL_CAPTURESOUL);
+        DoCast(m_creature,SPELL_CAPTURESOUL);
 
-            switch(rand()%3)
-            {
-            case 0: DoScriptText(SAY_KILL1, m_creature); break;
-            case 1: DoScriptText(SAY_KILL2, m_creature); break;
-            case 2: DoScriptText(SAY_KILL3, m_creature); break;
-            }
+        DoScriptText(RAND(SAY_KILL1, SAY_KILL2, SAY_KILL3), m_creature);
     }
 
     void JustDied(Unit *victim)
@@ -130,7 +121,7 @@ struct TRINITY_DLL_DECL boss_doomlordkazzakAI : public ScriptedAI
         }
         else
             Check_Timer -= diff;
-        
+
         //ShadowVolley_Timer
         if (ShadowVolley_Timer < diff)
         {
@@ -138,7 +129,7 @@ struct TRINITY_DLL_DECL boss_doomlordkazzakAI : public ScriptedAI
 
             if(Enraged)
             {
-                SVolley_count++; 
+                SVolley_count++;
 
                 if(SVolley_count >= 6)
                 {

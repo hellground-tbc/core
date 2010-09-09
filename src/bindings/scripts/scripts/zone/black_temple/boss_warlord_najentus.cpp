@@ -105,11 +105,7 @@ struct TRINITY_DLL_DECL boss_najentusAI : public ScriptedAI
 
     void KilledUnit(Unit *victim)
     {
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(SAY_SLAY1, m_creature); break;
-        case 1: DoScriptText(SAY_SLAY2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), m_creature);
     }
 
     void JustDied(Unit *victim)
@@ -145,7 +141,7 @@ struct TRINITY_DLL_DECL boss_najentusAI : public ScriptedAI
     {
         Map *pMap = m_creature->GetMap();
         Map::PlayerList const &PlayerList = pMap->GetPlayers();
-        
+
         if(PlayerList.isEmpty())
             return;
 
@@ -228,11 +224,7 @@ struct TRINITY_DLL_DECL boss_najentusAI : public ScriptedAI
 
         if(SpecialYellTimer < diff)
         {
-            switch(rand()%2)
-            {
-            case 0: DoScriptText(SAY_SPECIAL1, m_creature); break;
-            case 1: DoScriptText(SAY_SPECIAL2, m_creature); break;
-            }
+            DoScriptText(RAND(SAY_SPECIAL1, SAY_SPECIAL2), m_creature);
 
             SpecialYellTimer = 25000 + (rand()%76)*1000;
         }
@@ -259,11 +251,7 @@ struct TRINITY_DLL_DECL boss_najentusAI : public ScriptedAI
                     SpineTargetMap.insert(spineTarget);
                 }
 
-                switch(rand()%2)
-                {
-                    case 0: DoScriptText(SAY_NEEDLE1, m_creature); break;
-                    case 1: DoScriptText(SAY_NEEDLE2, m_creature); break;
-                }
+                DoScriptText(RAND(SAY_NEEDLE1, SAY_NEEDLE2), m_creature);
             }
             ImpalingSpineTimer = 21000;
         }

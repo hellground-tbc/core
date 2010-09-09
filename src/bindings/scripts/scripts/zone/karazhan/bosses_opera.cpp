@@ -551,11 +551,8 @@ struct TRINITY_DLL_DECL boss_croneAI : public ScriptedAI
 
     void EnterCombat(Unit* who)
     {
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(SAY_CRONE_AGGRO, m_creature); break;
-        case 1: DoScriptText(SAY_CRONE_AGGRO2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_CRONE_AGGRO, SAY_CRONE_AGGRO2), m_creature);
+
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
     }
@@ -903,7 +900,7 @@ void Resurrect(Creature* target)
     target->SetHealth(target->GetMaxHealth());
     target->SetUInt32Value(UNIT_FIELD_BYTES_1, PLAYER_STATE_NONE);
     target->CastSpell(target, SPELL_RES_VISUAL, true);
-    
+
     if(target->getVictim())
     {
         target->GetMotionMaster()->MoveChase(target->getVictim());
@@ -926,7 +923,7 @@ struct TRINITY_DLL_DECL boss_julianneAI : public ScriptedAI
 
     uint32 EntryYellTimer;
     uint32 AggroYellTimer;
-    
+
     uint32 Phase;
     uint64 RomuloGUID;
     uint32 BlindingPassionTimer;
@@ -937,7 +934,7 @@ struct TRINITY_DLL_DECL boss_julianneAI : public ScriptedAI
     uint32 ResurrectTimer;
     uint32 DrinkPoisonTimer;
     uint32 ResurrectSelfTimer;
-    
+
     bool IsFakingDeath;
     bool SummonedRomulo;
     bool RomuloDead;
@@ -964,7 +961,7 @@ struct TRINITY_DLL_DECL boss_julianneAI : public ScriptedAI
         ResurrectTimer = 10000;
         DrinkPoisonTimer = 0;
         ResurrectSelfTimer = 0;
-        
+
         if(IsFakingDeath)
             Resurrect(m_creature);
 
@@ -988,7 +985,7 @@ struct TRINITY_DLL_DECL boss_julianneAI : public ScriptedAI
 
         ScriptedAI::MoveInLineOfSight(who);
     }
-    
+
     void SpellHit(Unit* caster, const SpellEntry *Spell)
     {
         if (Spell->Id == SPELL_DRINK_POISON)
@@ -997,7 +994,7 @@ struct TRINITY_DLL_DECL boss_julianneAI : public ScriptedAI
             DrinkPoisonTimer = 2500;
         }
     }
-    
+
     void DamageTaken(Unit* done_by, uint32 &damage);
 
     void JustDied(Unit* killer)
@@ -1029,9 +1026,9 @@ struct TRINITY_DLL_DECL boss_romuloAI : public ScriptedAI
         EntryYellTimer = 8000;
         AggroYellTimer = 15000;
     }
-    
+
     ScriptedInstance* pInstance;
-    
+
     uint64 JulianneGUID;
 
     uint32 Phase;
@@ -1058,7 +1055,7 @@ struct TRINITY_DLL_DECL boss_romuloAI : public ScriptedAI
         DeadlySwatheTimer = 25000;
         PoisonThrustTimer = 10000;
         ResurrectTimer = 10000;
-        
+
         IsFakingDeath = false;
         JulianneDead = false;
     }
@@ -1089,7 +1086,7 @@ struct TRINITY_DLL_DECL boss_romuloAI : public ScriptedAI
     void JustDied(Unit* killer)
     {
         DoScriptText(SAY_ROMULO_DEATH, m_creature);
-        
+
         if (pInstance)
         {
             pInstance->SetData(DATA_OPERA_EVENT, DONE);
@@ -1117,7 +1114,7 @@ void boss_julianneAI::DamageTaken(Unit* done_by, uint32 &damage)
     if(Phase == PHASE_JULIANNE)
     {
         damage = 0;
-        
+
         if (IsFakingDeath)
             return;
 
@@ -1264,7 +1261,7 @@ void boss_julianneAI::UpdateAI(const uint32 diff)
                 ((boss_romuloAI*)Romulo->AI())->JulianneGUID = m_creature->GetGUID();
                 ((boss_romuloAI*)Romulo->AI())->Phase = PHASE_ROMULO;
                 Romulo->setFaction(16);
- 
+
                 if(m_creature->getVictim())
                 {
                     Romulo->AddThreat(m_creature->getVictim(), 0.0f);

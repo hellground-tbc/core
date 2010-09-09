@@ -106,10 +106,10 @@ struct TRINITY_DLL_DECL mob_voidtravelerAI : public ScriptedAI
                 SpellEntry *spell = (SpellEntry *)GetSpellStore()->LookupEntry(HeroicMode?H_SPELL_EMPOWERING_SHADOWS:SPELL_EMPOWERING_SHADOWS);
                 if(spell)
                     Vorpil->AddAura(new EmpoweringShadowsAura(spell, 0, NULL, Vorpil, m_creature));
-                
+
                 if(Vorpil->isAlive())
                     Vorpil->ModifyHealth(Vorpil->GetMaxHealth()/25);
-                
+
                 DoCast(m_creature, SPELL_SHADOW_NOVA, true);
                 m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 return;
@@ -226,11 +226,7 @@ struct TRINITY_DLL_DECL boss_grandmaster_vorpilAI : public ScriptedAI
 
     void KilledUnit(Unit *victim)
     {
-        switch(rand()%2)
-        {
-            case 0: DoScriptText(SAY_SLAY1, m_creature); break;
-            case 1: DoScriptText(SAY_SLAY2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), m_creature);
     }
 
     void JustDied(Unit *victim)
@@ -244,12 +240,8 @@ struct TRINITY_DLL_DECL boss_grandmaster_vorpilAI : public ScriptedAI
 
     void EnterCombat(Unit *who)
     {
-        switch(rand()%3)
-        {
-            case 0: DoScriptText(SAY_AGGRO1, m_creature); break;
-            case 1: DoScriptText(SAY_AGGRO2, m_creature); break;
-            case 2: DoScriptText(SAY_AGGRO3, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), m_creature);
+
         summonPortals();
 
         if(pInstance)
@@ -276,7 +268,9 @@ struct TRINITY_DLL_DECL boss_grandmaster_vorpilAI : public ScriptedAI
         {
             DoCast(m_creature,SPELL_SHADOWBOLT_VOLLEY);
             ShadowBoltVolley_Timer = 15000;
-        }else ShadowBoltVolley_Timer -= diff;
+        }
+        else
+            ShadowBoltVolley_Timer -= diff;
 
         if (HeroicMode && banish_Timer < diff)
         {
@@ -286,7 +280,9 @@ struct TRINITY_DLL_DECL boss_grandmaster_vorpilAI : public ScriptedAI
                 DoCast(target,SPELL_BANISH);
                 banish_Timer = 16000;
             }
-        }else banish_Timer -= diff;
+        }
+        else
+            banish_Timer -= diff;
 
         if ( DrawShadows_Timer < diff)
         {
@@ -304,7 +300,9 @@ struct TRINITY_DLL_DECL boss_grandmaster_vorpilAI : public ScriptedAI
 
             ShadowBoltVolley_Timer = 6000;
             DrawShadows_Timer = 30000;
-        }else DrawShadows_Timer -= diff;
+        }
+        else
+            DrawShadows_Timer -= diff;
 
         if ( summonTraveler_Timer < diff)
         {
@@ -313,7 +311,9 @@ struct TRINITY_DLL_DECL boss_grandmaster_vorpilAI : public ScriptedAI
             //enrage at 20%
             if((m_creature->GetHealth()*5) < m_creature->GetMaxHealth())
                 summonTraveler_Timer = 5000;
-        }else summonTraveler_Timer -=diff;
+        }
+        else
+            summonTraveler_Timer -=diff;
 
         DoMeleeAttackIfReady();
     }

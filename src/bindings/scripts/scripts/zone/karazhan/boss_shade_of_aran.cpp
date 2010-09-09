@@ -201,11 +201,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
 
     void KilledUnit(Unit *victim)
     {
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(SAY_KILL1, m_creature); break;
-        case 1: DoScriptText(SAY_KILL2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_KILL1, SAY_KILL2), m_creature);
     }
 
     void TeleportCenter()
@@ -247,18 +243,9 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
     void EnterCombat(Unit *who)
     {
         if (PlayerHaveAtiesh())
-        {
             DoScriptText(SAY_ATIESH, m_creature);
-        }
         else
-        {
-            switch(rand()%3)
-            {
-            case 0: DoScriptText(SAY_AGGRO1, m_creature); break;
-            case 1: DoScriptText(SAY_AGGRO2, m_creature); break;
-            case 2: DoScriptText(SAY_AGGRO3, m_creature); break;
-            }
-        }
+            DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), m_creature);
 
         if(pInstance)
         {
@@ -478,7 +465,6 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         {
             switch (rand()%2)
             {
-
                 case 0:
                     AddSpellToCast(m_creature, SPELL_AOE_CS);
                     break;
@@ -487,6 +473,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                         AddSpellToCast(pUnit, SPELL_CHAINSOFICE);
                     break;
             }
+
             SecondarySpellTimer = 5000 + (rand()%15000);
         }
         else

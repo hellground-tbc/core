@@ -73,15 +73,7 @@ struct TRINITY_DLL_DECL boss_razuviousAI : public ScriptedAI
         if (rand()%3)
             return;
 
-        switch (rand()%2)
-        {
-            case 0:
-                DoPlaySoundToSet(m_creature, SOUND_SLAY1);
-                break;
-            case 1:
-                DoPlaySoundToSet(m_creature, SOUND_SLAY2);
-                break;
-        }
+        DoPlaySoundToSet(m_creature, RAND(SOUND_SLAY1, SOUND_SLAY2));
     }
 
     void JustDied(Unit* Killer)
@@ -91,18 +83,7 @@ struct TRINITY_DLL_DECL boss_razuviousAI : public ScriptedAI
 
     void EnterCombat(Unit *who)
     {
-        switch (rand()%3)
-        {
-            case 0:
-                DoPlaySoundToSet(m_creature, SOUND_AGGRO1);
-                break;
-            case 1:
-                DoPlaySoundToSet(m_creature, SOUND_AGGRO2);
-                break;
-            case 2:
-                DoPlaySoundToSet(m_creature, SOUND_AGGRO3);
-                break;
-        }
+        DoPlaySoundToSet(m_creature, RAND(SOUND_AGGRO1, SOUND_AGGRO2, SOUND_AGGRO3));
     }
 
     void UpdateAI(const uint32 diff)
@@ -115,39 +96,27 @@ struct TRINITY_DLL_DECL boss_razuviousAI : public ScriptedAI
         {
             DoCast(m_creature->getVictim(),SPELL_UNBALANCINGSTRIKE);
             UnbalancingStrike_Timer = 30000;
-        }else UnbalancingStrike_Timer -= diff;
+        }
+        else
+            UnbalancingStrike_Timer -= diff;
 
         //DisruptingShout_Timer
         if (DisruptingShout_Timer < diff)
         {
             DoCast(m_creature->getVictim(), SPELL_DISRUPTINGSHOUT);
             DisruptingShout_Timer = 25000;
-        }else DisruptingShout_Timer -= diff;
+        }
+        else
+            DisruptingShout_Timer -= diff;
 
         //CommandSound_Timer
         if (CommandSound_Timer < diff)
         {
-            switch (rand()%5)
-            {
-                case 0:
-                    DoPlaySoundToSet(m_creature, SOUND_COMMND1);
-                    break;
-                case 1:
-                    DoPlaySoundToSet(m_creature, SOUND_COMMND2);
-                    break;
-                case 2:
-                    DoPlaySoundToSet(m_creature, SOUND_COMMND3);
-                    break;
-                case 3:
-                    DoPlaySoundToSet(m_creature, SOUND_COMMND4);
-                    break;
-                case 4:
-                    DoPlaySoundToSet(m_creature, SOUND_COMMND5);
-                    break;
-            }
-
+            DoPlaySoundToSet(m_creature, RAND(SOUND_COMMND1, SOUND_COMMND2, SOUND_COMMND3, SOUND_COMMND4, SOUND_COMMND5));
             CommandSound_Timer = 40000;
-        }else CommandSound_Timer -= diff;
+        }
+        else
+            CommandSound_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }

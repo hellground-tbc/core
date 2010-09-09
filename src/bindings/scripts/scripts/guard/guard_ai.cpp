@@ -88,8 +88,11 @@ void guardAI::UpdateAI(const uint32 diff)
             //Set our timer to 10 minutes before rebuff
             BuffTimer = 600000;
         }                                                   //Try agian in 30 seconds
-        else BuffTimer = 30000;
-    }else BuffTimer -= diff;
+        else
+            BuffTimer = 30000;
+    }
+    else
+        BuffTimer -= diff;
 
     //Return since we have no target
     if (!UpdateVictim())

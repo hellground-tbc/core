@@ -118,7 +118,7 @@ struct TRINITY_DLL_DECL mob_inner_demonAI : public ScriptedAI
         if(Unit* owner = Unit::GetUnit((*m_creature),victimGUID))
         {
             if(m_creature->getVictimGUID() != victimGUID)
-            { 
+            {
                 if(owner->isAlive())
                     AttackStart(owner);
                 else
@@ -364,23 +364,9 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
             return;
 
         if (DemonForm)
-        {
-            switch(rand()%3)
-            {
-                case 0: DoScriptText(SAY_DEMON_SLAY1, m_creature); break;
-                case 1: DoScriptText(SAY_DEMON_SLAY2, m_creature); break;
-                case 2: DoScriptText(SAY_DEMON_SLAY3, m_creature); break;
-            }
-        }
+            DoScriptText(RAND(SAY_DEMON_SLAY1, SAY_DEMON_SLAY2, SAY_DEMON_SLAY3), m_creature);
         else
-        {
-            switch(rand()%3)
-            {
-                case 0: DoScriptText(SAY_NIGHTELF_SLAY1, m_creature); break;
-                case 1: DoScriptText(SAY_NIGHTELF_SLAY2, m_creature); break;
-                case 2: DoScriptText(SAY_NIGHTELF_SLAY3, m_creature); break;
-            }
-        }
+            DoScriptText(RAND(SAY_NIGHTELF_SLAY1, SAY_NIGHTELF_SLAY2, SAY_NIGHTELF_SLAY3), m_creature);
     }
 
     void JustDied(Unit *victim)
@@ -420,15 +406,15 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
                 BanishTimer -= diff;
             return;
         }
- 
+
         if(PulseCombat_Timer < diff)
-        {    
+        {
             DoZoneInCombat();
             PulseCombat_Timer = 2000;
         }
         else
             PulseCombat_Timer -= diff;
-        
+
         if(m_creature->getVictim()->HasAura(30300,0))
             DoResetThreat();
 
@@ -643,12 +629,7 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blind_demonformAI : public ScriptedAI
         if (victim->GetTypeId() != TYPEID_PLAYER)
             return;
 
-        switch(rand()%3)
-        {
-            case 0: DoScriptText(SAY_DEMON_SLAY1, m_creature); break;
-            case 1: DoScriptText(SAY_DEMON_SLAY2, m_creature); break;
-            case 2: DoScriptText(SAY_DEMON_SLAY3, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_DEMON_SLAY1, SAY_DEMON_SLAY2, SAY_DEMON_SLAY3), m_creature);
     }
 
     void JustDied(Unit *victim)
@@ -667,7 +648,7 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blind_demonformAI : public ScriptedAI
         //Return since we have no target
         if (!UpdateVictim() )
             return;
-        
+
         if(m_creature->getVictim()->HasAura(30300,0))
             DoResetThreat();
 

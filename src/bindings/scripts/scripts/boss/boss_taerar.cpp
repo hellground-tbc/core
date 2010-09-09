@@ -129,14 +129,18 @@ struct TRINITY_DLL_DECL boss_taerarAI : public ScriptedAI
             if (target) DoCast(target,SPELL_SLEEP);
 
             Sleep_Timer = 8000 + rand()%7000;
-        }else Sleep_Timer -= diff;
+        }
+        else
+            Sleep_Timer -= diff;
 
         //NoxiousBreath_Timer
         if (NoxiousBreath_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_NOXIOUSBREATH);
             NoxiousBreath_Timer = 14000 + rand()%6000;
-        } else NoxiousBreath_Timer -= diff;
+        }
+        else
+            NoxiousBreath_Timer -= diff;
 
         //Tailsweep every 2 seconds
         if (TailSweep_Timer < diff)
@@ -145,7 +149,9 @@ struct TRINITY_DLL_DECL boss_taerarAI : public ScriptedAI
                 DoCast(target,SPELL_TAILSWEEP);
 
             TailSweep_Timer = 2000;
-        }else TailSweep_Timer -= diff;
+        }
+        else
+            TailSweep_Timer -= diff;
 
         //MarkOfNature_Timer
         //if (MarkOfNature_Timer < diff)
@@ -159,14 +165,18 @@ struct TRINITY_DLL_DECL boss_taerarAI : public ScriptedAI
         {
             DoCast(m_creature->getVictim(),SPELL_ARCANEBLAST);
             ArcaneBlast_Timer = 7000 + rand()%5000;
-        }else ArcaneBlast_Timer -= diff;
+        }
+        else
+            ArcaneBlast_Timer -= diff;
 
         //BellowingRoar_Timer
         if (BellowingRoar_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_BELLOWINGROAR);
             BellowingRoar_Timer = 20000 + rand()%10000;
-        } else BellowingRoar_Timer -= diff;
+        }
+        else
+            BellowingRoar_Timer -= diff;
 
         //Summon 3 Shades
         if ( !Shades  && (int) (m_creature->GetHealth()*100 / m_creature->GetMaxHealth() +0.5) == 75)
@@ -188,7 +198,9 @@ struct TRINITY_DLL_DECL boss_taerarAI : public ScriptedAI
                 Summon1_Timer = 120000;
                 Shades = true;
                 Shades_Timer = 60000;
-            } else Summon1_Timer -= diff;
+            }
+            else
+                Summon1_Timer -= diff;
         }
 
         //Summon 3 Shades
@@ -211,7 +223,9 @@ struct TRINITY_DLL_DECL boss_taerarAI : public ScriptedAI
                 Summon2_Timer = 120000;
                 Shades = true;
                 Shades_Timer = 60000;
-            } else Summon2_Timer -= diff;
+            }
+            else
+                Summon2_Timer -= diff;
         }
 
         //Summon 3 Shades
@@ -234,7 +248,9 @@ struct TRINITY_DLL_DECL boss_taerarAI : public ScriptedAI
                 Summon3_Timer = 120000;
                 Shades = true;
                 Shades_Timer = 60000;
-            } else Summon3_Timer -= diff;
+            }
+            else
+                Summon3_Timer -= diff;
         }
 
         DoMeleeAttackIfReady();
@@ -270,14 +286,18 @@ struct TRINITY_DLL_DECL boss_shadeoftaerarAI : public ScriptedAI
         {
             DoCast(m_creature->getVictim(),SPELL_POSIONCLOUD);
             PoisonCloud_Timer = 30000;
-        }else PoisonCloud_Timer -= diff;
+        }
+        else
+            PoisonCloud_Timer -= diff;
 
         //PosionBreath_Timer
         if (PosionBreath_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_POSIONBREATH);
             PosionBreath_Timer = 12000;
-        }else PosionBreath_Timer -= diff;
+        }
+        else
+            PosionBreath_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }

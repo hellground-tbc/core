@@ -147,11 +147,7 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
 
     void KilledUnit(Unit *victim)
     {
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(SAY_SLAY1, m_creature); break;
-        case 1: DoScriptText(SAY_SLAY2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), m_creature);
     }
 
     void JustDied(Unit *victim)
@@ -237,13 +233,7 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
             if(EnrageTimer <= diff)
             {
                 EnrageTimer = 0;
-                int text = 0;
-                switch (rand()%2)
-                {
-                    case 0: text = SAY_ENRAGE1; break;
-                    case 1: text = SAY_ENRAGE2; break;
-                }
-                ForceSpellCastWithScriptText(m_creature, SPELL_BERSERK, text, INTERRUPT_AND_CAST_INSTANTLY);
+                ForceSpellCastWithScriptText(m_creature, SPELL_BERSERK, RAND(SAY_ENRAGE1, SAY_ENRAGE2), INTERRUPT_AND_CAST_INSTANTLY);
             }
             else
                 EnrageTimer -= diff;
@@ -336,11 +326,7 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
                     //Cast this without triggered so that it appears in combat logs and shows visual.
                     ForceSpellCast(m_creature, SPELL_FEL_RAGE_SELF, INTERRUPT_AND_CAST);
 
-                    switch(rand()%2)
-                    {
-                        case 0: DoScriptText(SAY_SPECIAL1, m_creature); break;
-                        case 1: DoScriptText(SAY_SPECIAL2, m_creature); break;
-                    }
+                    DoScriptText(RAND(SAY_SPECIAL1, SAY_SPECIAL2), m_creature);
 
                     ForceSpellCast(target, SPELL_CHARGE, INTERRUPT_AND_CAST);
                     ForceSpellCast(target, SPELL_FEL_GEYSER, INTERRUPT_AND_CAST);

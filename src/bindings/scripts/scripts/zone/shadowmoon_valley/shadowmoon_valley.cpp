@@ -959,49 +959,24 @@ struct TRINITY_DLL_DECL npc_earthmender_wildaAI : public npc_escortAI
                case 14: SummonAssassin(); break;
                case 15: DoScriptText(SAY_PROGRESS3, m_creature, player); break;
                case 19:
-                   switch(rand()%3)
-                   {
-                   case 0: DoScriptText(SAY_PROGRESS2, m_creature, player); break;
-                   case 1: DoScriptText(SAY_PROGRESS4, m_creature, player); break;
-                   case 2: DoScriptText(SAY_PROGRESS5, m_creature, player); break;
-                   }
+                   DoScriptText(RAND(SAY_PROGRESS2, SAY_PROGRESS4, SAY_PROGRESS5), m_creature, player);
                    break;
                case 20: SummonAssassin(); break;
                case 26:
-                   switch(rand()%3)
-                   {
-                   case 0: DoScriptText(SAY_PROGRESS2, m_creature, player); break;
-                   case 1: DoScriptText(SAY_PROGRESS4, m_creature, player); break;
-                   case 2: DoScriptText(SAY_PROGRESS5, m_creature, player); break;
-                   }
+                   DoScriptText(RAND(SAY_PROGRESS2, SAY_PROGRESS4, SAY_PROGRESS5), m_creature, player);
                    break;
                case 27: SummonAssassin(); break;
                case 33:
-                   switch(rand()%3)
-                   {
-                   case 0: DoScriptText(SAY_PROGRESS2, m_creature, player); break;
-                   case 1: DoScriptText(SAY_PROGRESS4, m_creature, player); break;
-                   case 2: DoScriptText(SAY_PROGRESS5, m_creature, player); break;
-                   }
+                   DoScriptText(RAND(SAY_PROGRESS2, SAY_PROGRESS4, SAY_PROGRESS5), m_creature, player);
                    break;
                case 34: SummonAssassin(); break;
                case 37:
-                   switch(rand()%3)
-                   {
-                   case 0: DoScriptText(SAY_PROGRESS2, m_creature, player); break;
-                   case 1: DoScriptText(SAY_PROGRESS4, m_creature, player); break;
-                   case 2: DoScriptText(SAY_PROGRESS5, m_creature, player); break;
-                   }
+                   DoScriptText(RAND(SAY_PROGRESS2, SAY_PROGRESS4, SAY_PROGRESS5), m_creature, player);
                    break;
                case 38: SummonAssassin(); break;
                case 39: DoScriptText(SAY_PROGRESS6, m_creature, player); break;
                case 43:
-                   switch(rand()%3)
-                   {
-                   case 0: DoScriptText(SAY_PROGRESS2, m_creature, player); break;
-                   case 1: DoScriptText(SAY_PROGRESS4, m_creature, player); break;
-                   case 2: DoScriptText(SAY_PROGRESS5, m_creature, player); break;
-                   }
+                   DoScriptText(RAND(SAY_PROGRESS2, SAY_PROGRESS4, SAY_PROGRESS5), m_creature, player);
                    break;
                case 44: SummonAssassin(); break;
                case 50:
@@ -1019,11 +994,8 @@ struct TRINITY_DLL_DECL npc_earthmender_wildaAI : public npc_escortAI
            Unit* CoilskarAssassin = m_creature->SummonCreature(NPC_COILSKAR_ASSASSIN, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), m_creature->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 0);
            if( CoilskarAssassin )
            {
-               switch(rand()%2)
-               {
-               case 0: DoScriptText(ASSASSIN_SAY_AGGRO1, CoilskarAssassin, player); break;
-               case 1: DoScriptText(ASSASSIN_SAY_AGGRO2, CoilskarAssassin, player); break;
-               }
+               DoScriptText(RAND(ASSASSIN_SAY_AGGRO1, ASSASSIN_SAY_AGGRO2), CoilskarAssassin, player);
+
                ((Creature*)CoilskarAssassin)->AI()->AttackStart(m_creature);
            }
            else error_log("TSCR ERROR: Coilskar Assassin couldn't be summmoned");
@@ -2633,12 +2605,12 @@ EndContentData */
 #define XIRI_GOSSIP_HELLO "I am ready to join your forces in Battle Xi'ri"
 
 //NPC spawn positions and Waypoints
-static float MaievBT[4] = 
+static float MaievBT[4] =
 {
     -3554.0, 740.0, -15.4, 4.70
 };
 
-static float MaievWaypoint[][3] = 
+static float MaievWaypoint[][3] =
 {
     {-3554.0, 731.0, -15.0},
     {-3554.0, 700.0, - 9.3},
@@ -2661,7 +2633,7 @@ static float AkamaBT[4] =
     -3570.2, 684.5, -5.22, 4.70
 };
 
-static float AkamaWaypoint[][3] = 
+static float AkamaWaypoint[][3] =
 {
     {-3570.2, 654.5, 0.76},
     {-3570.2, 624.5, 5.78},
@@ -2699,7 +2671,7 @@ static float DeathswornPath[8][3] =
     {-3573.0, 623.0, 6.10}
 };
 
-static float DeathswornWaypoint[][3] = 
+static float DeathswornWaypoint[][3] =
 {
     {-3561.3, 537.2, 16.6},
     {-3553.4, 500.9, 20.0},
@@ -3118,7 +3090,7 @@ struct TRINITY_DLL_DECL npc_xiriAI : public Scripted_NoMovementAI
             else
                 QuestTimer -= diff;
         }
-        
+
     }
 };
 
@@ -3199,11 +3171,11 @@ struct TRINITY_DLL_DECL mob_deathbringer_joovanAI : public ScriptedAI
     uint32 EventTimer;
     uint8 EventCounter;
 
-    mob_deathbringer_joovanAI(Creature* c) : ScriptedAI(c) 
+    mob_deathbringer_joovanAI(Creature* c) : ScriptedAI(c)
     {
         ImageOfWarbringerGUID = 0;
     }
-    
+
 
     void Reset()
     {
@@ -3251,14 +3223,14 @@ struct TRINITY_DLL_DECL mob_deathbringer_joovanAI : public ScriptedAI
                 {
                     warbringer->CombatStop();
                     warbringer->CleanupsBeforeDelete();
-                    warbringer->AddObjectToRemoveList();                
+                    warbringer->AddObjectToRemoveList();
                 }
                 me->CombatStop();
                 me->CleanupsBeforeDelete();
                 me->AddObjectToRemoveList();
                 break;
             }
-            
+
         }
     }
 
@@ -3306,7 +3278,7 @@ struct TRINITY_DLL_DECL mob_deathbringer_joovanAI : public ScriptedAI
                     case 7:
                     {
                         WarbringerSay(WARBRINGER_SAY4);
-                    
+
                         std::list<Unit*> pList;
                         Trinity::AnyUnitInObjectRangeCheck u_check(me, 20);
                         Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(pList, u_check);
@@ -3324,7 +3296,7 @@ struct TRINITY_DLL_DECL mob_deathbringer_joovanAI : public ScriptedAI
                                 if(p->HasAura(37097, 0))
                                 {
                                     // event happens nie dziala, a powinien!
-                                    p->AreaExploredOrEventHappens(10596);  
+                                    p->AreaExploredOrEventHappens(10596);
                                     p->AreaExploredOrEventHappens(10563);
                                     // dlatego recznie musimy complete quest dac
                                     p->CompleteQuest(10596);
@@ -3345,10 +3317,10 @@ struct TRINITY_DLL_DECL mob_deathbringer_joovanAI : public ScriptedAI
                     EventTimer = 1000;
                 else
                     EventTimer = 4000;
-            } 
+            }
             else
                 EventTimer -= diff;
-        }    
+        }
 /*
         if(!UpdateVictim())
             return;
@@ -3377,7 +3349,7 @@ bool GossipHello_npc_overlord_orbarokh(Player *player, Creature *_Creature)
         player->PrepareQuestMenu( _Creature->GetGUID() );
 
 		if(player->GetQuestStatus(10751) || player->GetQuestStatus(10765) || player->GetQuestStatus(10768) || player->GetQuestStatus(10769) == QUEST_STATUS_INCOMPLETE )
-			if(!player->HasItemCount(31108,1))	
+			if(!player->HasItemCount(31108,1))
 				player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_ORBAROKH, GOSSIP_SENDER_MAIN, GOSSIP_SENDER_INFO );
 				player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
     return true;
@@ -3559,7 +3531,7 @@ void AddSC_shadowmoon_valley()
     newscript->Name="mob_deathbringer_joovan";
     newscript->GetAI = &GetAI_mob_deathbringer_joovanAI;
     newscript->RegisterSelf();
-	
+
 	newscript = new Script;
     newscript->Name="npc_overlord_orbarokh";
     newscript->pGossipHello = &GossipHello_npc_overlord_orbarokh;

@@ -150,12 +150,7 @@ struct TRINITY_DLL_DECL boss_high_astromancer_solarianAI : public ScriptedAI
 
     void KilledUnit(Unit *victim)
     {
-        switch(rand()%3)
-        {
-        case 0: DoScriptText(SAY_KILL1, m_creature); break;
-        case 1: DoScriptText(SAY_KILL2, m_creature); break;
-        case 2: DoScriptText(SAY_KILL3, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_KILL1, SAY_KILL2, SAY_KILL3), m_creature);
     }
 
     void JustDied(Unit *victim)
@@ -197,11 +192,8 @@ struct TRINITY_DLL_DECL boss_high_astromancer_solarianAI : public ScriptedAI
     {
         float z;
 
-        switch(rand()%2)
-        {
-            case 0: z = 1; break;
-            case 1: z = -1; break;
-        }
+        z = RAND(1, -1);
+
         return (z*sqrt(radius*radius - (x - CENTER_X)*(x - CENTER_X)) + CENTER_Y);
     }
 
@@ -223,7 +215,7 @@ struct TRINITY_DLL_DECL boss_high_astromancer_solarianAI : public ScriptedAI
                 EnterEvadeMode();
             else
                 DoZoneInCombat();
-            
+
             Check_Timer = 3000;
         }
         else
@@ -307,7 +299,7 @@ struct TRINITY_DLL_DECL boss_high_astromancer_solarianAI : public ScriptedAI
             if(MarkOfTheAstromancer_Timer < diff) //A debuff that lasts for 5 seconds, cast several times each phase on a random raid member, but not the main tank
             {
                 Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_MARK_OF_THE_ASTROMANCER), true, m_creature->getVictimGUID());
-                
+
                 if(target)
                     DoCast(target, SPELL_MARK_OF_THE_ASTROMANCER);
                 else
@@ -326,7 +318,7 @@ struct TRINITY_DLL_DECL boss_high_astromancer_solarianAI : public ScriptedAI
                 //After these 50 seconds she portals to the middle of the room and disappears, leaving 3 light portals behind.
                 m_creature->GetMotionMaster()->Clear();
                 m_creature->Relocate(SolarianPos[0], SolarianPos[1], SolarianPos[2], SolarianPos[3]);
-                
+
                 for(int i=0; i<=2; ++i)
                 {
                     if(!i)
@@ -371,7 +363,7 @@ struct TRINITY_DLL_DECL boss_high_astromancer_solarianAI : public ScriptedAI
             //10 seconds after Solarian disappears, 12 mobs spawn out of the three portals.
             m_creature->AttackStop();
             m_creature->StopMoving();
-            
+
             if (Phase2_Timer < diff)
             {
                 Phase = 3;
@@ -487,16 +479,7 @@ struct TRINITY_DLL_DECL mob_solarium_priestAI : public ScriptedAI
         {
             Unit* target = NULL;
 
-            switch(rand()%2)
-            {
-                case 0:
-                    if(pInstance)
-                        target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_ASTROMANCER));
-                    break;
-                case 1:
-                    target = m_creature;
-                    break;
-            }
+            target = RAND((Unit*)m_creature, (pInstance ? Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_ASTROMANCER)) : NULL));
 
             if(target)
             {

@@ -89,11 +89,7 @@ struct TRINITY_DLL_DECL boss_pathaleon_the_calculatorAI : public ScriptedAI
 
     void KilledUnit(Unit* victim)
     {
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(SAY_SLAY_1, m_creature); break;
-        case 1: DoScriptText(SAY_SLAY_2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), m_creature);
     }
 
     void JustDied(Unit* Killer)
@@ -124,7 +120,7 @@ struct TRINITY_DLL_DECL boss_pathaleon_the_calculatorAI : public ScriptedAI
             DoScriptText(SAY_SUMMON, m_creature);
             Summon_Timer = 30000 + rand()%15000;
         }else Summon_Timer -= diff;
-        
+
         if(Check_Timer < diff)
         {
             if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 30.0f)
@@ -133,7 +129,7 @@ struct TRINITY_DLL_DECL boss_pathaleon_the_calculatorAI : public ScriptedAI
                 DoZoneInCombat();
                 Check_Timer = 3000;
             }
-            else 
+            else
                 Check_Timer -= diff;
 
         if(ManaTap_Timer < diff)
@@ -152,16 +148,12 @@ struct TRINITY_DLL_DECL boss_pathaleon_the_calculatorAI : public ScriptedAI
         {
             if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true, m_creature->getVictimGUID()))
             {
-                switch(rand()%2)
-                {
-                case 0: DoScriptText(SAY_DOMINATION_1, m_creature); break;
-                case 1: DoScriptText(SAY_DOMINATION_2, m_creature); break;
-                }
+                DoScriptText(RAND(SAY_DOMINATION_1, SAY_DOMINATION_2), m_creature);
 
                 DoCast(target,SPELL_DOMINATION);
             }
-                Domination_Timer = 25000 + rand()%5000;
-            }else Domination_Timer -= diff;
+            Domination_Timer = 25000 + rand()%5000;
+        }else Domination_Timer -= diff;
 
         //Only casting if Heroic Mode is used
         if (HeroicMode)

@@ -182,11 +182,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
 
     void KilledUnit(Unit *victim)
     {
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(SAY_EVIL_SLAY1, m_creature); break;
-        case 1: DoScriptText(SAY_EVIL_SLAY2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_EVIL_SLAY1, SAY_EVIL_SLAY2), m_creature);
     }
 
     void MovementInform(uint32 type,uint32 id)
@@ -198,7 +194,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             return;
 
         m_creature->SetVisibility(VISIBILITY_OFF);
-        
+
         if(isFriendly)
             m_creature->setDeathState(JUST_DIED);
         else
@@ -334,11 +330,8 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
             EnterEvadeMode();
             return;
         }
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(SAY_SATH_SLAY1, m_creature); break;
-        case 1: DoScriptText(SAY_SATH_SLAY2, m_creature); break;
-        }
+
+        DoScriptText(RAND(SAY_SATH_SLAY1, SAY_SATH_SLAY2), m_creature);
     }
 
     void JustDied(Unit *killer)

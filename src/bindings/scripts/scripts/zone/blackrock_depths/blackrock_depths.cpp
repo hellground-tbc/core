@@ -243,7 +243,9 @@ struct TRINITY_DLL_DECL npc_grimstoneAI : public npc_escortAI
                         }
                     }
                 }
-            }else MobDeath_Timer -= diff;
+            }
+            else
+                MobDeath_Timer -= diff;
         }
 
         if (Event_Timer)
@@ -311,7 +313,9 @@ struct TRINITY_DLL_DECL npc_grimstoneAI : public npc_escortAI
                     break;
                 }
                 ++EventPhase;
-            }else Event_Timer -= diff;
+            }
+            else
+                Event_Timer -= diff;
         }
 
         if (CanWalk)
@@ -368,7 +372,9 @@ struct TRINITY_DLL_DECL mob_phalanxAI : public ScriptedAI
         {
             DoCast(m_creature->getVictim(),SPELL_THUNDERCLAP);
             ThunderClap_Timer = 10000;
-        }else ThunderClap_Timer -= diff;
+        }
+        else
+            ThunderClap_Timer -= diff;
 
         //FireballVolley_Timer
         if( m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 51 )
@@ -377,7 +383,9 @@ struct TRINITY_DLL_DECL mob_phalanxAI : public ScriptedAI
             {
                 DoCast(m_creature->getVictim(),SPELL_FIREBALLVOLLEY);
                 FireballVolley_Timer = 15000;
-            }else FireballVolley_Timer -= diff;
+            }
+            else
+                FireballVolley_Timer -= diff;
         }
 
         //MightyBlow_Timer
@@ -385,7 +393,9 @@ struct TRINITY_DLL_DECL mob_phalanxAI : public ScriptedAI
         {
             DoCast(m_creature->getVictim(),SPELL_MIGHTYBLOW);
             MightyBlow_Timer = 10000;
-        }else MightyBlow_Timer -= diff;
+        }
+        else
+            MightyBlow_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }
@@ -732,11 +742,17 @@ struct TRINITY_DLL_DECL npc_marshal_windsorAI : public npc_escortAI
     {
         switch(rand()%3)
         {
-            case 0:m_creature->Say(SAY_WINDSOR_AGGRO1, LANG_UNIVERSAL, who->GetGUID());break;
-            case 1:m_creature->Say(SAY_WINDSOR_AGGRO2, LANG_UNIVERSAL, who->GetGUID());break;
-            case 2:m_creature->Say(SAY_WINDSOR_AGGRO3, LANG_UNIVERSAL, who->GetGUID());break;
+            case 0:
+                m_creature->Say(SAY_WINDSOR_AGGRO1, LANG_UNIVERSAL, who->GetGUID());
+                break;
+            case 1:
+                m_creature->Say(SAY_WINDSOR_AGGRO2, LANG_UNIVERSAL, who->GetGUID());
+                break;
+            case 2:
+                m_creature->Say(SAY_WINDSOR_AGGRO3, LANG_UNIVERSAL, who->GetGUID());
+                break;
         }
-    }
+        }
 
     void Reset()
     {
@@ -966,15 +982,21 @@ struct TRINITY_DLL_DECL npc_marshal_reginald_windsorAI : public npc_escortAI
     {
         switch(rand()%3)
         {
-            case 0:m_creature->Say(SAY_WINDSOR_AGGRO1, LANG_UNIVERSAL, who->GetGUID());break;
-            case 1:m_creature->Say(SAY_WINDSOR_AGGRO2, LANG_UNIVERSAL, who->GetGUID());break;
-            case 2:m_creature->Say(SAY_WINDSOR_AGGRO3, LANG_UNIVERSAL, who->GetGUID());break;
+            case 0:
+                m_creature->Say(SAY_WINDSOR_AGGRO1, LANG_UNIVERSAL, who->GetGUID());
+                break;
+            case 1:
+                m_creature->Say(SAY_WINDSOR_AGGRO2, LANG_UNIVERSAL, who->GetGUID());
+                break;
+            case 2:
+                m_creature->Say(SAY_WINDSOR_AGGRO3, LANG_UNIVERSAL, who->GetGUID());
+                break;
         }
     }
 
     void JustDied(Unit *slayer)
     {
-        if(pInstance) 
+        if(pInstance)
             pInstance->SetData(DATA_QUEST_JAIL_BREAK, FAIL);
     }
 
@@ -1126,7 +1148,7 @@ struct TRINITY_DLL_DECL npc_tobias_seecherAI : public npc_escortAI
             m_creature->SetVisibility(VISIBILITY_OFF);
             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-            
+
             if(pInstance)
                 pInstance->SetData(DATA_TOBIAS,DONE);
         }
@@ -1320,7 +1342,9 @@ struct TRINITY_DLL_DECL npc_rocknotAI : public npc_escortAI
                 DoGo(DATA_GO_BAR_KEG,0);
                 BreakKeg_Timer = 0;
                 BreakDoor_Timer = 1000;
-            }else BreakKeg_Timer -= diff;
+            }
+            else
+                BreakKeg_Timer -= diff;
         }
 
         if (BreakDoor_Timer)
@@ -1339,7 +1363,9 @@ struct TRINITY_DLL_DECL npc_rocknotAI : public npc_escortAI
                 pInstance->SetData(TYPE_BAR,DONE);
 
                 BreakDoor_Timer = 0;
-            }else BreakDoor_Timer -= diff;
+            }
+            else
+                BreakDoor_Timer -= diff;
         }
 
         npc_escortAI::UpdateAI(diff);
@@ -1494,7 +1520,7 @@ void AddSC_blackrock_depths()
      newscript->Name="npc_shill";
      newscript->pGossipHello =  &GossipHello_npc_shill;
      newscript->RegisterSelf();
-    
+
      newscript = new Script;
      newscript->Name="npc_crest";
      newscript->pGossipHello =  &GossipHello_npc_crest;

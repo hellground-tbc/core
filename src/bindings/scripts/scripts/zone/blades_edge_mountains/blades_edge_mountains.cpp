@@ -95,49 +95,23 @@ struct TRINITY_DLL_DECL mobs_nether_drakeAI : public ScriptedAI
             switch( m_creature->GetEntry() )
             {
                 case ENTRY_WHELP:
-                    switch(rand()%4)
-                    {
-                        case 0: cEntry = ENTRY_PROTO; break;
-                        case 1: cEntry = ENTRY_ADOLE; break;
-                        case 2: cEntry = ENTRY_MATUR; break;
-                        case 3: cEntry = ENTRY_NIHIL; break;
-                    }
+                    cEntry = RAND(ENTRY_PROTO, ENTRY_ADOLE, ENTRY_MATUR, ENTRY_NIHIL);
                     break;
                 case ENTRY_PROTO:
-                    switch(rand()%3)
-                    {
-                        case 0: cEntry = ENTRY_ADOLE; break;
-                        case 1: cEntry = ENTRY_MATUR; break;
-                        case 2: cEntry = ENTRY_NIHIL; break;
-                    }
+                    cEntry = RAND(ENTRY_ADOLE, ENTRY_MATUR, ENTRY_NIHIL);
                     break;
                 case ENTRY_ADOLE:
-                    switch(rand()%3)
-                    {
-                        case 0: cEntry = ENTRY_PROTO; break;
-                        case 1: cEntry = ENTRY_MATUR; break;
-                        case 2: cEntry = ENTRY_NIHIL; break;
-                    }
+                    cEntry = RAND(ENTRY_PROTO, ENTRY_MATUR, ENTRY_NIHIL);
                     break;
                 case ENTRY_MATUR:
-                    switch(rand()%3)
-                    {
-                        case 0: cEntry = ENTRY_PROTO; break;
-                        case 1: cEntry = ENTRY_ADOLE; break;
-                        case 2: cEntry = ENTRY_NIHIL; break;
-                    }
+                    cEntry = RAND(ENTRY_PROTO, ENTRY_ADOLE, ENTRY_NIHIL);
                     break;
                 case ENTRY_NIHIL:
                     if( NihilSpeech_Phase )
                     {
                         DoScriptText(SAY_NIHIL_INTERRUPT, m_creature);
                         IsNihil = false;
-                        switch(rand()%3)
-                        {
-                            case 0: cEntry = ENTRY_PROTO; break;
-                            case 1: cEntry = ENTRY_ADOLE; break;
-                            case 2: cEntry = ENTRY_MATUR; break;
-                        }
+                        cEntry = RAND(ENTRY_PROTO, ENTRY_ADOLE, ENTRY_MATUR);
                     }
                     break;
             }

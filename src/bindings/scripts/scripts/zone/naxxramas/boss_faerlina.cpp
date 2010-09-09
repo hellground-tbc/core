@@ -57,13 +57,7 @@ struct TRINITY_DLL_DECL boss_faerlinaAI : public ScriptedAI
 
     void EnterCombat(Unit *who)
     {
-        switch (rand()%4)
-        {
-        case 0: DoScriptText(SAY_AGGRO1, m_creature); break;
-        case 1: DoScriptText(SAY_AGGRO2, m_creature); break;
-        case 2: DoScriptText(SAY_AGGRO3, m_creature); break;
-        case 3: DoScriptText(SAY_AGGRO4, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3, SAY_AGGRO4), m_creature);
     }
 
     void MoveInLineOfSight(Unit *who)
@@ -79,11 +73,7 @@ struct TRINITY_DLL_DECL boss_faerlinaAI : public ScriptedAI
 
     void KilledUnit(Unit* victim)
     {
-        switch (rand()%2)
-        {
-            case 0: DoScriptText(SAY_SLAY1, m_creature); break;
-            case 1: DoScriptText(SAY_SLAY2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), m_creature);
     }
 
     void JustDied(Unit* Killer)

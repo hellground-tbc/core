@@ -523,7 +523,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
     {
         if(Phase >= 4)
             ScriptedAI::AttackStart(who);
-    }    
+    }
 
     void EnterCombat(Unit *who)
     {
@@ -533,12 +533,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
 
     void KilledUnit()
     {
-        switch(rand()%3)
-        {
-        case 0: DoScriptText(SAY_SLAY1, m_creature); break;
-        case 1: DoScriptText(SAY_SLAY2, m_creature); break;
-        case 2: DoScriptText(SAY_SLAY3, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2, SAY_SLAY3), m_creature);
     }
 
     void JustSummoned(Creature* summoned)
@@ -1007,11 +1002,9 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                         {
                             AddSpellToCast(m_creature, SPELL_SUMMON_PHOENIX, true);
                             //DoCast(m_creature, SPELL_SUMMON_PHOENIX, true);
-                            switch(rand()%2)
-                            {
-                                case 0: DoScriptText(SAY_SUMMON_PHOENIX1, m_creature); break;
-                                case 1: DoScriptText(SAY_SUMMON_PHOENIX2, m_creature); break;
-                            }
+
+                            DoScriptText(RAND(SAY_SUMMON_PHOENIX1, SAY_SUMMON_PHOENIX2), m_creature);
+
                             Phoenix_Timer = 30000 +rand()%10000;
                         }
                         else
@@ -1032,26 +1025,22 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                         // MC after 20 sec from Pyros chain (4 Phase)
                         if(Phase == 4)
                         {
-                          if(m_creature->getThreatManager().getThreatList().size() >= 2)
-                          {
-                            switch(rand()%2)
+                            if(m_creature->getThreatManager().getThreatList().size() >= 2)
                             {
-                              case 0: DoScriptText(SAY_MINDCONTROL1, m_creature); break;
-                              case 1: DoScriptText(SAY_MINDCONTROL2, m_creature); break;
-                            }
-                            for (uint32 i = 0; i < urand(2, 3); i++)
-                            {
-                                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 80.0, true, m_creature->getVictimGUID());
-                                if(!target)
-                                    target = m_creature->getVictim();
+                                DoScriptText(RAND(SAY_MINDCONTROL1, SAY_MINDCONTROL2), m_creature);
+                                for (uint32 i = 0; i < urand(2, 3); i++)
+                                {
+                                    Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 80.0, true, m_creature->getVictimGUID());
+                                    if(!target)
+                                        target = m_creature->getVictim();
 
-                                if(target)
-                                    DoCast(target, SPELL_MIND_CONTROL, true);
+                                    if(target)
+                                        DoCast(target, SPELL_MIND_CONTROL, true);
+                                }
                             }
-                          }
-                          MindControl_Timer = 10000;
-                          MC_Done = false;                // for second MC to have a good timer
-                       }
+                            MindControl_Timer = 10000;
+                            MC_Done = false;                // for second MC to have a good timer
+                        }
                     }
                     else
                         Arcane_Timer1 -= diff;
@@ -1063,20 +1052,16 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                         {
                             if(m_creature->getThreatManager().getThreatList().size() >= 2)
                             {
-                              switch(rand()%2)
-                              {
-                                case 0: DoScriptText(SAY_MINDCONTROL1, m_creature); break;
-                                case 1: DoScriptText(SAY_MINDCONTROL2, m_creature); break;
-                              }
-                             for (uint32 i = 0; i < urand(2, 3); i++)
-                             {
+                                DoScriptText(RAND(SAY_MINDCONTROL1, SAY_MINDCONTROL2), m_creature);
 
-                                 Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 80.0, true, m_creature->getVictimGUID());
-                                 if(!target)
-                                     target = m_creature->getVictim();
-                                 if(target)
-                                    DoCast(target, SPELL_MIND_CONTROL, true);
-                             }
+                                for (uint32 i = 0; i < urand(2, 3); i++)
+                                {
+                                    Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 80.0, true, m_creature->getVictimGUID());
+                                    if(!target)
+                                         target = m_creature->getVictim();
+                                    if(target)
+                                        DoCast(target, SPELL_MIND_CONTROL, true);
+                                }
                             }
                             MC_Done = true;
                         }
@@ -1194,11 +1179,9 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                                     pInstance->SetData(DATA_KAELTHASEVENT, 5);    // set KaelthasEventPhase = 5 for Gravity Lapse phase
                                 // 1) Kael'thas casts teleportation visual spell on self
                                 m_creature->CastSpell(m_creature, SPELL_GRAVITY_KAEL_VISUAL, false);
-                                switch(rand()%2)
-                                {
-                                    case 0: DoScriptText(SAY_GRAVITYLAPSE1, m_creature); break;
-                                    case 1: DoScriptText(SAY_GRAVITYLAPSE2, m_creature); break;
-                                }
+
+                                DoScriptText(RAND(SAY_GRAVITYLAPSE1, SAY_GRAVITYLAPSE2), m_creature);
+
                                 GravityLapse_Timer = 2000;
                                 ++GravityLapse_Phase;
                                 Arcane_Timer1 = 0;

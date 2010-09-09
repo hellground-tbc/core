@@ -201,49 +201,42 @@ struct TRINITY_DLL_DECL boss_chromaggusAI : public ScriptedAI
 
             //Cast new random vurlnabilty on self
             uint32 spell;
-            switch (rand()%5)
-            {
-                case 0: spell = SPELL_FIRE_VURNALBILTY; break;
-                case 1: spell = SPELL_FROST_VURNALBILTY; break;
-                case 2: spell = SPELL_SHADOW_VURNALBILTY; break;
-                case 3: spell = SPELL_NATURE_VURNALBILTY; break;
-                case 4: spell = SPELL_ARCANE_VURNALBILTY; break;
-            }
+
+            spell = RAND(SPELL_FIRE_VURNALBILTY, SPELL_FROST_VURNALBILTY, SPELL_SHADOW_VURNALBILTY, SPELL_NATURE_VURNALBILTY, SPELL_ARCANE_VURNALBILTY);
 
             DoCast(m_creature,spell);
             CurrentVurln_Spell = spell;
 
             DoScriptText(EMOTE_SHIMMER, m_creature);
             Shimmer_Timer = 45000;
-        }else Shimmer_Timer -= diff;
+        }
+        else
+            Shimmer_Timer -= diff;
 
         //Breath1_Timer
         if (Breath1_Timer < diff)
         {
             DoCast(m_creature->getVictim(),Breath1_Spell);
             Breath1_Timer = 60000;
-        }else Breath1_Timer -= diff;
+        }
+        else
+            Breath1_Timer -= diff;
 
         //Breath2_Timer
         if (Breath2_Timer < diff)
         {
             DoCast(m_creature->getVictim(),Breath2_Spell);
             Breath2_Timer = 60000;
-        }else Breath2_Timer -= diff;
+        }
+        else
+            Breath2_Timer -= diff;
 
         //Affliction_Timer
         if (Affliction_Timer < diff)
         {
             uint32 SpellAfflict = 0;
 
-            switch (rand()%5)
-            {
-                case 0: SpellAfflict = SPELL_BROODAF_BLUE; break;
-                case 1: SpellAfflict = SPELL_BROODAF_BLACK; break;
-                case 2: SpellAfflict = SPELL_BROODAF_RED; break;
-                case 3: SpellAfflict = SPELL_BROODAF_BRONZE; break;
-                case 4: SpellAfflict = SPELL_BROODAF_GREEN; break;
-            }
+            SpellAfflict = RAND(SPELL_BROODAF_BLUE, SPELL_BROODAF_BLACK, SPELL_BROODAF_RED, SPELL_BROODAF_BRONZE, SPELL_BROODAF_GREEN);
 
             std::list<HostilReference*>::iterator i;
 
@@ -280,7 +273,9 @@ struct TRINITY_DLL_DECL boss_chromaggusAI : public ScriptedAI
             }
 
             Affliction_Timer = 10000;
-        }else Affliction_Timer -= diff;
+        }
+        else
+            Affliction_Timer -= diff;
 
         //Frenzy_Timer
         if (Frenzy_Timer < diff)
@@ -288,7 +283,9 @@ struct TRINITY_DLL_DECL boss_chromaggusAI : public ScriptedAI
             DoCast(m_creature,SPELL_FRENZY);
             DoScriptText(EMOTE_FRENZY, m_creature);
             Frenzy_Timer = 10000 + (rand() % 5000);
-        }else Frenzy_Timer -= diff;
+        }
+        else
+            Frenzy_Timer -= diff;
 
         //Enrage if not already enraged and below 20%
         if (!Enraged && (m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 20)

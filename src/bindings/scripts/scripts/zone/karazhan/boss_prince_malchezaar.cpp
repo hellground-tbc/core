@@ -85,7 +85,7 @@ static InfernalPoint InfernalPoints[] =
 #define SPELL_EQUIP_AXES        30857                       //Visual for axe equiping
 #define SPELL_AMPLIFY_DAMAGE    39095                       //Amplifiy during phase 3
 #define SPELL_HELLFIRE          30859                       //Infenals' hellfire aura
-#define SPELL_CLEAVE            30131                       //Same as Nightbane. 
+#define SPELL_CLEAVE            30131                       //Same as Nightbane.
 #define NETHERSPITE_INFERNAL    17646                       //The netherspite infernal creature
 #define MALCHEZARS_AXE          17650                       //Malchezar's axes (creatures), summoned during phase 3
 
@@ -227,12 +227,7 @@ struct TRINITY_DLL_DECL boss_malchezaarAI : public ScriptedAI
 
     void KilledUnit(Unit *victim)
     {
-        switch(rand()%3)
-        {
-        case 0: DoScriptText(SAY_SLAY1, m_creature); break;
-        case 1: DoScriptText(SAY_SLAY2, m_creature); break;
-        case 2: DoScriptText(SAY_SLAY3, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2, SAY_SLAY3), m_creature);
     }
 
     void JustDied(Unit *victim)
@@ -400,11 +395,7 @@ struct TRINITY_DLL_DECL boss_malchezaarAI : public ScriptedAI
             DoCast(Infernal, SPELL_INFERNAL_RELAY);
         }
 
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(SAY_SUMMON1, m_creature); break;
-        case 1: DoScriptText(SAY_SUMMON2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SUMMON1, SAY_SUMMON2), m_creature);
     }
 
     void DamageTaken(Unit *done_by, uint32 &damage)
@@ -426,7 +417,7 @@ struct TRINITY_DLL_DECL boss_malchezaarAI : public ScriptedAI
                 DoResetThreat();
             else
                 DoZoneInCombat();
-            
+
             CheckTimer = 3000;
         }else CheckTimer -= diff;
 
@@ -531,7 +522,7 @@ struct TRINITY_DLL_DECL boss_malchezaarAI : public ScriptedAI
                 SunderArmorTimer = 15000;
 
             }else SunderArmorTimer -= diff;
-            
+
             if(Cleave_Timer < diff)
             {
                 DoCast(m_creature->getVictim(), SPELL_CLEAVE);

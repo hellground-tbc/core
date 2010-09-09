@@ -65,22 +65,12 @@ struct TRINITY_DLL_DECL boss_pandemoniusAI : public ScriptedAI
 
     void KilledUnit(Unit* victim)
     {
-        switch(rand()%2)
-        {
-            case 0: DoScriptText(SAY_KILL_1, m_creature); break;
-            case 1: DoScriptText(SAY_KILL_2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_KILL_1, SAY_KILL_2), m_creature);
     }
 
     void EnterCombat(Unit *who)
     {
-        switch(rand()%3)
-        {
-            case 0: DoScriptText(SAY_AGGRO_1, m_creature); break;
-            case 1: DoScriptText(SAY_AGGRO_2, m_creature); break;
-            case 2: DoScriptText(SAY_AGGRO_3, m_creature); break;
-        }
-
+        DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), m_creature);
     }
 
     void UpdateAI(const uint32 diff)
@@ -102,7 +92,9 @@ struct TRINITY_DLL_DECL boss_pandemoniusAI : public ScriptedAI
                 VoidBlast_Timer = 25000+rand()%10000;
                 VoidBlast_Counter = 0;
             }
-        }else VoidBlast_Timer -= diff;
+        }
+        else
+            VoidBlast_Timer -= diff;
 
         if( !VoidBlast_Counter )
         {
@@ -115,7 +107,9 @@ struct TRINITY_DLL_DECL boss_pandemoniusAI : public ScriptedAI
 
                 DoCast(m_creature,HeroicMode ? H_SPELL_DARK_SHELL : SPELL_DARK_SHELL);
                 DarkShell_Timer = 20000;
-            }else DarkShell_Timer -= diff;
+            }
+            else
+                DarkShell_Timer -= diff;
         }
 
         DoMeleeAttackIfReady();

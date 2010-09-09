@@ -151,12 +151,7 @@ struct TRINITY_DLL_DECL boss_morogrim_tidewalkerAI : public ScriptedAI
 
     void KilledUnit(Unit *victim)
     {
-        switch(rand()%3)
-        {
-        case 0: DoScriptText(SAY_SLAY1, m_creature); break;
-        case 1: DoScriptText(SAY_SLAY2, m_creature); break;
-        case 2: DoScriptText(SAY_SLAY3, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2, SAY_SLAY3), m_creature);
     }
 
     void JustDied(Unit *victim)
@@ -192,12 +187,12 @@ struct TRINITY_DLL_DECL boss_morogrim_tidewalkerAI : public ScriptedAI
             return;
 
         if(PulseCombat_Timer < diff)
-        {    
+        {
             if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 135.0f)
                 EnterEvadeMode();
             else
                 DoZoneInCombat();
-            
+
             PulseCombat_Timer = 3000;
         }else PulseCombat_Timer -= diff;
 
@@ -212,11 +207,7 @@ struct TRINITY_DLL_DECL boss_morogrim_tidewalkerAI : public ScriptedAI
             }
             else
             {
-                switch(rand()%2)
-                {
-                    case 0: DoScriptText(SAY_SUMMON1, m_creature); break;
-                    case 1: DoScriptText(SAY_SUMMON2, m_creature); break;
-                }
+                DoScriptText(RAND(SAY_SUMMON1, SAY_SUMMON2), m_creature);
 
                 for(uint8 i = 0; i < 10; i++)
                 {
@@ -274,11 +265,7 @@ struct TRINITY_DLL_DECL boss_morogrim_tidewalkerAI : public ScriptedAI
                     }
                 }
 
-                switch(rand()%2)
-                {
-                    case 0: DoScriptText(SAY_SUMMON_BUBL1, m_creature); break;
-                    case 1: DoScriptText(SAY_SUMMON_BUBL2, m_creature); break;
-                }
+                DoScriptText(RAND(SAY_SUMMON_BUBL1, SAY_SUMMON_BUBL2), m_creature);
 
                 DoScriptText(EMOTE_WATERY_GRAVE, m_creature);
                 WateryGrave_Timer = 30000;
@@ -314,7 +301,7 @@ struct TRINITY_DLL_DECL boss_morogrim_tidewalkerAI : public ScriptedAI
 
                     if(globuletarget)
                         globulelist.insert(globuletarget->GetGUID());
-                    
+
                     globuletarget->CastSpell(globuletarget, globulespell[g], true);
                 }
                 DoScriptText(EMOTE_WATERY_GLOBULES, m_creature);

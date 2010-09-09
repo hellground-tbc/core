@@ -510,12 +510,8 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public boss_illidari_coun
 
     void CastAuraOnCouncil()
     {
-        uint32 spellid = 0;
-        switch(rand()%2)
-        {
-            case 0: spellid = SPELL_DEVOTION_AURA;   break;
-            case 1: spellid = SPELL_CHROMATIC_AURA;  break;
-        }
+        uint32 spellid = RAND(SPELL_DEVOTION_AURA, SPELL_CHROMATIC_AURA);
+
         for(uint8 i = 0; i < 4; ++i)
         {
             Unit* pUnit = Unit::GetUnit((*m_creature), Council[i]);
@@ -545,11 +541,7 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public boss_illidari_coun
         {
             if(Unit* pUnit = SelectCouncilMember())
             {
-                switch(rand()%2)
-                {
-                    case 0: AddSpellToCast(pUnit, SPELL_BLESS_SPELLWARD);  break;
-                    case 1: AddSpellToCast(pUnit, SPELL_BLESS_PROTECTION); break;
-                }
+                AddSpellToCast(pUnit, RAND(SPELL_BLESS_SPELLWARD, SPELL_BLESS_PROTECTION));
             }
             BlessingTimer = 15000;
         }
@@ -581,11 +573,7 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public boss_illidari_coun
 
         if(SealTimer < diff)
         {
-            switch(rand()%2)
-            {
-                case 0: AddSpellToCast(m_creature, SPELL_SEAL_OF_COMMAND);  break;
-                case 1: AddSpellToCast(m_creature, SPELL_SEAL_OF_BLOOD);    break;
-            }
+            AddSpellToCast(m_creature, RAND(SPELL_SEAL_OF_COMMAND, SPELL_SEAL_OF_BLOOD));
             SealTimer = 40000;
         }
         else

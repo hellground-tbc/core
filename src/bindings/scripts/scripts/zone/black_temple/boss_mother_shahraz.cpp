@@ -112,11 +112,7 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
 
     void KilledUnit(Unit *victim)
     {
-        switch (rand()%2)
-        {
-        case 0: DoScriptText(SAY_SLAY1, m_creature); break;
-        case 1: DoScriptText(SAY_SLAY2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), m_creature);
     }
 
     void JustDied(Unit *victim)
@@ -137,14 +133,13 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
             DoZoneInCombat();
             CheckTimer = 2000;
         }
-        else 
+        else
             CheckTimer -= diff;
 
         if (!Enraged && ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 10))
         {
             Enraged = true;
-            DoCast(m_creature, SPELL_ENRAGE, true);
-            DoScriptText(SAY_ENRAGE, m_creature);
+            ForceSpellCastWithScriptText(m_creature, SPELL_ENRAGE, SAY_ENRAGE, INTERRUPT_AND_CAST_INSTANTLY);
         }
 
         //Randomly cast one beam.
@@ -183,13 +178,7 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         // Select 3 random targets (can select same target more than once), teleport to a random location then make them cast explosions until they get away from each other.
         if (FatalAttractionTimer < diff)
         {
-            int text = 0;
-            switch (rand()%2)
-            {
-                case 0: text = SAY_SPELL2; break;
-                case 1: text = SAY_SPELL3; break;
-            }
-            ForceSpellCastWithScriptText(m_creature, SPELL_FATAL_ATTRACTION, text, INTERRUPT_AND_CAST_INSTANTLY);
+            ForceSpellCastWithScriptText(m_creature, SPELL_FATAL_ATTRACTION, RAND(SAY_SPELL2, SAY_SPELL3), INTERRUPT_AND_CAST_INSTANTLY);
             FatalAttractionTimer = 40000 + rand()%31 * 1000;
         }
         else
@@ -212,7 +201,6 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
                 {
                     EnrageTimer = 0;
                     ForceSpellCastWithScriptText(m_creature, SPELL_BERSERK, SAY_ENRAGE, INTERRUPT_AND_CAST_INSTANTLY);
-                    DoScriptText(SAY_ENRAGE, m_creature);
                 }
                 else
                     EnrageTimer -= diff;
@@ -222,17 +210,13 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         //Random taunts
         if (RandomYellTimer < diff)
         {
-            switch (rand()%3)
-            {
-                case 0: DoScriptText(SAY_TAUNT1, m_creature); break;
-                case 1: DoScriptText(SAY_TAUNT2, m_creature); break;
-                case 2: DoScriptText(SAY_TAUNT3, m_creature); break;
-            }
+            DoScriptText(RAND(SAY_TAUNT1, SAY_TAUNT2, SAY_TAUNT3), m_creature);
             RandomYellTimer = 60000 +rand()%91000;
         }
         else
             RandomYellTimer -= diff;
 
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };
