@@ -457,7 +457,7 @@ Unit *caster, Item* castItem) : Aura(spellproto, eff, currentBasePoints, target,
         m_radius = GetSpellRadius(spellproto,m_effIndex,false);
     else
         m_radius = GetSpellRadius(spellproto,m_effIndex,true);
-    
+
     if(Player* modOwner = caster_ptr->GetSpellModOwner())
         modOwner->ApplySpellMod(GetId(), SPELLMOD_RADIUS, m_radius);
 
@@ -2295,7 +2295,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
 
         // AT REMOVE
         switch(GetId())
-        {                 
+        {
             case 2584:          // Waiting to Resurrect
             {
                 // Waiting to resurrect spell cancel, we must remove player from resurrect queue
@@ -2318,7 +2318,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     m_target->Kill(m_target, true);
                 return;
             }
-            case 46308:        // Burning Winds                                
+            case 46308:        // Burning Winds
             {
                 m_target->CastSpell(m_target,47287,true,NULL,this); // casted only at creatures at spawn
                 return;
@@ -2333,6 +2333,8 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 m_target->SetHealth(m_target->GetMaxHealth());
 
                 m_target->RemoveAllAurasOnDeath();  //prevent spell immunities from cloak of shadows and others
+                if (m_target->GetTypeId() == TYPEID_PLAYER && m_target->GetPet())
+                    ((Player*)m_target)->RemovePet(m_target->GetPet(), PET_SAVE_NOT_IN_SLOT);
                 m_target->CastSpell(m_target, 40266, true);   //summon Vengeful Spirit and 4 Shadowy Constructs
                 m_target->CastSpell(m_target, 40282, true);   //Possess Spirit Immune
                 m_target->CastSpell((Unit*)NULL, 40268, false); //Possess Vengeful Spirit
@@ -6490,7 +6492,7 @@ void Aura::PeriodicTick()
             if(GetId() == 31447 && m_target->GetMaxPower(POWER_MANA) && !m_target->GetPower(POWER_MANA))
             {
                 m_target->CastSpell(m_target, 31463, true, 0, this);
-                
+
                 // Remove aura
                 SetAuraDuration(0);
             }
@@ -6734,21 +6736,21 @@ void Aura::PeriodicDummyTick()
         {
             if (m_target->GetTypeId() != TYPEID_PLAYER)
                 return;
-            
+
             // Should be manauser
             if (m_target->getPowerType() != POWER_MANA)
                 return;
-            
+
             Unit *caster = GetCaster();
             if (!caster)
                 return;
-            
+
             // Regen amount is max (100% from spell) on 21% or less mana and min on 92.5% or greater mana (20% from spell)
             int mana = m_target->GetPower(POWER_MANA);
             int max_mana = m_target->GetMaxPower(POWER_MANA);
             int32 base_regen = caster->CalculateSpellDamage(m_spellProto, m_effIndex, m_currentBasePoints, m_target);
             float regen_pct = 1.20f - 1.1f * mana / max_mana;
-            
+
             if (regen_pct > 1.0f)
                 regen_pct = 1.0f;
             else if (regen_pct < 0.2f) regen_pct = 0.2f;
