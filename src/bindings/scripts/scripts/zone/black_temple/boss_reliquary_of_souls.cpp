@@ -161,6 +161,7 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
         EssenceGUID = 0;
+        m_creature->setActive(true);
     }
 
     ScriptedInstance* pInstance;
@@ -200,7 +201,7 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
         m_creature->RemoveAurasDueToSpell(SPELL_SUBMERGE);
     }
 
-    void MoveInLineOfSight(Unit *who)
+    void StartEvent(Unit *who)
     {
         if (!m_creature->isInCombat() && who->GetTypeId() == TYPEID_PLAYER)
         {
@@ -416,6 +417,48 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
         else
             Timer -= diff;
     }
+};
+
+struct TRINITY_DLL_DECL npc_ros_triggerAI : public ScriptedAI
+{
+    npc_ros_triggerAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
+
+    ScriptedInstance *pInstance;
+    uint64 RosGUID;
+
+    void Reset()
+    {
+        RosGUID = 0;
+    }
+
+    void EnterCombat(Unit* who){}
+
+    void JustRespawned(){}
+
+    void MoveInLineOfSight(Unit * who)
+    {
+        if (!RosGUID)
+            RosGUID = pInstance->GetData64(DATA_RELIQUARYOFSOULSEVENT);
+
+        if (!pInstance)
+             pInstance = (ScriptedInstance*)m_creature->GetInstanceData();
+
+        if (pInstance && pInstance->GetData(DATA_RELIQUARYOFSOULSEVENT) == NOT_STARTED && who->GetTypeId() == TYPEID_PLAYER)
+        {
+            Creature * ros = Unit::GetCreature(*m_creature, RosGUID);
+            if (ros && !((Player*)who)->isGameMaster())
+            {
+                ((boss_reliquary_of_soulsAI*)(ros->AI()))->StartEvent(who);
+            }
+        }
+    }
+
+    void JustDied(Unit *killer){}
+
+    void UpdateAI(const uint32 diff){}
 };
 
 //This is used to sort the players by distance in preparation for the Fixate cast.
@@ -843,6 +886,11 @@ CreatureAI* GetAI_npc_enslaved_soul(Creature *_Creature)
     return new npc_enslaved_soulAI (_Creature);
 }
 
+CreatureAI* GetAI_npc_ros_trigger(Creature *_Creature)
+{
+    return new npc_ros_triggerAI (_Creature);
+}
+
 void AddSC_boss_reliquary_of_souls()
 {
     Script *newscript;
@@ -869,6 +917,11 @@ void AddSC_boss_reliquary_of_souls()
     newscript = new Script;
     newscript->Name="npc_enslaved_soul";
     newscript->GetAI = &GetAI_npc_enslaved_soul;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_ros_trigger";
+    newscript->GetAI = &GetAI_npc_ros_trigger;
     newscript->RegisterSelf();
 }
 

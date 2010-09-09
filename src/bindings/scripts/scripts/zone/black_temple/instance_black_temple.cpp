@@ -55,6 +55,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
     uint64 IllidariCouncil;
     uint64 BloodElfCouncilVoice;
     uint64 IllidanStormrage;
+    uint64 ReliquaryOfTheLost;
 
     uint64 NajentusGate;
     uint64 MainTempleDoors;
@@ -94,6 +95,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         IllidariCouncil = 0;
         BloodElfCouncilVoice = 0;
         IllidanStormrage = 0;
+        ReliquaryOfTheLost = 0;
 
         NajentusGate    = 0;
         MainTempleDoors = 0;
@@ -154,7 +156,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
                 Akama = creature->GetGUID();
                 break;
             case 23191:
-                Akama_Shade = creature->GetGUID(); 
+                Akama_Shade = creature->GetGUID();
                 break;
             case 22841: // Shade of Akama
                 data = DATA_SHADEOFAKAMAEVENT;
@@ -162,15 +164,15 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
                 break;
             case 22871: // Teron Gorefiend
                 data = DATA_TERONGOREFIENDEVENT;
-                Teron = creature->GetGUID();   
+                Teron = creature->GetGUID();
                 break;
             case 22898: // Supremus
                 data = DATA_SUPREMUSEVENT;
-                Supremus = creature->GetGUID();   
+                Supremus = creature->GetGUID();
                 break;
             case 22917: // Illidan Stormrage
                 data = DATA_ILLIDANSTORMRAGEEVENT;
-                IllidanStormrage = creature->GetGUID();  
+                IllidanStormrage = creature->GetGUID();
                 break;
             case 22947:
                 data = DATA_MOTHERSHAHRAZEVENT;
@@ -179,30 +181,31 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
                 break;
             case 22949:
                 data = DATA_ILLIDARICOUNCILEVENT;
-                GathiosTheShatterer = creature->GetGUID();  
+                GathiosTheShatterer = creature->GetGUID();
                 break;
             case 22950:
                 data = DATA_ILLIDARICOUNCILEVENT;
                 HighNethermancerZerevor = creature->GetGUID();
                 break;
-            case 22951: 
+            case 22951:
                 data = DATA_ILLIDARICOUNCILEVENT;
-                LadyMalande = creature->GetGUID(); 
+                LadyMalande = creature->GetGUID();
                 break;
             case 22952:
                 data = DATA_ILLIDARICOUNCILEVENT;
-                VerasDarkshadow = creature->GetGUID();    
+                VerasDarkshadow = creature->GetGUID();
                 break;
-            case 23426:  
-                IllidariCouncil = creature->GetGUID();     
+            case 23426:
+                IllidariCouncil = creature->GetGUID();
                 break;
-            case 23418: // Reliquary of the Lost
+            case 22856: // Reliquary of the Lost
                 data = DATA_RELIQUARYOFSOULSEVENT;
+                ReliquaryOfTheLost = creature->GetGUID();
                 break;
-            case 23499:  
-                BloodElfCouncilVoice = creature->GetGUID(); 
+            case 23499:
+                BloodElfCouncilVoice = creature->GetGUID();
                 break;
-            case 23047: 
+            case 23047:
                 weaponmasterList.push_back(creature->GetGUID());
                 break;
         }
@@ -283,6 +286,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         case DATA_AKAMA:                       return Akama;
         case DATA_AKAMA_SHADE:                 return Akama_Shade;
         case DATA_SHADEOFAKAMA:                return ShadeOfAkama;
+        case DATA_RELIQUARYOFSOULSEVENT:       return ReliquaryOfTheLost;
         case DATA_TERONGOREFIEND:              return Teron;
         case DATA_SUPREMUS:                    return Supremus;
         case DATA_ILLIDANSTORMRAGE:            return IllidanStormrage;
@@ -409,7 +413,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         }
     }
 
-    
+
     void SetData64(uint32 type, uint64 value)
     {
         switch(type)
@@ -419,7 +423,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
             break;
         }
     }
-    
+
     uint32 GetData(uint32 type)
     {
         switch(type)
@@ -438,7 +442,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         }
         return 0;
     }
-    
+
     void OnPlayerDeath(Player *pPlayer)
     {
         if(sodList.size() && GetData(DATA_TERONGOREFIENDEVENT) == IN_PROGRESS)
@@ -470,7 +474,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
             }
         }
     }
-    
+
     const char* Save()
     {
         return str_data.c_str();
