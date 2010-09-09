@@ -65,7 +65,7 @@ struct TRINITY_DLL_DECL mob_doom_blossomAI : public NullCreatureAI
     mob_doom_blossomAI(Creature *c) : NullCreatureAI(c)
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
-        TeronGUID = pInstance ? pInstance->GetData64(DATA_TERONGOREFIENDEVENT) : 0;
+        TeronGUID = pInstance ? pInstance->GetData64(DATA_TERONGOREFIEND) : 0;
     }
 
     ScriptedInstance* pInstance;
@@ -148,7 +148,7 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
     mob_shadowy_constructAI(Creature* c) : ScriptedAI(c)
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
-        TeronGUID = pInstance ? pInstance->GetData64(DATA_TERONGOREFIENDEVENT) : 0;
+        TeronGUID = pInstance ? pInstance->GetData64(DATA_TERONGOREFIEND) : 0;
     }
 
     ScriptedInstance* pInstance;
@@ -500,6 +500,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
             if(target && target->isAlive() && !target->HasAura(SPELL_SHADOW_OF_DEATH, 0) && !target->HasAura(40282, 0) )
             {
                 AddSpellToCast(target, SPELL_SHADOW_OF_DEATH);
+                pInstance->SetData64(DATA_SHADOWOFDEATH, target->GetGUID()); 
                 ShadowOfDeathTimer = urand(30000, 50000);
             }
         }

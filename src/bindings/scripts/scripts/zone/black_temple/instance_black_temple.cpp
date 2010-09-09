@@ -74,10 +74,13 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
     uint32 Encounters[ENCOUNTERS];
     std::string str_data;
 
+    std::map<uint64, uint32> sodList;
     std::vector<uint64> weaponmasterList;
 
     void Initialize()
     {
+        sodList.clear();
+
         Najentus = 0;
         Akama = 0;
         Akama_Shade = 0;
@@ -280,7 +283,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         case DATA_AKAMA:                       return Akama;
         case DATA_AKAMA_SHADE:                 return Akama_Shade;
         case DATA_SHADEOFAKAMA:                return ShadeOfAkama;
-        case DATA_TERONGOREFIENDEVENT:         return Teron;
+        case DATA_TERONGOREFIEND:              return Teron;
         case DATA_SUPREMUS:                    return Supremus;
         case DATA_ILLIDANSTORMRAGE:            return IllidanStormrage;
         case DATA_GATHIOSTHESHATTERER:         return GathiosTheShatterer;
@@ -406,26 +409,69 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         }
     }
 
+    
+    void SetData64(uint32 type, uint64 value)
+    {
+        switch(type)
+        {
+            case DATA_SHADOWOFDEATH:
+                sodList[value] = 70000;
+            break;
+        }
+    }
+    
     uint32 GetData(uint32 type)
     {
         switch(type)
         {
-        case DATA_HIGHWARLORDNAJENTUSEVENT:         return Encounters[0];
-        case DATA_SUPREMUSEVENT:                    return Encounters[1];
-        case DATA_SHADEOFAKAMAEVENT:                return Encounters[2];
-        case DATA_TERONGOREFIENDEVENT:              return Encounters[3];
-        case DATA_GURTOGGBLOODBOILEVENT:            return Encounters[4];
-        case DATA_RELIQUARYOFSOULSEVENT:            return Encounters[5];
-        case DATA_MOTHERSHAHRAZEVENT:               return Encounters[6];
-        case DATA_ILLIDARICOUNCILEVENT:             return Encounters[7];
-        case DATA_ILLIDANSTORMRAGEEVENT:            return Encounters[8];
-        case DATA_ENSLAVED_SOUL:                    return EnslavedSoulsCount;
-        case DATA_WEAPONMASTER_LIST_SIZE:           return weaponmasterList.size();
+            case DATA_HIGHWARLORDNAJENTUSEVENT:         return Encounters[0];
+            case DATA_SUPREMUSEVENT:                    return Encounters[1];
+            case DATA_SHADEOFAKAMAEVENT:                return Encounters[2];
+            case DATA_TERONGOREFIENDEVENT:              return Encounters[3];
+            case DATA_GURTOGGBLOODBOILEVENT:            return Encounters[4];
+            case DATA_RELIQUARYOFSOULSEVENT:            return Encounters[5];
+            case DATA_MOTHERSHAHRAZEVENT:               return Encounters[6];
+            case DATA_ILLIDARICOUNCILEVENT:             return Encounters[7];
+            case DATA_ILLIDANSTORMRAGEEVENT:            return Encounters[8];
+            case DATA_ENSLAVED_SOUL:                    return EnslavedSoulsCount;
+            case DATA_WEAPONMASTER_LIST_SIZE:           return weaponmasterList.size();
         }
         return 0;
     }
+    
+    void OnPlayerDeath(Player *pPlayer)
+    {
+        if(sodList.size() && GetData(DATA_TERONGOREFIENDEVENT) == IN_PROGRESS)
+        {
+            for(std::map<uint64,uint32>::iterator itr = sodList.begin(); itr != sodList.end(); itr++)
+                if(itr->first == pPlayer->GetGUID())
+                    sodList.erase(itr);
+        }
+    }
 
-   const char* Save()
+    void Update(uint32 diff)
+    {
+        if(GetData(DATA_TERONGOREFIENDEVENT) == IN_PROGRESS)
+        {
+            if(sodList.size())
+            {
+                for(std::map<uint64,uint32>::iterator itr = sodList.begin(); itr != sodList.end(); itr++)
+                {
+                    if(itr->second <= diff)
+                    {
+                        if(Unit *teron = instance->GetCreature(GetData64(DATA_TERONGOREFIEND)))
+                            teron->CastSpell(teron, 40266, true);
+
+                        sodList.erase(itr);
+                    }
+                    else
+                        itr->second -= diff;
+                }
+            }
+        }
+    }
+    
+    const char* Save()
     {
         return str_data.c_str();
     }
