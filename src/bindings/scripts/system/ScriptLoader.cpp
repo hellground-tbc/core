@@ -375,11 +375,15 @@ extern void AddSC_razorfen_kraul();
 //Redridge Mountains
 //Ruins of Ahn'Qiraj
 extern void AddSC_boss_ayamiss();
+extern void AddSC_larva();
 //extern void AddSC_boss_buru();
 extern void AddSC_boss_kurinnaxx();
 extern void AddSC_boss_moam();
+extern void AddSC_mana_fiend();
 //extern void AddSC_boss_ossirian();
-//extern void AddSC_boss_rajaxx();
+extern void AddSC_boss_rajaxx();
+//extern void AddSC_lieutenant_general_andorov();
+//extern void AddSC_rajaxx_officer();
 //extern void AddSC_instance_ruins_of_anhqiraj(); //Placeholder
 //Scarlet Monastery
 extern void AddSC_boss_arcanist_doan();
@@ -949,11 +953,15 @@ void AddScripts()
     //Redridge Mountains
     //Ruins of Ahn'Qiraj
     AddSC_boss_ayamiss();
+    AddSC_larva();
    // AddSC_boss_buru();
     AddSC_boss_kurinnaxx();
     AddSC_boss_moam();
+    AddSC_mana_fiend();
    // AddSC_boss_ossirian();
-   // AddSC_boss_rajaxx();
+    AddSC_boss_rajaxx();
+   // AddSC_lieutenant_general_andorov();
+   // AddSC_rajaxx_officer();
    // AddSC_instance_ruins_of_anhqiraj();
 
     //Scarlet Monastery
