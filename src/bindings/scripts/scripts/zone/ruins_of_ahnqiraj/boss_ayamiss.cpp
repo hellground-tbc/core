@@ -38,9 +38,11 @@ make him fly from 70-100%
 
 #define CREATURE_SWARMER        15546                           //propably we need to summon them manually
 
-static float position[3] = 
+static float position[3] =
 {
-    {-9664.55}, {1562.54}, {22.05}
+    -9664.55,
+    1562.54,
+    22.05
 };
 
 struct TRINITY_DLL_DECL boss_ayamissAI : public ScriptedAI
