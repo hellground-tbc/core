@@ -1750,6 +1750,7 @@ void Creature::Respawn(bool command)
             setDeathState( JUST_ALIVED );
 
         //Call AI respawn virtual function
+        AI()->Reset();
         AI()->JustRespawned();
 
         //GetMap()->Add(this);

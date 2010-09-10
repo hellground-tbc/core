@@ -137,7 +137,7 @@ class TRINITY_DLL_SPEC CreatureAI : public UnitAI
         virtual bool IsEscorted() { return false; }
 
         // Called when creature is spawned or respawned (for reseting variables)
-        virtual void JustRespawned() { Reset(); }
+        virtual void JustRespawned() {}
 
         // Called at waypoint reached or point movement finished
         virtual void MovementInform(uint32 /*MovementType*/, uint32 /*Data*/) {}

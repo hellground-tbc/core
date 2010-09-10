@@ -272,12 +272,16 @@ struct TRINITY_DLL_DECL mob_towering_infernalAI : public ScriptedAI
 
     void Reset()
     {
-        //DoCast(m_creature, SPELL_INFERNO_EFFECT);
-       // DoCast(m_creature, SPELL_IMMOLATION);
         m_creature->setFaction(1720);
         m_creature->ApplySpellImmune(2, IMMUNITY_MECHANIC, MECHANIC_BANISH, true);
         CheckTimer = 5000;
         WaitTimer = 3500;
+    }
+
+    void JustRespawned()
+    {
+        DoCast(m_creature, SPELL_INFERNO_EFFECT);
+        DoCast(m_creature, SPELL_IMMOLATION);
     }
 
     void MoveInLineOfSight(Unit *who)
@@ -311,12 +315,7 @@ struct TRINITY_DLL_DECL mob_towering_infernalAI : public ScriptedAI
         //Return since we have no target
         if (!UpdateVictim())
             return;
-        //small workaround
-        if(WaitTimer == 3500)
-        {
-            DoCast(m_creature, SPELL_INFERNO_EFFECT);
-            DoCast(m_creature, SPELL_IMMOLATION);
-        }
+
 
         if(WaitTimer > diff)
         {
