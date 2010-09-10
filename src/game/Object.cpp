@@ -1066,8 +1066,8 @@ void WorldObject::SetWorldObject(bool on)
 {
     if(!IsInWorld())
         return;
-    
-    GetMap()->AddObjectToSwitchList(this, on); 
+
+    GetMap()->AddObjectToSwitchList(this, on);
 }
 
 void WorldObject::setActive( bool on )
@@ -1223,6 +1223,21 @@ bool WorldObject::_IsWithinDist(WorldObject const* obj, float dist2compare, bool
     }
     float sizefactor = GetObjectSize() + obj->GetObjectSize();
     float maxdist = dist2compare + sizefactor;
+
+    return distsq < maxdist * maxdist;
+}
+
+bool WorldObject::_IsWithinDist(WorldLocation const* wLoc, float dist2compare, bool is3D) const
+{
+    float dx = GetPositionX() - wLoc->x;
+    float dy = GetPositionY() - wLoc->y;
+    float distsq = dx*dx + dy*dy;
+    if(is3D)
+    {
+        float dz = GetPositionZ() - wLoc->z;
+        distsq += dz*dz;
+    }
+    float maxdist = dist2compare + GetObjectSize();
 
     return distsq < maxdist * maxdist;
 }

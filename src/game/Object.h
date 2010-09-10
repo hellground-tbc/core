@@ -475,6 +475,7 @@ class TRINITY_DLL_SPEC WorldObject : public Object, public WorldLocation
         bool IsInMap(const WorldObject* obj) const { return GetMapId()==obj->GetMapId() && GetInstanceId()==obj->GetInstanceId(); }
 
         bool _IsWithinDist(WorldObject const* obj, float dist2compare, bool is3D) const;
+        bool _IsWithinDist(WorldLocation const* wLoc, float dist2compare, bool is3D) const;
         bool IsWithinDist(WorldObject const* obj, float dist2compare, bool is3D = true) const
         {
             return obj && _IsWithinDist(obj,dist2compare,is3D);
@@ -482,6 +483,10 @@ class TRINITY_DLL_SPEC WorldObject : public Object, public WorldLocation
         bool IsWithinDistInMap(WorldObject const* obj, float dist2compare, bool is3D = true) const
         {
             return obj && IsInMap(obj) && _IsWithinDist(obj,dist2compare,is3D);
+        }
+        bool IsWithinDistInMap(WorldLocation const* wLoc, float dist2compare, bool is3D = true) const
+        {
+            return wLoc && GetMapId() == wLoc->mapid && _IsWithinDist(wLoc,dist2compare,is3D);
         }
         bool IsWithinLOS(const float x, const float y, const float z ) const;
         bool IsWithinLOSInMap(const WorldObject* obj) const;
