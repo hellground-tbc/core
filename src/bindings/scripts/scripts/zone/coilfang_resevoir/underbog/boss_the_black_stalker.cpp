@@ -38,8 +38,10 @@ struct TRINITY_DLL_DECL boss_the_black_stalkerAI : public ScriptedAI
     boss_the_black_stalkerAI(Creature *c) : ScriptedAI(c)
     {
         HeroicMode = m_creature->GetMap()->IsHeroic();
+        c->GetPosition(wLoc);
     }
 
+    WorldLocation wLoc;
     bool HeroicMode;
     uint32 SporeStriders_Timer;
     uint32 Levitate_Timer;
@@ -97,9 +99,7 @@ struct TRINITY_DLL_DECL boss_the_black_stalkerAI : public ScriptedAI
         // Evade if too far
         if(check_Timer < diff)
         {
-            float x,y,z,o;
-            m_creature->GetHomePosition(x,y,z,o);
-            if(m_creature->GetDistance(x,y,z) > 60)
+            if(!m_creature->IsWithinDistInMap(&wLoc, 60))
             {
                 EnterEvadeMode();
                 return;

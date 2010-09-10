@@ -116,7 +116,7 @@ struct TRINITY_DLL_DECL mob_voidtravelerAI : public ScriptedAI
             }
 
             m_creature->GetMotionMaster()->MoveFollow(Vorpil,0,0);
-            if(m_creature->GetDistance(Vorpil) < 3)
+            if(m_creature->IsWithinDistInMap(Vorpil, 3))
             {
                 DoCast(m_creature, SPELL_SACRIFICE, false);
                 sacrificed = true;

@@ -458,7 +458,7 @@ struct TRINITY_DLL_DECL npc_dark_fiendAI : public ScriptedAI
             }
             else
             {
-                if(m_creature->GetDistance(m_creature->getVictim()) < 5)
+                if(m_creature->IsWithinDistInMap(m_creature->getVictim(), 5))
                 {
                     DoCastAOE(SPELL_DARKFIEND_AOE, false);
                     m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);

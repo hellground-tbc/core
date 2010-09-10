@@ -627,7 +627,7 @@ struct TRINITY_DLL_DECL boss_ellris_duskhallowAI : public boss_priestess_guestAI
             Fear_Timer = 10000;
         }else Fear_Timer -= diff;
 
-        if (m_creature->GetDistance(m_creature->getVictim()) <= 10)
+        if (m_creature->IsWithinDistInMap(m_creature->getVictim(), 10))
             m_creature->StopMoving();
         //DoMeleeAttackIfReady();//should not melee, she's a warlock
     }
@@ -801,7 +801,7 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
             Blink_Timer = 8000;
         }else Blink_Timer -= diff;
 
-        if (m_creature->getVictim() && m_creature->GetDistance(m_creature->getVictim()) <= 10)
+        if (m_creature->getVictim() && m_creature->IsWithinDistInMap(m_creature->getVictim(), 10))
             m_creature->StopMoving();
 
         //DoMeleeAttackIfReady(); //mage type, no melee needed
@@ -1175,7 +1175,7 @@ struct TRINITY_DLL_DECL boss_zelfanAI : public boss_priestess_guestAI
 
         if(Goblin_Dragon_Gun_Timer < diff)
         {
-            if (m_creature->GetDistance(m_creature->getVictim()) <= 5)
+            if (m_creature->IsWithinDistInMap(m_creature->getVictim(), 5))
             {
                 Goblin_Dragon_Gun_Timer = 10000;
                 DoCast(m_creature->getVictim(), SPELL_GOBLIN_DRAGON_GUN);

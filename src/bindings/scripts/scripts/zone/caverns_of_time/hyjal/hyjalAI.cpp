@@ -429,10 +429,10 @@ void hyjalAI::EnterCombat(Unit *who)
 {
     if(IsDummy)
         return;
-    
+
     for(uint8 i = 0; i < 2; ++i)
     {
-        
+
         if(Spell[i].CooldownStart)
             SpellTimer[i] = Spell[i].CooldownStart;
         else if(Spell[i].CooldownMin)
@@ -1074,7 +1074,7 @@ void hyjalAI::WaypointReached(uint32 i)
             {
                 if((*itr) && (*itr)->isAlive() && (*itr) != m_creature && (*itr)->GetEntry() != JAINA)
                 {
-                    if((*itr)->GetDistance(m_creature) >= 60)
+                    if(!(*itr)->IsWithinDistInMap(m_creature, 60))
                         (*itr)->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
                     float x, y, z;
                     (*itr)->SetDefaultMovementType(IDLE_MOTION_TYPE);

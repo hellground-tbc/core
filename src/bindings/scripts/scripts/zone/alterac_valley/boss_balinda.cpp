@@ -16,7 +16,7 @@
 
 /* ScriptData
 SDName: Boss_Balinda
-SD%Complete: 
+SD%Complete:
 SDComment: Timers should be adjusted
 EndScriptData */
 
@@ -37,7 +37,7 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_balindaAI : public ScriptedAI
 {
-    boss_balindaAI(Creature *c) : ScriptedAI(c) 
+    boss_balindaAI(Creature *c) : ScriptedAI(c)
     {
         m_creature->GetPosition(wLoc);
     }
@@ -114,7 +114,7 @@ struct TRINITY_DLL_DECL boss_balindaAI : public ScriptedAI
 
         if(CheckTimer < diff)
         {
-            if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) >= 20.0f)
+            if(!m_creature->IsWithinDistInMap(&wLoc, 20))
             {
                 m_creature->InterruptNonMeleeSpells(false);
                 EnterEvadeMode();

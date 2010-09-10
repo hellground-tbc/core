@@ -33,13 +33,17 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_broodlordAI : public ScriptedAI
 {
-    boss_broodlordAI(Creature *c) : ScriptedAI(c) {}
+    boss_broodlordAI(Creature *c) : ScriptedAI(c)
+    {
+        c->GetPosition(wLoc);
+    }
 
     uint32 Cleave_Timer;
     uint32 BlastWave_Timer;
     uint32 MortalStrike_Timer;
     uint32 KnockBack_Timer;
     uint32 LeashCheck_Timer;
+    WorldLocation wLoc;
 
     void Reset()
     {
@@ -64,10 +68,7 @@ struct TRINITY_DLL_DECL boss_broodlordAI : public ScriptedAI
         //LeashCheck_Timer
         if (LeashCheck_Timer < diff)
         {
-            float rx,ry,rz;
-            m_creature->GetRespawnCoord(rx, ry, rz);
-            float spawndist = m_creature->GetDistance(rx,ry,rz);
-            if ( spawndist > 250 )
+            if (!m_creature->IsWithinDistInMap(&wLoc, 250))
             {
                 DoScriptText(SAY_LEASH, m_creature);
                 EnterEvadeMode();

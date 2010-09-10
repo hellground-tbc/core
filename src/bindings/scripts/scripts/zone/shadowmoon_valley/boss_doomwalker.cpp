@@ -105,7 +105,7 @@ struct TRINITY_DLL_DECL boss_doomwalkerAI : public ScriptedAI
 
         if(Check_Timer < diff)
         {
-            if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 80.0f)
+            if(!m_creature->IsWithinDistInMap(&wLoc, 80.0f))
                 EnterEvadeMode();
 
             Check_Timer = 2000;

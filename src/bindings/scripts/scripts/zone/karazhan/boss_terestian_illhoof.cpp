@@ -259,7 +259,7 @@ struct TRINITY_DLL_DECL boss_terestianAI : public ScriptedAI
         //Check_Timer
         if(CheckTimer < diff)
         {
-            if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 35.0f)
+            if(!m_creature->IsWithinDistInMap(&wLoc, 35.0f))
                 EnterEvadeMode();
             else
                 DoZoneInCombat();

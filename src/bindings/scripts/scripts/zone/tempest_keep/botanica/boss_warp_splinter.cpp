@@ -180,14 +180,15 @@ struct TRINITY_DLL_DECL boss_warp_splinterAI : public ScriptedAI
         //Check_Timer
         if(Check_Timer < diff)
         {
-            if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 30.0f)
+            if(!m_creature->IsWithinDistInMap(&wLoc, 30.0f))
                 EnterEvadeMode();
             else
                 DoZoneInCombat();
-                Check_Timer = 3000;
-            }
-            else
-                Check_Timer -= diff;
+
+            Check_Timer = 3000;
+        }
+        else
+            Check_Timer -= diff;
 
         //Check for Arcane Volley
         if(Arcane_Volley_Timer < diff)

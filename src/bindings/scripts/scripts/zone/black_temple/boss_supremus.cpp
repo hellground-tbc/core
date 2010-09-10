@@ -143,7 +143,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit *who)
     {
-        if (m_creature->GetDistance(who) <= 50 && !m_creature->isInCombat() && m_creature->IsHostileTo(who))
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, 50) && m_creature->IsHostileTo(who))
             m_creature->AI()->AttackStart(who);
     }
 
@@ -155,9 +155,9 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
         if(GameObject* Doors = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_GAMEOBJECT_SUPREMUS_DOORS)))
         {
             if(close)
-                Doors->SetGoState(1);                 // Closed
+                Doors->SetGoState(1);                   // Closed
             else
-                Doors->SetGoState(0);                      // Open
+                Doors->SetGoState(0);                   // Opened
         }
     }
 

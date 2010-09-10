@@ -206,9 +206,16 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
         SelectAddEntry();
         for(uint8 i = 0; i < 4; ++i)
             AddGUID[i] = 0;
+
+        wLoc.x = 119.223;
+        wLoc.y = 1035.45;
+        wLoc.z = 29.4481;
+        wLoc.mapid = c->GetMapId();
     }
 
     ScriptedInstance *pInstance;
+
+    WorldLocation wLoc;
 
     uint64 AddGUID[4];
     uint32 AddEntry[4];
@@ -340,7 +347,7 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
 
         if(ResetTimer < diff)
         {
-            if(m_creature->GetDistance(119.223,1035.45,29.4481) <= 10)
+            if(m_creature->IsWithinDistInMap(&wLoc, 10))
             {
                 EnterEvadeMode();
                 return;

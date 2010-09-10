@@ -112,7 +112,7 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
         //Check_Timer
         if(Check_Timer < diff)
         {
-            if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 135.0f)
+            if(!m_creature->IsWithinDistInMap(&wLoc, 135.0f))
                 EnterEvadeMode();
             else
                 DoZoneInCombat();

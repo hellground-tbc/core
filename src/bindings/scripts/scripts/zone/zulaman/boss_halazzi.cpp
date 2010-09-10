@@ -215,7 +215,7 @@ struct TRINITY_DLL_DECL boss_halazziAI : public ScriptedAI
 
         if (checkTimer2 < diff)
         {
-            if (m_creature->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 50)
+            if (!m_creature->IsWithinDistInMap(&wLoc, 50))
                 EnterEvadeMode();
             else
                 DoZoneInCombat();

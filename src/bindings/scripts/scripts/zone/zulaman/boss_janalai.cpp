@@ -109,9 +109,15 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
             TempSpell->EffectImplicitTargetA[0] = 1;
             TempSpell->EffectImplicitTargetB[0] = 0;
         }
+        wLoc.x = -33.93;
+        wLoc.y = 1149.27;
+        wLoc.z = 19;
+        wLoc.mapid = c->GetMapId();
     }
 
     ScriptedInstance *pInstance;
+
+    WorldLocation wLoc;
 
     uint32 FireBreathTimer;
     uint32 BombTimer;
@@ -338,7 +344,7 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
 
         if (checkTimer < diff)
         {
-            if (m_creature->GetDistance(JanalainPos[0][0], JanalainPos[0][1], JanalainPos[0][2]) > 20)
+            if (!m_creature->IsWithinDistInMap(&wLoc, 20))
                 EnterEvadeMode();
             else
                 DoZoneInCombat();

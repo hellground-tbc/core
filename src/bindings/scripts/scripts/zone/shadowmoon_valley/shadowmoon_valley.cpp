@@ -2717,7 +2717,7 @@ struct TRINITY_DLL_DECL npc_maiev_BT_attuAI : public npc_escortAI
 
     void MoveInLineOfSight(Unit* who)
     {
-        if(!m_creature->isInCombat() && (who->GetEntry() == 22988 || who->GetEntry() == 23152) && m_creature->GetDistance(who) <= 20)
+        if(!m_creature->isInCombat() && (who->GetEntry() == 22988 || who->GetEntry() == 23152) && m_creature->IsWithinDistInMap(who, 20))
             m_creature->AI()->AttackStart(who);
     }
 
@@ -2791,7 +2791,7 @@ struct TRINITY_DLL_DECL npc_akama_BT_attuAI : public npc_escortAI
 
     void MoveInLineOfSight(Unit* who)
     {
-        if(!m_creature->isInCombat() && (who->GetEntry() == 22988 || who->GetEntry() == 23152) && m_creature->GetDistance(who) <= 20)
+        if(!m_creature->isInCombat() && (who->GetEntry() == 22988 || who->GetEntry() == 23152) && m_creature->IsWithinDistInMap(who, 20))
             m_creature->AI()->AttackStart(who);
     }
 
@@ -2895,7 +2895,7 @@ struct TRINITY_DLL_DECL npc_ashtongue_deathswornAI : public npc_escortAI
 
     void MoveInLineOfSight(Unit* who)
     {
-        if(!m_creature->isInCombat() && (who->GetEntry() == 22988 || who->GetEntry() == 23152 || who->GetEntry() == 21166) && m_creature->GetDistance(who) <= 30)
+        if(!m_creature->isInCombat() && (who->GetEntry() == 22988 || who->GetEntry() == 23152 || who->GetEntry() == 21166) && m_creature->IsWithinDistInMap(who, 30))
             m_creature->AI()->AttackStart(who);
     }
 

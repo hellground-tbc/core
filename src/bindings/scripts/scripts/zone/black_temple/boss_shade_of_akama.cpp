@@ -125,7 +125,7 @@ static const uint32 spawnEntries[3]= {23523, 23318, 23524};
 
 struct TRINITY_DLL_DECL mob_ashtongue_channelerAI : public ScriptedAI
 {
-    mob_ashtongue_channelerAI(Creature* c) : ScriptedAI(c) 
+    mob_ashtongue_channelerAI(Creature* c) : ScriptedAI(c)
     {
         pInstance = (ScriptedInstance *)c->GetInstanceData();
         ShadeGUID = 0;
@@ -198,7 +198,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
         }
     }
 
-    void UpdateAI(const uint32 diff) 
+    void UpdateAI(const uint32 diff)
     {
         if (!m_attack || !UpdateVictim())
             return;
@@ -420,7 +420,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
     void KilledUnit(Unit *) {}
     void JustDied(Unit* killer);
 
-    void SummonedCreatureDespawn(Creature *summon) 
+    void SummonedCreatureDespawn(Creature *summon)
     {
         if (summon->GetEntry() == CREATURE_CHANNELER || summon->GetEntry() == CREATURE_SORCERER)
             return;
@@ -641,7 +641,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
                 ProcessSpawning(diff);
                 if (m_checkTimer < diff)
                 {
-                    if (m_creature->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 100)
+                    if (!m_creature->IsWithinDistInMap(&wLoc, 100))
                         EnterEvadeMode();
                     else
                         DoZoneInCombat();
@@ -748,7 +748,7 @@ struct TRINITY_DLL_DECL npc_akamaAI : public ScriptedAI
         m_summons.DespawnAll();
     }
 
-    void SummonedCreatureDespawn(Creature *summon) 
+    void SummonedCreatureDespawn(Creature *summon)
     {
         m_summons.Despawn(summon);
     }

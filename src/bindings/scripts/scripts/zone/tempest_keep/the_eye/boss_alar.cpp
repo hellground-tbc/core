@@ -50,7 +50,6 @@ static float waypoint[6][3] =
     {388.18, -32.85, 20.18},
     {340.29, -60.19, 17.72},
     {332, 0.01, 39}, // better not use the same xy coord
-    {331, 0.01, -2.39}
 };
 
 enum WaitEventType
@@ -76,7 +75,11 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
     {
         pInstance = (ScriptedInstance*)c->GetInstanceData();
         DefaultMoveSpeedRate = c->GetSpeedRate(MOVE_RUN);
-        m_creature->GetPosition(wLoc);
+        //m_creature->GetPosition(wLoc);
+        wLoc.x = 331;
+        wLoc.y = 0.01;
+        wLoc.z = -2.39;
+        wLoc.mapid = c->GetMapId();
     }
 
     ScriptedInstance *pInstance;
@@ -240,7 +243,7 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
             Player* i_pl = i->getSource();
             if (i_pl && i_pl->isAlive() && !i_pl->isGameMaster() &&
                 i_pl->isInCombat() && !i_pl->hasUnitState(UNIT_STAT_DIED) &&
-                i_pl->GetDistance(waypoint[5][0], waypoint[5][1], waypoint[5][2]) < 135)
+                i_pl->IsWithinDistInMap(&wLoc, 135))
                     return true;
         }
 
@@ -255,7 +258,7 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
         if (checkTimer < diff)
         {
 
-            if (m_creature->GetDistance(waypoint[5][0], waypoint[5][1], waypoint[5][2]) >  135 || !CheckPlayersInInstance())
+            if (!m_creature->IsWithinDistInMap(&wLoc, 135) || !CheckPlayersInInstance())
             {
                 EnterEvadeMode();
                 return;
@@ -344,7 +347,7 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
                             m_creature->RemoveAurasDueToSpell(SPELL_DIVE_BOMB_VISUAL);
                             m_creature->CastSpell(target, SPELL_DIVE_BOMB, true);
                             float dist = 3.0f;
-                            if(m_creature->GetDistance(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ()) <= 5.0f)
+                            if(m_creature->IsWithinDistInMap(target, 5.0f))
                                 dist = 5.0f;
                             WaitTimer = 1000 + floor(dist / 80 * 1000.0f);
                             m_creature->StopMoving();

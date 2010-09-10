@@ -167,7 +167,7 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
         AtrophyTimer = 3000;
         CheckTeronTimer = 5000;
         InvisibilityTimer = 1000;
-        
+
         me->DestroyForNearbyPlayers();
         me->SetVisibility(VISIBILITY_OFF);
     }
@@ -450,7 +450,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
 
         if (CheckTimer < diff)
         {
-            if(m_creature->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 90)
+            if(!m_creature->IsWithinDistInMap(&wLoc, 90))
                 EnterEvadeMode();
             else
                 DoZoneInCombat();
@@ -501,7 +501,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
             if(target && target->isAlive() && !target->HasAura(SPELL_SHADOW_OF_DEATH, 0) && !target->HasAura(40282, 0) )
             {
                 AddSpellToCast(target, SPELL_SHADOW_OF_DEATH);
-                pInstance->SetData64(DATA_SHADOWOFDEATH, target->GetGUID()); 
+                pInstance->SetData64(DATA_SHADOWOFDEATH, target->GetGUID());
                 ShadowOfDeathTimer = urand(30000, 50000);
             }
         }

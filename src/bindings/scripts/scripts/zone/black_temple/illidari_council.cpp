@@ -527,7 +527,7 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public boss_illidari_coun
 
         if (CheckTimer < diff)
         {
-            if (m_creature->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 100)
+            if (!m_creature->IsWithinDistInMap(&wLoc, 100))
                 EnterEvadeMode();
             else
                 DoZoneInCombat();
@@ -655,7 +655,7 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public boss_illidari_
 
         if(CheckTimer < diff)
         {
-            if (m_creature->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 100.0)
+            if (!m_creature->IsWithinDistInMap(&wLoc, 100.0))
                 EnterEvadeMode();
             else
                 DoZoneInCombat();
@@ -775,7 +775,7 @@ struct TRINITY_DLL_DECL boss_lady_malandeAI : public boss_illidari_councilAI
 
         if(CheckTimer < diff)
         {
-            if (m_creature->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 100.0)
+            if (!m_creature->IsWithinDistInMap(&wLoc, 100.0))
                 EnterEvadeMode();
             else
                 DoZoneInCombat();
@@ -884,7 +884,7 @@ struct TRINITY_DLL_DECL boss_veras_darkshadowAI : public boss_illidari_councilAI
 
         if (CheckTimer < diff)
         {
-            if (m_creature->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 100.0)
+            if (!m_creature->IsWithinDistInMap(&wLoc, 100.0))
                 EnterEvadeMode();
             else
                 DoZoneInCombat();

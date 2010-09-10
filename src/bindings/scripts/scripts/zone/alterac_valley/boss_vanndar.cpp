@@ -89,7 +89,7 @@ struct TRINITY_DLL_DECL boss_vanndarAI : public ScriptedAI
 
         if(CheckTimer < diff)
         {
-            if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 20.0f)
+            if(!m_creature->IsWithinDistInMap(&wLoc, 20.0f))
                 EnterEvadeMode();
 
             CheckTimer = 2000;

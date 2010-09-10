@@ -16,7 +16,7 @@
 
 /* ScriptData
 SDName: Boss_Galvangar
-SD%Complete: 
+SD%Complete:
 SDComment: timers should be adjusted
 EndScriptData */
 
@@ -33,7 +33,7 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_galvangarAI : public ScriptedAI
 {
-    boss_galvangarAI(Creature *c) : ScriptedAI(c) 
+    boss_galvangarAI(Creature *c) : ScriptedAI(c)
     {
         m_creature->GetPosition(wLoc);
     }
@@ -86,7 +86,7 @@ struct TRINITY_DLL_DECL boss_galvangarAI : public ScriptedAI
 
         if(CheckTimer < diff)
         {
-            if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 20.0f)
+            if(!m_creature->IsWithinDistInMap(&wLoc, 20.0f))
             {
                 EnterEvadeMode();
                 return;

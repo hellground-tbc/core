@@ -249,7 +249,7 @@ struct TRINITY_DLL_DECL boss_akilzonAI : public ScriptedAI
 
         if (checkTimer < diff)
         {
-            if (m_creature->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 45)
+            if (!m_creature->IsWithinDistInMap(&wLoc, 45))
                 EnterEvadeMode();
             else
                 DoZoneInCombat();

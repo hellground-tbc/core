@@ -404,7 +404,7 @@ struct TRINITY_DLL_DECL boss_zuljinAI : public ScriptedAI
 
         if (checkTimer < diff)
         {
-            if (m_creature->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 100)
+            if (!m_creature->IsWithinDistInMap(&wLoc, 100))
                 EnterEvadeMode();
             else
                 DoZoneInCombat();
@@ -555,7 +555,7 @@ struct TRINITY_DLL_DECL boss_zuljinAI : public ScriptedAI
                                 TankGUID = 0;
                             }
                             else
-                            { 
+                            {
                                 if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
                                     AttackStart(target);
                             }

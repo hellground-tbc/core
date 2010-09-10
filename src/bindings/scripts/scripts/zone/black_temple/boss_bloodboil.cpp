@@ -162,7 +162,7 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
     {
         if (!m_creature->isInCombat())
         {
-            if (m_creature->GetDistance(who) <= 40 && m_creature->IsHostileTo(who))
+            if (m_creature->IsWithinDistInMap(who, 45) && m_creature->IsHostileTo(who))
                 m_creature->AI()->AttackStart(who);
         }
     }

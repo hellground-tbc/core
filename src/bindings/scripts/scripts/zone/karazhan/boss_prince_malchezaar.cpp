@@ -400,7 +400,7 @@ struct TRINITY_DLL_DECL boss_malchezaarAI : public ScriptedAI
 
     void DamageTaken(Unit *done_by, uint32 &damage)
     {
-        if(done_by->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 95.0f)
+        if(!done_by->IsWithinDistInMap(&wLoc, 95.0f))
         {
             damage = 0;
         }
@@ -413,7 +413,7 @@ struct TRINITY_DLL_DECL boss_malchezaarAI : public ScriptedAI
 
         if(CheckTimer < diff)
         {
-            if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 95.0f)
+            if(!m_creature->IsWithinDistInMap(&wLoc, 95.0f))
                 DoResetThreat();
             else
                 DoZoneInCombat();

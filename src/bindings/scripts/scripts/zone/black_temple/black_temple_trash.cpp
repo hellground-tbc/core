@@ -908,7 +908,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_skystalkerAI : public ScriptedAI
         for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
         {
             Player* i_pl = i->getSource();
-            if (i_pl && i_pl->isAlive() && !i_pl->isGameMaster() && m_creature->GetDistance(i_pl) >15 && m_creature->GetDistance(i_pl) < 40)
+            if (i_pl && i_pl->isAlive() && !i_pl->isGameMaster() && !m_creature->IsWithinDistInMap(i_pl, 15) && m_creature->IsWithinDistInMap(i_pl, 40))
                 rangedList.push_back((Unit*)i_pl);
         }
 
@@ -938,29 +938,35 @@ struct TRINITY_DLL_DECL mob_dragonmaw_skystalkerAI : public ScriptedAI
 
         if (distCheckTimer < diff)
         {
-            if (m_creature->GetDistance(victim) > 37)
+            if (!m_creature->IsWithinDistInMap(victim, 37))
             {
                 m_creature->StopMoving();
                 m_creature->GetMotionMaster()->Clear();
                 m_creature->GetMotionMaster()->MoveChase(victim, 25);
+                distCheckTimer = 3000;
             }
             else
             {
-                if (m_creature->GetDistance(victim) < 10 && !m_creature->IsNonMeleeSpellCasted(false))
+                if (m_creature->IsWithinDistInMap(victim, 10))
                 {
-                    DoResetThreat();
-                    victim = GetNewTarget();
-
-                    if (!victim)
+                    if (!m_creature->IsNonMeleeSpellCasted(false))
                     {
-                        victim = SelectUnit(SELECT_TARGET_RANDOM, 0, 40, true);
-                        m_creature->StopMoving();
-                        m_creature->GetMotionMaster()->Clear();
-                        m_creature->GetMotionMaster()->MoveChase(victim, 25);
+                        DoResetThreat();
+                        victim = GetNewTarget();
+
+                        if (!victim)
+                        {
+                            victim = SelectUnit(SELECT_TARGET_RANDOM, 0, 40, true);
+                            m_creature->StopMoving();
+                            m_creature->GetMotionMaster()->Clear();
+                            m_creature->GetMotionMaster()->MoveChase(victim, 25);
+                        }
+                        distCheckTimer = 3000;
                     }
+                    else
+                        distCheckTimer = 500;
                 }
             }
-            distCheckTimer = 3000;
         }
         else
             distCheckTimer -= diff;
@@ -1015,7 +1021,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
         for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
         {
             Player* i_pl = i->getSource();
-            if (i_pl && i_pl->isAlive() && !i_pl->isGameMaster() && m_creature->GetDistance(i_pl) < 6)
+            if (i_pl && i_pl->isAlive() && !i_pl->isGameMaster() && m_creature->IsWithinDistInMap(i_pl, 6))
                 return (Unit*)i_pl;
         }
 
@@ -1029,7 +1035,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
         for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
         {
             Player* i_pl = i->getSource();
-            if (i_pl && i_pl->isAlive() && !i_pl->isGameMaster() && m_creature->GetDistance(i_pl) >15 && m_creature->GetDistance(i_pl) < 40)
+            if (i_pl && i_pl->isAlive() && !i_pl->isGameMaster() && !m_creature->IsWithinDistInMap(i_pl, 15) && m_creature->IsWithinDistInMap(i_pl, 40))
                 rangedList.push_back((Unit*)i_pl);
         }
 
@@ -1059,7 +1065,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
 
         if (distCheckTimer < diff)
         {
-            if (m_creature->GetDistance(victim) > 37)
+            if (!m_creature->IsWithinDistInMap(victim, 37))
             {
                 m_creature->StopMoving();
                 m_creature->GetMotionMaster()->Clear();
@@ -1067,18 +1073,24 @@ struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
             }
             else
             {
-                if (m_creature->GetDistance(victim) < 10 && !m_creature->IsNonMeleeSpellCasted(false))
+                if (m_creature->IsWithinDistInMap(victim, 10))
                 {
-                    DoResetThreat();
-                    victim = GetNewTarget();
-
-                    if (!victim)
+                    if (!m_creature->IsNonMeleeSpellCasted(false))
                     {
-                        victim = SelectUnit(SELECT_TARGET_RANDOM, 0, 40, true);
-                        m_creature->StopMoving();
-                        m_creature->GetMotionMaster()->Clear();
-                        m_creature->GetMotionMaster()->MoveChase(victim, 25);
+                        DoResetThreat();
+                        victim = GetNewTarget();
+
+                        if (!victim)
+                        {
+                            victim = SelectUnit(SELECT_TARGET_RANDOM, 0, 40, true);
+                            m_creature->StopMoving();
+                            m_creature->GetMotionMaster()->Clear();
+                            m_creature->GetMotionMaster()->MoveChase(victim, 25);
+                        }
+                        distCheckTimer = 3000;
                     }
+                    else
+                        distCheckTimer = 500;
                 }
             }
             distCheckTimer = 3000;

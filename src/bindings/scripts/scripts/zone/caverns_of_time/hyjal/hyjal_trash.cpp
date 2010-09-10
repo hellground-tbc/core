@@ -308,7 +308,7 @@ void hyjal_trashAI::UpdateAI(const uint32 diff)
                     default:
                         for(uint8 i = 22; i < 36; i++)
                             AddWaypoint( i-18, AllianceOverrunWP[i][0]+irand(-3,3), AllianceOverrunWP[i][1]+irand(-3,3), AllianceOverrunWP[i][2]);
-                        
+
                         SetDespawnAtEnd(true);
                         LastOverronPos = 17;
                         Start(true, true);
@@ -322,7 +322,7 @@ void hyjal_trashAI::UpdateAI(const uint32 diff)
             {
                 for(uint8 i = 0; i < 6; i++)
                     AddWaypoint(i, HordeWPs[i][0]+irand(-3,3), HordeWPs[i][1]+irand(-3,3), HordeWPs[i][2]);
-                
+
                 switch(OverrunType)
                 {
                     case 0:
@@ -348,7 +348,7 @@ void hyjal_trashAI::UpdateAI(const uint32 diff)
                     default:
                         for(uint8 i = 0; i < 16; i++)
                             AddWaypoint( i+6, HordeOverrunWP[i][0]+irand(-10,10), HordeOverrunWP[i][1]+irand(-10,10), HordeOverrunWP[i][2]);
-                        
+
                         SetDespawnAtEnd(true);
                         LastOverronPos = 21;
                         Start(true, true);
@@ -359,10 +359,10 @@ void hyjal_trashAI::UpdateAI(const uint32 diff)
             {
                 for(uint8 i = 0; i < 6; i++)
                     AddWaypoint(i, HordeWPs[i][0]+irand(-10,10), HordeWPs[i][1]+irand(-10,10), HordeWPs[i][2]);
-                
+
                 for(uint8 i = 0; i < 16; i++)
                     AddWaypoint( i+6, HordeOverrunWP[i][0]+irand(-10,10), HordeOverrunWP[i][1]+irand(-10,10), HordeOverrunWP[i][2]);
-                
+
                 SetDespawnAtEnd(true);
                 LastOverronPos = 21;
                 Start(true, true);
@@ -375,7 +375,7 @@ void hyjal_trashAI::JustDied(Unit *victim)
 {
     if(!pInstance)
         return;
-    
+
     if(IsEvent && !m_creature->isWorldBoss())
         pInstance->SetData(DATA_TRASH, 0);//signal trash is dead
 
@@ -595,7 +595,7 @@ struct mob_abominationAI : public hyjal_trashAI
                     {
                         for (uint8 i = 0; i < 8; ++i)
                             AddWaypoint(i, HordeWPs[i][0]+irand(-3,3),    HordeWPs[i][1]+irand(-3,3),    HordeWPs[i][2]);
-                        
+
                         Start(false, true);
                         SetDespawnAtEnd(false);
                     }
@@ -603,7 +603,7 @@ struct mob_abominationAI : public hyjal_trashAI
                     {
                         for (uint8 i = 0; i < 8; ++i)
                             AddWaypoint(i, AllianceWPs[i][0]+irand(-3,3),    AllianceWPs[i][1]+irand(-3,3),    AllianceWPs[i][2]);
-                        
+
                         Start(false, true);
                         SetDespawnAtEnd(false);
                     }
@@ -728,7 +728,7 @@ struct mob_ghoulAI : public hyjal_trashAI
                     {
                         for (uint8 i = 0; i < 8; ++i)
                             AddWaypoint(i, HordeWPs[i][0]+irand(-3,3),    HordeWPs[i][1]+irand(-3,3),    HordeWPs[i][2]);
-                        
+
                         Start(false, true);
                         SetDespawnAtEnd(false);
                     }
@@ -736,7 +736,7 @@ struct mob_ghoulAI : public hyjal_trashAI
                     {
                         for (uint8 i = 0; i < 8; ++i)
                             AddWaypoint(i, AllianceWPs[i][0]+irand(-3,3),    AllianceWPs[i][1]+irand(-3,3),    AllianceWPs[i][2]);
-                        
+
                         Start(false, true);
                         SetDespawnAtEnd(false);
                     }
@@ -916,7 +916,7 @@ struct mob_necromancerAI : public hyjal_trashAI
         }
         else
             UnholyFrenzyTimer -= diff;
-        
+
         if(CrippleTimer<diff)
         {
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true))
@@ -1147,7 +1147,7 @@ struct mob_crypt_fiendAI : public hyjal_trashAI
                     {
                         for (uint8 i = 0; i < 8; ++i)
                             AddWaypoint(i, HordeWPs[i][0]+irand(-3,3),    HordeWPs[i][1]+irand(-3,3),    HordeWPs[i][2]);
-                        
+
                         Start(false, true);
                         SetDespawnAtEnd(false);
                     }
@@ -1155,7 +1155,7 @@ struct mob_crypt_fiendAI : public hyjal_trashAI
                     {
                         for (uint8 i = 0; i < 8; ++i)
                             AddWaypoint(i, AllianceWPs[i][0]+irand(-3,3),    AllianceWPs[i][1]+irand(-3,3),    AllianceWPs[i][2]);
-                        
+
                         Start(false, true);
                         SetDespawnAtEnd(false);
                     }
@@ -1259,7 +1259,7 @@ struct mob_fel_stalkerAI : public hyjal_trashAI
                     {
                         for (uint8 i = 0; i < 8; ++i)
                             AddWaypoint(i, HordeWPs[i][0]+irand(-3,3),    HordeWPs[i][1]+irand(-3,3),    HordeWPs[i][2]);
-                        
+
                         Start(false, true);
                         SetDespawnAtEnd(false);
                     }
@@ -1267,7 +1267,7 @@ struct mob_fel_stalkerAI : public hyjal_trashAI
                     {
                         for (uint8 i = 0; i < 8; ++i)
                             AddWaypoint(i, AllianceWPs[i][0]+irand(-3,3),    AllianceWPs[i][1]+irand(-3,3),    AllianceWPs[i][2]);
-                        
+
                         Start(false, true);
                         SetDespawnAtEnd(false);
                     }
@@ -1362,7 +1362,7 @@ struct mob_frost_wyrmAI : public hyjal_trashAI
                     {
                         for (uint8 i = 0; i < 3; ++i)
                             AddWaypoint(i, FrostWyrmWPs[i][0],    FrostWyrmWPs[i][1],    FrostWyrmWPs[i][2]);
-                        
+
                         Start(false, true);
                         SetDespawnAtEnd(false);
                     }
@@ -1370,7 +1370,7 @@ struct mob_frost_wyrmAI : public hyjal_trashAI
                     {
                         for (uint8 i = 0; i < 3; ++i)
                             AddWaypoint(i, FlyPathWPs[i][0]+irand(-10,10),    FlyPathWPs[i][1]+irand(-10,10),    FlyPathWPs[i][2]);
-                        
+
                         Start(false, true);
                         SetDespawnAtEnd(false);
                     }
@@ -1381,7 +1381,7 @@ struct mob_frost_wyrmAI : public hyjal_trashAI
         if (!UpdateVictim())
             return;
 
-        if(m_creature->GetDistance(m_creature->getVictim()) >= 25)
+        if(!m_creature->IsWithinDistInMap(m_creature->getVictim(), 25))
         {
             if(MoveTimer < diff)
             {
@@ -1394,7 +1394,7 @@ struct mob_frost_wyrmAI : public hyjal_trashAI
 
         if(FrostBreathTimer<diff)
         {
-            if(m_creature->GetDistance(m_creature->getVictim()) < 25)
+            if(m_creature->IsWithinDistInMap(m_creature->getVictim(), 25))
             {
                 DoCast(m_creature->getVictim(),SPELL_FROST_BREATH);
                 m_creature->StopMoving();
@@ -1487,7 +1487,7 @@ struct mob_gargoyleAI : public hyjal_trashAI
                     {
                         for (uint8 i = 0; i < 3; ++i)
                             AddWaypoint(i, GargoyleWPs[i][0]+irand(-10,10), GargoyleWPs[i][1]+irand(-10,10), GargoyleWPs[i][2]);
-                        
+
                         Start(false, true);
                         SetDespawnAtEnd(false);
                     }
@@ -1495,7 +1495,7 @@ struct mob_gargoyleAI : public hyjal_trashAI
                     {
                         for (uint8 i = 0; i < 3; ++i)
                             AddWaypoint(i, FlyPathWPs[i][0]+irand(-10,10),    FlyPathWPs[i][1]+irand(-10,10),    FlyPathWPs[i][2]);
-                        
+
                         Start(false, true);
                         SetDespawnAtEnd(false);
                     }
@@ -1522,7 +1522,7 @@ struct mob_gargoyleAI : public hyjal_trashAI
         if (!UpdateVictim())
             return;
 
-        if(m_creature->GetDistance(m_creature->getVictim()) >= 20 || forcemove)
+        if(!m_creature->IsWithinDistInMap(m_creature->getVictim(), 20) || forcemove)
         {
             forcemove = false;
             if(forcemove)
@@ -1550,7 +1550,7 @@ struct mob_gargoyleAI : public hyjal_trashAI
 
         if(StrikeTimer<diff)
         {
-            if(m_creature->GetDistance(m_creature->getVictim()) < 20)
+            if(m_creature->IsWithinDistInMap(m_creature->getVictim(), 20))
             {
                 DoCast(m_creature->getVictim(),SPELL_GARGOYLE_STRIKE);
                 m_creature->StopMoving();
