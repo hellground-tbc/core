@@ -50,6 +50,7 @@ static float waypoint[6][3] =
     {388.18, -32.85, 20.18},
     {340.29, -60.19, 17.72},
     {332, 0.01, 39}, // better not use the same xy coord
+    {331, 0.01, -2.59}
 };
 
 enum WaitEventType
