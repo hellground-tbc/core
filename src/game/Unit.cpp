@@ -6955,8 +6955,7 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
     }
 
     //Set our target
-    if(!hasUnitState(UNIT_STAT_CASTING))
-        SetUInt64Value(UNIT_FIELD_TARGET, victim->GetGUID());
+    SetUInt64Value(UNIT_FIELD_TARGET, victim->GetGUID());
 
     if(meleeAttack)
         addUnitState(UNIT_STAT_MELEE_ATTACKING);
