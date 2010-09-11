@@ -7476,6 +7476,11 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             {
                 CastingTime = 0;
             }
+            // Flame Cap
+            else if(spellProto->Id = 28715)
+            {
+                CastingTimer = 0;
+            }
         case SPELLFAMILY_MAGE:
             // Ignite - do not modify, it is (8*Rank)% damage of procing Spell
             if(spellProto->Id==12654)
