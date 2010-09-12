@@ -140,8 +140,55 @@ void instance_karazhan::OnCreatureCreate(Creature *creature, uint32 entry)
             break;
     }
 
-    if(data && creature->isAlive() && GetData(data) == DONE)
-        creature->Kill(creature, false);
+    if(data)
+    {
+        if (creature->isAlive() && GetData(data) == DONE)
+            creature->Kill(creature, false);
+    }
+    else    //if it's trash
+    {
+        const CreatureData * tmp = creature->GetLinkedRespawnCreatureData();
+
+        if (!tmp)
+            return;
+
+        switch (tmp->id)
+        {
+            case 15688:
+                data = DATA_TERESTIAN_EVENT;
+                break;
+            case 15687:
+                data = DATA_MOROES_EVENT;
+                break;
+            case 16524:
+                data = DATA_SHADEOFARAN_EVENT;
+                break;
+            case 15691:
+                data = DATA_CURATOR_EVENT;
+                break;
+            case 16457:
+                data = DATA_MAIDENOFVIRTUE_EVENT;
+                break;
+            case 16151:
+                data = DATA_ATTUMEN_EVENT;
+                break;
+            case 15689:
+                data = DATA_NETHERSPITE_EVENT;
+                break;
+            case 17225:
+                data = DATA_NIGHTBANE_EVENT;
+                break;
+            case 15690:
+                data = DATA_MALCHEZZAR_EVENT;
+                break;
+        }
+
+        if (data && GetData(data) == DONE)
+        {
+            creature->Kill(creature, false);
+            creature->RemoveCorpse();
+        }
+    }
 }
 
 uint64 instance_karazhan::GetData64(uint32 data)
