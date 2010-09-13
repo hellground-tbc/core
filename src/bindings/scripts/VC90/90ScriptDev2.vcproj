@@ -1090,6 +1090,14 @@
 						RelativePath="..\scripts\zone\onyxias_lair\boss_onyxia.cpp"
 						>
 					</File>
+					<File
+						RelativePath="..\scripts\zone\onyxias_lair\def_onyxia_lair.h"
+						>
+					</File>
+					<File
+						RelativePath="..\scripts\zone\onyxias_lair\instance_onyxia_lair.cpp"
+						>
+					</File>
 				</Filter>
 				<Filter
 					Name="Ragefire Chasm"

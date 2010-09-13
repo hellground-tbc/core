@@ -84,6 +84,21 @@ GameObject::~GameObject()
     }
 }
 
+void GameObject::SendCustomAnimation()
+{
+    WorldPacket data(SMSG_GAMEOBJECT_CUSTOM_ANIM,8+4);
+    data << GetGUID();
+    data << (uint32)(GetGoAnimProgress());
+    SendMessageToSet(&data, false);
+}
+
+void GameObject::SendSpawnAnimation()
+{
+    WorldPacket data(SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE, 8);
+    data << GetGUID();
+    SendMessageToSet(&data, true);
+}
+
 void GameObject::AddToWorld()
 {
     ///- Register the gameobject for guid lookup
@@ -369,6 +384,7 @@ void GameObject::Update(uint32 diff)
                     //caster->CastSpell(ok, goInfo->trap.spellId, true);
                     CastSpell(ok, goInfo->trap.spellId);
                     m_cooldownTime = time(NULL) + 4;        // 4 seconds
+                    SendCustomAnimation();
 
                     if(NeedDespawn)
                         SetLootState(GO_JUST_DEACTIVATED);  // can be despawned or destroyed
@@ -1350,6 +1366,27 @@ void GameObject::CastSpell(Unit* target, uint32 spell)
     //trigger->setDeathState(JUST_DIED);
     //trigger->RemoveCorpse();
 }
+
+
+void GameObject::CastSpell(GameObject* target, uint32 spell)
+{
+    //summon world trigger
+    Creature *trigger = SummonTrigger(GetPositionX(), GetPositionY(), GetPositionZ(), 0, 1);
+    if(!trigger) return;
+
+    trigger->SetVisibility(VISIBILITY_OFF); //should this be true?
+    if(Unit *owner = GetOwner())
+    {
+        trigger->setFaction(owner->getFaction());
+        trigger->CastSpell(target, spell, true, 0, 0, owner->GetGUID());
+    }
+    else
+    {
+        trigger->setFaction(14);
+        trigger->CastSpell(target, spell, true, 0, 0, target->GetGUID());
+    }
+}
+
 
 // overwrite WorldObject function for proper name localization
 const char* GameObject::GetNameForLocaleIdx(int32 loc_idx) const
