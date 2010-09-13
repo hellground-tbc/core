@@ -289,6 +289,9 @@ bool DropAggro(Creature* pAttacker, Unit * target)
     if (target->HasAura(38509,1))
         return true;
 
+    if (target->GetTypeId() == TYPEID_UNIT && target->GetEntry() == 23109)
+        return true;
+
     return false;
 }
 
