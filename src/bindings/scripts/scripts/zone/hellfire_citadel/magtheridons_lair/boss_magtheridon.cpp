@@ -219,6 +219,8 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public ScriptedAI
         {
             pInstance->SetData(DATA_COLLAPSE, false);
             pInstance->SetData(DATA_CHANNELER_EVENT, NOT_STARTED);
+            if (pInstance->GetData(DATA_MAGTHERIDON_EVENT) != DONE)
+                pInstance->SetData(DATA_MAGTHERIDON_EVENT, NOT_STARTED);
         }
 
         Berserk_Timer = 1320000;
