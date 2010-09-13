@@ -224,7 +224,7 @@ struct TRINITY_DLL_DECL boss_malchezaarAI : public ScriptedAI
             }
 
             if (pInstance->GetData(DATA_MALCHEZZAR_EVENT) != DONE)
-                pInstance->SetData(DATA_MALCHEZZAR_EVENT, DONE);
+                pInstance->SetData(DATA_MALCHEZZAR_EVENT, NOT_STARTED);
         }
     }
 
