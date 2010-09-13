@@ -73,6 +73,9 @@ extern void AddSC_boss_darkweaver_syth();
 extern void AddSC_boss_talon_king_ikiss();
 extern void AddSC_instance_sethekk_halls();
 
+//--Onyxia's Lair
+extern void AddSC_instance_onyxia_lair();
+
 //--Shadow Labyrinth
 extern void AddSC_boss_ambassador_hellmaw();
 extern void AddSC_boss_blackheart_the_inciter();
@@ -587,6 +590,9 @@ void AddScripts()
 
     // -- Areatrigger --
     AddSC_areatrigger_scripts();
+
+    // -- Onyxia's Lair
+    AddSC_instance_onyxia_lair();
 
     // -- Boss --
     AddSC_boss_emeriss();
