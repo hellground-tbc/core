@@ -173,93 +173,59 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
             Door->SetUInt32Value(GAMEOBJECT_STATE, open ? 0 : 1);
     }
 
+    uint32 GetEncounterForEntry(uint32 entry)
+    {
+        switch(entry)
+        {
+            case 21212:
+                return DATA_LADYVASHJEVENT;
+            case 21214:
+                return DATA_KARATHRESSEVENT;
+            case 21217:
+                return DATA_THELURKERBELOWEVENT;
+            case 21215:
+                return DATA_LEOTHERASTHEBLINDEVENT;
+            case 21213:
+                return DATA_MOROGRIMTIDEWALKEREVENT;
+            case 21216:
+                return DATA_HYDROSSTHEUNSTABLEEVENT;
+            default:
+                return 0;
+        }
+    }
     void OnCreatureCreate(Creature *creature, uint32 creature_entry)
     {
-        uint32 data = 0;
         switch(creature_entry)
         {
             case 21212:
-                data = DATA_LADYVASHJEVENT;
                 LadyVashj = creature->GetGUID();
                 break;
             case 21214:
-                data = DATA_KARATHRESSEVENT;
                 Karathress = creature->GetGUID();
                 break;
             case 21966:
-                data = DATA_KARATHRESSEVENT;
                 Sharkkis = creature->GetGUID();
                 break;
             case 21217:
-                data = DATA_THELURKERBELOWEVENT;
                 LurkerBelow = creature->GetGUID();
                 break;
             case 21965:
-                data = DATA_KARATHRESSEVENT;
                 Tidalvess = creature->GetGUID();
                 break;
             case 21964:
-                data = DATA_KARATHRESSEVENT;
                 Caribdis = creature->GetGUID();
                 break;
             case 21215:
-                data = DATA_LEOTHERASTHEBLINDEVENT;
                 LeotherasTheBlind = creature->GetGUID();
                 break;
-            case 21213:
-                data = DATA_MOROGRIMTIDEWALKEREVENT;
-                break;
-            case 21216:
-                data = DATA_HYDROSSTHEUNSTABLEEVENT;
-                break;
         }
 
-        if(data)
-        {
-            if (creature->isAlive() && GetData(data) == DONE)
-                creature->Kill(creature, false);
-        }
-        else
-        {
-            const CreatureData * tmp = creature->GetLinkedRespawnCreatureData();
+        const CreatureData *tmp = creature->GetLinkedRespawnCreatureData();
+        if (!tmp)
+            return;
 
-            if (!tmp)
-                return;
-
-            switch (tmp->id)
-            {
-                case 21212:
-                    data = DATA_LADYVASHJEVENT;
-                    break;
-                case 21214:
-                    data = DATA_KARATHRESSEVENT;
-                    break;
-                case 21966:
-                    data = DATA_KARATHRESSEVENT;
-                    break;
-                case 21217:
-                    data = DATA_THELURKERBELOWEVENT;
-                    break;
-                case 21965:
-                    data = DATA_KARATHRESSEVENT;
-                    break;
-                case 21964:
-                    data = DATA_KARATHRESSEVENT;
-                    break;
-                case 21215:
-                    data = DATA_LEOTHERASTHEBLINDEVENT;
-                    break;
-                case 21213:
-                    data = DATA_MOROGRIMTIDEWALKEREVENT;
-                    break;
-                case 21216:
-                    data = DATA_HYDROSSTHEUNSTABLEEVENT;
-                    break;
-            }
-
-            if (data && creature->isAlive() && GetData(data) == DONE)
-                creature->Kill(creature, false);
-        }
+        if (GetEncounterForEntry(tmp->id) && creature->isAlive() && GetData(GetEncounterForEntry(tmp->id)) == DONE)
+            creature->Kill(creature, false);
     }
 
     void SetData64(uint32 type, uint64 data)
