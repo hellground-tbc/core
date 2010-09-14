@@ -6433,7 +6433,7 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor, bool pvpt
 
     // add honor points
     ModifyHonorPoints(int32(honor));
-    UpdatePvpTitles();
+    //UpdatePvpTitles();
     ApplyModUInt32Value(PLAYER_FIELD_TODAY_CONTRIBUTION, uint32(honor), true);
 
     if( sWorld.getConfig(CONFIG_PVP_TOKEN_ENABLE) && pvptoken )
