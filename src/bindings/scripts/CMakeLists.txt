@@ -247,6 +247,8 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/naxxramas/boss_thaddius.cpp
    scripts/zone/naxxramas/instance_naxxramas.cpp
    scripts/zone/netherstorm/netherstorm.cpp
+   scripts/zone/onyxias_lair/def_onyxia_lair.h
+   scripts/zone/onyxias_lair/instance_onyxia_lair.cpp
    scripts/zone/onyxias_lair/boss_onyxia.cpp
    scripts/zone/orgrimmar/orgrimmar.cpp
    scripts/zone/razorfen_downs/razorfen_downs.cpp
