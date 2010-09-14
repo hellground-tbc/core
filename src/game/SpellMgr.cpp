@@ -2574,7 +2574,7 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 44978: case 45001: case 45002:     // Wild Magic
         case 45004: case 45006: case 45010:     // Wild Magic
-        case 31347: // Doom
+        //case 31347: // Doom
         case 41635: // Prayer of Mending
         case 44869: // Spectral Blast
         case 45027: // Revitalize
@@ -2600,9 +2600,11 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->MaxAffectedTargets = 4;
             break;
         case 42005: // Bloodboil
+        case 31347: // Doom
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
             spellInfo->EffectImplicitTargetB[0] = 0;
-            spellInfo->rangeIndex = 6;
+            if(i == 42005)
+                spellInfo->rangeIndex = 6;
             break;
         case 41625: // Fel Rage 3
             spellInfo->Stances = 0;
