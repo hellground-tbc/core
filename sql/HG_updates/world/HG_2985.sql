@@ -1,0 +1,1 @@
+UPDATE world.creature_template SET ScriptName='mobs_shadowmoon_valley_wildlife' where entry=21878 or entry=21879 or entry=21864;
