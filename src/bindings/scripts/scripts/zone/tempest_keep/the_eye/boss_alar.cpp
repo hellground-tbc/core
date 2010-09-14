@@ -110,7 +110,7 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
 
     void Reset()
     {
-        if(pInstance)
+        if(pInstance && pInstance->GetData(DATA_ALAREVENT) != DONE)
             pInstance->SetData(DATA_ALAREVENT, NOT_STARTED);
 
         Berserk_Timer = 1200000;

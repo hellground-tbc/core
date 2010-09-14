@@ -210,8 +210,60 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
                 break;
         }
 
-        if(data && creature->isAlive() && GetData(data) == DONE)
-            creature->Kill(creature, false);
+        if(data)
+        {
+            if (creature->isAlive() && GetData(data) == DONE)
+                creature->Kill(creature, false);
+        }
+        else
+        {
+            const CreatureData * tmp = creature->GetLinkedRespawnCreatureData();
+
+            if (!tmp)
+                return;
+
+            switch (tmp->id)
+            {
+                case 22887: // High Warlord Naj'entus
+                    data = DATA_HIGHWARLORDNAJENTUSEVENT;
+                    break;
+                case 22841: // Shade of Akama
+                    data = DATA_SHADEOFAKAMAEVENT;
+                    break;
+                case 22871: // Teron Gorefiend
+                    data = DATA_TERONGOREFIENDEVENT;
+                    break;
+                case 22898: // Supremus
+                    data = DATA_SUPREMUSEVENT;
+                    break;
+                case 22917: // Illidan Stormrage
+                    data = DATA_ILLIDANSTORMRAGEEVENT;
+                    break;
+                case 22947:
+                    data = DATA_MOTHERSHAHRAZEVENT;
+                case 22948: // Gurtogg Bloodboil
+                    data = DATA_GURTOGGBLOODBOILEVENT;
+                    break;
+                case 22949:
+                    data = DATA_ILLIDARICOUNCILEVENT;
+                    break;
+                case 22950:
+                    data = DATA_ILLIDARICOUNCILEVENT;
+                    break;
+                case 22951:
+                    data = DATA_ILLIDARICOUNCILEVENT;
+                    break;
+                case 22952:
+                    data = DATA_ILLIDARICOUNCILEVENT;
+                    break;
+                case 22856: // Reliquary of the Lost
+                    data = DATA_RELIQUARYOFSOULSEVENT;
+                    break;
+            }
+
+            if (data && creature->isAlive() && GetData(data) == DONE)
+                creature->Kill(creature, false);
+        }
     }
 
     void OnObjectCreate(GameObject* go)

@@ -180,8 +180,6 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
             }
             pInstance->SetData(DATA_KARATHRESSEVENT, NOT_STARTED);
         }
-
-
     }
 
     void EventAdvisorDeath(int adv)

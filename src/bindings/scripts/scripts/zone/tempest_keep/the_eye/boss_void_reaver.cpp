@@ -69,7 +69,7 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
         m_creature->ApplySpellImmune(3, IMMUNITY_STATE, SPELL_AURA_PERIODIC_LEECH, true);
         m_creature->ApplySpellImmune(4, IMMUNITY_STATE, SPELL_AURA_PERIODIC_MANA_LEECH, true);
 
-        if (pInstance && m_creature->isAlive())
+        if (pInstance && pInstance->GetData(DATA_VOIDREAVEREVENT) != DONE)
             pInstance->SetData(DATA_VOIDREAVEREVENT, NOT_STARTED);
     }
 

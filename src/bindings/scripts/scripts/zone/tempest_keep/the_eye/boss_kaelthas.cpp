@@ -444,7 +444,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
         m_creature->RemoveAllAuras(); //if Reset called while animation
         m_creature->ApplySpellImmune(2, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
 
-        if(pInstance)
+        if(pInstance && pInstance->GetData(DATA_KAELTHASEVENT) != DONE)
         {
             pInstance->SetData(DATA_KAELTHASEVENT, NOT_STARTED);
             pInstance->SetData(DATA_EXPLODE, false);

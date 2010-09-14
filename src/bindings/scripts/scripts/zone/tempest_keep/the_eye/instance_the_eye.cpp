@@ -85,7 +85,7 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
         uint32 data = 0;
         switch(creature_entry)
         {
-            case 20064: 
+            case 20064:
                 data = DATA_KAELTHASEVENT;
                 ThaladredTheDarkener = creature->GetGUID();
                 break;
@@ -99,11 +99,11 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
                 break;
             case 20060:
                 data = DATA_KAELTHASEVENT;
-                LordSanguinar = creature->GetGUID(); 
+                LordSanguinar = creature->GetGUID();
                 break;
             case 19622:
                 data = DATA_KAELTHASEVENT;
-                Kaelthas = creature->GetGUID(); 
+                Kaelthas = creature->GetGUID();
                 break;
             case 18805:
                 data = DATA_HIGHASTROMANCERSOLARIANEVENT;
@@ -118,8 +118,49 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
                 break;
         }
 
-        if(data && creature->isAlive() && GetData(data) == DONE)
-            creature->Kill(creature);
+        if(data)
+        {
+            if (creature->isAlive() && GetData(data) == DONE)
+                creature->Kill(creature, false);
+        }
+        else
+        {
+            const CreatureData * tmp = creature->GetLinkedRespawnCreatureData();
+
+            if (!tmp)
+                return;
+
+            switch (tmp->id)
+            {
+                case 20064:
+                    data = DATA_KAELTHASEVENT;
+                    break;
+                case 20063:
+                    data = DATA_KAELTHASEVENT;
+                    break;
+                case 20062:
+                    data = DATA_KAELTHASEVENT;
+                    break;
+                case 20060:
+                    data = DATA_KAELTHASEVENT;
+                    break;
+                case 19622:
+                    data = DATA_KAELTHASEVENT;
+                    break;
+                case 18805:
+                    data = DATA_HIGHASTROMANCERSOLARIANEVENT;
+                    break;
+                case 19514:
+                    data = DATA_ALAREVENT;
+                    break;
+                case 19516:
+                    data = DATA_VOIDREAVEREVENT;
+                    break;
+            }
+
+            if (data && creature->isAlive() && GetData(data) == DONE)
+                creature->Kill(creature, false);
+        }
     }
 
     void OnObjectCreate(GameObject *go)

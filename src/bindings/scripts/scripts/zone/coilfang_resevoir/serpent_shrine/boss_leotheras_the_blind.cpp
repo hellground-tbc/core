@@ -212,7 +212,7 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
         m_creature->CastSpell(m_creature, SPELL_DUAL_WIELD, true);
         m_creature->SetCorpseDelay(1000*60*60);
 
-        if(pInstance)
+        if(pInstance && pInstance->GetData(DATA_LEOTHERASTHEBLINDEVENT) != DONE)
             pInstance->SetData(DATA_LEOTHERASTHEBLINDEVENT, NOT_STARTED);
     }
 

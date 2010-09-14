@@ -205,7 +205,7 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
                 remo->setDeathState(JUST_DIED);
         }
 
-        if(pInstance)
+        if(pInstance && pInstance->GetData(DATA_LADYVASHJEVENT) != DONE)
             pInstance->SetData(DATA_LADYVASHJEVENT, NOT_STARTED);
         ShieldGeneratorChannel[0] = 0;
         ShieldGeneratorChannel[1] = 0;

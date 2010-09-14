@@ -137,7 +137,7 @@ struct TRINITY_DLL_DECL boss_morogrim_tidewalkerAI : public ScriptedAI
         Earthquake = false;
         Phase2 = false;
 
-        if (pInstance)
+        if (pInstance && pInstance->GetData(DATA_MOROGRIMTIDEWALKEREVENT) != DONE)
             pInstance->SetData(DATA_MOROGRIMTIDEWALKEREVENT, NOT_STARTED);
     }
 

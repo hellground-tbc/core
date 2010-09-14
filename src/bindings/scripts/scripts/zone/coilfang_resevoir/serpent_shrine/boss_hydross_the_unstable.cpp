@@ -121,8 +121,9 @@ struct TRINITY_DLL_DECL boss_hydross_the_unstableAI : public ScriptedAI
 
         m_creature->SetUInt32Value(UNIT_FIELD_DISPLAYID, MODEL_CLEAN);
 
-        if (pInstance)
+        if (pInstance && pInstance->GetData(DATA_HYDROSSTHEUNSTABLEEVENT) != DONE)
             pInstance->SetData(DATA_HYDROSSTHEUNSTABLEEVENT, NOT_STARTED);
+
         beam = false;
         Summons.DespawnAll();
     }

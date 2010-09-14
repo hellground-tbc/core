@@ -183,7 +183,7 @@ void instance_karazhan::OnCreatureCreate(Creature *creature, uint32 entry)
                 break;
         }
 
-        if (data && GetData(data) == DONE)
+        if (data && creature->isAlive() && GetData(data) == DONE)
         {
             creature->Kill(creature, false);
             creature->RemoveCorpse();

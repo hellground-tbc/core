@@ -77,19 +77,19 @@ struct TRINITY_DLL_DECL instance_gruuls_lair : public ScriptedInstance
         switch(creature_entry)
         {
             case 18835:
-                data = DATA_MAULGAREVENT; 
+                data = DATA_MAULGAREVENT;
                 KigglerTheCrazed = creature->GetGUID();
                 break;
             case 18836:
-                data = DATA_MAULGAREVENT; 
+                data = DATA_MAULGAREVENT;
                 BlindeyeTheSeer = creature->GetGUID();
                 break;
             case 18834:
-                data = DATA_MAULGAREVENT; 
+                data = DATA_MAULGAREVENT;
                 OlmTheSummoner = creature->GetGUID();
                 break;
             case 18832:
-                data = DATA_MAULGAREVENT; 
+                data = DATA_MAULGAREVENT;
                 KroshFirehand = creature->GetGUID();
                 break;
             case 18831:
@@ -101,8 +101,43 @@ struct TRINITY_DLL_DECL instance_gruuls_lair : public ScriptedInstance
                 break;
         }
 
-        if(data && creature->isAlive() && GetData(data) == DONE)
-            creature->Kill(creature, false);
+        if(data)
+        {
+            if (creature->isAlive() && GetData(data) == DONE)
+                creature->Kill(creature, false);
+        }
+        else
+        {
+            const CreatureData * tmp = creature->GetLinkedRespawnCreatureData();
+
+            if (!tmp)
+                return;
+
+            switch (tmp->id)
+            {
+                case 18835:
+                    data = DATA_MAULGAREVENT;
+                    break;
+                case 18836:
+                    data = DATA_MAULGAREVENT;
+                    break;
+                case 18834:
+                    data = DATA_MAULGAREVENT;
+                    break;
+                case 18832:
+                    data = DATA_MAULGAREVENT;
+                    break;
+                case 18831:
+                    data = DATA_MAULGAREVENT;
+                    break;
+                case 19044:
+                    data = DATA_GRUULEVENT;
+                    break;
+            }
+
+            if (data && creature->isAlive() && GetData(data) == DONE)
+                creature->Kill(creature, false);
+        }
     }
 
     void OnObjectCreate(GameObject* go)
@@ -146,16 +181,16 @@ struct TRINITY_DLL_DECL instance_gruuls_lair : public ScriptedInstance
             case DATA_MAULGAREVENT:
                 if(data == DONE)
                     HandleGameObject(MaulgarDoor, true);
-                
+
                 if(Encounters[0] != DONE)
                     Encounters[0] = data;
                 break;
-            case DATA_GRUULEVENT:                
+            case DATA_GRUULEVENT:
                 if(data == IN_PROGRESS)
                     HandleGameObject(GruulDoor, false);
                 else
                     HandleGameObject(GruulDoor, true);
-                
+
                 if(Encounters[1] != DONE)
                     Encounters[1] = data;
                 break;

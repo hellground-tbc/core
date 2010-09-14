@@ -184,15 +184,15 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
                 break;
             case 21214:
                 data = DATA_KARATHRESSEVENT;
-                Karathress = creature->GetGUID();  
+                Karathress = creature->GetGUID();
                 break;
             case 21966:
                 data = DATA_KARATHRESSEVENT;
-                Sharkkis = creature->GetGUID();  
+                Sharkkis = creature->GetGUID();
                 break;
             case 21217:
                 data = DATA_THELURKERBELOWEVENT;
-                LurkerBelow = creature->GetGUID(); 
+                LurkerBelow = creature->GetGUID();
                 break;
             case 21965:
                 data = DATA_KARATHRESSEVENT;
@@ -204,7 +204,7 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
                 break;
             case 21215:
                 data = DATA_LEOTHERASTHEBLINDEVENT;
-                LeotherasTheBlind = creature->GetGUID(); 
+                LeotherasTheBlind = creature->GetGUID();
                 break;
             case 21213:
                 data = DATA_MOROGRIMTIDEWALKEREVENT;
@@ -214,8 +214,52 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
                 break;
         }
 
-        if(data && creature->isAlive() && GetData(data) == DONE)
-            creature->Kill(creature, false);
+        if(data)
+        {
+            if (creature->isAlive() && GetData(data) == DONE)
+                creature->Kill(creature, false);
+        }
+        else
+        {
+            const CreatureData * tmp = creature->GetLinkedRespawnCreatureData();
+
+            if (!tmp)
+                return;
+
+            switch (tmp->id)
+            {
+                case 21212:
+                    data = DATA_LADYVASHJEVENT;
+                    break;
+                case 21214:
+                    data = DATA_KARATHRESSEVENT;
+                    break;
+                case 21966:
+                    data = DATA_KARATHRESSEVENT;
+                    break;
+                case 21217:
+                    data = DATA_THELURKERBELOWEVENT;
+                    break;
+                case 21965:
+                    data = DATA_KARATHRESSEVENT;
+                    break;
+                case 21964:
+                    data = DATA_KARATHRESSEVENT;
+                    break;
+                case 21215:
+                    data = DATA_LEOTHERASTHEBLINDEVENT;
+                    break;
+                case 21213:
+                    data = DATA_MOROGRIMTIDEWALKEREVENT;
+                    break;
+                case 21216:
+                    data = DATA_HYDROSSTHEUNSTABLEEVENT;
+                    break;
+            }
+
+            if (data && creature->isAlive() && GetData(data) == DONE)
+                creature->Kill(creature, false);
+        }
     }
 
     void SetData64(uint32 type, uint64 data)
@@ -250,14 +294,14 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
     {
         switch(type)
         {
-        case DATA_STRANGE_POOL: 
+        case DATA_STRANGE_POOL:
             {
                 StrangePool = data;
                 if(data == NOT_STARTED)
                     LurkerSubEvent = LURKER_NOT_STARTED;
             }
             break;
-         case DATA_TRASH : 
+         case DATA_TRASH :
             {
                 if(data == 1 && TrashCount < MIN_KILLS)
                     TrashCount++;//+1 died
@@ -382,7 +426,7 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
             else
                 FishingTimer -= diff;
         }
-        //Water checks    
+        //Water checks
         if(WaterCheckTimer < diff)
         {
             if(TrashCount >= MIN_KILLS)
@@ -421,12 +465,12 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
                                 DoSpawnFrenzy = false;
                             }
                         }
-                    }   
+                    }
                     else
                         if(pPlayer->GetPositionZ() > -19.9645 && !pPlayer->hasUnitState(MOVEMENTFLAG_JUMPING))
                             pPlayer->RemoveAurasDueToSpell(SPELL_SCALDINGWATER);
                 }
-                                    
+
             }
             WaterCheckTimer = 500; //remove stress from core
         }

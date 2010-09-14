@@ -126,7 +126,7 @@ struct TRINITY_DLL_DECL boss_high_astromancer_solarianAI : public ScriptedAI
         Wrath_Timer = 20000+rand()%5000;//twice in phase one
         Phase = 1;
 
-        if(pInstance)
+        if(pInstance && pInstance->GetData(DATA_HIGHASTROMANCERSOLARIANEVENT) != DONE)
             pInstance->SetData(DATA_HIGHASTROMANCERSOLARIANEVENT, NOT_STARTED);
 
         m_creature->SetArmor(defaultarmor);
