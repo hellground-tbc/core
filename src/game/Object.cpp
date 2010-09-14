@@ -1247,7 +1247,7 @@ bool WorldObject::IsWithinLOSInMap(const WorldObject* obj) const
     if (!IsInMap(obj)) return false;
     float ox,oy,oz;
     obj->GetPosition(ox,oy,oz);
-    return(IsWithinLOS(ox, oy, oz ));
+    return(IsWithinLOS(ox, oy, oz + obj->GetObjectSize()));
 }
 
 bool WorldObject::IsWithinLOS(const float ox, const float oy, const float oz ) const
@@ -1255,7 +1255,7 @@ bool WorldObject::IsWithinLOS(const float ox, const float oy, const float oz ) c
     float x,y,z;
     GetPosition(x,y,z);
     VMAP::IVMapManager *vMapManager = VMAP::VMapFactory::createOrGetVMapManager();
-    return vMapManager->isInLineOfSight(GetMapId(), x, y, z+2.0f, ox, oy, oz+2.0f);
+    return vMapManager->isInLineOfSight(GetMapId(), x, y, z + GetObjectSize(), ox, oy, oz);
 }
 
 bool WorldObject::IsInRange(WorldObject const* obj, float minRange, float maxRange, bool is3D /* = true */) const
