@@ -345,8 +345,6 @@ void InstanceSaveManager::PackInstances()
 
     uint32 InstanceNumber = 1;
     // we do assume std::set is sorted properly on integer value
-    WorldDatabase.BeginTransaction();
-    CharacterDatabase.BeginTransaction();
     for (std::set< uint32 >::iterator i = InstanceSet.begin(); i != InstanceSet.end(); ++i)
     {
         if (*i != InstanceNumber)
@@ -365,9 +363,6 @@ void InstanceSaveManager::PackInstances()
         ++InstanceNumber;
         bar.step();
     }
-    WorldDatabase.CommitTransaction();
-    CharacterDatabase.CommitTransaction();
-
 
     sLog.outString();
     sLog.outString( ">> Instance numbers remapped, next instance id is %u", InstanceNumber );
