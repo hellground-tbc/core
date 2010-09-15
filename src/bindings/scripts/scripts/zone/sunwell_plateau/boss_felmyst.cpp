@@ -165,7 +165,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         DespawnSummons(MOB_VAPOR_TRAIL);
         m_creature->setActive(false);
 
-        if(pInstance)
+        if(pInstance && pInstance->GetData(DATA_FELMYST_EVENT) != DONE)
             pInstance->SetData(DATA_FELMYST_EVENT, NOT_STARTED);
     }
 

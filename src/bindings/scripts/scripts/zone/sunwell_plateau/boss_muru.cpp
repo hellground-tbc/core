@@ -226,7 +226,7 @@ struct TRINITY_DLL_DECL boss_muruAI : public Scripted_NoMovementAI
         Summons.DespawnAll();
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->SetVisibility(VISIBILITY_ON);
-        if(pInstance)
+        if(pInstance && pInstance->GetData(DATA_MURU_EVENT) != DONE)
             pInstance->SetData(DATA_MURU_EVENT, NOT_STARTED);
     }
 

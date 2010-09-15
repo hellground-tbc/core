@@ -139,7 +139,7 @@ struct TRINITY_DLL_DECL boss_sacrolashAI : public ScriptedAI
             SisterDeath = false;
         }
 
-        if(pInstance)
+        if(pInstance && pInstance->GetData(DATA_EREDAR_TWINS_EVENT) != DONE)
             pInstance->SetData(DATA_EREDAR_TWINS_EVENT, NOT_STARTED);
     }
 
@@ -152,10 +152,8 @@ struct TRINITY_DLL_DECL boss_sacrolashAI : public ScriptedAI
             Unit* Temp =  Unit::GetUnit((*m_creature),pInstance->GetData64(DATA_ALYTHESS));
             if (Temp && Temp->isAlive() && !(Temp->getVictim()))
                 ((Creature*)Temp)->AI()->AttackStart(who);
-        }
-
-        if(pInstance)
             pInstance->SetData(DATA_EREDAR_TWINS_EVENT, IN_PROGRESS);
+        }
     }
 
     void KilledUnit(Unit *victim)
@@ -397,7 +395,7 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
             SisterDeath = false;
         }
 
-        if(pInstance)
+        if(pInstance && pInstance->GetData(DATA_EREDAR_TWINS_EVENT) != DONE)
             pInstance->SetData(DATA_EREDAR_TWINS_EVENT, NOT_STARTED);
     }
 
@@ -410,10 +408,8 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
             Unit* Temp =  Unit::GetUnit((*m_creature),pInstance->GetData64(DATA_SACROLASH));
             if (Temp && Temp->isAlive() && !(Temp->getVictim()))
                 ((Creature*)Temp)->AI()->AttackStart(who);
-        }
-
-        if(pInstance)
             pInstance->SetData(DATA_EREDAR_TWINS_EVENT, IN_PROGRESS);
+        }
     }
 
     void AttackStart(Unit *who)

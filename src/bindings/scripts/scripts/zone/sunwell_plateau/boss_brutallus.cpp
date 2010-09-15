@@ -115,7 +115,7 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
         else
             EndIntro();
 
-        if(pInstance)
+        if(pInstance && pInstance->GetData(DATA_BRUTALLUS_EVENT) != DONE)
             pInstance->SetData(DATA_BRUTALLUS_EVENT, NOT_STARTED);
     }
 

@@ -133,6 +133,30 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
             go->SetGoState(state);
     }
 
+    uint32 GetEncounterForEntry(uint32 entry)
+    {
+        switch(entry)
+        {
+            case 25315:
+                return DATA_KILJAEDEN_EVENT;
+            case 25741:
+            case 25840:
+                return DATA_MURU_EVENT;
+            case 25166:
+            case 25165:
+                return DATA_EREDAR_TWINS_EVENT;
+            case 25038:
+                return DATA_FELMYST_EVENT;
+            case 24882:
+                return DATA_BRUTALLUS_EVENT;
+            case 24850:
+            case 24892:
+                return DATA_KALECGOS_EVENT;
+            default:
+                return 0;
+        }
+    }
+
     void OnCreatureCreate(Creature* creature, uint32 entry)
     {
         switch(entry)
@@ -151,6 +175,13 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
             case 26046: Anveena             = creature->GetGUID(); break;
             case 25319: KalecgosKJ          = creature->GetGUID(); break;
         }
+
+        const CreatureData *tmp = creature->GetLinkedRespawnCreatureData();
+        if (!tmp)
+            return;
+
+        if (GetEncounterForEntry(tmp->id) && creature->isAlive() && GetData(GetEncounterForEntry(tmp->id)) == DONE)
+            creature->Kill(creature, false);
     }
 
     void OnObjectCreate(GameObject* gobj)

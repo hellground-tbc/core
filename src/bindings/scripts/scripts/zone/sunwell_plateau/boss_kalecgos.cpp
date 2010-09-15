@@ -295,7 +295,7 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
         isEnraged = false;
         isBanished = false;
 
-        if(pInstance)
+        if(pInstance && pInstance->GetData(DATA_KALECGOS_EVENT) != DONE)
             pInstance->SetData(DATA_KALECGOS_EVENT, NOT_STARTED);
     }
 

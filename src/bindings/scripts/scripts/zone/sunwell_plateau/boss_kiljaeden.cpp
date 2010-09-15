@@ -461,6 +461,9 @@ struct TRINITY_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
 
         Kalec = ((Creature*)Unit::GetUnit(*m_creature, pInstance->GetData64(DATA_KALECGOS_KJ)));
         ChangeTimers(false, 0);
+
+        if (pInstance && pInstance->GetData(DATA_KILJAEDEN_EVENT) != DONE)
+            pInstance->SetData(DATA_KILJAEDEN_EVENT, NOT_STARTED);
     }
 
     void ChangeTimers(bool status, uint32 WTimer){
@@ -521,6 +524,9 @@ struct TRINITY_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
     {
         DoZoneInCombat();
         DoScriptText(SAY_KJ_EMERGE, m_creature);
+
+        if(pInstance)
+            pInstance->SetData(DATA_KILJAEDEN_EVENT, IN_PROGRESS);
     }
 
     void CastSinisterReflection()
