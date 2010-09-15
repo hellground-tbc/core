@@ -464,7 +464,8 @@ struct TRINITY_DLL_DECL npc_vim_bunnyAI : public ScriptedAI
     {
         Player* p_ok = NULL;
         Trinity::AnyPlayerInObjectRangeCheck p_check(me, 2.0f);
-        Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck>  checker(p_ok, p_check);
+        Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> checker(p_ok, p_check);
+        me->VisitNearbyWorldObject(5.0, checker);
         return p_ok;
     }
 
