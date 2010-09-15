@@ -88,7 +88,7 @@ namespace VMAP
 
             bool isLineOfSightCalcEnabled(unsigned int pMapId) const { return(iEnableLineOfSightCalc && mapsWithLOS.containsKey(pMapId)); }
             bool isHeightCalcEnabled(unsigned int pMapId) const { return(iEnableHeightCalc && mapsWithHeight.containsKey(pMapId)); }
-            bool isMapLoadingEnabled(unsigned int pMapId) const { return((iEnableLineOfSightCalc || iEnableHeightCalc) && (mapsWithHeight.containsKey(pMapId) || mapsWithLOS.containsKey(pMapId))); }
+            bool isMapLoadingEnabled(unsigned int pMapId) const { return isHeightCalcEnabled(pMapId) || isLineOfSightCalcEnabled(pMapId); }
 
             virtual std::string getDirFileName(unsigned int pMapId, int x, int y) const =0;
             /**

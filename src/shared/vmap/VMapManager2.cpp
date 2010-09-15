@@ -202,9 +202,6 @@ namespace VMAP
     {
         if (!isLineOfSightCalcEnabled(pMapId))
             return true;
-
-        if (!mapsWithLOS.containsKey(pMapId))
-            return true;
         
         bool result = true;
         InstanceTreeMap::iterator instanceTree = iInstanceMapTrees.find(pMapId);
