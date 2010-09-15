@@ -464,9 +464,9 @@ CreatureAI* GetAI_npc_warden_mellichar(Creature *_Creature)
 
 #define SPELL_VOID_ZONE_DAMAGE 36120
 
-struct TRINITY_DLL_DECL mob_zerekethvoidzoneAI : public ScriptedAI
+struct TRINITY_DLL_DECL mob_zerekethvoidzoneAI : public Scripted_NoMovementAI
 {
-    mob_zerekethvoidzoneAI(Creature *c) : ScriptedAI(c) {}
+    mob_zerekethvoidzoneAI(Creature *c) : Scripted_NoMovementAI(c) {}
 
     void Reset()
     {
