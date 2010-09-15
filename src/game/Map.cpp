@@ -2039,11 +2039,9 @@ bool Map::IsInWater(float x, float y, float pZ, LiquidData *data) const
     if (const_cast<Map*>(this)->GetGrid(x, y))
     {
         LiquidData liquid_status;
-        if (getLiquidStatus(x, y, pZ, MAP_ALL_LIQUIDS, &liquid_status))
-        {
-            if (liquid_status.level - liquid_status.depth_level > 2)
+        LiquidData *liquid_ptr = data ? data : &liquid_status;
+        if (getLiquidStatus(x, y, pZ, MAP_ALL_LIQUIDS, liquid_ptr))
                 return true;
-        }
     }
     return false;
 }
