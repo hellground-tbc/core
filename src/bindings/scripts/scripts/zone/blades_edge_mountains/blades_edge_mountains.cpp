@@ -506,13 +506,14 @@ struct TRINITY_DLL_DECL npc_vim_bunnyAI : public ScriptedAI
                     CheckTimer = 20000;
                     return;
                 }
+                CheckTimer = 1000;
             }
             else
             {
                 if(GetPlayer())
                 {
                     Unit *temp = DoSpawnCreature(PENTAGRAM_TRIGGER,0,0,2.0,0, TEMPSUMMON_TIMED_DESPAWN, 2000);
-                    temp->CastSpell(temp, SPELL_PENTAGRAM,false);
+                    temp->CastSpell(temp, SPELL_PENTAGRAM, false);
                 }
                 CheckTimer = 2100;
             }
