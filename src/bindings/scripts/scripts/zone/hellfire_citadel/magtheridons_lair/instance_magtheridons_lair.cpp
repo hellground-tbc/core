@@ -73,14 +73,23 @@ struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
             if(Encounters[i] == IN_PROGRESS) return true;
         return false;
     }
+    
+    uint32 GetEncounterForEntry(uint32 entry)
+    {
+        switch(entry)
+        {
+            case 17257:
+                return DATA_MAGTHERIDON_EVENT;
+            default:
+                return 0;
+        }
+    }
 
     void OnCreatureCreate(Creature *creature, uint32 creature_entry)
     {
-        uint32 data = 0;
         switch(creature->GetEntry())
         {
             case 17257:
-                data = DATA_MAGTHERIDON_EVENT;
                 MagtheridonGUID = creature->GetGUID();
                 break;
             case 17256:
@@ -91,7 +100,11 @@ struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
                 break;
         }
 
-        if(data && creature->isAlive() && GetData(data) == DONE)
+        const CreatureData * tmp = creature->GetLinkedRespawnCreatureData();
+        if (!tmp)
+            return;
+
+        if(GetEncounterForEntry(tmp->id) && creature->isAlive() && GetData(GetEncounterForEntry(tmp->id)) == DONE)
             creature->Kill(creature, false);
     }
 
