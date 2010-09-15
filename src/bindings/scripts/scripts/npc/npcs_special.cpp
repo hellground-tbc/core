@@ -1647,6 +1647,80 @@ CreatureAI* GetAI_npc_woeful_healer(Creature* pCreature)
     return new npc_woeful_healerAI(pCreature);
 }
 
+#define GOSSIP_VIOLET_SIGNET    "I have lost my Violet Signet, could you make me a new one?"
+#define GOSSIP_ETERNAL_BAND    "I have lost my Eternal Band, could you make me a new one?"
+
+// Archmage Leryda from Karazhan and Soridormi from Mount Hyjal
+bool GossipHello_npc_ring_specialist(Player* player, Creature* _Creature)
+{
+    if (_Creature->isQuestGiver())
+        player->PrepareQuestMenu( _Creature->GetGUID() );
+    uint32 entry = _Creature->GetEntry();
+    switch(entry)
+    {
+        // Archmage Leryda
+        case 18253:
+            // player has none of the rings
+            if((!player->HasItemCount(29287, 1, true) && !player->HasItemCount(29279, 1, true) && !player->HasItemCount(29283, 1, true) && !player->HasItemCount(29290, 1, true))
+                && // and had completed one of the chains
+               (player->GetQuestRewardStatus(10725) || player->GetQuestRewardStatus(10728) || player->GetQuestRewardStatus(10727) || player->GetQuestRewardStatus(10726)))
+                    player->ADD_GOSSIP_ITEM( 0, GOSSIP_VIOLET_SIGNET, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            break;
+        // Soridormi
+        case 19935:
+            // player has none of the rings
+            if((!player->HasItemCount(29305, 1, true) && !player->HasItemCount(29309, 1, true) && !player->HasItemCount(29301, 1, true) && !player->HasItemCount(29297, 1, true))
+                && // and had completed one of the chains
+               (player->GetQuestRewardStatus(10472) || player->GetQuestRewardStatus(10473) || player->GetQuestRewardStatus(10474) || player->GetQuestRewardStatus(10475)))
+                    player->ADD_GOSSIP_ITEM( 0, GOSSIP_ETERNAL_BAND,   GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+            break;
+    }
+
+    player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+    return true;
+}
+
+void RestoreQuestRingItem(Player* player, uint32 id)
+{
+        ItemPosCountVec dest;
+        uint8 msg = player->CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, id, 1);
+        if( msg == EQUIP_ERR_OK )
+        {
+            Item* item = player->StoreNewItem( dest, id, true);
+            player->SendNewItem(item, 1, true, false);
+        }
+}
+
+bool GossipSelect_npc_ring_specialist(Player* player, Creature* _Creature, uint32 sender, uint32 action)
+{
+    switch( action )
+    {
+        case GOSSIP_ACTION_INFO_DEF + 1:
+            if(player->GetQuestRewardStatus(10725))
+                RestoreQuestRingItem(player, 29287);
+            if(player->GetQuestRewardStatus(10728))
+                RestoreQuestRingItem(player, 29279);
+            if(player->GetQuestRewardStatus(10727))
+                RestoreQuestRingItem(player, 29283);
+            if(player->GetQuestRewardStatus(10726))
+                RestoreQuestRingItem(player, 29290);
+            player->CLOSE_GOSSIP_MENU();
+            break;
+        case GOSSIP_ACTION_INFO_DEF + 2:
+            if(player->GetQuestRewardStatus(10472))
+                RestoreQuestRingItem(player, 29305);
+            if(player->GetQuestRewardStatus(10473))
+                RestoreQuestRingItem(player, 29309);
+            if(player->GetQuestRewardStatus(10474))
+                RestoreQuestRingItem(player, 29301);
+            if(player->GetQuestRewardStatus(10475))
+                RestoreQuestRingItem(player, 29297);
+            player->CLOSE_GOSSIP_MENU();
+            break;
+    }
+    return true;
+}
+
 void AddSC_npcs_special()
 {
     Script *newscript;
@@ -1748,6 +1822,12 @@ void AddSC_npcs_special()
     newscript = new Script;
     newscript->Name="npc_woeful_healer";
     newscript->GetAI = &GetAI_npc_woeful_healer;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_ring_specialist";
+    newscript->pGossipHello = &GossipHello_npc_ring_specialist;
+    newscript->pGossipSelect = &GossipSelect_npc_ring_specialist;
     newscript->RegisterSelf();
 }
 
