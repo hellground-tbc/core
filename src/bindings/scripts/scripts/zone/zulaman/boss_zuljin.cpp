@@ -180,7 +180,7 @@ struct TRINITY_DLL_DECL boss_zuljinAI : public ScriptedAI
 
     void Reset()
     {
-        if(pInstance)
+        if(pInstance && pInstance->GetData(DATA_ZULJINEVENT) != DONE)
             pInstance->SetData(DATA_ZULJINEVENT, NOT_STARTED);
 
         Phase = 0;

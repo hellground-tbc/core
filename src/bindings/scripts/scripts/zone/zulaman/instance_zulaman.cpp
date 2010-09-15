@@ -104,6 +104,27 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
         return false;
     }
 
+    uint32 GetEncounterForEntry(uint32 entry)
+    {
+        switch(entry)
+        {
+            case 23574:
+                return DATA_AKILZONEVENT;
+            case 23576:
+                return DATA_NALORAKKEVENT;
+            case 23578:
+                return DATA_JANALAIEVENT;
+            case 23577:
+                return DATA_HALAZZIEVENT;
+            case 24239:
+                return DATA_HEXLORDEVENT;
+            case 23863:
+                return DATA_ZULJINEVENT;
+            default:
+                return 0;
+        }
+    }
+
     void OnCreatureCreate(Creature *creature, uint32 creature_entry)
     {
         switch(creature_entry)
@@ -115,6 +136,13 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
         case 23576://nalorakk
         default: break;
         }
+
+        const CreatureData *tmp = creature->GetLinkedRespawnCreatureData();
+        if (!tmp)
+            return;
+
+        if (GetEncounterForEntry(tmp->id) && creature->isAlive() && GetData(GetEncounterForEntry(tmp->id)) == DONE)
+            creature->Kill(creature, false);
     }
 
     void OnObjectCreate(GameObject *go)

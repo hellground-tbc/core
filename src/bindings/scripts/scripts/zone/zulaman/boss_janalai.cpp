@@ -139,7 +139,7 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
 
     void Reset()
     {
-        if(pInstance)
+        if(pInstance && pInstance->GetData(DATA_JANALAIEVENT) != DONE)
             pInstance->SetData(DATA_JANALAIEVENT, NOT_STARTED);
 
         FireBreathTimer = 8000;

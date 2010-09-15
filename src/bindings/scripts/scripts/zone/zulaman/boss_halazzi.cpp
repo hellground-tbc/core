@@ -103,7 +103,7 @@ struct TRINITY_DLL_DECL boss_halazziAI : public ScriptedAI
 
     void Reset()
     {
-        if(pInstance)
+        if(pInstance && pInstance->GetData(DATA_HALAZZIEVENT) != DONE)
             pInstance->SetData(DATA_HALAZZIEVENT, NOT_STARTED);
 
         TransformCount = 0;

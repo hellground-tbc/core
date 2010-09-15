@@ -142,7 +142,7 @@ struct TRINITY_DLL_DECL boss_nalorakkAI : public ScriptedAI
             (*m_creature).GetMotionMaster()->MovePoint(0,NalorakkWay[7][0],NalorakkWay[7][1],NalorakkWay[7][2]);
         }
 
-        if(pInstance)
+        if(pInstance && pInstance->GetData(DATA_NALORAKKEVENT) != DONE)
             pInstance->SetData(DATA_NALORAKKEVENT, NOT_STARTED);
 
         Surge_Timer = 15000 + rand()%5000;

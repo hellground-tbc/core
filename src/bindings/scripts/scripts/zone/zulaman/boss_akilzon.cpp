@@ -91,7 +91,7 @@ struct TRINITY_DLL_DECL boss_akilzonAI : public ScriptedAI
 
     void Reset()
     {
-        if(pInstance)
+        if(pInstance && pInstance->GetData(DATA_AKILZONEVENT) != DONE)
             pInstance->SetData(DATA_AKILZONEVENT, NOT_STARTED);
 
         StaticDisruption_Timer = (10+rand()%10)*1000; //10 to 20 seconds (bosskillers)
