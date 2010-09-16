@@ -22,11 +22,11 @@ SDCategory: Blackwing Lair
 EndScriptData */
 
 #include "precompiled.h"
-#include "def_blackwing_liar.h"
+#include "def_blackwing_lair.h"
 
 #define ENCOUNTERS 8
 
-/* Blackwing Liar encounters:
+/* Blackwing lair encounters:
 0 - Razorgore the Untamed event
 1 - Vaelastrasz the Corrupt Event
 2 - Broodlord Lashlayer Event
@@ -37,9 +37,9 @@ EndScriptData */
 7 - Nefarian Event
 */
 
-struct TRINITY_DLL_DECL instance_blackwing_liar : public ScriptedInstance
+struct TRINITY_DLL_DECL instance_blackwing_lair : public ScriptedInstance
 {
-    instance_blackwing_liar(Map *map) : ScriptedInstance(map) {Initialize();};
+    instance_blackwing_lair(Map *map) : ScriptedInstance(map) {Initialize();};
 
     uint32 Encounters[ENCOUNTERS];
 
@@ -207,18 +207,18 @@ struct TRINITY_DLL_DECL instance_blackwing_liar : public ScriptedInstance
     void Update (uint32 diff){}
 };
 
-InstanceData* GetInstanceData_instance_blackwing_liar(Map* map)
+InstanceData* GetInstanceData_instance_blackwing_lair(Map* map)
 {
-    return new instance_blackwing_liar(map);
+    return new instance_blackwing_lair(map);
 }
 
-void AddSC_instance_blackwing_liar()
+void AddSC_instance_blackwing_lair()
 {
     Script *newscript;
 
     newscript = new Script;
     newscript->Name = "instance_blackwing_lair";
-    newscript->GetInstanceData = &GetInstanceData_instance_blackwing_liar;
+    newscript->GetInstanceData = &GetInstanceData_instance_blackwing_lair;
     newscript->RegisterSelf();
 }
 
