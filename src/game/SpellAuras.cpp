@@ -2339,7 +2339,8 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 
                 m_target->CastSpell(m_target, 40266, true);   //summon Vengeful Spirit and 4 Shadowy Constructs
                 m_target->CastSpell((Unit*)NULL, 40268, false); //Possess Vengeful Spirit
-                m_target->CastSpell(m_target, 40282, true);   //Possess Spirit Immune
+                //m_target->CastSpell(m_target, 40282, true);   //Possess Spirit Immune
+                m_target->AddAura(40282, m_target);             //Possess Spirit Immune
             }
         }
     }
