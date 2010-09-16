@@ -63,6 +63,23 @@ struct TRINITY_DLL_DECL instance_blackwing_liar : public ScriptedInstance
     {
         switch(entry)
         {
+            case 12435:
+                return DATA_RAZORGORE_THE_UNTAMED_EVENT;
+            case 13020:
+                return DATA_VAELASTRASZ_THE_CORRUPT_EVENT;
+            case 12017:
+                return DATA_BROODLORD_LASHLAYER_EVENT;
+            case 11983:
+                return DATA_FIREMAW_EVENT;
+            case 14601:
+                return DATA_EBONROC_EVENT;
+            case 11981:
+                return DATA_FLAMEGOR_EVENT;
+            case 14020:
+                return DATA_CHROMAGGUS_EVENT;
+            case 11583:
+            case 10162:
+                return DATA_NEFARIAN_EVENT;
             default:
                 return 0;
         }
@@ -101,7 +118,7 @@ struct TRINITY_DLL_DECL instance_blackwing_liar : public ScriptedInstance
                 if(Encounters[1] != DONE)
                     Encounters[1] = data;
                 break;
-            case DATA_BEOODLORD_LASHLAYER_EVENT:
+            case DATA_BROODLORD_LASHLAYER_EVENT:
                 if(Encounters[2] != DONE)
                     Encounters[2] = data;
                 break;
@@ -139,7 +156,7 @@ struct TRINITY_DLL_DECL instance_blackwing_liar : public ScriptedInstance
                 return Encounters[0];
             case DATA_VAELASTRASZ_THE_CORRUPT_EVENT:
                 return Encounters[1];
-            case DATA_BEOODLORD_LASHLAYER_EVENT:
+            case DATA_BROODLORD_LASHLAYER_EVENT:
                 return Encounters[2];
             case DATA_FIREMAW_EVENT:
                 return Encounters[3];

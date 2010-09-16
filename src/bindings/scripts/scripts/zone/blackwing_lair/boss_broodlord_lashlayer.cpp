@@ -56,8 +56,8 @@ struct TRINITY_DLL_DECL boss_broodlordAI : public ScriptedAI
         KnockBack_Timer = 30000;
         LeashCheck_Timer = 2000;
 
-        if (pInstance && pInstance->GetData(DATA_BEOODLORD_LASHLAYER_EVENT) != DONE)
-            pInstance->SetData(DATA_BEOODLORD_LASHLAYER_EVENT, NOT_STARTED);
+        if (pInstance && pInstance->GetData(DATA_BROODLORD_LASHLAYER_EVENT) != DONE)
+            pInstance->SetData(DATA_BROODLORD_LASHLAYER_EVENT, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
@@ -66,13 +66,13 @@ struct TRINITY_DLL_DECL boss_broodlordAI : public ScriptedAI
         DoZoneInCombat();
 
         if (pInstance)
-            pInstance->SetData(DATA_BEOODLORD_LASHLAYER_EVENT, IN_PROGRESS);
+            pInstance->SetData(DATA_BROODLORD_LASHLAYER_EVENT, IN_PROGRESS);
     }
 
     void JustDied(Unit * killer)
     {
         if (pInstance)
-            pInstance->SetData(DATA_BEOODLORD_LASHLAYER_EVENT, DONE);
+            pInstance->SetData(DATA_BROODLORD_LASHLAYER_EVENT, DONE);
     }
 
     void UpdateAI(const uint32 diff)
