@@ -53,6 +53,8 @@ void instance_karazhan::Initialize()
     NetherspaceDoor     = 0;
     MastersTerraceDoor[0]= 0;
     MastersTerraceDoor[1]= 0;
+    SideEntranceDoor    = 0;
+    ServentAccessDoor   = 0;
     ImageGUID           = 0;
     MedivhGUID          = 0;
     CheckTimer          = 5000;
@@ -200,6 +202,13 @@ void instance_karazhan::SetData(uint32 type, uint32 data)
             Encounters[3] = data;
         break;
     case DATA_OPERA_EVENT:
+        if(data == DONE)
+        {
+            HandleGameObject(SideEntranceDoor, true);
+            HandleGameObject(ServentAccessDoor, true);
+            HandleGameObject(StageDoorLeftGUID, true);
+            HandleGameObject(StageDoorRightGUID, true);
+        }
         if(Encounters[4] != DONE)
             Encounters[4] = data;
         break;
@@ -261,12 +270,18 @@ void instance_karazhan::OnObjectCreate(GameObject* go)
     {
     case 183932:
         CurtainGUID           = go->GetGUID();
+        if(Encounters[4] == DONE)
+            HandleGameObject(NULL,true,go);
         break;
     case 184278:
         StageDoorLeftGUID     = go->GetGUID();
+        if(Encounters[4] == DONE)
+            HandleGameObject(NULL,true,go);
         break;
     case 184279:
         StageDoorRightGUID    = go->GetGUID();
+        if(Encounters[4] == DONE)
+            HandleGameObject(NULL,true,go);
         break;
     case 184517:
         LibraryDoor           = go->GetGUID();
@@ -288,6 +303,16 @@ void instance_karazhan::OnObjectCreate(GameObject* go)
         break;
     case 184280:
         MastersTerraceDoor[1] = go->GetGUID();
+        break;
+    case 184275:
+        SideEntranceDoor      = go->GetGUID();
+        if(Encounters[4] == DONE)
+            HandleGameObject(NULL,true,go);
+        break;
+    case 184281:
+        ServentAccessDoor = go->GetGUID();
+        if(Encounters[4] == DONE)
+            HandleGameObject(NULL,true,go);
         break;
     }
 

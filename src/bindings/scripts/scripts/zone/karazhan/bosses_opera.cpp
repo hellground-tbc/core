@@ -617,14 +617,7 @@ struct TRINITY_DLL_DECL boss_croneAI : public ScriptedAI
         DoScriptText(SAY_CRONE_DEATH, m_creature);
 
         if(pInstance)
-        {
             pInstance->SetData(DATA_OPERA_EVENT, DONE);
-
-            if (GameObject* lDoor = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_STAGEDOORLEFT)))
-                lDoor->SetGoState(0);
-            if (GameObject* rDoor = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_STAGEDOORRIGHT)))
-                rDoor->SetGoState(0);
-        }
     }
 
     void UpdateAI(const uint32 diff)
@@ -820,14 +813,7 @@ struct TRINITY_DLL_DECL boss_bigbadwolfAI : public ScriptedAI
         DoPlaySoundToSet(m_creature, SOUND_WOLF_DEATH);
 
         if(pInstance)
-        {
             pInstance->SetData(DATA_OPERA_EVENT, DONE);
-
-            if (GameObject* lDoor = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_STAGEDOORLEFT)))
-                lDoor->SetGoState(0);
-            if (GameObject* rDoor = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_STAGEDOORRIGHT)))
-                rDoor->SetGoState(0);
-        }
     }
 
     void UpdateAI(const uint32 diff)
@@ -1079,12 +1065,7 @@ struct TRINITY_DLL_DECL boss_julianneAI : public ScriptedAI
         DoScriptText(SAY_JULIANNE_DEATH02, m_creature);
 
         if(pInstance)
-        {
             pInstance->SetData(DATA_OPERA_EVENT, DONE);
-            GameObject* Door = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_STAGEDOORRIGHT));
-            if(Door)
-                Door->UseDoorOrButton();
-        }
     }
 
     void KilledUnit(Unit* victim)
@@ -1176,14 +1157,7 @@ struct TRINITY_DLL_DECL boss_romuloAI : public ScriptedAI
         DoScriptText(SAY_ROMULO_DEATH, m_creature);
 
         if (pInstance)
-        {
             pInstance->SetData(DATA_OPERA_EVENT, DONE);
-
-            if (GameObject* lDoor = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_STAGEDOORLEFT)))
-                lDoor->SetGoState(0);
-            if (GameObject* rDoor = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_STAGEDOORRIGHT)))
-                rDoor->SetGoState(0);
-        }
     }
 
     void KilledUnit(Unit* victim)
