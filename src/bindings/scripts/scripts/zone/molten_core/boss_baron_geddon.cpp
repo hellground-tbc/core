@@ -22,6 +22,7 @@ SDCategory: Molten Core
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_molten_core.h"
 
 #define EMOTE_SERVICE               -1409000
 
@@ -32,8 +33,12 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_baron_geddonAI : public ScriptedAI
 {
-    boss_baron_geddonAI(Creature *c) : ScriptedAI(c) {}
+    boss_baron_geddonAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
 
+    ScriptedInstance* pInstance;
     uint32 Inferno_Timer;
     uint32 IgniteMana_Timer;
     uint32 LivingBomb_Timer;
@@ -43,10 +48,21 @@ struct TRINITY_DLL_DECL boss_baron_geddonAI : public ScriptedAI
         Inferno_Timer = 45000;                              //These times are probably wrong
         IgniteMana_Timer = 30000;
         LivingBomb_Timer = 35000;
+
+        if (pInstance && pInstance->GetData(DATA_BARON_GEDDON_EVENT) != DONE)
+            pInstance->SetData(DATA_BARON_GEDDON_EVENT, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
     {
+        if (pInstance)
+            pInstance->SetData(DATA_BARON_GEDDON_EVENT, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_BARON_GEDDON_EVENT, DONE);
     }
 
     void UpdateAI(const uint32 diff)

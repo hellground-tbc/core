@@ -57,16 +57,21 @@ struct TRINITY_DLL_DECL boss_golemaggAI : public ScriptedAI
         Enrage_Timer = 0;
 
         m_creature->CastSpell(m_creature,SPELL_MAGMASPLASH,true);
+
+        if (pInstance && pInstance->GetData(DATA_GOLEMAGG_THE_INCINERATOR_EVENT) != DONE)
+            pInstance->SetData(DATA_GOLEMAGG_THE_INCINERATOR_EVENT, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
     {
+        if (pInstance)
+            pInstance->SetData(DATA_GOLEMAGG_THE_INCINERATOR_EVENT, IN_PROGRESS);
     }
 
     void JustDied(Unit* Killer)
     {
         if(pInstance)
-            pInstance->SetData(DATA_GOLEMAGG_DEATH, 0);
+            pInstance->SetData(DATA_GOLEMAGG_THE_INCINERATOR_EVENT, DONE);
     }
 
     void UpdateAI(const uint32 diff)
