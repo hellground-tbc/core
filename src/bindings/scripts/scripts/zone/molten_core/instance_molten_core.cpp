@@ -24,7 +24,7 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_molten_core.h"
 
-#define ENCOUNTERS      9
+#define ENCOUNTERS      10
 
 #define ID_LUCIFRON     12118
 #define ID_MAGMADAR     11982
@@ -40,214 +40,292 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL instance_molten_core : public ScriptedInstance
 {
-     instance_molten_core(Map *map) : ScriptedInstance(map) {Initialize();};
+    instance_molten_core(Map *map) : ScriptedInstance(map) {Initialize();};
 
-        uint64 Lucifron, Magmadar, Gehennas, Garr, Geddon, Shazzrah, Sulfuron, Golemagg, Domo, Ragnaros, FlamewakerPriest;
-        uint64 RuneKoro, RuneZeth, RuneMazj, RuneTheri, RuneBlaz, RuneKress, RuneMohn;
+    uint64 Lucifron, Magmadar, Gehennas, Garr, Geddon, Shazzrah, Sulfuron, Golemagg, Domo, Ragnaros, FlamewakerPriest;
+    uint64 RuneKoro, RuneZeth, RuneMazj, RuneTheri, RuneBlaz, RuneKress, RuneMohn;
 
-        //If all Bosses are dead.
-        bool IsBossDied[9];
+    uint32 Encounter[ENCOUNTERS];
 
-        uint32 Encounter[ENCOUNTERS];
+    void Initialize()
+    {
+        Lucifron = 0;
+        Magmadar = 0;
+        Gehennas = 0;
+        Garr = 0;
+        Geddon = 0;
+        Shazzrah = 0;
+        Sulfuron = 0;
+        Golemagg = 0;
+        Domo = 0;
+        Ragnaros = 0;
+        FlamewakerPriest = 0;
 
-        void Initialize()
+        RuneKoro = 0;
+        RuneZeth = 0;
+        RuneMazj = 0;
+        RuneTheri = 0;
+        RuneBlaz = 0;
+        RuneKress = 0;
+        RuneMohn = 0;
+
+        for(uint8 i = 0; i < ENCOUNTERS; i++)
+            Encounter[i] = NOT_STARTED;
+    }
+
+    bool IsEncounterInProgress() const
+    {
+        for (uint8 i = 0; i < ENCOUNTERS; ++i)
+            if (Encounter[i] != DONE && Encounter[i] != NOT_STARTED)
+                return true;
+
+        return false;
+    };
+
+
+   void OnObjectCreate(GameObject *go)
+    {
+         switch(go->GetEntry())
+         {
+         case 176951:                                    //Sulfuron
+             RuneKoro = go->GetGUID();
+             break;
+         case 176952:                                    //Geddon
+             RuneZeth = go->GetGUID();
+             break;
+         case 176953:                                    //Shazzrah
+             RuneMazj = go->GetGUID();
+             break;
+         case 176954:                                    //Golemagg
+             RuneTheri = go->GetGUID();
+             break;
+         case 176955:                                    //Garr
+             RuneBlaz = go->GetGUID();
+             break;
+         case 176956:                                    //Magmadar
+             RuneKress = go->GetGUID();
+             break;
+         case 176957:                                    //Gehennas
+             RuneMohn = go->GetGUID();
+             break;
+             }
+    }
+
+    uint32 GetEncounterForEntry(uint32 entry)
+    {
+        switch(entry)
         {
-            Lucifron = 0;
-            Magmadar = 0;
-            Gehennas = 0;
-            Garr = 0;
-            Geddon = 0;
-            Shazzrah = 0;
-            Sulfuron = 0;
-            Golemagg = 0;
-            Domo = 0;
-            Ragnaros = 0;
-            FlamewakerPriest = 0;
+            case ID_LUCIFRON:
+                return DATA_LUCIFRON_EVENT;
+            case ID_MAGMADAR:
+                return DATA_MAGMADAR_EVENT;
+            case ID_GEHENNAS:
+                return DATA_GEHENNAS_EVENT;
+            case ID_GARR:
+                return DATA_GARR_EVENT;
+            case ID_GEDDON:
+                return DATA_BARON_GEDDON_EVENT;
+            case ID_SHAZZRAH:
+                return DATA_SHAZZRAH_EVENT;
+            case ID_SULFURON:
+                return DATA_SULFURON_HARBRINGER_EVENT;
+            case ID_GOLEMAGG:
+                return DATA_GOLEMAGG_THE_INCINERATOR_EVENT;
+            case ID_DOMO:
+                return DATA_MAJORDOMO_EXECUTUS_EVENT;
+            case ID_RAGNAROS:
+                return DATA_RAGNAROS_EVENT;
+            default:
+                return 0;
+        }
+    }
 
-            RuneKoro = 0;
-            RuneZeth = 0;
-            RuneMazj = 0;
-            RuneTheri = 0;
-            RuneBlaz = 0;
-            RuneKress = 0;
-            RuneMohn = 0;
+    void OnCreatureCreate(Creature *creature, uint32 creature_entry)
+    {
+        switch (creature_entry)
+        {
+            case ID_LUCIFRON:
+                Lucifron = creature->GetGUID();
+                break;
 
-            IsBossDied[0] = false;
-            IsBossDied[1] = false;
-            IsBossDied[2] = false;
-            IsBossDied[3] = false;
-            IsBossDied[4] = false;
-            IsBossDied[5] = false;
-            IsBossDied[6] = false;
+            case ID_MAGMADAR:
+                Magmadar = creature->GetGUID();
+                break;
 
-            IsBossDied[7] = false;
-            IsBossDied[8] = false;
+            case ID_GEHENNAS:
+                Gehennas = creature->GetGUID();
+                break;
 
-             for(uint8 i = 0; i < ENCOUNTERS; i++)
-                  Encounter[i] = NOT_STARTED;
+            case ID_GARR:
+                Garr = creature->GetGUID();
+                break;
 
+            case ID_GEDDON:
+                Geddon = creature->GetGUID();
+                break;
 
+            case ID_SHAZZRAH:
+                Shazzrah = creature->GetGUID();
+                break;
+
+            case ID_SULFURON:
+                Sulfuron = creature->GetGUID();
+                break;
+
+            case ID_GOLEMAGG:
+                Golemagg = creature->GetGUID();
+                break;
+
+            case ID_DOMO:
+                Domo = creature->GetGUID();
+                break;
+
+            case ID_RAGNAROS:
+                Ragnaros = creature->GetGUID();
+                break;
+
+            case ID_FLAMEWAKERPRIEST:
+                FlamewakerPriest = creature->GetGUID();
+                break;
         }
 
-        bool IsEncounterInProgress() const
-        {
-            return false;
-        };
+        const CreatureData *tmp = creature->GetLinkedRespawnCreatureData();
+        if (!tmp)
+            return;
 
+        if (GetEncounterForEntry(tmp->id) && creature->isAlive() && GetData(GetEncounterForEntry(tmp->id)) == DONE)
+            creature->Kill(creature, false);
+    }
 
-       void OnObjectCreate(GameObject *go)
+    uint64 GetData64 (uint32 identifier)
+    {
+        switch(identifier)
         {
-             switch(go->GetEntry())
-             {
-             case 176951:                                    //Sulfuron
-                 RuneKoro = go->GetGUID();
-                 break;
-             case 176952:                                    //Geddon
-                 RuneZeth = go->GetGUID();
-                 break;
-             case 176953:                                    //Shazzrah
-                 RuneMazj = go->GetGUID();
-                 break;
-             case 176954:                                    //Golemagg
-                 RuneTheri = go->GetGUID();
-                 break;
-             case 176955:                                    //Garr
-                 RuneBlaz = go->GetGUID();
-                 break;
-             case 176956:                                    //Magmadar
-                 RuneKress = go->GetGUID();
-                 break;
-             case 176957:                                    //Gehennas
-                 RuneMohn = go->GetGUID();
-                 break;
-                 }
+            case DATA_SULFURON:
+                return Sulfuron;
+            case DATA_GOLEMAGG:
+                return Sulfuron;
+
+            case DATA_FLAMEWAKERPRIEST:
+                return FlamewakerPriest;
         }
 
+        return 0;
+    }
 
-        void OnCreatureCreate(Creature *creature, uint32 creature_entry)
+    uint32 GetData(uint32 type)
+    {
+        switch(type)
         {
-            switch (creature_entry)
-            {
-                case ID_LUCIFRON:
-                    Lucifron = creature->GetGUID();
-                    break;
-
-                case ID_MAGMADAR:
-                    Magmadar = creature->GetGUID();
-                    break;
-
-                case ID_GEHENNAS:
-                    Gehennas = creature->GetGUID();
-                    break;
-
-                case ID_GARR:
-                    Garr = creature->GetGUID();
-                    break;
-
-                case ID_GEDDON:
-                    Geddon = creature->GetGUID();
-                    break;
-
-                case ID_SHAZZRAH:
-                    Shazzrah = creature->GetGUID();
-                    break;
-
-                case ID_SULFURON:
-                    Sulfuron = creature->GetGUID();
-                    break;
-
-                case ID_GOLEMAGG:
-                    Golemagg = creature->GetGUID();
-                    break;
-
-                case ID_DOMO:
-                    Domo = creature->GetGUID();
-                    break;
-
-                case ID_RAGNAROS:
-                    Ragnaros = creature->GetGUID();
-                    break;
-
-                case ID_FLAMEWAKERPRIEST:
-                    FlamewakerPriest = creature->GetGUID();
-                    break;
-            }
+            case DATA_LUCIFRON_EVENT:
+                return Encounter[0];
+            case DATA_MAGMADAR_EVENT:
+                return Encounter[1];
+            case DATA_GEHENNAS_EVENT:
+                return Encounter[2];
+            case DATA_GARR_EVENT:
+                return Encounter[3];
+            case DATA_SHAZZRAH_EVENT:
+                return Encounter[4];
+            case DATA_BARON_GEDDON_EVENT:
+                return Encounter[5];
+            case DATA_GOLEMAGG_THE_INCINERATOR_EVENT:
+                return Encounter[6];
+            case DATA_SULFURON_HARBRINGER_EVENT:
+                return Encounter[7];
+            case DATA_MAJORDOMO_EXECUTUS_EVENT:
+                return Encounter[8];
+            case DATA_RAGNAROS_EVENT:
+                return Encounter[9];
         }
 
-        uint64 GetData64 (uint32 identifier)
+        return 0;
+    }
+
+    void SetData(uint32 type, uint32 data)
+    {
+        switch(type)
         {
-            switch(identifier)
-            {
-                case DATA_SULFURON:
-                    return Sulfuron;
-                case DATA_GOLEMAGG:
-                    return Sulfuron;
-
-                case DATA_FLAMEWAKERPRIEST:
-                    return FlamewakerPriest;
-            }
-
-            return 0;
+            case DATA_LUCIFRON_EVENT:
+                if(Encounter[0] != DONE)
+                    Encounter[0] = data;
+                break;
+            case DATA_MAGMADAR_EVENT:
+                if(Encounter[1] != DONE)
+                    Encounter[1] = data;
+                break;
+            case DATA_GEHENNAS_EVENT:
+                if(Encounter[2] != DONE)
+                    Encounter[2] = data;
+                break;
+            case DATA_GARR_EVENT:
+                if(Encounter[3] != DONE)
+                    Encounter[3] = data;
+                break;
+            case DATA_SHAZZRAH_EVENT:
+                if(Encounter[4] != DONE)
+                    Encounter[4] = data;
+                break;
+            case DATA_BARON_GEDDON_EVENT:
+                if(Encounter[5] != DONE)
+                    Encounter[5] = data;
+                break;
+            case DATA_GOLEMAGG_THE_INCINERATOR_EVENT:
+                if(Encounter[6] != DONE)
+                    Encounter[6] = data;
+                break;
+            case DATA_SULFURON_HARBRINGER_EVENT:
+                if(Encounter[7] != DONE)
+                    Encounter[7] = data;
+                break;
+            case DATA_MAJORDOMO_EXECUTUS_EVENT:
+                if(Encounter[8] != DONE)
+                    Encounter[8] = data;
+                break;
+            case DATA_RAGNAROS_EVENT:
+                if(Encounter[9] != DONE)
+                    Encounter[9] = data;
+                break;
         }
 
-        uint32 GetData(uint32 type)
+        if (data == DONE)
+            SaveToDB();
+    }
+
+    const char* Save()
+    {
+        OUT_SAVE_INST_DATA;
+        std::ostringstream stream;
+        stream << Encounter[0] << " " << Encounter[1] << " " << Encounter[2] << " " << Encounter[3] << " " << Encounter[4] << " "
+             << Encounter[5] << " " << Encounter[6] << " " << Encounter[7] << " " << Encounter[8] << " " << Encounter[9];
+        char* out = new char[stream.str().length() + 1];
+        strcpy(out, stream.str().c_str());
+        if(out)
         {
-            switch(type)
-            {
-                case DATA_LUCIFRONISDEAD:
-                    if(IsBossDied[0])
-                        return 1;
-                    break;
-
-                case DATA_MAGMADARISDEAD:
-                    if(IsBossDied[1])
-                        return 1;
-                    break;
-
-                case DATA_GEHENNASISDEAD:
-                    if(IsBossDied[2])
-                        return 1;
-                    break;
-
-                case DATA_GARRISDEAD:
-                    if(IsBossDied[3])
-                        return 1;
-                    break;
-
-                case DATA_GEDDONISDEAD:
-                    if(IsBossDied[4])
-                        return 1;
-                    break;
-
-                case DATA_SHAZZRAHISDEAD:
-                    if(IsBossDied[5])
-                        return 1;
-                    break;
-
-                case DATA_SULFURONISDEAD:
-                    if(IsBossDied[6])
-                        return 1;
-                    break;
-
-                case DATA_GOLEMAGGISDEAD:
-                    if(IsBossDied[7])
-                        return 1;
-                    break;
-
-                case DATA_MAJORDOMOISDEAD:
-                    if(IsBossDied[8])
-                        return 1;
-                    break;
-            }
-
-            return 0;
+            OUT_SAVE_INST_DATA_COMPLETE;
+            return out;
         }
 
-        void SetData(uint32 type, uint32 data)
+        return NULL;
+    }
+
+    void Load(const char* in)
+    {
+        if(!in)
         {
-            if (type == DATA_GOLEMAGG_DEATH)
-                IsBossDied[7] = true;
+            OUT_LOAD_INST_DATA_FAIL;
+            return;
         }
+
+        OUT_LOAD_INST_DATA(in);
+        std::istringstream stream(in);
+        stream >> Encounter[0] >> Encounter[1] >> Encounter[2] >> Encounter[3] >> Encounter[4]
+             >> Encounter[5] >> Encounter[6] >> Encounter[7] >> Encounter[8] >> Encounter[9];
+        for(uint8 i = 0; i < ENCOUNTERS; ++i)
+            if(Encounter[i] == IN_PROGRESS)                // Do not load an encounter as "In Progress" - reset it instead.
+                Encounter[i] = NOT_STARTED;
+        OUT_LOAD_INST_DATA_COMPLETE;
+    }
 };
 
 InstanceData* GetInstance_instance_molten_core(Map *map)

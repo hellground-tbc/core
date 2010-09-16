@@ -5,18 +5,20 @@
 #ifndef DEF_MOLTEN_CORE_H
 #define DEF_MOLTEN_CORE_H
 
-#define DATA_FLAMEWAKERPRIEST 1
-#define DATA_GARRISDEAD 2
-#define DATA_GEDDONISDEAD 3
-#define DATA_GEHENNASISDEAD 4
-#define DATA_GOLEMAGGISDEAD 5
-#define DATA_GOLEMAGG_DEATH 6
-#define DATA_LUCIFRONISDEAD 7
-#define DATA_MAGMADARISDEAD 8
-#define DATA_MAJORDOMOISDEAD 9
-#define DATA_SHAZZRAHISDEAD 10
-#define DATA_SULFURON 11
-#define DATA_SULFURONISDEAD 12
-#define DATA_GOLEMAGG 13
+#define DATA_LUCIFRON_EVENT                 0
+#define DATA_MAGMADAR_EVENT                 1
+#define DATA_GEHENNAS_EVENT                 2
+#define DATA_GARR_EVENT                     3
+#define DATA_SHAZZRAH_EVENT                 4
+#define DATA_BARON_GEDDON_EVENT             5
+#define DATA_GOLEMAGG_THE_INCINERATOR_EVENT 6
+#define DATA_SULFURON_HARBRINGER_EVENT      7
+#define DATA_MAJORDOMO_EXECUTUS_EVENT       8
+#define DATA_RAGNAROS_EVENT                 9
+#define DATA_GOLEMAGG_DEATH                 10
+#define DATA_SULFURON                       11
+#define DATA_FLAMEWAKERPRIEST               12
+#define DATA_GOLEMAGG                       13
+
 #endif
 

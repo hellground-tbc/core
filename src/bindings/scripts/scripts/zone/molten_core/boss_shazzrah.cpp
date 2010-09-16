@@ -22,6 +22,7 @@ SDCategory: Molten Core
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_molten_core.h"
 
 #define SPELL_ARCANEEXPLOSION           19712
 #define SPELL_SHAZZRAHCURSE             19713
@@ -30,8 +31,12 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_shazzrahAI : public ScriptedAI
 {
-    boss_shazzrahAI(Creature *c) : ScriptedAI(c) {}
+    boss_shazzrahAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
 
+    ScriptedInstance * pInstance;
     uint32 ArcaneExplosion_Timer;
     uint32 ShazzrahCurse_Timer;
     uint32 DeadenMagic_Timer;
@@ -45,10 +50,21 @@ struct TRINITY_DLL_DECL boss_shazzrahAI : public ScriptedAI
         DeadenMagic_Timer = 24000;
         Countspell_Timer = 15000;
         Blink_Timer = 30000;
+
+        if (pInstance)
+            pInstance->SetData(DATA_SHAZZRAH_EVENT, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
     {
+        if (pInstance)
+            pInstance->SetData(DATA_SHAZZRAH_EVENT, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_SHAZZRAH_EVENT, DONE);
     }
 
     void UpdateAI(const uint32 diff)
