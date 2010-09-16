@@ -22,6 +22,7 @@ SDCategory: Ruins of Ahn'Qiraj
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_ruins_of_ahnqiraj.h"
 
 #define SAY_ANDOROV_INTRO   -1509003 //They come now. Try not to get yourself killed, young blood.
 #define SAY_ANDOROV_ATTACK  -1509004 //Remember, Rajaxx, when I said I'd kill you last? I lied...
@@ -48,9 +49,9 @@ EndScriptData */
 #define SPELL_THUNDERCRASH  25599
 
 //Lieutenant
-#define SAY_START       // Remember, Rajaxx, when I said I'd kill you last? I lied... 
-#define SAY_BEFORE      // They come now. Try not to get yourself killed, young blood. 
-#define SAY_FIRST_WAVE  // Kill first, ask questions later... Incoming! 
+#define SAY_START       // Remember, Rajaxx, when I said I'd kill you last? I lied...
+#define SAY_BEFORE      // They come now. Try not to get yourself killed, young blood.
+#define SAY_FIRST_WAVE  // Kill first, ask questions later... Incoming!
 
 #define SPELL_AURA          25516
 #define SPELL_BASH          25515
@@ -69,7 +70,12 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_rajaxxAI : public ScriptedAI
 {
-    boss_rajaxxAI(Creature *c) : ScriptedAI(c) {}
+    boss_rajaxxAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
+
+    ScriptedInstance * pInstance;
 
     uint32 Disarm_Timer;
     uint32 Thundercrash_Timer;
@@ -80,11 +86,23 @@ struct TRINITY_DLL_DECL boss_rajaxxAI : public ScriptedAI
         Thundercrash_Timer = 30000; //propably wrong
         Disarm_Timer = 20000;
         frenzied = false;
+
+        if (pInstance)
+            pInstance->SetData(DATA_GENERAL_RAJAXX, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_INTRO, m_creature);
+
+        if (pInstance)
+            pInstance->SetData(DATA_GENERAL_RAJAXX, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_GENERAL_RAJAXX, DONE);
     }
 
     void UpdateAI(const uint32 diff)
@@ -99,7 +117,7 @@ struct TRINITY_DLL_DECL boss_rajaxxAI : public ScriptedAI
             Thundercrash_Timer = 30000;
         }
         else Thundercrash_Timer -= diff;
-        
+
         if (Disarm_Timer < diff)
         {
             DoCast(m_creature->getVictim(), SPELL_DISARM);

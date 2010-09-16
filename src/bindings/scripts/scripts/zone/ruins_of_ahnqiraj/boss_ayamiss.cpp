@@ -22,6 +22,7 @@ SDCategory: Ruins of Ahn'Qiraj
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_ruins_of_ahnqiraj.h"
 
 /*
 To do:
@@ -47,8 +48,12 @@ static float position[3] =
 
 struct TRINITY_DLL_DECL boss_ayamissAI : public ScriptedAI
 {
-    boss_ayamissAI(Creature *c) : ScriptedAI(c) {}
+    boss_ayamissAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
 
+    ScriptedInstance * pInstance;
     Unit *pTarget;
     uint32 STINGERSPRAY_Timer;
     uint32 POISONSTINGER_Timer;
@@ -63,6 +68,9 @@ struct TRINITY_DLL_DECL boss_ayamissAI : public ScriptedAI
         SUMMONSWARMER_Timer = 60000;
         phase=1;
         m_creature->SetUnitMovementFlags(MOVEMENTFLAG_LEVITATING);
+
+        if (pInstance)
+            pInstance->SetData(DATA_AYAMISS_THE_HUNTER, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
@@ -70,6 +78,15 @@ struct TRINITY_DLL_DECL boss_ayamissAI : public ScriptedAI
         pTarget = who;
         m_creature->SetUnitMovementFlags(MOVEMENTFLAG_LEVITATING);
         m_creature->GetMotionMaster()->MovePoint(0, position[0], position[1], position[2]);
+
+        if (pInstance)
+            pInstance->SetData(DATA_AYAMISS_THE_HUNTER, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_AYAMISS_THE_HUNTER, DONE);
     }
 
     void AttackStart(Unit* who)

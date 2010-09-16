@@ -22,6 +22,7 @@ SDCategory: Ruins of Ahn'Qiraj
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_ruins_of_ahnqiraj.h"
 
 #define EMOTE_AGGRO             -1509000
 #define EMOTE_MANA_FULL         -1509001
@@ -38,7 +39,12 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_moamAI : public ScriptedAI
 {
-    boss_moamAI(Creature *c) : ScriptedAI(c) {}
+    boss_moamAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
+
+    ScriptedInstance * pInstance;
 
     Unit *pTarget;
     uint32 TRAMPLE_Timer;
@@ -55,6 +61,9 @@ struct TRINITY_DLL_DECL boss_moamAI : public ScriptedAI
         SUMMONMANA_Timer = 90000;
         DrainTargets = 0;
         stoned = false;
+
+        if (pInstance)
+            pInstance->SetData(DATA_MOAM, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
@@ -62,6 +71,15 @@ struct TRINITY_DLL_DECL boss_moamAI : public ScriptedAI
         DoScriptText(EMOTE_AGGRO, m_creature);
         pTarget = who;
         m_creature->SetPower(POWER_MANA, 0); //starts without any mana
+
+        if (pInstance)
+            pInstance->SetData(DATA_MOAM, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_MOAM, DONE);
     }
 
     void JustSummoned(Creature *creature)

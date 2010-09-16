@@ -22,6 +22,7 @@ SDCategory: Ruins of Ahn'Qiraj
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_ruins_of_ahnqiraj.h"
 
 #define SAY_SURPREME2   -1509019
 #define SAY_SURPREME3   -1509020
@@ -50,4 +51,4 @@ EndScriptData */
 #define SPELL_NATUREW   25180
 #define SPELL_SHADOWW   25183
 
-#define CREATURE_TORNADO    1 //placeholder 
+#define CREATURE_TORNADO    1 //placeholder
