@@ -3,7 +3,7 @@
 
 #define DATA_RAZORGORE_THE_UNTAMED_EVENT    0
 #define DATA_VAELASTRASZ_THE_CORRUPT_EVENT  1
-#define DATA_BEOODLORD_LASHLAYER_EVENT      2
+#define DATA_BROODLORD_LASHLAYER_EVENT      2
 #define DATA_FIREMAW_EVENT                  3
 #define DATA_EBONROC_EVENT                  4
 #define DATA_FLAMEGOR_EVENT                 5

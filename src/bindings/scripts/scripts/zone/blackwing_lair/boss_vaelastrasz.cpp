@@ -22,7 +22,7 @@ SDCategory: Blackwing Lair
 EndScriptData */
 
 #include "precompiled.h"
-#include "def_blackwing_liar.h"
+#include "def_blackwing_lair.h"
 
 #define SAY_LINE1           -1469026
 #define SAY_LINE2           -1469027

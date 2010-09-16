@@ -22,7 +22,7 @@ SDCategory: Blackwing Lair
 EndScriptData */
 
 #include "precompiled.h"
-#include "def_blackwing_liar.h"
+#include "def_blackwing_lair.h"
 
 //Razorgore Phase 2 Script
 

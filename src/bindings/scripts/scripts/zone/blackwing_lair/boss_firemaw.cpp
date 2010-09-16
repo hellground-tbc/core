@@ -22,7 +22,7 @@ SDCategory: Blackwing Lair
 EndScriptData */
 
 #include "precompiled.h"
-#include "def_blackwing_liar.h"
+#include "def_blackwing_lair.h"
 
 #define SPELL_SHADOWFLAME       22539
 #define SPELL_WINGBUFFET        23339

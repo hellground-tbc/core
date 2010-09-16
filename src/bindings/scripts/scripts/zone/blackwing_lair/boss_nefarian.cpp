@@ -22,7 +22,7 @@ SDCategory: Blackwing Lair
 EndScriptData */
 
 #include "precompiled.h"
-#include "def_blackwing_liar.h"
+#include "def_blackwing_lair.h"
 
 #define SAY_AGGRO               -1469007
 #define SAY_XHEALTH             -1469008
