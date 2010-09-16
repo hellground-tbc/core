@@ -22,6 +22,7 @@ SDCategory: Blackwing Lair
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_blackwing_liar.h"
 
 #define SAY_AGGRO               -1469007
 #define SAY_XHEALTH             -1469008
@@ -60,8 +61,12 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_nefarianAI : public ScriptedAI
 {
-    boss_nefarianAI(Creature *c) : ScriptedAI(c) {}
+    boss_nefarianAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
 
+    ScriptedInstance * pInstance;
     uint32 ShadowFlame_Timer;
     uint32 BellowingRoar_Timer;
     uint32 VeilOfShadow_Timer;
@@ -83,6 +88,9 @@ struct TRINITY_DLL_DECL boss_nefarianAI : public ScriptedAI
         Phase3 = false;
 
         DespawnTimer = 5000;
+
+        if (pInstance && pInstance->GetData(DATA_NEFARIAN_EVENT) != DONE)
+            pInstance->SetData(DATA_NEFARIAN_EVENT, NOT_STARTED);
     }
 
     void KilledUnit(Unit* Victim)
@@ -96,6 +104,9 @@ struct TRINITY_DLL_DECL boss_nefarianAI : public ScriptedAI
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_DEATH, m_creature);
+
+        if (pInstance)
+            pInstance->SetData(DATA_NEFARIAN_EVENT, DONE);
     }
 
     void EnterCombat(Unit *who)
@@ -104,6 +115,9 @@ struct TRINITY_DLL_DECL boss_nefarianAI : public ScriptedAI
 
         DoCast(who,SPELL_SHADOWFLAME_INITIAL);
         DoZoneInCombat();
+
+        if (pInstance)
+            pInstance->SetData(DATA_NEFARIAN_EVENT, IN_PROGRESS);
     }
 
     void UpdateAI(const uint32 diff)

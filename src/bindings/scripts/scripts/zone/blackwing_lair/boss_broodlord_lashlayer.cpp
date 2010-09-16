@@ -22,6 +22,7 @@ SDCategory: Blackwing Lair
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_blackwing_liar.h"
 
 #define SAY_AGGRO               -1469000
 #define SAY_LEASH               -1469001
@@ -36,8 +37,10 @@ struct TRINITY_DLL_DECL boss_broodlordAI : public ScriptedAI
     boss_broodlordAI(Creature *c) : ScriptedAI(c)
     {
         c->GetPosition(wLoc);
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
     }
 
+    ScriptedInstance * pInstance;
     uint32 Cleave_Timer;
     uint32 BlastWave_Timer;
     uint32 MortalStrike_Timer;
@@ -52,12 +55,24 @@ struct TRINITY_DLL_DECL boss_broodlordAI : public ScriptedAI
         MortalStrike_Timer = 20000;
         KnockBack_Timer = 30000;
         LeashCheck_Timer = 2000;
+
+        if (pInstance && pInstance->GetData(DATA_BEOODLORD_LASHLAYER_EVENT) != DONE)
+            pInstance->SetData(DATA_BEOODLORD_LASHLAYER_EVENT, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
         DoZoneInCombat();
+
+        if (pInstance)
+            pInstance->SetData(DATA_BEOODLORD_LASHLAYER_EVENT, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_BEOODLORD_LASHLAYER_EVENT, DONE);
     }
 
     void UpdateAI(const uint32 diff)

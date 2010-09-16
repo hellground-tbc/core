@@ -22,6 +22,7 @@ SDCategory: Blackwing Lair
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_blackwing_liar.h"
 
 #define SAY_LINE1           -1469026
 #define SAY_LINE2           -1469027
@@ -45,8 +46,10 @@ struct TRINITY_DLL_DECL boss_vaelAI : public ScriptedAI
         c->SetUInt32Value(UNIT_NPC_FLAGS,1);
         c->setFaction(35);
         c->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
     }
 
+    ScriptedInstance * pInstance;
     uint64 PlayerGUID;
     uint32 SpeachTimer;
     uint32 SpeachNum;
@@ -72,6 +75,9 @@ struct TRINITY_DLL_DECL boss_vaelAI : public ScriptedAI
         TailSwipe_Timer = 20000;
         HasYelled = false;
         DoingSpeach = false;
+
+        if (pInstance && pInstance->GetData(DATA_VAELASTRASZ_THE_CORRUPT_EVENT) != DONE)
+            pInstance->SetData(DATA_VAELASTRASZ_THE_CORRUPT_EVENT, NOT_STARTED);
     }
 
     void BeginSpeach(Unit* target)
@@ -97,11 +103,20 @@ struct TRINITY_DLL_DECL boss_vaelAI : public ScriptedAI
         DoScriptText(SAY_KILLTARGET, m_creature, victim);
     }
 
+    void JustDied(Unit * killer)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_VAELASTRASZ_THE_CORRUPT_EVENT, DONE);
+    }
+
     void EnterCombat(Unit *who)
     {
         DoCast(m_creature,SPELL_ESSENCEOFTHERED);
         DoZoneInCombat();
         m_creature->SetHealth(int(m_creature->GetMaxHealth()*.3));
+
+        if (pInstance)
+            pInstance->SetData(DATA_VAELASTRASZ_THE_CORRUPT_EVENT, IN_PROGRESS);
     }
 
     void UpdateAI(const uint32 diff)

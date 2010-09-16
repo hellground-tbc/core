@@ -22,6 +22,7 @@ SDCategory: Blackwing Lair
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_blackwing_liar.h"
 
 #define EMOTE_FRENZY                -1469002
 #define EMOTE_SHIMMER               -1469003
@@ -156,9 +157,12 @@ struct TRINITY_DLL_DECL boss_chromaggusAI : public ScriptedAI
                 break;
         };
 
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+
         EnterEvadeMode();
     }
 
+    ScriptedInstance * pInstance;
     uint32 Breath1_Spell;
     uint32 Breath2_Spell;
     uint32 CurrentVurln_Spell;
@@ -181,10 +185,21 @@ struct TRINITY_DLL_DECL boss_chromaggusAI : public ScriptedAI
         Frenzy_Timer = 15000;
 
         Enraged = false;
+
+        if (pInstance && pInstance->GetData(DATA_CHROMAGGUS_EVENT) != DONE)
+            pInstance->SetData(DATA_CHROMAGGUS_EVENT, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
     {
+        if (pInstance)
+            pInstance->SetData(DATA_CHROMAGGUS_EVENT, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_CHROMAGGUS_EVENT, DONE);
     }
 
     void UpdateAI(const uint32 diff)

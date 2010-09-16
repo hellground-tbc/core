@@ -22,6 +22,7 @@ SDCategory: Blackwing Lair
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_blackwing_liar.h"
 
 //Razorgore Phase 2 Script
 
@@ -37,8 +38,12 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_razorgoreAI : public ScriptedAI
 {
-    boss_razorgoreAI(Creature *c) : ScriptedAI(c) {}
+    boss_razorgoreAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
 
+    ScriptedInstance * pInstance;
     uint32 Cleave_Timer;
     uint32 WarStomp_Timer;
     uint32 FireballVolley_Timer;
@@ -50,16 +55,23 @@ struct TRINITY_DLL_DECL boss_razorgoreAI : public ScriptedAI
         WarStomp_Timer = 35000;
         FireballVolley_Timer = 7000;
         Conflagration_Timer = 12000;
+
+        if (pInstance && pInstance->GetData(DATA_RAZORGORE_THE_UNTAMED_EVENT) != DONE)
+            pInstance->SetData(DATA_RAZORGORE_THE_UNTAMED_EVENT, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
     {
         DoZoneInCombat();
+        if (pInstance)
+            pInstance->SetData(DATA_RAZORGORE_THE_UNTAMED_EVENT, IN_PROGRESS);
     }
 
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_DEATH, m_creature);
+        if (pInstance)
+            pInstance->SetData(DATA_RAZORGORE_THE_UNTAMED_EVENT, DONE);
     }
 
     void UpdateAI(const uint32 diff)

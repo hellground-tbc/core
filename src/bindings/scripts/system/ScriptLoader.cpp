@@ -147,6 +147,7 @@ extern void AddSC_boss_flamegor();
 extern void AddSC_boss_chromaggus();
 extern void AddSC_boss_nefarian();
 extern void AddSC_boss_victor_nefarius();
+extern void AddSC_instance_blackwing_liar();
 
 //Blade's Edge Mountains
 extern void AddSC_blades_edge_mountains();
