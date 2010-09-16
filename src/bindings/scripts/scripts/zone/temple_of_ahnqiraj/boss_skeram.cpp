@@ -95,6 +95,9 @@ struct TRINITY_DLL_DECL boss_skeramAI : public ScriptedAI
 
         if (IsImage)
             m_creature->setDeathState(JUST_DIED);
+
+        if (pInstance)
+            pInstance->SetData(DATA_THE_PROPHET_SKERAM, NOT_STARTED);
     }
 
     void KilledUnit(Unit* victim)
@@ -105,7 +108,11 @@ struct TRINITY_DLL_DECL boss_skeramAI : public ScriptedAI
     void JustDied(Unit* Killer)
     {
         if (!IsImage)
+        {
             DoScriptText(SAY_DEATH, m_creature);
+            if (pInstance)
+                pInstance->SetData(DATA_THE_PROPHET_SKERAM, DONE);
+        }
     }
 
     void EnterCombat(Unit *who)
@@ -114,6 +121,8 @@ struct TRINITY_DLL_DECL boss_skeramAI : public ScriptedAI
             return;
 
         DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), m_creature);
+        if (pInstance)
+            pInstance->SetData(DATA_THE_PROPHET_SKERAM, IN_PROGRESS);
     }
 
     void UpdateAI(const uint32 diff)

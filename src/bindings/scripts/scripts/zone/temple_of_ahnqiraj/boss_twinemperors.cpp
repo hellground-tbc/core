@@ -90,6 +90,9 @@ struct TRINITY_DLL_DECL boss_twinemperorsAI : public ScriptedAI
         m_creature->clearUnitState(UNIT_STAT_STUNNED);
         DontYellWhenDead = false;
         EnrageTimer = 15*60000;
+
+        if (pInstance)
+            pInstance->SetData(DATA_TWIN_EMPERORS, NOT_STARTED);
     }
 
     Creature *GetOtherBoss()
@@ -131,8 +134,12 @@ struct TRINITY_DLL_DECL boss_twinemperorsAI : public ScriptedAI
             pOtherBoss->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
             ((boss_twinemperorsAI *)pOtherBoss->AI())->DontYellWhenDead = true;
         }
+
         if (!DontYellWhenDead)                              // I hope AI is not threaded
             DoPlaySoundToSet(m_creature, IAmVeklor() ? SOUND_VL_DEATH : SOUND_VN_DEATH);
+
+        if (pInstance)
+            pInstance->SetData(DATA_TWIN_EMPERORS, DONE);
     }
 
     void KilledUnit(Unit* victim)
@@ -156,6 +163,8 @@ struct TRINITY_DLL_DECL boss_twinemperorsAI : public ScriptedAI
                 otherAI->DoZoneInCombat();
             }
         }
+        if (pInstance)
+            pInstance->SetData(DATA_TWIN_EMPERORS, IN_PROGRESS);
     }
 
     void SpellHit(Unit *caster, const SpellEntry *entry)

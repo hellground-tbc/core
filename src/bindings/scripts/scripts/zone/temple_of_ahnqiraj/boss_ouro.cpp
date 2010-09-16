@@ -33,7 +33,12 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_ouroAI : public ScriptedAI
 {
-    boss_ouroAI(Creature *c) : ScriptedAI(c) {}
+    boss_ouroAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+    }
+
+    ScriptedInstance *pInstance;
 
     uint32 Sweep_Timer;
     uint32 SandBlast_Timer;
@@ -57,11 +62,22 @@ struct TRINITY_DLL_DECL boss_ouroAI : public ScriptedAI
 
         Enrage = false;
         Submerged = false;
+
+        if (pInstance)
+            pInstance->SetData(DATA_OURO, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
     {
         DoCast(m_creature->getVictim(), SPELL_BIRTH);
+        if (pInstance)
+            pInstance->SetData(DATA_OURO, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_OURO, DONE);
     }
 
     void UpdateAI(const uint32 diff)

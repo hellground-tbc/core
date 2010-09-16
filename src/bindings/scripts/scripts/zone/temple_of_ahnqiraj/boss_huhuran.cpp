@@ -22,6 +22,7 @@ SDCategory: Temple of Ahn'Qiraj
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_temple_of_ahnqiraj.h"
 
 #define SPELL_FRENZY 26051
 #define SPELL_BERSERK 26068
@@ -32,8 +33,12 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_huhuranAI : public ScriptedAI
 {
-    boss_huhuranAI(Creature *c) : ScriptedAI(c) {}
+    boss_huhuranAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+    }
 
+    ScriptedInstance *pInstance;
     uint32 Frenzy_Timer;
     uint32 Wyvern_Timer;
     uint32 Spit_Timer;
@@ -55,10 +60,21 @@ struct TRINITY_DLL_DECL boss_huhuranAI : public ScriptedAI
 
         Frenzy = false;
         Berserk = false;
+
+        if (pInstance)
+            pInstance->SetData(DATA_PRINCESS_HUHURAN, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
     {
+        if (pInstance)
+            pInstance->SetData(DATA_PRINCESS_HUHURAN, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_PRINCESS_HUHURAN, DONE);
     }
 
     void UpdateAI(const uint32 diff)

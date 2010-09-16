@@ -22,6 +22,7 @@ SDCategory: Temple of Ahn'Qiraj
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_temple_of_ahnqiraj.h"
 
 #define SAY_AGGRO                   -1531008
 #define SAY_SLAY                    -1531009
@@ -38,7 +39,12 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_sarturaAI : public ScriptedAI
 {
-    boss_sarturaAI(Creature *c) : ScriptedAI(c) {}
+    boss_sarturaAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+    }
+
+    ScriptedInstance *pInstance;
 
     uint32 WhirlWind_Timer;
     uint32 WhirlWindRandom_Timer;
@@ -66,16 +72,23 @@ struct TRINITY_DLL_DECL boss_sarturaAI : public ScriptedAI
         Enraged = false;
         EnragedHard = false;
 
+        if (pInstance)
+            pInstance->SetData(DATA_BATTLEGUARD_SARTURA, NOT_STARTED);
+
     }
 
     void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
+        if (pInstance)
+            pInstance->SetData(DATA_BATTLEGUARD_SARTURA, IN_PROGRESS);
     }
 
      void JustDied(Unit* Killer)
      {
          DoScriptText(SAY_DEATH, m_creature);
+         if (pInstance)
+            pInstance->SetData(DATA_BATTLEGUARD_SARTURA, DONE);
      }
 
      void KilledUnit(Unit* victim)

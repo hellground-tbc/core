@@ -388,7 +388,7 @@ extern void AddSC_mana_fiend();
 extern void AddSC_boss_rajaxx();
 //extern void AddSC_lieutenant_general_andorov();
 //extern void AddSC_rajaxx_officer();
-//extern void AddSC_instance_ruins_of_anhqiraj(); //Placeholder
+extern void AddSC_instance_ruins_of_ahnqiraj();
 //Scarlet Monastery
 extern void AddSC_boss_arcanist_doan();
 extern void AddSC_boss_azshir_the_sleepless();
