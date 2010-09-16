@@ -1539,7 +1539,7 @@ void World::SetInitialWorldSettings()
     sLog.outString("Calculate next daily quest reset time..." );
     InitDailyQuestResetTime();
 
-    sLog.outString("Loadin special daily quests..." );
+    sLog.outString("Loading special daily quests..." );
     objmgr.LoadSpecialQuests();
 
     sLog.outString("Starting Game Event system..." );
