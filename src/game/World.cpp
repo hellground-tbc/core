@@ -51,7 +51,7 @@
 #include "BattleGroundMgr.h"
 #include "OutdoorPvPMgr.h"
 #include "TemporarySummon.h"
-#include "AuctionHouseBot.h"
+//#include "AuctionHouseBot.h"
 #include "WaypointMovementGenerator.h"
 #include "VMapFactory.h"
 #include "GlobalEvents.h"
@@ -1546,8 +1546,8 @@ void World::SetInitialWorldSettings()
     uint32 nextGameEvent = gameeventmgr.Initialize();
     m_timers[WUPDATE_EVENTS].SetInterval(nextGameEvent);    //depend on next event
 
-    sLog.outString("Initialize AuctionHouseBot...");
-    auctionbot.Initialize();
+    //sLog.outString("Initialize AuctionHouseBot...");
+    //auctionbot.Initialize();
 
     sLog.outString( "Activating AntiCheat" );
     if (m_ac.activate() == -1)
