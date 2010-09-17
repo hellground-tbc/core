@@ -285,6 +285,8 @@ void instance_karazhan::OnObjectCreate(GameObject* go)
         break;
     case 184517:
         LibraryDoor           = go->GetGUID();
+        if(GetData(DATA_SHADEOFARAN_EVENT) == DONE) // open door from Shade of Aran whenever event is saved as DONE
+            go->SetGoState(0);
         break;
     case 185521:
         MassiveDoor           = go->GetGUID();
