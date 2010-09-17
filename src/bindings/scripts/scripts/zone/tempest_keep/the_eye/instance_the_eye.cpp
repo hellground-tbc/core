@@ -24,7 +24,7 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_the_eye.h"
 
-#define ENCOUNTERS 5
+#define ENCOUNTERS 4
 
 /* The Eye encounters:
 0 - Kael'thas event
@@ -47,9 +47,6 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
     uint64 Astromancer;
     uint64 Alar;
 
-    uint8 KaelthasEventPhase;
-    uint8 AlarEventPhase;
-
     uint32 Encounters[ENCOUNTERS];
 
     void Initialize()
@@ -64,9 +61,6 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
         Astromancer = 0;
         Alar = 0;
 
-        KaelthasEventPhase = 0;
-        AlarEventPhase = 0;
-
         for(uint8 i = 0; i < ENCOUNTERS; i++)
             Encounters[i] = NOT_STARTED;
     }
@@ -79,7 +73,7 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
 
         return false;
     }
-    
+
     uint32 GetEncounterForEntry(uint32 entry)
     {
         switch(entry)
@@ -94,7 +88,7 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
                 return DATA_VOIDREAVEREVENT;
             default:
                 return 0;
-        }         
+        }
     }
 
     void OnCreatureCreate(Creature *creature, uint32 creature_entry)
@@ -167,8 +161,6 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
         switch(type)
         {
             case DATA_ALAREVENT:
-                AlarEventPhase = data;
-
                 if(Encounters[0] != DONE)
                     Encounters[0] = data;
                 break;
@@ -195,7 +187,6 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
                         if(GameObject *Door = instance->GetGameObject(*i))
                         Door->SetGoState(1);
                     }
-                KaelthasEventPhase = data;
                 if(Encounters[3] != DONE)
                     Encounters[3] = data;
                 break;
@@ -207,6 +198,7 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
                     ExplodeObject->SetGoState(!data);
                 }
         }
+
         if(data == DONE)
             SaveToDB();
     }
@@ -215,10 +207,10 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
     {
         switch(type)
         {
-            case DATA_ALAREVENT:    return AlarEventPhase;
+            case DATA_ALAREVENT:                    return Encounters[0];
             case DATA_HIGHASTROMANCERSOLARIANEVENT: return Encounters[1];
-            case DATA_VOIDREAVEREVENT:  return Encounters[2];
-            case DATA_KAELTHASEVENT:    return KaelthasEventPhase;
+            case DATA_VOIDREAVEREVENT:              return Encounters[2];
+            case DATA_KAELTHASEVENT:                return Encounters[3];
         }
         return 0;
     }

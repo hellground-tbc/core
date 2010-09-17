@@ -147,7 +147,7 @@ extern void AddSC_boss_flamegor();
 extern void AddSC_boss_chromaggus();
 extern void AddSC_boss_nefarian();
 extern void AddSC_boss_victor_nefarius();
-extern void AddSC_instance_blackwing_liar();
+extern void AddSC_instance_blackwing_lair();
 
 //Blade's Edge Mountains
 extern void AddSC_blades_edge_mountains();
@@ -358,6 +358,7 @@ extern void AddSC_boss_noth();
 extern void AddSC_boss_gluth();
 extern void AddSC_boss_sapphiron();
 extern void AddSC_boss_four_horsemen();
+extern void AddSC_instance_naxxramas();
 
 //Netherstorm
 extern void AddSC_netherstorm();
@@ -729,6 +730,7 @@ void AddScripts()
     AddSC_boss_chromaggus();
     AddSC_boss_nefarian();
     AddSC_boss_victor_nefarius();
+    AddSC_instance_blackwing_lair();
 
     //Blade's Edge Mountains
     AddSC_blades_edge_mountains();
@@ -939,6 +941,7 @@ void AddScripts()
     AddSC_boss_gluth();
     AddSC_boss_sapphiron();
     AddSC_boss_four_horsemen();
+    AddSC_instance_naxxramas();
 
     //Netherstorm
     AddSC_netherstorm();
@@ -969,7 +972,7 @@ void AddScripts()
     AddSC_boss_rajaxx();
    // AddSC_lieutenant_general_andorov();
    // AddSC_rajaxx_officer();
-   // AddSC_instance_ruins_of_anhqiraj();
+    AddSC_instance_ruins_of_ahnqiraj();
 
     //Scarlet Monastery
     AddSC_boss_arcanist_doan();
