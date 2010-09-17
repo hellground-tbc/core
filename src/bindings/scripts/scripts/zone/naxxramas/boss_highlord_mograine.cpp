@@ -22,6 +22,7 @@ SDCategory: Naxxramas
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_naxxramas.h"
 
 //All horsemen
 #define SPELL_SHIELDWALL           29061
@@ -57,7 +58,12 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_highlord_mograineAI : public ScriptedAI
 {
-    boss_highlord_mograineAI(Creature *c) : ScriptedAI(c) {}
+    boss_highlord_mograineAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
+
+    ScriptedInstance * pInstance;
 
     uint32 Mark_Timer;
     uint32 RighteousFire_Timer;
@@ -70,6 +76,9 @@ struct TRINITY_DLL_DECL boss_highlord_mograineAI : public ScriptedAI
         RighteousFire_Timer = 2000;                         // applied approx 1 out of 4 attacks
         ShieldWall1 = true;
         ShieldWall2 = true;
+
+        if (pInstance)
+            pInstance->SetData(DATA_THE_FOUR_HORSEMEN, NOT_STARTED);
     }
 
     void InitialYell()
@@ -113,11 +122,16 @@ struct TRINITY_DLL_DECL boss_highlord_mograineAI : public ScriptedAI
     {
         DoYell(SAY_DEATH,LANG_UNIVERSAL,NULL);
         DoPlaySoundToSet(m_creature, SOUND_DEATH);
+        if (pInstance)
+            pInstance->SetData(DATA_THE_FOUR_HORSEMEN, DONE);
     }
 
     void EnterCombat(Unit *who)
     {
         InitialYell();
+
+        if (pInstance)
+            pInstance->SetData(DATA_THE_FOUR_HORSEMEN, IN_PROGRESS);
     }
 
     void UpdateAI(const uint32 diff)

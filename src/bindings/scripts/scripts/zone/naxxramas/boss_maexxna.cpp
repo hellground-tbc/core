@@ -22,6 +22,7 @@ SDCategory: Naxxramas
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_naxxramas.h"
 
 #define SPELL_WEBTRAP           28622                       //Spell is normally used by the webtrap on the wall NOT by Maexxna
 #define SPELL_WEBSPRAY          29484
@@ -49,7 +50,7 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL mob_webwrapAI : public ScriptedAI
 {
-    mob_webwrapAI(Creature *c) : ScriptedAI(c) {}
+    mob_webwrapAI(Creature *c) : ScriptedAI(c){}
 
     uint64 victimGUID;
 
@@ -96,8 +97,12 @@ struct TRINITY_DLL_DECL mob_webwrapAI : public ScriptedAI
 
 struct TRINITY_DLL_DECL boss_maexxnaAI : public ScriptedAI
 {
-    boss_maexxnaAI(Creature *c) : ScriptedAI(c) {}
+    boss_maexxnaAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
 
+    ScriptedInstance * pInstance;
     uint32 WebTrap_Timer;
     uint32 WebSpray_Timer;
     uint32 PoisonShock_Timer;
@@ -113,10 +118,21 @@ struct TRINITY_DLL_DECL boss_maexxnaAI : public ScriptedAI
         NecroticPoison_Timer = 30000;                       //30 seconds
         SummonSpiderling_Timer = 30000;                     //30 sec init, 40 sec normal
         Enraged = false;
+
+        if (pInstance)
+            pInstance->SetData(DATA_MAEXXNA, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
     {
+        if (pInstance)
+            pInstance->SetData(DATA_MAEXXNA, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_MAEXXNA, DONE);
     }
 
     void DoCastWebWrap()

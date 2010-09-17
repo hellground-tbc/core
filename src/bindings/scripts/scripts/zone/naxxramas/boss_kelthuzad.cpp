@@ -22,6 +22,7 @@ SDCategory: Naxxramas
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_naxxramas.h"
 
 //when shappiron dies. dialog between kel and lich king (in this order)
 #define SAY_SAPP_DIALOG1            -1533084
@@ -159,8 +160,10 @@ struct TRINITY_DLL_DECL boss_kelthuzadAI : public ScriptedAI
         GuardiansOfIcecrown[3] = 0;
         GuardiansOfIcecrown[4] = 0;
         GuardiansOfIcecrown_Count = 0;
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
     }
 
+    ScriptedInstance * pInstance;
     uint64 GuardiansOfIcecrown[5];
     uint32 GuardiansOfIcecrown_Count;
     uint32 GuardiansOfIcecrown_Timer;
@@ -200,6 +203,9 @@ struct TRINITY_DLL_DECL boss_kelthuzadAI : public ScriptedAI
         Phase1_Timer = 310000;                              //Phase 1 lasts 5 minutes and 10 seconds
         Phase2 = false;
         Phase3 = false;
+
+        if (pInstance)
+            pInstance->SetData(DATA_KEL_THUZAD, NOT_STARTED);
     }
 
     void KilledUnit()
@@ -215,55 +221,60 @@ struct TRINITY_DLL_DECL boss_kelthuzadAI : public ScriptedAI
         DoScriptText(SAY_DEATH, m_creature);
         for(int i=0; i<5; i++)
             if(GuardiansOfIcecrown[i])
-        {
-            Unit* pUnit = Unit::GetUnit((*m_creature), GuardiansOfIcecrown[i]);
-            if (!pUnit || !pUnit->isAlive())
-                continue;
-
-            pUnit->CombatStop();
-            float Walk_Pos_X;
-            float Walk_Pos_Y;
-            float Walk_Pos_Z;
-            switch(rand()%6)
             {
-                case 0:
-                    Walk_Pos_X = ADDX_LEFT_FAR;
-                    Walk_Pos_Y = ADDY_LEFT_FAR;
-                    Walk_Pos_Z = ADDZ_LEFT_FAR;
-                    break;
-                case 1:
-                    Walk_Pos_X = ADDX_LEFT_MIDDLE;
-                    Walk_Pos_Y = ADDY_LEFT_MIDDLE;
-                    Walk_Pos_Z = ADDZ_LEFT_MIDDLE;
-                    break;
-                case 2:
-                    Walk_Pos_X = ADDX_LEFT_NEAR;
-                    Walk_Pos_Y = ADDY_LEFT_NEAR;
-                    Walk_Pos_Z = ADDZ_LEFT_NEAR;
-                    break;
-                case 3:
-                    Walk_Pos_X = ADDX_RIGHT_FAR;
-                    Walk_Pos_Y = ADDY_RIGHT_FAR;
-                    Walk_Pos_Z = ADDZ_RIGHT_FAR;
-                    break;
-                case 4:
-                    Walk_Pos_X = ADDX_RIGHT_MIDDLE;
-                    Walk_Pos_Y = ADDY_RIGHT_MIDDLE;
-                    Walk_Pos_Z = ADDZ_RIGHT_MIDDLE;
-                    break;
-                case 5:
-                    Walk_Pos_X = ADDX_RIGHT_NEAR;
-                    Walk_Pos_Y = ADDY_RIGHT_NEAR;
-                    Walk_Pos_Z = ADDZ_RIGHT_NEAR;
-                    break;
+                Unit* pUnit = Unit::GetUnit((*m_creature), GuardiansOfIcecrown[i]);
+                if (!pUnit || !pUnit->isAlive())
+                    continue;
+
+                pUnit->CombatStop();
+                float Walk_Pos_X;
+                float Walk_Pos_Y;
+                float Walk_Pos_Z;
+                switch(rand()%6)
+                {
+                    case 0:
+                        Walk_Pos_X = ADDX_LEFT_FAR;
+                        Walk_Pos_Y = ADDY_LEFT_FAR;
+                        Walk_Pos_Z = ADDZ_LEFT_FAR;
+                        break;
+                    case 1:
+                        Walk_Pos_X = ADDX_LEFT_MIDDLE;
+                        Walk_Pos_Y = ADDY_LEFT_MIDDLE;
+                        Walk_Pos_Z = ADDZ_LEFT_MIDDLE;
+                        break;
+                    case 2:
+                        Walk_Pos_X = ADDX_LEFT_NEAR;
+                        Walk_Pos_Y = ADDY_LEFT_NEAR;
+                        Walk_Pos_Z = ADDZ_LEFT_NEAR;
+                        break;
+                    case 3:
+                        Walk_Pos_X = ADDX_RIGHT_FAR;
+                        Walk_Pos_Y = ADDY_RIGHT_FAR;
+                        Walk_Pos_Z = ADDZ_RIGHT_FAR;
+                        break;
+                    case 4:
+                        Walk_Pos_X = ADDX_RIGHT_MIDDLE;
+                        Walk_Pos_Y = ADDY_RIGHT_MIDDLE;
+                        Walk_Pos_Z = ADDZ_RIGHT_MIDDLE;
+                        break;
+                    case 5:
+                        Walk_Pos_X = ADDX_RIGHT_NEAR;
+                        Walk_Pos_Y = ADDY_RIGHT_NEAR;
+                        Walk_Pos_Z = ADDZ_RIGHT_NEAR;
+                        break;
+                }
+                pUnit->SendMonsterMoveWithSpeed(Walk_Pos_X, Walk_Pos_Y, Walk_Pos_Z,MOVEMENTFLAG_WALK_MODE);
             }
-            pUnit->SendMonsterMoveWithSpeed(Walk_Pos_X, Walk_Pos_Y, Walk_Pos_Z,MOVEMENTFLAG_WALK_MODE);
-        }
+        if (pInstance)
+            pInstance->SetData(DATA_KEL_THUZAD, DONE);
     }
 
     void EnterCombat(Unit* who)
     {
         DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), m_creature);
+
+        if (pInstance)
+            pInstance->SetData(DATA_KEL_THUZAD, IN_PROGRESS);
     }
 
     void UpdateAI(const uint32 diff)

@@ -22,6 +22,7 @@ SDCategory: Naxxramas
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_naxxramas.h"
 
 //Razuvious - NO TEXT sound only
 //8852 aggro01 - Hah hah, I'm just getting warmed up!
@@ -55,7 +56,12 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_razuviousAI : public ScriptedAI
 {
-    boss_razuviousAI(Creature *c) : ScriptedAI(c) {}
+    boss_razuviousAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
+
+    ScriptedInstance * pInstance;
 
     uint32 UnbalancingStrike_Timer;
     uint32 DisruptingShout_Timer;
@@ -66,6 +72,9 @@ struct TRINITY_DLL_DECL boss_razuviousAI : public ScriptedAI
         UnbalancingStrike_Timer = 30000;                    //30 seconds
         DisruptingShout_Timer = 25000;                      //25 seconds
         CommandSound_Timer = 40000;                         //40 seconds
+
+        if (pInstance)
+            pInstance->SetData(DATA_INSTRUCTOR_RAZUVIOUS, NOT_STARTED);
     }
 
     void KilledUnit(Unit* Victim)
@@ -79,11 +88,16 @@ struct TRINITY_DLL_DECL boss_razuviousAI : public ScriptedAI
     void JustDied(Unit* Killer)
     {
         DoPlaySoundToSet(m_creature, SOUND_DEATH);
+        if (pInstance)
+            pInstance->SetData(DATA_INSTRUCTOR_RAZUVIOUS, DONE);
     }
 
     void EnterCombat(Unit *who)
     {
         DoPlaySoundToSet(m_creature, RAND(SOUND_AGGRO1, SOUND_AGGRO2, SOUND_AGGRO3));
+
+        if (pInstance)
+            pInstance->SetData(DATA_INSTRUCTOR_RAZUVIOUS, IN_PROGRESS);
     }
 
     void UpdateAI(const uint32 diff)

@@ -22,6 +22,7 @@ SDCategory: Naxxramas
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_naxxramas.h"
 
 #define SAY_AGGRO1              -1533075
 #define SAY_AGGRO2              -1533076
@@ -51,7 +52,12 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_nothAI : public ScriptedAI
 {
-    boss_nothAI(Creature *c) : ScriptedAI(c) {}
+    boss_nothAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
+
+    ScriptedInstance * pInstance;
 
     uint32 Blink_Timer;
     uint32 Curse_Timer;
@@ -62,11 +68,17 @@ struct TRINITY_DLL_DECL boss_nothAI : public ScriptedAI
         Blink_Timer = 25000;
         Curse_Timer = 4000;
         Summon_Timer = 12000;
+
+        if (pInstance)
+            pInstance->SetData(DATA_NOTH_THE_PLAGUEBRINGER, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
     {
         DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), m_creature);
+
+        if (pInstance)
+            pInstance->SetData(DATA_NOTH_THE_PLAGUEBRINGER, IN_PROGRESS);
     }
 
     void KilledUnit(Unit* victim)
@@ -83,6 +95,8 @@ struct TRINITY_DLL_DECL boss_nothAI : public ScriptedAI
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_DEATH, m_creature);
+        if (pInstance)
+            pInstance->SetData(DATA_NOTH_THE_PLAGUEBRINGER, DONE);
     }
 
     void UpdateAI(const uint32 diff)
