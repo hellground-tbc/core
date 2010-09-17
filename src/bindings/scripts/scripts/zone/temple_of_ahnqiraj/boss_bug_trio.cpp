@@ -156,7 +156,7 @@ struct TRINITY_DLL_DECL boss_vemAI : public ScriptedAI
     {
         if(pInstance)
         {
-            pInstance->SetData(DATA_VEM, 0);
+            pInstance->SetData(DATA_VEM, 1);
             if(pInstance->GetData(DATA_BUG_TRIO_DEATH) < 2)
                                                             // Unlootable if death
                 m_creature->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);

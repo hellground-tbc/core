@@ -57,6 +57,8 @@ struct TRINITY_DLL_DECL instance_temple_of_ahnqiraj : public ScriptedInstance
 
         CthunPhase = 0;
 
+        Vem = false;
+
         for(uint8 i = 0; i < ENCOUNTERS; i++)
             Encounters[i] = NOT_STARTED;
     }

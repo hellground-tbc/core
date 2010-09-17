@@ -725,7 +725,7 @@ struct TRINITY_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
 
         if(RuneShieldTimer < diff)
         {
-            AddSpellToCast(m_creature, SPELL_RUNE_SHIELD, true);
+            ForceSpellCast(m_creature, SPELL_RUNE_SHIELD);
 
             RuneShieldTimer = 15000;
         }
