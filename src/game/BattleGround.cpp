@@ -1070,8 +1070,7 @@ void BattleGround::AddToBGFreeSlotQueue()
     // make sure to add only once
     if(!m_InBGFreeSlotQueue)
     {
-        uint32 queue_type_id = sBattleGroundMgr.BGQueueTypeId(m_TypeID, 0);
-        sBattleGroundMgr.m_BGQueues[queue_type_id].AddDeficientBG(this);
+        sBattleGroundMgr.BGFreeSlotQueue[m_TypeID].push_front(this);
         m_InBGFreeSlotQueue = true;
     }
 }
@@ -1081,8 +1080,15 @@ void BattleGround::RemoveFromBGFreeSlotQueue()
 {
     // set to be able to re-add if needed
     m_InBGFreeSlotQueue = false;
-    uint32 queue_type_id = sBattleGroundMgr.BGQueueTypeId(m_TypeID, 0);
-    sBattleGroundMgr.m_BGQueues[queue_type_id].RemoveDeficientBG(this);
+    // uncomment this code when battlegrounds will work like instances
+    for (std::deque<BattleGround*>::iterator itr = sBattleGroundMgr.BGFreeSlotQueue[m_TypeID].begin(); itr != sBattleGroundMgr.BGFreeSlotQueue[m_TypeID].end(); ++itr)
+    {
+        if ((*itr)->GetInstanceID() == m_InstanceID)
+        {
+            sBattleGroundMgr.BGFreeSlotQueue[m_TypeID].erase(itr);
+            return;
+        }
+    }
 }
 
 // get the number of free slots for team

@@ -19028,8 +19028,6 @@ uint32 Player::GetMaxLevelForBattleGroundQueueId(uint32 queue_id)
 //TODO make this more generic - current implementation is wrong
 uint32 Player::GetBattleGroundQueueIdFromLevel() const
 {
-    return getLevel()/10 - 1;
-    /*
     uint32 level = getLevel();
     if(level <= 19)
         return 0;
