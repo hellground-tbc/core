@@ -120,6 +120,7 @@ struct TRINITY_DLL_DECL boss_azgalorAI : public hyjal_trashAI
         hyjal_trashAI::JustDied(victim);
         if(pInstance && IsEvent)
             pInstance->SetData(DATA_AZGALOREVENT, DONE);
+        
         DoPlaySoundToSet(m_creature, SOUND_ONDEATH);
     }
 
@@ -163,9 +164,11 @@ struct TRINITY_DLL_DECL boss_azgalorAI : public hyjal_trashAI
 
         if(RainTimer < diff)
         {
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true))
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 40, true))
+            {
                 DoCast(target, SPELL_RAIN_OF_FIRE);
-            RainTimer = 20000+rand()%15000;
+                RainTimer = urand(20000, 35000);
+            }
         }
         else
             RainTimer -= diff;
@@ -176,7 +179,7 @@ struct TRINITY_DLL_DECL boss_azgalorAI : public hyjal_trashAI
             if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true, m_creature->getVictimGUID()))
             {
                 DoCast(target, SPELL_DOOM);//never on tank
-                DoomTimer = 45000+rand()%5000;
+                DoomTimer = urand(45000, 50000);
             }
         }
         else
@@ -193,8 +196,10 @@ struct TRINITY_DLL_DECL boss_azgalorAI : public hyjal_trashAI
         if(CleaveTimer < diff)
         {
             if(Unit *target = m_creature->getVictim())
+            {
                 DoCast(target, SPELL_CLEAVE);
-            CleaveTimer = 10000+rand()%5000;
+                CleaveTimer = urand(10000, 15000);
+            }
         }
         else
             CleaveTimer -= diff;
@@ -227,36 +232,26 @@ struct TRINITY_DLL_DECL mob_lesser_doomguardAI : public hyjal_trashAI
     mob_lesser_doomguardAI(Creature *c) : hyjal_trashAI(c)
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
-        if(pInstance)
-            AzgalorGUID = pInstance->GetData64(DATA_AZGALOR);
     }
 
     uint32 CrippleTimer;
     uint32 WarstompTimer;
     uint32 CheckTimer;
-    uint64 AzgalorGUID;
+
     ScriptedInstance* pInstance;
 
     void Reset()
     {
         CrippleTimer = 50000;
         WarstompTimer = 10000;
-        DoCast(m_creature, SPELL_THRASH);
-        CheckTimer = 5000;
+        CheckTimer = 2000;
     }
 
-    void EnterCombat(Unit *who)
+    void WaypointReached(uint32){}
+
+    void JustRespawned()
     {
-    }
-
-    void KilledUnit(Unit *victim)
-    {
-
-    }
-
-    void WaypointReached(uint32 i)
-    {
-
+        DoCast(m_creature, SPELL_THRASH, true);
     }
 
     void MoveInLineOfSight(Unit *who)
@@ -268,27 +263,24 @@ struct TRINITY_DLL_DECL mob_lesser_doomguardAI : public hyjal_trashAI
         }
     }
 
-    void JustDied(Unit *victim)
-    {
-
-    }
-
     void UpdateAI(const uint32 diff)
     {
         if(CheckTimer < diff)
         {
-            if(AzgalorGUID)
+            if(pInstance)
             {
-                Creature* boss = Unit::GetCreature((*m_creature),AzgalorGUID);
-                if(!boss || (boss && boss->isDead()))
+                Creature *pAzgalor = pInstance->GetCreature(pInstance->GetData64(DATA_AZGALOR));
+                if(!pAzgalor || !pAzgalor->isAlive())
                 {
                     m_creature->setDeathState(JUST_DIED);
                     m_creature->RemoveCorpse();
                     return;
                 }
             }
-            CheckTimer = 5000;
-        }else CheckTimer -= diff;
+            CheckTimer = 2000;
+        }
+        else
+            CheckTimer -= diff;
 
         //Return since we have no target
         if (!UpdateVictim() )
@@ -297,15 +289,21 @@ struct TRINITY_DLL_DECL mob_lesser_doomguardAI : public hyjal_trashAI
         if(WarstompTimer < diff)
         {
             DoCast(m_creature, SPELL_WARSTOMP);
-            WarstompTimer = 10000+rand()%5000;
-        }else WarstompTimer -= diff;
+            WarstompTimer = urand(10000, 25000);
+        }
+        else
+            WarstompTimer -= diff;
 
         if(CrippleTimer < diff)
         {
             if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0,100,true))
+            {
                 DoCast(target, SPELL_CRIPPLE);
-            CrippleTimer = 25000+rand()%5000;
-        }else CrippleTimer -= diff;
+                CrippleTimer = urand(25000, 30000);
+            }
+        }
+        else
+            CrippleTimer -= diff;
 
         DoMeleeAttackIfReady();
     }
