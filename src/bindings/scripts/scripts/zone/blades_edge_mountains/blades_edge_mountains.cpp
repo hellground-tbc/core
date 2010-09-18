@@ -447,42 +447,29 @@ CreatureAI* GetAI_npc_ogre_brute(Creature* pCreature)
 
 struct TRINITY_DLL_DECL npc_vim_bunnyAI : public ScriptedAI
 {
-    npc_vim_bunnyAI(Creature *c) : ScriptedAI(c)
-    {
-        main = !CheckGameobject();
-    }
+    npc_vim_bunnyAI(Creature *c) : ScriptedAI(c){}
 
     uint32 CheckTimer;
-    bool main;
 
     void Reset()
     {
-        CheckTimer = 4000;
+        CheckTimer = 1000;
     }
 
     bool GetPlayer()
     {
-        Player* p_ok = NULL;
-        Trinity::AnyPlayerInObjectRangeCheck p_check(me, 2.0f);
-        Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> checker(p_ok, p_check);
-        me->VisitNearbyWorldObject(5.0, checker);
-        return p_ok;
-    }
-
-    bool CheckGameobject()
-    {
-        GameObject * temp = NULL;
-        Trinity::AllGameObjectsWithEntryInGrid go_check(GO_FLAME_CIRCLE);
-        Trinity::GameObjectSearcher<Trinity::AllGameObjectsWithEntryInGrid> searcher(temp, go_check);
-        me->VisitNearbyGridObject(3.0, searcher);
-        return temp;
+        Player *pPlayer = NULL;
+        Trinity::AnyPlayerInObjectRangeCheck p_check(m_creature, 3.0f);
+        Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(pPlayer, p_check);
+        me->VisitNearbyObject(3.0f, searcher);
+        return pPlayer;
     }
 
     void UpdateAI(const uint32 diff)
     {
         if(CheckTimer < diff)
         {
-            if(main)
+            if(me->GetDistance2d(3279.80f, 4639.76f) < 5.0)
             {
                 if(GetClosestCreatureWithEntry(me, MAIN_SPAWN, 80.0f))
                 {
@@ -494,15 +481,7 @@ struct TRINITY_DLL_DECL npc_vim_bunnyAI : public ScriptedAI
                 std::list<Creature*> triggers = DoFindAllCreaturesWithEntry(PENTAGRAM_TRIGGER, 50.0);
                 if(triggers.size() >= 5)
                 {
-                    for(std::list<Creature*>::iterator itr = triggers.begin(); itr != triggers.end(); itr++)
-                    {
-                        if(!(*itr)->IsNonMeleeSpellCasted(true))
-                        {
-                            CheckTimer = 2000;
-                            return;
-                        }
-                    }
-                    DoSpawnCreature(MAIN_SPAWN,0,0,0,0, TEMPSUMMON_DEAD_DESPAWN, 10000);
+                    DoSpawnCreature(MAIN_SPAWN,0,0,0,0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000);
                     CheckTimer = 20000;
                     return;
                 }
@@ -512,10 +491,12 @@ struct TRINITY_DLL_DECL npc_vim_bunnyAI : public ScriptedAI
             {
                 if(GetPlayer())
                 {
-                    Unit *temp = DoSpawnCreature(PENTAGRAM_TRIGGER,0,0,2.0,0, TEMPSUMMON_TIMED_DESPAWN, 2000);
+                    Unit *temp = DoSpawnCreature(PENTAGRAM_TRIGGER,0,0,2.0,0, TEMPSUMMON_TIMED_DESPAWN, 15000);
                     temp->CastSpell(temp, SPELL_PENTAGRAM, false);
+                    CheckTimer = 16000;
+                    return;
                 }
-                CheckTimer = 2100;
+                CheckTimer = 2000;
             }
         }
         else
@@ -578,4 +559,3 @@ void AddSC_blades_edge_mountains()
     newscript->GetAI = &GetAI_npc_vim_bunny;
     newscript->RegisterSelf();
 }
-
