@@ -92,6 +92,8 @@ class TRINITY_DLL_SPEC InstanceData
         virtual uint32 GetData(uint32) { return 0; }
         virtual void SetData(uint32, uint32 data) {}
 
+        Creature *GetCreature(uint64 guid){ return instance->GetCreature(guid); }
+
         //Handle open / close objects
         void HandleGameObject(uint64 GUID, bool open, GameObject *go = NULL);
 };
