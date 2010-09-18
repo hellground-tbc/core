@@ -704,7 +704,7 @@ uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, cons
         return 0;
 
     //You don't lose health from damage taken from another player while in a sanctuary
-    if(pVictim != this && GetTypeId() == TYPEID_PLAYER && pVictim->GetTypeId() == TYPEID_PLAYER)
+    if(pVictim != this && isCharmedOwnedByPlayerOrPlayer() && pVictim->isCharmedOwnedByPlayerOrPlayer())
     {
         const AreaTableEntry *area = GetAreaEntryByAreaID(pVictim->GetAreaId());
         if(area && area->flags & AREA_FLAG_SANCTUARY)       //sanctuary
