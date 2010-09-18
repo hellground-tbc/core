@@ -338,6 +338,10 @@ void WorldSession::LogoutPlayer(bool Save)
             {
                 _player->RemoveBattleGroundQueueId(bgTypeId);
                 sBattleGroundMgr.m_BattleGroundQueues[ bgTypeId ].RemovePlayer(_player->GetGUID(), true);
+
+                sBattleGroundMgr.m_BGQueues[bgTypeId].RemovePlayer(_player->GetGUID());
+                sLog.outString("DEBUG POINT 100");
+
             }
         }
 
