@@ -260,14 +260,11 @@ struct TRINITY_DLL_DECL mob_towering_infernalAI : public ScriptedAI
 {
     mob_towering_infernalAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
-        if(pInstance)
-            AnetheronGUID = pInstance->GetData64(DATA_ANETHERON);
+        pInstance = ((ScriptedInstance*)c->GetInstanceData());  
     }
 
     uint32 CheckTimer;
     uint32 WaitTimer;
-    uint64 AnetheronGUID;
     ScriptedInstance* pInstance;
 
     void Reset()
@@ -297,17 +294,17 @@ struct TRINITY_DLL_DECL mob_towering_infernalAI : public ScriptedAI
     {
         if(CheckTimer < diff)
         {
-            if(AnetheronGUID)
+            if(pInstance)
             {
-                Creature* boss = Unit::GetCreature((*m_creature),AnetheronGUID);
-                if(!boss || (boss && boss->isDead()))
+                Creature *pAnetheron = pInstance->GetCreature(pInstance->GetData64(DATA_ANETHERON));
+                if(!pAnetheron || !pAnetheron->isAlive())
                 {
                     m_creature->setDeathState(JUST_DIED);
                     m_creature->RemoveCorpse();
                     return;
                 }
             }
-            CheckTimer = 5000;
+            CheckTimer = 2000;
         }
         else
             CheckTimer -= diff;
