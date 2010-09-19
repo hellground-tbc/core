@@ -159,6 +159,8 @@ void WorldSession::HandleBattleGroundJoinOpcode( WorldPacket & recv_data )
     {
         sLog.outDebug("Battleground: the following players are joining as group:");
         GroupQueueInfo * ginfo = sBattleGroundMgr.m_BattleGroundQueues[bgQueueTypeId].AddGroup(_player, bgTypeId, 0, false, 0);
+
+        ginfo->Premade = grp->GetMembersCount() >= bg->GetMaxPlayersPerTeam() * 0.6;
         for(GroupReference *itr = grp->GetFirstMember(); itr != NULL; itr = itr->next())
         {
             Player *member = itr->getSource();

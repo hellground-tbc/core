@@ -61,6 +61,7 @@ struct GroupQueueInfo                                       // stores informatio
     uint32  IsInvitedToBGInstanceGUID;                      // was invited to certain BG
     uint32  ArenaTeamRating;                                // if rated match, inited to the rating of the team
     uint32  OpponentsTeamRating;                            // for rated arena matches
+    bool Premade;
 };
 
 class BattleGround;
@@ -101,7 +102,7 @@ class BattleGroundQueue
             void AddGroup(GroupQueueInfo * group);
             void RemoveGroup(GroupQueueInfo * group);
             uint32 GetPlayerCount() const {return PlayerCount;}
-            bool Build(uint32 MinPlayers, uint32 MaxPlayers, EligibleGroups::iterator startitr);
+            bool Build(uint32 MinPlayers, uint32 MaxPlayers, EligibleGroups::iterator startitr, bool premade);
         public:
             std::list<GroupQueueInfo *> SelectedGroups;
         private:
@@ -123,7 +124,7 @@ class BattleGroundQueue
 
         SelectionPool m_SelectionPools[NUM_SELECTION_POOL_TYPES];
 
-        bool BuildSelectionPool(uint32 bgTypeId, uint32 queue_id, uint32 MinPlayers, uint32 MaxPlayers, SelectionPoolBuildMode mode, uint8 ArenaType = 0, bool isRated = false, uint32 MinRating = 0, uint32 MaxRating = 0, uint32 DisregardTime = 0, uint32 excludeTeam = 0);
+        bool BuildSelectionPool(uint32 bgTypeId, uint32 queue_id, uint32 MinPlayers, uint32 MaxPlayers, SelectionPoolBuildMode mode, uint8 ArenaType = 0, bool isRated = false, uint32 MinRating = 0, uint32 MaxRating = 0, uint32 DisregardTime = 0, uint32 excludeTeam = 0, bool premade = false);
 
     private:
 
