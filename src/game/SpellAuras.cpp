@@ -660,7 +660,8 @@ bool AreaAura::CheckTarget(Unit *target)
                 for(Unit::AuraMap::iterator it = auras.begin(); it != auras.end(); it++)
                 {
                     Aura* aur = (*it).second;
-                    if(aur->GetSpellProto()->SpellFamilyName == SPELLFAMILY_SHAMAN && aur->GetSpellProto()->SpellIconID == GetSpellProto()->SpellIconID)
+                    if(aur->GetSpellProto()->SpellFamilyName == SPELLFAMILY_SHAMAN && aur->GetSpellProto()->SpellIconID == GetSpellProto()->SpellIconID && 
+                        aur->GetSpellProto()->SpellFamilyFlags == GetSpellProto()->SpellFamilyFlags)
                     {
                         if(GetId() < aur->GetId())        // HACK: higher id => higher spell rank
                             return false;
