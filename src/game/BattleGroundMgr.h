@@ -64,6 +64,26 @@ struct GroupQueueInfo                                       // stores informatio
     bool Premade;
 };
 
+struct QueueTimer
+{
+    uint32 average_time;
+    uint32 overalltime;
+    uint32 count;
+
+    QueueTimer() : average_time(0), overalltime(0), count(0) {}
+
+    void updateTime(uint32 time)
+    {
+        overalltime += time;
+        if (++count == 10)
+        {
+            average_time = overalltime/count;
+            overalltime = 0;
+            count = 0;
+        }
+    }
+};
+
 class BattleGround;
 class BattleGroundQueue
 {
@@ -84,6 +104,7 @@ class BattleGroundQueue
 
         typedef std::list<GroupQueueInfo*> QueuedGroupsList;
         QueuedGroupsList m_QueuedGroups[MAX_BATTLEGROUND_QUEUES];
+        QueueTimer m_queueTimers[MAX_BATTLEGROUND_QUEUES];
 
         // class to hold pointers to the groups eligible for a specific selection pool building mode
         class EligibleGroups : public std::list<GroupQueueInfo *>
