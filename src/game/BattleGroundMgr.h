@@ -26,71 +26,15 @@
 
 class BattleGround;
 
-enum BattleGroundJoinErrors
-{
-    BG_JOIN_NOT_ELIGIBLE      = 0,
-    BG_JOIN_AV                = 1,
-    BG_JOIN_WSG               = 2,
-    BG_JOIN_AB                = 3,
-    BG_JOIN_NA                = 4,
-    BG_JOIN_BE                = 5,
-    BG_JOIN_AA                = 6,
-    BG_JOIN_EY                = 7,
-    BG_JOIN_TEAM_LEFT_QUEUE   = 0xFFFFFFF9, // Your team has left arena queue.
-    BG_JOIN_OTHER_WHILE_RATED = 0xFFFFFFFA, // You cannot join other battles while queued for rated.
-    BG_JOIN_RATED_WHILE_OTHER = 0xFFFFFFFB, // You cannot join rated while queued for other battles.
-    BG_JOIN_ONLY_3_QUEUES     = 0xFFFFFFFC, // You can only join 3 queues at same time.
-    BG_JOIN_NOT_SAME_TEAM     = 0xFFFFFFFD, // Your group is not in same team.
-    BG_JOIN_DESERTER_IN_GROUP = 0xFFFFFFFE  // Someone in party has deserter debuff.
-};
-
 //TODO it is not possible to have this structure, because we should have BattlegroundSet for each queue
 //so i propose to change this type to array 1..MAX_BATTLEGROUND_TYPES of sets or maps..
 typedef std::map<uint32, BattleGround*> BattleGroundSet;
 //typedef std::map<uint32, BattleGroundQueue*> BattleGroundQueueSet;
 typedef std::deque<BattleGround*> BGFreeSlotQueueType;
 
-
-enum BattleGroundLevels
-{
-    BG_LEVEL_10_19              = 0,
-    BG_LEVEL_20_19              = 1,
-    BG_LEVEL_30_19              = 2,
-    BG_LEVEL_40_19              = 3,
-    BG_LEVEL_50_19              = 4,
-    BG_LEVEL_60_19              = 5,
-    BG_LEVEL_70                 = 6,
-    BG_MAX_LEVEL_QUEUE          = 7
-};
-
-// from .dbc
-enum BattleGroundId
-{
-    BATTLEGROUND_AV       = 1,
-    BATTLEGROUND_WS       = 2,
-    BATTLEGROUND_AB       = 3,
-    BATTLEGROUND_NA       = 4,
-    BATTLEGROUND_BE       = 5,
-    BATTLEGROUND_AA       = 6,
-    BATTLEGROUND_EY       = 7,
-    BATTLEGROUND_RL       = 8,
-    MAX_BATTLEGROUND_TYPES = 9
-};
-
-// internal queue id per bg type
-enum BattleGroundQueueId
-{
-    BATTLEGROUND_QUEUE_AV       = 1,
-    BATTLEGROUND_QUEUE_WS       = 2,
-    BATTLEGROUND_QUEUE_AB       = 3,
-    BATTLEGROUND_QUEUE_EY       = 4,
-    BATTLEGROUND_QUEUE_2v2      = 6,
-    BATTLEGROUND_QUEUE_3v3      = 7,
-    BATTLEGROUND_QUEUE_5v5      = 8, // change it to 0,1,2,3,4,5,6,7
-    _MAX_BATTLEGROUND_QUEUES     = 9
-};
-
 #define MAX_BATTLEGROUND_QUEUES 7                           // for level ranges 10-19, 20-29, 30-39, 40-49, 50-59, 60-69, 70+
+
+#define MAX_BATTLEGROUND_TYPES 9                            // each BG type will be in array
 
 #define MAX_BATTLEGROUND_QUEUE_TYPES 8
 
@@ -117,138 +61,10 @@ struct GroupQueueInfo                                       // stores informatio
     uint32  IsInvitedToBGInstanceGUID;                      // was invited to certain BG
     uint32  ArenaTeamRating;                                // if rated match, inited to the rating of the team
     uint32  OpponentsTeamRating;                            // for rated arena matches
-};
-
-struct QueuedGroupInfo;
-               //  guid, QueuedGroupInfo *
-typedef std::map<uint64, QueuedGroupInfo *> _QueuedPlayersMap;
-
-struct QueuedGroupInfo
-{
-    _QueuedPlayersMap players;
-    uint32 team;
-    uint32 bg_type_id;
-
-    uint32 bg_instance_GUID;
-    uint32 join_time;
-
-    // arena stuff
-    bool   is_rated;
-    uint8  arena_type;
-    uint32 arena_team_id;
-
-    uint32 arena_team_rating;
-    uint32 arena_opponents_rating;
+    bool Premade;
 };
 
 class BattleGround;
-
-struct BattleGroundQueueTimer
-{
-    uint32 overall_times;
-    uint32 count;
-    uint32 average_time;
-
-    BattleGroundQueueTimer() : average_time(0), overall_times(0), count(0) {}
-
-    void update_time(uint64 time)
-    {
-        overall_times += time;
-        count++;
-        if (count == 10)
-        {
-            average_time = overall_times/count;
-            count = 0;
-            overall_times = 0;
-        }
-    }
-};
-
-class _BattleGroundQueue
-{
-    public:
-        void UpdateBGQueue(uint32 bg_queue_level);
-
-        void AddGroup(Player *leader, bool join_as_group = false, uint32 instance_id = 0);
-        void AddPlayer(Player *player, QueuedGroupInfo *group_info);
-        void RemovePlayer(uint64 guid);
-
-        uint32 m_BGTypeId;
-
-        void AddDeficientBG(BattleGround *bg) {m_deficientBG.push_back(bg);}
-        void RemoveDeficientBG(BattleGround *);
-
-        _QueuedPlayersMap m_queuedPlayers[BG_MAX_LEVEL_QUEUE];
-    private:
-        ACE_Thread_Mutex m_update_mutex;
-
-        typedef std::list<QueuedGroupInfo *> _QueuedGroupsList;
-        typedef std::deque<BattleGround *> DeficientBG;
-
-        void InviteGroupsToBG(_QueuedGroupsList *selected_groups, BattleGround *bg);
-        void InviteGroupToBG(QueuedGroupInfo *group, BattleGround *bg);
-
-        _QueuedGroupsList m_queuedNormalGroups[BG_MAX_LEVEL_QUEUE]; // used for arena groups container in BATTLEGROUND_AA queue
-        _QueuedGroupsList m_queuedPremadeGroups[BG_MAX_LEVEL_QUEUE];
-
-        // used to count average wait time for every queue level
-        BattleGroundQueueTimer m_timers[BG_MAX_LEVEL_QUEUE];
-
-        //_QueuedGroupsList m_queuedArenaGroups[BG_MAX_LEVEL_QUEUE];
-
-        DeficientBG m_deficientBG;
-
-        class BGEligibleGroups
-        {
-            public:
-                BGEligibleGroups() : m_max_size(0) {}
-                bool Initialize(_QueuedGroupsList *source, uint32 team, uint32 max_players);
-
-                                // size,            groups
-                typedef std::map<uint32, _QueuedGroupsList> EligibleGroupsMap;
-                EligibleGroupsMap m_eligible;
-                uint32 m_max_size;
-        };
-
-        class TeamSelector
-        {
-            public:
-                void Initialize(_QueuedGroupsList *source, uint32 max_horde, uint32 max_alliance, bool reset = false);
-                int SelectPremadeTeams(uint32 max_players, bool fill);
-                int SelectNormalTeams(uint32 min_players, uint32 max_players);
-
-                int SelectArenaTeams(uint32 max_players);
-
-                struct SelectedGroups
-                {
-                    public:
-                        SelectedGroups() : m_players_count(0) {}
-                        void addGroup(QueuedGroupInfo *group) {m_selected.push_back(group); m_players_count += group->players.size();}
-                        void reset() {m_selected.clear(); m_players_count = 0;}
-                        uint32 getPlayersCount() {return m_players_count;}
-                        _QueuedGroupsList *getGroups() {return &m_selected;}
-
-                    private:
-                        _QueuedGroupsList m_selected;
-                        uint32 m_players_count;
-                };
-
-                uint32 getHordePlayersCount()    {return m_selected_horde.getPlayersCount();}
-                uint32 getAlliancePlayersCount() {return m_selected_alliance.getPlayersCount();}
-
-                SelectedGroups *getHordeSelection() {return &m_selected_horde;};
-                SelectedGroups *getAllianceSelection() {return &m_selected_alliance;}
-
-            private:
-                BGEligibleGroups m_horde;
-                BGEligibleGroups m_alliance;
-
-                SelectedGroups m_selected_horde;
-                SelectedGroups m_selected_alliance;
-        };
-};
-
-
 class BattleGroundQueue
 {
     public:
@@ -286,7 +102,7 @@ class BattleGroundQueue
             void AddGroup(GroupQueueInfo * group);
             void RemoveGroup(GroupQueueInfo * group);
             uint32 GetPlayerCount() const {return PlayerCount;}
-            bool Build(uint32 MinPlayers, uint32 MaxPlayers, EligibleGroups::iterator startitr);
+            bool Build(uint32 MinPlayers, uint32 MaxPlayers, EligibleGroups::iterator startitr, bool premade);
         public:
             std::list<GroupQueueInfo *> SelectedGroups;
         private:
@@ -308,7 +124,7 @@ class BattleGroundQueue
 
         SelectionPool m_SelectionPools[NUM_SELECTION_POOL_TYPES];
 
-        bool BuildSelectionPool(uint32 bgTypeId, uint32 queue_id, uint32 MinPlayers, uint32 MaxPlayers, SelectionPoolBuildMode mode, uint8 ArenaType = 0, bool isRated = false, uint32 MinRating = 0, uint32 MaxRating = 0, uint32 DisregardTime = 0, uint32 excludeTeam = 0);
+        bool BuildSelectionPool(uint32 bgTypeId, uint32 queue_id, uint32 MinPlayers, uint32 MaxPlayers, SelectionPoolBuildMode mode, uint8 ArenaType = 0, bool isRated = false, uint32 MinRating = 0, uint32 MaxRating = 0, uint32 DisregardTime = 0, uint32 excludeTeam = 0, bool premade = false);
 
     private:
 
@@ -399,12 +215,7 @@ class BattleGroundMgr
 
         /* Battleground queues */
         //these queues are instantiated when creating BattlegroundMrg
-
-        _BattleGroundQueue m_BGQueues[MAX_BATTLEGROUND_QUEUE_TYPES];
-
         BattleGroundQueue m_BattleGroundQueues[MAX_BATTLEGROUND_QUEUE_TYPES]; // public, because we need to access them in BG handler code
-
-        BattleGround *BGTemplates[MAX_BATTLEGROUND_TYPES];
 
         BGFreeSlotQueueType BGFreeSlotQueue[MAX_BATTLEGROUND_TYPES];
 
