@@ -179,7 +179,7 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
         if(who->GetTypeId() == TYPEID_UNIT)
             return;
 
-        if(ChangeTargetTimer || DelayTimer || me->GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE)
+        if(ChangeTargetTimer || DelayTimer)
             return;
 
         AttackStart(who);
@@ -260,9 +260,9 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
         else if(DelayTimer)
         {
             DelayTimer = 0;
-            ChangeTargetTimer = 5000;
-            if(me->GetPositionX() < 57698)
-                me->GetMotionMaster()->MovePoint(0, 576, 402.5, 191);
+            ChangeTargetTimer = 7000;
+            if(Creature* Teron = Unit::GetCreature((*m_creature), TeronGUID))
+               DoStartMovement(Teron);
         }
 
         if(ChangeTargetTimer > diff)
