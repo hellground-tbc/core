@@ -176,27 +176,29 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit *who)
     {
-        if(who->GetTypeId() == TYPEID_UNIT)
-            return;
-
         if(ChangeTargetTimer || DelayTimer)
             return;
 
+        DoResetThreat();
         AttackStart(who);
-        ChangeTargetTimer = 5000;
     }
 
     void AttackStart(Unit* who)
     {
-        if (!who)
+        if(!who)
             return;
 
-        if(who->GetTypeId() != TYPEID_PLAYER)
-            ChangeTargetTimer = 0;
-
-        if (m_creature->Attack(who, true))
+        // unit or target with posses spirit immune cannot be taken as targets
+        if(who->GetTypeId() != TYPEID_PLAYER || who->HasAura(40282, 0) || who->HasAura(40251, 0))
         {
-            m_creature->AddThreat(who, 100000.0f);
+            ChangeTargetTimer = 0;
+            return;
+        }
+
+        if(m_creature->Attack(who, true))
+        {
+            ChangeTargetTimer = 6000;
+            m_creature->AddThreat(who, 1000000.0f);
             DoStartMovement(who);
         }
     }
@@ -228,27 +230,12 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
     void CheckPlayers()
     {
         DoZoneInCombat();
-
-        if(Creature* Teron = Unit::GetCreature((*m_creature), TeronGUID))
+        if(Creature* pTeron = pInstance->GetCreature(pInstance->GetData64(DATA_TERONGOREFIEND)))
         {
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true, Teron->getVictimGUID()))
+            if(Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true, pTeron->getVictimGUID()))
             {
-                if(target->HasAura(40282, 0))
-                {
-                    m_creature->getThreatManager().modifyThreatPercent(target, -100);
-                    if(Unit* NewTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true, target->GetGUID()))
-                    {
-                        if(NewTarget != Teron->getVictim())
-                        {
-                            target = NewTarget;
-                            AttackStart(target);
-                            return;
-                        }
-                    }
-                }
-
-                if(!m_creature->getVictim())
-                    AttackStart(target);
+                if(pTarget->GetGUID() != pTeron->getVictimGUID())
+                    AttackStart(pTarget);
             }
         }
     }
@@ -264,8 +251,8 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
         {
             DelayTimer = 0;
             ChangeTargetTimer = 7000;
-            if(Creature* Teron = Unit::GetCreature((*m_creature), TeronGUID))
-               DoStartMovement(Teron);
+            if(Creature* pTeron = pInstance->GetCreature(pInstance->GetData64(DATA_TERONGOREFIEND)))
+               DoStartMovement(pTeron);
         }
 
         if(ChangeTargetTimer > diff)
@@ -275,8 +262,8 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
 
         if(CheckTeronTimer < diff)
         {
-            Creature* Teron = Unit::GetCreature((*m_creature), TeronGUID);
-            if(!Teron || !Teron->isInCombat())
+            Creature *pTeron = pInstance->GetCreature(pInstance->GetData64(DATA_TERONGOREFIEND));
+            if(!pTeron || !pTeron->isInCombat())
                  m_creature->Kill(m_creature, false);
 
             CheckTeronTimer = 5000;
