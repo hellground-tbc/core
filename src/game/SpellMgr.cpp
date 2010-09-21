@@ -977,6 +977,9 @@ bool IsPartialyResistable(SpellEntry const* spellInfo)
         case 41352:     // RoS: Aura of Desire dmg back
         case 41337:     // RoS: Aura of Anger
         case 40239:     // Teron: Incinerate
+        case 40325:     // Teron: Spirit Strike
+        case 40157:     // Teron: Spirit Lance
+        case 40175:     // Teron: Spirit Chains
             return false;
     }
 
