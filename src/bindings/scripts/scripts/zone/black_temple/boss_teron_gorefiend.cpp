@@ -191,6 +191,9 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
         if (!who)
             return;
 
+        if(who->GetTypeId() != TYPEID_PLAYER)
+            ChangeTargetTimer = 0;
+
         if (m_creature->Attack(who, true))
         {
             m_creature->AddThreat(who, 100000.0f);

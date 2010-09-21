@@ -569,13 +569,6 @@ class TRINITY_DLL_SPEC WorldSession
         //BattleGround
         void HandleBattleGroundHelloOpcode(WorldPacket &recv_data);
         void HandleBattleGroundJoinOpcode(WorldPacket &recv_data);
-
-        void _HandleBattleGroundJoinOpcode(WorldPacket &recv_data); // for new queue
-        void _HandleBattleGroundPlayerPortOpcode(WorldPacket &recv_data);
-        void _HandleBattleGroundArenaJoin(WorldPacket &recv_data);
-
-
-
         void HandleBattleGroundPlayerPositionsOpcode(WorldPacket& recv_data);
         void HandleBattleGroundPVPlogdataOpcode( WorldPacket &recv_data );
         void HandleBattleGroundPlayerPortOpcode( WorldPacket &recv_data );
