@@ -1727,15 +1727,21 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
     if(pCreature->IsAIEnabled)
         pCreature->AI()->JustRespawned();
 
-    if(((InstanceMap*)GetMap())->GetInstanceData())
-        ((InstanceMap*)GetMap())->GetInstanceData()->OnCreatureCreate(pCreature, id);
-
     if(pCreature->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER && pCreature->m_spells[0])
     {
         if(GetTypeId() == TYPEID_UNIT || GetTypeId() == TYPEID_PLAYER)
             pCreature->setFaction(((Unit*)this)->getFaction());
 
         pCreature->CastSpell(pCreature, pCreature->m_spells[0], false, 0, 0, GetGUID());
+    }
+
+    if(Map *pMap = GetMap())       // call OnPlayerDeath function
+    {
+        if(pMap->IsRaid() || pMap->IsDungeon())
+        {
+            if(((InstanceMap*)pMap)->GetInstanceData())
+                ((InstanceMap*)pMap)->GetInstanceData()->OnCreatureCreate(pCreature, id);
+        }
     }
 
     //return the creature therewith the summoner has access to it
