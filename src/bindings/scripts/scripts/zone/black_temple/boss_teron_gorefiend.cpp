@@ -233,6 +233,14 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
         DoZoneInCombat();
         if(Creature* pTeron = pInstance->GetCreature(pInstance->GetData64(DATA_TERONGOREFIEND)))
         {
+            if(me->GetDistance(pTeron) > 70.0f)
+            {
+                if(Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
+                    AttackStart(pTarget);
+
+                return;
+            }
+
             if(Unit* pTarget = ((ScriptedAI*)pTeron->AI())->SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true, pTeron->getVictimGUID()))
                 AttackStart(pTarget);
             else
@@ -255,7 +263,7 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
             DelayTimer = 0;
             ChangeTargetTimer = 4000;
             if(Creature *pMiddleTrigger = GetClosestCreatureWithEntry(me, 23084, 100.0f))
-               DoStartMovement(pMiddleTrigger);
+               me->GetMotionMaster()->MovePoint(0, pMiddleTrigger->GetPositionX(), pMiddleTrigger->GetPositionY(), pMiddleTrigger->GetPositionZ());
         }
 
         if(ChangeTargetTimer > diff)
