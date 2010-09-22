@@ -177,13 +177,6 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit *who)
     {
-        if(ChangeTargetTimer || DelayTimer)
-            return;
-
-        if(who->GetTypeId() != TYPEID_PLAYER || who->HasAura(40282, 0) || who->HasAura(40251, 0) || who->HasAura(40268,0))
-            return;
-
-        AttackStart(who);
     }
 
     void AttackStart(Unit* who)
@@ -200,7 +193,7 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
 
         if(m_creature->Attack(who, true))
         {
-            ChangeTargetTimer = 6000;
+            ChangeTargetTimer = 5000;
             m_creature->AddThreat(who, 1000000.0f);
             DoStartMovement(who);
         }
@@ -260,7 +253,7 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
         else if(DelayTimer)
         {
             DelayTimer = 0;
-            ChangeTargetTimer = 7000;
+            ChangeTargetTimer = 4000;
             if(Creature *pMiddleTrigger = GetClosestCreatureWithEntry(me, 23084, 100.0f))
                DoStartMovement(pMiddleTrigger);
         }
@@ -268,7 +261,7 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
         if(ChangeTargetTimer > diff)
             ChangeTargetTimer -= diff;
         else
-            ChangeTargetTimer = 0;
+            CheckPlayers();
 
         if(CheckTeronTimer < diff)
         {
