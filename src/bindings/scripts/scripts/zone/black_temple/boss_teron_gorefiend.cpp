@@ -182,13 +182,18 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
         if(DelayTimer || who->GetTypeId() != TYPEID_PLAYER || who->HasAura(40282, 0) || who->HasAura(40251, 0) || who->HasAura(40268,0))
             return;
 
+        if(me->getVictim())
+            DoModifyThreatPercent(me->getVictim(), -100);
+
         ScriptedAI::AttackStart(who);
+
+        me->AddThreat(who, 10000000.0f);
         ChangeTarget = 5000;
     }
 
     void KilledUnit(Unit *who)
     {
-        ChangeTarget = 5000;
+        ChangeTarget = 0;
     }
 
     void DamageTaken(Unit* done_by, uint32 &damage)
@@ -222,13 +227,13 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
             DoZoneInCombat();
             if(Creature* pTeron = pInstance->GetCreature(pInstance->GetData64(DATA_TERONGOREFIEND)))
             {
-                if(Unit* pTarget = ((ScriptedAI*)pTeron->AI())->SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
+                if(Unit* pTarget = ((ScriptedAI*)pTeron->AI())->SelectUnit(SELECT_TARGET_RANDOM, 1, 100, true))
                     AttackStart(pTarget);
             }
 
             if(!UpdateVictim())
             {
-                if(Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
+                if(Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 1, 200, true))
                     AttackStart(pTarget);
             }
         }
@@ -246,6 +251,10 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
         else if(DelayTimer)
         {
             DelayTimer = 0;
+
+            if(me->GetPositionX() < 565.0f)
+                return;
+
             if(Creature *pMiddleTrigger = GetClosestCreatureWithEntry(me, 23084, 100.0f))
                me->GetMotionMaster()->MovePoint(0, pMiddleTrigger->GetPositionX(), pMiddleTrigger->GetPositionY(), pMiddleTrigger->GetPositionZ());
         }
