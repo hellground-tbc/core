@@ -172,6 +172,7 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
         DelayTimer = 2500;
 
         me->SetSpeed(MOVE_RUN, 1.3f);
+        me->SetReactState(REACT_PASSIVE);
     }
 
     void MoveInLineOfSight(Unit *who)
@@ -179,7 +180,9 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
         if(ChangeTargetTimer || DelayTimer)
             return;
 
-        DoResetThreat();
+        if(who->GetTypeId() != TYPEID_PLAYER || who->HasAura(40282, 0) || who->HasAura(40251, 0) || who->HasAura(40268,0))
+            return;
+
         AttackStart(who);
     }
 
@@ -189,7 +192,7 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
             return;
 
         // unit or target with posses spirit immune cannot be taken as targets
-        if(who->GetTypeId() != TYPEID_PLAYER || who->HasAura(40282, 0) || who->HasAura(40251, 0))
+        if(who->GetTypeId() != TYPEID_PLAYER || who->HasAura(40282, 0) || who->HasAura(40251, 0) || who->HasAura(40268,0))
         {
             ChangeTargetTimer = 0;
             return;
@@ -232,7 +235,7 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
         DoZoneInCombat();
         if(Creature* pTeron = pInstance->GetCreature(pInstance->GetData64(DATA_TERONGOREFIEND)))
         {
-            if(Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true, pTeron->getVictimGUID()))
+            if(Unit* pTarget = ((ScriptedAI*)pTeron->AI())->SelectUnit(SELECT_TARGET_RANDOM, 0, 40, true, pTeron->getVictimGUID()))
                 AttackStart(pTarget);
         }
     }
