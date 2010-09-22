@@ -266,6 +266,9 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
                me->GetMotionMaster()->MovePoint(0, pMiddleTrigger->GetPositionX(), pMiddleTrigger->GetPositionY(), pMiddleTrigger->GetPositionZ());
         }
 
+        if(!UpdateVictim() && me->GetMotionMaster()->GetCurrentMovementGeneratorType() != POINT_MOTION_TYPE)
+            ChangeTargetTimer = 0;
+
         if(ChangeTargetTimer > diff)
             ChangeTargetTimer -= diff;
         else
