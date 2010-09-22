@@ -1314,7 +1314,7 @@ CreatureAI* GetAI_mob_illidari_fearbringer(Creature *_Creature)
 
 /* ============================
 *
-*      SHADE  OF  AKAMA
+*      SHADE  OF  AKAMA - scripted in Shade of Akama script
 *
 * ============================*/
 
@@ -1692,6 +1692,147 @@ CreatureAI* GetAI_mob_shadowmoon_blood_mage(Creature *_Creature)
     * Hungering Soul Fragment
     * Suffering Soul Fragment
 */
+/****************
+* Angered Soul Fragment - id 23398
+*****************/
+
+#define SPELL_ANGER     41986
+
+struct TRINITY_DLL_DECL mob_angered_soul_fragmentAI: public ScriptedAI
+{
+    mob_angered_soul_fragmentAI(Creature *c) : ScriptedAI(c) { }
+
+    uint32 Anger;
+
+    void Reset()
+    {
+        Anger = urand(1500, 6000);
+    }
+
+    void EnterCombat(Unit *)
+    {
+        DoZoneInCombat();
+    }
+
+    void JustDied(Unit* killer)
+    {
+        m_creature->RemoveCorpse();
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(Anger < diff)
+        {
+            AddSpellToCast(m_creature, SPELL_ANGER);
+            Anger = urand(6000, 16000);
+        }
+        else
+            Anger -=diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_angered_soul_fragment(Creature *_Creature)
+{
+    return new mob_angered_soul_fragmentAI(_Creature);
+}
+
+/****************
+* Hungering Soul Fragment - id 23401
+*****************/
+
+#define SPELL_CONSUMING_STRIKES     41248
+
+struct TRINITY_DLL_DECL mob_hungering_soul_fragmentAI: public ScriptedAI
+{
+    mob_hungering_soul_fragmentAI(Creature *c) : ScriptedAI(c) { }
+
+    void Reset()
+    {
+        DoCast(m_creature, SPELL_CONSUMING_STRIKES);
+    }
+
+    void EnterCombat(Unit *)
+    {
+        DoZoneInCombat();
+    }
+
+    void JustDied(Unit* killer)
+    {
+        m_creature->RemoveCorpse();
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_hungering_soul_fragment(Creature *_Creature)
+{
+    return new mob_hungering_soul_fragmentAI(_Creature);
+}
+
+/****************
+* Suffering Soul Fragment - id 23399
+*****************/
+
+#define SPELL_SOUL_BLAST        41245
+
+struct TRINITY_DLL_DECL mob_suffering_soul_fragmentAI: public ScriptedAI
+{
+    mob_suffering_soul_fragmentAI(Creature *c) : ScriptedAI(c) { }
+
+    uint32 SoulBlast;
+
+    void Reset()
+    {
+        SoulBlast = urand(2000, 5000);
+    }
+
+    void EnterCombat(Unit *)
+    {
+        DoZoneInCombat();
+    }
+
+    void JustDied(Unit* killer)
+    {
+        m_creature->RemoveCorpse();
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(SoulBlast < diff)
+        {
+            AddSpellToCast(m_creature, SPELL_SOUL_BLAST);
+            SoulBlast = urand(8000, 12000);
+        }
+        else
+            SoulBlast -=diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_suffering_soul_fragment(Creature *_Creature)
+{
+    return new mob_suffering_soul_fragmentAI(_Creature);
+}
+
+
+
 
 /* ============================
 *
@@ -1828,5 +1969,20 @@ void AddSC_black_temple_trash()
     newscript = new Script;
     newscript->Name = "mob_shadowmoon_deathshaper";
     newscript->GetAI = &GetAI_mob_shadowmoon_deathshaper;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_angered_soul_fragment";
+    newscript->GetAI = &GetAI_mob_suffering_soul_fragment;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_hungering_soul_fragment";
+    newscript->GetAI = &GetAI_mob_suffering_soul_fragment;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_suffering_soul_fragment";
+    newscript->GetAI = &GetAI_mob_suffering_soul_fragment;
     newscript->RegisterSelf();
 }
