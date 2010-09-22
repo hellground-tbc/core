@@ -233,10 +233,7 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
         if(Creature* pTeron = pInstance->GetCreature(pInstance->GetData64(DATA_TERONGOREFIEND)))
         {
             if(Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true, pTeron->getVictimGUID()))
-            {
-                if(pTarget->GetGUID() != pTeron->getVictimGUID())
-                    AttackStart(pTarget);
-            }
+                AttackStart(pTarget);
         }
     }
 
@@ -251,8 +248,8 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
         {
             DelayTimer = 0;
             ChangeTargetTimer = 7000;
-            if(Creature* pTeron = pInstance->GetCreature(pInstance->GetData64(DATA_TERONGOREFIEND)))
-               DoStartMovement(pTeron);
+            if(Creature *pMiddleTrigger = GetClosestCreatureWithEntry(me, 23084, 100.0f))
+               DoStartMovement(pMiddleTrigger);
         }
 
         if(ChangeTargetTimer > diff)
