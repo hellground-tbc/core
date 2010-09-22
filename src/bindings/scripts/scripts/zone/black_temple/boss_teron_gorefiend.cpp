@@ -172,7 +172,7 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
         DelayTimer = 2500;
 
         me->SetSpeed(MOVE_RUN, 1.3f);
-        me->SetReactState(REACT_PASSIVE);
+        //me->SetReactState(REACT_PASSIVE);
     }
 
     void MoveInLineOfSight(Unit *who)
