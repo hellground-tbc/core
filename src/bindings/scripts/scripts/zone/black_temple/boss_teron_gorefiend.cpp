@@ -151,28 +151,25 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
     mob_shadowy_constructAI(Creature* c) : ScriptedAI(c)
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
-        TeronGUID = pInstance ? pInstance->GetData64(DATA_TERONGOREFIEND) : 0;
     }
 
     ScriptedInstance* pInstance;
 
-    uint64 TeronGUID;
-
     uint32 DelayTimer;
     uint32 CheckTeronTimer;
-    uint32 ChangeTargetTimer;
+    uint32 ChangeTarget;
 
     void Reset()
     {
         DoCast(m_creature, SPELL_PASSIVE_SHADOWFORM, false);
         DoCast(m_creature, SPELL_SHADOW_STRIKES, false);
 
-        ChangeTargetTimer = 5000;
         CheckTeronTimer = 5000;
+        ChangeTarget = 3000;
         DelayTimer = 2500;
 
         me->SetSpeed(MOVE_RUN, 1.3f);
-        //me->SetReactState(REACT_PASSIVE);
+        me->setActive(true);
     }
 
     void MoveInLineOfSight(Unit *who)
@@ -181,27 +178,17 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
 
     void AttackStart(Unit* who)
     {
-        if(!who)
-            return;
-
         // unit or target with posses spirit immune cannot be taken as targets
-        if(who->GetTypeId() != TYPEID_PLAYER || who->HasAura(40282, 0) || who->HasAura(40251, 0) || who->HasAura(40268,0))
-        {
-            ChangeTargetTimer = 0;
+        if(DelayTimer || who->GetTypeId() != TYPEID_PLAYER || who->HasAura(40282, 0) || who->HasAura(40251, 0) || who->HasAura(40268,0))
             return;
-        }
 
-        if(m_creature->Attack(who, true))
-        {
-            ChangeTargetTimer = 5000;
-            m_creature->AddThreat(who, 1000000.0f);
-            DoStartMovement(who);
-        }
+        ScriptedAI::AttackStart(who);
+        ChangeTarget = 5000;
     }
 
     void KilledUnit(Unit *who)
     {
-        ChangeTargetTimer = 0;
+        ChangeTarget = 5000;
     }
 
     void DamageTaken(Unit* done_by, uint32 &damage)
@@ -228,27 +215,25 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
             m_creature->RemoveAurasByCasterSpell(aura->GetId(), caster->GetGUID());
     }
 
-    void CheckPlayers()
+    void UpdateTarget(uint32 diff)
     {
-        DoZoneInCombat();
-        if(Creature* pTeron = pInstance->GetCreature(pInstance->GetData64(DATA_TERONGOREFIEND)))
+        if(ChangeTarget < diff)
         {
-            if(me->GetDistance(pTeron) > 70.0f)
+            DoZoneInCombat();
+            if(Creature* pTeron = pInstance->GetCreature(pInstance->GetData64(DATA_TERONGOREFIEND)))
             {
-                if(Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
+                if(Unit* pTarget = ((ScriptedAI*)pTeron->AI())->SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
                     AttackStart(pTarget);
-
-                return;
             }
 
-            if(Unit* pTarget = ((ScriptedAI*)pTeron->AI())->SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true, pTeron->getVictimGUID()))
-                AttackStart(pTarget);
-            else
+            if(!UpdateVictim())
             {
                 if(Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
                     AttackStart(pTarget);
             }
         }
+        else
+            ChangeTarget -= diff;
     }
 
     void UpdateAI(const uint32 diff)
@@ -261,18 +246,11 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
         else if(DelayTimer)
         {
             DelayTimer = 0;
-            ChangeTargetTimer = 4000;
             if(Creature *pMiddleTrigger = GetClosestCreatureWithEntry(me, 23084, 100.0f))
                me->GetMotionMaster()->MovePoint(0, pMiddleTrigger->GetPositionX(), pMiddleTrigger->GetPositionY(), pMiddleTrigger->GetPositionZ());
         }
 
-        if(!UpdateVictim() && me->GetMotionMaster()->GetCurrentMovementGeneratorType() != POINT_MOTION_TYPE)
-            ChangeTargetTimer = 0;
-
-        if(ChangeTargetTimer > diff)
-            ChangeTargetTimer -= diff;
-        else
-            CheckPlayers();
+        UpdateTarget(diff);
 
         if(CheckTeronTimer < diff)
         {
@@ -280,7 +258,7 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
             if(!pTeron || !pTeron->isInCombat())
                  m_creature->Kill(m_creature, false);
 
-            CheckTeronTimer = 5000;
+            CheckTeronTimer = 2000;
         }
         else
             CheckTeronTimer -= diff;
