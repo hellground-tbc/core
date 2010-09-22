@@ -206,6 +206,11 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
         }
     }
 
+    void KilledUnit(Unit *who)
+    {
+        ChangeTargetTimer = 0;
+    }
+
     void DamageTaken(Unit* done_by, uint32 &damage)
     {
         if(done_by->GetTypeId() == TYPEID_PLAYER)
@@ -235,8 +240,13 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
         DoZoneInCombat();
         if(Creature* pTeron = pInstance->GetCreature(pInstance->GetData64(DATA_TERONGOREFIEND)))
         {
-            if(Unit* pTarget = ((ScriptedAI*)pTeron->AI())->SelectUnit(SELECT_TARGET_RANDOM, 0, 40, true, pTeron->getVictimGUID()))
+            if(Unit* pTarget = ((ScriptedAI*)pTeron->AI())->SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true, pTeron->getVictimGUID()))
                 AttackStart(pTarget);
+            else
+            {
+                if(Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
+                    AttackStart(pTarget);
+            }
         }
     }
 
