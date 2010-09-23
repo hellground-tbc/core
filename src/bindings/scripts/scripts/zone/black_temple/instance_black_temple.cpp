@@ -77,10 +77,12 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
 
     std::map<uint64, uint32> sodList;
     std::vector<uint64> weaponmasterList;
+    std::list<uint64> SoulFragmentsList;
 
     void Initialize()
     {
         sodList.clear();
+        SoulFragmentsList.clear();
 
         Najentus = 0;
         Akama = 0;
@@ -207,6 +209,11 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
                 break;
             case 23047:
                 weaponmasterList.push_back(creature->GetGUID());
+                break;
+            case 23398:
+            case 23401:
+            case 23399:
+                SoulFragmentsList.push_back(creature->GetGUID());
                 break;
         }
 
@@ -413,7 +420,19 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
             break;
         case DATA_RELIQUARYOFSOULSEVENT:
             if(data == DONE)
+            {
                 HandleGameObject(TempleDoor, true);
+                // after RoS dies, hide all soul fragments
+                for(std::list<uint64>::iterator itr = SoulFragmentsList.begin(); itr != SoulFragmentsList.end(); ++itr)
+                {
+                    Creature* SoulFragment = instance->GetCreature(*itr);
+                    if(SoulFragment)
+                    {
+                        SoulFragment->setFaction(35);
+                        SoulFragment->SetVisibility(VISIBILITY_OFF);
+                    }
+                }
+            }
             if(Encounters[5] != DONE)
                 Encounters[5] = data;
             break;
