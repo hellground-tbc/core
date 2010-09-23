@@ -1973,12 +1973,12 @@ void AddSC_black_temple_trash()
 
     newscript = new Script;
     newscript->Name = "mob_angered_soul_fragment";
-    newscript->GetAI = &GetAI_mob_suffering_soul_fragment;
+    newscript->GetAI = &GetAI_mob_angered_soul_fragment;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "mob_hungering_soul_fragment";
-    newscript->GetAI = &GetAI_mob_suffering_soul_fragment;
+    newscript->GetAI = &GetAI_mob_hungering_soul_fragment;
     newscript->RegisterSelf();
 
     newscript = new Script;
