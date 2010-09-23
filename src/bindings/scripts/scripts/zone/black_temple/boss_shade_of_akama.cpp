@@ -114,6 +114,8 @@ static float SpawnLocations[2][2]=
 
 #define AKAMA_SOUL_EXPEL            40855
 #define SPELL_DEBILITATIG_STRIKE    41178
+#define SPELL_SHIELD_BASH           41180
+#define SPELL_HEROIC_STRIKE         41975
 
 // Channeler entry
 #define CREATURE_CHANNELER          23421
@@ -173,9 +175,16 @@ struct TRINITY_DLL_DECL mob_ashtongue_channelerAI : public ScriptedAI
 
 struct TRINITY_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
 {
-    mob_ashtongue_defenderAI(Creature* c) : ScriptedAI(c) { }
+    mob_ashtongue_defenderAI(Creature* c) : ScriptedAI(c)
+    { 
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
+
+    ScriptedInstance* pInstance;
 
     uint32 m_debilStrikeTimer;
+    uint32 m_shieldBashTimer;
+    uint32 m_checkTimer;
     bool m_attack;
 
     void Reset()
@@ -184,6 +193,8 @@ struct TRINITY_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
         m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, false);
 
         m_debilStrikeTimer = 10000;
+        m_shieldBashTimer = 1000;
+        m_checkTimer = 10000;
         m_attack = false;
     }
 
@@ -198,6 +209,48 @@ struct TRINITY_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
         }
     }
 
+    void MovementInform(uint32 type, uint32 id)
+    {
+        if (type != POINT_MOTION_TYPE)
+            return;
+
+        if(pInstance)
+        {
+            if(Creature *pAkama = pInstance->GetCreature(pInstance->GetData64(DATA_AKAMA_SHADE)))
+                AttackStart(pAkama);
+        }
+    }
+
+    void DoMeleeAttackIfReady()
+    {
+        if(me->hasUnitState(UNIT_STAT_CASTING))
+            return;
+
+        //Make sure our attack is ready and we aren't currently casting before checking distance
+        if (me->isAttackReady())
+        {
+            //If we are within range melee the target
+            if (me->IsWithinMeleeRange(me->getVictim()))
+            {
+                me->AttackerStateUpdate(me->getVictim());
+                me->resetAttackTimer();
+                
+                if(IS_CREATURE_GUID(me->getVictimGUID()))
+                    DoCast(me->getVictim(), SPELL_HEROIC_STRIKE, false);
+            }
+        }
+
+        if (me->haveOffhandWeapon() && me->isAttackReady(OFF_ATTACK))
+        {
+            //If we are within range melee the target
+            if (me->IsWithinMeleeRange(me->getVictim()))
+            {
+                me->AttackerStateUpdate(me->getVictim(), OFF_ATTACK);
+                me->resetAttackTimer(OFF_ATTACK);
+            }
+        }
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if (!m_attack || !UpdateVictim())
@@ -206,10 +259,40 @@ struct TRINITY_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
         if (m_debilStrikeTimer < diff)
         {
             DoCast(m_creature->getVictim(), SPELL_DEBILITATIG_STRIKE, false);
-            m_debilStrikeTimer = 10000 + rand() % 5000;
+            m_debilStrikeTimer = 15000 + rand() % 5000;
         }
         else
             m_debilStrikeTimer -= diff;
+
+        if(m_shieldBashTimer < diff)
+        {
+            if (m_creature->getVictim()->hasUnitState(UNIT_STAT_CASTING))
+            {
+                DoCast(m_creature->getVictim(), SPELL_SHIELD_BASH, false);
+                m_shieldBashTimer = 10000;
+            }
+        }
+        else
+            m_shieldBashTimer -= diff;
+
+        if(m_checkTimer < diff)
+        {
+            if(!pInstance)
+                return;
+
+            if(Creature *pAkama = m_creature->GetCreature(*m_creature, pInstance->GetData64(DATA_SHADEOFAKAMA)))
+            {
+                if(!pAkama->isAlive())
+                {
+                    m_creature->Kill(m_creature, false);
+                    m_creature->RemoveCorpse();
+                }
+            }
+            m_checkTimer = 5000;
+        }
+        else
+            m_checkTimer -= diff;
+
         DoMeleeAttackIfReady();
     }
 };
@@ -409,7 +492,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
             if (mob)
             {
                 m_sorcerers.push_back(mob->GetGUID());
-                mob->GetMotionMaster()->MovePoint(0, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ());
+                mob->GetMotionMaster()->MovePoint(0, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ() +0.6f);
             }
             m_sorcTimer = 30000;
         }
@@ -638,7 +721,9 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
                     }
                 }
 
-                ProcessSpawning(diff);
+                if(m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
+                    ProcessSpawning(diff);
+
                 if (m_checkTimer < diff)
                 {
                     if (!m_creature->IsWithinDistInMap(&wLoc, 100))
@@ -743,6 +828,7 @@ struct TRINITY_DLL_DECL npc_akamaAI : public ScriptedAI
             {
                 m_creature->SetUInt32Value(UNIT_NPC_FLAGS, 0);
                 m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+                m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_PL_SPELL_TARGET);
             }
         }
         m_summons.DespawnAll();
