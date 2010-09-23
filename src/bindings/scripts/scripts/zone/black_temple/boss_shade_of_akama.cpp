@@ -721,7 +721,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
                     }
                 }
 
-                if(m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
+                if(m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
                     ProcessSpawning(diff);
 
                 if (m_checkTimer < diff)
