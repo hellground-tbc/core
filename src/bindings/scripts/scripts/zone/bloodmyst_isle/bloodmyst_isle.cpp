@@ -25,6 +25,8 @@ EndScriptData */
 mob_webbed_creature
 npc_captured_sunhawk_agent
 npc_exarch_admetius
+npc_princess_stillpine
+go_princess_stillpine_cage
 EndContentData */
 
 #include "precompiled.h"
@@ -160,6 +162,53 @@ bool GossipSelect_npc_exarch_admetius(Player *player, Creature *_Creature, uint3
     return true;
 }
 
+/*########
+## Quest: Saving Princess Stillpine
+########*/
+struct TRINITY_DLL_DECL npc_princess_stillpineAI : public ScriptedAI
+{
+        npc_princess_stillpineAI(Creature *c) : ScriptedAI(c){}
+
+        uint32 FleeTimer;
+
+        void Reset()
+        {
+            FleeTimer = 0;
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            if(FleeTimer)
+            {
+                if(FleeTimer <= diff)
+                    m_creature->ForcedDespawn();
+                else FleeTimer -= diff;
+            }
+        }
+};
+
+CreatureAI* GetAI_npc_princess_stillpineAI(Creature *_Creature)
+{
+    return new npc_princess_stillpineAI (_Creature);
+}
+
+bool GOHello_go_princess_stillpine_cage(Player* pPlayer, GameObject* pGO)
+{
+    Unit *Prisoner = FindCreature(17682, 4.0f, pPlayer);
+    if(!Prisoner)
+        return true;
+
+    if (pGO->GetGoType() == GAMEOBJECT_TYPE_DOOR)
+    {
+		DoScriptText(-1230010-urand(0, 2), Prisoner, pPlayer);
+        pPlayer->CastedCreatureOrGO(17682, Prisoner->GetGUID(), 31003);
+        ((Creature*)Prisoner)->GetMotionMaster()->MoveFleeing(pPlayer,4000);
+		CAST_AI(npc_princess_stillpineAI, ((Creature*)Prisoner)->AI())->FleeTimer = 4000;
+    }
+        
+    return false;
+}
+
 void AddSC_bloodmyst_isle()
 {
     Script *newscript;
@@ -179,6 +228,16 @@ void AddSC_bloodmyst_isle()
     newscript->Name="npc_exarch_admetius";
     newscript->pGossipHello =  &GossipHello_npc_exarch_admetius;
     newscript->pGossipSelect = &GossipSelect_npc_exarch_admetius;
+    newscript->RegisterSelf();
+	
+    newscript = new Script;
+    newscript->Name="npc_princess_stillpine";
+    newscript->GetAI = &GetAI_npc_princess_stillpineAI;
+    newscript->RegisterSelf();
+	
+	newscript = new Script;
+    newscript->Name = "go_princess_stillpine_cage";
+    newscript->pGOHello = &GOHello_go_princess_stillpine_cage;
     newscript->RegisterSelf();
 }
 

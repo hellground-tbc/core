@@ -30,6 +30,8 @@ npc_susurrus
 npc_geezle
 mob_nestlewood_owlkin
 mob_siltfin_murloc
+npc_stillpine_capitive
+go_warmaul_prison
 EndContentData */
 
 #include "precompiled.h"
@@ -652,6 +654,55 @@ CreatureAI* GetAI_mob_siltfin_murlocAI(Creature *_Creature)
 {
     return new mob_siltfin_murlocAI (_Creature);
 }
+
+/*########
+## Quest: The Prophecy of Akida
+########*/
+struct TRINITY_DLL_DECL npc_stillpine_capitiveAI : public ScriptedAI
+{
+        npc_stillpine_capitiveAI(Creature *c) : ScriptedAI(c){}
+
+        uint32 FleeTimer;
+
+        void Reset()
+        {
+            FleeTimer = 0;
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            if(FleeTimer)
+            {
+                if(FleeTimer <= diff)
+                    m_creature->ForcedDespawn();
+                else FleeTimer -= diff;
+            }
+        }
+};
+
+CreatureAI* GetAI_npc_stillpine_capitiveAI(Creature *_Creature)
+{
+    return new npc_stillpine_capitiveAI (_Creature);
+}
+
+bool GOHello_go_bristlelimb_cage(Player* pPlayer, GameObject* pGO)
+{
+    Unit *Prisoner = FindCreature(17375, 4.0f, pPlayer);
+    if(!Prisoner)
+        return true;
+
+    if (pGO->GetGoType() == GAMEOBJECT_TYPE_DOOR)
+    {
+		DoScriptText(-1230010-urand(0, 2), Prisoner, pPlayer);
+        pPlayer->CastedCreatureOrGO(17375, Prisoner->GetGUID(), 30406);
+        ((Creature*)Prisoner)->GetMotionMaster()->MoveFleeing(pPlayer,4000);
+		CAST_AI(npc_stillpine_capitiveAI, ((Creature*)Prisoner)->AI())->FleeTimer = 4000;
+    }
+        
+    return false;
+}
+
+
 void AddSC_azuremyst_isle()
 {
     Script *newscript;
@@ -698,5 +749,15 @@ void AddSC_azuremyst_isle()
     newscript = new Script;
     newscript->Name="mob_siltfin_murloc";
     newscript->GetAI = &GetAI_mob_siltfin_murlocAI;
+    newscript->RegisterSelf();
+	
+	newscript = new Script;
+    newscript->Name="npc_stillpine_capitive";
+    newscript->GetAI = &GetAI_npc_stillpine_capitiveAI;
+    newscript->RegisterSelf();
+	
+	newscript = new Script;
+    newscript->Name = "go_bristlelimb_cage";
+    newscript->pGOHello = &GOHello_go_bristlelimb_cage;
     newscript->RegisterSelf();
 }
