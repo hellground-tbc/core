@@ -107,7 +107,7 @@ static float SpawnLocations[2][2]=
 #define SPELL_SHADE_SOUL_CHANNEL_2  40520
 
 #define SPELL_DESTRUCTIVE_POISON    40874
-#define SPELL_LIGHTNING_BOLT        42024
+#define SPELL_CHAIN_LIGHTNING       40536
 
 #define SPELL_AKAMA_SOUL_CHANNEL    40447
 #define SPELL_AKAMA_SOUL_RETRIEVE   40902
@@ -198,8 +198,11 @@ struct TRINITY_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
         m_attack = false;
     }
 
-    void DamageMade(Unit *target, uint32 &damage, bool direct_damage)
+    void MovementInform(uint32 type, uint32 id)
     {
+        if (type != POINT_MOTION_TYPE)
+            return;
+        
         if (!m_attack)
         {
             m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
@@ -207,17 +210,14 @@ struct TRINITY_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
             m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             m_attack = true;
         }
-    }
-
-    void MovementInform(uint32 type, uint32 id)
-    {
-        if (type != POINT_MOTION_TYPE)
-            return;
 
         if(pInstance)
         {
             if(Creature *pAkama = pInstance->GetCreature(pInstance->GetData64(DATA_AKAMA_SHADE)))
+            {   
+                m_creature->AddThreat(pAkama, 100000.0f);
                 AttackStart(pAkama);
+            }
         }
     }
 
@@ -236,7 +236,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
                 me->resetAttackTimer();
                 
                 if(IS_CREATURE_GUID(me->getVictimGUID()))
-                    DoCast(me->getVictim(), SPELL_HEROIC_STRIKE, false);
+                    DoCast(me->getVictim(), SPELL_HEROIC_STRIKE, true);
             }
         }
 
@@ -259,7 +259,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
         if (m_debilStrikeTimer < diff)
         {
             DoCast(m_creature->getVictim(), SPELL_DEBILITATIG_STRIKE, false);
-            m_debilStrikeTimer = 15000 + rand() % 5000;
+            m_debilStrikeTimer = 20000;
         }
         else
             m_debilStrikeTimer -= diff;
@@ -335,7 +335,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_sorcererAI : public ScriptedAI
                 {
                     if (Unit *shade = m_creature->GetUnit(*m_creature, ShadeGUID))
                     {
-                        if (m_creature->GetDistance2d(shade) <= 20.0f)
+                        if (m_creature->GetDistance2d(shade) <= 10.0f +urand(0,5))
                         {
                             m_creature->StopMoving();
                             m_creature->RemoveAurasDueToSpell(SPELL_SHADE_SOUL_CHANNEL);
@@ -437,8 +437,6 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
         m_guardTimer = 15000;
         m_sorcTimer = 30000;
 
-        WorldLocation wLoc;
-
         if (pInstance)
             pInstance->SetData(DATA_SHADEOFAKAMAEVENT, NOT_STARTED);
     }
@@ -492,7 +490,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
             if (mob)
             {
                 m_sorcerers.push_back(mob->GetGUID());
-                mob->GetMotionMaster()->MovePoint(0, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ() +0.6f);
+                mob->GetMotionMaster()->MovePoint(0, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ());
             }
             m_sorcTimer = 30000;
         }
@@ -559,9 +557,10 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
                 SetBanish(false);
                 event_phase = 7;
                 TurnOffChanneling();
+
+                target->InterruptNonMeleeSpells(false);
+                ((Creature *)target)->AI()->AttackStart(m_creature);
             }
-            target->InterruptNonMeleeSpells(false);
-            ((Creature *)target)->AI()->AttackStart(m_creature);
         }
     }
 
@@ -816,7 +815,7 @@ struct TRINITY_DLL_DECL npc_akamaAI : public ScriptedAI
 
     void Reset()
     {
-        m_destructivePTimer = 10000;
+        m_destructivePTimer = 5000;
         m_lightningBoltTimer = 8000;
         m_yell = false;
         m_talk = 0;
@@ -1003,22 +1002,26 @@ struct TRINITY_DLL_DECL npc_akamaAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
+        if(m_creature->getVictim()->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
+            return;
+
         if (m_destructivePTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_DESTRUCTIVE_POISON, true);
-            m_destructivePTimer = 10000;
+            AddSpellToCast(m_creature->getVictim(), SPELL_DESTRUCTIVE_POISON, true);
+            m_destructivePTimer = 5000;
         }
         else
             m_destructivePTimer -= diff;
 
         if (m_lightningBoltTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_LIGHTNING_BOLT);
+            AddSpellToCast(m_creature->getVictim(), SPELL_CHAIN_LIGHTNING);
             m_lightningBoltTimer = 8000;
         }
         else
             m_lightningBoltTimer -= diff;
 
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };
