@@ -173,12 +173,12 @@ struct TRINITY_DLL_DECL npc_grimstoneAI : public npc_escortAI
         switch(i)
         {
         case 0:
-            DoScriptText(-1000000, m_creature);//2
+            DoScriptText(-1000002, m_creature);//2
             CanWalk = false;
             Event_Timer = 5000;
             break;
         case 1:
-            DoScriptText(-1000000, m_creature);//4
+            DoScriptText(-1000003, m_creature);//4
             CanWalk = false;
             Event_Timer = 5000;
             break;
@@ -186,10 +186,10 @@ struct TRINITY_DLL_DECL npc_grimstoneAI : public npc_escortAI
             CanWalk = false;
             break;
         case 3:
-            DoScriptText(-1000000, m_creature);//5
+            DoScriptText(-1000005, m_creature);//5
             break;
         case 4:
-            DoScriptText(-1000000, m_creature);//6
+            DoScriptText(-1000006, m_creature);//6
             CanWalk = false;
             Event_Timer = 5000;
             break;
@@ -255,7 +255,7 @@ struct TRINITY_DLL_DECL npc_grimstoneAI : public npc_escortAI
                 switch(EventPhase)
                 {
                 case 0:
-                    DoScriptText(-1000000, m_creature);//1
+                    DoScriptText(-1000001, m_creature);//1
                     DoGate(DATA_ARENA4,1);
                     Start(false, false);
                     CanWalk = true;
@@ -290,7 +290,7 @@ struct TRINITY_DLL_DECL npc_grimstoneAI : public npc_escortAI
                 case 7:
                     m_creature->SetVisibility(VISIBILITY_ON);
                     DoGate(DATA_ARENA1,1);
-                    DoScriptText(-1000000, m_creature);//4
+                    DoScriptText(-1000004, m_creature);//4
                     CanWalk = true;
                     Event_Timer = 0;
                     break;

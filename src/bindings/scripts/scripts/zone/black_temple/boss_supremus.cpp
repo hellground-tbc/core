@@ -302,7 +302,6 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
                 if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 999, true))
                 {
                     m_creature->CastSpell(target, SPELL_VOLCANIC_SUMMON, true);      //must have target for not to do DB errors
-                    DoScriptText(EMOTE_GROUND_CRACK, m_creature, 0, true);
                     SummonVolcanoTimer = 10000;
                 }
             }
@@ -329,6 +328,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
                 SummonVolcanoTimer = 2000;
                 PhaseSwitchTimer = 60000;
                 m_creature->SetSpeed(MOVE_RUN, 0.90f);
+                DoScriptText(EMOTE_GROUND_CRACK, m_creature, 0, true);
                 DoZoneInCombat();
             }
         }
