@@ -2183,10 +2183,10 @@ void Aura::TriggerSpell()
                         advance(i, rand()%m_threatlist.size());
                         target = Unit::GetUnit(*caster,(*i)->getUnitGuid());
                         break;
-                        }
                     }
                 break;
                 }
+        }
     }
     if(!GetSpellMaxRange(sSpellRangeStore.LookupEntry(triggeredSpellInfo->rangeIndex)))
         target = m_target;    //for druid dispel poison

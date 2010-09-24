@@ -1348,6 +1348,253 @@ CreatureAI* GetAI_mob_illidari_fearbringer(Creature *_Creature)
     * Storm Fury
 */
 
+/****************
+* Ashtongue Battlelord - id 22844
+*****************/
+
+#define SPELL_CLEAVE            15284
+#define SPELL_CONCUSSION_BLOW   32588
+#define SPELL_CONCUSSION_THROW  41182
+#define SPELL_FRENZY            34970
+
+struct TRINITY_DLL_DECL mob_ashtongue_battlelordAI : public ScriptedAI
+{
+    mob_ashtongue_battlelordAI(Creature *c) : ScriptedAI(c) {}
+
+    uint32 Cleave;
+    uint32 ConcussionBlow;
+    uint32 ConcussionThrow;
+    uint32 Frenzy;
+
+    void Reset()
+    {
+        Cleave = urand(3000, 10000);
+        ConcussionBlow = urand(10500, 25000);
+        ConcussionThrow = urand(10500, 25000);
+        Frenzy = 5000;
+    }
+    void EnterCombat(Unit*) { DoZoneInCombat(); }
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(Cleave < diff)
+        {
+            AddSpellToCast(m_creature->getVictim(), SPELL_CLEAVE);
+            Cleave = 10000;
+        }
+        else
+            Cleave -= diff;
+
+        if(ConcussionBlow < diff)
+        {
+            AddSpellToCast(m_creature->getVictim(), SPELL_CONCUSSION_BLOW);
+            ConcussionBlow = 25000;
+        }
+        else
+            ConcussionBlow -= diff;
+
+        if(ConcussionThrow < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_TOPAGGRO, 1, 100, true))
+            {
+                AddSpellToCast(target, SPELL_CONCUSSION_THROW);
+            }
+            ConcussionThrow = 22000;
+        }
+        else
+            ConcussionThrow -= diff;
+
+        if(Frenzy < diff)
+        {
+            if(!m_creature->HasAura(SPELL_FRENZY, 0))
+                AddSpellToCast(m_creature->getVictim(), SPELL_FRENZY);
+            Frenzy = 30000;
+        }
+        else
+            Frenzy -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_ashtongue_battlelord(Creature *_Creature)
+{
+    return new mob_ashtongue_battlelordAI (_Creature);
+}
+
+/****************
+* Ashtongue Feral Spirit - id 22849
+*****************/
+
+#define SPELL_CHARGE_RAGE       39575
+#define SPELL_SPIRIT_BOND       39578
+
+#define NPC_ASHTONGUE_PRIMALIST 22847
+
+struct TRINITY_DLL_DECL mob_ashtongue_feral_spiritAI : public ScriptedAI
+{
+    mob_ashtongue_feral_spiritAI(Creature *c) : ScriptedAI(c) {}
+
+    uint32 ChargeRage;
+    uint32 SpiritBond;
+
+    void Reset()
+    {
+        ChargeRage = urand(10000, 30000);
+        SpiritBond = urand(15000, 25000);
+    }
+    void EnterCombat(Unit*) { DoZoneInCombat(); }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, 65) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(ChargeRage < diff)
+        {
+            AddSpellToCast(m_creature, SPELL_CHARGE_RAGE);
+            ChargeRage = urand(20000, 30000);
+        }
+        else
+            ChargeRage -= diff;
+
+        if(SpiritBond < diff)
+        {
+            AddSpellToCast(m_creature, SPELL_SPIRIT_BOND);
+            if(Creature* Primalist = GetClosestCreatureWithEntry(m_creature, NPC_ASHTONGUE_PRIMALIST, 40.0f))
+                Primalist->CastSpell(Primalist, SPELL_SPIRIT_BOND, true);
+            SpiritBond = 30000;
+        }
+        else
+            SpiritBond -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_ashtongue_feral_spirit(Creature *_Creature)
+{
+    return new mob_ashtongue_feral_spiritAI (_Creature);
+}
+
+/****************
+* Ashtongue Primalist - id 22847
+*****************/
+
+#define SPELL_MULTI_SHOT            41187
+#define SPELL_SHOOT                 41188
+#define SPELL_WYVERN_STING          41186
+#define SPELL_SWEEPING_WING_CLIP    39584
+
+struct TRINITY_DLL_DECL mob_ashtongue_primalistAI : public ScriptedAI
+{
+    mob_ashtongue_primalistAI(Creature *c) : ScriptedAI(c) {}
+
+    uint32 MultiShot;
+    uint32 Shoot;
+    uint32 WyvernSting;
+    uint32 SweepingWingClip;
+
+    bool canShoot;
+
+    void Reset()
+    {
+        canShoot = true;
+        MultiShot = urand(20000, 40000);
+        Shoot = 500;
+        WyvernSting = urand(7000, 15000);
+        SweepingWingClip = urand(20000, 37000);
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if(!m_creature->isInCombat() && m_creature->GetDistance(who) > 25.0)    //to avoid far pulls not from group formations
+            return;
+
+        if(m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, 5.0) && m_creature->IsHostileTo(who))
+            canShoot = false;
+        else
+            canShoot = true;
+    }
+
+    void EnterCombat(Unit*) { DoZoneInCombat(); }
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(MultiShot < diff)
+        {
+            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100.0f, true);
+            if(target && m_creature->GetDistance(target) > 5.0f)
+            {
+                ForceSpellCast(target, SPELL_MULTI_SHOT);
+                MultiShot = 40000;
+            }
+            else
+                MultiShot = 3000;
+        }
+        else
+            MultiShot -= diff;
+
+        if(Shoot < diff)
+        {
+            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0f, true);
+            if(canShoot && target && m_creature->GetDistance(target) > 5.0f)
+                ForceSpellCast(target, SPELL_SHOOT);
+            Shoot = 1500;
+        }
+        else
+            Shoot -= diff;
+
+        if(WyvernSting < diff)
+        {
+            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, 35.0f, true);
+            if(target && m_creature->GetDistance(target) > 5.0f)
+            {
+                ForceSpellCast(target, SPELL_WYVERN_STING);
+                WyvernSting = 15000;
+            }
+            else
+                WyvernSting = 2000;
+        }
+        else
+            WyvernSting -= diff;
+
+        if(SweepingWingClip < diff)
+        {
+            if(m_creature->IsWithinDistInMap(m_creature->getVictim(), 5.0))
+            {
+                AddSpellToCast(m_creature->getVictim(), SPELL_SWEEPING_WING_CLIP);
+                    m_creature->GetMotionMaster()->MovePoint(1, m_creature->GetPositionX()+urand(10, 15), m_creature->GetPositionY()+urand(3, 7), m_creature->GetPositionZ());
+                SweepingWingClip = 37000;
+            }
+            else
+                SweepingWingClip = 2500;
+        }
+        else
+            SweepingWingClip -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_ashtongue_primalist(Creature *_Creature)
+{
+    return new mob_ashtongue_primalistAI (_Creature);
+}
+
 /* ============================
 *
 *      TERON  GOREFIEND
@@ -1969,6 +2216,21 @@ void AddSC_black_temple_trash()
     newscript = new Script;
     newscript->Name = "mob_shadowmoon_deathshaper";
     newscript->GetAI = &GetAI_mob_shadowmoon_deathshaper;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_ashtongue_battlelord";
+    newscript->GetAI = &GetAI_mob_ashtongue_battlelord;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_ashtongue_feral_spirit";
+    newscript->GetAI = &GetAI_mob_ashtongue_feral_spirit;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_ashtongue_primalist";
+    newscript->GetAI = &GetAI_mob_ashtongue_primalist;
     newscript->RegisterSelf();
 
     newscript = new Script;
