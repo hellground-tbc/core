@@ -2172,6 +2172,20 @@ void Aura::TriggerSpell()
                 caster->CastCustomSpell(trigger_spell_id, SPELLVALUE_MAX_TARGETS, m_tickNumber / 10 + 1, NULL, true, NULL, this, originalCasterGUID);
                 return;
             }
+            // Charge Rage targeting
+            case 39575:
+                if(caster->CanHaveThreatList())
+                {
+                    std::list<HostilReference*>& m_threatlist = caster->getThreatManager().getThreatList();
+                    std::list<HostilReference*>::iterator i = m_threatlist.begin();
+                    if(m_threatlist.size())
+                    {
+                        advance(i, rand()%m_threatlist.size());
+                        target = Unit::GetUnit(*caster,(*i)->getUnitGuid());
+                        break;
+                    }
+                break;
+                }
         }
     }
     if(!GetSpellMaxRange(sSpellRangeStore.LookupEntry(triggeredSpellInfo->rangeIndex)))
