@@ -26,6 +26,7 @@
 #include "Player.h"
 #include "ObjectMgr.h"
 #include "SpellMgr.h"
+#include "CreatureAI.h"
 
 Totem::Totem() : Creature()
 {
@@ -85,6 +86,10 @@ void Totem::Summon(Unit* owner)
     SetInstanceId(owner->GetInstanceId());
     owner->GetMap()->Add((Creature*)this);
 
+    // call JustSummoned function when totem summoned from spell
+    if(owner->GetTypeId() == TYPEID_UNIT && ((Creature*)owner)->IsAIEnabled)
+        ((Creature*)owner)->AI()->JustSummoned(this);
+
     WorldPacket data(SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE, 8);
     data << GetGUID();
     SendMessageToSet(&data,true);
@@ -143,6 +148,10 @@ void Totem::UnSummon()
                 }
             }
         }
+
+        // call SummonedCreatureDespawn function when totem UnSummoned
+        if(owner->GetTypeId() == TYPEID_UNIT && ((Creature*)owner)->IsAIEnabled)
+            ((Creature*)owner)->AI()->SummonedCreatureDespawn(this);
     }
 
     CleanupsBeforeDelete();

@@ -2604,6 +2604,7 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 42005: // Bloodboil
         case 31347: // Doom
+        case 39594: // Cyclone
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
             spellInfo->EffectImplicitTargetB[0] = 0;
             if(i == 42005)
