@@ -86,10 +86,6 @@ void Totem::Summon(Unit* owner)
     SetInstanceId(owner->GetInstanceId());
     owner->GetMap()->Add((Creature*)this);
 
-    // call JustSummoned function when totem summoned from spell
-    if(owner->GetTypeId() == TYPEID_UNIT && ((Creature*)owner)->IsAIEnabled)
-        ((Creature*)owner)->AI()->JustSummoned(this);
-
     WorldPacket data(SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE, 8);
     data << GetGUID();
     SendMessageToSet(&data,true);
@@ -109,6 +105,10 @@ void Totem::Summon(Unit* owner)
 
     if(GetEntry() == SENTRY_TOTEM_ENTRY)
         SetReactState(REACT_AGGRESSIVE);
+
+    // call JustSummoned function when totem summoned from spell
+    if(owner->GetTypeId() == TYPEID_UNIT && ((Creature*)owner)->IsAIEnabled)
+        ((Creature*)owner)->AI()->JustSummoned(this);
 }
 
 void Totem::UnSummon()
