@@ -521,7 +521,7 @@ void WorldSession::HandleStandStateChangeOpcode( WorldPacket & recv_data )
     uint8 animstate;
     recv_data >> animstate;
 
-    if(!GetPlayer()->isPossessed())
+    if(!GetPlayer()->isPossessed() && !GetPlayer()->isCharmed())
         _player->SetStandState(animstate);
 }
 
