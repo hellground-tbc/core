@@ -560,7 +560,7 @@ struct TRINITY_DLL_DECL mob_dragon_turtleAI : public ScriptedAI
         {
             if(!CanBeShielded)
             {
-                if(m_creature->GetHealth()/m_creature->GetMaxHealth()*100 < 50)
+                if(m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 50)
                     CanBeShielded = true;
                 ShellShield = 3000;
             }
@@ -1488,6 +1488,210 @@ CreatureAI* GetAI_mob_ashtongue_feral_spirit(Creature *_Creature)
 }
 
 /****************
+* Ashtongue Mystic - id 22844 & Ashtongue Mystic Totems - id 22894, 22896, 22897
+*****************/
+
+#define SPELL_FROST_SHOCK               41116
+#define SPELL_FLAME_SHOCK               41115
+#define SPELL_BLOODLUST                 41185
+#define SPELL_CHAIN_HEAL                41114
+#define SPELL_SEARING_TOTEM             39588
+#define SPELL_SUMMON_WINDFURY_TOTEM     39586
+#define SPELL_CYCLONE_TOTEM             39589
+// Totems
+#define NPC_CYCLONE_TOTEM           22894
+#define NPC_ASHTONGUE_SEARING_TOTEM 22896
+#define NPC_SUMMONED_WINDFURY_TOTEM 22897
+#define SPELL_CYCLON                39594
+#define SPELL_ATTACK                39593
+#define SPELL_WINDFURY_WEAPON       33727   //rank 5
+
+struct TRINITY_DLL_DECL totem_ashtongue_mysticAI : public Scripted_NoMovementAI
+{
+    totem_ashtongue_mysticAI(Creature *c) : Scripted_NoMovementAI(c) {}
+
+    uint64 OwnerGUID;
+    uint32 SpellTimer;
+
+    void Reset()
+    {
+        DoZoneInCombat(m_creature);
+        switch(m_creature->GetEntry())
+        {
+            case NPC_CYCLONE_TOTEM:
+                m_creature->SetMaxHealth(urand(4100,4200));
+                SpellTimer = urand(2000, 11000);
+                break;
+            case NPC_ASHTONGUE_SEARING_TOTEM:
+                m_creature->SetMaxHealth(urand(4800,4900));
+                SpellTimer = 1000;
+                break;
+            case NPC_SUMMONED_WINDFURY_TOTEM:
+                m_creature->SetMaxHealth(urand(1800,1900));
+                break;
+        }
+        m_creature->SetHealth(m_creature->GetMaxHealth());
+    }
+    void JustDied(Unit* killer)
+    {
+        if(m_creature->GetEntry() == NPC_SUMMONED_WINDFURY_TOTEM)
+        {
+            if(Unit* Mystic = Unit::GetUnit(*me, OwnerGUID))
+            {
+                if(Mystic->HasAura(SPELL_WINDFURY_WEAPON, 0))
+                    m_creature->RemoveAurasDueToSpell(SPELL_WINDFURY_WEAPON);
+            }
+        }
+    }
+    void UpdateAI(const uint32 diff)
+    {
+            if(SpellTimer < diff)
+            {
+                switch(m_creature->GetEntry())
+                {
+                    case NPC_CYCLONE_TOTEM:
+                        if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 40, true))
+                            AddSpellToCast(target, SPELL_CYCLON);
+                        SpellTimer = 11000;
+                        break;
+                    case NPC_ASHTONGUE_SEARING_TOTEM:
+                        AddSpellToCast(m_creature, SPELL_ATTACK);
+                        SpellTimer = 3000;
+                        break;
+                }
+            }
+            else
+                SpellTimer -= diff;
+
+        CastNextSpellIfAnyAndReady();
+    }
+};
+
+CreatureAI* GetAI_totem_ashtongue_mystic(Creature *_Creature)
+{
+    return new totem_ashtongue_mysticAI (_Creature);
+}
+
+struct TRINITY_DLL_DECL mob_ashtongue_mysticAI : public ScriptedAI
+{
+    mob_ashtongue_mysticAI(Creature *c) : ScriptedAI(c) {}
+
+    uint32 FrostShock;
+    uint32 FlameShock;
+    uint32 ChainHeal;
+    uint32 SearingTotem;
+    uint32 WindfuryTotem;
+    uint32 CycloneTotem;
+
+    void Reset()
+    {
+        FrostShock = urand(5000, 22000);
+        FlameShock = urand(10000, 30000);
+        ChainHeal = 5000;
+        SearingTotem = urand(500, 30000);
+        WindfuryTotem = urand(500, 30000);
+        CycloneTotem = urand(500, 30000);
+    }
+    void EnterCombat(Unit*) 
+    {
+        DoZoneInCombat();
+        DoCast(m_creature, SPELL_BLOODLUST);
+    }
+    void JustSummoned(Creature* totem)  //some workaround about windfury totem
+    {
+        if(totem->GetEntry() == NPC_SUMMONED_WINDFURY_TOTEM)
+        {
+            ((totem_ashtongue_mysticAI*)totem)->OwnerGUID = m_creature->GetGUID();
+            if(!m_creature->HasAura(SPELL_WINDFURY_WEAPON, 0))
+                m_creature->CastSpell(m_creature, SPELL_WINDFURY_WEAPON, true);
+        }
+        if(m_creature->getVictim())
+            ((totem_ashtongue_mysticAI*)totem)->AttackStart(m_creature->getVictim());
+    }
+    void SummonedCreatureDespawn(Creature* totem)
+    {
+        if(totem->GetEntry() == NPC_SUMMONED_WINDFURY_TOTEM)
+        {
+            if(m_creature->HasAura(SPELL_WINDFURY_WEAPON, 0))
+                m_creature->RemoveAurasDueToSpell(SPELL_WINDFURY_WEAPON);
+        }
+    }
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(FrostShock < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 20, true))
+                AddSpellToCast(target, SPELL_FROST_SHOCK);
+            FrostShock = 22000;
+        }
+        else
+            FrostShock -= diff;
+
+        if(FlameShock < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 20, true))
+                AddSpellToCast(target, SPELL_FLAME_SHOCK);
+            FlameShock = 30000;
+        }
+        else
+            FlameShock -= diff;
+
+        if(ChainHeal < diff)
+        {
+            if(m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 70)
+            {
+                ForceSpellCast(m_creature, SPELL_CHAIN_HEAL);
+                ChainHeal = 20000;
+            }
+            else if(Unit* healTarget = DoSelectLowestHpFriendly(40, 15000))
+            {
+                ForceSpellCast(healTarget, SPELL_CHAIN_HEAL);
+                ChainHeal = 20000;
+            }
+            else
+                ChainHeal = 3000;
+        }
+        else
+            ChainHeal -= diff;
+
+        if(SearingTotem < diff)
+        {
+            AddSpellToCast(m_creature, SPELL_SEARING_TOTEM);
+            SearingTotem = urand(30000, 40000);
+        }
+        else
+            SearingTotem -= diff;
+
+        if(WindfuryTotem < diff)
+        {
+            AddSpellToCast(m_creature, SPELL_SUMMON_WINDFURY_TOTEM);
+            WindfuryTotem = urand(30000, 40000);
+        }
+        else
+            WindfuryTotem -= diff;
+
+        if(CycloneTotem < diff)
+        {
+            AddSpellToCast(m_creature, SPELL_CYCLONE_TOTEM);
+            CycloneTotem = urand(30000, 40000);
+        }
+        else
+            CycloneTotem -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_ashtongue_mystic(Creature *_Creature)
+{
+    return new mob_ashtongue_mysticAI (_Creature);
+}
+
+/****************
 * Ashtongue Primalist - id 22847
 *****************/
 
@@ -1576,7 +1780,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_primalistAI : public ScriptedAI
             if(m_creature->IsWithinDistInMap(m_creature->getVictim(), 5.0))
             {
                 AddSpellToCast(m_creature->getVictim(), SPELL_SWEEPING_WING_CLIP);
-                    m_creature->GetMotionMaster()->MovePoint(1, m_creature->GetPositionX()+urand(10, 15), m_creature->GetPositionY()+urand(3, 7), m_creature->GetPositionZ());
+                m_creature->GetMotionMaster()->MovePoint(1, m_creature->GetPositionX()+urand(10, 15), m_creature->GetPositionY()+urand(3, 7), m_creature->GetPositionZ());
                 SweepingWingClip = 37000;
             }
             else
@@ -1593,6 +1797,99 @@ struct TRINITY_DLL_DECL mob_ashtongue_primalistAI : public ScriptedAI
 CreatureAI* GetAI_mob_ashtongue_primalist(Creature *_Creature)
 {
     return new mob_ashtongue_primalistAI (_Creature);
+}
+
+/****************
+* Ashtongue Stalker - id 23374
+*****************/
+
+#define SPELL_BLIND                 34654
+#define SPELL_INSTANT_POISON        41189
+#define SPELL_MIND_NUMBING_POISON   41190
+#define SPELL_STEALTH               34189
+#define SPELE_DUAL_WIELD            29651
+
+struct TRINITY_DLL_DECL mob_ashtongue_stalkerAI : public ScriptedAI
+{
+    mob_ashtongue_stalkerAI(Creature *c) : ScriptedAI(c) {}
+
+    uint32 Blind;
+    uint32 InstantPoison;
+    uint32 MindNumbingPoison;
+
+    Unit* TopAggroTarget(bool withMana)
+    {
+        std::list<HostilReference*> m_threatlist = m_creature->getThreatManager().getThreatList();
+        Unit *target;
+        while(m_threatlist.size() > 0)
+        {
+            target = Unit::GetUnit(*m_creature, (*m_threatlist.begin())->getUnitGuid());
+            if(withMana && target->getPowerType() != POWER_MANA)
+            {
+                m_threatlist.erase(m_threatlist.begin());
+                continue;
+            }
+            if(!withMana && target->getPowerType() == POWER_MANA)
+            {
+                m_threatlist.erase(m_threatlist.begin());
+                continue;
+            }
+            if(!target || !target->isAlive() || target->GetTypeId() != TYPEID_PLAYER)
+                m_threatlist.erase(m_threatlist.begin());
+            else
+                return target;
+        }
+        return NULL;
+    }
+
+    void Reset()
+    {
+        DoCast(m_creature, SPELL_STEALTH);
+        DoCast(m_creature, SPELE_DUAL_WIELD);
+        Blind = urand(10000, 20000);
+        InstantPoison = urand(5000, 10000);
+        MindNumbingPoison = urand(5000, 10000);
+    }
+    void EnterCombat(Unit*) { DoZoneInCombat(); }
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(Blind < diff)
+        {
+            AddSpellToCast(m_creature->getVictim(), SPELL_BLIND);
+            Blind = 20000;
+        }
+        else
+            Blind -= diff;
+
+        if(InstantPoison < diff)
+        {
+            if(TopAggroTarget(false))
+                AddSpellToCast(TopAggroTarget(false), SPELL_INSTANT_POISON);
+            InstantPoison = 10000;
+        }
+        else
+            InstantPoison -= diff;
+
+        if(MindNumbingPoison < diff)
+        {
+            if(TopAggroTarget(true))
+                AddSpellToCast(TopAggroTarget(true), SPELL_MIND_NUMBING_POISON);
+            MindNumbingPoison = 10000;
+        }
+        else
+            MindNumbingPoison -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_ashtongue_stalker(Creature *_Creature)
+{
+    return new mob_ashtongue_stalkerAI (_Creature);
 }
 
 /* ============================
@@ -2229,8 +2526,23 @@ void AddSC_black_temple_trash()
     newscript->RegisterSelf();
 
     newscript = new Script;
+    newscript->Name = "mob_ashtongue_mystic";
+    newscript->GetAI = &GetAI_mob_ashtongue_mystic;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "totem_ashtongue_mystic";
+    newscript->GetAI = &GetAI_totem_ashtongue_mystic;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
     newscript->Name = "mob_ashtongue_primalist";
     newscript->GetAI = &GetAI_mob_ashtongue_primalist;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_ashtongue_stalker";
+    newscript->GetAI = &GetAI_mob_ashtongue_stalker;
     newscript->RegisterSelf();
 
     newscript = new Script;
