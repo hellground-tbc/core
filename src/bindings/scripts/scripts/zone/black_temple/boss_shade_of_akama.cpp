@@ -660,9 +660,9 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
         }
 
         m_damageTimer = 10000;
-        m_waveTimer = 10000;
-        m_guardTimer = 15000;
-        m_sorcTimer = 30000;
+        m_waveTimer = 7000;
+        m_guardTimer = 9000;
+        m_sorcTimer = 9000;
 
         if (pInstance)
             pInstance->SetData(DATA_SHADEOFAKAMAEVENT, NOT_STARTED);
