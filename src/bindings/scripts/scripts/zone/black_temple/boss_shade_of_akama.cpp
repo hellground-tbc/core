@@ -296,6 +296,234 @@ struct TRINITY_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
     }
 };
 
+enum spiritbinderSpells
+{
+    SPELL_CHAIN_HEAL  = 42027,
+    SPELL_SPIRIT_HEAL = 42317,
+    SPELL_SPIRIT_MEND = 42025
+};
+
+struct TRINITY_DLL_DECL mob_ashtongue_spiritbinderAI : public ScriptedAI
+{
+    mob_ashtongue_spiritbinderAI(Creature* c) : ScriptedAI(c)
+    { 
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
+
+    ScriptedInstance* pInstance;
+
+    uint32 m_chainHealTimer;
+    uint32 m_spiritHealTimer;
+    uint32 m_spiritMendTimer;
+    uint32 m_checkTimer;
+
+    void Reset()
+    {
+        m_chainHealTimer  = urand(10000, 15000);
+        m_spiritHealTimer = urand(7000, 10000);
+        m_spiritMendTimer = urand(14000, 20000);
+        m_checkTimer = 5000;
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim())
+            return;
+
+        if (m_chainHealTimer < diff)
+        {
+            AddSpellToCast(m_creature, SPELL_CHAIN_HEAL, false);
+            m_chainHealTimer = 20000;
+        }
+        else
+            m_chainHealTimer -= diff;
+
+        if(m_spiritMendTimer < diff)
+        {
+            AddSpellToCast(m_creature, SPELL_SPIRIT_MEND, false);
+            m_spiritMendTimer = 20000;
+        }
+        else
+            m_spiritMendTimer -= diff;
+
+        if(m_spiritHealTimer < diff)
+        {
+            if(Unit *pFriend = DoSelectLowestHpFriendly(40.0f, 1000))
+            {
+                AddSpellToCast(pFriend, SPELL_SPIRIT_HEAL, false);
+                m_spiritHealTimer = 10000;
+            }
+        }
+        else
+            m_spiritHealTimer -= diff;
+
+        if(m_checkTimer < diff)
+        {
+            if(!pInstance)
+                return;
+
+            if(Creature *pAkama = m_creature->GetCreature(*m_creature, pInstance->GetData64(DATA_SHADEOFAKAMA)))
+            {
+                if(!pAkama->isAlive())
+                {
+                    m_creature->Kill(m_creature, false);
+                    m_creature->RemoveCorpse();
+                }
+            }
+            m_checkTimer = 5000;
+        }
+        else
+            m_checkTimer -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+enum elementalistSpells
+{
+    SPELL_RAIN_OF_FIRE = 42023,
+    SPELL_LIGHTNING_BOLT = 42024 
+};
+
+struct TRINITY_DLL_DECL mob_ashtongue_elementalistAI : public ScriptedAI
+{
+    mob_ashtongue_elementalistAI(Creature* c) : ScriptedAI(c)
+    { 
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
+
+    ScriptedInstance* pInstance;
+
+    uint32 m_rainofFireTimer;
+    uint32 m_lightningBoltTimer;
+    uint32 m_checkTimer;
+
+    void Reset()
+    {
+        m_rainofFireTimer  = urand(5000, 18000);
+        m_lightningBoltTimer = urand(2000, 4000);
+        m_checkTimer = 5000;
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim())
+            return;
+
+        if (m_lightningBoltTimer < diff)
+        {
+            AddSpellToCast(m_creature, SPELL_LIGHTNING_BOLT, false);
+            m_lightningBoltTimer = 10000;
+        }
+        else
+            m_lightningBoltTimer -= diff;
+
+        if(m_rainofFireTimer < diff)
+        {
+            DoZoneInCombat();
+            if(Unit *pEnemy = SelectUnit(SELECT_TARGET_RANDOM, 0, 40.0f, true))
+            {
+                AddSpellToCast(pEnemy, SPELL_RAIN_OF_FIRE, false);
+                m_rainofFireTimer = 15000;
+            }
+        }
+        else
+            m_rainofFireTimer -= diff;
+
+        if(m_checkTimer < diff)
+        {
+            if(!pInstance)
+                return;
+
+            if(Creature *pAkama = m_creature->GetCreature(*m_creature, pInstance->GetData64(DATA_SHADEOFAKAMA)))
+            {
+                if(!pAkama->isAlive())
+                {
+                    m_creature->Kill(m_creature, false);
+                    m_creature->RemoveCorpse();
+                }
+            }
+            m_checkTimer = 5000;
+        }
+        else
+            m_checkTimer -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+enum rogueSpells
+{
+    SPELL_DEBILITATING_POISON = 41978,
+    SPELL_EVISCERATE = 41177
+};
+
+struct TRINITY_DLL_DECL mob_ashtongue_rogueAI : public ScriptedAI
+{
+    mob_ashtongue_rogueAI(Creature* c) : ScriptedAI(c)
+    { 
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
+
+    ScriptedInstance* pInstance;
+
+    uint32 m_debilPoisonTimer;
+    uint32 m_eviscerateTimer;
+    uint32 m_checkTimer;
+
+    void Reset()
+    {
+        m_debilPoisonTimer  = urand(5000, 15000);
+        m_eviscerateTimer = urand(2000, 7000);
+        m_checkTimer = 5000;
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim())
+            return;
+
+        if (m_debilPoisonTimer < diff)
+        {
+            AddSpellToCast(m_creature->getVictim(), SPELL_DEBILITATING_POISON, false);
+            m_debilPoisonTimer = 15000;
+        }
+        else
+            m_debilPoisonTimer -= diff;
+
+        if(m_eviscerateTimer < diff)
+        {
+            AddSpellToCast(m_creature->getVictim(), SPELL_EVISCERATE, false);
+            m_eviscerateTimer = 10000;
+        }
+        else
+            m_eviscerateTimer -= diff;
+
+        if(m_checkTimer < diff)
+        {
+            if(!pInstance)
+                return;
+
+            if(Creature *pAkama = m_creature->GetCreature(*m_creature, pInstance->GetData64(DATA_SHADEOFAKAMA)))
+            {
+                if(!pAkama->isAlive())
+                {
+                    m_creature->Kill(m_creature, false);
+                    m_creature->RemoveCorpse();
+                }
+            }
+            m_checkTimer = 5000;
+        }
+        else
+            m_checkTimer -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
 struct TRINITY_DLL_DECL mob_ashtongue_sorcererAI : public ScriptedAI
 {
     mob_ashtongue_sorcererAI(Creature* c) : ScriptedAI(c)
@@ -1056,6 +1284,21 @@ CreatureAI* GetAI_mob_ashtongue_defender(Creature *_Creature)
     return new mob_ashtongue_defenderAI (_Creature);
 }
 
+CreatureAI* GetAI_mob_ashtongue_spiritbinder(Creature *_Creature)
+{
+    return new mob_ashtongue_spiritbinderAI (_Creature);
+}
+
+CreatureAI* GetAI_mob_ashtongue_elementalist(Creature *_Creature)
+{
+    return new mob_ashtongue_elementalistAI (_Creature);
+}
+
+CreatureAI* GetAI_mob_ashtongue_rogue(Creature *_Creature)
+{
+    return new mob_ashtongue_rogueAI (_Creature);
+}
+
 CreatureAI* GetAI_npc_akama_shade(Creature *_Creature)
 {
     return new npc_akamaAI (_Creature);
@@ -1117,6 +1360,21 @@ void AddSC_boss_shade_of_akama()
     newscript = new Script;
     newscript->Name="mob_ashtongue_sorcerer";
     newscript->GetAI = &GetAI_mob_ashtongue_sorcerer;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="mob_ashtongue_spiritbinder";
+    newscript->GetAI = &GetAI_mob_ashtongue_spiritbinder;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="mob_ashtongue_elementalist";
+    newscript->GetAI = &GetAI_mob_ashtongue_elementalist;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="mob_ashtongue_rogue";
+    newscript->GetAI = &GetAI_mob_ashtongue_rogue;
     newscript->RegisterSelf();
 
     newscript = new Script;

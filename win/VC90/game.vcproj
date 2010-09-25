@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="windows-1250"?>
+<?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
@@ -127,7 +127,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/MP /openmp"
+				AdditionalOptions="/D &quot;LARGE_CELL&quot;"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\shared\Database;..\..\src\shared\vmap;..\..\dep\ACE_wrappers;..\..\src\game\;..\..\dep\include\g3dlite"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;"
