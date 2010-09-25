@@ -1892,6 +1892,88 @@ CreatureAI* GetAI_mob_ashtongue_stalker(Creature *_Creature)
     return new mob_ashtongue_stalkerAI (_Creature);
 }
 
+/****************
+* Ashtongue Stormcaller - id 22846
+*****************/
+
+#define SPELL_CHAIN_LIGHTNING           41183
+#define SPELL_LIGHTNING_BOLT            41184
+#define SPELL_LIGHTNING_SHIELD          41151
+
+struct TRINITY_DLL_DECL mob_ashtongue_stormcallerAI : public ScriptedAI
+{
+    mob_ashtongue_stormcallerAI(Creature *c) : ScriptedAI(c) {}
+
+    uint32 ChainLightning;
+    uint32 LightningBolt;
+    uint32 LightningShield;
+
+    void Reset()
+    {
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
+        ChainLightning = urand(6000, 25000);
+        LightningBolt = urand(1500, 3000);
+        LightningShield = 25000;
+    }
+    void EnterCombat(Unit*)
+    {
+        DoZoneInCombat();
+        DoCast(m_creature, SPELL_LIGHTNING_SHIELD);
+    }
+    Unit* TopAggroTarget(float minDist)
+    {
+        std::list<HostilReference*> m_threatlist = m_creature->getThreatManager().getThreatList();
+        Unit *target;
+        while(m_threatlist.size() > 0)
+        {
+            target = Unit::GetUnit(*m_creature, (*m_threatlist.begin())->getUnitGuid());
+            if(!target || !target->isAlive() || target->GetTypeId() != TYPEID_PLAYER || (minDist && m_creature->IsWithinCombatRange(target, minDist)))
+                m_threatlist.erase(m_threatlist.begin());
+            else
+                return target;
+        }
+        return NULL;
+    }
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(ChainLightning < diff)
+        {
+            ForceSpellCast(m_creature->getVictim(), SPELL_CHAIN_LIGHTNING);
+            ChainLightning = 10000;
+        }
+        else
+            ChainLightning -= diff;
+
+        if(LightningBolt < diff)
+        {
+            if(TopAggroTarget(8.0f))
+                DoCast(TopAggroTarget(8.0f), SPELL_LIGHTNING_BOLT);
+            LightningBolt = 5000;
+        }
+        else
+            LightningBolt -= diff;
+
+        if(LightningShield < diff)
+        {
+            DoCast(m_creature, SPELL_LIGHTNING_SHIELD);
+            LightningShield = 22000;
+        }
+        else
+            LightningShield -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_ashtongue_stormcaller(Creature *_Creature)
+{
+    return new mob_ashtongue_stormcallerAI (_Creature);
+}
+
 /* ============================
 *
 *      TERON  GOREFIEND
@@ -2543,6 +2625,11 @@ void AddSC_black_temple_trash()
     newscript = new Script;
     newscript->Name = "mob_ashtongue_stalker";
     newscript->GetAI = &GetAI_mob_ashtongue_stalker;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_ashtongue_stormcaller";
+    newscript->GetAI = &GetAI_mob_ashtongue_stormcaller;
     newscript->RegisterSelf();
 
     newscript = new Script;

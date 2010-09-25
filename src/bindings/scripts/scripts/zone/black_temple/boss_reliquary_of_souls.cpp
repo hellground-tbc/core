@@ -177,7 +177,6 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
 
     uint32 CheckTimer;
     uint32 DelayTimer;
-    Unit* AggroTarget;
 
     void Reset()
     {
@@ -195,7 +194,6 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
         }
 
         Phase = 0;
-        AggroTarget = NULL;
 
         CheckTimer = 2000;
         DelayTimer = 0;
@@ -207,8 +205,22 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
 
     void StartEvent(Unit *who)
     {
-        AggroTarget = who;
-        DelayTimer = 15000;
+        if(!m_creature->isInCombat())
+        {
+            if (m_creature->IsWithinDistInMap(who, 100))
+            {
+                m_creature->AddThreat(who, 10000.0f);
+                DoZoneInCombat();
+
+                if(pInstance)
+                    pInstance->SetData(DATA_RELIQUARYOFSOULSEVENT, IN_PROGRESS);
+                Phase = 1;
+                Counter = 0;
+                Timer = 0;
+                DelayTimer = 15000;
+            }
+        }
+        
     }
 
     void EnterCombat(Unit* who)
@@ -262,25 +274,8 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
             DelayTimer -= diff;
             return;
         }
-        else if (DelayTimer)
-        {
+        else
             DelayTimer = 0;
-            if(!m_creature->isInCombat())
-            {
-                if (m_creature->IsWithinDistInMap(AggroTarget, 100))
-                {
-                    m_creature->AddThreat(AggroTarget, 10000.0f);
-                    DoZoneInCombat();
-
-                    if(pInstance)
-                        pInstance->SetData(DATA_RELIQUARYOFSOULSEVENT, IN_PROGRESS);
-
-                    Phase = 1;
-                    Counter = 0;
-                    Timer = 0;
-                }
-            }
-        }
 
         if(!Phase)
             return;
