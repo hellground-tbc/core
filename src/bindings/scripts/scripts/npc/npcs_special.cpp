@@ -38,6 +38,7 @@ npc_mojo                %       AI for companion Mojo (summoned by item: 33993)
 EndContentData */
 
 #include "precompiled.h"
+#include "Totem.h"
 
 /*########
 # npc_chicken_cluck
@@ -1721,6 +1722,84 @@ bool GossipSelect_npc_ring_specialist(Player* player, Creature* _Creature, uint3
     return true;
 }
 
+/*########
+# npc_elemental_guardian
+#########*/
+
+struct TRINITY_DLL_DECL npc_elemental_guardianAI : public ScriptedAI
+{
+    npc_elemental_guardianAI(Creature *c) : ScriptedAI(c){}
+
+    uint32 m_checkTimer;
+
+    void Reset()
+    {
+        m_checkTimer = 2000;
+    }
+
+    void Despawn()
+    {
+        m_creature->Kill(m_creature, false);
+        m_creature->RemoveCorpse();
+    }
+
+    void EnterCombat(Unit *who){}
+
+    void MoveInLineOfSight(Unit *pWho)
+    {
+        if(!m_creature->getVictim() && m_creature->IsHostileTo(pWho))
+        {
+            Creature *pTotem = m_creature->GetCreature(*m_creature, m_creature->GetOwnerGUID());
+            if(pTotem && pTotem->IsWithinDistInMap(pWho, 30.0f))
+                AttackStart(pWho);
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(m_checkTimer < diff)
+        {
+            Creature *pTotem = m_creature->GetCreature(*m_creature, m_creature->GetOwnerGUID());
+            if(!me->getVictim() && pTotem)
+            {
+                if(!m_creature->hasUnitState(UNIT_STAT_FOLLOW))
+                        m_creature->GetMotionMaster()->MoveFollow(pTotem, 2.0f, M_PI);
+
+                if(Unit *pTemp = pTotem->SelectNearestTarget(30.0))
+                    AttackStart(pTemp);
+            }
+
+            if(pTotem)
+            {
+                if(!pTotem->isAlive())
+                {
+                    Despawn();
+                    return;
+                }
+
+                if(!m_creature->IsWithinDistInMap(pTotem, 30.0f))
+                {
+                    EnterEvadeMode();
+                    m_creature->GetMotionMaster()->MoveFollow(pTotem, 2.0f, M_PI);
+                }
+            }
+            else
+                Despawn();
+
+            m_checkTimer = 2000;
+        }
+        else
+            m_checkTimer -= diff;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_elemental_guardian(Creature* pCreature)
+{
+    return new npc_elemental_guardianAI(pCreature);
+}
+
 void AddSC_npcs_special()
 {
     Script *newscript;
@@ -1828,6 +1907,11 @@ void AddSC_npcs_special()
     newscript->Name="npc_ring_specialist";
     newscript->pGossipHello = &GossipHello_npc_ring_specialist;
     newscript->pGossipSelect = &GossipSelect_npc_ring_specialist;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_elemental_guardian";
+    newscript->GetAI = &GetAI_npc_elemental_guardian;
     newscript->RegisterSelf();
 }
 

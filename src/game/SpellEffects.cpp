@@ -3968,13 +3968,34 @@ void Spell::EffectSummonGuardian(uint32 i)
         return;
     }
 
+    // set timer for unsummon
+    int32 duration = GetSpellDuration(m_spellInfo);
+
     Player *caster = NULL;
     if(m_originalCaster)
     {
         if(m_originalCaster->GetTypeId() == TYPEID_PLAYER)
             caster = (Player*)m_originalCaster;
         else if(((Creature*)m_originalCaster)->isTotem())
-            caster = m_originalCaster->GetCharmerOrOwnerPlayerOrPlayerItself();
+        {
+            if(((Creature*)m_originalCaster)->GetEntry() == 15439 || ((Creature*)m_originalCaster)->GetEntry() == 15430)
+            {
+                float px, py, pz;
+                m_caster->GetClosePoint(px,py,pz,m_caster->GetObjectSize());
+                if(caster = m_originalCaster->GetCharmerOrOwnerPlayerOrPlayerItself())
+                if(Pet *spawnCreature = caster->SummonPet(m_spellInfo->EffectMiscValue[i], px, py, pz, m_caster->GetOrientation(), GUARDIAN_PET, duration))
+                {
+                    spawnCreature->SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP,0);
+                    spawnCreature->SetUInt32Value(UNIT_CREATED_BY_SPELL, m_spellInfo->Id);
+                    spawnCreature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_PVP_ATTACKABLE);
+                    spawnCreature->SetOwnerGUID(m_caster->GetGUID());
+                    spawnCreature->SetReactState(REACT_AGGRESSIVE);
+                    return;
+                }
+            }
+            else
+                caster = m_originalCaster->GetCharmerOrOwnerPlayerOrPlayerItself();
+        }
     }
 
     if(!caster)
@@ -3982,9 +4003,6 @@ void Spell::EffectSummonGuardian(uint32 i)
         EffectSummonWild(i);
         return;
     }
-
-    // set timer for unsummon
-    int32 duration = GetSpellDuration(m_spellInfo);
 
     // Search old Guardian only for players (if casted spell not have duration or cooldown)
     // FIXME: some guardians have control spell applied and controlled by player and anyway player can't summon in this time
