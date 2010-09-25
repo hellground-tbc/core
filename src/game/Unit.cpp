@@ -6465,7 +6465,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         case 14157: // Ruthlessness
         {
             // Need add combopoint AFTER finish movie (or they dropped in finish phase)
-            if(GetTypeId()==TYPEID_PLAYER && procSpell->SpellFamilyFlags & SPELLFAMILYFLAG_ROGUE__FINISHING_MOVE)
+            if(GetTypeId()==TYPEID_PLAYER && procSpell->SpellFamilyFlags & SPELLFAMILYFLAG_ROGUE__FINISHING_MOVE && procSpell->Id != 26679)
             {
                 // avoid double proc
                 if(pVictim != this)
