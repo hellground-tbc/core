@@ -35,7 +35,7 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_amnennar_the_coldbringerAI : public ScriptedAI
 {
-    boss_amnennar_the_coldbringerAI(Creature *c) : ScriptedAI(c) {}
+    boss_amnennar_the_coldbringerAI(Creature *c) : ScriptedAI(c), summons(m_creature) {}
 
     uint32 AmnenarsWrath_Timer;
     uint32 FrostBolt_Timer;
@@ -44,12 +44,14 @@ struct TRINITY_DLL_DECL boss_amnennar_the_coldbringerAI : public ScriptedAI
     int RandX;
     int RandY;
     Creature* Summoned;
+    SummonList summons;
 
     void Reset()
     {
         AmnenarsWrath_Timer = 8000;
         FrostBolt_Timer = 1000;
         Spectrals = false;
+        summons.DespawnAll();
     }
 
     void EnterCombat(Unit *who)
@@ -83,6 +85,15 @@ struct TRINITY_DLL_DECL boss_amnennar_the_coldbringerAI : public ScriptedAI
         Summoned = DoSpawnCreature(8585, RandX, RandY, 0, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 60000);
         if (Summoned)
             ((CreatureAI*)Summoned->AI())->AttackStart(victim);
+    }
+    void JustSummoned(Creature* summoned)
+    {
+        summons.Summon(summoned);
+    }
+
+    void JustDied(Unit* killer)
+    {
+        summons.DespawnAll();
     }
 
     void UpdateAI(const uint32 diff)

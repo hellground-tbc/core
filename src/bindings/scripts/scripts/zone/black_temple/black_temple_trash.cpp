@@ -1599,21 +1599,27 @@ struct TRINITY_DLL_DECL mob_ashtongue_mysticAI : public ScriptedAI
     }
     void JustSummoned(Creature* totem)  //some workaround about windfury totem
     {
-        if(totem->GetEntry() == NPC_SUMMONED_WINDFURY_TOTEM)
+        if(totem)
         {
-            ((totem_ashtongue_mysticAI*)totem)->OwnerGUID = m_creature->GetGUID();
-            if(!m_creature->HasAura(SPELL_WINDFURY_WEAPON, 0))
-                m_creature->CastSpell(m_creature, SPELL_WINDFURY_WEAPON, true);
+            if(totem->GetEntry() == NPC_SUMMONED_WINDFURY_TOTEM)
+            {
+                ((totem_ashtongue_mysticAI*)totem)->OwnerGUID = m_creature->GetGUID();
+                if(!m_creature->HasAura(SPELL_WINDFURY_WEAPON, 0))
+                    m_creature->CastSpell(m_creature, SPELL_WINDFURY_WEAPON, true);
+            }
+            if(m_creature->getVictim())
+                ((totem_ashtongue_mysticAI*)totem)->AttackStart(m_creature->getVictim());
         }
-        if(m_creature->getVictim())
-            ((totem_ashtongue_mysticAI*)totem)->AttackStart(m_creature->getVictim());
     }
     void SummonedCreatureDespawn(Creature* totem)
     {
-        if(totem->GetEntry() == NPC_SUMMONED_WINDFURY_TOTEM)
+        if(totem)
         {
-            if(m_creature->HasAura(SPELL_WINDFURY_WEAPON, 0))
-                m_creature->RemoveAurasDueToSpell(SPELL_WINDFURY_WEAPON);
+            if(totem->GetEntry() == NPC_SUMMONED_WINDFURY_TOTEM)
+            {
+                if(m_creature->HasAura(SPELL_WINDFURY_WEAPON, 0))
+                    m_creature->RemoveAurasDueToSpell(SPELL_WINDFURY_WEAPON);
+            }
         }
     }
     void UpdateAI(const uint32 diff)
