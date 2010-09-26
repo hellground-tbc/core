@@ -253,6 +253,7 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/orgrimmar/orgrimmar.cpp
    scripts/zone/razorfen_downs/razorfen_downs.cpp
    scripts/zone/razorfen_downs/instance_razorfen_downs.cpp
+   scripts/zone/razorfen_downs/boss_amnennar_the_coldbringer.cpp
    scripts/zone/razorfen_kraul/def_razorfen_kraul.h
    scripts/zone/razorfen_kraul/instance_razorfen_kraul.cpp
    scripts/zone/razorfen_kraul/razorfen_kraul.cpp

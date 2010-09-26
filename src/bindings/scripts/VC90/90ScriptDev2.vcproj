@@ -1107,6 +1107,10 @@
 					Name="Razorfen Downs"
 					>
 					<File
+						RelativePath="..\scripts\zone\razorfen_downs\boss_amnennar_the_coldbringer.cpp"
+						>
+					</File>
+					<File
 						RelativePath="..\scripts\zone\razorfen_downs\instance_razorfen_downs.cpp"
 						>
 					</File>

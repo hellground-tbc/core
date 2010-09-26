@@ -373,6 +373,7 @@ extern void AddSC_orgrimmar();
 //Razorfen Downs
 extern void AddSC_razorfen_downs();
 extern void AddSC_instance_razorfen_downs();
+extern void AddSC_boss_amnennar_the_coldbringer();
 
 //Razorfen Kraul
 extern void AddSC_razorfen_kraul();
@@ -956,6 +957,7 @@ void AddScripts()
     //Razorfen Downs
     AddSC_razorfen_downs();
     AddSC_instance_razorfen_downs();
+    AddSC_boss_amnennar_the_coldbringer();
 
     //Razorfen Kraul
     AddSC_razorfen_kraul();
