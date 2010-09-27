@@ -43,20 +43,23 @@ EndScriptData */
 #define A_FACTION  1690
 #define H_FACTION  1691
 
-#define GOSSIP_POSSES "[ Control this Chesspiece ]" // Maybe should be different gossip, visuals will be fixed at the end :]
+#define GOSSIP_POSSES       "[ Control this Chesspiece ]" // Maybe should be different gossip, visuals will be fixed at the end :]
 
-#define ECHO_OF_MEDIVH_ID 16816
+#define ECHO_OF_MEDIVH_ID   16816
 
-#define EVENT_START "[PH] Start Chess Event" // Maybe should be different gossip, visuals will be fixed at the end :]
-#define NPC_ATTACK_RADIUS 7
-#define AGGRO_RANGE 1
-#define TRIGGER_ID 22519
-#define SEARCH_RANGE 5
-#define DUST_COVERED_CHEST 185119
+#define EVENT_START         "[PH] Start Chess Event" // Maybe should be different gossip, visuals will be fixed at the end :]
+#define NPC_ATTACK_RADIUS   7
+#define AGGRO_RANGE         1
+#define TRIGGER_ID          22519
+#define SEARCH_RANGE        5
+#define DUST_COVERED_CHEST  185119
 
 #define allianceSideDeadOrientation     1
 #define hordeSideDeadOrientation        1
 #define POSITION_Z                      221
+
+                            //x, y, z
+#define SPAWN_POS           0.0, 0.0, 0.0
 
 #define START_PRIORITY          100
 #define RAND_PRIORITY           100
@@ -186,6 +189,17 @@ enum ChessPIecesSpells
     SPELL_PAWN_A_2    = 37414     //Shield Block
 };
 
+enum MiniEvent
+{
+    MINI_EVENT_KING     = 0,
+    MINI_EVENT_QUEEN    = 1,
+    MINI_EVENT_BISHOP   = 2,
+    MINI_EVENT_KNIGHT   = 3,
+    MINI_EVENT_ROOK     = 4,
+    MINI_EVENT_PAWN     = 5,
+    MINI_EVENT_END      = 6
+};
+
 enum AbilityCooldowns
 {
     //ability 1
@@ -248,7 +262,6 @@ enum ChessOrientation
 
 struct ChessTile
 {
-
     WorldLocation position;
     uint64 piece;           //GUID;
     uint64 trigger;         //GUID;
@@ -313,9 +326,6 @@ private:
 
     WorldLocation wLoc;
 
-    //Unit * onMarker;
-    //bool EndMarker;
-
     uint64 MedivhGUID;
 
     int32 moveTimer;
@@ -346,8 +356,6 @@ private:
     bool ReturnToHome;
     bool CanMove;
 
-    //uint32 Heal_Timer;
-    //uint32 NextMove_Timer;
     uint64 MedivhGUID;
 
     int ability1Chance;     //chance to cast spell
@@ -364,10 +372,6 @@ private:
 
     uint32 ability1ID;
     uint32 ability2ID;
-
-    //Creature *start_marker, *end_marker;
-
-    //std::list<Unit *> PossibleMoveUnits;
 
     //void MoveInLineOfSight(Unit *who);
 
@@ -400,8 +404,6 @@ public:
 
     void UpdateAI(const uint32 diff);
 
-    void SpellHitTarget(Unit *target, const SpellEntry *spell);
-
     void DamageTaken(Unit * done_by, uint32 &damage);
 };
 
@@ -426,9 +428,11 @@ private:
 
     bool eventStarted;
     bool enabled;
-    bool boardPrepared;
+    bool miniEvent;
 
-    int prepareTimer;
+    int miniEventState;
+
+    int32 miniEventTimer;
 
     WorldLocation wLoc;     //location of medivh
     WorldLocation tpLoc;    //location of player teleport point
@@ -457,24 +461,31 @@ public:
 
     //teleport
 
-    void TeleportPlayer(Player * player);   //teleport player to tpLoc
+    void TeleportPlayer(Player * player);           //teleport player to tpLoc
     void TeleportPlayer(uint64 player);
-    void TeleportPlayers(); //teleport in game players to tpLoc
+    void TeleportPlayers();                         //teleport in game players to tpLoc
     void AddPlayerToTeleportList(Player * player);
     void TeleportListedPlayers();
 
-    //event starting
+    //event
 
     void ApplyDebuffsOnRaidMembers();
-    void PrepareBoardForEvent();    //search for pieces, triggers and save them in chessBoard table
+    void PrepareBoardForEvent();
     void StartEvent();
+    void SpawnRooks();
+    void SpawnKnights();
+    void SpawnBishops();
+    void SpawnQueens();
+    void SpawnKings();
+    void SpawnPawns();
+    void SpawnTriggers();
 
     //move
 
     bool ChessSquareIsEmpty(uint64 trigger);
     bool CanMoveTo(uint64 trigger, uint64 piece);   //check if player can move to trigger - prevent cheating
     void AddTriggerToMove(uint64 trigger, uint64 piece, bool player);
-    Unit * FindTrigger(uint64 piece);   //find trigger where piece actually should be
+    Unit * FindTrigger(uint64 piece);               //find trigger where piece actually should be
     void MakeMove();
     int GetMoveRange(uint64 piece);
     int GetMoveRange(Unit * piece);

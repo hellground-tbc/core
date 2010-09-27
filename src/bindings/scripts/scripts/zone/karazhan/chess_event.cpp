@@ -11,8 +11,7 @@ move_triggerAI::move_triggerAI(Creature *c) : ScriptedAI(c)
 
 void move_triggerAI::Reset()
 {
-    //onMarker    = NULL;
-    //EndMarker   = false;
+    printf("\n Wywolanie move_triggerAI::Reset()");
     moveTimer   = 10000;
     pieceStance = PIECE_NONE;
     unitToMove = 0;
@@ -21,6 +20,7 @@ void move_triggerAI::Reset()
 
 void move_triggerAI::SpellHit(Unit *caster,const SpellEntry *spell)
 {
+    printf("\n Wywolanie SpellHit(Unit *caster,const SpellEntry *spell)");
     if (!MedivhGUID)
         MedivhGUID = pInstance->GetData64(DATA_CHESS_ECHO_OF_MEDIVH);
 
@@ -31,17 +31,10 @@ void move_triggerAI::SpellHit(Unit *caster,const SpellEntry *spell)
     if(spell->Id == SPELL_MOVE_1 || spell->Id == SPELL_MOVE_2 || spell->Id == SPELL_MOVE_3 || spell->Id == SPELL_MOVE_4 ||
        spell->Id == SPELL_MOVE_5 || spell->Id == SPELL_MOVE_6 || spell->Id == SPELL_MOVE_7 || spell->Id == SPELL_CHANGE_FACING)
     {
-        //if(onMarker != NULL || EndMarker)
-        //    return;
-
-        //EndMarker = true;
-        //onMarker = caster;
-
         boss_MedivhAI * medivh = (boss_MedivhAI*)(m_creature->GetUnit(*m_creature, MedivhGUID));
         if (medivh)
         {
-            printf("\ntypeid: %i | unit: %i | player: %i\n", caster->GetTypeId(), TYPEID_UNIT, TYPEID_PLAYER);
-            if (/*caster->GetTypeId() == TYPEID_UNIT && */medivh->CanMoveTo(m_creature->GetGUID(), ((Creature*)caster)->GetGUID()))
+            if (medivh->CanMoveTo(m_creature->GetGUID(), caster->GetGUID()))
             {
                 medivh->AddTriggerToMove(m_creature->GetGUID(), caster->GetGUID(), caster->isPossessedByPlayer() ? true : false);
 
@@ -64,6 +57,7 @@ void move_triggerAI::SpellHit(Unit *caster,const SpellEntry *spell)
 
 void move_triggerAI::MakeMove()
 {
+    printf("\n Wywolanie MakeMove()");
     ChessPiecesStances tmpStance = pieceStance;
 
     moveTimer = 10000;
@@ -114,14 +108,6 @@ void move_triggerAI::UpdateAI(const uint32 diff)
         else
             moveTimer -= diff;
     }
-
-    /*if(unitToMove)
-    {
-        if(unitToMove->isAlive()) // Better check it here so we don't need to find start and end marker when chess die in move without reaching destination point :]
-            return;
-        else
-            Reset();
-    }*/
 }
 
 
@@ -136,45 +122,9 @@ npc_chesspieceAI::npc_chesspieceAI(Creature *c) : Scripted_NoMovementAI(c)
         TempSpell->Effect[0] = 0;  // Disable bind sight effect from SPELL_POSSES_CHESSPIECE. We handle all with dummy and charm effect.
 }
 
-/*void npc_chesspieceAI::MoveInLineOfSight(Unit *who)
-{
-    if( !m_creature->getVictim() && who->isTargetableForAttack() )
-    {
-        if (!m_creature->canFly() && m_creature->GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE)
-            return;
-
-        if( m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsWithinLOSInMap(who) && InGame)
-            AttackStart(who);
-    }
-}*/
-
-/*void npc_chesspieceAI::Aggro(Unit *Unit)
-{
-    MedivhGUID = pInstance->GetData64(DATA_CHESS_ECHO_OF_MEDIVH);
-    npc_medivh = m_creature->GetUnit(*m_creature, MedivhGUID);
-
-    if(npc_medivh)
-    {
-        switch(pInstance->GetData(CHESS_EVENT_TEAM))
-        {
-            case ALLIANCE:
-                if(m_creature->GetEntry() == NPC_KING_H)
-                    DoScriptText(SCRIPTTEXT_MEDIVH_CHECK, npc_medivh);
-                else if(m_creature->GetEntry() == NPC_KING_A)
-                    DoScriptText(SCRIPTTEXT_PLAYER_CHECK, npc_medivh);
-            break;
-            case HORDE:
-                if(m_creature->GetEntry() == NPC_KING_A)
-                    DoScriptText(SCRIPTTEXT_MEDIVH_CHECK, npc_medivh);
-                else if(m_creature->GetEntry() == NPC_KING_H)
-                    DoScriptText(SCRIPTTEXT_PLAYER_CHECK, npc_medivh);
-            break;
-        }
-    }
-}*/
-
 void npc_chesspieceAI::EnterEvadeMode()
 {
+    printf("\n Wywolanie EnterEvadeMode()");
     // to prevent reset chess pieces after unpossess
     if (pInstance->GetData(DATA_CHESS_EVENT) == IN_PROGRESS ||
         pInstance->GetData(DATA_CHESS_EVENT) == SPECIAL)
@@ -185,6 +135,7 @@ void npc_chesspieceAI::EnterEvadeMode()
 
 bool npc_chesspieceAI::IsHealingSpell(uint32 spell)
 {
+    printf("\n Wywolanie IsHealingSpell(uint32 spell)");
     if (spell == SPELL_BISHOP_A_1 || spell == SPELL_BISHOP_H_1)
         return true;
 
@@ -193,29 +144,9 @@ bool npc_chesspieceAI::IsHealingSpell(uint32 spell)
 
 int npc_chesspieceAI::GetAbilityRange(uint32 spell)
 {
+    printf("\n Wywolanie GetAbilityRange(uint32 spell)");
     switch(spell)
     {
-        /*
-        case SPELL_KING_H_1:
-        case SPELL_KING_A_1:
-        case SPELL_KNIGHT_H_1:
-        case SPELL_KNIGHT_A_1:
-        case SPELL_ROOK_H_1:
-        case SPELL_ROOK_A_1:
-        case SPELL_PAWN_H_1:
-        case SPELL_PAWN_A_1:
-        case SPELL_KING_H_2:
-        case SPELL_KING_A_2:
-        case SPELL_BISHOP_H_2:
-        case SPELL_BISHOP_A_2:
-        case SPELL_KNIGHT_H_2:
-        case SPELL_KNIGHT_A_2:
-        case SPELL_ROOK_H_2:
-        case SPELL_ROOK_A_2:
-        case SPELL_PAWN_H_2:
-        case SPELL_PAWN_A_2:
-            return 0;*/
-
         case SPELL_QUEEN_H_1:
         case SPELL_QUEEN_A_1:
             return 20;
@@ -232,6 +163,7 @@ int npc_chesspieceAI::GetAbilityRange(uint32 spell)
 
 void npc_chesspieceAI::SetSpellsAndCooldowns()
 {
+    printf("\n Wywolanie SetSpellsAndCooldowns()");
     switch(m_creature->GetEntry())
     {
         case NPC_KING_A:
@@ -386,15 +318,11 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
 
 void npc_chesspieceAI::Reset()
 {
+    printf("\n Wywolanie npc_chesspieceAI::Reset()");
     ReturnToHome = true;
-    //Heal_Timer = 7000;
     InGame = true;
     CanMove = false;
-    //NextMove_Timer = 5000; // wait 4.5s for first moves
     m_creature->setActive(true);
-
-    /*start_marker = NULL;
-    end_marker = NULL;*/
 
     SetSpellsAndCooldowns();
 
@@ -406,18 +334,13 @@ void npc_chesspieceAI::Reset()
 
 void npc_chesspieceAI::MovementInform(uint32 MovementType, uint32 Data)
 {
+    printf("\n Wywolanie MovementInform(uint32 MovementType, uint32 Data)");
     if (MovementType != POINT_MOTION_TYPE)
         return;
 
     this->npc_medivh = m_creature->GetMap()->GetCreature(this->MedivhGUID);
     if (npc_medivh)
         ((boss_MedivhAI*)npc_medivh)->SetOrientation(m_creature->GetGUID());
-
-    /*if(start_marker)
-    {
-        ((move_triggerAI*)start_marker->AI())->Reset();
-      //  DoSay("Start Cell - Clear!",LANG_UNIVERSAL,false); // only for debug purposes :]
-    }*/
 }
 
 void npc_chesspieceAI::MoveInLineOfSight(Unit *unit)
@@ -432,6 +355,7 @@ void npc_chesspieceAI::MoveInLineOfSight(Unit *unit)
 
 void npc_chesspieceAI::JustRespawned()
 {
+    printf("\n Wywolanie JustRespawned()");
     //not finally - just a presentation - need 32place two side of chesstable
     float angle = m_creature->GetOrientation();
     float pos_x = -11066;
@@ -446,6 +370,7 @@ void npc_chesspieceAI::JustRespawned()
 
 void npc_chesspieceAI::OnCharmed(bool apply)
 {
+    printf("\n Wywolanie OnCharmed(bool apply)");
     // Place to disable rotate and move for player on possess
     m_creature->SetInCombatState(false);
 }
@@ -474,9 +399,6 @@ void npc_chesspieceAI::UpdateAI(const uint32 diff)
     if(pInstance->GetData(DATA_CHESS_EVENT) != IN_PROGRESS)
         return;
 
-    //if(!m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE))
-    //    m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE); // that state disallow player to use spell's from pet bar. Need to change that and also need to disable move :]
-
     if(!ReturnToHome) // for fail
         ReturnToHome = true;
 
@@ -485,93 +407,6 @@ void npc_chesspieceAI::UpdateAI(const uint32 diff)
 
     if(!m_creature->isPossessed())
     {
-        /*if(!CanMove)
-        {
-            if(NextMove_Timer < diff)
-            {
-                CanMove = true;
-
-                start_marker = end_marker;
-                end_marker = NULL;
-
-                NextMove_Timer = 10000;
-            }else NextMove_Timer -= diff;
-        }*/
-
-        /*if(!m_creature->getVictim())
-        {
-            if(!CanMove)
-                return;
-
-            PossibleMoveUnits = FindPossibleMoveUnits();
-
-            if(PossibleMoveUnits.empty())
-                return;
-
-            std::list<Unit*>::iterator i = PossibleMoveUnits.begin();
-            advance ( i ,rand()%PossibleMoveUnits.size());
-
-            end_marker = (Creature*)(*i);
-
-            if(((move_triggerAI*)end_marker->AI())->onMarker != NULL && !((move_triggerAI*)end_marker->AI())->EndMarker)
-            {
-                for(uint8 x = 0; x<PossibleMoveUnits.size();x++)
-                {
-                    i = PossibleMoveUnits.begin();
-                    advance ( i, x);
-
-                    end_marker = (Creature*)(*i);
-
-                    if(!((move_triggerAI*)end_marker->AI())->EndMarker)
-                    {
-                        DoCast((*i),SPELL_MOVE_1);
-                        break;
-                    }
-                }
-            }
-            else
-                DoCast((*i),SPELL_MOVE_1);
-
-            CanMove = false;
-            NextMove_Timer = 6000;
-        }
-
-        switch(m_creature->GetEntry())
-        {
-            case NPC_BISHOP_A:
-
-                if(Heal_Timer <= diff)
-                {
-                    Unit *target = DoSelectLowestHpFriendly(25,5000); //dont select player controlled unit
-
-                    if(target)
-                        DoCast(target,BISHOP_HEAL_A);
-
-                    Heal_Timer = 21000;
-                }else Heal_Timer -= diff;
-                break;
-
-            case NPC_BISHOP_H:
-
-                if(Heal_Timer <= diff)
-                {
-                    Unit *target = DoSelectLowestHpFriendly(25,5000); //dont select player controlled unit
-
-                    if(target)
-                        DoCast(target,BISHOP_HEAL_H);
-
-                    Heal_Timer = 21000;
-                }else Heal_Timer -= diff;
-                break;
-
-            default:        break;
-        }
-        if(m_creature->getVictim() || !m_creature->IsWithinDistInMap(m_creature->getVictim(), NPC_ATTACK_RADIUS))
-        {
-            m_creature->CombatStop();
-            return;
-        }*/
-
         //TO DO: add shared cooldown for some spells
         if (ability1Timer < diff)
         {
@@ -613,7 +448,7 @@ void npc_chesspieceAI::UpdateAI(const uint32 diff)
         else
             ability2Timer -= diff;
 
-        if (attackTimer < diff)
+        /*if (attackTimer < diff)
         {
             attackTimer = attackCooldown;
             Unit * medivh = m_creature->GetUnit(*m_creature, this->MedivhGUID);
@@ -626,7 +461,7 @@ void npc_chesspieceAI::UpdateAI(const uint32 diff)
                 m_creature->DealDamage(uVictim, attackDamage, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         }
         else
-            attackTimer -= diff;
+            attackTimer -= diff;*/
 
     }
     //DoMeleeAttackIfReady();
@@ -634,26 +469,9 @@ void npc_chesspieceAI::UpdateAI(const uint32 diff)
     CastNextSpellIfAnyAndReady();
 }
 
-void npc_chesspieceAI::SpellHitTarget(Unit *target, const SpellEntry *spell)
-{
-    if(target->GetEntry() != TRIGGER_ID || (spell->Id != SPELL_MOVE_1
-       && spell->Id != SPELL_MOVE_2 && spell->Id != SPELL_MOVE_3 && spell->Id != SPELL_MOVE_4
-       && spell->Id != SPELL_MOVE_5 && spell->Id != SPELL_MOVE_6 && spell->Id != SPELL_MOVE_7) )
-        return;
-
-    /*if(m_creature->isPossessed())
-    {
-        Creature *marker = (Creature*)target;
-        if(marker && ((move_triggerAI*)marker->AI())->onMarker == m_creature)
-        {
-            start_marker = end_marker;
-            end_marker = (Creature*)target;
-        }
-    }*/
-}
-
 void npc_chesspieceAI::DamageTaken(Unit * done_by, uint32 &damage)
 {
+    printf("\n Wywolanie DamageTaken(Unit * done_by, uint32 &damage)");
     if (damage > m_creature->GetHealth())
     {
         //damage = 0;
@@ -670,7 +488,6 @@ void npc_chesspieceAI::DamageTaken(Unit * done_by, uint32 &damage)
         }
     }
 }
-
 
 //Medivh AI
 
@@ -963,11 +780,13 @@ boss_MedivhAI::boss_MedivhAI(Creature *c) : ScriptedAI(c)
 
 int boss_MedivhAI::GetMoveRange(uint64 piece)
 {
+    printf("\n Wywolanie GetMoveRange(uint64 piece)");
     return (GetMoveRange(m_creature->GetUnit(*m_creature, piece)));
 }
 
 int boss_MedivhAI::GetMoveRange(Unit * piece)
 {
+    printf("\n Wywolanie GetMoveRange(Unit * piece)");
     if (!piece)
         return 0;
 
@@ -1000,6 +819,7 @@ int boss_MedivhAI::GetMoveRange(Unit * piece)
 
 int boss_MedivhAI::GetCountOfEnemyInMelee(uint64 piece)
 {
+    printf("\n Wywolanie GetCountOfEnemyInMelee(uint64 piece)");
     int tmpCount = 0;
 
 
@@ -1043,6 +863,7 @@ int boss_MedivhAI::GetCountOfEnemyInMelee(uint64 piece)
 
 int boss_MedivhAI::GetLifePriority(uint64 piece)
 {
+    printf("\n Wywolanie GetLifePriority(uint64 piece)");
     Unit * uPiece = m_creature->GetUnit(*m_creature, piece);
 
     if (!uPiece)
@@ -1087,6 +908,7 @@ int boss_MedivhAI::GetLifePriority(uint64 piece)
 
 int boss_MedivhAI::GetAttackPriority(uint64 piece)
 {
+    printf("\n Wywolanie GetAttackPriority(uint64 piece)");
     Unit * uPiece = m_creature->GetUnit(*m_creature, piece);
 
     if (!uPiece)
@@ -1131,6 +953,7 @@ int boss_MedivhAI::GetAttackPriority(uint64 piece)
 
 bool boss_MedivhAI::IsEmptySquareInRange(uint64 piece, int range)
 {
+    printf("\n Wywolanie IsEmptySquareInRange(uint64 piece, int range)");
     if (!piece || !range)
         return false;
 
@@ -1211,6 +1034,7 @@ bool boss_MedivhAI::IsEmptySquareInRange(uint64 piece, int range)
 
 uint64 boss_MedivhAI::GetSpellTarget(uint64 caster, int range, bool heal)
 {
+    printf("\n Wywolanie GetSpellTarget(uint64 caster, int range, bool heal)");
     if (!range)
         return caster;
 
@@ -1446,6 +1270,7 @@ uint64 boss_MedivhAI::GetSpellTarget(uint64 caster, int range, bool heal)
 
 uint64 boss_MedivhAI::GetMeleeTarget(uint64 piece)
 {
+    printf("\n Wywolanie GetMeleeTarget(uint64 piece)");
     int8 tmpi, tmpj;    //temporary piece position
 
     for (int8 i = 0; i < 8; i++)
@@ -1533,6 +1358,7 @@ uint64 boss_MedivhAI::GetMeleeTarget(uint64 piece)
 
 bool boss_MedivhAI::IsChessPiece(Unit * unit)
 {
+    printf("\n Wywolanie IsChessPiece(Unit * unit)");
     switch (unit->GetEntry())
     {
         case NPC_BISHOP_A:
@@ -1557,16 +1383,20 @@ bool boss_MedivhAI::IsChessPiece(Unit * unit)
 
 bool boss_MedivhAI::IsMedivhsPiece(Unit * unit)
 {
-    switch (pInstance->GetData(CHESS_EVENT_TEAM))
+    printf("\n Wywolanie IsMedivhsPiece(Unit * unit)");
+    if (unit)
     {
-        case ALLIANCE:
-            if (unit->getFaction() == H_FACTION)
-                return true;
-            break;
-        case HORDE:
-            if (unit->getFaction() == A_FACTION)
-                return true;
-            break;
+        switch (pInstance->GetData(CHESS_EVENT_TEAM))
+        {
+            case ALLIANCE:
+                if (unit->getFaction() == H_FACTION)
+                    return true;
+                break;
+            case HORDE:
+                if (unit->getFaction() == A_FACTION)
+                    return true;
+                break;
+        }
     }
 
     return false;
@@ -1574,6 +1404,7 @@ bool boss_MedivhAI::IsMedivhsPiece(Unit * unit)
 
 bool boss_MedivhAI::IsMedivhsPiece(uint64 unit)
 {
+    printf("\n Wywolanie IsMedivhsPiece(uint64 unit)");
     for (std::list<uint64>::iterator i = medivhSidePieces.begin(); i != medivhSidePieces.end(); ++i)
     {
         if (*i == unit)
@@ -1585,6 +1416,7 @@ bool boss_MedivhAI::IsMedivhsPiece(uint64 unit)
 
 bool boss_MedivhAI::IsInMoveList(uint64 unit, bool trigger)
 {
+    printf("\n Wywolanie IsInMoveList(uint64 unit, bool trigger)");
     if (!trigger)
     {
         for (std::list<ChessTile>::iterator i = moveList.begin(); i != moveList.end(); ++i)
@@ -1607,6 +1439,7 @@ bool boss_MedivhAI::IsInMoveList(uint64 unit, bool trigger)
 
 bool boss_MedivhAI::IsInRange(uint64 from, uint64 to, int range)
 {
+    printf("\n Wywolanie IsInRange(uint64 from, uint64 to, int range)");
     if (!from || !to || !range)
         return false;
 
@@ -1703,9 +1536,11 @@ bool boss_MedivhAI::IsInRange(uint64 from, uint64 to, int range)
 
 void boss_MedivhAI::Reset()
 {
+    printf("\n Wywolanie boss_MedivhAI::Reset()");
     eventStarted = false;
-    boardPrepared = false;
-    prepareTimer = 10000;
+    miniEvent = false;
+    miniEventState = MINI_EVENT_KING;
+    miniEventTimer = 5000;
     hordePieces = 16;
     alliancePieces = 16;
     medivhSidePieces.clear();
@@ -1719,6 +1554,7 @@ void boss_MedivhAI::Reset()
 
 void boss_MedivhAI::SayChessPieceDied(Unit * piece)
 {
+    printf("\n Wywolanie SayChessPieceDied(Unit * piece)");
     if(pInstance->GetData(CHESS_EVENT_TEAM) == HORDE)
     {
         switch(piece->GetEntry())
@@ -1851,13 +1687,16 @@ void boss_MedivhAI::SayChessPieceDied(Unit * piece)
 
 void boss_MedivhAI::RemoveChessPieceFromBoard(uint64 piece)
 {
+    printf("\n Wywolanie RemoveChessPieceFromBoard(uint64 piece)");
+    return;
     Unit * uPiece = m_creature->GetMap()->GetCreature(piece);
     RemoveChessPieceFromBoard(uPiece);
 }
 
 void boss_MedivhAI::RemoveChessPieceFromBoard(Unit * piece)
 {
-    if (!piece)
+    printf("\n Wywolanie RemoveChessPieceFromBoard(Unit * piece)");
+    //if (!piece)
         return;
 
     if (piece->getFaction() == A_FACTION)
@@ -1892,11 +1731,341 @@ void boss_MedivhAI::RemoveChessPieceFromBoard(Unit * piece)
 
 
 
+void boss_MedivhAI::SpawnPawns()
+{
+    printf("\n Wywolanie SpawnPawns()");
+    Creature * tmp[2][8];
+
+    //printf("\nSpawnPawns(): before for");
+    for (int i = 0; i < 8; i++)
+    {
+        //printf("\nSpawnPawns(): in for: i: %i", i);
+        tmp[0][i] = m_creature->SummonCreature(NPC_PAWN_A, SPAWN_POS, ORI_W, TEMPSUMMON_DEAD_DESPAWN, 0);
+        tmp[1][i] = m_creature->SummonCreature(NPC_PAWN_H, SPAWN_POS, ORI_W, TEMPSUMMON_DEAD_DESPAWN, 0);
+        //printf("\n if 1");
+        if (tmp[0][i])
+        {
+            chessBoard[6][i].piece = tmp[0][i]->GetGUID();
+            tmp[0][i]->SetReactState(REACT_PASSIVE);
+            tmp[0][i]->GetMotionMaster()->MovePoint(0, chessBoard[6][i].position.x, chessBoard[6][i].position.y, chessBoard[6][i].position.z);
+        }
+        chessBoard[6][i].ori = CHESS_ORI_N;
+        //printf("\n if 2");
+        if (tmp[1][i])
+        {
+            chessBoard[1][i].piece = tmp[1][i]->GetGUID();
+            tmp[1][i]->SetReactState(REACT_PASSIVE);
+            tmp[1][i]->GetMotionMaster()->MovePoint(0, chessBoard[1][i].position.x, chessBoard[1][i].position.y, chessBoard[1][i].position.z);
+        }
+        chessBoard[1][i].ori = CHESS_ORI_S;
+    }
+    //printf("\n after for");
+    if (pInstance)
+    {
+        //printf("\n if 1");
+        if (pInstance->GetData(CHESS_EVENT_TEAM) == A_FACTION)
+        {
+            //printf("\n if 1.1");
+            for (int i = 0; i < 8; i++)
+            {
+                //printf("\n if 1.1 for: i: %i", i);
+                medivhSidePieces.push_back(tmp[1][i]->GetGUID());
+            }
+        }
+        else
+        {
+            //printf("\n if 1.2");
+            for (int i = 0; i < 8; i++)
+            {
+                //printf("\n if 1.2 for: i: %i", i);
+                medivhSidePieces.push_back(tmp[0][i]->GetGUID());
+            }
+        }
+    }
+    miniEventTimer = 20000;
+    //printf("\n end SpawnPawns()");
+}
+
+void boss_MedivhAI::SpawnRooks()
+{
+    printf("\n Wywolanie SpawnRooks()");
+    Creature * tmp1, * tmp2, * tmp3, * tmp4;
+
+    tmp1 = m_creature->SummonCreature(NPC_ROOK_A, SPAWN_POS, ORI_W, TEMPSUMMON_DEAD_DESPAWN, 0);
+
+    if (tmp1)
+    {
+        chessBoard[7][0].piece = tmp1->GetGUID();
+        chessBoard[7][0].ori = CHESS_ORI_N;
+        tmp1->SetReactState(REACT_PASSIVE);
+        tmp1->GetMotionMaster()->MovePoint(0, chessBoard[7][0].position.x, chessBoard[7][0].position.y, chessBoard[7][0].position.z);
+    }
+
+    tmp2 = m_creature->SummonCreature(NPC_ROOK_A, SPAWN_POS, ORI_W, TEMPSUMMON_DEAD_DESPAWN, 0);
+
+    if (tmp2)
+    {
+        chessBoard[7][7].piece = tmp2->GetGUID();
+        chessBoard[7][7].ori = CHESS_ORI_N;
+        tmp2->SetReactState(REACT_PASSIVE);
+        tmp2->GetMotionMaster()->MovePoint(0, chessBoard[7][7].position.x, chessBoard[7][7].position.y, chessBoard[7][7].position.z);
+    }
+
+
+    tmp3 = m_creature->SummonCreature(NPC_ROOK_H, SPAWN_POS, ORI_W, TEMPSUMMON_DEAD_DESPAWN, 0);
+
+    if (tmp3)
+    {
+        chessBoard[0][0].piece = tmp3->GetGUID();
+        chessBoard[0][0].ori = CHESS_ORI_S;
+        tmp3->SetReactState(REACT_PASSIVE);
+        tmp3->GetMotionMaster()->MovePoint(0, chessBoard[0][0].position.x, chessBoard[0][0].position.y, chessBoard[0][0].position.z);
+    }
+
+    tmp4 = m_creature->SummonCreature(NPC_ROOK_H, SPAWN_POS, ORI_W, TEMPSUMMON_DEAD_DESPAWN, 0);
+
+    if (tmp4)
+    {
+        chessBoard[0][7].piece = tmp4->GetGUID();
+        chessBoard[0][7].ori = CHESS_ORI_S;
+        tmp4->SetReactState(REACT_PASSIVE);
+        tmp4->GetMotionMaster()->MovePoint(0, chessBoard[0][7].position.x, chessBoard[0][7].position.y, chessBoard[0][7].position.z);
+    }
+
+    if (pInstance && tmp1 && tmp2 && tmp3 && tmp4)
+    {
+        if (pInstance->GetData(CHESS_EVENT_TEAM) == A_FACTION)
+        {
+            medivhSidePieces.push_back(tmp3->GetGUID());
+            medivhSidePieces.push_back(tmp4->GetGUID());
+        }
+        else
+        {
+            medivhSidePieces.push_back(tmp1->GetGUID());
+            medivhSidePieces.push_back(tmp2->GetGUID());
+        }
+    }
+    miniEventTimer = 5000;
+}
+
+void boss_MedivhAI::SpawnKnights()
+{
+    printf("\n Wywolanie SpawnKnights()");
+    Creature * tmp1, * tmp2, * tmp3, * tmp4;
+
+    tmp1 = m_creature->SummonCreature(NPC_KNIGHT_A, SPAWN_POS, ORI_W, TEMPSUMMON_DEAD_DESPAWN, 0);
+
+    if (tmp1)
+    {
+        chessBoard[7][1].piece = tmp1->GetGUID();
+        chessBoard[7][1].ori = CHESS_ORI_N;
+        tmp1->SetReactState(REACT_PASSIVE);
+        tmp1->GetMotionMaster()->MovePoint(0, chessBoard[7][1].position.x, chessBoard[7][1].position.y, chessBoard[7][1].position.z);
+    }
+
+    tmp2 = m_creature->SummonCreature(NPC_KNIGHT_A, SPAWN_POS, ORI_W, TEMPSUMMON_DEAD_DESPAWN, 0);
+
+    if (tmp2)
+    {
+        chessBoard[7][6].piece = tmp2->GetGUID();
+        chessBoard[7][6].ori = CHESS_ORI_N;
+        tmp2->SetReactState(REACT_PASSIVE);
+        tmp2->GetMotionMaster()->MovePoint(0, chessBoard[7][6].position.x, chessBoard[7][6].position.y, chessBoard[7][6].position.z);
+    }
+
+
+    tmp3 = m_creature->SummonCreature(NPC_KNIGHT_H, SPAWN_POS, ORI_W, TEMPSUMMON_DEAD_DESPAWN, 0);
+
+    if (tmp3)
+    {
+        chessBoard[0][1].piece = tmp3->GetGUID();
+        chessBoard[0][1].ori = CHESS_ORI_S;
+        tmp3->SetReactState(REACT_PASSIVE);
+        tmp3->GetMotionMaster()->MovePoint(0, chessBoard[0][1].position.x, chessBoard[0][1].position.y, chessBoard[0][1].position.z);
+    }
+
+    tmp4 = m_creature->SummonCreature(NPC_KNIGHT_H, SPAWN_POS, ORI_W, TEMPSUMMON_DEAD_DESPAWN, 0);
+
+    if (tmp4)
+    {
+        chessBoard[0][6].piece = tmp4->GetGUID();
+        chessBoard[0][6].ori = CHESS_ORI_S;
+        tmp4->SetReactState(REACT_PASSIVE);
+        tmp4->GetMotionMaster()->MovePoint(0, chessBoard[0][6].position.x, chessBoard[0][6].position.y, chessBoard[0][6].position.z);
+    }
+
+    if (pInstance && tmp1 && tmp2 && tmp3 && tmp4)
+    {
+        if (pInstance->GetData(CHESS_EVENT_TEAM) == A_FACTION)
+        {
+            medivhSidePieces.push_back(tmp3->GetGUID());
+            medivhSidePieces.push_back(tmp4->GetGUID());
+        }
+        else
+        {
+            medivhSidePieces.push_back(tmp1->GetGUID());
+            medivhSidePieces.push_back(tmp2->GetGUID());
+        }
+    }
+    miniEventTimer = 5000;
+}
+
+void boss_MedivhAI::SpawnBishops()
+{
+    printf("\n Wywolanie SpawnBishops()");
+    Creature * tmp1, * tmp2, * tmp3, * tmp4;
+
+    tmp1 = m_creature->SummonCreature(NPC_BISHOP_A, SPAWN_POS, ORI_W, TEMPSUMMON_DEAD_DESPAWN, 0);
+
+    if (tmp1)
+    {
+        chessBoard[7][2].piece = tmp1->GetGUID();
+        chessBoard[7][2].ori = CHESS_ORI_N;
+        tmp1->SetReactState(REACT_PASSIVE);
+        tmp1->GetMotionMaster()->MovePoint(0, chessBoard[7][2].position.x, chessBoard[7][2].position.y, chessBoard[7][2].position.z);
+    }
+
+    tmp2 = m_creature->SummonCreature(NPC_BISHOP_A, SPAWN_POS, ORI_W, TEMPSUMMON_DEAD_DESPAWN, 0);
+
+    if (tmp2)
+    {
+        chessBoard[7][5].piece = tmp2->GetGUID();
+        chessBoard[7][5].ori = CHESS_ORI_N;
+        tmp2->SetReactState(REACT_PASSIVE);
+        tmp2->GetMotionMaster()->MovePoint(0, chessBoard[7][5].position.x, chessBoard[7][5].position.y, chessBoard[7][5].position.z);
+    }
+
+
+    tmp3 = m_creature->SummonCreature(NPC_BISHOP_H, SPAWN_POS, ORI_W, TEMPSUMMON_DEAD_DESPAWN, 0);
+
+    if (tmp3)
+    {
+        chessBoard[0][2].piece = tmp3->GetGUID();
+        chessBoard[0][2].ori = CHESS_ORI_S;
+        tmp3->SetReactState(REACT_PASSIVE);
+        tmp3->GetMotionMaster()->MovePoint(0, chessBoard[0][2].position.x, chessBoard[0][2].position.y, chessBoard[0][2].position.z);
+    }
+
+    tmp4 = m_creature->SummonCreature(NPC_BISHOP_H, SPAWN_POS, ORI_W, TEMPSUMMON_DEAD_DESPAWN, 0);
+
+    if (tmp4)
+    {
+        chessBoard[0][5].piece = tmp4->GetGUID();
+        chessBoard[0][5].ori = CHESS_ORI_S;
+        tmp4->SetReactState(REACT_PASSIVE);
+        tmp4->GetMotionMaster()->MovePoint(0, chessBoard[0][5].position.x, chessBoard[0][5].position.y, chessBoard[0][5].position.z);
+    }
+
+    if (pInstance && tmp1 && tmp2 && tmp3 && tmp4)
+    {
+        if (pInstance->GetData(CHESS_EVENT_TEAM) == A_FACTION)
+        {
+            medivhSidePieces.push_back(tmp3->GetGUID());
+            medivhSidePieces.push_back(tmp4->GetGUID());
+        }
+        else
+        {
+            medivhSidePieces.push_back(tmp1->GetGUID());
+            medivhSidePieces.push_back(tmp2->GetGUID());
+        }
+    }
+
+    miniEventTimer = 5000;
+}
+
+void boss_MedivhAI::SpawnQueens()
+{
+    printf("\n Wywolanie SpawnQueens()");
+    Creature * tmp1, * tmp2;
+
+    tmp1 = m_creature->SummonCreature(NPC_QUEEN_A, SPAWN_POS, ORI_W, TEMPSUMMON_DEAD_DESPAWN, 0);
+
+    if (tmp1)
+    {
+        chessBoard[7][3].piece = tmp1->GetGUID();
+        chessBoard[7][3].ori = CHESS_ORI_N;
+        tmp1->SetReactState(REACT_PASSIVE);
+        tmp1->GetMotionMaster()->MovePoint(0, chessBoard[7][3].position.x, chessBoard[7][3].position.y, chessBoard[7][3].position.z);
+    }
+
+    tmp2 = m_creature->SummonCreature(NPC_QUEEN_H, SPAWN_POS, ORI_W, TEMPSUMMON_DEAD_DESPAWN, 0);
+
+    if (tmp2)
+    {
+        chessBoard[0][3].piece = tmp2->GetGUID();
+        chessBoard[0][3].ori = CHESS_ORI_S;
+        tmp2->SetReactState(REACT_PASSIVE);
+        tmp2->GetMotionMaster()->MovePoint(0, chessBoard[0][3].position.x, chessBoard[0][3].position.y, chessBoard[0][3].position.z);
+    }
+
+    if (pInstance && tmp1 && tmp2)
+    {
+        if (pInstance->GetData(CHESS_EVENT_TEAM) == A_FACTION)
+            medivhSidePieces.push_back(tmp2->GetGUID());
+        else
+            medivhSidePieces.push_back(tmp1->GetGUID());
+    }
+    miniEventTimer = 5000;
+}
+
+void boss_MedivhAI::SpawnKings()
+{
+    printf("\n Wywolanie SpawnKings()");
+    Creature * tmp1, * tmp2;
+
+    tmp1 = m_creature->SummonCreature(NPC_KING_A, SPAWN_POS, ORI_W, TEMPSUMMON_MANUAL_DESPAWN, 0);
+
+    if (tmp1)
+    {
+        chessBoard[7][4].piece = tmp1->GetGUID();
+        chessBoard[7][4].ori = CHESS_ORI_N;
+        tmp1->SetReactState(REACT_PASSIVE);
+        tmp1->GetMotionMaster()->MovePoint(0, chessBoard[7][4].position.x, chessBoard[7][4].position.y, chessBoard[7][4].position.z);
+    }
+
+    tmp2 = m_creature->SummonCreature(NPC_KING_H, SPAWN_POS, ORI_W, TEMPSUMMON_MANUAL_DESPAWN, 0);
+
+    if (tmp2)
+    {
+        chessBoard[0][4].piece = tmp2->GetGUID();
+        chessBoard[0][4].ori = CHESS_ORI_S;
+        tmp2->SetReactState(REACT_PASSIVE);
+        tmp2->GetMotionMaster()->MovePoint(0, chessBoard[0][4].position.x, chessBoard[0][4].position.y, chessBoard[0][4].position.z);
+    }
+
+    if (pInstance && tmp1 && tmp2)
+    {
+        if (pInstance->GetData(CHESS_EVENT_TEAM) == A_FACTION)
+            medivhSidePieces.push_back(tmp2->GetGUID());
+        else
+            medivhSidePieces.push_back(tmp1->GetGUID());
+    }
+    miniEventTimer = 5000;
+}
+
+void boss_MedivhAI::SpawnTriggers()
+{
+    printf("\n Wywolanie SpawnTriggers()");
+    Creature * tmp = NULL;
+
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 8; j++)
+        {
+            tmp = m_creature->SummonCreature(TRIGGER_ID, chessBoard[i][j].position.x, chessBoard[i][j].position.y, chessBoard[i][j].position.z, ORI_W, TEMPSUMMON_MANUAL_DESPAWN, 0);
+            if (tmp)
+            {
+                chessBoard[i][j].trigger = tmp->GetGUID();
+                chessBoard[i][j].ori = CHESS_ORI_N;
+                tmp->SetReactState(REACT_PASSIVE);
+            }
+        }
+    }
+}
+
 void boss_MedivhAI::PrepareBoardForEvent()
 {
-    //DoSay("zaczynam przygotowywanie planszy", LANG_UNIVERSAL, m_creature);
-    //printf("\nzaczynam przygotowywanie planszy\n");
-
+    printf("\n Wywolanie PrepareBoardForEvent()");
     // Horde Tower
     allowedPositions[NPC_ROOK_H].push_back(std::pair<int, int>(0, 0));
     allowedPositions[NPC_ROOK_H].push_back(std::pair<int, int>(0, 7));
@@ -1952,230 +2121,19 @@ void boss_MedivhAI::PrepareBoardForEvent()
         }
     }
 
-    /*Creature * current;
-    Creature * next;
-    float posX, posY, posXc, posYc;
-    std::list<Creature*> tmpList;*/
-
-    printf("\nRozmiar forChessList: %i\n", pInstance->forChessList.size());
-
-    for (std::list<uint64>::iterator i = pInstance->forChessList.begin(); i != pInstance->forChessList.end(); i++)
-    {
-        printf("\n| %u", (*i));
-        Creature *temp = m_creature->GetMap()->GetCreature(*i); //GetCreature(*m_creature, (*i));
-        if (temp)
-        {
-            std::list< std::pair<int, int> >::iterator iter = allowedPositions[temp->GetEntry()].begin();
-            if (iter != allowedPositions[temp->GetEntry()].end())
-            {
-                float x = chessBoard[iter->first][iter->second].position.x;
-                float y = chessBoard[iter->first][iter->second].position.y;
-                float z = chessBoard[iter->first][iter->second].position.z;
-                temp->Relocate(x, y, z, temp->GetOrientation());
-
-                if (IsChessPiece(temp))
-                    chessBoard[iter->first][iter->second].piece = temp->GetGUID();
-                else
-                    chessBoard[iter->first][iter->second].trigger = temp->GetGUID();
-
-                allowedPositions[temp->GetEntry()].erase(iter);
-
-                if (temp->getFaction() == A_FACTION)
-                    chessBoard[iter->first][iter->second].ori = CHESS_ORI_N;
-                else
-                    chessBoard[iter->first][iter->second].ori = CHESS_ORI_S;
-            }
-            else
-                printf("     -     iter to end !!");
-        }
-        else
-            printf("  -   nima tempa hahahaha");
-    }
-
-    /*
-    /// DALEJ NIEPOTRZEBNE ALE NIE KASOWAŁEM
-    //printf("\nRozmiary: tmpList: %i, forChessList: %i\n", tmpList.size(), pInstance->forChessList.size());
-
-    //return;
-    //DoSay("szukanie pierwszego", LANG_UNIVERSAL, m_creature);
-    //printf("\nszukanie pierwszego\n");
-    //add first trigger to list (from that point we will start searching and adding to chessBoard oder triggers)
-    for (std::list<Creature*>::iterator itr = tmpList.begin(); itr != tmpList.end(); ++itr)
-    {
-        //printf("\n1\n");
-        posX = (*itr)->GetPositionX();
-        if (posX < -11050 && posX > -11056)
-        {
-            //printf("\n1.1\n");
-            //DoSay("znalazlem pierwszego", LANG_UNIVERSAL, m_creature);
-            //printf("\nznalazlem pierwszego\n");
-            //printf("\n1.2\n");
-            current = (*itr);
-            posXc = current->GetPositionX();
-            posYc = current->GetPositionY();
-            //printf("\n1.3\n");
-            if (current->GetEntry() == TRIGGER_ID)
-                chessBoard[0][0].trigger = current->GetGUID();
-            else
-            {
-                if (IsChessPiece(current))
-                {
-                    chessBoard[0][0].piece = current->GetGUID();
-
-                    if (IsMedivhsPiece(current))
-                        medivhSidePieces.push_back(current->GetGUID());
-
-                    if (current->getFaction() == A_FACTION)
-                        chessBoard[0][0].ori = CHESS_ORI_N;
-                    else
-                        chessBoard[0][0].ori = CHESS_ORI_S;
-                }
-            }
-            //printf("\n1.4\n");
-            //current->CastSpell(current, SPELL_MOVE_MARKER, true);
-
-
-
-
-            //tmpList.erase(itr);
-            //printf("\n1.5\n");
-        }
-        //printf("\n2\n");
-    }
-
-    for (int i = 0; i < 7; i++)
-    {
-
-        if (i < 7 && chessBoard[i][0].trigger != 0)
-            current = m_creature->GetCreature(*m_creature, chessBoard[i][0].trigger);
-
-        if (!current)
-        {
-            //DoSay("niema currenta 2", LANG_UNIVERSAL, m_creature);
-            //printf("\nniema currenta 2\n");
-            continue;
-        }
-
-        for (std::list<Creature*>::iterator itr = tmpList.begin(); itr != tmpList.end(); ++itr)
-        {
-            //printf("\n3\n");
-            next = (*itr);
-            //printf("\n4\n");
-            if (!next)
-            {
-                //DoSay("niema Next 1", LANG_UNIVERSAL, m_creature);
-                //printf("\nniema next 1\n");
-                continue;
-            }
-            //printf("\n5\n");
-            if (((next->GetPositionX() < (current->GetPositionX() - 2)) && (next->GetPositionX() > (current->GetPositionX() - 4))) &&
-                ((next->GetPositionY() > (current->GetPositionY() + 3 )) && (next->GetPositionY() < (current->GetPositionY() + 6))))
-            {
-                //printf("\n5.1\n");
-                if (next->GetEntry() == TRIGGER_ID)
-                    chessBoard[i + 1][0].trigger = next->GetGUID();
-                else
-                    if (IsChessPiece(current))
-                    {
-                        chessBoard[i + 1][0].piece = next->GetGUID();
-
-                        if (IsMedivhsPiece(next))
-                            medivhSidePieces.push_back(next->GetGUID());
-
-                        if (current->getFaction() == A_FACTION)
-                            chessBoard[i + 1][0].ori = CHESS_ORI_N;
-                        else
-                            chessBoard[i + 1][0].ori = CHESS_ORI_S;
-                    }
-                //next->CastSpell(next, SPELL_MOVE_MARKER, true);
-                //printf("\nznalazlem z lewej: %i   n: %s\n", i, next->GetName());
-
-                //printf("\n5.2\n");
-                //tmpList.erase(itr);
-                //printf("\n5.3\n");
-            }
-           // printf("\n6\n");
-        }
-        current = NULL;
-    }
-
-    for (int i = 0; i < 8; i++)
-    {
-        //printf("\n7\n");
-        if (chessBoard[i][0].trigger != 0)
-            current = m_creature->GetCreature(*m_creature, chessBoard[i][0].trigger);
-
-        if (!current)
-        {
-            //DoSay("niema currenta 3", LANG_UNIVERSAL, m_creature);
-            //printf("\nniema currenta 3\n");
-            continue;
-        }
-        for (int j = 1; j < 8; j++)
-        {
-            //printf("\n8\n");
-            for (std::list<Creature*>::iterator itr = tmpList.begin(); itr != tmpList.end(); ++itr)
-            {
-                //printf("\n9\n");
-                next = (*itr);
-                //printf("\n10\n");
-                if (!next)
-                    continue;
-
-                if (((next->GetPositionX() < (current->GetPositionX() - 3)) && (next->GetPositionX() > (current->GetPositionX() - 6))) &&
-                    ((next->GetPositionY() < (current->GetPositionY() - 2)) && (next->GetPositionY() > (current->GetPositionY() - 6))))
-                {
-                    //printf("\n10.1\n");
-                    if (next->GetEntry() == TRIGGER_ID)
-                        chessBoard[i][j].trigger = next->GetGUID();
-                    else
-                        if (IsChessPiece(next))
-                        {
-                            chessBoard[i][j].piece = next->GetGUID();
-
-                            if (IsMedivhsPiece(next))
-                                medivhSidePieces.push_back(next->GetGUID());
-
-                            if (next->getFaction() == A_FACTION)
-                                chessBoard[i][j].ori = CHESS_ORI_N;
-                            else
-                                chessBoard[i][j].ori = CHESS_ORI_S;
-                        }
-
-                    //next->CastSpell(next, SPELL_MOVE_MARKER, true);
-                    //printf("\nznalazlem z reszty: [%i][%i]\n", i, j);
-
-                    //printf("\n10.2\n");
-                    //tmpList.erase(itr);
-                    //printf("\n10.3\n");
-                }
-                //printf("\n11\n");
-            }
-            //printf("\n12\n");
-            current = NULL;
-
-            if (j < 7 && chessBoard[i][j].trigger != 0)
-                current = m_creature->GetCreature(*m_creature, chessBoard[i][j].trigger);
-            //printf("\n13\n");
-            if (j < 7 && !current)
-            {
-                //DoSay("niema currenta 4", LANG_UNIVERSAL, m_creature);
-                //printf("\nniema currenta 4\n");
-                break;
-            }
-            //printf("\n14\n");
-        }
-        current = NULL;
-    }*/
+    SpawnTriggers();
+    SpawnKings();
 }
 
 void boss_MedivhAI::TeleportPlayer(Player * player)
 {
+    printf("\n Wywolanie TeleportPlayer(Player * player)");
     if (player)
         player->TeleportTo(tpLoc);
 }
 void boss_MedivhAI::TeleportPlayer(uint64 player)
 {
+    printf("\n Wywolanie TeleportPlayer(uint64 player)");
     if(player)
     {
         if(Unit *tmpPlayer = Unit::GetUnit(*m_creature, player))
@@ -2186,6 +2144,7 @@ void boss_MedivhAI::TeleportPlayer(uint64 player)
 
 void boss_MedivhAI::TeleportPlayers()
 {
+    printf("\n Wywolanie TeleportPlayers()");
     Map::PlayerList const &pList = m_creature->GetMap()->GetPlayers();
     for (Map::PlayerList::const_iterator itr = pList.begin(); itr != pList.end(); ++itr)
         if (itr->getSource() && itr->getSource()->HasAura(SPELL_POSSES_CHESSPIECE, 0))
@@ -2194,12 +2153,14 @@ void boss_MedivhAI::TeleportPlayers()
 
 void boss_MedivhAI::AddPlayerToTeleportList(Player * player)
 {
+    printf("\n Wywolanie AddPlayerToTeleportList(Player* player)");
     if (player)
         tpList.push_back(player->GetGUID());
 }
 
 void boss_MedivhAI::TeleportListedPlayers()
 {
+    printf("\n Wywolanie TeleportListedPlayers()");
     for (std::list<uint64>::iterator itr = tpList.begin(); itr != tpList.end(); ++itr)
     {
         Unit* tmpPl = Unit::GetUnit(*m_creature, (*itr));
@@ -2213,6 +2174,7 @@ void boss_MedivhAI::TeleportListedPlayers()
 
 void boss_MedivhAI::ApplyDebuffsOnRaidMembers()
 {
+    printf("\n Wywolanie ApplyDebuffsOnRaidMembers()");
     //DoSay("ApplyDebuffsOnRaidMembers() poczatek", LANG_UNIVERSAL, m_creature);
     Player * tmp;
     m_creature->CastSpell(m_creature, SPELL_GAME_IN_SESSION, true);
@@ -2237,8 +2199,8 @@ void boss_MedivhAI::ApplyDebuffsOnRaidMembers()
 
 void boss_MedivhAI::StartEvent()
 {
-    //DoSay("StartEvent", LANG_UNIVERSAL, m_creature);
-    //PrepareBoardForEvent();
+    printf("\n Wywolanie StartEvent()");
+    miniEvent = true;
     TeleportPlayers();
     ApplyDebuffsOnRaidMembers();
 
@@ -2248,22 +2210,49 @@ void boss_MedivhAI::StartEvent()
 
 void boss_MedivhAI::UpdateAI(const uint32 diff)
 {
-    /*if (!enabled && pInstance->GetData(DATA_CURATOR_EVENT) == DONE)
+    if(miniEvent)
     {
-        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-        enabled = true;
-    }*/
-
-    if(!boardPrepared)
-    {
-        if (prepareTimer < diff)
+        if (miniEventTimer < diff)
         {
-            PrepareBoardForEvent();
-            boardPrepared = true;
+            switch(miniEventState)
+            {
+                case MINI_EVENT_KING:
+                    PrepareBoardForEvent();
+                    break;
+                case MINI_EVENT_QUEEN:
+                    SpawnQueens();
+                    break;
+                case MINI_EVENT_BISHOP:
+                    SpawnBishops();
+                    break;
+                case MINI_EVENT_KNIGHT:
+                    SpawnKnights();
+                    break;
+                case MINI_EVENT_ROOK:
+                    SpawnRooks();
+                    break;
+                case MINI_EVENT_PAWN:
+                    SpawnPawns();
+                    break;
+                default:
+                    miniEvent = false;
+                    printf("\nTablica:");
+                    for (int i = 0; i < 8; i++)
+                    {
+                        for (int j = 0; j < 8; j++)
+                        {
+                            SetOrientation(chessBoard[i][j].piece, chessBoard[i][j].ori);
+                            printf("\ni: %i, j: %i, piece: %u, trigger: %u", i, j, chessBoard[i][j].piece, chessBoard[i][j].trigger);
+                        }
+                    }
+                    break;
+            }
+            miniEventState++;
         }
         else
-            prepareTimer -= diff;
+            miniEventTimer -= diff;
+
+        return;
     }
 
     if (!eventStarted && pInstance->GetData(DATA_CHESS_EVENT) == IN_PROGRESS)
@@ -2352,33 +2341,49 @@ void boss_MedivhAI::SetOrientation(uint64 piece, ChessOrientation ori)
             }
 
             chessBoard[tmpi][tmpj].ori = tmpOri;
-
-            switch (tmpOri)
-            {
-                case CHESS_ORI_N:
-                    tmpPiece->SetOrientation(ORI_N);
-                    break;
-                case CHESS_ORI_E:
-                    tmpPiece->SetOrientation(ORI_E);
-                    break;
-                case CHESS_ORI_S:
-                    tmpPiece->SetOrientation(ORI_S);
-                    break;
-                case CHESS_ORI_W:
-                    tmpPiece->SetOrientation(ORI_W);
-                    break;
-                default:
-                    break;
-            }
-
         }
     }
     else
         chessBoard[tmpi][tmpj].ori = ori;
+
+    Creature * cPiece = m_creature->GetMap()->GetCreature(piece);
+    if (cPiece)
+    {
+
+        switch (chessBoard[tmpi][tmpj].ori)
+        {
+            case CHESS_ORI_N:
+                cPiece->SetOrientation(ORI_N);
+                break;
+            case CHESS_ORI_E:
+                cPiece->SetOrientation(ORI_E);
+                break;
+            case CHESS_ORI_S:
+                cPiece->SetOrientation(ORI_S);
+                break;
+            case CHESS_ORI_W:
+                cPiece->SetOrientation(ORI_W);
+                break;
+            default:
+                break;
+        }
+
+        Map::PlayerList const& players = m_creature->GetMap()->GetPlayers();
+
+        if (!players.isEmpty())
+        {
+            for(Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+            {
+                if (Player* plr = itr->getSource())
+                    cPiece->SendMonsterMove(cPiece->GetPositionX(), cPiece->GetPositionY(), cPiece->GetPositionZ(), 0, plr);
+            }
+        }
+    }
 }
 
 Unit * boss_MedivhAI::FindTrigger(uint64 piece)
 {
+    printf("\n Wywolanie FindTrigger(uint64 piece)");
     for (int8 i = 0; i < 8; i++)
     {
         for (int8 j = 0; j < 8; j++)
@@ -2393,6 +2398,7 @@ Unit * boss_MedivhAI::FindTrigger(uint64 piece)
 
 bool boss_MedivhAI::ChessSquareIsEmpty(uint64 trigger)
 {
+    printf("\n Wywolanie ChessSquareIsEmpty(uint64 trigger)");
     for (int8 i = 0; i < 8; i++)
     {
         for (int8 j = 0; j < 8; j++)
@@ -2412,144 +2418,33 @@ bool boss_MedivhAI::ChessSquareIsEmpty(uint64 trigger)
 
 bool boss_MedivhAI::CanMoveTo(uint64 trigger, uint64 piece)
 {
+    printf("\n Wywolanie CanMoveTo(uint64 trigger, uint64 piece)");
     printf("\nCanMoveTo: trigger %u, piece %u", trigger, piece);
 
     if (!trigger || !piece)
         return false;
 
-    int moveRange = GetMoveRange(piece);
-    bool inRange = IsInRange(piece, trigger, moveRange);//false;
-
-    /*int8 tmpI = -1, tmpJ = -1, i, tmpOffsetI, tmpOffsetJ;
-
+    printf("\nCMT: Tablica:");
     for (int i = 0; i < 8; i++)
     {
         for (int j = 0; j < 8; j++)
         {
-            printf ("\n i %i, j %i | G: %u | G2: %u", i, j, chessBoard[i][j].piece, chessBoard[i][j].trigger);
-            if (chessBoard[i][j].piece == piece)
-            {
-                tmpI = i;
-                tmpJ = j;
-                break;
-            }
+            printf("\ni: %i, j: %i, piece: %u, trigger: %u", i, j, chessBoard[i][j].piece, chessBoard[i][j].trigger);
         }
-        //if we find location of piece
-        if (tmpI >= 0 && tmpJ >= 0)
-            break;
     }
 
-    printf("\nCanMoveTo: tmpI %i, tmpJ %i", tmpI, tmpJ);
-    if (tmpI < 0 || tmpJ < 0)
-    {
-        Unit * uPiece = m_creature->GetUnit(*m_creature, piece);
-        if (uPiece)
-            ((ScriptedAI*)uPiece)->DoSay("CanMoveTo(..) : Nie znaleziono mnie na planszy !!", LANG_UNIVERSAL, uPiece, false);
-        return false;
-    }
-
-    switch (moveRange)
-    {
-        case 25:
-            for (i = 0; i < OFFSET25COUNT; i++)
-            {
-                tmpOffsetI = offsetTab25[i][0];
-                tmpOffsetJ = offsetTab25[i][1];
-
-                if (tmpI + tmpOffsetI >= 0 && tmpI + tmpOffsetI < 8 &&
-                    tmpJ + tmpOffsetJ >= 0 && tmpJ + tmpOffsetJ < 8)
-                {
-                    if (chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].piece == trigger ||
-                        chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].trigger == trigger)
-                        {
-                            inRange = true;
-                            break;
-                        }
-                }
-            }
-        case 20:
-            if (!inRange)
-            {
-                for (i = 0; i < OFFSET20COUNT; i++)
-                {
-                    tmpOffsetI = offsetTab20[i][0];
-                    tmpOffsetJ = offsetTab20[i][1];
-
-                    if (tmpI + tmpOffsetI >= 0 && tmpI + tmpOffsetI < 8 &&
-                        tmpJ + tmpOffsetJ >= 0 && tmpJ + tmpOffsetJ < 8)
-                    {
-                       if (chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].piece == trigger ||
-                            chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].trigger == trigger)
-                            {
-                                inRange = true;
-                                break;
-                            }
-                    }
-                }
-            }
-        case 15:
-            if (!inRange)
-            {
-                for (i = 0; i < OFFSET15COUNT; i++)
-                {
-                    tmpOffsetI = offsetTab15[i][0];
-                    tmpOffsetJ = offsetTab15[i][1];
-
-                    if (tmpI + tmpOffsetI >= 0 && tmpI + tmpOffsetI < 8 &&
-                        tmpJ + tmpOffsetJ >= 0 && tmpJ + tmpOffsetJ < 8)
-                    {
-                        if (chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].piece == trigger ||
-                            chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].trigger == trigger)
-                            {
-                                inRange = true;
-                                break;
-                            }
-                    }
-                }
-            }
-        case 8:
-            if (!inRange)
-            {
-                for (i = 0; i < OFFSET8COUNT; i++)
-                {
-                    tmpOffsetI = offsetTab8[i][0];
-                    tmpOffsetJ = offsetTab8[i][1];
-
-                    if (tmpI + tmpOffsetI >= 0 && tmpI + tmpOffsetI < 8 &&
-                        tmpJ + tmpOffsetJ >= 0 && tmpJ + tmpOffsetJ < 8)
-                    {
-                       if (chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].piece == trigger ||
-                            chessBoard[tmpI + tmpOffsetI][tmpJ + tmpOffsetJ].trigger == trigger)
-                            {
-                                inRange = true;
-                                break;
-                            }
-                    }
-                }
-            }
-            break;
-        default:
-            break;
-    }*/
-
+    int moveRange = GetMoveRange(piece);
+    bool inRange = IsInRange(piece, trigger, moveRange);
     bool isEmpty = ChessSquareIsEmpty(trigger);
 
     printf("\nCanMoveTo: moveRange %i, isInRange %i, isEmpty %i", moveRange, inRange, isEmpty);
-
-    printf("\ntablica: \n");
-    for (int i = 0; i < 8; i++)
-    {
-        for (int j = 0; j < 8; j++)
-        {
-            printf("i: %i |j: %i|piece: %u|trigger: %u\n", i, j, chessBoard[i][j].piece, chessBoard[i][j].trigger);
-        }
-    }
 
     return inRange && isEmpty;
 }
 
 void boss_MedivhAI::AddTriggerToMove(uint64 trigger, uint64 piece, bool player)
 {
+    printf("\n Wywolanie AddTriggerToMove(uint64 trigger, uint64 piece, bool player)");
     ChessTile tmp;
     tmp.piece = piece;
     tmp.trigger = trigger;
@@ -2740,7 +2635,8 @@ bool GossipHello_npc_chesspiece(Player* player, Creature* _Creature)
 {
     ScriptedInstance* pInstance = ((ScriptedInstance*)_Creature->GetInstanceData());
 
-    //if(pInstance->GetData(DATA_CHESS_EVENT) != IN_PROGRESS)
+    //if(pInstance->GetData(DATA_CHESS_EVENT) != IN_PROGRESS &&
+    //   _Creature->GetEntry() != NPC_KING_A && _Creature->GetEntry() != NPC_KING_H)
     //    return true;
 
     if(pInstance->GetData(CHESS_EVENT_TEAM) == ALLIANCE && _Creature->getFaction() != A_FACTION)
@@ -2762,6 +2658,9 @@ bool GossipSelect_npc_chesspiece(Player* player, Creature* _Creature, uint32 sen
 {
     if(action == GOSSIP_ACTION_INFO_DEF + 1)
     {
+        //if (_Creature->GetEntry() == NPC_KING_A || _Creature->GetEntry() == NPC_KING_H)
+        //    pInstance->SetData(DATA_CHESS_EVENT, IN_PROGRESS);
+
         player->CastSpell(_Creature, SPELL_POSSES_CHESSPIECE, false);
     }
 
@@ -2786,8 +2685,8 @@ bool GossipHello_npc_echo_of_medivh(Player* player, Creature* _Creature)
     {
         player->ADD_GOSSIP_ITEM(0, EVENT_START, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
 
-        if (player->isGameMaster())
-            player->ADD_GOSSIP_ITEM(2, "Start Debug Mode", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+        //if (player->isGameMaster())
+        //    player->ADD_GOSSIP_ITEM(2, "Start Debug Mode", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
     }
 
     player->SEND_GOSSIP_MENU(8990, _Creature->GetGUID());
