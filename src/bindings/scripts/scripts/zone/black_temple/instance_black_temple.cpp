@@ -401,6 +401,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         case DATA_TERONGOREFIENDEVENT:
             if(data == IN_PROGRESS)
             {
+                sodList.clear();
                 HandleGameObject(TeronDoor, false);
                 HandleGameObject(CommonDoor, false);
             }
