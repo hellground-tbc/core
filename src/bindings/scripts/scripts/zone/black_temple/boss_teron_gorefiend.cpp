@@ -165,10 +165,10 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
         DoCast(m_creature, SPELL_SHADOW_STRIKES, false);
 
         CheckTeronTimer = 5000;
-        ChangeTarget = 3000;
-        DelayTimer = 2500;
+        ChangeTarget = 4000;
+        DelayTimer = 2000;
 
-        me->SetSpeed(MOVE_RUN, 1.3f);
+        me->SetSpeed(MOVE_RUN, 1.0f);
         me->setActive(true);
     }
 
@@ -252,7 +252,7 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
         {
             DelayTimer = 0;
 
-            if(me->GetPositionX() < 565.0f)
+            if(me->GetPositionX() > 565.0f)
                 return;
 
             if(Creature *pMiddleTrigger = GetClosestCreatureWithEntry(me, 23084, 100.0f))
