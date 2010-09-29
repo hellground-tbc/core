@@ -1980,6 +1980,87 @@ CreatureAI* GetAI_mob_ashtongue_stormcaller(Creature *_Creature)
     return new mob_ashtongue_stormcallerAI (_Creature);
 }
 
+/****************
+* Illidari Nightlord - id 22855
+*****************/
+
+#define SPELL_CURSE_OF_MENDING          39647
+#define SPELL_FEAR                      41150
+#define SPELL_SHADOW_INFERNO            39645
+#define SPELL_SUMMON_SHADOWFIENDS       39649
+
+struct TRINITY_DLL_DECL mob_illidari_nightlordAI : public ScriptedAI
+{
+    mob_illidari_nightlordAI(Creature *c) : ScriptedAI(c) {}
+
+    uint32 CurseOfMending;
+    uint32 Fear;
+    uint32 ShadowInferno;
+    uint32 Shadowfiends;
+
+    void Reset()
+    {
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
+        CurseOfMending = urand(10000, 20000);
+        Fear = urand(3000, 15000);
+        ShadowInferno = 7000;
+        Shadowfiends = urand(15000, 20000);
+    }
+    void EnterCombat(Unit*) { DoZoneInCombat(); }
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(CurseOfMending < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 10, true))
+                ForceSpellCast(target, SPELL_CURSE_OF_MENDING);
+            CurseOfMending = 20000;
+        }
+        else
+            CurseOfMending -= diff;
+
+        if(Fear < diff)
+        {
+            ForceSpellCast(m_creature, SPELL_FEAR);
+            Fear = urand(10000, 15000);
+        }
+        else
+            Fear -= diff;
+
+        if(ShadowInferno < diff)
+        {
+            if(Fear < 8200)
+                Fear += 8000;
+            if(CurseOfMending < 8200)
+                CurseOfMending += 8000;
+            if(Shadowfiends < 8200)
+                Shadowfiends += 8000;
+            ForceSpellCast(m_creature, SPELL_SHADOW_INFERNO);
+            ShadowInferno = 20000;
+        }
+        else
+            ShadowInferno -= diff;
+
+        if(Shadowfiends < diff)
+        {
+            ForceSpellCast(m_creature, SPELL_SUMMON_SHADOWFIENDS);
+            Shadowfiends = 25000;
+        }
+        else
+            Shadowfiends -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_illidari_nightlord(Creature *_Creature)
+{
+    return new mob_illidari_nightlordAI (_Creature);
+}
+
 /* ============================
 *
 *      TERON  GOREFIEND
@@ -2636,6 +2717,11 @@ void AddSC_black_temple_trash()
     newscript = new Script;
     newscript->Name = "mob_ashtongue_stormcaller";
     newscript->GetAI = &GetAI_mob_ashtongue_stormcaller;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_illidari_nightlord";
+    newscript->GetAI = &GetAI_mob_illidari_nightlord;
     newscript->RegisterSelf();
 
     newscript = new Script;
