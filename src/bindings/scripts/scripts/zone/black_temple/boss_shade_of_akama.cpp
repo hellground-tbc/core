@@ -215,6 +215,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
         {
             if(Creature *pAkama = pInstance->GetCreature(pInstance->GetData64(DATA_AKAMA_SHADE)))
             {   
+                m_creature->AddThreat(pAkama, 100000.0f);
                 AttackStart(pAkama);
             }
         }

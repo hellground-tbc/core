@@ -251,12 +251,6 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
         else if(DelayTimer)
         {
             DelayTimer = 0;
-
-            if(me->GetPositionX() > 565.0f)
-                return;
-
-            if(Creature *pMiddleTrigger = GetClosestCreatureWithEntry(me, 23084, 100.0f))
-               me->GetMotionMaster()->MovePoint(0, pMiddleTrigger->GetPositionX(), pMiddleTrigger->GetPositionY(), pMiddleTrigger->GetPositionZ());
         }
 
         UpdateTarget(diff);
