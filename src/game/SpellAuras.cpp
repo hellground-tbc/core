@@ -1808,8 +1808,13 @@ void Aura::TriggerSpell()
 //                    case 39630: break;
 //                    // Shadow Bolt Whirl
 //                    case 39634: break;
-//                    // Shadow Inferno
-//                    case 39645: break;
+                    // Shadow Inferno
+                    case 39645:
+                    {
+                        const int32 damage = GetBasePoints()+1;
+                        caster->CastCustomSpell(caster, 39646, &damage, NULL, NULL, true);
+                        break;
+                    }
                     // Tear of Azzinoth Summon Channel - it's not really supposed to do anything,and this only prevents the console spam
                     case 39857: trigger_spell_id = 39856; break;
 //                    // Soulgrinder Ritual Visual (Smashed)

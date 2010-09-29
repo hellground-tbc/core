@@ -5401,9 +5401,20 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             }
             break;
         }
+        // Fixated
         case 40893:
         {
             m_caster->CastSpell(m_caster, 40893, false);
+        }
+        // Summon Shadowfiends
+        case 39649:
+        {
+            uint8 random = urand(8, 12);
+            for(uint8 i = 0; i < random; ++i)
+            {
+                m_caster->CastSpell(m_caster, 41159, true);
+            }
+            break;
         }
     }
 
