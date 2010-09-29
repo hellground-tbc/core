@@ -37,6 +37,8 @@ mob_illidari_spawn
 npc_lord_illidan_stormrage
 go_crystal_prison
 npc_enraged_spirit
+npc_overlord_orbarokh
+npc_thane_yoregar
 EndContentData */
 
 #include "precompiled.h"
@@ -3370,6 +3372,39 @@ bool GossipSelect_npc_overlord_orbarokh(Player *player, Creature *_Creature, uin
     return true;
 }
 
+/*####
+# npc_thane_yoregar
+####*/
+
+#define GOSSIP_ITEM_YOREGAR "Restore Kor'kron Flare Gun."
+
+bool GossipHello_npc_thane_yoregar(Player *player, Creature *_Creature)
+{
+    if (_Creature->isQuestGiver())
+        player->PrepareQuestMenu( _Creature->GetGUID() );
+
+		if(player->GetQuestStatus(10773) || player->GetQuestStatus(10774) || player->GetQuestStatus(10775) || player->GetQuestStatus(10776) == QUEST_STATUS_INCOMPLETE )
+			if(!player->HasItemCount(31310,1))
+				player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_YOREGAR, GOSSIP_SENDER_MAIN, GOSSIP_SENDER_INFO );
+				player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+    return true;
+}
+
+bool GossipSelect_npc_thane_yoregar(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+{
+    if( action == GOSSIP_SENDER_INFO )
+    {
+            ItemPosCountVec dest;
+            uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 31310, 1);
+			if (msg == EQUIP_ERR_OK)
+            {
+                 Item* item = player->StoreNewItem(dest, 31310, true);
+                     player->SendNewItem(item,1,true,false,true);
+            }
+    }
+    return true;
+}
+
 
 void AddSC_shadowmoon_valley()
 {
@@ -3526,16 +3561,21 @@ void AddSC_shadowmoon_valley()
     newscript->GetAI = &GetAI_npc_xiri;
     newscript->RegisterSelf();
 
-
     newscript = new Script;
     newscript->Name="mob_deathbringer_joovan";
     newscript->GetAI = &GetAI_mob_deathbringer_joovanAI;
     newscript->RegisterSelf();
-
+	
 	newscript = new Script;
     newscript->Name="npc_overlord_orbarokh";
     newscript->pGossipHello = &GossipHello_npc_overlord_orbarokh;
     newscript->pGossipSelect = &GossipSelect_npc_overlord_orbarokh;
+    newscript->RegisterSelf();
+	
+    newscript = new Script;
+    newscript->Name="npc_thane_yoregar";
+    newscript->pGossipHello = &GossipHello_npc_thane_yoregar;
+    newscript->pGossipSelect = &GossipSelect_npc_thane_yoregar;
     newscript->RegisterSelf();
 }
 

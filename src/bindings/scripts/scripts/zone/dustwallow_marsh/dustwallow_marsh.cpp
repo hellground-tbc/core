@@ -67,14 +67,14 @@ struct TRINITY_DLL_DECL mobs_risen_husk_spiritAI : public ScriptedAI
         if( ConsumeFlesh_Timer < diff )
         {
             if( m_creature->GetEntry() == 23555 )
-                DoCast(m_creature->getVictim(),SPELL_CONSUME_FLESH);
+                DoCast(m_creature,SPELL_CONSUME_FLESH);
             ConsumeFlesh_Timer = 15000;
         } else ConsumeFlesh_Timer -= diff;
 
         if( IntangiblePresence_Timer < diff )
         {
             if( m_creature->GetEntry() == 23554 )
-                DoCast(m_creature->getVictim(),SPELL_INTANGIBLE_PRESENCE);
+                DoCast(m_creature,SPELL_INTANGIBLE_PRESENCE);
             IntangiblePresence_Timer = 20000;
         } else IntangiblePresence_Timer -= diff;
 

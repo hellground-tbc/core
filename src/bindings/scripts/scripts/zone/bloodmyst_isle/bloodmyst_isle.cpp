@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Bloodmyst_Isle
 SD%Complete: 80
-SDComment: Quest support: 9670, 9756.
+SDComment: Quest support: 9670, 9667, 9756.
 SDCategory: Bloodmyst Isle
 EndScriptData */
 
