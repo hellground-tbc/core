@@ -1534,6 +1534,11 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->CastSpell(unitTarget,39835,true);
                     break;
                 }
+                case 39581:                                 // Storm Blink
+                {
+                    m_caster->CastSpell(m_caster, 39582, true);
+                    break;
+                }
             }
 
             //All IconID Check in there
