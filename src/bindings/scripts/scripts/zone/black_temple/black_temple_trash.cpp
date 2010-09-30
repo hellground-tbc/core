@@ -1981,6 +1981,217 @@ CreatureAI* GetAI_mob_ashtongue_stormcaller(Creature *_Creature)
 }
 
 /****************
+* Illidari Boneslicer - id 22869
+*****************/
+
+#define SPELL_CLOAK_OF_SHADOWS              39666
+#define SPELL_GOUGE                         24698
+#define SPELL_SHADOWSTEP                    41176
+#define SPELL_WOUND_POISON                  39665
+
+struct TRINITY_DLL_DECL mob_illidari_boneslicerAI : public ScriptedAI
+{
+    mob_illidari_boneslicerAI(Creature *c) : ScriptedAI(c) {}
+
+    uint32 CloakOfShadows;
+    uint32 Gouge;
+    uint32 Shadowstep;
+    uint32 WoundPoison;
+
+    void Reset()
+    {
+        CloakOfShadows = 15000;
+        Gouge = urand(1000, 10000);;
+        Shadowstep = urand(5000, 15000);
+        WoundPoison = urand(1000, 3000);
+    }
+    void EnterCombat(Unit*)
+    {
+        DoCast(m_creature, SPELL_CLOAK_OF_SHADOWS);
+        DoZoneInCombat();
+    }
+    void DamageMade(Unit* target, uint32 & damage, bool direct_damage)
+    {
+        if(damage && direct_damage)
+            ForceSpellCast(target, SPELL_WOUND_POISON);
+    }
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(CloakOfShadows < diff)
+        {
+            AddSpellToCast(m_creature, SPELL_CLOAK_OF_SHADOWS);
+            CloakOfShadows = 15000;
+        }
+        else
+            CloakOfShadows -= diff;
+
+        if(Gouge < diff)
+        {
+            AddSpellToCast(m_creature->getVictim(), SPELL_GOUGE);
+            Gouge = 10000;
+        }
+        else
+            Gouge -= diff;
+
+        if(Shadowstep < diff)
+        {
+            AddSpellToCast(m_creature->getVictim(), SPELL_SHADOWSTEP);
+            Shadowstep = 15000;
+        }
+        else
+            Shadowstep -= diff;
+
+        if(WoundPoison < diff)
+        {
+            AddSpellToCast(m_creature->getVictim(), SPELL_WOUND_POISON);
+            WoundPoison = 3000;
+        }
+        else
+            WoundPoison -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_illidari_boneslicer(Creature *_Creature)
+{
+    return new mob_illidari_boneslicerAI (_Creature);
+}
+
+/****************
+* Illidari Centurion - id 23337
+*****************/
+
+#define SPELL_CLEAVE                15284
+#define SPELL_SONIC_STRIKE          41168
+
+struct TRINITY_DLL_DECL mob_illidari_centurionAI : public ScriptedAI
+{
+    mob_illidari_centurionAI(Creature *c) : ScriptedAI(c) {}
+
+    uint32 Cleave;
+    uint32 SonicStrike;
+
+    void Reset()
+    {
+        Cleave = urand(3000, 10000);
+        SonicStrike = urand(5000, 15000);
+    }
+    void EnterCombat(Unit*) { DoZoneInCombat(); }
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(Cleave < diff)
+        {
+            AddSpellToCast(m_creature->getVictim(), SPELL_CLEAVE);
+            Cleave = 10000;
+        }
+        else
+            Cleave -= diff;
+
+        if(SonicStrike < diff)  //in cone in front of a caster, should "in front" be changed randomly?
+        {
+            AddSpellToCast(m_creature, SPELL_SONIC_STRIKE);
+            SonicStrike = 15000;
+        }
+        else
+            SonicStrike -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_illidari_centurion(Creature *_Creature)
+{
+    return new mob_illidari_centurionAI (_Creature);
+}
+
+/****************
+* Illidari Defiler - id 22853
+*****************/
+
+#define SPELL_FEL_IMMOLATE                  39670
+#define SPELL_CURSE_OF_AGONY                39672
+#define SPELL_BANISH                        39674
+#define SPELL_RAIN_OF_CHAOS                 39671
+
+struct TRINITY_DLL_DECL mob_illidari_defilerAI : public ScriptedAI
+{
+    mob_illidari_defilerAI(Creature *c) : ScriptedAI(c) {}
+
+    uint32 FelImmolate;
+    uint32 CurseOfAgony;
+    uint32 Banish;
+    uint32 RainOfChaos;
+
+    void Reset()
+    {
+        FelImmolate = urand(15000, 25000);
+        CurseOfAgony = urand(20000, 35000);
+        Banish = urand(10000, 30000);
+        RainOfChaos = urand(3000, 15000);
+    }
+    void EnterCombat(Unit*)
+    {
+        DoZoneInCombat();
+    }
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(FelImmolate < diff)
+        {
+            AddSpellToCast(m_creature->getVictim(), SPELL_FEL_IMMOLATE);
+            FelImmolate = 25000;
+        }
+        else
+            FelImmolate -= diff;
+
+        if(CurseOfAgony < diff)
+        {
+            AddSpellToCast(m_creature, SPELL_CURSE_OF_AGONY);
+            CurseOfAgony = 35000;
+        }
+        else
+            CurseOfAgony -= diff;
+
+        if(Banish < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true))
+                AddSpellToCast(target, SPELL_BANISH);
+            Banish = 30000;
+        }
+        else
+            Banish -= diff;
+
+        if(RainOfChaos < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true))
+                AddSpellToCast(target, SPELL_RAIN_OF_CHAOS);
+            RainOfChaos = 15000;
+        }
+        else
+            RainOfChaos -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_illidari_defiler(Creature *_Creature)
+{
+    return new mob_illidari_defilerAI (_Creature);
+}
+
+/****************
 * Illidari Nightlord - id 22855
 *****************/
 
@@ -2059,6 +2270,46 @@ struct TRINITY_DLL_DECL mob_illidari_nightlordAI : public ScriptedAI
 CreatureAI* GetAI_mob_illidari_nightlord(Creature *_Creature)
 {
     return new mob_illidari_nightlordAI (_Creature);
+}
+
+/****************
+* Storm Fury - id 22848
+*****************/
+
+#define SPELL_STORM_BLINK           39581
+
+struct TRINITY_DLL_DECL mob_storm_furyAI : public ScriptedAI
+{
+    mob_storm_furyAI(Creature *c) : ScriptedAI(c) {}
+
+    uint32 StormBlink;
+
+    void Reset()
+    {
+        StormBlink = urand(15000, 25000);
+    }
+    void EnterCombat(Unit*) { DoZoneInCombat(); }
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(StormBlink < diff)
+        {
+            AddSpellToCast(m_creature, SPELL_STORM_BLINK);
+            StormBlink = 25000;
+        }
+        else
+            StormBlink -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_storm_fury(Creature *_Creature)
+{
+    return new mob_storm_furyAI (_Creature);
 }
 
 /* ============================
@@ -2720,8 +2971,33 @@ void AddSC_black_temple_trash()
     newscript->RegisterSelf();
 
     newscript = new Script;
+    newscript->Name = "mob_illidari_boneslicer";
+    newscript->GetAI = &GetAI_mob_illidari_boneslicer;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_illidari_centurion";
+    newscript->GetAI = &GetAI_mob_illidari_centurion;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_illidari_defiler";
+    newscript->GetAI = &GetAI_mob_illidari_defiler;
+    newscript->RegisterSelf();
+
+/*    newscript = new Script;
+    newscript->Name = "mob_illidari_heartseeker";
+    newscript->GetAI = &GetAI_mob_illidari_heartseeker;
+    newscript->RegisterSelf();*/
+
+    newscript = new Script;
     newscript->Name = "mob_illidari_nightlord";
     newscript->GetAI = &GetAI_mob_illidari_nightlord;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_storm_fury";
+    newscript->GetAI = &GetAI_mob_storm_fury;
     newscript->RegisterSelf();
 
     newscript = new Script;
