@@ -11499,6 +11499,10 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
         }
     }
 
+    // HACK: Skeleton Shot - summon skeleton on death when having aura
+    if(pVictim->GetTypeId() == TYPEID_PLAYER && pVictim->HasAura(41171, 1))
+        pVictim->CastSpell((Unit*)NULL, 41174, true, 0, 0, this->GetGUID());
+
     // if talent known but not triggered (check priest class for speedup check)
     bool SpiritOfRedemption = false;
     if(pVictim->GetTypeId()==TYPEID_PLAYER && pVictim->getClass()==CLASS_PRIEST )
