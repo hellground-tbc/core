@@ -2192,6 +2192,108 @@ CreatureAI* GetAI_mob_illidari_defiler(Creature *_Creature)
 }
 
 /****************
+* Illidari Heartseeker - id 23339
+*****************/
+
+#define SPELL_RAPID_SHOT                41173
+#define SPELL_SHOOT                     41169
+#define SPELL_SKELETON_SHOT             41171
+#define SPELL_CURSE_OF_THE_BLEAKHEART   6946  //41170 proper spell blocks 6947 proc
+
+struct TRINITY_DLL_DECL mob_illidari_heartseekerAI : public ScriptedAI
+{
+    mob_illidari_heartseekerAI(Creature *c) : ScriptedAI(c) {}
+
+    uint32 RapidShot;
+    uint32 Shoot;
+    uint32 SkeletonShot;
+    uint32 Curse;
+
+    void Reset()
+    {
+        RapidShot = urand(10000, 20000);
+        Shoot = 500;
+        SkeletonShot = urand(15000, 35000);
+        Curse = urand(1000, 20000);
+    }
+    void EnterCombat(Unit* who)
+    {
+        DoZoneInCombat();
+        AttackStart(who, false);
+    }
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(Shoot < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
+            {
+                if(m_creature->GetDistance(target) > 30)
+                {
+                    m_creature->GetMotionMaster()->MoveChase(target, 20, 0);
+                    m_creature->SetSpeed(MOVE_RUN, 1,5);
+                }
+                else if(!target->IsWithinDistInMap(m_creature, 5.0))
+                {
+                    m_creature->GetMotionMaster()->Clear();
+                    m_creature->GetMotionMaster()->MoveIdle();
+                    ForceSpellCast(target, SPELL_SHOOT);
+                }
+            }
+            Shoot = 2000;
+        }
+        else
+            Shoot -= diff;
+
+        if(RapidShot < diff)
+        {
+            AddSpellToCast(m_creature, SPELL_RAPID_SHOT);
+            RapidShot = 20000;
+        }
+        else
+            RapidShot -= diff;
+
+        if(SkeletonShot < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 40, true))
+            {
+                if(target->IsWithinDistInMap(m_creature, 8.0))
+                    SkeletonShot = 1000;
+                else
+                {
+                    AddSpellToCast(target, SPELL_SKELETON_SHOT);
+                    SkeletonShot = 35000;
+                }
+            }
+        }
+        else
+            SkeletonShot -= diff;
+
+        if(Curse < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 60, true))    // workaround...
+            {
+                target->CastSpell(target, SPELL_CURSE_OF_THE_BLEAKHEART, true, 0, 0, m_creature->GetGUID());
+                //target->CastSpell(target, SPELL_CURSE_PROC, true, 0, 0, m_creature->GetGUID());
+            }
+            Curse = 20000;
+        }
+        else
+            Curse -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_illidari_heartseeker(Creature *_Creature)
+{
+    return new mob_illidari_heartseekerAI (_Creature);
+}
+
+/****************
 * Illidari Nightlord - id 22855
 *****************/
 
@@ -2331,6 +2433,95 @@ CreatureAI* GetAI_mob_storm_fury(Creature *_Creature)
     * Shadowmoon Weapon Master
     * Wrathbone Flayer
 */
+
+/****************
+* Hand of Gorefiend - id 23172
+*****************/
+
+#define SPELL_ENRAGE                38166
+
+struct TRINITY_DLL_DECL mob_hand_of_gorefiendAI : public ScriptedAI
+{
+    mob_hand_of_gorefiendAI(Creature *c) : ScriptedAI(c) {}
+
+    uint32 Enrage;
+
+    void Reset()
+    {
+        Enrage = 10000;
+    }
+    void EnterCombat(Unit*) { DoZoneInCombat(); }
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(Enrage < diff)
+        {
+            DoCast(m_creature, SPELL_ENRAGE);
+            Enrage = 30000;
+        }
+        else
+            Enrage -= diff;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_hand_of_gorefiend(Creature *_Creature)
+{
+    return new mob_hand_of_gorefiendAI (_Creature);
+}
+
+/****************
+* Shadowmoon Blood Mage - id 22945
+*****************/
+
+#define SPELL_BLOOD_SIPHON              41068
+#define SPELL_BLOODBOLT                 41072
+
+// zle id ale wyglada podobnie
+#define SPELL_GREEN_BEAM        38909
+#define MOB_SKELETON            22953
+
+struct TRINITY_DLL_DECL mob_shadowmoon_blood_mageAI: public ScriptedAI
+{
+    mob_shadowmoon_blood_mageAI(Creature *c) : ScriptedAI(c) { }
+
+    void Reset()
+    {
+    }
+
+    void EnterCombat(Unit *)
+    {
+        m_creature->InterruptNonMeleeSpells(false, SPELL_GREEN_BEAM);
+        DoZoneInCombat();
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+        {
+            if (!m_creature->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT))
+            {
+                if (Unit *skeleton = FindCreature(MOB_SKELETON, 20.0f, m_creature))
+                {
+                    if (skeleton->isAlive())
+                        DoCast(skeleton, SPELL_GREEN_BEAM);
+                }
+            }
+            return;
+        }
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_shadowmoon_blood_mage(Creature *_Creature)
+{
+    return new mob_shadowmoon_blood_mageAI(_Creature);
+}
 
 /****************
 * Shadowmoon Weapon Master - id 23049
@@ -2527,49 +2718,6 @@ struct TRINITY_DLL_DECL mob_shadowmoon_soldierAI: public ScriptedAI
 };
 
 /****************
-* Shadowmoon Blood Mage - id 22945
-*****************/
-
-// zle id ale wyglada podobnie
-#define SPELL_GREEN_BEAM        38909
-#define MOB_SKELETON            22953
-
-struct TRINITY_DLL_DECL mob_shadowmoon_blood_mageAI: public ScriptedAI
-{
-    mob_shadowmoon_blood_mageAI(Creature *c) : ScriptedAI(c) { }
-
-    void Reset()
-    {
-    }
-
-    void EnterCombat(Unit *)
-    {
-        m_creature->InterruptNonMeleeSpells(false, SPELL_GREEN_BEAM);
-        DoZoneInCombat();
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-        if(!UpdateVictim())
-        {
-            if (!m_creature->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT))
-            {
-                if (Unit *skeleton = FindCreature(MOB_SKELETON, 20.0f, m_creature))
-                {
-                    if (skeleton->isAlive())
-                        DoCast(skeleton, SPELL_GREEN_BEAM);
-                }
-            }
-            return;
-        }
-
-        CastNextSpellIfAnyAndReady();
-        DoMeleeAttackIfReady();
-    }
-};
-
-
-/****************
 * Shadowmoon Deathshaper - id 22882
 *****************/
 
@@ -2621,11 +2769,6 @@ CreatureAI* GetAI_mob_shadowmoon_weapon_master(Creature *_Creature)
 CreatureAI* GetAI_mob_shadowmoon_soldier(Creature *_Creature)
 {
     return new mob_shadowmoon_soldierAI(_Creature);
-}
-
-CreatureAI* GetAI_mob_shadowmoon_blood_mage(Creature *_Creature)
-{
-    return new mob_shadowmoon_blood_mageAI(_Creature);
 }
 
 /* ============================
@@ -2915,26 +3058,7 @@ void AddSC_black_temple_trash()
     newscript->GetAI = &GetAI_mob_illidari_fearbringer;
     newscript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name = "mob_shadowmoon_weapon_master";
-    newscript->GetAI = &GetAI_mob_shadowmoon_weapon_master;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name = "mob_shadowmoon_soldier";
-    newscript->GetAI = &GetAI_mob_shadowmoon_soldier;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name = "mob_shadowmoon_blood_mage";
-    newscript->GetAI = &GetAI_mob_shadowmoon_blood_mage;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name = "mob_shadowmoon_deathshaper";
-    newscript->GetAI = &GetAI_mob_shadowmoon_deathshaper;
-    newscript->RegisterSelf();
-
+    // Shade Of Akama
     newscript = new Script;
     newscript->Name = "mob_ashtongue_battlelord";
     newscript->GetAI = &GetAI_mob_ashtongue_battlelord;
@@ -2985,10 +3109,10 @@ void AddSC_black_temple_trash()
     newscript->GetAI = &GetAI_mob_illidari_defiler;
     newscript->RegisterSelf();
 
-/*    newscript = new Script;
+    newscript = new Script;
     newscript->Name = "mob_illidari_heartseeker";
     newscript->GetAI = &GetAI_mob_illidari_heartseeker;
-    newscript->RegisterSelf();*/
+    newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "mob_illidari_nightlord";
@@ -2998,6 +3122,32 @@ void AddSC_black_temple_trash()
     newscript = new Script;
     newscript->Name = "mob_storm_fury";
     newscript->GetAI = &GetAI_mob_storm_fury;
+    newscript->RegisterSelf();
+
+    // Teron Gorefiend
+    newscript = new Script;
+    newscript->Name = "mob_hand_of_gorefiend";
+    newscript->GetAI = &GetAI_mob_hand_of_gorefiend;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_shadowmoon_blood_mage";
+    newscript->GetAI = &GetAI_mob_shadowmoon_blood_mage;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_shadowmoon_weapon_master";
+    newscript->GetAI = &GetAI_mob_shadowmoon_weapon_master;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_shadowmoon_soldier";
+    newscript->GetAI = &GetAI_mob_shadowmoon_soldier;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_shadowmoon_deathshaper";
+    newscript->GetAI = &GetAI_mob_shadowmoon_deathshaper;
     newscript->RegisterSelf();
 
     newscript = new Script;
