@@ -2274,10 +2274,7 @@ struct TRINITY_DLL_DECL mob_illidari_heartseekerAI : public ScriptedAI
         if(Curse < diff)
         {
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 60, true))    // workaround...
-            {
                 target->CastSpell(target, SPELL_CURSE_OF_THE_BLEAKHEART, true, 0, 0, m_creature->GetGUID());
-                //target->CastSpell(target, SPELL_CURSE_PROC, true, 0, 0, m_creature->GetGUID());
-            }
             Curse = 20000;
         }
         else
