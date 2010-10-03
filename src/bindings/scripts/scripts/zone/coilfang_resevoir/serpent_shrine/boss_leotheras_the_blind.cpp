@@ -452,8 +452,10 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
         //Enrage_Timer ( 10 min )
         if(Berserk_Timer < diff)
         {
-            DoCast(m_creature, SPELL_BERSERK);
-            Berserk_Timer = 600000;
+            if(!m_creature->HasAura(SPELL_BERSERK, 0))
+                DoCast(m_creature, SPELL_BERSERK);
+            m_creature->SetSpeed(MOVE_RUN, 3.0);
+            Berserk_Timer = 5000;
         }
         else
             Berserk_Timer -= diff;

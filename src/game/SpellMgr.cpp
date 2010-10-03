@@ -2692,12 +2692,15 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 36819: //Kael Pyroblast
             spellInfo->rangeIndex = 6;  // from 40yd to 100yd to avoid running from dmg
-            // missing break?
+            break;
         case 40334:
             spellInfo->procFlags = PROC_FLAG_SUCCESSFUL_MELEE_HIT;
             break;
         case 30015: // Summon Naias cooldown
             spellInfo->RecoveryTime = 300000;
+            break;
+        case 6947:  // Curse of the Bleakheart
+            spellInfo->procFlags = 65876;      //any succesfull melee, ranged or negative spell hit
             break;
         default:
             break;

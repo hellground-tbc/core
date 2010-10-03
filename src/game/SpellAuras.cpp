@@ -2272,6 +2272,10 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 if(roll_chance_i(20))                       // backfire stun
                     m_target->CastSpell(m_target, 51581, true, NULL, this);
                 return;
+            case 6946:                                     // Curse of Bleakheart
+                if(!m_target->HasAura(6947, 0))
+                    m_target->CastSpell(m_target, 6947, true);
+                return;
             case 43873:                                     // Headless Horseman Laugh
                 if(caster->GetTypeId() == TYPEID_PLAYER)
                     ((Player*)caster)->SendPlaySound(11965, false);
@@ -2364,6 +2368,12 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 m_target->CastSpell(m_target, 28206, true, NULL, this);
                 // Poison Cloud
                 m_target->CastSpell(m_target, 28240, true, NULL, this);
+                return;
+            }
+            case 6946:                                     // Curse of Bleakheart
+            {
+                if(m_target->HasAura(6947, 0))
+                    m_target->RemoveAurasDueToSpell(6947);
                 return;
             }
             case 45934:        // Dark Fiend
