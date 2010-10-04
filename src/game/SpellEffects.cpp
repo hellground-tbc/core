@@ -982,16 +982,18 @@ void Spell::EffectDummy(uint32 i)
                     }
                     return;
                 }
-                /*
-                Placeholder for Gnomish Death Ray support.
-                Maybe spells ids after case should be swaped.
+                // Gnomish Death Ray
+                // TODO: poprawic animacje, oraz skalowanie dmg z poziomem
                 case 13280:
-                    m_caster->CastSpell(m_caster, 13493, true);     // Gnomish Death Ray periodic damage
+                    if(!unitTarget)
+                        return;
+                    m_caster->CastSpell(unitTarget, 13279, true);     // Gnomish Death Ray direct damage
                     return;
                 case 13278:
-                    m_caster->CastSpell(unitTarget, 13279, true);  // Gnomish Death Ray effect
+                    if(!unitTarget)
+                        return;
+                    m_caster->CastSpell(unitTarget, 13493, true);  // Gnomish Death Ray self DOT
                     return;
-                */
                 case 13180:                                 // Gnomish Mind Control Cap
                 {
                     if(!unitTarget)
@@ -4669,6 +4671,9 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
                 if(m_caster->GetTypeId()==TYPEID_PLAYER)
                     ((Player*)m_caster)->AddComboPoints(unitTarget,1);
             }
+            // Maim interrupt (s3, s4 gloves bonus)
+            if(m_spellInfo->Id == 22570 && m_caster->HasAura(44835, 0)) 
+                m_caster->CastSpell(unitTarget, 32747, true);
             break;
         }
     }

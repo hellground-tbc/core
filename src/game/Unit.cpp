@@ -5291,13 +5291,15 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     target = this;
                     break;
                 }
-                // Maim Interrupt
+                // Maim Interrupt - handled in Spell::SpellDamageWeaponDmg
+                /*
                 case 44835:
                 {
                     // Deadly Interrupt Effect
                     triggered_spell_id = 32747;
                     break;
                 }
+                */
             }
             break;
         }
