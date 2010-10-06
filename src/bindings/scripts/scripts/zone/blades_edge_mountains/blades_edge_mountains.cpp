@@ -30,6 +30,7 @@ npc_saikkal_the_elder
 npc_skyguard_handler_irena
 npc_bloodmaul_brutebane
 npc_ogre_brute
+npc_aether_ray
 EndContentData */
 
 #include "precompiled.h"
@@ -508,6 +509,78 @@ CreatureAI* GetAI_npc_vim_bunny(Creature *_Creature)
 {
     return new npc_vim_bunnyAI (_Creature);
 }
+
+/*######
+## Wrangle Some Aether Rays
+######*/
+
+// Spells
+#define EMOTE_WEAK     "appears ready to be wrangled."
+#define SPELL_SUMMON_WRANGLED   40917
+#define SPELL_CHANNEL           40626
+
+struct TRINITY_DLL_DECL mob_aetherrayAI : public ScriptedAI
+{
+
+    mob_aetherrayAI(Creature *c) : ScriptedAI(c) {}
+
+    bool Weak;
+    uint64 PlayerGUID;
+
+    void Reset()
+    {
+        Weak = false;
+    }
+
+    void EnterCombat(Unit *who)
+    {
+        if(Player *player = who->GetCharmerOrOwnerPlayerOrPlayerItself())
+            PlayerGUID = player->GetGUID();
+    }
+
+    void JustSummoned(Creature* summoned)
+    {
+        summoned->GetMotionMaster()->MoveFollow(Unit::GetPlayer(PlayerGUID), PET_FOLLOW_DIST, m_creature->GetFollowAngle(), MOTION_SLOT_ACTIVE);
+    }
+        
+    void UpdateAI(const uint32 diff)
+    {
+
+    if (!UpdateVictim())
+            return;
+
+    if(PlayerGUID) // start: support for quest 11066 and 11065
+        {
+            Player* target = Unit::GetPlayer(PlayerGUID);
+
+            if(target && !Weak && m_creature->GetHealth() < (m_creature->GetMaxHealth() / 100 * 40)
+                && (target->GetQuestStatus(11066) == QUEST_STATUS_INCOMPLETE || target->GetQuestStatus(11065) == QUEST_STATUS_INCOMPLETE))
+            {
+                me->MonsterTextEmote(EMOTE_WEAK, 0, false);
+                Weak = true;
+            }
+
+            if(Weak && m_creature->HasAura(40856, 0))
+            {
+                me->CastSpell(target, SPELL_SUMMON_WRANGLED, false);
+                target->KilledMonster(23343, m_creature->GetGUID());
+                m_creature->AttackStop(); // delete the normal mob
+                m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                m_creature->RemoveCorpse();          
+            }
+        }
+
+        DoMeleeAttackIfReady();
+    }
+
+
+};
+
+CreatureAI* GetAI_mob_aetherray(Creature *_Creature)
+{
+    return new mob_aetherrayAI (_Creature);
+}
+
 /*######
 ## AddSC
 ######*/
@@ -558,4 +631,10 @@ void AddSC_blades_edge_mountains()
     newscript->Name = "npc_vim_bunny";
     newscript->GetAI = &GetAI_npc_vim_bunny;
     newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_aetherray";
+    newscript->GetAI = &GetAI_mob_aetherray;
+    newscript->RegisterSelf();
+    
 }
