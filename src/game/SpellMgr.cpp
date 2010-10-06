@@ -308,6 +308,25 @@ bool IsPassiveSpell(SpellEntry const *spellInfo)
     return (spellInfo->Attributes & SPELL_ATTR_PASSIVE) != 0;
 }
 
+void ApplySpellThreatModifiers(SpellEntry const *spellInfo, float &threat)
+{
+    if(!spellInfo)
+        return;
+
+    if(spellInfo->SpellFamilyName == SPELLFAMILY_WARLOCK && spellInfo->SpellFamilyFlags == 256) // Searing Pain
+        threat *= 2.0f;
+
+    else if(spellInfo->SpellFamilyName == SPELLFAMILY_SHAMAN && spellInfo->SpellFamilyFlags == SPELLFAMILYFLAG_SHAMAN_FROST_SHOCK)
+        threat *= 2.0f;
+
+    else if(spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN && spellInfo->SpellFamilyFlags == 0x4000000000l) // Holy shield
+        threat *= 1.35f;
+
+    else if(spellInfo->Id == 33619) // Reflective shield
+        threat = 1.0f;
+
+}
+
 uint32 CalculatePowerCost(SpellEntry const * spellInfo, Unit const * caster, SpellSchoolMask schoolMask)
 {
     // Spell drain all exist power on cast (Only paladin lay of Hands)

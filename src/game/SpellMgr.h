@@ -322,6 +322,7 @@ inline uint32 GetSpellRangeType(SpellRangeEntry const *range) { return (range ? 
 inline uint32 GetSpellRecoveryTime(SpellEntry const *spellInfo) { return spellInfo->RecoveryTime > spellInfo->CategoryRecoveryTime ? spellInfo->RecoveryTime : spellInfo->CategoryRecoveryTime; }
 int32 GetSpellDuration(SpellEntry const *spellInfo);
 int32 GetSpellMaxDuration(SpellEntry const *spellInfo);
+void ApplySpellThreatModifiers(SpellEntry const *spellInfo, float &threat);
 
 inline float GetSpellRadius(SpellEntry const *spellInfo, uint32 effectIdx, bool positive)
 {
