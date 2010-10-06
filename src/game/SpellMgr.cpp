@@ -2705,6 +2705,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 6947:  // Curse of the Bleakheart
             spellInfo->procFlags = 65876;      //any succesfull melee, ranged or negative spell hit
             break;
+        case 34580: // Impale( Despair item)
+            spellInfo->AttributesCu |= SPELL_ATTR_CU_IGNORE_ARMOR;
+            break;
         default:
             break;
         }
