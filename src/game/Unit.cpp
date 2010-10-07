@@ -980,18 +980,9 @@ uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, cons
 
             if (pVictim->GetTypeId() != TYPEID_PLAYER)
             {
-                if (spellProto && spellProto->Id == 33619)
-                {
-                    //if it's from Reflective Shield
-                    pVictim->AddThreat(this, 1.0f, SpellSchoolMask(damageInfo->schoolMask), spellProto);
-                }
-                else
-                {
-                    if(spellProto && IsDamageToThreatSpell(spellProto))
-                        pVictim->AddThreat(this, damageInfo->damage*2, SpellSchoolMask(damageInfo->schoolMask), spellProto);
-                    else
-                        pVictim->AddThreat(this, damageInfo->damage, SpellSchoolMask(damageInfo->schoolMask), spellProto);
-                }
+                float threat = damageInfo->damage;
+                ApplySpellThreatModifiers(spellProto, threat);
+                pVictim->AddThreat(this, threat, SpellSchoolMask(damageInfo->schoolMask), spellProto);
             }
             else                                                // victim is a player
             {

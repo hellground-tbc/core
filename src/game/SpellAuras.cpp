@@ -1946,6 +1946,8 @@ void Aura::TriggerSpell()
                     {
                         if(!m_duration)
                             m_target->CastSpell(m_target, 32612, true, NULL, this);
+                        else if(m_tickNumber < 5)
+                            m_target->getHostilRefManager().addThreatPercent(-(int32)(100/(6-m_tickNumber)));
                         return;
                     }
                     default:
@@ -5715,9 +5717,6 @@ void Aura::HandleShapeshiftBoosts(bool apply)
 
     if(apply)
     {
-        if (spellId) m_target->CastSpell(m_target, spellId, true, NULL, this );
-        if (spellId2) m_target->CastSpell(m_target, spellId2, true, NULL, this);
-
         if(m_target->GetTypeId() == TYPEID_PLAYER)
         {
             const PlayerSpellMap& sp_list = ((Player *)m_target)->GetSpellMap();
@@ -5759,6 +5758,9 @@ void Aura::HandleShapeshiftBoosts(bool apply)
                 }
             }
         }
+        
+        if (spellId) m_target->CastSpell(m_target, spellId, true, NULL, this );
+        if (spellId2) m_target->CastSpell(m_target, spellId2, true, NULL, this);
     }
     else
     {

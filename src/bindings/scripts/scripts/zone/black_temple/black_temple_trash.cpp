@@ -1826,11 +1826,11 @@ struct TRINITY_DLL_DECL mob_ashtongue_stalkerAI : public ScriptedAI
     Unit* TopAggroTarget(bool withMana)
     {
         std::list<HostilReference*> m_threatlist = m_creature->getThreatManager().getThreatList();
-        Unit *target;
+        Unit *target = NULL;
         while(m_threatlist.size() > 0)
         {
             target = Unit::GetUnit(*m_creature, (*m_threatlist.begin())->getUnitGuid());
-            if(withMana && target->getPowerType() != POWER_MANA)
+            if(withMana && target && target->getPowerType() != POWER_MANA)
             {
                 m_threatlist.erase(m_threatlist.begin());
                 continue;
@@ -1842,10 +1842,8 @@ struct TRINITY_DLL_DECL mob_ashtongue_stalkerAI : public ScriptedAI
             }
             if(!target || !target->isAlive() || target->GetTypeId() != TYPEID_PLAYER)
                 m_threatlist.erase(m_threatlist.begin());
-            else
-                return target;
         }
-        return NULL;
+        return target;
     }
 
     void Reset()
@@ -1929,16 +1927,14 @@ struct TRINITY_DLL_DECL mob_ashtongue_stormcallerAI : public ScriptedAI
     Unit* TopAggroTarget(float minDist)
     {
         std::list<HostilReference*> m_threatlist = m_creature->getThreatManager().getThreatList();
-        Unit *target;
+        Unit *target = NULL;
         while(m_threatlist.size() > 0)
         {
             target = Unit::GetUnit(*m_creature, (*m_threatlist.begin())->getUnitGuid());
             if(!target || !target->isAlive() || target->GetTypeId() != TYPEID_PLAYER || (minDist && m_creature->IsWithinCombatRange(target, minDist)))
                 m_threatlist.erase(m_threatlist.begin());
-            else
-                return target;
         }
-        return NULL;
+        return target;
     }
     void UpdateAI(const uint32 diff)
     {
