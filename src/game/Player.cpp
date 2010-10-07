@@ -3979,7 +3979,7 @@ void Player::SetMovement(PlayerMovementType pType)
             sLog.outError("Player::SetMovement: Unsupported move type (%d), data not sent to client.",pType);
             return;
     }
-    data.append(GetPackGUID());
+    data << GetPackGUID();
     data << uint32(0);
     GetSession()->SendPacket( &data );
 }
@@ -14132,6 +14132,33 @@ void Player::SendQuestTimerFailed( uint32 quest_id )
     }
 }
 
+void Player::SendQuestConfirmAccept(const Quest* pQuest, Player* pReceiver)
+{
+    if (pReceiver)
+    {
+        std::string strTitle = pQuest->GetTitle();
+
+        int loc_idx = pReceiver->GetSession()->GetSessionDbLocaleIndex();
+
+        if (loc_idx >= 0)
+        {
+            if (const QuestLocale* pLocale = objmgr.GetQuestLocale(pQuest->GetQuestId()))
+            {
+                if (pLocale->Title.size() > loc_idx && !pLocale->Title[loc_idx].empty())
+                    strTitle = pLocale->Title[loc_idx];
+            }
+        }
+
+        WorldPacket data(SMSG_QUEST_CONFIRM_ACCEPT, (4 + strTitle.size() + 8));
+        data << uint32(pQuest->GetQuestId());
+        data << strTitle;
+        data << uint64(GetGUID());
+        pReceiver->GetSession()->SendPacket(&data);
+
+        sLog.outDebug("WORLD: Sent SMSG_QUEST_CONFIRM_ACCEPT");
+    }
+}
+
 void Player::SendCanTakeQuestResponse( uint32 msg )
 {
     WorldPacket data( SMSG_QUESTGIVER_QUEST_INVALID, 4 );
@@ -18520,7 +18547,7 @@ void Player::SendComboPoints()
     if (combotarget)
     {
         WorldPacket data(SMSG_UPDATE_COMBO_POINTS, combotarget->GetPackGUID().size()+1);
-        data.append(combotarget->GetPackGUID());
+        data << combotarget->GetPackGUID();
         data << uint8(m_comboPoints);
         GetSession()->SendPacket(&data);
     }
@@ -18670,7 +18697,7 @@ void Player::SendInitialPacketsAfterAddToMap()
     if(HasAuraType(SPELL_AURA_MOD_ROOT))
     {
         WorldPacket data(SMSG_FORCE_MOVE_ROOT, 10);
-        data.append(GetPackGUID());
+        data << GetPackGUID();
         data << (uint32)2;
         SendMessageToSet(&data,true);
     }
@@ -19481,7 +19508,7 @@ void Player::ResurectUsingRequestData()
 void Player::SetClientControl(Unit* target, uint8 allowMove)
 {
     WorldPacket data(SMSG_CLIENT_CONTROL_UPDATE, target->GetPackGUID().size()+1);
-    data.append(target->GetPackGUID());
+    data << target->GetPackGUID();
     data << uint8(allowMove);
     GetSession()->SendPacket(&data);
 }

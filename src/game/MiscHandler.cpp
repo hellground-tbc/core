@@ -273,6 +273,7 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recv_data )
             continue;
 
         uint32 pzoneid = itr->second->GetZoneId();
+        uint8 gender = itr->second->getGender();
 
         bool z_show = true;
         for(uint32 i = 0; i < zones_count; i++)
@@ -328,13 +329,13 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recv_data )
         if (!s_show)
             continue;
 
-        data << pname;                                      // player name
-        data << gname;                                      // guild name
-        data << uint32( lvl );                              // player level
-        data << uint32( class_ );                           // player class
-        data << uint32( race );                             // player race
-        data << uint8(0);                                   // new 2.4.0
-        data << uint32( pzoneid );                          // player zone id
+        data << pname;                                    // player name
+        data << gname;                                    // guild name
+        data << uint32(lvl );                             // player level
+        data << uint32(class_);                           // player class
+        data << uint32(race);                             // player race
+        data << uint8(gender);                            // player gender
+        data << uint32(pzoneid);                          // player zone id
 
         // 49 is maximum player count sent to client - can be overridden
         // through config, but is unstable
@@ -342,8 +343,8 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recv_data )
             break;
     }
 
-    data.put( 0,              clientcount );                //insert right count
-    data.put( sizeof(uint32), clientcount );                //insert right count
+    data.put(0, clientcount );                //insert right count
+    data.put(4, clientcount );                //insert right count
 
     SendPacket(&data);
     sLog.outDebug( "WORLD: Send SMSG_WHO Message" );
@@ -386,7 +387,7 @@ void WorldSession::HandleLogoutRequestOpcode( WorldPacket & /*recv_data*/ )
         GetPlayer()->SetStandState(PLAYER_STATE_SIT);
 
         WorldPacket data( SMSG_FORCE_MOVE_ROOT, (8+4) );    // guess size
-        data.append(GetPlayer()->GetPackGUID());
+        data << GetPlayer()->GetPackGUID();
         data << (uint32)2;
         SendPacket( &data );
         GetPlayer()->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE);
@@ -418,7 +419,7 @@ void WorldSession::HandleLogoutCancelOpcode( WorldPacket & /*recv_data*/ )
     {
         //!we can move again
         data.Initialize( SMSG_FORCE_MOVE_UNROOT, 8 );       // guess size
-        data.append(GetPlayer()->GetPackGUID());
+        data << GetPlayer()->GetPackGUID();
         data << uint32(0);
         SendPacket( &data );
 
@@ -1158,9 +1159,9 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recv_data)
         return;
 
     uint32 talent_points = 0x3D;
-    uint32 guid_size = plr->GetPackGUID().wpos();
+    uint32 guid_size = plr->GetPackGUID().size();
     WorldPacket data(SMSG_INSPECT_TALENT, guid_size+4+talent_points);
-    data.append(plr->GetPackGUID());
+    data << plr->GetPackGUID();
     data << uint32(talent_points);
 
     // fill by 0 talents array
@@ -1648,17 +1649,15 @@ void WorldSession::HandleDismountOpcode( WorldPacket & /*recv_data*/ )
 
 void WorldSession::HandleMoveFlyModeChangeAckOpcode( WorldPacket & recv_data )
 {
-    CHECK_PACKET_SIZE(recv_data, 8+4+4);
-
     // fly mode on/off
     sLog.outDebug("WORLD: CMSG_MOVE_SET_CAN_FLY_ACK");
     //recv_data.hexlike();
 
-    uint64 guid;
-    uint32 unk;
     uint32 flags;
 
-    recv_data >> guid >> unk >> flags;
+    recv_data >> Unused<uint64>();                          // guid
+    recv_data >> Unused<uint32>();                          // unk
+    recv_data >> flags;
 
     _player->SetUnitMovementFlags(flags);
     /*

@@ -61,7 +61,7 @@ uint32 GuidHigh2TypeId(uint32 guid_hi)
         case HIGHGUID_CORPSE:       return TYPEID_CORPSE;
         case HIGHGUID_MO_TRANSPORT: return TYPEID_GAMEOBJECT;
     }
-    return 10;                                              // unknown
+    return TYPEID_OBJECT;                                              // unknown
 }
 
 Object::Object( )
@@ -76,8 +76,7 @@ Object::Object( )
     m_inWorld           = false;
     m_objectUpdated     = false;
 
-    m_PackGUID.clear();
-    m_PackGUID.appendPackGUID(0);
+    m_PackGUID.Set(0);
 }
 
 Object::~Object( )
@@ -117,13 +116,15 @@ void Object::_InitValues()
 
 void Object::_Create( uint32 guidlow, uint32 entry, HighGuid guidhigh )
 {
-    if(!m_uint32Values) _InitValues();
+    if(!m_uint32Values)
+        _InitValues();
 
     uint64 guid = MAKE_NEW_GUID(guidlow, entry, guidhigh);  // required more changes to make it working
+    
     SetUInt64Value( OBJECT_FIELD_GUID, guid );
     SetUInt32Value( OBJECT_FIELD_TYPE, m_objectType );
-    m_PackGUID.clear();
-    m_PackGUID.appendPackGUID(GetGUID());
+    
+    m_PackGUID.Set(guid);
 }
 
 void Object::BuildMovementUpdateBlock(UpdateData * data, uint32 flags ) const
@@ -251,7 +252,7 @@ void Object::DestroyForPlayer(Player *target) const
     ASSERT(target);
 
     WorldPacket data(SMSG_DESTROY_OBJECT, 8);
-    data << GetGUID();
+    data << uint64(GetGUID());
     target->GetSession()->SendPacket( &data );
 }
 
@@ -449,22 +450,9 @@ void Object::BuildMovementUpdate(ByteBuffer * data, uint8 flags, uint32 flags2 )
                 *data << path.GetNodes()[i].z;
             }
 
-            /*for(uint32 i = 0; i < poscount; i++)
-            {
-                // path points
-                *data << (float)0;
-                *data << (float)0;
-                *data << (float)0;
-            }*/
-
             *data << path.GetNodes()[poscount-1].x;
             *data << path.GetNodes()[poscount-1].y;
             *data << path.GetNodes()[poscount-1].z;
-
-            // target position (path end)
-            /**data << ((Unit*)this)->GetPositionX();
-             *data << ((Unit*)this)->GetPositionY();
-             *data << ((Unit*)this)->GetPositionZ();*/
         }
     }
 
@@ -1616,7 +1604,7 @@ void WorldObject::BuildHeartBeatMsg(WorldPacket *data) const
         return;
 
     data->Initialize(MSG_MOVE_HEARTBEAT, 32);
-    data->append(GetPackGUID());
+    *data << GetPackGUID();
     *data << uint32(((Unit*)this)->GetUnitMovementFlags()); // movement flags
     *data << uint8(0);                                      // 2.3.0
     *data << getMSTime();                                   // time
@@ -1634,7 +1622,7 @@ void WorldObject::BuildTeleportAckMsg(WorldPacket *data, float x, float y, float
         return;
 
     data->Initialize(MSG_MOVE_TELEPORT_ACK, 41);
-    data->append(GetPackGUID());
+    *data << GetPackGUID();
     *data << uint32(0);                                     // this value increments every time
     *data << uint32(((Unit*)this)->GetUnitMovementFlags()); // movement flags
     *data << uint8(0);                                      // 2.3.0

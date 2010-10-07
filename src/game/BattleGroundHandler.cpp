@@ -495,26 +495,14 @@ void WorldSession::HandleBattleGroundPlayerPortOpcode( WorldPacket &recv_data )
     }
 }
 
-void WorldSession::HandleBattleGroundLeaveOpcode( WorldPacket & /*recv_data*/ )
+void WorldSession::HandleBattleGroundLeaveOpcode( WorldPacket &recv_data)
 {
-    //CHECK_PACKET_SIZE(recv_data, 1+1+4+2);
-
     sLog.outDebug( "WORLD: Recvd CMSG_LEAVE_BATTLEFIELD Message");
 
-    //uint8 unk1, unk2;
-    //uint32 bgTypeId;                                        // id from DBC
-    //uint16 unk3;
-
-    //recv_data >> unk1 >> unk2 >> bgTypeId >> unk3; - no used currently
-
-    //if(bgTypeId >= MAX_BATTLEGROUND_TYPES)                  // cheating? but not important in this case
-    //    return;
-
-    // not allow leave battleground in combat
-    if(_player->isInCombat())
-        if(BattleGround* bg = _player->GetBattleGround())
-            if(bg->GetStatus() != STATUS_WAIT_LEAVE)
-                return;
+    recv_data.read_skip<uint8>();                           // unk1
+    recv_data.read_skip<uint8>();                           // unk2
+    recv_data.read_skip<uint32>();                          // BattleGroundTypeId
+    recv_data.read_skip<uint16>();                          // unk3
 
     _player->LeaveBattleground();
 }

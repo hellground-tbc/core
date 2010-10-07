@@ -21,7 +21,7 @@
 #ifndef TRINITYCORE_PET_H
 #define TRINITYCORE_PET_H
 
-#include "ObjectDefines.h"
+#include "ObjectGuid.h"
 #include "Creature.h"
 #include "Unit.h"
 

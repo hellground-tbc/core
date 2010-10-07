@@ -883,7 +883,7 @@ void Aura::UpdateAuraDuration()
         ((Player *)m_target)->SendDirectMessage(&data);
 
         data.Initialize(SMSG_SET_EXTRA_AURA_INFO, (8+1+4+4+4));
-        data.append(m_target->GetPackGUID());
+        data << m_target->GetPackGUID();
         data << uint8(m_auraSlot);
         data << uint32(GetId());
         data << uint32(GetAuraMaxDuration());
@@ -920,7 +920,7 @@ void Aura::SendAuraDurationForCaster(Player* caster)
         return;
 
     WorldPacket data(SMSG_SET_EXTRA_AURA_INFO_NEED_UPDATE, (8+1+4+4+4));
-    data.append(m_target->GetPackGUID());
+    data << m_target->GetPackGUID();
     data << uint8(m_auraSlot);
     data << uint32(GetId());
     data << uint32(GetAuraMaxDuration());                   // full
@@ -2738,7 +2738,7 @@ void Aura::HandleAuraWaterWalk(bool apply, bool Real)
         data.Initialize(SMSG_MOVE_WATER_WALK, 8+4);
     else
         data.Initialize(SMSG_MOVE_LAND_WALK, 8+4);
-    data.append(m_target->GetPackGUID());
+    data << m_target->GetPackGUID();
     data << uint32(0);
     m_target->SendMessageToSet(&data,true);
 }
@@ -2754,7 +2754,7 @@ void Aura::HandleAuraFeatherFall(bool apply, bool Real)
         data.Initialize(SMSG_MOVE_FEATHER_FALL, 8+4);
     else
         data.Initialize(SMSG_MOVE_NORMAL_FALL, 8+4);
-    data.append(m_target->GetPackGUID());
+    data << m_target->GetPackGUID();
     data << (uint32)0;
     m_target->SendMessageToSet(&data,true);
 }
@@ -3936,7 +3936,7 @@ void Aura::HandleAuraModIncreaseFlightSpeed(bool apply, bool Real)
             data.Initialize(SMSG_MOVE_SET_CAN_FLY, 12);
         else
             data.Initialize(SMSG_MOVE_UNSET_CAN_FLY, 12);
-        data.append(m_target->GetPackGUID());
+        data << m_target->GetPackGUID();
         data << uint32(0);                                      // unknown
         m_target->SendMessageToSet(&data, true);
 
@@ -5858,7 +5858,7 @@ void Aura::HandleAuraAllowFlight(bool apply, bool Real)
         data.Initialize(SMSG_MOVE_SET_CAN_FLY, 12);
     else
         data.Initialize(SMSG_MOVE_UNSET_CAN_FLY, 12);
-    data.append(m_target->GetPackGUID());
+    data << m_target->GetPackGUID();
     data << uint32(0);                                      // unk
     m_target->SendMessageToSet(&data, true);
 }
@@ -6227,7 +6227,7 @@ void Aura::PeriodicTick()
                 GUID_LOPART(GetCasterGUID()), GuidHigh2TypeId(GUID_HIPART(GetCasterGUID())), m_target->GetGUIDLow(), m_target->GetTypeId(), damageInfo.damage, GetId(), damageInfo.absorb);
 
             WorldPacket data(SMSG_PERIODICAURALOG, (21+16));// we guess size
-            data.append(m_target->GetPackGUID());
+            data << m_target->GetPackGUID();
             data.appendPackGUID(GetCasterGUID());
             data << uint32(GetId());
             data << uint32(1);
@@ -6429,7 +6429,7 @@ void Aura::PeriodicTick()
                 GUID_LOPART(GetCasterGUID()), GuidHigh2TypeId(GUID_HIPART(GetCasterGUID())), m_target->GetGUIDLow(), m_target->GetTypeId(), pdamage, GetId());
 
             WorldPacket data(SMSG_PERIODICAURALOG, (21+16));// we guess size
-            data.append(m_target->GetPackGUID());
+            data << m_target->GetPackGUID();
             data.appendPackGUID(GetCasterGUID());
             data << uint32(GetId());
             data << uint32(1);
@@ -6540,7 +6540,7 @@ void Aura::PeriodicTick()
             }
 
             WorldPacket data(SMSG_PERIODICAURALOG, (21+16));// we guess size
-            data.append(m_target->GetPackGUID());
+            data << m_target->GetPackGUID();
             data.appendPackGUID(GetCasterGUID());
             data << uint32(GetId());
             data << uint32(1);
@@ -6610,7 +6610,7 @@ void Aura::PeriodicTick()
                 break;
 
             WorldPacket data(SMSG_PERIODICAURALOG, (21+16));// we guess size
-            data.append(m_target->GetPackGUID());
+            data << m_target->GetPackGUID();
             data.appendPackGUID(GetCasterGUID());
             data << uint32(GetId());
             data << uint32(1);
@@ -6639,7 +6639,7 @@ void Aura::PeriodicTick()
                 break;
 
             WorldPacket data(SMSG_PERIODICAURALOG, (21+16));// we guess size
-            data.append(m_target->GetPackGUID());
+            data << m_target->GetPackGUID();
             data.appendPackGUID(GetCasterGUID());
             data << uint32(GetId());
             data << uint32(1);

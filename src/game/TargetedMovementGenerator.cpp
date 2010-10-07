@@ -30,32 +30,15 @@
 #define SMALL_ALPHA 0.05f
 
 #include <cmath>
-/*
-struct StackCleaner
-{
-    Creature &i_creature;
-    StackCleaner(Creature &creature) : i_creature(creature) {}
-    void Done(void) { i_creature.StopMoving(); }
-    ~StackCleaner()
-    {
-        i_creature->Clear();
-    }
-};
-*/
 
 template<class T>
-void
-TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
+void TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
 {
     if( !i_target.isValid() || !&owner )
         return;
 
     if( owner.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED) )
         return;
-
-    // prevent redundant micro-movement for pets, other followers.
-    //if(i_offset && i_target->IsWithinDistInMap(&owner,2*i_offset))
-    //    return;
 
     float x, y, z;
     if(!i_offset)
@@ -93,8 +76,7 @@ TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
 }
 
 template<class T>
-void
-TargetedMovementGenerator<T>::_adaptSpeedToTarget(T &owner)
+void TargetedMovementGenerator<T>::_adaptSpeedToTarget(T &owner)
 {
     if(!owner.GetOwner())
         return;
@@ -110,16 +92,15 @@ TargetedMovementGenerator<T>::_adaptSpeedToTarget(T &owner)
 
     float dist_to_target = owner.GetDistance2d( i_target.getTarget() );
 
-    if( dist_to_target <= lowerCritDist && currSpeed != targetSpeed )
+    if( dist_to_target <= lowerCritDist && currSpeed < targetSpeed )
         owner.SetSpeed(MOVE_RUN, targetSpeed, true);
     // distance is greater than threashold: go to max speed
-    else if( dist_to_target > upperCritDist && currSpeed != maxSpeed )
+    else if( dist_to_target > upperCritDist && currSpeed < maxSpeed )
         owner.SetSpeed(MOVE_RUN, maxSpeed, true);
 }
 
 template<class T>
-void
-TargetedMovementGenerator<T>::Initialize(T &owner)
+void TargetedMovementGenerator<T>::Initialize(T &owner)
 {
     if(!&owner)
         return;
@@ -134,8 +115,7 @@ TargetedMovementGenerator<T>::Initialize(T &owner)
 }
 
 template<class T>
-void
-TargetedMovementGenerator<T>::Finalize(T &owner)
+void TargetedMovementGenerator<T>::Finalize(T &owner)
 {
     owner.clearUnitState(UNIT_STAT_CHASE);
 
@@ -146,30 +126,29 @@ TargetedMovementGenerator<T>::Finalize(T &owner)
 }
 
 template<class T>
-void
-TargetedMovementGenerator<T>::Reset(T &owner)
+void TargetedMovementGenerator<T>::Reset(T &owner)
 {
     Initialize(owner);
 }
 
 template<class T>
-bool
-TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
+bool TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
 {
-    if(!i_target.isValid())
+    if (!i_target.isValid())
         return false;
 
-    if( !&owner || !owner.isAlive())
+    if (!&owner || !owner.isAlive())
         return true;
 
-    if( owner.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_FLEEING | UNIT_STAT_DISTRACTED) )
+    if (owner.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_FLEEING | UNIT_STAT_DISTRACTED))
         return true;
 
     // prevent movement while casting spells with cast time or channel time
-    if ( owner.IsNonMeleeSpellCasted(false, false,  true) && (!owner.m_currentSpells[CURRENT_GENERIC_SPELL] || owner.m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT))
+    if (owner.IsNonMeleeSpellCasted(false, false,  true) && (!owner.m_currentSpells[CURRENT_GENERIC_SPELL] || owner.m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT))
     {
         if(!owner.IsStopped())
             owner.StopMoving();
+
         return true;
     }
 
@@ -179,10 +158,10 @@ TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
 
     Traveller<T> traveller(owner);
 
-    if( !i_destinationHolder.HasDestination() )
+    if (!i_destinationHolder.HasDestination())
         _setTargetLocation(owner);
 
-    if( owner.IsStopped() && !i_destinationHolder.HasArrived() )
+    if (owner.IsStopped() && !i_destinationHolder.HasArrived())
     {
         owner.addUnitState(UNIT_STAT_CHASE);
         if (owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->canFly())
@@ -199,10 +178,10 @@ TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
             i_destinationHolder.ResetUpdate(50);
 
         // adapt speed at follow mode
-        if( owner.hasUnitState(UNIT_STAT_FOLLOW) )
+        if (owner.hasUnitState(UNIT_STAT_FOLLOW))
             _adaptSpeedToTarget(owner);
 
-        if((i_offset ? !i_target->IsWithinDistInMap(&owner,2*i_offset)
+        if ((i_offset ? !i_target->IsWithinDistInMap(&owner,2*i_offset)
             : !i_target->IsWithinMeleeRange(&owner)) || i_recalculateTravel)
         {
             owner.SetInFront(i_target.getTarget());         // Set new Angle For Map::
@@ -210,10 +189,10 @@ TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
             i_recalculateTravel = false;
         }
         // Update the Angle of the target only for Map::, no need to send packet for player
-        else if ( !i_angle && !owner.HasInArc( 0.01f, i_target.getTarget() ) )
+        else if (!i_angle && !owner.HasInArc( 0.01f, i_target.getTarget()))
             owner.SetInFront(i_target.getTarget());
 
-        if(( owner.IsStopped() && !i_destinationHolder.HasArrived() ))
+        if ((owner.IsStopped() && !i_destinationHolder.HasArrived()))
         {
             //Angle update will take place into owner.StopMoving()
             owner.SetInFront(i_target.getTarget());

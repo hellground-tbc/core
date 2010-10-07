@@ -37,9 +37,6 @@
 
 void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
 {
-    // TODO: add targets.read() check
-    CHECK_PACKET_SIZE(recvPacket,1+1+1+1+8);
-
     Player* pUser = _player;
     uint8 bagIndex, slot;
     uint8 spell_count;                                      // number of spells at item, not used
@@ -119,8 +116,8 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     }
 
     SpellCastTargets targets;
-    if(!targets.read(&recvPacket, pUser))
-        return;
+
+    recvPacket >> targets.ReadForCaster(pUser);
 
     if(!targets.getUnitTarget())
     {
@@ -338,16 +335,13 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 
     // client provided targets
     SpellCastTargets targets;
-    if(!targets.read(&recvPacket,_player))
-        return;
+    recvPacket >> targets.ReadForCaster(_player);
 
     // auto-selection buff level base at target level (in spellInfo)
-    if(targets.getUnitTarget())
+    if (Unit* target = targets.getUnitTarget())
     {
-        SpellEntry const *actualSpellInfo = spellmgr.SelectAuraRankForPlayerLevel(spellInfo,targets.getUnitTarget()->getLevel());
-
         // if rank not found then function return NULL but in explicit cast case original spell can be casted and later failed with appropriate error message
-        if(actualSpellInfo)
+        if (SpellEntry const *actualSpellInfo = spellmgr.SelectAuraRankForPlayerLevel(spellInfo, target->getLevel()))
             spellInfo = actualSpellInfo;
     }
 

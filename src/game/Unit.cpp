@@ -376,7 +376,7 @@ void Unit::SendMonsterMoveWithSpeed(float x, float y, float z, uint32 transitTim
 void Unit::SendMonsterStop()
 {
     WorldPacket data( SMSG_MONSTER_MOVE, (17 + GetPackGUID().size()) );
-    data.append(GetPackGUID());
+    data << GetPackGUID();
     data << GetPositionX() << GetPositionY() << GetPositionZ();
     data << getMSTime();
     data << uint8(1);
@@ -388,7 +388,7 @@ void Unit::SendMonsterStop()
 void Unit::SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 Time, Player* player)
 {
     WorldPacket data( SMSG_MONSTER_MOVE, (41 + GetPackGUID().size()) );
-    data.append(GetPackGUID());
+    data << GetPackGUID();
 
     data << GetPositionX() << GetPositionY() << GetPositionZ();
     data << getMSTime();
@@ -411,7 +411,7 @@ void Unit::SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 T
 void Unit::SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 MoveFlags, uint32 time, float speedZ, Player *player)
 {
     WorldPacket data( SMSG_MONSTER_MOVE, 12+4+1+4+4+4+12+GetPackGUID().size());
-    data.append(GetPackGUID());
+    data << GetPackGUID();
 
     data << uint8(0);                                       // new in 3.1
     data << GetPositionX() << GetPositionY() << GetPositionZ();
@@ -445,7 +445,7 @@ void Unit::SendMonsterMoveByPath(Path const& path, uint32 start, uint32 end)
     uint32 pathSize = end-start;
 
     WorldPacket data( SMSG_MONSTER_MOVE, (GetPackGUID().size()+4+4+4+4+1+4+4+4+pathSize*4*3) );
-    data.append(GetPackGUID());
+    data << GetPackGUID();
     data << GetPositionX();
     data << GetPositionY();
     data << GetPositionZ();
@@ -2381,8 +2381,8 @@ void Unit::SendMeleeAttackStop(Unit* victim)
         return;
 
     WorldPacket data( SMSG_ATTACKSTOP, (4+16) );            // we guess size
-    data.append(GetPackGUID());
-    data.append(victim->GetPackGUID());                     // can be 0x00...
+    data << GetPackGUID();
+    data << victim->GetPackGUID();                          // can be 0x00...
     data << uint32(0);                                      // can be 0x1
     SendMessageToSet(&data, true);
     sLog.outDetail("%s %u stopped attacking %s %u", (GetTypeId()==TYPEID_PLAYER ? "player" : "creature"), GetGUIDLow(), (victim->GetTypeId()==TYPEID_PLAYER ? "player" : "creature"),victim->GetGUIDLow());
@@ -4390,8 +4390,8 @@ void Unit::RemoveAllGameObjects()
 void Unit::SendSpellNonMeleeDamageLog(SpellDamageLog *log)
 {
     WorldPacket data(SMSG_SPELLNONMELEEDAMAGELOG, (16+4+4+1+4+4+1+1+4+4+1)); // we guess size
-    data.append(log->target->GetPackGUID());
-    data.append(log->source->GetPackGUID());
+    data << log->target->GetPackGUID();
+    data << log->source->GetPackGUID();
     data << uint32(log->spell_id);
     data << uint32(log->damage);                             //damage amount
     data << uint8 (log->schoolMask);                         //damage school
@@ -4409,8 +4409,8 @@ void Unit::SendSpellNonMeleeDamageLog(Unit *target,uint32 SpellID,uint32 Damage,
 {
     sLog.outDebug("Sending: SMSG_SPELLNONMELEEDAMAGELOG");
     WorldPacket data(SMSG_SPELLNONMELEEDAMAGELOG, (16+4+4+1+4+4+1+1+4+4+1)); // we guess size
-    data.append(target->GetPackGUID());
-    data.append(GetPackGUID());
+    data << target->GetPackGUID();
+    data << GetPackGUID();
     data << uint32(SpellID);
     data << uint32(Damage-AbsorbedDamage-Resist-Blocked);
     data << uint8(damageSchoolMask);                        // spell school
@@ -4453,8 +4453,8 @@ void Unit::SendAttackStateUpdate(MeleeDamageLog *damageInfo)
 {
     WorldPacket data(SMSG_ATTACKERSTATEUPDATE, (16+84));    // we guess size
     data << (uint32)damageInfo->hitInfo;
-    data.append(GetPackGUID());
-    data.append(damageInfo->target->GetPackGUID());
+    data << GetPackGUID();
+    data << damageInfo->target->GetPackGUID();
     data << (uint32)(damageInfo->damage);     // Full damage
 
     data << (uint8)1;                         // Sub damage count
@@ -4478,8 +4478,8 @@ void Unit::SendAttackStateUpdate(uint32 HitInfo, Unit *target, uint8 SwingType, 
 
     WorldPacket data(SMSG_ATTACKERSTATEUPDATE, (16+45));    // we guess size
     data << (uint32)HitInfo;
-    data.append(GetPackGUID());
-    data.append(target->GetPackGUID());
+    data << GetPackGUID();
+    data << target->GetPackGUID();
     data << (uint32)(Damage-AbsorbDamage-Resist-BlockedAmount);
 
     data << (uint8)SwingType;                               // count?
@@ -7287,8 +7287,8 @@ void Unit::SendHealSpellLog(Unit *pVictim, uint32 SpellID, uint32 Damage, bool c
 {
     // we guess size
     WorldPacket data(SMSG_SPELLHEALLOG, (8+8+4+4+1));
-    data.append(pVictim->GetPackGUID());
-    data.append(GetPackGUID());
+    data << pVictim->GetPackGUID();
+    data << GetPackGUID();
     data << uint32(SpellID);
     data << uint32(Damage);
     data << uint8(critical ? 1 : 0);
@@ -7299,8 +7299,8 @@ void Unit::SendHealSpellLog(Unit *pVictim, uint32 SpellID, uint32 Damage, bool c
 void Unit::SendEnergizeSpellLog(Unit *pVictim, uint32 SpellID, uint32 Damage, Powers powertype)
 {
     WorldPacket data(SMSG_SPELLENERGIZELOG, (8+8+4+4+4+1));
-    data.append(pVictim->GetPackGUID());
-    data.append(GetPackGUID());
+    data << pVictim->GetPackGUID();
+    data << GetPackGUID();
     data << uint32(SpellID);
     data << uint32(powertype);
     data << uint32(Damage);
@@ -9163,7 +9163,7 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
                 return;
         }
 
-        data.append(GetPackGUID());
+        data << GetPackGUID();
         data << uint32(0);                                  //movement flags
         data << uint8(0);                                   //unk
         data << uint32(getMSTime());
@@ -9210,7 +9210,7 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
                 sLog.outError("Unit::SetSpeed: Unsupported move type (%d), data not sent to client.",mtype);
                 return;
         }
-        data.append(GetPackGUID());
+        data << GetPackGUID();
         data << (uint32)0;                                  // moveEvent, NUM_PMOVE_EVTS = 0x39
         if (mtype == MOVE_RUN)
             data << uint8(0);                               // new 2.1.0
@@ -10097,7 +10097,8 @@ void Unit::setHover(bool val)
         data.Initialize(SMSG_MOVE_SET_HOVER, 8+4);
     else
         data.Initialize(SMSG_MOVE_UNSET_HOVER, 8+4);
-    data.append(GetPackGUID());
+
+    data << GetPackGUID();
     data << uint32(0);
     SendMessageToSet(&data, true);
 }
@@ -11773,7 +11774,7 @@ void Unit::SetStunned(bool apply)
             SetUnitMovementFlags(0);    //Clear movement flags
 
         WorldPacket data(SMSG_FORCE_MOVE_ROOT, 8);
-        data.append(GetPackGUID());
+        data << GetPackGUID();
         data << uint32(0);
         SendMessageToSet(&data,true);
     }
@@ -11790,7 +11791,7 @@ void Unit::SetStunned(bool apply)
         if(!hasUnitState(UNIT_STAT_ROOT))         // prevent allow move if have also root effect
         {
             WorldPacket data(SMSG_FORCE_MOVE_UNROOT, 8+4);
-            data.append(GetPackGUID());
+            data << GetPackGUID();
             data << uint32(0);
             SendMessageToSet(&data,true);
         }
@@ -11809,7 +11810,7 @@ void Unit::SetRooted(bool apply)
             SetUnitMovementFlags(0);
 
             WorldPacket data(SMSG_FORCE_MOVE_ROOT, 10);
-            data.append(GetPackGUID());
+            data << GetPackGUID();
             data << (uint32)2;
             SendMessageToSet(&data,true);
         }
@@ -11825,7 +11826,7 @@ void Unit::SetRooted(bool apply)
             if(GetTypeId() == TYPEID_PLAYER)
             {
                 WorldPacket data(SMSG_FORCE_MOVE_UNROOT, 10);
-                data.append(GetPackGUID());
+                data << GetPackGUID();
                 data << (uint32)2;
                 SendMessageToSet(&data,true);
             }
@@ -12269,7 +12270,7 @@ void Unit::KnockBackFrom(Unit* target, float horizintalSpeed, float verticalSpee
     if(GetTypeId()==TYPEID_PLAYER)
     {
         WorldPacket data(SMSG_MOVE_KNOCK_BACK, 8+4+4+4+4+4);
-        data.append(GetPackGUID());
+        data << GetPackGUID();
         data << uint32(0);                                  // Sequence
         data << float(vcos);                                // x direction
         data << float(vsin);                                // y direction

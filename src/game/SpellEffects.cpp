@@ -3183,7 +3183,7 @@ void Spell::EffectEnergisePct(uint32 i)
 
     uint32 gain = damage * maxPower / 100;
     unitTarget->ModifyPower(power, gain);
-    m_caster->SendEnergizeSpellLog(unitTarget, m_spellInfo->Id, damage, power);
+    m_caster->SendEnergizeSpellLog(unitTarget, m_spellInfo->Id, gain, power);
 }
 
 void Spell::SendLoot(uint64 guid, LootType loottype)
@@ -3746,8 +3746,8 @@ void Spell::EffectDispel(uint32 i)
         {
             int32 count = success_list.size();
             WorldPacket data(SMSG_SPELLDISPELLOG, 8+8+4+1+4+count*5);
-            data.append(unitTarget->GetPackGUID());         // Victim GUID
-            data.append(m_caster->GetPackGUID());           // Caster GUID
+            data << unitTarget->GetPackGUID();              // Victim GUID
+            data << m_caster->GetPackGUID();                // Caster GUID
             data << uint32(m_spellInfo->Id);                // dispel spell id
             data << uint8(0);                               // not used
             data << uint32(count);                          // count
@@ -6898,8 +6898,8 @@ void Spell::EffectStealBeneficialBuff(uint32 i)
         {
             int32 count = success_list.size();
             WorldPacket data(SMSG_SPELLSTEALLOG, 8+8+4+1+4+count*5);
-            data.append(unitTarget->GetPackGUID());  // Victim GUID
-            data.append(m_caster->GetPackGUID());    // Caster GUID
+            data << unitTarget->GetPackGUID();       // Victim GUID
+            data << m_caster->GetPackGUID();         // Caster GUID
             data << uint32(m_spellInfo->Id);         // dispel spell id
             data << uint8(0);                        // not used
             data << uint32(count);                   // count
