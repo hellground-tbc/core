@@ -57,11 +57,11 @@ enum OnyxiaSpells
 
 struct Position;
 enum SpawnDefinitions;
-extern Position spawnEntrancePoints[MAX];
+extern cPosition spawnEntrancePoints[MAX];
 
-static Position center = {-24.8694, -214.071, -89.246};
+static cPosition center = {-24.8694, -214.071, -89.246};
 
-static Position flyLocations[] =
+static cPosition flyLocations[] =
 {
     {-65.5955, -222.839, -84.3624},
     {-48.26, -196.624, -86.1145},

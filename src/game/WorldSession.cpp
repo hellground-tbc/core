@@ -535,4 +535,3 @@ void WorldSession::SendAuthWaitQue(uint32 position)
         SendPacket(&packet);
     }
 }
-

@@ -194,9 +194,14 @@ void WorldSession::HandleActivateTaxiFarOpcode ( WorldPacket & recv_data )
     GetPlayer()->ActivateTaxiPathTo(nodes, 0, npc);
 }
 
-void WorldSession::HandleTaxiNextDestinationOpcode(WorldPacket& /*recv_data*/)
+void WorldSession::HandleTaxiNextDestinationOpcode(WorldPacket& recv_data)
 {
     sLog.outDebug( "WORLD: Received CMSG_MOVE_SPLINE_DONE" );
+
+    MovementInfo movementInfo;                              // used only for proper packet read
+
+    recv_data >> movementInfo;
+    recv_data >> Unused<uint32>();                          // unk
 
     // in taxi flight packet received in 2 case:
     // 1) end taxi path in far (multi-node) flight

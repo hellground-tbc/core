@@ -25,7 +25,7 @@ EndScriptData */
 #include "def_onyxia_lair.h"
 
 enum SpawnDefinitions;
-extern Position spawnEntrancePoints[];
+extern cPosition spawnEntrancePoints[];
 
 enum OnyxiaLair
 {

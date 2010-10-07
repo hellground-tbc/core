@@ -1,5 +1,5 @@
 
-struct Position
+struct cPosition
 {
     float x;
     float y;
@@ -14,7 +14,7 @@ enum SpawnDefinitions
     MAX                  = 2,
 };
 
-static Position spawnEntrancePoints[MAX] =
+static cPosition spawnEntrancePoints[MAX] =
 {
     {-35.8699, -161.351, -91.1765},
     {-35.813, -268.307, -91.1498}

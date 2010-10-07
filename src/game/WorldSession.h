@@ -32,7 +32,6 @@ class MailItemsInfo;
 struct ItemPrototype;
 struct AuctionEntry;
 struct DeclinedName;
-struct MovementInfo;
 
 class Creature;
 class Item;
@@ -45,6 +44,7 @@ class WorldSession;
 class QueryResult;
 class LoginQueryHolder;
 class CharacterHandler;
+class MovementInfo;
 
 #define CHECK_PACKET_SIZE(P,S) if((P).size() < (S)) return SizeError((P),(S));
 
@@ -336,8 +336,8 @@ class TRINITY_DLL_SPEC WorldSession
         void HandleMoveWorldportAckOpcode();                // for server-side calls
 
         void HandleMovementOpcodes(WorldPacket& recvPacket);
-        void HandlePossessedMovement(WorldPacket& recv_data, MovementInfo& movementInfo, uint32& MovementFlags);
-        void HandleSetActiveMoverOpcode(WorldPacket &recv_data);
+        void HandlePossessedMovement(WorldPacket& recv_data, MovementInfo& movementInfo);        void HandleSetActiveMoverOpcode(WorldPacket &recv_data);
+        void HandleMoveNotActiveMoverOpcode(WorldPacket &recv_data);
         void HandleMoveTimeSkippedOpcode(WorldPacket &recv_data);
 
         void HandleRequestRaidInfoOpcode( WorldPacket & recv_data );

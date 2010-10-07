@@ -3052,13 +3052,20 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
                 return DIMINISHING_BLIND_CYCLONE;
             break;
         }
+        case SPELLFAMILY_HUNTER:
+        {
+            // Freezing trap
+            if (spellproto->SpellFamilyFlags & 0x00000000008LL)
+                return DIMINISHING_FREEZE;
+            break;
+        }
         case SPELLFAMILY_WARLOCK:
         {
             // Death Coil
             if (spellproto->SpellFamilyFlags & 0x00000080000LL)
                 return DIMINISHING_DEATHCOIL;
             // Seduction
-            if (spellproto->SpellFamilyFlags & 0x00040000000LL)
+            else if (spellproto->SpellFamilyFlags & 0x00040000000LL)
                 return DIMINISHING_FEAR;
             // Fear
             //else if (spellproto->SpellFamilyFlags & 0x40840000000LL)
@@ -3066,6 +3073,9 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
             // Curses/etc
             else if (spellproto->SpellFamilyFlags & 0x00080000000LL)
                 return DIMINISHING_LIMITONLY;
+            // Unstable affliction dispel silence
+            else if (spellproto->Id == 31117)
+                return DIMINISHING_UNSTABLE_AFFLICTION;
             break;
         }
         case SPELLFAMILY_DRUID:
@@ -3165,7 +3175,7 @@ DiminishingReturnsType GetDiminishingReturnsGroupType(DiminishingGroup group)
         case DIMINISHING_FEAR:
         case DIMINISHING_CHARM:
         case DIMINISHING_POLYMORPH:
-        case DIMINISHING_SILENCE:
+        case DIMINISHING_UNSTABLE_AFFLICTION:
         case DIMINISHING_DISARM:
         case DIMINISHING_DEATHCOIL:
         case DIMINISHING_FREEZE:

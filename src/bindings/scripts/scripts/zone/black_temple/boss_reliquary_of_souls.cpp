@@ -87,7 +87,7 @@ EndScriptData */
 #define ROS_TRIGGER_ID                  23472
 #define SPELL_SUMMON_ENSLAVE_SOUL       41538
 
-struct Position
+struct cPosition
 {
     float x,y;
 };
