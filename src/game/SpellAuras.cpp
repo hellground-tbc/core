@@ -5717,9 +5717,6 @@ void Aura::HandleShapeshiftBoosts(bool apply)
 
     if(apply)
     {
-        if (spellId) m_target->CastSpell(m_target, spellId, true, NULL, this );
-        if (spellId2) m_target->CastSpell(m_target, spellId2, true, NULL, this);
-
         if(m_target->GetTypeId() == TYPEID_PLAYER)
         {
             const PlayerSpellMap& sp_list = ((Player *)m_target)->GetSpellMap();
@@ -5761,6 +5758,9 @@ void Aura::HandleShapeshiftBoosts(bool apply)
                 }
             }
         }
+        
+        if (spellId) m_target->CastSpell(m_target, spellId, true, NULL, this );
+        if (spellId2) m_target->CastSpell(m_target, spellId2, true, NULL, this);
     }
     else
     {
