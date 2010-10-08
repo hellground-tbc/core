@@ -66,7 +66,7 @@ class LootTemplate::LootGroup                               // A set of loot def
         LootStoreItemList ExplicitlyChanced;                // Entries with chances defined in DB
         LootStoreItemList EqualChanced;                     // Zero chances - every entry takes the same chance
 
-        LootStoreItem const * Roll() const;                 // Rolls an item from the group, returns NULL if all miss their chances
+        LootStoreItem const * Roll(std::set<uint32> &except) const;                 // Rolls an item from the group, returns NULL if all miss their chances
 };
 
 //Remove all data and free all memory
@@ -365,6 +365,13 @@ void Loot::AddItem(LootStoreItem const & item)
     else if (items.size() < MAX_NR_LOOT_ITEMS)              // Non-quest drop
     {
         items.push_back(LootItem(item));
+
+        ItemPrototype const* proto = objmgr.GetItemPrototype(item.itemid);
+
+        // items with quality >= RARE are unique in loot, except for epic junk (-> tier tokens)
+        if(proto->Quality >= ITEM_QUALITY_RARE &&                                               
+            (proto->Quality != ITEM_QUALITY_EPIC || proto->Class != ITEM_CLASS_JUNK))
+            unique_items.insert(item.itemid);
 
         // non-conditional one-player only items are counted here,
         // free for all items are counted in FillFFALoot(),
@@ -938,25 +945,55 @@ void LootTemplate::LootGroup::AddEntry(LootStoreItem& item)
 }
 
 // Rolls an item from the group, returns NULL if all miss their chances
-LootStoreItem const * LootTemplate::LootGroup::Roll() const
+LootStoreItem const * LootTemplate::LootGroup::Roll(std::set<uint32> &except) const
 {
     if (!ExplicitlyChanced.empty())                         // First explicitly chanced entries are checked
     {
         float Roll = rand_chance();
 
-        for (uint32 i=0; i<ExplicitlyChanced.size(); ++i)    //check each explicitly chanced entry in the template and modify its chance based on quality.
+        std::vector<uint32> allowed;
+        float notAllowedChance = 0;
+        int counter = 0;
+        for(LootStoreItemList::const_iterator i = ExplicitlyChanced.begin(); i != ExplicitlyChanced.end(); ++i)
         {
-            if(ExplicitlyChanced[i].chance>=100.f)
-                return &ExplicitlyChanced[i];
+            if(except.find(i->itemid) != except.end())
+                notAllowedChance += i->chance;
+            else
+                allowed.push_back(counter);
+            counter++;
+        }
+        if(notAllowedChance >= 100.0f)
+            return NULL;
 
-            ItemPrototype const *pProto = objmgr.GetItemPrototype(ExplicitlyChanced[i].itemid);
-            Roll -= ExplicitlyChanced[i].chance;
+        Roll = (100.0f - notAllowedChance)*Roll/100.0f;
+
+        for (std::vector<uint32>::const_iterator i = allowed.begin(); i != allowed.end(); ++i)    //check each explicitly chanced entry in the template and modify its chance based on quality.
+        {
+            const LootStoreItem *item = &ExplicitlyChanced[*i];
+            //if(item->chance >= 100.f)
+            //    return item;
+
+            //ItemPrototype const *pProto = objmgr.GetItemPrototype(ExplicitlyChanced[*i].itemid);
+            Roll -= item->chance;
             if (Roll < 0)
-                return &ExplicitlyChanced[i];
+                return item;
         }
     }
     if (!EqualChanced.empty())                              // If nothing selected yet - an item is taken from equal-chanced part
-        return &EqualChanced[irand(0, EqualChanced.size()-1)];
+    {
+        std::vector<uint32> allowed;
+        
+        int counter = 0;
+        for(LootStoreItemList::const_iterator i = EqualChanced.begin(); i != EqualChanced.end(); ++i)
+        {
+            if(except.find(i->itemid) == except.end())
+                allowed.push_back(counter);
+            counter++;
+        }
+
+        if(!allowed.empty())
+            return &EqualChanced[allowed[irand(0, allowed.size()-1)]];
+    }
 
     return NULL;                                            // Empty drop from the group
 }
@@ -988,7 +1025,7 @@ bool LootTemplate::LootGroup::HasQuestDropForPlayer(Player const * player) const
 // Rolls an item from the group (if any takes its chance) and adds the item to the loot
 void LootTemplate::LootGroup::Process(Loot& loot) const
 {
-    LootStoreItem const * item = Roll();
+    LootStoreItem const * item = Roll(loot.unique_items);
     if (item != NULL)
         loot.AddItem(*item);
 }
@@ -1101,7 +1138,10 @@ void LootTemplate::Process(Loot& loot, LootStore const& store, uint8 groupId) co
                 Referenced->Process(loot, store, i->group); // Ref processing
         }
         else                                                // Plain entries (not a reference, not grouped)
-            loot.AddItem(*i);                               // Chance is already checked, just add
+        {
+            if(loot.unique_items.find(i->itemid) == loot.unique_items.end())
+                loot.AddItem(*i);                               // Chance is already checked, just add
+        }
     }
 
     // Now processing groups
