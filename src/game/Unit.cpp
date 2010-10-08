@@ -8020,6 +8020,12 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
     if(maxval)
         TotalMod *= (100.0f + maxval) / 100.0f;
 
+    // Some spells are not healing spells itself, but they just trigger other healing spell (with fixed amount of healing)
+    // Don't apply SPELL_AURA_MOD_HEALING_PCT on them (it will be applied on triggered spell)
+    if( (spellProto->Id == 33763 && damagetype != DOT) ||                                                       // lifebloom final heal
+        (spellProto->SpellFamilyName == SPELLFAMILY_SHAMAN && spellProto->SpellFamilyFlags == 0x40000000000l )) // earth shield
+        TotalMod = 1.0f;
+
     // These Spells are doing fixed amount of healing (TODO found less hack-like check)
     if (spellProto->Id == 15290 || spellProto->Id == 39373 ||
         spellProto->Id == 33778 || spellProto->Id == 379   ||
