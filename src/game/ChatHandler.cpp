@@ -154,7 +154,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
                 break;
 
             // strip invisible characters for non-addon messages
-            if (lang != LANG_ADDON) && sWorld.getConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
+            if (lang != LANG_ADDON && sWorld.getConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
                 stripLineInvisibleChars(msg);
 
             if(msg.empty())
