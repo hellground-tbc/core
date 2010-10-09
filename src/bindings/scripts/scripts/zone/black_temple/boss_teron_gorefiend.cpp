@@ -501,7 +501,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
 
             if(target && target->isAlive() && !target->HasAura(SPELL_SHADOW_OF_DEATH, 0) && !target->HasAura(40282, 0) )
             {
-                AddSpellToCast(target, SPELL_SHADOW_OF_DEATH);
+                AddSpellToCast(target, SPELL_SHADOW_OF_DEATH, false, true);
                 ShadowOfDeathTimer = urand(30000, 50000);
             }
         }
