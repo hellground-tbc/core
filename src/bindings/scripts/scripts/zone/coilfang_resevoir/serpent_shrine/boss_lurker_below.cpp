@@ -195,7 +195,7 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
                 return;
         }
 
-        m_creature->SetUInt64Value(UNIT_FIELD_TARGET,0);
+        m_creature->SetSelection(0);
         m_creature->SetOrientation( r_orient );
 
         // and client
@@ -211,7 +211,7 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
             me->SetReactState(REACT_AGGRESSIVE);
 
             if(UpdateVictim())
-                m_creature->SetUInt64Value(UNIT_FIELD_TARGET, m_creature->getVictimGUID());
+                m_creature->SetSelection(m_creature->getVictimGUID());
 
             RotTimer = 20000;
             return;

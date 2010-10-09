@@ -771,7 +771,7 @@ struct TRINITY_DLL_DECL npc_overlord_morghorAI : public ScriptedAI
     {
         Player* plr = Unit::GetPlayer(PlayerGUID);
 
-        Unit* Illi = Unit::GetUnit((*m_creature), IllidanGUID);
+        Creature* Illi = Unit::GetCreature((*m_creature), IllidanGUID);
 
         if(!plr || (!Illi && Step < 23))
         {
@@ -790,8 +790,8 @@ struct TRINITY_DLL_DECL npc_overlord_morghorAI : public ScriptedAI
              Illi->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE); return 350; break;
         case 6:
             Illi->CastSpell(Illi, SPELL_ONE, true);
-            Illi->SetUInt64Value(UNIT_FIELD_TARGET, m_creature->GetGUID());
-            m_creature->SetUInt64Value(UNIT_FIELD_TARGET, IllidanGUID);
+            Illi->SetSelection(m_creature->GetGUID());
+            m_creature->SetSelection(IllidanGUID);
             return 2000; break;
         case 7: DoScriptText(OVERLORD_YELL_2, m_creature); return 4500; break;
         case 8: m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, 8); return 2500; break;
@@ -800,7 +800,7 @@ struct TRINITY_DLL_DECL npc_overlord_morghorAI : public ScriptedAI
         case 11: DoScriptText(OVERLORD_SAY_4, m_creature, plr); return 6000; break;
         case 12: DoScriptText(LORD_ILLIDAN_SAY_2, Illi); return 5500; break;
         case 13: DoScriptText(LORD_ILLIDAN_SAY_3, Illi); return 4000; break;
-        case 14: Illi->SetUInt64Value(UNIT_FIELD_TARGET, PlayerGUID); return 1500; break;
+        case 14: Illi->SetSelection(PlayerGUID); return 1500; break;
         case 15: DoScriptText(LORD_ILLIDAN_SAY_4, Illi); return 1500; break;
         case 16:
             if (plr)
@@ -830,7 +830,7 @@ struct TRINITY_DLL_DECL npc_overlord_morghorAI : public ScriptedAI
             Illi->setDeathState(JUST_DIED);
             return 1000; break;
         case 23: m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1,0); return 2000; break;
-        case 24: m_creature->SetUInt64Value(UNIT_FIELD_TARGET, PlayerGUID); return 5000; break;
+        case 24: m_creature->SetSelection(PlayerGUID); return 5000; break;
         case 25: DoScriptText(OVERLORD_SAY_6, m_creature); return 2000; break;
         case 26:
             if(plr)
@@ -1314,7 +1314,7 @@ struct TRINITY_DLL_DECL mob_torloth_the_magnificentAI : public ScriptedAI
 
         m_creature->addUnitState(UNIT_STAT_ROOT);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        m_creature->SetUInt64Value(UNIT_FIELD_TARGET, 0);
+        m_creature->SetSelection(0);
     }
 
     void HandleAnimation()
@@ -1345,7 +1345,7 @@ struct TRINITY_DLL_DECL mob_torloth_the_magnificentAI : public ScriptedAI
         case 5:
             if(Player* AggroTarget = (Unit::GetPlayer(AggroTargetGUID)))
             {
-                m_creature->SetUInt64Value(UNIT_FIELD_TARGET, AggroTarget->GetGUID());
+                m_creature->SetSelection(AggroTarget->GetGUID());
                 m_creature->AddThreat(AggroTarget, 1);
                 m_creature->HandleEmoteCommand(EMOTE_ONESHOT_POINT);
             }

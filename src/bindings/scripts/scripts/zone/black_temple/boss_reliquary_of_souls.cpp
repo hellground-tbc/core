@@ -225,7 +225,7 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
 
     void EnterCombat(Unit* who)
     {
-        m_creature->SetUInt64Value(UNIT_FIELD_TARGET, NULL);
+        m_creature->SetSelection(NULL);
     }
 
     void SummonSouls()
@@ -299,7 +299,7 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
                 return;
             }
 
-            m_creature->SetUInt64Value(UNIT_FIELD_TARGET, NULL);
+            m_creature->SetSelection(NULL);
 
             CheckTimer = 2000;
         }

@@ -1538,7 +1538,7 @@ struct TRINITY_DLL_DECL npc_mojoAI : public ScriptedAI
                 hearts = false;
                 m_creature->GetMotionMaster()->Clear(true);
                 m_creature->GetMotionMaster()->MoveFollow(m_creature->GetOwner(), 2.0, M_PI/2);
-                m_creature->SetFlag64(UNIT_FIELD_TARGET, NULL);
+                m_creature->SetSelection(NULL);
             }
             else
                 heartsResetTimer -= diff;
@@ -1557,7 +1557,7 @@ bool ReceiveEmote_npc_mojo( Player *player, Creature *_Creature, uint32 emote )
             {
                 player->CastSpell(player, SPELL_FEELING_FROGGY, false);
                 _Creature->CastSpell(_Creature, SPELL_HEARTS, false);
-                _Creature->SetFlag64(UNIT_FIELD_TARGET, player->GetGUID());
+                _Creature->SetSelection(player->GetGUID());
                 _Creature->StopMoving();
                 _Creature->GetMotionMaster()->Clear();
                 _Creature->GetMotionMaster()->MoveFollow(player, 1.0, 0);

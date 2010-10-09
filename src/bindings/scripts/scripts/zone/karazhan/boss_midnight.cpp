@@ -139,14 +139,14 @@ struct TRINITY_DLL_DECL boss_midnightAI : public ScriptedAI
                     Mount_Timer = 0;
                     m_creature->SetVisibility(VISIBILITY_OFF);
                     m_creature->GetMotionMaster()->MoveIdle();
-                    if (Unit *pAttumen = Unit::GetUnit(*m_creature, Attumen))
+                    if (Creature *pAttumen = Unit::GetCreature(*m_creature, Attumen))
                     {
                         pAttumen->SetUInt32Value(UNIT_FIELD_DISPLAYID, MOUNTED_DISPLAYID);
                         pAttumen->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                         if(pAttumen->getVictim())
                         {
                             pAttumen->GetMotionMaster()->MoveChase(pAttumen->getVictim());
-                            pAttumen->SetUInt64Value(UNIT_FIELD_TARGET, pAttumen->getVictimGUID());
+                            pAttumen->SetSelection(pAttumen->getVictimGUID());
                         }
                         pAttumen->SetFloatValue(OBJECT_FIELD_SCALE_X,1);
                     }

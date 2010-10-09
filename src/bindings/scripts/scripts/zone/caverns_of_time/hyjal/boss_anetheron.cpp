@@ -159,8 +159,8 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
             DoZoneInCombat();
             if(!m_creature->IsNonMeleeSpellCasted(true))
             {
-                if(m_creature->GetUInt64Value(UNIT_FIELD_TARGET) != m_creature->getVictimGUID())
-                    m_creature->SetUInt64Value(UNIT_FIELD_TARGET, m_creature->getVictimGUID());
+                if(m_creature->GetSelection() != m_creature->getVictimGUID())
+                    m_creature->SetSelection(m_creature->getVictimGUID());
             }
             m_creature->SetSpeed(MOVE_RUN, 3.0);
             CheckTimer = 2000;
@@ -172,24 +172,20 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
         {
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,65,true))
             {
-                //for proper visual
-                m_creature->SetUInt64Value(UNIT_FIELD_TARGET, target->GetGUID());
-                DoCast(target,SPELL_CARRION_SWARM, true);
-                CheckTimer = 1000;
-            }
-
-            SwarmTimer = 12000+rand()%6000;
-
-            switch(rand()%2)
-            {
-                case 0:
-                    DoPlaySoundToSet(m_creature, SOUND_SWARM1);
-                    DoYell(SAY_SWARM1, LANG_UNIVERSAL, NULL);
+                AddSpellToCast(target, SPELL_CARRION_SWARM, false, true);
+                SwarmTimer = 12000+rand()%6000;
+                
+                switch(rand()%2)
+                {
+                    case 0:
+                        DoPlaySoundToSet(m_creature, SOUND_SWARM1);
+                        DoYell(SAY_SWARM1, LANG_UNIVERSAL, NULL);
                     break;
-                case 1:
-                    DoPlaySoundToSet(m_creature, SOUND_SWARM2);
-                    DoYell(SAY_SWARM2, LANG_UNIVERSAL, NULL);
+                    case 1:
+                        DoPlaySoundToSet(m_creature, SOUND_SWARM2);
+                        DoYell(SAY_SWARM2, LANG_UNIVERSAL, NULL);
                     break;
+                }
             }
         }
         else
@@ -221,30 +217,27 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
             if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0,200,true))
             {
                 m_creature->CastStop();
-                m_creature->SetUInt64Value(UNIT_FIELD_TARGET, target->GetGUID());    //do target inferno victim when casting
-                DoCast(target, SPELL_INFERNO);
-                CheckTimer = 3600;
-            }
+                AddSpellToCast(target, SPELL_INFERNO, false, true);
 
-            InfernoTimer = 60000;
-
-            switch(rand()%2)
-            {
-                case 0:
-                    DoPlaySoundToSet(m_creature, SOUND_INFERNO1);
-                    DoYell(SAY_INFERNO1, LANG_UNIVERSAL, NULL);
+                switch(rand()%2)
+                {
+                    case 0:
+                        DoPlaySoundToSet(m_creature, SOUND_INFERNO1);
+                        DoYell(SAY_INFERNO1, LANG_UNIVERSAL, NULL);
                     break;
-                case 1:
-                    DoPlaySoundToSet(m_creature, SOUND_INFERNO2);
-                    DoYell(SAY_INFERNO2, LANG_UNIVERSAL, NULL);
+                    case 1:
+                        DoPlaySoundToSet(m_creature, SOUND_INFERNO2);
+                        DoYell(SAY_INFERNO2, LANG_UNIVERSAL, NULL);
                     break;
+                }
+                InfernoTimer = 60000;
             }
         }
         else
             InfernoTimer -= diff;
 
-        DoMeleeAttackIfReady();
         CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
     }
 };
 

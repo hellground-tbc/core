@@ -1102,7 +1102,7 @@ struct TRINITY_DLL_DECL npc_akamaAI : public ScriptedAI
                 if (shade)
                 {
                     DoCast(shade, SPELL_AKAMA_SOUL_CHANNEL);
-                    m_creature->SetUInt64Value(UNIT_FIELD_TARGET, ShadeGUID);
+                    m_creature->SetSelection(ShadeGUID);
                 }
             }
             break;

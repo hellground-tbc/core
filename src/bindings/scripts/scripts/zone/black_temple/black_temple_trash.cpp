@@ -145,12 +145,11 @@ struct TRINITY_DLL_DECL mob_aqueous_spawnAI : public ScriptedAI
 
         if(!merging && MergeTimer < diff)
         {
-            if(Unit* Lord = FindCreature(NPC_AQUEOUS_LORD, 80, m_creature))
+            if(Unit* pLord = FindCreature(NPC_AQUEOUS_LORD, 80, m_creature))
             {
-                m_creature->SetUInt64Value(UNIT_FIELD_TARGET, Lord->GetGUID());
-                AddSpellToCast(Lord, SPELL_MERGE);
+                AddSpellToCast(pLord, SPELL_MERGE, false, true);
+                merging = true;
             }
-            merging = true;
         }
         else
             MergeTimer -= diff;
