@@ -2026,6 +2026,8 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 unitList.remove(m_targets.getUnitTarget());
             else if(m_spellInfo->Id == 37019) // Conflagration proc (Capernian)
                 unitList.remove(m_targets.getUnitTarget());
+            else if(m_spellInfo->Id == 41067) // Blood Splash proc
+                unitList.remove(m_targets.getUnitTarget());
 
             for(std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
                 AddUnitTarget(*itr, i);
