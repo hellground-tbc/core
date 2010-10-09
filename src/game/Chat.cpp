@@ -880,6 +880,15 @@ bool ChatHandler::ExecuteCommandInTable(ChatCommand *table, const char* text, co
     return false;
 }
 
+bool ChatHandler::ContainsNotAllowedSigns(std::string text /*copy of text because we change it*/)
+{
+    for (uint32 i = 0; i < text.length(); ++i)
+        text[i] = tolower(text[i]);
+
+    if (text.find("blizz.blp") != text.npos())
+        return true;
+}
+
 int ChatHandler::ParseCommands(const char* text)
 {
     ASSERT(text);

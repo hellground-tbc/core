@@ -154,11 +154,14 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
                 break;
 
             // strip invisible characters for non-addon messages
-            if (lang != LANG_ADDON && sWorld.getConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
+            if (lang != LANG_ADDON) && sWorld.getConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
                 stripLineInvisibleChars(msg);
 
             if(msg.empty())
                 break;
+
+            if (ChatHandler(this).ContainsNotAllowedSigns(msg))
+                return;
 
             if(type == CHAT_MSG_SAY)
                 GetPlayer()->Say(msg, lang);
@@ -181,6 +184,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 
             if(msg.empty())
                 break;
+
+            if (ChatHandler(this).ContainsNotAllowedSigns(msg))
+                return;
 
             if(!normalizePlayerName(to))
             {
@@ -235,6 +241,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
             if(msg.empty())
                 break;
 
+            if (ChatHandler(this).ContainsNotAllowedSigns(msg))
+                return;
+
             Group *group = GetPlayer()->GetGroup();
             if(!group)
                 return;
@@ -261,6 +270,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 
             if(msg.empty())
                 break;
+
+            if (ChatHandler(this).ContainsNotAllowedSigns(msg))
+                return;
 
             if (GetPlayer()->GetGuildId())
             {
@@ -289,6 +301,10 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
             if(msg.empty())
                 break;
 
+            if (ChatHandler(this).ContainsNotAllowedSigns(msg))
+                return;
+
+
             if (GetPlayer()->GetGuildId())
             {
                 Guild *guild = objmgr.GetGuildById(GetPlayer()->GetGuildId());
@@ -315,6 +331,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
             if(msg.empty())
                 break;
 
+            if (ChatHandler(this).ContainsNotAllowedSigns(msg))
+                return;
+
             Group *group = GetPlayer()->GetGroup();
             if(!group || !group->isRaidGroup() || group->isBGGroup())
                 return;
@@ -340,6 +359,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 
             if(msg.empty())
                 break;
+
+            if (ChatHandler(this).ContainsNotAllowedSigns(msg))
+                return;
 
             Group *group = GetPlayer()->GetGroup();
             if(!group || !group->isRaidGroup() || !group->IsLeader(GetPlayer()->GetGUID()) || group->isBGGroup())
@@ -428,6 +450,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 
             if(msg.empty())
                 break;
+
+            if (ChatHandler(this).ContainsNotAllowedSigns(msg))
+                return;
 
             if(ChannelMgr* cMgr = channelMgr(_player->GetTeam()))
             {
