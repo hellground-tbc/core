@@ -963,6 +963,15 @@ std::list<Creature*> ScriptedAI::DoFindFriendlyMissingBuff(float range, uint32 s
     return pList;
 }
 
+std::list<Unit*> ScriptedAI::DoFindAllDeadInRange(float range)
+{
+    std::list<Unit*> pList;
+    Trinity::AllDeadUnitsInRange u_check(m_creature, range);
+    Trinity::UnitListSearcher<Trinity::AllDeadUnitsInRange> searcher(pList, u_check);
+    m_creature->VisitNearbyObject(range, searcher);
+    return pList;
+}
+
 void ScriptedAI::SetEquipmentSlots(bool bLoadDefault, int32 uiMainHand, int32 uiOffHand, int32 uiRanged)
 {
     if (bLoadDefault)
