@@ -887,6 +887,7 @@ bool ChatHandler::ContainsNotAllowedSigns(std::string text /*copy of text becaus
 
     if (text.find("blizz.blp") != text.npos)
         return true;
+    return false;
 }
 
 int ChatHandler::ParseCommands(const char* text)
