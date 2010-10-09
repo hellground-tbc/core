@@ -285,8 +285,8 @@ bool DropAggro(Creature* pAttacker, Unit * target)
     if (target->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION))
         return true;
 
-    // target is stunned from Lady Vashj Shockblast, Concussive Blow and Throw, Gouge
-    if (target->HasAura(38509,1) || target->HasAura(32588, 1) || target->HasAura(41182, 1) || target->HasAura(24698, 1))
+    // target is stunned from Lady Vashj Shockblast, Concussive Blow and Throw, Gouge, Freezing Trap
+    if (target->HasAura(38509,1) || target->HasAura(32588, 1) || target->HasAura(41182, 1) || target->HasAura(24698, 1) || target->HasAura(41086, 0))
         return true;
 
     if (target->GetTypeId() == TYPEID_UNIT && target->GetEntry() == 23109)
