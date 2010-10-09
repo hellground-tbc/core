@@ -29,10 +29,11 @@ EndScriptData */
 #define SAY_AGGRO                       -1564038
 #define SAY_SLAY1                       -1564039
 #define SAY_SLAY2                       -1564040
-#define SAY_SPELL1                      -1564041
-#define SAY_SPELL2                      -1564042
-#define SAY_SPECIAL1                    -1564043
-#define SAY_SPECIAL2                    -1564044
+#define SAY_SPELL1                      -1564042
+#define SAY_SPELL2                      -1564044
+#define SAY_SPELL3                      -1564043
+#define SAY_SPECIAL1                    -1564041
+#define SAY_SPECIAL2                    -1564045
 #define SAY_ENRAGE                      -1564045
 #define SAY_DEATH                       -1564046
 
@@ -47,8 +48,8 @@ EndScriptData */
 
 #define SPELL_ATROPHY                   40327               // Shadowy Constructs use this when they get within melee range of a player
 
-#define CREATURE_DOOM_BLOSSOM       23123
-#define CREATURE_SHADOWY_CONSTRUCT  23111
+#define CREATURE_DOOM_BLOSSOM           23123
+#define CREATURE_SHADOWY_CONSTRUCT      23111
 
 uint32 GhostSpell[5] =
 {
@@ -87,7 +88,7 @@ struct TRINITY_DLL_DECL mob_doom_blossomAI : public NullCreatureAI
 
         float newX, newY, newZ;
         m_creature->GetRandomPoint(m_creature->GetPositionX(),m_creature->GetPositionY(),m_creature->GetPositionZ(), 10.0, newX, newY, newZ);
-        
+
         newZ = 196.0;
         m_creature->GetMotionMaster()->MovePoint(0, newX, newY, newZ);
         m_creature->SetSpeed(MOVE_RUN, 0.2);
@@ -115,7 +116,7 @@ struct TRINITY_DLL_DECL mob_doom_blossomAI : public NullCreatureAI
 
                 float newX, newY, newZ;
                 m_creature->GetRandomPoint(m_creature->GetPositionX(),m_creature->GetPositionY(),m_creature->GetPositionZ(), 3.0, newX, newY, newZ);
-                
+
                 newZ = (newZ < 200.0) ? (newZ + 1.0) : newZ;
                 m_creature->GetMotionMaster()->MovePoint(1, newX, newY, newZ);
                 m_creature->SetSpeed(MOVE_RUN, 0.1);
@@ -136,7 +137,7 @@ struct TRINITY_DLL_DECL mob_doom_blossomAI : public NullCreatureAI
 
             if(Unit *target = ((ScriptedAI*)Teron->AI())->SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
                 DoCast(target, SPELL_SHADOWBOLT);
-            
+
             ShadowBoltTimer = 1500+rand()%1000;
         }
         else
@@ -487,7 +488,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
 
         if(CrushingShadowsTimer < diff)
         {
-            AddSpellToCast(m_creature, SPELL_CRUSHING_SHADOWS);
+            AddSpellToCastWithScriptText(m_creature, SPELL_CRUSHING_SHADOWS, SAY_SPELL3);
             CrushingShadowsTimer = urand(17000, 42000);
         }
         else
@@ -519,8 +520,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
         {
             if(EnrageTimer < diff)
             {
-                AddSpellToCast(m_creature, SPELL_BERSERK);
-                DoScriptText(SAY_ENRAGE, m_creature);
+                AddSpellToCastWithScriptText(m_creature, SPELL_BERSERK, SAY_ENRAGE);
             }
             else
                 EnrageTimer -= diff;
