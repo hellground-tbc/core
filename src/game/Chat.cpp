@@ -885,7 +885,7 @@ bool ChatHandler::ContainsNotAllowedSigns(std::string text /*copy of text becaus
     for (uint32 i = 0; i < text.length(); ++i)
         text[i] = tolower(text[i]);
 
-    if (text.find("blizz.blp") != text.npos())
+    if (text.find("blizz.blp") != text.npos)
         return true;
 }
 
