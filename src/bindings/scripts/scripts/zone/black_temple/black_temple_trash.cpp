@@ -2394,7 +2394,7 @@ CreatureAI* GetAI_mob_storm_fury(Creature *_Creature)
     * Shadowmoon Blood Mage
     * Shadowmoon Champion
     * Shadowmoon Deathshaper
-    * Shadowmoon Grunt
+    * Shadowmoon Grunt - no special AI
     * Shadowmoon Houndmaster
     * Shadowmoon Reaver
     * Shadowmoon Riding Hound
@@ -2457,14 +2457,25 @@ struct TRINITY_DLL_DECL mob_shadowmoon_blood_mageAI: public ScriptedAI
 {
     mob_shadowmoon_blood_mageAI(Creature *c) : ScriptedAI(c) { }
 
+    uint32 BloodSiphon;
+    uint32 Bloodbolt;
+
     void Reset()
     {
+        BloodSiphon = urand(3000, 20000);
+        Bloodbolt = urand(5000, 15000);
     }
 
     void EnterCombat(Unit *)
     {
         m_creature->InterruptNonMeleeSpells(false, SPELL_GREEN_BEAM);
         DoZoneInCombat();
+    }
+
+    void SpellHitTarget(Unit* target, const SpellEntry*)    //workaround
+    {
+        if(target->HasAura(41229, 1))
+            target->RemoveAura(41229, 1);
     }
 
     void UpdateAI(const uint32 diff)
@@ -2482,6 +2493,23 @@ struct TRINITY_DLL_DECL mob_shadowmoon_blood_mageAI: public ScriptedAI
             return;
         }
 
+        if(BloodSiphon < diff)
+        {
+            AddSpellToCast(m_creature, SPELL_BLOOD_SIPHON);
+            BloodSiphon = 20000;
+        }
+        else
+            BloodSiphon -= diff;
+
+        if(Bloodbolt < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_TOPAGGRO, 0, 40.0, true))
+                ForceSpellCast(target, SPELL_BLOODBOLT);
+            Bloodbolt = 15000;
+        }
+        else
+            Bloodbolt -= diff;
+
         CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
@@ -2490,6 +2518,398 @@ struct TRINITY_DLL_DECL mob_shadowmoon_blood_mageAI: public ScriptedAI
 CreatureAI* GetAI_mob_shadowmoon_blood_mage(Creature *_Creature)
 {
     return new mob_shadowmoon_blood_mageAI(_Creature);
+}
+
+/****************
+* Shadowmoon Champion - id 22880 and Whirling Blade - id 23369
+*****************/
+
+#define SPELL_CHAOTIC_LIGHT                 41063
+#define SPELL_WHIRLING_BLADE                41053
+#define SPELL_WHIRLWIND                     41058
+
+#define MOB_WHIRLING_BLADE                  23369
+
+struct TRINITY_DLL_DECL mob_shadowmoon_championAI: public ScriptedAI
+{
+    mob_shadowmoon_championAI(Creature *c) : ScriptedAI(c) { }
+
+    uint32 ChaoticLight;
+    uint32 WhirlingBlade;
+
+    void Reset()
+    {
+        ChaoticLight = urand(2000, 5000);
+        WhirlingBlade = 0;
+    }
+
+    void EnterCombat(Unit *) { DoZoneInCombat(); }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(ChaoticLight < diff)
+        {
+            AddSpellToCast(m_creature, SPELL_CHAOTIC_LIGHT);
+            ChaoticLight = urand(5000, 10000);
+        }
+        else
+            ChaoticLight -= diff;
+
+        if(WhirlingBlade < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 60.0, true))
+                ForceSpellCast(target, SPELL_WHIRLING_BLADE);
+            WhirlingBlade = 30000;
+        }
+        else
+            WhirlingBlade -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_shadowmoon_champion(Creature *_Creature)
+{
+    return new mob_shadowmoon_championAI(_Creature);
+}
+
+struct TRINITY_DLL_DECL mob_whirling_bladeAI: public Scripted_NoMovementAI
+{
+    mob_whirling_bladeAI(Creature *c) : Scripted_NoMovementAI(c) { }
+
+    uint32 Whirl;
+    uint32 DieTimer;
+
+    void Reset()
+    {
+        DoCast(m_creature, SPELL_WHIRLWIND, true);
+        Whirl = 6000;
+        DieTimer = 14000;
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(Whirl < diff)
+        {
+            AddSpellToCast(m_creature, SPELL_WHIRLWIND);
+            Whirl = 6000;
+        }
+        else
+            Whirl -= diff;
+
+        if(DieTimer < diff)
+        {
+            m_creature->Kill(m_creature, false);
+            m_creature->RemoveCorpse();
+            DieTimer = 2000;
+        }
+        else DieTimer -= diff;
+
+        CastNextSpellIfAnyAndReady();
+    }
+};
+
+CreatureAI* GetAI_mob_whirling_blade(Creature *_Creature)
+{
+    return new mob_whirling_bladeAI(_Creature);
+}
+
+/****************
+* Shadowmoon Deathshaper - id 22882
+*****************/
+
+#define SPELL_DEATH_COIL                41070
+#define SPELL_DEMON_ARMOR               13787
+#define SPELL_RAISE_DEAD                41071
+#define SPELL_SHADOWBOLT                41069
+
+struct TRINITY_DLL_DECL mob_shadowmoon_deathshaperAI: public ScriptedAI
+{
+    mob_shadowmoon_deathshaperAI(Creature *c) : ScriptedAI(c) { }
+
+    uint32 Shadowbolt;
+    uint32 DeathCoil;
+    uint32 DemonArmor;
+    uint32 RaiseDeadCheck;
+
+    std::list<uint64> UsedCorpsesGUID;
+
+    void Reset()
+    {
+        Shadowbolt = urand(500, 5000);
+        DeathCoil = urand(5000, 20000);
+        DemonArmor = 1800000;
+        RaiseDeadCheck = 10000;
+
+        UsedCorpsesGUID.clear();
+    }
+
+    void EnterCombat(Unit *)
+    {
+        m_creature->InterruptNonMeleeSpells(false, SPELL_GREEN_BEAM);
+        DoCast(m_creature, SPELL_DEMON_ARMOR);
+        DoZoneInCombat();
+    }
+
+    // THIS MAY CRASH, pls check it...
+    uint64 SelectCorpseGUID()
+    {
+        std::list<Unit*> DeadList = DoFindAllDeadInRange(50);
+        std::list<uint64> CorpseGUID;
+        CorpseGUID.clear();
+
+        // select all dead friendly creatures GUIDs
+        if(!DeadList.empty())
+        {
+            for(std::list<Unit*>::iterator i = DeadList.begin(); i != DeadList.end(); ++i)
+            {
+                CorpseGUID.push_back((*i)->GetGUID());  // this may be moved to searcher, but if no crashes
+            }
+        }
+        // remove GUIDs of once used corpses
+        if(!CorpseGUID.empty())
+        {
+            for(std::list<uint64>::iterator i = CorpseGUID.begin(); i != CorpseGUID.end(); ++i)
+            {
+                if(!UsedCorpsesGUID.empty())
+                {
+                    for(std::list<uint64>::iterator iter = UsedCorpsesGUID.begin(); iter != UsedCorpsesGUID.end(); ++iter)
+                    {
+                        if((*iter) == (*i))
+                            CorpseGUID.remove((*iter));
+                    }
+                }
+            }
+        }
+        // get victim GUID now (can be random later if no crashes)
+        if(!CorpseGUID.empty())
+            return (*CorpseGUID.begin());
+
+        return NULL;
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        
+        if(!UpdateVictim())
+        {
+            if (!m_creature->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT))
+            {
+                if (Unit *skeleton = FindCreature(MOB_SKELETON, 20.0f, m_creature))
+                {
+                    if (skeleton->isAlive())
+                        DoCast(skeleton, SPELL_GREEN_BEAM);
+                }
+            }
+            return;
+        }
+
+        if(Shadowbolt < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_TOPAGGRO, 0, 40.0, true))
+                AddSpellToCast(target, SPELL_SHADOWBOLT);
+            Shadowbolt = 5000;
+        }
+        else
+            Shadowbolt -= diff;
+
+        if(DeathCoil < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0, true))
+                AddSpellToCast(target, SPELL_DEATH_COIL);
+            DeathCoil = 20000;
+        }
+        else
+            DeathCoil -= diff;
+
+        //THIS MAY CRASH!! check it pls
+        /*
+        if(RaiseDeadCheck < diff)
+        {
+            if(SelectCorpseGUID())
+            {
+                uint64 targetGUID = SelectCorpseGUID();
+                if(Unit* target = Unit::GetUnit(*m_creature, targetGUID))
+                {
+                    AddSpellToCast(target, SPELL_RAISE_DEAD);
+                    UsedCorpsesGUID.push_back(targetGUID);
+                }
+            }
+            RaiseDeadCheck = 10000;
+        }
+        else
+            RaiseDeadCheck -= diff;*/
+
+        if(DemonArmor < diff)
+        {
+            ForceSpellCast(m_creature, SPELL_DEMON_ARMOR);
+            DemonArmor = 1800000;
+        }
+        else
+            DemonArmor -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+
+CreatureAI* GetAI_mob_shadowmoon_deathshaper(Creature *_Creature)
+{
+    return new mob_shadowmoon_deathshaperAI(_Creature);
+}
+
+/****************
+* Shadowmoon Houndmaster - id 23018
+*****************/
+
+#define SPELL_FREEZING_TRAP                 41085
+#define SPELL_SHOOT_1                       41093
+#define SPELL_SILENCING_SHOT                41084
+#define SPELL_SUMMON_RIDING_WARHOUND        39906
+#define SPELL_VOLLEY                        41091
+#define SPELL_WING_CLIP                     32908
+#define SPELL_FLARE                         41094
+
+#define MOB_SHADOWMOON_RIDING_HOUND         23083
+
+struct TRINITY_DLL_DECL mob_shadowmoon_houndmasterAI: public ScriptedAI
+{
+    mob_shadowmoon_houndmasterAI(Creature *c) : ScriptedAI(c) { }
+
+    uint32 Shoot;
+    uint32 FreezingTrap;
+    uint32 SilencingShot;
+    uint32 Volley;
+    uint32 WingClip;
+    uint32 Flare;
+
+    void Reset()
+    {
+        
+        if(Creature* Hound = GetClosestCreatureWithEntry(m_creature, MOB_SHADOWMOON_RIDING_HOUND, 80))
+        {
+            Hound->Kill(Hound, false);
+            Hound->RemoveCorpse();
+        }
+        m_creature->Mount(14334);
+        Shoot = 2000;
+        FreezingTrap = 15000;
+        SilencingShot = urand(5000, 15000);
+        Volley = urand(10000, 25000);
+        WingClip = urand(8000, 20000);
+        Flare = urand(2000, 20000);
+    }
+
+    void EnterCombat(Unit *)
+    {
+        m_creature->Unmount();
+        DoCast(m_creature, SPELL_SUMMON_RIDING_WARHOUND);
+        DoCast(m_creature, SPELL_FREEZING_TRAP);
+        m_creature->GetMotionMaster()->Clear();
+        m_creature->GetMotionMaster()->MovePoint(1, m_creature->GetPositionX()+urand(10, 15), m_creature->GetPositionY()+urand(3, 7), m_creature->GetPositionZ());
+        DoZoneInCombat();
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(FreezingTrap < diff)
+        {
+            DoCast(m_creature, SPELL_FREEZING_TRAP);
+            m_creature->GetMotionMaster()->Clear();
+            m_creature->GetMotionMaster()->MovePoint(1, m_creature->GetPositionX()+urand(10, 15), m_creature->GetPositionY()+urand(3, 7), m_creature->GetPositionZ());
+            FreezingTrap = 15000;
+        }
+        else
+            FreezingTrap -= diff;
+
+        if(Volley < diff)
+        {
+            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 40.0f, true);
+            if(target && m_creature->GetDistance(target) > 10.0f)
+            {
+                ForceSpellCast(target, SPELL_VOLLEY);
+                Volley = 25000;
+            }
+            else
+                Volley = 3000;
+        }
+        else
+            Volley -= diff;
+
+        if(Shoot < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_TOPAGGRO, 0, 100, true))
+            {
+                if(m_creature->GetDistance(target) > 30)
+                {
+                    m_creature->GetMotionMaster()->MoveChase(target, 20, 0);
+                    m_creature->SetSpeed(MOVE_RUN, 1,5);
+                }
+                else if(!target->IsWithinDistInMap(m_creature, 5.0))
+                {
+                    m_creature->GetMotionMaster()->Clear();
+                    m_creature->GetMotionMaster()->MoveIdle();
+                    ForceSpellCast(target, SPELL_SHOOT_1);
+                }
+            }
+            Shoot = 2000;
+        }
+        else
+            Shoot -= diff;
+
+        if(SilencingShot < diff)
+        {
+            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, 35.0f, true);
+            if(target && m_creature->GetDistance(target) > 8.0f)
+            {
+                ForceSpellCast(target, SPELL_SILENCING_SHOT);
+                SilencingShot = 15000;
+            }
+            else
+                SilencingShot = 4000;
+        }
+        else
+            SilencingShot -= diff;
+
+        if(WingClip < diff)
+        {
+            if(m_creature->IsWithinDistInMap(m_creature->getVictim(), 5.0))
+            {
+                AddSpellToCast(m_creature->getVictim(), SPELL_WING_CLIP);
+                m_creature->GetMotionMaster()->MovePoint(1, m_creature->GetPositionX()+urand(10, 15), m_creature->GetPositionY()+urand(3, 7), m_creature->GetPositionZ());
+                WingClip = 20000;
+            }
+            else
+                WingClip = 2500;
+        }
+        else
+            WingClip -= diff;
+
+        if(Flare < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100.0f, true))
+                AddSpellToCast(target, SPELL_FLARE);
+            Flare = 20000;
+        }
+        else
+            Flare -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_shadowmoon_houndmaster(Creature *_Creature)
+{
+    return new mob_shadowmoon_houndmasterAI(_Creature);
 }
 
 /****************
@@ -2685,50 +3105,6 @@ struct TRINITY_DLL_DECL mob_shadowmoon_soldierAI: public ScriptedAI
         DoMeleeAttackIfReady();
     }
 };
-
-/****************
-* Shadowmoon Deathshaper - id 22882
-*****************/
-
-struct TRINITY_DLL_DECL mob_shadowmoon_deathshaperAI: public ScriptedAI
-{
-    mob_shadowmoon_deathshaperAI(Creature *c) : ScriptedAI(c) { }
-
-    void Reset()
-    {
-    }
-
-    void EnterCombat(Unit *)
-    {
-        m_creature->InterruptNonMeleeSpells(false, SPELL_GREEN_BEAM);
-        DoZoneInCombat();
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-        if(!UpdateVictim())
-        {
-            if (!m_creature->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT))
-            {
-                if (Unit *skeleton = FindCreature(MOB_SKELETON, 20.0f, m_creature))
-                {
-                    if (skeleton->isAlive())
-                        DoCast(skeleton, SPELL_GREEN_BEAM);
-                }
-            }
-            return;
-        }
-
-        CastNextSpellIfAnyAndReady();
-        DoMeleeAttackIfReady();
-    }
-};
-
-
-CreatureAI* GetAI_mob_shadowmoon_deathshaper(Creature *_Creature)
-{
-    return new mob_shadowmoon_deathshaperAI(_Creature);
-}
 
 CreatureAI* GetAI_mob_shadowmoon_weapon_master(Creature *_Creature)
 {
@@ -3102,6 +3478,21 @@ void AddSC_black_temple_trash()
     newscript = new Script;
     newscript->Name = "mob_shadowmoon_blood_mage";
     newscript->GetAI = &GetAI_mob_shadowmoon_blood_mage;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_shadowmoon_champion";
+    newscript->GetAI = &GetAI_mob_shadowmoon_champion;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_whirling_blade";
+    newscript->GetAI = &GetAI_mob_whirling_blade;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_shadowmoon_houndmaster";
+    newscript->GetAI = &GetAI_mob_shadowmoon_houndmaster;
     newscript->RegisterSelf();
 
     newscript = new Script;

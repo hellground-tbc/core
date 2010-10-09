@@ -1016,6 +1016,23 @@ namespace Trinity
         float range;
     };
 
+    class AllDeadUnitsInRange
+    {
+    public:
+        AllDeadUnitsInRange(Unit const* obj, float range) : i_obj(obj), i_range(range) {}
+        bool operator()(Unit* u)
+        {
+            if(u->isDead() && i_obj->IsWithinDistInMap(u, i_range))
+            {
+                return true;
+            }
+            return false;
+        }
+    private:
+        Unit const* i_obj;
+        float i_range;
+    };
+
     #ifndef WIN32
     template<> inline void PlayerRelocationNotifier::Visit<Creature>(CreatureMapType &);
     template<> inline void PlayerRelocationNotifier::Visit<Player>(PlayerMapType &);

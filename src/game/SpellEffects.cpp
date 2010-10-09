@@ -204,7 +204,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectLeapBack,                                 //138 SPELL_EFFECT_LEAP_BACK                Leap Back
     &Spell::EffectUnused,                                   //139 SPELL_EFFECT_139                      unused
     &Spell::EffectForceCast,                                //140 SPELL_EFFECT_FORCE_CAST
-    &Spell::EffectNULL,                                     //141 SPELL_EFFECT_141                      damage and reduce speed?
+    &Spell::EffectNULL,                                     //141 SPELL_EFFECT_141                      Only one spell, using SPELL_EFFECT_SCHOOL_DAMAGE, and there triggering spell
     &Spell::EffectTriggerSpellWithValue,                    //142 SPELL_EFFECT_TRIGGER_SPELL_WITH_VALUE
     &Spell::EffectApplyAreaAura,                            //143 SPELL_EFFECT_APPLY_AREA_AURA_OWNER
     &Spell::EffectKnockBack,                                //144 SPELL_EFFECT_KNOCK_BACK_2             Spectral Blast
@@ -4958,6 +4958,15 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             m_caster->getThreatManager().modifyThreatPercent(unitTarget, -25);
             break;
         }
+        // Bloodbolt & Blood Splash workaround
+        case 41072:
+        {
+            const int32 damage = irand(3238, 3762);
+            const int32 reduction = NULL;
+            m_caster->CastCustomSpell(unitTarget, 41229, &damage, &reduction, NULL, true);  // workaround not to implement spell effect 141 only for 1 spell
+            unitTarget->CastCustomSpell(unitTarget, 41067, &damage, NULL, NULL, true, 0, 0, m_caster->GetGUID());
+            break;
+        }
         // Void Reaver: Knock Back
         case 25778:
         {
@@ -4967,7 +4976,6 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             m_caster->getThreatManager().modifyThreatPercent(unitTarget, -25);
             break;
         }
-
         // Incite Chaos
         case 33676:
         {
