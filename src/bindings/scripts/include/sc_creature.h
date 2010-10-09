@@ -78,47 +78,52 @@ public:
     uint32 spellId;
     bool triggered;
     bool isAOECast;
+    bool setAsTarget;
     int32 scriptTextEntry;
 
-    SpellToCast(Unit* target, uint32 spellId, bool triggered, int32 scriptTextEntry, bool isAOECast)
+    SpellToCast(Unit* target, uint32 spellId, bool triggered, int32 scriptTextEntry, bool isAOECast, bool visualTarget)
     {
 
         if (target)
-            this->targetGUID = target->GetGUID();
+            targetGUID = target->GetGUID();
         else
-            this->targetGUID = 0;
+            targetGUID = 0;
 
-        this->spellId = spellId;
-        this->triggered = triggered;
-        this->isAOECast = isAOECast;
-        this->scriptTextEntry = scriptTextEntry;
+        spellId = spellId;
+        triggered = triggered;
+        isAOECast = isAOECast;
+        scriptTextEntry = scriptTextEntry;
+        setAsTarget = visualTarget;
     }
 
-    SpellToCast(uint64 target, uint32 spellId, bool triggered, int32 scriptTextEntry, bool isAOECast)
+    SpellToCast(uint64 target, uint32 spellId, bool triggered, int32 scriptTextEntry, bool isAOECast, bool visualTarget)
     {
-        this->targetGUID = target;
-        this->spellId = spellId;
-        this->triggered = triggered;
-        this->isAOECast = isAOECast;
-        this->scriptTextEntry = scriptTextEntry;
+        targetGUID = target;
+        spellId = spellId;
+        triggered = triggered;
+        isAOECast = isAOECast;
+        scriptTextEntry = scriptTextEntry;
+        setAsTarget = visualTarget;
     }
 
     SpellToCast()
     {
-        this->targetGUID = 0;
-        this->spellId = 0;
-        this->triggered = false;
-        this->isAOECast = false;
-        this->scriptTextEntry = 0;
+        targetGUID = 0;
+        spellId = 0;
+        triggered = false;
+        isAOECast = false;
+        scriptTextEntry = 0;
+        setAsTarget = false;
     }
 
     ~SpellToCast()
     {
-        this->targetGUID = 0;
-        this->spellId = 0;
-        this->triggered = false;
-        this->isAOECast = false;
-        this->scriptTextEntry = 0;
+        targetGUID = 0;
+        spellId = 0;
+        triggered = false;
+        isAOECast = false;
+        scriptTextEntry = 0;
+        setAsTarget = false;
     }
 };
 
@@ -231,14 +236,16 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
     //Cast spell by Id
     void DoCast(Unit* victim, uint32 spellId, bool triggered = false);
     void DoCastAOE(uint32 spellId, bool triggered = false);
-    void AddSpellToCast(Unit* victim, uint32 spellId, bool triggered = false);
-    void AddSpellToCastWithScriptText(Unit* victim, uint32 spellId, int32 scriptTextEntry, bool triggered = false);
+
+    //Casts queue
+    void AddSpellToCast(Unit* victim, uint32 spellId, bool triggered = false, bool visualTarget = false);
+    void AddSpellToCastWithScriptText(Unit* victim, uint32 spellId, int32 scriptTextEntry, bool triggered = false, bool visualTarget = false);
     void AddAOESpellToCast(uint32 spellId, bool triggered = false);
     void AddAOESpellToCastWithScriptText(uint32 spellId, int32 scriptTextEntry, bool triggered = false);
 
     //Forces spell cast by Id
-    void ForceSpellCast(Unit* victim, uint32 spellId, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false);
-    void ForceSpellCastWithScriptText(Unit* victim, uint32 spellId, int32 scriptTextEntry, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false);
+    void ForceSpellCast(Unit* victim, uint32 spellId, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false, bool visualTarget = false);
+    void ForceSpellCastWithScriptText(Unit* victim, uint32 spellId, int32 scriptTextEntry, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false, bool visualTarget = false);
     void ForceAOESpellCast(uint32 spellId, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false);
     void ForceAOESpellCastWithScriptText(uint32 spellId, int32 scriptTextEntry, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false);
 

@@ -537,13 +537,22 @@ inline bool CreatureAI::UpdateVictim()
     if(!me->isInCombat())
         return false;
 
-    if(me->hasUnitState(UNIT_STAT_CASTING) && me->getVictim())
-        return me->getVictim();
+    if(me->getVictim())
+    {
+        if(me->IsNonMeleeSpellCasted(false))
+            return true;
+        else
+        {
+            if(me->GetSelection() != me->getVictimGUID())
+                me->SetSelection(me->getVictimGUID());
+        }
+    }
 
     if(!me->HasReactState(REACT_PASSIVE))
     {
-        if(Unit *victim = me->SelectVictim())
-            AttackStart(victim);
+        if(Unit *pVictim = me->SelectVictim())
+            AttackStart(pVictim);
+
         return me->getVictim();
     }
     else if(me->getThreatManager().isThreatListEmpty())
