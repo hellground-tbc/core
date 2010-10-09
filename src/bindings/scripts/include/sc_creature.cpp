@@ -515,7 +515,7 @@ Unit* ScriptedAI::SelectUnit(SelectAggroTarget target, uint32 position)
     return NULL;
 }
 
-Unit* ScriptedAI::SelectUnit(SelectAggroTarget targetType, uint32 position, float dist, bool playerOnly, uint64 exclude)
+Unit* ScriptedAI::SelectUnit(SelectAggroTarget targetType, uint32 position, float dist, bool playerOnly, uint64 exclude, float mindist)
 {
     if(targetType == SELECT_TARGET_NEAREST || targetType == SELECT_TARGET_FARTHEST)
     {
@@ -529,7 +529,8 @@ Unit* ScriptedAI::SelectUnit(SelectAggroTarget targetType, uint32 position, floa
             if(!target
                 || playerOnly && target->GetTypeId() != TYPEID_PLAYER
                 || dist && !m_creature->IsWithinCombatRange(target, dist)
-                || exclude && exclude == target->GetGUID())
+                || exclude && exclude == target->GetGUID()
+                || mindist && m_creature->IsWithinCombatRange(target, mindist))
             {
                 continue;
             }
@@ -579,7 +580,8 @@ Unit* ScriptedAI::SelectUnit(SelectAggroTarget targetType, uint32 position, floa
                 || !target->isAlive()
                 || playerOnly && target->GetTypeId() != TYPEID_PLAYER
                 || dist && !m_creature->IsWithinCombatRange(target, dist)
-                || exclude && exclude == target->GetGUID())
+                || exclude && exclude == target->GetGUID()
+                || mindist && m_creature->IsWithinCombatRange(target, mindist))
             {
                 m_threatlist.erase(i);
             }
@@ -593,7 +595,7 @@ Unit* ScriptedAI::SelectUnit(SelectAggroTarget targetType, uint32 position, floa
     return NULL;
 }
 
-Unit* ScriptedAI::SelectUnit(SelectAggroTarget targetType, uint32 position, float dist, bool playerOnly, Powers power)
+Unit* ScriptedAI::SelectUnit(SelectAggroTarget targetType, uint32 position, float maxdist, bool playerOnly, Powers power)
 {
     if(targetType == SELECT_TARGET_NEAREST || targetType == SELECT_TARGET_FARTHEST)
     {
@@ -606,7 +608,7 @@ Unit* ScriptedAI::SelectUnit(SelectAggroTarget targetType, uint32 position, floa
             Unit *target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
             if(!target
                 || playerOnly && target->GetTypeId() != TYPEID_PLAYER
-                || dist && !m_creature->IsWithinCombatRange(target, dist)
+                || maxdist && !m_creature->IsWithinCombatRange(target, maxdist)
                 || power != target->getPowerType())
             {
                 continue;
@@ -656,7 +658,7 @@ Unit* ScriptedAI::SelectUnit(SelectAggroTarget targetType, uint32 position, floa
             if(!target
                 || !target->isAlive()
                 || playerOnly && target->GetTypeId() != TYPEID_PLAYER
-                || dist && !m_creature->IsWithinCombatRange(target, dist)
+                || maxdist && !m_creature->IsWithinCombatRange(target, maxdist)
                 || power != target->getPowerType())
             {
                 m_threatlist.erase(i);

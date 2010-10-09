@@ -1926,7 +1926,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_stormcallerAI : public ScriptedAI
 
         if(LightningBolt < diff)
         {
-            if(Unit *pTarget = SelectUnit(SELECT_TARGET_TOPAGGRO, 0, 8.0f, true))
+            if(Unit *pTarget = SelectUnit(SELECT_TARGET_TOPAGGRO, 0, 60.0f, true, 0, 8.0f))
             {
                 DoCast(pTarget, SPELL_LIGHTNING_BOLT);
                 LightningBolt = 5000;
