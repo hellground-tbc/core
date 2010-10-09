@@ -307,6 +307,7 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
 
     //Selects a unit from the creature's current aggro list
     Unit* SelectUnit(SelectAggroTarget target, uint32 position, float dist, bool playerOnly, uint64 = 0);
+    Unit* SelectUnit(SelectAggroTarget targetType, uint32 position, float dist, bool playerOnly, Powers powerOnly);
     Unit* SelectUnit(SelectAggroTarget target, uint32 position);
 
     void SelectUnitList(std::list<Unit*> &targetList, uint32 num, SelectAggroTarget target, float dist, bool playerOnly);
