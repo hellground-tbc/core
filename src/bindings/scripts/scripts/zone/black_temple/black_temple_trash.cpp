@@ -2464,6 +2464,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_blood_mageAI: public ScriptedAI
 
     void Reset()
     {
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
         BloodSiphon = urand(3000, 20000);
         Bloodbolt = urand(5000, 15000);
     }
@@ -2730,7 +2731,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_deathshaperAI: public ScriptedAI
             DeathCoil -= diff;
 
         //THIS MAY CRASH!! check it pls
-        /*
+        
         if(RaiseDeadCheck < diff)
         {
             if(SelectCorpseGUID())
@@ -2745,7 +2746,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_deathshaperAI: public ScriptedAI
             RaiseDeadCheck = 10000;
         }
         else
-            RaiseDeadCheck -= diff;*/
+            RaiseDeadCheck -= diff;
 
         if(DemonArmor < diff)
         {
@@ -2814,7 +2815,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_houndmasterAI: public ScriptedAI
         DoCast(m_creature, SPELL_SUMMON_RIDING_WARHOUND);
         DoCast(m_creature, SPELL_FREEZING_TRAP);
         m_creature->GetMotionMaster()->Clear();
-        m_creature->GetMotionMaster()->MovePoint(1, m_creature->GetPositionX()+urand(10, 15), m_creature->GetPositionY()+urand(3, 7), m_creature->GetPositionZ());
+        m_creature->GetMotionMaster()->MovePoint(0, m_creature->GetPositionX()+urand(10, 15), m_creature->GetPositionY()+urand(3, 7), m_creature->GetPositionZ());
         DoZoneInCombat();
     }
 
@@ -2913,6 +2914,134 @@ struct TRINITY_DLL_DECL mob_shadowmoon_houndmasterAI: public ScriptedAI
 CreatureAI* GetAI_mob_shadowmoon_houndmaster(Creature *_Creature)
 {
     return new mob_shadowmoon_houndmasterAI(_Creature);
+}
+
+/****************
+* Shadowmoon Reaver - id 22879
+*****************/
+
+#define SPELL_SPELL_ABSORPTION              41034
+#define SPELL_SHADOW_RESONANCE              41047
+
+struct TRINITY_DLL_DECL mob_shadowmoon_reaverAI : public ScriptedAI
+{
+    mob_shadowmoon_reaverAI(Creature *c) : ScriptedAI(c) {}
+
+    uint32 SpellAbsorption;
+    uint32 ShadowResonance;
+
+    void Reset()
+    {
+        SpellAbsorption = 10000;
+        ShadowResonance = urand(5000, 20000);
+    }
+    void EnterCombat(Unit*) { DoZoneInCombat(); }
+    void SpellHit(Unit* caster, const SpellEntry*)
+    {
+        if(caster->GetTypeId() == TYPEID_PLAYER && m_creature->HasAura(SPELL_SPELL_ABSORPTION, 0))
+            m_creature->CastSpell(m_creature, 41033, true, 0, m_creature->GetAura(SPELL_SPELL_ABSORPTION, 0));
+    }
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(SpellAbsorption < diff)
+        {
+            AddSpellToCast(m_creature, SPELL_SPELL_ABSORPTION);
+            SpellAbsorption = 40000;
+        }
+        else
+            SpellAbsorption -= diff;
+
+        if(ShadowResonance < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 10.0f, true))
+                AddSpellToCast(target, SPELL_SHADOW_RESONANCE);
+            ShadowResonance = 20000;
+        }
+        else
+            ShadowResonance -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_shadowmoon_reaver(Creature *_Creature)
+{
+    return new mob_shadowmoon_reaverAI (_Creature);
+}
+
+/****************
+* Shadowmoon Riding Hound - id 23083
+*****************/
+
+#define SPELL_CARNIVOROUS_BITE              41092
+#define SPELL_CHARGE                        25821
+#define SPELL_ENRAGE_1                       8599
+
+struct TRINITY_DLL_DECL mob_shadowmoon_riding_houndAI: public ScriptedAI
+{
+    mob_shadowmoon_riding_houndAI(Creature *c) : ScriptedAI(c) { }
+
+    uint32 Charge;
+    uint32 Enrage;
+
+    void Reset()
+    {
+        Charge = urand(5000, 20000);
+        Enrage = 15000;
+    }
+
+    void DamageMade(Unit* target, uint32 &damage, bool direct_damage)
+    {
+        if(damage)
+        {
+            if(target->HasAura(SPELL_CARNIVOROUS_BITE, 0))   //do not stack again when 5 stacks and still more than 6 seconds of DoT to deal spell damage
+            {
+                Aura* Aur = target->GetAura(SPELL_CARNIVOROUS_BITE, 0);
+                if(Aur && Aur->GetStackAmount() == 5 && Aur->GetAuraDuration() > 6000)
+                {
+                    Aur->UpdateAuraDuration();
+                    return;
+                }
+            }
+            ForceSpellCast(target, SPELL_CARNIVOROUS_BITE);
+        }
+    }
+    void EnterCombat(Unit *) { DoZoneInCombat(); }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(Charge < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 40.0f, true))
+                AddSpellToCast(target, SPELL_CHARGE);
+            Charge = 20000;
+        }
+        else
+            Charge -= diff;
+
+        if(Enrage < diff)
+        {
+            AddSpellToCast(m_creature, SPELL_ENRAGE_1);
+            Enrage = 30000;
+        }
+        else
+            Enrage -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_shadowmoon_riding_hound(Creature *_Creature)
+{
+    return new mob_shadowmoon_riding_houndAI(_Creature);
 }
 
 /****************
@@ -3496,6 +3625,16 @@ void AddSC_black_temple_trash()
     newscript = new Script;
     newscript->Name = "mob_shadowmoon_houndmaster";
     newscript->GetAI = &GetAI_mob_shadowmoon_houndmaster;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_shadowmoon_reaver";
+    newscript->GetAI = &GetAI_mob_shadowmoon_reaver;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_shadowmoon_riding_hound";
+    newscript->GetAI = &GetAI_mob_shadowmoon_riding_hound;
     newscript->RegisterSelf();
 
     newscript = new Script;

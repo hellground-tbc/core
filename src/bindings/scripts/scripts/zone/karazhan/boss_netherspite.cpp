@@ -457,9 +457,6 @@ struct TRINITY_DLL_DECL mob_void_zoneAI : public Scripted_NoMovementAI
         else
             checkTimer -= diff;
     }
-
-    
-
 };
 CreatureAI* GetAI_mob_void_zone(Creature *_Creature)
 {
