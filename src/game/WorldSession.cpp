@@ -226,9 +226,10 @@ bool WorldSession::Update(uint32 diff)
                     (this->*opHandle.handler)(*packet);
                     break;
                 case STATUS_NEVER:
-                    sLog.outError( "SESSION: received not allowed opcode %s (0x%.4X)",
-                        LookupOpcodeName(packet->GetOpcode()),
-                        packet->GetOpcode());
+                    if (packet->GetOpcode() != CMSG_MOVE_NOT_ACTIVE_MOVER)
+                        sLog.outError( "SESSION: received not allowed opcode %s (0x%.4X)",
+                            LookupOpcodeName(packet->GetOpcode()),
+                            packet->GetOpcode());
                     break;
             }
         }
