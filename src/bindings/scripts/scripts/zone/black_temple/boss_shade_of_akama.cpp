@@ -561,14 +561,15 @@ struct TRINITY_DLL_DECL mob_ashtongue_sorcererAI : public ScriptedAI
             {
                 if (m_checkTimer < diff)
                 {
-                    if (Unit *shade = m_creature->GetUnit(*m_creature, ShadeGUID))
+                    if (Unit *pShade = m_creature->GetUnit(*m_creature, ShadeGUID))
                     {
-                        if (m_creature->GetDistance2d(shade) <= 10.0f +urand(0,5))
+                        if (m_creature->GetDistance2d(pShade) <= 10.0f +urand(0,5))
                         {
                             m_creature->StopMoving();
                             m_creature->RemoveAurasDueToSpell(SPELL_SHADE_SOUL_CHANNEL);
-                            if (shade->isAlive())
-                                DoCast(shade, SPELL_SHADE_SOUL_CHANNEL);
+
+                            if (pShade->isAlive())
+                                DoCast(pShade, SPELL_SHADE_SOUL_CHANNEL);
                             else
                                 m_channel = false;
                         }
@@ -754,6 +755,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
     {
         if (aura->GetSpellProto()->Id == SPELL_SHADE_SOUL_CHANNEL_2)
             SetBanish(true);
+
         if (aura->GetSpellProto()->Id == SPELL_AKAMA_SOUL_CHANNEL)
             event_phase = 1;
     }
@@ -768,12 +770,13 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
                 channeler->InterruptNonMeleeSpells(false);
             }
         }
+
         for (std::list<uint64>::const_iterator itr = m_sorcerers.begin(); itr != m_sorcerers.end(); ++itr)
         {
-            if (Creature *sorc = m_creature->GetCreature(*m_creature, *itr))
+            if (Creature *pSorc = m_creature->GetCreature(*m_creature, *itr))
             {
-                ((mob_ashtongue_sorcererAI *)sorc->AI())->m_channel = false;
-                sorc->InterruptNonMeleeSpells(false);
+                pSorc->Kill(pSorc, false);
+                pSorc->RemoveCorpse();
             }
         }
         m_freeSlot = 0;
