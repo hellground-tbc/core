@@ -931,7 +931,7 @@ void CreatureEventAI::JustSummoned(Creature* pUnit)
         return;
 
     uint32 entry = pUnit->GetEntry();
-    uint32 level = me->GetLevel();
+    uint32 level = me->getLevel();
     uint32 hp = 0;
     bool check = false;
 
