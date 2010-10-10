@@ -1747,6 +1747,10 @@ struct TRINITY_DLL_DECL npc_elemental_guardianAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit *pWho)
     {
+        const AreaTableEntry *area = GetAreaEntryByAreaID(pWho->GetAreaId());
+        if(area && area->flags & AREA_FLAG_SANCTUARY)       //sanctuary
+            return;
+
         if(!m_creature->getVictim() && m_creature->IsHostileTo(pWho))
         {
             Creature *pTotem = m_creature->GetCreature(*m_creature, m_creature->GetOwnerGUID());
@@ -1760,13 +1764,18 @@ struct TRINITY_DLL_DECL npc_elemental_guardianAI : public ScriptedAI
         if(m_checkTimer < diff)
         {
             Creature *pTotem = m_creature->GetCreature(*m_creature, m_creature->GetOwnerGUID());
+            
             if(!me->getVictim() && pTotem)
             {
                 if(!m_creature->hasUnitState(UNIT_STAT_FOLLOW))
-                        m_creature->GetMotionMaster()->MoveFollow(pTotem, 2.0f, M_PI);
+                    m_creature->GetMotionMaster()->MoveFollow(pTotem, 2.0f, M_PI);
 
-                if(Unit *pTemp = pTotem->SelectNearestTarget(30.0))
-                    AttackStart(pTemp);
+                const AreaTableEntry *area = GetAreaEntryByAreaID(pWho->GetAreaId());
+                if(area && area->flags & ~AREA_FLAG_SANCTUARY) 
+                {
+                    if(Unit *pTemp = pTotem->SelectNearestTarget(30.0))
+                        AttackStart(pTemp);
+                }
             }
 
             if(pTotem)
