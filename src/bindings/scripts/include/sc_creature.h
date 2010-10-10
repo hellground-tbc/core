@@ -85,45 +85,45 @@ public:
     {
 
         if (target)
-            targetGUID = target->GetGUID();
+            this->targetGUID = target->GetGUID();
         else
-            targetGUID = 0;
+            this->targetGUID = 0;
 
-        spellId = spellId;
-        triggered = triggered;
-        isAOECast = isAOECast;
-        scriptTextEntry = scriptTextEntry;
-        setAsTarget = visualTarget;
+        this->spellId = spellId;
+        this->triggered = triggered;
+        this->isAOECast = isAOECast;
+        this->scriptTextEntry = scriptTextEntry;
+        this->setAsTarget = visualTarget;
     }
 
     SpellToCast(uint64 target, uint32 spellId, bool triggered, int32 scriptTextEntry, bool isAOECast, bool visualTarget)
     {
-        targetGUID = target;
-        spellId = spellId;
-        triggered = triggered;
-        isAOECast = isAOECast;
-        scriptTextEntry = scriptTextEntry;
-        setAsTarget = visualTarget;
+        this->targetGUID = target;
+        this->spellId = spellId;
+        this->triggered = triggered;
+        this->isAOECast = isAOECast;
+        this->scriptTextEntry = scriptTextEntry;
+        this->setAsTarget = visualTarget;
     }
 
     SpellToCast()
     {
-        targetGUID = 0;
-        spellId = 0;
-        triggered = false;
-        isAOECast = false;
-        scriptTextEntry = 0;
-        setAsTarget = false;
+        this->targetGUID = 0;
+        this->spellId = 0;
+        this->triggered = false;
+        this->isAOECast = false;
+        this->scriptTextEntry = 0;
+        this->setAsTarget = false;
     }
 
     ~SpellToCast()
     {
-        targetGUID = 0;
-        spellId = 0;
-        triggered = false;
-        isAOECast = false;
-        scriptTextEntry = 0;
-        setAsTarget = false;
+        this->targetGUID = 0;
+        this->spellId = 0;
+        this->triggered = false;
+        this->isAOECast = false;
+        this->scriptTextEntry = 0;
+        this->setAsTarget = false;
     }
 };
 

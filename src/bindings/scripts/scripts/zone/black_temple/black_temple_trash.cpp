@@ -2607,7 +2607,8 @@ struct TRINITY_DLL_DECL mob_whirling_bladeAI: public Scripted_NoMovementAI
             m_creature->RemoveCorpse();
             DieTimer = 2000;
         }
-        else DieTimer -= diff;
+        else
+            DieTimer -= diff;
 
         CastNextSpellIfAnyAndReady();
     }
@@ -2662,7 +2663,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_deathshaperAI: public ScriptedAI
         std::list<uint64> CorpseGUID;
         CorpseGUID.clear();
 
-        // select all dead friendly creatures GUIDs
+        // select all dead units GUIDs
         if(!DeadList.empty())
         {
             for(std::list<Unit*>::iterator i = DeadList.begin(); i != DeadList.end(); ++i)
