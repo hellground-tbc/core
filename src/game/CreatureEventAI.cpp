@@ -939,7 +939,7 @@ void CreatureEventAI::JustSummoned(Creature* pUnit)
 
     switch (entry)
     {
-        case 12922; //imp
+        case 12922: //imp
             hp = 17.8 * level - 54;
             check = true;
             break;
