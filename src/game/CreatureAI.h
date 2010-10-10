@@ -149,7 +149,7 @@ class TRINITY_DLL_SPEC CreatureAI : public UnitAI
         // Called at reaching home after evade
         virtual void JustReachedHome() { }
  
-        void DoZoneInCombat(Creature* pUnit = NULL);
+        void DoZoneInCombat(float max_dist = 200.0f);
  
         // Called at text emote receive from player 
         virtual void ReceiveEmote(Player* pPlayer, uint32 text_emote) {}

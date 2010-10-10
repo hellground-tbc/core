@@ -195,9 +195,9 @@ struct TRINITY_DLL_DECL boss_lord_ahuneAI : public Scripted_NoMovementAI
 
     void JustSummoned(Creature* summoned)
     {
-        DoZoneInCombat(summoned);
         if(summoned->AI() && me->getVictim())
             summoned->AI()->AttackStart(me->getVictim());
+
         Summons.Summon(summoned);
     }
 

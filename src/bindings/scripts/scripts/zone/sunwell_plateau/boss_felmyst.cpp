@@ -240,7 +240,6 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         if(summon->GetEntry() == MOB_DEAD)
         {
             summon->AI()->AttackStart(SelectUnit(SELECT_TARGET_RANDOM, 0));
-            DoZoneInCombat(summon);
             summon->CastSpell(summon, SPELL_DEAD_PASSIVE, true);
         }
     }

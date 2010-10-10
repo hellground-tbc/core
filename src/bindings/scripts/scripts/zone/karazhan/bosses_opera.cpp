@@ -1329,7 +1329,7 @@ void boss_julianneAI::UpdateAI(const uint32 diff)
                     Romulo->AddThreat(m_creature->getVictim(), 0.0f);
                 }
 
-                DoZoneInCombat(Romulo);
+                Romulo->AI()->DoZoneInCombat();
             }
             SummonedRomulo = true;
         }else SummonRomuloTimer -= diff;

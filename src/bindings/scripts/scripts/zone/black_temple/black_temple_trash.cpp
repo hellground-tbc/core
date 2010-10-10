@@ -1514,7 +1514,7 @@ struct TRINITY_DLL_DECL totem_ashtongue_mysticAI : public Scripted_NoMovementAI
 
     void Reset()
     {
-        DoZoneInCombat(m_creature);
+        DoZoneInCombat();
         switch(m_creature->GetEntry())
         {
             case NPC_CYCLONE_TOTEM:
@@ -1856,6 +1856,8 @@ struct TRINITY_DLL_DECL mob_ashtongue_stalkerAI : public ScriptedAI
                 AddSpellToCast(pTarget, SPELL_INSTANT_POISON);
                 InstantPoison = 10000;
             }
+            else
+                InstantPoison = 5000;
         }
         else
             InstantPoison -= diff;
