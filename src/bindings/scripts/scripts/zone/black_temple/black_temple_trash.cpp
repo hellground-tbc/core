@@ -2794,7 +2794,6 @@ struct TRINITY_DLL_DECL mob_shadowmoon_houndmasterAI: public ScriptedAI
 
     void Reset()
     {
-        
         if(Creature* Hound = GetClosestCreatureWithEntry(m_creature, MOB_SHADOWMOON_RIDING_HOUND, 80))
         {
             Hound->Kill(Hound, false);
@@ -3045,6 +3044,61 @@ CreatureAI* GetAI_mob_shadowmoon_riding_hound(Creature *_Creature)
 }
 
 /****************
+* Shadowmoon Soldier - id 23047
+*****************/
+
+#define SPELL_STRIKE                43298
+
+struct TRINITY_DLL_DECL mob_shadowmoon_soldierAI: public ScriptedAI
+{
+    mob_shadowmoon_soldierAI(Creature *c) : ScriptedAI(c) { }
+
+    uint32 Strike;
+
+    void Reset()
+    {
+        Strike = urand(3000, 8000);
+    }
+
+    void MovementInform(uint32 type, uint32 id)
+    {
+        if (type != POINT_MOTION_TYPE)
+            return;
+
+        switch (id)
+        {
+            case 0:
+                m_creature->HandleEmoteCommand(EMOTE_ONESHOT_SALUTE);
+            break;
+        }
+    }
+
+    void EnterCombat(Unit *) { DoZoneInCombat(); }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(Strike < diff)
+        {
+            AddSpellToCast(m_creature->getVictim(), SPELL_STRIKE);
+            Strike = urand(3000, 8000);
+        }
+        else
+            Strike -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_shadowmoon_soldier(Creature *_Creature)
+{
+    return new mob_shadowmoon_soldierAI(_Creature);
+}
+
+/****************
 * Shadowmoon Weapon Master - id 23049
 *****************/
 
@@ -3066,6 +3120,25 @@ static float fieldPositions [8][2] =
 #define WEAPON_X          454.35f
 #define WEAPON_Y          190.09f
 
+#define SPELL_BATTLE_AURA               41106
+#define SPELL_BATTLE_STANCE             41099
+#define SPELL_BERSERKER_AURA            41107
+#define SPELL_BERSERKER_STANCE          41100
+#define SPELL_DEFENSIVE_AURA            41105
+#define SPELL_DEFENSIVE_STANCE          41101
+#define SPELL_KNOCK_AWAY                18813
+#define SPELL_MUTILATE                  41103
+#define SPELL_SHIELD_WALL               41104
+#define SPELL_WHIRLWIND_1               41097
+
+#define BATTLE_STANCE_YELL  "Berserker stance! Attack them recklessly!"
+
+enum Stances
+{
+    DEFENSIVE = 1,
+    BERSERKER,
+    BATTLE
+};
 
 struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
 {
@@ -3082,13 +3155,51 @@ struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
 
     uint32 m_nextMove;
     int32  m_nextId;
+    uint8  Stance;
+
+    uint32 SpecialTimer;
+    uint32 KnockAway;
 
     void Reset()
     {
+        Stance = DEFENSIVE;
+        KnockAway = urand(3000, 20000);
+        SpecialTimer = 0;
+
         if (!soldiersList.empty())
         {
             m_nextMove = 2000;
             m_nextId   = 1;
+        }
+    }
+
+    void DamageTaken(Unit* who, uint32& damage)
+    {
+        if(damage)
+        {
+            if(m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 80 && Stance == DEFENSIVE)
+            {
+                m_creature->RemoveAurasDueToSpell(SPELL_DEFENSIVE_STANCE);
+                m_creature->RemoveAurasDueToSpell(SPELL_DEFENSIVE_AURA);
+                if(m_creature->HasAura(SPELL_SHIELD_WALL, 0))
+                    m_creature->RemoveAurasDueToSpell(SPELL_SHIELD_WALL);
+                ForceSpellCast(m_creature, SPELL_BERSERKER_STANCE, INTERRUPT_AND_CAST_INSTANTLY);
+                ForceSpellCast(m_creature, SPELL_BERSERKER_AURA, INTERRUPT_AND_CAST_INSTANTLY);
+                Stance = BERSERKER;
+                SpecialTimer = 0;
+            }
+            if(m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 35 && Stance == BERSERKER)
+            {
+                DoYell(BATTLE_STANCE_YELL, 0, m_creature);
+                m_creature->RemoveAurasDueToSpell(SPELL_BERSERKER_STANCE);
+                m_creature->RemoveAurasDueToSpell(SPELL_BERSERKER_AURA);
+                if(m_creature->HasAura(SPELL_WHIRLWIND_1, 0))
+                    m_creature->RemoveAurasDueToSpell(SPELL_WHIRLWIND_1);
+                ForceSpellCast(m_creature, SPELL_BATTLE_STANCE, INTERRUPT_AND_CAST_INSTANTLY);
+                ForceSpellCast(m_creature, SPELL_BATTLE_AURA, INTERRUPT_AND_CAST_INSTANTLY);
+                Stance = BATTLE;
+                SpecialTimer = 0;
+            }
         }
     }
 
@@ -3116,7 +3227,12 @@ struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
         }
     }
 
-    void EnterCombat(Unit *) { DoZoneInCombat(); }
+    void EnterCombat(Unit *)
+    {
+        DoZoneInCombat();
+        ForceSpellCast(m_creature, SPELL_DEFENSIVE_STANCE, INTERRUPT_AND_CAST_INSTANTLY);
+        ForceSpellCast(m_creature, SPELL_DEFENSIVE_AURA, INTERRUPT_AND_CAST_INSTANTLY);
+    }
 
     void UpdateAI(const uint32 diff)
     {
@@ -3193,45 +3309,35 @@ struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
             }
             return;
         }
-        CastNextSpellIfAnyAndReady();
-        DoMeleeAttackIfReady();
-    }
-};
 
-
-/****************
-* Shadowmoon Soldier - id 23047
-*****************/
-
-#define SPELL_STRIKE        11976
-
-struct TRINITY_DLL_DECL mob_shadowmoon_soldierAI: public ScriptedAI
-{
-    mob_shadowmoon_soldierAI(Creature *c) : ScriptedAI(c) { }
-
-    void Reset()
-    {
-    }
-
-    void MovementInform(uint32 type, uint32 id)
-    {
-        if (type != POINT_MOTION_TYPE)
-            return;
-
-        switch (id)
+        if(SpecialTimer < diff)
         {
-            case 0:
-                m_creature->HandleEmoteCommand(EMOTE_ONESHOT_SALUTE);
-            break;
+            switch(Stance)
+            {
+                case DEFENSIVE:
+                    AddSpellToCast(m_creature, SPELL_SHIELD_WALL);
+                    SpecialTimer = 40000;
+                    break;
+                case BERSERKER:
+                    AddSpellToCast(m_creature, SPELL_WHIRLWIND_1);
+                    SpecialTimer = 25000;
+                    break;
+                case BATTLE:
+                    AddSpellToCast(m_creature->getVictim(), SPELL_MUTILATE);
+                    SpecialTimer = 25000;
+                    break;
+            }
         }
-    }
+        else
+            SpecialTimer -= diff;
 
-    void EnterCombat(Unit *) { DoZoneInCombat(); }
-
-    void UpdateAI(const uint32 diff)
-    {
-        if(!UpdateVictim())
-            return;
+        if(KnockAway < diff)
+        {
+            AddSpellToCast(m_creature->getVictim(), SPELL_KNOCK_AWAY);
+            KnockAway = 20000;
+        }
+        else
+            KnockAway -= diff;
 
         CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
@@ -3241,11 +3347,6 @@ struct TRINITY_DLL_DECL mob_shadowmoon_soldierAI: public ScriptedAI
 CreatureAI* GetAI_mob_shadowmoon_weapon_master(Creature *_Creature)
 {
     return new mob_shadowmoon_weapon_masterAI(_Creature);
-}
-
-CreatureAI* GetAI_mob_shadowmoon_soldier(Creature *_Creature)
-{
-    return new mob_shadowmoon_soldierAI(_Creature);
 }
 
 /* ============================
@@ -3623,6 +3724,11 @@ void AddSC_black_temple_trash()
     newscript->RegisterSelf();
 
     newscript = new Script;
+    newscript->Name = "mob_shadowmoon_deathshaper";
+    newscript->GetAI = &GetAI_mob_shadowmoon_deathshaper;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
     newscript->Name = "mob_shadowmoon_houndmaster";
     newscript->GetAI = &GetAI_mob_shadowmoon_houndmaster;
     newscript->RegisterSelf();
@@ -3638,18 +3744,13 @@ void AddSC_black_temple_trash()
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name = "mob_shadowmoon_weapon_master";
-    newscript->GetAI = &GetAI_mob_shadowmoon_weapon_master;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
     newscript->Name = "mob_shadowmoon_soldier";
     newscript->GetAI = &GetAI_mob_shadowmoon_soldier;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name = "mob_shadowmoon_deathshaper";
-    newscript->GetAI = &GetAI_mob_shadowmoon_deathshaper;
+    newscript->Name = "mob_shadowmoon_weapon_master";
+    newscript->GetAI = &GetAI_mob_shadowmoon_weapon_master;
     newscript->RegisterSelf();
 
     newscript = new Script;
