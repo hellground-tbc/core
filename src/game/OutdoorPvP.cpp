@@ -524,7 +524,7 @@ bool OutdoorPvP::Update(uint32 diff)
 void OutdoorPvPObjective::UpdateActivePlayerProximityCheck()
 {
     //tymczasowo return bo crashuje przy GetGameObject Oo
-    return;
+    //return;
 
     Map * tmpMap = GetMap();
     if (!tmpMap)
@@ -537,7 +537,7 @@ void OutdoorPvPObjective::UpdateActivePlayerProximityCheck()
             return;
         }
 
-        Map * tmpMap = GetMap(data->mapid);
+        tmpMap = GetMap(data->mapid);
         if (!tmpMap)
         {
             sLog.outError("OutdoorPvPObjective::UpdateActivePlayerProximityCheck: map not found (id %u)", data->mapid);
