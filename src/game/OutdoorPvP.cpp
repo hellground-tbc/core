@@ -31,6 +31,7 @@ OutdoorPvPObjective::OutdoorPvPObjective(OutdoorPvP * pvp)
 m_State(0), m_OldState(0), m_CapturePoint(0), m_NeutralValue(0),
 m_ShiftMaxCaptureSpeed(0), m_CapturePointCreature(0)
 {
+    m_Map = NULL;
 }
 
 bool OutdoorPvPObjective::HandlePlayerEnter(Player * plr)
@@ -251,7 +252,6 @@ bool OutdoorPvPObjective::AddCapturePoint(uint32 entry, uint32 map, float x, flo
     m_ShiftMaxPhase = goinfo->raw.data[17];
     m_ShiftMaxCaptureSpeed = m_ShiftMaxPhase / float(goinfo->raw.data[16]);
     m_NeutralValue = goinfo->raw.data[12];
-
     // add to map if map is already loaded
     Map * pMap = GetMap(map);
     if(!pMap)

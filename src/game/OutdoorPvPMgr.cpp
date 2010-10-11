@@ -59,7 +59,6 @@ void OutdoorPvPMgr::InitOutdoorPvP()
         sLog.outDebug("OutdoorPvP : HP successfully initiated.");
     }
 
-
     pOP = new OutdoorPvPNA;
     // respawn, init variables
     if(!pOP->SetupOutdoorPvP())
@@ -72,7 +71,6 @@ void OutdoorPvPMgr::InitOutdoorPvP()
         m_OutdoorPvPSet.push_back(pOP);
         sLog.outDebug("OutdoorPvP : NA successfully initiated.");
     }
-
 
     pOP = new OutdoorPvPTF;
     // respawn, init variables
