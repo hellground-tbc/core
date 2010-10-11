@@ -3777,6 +3777,8 @@ void Map::InsertIntoObjMap(Object * obj)
                     a->second = (Creature*)obj;
                 else
                     error_log("Map::InsertIntoCreatureMap: GUID %u already in map", guid.GetRawValue());
+
+                a.release();
                 break;
             }
         case HIGHGUID_GAMEOBJECT:
@@ -3787,6 +3789,8 @@ void Map::InsertIntoObjMap(Object * obj)
                     a->second = (GameObject*)obj;
                 else
                     error_log("Map::InsertIntoGameObjectMap: GUID %u already in map", guid.GetRawValue());
+
+                a.release();
                 break;
             }
         case HIGHGUID_DYNAMICOBJECT:
@@ -3797,6 +3801,8 @@ void Map::InsertIntoObjMap(Object * obj)
                     a->second = (DynamicObject*)obj;
                 else
                     error_log("Map::InsertIntoDynamicObjectMap: GUID %u already in map", guid.GetRawValue());
+
+                a.release();
                 break;
             }
         case HIGHGUID_PET:
@@ -3818,7 +3824,6 @@ void Map::InsertIntoObjMap(Object * obj)
 void Map::RemoveFromObjMap(uint64 guid)
 {
     ObjectGuid objGuid(guid);
-
 
     switch(objGuid.GetHigh())
     {

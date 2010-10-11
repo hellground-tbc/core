@@ -523,6 +523,9 @@ bool OutdoorPvP::Update(uint32 diff)
 
 void OutdoorPvPObjective::UpdateActivePlayerProximityCheck()
 {
+    //tymczasowo return bo crashuje przy GetGameObject Oo
+    return;
+
     Map * tmpMap = GetMap();
     if (!tmpMap)
     {

@@ -204,9 +204,9 @@ void ObjectAccessor::RemoveCorpse(Corpse *corpse)
     // build mapid*cellid -> guid_set map
     CellPair cell_pair = Trinity::ComputeCellPair(corpse->GetPositionX(), corpse->GetPositionY());
     uint32 cell_id = (cell_pair.y_coord*TOTAL_NUMBER_OF_CELLS_PER_MAP) + cell_pair.x_coord;
+    corpse->RemoveFromWorld();
 
     objmgr.DeleteCorpseCellData(corpse->GetMapId(),cell_id,corpse->GetOwnerGUID());
-    corpse->RemoveFromWorld();
 
     Guard guard(i_corpseGuard);
     i_player2corpse.erase(corpse->GetOwnerGUID());
