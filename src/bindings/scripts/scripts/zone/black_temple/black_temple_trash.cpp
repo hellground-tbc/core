@@ -58,7 +58,7 @@ struct TRINITY_DLL_DECL mob_aqueous_lordAI : public ScriptedAI
         SummonTimer = urand(5000,10000);
         CrashingWave = 15000;
     }
-    void EnterCombat(Unit*) { DoZoneInCombat(); }
+    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -127,7 +127,7 @@ struct TRINITY_DLL_DECL mob_aqueous_spawnAI : public ScriptedAI
         merging = false;
 
     }
-    void EnterCombat(Unit*) { DoZoneInCombat(); }
+    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim() && !merging)
@@ -184,7 +184,7 @@ struct TRINITY_DLL_DECL mob_coilskar_generalAI : public ScriptedAI
         BoomingVoice = 40000;
     }
 
-    void EnterCombat(Unit*) { DoZoneInCombat(); }
+    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -273,7 +273,7 @@ struct TRINITY_DLL_DECL mob_coilskar_harpoonerAI : public ScriptedAI
 
     void EnterCombat(Unit* who)
     {
-        DoZoneInCombat();
+        DoZoneInCombat(80.0f);
         if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 80, true))
         {
             if(!target->HasAura(40084, 0))
@@ -352,7 +352,7 @@ struct TRINITY_DLL_DECL mob_coilskar_seacallerAI : public ScriptedAI
         Hurricane = urand(20000, 30000);
         SummonGeyser = urand(3000, 8000);
     }
-    void EnterCombat(Unit*) { DoZoneInCombat(); }
+    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -417,7 +417,7 @@ struct TRINITY_DLL_DECL mob_coilskar_geyserAI : public Scripted_NoMovementAI
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->CastSpell(m_creature, SPELL_GEYSER, false);
     }
-    void EnterCombat(Unit*) { DoZoneInCombat(); }
+    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
 };
 
 /****************
@@ -439,7 +439,7 @@ struct TRINITY_DLL_DECL mob_coilskar_soothsayerAI : public ScriptedAI
         HolyNova = urand(5000, 15000);
         Restoration = (8000, 12000);
     }
-    void EnterCombat(Unit*) { DoZoneInCombat(); }
+    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -492,7 +492,7 @@ struct TRINITY_DLL_DECL mob_coilskar_wranglerAI : public ScriptedAI
         ElectricSpur = urand(15000, 40000);
         LightningProd = urand(8000, 15000);
     }
-    void EnterCombat(Unit*) { DoZoneInCombat(); }
+    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -549,7 +549,7 @@ struct TRINITY_DLL_DECL mob_dragon_turtleAI : public ScriptedAI
         ShellShield = 3000;
         CanBeShielded = false;
     }
-    void EnterCombat(Unit*) { DoZoneInCombat(); }
+    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -622,7 +622,7 @@ struct TRINITY_DLL_DECL mob_leviathanAI : public ScriptedAI
         PoisonSpit = urand(6000, 15000);
         TailSweep = 6000;
     }
-    void EnterCombat(Unit*) { DoZoneInCombat(); }
+    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -773,7 +773,7 @@ struct TRINITY_DLL_DECL mob_bonechewer_taskmasterAI : public ScriptedAI
 
     void EnterCombat(Unit *who)
     {
-        DoZoneInCombat();
+        DoZoneInCombat(80.0f);
         if (urand(0, 100) < 25)
         {
             m_creature->CastSpell(m_creature, SPELL_BONECHEWER_DISGRUNTLED, false);
@@ -825,7 +825,7 @@ struct TRINITY_DLL_DECL mob_bonechewer_workerAI : public ScriptedAI
 
     void EnterCombat(Unit *who)
     {
-        DoZoneInCombat();
+        DoZoneInCombat(80.0f);
         if (who)
         {
             if (urand(0, 100) < 20)
@@ -892,7 +892,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_skystalkerAI : public ScriptedAI
 
     void EnterCombat(Unit *who)
     {
-        DoZoneInCombat();
+        DoZoneInCombat(80.0f);
         m_creature->StopMoving();
         m_creature->GetMotionMaster()->Clear();
         m_creature->GetMotionMaster()->MoveChase(who, 15);
@@ -1006,7 +1006,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
 
     void EnterCombat(Unit *who)
     {
-        DoZoneInCombat();
+        DoZoneInCombat(80.0f);
         m_creature->StopMoving();
         m_creature->GetMotionMaster()->Clear();
         m_creature->GetMotionMaster()->MoveChase(who, 15);
@@ -1149,7 +1149,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_wyrmcallerAI : public ScriptedAI
         jabTimer = 5000 + urand(0, 5000);
     }
 
-    void EnterCombat(Unit *who) { DoZoneInCombat(); }
+    void EnterCombat(Unit *who) { DoZoneInCombat(80.0f); }
 
     void JustDied(Unit *victim) {}
 
@@ -1230,7 +1230,7 @@ struct TRINITY_DLL_DECL mob_illidari_fearbringerAI : public ScriptedAI
         m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
     }
 
-    void EnterCombat(Unit *who) { DoZoneInCombat(); }
+    void EnterCombat(Unit *who) { DoZoneInCombat(80.0f); }
 
     void JustDied(Unit *victim){}
 
@@ -1372,7 +1372,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_battlelordAI : public ScriptedAI
         ConcussionThrow = urand(10500, 25000);
         Frenzy = 5000;
     }
-    void EnterCombat(Unit*) { DoZoneInCombat(); }
+    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -1445,7 +1445,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_feral_spiritAI : public ScriptedAI
         ChargeRage = urand(10000, 30000);
         SpiritBond = urand(15000, 25000);
     }
-    void EnterCombat(Unit*) { DoZoneInCombat(); }
+    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
 
     void MoveInLineOfSight(Unit *who)
     {
@@ -1514,7 +1514,7 @@ struct TRINITY_DLL_DECL totem_ashtongue_mysticAI : public Scripted_NoMovementAI
 
     void Reset()
     {
-        DoZoneInCombat();
+        DoZoneInCombat(80.0f);
         switch(m_creature->GetEntry())
         {
             case NPC_CYCLONE_TOTEM:
@@ -1593,7 +1593,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_mysticAI : public ScriptedAI
     }
     void EnterCombat(Unit*) 
     {
-        DoZoneInCombat();
+        DoZoneInCombat(80.0f);
         DoCast(m_creature, SPELL_BLOODLUST);
     }
     void JustSummoned(Creature* totem)  //some workaround about windfury totem
@@ -1736,7 +1736,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_primalistAI : public ScriptedAI
             canShoot = true;
     }
 
-    void EnterCombat(Unit*) { DoZoneInCombat(); }
+    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -1830,7 +1830,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_stalkerAI : public ScriptedAI
         InstantPoison = urand(5000, 10000);
         MindNumbingPoison = urand(5000, 10000);
     }
-    void EnterCombat(Unit*) { DoZoneInCombat(); }
+    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -1908,7 +1908,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_stormcallerAI : public ScriptedAI
     }
     void EnterCombat(Unit*)
     {
-        DoZoneInCombat();
+        DoZoneInCombat(80.0f);
         DoCast(m_creature, SPELL_LIGHTNING_SHIELD);
     }
 
@@ -1982,7 +1982,7 @@ struct TRINITY_DLL_DECL mob_illidari_boneslicerAI : public ScriptedAI
     void EnterCombat(Unit*)
     {
         DoCast(m_creature, SPELL_CLOAK_OF_SHADOWS);
-        DoZoneInCombat();
+        DoZoneInCombat(80.0f);
     }
     void DamageMade(Unit* target, uint32 & damage, bool direct_damage)
     {
@@ -2055,7 +2055,7 @@ struct TRINITY_DLL_DECL mob_illidari_centurionAI : public ScriptedAI
         Cleave = urand(3000, 10000);
         SonicStrike = urand(5000, 15000);
     }
-    void EnterCombat(Unit*) { DoZoneInCombat(); }
+    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -2114,7 +2114,7 @@ struct TRINITY_DLL_DECL mob_illidari_defilerAI : public ScriptedAI
     }
     void EnterCombat(Unit*)
     {
-        DoZoneInCombat();
+        DoZoneInCombat(80.0f);
     }
     void UpdateAI(const uint32 diff)
     {
@@ -2192,7 +2192,7 @@ struct TRINITY_DLL_DECL mob_illidari_heartseekerAI : public ScriptedAI
     }
     void EnterCombat(Unit* who)
     {
-        DoZoneInCombat();
+        DoZoneInCombat(80.0f);
         AttackStart(who, false);
     }
     void UpdateAI(const uint32 diff)
@@ -2290,7 +2290,7 @@ struct TRINITY_DLL_DECL mob_illidari_nightlordAI : public ScriptedAI
         ShadowInferno = 7000;
         Shadowfiends = urand(15000, 20000);
     }
-    void EnterCombat(Unit*) { DoZoneInCombat(); }
+    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -2361,7 +2361,7 @@ struct TRINITY_DLL_DECL mob_storm_furyAI : public ScriptedAI
     {
         StormBlink = urand(15000, 25000);
     }
-    void EnterCombat(Unit*) { DoZoneInCombat(); }
+    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -2421,7 +2421,7 @@ struct TRINITY_DLL_DECL mob_hand_of_gorefiendAI : public ScriptedAI
     {
         Enrage = 10000;
     }
-    void EnterCombat(Unit*) { DoZoneInCombat(); }
+    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -2472,7 +2472,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_blood_mageAI: public ScriptedAI
     void EnterCombat(Unit *)
     {
         m_creature->InterruptNonMeleeSpells(false, SPELL_GREEN_BEAM);
-        DoZoneInCombat();
+        DoZoneInCombat(80.0f);
     }
 
     void SpellHitTarget(Unit* target, const SpellEntry*)    //workaround
@@ -2546,7 +2546,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_championAI: public ScriptedAI
         WhirlingBlade = 0;
     }
 
-    void EnterCombat(Unit *) { DoZoneInCombat(); }
+    void EnterCombat(Unit *) { DoZoneInCombat(80.0f); }
 
     void UpdateAI(const uint32 diff)
     {
@@ -2656,7 +2656,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_deathshaperAI: public ScriptedAI
     {
         m_creature->InterruptNonMeleeSpells(false, SPELL_GREEN_BEAM);
         DoCast(m_creature, SPELL_DEMON_ARMOR);
-        DoZoneInCombat();
+        DoZoneInCombat(80.0f);
     }
 
     // THIS MAY CRASH, pls check it...
@@ -2815,7 +2815,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_houndmasterAI: public ScriptedAI
         DoCast(m_creature, SPELL_FREEZING_TRAP);
         m_creature->GetMotionMaster()->Clear();
         m_creature->GetMotionMaster()->MovePoint(0, m_creature->GetPositionX()+urand(10, 15), m_creature->GetPositionY()+urand(3, 7), m_creature->GetPositionZ());
-        DoZoneInCombat();
+        DoZoneInCombat(80.0f);
     }
 
     void UpdateAI(const uint32 diff)
@@ -2934,7 +2934,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_reaverAI : public ScriptedAI
         SpellAbsorption = 10000;
         ShadowResonance = urand(5000, 20000);
     }
-    void EnterCombat(Unit*) { DoZoneInCombat(); }
+    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
     void SpellHit(Unit* caster, const SpellEntry*)
     {
         if(caster->GetTypeId() == TYPEID_PLAYER && m_creature->HasAura(SPELL_SPELL_ABSORPTION, 0))
@@ -3009,7 +3009,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_riding_houndAI: public ScriptedAI
             ForceSpellCast(target, SPELL_CARNIVOROUS_BITE);
         }
     }
-    void EnterCombat(Unit *) { DoZoneInCombat(); }
+    void EnterCombat(Unit *) { DoZoneInCombat(80.0f); }
 
     void UpdateAI(const uint32 diff)
     {
@@ -3073,7 +3073,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_soldierAI: public ScriptedAI
         }
     }
 
-    void EnterCombat(Unit *) { DoZoneInCombat(); }
+    void EnterCombat(Unit *) { DoZoneInCombat(80.0f); }
 
     void UpdateAI(const uint32 diff)
     {
@@ -3229,7 +3229,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
 
     void EnterCombat(Unit *)
     {
-        DoZoneInCombat();
+        DoZoneInCombat(80.0f);
         ForceSpellCast(m_creature, SPELL_DEFENSIVE_STANCE, INTERRUPT_AND_CAST_INSTANTLY);
         ForceSpellCast(m_creature, SPELL_DEFENSIVE_AURA, INTERRUPT_AND_CAST_INSTANTLY);
     }
@@ -3396,7 +3396,7 @@ struct TRINITY_DLL_DECL mob_angered_soul_fragmentAI: public ScriptedAI
 
     void EnterCombat(Unit *)
     {
-        DoZoneInCombat();
+        DoZoneInCombat(80.0f);
     }
 
     void JustDied(Unit* killer)
@@ -3444,7 +3444,7 @@ struct TRINITY_DLL_DECL mob_hungering_soul_fragmentAI: public ScriptedAI
 
     void EnterCombat(Unit *)
     {
-        DoZoneInCombat();
+        DoZoneInCombat(80.0f);
     }
 
     void JustDied(Unit* killer)
@@ -3485,7 +3485,7 @@ struct TRINITY_DLL_DECL mob_suffering_soul_fragmentAI: public ScriptedAI
 
     void EnterCombat(Unit *)
     {
-        DoZoneInCombat();
+        DoZoneInCombat(80.0f);
     }
 
     void JustDied(Unit* killer)
