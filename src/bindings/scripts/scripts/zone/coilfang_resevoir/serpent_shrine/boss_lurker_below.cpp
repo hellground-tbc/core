@@ -19,30 +19,10 @@
 #include "../../../creature/simple_ai.h"
 #include "Spell.h"
 
-#define SPELL_SPOUT         37433
-#define SPELL_KNOCKBACK     19813
-#define SPELL_GEYSER        37478
-#define SPELL_WHIRL         37363
-#define SPELL_WATERBOLT     37138
-#define SPELL_SUBMERGE      37550
-#define SPELL_EMERGE        20568
-
 #define EMOTE_SPOUT "takes a deep breath."
-
-#define SPOUT_DIST 100
 
 #define MOB_COILFANG_GUARDIAN 21873
 #define MOB_COILFANG_AMBUSHER 21865
-
-//Ambusher spells
-#define SPELL_SPREAD_SHOT   37790
-#define SPELL_SHOOT         37770
-
-//Guardian spells
-#define SPELL_ARCINGSMASH   38761 // Wrong SpellId. Can't find the right one.
-#define SPELL_HAMSTRING     26211
-
-#define TRIGGER             26515
 
 float AddPos[9][3] =
 {
@@ -57,65 +37,33 @@ float AddPos[9][3] =
     {42.471519, -445.115295, -19.769423}    //MOVE_GUARDIAN_3 X, Y, Z
 };
 
-#define ROTATE_STEP M_PI*2/40
-struct Rotator
+enum lurkerSpells
 {
-    Rotator(Unit *pOwner): m_owner(pOwner), m_timer(500), m_count(0), m_rotating(false), m_inlineGUID(0)
-    {
-    }
-
-    void start()
-    {
-        m_rotateLeft = bool(urand(0, 1));
-        m_rotating = true;
-    }
-
-    void end()
-    {
-        m_rotating = false;
-        m_inlineGUID = 0;
-    }
-
-    void castspout()
-    {
-        Map *pMap = m_owner->GetMap();
-    }
-
-    bool update(const uint32 diff)
-    {
-        if(!m_rotating)
-            return false;
-
-        if(m_timer > diff)
-        {
-            m_timer = 500;
-        }
-        else
-            m_timer -= diff;
-
-        return true;
-    }
-      
-    bool m_rotateLeft;
-    bool m_rotating;
-
-    uint32 m_timer;
-    uint32 m_count;
-
-    uint64 m_inlineGUID;
-
-    Unit *m_owner;
+    SPELL_SPOUT      = 37433,
+    SPELL_GEYSER     = 37478,
+    SPELL_WHIRL      = 37363,
+    SPELL_WATERBOLT  = 37138,
+    SPELL_SUBMERGE   = 37550,
+    SPELL_EMERGE     = 20568
 };
+
+#define SPOUT_WIDTH 1.5f
 
 struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
 {
-    boss_the_lurker_belowAI(Creature *c) : Scripted_NoMovementAI(c), Summons(m_creature)
+    boss_the_lurker_belowAI(Creature *c) : Scripted_NoMovementAI(c), m_summons(m_creature)
     {
         pInstance = (ScriptedInstance*)c->GetInstanceData();
     }
 
     ScriptedInstance* pInstance;
-    SummonList Summons;
+    SummonList m_summons;
+
+    bool m_rotating;
+    bool m_submerged;
+
+    uint32 m_rotateTimer;
+    uint32 m_phaseTimer;
 
     void Reset()
     {
@@ -124,16 +72,37 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
             pInstance->SetData(DATA_THELURKERBELOWEVENT, NOT_STARTED);
             pInstance->SetData(DATA_STRANGE_POOL, NOT_STARTED);
         }
-
+        
+        // Apply imunities: move to DB !
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
         m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
+
+        // Set reactstate to: Aggresive
+        me->SetReactState(REACT_AGGRESSIVE);
+
+        // Timers
+        m_rotateTimer = 10000;
+        m_phaseTimer = 60000;
+
+        // Bools
+        m_rotating = false;
+        m_submerged = false;
     }
+
     void EnterCombat(Unit *who)
     {
         if (pInstance)
             pInstance->SetData(DATA_THELURKERBELOWEVENT, IN_PROGRESS);
 
-        Scripted_NoMovementAI::AttackStart(who);
+        AttackStart(who);
+    }
+    
+    void AttackStart(Unit *pWho)
+    {
+        if(me->HasReactState(REACT_PASSIVE))
+            return;
+
+        Scripted_NoMovementAI::AttackStart(pWho);
     }
 
     void JustDied(Unit* Killer)
@@ -141,15 +110,86 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
         if (pInstance)
             pInstance->SetData(DATA_THELURKERBELOWEVENT, DONE);
 
-        Summons.DespawnAll();
+        m_summons.DespawnAll();
+    }
+    
+    void MovementInform(uint32 type, uint32 data)
+    {
+        if (type == ROTATE_MOTION_TYPE)
+        {
+            if (data == 1) //Rotate movegen update
+            {
+                me->SetSelection(0);
+
+                WorldLocation wLoc;
+                me->GetClosePoint(wLoc.x, wLoc.y, wLoc.z, 0, 5.0f, 0);
+               
+                // Just visual to realize current orientation ;]
+                if (Unit *vBunny = me->SummonCreature(721, wLoc.x, wLoc.y, wLoc.z, 0, TEMPSUMMON_TIMED_DESPAWN, 500))
+                    vBunny->CastSpell(vBunny, 39989, false);
+       
+                Map *pMap = me->GetMap();
+                Map::PlayerList const& players = pMap->GetPlayers();
+                for(Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
+                {
+                    if (!me->IsWithinDistInMap(i->getSource(), 100.0f))
+                        continue;
+
+                    if (IsInLineAboveWater(i->getSource()))
+                        ForceSpellCast(i->getSource(), SPELL_SPOUT, INTERRUPT_AND_CAST_INSTANTLY);
+                }
+            }
+            else // data == 0 finalize
+            {
+                me->SetReactState(REACT_AGGRESSIVE);
+                m_rotating = false;
+            }
+        }
+    }
+
+    bool IsInLineAboveWater(Player *pWho)
+    {
+        if (pWho->IsInWater() || !me->HasInArc(M_PI, pWho))
+            return false;
+
+        float wLevel = pWho->GetMap()->GetWaterLevel(pWho->GetPositionX(), pWho->GetPositionY());
+        if(pWho->GetPositionZ() < wLevel)
+            return false;
+
+        return (abs(sin(me->GetAngle(pWho) - me->GetOrientation())) * me->GetExactDistance2d(pWho->GetPositionX(), pWho->GetPositionY()) < SPOUT_WIDTH);
     }
 
     void MoveInLineOfSight(Unit *who)
+    {
+        if (me->HasReactState(REACT_PASSIVE))
+            return;
+    }
+
+    void DoMeleeAttackIfReady()
     {
     }
 
     void UpdateAI(const uint32 diff)
     {
+        if (m_rotating)
+            return;
+
+        if (m_rotateTimer < diff)
+        {
+            me->SetReactState(REACT_PASSIVE);
+            me->GetMotionMaster()->MoveRotate(20000, RAND(ROTATE_DIRECTION_LEFT, ROTATE_DIRECTION_RIGHT));
+
+            m_rotating = true;
+            m_rotateTimer = 10000;
+        }
+        else
+            m_rotateTimer -= diff;
+
+        if(!UpdateVictim())
+            return;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
     }
  };
 
@@ -157,9 +197,6 @@ struct TRINITY_DLL_DECL mob_coilfang_ambusherAI : public Scripted_NoMovementAI
 {
     mob_coilfang_ambusherAI(Creature *c) : Scripted_NoMovementAI(c)
     {
-        SpellEntry *TempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_SHOOT);
-        if(TempSpell)
-            TempSpell->Effect[0] = 2;
     }
 
     uint32 MultiShotTimer;

@@ -6554,7 +6554,8 @@ bool ChatHandler::HandleCastBackCommand(const char* args)
     bool triggered = (trig_str != NULL);
 
     // update orientation at server
-    caster->SetOrientation(caster->GetAngle(m_session->GetPlayer()));
+    if(!caster->hasUnitState(UNIT_STAT_CANNOT_TURN))
+        caster->SetOrientation(caster->GetAngle(m_session->GetPlayer()));
 
     //sky mod update
     //WorldPacket data;
@@ -6647,7 +6648,8 @@ bool ChatHandler::HandleCastTargetCommand(const char* args)
     bool triggered = (trig_str != NULL);
 
     // update orientation at server
-    caster->SetOrientation(caster->GetAngle(m_session->GetPlayer()));
+    if(!caster->hasUnitState(UNIT_STAT_CANNOT_TURN))
+        caster->SetOrientation(caster->GetAngle(m_session->GetPlayer()));
 
     // and client
     WorldPacket data;
