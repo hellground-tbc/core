@@ -276,13 +276,14 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
             }
         case DATA_WATER : Water = data; break;
         case DATA_CONTROL_CONSOLE:
-            if(data = DONE)
+            if(data == DONE)
             {
                 OpenDoor(BridgePart[0], true);
                 OpenDoor(BridgePart[1], true);
                 OpenDoor(BridgePart[2], true);
             }
             ControlConsole = data;
+            break;
         case DATA_HYDROSSTHEUNSTABLEEVENT:
             if(Encounters[0] != DONE)
                 Encounters[0] = data;
