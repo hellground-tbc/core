@@ -472,7 +472,7 @@ struct TRINITY_DLL_DECL mob_coilskar_soothsayerAI : public ScriptedAI
 * Coilscar Wrangler - id 22877
 *****************/
 
-#define SPELL_CLEAVE                   15284
+#define SPELL_CLEAVE_1                 15284
 #define SPELL_ELECTRIC_SPUR            40076
 #define SPELL_LIGHTNING_PROD           40066
 
@@ -500,7 +500,7 @@ struct TRINITY_DLL_DECL mob_coilskar_wranglerAI : public ScriptedAI
 
         if(Cleave < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_CLEAVE);
+            AddSpellToCast(m_creature->getVictim(), SPELL_CLEAVE_1);
             Cleave = urand(10000, 15000);
         }
         else
@@ -1351,7 +1351,6 @@ CreatureAI* GetAI_mob_illidari_fearbringer(Creature *_Creature)
 * Ashtongue Battlelord - id 22844
 *****************/
 
-#define SPELL_CLEAVE            15284
 #define SPELL_CONCUSSION_BLOW   32588
 #define SPELL_CONCUSSION_THROW  41182
 #define SPELL_FRENZY            34970
@@ -1380,7 +1379,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_battlelordAI : public ScriptedAI
 
         if(Cleave < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_CLEAVE);
+            AddSpellToCast(m_creature->getVictim(), SPELL_CLEAVE_1);
             Cleave = 10000;
         }
         else
@@ -2040,7 +2039,6 @@ CreatureAI* GetAI_mob_illidari_boneslicer(Creature *_Creature)
 * Illidari Centurion - id 23337
 *****************/
 
-#define SPELL_CLEAVE                15284
 #define SPELL_SONIC_STRIKE          41168
 
 struct TRINITY_DLL_DECL mob_illidari_centurionAI : public ScriptedAI
@@ -2063,7 +2061,7 @@ struct TRINITY_DLL_DECL mob_illidari_centurionAI : public ScriptedAI
 
         if(Cleave < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_CLEAVE);
+            AddSpellToCast(m_creature->getVictim(), SPELL_CLEAVE_1);
             Cleave = 10000;
         }
         else
@@ -3357,6 +3355,59 @@ CreatureAI* GetAI_mob_shadowmoon_weapon_master(Creature *_Creature)
     return new mob_shadowmoon_weapon_masterAI(_Creature);
 }
 
+/****************
+* Wrathbone Flayer - id 22953
+*****************/
+
+#define SPELL_CLEAVE_2                      15496
+#define SPELL_IGNORED                       39544
+
+struct TRINITY_DLL_DECL mob_wrathbone_flayerAI: public ScriptedAI
+{
+    mob_wrathbone_flayerAI(Creature *c) : ScriptedAI(c) { }
+
+    uint32 Cleave;
+    uint32 Ignored;
+
+    void Reset()
+    {
+        Cleave = 1500;
+        Ignored = urand(3000, 10000);
+    }
+
+    void EnterCombat(Unit *) { DoZoneInCombat(80.0f); }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(Cleave < diff)
+        {
+            AddSpellToCast(m_creature->getVictim(), SPELL_CLEAVE_2);
+            Cleave = 3000;
+        }
+        else
+            Cleave -= diff;
+
+        if(Ignored < diff)
+        {
+            AddSpellToCast(m_creature->getVictim(), SPELL_IGNORED);
+            Ignored = 10000;
+        }
+        else
+            Ignored -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_wrathbone_flayer(Creature *_Creature)
+{
+    return new mob_wrathbone_flayerAI(_Creature);
+}
+
 /* ============================
 *
 *      GURTOGG  BLOODBOIL
@@ -3760,7 +3811,13 @@ void AddSC_black_temple_trash()
     newscript->Name = "mob_shadowmoon_weapon_master";
     newscript->GetAI = &GetAI_mob_shadowmoon_weapon_master;
     newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "mob_wrathbone_flayer";
+    newscript->GetAI = &GetAI_mob_wrathbone_flayer;
+    newscript->RegisterSelf();
 
+    // Reliquary of Souls
     newscript = new Script;
     newscript->Name = "mob_angered_soul_fragment";
     newscript->GetAI = &GetAI_mob_angered_soul_fragment;
