@@ -138,7 +138,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
             GetPlayer()->UpdateSpeakTime();
     }
 
-    if (type == CHAT_MSG_WHISPER || type == CHAT_MSG_YELL || CHAT_MSG_CHANNEL)
+    if (type == CHAT_MSG_WHISPER || type == CHAT_MSG_YELL || type == CHAT_MSG_CHANNEL)
     {
         if (GetPlayer()->getLevel() < 5)
         {
