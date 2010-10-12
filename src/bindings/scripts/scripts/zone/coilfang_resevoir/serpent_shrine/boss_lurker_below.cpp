@@ -21,20 +21,23 @@
 
 #define EMOTE_SPOUT "takes a deep breath."
 
-#define MOB_COILFANG_GUARDIAN 21873
-#define MOB_COILFANG_AMBUSHER 21865
-
-float AddPos[9][3] =
+enum lurkerAdds
 {
-    {2.8553810, -459.823914, -19.182686},   //MOVE_AMBUSHER_1 X, Y, Z
-    {12.400000, -466.042267, -19.182686},   //MOVE_AMBUSHER_2 X, Y, Z
-    {51.366653, -460.836060, -19.182686},   //MOVE_AMBUSHER_3 X, Y, Z
-    {62.597980, -457.433044, -19.182686},   //MOVE_AMBUSHER_4 X, Y, Z
-    {77.607452, -384.302765, -19.182686},   //MOVE_AMBUSHER_5 X, Y, Z
-    {63.897900, -378.984924, -19.182686},   //MOVE_AMBUSHER_6 X, Y, Z
-    {34.447250, -387.333618, -19.182686},   //MOVE_GUARDIAN_1 X, Y, Z
-    {14.388216, -423.468018, -19.625271},   //MOVE_GUARDIAN_2 X, Y, Z
-    {42.471519, -445.115295, -19.769423}    //MOVE_GUARDIAN_3 X, Y, Z
+    MOB_COILFANG_GUARDIAN = 21873,
+    MOB_COILFANG_AMBUSHER = 21865
+};
+
+float addPos[9][4] =
+{
+    { MOB_COILFANG_AMBUSHER, 2.8553810, -459.823914, -19.182686},   //MOVE_AMBUSHER_1 X, Y, Z
+    { MOB_COILFANG_AMBUSHER, 12.400000, -466.042267, -19.182686},   //MOVE_AMBUSHER_2 X, Y, Z
+    { MOB_COILFANG_AMBUSHER, 51.366653, -460.836060, -19.182686},   //MOVE_AMBUSHER_3 X, Y, Z
+    { MOB_COILFANG_AMBUSHER, 62.597980, -457.433044, -19.182686},   //MOVE_AMBUSHER_4 X, Y, Z
+    { MOB_COILFANG_AMBUSHER, 77.607452, -384.302765, -19.182686},   //MOVE_AMBUSHER_5 X, Y, Z
+    { MOB_COILFANG_AMBUSHER, 63.897900, -378.984924, -19.182686},   //MOVE_AMBUSHER_6 X, Y, Z
+    { MOB_COILFANG_GUARDIAN, 34.447250, -387.333618, -19.182686},   //MOVE_GUARDIAN_1 X, Y, Z
+    { MOB_COILFANG_GUARDIAN, 14.388216, -423.468018, -19.625271},   //MOVE_GUARDIAN_2 X, Y, Z
+    { MOB_COILFANG_GUARDIAN, 42.471519, -445.115295, -19.769423}    //MOVE_GUARDIAN_3 X, Y, Z
 };
 
 enum lurkerSpells
@@ -47,7 +50,7 @@ enum lurkerSpells
     SPELL_EMERGE     = 20568
 };
 
-#define SPOUT_WIDTH 1.5f
+#define SPOUT_WIDTH 1.0f
 
 struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
 {
@@ -64,6 +67,9 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
 
     uint32 m_rotateTimer;
     uint32 m_phaseTimer;
+    uint32 m_whirlTimer;
+
+    std::map<uint64, uint8> m_immunemap;
 
     void Reset()
     {
@@ -81,8 +87,9 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
         me->SetReactState(REACT_AGGRESSIVE);
 
         // Timers
-        m_rotateTimer = 10000;
-        m_phaseTimer = 60000;
+        m_rotateTimer = 40000;
+        m_phaseTimer = 90000;
+        m_whirlTimer = 16000;
 
         // Bools
         m_rotating = false;
@@ -132,11 +139,27 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
                 Map::PlayerList const& players = pMap->GetPlayers();
                 for(Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
                 {
-                    if (!me->IsWithinDistInMap(i->getSource(), 100.0f))
+                    Player *pPlayer = i->getSource();
+                    if (uint8 count = m_immunemap[pPlayer->GetGUID()])
+                    {
+                        if (count >= 5) // Prevent to take n spout casts at same player :]
+                            m_immunemap[pPlayer->GetGUID()] = 0;
+                        else
+                        {
+                            m_immunemap[pPlayer->GetGUID()]++;
+                            continue;
+                        }
+                    }
+
+                    if (!me->IsWithinDistInMap(pPlayer, 100.0f))
                         continue;
 
-                    if (IsInLineAboveWater(i->getSource()))
-                        ForceSpellCast(i->getSource(), SPELL_SPOUT, INTERRUPT_AND_CAST_INSTANTLY);
+                    if (IsInLineAboveWater(pPlayer))
+                    {
+                        ForceSpellCast(pPlayer, SPELL_SPOUT, INTERRUPT_AND_CAST_INSTANTLY);
+                        m_immunemap[pPlayer->GetGUID()] = 1;
+                    }
+
                 }
             }
             else // data == 0 finalize
@@ -177,6 +200,8 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
         if (m_rotateTimer < diff)
         {
             me->SetReactState(REACT_PASSIVE);
+            
+            m_immunemap.clear();
             me->GetMotionMaster()->MoveRotate(20000, RAND(ROTATE_DIRECTION_LEFT, ROTATE_DIRECTION_RIGHT));
 
             m_rotating = true;
