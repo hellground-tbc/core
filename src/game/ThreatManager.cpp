@@ -282,7 +282,7 @@ bool DropAggro(Creature* pAttacker, Unit * target)
         return true;
 
     //target has Spirit of Redemption aura (shapeshift effect)
-    if (target->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION))
+    if (target->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION) || target->HasAuraType(SPELL_AURA_IGNORED))
         return true;
 
     // target is stunned from Lady Vashj Shockblast, Concussive Blow and Throw, Gouge, Freezing Trap
