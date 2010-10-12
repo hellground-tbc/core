@@ -2659,7 +2659,6 @@ struct TRINITY_DLL_DECL mob_shadowmoon_deathshaperAI: public ScriptedAI
         DoZoneInCombat(80.0f);
     }
 
-    // THIS MAY CRASH, pls check it...
     uint64 SelectCorpseGUID()
     {
         std::list<Unit*> DeadList = DoFindAllDeadInRange(50);
@@ -2671,7 +2670,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_deathshaperAI: public ScriptedAI
         {
             for(std::list<Unit*>::iterator i = DeadList.begin(); i != DeadList.end(); ++i)
             {
-                CorpseGUID.push_back((*i)->GetGUID());  // this may be moved to searcher, but if no crashes
+                CorpseGUID.push_back((*i)->GetGUID());  // this may be moved to searcher later on
             }
         }
         // remove GUIDs of once used corpses
@@ -2684,21 +2683,33 @@ struct TRINITY_DLL_DECL mob_shadowmoon_deathshaperAI: public ScriptedAI
                     for(std::list<uint64>::iterator iter = UsedCorpsesGUID.begin(); iter != UsedCorpsesGUID.end(); ++iter)
                     {
                         if((*iter) == (*i))
+                        {
                             CorpseGUID.remove((*iter));
+                            if(CorpseGUID.size())
+                            {
+                                i = CorpseGUID.begin();
+                                iter = UsedCorpsesGUID.begin();
+                            }
+                            else
+                                break;
+                        }
                     }
                 }
+                break;
             }
         }
-        // get victim GUID now (can be random later if no crashes)
+        // now get random GUID
         if(!CorpseGUID.empty())
-            return (*CorpseGUID.begin());
-
+        {
+            std::list<uint64>::iterator i = CorpseGUID.begin();
+            advance(i, rand()%CorpseGUID.size());
+            return (*i);
+        }
         return NULL;
     }
 
     void UpdateAI(const uint32 diff)
     {
-        
         if(!UpdateVictim())
         {
             if (!m_creature->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT))
@@ -2730,16 +2741,13 @@ struct TRINITY_DLL_DECL mob_shadowmoon_deathshaperAI: public ScriptedAI
         else
             DeathCoil -= diff;
 
-        //THIS MAY CRASH!! check it pls
-        
         if(RaiseDeadCheck < diff)
         {
-            if(SelectCorpseGUID())
+            if(uint64 targetGUID = SelectCorpseGUID())
             {
-                uint64 targetGUID = SelectCorpseGUID();
                 if(Unit* target = Unit::GetUnit(*m_creature, targetGUID))
                 {
-                    AddSpellToCast(target, SPELL_RAISE_DEAD);
+                    AddSpellToCast(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), SPELL_RAISE_DEAD, false);
                     UsedCorpsesGUID.push_back(targetGUID);
                 }
             }
