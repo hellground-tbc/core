@@ -2219,9 +2219,36 @@ void Aura::TriggerSpellWithValue()
 
     // generic casting code with custom spells and target/caster customs
     uint32 trigger_spell_id = GetSpellProto()->EffectTriggerSpell[m_effIndex];
-    int32  basepoints0 = GetModifier()->m_amount;
+    int32  basepoints = GetModifier()->m_amount;
 
-    caster->CastCustomSpell(caster, trigger_spell_id, &basepoints0, NULL, NULL, true, NULL, this, caster->GetGUID());
+    // Spell Absorption triggered damage multiplies by Chaotic Charge stack count
+    if(GetId() == 41034)
+    {
+        if(caster->HasAura(41033, 0))
+        {
+             int32 multiplier = caster->GetAura(41033, 0)->GetStackAmount();
+             basepoints *= multiplier;
+        }
+        else
+            basepoints = 0;
+    }
+
+    SpellEntry const *triggeredSpellInfo = sSpellStore.LookupEntry(trigger_spell_id);
+    int32 bp[3];
+    // damage triggered from spell might not only be processed by first effect (but always EffectDieSides equal 1)
+    if(triggeredSpellInfo)
+    {
+        uint8 j = 0;
+        for(uint8 i=0;i<3;++i)
+        {
+            bp[i] = 0;
+            if(triggeredSpellInfo->EffectDieSides[i] == 1)
+                j = i;
+        }
+        bp[j] = basepoints;
+    }
+
+    caster->CastCustomSpell(caster, trigger_spell_id, &bp[0], &bp[1], &bp[2], true, NULL, this, caster->GetGUID());
 }
 
 /*********************************************************/
