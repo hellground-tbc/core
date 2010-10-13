@@ -2844,7 +2844,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_houndmasterAI: public ScriptedAI
             Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 40.0f, true);
             if(target && m_creature->GetDistance(target) > 10.0f)
             {
-                ForceSpellCast(target, SPELL_VOLLEY);
+                AddSpellToCast(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), SPELL_VOLLEY);
                 Volley = 25000;
             }
             else
@@ -3137,6 +3137,9 @@ static float fieldPositions [8][2] =
 #define SPELL_SHIELD_WALL               41104
 #define SPELL_WHIRLWIND_1               41097
 
+#define AXE_MODEL                       45073
+#define AXE_INFO                        33488898
+
 #define BATTLE_STANCE_YELL  "Berserker stance! Attack them recklessly!"
 
 enum Stances
@@ -3168,6 +3171,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
 
     void Reset()
     {
+        m_creature->LoadEquipment(484, true);
         Stance = DEFENSIVE;
         KnockAway = urand(3000, 20000);
         SpecialTimer = 0;
@@ -3179,6 +3183,47 @@ struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
         }
     }
 
+    void SetWeaponModelAndDamage(uint8 Stance)
+    {
+        const CreatureInfo *cinfo = m_creature->GetCreatureInfo();
+        switch(Stance)
+        {
+            case DEFENSIVE:
+                //main hand: 1h axe, off-hand: shield
+                m_creature->LoadEquipment(439, true);
+                m_creature->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, cinfo->mindmg);
+                m_creature->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, cinfo->maxdmg);
+                m_creature->UpdateDamagePhysical(BASE_ATTACK);
+                break;
+            case BERSERKER:
+                // 2h sword
+                m_creature->LoadEquipment(484, true);
+                m_creature->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, cinfo->mindmg);
+                m_creature->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, cinfo->maxdmg);
+                m_creature->UpdateDamagePhysical(BASE_ATTACK);
+                break;
+            case BATTLE:
+                //main hand: 1h axe
+                m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY, AXE_MODEL);
+                m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO, AXE_INFO);
+                // off-hand: 1h axe
+                m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY+1, AXE_MODEL);
+                m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO+2, AXE_INFO);
+
+                m_creature->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, cinfo->mindmg);
+                m_creature->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, cinfo->maxdmg);
+                m_creature->UpdateDamagePhysical(BASE_ATTACK);
+                m_creature->SetBaseWeaponDamage(OFF_ATTACK, MINDAMAGE, cinfo->mindmg);
+                m_creature->SetBaseWeaponDamage(OFF_ATTACK, MAXDAMAGE, cinfo->maxdmg);
+                m_creature->SetFloatValue(UNIT_FIELD_MINOFFHANDDAMAGE, cinfo->mindmg);
+                m_creature->SetFloatValue(UNIT_FIELD_MAXOFFHANDDAMAGE, cinfo->maxdmg);
+                m_creature->SetAttackTime(OFF_ATTACK, (m_creature->GetAttackTime(BASE_ATTACK)*150)/100);
+                break;
+            default:
+                return;
+        }
+    }
+
     void DamageTaken(Unit* who, uint32& damage)
     {
         if(damage)
@@ -3187,16 +3232,17 @@ struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
             {
                 m_creature->RemoveAurasDueToSpell(SPELL_DEFENSIVE_STANCE);
                 m_creature->RemoveAurasDueToSpell(SPELL_DEFENSIVE_AURA);
+                DoYell(BATTLE_STANCE_YELL, 0, m_creature);
                 if(m_creature->HasAura(SPELL_SHIELD_WALL, 0))
                     m_creature->RemoveAurasDueToSpell(SPELL_SHIELD_WALL);
                 ForceSpellCast(m_creature, SPELL_BERSERKER_STANCE, INTERRUPT_AND_CAST_INSTANTLY);
                 ForceSpellCast(m_creature, SPELL_BERSERKER_AURA, INTERRUPT_AND_CAST_INSTANTLY);
                 Stance = BERSERKER;
+                SetWeaponModelAndDamage(Stance);
                 SpecialTimer = 0;
             }
             if(m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 35 && Stance == BERSERKER)
             {
-                DoYell(BATTLE_STANCE_YELL, 0, m_creature);
                 m_creature->RemoveAurasDueToSpell(SPELL_BERSERKER_STANCE);
                 m_creature->RemoveAurasDueToSpell(SPELL_BERSERKER_AURA);
                 if(m_creature->HasAura(SPELL_WHIRLWIND_1, 0))
@@ -3204,6 +3250,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
                 ForceSpellCast(m_creature, SPELL_BATTLE_STANCE, INTERRUPT_AND_CAST_INSTANTLY);
                 ForceSpellCast(m_creature, SPELL_BATTLE_AURA, INTERRUPT_AND_CAST_INSTANTLY);
                 Stance = BATTLE;
+                SetWeaponModelAndDamage(Stance);
                 SpecialTimer = 0;
             }
         }
@@ -3238,6 +3285,8 @@ struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
         DoZoneInCombat(80.0f);
         ForceSpellCast(m_creature, SPELL_DEFENSIVE_STANCE, INTERRUPT_AND_CAST_INSTANTLY);
         ForceSpellCast(m_creature, SPELL_DEFENSIVE_AURA, INTERRUPT_AND_CAST_INSTANTLY);
+        m_creature->SetArmor(m_creature->GetArmor()*2.5);   // arbitrary
+        SetWeaponModelAndDamage(Stance);
     }
 
     void UpdateAI(const uint32 diff)
