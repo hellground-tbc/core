@@ -2905,11 +2905,14 @@ void Spell::EffectHealthLeech(uint32 i)
     if(Player *modOwner = m_caster->GetSpellModOwner())
         modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_MULTIPLE_VALUE, multiplier);
 
-    int32 new_damage = int32(damage*multiplier);
+    int32 new_damage = 0;
     uint32 curHealth = unitTarget->GetHealth();
-    new_damage = m_caster->SpellNonMeleeDamageLog(unitTarget, m_spellInfo->Id, new_damage, m_IsTriggeredSpell, true);
+    new_damage = m_caster->SpellNonMeleeDamageLog(unitTarget, m_spellInfo->Id, damage, m_IsTriggeredSpell, true);
     if(curHealth < new_damage)
         new_damage = curHealth;
+
+    // multipier only affects gains of HP!
+    new_damage = int32(damage*multiplier);
 
     if(m_caster->isAlive())
     {
