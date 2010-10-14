@@ -590,12 +590,14 @@ struct TRINITY_DLL_DECL mob_ashtongue_sorcererAI : public ScriptedAI
 
 enum phases
 {
-    START_EVENT  = 0, // start event
-    MOVE_PHASE_1 = 2, // go to the stairs
-    MOVE_PHASE_2 = 3, // step down from stairs
-    ATTACK_PHASE = 4, // go to akama
-    AKAMA_FIGHT  = 5  // start fight with akama
+    START_EVENT  = 0,  // start event
+    MOVE_PHASE_1 = 2,  // go to the stairs
+    MOVE_PHASE_2 = 3,  // step down from stairs
+    ATTACK_PHASE = 4,  // go to akama
+    AKAMA_FIGHT  = 5,  // start fight with akama
+    AKAMA_DEATH  = 10  // Akama dies after 60s of fight with shade
 };
+
 struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
 {
     boss_shade_of_akamaAI(Creature* c) : ScriptedAI(c), m_summons(c)
@@ -676,7 +678,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
         m_guardTimer = 9000;
         m_sorcTimer = 9000;
 
-        m_updateSpeed = true;
+        m_updateSpeed = false;
 
         if (pInstance)
             pInstance->SetData(DATA_SHADEOFAKAMAEVENT, NOT_STARTED);
@@ -1003,7 +1005,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
                             if (akama && akama->isAlive())
                             {
                                 int damage = akama->GetMaxHealth()/12;
-                                if (event_phase == 11) // after 60s deal damage equal to hp
+                                if (event_phase == AKAMA_DEATH) // after 60s deal damage equal to hp
                                     damage = akama->GetHealth();
                                 
                                 m_creature->DealDamage(akama, damage, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
