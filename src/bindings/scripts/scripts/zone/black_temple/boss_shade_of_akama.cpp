@@ -214,10 +214,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
         if (pInstance)
         {
             if(Creature *pAkama = pInstance->GetCreature(pInstance->GetData64(DATA_AKAMA_SHADE)))
-            {   
-                m_creature->AddThreat(pAkama, 100000.0f);
                 AttackStart(pAkama);
-            }
         }
     }
 
@@ -314,6 +311,24 @@ struct TRINITY_DLL_DECL mob_ashtongue_spiritbinderAI : public ScriptedAI
         m_spiritHealTimer = urand(7000, 10000);
         m_spiritMendTimer = urand(14000, 20000);
         m_checkTimer = 5000;
+    }
+
+    void MoveInLineOfSight(Unit *pWho)
+    {
+        if (me->getVictim())
+            return;
+
+        if (pWho->GetTypeId() == TYPEID_PLAYER)
+            AttackStart(pWho);
+    }
+
+    void MovementInform(uint32 type, uint32 id)
+    {
+        if (type != POINT_MOTION_TYPE)
+            return;
+
+        if (Creature *pAkama = m_creature->GetCreature(*m_creature, pInstance->GetData64(DATA_AKAMA_SHADE)))
+            AttackStart(pAkama);
     }
 
     Unit *FindSpiritHealTarget()
@@ -431,6 +446,24 @@ struct TRINITY_DLL_DECL mob_ashtongue_elementalistAI : public ScriptedAI
         m_checkTimer = 5000;
     }
 
+    void MoveInLineOfSight(Unit *pWho)
+    {
+        if (me->getVictim())
+            return;
+
+        if (pWho->GetTypeId() == TYPEID_PLAYER)
+            AttackStart(pWho);
+    }
+
+    void MovementInform(uint32 type, uint32 id)
+    {
+        if (type != POINT_MOTION_TYPE)
+            return;
+
+        if (Creature *pAkama = m_creature->GetCreature(*m_creature, pInstance->GetData64(DATA_AKAMA_SHADE)))
+            AttackStart(pAkama);
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim())
@@ -508,6 +541,24 @@ struct TRINITY_DLL_DECL mob_ashtongue_rogueAI : public ScriptedAI
         ForceSpellCast(me, SPELL_DUAL_WIELD, INTERRUPT_AND_CAST);
     }
 
+    void MoveInLineOfSight(Unit *pWho)
+    {
+        if (me->getVictim())
+            return;
+
+        if (pWho->GetTypeId() == TYPEID_PLAYER)
+            AttackStart(pWho);
+    }
+
+    void MovementInform(uint32 type, uint32 id)
+    {
+        if (type != POINT_MOTION_TYPE)
+            return;
+
+        if (Creature *pAkama = m_creature->GetCreature(*m_creature, pInstance->GetData64(DATA_AKAMA_SHADE)))
+            AttackStart(pAkama);
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim())
@@ -531,10 +582,10 @@ struct TRINITY_DLL_DECL mob_ashtongue_rogueAI : public ScriptedAI
 
         if (m_checkTimer < diff)
         {
-            if(!pInstance)
+            if (!pInstance)
                 return;
 
-            if(Creature *pAkama = m_creature->GetCreature(*m_creature, pInstance->GetData64(DATA_SHADEOFAKAMA)))
+            if (Creature *pAkama = m_creature->GetCreature(*m_creature, pInstance->GetData64(DATA_SHADEOFAKAMA)))
             {
                 if(!pAkama->isAlive())
                 {
@@ -720,12 +771,10 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
             {
                 for (int j = 0; j < 3; ++j)
                 {
-                    Creature *mob = m_creature->SummonCreature(spawnEntries[j], SpawnLocations[i][0], SpawnLocations[i][1], SPAWN_Z, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
-                    if (mob)
+                    if (Creature *pAttacker = m_creature->SummonCreature(spawnEntries[j], SpawnLocations[i][0], SpawnLocations[i][1], SPAWN_Z, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000))
                     {
-                        m_summons.Summon(mob);
-                        if (akama)
-                            mob->AI()->AttackStart(akama);
+                        m_summons.Summon(pAttacker);
+                        pAttacker->GetMotionMaster()->MovePoint(0, 453.67f, 401.16f, 118.32f);
                     }
                 }
             }
@@ -736,15 +785,14 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
 
         if (m_guardTimer < diff)
         {
-            Creature *mob = m_creature->SummonCreature(CREATURE_DEFENDER, SpawnLocations[0][0], SpawnLocations[0][1], SPAWN_Z, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
-            if (mob)
+            if (Creature *pDefender = m_creature->SummonCreature(CREATURE_DEFENDER, SpawnLocations[0][0], SpawnLocations[0][1], SPAWN_Z, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000))
             {
-                m_summons.Summon(mob);
+                m_summons.Summon(pDefender);
                 if(Creature *pAkama = m_creature->GetCreature(*m_creature, AkamaGUID))
-                    m_creature->AddThreat(pAkama, 100000.0f);
+                    pDefender->AddThreat(pAkama, 100000.0f);
 
-                mob->GetMotionMaster()->MovePoint(0, AKAMA_X, AKAMA_Y, AKAMA_Z);
-                mob->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                pDefender->GetMotionMaster()->MovePoint(0, AKAMA_X, AKAMA_Y, AKAMA_Z);
+                pDefender->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             }
             m_guardTimer = 30000;
         }
@@ -759,11 +807,10 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
                 return;
             }
 
-            Creature *mob = m_creature->SummonCreature(CREATURE_SORCERER, SpawnLocations[1][0], SpawnLocations[1][1], SPAWN_Z, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
-            if (mob)
+            if (Creature *pSorcerer = m_creature->SummonCreature(CREATURE_SORCERER, SpawnLocations[1][0], SpawnLocations[1][1], SPAWN_Z, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000))
             {
-                m_sorcerers.push_back(mob->GetGUID());
-                mob->GetMotionMaster()->MovePoint(0, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ());
+                m_sorcerers.push_back(pSorcerer->GetGUID());
+                pSorcerer->GetMotionMaster()->MovePoint(0, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ());
             }
             m_sorcTimer = 30000;
         }
@@ -990,7 +1037,9 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
             {
                 if (m_updateSpeed && me->GetTotalAuraModifier(SPELL_AURA_MOD_DECREASE_SPEED) < -100)
                 {
+                    me->GetMotionMaster()->MovementExpired();
                     me->StopMoving();
+
                     m_updateSpeed = false;
                 }
 
@@ -1004,7 +1053,10 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
                     if (event_phase == MOVE_PHASE_1 || event_phase == MOVE_PHASE_2)
                     {
                         int i = event_phase%2;
+
+                        me->GetMotionMaster()->MovementExpired();
                         me->StopMoving();
+
                         me->GetMotionMaster()->MovePoint(i, moveTo[i][0], moveTo[i][1], moveTo[i][2]);
                     }
                     m_updateSpeed = false;
@@ -1020,7 +1072,8 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
                     else
                         DoZoneInCombat();
 
-                    m_checkTimer = 3000;
+                    //me->SendMovementFlagUpdate();
+                    m_checkTimer = 2000;
                 }
                 else
                     m_checkTimer -= diff;
