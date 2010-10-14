@@ -211,7 +211,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
             m_attack = true;
         }
 
-        if(pInstance)
+        if (pInstance)
         {
             if(Creature *pAkama = pInstance->GetCreature(pInstance->GetData64(DATA_AKAMA_SHADE)))
             {   
@@ -223,7 +223,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
 
     void DoMeleeAttackIfReady()
     {
-        if(me->hasUnitState(UNIT_STAT_CASTING))
+        if (me->hasUnitState(UNIT_STAT_CASTING))
             return;
 
         //Make sure our attack is ready and we aren't currently casting before checking distance
@@ -237,16 +237,6 @@ struct TRINITY_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
                 
                 if(IS_CREATURE_GUID(me->getVictimGUID()))
                     DoCast(me->getVictim(), SPELL_HEROIC_STRIKE, true);
-            }
-        }
-
-        if (me->haveOffhandWeapon() && me->isAttackReady(OFF_ATTACK))
-        {
-            //If we are within range melee the target
-            if (me->IsWithinMeleeRange(me->getVictim()))
-            {
-                me->AttackerStateUpdate(me->getVictim(), OFF_ATTACK);
-                me->resetAttackTimer(OFF_ATTACK);
             }
         }
     }
@@ -264,7 +254,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
         else
             m_debilStrikeTimer -= diff;
 
-        if(m_shieldBashTimer < diff)
+        if (m_shieldBashTimer < diff)
         {
             if (m_creature->getVictim()->hasUnitState(UNIT_STAT_CASTING))
             {
@@ -275,7 +265,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
         else
             m_shieldBashTimer -= diff;
 
-        if(m_checkTimer < diff)
+        if (m_checkTimer < diff)
         {
             if(!pInstance)
                 return;
@@ -326,6 +316,38 @@ struct TRINITY_DLL_DECL mob_ashtongue_spiritbinderAI : public ScriptedAI
         m_checkTimer = 5000;
     }
 
+    Unit *FindSpiritHealTarget()
+    {
+        Unit *pTarget = NULL;
+
+        std::list<Creature*> m_sorcerrers = DoFindAllCreaturesWithEntry(CREATURE_SORCERER, 100.0f);
+        std::list<Creature*> m_channelers = DoFindAllCreaturesWithEntry(CREATURE_CHANNELER, 100.0f);
+
+        if (!m_sorcerrers.empty())
+        {
+            pTarget = *m_sorcerrers.begin();
+
+            for (std::list<Creature*>::iterator i = m_sorcerrers.begin(); i != m_sorcerrers.end(); i++)
+            {
+                if ((*i)->GetHealth() < pTarget->GetHealth())
+                    pTarget = *i;
+            }
+        }
+
+        if (!m_channelers.empty())
+        {
+            if(!pTarget)
+                pTarget = *m_sorcerrers.begin();
+
+            for (std::list<Creature*>::iterator i = m_sorcerrers.begin(); i != m_sorcerrers.end(); i++)
+            {
+                if ((*i)->GetHealth() < pTarget->GetHealth())
+                    pTarget = *i;
+            }
+        }
+        return pTarget;
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim())
@@ -339,7 +361,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_spiritbinderAI : public ScriptedAI
         else
             m_chainHealTimer -= diff;
 
-        if(m_spiritMendTimer < diff)
+        if (m_spiritMendTimer < diff)
         {
             AddSpellToCast(m_creature, SPELL_SPIRIT_MEND, false);
             m_spiritMendTimer = 20000;
@@ -347,18 +369,20 @@ struct TRINITY_DLL_DECL mob_ashtongue_spiritbinderAI : public ScriptedAI
         else
             m_spiritMendTimer -= diff;
 
-        if(m_spiritHealTimer < diff)
+        if (m_spiritHealTimer < diff)
         {
-            if(Unit *pFriend = DoSelectLowestHpFriendly(40.0f, 1000))
+            if(Unit *pFriend = FindSpiritHealTarget())
             {
                 AddSpellToCast(pFriend, SPELL_SPIRIT_HEAL, false);
                 m_spiritHealTimer = 10000;
             }
+            else
+                m_spiritHealTimer = 5000;
         }
         else
             m_spiritHealTimer -= diff;
 
-        if(m_checkTimer < diff)
+        if (m_checkTimer < diff)
         {
             if(!pInstance)
                 return;
@@ -383,7 +407,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_spiritbinderAI : public ScriptedAI
 
 enum elementalistSpells
 {
-    SPELL_RAIN_OF_FIRE = 42023,
+    SPELL_RAIN_OF_FIRE   = 42023,
     SPELL_LIGHTNING_BOLT = 42024 
 };
 
@@ -420,7 +444,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_elementalistAI : public ScriptedAI
         else
             m_lightningBoltTimer -= diff;
 
-        if(m_rainofFireTimer < diff)
+        if (m_rainofFireTimer < diff)
         {
             DoZoneInCombat();
             if(Unit *pEnemy = SelectUnit(SELECT_TARGET_RANDOM, 0, 40.0f, true))
@@ -432,14 +456,14 @@ struct TRINITY_DLL_DECL mob_ashtongue_elementalistAI : public ScriptedAI
         else
             m_rainofFireTimer -= diff;
 
-        if(m_checkTimer < diff)
+        if (m_checkTimer < diff)
         {
-            if(!pInstance)
+            if (!pInstance)
                 return;
 
-            if(Creature *pAkama = m_creature->GetCreature(*m_creature, pInstance->GetData64(DATA_SHADEOFAKAMA)))
+            if (Creature *pAkama = m_creature->GetCreature(*m_creature, pInstance->GetData64(DATA_SHADEOFAKAMA)))
             {
-                if(!pAkama->isAlive())
+                if (!pAkama->isAlive())
                 {
                     m_creature->Kill(m_creature, false);
                     m_creature->RemoveCorpse();
@@ -458,7 +482,8 @@ struct TRINITY_DLL_DECL mob_ashtongue_elementalistAI : public ScriptedAI
 enum rogueSpells
 {
     SPELL_DEBILITATING_POISON = 41978,
-    SPELL_EVISCERATE = 41177
+    SPELL_EVISCERATE          = 41177,
+    SPELL_DUAL_WIELD          = 29651
 };
 
 struct TRINITY_DLL_DECL mob_ashtongue_rogueAI : public ScriptedAI
@@ -479,6 +504,8 @@ struct TRINITY_DLL_DECL mob_ashtongue_rogueAI : public ScriptedAI
         m_debilPoisonTimer  = urand(5000, 15000);
         m_eviscerateTimer = urand(2000, 7000);
         m_checkTimer = 5000;
+
+        ForceSpellCast(me, SPELL_DUAL_WIELD, INTERRUPT_AND_CAST);
     }
 
     void UpdateAI(const uint32 diff)
@@ -494,7 +521,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_rogueAI : public ScriptedAI
         else
             m_debilPoisonTimer -= diff;
 
-        if(m_eviscerateTimer < diff)
+        if (m_eviscerateTimer < diff)
         {
             AddSpellToCast(m_creature->getVictim(), SPELL_EVISCERATE, false);
             m_eviscerateTimer = 10000;
@@ -502,7 +529,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_rogueAI : public ScriptedAI
         else
             m_eviscerateTimer -= diff;
 
-        if(m_checkTimer < diff)
+        if (m_checkTimer < diff)
         {
             if(!pInstance)
                 return;
@@ -590,7 +617,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_sorcererAI : public ScriptedAI
 
 enum phases
 {
-    START_EVENT  = 0,  // start event
+    START_EVENT  = 1,  // start event
     MOVE_PHASE_1 = 2,  // go to the stairs
     MOVE_PHASE_2 = 3,  // step down from stairs
     ATTACK_PHASE = 4,  // go to akama
@@ -840,7 +867,10 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
             return;
 
         if (id == 0)
+        {
             event_phase = MOVE_PHASE_2;
+            m_updateSpeed = true; // Just to force second path
+        }
         else
         {
             if (id == 1)
@@ -1264,7 +1294,7 @@ struct TRINITY_DLL_DECL npc_akamaAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
-        if(m_creature->getVictim()->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
+        if (m_creature->getVictim()->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
             return;
 
         if (m_destructivePTimer < diff)
@@ -1375,42 +1405,42 @@ void AddSC_boss_shade_of_akama()
 {
     Script *newscript;
     newscript = new Script;
-    newscript->Name="boss_shade_of_akama";
+    newscript->Name = "boss_shade_of_akama";
     newscript->GetAI = &GetAI_boss_shade_of_akama;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="mob_ashtongue_channeler";
+    newscript->Name = "mob_ashtongue_channeler";
     newscript->GetAI = &GetAI_mob_ashtongue_channeler;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="mob_ashtongue_defender";
+    newscript->Name = "mob_ashtongue_defender";
     newscript->GetAI = &GetAI_mob_ashtongue_defender;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="mob_ashtongue_sorcerer";
+    newscript->Name = "mob_ashtongue_sorcerer";
     newscript->GetAI = &GetAI_mob_ashtongue_sorcerer;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="mob_ashtongue_spiritbinder";
+    newscript->Name = "mob_ashtongue_spiritbinder";
     newscript->GetAI = &GetAI_mob_ashtongue_spiritbinder;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="mob_ashtongue_elementalist";
+    newscript->Name = "mob_ashtongue_elementalist";
     newscript->GetAI = &GetAI_mob_ashtongue_elementalist;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="mob_ashtongue_rogue";
+    newscript->Name = "mob_ashtongue_rogue";
     newscript->GetAI = &GetAI_mob_ashtongue_rogue;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_akama_shade";
+    newscript->Name = "npc_akama_shade";
     newscript->GetAI = &GetAI_npc_akama_shade;
     newscript->pGossipHello = &GossipHello_npc_akama;
     newscript->pGossipSelect = &GossipSelect_npc_akama;
