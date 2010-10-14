@@ -97,14 +97,14 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
 
         // Timers
         m_rotateTimer = 45000;
-        m_phaseTimer = 5000;
+        m_phaseTimer = 120000;
         m_whirlTimer = 17000;
         m_geyserTimer = 0;
         m_checkTimer = 3000;
 
         // Bools
         m_rotating = false;
-        m_submerged = true;
+        m_submerged = false;
 
         m_summons.DespawnAll();
         ForceSpellCast(me, SPELL_SUBMERGE, INTERRUPT_AND_CAST_INSTANTLY);
@@ -249,20 +249,11 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
 
         if (me->GetVisibility() == VISIBILITY_OFF)
         {
-            if (m_phaseTimer < diff)
-            {
-                me->SetVisibility(VISIBILITY_ON);
-                me->RemoveAurasDueToSpell(SPELL_SUBMERGE);
-                
-                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
-                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                
-                m_submerged = false;
-                m_phaseTimer = 120000;
-            }
-            else
-                m_phaseTimer -= diff;
-
+            me->SetVisibility(VISIBILITY_ON);
+            me->RemoveAurasDueToSpell(SPELL_SUBMERGE);
+             
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             return;
         }
 

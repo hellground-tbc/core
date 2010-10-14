@@ -588,6 +588,14 @@ struct TRINITY_DLL_DECL mob_ashtongue_sorcererAI : public ScriptedAI
     }
 };
 
+enum phases
+{
+    START_EVENT  = 0, // start event
+    MOVE_PHASE_1 = 2, // go to the stairs
+    MOVE_PHASE_2 = 3, // step down from stairs
+    ATTACK_PHASE = 4, // go to akama
+    AKAMA_FIGHT  = 5  // start fight with akama
+};
 struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
 {
     boss_shade_of_akamaAI(Creature* c) : ScriptedAI(c), m_summons(c)
@@ -633,14 +641,15 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
     uint32 m_waveTimer;
     uint32 m_guardTimer;
     uint32 m_sorcTimer;
+    uint32 m_checkTimer;
 
     uint32 m_freeSlot;
-
-    uint32 m_checkTimer;
 
     uint16 event_phase;
 
     WorldLocation wLoc;
+
+    bool m_updateSpeed;
 
     void Reset()
     {
@@ -657,6 +666,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
         {
             if (akama->isDead())
                 akama->Respawn();
+
             akama->AI()->EnterEvadeMode();
             akama->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
         }
@@ -665,6 +675,8 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
         m_waveTimer = 7000;
         m_guardTimer = 9000;
         m_sorcTimer = 9000;
+
+        m_updateSpeed = true;
 
         if (pInstance)
             pInstance->SetData(DATA_SHADEOFAKAMAEVENT, NOT_STARTED);
@@ -737,6 +749,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
     {
         if (summon->GetEntry() == CREATURE_CHANNELER || summon->GetEntry() == CREATURE_SORCERER)
             return;
+
         m_summons.Despawn(summon);
     }
 
@@ -744,7 +757,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
 
     void AttackStart(Unit* who)
     {
-        if (!who || event_phase != 6)
+        if (!who || event_phase != ATTACK_PHASE)
             return;
 
         if (m_creature->Attack(who, true))
@@ -754,10 +767,25 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
     void OnAuraApply(Aura *aura, Unit *, bool stackApply)
     {
         if (aura->GetSpellProto()->Id == SPELL_SHADE_SOUL_CHANNEL_2)
+        {
             SetBanish(true);
+            m_updateSpeed = true;
+        }
 
         if (aura->GetSpellProto()->Id == SPELL_AKAMA_SOUL_CHANNEL)
-            event_phase = 1;
+            event_phase = START_EVENT;
+    }
+    void OnAuraRemove(Aura *aura, bool stackRemove)
+    {
+        if (aura->GetSpellProto()->Id == SPELL_SHADE_SOUL_CHANNEL_2)
+        {
+            ++m_freeSlot;
+            
+            if (!stackRemove)
+                SetBanish(false);
+
+            m_updateSpeed = true;
+        }
     }
 
     void TurnOffChanneling()
@@ -786,10 +814,10 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
     {
         if (target->GetGUID() == AkamaGUID)
         {
-            if (event_phase == 6)
+            if (event_phase == ATTACK_PHASE)
             {
                 SetBanish(false);
-                event_phase = 7;
+                event_phase = AKAMA_FIGHT;
                 TurnOffChanneling();
 
                 target->InterruptNonMeleeSpells(false);
@@ -810,30 +838,18 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
             return;
 
         if (id == 0)
-            event_phase = 4;
+            event_phase = MOVE_PHASE_2;
         else
         {
             if (id == 1)
             {
-                event_phase = 6;
+                event_phase = ATTACK_PHASE;
                 if (Creature *akama = m_creature->GetCreature(*m_creature, AkamaGUID))
                 {
                     m_creature->AddThreat(akama, 1000000.0f);
                     m_creature->AI()->AttackStart(akama);
                 }
             }
-        }
-    }
-
-    void OnAuraRemove(Aura *aura, bool stackRemove)
-    {
-        if (aura->GetSpellProto()->Id == SPELL_SHADE_SOUL_CHANNEL_2)
-        {
-            ++m_freeSlot;
-            if (!stackRemove)
-                SetBanish(false);
-            if (event_phase == 3 || event_phase == 5)
-                --event_phase;
         }
     }
 
@@ -857,6 +873,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
             }
         }
         m_channelers.clear();
+
         for (std::list<uint64>::const_iterator itr = m_sorcerers.begin(); itr != m_sorcerers.end(); ++itr)
         {
             Creature *sorc = m_creature->GetCreature(*m_creature, *itr);
@@ -926,32 +943,39 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
         }
         else
         {
-            if (event_phase == 1)
+            if (event_phase == START_EVENT)
             {
                 for (std::list<uint64>::const_iterator itr = m_channelers.begin(); itr != m_channelers.end(); ++itr)
                 {
                     if (Creature *channeler = m_creature->GetCreature(*m_creature, *itr))
                         channeler->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 }
+
                 DoZoneInCombat();
-                ++event_phase;
+                event_phase = MOVE_PHASE_1;
             }
             else
             {
-                if (event_phase == 2 || event_phase == 4)
+                if (m_updateSpeed && me->GetTotalAuraModifier(SPELL_AURA_MOD_DECREASE_SPEED) < -100)
                 {
-                    if (m_creature->GetTotalAuraModifier(SPELL_AURA_MOD_DECREASE_SPEED) > -100)
+                    me->StopMoving();
+                    m_updateSpeed = false;
+                }
+
+                if (m_updateSpeed)
+                {
+                    if (me->GetUnitMovementFlags() & MOVEMENTFLAG_WALK_MODE)
+                        me->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+
+                    me->UpdateSpeed(MOVE_RUN, true);
+
+                    if (event_phase == MOVE_PHASE_1 || event_phase == MOVE_PHASE_2)
                     {
-                        int i = 0;
-                        if (event_phase == 4)
-                            i = 1;
-                        ++event_phase;
-
-                        if (m_creature->GetUnitMovementFlags() & MOVEMENTFLAG_WALK_MODE)
-                            m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
-
-                        m_creature->GetMotionMaster()->MovePoint(i, moveTo[i][0], moveTo[i][1], moveTo[i][2]);
+                        int i = event_phase%2;
+                        me->StopMoving();
+                        me->GetMotionMaster()->MovePoint(i, moveTo[i][0], moveTo[i][1], moveTo[i][2]);
                     }
+                    m_updateSpeed = false;
                 }
 
                 if(m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
@@ -963,12 +987,13 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
                         EnterEvadeMode();
                     else
                         DoZoneInCombat();
+
                     m_checkTimer = 3000;
                 }
                 else
                     m_checkTimer -= diff;
 
-                if (event_phase >= 7)
+                if (event_phase >= AKAMA_FIGHT)
                 {
                     if (m_damageTimer < diff)
                     {
@@ -978,8 +1003,9 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
                             if (akama && akama->isAlive())
                             {
                                 int damage = akama->GetMaxHealth()/12;
-                                if (event_phase == 12) // after 60s deal damage equal to hp
+                                if (event_phase == 11) // after 60s deal damage equal to hp
                                     damage = akama->GetHealth();
+                                
                                 m_creature->DealDamage(akama, damage, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                                 m_damageTimer = 10000;
                                 ++event_phase;
