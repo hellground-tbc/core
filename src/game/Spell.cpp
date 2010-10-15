@@ -632,6 +632,9 @@ void Spell::prepareDataForTriggerSystem()
                     return;
                 }
             break;
+            case SPELLFAMILY_SHAMAN:
+                if (m_spellInfo->SpellFamilyFlags & 0x800000LL) m_canTrigger = true; // Flurry etc. from WF ATTACK !
+            break;
             case SPELLFAMILY_HUNTER:  // Hunter Explosive Trap Effect/Immolation Trap Effect/Frost Trap Aura/Snake Trap Effect
                 if (m_spellInfo->SpellFamilyFlags & 0x0000200000000014LL) m_canTrigger = true;
             break;
