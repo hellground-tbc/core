@@ -165,26 +165,21 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
             {
                 me->SetSelection(0);
 
-              /*
                 WorldLocation wLoc;
-                me->GetClosePoint(wLoc.x, wLoc.y, wLoc.z, 0, 5.0f, 0);
+                me->GetClosePoint(wLoc.x, wLoc.y, wLoc.z, 0, 6.0f, 0);
                
-                // Just visual to realize current orientation ;]
-                if (Unit *vBunny = me->SummonCreature(721, wLoc.x, wLoc.y, wLoc.z +1.0f, 0, TEMPSUMMON_TIMED_DESPAWN, 200))
-                {
-                }
-              */
-       
                 Map *pMap = me->GetMap();
                 Map::PlayerList const& players = pMap->GetPlayers();
-                for(Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
+                for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
                 {
                     Player *pPlayer = i->getSource();
                     
                     if (uint8 count = m_immunemap[pPlayer->GetGUID()])
                     {
-                        if (count >= 5)
+                        if (count >= 10)
+                        {
                             m_immunemap[pPlayer->GetGUID()] = 0;
+                        }
                         else
                         {
                             m_immunemap[pPlayer->GetGUID()]++;
@@ -274,6 +269,8 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 
                 m_submerged = false;
+                m_spoutTimer = 0;
+                m_whirlTimer = 2000;
                 m_phaseTimer = 90000;
             }
             else
@@ -311,7 +308,14 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
             {
                 me->SetReactState(REACT_PASSIVE);
             
-                m_immunemap.clear();
+                Map *pMap = me->GetMap();
+                Map::PlayerList const& players = pMap->GetPlayers();
+                for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
+                {
+                    Player *pPlayer = i->getSource();
+                    m_immunemap[pPlayer->GetGUID()] = 0;
+                }
+
                 me->GetMotionMaster()->MoveRotate(20000, RAND(ROTATE_DIRECTION_LEFT, ROTATE_DIRECTION_RIGHT));
 
                 ForceSpellCast(me, SPELL_SPOUT_VISUAL, INTERRUPT_AND_CAST_INSTANTLY);
@@ -346,7 +350,7 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
             if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 100.0f, true, me->getVictimGUID()))
             {
                 AddSpellToCast(pTarget, SPELL_GEYSER);
-                m_geyserTimer = urand(20000, 30000);
+                m_geyserTimer = urand(10000, 30000);
             }
         }
         else
@@ -355,21 +359,16 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
         CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
- };
+};
 
-struct TRINITY_DLL_DECL mob_coilfang_ambusherAI : public Scripted_NoMovementAI
+struct TRINITY_DLL_DECL mob_coilfang_guardianAI : public ScriptedAI
 {
-    mob_coilfang_ambusherAI(Creature *c) : Scripted_NoMovementAI(c)
+    mob_coilfang_guardianAI(Creature *c) : ScriptedAI(c)
     {
     }
 
-    uint32 MultiShotTimer;
-    uint32 ShootBowTimer;
-
     void Reset()
     {
-        MultiShotTimer = 10000;
-        ShootBowTimer = 4000;
     }
 
     void EnterCombat(Unit *who)
@@ -382,19 +381,39 @@ struct TRINITY_DLL_DECL mob_coilfang_ambusherAI : public Scripted_NoMovementAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(MultiShotTimer < diff)
-        {
-        }
-        else
-            MultiShotTimer -= diff;
-
-        if(ShootBowTimer < diff)
-        {
-        }
-        else
-            ShootBowTimer -= diff;
     }
 };
+
+struct TRINITY_DLL_DECL mob_coilfang_ambusherAI : public Scripted_NoMovementAI
+{
+    mob_coilfang_ambusherAI(Creature *c) : Scripted_NoMovementAI(c)
+    {
+    }
+
+    uint32 m_multiTimer;
+    uint32 m_shootTimer;
+
+    void Reset()
+    {
+    }
+
+    void EnterCombat(Unit *who)
+    {
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+    }
+};
+
+CreatureAI* GetAI_mob_coilfang_guardian(Creature* pCreature)
+{
+    return new mob_coilfang_guardianAI (pCreature);
+}
 
 CreatureAI* GetAI_mob_coilfang_ambusher(Creature* pCreature)
 {
@@ -414,10 +433,10 @@ void AddSC_boss_the_lurker_below()
     newscript->GetAI = &GetAI_boss_the_lurker_below;
     newscript->RegisterSelf();
 
-    /*newscript = new Script;
+    newscript = new Script;
     newscript->Name="mob_coilfang_guardian";
     newscript->GetAI = &GetAI_mob_coilfang_guardian;
-    newscript->RegisterSelf();*/
+    newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="mob_coilfang_ambusher";
