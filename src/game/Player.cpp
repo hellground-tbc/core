@@ -2249,7 +2249,7 @@ bool Player::IsUnderWater() const
 
 void Player::SetInWater(bool apply)
 {
-    if(m_isInWater==apply)
+    if(m_isInWater == apply)
         return;
 
     //define player in water by opcodes

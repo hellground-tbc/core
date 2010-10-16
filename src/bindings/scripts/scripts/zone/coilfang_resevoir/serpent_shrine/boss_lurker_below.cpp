@@ -187,7 +187,7 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
                         }
                     }
 
-                    if (pPlayer->IsInWater())
+                    if (pPlayer->IsInWater() || pPlayer->GetPositionZ() < -19.9645)
                         continue;
 
                     if (me->GetDistance2d(pPlayer) > 100.0f)
@@ -361,27 +361,62 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
     }
 };
 
+enum guardianSpells
+{
+    SPELL_HARMSTRING   = 9080,
+    SPELL_ARCING_SMASH = 28168
+};
+
 struct TRINITY_DLL_DECL mob_coilfang_guardianAI : public ScriptedAI
 {
     mob_coilfang_guardianAI(Creature *c) : ScriptedAI(c)
     {
     }
 
+    uint32 m_harmstringTimer;
+    uint32 m_arcingTimer;
+
     void Reset()
     {
+        m_harmstringTimer = urand(5000, 15000);
+        m_arcingTimer = urand(15000, 20000);
     }
 
     void EnterCombat(Unit *who)
     {
-    }
-
-    void MoveInLineOfSight(Unit *who)
-    {
+        DoZoneInCombat(80.0f);
     }
 
     void UpdateAI(const uint32 diff)
     {
+        if (!UpdateVictim())
+            return;
+
+        if (m_harmstringTimer < diff)
+        {
+            AddSpellToCast(me->getVictim(), SPELL_HARMSTRING);
+            m_harmstringTimer = 10500;
+        }
+        else
+            m_harmstringTimer -= diff;
+
+        if (m_arcingTimer < diff)
+        {
+            AddSpellToCast(me->getVictim(), SPELL_ARCING_SMASH);
+            m_arcingTimer = urand(10000, 20000);
+        }
+        else
+            m_arcingTimer -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
     }
+};
+
+enum ambusherSpells
+{
+    SPELL_SPREAD_SHOT = 37790,
+    SPELL_NORMAL_SHOT = 37770
 };
 
 struct TRINITY_DLL_DECL mob_coilfang_ambusherAI : public Scripted_NoMovementAI
@@ -390,23 +425,45 @@ struct TRINITY_DLL_DECL mob_coilfang_ambusherAI : public Scripted_NoMovementAI
     {
     }
 
-    uint32 m_multiTimer;
+    uint32 m_spreadTimer;
     uint32 m_shootTimer;
 
     void Reset()
     {
+        m_spreadTimer = urand(10000, 20000);
+        m_shootTimer = 2000;
     }
 
     void EnterCombat(Unit *who)
-    {
-    }
-
-    void MoveInLineOfSight(Unit *who)
-    {
+    { 
+        DoZoneInCombat(80.0f);
     }
 
     void UpdateAI(const uint32 diff)
     {
+        if (m_spreadTimer < diff)
+        {
+            if (Unit *pTemp = SelectUnit(SELECT_TARGET_RANDOM, 100.0f))
+            {
+                AddSpellToCast(pTemp, SPELL_SPREAD_SHOT);
+                m_spreadTimer = urand(10000, 20000);
+            }
+        }
+        else
+            m_spreadTimer -= diff;
+
+        if (m_shootTimer < diff)
+        {
+            if (Unit *pTemp = SelectUnit(SELECT_TARGET_RANDOM, 100.0f))
+            {
+                AddSpellToCast(pTemp, SPELL_NORMAL_SHOT);
+                m_shootTimer = 2000;
+            }
+        }
+        else
+            m_shootTimer -= diff;
+
+        CastNextSpellIfAnyAndReady();
     }
 };
 

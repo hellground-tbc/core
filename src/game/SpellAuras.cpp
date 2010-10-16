@@ -566,10 +566,10 @@ void Aura::Update(uint32 diff)
         }
     }
 
-    // Scalding Water
-    if(GetId() == 37284)
+    // Scalding Water remove, while not in water ;]
+    if (GetId() == 37284)
     {
-        if(!m_target->IsInWater())
+        if (m_target->GetPositionZ() >= -19.9645)
             m_target->RemoveAurasDueToSpell(37284);
     }
 

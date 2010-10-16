@@ -430,11 +430,7 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
                             }
                         }
                     }
-                    else
-                        if(pPlayer->GetPositionZ() > -19.9645 && !pPlayer->hasUnitState(MOVEMENTFLAG_JUMPING))
-                            pPlayer->RemoveAurasDueToSpell(SPELL_SCALDINGWATER);
                 }
-
             }
             WaterCheckTimer = 500; //remove stress from core
         }
@@ -470,4 +466,3 @@ void AddSC_instance_serpentshrine_cavern()
     newscript->pGOHello = &GOHello_go_bridge_console;
     newscript->RegisterSelf();
 }
-
