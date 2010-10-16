@@ -15,6 +15,8 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_black_temple.h"
 
+#define AGGRO_RANGE             35.0
+
 /* ============================
 *
 *      HIGL  LORD  NAJENTUS
@@ -1372,6 +1374,11 @@ struct TRINITY_DLL_DECL mob_ashtongue_battlelordAI : public ScriptedAI
         Frenzy = 5000;
     }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -1595,6 +1602,11 @@ struct TRINITY_DLL_DECL mob_ashtongue_mysticAI : public ScriptedAI
         DoZoneInCombat(80.0f);
         DoCast(m_creature, SPELL_BLOODLUST);
     }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
     void JustSummoned(Creature* totem)  //some workaround about windfury totem
     {
         if(totem)
@@ -1723,10 +1735,12 @@ struct TRINITY_DLL_DECL mob_ashtongue_primalistAI : public ScriptedAI
         WyvernSting = urand(7000, 15000);
         SweepingWingClip = urand(20000, 37000);
     }
-
     void MoveInLineOfSight(Unit *who)
     {
-        if(!m_creature->isInCombat() && m_creature->GetDistance(who) > 25.0)    //to avoid far pulls not from group formations
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+
+        if(!m_creature->isInCombat() && m_creature->GetDistance(who) > AGGRO_RANGE)    //to avoid far pulls not from group formations
             return;
 
         if(m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, 5.0) && m_creature->IsHostileTo(who))
@@ -1830,6 +1844,11 @@ struct TRINITY_DLL_DECL mob_ashtongue_stalkerAI : public ScriptedAI
         MindNumbingPoison = urand(5000, 10000);
     }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -1910,7 +1929,11 @@ struct TRINITY_DLL_DECL mob_ashtongue_stormcallerAI : public ScriptedAI
         DoZoneInCombat(80.0f);
         DoCast(m_creature, SPELL_LIGHTNING_SHIELD);
     }
-
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -1983,6 +2006,11 @@ struct TRINITY_DLL_DECL mob_illidari_boneslicerAI : public ScriptedAI
         DoCast(m_creature, SPELL_CLOAK_OF_SHADOWS);
         DoZoneInCombat(80.0f);
     }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
     void DamageMade(Unit* target, uint32 & damage, bool direct_damage)
     {
         if(damage && direct_damage)
@@ -2054,6 +2082,11 @@ struct TRINITY_DLL_DECL mob_illidari_centurionAI : public ScriptedAI
         SonicStrike = urand(5000, 15000);
     }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -2113,6 +2146,11 @@ struct TRINITY_DLL_DECL mob_illidari_defilerAI : public ScriptedAI
     void EnterCombat(Unit*)
     {
         DoZoneInCombat(80.0f);
+    }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
     }
     void UpdateAI(const uint32 diff)
     {
@@ -2192,6 +2230,11 @@ struct TRINITY_DLL_DECL mob_illidari_heartseekerAI : public ScriptedAI
     {
         DoZoneInCombat(80.0f);
         AttackStart(who, false);
+    }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
     }
     void UpdateAI(const uint32 diff)
     {
@@ -2289,6 +2332,11 @@ struct TRINITY_DLL_DECL mob_illidari_nightlordAI : public ScriptedAI
         Shadowfiends = urand(15000, 20000);
     }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -2360,6 +2408,11 @@ struct TRINITY_DLL_DECL mob_storm_furyAI : public ScriptedAI
         StormBlink = urand(15000, 25000);
     }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -2394,7 +2447,7 @@ CreatureAI* GetAI_mob_storm_fury(Creature *_Creature)
     * Shadowmoon Blood Mage
     * Shadowmoon Champion
     * Shadowmoon Deathshaper
-    * Shadowmoon Grunt - no special AI
+    * Shadowmoon Grunt - no special AI only LoS aggro
     * Shadowmoon Houndmaster
     * Shadowmoon Reaver
     * Shadowmoon Riding Hound
@@ -2420,6 +2473,11 @@ struct TRINITY_DLL_DECL mob_hand_of_gorefiendAI : public ScriptedAI
         Enrage = 10000;
     }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -2466,13 +2524,16 @@ struct TRINITY_DLL_DECL mob_shadowmoon_blood_mageAI: public ScriptedAI
         BloodSiphon = urand(3000, 20000);
         Bloodbolt = urand(5000, 15000);
     }
-
     void EnterCombat(Unit *)
     {
         m_creature->InterruptNonMeleeSpells(false, SPELL_GREEN_BEAM);
         DoZoneInCombat(80.0f);
     }
-
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
     void SpellHitTarget(Unit* target, const SpellEntry*)    //workaround
     {
         if(target->HasAura(41229, 1))
@@ -2545,6 +2606,11 @@ struct TRINITY_DLL_DECL mob_shadowmoon_championAI: public ScriptedAI
     }
 
     void EnterCombat(Unit *) { DoZoneInCombat(80.0f); }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
 
     void UpdateAI(const uint32 diff)
     {
@@ -2655,6 +2721,12 @@ struct TRINITY_DLL_DECL mob_shadowmoon_deathshaperAI: public ScriptedAI
         m_creature->InterruptNonMeleeSpells(false, SPELL_GREEN_BEAM);
         DoCast(m_creature, SPELL_DEMON_ARMOR);
         DoZoneInCombat(80.0f);
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
     }
 
     uint64 SelectCorpseGUID()
@@ -2774,6 +2846,34 @@ CreatureAI* GetAI_mob_shadowmoon_deathshaper(Creature *_Creature)
 }
 
 /****************
+* Shadowmoon Grunt - id 23147
+*****************/
+
+struct TRINITY_DLL_DECL mob_shadowmoon_gruntAI : public ScriptedAI
+{
+    mob_shadowmoon_gruntAI(Creature *c) : ScriptedAI(c) {}
+
+    void Reset() { }
+    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_shadowmoon_grunt(Creature *_Creature)
+{
+    return new mob_shadowmoon_gruntAI (_Creature);
+}
+
+/****************
 * Shadowmoon Houndmaster - id 23018
 *****************/
 
@@ -2822,6 +2922,12 @@ struct TRINITY_DLL_DECL mob_shadowmoon_houndmasterAI: public ScriptedAI
         m_creature->GetMotionMaster()->Clear();
         m_creature->GetMotionMaster()->MovePoint(0, m_creature->GetPositionX()+urand(10, 15), m_creature->GetPositionY()+urand(3, 7), m_creature->GetPositionZ());
         DoZoneInCombat(80.0f);
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
     }
 
     void UpdateAI(const uint32 diff)
@@ -2941,6 +3047,11 @@ struct TRINITY_DLL_DECL mob_shadowmoon_reaverAI : public ScriptedAI
         ShadowResonance = urand(5000, 20000);
     }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
     void SpellHit(Unit* caster, const SpellEntry*)
     {
         if(caster->GetTypeId() == TYPEID_PLAYER && m_creature->HasAura(SPELL_SPELL_ABSORPTION, 0))
@@ -3016,6 +3127,11 @@ struct TRINITY_DLL_DECL mob_shadowmoon_riding_houndAI: public ScriptedAI
         }
     }
     void EnterCombat(Unit *) { DoZoneInCombat(80.0f); }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
 
     void UpdateAI(const uint32 diff)
     {
@@ -3080,6 +3196,11 @@ struct TRINITY_DLL_DECL mob_shadowmoon_soldierAI: public ScriptedAI
     }
 
     void EnterCombat(Unit *) { DoZoneInCombat(80.0f); }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
 
     void UpdateAI(const uint32 diff)
     {
@@ -3288,6 +3409,11 @@ struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
         m_creature->SetArmor(m_creature->GetArmor()*2.5);   // arbitrary
         SetWeaponModelAndDamage(Stance);
     }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
 
     void UpdateAI(const uint32 diff)
     {
@@ -3425,6 +3551,11 @@ struct TRINITY_DLL_DECL mob_wrathbone_flayerAI: public ScriptedAI
     }
 
     void EnterCombat(Unit *) { DoZoneInCombat(80.0f); }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
 
     void UpdateAI(const uint32 diff)
     {
@@ -3468,11 +3599,637 @@ CreatureAI* GetAI_mob_wrathbone_flayer(Creature *_Creature)
     * Bonechewer Shield Disciple
     * Bonechewer Blade Fury
     * Bonechewer Blood Prophet
-    * Mutated Battle Wolf
+    * Mutant War Hound
     * Bonechewer Brawler
     * Bonechewer Combatant
     * Bonechewer Spectator
 */
+
+/****************
+* Bonechewer Behemoth - id 23196
+*****************/
+
+#define SPELL_BEHEMOTH_CHARGE                   41272
+#define SPELL_FEL_STOMP                         41274
+#define SPELL_FIERY_COMET                       41277
+#define SPELL_FRENZY_1                          8269
+#define SPELL_METEOR                            41276
+
+enum Type
+{
+    MELEE_TYPE = 0,
+    RANGED_TYPE
+};
+
+struct TRINITY_DLL_DECL mob_bonechewer_behemothAI: public ScriptedAI
+{
+    mob_bonechewer_behemothAI(Creature *c) : ScriptedAI(c) { }
+
+    uint8 Type;
+    uint32 SpellTimer;
+    uint32 Frenzy;
+
+
+    void Reset()
+    {
+        Type = RAND(MELEE_TYPE, RANGED_TYPE);
+        SpellTimer = Type ? urand(5000, 20000) : urand(3000, 15000);
+        Frenzy = 35000;
+    }
+
+    void EnterCombat(Unit *)
+    {
+        DoZoneInCombat(80.0f);
+    }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(SpellTimer < diff)
+        {
+            uint32 SpellId = 0;
+            switch(Type)
+            {
+                case MELEE_TYPE:
+                {
+                    SpellId = RAND(SPELL_BEHEMOTH_CHARGE, SPELL_FEL_STOMP);
+                    switch(SpellId)
+                    {
+                        case SPELL_BEHEMOTH_CHARGE:
+                            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0f, true, 0, 5.0f))
+                                AddSpellToCast(target, SPELL_BEHEMOTH_CHARGE);
+                            else
+                                SpellTimer = 2000;
+                            break;
+                        case SPELL_FEL_STOMP:
+                            AddSpellToCast(m_creature, SPELL_FEL_STOMP);
+                            break;
+                    }
+                    break;
+                }
+                case RANGED_TYPE:
+                {
+                    SpellId = RAND(SPELL_FIERY_COMET, SPELL_METEOR);
+                    switch(SpellId)
+                    {
+                        case SPELL_FIERY_COMET:
+                            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 40.0f, true, 0, 10.0f))
+                                AddSpellToCast(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), SPELL_FIERY_COMET);
+                            else
+                                SpellTimer = 3000;
+                            break;
+                        case SPELL_METEOR:
+                            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 120.0f, true))
+                                AddSpellToCast(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), SPELL_METEOR);
+                            else
+                                SpellTimer = 2500;
+                            break;
+                    }
+                    break;
+                }
+            }
+            AddSpellToCast(m_creature->getVictim(), SPELL_CLEAVE_2);
+            SpellTimer = Type ? 20000 : 15000;
+        }
+        else
+            SpellTimer -= diff;
+
+        if(Frenzy < diff)
+        {
+            if(!m_creature->HasAura(SPELL_FRENZY_1, 0))
+                AddSpellToCast(m_creature, SPELL_FRENZY_1);
+            Frenzy = 10000;
+        }
+        else
+            Frenzy -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_bonechewer_behemoth(Creature *_Creature)
+{
+    return new mob_bonechewer_behemothAI(_Creature);
+}
+
+/****************
+* Bonechewer Shield Disciple - id 23236
+*****************/
+
+#define SPELL_INTERVENE                 41198
+#define SPELL_SHIELD_BASH               41197
+#define SPELL_SHIELD_WALL               41196
+#define SPELL_THROW_SHIELD              41213
+
+#define MOB_BONECHEWER_BLADE_FURY       23235
+
+struct TRINITY_DLL_DECL mob_bonechewer_shield_discipleAI: public ScriptedAI
+{
+    mob_bonechewer_shield_discipleAI(Creature *c) : ScriptedAI(c) { }
+
+    uint32 Intervene;
+    uint32 ShieldBash;
+    uint32 ThrowShield;
+
+
+    void Reset()
+    {
+        Intervene = urand(15000, 20000);
+        ShieldBash = urand(4000, 15000);
+        ThrowShield = urand(7000, 17000);
+    }
+
+    void EnterCombat(Unit *) { DoZoneInCombat(80.0f); }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
+
+    void DamageTaken(Unit* who, uint32& damage)
+    {
+        if(damage)
+        {
+            if(m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 30)
+                ForceSpellCast(m_creature, SPELL_SHIELD_WALL);
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(Intervene < diff)
+        {
+            Unit* InterveneTarget = GetClosestCreatureWithEntry(m_creature,MOB_BONECHEWER_BLADE_FURY, 25.0f);
+            if(InterveneTarget && !m_creature->IsWithinDistInMap(InterveneTarget, 8.0) && InterveneTarget->isInCombat())
+            {
+                ForceSpellCast(InterveneTarget, SPELL_INTERVENE);
+                Intervene = 20000;
+            }
+            else
+                Intervene = 3000;
+        }
+        else
+            Intervene -= diff;
+
+        if(ShieldBash < diff)
+        {
+            AddSpellToCast(m_creature->getVictim(), SPELL_SHIELD_BASH);
+            ShieldBash = 15000;
+        }
+        else
+            ShieldBash -= diff;
+
+        if(ThrowShield < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_TOPAGGRO, 1, 45.0f, true, 0, 5.0f))
+                AddSpellToCast(target, SPELL_THROW_SHIELD);
+            ThrowShield = 17000;
+        }
+        else
+            ThrowShield -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_bonechewer_shield_disciple(Creature *_Creature)
+{
+    return new mob_bonechewer_shield_discipleAI(_Creature);
+}
+
+/****************
+* Bonechewer Blade Fury - id 23235
+*****************/
+
+#define SPELL_WHIRLWIND_2               41194
+
+struct TRINITY_DLL_DECL mob_bonechewer_blade_furyAI: public ScriptedAI
+{
+    mob_bonechewer_blade_furyAI(Creature *c) : ScriptedAI(c) { }
+
+    uint32 Whirlwind;
+    uint32 MoveTimer;
+
+    void Reset()
+    {
+        Whirlwind = urand(5000, 15000);
+        MoveTimer = 0;
+    }
+
+    void EnterCombat(Unit *) { DoZoneInCombat(80.0f); }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
+
+    void OnAuraRemove(Aura* aur, bool stackRemove)
+    {
+        if(aur->GetId() == SPELL_WHIRLWIND_2)
+        {
+            m_creature->Relocate(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), m_creature->GetOrientation());
+            DoStartMovement(m_creature->getVictim());
+            MoveTimer = 0;
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(Whirlwind < diff)
+        {
+            AddSpellToCast(m_creature, SPELL_WHIRLWIND_2);
+            Whirlwind = 15000;
+        }
+        else
+            Whirlwind -= diff;
+
+        if(m_creature->HasAura(SPELL_WHIRLWIND_2, 0))
+        {
+            if(MoveTimer < diff)
+            {
+                float x, y, z = 0;
+                m_creature->Relocate(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), m_creature->GetOrientation());
+                m_creature->GetGroundPointAroundUnit(x, y, z, 10.0, 3.14*RAND(0, 1/6, 2/6, 3/6, 4/6, 5/6, 1));
+                m_creature->GetMotionMaster()->Clear();
+                m_creature->GetMotionMaster()->MovePoint(0, x, y, z);
+                MoveTimer = 2500;
+            }
+            else
+                MoveTimer -= diff;
+        }
+        else
+            DoMeleeAttackIfReady();
+
+        CastNextSpellIfAnyAndReady();
+    }
+};
+
+CreatureAI* GetAI_mob_bonechewer_blade_fury(Creature *_Creature)
+{
+    return new mob_bonechewer_blade_furyAI(_Creature);
+}
+
+/****************
+* Bonechewer Blood Prophet - id 23237
+*****************/
+
+#define SPELL_BLOOD_DRAIN               41238
+#define SPELL_BLOODBOLT_1               41229
+#define SPELL_PROPHECY_OF_BLOOD_PL      41230
+#define SPELL_PROPHECY_OF_BLOOD_MOB     41231
+
+struct TRINITY_DLL_DECL mob_bonechewer_blood_prophetAI: public ScriptedAI
+{
+    mob_bonechewer_blood_prophetAI(Creature *c) : ScriptedAI(c) { }
+
+    uint32 BloodDrain;
+    uint32 Bloodbolt;
+    uint32 ProphecyOfBlood;
+
+
+    void Reset()
+    {
+        BloodDrain = urand(5000, 25000);
+        Bloodbolt = urand(1000, 10000);
+        ProphecyOfBlood = 12000;
+    }
+
+    void EnterCombat(Unit *) { DoZoneInCombat(80.0f); }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
+
+    void DamageTaken(Unit* who, uint32& damage)
+    {
+        if(damage)
+        {
+            if(m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 35)
+                ForceSpellCast(m_creature, SPELL_FRENZY_1);
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(BloodDrain < diff)
+        {
+            AddSpellToCast(m_creature->getVictim(), SPELL_BLOOD_DRAIN);
+            BloodDrain = 25000;
+        }
+        else
+            BloodDrain -= diff;
+
+        if(Bloodbolt < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 40.0f, true))
+                AddSpellToCast(target, SPELL_BLOODBOLT_1);
+            Bloodbolt = 15000;
+        }
+        else
+            Bloodbolt -= diff;
+
+        if(ProphecyOfBlood < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 20.0f, true))
+                AddSpellToCast(target, SPELL_PROPHECY_OF_BLOOD_PL);
+            std::list<Creature*> Friendly = DoFindAllFriendlyInGrid(20.0f);
+            if(!Friendly.empty())
+            {
+                std::list<Creature*>::iterator i = Friendly.begin();
+                advance(i, rand()%Friendly.size());
+                if(Creature* Friend = (*i))
+                    AddSpellToCast(Friend, SPELL_PROPHECY_OF_BLOOD_MOB);
+            }
+            ProphecyOfBlood = 15000;
+        }
+        else
+            ProphecyOfBlood -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_bonechewer_blood_prophet(Creature *_Creature)
+{
+    return new mob_bonechewer_blood_prophetAI(_Creature);
+}
+
+/****************
+* Mutant War Hound - id 23237
+*****************/
+
+#define SPELL_DISEASE_CLOUD             41290   //visual
+#define SPELL_CLOUD_OF_DISEASE          41193
+
+
+struct TRINITY_DLL_DECL mob_mutated_war_houndAI: public ScriptedAI
+{
+    mob_mutated_war_houndAI(Creature *c) : ScriptedAI(c) { }
+
+    void Reset()
+    {
+        if(!m_creature->HasAura(SPELL_DISEASE_CLOUD, 0))
+            DoCast(m_creature, SPELL_DISEASE_CLOUD);
+    }
+
+    void EnterCombat(Unit *) { DoZoneInCombat(80.0f); }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
+
+    void DamageTaken(Unit* who, uint32& damage)
+    {
+        if(damage && damage > m_creature->GetHealth())
+            m_creature->CastSpell(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), SPELL_CLOUD_OF_DISEASE, false);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_mutated_war_hound(Creature *_Creature)
+{
+    return new mob_mutated_war_houndAI(_Creature);
+}
+
+/****************
+* Bonechewer Brawler - id 23222
+*****************/
+
+#define SPELL_ENRAGE_2              41254
+
+struct TRINITY_DLL_DECL mob_bonechewer_brawlerAI: public ScriptedAI
+{
+    mob_bonechewer_brawlerAI(Creature *c) : ScriptedAI(c) { }
+
+    uint32 Enrage;
+
+    void Reset()
+    {
+        Enrage = urand(15000, 25000);
+    }
+
+    void EnterCombat(Unit *) { DoZoneInCombat(80.0f); }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
+
+    void DamageTaken(Unit* who, uint32& damage)
+    {
+        if(damage)
+        {
+            if(m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 30)
+                ForceSpellCast(m_creature, SPELL_FRENZY_1);
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(Enrage < diff)
+        {
+            AddSpellToCast(m_creature, SPELL_ENRAGE_2);
+            Enrage = 25000;
+        }
+        else
+            Enrage -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_bonechewer_brawler(Creature *_Creature)
+{
+    return new mob_bonechewer_brawlerAI(_Creature);
+}
+
+/****************
+* Bonechewer Combatant - id 23239
+*****************/
+
+#define SPELL_COMBAT_RAGE               41251
+
+struct TRINITY_DLL_DECL mob_bonechewer_combatantAI: public ScriptedAI
+{
+    mob_bonechewer_combatantAI(Creature *c) : ScriptedAI(c) { }
+
+    uint32 CombatRage;
+
+    void Reset()
+    {
+        CombatRage = urand(3000, 10000);
+    }
+
+    void EnterCombat(Unit *) { DoZoneInCombat(80.0f); }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
+
+    void DamageTaken(Unit* who, uint32& damage)
+    {
+        if(damage)
+        {
+            if(m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 30)
+                ForceSpellCast(m_creature, SPELL_FRENZY_1);
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(CombatRage < diff)
+        {
+            AddSpellToCast(m_creature, SPELL_COMBAT_RAGE);
+            CombatRage = 10000;
+        }
+        else
+            CombatRage -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_bonechewer_combatant(Creature *_Creature)
+{
+    return new mob_bonechewer_combatantAI(_Creature);
+}
+
+/****************
+* Bonechewer Spectator - id 23223
+*****************/
+
+#define SPELL_CHARGE_1                  36140
+#define SPELL_CLEAVE_3                  40505
+#define SPELL_MORTAL_WOUND              25646
+#define SPELL_STRIKE_1                  13446
+#define SPELL_SUNDER_ARMOR              13444
+
+struct TRINITY_DLL_DECL mob_bonechewer_spectatorAI: public ScriptedAI
+{
+    mob_bonechewer_spectatorAI(Creature *c) : ScriptedAI(c) { }
+
+    uint32 Charge;
+    uint32 Cleave;
+    uint32 MortalWound;
+    uint32 Strike;
+    uint32 SunderArmor;
+
+    void Reset()
+    {
+        Charge = urand(3000, 6000);
+        Cleave = urand(5000, 15000);
+        MortalWound = urand(2000, 6000);
+        Strike = 1500;
+        SunderArmor = urand(3000, 10000);
+    }
+
+    void EnterCombat(Unit* who) { DoZoneInCombat(80.0f); }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
+
+    void DamageTaken(Unit* who, uint32& damage)
+    {
+        if(damage)
+        {
+            if(m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 30)
+                ForceSpellCast(m_creature, SPELL_FRENZY_1);
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(Charge < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 25.0f, true, 0, 8.0f))
+                AddSpellToCast(target, SPELL_CHARGE_1);
+            Charge = urand(20000, 40000);
+        }
+        else
+            Charge -= diff;
+
+        if(Cleave < diff)
+        {
+            AddSpellToCast(m_creature->getVictim(), SPELL_CLEAVE_3);
+            Cleave = 15000;
+        }
+        else
+            Cleave -= diff;
+
+        if(MortalWound < diff)
+        {
+            AddSpellToCast(m_creature->getVictim(), SPELL_MORTAL_WOUND);
+            MortalWound = urand(8000, 12000);
+        }
+        else
+            MortalWound -= diff;
+
+        if(Strike < diff)
+        {
+            AddSpellToCast(m_creature->getVictim(), SPELL_STRIKE_1);
+            Strike = urand(4000, 6000);
+        }
+        else
+            Strike -= diff;
+
+        if(SunderArmor < diff)
+        {
+            AddSpellToCast(m_creature->getVictim(), SPELL_SUNDER_ARMOR);
+            SunderArmor = 10000;
+        }
+        else
+            SunderArmor -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_bonechewer_spectator(Creature *_Creature)
+{
+    return new mob_bonechewer_spectatorAI(_Creature);
+}
 
 /* ============================
 *
@@ -3837,6 +4594,11 @@ void AddSC_black_temple_trash()
     newscript->RegisterSelf();
 
     newscript = new Script;
+    newscript->Name = "mob_shadowmoon_grunt";
+    newscript->GetAI = &GetAI_mob_shadowmoon_grunt;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
     newscript->Name = "mob_shadowmoon_houndmaster";
     newscript->GetAI = &GetAI_mob_shadowmoon_houndmaster;
     newscript->RegisterSelf();
@@ -3880,5 +4642,46 @@ void AddSC_black_temple_trash()
     newscript = new Script;
     newscript->Name = "mob_suffering_soul_fragment";
     newscript->GetAI = &GetAI_mob_suffering_soul_fragment;
+    newscript->RegisterSelf();
+
+    // Gurtogg Bloodboil
+    newscript = new Script;
+    newscript->Name = "mob_bonechewer_behemoth";
+    newscript->GetAI = &GetAI_mob_bonechewer_behemoth;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_bonechewer_shield_disciple";
+    newscript->GetAI = &GetAI_mob_bonechewer_shield_disciple;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_bonechewer_blade_fury";
+    newscript->GetAI = &GetAI_mob_bonechewer_blade_fury;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_bonechewer_blood_prophet";
+    newscript->GetAI = &GetAI_mob_bonechewer_blood_prophet;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_mutated_war_hound";
+    newscript->GetAI = &GetAI_mob_mutated_war_hound;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_bonechewer_brawler";
+    newscript->GetAI = &GetAI_mob_bonechewer_brawler;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_bonechewer_combatant";
+    newscript->GetAI = &GetAI_mob_bonechewer_combatant;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_bonechewer_spectator";
+    newscript->GetAI = &GetAI_mob_bonechewer_spectator;
     newscript->RegisterSelf();
 }
