@@ -195,13 +195,13 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
                     if (pPlayer->IsInWater())
                         continue;
 
-                    if (caster->GetDistance2d(pPlayer) > 100.0f)
+                    if (me->GetDistance2d(pPlayer) > 100.0f)
                         continue;
 
-                    if (!caster->HasInArc(M_PI, pPlayer))
+                    if (!me->HasInArc(M_PI, pPlayer))
                         continue;
 
-                    if (abs(sin(caster->GetAngle(pPlayer) - caster->GetOrientation())) * caster->GetExactDistance2d(pPlayer->GetPositionX(), pPlayer->GetPositionY()) < SPOUT_WIDTH)
+                    if (abs(sin(me->GetAngle(pPlayer) - me->GetOrientation())) * me->GetExactDistance2d(pPlayer->GetPositionX(), pPlayer->GetPositionY()) < SPOUT_WIDTH)
                     {
                         ForceSpellCast(pPlayer, SPELL_SPOUT_EFFECT, INTERRUPT_AND_CAST_INSTANTLY, true);
                         m_immunemap[pPlayer->GetGUID()] = 1;
