@@ -1739,8 +1739,34 @@ void Aura::TriggerSpell()
 //                    case 37125: break;
 //                    // Arcane Flurry
 //                    case 37268: break;
-//                    // Spout
-//                    case 37429: break;
+                    // Spout
+                    case 37429:
+                    {
+                        trigger_spell_id = 42835;
+
+                        // Need to find nice way to prevent SPOUT spam on one target ;]
+                        /*Map *pMap = caster->GetMap();
+                        if (!pMap)
+                            break;
+                            
+                        Map::PlayerList const& players = pMap->GetPlayers();
+                        for(Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
+                        {
+                            Player *pPlayer = i->getSource();
+                            if (pPlayer->IsInWater())
+                                continue;
+
+                            if (caster->GetDistance2d(pPlayer) > 100.0f)
+                                continue;
+
+                            if (!caster->HasInArc(M_PI, pPlayer))
+                                continue;
+
+                            if (abs(sin(caster->GetAngle(pPlayer) - caster->GetOrientation())) * caster->GetExactDistance2d(pPlayer->GetPositionX(), pPlayer->GetPositionY()) < 1.5f)
+                                caster->CastSpell(pPlayer, 37433, true);
+                        }*/
+                    }
+                    break;
 //                    // Spout
 //                    case 37430: break;
 //                    // Karazhan - Chess NPC AI, Snapshot timer
@@ -1784,7 +1810,7 @@ void Aura::TriggerSpell()
 //                    case 38751: break;
 //                    // Murmur's Touch
 //                    case 38794: break;
-//                    // Activate Nether-wraith Beacon (31742 Nether-wraith Beacon item)
+                    // Activate Nether-wraith Beacon (31742 Nether-wraith Beacon item)
                     case 39105:
                     {
                         if(!target)
