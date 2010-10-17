@@ -78,11 +78,13 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
     std::map<uint64, uint32> sodList;
     std::vector<uint64> weaponmasterList;
     std::list<uint64> SoulFragmentsList;
+    std::list<uint64> AshtongueBrokenList;
 
     void Initialize()
     {
         sodList.clear();
         SoulFragmentsList.clear();
+        AshtongueBrokenList.clear();
 
         Najentus = 0;
         Akama = 0;
@@ -214,6 +216,15 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
             case 23401:
             case 23399:
                 SoulFragmentsList.push_back(creature->GetGUID());
+                break;
+            case 22844:
+            case 22849:
+            case 22845:
+            case 22847:
+            case 23374:
+            case 22846:
+            case 22848:
+                AshtongueBrokenList.push_back(creature->GetGUID());
                 break;
         }
 
@@ -391,6 +402,16 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
                 Encounters[1] = data;
             break;
         case DATA_SHADEOFAKAMAEVENT:
+            if(data == DONE)
+            {
+                // after Shade Of Akama is defeated all Ashtongue change faction
+                for(std::list<uint64>::iterator itr = AshtongueBrokenList.begin(); itr != AshtongueBrokenList.end(); ++itr)
+                {
+                    Creature* Broken = instance->GetCreature(*itr);
+                    if(Broken)
+                        Broken->setFaction(1820);
+                }
+            }
             if(data == IN_PROGRESS)
                 HandleGameObject(ShadeOfAkamaDoor, false);
             else

@@ -1493,7 +1493,7 @@ CreatureAI* GetAI_mob_ashtongue_feral_spirit(Creature *_Creature)
 }
 
 /****************
-* Ashtongue Mystic - id 22844 & Ashtongue Mystic Totems - id 22894, 22896, 22897
+* Ashtongue Mystic - id 22845 & Ashtongue Mystic Totems - id 22894, 22896, 22897
 *****************/
 
 #define SPELL_FROST_SHOCK               41116
@@ -4381,9 +4381,6 @@ CreatureAI* GetAI_mob_suffering_soul_fragment(Creature *_Creature)
     return new mob_suffering_soul_fragmentAI(_Creature);
 }
 
-
-
-
 /* ============================
 *
 *      MOTHER  SHAHRAZ
@@ -4628,22 +4625,6 @@ void AddSC_black_temple_trash()
     newscript->GetAI = &GetAI_mob_wrathbone_flayer;
     newscript->RegisterSelf();
 
-    // Reliquary of Souls
-    newscript = new Script;
-    newscript->Name = "mob_angered_soul_fragment";
-    newscript->GetAI = &GetAI_mob_angered_soul_fragment;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name = "mob_hungering_soul_fragment";
-    newscript->GetAI = &GetAI_mob_hungering_soul_fragment;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name = "mob_suffering_soul_fragment";
-    newscript->GetAI = &GetAI_mob_suffering_soul_fragment;
-    newscript->RegisterSelf();
-
     // Gurtogg Bloodboil
     newscript = new Script;
     newscript->Name = "mob_bonechewer_behemoth";
@@ -4683,5 +4664,21 @@ void AddSC_black_temple_trash()
     newscript = new Script;
     newscript->Name = "mob_bonechewer_spectator";
     newscript->GetAI = &GetAI_mob_bonechewer_spectator;
+    newscript->RegisterSelf();
+
+    // Reliquary of Souls
+    newscript = new Script;
+    newscript->Name = "mob_angered_soul_fragment";
+    newscript->GetAI = &GetAI_mob_angered_soul_fragment;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_hungering_soul_fragment";
+    newscript->GetAI = &GetAI_mob_hungering_soul_fragment;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_suffering_soul_fragment";
+    newscript->GetAI = &GetAI_mob_suffering_soul_fragment;
     newscript->RegisterSelf();
 }
