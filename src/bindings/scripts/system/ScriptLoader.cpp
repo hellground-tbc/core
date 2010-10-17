@@ -284,6 +284,7 @@ extern void AddSC_hellfire_peninsula();
 
 //Hillsbrad Foothills
 //Hinterlands
+extern void AddSC_hinterlands();
 //Ironforge
 extern void AddSC_ironforge();
 
@@ -869,6 +870,7 @@ void AddScripts()
 
     //Hillsbrad Foothills
     //Hinterlands
+    AddSC_hinterlands();
     //Ironforge
     AddSC_ironforge();
 
