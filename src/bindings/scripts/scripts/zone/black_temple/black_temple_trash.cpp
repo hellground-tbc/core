@@ -1515,7 +1515,6 @@ struct TRINITY_DLL_DECL totem_ashtongue_mysticAI : public Scripted_NoMovementAI
 {
     totem_ashtongue_mysticAI(Creature *c) : Scripted_NoMovementAI(c) {}
 
-    uint64 OwnerGUID;
     uint32 SpellTimer;
 
     void Reset()
@@ -1541,7 +1540,7 @@ struct TRINITY_DLL_DECL totem_ashtongue_mysticAI : public Scripted_NoMovementAI
     {
         if(m_creature->GetEntry() == NPC_SUMMONED_WINDFURY_TOTEM)
         {
-            if(Unit* Mystic = Unit::GetUnit(*me, OwnerGUID))
+            if(Unit* Mystic = GetClosestCreatureWithEntry(m_creature, 22845, 5.0))
             {
                 if(Mystic->HasAura(SPELL_WINDFURY_WEAPON, 0))
                     m_creature->RemoveAurasDueToSpell(SPELL_WINDFURY_WEAPON);
@@ -1587,12 +1586,14 @@ struct TRINITY_DLL_DECL mob_ashtongue_mysticAI : public ScriptedAI
     uint32 SearingTotem;
     uint32 WindfuryTotem;
     uint32 CycloneTotem;
+    uint32 CheckTimer;
 
     void Reset()
     {
         FrostShock = urand(5000, 22000);
         FlameShock = urand(10000, 30000);
         ChainHeal = 5000;
+        CheckTimer = 2000;
         SearingTotem = urand(500, 30000);
         WindfuryTotem = urand(500, 30000);
         CycloneTotem = urand(500, 30000);
@@ -1607,35 +1608,27 @@ struct TRINITY_DLL_DECL mob_ashtongue_mysticAI : public ScriptedAI
         if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
             AttackStart(who);
     }
-    void JustSummoned(Creature* totem)  //some workaround about windfury totem
-    {
-        if(totem)
-        {
-            if(totem->GetEntry() == NPC_SUMMONED_WINDFURY_TOTEM)
-            {
-                ((totem_ashtongue_mysticAI*)totem)->OwnerGUID = m_creature->GetGUID();
-                if(!m_creature->HasAura(SPELL_WINDFURY_WEAPON, 0))
-                    m_creature->CastSpell(m_creature, SPELL_WINDFURY_WEAPON, true);
-            }
-            if(m_creature->getVictim())
-                ((totem_ashtongue_mysticAI*)totem)->AttackStart(m_creature->getVictim());
-        }
-    }
-    void SummonedCreatureDespawn(Creature* totem)
-    {
-        if(totem)
-        {
-            if(totem->GetEntry() == NPC_SUMMONED_WINDFURY_TOTEM)
-            {
-                if(m_creature->HasAura(SPELL_WINDFURY_WEAPON, 0))
-                    m_creature->RemoveAurasDueToSpell(SPELL_WINDFURY_WEAPON);
-            }
-        }
-    }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
             return;
+
+        if(CheckTimer < diff)
+        {
+            if(Unit* WindTotem = GetClosestCreatureWithEntry(m_creature, NPC_SUMMONED_WINDFURY_TOTEM, 10.0))
+            {
+                if(!m_creature->HasAura(SPELL_WINDFURY_WEAPON, 0))
+                    m_creature->CastSpell(m_creature, SPELL_WINDFURY_WEAPON, true);
+            }
+            else
+            {
+                if(m_creature->HasAura(SPELL_WINDFURY_WEAPON, 0))
+                    m_creature->CastSpell(m_creature, SPELL_WINDFURY_WEAPON, true);
+            }
+            CheckTimer = 1500;
+        }
+        else
+            CheckTimer -= diff;
 
         if(FrostShock < diff)
         {
