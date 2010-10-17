@@ -1632,11 +1632,10 @@ struct TRINITY_DLL_DECL npc_woeful_healerAI : public ScriptedAI
 
         if (healTimer <= diff)
         {
+            healTimer = urand(2500, 7500);
             if (!owner || !owner->isInCombat())
                 return;
-
             m_creature->CastSpell(m_creature, SPELL_PREYER_OF_HEALING, false);
-            healTimer = urand(2500, 7500);
         }
         else
             healTimer -= diff;
