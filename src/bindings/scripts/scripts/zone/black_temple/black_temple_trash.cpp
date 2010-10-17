@@ -3815,6 +3815,18 @@ CreatureAI* GetAI_mob_bonechewer_shield_disciple(Creature *_Creature)
 
 #define SPELL_WHIRLWIND_2               41194
 
+uint32 CCMechanics[8] = 
+{
+    MECHANIC_FEAR,
+    MECHANIC_ROOT,
+    MECHANIC_SNARE,
+    MECHANIC_STUN,
+    MECHANIC_FREEZE,
+    MECHANIC_KNOCKOUT,
+    MECHANIC_POLYMORPH,
+    MECHANIC_HORROR
+};
+
 struct TRINITY_DLL_DECL mob_bonechewer_blade_furyAI: public ScriptedAI
 {
     mob_bonechewer_blade_furyAI(Creature *c) : ScriptedAI(c) { }
@@ -3835,10 +3847,17 @@ struct TRINITY_DLL_DECL mob_bonechewer_blade_furyAI: public ScriptedAI
             AttackStart(who);
     }
 
+    void SetCCImmunity(bool apply)
+    {
+        for(uint8 i=0;i<8;++i)
+            m_creature->ApplySpellImmune(i, IMMUNITY_MECHANIC, CCMechanics[i], apply);
+    }
+
     void OnAuraRemove(Aura* aur, bool stackRemove)
     {
         if(aur->GetId() == SPELL_WHIRLWIND_2)
         {
+            SetCCImmunity(false);
             m_creature->Relocate(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), m_creature->GetOrientation());
             DoStartMovement(m_creature->getVictim());
             MoveTimer = 0;
@@ -3862,6 +3881,7 @@ struct TRINITY_DLL_DECL mob_bonechewer_blade_furyAI: public ScriptedAI
         {
             if(MoveTimer < diff)
             {
+                SetCCImmunity(true);
                 float x, y, z = 0;
                 m_creature->Relocate(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), m_creature->GetOrientation());
                 m_creature->GetGroundPointAroundUnit(x, y, z, 10.0, 3.14*RAND(0, 1/6, 2/6, 3/6, 4/6, 5/6, 1));
@@ -3975,7 +3995,7 @@ CreatureAI* GetAI_mob_bonechewer_blood_prophet(Creature *_Creature)
 }
 
 /****************
-* Mutant War Hound - id 23237
+* Mutant War Hound - id 23232
 *****************/
 
 #define SPELL_DISEASE_CLOUD             41290   //visual
