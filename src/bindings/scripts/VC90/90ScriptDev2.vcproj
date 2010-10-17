@@ -424,6 +424,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\game\follower_ai.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\game\follower_ai.h"
+					>
+				</File>
+				<File
 					RelativePath="..\scripts\npc\npc_innkeeper.cpp"
 					>
 				</File>

@@ -27,6 +27,8 @@ SET(trinityscript_LIB_SRCS
    scripts/guard/guards.cpp
    scripts/item/item_scripts.cpp
    scripts/item/item_test.cpp
+   scripts/npc/follower_ai.cpp
+   scripts/npc/follower_ai.h
    scripts/npc/escort_ai.cpp
    scripts/npc/escort_ai.h
    scripts/npc/npc_innkeeper.cpp

@@ -7,7 +7,7 @@
 
 /* ScriptData
 SDName: Black_Temple_Trash
-SD%Complete: 13% (9/68)
+SD%Complete: 81% (55/68)
 SDComment: Trash NPCs divided by to boss links
 SDCategory: Black Temple
 EndScriptData */
