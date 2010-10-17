@@ -1,23 +1,25 @@
-/* Copyright (C) 2006 - 2008 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+/*
+ * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 /* ScriptData
 SDName: Tanaris
 SD%Complete: 80
-SDComment: Quest support: 2882, 2954, 4005, 10277, 648, 10279(Special flight path). Noggenfogger vendor
+SDComment: Quest support: 648, 1560, 2882, 2954, 4005, 10277, 10279(Special flight path). Noggenfogger vendor
 SDCategory: Tanaris
 EndScriptData */
 
@@ -29,10 +31,12 @@ npc_steward_of_time
 npc_stone_watcher_of_norgannon
 npc_OOX17
 go_landmark_treasure
+npc_tooga
 EndContentData */
 
 #include "precompiled.h"
 #include "escort_ai.h"
+#include "follower_ai.h"
 
 /*######
 ## mob_aquementas
@@ -43,7 +47,7 @@ EndContentData */
 #define SPELL_AQUA_JET      13586
 #define SPELL_FROST_SHOCK   15089
 
-struct TRINITY_DLL_DECL mob_aquementasAI : public ScriptedAI
+struct mob_aquementasAI : public ScriptedAI
 {
     mob_aquementasAI(Creature *c) : ScriptedAI(c) {}
 
@@ -58,7 +62,7 @@ struct TRINITY_DLL_DECL mob_aquementasAI : public ScriptedAI
     {
         SendItem_Timer = 0;
         SwitchFaction_Timer = 10000;
-        m_creature->setFaction(35);
+        me->setFaction(35);
         isFriendly = true;
 
         AquaJet_Timer = 5000;
@@ -67,65 +71,65 @@ struct TRINITY_DLL_DECL mob_aquementasAI : public ScriptedAI
 
     void SendItem(Unit* receiver)
     {
-        if (((Player*)receiver)->HasItemCount(11169,1,false) &&
-            ((Player*)receiver)->HasItemCount(11172,11,false) &&
-            ((Player*)receiver)->HasItemCount(11173,1,false) &&
-            !((Player*)receiver)->HasItemCount(11522,1,true))
+        if (CAST_PLR(receiver)->HasItemCount(11169,1,false) &&
+            CAST_PLR(receiver)->HasItemCount(11172,11,false) &&
+            CAST_PLR(receiver)->HasItemCount(11173,1,false) &&
+            !CAST_PLR(receiver)->HasItemCount(11522,1,true))
         {
             ItemPosCountVec dest;
-            uint8 msg = ((Player*)receiver)->CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, 11522, 1, false);
-            if( msg == EQUIP_ERR_OK )
-                ((Player*)receiver)->StoreNewItem( dest, 11522, 1, true);
+            uint8 msg = CAST_PLR(receiver)->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 11522, 1, false);
+            if (msg == EQUIP_ERR_OK)
+                CAST_PLR(receiver)->StoreNewItem(dest, 11522, 1, true);
         }
     }
 
     void EnterCombat(Unit* who)
     {
-        DoScriptText(AGGRO_YELL_AQUE, m_creature, who);
+        DoScriptText(AGGRO_YELL_AQUE, me, who);
     }
 
     void UpdateAI(const uint32 diff)
     {
-        if( isFriendly )
+        if (isFriendly)
         {
-            if( SwitchFaction_Timer < diff )
+            if (SwitchFaction_Timer <= diff)
             {
-                m_creature->setFaction(91);
+                me->setFaction(91);
                 isFriendly = false;
-            }else SwitchFaction_Timer -= diff;
+            } else SwitchFaction_Timer -= diff;
         }
 
         if (!UpdateVictim())
             return;
 
-        if( !isFriendly )
+        if (!isFriendly)
         {
-            if( SendItem_Timer < diff )
+            if (SendItem_Timer <= diff)
             {
-                if( m_creature->getVictim()->GetTypeId() == TYPEID_PLAYER )
-                    SendItem(m_creature->getVictim());
+                if (me->getVictim()->GetTypeId() == TYPEID_PLAYER)
+                    SendItem(me->getVictim());
                 SendItem_Timer = 5000;
-            }else SendItem_Timer -= diff;
+            } else SendItem_Timer -= diff;
         }
 
-        if( FrostShock_Timer < diff )
+        if (FrostShock_Timer <= diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_FROST_SHOCK);
+            DoCast(me->getVictim(), SPELL_FROST_SHOCK);
             FrostShock_Timer = 15000;
-        }else FrostShock_Timer -= diff;
+        } else FrostShock_Timer -= diff;
 
-        if( AquaJet_Timer < diff )
+        if (AquaJet_Timer <= diff)
         {
-            DoCast(m_creature,SPELL_AQUA_JET);
+            DoCast(me, SPELL_AQUA_JET);
             AquaJet_Timer = 15000;
-        }else AquaJet_Timer -= diff;
+        } else AquaJet_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }
 };
-CreatureAI* GetAI_mob_aquementas(Creature *_Creature)
+CreatureAI* GetAI_mob_aquementas(Creature* pCreature)
 {
-    return new mob_aquementasAI (_Creature);
+    return new mob_aquementasAI (pCreature);
 }
 
 /*######
@@ -147,63 +151,63 @@ CreatureAI* GetAI_mob_aquementas(Creature *_Creature)
 #define WHISPER_CUSTODIAN_13    -1000162
 #define WHISPER_CUSTODIAN_14    -1000163
 
-struct TRINITY_DLL_DECL npc_custodian_of_timeAI : public npc_escortAI
+struct npc_custodian_of_timeAI : public npc_escortAI
 {
     npc_custodian_of_timeAI(Creature *c) : npc_escortAI(c) {}
 
     void WaypointReached(uint32 i)
     {
-        Player *pTemp = GetPlayerForEscort();
-        if( !pTemp )
+        Player *pPlayer = GetPlayerForEscort();
+        if (!pPlayer)
             return;
 
-        switch( i )
+        switch(i)
         {
-            case 2: DoScriptText(WHISPER_CUSTODIAN_1, m_creature, pTemp); break;
-            case 3: DoScriptText(WHISPER_CUSTODIAN_2, m_creature, pTemp); break;
-            case 4: DoScriptText(WHISPER_CUSTODIAN_3, m_creature, pTemp); break;
-            case 5: DoScriptText(WHISPER_CUSTODIAN_4, m_creature, pTemp); break;
-            case 7: DoScriptText(WHISPER_CUSTODIAN_5, m_creature, pTemp); break;
-            case 8: DoScriptText(WHISPER_CUSTODIAN_6, m_creature, pTemp); break;
-            case 9: DoScriptText(WHISPER_CUSTODIAN_7, m_creature, pTemp); break;
-            case 10: DoScriptText(WHISPER_CUSTODIAN_8, m_creature, pTemp); break;
-            case 11: DoScriptText(WHISPER_CUSTODIAN_9, m_creature, pTemp); break;
-            case 12: DoScriptText(WHISPER_CUSTODIAN_4, m_creature, pTemp); break;
-            case 15: DoScriptText(WHISPER_CUSTODIAN_10, m_creature, pTemp); break;
-            case 16: DoScriptText(WHISPER_CUSTODIAN_4, m_creature, pTemp); break;
-            case 18: DoScriptText(WHISPER_CUSTODIAN_11, m_creature, pTemp); break;
-            case 19: DoScriptText(WHISPER_CUSTODIAN_12, m_creature, pTemp); break;
-            case 20: DoScriptText(WHISPER_CUSTODIAN_4, m_creature, pTemp); break;
-            case 24: DoScriptText(WHISPER_CUSTODIAN_13, m_creature, pTemp); break;
-            case 25: DoScriptText(WHISPER_CUSTODIAN_4, m_creature, pTemp); break;
-            case 26:
-                DoScriptText(WHISPER_CUSTODIAN_14, m_creature, pTemp);
-                DoCast(pTemp,34883);
-                //below here is temporary workaround, to be removed when spell works properly
-                pTemp->AreaExploredOrEventHappens(10277);
+            case 0: DoScriptText(WHISPER_CUSTODIAN_1, me, pPlayer); break;
+            case 1: DoScriptText(WHISPER_CUSTODIAN_2, me, pPlayer); break;
+            case 2: DoScriptText(WHISPER_CUSTODIAN_3, me, pPlayer); break;
+            case 3: DoScriptText(WHISPER_CUSTODIAN_4, me, pPlayer); break;
+            case 5: DoScriptText(WHISPER_CUSTODIAN_5, me, pPlayer); break;
+            case 6: DoScriptText(WHISPER_CUSTODIAN_6, me, pPlayer); break;
+            case 7: DoScriptText(WHISPER_CUSTODIAN_7, me, pPlayer); break;
+            case 8: DoScriptText(WHISPER_CUSTODIAN_8, me, pPlayer); break;
+            case 9: DoScriptText(WHISPER_CUSTODIAN_9, me, pPlayer); break;
+            case 10: DoScriptText(WHISPER_CUSTODIAN_4, me, pPlayer); break;
+            case 13: DoScriptText(WHISPER_CUSTODIAN_10, me, pPlayer); break;
+            case 14: DoScriptText(WHISPER_CUSTODIAN_4, me, pPlayer); break;
+            case 16: DoScriptText(WHISPER_CUSTODIAN_11, me, pPlayer); break;
+            case 17: DoScriptText(WHISPER_CUSTODIAN_12, me, pPlayer); break;
+            case 18: DoScriptText(WHISPER_CUSTODIAN_4, me, pPlayer); break;
+            case 22: DoScriptText(WHISPER_CUSTODIAN_13, me, pPlayer); break;
+            case 23: DoScriptText(WHISPER_CUSTODIAN_4, me, pPlayer); break;
+            case 24:
+                DoScriptText(WHISPER_CUSTODIAN_14, me, pPlayer);
+                DoCast(pPlayer, 34883);
+                // below here is temporary workaround, to be removed when spell works properly
+                pPlayer->AreaExploredOrEventHappens(10277);
                 break;
         }
     }
 
     void MoveInLineOfSight(Unit *who)
     {
-        if(HasEscortState(STATE_ESCORT_ESCORTING))
+        if (HasEscortState(STATE_ESCORT_ESCORTING))
             return;
 
-        if( who->GetTypeId() == TYPEID_PLAYER )
+        if (who->GetTypeId() == TYPEID_PLAYER)
         {
-            if( ((Player*)who)->HasAura(34877,1) && ((Player*)who)->GetQuestStatus(10277) == QUEST_STATUS_INCOMPLETE )
+            if (who->HasAura(34877,1) && CAST_PLR(who)->GetQuestStatus(10277) == QUEST_STATUS_INCOMPLETE)
             {
                 float Radius = 10.0;
-                if( m_creature->IsWithinDistInMap(who, Radius) )
+                if (me->IsWithinDistInMap(who, Radius))
                 {
-                    if (npc_escortAI* pEscortAI = CAST_AI(npc_custodian_of_timeAI, m_creature->AI()))
-                        pEscortAI->Start(false, false, who->GetGUID());
+                    Start(false, false, who->GetGUID());
                 }
             }
         }
     }
 
+    void EnterCombat(Unit* /*who*/) {}
     void Reset() { }
 
     void UpdateAI(const uint32 diff)
@@ -212,38 +216,36 @@ struct TRINITY_DLL_DECL npc_custodian_of_timeAI : public npc_escortAI
     }
 };
 
-CreatureAI* GetAI_npc_custodian_of_time(Creature *_Creature)
+CreatureAI* GetAI_npc_custodian_of_time(Creature* pCreature)
 {
-    npc_custodian_of_timeAI* custodian_of_timeAI = new npc_custodian_of_timeAI(_Creature);
+    npc_custodian_of_timeAI* custodian_of_timeAI = new npc_custodian_of_timeAI(pCreature);
 
-    custodian_of_timeAI->AddWaypoint(0, -8535.57,-4212.61, -212.04);
-    custodian_of_timeAI->AddWaypoint(1, -8456.48,-4211.77, -213.30);
-    custodian_of_timeAI->AddWaypoint(2, -8374.93,-4250.21, -205.05,5000);
-    custodian_of_timeAI->AddWaypoint(3, -8374.93,-4250.21, -204.38,16000);
-    custodian_of_timeAI->AddWaypoint(4, -8374.93,-4250.21, -204.38,10000);
-    custodian_of_timeAI->AddWaypoint(5, -8374.93,-4250.21, -204.38,2000);
-    custodian_of_timeAI->AddWaypoint(6, -8439.40,-4180.05, -209.25);
-    custodian_of_timeAI->AddWaypoint(7, -8437.82,-4120.84, -208.59,10000);
-    custodian_of_timeAI->AddWaypoint(8, -8437.82,-4120.84, -208.59,16000);
-    custodian_of_timeAI->AddWaypoint(9, -8437.82,-4120.84, -208.59,13000);
-    custodian_of_timeAI->AddWaypoint(10, -8437.82,-4120.84, -208.59,18000);
-    custodian_of_timeAI->AddWaypoint(11, -8437.82,-4120.84, -208.59,15000);
-    custodian_of_timeAI->AddWaypoint(12, -8437.82,-4120.84, -208.59,2000);
-    custodian_of_timeAI->AddWaypoint(13, -8467.26,-4198.63, -214.21);
-    custodian_of_timeAI->AddWaypoint(14, -8667.76,-4252.13, -209.56);
-    custodian_of_timeAI->AddWaypoint(15, -8703.71,-4234.58, -209.5,14000);
-    custodian_of_timeAI->AddWaypoint(16, -8703.71,-4234.58, -209.5,2000);
-    custodian_of_timeAI->AddWaypoint(17, -8642.81,-4304.37, -209.57);
-    custodian_of_timeAI->AddWaypoint(18, -8649.06,-4394.36, -208.46,6000);
-    custodian_of_timeAI->AddWaypoint(19, -8649.06,-4394.36, -208.46,18000);
-    custodian_of_timeAI->AddWaypoint(20, -8649.06,-4394.36, -208.46,2000);
-    custodian_of_timeAI->AddWaypoint(21, -8468.72,-4437.67, -215.45);
-    custodian_of_timeAI->AddWaypoint(22, -8427.54,-4426, -211.13);
-    custodian_of_timeAI->AddWaypoint(23, -8364.83,-4393.32, -205.91);
-    custodian_of_timeAI->AddWaypoint(24, -8304.54,-4357.2, -208.2,18000);
-    custodian_of_timeAI->AddWaypoint(25, -8304.54,-4357.2, -208.2,2000);
-    custodian_of_timeAI->AddWaypoint(26, -8375.42,-4250.41, -205.14,5000);
-    custodian_of_timeAI->AddWaypoint(27, -8375.42,-4250.41, -205.14,5000);
+    custodian_of_timeAI->AddWaypoint(0, -8374.93,-4250.21, -204.38,5000);
+    custodian_of_timeAI->AddWaypoint(1, -8374.93,-4250.21, -204.38,16000);
+    custodian_of_timeAI->AddWaypoint(2, -8374.93,-4250.21, -204.38,10000);
+    custodian_of_timeAI->AddWaypoint(3, -8374.93,-4250.21, -204.38,2000);
+    custodian_of_timeAI->AddWaypoint(4, -8439.40,-4180.05, -209.25);
+    custodian_of_timeAI->AddWaypoint(5, -8437.82,-4120.84, -208.59,10000);
+    custodian_of_timeAI->AddWaypoint(6, -8437.82,-4120.84, -208.59,16000);
+    custodian_of_timeAI->AddWaypoint(7, -8437.82,-4120.84, -208.59,13000);
+    custodian_of_timeAI->AddWaypoint(8, -8437.82,-4120.84, -208.59,18000);
+    custodian_of_timeAI->AddWaypoint(9, -8437.82,-4120.84, -208.59,15000);
+    custodian_of_timeAI->AddWaypoint(10, -8437.82,-4120.84, -208.59,2000);
+    custodian_of_timeAI->AddWaypoint(11, -8467.26,-4198.63, -214.21);
+    custodian_of_timeAI->AddWaypoint(12, -8667.76,-4252.13, -209.56);
+    custodian_of_timeAI->AddWaypoint(13, -8703.71,-4234.58, -209.5,14000);
+    custodian_of_timeAI->AddWaypoint(14, -8703.71,-4234.58, -209.5,2000);
+    custodian_of_timeAI->AddWaypoint(15, -8642.81,-4304.37, -209.57);
+    custodian_of_timeAI->AddWaypoint(16, -8649.06,-4394.36, -208.46,6000);
+    custodian_of_timeAI->AddWaypoint(17, -8649.06,-4394.36, -208.46,18000);
+    custodian_of_timeAI->AddWaypoint(18, -8649.06,-4394.36, -208.46,2000);
+    custodian_of_timeAI->AddWaypoint(19, -8468.72,-4437.67, -215.45);
+    custodian_of_timeAI->AddWaypoint(20, -8427.54,-4426, -211.13);
+    custodian_of_timeAI->AddWaypoint(21, -8364.83,-4393.32, -205.91);
+    custodian_of_timeAI->AddWaypoint(22, -8304.54,-4357.2, -208.2,18000);
+    custodian_of_timeAI->AddWaypoint(23, -8304.54,-4357.2, -208.2,2000);
+    custodian_of_timeAI->AddWaypoint(24, -8375.42,-4250.41, -205.14,5000);
+    custodian_of_timeAI->AddWaypoint(25, -8375.42,-4250.41, -205.14,5000);
 
     return (CreatureAI*)custodian_of_timeAI;
 }
@@ -252,23 +254,23 @@ CreatureAI* GetAI_npc_custodian_of_time(Creature *_Creature)
 ## npc_marin_noggenfogger
 ######*/
 
-bool GossipHello_npc_marin_noggenfogger(Player *player, Creature *_Creature)
+bool GossipHello_npc_marin_noggenfogger(Player* pPlayer, Creature* pCreature)
 {
-    if( _Creature->isQuestGiver() )
-        player->PrepareQuestMenu( _Creature->GetGUID() );
+    if (pCreature->isQuestGiver())
+        pPlayer->PrepareQuestMenu(pCreature->GetGUID());
 
-    if( _Creature->isVendor() && player->GetQuestRewardStatus(2662) )
-        player->ADD_GOSSIP_ITEM(1, GOSSIP_TEXT_BROWSE_GOODS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
+    if (pCreature->isVendor() && pPlayer->GetQuestRewardStatus(2662))
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, GOSSIP_TEXT_BROWSE_GOODS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
 
-    player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+    pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
 
     return true;
 }
 
-bool GossipSelect_npc_marin_noggenfogger(Player *player, Creature *_Creature, uint32 sender, uint32 action)
+bool GossipSelect_npc_marin_noggenfogger(Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 uiAction)
 {
-    if( action == GOSSIP_ACTION_TRADE )
-        player->SEND_VENDORLIST( _Creature->GetGUID() );
+    if (uiAction == GOSSIP_ACTION_TRADE)
+        pPlayer->SEND_VENDORLIST(pCreature->GetGUID());
 
     return true;
 }
@@ -279,34 +281,34 @@ bool GossipSelect_npc_marin_noggenfogger(Player *player, Creature *_Creature, ui
 
 #define GOSSIP_ITEM_FLIGHT  "Please take me to the master's lair."
 
-bool GossipHello_npc_steward_of_time(Player *player, Creature *_Creature)
+bool GossipHello_npc_steward_of_time(Player* pPlayer, Creature* pCreature)
 {
-    if( _Creature->isQuestGiver() )
-        player->PrepareQuestMenu( _Creature->GetGUID() );
+    if (pCreature->isQuestGiver())
+        pPlayer->PrepareQuestMenu(pCreature->GetGUID());
 
-    if( player->GetQuestStatus(10279) == QUEST_STATUS_INCOMPLETE || player->GetQuestRewardStatus(10279) )
+    if (pPlayer->GetQuestStatus(10279) == QUEST_STATUS_INCOMPLETE || pPlayer->GetQuestRewardStatus(10279))
     {
-        player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_FLIGHT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-        player->SEND_GOSSIP_MENU(9978,_Creature->GetGUID());
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_FLIGHT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+        pPlayer->SEND_GOSSIP_MENU(9978, pCreature->GetGUID());
     }
     else
-        player->SEND_GOSSIP_MENU(9977,_Creature->GetGUID());
+        pPlayer->SEND_GOSSIP_MENU(9977, pCreature->GetGUID());
 
     return true;
 }
 
-bool QuestAccept_npc_steward_of_time(Player *player, Creature *creature, Quest const *quest )
+bool QuestAccept_npc_steward_of_time(Player* pPlayer, Creature* /*pCreature*/, Quest const *quest)
 {
-    if( quest->GetQuestId() == 10279 )                      //Quest: To The Master's Lair
-        player->CastSpell(player,34891,true);               //(Flight through Caverns)
+    if (quest->GetQuestId() == 10279)                      //Quest: To The Master's Lair
+        pPlayer->CastSpell(pPlayer,34891,true);               //(Flight through Caverns)
 
     return false;
 }
 
-bool GossipSelect_npc_steward_of_time(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+bool GossipSelect_npc_steward_of_time(Player* pPlayer, Creature* /*pCreature*/, uint32 /*uiSender*/, uint32 uiAction)
 {
-    if( action == GOSSIP_ACTION_INFO_DEF + 1 )
-        player->CastSpell(player,34891,true);               //(Flight through Caverns)
+    if (uiAction == GOSSIP_ACTION_INFO_DEF + 1)
+        pPlayer->CastSpell(pPlayer,34891,true);               //(Flight through Caverns)
 
     return true;
 }
@@ -322,46 +324,46 @@ bool GossipSelect_npc_steward_of_time(Player *player, Creature *_Creature, uint3
 #define GOSSIP_ITEM_NORGANNON_5     "So, what's inside Uldum?"
 #define GOSSIP_ITEM_NORGANNON_6     "I will return when i have the Plates of Uldum."
 
-bool GossipHello_npc_stone_watcher_of_norgannon(Player *player, Creature *_Creature)
+bool GossipHello_npc_stone_watcher_of_norgannon(Player* pPlayer, Creature* pCreature)
 {
-    if( _Creature->isQuestGiver() )
-        player->PrepareQuestMenu( _Creature->GetGUID() );
+    if (pCreature->isQuestGiver())
+        pPlayer->PrepareQuestMenu(pCreature->GetGUID());
 
-    if( player->GetQuestStatus(2954) == QUEST_STATUS_INCOMPLETE )
-        player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_NORGANNON_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+    if (pPlayer->GetQuestStatus(2954) == QUEST_STATUS_INCOMPLETE)
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_NORGANNON_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
 
-    player->SEND_GOSSIP_MENU(1674, _Creature->GetGUID());
+    pPlayer->SEND_GOSSIP_MENU(1674, pCreature->GetGUID());
 
     return true;
 }
 
-bool GossipSelect_npc_stone_watcher_of_norgannon(Player *player, Creature *_Creature, uint32 sender, uint32 action)
+bool GossipSelect_npc_stone_watcher_of_norgannon(Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 uiAction)
 {
-    switch (action)
+    switch (uiAction)
     {
         case GOSSIP_ACTION_INFO_DEF:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_NORGANNON_2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
-            player->SEND_GOSSIP_MENU(1675, _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_NORGANNON_2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+            pPlayer->SEND_GOSSIP_MENU(1675, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+1:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_NORGANNON_3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
-            player->SEND_GOSSIP_MENU(1676, _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_NORGANNON_3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+            pPlayer->SEND_GOSSIP_MENU(1676, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+2:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_NORGANNON_4, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
-            player->SEND_GOSSIP_MENU(1677, _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_NORGANNON_4, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
+            pPlayer->SEND_GOSSIP_MENU(1677, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+3:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_NORGANNON_5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+4);
-            player->SEND_GOSSIP_MENU(1678, _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_NORGANNON_5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+4);
+            pPlayer->SEND_GOSSIP_MENU(1678, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+4:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_NORGANNON_6, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);
-            player->SEND_GOSSIP_MENU(1679, _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_NORGANNON_6, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);
+            pPlayer->SEND_GOSSIP_MENU(1679, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+5:
-            player->CLOSE_GOSSIP_MENU();
-            player->AreaExploredOrEventHappens(2954);
+            pPlayer->CLOSE_GOSSIP_MENU();
+            pPlayer->AreaExploredOrEventHappens(2954);
             break;
     }
     return true;
@@ -371,86 +373,92 @@ bool GossipSelect_npc_stone_watcher_of_norgannon(Player *player, Creature *_Crea
 ## npc_OOX17
 ######*/
 
-#define Q_OOX17             648
-#define SPAWN_FIRST         7803
-#define SPAWN_SECOND_1      5617
-#define SPAWN_SECOND_2      7805
-#define SAY_SCOFF           -1060004
-#define SAY_CHICKEN_ACC     -1060000
-#define SAY_CHICKEN_AGGRO_1 -1060001
-#define SAY_CHICKEN_AGGRO_2 -1060002
-#define SAY_CHICKEN_AMB     -1060003
-#define SAY_CHICKEN_COMP    -1060005
+enum e00X17
+{
+    //texts are signed for 7806
+    SAY_OOX_START           = -1060000,
+    SAY_OOX_AGGRO1          = -1060001,
+    SAY_OOX_AGGRO2          = -1060002,
+    SAY_OOX_AMBUSH          = -1060003,
+    SAY_OOX17_AMBUSH_REPLY  = -1060004,
+    SAY_OOX_END             = -1060005,
 
-struct TRINITY_DLL_DECL npc_OOX17AI : public npc_escortAI
+    Q_OOX17                 = 648,
+    SPAWN_FIRST             = 7803,
+    SPAWN_SECOND_1          = 5617,
+    SPAWN_SECOND_2          = 7805
+};
+
+struct npc_OOX17AI : public npc_escortAI
 {
     npc_OOX17AI(Creature *c) : npc_escortAI(c) {}
 
     void WaypointReached(uint32 i)
     {
-        Player* player = GetPlayerForEscort();
+        Player* pPlayer = GetPlayerForEscort();
 
-        if (!player)
+        if (!pPlayer)
             return;
 
         switch(i) {
             case 23:
-                m_creature->SummonCreature(SPAWN_FIRST, -8350.96, -4445.79, 10.10, 6.20, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
-                m_creature->SummonCreature(SPAWN_FIRST, -8355.96, -4447.79, 10.10, 6.27, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
-                m_creature->SummonCreature(SPAWN_FIRST, -8353.96, -4442.79, 10.10, 6.08, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
-                DoScriptText(SAY_CHICKEN_AMB, m_creature);
+                me->SummonCreature(SPAWN_FIRST, -8350.96, -4445.79, 10.10, 6.20, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+                me->SummonCreature(SPAWN_FIRST, -8355.96, -4447.79, 10.10, 6.27, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+                me->SummonCreature(SPAWN_FIRST, -8353.96, -4442.79, 10.10, 6.08, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+                DoScriptText(SAY_OOX_AMBUSH, me);
                 break;
 
             case 56:
-                m_creature->SummonCreature(SPAWN_SECOND_1, -7510.07, -4795.50, 9.35, 6.06, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
-                m_creature->SummonCreature(SPAWN_SECOND_2, -7515.07, -4797.50, 9.35, 6.22, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
-                m_creature->SummonCreature(SPAWN_SECOND_2, -7518.07, -4792.50, 9.35, 6.22, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
-                DoScriptText(SAY_CHICKEN_AMB, m_creature);
-
-                if(Unit* scoff = FindCreature(SPAWN_SECOND_2, 30, m_creature))
-                    DoScriptText(SAY_SCOFF, scoff);
-
+                me->SummonCreature(SPAWN_SECOND_1, -7510.07, -4795.50, 9.35, 6.06, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+                me->SummonCreature(SPAWN_SECOND_2, -7515.07, -4797.50, 9.35, 6.22, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+                me->SummonCreature(SPAWN_SECOND_2, -7518.07, -4792.50, 9.35, 6.22, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+                DoScriptText(SAY_OOX_AMBUSH, me);
+                if (Unit* scoff = FindCreature(SPAWN_SECOND_2, 30, me))
+                    DoScriptText(SAY_OOX17_AMBUSH_REPLY, scoff);
                 break;
 
             case 86:
-                DoScriptText(SAY_CHICKEN_COMP, m_creature);
-                player->GroupEventHappens(Q_OOX17, m_creature);
+                if (pPlayer)
+                {
+                    DoScriptText(SAY_OOX_END, me);
+                    pPlayer->GroupEventHappens(Q_OOX17, me);
+                }
                 break;
         }
     }
 
     void Reset(){}
 
-    void EnterCombat(Unit* who)
+    void EnterCombat(Unit* /*who*/)
     {
-        DoScriptText(RAND(SAY_CHICKEN_AGGRO_1, SAY_CHICKEN_AGGRO_2), m_creature);
+        DoScriptText(RAND(SAY_OOX_AGGRO1,SAY_OOX_AGGRO2), me);
     }
 
     void JustSummoned(Creature* summoned)
     {
-        summoned->AI()->AttackStart(m_creature);
+        summoned->AI()->AttackStart(me);
     }
 };
 
-bool QuestAccept_npc_OOX17(Player* player, Creature* creature, Quest const* quest)
+bool QuestAccept_npc_OOX17(Player* pPlayer, Creature* pCreature, Quest const* quest)
 {
     if (quest->GetQuestId() == Q_OOX17)
     {
-        creature->setFaction(113);
-        creature->SetHealth(creature->GetMaxHealth());
-        creature->SetUInt32Value(UNIT_FIELD_BYTES_1,0);
-        creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
-        DoScriptText(SAY_CHICKEN_ACC, creature);
-        if (npc_escortAI* pEscortAI = CAST_AI(npc_OOX17AI, creature->AI()))
-            pEscortAI->Start(true, true, player->GetGUID(), quest);
+        pCreature->setFaction(113);
+        pCreature->SetHealth(pCreature->GetMaxHealth());
+        pCreature->SetUInt32Value(UNIT_FIELD_BYTES_1,0);
+        pCreature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
+        DoScriptText(SAY_OOX_START, pCreature);
 
+        if (npc_escortAI* pEscortAI = CAST_AI(npc_OOX17AI, pCreature->AI()))
+            pEscortAI->Start(true, false, pPlayer->GetGUID());
     }
     return true;
 }
 
-CreatureAI* GetAI_npc_OOX17(Creature *_Creature)
+CreatureAI* GetAI_npc_OOX17(Creature* pCreature)
 {
-    npc_OOX17AI* OOX17AI = new npc_OOX17AI(_Creature);
+    npc_OOX17AI* OOX17AI = new npc_OOX17AI(pCreature);
 
     OOX17AI->AddWaypoint(0, -8843.73, -4374.44, 43.71);
     OOX17AI->AddWaypoint(1, -8834.68, -4373.88, 45.71);
@@ -569,21 +577,21 @@ bool GOHello_go_landmark_treasure(Player *player, GameObject* _GO)
     Creature * spawn = NULL;
 
     spawn = player->SummonCreature(NPC_PIRATE, -10029.78, -4032.54, 19.41, 3.40, TEMPSUMMON_TIMED_DESPAWN, 340000);
-    if(spawn)
+    if (spawn)
         spawn->GetMotionMaster()->MovePath(PATH_ENTRY_1, true);
     spawn = player->SummonCreature(NPC_PIRATE, -10031.64, -4032.14, 19.11, 3.40, TEMPSUMMON_TIMED_DESPAWN, 340000);
-    if(spawn)
+    if (spawn)
         spawn->GetMotionMaster()->MovePath(PATH_ENTRY_3, true);
 
     spawn = player->SummonCreature(NPC_SWASHBUCKLER, -10029.86, -4030.51, 20.02, 3.40, TEMPSUMMON_TIMED_DESPAWN, 340000);
-    if(spawn)
+    if (spawn)
         spawn->GetMotionMaster()->MovePath(PATH_ENTRY_4, true);
     spawn = player->SummonCreature(NPC_SWASHBUCKLER, -10031.83, -4030.70, 19.52, 3.40, TEMPSUMMON_TIMED_DESPAWN, 340000);
-    if(spawn)
+    if (spawn)
         spawn->GetMotionMaster()->MovePath(PATH_ENTRY_5, true);
 
     spawn = player->SummonCreature(NPC_BUCCANEER, -10028.90, -4029.65, 20.53, 3.40, TEMPSUMMON_TIMED_DESPAWN, 340000);
-    if(spawn)
+    if (spawn)
         spawn->GetMotionMaster()->MovePath(PATH_ENTRY_2, true);
 
     player->SummonGameObject(GO_TREASURE, -10119.70, -4050.45, 5.33, 0, 0, 0, 0, 0, 240);
@@ -591,70 +599,193 @@ bool GOHello_go_landmark_treasure(Player *player, GameObject* _GO)
     return true;
 };
 
-/*######
-## npc_anachronos
-######*/
+/*####
+# npc_tooga
+####*/
 
-#define SAY_MISTAKE -1645010
-
-struct TRINITY_DLL_DECL npc_anachronosAI : public ScriptedAI
+enum eTooga
 {
-    npc_anachronosAI(Creature *c) : ScriptedAI(c) {}
+    SAY_TOOG_THIRST             = -1600391,
+    SAY_TOOG_WORRIED            = -1600392,
+    SAY_TOOG_POST_1             = -1600393,
+    SAY_TORT_POST_2             = -1600394,
+    SAY_TOOG_POST_3             = -1600395,
+    SAY_TORT_POST_4             = -1600396,
+    SAY_TOOG_POST_5             = -1600397,
+    SAY_TORT_POST_6             = -1600398,
 
-   void UpdateAI(const uint32 diff)
-   {
-        if (!UpdateVictim() )
+    QUEST_TOOGA                 = 1560,
+    NPC_TORTA                   = 6015,
+
+    POINT_ID_TO_WATER           = 1,
+    FACTION_TOOG_ESCORTEE       = 113
+};
+
+const float m_afToWaterLoc[] = {-7032.664551f, -4906.199219f, -1.606446f};
+
+struct npc_toogaAI : public FollowerAI
+{
+    npc_toogaAI(Creature* pCreature) : FollowerAI(pCreature) { }
+
+    uint32 m_uiCheckSpeechTimer;
+    uint32 m_uiPostEventTimer;
+    uint32 m_uiPhasePostEvent;
+
+    uint64 TortaGUID;
+
+    void Reset()
+    {
+        m_uiCheckSpeechTimer = 2500;
+        m_uiPostEventTimer = 1000;
+        m_uiPhasePostEvent = 0;
+
+        TortaGUID = 0;
+    }
+
+    void MoveInLineOfSight(Unit *pWho)
+    {
+        FollowerAI::MoveInLineOfSight(pWho);
+
+        if (!me->getVictim() && !HasFollowState(STATE_FOLLOW_COMPLETE | STATE_FOLLOW_POSTEVENT) && pWho->GetEntry() == NPC_TORTA)
+        {
+            if (me->IsWithinDistInMap(pWho, INTERACTION_DISTANCE))
+            {
+                if (Player* pPlayer = GetLeaderForFollower())
+                {
+                    if (pPlayer->GetQuestStatus(QUEST_TOOGA) == QUEST_STATUS_INCOMPLETE)
+                        pPlayer->GroupEventHappens(QUEST_TOOGA, me);
+                }
+
+                TortaGUID = pWho->GetGUID();
+                SetFollowComplete(true);
+            }
+        }
+    }
+
+    void MovementInform(uint32 uiMotionType, uint32 uiPointId)
+    {
+        FollowerAI::MovementInform(uiMotionType, uiPointId);
+
+        if (uiMotionType != POINT_MOTION_TYPE)
             return;
 
-        if (m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 20)
+        if (uiPointId == POINT_ID_TO_WATER)
+            SetFollowComplete();
+    }
+
+    void UpdateFollowerAI(const uint32 uiDiff)
+    {
+        if (!UpdateVictim())
         {
-            DoScriptText(SAY_MISTAKE, m_creature);
-            m_creature->Kill(m_creature, false);
-            m_creature->RemoveCorpse();
+            //we are doing the post-event, or...
+            if (HasFollowState(STATE_FOLLOW_POSTEVENT))
+            {
+                if (m_uiPostEventTimer <= uiDiff)
+                {
+                    m_uiPostEventTimer = 5000;
+
+                    Unit *pTorta = Unit::GetUnit(*me, TortaGUID);
+                    if (!pTorta || !pTorta->isAlive())
+                    {
+                        //something happened, so just complete
+                        SetFollowComplete();
+                        return;
+                    }
+
+                    switch(m_uiPhasePostEvent)
+                    {
+                        case 1:
+                            DoScriptText(SAY_TOOG_POST_1, me);
+                            break;
+                        case 2:
+                            DoScriptText(SAY_TORT_POST_2, pTorta);
+                            break;
+                        case 3:
+                            DoScriptText(SAY_TOOG_POST_3, me);
+                            break;
+                        case 4:
+                            DoScriptText(SAY_TORT_POST_4, pTorta);
+                            break;
+                        case 5:
+                            DoScriptText(SAY_TOOG_POST_5, me);
+                            break;
+                        case 6:
+                            DoScriptText(SAY_TORT_POST_6, pTorta);
+                            me->GetMotionMaster()->MovePoint(POINT_ID_TO_WATER, m_afToWaterLoc[0], m_afToWaterLoc[1], m_afToWaterLoc[2]);
+                            break;
+                    }
+
+                    ++m_uiPhasePostEvent;
+                }
+                else
+                    m_uiPostEventTimer -= uiDiff;
+            }
+            //...we are doing regular speech check
+            else if (HasFollowState(STATE_FOLLOW_INPROGRESS))
+            {
+                if (m_uiCheckSpeechTimer <= uiDiff)
+                {
+                    m_uiCheckSpeechTimer = 5000;
+
+                    if (urand(0,9) > 8)
+                        DoScriptText(RAND(SAY_TOOG_THIRST,SAY_TOOG_WORRIED), me);
+                }
+                else
+                    m_uiCheckSpeechTimer -= uiDiff;
+            }
+
+            return;
         }
 
         DoMeleeAttackIfReady();
     }
 };
 
-CreatureAI* GetAI_npc_anachronos(Creature *_Creature)
+CreatureAI* GetAI_npc_tooga(Creature* pCreature)
 {
-    return new npc_anachronosAI(_Creature);
+    return new npc_toogaAI(pCreature);
 }
 
-/*######
-## AddSC
-######*/
+bool QuestAccept_npc_tooga(Player* pPlayer, Creature* pCreature, const Quest* pQuest)
+{
+    if (pQuest->GetQuestId() == QUEST_TOOGA)
+    {
+        if (npc_toogaAI* pToogaAI = CAST_AI(npc_toogaAI, pCreature->AI()))
+            pToogaAI->StartFollow(pPlayer, FACTION_TOOG_ESCORTEE, pQuest);
+    }
+
+    return true;
+}
 
 void AddSC_tanaris()
 {
     Script *newscript;
 
     newscript = new Script;
-    newscript->Name="mob_aquementas";
+    newscript->Name = "mob_aquementas";
     newscript->GetAI = &GetAI_mob_aquementas;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_custodian_of_time";
+    newscript->Name = "npc_custodian_of_time";
     newscript->GetAI = &GetAI_npc_custodian_of_time;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_marin_noggenfogger";
+    newscript->Name = "npc_marin_noggenfogger";
     newscript->pGossipHello =  &GossipHello_npc_marin_noggenfogger;
     newscript->pGossipSelect = &GossipSelect_npc_marin_noggenfogger;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_steward_of_time";
+    newscript->Name = "npc_steward_of_time";
     newscript->pGossipHello =  &GossipHello_npc_steward_of_time;
     newscript->pGossipSelect = &GossipSelect_npc_steward_of_time;
     newscript->pQuestAccept =  &QuestAccept_npc_steward_of_time;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_stone_watcher_of_norgannon";
+    newscript->Name = "npc_stone_watcher_of_norgannon";
     newscript->pGossipHello =  &GossipHello_npc_stone_watcher_of_norgannon;
     newscript->pGossipSelect = &GossipSelect_npc_stone_watcher_of_norgannon;
     newscript->RegisterSelf();
@@ -671,8 +802,8 @@ void AddSC_tanaris()
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name = "npc_anachronos";
-    newscript->GetAI = &GetAI_npc_anachronos;
+    newscript->Name = "npc_tooga";
+    newscript->GetAI = &GetAI_npc_tooga;
+    newscript->pQuestAccept = &QuestAccept_npc_tooga;
     newscript->RegisterSelf();
 }
-
