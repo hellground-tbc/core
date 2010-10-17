@@ -1358,6 +1358,10 @@
 				<Filter
 					Name="Wetlands"
 					>
+					<File
+						RelativePath="..\scripts\zone\wetlands\wetlands.cpp"
+						>
+					</File>
 				</Filter>
 				<Filter
 					Name="Winterspring"
