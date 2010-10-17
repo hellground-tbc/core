@@ -482,6 +482,7 @@ extern void AddSC_sunwell_plateau();
 extern void AddSC_tanaris();
 
 //Teldrassil
+extern void AddSC_teldrassil();
 //Tempest Keep
 //--Arcatraz
 extern void AddSC_arcatraz();
@@ -1067,6 +1068,7 @@ void AddScripts()
     AddSC_tanaris();
 
     //Teldrassil
+    AddSC_teldrassil();
     //Tempest Keep
     //--Arcatraz
     AddSC_arcatraz();
