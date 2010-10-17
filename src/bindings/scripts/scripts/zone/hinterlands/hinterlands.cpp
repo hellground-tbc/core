@@ -100,7 +100,6 @@ bool QuestAccept_npc_00x09hl(Player* pPlayer, Creature* pCreature, const Quest* 
 {
     if (pQuest->GetQuestId() == QUEST_RESQUE_OOX_09)
     {
-        std::cout << "Mam q zaczynam event?" << std::endl;
         pCreature->SetStandState(UNIT_STAND_STATE_STAND);
         pCreature->setFaction(113);
         pCreature->SetHealth(pCreature->GetMaxHealth());
