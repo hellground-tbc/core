@@ -327,7 +327,7 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public ScriptedAI
         DoScriptText(SAY_FREED, m_creature);
    }
 
-    void OnAuraRemove(Aura* aur)
+    void OnAuraRemove(Aura* aur, bool removeStack)
     {
         if(aur->GetId() == 30205)
         {

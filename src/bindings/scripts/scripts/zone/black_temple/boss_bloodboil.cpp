@@ -207,6 +207,23 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
         targets.clear();
     }
 
+    void OnAuraRemove(Aura * aur, bool removeStack)
+    {
+        if (aur->GetId() == SPELL_FEL_RAGE_SELF)
+        {
+            if (Unit *pTarget = Unit::GetUnit(*m_creature, m_targetGUID))
+            {
+                m_targetGUID = 0;
+                if(DoGetThreat(pTarget))
+                    DoModifyThreatPercent(pTarget, -100);
+
+                m_creature->AddThreat(pTarget, m_targetThreat);
+                m_targetThreat = 0;
+            }
+            PhaseChangeTimer = 0;
+        }
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim())
@@ -234,7 +251,7 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
 
         if (ArcingSmashTimer < diff)
         {
-            AddSpellToCast((Unit*)NULL, SPELL_ARCING_SMASH, false, true);
+            ForceSpellCast(m_creature->getVictim(), SPELL_ARCING_SMASH, DONT_INTERRUPT, false, true);
             ArcingSmashTimer = 10000;
         }
         else
@@ -316,7 +333,7 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
                     m_creature->SetSelection(pTarget->GetGUID());
 
                     pTarget->CastSpell(m_creature, SPELL_TAUNT_GURTOGG, true);
-                    
+
                     ForceSpellCast(pTarget, SPELL_FEL_RAGE_1, INTERRUPT_AND_CAST_INSTANTLY);
                     ForceSpellCast(pTarget, SPELL_FEL_RAGE_2, INTERRUPT_AND_CAST_INSTANTLY);
                     ForceSpellCast(pTarget, SPELL_FEL_RAGE_3, INTERRUPT_AND_CAST_INSTANTLY);
@@ -326,7 +343,7 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
 
                     ForceSpellCast(m_creature, SPELL_FEL_RAGE_SELF, INTERRUPT_AND_CAST);
                     ForceSpellCast(m_creature, SPELL_INSIGNIFIGANCE, INTERRUPT_AND_CAST);
-                    
+
                     DoScriptText(RAND(SAY_SPECIAL1, SAY_SPECIAL2), m_creature);
 
                     ArcingSmashTimer = 10000;
@@ -343,10 +360,10 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
                     Phase1 = false;
                 }
             }
-            else                                           
+            else
             {
                 Phase1 = true;
-                if (Unit *pTarget = Unit::GetUnit(*m_creature, m_targetGUID))
+                /*if (Unit *pTarget = Unit::GetUnit(*m_creature, m_targetGUID))
                 {
                     m_targetGUID = 0;
                     if(DoGetThreat(pTarget))
@@ -354,7 +371,7 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
 
                     m_creature->AddThreat(pTarget, m_targetThreat);
                     m_targetThreat = 0;
-                }
+                }*/
 
                 BewilderingStrikeTimer = urand(5000, 65000);
                 BloodboilTimer = 10000;
@@ -364,7 +381,7 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
                 PhaseChangeTimer = 59000;
 
                 m_creature->SetSpeed(MOVE_RUN, 2.0);
-                DoCast(m_creature, SPELL_ACIDIC_WOUND, true);
+                ForceSpellCast(m_creature, SPELL_ACIDIC_WOUND, INTERRUPT_AND_CAST_INSTANTLY);
             }
         }
         else
