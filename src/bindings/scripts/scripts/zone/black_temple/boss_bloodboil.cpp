@@ -251,7 +251,7 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
 
         if (ArcingSmashTimer < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_ARCING_SMASH, false, true);
+            ForceSpellCast(m_creature->getVictim(), SPELL_ARCING_SMASH, DONT_INTERRUPT, false, true);
             ArcingSmashTimer = 10000;
         }
         else
