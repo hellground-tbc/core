@@ -4804,7 +4804,11 @@ void Spell::EffectHealMaxHealth(uint32 /*i*/)
 {
     if(!unitTarget)
         return;
+
     if(!unitTarget->isAlive())
+        return;
+
+    if (unitTarget->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_HEALING_PCT) =< -100)
         return;
 
     uint32 addhealth = unitTarget->GetMaxHealth() - unitTarget->GetHealth();
@@ -4814,9 +4818,11 @@ void Spell::EffectHealMaxHealth(uint32 /*i*/)
     {
         if(!m_originalCaster)
             return;
+
         addhealth = addhealth > m_originalCaster->GetMaxHealth() ? m_originalCaster->GetMaxHealth() : addhealth;
         uint32 LoHamount = unitTarget->GetHealth() + m_originalCaster->GetMaxHealth();
         LoHamount = LoHamount > unitTarget->GetMaxHealth() ? unitTarget->GetMaxHealth() : LoHamount;
+        
         unitTarget->SetHealth(LoHamount);
     }
     else
