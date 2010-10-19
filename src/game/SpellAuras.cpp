@@ -2533,10 +2533,42 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
         case SPELLFAMILY_MAGE:
         {
             // Hypothermia
-            if( GetId()==41425 )
+            switch(GetId())
             {
-                m_target->ModifyAuraState(AURA_STATE_HYPOTHERMIA,apply);
+                case 41425:
+                    m_target->ModifyAuraState(AURA_STATE_HYPOTHERMIA,apply);
                 return;
+
+                case 11094:
+                case 13043: 
+                case 11189:
+                case 28332: 
+                {
+                    if (m_target->GetTypeId() != TYPEID_PLAYER)
+                        return;
+
+                    if (apply)
+                    {
+                        SpellModifier *mod = new SpellModifier;
+                        mod->op = SPELLMOD_EFFECT2;
+                        mod->value = GetModifierValue();
+                        mod->type = SPELLMOD_PCT;
+                        mod->spellId = GetId();
+                        mod->effectId = m_effIndex;
+                        mod->lastAffected = NULL;
+
+                        if (GetId() == 11094 || GetId() == 13043)
+                            mod->mask = 0x8LL;
+                        else
+                            mod->mask = 0x17FFLL;
+
+                        mod->charges = 0;
+                        m_spellmod = mod;
+                    }
+
+                    ((Player*)m_target)->AddSpellMod(m_spellmod, apply);
+                    return;
+                }
             }
             break;
         }
