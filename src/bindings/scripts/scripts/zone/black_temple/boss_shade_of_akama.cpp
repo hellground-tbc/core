@@ -253,7 +253,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
 
         if (m_shieldBashTimer < diff)
         {
-            if (m_creature->getVictim()->hasUnitState(UNIT_STAT_CASTING))
+            if (m_creature->getVictim() && m_creature->getVictim()->hasUnitState(UNIT_STAT_CASTING))
             {
                 DoCast(m_creature->getVictim(), SPELL_SHIELD_BASH, false);
                 m_shieldBashTimer = 10000;
