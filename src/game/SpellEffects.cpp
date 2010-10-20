@@ -3124,7 +3124,7 @@ void Spell::EffectEnergize(uint32 i)
 
     int32 gain = unitTarget->ModifyPower(power,damage);
     unitTarget->getHostilRefManager().threatAssist(m_caster, float(gain) * 0.5f, m_spellInfo);
-    
+
     m_caster->SendEnergizeSpellLog(unitTarget, m_spellInfo->Id, damage, power);
 
     // Mad Alchemist's Potion
@@ -4678,7 +4678,7 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
                     ((Player*)m_caster)->AddComboPoints(unitTarget,1);
             }
             // Maim interrupt (s3, s4 gloves bonus)
-            if(m_spellInfo->Id == 22570 && m_caster->HasAura(44835, 0)) 
+            if(m_spellInfo->Id == 22570 && m_caster->HasAura(44835, 0))
                 m_caster->CastSpell(unitTarget, 32747, true);
             break;
         }
@@ -4822,7 +4822,7 @@ void Spell::EffectHealMaxHealth(uint32 /*i*/)
         addhealth = addhealth > m_originalCaster->GetMaxHealth() ? m_originalCaster->GetMaxHealth() : addhealth;
         uint32 LoHamount = unitTarget->GetHealth() + m_originalCaster->GetMaxHealth();
         LoHamount = LoHamount > unitTarget->GetMaxHealth() ? unitTarget->GetMaxHealth() : LoHamount;
-        
+
         unitTarget->SetHealth(LoHamount);
     }
     else
@@ -5381,6 +5381,9 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         case 48025:                                     // Headless Horseman's Mount
         {
                 if(!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+                    return;
+
+                if (unitTarget->GetMap()->IsDungeon() || unitTarget->GetMap()->IsRaid())
                     return;
 
                 if(GetVirtualMapForMapAndZone(unitTarget->GetMapId(),unitTarget->GetZoneId()) != 530)
