@@ -424,11 +424,11 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\game\follower_ai.cpp"
+					RelativePath="..\scripts\npc\follower_ai.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\game\follower_ai.h"
+					RelativePath="..\scripts\npc\follower_ai.h"
 					>
 				</File>
 				<File

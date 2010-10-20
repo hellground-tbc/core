@@ -343,7 +343,7 @@ Spell::Spell( Unit* Caster, SpellEntry const *info, bool triggered, uint64 origi
     m_triggeredByAuraSpell  = NULL;
 
     //Auto Shot & Shoot
-    if( m_spellInfo->AttributesEx2 == 0x000020 && !triggered )
+    if (m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_AUTOREPEAT_FLAG && !triggered)
         m_autoRepeat = true;
     else
         m_autoRepeat = false;
@@ -760,11 +760,13 @@ void Spell::AddUnitTarget(Unit* pVictim, uint32 effIndex)
         // TODO: this is a hack
         float dist = m_caster->GetDistance(pVictim->GetPositionX(), pVictim->GetPositionY(), pVictim->GetPositionZ());
 
-        if (dist < 5.0f) dist = 5.0f;
+        if (dist < 5.0f)
+            dist = 5.0f;
+
         target.timeDelay = (uint64) floor(dist / m_spellInfo->speed * 1000.0f);
 
         // Calculate minimum incoming time
-        if (m_delayMoment==0 || m_delayMoment>target.timeDelay)
+        if (m_delayMoment == 0 || m_delayMoment>target.timeDelay)
             m_delayMoment = target.timeDelay;
     }
     else
@@ -780,7 +782,7 @@ void Spell::AddUnitTarget(Unit* pVictim, uint32 effIndex)
             target.reflectResult = SPELL_MISS_PARRY;
 
         // Increase time interval for reflected spells by 1.5
-        target.timeDelay+=target.timeDelay>>1;
+        target.timeDelay += target.timeDelay >> 1;
     }
     else
         target.reflectResult = SPELL_MISS_NONE;
