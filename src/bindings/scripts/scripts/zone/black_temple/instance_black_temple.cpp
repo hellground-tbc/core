@@ -146,14 +146,44 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         return NULL;
     }
 
+    uint32 GetEncounterForEntry(uint32 entry)
+    {
+        switch(entry)
+        {
+            case 22887:
+                return DATA_HIGHWARLORDNAJENTUSEVENT;
+            case 22841:
+                return DATA_SHADEOFAKAMAEVENT;
+            case 22871:
+                return DATA_TERONGOREFIENDEVENT;
+            case 22898:
+                return DATA_SUPREMUSEVENT;
+            case 22917:
+                return DATA_ILLIDANSTORMRAGEEVENT;
+            case 22947:
+                return DATA_MOTHERSHAHRAZEVENT;
+            case 22948:
+                return DATA_GURTOGGBLOODBOILEVENT;
+            case 22949:
+            case 22950:
+            case 22951:
+            case 22952:
+                return DATA_ILLIDARICOUNCILEVENT;
+            case 22856:
+                return DATA_RELIQUARYOFSOULSEVENT;
+            case 22947:
+                return DATA_MOTHERSHAHRAZEVENT;
+            default:
+                return 0;
+        }
+    }
+
     void OnCreatureCreate(Creature *creature, uint32 creature_entry)
     {
-        uint32 data = 0;
-
+        bool ashtongueBroken = false;
         switch(creature_entry)
         {
             case 22887: // High Warlord Naj'entus
-                data = DATA_HIGHWARLORDNAJENTUSEVENT;
                 Najentus = creature->GetGUID();
                 break;
             case 23089:
@@ -163,47 +193,33 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
                 Akama_Shade = creature->GetGUID();
                 break;
             case 22841: // Shade of Akama
-                data = DATA_SHADEOFAKAMAEVENT;
                 ShadeOfAkama = creature->GetGUID();
                 break;
             case 22871: // Teron Gorefiend
-                data = DATA_TERONGOREFIENDEVENT;
                 Teron = creature->GetGUID();
                 break;
             case 22898: // Supremus
-                data = DATA_SUPREMUSEVENT;
                 Supremus = creature->GetGUID();
                 break;
             case 22917: // Illidan Stormrage
-                data = DATA_ILLIDANSTORMRAGEEVENT;
                 IllidanStormrage = creature->GetGUID();
                 break;
-            case 22947:
-                data = DATA_MOTHERSHAHRAZEVENT;
-            case 22948: // Gurtogg Bloodboil
-                data = DATA_GURTOGGBLOODBOILEVENT;
-                break;
             case 22949:
-                data = DATA_ILLIDARICOUNCILEVENT;
                 GathiosTheShatterer = creature->GetGUID();
                 break;
             case 22950:
-                data = DATA_ILLIDARICOUNCILEVENT;
                 HighNethermancerZerevor = creature->GetGUID();
                 break;
             case 22951:
-                data = DATA_ILLIDARICOUNCILEVENT;
                 LadyMalande = creature->GetGUID();
                 break;
             case 22952:
-                data = DATA_ILLIDARICOUNCILEVENT;
                 VerasDarkshadow = creature->GetGUID();
                 break;
             case 23426:
                 IllidariCouncil = creature->GetGUID();
                 break;
             case 22856: // Reliquary of the Lost
-                data = DATA_RELIQUARYOFSOULSEVENT;
                 ReliquaryOfTheLost = creature->GetGUID();
                 break;
             case 23499:
@@ -225,72 +241,19 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
             case 22846:
             case 22848:
                 AshtongueBrokenList.push_back(creature->GetGUID());
+                ashtongueBroken = true;
                 break;
         }
 
-        if(GetData(DATA_SHADEOFAKAMAEVENT) == DONE && !AshtongueBrokenList.empty())
+        const CreatureData *tmp = creature->GetLinkedRespawnCreatureData();
+        if (!tmp)
+            return;
+
+        if (GetEncounterForEntry(tmp->id) && creature->isAlive() && GetData(GetEncounterForEntry(tmp->id)) == DONE)
         {
-            // after Shade Of Akama is defeated all Ashtongue change faction
-            for(std::list<uint64>::iterator itr = AshtongueBrokenList.begin(); itr != AshtongueBrokenList.end(); ++itr)
-            {
-                Creature* Broken = instance->GetCreature(*itr);
-                if(Broken)
-                    Broken->setFaction(1820);
-            }
-        }
-
-        if(data)
-        {
-            if (creature->isAlive() && GetData(data) == DONE)
-                creature->Kill(creature, false);
-        }
-        else
-        {
-            const CreatureData * tmp = creature->GetLinkedRespawnCreatureData();
-
-            if (!tmp)
-                return;
-
-            switch (tmp->id)
-            {
-                case 22887: // High Warlord Naj'entus
-                    data = DATA_HIGHWARLORDNAJENTUSEVENT;
-                    break;
-                case 22841: // Shade of Akama
-                    data = DATA_SHADEOFAKAMAEVENT;
-                    break;
-                case 22871: // Teron Gorefiend
-                    data = DATA_TERONGOREFIENDEVENT;
-                    break;
-                case 22898: // Supremus
-                    data = DATA_SUPREMUSEVENT;
-                    break;
-                case 22917: // Illidan Stormrage
-                    data = DATA_ILLIDANSTORMRAGEEVENT;
-                    break;
-                case 22947:
-                    data = DATA_MOTHERSHAHRAZEVENT;
-                case 22948: // Gurtogg Bloodboil
-                    data = DATA_GURTOGGBLOODBOILEVENT;
-                    break;
-                case 22949:
-                    data = DATA_ILLIDARICOUNCILEVENT;
-                    break;
-                case 22950:
-                    data = DATA_ILLIDARICOUNCILEVENT;
-                    break;
-                case 22951:
-                    data = DATA_ILLIDARICOUNCILEVENT;
-                    break;
-                case 22952:
-                    data = DATA_ILLIDARICOUNCILEVENT;
-                    break;
-                case 22856: // Reliquary of the Lost
-                    data = DATA_RELIQUARYOFSOULSEVENT;
-                    break;
-            }
-
-            if (data && creature->isAlive() && GetData(data) == DONE)
+            if (ashtongueBroken)
+                creature->setFaction(1820);
+            else
                 creature->Kill(creature, false);
         }
     }
