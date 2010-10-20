@@ -73,10 +73,15 @@ struct Location
 
 #define SPAWN_Z 112.87f
 
-static float moveTo[2][3] =
+#define AKAMA_X         514.78
+#define AKAMA_Y         400.79
+#define AKAMA_Z         112.78
+
+static float moveTo[3][3] =
 {
     {470.0, 400.80, CHANNELERS_Z},
-    {482.45, 401.02, SPAWN_Z}
+    {482.45, 401.02, SPAWN_Z},
+    {AKAMA_X, AKAMA_Y, AKAMA_Z}
 };
 
 static float SpawnLocations[2][2]=
@@ -90,15 +95,6 @@ static float SpawnLocations[2][2]=
 #define AGGRO_X         482.793182
 #define AGGRO_Y         401.270172
 #define AGGRO_Z         112.783928
-
-/*#define AKAMA_X 488.25
-#define AKAMA_Y 401.22
-#define AKAMA_Z         112.78
-*/
-
-#define AKAMA_X         514.78
-#define AKAMA_Y         400.79
-#define AKAMA_Z         112.78
 
 // Spells
 #define SPELL_VERTEX_SHADE_BLACK    39833
@@ -671,7 +667,7 @@ enum phases
     START_EVENT  = 1,  // start event
     MOVE_PHASE_1 = 2,  // go to the stairs
     MOVE_PHASE_2 = 3,  // step down from stairs
-    ATTACK_PHASE = 4,  // go to akama
+    MOVE_PHASE_3 = 4,  // go to akama
     AKAMA_FIGHT  = 5,  // start fight with akama
     AKAMA_DEATH  = 10  // Akama dies after 60s of fight with shade
 };
@@ -833,7 +829,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
 
     void AttackStart(Unit* who)
     {
-        if (!who || event_phase != ATTACK_PHASE)
+        if (!who || event_phase != AKAMA_FIGHT)
             return;
 
         if (m_creature->Attack(who, true))
@@ -890,10 +886,9 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
     {
         if (target->GetGUID() == AkamaGUID)
         {
-            if (event_phase == ATTACK_PHASE)
+            if (event_phase == AKAMA_FIGHT)
             {
                 SetBanish(false);
-                event_phase = AKAMA_FIGHT;
                 TurnOffChanneling();
 
                 target->InterruptNonMeleeSpells(false);
@@ -913,21 +908,29 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
         if (type != POINT_MOTION_TYPE)
             return;
 
-        if (id == 0)
+        switch (id)
         {
-            event_phase = MOVE_PHASE_2;
-            m_updateSpeed = true; // Just to force second path
-        }
-        else
-        {
-            if (id == 1)
+            case 0:
             {
-                event_phase = ATTACK_PHASE;
-                if (Creature *akama = m_creature->GetCreature(*m_creature, AkamaGUID))
+                event_phase = MOVE_PHASE_2;
+                m_updateSpeed = true; // Just to force second path
+                break;
+            }
+            case 1:
+            {
+                event_phase = MOVE_PHASE_3;
+                m_updateSpeed = true;
+                break;
+            }
+            case 2:
+            {
+                event_phase = AKAMA_FIGHT;
+                if (Creature *pAkama = m_creature->GetCreature(*m_creature, AkamaGUID))
                 {
-                    m_creature->AddThreat(akama, 1000000.0f);
-                    m_creature->AI()->AttackStart(akama);
+                    m_creature->AddThreat(pAkama, 1000000.0f);
+                    m_creature->AI()->AttackStart(pAkama);
                 }
+                break;
             }
         }
     }
@@ -1035,7 +1038,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
             }
             else
             {
-                if (m_updateSpeed && me->GetTotalAuraModifier(SPELL_AURA_MOD_DECREASE_SPEED) < -100)
+                if (m_updateSpeed && me->GetTotalAuraModifier(SPELL_AURA_MOD_DECREASE_SPEED) <= -100)
                 {
                     me->GetMotionMaster()->MovementExpired();
                     me->StopMoving();
@@ -1058,6 +1061,13 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
                         me->StopMoving();
 
                         me->GetMotionMaster()->MovePoint(i, moveTo[i][0], moveTo[i][1], moveTo[i][2]);
+                    }
+                    else if (event_phase == MOVE_PHASE_3)
+                    {
+                        me->GetMotionMaster()->MovementExpired();
+                        me->StopMoving();
+
+                        me->GetMotionMaster()->MovePoint(2, moveTo[2][0], moveTo[2][1], moveTo[2][2]);
                     }
                     m_updateSpeed = false;
                 }
