@@ -228,6 +228,17 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
                 break;
         }
 
+        if(GetData(DATA_SHADEOFAKAMAEVENT) == DONE && !AshtongueBrokenList.empty())
+        {
+            // after Shade Of Akama is defeated all Ashtongue change faction
+            for(std::list<uint64>::iterator itr = AshtongueBrokenList.begin(); itr != AshtongueBrokenList.end(); ++itr)
+            {
+                Creature* Broken = instance->GetCreature(*itr);
+                if(Broken)
+                    Broken->setFaction(1820);
+            }
+        }
+
         if(data)
         {
             if (creature->isAlive() && GetData(data) == DONE)
@@ -402,7 +413,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
                 Encounters[1] = data;
             break;
         case DATA_SHADEOFAKAMAEVENT:
-            if(data == DONE)
+            if(data == DONE && !AshtongueBrokenList.empty())
             {
                 // after Shade Of Akama is defeated all Ashtongue change faction
                 for(std::list<uint64>::iterator itr = AshtongueBrokenList.begin(); itr != AshtongueBrokenList.end(); ++itr)
