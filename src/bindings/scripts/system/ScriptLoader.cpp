@@ -479,6 +479,9 @@ extern void AddSC_boss_muru();
 extern void AddSC_boss_kiljaeden();
 extern void AddSC_sunwell_plateau();
 
+//Swamp Of Sorrows
+extern void AddSC_swamp_of_sorrows();
+
 //Tanaris
 extern void AddSC_tanaris();
 
@@ -1066,6 +1069,9 @@ void AddScripts()
     AddSC_boss_muru();
     AddSC_boss_kiljaeden();
     AddSC_sunwell_plateau();
+
+    //Swamp Of Sorrows
+    AddSC_swamp_of_sorrows();
 
     //Tanaris
     AddSC_tanaris();

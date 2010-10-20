@@ -782,6 +782,10 @@
 				<Filter
 					Name="Swamp of Sorrows"
 					>
+					<File
+						RelativePath="..\scripts\zone\swamp of sorrows\swamp_of_sorrows.cpp"
+						>
+					</File>
 				</Filter>
 				<Filter
 					Name="Scarlet Monastery"
