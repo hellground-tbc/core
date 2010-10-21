@@ -171,8 +171,6 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
                 return DATA_ILLIDARICOUNCILEVENT;
             case 22856:
                 return DATA_RELIQUARYOFSOULSEVENT;
-            case 22947:
-                return DATA_MOTHERSHAHRAZEVENT;
             default:
                 return 0;
         }

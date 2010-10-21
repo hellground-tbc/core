@@ -68,9 +68,6 @@ struct Location
     float x, y, o, z;
 };
 
-#define SPAWN_LOCATION_SOUTH 0
-#define SPAWN_LOCATION_NORTH 1
-
 #define SPAWN_Z 112.87f
 
 #define AKAMA_X         514.78
@@ -79,22 +76,16 @@ struct Location
 
 static float moveTo[3][3] =
 {
-    {470.0, 400.80, CHANNELERS_Z},
-    {482.45, 401.02, SPAWN_Z},
-    {AKAMA_X, AKAMA_Y, AKAMA_Z}
+    { 470.00, 400.80, CHANNELERS_Z },
+    { 482.45, 400.80, SPAWN_Z },
+    { 505.50, 400.80, AKAMA_Z }
 };
 
 static float SpawnLocations[2][2]=
 {
-    {499.30, 469.37},
-    {499.06, 331.73}
+    { 499.30, 469.37 },
+    { 499.06, 331.73 }
 };
-
-
-// Locations
-#define AGGRO_X         482.793182
-#define AGGRO_Y         401.270172
-#define AGGRO_Z         112.783928
 
 // Spells
 #define SPELL_VERTEX_SHADE_BLACK    39833
@@ -604,61 +595,72 @@ struct TRINITY_DLL_DECL mob_ashtongue_sorcererAI : public ScriptedAI
     mob_ashtongue_sorcererAI(Creature* c) : ScriptedAI(c)
     {
         pInstance = (ScriptedInstance *)c->GetInstanceData();
-        ShadeGUID = 0;
     }
 
     ScriptedInstance *pInstance;
 
-    uint64 ShadeGUID;
-    bool m_channel;
     uint32 m_checkTimer;
+    uint64 m_shadeGUID;
+
+    bool m_channeling;
 
     void Reset()
     {
         m_checkTimer = 1000;
-        m_channel = true;
+
+        m_channeling = false;
+        m_shadeGUID = pInstance->GetData64(DATA_SHADEOFAKAMA);
     }
 
-    void OnAuraRemove(Aura *aura, bool stackRemove);
+    void OnAuraRemove(Aura *aura, bool stackRemove)
+    {
+        if (aura->GetSpellProto()->Id == SPELL_SHADE_SOUL_CHANNEL)
+        {
+            if (Unit *pShade = m_creature->GetUnit(*m_creature, m_shadeGUID))
+                pShade->RemoveSingleAuraFromStack(SPELL_SHADE_SOUL_CHANNEL_2, 0);
+        }
+    }
+
+    void MovementInform(uint32 type, uint32 id)
+    {
+        if (type != POINT_MOTION_TYPE)
+            return;
+
+        if (Unit *pShade = m_creature->GetUnit(*m_creature, m_shadeGUID))
+        {
+            me->SetSelection(m_shadeGUID);
+            DoCast(pShade, SPELL_SHADE_SOUL_CHANNEL);
+        }
+
+        m_channeling = true;
+    }
+
     void EnterCombat(Unit* who) {}
     void AttackStart(Unit* who) {}
     void MoveInLineOfSight(Unit* who) {}
-
     void UpdateAI(const uint32 diff)
     {
-        if (!m_channel)
+        if (!m_channeling)
             return;
 
-        if (ShadeGUID)
+        if (m_checkTimer < diff)
         {
-            if (!m_creature->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT))
+            if (!me->IsNonMeleeSpellCasted(true, false, true)) // that shouldn't happen
             {
-                if (m_checkTimer < diff)
+                if (Unit *pShade = m_creature->GetUnit(*m_creature, m_shadeGUID))
                 {
-                    if (Unit *pShade = m_creature->GetUnit(*m_creature, ShadeGUID))
+                    if (pShade->isAlive())
                     {
-                        if (m_creature->GetDistance2d(pShade) <= 10.0f +urand(0,5))
-                        {
-                            m_creature->StopMoving();
-                            m_creature->RemoveAurasDueToSpell(SPELL_SHADE_SOUL_CHANNEL);
-
-                            if (pShade->isAlive())
-                                DoCast(pShade, SPELL_SHADE_SOUL_CHANNEL);
-                            else
-                                m_channel = false;
-                        }
+                        me->SetSelection(m_shadeGUID);
+                        DoCast(pShade, SPELL_SHADE_SOUL_CHANNEL);
                     }
-                    m_checkTimer = 1000;
                 }
-                else
-                    m_checkTimer -= diff;
             }
+            m_checkTimer = 1000;
+
         }
         else
-        {
-            if (pInstance)
-                ShadeGUID = pInstance->GetData64(DATA_SHADEOFAKAMA);
-        }
+            m_checkTimer -= diff;
     }
 };
 
@@ -770,7 +772,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
                     if (Creature *pAttacker = m_creature->SummonCreature(spawnEntries[j], SpawnLocations[i][0], SpawnLocations[i][1], SPAWN_Z, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000))
                     {
                         m_summons.Summon(pAttacker);
-                        pAttacker->GetMotionMaster()->MovePoint(0, 453.67f, 401.16f, 118.32f);
+                        pAttacker->GetMotionMaster()->MovePoint(0, 486.90f, 401.33f, SPAWN_Z);
                     }
                 }
             }
@@ -806,7 +808,10 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
             if (Creature *pSorcerer = m_creature->SummonCreature(CREATURE_SORCERER, SpawnLocations[1][0], SpawnLocations[1][1], SPAWN_Z, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000))
             {
                 m_sorcerers.push_back(pSorcerer->GetGUID());
-                pSorcerer->GetMotionMaster()->MovePoint(0, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ());
+               
+                WorldLocation sLoc;
+                me->GetClosePoint(sLoc.x, sLoc.y, sLoc.z, 0, 15.0f, frand(4.30, 5.31));
+                pSorcerer->GetMotionMaster()->MovePoint(0, sLoc.x, sLoc.y, sLoc.z);
             }
             m_sorcTimer = 30000;
         }
@@ -913,13 +918,13 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
             case 0:
             {
                 event_phase = MOVE_PHASE_2;
-                m_updateSpeed = true; // Just to force second path
+                m_updateSpeed = true;         // Just to force next path
                 break;
             }
             case 1:
             {
                 event_phase = MOVE_PHASE_3;
-                m_updateSpeed = true;
+                m_updateSpeed = true;         // Just to force next path
                 break;
             }
             case 2:
@@ -1082,7 +1087,6 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
                     else
                         DoZoneInCombat();
 
-                    //me->SendMovementFlagUpdate();
                     m_checkTimer = 2000;
                 }
                 else
@@ -1127,15 +1131,6 @@ void mob_ashtongue_channelerAI::OnAuraRemove(Aura *aura, bool stackRemove)
     }
 }
 
-void mob_ashtongue_sorcererAI::OnAuraRemove(Aura *aura, bool stackRemove)
-{
-    if (aura->GetSpellProto()->Id == SPELL_SHADE_SOUL_CHANNEL)
-    {
-        if (Unit *shade = m_creature->GetUnit(*m_creature, ShadeGUID))
-            shade->RemoveSingleAuraFromStack(SPELL_SHADE_SOUL_CHANNEL_2, 0);
-    }
-}
-
 struct TRINITY_DLL_DECL npc_akamaAI : public ScriptedAI
 {
     npc_akamaAI(Creature* c) : ScriptedAI(c), m_summons(m_creature)
@@ -1158,7 +1153,7 @@ struct TRINITY_DLL_DECL npc_akamaAI : public ScriptedAI
 
     uint64 ShadeGUID;
 
-    uint32 m_destructivePTimer;
+    uint32 m_destructiveTimer;
     uint32 m_lightningBoltTimer;
 
     uint32 m_talk;
@@ -1170,8 +1165,9 @@ struct TRINITY_DLL_DECL npc_akamaAI : public ScriptedAI
 
     void Reset()
     {
-        m_destructivePTimer = 5000;
+        m_destructiveTimer = 5000;
         m_lightningBoltTimer = 8000;
+
         m_yell = false;
         m_talk = 0;
         m_talkTimer = 0;
@@ -1264,6 +1260,7 @@ struct TRINITY_DLL_DECL npc_akamaAI : public ScriptedAI
         Creature *shade = m_creature->GetCreature(*m_creature, ShadeGUID);
         if (shade && shade->isAlive())
             shade->AI()->EnterEvadeMode();
+
         m_summons.DespawnAll();
     }
 
@@ -1274,9 +1271,9 @@ struct TRINITY_DLL_DECL npc_akamaAI : public ScriptedAI
             if (!me->isInCombat())
                 return false;
 
-            if (Creature *shade = m_creature->GetCreature(*m_creature, ShadeGUID))
+            if (Creature *pShade = m_creature->GetCreature(*m_creature, ShadeGUID))
             {
-                AttackStart(shade);
+                AttackStart(pShade);
                 return me->getVictim();
             }
         }
@@ -1357,16 +1354,16 @@ struct TRINITY_DLL_DECL npc_akamaAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
-        if (m_creature->getVictim()->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
+        if (me->m_currentSpells[CURRENT_CHANNELED_SPELL])
             return;
 
-        if (m_destructivePTimer < diff)
+        if (m_destructiveTimer < diff)
         {
             AddSpellToCast(m_creature->getVictim(), SPELL_DESTRUCTIVE_POISON, true);
-            m_destructivePTimer = 5000;
+            m_destructiveTimer = 5000;
         }
         else
-            m_destructivePTimer -= diff;
+            m_destructiveTimer -= diff;
 
         if (m_lightningBoltTimer < diff)
         {
