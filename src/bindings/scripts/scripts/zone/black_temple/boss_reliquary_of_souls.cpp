@@ -480,7 +480,7 @@ struct TargetDistanceOrder : public std::binary_function<const Unit, const Unit,
     // functor for operator "<"
     bool operator()(const Unit* _Left, const Unit* _Right) const
     {
-        return (MainTarget->GetDistanceSq(_Left) < MainTarget->GetDistanceSq(_Right));
+        return (MainTarget->GetDistanceSq(_Left->GetPositionX(), _Left->GetPositionY(), _Left->GetPositionZ()) < MainTarget->GetDistanceSq(_Right->GetPositionX(), _Right->GetPositionY(), _Right->GetPositionZ()));
     }
 };
 
