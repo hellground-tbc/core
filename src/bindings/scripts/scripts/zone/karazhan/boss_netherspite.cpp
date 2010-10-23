@@ -19,7 +19,9 @@
 #define SPELL_BANISH_ROOT           42716
 #define SPELL_EMPOWERMENT           38549
 #define SPELL_NETHERSPITE_ROAR      38684
-#define SPELL_VOID_ZONE_EFFECT      46262
+#define SPELL_VOID_ZONE_EFFECT      46264
+
+#define NETHER_PATROL_PATH          15689
 
 const float PortalCoord[3][3] =
 {
@@ -122,6 +124,8 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
            for(int i=0; i<10;++i)
               ExhaustCandidate[j][i] = 0;
         }
+
+        m_creature->GetMotionMaster()->MovePath(NETHER_PATROL_PATH, true);
 
         if(pInstance && pInstance->GetData(DATA_NETHERSPITE_EVENT) != DONE)
             pInstance->SetData(DATA_NETHERSPITE_EVENT, NOT_STARTED);
@@ -301,8 +305,17 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
         HandleDoors(false);
         SwitchToPortalPhase();
 
+        m_creature->GetMotionMaster()->Clear();
+        DoStartMovement(who);
+
         if (pInstance)
             pInstance->SetData(DATA_NETHERSPITE_EVENT, IN_PROGRESS);
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, 25.0) && m_creature->IsHostileTo(who))
+            AttackStart(who);
     }
 
     void JustDied(Unit* killer)
@@ -333,7 +346,7 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
         if(VoidZoneTimer < diff)
         {
             if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,1,GetSpellMaxRange(SPELL_VOIDZONE),true, m_creature->getVictimGUID()))
-                DoCast(target,SPELL_VOIDZONE,true);
+                AddSpellToCast(target,SPELL_VOIDZONE,true);
 
             VoidZoneTimer = 15000;
         }
@@ -344,7 +357,7 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
         if(!Berserk && NetherInfusionTimer < diff)
         {
             m_creature->AddAura(SPELL_NETHER_INFUSION, m_creature);
-            DoCast(m_creature, SPELL_NETHERSPITE_ROAR);
+            ForceSpellCast(m_creature, SPELL_NETHERSPITE_ROAR, INTERRUPT_AND_CAST_INSTANTLY);
             Berserk = true;
         }
         else
@@ -364,7 +377,7 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
             // Empowerment & Nether Burn
             if(EmpowermentTimer < diff)
             {
-                DoCast(m_creature, SPELL_EMPOWERMENT);
+                ForceSpellCast(m_creature, SPELL_EMPOWERMENT);
                 m_creature->AddAura(SPELL_NETHERBURN_AURA, m_creature);
                 EmpowermentTimer = 90000;
             }
@@ -396,7 +409,7 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
             if(NetherbreathTimer < diff)
             {
                 if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,GetSpellMaxRange(SPELL_NETHERBREATH),true))
-                    DoCast(target,SPELL_NETHERBREATH);
+                    AddSpellToCast(target,SPELL_NETHERBREATH);
 
                 NetherbreathTimer = 5000+rand()%2000;
             }
@@ -414,6 +427,7 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
             else
                 PhaseTimer -= diff;
         }
+        CastNextSpellIfAnyAndReady();
     }
 };
 
@@ -435,12 +449,13 @@ struct TRINITY_DLL_DECL mob_void_zoneAI : public Scripted_NoMovementAI
 
     ScriptedInstance* pInstance;
     uint32 checkTimer;
+    uint32 dieTimer;
 
     void Reset()
     {
-        if(!m_creature->HasAura(SPELL_VOID_ZONE_EFFECT, 0))
-            DoCast(m_creature, SPELL_VOID_ZONE_EFFECT);
-        checkTimer = 3000;
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        checkTimer = 500;
+        dieTimer = 25000;
     }
 
     void UpdateAI(const uint32 diff)
@@ -452,10 +467,21 @@ struct TRINITY_DLL_DECL mob_void_zoneAI : public Scripted_NoMovementAI
                 m_creature->Kill(m_creature, false);
                 m_creature->RemoveCorpse();
             }
-            checkTimer = 3000;
+            const int32 dmg = frand(1000, 1500);    //workaround here, no proper spell known
+            m_creature->CastCustomSpell(NULL, SPELL_VOID_ZONE_EFFECT, &dmg, NULL, NULL, false);
+            checkTimer = 2000;
         }
         else
             checkTimer -= diff;
+
+        if(dieTimer < diff)
+        {
+            m_creature->Kill(m_creature, false);
+            m_creature->RemoveCorpse();
+            dieTimer = 25000;
+        }
+        else
+            dieTimer -= diff;
     }
 };
 CreatureAI* GetAI_mob_void_zone(Creature *_Creature)
