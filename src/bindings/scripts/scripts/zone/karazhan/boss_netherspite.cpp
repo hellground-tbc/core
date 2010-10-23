@@ -110,7 +110,6 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
         HandleDoors(true);
         DestroyPortals();
 
-
         for(int i=0; i<3; ++i)
         {
             PortalGUID[i] = 0;
@@ -208,7 +207,7 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
                     {
                         Player* p = i->getSource();
                         if(p && p->isAlive() // alive
-                            && (!target || target->GetDistance2d(portal)>p->GetDistance2d(portal)) // closer than current best
+                            && (!target || target->GetExactDistance2d(portal) > p->GetExactDistance2d(portal)) // closer than current best
                             && !p->HasAura(PlayerDebuff[j],0) // not exhausted
                             && !p->HasAura(PlayerBuff[(j+1)%3],0) // not on another beam
                             && !p->HasAura(PlayerBuff[(j+2)%3],0)
@@ -260,7 +259,7 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
                 }
 
                 // aggro target if Red Beam
-                if(j==RED_PORTAL && m_creature->getVictim() != target && target->GetTypeId() == TYPEID_PLAYER)
+                if(j == RED_PORTAL && m_creature->getVictim() != target && target->GetTypeId() == TYPEID_PLAYER)
                     m_creature->getThreatManager().addThreat(target, 100000.0f+DoGetThreat(m_creature->getVictim()));
             }
         }
