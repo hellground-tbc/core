@@ -649,6 +649,8 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
     {
         case 23333:                                         // BG spell
         case 23335:                                         // BG spell
+        case 24732:                                         // Bat Costume
+        case 24740:                                         // Wisp Costume
         case 34976:                                         // BG spell
         case 31579:                                         // Arcane Empowerment Rank1 talent aura with one positive and one negative (check not needed in wotlk)
         case 31582:                                         // Arcane Empowerment Rank2
