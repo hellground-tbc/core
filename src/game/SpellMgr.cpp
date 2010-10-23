@@ -2744,6 +2744,15 @@ void SpellMgr::LoadSpellCustomAttr()
         case 42835: // set visual only
             spellInfo->Effect[0] = 0;
             break;
+        case 47977: // Broom Broom
+        case 42679:
+        case 42673:
+        case 42680:
+        case 42681:
+        case 42683:
+        case 42684:
+            spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_NOT_USABLE_IN_ARENA;
+            break;
         default:
             break;
         }
