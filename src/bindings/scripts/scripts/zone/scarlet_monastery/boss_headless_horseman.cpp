@@ -197,7 +197,7 @@ struct TRINITY_DLL_DECL mob_wisp_invisAI : public ScriptedAI
 
 struct TRINITY_DLL_DECL mob_headAI : public ScriptedAI
 {
-    mob_headAI(Creature *c) : ScriptedAI(c) 
+    mob_headAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = (ScriptedInstance*)c->GetInstanceData();
     }
@@ -528,7 +528,7 @@ struct TRINITY_DLL_DECL boss_headless_horsemanAI : public ScriptedAI
 
         for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
             if((m_creature->IsWithinLOSInMap(i->getSource()) || !checkLoS) && m_creature->getVictim() != i->getSource() &&
-                m_creature->IsWithinDistInMap(i->getSource(), range) && i->getSource()->isAlive())
+                m_creature->IsWithinDistInMap(i->getSource(), range) && i->getSource()->isAlive() && !i->getSource()->isGameMaster())
                 temp.push_back(i->getSource());
 
         if (temp.size())
@@ -896,7 +896,7 @@ bool GOReward_go_loosely_turned_soil(Player *plr, GameObject* soil, Quest const*
         {
             ((boss_headless_horsemanAI*)horseman->AI())->playerGUID = plr->GetGUID();
             ((boss_headless_horsemanAI*)horseman->AI())->FlyMode();
-            soil->SetUInt32Value(GAMEOBJECT_FACTION,14); 
+            soil->SetUInt32Value(GAMEOBJECT_FACTION,14);
         }
     }
     return true;
