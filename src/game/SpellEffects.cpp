@@ -2105,6 +2105,11 @@ void Spell::EffectDummy(uint32 i)
         m_caster->AddPetAura(petSpell);
         return;
     }
+
+    // Script based implementation. Must be used only for not good for implementation in core spell effects
+    // So called only for not proccessed cases
+    if (unitTarget && unitTarget->GetTypeId() == TYPEID_UNIT && Script)
+        Script->EffectDummyCreature(m_caster, m_spellInfo->Id, i, ((Creature*)unitTarget));
 }
 
 void Spell::EffectTriggerSpellWithValue(uint32 i)

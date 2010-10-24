@@ -61,6 +61,11 @@ struct TRINITY_DLL_DECL mob_aqueous_lordAI : public ScriptedAI
         CrashingWave = 15000;
     }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -130,6 +135,11 @@ struct TRINITY_DLL_DECL mob_aqueous_spawnAI : public ScriptedAI
 
     }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim() && !merging)
@@ -187,6 +197,11 @@ struct TRINITY_DLL_DECL mob_coilskar_generalAI : public ScriptedAI
     }
 
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -285,6 +300,11 @@ struct TRINITY_DLL_DECL mob_coilskar_harpoonerAI : public ScriptedAI
             }
         }
     }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
 
     void UpdateAI(const uint32 diff)
     {
@@ -355,6 +375,11 @@ struct TRINITY_DLL_DECL mob_coilskar_seacallerAI : public ScriptedAI
         SummonGeyser = urand(3000, 8000);
     }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -442,6 +467,11 @@ struct TRINITY_DLL_DECL mob_coilskar_soothsayerAI : public ScriptedAI
         Restoration = (8000, 12000);
     }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -495,6 +525,11 @@ struct TRINITY_DLL_DECL mob_coilskar_wranglerAI : public ScriptedAI
         LightningProd = urand(8000, 15000);
     }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -552,6 +587,11 @@ struct TRINITY_DLL_DECL mob_dragon_turtleAI : public ScriptedAI
         CanBeShielded = false;
     }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -625,6 +665,11 @@ struct TRINITY_DLL_DECL mob_leviathanAI : public ScriptedAI
         TailSweep = 6000;
     }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -782,6 +827,11 @@ struct TRINITY_DLL_DECL mob_bonechewer_taskmasterAI : public ScriptedAI
             disgruntledCasted = true;
         }
     }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
 
     void JustDied(Unit *victim){}
 
@@ -835,6 +885,11 @@ struct TRINITY_DLL_DECL mob_bonechewer_workerAI : public ScriptedAI
                 m_creature->CastSpell(who, SPELL_WORKER_THROW_PICK, false);
             }
         }
+    }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
     }
 
     void JustDied(Unit *victim)
@@ -898,6 +953,11 @@ struct TRINITY_DLL_DECL mob_dragonmaw_skystalkerAI : public ScriptedAI
         m_creature->StopMoving();
         m_creature->GetMotionMaster()->Clear();
         m_creature->GetMotionMaster()->MoveChase(who, 15);
+    }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
     }
 
     void JustDied(Unit *victim){}
@@ -1012,6 +1072,11 @@ struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
         m_creature->StopMoving();
         m_creature->GetMotionMaster()->Clear();
         m_creature->GetMotionMaster()->MoveChase(who, 15);
+    }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
     }
 
     void JustDied(Unit *victim){}
@@ -1152,6 +1217,11 @@ struct TRINITY_DLL_DECL mob_dragonmaw_wyrmcallerAI : public ScriptedAI
     }
 
     void EnterCombat(Unit *who) { DoZoneInCombat(80.0f); }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
 
     void JustDied(Unit *victim) {}
 
@@ -1233,6 +1303,11 @@ struct TRINITY_DLL_DECL mob_illidari_fearbringerAI : public ScriptedAI
     }
 
     void EnterCombat(Unit *who) { DoZoneInCombat(80.0f); }
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
 
     void JustDied(Unit *victim){}
 
