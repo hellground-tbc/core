@@ -207,7 +207,7 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
                     {
                         Player* p = i->getSource();
                         if(p && p->isAlive() // alive
-                            && (!target || target->GetExactDistance2d(portal) > p->GetExactDistance2d(portal)) // closer than current best
+                            && (!target || target->GetExactDistance2d(portal->GetPositionX(), portal->GetPositionY()) > p->GetExactDistance2d(portal->GetPositionX(), portal->GetPositionY())) // closer than current best
                             && !p->HasAura(PlayerDebuff[j],0) // not exhausted
                             && !p->HasAura(PlayerBuff[(j+1)%3],0) // not on another beam
                             && !p->HasAura(PlayerBuff[(j+2)%3],0)
