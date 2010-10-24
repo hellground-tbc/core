@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Nagrand
 SD%Complete: 90
-SDComment: Quest support: 9849, 9918, 9874, 9991, 10107, 10108, 10044, 10168, 10172, 10646, 10085, 10987. TextId's unknown for altruis_the_sufferer and greatmother_geyah (npc_text)
+SDComment: Quest support: 9849, 9918, 9874, 9923, 9924, 9954, 9991, 10107, 10108, 10044, 10168, 10172, 10646, 10085, 10987. TextId's unknown for altruis_the_sufferer and greatmother_geyah (npc_text)
 SDCategory: Nagrand
 EndScriptData */
 
@@ -31,6 +31,8 @@ npc_greatmother_geyah
 npc_lantresor_of_the_blade
 npc_creditmarker_visit_with_ancestors
 mob_sparrowhawk
+npc_corki_capitive
+go_corki_cage
 EndContentData */
 
 #include "precompiled.h"
@@ -681,6 +683,100 @@ CreatureAI* GetAI_mob_sparrowhawk(Creature *_Creature)
     return new mob_sparrowhawkAI (_Creature);
 }
 
+/*########
+## Quests: HELP!, Corki's Gone Missing Again!, Cho'war the Pillager
+########*/
+
+enum CorkiCage
+{
+    QUEST_HELP1                          = 9923, // HELP!
+    NPC_CORKI_CAPITIVE1                  = 18445,
+    GO_CORKI_CAGE1                       = 182349,
+	
+    QUEST_HELP2                          = 9924, // Corki's Gone Missing Again!
+    NPC_CORKI_CAPITIVE2                  = 20812,
+    GO_CORKI_CAGE2                       = 182350,
+	
+    QUEST_HELP3                          = 9955, // Cho'war the Pillager
+    NPC_CORKI_CAPITIVE3                  = 18369,
+    GO_CORKI_CAGE3                       = 182521
+};
+
+
+
+struct npc_corki_capitiveAI : public ScriptedAI
+{
+    npc_corki_capitiveAI(Creature *c) : ScriptedAI(c){}
+
+    uint32 FleeTimer;
+
+  void Reset()
+  {
+    FleeTimer = 0;
+    GameObject* cage = NULL;
+    switch (me->GetEntry())
+    {
+      case NPC_CORKI_CAPITIVE1:
+        cage = FindGameObject(GO_CORKI_CAGE1, 5.0f, me);
+        break;
+      case NPC_CORKI_CAPITIVE2:
+        cage = FindGameObject(GO_CORKI_CAGE2, 5.0f, me);
+        break;
+      case NPC_CORKI_CAPITIVE3:
+        cage = FindGameObject(GO_CORKI_CAGE3, 5.0f, me);
+        break;
+    }
+    
+     if(cage)
+      cage->ResetDoorOrButton();
+  }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(FleeTimer)
+        {
+            if(FleeTimer <= diff)
+                me->ForcedDespawn();
+            else FleeTimer -= diff;
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_corki_capitiveAI(Creature* pCreature)
+{
+    return new npc_corki_capitiveAI(pCreature);
+}
+
+bool go_corki_cage(Player* pPlayer, GameObject* pGo)
+{
+   Creature* pCreature = NULL;
+    switch(pGo->GetEntry())
+    {
+        case GO_CORKI_CAGE1:
+            if(pPlayer->GetQuestStatus(QUEST_HELP1) == QUEST_STATUS_INCOMPLETE)
+                pCreature = GetClosestCreatureWithEntry(pGo, NPC_CORKI_CAPITIVE1, 5.0f);
+            break;
+        case GO_CORKI_CAGE2:
+            if(pPlayer->GetQuestStatus(QUEST_HELP2) == QUEST_STATUS_INCOMPLETE)
+                pCreature = GetClosestCreatureWithEntry(pGo, NPC_CORKI_CAPITIVE2, 5.0f);
+            break;
+        case GO_CORKI_CAGE3:
+            if(pPlayer->GetQuestStatus(QUEST_HELP3) == QUEST_STATUS_INCOMPLETE)
+                pCreature = GetClosestCreatureWithEntry(pGo, NPC_CORKI_CAPITIVE3, 5.0f);
+            break;
+    }
+    if(pCreature)
+    {
+        DoScriptText(-1230010-urand(0, 2), pCreature, pPlayer);
+        pCreature->GetMotionMaster()->Clear();
+        pCreature->GetMotionMaster()->MoveFleeing(pPlayer, 3500);
+        pPlayer->KilledMonster(pCreature->GetEntry(), pCreature->GetGUID());
+        CAST_AI(npc_corki_capitiveAI, pCreature->AI())->FleeTimer = 3500;
+        return false;
+    }
+    return true;
+}
+
 /*####
 #
 ####*/
@@ -738,6 +834,16 @@ void AddSC_nagrand()
     newscript = new Script;
     newscript->Name="mob_sparrowhawk";
     newscript->GetAI = &GetAI_mob_sparrowhawk;
+    newscript->RegisterSelf();
+	
+    newscript = new Script;
+    newscript->Name="npc_corki_capitive";
+    newscript->GetAI = &GetAI_npc_corki_capitiveAI;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name="go_corki_cage";
+    newscript->pGOHello = &go_corki_cage;
     newscript->RegisterSelf();
 }
 

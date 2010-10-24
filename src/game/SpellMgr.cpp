@@ -2719,6 +2719,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 30015: // Summon Naias cooldown
             spellInfo->RecoveryTime = 300000;
             break;
+        case 35413: // Summon Goliathon cooldown
+            spellInfo->RecoveryTime = 300000;
+            break;
         case 13278: // Gnomish Death Ray
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
             break;
