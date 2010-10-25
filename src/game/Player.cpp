@@ -1888,7 +1888,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
                     data << float(m_movementInfo.GetTransportPos()->x);
                     data << float(m_movementInfo.GetTransportPos()->y);
                     data << float(m_movementInfo.GetTransportPos()->z);
-                    data << float(m_movementInfo.GetTransportPos()->o); 
+                    data << float(m_movementInfo.GetTransportPos()->o);
                 }
                 else
                 {
@@ -14569,7 +14569,7 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
             sLog.outError("ERROR: Player (guidlow %d) have invalid transport coordinates (X: %f Y: %f Z: %f O: %f). Teleport to default race/class locations.",
                  guid, GetPositionX() + m_movementInfo.GetTransportPos()->x, GetPositionY() + m_movementInfo.GetTransportPos()->y,
                 GetPositionZ() + m_movementInfo.GetTransportPos()->z, GetOrientation() + m_movementInfo.GetTransportPos()->o);
-            
+
             RelocateToHomebind();
 
             m_movementInfo.ClearTransportData();
@@ -19979,9 +19979,7 @@ void Player::AddGlobalCooldown(SpellEntry const *spellInfo, Spell const *spell)
         return;
 
     uint32 cdTime = 0;
-    if(!spellInfo->StartRecoveryTime)
-        cdTime = 300;
-    else
+    if(spellInfo->StartRecoveryTime)
     {
         cdTime = spellInfo->StartRecoveryTime;
 
