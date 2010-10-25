@@ -252,7 +252,10 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
             if (ashtongueBroken)
                 creature->setFaction(1820);
             else
+            {
                 creature->Kill(creature, false);
+                creature->RemoveCorpse();
+            }
         }
     }
 

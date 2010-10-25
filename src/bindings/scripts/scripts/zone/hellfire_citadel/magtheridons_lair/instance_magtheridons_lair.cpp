@@ -73,7 +73,7 @@ struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
             if(Encounters[i] == IN_PROGRESS) return true;
         return false;
     }
-    
+
     uint32 GetEncounterForEntry(uint32 entry)
     {
         switch(entry)
@@ -105,7 +105,10 @@ struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
             return;
 
         if(GetEncounterForEntry(tmp->id) && creature->isAlive() && GetData(GetEncounterForEntry(tmp->id)) == DONE)
+        {
             creature->Kill(creature, false);
+            creature->RemoveCorpse();
+        }
     }
 
     void OnObjectCreate(GameObject *go)

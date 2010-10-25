@@ -85,7 +85,10 @@ struct TRINITY_DLL_DECL instance_naxxramas : public ScriptedInstance
             return;
 
         if (GetEncounterForEntry(tmp->id) && creature->isAlive() && GetData(GetEncounterForEntry(tmp->id)) == DONE)
+        {
             creature->Kill(creature, false);
+            creature->RemoveCorpse();
+        }
     }
 
     void OnObjectCreate(GameObject* go){}
