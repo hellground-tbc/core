@@ -3257,6 +3257,11 @@ bool Unit::isInFront(Unit const* target, float distance,  float arc) const
     return IsWithinDistInMap(target, distance) && HasInArc( arc, target );
 }
 
+bool Unit::isInFront(GameObject const* target, float distance,  float arc) const
+{
+    return IsWithinDistInMap(target, distance) && HasInArc( arc, target );
+}
+
 void Unit::SetInFront(Unit const* target)
 {
     if(!hasUnitState(UNIT_STAT_CANNOT_TURN))
@@ -3268,7 +3273,22 @@ bool Unit::isInBack(Unit const* target, float distance, float arc) const
     return IsWithinDistInMap(target, distance) && !HasInArc( 2 * M_PI - arc, target );
 }
 
+bool Unit::isInBack(GameObject const* target, float distance, float arc) const
+{
+    return IsWithinDistInMap(target, distance) && !HasInArc( 2 * M_PI - arc, target );
+}
+
 bool Unit::isInLine(Unit const* target, float distance) const
+{
+    if(!HasInArc(M_PI, target) || !IsWithinDistInMap(target, distance))
+        return false;
+
+    float width = GetObjectSize() + target->GetObjectSize() * 0.5f;
+    float angle = GetAngle(target) - GetOrientation();
+    return abs(sin(angle)) * GetExactDistance2d(target->GetPositionX(), target->GetPositionY()) < width;
+}
+
+bool Unit::isInLine(GameObject const* target, float distance) const
 {
     if(!HasInArc(M_PI, target) || !IsWithinDistInMap(target, distance))
         return false;
@@ -11614,7 +11634,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
                 uint32 ressSpellId = pVictim->GetUInt32Value(PLAYER_SELF_RES_SPELL);
                 if(!ressSpellId)
                     ressSpellId = ((Player*)pVictim)->GetResurrectionSpellId();
-                
+
                 //Remove all expected to remove at death auras (most important negative case like DoT or periodic triggers)
                 pVictim->RemoveAllAurasOnDeath();
                 // restore for use at real death

@@ -812,7 +812,11 @@ void Spell::EffectDummy(uint32 i)
                         m_caster->CastSpell(unitTarget,spell_id,true);
                 return;
                 }
-
+                 // Demon Broiled Surprise
+                case 43723:
+                {
+                    m_caster->CastSpell(m_caster, 43753, false);
+                }
                 // Wrath of the Astromancer
                 case 42784:
                 {
@@ -876,12 +880,6 @@ void Spell::EffectDummy(uint32 i)
                     data << uint64(pGameObj->GetGUID());
                     m_caster->SendMessageToSet(&data,true);
 
-                    return;
-                }
-                // Demon Broiled Surprise
-                case 43723:
-                {
-                    m_caster->CastSpell(m_caster, 43753, false);
                     return;
                 }
                 case 8063:                                  // Deviate Fish
@@ -4963,6 +4961,30 @@ void Spell::EffectScriptEffect(uint32 effIndex)
 
     switch(m_spellInfo->Id)
     {
+        // Demon Broiled Surprise HACKY WAY
+        /*case 43723:
+        {
+            bool cast = false;
+            std::list<Creature*> pList;
+            Trinity::AllCreaturesOfEntryInRange u_check(m_creature, entry, range);
+            Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(pList, u_check);
+            m_creature->VisitNearbyObject(range, searcher);
+            for (std::list<Creature*>::iterator itr = pList.begin(); itr != pList.end(); ++itr)
+            {
+                if (tmp && tmp->GetEntry() == 19973 && !tmp->isAlive())
+                {
+                    cast = true;
+                    break;
+                }
+            }
+
+            if (cast)
+                m_caster->CastSpell(m_caster, 43753, false);
+            else
+                SendCastResult(SPELL_FAILED_BAD_TARGETS);
+
+            return;
+        }*/
         // Gurtogg Bloodboil: Eject
         case 40486:
         {

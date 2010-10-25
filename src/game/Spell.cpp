@@ -1390,7 +1390,7 @@ void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uin
     }
 }
 
-void Spell::SearchAreaTarget(std::list<Unit*> &TagUnitMap, float radius, const uint32 type, SpellTargets TargetType, uint32 entry)
+void Spell::SearchAreaTarget(std::list<Unit*> &TagUnitMap, float radius, const uint32 type, SpellTargets TargetType, uint32 entry, SpellScriptTargetType spellScriptTargetType)
 {
     float x, y, z;
     switch(type)
@@ -1427,12 +1427,87 @@ void Spell::SearchAreaTarget(std::list<Unit*> &TagUnitMap, float radius, const u
             break;
     }
 
-    Trinity::SpellNotifierCreatureAndPlayer notifier(*this, TagUnitMap, radius, type, TargetType, entry, x, y, z);
-    if((m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY)
-        || TargetType == SPELL_TARGETS_ENTRY && !entry)
-        m_caster->GetMap()->VisitWorld(x, y, radius, notifier);
-    else
-        m_caster->GetMap()->VisitAll(x, y, radius, notifier);
+    switch (spellScriptTargetType)
+    {
+        case SPELL_TARGET_TYPE_CREATURE:
+        {
+            Trinity::SpellNotifierCreatureAndPlayer notifier(*this, TagUnitMap, radius, type, TargetType, entry, x, y, z);
+            if((m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY)
+                || TargetType == SPELL_TARGETS_ENTRY && !entry)
+                m_caster->GetMap()->VisitWorld(x, y, radius, notifier);
+            else
+                m_caster->GetMap()->VisitAll(x, y, radius, notifier);
+            break;
+        }
+        case SPELL_TARGET_TYPE_DEAD:
+        {
+            Trinity::SpellNotifierDeadCreature notifier(*this, TagUnitMap, radius, type, TargetType, entry, x, y, z);
+            if((m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY)
+                || TargetType == SPELL_TARGETS_ENTRY && !entry)
+                m_caster->GetMap()->VisitWorld(x, y, radius, notifier);
+            else
+                m_caster->GetMap()->VisitAll(x, y, radius, notifier);
+            break;
+        }
+        default:
+            sLog.outError("WTF ? Oo Wrong spell script target type for this function: %i (shouldbe %i or %i)", spellScriptTargetType, SPELL_TARGET_TYPE_CREATURE, SPELL_TARGET_TYPE_DEAD);
+            break;
+    }
+}
+
+void Spell::SearchAreaTarget(std::list<GameObject*> &goList, float radius, const uint32 type, SpellTargets TargetType, uint32 entry, SpellScriptTargetType spellScriptTargetType)
+{
+    float x, y, z;
+    switch(type)
+    {
+        case PUSH_DST_CENTER:
+            CheckDst();
+            x = m_targets.m_destX;
+            y = m_targets.m_destY;
+            z = m_targets.m_destZ;
+            break;
+        case PUSH_SRC_CENTER:
+            CheckSrc();
+            x = m_targets.m_srcX;
+            y = m_targets.m_srcY;
+            z = m_targets.m_srcZ;
+            break;
+        case PUSH_CHAIN:
+        {
+            GameObject *target = m_targets.getGOTarget();
+            if(!target)
+            {
+                sLog.outError( "SPELL: cannot find unit target for spell ID %u\n", m_spellInfo->Id );
+                return;
+            }
+            x = target->GetPositionX();
+            y = target->GetPositionY();
+            z = target->GetPositionZ();
+            break;
+        }
+        default:
+            x = m_caster->GetPositionX();
+            y = m_caster->GetPositionY();
+            z = m_caster->GetPositionZ();
+            break;
+    }
+
+    switch (spellScriptTargetType)
+    {
+        case SPELL_TARGET_TYPE_GAMEOBJECT:
+        {
+            Trinity::SpellNotifierGameObject notifier(*this, goList, radius, type, TargetType, entry, x, y, z);
+            if((m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY)
+                || TargetType == SPELL_TARGETS_ENTRY && !entry)
+                m_caster->GetMap()->VisitWorld(x, y, radius, notifier);
+            else
+                m_caster->GetMap()->VisitAll(x, y, radius, notifier);
+            break;
+        }
+        default:
+            sLog.outError("WTF ? Oo Wrong spell script target type for this function: %i (should be %i)", spellScriptTargetType, SPELL_TARGET_TYPE_GAMEOBJECT);
+            break;
+    }
 }
 
 WorldObject* Spell::SearchNearbyTarget(float range, SpellTargets TargetType)
@@ -1932,6 +2007,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_RADIUS, radius, this);
 
         std::list<Unit*> unitList;
+        std::list<GameObject*> goList;
 
         switch(cur)
         {
@@ -1975,9 +2051,13 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 {
                     for(SpellScriptTarget::const_iterator i_spellST = lower; i_spellST != upper; ++i_spellST)
                     {
-                        if(i_spellST->second.type == SPELL_TARGET_TYPE_CREATURE)
-                            SearchAreaTarget(unitList, radius, pushType, SPELL_TARGETS_ENTRY, i_spellST->second.targetEntry);
+                        SpellScriptTargetType tmp = i_spellST->second.type;
+                        if (tmp == SPELL_TARGET_TYPE_GAMEOBJECT)
+                            SearchAreaTarget(goList, radius, pushType, SPELL_TARGETS_ENTRY, i_spellST->second.targetEntry, tmp);
+                        else
+                            SearchAreaTarget(unitList, radius, pushType, SPELL_TARGETS_ENTRY, i_spellST->second.targetEntry, tmp);
                     }
+
                 }
                 break;
             }
@@ -2036,6 +2116,15 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
 
             for(std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
                 AddUnitTarget(*itr, i);
+        }
+
+        if(!goList.empty())
+        {
+            if(m_spellValue->MaxAffectedTargets)
+                Trinity::RandomResizeList(goList, m_spellValue->MaxAffectedTargets);
+
+            for(std::list<GameObject*>::iterator itr = goList.begin(); itr != goList.end(); ++itr)
+                AddGOTarget(*itr, i);
         }
     } // Chain or Area
 }
