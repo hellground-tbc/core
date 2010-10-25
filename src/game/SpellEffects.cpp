@@ -816,6 +816,7 @@ void Spell::EffectDummy(uint32 i)
                 case 43723:
                 {
                     m_caster->CastSpell(m_caster, 43753, false);
+                    return;
                 }
                 // Wrath of the Astromancer
                 case 42784:
