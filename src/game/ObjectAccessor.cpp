@@ -93,6 +93,17 @@ Player* ObjectAccessor::FindPlayer(uint64 guid)
 
 Player* ObjectAccessor::GetPlayerByName(const char *name)
 {
+    std::string tmp = name;
+    PlayerName2PlayerMapType::const_accessor a;
+    if (i_playerName2Player.find(a, tmp))
+        if (a->second->IsInWorld())
+            return a->second;
+
+    return NULL;
+}
+
+Player* ObjectAccessor::GetPlayerByName(std::string &name)
+{
     PlayerName2PlayerMapType::const_accessor a;
     if (i_playerName2Player.find(a, name))
         if (a->second->IsInWorld())
@@ -128,8 +139,9 @@ bool ObjectAccessor::RemovePlayer(uint64 guid)
 
 bool ObjectAccessor::AddPlayerName(Player *pl)
 {
+    std::string tmp = pl->GetName();
     PlayerName2PlayerMapType::accessor a;
-    if (i_playerName2Player.insert(a, pl->GetName()))
+    if (i_playerName2Player.insert(a, tmp))
     {
         a->second = pl;
         return true;

@@ -3646,7 +3646,7 @@ bool ChatHandler::HandleGuildInviteCommand(const char *args)
     }
 
     uint64 plGuid = 0;
-    if (Player* targetPlayer = ObjectAccessor::Instance ().GetPlayerByName (plName.c_str ()))
+    if (Player* targetPlayer = ObjectAccessor::Instance ().GetPlayerByName (plName))
         plGuid = targetPlayer->GetGUID ();
     else
         plGuid = objmgr.GetPlayerGUIDByName (plName.c_str ());
@@ -3680,7 +3680,7 @@ bool ChatHandler::HandleGuildUninviteCommand(const char *args)
 
     uint64 plGuid = 0;
     uint32 glId   = 0;
-    if (Player* targetPlayer = ObjectAccessor::Instance ().GetPlayerByName (plName.c_str ()))
+    if (Player* targetPlayer = ObjectAccessor::Instance ().GetPlayerByName (plName))
     {
         plGuid = targetPlayer->GetGUID ();
         glId   = targetPlayer->GetGuildId ();
@@ -3722,7 +3722,7 @@ bool ChatHandler::HandleGuildRankCommand(const char *args)
 
     uint64 plGuid = 0;
     uint32 glId   = 0;
-    if (Player* targetPlayer = ObjectAccessor::Instance ().GetPlayerByName (plName.c_str ()))
+    if (Player* targetPlayer = ObjectAccessor::Instance ().GetPlayerByName (plName))
     {
         plGuid = targetPlayer->GetGUID ();
         glId   = targetPlayer->GetGuildId ();

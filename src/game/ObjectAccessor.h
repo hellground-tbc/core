@@ -110,7 +110,7 @@ class ObjectAccessor : public Trinity::Singleton<ObjectAccessor, Trinity::ClassL
 
     public:
         typedef tbb::concurrent_hash_map<uint64, Corpse*> Player2CorpsesMapType;
-        typedef tbb::concurrent_hash_map<const char*, Player*> PlayerName2PlayerMapType;
+        typedef tbb::concurrent_hash_map<std::string, Player*> PlayerName2PlayerMapType;
 
         static Pet* GetPet(uint64 guid);
 
@@ -123,7 +123,8 @@ class ObjectAccessor : public Trinity::Singleton<ObjectAccessor, Trinity::ClassL
 
         HashMapHolder<Player>::MapType& GetPlayers();
 
-        Player* GetPlayerByName(const char *name) ;
+        Player* GetPlayerByName(const char *name);
+        Player* GetPlayerByName(std::string &name);
 
         bool RemovePlayerName(Player *pl);
         bool RemovePlayer(Player *pl);
