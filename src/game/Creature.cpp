@@ -205,7 +205,7 @@ void Creature::RemoveFromWorld()
             formation_mgr.RemoveCreatureFromGroup(m_formation, this);
 
         Unit::RemoveFromWorld();
-        GetMap()->RemoveFromObjMap(GetGUID());
+        GetMap()->RemoveFromObjMap(this);
     }
 }
 
