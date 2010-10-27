@@ -241,11 +241,19 @@ enum LevelRequirementVsMode
 #define INVALID_HEIGHT       -100000.0f                     // for check, must be equal to VMAP_INVALID_HEIGHT, real value for unknown height is VMAP_INVALID_HEIGHT_VALUE
 #define MIN_UNLOAD_DELAY      1                             // immediate unload
 
-typedef UNORDERED_MAP<Creature*, CreatureMover>             CreatureMoveList;
-typedef std::map<uint32/*leaderDBGUID*/, CreatureGroup*>    CreatureGroupHolderType;
-typedef tbb::concurrent_hash_map<uint64, GameObject*>       GObjectMapType;
-typedef tbb::concurrent_hash_map<uint64, DynamicObject*>    DObjectMapType;
-typedef tbb::concurrent_hash_map<uint64, Creature*>         CreaturesMapType;
+typedef UNORDERED_MAP<Creature*, CreatureMover>                 CreatureMoveList;
+typedef std::map<uint32/*leaderDBGUID*/, CreatureGroup*>        CreatureGroupHolderType;
+typedef tbb::concurrent_hash_map<uint64, GameObject*>           GObjectMapType;
+typedef tbb::concurrent_hash_map<uint64, DynamicObject*>        DObjectMapType;
+typedef tbb::concurrent_hash_map<uint64, Creature*>             CreaturesMapType;
+typedef tbb::concurrent_hash_map<uint32, std::list<uint64> >    CreatureIdToGuidListMapType;
+
+enum GetCreatureGuidType
+{
+    GET_FIRST_CREATURE_GUID     = 0,
+    GET_LAST_CREATURE_GUID      = 1,
+    GET_RANDOM_CREATURE_GUID    = 2
+};
 
 class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockable<Map, ACE_Thread_Mutex>
 {
@@ -268,8 +276,12 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         template<class T> void Add(T *);
         template<class T> void Remove(T *, bool);
 
+        void InsertIntoCreatureGUIDList(Creature * obj);
+        void RemoveFromCreatureGUIDList(Creature * obj);
+
         void InsertIntoObjMap(Object * obj);
         void RemoveFromObjMap(uint64 guid);
+        void RemoveFromObjMap(Object * obj);
 
         virtual void Update(const uint32&);
 
@@ -454,6 +466,9 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
 
         Object* GetObjectByTypeMask(Player const &p, uint64 guid, uint32 typemask);
 
+        std::list<uint64> GetCreaturesGUIDList(uint32 id, GetCreatureGuidType type = GET_FIRST_CREATURE_GUID, uint32 max = 0);
+        uint64 GetCreatureGUID(uint32 id, GetCreatureGuidType type = GET_FIRST_CREATURE_GUID);
+
         void AddUpdateObject(Object *obj)
         {
             i_objectsToClientUpdate.insert(obj);
@@ -507,9 +522,10 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
 
         std::set<Object *> i_objectsToClientUpdate;
 
-        GObjectMapType      gameObjectsMap;
-        DObjectMapType      dynamicObjectsMap;
-        CreaturesMapType    creaturesMap;
+        GObjectMapType                  gameObjectsMap;
+        DObjectMapType                  dynamicObjectsMap;
+        CreaturesMapType                creaturesMap;
+        CreatureIdToGuidListMapType     creatureIdToGuidMap;
 
     protected:
         void SetUnloadReferenceLock(const GridPair &p, bool on) { getNGrid(p.x_coord, p.y_coord)->setUnloadReferenceLock(on); }

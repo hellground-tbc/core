@@ -3762,6 +3762,96 @@ Object* Map::GetObjectByTypeMask(Player const &p, uint64 guid, uint32 typemask)
     return NULL;
 }
 
+std::list<uint64> Map::GetCreaturesGUIDList(uint32 id, GetCreatureGuidType type , uint32 max)
+{
+    std::list<uint64> returnList;
+    CreatureIdToGuidListMapType::const_accessor a;
+    if (creatureIdToGuidMap.find(a, id))
+    {
+        std::list<uint64> tmpList = a->second;
+
+        if (!max || max > tmpList.size())
+        {
+            max = tmpList.size();
+            if (type == GET_RANDOM_CREATURE_GUID)
+                type = GET_FIRST_CREATURE_GUID;
+        }
+        uint64 count = 0;
+        switch (type)
+        {
+            case GET_FIRST_CREATURE_GUID:
+                for (std::list<uint64>::iterator itr = tmpList.begin(); count != max; ++itr, ++count)
+                    returnList.push_back(*itr);
+                break;
+            case GET_LAST_CREATURE_GUID:
+                for (std::list<uint64>::reverse_iterator itr = tmpList.rbegin(); count != max; ++itr, ++count)
+                    returnList.push_back(*itr);
+                break;
+            case GET_RANDOM_CREATURE_GUID:
+                for (count = 0; count != max; ++count)
+                {
+                    std::list<uint64>::iterator itr = tmpList.begin();
+                    std::advance(itr, rand()%(tmpList.size()-1));
+                    returnList.push_back(*itr);
+                    tmpList.erase(itr);
+                }
+                break;
+        }
+    }
+
+    return returnList;
+}
+
+uint64 Map::GetCreatureGUID(uint32 id, GetCreatureGuidType type)
+{
+    uint64 returnGUID = 0;
+
+    CreatureIdToGuidListMapType::const_accessor a;
+    if (creatureIdToGuidMap.find(a, id))
+    {
+        switch(type)
+        {
+            case GET_FIRST_CREATURE_GUID:
+                returnGUID = a->second.front();
+                break;
+            case GET_LAST_CREATURE_GUID:
+                returnGUID = a->second.back();
+                break;
+            case GET_RANDOM_CREATURE_GUID:
+                std::list<uint64>::const_iterator itr= a->second.begin();
+                std::advance(itr, rand()%(a->second.size()-1));
+                returnGUID = *itr;
+                break;
+        }
+    }
+
+    return returnGUID;
+}
+
+void Map::InsertIntoCreatureGUIDList(Creature * obj)
+{
+    CreatureIdToGuidListMapType::accessor a;
+    if (creatureIdToGuidMap.insert(a, obj->GetEntry()))
+    {
+        std::list<uint64> tmp;
+        tmp.push_back(obj->GetGUID());
+        a->second = tmp;
+    }
+    else
+    {
+        a.release();
+        if (creatureIdToGuidMap.find(a, obj->GetEntry()))
+            a->second.push_back(obj->GetGUID());
+    }
+}
+
+void Map::RemoveFromCreatureGUIDList(Creature * obj)
+{
+    CreatureIdToGuidListMapType::accessor a;
+    if (creatureIdToGuidMap.find(a, obj->GetEntry()))
+        a->second.remove(obj->GetGUID());
+}
+
 
 void Map::InsertIntoObjMap(Object * obj)
 {
@@ -3774,7 +3864,10 @@ void Map::InsertIntoObjMap(Object * obj)
                 CreaturesMapType::accessor a;
 
                 if (creaturesMap.insert(a, guid.GetRawValue()))
+                {
                     a->second = (Creature*)obj;
+                    InsertIntoCreatureGUIDList(a->second);
+                }
                 else
                     error_log("Map::InsertIntoCreatureMap: GUID %u already in map", guid.GetRawValue());
 
@@ -3852,6 +3945,44 @@ void Map::RemoveFromObjMap(uint64 guid)
 
         case HIGHGUID_CORPSE:
             HashMapHolder<Corpse>::Remove(guid);
+            break;
+        default:
+            break;
+    }
+}
+
+void Map::RemoveFromObjMap(Object * obj)
+{
+    ObjectGuid objGuid(obj->GetGUID());
+
+    switch(objGuid.GetHigh())
+    {
+        case HIGHGUID_UNIT:
+            RemoveFromCreatureGUIDList((Creature*)obj);
+            if (!creaturesMap.erase(objGuid.GetRawValue()))
+                error_log("Map::RemoveFromCreatureMap: Creature GUID %u not in map", objGuid.GetRawValue());
+            break;
+
+        case HIGHGUID_GAMEOBJECT:
+            if (!gameObjectsMap.erase(objGuid.GetRawValue()))
+                error_log("Map::RemoveFromGameObjectMap: Game Object GUID %u not in map", objGuid.GetRawValue());
+            break;
+
+        case HIGHGUID_DYNAMICOBJECT:
+            if (!dynamicObjectsMap.erase(objGuid.GetRawValue()))
+                error_log("Map::RemoveFromDynamicObjectMap: Dynamic Object GUID %u not in map", objGuid.GetRawValue());
+            break;
+
+        case HIGHGUID_PET:
+            ObjectAccessor::Instance().RemovePet(objGuid.GetRawValue());
+            break;
+
+        case HIGHGUID_PLAYER:
+            ObjectAccessor::Instance().RemovePlayer(objGuid.GetRawValue());
+            break;
+
+        case HIGHGUID_CORPSE:
+            HashMapHolder<Corpse>::Remove(objGuid.GetRawValue());
             break;
         default:
             break;
