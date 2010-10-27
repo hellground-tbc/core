@@ -331,6 +331,9 @@ struct TRINITY_DLL_DECL mob_ashtongue_spiritbinderAI : public ScriptedAI
 
             for (std::list<Creature*>::iterator i = m_sorcerrers.begin(); i != m_sorcerrers.end(); i++)
             {
+                if (!(*i)->isAlive())
+                    continue;
+
                 if ((*i)->GetHealth() < pTarget->GetHealth())
                     pTarget = *i;
             }
@@ -343,11 +346,18 @@ struct TRINITY_DLL_DECL mob_ashtongue_spiritbinderAI : public ScriptedAI
 
             for (std::list<Creature*>::iterator i = m_sorcerrers.begin(); i != m_sorcerrers.end(); i++)
             {
+                if (!(*i)->isAlive())
+                    continue;
+
                 if ((*i)->GetHealth() < pTarget->GetHealth())
                     pTarget = *i;
             }
         }
-        return pTarget;
+
+        if (pTarget->isAlive() && pTarget->IsInWorld())
+            return pTarget;
+        else
+            return NULL;
     }
 
     void UpdateAI(const uint32 diff)

@@ -11,16 +11,6 @@
  #define EMOTE_PHASE_PORTAL          -1532089
  #define EMOTE_PHASE_BANISH          -1532090
 
-#define SPELL_NETHERBURN_AURA       30522
-#define SPELL_VOIDZONE              37063
-#define SPELL_NETHER_INFUSION       38688
-#define SPELL_NETHERBREATH          38523
-#define SPELL_BANISH_VISUAL         39833
-#define SPELL_BANISH_ROOT           42716
-#define SPELL_EMPOWERMENT           38549
-#define SPELL_NETHERSPITE_ROAR      38684
-#define SPELL_VOID_ZONE_EFFECT      46264
-
 #define NETHER_PATROL_PATH          15689
 
 const float PortalCoord[3][3] =
@@ -30,11 +20,28 @@ const float PortalCoord[3][3] =
     {-11094.493164, -1591.969238, 279.949188}  // Back side
 };
 
-enum Netherspite_Portal
+enum portals
 {
-    RED_PORTAL = 0, // Perseverence
-    GREEN_PORTAL = 1, // Serenity
-    BLUE_PORTAL = 2 // Dominance
+    RED_PORTAL   = 0,  // Perseverence
+    GREEN_PORTAL = 1,  // Serenity
+    BLUE_PORTAL  = 2   // Dominance
+};
+
+enum phases
+{
+    PORTAL_PHASE = 0,
+    BANISH_PHASE = 1
+};
+
+enum spells
+{
+    SPELL_NETHERBURN_AURA  = 30522,
+    SPELL_VOIDZONE         = 37063,
+    SPELL_NETHER_INFUSION  = 38688,
+    SPELL_NETHERBREATH     = 38523,
+    SPELL_BANISH_VISUAL    = 39833,
+    SPELL_EMPOWERMENT      = 38549,
+    SPELL_NETHERSPITE_ROAR = 38684,
 };
 
 const uint32 PortalID[3] = {17369, 17367, 17368};
@@ -51,7 +58,7 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
 
         // need core fix
-        for(int i=0; i<3; ++i)
+        for(int i=0; i < 3; ++i)
         {
             if(SpellEntry *spell = (SpellEntry*)GetSpellStore()->LookupEntry(PlayerBuff[i]))
                 spell->AttributesEx |= SPELL_ATTR_EX_NEGATIVE;
@@ -60,20 +67,46 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
 
     ScriptedInstance* pInstance;
 
-    bool PortalPhase;
-    bool Berserk;
-    uint32 PhaseTimer; // timer for phase switching
-    uint32 VoidZoneTimer;
     uint32 NetherInfusionTimer; // berserking timer
     uint32 NetherbreathTimer;
     uint32 EmpowermentTimer;
-    uint32 ExhaustCheckTimer;
-    uint32 PortalTimer; // timer for beam checking
-    uint64 PortalGUID[3]; // guid's of portals
-    uint64 BeamerGUID[3]; // guid's of auxiliary beaming portals
-    uint64 BeamTarget[3]; // guid's of portals' current targets
-    Unit* ExhaustCandidate[3][10];
 
+    uint8 m_phase;
+
+    uint32 m_voidTimer;
+    uint32 m_phaseTimer;
+    uint32 m_enrageTimer;
+
+    void Reset()
+    {
+        m_phase = PORTAL_PHASE;
+
+        m_phaseTimer = 60000;
+        m_voidTimer = 15000;
+        m_enrageTimer = ;
+
+        HandleDoors(true);
+        DestroyPortals();
+
+        for(int i=0; i<3; ++i)
+        {
+            PortalGUID[i] = 0;
+            BeamTarget[i] = 0;
+            BeamerGUID[i] = 0;
+        }
+
+        // clear candidates
+        for(int j=0; j<3;++j)
+        {
+           for(int i=0; i<10;++i)
+              ExhaustCandidate[j][i] = 0;
+        }
+
+        m_creature->GetMotionMaster()->MovePath(NETHER_PATROL_PATH, true);
+
+        if(pInstance && pInstance->GetData(DATA_NETHERSPITE_EVENT) != DONE)
+            pInstance->SetData(DATA_NETHERSPITE_EVENT, NOT_STARTED);
+    }
     bool IsBetween(WorldObject* u1, WorldObject* target, WorldObject* u2) // the in-line checker
     {
         if(!u1 || !u2 || !target)
@@ -99,37 +132,6 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
     {
         return sqrt((xa-xb)*(xa-xb) + (ya-yb)*(ya-yb));
     }
-
-    void Reset()
-    {
-        Berserk = false;
-        NetherInfusionTimer = 540000;
-        VoidZoneTimer = 15000;
-        NetherbreathTimer = 3000;
-        ExhaustCheckTimer = 1000;
-        HandleDoors(true);
-        DestroyPortals();
-
-        for(int i=0; i<3; ++i)
-        {
-            PortalGUID[i] = 0;
-            BeamTarget[i] = 0;
-            BeamerGUID[i] = 0;
-        }
-
-        // clear candidates
-        for(int j=0; j<3;++j)
-        {
-           for(int i=0; i<10;++i)
-              ExhaustCandidate[j][i] = 0;
-        }
-
-        m_creature->GetMotionMaster()->MovePath(NETHER_PATROL_PATH, true);
-
-        if(pInstance && pInstance->GetData(DATA_NETHERSPITE_EVENT) != DONE)
-            pInstance->SetData(DATA_NETHERSPITE_EVENT, NOT_STARTED);
-    }
-
     void SummonPortals()
     {
         uint8 r = rand()%4;

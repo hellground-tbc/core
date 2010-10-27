@@ -158,7 +158,6 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
     {
         // data: 0 = FINALIZE
         // data: 1 = UPDATE
-
         if (type == ROTATE_MOTION_TYPE)
         {
             if (data == 1) //Rotate movegen update
@@ -256,6 +255,8 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
              
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+
+            DoZoneInCombat(75.0f);
             return;
         }
 
@@ -315,7 +316,8 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
                     Player *pPlayer = i->getSource();
                     m_immunemap[pPlayer->GetGUID()] = 0;
                 }
-
+                
+                me->SetSelection(0);
                 me->GetMotionMaster()->MoveRotate(20000, RAND(ROTATE_DIRECTION_LEFT, ROTATE_DIRECTION_RIGHT));
 
                 ForceSpellCast(me, SPELL_SPOUT_VISUAL, INTERRUPT_AND_CAST_INSTANTLY);
