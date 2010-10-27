@@ -549,6 +549,7 @@ extern void AddSC_ungoro_crater();
 
 //Upper blackrock spire
 //Wailing caverns
+extern void AddSC_wailing_caverns();
 
 //Western plaguelands
 extern void AddSC_western_plaguelands();
@@ -1140,6 +1141,7 @@ void AddScripts()
 
     //Upper blackrock spire
     //Wailing caverns
+    AddSC_wailing_caverns();
 
     //Western plaguelands
     AddSC_western_plaguelands();
