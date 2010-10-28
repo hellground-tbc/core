@@ -673,19 +673,19 @@ namespace Trinity
                 {
                     case PUSH_IN_FRONT:
                         if(i_caster->isInFront((GameObject*)(itr->getSource()), i_radius, M_PI/3 ))
-                            i_data->push_back(itr->getSource());
+                            i_data->push_back((GameObject*)itr->getSource());
                         break;
                     case PUSH_IN_BACK:
                         if(i_caster->isInBack((GameObject*)(itr->getSource()), i_radius, M_PI/3 ))
-                            i_data->push_back(itr->getSource());
+                            i_data->push_back((GameObject*)itr->getSource());
                         break;
                     case PUSH_IN_LINE:
                         if(i_caster->isInLine((GameObject*)(itr->getSource()), i_radius ))
-                            i_data->push_back(itr->getSource());
+                            i_data->push_back((GameObject*)itr->getSource());
                         break;
                     default:
                         if((itr->getSource()->GetDistanceSq(i_x, i_y, i_z) < i_radiusSq))
-                            i_data->push_back(itr->getSource());
+                            i_data->push_back((GameObject*)itr->getSource());
                         break;
                 }
             }
