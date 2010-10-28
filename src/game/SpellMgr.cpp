@@ -324,7 +324,6 @@ void ApplySpellThreatModifiers(SpellEntry const *spellInfo, float &threat)
 
     else if(spellInfo->Id == 33619) // Reflective shield
         threat = 1.0f;
-
 }
 
 uint32 CalculatePowerCost(SpellEntry const * spellInfo, Unit const * caster, SpellSchoolMask schoolMask)

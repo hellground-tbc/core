@@ -980,9 +980,12 @@ uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, cons
 
             if (pVictim->GetTypeId() != TYPEID_PLAYER)
             {
+                Unit *threatTarget = this;
+
                 float threat = damageInfo->damage;
                 ApplySpellThreatModifiers(spellProto, threat);
-                pVictim->AddThreat(this, threat, SpellSchoolMask(damageInfo->schoolMask), spellProto);
+
+                pVictim->AddThreat(threatTarget, threat, SpellSchoolMask(damageInfo->schoolMask), spellProto);
             }
             else                                                // victim is a player
             {
