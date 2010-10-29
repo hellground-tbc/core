@@ -427,6 +427,7 @@ class TRINITY_DLL_SPEC Creature : public Unit
 
         void AddToWorld();
         void RemoveFromWorld();
+        void DisappearAndDie();
 
         bool Create (uint32 guidlow, Map *map, uint32 Entry, uint32 team, const CreatureData *data = NULL);
         bool LoadCreaturesAddon(bool reload = false);
@@ -514,6 +515,9 @@ class TRINITY_DLL_SPEC Creature : public Unit
         void UpdateDamagePhysical(WeaponAttackType attType);
         uint32 GetCurrentEquipmentId() { return m_equipmentId; }
         float GetSpellDamageMod(int32 Rank);
+
+        void SetSelection(uint64 guid){ SetUInt64Value(UNIT_FIELD_TARGET, guid); } 
+        uint64 GetSelection() { return GetUInt64Value(UNIT_FIELD_TARGET); }
 
         VendorItemData const* GetVendorItems() const;
         uint32 GetVendorItemCurrentCount(VendorItem const* vItem);

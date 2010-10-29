@@ -5237,8 +5237,7 @@ bool ChatHandler::HandleServerShutDownCommand(const char* args)
 
     int32 time = atoi (time_str);
 
-    ///- Prevent interpret wrong arg value as 0 secs shutdown time
-    if(time == 0 && (time_str[0]!='0' || time_str[1]!='\0') || time < 0)
+    if(time <= 0)
         return false;
 
     if (exitcode_str)
@@ -5272,8 +5271,7 @@ bool ChatHandler::HandleServerRestartCommand(const char* args)
 
     int32 time = atoi (time_str);
 
-    ///- Prevent interpret wrong arg value as 0 secs shutdown time
-    if(time == 0 && (time_str[0]!='0' || time_str[1]!='\0') || time < 0)
+    if(time <= 0)
         return false;
 
     if (exitcode_str)
@@ -5307,8 +5305,7 @@ bool ChatHandler::HandleServerIdleRestartCommand(const char* args)
 
     int32 time = atoi (time_str);
 
-    ///- Prevent interpret wrong arg value as 0 secs shutdown time
-    if(time == 0 && (time_str[0]!='0' || time_str[1]!='\0') || time < 0)
+    if(time <= 0)
         return false;
 
     if (exitcode_str)
@@ -5342,8 +5339,7 @@ bool ChatHandler::HandleServerIdleShutDownCommand(const char* args)
 
     int32 time = atoi (time_str);
 
-    ///- Prevent interpret wrong arg value as 0 secs shutdown time
-    if(time == 0 && (time_str[0]!='0' || time_str[1]!='\0') || time < 0)
+    if(time <= 0)
         return false;
 
     if (exitcode_str)
@@ -6558,7 +6554,8 @@ bool ChatHandler::HandleCastBackCommand(const char* args)
     bool triggered = (trig_str != NULL);
 
     // update orientation at server
-    caster->SetOrientation(caster->GetAngle(m_session->GetPlayer()));
+    if(!caster->hasUnitState(UNIT_STAT_CANNOT_TURN))
+        caster->SetOrientation(caster->GetAngle(m_session->GetPlayer()));
 
     //sky mod update
     //WorldPacket data;
@@ -6651,7 +6648,8 @@ bool ChatHandler::HandleCastTargetCommand(const char* args)
     bool triggered = (trig_str != NULL);
 
     // update orientation at server
-    caster->SetOrientation(caster->GetAngle(m_session->GetPlayer()));
+    if(!caster->hasUnitState(UNIT_STAT_CANNOT_TURN))
+        caster->SetOrientation(caster->GetAngle(m_session->GetPlayer()));
 
     // and client
     WorldPacket data;

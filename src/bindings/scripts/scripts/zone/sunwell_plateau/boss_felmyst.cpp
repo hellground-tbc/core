@@ -240,7 +240,6 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         if(summon->GetEntry() == MOB_DEAD)
         {
             summon->AI()->AttackStart(SelectUnit(SELECT_TARGET_RANDOM, 0));
-            DoZoneInCombat(summon);
             summon->CastSpell(summon, SPELL_DEAD_PASSIVE, true);
         }
     }
@@ -574,7 +573,7 @@ struct TRINITY_DLL_DECL mob_felmyst_trailAI : public ScriptedAI
     {
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->CastSpell(m_creature, SPELL_TRAIL_TRIGGER, true);
-        m_creature->SetUInt64Value(UNIT_FIELD_TARGET, m_creature->GetGUID());
+        m_creature->SetSelection(m_creature->GetGUID());
         m_creature->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 0.01); // core bug
     }
     void Reset() {}

@@ -544,6 +544,7 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
         bool hasQuest(uint32 quest_id) const;
         bool hasInvolvedQuest(uint32 quest_id) const;
         bool ActivateToQuest(Player *pTarget) const;
+        void ResetDoorOrButton();
         void UseDoorOrButton(uint32 time_to_restore = 0);   // 0 = use `gameobject`.`spawntimesecs`
 
         uint32 GetLinkedGameObjectEntry() const

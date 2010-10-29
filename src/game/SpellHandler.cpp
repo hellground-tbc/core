@@ -316,14 +316,14 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 
     SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId );
 
-    if(!spellInfo)
+    if (!spellInfo)
     {
         sLog.outError("WORLD: unknown spell id %u", spellId);
         return;
     }
 
     // not have spell or spell passive and not casted by client
-    if ( !_player->HasSpell (spellId) || IsPassiveSpell(spellId) )
+    if (!_player->HasSpell (spellId) || IsPassiveSpell(spellId) )
     {
         //cheater? kick? ban?
         return;
@@ -343,6 +343,12 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
         // if rank not found then function return NULL but in explicit cast case original spell can be casted and later failed with appropriate error message
         if (SpellEntry const *actualSpellInfo = spellmgr.SelectAuraRankForPlayerLevel(spellInfo, target->getLevel()))
             spellInfo = actualSpellInfo;
+    }
+
+    if (spellInfo->AttributesEx2 & SPELL_ATTR_EX2_AUTOREPEAT_FLAG)
+    {
+        if (_player->m_currentSpells[CURRENT_AUTOREPEAT_SPELL] && _player->m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Id == spellInfo->Id)
+            return;
     }
 
     Spell *spell = new Spell(_player, spellInfo, false);

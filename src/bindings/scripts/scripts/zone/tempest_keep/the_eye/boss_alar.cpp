@@ -205,7 +205,7 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
                 m_creature->RemoveAllAuras();
                 m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 m_creature->AttackStop();
-                m_creature->SetUInt64Value(UNIT_FIELD_TARGET, 0);
+                m_creature->SetSelection(0);
                 m_creature->SetSpeed(MOVE_RUN, 5.0f);
                 ForceMove = true;
                 ForceTimer = 0;

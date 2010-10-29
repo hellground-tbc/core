@@ -198,7 +198,7 @@ class SpellCastTargets
         ObjectGuid m_itemTargetGUID;
         uint32 m_itemTargetEntry;
 };
- 
+
 inline ByteBuffer& operator<< (ByteBuffer& buf, SpellCastTargets const& targets)
 {
     targets.write(buf);
@@ -588,7 +588,8 @@ class Spell
         void DoAllEffectOnTarget(GOTargetInfo *target);
         void DoAllEffectOnTarget(ItemTargetInfo *target);
         bool IsAliveUnitPresentInTargetList();
-        void SearchAreaTarget(std::list<Unit*> &unitList, float radius, const uint32 type, SpellTargets TargetType, uint32 entry = 0);
+        void SearchAreaTarget(std::list<Unit*> &unitList, float radius, const uint32 type, SpellTargets TargetType, uint32 entry = 0, SpellScriptTargetType spellScriptTargetType = SPELL_TARGET_TYPE_CREATURE);
+        void SearchAreaTarget(std::list<GameObject*> &goList, float radius, const uint32 type, SpellTargets TargetType, uint32 entry = 0, SpellScriptTargetType spellScriptTargetType = SPELL_TARGET_TYPE_CREATURE);
         void SearchChainTarget(std::list<Unit*> &unitList, float radius, uint32 unMaxTargets, SpellTargets TargetType);
         WorldObject* SearchNearbyTarget(float range, SpellTargets TargetType);
         bool IsValidSingleTargetEffect(Unit const* target, Targets type) const;
@@ -625,6 +626,79 @@ class Spell
 
 namespace Trinity
 {
+    struct TRINITY_DLL_DECL SpellNotifierGameObject
+    {
+        std::list<GameObject*> *i_data;
+        Spell &i_spell;
+        const uint32& i_push_type;
+        float i_radius, i_radiusSq;
+        SpellTargets i_TargetType;
+        Unit* i_caster;
+        uint32 i_entry;
+        float i_x, i_y, i_z;
+
+        SpellNotifierGameObject(Spell &spell, std::list<GameObject*> &data, float radius, const uint32 &type,
+            SpellTargets TargetType = SPELL_TARGETS_ENEMY, uint32 entry = 0, float x = 0, float y = 0, float z = 0)
+            : i_data(&data), i_spell(spell), i_push_type(type), i_radius(radius), i_radiusSq(radius*radius)
+            , i_TargetType(TargetType), i_entry(entry), i_x(x), i_y(y), i_z(z)
+        {
+            i_caster = spell.GetCaster();
+        }
+
+        template<class T> inline void Visit(GridRefManager<T>  &m)
+        {
+            assert(i_data);
+
+            if(!i_caster)
+                return;
+
+            for(typename GridRefManager<T>::iterator itr = m.begin(); itr != m.end(); ++itr)
+            {
+                if(itr->getSource()->GetTypeId() != TYPEID_GAMEOBJECT)
+                    continue;
+
+                switch (i_TargetType)
+                {
+                    case SPELL_TARGETS_ENTRY:
+                    {
+                        if(itr->getSource()->GetEntry()!= i_entry)
+                            continue;
+                    }break;
+                    default:
+                        sLog.outError("Game Object can only have SPELL_TARGETS_ENTRY (%i) type not %i", SPELL_TARGETS_ENTRY, i_TargetType);
+                        continue;
+                }
+
+                switch(i_push_type)
+                {
+                    case PUSH_IN_FRONT:
+                        if(i_caster->isInFront((GameObject*)(itr->getSource()), i_radius, M_PI/3 ))
+                            i_data->push_back((GameObject*)itr->getSource());
+                        break;
+                    case PUSH_IN_BACK:
+                        if(i_caster->isInBack((GameObject*)(itr->getSource()), i_radius, M_PI/3 ))
+                            i_data->push_back((GameObject*)itr->getSource());
+                        break;
+                    case PUSH_IN_LINE:
+                        if(i_caster->isInLine((GameObject*)(itr->getSource()), i_radius ))
+                            i_data->push_back((GameObject*)itr->getSource());
+                        break;
+                    default:
+                        if((itr->getSource()->GetDistanceSq(i_x, i_y, i_z) < i_radiusSq))
+                            i_data->push_back((GameObject*)itr->getSource());
+                        break;
+                }
+            }
+        }
+
+        #ifdef WIN32
+        template<> inline void Visit(CorpseMapType & ) {}
+        template<> inline void Visit(PlayerMapType & ) {}
+        template<> inline void Visit(GameObjectMapType & ) {}
+        template<> inline void Visit(DynamicObjectMapType & ) {}
+        #endif
+    };
+
     struct TRINITY_DLL_DECL SpellNotifierCreatureAndPlayer
     {
         std::list<Unit*> *i_data;
@@ -702,16 +776,7 @@ namespace Trinity
                         break;
                     case PUSH_IN_LINE:
                         if(i_caster->isInLine((Unit*)(itr->getSource()), i_radius ))
-                        {
-                            if(i_spell.m_spellInfo->Id != 37433)
-                                i_data->push_back(itr->getSource());
-                            else
-                            {
-                                Unit *target = (Unit*)(itr->getSource());
-                                if(target->GetTypeId() == TYPEID_PLAYER && !((Player*)target)->IsInWater() && target->GetPositionZ() > -19.9645)
-                                    i_data->push_back(itr->getSource());
-                            }
-                        }
+                            i_data->push_back(itr->getSource());
                         break;
                     default:
                         if(i_TargetType != SPELL_TARGETS_ENTRY && i_push_type == PUSH_SRC_CENTER && i_caster) // if caster then check distance from caster to target (because of model collision)
@@ -744,10 +809,132 @@ namespace Trinity
         #endif
     };
 
+
+    struct TRINITY_DLL_DECL SpellNotifierDeadCreature
+    {
+        std::list<Unit*> *i_data;
+        Spell &i_spell;
+        const uint32& i_push_type;
+        float i_radius, i_radiusSq;
+        SpellTargets i_TargetType;
+        Unit* i_caster;
+        uint32 i_entry;
+        float i_x, i_y, i_z;
+
+        SpellNotifierDeadCreature(Spell &spell, std::list<Unit*> &data, float radius, const uint32 &type,
+            SpellTargets TargetType = SPELL_TARGETS_ENEMY, uint32 entry = 0, float x = 0, float y = 0, float z = 0)
+            : i_data(&data), i_spell(spell), i_push_type(type), i_radius(radius), i_radiusSq(radius*radius)
+            , i_TargetType(TargetType), i_entry(entry), i_x(x), i_y(y), i_z(z)
+        {
+            i_caster = spell.GetCaster();
+        }
+
+        template<class T> inline void Visit(GridRefManager<T>  &m)
+        {
+            assert(i_data);
+
+            if(!i_caster)
+                return;
+
+            for(typename GridRefManager<T>::iterator itr = m.begin(); itr != m.end(); ++itr)
+            {
+                if(itr->getSource()->getDeathState() != CORPSE || itr->getSource()->GetTypeId() != TYPEID_UNIT)
+                    continue;
+
+                switch (i_TargetType)
+                {
+                    case SPELL_TARGETS_ALLY:
+                        if (!itr->getSource()->isAttackableByAOE() || !i_caster->IsFriendlyTo( itr->getSource() ))
+                            continue;
+                        break;
+                    case SPELL_TARGETS_ENEMY:
+                    {
+                        if(((Creature*)itr->getSource())->isTotem())
+                            continue;
+                        if(!itr->getSource()->isAttackableByAOE())
+                            continue;
+
+                        Unit* check = i_caster->GetCharmerOrOwnerOrSelf();
+
+                        if( check->GetTypeId()==TYPEID_PLAYER )
+                        {
+                            if (check->IsFriendlyTo( itr->getSource() ))
+                                continue;
+                        }
+                        else
+                        {
+                            if (!check->IsHostileTo( itr->getSource() ))
+                                continue;
+                        }
+                    }break;
+                    case SPELL_TARGETS_ENTRY:
+                    {
+                        if(itr->getSource()->GetEntry()!= i_entry)
+                            continue;
+                    }break;
+                    default: continue;
+                }
+
+                switch(i_push_type)
+                {
+                    case PUSH_IN_FRONT:
+                        if(i_caster->isInFront((Unit*)(itr->getSource()), i_radius, M_PI/3 ))
+                            i_data->push_back(itr->getSource());
+                        break;
+                    case PUSH_IN_BACK:
+                        if(i_caster->isInBack((Unit*)(itr->getSource()), i_radius, M_PI/3 ))
+                            i_data->push_back(itr->getSource());
+                        break;
+                    case PUSH_IN_LINE:
+                        if(i_caster->isInLine((Unit*)(itr->getSource()), i_radius ))
+                            i_data->push_back(itr->getSource());
+                        break;
+                    default:
+                        if(i_TargetType != SPELL_TARGETS_ENTRY && i_push_type == PUSH_SRC_CENTER && i_caster) // if caster then check distance from caster to target (because of model collision)
+                        {
+                            if(i_caster->IsWithinDistInMap(itr->getSource(), i_radius))
+                            {
+                                if(i_caster->GetTypeId() == TYPEID_UNIT && ((Creature*)i_caster)->isTotem())
+                                {
+                                    if(i_caster->IsWithinLOSInMap(itr->getSource()))
+                                        i_data->push_back(itr->getSource());
+                                }
+                                else
+                                    i_data->push_back(itr->getSource());
+                            }
+                        }
+                        else
+                        {
+                            if((itr->getSource()->GetDistanceSq(i_x, i_y, i_z) < i_radiusSq))
+                                i_data->push_back(itr->getSource());
+                        }
+                        break;
+                }
+            }
+        }
+
+        #ifdef WIN32
+        template<> inline void Visit(CorpseMapType & ) {}
+        template<> inline void Visit(GameObjectMapType & ) {}
+        template<> inline void Visit(PlayerMapType & ) {}
+        template<> inline void Visit(DynamicObjectMapType & ) {}
+        #endif
+    };
+
     #ifndef WIN32
+    template<> inline void SpellNotifierGameObject::Visit(CorpseMapType& ) {}
+    template<> inline void SpellNotifierGameObject::Visit(CreatureMapType& ) {}
+    template<> inline void SpellNotifierGameObject::Visit(PlayerMapType& ) {}
+    template<> inline void SpellNotifierGameObject::Visit(DynamicObjectMapType& ) {}
+
     template<> inline void SpellNotifierCreatureAndPlayer::Visit(CorpseMapType& ) {}
     template<> inline void SpellNotifierCreatureAndPlayer::Visit(GameObjectMapType& ) {}
     template<> inline void SpellNotifierCreatureAndPlayer::Visit(DynamicObjectMapType& ) {}
+
+    template<> inline void SpellNotifierDeadCreature::Visit(CorpseMapType& ) {}
+    template<> inline void SpellNotifierDeadCreature::Visit(GameObjectMapType& ) {}
+    template<> inline void SpellNotifierDeadCreature::Visit(PlayerMapType& ) {}
+    template<> inline void SpellNotifierDeadCreature::Visit(DynamicObjectMapType& ) {}
     #endif
 }
 

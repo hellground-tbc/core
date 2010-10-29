@@ -566,10 +566,10 @@ void Aura::Update(uint32 diff)
         }
     }
 
-    // Scalding Water
-    if(GetId() == 37284)
+    // Scalding Water remove, while not in water ;]
+    if (GetId() == 37284)
     {
-        if(!m_target->IsInWater())
+        if (m_target->GetPositionZ() >= -19.9645)
             m_target->RemoveAurasDueToSpell(37284);
     }
 
@@ -1739,8 +1739,8 @@ void Aura::TriggerSpell()
 //                    case 37125: break;
 //                    // Arcane Flurry
 //                    case 37268: break;
-//                    // Spout
-//                    case 37429: break;
+                    // Spout
+                    case 37429: trigger_spell_id = 42835; break;
 //                    // Spout
 //                    case 37430: break;
 //                    // Karazhan - Chess NPC AI, Snapshot timer
@@ -1784,7 +1784,7 @@ void Aura::TriggerSpell()
 //                    case 38751: break;
 //                    // Murmur's Touch
 //                    case 38794: break;
-//                    // Activate Nether-wraith Beacon (31742 Nether-wraith Beacon item)
+                    // Activate Nether-wraith Beacon (31742 Nether-wraith Beacon item)
                     case 39105:
                     {
                         if(!target)
@@ -2198,6 +2198,7 @@ void Aura::TriggerSpell()
     }
     if(!GetSpellMaxRange(sSpellRangeStore.LookupEntry(triggeredSpellInfo->rangeIndex)))
         target = m_target;    //for druid dispel poison
+
     m_target->CastSpell(target, triggeredSpellInfo, true, 0, this, originalCasterGUID);
 }
 
@@ -2218,9 +2219,36 @@ void Aura::TriggerSpellWithValue()
 
     // generic casting code with custom spells and target/caster customs
     uint32 trigger_spell_id = GetSpellProto()->EffectTriggerSpell[m_effIndex];
-    int32  basepoints0 = GetModifier()->m_amount;
+    int32  basepoints = GetModifier()->m_amount;
 
-    caster->CastCustomSpell(caster, trigger_spell_id, &basepoints0, NULL, NULL, true, NULL, this, caster->GetGUID());
+    // Spell Absorption triggered damage multiplies by Chaotic Charge stack count
+    if(GetId() == 41034)
+    {
+        if(caster->HasAura(41033, 0))
+        {
+             int32 multiplier = caster->GetAura(41033, 0)->GetStackAmount();
+             basepoints *= multiplier;
+        }
+        else
+            basepoints = 0;
+    }
+
+    SpellEntry const *triggeredSpellInfo = sSpellStore.LookupEntry(trigger_spell_id);
+    int32 bp[3];
+    // damage triggered from spell might not only be processed by first effect (but always EffectDieSides equal 1)
+    if(triggeredSpellInfo)
+    {
+        uint8 j = 0;
+        for(uint8 i=0;i<3;++i)
+        {
+            bp[i] = 0;
+            if(triggeredSpellInfo->EffectDieSides[i] == 1)
+                j = i;
+        }
+        bp[j] = basepoints;
+    }
+
+    caster->CastCustomSpell(caster, trigger_spell_id, &bp[0], &bp[1], &bp[2], true, NULL, this, caster->GetGUID());
 }
 
 /*********************************************************/
@@ -2505,10 +2533,42 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
         case SPELLFAMILY_MAGE:
         {
             // Hypothermia
-            if( GetId()==41425 )
+            switch(GetId())
             {
-                m_target->ModifyAuraState(AURA_STATE_HYPOTHERMIA,apply);
+                case 41425:
+                    m_target->ModifyAuraState(AURA_STATE_HYPOTHERMIA,apply);
                 return;
+
+                case 11094:
+                case 13043: 
+                case 11189:
+                case 28332: 
+                {
+                    if (m_target->GetTypeId() != TYPEID_PLAYER)
+                        return;
+
+                    if (apply)
+                    {
+                        SpellModifier *mod = new SpellModifier;
+                        mod->op = SPELLMOD_EFFECT2;
+                        mod->value = GetModifierValue();
+                        mod->type = SPELLMOD_PCT;
+                        mod->spellId = GetId();
+                        mod->effectId = m_effIndex;
+                        mod->lastAffected = NULL;
+
+                        if (GetId() == 11094 || GetId() == 13043)
+                            mod->mask = 0x8LL;
+                        else
+                            mod->mask = 0x17FFLL;
+
+                        mod->charges = 0;
+                        m_spellmod = mod;
+                    }
+
+                    ((Player*)m_target)->AddSpellMod(m_spellmod, apply);
+                    return;
+                }
             }
             break;
         }
@@ -2760,6 +2820,10 @@ void Aura::HandleAuraFeatherFall(bool apply, bool Real)
     data << m_target->GetPackGUID();
     data << (uint32)0;
     m_target->SendMessageToSet(&data,true);
+
+    // start fall from current height
+    if(!apply && m_target->GetTypeId() == TYPEID_PLAYER)
+        ((Player*)m_target)->SetFallInformation(0, m_target->GetPositionZ());
 }
 
 void Aura::HandleAuraHover(bool apply, bool Real)

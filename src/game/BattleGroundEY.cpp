@@ -196,6 +196,7 @@ void BattleGroundEY::CheckSomeoneJoinedPoint()
                 if(!plr)
                 {
                     sLog.outError("BattleGroundEY: Player " UI64FMTD " not found!", m_PlayersNearPoint[EY_POINTS_MAX][j]);
+                    m_PlayersNearPoint[EY_POINTS_MAX].erase(m_PlayersNearPoint[EY_POINTS_MAX].begin() + j);
                     ++j;
                     continue;
                 }
@@ -242,8 +243,8 @@ void BattleGroundEY::CheckSomeoneLeftPoint()
                 if (!plr)
                 {
                     sLog.outError("BattleGroundEY: Player " UI64FMTD " not found!", m_PlayersNearPoint[i][j]);
-                    //move not existed player to "free space" - this will cause many error showing in log, but it is a very important bug
-                    m_PlayersNearPoint[EY_POINTS_MAX].push_back(m_PlayersNearPoint[i][j]);
+                    ////move not existed player to "free space" - this will cause many error showing in log, but it is a very important bug
+                    //m_PlayersNearPoint[EY_POINTS_MAX].push_back(m_PlayersNearPoint[i][j]);
                     m_PlayersNearPoint[i].erase(m_PlayersNearPoint[i].begin() + j);
                     ++j;
                     continue;

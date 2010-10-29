@@ -198,27 +198,13 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
 
                     case 3:
                     {
-                        //Shatter takes effect
-                        // Not Needet Anymore Handled in Spell SPELL_SHATTER
-                        //std::list<HostilReference*>& m_threatlist = m_creature->getThreatManager().getThreatList();
-                        //for(std::list<HostilReference*>::iterator itr = m_threatlist.begin(); itr!= m_threatlist.end(); ++itr)
-                        //{
-                        //    Unit *target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
-                        //    if(target)
-                        //    {
-                        //        target->RemoveAurasDueToSpell(SPELL_STONED);
-                        //        if(target->GetTypeId() == TYPEID_PLAYER)
-                        //            target->CastSpell(target, SPELL_SHATTER_EFFECT, false, NULL, NULL, m_creature->GetGUID());
-                        //    }
-                        //}
-
                         m_creature->GetMotionMaster()->Clear();
 
                         Unit *victim = m_creature->getVictim();
                         if(victim)
                         {
                             m_creature->GetMotionMaster()->MoveChase(victim);
-                            m_creature->SetUInt64Value(UNIT_FIELD_TARGET, victim->GetGUID());
+                            m_creature->SetSelection(victim->GetGUID());
                         }
 
                         PerformingGroundSlam = false;
@@ -280,7 +266,7 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
             {
                 m_creature->GetMotionMaster()->Clear();
                 m_creature->GetMotionMaster()->MoveIdle();
-                m_creature->SetUInt64Value(UNIT_FIELD_TARGET, 0);
+                m_creature->SetSelection(0);
 
                 PerformingGroundSlam= true;
                 GroundSlamTimer = 0;

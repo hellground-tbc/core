@@ -769,7 +769,7 @@ void Unit::SendDamageLog(DamageLog *damageInfo)
     }
 }
 
-// tymczasowo to kopia starej funkcji - trzeba zmieniæ
+// tymczasowo to kopia starej funkcji - trzeba zmienic
 uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, const SpellEntry *spellProto, bool durabilityLoss)
 {
     Unit *pVictim = damageInfo->target;
@@ -980,9 +980,12 @@ uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, cons
 
             if (pVictim->GetTypeId() != TYPEID_PLAYER)
             {
+                Unit *threatTarget = this;
+
                 float threat = damageInfo->damage;
                 ApplySpellThreatModifiers(spellProto, threat);
-                pVictim->AddThreat(this, threat, SpellSchoolMask(damageInfo->schoolMask), spellProto);
+
+                pVictim->AddThreat(threatTarget, threat, SpellSchoolMask(damageInfo->schoolMask), spellProto);
             }
             else                                                // victim is a player
             {
@@ -1357,7 +1360,7 @@ void Unit::CalculateSpellDamageTaken(SpellDamageLog *damageInfo, int32 damage, S
                 if (pVictim->GetTypeId()==TYPEID_PLAYER)
                     damage -= ((Player*)pVictim)->GetMeleeCritDamageReduction(damage);
 
-                // je¿eli crit to zmieniamy
+                // jezeli crit to zmieniamy
                 damageInfo->rageDamage = damage;
             }
             // Spell weapon based damage CAN BE crit & blocked at same time
@@ -2785,6 +2788,7 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool 
         for(Unit::AuraList::const_iterator i = mReflectSpellsSchool.begin(); i != mReflectSpellsSchool.end(); ++i)
             if((*i)->GetModifier()->m_miscvalue & GetSpellSchoolMask(spell))
                 reflectchance = (*i)->GetModifierValue();
+
         if (reflectchance > 0 && roll_chance_i(reflectchance))
         {
             // Start triggers for remove charges if need (trigger only for victim, and mark as active spell)
@@ -3256,6 +3260,11 @@ bool Unit::isInFront(Unit const* target, float distance,  float arc) const
     return IsWithinDistInMap(target, distance) && HasInArc( arc, target );
 }
 
+bool Unit::isInFront(GameObject const* target, float distance,  float arc) const
+{
+    return IsWithinDistInMap(target, distance) && HasInArc( arc, target );
+}
+
 void Unit::SetInFront(Unit const* target)
 {
     if(!hasUnitState(UNIT_STAT_CANNOT_TURN))
@@ -3267,12 +3276,27 @@ bool Unit::isInBack(Unit const* target, float distance, float arc) const
     return IsWithinDistInMap(target, distance) && !HasInArc( 2 * M_PI - arc, target );
 }
 
+bool Unit::isInBack(GameObject const* target, float distance, float arc) const
+{
+    return IsWithinDistInMap(target, distance) && !HasInArc( 2 * M_PI - arc, target );
+}
+
 bool Unit::isInLine(Unit const* target, float distance) const
 {
     if(!HasInArc(M_PI, target) || !IsWithinDistInMap(target, distance))
         return false;
 
-    float width = GetEntry() == 21217 ? 2 : GetObjectSize() + target->GetObjectSize() * 0.5f;
+    float width = GetObjectSize() + target->GetObjectSize() * 0.5f;
+    float angle = GetAngle(target) - GetOrientation();
+    return abs(sin(angle)) * GetExactDistance2d(target->GetPositionX(), target->GetPositionY()) < width;
+}
+
+bool Unit::isInLine(GameObject const* target, float distance) const
+{
+    if(!HasInArc(M_PI, target) || !IsWithinDistInMap(target, distance))
+        return false;
+
+    float width = GetObjectSize() + target->GetObjectSize() * 0.5f;
     float angle = GetAngle(target) - GetOrientation();
     return abs(sin(angle)) * GetExactDistance2d(target->GetPositionX(), target->GetPositionY()) < width;
 }
@@ -3516,7 +3540,8 @@ bool Unit::AddAura(Aura *Aur)
                 i2=m_Auras.lower_bound(spair);
                 continue;
             }
-            if(aurSpellInfo->Id == 28093)       // Allow mongoose procs from different weapons stack
+
+            if(aurSpellInfo->Id == 28093 || aurSpellInfo->Id == 20007)       // Allow mongoose procs from different weapons stack
             {
                 if(Aur->GetCastItemGUID() != i2->second->GetCastItemGUID())
                 {
@@ -7569,8 +7594,8 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             {
                 CastingTime = 0;
             }
-            // Flame Cap
-            else if(spellProto->Id == 28715)
+            // Flame Cap & Scalding Water
+            else if(spellProto->Id == 28715 || spellProto->Id == 37284)
             {
                 CastingTime = 0;
             }

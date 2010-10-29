@@ -324,7 +324,6 @@ void ApplySpellThreatModifiers(SpellEntry const *spellInfo, float &threat)
 
     else if(spellInfo->Id == 33619) // Reflective shield
         threat = 1.0f;
-
 }
 
 uint32 CalculatePowerCost(SpellEntry const * spellInfo, Unit const * caster, SpellSchoolMask schoolMask)
@@ -649,6 +648,8 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
     {
         case 23333:                                         // BG spell
         case 23335:                                         // BG spell
+        case 24732:                                         // Bat Costume
+        case 24740:                                         // Wisp Costume
         case 34976:                                         // BG spell
         case 31579:                                         // Arcane Empowerment Rank1 talent aura with one positive and one negative (check not needed in wotlk)
         case 31582:                                         // Arcane Empowerment Rank2
@@ -2575,7 +2576,6 @@ void SpellMgr::LoadSpellCustomAttr()
         case 34121: // Al'ar Flame Buffet
             spellInfo->InterruptFlags &= ~SPELL_INTERRUPT_FLAG_MOVEMENT;
         case 26029: // dark glare
-        case 37433: // spout
         case 43140: case 43215: // flame breath
             spellInfo->AttributesCu |= SPELL_ATTR_CU_CONE_LINE;
             break;
@@ -2718,6 +2718,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 30015: // Summon Naias cooldown
             spellInfo->RecoveryTime = 300000;
             break;
+        case 35413: // Summon Goliathon cooldown
+            spellInfo->RecoveryTime = 300000;
+            break;
         case 13278: // Gnomish Death Ray
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
             break;
@@ -2729,6 +2732,28 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 66:    // Invisibility (fading) - break on casting spell
             spellInfo->AuraInterruptFlags |= AURA_INTERRUPT_FLAG_CAST;
+            break;
+        case 37363: // set 5y radius instead of 25y
+            spellInfo->EffectRadiusIndex[0] = 8;
+            spellInfo->EffectRadiusIndex[0] = 8;
+            break;
+        case 37433: // just in case, where u don't get spout sometimes ?
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
+            spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_TARGET_ENEMY;
+            spellInfo->EffectImplicitTargetB[0] = 0;
+            spellInfo->EffectImplicitTargetB[1] = 0;
+            break;
+        case 42835: // set visual only
+            spellInfo->Effect[0] = 0;
+            break;
+        case 47977: // Broom Broom
+        case 42679:
+        case 42673:
+        case 42680:
+        case 42681:
+        case 42683:
+        case 42684:
+            spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_NOT_USABLE_IN_ARENA;
             break;
         default:
             break;
@@ -3115,6 +3140,13 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
             // Hamstring - limit duration to 10s in PvP
             if (spellproto->SpellFamilyFlags & 0x00000000002LL)
                 return DIMINISHING_LIMITONLY;
+            break;
+        }
+        case SPELLFAMILY_PALADIN:
+        {
+            // Turn Evil - share group with fear, seduction
+            if (spellproto->Id == 10326)
+                return DIMINISHING_FEAR;
             break;
         }
         default:

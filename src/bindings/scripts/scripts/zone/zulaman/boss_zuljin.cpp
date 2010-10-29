@@ -372,7 +372,6 @@ struct TRINITY_DLL_DECL boss_zuljinAI : public ScriptedAI
                         Vortex->SetSpeed(MOVE_RUN, 1.0f);
                         if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
                             Vortex->AI()->AttackStart(target);
-                        DoZoneInCombat(Vortex);
                     }
                 }
             }

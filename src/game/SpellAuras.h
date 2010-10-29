@@ -301,10 +301,13 @@ class TRINITY_DLL_SPEC Aura
             if(GetSpellProto()->SpellFamilyName == SPELLFAMILY_PRIEST && GetSpellProto()->SpellFamilyFlags & 0x800000LL) // Mind Flay
                 return true;
 
-            if(GetSpellProto()->SpellFamilyName == SPELLFAMILY_PRIEST && GetSpellProto()->SpellFamilyFlags & 0x40000000000LL) // Vampiric Touch
+            if(GetSpellProto()->Id == 34456) // Ferocious Inspiration
+                return true;
+
+            if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_PRIEST && GetSpellProto()->SpellFamilyFlags & 0x40000000000LL) // Vampiric Touch
                 return true;
     
-            if( this->GetSpellProto()->SpellFamilyName == SPELLFAMILY_SHAMAN && this->GetSpellProto()->SpellIconID == 1677 ) // Grounding Totem
+            if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_SHAMAN && this->GetSpellProto()->SpellIconID == 1677 ) // Grounding Totem
                 return true;
 
             return false;

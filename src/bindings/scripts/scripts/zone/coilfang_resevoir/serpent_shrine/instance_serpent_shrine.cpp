@@ -225,7 +225,10 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
             return;
 
         if (GetEncounterForEntry(tmp->id) && creature->isAlive() && GetData(GetEncounterForEntry(tmp->id)) == DONE)
+        {
             creature->Kill(creature, false);
+            creature->RemoveCorpse();
+        }
     }
 
     void SetData64(uint32 type, uint64 data)
@@ -276,13 +279,14 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
             }
         case DATA_WATER : Water = data; break;
         case DATA_CONTROL_CONSOLE:
-            if(data = DONE)
+            if(data == DONE)
             {
                 OpenDoor(BridgePart[0], true);
                 OpenDoor(BridgePart[1], true);
                 OpenDoor(BridgePart[2], true);
             }
             ControlConsole = data;
+            break;
         case DATA_HYDROSSTHEUNSTABLEEVENT:
             if(Encounters[0] != DONE)
                 Encounters[0] = data;
@@ -413,10 +417,7 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
                         if(Water == WATERSTATE_SCALDING)
                         {
                             if(!pPlayer->HasAura(SPELL_SCALDINGWATER,0))
-                            {
-                                int32 bp0 = 500;
-                                pPlayer->CastCustomSpell(pPlayer, SPELL_SCALDINGWATER, &bp0, 0, 0, true); // Gracz nie powinien sam na siebie tego kastowac, bo dostaje bonus z
-                            }
+                                pPlayer->CastSpell(pPlayer, SPELL_SCALDINGWATER, true);
                         }
                         else if(Water == WATERSTATE_FRENZY)
                         {
@@ -432,11 +433,7 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
                             }
                         }
                     }
-                    else
-                        if(pPlayer->GetPositionZ() > -19.9645 && !pPlayer->hasUnitState(MOVEMENTFLAG_JUMPING))
-                            pPlayer->RemoveAurasDueToSpell(SPELL_SCALDINGWATER);
                 }
-
             }
             WaterCheckTimer = 500; //remove stress from core
         }
@@ -472,4 +469,3 @@ void AddSC_instance_serpentshrine_cavern()
     newscript->pGOHello = &GOHello_go_bridge_console;
     newscript->RegisterSelf();
 }
-

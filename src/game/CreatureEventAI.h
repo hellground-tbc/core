@@ -61,7 +61,7 @@ enum EventAI_Type
     EVENT_T_BUFFED                  = 23,                   // Param1 = SpellID, Param2 = Number of Time STacked, Param3/4 Repeat Min/Max
     EVENT_T_TARGET_BUFFED           = 24,                   // Param1 = SpellID, Param2 = Number of Time STacked, Param3/4 Repeat Min/Max
     EVENT_T_RESET                   = 35,                   // Is it called after combat, when the creature respawn and spawn. -- TRINITY ONLY
- 
+
     EVENT_T_END,
 };
 
@@ -110,7 +110,7 @@ enum EventAI_ActionType
     ACTION_T_SET_SHEATH                 = 40,               // Sheath (0-passive,1-melee,2-ranged)
     ACTION_T_FORCE_DESPAWN              = 41,               // No Params
     ACTION_T_SET_INVINCIBILITY_HP_LEVEL = 42,               // MinHpValue, format(0-flat,1-percent from max health)
- 
+
     ACTION_T_SET_PHASE_MASK             = 97,
     ACTION_T_SET_STAND_STATE            = 98,
     ACTION_T_MOVE_RANDOM_POINT          = 99,
@@ -634,5 +634,7 @@ class TRINITY_DLL_SPEC CreatureEventAI : public CreatureAI
         float AttackDistance;                               // Distance to attack from
         float AttackAngle;                                  // Angle of attack
         uint32 InvinceabilityHpLevel;                       // Minimal health level allowed at damage apply
+
+        Unit* summoned;
 };
 #endif

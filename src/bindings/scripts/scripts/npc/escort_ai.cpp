@@ -61,7 +61,7 @@ bool npc_escortAI::AssistPlayerInCombat(Unit* pWho)
         return false;
 
     //experimental (unknown) flag not present
-    if (!(m_creature->GetCreatureInfo()->type_flags & 0x01000))
+    if (!(m_creature->GetCreatureInfo()->type_flags & CREATURE_TYPEFLAGS_UNK13))
         return false;
 
     //not a player

@@ -3152,8 +3152,16 @@ bool ChatHandler::HandleAnimCommand(const char* args)
     if (!*args)
         return false;
 
+    Unit *pTarget = NULL;
+
+    if(m_session->GetPlayer()->GetSelection())
+        pTarget = Unit::GetUnit(*(m_session->GetPlayer()), m_session->GetPlayer()->GetSelection());
+
+    if(!pTarget)
+        pTarget = m_session->GetPlayer();
+
     uint32 anim_id = atoi((char*)args);
-    m_session->GetPlayer()->HandleEmoteCommand(anim_id);
+    pTarget->HandleEmoteCommand(anim_id);
     return true;
 }
 
@@ -3731,7 +3739,7 @@ bool ChatHandler::HandleNpcUnFollowCommand(const char* /*args*/)
     if (/*creature->GetMotionMaster()->empty() ||*/
         creature->GetMotionMaster()->GetCurrentMovementGeneratorType ()!=TARGETED_MOTION_TYPE)
     {
-        PSendSysMessage(LANG_CREATURE_NOT_FOLLOW_YOU);
+        PSendSysMessage(LANG_CREATURE_NOT_FOLLOW_YOU, creature->GetName());
         SetSentErrorMessage(true);
         return false;
     }
@@ -3741,7 +3749,7 @@ bool ChatHandler::HandleNpcUnFollowCommand(const char* /*args*/)
 
     if(mgen->GetTarget()!=player)
     {
-        PSendSysMessage(LANG_CREATURE_NOT_FOLLOW_YOU);
+        PSendSysMessage(LANG_CREATURE_NOT_FOLLOW_YOU, creature->GetName());
         SetSentErrorMessage(true);
         return false;
     }

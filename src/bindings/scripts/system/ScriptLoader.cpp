@@ -284,6 +284,7 @@ extern void AddSC_hellfire_peninsula();
 
 //Hillsbrad Foothills
 //Hinterlands
+extern void AddSC_hinterlands();
 //Ironforge
 extern void AddSC_ironforge();
 
@@ -478,10 +479,14 @@ extern void AddSC_boss_muru();
 extern void AddSC_boss_kiljaeden();
 extern void AddSC_sunwell_plateau();
 
+//Swamp Of Sorrows
+extern void AddSC_swamp_of_sorrows();
+
 //Tanaris
 extern void AddSC_tanaris();
 
 //Teldrassil
+extern void AddSC_teldrassil();
 //Tempest Keep
 //--Arcatraz
 extern void AddSC_arcatraz();
@@ -544,6 +549,7 @@ extern void AddSC_ungoro_crater();
 
 //Upper blackrock spire
 //Wailing caverns
+extern void AddSC_wailing_caverns();
 
 //Western plaguelands
 extern void AddSC_western_plaguelands();
@@ -552,6 +558,7 @@ extern void AddSC_western_plaguelands();
 extern void AddSC_westfall();
 
 //Wetlands
+extern void AddSC_wetlands();
 //Winterspring
 extern void AddSC_winterspring();
 
@@ -868,6 +875,7 @@ void AddScripts()
 
     //Hillsbrad Foothills
     //Hinterlands
+    AddSC_hinterlands();
     //Ironforge
     AddSC_ironforge();
 
@@ -1063,10 +1071,14 @@ void AddScripts()
     AddSC_boss_kiljaeden();
     AddSC_sunwell_plateau();
 
+    //Swamp Of Sorrows
+    AddSC_swamp_of_sorrows();
+
     //Tanaris
     AddSC_tanaris();
 
     //Teldrassil
+    AddSC_teldrassil();
     //Tempest Keep
     //--Arcatraz
     AddSC_arcatraz();
@@ -1129,6 +1141,7 @@ void AddScripts()
 
     //Upper blackrock spire
     //Wailing caverns
+    AddSC_wailing_caverns();
 
     //Western plaguelands
     AddSC_western_plaguelands();
@@ -1137,6 +1150,7 @@ void AddScripts()
     AddSC_westfall();
 
     //Wetlands
+    AddSC_wetlands();
     //Winterspring
     AddSC_winterspring();
 

@@ -411,6 +411,7 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
         {
             DoZoneInCombat();
             PulseCombat_Timer = 2000;
+            me->SetSpeed(MOVE_RUN, DemonForm ? 3.0 : 2.0);
         }
         else
             PulseCombat_Timer -= diff;
@@ -614,10 +615,12 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blind_demonformAI : public ScriptedAI
 
     uint32 ChaosBlast_Timer;
     bool DealDamage;
+    uint32 checkTimer;
 
     void Reset()
     {
         ChaosBlast_Timer = 1000;
+        checkTimer = 2000;
         DealDamage = true;
     }
 
@@ -654,14 +657,22 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blind_demonformAI : public ScriptedAI
         if(m_creature->getVictim()->HasAura(30300,0))
             DoResetThreat();
 
+        if (checkTimer <= diff)
+        {
+            checkTimer = 2000;
+            me->SetSpeed(MOVE_RUN, 3.0);
+        }
+        else
+            checkTimer -= diff;
+
         //ChaosBlast_Timer
-        if(m_creature->IsWithinDistInMap(m_creature->getVictim(), 30))
+        if(m_creature->IsWithinDistInMap(m_creature->getVictim(), 25))
             m_creature->StopMoving();
 
         if(ChaosBlast_Timer < diff)
          {
             // will cast only when in range od spell
-            if(m_creature->IsWithinDistInMap(m_creature->getVictim(), 30))
+            if(m_creature->IsWithinDistInMap(m_creature->getVictim(), 25))
             {
                 //m_creature->CastSpell(m_creature->getVictim(),SPELL_CHAOS_BLAST,true);
                 int damage = 100;

@@ -424,6 +424,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\scripts\npc\follower_ai.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\scripts\npc\follower_ai.h"
+					>
+				</File>
+				<File
 					RelativePath="..\scripts\npc\npc_innkeeper.cpp"
 					>
 				</File>
@@ -774,6 +782,10 @@
 				<Filter
 					Name="Swamp of Sorrows"
 					>
+					<File
+						RelativePath="..\scripts\zone\swamp of sorrows\swamp_of_sorrows.cpp"
+						>
+					</File>
 				</Filter>
 				<Filter
 					Name="Scarlet Monastery"
@@ -1230,6 +1242,10 @@
 				<Filter
 					Name="Teldrassil"
 					>
+					<File
+						RelativePath="..\scripts\zone\teldrassil\teldrassil.cpp"
+						>
+					</File>
 				</Filter>
 				<Filter
 					Name="Temple of Ahn&apos;Qiraj"
@@ -1323,7 +1339,15 @@
 					Name="Wailing Caverns"
 					>
 					<File
+						RelativePath="..\scripts\zone\wailing_caverns\def_wailing_caverns.h"
+						>
+					</File>
+					<File
 						RelativePath="..\scripts\zone\wailing_caverns\instance_wailing_caverns.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\scripts\zone\wailing_caverns\wailing_caverns.cpp"
 						>
 					</File>
 				</Filter>
@@ -1346,6 +1370,10 @@
 				<Filter
 					Name="Wetlands"
 					>
+					<File
+						RelativePath="..\scripts\zone\wetlands\wetlands.cpp"
+						>
+					</File>
 				</Filter>
 				<Filter
 					Name="Winterspring"
@@ -2424,6 +2452,14 @@
 					>
 					<File
 						RelativePath="..\scripts\zone\loch_modan\loch_modan.cpp"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="Hinterlands"
+					>
+					<File
+						RelativePath="..\scripts\zone\hinterlands\hinterlands.cpp"
 						>
 					</File>
 				</Filter>

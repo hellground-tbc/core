@@ -36,7 +36,7 @@ class Player;
 #ifdef LARGE_CELL
 #define MAX_NUMBER_OF_CELLS     8
 #else
-#define MAX_NUMBER_OF_CELLS     16
+#define MAX_NUMBER_OF_CELLS     8
 #endif
 
 #define MAX_NUMBER_OF_GRIDS      64

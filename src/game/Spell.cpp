@@ -343,7 +343,7 @@ Spell::Spell( Unit* Caster, SpellEntry const *info, bool triggered, uint64 origi
     m_triggeredByAuraSpell  = NULL;
 
     //Auto Shot & Shoot
-    if( m_spellInfo->AttributesEx2 == 0x000020 && !triggered )
+    if (m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_AUTOREPEAT_FLAG && !triggered)
         m_autoRepeat = true;
     else
         m_autoRepeat = false;
@@ -356,14 +356,14 @@ Spell::Spell( Unit* Caster, SpellEntry const *info, bool triggered, uint64 origi
 
     // determine reflection
     m_canReflect = false;
-    if(m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC && !IsAreaOfEffectSpell(m_spellInfo) && (m_spellInfo->AttributesEx2 & 0x4)==0)
+    if (!(m_spellInfo->SchoolMask & SPELL_SCHOOL_MASK_NORMAL) && m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC && !IsAreaOfEffectSpell(m_spellInfo) && (m_spellInfo->AttributesEx2 & 0x4)==0)
     {
-        for(int j=0;j<3;j++)
+        for (int j = 0; j < 3; j++)
         {
             if (m_spellInfo->Effect[j]==0)
                 continue;
 
-            if(!IsPositiveTarget(m_spellInfo->EffectImplicitTargetA[j],m_spellInfo->EffectImplicitTargetB[j]))
+            if (!IsPositiveTarget(m_spellInfo->EffectImplicitTargetA[j],m_spellInfo->EffectImplicitTargetB[j]))
                 m_canReflect = true;
             else
                 m_canReflect = (m_spellInfo->AttributesEx & SPELL_ATTR_EX_NEGATIVE) ? true : false;
@@ -632,6 +632,9 @@ void Spell::prepareDataForTriggerSystem()
                     return;
                 }
             break;
+            case SPELLFAMILY_SHAMAN:
+                if (m_spellInfo->SpellFamilyFlags & 0x800000LL) m_canTrigger = true; // Flurry etc. from WF ATTACK !
+            break;
             case SPELLFAMILY_HUNTER:  // Hunter Explosive Trap Effect/Immolation Trap Effect/Frost Trap Aura/Snake Trap Effect
                 if (m_spellInfo->SpellFamilyFlags & 0x0000200000000014LL) m_canTrigger = true;
             break;
@@ -757,11 +760,13 @@ void Spell::AddUnitTarget(Unit* pVictim, uint32 effIndex)
         // TODO: this is a hack
         float dist = m_caster->GetDistance(pVictim->GetPositionX(), pVictim->GetPositionY(), pVictim->GetPositionZ());
 
-        if (dist < 5.0f) dist = 5.0f;
+        if (dist < 5.0f)
+            dist = 5.0f;
+
         target.timeDelay = (uint64) floor(dist / m_spellInfo->speed * 1000.0f);
 
         // Calculate minimum incoming time
-        if (m_delayMoment==0 || m_delayMoment>target.timeDelay)
+        if (m_delayMoment == 0 || m_delayMoment>target.timeDelay)
             m_delayMoment = target.timeDelay;
     }
     else
@@ -777,7 +782,7 @@ void Spell::AddUnitTarget(Unit* pVictim, uint32 effIndex)
             target.reflectResult = SPELL_MISS_PARRY;
 
         // Increase time interval for reflected spells by 1.5
-        target.timeDelay+=target.timeDelay>>1;
+        target.timeDelay += target.timeDelay >> 1;
     }
     else
         target.reflectResult = SPELL_MISS_NONE;
@@ -1385,7 +1390,7 @@ void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uin
     }
 }
 
-void Spell::SearchAreaTarget(std::list<Unit*> &TagUnitMap, float radius, const uint32 type, SpellTargets TargetType, uint32 entry)
+void Spell::SearchAreaTarget(std::list<Unit*> &TagUnitMap, float radius, const uint32 type, SpellTargets TargetType, uint32 entry, SpellScriptTargetType spellScriptTargetType)
 {
     float x, y, z;
     switch(type)
@@ -1422,12 +1427,87 @@ void Spell::SearchAreaTarget(std::list<Unit*> &TagUnitMap, float radius, const u
             break;
     }
 
-    Trinity::SpellNotifierCreatureAndPlayer notifier(*this, TagUnitMap, radius, type, TargetType, entry, x, y, z);
-    if((m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY)
-        || TargetType == SPELL_TARGETS_ENTRY && !entry)
-        m_caster->GetMap()->VisitWorld(x, y, radius, notifier);
-    else
-        m_caster->GetMap()->VisitAll(x, y, radius, notifier);
+    switch (spellScriptTargetType)
+    {
+        case SPELL_TARGET_TYPE_CREATURE:
+        {
+            Trinity::SpellNotifierCreatureAndPlayer notifier(*this, TagUnitMap, radius, type, TargetType, entry, x, y, z);
+            if((m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY)
+                || TargetType == SPELL_TARGETS_ENTRY && !entry)
+                m_caster->GetMap()->VisitWorld(x, y, radius, notifier);
+            else
+                m_caster->GetMap()->VisitAll(x, y, radius, notifier);
+            break;
+        }
+        case SPELL_TARGET_TYPE_DEAD:
+        {
+            Trinity::SpellNotifierDeadCreature notifier(*this, TagUnitMap, radius, type, TargetType, entry, x, y, z);
+            if((m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY)
+                || TargetType == SPELL_TARGETS_ENTRY && !entry)
+                m_caster->GetMap()->VisitWorld(x, y, radius, notifier);
+            else
+                m_caster->GetMap()->VisitAll(x, y, radius, notifier);
+            break;
+        }
+        default:
+            sLog.outError("WTF ? Oo Wrong spell script target type for this function: %i (shouldbe %i or %i)", spellScriptTargetType, SPELL_TARGET_TYPE_CREATURE, SPELL_TARGET_TYPE_DEAD);
+            break;
+    }
+}
+
+void Spell::SearchAreaTarget(std::list<GameObject*> &goList, float radius, const uint32 type, SpellTargets TargetType, uint32 entry, SpellScriptTargetType spellScriptTargetType)
+{
+    float x, y, z;
+    switch(type)
+    {
+        case PUSH_DST_CENTER:
+            CheckDst();
+            x = m_targets.m_destX;
+            y = m_targets.m_destY;
+            z = m_targets.m_destZ;
+            break;
+        case PUSH_SRC_CENTER:
+            CheckSrc();
+            x = m_targets.m_srcX;
+            y = m_targets.m_srcY;
+            z = m_targets.m_srcZ;
+            break;
+        case PUSH_CHAIN:
+        {
+            GameObject *target = m_targets.getGOTarget();
+            if(!target)
+            {
+                sLog.outError( "SPELL: cannot find unit target for spell ID %u\n", m_spellInfo->Id );
+                return;
+            }
+            x = target->GetPositionX();
+            y = target->GetPositionY();
+            z = target->GetPositionZ();
+            break;
+        }
+        default:
+            x = m_caster->GetPositionX();
+            y = m_caster->GetPositionY();
+            z = m_caster->GetPositionZ();
+            break;
+    }
+
+    switch (spellScriptTargetType)
+    {
+        case SPELL_TARGET_TYPE_GAMEOBJECT:
+        {
+            Trinity::SpellNotifierGameObject notifier(*this, goList, radius, type, TargetType, entry, x, y, z);
+            if((m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY)
+                || TargetType == SPELL_TARGETS_ENTRY && !entry)
+                m_caster->GetMap()->VisitWorld(x, y, radius, notifier);
+            else
+                m_caster->GetMap()->VisitAll(x, y, radius, notifier);
+            break;
+        }
+        default:
+            sLog.outError("WTF ? Oo Wrong spell script target type for this function: %i (should be %i)", spellScriptTargetType, SPELL_TARGET_TYPE_GAMEOBJECT);
+            break;
+    }
 }
 
 WorldObject* Spell::SearchNearbyTarget(float range, SpellTargets TargetType)
@@ -1927,6 +2007,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_RADIUS, radius, this);
 
         std::list<Unit*> unitList;
+        std::list<GameObject*> goList;
 
         switch(cur)
         {
@@ -1970,9 +2051,13 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 {
                     for(SpellScriptTarget::const_iterator i_spellST = lower; i_spellST != upper; ++i_spellST)
                     {
-                        if(i_spellST->second.type == SPELL_TARGET_TYPE_CREATURE)
-                            SearchAreaTarget(unitList, radius, pushType, SPELL_TARGETS_ENTRY, i_spellST->second.targetEntry);
+                        SpellScriptTargetType tmp = i_spellST->second.type;
+                        if (tmp == SPELL_TARGET_TYPE_GAMEOBJECT)
+                            SearchAreaTarget(goList, radius, pushType, SPELL_TARGETS_ENTRY, i_spellST->second.targetEntry, tmp);
+                        else
+                            SearchAreaTarget(unitList, radius, pushType, SPELL_TARGETS_ENTRY, i_spellST->second.targetEntry, tmp);
                     }
+
                 }
                 break;
             }
@@ -2026,9 +2111,20 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 unitList.remove(m_targets.getUnitTarget());
             else if(m_spellInfo->Id == 37019) // Conflagration proc (Capernian)
                 unitList.remove(m_targets.getUnitTarget());
+            else if(m_spellInfo->Id == 41067) // Blood Splash proc
+                unitList.remove(m_targets.getUnitTarget());
 
             for(std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
                 AddUnitTarget(*itr, i);
+        }
+
+        if(!goList.empty())
+        {
+            if(m_spellValue->MaxAffectedTargets)
+                Trinity::RandomResizeList(goList, m_spellValue->MaxAffectedTargets);
+
+            for(std::list<GameObject*>::iterator itr = goList.begin(); itr != goList.end(); ++itr)
+                AddGOTarget(*itr, i);
         }
     } // Chain or Area
 }

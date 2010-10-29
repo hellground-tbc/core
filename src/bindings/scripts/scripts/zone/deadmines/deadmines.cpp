@@ -27,9 +27,9 @@ EndScriptData */
 
 #define SOUND_CANNONFIRE    1400
 #define SOUND_DESTROYDOOR    3079
-#define SAY_MR_SMITE_ALARM1 "You there, check out that noise!"
+#define SAY_MR_SMITE_ALARM1  -1036000
 #define SOUND_MR_SMITE_ALARM1  5775
-#define SAY_MR_SMITE_ALARM2 "We're under attack! A vast, ye swabs! Repel the invaders!"
+#define SAY_MR_SMITE_ALARM2  -1036001
 #define SOUND_MR_SMITE_ALARM2  5777
 
 #define GO_IRONCLAD_DOOR    16397

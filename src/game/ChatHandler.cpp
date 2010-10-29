@@ -138,6 +138,15 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
             GetPlayer()->UpdateSpeakTime();
     }
 
+    if (type == CHAT_MSG_WHISPER || type == CHAT_MSG_YELL || type == CHAT_MSG_CHANNEL)
+    {
+        if (GetPlayer()->getLevel() < 5)
+        {
+            SendNotification("You can't send message of this type until you reach level 5.");
+            return;
+        }
+    }
+
     switch(type)
     {
         case CHAT_MSG_SAY:

@@ -1485,7 +1485,7 @@ struct TRINITY_DLL_DECL boss_maievAI : public ScriptedAI
             m_creature->InterruptNonMeleeSpells(false);
             m_creature->GetMotionMaster()->Clear(false);
             m_creature->AttackStop();
-            m_creature->SetUInt64Value(UNIT_FIELD_TARGET, IllidanGUID);
+            m_creature->SetSelection(IllidanGUID);
             MaxTimer = 0;
             break;
         case PHASE_TRANSFORM_SEQUENCE:
@@ -2049,7 +2049,7 @@ void boss_illidan_stormrageAI::CastEyeBlast()
     Trigger->GetMotionMaster()->MovePoint(0, final.x, final.y, final.z);
 
     //Trigger->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-    m_creature->SetUInt64Value(UNIT_FIELD_TARGET, Trigger->GetGUID());
+    m_creature->SetSelection(Trigger->GetGUID());
     DoCast(Trigger, SPELL_EYE_BLAST);
 }
 

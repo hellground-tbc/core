@@ -230,8 +230,9 @@ struct TRINITY_DLL_DECL boss_moroesAI : public ScriptedAI
                 if (Temp && Temp->isAlive())
                 {
                     Temp->AI()->AttackStart(m_creature->getVictim());
-                    DoZoneInCombat(Temp);
-                }else
+                    Temp->AI()->DoZoneInCombat();
+                }
+                else
                     EnterEvadeMode();
             }
         }

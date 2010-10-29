@@ -1185,6 +1185,10 @@ bool Pet::InitStatsForLevel(uint32 petlevel)
                     SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel * 4 - petlevel));
                     SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel * 4 + petlevel));
                     break;
+                case 17503: //Woeful Healer
+                    SetCreateMana(100000);  //arbitrary
+                    SetCreateHealth(28 + 30*petlevel);
+                    break;
                 case 19833: //Snake Trap - Venomous Snake
                     SetCreateHealth(uint32(107 * (petlevel - 40) * 0.025f));
                     SetCreateMana(0);

@@ -123,7 +123,10 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
             return;
 
         if(GetEncounterForEntry(tmp->id) && creature->isAlive() && GetData(GetEncounterForEntry(tmp->id)) == DONE)
+        {
             creature->Kill(creature, false);
+            creature->RemoveCorpse();
+        }
     }
 
     void OnObjectCreate(GameObject *go)

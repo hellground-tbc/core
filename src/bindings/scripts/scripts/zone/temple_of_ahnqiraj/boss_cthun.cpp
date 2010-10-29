@@ -238,7 +238,7 @@ struct TRINITY_DLL_DECL eye_of_cthunAI : public Scripted_NoMovementAI
                         DoCast(target,SPELL_GREEN_BEAM);
 
                         //Correctly update our target
-                        m_creature->SetUInt64Value(UNIT_FIELD_TARGET, target->GetGUID());
+                        m_creature->SetSelection(target->GetGUID());
                     }
 
                     //Beam every 3 seconds
@@ -299,7 +299,7 @@ struct TRINITY_DLL_DECL eye_of_cthunAI : public Scripted_NoMovementAI
                     if (target)
                     {
                         //Correctly update our target
-                        m_creature->SetUInt64Value(UNIT_FIELD_TARGET, target->GetGUID());
+                        m_creature->SetSelection(target->GetGUID());
 
                         //Face our target
                         DarkGlareAngle = m_creature->GetAngle(target);
@@ -327,7 +327,7 @@ struct TRINITY_DLL_DECL eye_of_cthunAI : public Scripted_NoMovementAI
                     if (DarkGlareTickTimer < diff)
                 {
                     //Remove any target
-                    m_creature->SetUInt64Value(UNIT_FIELD_TARGET, 0);
+                    m_creature->SetSelection(0);
 
                     //Set angle and cast
                     if (ClockWise)
@@ -374,7 +374,7 @@ struct TRINITY_DLL_DECL eye_of_cthunAI : public Scripted_NoMovementAI
             case 2:
             {
                 //Remove any target
-                m_creature->SetUInt64Value(UNIT_FIELD_TARGET, 0);
+                m_creature->SetSelection(0);
                 m_creature->SetHealth(0);
             }
 
@@ -412,7 +412,7 @@ struct TRINITY_DLL_DECL eye_of_cthunAI : public Scripted_NoMovementAI
                 m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
 
                 //Remove Target field
-                m_creature->SetUInt64Value(UNIT_FIELD_TARGET, 0);
+                m_creature->SetSelection(0);
 
                 //Death animation/respawning;
                 pInstance->SetData(DATA_CTHUN_PHASE, 2);
@@ -594,7 +594,7 @@ struct TRINITY_DLL_DECL cthunAI : public Scripted_NoMovementAI
             return;
         }
 
-        m_creature->SetUInt64Value(UNIT_FIELD_TARGET, 0);
+        m_creature->SetSelection(0);
 
         //No instance
         if (!pInstance)
@@ -662,7 +662,7 @@ struct TRINITY_DLL_DECL cthunAI : public Scripted_NoMovementAI
             case 3:
             {
                 //Remove Target field
-                m_creature->SetUInt64Value(UNIT_FIELD_TARGET, 0);
+                m_creature->SetSelection(0);
 
                 //Weaken
                 if (FleshTentaclesKilled > 1)

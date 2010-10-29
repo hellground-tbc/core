@@ -204,7 +204,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectLeapBack,                                 //138 SPELL_EFFECT_LEAP_BACK                Leap Back
     &Spell::EffectUnused,                                   //139 SPELL_EFFECT_139                      unused
     &Spell::EffectForceCast,                                //140 SPELL_EFFECT_FORCE_CAST
-    &Spell::EffectNULL,                                     //141 SPELL_EFFECT_141                      damage and reduce speed?
+    &Spell::EffectNULL,                                     //141 SPELL_EFFECT_141                      Only one spell, using SPELL_EFFECT_SCHOOL_DAMAGE, and there triggering spell
     &Spell::EffectTriggerSpellWithValue,                    //142 SPELL_EFFECT_TRIGGER_SPELL_WITH_VALUE
     &Spell::EffectApplyAreaAura,                            //143 SPELL_EFFECT_APPLY_AREA_AURA_OWNER
     &Spell::EffectKnockBack,                                //144 SPELL_EFFECT_KNOCK_BACK_2             Spectral Blast
@@ -812,7 +812,12 @@ void Spell::EffectDummy(uint32 i)
                         m_caster->CastSpell(unitTarget,spell_id,true);
                 return;
                 }
-
+                 // Demon Broiled Surprise
+                case 43723:
+                {
+                    m_caster->CastSpell(m_caster, 43753, false);
+                    return;
+                }
                 // Wrath of the Astromancer
                 case 42784:
                 {
@@ -876,12 +881,6 @@ void Spell::EffectDummy(uint32 i)
                     data << uint64(pGameObj->GetGUID());
                     m_caster->SendMessageToSet(&data,true);
 
-                    return;
-                }
-                // Demon Broiled Surprise
-                case 43723:
-                {
-                    m_caster->CastSpell(m_caster, 43753, false);
                     return;
                 }
                 case 8063:                                  // Deviate Fish
@@ -2105,6 +2104,11 @@ void Spell::EffectDummy(uint32 i)
         m_caster->AddPetAura(petSpell);
         return;
     }
+
+    // Script based implementation. Must be used only for not good for implementation in core spell effects
+    // So called only for not proccessed cases
+    if (unitTarget && unitTarget->GetTypeId() == TYPEID_UNIT && Script)
+        Script->EffectDummyCreature(m_caster, m_spellInfo->Id, i, ((Creature*)unitTarget));
 }
 
 void Spell::EffectTriggerSpellWithValue(uint32 i)
@@ -2905,11 +2909,14 @@ void Spell::EffectHealthLeech(uint32 i)
     if(Player *modOwner = m_caster->GetSpellModOwner())
         modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_MULTIPLE_VALUE, multiplier);
 
-    int32 new_damage = int32(damage*multiplier);
+    int32 new_damage = 0;
     uint32 curHealth = unitTarget->GetHealth();
-    new_damage = m_caster->SpellNonMeleeDamageLog(unitTarget, m_spellInfo->Id, new_damage, m_IsTriggeredSpell, true);
+    new_damage = m_caster->SpellNonMeleeDamageLog(unitTarget, m_spellInfo->Id, damage, m_IsTriggeredSpell, true);
     if(curHealth < new_damage)
         new_damage = curHealth;
+
+    // multipier only affects gains of HP!
+    new_damage = int32(damage*multiplier);
 
     if(m_caster->isAlive())
     {
@@ -3121,7 +3128,7 @@ void Spell::EffectEnergize(uint32 i)
 
     int32 gain = unitTarget->ModifyPower(power,damage);
     unitTarget->getHostilRefManager().threatAssist(m_caster, float(gain) * 0.5f, m_spellInfo);
-    
+
     m_caster->SendEnergizeSpellLog(unitTarget, m_spellInfo->Id, damage, power);
 
     // Mad Alchemist's Potion
@@ -4675,7 +4682,7 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
                     ((Player*)m_caster)->AddComboPoints(unitTarget,1);
             }
             // Maim interrupt (s3, s4 gloves bonus)
-            if(m_spellInfo->Id == 22570 && m_caster->HasAura(44835, 0)) 
+            if(m_spellInfo->Id == 22570 && m_caster->HasAura(44835, 0))
                 m_caster->CastSpell(unitTarget, 32747, true);
             break;
         }
@@ -4799,27 +4806,33 @@ void Spell::EffectThreat(uint32 /*i*/)
 
 void Spell::EffectHealMaxHealth(uint32 /*i*/)
 {
-    if(!unitTarget)
+    if (!unitTarget)
         return;
-    if(!unitTarget->isAlive())
+
+    if (!unitTarget->isAlive())
+        return;
+
+    if (unitTarget->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_HEALING_PCT) <= -100)
         return;
 
     uint32 addhealth = unitTarget->GetMaxHealth() - unitTarget->GetHealth();
 
     // Lay on Hands
-    if(m_spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN && m_spellInfo->SpellFamilyFlags & 0x0000000000008000)
+    if (m_spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN && m_spellInfo->SpellFamilyFlags & 0x0000000000008000)
     {
-        if(!m_originalCaster)
+        if (!m_originalCaster)
             return;
+
         addhealth = addhealth > m_originalCaster->GetMaxHealth() ? m_originalCaster->GetMaxHealth() : addhealth;
         uint32 LoHamount = unitTarget->GetHealth() + m_originalCaster->GetMaxHealth();
         LoHamount = LoHamount > unitTarget->GetMaxHealth() ? unitTarget->GetMaxHealth() : LoHamount;
+
         unitTarget->SetHealth(LoHamount);
     }
     else
         unitTarget->SetHealth(unitTarget->GetMaxHealth());
 
-    if(m_originalCaster)
+    if( m_originalCaster)
         m_originalCaster->SendHealSpellLog(unitTarget, m_spellInfo->Id, addhealth, false);
 }
 
@@ -4949,13 +4962,46 @@ void Spell::EffectScriptEffect(uint32 effIndex)
 
     switch(m_spellInfo->Id)
     {
+        // Demon Broiled Surprise HACKY WAY
+        /*case 43723:
+        {
+            bool cast = false;
+            std::list<Creature*> pList;
+            Trinity::AllCreaturesOfEntryInRange u_check(m_creature, entry, range);
+            Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(pList, u_check);
+            m_creature->VisitNearbyObject(range, searcher);
+            for (std::list<Creature*>::iterator itr = pList.begin(); itr != pList.end(); ++itr)
+            {
+                if (tmp && tmp->GetEntry() == 19973 && !tmp->isAlive())
+                {
+                    cast = true;
+                    break;
+                }
+            }
+
+            if (cast)
+                m_caster->CastSpell(m_caster, 43753, false);
+            else
+                SendCastResult(SPELL_FAILED_BAD_TARGETS);
+
+            return;
+        }*/
         // Gurtogg Bloodboil: Eject
         case 40486:
         {
             if(!m_caster->CanHaveThreatList())
                 return;
 
-            m_caster->getThreatManager().modifyThreatPercent(unitTarget, -irand(1, 25));
+            m_caster->getThreatManager().modifyThreatPercent(unitTarget, -25);
+            break;
+        }
+        // Bloodbolt & Blood Splash workaround
+        case 41072:
+        {
+            const int32 damage = irand(3238, 3762);
+            const int32 reduction = NULL;
+            m_caster->CastCustomSpell(unitTarget, 41229, &damage, &reduction, NULL, true);  // workaround not to implement spell effect 141 only for 1 spell
+            unitTarget->CastCustomSpell(unitTarget, 41067, &damage, NULL, NULL, true, 0, 0, m_caster->GetGUID());
             break;
         }
         // Void Reaver: Knock Back
@@ -4967,7 +5013,6 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             m_caster->getThreatManager().modifyThreatPercent(unitTarget, -25);
             break;
         }
-
         // Incite Chaos
         case 33676:
         {
@@ -5364,6 +5409,9 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         case 48025:                                     // Headless Horseman's Mount
         {
                 if(!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+                    return;
+
+                if (unitTarget->GetMap()->IsDungeon() || unitTarget->GetMap()->IsRaid())
                     return;
 
                 if(GetVirtualMapForMapAndZone(unitTarget->GetMapId(),unitTarget->GetZoneId()) != 530)
@@ -6619,7 +6667,14 @@ void Spell::EffectTransmitted(uint32 effIndex)
     if(goinfo->type == GAMEOBJECT_TYPE_FISHINGNODE)
     {
         LiquidData liqData;
-        if ( !cMap->IsInWater(fx, fy, fz -0.5f, &liqData))             // Hack to prevent fishing bobber from failing to land on fishing hole
+        if(cMap->GetId() == 548 && m_caster->GetDistance(36.69, -416.38, -19.9645) <= 16)    //center of strange pool             // Hack to prevent fishing bobber from failing to land on fishing hole
+        {
+            fx = 36.69 +irand(-8,8);
+            fy = -416.38 +irand(-8,8);
+            fz = -19.9645;
+
+        }
+        else if ( !cMap->IsInWater(fx, fy, fz -0.5f, &liqData))             // Hack to prevent fishing bobber from failing to land on fishing hole
         {
             // but this is not proper, we really need to ignore not materialized objects
             SendCastResult(SPELL_FAILED_NOT_HERE);
@@ -6628,7 +6683,8 @@ void Spell::EffectTransmitted(uint32 effIndex)
         }
 
         // replace by water level in this case
-        fz = liqData.level;
+        if(cMap->GetId() != 548)
+            fz = liqData.level;
     }
     // if gameobject is summoning object, it should be spawned right on caster's position
     else if(goinfo->type==GAMEOBJECT_TYPE_SUMMONING_RITUAL)

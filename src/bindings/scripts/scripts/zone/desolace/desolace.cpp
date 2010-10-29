@@ -8,11 +8,12 @@
 /* ScriptData
 SDName: Desolace
 SD%Complete:
-SDComment: Quest support: 1440, 5381
+SDComment: Quest support: 1440, 5561, 5381
 SDCategory: Desolace
 EndScriptData */
 
 /* ContentData
+npc_aged_dying_ancient_kodo
 go_iruxos
 npc_dalinda_malem
 EndContentData */
@@ -20,9 +21,10 @@ EndContentData */
 #include "precompiled.h"
 #include "escort_ai.h"
 
+/*######
+## npc_aged_dying_ancient_kodo. Quest 5561
+######*/
 
-// FIXME LATER -> Do we really need pEffectDummyCreature ?
-/*
 enum eDyingKodo
 {
     // signed for 9999
@@ -143,7 +145,7 @@ bool GossipHello_npc_aged_dying_ancient_kodo(Player* pPlayer, Creature* pCreatur
     if (pPlayer->HasAura(SPELL_KODO_KOMBO_PLAYER_BUFF, 0) && pCreature->HasAura(SPELL_KODO_KOMBO_DESPAWN_BUFF, 0))
     {
         //the expected quest objective
-        pPlayer->TalkedToCreature(pCreature->GetEntry(), pCreature->GetGUID());
+        pPlayer->CastedCreatureOrGO(pCreature->GetEntry(), pCreature->GetGUID(), SPELL_KODO_KOMBO_GOSSIP);
 
         pPlayer->RemoveAurasDueToSpell(SPELL_KODO_KOMBO_PLAYER_BUFF);
         pCreature->GetMotionMaster()->MoveIdle();
@@ -151,7 +153,7 @@ bool GossipHello_npc_aged_dying_ancient_kodo(Player* pPlayer, Creature* pCreatur
 
     pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
     return true;
-}*/
+}
 
 /*######
 ## go_iruxos. Quest 5381
@@ -240,13 +242,12 @@ void AddSC_desolace()
 {
     Script *newscript;
 
-    /*
     newscript = new Script;
     newscript->Name = "npc_aged_dying_ancient_kodo";
     newscript->GetAI = &GetAI_npc_aged_dying_ancient_kodo;
     newscript->pEffectDummyCreature = &EffectDummyCreature_npc_aged_dying_ancient_kodo;
     newscript->pGossipHello = &GossipHello_npc_aged_dying_ancient_kodo;
-    newscript->RegisterSelf();*/
+    newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_iruxos";

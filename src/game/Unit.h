@@ -615,11 +615,11 @@ enum MovementFlags
         MOVEMENTFLAG_PITCH_UP|MOVEMENTFLAG_PITCH_DOWN|MOVEMENTFLAG_FLY_UNK1   |
         MOVEMENTFLAG_JUMPING |MOVEMENTFLAG_FALLING   |MOVEMENTFLAG_FLY_UP     |
         MOVEMENTFLAG_FLYING2 |MOVEMENTFLAG_SPLINE,
-    
+
     MOVEMENTFLAG_TURNING        =
         MOVEMENTFLAG_LEFT | MOVEMENTFLAG_RIGHT,
  };
- 
+
 struct Position
 {
     Position() : x(0.0f), y(0.0f), z(0.0f), o(0.0f) {}
@@ -1406,9 +1406,12 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         void SetBaseWeaponDamage(WeaponAttackType attType ,WeaponDamageRange damageRange, float value) { m_weaponDamage[attType][damageRange] = value; }
 
         bool isInFront(Unit const* target,float distance, float arc = M_PI) const;
+        bool isInFront(GameObject const* target,float distance, float arc = M_PI) const;
         void SetInFront(Unit const* target);
         bool isInBack(Unit const* target, float distance, float arc = M_PI) const;
+        bool isInBack(GameObject const* target, float distance, float arc = M_PI) const;
         bool isInLine(Unit const* target, float distance) const;
+        bool isInLine(GameObject const* target, float distance) const;
 
         // Visibility system
         UnitVisibility GetVisibility() const { return m_Visibility; }

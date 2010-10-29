@@ -92,7 +92,10 @@ struct TRINITY_DLL_DECL instance_blackwing_lair : public ScriptedInstance
             return;
 
         if (GetEncounterForEntry(tmp->id) && creature->isAlive() && GetData(GetEncounterForEntry(tmp->id)) == DONE)
+        {
             creature->Kill(creature, false);
+            creature->RemoveCorpse();
+        }
     }
 
     void SetData64(uint32 type, uint64 data){}

@@ -217,7 +217,7 @@ bool GossipHello_npc_cenarion_scout_jalia(Player *player, Creature *_Creature)
         player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_JALIA, GOSSIP_SENDER_MAIN, GOSSIP_SENDER_INFO );
 
     player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
-
+    player->CLOSE_GOSSIP_MENU();
     return true;
 }
 
@@ -226,6 +226,7 @@ bool GossipSelect_npc_cenarion_scout_jalia(Player *player, Creature *_Creature, 
     if( action == GOSSIP_SENDER_INFO )
     {
         player->CastSpell( player, 25845, false);
+        player->CLOSE_GOSSIP_MENU();
     }
     return true;
 }
@@ -246,7 +247,7 @@ bool GossipHello_npc_cenarion_scout_azenel(Player *player, Creature *_Creature)
         player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_AZENEL, GOSSIP_SENDER_MAIN, GOSSIP_SENDER_INFO );
 
     player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
-
+    player->CLOSE_GOSSIP_MENU();
     return true;
 }
 

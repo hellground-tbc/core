@@ -205,12 +205,6 @@ struct TRINITY_DLL_DECL boss_high_astromancer_solarianAI : public ScriptedAI
         //Check_Timer
         if(Check_Timer < diff)
         {
-            if(!m_creature->IsNonMeleeSpellCasted(false))
-            {
-                if(m_creature->GetUInt64Value(UNIT_FIELD_TARGET) != m_creature->getVictimGUID())
-                    m_creature->SetUInt64Value(UNIT_FIELD_TARGET, m_creature->getVictimGUID());
-            }
-
             if(!m_creature->IsWithinDistInMap(&wLoc, 135.0f))
                 EnterEvadeMode();
             else
@@ -234,6 +228,7 @@ struct TRINITY_DLL_DECL boss_high_astromancer_solarianAI : public ScriptedAI
                 {
                     m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     m_creature->SetVisibility(VISIBILITY_OFF);
+                    m_creature->DestroyForNearbyPlayers();
                 }
                 AppearDelay_Timer = 2000;
             }
@@ -279,7 +274,7 @@ struct TRINITY_DLL_DECL boss_high_astromancer_solarianAI : public ScriptedAI
 
                     if(target)
                     {
-                        m_creature->SetUInt64Value(UNIT_FIELD_TARGET, target->GetGUID()); // Set this as current target
+                        m_creature->SetSelection(target->GetGUID()); // Set this as current target
                         DoCast(target, SPELL_ARCANE_MISSILES);
                     }
                 }

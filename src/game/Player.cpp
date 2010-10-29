@@ -2249,7 +2249,7 @@ bool Player::IsUnderWater() const
 
 void Player::SetInWater(bool apply)
 {
-    if(m_isInWater==apply)
+    if(m_isInWater == apply)
         return;
 
     //define player in water by opcodes
@@ -12043,25 +12043,26 @@ void Player::RemoveEnchantmentDurations(Item *item)
 void Player::RemoveAllEnchantments(EnchantmentSlot slot, bool arena)
 {
     // remove enchantments from equipped items first to clean up the m_enchantDuration list
-    for(EnchantDurationList::iterator itr = m_enchantDuration.begin(),next;itr != m_enchantDuration.end();itr=next)
+    for (EnchantDurationList::iterator itr = m_enchantDuration.begin(),next;itr != m_enchantDuration.end();itr=next)
     {
         next = itr;
-        if(itr->slot==slot)
+        if (itr->slot == slot)
         {
-            if(arena && itr->item)
+            if (arena && itr->item)
             {
                 uint32 enchant_id = itr->item->GetEnchantmentId(slot);
-                if(enchant_id)
+                if (enchant_id)
                 {
                     SpellItemEnchantmentEntry const *pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
-                    if(pEnchant && pEnchant->aura_id == ITEM_ENCHANTMENT_AURAID_POISON)
+                    if (pEnchant && pEnchant->aura_id == ITEM_ENCHANTMENT_AURAID_POISON)
                     {
                         ++next;
                         continue;
                     }
                 }
             }
-            if(itr->item && itr->item->GetEnchantmentId(slot))
+
+            if (itr->item && itr->item->GetEnchantmentId(slot))
             {
                 // remove from stats
                 ApplyEnchantment(itr->item,slot,false,false);
@@ -12078,24 +12079,40 @@ void Player::RemoveAllEnchantments(EnchantmentSlot slot, bool arena)
     // remove enchants from inventory items
     // NOTE: no need to remove these from stats, since these aren't equipped
     // in inventory
-    for(int i = INVENTORY_SLOT_ITEM_START; i < INVENTORY_SLOT_ITEM_END; i++)
+    for (int i = INVENTORY_SLOT_ITEM_START; i < INVENTORY_SLOT_ITEM_END; i++)
     {
-        Item* pItem = GetItemByPos( INVENTORY_SLOT_BAG_0, i );
-        if( pItem && pItem->GetEnchantmentId(slot) )
+        Item *pItem = GetItemByPos( INVENTORY_SLOT_BAG_0, i );
+        if (pItem && pItem->GetEnchantmentId(slot))
+        {
+            if (arena)
+            {
+                SpellItemEnchantmentEntry const *pEnchant = sSpellItemEnchantmentStore.LookupEntry(pItem->GetEnchantmentId(slot));
+                if(pEnchant && pEnchant->aura_id == ITEM_ENCHANTMENT_AURAID_POISON)
+                    continue;
+            }
             pItem->ClearEnchantment(slot);
+        }
     }
 
     // in inventory bags
-    for(int i = INVENTORY_SLOT_BAG_START; i < INVENTORY_SLOT_BAG_END; i++)
+    for (int i = INVENTORY_SLOT_BAG_START; i < INVENTORY_SLOT_BAG_END; i++)
     {
-        Bag* pBag = (Bag*)GetItemByPos( INVENTORY_SLOT_BAG_0, i );
-        if( pBag )
+        Bag *pBag = (Bag*)GetItemByPos( INVENTORY_SLOT_BAG_0, i );
+        if (pBag)
         {
-            for(uint32 j = 0; j < pBag->GetBagSize(); j++)
+            for (uint32 j = 0; j < pBag->GetBagSize(); j++)
             {
-                Item* pItem = pBag->GetItemByPos(j);
-                if( pItem && pItem->GetEnchantmentId(slot) )
+                Item *pItem = pBag->GetItemByPos(j);
+                if (pItem && pItem->GetEnchantmentId(slot))
+                {
+                    if (arena)
+                    {
+                        SpellItemEnchantmentEntry const *pEnchant = sSpellItemEnchantmentStore.LookupEntry(pItem->GetEnchantmentId(slot));
+                        if (pEnchant && pEnchant->aura_id == ITEM_ENCHANTMENT_AURAID_POISON)
+                            continue;
+                    }
                     pItem->ClearEnchantment(slot);
+                }
             }
         }
     }
@@ -19962,9 +19979,7 @@ void Player::AddGlobalCooldown(SpellEntry const *spellInfo, Spell const *spell)
         return;
 
     uint32 cdTime = 0;
-    if(!spellInfo->StartRecoveryTime)
-        cdTime = 300;
-    else
+    if(spellInfo->StartRecoveryTime)
     {
         cdTime = spellInfo->StartRecoveryTime;
 

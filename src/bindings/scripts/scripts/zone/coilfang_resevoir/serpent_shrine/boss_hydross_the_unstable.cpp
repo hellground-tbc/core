@@ -227,6 +227,7 @@ struct TRINITY_DLL_DECL boss_hydross_the_unstableAI : public ScriptedAI
                 EnterEvadeMode();
 
             PulseCombat_Timer = 3000;
+            me->SetSpeed(MOVE_RUN, 3.0);
         }
         else
             PulseCombat_Timer -= diff;

@@ -190,13 +190,26 @@ void ScriptedAI::CastNextSpellIfAnyAndReady(uint32 diff)
         if (temp->scriptTextEntry)
             DoScriptText(temp->scriptTextEntry, m_creature, m_creature->getVictim());
 
+        if (temp->isDestCast)
+        {
+            m_creature->CastSpell(temp->castDest[0], temp->castDest[1], temp->castDest[2], temp->spellId, temp->triggered);
+            spellList.pop_front();
+            casted = true;
+            return;
+        }
+
         if (temp->targetGUID)
         {
             Unit * tempU = m_creature->GetUnit(*m_creature, temp->targetGUID);
 
             if (tempU && tempU->IsInWorld() && tempU->isAlive() && tempU->IsInMap(m_creature))
                 if (temp->spellId)
+                {
+                    if(temp->setAsTarget)
+                        m_creature->SetSelection(temp->targetGUID);
+
                     m_creature->CastSpell(tempU, temp->spellId, temp->triggered);
+                }
         }
         else
         {
@@ -282,41 +295,48 @@ void ScriptedAI::DoCastSpell(Unit* who,SpellEntry const *spellInfo, bool trigger
     m_creature->CastSpell(who, spellInfo, triggered);
 }
 
-void ScriptedAI::AddSpellToCast(Unit* victim, uint32 spellId, bool triggered)
+void ScriptedAI::AddSpellToCast(Unit* victim, uint32 spellId, bool triggered, bool visualTarget)
 {
     /*if (!victim)
         return;*/
 
-    SpellToCast temp(victim ? victim->GetGUID() : NULL, spellId, triggered, 0, false);
+    SpellToCast temp(victim ? victim->GetGUID() : NULL, spellId, triggered, 0, false, visualTarget);
 
     spellList.push_back(temp);
 }
 
-void ScriptedAI::AddSpellToCastWithScriptText(Unit* victim, uint32 spellId, int32 scriptTextEntry, bool triggered)
+void ScriptedAI::AddSpellToCast(float x, float y, float z, uint32 spellId, bool triggered, bool visualTarget)
+{
+    SpellToCast temp(x, y, z, spellId, triggered, 0, false, visualTarget);
+
+    spellList.push_back(temp);
+}
+
+void ScriptedAI::AddSpellToCastWithScriptText(Unit* victim, uint32 spellId, int32 scriptTextEntry, bool triggered, bool visualTarget)
 {
     /*if (!victim)
         return;*/
 
-    SpellToCast temp(victim ? victim->GetGUID() : NULL, spellId, triggered, scriptTextEntry, false);
+    SpellToCast temp(victim ? victim->GetGUID() : NULL, spellId, triggered, scriptTextEntry, false, visualTarget);
 
     spellList.push_back(temp);
 }
 
 void ScriptedAI::AddAOESpellToCast(uint32 spellId, bool triggered)
 {
-    SpellToCast temp(m_creature, spellId, triggered, 0, true);
+    SpellToCast temp(m_creature, spellId, triggered, 0, true, false);
 
     spellList.push_back(temp);
 }
 
 void ScriptedAI::AddAOESpellToCastWithScriptText(uint32 spellId, int32 scriptTextEntry, bool triggered)
 {
-    SpellToCast temp(m_creature, spellId, triggered, scriptTextEntry, true);
+    SpellToCast temp(m_creature, spellId, triggered, scriptTextEntry, true, false);
 
     spellList.push_back(temp);
 }
 
-void ScriptedAI::ForceSpellCast(Unit *victim, uint32 spellId, interruptSpell interruptCurrent, bool triggered)
+void ScriptedAI::ForceSpellCast(Unit *victim, uint32 spellId, interruptSpell interruptCurrent, bool triggered, bool visualTarget)
 {
     /*if (!victim)
         return;*/
@@ -327,18 +347,21 @@ void ScriptedAI::ForceSpellCast(Unit *victim, uint32 spellId, interruptSpell int
         m_creature->InterruptNonMeleeSpells(false);
         break;
     case INTERRUPT_AND_CAST_INSTANTLY:
+        if(visualTarget)
+            m_creature->SetSelection(victim->GetGUID());
+
         m_creature->CastSpell(victim, spellId, triggered);
         return;
     default:
         break;
     }
 
-    SpellToCast temp(victim ? victim->GetGUID() : NULL, spellId, triggered, 0, false);
+    SpellToCast temp(victim ? victim->GetGUID() : NULL, spellId, triggered, 0, false, visualTarget);
 
     spellList.push_front(temp);
 }
 
-void ScriptedAI::ForceSpellCastWithScriptText(Unit *victim, uint32 spellId, int32 scriptTextEntry, interruptSpell interruptCurrent, bool triggered)
+void ScriptedAI::ForceSpellCastWithScriptText(Unit *victim, uint32 spellId, int32 scriptTextEntry, interruptSpell interruptCurrent, bool triggered, bool visualTarget)
 {
     /*if (!victim)
         return;*/
@@ -351,13 +374,17 @@ void ScriptedAI::ForceSpellCastWithScriptText(Unit *victim, uint32 spellId, int3
     case INTERRUPT_AND_CAST_INSTANTLY:
         if (scriptTextEntry)
             DoScriptText(scriptTextEntry, m_creature, victim);
+
+        if (visualTarget)
+            m_creature->SetSelection(victim->GetGUID());
+
         m_creature->CastSpell(victim, spellId, triggered);
         return;
     default:
         break;
     }
 
-    SpellToCast temp(victim ? victim->GetGUID() : NULL, spellId, triggered, scriptTextEntry, false);
+    SpellToCast temp(victim ? victim->GetGUID() : NULL, spellId, triggered, scriptTextEntry, false, visualTarget);
 
     spellList.push_front(temp);
 }
@@ -376,7 +403,7 @@ void ScriptedAI::ForceAOESpellCast(uint32 spellId, interruptSpell interruptCurre
         break;
     }
 
-    SpellToCast temp(m_creature, spellId, triggered, 0, true);
+    SpellToCast temp(m_creature, spellId, triggered, 0, true, false);
 
     spellList.push_front(temp);
 }
@@ -397,7 +424,7 @@ void ScriptedAI::ForceAOESpellCastWithScriptText(uint32 spellId, int32 scriptTex
         break;
     }
 
-    SpellToCast temp(m_creature, spellId, triggered, scriptTextEntry, true);
+    SpellToCast temp(m_creature, spellId, triggered, scriptTextEntry, true, false);
 
     spellList.push_front(temp);
 }
@@ -1039,6 +1066,15 @@ std::list<Creature*> ScriptedAI::DoFindFriendlyMissingBuff(float range, uint32 s
     std::list<Creature*> pList;
     Trinity::FriendlyMissingBuffInRange u_check(m_creature, range, spellid);
     Trinity::CreatureListSearcher<Trinity::FriendlyMissingBuffInRange> searcher(pList, u_check);
+    m_creature->VisitNearbyObject(range, searcher);
+    return pList;
+}
+
+std::list<Unit*> ScriptedAI::DoFindAllDeadInRange(float range)
+{
+    std::list<Unit*> pList;
+    Trinity::AllDeadUnitsInRange u_check(m_creature, range);
+    Trinity::UnitListSearcher<Trinity::AllDeadUnitsInRange> searcher(pList, u_check);
     m_creature->VisitNearbyObject(range, searcher);
     return pList;
 }

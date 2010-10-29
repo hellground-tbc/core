@@ -27,6 +27,8 @@ SET(trinityscript_LIB_SRCS
    scripts/guard/guards.cpp
    scripts/item/item_scripts.cpp
    scripts/item/item_test.cpp
+   scripts/npc/follower_ai.cpp
+   scripts/npc/follower_ai.h
    scripts/npc/escort_ai.cpp
    scripts/npc/escort_ai.h
    scripts/npc/npc_innkeeper.cpp
@@ -186,6 +188,7 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/hellfire_citadel/shattered_halls/boss_warchief_kargath_bladefist.cpp
    scripts/zone/hellfire_peninsula/boss_doomlord_kazzak.cpp
    scripts/zone/hellfire_peninsula/hellfire_peninsula.cpp
+   scripts/zone/hinterlands/hinterlands.cpp
    scripts/zone/ironforge/ironforge.cpp
    scripts/zone/isle_of_queldanas/isle_of_queldanas.cpp
    scripts/zone/karazhan/boss_curator.cpp
@@ -326,7 +329,9 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/sunwell_plateau/sunwell_plateau.cpp
    scripts/zone/sunwell_plateau/def_sunwell_plateau.h
    scripts/zone/sunwell_plateau/instance_sunwell_plateau.cpp
+   scripts/zone/swamp\ of\ sorrows/swamp_of_sorrows.cpp
    scripts/zone/tanaris/tanaris.cpp
+   scripts/zone/teldrassil/teldrassil.cpp
    scripts/zone/tempest_keep/arcatraz/arcatraz.cpp
    scripts/zone/tempest_keep/arcatraz/boss_harbinger_skyriss.cpp
    scripts/zone/tempest_keep/arcatraz/def_arcatraz.h
@@ -369,9 +374,12 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/uldaman/uldaman.cpp
    scripts/zone/undercity/undercity.cpp
    scripts/zone/ungoro_crater/ungoro_crater.cpp
+   scripts/zone/wailing_caverns/def_wailing_caverns.h
    scripts/zone/wailing_caverns/instance_wailing_caverns.cpp
+   scripts/zone/wailing_caverns/wailing_caverns.cpp
    scripts/zone/western_plaguelands/western_plaguelands.cpp
    scripts/zone/westfall/westfall.cpp
+   scripts/zone/wetlands/wetlands.cpp
    scripts/zone/winterspring/winterspring.cpp
    scripts/zone/zangarmarsh/zangarmarsh.cpp
    scripts/zone/zulaman/boss_akilzon.cpp

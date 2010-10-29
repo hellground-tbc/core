@@ -153,7 +153,10 @@ void instance_karazhan::OnCreatureCreate(Creature *creature, uint32 entry)
         return;
 
     if (GetEncounterForEntry(tmp->id) && creature->isAlive() && GetData(GetEncounterForEntry(tmp->id)) == DONE)
+    {
         creature->Kill(creature, false);
+        creature->RemoveCorpse();
+    }
 }
 
 uint64 instance_karazhan::GetData64(uint32 data)
@@ -209,8 +212,12 @@ void instance_karazhan::SetData(uint32 type, uint32 data)
             HandleGameObject(StageDoorLeftGUID, true);
             HandleGameObject(StageDoorRightGUID, true);
         }
+
         if(Encounters[4] != DONE)
             Encounters[4] = data;
+
+        if(data == NOT_STARTED)
+            OzDeathCount = 0;
         break;
     case DATA_CURATOR_EVENT:
         if(Encounters[5] != DONE)

@@ -35,6 +35,7 @@ npc_snake_trap_serpents 80%     AI for snakes that summoned by Snake Trap
 npc_flight_master       100%    AI for flight masters.
 npc_lazy_peon                   AI for peons for quest 5441 (Lazy Peons)
 npc_mojo                %       AI for companion Mojo (summoned by item: 33993)
+npc_master_omarion      100%    Master Craftsman Omarion, patterns menu
 EndContentData */
 
 #include "precompiled.h"
@@ -1538,7 +1539,7 @@ struct TRINITY_DLL_DECL npc_mojoAI : public ScriptedAI
                 hearts = false;
                 m_creature->GetMotionMaster()->Clear(true);
                 m_creature->GetMotionMaster()->MoveFollow(m_creature->GetOwner(), 2.0, M_PI/2);
-                m_creature->SetFlag64(UNIT_FIELD_TARGET, NULL);
+                m_creature->SetSelection(NULL);
             }
             else
                 heartsResetTimer -= diff;
@@ -1557,7 +1558,7 @@ bool ReceiveEmote_npc_mojo( Player *player, Creature *_Creature, uint32 emote )
             {
                 player->CastSpell(player, SPELL_FEELING_FROGGY, false);
                 _Creature->CastSpell(_Creature, SPELL_HEARTS, false);
-                _Creature->SetFlag64(UNIT_FIELD_TARGET, player->GetGUID());
+                _Creature->SetSelection(player->GetGUID());
                 _Creature->StopMoving();
                 _Creature->GetMotionMaster()->Clear();
                 _Creature->GetMotionMaster()->MoveFollow(player, 1.0, 0);
@@ -1632,11 +1633,10 @@ struct TRINITY_DLL_DECL npc_woeful_healerAI : public ScriptedAI
 
         if (healTimer <= diff)
         {
+            healTimer = urand(2500, 7500);
             if (!owner || !owner->isInCombat())
                 return;
-
             m_creature->CastSpell(m_creature, SPELL_PREYER_OF_HEALING, false);
-            healTimer = urand(2500, 7500);
         }
         else
             healTimer -= diff;
@@ -1747,6 +1747,9 @@ struct TRINITY_DLL_DECL npc_elemental_guardianAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit *pWho)
     {
+        if(pWho->GetTypeId() == TYPEID_PLAYER && pWho->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_SANCTUARY))
+            return;
+
         if(!m_creature->getVictim() && m_creature->IsHostileTo(pWho))
         {
             Creature *pTotem = m_creature->GetCreature(*m_creature, m_creature->GetOwnerGUID());
@@ -1760,13 +1763,20 @@ struct TRINITY_DLL_DECL npc_elemental_guardianAI : public ScriptedAI
         if(m_checkTimer < diff)
         {
             Creature *pTotem = m_creature->GetCreature(*m_creature, m_creature->GetOwnerGUID());
+            
             if(!me->getVictim() && pTotem)
             {
                 if(!m_creature->hasUnitState(UNIT_STAT_FOLLOW))
-                        m_creature->GetMotionMaster()->MoveFollow(pTotem, 2.0f, M_PI);
+                    m_creature->GetMotionMaster()->MoveFollow(pTotem, 2.0f, M_PI);
 
-                if(Unit *pTemp = pTotem->SelectNearestTarget(30.0))
-                    AttackStart(pTemp);
+                if(Unit *pOwner = pTotem->GetOwner()) 
+                {
+                    if(pOwner->GetTypeId() != TYPEID_PLAYER || !pOwner->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_SANCTUARY))
+                    {
+                        if(Unit *pTemp = pTotem->SelectNearestTarget(30.0))
+                            AttackStart(pTemp);
+                    }
+                }
             }
 
             if(pTotem)
@@ -1798,6 +1808,133 @@ struct TRINITY_DLL_DECL npc_elemental_guardianAI : public ScriptedAI
 CreatureAI* GetAI_npc_elemental_guardian(Creature* pCreature)
 {
     return new npc_elemental_guardianAI(pCreature);
+}
+
+//Blacksmithing
+#define GOSSIP_ITEM_OMARION0  "Learn Icebane Bracers pattern."
+#define GOSSIP_ITEM_OMARION1  "Learn Icebane Gauntlets pattern."
+#define GOSSIP_ITEM_OMARION2  "Learn Icebane Breastplate pattern."
+//Leatherworking
+#define GOSSIP_ITEM_OMARION3  "Learn Polar Bracers pattern."
+#define GOSSIP_ITEM_OMARION4  "Learn Polar Gloves pattern."
+#define GOSSIP_ITEM_OMARION5  "Learn Polar Tunic pattern."
+#define GOSSIP_ITEM_OMARION6  "Learn Icy Scale Bracers pattern."
+#define GOSSIP_ITEM_OMARION7  "Learn Icy Scale Gauntlets pattern."
+#define GOSSIP_ITEM_OMARION8  "Learn Icy Scale Breastplate pattern."
+//Tailoring
+#define GOSSIP_ITEM_OMARION9  "Learn Glacial Wrists pattern."
+#define GOSSIP_ITEM_OMARION10 "Learn Glacial Gloves pattern."
+#define GOSSIP_ITEM_OMARION11 "Learn Glacial Vest pattern."
+#define GOSSIP_ITEM_OMARION12 "Learn Glacial Cloak pattern."
+
+bool GossipHello_npc_master_omarion(Player *player, Creature *_Creature)
+{
+bool isexalted,isrevered;
+isexalted = false;
+isrevered = false;
+  if(player->GetReputation(529) >= 21000)
+  {
+    isrevered = true;
+    if(player->GetReputation(529) >= 42000)
+      isexalted = true;
+  }
+
+  if(player->GetBaseSkillValue(SKILL_BLACKSMITHING)>=300) // Blacksmithing +300
+  {
+    if(isrevered)
+    {
+	  player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION0    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+	  player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION1    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2); 
+	if(isexalted)
+	{
+	  player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION2    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
+    }
+    }
+  }
+  if(player->GetBaseSkillValue(SKILL_LEATHERWORKING)>=300) // Leatherworking +300
+  {
+    if(isrevered)
+    {
+	  player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION3    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
+	  player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION4    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5);
+	if(isexalted)
+	{
+	  player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION5    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 6);
+	}
+    }
+    if(isrevered)
+    {
+	  player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION6    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 7);
+	  player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION7    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 8);
+	if(isexalted)
+    {
+	  player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION8    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 9);
+    }
+    }
+  }
+  if(player->GetBaseSkillValue(SKILL_TAILORING)>=300) // Tailoring +300
+  {
+    if(isrevered)
+    {
+      player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION9    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 10);
+      player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION10   , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 11);
+    if(isexalted) 
+    {
+      player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION11   , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 12);
+      player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION12   , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 13);
+    }
+    }
+  }
+player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+return true;
+}
+
+bool GossipSelect_npc_master_omarion(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+{
+switch (action)
+{    
+	  case GOSSIP_ACTION_INFO_DEF + 1:         // Icebane Bracers
+		player->learnSpell( 28244 );
+		break;
+	  case GOSSIP_ACTION_INFO_DEF + 2:         // Icebane Gauntlets
+		player->learnSpell( 28243 );
+		break;
+	  case GOSSIP_ACTION_INFO_DEF + 3:         // Icebane Breastplate
+		player->learnSpell( 28242 );
+		break;
+	  case GOSSIP_ACTION_INFO_DEF + 4:         // Polar Bracers
+		player->learnSpell( 28221 );
+		break;
+	  case GOSSIP_ACTION_INFO_DEF + 5:         // Polar Gloves
+		player->learnSpell( 28220 );
+		break;
+	  case GOSSIP_ACTION_INFO_DEF + 6:         // Polar Tunic
+		player->learnSpell( 28219 );
+		break;
+	  case GOSSIP_ACTION_INFO_DEF + 7:         // Icy Scale Bracers
+		player->learnSpell( 28224 );
+		break;
+	  case GOSSIP_ACTION_INFO_DEF + 8:         // Icy Scale Gauntlets
+		player->learnSpell( 28223 );
+		break;
+	  case GOSSIP_ACTION_INFO_DEF + 9:         // Icy Scale Breastplate
+		player->learnSpell( 28222 );
+		break;
+	  case GOSSIP_ACTION_INFO_DEF + 10:        // Glacial Wrists
+		player->learnSpell( 28209 );
+		break; 
+	  case GOSSIP_ACTION_INFO_DEF + 11:        // Glacial Gloves
+		player->learnSpell( 28205 );
+		break;
+	  case GOSSIP_ACTION_INFO_DEF + 12:        // Glacial Vest
+		player->learnSpell( 28207 );
+		break;
+	  case GOSSIP_ACTION_INFO_DEF + 13:        // Glacial Cloak
+		player->learnSpell( 28208 );
+		break;
+    }
+    player->CLOSE_GOSSIP_MENU();
+    return true;
 }
 
 void AddSC_npcs_special()
@@ -1912,6 +2049,12 @@ void AddSC_npcs_special()
     newscript = new Script;
     newscript->Name="npc_elemental_guardian";
     newscript->GetAI = &GetAI_npc_elemental_guardian;
+    newscript->RegisterSelf();
+	
+    newscript = new Script;
+    newscript->Name="npc_master_omarion";
+    newscript->pGossipHello =  &GossipHello_npc_master_omarion;
+    newscript->pGossipSelect = &GossipSelect_npc_master_omarion;
     newscript->RegisterSelf();
 }
 

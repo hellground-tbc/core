@@ -1570,6 +1570,7 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
         {
             if(!m_creature->IsNonMeleeSpellCasted(false) && m_creature->GetDistance2d(m_creature->getVictim()) < 35.0f)
                 DoCast(m_creature->getVictim(), SPELL_CAPERNIAN_FIREBALL);
+
             Fireball_Timer = 2000+diff;   // spam fireball casts if ready
         }
         else

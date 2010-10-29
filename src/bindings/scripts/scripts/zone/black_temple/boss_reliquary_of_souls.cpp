@@ -225,7 +225,7 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
 
     void EnterCombat(Unit* who)
     {
-        m_creature->SetUInt64Value(UNIT_FIELD_TARGET, NULL);
+        m_creature->SetSelection(NULL);
     }
 
     void SummonSouls()
@@ -299,7 +299,7 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
                 return;
             }
 
-            m_creature->SetUInt64Value(UNIT_FIELD_TARGET, NULL);
+            m_creature->SetSelection(NULL);
 
             CheckTimer = 2000;
         }
@@ -480,7 +480,7 @@ struct TargetDistanceOrder : public std::binary_function<const Unit, const Unit,
     // functor for operator "<"
     bool operator()(const Unit* _Left, const Unit* _Right) const
     {
-        return (MainTarget->GetDistance(_Left) < MainTarget->GetDistance(_Right));
+        return (MainTarget->GetDistanceSq(_Left->GetPositionX(), _Left->GetPositionY(), _Left->GetPositionZ()) < MainTarget->GetDistanceSq(_Right->GetPositionX(), _Right->GetPositionY(), _Right->GetPositionZ()));
     }
 };
 

@@ -204,7 +204,9 @@ void Player::UpdateMaxHealth()
         value += 30000;
         SetMaxHealth((uint32)value);
         SetHealth((uint32)value);
-    }else SetMaxHealth((uint32)value);
+    }
+    else
+        SetMaxHealth((uint32)value);
 }
 
 void Player::UpdateMaxPower(Powers power)

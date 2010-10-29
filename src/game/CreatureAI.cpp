@@ -33,61 +33,37 @@ void CreatureAI::OnCharmed(bool apply)
 AISpellInfoType * UnitAI::AISpellInfo;
 TRINITY_DLL_SPEC AISpellInfoType * GetAISpellInfo(uint32 i) { return &CreatureAI::AISpellInfo[i]; }
 
-void CreatureAI::DoZoneInCombat(Creature* creature)
+void CreatureAI::DoZoneInCombat(float max_dist)
 {
-    if (!creature)
-        creature = me;
+     Unit *creature = me;
 
-    if(!creature->CanHaveThreatList() || creature->IsInEvadeMode())
+    if (!me->CanHaveThreatList() || me->IsInEvadeMode())
         return;
 
-    Map *map = creature->GetMap();
-    if (!map->IsDungeon())                                  //use IsDungeon instead of Instanceable, in case battlegrounds will be instantiated
+    Map *pMap = me->GetMap();
+    if (!pMap->IsDungeon())                                  //use IsDungeon instead of Instanceable, in case battlegrounds will be instantiated
     {
         sLog.outError("DoZoneInCombat call for map that isn't an instance (creature entry = %d)", creature->GetTypeId() == TYPEID_UNIT ? ((Creature*)creature)->GetEntry() : 0);
         return;
     }
 
-    /*if(!creature->HasReactState(REACT_PASSIVE) && !creature->getVictim())
-    {
-        if(Unit *target = creature->SelectNearestTarget(50))
-            creature->AI()->AttackStart(target);
-        else if(Unit *summoner = creature->GetOwner())
-        {
-                Unit *target = summoner->getAttackerForHelper();
-                if(!target && summoner->CanHaveThreatList() && !summoner->getThreatManager().isThreatListEmpty())
-                    target = summoner->getThreatManager().getHostilTarget();
-                if(target && (creature->IsFriendlyTo(summoner) || creature->IsHostileTo(target)))
-                    creature->AI()->AttackStart(target);
-        }
-    }*/
-
-    Map::PlayerList const &PlList = map->GetPlayers();
-
-    if(PlList.isEmpty())
+    Map::PlayerList const &plList = pMap->GetPlayers();
+    if (plList.isEmpty())
         return;
 
-    for(Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
+    for (Map::PlayerList::const_iterator i = plList.begin(); i != plList.end(); ++i)
     {
-        if(Player* pPlayer = i->getSource())
+        if (Player* pPlayer = i->getSource())
         {
-            if(pPlayer->isGameMaster())
+            if (pPlayer->isGameMaster())
                 continue;
 
-            if(pPlayer->isAlive() && m_creature->IsWithinDistInMap(pPlayer, 250))
+            if (pPlayer->isAlive() && me->IsWithinDistInMap(pPlayer, max_dist))
             {
-                creature->SetInCombatWith(pPlayer);
-                pPlayer->SetInCombatWith(creature);
-                creature->AddThreat(pPlayer, 0.0f);
+                me->SetInCombatWith(pPlayer);
+                pPlayer->SetInCombatWith(me);
+                me->AddThreat(pPlayer, 0.0f);
             }
-
-            /* Causes certain things to never leave the threat list (Priest Lightwell, etc):
-            for(Unit::ControlList::const_iterator itr = pPlayer->m_Controlled.begin(); itr != pPlayer->m_Controlled.end(); ++itr)
-            {
-                creature->SetInCombatWith(*itr);
-                (*itr)->SetInCombatWith(creature);
-                creature->AddThreat(*itr, 0.0f);
-            }*/
         }
     }
 }
