@@ -6816,7 +6816,7 @@ void Aura::PeriodicDummyTick()
                         // default case - not in arena
                         m_isPeriodic = false;
                         if(m_tickNumber == 1)
-                            (*i)->GetModifier()->m_amount = m_modifier.m_amount;
+                            (*i)->GetModifier()->m_amount = (m_target->HasAuraType(SPELL_AURA_MOD_SHAPESHIFT) ? 0 : m_modifier.m_amount);
                         ((Player*)m_target)->UpdateManaRegen();
                         return;
                     }
@@ -6846,6 +6846,10 @@ void Aura::PeriodicDummyTick()
                             (*i)->GetModifier()->m_amount = m_modifier.m_amount;
                             break;
                     }
+
+                    if (m_target->HasAuraType(SPELL_AURA_MOD_SHAPESHIFT))
+                        (*i)->GetModifier()->m_amount = 0;
+
                     ((Player*)m_target)->UpdateManaRegen();
                     return;
                 }
