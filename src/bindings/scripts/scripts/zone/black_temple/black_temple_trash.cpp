@@ -1615,7 +1615,7 @@ struct TRINITY_DLL_DECL totem_ashtongue_mysticAI : public Scripted_NoMovementAI
     {
         if(m_creature->GetEntry() == NPC_SUMMONED_WINDFURY_TOTEM)
         {
-            if(Unit* Mystic = GetClosestCreatureWithEntry(m_creature, 22845, 5.0))
+            if(Unit* Mystic = GetClosestCreatureWithEntry(m_creature, 22845, 15.0))
             {
                 if(Mystic->HasAura(SPELL_WINDFURY_WEAPON, 0))
                     m_creature->RemoveAurasDueToSpell(SPELL_WINDFURY_WEAPON);
@@ -1690,7 +1690,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_mysticAI : public ScriptedAI
 
         if(CheckTimer < diff)
         {
-            if(Unit* WindTotem = GetClosestCreatureWithEntry(m_creature, NPC_SUMMONED_WINDFURY_TOTEM, 10.0))
+            if(Unit* WindTotem = GetClosestCreatureWithEntry(m_creature, NPC_SUMMONED_WINDFURY_TOTEM, 15.0))
             {
                 if(!m_creature->HasAura(SPELL_WINDFURY_WEAPON, 0))
                     m_creature->CastSpell(m_creature, SPELL_WINDFURY_WEAPON, true);

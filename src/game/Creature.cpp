@@ -1599,6 +1599,9 @@ bool Creature::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bo
 
 bool Creature::IsWithinSightDist(Unit const* u) const
 {
+    if(!IsWithinLOSInMap(u))
+        return false;
+
     return IsWithinDistInMap(u, sWorld.getConfig(CONFIG_SIGHT_MONSTER));
 }
 
