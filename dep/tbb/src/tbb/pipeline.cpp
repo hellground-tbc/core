@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -133,7 +133,7 @@ public:
                 if( token-low_token>=array_size ) 
                     grow( token-low_token+1 );
                 ITT_NOTIFY( sync_releasing, this );
-                putter.put_task_info(array[token&(array_size-1)]);
+                putter.put_task_info(array[token&array_size-1]);
                 return true;
             }
         }
@@ -151,7 +151,7 @@ public:
             spin_mutex::scoped_lock lock( array_mutex );
             if( !is_ordered || token==low_token ) {
                 // Wake the next task
-                task_info& item = array[++low_token & (array_size-1)];
+                task_info& item = array[++low_token & array_size-1];
                 ITT_NOTIFY( sync_acquired, this );
                 wakee = item;
                 item.is_valid = false;
@@ -161,12 +161,12 @@ public:
             spawner.spawn_stage_task(wakee);
     }
 
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
     //! The method destroys all data in filters to prevent memory leaks
     void clear( filter* my_filter ) {
         long t=low_token;
         for( size_type i=0; i<array_size; ++i, ++t ){
-            task_info& temp = array[t&(array_size-1)];
+            task_info& temp = array[t&array_size-1];
             if (temp.is_valid ) {
                 my_filter->finalize(temp.my_object);
                 temp.is_valid = false;
@@ -177,7 +177,7 @@ public:
 
     bool return_item(task_info& info, bool advance) {
         spin_mutex::scoped_lock lock( array_mutex );
-        task_info& item = array[low_token&(array_size-1)];
+        task_info& item = array[low_token&array_size-1];
         ITT_NOTIFY( sync_acquired, this );
         if( item.is_valid ) {
             info = item;
@@ -204,7 +204,7 @@ public:
         if( token-low_token>=array_size ) 
             grow( token-low_token+1 );
         ITT_NOTIFY( sync_releasing, this );
-        array[token&(array_size-1)] = info;
+        array[token&array_size-1] = info;
     }
 };
 
@@ -219,7 +219,7 @@ void input_buffer::grow( size_type minimum_size ) {
         new_array[i].is_valid = false;
     long t=low_token;
     for( size_type i=0; i<old_size; ++i, ++t )
-        new_array[t&(new_size-1)] = old_array[t&(old_size-1)];
+        new_array[t&new_size-1] = old_array[t&old_size-1];
     array = new_array;
     array_size = new_size;
     if( old_array )
@@ -258,7 +258,7 @@ public:
     }
     //! The virtual task execution method
     /*override*/ task* execute();
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
     ~stage_task()    
     {
         if (my_filter && my_object && (my_filter->my_filter_mode & filter::version_mask) >= __TBB_PIPELINE_VERSION(4)) {
@@ -267,7 +267,7 @@ public:
             my_object = NULL;
         }
     }
-#endif // __TBB_TASK_GROUP_CONTEXT
+#endif // __TBB_EXCEPTIONS
     //! Creates and spawns stage_task from task_info
     void spawn_stage_task(const task_info& info)
     {
@@ -465,7 +465,7 @@ public:
         my_pipeline(_pipeline)
     {}
     ~pipeline_cleaner(){
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
         if (my_pipeline.end_counter->is_cancelled()) // Pipeline was cancelled
             my_pipeline.clear_filters(); 
 #endif
@@ -479,7 +479,7 @@ void pipeline::inject_token( task& ) {
     __TBB_ASSERT(0,"illegal call to inject_token");
 }
 
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
 void pipeline::clear_filters() {
     for( filter* f = filter_list; f; f = f->next_filter_in_pipeline ) {
         if ((f->my_filter_mode & filter::version_mask) >= __TBB_PIPELINE_VERSION(4))
@@ -591,7 +591,7 @@ void pipeline::remove_filter( filter& filter_ ) {
 }
 
 void pipeline::run( size_t max_number_of_live_tokens
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
     , tbb::task_group_context& context
 #endif
     ) {
@@ -600,7 +600,7 @@ void pipeline::run( size_t max_number_of_live_tokens
     if( filter_list ) {
         internal::pipeline_cleaner my_pipeline_cleaner(*this);
         end_of_input = false;
-#if __TBB_TASK_GROUP_CONTEXT            
+#if __TBB_EXCEPTIONS            
         end_counter = new( task::allocate_root(context) ) internal::pipeline_root_task( *this );
 #else
         end_counter = new( task::allocate_root() ) internal::pipeline_root_task( *this );
@@ -611,19 +611,12 @@ void pipeline::run( size_t max_number_of_live_tokens
     } 
 }
 
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
 void pipeline::run( size_t max_number_of_live_tokens ) {
-    if( filter_list ) {
-        // Construct task group context with the exception propagation mode expected 
-        // by the pipeline caller.
-        uintptr_t ctx_traits = filter_list->my_filter_mode & filter::exact_exception_propagation ? 
-                task_group_context::default_traits :
-                task_group_context::default_traits & ~task_group_context::exact_exception;
-        task_group_context context(task_group_context::bound, ctx_traits);
-        run(max_number_of_live_tokens, context);
-    }
+    tbb::task_group_context context;
+    run(max_number_of_live_tokens, context);
 }
-#endif // __TBB_TASK_GROUP_CONTEXT
+#endif // __TBB_EXCEPTIONS
 
 filter::~filter() {
     if ( (my_filter_mode & version_mask) >= __TBB_PIPELINE_VERSION(3) ) {

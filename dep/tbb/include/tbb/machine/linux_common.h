@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -35,9 +35,7 @@
 #include <sched.h>
 
 // Definition of __TBB_Yield()
-#ifndef __TBB_Yield
 #define __TBB_Yield()  sched_yield()
-#endif
 
 /* Futex definitions */
 #include <sys/syscall.h>

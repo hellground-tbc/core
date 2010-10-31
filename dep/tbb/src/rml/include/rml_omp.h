@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -42,14 +42,14 @@ class omp_client;
 // Classes instantiated by the server
 //------------------------------------------------------------------------
 
-//! Represents a set of omp worker threads provided by the server.
+//! Represents a set of worker threads provided by the server.
 class omp_server: public ::rml::server {
 public:
-    //! A number of coins (i.e., threads)
+    //! A number of threads
     typedef unsigned size_type;
 
     //! Return the number of coins in the bank. (negative if machine is oversubscribed).
-    virtual int current_balance() const = 0;
+    virtual int current_balance() const RML_PURE(int);
   
     //! Request n coins.  Returns number of coins granted. Oversubscription amount if negative.
     /** Always granted if is_strict is true.
@@ -57,34 +57,20 @@ public:
         - Negative result indicates that no coins were taken, and that the bank has deficit 
           by that amount and the caller (if being a good citizen) should return that many coins.
      */
-    virtual int try_increase_load( size_type /*n*/, bool /*strict*/ ) = 0;
+    virtual int try_increase_load( size_type /*n*/, bool /*strict*/ ) RML_PURE(size_type)
 
     //! Return n coins into the bank.
-    virtual void decrease_load( size_type /*n*/ ) = 0;
+    virtual void decrease_load( size_type /*n*/ ) RML_PURE(void);
 
     //! Convert n coins into n threads.
     /** When a thread returns, it is converted back into a coin and the coin is returned to the bank. */
-    virtual void get_threads( size_type /*m*/, void* /*cookie*/, job* /*array*/[] ) = 0;
+    virtual void get_threads( size_type /*m*/, void* /*cookie*/, job* /*array*/[] ) RML_PURE(void);
 
     /** Putting a thread to sleep - convert a thread into a coin
         Waking up a thread        - convert a coin into a thread
       
        Note: conversion between a coin and a thread does not affect the accounting.
      */
-#if _WIN32||_WIN64
-    //! Inform server of a tbb master thread.
-    virtual void register_master( execution_resource_t& /*v*/ ) = 0;
-
-    //! Inform server that the tbb master thread is done with its work.
-    virtual void unregister_master( execution_resource_t /*v*/ ) = 0;
- 
-    //! deactivate
-    /** give control to ConcRT RM */
-    virtual void deactivate( job* ) = 0;
-
-    //! reactivate
-    virtual void reactivate( job* ) = 0;
-#endif /* _WIN32||_WIN64 */
 };
 
 
@@ -94,10 +80,9 @@ public:
 
 class omp_client: public ::rml::client {
 public:
-    //! Called by server thread when it delivers a thread to client
-    /** The index argument is a 0-origin index of the job for this thread within the array
-        returned by method get_threads.  Server decreases the load by 1 (i.e., returning the coin
-        back to the bank) after this method returns. */
+    //! Called by server thread when it runs its part of a parallel region.  
+    /** The index argument is a 0-origin index of this thread within the array
+        returned by method get_threads.  Server decreases the load by 1 after this method returns. */
     virtual void process( job&, void* /*cookie*/, size_type /*index*/ ) RML_PURE(void)
 };
 
@@ -107,7 +92,7 @@ class omp_factory: public ::rml::factory {
     //! Pointer to routine that creates an RML server.
     status_type (*my_make_server_routine)( omp_factory&, omp_server*&, omp_client& );
 
-    //! Pointer to routine that calls callback function with server version info.
+    //! Pointer to routine that returns server version info.
     void (*my_call_with_server_info_routine)( ::rml::server_info_callback_t cb, void* arg );
 
 public:

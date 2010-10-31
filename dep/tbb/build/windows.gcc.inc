@@ -1,4 +1,4 @@
-# Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+# Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 #
 # This file is part of Threading Building Blocks.
 #
@@ -34,15 +34,12 @@ LIBEXT = dll # MinGW allows linking with DLLs directly
 
 TBB.RES =
 MALLOC.RES =
-RML.RES =
 TBB.MANIFEST =
 MALLOC.MANIFEST =
-RML.MANIFEST =
 
 # TODO: do better when/if mingw64 support is added
 TBB.DEF = $(tbb_root)/src/tbb/lin32-tbb-export.def
 MALLOC.DEF = $(MALLOC_ROOT)/win-gcc-tbbmalloc-export.def
-RML.DEF = $(RML_SERVER_ROOT)/lin-rml-export.def
 
 LINK_TBB.LIB = $(TBB.LIB)
 
@@ -100,9 +97,6 @@ ifeq (ia32,$(arch))
     CPLUS_FLAGS += -m32
     LIB_LINK_FLAGS += -m32
 endif 
-
-# For examples
-export UNIXMODE = 1
 
 #------------------------------------------------------------------------------
 # End of command lines

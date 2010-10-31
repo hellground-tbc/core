@@ -1,4 +1,4 @@
-; Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+; Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 ;
 ; This file is part of Threading Building Blocks.
 ;
@@ -58,7 +58,7 @@ __TBB_machine_trylockbyte
 ?allocate@allocate_child_proxy@internal@tbb@@QBEAAVtask@3@I@Z
 ?allocate@allocate_continuation_proxy@internal@tbb@@QBEAAVtask@3@I@Z
 ?allocate@allocate_root_proxy@internal@tbb@@SAAAVtask@3@I@Z
-?destroy@task_base@internal@interface5@tbb@@SAXAAVtask@4@@Z
+?destroy@task@tbb@@QAEXAAV12@@Z
 ?free@allocate_additional_child_of_proxy@internal@tbb@@QBEXAAVtask@3@@Z
 ?free@allocate_child_proxy@internal@tbb@@QBEXAAVtask@3@@Z
 ?free@allocate_continuation_proxy@internal@tbb@@QBEXAAVtask@3@@Z
@@ -76,13 +76,8 @@ __TBB_machine_trylockbyte
 ?terminate@task_scheduler_init@tbb@@QAEXXZ
 ?observe@task_scheduler_observer_v3@internal@tbb@@QAEX_N@Z
 
-#if !TBB_NO_LEGACY
-; task_v2.cpp
-?destroy@task@tbb@@QAEXAAV12@@Z
-#endif
-
 ; exception handling support
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
 ?allocate@allocate_root_with_context_proxy@internal@tbb@@QBEAAVtask@3@I@Z
 ?free@allocate_root_with_context_proxy@internal@tbb@@QBEXAAVtask@3@@Z
 ?is_group_execution_cancelled@task_group_context@tbb@@QBE_NXZ
@@ -98,15 +93,7 @@ __TBB_machine_trylockbyte
 ?destroy@captured_exception@tbb@@UAEXXZ
 ?set@captured_exception@tbb@@QAEXPBD0@Z
 ?clear@captured_exception@tbb@@QAEXXZ
-#endif /* __TBB_TASK_GROUP_CONTEXT */
-
-; Symbols for exceptions thrown from TBB
-?throw_bad_last_alloc_exception_v4@internal@tbb@@YAXXZ
-?throw_exception_v4@internal@tbb@@YAXW4exception_id@12@@Z
-?what@bad_last_alloc@tbb@@UBEPBDXZ
-?what@missing_wait@tbb@@UBEPBDXZ
-?what@invalid_multiple_scheduling@tbb@@UBEPBDXZ
-?what@improper_lock@tbb@@UBEPBDXZ
+#endif /* __TBB_EXCEPTIONS */
 
 ; tbb_misc.cpp
 ?assertion_failure@tbb@@YAXPBDH00@Z
@@ -115,6 +102,7 @@ __TBB_machine_trylockbyte
 ?set_assertion_handler@tbb@@YAP6AXPBDH00@ZP6AX0H00@Z@Z
 ?runtime_warning@internal@tbb@@YAXPBDZZ
 TBB_runtime_interface_version
+?throw_bad_last_alloc_exception_v4@internal@tbb@@YAXXZ
 
 ; itt_notify.cpp
 ?itt_load_pointer_with_acquire_v3@internal@tbb@@YAPAXPBX@Z
@@ -131,7 +119,7 @@ TBB_runtime_interface_version
 ?clear@pipeline@tbb@@QAEXXZ
 ?inject_token@pipeline@tbb@@AAEXAAVtask@2@@Z
 ?run@pipeline@tbb@@QAEXI@Z
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
 ?run@pipeline@tbb@@QAEXIAAVtask_group_context@2@@Z
 #endif
 ?process_item@thread_bound_filter@tbb@@QAE?AW4result_type@12@XZ
@@ -144,19 +132,6 @@ TBB_runtime_interface_version
 ?release@scoped_lock@queuing_rw_mutex@tbb@@QAEXXZ
 ?upgrade_to_writer@scoped_lock@queuing_rw_mutex@tbb@@QAE_NXZ
 ?try_acquire@scoped_lock@queuing_rw_mutex@tbb@@QAE_NAAV23@_N@Z
-
-; reader_writer_lock.cpp
-?try_lock_read@reader_writer_lock@interface5@tbb@@QAE_NXZ
-?try_lock@reader_writer_lock@interface5@tbb@@QAE_NXZ
-?unlock@reader_writer_lock@interface5@tbb@@QAEXXZ
-?lock_read@reader_writer_lock@interface5@tbb@@QAEXXZ
-?lock@reader_writer_lock@interface5@tbb@@QAEXXZ
-?internal_construct@reader_writer_lock@interface5@tbb@@AAEXXZ
-?internal_destroy@reader_writer_lock@interface5@tbb@@AAEXXZ
-?internal_construct@scoped_lock@reader_writer_lock@interface5@tbb@@AAEXAAV234@@Z
-?internal_destroy@scoped_lock@reader_writer_lock@interface5@tbb@@AAEXXZ
-?internal_construct@scoped_lock_read@reader_writer_lock@interface5@tbb@@AAEXAAV234@@Z
-?internal_destroy@scoped_lock_read@reader_writer_lock@interface5@tbb@@AAEXXZ
 
 #if !TBB_NO_LEGACY
 ; spin_rw_mutex.cpp v2
@@ -208,9 +183,6 @@ TBB_runtime_interface_version
 ?release@scoped_lock@queuing_mutex@tbb@@QAEXXZ
 ?try_acquire@scoped_lock@queuing_mutex@tbb@@QAE_NAAV23@@Z
 
-; critical_section.cpp
-?internal_construct@critical_section_v4@internal@tbb@@QAEXXZ
-
 #if !TBB_NO_LEGACY
 ; concurrent_hash_map.cpp
 ?internal_grow_predicate@hash_map_segment_base@internal@tbb@@QBE_NXZ
@@ -233,7 +205,6 @@ TBB_runtime_interface_version
 ; concurrent_queue v3
 ??1concurrent_queue_iterator_base_v3@internal@tbb@@IAE@XZ
 ??0concurrent_queue_iterator_base_v3@internal@tbb@@IAE@ABVconcurrent_queue_base_v3@12@@Z
-??0concurrent_queue_iterator_base_v3@internal@tbb@@IAE@ABVconcurrent_queue_base_v3@12@I@Z
 ?advance@concurrent_queue_iterator_base_v3@internal@tbb@@IAEXXZ
 ?assign@concurrent_queue_iterator_base_v3@internal@tbb@@IAEXABV123@@Z
 ??0concurrent_queue_base_v3@internal@tbb@@IAE@I@Z
@@ -288,10 +259,3 @@ TBB_runtime_interface_version
 ?thread_sleep_v3@internal@tbb@@YAXABVinterval_t@tick_count@2@@Z
 ?move_v3@internal@tbb@@YAXAAVtbb_thread_v3@12@0@Z
 ?thread_get_id_v3@internal@tbb@@YA?AVid@tbb_thread_v3@12@XZ
-
-; condition_variable
-?internal_initialize_condition_variable@internal@interface5@tbb@@YAXAATcondvar_impl_t@123@@Z
-?internal_condition_variable_wait@internal@interface5@tbb@@YA_NAATcondvar_impl_t@123@PAVmutex@3@PBVinterval_t@tick_count@3@@Z
-?internal_condition_variable_notify_one@internal@interface5@tbb@@YAXAATcondvar_impl_t@123@@Z
-?internal_condition_variable_notify_all@internal@interface5@tbb@@YAXAATcondvar_impl_t@123@@Z
-?internal_destroy_condition_variable@internal@interface5@tbb@@YAXAATcondvar_impl_t@123@@Z

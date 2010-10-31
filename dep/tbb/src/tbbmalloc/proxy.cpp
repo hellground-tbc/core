@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -27,16 +27,6 @@
 */
 
 #include "proxy.h"
-
-#if !defined(__EXCEPTIONS) && !defined(_CPPUNWIND) && !defined(__SUNPRO_CC) || defined(_XBOX)
-    #if TBB_USE_EXCEPTIONS
-        #error Compilation settings do not support exception handling. Please do not set TBB_USE_EXCEPTIONS macro or set it to 0.
-    #elif !defined(TBB_USE_EXCEPTIONS)
-        #define TBB_USE_EXCEPTIONS 0
-    #endif
-#elif !defined(TBB_USE_EXCEPTIONS)
-    #define TBB_USE_EXCEPTIONS 1
-#endif
 
 #if MALLOC_LD_PRELOAD
 
@@ -159,18 +149,12 @@ extern "C" struct mallinfo mallinfo() __THROW
 
 void * operator new(size_t sz) throw (std::bad_alloc) {
     void *res = scalable_malloc(sz);
-#if TBB_USE_EXCEPTIONS
-    if (NULL == res)
-        throw std::bad_alloc();
-#endif /* TBB_USE_EXCEPTIONS */
+    if (NULL == res) throw std::bad_alloc();
     return res;
 }
 void* operator new[](size_t sz) throw (std::bad_alloc) {
     void *res = scalable_malloc(sz);
-#if TBB_USE_EXCEPTIONS
-    if (NULL == res)
-        throw std::bad_alloc();
-#endif /* TBB_USE_EXCEPTIONS */
+    if (NULL == res) throw std::bad_alloc();
     return res;
 }
 void operator delete(void* ptr) throw() {
@@ -212,6 +196,7 @@ void* safer_expand( void *, size_t )
     return NULL;
 }
 
+#define __TBB_QV(EXP) #EXP
 #define __TBB_ORIG_ALLOCATOR_REPLACEMENT_WRAPPER(CRTLIB)\
 void (*orig_free_##CRTLIB)(void*);                                                        \
 void safer_scalable_free_##CRTLIB( void *ptr)                                             \
@@ -237,49 +222,31 @@ void* safer_scalable_aligned_realloc_##CRTLIB( void *ptr, size_t size, size_t al
     return safer_scalable_aligned_realloc( ptr, size, aligment, &func_ptrs );             \
 } 
 
-// limit is 30 bytes/60 symbols per line
-const char* known_bytecodes[] = {
-#if _WIN64
-    "4883EC284885C974",       //release free() win64
-    "4883EC384885C975",       //release msize() win64
-    "4885C974375348",         //release free() 8.0.50727.42 win64
-    "48894C24084883EC28BA",   //debug prologue for win64
-    "4C8BC1488B0DA6E4040033", //win64 SDK
-    "4883EC284885C975",       //release msize() 10.0.21003.1 win64
-#else
-    "558BEC6A018B",           //debug free() & _msize() 8.0.50727.4053 win32
-    "6A1868********E8",       //release free() 8.0.50727.4053 win32
-    "6A1C68********E8",       //release _msize() 8.0.50727.4053 win32
-    "8BFF558BEC6A",           //debug free() & _msize() 9.0.21022.8 win32
-    "8BFF558BEC83",           //debug free() & _msize() 10.0.21003.1 win32
-#endif
-    NULL
-    };
-
 #if _WIN64
 #define __TBB_ORIG_ALLOCATOR_REPLACEMENT_CALL(CRT_VER)\
-    ReplaceFunctionWithStore( #CRT_VER "d.dll", "free",  (FUNCPTR)safer_scalable_free_ ## CRT_VER ## d,  known_bytecodes, (FUNCPTR*)&orig_free_ ## CRT_VER ## d );  \
-    ReplaceFunctionWithStore( #CRT_VER  ".dll", "free",  (FUNCPTR)safer_scalable_free_ ## CRT_VER,       known_bytecodes, (FUNCPTR*)&orig_free_ ## CRT_VER );       \
-    ReplaceFunctionWithStore( #CRT_VER "d.dll", "_msize",(FUNCPTR)safer_scalable_msize_ ## CRT_VER ## d, known_bytecodes, (FUNCPTR*)&orig_msize_ ## CRT_VER ## d ); \
-    ReplaceFunctionWithStore( #CRT_VER  ".dll", "_msize",(FUNCPTR)safer_scalable_msize_ ## CRT_VER,      known_bytecodes, (FUNCPTR*)&orig_msize_ ## CRT_VER );      \
-    ReplaceFunctionWithStore( #CRT_VER "d.dll", "realloc",         (FUNCPTR)safer_scalable_realloc_ ## CRT_VER ## d,         0, NULL); \
-    ReplaceFunctionWithStore( #CRT_VER  ".dll", "realloc",         (FUNCPTR)safer_scalable_realloc_ ## CRT_VER,              0, NULL); \
-    ReplaceFunctionWithStore( #CRT_VER "d.dll", "_aligned_free",   (FUNCPTR)safer_scalable_free_ ## CRT_VER ## d,            0, NULL); \
-    ReplaceFunctionWithStore( #CRT_VER  ".dll", "_aligned_free",   (FUNCPTR)safer_scalable_free_ ## CRT_VER,                 0, NULL); \
-    ReplaceFunctionWithStore( #CRT_VER "d.dll", "_aligned_realloc",(FUNCPTR)safer_scalable_aligned_realloc_ ## CRT_VER ## d, 0, NULL); \
-    ReplaceFunctionWithStore( #CRT_VER  ".dll", "_aligned_realloc",(FUNCPTR)safer_scalable_aligned_realloc_ ## CRT_VER,      0, NULL);
+    ReplaceFunctionWithStore( __TBB_QV(CRT_VER ## d.dll), "free",  (FUNCPTR)safer_scalable_free_ ## CRT_VER ## d,  9, (FUNCPTR*)&orig_free_ ## CRT_VER ## d );  \
+    ReplaceFunctionWithStore( __TBB_QV(CRT_VER ##.dll),   "free",  (FUNCPTR)safer_scalable_free_ ## CRT_VER,       0, NULL );                                   \
+    orig_free_ ## CRT_VER = NULL;                                                                                                                               \
+    ReplaceFunctionWithStore( __TBB_QV(CRT_VER ## d.dll), "_msize",(FUNCPTR)safer_scalable_msize_ ## CRT_VER ## d, 9, (FUNCPTR*)&orig_msize_ ## CRT_VER ## d ); \
+    ReplaceFunctionWithStore( __TBB_QV(CRT_VER ##.dll),   "_msize",(FUNCPTR)safer_scalable_msize_ ## CRT_VER,      7, (FUNCPTR*)&orig_msize_ ## CRT_VER );      \
+    ReplaceFunctionWithStore( __TBB_QV(CRT_VER ## d.dll), "realloc",         (FUNCPTR)safer_scalable_realloc_ ## CRT_VER ## d,         0, NULL); \
+    ReplaceFunctionWithStore( __TBB_QV(CRT_VER ##.dll),   "realloc",         (FUNCPTR)safer_scalable_realloc_ ## CRT_VER,              0, NULL); \
+    ReplaceFunctionWithStore( __TBB_QV(CRT_VER ## d.dll), "_aligned_free",   (FUNCPTR)safer_scalable_free_ ## CRT_VER ## d,            0, NULL); \
+    ReplaceFunctionWithStore( __TBB_QV(CRT_VER ##.dll),   "_aligned_free",   (FUNCPTR)safer_scalable_free_ ## CRT_VER,                 0, NULL); \
+    ReplaceFunctionWithStore( __TBB_QV(CRT_VER ## d.dll), "_aligned_realloc",(FUNCPTR)safer_scalable_aligned_realloc_ ## CRT_VER ## d, 0, NULL); \
+    ReplaceFunctionWithStore( __TBB_QV(CRT_VER ##.dll),   "_aligned_realloc",(FUNCPTR)safer_scalable_aligned_realloc_ ## CRT_VER,      0, NULL);
 #else
 #define __TBB_ORIG_ALLOCATOR_REPLACEMENT_CALL(CRT_VER)\
-    ReplaceFunctionWithStore( #CRT_VER "d.dll", "free",  (FUNCPTR)safer_scalable_free_ ## CRT_VER ## d,  known_bytecodes, (FUNCPTR*)&orig_free_ ## CRT_VER ## d );  \
-    ReplaceFunctionWithStore( #CRT_VER  ".dll", "free",  (FUNCPTR)safer_scalable_free_ ## CRT_VER,       known_bytecodes, (FUNCPTR*)&orig_free_ ## CRT_VER );       \
-    ReplaceFunctionWithStore( #CRT_VER "d.dll", "_msize",(FUNCPTR)safer_scalable_msize_ ## CRT_VER ## d, known_bytecodes, (FUNCPTR*)&orig_msize_ ## CRT_VER ## d ); \
-    ReplaceFunctionWithStore( #CRT_VER  ".dll", "_msize",(FUNCPTR)safer_scalable_msize_ ## CRT_VER,      known_bytecodes, (FUNCPTR*)&orig_msize_ ## CRT_VER );      \
-    ReplaceFunctionWithStore( #CRT_VER "d.dll", "realloc",         (FUNCPTR)safer_scalable_realloc_ ## CRT_VER ## d,         0, NULL); \
-    ReplaceFunctionWithStore( #CRT_VER  ".dll", "realloc",         (FUNCPTR)safer_scalable_realloc_ ## CRT_VER,              0, NULL); \
-    ReplaceFunctionWithStore( #CRT_VER "d.dll", "_aligned_free",   (FUNCPTR)safer_scalable_free_ ## CRT_VER ## d,            0, NULL); \
-    ReplaceFunctionWithStore( #CRT_VER  ".dll", "_aligned_free",   (FUNCPTR)safer_scalable_free_ ## CRT_VER,                 0, NULL); \
-    ReplaceFunctionWithStore( #CRT_VER "d.dll", "_aligned_realloc",(FUNCPTR)safer_scalable_aligned_realloc_ ## CRT_VER ## d, 0, NULL); \
-    ReplaceFunctionWithStore( #CRT_VER  ".dll", "_aligned_realloc",(FUNCPTR)safer_scalable_aligned_realloc_ ## CRT_VER,      0, NULL);
+    ReplaceFunctionWithStore( __TBB_QV(CRT_VER ## d.dll), "free",  (FUNCPTR)safer_scalable_free_ ## CRT_VER ## d,  5, (FUNCPTR*)&orig_free_ ## CRT_VER ## d );  \
+    ReplaceFunctionWithStore( __TBB_QV(CRT_VER ##.dll),   "free",  (FUNCPTR)safer_scalable_free_ ## CRT_VER,       7, (FUNCPTR*)&orig_free_ ## CRT_VER );       \
+    ReplaceFunctionWithStore( __TBB_QV(CRT_VER ## d.dll), "_msize",(FUNCPTR)safer_scalable_msize_ ## CRT_VER ## d, 5, (FUNCPTR*)&orig_msize_ ## CRT_VER ## d ); \
+    ReplaceFunctionWithStore( __TBB_QV(CRT_VER ##.dll),   "_msize",(FUNCPTR)safer_scalable_msize_ ## CRT_VER,      7, (FUNCPTR*)&orig_msize_ ## CRT_VER );      \
+    ReplaceFunctionWithStore( __TBB_QV(CRT_VER ## d.dll), "realloc",         (FUNCPTR)safer_scalable_realloc_ ## CRT_VER ## d,         0, NULL); \
+    ReplaceFunctionWithStore( __TBB_QV(CRT_VER ##.dll),   "realloc",         (FUNCPTR)safer_scalable_realloc_ ## CRT_VER,              0, NULL); \
+    ReplaceFunctionWithStore( __TBB_QV(CRT_VER ## d.dll), "_aligned_free",   (FUNCPTR)safer_scalable_free_ ## CRT_VER ## d,            0, NULL); \
+    ReplaceFunctionWithStore( __TBB_QV(CRT_VER ##.dll),   "_aligned_free",   (FUNCPTR)safer_scalable_free_ ## CRT_VER,                 0, NULL); \
+    ReplaceFunctionWithStore( __TBB_QV(CRT_VER ## d.dll), "_aligned_realloc",(FUNCPTR)safer_scalable_aligned_realloc_ ## CRT_VER ## d, 0, NULL); \
+    ReplaceFunctionWithStore( __TBB_QV(CRT_VER ##.dll),   "_aligned_realloc",(FUNCPTR)safer_scalable_aligned_realloc_ ## CRT_VER,      0, NULL);
 #endif
 
 __TBB_ORIG_ALLOCATOR_REPLACEMENT_WRAPPER(msvcr70d);
@@ -290,8 +257,6 @@ __TBB_ORIG_ALLOCATOR_REPLACEMENT_WRAPPER(msvcr80d);
 __TBB_ORIG_ALLOCATOR_REPLACEMENT_WRAPPER(msvcr80);
 __TBB_ORIG_ALLOCATOR_REPLACEMENT_WRAPPER(msvcr90d);
 __TBB_ORIG_ALLOCATOR_REPLACEMENT_WRAPPER(msvcr90);
-__TBB_ORIG_ALLOCATOR_REPLACEMENT_WRAPPER(msvcr100d);
-__TBB_ORIG_ALLOCATOR_REPLACEMENT_WRAPPER(msvcr100);
 
 
 /*** replacements for global operators new and delete ***/
@@ -341,8 +306,6 @@ const char* modules_to_replace[] = {
     "msvcr80.dll",
     "msvcr90d.dll",
     "msvcr90.dll",
-    "msvcr100d.dll",
-    "msvcr100.dll",
     "msvcr70d.dll",
     "msvcr70.dll",
     "msvcr71d.dll",
@@ -402,12 +365,12 @@ FRDATA routines_to_replace[] = {
 };
 
 #ifndef UNICODE
-void ReplaceFunctionWithStore( const char*dllName, const char *funcName, FUNCPTR newFunc, const char ** opcodes, FUNCPTR* origFunc )
+void ReplaceFunctionWithStore( const char*dllName, const char *funcName, FUNCPTR newFunc, UINT opcodesNumber, FUNCPTR* origFunc )
 #else
-void ReplaceFunctionWithStore( const wchar_t *dllName, const char *funcName, FUNCPTR newFunc, const char ** opcodes, FUNCPTR* origFunc )
+void ReplaceFunctionWithStore( const wchar_t *dllName, const char *funcName, FUNCPTR newFunc, UINT opcodesNumber, FUNCPTR* origFunc )
 #endif
 {
-    FRR_TYPE type = ReplaceFunction( dllName, funcName, newFunc, opcodes, origFunc );
+    FRR_TYPE type = ReplaceFunction( dllName, funcName, newFunc, opcodesNumber, origFunc );
     if (type == FRR_NODLL) return;
     if ( type != FRR_OK )
     {
@@ -442,7 +405,6 @@ void doMallocReplacement()
     __TBB_ORIG_ALLOCATOR_REPLACEMENT_CALL(msvcr71)
     __TBB_ORIG_ALLOCATOR_REPLACEMENT_CALL(msvcr80)
     __TBB_ORIG_ALLOCATOR_REPLACEMENT_CALL(msvcr90)
-    __TBB_ORIG_ALLOCATOR_REPLACEMENT_CALL(msvcr100)
 }
 
 extern "C" BOOL WINAPI DllMain( HINSTANCE hInst, DWORD callReason, LPVOID reserved )

@@ -1,4 +1,4 @@
-# Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+# Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 #
 # This file is part of Threading Building Blocks.
 #
@@ -69,7 +69,7 @@ OBJ=o
 DLL=dylib
 LIBEXT=dylib
 
-def_prefix = $(if $(findstring 64,$(arch)),mac64,mac32)
+def_prefix = $(if $(findstring 32,$(arch)),mac32,mac64)
 
 TBB.DEF = $(tbb_root)/src/tbb/$(def_prefix)-tbb-export.def
 TBB.DLL = libtbb$(DEBUG_SUFFIX).$(DLL)

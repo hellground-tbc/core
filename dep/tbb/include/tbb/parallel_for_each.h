@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -38,12 +38,12 @@ namespace internal {
     // The class calls user function in operator()
     template <typename Function, typename Iterator>
     class parallel_for_each_body : internal::no_assign {
-        const Function &my_func;
+        Function &my_func;
     public:
-        parallel_for_each_body(const Function &_func) : my_func(_func) {}
+        parallel_for_each_body(Function &_func) : my_func(_func) {}
         parallel_for_each_body(const parallel_for_each_body<Function, Iterator> &_caller) : my_func(_caller.my_func) {}
 
-        void operator() ( typename std::iterator_traits<Iterator>::value_type& value ) const {
+        void operator() ( typename std::iterator_traits<Iterator>::value_type value ) const {
             my_func(value);
         }
     };
@@ -56,18 +56,20 @@ namespace internal {
 //! Calls function f for all items from [first, last) interval using user-supplied context
 /** @ingroup algorithms */
 template<typename InputIterator, typename Function>
-void parallel_for_each(InputIterator first, InputIterator last, const Function& f, task_group_context &context) {
+Function parallel_for_each(InputIterator first, InputIterator last, Function f, task_group_context &context) {
     internal::parallel_for_each_body<Function, InputIterator> body(f);
 
     tbb::parallel_do (first, last, body, context);
+    return f;
 }
 
 //! Uses default context
 template<typename InputIterator, typename Function>
-void parallel_for_each(InputIterator first, InputIterator last, const Function& f) {
+Function parallel_for_each(InputIterator first, InputIterator last, Function f) {
     internal::parallel_for_each_body<Function, InputIterator> body(f);
 
     tbb::parallel_do (first, last, body);
+    return f;
 }
 
 //@}

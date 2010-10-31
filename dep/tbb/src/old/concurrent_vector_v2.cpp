@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -28,21 +28,10 @@
 
 #include "concurrent_vector_v2.h"
 #include "tbb/tbb_machine.h"
+#include <stdexcept>
 #include "../tbb/itt_notify.h"
 #include "tbb/task.h"
-
-#if !TBB_USE_EXCEPTIONS && _MSC_VER
-    // Suppress "C++ exception handler used, but unwind semantics are not enabled" warning in STL headers
-    #pragma warning (push)
-    #pragma warning (disable: 4530)
-#endif
-
-#include <stdexcept>
 #include <cstring>
-
-#if !TBB_USE_EXCEPTIONS && _MSC_VER
-    #pragma warning (pop)
-#endif
 
 
 #if defined(_MSC_VER) && defined(_Wp64)
@@ -109,7 +98,7 @@ concurrent_vector_base::size_type concurrent_vector_base::internal_capacity() co
 
 void concurrent_vector_base::internal_reserve( size_type n, size_type element_size, size_type max_size ) {
     if( n>max_size ) {
-        __TBB_THROW( std::length_error("argument to ConcurrentVector::reserve exceeds ConcurrentVector::max_size()") );
+        throw std::length_error("argument to ConcurrentVector::reserve exceeds ConcurrentVector::max_size()");
     }
     for( segment_index_t k = helper::find_segment_end(*this); segment_base(k)<n; ++k ) {
         helper::extend_segment_if_necessary(*this,k);

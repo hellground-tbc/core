@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -151,8 +151,7 @@ static inline T __TBB_machine_fetchstore##S ( volatile void * ptr, U value ) { \
 
 __TBB_DEFINE_ATOMICS(1, __int8, __int8, al, cl)
 __TBB_DEFINE_ATOMICS(2, __int16, __int16, ax, cx)
-__TBB_DEFINE_ATOMICS(4, __int32, __int32, eax, ecx)
-__TBB_DEFINE_ATOMICS(W, ptrdiff_t, ptrdiff_t, eax, ecx)
+__TBB_DEFINE_ATOMICS(4, __int32, ptrdiff_t, eax, ecx)
 
 static inline __int32 __TBB_machine_lg( unsigned __int64 i ) {
     unsigned __int32 j;
@@ -198,19 +197,19 @@ static inline void __TBB_machine_pause (__int32 delay ) {
 #define __TBB_CompareAndSwap2(P,V,C) __TBB_machine_cmpswp2(P,V,C)
 #define __TBB_CompareAndSwap4(P,V,C) __TBB_machine_cmpswp4(P,V,C)
 #define __TBB_CompareAndSwap8(P,V,C) __TBB_machine_cmpswp8(P,V,C)
-#define __TBB_CompareAndSwapW(P,V,C) __TBB_machine_cmpswpW(P,V,C)
+#define __TBB_CompareAndSwapW(P,V,C) __TBB_machine_cmpswp4(P,V,C)
 
 #define __TBB_FetchAndAdd1(P,V) __TBB_machine_fetchadd1(P,V)
 #define __TBB_FetchAndAdd2(P,V) __TBB_machine_fetchadd2(P,V)
 #define __TBB_FetchAndAdd4(P,V) __TBB_machine_fetchadd4(P,V)
 #define __TBB_FetchAndAdd8(P,V) __TBB_machine_fetchadd8(P,V)
-#define __TBB_FetchAndAddW(P,V) __TBB_machine_fetchaddW(P,V)
+#define __TBB_FetchAndAddW(P,V) __TBB_machine_fetchadd4(P,V)
 
 #define __TBB_FetchAndStore1(P,V) __TBB_machine_fetchstore1(P,V)
 #define __TBB_FetchAndStore2(P,V) __TBB_machine_fetchstore2(P,V)
 #define __TBB_FetchAndStore4(P,V) __TBB_machine_fetchstore4(P,V)
 #define __TBB_FetchAndStore8(P,V) __TBB_machine_fetchstore8(P,V)
-#define __TBB_FetchAndStoreW(P,V) __TBB_machine_fetchstoreW(P,V)
+#define __TBB_FetchAndStoreW(P,V) __TBB_machine_fetchstore4(P,V)
 
 // Should define this: 
 #define __TBB_Store8(P,V) __TBB_machine_store8(P,V)

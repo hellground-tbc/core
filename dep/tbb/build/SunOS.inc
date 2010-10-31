@@ -1,4 +1,4 @@
-# Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+# Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 #
 # This file is part of Threading Building Blocks.
 #
@@ -45,13 +45,8 @@ ifndef runtime
         export runtime:=cc$(gcc_version)_kernel$(os_kernel_version)
 endif
 
-ifeq ($(arch),sparc)
-        native_compiler := gcc
-        export compiler ?= gcc
-else
-        native_compiler := suncc
-        export compiler ?= suncc
-endif
+native_compiler := suncc
+export compiler ?= suncc
 # debugger ?= gdb
 
 CMD=$(SHELL) -c
@@ -64,6 +59,11 @@ SLASH=/
 MAKE_VERSIONS=bash $(tbb_root)/build/version_info_sunos.sh $(CPLUS) $(CPLUS_FLAGS) $(INCLUDES) >version_string.tmp
 MAKE_TBBVARS=bash $(tbb_root)/build/generate_tbbvars.sh
 
+ifeq ($(compiler),suncc)
+        export TBB_CUSTOM_VARS_SH=CXXFLAGS="-I$(CWD)/../include -library=stlport4 $(CXXFLAGS) -M$(CWD)/../build/suncc.map.pause"
+        export TBB_CUSTOM_VARS_CSH=CXXFLAGS "-I$(CWD)/../include -library=stlport4 $(CXXFLAGS) -M$(CWD)/../build/suncc.map.pause"
+endif
+	
 ifdef LD_LIBRARY_PATH
         export LD_LIBRARY_PATH := .:$(LD_LIBRARY_PATH)
 else

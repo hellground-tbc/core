@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -57,7 +57,7 @@ public:
 
     //! Construct range with default-constructed values for begin and end.
     /** Requires that Value have a default constructor. */
-    blocked_range() : my_end(), my_begin() {}
+    blocked_range() : my_begin(), my_end() {}
 
     //! Construct range over half-open interval [begin,end), with the given grainsize.
     blocked_range( Value begin_, Value end_, size_type grainsize_=1 ) : 
@@ -108,7 +108,7 @@ private:
     Value my_begin;
     size_type my_grainsize;
 
-    //! Auxiliary function used by forking constructor.
+    //! Auxilary function used by forking constructor.
     /** Using this function lets us not require that Value support assignment or default construction. */
     static Value do_split( blocked_range& r ) {
         __TBB_ASSERT( r.is_divisible(), "cannot split blocked_range that is not divisible" );

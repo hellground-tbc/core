@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -33,7 +33,8 @@
 #include "partitioner.h"
 #include "blocked_range.h"
 #include <new>
-#include "tbb_exception.h"
+#include <stdexcept> // std::invalid_argument
+#include <string> // std::invalid_argument text
 
 namespace tbb {
 
@@ -58,10 +59,10 @@ namespace internal {
         }
         //! Splitting constructor used to generate children.
         /** this becomes left child.  Newly constructed object is right child. */
-        start_for( start_for& parent_, split ) :
-            my_range(parent_.my_range,split()),    
-            my_body(parent_.my_body),
-            my_partition(parent_.my_partition,split())
+        start_for( start_for& parent, split ) :
+            my_range(parent.my_range,split()),    
+            my_body(parent.my_body),
+            my_partition(parent.my_partition,split())
         {
             my_partition.set_affinity(*this);
         }
@@ -72,39 +73,39 @@ namespace internal {
     public:
         static void run(  const Range& range, const Body& body, const Partitioner& partitioner ) {
             if( !range.empty() ) {
-#if !__TBB_TASK_GROUP_CONTEXT || TBB_JOIN_OUTER_TASK_GROUP
+#if !__TBB_EXCEPTIONS || TBB_JOIN_OUTER_TASK_GROUP
                 start_for& a = *new(task::allocate_root()) start_for(range,body,const_cast<Partitioner&>(partitioner));
 #else
                 // Bound context prevents exceptions from body to affect nesting or sibling algorithms,
                 // and allows users to handle exceptions safely by wrapping parallel_for in the try-block.
                 task_group_context context;
                 start_for& a = *new(task::allocate_root(context)) start_for(range,body,const_cast<Partitioner&>(partitioner));
-#endif /* __TBB_TASK_GROUP_CONTEXT && !TBB_JOIN_OUTER_TASK_GROUP */
+#endif /* __TBB_EXCEPTIONS && !TBB_JOIN_OUTER_TASK_GROUP */
                 task::spawn_root_and_wait(a);
             }
         }
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
         static void run(  const Range& range, const Body& body, const Partitioner& partitioner, task_group_context& context ) {
             if( !range.empty() ) {
                 start_for& a = *new(task::allocate_root(context)) start_for(range,body,const_cast<Partitioner&>(partitioner));
                 task::spawn_root_and_wait(a);
             }
         }
-#endif /* __TBB_TASK_GROUP_CONTEXT */
+#endif /* __TBB_EXCEPTIONS */
     };
 
     template<typename Range, typename Body, typename Partitioner>
     task* start_for<Range,Body,Partitioner>::execute() {
         if( !my_range.is_divisible() || my_partition.should_execute_range(*this) ) {
             my_body( my_range );
-            return my_partition.continue_after_execute_range(); 
+            return my_partition.continue_after_execute_range(*this); 
         } else {
             empty_task& c = *new( this->allocate_continuation() ) empty_task;
             recycle_as_child_of(c);
             c.set_ref_count(2);
             bool delay = my_partition.decide_whether_to_delay();
             start_for& b = *new( c.allocate_child() ) start_for(*this,split());
-            my_partition.spawn_or_delay(delay,b);
+            my_partition.spawn_or_delay(delay,*this,b);
             return this;
         }
     } 
@@ -153,7 +154,7 @@ void parallel_for( const Range& range, const Body& body, affinity_partitioner& p
     internal::start_for<Range,Body,affinity_partitioner>::run(range,body,partitioner);
 }
 
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
 //! Parallel iteration over range with simple partitioner and user-supplied context.
 /** @ingroup algorithms **/
 template<typename Range, typename Body>
@@ -174,7 +175,7 @@ template<typename Range, typename Body>
 void parallel_for( const Range& range, const Body& body, affinity_partitioner& partitioner, task_group_context& context ) {
     internal::start_for<Range,Body,affinity_partitioner>::run(range,body,partitioner, context);
 }
-#endif /* __TBB_TASK_GROUP_CONTEXT */
+#endif /* __TBB_EXCEPTIONS */
 //@}
 
 //! @cond INTERNAL
@@ -208,10 +209,9 @@ void parallel_for(Index first, Index last, Index step, const Function& f) {
 }
 template <typename Index, typename Function>
 void parallel_for(Index first, Index last, Index step, const Function& f, tbb::task_group_context &context) {
-    if (step <= 0 )
-        internal::throw_exception(internal::eid_nonpositive_step); // throws std::invalid_argument
-    else if (last > first) {
-        // Above "else" is necessary to prevent "potential divide by zero" warning
+    if (step <= 0 ) throw std::invalid_argument("step should be positive");
+
+    if (last > first) {
         Index end = (last - first) / step;
         if (first + end * step < last) end++;
         tbb::blocked_range<Index> range(static_cast<Index>(0), end);

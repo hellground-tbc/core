@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -30,33 +30,18 @@
 #define __TBB_task_group_H
 
 #include "task.h"
-#include "tbb_exception.h"
+#include <exception>
 
 namespace tbb {
 
-namespace internal {
-    template<typename F> class task_handle_task;
-}
-
 template<typename F>
-class task_handle : internal::no_assign {
-    template<typename _F> friend class internal::task_handle_task;
-
-    static const intptr_t scheduled = 0x1;
-
+class task_handle {
     F my_func;
-    intptr_t my_state;
 
-    void mark_scheduled () {
-        // The check here is intentionally lax to avoid the impact of interlocked operation
-        if ( my_state & scheduled )
-            internal::throw_exception( internal::eid_invalid_multiple_scheduling );
-        my_state |= scheduled;
-    }
 public:
-    task_handle( const F& f ) : my_func(f), my_state(0) {}
+    task_handle( const F& f ) : my_func(f) {}
 
-    void operator() () const { my_func(); }
+    void operator()() { my_func(); }
 };
 
 enum task_group_status {
@@ -89,7 +74,7 @@ class task_handle_task : public task {
         return NULL;
     }
 public:
-    task_handle_task( task_handle<F>& h ) : my_handle(h) { h.mark_scheduled(); }
+    task_handle_task( task_handle<F>& h ) : my_handle(h) {}
 };
 
 class task_group_base : internal::no_copy {
@@ -101,10 +86,10 @@ protected:
 
     template<typename F>
     task_group_status internal_run_and_wait( F& f ) {
-        __TBB_TRY {
+        try {
             if ( !my_context.is_group_execution_cancelled() )
                 f();
-        } __TBB_CATCH( ... ) {
+        } catch ( ... ) {
             my_context.register_pending_exception();
         }
         return wait();
@@ -129,11 +114,11 @@ public:
     }
 
     task_group_status wait() {
-        __TBB_TRY {
-            my_root->wait_for_all();
-        } __TBB_CATCH( ... ) {
+        try {
+            owner().prefix().owner->wait_for_all( *my_root, NULL );
+        } catch ( ... ) {
             my_context.reset();
-            __TBB_RETHROW();
+            throw;
         }
         if ( my_context.is_group_execution_cancelled() ) {
             my_context.reset();
@@ -157,18 +142,16 @@ class task_group : public internal::task_group_base {
 public:
     task_group () : task_group_base( task_group_context::concurrent_wait ) {}
 
-    ~task_group() __TBB_TRY {
+    ~task_group() try {
         __TBB_ASSERT( my_root->ref_count() != 0, NULL );
         if( my_root->ref_count() > 1 )
             my_root->wait_for_all();
         owner().destroy(*my_root);
     }
-#if TBB_USE_EXCEPTIONS
     catch (...) {
         owner().destroy(*my_root);
         throw;
     }
-#endif /* TBB_USE_EXCEPTIONS */
 
 #if __SUNPRO_CC
     template<typename F>
@@ -195,6 +178,12 @@ public:
     }
 }; // class task_group
 
+class missing_wait : public std::exception {
+public:
+    /*override*/ 
+    const char* what() const throw() { return "wait() was not called on the structured_task_group"; }
+};
+
 class structured_task_group : public internal::task_group_base {
 public:
     ~structured_task_group() {
@@ -207,13 +196,10 @@ public:
             my_root->wait_for_all();
             owner().destroy(*my_root);
             if ( !stack_unwinding_in_progress )
-                internal::throw_exception( internal::eid_missing_wait );
+                throw missing_wait();
         }
-        else {
-            if( my_root->ref_count() == 1 )
-                my_root->set_ref_count(0);
+        else
             owner().destroy(*my_root);
-        }
     }
 
     template<typename F>
@@ -222,9 +208,8 @@ public:
     }
 
     task_group_status wait() {
-        task_group_status res = task_group_base::wait();
-        my_root->set_ref_count(1);
-        return res;
+        __TBB_ASSERT ( my_root->ref_count() != 0, "wait() can be called only once during the structured_task_group lifetime" );
+        return task_group_base::wait();
     }
 }; // class structured_task_group
 

@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -43,12 +43,9 @@
 #include "blocked_range2d.h"
 #include "blocked_range3d.h"
 #include "cache_aligned_allocator.h"
-#include "combinable.h"
-#include "concurrent_unordered_map.h"
 #include "concurrent_hash_map.h"
 #include "concurrent_queue.h"
 #include "concurrent_vector.h"
-#include "critical_section.h"
 #include "enumerable_thread_specific.h"
 #include "mutex.h"
 #include "null_mutex.h"
@@ -64,7 +61,6 @@
 #include "pipeline.h"
 #include "queuing_mutex.h"
 #include "queuing_rw_mutex.h"
-#include "reader_writer_lock.h"
 #include "recursive_mutex.h"
 #include "spin_mutex.h"
 #include "spin_rw_mutex.h"

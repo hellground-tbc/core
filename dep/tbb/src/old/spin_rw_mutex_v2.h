@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -168,7 +168,7 @@ public:
     };
 
 private:
-    typedef uintptr_t state_t;
+    typedef internal::uintptr state_t;
     static const state_t WRITER = 1;
     static const state_t WRITER_PENDING = 2;
     static const state_t READERS = ~(WRITER | WRITER_PENDING);

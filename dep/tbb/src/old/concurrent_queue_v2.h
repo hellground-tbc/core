@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -59,7 +59,7 @@ protected:
     //! Prefix on a page
     struct page {
         page* next;
-        uintptr_t mask; 
+        uintptr mask; 
     };
 
     //! Capacity of the queue

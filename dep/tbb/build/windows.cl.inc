@@ -1,4 +1,4 @@
-# Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+# Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 #
 # This file is part of Threading Building Blocks.
 #
@@ -35,16 +35,15 @@
 CPLUS = cl /nologo
 LINK_FLAGS = /link /nologo
 LIB_LINK_FLAGS=/link /nologo /DLL /MAP /DEBUG /fixed:no /INCREMENTAL:NO
-ifeq ($(runtime), vc_mt)
-	MS_CRT_KEY = /MT$(if $(findstring debug,$(cfg)),d)
-else
-	MS_CRT_KEY = /MD$(if $(findstring debug,$(cfg)),d)
-endif
+MS_CRT_KEY = /MD$(if $(findstring debug,$(cfg)),d)
 EH_FLAGS = /EHsc /GR
               
 ifeq ($(cfg), release)
         CPLUS_FLAGS = $(MS_CRT_KEY) /O2 /Zi $(EH_FLAGS) /Zc:forScope /Zc:wchar_t
         ASM_FLAGS =
+ifeq (ia32,$(arch))
+        CPLUS_FLAGS += /Oy
+endif
 endif
 ifeq ($(cfg), debug)
         CPLUS_FLAGS = $(MS_CRT_KEY) /Od /Ob0 /Zi $(EH_FLAGS) /Zc:forScope /Zc:wchar_t /DTBB_USE_DEBUG
@@ -77,12 +76,12 @@ endif
 ifeq ($(runtime),vc9)
         OPENMP_FLAG = /openmp
 endif
-ifeq ($(runtime),vc_mt)
-        OPENMP_FLAG = /openmp
-endif
+
 ifeq (intel64,$(arch))
         CPLUS_FLAGS += /GS-
 endif
+
+
 
 CPLUS_FLAGS += /DDO_ITT_NOTIFY /DUSE_WINTHREAD /D_CRT_SECURE_NO_DEPRECATE \
         /D_WIN32_WINNT=$(_WIN32_WINNT)
@@ -97,11 +96,11 @@ C_FLAGS = $(CPLUS_FLAGS)
 #------------------------------------------------------------------------------
 ASSEMBLY_SOURCE=$(arch)-masm
 ifeq (intel64,$(arch))
-    ASM=ml64 /nologo
+    ASM=ml64
     ASM_FLAGS += /DEM64T=1 /c /Zi
     TBB_ASM.OBJ = atomic_support.obj
 else
-    ASM=ml /nologo
+    ASM=ml
     ASM_FLAGS += /c /coff /Zi
     TBB_ASM.OBJ = atomic_support.obj lock_byte.obj
 endif

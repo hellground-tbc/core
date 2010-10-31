@@ -1,4 +1,4 @@
-# Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+# Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 #
 # This file is part of Threading Building Blocks.
 #
@@ -44,19 +44,19 @@ cfg ?= release
 CPLUS = icl /nologo $(VCCOMPAT_FLAG)
 LINK_FLAGS = /link /nologo
 LIB_LINK_FLAGS= /link /nologo /DLL /MAP /DEBUG /fixed:no /INCREMENTAL:NO
-ifeq ($(runtime), vc_mt)
-	MS_CRT_KEY = /MT$(if $(findstring debug,$(cfg)),d)
-else
-	MS_CRT_KEY = /MD$(if $(findstring debug,$(cfg)),d)
-endif
+MS_CRT_KEY = /MD$(if $(findstring debug,$(cfg)),d)
 EH_FLAGS = /EHsc /GR
 
 ifeq ($(cfg), release)
     CPLUS_FLAGS = $(MS_CRT_KEY) /O2 /Zi $(EH_FLAGS) /Zc:forScope /Zc:wchar_t
     ASM_FLAGS =
+ifeq (ia32,$(arch))
+    CPLUS_FLAGS += /Oy
+endif
 endif
 ifeq ($(cfg), debug)
     CPLUS_FLAGS = $(MS_CRT_KEY) /Od /Ob0 /Zi $(EH_FLAGS) /Zc:forScope /Zc:wchar_t /DTBB_USE_DEBUG
+    LINK_FLAGS += libmmds.lib /NODEFAULTLIB:libmmdd.lib
     ASM_FLAGS = /DUSE_FRAME_POINTER
 endif
 
@@ -90,7 +90,6 @@ ifeq ($(runtime),vc8)
         CPLUS_FLAGS += /D_USE_RTM_VERSION
 endif
 
-
 C_FLAGS = $(CPLUS_FLAGS)
 
 ifneq (00,$(lambdas)$(cpp0x))
@@ -98,18 +97,12 @@ ifneq (00,$(lambdas)$(cpp0x))
 endif
 
 VCVERSION:=$(runtime)
-VCCOMPAT_FLAG ?= $(if $(findstring vc7.1, $(VCVERSION)),/Qvc7.1)
+VCCOMPAT_FLAG := $(if $(findstring vc7.1, $(VCVERSION)),/Qvc7.1)
 ifeq ($(VCCOMPAT_FLAG),)
         VCCOMPAT_FLAG := $(if $(findstring vc8, $(VCVERSION)),/Qvc8)
 endif
 ifeq ($(VCCOMPAT_FLAG),)
-        VCCOMPAT_FLAG := $(if $(findstring vc_mt, $(VCVERSION)),/Qvc8)
-endif
-ifeq ($(VCCOMPAT_FLAG),)
         VCCOMPAT_FLAG := $(if $(findstring vc9, $(VCVERSION)),/Qvc9)
-endif
-ifeq ($(VCCOMPAT_FLAG),)
-        VCCOMPAT_FLAG := $(if $(findstring vc10, $(VCVERSION)),/Qvc10)
 endif
 ifeq ($(VCCOMPAT_FLAG),)
         $(error VC version not detected correctly: $(VCVERSION) )
@@ -125,11 +118,11 @@ export VCCOMPAT_FLAG
 #------------------------------------------------------------------------------
 ASSEMBLY_SOURCE=$(arch)-masm
 ifeq (intel64,$(arch))
-    ASM=ml64 /nologo
+    ASM=ml64
     ASM_FLAGS += /DEM64T=1 /c /Zi
     TBB_ASM.OBJ = atomic_support.obj
 else
-    ASM=ml /nologo
+    ASM=ml
     ASM_FLAGS += /c /coff /Zi
     TBB_ASM.OBJ = atomic_support.obj lock_byte.obj
 endif

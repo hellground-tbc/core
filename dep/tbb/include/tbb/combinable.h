@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -29,8 +29,8 @@
 #ifndef __TBB_combinable_H
 #define __TBB_combinable_H
 
-#include "enumerable_thread_specific.h"
-#include "cache_aligned_allocator.h"
+#include "tbb/enumerable_thread_specific.h"
+#include "tbb/cache_aligned_allocator.h"
 
 namespace tbb {
 /** \name combinable
@@ -67,13 +67,11 @@ namespace tbb {
 
         T& local(bool & exists) { return my_ets.local(exists); }
 
-        // combine_func_t has signature T(T,T) or T(const T&, const T&)
-        template <typename combine_func_t>
-        T combine(combine_func_t f_combine) { return my_ets.combine(f_combine); }
+        template< typename FCombine>
+        T combine(FCombine fcombine) { return my_ets.combine(fcombine); }
 
-        // combine_func_t has signature void(T) or void(const T&)
-        template <typename combine_func_t>
-        void combine_each(combine_func_t f_combine) { my_ets.combine_each(f_combine); }
+        template<typename FCombine>
+        void combine_each(FCombine fcombine) { my_ets.combine_each(fcombine); }
 
     };
 } // namespace tbb

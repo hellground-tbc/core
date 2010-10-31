@@ -1,6 +1,6 @@
 @echo off
 REM
-REM Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+REM Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 REM
 REM This file is part of Threading Building Blocks.
 REM

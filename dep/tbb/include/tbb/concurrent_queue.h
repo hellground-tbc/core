@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -50,12 +50,11 @@ class concurrent_queue: public internal::concurrent_queue_base_v3<T> {
     //! Allocates a block of size n (bytes)
     /*overide*/ virtual void *allocate_block( size_t n ) {
         void *b = reinterpret_cast<void*>(my_allocator.allocate( n ));
-        if( !b )
-            internal::throw_exception(internal::eid_bad_alloc); 
+        if( !b ) this->internal_throw_exception(); 
         return b;
     }
 
-    //! Deallocates block created by allocate_block.
+    //! Returns a block of size n (bytes)
     /*override*/ virtual void deallocate_block( void *b, size_t n ) {
         my_allocator.deallocate( reinterpret_cast<char*>(b), n );
     }
@@ -81,14 +80,14 @@ public:
 
     //! Construct empty queue
     explicit concurrent_queue(const allocator_type& a = allocator_type()) : 
-        my_allocator( a )
+        internal::concurrent_queue_base_v3<T>( sizeof(T) ), my_allocator( a )
     {
     }
 
     //! [begin,end) constructor
     template<typename InputIterator>
     concurrent_queue( InputIterator begin, InputIterator end, const allocator_type& a = allocator_type()) :
-        my_allocator( a )
+        internal::concurrent_queue_base_v3<T>( sizeof(T) ), my_allocator( a )
     {
         for( ; begin != end; ++begin )
             internal_push(&*begin);
@@ -96,7 +95,7 @@ public:
     
     //! Copy constructor
     concurrent_queue( const concurrent_queue& src, const allocator_type& a = allocator_type()) : 
-        internal::concurrent_queue_base_v3<T>(), my_allocator( a )
+        internal::concurrent_queue_base_v3<T>( sizeof(T) ), my_allocator( a )
     {
         assign( src );
     }
@@ -150,7 +149,7 @@ template<typename T, class A>
 void concurrent_queue<T,A>::clear() {
     while( !empty() ) {
         T value;
-        this->internal_try_pop(&value);
+        internal_try_pop(&value);
     }
 }
 
@@ -170,8 +169,6 @@ class concurrent_bounded_queue: public internal::concurrent_queue_base_v3 {
     typedef typename A::template rebind<char>::other page_allocator_type;
     page_allocator_type my_allocator;
 
-    typedef typename concurrent_queue_base_v3::padded_page<T> padded_page;
- 
     //! Class used to ensure exception-safety of method "pop" 
     class destroyer: internal::no_copy {
         T& my_value;
@@ -180,9 +177,9 @@ class concurrent_bounded_queue: public internal::concurrent_queue_base_v3 {
         ~destroyer() {my_value.~T();}          
     };
 
-    T& get_ref( page& p, size_t index ) {
+    T& get_ref( page& page, size_t index ) {
         __TBB_ASSERT( index<items_per_page, NULL );
-        return (&static_cast<padded_page*>(static_cast<void*>(&p))->last)[index];
+        return static_cast<T*>(static_cast<void*>(&page+1))[index];
     }
 
     /*override*/ virtual void copy_item( page& dst, size_t index, const void* src ) {
@@ -190,7 +187,7 @@ class concurrent_bounded_queue: public internal::concurrent_queue_base_v3 {
     }
 
     /*override*/ virtual void copy_page_item( page& dst, size_t dindex, const page& src, size_t sindex ) {
-        new( &get_ref(dst,dindex) ) T( get_ref( const_cast<page&>(src), sindex ) );
+        new( &get_ref(dst,dindex) ) T( static_cast<const T*>(static_cast<const void*>(&src+1))[sindex] );
     }
 
     /*override*/ virtual void assign_and_destroy_item( void* dst, page& src, size_t index ) {
@@ -200,15 +197,14 @@ class concurrent_bounded_queue: public internal::concurrent_queue_base_v3 {
     }
 
     /*overide*/ virtual page *allocate_page() {
-        size_t n = sizeof(padded_page) + (items_per_page-1)*sizeof(T);
+        size_t n = sizeof(page) + items_per_page*item_size;
         page *p = reinterpret_cast<page*>(my_allocator.allocate( n ));
-        if( !p )
-            internal::throw_exception(internal::eid_bad_alloc); 
+        if( !p ) internal_throw_exception(); 
         return p;
     }
 
     /*override*/ virtual void deallocate_page( page *p ) {
-        size_t n = sizeof(padded_page) + items_per_page*sizeof(T);
+        size_t n = sizeof(page) + items_per_page*item_size;
         my_allocator.deallocate( reinterpret_cast<char*>(p), n );
     }
 
@@ -300,8 +296,8 @@ public:
     //! Set the capacity
     /** Setting the capacity to 0 causes subsequent try_push operations to always fail,
         and subsequent push operations to block forever. */
-    void set_capacity( size_type new_capacity ) {
-        internal_set_capacity( new_capacity, sizeof(T) );
+    void set_capacity( size_type capacity ) {
+        internal_set_capacity( capacity, sizeof(T) );
     }
 
     //! return allocator object
@@ -366,8 +362,8 @@ public:
 
     //! [begin,end) constructor
     template<typename InputIterator>
-    concurrent_queue( InputIterator b /*begin*/, InputIterator e /*end*/, const A& a = A()) :
-        concurrent_bounded_queue<T,A>( b, e, a )
+    concurrent_queue( InputIterator begin, InputIterator end, const A& a = A()) :
+        concurrent_bounded_queue<T,A>( begin, end, a )
     {
     }
 

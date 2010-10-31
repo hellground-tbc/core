@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -35,9 +35,6 @@
 #if _WIN32||_WIN64
 #include <windows.h>
 #endif /* _WIN32||_WIN64 */
-#if __SUNPRO_CC
-using std::size_t;
-#endif
 
 #ifdef RML_PURE_VIRTUAL_HANDLER
 #define RML_PURE(T) {RML_PURE_VIRTUAL_HANDLER(); return (T)0;}
@@ -98,6 +95,8 @@ public:
     virtual std::size_t min_stack_size() const RML_PURE(std::size_t)
 
     //! Server calls this routine when it needs client to create a job object.
+    /** Value of index is guaranteed to be unique for each job and in the half-open 
+        interval [0,max_job_count) */
     virtual job* create_one_job() RML_PURE(job*)
 
     //! Acknowledge that all jobs have been cleaned up.
@@ -127,26 +126,19 @@ public:
     //! Typedef for convenience of derived classes.
     typedef ::rml::job job;
 
-#if _WIN32||_WIN64
-    typedef void* execution_resource_t;
-#endif
-
     //! Request that connection to server be closed.
     /** Causes each job associated with the client to have its cleanup method called,
         possibly by a thread different than the thread that created the job. 
         This method can return before all cleanup methods return. 
         Actions that have to wait after all cleanup methods return should be part of 
-        client::acknowledge_close_connection. 
-        Pass true as exiting if request_close_connection() is called because exit() is
-        called. In that case, it is the client's responsibility to make sure all threads
-        are terminated. In all other cases, pass false.  */
-    virtual void request_close_connection( bool exiting = false ) = 0;
+        client::acknowledge_close_connection. */
+    virtual void request_close_connection() = 0;
 
     //! Called by client thread when it reaches a point where it cannot make progress until other threads do.  
     virtual void yield() = 0;
 
     //! Called by client to indicate a change in the number of non-RML threads that are running.
-    /** This is a performance hint to the RML to adjust how many threads it should let run 
+    /** This is a performance hint to the RML to adjust how many many threads it should let run 
         concurrently.  The delta is the change in the number of non-RML threads that are running.
         For example, a value of 1 means the client has started running another thread, and a value 
         of -1 indicates that the client has blocked or terminated one of its threads. */
@@ -185,12 +177,8 @@ public:
 #else
     void* library_handle;
 #endif /* _WIN32||_WIN64 */ 
-
-    //! Special marker to keep dll from being unloaded prematurely
-    static const size_t c_dont_unload = 1;
 };
 
-//! Typedef for callback functions to print server info
 typedef void (*server_info_callback_t)( void* arg, const char* server_info );
 
 } // namespace rml

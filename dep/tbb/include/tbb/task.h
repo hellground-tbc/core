@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -32,73 +32,14 @@
 #include "tbb_stddef.h"
 #include "tbb_machine.h"
 
-typedef struct ___itt_caller *__itt_caller;
-
 namespace tbb {
 
 class task;
 class task_list;
 
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
 class task_group_context;
-#endif /* __TBB_TASK_GROUP_CONTEXT */
-
-// MSVC does not allow taking the address of a member that was defined 
-// privately in task_base and made public in class task via a using declaration.
-#if _MSC_VER || (__GNUC__==3 && __GNUC_MINOR__<3)
-#define __TBB_TASK_BASE_ACCESS public
-#else
-#define __TBB_TASK_BASE_ACCESS private
-#endif
-
-namespace internal {
-
-    class allocate_additional_child_of_proxy: no_assign {
-        //! No longer used, but retained for binary layout compatibility.  Always NULL.
-        task* self;
-        task& parent;
-    public:
-        explicit allocate_additional_child_of_proxy( task& parent_ ) : self(NULL), parent(parent_) {}
-        task& __TBB_EXPORTED_METHOD allocate( size_t size ) const;
-        void __TBB_EXPORTED_METHOD free( task& ) const;
-    };
-
-}
-
-namespace interface5 {
-    namespace internal {
-        //! Base class for methods that became static in TBB 3.0.
-        /** TBB's evolution caused the "this" argument for several methods to become obsolete.
-            However, for backwards binary compatibility, the new methods need distinct names,
-            otherwise the One Definition Rule would be broken.  Hence the new methods are 
-            defined in this private base class, and then exposed in class task via 
-            using declarations. */
-        class task_base: tbb::internal::no_copy {
-        __TBB_TASK_BASE_ACCESS:
-            friend class tbb::task;
-
-            //! Schedule task for execution when a worker becomes available.
-            static void spawn( task& t );
- 
-            //! Spawn multiple tasks and clear list.
-            static void spawn( task_list& list );
-
-            //! Like allocate_child, except that task's parent becomes "t", not this.
-            /** Typically used in conjunction with schedule_to_reexecute to implement while loops.
-               Atomically increments the reference count of t.parent() */
-            static tbb::internal::allocate_additional_child_of_proxy allocate_additional_child_of( task& t ) {
-                return tbb::internal::allocate_additional_child_of_proxy(t);
-            }
-
-            //! Destroy a task.
-            /** Usually, calling this method is unnecessary, because a task is
-                implicitly deleted after its execute() method runs.  However,
-                sometimes a task needs to be explicitly deallocated, such as
-                when a root task is used as the parent in spawn_and_wait_for_all. */
-            static void __TBB_EXPORTED_FUNC destroy( task& victim );
-        }; 
-    } // internal
-} // interface5
+#endif /* __TBB_EXCEPTIONS */
 
 //! @cond INTERNAL
 namespace internal {
@@ -117,21 +58,16 @@ namespace internal {
         //! Pure virtual destructor;
         //  Have to have it just to shut up overzealous compilation warnings
         virtual ~scheduler() = 0;
-#if __TBB_ARENA_PER_MASTER
-
-        //! For internal use only
-        virtual void enqueue( task& t, void* reserved ) = 0;
-#endif /* __TBB_ARENA_PER_MASTER */
     };
 
     //! A reference count
     /** Should always be non-negative.  A signed type is used so that underflow can be detected. */
-    typedef intptr_t reference_count;
+    typedef intptr reference_count;
 
     //! An id as used for specifying affinity.
     typedef unsigned short affinity_id;
 
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
     struct context_list_node_t {
         context_list_node_t *my_prev,
                             *my_next;
@@ -144,7 +80,7 @@ namespace internal {
         task& __TBB_EXPORTED_METHOD allocate( size_t size ) const;
         void __TBB_EXPORTED_METHOD free( task& ) const;
     };
-#endif /* __TBB_TASK_GROUP_CONTEXT */
+#endif /* __TBB_EXCEPTIONS */
 
     class allocate_root_proxy: no_assign {
     public:
@@ -164,6 +100,17 @@ namespace internal {
         void __TBB_EXPORTED_METHOD free( task& ) const;
     };
 
+    class allocate_additional_child_of_proxy: no_assign {
+        task& self;
+        task& parent;
+    public:
+        allocate_additional_child_of_proxy( task& self_, task& parent_ ) : self(self_), parent(parent_) {}
+        task& __TBB_EXPORTED_METHOD allocate( size_t size ) const;
+        void __TBB_EXPORTED_METHOD free( task& ) const;
+    };
+
+    class task_group_base;
+
     //! Memory prefix to a task object.
     /** This class is internal to the library.
         Do not reference it directly, except within the library itself.
@@ -173,21 +120,21 @@ namespace internal {
     class task_prefix {
     private:
         friend class tbb::task;
-        friend class tbb::interface5::internal::task_base;
         friend class tbb::task_list;
         friend class internal::scheduler;
         friend class internal::allocate_root_proxy;
         friend class internal::allocate_child_proxy;
         friend class internal::allocate_continuation_proxy;
         friend class internal::allocate_additional_child_of_proxy;
+        friend class internal::task_group_base;
 
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
         //! Shared context that is used to communicate asynchronous state changes
         /** Currently it is used to broadcast cancellation requests generated both 
             by users and as the result of unhandled exceptions in the task::execute()
             methods. */
         task_group_context  *context;
-#endif /* __TBB_TASK_GROUP_CONTEXT */
+#endif /* __TBB_EXCEPTIONS */
         
         //! The scheduler that allocated the task, or NULL if the task is big.
         /** Small tasks are pooled by the scheduler that allocated the task.
@@ -223,10 +170,9 @@ namespace internal {
 
         //! Miscellaneous state that is not directly visible to users, stored as a byte for compactness.
         /** 0x0 -> version 1.0 task
-            0x1 -> version >=2.1 task
-            0x20 -> task_proxy
-            0x40 -> task has live ref_count
-            0x80 -> a stolen task */
+            0x1 -> version 3.0 task
+            0x2 -> task_proxy
+            0x40 -> task has live ref_count */
         unsigned char extra_state;
 
         affinity_id affinity;
@@ -241,7 +187,7 @@ namespace internal {
 } // namespace internal
 //! @endcond
 
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
 
 #if TBB_USE_CAPTURED_EXCEPTION
     class tbb_exception;
@@ -272,7 +218,8 @@ namespace internal {
     When adding new members to task_group_context or changing types of existing ones, 
     update the size of both padding buffers (_leading_padding and _trailing_padding)
     appropriately. See also VERSIONING NOTE at the constructor definition below. **/
-class task_group_context : internal::no_copy {
+class task_group_context : internal::no_copy
+{
 private:
 #if TBB_USE_CAPTURED_EXCEPTION
     typedef tbb_exception exception_container_type;
@@ -294,6 +241,7 @@ public:
 
     enum traits_type {
         exact_exception = 0x0001ul << traits_offset,
+        no_cancellation = 0x0002ul << traits_offset,
         concurrent_wait = 0x0004ul << traits_offset,
 #if TBB_USE_CAPTURED_EXCEPTION
         default_traits = 0
@@ -317,16 +265,12 @@ private:
         its parent happens. Any context can be present in the list of one thread only. **/
     internal::context_list_node_t my_node;
 
-    //! Used to set and maintain stack stitching point for Intel Performance Tools.
-    __itt_caller itt_caller;
-
     //! Leading padding protecting accesses to frequently used members from false sharing.
     /** Read accesses to the field my_cancellation_requested are on the hot path inside
         the scheduler. This padding ensures that this field never shares the same cache 
         line with a local variable that is frequently written to. **/
     char _leading_padding[internal::NFS_MaxLineSize - 
-                    2 * sizeof(uintptr_t)- sizeof(void*) - sizeof(internal::context_list_node_t)
-                          - sizeof(__itt_caller)];
+                    2 * sizeof(uintptr_t)- sizeof(void*) - sizeof(internal::context_list_node_t)];
     
     //! Specifies whether cancellation was request for this task group.
     uintptr_t my_cancellation_requested;
@@ -432,8 +376,6 @@ private:
 
     static const kind_type binding_required = bound;
     static const kind_type binding_completed = kind_type(bound+1);
-    static const kind_type detached = kind_type(binding_completed+1);
-    static const kind_type dying = kind_type(detached+1);
 
     //! Checks if any of the ancestors has a cancellation request outstanding, 
     //! and propagates it back to descendants.
@@ -449,16 +391,15 @@ private:
     }
 }; // class task_group_context
 
-#endif /* __TBB_TASK_GROUP_CONTEXT */
+#endif /* __TBB_EXCEPTIONS */
 
 //! Base class for user-defined tasks.
 /** @ingroup task_scheduling */
-class task: __TBB_TASK_BASE_ACCESS interface5::internal::task_base {
-
+class task: internal::no_copy {
     //! Set reference count
     void __TBB_EXPORTED_METHOD internal_set_ref_count( int count );
 
-    //! Decrement reference count and return its new value.
+    //! Decrement reference count and return true if non-zero.
     internal::reference_count __TBB_EXPORTED_METHOD internal_decrement_ref_count();
 
 protected:
@@ -485,7 +426,7 @@ public:
         //! task object is on free list, or is going to be put there, or was just taken off.
         freed,
         //! task to be recycled as continuation
-        recycle 
+        recycle
     };
 
     //------------------------------------------------------------------------
@@ -497,12 +438,12 @@ public:
         return internal::allocate_root_proxy();
     }
 
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
     //! Returns proxy for overloaded new that allocates a root task associated with user supplied context.
     static internal::allocate_root_with_context_proxy allocate_root( task_group_context& ctx ) {
         return internal::allocate_root_with_context_proxy(ctx);
     }
-#endif /* __TBB_TASK_GROUP_CONTEXT */
+#endif /* __TBB_EXCEPTIONS */
 
     //! Returns proxy for overloaded new that allocates a continuation task of *this.
     /** The continuation's parent becomes the parent of *this. */
@@ -515,20 +456,19 @@ public:
         return *reinterpret_cast<internal::allocate_child_proxy*>(this);
     }
 
-    //! Define recommended static form via import from base class.
-    using task_base::allocate_additional_child_of;
+    //! Like allocate_child, except that task's parent becomes "t", not this.
+    /** Typically used in conjunction with schedule_to_reexecute to implement while loops.
+        Atomically increments the reference count of t.parent() */
+    internal::allocate_additional_child_of_proxy allocate_additional_child_of( task& t ) {
+        return internal::allocate_additional_child_of_proxy(*this,t);
+    }
 
-#if __TBB_DEPRECATED_TASK_INTERFACE
     //! Destroy a task.
     /** Usually, calling this method is unnecessary, because a task is
         implicitly deleted after its execute() method runs.  However,
         sometimes a task needs to be explicitly deallocated, such as
         when a root task is used as the parent in spawn_and_wait_for_all. */
-    void __TBB_EXPORTED_METHOD destroy( task& t );
-#else /* !__TBB_DEPRECATED_TASK_INTERFACE */
-    //! Define recommended static form via import from base class.
-    using task_base::destroy;
-#endif /* !__TBB_DEPRECATED_TASK_INTERFACE */
+    void __TBB_EXPORTED_METHOD destroy( task& victim );
 
     //------------------------------------------------------------------------
     // Recycling of tasks
@@ -547,8 +487,7 @@ public:
     }
 
     //! Recommended to use, safe variant of recycle_as_continuation
-    /** For safety, it requires additional increment of ref_count.
-        With no decendants and ref_count of 1, it has the semantics of recycle_to_reexecute. */
+    /** For safety, it requires additional increment of ref_count. */
     void recycle_as_safe_continuation() {
         __TBB_ASSERT( prefix().state==executing, "execute not running?" );
         prefix().state = recycle;
@@ -564,13 +503,13 @@ public:
         __TBB_ASSERT( new_parent.prefix().state!=freed, "parent already freed" );
         p.state = allocated;
         p.parent = &new_parent;
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
         p.context = new_parent.prefix().context;
-#endif /* __TBB_TASK_GROUP_CONTEXT */
+#endif /* __TBB_EXCEPTIONS */
     }
 
     //! Schedule this for reexecution after current execute() returns.
-    /** Made obsolete by recycle_as_safe_continuation; may become deprecated. */
+    /** Requires that this.execute() be running. */
     void recycle_to_reexecute() {
         __TBB_ASSERT( prefix().state==executing, "execute not running, or already recycled" );
         __TBB_ASSERT( prefix().ref_count==0, "no child tasks allowed when recycled for reexecution" );
@@ -604,7 +543,7 @@ public:
     }
 
     //! Atomically decrement reference count.  
-    /** Has release semantics. */  
+    /** Has release semanics. */  
     int decrement_ref_count() {
 #if TBB_USE_THREADING_TOOLS||TBB_USE_ASSERT
         return int(internal_decrement_ref_count());
@@ -613,8 +552,17 @@ public:
 #endif /* TBB_USE_THREADING_TOOLS||TBB_USE_ASSERT */
     }
 
-    //! Define recommended static forms via import from base class.
-    using task_base::spawn;
+    //! Schedule task for execution when a worker becomes available.
+    /** After all children spawned so far finish their method task::execute,
+        their parent's method task::execute may start running.  Therefore, it
+        is important to ensure that at least one child has not completed until
+        the parent is ready to run. */
+    void spawn( task& child ) {
+        prefix().owner->spawn( child, child.prefix().next );
+    }
+
+    //! Spawn multiple tasks and clear list.
+    void spawn( task_list& list );
 
     //! Similar to spawn followed by wait_for_all, but more efficient.
     void spawn_and_wait_for_all( task& child ) {
@@ -625,6 +573,8 @@ public:
     void __TBB_EXPORTED_METHOD spawn_and_wait_for_all( task_list& list );
 
     //! Spawn task allocated by allocate_root, wait for it to complete, and deallocate it.
+    /** The thread that calls spawn_root_and_wait must be the same thread
+        that allocated the task. */
     static void spawn_root_and_wait( task& root ) {
         root.prefix().owner->spawn_root_and_wait( root, root.prefix().next );
     }
@@ -640,27 +590,22 @@ public:
         prefix().owner->wait_for_all( *this, NULL );
     }
 
-#if __TBB_ARENA_PER_MASTER
-    //! Enqueue task for starvation-resistant execution.
-    static void enqueue( task& t ) {
-        t.prefix().owner->enqueue( t, NULL );
-    }
-
-#endif /* __TBB_ARENA_PER_MASTER */
     //! The innermost task being executed or destroyed by the current thread at the moment.
     static task& __TBB_EXPORTED_FUNC self();
 
     //! task on whose behalf this task is working, or NULL if this is a root.
     task* parent() const {return prefix().parent;}
 
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
     //! Shared context that is used to communicate asynchronous state changes
     task_group_context* context() {return prefix().context;}
-#endif /* __TBB_TASK_GROUP_CONTEXT */   
+#endif /* __TBB_EXCEPTIONS */   
 
-    //! True if task was stolen from the task pool of another thread.
+    //! True if task is owned by different thread than thread that owns its parent.
     bool is_stolen_task() const {
-        return (prefix().extra_state & 0x80)!=0;
+        internal::task_prefix& p = prefix();
+        internal::task_prefix& q = parent()->prefix();
+        return p.owner!=q.owner;
     }
 
     //------------------------------------------------------------------------
@@ -673,8 +618,8 @@ public:
     //! The internal reference count.
     int ref_count() const {
 #if TBB_USE_ASSERT
-        internal::reference_count ref_count_ = prefix().ref_count;
-        __TBB_ASSERT( ref_count_==int(ref_count_), "integer overflow error");
+        internal::reference_count ref_count = prefix().ref_count;
+        __TBB_ASSERT( ref_count==int(ref_count), "integer overflow error");
 #endif
         return int(prefix().ref_count);
     }
@@ -703,27 +648,28 @@ public:
         The default action does nothing. */
     virtual void __TBB_EXPORTED_METHOD note_affinity( affinity_id id );
 
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
     //! Initiates cancellation of all tasks in this cancellation group and its subordinate groups.
     /** \return false if cancellation has already been requested, true otherwise. **/
     bool cancel_group_execution () { return prefix().context->cancel_group_execution(); }
 
     //! Returns true if the context received cancellation request.
     bool is_cancelled () const { return prefix().context->is_group_execution_cancelled(); }
-#endif /* __TBB_TASK_GROUP_CONTEXT */
+#endif /* __TBB_EXCEPTIONS */
 
 private:
-    friend class interface5::internal::task_base;
     friend class task_list;
     friend class internal::scheduler;
     friend class internal::allocate_root_proxy;
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
     friend class internal::allocate_root_with_context_proxy;
-#endif /* __TBB_TASK_GROUP_CONTEXT */
+#endif /* __TBB_EXCEPTIONS */
     friend class internal::allocate_continuation_proxy;
     friend class internal::allocate_child_proxy;
     friend class internal::allocate_additional_child_of_proxy;
     
+    friend class internal::task_group_base;
+
     //! Get reference to corresponding task_prefix.
     /** Version tag prevents loader on Linux from using the wrong symbol in debug builds. **/
     internal::task_prefix& prefix( internal::version_tag* = NULL ) const {
@@ -747,7 +693,6 @@ private:
     task* first;
     task** next_ptr;
     friend class task;
-    friend class interface5::internal::task_base;
 public:
     //! Construct empty list
     task_list() : first(NULL), next_ptr(&first) {}
@@ -781,13 +726,9 @@ public:
     }
 };
 
-inline void interface5::internal::task_base::spawn( task& t ) {
-    t.prefix().owner->spawn( t, t.prefix().next );
-}
-
-inline void interface5::internal::task_base::spawn( task_list& list ) {
+inline void task::spawn( task_list& list ) {
     if( task* t = list.first ) {
-        t->prefix().owner->spawn( *t, *list.next_ptr );
+        prefix().owner->spawn( *t, *list.next_ptr );
         list.clear();
     }
 }
@@ -809,7 +750,7 @@ inline void operator delete( void* task, const tbb::internal::allocate_root_prox
     tbb::internal::allocate_root_proxy::free( *static_cast<tbb::task*>(task) );
 }
 
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
 inline void *operator new( size_t bytes, const tbb::internal::allocate_root_with_context_proxy& p ) {
     return &p.allocate(bytes);
 }
@@ -817,7 +758,7 @@ inline void *operator new( size_t bytes, const tbb::internal::allocate_root_with
 inline void operator delete( void* task, const tbb::internal::allocate_root_with_context_proxy& p ) {
     p.free( *static_cast<tbb::task*>(task) );
 }
-#endif /* __TBB_TASK_GROUP_CONTEXT */
+#endif /* __TBB_EXCEPTIONS */
 
 inline void *operator new( size_t bytes, const tbb::internal::allocate_continuation_proxy& p ) {
     return &p.allocate(bytes);

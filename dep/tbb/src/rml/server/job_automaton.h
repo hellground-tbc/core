@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -53,7 +53,8 @@ namespace internal {
               ptr|1
 
 "owner" = corresponding server_thread.
-Odd states (except -1) indicate that someone is executing code on the job.
+Odd states indicate that someone is executing code on the job.
+Furthermore, odd states!=-1 indicate that owner will read its mailbox shortly.
 Most transitions driven only by owner.
 Transition 0-->-1 is driven by non-owner.
 Transition ptr->-1 is driven  by owner or non-owner.
@@ -105,17 +106,20 @@ public:
     }
 
     //! Transition 0-->-1
-    /** If successful, return true. called by non-owner (for TBB and the likes) */
+    /** If successful, return true. */
     bool try_plug_null() {
         return my_job.compare_and_swap( -1, 0 )==0;
     }
 
     //! Try to transition to -1.  If successful, set j to contents and return true.
-    /** Called by owner or non-owner. (for OpenMP and the likes) */
+    /** Called by owner or non-owner. */
     bool try_plug( rml::job*&j ) {
         for(;;) {
             intptr_t snapshot = my_job;
             if( snapshot&1 ) {
+                // server_thread that owns job is executing a mailbox item for the job,
+                // and will thus read its mailbox afterwards, and see a terminate request
+                // for the job.
                 j = NULL;
                 return false;
             } 
@@ -124,7 +128,7 @@ public:
                 j = reinterpret_cast<rml::job*>(snapshot);
                 return true;
             } 
-            // Need to retry, because current thread may be non-owner that read a 0, and owner might have
+            // Need to retry, because current thread may be nonowner that read a 0, and owner might have
             // caused transition 0->1->ptr after we took our snapshot.
         }
     }

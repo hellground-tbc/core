@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -127,10 +127,10 @@ public:
     }
 
     atomic<ticket> head_counter;
-    char pad1[NFS_MaxLineSize-sizeof(atomic<ticket>)];
+    char pad1[NFS_MaxLineSize-sizeof(size_t)];
 
     atomic<ticket> tail_counter;
-    char pad2[NFS_MaxLineSize-sizeof(atomic<ticket>)];
+    char pad2[NFS_MaxLineSize-sizeof(ticket)];
     micro_queue array[n_queue];    
 
     micro_queue& choose( ticket k ) {
@@ -176,7 +176,7 @@ void micro_queue::push( const void* item, ticket k, concurrent_queue_base& base 
         }
         base.copy_item( *p, index, item );
         // If no exception was thrown, mark item as present.
-        p->mask |= uintptr_t(1)<<index;
+        p->mask |= uintptr(1)<<index;
     } 
 }
 
@@ -190,7 +190,7 @@ bool micro_queue::pop( void* dst, ticket k, concurrent_queue_base& base ) {
     bool success = false; 
     {
         pop_finalizer finalizer( *this, k+concurrent_queue_rep::n_queue, index==base.items_per_page-1 ? &p : NULL ); 
-        if( p.mask & uintptr_t(1)<<index ) {
+        if( p.mask & uintptr(1)<<index ) {
             success = true;
             base.assign_and_destroy_item( dst, p, index );
         }

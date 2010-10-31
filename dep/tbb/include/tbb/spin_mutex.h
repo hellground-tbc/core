@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -64,7 +64,7 @@ public:
         spin_mutex* my_mutex; 
 
         //! Value to store into spin_mutex::flag to unlock the mutex.
-        uintptr_t my_unlock_value;
+        internal::uintptr my_unlock_value;
 
         //! Like acquire, but with ITT instrumentation.
         void __TBB_EXPORTED_METHOD internal_acquire( spin_mutex& m );

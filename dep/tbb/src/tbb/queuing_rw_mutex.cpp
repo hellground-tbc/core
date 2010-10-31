@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -145,8 +145,8 @@ typedef tricky_atomic_pointer<queuing_rw_mutex::scoped_lock> tricky_pointer;
 static const tricky_pointer::word FLAG = 0x1;
 
 inline
-uintptr_t get_flag( queuing_rw_mutex::scoped_lock* ptr ) { 
-    return uintptr_t(tricky_pointer(ptr)&FLAG);
+uintptr get_flag( queuing_rw_mutex::scoped_lock* ptr ) { 
+    return uintptr(tricky_pointer(ptr)&FLAG);
 }
 
 //------------------------------------------------------------------------

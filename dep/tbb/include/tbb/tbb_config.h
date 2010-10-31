@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -72,42 +72,21 @@
 #endif /* TBB_PEFORMANCE_WARNINGS */
 #endif /* TBB_USE_PERFORMANCE_WARNINGS */
 
-#if !defined(__EXCEPTIONS) && !defined(_CPPUNWIND) && !defined(__SUNPRO_CC) || defined(_XBOX)
-    #if TBB_USE_EXCEPTIONS
-        #error Compilation settings do not support exception handling. Please do not set TBB_USE_EXCEPTIONS macro or set it to 0.
-    #elif !defined(TBB_USE_EXCEPTIONS)
-        #define TBB_USE_EXCEPTIONS 0
-    #endif
-#elif !defined(TBB_USE_EXCEPTIONS)
-    #define TBB_USE_EXCEPTIONS 1
-#endif
-
-#ifndef TBB_IMPLEMENT_CPP0X
-/** By default, use C++0x classes if available **/
-#if __GNUC__==4 && __GNUC_MINOR__>=4 && __GXX_EXPERIMENTAL_CXX0X__
-#define TBB_IMPLEMENT_CPP0X 0
-#else
-#define TBB_IMPLEMENT_CPP0X 1
-#endif
-#endif /* TBB_IMPLEMENT_CPP0X */
 
 /** Feature sets **/
 
-#ifndef __TBB_COUNT_TASK_NODES
-    #define __TBB_COUNT_TASK_NODES TBB_USE_ASSERT
-#endif
-
-#ifndef __TBB_TASK_GROUP_CONTEXT
-#define __TBB_TASK_GROUP_CONTEXT 1
-#endif /* __TBB_TASK_GROUP_CONTEXT */
+#ifndef __TBB_EXCEPTIONS
+#define __TBB_EXCEPTIONS 1
+#endif /* __TBB_EXCEPTIONS */
 
 #ifndef __TBB_SCHEDULER_OBSERVER
 #define __TBB_SCHEDULER_OBSERVER 1
 #endif /* __TBB_SCHEDULER_OBSERVER */
 
-#ifndef __TBB_ARENA_PER_MASTER
-#define __TBB_ARENA_PER_MASTER 1
-#endif /* __TBB_ARENA_PER_MASTER */
+#ifndef __TBB_NEW_ITT_NOTIFY
+#define __TBB_NEW_ITT_NOTIFY 1
+#endif /* !__TBB_NEW_ITT_NOTIFY */
+
 
 /* TODO: The following condition should be extended as soon as new compilers/runtimes 
          with std::exception_ptr support appear. */
@@ -139,7 +118,7 @@
 
 /** Workarounds presence **/
 
-#if __GNUC__==4 && __GNUC_MINOR__>=4 && !defined(__INTEL_COMPILER)
+#if __GNUC__==4 && __GNUC_MINOR__==4 && !defined(__INTEL_COMPILER)
     #define __TBB_GCC_WARNING_SUPPRESSION_ENABLED 1
 #endif
 
@@ -149,23 +128,15 @@
     versions go out of the support list. 
 **/
 
-#if _MSC_VER && __INTEL_COMPILER && (__INTEL_COMPILER<1110 || __INTEL_COMPILER==1110 && __INTEL_COMPILER_BUILD_DATE < 20091012)
-    /** Necessary to avoid ICL error (or warning in non-strict mode): 
-        "exception specification for implicitly declared virtual destructor is 
-        incompatible with that of overridden one". **/
-    #define __TBB_DEFAULT_DTOR_THROW_SPEC_BROKEN 1
-#endif
-
-#if defined(_MSC_VER) && _MSC_VER < 1500 && !defined(__INTEL_COMPILER)
-    /** VS2005 and earlier do not allow declaring template class as a friend 
+#if defined(_MSC_VER) && _MSC_VER < 0x1500 && !defined(__INTEL_COMPILER)
+    /** VS2005 and earlier does not allow to declare a template class as a friend 
         of classes defined in other namespaces. **/
     #define __TBB_TEMPLATE_FRIENDS_BROKEN 1
 #endif
 
 #if __GLIBC__==2 && __GLIBC_MINOR__==3 || __MINGW32__
-    //! Macro controlling EH usages in TBB tests
     /** Some older versions of glibc crash when exception handling happens concurrently. **/
-    #define __TBB_THROW_ACROSS_MODULE_BOUNDARY_BROKEN 1
+    #define __TBB_EXCEPTION_HANDLING_BROKEN 1
 #endif
 
 #if (_WIN32||_WIN64) && __INTEL_COMPILER == 1110
@@ -173,13 +144,8 @@
     #define __TBB_ICL_11_1_CODE_GEN_BROKEN 1
 #endif
 
-#if __GNUC__==3 && __GNUC_MINOR__==3 && !defined(__INTEL_COMPILER)
-    /** A bug in GCC 3.3 with access to nested classes declared in protected area */
-    #define __TBB_GCC_3_3_PROTECTED_BROKEN 1
-#endif
-
 #if __FreeBSD__
-    /** A bug in FreeBSD 8.0 results in kernel panic when there is contention 
+    /** The bug in FreeBSD 8.0 results in kernel panic when there is contention 
         on a mutex created with this attribute. **/
     #define __TBB_PRIO_INHERIT_BROKEN 1
 
@@ -188,11 +154,8 @@
     #define __TBB_PLACEMENT_NEW_EXCEPTION_SAFETY_BROKEN 1
 #endif /* __FreeBSD__ */
 
-#if (__linux__ || __APPLE__) && __i386__ && defined(__INTEL_COMPILER)
-    /** The Intel compiler for IA-32 (Linux|Mac OS X) crashes or generates 
-        incorrect code when __asm__ arguments have a cast to volatile. **/
-    #define __TBB_ICC_ASM_VOLATILE_BROKEN 1
+#if __LRB__
+#include "tbb_config_lrb.h"
 #endif
-
 
 #endif /* __TBB_tbb_config_H */

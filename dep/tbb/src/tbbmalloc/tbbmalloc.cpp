@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -28,15 +28,7 @@
 
 #include "TypeDefinitions.h" // Customize.h and proxy.h get included
 
-#include "tbb/itt_notify.h" // for __TBB_load_ittnotify()
-
-#undef UNICODE
-
-#if USE_PTHREAD
-#include <dlfcn.h>
-#elif USE_WINTHREAD
-#include <windows.h>
-#endif
+#include "tbb/itt_notify.cpp"
 
 #if MALLOC_CHECK_RECURSION
 
@@ -74,38 +66,30 @@ static void* (*original_realloc_ptr)(void*,size_t) = 0;
 
 #endif /* MALLOC_CHECK_RECURSION */
 
+#if __TBB_NEW_ITT_NOTIFY
+extern "C" 
+#endif
+void ITT_DoOneTimeInitialization() {} // required for itt_notify.cpp to work
+
 #if DO_ITT_NOTIFY
 /** Caller is responsible for ensuring this routine is called exactly once. */
 void MallocInitializeITT() {
+#if __TBB_NEW_ITT_NOTIFY
     tbb::internal::__TBB_load_ittnotify();
+#else
+    bool success = false;
+    // Check if we are running under control of VTune.
+    if( GetBoolEnvironmentVariable("KMP_FOR_TCHECK") || GetBoolEnvironmentVariable("KMP_FOR_TPROFILE") ) {
+        // Yes, we are under control of VTune.  Check for libittnotify library.
+        success = dynamic_link( LIBITTNOTIFY_NAME, ITT_HandlerTable, 5 );
+    }
+    if (!success){
+        for (int i = 0; i < 5; i++)
+            *ITT_HandlerTable[i].handler = NULL;
+    }
+#endif /* !__TBB_NEW_ITT_NOTIFY */
 }
-#else
-void MallocInitializeITT() {}
 #endif /* DO_ITT_NOTIFY */
-
-extern "C" 
-void ITT_DoOneTimeInitialization() {
-    MallocInitializeITT();
-} // required for itt_notify.cpp to work
-
-#if TBB_USE_DEBUG
-#define DEBUG_SUFFIX "_debug"
-#else
-#define DEBUG_SUFFIX
-#endif /* TBB_USE_DEBUG */
-
-// MALLOCLIB_NAME is the name of the TBB memory allocator library.
-#if _WIN32||_WIN64
-#define MALLOCLIB_NAME "tbbmalloc" DEBUG_SUFFIX ".dll"
-#elif __APPLE__
-#define MALLOCLIB_NAME "libtbbmalloc" DEBUG_SUFFIX ".dylib"
-#elif __linux__
-#define MALLOCLIB_NAME "libtbbmalloc" DEBUG_SUFFIX  __TBB_STRING(.so.TBB_COMPATIBLE_INTERFACE_VERSION)
-#elif __FreeBSD__ || __sun
-#define MALLOCLIB_NAME "libtbbmalloc" DEBUG_SUFFIX ".so"
-#else
-#error Unknown OS
-#endif
 
 void init_tbbmalloc() {
 #if MALLOC_LD_PRELOAD
@@ -132,18 +116,6 @@ void init_tbbmalloc() {
 #if DO_ITT_NOTIFY
     MallocInitializeITT();
 #endif
-
-/* Preventing TBB allocator library from unloading to prevent
-   resource leak, as memory is not released on the library unload.
-*/
-#if USE_PTHREAD
-    dlopen(MALLOCLIB_NAME, RTLD_NOW);
-#elif USE_WINTHREAD
-    // Prevent Windows from displaying message boxes if it fails to load library
-    UINT prev_mode = SetErrorMode (SEM_FAILCRITICALERRORS);
-    LoadLibrary(MALLOCLIB_NAME);
-    SetErrorMode (prev_mode);
-#endif /* USE_PTHREAD */
 }
 
 #if !(_WIN32||_WIN64)
@@ -192,20 +164,12 @@ void __TBB_internal_free(void *object)
 } /* extern "C" */
 
 #endif /* MALLOC_LD_PRELOAD */
-
 #endif /* MALLOC_CHECK_RECURSION */
 
 } } // namespaces
 
 #ifdef _WIN32
-
-#if _XBOX
-    #define NONET
-    #define NOD3D
-    #include <xtl.h>
-#else
 #include <windows.h>
-#endif    
 
 extern "C" BOOL WINAPI DllMain( HINSTANCE hInst, DWORD callReason, LPVOID )
 {

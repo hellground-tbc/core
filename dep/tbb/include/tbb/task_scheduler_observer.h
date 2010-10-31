@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -42,7 +42,7 @@ class observer_proxy;
 class task_scheduler_observer_v3 {
     friend class observer_proxy;
     observer_proxy* my_proxy;
-    atomic<intptr_t> my_busy_count;
+    atomic<intptr> my_busy_count;
 public:
     //! Enable or disable observation
     void __TBB_EXPORTED_METHOD observe( bool state=true );

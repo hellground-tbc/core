@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -334,7 +334,11 @@ void TestNegativeQueue( int nthread ) {
     NativeParallelFor( nthread, TestNegativeQueueBody<T>(queue,nthread) );
 }
 
-int TestMain () {
+int main( int argc, char* argv[] ) {
+    // Set default for minimum number of threads.
+    MinThread = 1;
+    ParseCommandLine(argc,argv);
+
     TestEmptyQueue<char>();
     TestEmptyQueue<Foo>();
     TestFullQueue();
@@ -352,5 +356,6 @@ int TestMain () {
             TestPushPop(prefill,ptrdiff_t(100),nthread);
         }
     }
-    return Harness::Done;
+    printf("done\n");
+    return 0;
 }

@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -52,15 +52,6 @@ class pipeline_root_task;
 class pipeline_cleaner;
 
 } // namespace internal
-
-namespace interface5 {
-    template<typename T, typename U> class filter_t;
-
-    namespace internal {
-        class pipeline_proxy;
-    }
-}
-
 //! @endcond
 
 //! A stage in a pipeline.
@@ -68,7 +59,7 @@ namespace interface5 {
 class filter: internal::no_copy {
 private:
     //! Value used to mark "not in pipeline"
-    static filter* not_in_pipeline() {return reinterpret_cast<filter*>(intptr_t(-1));}
+    static filter* not_in_pipeline() {return reinterpret_cast<filter*>(internal::intptr(-1));}
     
     //! The lowest bit 0 is for parallel vs. serial
     static const unsigned char filter_is_serial = 0x1; 
@@ -80,14 +71,6 @@ private:
 
     //! 5th bit distinguishes thread-bound and regular filters.
     static const unsigned char filter_is_bound = 0x1<<5;  
-
-    //! 7th bit defines exception propagation mode expected by the application.
-    static const unsigned char exact_exception_propagation =
-#if TBB_USE_CAPTURED_EXCEPTION
-            0x0;
-#else
-            0x1<<7;
-#endif /* TBB_USE_CAPTURED_EXCEPTION */
 
     static const unsigned char current_version = __TBB_PIPELINE_VERSION(5);
     static const unsigned char version_mask = 0x7<<1; // bits 1-3 are for version
@@ -106,7 +89,7 @@ protected:
     filter( bool is_serial_ ) : 
         next_filter_in_pipeline(not_in_pipeline()),
         my_input_buffer(NULL),
-        my_filter_mode(static_cast<unsigned char>((is_serial_ ? serial : parallel) | exact_exception_propagation)),
+        my_filter_mode(static_cast<unsigned char>(is_serial_ ? serial : parallel)),
         prev_filter_in_pipeline(not_in_pipeline()),
         my_pipeline(NULL),
         next_segment(NULL)
@@ -115,7 +98,7 @@ protected:
     filter( mode filter_mode ) :
         next_filter_in_pipeline(not_in_pipeline()),
         my_input_buffer(NULL),
-        my_filter_mode(static_cast<unsigned char>(filter_mode | exact_exception_propagation)),
+        my_filter_mode(static_cast<unsigned char>(filter_mode)),
         prev_filter_in_pipeline(not_in_pipeline()),
         my_pipeline(NULL),
         next_segment(NULL)
@@ -145,7 +128,7 @@ public:
     /** If the filter was added to a pipeline, the pipeline must be destroyed first. */
     virtual __TBB_EXPORTED_METHOD ~filter();
 
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
     //! Destroys item if pipeline was cancelled.
     /** Required to prevent memory leaks.
         Note it can be called concurrently even for serial filters.*/
@@ -193,7 +176,7 @@ public:
     };
 protected:
     thread_bound_filter(mode filter_mode): 
-         filter(static_cast<mode>(filter_mode | filter::filter_is_bound | filter::exact_exception_propagation))
+         filter(static_cast<mode>(filter_mode | filter::filter_is_bound))
     {}
 public:
     //! If a data item is available, invoke operator() on that item.  
@@ -233,7 +216,7 @@ public:
     //! Run the pipeline to completion.
     void __TBB_EXPORTED_METHOD run( size_t max_number_of_live_tokens );
 
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
     //! Run the pipeline to completion with user-supplied context.
     void __TBB_EXPORTED_METHOD run( size_t max_number_of_live_tokens, tbb::task_group_context& context );
 #endif
@@ -247,7 +230,6 @@ private:
     friend class filter;
     friend class thread_bound_filter;
     friend class internal::pipeline_cleaner;
-    friend class tbb::interface5::internal::pipeline_proxy;
 
     //! Pointer to first filter in the pipeline.
     filter* filter_list;
@@ -276,260 +258,11 @@ private:
     //! Not used, but retained to satisfy old export files.
     void __TBB_EXPORTED_METHOD inject_token( task& self );
 
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
     //! Does clean up if pipeline is cancelled or exception occured
     void clear_filters();
 #endif
 };
-
-//------------------------------------------------------------------------
-// Support for lambda-friendly parallel_pipeline interface
-//------------------------------------------------------------------------
-
-namespace interface5 {
-
-namespace internal {
-    template<typename T, typename U, typename Body> class concrete_filter;
-}
-
-class flow_control {
-    bool is_pipeline_stopped;
-    flow_control() { is_pipeline_stopped = false; }
-    template<typename T, typename U, typename Body> friend class internal::concrete_filter;
-public:
-    void stop() { is_pipeline_stopped = true; }
-};
-
-//! @cond INTERNAL
-namespace internal {
-
-template<typename T, typename U, typename Body>
-class concrete_filter: public tbb::filter {
-    Body my_body;
-
-    /*override*/ void* operator()(void* input) {
-        T* temp_input = (T*)input;
-        // Call user's operator()() here
-        void* output = (void*) new U(my_body(*temp_input)); 
-        delete temp_input;
-        return output;
-    }
-
-public:
-    concrete_filter(tbb::filter::mode filter_mode, const Body& body) : filter(filter_mode), my_body(body) {}
-};
-
-template<typename U, typename Body>
-class concrete_filter<void,U,Body>: public filter {
-    Body my_body;
-
-    /*override*/void* operator()(void*) {
-        flow_control control;
-        U temp_output = my_body(control);
-        void* output = control.is_pipeline_stopped ? NULL : (void*) new U(temp_output); 
-        return output;
-    }
-public:
-    concrete_filter(tbb::filter::mode filter_mode, const Body& body) : filter(filter_mode), my_body(body) {}
-};
-
-template<typename T, typename Body>
-class concrete_filter<T,void,Body>: public filter {
-    Body my_body;
-   
-    /*override*/ void* operator()(void* input) {
-        T* temp_input = (T*)input;
-        my_body(*temp_input);
-        delete temp_input;
-        return NULL;
-    }
-public:
-    concrete_filter(tbb::filter::mode filter_mode, const Body& body) : filter(filter_mode), my_body(body) {}
-};
-
-template<typename Body>
-class concrete_filter<void,void,Body>: public filter {
-    Body my_body;
-    
-    /** Override privately because it is always called virtually */
-    /*override*/ void* operator()(void*) {
-        flow_control control;
-        my_body(control);
-        void* output = control.is_pipeline_stopped ? NULL : (void*)(intptr_t)-1; 
-        return output;
-    }
-public:
-    concrete_filter(filter::mode filter_mode, const Body& body) : filter(filter_mode), my_body(body) {}
-};
-
-//! The class that represents an object of the pipeline for parallel_pipeline().
-/** It primarily serves as RAII class that deletes heap-allocated filter instances. */
-class pipeline_proxy {
-    tbb::pipeline my_pipe;
-public:
-    pipeline_proxy( const filter_t<void,void>& filter_chain );
-    ~pipeline_proxy() {
-        while( filter* f = my_pipe.filter_list ) 
-            delete f; // filter destructor removes it from the pipeline
-    }
-    tbb::pipeline* operator->() { return &my_pipe; }
-};
-
-//! Abstract base class that represents a node in a parse tree underlying a filter_t.
-/** These nodes are always heap-allocated and can be shared by filter_t objects. */
-class filter_node: tbb::internal::no_copy {
-    /** Count must be atomic because it is hidden state for user, but might be shared by threads. */
-    tbb::atomic<intptr_t> ref_count;
-protected:
-    filter_node() {
-        ref_count = 0;
-#ifdef __TBB_TEST_FILTER_NODE_COUNT
-        ++(__TBB_TEST_FILTER_NODE_COUNT);
-#endif
-    }
-public:
-    //! Add concrete_filter to pipeline 
-    virtual void add_to( pipeline& ) = 0;
-    //! Increment reference count
-    void add_ref() {++ref_count;}
-    //! Decrement reference count and delete if it becomes zero.
-    void remove_ref() {
-        __TBB_ASSERT(ref_count>0,"ref_count underflow");
-        if( --ref_count==0 ) 
-            delete this;
-    }
-    virtual ~filter_node() {
-#ifdef __TBB_TEST_FILTER_NODE_COUNT
-        --(__TBB_TEST_FILTER_NODE_COUNT);
-#endif
-    }
-};
-
-//! Node in parse tree representing result of make_filter.
-template<typename T, typename U, typename Body>
-class filter_node_leaf: public filter_node  {
-    const tbb::filter::mode mode;
-    const Body& body;
-    /*override*/void add_to( pipeline& p ) {
-        concrete_filter<T,U,Body>* f = new concrete_filter<T,U,Body>(mode,body);
-        p.add_filter( *f );
-    }
-public:
-    filter_node_leaf( tbb::filter::mode m, const Body& b ) : mode(m), body(b) {}
-};
-
-//! Node in parse tree representing join of two filters.
-class filter_node_join: public filter_node {
-    friend class filter_node; // to suppress GCC 3.2 warnings
-    filter_node& left;
-    filter_node& right;
-    /*override*/~filter_node_join() {
-       left.remove_ref();
-       right.remove_ref();
-    }
-    /*override*/void add_to( pipeline& p ) {
-        left.add_to(p);
-        right.add_to(p);
-    }
-public:
-    filter_node_join( filter_node& x, filter_node& y ) : left(x), right(y) {
-       left.add_ref();
-       right.add_ref();
-    }
-};
-
-} // namespace internal
-//! @endcond
-
-template<typename T, typename U, typename Body>
-filter_t<T,U> make_filter(tbb::filter::mode mode, const Body& body) {
-    return new internal::filter_node_leaf<T,U,Body>(mode, body);
-}
-
-template<typename T, typename V, typename U>
-filter_t<T,U> operator& (const filter_t<T,V>& left, const filter_t<V,U>& right) {
-    __TBB_ASSERT(left.root,"cannot use default-constructed filter_t as left argument of '&'");
-    __TBB_ASSERT(right.root,"cannot use default-constructed filter_t as right argument of '&'");
-    return new internal::filter_node_join(*left.root,*right.root);
-}
-
-//! Class representing a chain of type-safe pipeline filters
-template<typename T, typename U>
-class filter_t {
-    typedef internal::filter_node filter_node;
-    filter_node* root;
-    filter_t( filter_node* root_ ) : root(root_) {
-        root->add_ref();
-    }
-    friend class internal::pipeline_proxy;
-    template<typename T_, typename U_, typename Body>
-    friend filter_t<T_,U_> make_filter(tbb::filter::mode, const Body& );
-    template<typename T_, typename V_, typename U_>
-    friend filter_t<T_,U_> operator& (const filter_t<T_,V_>& , const filter_t<V_,U_>& );
-public:
-    filter_t() : root(NULL) {}
-    filter_t( const filter_t<T,U>& rhs ) : root(rhs.root) {
-        if( root ) root->add_ref();
-    }
-    template<typename Body>
-    filter_t( tbb::filter::mode mode, const Body& body ) :
-        root( new internal::filter_node_leaf<T,U,Body>(mode, body) ) {
-        root->add_ref();
-    }
-
-    void operator=( const filter_t<T,U>& rhs ) {
-        // Order of operations below carefully chosen so that reference counts remain correct
-        // in unlikely event that remove_ref throws exception.
-        filter_node* old = root;
-        root = rhs.root; 
-        if( root ) root->add_ref();
-        if( old ) old->remove_ref();
-    }
-    ~filter_t() {
-        if( root ) root->remove_ref();
-    }
-    void clear() {
-        // Like operator= with filter_t() on right side.
-        if( root ) {
-            filter_node* old = root;
-            root = NULL;
-            old->remove_ref();
-        }
-    }
-};
-
-inline internal::pipeline_proxy::pipeline_proxy( const filter_t<void,void>& filter_chain ) : my_pipe() {
-    __TBB_ASSERT( filter_chain.root, "cannot apply parallel_pipeline to default-constructed filter_t"  );
-    filter_chain.root->add_to(my_pipe);
-}
-
-inline void parallel_pipeline(size_t max_number_of_live_tokens, const filter_t<void,void>& filter_chain
-#if __TBB_TASK_GROUP_CONTEXT
-    , tbb::task_group_context& context
-#endif
-    ) {
-    internal::pipeline_proxy pipe(filter_chain);
-    // tbb::pipeline::run() is called via the proxy
-    pipe->run(max_number_of_live_tokens
-#if __TBB_TASK_GROUP_CONTEXT
-              , context
-#endif
-    );
-}
-
-#if __TBB_TASK_GROUP_CONTEXT
-inline void parallel_pipeline(size_t max_number_of_live_tokens, const filter_t<void,void>& filter_chain) {
-    tbb::task_group_context context;
-    parallel_pipeline(max_number_of_live_tokens, filter_chain, context);
-}
-#endif // __TBB_TASK_GROUP_CONTEXT
-
-} // interface5
-
-using interface5::flow_control;
-using interface5::filter_t;
-using interface5::make_filter;
-using interface5::parallel_pipeline;
 
 } // tbb
 

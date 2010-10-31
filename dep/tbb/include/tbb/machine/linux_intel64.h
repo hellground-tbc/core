@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -47,8 +47,8 @@ static inline T __TBB_machine_cmpswp##S (volatile void *ptr, T value, T comparan
     T result;                                                                        \
                                                                                      \
     __asm__ __volatile__("lock\ncmpxchg" X " %2,%1"                                  \
-                          : "=a"(result), "=m"(*(volatile T*)ptr)                    \
-                          : "q"(value), "0"(comparand), "m"(*(volatile T*)ptr)       \
+                          : "=a"(result), "=m"(*(T *)ptr)                            \
+                          : "q"(value), "0"(comparand), "m"(*(T *)ptr)               \
                           : "memory");                                               \
     return result;                                                                   \
 }                                                                                    \
@@ -57,8 +57,8 @@ static inline T __TBB_machine_fetchadd##S(volatile void *ptr, T addend)         
 {                                                                                    \
     T result;                                                                        \
     __asm__ __volatile__("lock\nxadd" X " %0,%1"                                     \
-                          : "=r"(result),"=m"(*(volatile T*)ptr)                     \
-                          : "0"(addend), "m"(*(volatile T*)ptr)                      \
+                          : "=r"(result),"=m"(*(T *)ptr)                             \
+                          : "0"(addend), "m"(*(T *)ptr)                              \
                           : "memory");                                               \
     return result;                                                                   \
 }                                                                                    \
@@ -67,8 +67,8 @@ static inline  T __TBB_machine_fetchstore##S(volatile void *ptr, T value)       
 {                                                                                    \
     T result;                                                                        \
     __asm__ __volatile__("lock\nxchg" X " %0,%1"                                     \
-                          : "=r"(result),"=m"(*(volatile T*)ptr)                     \
-                          : "0"(value), "m"(*(volatile T*)ptr)                       \
+                          : "=r"(result),"=m"(*(T *)ptr)                             \
+                          : "0"(value), "m"(*(T *)ptr)                               \
                           : "memory");                                               \
     return result;                                                                   \
 }                                                                                    \
@@ -85,11 +85,11 @@ static inline int64_t __TBB_machine_lg( uint64_t x ) {
 }
 
 static inline void __TBB_machine_or( volatile void *ptr, uint64_t addend ) {
-    __asm__ __volatile__("lock\norq %1,%0" : "=m"(*(volatile uint64_t*)ptr) : "r"(addend), "m"(*(volatile uint64_t*)ptr) : "memory");
+    __asm__ __volatile__("lock\norq %1,%0" : "=m"(*(uint64_t *)ptr) : "r"(addend), "m"(*(uint64_t *)ptr) : "memory");
 }
 
 static inline void __TBB_machine_and( volatile void *ptr, uint64_t addend ) {
-    __asm__ __volatile__("lock\nandq %1,%0" : "=m"(*(volatile uint64_t*)ptr) : "r"(addend), "m"(*(volatile uint64_t*)ptr) : "memory");
+    __asm__ __volatile__("lock\nandq %1,%0" : "=m"(*(uint64_t *)ptr) : "r"(addend), "m"(*(uint64_t *)ptr) : "memory");
 }
 
 static inline void __TBB_machine_pause( int32_t delay ) {
@@ -97,7 +97,7 @@ static inline void __TBB_machine_pause( int32_t delay ) {
        __asm__ __volatile__("pause;");
     }
     return;
-}
+}   
 
 // Machine specific atomic operations
 
@@ -126,9 +126,7 @@ static inline void __TBB_machine_pause( int32_t delay ) {
 #define __TBB_AtomicAND(P,V) __TBB_machine_and(P,V)
 
 // Definition of other functions
-#ifndef __TBB_Pause
 #define __TBB_Pause(V) __TBB_machine_pause(V)
-#endif
 #define __TBB_Log2(V)    __TBB_machine_lg(V)
 
 // Special atomic functions

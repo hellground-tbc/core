@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -28,6 +28,8 @@
 
 // No ifndef guard because this file is not a normal include file.
 
+// FIXME - resolve whether _debug version of the RML should have different suffix. */
+
 #if TBB_USE_DEBUG
 #define DEBUG_SUFFIX "_debug"
 #else
@@ -49,20 +51,7 @@
 
 #include "library_assert.h"
 
-const ::rml::versioned_object::version_type CLIENT_VERSION = 2;
-
-#if __TBB_WEAK_SYMBOLS
-    #pragma weak __RML_open_factory
-    #pragma weak __TBB_make_rml_server
-    #pragma weak __RML_close_factory
-    #pragma weak __TBB_call_with_my_server_info
-    extern "C" {
-        ::rml::factory::status_type __RML_open_factory ( ::rml::factory&, ::rml::versioned_object::version_type&, ::rml::versioned_object::version_type );
-        ::rml::factory::status_type __TBB_make_rml_server( tbb::internal::rml::tbb_factory& f, tbb::internal::rml::tbb_server*& server, tbb::internal::rml::tbb_client& client );
-        void __TBB_call_with_my_server_info( ::rml::server_info_callback_t cb, void* arg );
-        void __RML_close_factory( ::rml::factory& f );
-    }
-#endif /* __TBB_WEAK_SYMBOLS */
+const ::rml::versioned_object::version_type CLIENT_VERSION = 1;
 
 ::rml::factory::status_type FACTORY::open() {
     // Failure of following assertion indicates that factory is already open, or not zero-inited.
@@ -79,8 +68,9 @@ const ::rml::versioned_object::version_type CLIENT_VERSION = 2;
     if( dynamic_link( RML_SERVER_NAME, server_link_table, 4, 4, &h ) ) {
         library_handle = h; 
         version_type server_version;
-        result = (*open_factory_routine)( *this, server_version, CLIENT_VERSION );
+        status_type result = (*open_factory_routine)( *this, server_version, CLIENT_VERSION );
         // server_version can be checked here for incompatibility here if necessary.
+        return result;
     } else {
         library_handle = NULL;
         result = st_not_found;
@@ -89,9 +79,8 @@ const ::rml::versioned_object::version_type CLIENT_VERSION = 2;
 }
 
 void FACTORY::close() {
-    if( library_handle )
+    if( library_handle ) {
         (*my_wait_to_close_routine)(*this);
-    if( (size_t)library_handle>FACTORY::c_dont_unload ) {
         dynamic_link_handle h = library_handle;
         dynamic_unlink(h);
         library_handle = NULL;

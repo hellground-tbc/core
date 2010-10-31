@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -33,13 +33,7 @@
 #include "tbb/tbb_machine.h"
 
 #if _WIN32||_WIN64
-#if _XBOX
-    #define NONET
-    #define NOD3D
-    #include <xtl.h>
-#else
 #include <windows.h>
-#endif
 #elif defined(__linux__)
 #include <sys/sysinfo.h>
 #elif defined(__sun)
@@ -53,76 +47,22 @@
 #endif
 
 namespace tbb {
+
 namespace internal {
 
-const size_t MByte = 1<<20;
-
-#if !defined(__TBB_WORDSIZE)
-    const size_t ThreadStackSize = 1*MByte;
-#elif __TBB_WORDSIZE<=4
-    const size_t ThreadStackSize = 2*MByte;
-#else
-    const size_t ThreadStackSize = 4*MByte;
-#endif
-
 #if defined(__TBB_DetectNumberOfWorkers)
-
 static inline int DetectNumberOfWorkers() {
     return __TBB_DetectNumberOfWorkers(); 
 }
 
-#else /* !__TBB_DetectNumberOfWorkers */
+#else
 
 #if _WIN32||_WIN64
-
-#if _XBOX
-
-// This port uses only 2 hardware threads for TBB on XBOX 360. 
-// Others are left to sound etc.
-// Change the following mask to allow TBB use more HW threads.
-static const int XBOX360_HARDWARE_THREAD_MASK = 0x0C;
-
-static inline int DetectNumberOfWorkers() 
-{
- char a[XBOX360_HARDWARE_THREAD_MASK];  //compile time assert - at least one bit should be set always
- a[0]=0;
- 
- return ((XBOX360_HARDWARE_THREAD_MASK >> 0) & 1) +
-        ((XBOX360_HARDWARE_THREAD_MASK >> 1) & 1) +
-        ((XBOX360_HARDWARE_THREAD_MASK >> 2) & 1) +
-        ((XBOX360_HARDWARE_THREAD_MASK >> 3) & 1) +
-        ((XBOX360_HARDWARE_THREAD_MASK >> 4) & 1) +
-        ((XBOX360_HARDWARE_THREAD_MASK >> 5) & 1) + 1;  //+1 - tbb is creating DetectNumberOfWorkers()-1 threads in arena 
-}
-
-static inline int GetHardwareThreadIndex(int workerThreadIndex)
-{
- workerThreadIndex %= DetectNumberOfWorkers()-1;
- int m = XBOX360_HARDWARE_THREAD_MASK;
- int index = 0;
- int skipcount = workerThreadIndex;
- while (true)
-  {
-   if ((m & 1)!=0) 
-    {
-     if (skipcount==0) break;
-     skipcount--;
-    }
-   m >>= 1;
-   index++;
-  }
- return index; 
-}
-
-#else /* !_XBOX */
-
 static inline int DetectNumberOfWorkers() {
     SYSTEM_INFO si;
     GetSystemInfo(&si);
     return static_cast<int>(si.dwNumberOfProcessors);
 }
-
-#endif /* !_XBOX */
 
 #elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__) || defined(__sun) 
 static inline int DetectNumberOfWorkers() {
@@ -155,12 +95,23 @@ static inline int DetectNumberOfWorkers() {
 
 #else
 #error DetectNumberOfWorkers: OS detection method is unknown
+
 #endif /* os kind */
 
-#endif /* !__TBB_DetectNumberOfWorkers */
+#endif
 
-//! Throws std::runtime_error with what() returning error_code description prefixed with aux_info
-void handle_win_error( int error_code );
+// assertion_failure is declared in tbb/tbb_stddef.h because it user code
+// needs to see its declaration.
+
+//! Throw std::runtime_error of form "(what): (strerror of error_code)"
+/* The "what" should be fairly short, not more than about 64 characters.
+   Because we control all the call sites to handle_perror, it is pointless
+   to bullet-proof it for very long strings.
+
+   Design note: ADR put this routine off to the side in tbb_misc.cpp instead of
+   Task.cpp because the throw generates a pathetic lot of code, and ADR wanted
+   this large chunk of code to be placed on a cold page. */
+void __TBB_EXPORTED_FUNC handle_perror( int error_code, const char* what );
 
 //! True if environment variable with given name is set and not 0; otherwise false.
 bool GetBoolEnvironmentVariable( const char * name );
@@ -174,60 +125,8 @@ void PrintExtraVersionInfo( const char* category, const char* description );
 //! A callback routine to print RML version information on stderr
 void PrintRMLVersionInfo( void* arg, const char* server_info );
 
-// For TBB compilation only; not to be used in public headers
-#if defined(min) || defined(max)
-#undef min
-#undef max
-#endif
-
-//! Utility template function returning lesser of the two values.
-/** Provided here to avoid including not strict safe <algorithm>.\n
-    In case operands cause signed/unsigned or size mismatch warnings it is caller's
-    responsibility to do the appropriate cast before calling the function. **/
-template<typename T1, typename T2>
-T1 min ( const T1& val1, const T2& val2 ) {
-    return val1 < val2 ? val1 : val2;
-}
-
-//! Utility template function returning greater of the two values.
-/** Provided here to avoid including not strict safe <algorithm>.\n
-    In case operands cause signed/unsigned or size mismatch warnings it is caller's
-    responsibility to do the appropriate cast before calling the function. **/
-template<typename T1, typename T2>
-T1 max ( const T1& val1, const T2& val2 ) {
-    return val1 < val2 ? val2 : val1;
-}
-
-//------------------------------------------------------------------------
-// FastRandom
-//------------------------------------------------------------------------
-
-/** Defined in tbb_main.cpp **/
-unsigned GetPrime ( unsigned seed );
-
-//! A fast random number generator.
-/** Uses linear congruential method. */
-class FastRandom {
-    unsigned x, a;
-public:
-    //! Get a random number.
-    unsigned short get() {
-        return get(x);
-    }
-    //! Get a random number for the given seed; update the seed for next use.
-    unsigned short get( unsigned& seed ) {
-        unsigned short r = (unsigned short)(seed>>16);
-        seed = seed*a+1;
-        return r;
-    }
-    //! Construct a random number generator.
-    FastRandom( unsigned seed ) {
-        x = seed;
-        a = GetPrime( seed );
-    }
-};
-
 } // namespace internal
+
 } // namespace tbb
 
 #endif /* _TBB_tbb_misc_H */

@@ -1,4 +1,4 @@
-# Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+# Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 #
 # This file is part of Threading Building Blocks.
 #
@@ -24,6 +24,8 @@
 # invalidate any other reasons why the executable file might be covered by
 # the GNU General Public License.
 
+.PRECIOUS: %.$(OBJ) %.$(DLL).$(OBJ) %.exe
+
 ifeq ($(tbb_strict),1)
   ifeq ($(WARNING_AS_ERROR_KEY),)
     $(error WARNING_AS_ERROR_KEY is empty)
@@ -36,14 +38,12 @@ ifndef TEST_EXT
     TEST_EXT = exe
 endif
 
-.PRECIOUS: %.$(OBJ) %.$(TEST_EXT) %.res
-
 INCLUDES += $(INCLUDE_KEY)$(tbb_root)/src $(INCLUDE_KEY)$(tbb_root)/src/rml/include $(INCLUDE_KEY)$(tbb_root)/include
 
 CPLUS_FLAGS += $(WARNING_KEY) $(CXXFLAGS)
 LINK_FLAGS += $(LDFLAGS)
 LIB_LINK_FLAGS += $(LDFLAGS)
-CPLUS_FLAGS_NOSTRICT = $(subst -strict_ansi,-ansi,$(CPLUS_FLAGS))
+CPLUS_FLAGS_NOSTRICT:=$(subst -strict_ansi,-ansi,$(CPLUS_FLAGS))
 
 LIB_LINK_CMD ?= $(CPLUS) $(PIC_KEY)
 ifeq ($(origin LIB_OUTPUT_KEY), undefined)
@@ -90,7 +90,7 @@ ifeq (1,$(TBB_NOSTRICT))
 # The files below need the -strict_ansi flag downgraded to -ansi to compile
 
 $(KNOWN_NOSTRICT): %.$(OBJ): %.cpp
-	$(CPLUS) $(COMPILE_ONLY) $(CPLUS_FLAGS_NOSTRICT) $(CXX_ONLY_FLAGS) $(CXX_WARN_SUPPRESS) $(INCLUDES) $<
+	$(CPLUS) $(COMPILE_ONLY) $(CPLUS_FLAGS_NOSTRICT) $(CXX_ONLY_FLAGS) $(INCLUDES) $<
 endif
 
 $(KNOWN_WARNINGS): %.$(OBJ): %.cpp
@@ -105,11 +105,14 @@ tbb_misc.E: tbb_misc.cpp version_string.tmp
 %.res: %.rc version_string.tmp $(TBB.MANIFEST)
 	rc /Fo$@ $(INCLUDES) $(filter /D%,$(CPLUS_FLAGS)) $<
 
+tbbvars:
+	$(MAKE_TBBVARS)
+
 ifneq (,$(TBB.MANIFEST))
 $(TBB.MANIFEST):
 	cmd /C "echo #include ^<stdio.h^> >tbbmanifest.c"
 	cmd /C "echo int main(){return 0;} >>tbbmanifest.c"
-	cl /nologo $(C_FLAGS) tbbmanifest.c
+	cl $(C_FLAGS) tbbmanifest.c
 
 version_string.tmp: $(TBB.MANIFEST)
 	$(MAKE_VERSIONS)

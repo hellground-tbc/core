@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -162,7 +162,7 @@ namespace internal {
         {
             typedef do_iteration_task<Body, Item> iteration_type;
 
-            iteration_type& t = *new (task::allocate_additional_child_of(*my_barrier)) iteration_type(item, *this);
+            iteration_type& t = *new (task::self().allocate_additional_child_of(*my_barrier)) iteration_type(item, *this);
 
             t.spawn( t );
         }
@@ -176,7 +176,7 @@ namespace internal {
             __TBB_ASSERT(my_barrier, "root task allocation failed");
         }
 
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
         parallel_do_feeder_impl(tbb::task_group_context &context)
         {
             my_barrier = new( task::allocate_root(context) ) empty_task();
@@ -393,13 +393,13 @@ namespace internal {
         @ingroup algorithms */
     template<typename Iterator, typename Body, typename Item> 
     void run_parallel_do( Iterator first, Iterator last, const Body& body
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
         , task_group_context& context
 #endif
         )
     {
         typedef do_task_iter<Iterator, Body, Item> root_iteration_task;
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
         parallel_do_feeder_impl<Body, Item> feeder(context);
 #else
         parallel_do_feeder_impl<Body, Item> feeder;
@@ -417,15 +417,15 @@ namespace internal {
         @ingroup algorithms **/
     template<typename Iterator, typename Body, typename Item> 
     void select_parallel_do( Iterator first, Iterator last, const Body& body, void (Body::*)(Item) const
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
         , task_group_context& context 
-#endif // __TBB_TASK_GROUP_CONTEXT 
+#endif // __TBB_EXCEPTIONS 
         )
     {
         run_parallel_do<Iterator, Body, typename strip<Item>::type>( first, last, body
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
             , context
-#endif // __TBB_TASK_GROUP_CONTEXT 
+#endif // __TBB_EXCEPTIONS 
             );
     }
 
@@ -434,15 +434,15 @@ namespace internal {
         @ingroup algorithms **/
     template<typename Iterator, typename Body, typename Item, typename _Item> 
     void select_parallel_do( Iterator first, Iterator last, const Body& body, void (Body::*)(Item, parallel_do_feeder<_Item>&) const
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
         , task_group_context& context 
-#endif // __TBB_TASK_GROUP_CONTEXT
+#endif // __TBB_EXCEPTIONS
         )
     {
         run_parallel_do<Iterator, Body, typename strip<Item>::type>( first, last, body
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
             , context
-#endif // __TBB_TASK_GROUP_CONTEXT
+#endif // __TBB_EXCEPTIONS
             );
     }
 
@@ -479,17 +479,17 @@ void parallel_do( Iterator first, Iterator last, const Body& body )
 {
     if ( first == last )
         return;
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
     task_group_context context;
-#endif // __TBB_TASK_GROUP_CONTEXT
+#endif // __TBB_EXCEPTIONS
     internal::select_parallel_do( first, last, body, &Body::operator()
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
         , context
-#endif // __TBB_TASK_GROUP_CONTEXT
+#endif // __TBB_EXCEPTIONS
         );
 }
 
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
 //! Parallel iteration over a range, with optional addition of more work and user-supplied context
 /** @ingroup algorithms */
 template<typename Iterator, typename Body> 
@@ -499,7 +499,7 @@ void parallel_do( Iterator first, Iterator last, const Body& body, task_group_co
         return;
     internal::select_parallel_do( first, last, body, &Body::operator(), context );
 }
-#endif // __TBB_TASK_GROUP_CONTEXT
+#endif // __TBB_EXCEPTIONS
 
 //@}
 

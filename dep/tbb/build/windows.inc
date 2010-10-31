@@ -1,4 +1,4 @@
-# Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+# Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 #
 # This file is part of Threading Building Blocks.
 #
@@ -90,11 +90,11 @@ RML.DEF = $(RML_SERVER_ROOT)/$(def_prefix)-rml-export.def
 RML.DLL = irml$(DEBUG_SUFFIX).$(DLL)
 RML.LIB = irml$(DEBUG_SUFFIX).$(LIBEXT)
 RML.RES = irml.res
-ifneq ($(filter vc8 vc9,$(runtime)),)
+ifneq ($(runtime),vc7.1)
 RML.MANIFEST = tbbmanifest.exe.manifest
 endif
 
-MAKE_VERSIONS = cmd /C cscript /nologo /E:jscript $(subst \,/,$(tbb_root))/build/version_info_windows.js $(compiler) $(arch) $(subst \,/,"$(CPLUS) $(CPLUS_FLAGS)") > version_string.tmp
+MAKE_VERSIONS = cmd /C cscript /nologo /E:jscript $(subst \,/,$(tbb_root))/build/version_info_windows.js $(compiler) $(arch) $(subst \,/,"$(CPLUS) $(CPLUS_FLAGS) $(INCLUDES)") > version_string.tmp
 MAKE_TBBVARS  = cmd /C "$(subst /,\,$(tbb_root))\build\generate_tbbvars.bat"
 
 TEST_LAUNCHER =  $(subst /,\,$(tbb_root))\build\test_launcher.bat

@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -29,34 +29,26 @@
 #ifndef __TBB_concurrent_hash_map_H
 #define __TBB_concurrent_hash_map_H
 
-#include "tbb_stddef.h"
-
-#if !TBB_USE_EXCEPTIONS && _MSC_VER
-    // Suppress "C++ exception handler used, but unwind semantics are not enabled" warning in STL headers
-    #pragma warning (push)
-    #pragma warning (disable: 4530)
-#endif
-
+#include <stdexcept>
 #include <iterator>
 #include <utility>      // Need std::pair
 #include <cstring>      // Need std::memset
-
-#if !TBB_USE_EXCEPTIONS && _MSC_VER
-    #pragma warning (pop)
-#endif
-
+#include <string>
+#include "tbb_stddef.h"
 #include "cache_aligned_allocator.h"
 #include "tbb_allocator.h"
 #include "spin_rw_mutex.h"
 #include "atomic.h"
 #include "aligned_space.h"
-#include "tbb_exception.h"
-#include "_concurrent_unordered_internal.h" // Need tbb_hasher
 #if TBB_USE_PERFORMANCE_WARNINGS
 #include <typeinfo>
 #endif
 
 namespace tbb {
+
+template<typename T> struct tbb_hash_compare;
+template<typename Key, typename T, typename HashCompare = tbb_hash_compare<Key>, typename A = tbb_allocator<std::pair<Key, T> > >
+class concurrent_hash_map;
 
 //! @cond INTERNAL
 namespace internal {
@@ -66,29 +58,11 @@ namespace internal {
     void __TBB_EXPORTED_FUNC itt_store_pointer_with_release_v3( void* dst, void* src );
     //! Routine that loads pointer from location pointed to by src without causing ITT to report a race.
     void* __TBB_EXPORTED_FUNC itt_load_pointer_v3( const void* src );
-}
-//! @endcond
-
-//! hash_compare that is default argument for concurrent_hash_map
-template<typename Key>
-struct tbb_hash_compare {
-    static size_t hash( const Key& a ) { return tbb_hasher(a); }
-    static bool equal( const Key& a, const Key& b ) { return a == b; }
-};
-
-namespace interface4 {
-
-    template<typename Key, typename T, typename HashCompare = tbb_hash_compare<Key>, typename A = tbb_allocator<std::pair<Key, T> > >
-    class concurrent_hash_map;
-
-    //! @cond INTERNAL
-    namespace internal {
-
 
     //! Type of a hash code.
     typedef size_t hashcode_t;
     //! Node base type
-    struct hash_map_node_base : tbb::internal::no_copy {
+    struct hash_map_node_base : no_copy {
         //! Mutex type
         typedef spin_rw_mutex mutex_t;
         //! Scoped lock type for mutex
@@ -113,7 +87,7 @@ namespace interface4 {
         //! Node base type
         typedef hash_map_node_base node_base;
         //! Bucket type
-        struct bucket : tbb::internal::no_copy {
+        struct bucket : no_copy {
             //! Mutex type for buckets
             typedef spin_rw_mutex mutex_t;
             //! Scoped lock type for mutex
@@ -246,16 +220,6 @@ namespace interface4 {
             return &seg[h];
         }
 
-        // internal serial rehashing helper
-        void mark_rehashed_levels( hashcode_t h ) throw () {
-            segment_index_t s = segment_index_of( h );
-            while( segment_ptr_t seg = my_table[++s] )
-                if( seg[h].node_list == rehash_req ) {
-                    seg[h].node_list = empty_rehashed;
-                    mark_rehashed_levels( h + segment_base(s) );
-                }
-        }
-
         //! Check for mask race
         // Splitting into two functions should help inlining
         inline bool check_mask_race( const hashcode_t h, hashcode_t &m ) const {
@@ -276,8 +240,7 @@ namespace interface4 {
             if( (h & m_old) != (h & m) ) { // mask changed for this hashcode, rare event
                 // condition above proves that 'h' has some other bits set beside 'm_old'
                 // find next applicable mask after m_old    //TODO: look at bsl instruction
-                for( ++m_old; !(h & m_old); m_old <<= 1 ) // at maximum few rounds depending on the first block size
-                    ;
+                for( ++m_old; !(h & m_old); m_old <<= 1 ); // at maximum few rounds depending on the first block size
                 m_old = (m_old<<1) - 1; // get full mask from a bit
                 __TBB_ASSERT((m_old&(m_old+1))==0 && m_old <= m, NULL);
                 // check whether it is rehashing/ed
@@ -353,10 +316,10 @@ namespace interface4 {
         friend ptrdiff_t operator-( const hash_map_iterator<C,T>& i, const hash_map_iterator<C,U>& j );
     
         template<typename C, typename U>
-        friend class hash_map_iterator;
+        friend class internal::hash_map_iterator;
 
         template<typename I>
-        friend class hash_map_range;
+        friend class internal::hash_map_range;
 
         void advance_to_next_bucket() { // TODO?: refactor to iterator_base class
             size_t k = my_index+1;
@@ -375,7 +338,7 @@ namespace interface4 {
         }
 #if !defined(_MSC_VER) || defined(__INTEL_COMPILER)
         template<typename Key, typename T, typename HashCompare, typename A>
-        friend class interface4::concurrent_hash_map;
+        friend class tbb::concurrent_hash_map;
 #else
     public: // workaround
 #endif
@@ -493,24 +456,24 @@ namespace interface4 {
         {}
 #if TBB_DEPRECATED
         //! Init range with iterators and grainsize specified
-        hash_map_range( const Iterator& begin_, const Iterator& end_, size_type grainsize_ = 1 ) : 
+        hash_map_range( const Iterator& begin_, const Iterator& end_, size_type grainsize = 1 ) : 
             my_begin(begin_), 
             my_end(end_),
-            my_grainsize(grainsize_)
+            my_grainsize(grainsize)
         {
             if(!my_end.my_index && !my_end.my_bucket) // end
                 my_end.my_index = my_end.my_map->my_mask + 1;
             set_midpoint();
-            __TBB_ASSERT( grainsize_>0, "grainsize must be positive" );
+            __TBB_ASSERT( grainsize>0, "grainsize must be positive" );
         }
 #endif
         //! Init range with container and grainsize specified
-        hash_map_range( const map_type &map, size_type grainsize_ = 1 ) : 
+        hash_map_range( const map_type &map, size_type grainsize = 1 ) : 
             my_begin( Iterator( map, 0, map.my_embedded_segment, map.my_embedded_segment->node_list ) ),
             my_end( Iterator( map, map.my_mask + 1, 0, 0 ) ),
-            my_grainsize( grainsize_ )
+            my_grainsize( grainsize )
         {
-            __TBB_ASSERT( grainsize_>0, "grainsize must be positive" );
+            __TBB_ASSERT( grainsize>0, "grainsize must be positive" );
             set_midpoint();
         }
         const Iterator& begin() const {return my_begin;}
@@ -537,9 +500,39 @@ namespace interface4 {
         __TBB_ASSERT( my_begin != my_midpoint || my_begin == my_end,
             "[my_begin, my_midpoint) range should not be empty" );
     }
-
-    } // internal
+} // namespace internal
 //! @endcond
+
+//! Hash multiplier
+static const size_t hash_multiplier = sizeof(size_t)==4? 2654435769U : 11400714819323198485ULL;
+//! Hasher functions
+template<typename T>
+inline static size_t tbb_hasher( const T& t ) {
+    return static_cast<size_t>( t ) * hash_multiplier;
+}
+template<typename P>
+inline static size_t tbb_hasher( P* ptr ) {
+    size_t const h = reinterpret_cast<size_t>( ptr );
+    return (h >> 3) ^ h;
+}
+template<typename E, typename S, typename A>
+inline static size_t tbb_hasher( const std::basic_string<E,S,A>& s ) {
+    size_t h = 0;
+    for( const E* c = s.c_str(); *c; c++ )
+        h = static_cast<size_t>(*c) ^ (h * hash_multiplier);
+    return h;
+}
+template<typename F, typename S>
+inline static size_t tbb_hasher( const std::pair<F,S>& p ) {
+    return tbb_hasher(p.first) ^ tbb_hasher(p.second);
+}
+
+//! hash_compare - default argument
+template<typename T>
+struct tbb_hash_compare {
+    static size_t hash( const T& t ) { return tbb_hasher(t); }
+    static bool equal( const T& a, const T& b ) { return a == b; }
+};
 
 //! Unordered map from Key to T.
 /** concurrent_hash_map is associative container with concurrent access.
@@ -583,7 +576,7 @@ public:
     typedef Key key_type;
     typedef T mapped_type;
     typedef std::pair<const Key,T> value_type;
-    typedef hash_map_base::size_type size_type;
+    typedef internal::hash_map_base::size_type size_type;
     typedef ptrdiff_t difference_type;
     typedef value_type *pointer;
     typedef const value_type *const_pointer;
@@ -609,8 +602,7 @@ protected:
         // exception-safe allocation, see C++ Standard 2003, clause 5.3.4p17
         void *operator new( size_t /*size*/, node_allocator_type &a ) {
             void *ptr = a.allocate(1);
-            if(!ptr) 
-                tbb::internal::throw_exception(tbb::internal::eid_bad_alloc);
+            if(!ptr) throw std::bad_alloc();
             return ptr;
         }
         // match placement-new form above to be called if exception thrown in constructor
@@ -675,11 +667,6 @@ protected:
     restart:
         for( node_base **p = &b_old()->node_list, *n = __TBB_load_with_acquire(*p); is_valid(n); n = *p ) {
             hashcode_t c = my_hash_compare.hash( static_cast<node*>(n)->item.first );
-#if TBB_USE_ASSERT
-            hashcode_t bmask = h & (mask>>1);
-            bmask = bmask==0? 1 : ( 1u<<(__TBB_Log2( bmask )+1 ) ) - 1; // minimal mask of parent bucket
-            __TBB_ASSERT( (c & bmask) == (h & bmask), "hash() function changed for key in table" );
-#endif
             if( (c & mask) == h ) {
                 if( !b_old.is_writer() )
                     if( !b_old.upgrade_to_writer() ) {
@@ -759,7 +746,7 @@ public:
 
     //! Construct empty table.
     concurrent_hash_map(const allocator_type &a = allocator_type())
-        : internal::hash_map_base(), my_allocator(a)
+        : my_allocator(a)
     {}
 
     //! Construct empty table with n preallocated buckets. This number serves also as initial concurrency level.
@@ -771,7 +758,7 @@ public:
 
     //! Copy constructor
     concurrent_hash_map( const concurrent_hash_map& table, const allocator_type &a = allocator_type())
-        : internal::hash_map_base(), my_allocator(a)
+        : my_allocator(a)
     {
         internal_copy(table);
     }
@@ -795,11 +782,6 @@ public:
     }
 
 
-    //! Rehashes and optionally resizes the whole table.
-    /** Useful to optimize performance before or after concurrent operations.
-        Also enables using of find() and count() concurrent methods in serial context. */
-    void rehash(size_type n = 0);
-    
     //! Clear table
     void clear();
 
@@ -834,9 +816,6 @@ public:
 
     //! Upper bound on size.
     size_type max_size() const {return (~size_type(0))/sizeof(node);}
-
-    //! Returns the current number of buckets
-    size_type bucket_count() const { return my_mask+1; }
 
     //! return allocator object
     allocator_type get_allocator() const { return this->my_allocator; }
@@ -1044,18 +1023,14 @@ bool concurrent_hash_map<Key,T,HashCompare,A>::lookup( bool op_insert, const Key
         // acquire the item
         if( !result->my_lock.try_acquire( n->mutex, write ) ) {
             // we are unlucky, prepare for longer wait
-            tbb::internal::atomic_backoff trials;
+            internal::atomic_backoff trials;
             do {
                 if( !trials.bounded_pause() ) {
                     // the wait takes really long, restart the operation
                     b.release();
                     __TBB_ASSERT( !op_insert || !return_value, "Can't acquire new item in locked bucket?" );
                     __TBB_Yield();
-#if TBB_USE_THREADING_TOOLS
-                    m = (hashcode_t) itt_load_pointer_with_acquire_v3( &my_mask );
-#else
                     m = my_mask;
-#endif
                     goto restart;
                 }
             } while( !result->my_lock.try_acquire( n->mutex, write ) );
@@ -1074,7 +1049,7 @@ check_growth:
 
 template<typename Key, typename T, typename HashCompare, typename A>
 template<typename I>
-std::pair<I, I> concurrent_hash_map<Key,T,HashCompare,A>::internal_equal_range( const Key& key, I end_ ) const {
+std::pair<I, I> concurrent_hash_map<Key,T,HashCompare,A>::internal_equal_range( const Key& key, I end ) const {
     hashcode_t h = my_hash_compare.hash( key );
     hashcode_t m = my_mask;
     __TBB_ASSERT((m&(m+1))==0, NULL);
@@ -1086,7 +1061,7 @@ std::pair<I, I> concurrent_hash_map<Key,T,HashCompare,A>::internal_equal_range( 
     }
     node *n = search_bucket( key, b );
     if( !n )
-        return std::make_pair(end_, end_);
+        return std::make_pair(end, end);
     iterator lower(*this, h, b, n), upper(lower);
     return std::make_pair(lower, ++upper);
 }
@@ -1097,11 +1072,7 @@ bool concurrent_hash_map<Key,T,HashCompare,A>::exclude( const_accessor &item_acc
     node_base *const n = item_accessor.my_node;
     item_accessor.my_node = NULL; // we ought release accessor anyway
     hashcode_t const h = item_accessor.my_hash;
-#if TBB_USE_THREADING_TOOLS
-    hashcode_t m = (hashcode_t) itt_load_pointer_with_acquire_v3( &my_mask );
-#else
     hashcode_t m = my_mask;
-#endif
     do {
         // get bucket
         bucket_accessor b( this, h & m, /*writer=*/true );
@@ -1130,11 +1101,7 @@ template<typename Key, typename T, typename HashCompare, typename A>
 bool concurrent_hash_map<Key,T,HashCompare,A>::erase( const Key &key ) {
     node_base *n;
     hashcode_t const h = my_hash_compare.hash( key );
-#if TBB_USE_THREADING_TOOLS
-    hashcode_t m = (hashcode_t) itt_load_pointer_with_acquire_v3( &my_mask );
-#else
     hashcode_t m = my_mask;
-#endif
 restart:
     {//lock scope
         // get bucket
@@ -1175,129 +1142,56 @@ void concurrent_hash_map<Key,T,HashCompare,A>::swap(concurrent_hash_map<Key,T,Ha
 }
 
 template<typename Key, typename T, typename HashCompare, typename A>
-void concurrent_hash_map<Key,T,HashCompare,A>::rehash(size_type sz) {
-    reserve( sz ); // TODO: add reduction of number of buckets as well
-    hashcode_t mask = my_mask;
-    hashcode_t b = (mask+1)>>1; // size or first index of the last segment
-    __TBB_ASSERT((b&(b-1))==0, NULL);
-    bucket *bp = get_bucket( b ); // only the last segment should be scanned for rehashing
-    for(; b <= mask; b++, bp++ ) {
-        node_base *n = bp->node_list;
-        __TBB_ASSERT( is_valid(n) || n == internal::empty_rehashed || n == internal::rehash_req, "Broken internal structure" );
-        __TBB_ASSERT( *reinterpret_cast<intptr_t*>(&bp->mutex) == 0, "concurrent or unexpectedly terminated operation during rehash() execution" );
-        if( n == internal::rehash_req ) { // rehash bucket, conditional because rehashing of a previous bucket may affect this one
-            hashcode_t h = b; bucket *b_old = bp;
-            do {
-                __TBB_ASSERT( h > 1, "The lowermost buckets can't be rehashed" );
-                hashcode_t m = ( 1u<<__TBB_Log2( h ) ) - 1; // get parent mask from the topmost bit
-                b_old = get_bucket( h &= m );
-            } while( b_old->node_list == internal::rehash_req );
-            // now h - is index of the root rehashed bucket b_old
-            mark_rehashed_levels( h ); // mark all non-rehashed children recursively across all segments
-            for( node_base **p = &b_old->node_list, *q = *p; is_valid(q); q = *p ) {
-                hashcode_t c = my_hash_compare.hash( static_cast<node*>(q)->item.first );
-                if( (c & mask) != h ) { // should be rehashed
-                    *p = q->next; // exclude from b_old
-                    bucket *b_new = get_bucket( c & mask );
-                    __TBB_ASSERT( b_new->node_list != internal::rehash_req, "hash() function changed for key in table or internal error" );
-                    add_to_bucket( b_new, q );
-                } else p = &q->next; // iterate to next item
-            }
-        }
-    }
-#if TBB_USE_PERFORMANCE_WARNINGS
-    int current_size = int(my_size), buckets = int(mask)+1, empty_buckets = 0, overpopulated_buckets = 0; // usage statistics
-    static bool reported = false;
-#endif
-#if TBB_USE_ASSERT || TBB_USE_PERFORMANCE_WARNINGS
-    for( b = 0; b <= mask; b++ ) {// only last segment should be scanned for rehashing
-        if( b & (b-2) ) ++bp; // not the beginning of a segment
-        else bp = get_bucket( b );
-        node_base *n = bp->node_list;
-        __TBB_ASSERT( *reinterpret_cast<intptr_t*>(&bp->mutex) == 0, "concurrent or unexpectedly terminated operation during rehash() execution" );
-        __TBB_ASSERT( is_valid(n) || n == internal::empty_rehashed, "Broken internal structure" );
-#if TBB_USE_PERFORMANCE_WARNINGS
-        if( n == internal::empty_rehashed ) empty_buckets++;
-        else if( n->next ) overpopulated_buckets++;
-#endif
-#if TBB_USE_ASSERT
-        for( ; is_valid(n); n = n->next ) {
-            hashcode_t h = my_hash_compare.hash( static_cast<node*>(n)->item.first ) & mask;
-            __TBB_ASSERT( h == b, "hash() function changed for key in table or internal error" );
-        }
-#endif
-    }
-#endif // TBB_USE_ASSERT || TBB_USE_PERFORMANCE_WARNINGS
-#if TBB_USE_PERFORMANCE_WARNINGS
-    if( buckets > current_size) empty_buckets -= buckets - current_size;
-    else overpopulated_buckets -= current_size - buckets; // TODO: load_factor?
-    if( !reported && buckets >= 512 && ( 2*empty_buckets > current_size || 2*overpopulated_buckets > current_size ) ) {
-        tbb::internal::runtime_warning(
-            "Performance is not optimal because the hash function produces bad randomness in lower bits in %s.\nSize: %d  Empties: %d  Overlaps: %d",
-            typeid(*this).name(), current_size, empty_buckets, overpopulated_buckets );
-        reported = true;
-    }
-#endif
-}
-
-template<typename Key, typename T, typename HashCompare, typename A>
 void concurrent_hash_map<Key,T,HashCompare,A>::clear() {
     hashcode_t m = my_mask;
     __TBB_ASSERT((m&(m+1))==0, NULL);
-#if TBB_USE_ASSERT || TBB_USE_PERFORMANCE_WARNINGS
+#if TBB_USE_DEBUG || TBB_USE_PERFORMANCE_WARNINGS
 #if TBB_USE_PERFORMANCE_WARNINGS
-    int current_size = int(my_size), buckets = int(m)+1, empty_buckets = 0, overpopulated_buckets = 0; // usage statistics
+    int size = int(my_size), buckets = int(m)+1, empty_buckets = 0, overpopulated_buckets = 0; // usage statistics
     static bool reported = false;
 #endif
-    bucket *bp = 0;
     // check consistency
     for( segment_index_t b = 0; b <= m; b++ ) {
-        if( b & (b-2) ) ++bp; // not the beginning of a segment
-        else bp = get_bucket( b );
-        node_base *n = bp->node_list;
-        __TBB_ASSERT( is_valid(n) || n == internal::empty_rehashed || n == internal::rehash_req, "Broken internal structure" );
-        __TBB_ASSERT( *reinterpret_cast<intptr_t*>(&bp->mutex) == 0, "concurrent or unexpectedly terminated operation during clear() execution" );
+        node_base *n = get_bucket(b)->node_list;
 #if TBB_USE_PERFORMANCE_WARNINGS
         if( n == internal::empty_rehashed ) empty_buckets++;
         else if( n == internal::rehash_req ) buckets--;
         else if( n->next ) overpopulated_buckets++;
 #endif
-#if __TBB_EXTRA_DEBUG
         for(; is_valid(n); n = n->next ) {
             hashcode_t h = my_hash_compare.hash( static_cast<node*>(n)->item.first );
             h &= m;
-            __TBB_ASSERT( h == b || get_bucket(h)->node_list == internal::rehash_req, "hash() function changed for key in table or internal error" );
+            __TBB_ASSERT( h == b || get_bucket(h)->node_list == internal::rehash_req, "Rehashing is not finished until serial stage due to concurrent or unexpectedly terminated operation" );
         }
-#endif
     }
 #if TBB_USE_PERFORMANCE_WARNINGS
-    if( buckets > current_size) empty_buckets -= buckets - current_size;
-    else overpopulated_buckets -= current_size - buckets; // TODO: load_factor?
-    if( !reported && buckets >= 512 && ( 2*empty_buckets > current_size || 2*overpopulated_buckets > current_size ) ) {
-        tbb::internal::runtime_warning(
+    if( buckets > size) empty_buckets -= buckets - size;
+    else overpopulated_buckets -= size - buckets; // TODO: load_factor?
+    if( !reported && buckets >= 512 && ( 2*empty_buckets >= size || 2*overpopulated_buckets > size ) ) {
+        internal::runtime_warning(
             "Performance is not optimal because the hash function produces bad randomness in lower bits in %s.\nSize: %d  Empties: %d  Overlaps: %d",
-            typeid(*this).name(), current_size, empty_buckets, overpopulated_buckets );
+            typeid(*this).name(), size, empty_buckets, overpopulated_buckets );
         reported = true;
     }
 #endif
-#endif//TBB_USE_ASSERT || TBB_USE_PERFORMANCE_WARNINGS
+#endif//TBB_USE_DEBUG || TBB_USE_PERFORMANCE_WARNINGS
     my_size = 0;
     segment_index_t s = segment_index_of( m );
     __TBB_ASSERT( s+1 == pointers_per_table || !my_table[s+1], "wrong mask or concurrent grow" );
     cache_aligned_allocator<bucket> alloc;
     do {
         __TBB_ASSERT( is_valid( my_table[s] ), "wrong mask or concurrent grow" );
-        segment_ptr_t buckets_ptr = my_table[s];
+        segment_ptr_t buckets = my_table[s];
         size_type sz = segment_size( s ? s : 1 );
         for( segment_index_t i = 0; i < sz; i++ )
-            for( node_base *n = buckets_ptr[i].node_list; is_valid(n); n = buckets_ptr[i].node_list ) {
-                buckets_ptr[i].node_list = n->next;
+            for( node_base *n = buckets[i].node_list; is_valid(n); n = buckets[i].node_list ) {
+                buckets[i].node_list = n->next;
                 delete_node( n );
             }
         if( s >= first_block) // the first segment or the next
-            alloc.deallocate( buckets_ptr, sz );
+            alloc.deallocate( buckets, sz );
         else if( s == embedded_block && embedded_block != first_block )
-            alloc.deallocate( buckets_ptr, segment_size(first_block)-embedded_buckets );
+            alloc.deallocate( buckets, segment_size(first_block)-embedded_buckets );
         if( s >= embedded_block ) my_table[s] = 0;
     } while(s-- > 0);
     my_mask = embedded_buckets - 1;
@@ -1309,21 +1203,19 @@ void concurrent_hash_map<Key,T,HashCompare,A>::internal_copy( const concurrent_h
     hashcode_t mask = source.my_mask;
     if( my_mask == mask ) { // optimized version
         bucket *dst = 0, *src = 0;
-        bool rehash_required = false;
         for( hashcode_t k = 0; k <= mask; k++ ) {
             if( k & (k-2) ) ++dst,src++; // not the beginning of a segment
             else { dst = get_bucket( k ); src = source.get_bucket( k ); }
             __TBB_ASSERT( dst->node_list != internal::rehash_req, "Invalid bucket in destination table");
             node *n = static_cast<node*>( src->node_list );
             if( n == internal::rehash_req ) { // source is not rehashed, items are in previous buckets
-                rehash_required = true;
-                dst->node_list = internal::rehash_req;
+                bucket_accessor b( this, k );
+                rehash_bucket( b(), k ); // TODO: use without synchronization
             } else for(; n; n = static_cast<node*>( n->next ) ) {
                 add_to_bucket( dst, new( my_allocator ) node(n->item.first, n->item.second) );
                 ++my_size; // TODO: replace by non-atomic op
             }
         }
-        if( rehash_required ) rehash();
     } else internal_copy( source.begin(), source.end() );
 }
 
@@ -1340,11 +1232,6 @@ void concurrent_hash_map<Key,T,HashCompare,A>::internal_copy(I first, I last) {
         ++my_size; // TODO: replace by non-atomic op
     }
 }
-
-} // namespace interface4
-
-using interface4::concurrent_hash_map;
-
 
 template<typename Key, typename T, typename HashCompare, typename A1, typename A2>
 inline bool operator==(const concurrent_hash_map<Key, T, HashCompare, A1> &a, const concurrent_hash_map<Key, T, HashCompare, A2> &b) {
