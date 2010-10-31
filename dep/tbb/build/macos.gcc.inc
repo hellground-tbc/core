@@ -1,4 +1,4 @@
-# Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+# Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 #
 # This file is part of Threading Building Blocks.
 #
@@ -35,8 +35,7 @@ OUTPUTOBJ_KEY = -o #
 PIC_KEY = -fPIC
 WARNING_AS_ERROR_KEY = -Werror
 WARNING_KEY = -Wall
-TEST_WARNING_KEY = -Wextra -Wshadow -Wcast-qual -Woverloaded-virtual -Wnon-virtual-dtor
-WARNING_SUPPRESS = -Wno-non-virtual-dtor
+WARNING_SUPPRESS =
 DYLIB_KEY = -dynamiclib
 EXPORT_KEY = -Wl,-exported_symbols_list,
 LIBDL = -ldl

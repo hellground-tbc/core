@@ -1,4 +1,4 @@
-// Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+// Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 //
 // This file is part of Threading Building Blocks.
 //
@@ -90,7 +90,7 @@ BEGIN
             VALUE "FileDescription", "Threading Building Blocks library\0"
             VALUE "FileVersion", TBB_VERSION "\0"
 //what is it?            VALUE "InternalName", "tbb\0"
-            VALUE "LegalCopyright", "Copyright 2005-2010 Intel Corporation.  All Rights Reserved.\0"
+            VALUE "LegalCopyright", "Copyright 2005-2009 Intel Corporation.  All Rights Reserved.\0"
             VALUE "LegalTrademarks", "\0"
 #ifndef TBB_USE_DEBUG
             VALUE "OriginalFilename", "tbb.dll\0"

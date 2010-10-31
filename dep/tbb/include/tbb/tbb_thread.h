@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -39,21 +39,10 @@
 #include <pthread.h>
 #endif // _WIN32||_WIN64
 
+#include <iosfwd>
+#include <exception>             // Need std::terminate from here.
 #include "tbb_stddef.h"
 #include "tick_count.h"
-#include <exception>             // Need std::terminate from here.
-
-#if !TBB_USE_EXCEPTIONS && _MSC_VER
-    // Suppress "C++ exception handler used, but unwind semantics are not enabled" warning in STL headers
-    #pragma warning (push)
-    #pragma warning (disable: 4530)
-#endif
-
-#include <iosfwd>
-
-#if !TBB_USE_EXCEPTIONS && _MSC_VER
-    #pragma warning (pop)
-#endif
 
 namespace tbb {
 
@@ -83,9 +72,9 @@ namespace internal {
 
         static __TBB_NATIVE_THREAD_ROUTINE start_routine( void* c ) {
             thread_closure_0 *self = static_cast<thread_closure_0*>(c);
-            __TBB_TRY {
+            try {
                 self->function();
-            } __TBB_CATCH( ... ) {
+            } catch ( ... ) {
                 std::terminate();
             }
             delete self;
@@ -100,9 +89,9 @@ namespace internal {
         //! Routine passed to Windows's _beginthreadex by thread::internal_start() inside tbb.dll
         static __TBB_NATIVE_THREAD_ROUTINE start_routine( void* c ) {
             thread_closure_1 *self = static_cast<thread_closure_1*>(c);
-            __TBB_TRY {
+            try {
                 self->function(self->arg1);
-            } __TBB_CATCH( ... ) {
+            } catch ( ... ) {
                 std::terminate();
             }
             delete self;
@@ -117,9 +106,9 @@ namespace internal {
         //! Routine passed to Windows's _beginthreadex by thread::internal_start() inside tbb.dll
         static __TBB_NATIVE_THREAD_ROUTINE start_routine( void* c ) {
             thread_closure_2 *self = static_cast<thread_closure_2*>(c);
-            __TBB_TRY {
+            try {
                 self->function(self->arg1, self->arg2);
-            } __TBB_CATCH( ... ) {
+            } catch ( ... ) {
                 std::terminate();
             }
             delete self;
@@ -172,7 +161,6 @@ namespace internal {
 #endif // _WIN32||_WIN64
             return *this;
         }
-        void swap( tbb_thread_v3& t ) {tbb::swap( *this, t );}
         bool joinable() const {return my_handle!=0; }
         //! The completion of the thread represented by *this happens before join() returns.
         void __TBB_EXPORTED_METHOD join();
@@ -200,10 +188,10 @@ namespace internal {
     class tbb_thread_v3::id { 
 #if _WIN32||_WIN64
         DWORD my_id;
-        id( DWORD id_ ) : my_id(id_) {}
+        id( DWORD my_id ) : my_id(my_id) {}
 #else
         pthread_t my_id;
-        id( pthread_t id_ ) : my_id(id_) {}
+        id( pthread_t my_id ) : my_id(my_id) {}
 #endif // _WIN32||_WIN64
         friend class tbb_thread_v3;
     public:

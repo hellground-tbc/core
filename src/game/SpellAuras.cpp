@@ -6817,7 +6817,7 @@ void Aura::PeriodicDummyTick()
                         m_isPeriodic = false;
                         if(m_tickNumber == 1)
                         {
-                            if (((Player*)m_target)->GetClass() == CLASS_DRUID && m_target->HasAuraType(SPELL_AURA_MOD_SHAPESHIFT) && !m_target->HasAura(24858, 0))
+                            if (((Player*)m_target)->getPowerType() != POWER_MANA)
                                 (*i)->GetModifier()->m_amount = 0;
                             else
                                 (*i)->GetModifier()->m_amount = m_modifier.m_amount;
@@ -6853,7 +6853,7 @@ void Aura::PeriodicDummyTick()
                             break;
                     }
 
-                    if (((Player*)m_target)->GetClass() == CLASS_DRUID && m_target->HasAuraType(SPELL_AURA_MOD_SHAPESHIFT) && !m_target->HasAura(24858, 0))
+                    if (((Player*)m_target)->getPowerType() != POWER_MANA)
                         (*i)->GetModifier()->m_amount = 0;
 
                     ((Player*)m_target)->UpdateManaRegen();

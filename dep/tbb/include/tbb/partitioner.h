@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -62,10 +62,10 @@ class partition_type_base {
 public:
     void set_affinity( task & ) {}
     void note_affinity( task::affinity_id ) {}
-    task* continue_after_execute_range() {return NULL;}
+    task* continue_after_execute_range( task& ) {return NULL;}
     bool decide_whether_to_delay() {return false;}
-    void spawn_or_delay( bool, task& b ) {
-        task::spawn(b);
+    void spawn_or_delay( bool, task& a, task& b ) {
+        a.spawn(b);
     }
 };
 
@@ -188,12 +188,12 @@ public:
         if( map_begin<map_end ) 
             my_array[map_begin] = id;
     }
-    task* continue_after_execute_range() {
+    task* continue_after_execute_range( task& t ) {
         task* first = NULL;
         if( !delay_list.empty() ) {
             first = &delay_list.pop_front();
             while( !delay_list.empty() ) {
-                task::spawn(*first);
+                t.spawn(*first);
                 first = &delay_list.pop_front();
             }
         }
@@ -203,11 +203,11 @@ public:
         // The possible underflow caused by "-1u" is deliberate
         return (map_begin&(factor-1))==0 && map_end-map_begin-1u<factor;
     }
-    void spawn_or_delay( bool delay, task& b ) {
+    void spawn_or_delay( bool delay, task& a, task& b ) {
         if( delay )  
             delay_list.push_back(b);
         else 
-            task::spawn(b);
+            a.spawn(b);
     }
 
     ~affinity_partition_type() {

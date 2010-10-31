@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -32,13 +32,7 @@
 #if USE_PTHREAD
 #include <pthread.h>
 #else /* assume USE_WINTHREAD */
-#if defined(_XBOX)
-    #define NONET
-    #define NOD3D
-    #include <xtl.h>
-#else
 #include <windows.h>
-#endif
 #endif
 
 namespace tbb {

@@ -1,4 +1,4 @@
-# Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+# Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 #
 # This file is part of Threading Building Blocks.
 #
@@ -76,9 +76,6 @@ ifeq (sparc,$(arch))
     CPLUS_FLAGS    += -m64
     LIB_LINK_FLAGS += -m64
 endif 
-
-export TBB_CUSTOM_VARS_SH=export CXXFLAGS="-I$${TBB30_INSTALL_DIR}/include -library=stlport4 $(CXXFLAGS) -M$${TBB30_INSTALL_DIR}/build/suncc.map.pause"
-export TBB_CUSTOM_VARS_CSH=setenv CXXFLAGS "-I$${TBB30_INSTALL_DIR}/include -library=stlport4 $(CXXFLAGS) -M$${TBB30_INSTALL_DIR}/build/suncc.map.pause"
 
 #------------------------------------------------------------------------------
 # Setting assembler data.

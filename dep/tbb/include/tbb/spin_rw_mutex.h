@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -95,6 +95,7 @@ public:
         scoped_lock() : mutex(NULL), is_writer(false) {}
 
         //! Acquire lock on given mutex.
+        /** Upon entry, *this should not be in the "have acquired a mutex" state. */
         scoped_lock( spin_rw_mutex& m, bool write = true ) : mutex(NULL) {
             acquire(m, write);
         }

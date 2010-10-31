@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -30,11 +30,11 @@
 #define __TBB_tbb_stddef_H
 
 // Marketing-driven product version
-#define TBB_VERSION_MAJOR 3
-#define TBB_VERSION_MINOR 0
+#define TBB_VERSION_MAJOR 2
+#define TBB_VERSION_MINOR 2
 
 // Engineering-focused interface version
-#define TBB_INTERFACE_VERSION 5000
+#define TBB_INTERFACE_VERSION 4001
 #define TBB_INTERFACE_VERSION_MAJOR TBB_INTERFACE_VERSION/1000
 
 // The oldest major interface version still supported
@@ -159,10 +159,10 @@ namespace internal {
 
 #include "tbb_config.h"
 
-//! The namespace tbb contains all components of the library.
 namespace tbb {
     //! Type for an assertion handler
     typedef void(*assertion_handler_type)( const char* filename, int line, const char* expression, const char * comment );
+}
 
 #if TBB_USE_ASSERT
 
@@ -173,6 +173,7 @@ namespace tbb {
 #define __TBB_ASSERT(predicate,message) ((predicate)?((void)0):tbb::assertion_failure(__FILE__,__LINE__,#predicate,message))
 #define __TBB_ASSERT_EX __TBB_ASSERT
 
+namespace tbb {
     //! Set assertion handler and return previous value of it.
     assertion_handler_type __TBB_EXPORTED_FUNC set_assertion_handler( assertion_handler_type new_handler );
 
@@ -181,6 +182,7 @@ namespace tbb {
         If assertion handler is null, print message for assertion failure and abort.
         Otherwise call the assertion handler. */
     void __TBB_EXPORTED_FUNC assertion_failure( const char* filename, int line, const char* expression, const char* comment );
+} // namespace tbb
 
 #else
 
@@ -190,6 +192,9 @@ namespace tbb {
 #define __TBB_ASSERT_EX(predicate,comment) ((void)(1 && (predicate)))
 
 #endif /* TBB_USE_ASSERT */
+
+//! The namespace tbb contains all components of the library.
+namespace tbb {
 
 //! The function returns the interface version of the TBB shared library being used.
 /**
@@ -214,47 +219,21 @@ namespace internal {
 
 using std::size_t;
 
+//! An unsigned integral type big enough to hold a pointer.
+/** There's no guarantee by the C++ standard that a size_t is really big enough,
+    but it happens to be for all platforms of interest. */
+typedef size_t uintptr;
+
+//! A signed integral type big enough to hold a pointer.
+/** There's no guarantee by the C++ standard that a ptrdiff_t is really big enough,
+    but it happens to be for all platforms of interest. */
+typedef std::ptrdiff_t intptr;
+
 //! Compile-time constant that is upper bound on cache line/sector size.
 /** It should be used only in situations where having a compile-time upper 
     bound is more useful than a run-time exact answer.
     @ingroup memory_allocation */
 const size_t NFS_MaxLineSize = 128;
-
-template<class T, int S>
-struct padded_base : T {
-    char pad[NFS_MaxLineSize - sizeof(T) % NFS_MaxLineSize];
-};
-template<class T> struct padded_base<T, 0> : T {};
-
-//! Pads type T to fill out to a multiple of cache line size.
-template<class T>
-struct padded : padded_base<T, sizeof(T)> {};
-
-//! Extended variant of the standard offsetof macro
-/** The standard offsetof macro is not sufficient for TBB as it can be used for
-    POD-types only. The constant 0x1000 (not NULL) is necessary to appease GCC. **/
-#define __TBB_offsetof(class_name, member_name) \
-    ((ptrdiff_t)&(reinterpret_cast<class_name*>(0x1000)->member_name) - 0x1000)
-
-//! Returns address of the object containing a member with the given name and address
-#define __TBB_get_object_ref(class_name, member_name, member_addr) \
-    (*reinterpret_cast<class_name*>((char*)member_addr - __TBB_offsetof(class_name, member_name)))
-
-//! Throws std::runtime_error with what() returning error_code description prefixed with aux_info
-void __TBB_EXPORTED_FUNC handle_perror( int error_code, const char* aux_info );
-
-#if TBB_USE_EXCEPTIONS
-    #define __TBB_TRY try
-    #define __TBB_CATCH(e) catch(e)
-    #define __TBB_THROW(e) throw e
-    #define __TBB_RETHROW() throw
-#else /* !TBB_USE_EXCEPTIONS */
-    inline bool __TBB_false() { return false; }
-    #define __TBB_TRY
-    #define __TBB_CATCH(e) if ( tbb::internal::__TBB_false() )
-    #define __TBB_THROW(e) ((void)0)
-    #define __TBB_RETHROW() ((void)0)
-#endif /* !TBB_USE_EXCEPTIONS */
 
 //! Report a runtime warning.
 void __TBB_EXPORTED_FUNC runtime_warning( const char* format, ... );

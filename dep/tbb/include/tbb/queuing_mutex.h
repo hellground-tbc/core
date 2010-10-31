@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -29,20 +29,7 @@
 #ifndef __TBB_queuing_mutex_H
 #define __TBB_queuing_mutex_H
 
-#include "tbb_config.h"
-
-#if !TBB_USE_EXCEPTIONS && _MSC_VER
-    // Suppress "C++ exception handler used, but unwind semantics are not enabled" warning in STL headers
-    #pragma warning (push)
-    #pragma warning (disable: 4530)
-#endif
-
 #include <cstring>
-
-#if !TBB_USE_EXCEPTIONS && _MSC_VER
-    #pragma warning (pop)
-#endif
-
 #include "atomic.h"
 #include "tbb_profiling.h"
 
@@ -77,6 +64,7 @@ public:
         scoped_lock() {initialize();}
 
         //! Acquire lock on given mutex.
+        /** Upon entry, *this should not be in the "have acquired a mutex" state. */
         scoped_lock( queuing_mutex& m ) {
             initialize();
             acquire(m);
@@ -107,7 +95,7 @@ public:
         /** Inverted (0 - blocked, 1 - acquired the mutex) for the sake of 
             zero-initialization.  Defining it as an entire word instead of
             a byte seems to help performance slightly. */
-        uintptr_t going;
+        internal::uintptr going;
     };
 
     void __TBB_EXPORTED_METHOD internal_construct();

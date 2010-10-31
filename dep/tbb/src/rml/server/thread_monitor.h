@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -43,8 +43,6 @@
 #error Unsupported platform
 #endif 
 #include <stdio.h>
-#include "tbb/itt_notify.h"
-
 
 // All platform-specific threading support is in this header.
 
@@ -67,12 +65,6 @@
 namespace rml {
 
 namespace internal {
-
-#if DO_ITT_NOTIFY
-static const ::tbb::tchar *SyncType_RML = _T("%Constant");
-static const ::tbb::tchar *SyncObj_ThreadMonitorLock = _T("RML Lock"),
-                          *SyncObj_ThreadMonitor = _T("RML Thr Monitor");
-#endif /* DO_ITT_NOTIFY */
 
 //! Monitor with limited two-phase commit form of wait.  
 /** At most one thread should wait on an instance at a time. */
@@ -114,8 +106,6 @@ public:
     static void launch( thread_routine_type thread_routine, void* arg, size_t stack_size );
     static void yield();
 
-
-
 private:
     cookie my_cookie;
 #if USE_WINTHREAD
@@ -128,7 +118,6 @@ private:
     static void check( int error_code, const char* routine );
 #endif /* USE_PTHREAD */
 };
-
 
 
 #if USE_WINTHREAD
@@ -153,17 +142,12 @@ inline void thread_monitor::yield() {
 inline thread_monitor::thread_monitor() {
     event = CreateEvent( NULL, /*manualReset=*/true, /*initialState=*/false, NULL );
     InitializeCriticalSection( &critical_section );
-    ITT_SYNC_CREATE(&event, SyncType_RML, SyncObj_ThreadMonitor);
-    ITT_SYNC_CREATE(&critical_section, SyncType_RML, SyncObj_ThreadMonitorLock);
     my_cookie.my_version = 0;
 }
 
 inline thread_monitor::~thread_monitor() {
-    // Fake prepare/acquired pair for Intel(R) Parallel Amplifier to correctly attribute the operations below
-    ITT_NOTIFY( sync_prepare, &event );
     CloseHandle( event );
     DeleteCriticalSection( &critical_section );
-    ITT_NOTIFY( sync_acquired, &event );
 }
      
 inline void thread_monitor::notify() {
@@ -203,7 +187,8 @@ inline void thread_monitor::check( int error_code, const char* routine ) {
 inline void thread_monitor::launch( void* (*thread_routine)(void*), void* arg, size_t stack_size ) {
     // FIXME - consider more graceful recovery than just exiting if a thread cannot be launched.
     // Note that there are some tricky situations to deal with, such that the thread is already 
-    // grabbed as part of an OpenMP team. 
+    // grabbed as part of an OpenMP team, or is being launched as a replacement for a thread with
+    // too small a stack.
     pthread_attr_t s;
     check(pthread_attr_init( &s ), "pthread_attr_init");
     if( stack_size>0 ) {
@@ -219,10 +204,8 @@ inline void thread_monitor::yield() {
 }
 
 inline thread_monitor::thread_monitor() {
-    check( pthread_cond_init(&my_cond,NULL), "pthread_cond_init" );
     check( pthread_mutex_init(&my_mutex,NULL), "pthread_mutex_init" );
-    ITT_SYNC_CREATE(&my_cond, SyncType_RML, SyncObj_ThreadMonitor);
-    ITT_SYNC_CREATE(&my_mutex, SyncType_RML, SyncObj_ThreadMonitorLock);
+    check( pthread_cond_init(&my_cond,NULL), "pthread_cond_init" );
     my_cookie.my_version = 0;
 }
 

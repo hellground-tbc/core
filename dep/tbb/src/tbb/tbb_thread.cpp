@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -28,14 +28,17 @@
 
 #if _WIN32||_WIN64
 #include <process.h>        /* Need _beginthreadex from there */
-#endif
-#include "tbb_misc.h"       // handle_win_error, ThreadStackSize
+#include <stdexcept>        /* Need std::runtime_error from there */
+#include <string>           /* Need std::string from there */
+#endif // _WIN32||_WIN64
+#include "tbb_misc.h" // for handle_perror
 #include "tbb/tbb_stddef.h"
 #include "tbb/tbb_thread.h"
 #include "tbb/tbb_allocator.h"
 #include "tbb/task_scheduler_init.h" /* Need task_scheduler_init::default_num_threads() */
 
 namespace tbb {
+
 namespace internal {
 
 //! Allocate a closure
@@ -49,6 +52,30 @@ void free_closure_v3( void *ptr )
 {
     deallocate_via_handler_v3( ptr );
 }
+
+#if _WIN32||_WIN64 
+#if defined(__EXCEPTIONS) || defined(_CPPUNWIND)
+// The above preprocessor symbols are defined by compilers when exception handling is enabled.
+
+void handle_win_error( int error_code ) 
+{
+    LPTSTR msg_buf;
+
+    FormatMessage(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+        FORMAT_MESSAGE_FROM_SYSTEM |
+        FORMAT_MESSAGE_IGNORE_INSERTS,
+        NULL,
+        error_code,
+        0,
+        (LPTSTR) &msg_buf,
+        0, NULL );
+    const std::string msg_str(msg_buf);
+    LocalFree(msg_buf);
+    throw std::runtime_error(msg_str);
+}
+#endif //__EXCEPTIONS || _CPPUNWIND
+#endif // _WIN32||_WIN64
 
 void tbb_thread_v3::join()
 {
@@ -84,13 +111,22 @@ void tbb_thread_v3::detach() {
     my_handle = 0;
 }
 
+const size_t MB = 1<<20;
+#if !defined(__TBB_WORDSIZE)
+const size_t ThreadStackSize = 1*MB;
+#elif __TBB_WORDSIZE<=4
+const size_t ThreadStackSize = 2*MB;
+#else
+const size_t ThreadStackSize = 4*MB;
+#endif
+
 void tbb_thread_v3::internal_start( __TBB_NATIVE_THREAD_ROUTINE_PTR(start_routine),
                                     void* closure ) {
 #if _WIN32||_WIN64
     unsigned thread_id;
     // The return type of _beginthreadex is "uintptr_t" on new MS compilers,
-    // and 'unsigned long' on old MS compilers.  uintptr_t works for both.
-    uintptr_t status = _beginthreadex( NULL, ThreadStackSize, start_routine,
+    // and 'unsigned long' on old MS compilers.  Our uintptr works for both.
+    uintptr status = _beginthreadex( NULL, ThreadStackSize, start_routine,
                                      closure, 0, &thread_id ); 
     if( status==0 )
         handle_perror(errno,"__beginthreadex");
@@ -169,4 +205,5 @@ void thread_sleep_v3(const tick_count::interval_t &i)
 }
 
 } // internal
+
 } // tbb

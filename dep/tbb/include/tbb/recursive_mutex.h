@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -30,14 +30,22 @@
 #define __TBB_recursive_mutex_H
 
 #if _WIN32||_WIN64
-    #include <windows.h>
-    #if !defined(_WIN32_WINNT)
-    // The following Windows API function is declared explicitly;
-    // otherwise any user would have to specify /D_WIN32_WINNT=0x0400
-    extern "C" BOOL WINAPI TryEnterCriticalSection( LPCRITICAL_SECTION );
-    #endif
+
+#include <windows.h>
+#if !defined(_WIN32_WINNT)
+// The following Windows API function is declared explicitly;
+// otherwise any user would have to specify /D_WIN32_WINNT=0x0400
+extern "C" BOOL WINAPI TryEnterCriticalSection( LPCRITICAL_SECTION );
+#endif
+
 #else /* if not _WIN32||_WIN64 */
-    #include <pthread.h>
+
+#include <pthread.h>
+namespace tbb { namespace internal {
+// Use this internal TBB function to throw an exception
+  extern void handle_perror( int error_code, const char* what );
+} } //namespaces
+
 #endif /* _WIN32||_WIN64 */
 
 #include <new>
@@ -211,14 +219,6 @@ public:
   #endif /* _WIN32||_WIN64 */
 #endif /* TBB_USE_ASSERT */
     }
-
-    //! Return native_handle
-  #if _WIN32||_WIN64
-    typedef LPCRITICAL_SECTION native_handle_type;
-  #else
-    typedef pthread_mutex_t* native_handle_type;
-  #endif
-    native_handle_type native_handle() { return (native_handle_type) &impl; }
 
 private:
 #if _WIN32||_WIN64

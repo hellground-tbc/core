@@ -102,6 +102,8 @@ SET(game_STAT_SRCS
    Guild.cpp
    Guild.h
    GuildHandler.cpp
+   GridMap.h
+   GridMap.cpp
    HomeMovementGenerator.cpp
    HomeMovementGenerator.h
    HostilRefManager.cpp

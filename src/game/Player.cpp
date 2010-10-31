@@ -862,6 +862,12 @@ void Player::StopMirrorTimer(MirrorTimerType Type)
     GetSession()->SendPacket(&data);
 }
 
+void Player::UpdateFallInformationIfNeed( MovementInfo const& minfo,uint16 opcode )
+{
+    if (m_lastFallTime >= minfo.GetFallTime() || m_lastFallZ <= minfo.GetPos()->z || opcode == MSG_MOVE_FALL_LAND)
+        SetFallInformation(minfo.GetFallTime(), minfo.GetPos()->z);
+}
+
 void Player::EnvironmentalDamage(EnviromentalDamage type, uint32 damage)
 {
     if (!isAlive() || isGameMaster())
@@ -19721,8 +19727,8 @@ PartyResult Player::CanUninviteFromGroup() const
 
 void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
 {
-    LiquidData liquid_status;
-    ZLiquidStatus res = m->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &liquid_status);
+    GridMapLiquidData liquid_status;
+    GridMapLiquidStatus res = m->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &liquid_status);
     if (!res)
     {
         m_MirrorTimerFlags &= ~(UNDERWATER_INWATER|UNDERWATER_INLAVA|UNDERWATER_INSLIME|UNDERWATER_INDARKWATER);
@@ -19797,9 +19803,6 @@ bool ItemPosCount::isContainedIn(ItemPosCountVec const& vec) const
 
 void Player::HandleFallDamage(MovementInfo& movementInfo)
 {
-    if (movementInfo.GetFallTime() < 1500)
-        return;
-
     // calculate total z distance of the fall
     float z_diff = m_lastFallZ - movementInfo.GetPos()->z;
     uint32 areaID = GetMap()->GetId();

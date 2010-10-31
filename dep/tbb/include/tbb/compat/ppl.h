@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -33,10 +33,6 @@
 #include "../parallel_invoke.h"
 #include "../parallel_for_each.h"
 #include "../parallel_for.h"
-#include "../tbb_exception.h"
-#include "../critical_section.h"
-#include "../reader_writer_lock.h"
-#include "../combinable.h"
 
 namespace Concurrency {
 
@@ -44,7 +40,6 @@ namespace Concurrency {
     using tbb::task_group_status;
     using tbb::task_group;
     using tbb::structured_task_group;
-    using tbb::invalid_multiple_scheduling;
     using tbb::missing_wait;
     using tbb::make_task;
 
@@ -57,11 +52,6 @@ namespace Concurrency {
     using tbb::parallel_invoke;
     using tbb::strict_ppl::parallel_for;
     using tbb::parallel_for_each;
-    using tbb::critical_section;
-    using tbb::reader_writer_lock;
-    using tbb::combinable;
-
-    using tbb::improper_lock;
 
 } // namespace Concurrency
 

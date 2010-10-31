@@ -1,4 +1,4 @@
-# Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+# Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 #
 # This file is part of Threading Building Blocks.
 #
@@ -60,13 +60,6 @@ ifeq ($(wildcard $(tbb_root)/build/$(tbb_os).$(compiler).inc),)
   $(error Compiler "$(compiler)" is not supported on $(tbb_os). Add build/$(tbb_os).$(compiler).inc file with compiler-specific settings )
 endif
 
-ifdef target
- ifeq ($(wildcard $(tbb_root)/build/$(target).inc),)
-  $(error "$(target)" is not supported. Add build/$(target).inc file)
- endif
- include $(tbb_root)/build/$(target).inc
-endif
-
 # Support for running debug tests to release library and vice versa
 flip_cfg=$(subst _flipcfg,_release,$(subst _release,_debug,$(subst _debug,_flipcfg,$(1))))
 cross_cfg = $(if $(crosstest),$(call flip_cfg,$(1)),$(1))
@@ -77,7 +70,7 @@ ifdef BUILDING_PHASE
  # No lambas or other C++0x extensions by default for compilers that implement them as experimental features
  lambdas ?= 0
  cpp0x ?= 0
- # include compiler-specific build configurations
+  # include compiler-specific build configurations
  -include $(tbb_root)/build/$(tbb_os).$(compiler).inc
  ifdef extra_inc
   -include $(tbb_root)/build/$(extra_inc)

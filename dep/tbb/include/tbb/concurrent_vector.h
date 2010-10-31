@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -30,25 +30,15 @@
 #define __TBB_concurrent_vector_H
 
 #include "tbb_stddef.h"
-#include "tbb_exception.h"
+#include <algorithm>
+#include <iterator>
+#include <new>
+#include <cstring>
 #include "atomic.h"
 #include "cache_aligned_allocator.h"
 #include "blocked_range.h"
+
 #include "tbb_machine.h"
-#include <new>
-
-#if !TBB_USE_EXCEPTIONS && _MSC_VER
-    // Suppress "C++ exception handler used, but unwind semantics are not enabled" warning in STL headers
-    #pragma warning (push)
-    #pragma warning (disable: 4530)
-#endif
-
-#include <algorithm>
-#include <iterator>
-
-#if !TBB_USE_EXCEPTIONS && _MSC_VER
-    #pragma warning (pop)
-#endif
 
 #if _MSC_VER==1500 && !__INTEL_COMPILER
     // VS2008/VC9 seems to have an issue; limits pull in math.h
@@ -71,12 +61,12 @@ namespace tbb {
 template<typename T, class A = cache_aligned_allocator<T> >
 class concurrent_vector;
 
+
 //! @cond INTERNAL
 namespace internal {
 
     //! Bad allocation marker
     static void *const vector_allocation_error_flag = reinterpret_cast<void*>(size_t(63));
-
     //! Routine that loads pointer from location pointed to by src without any fence, without causing ITT to report a race.
     void* __TBB_EXPORTED_FUNC itt_load_pointer_v3( const void* src );
 
@@ -176,7 +166,6 @@ namespace internal {
         void __TBB_EXPORTED_METHOD internal_copy( const concurrent_vector_base_v3& src, size_type element_size, internal_array_op2 copy );
         void __TBB_EXPORTED_METHOD internal_assign( const concurrent_vector_base_v3& src, size_type element_size,
                               internal_array_op1 destroy, internal_array_op2 assign, internal_array_op2 copy );
-        //! Obsolete
         void __TBB_EXPORTED_METHOD internal_throw_exception(size_type) const;
         void __TBB_EXPORTED_METHOD internal_swap(concurrent_vector_base_v3& v);
 
@@ -458,7 +447,7 @@ private:
         typedef const T& const_reference;
         typedef I iterator;
         typedef ptrdiff_t difference_type;
-        generic_range_type( I begin_, I end_, size_t grainsize_ = 1) : blocked_range<I>(begin_,end_,grainsize_) {} 
+        generic_range_type( I begin_, I end_, size_t grainsize = 1) : blocked_range<I>(begin_,end_,grainsize) {} 
         template<typename U>
         generic_range_type( const generic_range_type<U>& r) : blocked_range<I>(r.begin(),r.end(),r.grainsize()) {} 
         generic_range_type( generic_range_type& r, split ) : blocked_range<I>(r,split()) {}
@@ -505,37 +494,37 @@ public:
 
     //! Construct empty vector.
     explicit concurrent_vector(const allocator_type &a = allocator_type())
-        : internal::allocator_base<T, A>(a), internal::concurrent_vector_base()
+        : internal::allocator_base<T, A>(a)
     {
         vector_allocator_ptr = &internal_allocator;
     }
 
     //! Copying constructor
     concurrent_vector( const concurrent_vector& vector, const allocator_type& a = allocator_type() )
-        : internal::allocator_base<T, A>(a), internal::concurrent_vector_base()
+        : internal::allocator_base<T, A>(a)
     {
         vector_allocator_ptr = &internal_allocator;
-        __TBB_TRY {
+        try {
             internal_copy(vector, sizeof(T), &copy_array);
-        } __TBB_CATCH(...) {
+        } catch(...) {
             segment_t *table = my_segment;
             internal_free_segments( reinterpret_cast<void**>(table), internal_clear(&destroy_array), my_first_block );
-            __TBB_RETHROW();
+            throw;
         }
     }
 
     //! Copying constructor for vector with different allocator type
     template<class M>
     concurrent_vector( const concurrent_vector<T, M>& vector, const allocator_type& a = allocator_type() )
-        : internal::allocator_base<T, A>(a), internal::concurrent_vector_base()
+        : internal::allocator_base<T, A>(a)
     {
         vector_allocator_ptr = &internal_allocator;
-        __TBB_TRY {
+        try {
             internal_copy(vector.internal_vector_base(), sizeof(T), &copy_array);
-        } __TBB_CATCH(...) {
+        } catch(...) {
             segment_t *table = my_segment;
             internal_free_segments( reinterpret_cast<void**>(table), internal_clear(&destroy_array), my_first_block );
-            __TBB_RETHROW();
+            throw;
         }
     }
 
@@ -543,12 +532,12 @@ public:
     explicit concurrent_vector(size_type n)
     {
         vector_allocator_ptr = &internal_allocator;
-        __TBB_TRY {
+        try {
             internal_resize( n, sizeof(T), max_size(), NULL, &destroy_array, &initialize_array );
-        } __TBB_CATCH(...) {
+        } catch(...) {
             segment_t *table = my_segment;
             internal_free_segments( reinterpret_cast<void**>(table), internal_clear(&destroy_array), my_first_block );
-            __TBB_RETHROW();
+            throw;
         }
     }
 
@@ -557,12 +546,12 @@ public:
         : internal::allocator_base<T, A>(a)
     {
         vector_allocator_ptr = &internal_allocator;
-        __TBB_TRY {
+        try {
             internal_resize( n, sizeof(T), max_size(), static_cast<const void*>(&t), &destroy_array, &initialize_array_by );
-        } __TBB_CATCH(...) {
+        } catch(...) {
             segment_t *table = my_segment;
             internal_free_segments( reinterpret_cast<void**>(table), internal_clear(&destroy_array), my_first_block );
-            __TBB_RETHROW();
+            throw;
         }
     }
 
@@ -572,12 +561,12 @@ public:
         : internal::allocator_base<T, A>(a)
     {
         vector_allocator_ptr = &internal_allocator;
-        __TBB_TRY {
+        try {
             internal_assign_range(first, last, static_cast<is_integer_tag<std::numeric_limits<I>::is_integer> *>(0) );
-        } __TBB_CATCH(...) {
+        } catch(...) {
             segment_t *table = my_segment;
             internal_free_segments( reinterpret_cast<void**>(table), internal_clear(&destroy_array), my_first_block );
-            __TBB_RETHROW();
+            throw;
         }
     }
 
@@ -901,13 +890,13 @@ private:
 template<typename T, class A>
 void concurrent_vector<T, A>::shrink_to_fit() {
     internal_segments_table old;
-    __TBB_TRY {
+    try {
         if( internal_compact( sizeof(T), &old, &destroy_array, &copy_array ) )
             internal_free_segments( old.table, pointers_per_long_table, old.first_block ); // free joined and unnecessary segments
-    } __TBB_CATCH(...) {
+    } catch(...) {
         if( old.first_block ) // free segment allocated for compacting. Only for support of exceptions in ctor of user T[ype]
             internal_free_segments( old.table, 1, old.first_block );
-        __TBB_RETHROW();
+        throw;
     }
 }
 
@@ -934,7 +923,7 @@ T& concurrent_vector<T, A>::internal_subscript( size_type index ) const {
     __TBB_ASSERT( index < my_early_size, "index out of bounds" );
     size_type j = index;
     segment_index_t k = segment_base_index_of( j );
-    __TBB_ASSERT( (segment_t*)my_segment != my_storage || k < pointers_per_short_table, "index is being allocated" );
+    __TBB_ASSERT( my_segment != (segment_t*)my_storage || k < pointers_per_short_table, "index is being allocated" );
     // no need in __TBB_load_with_acquire since thread works in own space or gets 
 #if TBB_USE_THREADING_TOOLS
     T* array = static_cast<T*>( tbb::internal::itt_load_pointer_v3(&my_segment[k].array));
@@ -949,14 +938,14 @@ T& concurrent_vector<T, A>::internal_subscript( size_type index ) const {
 template<typename T, class A>
 T& concurrent_vector<T, A>::internal_subscript_with_exceptions( size_type index ) const {
     if( index >= my_early_size )
-        internal::throw_exception(internal::eid_out_of_range); // throw std::out_of_range
+        internal_throw_exception(0); // throw std::out_of_range
     size_type j = index;
     segment_index_t k = segment_base_index_of( j );
-    if( (segment_t*)my_segment == my_storage && k >= pointers_per_short_table )
-        internal::throw_exception(internal::eid_segment_range_error); // throw std::range_error
+    if( my_segment == (segment_t*)my_storage && k >= pointers_per_short_table )
+        internal_throw_exception(1); // throw std::range_error
     void *array = my_segment[k].array; // no need in __TBB_load_with_acquire
     if( array <= internal::vector_allocation_error_flag ) // check for correct segment pointer
-        internal::throw_exception(internal::eid_index_range_error); // throw std::range_error
+        internal_throw_exception(2); // throw std::range_error
     return static_cast<T*>(array)[j];
 }
 

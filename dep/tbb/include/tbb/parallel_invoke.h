@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -39,9 +39,9 @@ namespace internal {
     template<typename function>
     class function_invoker : public task{
     public:
-        function_invoker(const function& _function) : my_function(_function) {}
+        function_invoker(function& _function) : my_function(_function) {}
     private:
-        const function &my_function;
+        function &my_function;
         /*override*/
         task* execute()
         {
@@ -54,9 +54,9 @@ namespace internal {
     template <size_t N, typename function1, typename function2, typename function3>
     class spawner : public task {
     private:
-        const function1& my_func1;
-        const function2& my_func2;
-        const function3& my_func3;
+        function1& my_func1;
+        function2& my_func2;
+        function3& my_func3;
         bool is_recycled;
 
         task* execute (){
@@ -82,7 +82,7 @@ namespace internal {
         } // execute
 
     public:
-        spawner(const function1& _func1, const function2& _func2, const function3& _func3) : my_func1(_func1), my_func2(_func2), my_func3(_func3), is_recycled(false) {}
+        spawner(function1& _func1, function2& _func2, function3& _func3) : my_func1(_func1), my_func2(_func2), my_func3(_func3), is_recycled(false) {}
     };
 
     // Creates and spawns child tasks
@@ -100,7 +100,7 @@ namespace internal {
         }
         // Adds child task and spawns it
         template <typename function>
-        void add_child (const function &_func)
+        void add_child (function &_func)
         {
             internal::function_invoker<function>* invoker = new (allocate_child()) internal::function_invoker<function>(_func);
             __TBB_ASSERT(invoker, "Child task allocation failed");
@@ -110,7 +110,7 @@ namespace internal {
         // Adds a task with multiple child tasks and spawns it
         // two arguments
         template <typename function1, typename function2>
-        void add_children (const function1& _func1, const function2& _func2)
+        void add_children (function1& _func1, function2& _func2)
         {
             // The third argument is dummy, it is ignored actually.
             parallel_invoke_noop noop;
@@ -119,7 +119,7 @@ namespace internal {
         }
         // three arguments
         template <typename function1, typename function2, typename function3>
-        void add_children (const function1& _func1, const function2& _func2, const function3& _func3)
+        void add_children (function1& _func1, function2& _func2, function3& _func3)
         {
             internal::spawner<3, function1, function2, function3>& sub_root = *new(allocate_child())internal::spawner<3, function1, function2, function3>(_func1, _func2, _func3);
             spawn(sub_root);
@@ -127,7 +127,7 @@ namespace internal {
 
         // Waits for all child tasks
         template <typename F0>
-        void run_and_finish(const F0& f0)
+        void run_and_finish(F0& f0)
         {
             internal::function_invoker<F0>* invoker = new (allocate_child()) internal::function_invoker<F0>(f0);
             __TBB_ASSERT(invoker, "Child task allocation failed");
@@ -156,7 +156,7 @@ namespace internal {
 // parallel_invoke with user-defined context
 // two arguments
 template<typename F0, typename F1 >
-void parallel_invoke(const F0& f0, const F1& f1, tbb::task_group_context& context) {
+void parallel_invoke(F0 f0, F1 f1, tbb::task_group_context& context) {
     internal::parallel_invoke_cleaner cleaner(2, context);
     internal::parallel_invoke_helper& root = cleaner.root;
 
@@ -167,7 +167,7 @@ void parallel_invoke(const F0& f0, const F1& f1, tbb::task_group_context& contex
 
 // three arguments
 template<typename F0, typename F1, typename F2 >
-void parallel_invoke(const F0& f0, const F1& f1, const F2& f2, tbb::task_group_context& context) {
+void parallel_invoke(F0 f0, F1 f1, F2 f2, tbb::task_group_context& context) {
     internal::parallel_invoke_cleaner cleaner(3, context);
     internal::parallel_invoke_helper& root = cleaner.root;
 
@@ -179,9 +179,7 @@ void parallel_invoke(const F0& f0, const F1& f1, const F2& f2, tbb::task_group_c
 
 // four arguments
 template<typename F0, typename F1, typename F2, typename F3>
-void parallel_invoke(const F0& f0, const F1& f1, const F2& f2, const F3& f3,
-                     tbb::task_group_context& context)
-{
+void parallel_invoke(F0 f0, F1 f1, F2 f2, F3 f3, tbb::task_group_context& context) {
     internal::parallel_invoke_cleaner cleaner(4, context);
     internal::parallel_invoke_helper& root = cleaner.root;
 
@@ -194,9 +192,7 @@ void parallel_invoke(const F0& f0, const F1& f1, const F2& f2, const F3& f3,
 
 // five arguments
 template<typename F0, typename F1, typename F2, typename F3, typename F4 >
-void parallel_invoke(const F0& f0, const F1& f1, const F2& f2, const F3& f3, const F4& f4,
-                     tbb::task_group_context& context)
-{
+void parallel_invoke(F0 f0, F1 f1, F2 f2, F3 f3, F4 f4, tbb::task_group_context& context) {
     internal::parallel_invoke_cleaner cleaner(3, context);
     internal::parallel_invoke_helper& root = cleaner.root;
 
@@ -207,10 +203,8 @@ void parallel_invoke(const F0& f0, const F1& f1, const F2& f2, const F3& f3, con
 }
 
 // six arguments
-template<typename F0, typename F1, typename F2, typename F3, typename F4, typename F5>
-void parallel_invoke(const F0& f0, const F1& f1, const F2& f2, const F3& f3, const F4& f4, const F5& f5,
-                     tbb::task_group_context& context)
-{
+template<typename F0, typename F1, typename F2, typename F3, typename F4, typename F5 >
+void parallel_invoke(F0 f0, F1 f1, F2 f2, F3 f3, F4 f4, F5 f5, tbb::task_group_context& context) {
     internal::parallel_invoke_cleaner cleaner(3, context);
     internal::parallel_invoke_helper& root = cleaner.root;
 
@@ -221,11 +215,8 @@ void parallel_invoke(const F0& f0, const F1& f1, const F2& f2, const F3& f3, con
 }
 
 // seven arguments
-template<typename F0, typename F1, typename F2, typename F3, typename F4, typename F5, typename F6>
-void parallel_invoke(const F0& f0, const F1& f1, const F2& f2, const F3& f3, const F4& f4,
-                     const F5& f5, const F6& f6,
-                     tbb::task_group_context& context)
-{
+template<typename F0, typename F1, typename F2, typename F3, typename F4, typename F5, typename F6 >
+void parallel_invoke(F0 f0, F1 f1, F2 f2, F3 f3, F4 f4, F5 f5, F6 f6, tbb::task_group_context& context) {
     internal::parallel_invoke_cleaner cleaner(3, context);
     internal::parallel_invoke_helper& root = cleaner.root;
 
@@ -236,12 +227,9 @@ void parallel_invoke(const F0& f0, const F1& f1, const F2& f2, const F3& f3, con
 }
 
 // eight arguments
-template<typename F0, typename F1, typename F2, typename F3, typename F4,
-         typename F5, typename F6, typename F7>
-void parallel_invoke(const F0& f0, const F1& f1, const F2& f2, const F3& f3, const F4& f4,
-                     const F5& f5, const F6& f6, const F7& f7,
-                     tbb::task_group_context& context)
-{
+template<typename F0, typename F1, typename F2, typename F3, typename F4, typename F5, typename F6,
+    typename F7>
+void parallel_invoke(F0 f0, F1 f1, F2 f2, F3 f3, F4 f4, F5 f5, F6 f6, F7 f7, tbb::task_group_context& context) {
     internal::parallel_invoke_cleaner cleaner(4, context);
     internal::parallel_invoke_helper& root = cleaner.root;
 
@@ -253,12 +241,9 @@ void parallel_invoke(const F0& f0, const F1& f1, const F2& f2, const F3& f3, con
 }
 
 // nine arguments
-template<typename F0, typename F1, typename F2, typename F3, typename F4,
-         typename F5, typename F6, typename F7, typename F8>
-void parallel_invoke(const F0& f0, const F1& f1, const F2& f2, const F3& f3, const F4& f4,
-                     const F5& f5, const F6& f6, const F7& f7, const F8& f8,
-                     tbb::task_group_context& context)
-{
+template<typename F0, typename F1, typename F2, typename F3, typename F4, typename F5, typename F6,
+        typename F7, typename F8>
+void parallel_invoke(F0 f0, F1 f1, F2 f2, F3 f3, F4 f4, F5 f5, F6 f6, F7 f7, F8 f8, tbb::task_group_context& context) {
     internal::parallel_invoke_cleaner cleaner(4, context);
     internal::parallel_invoke_helper& root = cleaner.root;
 
@@ -270,12 +255,9 @@ void parallel_invoke(const F0& f0, const F1& f1, const F2& f2, const F3& f3, con
 }
 
 // ten arguments
-template<typename F0, typename F1, typename F2, typename F3, typename F4,
-         typename F5, typename F6, typename F7, typename F8, typename F9>
-void parallel_invoke(const F0& f0, const F1& f1, const F2& f2, const F3& f3, const F4& f4,
-                     const F5& f5, const F6& f6, const F7& f7, const F8& f8, const F9& f9,
-                     tbb::task_group_context& context)
-{
+template<typename F0, typename F1, typename F2, typename F3, typename F4, typename F5, typename F6,
+        typename F7, typename F8, typename F9>
+void parallel_invoke(F0 f0, F1 f1, F2 f2, F3 f3, F4 f4, F5 f5, F6 f6, F7 f7, F8 f8, F9 f9, tbb::task_group_context& context) {
     internal::parallel_invoke_cleaner cleaner(4, context);
     internal::parallel_invoke_helper& root = cleaner.root;
 
@@ -288,66 +270,58 @@ void parallel_invoke(const F0& f0, const F1& f1, const F2& f2, const F3& f3, con
 
 // two arguments
 template<typename F0, typename F1>
-void parallel_invoke(const F0& f0, const F1& f1) {
+void parallel_invoke(F0 f0, F1 f1) {
     task_group_context context;
     parallel_invoke<F0, F1>(f0, f1, context);
 }
 // three arguments
 template<typename F0, typename F1, typename F2>
-void parallel_invoke(const F0& f0, const F1& f1, const F2& f2) {
+void parallel_invoke(F0 f0, F1 f1, F2 f2) {
     task_group_context context;
     parallel_invoke<F0, F1, F2>(f0, f1, f2, context);
 }
 // four arguments
 template<typename F0, typename F1, typename F2, typename F3 >
-void parallel_invoke(const F0& f0, const F1& f1, const F2& f2, const F3& f3) {
+void parallel_invoke(F0 f0, F1 f1, F2 f2, F3 f3) {
     task_group_context context;
     parallel_invoke<F0, F1, F2, F3>(f0, f1, f2, f3, context);
 }
 // five arguments
 template<typename F0, typename F1, typename F2, typename F3, typename F4>
-void parallel_invoke(const F0& f0, const F1& f1, const F2& f2, const F3& f3, const F4& f4) {
+void parallel_invoke(F0 f0, F1 f1, F2 f2, F3 f3, F4 f4) {
     task_group_context context;
     parallel_invoke<F0, F1, F2, F3, F4>(f0, f1, f2, f3, f4, context);
 }
 // six arguments
 template<typename F0, typename F1, typename F2, typename F3, typename F4, typename F5>
-void parallel_invoke(const F0& f0, const F1& f1, const F2& f2, const F3& f3, const F4& f4, const F5& f5) {
+void parallel_invoke(F0 f0, F1 f1, F2 f2, F3 f3, F4 f4, F5 f5) {
     task_group_context context;
     parallel_invoke<F0, F1, F2, F3, F4, F5>(f0, f1, f2, f3, f4, f5, context);
 }
 // seven arguments
 template<typename F0, typename F1, typename F2, typename F3, typename F4, typename F5, typename F6>
-void parallel_invoke(const F0& f0, const F1& f1, const F2& f2, const F3& f3, const F4& f4,
-                     const F5& f5, const F6& f6)
-{
+void parallel_invoke(F0 f0, F1 f1, F2 f2, F3 f3, F4 f4, F5 f5, F6 f6) {
     task_group_context context;
     parallel_invoke<F0, F1, F2, F3, F4, F5, F6>(f0, f1, f2, f3, f4, f5, f6, context);
 }
 // eigth arguments
-template<typename F0, typename F1, typename F2, typename F3, typename F4, 
-         typename F5, typename F6, typename F7>
-void parallel_invoke(const F0& f0, const F1& f1, const F2& f2, const F3& f3, const F4& f4,
-                     const F5& f5, const F6& f6, const F7& f7)
-{
+template<typename F0, typename F1, typename F2, typename F3, typename F4, typename F5, typename F6,
+        typename F7>
+void parallel_invoke(F0 f0, F1 f1, F2 f2, F3 f3, F4 f4, F5 f5, F6 f6, F7 f7) {
     task_group_context context;
     parallel_invoke<F0, F1, F2, F3, F4, F5, F6, F7>(f0, f1, f2, f3, f4, f5, f6, f7, context);
 }
 // nine arguments
-template<typename F0, typename F1, typename F2, typename F3, typename F4,
-         typename F5, typename F6, typename F7, typename F8>
-void parallel_invoke(const F0& f0, const F1& f1, const F2& f2, const F3& f3, const F4& f4,
-                     const F5& f5, const F6& f6, const F7& f7, const F8& f8)
-{
+template<typename F0, typename F1, typename F2, typename F3, typename F4, typename F5, typename F6,
+        typename F7, typename F8>
+void parallel_invoke(F0 f0, F1 f1, F2 f2, F3 f3, F4 f4, F5 f5, F6 f6, F7 f7, F8 f8) {
     task_group_context context;
     parallel_invoke<F0, F1, F2, F3, F4, F5, F6, F7, F8>(f0, f1, f2, f3, f4, f5, f6, f7, f8, context);
 }
 // ten arguments
-template<typename F0, typename F1, typename F2, typename F3, typename F4,
-         typename F5, typename F6, typename F7, typename F8, typename F9>
-void parallel_invoke(const F0& f0, const F1& f1, const F2& f2, const F3& f3, const F4& f4,
-                     const F5& f5, const F6& f6, const F7& f7, const F8& f8, const F9& f9)
-{
+template<typename F0, typename F1, typename F2, typename F3, typename F4, typename F5, typename F6,
+        typename F7, typename F8, typename F9>
+void parallel_invoke(F0 f0, F1 f1, F2 f2, F3 f3, F4 f4, F5 f5, F6 f6, F7 f7, F8 f8, F9 f9) {
     task_group_context context;
     parallel_invoke<F0, F1, F2, F3, F4, F5, F6, F7, F8, F9>(f0, f1, f2, f3, f4, f5, f6, f7, f8, f9, context);
 }

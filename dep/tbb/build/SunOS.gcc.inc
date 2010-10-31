@@ -1,4 +1,4 @@
-# Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+# Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 #
 # This file is part of Threading Building Blocks.
 #
@@ -39,7 +39,6 @@ LIBDL = -ldl
 TBB_NOSTRICT = 1
 
 CPLUS = g++ 
-CONLY = gcc
 LIB_LINK_FLAGS = -shared
 LIBS = -lpthread -lrt -ldl 
 C_FLAGS = $(CPLUS_FLAGS) -x c

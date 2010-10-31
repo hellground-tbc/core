@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -27,13 +27,13 @@
 */
 
 // Please define version number in the file:
-#include "tbb/tbb_stddef.h"
+#include "../../include/tbb/tbb_stddef.h"
 
 // And don't touch anything below
 #ifndef ENDL
 #define ENDL "\n"
 #endif
-#include "version_string.tmp"
+#include "../../build/vsproject/version_string.tmp"
 
 #ifndef __TBB_VERSION_STRINGS
 #pragma message("Warning: version_string.tmp isn't generated properly by version_info.sh script!")

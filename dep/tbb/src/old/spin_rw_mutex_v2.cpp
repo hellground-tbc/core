@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -34,8 +34,8 @@ namespace tbb {
 
 using namespace internal;
 
-static inline bool CAS(volatile uintptr_t &addr, uintptr_t newv, uintptr_t oldv) {
-    return __TBB_CompareAndSwapW((volatile void *)&addr, (intptr_t)newv, (intptr_t)oldv) == (intptr_t)oldv;
+static inline bool CAS(volatile uintptr &addr, uintptr newv, uintptr oldv) {
+    return __TBB_CompareAndSwapW((volatile void *)&addr, (intptr)newv, (intptr)oldv) == (intptr)oldv;
 }
 
 //! Signal that write lock is released
@@ -136,7 +136,7 @@ void spin_rw_mutex::internal_release_reader(spin_rw_mutex *mutex)
     __TBB_ASSERT( mutex->state & READERS, "invalid state of a read lock: no readers" );
     __TBB_ASSERT( !(mutex->state & WRITER), "invalid state of a read lock: active writer" );
     ITT_NOTIFY(sync_releasing, mutex); // release reader
-    __TBB_FetchAndAddWrelease((volatile void *)&(mutex->state),-(intptr_t)ONE_READER);
+    __TBB_FetchAndAddWrelease((volatile void *)&(mutex->state),-(intptr)ONE_READER);
 }
 
 bool spin_rw_mutex::internal_try_acquire_writer( spin_rw_mutex * mutex )

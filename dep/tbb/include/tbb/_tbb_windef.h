@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -39,6 +39,9 @@
 #if !defined(_MT)
 #error TBB requires linkage with multithreaded C/C++ runtime library. \
        Choose multithreaded DLL runtime in project settings, or use /MD[d] compiler switch.
+#elif !defined(_DLL)
+#pragma message("Warning: Using TBB together with static C/C++ runtime library is not recommended. " \
+                "Consider switching your project to multithreaded DLL runtime used by TBB.")
 #endif
 
 // Workaround for the problem with MVSC headers failing to define namespace std

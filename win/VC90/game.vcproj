@@ -128,7 +128,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\shared\Database;..\..\src\shared\vmap;..\..\dep\ACE_wrappers;..\..\src\game\;..\..\dep\include\g3dlite"
+				AdditionalIncludeDirectories="..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\shared\Database;..\..\src\shared\vmap;..\..\dep\ACE_wrappers;..\..\src\game\;..\..\dep\include\g3dlite;..\..\dep\tbb\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -1225,6 +1225,14 @@
 			</File>
 			<File
 				RelativePath="..\..\src\game\GridDefines.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\GridMap.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\GridMap.h"
 				>
 			</File>
 			<File

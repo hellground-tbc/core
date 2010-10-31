@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -30,7 +30,7 @@
 #define __TBB_profiling_H
 
 // Check if the tools support is enabled
-#if (_WIN32||_WIN64||__linux__) && !__MINGW32__ && TBB_USE_THREADING_TOOLS
+#if (_WIN32||_WIN64||__linux__) && TBB_USE_THREADING_TOOLS
 
 #if _WIN32||_WIN64
 #include <stdlib.h>  /* mbstowcs_s */

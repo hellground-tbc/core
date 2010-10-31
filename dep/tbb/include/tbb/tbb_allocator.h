@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -29,20 +29,9 @@
 #ifndef __TBB_tbb_allocator_H
 #define __TBB_tbb_allocator_H
 
-#include "tbb_stddef.h"
 #include <new>
-
-#if !TBB_USE_EXCEPTIONS && _MSC_VER
-    // Suppress "C++ exception handler used, but unwind semantics are not enabled" warning in STL headers
-    #pragma warning (push)
-    #pragma warning (disable: 4530)
-#endif
-
 #include <cstring>
-
-#if !TBB_USE_EXCEPTIONS && _MSC_VER
-    #pragma warning (pop)
-#endif
+#include "tbb_stddef.h"
 
 namespace tbb {
 
@@ -118,7 +107,7 @@ public:
     }
     
     //! Copy-construct value at location pointed to by p.
-    void construct( pointer p, const value_type& value ) {::new((void*)(p)) value_type(value);}
+    void construct( pointer p, const value_type& value ) {new(static_cast<void*>(p)) value_type(value);}
 
     //! Destroy value at location pointed to by p.
     void destroy( pointer p ) {p->~value_type();}

@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -249,20 +249,22 @@ void TestTryAcquire_OneThread( const char * mutex_name ) {
 
 #include "tbb/task_scheduler_init.h"
 
-int TestMain () {
+int main( int argc, char * argv[] ) {
+    ParseCommandLine( argc, argv );
     for( int p=MinThread; p<=MaxThread; ++p ) {
         tbb::task_scheduler_init init( p );
-        if( Verbose )
-            printf( "testing with %d workers\n", static_cast<int>(p) );
-        // Run each test 3 times.
-        for( int i=0; i<3; ++i ) {
-            Test<tbb::spin_rw_mutex>( "Spin RW Mutex" );
+	if( Verbose )
+	    printf( "testing with %d workers\n", static_cast<int>(p) );
+	// Run each test 3 times.
+	for( int i=0; i<3; ++i ) {
+	    Test<tbb::spin_rw_mutex>( "Spin RW Mutex" );
             
             TestTryAcquire_OneThread<tbb::spin_rw_mutex>("Spin RW Mutex"); // only tests try_acquire for writers
-            TestReaderWriterLock<tbb::spin_rw_mutex>( "Spin RW Mutex" );
-        }
-        if( Verbose )
-            printf( "calling destructor for task_scheduler_init\n" );
+	    TestReaderWriterLock<tbb::spin_rw_mutex>( "Spin RW Mutex" );
+	if( Verbose )
+	    printf( "calling destructor for task_scheduler_init\n" );
+	}
     }
-    return Harness::Done;
+    STD::printf("done\n");
+    return 0;
 }

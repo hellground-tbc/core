@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -65,7 +65,7 @@ namespace internal {
     /** Represented as a char, not enum, for compactness. */
     typedef char reduction_context;
 
-    //! Task type use to combine the partial results of parallel_reduce.
+    //! Task type use to combine the partial results of parallel_reduce with affinity_partitioner.
     /** @ingroup algorithms */
     template<typename Body>
     class finish_reduce: public task {
@@ -74,10 +74,10 @@ namespace internal {
         bool has_right_zombie;
         const reduction_context my_context;
         aligned_space<Body,1> zombie_space;
-        finish_reduce( char context_ ) : 
+        finish_reduce( char context ) : 
             my_body(NULL),
             has_right_zombie(false),
-            my_context(context_)
+            my_context(context)
         {
         }
         task* execute() {
@@ -95,7 +95,7 @@ namespace internal {
         friend class start_reduce;
     };
 
-    //! Task type used to split the work of parallel_reduce.
+    //! Task type used to split the work of parallel_reduce with affinity_partitioner.
     /** @ingroup algorithms */
     template<typename Range, typename Body, typename Partitioner>
     class start_reduce: public task {
@@ -118,14 +118,14 @@ namespace internal {
         }
         //! Splitting constructor used to generate children.
         /** this becomes left child.  Newly constructed object is right child. */
-        start_reduce( start_reduce& parent_, split ) :
-            my_body(parent_.my_body),
-            my_range(parent_.my_range,split()),
-            my_partition(parent_.my_partition,split()),
+        start_reduce( start_reduce& parent, split ) :
+            my_body(parent.my_body),
+            my_range(parent.my_range,split()),
+            my_partition(parent.my_partition,split()),
             my_context(2)
         {
             my_partition.set_affinity(*this);
-            parent_.my_context = 1;
+            parent.my_context = 1;
         }
         //! Update affinity info, if any
         /*override*/ void note_affinity( affinity_id id ) {
@@ -135,22 +135,22 @@ namespace internal {
 public:
         static void run( const Range& range, Body& body, Partitioner& partitioner ) {
             if( !range.empty() ) {
-#if !__TBB_TASK_GROUP_CONTEXT || TBB_JOIN_OUTER_TASK_GROUP
+#if !__TBB_EXCEPTIONS || TBB_JOIN_OUTER_TASK_GROUP
                 task::spawn_root_and_wait( *new(task::allocate_root()) start_reduce(range,&body,partitioner) );
 #else
                 // Bound context prevents exceptions from body to affect nesting or sibling algorithms,
                 // and allows users to handle exceptions safely by wrapping parallel_for in the try-block.
                 task_group_context context;
                 task::spawn_root_and_wait( *new(task::allocate_root(context)) start_reduce(range,&body,partitioner) );
-#endif /* __TBB_TASK_GROUP_CONTEXT && !TBB_JOIN_OUTER_TASK_GROUP */
+#endif /* __TBB_EXCEPTIONS && !TBB_JOIN_OUTER_TASK_GROUP */
             }
         }
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
         static void run( const Range& range, Body& body, Partitioner& partitioner, task_group_context& context ) {
             if( !range.empty() ) 
                 task::spawn_root_and_wait( *new(task::allocate_root(context)) start_reduce(range,&body,partitioner) );
         }
-#endif /* __TBB_TASK_GROUP_CONTEXT */
+#endif /* __TBB_EXCEPTIONS */
     };
 
     template<typename Range, typename Body, typename Partitioner>
@@ -166,14 +166,14 @@ public:
             (*my_body)( my_range );
             if( my_context==1 ) 
                 parallel_reduce_store_body(static_cast<finish_type*>(parent())->my_body, my_body );
-            return my_partition.continue_after_execute_range();
+            return my_partition.continue_after_execute_range(*this);
         } else {
             finish_type& c = *new( allocate_continuation()) finish_type(my_context);
             recycle_as_child_of(c);
             c.set_ref_count(2);    
             bool delay = my_partition.decide_whether_to_delay();
             start_reduce& b = *new( c.allocate_child() ) start_reduce(*this,split());
-            my_partition.spawn_or_delay(delay,b);
+            my_partition.spawn_or_delay(delay,*this,b);
             return this;
         }
     } 
@@ -276,7 +276,7 @@ void parallel_reduce( const Range& range, Body& body, affinity_partitioner& part
     internal::start_reduce<Range,Body,affinity_partitioner>::run( range, body, partitioner );
 }
 
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
 //! Parallel iteration with reduction, simple partitioner and user-supplied context.
 /** @ingroup algorithms **/
 template<typename Range, typename Body>
@@ -297,7 +297,7 @@ template<typename Range, typename Body>
 void parallel_reduce( const Range& range, Body& body, affinity_partitioner& partitioner, task_group_context& context ) {
     internal::start_reduce<Range,Body,affinity_partitioner>::run( range, body, partitioner, context );
 }
-#endif /* __TBB_TASK_GROUP_CONTEXT */
+#endif /* __TBB_EXCEPTIONS */
 
 /** parallel_reduce overloads that work with anonymous function objects
     (see also \ref parallel_reduce_lambda_req "requirements on parallel_reduce anonymous function objects"). **/
@@ -345,7 +345,7 @@ Value parallel_reduce( const Range& range, const Value& identity, const RealBody
     return body.result();
 }
 
-#if __TBB_TASK_GROUP_CONTEXT
+#if __TBB_EXCEPTIONS
 //! Parallel iteration with reduction, simple partitioner and user-supplied context.
 /** @ingroup algorithms **/
 template<typename Range, typename Value, typename RealBody, typename Reduction>
@@ -378,7 +378,7 @@ Value parallel_reduce( const Range& range, const Value& identity, const RealBody
                                         ::run( range, body, partitioner, context );
     return body.result();
 }
-#endif /* __TBB_TASK_GROUP_CONTEXT */
+#endif /* __TBB_EXCEPTIONS */
 //@}
 
 } // namespace tbb

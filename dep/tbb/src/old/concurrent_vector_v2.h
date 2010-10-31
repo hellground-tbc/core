@@ -1,5 +1,5 @@
 /*
-    Copyright 2005-2010 Intel Corporation.  All Rights Reserved.
+    Copyright 2005-2009 Intel Corporation.  All Rights Reserved.
 
     This file is part of Threading Building Blocks.
 
@@ -30,23 +30,13 @@
 #define __TBB_concurrent_vector_H
 
 #include "tbb/tbb_stddef.h"
+#include <iterator>
+#include <new>
 #include "tbb/atomic.h"
 #include "tbb/cache_aligned_allocator.h"
 #include "tbb/blocked_range.h"
+
 #include "tbb/tbb_machine.h"
-#include <new>
-
-#if !TBB_USE_EXCEPTIONS && _MSC_VER
-    // Suppress "C++ exception handler used, but unwind semantics are not enabled" warning in STL headers
-    #pragma warning (push)
-    #pragma warning (disable: 4530)
-#endif
-
-#include <iterator>
-
-#if !TBB_USE_EXCEPTIONS && _MSC_VER
-    #pragma warning (pop)
-#endif
 
 namespace tbb {
 
@@ -69,8 +59,8 @@ namespace internal {
         static const int min_segment_size = segment_index_t(1)<<lg_min_segment_size;
       
         static segment_index_t segment_index_of( size_t index ) { 
-            uintptr_t i = index|1<<(lg_min_segment_size-1);
-            uintptr_t j = __TBB_Log2(i); 
+            uintptr i = index|1<<(lg_min_segment_size-1);
+            uintptr j = __TBB_Log2(i); 
             return segment_index_t(j-(lg_min_segment_size-1)); 
         }
 
