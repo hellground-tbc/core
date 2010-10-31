@@ -6666,7 +6666,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
 
     if(goinfo->type == GAMEOBJECT_TYPE_FISHINGNODE)
     {
-        LiquidData liqData;
+        GridMapLiquidData liqData;
         if(cMap->GetId() == 548 && m_caster->GetDistance(36.69, -416.38, -19.9645) <= 16)    //center of strange pool             // Hack to prevent fishing bobber from failing to land on fishing hole
         {
             fx = 36.69 +irand(-8,8);
