@@ -6820,7 +6820,7 @@ void Aura::PeriodicDummyTick()
                             if (((Player*)m_target)->GetClass() == CLASS_DRUID && m_target->HasAuraType(SPELL_AURA_MOD_SHAPESHIFT) && !m_target->HasAura(24858, 0))
                                 (*i)->GetModifier()->m_amount = 0;
                             else
-                                (*i)->GetModifier()->m_amount = m_modifier.m_amount);
+                                (*i)->GetModifier()->m_amount = m_modifier.m_amount;
 
                         }
                         ((Player*)m_target)->UpdateManaRegen();
