@@ -3301,6 +3301,27 @@ bool Unit::isInLine(GameObject const* target, float distance) const
     return abs(sin(angle)) * GetExactDistance2d(target->GetPositionX(), target->GetPositionY()) < width;
 }
 
+bool Unit::isBetween(WorldObject *s, WorldObject *e, float offset) const
+{
+    float xn, yn, xp, yp, xh, yh;
+
+    xn = s->GetPositionX();
+    yn = s->GetPositionY();
+    
+    xp = e->GetPositionX();
+    yp = e->GetPositionY();
+
+    xh = GetPositionX();
+    yh = GetPositionY();
+
+    // check if target is between
+    if(s->GetExactDist2d(xh,yh) >= s->GetExactDist2d(xp,yp) || e->GetExactDist2d(xh,yh) >= s->GetExactDist2d(xp,yp))
+        return false;
+
+    // check distance from the line
+    return (abs((xn-xp)*yh + (yp-yn)*xh - xn*yp + xp*yn) / s->GetExactDist2d(xp,yp) < offset);
+}
+
 bool Unit::isInAccessiblePlaceFor(Creature const* c) const
 {
     if(IsInWater())

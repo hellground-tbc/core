@@ -165,7 +165,7 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
                 me->SetSelection(0);
 
                 WorldLocation wLoc;
-                me->GetClosePoint(wLoc.x, wLoc.y, wLoc.z, 0, 6.0f, 0);
+                me->GetClosePoint(wLoc.x, wLoc.y, wLoc.z, 0, 95.0f, 0);
                
                 Map *pMap = me->GetMap();
                 Map::PlayerList const& players = pMap->GetPlayers();
@@ -186,7 +186,7 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
                         }
                     }
 
-                    if (pPlayer->IsInWater() || pPlayer->GetPositionZ() < -19.9645)
+                    if (/*pPlayer->IsInWater() ||*/ pPlayer->GetPositionZ() < -19.9645)
                         continue;
 
                     if (me->GetDistance2d(pPlayer) > 100.0f)
@@ -195,7 +195,11 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
                     if (!me->HasInArc(M_PI, pPlayer))
                         continue;
 
-                    if (abs(sin(me->GetAngle(pPlayer) - me->GetOrientation())) * me->GetExactDistance2d(pPlayer->GetPositionX(), pPlayer->GetPositionY()) < SPOUT_WIDTH)
+                    Unit *pTemp = me->SummonCreature(WORLD_TRIGGER, wLoc.x, wLoc.y, wLoc.z, 0, TEMPSUMMON_TIMED_DESPAWN, 1000);
+                    if (!pTemp)
+                        continue;
+
+                    if (pPlayer->isBetween(me, pTemp, SPOUT_WIDTH))
                     {
                         ForceSpellCast(pPlayer, SPELL_SPOUT_EFFECT, INTERRUPT_AND_CAST_INSTANTLY, true);
                         m_immunemap[pPlayer->GetGUID()] = 1;

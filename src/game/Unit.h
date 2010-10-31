@@ -1413,6 +1413,8 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         bool isInLine(Unit const* target, float distance) const;
         bool isInLine(GameObject const* target, float distance) const;
 
+        bool isBetween(WorldObject *s, WorldObject *e, float offset = 1.5f) const;
+
         // Visibility system
         UnitVisibility GetVisibility() const { return m_Visibility; }
         void SetVisibility(UnitVisibility x);

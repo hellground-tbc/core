@@ -74,32 +74,6 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
     uint64 BeamTarget[3]; // guid's of portals' current targets
     Unit* ExhaustCandidate[3][10];
 
-    bool IsBetween(WorldObject* u1, WorldObject* target, WorldObject* u2) // the in-line checker
-    {
-        if(!u1 || !u2 || !target)
-            return false;
-
-        float xn, yn, xp, yp, xh, yh;
-        xn = u1->GetPositionX();
-        yn = u1->GetPositionY();
-        xp = u2->GetPositionX();
-        yp = u2->GetPositionY();
-        xh = target->GetPositionX();
-        yh = target->GetPositionY();
-
-        // check if target is between (not checking distance from the beam yet)
-        if(dist(xn,yn,xh,yh)>=dist(xn,yn,xp,yp) || dist(xp,yp,xh,yh)>=dist(xn,yn,xp,yp))
-            return false;
-
-        // check  distance from the beam
-        return (abs((xn-xp)*yh+(yp-yn)*xh-xn*yp+xp*yn)/dist(xn,yn,xp,yp) < 1.5f);
-    }
-
-    float dist(float xa, float ya, float xb, float yb) // auxiliary method for distance
-    {
-        return sqrt((xa-xb)*(xa-xb) + (ya-yb)*(ya-yb));
-    }
-
     void Reset()
     {
         Berserk = false;
@@ -211,7 +185,7 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
                             && !p->HasAura(PlayerDebuff[j],0) // not exhausted
                             && !p->HasAura(PlayerBuff[(j+1)%3],0) // not on another beam
                             && !p->HasAura(PlayerBuff[(j+2)%3],0)
-                            && IsBetween(m_creature, p, portal)) // on the beam
+                            && p->isBetween(m_creature, portal)) // on the beam
                             target = p;
                     }
                 }
