@@ -2540,9 +2540,9 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 return;
 
                 case 11094:
-                case 13043: 
+                case 13043:
                 case 11189:
-                case 28332: 
+                case 28332:
                 {
                     if (m_target->GetTypeId() != TYPEID_PLAYER)
                         return;
@@ -6816,7 +6816,13 @@ void Aura::PeriodicDummyTick()
                         // default case - not in arena
                         m_isPeriodic = false;
                         if(m_tickNumber == 1)
-                            (*i)->GetModifier()->m_amount = (m_target->HasAuraType(SPELL_AURA_MOD_SHAPESHIFT) ? 0 : m_modifier.m_amount);
+                        {
+                            if (((Player*)m_target)->m_class == CLASS_DRUID && m_target->HasAuraType(SPELL_AURA_MOD_SHAPESHIFT) && !m_target->HasAura(24858, 0))
+                                (*i)->GetModifier()->m_amount = 0
+                            else
+                                (*i)->GetModifier()->m_amount = m_modifier.m_amount);
+
+                        }
                         ((Player*)m_target)->UpdateManaRegen();
                         return;
                     }
@@ -6847,8 +6853,8 @@ void Aura::PeriodicDummyTick()
                             break;
                     }
 
-                    if (m_target->HasAuraType(SPELL_AURA_MOD_SHAPESHIFT))
-                        (*i)->GetModifier()->m_amount = 0;
+                    if (((Player*)m_target)->m_class == CLASS_DRUID && m_target->HasAuraType(SPELL_AURA_MOD_SHAPESHIFT) && !m_target->HasAura(24858, 0))
+                        (*i)->GetModifier()->m_amount = 0
 
                     ((Player*)m_target)->UpdateManaRegen();
                     return;
