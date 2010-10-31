@@ -59,6 +59,7 @@ BattleGround::BattleGround()
     m_MinPlayers        = 0;
 
     m_MapId             = 0;
+    m_Map               = NULL;
 
     m_TeamStartLocX[BG_TEAM_ALLIANCE]   = 0;
     m_TeamStartLocX[BG_TEAM_HORDE]      = 0;
@@ -932,6 +933,7 @@ void BattleGround::Reset()
     SetLastResurrectTime(0);
     SetArenaType(0);
     SetRated(false);
+    m_Map = NULL;
 
     m_Events = 0;
 
