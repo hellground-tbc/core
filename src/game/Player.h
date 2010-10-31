@@ -1966,6 +1966,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         /*********************************************************/
 
         void EnvironmentalDamage(EnviromentalDamage type, uint32 damage);
+        void UpdateFallInformationIfNeed( MovementInfo const& minfo,uint16 opcode );
 
         /*********************************************************/
         /***               FLOOD FILTER SYSTEM                 ***/

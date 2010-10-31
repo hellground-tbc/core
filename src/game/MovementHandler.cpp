@@ -269,9 +269,7 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
 
     GetPlayer()->SetPosition(movementInfo.GetPos()->x, movementInfo.GetPos()->y, movementInfo.GetPos()->z, movementInfo.GetPos()->o);
     GetPlayer()->m_movementInfo = movementInfo;
-
-    if (GetPlayer()->m_lastFallTime >= movementInfo.GetFallTime() || GetPlayer()->m_lastFallZ <=movementInfo.GetPos()->z || recv_data.GetOpcode() == MSG_MOVE_FALL_LAND)
-        GetPlayer()->SetFallInformation(movementInfo.GetFallTime(), movementInfo.GetPos()->z);
+    GetPlayer()->UpdateFallInformationIfNeed(movementInfo, recv_data.GetOpcode());
 
     if (GetPlayer()->isMovingOrTurning())
         GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
