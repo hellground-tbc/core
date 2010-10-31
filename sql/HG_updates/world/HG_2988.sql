@@ -1,0 +1,2 @@
+UPDATE creature_template SET ScriptName='', KillCredit = 19995 where entry IN(19998, 20334, 21296, 21975);
+UPDATE creature_template SET ScriptName='', KillCredit = 21978 where entry IN(21878, 21879, 21864);
