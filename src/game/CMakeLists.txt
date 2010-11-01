@@ -195,6 +195,8 @@ SET(game_STAT_SRCS
    PlayerDump.h
    PointMovementGenerator.cpp
    PointMovementGenerator.h
+   PoolHandler.h
+   PoolHandler.cpp
    QueryHandler.cpp
    QuestDef.cpp
    QuestDef.h

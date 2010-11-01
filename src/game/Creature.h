@@ -516,7 +516,7 @@ class TRINITY_DLL_SPEC Creature : public Unit
         uint32 GetCurrentEquipmentId() { return m_equipmentId; }
         float GetSpellDamageMod(int32 Rank);
 
-        void SetSelection(uint64 guid){ SetUInt64Value(UNIT_FIELD_TARGET, guid); } 
+        void SetSelection(uint64 guid){ SetUInt64Value(UNIT_FIELD_TARGET, guid); }
         uint64 GetSelection() { return GetUInt64Value(UNIT_FIELD_TARGET); }
 
         VendorItemData const* GetVendorItems() const;
@@ -616,7 +616,7 @@ class TRINITY_DLL_SPEC Creature : public Unit
         time_t const& GetRespawnTime() const { return m_respawnTime; }
         time_t GetRespawnTimeEx() const;
         void SetRespawnTime(uint32 respawn) { m_respawnTime = respawn ? time(NULL) + respawn : 0; }
-        void Respawn(bool command = false);
+        void Respawn();
         void SaveRespawnTime();
 
         uint32 GetRespawnDelay() const { return m_respawnDelay; }

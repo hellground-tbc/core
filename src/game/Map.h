@@ -52,7 +52,6 @@ class Player;
 class WorldObject;
 class CreatureGroup;
 class BattleGround;
-class GridMap;
 
 struct ScriptInfo;
 struct ScriptAction;

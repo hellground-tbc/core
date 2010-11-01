@@ -29,6 +29,7 @@
 #include "QuestDef.h"
 #include "GossipDef.h"
 #include "Player.h"
+#include "PoolHandler.h"
 #include "Opcodes.h"
 #include "Log.h"
 #include "LootMgr.h"
@@ -1728,7 +1729,7 @@ bool Creature::FallGround()
     return true;
 }
 
-void Creature::Respawn(bool command)
+void Creature::Respawn()
 {
     RemoveCorpse();
 
@@ -1771,6 +1772,9 @@ void Creature::Respawn(bool command)
         AI()->JustRespawned();
 
         //GetMap()->Add(this);
+        uint16 poolid = poolhandler.IsPartOfAPool(GetGUIDLow(), GetTypeId());
+        if (poolid)
+            poolhandler.UpdatePool(poolid, GetGUIDLow(), TYPEID_UNIT);
     }
     SetToNotify();
 }
