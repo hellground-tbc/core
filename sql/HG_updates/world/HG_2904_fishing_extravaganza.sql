@@ -1,0 +1,17 @@
+UPDATE world.creature set spawntimesecs=14400 where id=15077;
+UPDATE world.creature_template set ScriptName='npc_riggle_bassbait' where entry=15077;
+UPDATE world.item_template set Duration=-14400 where entry=19807;
+UPDATE world.gameobject_loot_template SET ChanceOrQuestChance=1 where item=19805 or item=19806 or item=19803 or item=19808;
+UPDATE world.gameobject SET position_x=-13643.357422, position_y=553.061584, position_z=0 where guid=20415;
+UPDATE world.gameobject SET position_x=-13581.621094, position_y=771.235840, position_z=0 where guid=13376;
+UPDATE world.gameobject SET position_x=-13237.576172, position_y=566.129211, position_z=0 where guid=18133;
+UPDATE world.gameobject SET position_x=-13407.092773, position_y=793.673767, position_z=0 where guid=13231;
+UPDATE world.gameobject SET position_x=-13425.299805, position_y=781.916016, position_z=0 where guid=18131;
+UPDATE world.gameobject SET position_x=-13293.336914, position_y=631.431763, position_z=0 where guid=13048 or guid=20418;
+UPDATE world.gameobject SET position_x=-13249.443359, position_y=590.201050, position_z=0 where guid=20419;
+UPDATE world.gameobject SET position_x=-12970.041016, position_y=502.552826, position_z=0 where guid=18135 or guid=20422;
+UPDATE world.gameobject SET position_x=-11975.719727, position_y=742.825317, position_z=0 where guid=20450;
+UPDATE world.gameobject SET position_x=-12702.163086, position_y=-10.682652, position_z=0 where guid=20441;
+UPDATE world.gameobject SET position_x=-12304.060547, position_y=364.570374, position_z=0 where guid=11012 or guid=18129;
+UPDATE world.gameobject SET position_x=-12040.229492, position_y=528.705627, position_z=0 where guid=20462;
+UPDATE world.gameobject SET position_x=-12015.160156, position_y=645.465576, position_z=0 where guid=20449 or guid=20461;
