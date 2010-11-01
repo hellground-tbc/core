@@ -119,7 +119,7 @@ public:
 
     virtual void DeleteSpawns();
 
-    Map * GetMap(uint32 id = -1)
+    Map * GetMap(int32 id = -1)
     {
         if (id == -1)
             return m_Map;
