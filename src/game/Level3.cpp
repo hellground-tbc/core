@@ -6120,7 +6120,7 @@ bool ChatHandler::HandleRespawnCommand(const char* /*args*/)
         }
 
         if(target->isDead())
-            ((Creature*)target)->Respawn(true);
+            ((Creature*)target)->Respawn();
         return true;
     }
 

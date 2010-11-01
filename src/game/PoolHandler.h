@@ -22,6 +22,7 @@
 #include "Platform/Define.h"
 #include "Creature.h"
 #include "GameObject.h"
+#include "MapManager.h"
 
 struct PoolTemplateData
 {
@@ -95,7 +96,6 @@ class PoolHandler
         SearchMap mCreatureSearchMap;
         SearchMap mGameobjectSearchMap;
         SearchMap mPoolSearchMap;
-
 };
 
 #define poolhandler Trinity::Singleton<PoolHandler>::Instance()

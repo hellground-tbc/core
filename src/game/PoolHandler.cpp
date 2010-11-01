@@ -145,8 +145,15 @@ void PoolGroup<Creature>::Despawn1Object(uint32 guid)
     if (CreatureData const* data = objmgr.GetCreatureData(guid))
     {
         objmgr.RemoveCreatureFromGrid(guid, data);
+        Map * tmpMap = MapManager::Instance().FindMap(data->mapid);
 
-        if (Creature* pCreature = ObjectAccessor::Instance().GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_UNIT), (Creature*)NULL))
+        if (!tmpMap)
+        {
+            sLog.outError("PoolGroup<Creature>::Despawn1Object: map not found (id %u)", data->mapid);
+            return;
+        }
+
+        if (Creature* pCreature = tmpMap->GetCreature(MAKE_NEW_GUID(guid, data->id, HIGHGUID_UNIT)))
             pCreature->AddObjectToRemoveList();
     }
 }
@@ -158,8 +165,15 @@ void PoolGroup<GameObject>::Despawn1Object(uint32 guid)
     if (GameObjectData const* data = objmgr.GetGOData(guid))
     {
         objmgr.RemoveGameobjectFromGrid(guid, data);
+        Map * tmpMap = MapManager::Instance().FindMap(data->mapid);
 
-        if (GameObject* pGameobject = ObjectAccessor::Instance().GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_GAMEOBJECT), (GameObject*)NULL))
+        if (!tmpMap)
+        {
+            sLog.outError("PoolGroup<GameObject>::Despawn1Object: map not found (id %u)", data->mapid);
+            return;
+        }
+
+        if (GameObject* pGameobject = tmpMap->GetGameObject(MAKE_NEW_GUID(guid, data->id, HIGHGUID_GAMEOBJECT)))
             pGameobject->AddObjectToRemoveList();
     }
 }
@@ -313,8 +327,17 @@ bool PoolGroup<Creature>::ReSpawn1Object(uint32 guid)
 {
     if (CreatureData const* data = objmgr.GetCreatureData(guid))
     {
-        if (Creature* pCreature = ObjectAccessor::Instance().GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_UNIT), (Creature*)NULL))
-            pCreature->GetMap()->Add(pCreature);
+        objmgr.RemoveCreatureFromGrid(guid, data);
+        Map * tmpMap = MapManager::Instance().FindMap(data->mapid);
+
+        if (!tmpMap)
+        {
+            sLog.outError("PoolGroup<Creature>::ReSpawn1Object: map not found (id %u)", data->mapid);
+            return false;
+        }
+
+        if (Creature* pCreature = tmpMap->GetCreature(MAKE_NEW_GUID(guid, data->id, HIGHGUID_UNIT)))
+            tmpMap->Add(pCreature);
         return true;
     }
     return false;
@@ -326,8 +349,17 @@ bool PoolGroup<GameObject>::ReSpawn1Object(uint32 guid)
 {
     if (GameObjectData const* data = objmgr.GetGOData(guid))
     {
-        if (GameObject* pGameobject = ObjectAccessor::Instance().GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_GAMEOBJECT), (GameObject*)NULL))
-            pGameobject->GetMap()->Add(pGameobject);
+        objmgr.RemoveGameobjectFromGrid(guid, data);
+        Map * tmpMap = MapManager::Instance().FindMap(data->mapid);
+
+        if (!tmpMap)
+        {
+            sLog.outError("PoolGroup<GameObject>::ReSpawn1Object: map not found (id %u)", data->mapid);
+            return false;
+        }
+
+        if (GameObject* pGameobject = tmpMap->GetGameObject(MAKE_NEW_GUID(guid, data->id, HIGHGUID_GAMEOBJECT)))
+            tmpMap->Add(pGameobject);
         return true;
     }
     return false;

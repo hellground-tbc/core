@@ -572,6 +572,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\game\PoolHandler.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\PoolHandler.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\game\TemporarySummon.cpp"
 				>
 			</File>
