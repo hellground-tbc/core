@@ -606,6 +606,10 @@
 				<Filter
 					Name="Durotar"
 					>
+					<File
+						RelativePath="..\scripts\zone\durotar\durotar.cpp"
+						>
+					</File>
 				</Filter>
 				<Filter
 					Name="Duskwood"

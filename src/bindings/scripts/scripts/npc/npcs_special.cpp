@@ -1442,60 +1442,6 @@ CreatureAI* GetAI_npc_garments_of_quests(Creature* pCreature)
 }
 
 /*########
-# npc_lazy_peon
-#########*/
-
-#define MIN_TIME_TO_GO_ASLEEP    60000         //1 minute
-#define MAX_TIME_TO_GO_ASLEEP    600000        //10 minutes
-
-struct TRINITY_DLL_DECL npc_lazy_peonAI : public ScriptedAI
-{
-    npc_lazy_peonAI(Creature *c) : ScriptedAI(c) {Reset();}
-
-    uint32 reAuraTimer;
-
-    void Reset()
-    {
-        reAuraTimer = urand(MIN_TIME_TO_GO_ASLEEP, MAX_TIME_TO_GO_ASLEEP);
-    }
-
-    void EnterCombat(Unit *who) {}
-
-    void SpellHit(Unit* pCaster, const SpellEntry *spell)
-    {
-        if (spell->Id == 19938 && m_creature->HasAura(17743, 0))
-            m_creature->RemoveAura(17743, 0);
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-        if (m_creature->HasAura(17743, 0))
-            return;
-
-        if (reAuraTimer < diff)
-        {
-            if (!m_creature->HasAura(17743, 0))
-            {
-                m_creature->CastSpell(m_creature, 17743, true);
-                reAuraTimer = urand(MIN_TIME_TO_GO_ASLEEP, MAX_TIME_TO_GO_ASLEEP);
-
-                return;
-            }
-        }
-        else
-            reAuraTimer -= diff;
-
-        DoMeleeAttackIfReady();
-    }
-};
-
-CreatureAI* GetAI_npc_lazy_peon(Creature* pCreature)
-{
-    return new npc_lazy_peonAI(pCreature);
-}
-
-
-/*########
 # npc_mojo
 #########*/
 
@@ -1843,11 +1789,11 @@ isrevered = false;
   {
     if(isrevered)
     {
-	  player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION0    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-	  player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION1    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2); 
-	if(isexalted)
-	{
-	  player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION2    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
+      player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION0    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+      player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION1    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2); 
+    if(isexalted)
+    {
+      player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION2    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
     }
     }
   }
@@ -1855,20 +1801,20 @@ isrevered = false;
   {
     if(isrevered)
     {
-	  player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION3    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
-	  player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION4    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5);
-	if(isexalted)
-	{
-	  player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION5    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 6);
-	}
+      player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION3    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
+      player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION4    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5);
+    if(isexalted)
+    {
+      player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION5    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 6);
+    }
     }
     if(isrevered)
     {
-	  player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION6    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 7);
-	  player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION7    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 8);
-	if(isexalted)
+      player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION6    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 7);
+      player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION7    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 8);
+    if(isexalted)
     {
-	  player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION8    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 9);
+      player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION8    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 9);
     }
     }
   }
@@ -1893,45 +1839,45 @@ bool GossipSelect_npc_master_omarion(Player *player, Creature *_Creature, uint32
 {
 switch (action)
 {    
-	  case GOSSIP_ACTION_INFO_DEF + 1:         // Icebane Bracers
-		player->learnSpell( 28244 );
-		break;
-	  case GOSSIP_ACTION_INFO_DEF + 2:         // Icebane Gauntlets
-		player->learnSpell( 28243 );
-		break;
-	  case GOSSIP_ACTION_INFO_DEF + 3:         // Icebane Breastplate
-		player->learnSpell( 28242 );
-		break;
-	  case GOSSIP_ACTION_INFO_DEF + 4:         // Polar Bracers
-		player->learnSpell( 28221 );
-		break;
-	  case GOSSIP_ACTION_INFO_DEF + 5:         // Polar Gloves
-		player->learnSpell( 28220 );
-		break;
-	  case GOSSIP_ACTION_INFO_DEF + 6:         // Polar Tunic
-		player->learnSpell( 28219 );
-		break;
-	  case GOSSIP_ACTION_INFO_DEF + 7:         // Icy Scale Bracers
-		player->learnSpell( 28224 );
-		break;
-	  case GOSSIP_ACTION_INFO_DEF + 8:         // Icy Scale Gauntlets
-		player->learnSpell( 28223 );
-		break;
-	  case GOSSIP_ACTION_INFO_DEF + 9:         // Icy Scale Breastplate
-		player->learnSpell( 28222 );
-		break;
-	  case GOSSIP_ACTION_INFO_DEF + 10:        // Glacial Wrists
-		player->learnSpell( 28209 );
-		break; 
-	  case GOSSIP_ACTION_INFO_DEF + 11:        // Glacial Gloves
-		player->learnSpell( 28205 );
-		break;
-	  case GOSSIP_ACTION_INFO_DEF + 12:        // Glacial Vest
-		player->learnSpell( 28207 );
-		break;
-	  case GOSSIP_ACTION_INFO_DEF + 13:        // Glacial Cloak
-		player->learnSpell( 28208 );
-		break;
+      case GOSSIP_ACTION_INFO_DEF + 1:         // Icebane Bracers
+        player->learnSpell( 28244 );
+        break;
+      case GOSSIP_ACTION_INFO_DEF + 2:         // Icebane Gauntlets
+        player->learnSpell( 28243 );
+        break;
+      case GOSSIP_ACTION_INFO_DEF + 3:         // Icebane Breastplate
+        player->learnSpell( 28242 );
+        break;
+      case GOSSIP_ACTION_INFO_DEF + 4:         // Polar Bracers
+        player->learnSpell( 28221 );
+        break;
+      case GOSSIP_ACTION_INFO_DEF + 5:         // Polar Gloves
+        player->learnSpell( 28220 );
+        break;
+      case GOSSIP_ACTION_INFO_DEF + 6:         // Polar Tunic
+        player->learnSpell( 28219 );
+        break;
+      case GOSSIP_ACTION_INFO_DEF + 7:         // Icy Scale Bracers
+        player->learnSpell( 28224 );
+        break;
+      case GOSSIP_ACTION_INFO_DEF + 8:         // Icy Scale Gauntlets
+        player->learnSpell( 28223 );
+        break;
+      case GOSSIP_ACTION_INFO_DEF + 9:         // Icy Scale Breastplate
+        player->learnSpell( 28222 );
+        break;
+      case GOSSIP_ACTION_INFO_DEF + 10:        // Glacial Wrists
+        player->learnSpell( 28209 );
+        break; 
+      case GOSSIP_ACTION_INFO_DEF + 11:        // Glacial Gloves
+        player->learnSpell( 28205 );
+        break;
+      case GOSSIP_ACTION_INFO_DEF + 12:        // Glacial Vest
+        player->learnSpell( 28207 );
+        break;
+      case GOSSIP_ACTION_INFO_DEF + 13:        // Glacial Cloak
+        player->learnSpell( 28208 );
+        break;
     }
     player->CLOSE_GOSSIP_MENU();
     return true;
@@ -2025,11 +1971,6 @@ void AddSC_npcs_special()
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_lazy_peon";
-    newscript->GetAI = &GetAI_npc_lazy_peon;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
     newscript->Name="npc_mojo";
     newscript->GetAI = &GetAI_npc_mojo;
     newscript->pReceiveEmote =  &ReceiveEmote_npc_mojo;
@@ -2050,7 +1991,7 @@ void AddSC_npcs_special()
     newscript->Name="npc_elemental_guardian";
     newscript->GetAI = &GetAI_npc_elemental_guardian;
     newscript->RegisterSelf();
-	
+    
     newscript = new Script;
     newscript->Name="npc_master_omarion";
     newscript->pGossipHello =  &GossipHello_npc_master_omarion;

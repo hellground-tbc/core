@@ -225,6 +225,7 @@ extern void AddSC_desolace();
 extern void AddSC_dun_morogh();
 
 //Durotar
+extern void AddSC_durotar();
 //Duskwood
 extern void AddSC_duskwood();
 
@@ -816,6 +817,7 @@ void AddScripts()
     AddSC_dun_morogh();
 
     //Durotar
+    AddSC_durotar();
     //Duskwood
     AddSC_duskwood();
 
