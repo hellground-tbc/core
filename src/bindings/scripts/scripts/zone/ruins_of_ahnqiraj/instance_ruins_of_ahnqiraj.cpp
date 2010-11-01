@@ -66,6 +66,8 @@ struct TRINITY_DLL_DECL instance_ruins_of_ahnqiraj : public ScriptedInstance
     {
         switch(creature_entry)
         {
+            case 0:
+                break;
             default:
                 break;
         }
@@ -89,6 +91,8 @@ struct TRINITY_DLL_DECL instance_ruins_of_ahnqiraj : public ScriptedInstance
     {
         switch(identifier)
         {
+            case 0:
+                return 0;
             default:
                 return 0;
         }

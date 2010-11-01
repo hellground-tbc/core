@@ -76,6 +76,8 @@ struct TRINITY_DLL_DECL instance_naxxramas : public ScriptedInstance
     {
         switch(creature_entry)
         {
+            case 0:
+                break;
             default:
                 break;
         }
@@ -208,6 +210,8 @@ struct TRINITY_DLL_DECL instance_naxxramas : public ScriptedInstance
     {
         switch(identifier)
         {
+            case 0:
+                return 0;
             default:
                 return 0;
         }

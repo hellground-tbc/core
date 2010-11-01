@@ -104,6 +104,8 @@ struct TRINITY_DLL_DECL instance_blackwing_lair : public ScriptedInstance
     {
         switch(identifier)
         {
+            case 0:
+                return 0;
             default:
                 return 0;
         }
