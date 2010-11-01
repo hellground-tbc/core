@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Nagrand
 SD%Complete: 90
-SDComment: Quest support: 9849, 9918, 9874, 9923, 9924, 9954, 9991, 10107, 10108, 10044, 10168, 10172, 10646, 10085, 10987. TextId's unknown for altruis_the_sufferer and greatmother_geyah (npc_text)
+SDComment: Quest support: 9849, 9868, 9918, 9874, 9923, 9924, 9954, 9991, 10107, 10108, 10044, 10168, 10172, 10646, 10085, 10987. TextId's unknown for altruis_the_sufferer and greatmother_geyah (npc_text)
 SDCategory: Nagrand
 EndScriptData */
 
@@ -33,9 +33,11 @@ npc_creditmarker_visit_with_ancestors
 mob_sparrowhawk
 npc_corki_capitive
 go_corki_cage
+npc_maghar_captive
 EndContentData */
 
 #include "precompiled.h"
+#include "escort_ai.h"
 
 /*######
 ## mob_shattered_rumbler - this should be done with ACID
@@ -692,11 +694,11 @@ enum CorkiCage
     QUEST_HELP1                          = 9923, // HELP!
     NPC_CORKI_CAPITIVE1                  = 18445,
     GO_CORKI_CAGE1                       = 182349,
-	
+    
     QUEST_HELP2                          = 9924, // Corki's Gone Missing Again!
     NPC_CORKI_CAPITIVE2                  = 20812,
     GO_CORKI_CAGE2                       = 182350,
-	
+    
     QUEST_HELP3                          = 9955, // Cho'war the Pillager
     NPC_CORKI_CAPITIVE3                  = 18369,
     GO_CORKI_CAGE3                       = 182521
@@ -777,6 +779,170 @@ bool go_corki_cage(Player* pPlayer, GameObject* pGo)
     return true;
 }
 
+/*#####
+## npc_maghar_captive
+#####*/
+
+enum eMagharCaptive
+{
+    SAY_MAG_START               = -1000482,
+    SAY_MAG_NO_ESCAPE           = -1000483,
+    SAY_MAG_MORE                = -1000484,
+    SAY_MAG_MORE_REPLY          = -1000485,
+    SAY_MAG_LIGHTNING           = -1000486,
+    SAY_MAG_SHOCK               = -1000487,
+    SAY_MAG_COMPLETE            = -1000488,
+
+    SPELL_CHAIN_LIGHTNING       = 16006,
+    SPELL_EARTHBIND_TOTEM       = 15786,
+    SPELL_FROST_SHOCK           = 12548,
+    SPELL_HEALING_WAVE          = 12491,
+
+    QUEST_TOTEM_KARDASH_H       = 9868,
+
+    NPC_MURK_RAIDER             = 18203,
+    NPC_MURK_BRUTE              = 18211,
+    NPC_MURK_SCAVENGER          = 18207,
+    NPC_MURK_PUTRIFIER          = 18202
+};
+
+static float m_afAmbushA[]= {-1568.805786, 8533.873047, 1.958};
+static float m_afAmbushB[]= {-1491.554321, 8506.483398, 1.248};
+
+struct npc_maghar_captiveAI : public npc_escortAI
+{
+    npc_maghar_captiveAI(Creature* pCreature) : npc_escortAI(pCreature) { Reset(); }
+
+    uint32 m_uiChainLightningTimer;
+    uint32 m_uiHealTimer;
+    uint32 m_uiFrostShockTimer;
+
+    void Reset()
+    {
+        m_uiChainLightningTimer = 1000;
+        m_uiHealTimer = 0;
+        m_uiFrostShockTimer = 6000;
+    }
+
+    void EnterCombat(Unit* /*pWho*/)
+    {
+        DoCast(me, SPELL_EARTHBIND_TOTEM, false);
+    }
+
+    void WaypointReached(uint32 uiPointId)
+    {
+        switch(uiPointId)
+        {
+            case 7:
+                DoScriptText(SAY_MAG_MORE, me);
+
+                if (Creature* pTemp = me->SummonCreature(NPC_MURK_PUTRIFIER, m_afAmbushB[0], m_afAmbushB[1], m_afAmbushB[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000))
+                    DoScriptText(SAY_MAG_MORE_REPLY, pTemp);
+
+                me->SummonCreature(NPC_MURK_PUTRIFIER, m_afAmbushB[0]-2.5f, m_afAmbushB[1]-2.5f, m_afAmbushB[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+
+                me->SummonCreature(NPC_MURK_SCAVENGER, m_afAmbushB[0]+2.5f, m_afAmbushB[1]+2.5f, m_afAmbushB[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+                me->SummonCreature(NPC_MURK_SCAVENGER, m_afAmbushB[0]+2.5f, m_afAmbushB[1]-2.5f, m_afAmbushB[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+                break;
+            case 16:
+                DoScriptText(SAY_MAG_COMPLETE, me);
+
+                if (Player* pPlayer = GetPlayerForEscort())
+                    pPlayer->GroupEventHappens(QUEST_TOTEM_KARDASH_H, me);
+
+                SetRun();
+                break;
+        }
+    }
+
+    void JustSummoned(Creature* pSummoned)
+    {
+        if (pSummoned->GetEntry() == NPC_MURK_BRUTE)
+            DoScriptText(SAY_MAG_NO_ESCAPE, pSummoned);
+
+        if (pSummoned->isTotem())
+            return;
+
+        pSummoned->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+        pSummoned->GetMotionMaster()->MovePoint(0, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ());
+        pSummoned->AI()->AttackStart(me);
+
+    }
+
+    void SpellHitTarget(Unit* /*pTarget*/, const SpellEntry* pSpell)
+    {
+        if (pSpell->Id == SPELL_CHAIN_LIGHTNING)
+        {
+            if (rand()%10)
+                return;
+
+            DoScriptText(SAY_MAG_LIGHTNING, me);
+        }
+    }
+
+    void UpdateAI(const uint32 uiDiff)
+    {
+        npc_escortAI::UpdateAI(uiDiff);
+        if (!me->getVictim())
+            return;
+
+        if (m_uiChainLightningTimer <= uiDiff)
+        {
+            DoCast(me->getVictim(), SPELL_CHAIN_LIGHTNING);
+            m_uiChainLightningTimer = urand(7000, 14000);
+        }
+        else
+            m_uiChainLightningTimer -= uiDiff;
+
+        if (me->GetHealth()*100 < me->GetMaxHealth()*30)
+        {
+            if (m_uiHealTimer <= uiDiff)
+            {
+                DoCast(me, SPELL_HEALING_WAVE);
+                m_uiHealTimer = 5000;
+            }
+            else
+                m_uiHealTimer -= uiDiff;
+        }
+
+        if (m_uiFrostShockTimer <= uiDiff)
+        {
+            DoCast(me->getVictim(), SPELL_FROST_SHOCK);
+            m_uiFrostShockTimer = urand(7500, 15000);
+        }
+        else
+            m_uiFrostShockTimer -= uiDiff;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+bool QuestAccept_npc_maghar_captive(Player* pPlayer, Creature* pCreature, const Quest* pQuest)
+{
+    if (pQuest->GetQuestId() == QUEST_TOTEM_KARDASH_H)
+    {
+        if (npc_maghar_captiveAI* pEscortAI = dynamic_cast<npc_maghar_captiveAI*>(pCreature->AI()))
+        {
+            pCreature->SetStandState(UNIT_STAND_STATE_STAND);
+            pCreature->setFaction(232);
+
+            pEscortAI->Start(true, false, pPlayer->GetGUID(), pQuest);
+
+            DoScriptText(SAY_MAG_START, pCreature);
+
+            pCreature->SummonCreature(NPC_MURK_RAIDER, m_afAmbushA[0]+2.5f, m_afAmbushA[1]-2.5f, m_afAmbushA[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+            pCreature->SummonCreature(NPC_MURK_PUTRIFIER, m_afAmbushA[0]-2.5f, m_afAmbushA[1]+2.5f, m_afAmbushA[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+            pCreature->SummonCreature(NPC_MURK_BRUTE, m_afAmbushA[0], m_afAmbushA[1], m_afAmbushA[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+        }
+    }
+    return true;
+}
+
+CreatureAI* GetAI_npc_maghar_captive(Creature* pCreature)
+{
+    return new npc_maghar_captiveAI(pCreature);
+}
+
 /*####
 #
 ####*/
@@ -835,15 +1001,20 @@ void AddSC_nagrand()
     newscript->Name="mob_sparrowhawk";
     newscript->GetAI = &GetAI_mob_sparrowhawk;
     newscript->RegisterSelf();
-	
+
     newscript = new Script;
     newscript->Name="npc_corki_capitive";
     newscript->GetAI = &GetAI_npc_corki_capitiveAI;
     newscript->RegisterSelf();
-    
+
     newscript = new Script;
     newscript->Name="go_corki_cage";
     newscript->pGOHello = &go_corki_cage;
     newscript->RegisterSelf();
-}
 
+    newscript = new Script;
+    newscript->Name = "npc_maghar_captive";
+    newscript->GetAI = &GetAI_npc_maghar_captive;
+    newscript->pQuestAccept = &QuestAccept_npc_maghar_captive;
+    newscript->RegisterSelf();
+}
