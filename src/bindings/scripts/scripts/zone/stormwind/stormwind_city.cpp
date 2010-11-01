@@ -385,10 +385,8 @@ struct npc_lord_gregor_lescovarAI : public npc_escortAI
                         break;
                     case 6:
                         DoScriptText(SAY_LESCOVAR_4, me);
-                        /*
                         if (Player* pPlayer = GetPlayerForEscort())
                             pPlayer->AreaExploredOrEventHappens(QUEST_THE_ATTACK);
-                        */
                         uiTimer = 2000;
                         uiPhase = 7;
                         break;

@@ -13724,6 +13724,8 @@ void Player::AreaExploredOrEventHappens( uint32 questId )
         }
         if( CanCompleteQuest( questId ) )
             CompleteQuest( questId );
+        else
+            SendQuestComplete( questId);
     }
 }
 
