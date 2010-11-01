@@ -119,9 +119,9 @@ public:
 
     virtual void DeleteSpawns();
 
-    Map * GetMap(uint32 id = 0)
+    Map * GetMap(uint32 id = -1)
     {
-        if (!id)
+        if (id == -1)
             return m_Map;
 
         return m_Map ? m_Map : m_Map = MapManager::Instance().FindMap(id);
