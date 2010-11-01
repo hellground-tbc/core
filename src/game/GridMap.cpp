@@ -193,6 +193,7 @@ bool GridMap::loadHeightData(FILE *in, uint32 offset, uint32 /*size*/)
 
 bool GridMap::loadGridMapLiquidData(FILE *in, uint32 offset, uint32 /*size*/)
 {
+    GridMapLiquidHeader header;
     fseek(in, offset, SEEK_SET);
     fread(&header, sizeof(header), 1, in);
     if (header.fourcc != uint32(MAP_LIQUID_MAGIC))
