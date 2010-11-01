@@ -1408,6 +1408,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         bool isInFront(Unit const* target,float distance, float arc = M_PI) const;
         bool isInFront(GameObject const* target,float distance, float arc = M_PI) const;
         void SetInFront(Unit const* target);
+        void SetFacingToObject(WorldObject* pObject);
         bool isInBack(Unit const* target, float distance, float arc = M_PI) const;
         bool isInBack(GameObject const* target, float distance, float arc = M_PI) const;
         bool isInLine(Unit const* target, float distance) const;

@@ -3267,8 +3267,26 @@ bool Unit::isInFront(GameObject const* target, float distance,  float arc) const
 
 void Unit::SetInFront(Unit const* target)
 {
+    // update orientation at server
     if(!hasUnitState(UNIT_STAT_CANNOT_TURN))
         SetOrientation(GetAngle(target));
+
+    // and client
+    WorldPacket data;
+    BuildHeartBeatMsg(&data);
+    SendMessageToSet(&data, false);
+}
+
+void Unit::SetFacingToObject(WorldObject* pObject)
+{
+    // update orientation at server
+    if(!hasUnitState(UNIT_STAT_CANNOT_TURN))
+        SetOrientation(GetAngle(pObject));
+
+    // and client
+    WorldPacket data;
+    BuildHeartBeatMsg(&data);
+    SendMessageToSet(&data, false);
 }
 
 bool Unit::isInBack(Unit const* target, float distance, float arc) const
