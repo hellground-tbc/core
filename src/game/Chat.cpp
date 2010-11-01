@@ -216,6 +216,8 @@ ChatCommand * ChatHandler::getCommandTable()
         { "lootrecipient",  SEC_GAMEMASTER,     false, &ChatHandler::HandleGetLootRecipient,           "", NULL },
         { "arena",          SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugArenaCommand,          "", NULL },
         { "threatlist",     SEC_GAMEMASTER,     false, &ChatHandler::HandleDebugThreatList,            "", NULL },
+        { "setinstdata",    SEC_ADMINISTRATOR,  false, &ChatHandler::HandleSetInstanceDataCommand,     "", NULL },
+        { "getinstdata",    SEC_ADMINISTRATOR,  false, &ChatHandler::HandleGetInstanceDataCommand,     "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 
