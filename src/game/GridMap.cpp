@@ -482,7 +482,7 @@ uint8 GridMap::getTerrainType(float x, float y)
 }
 
 // Get water state on map
-inline GridMapLiquidStatus GridMap::getLiquidStatus(float x, float y, float z, uint8 ReqLiquidType, GridMapLiquidData *data)
+GridMapLiquidStatus GridMap::getLiquidStatus(float x, float y, float z, uint8 ReqLiquidType, GridMapLiquidData *data)
 {
     // Check water type (if no water return)
     if (!m_liquid_type && !m_liquidType)
@@ -542,4 +542,55 @@ inline GridMapLiquidStatus GridMap::getLiquidStatus(float x, float y, float z, u
         return LIQUID_MAP_WATER_WALK;
                                                             // Above water
     return LIQUID_MAP_ABOVE_WATER;
+}
+
+bool GridMap::ExistMap(uint32 mapid,int gx,int gy)
+{
+    int len = sWorld.GetDataPath().length()+strlen("maps/%03u%02u%02u.map")+1;
+    char* tmp = new char[len];
+    snprintf(tmp, len, (char *)(sWorld.GetDataPath()+"maps/%03u%02u%02u.map").c_str(),mapid,gx,gy);
+
+    FILE *pf=fopen(tmp,"rb");
+
+    if(!pf)
+    {
+        sLog.outError("Check existing of map file '%s': not exist!",tmp);
+        delete[] tmp;
+        return false;
+    }
+
+    GridMapFileHeader header;
+    fread(&header, sizeof(header), 1, pf);
+    if (header.mapMagic     != uint32(MAP_MAGIC) ||
+        header.versionMagic != uint32(MAP_VERSION_MAGIC))
+    {
+        sLog.outError("Map file '%s' is non-compatible version (outdated?). Please, create new using ad.exe program.",tmp);
+        delete [] tmp;
+        fclose(pf);                                         //close file before return
+        return false;
+    }
+
+    delete [] tmp;
+    fclose(pf);
+    return true;
+}
+
+bool GridMap::ExistVMap(uint32 mapid,int gx,int gy)
+{
+    if(VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager())
+    {
+        if(vmgr->isMapLoadingEnabled(mapid))
+        {
+                                                            // x and y are swapped !! => fixed now
+            bool exists = vmgr->existsMap((sWorld.GetDataPath()+ "vmaps").c_str(), mapid, gx,gy);
+            if(!exists)
+            {
+                std::string name = vmgr->getDirFileName(mapid,gx,gy);
+                sLog.outError("VMap file '%s' is missing or point to wrong version vmap file, redo vmaps with latest vmap_assembler.exe program", (sWorld.GetDataPath()+"vmaps/"+name).c_str());
+                return false;
+            }
+        }
+    }
+
+    return true;
 }

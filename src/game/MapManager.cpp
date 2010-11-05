@@ -34,7 +34,6 @@
 #include "Corpse.h"
 #include "Config/ConfigEnv.h"
 #include "ObjectMgr.h"
-#include "GridMap.h"
 
 #define CLASS_LOCK Trinity::ClassLevelLockable<MapManager, ACE_Thread_Mutex>
 INSTANTIATE_SINGLETON_2(MapManager, CLASS_LOCK);
@@ -230,7 +229,7 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player)
         InstanceTemplate const* instance = objmgr.GetInstanceTemplate(mapid);
         if(!instance)
             return false;
-
+        
         return player->Satisfy(objmgr.GetAccessRequirement(instance->access_id), mapid, true);
     }
     else
@@ -261,7 +260,7 @@ MapManager::Update(time_t diff)
     i_timer.Update(diff);
     if( !i_timer.Passed() )
         return;
-
+    
     sWorld.RecordTimeDiff(NULL);
     for(MapMapType::iterator iter=i_maps.begin(); iter != i_maps.end(); ++iter)
     {
@@ -275,7 +274,7 @@ MapManager::Update(time_t diff)
         m_updater.wait();
 
     sWorld.RecordTimeDiff("UpdateMaps, hash_map size: %u", i_maps.size());
-
+    
     checkAndCorrectGridStatesArray();
     for(MapMapType::iterator iter = i_maps.begin(); iter != i_maps.end(); ++iter)
         iter->second->DelayedUpdate(i_timer.GetCurrent());
@@ -284,7 +283,7 @@ MapManager::Update(time_t diff)
 
     for (TransportSet::iterator iter = m_Transports.begin(); iter != m_Transports.end(); ++iter)
         (*iter)->Update(i_timer.GetCurrent());
-
+    
     sWorld.RecordTimeDiff("UpdateTransports");
 
     i_timer.SetCurrent(0);

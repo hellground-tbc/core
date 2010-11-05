@@ -21,14 +21,13 @@
 #ifndef TRINITY_MAPMANAGER_H
 #define TRINITY_MAPMANAGER_H
 
-#include "Common.h"
-#include "MapUpdater.h"
 #include "Platform/Define.h"
 #include "Policies/Singleton.h"
 #include "ace/Thread_Mutex.h"
+#include "Common.h"
 #include "Map.h"
 #include "GridStates.h"
-
+#include "MapUpdater.h"
 
 class Transport;
 
