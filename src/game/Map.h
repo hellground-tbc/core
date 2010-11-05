@@ -31,7 +31,7 @@
 #include "Cell.h"
 #include "Timer.h"
 #include "SharedDefines.h"
-#include "GridMap.h"
+//#include "GridMap.h"
 #include "GameSystem/GridRefManager.h"
 #include "MapRefManager.h"
 #include "mersennetwister/MersenneTwister.h"
@@ -52,6 +52,8 @@ class Player;
 class WorldObject;
 class CreatureGroup;
 class BattleGround;
+
+class GridMap;
 
 struct ScriptInfo;
 struct ScriptAction;

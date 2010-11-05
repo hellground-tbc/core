@@ -31,6 +31,7 @@
 #include "GlobalEvents.h"
 #include "ObjectGuid.h"
 #include "Corpse.h"
+#include "Map.h"
 
 static void CorpsesEraseCallBack(QueryResult_AutoPtr result, bool bones)
 {

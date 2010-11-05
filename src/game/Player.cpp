@@ -64,6 +64,7 @@
 #include "Spell.h"
 #include "SocialMgr.h"
 #include "GameEvent.h"
+#include "GridMap.h"
 
 #include "PlayerAI.h"
 

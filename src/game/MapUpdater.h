@@ -6,8 +6,8 @@
 #include <ace/Condition_Thread_Mutex.h>
 
 #include "DelayExecutor.h"
-
-class Map;
+#include "Map.h"
+//class Map;
 
 class MapUpdater
 {

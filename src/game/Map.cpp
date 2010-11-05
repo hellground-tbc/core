@@ -38,6 +38,7 @@
 #include "MapRefManager.h"
 #include "WaypointManager.h"
 #include "BattleGround.h"
+#include "GridMap.h"
 
 #include "MapInstanced.h"
 #include "InstanceSaveMgr.h"

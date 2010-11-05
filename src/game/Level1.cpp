@@ -35,6 +35,7 @@
 #include "InstanceSaveMgr.h"
 #include "Util.h"
 #include "TicketMgr.h"
+#include "GridMap.h"
 
 #ifdef _DEBUG_VMAPS
 #include "VMapFactory.h"

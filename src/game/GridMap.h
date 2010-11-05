@@ -87,14 +87,7 @@ struct GridMapLiquidHeader
     float liquidLevel;
 };
 
-enum GridMapLiquidStatus
-{
-    LIQUID_MAP_NO_WATER     = 0x00000000,
-    LIQUID_MAP_ABOVE_WATER  = 0x00000001,
-    LIQUID_MAP_WATER_WALK   = 0x00000002,
-    LIQUID_MAP_IN_WATER     = 0x00000004,
-    LIQUID_MAP_UNDER_WATER  = 0x00000008
-};
+/*enum GridMapLiquidStatus Moved to GridDefines.h */
 
 #define MAP_LIQUID_TYPE_NO_WATER    0x00
 #define MAP_LIQUID_TYPE_WATER       0x01
@@ -107,12 +100,7 @@ enum GridMapLiquidStatus
 #define MAP_LIQUID_TYPE_DARK_WATER  0x10
 #define MAP_LIQUID_TYPE_WMO_WATER   0x20
 
-struct GridMapLiquidData
-{
-    uint32 type;
-    float level;
-    float depth_level;
-};
+/*struct GridMapLiquidData Moved to GridDefines.h */
 
 class GridMap
 {
