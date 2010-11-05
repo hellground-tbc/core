@@ -172,37 +172,15 @@ struct TRINITY_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
     uint32 m_debilStrikeTimer;
     uint32 m_shieldBashTimer;
     uint32 m_checkTimer;
-    bool m_attack;
 
     void Reset()
     {
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
-        m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
+        m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, false);
 
         m_debilStrikeTimer = 10000;
         m_shieldBashTimer = 1000;
         m_checkTimer = 10000;
-        m_attack = false;
-    }
-
-    void MovementInform(uint32 type, uint32 id)
-    {
-        if (type != POINT_MOTION_TYPE)
-            return;
-        
-        if (!m_attack)
-        {
-            m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
-            m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, false);
-            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-            m_attack = true;
-        }
-
-        if (pInstance)
-        {
-            if(Creature *pAkama = pInstance->GetCreature(pInstance->GetData64(DATA_AKAMA_SHADE)))
-                AttackStart(pAkama);
-        }
     }
 
     void DoMeleeAttackIfReady()
@@ -227,7 +205,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_attack || !UpdateVictim())
+        if (!UpdateVictim())
             return;
 
         if (m_debilStrikeTimer < diff)
@@ -704,6 +682,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
         if(!_EnterEvadeMode())
             return;
 
+        me->SetHealth(me->GetMaxHealth());
         DespawnChannelersAndSorcerers();
 
         if(Unit *owner = me->GetCharmerOrOwner())
@@ -797,10 +776,10 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
             {
                 m_summons.Summon(pDefender);
                 if(Creature *pAkama = m_creature->GetCreature(*m_creature, AkamaGUID))
+                {
                     pDefender->AddThreat(pAkama, 100000.0f);
-
-                pDefender->GetMotionMaster()->MovePoint(0, AKAMA_X, AKAMA_Y, AKAMA_Z);
-                pDefender->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    pDefender->AttackStart(pAkama);
+                }
             }
             m_guardTimer = 30000;
         }
@@ -820,7 +799,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
                 m_sorcerers.push_back(pSorcerer->GetGUID());
                
                 WorldLocation sLoc;
-                me->GetClosePoint(sLoc.x, sLoc.y, sLoc.z, 0, 15.0f, frand(4.30, 5.31));
+                me->GetClosePoint(sLoc.x, sLoc.y, sLoc.z, 0, 10.0f, frand(4.30, 5.31));
                 pSorcerer->GetMotionMaster()->MovePoint(0, sLoc.x, sLoc.y, sLoc.z);
             }
             m_sorcTimer = 30000;
