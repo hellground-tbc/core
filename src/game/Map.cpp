@@ -932,8 +932,7 @@ Map::Remove(T *obj, bool remove)
     }
 }
 
-void
-Map::PlayerRelocation(Player *player, float x, float y, float z, float orientation)
+void Map::PlayerRelocation(Player *player, float x, float y, float z, float orientation)
 {
     assert(player);
 
@@ -973,8 +972,7 @@ Map::PlayerRelocation(Player *player, float x, float y, float z, float orientati
     }
 }
 
-void
-Map::CreatureRelocation(Creature *creature, float x, float y, float z, float ang)
+void Map::CreatureRelocation(Creature *creature, float x, float y, float z, float ang)
 {
     assert(CheckGridIntegrity(creature,false));
 

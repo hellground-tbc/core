@@ -1555,6 +1555,9 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         MotionMaster* GetMotionMaster() { return &i_motionMaster; }
 
         bool IsStopped() const { return !(hasUnitState(UNIT_STAT_MOVING)); }
+
+        virtual bool SetPosition(float x, float y, float z, float ang, bool teleport = false);
+
         void StopMoving();
 
         void AddUnitMovementFlag(uint32 f) { m_unit_movement_flags |= f; }

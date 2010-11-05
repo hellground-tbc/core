@@ -5176,10 +5176,7 @@ void Player::UpdateCombatSkills(Unit *pVictim, WeaponAttackType attType, bool de
 
     float chance = float(3 * lvldif * skilldif) / plevel;
     if(!defence)
-    {
-        if(getClass() == CLASS_WARRIOR || getClass() == CLASS_ROGUE)
-            chance *= 0.1f * GetStat(STAT_INTELLECT);
-    }
+        chance *= 0.1f * GetStat(STAT_INTELLECT);
 
     chance = chance < 1.0f ? 1.0f : chance;                 //minimum chance to increase skill is 1%
 
@@ -5545,46 +5542,22 @@ void Player::SetDontMove(bool dontMove)
 
 bool Player::SetPosition(float x, float y, float z, float orientation, bool teleport)
 {
-    // prevent crash when a bad coord is sent by the client
-    if(!Trinity::IsValidMapCoord(x,y,z,orientation))
-    {
-        sLog.outDebug("Player::SetPosition(%f, %f, %f, %f, %d) .. bad coordinates for player %d!",x,y,z,orientation,teleport,GetGUIDLow());
+    if (!Unit::SetPosition(x, y, z, orientation, teleport))
         return false;
-    }
 
-    Map *m = GetMap();
-
-    const float old_x = GetPositionX();
-    const float old_y = GetPositionY();
-    const float old_z = GetPositionZ();
-    const float old_r = GetOrientation();
-
-    if( teleport || old_x != x || old_y != y || old_z != z || old_r != orientation )
-    {
-        if (teleport || old_x != x || old_y != y || old_z != z)
-            RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_MOVE | AURA_INTERRUPT_FLAG_TURNING);
-        else
-            RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TURNING);
-
-        // move and update visible state if need
-        m->PlayerRelocation(this, x, y, z, orientation);
-
-        // reread after Map::Relocation
-        m = GetMap();
-        x = GetPositionX();
-        y = GetPositionY();
-        z = GetPositionZ();
-
-        // group update
-        if(GetGroup() && (old_x != x || old_y != y))
-            SetGroupUpdateFlag(GROUP_UPDATE_FLAG_POSITION);
-    }
+    // group update
+    if (GetGroup())
+        SetGroupUpdateFlag(GROUP_UPDATE_FLAG_POSITION);
 
     // code block for underwater state update
+    // Unit::SetPosition() checks for validity and updates our coordinates
+    // so we re-fetch them instead of using "raw" coordinates from function params
     UpdateUnderwaterState(GetMap(), GetPositionX(), GetPositionY(), GetPositionZ());
 
-    CheckAreaExploreAndOutdoor();
+    if (GetTrader() && !IsWithinDistInMap(GetTrader(), INTERACTION_DISTANCE))
+        GetSession()->SendCancelTrade();
 
+    CheckAreaExploreAndOutdoor();
     return true;
 }
 
@@ -19734,10 +19707,10 @@ void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
     GridMapLiquidStatus res = m->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &liquid_status);
     if (!res)
     {
-        m_MirrorTimerFlags &= ~(UNDERWATER_INWATER|UNDERWATER_INLAVA|UNDERWATER_INSLIME|UNDERWATER_INDARKWATER);
+        m_MirrorTimerFlags &= ~(UNDERWATER_INWATER|UNDERWATER_INLAVA|UNDERWATER_INSLIME|UNDERWARER_INDARKWATER);
         // Small hack for enable breath in WMO
-        //if (IsInWater())
-        //    m_MirrorTimerFlags|=UNDERWATER_INWATER;
+        /* if (IsInWater())
+            m_MirrorTimerFlags|=UNDERWATER_INWATER; */
         return;
     }
 
@@ -19752,9 +19725,9 @@ void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
 
     // Allow travel in dark water on taxi or transport
     if ((liquid_status.type & MAP_LIQUID_TYPE_DARK_WATER) && !isInFlight() && !GetTransport())
-        m_MirrorTimerFlags |= UNDERWATER_INDARKWATER;
+        m_MirrorTimerFlags |= UNDERWARER_INDARKWATER;
     else
-        m_MirrorTimerFlags &= ~UNDERWATER_INDARKWATER;
+        m_MirrorTimerFlags &= ~UNDERWARER_INDARKWATER;
 
     // in lava check, anywhere in lava level
     if (liquid_status.type&MAP_LIQUID_TYPE_MAGMA)
@@ -19774,18 +19747,18 @@ void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
     }
 }
 
-void Player::SetCanParry( bool value )
+void Player::SetCanParry(bool value)
 {
-    if(m_canParry==value)
+    if (m_canParry == value)
         return;
 
     m_canParry = value;
     UpdateParryPercentage();
 }
 
-void Player::SetCanBlock( bool value )
+void Player::SetCanBlock(bool value)
 {
-    if(m_canBlock==value)
+    if (m_canBlock == value)
         return;
 
     m_canBlock = value;
@@ -19794,9 +19767,12 @@ void Player::SetCanBlock( bool value )
 
 bool ItemPosCount::isContainedIn(ItemPosCountVec const& vec) const
 {
-    for(ItemPosCountVec::const_iterator itr = vec.begin(); itr != vec.end();++itr)
-        if(itr->pos == pos)
+    for (ItemPosCountVec::const_iterator itr = vec.begin(); itr != vec.end();++itr)
+    {
+        if (itr->pos == pos)
             return true;
+    }
+
     return false;
 }
 
