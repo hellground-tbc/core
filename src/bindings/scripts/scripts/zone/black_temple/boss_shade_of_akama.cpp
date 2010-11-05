@@ -163,7 +163,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_channelerAI : public ScriptedAI
 struct TRINITY_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
 {
     mob_ashtongue_defenderAI(Creature* c) : ScriptedAI(c)
-    { 
+    {
         pInstance = (ScriptedInstance*)c->GetInstanceData();
     }
 
@@ -196,7 +196,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
             {
                 me->AttackerStateUpdate(me->getVictim());
                 me->resetAttackTimer();
-                
+
                 if(IS_CREATURE_GUID(me->getVictimGUID()))
                     DoCast(me->getVictim(), SPELL_HEROIC_STRIKE, true);
             }
@@ -259,7 +259,7 @@ enum spiritbinderSpells
 struct TRINITY_DLL_DECL mob_ashtongue_spiritbinderAI : public ScriptedAI
 {
     mob_ashtongue_spiritbinderAI(Creature* c) : ScriptedAI(c)
-    { 
+    {
         pInstance = (ScriptedInstance*)c->GetInstanceData();
     }
 
@@ -398,13 +398,13 @@ struct TRINITY_DLL_DECL mob_ashtongue_spiritbinderAI : public ScriptedAI
 enum elementalistSpells
 {
     SPELL_RAIN_OF_FIRE   = 42023,
-    SPELL_LIGHTNING_BOLT = 42024 
+    SPELL_LIGHTNING_BOLT = 42024
 };
 
 struct TRINITY_DLL_DECL mob_ashtongue_elementalistAI : public ScriptedAI
 {
     mob_ashtongue_elementalistAI(Creature* c) : ScriptedAI(c)
-    { 
+    {
         pInstance = (ScriptedInstance*)c->GetInstanceData();
     }
 
@@ -497,7 +497,7 @@ enum rogueSpells
 struct TRINITY_DLL_DECL mob_ashtongue_rogueAI : public ScriptedAI
 {
     mob_ashtongue_rogueAI(Creature* c) : ScriptedAI(c)
-    { 
+    {
         pInstance = (ScriptedInstance*)c->GetInstanceData();
     }
 
@@ -778,7 +778,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
                 if(Creature *pAkama = m_creature->GetCreature(*m_creature, AkamaGUID))
                 {
                     pDefender->AddThreat(pAkama, 100000.0f);
-                    pDefender->AttackStart(pAkama);
+                    pDefender->AI()->AttackStart(pAkama);
                 }
             }
             m_guardTimer = 30000;
@@ -797,7 +797,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
             if (Creature *pSorcerer = m_creature->SummonCreature(CREATURE_SORCERER, SpawnLocations[1][0], SpawnLocations[1][1], SPAWN_Z, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000))
             {
                 m_sorcerers.push_back(pSorcerer->GetGUID());
-               
+
                 WorldLocation sLoc;
                 me->GetClosePoint(sLoc.x, sLoc.y, sLoc.z, 0, 10.0f, frand(4.30, 5.31));
                 pSorcerer->GetMotionMaster()->MovePoint(0, sLoc.x, sLoc.y, sLoc.z);
@@ -846,7 +846,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
         if (aura->GetSpellProto()->Id == SPELL_SHADE_SOUL_CHANNEL_2)
         {
             ++m_freeSlot;
-            
+
             if (!stackRemove)
                 SetBanish(false);
 
@@ -1093,7 +1093,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
                                 int damage = akama->GetMaxHealth()/12;
                                 if (event_phase == AKAMA_DEATH) // after 60s deal damage equal to hp
                                     damage = akama->GetHealth();
-                                
+
                                 m_creature->DealDamage(akama, damage, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                                 m_damageTimer = 10000;
                                 ++event_phase;

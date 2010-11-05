@@ -64,6 +64,7 @@
 #include "Spell.h"
 #include "SocialMgr.h"
 #include "GameEvent.h"
+#include "GridMap.h"
 
 #include "PlayerAI.h"
 
@@ -19706,7 +19707,7 @@ void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
     GridMapLiquidStatus res = m->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &liquid_status);
     if (!res)
     {
-        m_MirrorTimerFlags &= ~(UNDERWATER_INWATER|UNDERWATER_INLAVA|UNDERWATER_INSLIME|UNDERWARER_INDARKWATER);
+        m_MirrorTimerFlags &= ~(UNDERWATER_INWATER|UNDERWATER_INLAVA|UNDERWATER_INSLIME|UNDERWATER_INDARKWATER);
         // Small hack for enable breath in WMO
         /* if (IsInWater())
             m_MirrorTimerFlags|=UNDERWATER_INWATER; */
@@ -19724,9 +19725,9 @@ void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
 
     // Allow travel in dark water on taxi or transport
     if ((liquid_status.type & MAP_LIQUID_TYPE_DARK_WATER) && !isInFlight() && !GetTransport())
-        m_MirrorTimerFlags |= UNDERWARER_INDARKWATER;
+        m_MirrorTimerFlags |= UNDERWATER_INDARKWATER;
     else
-        m_MirrorTimerFlags &= ~UNDERWARER_INDARKWATER;
+        m_MirrorTimerFlags &= ~UNDERWATER_INDARKWATER;
 
     // in lava check, anywhere in lava level
     if (liquid_status.type&MAP_LIQUID_TYPE_MAGMA)
