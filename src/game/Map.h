@@ -60,6 +60,7 @@ struct ScriptAction;
 
 #define MAX_FALL_DISTANCE     250000.0f                     // "unlimited fall" to find VMap ground if it is available, just larger than MAX_HEIGHT - INVALID_HEIGHT
 #define DEFAULT_HEIGHT_SEARCH     10.0f                     // default search distance to find height at nearby locations
+#define DEFAULT_WATER_SEARCH      50.0f                     // default search distance to case detection water level
 
 struct CreatureMover
 {
@@ -198,6 +199,10 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         // some calls like isInWater should not use vmaps due to processor power
         // can return INVALID_HEIGHT if under z+2 z coord not found height
         float GetHeight(float x, float y, float z, bool pCheckVMap = true, float maxSearchDist = DEFAULT_HEIGHT_SEARCH) const;
+        float _getHeight(float x, float y, float z, float mapHeight, float maxSearchDist = DEFAULT_HEIGHT_SEARCH) const;
+
+        float GetWaterLevel(float x, float y, float z, float* pGround = NULL) const;
+        float GetWaterOrGroundLevel(float x, float y, float z, float* pGround = NULL, bool swim = false) const;
 
         GridMapLiquidStatus getLiquidStatus(float x, float y, float z, uint8 ReqLiquidType, GridMapLiquidData *data = 0) const;
 
@@ -207,7 +212,6 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         bool IsOutdoors(float x, float y, float z) const;
 
         uint8 GetTerrainType(float x, float y ) const;
-        float GetWaterLevel(float x, float y ) const;
 
         bool IsUnderWater(float x, float y, float z) const;
         bool IsInWater(float x, float y, float z,  GridMapLiquidData *data = 0) const;

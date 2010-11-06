@@ -25,8 +25,7 @@
 #include "DestinationHolderImp.h"
 
 template<class T>
-void
-ConfusedMovementGenerator<T>::Initialize(T &unit)
+void ConfusedMovementGenerator<T>::Initialize(T &unit)
 {
     const float wander_distance = 5.0f;
     float x,y,z;
@@ -42,7 +41,7 @@ ConfusedMovementGenerator<T>::Initialize(T &unit)
     bool is_water_ok, is_land_ok;
     _InitSpecific(unit, is_water_ok, is_land_ok);
 
-    for(unsigned int idx = 0; idx < MAX_CONF_WAYPOINTS+1; ++idx)
+    for (unsigned int idx = 0; idx < MAX_CONF_WAYPOINTS+1; ++idx)
     {
         const float wanderX = wander_distance*rand_norm();
         const float wanderY = wander_distance*rand_norm();
@@ -62,19 +61,20 @@ ConfusedMovementGenerator<T>::Initialize(T &unit)
 
         bool is_water = map->IsInWater(i_waypoints[idx][0],i_waypoints[idx][1], z);
         // if in water set higher z coord
-        if(is_water)
+        if (is_water)
             i_waypoints[idx][2] = (z >= i_waypoints[idx][2]) ? z : i_waypoints[idx][2];
 
         // if generated wrong path just ignore
-        if( is_water && !is_water_ok || !is_water && !is_land_ok ||
+        if ( is_water && !is_water_ok || !is_water && !is_land_ok ||
             !Trinity::IsValidMapCoord(i_waypoints[idx][0], i_waypoints[idx][1]) ||
             fabs(i_waypoints[idx][2] - z) > 2.0f)
         {
             i_waypoints[idx][0] = idx > 0 ? i_waypoints[idx-1][0] : x;
             i_waypoints[idx][1] = idx > 0 ? i_waypoints[idx-1][1] : y;
-            i_waypoints[idx][2] = idx > 0 ? i_waypoints[idx-1][2] : z;
         }
-        unit.UpdateGroundPositionZ(i_waypoints[idx][0], i_waypoints[idx][1], i_waypoints[idx][2]);
+
+        unit.UpdateAllowedPositionZ(i_waypoints[idx][0],i_waypoints[idx][1], z);
+        i_waypoints[idx][2] = z;
     }
 
     unit.CastStop();
@@ -87,24 +87,21 @@ ConfusedMovementGenerator<T>::Initialize(T &unit)
 }
 
 template<>
-void
-ConfusedMovementGenerator<Creature>::_InitSpecific(Creature &creature, bool &is_water_ok, bool &is_land_ok)
+void ConfusedMovementGenerator<Creature>::_InitSpecific(Creature &creature, bool &is_water_ok, bool &is_land_ok)
 {
     is_water_ok = creature.canSwim();
     is_land_ok  = creature.canWalk();
 }
 
 template<>
-void
-ConfusedMovementGenerator<Player>::_InitSpecific(Player &, bool &is_water_ok, bool &is_land_ok)
+void ConfusedMovementGenerator<Player>::_InitSpecific(Player &, bool &is_water_ok, bool &is_land_ok)
 {
     is_water_ok = true;
     is_land_ok  = true;
 }
 
 template<class T>
-void
-ConfusedMovementGenerator<T>::Reset(T &unit)
+void ConfusedMovementGenerator<T>::Reset(T &unit)
 {
     i_nextMove = 1;
     i_destinationHolder.ResetUpdate();
@@ -112,19 +109,19 @@ ConfusedMovementGenerator<T>::Reset(T &unit)
 }
 
 template<class T>
-bool
-ConfusedMovementGenerator<T>::Update(T &unit, const uint32 &diff)
+bool ConfusedMovementGenerator<T>::Update(T &unit, const uint32 &diff)
 {
-    if(!&unit)
+    if (!&unit)
         return true;
 
-    if(unit.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED))
+    if (unit.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED))
         return true;
 
     Traveller<T> traveller(unit);
 
-    if(i_destinationHolder.UpdateTraveller(traveller, diff))
-        if( i_destinationHolder.HasArrived())
+    if (i_destinationHolder.UpdateTraveller(traveller, diff))
+    {
+        if ( i_destinationHolder.HasArrived())
         {
             assert( i_nextMove <= MAX_CONF_WAYPOINTS );
             const float x = i_waypoints[i_nextMove][0];
@@ -133,16 +130,16 @@ ConfusedMovementGenerator<T>::Update(T &unit, const uint32 &diff)
             i_destinationHolder.SetDestination(traveller, x, y, z);
             i_nextMove = urand(1,MAX_CONF_WAYPOINTS);
         }
+    }
     return true;
 }
 
 template<class T>
-void
-ConfusedMovementGenerator<T>::Finalize(T &unit)
+void ConfusedMovementGenerator<T>::Finalize(T &unit)
 {
     unit.RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
     unit.clearUnitState(UNIT_STAT_CONFUSED);
-    if(unit.GetTypeId() == TYPEID_UNIT && unit.getVictim())
+    if (unit.GetTypeId() == TYPEID_UNIT && unit.getVictim())
         unit.SetUInt64Value(UNIT_FIELD_TARGET, unit.getVictimGUID());
 }
 

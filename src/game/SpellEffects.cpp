@@ -3836,6 +3836,8 @@ void Spell::EffectDistract(uint32 /*i*/)
         return;
 
     float angle = unitTarget->GetAngle(m_targets.m_destX, m_targets.m_destY);
+    
+    unitTarget->SetStandState(PLAYER_STATE_NONE);
 
     if ( unitTarget->GetTypeId() == TYPEID_PLAYER )
     {
@@ -6674,7 +6676,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
             fz = -19.9645;
 
         }
-        else if ( !cMap->IsInWater(fx, fy, fz -0.5f, &liqData))             // Hack to prevent fishing bobber from failing to land on fishing hole
+        else if ( !cMap->IsInWater(fx, fy, fz + 1.f/* -0.5f */, &liqData))           // Hack to prevent fishing bobber from failing to land on fishing hole
         {
             // but this is not proper, we really need to ignore not materialized objects
             SendCastResult(SPELL_FAILED_NOT_HERE);
@@ -6683,8 +6685,8 @@ void Spell::EffectTransmitted(uint32 effIndex)
         }
 
         // replace by water level in this case
-        if(cMap->GetId() != 548)
-            fz = liqData.level;
+        //if(cMap->GetId() != 548)
+        fz = liqData.level;
     }
     // if gameobject is summoning object, it should be spawned right on caster's position
     else if(goinfo->type==GAMEOBJECT_TYPE_SUMMONING_RITUAL)

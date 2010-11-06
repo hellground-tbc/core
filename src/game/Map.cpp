@@ -64,7 +64,6 @@ Map::~Map()
 
     if(!m_scriptSchedule.empty())
         sWorld.DecreaseScheduledScriptCount(m_scriptSchedule.size());
-
 }
 
 void Map::LoadVMap(int x,int y)
@@ -1223,6 +1222,43 @@ bool Map::hasVMapHeight()
     return vMgr && vMgr->isHeightCalcEnabled(GetId());
 }
 
+float Map::_getHeight(float x, float y, float z, float mapHeight, float maxSearchDist) const
+{
+    // if mapHeight has been found search vmap height at least until mapHeight point
+    // this prevent case when original Z "too high above ground and vmap height search fail"
+    // this will not affect most normal cases (no map in instance, or stay at ground at continent)
+    float z2 = z +2.0f;
+    if (mapHeight > INVALID_HEIGHT && z2 - mapHeight > maxSearchDist)
+        maxSearchDist = z2 - mapHeight + 1.0f;      // 1.0 make sure that we not fail for case when map height near but above for vamp height
+
+    // look from a bit higher pos to find the floor
+    float vmapHeight;
+    VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
+    vmapHeight = vmgr->getHeight(GetId(), x, y, z2, maxSearchDist);
+
+    // mapHeight set for any above raw ground Z or <= INVALID_HEIGHT
+    // vmapheight set for any under Z value or <= INVALID_HEIGHT
+
+    if (vmapHeight > INVALID_HEIGHT)
+    {
+        if (mapHeight > INVALID_HEIGHT)
+        {
+            // we have mapheight and vmapheight and must select more appropriate
+
+            // we are already under the surface or vmap height above map heigt
+            // or if the distance of the vmap height is less the land height distance
+            if (z < mapHeight || vmapHeight > mapHeight || fabs(mapHeight-z) > fabs(vmapHeight-z))
+                return vmapHeight;
+            else
+                return mapHeight;                           // better use .map surface height
+        }
+        else
+            return vmapHeight;                              // we have only vmapHeight (if have)
+    }
+
+    return mapHeight;
+}
+
 float Map::GetHeight(float x, float y, float z, bool pUseVmaps, float maxSearchDist) const
 {
     // find raw .map surface under Z coordinates
@@ -1245,10 +1281,7 @@ float Map::GetHeight(float x, float y, float z, bool pUseVmaps, float maxSearchD
     {
         VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
         if (vmgr->isHeightCalcEnabled(GetId()))
-        {
-            // look from a bit higher pos to find the floor
-            vmapHeight = vmgr->getHeight(GetId(), x, y, z + 2.0f, maxSearchDist);
-        }
+            return _getHeight(x, y, z + 2.0f, mapHeight, maxSearchDist);
         else
             vmapHeight = VMAP_INVALID_HEIGHT_VALUE;
     }
@@ -1283,6 +1316,45 @@ float Map::GetHeight(float x, float y, float z, bool pUseVmaps, float maxSearchD
     }
 }
 
+float Map::GetWaterLevel(float x, float y, float z, float* pGround /*= NULL*/) const
+{
+    if (const_cast<Map*>(this)->GetGrid(x, y))
+    {
+        // we need ground level (including grid height version) for proper return water level in point
+        float ground_z = GetHeight(x, y, z, true, DEFAULT_WATER_SEARCH);
+        if (pGround)
+            *pGround = ground_z;
+
+        GridMapLiquidData liquid_status;
+
+        GridMapLiquidStatus res = getLiquidStatus(x, y, ground_z, MAP_ALL_LIQUIDS, &liquid_status);
+        if (!res)
+            return VMAP_INVALID_HEIGHT_VALUE;
+
+        return liquid_status.level;
+    }
+
+    return VMAP_INVALID_HEIGHT_VALUE;
+}
+
+float Map::GetWaterOrGroundLevel(float x, float y, float z, float* pGround /*= NULL*/, bool swim /*= false*/) const
+{
+    if (const_cast<Map*>(this)->GetGrid(x, y))
+    {
+        // we need ground level (including grid height version) for proper return water level in point
+        float ground_z = GetHeight(x, y, z, true, DEFAULT_WATER_SEARCH);
+        if (pGround)
+            *pGround = ground_z;
+
+        GridMapLiquidData liquid_status;
+
+        GridMapLiquidStatus res = getLiquidStatus(x, y, ground_z, MAP_ALL_LIQUIDS, &liquid_status);
+        return res ? ( swim ? liquid_status.level - 2.0f : liquid_status.level) : ground_z;
+    }
+
+    return VMAP_INVALID_HEIGHT_VALUE;
+}
+
 inline bool IsOutdoorWMO(uint32 mogpFlags, int32 adtId, int32 rootId, int32 groupId, WMOAreaTableEntry const* wmoEntry, AreaTableEntry const* atEntry)
 {
     bool outdoor = true;
@@ -1295,7 +1367,7 @@ inline bool IsOutdoorWMO(uint32 mogpFlags, int32 adtId, int32 rootId, int32 grou
             return false;
     }
 
-    outdoor = mogpFlags&0x8;
+    outdoor = mogpFlags & 0x8;
 
     if(wmoEntry)
     {
@@ -1353,24 +1425,23 @@ uint16 Map::GetAreaFlag(float x, float y, float z, bool *isOutdoors) const
     AreaTableEntry const* atEntry = 0;
     bool haveAreaInfo = false;
 
-    if (GetAreaInfo(x, y, z, mogpFlags, adtId, rootId, groupId))
+    if(GetAreaInfo(x, y, z, mogpFlags, adtId, rootId, groupId))
     {
         haveAreaInfo = true;
-        if (wmoEntry = GetWMOAreaTableEntryByTripple(rootId, adtId, groupId))
+        if(wmoEntry = GetWMOAreaTableEntryByTripple(rootId, adtId, groupId))
             atEntry = GetAreaEntryByAreaID(wmoEntry->areaId);
     }
 
     uint16 areaflag;
-
     if (atEntry)
         areaflag = atEntry->exploreFlag;
     else
     {
-        if (GridMap *gmap = const_cast<Map*>(this)->GetGrid(x, y))
+        if(GridMap *gmap = const_cast<Map*>(this)->GetGrid(x, y))
             areaflag = gmap->getArea(x, y);
         // this used while not all *.map files generated (instances)
         else
-            areaflag = GetAreaFlagByMapId(i_mapEntry->MapID);
+            areaflag = GetAreaFlagByMapId(i_id);
     }
 
     if (isOutdoors)
@@ -1395,11 +1466,13 @@ GridMapLiquidStatus Map::getLiquidStatus(float x, float y, float z, uint8 ReqLiq
 {
     GridMapLiquidStatus result = LIQUID_MAP_NO_WATER;
     VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
+
     float liquid_level, ground_level = INVALID_HEIGHT;
+
     uint32 liquid_type;
     if (vmgr->GetLiquidLevel(GetId(), x, y, z, ReqLiquidType, liquid_level, ground_level, liquid_type))
     {
-        sLog.outDebug("getLiquidStatus(): vmap liquid level: %f ground: %f type: %u", liquid_level, ground_level, liquid_type);
+        DEBUG_LOG("getLiquidStatus(): vmap liquid level: %f ground: %f type: %u", liquid_level, ground_level, liquid_type);
         // Check water level and ground level
         if (liquid_level > ground_level && z > ground_level - 2)
         {
@@ -1440,14 +1513,6 @@ GridMapLiquidStatus Map::getLiquidStatus(float x, float y, float z, uint8 ReqLiq
     return result;
 }
 
-float Map::GetWaterLevel(float x, float y) const
-{
-    if (GridMap* gmap = const_cast<Map*>(this)->GetGrid(x, y))
-        return gmap->getLiquidLevel(x, y);
-    else
-        return 0;
-}
-
 uint32 Map::GetAreaId(uint16 areaflag,uint32 map_id)
 {
     AreaTableEntry const *entry = GetAreaEntryByAreaFlagAndMap(areaflag,map_id);
@@ -1476,7 +1541,10 @@ bool Map::IsInWater(float x, float y, float pZ, GridMapLiquidData *data) const
         GridMapLiquidData liquid_status;
         GridMapLiquidData *liquid_ptr = data ? data : &liquid_status;
         if (getLiquidStatus(x, y, pZ, MAP_ALL_LIQUIDS, liquid_ptr))
+        {
+            //if (liquid_prt->level - liquid_prt->depth_level > 2) //???
                 return true;
+        }
     }
     return false;
 }
@@ -1485,7 +1553,7 @@ bool Map::IsUnderWater(float x, float y, float z) const
 {
     if (const_cast<Map*>(this)->GetGrid(x, y))
     {
-        if (getLiquidStatus(x, y, z, MAP_LIQUID_TYPE_WATER|MAP_LIQUID_TYPE_OCEAN)&LIQUID_MAP_UNDER_WATER)
+        if (getLiquidStatus(x, y, z, MAP_LIQUID_TYPE_WATER | MAP_LIQUID_TYPE_OCEAN) & LIQUID_MAP_UNDER_WATER)
             return true;
     }
     return false;

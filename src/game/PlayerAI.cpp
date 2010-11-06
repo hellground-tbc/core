@@ -109,7 +109,9 @@ void HunterAI::UpdateAI(const uint32 diff)
 {
     if(!UpdateVictim())
         return;
+
     me->StopMoving();
+
     if(Steady_Timer < diff)
     {
         if(CanCast(me->getVictim(), SteadySpell, false))
@@ -175,6 +177,7 @@ void HunterAI::UpdateAI(const uint32 diff)
     }
     else
         Bestial_Timer -= diff;
+
     if (Auto_Timer < diff)
     {
         if (CanCast(me->getVictim(), AutoSpell, false))
