@@ -3270,11 +3270,6 @@ void Unit::SetInFront(Unit const* target)
     // update orientation at server
     if(!hasUnitState(UNIT_STAT_CANNOT_TURN))
         SetOrientation(GetAngle(target));
-
-    // and client
-    WorldPacket data;
-    BuildHeartBeatMsg(&data);
-    SendMessageToSet(&data, false);
 }
 
 void Unit::SetFacingToObject(WorldObject* pObject)
