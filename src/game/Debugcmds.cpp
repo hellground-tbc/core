@@ -732,7 +732,7 @@ bool ChatHandler::HandleSetInstanceData64Command(const char *args)
         return false;
 
     uint32 _id = uint32(atoi(id));
-    uint32 _data = uint32(atoi(data));
+    uint64 _data = uint64(atoi(data));
 
     pInstance->SetData64(_id, _data);
     return true;
