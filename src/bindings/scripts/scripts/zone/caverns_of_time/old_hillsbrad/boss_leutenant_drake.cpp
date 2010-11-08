@@ -23,7 +23,7 @@ EndScriptData */
 
 #include "precompiled.h"
 #include "def_old_hillsbrad.h"
-#include "../../../npc/npc_escortAI.h"
+#include "escort_ai.h"
 
 /*######
 ## go_barrel_old_hillsbrad
@@ -115,18 +115,14 @@ struct TRINITY_DLL_DECL boss_lieutenant_drakeAI : public ScriptedAI
         ExplodingShout_Timer = 25000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
     }
 
     void KilledUnit(Unit *victim)
     {
-        switch(rand()%2)
-        {
-            case 0: DoScriptText(SAY_SLAY1, m_creature); break;
-            case 1: DoScriptText(SAY_SLAY2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), m_creature);
     }
 
     void JustDied(Unit *victim)

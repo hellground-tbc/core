@@ -22,6 +22,7 @@ SDCategory: Blackwing Lair
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_blackwing_lair.h"
 
 #define EMOTE_FRENZY            -1469031
 
@@ -31,8 +32,12 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_flamegorAI : public ScriptedAI
 {
-    boss_flamegorAI(Creature *c) : ScriptedAI(c) {}
+    boss_flamegorAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
 
+    ScriptedInstance * pInstance;
     uint32 ShadowFlame_Timer;
     uint32 WingBuffet_Timer;
     uint32 Frenzy_Timer;
@@ -42,11 +47,23 @@ struct TRINITY_DLL_DECL boss_flamegorAI : public ScriptedAI
         ShadowFlame_Timer = 21000;                          //These times are probably wrong
         WingBuffet_Timer = 35000;
         Frenzy_Timer = 10000;
+
+        if (pInstance && pInstance->GetData(DATA_FLAMEGOR_EVENT) != DONE)
+            pInstance->SetData(DATA_FLAMEGOR_EVENT, NOT_STARTED);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoZoneInCombat();
+
+        if (pInstance)
+            pInstance->SetData(DATA_FLAMEGOR_EVENT, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_FLAMEGOR_EVENT, DONE);
     }
 
     void UpdateAI(const uint32 diff)

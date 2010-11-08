@@ -22,6 +22,7 @@ SDCategory: Karazhan
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_karazhan.h"
 
 #define SAY_AGGRO               -1532018
 #define SAY_SLAY1               -1532019
@@ -39,10 +40,13 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_maiden_of_virtueAI : public ScriptedAI
 {
-    boss_maiden_of_virtueAI(Creature *c) : ScriptedAI(c) 
+    boss_maiden_of_virtueAI(Creature *c) : ScriptedAI(c)
     {
+        pInstance = ((ScriptedInstance*)c->GetInstanceData());
         m_creature->GetPosition(wLoc);
     }
+
+    ScriptedInstance *pInstance;
 
     uint32 Repentance_Timer;
     uint32 Holyfire_Timer;
@@ -63,8 +67,9 @@ struct TRINITY_DLL_DECL boss_maiden_of_virtueAI : public ScriptedAI
         Holyground_Timer    = 3000;
         Enrage_Timer        = 600000;
         CheckTimer = 3000;
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
-        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_ATTACK_ME, true);
+
+        if(pInstance && pInstance->GetData(DATA_MAIDENOFVIRTUE_EVENT) != DONE)
+            pInstance->SetData(DATA_MAIDENOFVIRTUE_EVENT, NOT_STARTED);
 
         Enraged = false;
     }
@@ -74,22 +79,22 @@ struct TRINITY_DLL_DECL boss_maiden_of_virtueAI : public ScriptedAI
         if(rand()%2)
             return;
 
-        switch(rand()%3)
-        {
-        case 0: DoScriptText(SAY_SLAY1, m_creature);break;
-        case 1: DoScriptText(SAY_SLAY2, m_creature);break;
-        case 2: DoScriptText(SAY_SLAY3, m_creature);break;
-        }
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2, SAY_SLAY3), m_creature);
     }
 
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_DEATH, m_creature);
+
+        if (pInstance)
+            pInstance->SetData(DATA_MAIDENOFVIRTUE_EVENT, DONE);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
-         DoScriptText(SAY_AGGRO, m_creature);
+        DoScriptText(SAY_AGGRO, m_creature);
+        if (pInstance)
+            pInstance->SetData(DATA_MAIDENOFVIRTUE_EVENT, IN_PROGRESS);
     }
 
     void UpdateAI(const uint32 diff)
@@ -99,11 +104,11 @@ struct TRINITY_DLL_DECL boss_maiden_of_virtueAI : public ScriptedAI
 
         if(CheckTimer < diff)
         {
-            if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 30.0f)
+            if(!m_creature->IsWithinDistInMap(&wLoc, 30.0f))
                 EnterEvadeMode();
             else
                 DoZoneInCombat();
-            
+
             CheckTimer = 3000;
         }
         else
@@ -129,11 +134,8 @@ struct TRINITY_DLL_DECL boss_maiden_of_virtueAI : public ScriptedAI
         {
             DoCast(m_creature->getVictim(),SPELL_REPENTANCE);
 
-            switch(rand()%2)
-            {
-                case 0: DoScriptText(SAY_REPENTANCE1, m_creature);break;
-                case 1: DoScriptText(SAY_REPENTANCE2, m_creature);break;
-            }
+            DoScriptText(RAND(SAY_REPENTANCE1, SAY_REPENTANCE2), m_creature);
+
             Repentance_Timer = 30000 + rand()%15000;        //A little randomness on that spell
             Holyfire_Timer += 6000;
         }

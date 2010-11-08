@@ -46,7 +46,7 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_drektharAI : public ScriptedAI
 {
-    boss_drektharAI(Creature *c) : ScriptedAI(c) 
+    boss_drektharAI(Creature *c) : ScriptedAI(c)
     {
         m_creature->GetPosition(wLoc);
     }
@@ -70,14 +70,13 @@ struct TRINITY_DLL_DECL boss_drektharAI : public ScriptedAI
     CheckTimer              = 2000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoScriptText(YELL_AGGRO, m_creature);
     }
 
     void JustRespawned()
     {
-        InCombat = false;
         Reset();
         DoScriptText(YELL_RESPAWN, m_creature);
     }
@@ -93,47 +92,53 @@ struct TRINITY_DLL_DECL boss_drektharAI : public ScriptedAI
 
         if(CheckTimer < diff)
         {
-            if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 20.0f)
+            if(!m_creature->IsWithinDistInMap(&wLoc, 20.0f))
                 EnterEvadeMode();
-          
+
             CheckTimer = 2000;
-        }else CheckTimer -= diff;
+        }
+        else
+            CheckTimer -= diff;
 
         if (WhirlwindTimer < diff)
         {
             DoCast(m_creature->getVictim(), SPELL_WHIRLWIND);
             WhirlwindTimer =  (8+rand()%10)*1000;
-        }else WhirlwindTimer -= diff;
+        }
+        else
+            WhirlwindTimer -= diff;
 
         if (Whirlwind2Timer < diff)
         {
             DoCast(m_creature->getVictim(), SPELL_WHIRLWIND2);
             Whirlwind2Timer = (7+rand()%18)*1000;
-        }else Whirlwind2Timer -= diff;
+        }
+        else
+            Whirlwind2Timer -= diff;
 
         if (KnockdownTimer < diff)
         {
             DoCast(m_creature->getVictim(), SPELL_KNOCKDOWN);
             KnockdownTimer = (10+rand()%5)*1000;
-        }else KnockdownTimer -= diff;
+        }
+        else
+            KnockdownTimer -= diff;
 
         if (FrenzyTimer < diff)
         {
             DoCast(m_creature->getVictim(), SPELL_FRENZY);
             FrenzyTimer = (20+rand()%5)*1000;
-        }else FrenzyTimer -= diff;
-
-        if (YellTimer < diff) {
-        switch(rand()%4)
-        {
-            case 0: DoScriptText(YELL_RANDOM1, m_creature); break;
-            case 1: DoScriptText(YELL_RANDOM2, m_creature); break;
-            case 2: DoScriptText(YELL_RANDOM3, m_creature); break;
-            case 3: DoScriptText(YELL_RANDOM4, m_creature); break;
-            case 4: DoScriptText(YELL_RANDOM5, m_creature); break;
         }
-        YellTimer = (20+rand()%10)*1000; //20 to 30 seconds
-        } else YellTimer -= diff;
+        else
+            FrenzyTimer -= diff;
+
+        if (YellTimer < diff)
+        {
+            DoScriptText(RAND(YELL_RANDOM1, YELL_RANDOM2, YELL_RANDOM3, YELL_RANDOM4, YELL_RANDOM5), m_creature);
+            YellTimer = (20+rand()%10)*1000; //20 to 30 seconds
+        }
+        else
+            YellTimer -= diff;
 
         DoMeleeAttackIfReady();
     }

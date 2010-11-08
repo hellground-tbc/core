@@ -46,7 +46,7 @@ struct TRINITY_DLL_DECL boss_halyconAI : public ScriptedAI
         Summoned = false;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
     }
 
@@ -61,7 +61,9 @@ struct TRINITY_DLL_DECL boss_halyconAI : public ScriptedAI
         {
             DoCast(m_creature->getVictim(),SPELL_CROWDPUMMEL);
             CrowdPummel_Timer = 14000;
-        }else CrowdPummel_Timer -= diff;
+        }
+        else
+            CrowdPummel_Timer -= diff;
 
         //MightyBlow_Timer
         if (MightyBlow_Timer < diff)

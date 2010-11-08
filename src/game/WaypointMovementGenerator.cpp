@@ -84,8 +84,8 @@ void WaypointMovementGenerator<Creature>::InitTraveller(Creature &unit, const Wa
     unit.SetUInt32Value(UNIT_NPC_EMOTESTATE, 0);
     unit.SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
 
-    if(unit.canFly())
-        unit.AddUnitMovementFlag(MOVEMENTFLAG_FLYING2);
+    if (unit.canFly())
+         unit.AddUnitMovementFlag(MOVEMENTFLAG_FLYING2);
 
     unit.addUnitState(UNIT_STAT_ROAMING);
 }
@@ -104,11 +104,22 @@ WaypointMovementGenerator<Creature>::Initialize(Creature &u)
     i_currentNode = 0;
     if(waypoints && waypoints->size())
     {
-        node = waypoints->front();
+        if (CreatureData const *cdata = objmgr.GetCreatureData(u.GetDBTableGUIDLow()))
+            i_currentNode = cdata->currentwaypoint - 1;
+
+        if (i_currentNode > waypoints->size() - 1)
+            i_currentNode = 0;
+
+        node = waypoints->at(i_currentNode);
+
         Traveller<Creature> traveller(u);
         InitTraveller(u, *node);
         i_destinationHolder.SetDestination(traveller, node->x, node->y, node->z);
         i_nextMoveTime.Reset(i_destinationHolder.GetTotalTravelTime());
+
+        if (u.GetFormation())
+            if (u.GetFormation()->getLeader()->GetGUID() == u.GetGUID())
+                u.GetFormation()->LeaderMoveTo(node->x, node->y, node->z);
     }
     else
         node = NULL;
@@ -159,6 +170,10 @@ WaypointMovementGenerator<Creature>::Update(Creature &unit, const uint32 &diff)
                 i_destinationHolder.SetDestination(traveller, node->x, node->y, node->z);
                 i_nextMoveTime.Reset(i_destinationHolder.GetTotalTravelTime());
                 StopedByPlayer = false;
+
+                if (unit.GetFormation())
+                    if (unit.GetFormation()->getLeader()->GetGUID() == unit.GetGUID())
+                        unit.GetFormation()->LeaderMoveTo(node->x, node->y, node->z);
                 return true;
             }
 
@@ -180,6 +195,10 @@ WaypointMovementGenerator<Creature>::Update(Creature &unit, const uint32 &diff)
             InitTraveller(unit, *node);
             i_destinationHolder.SetDestination(traveller, node->x, node->y, node->z);
             i_nextMoveTime.Reset(i_destinationHolder.GetTotalTravelTime());
+
+            if (unit.GetFormation())
+                if (unit.GetFormation()->getLeader()->GetGUID() == unit.GetGUID())
+                    unit.GetFormation()->LeaderMoveTo(node->x, node->y, node->z);
         }
         else
         {
@@ -193,7 +212,7 @@ WaypointMovementGenerator<Creature>::Update(Creature &unit, const uint32 &diff)
 
             MovementInform(unit);
             unit.UpdateWaypointID(i_currentNode);
-            unit.clearUnitState(UNIT_STAT_MOVING);
+            unit.clearUnitState(UNIT_STAT_ROAMING);
             unit.Relocate(node->x, node->y, node->z);
         }
     }

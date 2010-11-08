@@ -22,6 +22,7 @@
 #include "QuestDef.h"
 #include "GameObject.h"
 #include "ObjectMgr.h"
+#include "PoolHandler.h"
 #include "SpellMgr.h"
 #include "Spell.h"
 #include "UpdateMask.h"
@@ -40,6 +41,7 @@
 #include "Util.h"
 #include "OutdoorPvPMgr.h"
 #include "BattleGroundAV.h"
+#include "Map.h"
 
 GameObject::GameObject() : WorldObject()
 {
@@ -72,9 +74,9 @@ GameObject::~GameObject()
         {
             Unit* owner = NULL;
             if(IS_PLAYER_GUID(owner_guid))
-                owner = ObjectAccessor::GetObjectInWorld(owner_guid, (Player*)NULL);
+                owner = ObjectAccessor::GetPlayer(owner_guid);
             else
-                owner = ObjectAccessor::GetUnit(*this,owner_guid);
+                owner = GetMap()->GetUnit(owner_guid);
 
             if(owner)
                 owner->RemoveGameObject(this,false);
@@ -84,12 +86,27 @@ GameObject::~GameObject()
     }
 }
 
+void GameObject::SendCustomAnimation()
+{
+    WorldPacket data(SMSG_GAMEOBJECT_CUSTOM_ANIM,8+4);
+    data << GetGUID();
+    data << (uint32)(GetGoAnimProgress());
+    SendMessageToSet(&data, false);
+}
+
+void GameObject::SendSpawnAnimation()
+{
+    WorldPacket data(SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE, 8);
+    data << GetGUID();
+    SendMessageToSet(&data, true);
+}
+
 void GameObject::AddToWorld()
 {
     ///- Register the gameobject for guid lookup
     if(!IsInWorld())
     {
-        ObjectAccessor::Instance().AddObject(this);
+        GetMap()->InsertIntoObjMap(this);
         WorldObject::AddToWorld();
     }
 }
@@ -102,8 +119,9 @@ void GameObject::RemoveFromWorld()
         if(Map *map = FindMap())
             if(map->IsDungeon() && ((InstanceMap*)map)->GetInstanceData())
                 ((InstanceMap*)map)->GetInstanceData()->OnObjectRemove(this);
-        ObjectAccessor::Instance().RemoveObject(this);
+
         WorldObject::RemoveFromWorld();
+        GetMap()->RemoveFromObjMap(GetGUID());
     }
 }
 
@@ -278,7 +296,11 @@ void GameObject::Update(uint32 diff)
                                 return;
                             }
                                                             // respawn timer
-                            GetMap()->Add(this);
+                            uint16 poolid = poolhandler.IsPartOfAPool(GetGUIDLow(), TYPEID_GAMEOBJECT);
+                            if (poolid)
+                                poolhandler.UpdatePool(poolid, GetGUIDLow(), TYPEID_GAMEOBJECT);
+                            else
+                                GetMap()->Add(this);
                             break;
                     }
                 }
@@ -286,7 +308,7 @@ void GameObject::Update(uint32 diff)
 
             // traps can have time and can not have
             GameObjectInfo const* goInfo = GetGOInfo();
-            if(goInfo->type == GAMEOBJECT_TYPE_TRAP)
+            if(goInfo && goInfo->type == GAMEOBJECT_TYPE_TRAP)
             {
                 // traps
                 Unit* owner = GetOwner();
@@ -306,7 +328,7 @@ void GameObject::Update(uint32 diff)
                     {
                         // try to read radius from trap spell
                         if(const SpellEntry *spellEntry = sSpellStore.LookupEntry(goInfo->trap.spellId))
-                            radius = GetSpellRadius(sSpellRadiusStore.LookupEntry(spellEntry->EffectRadiusIndex[0]));
+                            radius = GetSpellRadius(spellEntry,0,false);
 
                         if(!radius)
                             break;
@@ -337,7 +359,7 @@ void GameObject::Update(uint32 diff)
                     TypeContainerVisitor<Trinity::UnitSearcher<Trinity::AnyUnfriendlyNoTotemUnitInObjectRangeCheck>, GridTypeMapContainer > grid_object_checker(checker);
                     //cell_lock->Visit(cell_lock, grid_object_checker, *MapManager::Instance().GetMap(GetMapId(), this));
                     cell.Visit(p, grid_object_checker, *GetMap(), *this, radius);
-                    
+
                     // or unfriendly player/pet
                     if(!ok)
                     {
@@ -368,6 +390,7 @@ void GameObject::Update(uint32 diff)
                     //caster->CastSpell(ok, goInfo->trap.spellId, true);
                     CastSpell(ok, goInfo->trap.spellId);
                     m_cooldownTime = time(NULL) + 4;        // 4 seconds
+                    SendCustomAnimation();
 
                     if(NeedDespawn)
                         SetLootState(GO_JUST_DEACTIVATED);  // can be despawned or destroyed
@@ -507,7 +530,11 @@ void GameObject::Delete()
     SetGoState(1);
     SetUInt32Value(GAMEOBJECT_FLAGS, GetGOInfo()->flags);
 
-    AddObjectToRemoveList();
+    uint16 poolid = poolhandler.IsPartOfAPool(GetGUIDLow(), TYPEID_GAMEOBJECT);
+    if (poolid)
+        poolhandler.UpdatePool(poolid, GetGUIDLow(), TYPEID_GAMEOBJECT);
+    else
+        AddObjectToRemoveList();
 }
 
 void GameObject::getFishLoot(Loot *fishloot)
@@ -731,7 +758,7 @@ bool GameObject::IsTransport() const
 
 Unit* GameObject::GetOwner() const
 {
-    return ObjectAccessor::GetUnit(*this, GetOwnerGUID());
+    return GetMap()->GetUnit(GetOwnerGUID());
 }
 
 void GameObject::SaveRespawnTime()
@@ -889,6 +916,16 @@ GameObject* GameObject::LookupFishingHoleAround(float range)
     cell.Visit(p, grid_object_checker, *GetMap(), *this, range);
 
     return ok;
+}
+
+void GameObject::ResetDoorOrButton()
+{
+    if (m_lootState == GO_READY || m_lootState == GO_JUST_DEACTIVATED)
+        return;
+
+    SwitchDoorOrButton(false);
+    SetLootState(GO_JUST_DEACTIVATED);
+    m_cooldownTime = 0;
 }
 
 void GameObject::UseDoorOrButton(uint32 time_to_restore)
@@ -1240,26 +1277,20 @@ void GameObject::Use(Unit* user)
 
         case GAMEOBJECT_TYPE_FLAGSTAND:                     // 24
         {
-            if(user->GetTypeId()!=TYPEID_PLAYER)
+            if (user->GetTypeId() != TYPEID_PLAYER)
                 return;
 
             Player* player = (Player*)user;
 
-            if( player->isAllowUseBattleGroundObject() )
+            if (player->isAllowUseBattleGroundObject() )
             {
                 // in battleground check
                 BattleGround *bg = player->GetBattleGround();
-                if(!bg)
+                if (!bg)
                     return;
-                // BG flag click
-                // AB:
-                // 15001
-                // 15002
-                // 15003
-                // 15004
-                // 15005
-                bg->EventPlayerClickedOnFlag(player, this);
-                return;                                     //we don;t need to delete flag ... it is despawned!
+
+                 bg->EventPlayerClickedOnFlag(player, this);
+                 return;    //we don;t need to delete flag ... it is despawned!
             }
             break;
         }
@@ -1356,6 +1387,27 @@ void GameObject::CastSpell(Unit* target, uint32 spell)
     //trigger->RemoveCorpse();
 }
 
+
+void GameObject::CastSpell(GameObject* target, uint32 spell)
+{
+    //summon world trigger
+    Creature *trigger = SummonTrigger(GetPositionX(), GetPositionY(), GetPositionZ(), 0, 1);
+    if(!trigger) return;
+
+    trigger->SetVisibility(VISIBILITY_OFF); //should this be true?
+    if(Unit *owner = GetOwner())
+    {
+        trigger->setFaction(owner->getFaction());
+        trigger->CastSpell(target, spell, true, 0, 0, owner->GetGUID());
+    }
+    else
+    {
+        trigger->setFaction(14);
+        trigger->CastSpell(target, spell, true, 0, 0, target->GetGUID());
+    }
+}
+
+
 // overwrite WorldObject function for proper name localization
 const char* GameObject::GetNameForLocaleIdx(int32 loc_idx) const
 {
@@ -1372,3 +1424,13 @@ const char* GameObject::GetNameForLocaleIdx(int32 loc_idx) const
     return GetName();
 }
 
+float GameObject::GetObjectBoundingRadius() const
+{
+    //FIXME:
+    // 1. This is clearly hack way because GameObjectDisplayInfoEntry have 6 floats related to GO sizes, but better that use DEFAULT_WORLD_OBJECT_SIZE
+    // 2. In some cases this must be only interactive size, not GO size, current way can affect creature target point auto-selection in strange ways for big underground/virtual GOs
+    if (GameObjectDisplayInfoEntry const* dispEntry = sGameObjectDisplayInfoStore.LookupEntry(GetGOInfo()->displayId))
+        return fabs(dispEntry->unknown12) * GetGOInfo()->size;
+
+    return DEFAULT_WORLD_OBJECT_SIZE;
+}

@@ -22,6 +22,7 @@ SDCategory: Molten Core
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_molten_core.h"
 
 #define EMOTE_FRENZY                -1409001
 
@@ -33,8 +34,12 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_magmadarAI : public ScriptedAI
 {
-    boss_magmadarAI(Creature *c) : ScriptedAI(c) {}
+    boss_magmadarAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
 
+    ScriptedInstance * pInstance;
     uint32 Frenzy_Timer;
     uint32 Panic_Timer;
     uint32 Lavabomb_Timer;
@@ -46,10 +51,21 @@ struct TRINITY_DLL_DECL boss_magmadarAI : public ScriptedAI
         Lavabomb_Timer = 12000;
 
         m_creature->CastSpell(m_creature,SPELL_MAGMASPIT,true);
+
+        if (pInstance)
+            pInstance->SetData(DATA_MAGMADAR_EVENT, NOT_STARTED);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
+        if (pInstance)
+            pInstance->SetData(DATA_MAGMADAR_EVENT, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_MAGMADAR_EVENT, DONE);
     }
 
     void UpdateAI(const uint32 diff)

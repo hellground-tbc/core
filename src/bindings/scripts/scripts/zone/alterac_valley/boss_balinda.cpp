@@ -16,7 +16,7 @@
 
 /* ScriptData
 SDName: Boss_Balinda
-SD%Complete: 
+SD%Complete:
 SDComment: Timers should be adjusted
 EndScriptData */
 
@@ -37,7 +37,7 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_balindaAI : public ScriptedAI
 {
-    boss_balindaAI(Creature *c) : ScriptedAI(c) 
+    boss_balindaAI(Creature *c) : ScriptedAI(c)
     {
         m_creature->GetPosition(wLoc);
     }
@@ -61,14 +61,13 @@ struct TRINITY_DLL_DECL boss_balindaAI : public ScriptedAI
         WaterElementalTimer = 0;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoScriptText(YELL_AGGRO, m_creature);
     }
 
     void JustRespawned()
     {
-        InCombat = false;
         Reset();
     }
 
@@ -115,7 +114,7 @@ struct TRINITY_DLL_DECL boss_balindaAI : public ScriptedAI
 
         if(CheckTimer < diff)
         {
-            if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) >= 20.0f)
+            if(!m_creature->IsWithinDistInMap(&wLoc, 20))
             {
                 m_creature->InterruptNonMeleeSpells(false);
                 EnterEvadeMode();
@@ -202,11 +201,10 @@ struct TRINITY_DLL_DECL mob_av_water_elementalAI : public ScriptedAI
 
     void Reset() {}
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void JustRespawned()
     {
-        InCombat = false;
         if(Unit *owner = m_creature->GetOwner())
         {
             m_creature->setFaction(owner->getFaction());

@@ -85,7 +85,7 @@ static InfernalPoint InfernalPoints[] =
 #define SPELL_EQUIP_AXES        30857                       //Visual for axe equiping
 #define SPELL_AMPLIFY_DAMAGE    39095                       //Amplifiy during phase 3
 #define SPELL_HELLFIRE          30859                       //Infenals' hellfire aura
-#define SPELL_CLEAVE            30131                       //Same as Nightbane. 
+#define SPELL_CLEAVE            30131                       //Same as Nightbane.
 #define NETHERSPITE_INFERNAL    17646                       //The netherspite infernal creature
 #define MALCHEZARS_AXE          17650                       //Malchezar's axes (creatures), summoned during phase 3
 
@@ -107,7 +107,7 @@ struct TRINITY_DLL_DECL netherspite_infernalAI : public ScriptedAI
     InfernalPoint *point;
 
     void Reset() {}
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
     void MoveInLineOfSight(Unit *who) {}
 
     void UpdateAI(const uint32 diff)
@@ -219,11 +219,14 @@ struct TRINITY_DLL_DECL boss_malchezaarAI : public ScriptedAI
 
         if(pInstance)
         {
-           GameObject* Door = GameObject::GetGameObject((*m_creature),pInstance->GetData64(DATA_GAMEOBJECT_NETHER_DOOR));
+            GameObject* Door = GameObject::GetGameObject((*m_creature),pInstance->GetData64(DATA_GAMEOBJECT_NETHER_DOOR));
             if(Door)
-           {
+            {
                 Door->SetGoState(0);
-           }
+            }
+
+            if (pInstance->GetData(DATA_MALCHEZZAR_EVENT) != DONE)
+                pInstance->SetData(DATA_MALCHEZZAR_EVENT, NOT_STARTED);
         }
 
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -233,12 +236,7 @@ struct TRINITY_DLL_DECL boss_malchezaarAI : public ScriptedAI
 
     void KilledUnit(Unit *victim)
     {
-        switch(rand()%3)
-        {
-        case 0: DoScriptText(SAY_SLAY1, m_creature); break;
-        case 1: DoScriptText(SAY_SLAY2, m_creature); break;
-        case 2: DoScriptText(SAY_SLAY3, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2, SAY_SLAY3), m_creature);
     }
 
     void JustDied(Unit *victim)
@@ -260,10 +258,12 @@ struct TRINITY_DLL_DECL boss_malchezaarAI : public ScriptedAI
             {
                 Door->SetGoState(0);
             }
+
+            pInstance->SetData(DATA_MALCHEZZAR_EVENT, DONE);
         }
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
 
@@ -274,6 +274,7 @@ struct TRINITY_DLL_DECL boss_malchezaarAI : public ScriptedAI
             {
                 Door->SetGoState(1);
             }
+            pInstance->SetData(DATA_MALCHEZZAR_EVENT, IN_PROGRESS);
         }
     }
 
@@ -406,16 +407,12 @@ struct TRINITY_DLL_DECL boss_malchezaarAI : public ScriptedAI
             DoCast(Infernal, SPELL_INFERNAL_RELAY);
         }
 
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(SAY_SUMMON1, m_creature); break;
-        case 1: DoScriptText(SAY_SUMMON2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SUMMON1, SAY_SUMMON2), m_creature);
     }
 
     void DamageTaken(Unit *done_by, uint32 &damage)
     {
-        if(done_by->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 95.0f)
+        if(!done_by->IsWithinDistInMap(&wLoc, 95.0f))
         {
             damage = 0;
         }
@@ -435,11 +432,11 @@ struct TRINITY_DLL_DECL boss_malchezaarAI : public ScriptedAI
 
         if(CheckTimer < diff)
         {
-            if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 95.0f)
+            if(!m_creature->IsWithinDistInMap(&wLoc, 95.0f))
                 DoResetThreat();
             else
                 DoZoneInCombat();
-            
+
             CheckTimer = 3000;
         }else CheckTimer -= diff;
 
@@ -453,8 +450,8 @@ struct TRINITY_DLL_DECL boss_malchezaarAI : public ScriptedAI
         if(m_creature->hasUnitState(UNIT_STAT_STUNNED))     //While shifting to phase 2 malchezaar stuns himself
             return;
 
-        if(m_creature->GetUInt64Value(UNIT_FIELD_TARGET)!=m_creature->getVictim()->GetGUID())
-            m_creature->SetUInt64Value(UNIT_FIELD_TARGET, m_creature->getVictim()->GetGUID());
+        if(m_creature->GetSelection() != m_creature->getVictimGUID())
+            m_creature->SetSelection(m_creature->getVictimGUID());
 
         if(phase == 1)
         {
@@ -544,7 +541,7 @@ struct TRINITY_DLL_DECL boss_malchezaarAI : public ScriptedAI
                 SunderArmorTimer = 15000;
 
             }else SunderArmorTimer -= diff;
-            
+
             if(Cleave_Timer < diff)
             {
                 DoCast(m_creature->getVictim(), SPELL_CLEAVE);
@@ -618,7 +615,7 @@ struct TRINITY_DLL_DECL boss_malchezaarAI : public ScriptedAI
                 if(phase == 1)
                     target = m_creature->getVictim();       // the tank
                 else                                        //anyone but the tank
-                    target = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_SW_PAIN), true, m_creature->getVictim());
+                    target = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_SW_PAIN), true, m_creature->getVictimGUID());
 
                 if (target)
                     DoCast(target, SPELL_SW_PAIN);

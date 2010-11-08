@@ -48,7 +48,7 @@ struct TRINITY_DLL_DECL boss_anubshiahAI : public ScriptedAI
         EnvelopingWeb_Timer = 16000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
     }
 
@@ -63,7 +63,9 @@ struct TRINITY_DLL_DECL boss_anubshiahAI : public ScriptedAI
         {
             DoCast(m_creature->getVictim(),SPELL_SHADOWBOLT);
             ShadowBolt_Timer = 7000;
-        }else ShadowBolt_Timer -= diff;
+        }
+        else
+            ShadowBolt_Timer -= diff;
 
         //CurseOfTongues_Timer
         if (CurseOfTongues_Timer < diff)
@@ -71,21 +73,27 @@ struct TRINITY_DLL_DECL boss_anubshiahAI : public ScriptedAI
             if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0, 200, true))
                 DoCast(target,SPELL_CURSEOFTONGUES);
             CurseOfTongues_Timer = 18000;
-        }else CurseOfTongues_Timer -= diff;
+        }
+        else
+            CurseOfTongues_Timer -= diff;
 
         //CurseOfWeakness_Timer
         if (CurseOfWeakness_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_CURSEOFWEAKNESS);
             CurseOfWeakness_Timer = 45000;
-        }else CurseOfWeakness_Timer -= diff;
+        }
+        else
+            CurseOfWeakness_Timer -= diff;
 
         //DemonArmor_Timer
         if (DemonArmor_Timer < diff)
         {
             DoCast(m_creature,SPELL_DEMONARMOR);
             DemonArmor_Timer = 300000;
-        }else DemonArmor_Timer -= diff;
+        }
+        else
+            DemonArmor_Timer -= diff;
 
         //EnvelopingWeb_Timer
         if (EnvelopingWeb_Timer < diff)
@@ -94,7 +102,9 @@ struct TRINITY_DLL_DECL boss_anubshiahAI : public ScriptedAI
             target = SelectUnit(SELECT_TARGET_RANDOM,0);
             if (target) DoCast(target,SPELL_ENVELOPINGWEB);
             EnvelopingWeb_Timer = 12000;
-        }else EnvelopingWeb_Timer -= diff;
+        }
+        else
+            EnvelopingWeb_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }

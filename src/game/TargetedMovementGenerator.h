@@ -72,6 +72,7 @@ class TRINITY_DLL_SPEC TargetedMovementGenerator
         float i_angle;
         DestinationHolder< Traveller<T> > i_destinationHolder;
         bool i_recalculateTravel;
+        float i_targetX, i_targetY, i_targetZ;
 };
 #endif
 

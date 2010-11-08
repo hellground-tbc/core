@@ -37,10 +37,12 @@ mob_illidari_spawn
 npc_lord_illidan_stormrage
 go_crystal_prison
 npc_enraged_spirit
+npc_overlord_orbarokh
+npc_thane_yoregar
 EndContentData */
 
 #include "precompiled.h"
-#include "../../npc/npc_escortAI.h"
+#include "escort_ai.h"
 
 /*#####
 # mob_mature_netherwing_drake
@@ -78,8 +80,6 @@ struct TRINITY_DLL_DECL mob_mature_netherwing_drakeAI : public ScriptedAI
         CastTimer = 5000;
     }
 
-    void Aggro(Unit* who) { }
-
     void MoveInLineOfSight(Unit* who)
     {
         if(m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE)
@@ -97,7 +97,7 @@ struct TRINITY_DLL_DECL mob_mature_netherwing_drakeAI : public ScriptedAI
         {
             float PlayerX, PlayerY, PlayerZ;
             caster->GetClosePoint(PlayerX, PlayerY, PlayerZ, m_creature->GetObjectSize());
-            m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
+            m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
             m_creature->GetMotionMaster()->MovePoint(1, PlayerX, PlayerY, PlayerZ);
             PlayerGUID = caster->GetGUID();
         }
@@ -113,7 +113,7 @@ struct TRINITY_DLL_DECL mob_mature_netherwing_drakeAI : public ScriptedAI
             IsEating = true;
             EatTimer = 5000;
             m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_ONESHOT_ATTACKUNARMED);
-            m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
+            m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
         }
     }
 
@@ -194,11 +194,9 @@ struct TRINITY_DLL_DECL mob_enslaved_netherwing_drakeAI : public ScriptedAI
             m_creature->setFaction(FACTION_DEFAULT);
 
         FlyTimer = 10000;
-        m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
+        m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
         m_creature->SetVisibility(VISIBILITY_ON);
     }
-
-    void Aggro(Unit* who) { }
 
     void SpellHit(Unit* caster, const SpellEntry* spell)
     {
@@ -282,7 +280,7 @@ struct TRINITY_DLL_DECL mob_enslaved_netherwing_drakeAI : public ScriptedAI
                             dz += 25;
                         }
 
-                        m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
+                        m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
                         m_creature->GetMotionMaster()->MovePoint(1, dx, dy, dz);
                     }
                 }
@@ -317,8 +315,6 @@ struct TRINITY_DLL_DECL mob_dragonmaw_peonAI : public ScriptedAI
         Tapped = false;
         PoisonTimer = 0;
     }
-
-    void Aggro(Unit* who) { }
 
     void SpellHit(Unit* caster, const SpellEntry* spell)
     {
@@ -364,7 +360,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_peonAI : public ScriptedAI
             PoisonTimer = 0;
             m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         }else PoisonTimer -= diff;
-        
+
          DoMeleeAttackIfReady();
     }
 };
@@ -475,15 +471,15 @@ bool GossipSelect_npc_grand_commander_ruusk(Player *player, Creature *_Creature,
             player->SEND_GOSSIP_MENU(10406, _Creature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+3:
-            player->ADD_GOSSIP_ITEM(0, GOSSIP_SGCR3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+4);                                                            
+            player->ADD_GOSSIP_ITEM(0, GOSSIP_SGCR3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+4);
             player->SEND_GOSSIP_MENU(10407, _Creature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+4:
-            player->ADD_GOSSIP_ITEM(0, GOSSIP_SGCR4, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);                                                    
+            player->ADD_GOSSIP_ITEM(0, GOSSIP_SGCR4, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);
             player->SEND_GOSSIP_MENU(10408, _Creature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+5:
-            player->ADD_GOSSIP_ITEM(0, GOSSIP_SGCR5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+6);                                                    
+            player->ADD_GOSSIP_ITEM(0, GOSSIP_SGCR5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+6);
             player->SEND_GOSSIP_MENU(10409, _Creature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+6:
@@ -732,6 +728,7 @@ struct TRINITY_DLL_DECL npc_overlord_morghorAI : public ScriptedAI
 
     uint32 ConversationTimer;
     uint32 Step;
+    uint32 resetTimer;
 
     bool Event;
 
@@ -743,10 +740,11 @@ struct TRINITY_DLL_DECL npc_overlord_morghorAI : public ScriptedAI
         ConversationTimer = 0;
         Step = 0;
 
-        Event = false;
-    }
+        resetTimer = 180000;
 
-    void Aggro(Unit* who){}
+        Event = false;
+        m_creature->SetUInt32Value(UNIT_NPC_FLAGS, 2);
+    }
 
     void StartEvent()
     {
@@ -773,7 +771,7 @@ struct TRINITY_DLL_DECL npc_overlord_morghorAI : public ScriptedAI
     {
         Player* plr = Unit::GetPlayer(PlayerGUID);
 
-        Unit* Illi = Unit::GetUnit((*m_creature), IllidanGUID);
+        Creature* Illi = Unit::GetCreature((*m_creature), IllidanGUID);
 
         if(!plr || (!Illi && Step < 23))
         {
@@ -792,8 +790,8 @@ struct TRINITY_DLL_DECL npc_overlord_morghorAI : public ScriptedAI
              Illi->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE); return 350; break;
         case 6:
             Illi->CastSpell(Illi, SPELL_ONE, true);
-            Illi->SetUInt64Value(UNIT_FIELD_TARGET, m_creature->GetGUID());
-            m_creature->SetUInt64Value(UNIT_FIELD_TARGET, IllidanGUID);
+            Illi->SetSelection(m_creature->GetGUID());
+            m_creature->SetSelection(IllidanGUID);
             return 2000; break;
         case 7: DoScriptText(OVERLORD_YELL_2, m_creature); return 4500; break;
         case 8: m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, 8); return 2500; break;
@@ -802,7 +800,7 @@ struct TRINITY_DLL_DECL npc_overlord_morghorAI : public ScriptedAI
         case 11: DoScriptText(OVERLORD_SAY_4, m_creature, plr); return 6000; break;
         case 12: DoScriptText(LORD_ILLIDAN_SAY_2, Illi); return 5500; break;
         case 13: DoScriptText(LORD_ILLIDAN_SAY_3, Illi); return 4000; break;
-        case 14: Illi->SetUInt64Value(UNIT_FIELD_TARGET, PlayerGUID); return 1500; break;
+        case 14: Illi->SetSelection(PlayerGUID); return 1500; break;
         case 15: DoScriptText(LORD_ILLIDAN_SAY_4, Illi); return 1500; break;
         case 16:
             if (plr)
@@ -824,7 +822,7 @@ struct TRINITY_DLL_DECL npc_overlord_morghorAI : public ScriptedAI
         case 19: DoScriptText(LORD_ILLIDAN_SAY_7, Illi); return 5000; break;
         case 20:
             Illi->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
-            Illi->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
+            Illi->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
             return 500; break;
         case 21: DoScriptText(OVERLORD_SAY_5, m_creature); return 500; break;
         case 22:
@@ -832,7 +830,7 @@ struct TRINITY_DLL_DECL npc_overlord_morghorAI : public ScriptedAI
             Illi->setDeathState(JUST_DIED);
             return 1000; break;
         case 23: m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1,0); return 2000; break;
-        case 24: m_creature->SetUInt64Value(UNIT_FIELD_TARGET, PlayerGUID); return 5000; break;
+        case 24: m_creature->SetSelection(PlayerGUID); return 5000; break;
         case 25: DoScriptText(OVERLORD_SAY_6, m_creature); return 2000; break;
         case 26:
             if(plr)
@@ -869,7 +867,7 @@ struct TRINITY_DLL_DECL npc_overlord_morghorAI : public ScriptedAI
                 Yarzill->CastSpell(plr, 41540, true);
             return 1000;}break;
         case 32: m_creature->GetMotionMaster()->MovePoint(0, -5085.77, 577.231, 86.6719); return 5000; break;
-        case 33: Reset(); return 100; break;
+        case 33: EnterEvadeMode(); return 100; break;
 
         default : return 0;
         }
@@ -932,13 +930,14 @@ struct TRINITY_DLL_DECL npc_earthmender_wildaAI : public npc_escortAI
 
     bool Completed;
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
+        Player* player = GetPlayerForEscort();
 
         if(who->GetTypeId() == TYPEID_UNIT && who->GetEntry() == NPC_COILSKAR_ASSASSIN)
             DoScriptText(SAY_AGGRO2, m_creature, player);
-        else DoScriptText(SAY_AGGRO1, m_creature, player);
+        else
+            DoScriptText(SAY_AGGRO1, m_creature, player);
     }
 
     void Reset()
@@ -949,8 +948,7 @@ struct TRINITY_DLL_DECL npc_earthmender_wildaAI : public npc_escortAI
 
     void WaypointReached(uint32 i)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
-
+        Player* player = GetPlayerForEscort();
         if (!player)
             return;
 
@@ -963,49 +961,24 @@ struct TRINITY_DLL_DECL npc_earthmender_wildaAI : public npc_escortAI
                case 14: SummonAssassin(); break;
                case 15: DoScriptText(SAY_PROGRESS3, m_creature, player); break;
                case 19:
-                   switch(rand()%3)
-                   {
-                   case 0: DoScriptText(SAY_PROGRESS2, m_creature, player); break;
-                   case 1: DoScriptText(SAY_PROGRESS4, m_creature, player); break;
-                   case 2: DoScriptText(SAY_PROGRESS5, m_creature, player); break;
-                   }
+                   DoScriptText(RAND(SAY_PROGRESS2, SAY_PROGRESS4, SAY_PROGRESS5), m_creature, player);
                    break;
                case 20: SummonAssassin(); break;
                case 26:
-                   switch(rand()%3)
-                   {
-                   case 0: DoScriptText(SAY_PROGRESS2, m_creature, player); break;
-                   case 1: DoScriptText(SAY_PROGRESS4, m_creature, player); break;
-                   case 2: DoScriptText(SAY_PROGRESS5, m_creature, player); break;
-                   }
+                   DoScriptText(RAND(SAY_PROGRESS2, SAY_PROGRESS4, SAY_PROGRESS5), m_creature, player);
                    break;
                case 27: SummonAssassin(); break;
                case 33:
-                   switch(rand()%3)
-                   {
-                   case 0: DoScriptText(SAY_PROGRESS2, m_creature, player); break;
-                   case 1: DoScriptText(SAY_PROGRESS4, m_creature, player); break;
-                   case 2: DoScriptText(SAY_PROGRESS5, m_creature, player); break;
-                   }
+                   DoScriptText(RAND(SAY_PROGRESS2, SAY_PROGRESS4, SAY_PROGRESS5), m_creature, player);
                    break;
                case 34: SummonAssassin(); break;
                case 37:
-                   switch(rand()%3)
-                   {
-                   case 0: DoScriptText(SAY_PROGRESS2, m_creature, player); break;
-                   case 1: DoScriptText(SAY_PROGRESS4, m_creature, player); break;
-                   case 2: DoScriptText(SAY_PROGRESS5, m_creature, player); break;
-                   }
+                   DoScriptText(RAND(SAY_PROGRESS2, SAY_PROGRESS4, SAY_PROGRESS5), m_creature, player);
                    break;
                case 38: SummonAssassin(); break;
                case 39: DoScriptText(SAY_PROGRESS6, m_creature, player); break;
                case 43:
-                   switch(rand()%3)
-                   {
-                   case 0: DoScriptText(SAY_PROGRESS2, m_creature, player); break;
-                   case 1: DoScriptText(SAY_PROGRESS4, m_creature, player); break;
-                   case 2: DoScriptText(SAY_PROGRESS5, m_creature, player); break;
-                   }
+                   DoScriptText(RAND(SAY_PROGRESS2, SAY_PROGRESS4, SAY_PROGRESS5), m_creature, player);
                    break;
                case 44: SummonAssassin(); break;
                case 50:
@@ -1018,16 +991,13 @@ struct TRINITY_DLL_DECL npc_earthmender_wildaAI : public npc_escortAI
 
        void SummonAssassin()
        {
-           Player* player = Unit::GetPlayer(PlayerGUID);
+           Player* player = GetPlayerForEscort();
 
            Unit* CoilskarAssassin = m_creature->SummonCreature(NPC_COILSKAR_ASSASSIN, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), m_creature->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 0);
            if( CoilskarAssassin )
            {
-               switch(rand()%2)
-               {
-               case 0: DoScriptText(ASSASSIN_SAY_AGGRO1, CoilskarAssassin, player); break;
-               case 1: DoScriptText(ASSASSIN_SAY_AGGRO2, CoilskarAssassin, player); break;
-               }
+               DoScriptText(RAND(ASSASSIN_SAY_AGGRO1, ASSASSIN_SAY_AGGRO2), CoilskarAssassin, player);
+
                ((Creature*)CoilskarAssassin)->AI()->AttackStart(m_creature);
            }
            else error_log("TSCR ERROR: Coilskar Assassin couldn't be summmoned");
@@ -1035,9 +1005,9 @@ struct TRINITY_DLL_DECL npc_earthmender_wildaAI : public npc_escortAI
 
        void JustDied(Unit* killer)
        {
-           if (PlayerGUID && !Completed)
+           if (!Completed)
            {
-               Player* player = Unit::GetPlayer(PlayerGUID);
+               Player* player = GetPlayerForEscort();
                if (player)
                    player->FailQuest(QUEST_ESCAPE_FROM_COILSKAR_CISTERN);
            }
@@ -1114,7 +1084,8 @@ bool QuestAccept_npc_earthmender_wilda(Player* player, Creature* creature, Quest
     if (quest->GetQuestId() == QUEST_ESCAPE_FROM_COILSKAR_CISTERN)
     {
         creature->setFaction(113);
-        ((npc_escortAI*)(creature->AI()))->Start(true, true, false, player->GetGUID());
+        if (npc_earthmender_wildaAI* pEscortAI = CAST_AI(npc_earthmender_wildaAI, creature->AI()))
+            pEscortAI->Start(false, false, player->GetGUID(), quest);
     }
     return true;
 }
@@ -1233,7 +1204,7 @@ struct TRINITY_DLL_DECL mob_illidari_spawnAI : public ScriptedAI
         Timers = false;
     }
 
-    void Aggro(Unit* who) {}
+    void EnterCombat(Unit* who) {}
     void JustDied(Unit* slayer);
 
     void UpdateAI(const uint32 diff)
@@ -1343,10 +1314,8 @@ struct TRINITY_DLL_DECL mob_torloth_the_magnificentAI : public ScriptedAI
 
         m_creature->addUnitState(UNIT_STAT_ROOT);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        m_creature->SetUInt64Value(UNIT_FIELD_TARGET, 0);
+        m_creature->SetSelection(0);
     }
-
-    void Aggro(Unit* who){}
 
     void HandleAnimation()
     {
@@ -1376,7 +1345,7 @@ struct TRINITY_DLL_DECL mob_torloth_the_magnificentAI : public ScriptedAI
         case 5:
             if(Player* AggroTarget = (Unit::GetPlayer(AggroTargetGUID)))
             {
-                m_creature->SetUInt64Value(UNIT_FIELD_TARGET, AggroTarget->GetGUID());
+                m_creature->SetSelection(AggroTarget->GetGUID());
                 m_creature->AddThreat(AggroTarget, 1);
                 m_creature->HandleEmoteCommand(EMOTE_ONESHOT_POINT);
             }
@@ -1501,7 +1470,6 @@ struct TRINITY_DLL_DECL npc_lord_illidan_stormrageAI : public ScriptedAI
         m_creature->SetVisibility(VISIBILITY_OFF);
     }
 
-    void Aggro(Unit* who) {}
     void MoveInLineOfSight(Unit* who) {}
     void AttackStart(Unit* who) {}
 
@@ -1760,7 +1728,7 @@ struct TRINITY_DLL_DECL npc_enraged_spiritAI : public ScriptedAI
 
     void Reset()   { }
 
-    void Aggro(Unit *who){}
+    void EnterCombat(Unit *who){}
 
     void JustDied(Unit* killer)
     {
@@ -1881,12 +1849,12 @@ static float SuccubPos2[4] = {-3730.46,1041.40,55.95,4.60};
 #define OLUMS_SPIRIT                22870
 #define SPELL_OLUMS_SACRIFICE       39552
 #define STATE_DROWNED                 383
- 
+
 // BT prelude after quest 10944 postions data
 static float OlumPos[4] = {-3729.17,1035.63,55.95,5.82};
 static float OlumNewPos[4] = {-3721.87,1031.86,55.95,5.90};
 static float AkamaPos[4] = {-3714.50,1028.95,55.95,2.57};
-static float AkamaNewPos[4] = {-3718.33,1030.27,55.95,2.77}; 
+static float AkamaNewPos[4] = {-3718.33,1030.27,55.95,2.77};
 
 
 
@@ -1895,7 +1863,7 @@ static float AkamaNewPos[4] = {-3718.33,1030.27,55.95,2.77};
 struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
 {
     npc_AkamaAI(Creature* c) : ScriptedAI(c) {}
- 
+
     uint64 VagathGUID;
     uint64 Succub1GUID;
     uint64 Succub2GUID;
@@ -1903,20 +1871,20 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
     uint64 OlumGUID;
     uint64 IllidanGUID;
     uint64 OlumSpiritGUID;
- 
+
     uint32 TalkTimer;
     uint32 Step;
- 
+
     std::list<Unit*> targets;
- 
+
     bool EventStarted;
     bool PreludeEventStarted;
- 
+
     void Reset()
     {
         VagathGUID = 0;
         Step = 0;
- 
+
         TalkTimer = 0;
         EventStarted = false;
         targets.clear();
@@ -1932,9 +1900,7 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
         PreludeEventStarted = false;
 
     }
- 
-    void Aggro(Unit* who){}
- 
+
     void BuildNearbyUnitsList()
     {
         float range = 20.0f;
@@ -1947,23 +1913,23 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
     {
         Step = 1;
         EventStarted = true;
- 
+
         Creature* Vagath = m_creature->SummonCreature(VAGATH,VagathPos[0],VagathPos[1],VagathPos[2],VagathPos[3],TEMPSUMMON_CORPSE_TIMED_DESPAWN,0);
         Creature* Succub1 = m_creature->SummonCreature(ILLIDARI_SUCCUBUS,SuccubPos1[0],SuccubPos1[1],SuccubPos1[2],SuccubPos1[3],TEMPSUMMON_CORPSE_TIMED_DESPAWN,0);
         Creature* Succub2 = m_creature->SummonCreature(ILLIDARI_SUCCUBUS,SuccubPos2[0],SuccubPos2[1],SuccubPos2[2],SuccubPos2[3],TEMPSUMMON_CORPSE_TIMED_DESPAWN,0);
-       
+
         if(!Vagath || !Succub1 || !Succub2)
             return;
- 
+
         VagathGUID = Vagath->GetGUID();
         Succub1GUID = Succub1->GetGUID();
         Succub2GUID = Succub2->GetGUID();
- 
+
         Vagath->setFaction(35);
         TalkTimer = 3000;
- 
+
         BuildNearbyUnitsList();
-    } 
+    }
 
     uint32 NextStep(uint32 Step)
     {
@@ -1971,17 +1937,17 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
         Unit* Succub1 = Unit::GetUnit((*m_creature),Succub1GUID);
         Unit* Succub2 = Unit::GetUnit((*m_creature),Succub2GUID);
         Unit* maiev = FindCreature(MAIEV_SHADOWSONG, 50, m_creature);
-       
+
         switch(Step)
         {
             case 0:
             return 0;
-           
+
             case 1:
                 if(vaga)
                 ((Creature*)vaga)->Say(SAY_DIALOG_VAGATH_1,LANG_UNIVERSAL,NULL);
                 return 3000;
-           
+
             case 2:
                 for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
                 {
@@ -1989,7 +1955,7 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
                     DoWhisper(SAY_WHISPER_AKAMA_2, (*iter));
                 }
                 return 1000;
-           
+
             case 3:
                 for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
                 {
@@ -1997,7 +1963,7 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
                     DoCast((*iter), SPELL_FAKE_KILL_VISUAL);
                 }
                 return 1000;
-           
+
             case 4:
                 for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
                 {
@@ -2010,16 +1976,16 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
                     }
                 }
                 return 3000;
-           
+
             case 5:
                 m_creature->Say(SAY_DIALOG_AKAMA_3,LANG_UNIVERSAL,NULL);
                 return 12000;
-           
+
             case 6:
                 if(vaga)
                 ((Creature*)vaga)->Say(SAY_DIALOG_VAGATH_4,LANG_UNIVERSAL,NULL);
                 return 15000;
-           
+
             case 7:
                 if(vaga)
                 ((Creature*)vaga)->setDeathState(CORPSE);
@@ -2028,7 +1994,7 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
                 if(Succub2)
                 ((Creature*)Succub2)->setDeathState(CORPSE);
                 return 3000;
-           
+
             case 8:
                 for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
                 {
@@ -2036,7 +2002,7 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
                     DoCast((*iter), SPELL_RESURECTION_VISUAL);
                 }
                 return 2000;
-           
+
             case 9:
                 for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
                 {
@@ -2049,25 +2015,25 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
                 }
                 m_creature->Say(SAY_DIALOG_AKAMA_5, LANG_UNIVERSAL, NULL);
                 return 12000;
-           
+
             case 10:
                 if(maiev)
                 ((Creature*)maiev)->Say(SAY_DIALOG_MAIEV_6,LANG_UNIVERSAL,NULL);
                 return 12000;
-           
+
             case 11:
                 m_creature->Say(SAY_DIALOG_AKAMA_7,LANG_UNIVERSAL,NULL);
                 return 12000;
-           
+
             case 12:
                 if(maiev)
                 ((Creature*)maiev)->Say(SAY_DIALOG_MAIEV_8,LANG_UNIVERSAL,NULL);
                 return 1000;
-           
+
             case 13:
                 Reset();
                 return 100;
-           
+
             default:
             return 0;
         }
@@ -2089,20 +2055,20 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
         DoScriptText(SAY_DIALOG_OLUM_1,Olum);
         Olum->SendMonsterMove(OlumNewPos[0],OlumNewPos[1],OlumNewPos[2],5000);
         Olum->Relocate(OlumNewPos[0],OlumNewPos[1],OlumNewPos[2],OlumNewPos[3]);
-        
+
         TalkTimer = 13000;
     }
 
     uint32 PreludeNextStep(uint32 Step)
-    {       
+    {
         Unit* olum = Unit::GetUnit((*m_creature),OlumGUID);
         Unit* Illidan = Unit::GetUnit((*m_creature), IllidanGUID);
-       
+
         switch(Step)
         {
             case 0:
             return 0;
-           
+
             case 1: DoScriptText(SAY_DIALOG_PRE_AKAMA_1,m_creature); return 4000;
             case 2: if(olum) DoScriptText(SAY_DIALOG_OLUM_2,(Creature*)olum); return 8000;
             case 3: DoScriptText(SAY_DIALOG_PRE_AKAMA_2,m_creature); return 7000;
@@ -2170,7 +2136,7 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
         }
         return 0;
     }
- 
+
     void UpdateAI(const uint32 diff)
     {
         if(EventStarted && VagathGUID)
@@ -2202,7 +2168,7 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
         }
     }
 };
- 
+
 CreatureAI* GetAI_npc_Akama(Creature *_Creature)
 {
     return new npc_AkamaAI(_Creature);
@@ -2243,7 +2209,7 @@ EndContentData */
 
 struct TRINITY_DLL_DECL npc_shadowlord_triggerAI : public Scripted_NoMovementAI
 {
-    npc_shadowlord_triggerAI(Creature* c) : Scripted_NoMovementAI(c) 
+    npc_shadowlord_triggerAI(Creature* c) : Scripted_NoMovementAI(c)
     {
         x = m_creature->GetPositionX();
         y = m_creature->GetPositionY();
@@ -2258,7 +2224,7 @@ struct TRINITY_DLL_DECL npc_shadowlord_triggerAI : public Scripted_NoMovementAI
     uint32 Ccounter;        //is in combat counter
     float x, y, z;
 
-    static const int32 
+    static const int32
         SpawnX = -3249,
         SpawnY = 347,
         SpawnZ = 127;
@@ -2271,10 +2237,9 @@ struct TRINITY_DLL_DECL npc_shadowlord_triggerAI : public Scripted_NoMovementAI
         SoulstealerList.clear();
         SoulstealerList = DoFindAllCreaturesWithEntry(22061, 80.0f);
         m_creature->Relocate(x, y, z);
-        InCombat = false;
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         m_creature->GetMotionMaster()->Clear();
         m_creature->GetMotionMaster()->MoveIdle();
@@ -2282,7 +2247,7 @@ struct TRINITY_DLL_DECL npc_shadowlord_triggerAI : public Scripted_NoMovementAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(!InCombat)
+        if(!m_creature->isInCombat())
             return;
 
         if(Check_Timer < diff)
@@ -2423,7 +2388,7 @@ struct TRINITY_DLL_DECL mob_shadowlord_deathwailAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit *who) 
+    void EnterCombat(Unit *who)
     {
         if(!flying)
             return;
@@ -2466,7 +2431,7 @@ struct TRINITY_DLL_DECL mob_shadowlord_deathwailAI : public ScriptedAI
                 flying = true;
                 felfire = false;
             }
-            if(!InCombat && landed && trigger && trigger->isAlive())
+            if(!m_creature->isInCombat() && landed && trigger && trigger->isAlive())
                 Reset();
 
             if(!m_creature->HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE) && m_creature->GetPositionZ() < 142)
@@ -2475,7 +2440,7 @@ struct TRINITY_DLL_DECL mob_shadowlord_deathwailAI : public ScriptedAI
                 m_creature->SetSpeed(MOVE_WALK, 4.0);
                 m_creature->SetSpeed(MOVE_RUN, 2.0);
             }
-            if(felfire && trigger && ((npc_shadowlord_triggerAI*)((Creature*) trigger)->AI())->InCombat == false)
+            if(felfire && trigger && !trigger->isInCombat())
                 felfire = false;
             if(felfire)
                 AddSpellToCast(m_creature, SPELL_FEL_FIREBALL);
@@ -2513,7 +2478,7 @@ struct TRINITY_DLL_DECL mob_shadowlord_deathwailAI : public ScriptedAI
 
             if(Deathcoil_Timer < diff)
             {
-                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0, true, m_creature->getVictim()))
+                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0, true, m_creature->getVictimGUID()))
                     AddSpellToCast(target, SPELL_DEATHCOIL);
                 else
                     AddSpellToCast(m_creature->getVictim(), SPELL_DEATHCOIL);
@@ -2550,7 +2515,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_soulstealerAI : public Scripted_NoMovemen
     {
         std::list<Unit*> party;
 
-        if(!InCombat && who->GetTypeId() == TYPEID_PLAYER  && m_creature->IsWithinDistInMap(who, 15.0f))
+        if(!m_creature->isInCombat() && who->GetTypeId() == TYPEID_PLAYER  && m_creature->IsWithinDistInMap(who, 15.0f))
         {
             who->GetPartyMember(party, 50.0f);
             for(std::list<Unit*>::iterator i = party.begin(); i != party.end(); ++i)
@@ -2558,17 +2523,17 @@ struct TRINITY_DLL_DECL mob_shadowmoon_soulstealerAI : public Scripted_NoMovemen
                 AttackStart(*i);
             }
         }
-        
+
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         m_creature->SetStunned(true);
         m_creature->CombatStart(who);
-        if(Unit* EventTrigger = FindCreature(22096, 80.0, m_creature))
-            ((npc_shadowlord_triggerAI*)((Creature*) EventTrigger)->AI())->InCombat = true;
         if(Unit* Deathwail = FindCreature(22006, 100.0, m_creature))
             ((mob_shadowlord_deathwailAI*)((Creature*) Deathwail)->AI())->felfire = true;
+        if(Unit* trigger = FindCreature(22096, 100.0, m_creature))
+            ((npc_shadowlord_triggerAI*)((Creature*) trigger)->AI())->AttackStart(who);
     }
 
     void UpdateAI(const uint32 diff)
@@ -2596,6 +2561,850 @@ CreatureAI* GetAI_felfire_summoner(Creature *_Creature)
 {
     return new felfire_summonerAI (_Creature);
 }
+
+/*#####
+# Quest: A Distraction for Akama
+#####*/
+
+/* ContentData
+
+npc_maiev_BT_attu
+npc_akama_BT_attu
+npc_ashtongue_deathsworn
+mob_vagath
+mob_illidari_shadowlord
+npc_xiri
+Xi'ri gossips
+
+EndContentData */
+
+//NPC Entries
+#define NPC_MAIEV_SHADOWSONG        22989
+#define NPC_AKAMA_BT                22990
+#define NPC_ASHTONGUE_DEATHSWORN    21701
+#define MOB_VAGATH                  23152
+#define MOB_ILLIDARI_SHADOWLORD     22988
+
+//NPC Spells
+#define SPELL_FAN_OF_BLADES         39954
+#define SPELL_STEALTH               34189
+#define CHAIN_LIGHTNING             39945
+#define SPELL_BLINGING_LIGHT        36950   //not used
+#define SPELL_LIGHT_OF_THE_NAARU_1  39828
+#define SPELL_LIGHT_OF_THE_NAARU_2  39831   //spell_linked
+#define SPELL_CARRION_SWARM         39942
+#define SPELL_INFERNO               39941
+#define SPELL_SLEEP                 12098
+
+//NPC text's
+#define MAIEV_YELL        "I've waited for this moment for years. Illidan and his lapdogs will be destroyed! "
+#define AKAMA_START       "Now it's the time, Maiev! Unleash your wrath!"
+#define AKAMA_YELL        "Slay all who see us! Word must not get back to Illidan."
+#define AKAMA_KILL        "Akama has no master. Not anymore."
+#define VAGATH_AGGRO      "Pitiful wretches. You dared to assault Illidan's temple? Very well, I shall make it your death bed!"
+#define VAGATH_INTRO      "A miserable defense from Light-swollen fools. Xi'ri, I will consume you myself! "
+#define VAGATH_DEATH      "You'ves sealed your fate, Akama! The master will learn of your betrayal! "
+#define XIRI_GOSSIP_HELLO "I am ready to join your forces in Battle Xi'ri"
+
+//NPC spawn positions and Waypoints
+static float MaievBT[4] =
+{
+    -3554.0, 740.0, -15.4, 4.70
+};
+
+static float MaievWaypoint[][3] =
+{
+    {-3554.0, 731.0, -15.0},
+    {-3554.0, 700.0, - 9.3},
+    {-3554.0, 650.0,  1.71},
+    {-3554.0, 600.0,  9.30},
+    {-3554.0, 540.0,  16.5},
+    {-3561.8, 523.0,  17.9},
+    {-3556.4, 490.0,  22.0},
+    {-3570.0, 462.0,  24.5},
+    {-3576.6, 428.7,  28.6},
+    {-3586.0, 414.2,  31.2},
+    {-3593.0, 382.6,  34.0},
+    {-3599.1, 362.4,  35.2},
+    {-3606.4, 345.7,  39.3},
+    {-3633.1, 327.7,  38.8}
+};
+
+static float AkamaBT[4] =
+{
+    -3570.2, 684.5, -5.22, 4.70
+};
+
+static float AkamaWaypoint[][3] =
+{
+    {-3570.2, 654.5, 0.76},
+    {-3570.2, 624.5, 5.78},
+    {-3570.2, 594.5, 9.71},
+    {-3570.2, 564.5, 12.7},
+    {-3559.8, 534.5, 16.9},
+    {-3559.8, 473.0, 23.3},
+    {-3568.5, 423.0, 28.4},
+    {-3568.0, 375.0, 32.7},
+    {-3614.5, 330.2, 40.3},
+    {-3644.6, 315.4, 37.4}
+};
+
+static float Deathsworn[8][4] =
+{
+    {-3561.0, 720.0, -12.0, 1.56},
+    {-3557.0, 730.0, -13.6, 1.56},
+    {-3553.0, 735.0, -15.8, 1.56},
+    {-3549.0, 740.0, -16.7, 1.56},
+    {-3546.0, 745.0, -16.7, 1.56},
+    {-3565.0, 733.0, -13.0, 1.56},
+    {-3569.0, 738.0, -12.6, 1.56},
+    {-3573.0, 743.0, -11.9, 1.56}
+};
+
+static float DeathswornPath[8][3] =
+{
+    {-3561.0, 600.0, 9.20},
+    {-3557.0, 610.0, 8.00},
+    {-3553.0, 615.0, 7.60},
+    {-3549.0, 620.0, 7.30},
+    {-3545.0, 625.0, 7.10},
+    {-3565.0, 613.0, 7.40},
+    {-3569.0, 618.0, 6.80},
+    {-3573.0, 623.0, 6.10}
+};
+
+static float DeathswornWaypoint[][3] =
+{
+    {-3561.3, 537.2, 16.6},
+    {-3553.4, 500.9, 20.0},
+    {-3566.0, 484.6, 22.4},
+    {-3567.3, 457.0, 25.1},
+    {-3571.0, 417.7, 28.9},
+    {-3562.5, 379.2, 32.2},
+    {-3603.7, 346.0, 39.2},
+    {-3631.7, 327.1, 38.8}
+};
+
+static float Vagath[4] =
+{
+    -3570.7, 453.4, 25.72, 1.56
+};
+
+static float ShadowlordPos[6][4] =
+{
+    {-3555.9, 522.2, 18.20, 1.64},
+    {-3549.0, 519.4, 19.00, 1.54},
+    {-3540.5, 517.0, 20.30, 1.73},
+    {-3572.6, 486.4, 22.50, 1.34},
+    {-3582.3, 489.8, 23.29, 1.30},
+    {-3592.0, 487.5, 24.23, 1.25}
+};
+
+/*#####
+# npc_maiev_BT_attu
+######*/
+
+struct TRINITY_DLL_DECL npc_maiev_BT_attuAI : public npc_escortAI
+{
+    npc_maiev_BT_attuAI(Creature* c) : npc_escortAI(c) {}
+
+    bool moving;
+    uint32 FanOfBlades;
+
+    void Reset()
+    {
+        moving = false;
+        FanOfBlades = urand(2000, 6000);
+    }
+
+    void MoveInLineOfSight(Unit* who)
+    {
+        if(!m_creature->isInCombat() && (who->GetEntry() == 22988 || who->GetEntry() == 23152) && m_creature->IsWithinDistInMap(who, 20))
+            m_creature->AI()->AttackStart(who);
+    }
+
+    void WaypointReached(uint32 id)
+    {
+        if(id == 3)
+            DoYell(MAIEV_YELL, 0, 0);
+        if(id == 10)
+            DoCast(m_creature, SPELL_STEALTH);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        npc_escortAI::UpdateAI(diff);
+
+        if(!moving)
+        {
+            if(!HasEscortState(STATE_ESCORT_ESCORTING))
+                npc_escortAI::Start(true, true);
+            moving = true;
+        }
+
+        if(UpdateVictim())
+        {
+            if(FanOfBlades < diff)
+            {
+                DoCast(m_creature->getVictim(), SPELL_FAN_OF_BLADES);
+                FanOfBlades = urand(8000, 16000);
+            }
+            else
+                FanOfBlades -= diff;
+        }
+    }
+
+};
+
+CreatureAI* GetAI_npc_maiev_BT_attu(Creature *_Creature)
+{
+    npc_maiev_BT_attuAI* Maiev_BTattu_AI = new npc_maiev_BT_attuAI (_Creature);
+
+    for(uint32 i = 0; i < 14; ++i)
+    {
+        Maiev_BTattu_AI->AddWaypoint(i+1, MaievWaypoint[i][0], MaievWaypoint[i][1], MaievWaypoint[i][2]);
+    }
+
+    return (CreatureAI*)Maiev_BTattu_AI;
+}
+
+/*#####
+# npc_akama_BT_attu
+######*/
+
+struct TRINITY_DLL_DECL npc_akama_BT_attuAI : public npc_escortAI
+{
+    npc_akama_BT_attuAI(Creature* c) : npc_escortAI(c) {}
+
+    bool moving;
+    bool yell;
+    bool say;
+    uint32 ChainLightning;
+    uint32 YellCounter;
+    uint32 KillSayTimer;
+
+    void Reset()
+    {
+        ChainLightning = 1000;
+        moving = false;
+        say = false;
+        yell = false;
+    }
+
+    void MoveInLineOfSight(Unit* who)
+    {
+        if(!m_creature->isInCombat() && (who->GetEntry() == 22988 || who->GetEntry() == 23152) && m_creature->IsWithinDistInMap(who, 20))
+            m_creature->AI()->AttackStart(who);
+    }
+
+    void WaypointReached(uint32 id)
+    {
+        if(id == 2)
+            DoYell(AKAMA_START, 0, 0);
+        if(id == 4)
+        {
+            yell = true;
+            YellCounter = 10000;
+        }
+        if(id == 7)
+        {
+            say = true;
+            KillSayTimer = 3000;
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        npc_escortAI::UpdateAI(diff);
+
+        if(yell && YellCounter < diff)
+        {
+            DoYell(AKAMA_YELL, 0, 0);
+            yell = false;
+        }
+        else
+            YellCounter -= diff;
+
+        if(say && KillSayTimer < diff)
+        {
+            DoSay(AKAMA_KILL, 0, 0);
+            say = false;
+        }
+        else
+            KillSayTimer -= diff;
+
+        if(!moving)
+        {
+            if(!HasEscortState(STATE_ESCORT_ESCORTING))
+                npc_escortAI::Start(true, true);
+            moving = true;
+        }
+
+        if(UpdateVictim())
+        {
+            if(ChainLightning < diff)
+            {
+                DoCast(m_creature->getVictim(), CHAIN_LIGHTNING);
+                ChainLightning = urand(5000, 10000);
+            }
+            else
+                ChainLightning -= diff;
+        }
+    }
+
+};
+
+CreatureAI* GetAI_npc_akama_BT_attu(Creature *_Creature)
+{
+    npc_akama_BT_attuAI* Akama_BTattu_AI = new npc_akama_BT_attuAI (_Creature);
+
+    for(uint32 i = 0; i < 3; ++i)
+    {
+        Akama_BTattu_AI->AddWaypoint(i+1, AkamaWaypoint[i][0], AkamaWaypoint[i][1], AkamaWaypoint[i][2]);
+    }
+    Akama_BTattu_AI->AddWaypoint(4, AkamaWaypoint[3][0], AkamaWaypoint[3][1], AkamaWaypoint[3][2], 15000);
+    for(uint32 i = 4; i < 6; ++i)
+    {
+        Akama_BTattu_AI->AddWaypoint(i+1, AkamaWaypoint[i][0], AkamaWaypoint[i][1], AkamaWaypoint[i][2]);
+    }
+    Akama_BTattu_AI->AddWaypoint(7, AkamaWaypoint[6][0], AkamaWaypoint[6][1], AkamaWaypoint[6][2], 5000);
+    for(uint32 i = 7; i < 10; ++i)
+    {
+        Akama_BTattu_AI->AddWaypoint(i+1, AkamaWaypoint[i][0], AkamaWaypoint[i][1], AkamaWaypoint[i][2]);
+    }
+    return (CreatureAI*)Akama_BTattu_AI;
+}
+
+/*#####
+# npc_ashtongue_deathsworn
+######*/
+
+struct TRINITY_DLL_DECL npc_ashtongue_deathswornAI : public npc_escortAI
+{
+    npc_ashtongue_deathswornAI(Creature* c) : npc_escortAI(c) {}
+
+    uint32 AttackTimer;
+    bool intro;
+
+    void Reset()
+    {
+        if(!HasEscortState(STATE_ESCORT_ESCORTING))
+        {
+            AttackTimer = 25000;
+            intro = false;
+        }
+    }
+
+    void MoveInLineOfSight(Unit* who)
+    {
+        if(!m_creature->isInCombat() && (who->GetEntry() == 22988 || who->GetEntry() == 23152 || who->GetEntry() == 21166) && m_creature->IsWithinDistInMap(who, 30))
+            m_creature->AI()->AttackStart(who);
+    }
+
+    void WaypointReached(uint32) { }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!intro && AttackTimer < diff)
+        {
+            intro = true;
+            if(!HasEscortState(STATE_ESCORT_ESCORTING))
+                npc_escortAI::Start(true, true);
+        }
+        else
+            AttackTimer -= diff;
+
+        npc_escortAI::UpdateAI(diff);
+    }
+};
+
+CreatureAI* GetAI_npc_ashtongue_deathsworn(Creature *_Creature)
+{
+    npc_ashtongue_deathswornAI* Deathsworn_AI = new npc_ashtongue_deathswornAI (_Creature);
+
+    for(uint32 i = 0; i < 8; ++i)
+    {
+        Deathsworn_AI->AddWaypoint(i+2, DeathswornWaypoint[i][0], DeathswornWaypoint[i][1], DeathswornWaypoint[i][2]);
+    }
+    return (CreatureAI*)Deathsworn_AI;
+}
+
+/*#####
+# mob_vagath
+######*/
+
+struct TRINITY_DLL_DECL mob_vagathAI : public ScriptedAI
+{
+    mob_vagathAI(Creature* c) : ScriptedAI(c) {}
+
+    void Reset()
+    {
+        DoYell(VAGATH_INTRO, 0, 0);
+    }
+
+    void EnterCombat(Unit* who)
+    {
+        DoYell(VAGATH_AGGRO, 0, 0);
+    }
+
+    void JustDied(Unit* killer)
+    {
+        DoYell(VAGATH_DEATH, 0, 0);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(UpdateVictim())
+            DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_vagath(Creature* _Creature)
+{
+    return new mob_vagathAI(_Creature);
+}
+
+/*#####
+# mob_illidari_shadowlord
+######*/
+
+struct TRINITY_DLL_DECL mob_illidari_shadowlordAI : public ScriptedAI
+{
+    mob_illidari_shadowlordAI(Creature* c) : ScriptedAI(c) {}
+
+    uint32 CarrionSwarm;
+    uint32 Inferno;
+    uint32 Sleep;
+
+    void Reset()
+    {
+        CarrionSwarm = urand(4000, 10000);
+        Inferno = urand(6000, 15000);
+        Sleep = urand(2000, 30000);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(UpdateVictim())
+        {
+            if(CarrionSwarm < diff)
+            {
+                DoCast(m_creature->getVictim(), SPELL_CARRION_SWARM);
+                CarrionSwarm = urand(8000, 16000);
+            }
+            else
+                CarrionSwarm -= diff;
+
+            if(Inferno < diff)
+            {
+                DoCast(m_creature->getVictim(), SPELL_INFERNO);
+                Inferno = urand(35000, 50000);
+            }
+            else
+                Inferno -= diff;
+
+            if(Sleep < diff)
+            {
+                if(!urand(0, 3))
+                    DoCast(m_creature->getVictim(), SPELL_SLEEP);
+                Sleep = 60000;
+            }
+            else
+                Sleep -= diff;
+
+            DoMeleeAttackIfReady();
+        }
+    }
+};
+
+CreatureAI* GetAI_mob_illidari_shadowlord(Creature* _Creature)
+{
+    return new mob_illidari_shadowlordAI(_Creature);
+}
+
+/*#####
+# npc_xiri
+######*/
+
+struct TRINITY_DLL_DECL npc_xiriAI : public Scripted_NoMovementAI
+{
+    npc_xiriAI(Creature* c) : Scripted_NoMovementAI(c) {}
+
+    bool EventStarted;
+    uint64 PlayerGUID;
+    uint32 QuestTimer;
+
+    void Reset()
+    {
+        QuestTimer = 140000;
+        PlayerGUID = 0;
+        EventStarted = false;
+    }
+
+    void StartEvent()
+    {
+        DoPlaySoundToSet(m_creature,BLACK_TEMPLE_PRELUDE_MUSIC);
+        SummonEnemies();
+        SummonAttackers();
+        DoCast(m_creature, SPELL_LIGHT_OF_THE_NAARU_1);
+        EventStarted = true;
+    }
+
+    void SummonEnemies()
+    {
+        //Summon Shadowlords
+        for(uint32 i = 0; i < 6; i++)
+            m_creature->SummonCreature(MOB_ILLIDARI_SHADOWLORD, ShadowlordPos[i][0], ShadowlordPos[i][1], ShadowlordPos[i][2], ShadowlordPos[i][3], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);
+        //Summon Vagath
+        m_creature->SummonCreature(MOB_VAGATH, Vagath[0], Vagath[1], Vagath[2], Vagath[3], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 30000);
+    }
+
+    void SummonAttackers()
+    {
+        //Summon Akama
+        m_creature->SummonCreature(NPC_AKAMA_BT, AkamaBT[0], AkamaBT[1], AkamaBT[2], AkamaBT[3], TEMPSUMMON_CORPSE_DESPAWN, 0);
+        //Summon Maiev
+        m_creature->SummonCreature(NPC_MAIEV_SHADOWSONG, MaievBT[0], MaievBT[1], MaievBT[2], MaievBT[3], TEMPSUMMON_CORPSE_DESPAWN, 0);
+        //Summon Ashtongue Deathsworns
+        for(uint32 i = 0; i < 8; ++i)
+        {
+            Unit* DeathswornAttacker = m_creature->SummonCreature(NPC_ASHTONGUE_DEATHSWORN, Deathsworn[i][0], Deathsworn[i][1], Deathsworn[i][2], Deathsworn[i][3], TEMPSUMMON_CORPSE_DESPAWN, 0);
+            if(DeathswornAttacker)
+            {
+                if(DeathswornAttacker->HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))
+                    DeathswornAttacker->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+                DeathswornAttacker->GetMotionMaster()->MovePoint(1, DeathswornPath[i][0], DeathswornPath[i][1], DeathswornPath[i][2]);
+            }
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(EventStarted)
+        {
+            if(QuestTimer < diff)
+            {
+                Player* pl = m_creature->GetPlayer(PlayerGUID);
+                if(pl && pl->GetQuestStatus(10985) == QUEST_STATUS_INCOMPLETE)
+                    pl->GroupEventHappens(10985, m_creature);
+                Reset();
+            }
+            else
+                QuestTimer -= diff;
+        }
+
+    }
+};
+
+CreatureAI* GetAI_npc_xiri(Creature *_Creature)
+{
+    return new npc_xiriAI (_Creature);
+}
+
+/*#####
+# Xi'ri gossips
+######*/
+
+bool GossipHello_npc_xiri(Player *player, Creature *_Creature)
+{
+    bool EventStarted = ((npc_xiriAI*)_Creature->AI())->EventStarted;
+
+    if(EventStarted)
+        return false;
+
+    if (_Creature->isQuestGiver())
+        player->PrepareQuestMenu( _Creature->GetGUID() );
+
+    if (player->GetQuestStatus(10985) == QUEST_STATUS_INCOMPLETE)
+    {
+        player->ADD_GOSSIP_ITEM( 0, XIRI_GOSSIP_HELLO, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+        player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+    }
+    else
+        player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+
+    return true;
+}
+
+bool GossipSelect_npc_xiri(Player *player, Creature *_Creature, uint32 sender, uint32 action)
+{
+    switch(action)
+    {
+        case GOSSIP_ACTION_INFO_DEF:
+            player->CLOSE_GOSSIP_MENU();
+            ((npc_xiriAI*)_Creature->AI())->StartEvent();
+            ((npc_xiriAI*)_Creature->AI())->PlayerGUID = player->GetGUID();
+            break;
+    }
+    return true;
+}
+
+/*#######
+# Quest: To Legion Hold
+########*/
+
+/*#####
+# mob_deathbringer_joovan
+######*/
+
+#define IMAGE_OF_WARBRINGER     21502
+
+#define DEATHBRINGER_SAY1   "Everything is in readiness, warbringer."
+#define WARBRINGER_SAY1     "Doom Lord Kazzak will be pleased. You are to increase the pace of your attacks. Destroy the orcish and dwarven strongholds with all haste."
+#define DEATHBRINGER_SAY2   "Warbringer, that will require the use of all the hold's infernals. It may leave us vulnerable to a counterattack."
+#define WARBRINGER_SAY2     "Don't worry about that. I've increased production at the Deathforge. You'll have all the infernals you need to carry out your orders. Don't fail, Jovaan."
+#define DEATHBRINGER_SAY3   "It shall be as you say, warbringer. One last question, if I may..."
+#define WARBRINGER_SAY3     "Yes?"
+#define DEATHBRINGER_SAY4   "What's in the crate?"
+#define WARBRINGER_SAY4     "Crate? I didn't send you a crate, Jovaan. Don't you have more important things to worry about? Go see to them!"
+
+float deathbringer_joovanWP[2][3] = {
+    { -3320, 2948, 172 },
+    { -3304, 2931, 171 }
+};
+
+float imageOfWarbringerSP[4] = { -3300, 2927, 173.4, 2.40 };
+
+struct TRINITY_DLL_DECL mob_deathbringer_joovanAI : public ScriptedAI
+{
+    bool EventStarted;
+    bool ContinueMove;
+    uint64 ImageOfWarbringerGUID;
+    uint32 EventTimer;
+    uint8 EventCounter;
+
+    mob_deathbringer_joovanAI(Creature* c) : ScriptedAI(c)
+    {
+        ImageOfWarbringerGUID = 0;
+    }
+
+
+    void Reset()
+    {
+        me->GetMotionMaster()->MovePoint(0, deathbringer_joovanWP[0][0], deathbringer_joovanWP[0][1], deathbringer_joovanWP[0][2]);
+        EventStarted = false;
+
+        if(ImageOfWarbringerGUID)
+        {
+            if(Unit* unit = me->GetUnit(*me, ImageOfWarbringerGUID))
+            {
+                unit->CombatStop();
+                unit->CleanupsBeforeDelete();
+                unit->AddObjectToRemoveList();
+            }
+            ImageOfWarbringerGUID = 0;
+        }
+        ContinueMove = false;
+    }
+
+    void JustSummoned(Creature *creature)
+    {
+        ImageOfWarbringerGUID = creature->GetGUID();
+        EventStarted = true;
+        EventTimer = 0;
+        EventCounter = 0;
+    }
+
+    void MovementInform(uint32 type, uint32 id)
+    {
+        if(type != POINT_MOTION_TYPE)
+            return;
+
+        switch(id)
+        {
+            case 0:
+                ContinueMove = true;
+                break;
+            case 1:
+                me->SummonCreature(IMAGE_OF_WARBRINGER, imageOfWarbringerSP[0], imageOfWarbringerSP[1], imageOfWarbringerSP[2], imageOfWarbringerSP[3], TEMPSUMMON_TIMED_DESPAWN, 120000);
+                me->SetStandState(PLAYER_STATE_KNEEL);
+                break;
+            case 2:
+            {
+                if(Creature* warbringer = (Creature*)me->GetUnit(*me, ImageOfWarbringerGUID))
+                {
+                    warbringer->CombatStop();
+                    warbringer->CleanupsBeforeDelete();
+                    warbringer->AddObjectToRemoveList();
+                }
+                me->CombatStop();
+                me->CleanupsBeforeDelete();
+                me->AddObjectToRemoveList();
+                break;
+            }
+
+        }
+    }
+
+    void WarbringerSay(const char* text)
+    {
+        if(Creature* unit = (Creature*)me->GetUnit(*me, ImageOfWarbringerGUID))
+            unit->Say(text, 0, 0);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(ContinueMove)
+        {
+            me->GetMotionMaster()->MovePoint(1, deathbringer_joovanWP[1][0], deathbringer_joovanWP[1][1], deathbringer_joovanWP[1][2]);
+            ContinueMove = false;
+        }
+
+        if(EventStarted)
+        {
+            if(EventTimer < diff)
+            {
+                switch(EventCounter)
+                {
+                    case 0:
+                        me->Say(DEATHBRINGER_SAY1, 0, 0);
+                        break;
+                    case 1:
+                        WarbringerSay(WARBRINGER_SAY1);
+                        break;
+                    case 2:
+                        me->Say(DEATHBRINGER_SAY2, 0, 0);
+                        break;
+                    case 3:
+                        WarbringerSay(WARBRINGER_SAY2);
+                        break;
+                    case 4:
+                        me->Say(DEATHBRINGER_SAY3, 0, 0);
+                        break;
+                    case 5:
+                        WarbringerSay(WARBRINGER_SAY3);
+                        break;
+                    case 6:
+                        me->Say(DEATHBRINGER_SAY4, 0, 0);
+                        break;
+                    case 7:
+                    {
+                        WarbringerSay(WARBRINGER_SAY4);
+
+                        std::list<Unit*> pList;
+                        Trinity::AnyUnitInObjectRangeCheck u_check(me, 20);
+                        Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(pList, u_check);
+                        me->VisitNearbyObject(20, searcher);
+
+                        Creature* warbringer = (Creature*)me->GetUnit(*me, ImageOfWarbringerGUID);
+                        if(!warbringer)
+                            break;
+
+                        for(std::list<Unit*>::iterator it = pList.begin(); it != pList.end(); it++)
+                        {
+                            if((*it)->GetTypeId() == TYPEID_PLAYER)
+                            {
+                                Player *p = (Player*)(*it);
+                                if(p->HasAura(37097, 0))
+                                {
+                                    // event happens nie dziala, a powinien!
+                                    p->AreaExploredOrEventHappens(10596);
+                                    p->AreaExploredOrEventHappens(10563);
+                                    // dlatego recznie musimy complete quest dac
+                                    p->CompleteQuest(10596);
+                                    p->CompleteQuest(10563);
+                                }
+                            }
+                        }
+                        break;
+                    }
+                    case 8:
+                    {
+                        me->GetMotionMaster()->MovePoint(2, deathbringer_joovanWP[0][0], deathbringer_joovanWP[0][1], deathbringer_joovanWP[0][2]);
+                        break;
+                    }
+                }
+                EventCounter++;
+                if(EventCounter == 8)
+                    EventTimer = 1000;
+                else
+                    EventTimer = 4000;
+            }
+            else
+                EventTimer -= diff;
+        }
+/*
+        if(!UpdateVictim())
+            return;
+
+        me->Say("Deathbringer victim found, stopping event", 0, 0);
+
+        EventStarted = false;
+       DoMeleeAttackIfReady();*/
+    }
+};
+
+CreatureAI* GetAI_mob_deathbringer_joovanAI(Creature *_Creature)
+{
+    return new mob_deathbringer_joovanAI(_Creature);
+}
+
+/*####
+# npc_overlord_orbarokh
+####*/
+
+#define GOSSIP_ITEM_ORBAROKH "Restore Kor'kron Flare Gun."
+
+bool GossipHello_npc_overlord_orbarokh(Player *player, Creature *_Creature)
+{
+    if (_Creature->isQuestGiver())
+        player->PrepareQuestMenu( _Creature->GetGUID() );
+
+		if(player->GetQuestStatus(10751) || player->GetQuestStatus(10765) || player->GetQuestStatus(10768) || player->GetQuestStatus(10769) == QUEST_STATUS_INCOMPLETE )
+			if(!player->HasItemCount(31108,1))
+				player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_ORBAROKH, GOSSIP_SENDER_MAIN, GOSSIP_SENDER_INFO );
+				player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+    return true;
+}
+
+bool GossipSelect_npc_overlord_orbarokh(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+{
+    if( action == GOSSIP_SENDER_INFO )
+    {
+            ItemPosCountVec dest;
+            uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 31108, 1);
+			if (msg == EQUIP_ERR_OK)
+            {
+                 Item* item = player->StoreNewItem(dest, 31108, true);
+                     player->SendNewItem(item,1,true,false,true);
+            }
+    }
+    return true;
+}
+
+/*####
+# npc_thane_yoregar
+####*/
+
+#define GOSSIP_ITEM_YOREGAR "Restore Kor'kron Flare Gun."
+
+bool GossipHello_npc_thane_yoregar(Player *player, Creature *_Creature)
+{
+    if (_Creature->isQuestGiver())
+        player->PrepareQuestMenu( _Creature->GetGUID() );
+
+		if(player->GetQuestStatus(10773) || player->GetQuestStatus(10774) || player->GetQuestStatus(10775) || player->GetQuestStatus(10776) == QUEST_STATUS_INCOMPLETE )
+			if(!player->HasItemCount(31310,1))
+				player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_YOREGAR, GOSSIP_SENDER_MAIN, GOSSIP_SENDER_INFO );
+				player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+    return true;
+}
+
+bool GossipSelect_npc_thane_yoregar(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+{
+    if( action == GOSSIP_SENDER_INFO )
+    {
+            ItemPosCountVec dest;
+            uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 31310, 1);
+			if (msg == EQUIP_ERR_OK)
+            {
+                 Item* item = player->StoreNewItem(dest, 31310, true);
+                     player->SendNewItem(item,1,true,false,true);
+            }
+    }
+    return true;
+}
+
 
 void AddSC_shadowmoon_valley()
 {
@@ -2718,6 +3527,55 @@ void AddSC_shadowmoon_valley()
     newscript = new Script;
     newscript->Name="felfire_summoner";
     newscript->GetAI = &GetAI_felfire_summoner;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_maiev_BT_attu";
+    newscript->GetAI = &GetAI_npc_maiev_BT_attu;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_akama_BT_attu";
+    newscript->GetAI = &GetAI_npc_akama_BT_attu;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_ashtongue_deathsworn";
+    newscript->GetAI = &GetAI_npc_ashtongue_deathsworn;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="mob_vagath";
+    newscript->GetAI = &GetAI_mob_vagath;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="mob_illidari_shadowlord";
+    newscript->GetAI = &GetAI_mob_illidari_shadowlord;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_xiri";
+    newscript->pGossipHello =  &GossipHello_npc_xiri;
+    newscript->pGossipSelect = &GossipSelect_npc_xiri;
+    newscript->GetAI = &GetAI_npc_xiri;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="mob_deathbringer_joovan";
+    newscript->GetAI = &GetAI_mob_deathbringer_joovanAI;
+    newscript->RegisterSelf();
+	
+	newscript = new Script;
+    newscript->Name="npc_overlord_orbarokh";
+    newscript->pGossipHello = &GossipHello_npc_overlord_orbarokh;
+    newscript->pGossipSelect = &GossipSelect_npc_overlord_orbarokh;
+    newscript->RegisterSelf();
+	
+    newscript = new Script;
+    newscript->Name="npc_thane_yoregar";
+    newscript->pGossipHello = &GossipHello_npc_thane_yoregar;
+    newscript->pGossipSelect = &GossipSelect_npc_thane_yoregar;
     newscript->RegisterSelf();
 }
 

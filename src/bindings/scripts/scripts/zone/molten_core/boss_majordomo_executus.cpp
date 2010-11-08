@@ -22,6 +22,7 @@ SDCategory: Molten Core
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_molten_core.h"
 
 #define SAY_AGGRO           -1409003
 #define SAY_SPAWN           -1409004
@@ -69,6 +70,9 @@ struct TRINITY_DLL_DECL boss_majordomoAI : public ScriptedAI
         MagicReflection_Timer =  30000;                     //Damage reflection first so we alternate
         DamageReflection_Timer = 15000;
         Blastwave_Timer = 10000;
+
+        if (pInstance)
+            pInstance->SetData(DATA_MAJORDOMO_EXECUTUS_EVENT, NOT_STARTED);
     }
 
     void KilledUnit(Unit* victim)
@@ -79,9 +83,18 @@ struct TRINITY_DLL_DECL boss_majordomoAI : public ScriptedAI
         DoScriptText(SAY_SLAY, m_creature);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
+
+        if (pInstance)
+            pInstance->SetData(DATA_MAJORDOMO_EXECUTUS_EVENT, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_MAJORDOMO_EXECUTUS_EVENT, DONE);
     }
 
     void UpdateAI(const uint32 diff)

@@ -15,8 +15,6 @@ SET(trinityscript_LIB_SRCS
    scripts/boss/boss_lethon.cpp
    scripts/boss/boss_taerar.cpp
    scripts/boss/boss_ysondre.cpp
-   scripts/creature/mob_event_ai.cpp
-   scripts/creature/mob_event_ai.h
    scripts/creature/mob_generic_creature.cpp
    scripts/creature/simple_ai.cpp
    scripts/creature/simple_ai.h
@@ -29,8 +27,10 @@ SET(trinityscript_LIB_SRCS
    scripts/guard/guards.cpp
    scripts/item/item_scripts.cpp
    scripts/item/item_test.cpp
-   scripts/npc/npc_escortAI.cpp
-   scripts/npc/npc_escortAI.h
+   scripts/npc/follower_ai.cpp
+   scripts/npc/follower_ai.h
+   scripts/npc/escort_ai.cpp
+   scripts/npc/escort_ai.h
    scripts/npc/npc_innkeeper.cpp
    scripts/npc/npc_professions.cpp
    scripts/npc/npcs_special.cpp
@@ -71,6 +71,7 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/black_temple/def_black_temple.h
    scripts/zone/black_temple/illidari_council.cpp
    scripts/zone/black_temple/instance_black_temple.cpp
+   scripts/zone/black_temple/black_temple_trash.cpp
    scripts/zone/blackrock_depths/blackrock_depths.cpp
    scripts/zone/blackrock_depths/boss_ambassador_flamelash.cpp
    scripts/zone/blackrock_depths/boss_anubshiah.cpp
@@ -153,9 +154,11 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/coilfang_resevoir/slave_pens/instance_slave_pens.cpp
    scripts/zone/coilfang_resevoir/slave_pens/boss_lord_ahune.cpp
    scripts/zone/darkshore/darkshore.cpp
+   scripts/zone/desolace/desolace.cpp
    scripts/zone/deadmines/def_deadmines.h
    scripts/zone/deadmines/deadmines.cpp
    scripts/zone/dun_morogh/dun_morogh.cpp
+   scripts/zone/durotar/durotar.cpp
    scripts/zone/duskwood/duskwood.cpp
    scripts/zone/dustwallow_marsh/dustwallow_marsh.cpp
    scripts/zone/eastern_plaguelands/eastern_plaguelands.cpp
@@ -186,6 +189,7 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/hellfire_citadel/shattered_halls/boss_warchief_kargath_bladefist.cpp
    scripts/zone/hellfire_peninsula/boss_doomlord_kazzak.cpp
    scripts/zone/hellfire_peninsula/hellfire_peninsula.cpp
+   scripts/zone/hinterlands/hinterlands.cpp
    scripts/zone/ironforge/ironforge.cpp
    scripts/zone/isle_of_queldanas/isle_of_queldanas.cpp
    scripts/zone/karazhan/boss_curator.cpp
@@ -249,10 +253,13 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/naxxramas/boss_thaddius.cpp
    scripts/zone/naxxramas/instance_naxxramas.cpp
    scripts/zone/netherstorm/netherstorm.cpp
+   scripts/zone/onyxias_lair/def_onyxia_lair.h
+   scripts/zone/onyxias_lair/instance_onyxia_lair.cpp
    scripts/zone/onyxias_lair/boss_onyxia.cpp
    scripts/zone/orgrimmar/orgrimmar.cpp
    scripts/zone/razorfen_downs/razorfen_downs.cpp
    scripts/zone/razorfen_downs/instance_razorfen_downs.cpp
+   scripts/zone/razorfen_downs/boss_amnennar_the_coldbringer.cpp
    scripts/zone/razorfen_kraul/def_razorfen_kraul.h
    scripts/zone/razorfen_kraul/instance_razorfen_kraul.cpp
    scripts/zone/razorfen_kraul/razorfen_kraul.cpp
@@ -325,7 +332,9 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/sunwell_plateau/sunwell_plateau.cpp
    scripts/zone/sunwell_plateau/def_sunwell_plateau.h
    scripts/zone/sunwell_plateau/instance_sunwell_plateau.cpp
+   scripts/zone/swamp\ of\ sorrows/swamp_of_sorrows.cpp
    scripts/zone/tanaris/tanaris.cpp
+   scripts/zone/teldrassil/teldrassil.cpp
    scripts/zone/tempest_keep/arcatraz/arcatraz.cpp
    scripts/zone/tempest_keep/arcatraz/boss_harbinger_skyriss.cpp
    scripts/zone/tempest_keep/arcatraz/def_arcatraz.h
@@ -368,9 +377,12 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/uldaman/uldaman.cpp
    scripts/zone/undercity/undercity.cpp
    scripts/zone/ungoro_crater/ungoro_crater.cpp
+   scripts/zone/wailing_caverns/def_wailing_caverns.h
    scripts/zone/wailing_caverns/instance_wailing_caverns.cpp
+   scripts/zone/wailing_caverns/wailing_caverns.cpp
    scripts/zone/western_plaguelands/western_plaguelands.cpp
    scripts/zone/westfall/westfall.cpp
+   scripts/zone/wetlands/wetlands.cpp
    scripts/zone/winterspring/winterspring.cpp
    scripts/zone/zangarmarsh/zangarmarsh.cpp
    scripts/zone/zulaman/boss_akilzon.cpp
@@ -398,7 +410,10 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/zulgurub/boss_wushoolay.cpp
    scripts/zone/zulgurub/def_zulgurub.h
    scripts/zone/zulgurub/instance_zulgurub.cpp
-   system.cpp
+   system/ScriptLoader.cpp
+   system/ScriptLoader.h
+   system/system.cpp
+   system/system.h
 )
 
 add_library(trinityscript SHARED ${trinityscript_LIB_SRCS})

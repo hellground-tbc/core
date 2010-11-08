@@ -86,7 +86,7 @@ struct TRINITY_DLL_DECL mob_kilrekAI : public ScriptedAI
         AmplifyTimer = 2000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if(!pInstance)
         {
@@ -145,7 +145,6 @@ struct TRINITY_DLL_DECL mob_demon_chainAI : public Scripted_NoMovementAI
         SacrificeGUID = 0;
     }
 
-    void Aggro(Unit* who) {}
     void AttackStart(Unit* who) {}
     void MoveInLineOfSight(Unit* who) {}
 
@@ -206,11 +205,11 @@ struct TRINITY_DLL_DECL boss_terestianAI : public ScriptedAI
         SummonedPortals     = false;
         Berserk             = false;
 
-        if(pInstance)
+        if(pInstance && pInstance->GetData(DATA_TERESTIAN_EVENT) != DONE)
             pInstance->SetData(DATA_TERESTIAN_EVENT, NOT_STARTED);
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
 
@@ -222,16 +221,14 @@ struct TRINITY_DLL_DECL boss_terestianAI : public ScriptedAI
                 Kilrek->AddThreat(who, 1.0f);
 
             pInstance->SetData(DATA_TERESTIAN_EVENT, IN_PROGRESS);
-        }else ERROR_INST_DATA(m_creature);
+        }
+        else
+            ERROR_INST_DATA(m_creature);
     }
 
     void KilledUnit(Unit *victim)
     {
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(SAY_SLAY1, m_creature); break;
-        case 1: DoScriptText(SAY_SLAY2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), m_creature);
     }
 
     void JustDied(Unit *killer)
@@ -262,19 +259,19 @@ struct TRINITY_DLL_DECL boss_terestianAI : public ScriptedAI
         //Check_Timer
         if(CheckTimer < diff)
         {
-            if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 35.0f)
+            if(!m_creature->IsWithinDistInMap(&wLoc, 35.0f))
                 EnterEvadeMode();
             else
                 DoZoneInCombat();
-            
+
             CheckTimer = 3000;
         }
         else
             CheckTimer -= diff;
-        
+
         if(SacrificeTimer < diff)
         {
-            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_SACRIFICE), true, m_creature->getVictim());
+            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_SACRIFICE), true, m_creature->getVictimGUID());
             if(target && target->isAlive() && target->GetTypeId() == TYPEID_PLAYER)
             {
                 DoCast(target, SPELL_SACRIFICE, true);
@@ -283,11 +280,9 @@ struct TRINITY_DLL_DECL boss_terestianAI : public ScriptedAI
                 {
                     ((mob_demon_chainAI*)Chains->AI())->SacrificeGUID = target->GetGUID();
                     Chains->CastSpell(Chains, SPELL_DEMON_CHAINS, true);
-                    switch(rand()%2)
-                    {
-                    case 0: DoScriptText(SAY_SACRIFICE1, m_creature); break;
-                    case 1: DoScriptText(SAY_SACRIFICE2, m_creature); break;
-                    }
+
+                    DoScriptText(RAND(SAY_SACRIFICE1, SAY_SACRIFICE2), m_creature);
+
                     SacrificeTimer = 30000;
                 }
             }
@@ -316,18 +311,17 @@ struct TRINITY_DLL_DECL boss_terestianAI : public ScriptedAI
                         PortalGUID[i] = Portal->GetGUID();
                 }
                 SummonedPortals = true;
-                switch(rand()%2)
-                {
-                case 0: DoScriptText(SAY_SUMMON1, m_creature); break;
-                case 1: DoScriptText(SAY_SUMMON2, m_creature); break;
-                }
+
+                DoScriptText(RAND(SAY_SUMMON1, SAY_SUMMON2), m_creature);
             }
+
             uint32 random = rand()%2;
             Creature* Imp = m_creature->SummonCreature(CREATURE_FIENDISHIMP, PortalLocations[random][0], PortalLocations[random][1], PORTAL_Z, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 15000);
+
             if(Imp)
             {
                 Imp->AddThreat(m_creature->getVictim(), 1.0f);
-                if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, 200, true, m_creature->getVictim()))
+                if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, 200, true, m_creature->getVictimGUID()))
                     Imp->AI()->AttackStart(target);
             }
             SummonTimer = 5000;
@@ -361,7 +355,7 @@ struct TRINITY_DLL_DECL mob_fiendish_impAI : public ScriptedAI
         FireboltTimer = 2000;
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void UpdateAI(const uint32 diff)
     {

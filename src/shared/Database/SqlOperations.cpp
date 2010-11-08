@@ -45,23 +45,23 @@ void SqlTransaction::Execute(Database *db)
     db->DirectExecute("START TRANSACTION");
     while(!m_queue.empty())
     {
-        sql = m_queue.front();
+        sql = const_cast<char*>(m_queue.front());
 
         if(!db->DirectExecute(sql))
         {
-            free((void*)const_cast<char*>(sql));
+            delete [] sql;
             m_queue.pop();
             db->DirectExecute("ROLLBACK");
             while(!m_queue.empty())
             {
-                free((void*)const_cast<char*>(m_queue.front()));
+                delete [] (const_cast<char*>(m_queue.front()));
                 m_queue.pop();
             }
             m_Mutex.release();
             return;
         }
 
-        free((void*)const_cast<char*>(sql));
+        delete [] sql;
         m_queue.pop();
     }
     db->DirectExecute("COMMIT");
@@ -119,7 +119,7 @@ bool SqlQueryHolder::SetQuery(size_t index, const char *sql)
     }
 
     /// not executed yet, just stored (it's not called a holder for nothing)
-    m_queries[index] = SqlResultPair(strdup(sql), QueryResult_AutoPtr(NULL));
+    m_queries[index] = SqlResultPair(mangos_strdup(sql), QueryResult_AutoPtr(NULL));
     return true;
 }
 
@@ -153,7 +153,7 @@ QueryResult_AutoPtr SqlQueryHolder::GetResult(size_t index)
         /// the query strings are freed on the first GetResult or in the destructor
         if(m_queries[index].first != NULL)
         {
-            free((void*)(const_cast<char*>(m_queries[index].first)));
+            delete [] (const_cast<char*>(m_queries[index].first));
             m_queries[index].first = NULL;
         }
         /// when you get a result aways remember to delete it!
@@ -177,7 +177,7 @@ SqlQueryHolder::~SqlQueryHolder()
         /// if the result was never used, free the resources
         /// results used already (getresult called) are expected to be deleted
         if(m_queries[i].first != NULL)
-            free((void*)(const_cast<char*>(m_queries[i].first)));
+            delete [] (const_cast<char*>(m_queries[i].first));
     }
 }
 

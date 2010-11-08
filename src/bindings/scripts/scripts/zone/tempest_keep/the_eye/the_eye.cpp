@@ -44,7 +44,7 @@ struct TRINITY_DLL_DECL mob_crystalcore_devastatorAI : public ScriptedAI
         Knockaway_Timer = 25000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         m_creature->CombatStart(who);
     }
@@ -61,7 +61,7 @@ struct TRINITY_DLL_DECL mob_crystalcore_devastatorAI : public ScriptedAI
             m_creature->CastSpell(m_creature->getVictim(), SPELL_KNOCKAWAY, true);
 
             // current aggro target is knocked away pick new target
-            Unit* target = SelectUnit(SELECT_TARGET_TOPAGGRO, 0, 60, true, m_creature->getVictim());
+            Unit* target = SelectUnit(SELECT_TARGET_TOPAGGRO, 0, 60, true, m_creature->getVictimGUID());
 
             if(target)
                 m_creature->TauntApply(target);
@@ -107,7 +107,7 @@ struct TRINITY_DLL_DECL mob_crystalcore_mechanicAI : public ScriptedAI
         Saw_count=0;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         m_creature->CombatStart(who);
     }
@@ -179,7 +179,7 @@ struct TRINITY_DLL_DECL mob_phoenixhawk_hatchlingAI : public ScriptedAI
         WingBuffet_Timer = 4000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         m_creature->CombatStart(who);
     }
@@ -232,7 +232,7 @@ struct TRINITY_DLL_DECL mob_phoenix_hawkAI : public ScriptedAI
         Dive_Timer = 4000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         m_creature->CombatStart(who);
     }
@@ -295,7 +295,7 @@ struct TRINITY_DLL_DECL mob_tempest_falconerAI : public ScriptedAI
         Shoot_Timer = 3000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         m_creature->CombatStart(who);
     }
@@ -375,7 +375,7 @@ struct TRINITY_DLL_DECL mob_crimson_hand_blood_knightAI : public ScriptedAI
         Renew_Timer = 5000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         m_creature->CombatStart(who);
     }
@@ -487,7 +487,7 @@ struct TRINITY_DLL_DECL mob_Bloodwarder_SquireAI : public ScriptedAI
         HammerofWrath_Timer = 5000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         m_creature->CombatStart(who);
     }
@@ -589,7 +589,7 @@ struct TRINITY_DLL_DECL mob_Bloodwarder_VindicatorAI : public ScriptedAI
         HammerofWrath_Timer = 5000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         m_creature->CombatStart(who);
     }
@@ -690,7 +690,7 @@ struct TRINITY_DLL_DECL mob_tempest_smithAI : public ScriptedAI
         Shell_Shock_Timer = 11000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         m_creature->CombatStart(who);
     }
@@ -787,7 +787,7 @@ struct TRINITY_DLL_DECL mob_novice_astromancerAI : public ScriptedAI
         Rain_of_Fire_Timer = 5000+rand()%2000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         m_creature->CombatStart(who);
     }

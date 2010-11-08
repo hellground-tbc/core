@@ -19,7 +19,7 @@
 #ifndef TRINITY_OUTDOORPVPOBJECTIVEAI_H
 #define TRINITY_OUTDOORPVPOBJECTIVEAI_H
 
-#include "NullCreatureAI.h"
+#include "PassiveAI.h"
 
 class Creature;
 

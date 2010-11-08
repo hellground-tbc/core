@@ -4,7 +4,7 @@
 	Version="9,00"
 	Name="TrinityCore"
 	ProjectGUID="{A3A04E47-43A2-4C08-90B3-029CEF558594}"
-	RootNamespace="mangosd"
+	RootNamespace="trinitycore"
 	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
@@ -42,13 +42,13 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\..\..\bin\Release\mangosd.tlb"
+				TypeLibraryName=".\trinitycore__$(PlatformName)_$(ConfigurationName)\trinitycore.tlb"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/MP"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\shared\Database;..\..\src\shared\vmap;..\..\dep\ACE_wrappers;..\..\src\game\"
+				AdditionalIncludeDirectories="..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\shared\Database;..\..\src\shared\vmap;..\..\dep\ACE_wrappers;..\..\src\game\;..\..\dep\tbb\include"
 				PreprocessorDefinitions="VERSION=&quot;0.12.0-SVN&quot;;WIN32;NDEBUG;_CONSOLE;ENABLE_CLI"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -79,11 +79,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="libmySQL.lib libeay32.lib ws2_32.lib winmm.lib odbc32.lib odbccp32.lib advapi32.lib dbghelp.lib MSVCPRT.LIB msvcrt.lib"
+				AdditionalDependencies="libmySQL.lib libeay32.lib ws2_32.lib winmm.lib odbc32.lib odbccp32.lib advapi32.lib dbghelp.lib framework.lib msvcrt.lib"
 				OutputFile="..\..\bin\$(PlatformName)_$(ConfigurationName)\TrinityCore.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="..\..\dep\lib\$(PlatformName)_$(ConfigurationName)"
+				AdditionalLibraryDirectories="..\..\dep\lib\$(PlatformName)_$(ConfigurationName);&quot;.\framework__$(PlatformName)_$(ConfigurationName)&quot;"
 				IgnoreDefaultLibraryNames="VCOMP.lib"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="..\..\bin\$(PlatformName)_$(ConfigurationName)\TrinityCore.pdb"
@@ -143,7 +143,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\mangosd__$(PlatformName)_$(ConfigurationName)\mangosd.tlb"
+				TypeLibraryName=".\trinitycore__$(PlatformName)_$(ConfigurationName)\trinitycore.tlb"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
@@ -179,12 +179,12 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="libmySQL.lib libeay32.lib ws2_32.lib winmm.lib odbc32.lib odbccp32.lib advapi32.lib dbghelp.lib MSVCPRTD.LIB msvcrtd.lib"
+				AdditionalDependencies="libmySQL.lib libeay32.lib ws2_32.lib winmm.lib odbc32.lib odbccp32.lib advapi32.lib dbghelp.lib framework.lib msvcrtd.lib"
 				OutputFile="..\..\bin\$(PlatformName)_$(ConfigurationName)\TrinityCore.exe"
 				Version=""
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="..\..\dep\lib\$(PlatformName)_$(ConfigurationName)"
+				AdditionalLibraryDirectories="..\..\dep\lib\$(PlatformName)_$(ConfigurationName);&quot;.\framework__$(PlatformName)_$(ConfigurationName)&quot;"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="..\..\bin\$(PlatformName)_$(ConfigurationName)\TrinityCore.pdb"
 				GenerateMapFile="true"
@@ -244,7 +244,7 @@
 			<Tool
 				Name="VCMIDLTool"
 				TargetEnvironment="3"
-				TypeLibraryName=".\..\..\bin\Release\mangosd.tlb"
+				TypeLibraryName=".\trinitycore_$(PlatformName)_$(ConfigurationName)\trinitycore.tlb"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
@@ -280,11 +280,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libmySQL.lib libeay32.lib ws2_32.lib winmm.lib odbc32.lib odbccp32.lib advapi32.lib dbghelp.lib MSVCPRT.LIB msvcrt.lib"
+				AdditionalDependencies="libmySQL.lib libeay32.lib ws2_32.lib winmm.lib odbc32.lib odbccp32.lib advapi32.lib dbghelp.lib framework.lib msvcrt.lib"
 				OutputFile="..\..\bin\$(PlatformName)_$(ConfigurationName)\TrinityCore.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="..\..\dep\lib\$(PlatformName)_$(ConfigurationName)"
+				AdditionalLibraryDirectories="..\..\dep\lib\$(PlatformName)_$(ConfigurationName);&quot;.\framework__$(PlatformName)_$(ConfigurationName)&quot;"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="..\..\bin\$(PlatformName)_$(ConfigurationName)\TrinityCore.pdb"
 				GenerateMapFile="true"
@@ -342,7 +342,7 @@
 			<Tool
 				Name="VCMIDLTool"
 				TargetEnvironment="3"
-				TypeLibraryName=".\mangosd__$(PlatformName)_$(ConfigurationName)\mangosd.tlb"
+				TypeLibraryName=".\trinitycore__$(PlatformName)_$(ConfigurationName)\trinitycore.tlb"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
@@ -377,12 +377,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libmySQL.lib libeay32.lib ws2_32.lib winmm.lib odbc32.lib odbccp32.lib advapi32.lib dbghelp.lib MSVCPRTD.LIB msvcrtd.lib"
+				AdditionalDependencies="libmySQL.lib libeay32.lib ws2_32.lib winmm.lib odbc32.lib odbccp32.lib advapi32.lib dbghelp.lib framework.lib msvcrtd.lib"
 				OutputFile="..\..\bin\$(PlatformName)_$(ConfigurationName)\TrinityCore.exe"
 				Version=""
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="..\..\dep\lib\$(PlatformName)_$(ConfigurationName)"
+				AdditionalLibraryDirectories="..\..\dep\lib\$(PlatformName)_$(ConfigurationName);&quot;.\framework__$(PlatformName)_$(ConfigurationName)&quot;"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="..\..\bin\$(PlatformName)_$(ConfigurationName)\TrinityCore.pdb"
 				GenerateMapFile="true"

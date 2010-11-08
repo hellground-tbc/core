@@ -31,6 +31,7 @@ OutdoorPvPObjective::OutdoorPvPObjective(OutdoorPvP * pvp)
 m_State(0), m_OldState(0), m_CapturePoint(0), m_NeutralValue(0),
 m_ShiftMaxCaptureSpeed(0), m_CapturePointCreature(0)
 {
+    m_Map = NULL;
 }
 
 bool OutdoorPvPObjective::HandlePlayerEnter(Player * plr)
@@ -55,7 +56,7 @@ void OutdoorPvPObjective::HandlePlayerLeave(Player * plr)
 void OutdoorPvPObjective::HandlePlayerActivityChanged(Player * plr)
 {
     if(m_CapturePointCreature)
-        if(Creature * c = HashMapHolder<Creature>::Find(m_CapturePointCreature))
+        if(Creature * c = plr->GetMap()->GetCreature(m_CapturePointCreature))
             if(c->IsAIEnabled)
                 c->AI()->MoveInLineOfSight(plr);
 }
@@ -91,7 +92,7 @@ bool OutdoorPvPObjective::AddObject(uint32 type, uint32 entry, uint32 map, float
     m_Objects[type] = MAKE_NEW_GUID(guid, entry, HIGHGUID_GAMEOBJECT);
     m_ObjectTypes[m_Objects[type]]=type;
 
-    Map * pMap = MapManager::Instance().FindMap(map);
+    Map * pMap = GetMap(map);
     if(!pMap)
         return true;
     GameObject * go = new GameObject;
@@ -152,7 +153,7 @@ bool OutdoorPvPObjective::AddCreature(uint32 type, uint32 entry, uint32 teamval,
     m_Creatures[type] = MAKE_NEW_GUID(guid, entry, HIGHGUID_UNIT);
     m_CreatureTypes[m_Creatures[type]] = type;
 
-    Map * pMap = MapManager::Instance().FindMap(map);
+    Map * pMap = GetMap(map);
     if(!pMap)
         return true;
     Creature* pCreature = new Creature;
@@ -251,9 +252,8 @@ bool OutdoorPvPObjective::AddCapturePoint(uint32 entry, uint32 map, float x, flo
     m_ShiftMaxPhase = goinfo->raw.data[17];
     m_ShiftMaxCaptureSpeed = m_ShiftMaxPhase / float(goinfo->raw.data[16]);
     m_NeutralValue = goinfo->raw.data[12];
-
     // add to map if map is already loaded
-    Map * pMap = MapManager::Instance().FindMap(map);
+    Map * pMap = GetMap(map);
     if(!pMap)
         return true;
     // add GO...
@@ -302,7 +302,28 @@ bool OutdoorPvPObjective::DelCreature(uint32 type)
         return false;
     }
 
-    Creature *cr = HashMapHolder<Creature>::Find(m_Creatures[type]);
+    Map * tmpMap = GetMap();
+
+    if (!tmpMap)
+    {
+        CreatureData const* data = objmgr.GetCreatureData(GUID_LOPART(m_Creatures[type]));
+
+        if (!data)
+        {
+            sLog.outError("OutdoorPvPObjective::DelCreature: data not found for creature type %u", type);
+            return false;
+        }
+
+        tmpMap = GetMap(data->mapid);
+
+        if (!tmpMap)
+        {
+            sLog.outError("OutdoorPvPObjective::DelCreature: map not found (id %u) for creature type %u", data->mapid, type);
+            return false;
+        }
+    }
+
+    Creature *cr = tmpMap->GetCreature(m_Creatures[type]);
     if(!cr)
     {
         // can happen when closing the core
@@ -318,8 +339,7 @@ bool OutdoorPvPObjective::DelCreature(uint32 type)
     // explicit removal from map
     // beats me why this is needed, but with the recent removal "cleanup" some creatures stay in the map if "properly" deleted
     // so this is a big fat workaround, if AddObjectToRemoveList and DoDelayedMovesAndRemoves worked correctly, this wouldn't be needed
-    if(Map * map = MapManager::Instance().FindMap(cr->GetMapId()))
-        map->Remove(cr,false);
+    tmpMap->Remove(cr,false);
     // delete respawn time for this creature
     WorldDatabase.PExecute("DELETE FROM creature_respawn WHERE guid = '%u'", guid);
     cr->AddObjectToRemoveList();
@@ -334,7 +354,26 @@ bool OutdoorPvPObjective::DelObject(uint32 type)
     if(!m_Objects[type])
         return false;
 
-    GameObject *obj = HashMapHolder<GameObject>::Find(m_Objects[type]);
+    Map * tmpMap = GetMap();
+    if (!tmpMap)
+    {
+        GameObjectData const* data = objmgr.GetGOData(GUID_LOPART(m_Objects[type]));
+
+        if (!data)
+        {
+            sLog.outError("OutdoorPvPObjective::DelObject: data not found for game object type %u", type);
+            return false;
+        }
+
+        tmpMap = GetMap(data->mapid);
+        if (!tmpMap)
+        {
+            sLog.outError("OutdoorPvPObjective::DelObject: map not found (id %u) for game object type %u", data->mapid, type);
+            return false;
+        }
+    }
+
+    GameObject *obj = tmpMap->GetGameObject(m_Objects[type]);
     if(!obj)
     {
         m_Objects[type] = 0;
@@ -353,7 +392,26 @@ bool OutdoorPvPObjective::DelCapturePoint()
 {
     if(m_CapturePoint)
     {
-        GameObject *obj = HashMapHolder<GameObject>::Find(m_CapturePoint);
+        Map * tmpMap = GetMap();
+        if (!tmpMap)
+        {
+            GameObjectData const* data = objmgr.GetGOData(GUID_LOPART(m_CapturePoint));
+
+            if (!data)
+            {
+                sLog.outError("OutdoorPvPObjective::DelCapturePoint: data not found");
+                return false;
+            }
+
+            tmpMap = GetMap(data->mapid);
+            if (!tmpMap)
+            {
+                sLog.outError("OutdoorPvPObjective::DelCapturePoint: map not found (id %u)", data->mapid);
+                return false;
+            }
+        }
+
+        GameObject *obj = tmpMap->GetGameObject(m_CapturePoint);
         if(obj)
         {
             uint32 guid = obj->GetDBTableGUIDLow();
@@ -365,7 +423,27 @@ bool OutdoorPvPObjective::DelCapturePoint()
     }
     if(m_CapturePointCreature)
     {
-        Creature *cr = HashMapHolder<Creature>::Find(m_CapturePointCreature);
+        Map * tmpMap = GetMap();
+        if (!tmpMap)
+        {
+            CreatureData const* data = objmgr.GetCreatureData(GUID_LOPART(m_CapturePointCreature));
+
+            if (!data)
+            {
+                sLog.outError("OutdoorPvPObjective::DelCapturePoint: data not found ");
+                return false;
+            }
+
+            Map * tmpMap = GetMap(data->mapid);
+
+            if (!tmpMap)
+            {
+                sLog.outError("OutdoorPvPObjective::DelCapturePoint: map not found (id %u)", data->mapid);
+                return false;
+            }
+        }
+
+        Creature *cr = tmpMap->GetCreature(m_CapturePointCreature);
         if(cr)
         {
             uint32 guid = cr->GetDBTableGUIDLow();
@@ -376,8 +454,7 @@ bool OutdoorPvPObjective::DelCapturePoint()
             // explicit removal from map
             // beats me why this is needed, but with the recent removal "cleanup" some creatures stay in the map if "properly" deleted
             // so this is a big fat workaround, if AddObjectToRemoveList and DoDelayedMovesAndRemoves worked correctly, this wouldn't be needed
-            if(Map * map = MapManager::Instance().FindMap(cr->GetMapId()))
-                map->Remove(cr,false);
+            tmpMap->Remove(cr,false);
             // delete respawn time for this creature
             WorldDatabase.PExecute("DELETE FROM creature_respawn WHERE guid = '%u'", guid);
             cr->AddObjectToRemoveList();
@@ -440,12 +517,35 @@ bool OutdoorPvP::Update(uint32 diff)
     bool objective_changed = false;
     for(OutdoorPvPObjectiveSet::iterator itr = m_OutdoorPvPObjectives.begin(); itr != m_OutdoorPvPObjectives.end(); ++itr)
         objective_changed |= (*itr)->Update(diff);
+
     return objective_changed;
 }
 
 void OutdoorPvPObjective::UpdateActivePlayerProximityCheck()
 {
-    if(GameObject *cp = HashMapHolder<GameObject>::Find(m_CapturePoint))
+    //tymczasowo return bo crashuje przy GetGameObject Oo
+    //return;
+
+    Map * tmpMap = GetMap();
+    if (!tmpMap)
+    {
+        GameObjectData const* data = objmgr.GetGOData(GUID_LOPART(m_CapturePoint));
+
+        if (!data)
+        {
+            sLog.outError("OutdoorPvPObjective::UpdateActivePlayerProximityCheck: data not found");
+            return;
+        }
+
+        tmpMap = GetMap(data->mapid);
+        if (!tmpMap)
+        {
+            sLog.outError("OutdoorPvPObjective::UpdateActivePlayerProximityCheck: map not found (id %u)", data->mapid);
+            return;
+        }
+    }
+
+    if(GameObject *cp = tmpMap->GetGameObject(m_CapturePoint))
     {
         for(int team = 0; team < 2; ++team)
         {
@@ -463,6 +563,7 @@ void OutdoorPvPObjective::UpdateActivePlayerProximityCheck()
                 else
                 {
                     sLog.outError("Player ("UI64FMTD") offline, bit still in outdoor pvp, this should never happen.",(*itr));
+                    m_ActivePlayerGuids[team].erase(itr);
                 }
             }
         }
@@ -549,8 +650,16 @@ bool OutdoorPvPObjective::HandleCaptureCreaturePlayerMoveInLos(Player * p, Creat
     if(c->GetGUID() != m_CapturePointCreature)
         return false;
 
+    Map * tmpMap = GetMap(c->GetMap());
+
+    if (!tmpMap)
+    {
+        sLog.outError("OutdoorPvPObjective::HandleCaptureCreaturePlayerMoveInLos: Map not found");
+        return false;
+    }
+
     // check if capture point go is spawned
-    GameObject * cp = HashMapHolder<GameObject>::Find(m_CapturePoint);
+    GameObject * cp = tmpMap->GetGameObject(m_CapturePoint);
     if(!cp)
         return false;
 

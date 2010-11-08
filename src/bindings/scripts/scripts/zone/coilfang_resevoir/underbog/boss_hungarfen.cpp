@@ -45,7 +45,7 @@ struct TRINITY_DLL_DECL boss_hungarfenAI : public ScriptedAI
         AcidGeyser_Timer = 10000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
     }
 
@@ -113,8 +113,6 @@ struct TRINITY_DLL_DECL mob_underbog_mushroomAI : public ScriptedAI
     void MoveInLineOfSight(Unit *who) { return; }
 
     void AttackStart(Unit* who) { return; }
-
-    void Aggro(Unit* who) { }
 
     void UpdateAI(const uint32 diff)
     {

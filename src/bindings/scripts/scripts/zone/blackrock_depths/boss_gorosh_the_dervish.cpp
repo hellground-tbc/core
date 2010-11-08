@@ -39,7 +39,7 @@ struct TRINITY_DLL_DECL boss_gorosh_the_dervishAI : public ScriptedAI
         MortalStrike_Timer = 22000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
     }
 
@@ -54,14 +54,18 @@ struct TRINITY_DLL_DECL boss_gorosh_the_dervishAI : public ScriptedAI
         {
             DoCast(m_creature,SPELL_WHIRLWIND);
             WhirlWind_Timer = 15000;
-        }else WhirlWind_Timer -= diff;
+        }
+        else
+            WhirlWind_Timer -= diff;
 
         //MortalStrike_Timer
         if (MortalStrike_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_MORTALSTRIKE);
             MortalStrike_Timer = 15000;
-        }else MortalStrike_Timer -= diff;
+        }
+        else
+            MortalStrike_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }

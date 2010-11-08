@@ -212,6 +212,17 @@ struct DurabilityQualityEntry
     float     quality_mod;                                  // 1
 };
 
+struct EmotesEntry
+{
+    uint32  Id;                                             // 0
+    //char*   Name;                                         // 1, internal name
+    //uint32  AnimationId;                                  // 2, ref to animationData
+    uint32  Flags;                                          // 3, bitmask, may be unit_flags
+    uint32  EmoteType;                                      // 4, Can be 0, 1 or 2 (determine how emote are shown)
+    uint32  UnitStandState;                                 // 5, uncomfirmed, may be enum UnitStandStateType
+    //uint32  SoundId;                                      // 6, ref to soundEntries
+};
+
 struct EmotesTextEntry
 {
     uint32    Id;
@@ -275,6 +286,15 @@ struct FactionTemplateEntry
     bool IsHostileToPlayers() const { return (hostileMask & FACTION_MASK_PLAYER) !=0; }
     bool IsNeutralToAll() const { return hostileMask == 0 && friendlyMask == 0 && enemyFaction1==0 && enemyFaction2==0 && enemyFaction3==0 && enemyFaction4==0; }
     bool IsContestedGuardFaction() const { return (factionFlags & FACTION_TEMPLATE_FLAG_CONTESTED_GUARD)!=0; }
+};
+
+struct GameObjectDisplayInfoEntry
+{
+    uint32      Displayid;                                  // 0        m_ID
+    // char* filename;                                      // 1
+    // uint32 unknown2[10];                                 // 2-11     unknown data
+    float  unknown12;                                       // 12-17    unknown size data, use first value as interact dist, mostly in hacks way
+    // float  unknown13[5];                                 // 12-17    unknown size data
 };
 
 struct GemPropertiesEntry
@@ -688,8 +708,8 @@ struct SpellThreatEntry
 struct SpellRadiusEntry
 {
     uint32    ID;
-    float     Radius;
-    float     Radius2;
+    float     radiusHostile;
+    float     radiusFriend;
 };
 
 struct SpellRangeEntry
@@ -827,6 +847,23 @@ struct TotemCategoryEntry
                                                             // 17 string flags, unused
     uint32    categoryType;                                 // 18 (one for specialization)
     uint32    categoryMask;                                 // 19 (compatibility mask for same type: different for totems, compatible from high to low for rods)
+};
+
+struct WMOAreaTableEntry
+{
+    uint32 Id;                                              // 0 index
+    int32 rootId;                                           // 1 used in root WMO
+    int32 adtId;                                            // 2 used in adt file
+    int32 groupId;                                          // 3 used in group WMO
+    //uint32 field4;
+    //uint32 field5;
+    //uint32 field6;
+    //uint32 field7;
+    //uint32 field8;
+    uint32 Flags;                                           // 9 used for indoor/outdoor determination
+    uint32 areaId;                                          // 10 link to AreaTableEntry.ID
+    //char *Name[16];
+    //uint32 nameFlags;
 };
 
 struct WorldMapAreaEntry

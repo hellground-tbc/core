@@ -42,6 +42,8 @@ struct TRINITY_DLL_DECL instance_karazhan : public ScriptedInstance
     uint64 GamesmansDoor;                                   // Door before Chess
     uint64 GamesmansExitDoor;                               // Door after Chess
     uint64 NetherspaceDoor;                                 // Door at Malchezaar
+    uint64 SideEntranceDoor;                                // Door after side entrance
+    uint64 ServentAccessDoor;                               // Door on shortcut from Guest Chambers to Broken Stairs
     uint64 MastersTerraceDoor[2];
     uint64 ImageGUID;
     uint64 AranGUID;

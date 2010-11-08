@@ -146,12 +146,7 @@ struct TRINITY_DLL_DECL boss_grand_warlock_nethekurseAI : public ScriptedAI
 
     void DoTauntPeons()
     {
-        switch(rand()%3)
-        {
-            case 0: DoScriptText(SAY_TAUNT_1, m_creature); break;
-            case 1: DoScriptText(SAY_TAUNT_2, m_creature); break;
-            case 2: DoScriptText(SAY_TAUNT_3, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_TAUNT_1, SAY_TAUNT_2, SAY_TAUNT_3), m_creature);
 
         //TODO: kill the peons first
         IsIntroEvent = false;
@@ -168,16 +163,10 @@ struct TRINITY_DLL_DECL boss_grand_warlock_nethekurseAI : public ScriptedAI
 
         if (m_creature->Attack(who, true))
         {
-            m_creature->AddThreat(who, 0.0f);
-
-            if (!InCombat)
-            {
-                InCombat = true;
-                Aggro(who);
-            }
-
-            if (Phase) DoStartNoMovement(who);
-            else DoStartMovement(who);
+            if (Phase)
+                DoStartNoMovement(who);
+            else
+                DoStartMovement(who);
         }
     }
 
@@ -198,18 +187,13 @@ struct TRINITY_DLL_DECL boss_grand_warlock_nethekurseAI : public ScriptedAI
 
         if (IsIntroEvent || !IsMainEvent)
             return;
-        
+
         ScriptedAI::MoveInLineOfSight(who);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
-        switch(rand()%3)
-        {
-            case 0: DoScriptText(SAY_AGGRO_1, m_creature); break;
-            case 1: DoScriptText(SAY_AGGRO_2, m_creature); break;
-            case 2: DoScriptText(SAY_AGGRO_3, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), m_creature);
     }
 
     void JustSummoned(Creature *summoned)
@@ -224,11 +208,7 @@ struct TRINITY_DLL_DECL boss_grand_warlock_nethekurseAI : public ScriptedAI
 
     void KilledUnit(Unit* victim)
     {
-        switch(rand()%2)
-        {
-            case 0: DoScriptText(SAY_SLAY_1, m_creature); break;
-            case 1: DoScriptText(SAY_SLAY_2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), m_creature);
     }
 
     void JustDied(Unit* Killer)
@@ -328,25 +308,26 @@ struct TRINITY_DLL_DECL mob_fel_orc_convertAI : public ScriptedAI
         return;
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         if (pInstance)
         {
             if (pInstance->GetData64(DATA_NETHEKURSE))
             {
                 Creature *pKurse = Unit::GetCreature(*m_creature,pInstance->GetData64(DATA_NETHEKURSE));
-                if (pKurse && m_creature->GetDistance(pKurse) < 45.0f)
+                if (pKurse && m_creature->IsWithinDistInMap(pKurse, 45.0f))
                 {
                     ((boss_grand_warlock_nethekurseAI*)pKurse->AI())->DoYellForPeonAggro();
 
                     if (pInstance->GetData(TYPE_NETHEKURSE) == IN_PROGRESS)
                         return;
-                    else pInstance->SetData(TYPE_NETHEKURSE,IN_PROGRESS);
+                    else
+                        pInstance->SetData(TYPE_NETHEKURSE,IN_PROGRESS);
                 }
             }
         }
     }
-   
+
     void JustDied(Unit* Killer)
     {
         if (pInstance)

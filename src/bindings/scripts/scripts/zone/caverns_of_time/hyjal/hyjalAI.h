@@ -6,7 +6,7 @@
 #define SC_HYJALAI_H
 
 #include "def_hyjal.h"
-#include "../../../npc/npc_escortAI.h"
+#include "escort_ai.h"
 
 // Trash Mobs summoned in waves
 #define NECROMANCER         17899//done
@@ -156,7 +156,9 @@ static Yells ThrallQuotes[]=
 typedef struct spells
 {
     uint32 SpellId;
-    uint32 Cooldown;
+    uint32 CooldownMin;
+    uint32 CooldownMax;
+    uint32 CooldownStart;
     uint32 TargetType;
 }spells;
 
@@ -168,7 +170,7 @@ struct TRINITY_DLL_DECL hyjalAI : public npc_escortAI
 
     void EnterEvadeMode();                                  // Send creature back to spawn location and evade.
 
-    void Aggro(Unit *who);                                  // Used to reset cooldowns for our spells and to inform the raid that we're under attack
+    void EnterCombat(Unit *who);                                  // Used to reset cooldowns for our spells and to inform the raid that we're under attack
 
     void UpdateAI(const uint32 diff);                       // Called to summon waves, check for boss deaths and to cast our spells.
 
@@ -226,6 +228,7 @@ struct TRINITY_DLL_DECL hyjalAI : public npc_escortAI
         bool VeinsSpawned[2];
         uint8 InfernalCount;
         SummonList Summons;
+        SummonList TempSummons;
         bool Overrun;
         bool Teleported;
         bool WaitForTeleport;

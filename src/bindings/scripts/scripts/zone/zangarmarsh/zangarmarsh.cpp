@@ -30,7 +30,7 @@ npc_kayra_longmane
 EndContentData */
 
 #include "precompiled.h"
-#include "../../npc/npc_escortAI.h"
+#include "escort_ai.h"
 
 /*######
 ## npcs_ashyen_and_keleth
@@ -137,7 +137,7 @@ struct TRINITY_DLL_DECL npc_cooshcooshAI : public ScriptedAI
         m_creature->setFaction(FACTION_FRIENDLY_CO);
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void UpdateAI(const uint32 diff)
     {
@@ -273,11 +273,10 @@ struct TRINITY_DLL_DECL npc_kayra_longmaneAI : public npc_escortAI
 
     void Reset()
     {
-        Completed = false;
         m_creature->setFaction(1660);
     }
 
-    void Aggro(Unit* who){}
+    void EnterCombat(Unit* who){}
 
     void JustSummoned(Creature *summoned)
     {
@@ -287,7 +286,7 @@ struct TRINITY_DLL_DECL npc_kayra_longmaneAI : public npc_escortAI
 
     void WaypointReached(uint32 i)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
+        Player* player = GetPlayerForEscort();
 
         switch(i)
         {
@@ -306,26 +305,10 @@ struct TRINITY_DLL_DECL npc_kayra_longmaneAI : public npc_escortAI
         case 19: m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
             DoScriptText(SAY_PROGRESS_5, m_creature, player); break;
         case 26: DoScriptText(SAY_PROGRESS_6, m_creature, player);
-            Completed = true;
             if(player)
                 player->GroupEventHappens(QUEST_EFU, m_creature);
             break;
         }
-    }
-
-    void JustDied(Unit* killer)
-    {
-        if (PlayerGUID && !Completed)
-        {
-            Player* player = Unit::GetPlayer(PlayerGUID);
-            if (player && !Completed)
-                player->FailQuest(QUEST_EFU);
-        }
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-        npc_escortAI::UpdateAI(diff);
     }
 };
 
@@ -333,7 +316,8 @@ bool QuestAccept_npc_kayra_longmane(Player* player, Creature* creature, Quest co
 {
     if (quest->GetQuestId() == QUEST_EFU)
     {
-        ((npc_escortAI*)(creature->AI()))->Start(true, true, false, player->GetGUID());
+        if (npc_escortAI* pEscortAI = CAST_AI(npc_kayra_longmaneAI, creature->AI()))
+            pEscortAI->Start(true, true, player->GetGUID(), quest);
         creature->setFaction(113);
     }
     return true;

@@ -119,7 +119,7 @@ void HostilReference::updateOnlineStatus()
 
     if(!isValid())
     {
-        Unit* target = ObjectAccessor::GetUnit(*getSourceUnit(), getUnitGuid());
+        Unit* target = getSourceUnit()->GetMap()->GetUnit(getUnitGuid());
         if(target)
             link(target, getSource());
     }
@@ -135,7 +135,7 @@ void HostilReference::updateOnlineStatus()
         online = getTarget()->isInAccessiblePlaceFor(creature);
         if(!online)
         {
-            if(creature->AI()->canReachByRangeAttack(getTarget()))
+            if(creature->IsWithinCombatRange(getTarget(),MELEE_RANGE))
                 online = true;                              // not accessible but stays online
         }
         else
@@ -282,11 +282,15 @@ bool DropAggro(Creature* pAttacker, Unit * target)
         return true;
 
     //target has Spirit of Redemption aura (shapeshift effect)
-    if (target->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION))
+    if (target->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION) || target->HasAuraType(SPELL_AURA_IGNORED))
         return true;
 
-    // target is stunned from Lady Vashj Shockblast
-    if (target->HasAura(38509,1))
+    // target is stunned from Lady Vashj Shockblast, Concussive Blow and Throw, Gouge, Freezing Trap and other special cases
+    if (target->HasAura(38509,1) || target->HasAura(32588, 1) || target->HasAura(41182, 1) || target->HasAura(24698, 1) || target->HasAura(41086, 0)
+        || target->HasAura(41197,2))
+        return true;
+
+    if (target->GetTypeId() == TYPEID_UNIT && target->GetEntry() == 23109)
         return true;
 
     return false;

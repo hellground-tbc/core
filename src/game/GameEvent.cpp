@@ -21,6 +21,7 @@
 #include "GameEvent.h"
 #include "World.h"
 #include "ObjectMgr.h"
+#include "PoolHandler.h"
 #include "ProgressBar.h"
 #include "Language.h"
 #include "Log.h"
@@ -137,6 +138,9 @@ bool GameEvent::StartEvent( uint16 event_id, bool overwrite )
 
 void GameEvent::StopEvent( uint16 event_id, bool overwrite )
 {
+	if(event_id==15){
+		CharacterDatabase.Execute("DELETE FROM character_inventory WHERE item_template=19807");
+	}
     bool serverwide_evt = mGameEvent[event_id].state != GAMEEVENT_NORMAL;
 
     RemoveActiveEvent(event_id);
@@ -886,6 +890,63 @@ void GameEvent::LoadFromDB()
         sLog.outString();
         sLog.outString( ">> Loaded %u battleground holidays in game events", count );
     }
+
+    ////////////////////////
+    // GameEventPool
+    ////////////////////////
+
+    mGameEventPoolIds.resize(mGameEvent.size()*2-1);
+
+    sLog.outString("Loading Game Event Pool Data...");
+
+    //                                   1                    2
+    result = WorldDatabase.Query("SELECT pool_template.entry, game_event_pool.event "
+        "FROM pool_template JOIN game_event_pool ON pool_template.entry = game_event_pool.pool_entry");
+
+    count = 0;
+    if (!result)
+    {
+        barGoLink bar2(1);
+        bar2.step();
+
+        sLog.outString();
+        sLog.outString(">> Loaded %u pools in game events", count);
+    }
+    else
+    {
+
+        barGoLink bar2(result->GetRowCount());
+        do
+        {
+            Field *fields = result->Fetch();
+
+            bar2.step();
+
+            uint32 entry   = fields[0].GetUInt16();
+            int16 event_id = fields[1].GetInt16();
+
+            int32 internal_event_id = mGameEvent.size() + event_id - 1;
+
+            if (internal_event_id < 0 || internal_event_id >= mGameEventPoolIds.size())
+            {
+                sLog.outErrorDb("`game_event_pool` game event id (%i) is out of range compared to max event id in `game_event`",event_id);
+                continue;
+            }
+
+            if (!poolhandler.CheckPool(entry))
+            {
+                sLog.outErrorDb("Pool Id (%u) has all creatures or gameobjects with explicit chance sum <>100 and no equal chance defined. The pool system cannot pick one to spawn.", entry);
+                continue;
+            }
+
+            ++count;
+            IdList& poollist = mGameEventPoolIds[internal_event_id];
+            poollist.push_back(entry);
+
+        } while (result->NextRow());
+        sLog.outString();
+        sLog.outString(">> Loaded %u pools in game events", count);
+    }
 }
 
 uint32 GameEvent::GetNPCFlag(Creature * cr)
@@ -1060,20 +1121,24 @@ void GameEvent::UpdateEventNPCFlags(uint16 event_id)
         // get the creature data from the low guid to get the entry, to be able to find out the whole guid
         if( CreatureData const* data = objmgr.GetCreatureData(itr->first) )
         {
-            Creature * cr = HashMapHolder<Creature>::Find(MAKE_NEW_GUID(itr->first,data->id,HIGHGUID_UNIT));
-            // if we found the creature, modify its npcflag
-            if(cr)
+            Map * map = MapManager::Instance().FindMap(data->mapid);
+            if(map)
             {
-                uint32 npcflag = GetNPCFlag(cr);
-                if(const CreatureInfo * ci = cr->GetCreatureInfo())
-                    npcflag |= ci->npcflag;
-                cr->SetUInt32Value(UNIT_NPC_FLAGS,npcflag);
-                // reset gossip options, since the flag change might have added / removed some
-                cr->ResetGossipOptions();
-                // update to world
-                //cr->SendUpdateObjectToAllExcept(NULL);
+                Creature * cr = map->GetCreature(MAKE_NEW_GUID(itr->first,data->id,HIGHGUID_UNIT));
+                // if we found the creature, modify its npcflag
+                if(cr)
+                {
+                    uint32 npcflag = GetNPCFlag(cr);
+                    if(const CreatureInfo * ci = cr->GetCreatureInfo())
+                        npcflag |= ci->npcflag;
+                    cr->SetUInt32Value(UNIT_NPC_FLAGS,npcflag);
+                    // reset gossip options, since the flag change might have added / removed some
+                    cr->ResetGossipOptions();
+                    // update to world
+                    //cr->SendUpdateObjectToAllExcept(NULL);
+                }
+                // if we didn't find it, then the npcflag will be updated when the creature is loaded
             }
-            // if we didn't find it, then the npcflag will be updated when the creature is loaded
         }
     }
 }
@@ -1167,6 +1232,19 @@ void GameEvent::GameEventSpawn(int16 event_id)
             }
         }
     }
+
+    if (internal_event_id < 0 || internal_event_id >= mGameEventPoolIds.size())
+    {
+        sLog.outError("GameEvent::GameEventSpawn attempt access to out of range mGameEventPoolIds element %i (size: %u)", internal_event_id, mGameEventPoolIds.size());
+        return;
+    }
+
+    for (IdList::iterator itr = mGameEventPoolIds[internal_event_id].begin(); itr != mGameEventPoolIds[internal_event_id].end(); ++itr)
+    {
+        poolhandler.SpawnPool(*itr, 0, 0);
+        poolhandler.SpawnPool(*itr, 0, TYPEID_GAMEOBJECT);
+        poolhandler.SpawnPool(*itr, 0, TYPEID_UNIT);
+    }
 }
 
 void GameEvent::GameEventUnspawn(int16 event_id)
@@ -1189,10 +1267,14 @@ void GameEvent::GameEventUnspawn(int16 event_id)
         {
             objmgr.RemoveCreatureFromGrid(*itr, data);
 
-            if( Creature* pCreature = ObjectAccessor::Instance().GetObjectInWorld(MAKE_NEW_GUID(*itr, data->id, HIGHGUID_UNIT), (Creature*)NULL) )
+            Map * tmpMap = MapManager::Instance().FindMap(data->mapid);
+            if(tmpMap)
             {
-                pCreature->CleanupsBeforeDelete();
-                pCreature->AddObjectToRemoveList();
+                if (Creature * pCreature = tmpMap->GetCreature(MAKE_NEW_GUID(*itr, data->id, HIGHGUID_UNIT)))
+                {
+                    pCreature->CleanupsBeforeDelete();
+                    pCreature->AddObjectToRemoveList();
+                }
             }
         }
     }
@@ -1213,10 +1295,21 @@ void GameEvent::GameEventUnspawn(int16 event_id)
         {
             objmgr.RemoveGameobjectFromGrid(*itr, data);
 
-            if( GameObject* pGameobject = ObjectAccessor::Instance().GetObjectInWorld(MAKE_NEW_GUID(*itr, data->id, HIGHGUID_GAMEOBJECT), (GameObject*)NULL) )
-                pGameobject->AddObjectToRemoveList();
+            Map * tmpMap = MapManager::Instance().FindMap(data->mapid);
+            if(tmpMap)
+                if (GameObject* pGameobject = tmpMap->GetGameObject(MAKE_NEW_GUID(*itr, data->id, HIGHGUID_GAMEOBJECT)))
+                    pGameobject->AddObjectToRemoveList();
         }
     }
+
+    if (internal_event_id < 0 || internal_event_id >= mGameEventPoolIds.size())
+    {
+        sLog.outError("GameEvent::GameEventUnspawn attempt access to out of range mGameEventPoolIds element %i (size: %u)", internal_event_id, mGameEventPoolIds.size());
+        return;
+    }
+
+    for (IdList::iterator itr = mGameEventPoolIds[internal_event_id].begin(); itr != mGameEventPoolIds[internal_event_id].end(); ++itr)
+        poolhandler.DespawnPool(*itr);
 }
 
 void GameEvent::ChangeEquipOrModel(int16 event_id, bool activate)
@@ -1229,7 +1322,11 @@ void GameEvent::ChangeEquipOrModel(int16 event_id, bool activate)
             continue;
 
         // Update if spawned
-        Creature* pCreature = ObjectAccessor::Instance().GetObjectInWorld(MAKE_NEW_GUID(itr->first, data->id,HIGHGUID_UNIT), (Creature*)NULL);
+        Map * tmpMap = MapManager::Instance().FindMap(data->mapid);
+        if (!tmpMap)
+            continue;
+
+        Creature* pCreature = tmpMap->GetCreature(MAKE_NEW_GUID(itr->first, data->id,HIGHGUID_UNIT));
         if (pCreature)
         {
             if (activate)
@@ -1522,7 +1619,7 @@ TRINITY_DLL_SPEC bool isGameEventActive(uint16 event_id)
     for(GameEvent::ActiveEvents::const_iterator itr = ae.begin(); itr != ae.end(); ++itr)
         if(*itr == event_id)
         return true;
-        
+
     return false;
 }
 

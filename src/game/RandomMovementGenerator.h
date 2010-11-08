@@ -35,10 +35,9 @@ class TRINITY_DLL_SPEC RandomMovementGenerator
 
         void _setRandomLocation(T &);
         void Initialize(T &);
-        void Finalize(T &);
+        void Finalize(T &){}
         void Reset(T &);
         bool Update(T &, const uint32 &);
-        bool GetDestination(float &x, float &y, float &z) const;
         void UpdateMapPosition(uint32 mapid, float &x ,float &y, float &z)
         {
             i_destinationHolder.GetLocationNow(mapid, x,y,z);

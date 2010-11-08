@@ -109,9 +109,15 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
             TempSpell->EffectImplicitTargetA[0] = 1;
             TempSpell->EffectImplicitTargetB[0] = 0;
         }
+        wLoc.x = -33.93;
+        wLoc.y = 1149.27;
+        wLoc.z = 19;
+        wLoc.mapid = c->GetMapId();
     }
 
     ScriptedInstance *pInstance;
+
+    WorldLocation wLoc;
 
     uint32 FireBreathTimer;
     uint32 BombTimer;
@@ -133,7 +139,7 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
 
     void Reset()
     {
-        if(pInstance)
+        if(pInstance && pInstance->GetData(DATA_JANALAIEVENT) != DONE)
             pInstance->SetData(DATA_JANALAIEVENT, NOT_STARTED);
 
         FireBreathTimer = 8000;
@@ -168,14 +174,10 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
 
     void KilledUnit(Unit* victim)
     {
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(SAY_SLAY_1, m_creature); break;
-        case 1: DoScriptText(SAY_SLAY_2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), m_creature);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if(pInstance)
             pInstance->SetData(DATA_JANALAIEVENT, IN_PROGRESS);
@@ -342,7 +344,7 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
 
         if (checkTimer < diff)
         {
-            if (m_creature->GetDistance(JanalainPos[0][0], JanalainPos[0][1], JanalainPos[0][2]) > 20)
+            if (!m_creature->IsWithinDistInMap(&wLoc, 20))
                 EnterEvadeMode();
             else
                 DoZoneInCombat();
@@ -476,7 +478,7 @@ struct TRINITY_DLL_DECL mob_janalai_firebombAI : public ScriptedAI
             m_creature->CastSpell(m_creature, SPELL_FIRE_BOMB_DUMMY, true);
     }
 
-    void Aggro(Unit* who) {}
+    void EnterCombat(Unit* who) {}
 
     void AttackStart(Unit* who) {}
 
@@ -554,7 +556,7 @@ struct TRINITY_DLL_DECL mob_amanishi_hatcherAI : public ScriptedAI
             return true;
     }
 
-    void Aggro(Unit* who) {}
+    void EnterCombat(Unit* who) {}
     void AttackStart(Unit*) {}
     void MoveInLineOfSight(Unit*) {}
     void MovementInform(uint32, uint32)
@@ -641,7 +643,7 @@ struct TRINITY_DLL_DECL mob_hatchlingAI : public ScriptedAI
         m_creature->SetUnitMovementFlags(MOVEMENTFLAG_LEVITATING);
     }
 
-    void Aggro(Unit *who) {/*DoZoneInCombat();*/}
+    void EnterCombat(Unit *who) {/*DoZoneInCombat();*/}
 
     void UpdateAI(const uint32 diff)
     {
@@ -674,7 +676,7 @@ struct TRINITY_DLL_DECL mob_eggAI : public ScriptedAI
 {
     mob_eggAI(Creature *c) : ScriptedAI(c){}
     void Reset() {}
-    void Aggro(Unit* who) {}
+    void EnterCombat(Unit* who) {}
     void AttackStart(Unit* who) {}
     void MoveInLineOfSight(Unit* who) {}
     void UpdateAI(const uint32 diff) {}

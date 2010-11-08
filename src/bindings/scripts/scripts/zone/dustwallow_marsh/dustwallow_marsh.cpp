@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Dustwallow_Marsh
 SD%Complete: 95
-SDComment: Quest support: 11180, 558, 11126. Vendor Nat Pagle
+SDComment: Quest support: 1270, 1222, 11180, 558, 11126. Vendor Nat Pagle
 SDCategory: Dustwallow Marsh
 EndScriptData */
 
@@ -27,9 +27,16 @@ npc_restless_apparition
 npc_deserter_agitator
 npc_lady_jaina_proudmoore
 npc_nat_pagle
+npc_theramore_combat_dummy
+mob_mottled_drywallow_crocolisks
+npc_morokk
+npc_ogron
+npc_private_hendel
+npc_stinky
 EndContentData */
 
 #include "precompiled.h"
+#include "escort_ai.h"
 
 /*######
 ## mobs_risen_husk_spirit
@@ -52,8 +59,6 @@ struct TRINITY_DLL_DECL mobs_risen_husk_spiritAI : public ScriptedAI
         IntangiblePresence_Timer = 5000;
     }
 
-    void Aggro(Unit* who) { }
-
     void DamageTaken(Unit *done_by, uint32 &damage)
     {
         if( done_by->GetTypeId() == TYPEID_PLAYER )
@@ -69,14 +74,14 @@ struct TRINITY_DLL_DECL mobs_risen_husk_spiritAI : public ScriptedAI
         if( ConsumeFlesh_Timer < diff )
         {
             if( m_creature->GetEntry() == 23555 )
-                DoCast(m_creature->getVictim(),SPELL_CONSUME_FLESH);
+                DoCast(m_creature,SPELL_CONSUME_FLESH);
             ConsumeFlesh_Timer = 15000;
         } else ConsumeFlesh_Timer -= diff;
 
         if( IntangiblePresence_Timer < diff )
         {
             if( m_creature->GetEntry() == 23554 )
-                DoCast(m_creature->getVictim(),SPELL_INTANGIBLE_PRESENCE);
+                DoCast(m_creature,SPELL_INTANGIBLE_PRESENCE);
             IntangiblePresence_Timer = 20000;
         } else IntangiblePresence_Timer -= diff;
 
@@ -114,8 +119,6 @@ struct TRINITY_DLL_DECL npc_deserter_agitatorAI : public ScriptedAI
     {
         m_creature->setFaction(894);
     }
-
-    void Aggro(Unit* who) {}
 };
 
 CreatureAI* GetAI_npc_deserter_agitator(Creature *_Creature)
@@ -210,7 +213,7 @@ struct TRINITY_DLL_DECL npc_theramore_combat_dummyAI : public Scripted_NoMovemen
     uint64 AttackerGUID;
     uint32 Check_Timer;
 
-    void Reset() 
+    void Reset()
     {
         m_creature->SetNoCallAssistance(true);
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_STUN, true);
@@ -218,7 +221,7 @@ struct TRINITY_DLL_DECL npc_theramore_combat_dummyAI : public Scripted_NoMovemen
         Check_Timer = 0;
     }
 
-    void Aggro(Unit* who) 
+    void EnterCombat(Unit* who)
     {
         AttackerGUID = ((Player*)who)->GetGUID();
         m_creature->SetStunned(true);
@@ -239,7 +242,7 @@ struct TRINITY_DLL_DECL npc_theramore_combat_dummyAI : public Scripted_NoMovemen
         {
             if(m_creature->GetDistance2d(attacker) > 12.0f)
                 EnterEvadeMode();
-                
+
             Check_Timer = 3000;
         }
         else
@@ -252,9 +255,806 @@ CreatureAI* GetAI_npc_theramore_combat_dummy(Creature *_Creature)
     return new npc_theramore_combat_dummyAI (_Creature);
 }
 
+#define QUEST_THE_GRIMTOTEM_WEAPON      11169
+#define AURA_CAPTURED_TOTEM             42454
+#define NPC_CAPTURED_TOTEM              23811
+
 /*######
-##
+## mob_mottled_drywallow_crocolisks
 ######*/
+
+struct TRINITY_DLL_DECL mob_mottled_drywallow_crocolisksAI : public ScriptedAI
+{
+   mob_mottled_drywallow_crocolisksAI(Creature *c) : ScriptedAI(c) {}
+
+    void Reset() {}
+    void JustDied (Unit* killer)
+    {
+        Player *pPlayer = NULL;
+
+        if(!IS_PLAYER_GUID(killer->GetGUID()))
+        {
+            if(!IS_PLAYER_GUID(killer->GetCharmerOrOwnerGUID()))
+                return;
+            else
+                pPlayer = killer->GetPlayer(killer->GetCharmerOrOwnerGUID());
+        }
+        else
+            pPlayer = (Player*)killer;
+
+        if(!pPlayer)
+            return;
+
+        if(pPlayer->GetQuestStatus(QUEST_THE_GRIMTOTEM_WEAPON) == QUEST_STATUS_INCOMPLETE)
+        {
+            if(Unit* totem = FindCreature(NPC_CAPTURED_TOTEM, 20.0, m_creature))   //blizzlike(?) check by dummy aura is NOT working, mysteriously...
+                pPlayer->KilledMonster(NPC_CAPTURED_TOTEM, pPlayer->GetGUID());
+        }
+    }
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_mottled_drywallow_crocolisks(Creature *_Creature)
+{
+    return new mob_mottled_drywallow_crocolisksAI (_Creature);
+}
+
+/*######
+## npc_morokk
+######*/
+
+enum
+{
+    SAY_MOR_CHALLENGE               = -1800499,
+    SAY_MOR_SCARED                  = -1800500,
+
+    QUEST_CHALLENGE_MOROKK          = 1173,
+
+    FACTION_MOR_HOSTILE             = 168,
+    FACTION_MOR_RUNNING             = 35
+};
+
+struct npc_morokkAI : public npc_escortAI
+{
+    npc_morokkAI(Creature* pCreature) : npc_escortAI(pCreature)
+    {
+        m_bIsSuccess = false;
+        Reset();
+    }
+
+    bool m_bIsSuccess;
+
+    void Reset() {}
+
+    void WaypointReached(uint32 uiPointId)
+    {
+        switch(uiPointId)
+        {
+            case 0:
+                SetEscortPaused(true);
+                break;
+            case 1:
+                if (m_bIsSuccess)
+                    DoScriptText(SAY_MOR_SCARED, me);
+                else
+                {
+                    me->setDeathState(JUST_DIED);
+                    me->Respawn();
+                }
+                break;
+        }
+    }
+
+    void AttackedBy(Unit* pAttacker)
+    {
+        if (me->getVictim())
+            return;
+
+        if (me->IsFriendlyTo(pAttacker))
+            return;
+
+        AttackStart(pAttacker);
+    }
+
+    void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)
+    {
+        if (HasEscortState(STATE_ESCORT_ESCORTING))
+        {
+            if (me->GetHealth()*100 < me->GetMaxHealth()*30.0f)
+            {
+                if (Player* pPlayer = GetPlayerForEscort())
+                    pPlayer->GroupEventHappens(QUEST_CHALLENGE_MOROKK, me);
+
+                me->setFaction(FACTION_MOR_RUNNING);
+                SetRun(true);
+
+                m_bIsSuccess = true;
+                EnterEvadeMode();
+
+                uiDamage = 0;
+            }
+        }
+    }
+
+    void UpdateEscortAI(const uint32 uiDiff)
+    {
+        if (!me->getVictim())
+        {
+            if (HasEscortState(STATE_ESCORT_PAUSED))
+            {
+                if (Player* pPlayer = GetPlayerForEscort())
+                {
+                    m_bIsSuccess = false;
+                    DoScriptText(SAY_MOR_CHALLENGE, me, pPlayer);
+                    me->setFaction(FACTION_MOR_HOSTILE);
+                    AttackStart(pPlayer);
+                }
+
+                SetEscortPaused(false);
+            }
+
+            return;
+        }
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_morokk(Creature* pCreature)
+{
+    return new npc_morokkAI(pCreature);
+}
+
+bool QuestAccept_npc_morokk(Player* pPlayer, Creature* pCreature, const Quest* pQuest)
+{
+    if (pQuest->GetQuestId() == QUEST_CHALLENGE_MOROKK)
+    {
+        if (npc_morokkAI* pEscortAI = CAST_AI(npc_morokkAI, pCreature->AI()))
+            pEscortAI->Start(true, false, pPlayer->GetGUID(), pQuest);
+
+        return true;
+    }
+
+    return false;
+}
+
+
+/*######
+## npc_ogron
+######*/
+
+enum
+{
+    SAY_OGR_START                       = -1800452,
+    SAY_OGR_SPOT                        = -1800453,
+    SAY_OGR_RET_WHAT                    = -1800454,
+    SAY_OGR_RET_SWEAR                   = -1800455,
+    SAY_OGR_REPLY_RET                   = -1800456,
+    SAY_OGR_RET_TAKEN                   = -1800457,
+    SAY_OGR_TELL_FIRE                   = -1800458,
+    SAY_OGR_RET_NOCLOSER                = -1800459,
+    SAY_OGR_RET_NOFIRE                  = -1800460,
+    SAY_OGR_RET_HEAR                    = -1800461,
+    SAY_OGR_CAL_FOUND                   = -1800462,
+    SAY_OGR_CAL_MERCY                   = -1800463,
+    SAY_OGR_HALL_GLAD                   = -1800464,
+    EMOTE_OGR_RET_ARROW                 = -1800465,
+    SAY_OGR_RET_ARROW                   = -1800466,
+    SAY_OGR_CAL_CLEANUP                 = -1800467,
+    SAY_OGR_NODIE                       = -1800468,
+    SAY_OGR_SURVIVE                     = -1800469,
+    SAY_OGR_RET_LUCKY                   = -1800470,
+    SAY_OGR_THANKS                      = -1800471,
+
+    QUEST_QUESTIONING                   = 1273,
+
+    FACTION_GENERIC_FRIENDLY            = 35,
+    FACTION_THER_HOSTILE                = 151,
+
+    NPC_REETHE                          = 4980,
+    NPC_CALDWELL                        = 5046,
+    NPC_HALLAN                          = 5045,
+    NPC_SKIRMISHER                      = 5044,
+
+    SPELL_FAKE_SHOT                     = 7105,
+
+    PHASE_INTRO                         = 0,
+    PHASE_GUESTS                        = 1,
+    PHASE_FIGHT                         = 2,
+    PHASE_COMPLETE                      = 3
+};
+
+static float m_afSpawn[] = {-3383.501953f, -3203.383301f, 36.149f};
+static float m_afMoveTo[] = {-3371.414795f, -3212.179932f, 34.210f};
+
+struct npc_ogronAI : public npc_escortAI
+{
+    npc_ogronAI(Creature* pCreature) : npc_escortAI(pCreature)
+    {
+        lCreatureList.clear();
+        m_uiPhase = 0;
+        m_uiPhaseCounter = 0;
+        Reset();
+    }
+
+    std::list<Creature*> lCreatureList;
+
+    uint32 m_uiPhase;
+    uint32 m_uiPhaseCounter;
+    uint32 m_uiGlobalTimer;
+
+    void Reset()
+    {
+        m_uiGlobalTimer = 5000;
+
+        /*if (HasEscortState(STATE_ESCORT_PAUSED) && m_uiPhase == PHASE_FIGHT)
+            m_uiPhase = PHASE_COMPLETE;*/
+
+        if (!HasEscortState(STATE_ESCORT_ESCORTING))
+        {
+            lCreatureList.clear();
+            m_uiPhase = 0;
+            m_uiPhaseCounter = 0;
+        }
+    }
+
+    void MoveInLineOfSight(Unit* pWho)
+    {
+        if (HasEscortState(STATE_ESCORT_ESCORTING) && pWho->GetEntry() == NPC_REETHE && lCreatureList.empty())
+            lCreatureList.push_back((Creature*)pWho);
+
+        npc_escortAI::MoveInLineOfSight(pWho);
+    }
+
+    void WaypointReached(uint32 uiPointId)
+    {
+        switch(uiPointId)
+        {
+            case 9:
+                DoScriptText(SAY_OGR_SPOT, me);
+                break;
+            case 10:
+                if (Creature* pReethe = GetClosestCreatureWithEntry(me, NPC_REETHE, 15.0f))
+                    DoScriptText(SAY_OGR_RET_WHAT, pReethe);
+                break;
+            case 11:
+                SetEscortPaused(true);
+                break;
+        }
+    }
+
+    void JustSummoned(Creature* pSummoned)
+    {
+        lCreatureList.push_back(pSummoned);
+
+        pSummoned->setFaction(FACTION_GENERIC_FRIENDLY);
+
+        if (pSummoned->GetEntry() == NPC_CALDWELL)
+            pSummoned->GetMotionMaster()->MovePoint(0, m_afMoveTo[0], m_afMoveTo[1], m_afMoveTo[2]);
+        else
+        {
+            if (Creature* pCaldwell = GetClosestCreatureWithEntry(me, NPC_CALDWELL, 15.0f))
+            {
+                //will this conversion work without compile warning/error?
+                size_t iSize = lCreatureList.size();
+                pSummoned->GetMotionMaster()->MoveFollow(pCaldwell, 0.5f, (M_PI/2)*(int)iSize);
+            }
+        }
+    }
+
+    void DoStartAttackMe()
+    {
+        if (!lCreatureList.empty())
+        {
+            for(std::list<Creature*>::iterator itr = lCreatureList.begin(); itr != lCreatureList.end(); ++itr)
+            {
+                if ((*itr)->GetEntry() == NPC_REETHE)
+                    continue;
+
+                if ((*itr)->isAlive())
+                {
+                    (*itr)->setFaction(FACTION_THER_HOSTILE);
+                    (*itr)->AI()->AttackStart(me);
+                }
+            }
+        }
+    }
+
+    void UpdateEscortAI(const uint32 uiDiff)
+    {
+        if (!UpdateVictim())
+        {
+            if (HasEscortState(STATE_ESCORT_PAUSED))
+            {
+                if (m_uiGlobalTimer < uiDiff)
+                {
+                    m_uiGlobalTimer = 5000;
+
+                    switch(m_uiPhase)
+                    {
+                        case PHASE_INTRO:
+                        {
+                            switch(m_uiPhaseCounter)
+                            {
+                                case 0:
+                                    if (Creature* pReethe = GetClosestCreatureWithEntry(me, NPC_REETHE, 15.0f))
+                                        DoScriptText(SAY_OGR_RET_SWEAR, pReethe);
+                                    break;
+                                case 1:
+                                    DoScriptText(SAY_OGR_REPLY_RET, me);
+                                    break;
+                                case 2:
+                                    if (Creature* pReethe = GetClosestCreatureWithEntry(me, NPC_REETHE, 15.0f))
+                                        DoScriptText(SAY_OGR_RET_TAKEN, pReethe);
+                                    break;
+                                case 3:
+                                    DoScriptText(SAY_OGR_TELL_FIRE, me);
+                                    if (Creature* pReethe = GetClosestCreatureWithEntry(me, NPC_REETHE, 15.0f))
+                                        DoScriptText(SAY_OGR_RET_NOCLOSER, pReethe);
+                                    break;
+                                case 4:
+                                    if (Creature* pReethe = GetClosestCreatureWithEntry(me, NPC_REETHE, 15.0f))
+                                        DoScriptText(SAY_OGR_RET_NOFIRE, pReethe);
+                                    break;
+                                case 5:
+                                    if (Creature* pReethe = GetClosestCreatureWithEntry(me, NPC_REETHE, 15.0f))
+                                        DoScriptText(SAY_OGR_RET_HEAR, pReethe);
+
+                                    me->SummonCreature(NPC_CALDWELL, m_afSpawn[0], m_afSpawn[1], m_afSpawn[2], 0.0f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 300000);
+                                    me->SummonCreature(NPC_HALLAN, m_afSpawn[0], m_afSpawn[1], m_afSpawn[2], 0.0f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 300000);
+                                    me->SummonCreature(NPC_SKIRMISHER, m_afSpawn[0], m_afSpawn[1], m_afSpawn[2], 0.0f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 300000);
+                                    me->SummonCreature(NPC_SKIRMISHER, m_afSpawn[0], m_afSpawn[1], m_afSpawn[2], 0.0f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 300000);
+
+                                    m_uiPhase = PHASE_GUESTS;
+                                    break;
+                            }
+                            break;
+                        }
+
+                        case PHASE_GUESTS:
+                        {
+                            switch(m_uiPhaseCounter)
+                            {
+                                case 6:
+                                    if (Creature* pCaldwell = GetClosestCreatureWithEntry(me, NPC_CALDWELL, 15.0f))
+                                        DoScriptText(SAY_OGR_CAL_FOUND, pCaldwell);
+                                    break;
+                                case 7:
+                                    if (Creature* pCaldwell = GetClosestCreatureWithEntry(me, NPC_CALDWELL, 15.0f))
+                                        DoScriptText(SAY_OGR_CAL_MERCY, pCaldwell);
+                                    break;
+                                case 8:
+                                    if (Creature* pHallan = GetClosestCreatureWithEntry(me, NPC_HALLAN, 15.0f))
+                                    {
+                                        DoScriptText(SAY_OGR_HALL_GLAD, pHallan);
+
+                                        if (Creature* pReethe = GetClosestCreatureWithEntry(me, NPC_REETHE, 15.0f))
+                                            pHallan->CastSpell(pReethe, SPELL_FAKE_SHOT, false);
+                                    }
+                                    break;
+                                case 9:
+                                    if (Creature* pReethe = GetClosestCreatureWithEntry(me, NPC_REETHE, 15.0f))
+                                    {
+                                        DoScriptText(EMOTE_OGR_RET_ARROW, pReethe);
+                                        DoScriptText(SAY_OGR_RET_ARROW, pReethe);
+                                    }
+                                    break;
+                                case 10:
+                                    if (Creature* pCaldwell = GetClosestCreatureWithEntry(me, NPC_CALDWELL, 15.0f))
+                                        DoScriptText(SAY_OGR_CAL_CLEANUP, pCaldwell);
+
+                                    DoScriptText(SAY_OGR_NODIE, me);
+                                    break;
+                                case 11:
+                                    DoStartAttackMe();
+                                    m_uiPhase = PHASE_COMPLETE;
+                                    break;
+                            }
+                            break;
+                        }
+
+                        case PHASE_COMPLETE:
+                        {
+                            switch(m_uiPhaseCounter)
+                            {
+                                case 12:
+                                    if (Player* pPlayer = GetPlayerForEscort())
+                                        pPlayer->GroupEventHappens(QUEST_QUESTIONING, me);
+                                    DoScriptText(SAY_OGR_SURVIVE, me);
+                                    break;
+                                case 13:
+                                    if (Creature* pReethe = GetClosestCreatureWithEntry(me, NPC_REETHE, 15.0f))
+                                        DoScriptText(SAY_OGR_RET_LUCKY, pReethe);
+                                    break;
+                                case 14:
+                                    if (Creature* pReethe = GetClosestCreatureWithEntry(me, NPC_REETHE, 15.0f))
+                                        pReethe->setDeathState(JUST_DIED);
+                                    break;
+                                case 15:
+                                    DoScriptText(SAY_OGR_THANKS, me);
+                                    SetRun(true);
+                                    SetEscortPaused(false);
+                                    break;
+                            }
+                            break;
+                        }
+                    }
+                        ++m_uiPhaseCounter;
+                }
+                else
+                    m_uiGlobalTimer -= uiDiff;
+            }
+
+            return;
+        }
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+bool QuestAccept_npc_ogron(Player* pPlayer, Creature* pCreature, const Quest* pQuest)
+{
+    if (pQuest->GetQuestId() == QUEST_QUESTIONING)
+    {
+        pCreature->setFaction(FACTION_ESCORT_N_FRIEND_PASSIVE);
+        DoScriptText(SAY_OGR_START, pCreature, pPlayer);
+
+        if (npc_ogronAI* pEscortAI = CAST_AI(npc_ogronAI, (pCreature->AI())))
+            pEscortAI->Start(false, false, pPlayer->GetGUID(), pQuest, true);
+    }
+
+    return true;
+}
+
+CreatureAI* GetAI_npc_ogron(Creature* pCreature)
+{
+    return new npc_ogronAI(pCreature);
+}
+
+/*######
+## npc_private_hendel
+######*/
+
+enum eHendel
+{
+    SAY_PROGRESS_1_TER          = -1600413,
+    SAY_PROGRESS_2_HEN          = -1600414,
+    SAY_PROGRESS_3_TER          = -1600415,
+    SAY_PROGRESS_4_TER          = -1600416,
+    EMOTE_SURRENDER             = -1600417,
+
+    QUEST_MISSING_DIPLO_PT16    = 1324,
+    FACTION_HOSTILE             = 168,
+
+    NPC_SENTRY                  = 5184,
+    NPC_JAINA                   = 4968,
+    NPC_TERVOSH                 = 4967,
+    NPC_PAINED                  = 4965,
+
+    PHASE_ATTACK                = 1,
+    PHASE_COMPLETED             = 2
+};
+
+struct EventLocation
+{
+    float m_fX, m_fY, m_fZ;
+};
+
+EventLocation m_afEventMoveTo[] =
+{
+    {-2943.92f, -3319.41f, 29.8336f},
+    {-2933.01f, -3321.05f, 29.5781f}
+
+};
+
+struct npc_private_hendelAI : public ScriptedAI
+{
+    npc_private_hendelAI(Creature* pCreature) : ScriptedAI(pCreature) { Reset(); }
+
+    std::list<Creature*> lCreatureList;
+
+    uint32 m_uiPhaseCounter;
+    uint32 m_uiEventTimer;
+    uint32 m_uiPhase;
+    uint64 PlayerGUID;
+
+    void Reset()
+    {
+        PlayerGUID = 0;
+        m_uiPhase = 0;
+        m_uiEventTimer = 0;
+        m_uiPhaseCounter = 0;
+        lCreatureList.clear();
+    }
+    
+    void AttackedBy(Unit* pAttacker)
+    {
+        if (me->getVictim())
+            return;
+
+        if (me->IsFriendlyTo(pAttacker))
+            return;
+
+        AttackStart(pAttacker);
+    }
+
+    void JustSummoned(Creature* pSummoned)
+    {
+        pSummoned->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+
+        if (pSummoned->GetEntry() == NPC_TERVOSH)
+        {
+            pSummoned->GetMotionMaster()->MovePoint(0, -2889.48f, -3349.37f, 32.0619f);
+            return;
+        }
+        if (pSummoned->GetEntry() == NPC_JAINA)
+        {
+            pSummoned->GetMotionMaster()->MovePoint(0, -2889.27f, -3347.17f, 32.2615f);
+            return;
+        }
+        pSummoned->GetMotionMaster()->MovePoint(0, -2890.31f,-3345.23f,32.3087f);
+    }
+
+    void DoAttackPlayer()
+    {
+        Player* pPlayer = Unit::GetPlayer(PlayerGUID);
+        if(!pPlayer)
+            return;
+
+        me->setFaction(FACTION_HOSTILE);
+        me->AI()->AttackStart(pPlayer);
+
+        lCreatureList = DoFindAllCreaturesWithEntry(NPC_SENTRY, 20);
+
+        if (!lCreatureList.empty())
+        {
+            for(std::list<Creature*>::iterator itr = lCreatureList.begin(); itr != lCreatureList.end(); ++itr)
+            {
+                if ((*itr)->isAlive())
+                {
+                    (*itr)->setFaction(FACTION_HOSTILE);
+                    (*itr)->AI()->AttackStart(pPlayer);
+                }
+            }
+        }
+    }
+
+    void UpdateAI(const uint32 uiDiff)
+    {
+        if (!UpdateVictim() && m_uiPhase)
+        {
+            switch(m_uiPhase)
+            {
+            case PHASE_ATTACK:
+                DoAttackPlayer();
+                break;
+
+            case PHASE_COMPLETE:
+                if (m_uiEventTimer <= uiDiff)
+                {
+                    m_uiEventTimer = 5000;
+
+                    switch (m_uiPhaseCounter)
+                    {
+                    case 0:
+                        DoScriptText(EMOTE_SURRENDER, me);
+                        break;
+                    case 1:
+                        if (Creature* pTervosh = GetClosestCreatureWithEntry(me, NPC_TERVOSH, 10.0f))
+                            DoScriptText(SAY_PROGRESS_1_TER, pTervosh);
+                        break;
+                    case 2:
+                        DoScriptText(SAY_PROGRESS_2_HEN, me);
+                        break;
+                    case 3:
+                        if (Creature* pTervosh = GetClosestCreatureWithEntry(me, NPC_TERVOSH, 10.0f))
+                            DoScriptText(SAY_PROGRESS_3_TER, pTervosh);
+                        break;
+                    case 4:
+                        if (Creature* pTervosh = GetClosestCreatureWithEntry(me, NPC_TERVOSH, 10.0f))
+                                DoScriptText(SAY_PROGRESS_4_TER, pTervosh);
+                        if (Player* pPlayer = Unit::GetPlayer(PlayerGUID))
+                            pPlayer->GroupEventHappens(QUEST_MISSING_DIPLO_PT16, me);
+                        Reset();
+                        break;
+                    }
+                    ++m_uiPhaseCounter;
+                }
+                else
+                    m_uiEventTimer -= uiDiff;
+            }
+        }
+        return;
+    }
+    
+    void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)
+    {
+        if (uiDamage > me->GetHealth() || ((me->GetHealth() - uiDamage)*100 / me->GetMaxHealth() < 20))
+        {
+            uiDamage = 0;
+            m_uiPhase = PHASE_COMPLETE;
+            m_uiEventTimer = 2000;
+
+            me->RestoreFaction();
+            me->RemoveAllAuras();
+            me->DeleteThreatList();
+            me->CombatStop(true);
+            me->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+            me->SetHomePosition(-2892.28f,-3347.81f,31.8609f,0.160719f);
+            me->GetMotionMaster()->MoveTargetedHome();
+
+            if (Player* pPlayer = Unit::GetPlayer(PlayerGUID))
+                pPlayer->CombatStop(true);
+
+            if (!lCreatureList.empty())
+            {
+                uint16 N = -1;
+
+                for(std::list<Creature*>::iterator itr = lCreatureList.begin(); itr != lCreatureList.end(); ++itr)
+                {
+                    if ((*itr)->isAlive())
+                    {
+                        N = N + 1;
+                        (*itr)->RestoreFaction();
+                        (*itr)->RemoveAllAuras();
+                        (*itr)->DeleteThreatList();
+                        (*itr)->CombatStop(true);
+                        (*itr)->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+                        (*itr)->GetMotionMaster()->MovePoint(0, m_afEventMoveTo[N].m_fX,  m_afEventMoveTo[N].m_fY,  m_afEventMoveTo[N].m_fZ);
+                        (*itr)->ForcedDespawn(5000);
+                    }
+                }
+            }
+            lCreatureList.clear();
+
+            me->ForcedDespawn(60000);
+            me->SummonCreature(NPC_TERVOSH, -2876.66f, -3346.96f, 35.6029f, 0.0f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 60000);
+            me->SummonCreature(NPC_JAINA, -2876.95f, -3342.78f, 35.6244f, 0.0f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 60000);
+            me->SummonCreature(NPC_PAINED, -2877.67f, -3338.63f, 35.2548f, 0.0f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 60000);       
+        }
+    }
+};
+
+bool QuestAccept_npc_private_hendel(Player* pPlayer, Creature* pCreature, const Quest* pQuest)
+{
+    if (pQuest->GetQuestId() == QUEST_MISSING_DIPLO_PT16)
+    {
+        CAST_AI(npc_private_hendelAI, pCreature->AI())->m_uiPhase = PHASE_ATTACK;
+        CAST_AI(npc_private_hendelAI, pCreature->AI())->PlayerGUID = pPlayer->GetGUID();
+    }
+
+    return true; 
+}
+
+CreatureAI* GetAI_npc_private_hendel(Creature* pCreature)
+{
+    return new npc_private_hendelAI(pCreature);
+}
+
+/*#####
+## npc_stinky
+#####*/
+
+enum eStinky
+{
+    QUEST_STINKYS_ESCAPE_H                       = 1270,
+    QUEST_STINKYS_ESCAPE_A                       = 1222,
+    SAY_QUEST_ACCEPTED                           = -1000612,
+    SAY_STAY_1                                   = -1000613,
+    SAY_STAY_2                                   = -1000614,
+    SAY_STAY_3                                   = -1000615,
+    SAY_STAY_4                                   = -1000616,
+    SAY_STAY_5                                   = -1000617,
+    SAY_STAY_6                                   = -1000618,
+    SAY_QUEST_COMPLETE                           = -1000619,
+    SAY_ATTACKED_1                               = -1000620,
+    EMOTE_DISAPPEAR                              = -1000621
+};
+
+struct npc_stinkyAI : public npc_escortAI
+{
+    npc_stinkyAI(Creature* pCreature) : npc_escortAI(pCreature) { }
+
+    void WaypointReached(uint32 i)
+    {
+        Player* pPlayer = GetPlayerForEscort();
+        if (!pPlayer)
+            return;
+
+        switch (i)
+        {
+        case 7:
+            DoScriptText(SAY_STAY_1, me, pPlayer);
+            break;
+        case 11:
+            DoScriptText(SAY_STAY_2, me, pPlayer);
+            break;
+        case 25:
+            DoScriptText(SAY_STAY_3, me, pPlayer);
+            break;
+        case 26:
+            DoScriptText(SAY_STAY_4, me, pPlayer);
+            break;
+        case 27:
+            DoScriptText(SAY_STAY_5, me, pPlayer);
+            break;
+        case 28:
+            DoScriptText(SAY_STAY_6, me, pPlayer);
+            me->SetStandState(UNIT_STAND_STATE_KNEEL);
+            break;
+        case 29:
+            me->SetStandState(UNIT_STAND_STATE_STAND);
+            break;
+        case 37:
+            DoScriptText(SAY_QUEST_COMPLETE, me, pPlayer);
+            SetRun();
+            if (pPlayer && pPlayer->GetQuestStatus(QUEST_STINKYS_ESCAPE_H))
+                pPlayer->GroupEventHappens(QUEST_STINKYS_ESCAPE_H, me);
+            if (pPlayer && pPlayer->GetQuestStatus(QUEST_STINKYS_ESCAPE_A))
+                pPlayer->GroupEventHappens(QUEST_STINKYS_ESCAPE_A, me);
+            break;
+        case 39:
+            DoScriptText(EMOTE_DISAPPEAR, me);
+            break;
+        }
+    }
+
+    void EnterCombat(Unit* pWho)
+    {
+        DoScriptText(SAY_ATTACKED_1, me, pWho);
+    }
+
+    void Reset() {}
+
+    void JustDied(Unit* /*pKiller*/)
+    {
+        Player* pPlayer = GetPlayerForEscort();
+
+        if (HasEscortState(STATE_ESCORT_ESCORTING) && pPlayer)
+        {
+            if (pPlayer->GetQuestStatus(QUEST_STINKYS_ESCAPE_H))
+                pPlayer->FailQuest(QUEST_STINKYS_ESCAPE_H);
+            if (pPlayer->GetQuestStatus(QUEST_STINKYS_ESCAPE_A))
+                pPlayer->FailQuest(QUEST_STINKYS_ESCAPE_A);
+        }
+    }
+
+    void UpdateAI(const uint32 uiDiff)
+    {
+        npc_escortAI::UpdateAI(uiDiff);
+
+            if (!UpdateVictim())
+            return;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_stinky(Creature* pCreature)
+{
+    return new npc_stinkyAI(pCreature);
+}
+
+bool QuestAccept_npc_stinky(Player* pPlayer, Creature* pCreature, Quest const *quest)
+{
+    if (quest->GetQuestId() == QUEST_STINKYS_ESCAPE_H || QUEST_STINKYS_ESCAPE_A)
+    {
+        if (npc_stinkyAI* pEscortAI = CAST_AI(npc_stinkyAI, pCreature->AI()))
+        {
+            pCreature->setFaction(FACTION_ESCORT_N_NEUTRAL_ACTIVE);
+            pCreature->SetStandState(UNIT_STAND_STATE_STAND);
+            DoScriptText(SAY_QUEST_ACCEPTED, pCreature);
+            pEscortAI->Start(false, false, pPlayer->GetGUID());
+        }
+    }
+    return true;
+}
 
 void AddSC_dustwallow_marsh()
 {
@@ -291,6 +1091,35 @@ void AddSC_dustwallow_marsh()
     newscript = new Script;
     newscript->Name="npc_theramore_combat_dummy";
     newscript->GetAI = &GetAI_npc_theramore_combat_dummy;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="mob_mottled_drywallow_crocolisks";
+    newscript->GetAI = &GetAI_mob_mottled_drywallow_crocolisks;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_morokk";
+    newscript->GetAI = &GetAI_npc_morokk;
+    newscript->pQuestAccept = &QuestAccept_npc_morokk;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_ogron";
+    newscript->GetAI = &GetAI_npc_ogron;
+    newscript->pQuestAccept = &QuestAccept_npc_ogron;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_private_hendel";
+    newscript->GetAI = &GetAI_npc_private_hendel;
+    newscript->pQuestAccept = &QuestAccept_npc_private_hendel;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_stinky";
+    newscript->GetAI = &GetAI_npc_stinky;
+    newscript->pQuestAccept = &QuestAccept_npc_stinky;
     newscript->RegisterSelf();
 }
 

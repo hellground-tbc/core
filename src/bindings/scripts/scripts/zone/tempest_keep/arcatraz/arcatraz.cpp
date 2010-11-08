@@ -104,28 +104,18 @@ struct TRINITY_DLL_DECL npc_millhouse_manastormAI : public ScriptedAI
         {
             m_creature->AddThreat(who, 0.0f);
 
-            if (!InCombat)
-            {
-                InCombat = true;
-                Aggro(who);
-            }
-
             //TODO: Make it so he moves when target out of range
             DoStartNoMovement(who);
         }
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
     }
 
     void KilledUnit(Unit *victim)
     {
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(SAY_KILL_1, m_creature); break;
-        case 1: DoScriptText(SAY_KILL_2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_KILL_1, SAY_KILL_2), m_creature);
     }
 
     void JustDied(Unit *victim)
@@ -301,11 +291,11 @@ struct TRINITY_DLL_DECL npc_warden_mellicharAI : public ScriptedAI
 
             float attackRadius = m_creature->GetAttackDistance(who)/10;
             if( m_creature->IsWithinDistInMap(who, attackRadius) && m_creature->IsWithinLOSInMap(who) )
-                Aggro(who);
+                EnterCombat(who);
         }
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoScriptText(YELL_INTRO1, m_creature);
         DoCast(m_creature,SPELL_BUBBLE_VISUAL);
@@ -399,11 +389,7 @@ struct TRINITY_DLL_DECL npc_warden_mellicharAI : public ScriptedAI
                 switch( Phase )
                 {
                     case 2:
-                        switch( rand()%2 )
-                        {
-                            case 0: m_creature->SummonCreature(ENTRY_TRICKSTER,478.326,-148.505,42.56,3.19,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,600000); break;
-                            case 1: m_creature->SummonCreature(ENTRY_PH_HUNTER,478.326,-148.505,42.56,3.19,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,600000); break;
-                        }
+                        m_creature->SummonCreature(RAND(ENTRY_TRICKSTER, ENTRY_PH_HUNTER), 478.326, -148.505, 42.56, 3.19, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 600000);
                         break;
                     case 3:
                         m_creature->SummonCreature(ENTRY_MILLHOUSE,413.292,-148.378,42.56,6.27,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,600000);
@@ -412,18 +398,10 @@ struct TRINITY_DLL_DECL npc_warden_mellicharAI : public ScriptedAI
                        DoScriptText(YELL_RELEASE2B, m_creature);
                         break;
                     case 5:
-                        switch( rand()%2 )
-                        {
-                            case 0: m_creature->SummonCreature(ENTRY_AKKIRIS,420.179,-174.396,42.58,0.02,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,600000); break;
-                            case 1: m_creature->SummonCreature(ENTRY_SULFURON,420.179,-174.396,42.58,0.02,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,600000); break;
-                        }
+                        m_creature->SummonCreature(RAND(ENTRY_AKKIRIS, ENTRY_SULFURON), 420.179, -174.396, 42.58, 0.02, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 600000);
                         break;
                     case 6:
-                        switch( rand()%2 )
-                        {
-                            case 0: m_creature->SummonCreature(ENTRY_TW_DRAK,471.795,-174.58,42.58,3.06,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,600000); break;
-                            case 1: m_creature->SummonCreature(ENTRY_BL_DRAK,471.795,-174.58,42.58,3.06,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,600000); break;
-                        }
+                        m_creature->SummonCreature(RAND(ENTRY_TW_DRAK,ENTRY_BL_DRAK), 471.795, -174.58, 42.58, 3.06, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 600000);
                         break;
                     case 7:
                         m_creature->SummonCreature(ENTRY_SKYRISS,445.763,-191.639,44.64,1.60,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,600000);
@@ -486,9 +464,9 @@ CreatureAI* GetAI_npc_warden_mellichar(Creature *_Creature)
 
 #define SPELL_VOID_ZONE_DAMAGE 36120
 
-struct TRINITY_DLL_DECL mob_zerekethvoidzoneAI : public ScriptedAI
+struct TRINITY_DLL_DECL mob_zerekethvoidzoneAI : public Scripted_NoMovementAI
 {
-    mob_zerekethvoidzoneAI(Creature *c) : ScriptedAI(c) {}
+    mob_zerekethvoidzoneAI(Creature *c) : Scripted_NoMovementAI(c) {}
 
     void Reset()
     {
@@ -498,8 +476,6 @@ struct TRINITY_DLL_DECL mob_zerekethvoidzoneAI : public ScriptedAI
 
         DoCast(m_creature,SPELL_VOID_ZONE_DAMAGE);
     }
-
-    void Aggro(Unit* who) {}
 };
 CreatureAI* GetAI_mob_zerekethvoidzoneAI(Creature *_Creature)
 {

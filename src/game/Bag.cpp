@@ -50,13 +50,20 @@ void Bag::AddToWorld()
 
     for(uint32 i = 0;  i < GetBagSize(); ++i)
         if(m_bagslot[i])
+        {
+            if (m_bagslot[i] == this)
+            {
+                sLog.outError("Bag has self in slot: %u, bag size: %u, owner: " I64FMT, GetSlotByItemGUID(m_bagslot[i]->GetGUID()), GetBagSize(), GetOwnerGUID());
+                continue;
+            }
             m_bagslot[i]->AddToWorld();
+        }
 }
 
 void Bag::RemoveFromWorld()
 {
     for(uint32 i = 0; i < GetBagSize(); ++i)
-        if(m_bagslot[i])
+        if(m_bagslot[i] && m_bagslot[i] != this)
             m_bagslot[i]->RemoveFromWorld();
 
     Item::RemoveFromWorld();
@@ -157,7 +164,7 @@ void Bag::StoreItem( uint8 slot, Item *pItem, bool /*update*/ )
         return;
     }
 
-    if( pItem )
+    if(pItem && pItem->GetGUID() != GetGUID())
     {
         m_bagslot[slot] = pItem;
         SetUInt64Value(CONTAINER_FIELD_SLOT_1 + (slot * 2), pItem->GetGUID());

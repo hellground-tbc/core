@@ -112,7 +112,6 @@ struct TRINITY_DLL_DECL boss_sacrolashAI : public ScriptedAI
 
     void Reset()
     {
-        InCombat = false;
         Enraged = false;
 
         if(pInstance)
@@ -120,19 +119,15 @@ struct TRINITY_DLL_DECL boss_sacrolashAI : public ScriptedAI
             Unit* Temp =  Unit::GetUnit((*m_creature),pInstance->GetData64(DATA_ALYTHESS));
             if (Temp)
                 if (Temp->isDead())
-                {
                     ((Creature*)Temp)->Respawn();
-                }else
+                else
                 {
                     if(Temp->getVictim())
-                    {
                         m_creature->getThreatManager().addThreat(Temp->getVictim(),0.0f);
-                        InCombat = true;
-                    }
                 }
         }
 
-        if(!InCombat)
+        if(!m_creature->isInCombat())
         {
             ShadowbladesTimer = 10000;
             ShadownovaTimer = 30000;
@@ -144,11 +139,11 @@ struct TRINITY_DLL_DECL boss_sacrolashAI : public ScriptedAI
             SisterDeath = false;
         }
 
-        if(pInstance)
+        if(pInstance && pInstance->GetData(DATA_EREDAR_TWINS_EVENT) != DONE)
             pInstance->SetData(DATA_EREDAR_TWINS_EVENT, NOT_STARTED);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoZoneInCombat();
 
@@ -157,22 +152,14 @@ struct TRINITY_DLL_DECL boss_sacrolashAI : public ScriptedAI
             Unit* Temp =  Unit::GetUnit((*m_creature),pInstance->GetData64(DATA_ALYTHESS));
             if (Temp && Temp->isAlive() && !(Temp->getVictim()))
                 ((Creature*)Temp)->AI()->AttackStart(who);
-        }
-
-        if(pInstance)
             pInstance->SetData(DATA_EREDAR_TWINS_EVENT, IN_PROGRESS);
+        }
     }
 
     void KilledUnit(Unit *victim)
     {
         if(rand()%4 == 0)
-        {
-            switch (rand()%2)
-            {
-            case 0: DoScriptText(YELL_SAC_KILL_1, m_creature); break;
-            case 1: DoScriptText(YELL_SAC_KILL_2, m_creature); break;
-            }
-        }
+            DoScriptText(RAND(YELL_SAC_KILL_1, YELL_SAC_KILL_2), m_creature);
     }
 
     void JustDied(Unit* Killer)
@@ -376,7 +363,6 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
 
     void Reset()
     {
-        InCombat = false;
         Enraged = false;
 
         if(pInstance)
@@ -396,7 +382,7 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
                 }
         }
 
-        if(!InCombat)
+        if(!m_creature->isInCombat())
         {
             ConflagrationTimer = 45000;
             BlazeTimer = 100;
@@ -409,11 +395,11 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
             SisterDeath = false;
         }
 
-        if(pInstance)
+        if(pInstance && pInstance->GetData(DATA_EREDAR_TWINS_EVENT) != DONE)
             pInstance->SetData(DATA_EREDAR_TWINS_EVENT, NOT_STARTED);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoZoneInCombat();
 
@@ -422,18 +408,14 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
             Unit* Temp =  Unit::GetUnit((*m_creature),pInstance->GetData64(DATA_SACROLASH));
             if (Temp && Temp->isAlive() && !(Temp->getVictim()))
                 ((Creature*)Temp)->AI()->AttackStart(who);
-        }
-
-        if(pInstance)
             pInstance->SetData(DATA_EREDAR_TWINS_EVENT, IN_PROGRESS);
+        }
     }
 
     void AttackStart(Unit *who)
     {
-        if (!InCombat)
-        {
+        if (!m_creature->isInCombat())
             Scripted_NoMovementAI::AttackStart(who);
-        }
     }
 
     void MoveInLineOfSight(Unit *who)
@@ -447,11 +429,10 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
             float attackRadius = m_creature->GetAttackDistance(who);
             if (m_creature->IsWithinDistInMap(who, attackRadius) && m_creature->GetDistanceZ(who) <= CREATURE_Z_ATTACK_RANGE && m_creature->IsWithinLOSInMap(who))
             {
-                if (!InCombat)
+                if (!m_creature->isInCombat())
                 {
                     DoStartNoMovement(who);
-                    Aggro(who);
-                    InCombat = true;
+                    EnterCombat(who);
                 }
             }
         }
@@ -464,13 +445,7 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
     void KilledUnit(Unit *victim)
     {
         if(rand()%4 == 0)
-        {
-            switch (rand()%2)
-            {
-            case 0: DoScriptText(YELL_ALY_KILL_1, m_creature); break;
-            case 1: DoScriptText(YELL_ALY_KILL_2, m_creature); break;
-            }
-        }
+            DoScriptText(RAND(YELL_ALY_KILL_1, YELL_ALY_KILL_2), m_creature);
     }
 
     void JustDied(Unit* Killer)
@@ -688,7 +663,7 @@ struct TRINITY_DLL_DECL mob_shadow_imageAI : public ScriptedAI
         KillTimer = 15000;
     }
 
-    void Aggro(Unit *who){}
+    void EnterCombat(Unit *who){}
 
     void SpellHitTarget(Unit* target,const SpellEntry* spell)
     {

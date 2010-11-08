@@ -26,7 +26,7 @@ npc_defias_traitor
 EndContentData */
 
 #include "precompiled.h"
-#include "../../npc/npc_escortAI.h"
+#include "escort_ai.h"
 
 /*#####
 # npc_daphne_stilwell
@@ -46,7 +46,7 @@ EndContentData */
 #define THUG_SPAWN_Y 1581
 #define THUG_SPAWN_Z 59.018
 #define THUG_SPAWN_O 4.164382
-#define THUG_SPAWN_R  5 
+#define THUG_SPAWN_R  5
 
 //Speech
 #define SAY_KILL_HER "Kill her! Take the farm!"
@@ -64,8 +64,8 @@ struct TRINITY_DLL_DECL npc_daphne_stilwellAI : public npc_escortAI
     }
 
 
-    std::vector<uint64> enemies;       
-    uint8 thug_wave;                   
+    std::vector<uint64> enemies;
+    uint8 thug_wave;
     bool IsWalking;
     bool initial_movement;
     bool real_event_started;
@@ -84,7 +84,7 @@ struct TRINITY_DLL_DECL npc_daphne_stilwellAI : public npc_escortAI
 
     void WaypointReached(uint32 i)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
+        Player* player = GetPlayerForEscort();
 
         if (!player)
             return;
@@ -114,10 +114,9 @@ struct TRINITY_DLL_DECL npc_daphne_stilwellAI : public npc_escortAI
             IsWalking = true;
             break;
         case 11:
-            if (PlayerGUID && thug_wave > 3)
+            if (thug_wave > 3)
             {
-                if (Player* player = Unit::GetPlayer(PlayerGUID))
-                    player->CompleteQuest(QUEST_PROTECT_DAPHNE);
+                player->CompleteQuest(QUEST_PROTECT_DAPHNE);
             }
             if (player && player->GetTypeId() == TYPEID_PLAYER)
                 ((Player*)player)->GroupEventHappens(QUEST_PROTECT_DAPHNE,m_creature);
@@ -129,7 +128,7 @@ struct TRINITY_DLL_DECL npc_daphne_stilwellAI : public npc_escortAI
         }
     }
 
-    void Aggro(Unit* who){}
+    void EnterCombat(Unit* who){}
 
     void Reset()
     {
@@ -143,11 +142,8 @@ struct TRINITY_DLL_DECL npc_daphne_stilwellAI : public npc_escortAI
 
     void JustDied(Unit* killer)
     {
-        if (PlayerGUID)
-        {
-            if (Player* player = Unit::GetPlayer(PlayerGUID))
+        if (Player* player = GetPlayerForEscort())
                 player->FailQuest(QUEST_PROTECT_DAPHNE);
-        }
     }
 
     void UpdateAI(const uint32 diff)
@@ -160,17 +156,13 @@ struct TRINITY_DLL_DECL npc_daphne_stilwellAI : public npc_escortAI
                 initial_movement = false;
             }
 
-            if (PlayerGUID)
+            Player* player = GetPlayerForEscort();
+            if (player)
             {
-                Player* player = Unit::GetPlayer(PlayerGUID);
-
-                if (player)
+                if(player->isDead())
                 {
-                    if(player->isDead())
-                    {
-                        player->FailQuest(QUEST_PROTECT_DAPHNE);
-                        SetVariables();
-                    }
+                    player->FailQuest(QUEST_PROTECT_DAPHNE);
+                    SetVariables();
                 }
 
                 if(m_creature->isDead() && player)
@@ -248,8 +240,11 @@ bool QuestAccept_npc_daphne_stilwell(Player* player, Creature* creature, Quest c
 {
     if (quest->GetQuestId() == QUEST_PROTECT_DAPHNE)
     {
-        ((npc_escortAI*)(creature->AI()))->Start(true, true, true, player->GetGUID());
-        ((npc_escortAI*)(creature->AI()))->DoSay(SAY_MOVE, LANG_UNIVERSAL, NULL);
+        if (npc_escortAI* pEscortAI = CAST_AI(npc_daphne_stilwellAI, creature->AI()))
+        {
+            pEscortAI->Start(true, true, player->GetGUID(), quest);
+            pEscortAI->DoSay(SAY_MOVE, LANG_UNIVERSAL, NULL);
+        }
     }
 
     return true;
@@ -296,7 +291,7 @@ struct TRINITY_DLL_DECL npc_defias_traitorAI : public npc_escortAI
 
     void WaypointReached(uint32 i)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
+        Player* player = GetPlayerForEscort();
 
         if (!player || player->GetTypeId() != TYPEID_PLAYER)
             return;
@@ -317,24 +312,17 @@ struct TRINITY_DLL_DECL npc_defias_traitorAI : public npc_escortAI
                 break;
         }
     }
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
-        switch(rand()%2)
-        {
-            case 0: DoScriptText(SAY_AGGRO_1, m_creature, who); break;
-            case 1: DoScriptText(SAY_AGGRO_2, m_creature, who); break;
-        }
+        DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2), m_creature, who);
     }
 
     void Reset(){}
 
     void JustDied(Unit* killer)
     {
-        if (PlayerGUID)
-        {
-            if (Player* player = Unit::GetPlayer(PlayerGUID))
-                player->FailQuest(QUEST_DEFIAS_BROTHERHOOD);
-        }
+        if (Player* player = GetPlayerForEscort())
+            player->FailQuest(QUEST_DEFIAS_BROTHERHOOD);
     }
 
     void UpdateAI(const uint32 diff)
@@ -347,7 +335,8 @@ bool QuestAccept_npc_defias_traitor(Player* player, Creature* creature, Quest co
 {
     if (quest->GetQuestId() == QUEST_DEFIAS_BROTHERHOOD)
     {
-        ((npc_escortAI*)(creature->AI()))->Start(true, true, true, player->GetGUID());
+        if (npc_escortAI* pEscortAI = CAST_AI(npc_defias_traitorAI, creature->AI()))
+            pEscortAI->Start(true, true, player->GetGUID(), quest);
         DoScriptText(SAY_START, creature, player);
     }
 
@@ -407,6 +396,42 @@ CreatureAI* GetAI_npc_defias_traitor(Creature *_Creature)
     return (CreatureAI*)thisAI;
 }
 
+//#####
+//# NPC Mikhail - q 1249
+//########
+
+bool QuestAccept_npc_Mikhail(Player* player, Creature* creature, Quest const* quest)
+{
+    if (quest->GetQuestId() == 1249)
+    {
+        Creature* trigger = NULL;
+
+        float x, y, z;
+        creature->GetPosition(x, y, z);
+
+        CellPair pair(Trinity::ComputeCellPair(x, y));
+        Cell cell(pair);
+        cell.data.Part.reserved = ALL_DISTRICT;
+        cell.SetNoCreate();
+
+        Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck check(*creature, 4962, true, 10);
+        Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(trigger, check);
+
+        TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> cSearcher(searcher);
+
+        cell.Visit(pair, cSearcher, *(creature->GetMap()));
+
+        if(trigger)
+        {
+            trigger->setFaction(14);
+            trigger->Attack(player, true);
+            trigger->GetMotionMaster()->MoveChase(player, 0, 0);
+        }
+    }
+
+    return true;
+}
+
 void AddSC_westfall()
 {
     Script *newscript;
@@ -422,6 +447,12 @@ void AddSC_westfall()
     newscript->Name="npc_defias_traitor";
     newscript->GetAI = &GetAI_npc_defias_traitor;
     newscript->pQuestAccept = &QuestAccept_npc_defias_traitor;
+    newscript->RegisterSelf();
+
+
+    newscript = new Script;
+    newscript->Name = "npc_Mikhail";
+    newscript->pQuestAccept = &QuestAccept_npc_Mikhail;
     newscript->RegisterSelf();
 }
 

@@ -108,14 +108,9 @@ struct TRINITY_DLL_DECL boss_talon_king_ikissAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
-        switch(rand()%3)
-        {
-            case 0: DoScriptText(SAY_AGGRO_1, m_creature); break;
-            case 1: DoScriptText(SAY_AGGRO_2, m_creature); break;
-            case 2: DoScriptText(SAY_AGGRO_3, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), m_creature);
     }
 
     void JustDied(Unit* Killer)
@@ -128,11 +123,7 @@ struct TRINITY_DLL_DECL boss_talon_king_ikissAI : public ScriptedAI
 
     void KilledUnit(Unit* victim)
     {
-        switch(rand()%2)
-        {
-            case 0: DoScriptText(SAY_SLAY_1, m_creature); break;
-            case 1: DoScriptText(SAY_SLAY_2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), m_creature);
     }
 
     void UpdateAI(const uint32 diff)
@@ -151,17 +142,21 @@ struct TRINITY_DLL_DECL boss_talon_king_ikissAI : public ScriptedAI
         {
             DoCast(m_creature,HeroicMode ? H_SPELL_ARCANE_VOLLEY : SPELL_ARCANE_VOLLEY);
             ArcaneVolley_Timer = 10000+rand()%5000;
-        }else ArcaneVolley_Timer -= diff;
+        }
+        else
+            ArcaneVolley_Timer -= diff;
 
         if (Sheep_Timer < diff)
         {
             //second top aggro target in normal, random target in heroic correct?
             Unit *target = NULL;
-            target = HeroicMode ? SelectUnit(SELECT_TARGET_RANDOM,0, 60, true) : SelectUnit(SELECT_TARGET_TOPAGGRO,1, 60, true, m_creature->getVictim());
+            target = HeroicMode ? SelectUnit(SELECT_TARGET_RANDOM,0, 60, true) : SelectUnit(SELECT_TARGET_TOPAGGRO,1, 60, true, m_creature->getVictimGUID());
             if (target)
                 DoCast(target,HeroicMode ? H_SPELL_POLYMORPH : SPELL_POLYMORPH);
             Sheep_Timer = 15000+rand()%2500;
-        }else Sheep_Timer -= diff;
+        }
+        else
+            Sheep_Timer -= diff;
 
         //may not be correct time to cast
         if (!ManaShield && ((m_creature->GetHealth()*100) / m_creature->GetMaxHealth() < 20))
@@ -176,7 +171,9 @@ struct TRINITY_DLL_DECL boss_talon_king_ikissAI : public ScriptedAI
             {
                 DoCast(m_creature,H_SPELL_SLOW);
                 Slow_Timer = 15000+rand()%25000;
-            }else Slow_Timer -= diff;
+            }
+            else
+                Slow_Timer -= diff;
         }
 
         if (Blink_Timer < diff)
@@ -198,7 +195,9 @@ struct TRINITY_DLL_DECL boss_talon_king_ikissAI : public ScriptedAI
                 Blink = true;
             }
             Blink_Timer = 35000+rand()%5000;
-        }else Blink_Timer -= diff;
+        }
+        else
+            Blink_Timer -= diff;
 
         if (!Blink)
             DoMeleeAttackIfReady();

@@ -68,7 +68,7 @@ struct TRINITY_DLL_DECL boss_arcanist_doanAI : public ScriptedAI
         ManaShield4_Timer = 70000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoYell(SAY_AGGRO,LANG_UNIVERSAL,NULL);
         DoPlaySoundToSet(m_creature,SOUND_AGGRO);

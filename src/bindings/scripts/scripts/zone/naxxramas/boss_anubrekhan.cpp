@@ -22,6 +22,7 @@ SDCategory: Naxxramas
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_naxxramas.h"
 
 #define SAY_GREET           -1533000
 #define SAY_AGGRO1          -1533001
@@ -46,8 +47,12 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_anubrekhanAI : public ScriptedAI
 {
-    boss_anubrekhanAI(Creature *c) : ScriptedAI(c) {}
+    boss_anubrekhanAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
 
+    ScriptedInstance * pInstance;
     uint32 Impale_Timer;
     uint32 LocustSwarm_Timer;
     uint32 Summon_Timer;
@@ -58,6 +63,9 @@ struct TRINITY_DLL_DECL boss_anubrekhanAI : public ScriptedAI
         Impale_Timer = 15000;                               //15 seconds
         LocustSwarm_Timer = 80000 + (rand()%40000);         //Random time between 80 seconds and 2 minutes for initial cast
         Summon_Timer = LocustSwarm_Timer + 45000;           //45 seconds after initial locust swarm
+
+        if (pInstance)
+            pInstance->SetData(DATA_ANUB_REKHAN, NOT_STARTED);
     }
 
     void KilledUnit(Unit* Victim)
@@ -71,31 +79,29 @@ struct TRINITY_DLL_DECL boss_anubrekhanAI : public ScriptedAI
          DoScriptText(SAY_SLAY, m_creature);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
-        switch(rand()%3)
-        {
-        case 0: DoScriptText(SAY_AGGRO1, m_creature); break;
-        case 1: DoScriptText(SAY_AGGRO2, m_creature); break;
-        case 2: DoScriptText(SAY_AGGRO3, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), m_creature);
+
+        if (pInstance)
+            pInstance->SetData(DATA_ANUB_REKHAN, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_ANUB_REKHAN, DONE);
     }
 
     void MoveInLineOfSight(Unit *who)
     {
+        if (!HasTaunted && m_creature->IsWithinDistInMap(who, 60.0f))
+        {
+            DoScriptText(RAND(SAY_GREET, SAY_TAUNT1, SAY_TAUNT2, SAY_TAUNT3, SAY_TAUNT4), m_creature);
 
-            if (!HasTaunted && m_creature->IsWithinDistInMap(who, 60.0f))
-            {
-                switch(rand()%5)
-                {
-                case 0: DoScriptText(SAY_GREET, m_creature); break;
-                case 1: DoScriptText(SAY_TAUNT1, m_creature); break;
-                case 2: DoScriptText(SAY_TAUNT2, m_creature); break;
-                case 3: DoScriptText(SAY_TAUNT3, m_creature); break;
-                case 4: DoScriptText(SAY_TAUNT4, m_creature); break;
-                }
-                HasTaunted = true;
-            }
+            HasTaunted = true;
+        }
+
         ScriptedAI::MoveInLineOfSight(who);
     }
 

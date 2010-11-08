@@ -64,15 +64,42 @@ uint32 OutdoorPvPObjectiveNA::GetAliveGuardsCount()
         case NA_NPC_GUARD_14:
         case NA_NPC_GUARD_15:
             {
-                if(Creature * cr = HashMapHolder<Creature>::Find(itr->second))
+                Map * tmpMap = GetMap();
+                if (!tmpMap)
                 {
-                    if(cr->isAlive())
-                        ++cnt;
+                    CreatureData const * cd = objmgr.GetCreatureData(GUID_LOPART(itr->second));
+                    if (cd)
+                    {
+                        tmpMap = GetMap(cd->mapid);
+
+                        if (tmpMap)
+                        {
+                            if(Creature * cr = tmpMap->GetCreature(itr->second))
+                            {
+                                if(cr->isAlive())
+                                    ++cnt;
+                            }
+                            else
+                            {
+                                if(!cd->is_dead)
+                                    ++cnt;
+                            }
+                        }
+                    }
                 }
-                else if (CreatureData const * cd = objmgr.GetCreatureData(GUID_LOPART(itr->second)))
+                else
                 {
-                    if(!cd->is_dead)
-                        ++cnt;
+                    if(Creature * cr = tmpMap->GetCreature(itr->second))
+                    {
+                        if(cr->isAlive())
+                            ++cnt;
+                    }
+                    else
+                    {
+                        CreatureData const * cd = objmgr.GetCreatureData(GUID_LOPART(itr->second));
+                        if(cd && !cd->is_dead)
+                            ++cnt;
+                    }
                 }
             }
             break;
@@ -640,8 +667,26 @@ bool OutdoorPvPObjectiveNA::Update(uint32 diff)
                 artkit = 1;
                 break;
             }
+            Map * tmpMap = GetMap();
+            if (!tmpMap)
+            {
+                GameObjectData const* data = objmgr.GetGOData(GUID_LOPART(m_CapturePoint));
 
-            GameObject* flag = HashMapHolder<GameObject>::Find(m_CapturePoint);
+                if (!data)
+                {
+                    sLog.outError("OutdoorPvPObjectiveNA::Update: data not found");
+                    return false;
+                }
+
+                Map * tmpMap = GetMap(data->mapid);
+                if (!tmpMap)
+                {
+                    sLog.outError("OutdoorPvPObjectiveNA::Update: map not found (id %u)", data->mapid);
+                    return false;
+                }
+            }
+
+            GameObject* flag = tmpMap->GetGameObject(m_CapturePoint);
             if(flag)
             {
                 flag->SetGoArtKit(artkit);

@@ -90,7 +90,7 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
             pInstance->SetData(DATA_GRUULEVENT, DONE);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
         DoZoneInCombat();
@@ -101,12 +101,7 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
 
     void KilledUnit()
     {
-        switch(rand()%3)
-        {
-        case 0: DoScriptText(SAY_SLAY1, m_creature); break;
-        case 1: DoScriptText(SAY_SLAY2, m_creature); break;
-        case 2: DoScriptText(SAY_SLAY3, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2, SAY_SLAY3), m_creature);
     }
 
     void UpdateAI(const uint32 diff)
@@ -163,13 +158,7 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
                             Unit *target2 = *(knockback_targets.begin() + rand()%knockback_targets.size());
 
                             if(target && target2)
-                            {
-                                switch(rand()%2)
-                                {
-                                    case 0: target->CastSpell(target, SPELL_KNOCK_BACK, true, NULL, NULL, m_creature->GetGUID()); break;
-                                    case 1: target->CastSpell(target, SPELL_KNOCK_BACK2, true, NULL, NULL, m_creature->GetGUID()); break;
-                                }
-                            }
+                                target->CastSpell(target, RAND(SPELL_KNOCK_BACK, SPELL_KNOCK_BACK2), true, NULL, NULL, m_creature->GetGUID());
                         }
 
                         GroundSlamTimer = 7000;
@@ -209,27 +198,13 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
 
                     case 3:
                     {
-                        //Shatter takes effect
-                        // Not Needet Anymore Handled in Spell SPELL_SHATTER
-                        //std::list<HostilReference*>& m_threatlist = m_creature->getThreatManager().getThreatList();
-                        //for(std::list<HostilReference*>::iterator itr = m_threatlist.begin(); itr!= m_threatlist.end(); ++itr)
-                        //{
-                        //    Unit *target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
-                        //    if(target)
-                        //    {
-                        //        target->RemoveAurasDueToSpell(SPELL_STONED);
-                        //        if(target->GetTypeId() == TYPEID_PLAYER)
-                        //            target->CastSpell(target, SPELL_SHATTER_EFFECT, false, NULL, NULL, m_creature->GetGUID());
-                        //    }
-                        //}
-
                         m_creature->GetMotionMaster()->Clear();
 
                         Unit *victim = m_creature->getVictim();
                         if(victim)
                         {
                             m_creature->GetMotionMaster()->MoveChase(victim);
-                            m_creature->SetUInt64Value(UNIT_FIELD_TARGET, victim->GetGUID());
+                            m_creature->SetSelection(victim->GetGUID());
                         }
 
                         PerformingGroundSlam = false;
@@ -291,7 +266,7 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
             {
                 m_creature->GetMotionMaster()->Clear();
                 m_creature->GetMotionMaster()->MoveIdle();
-                m_creature->SetUInt64Value(UNIT_FIELD_TARGET, 0);
+                m_creature->SetSelection(0);
 
                 PerformingGroundSlam= true;
                 GroundSlamTimer = 0;

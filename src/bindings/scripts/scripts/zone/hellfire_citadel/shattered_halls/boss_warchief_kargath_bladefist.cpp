@@ -73,7 +73,7 @@ struct TRINITY_DLL_DECL boss_warchief_kargath_bladefistAI : public ScriptedAI
         resetcheck_timer = 5000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         switch (rand()%3)
         {
@@ -192,11 +192,15 @@ struct TRINITY_DLL_DECL boss_warchief_kargath_bladefistAI : public ScriptedAI
             return;
 
         if(Assassins_Timer)
+        {
             if(Assassins_Timer < diff)
             {
                 SpawnAssassin();
                 Assassins_Timer = 0;
-            }else Assassins_Timer -= diff;
+            }
+            else
+                Assassins_Timer -= diff;
+        }
 
         if(InBlade)
         {
@@ -225,11 +229,14 @@ struct TRINITY_DLL_DECL boss_warchief_kargath_bladefistAI : public ScriptedAI
                         (*m_creature).GetMotionMaster()->MovePoint(1,x,y,m_creature->GetPositionZ());
                         Wait_Timer = 0;
                     }
-                }else Wait_Timer -= diff;
+                }
+                else
+                    Wait_Timer -= diff;
         }
         else
         {
             if(Blade_Dance_Timer)
+            {
                 if(Blade_Dance_Timer < diff)
                 {
                     target_num = TARGET_NUM;
@@ -238,14 +245,21 @@ struct TRINITY_DLL_DECL boss_warchief_kargath_bladefistAI : public ScriptedAI
                     Blade_Dance_Timer = 0;
                     m_creature->SetSpeed(MOVE_RUN,4);
                     return;
-                }else Blade_Dance_Timer -= diff;
+                }
+                else
+                    Blade_Dance_Timer -= diff;
+            }
 
             if(Charge_timer)
+            {
                 if(Charge_timer < diff)
                 {
-                    DoCast(SelectUnit(SELECT_TARGET_RANDOM,0),H_SPELL_CHARGE);
+                    DoCast(SelectUnit(SELECT_TARGET_RANDOM,0), H_SPELL_CHARGE);
                     Charge_timer = 0;
-                }else Charge_timer -= diff;
+                }
+                else
+                    Charge_timer -= diff;
+            }
 
             if (Summon_Assistant_Timer < diff)
             {
@@ -253,17 +267,13 @@ struct TRINITY_DLL_DECL boss_warchief_kargath_bladefistAI : public ScriptedAI
                 Creature* Summoned;
 
                 for(int i = 0; i < summoned; i++)
-                {
-                    switch(rand()%3)
-                    {
-                        case 0: Summoned = m_creature->SummonCreature(MOB_HEARTHEN_GUARD,AddsEntrance[0],AddsEntrance[1], AddsEntrance[2], 0,TEMPSUMMON_CORPSE_TIMED_DESPAWN,10000); break;
-                        case 1: Summoned = m_creature->SummonCreature(MOB_SHARPSHOOTER_GUARD,AddsEntrance[0],AddsEntrance[1], AddsEntrance[2], 0,TEMPSUMMON_CORPSE_TIMED_DESPAWN,10000); break;
-                        case 2: Summoned = m_creature->SummonCreature(MOB_REAVER_GUARD,AddsEntrance[0],AddsEntrance[1], AddsEntrance[2], 0,TEMPSUMMON_CORPSE_TIMED_DESPAWN,10000); break;
-                    }
-                }
+                    Summoned = m_creature->SummonCreature(RAND(MOB_HEARTHEN_GUARD, MOB_SHARPSHOOTER_GUARD, MOB_REAVER_GUARD), AddsEntrance[0], AddsEntrance[1], AddsEntrance[2], 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);
+
                 if(rand()%100 < 20) summoned++;
                     Summon_Assistant_Timer = 15000 + (rand()%5000) ;
-            }else Summon_Assistant_Timer -= diff;
+            }
+            else
+                Summon_Assistant_Timer -= diff;
 
             DoMeleeAttackIfReady();
         }
@@ -273,13 +283,16 @@ struct TRINITY_DLL_DECL boss_warchief_kargath_bladefistAI : public ScriptedAI
             uint32 tempx,tempy;
             tempx = m_creature->GetPositionX();
             tempy = m_creature->GetPositionY();
+
             if ( tempx > 255 || tempx < 205)
             {
                 EnterEvadeMode();
                 return;
             }
             resetcheck_timer = 5000;
-        }else resetcheck_timer -= diff;
+        }
+        else
+            resetcheck_timer -= diff;
     }
 };
 

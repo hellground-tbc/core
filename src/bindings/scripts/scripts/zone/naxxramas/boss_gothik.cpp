@@ -22,6 +22,7 @@ SDCategory: Naxxramas
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_naxxramas.h"
 
 #define SAY_SPEECH                  -1533040
 #define SAY_KILL                    -1533041

@@ -70,7 +70,7 @@ void SimpleAI::Reset()
 {
 }
 
-void SimpleAI::Aggro(Unit *who)
+void SimpleAI::EnterCombat(Unit *who)
 {
             //Reset cast timers
             if (Spell[0].First_Cast >= 0)
@@ -272,7 +272,8 @@ void SimpleAI::UpdateAI(const uint32 diff)
                     if (Spell[i].Text[random_text])
                         if (Spell[i].Say[random_text])
                             DoSay(Spell[i].Text[random_text], LANG_UNIVERSAL, target);
-                        else DoYell(Spell[i].Text[random_text], LANG_UNIVERSAL, target);
+                        else
+                            DoYell(Spell[i].Text[random_text], LANG_UNIVERSAL, target);
 
                     //Random sound
                     if (Spell[i].Text_Sound[random_text])
@@ -284,10 +285,12 @@ void SimpleAI::UpdateAI(const uint32 diff)
             //Spell will cast agian when the cooldown is up
             if (Spell[i].CooldownRandomAddition)
                 Spell_Timer[i] = Spell[i].Cooldown + (rand() % Spell[i].CooldownRandomAddition);
-            else Spell_Timer[i] = Spell[i].Cooldown;
+            else
+                Spell_Timer[i] = Spell[i].Cooldown;
 
-        }else Spell_Timer[i] -= diff;
-
+        }
+        else
+            Spell_Timer[i] -= diff;
     }
 
     DoMeleeAttackIfReady();

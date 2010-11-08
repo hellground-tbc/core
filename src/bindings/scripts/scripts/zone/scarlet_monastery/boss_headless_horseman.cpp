@@ -147,7 +147,7 @@ struct TRINITY_DLL_DECL mob_wisp_invisAI : public ScriptedAI
     uint32 spell;
     uint32 spell2;
     void Reset(){}
-    void Aggro(Unit *who){}
+    void EnterCombat(Unit *who){}
     void SetType(uint32 _type)
     {
         Creaturetype = _type;
@@ -197,7 +197,7 @@ struct TRINITY_DLL_DECL mob_wisp_invisAI : public ScriptedAI
 
 struct TRINITY_DLL_DECL mob_headAI : public ScriptedAI
 {
-    mob_headAI(Creature *c) : ScriptedAI(c) 
+    mob_headAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = (ScriptedInstance*)c->GetInstanceData();
     }
@@ -222,7 +222,7 @@ struct TRINITY_DLL_DECL mob_headAI : public ScriptedAI
         laugh = 15000 + rand()%16 * 1000;
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
     void SaySound(int32 textEntry, Unit *target = 0)
     {
         DoScriptText(textEntry, m_creature, target);
@@ -480,7 +480,7 @@ struct TRINITY_DLL_DECL boss_headless_horsemanAI : public ScriptedAI
         ++id;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if(pInstance)
             pInstance->SetData(DATA_HORSEMAN_EVENT, IN_PROGRESS);
@@ -528,7 +528,7 @@ struct TRINITY_DLL_DECL boss_headless_horsemanAI : public ScriptedAI
 
         for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
             if((m_creature->IsWithinLOSInMap(i->getSource()) || !checkLoS) && m_creature->getVictim() != i->getSource() &&
-                m_creature->IsWithinDistInMap(i->getSource(), range) && i->getSource()->isAlive())
+                m_creature->IsWithinDistInMap(i->getSource(), range) && i->getSource()->isAlive() && !i->getSource()->isGameMaster())
                 temp.push_back(i->getSource());
 
         if (temp.size())
@@ -686,7 +686,7 @@ struct TRINITY_DLL_DECL boss_headless_horsemanAI : public ScriptedAI
             case 2:
                 if(conflagrate < diff)
                 {
-                    Unit *plr = SelectUnit(SELECT_TARGET_RANDOM, 1,30,true, m_creature->getVictim());
+                    Unit *plr = SelectUnit(SELECT_TARGET_RANDOM, 1,30,true, m_creature->getVictimGUID());
                     if(!plr)
                         plr = m_creature->getVictim();
 
@@ -822,7 +822,7 @@ struct TRINITY_DLL_DECL mob_pulsing_pumpkinAI : public ScriptedAI
         m_creature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_DISABLE_ROTATE);
     }
 
-    void Aggro(Unit *who){}
+    void EnterCombat(Unit *who){}
 
     void SpellHit(Unit *caster, const SpellEntry *spell)
     {
@@ -896,7 +896,7 @@ bool GOReward_go_loosely_turned_soil(Player *plr, GameObject* soil, Quest const*
         {
             ((boss_headless_horsemanAI*)horseman->AI())->playerGUID = plr->GetGUID();
             ((boss_headless_horsemanAI*)horseman->AI())->FlyMode();
-            soil->SetUInt32Value(GAMEOBJECT_FACTION,14); 
+            soil->SetUInt32Value(GAMEOBJECT_FACTION,14);
         }
     }
     return true;

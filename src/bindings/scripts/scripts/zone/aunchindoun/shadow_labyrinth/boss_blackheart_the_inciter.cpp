@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Boss_Blackheart_the_Inciter
 SD%Complete: 100
-SDComment: 
+SDComment:
 SDCategory: Auchindoun, Shadow Labyrinth
 EndScriptData */
 
@@ -91,11 +91,7 @@ struct TRINITY_DLL_DECL boss_blackheart_the_inciterAI : public ScriptedAI
 
     void KilledUnit(Unit *victim)
     {
-        switch(rand()%2)
-        {
-            case 0: DoScriptText(SAY_SLAY1, m_creature); break;
-            case 1: DoScriptText(SAY_SLAY2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), m_creature);
     }
 
     void JustDied(Unit *victim)
@@ -130,14 +126,9 @@ struct TRINITY_DLL_DECL boss_blackheart_the_inciterAI : public ScriptedAI
              }
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
-        switch(rand()%3)
-        {
-            case 0: DoScriptText(SAY_AGGRO1, m_creature); break;
-            case 1: DoScriptText(SAY_AGGRO2, m_creature); break;
-            case 2: DoScriptText(SAY_AGGRO3, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), m_creature);
 
         TrashAggro();
 
@@ -153,6 +144,10 @@ struct TRINITY_DLL_DECL boss_blackheart_the_inciterAI : public ScriptedAI
             {
                 InciteChaos = false;
                 DoResetThreat();
+
+                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 50, true);
+                if(target)
+                    AttackStart(target);
             }
             else
                 InciteChaosWait_Timer -= diff;
@@ -178,7 +173,7 @@ struct TRINITY_DLL_DECL boss_blackheart_the_inciterAI : public ScriptedAI
             for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
             {
                 Player *plr = i->getSource();
-                Player *target = (Player*)SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true, plr);
+                Player *target = (Player*)SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true, plr->GetGUID());
 
                 if(plr && plr->IsAIEnabled && target)
                     plr->AI()->AttackStart(target);

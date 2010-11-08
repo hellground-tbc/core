@@ -51,11 +51,12 @@
 #include "BattleGroundMgr.h"
 #include "OutdoorPvPMgr.h"
 #include "TemporarySummon.h"
-#include "AuctionHouseBot.h"
+//#include "AuctionHouseBot.h"
 #include "WaypointMovementGenerator.h"
 #include "VMapFactory.h"
 #include "GlobalEvents.h"
 #include "GameEvent.h"
+#include "PoolHandler.h"
 #include "Database/DatabaseImpl.h"
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
@@ -65,6 +66,7 @@
 #include "Language.h"
 #include "CreatureGroups.h"
 #include "Transports.h"
+#include "CreatureEventAIMgr.h"
 
 INSTANTIATE_SINGLETON_1( World );
 
@@ -113,6 +115,22 @@ World::World()
 
     m_updateTimeSum = 0;
     m_updateTimeCount = 0;
+
+    // TODO: move to config
+    m_honorRanks[0] = 10000000;//100;
+    m_honorRanks[1] = 10000000;//500;
+    m_honorRanks[2] = 10000000;//1000;
+    m_honorRanks[3] = 10000000;//2000;
+    m_honorRanks[4] = 10000000;//5000;
+    m_honorRanks[5] = 10000000;//10000;
+    m_honorRanks[6] = 10000000;//16000;
+    m_honorRanks[7] = 10000000;//23000;
+    m_honorRanks[8] = 10000000;//31000;
+    m_honorRanks[9] = 10000000;//40000;
+    m_honorRanks[10] = 10000000;//50000;
+    m_honorRanks[11] = 10000000;//60000;
+    m_honorRanks[12] = 10000000;//75000;
+    m_honorRanks[13] = 10000000;//100000;
 }
 
 /// World destructor
@@ -935,8 +953,10 @@ void World::LoadConfigSettings(bool reload)
 
     m_configs[CONFIG_EVENT_ANNOUNCE] = sConfig.GetIntDefault("Event.Announce",0);
 
+    m_configs[CONFIG_CREATURE_FAMILY_FLEE_ASSISTANCE_RADIUS] = sConfig.GetIntDefault("CreatureFamilyFleeAssistanceRadius",30);
     m_configs[CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS] = sConfig.GetIntDefault("CreatureFamilyAssistanceRadius",10);
     m_configs[CONFIG_CREATURE_FAMILY_ASSISTANCE_DELAY]  = sConfig.GetIntDefault("CreatureFamilyAssistanceDelay",1500);
+    m_configs[CONFIG_CREATURE_FAMILY_FLEE_DELAY]        = sConfig.GetIntDefault("CreatureFamilyFleeDelay",7000);
 
     m_configs[CONFIG_WORLD_BOSS_LEVEL_DIFF] = sConfig.GetIntDefault("WorldBossLevelDiff",3);
 
@@ -985,7 +1005,7 @@ void World::LoadConfigSettings(bool reload)
 
     m_configs[CONFIG_BATTLEGROUND_PREMATURE_FINISH_TIMER] = sConfig.GetIntDefault("BattleGround.PrematureFinishTimer", 0);
     m_configs[CONFIG_INSTANT_LOGOUT] = sConfig.GetIntDefault("InstantLogout", SEC_MODERATOR);
-    
+
     m_configs[CONFIG_GROUPLEADER_RECONNECT_PERIOD] = sConfig.GetIntDefault("GroupLeaderReconnectPeriod", 180);
 
     m_VisibleUnitGreyDistance = sConfig.GetFloatDefault("Visibility.Distance.Grey.Unit", 1);
@@ -1105,13 +1125,13 @@ void World::LoadConfigSettings(bool reload)
     VMAP::VMapFactory::preventSpellsFromBeingTestedForLoS(ignoreSpellIds.c_str());
     sLog.outString( "WORLD: VMap support included. LineOfSight:%i, getHeight:%i",enableLOS, enableHeight);
     sLog.outString( "WORLD: VMap data directory is: %svmaps",m_dataPath.c_str());
-    sLog.outString( "WORLD: VMap config keys are: vmap.enableLOS, vmap.enableHeight, vmap.ignoreMapIds, vmap.ignoreSpellIds");
+    //sLog.outString( "WORLD: VMap config keys are: vmap.enableLOS, vmap.enableHeight, vmap.ignoreMapIds, vmap.ignoreSpellIds");
 
 
     m_configs[CONFIG_MAX_WHO] = sConfig.GetIntDefault("MaxWhoListReturns", 49);
     m_configs[CONFIG_PET_LOS] = sConfig.GetBoolDefault("vmap.petLOS", false);
     m_configs[CONFIG_VMAP_TOTEM] = sConfig.GetBoolDefault("vmap.totem", false);
-    
+
     m_configs[CONFIG_PREMATURE_BG_REWARD] = sConfig.GetBoolDefault("Battleground.PrematureReward", true);
     m_configs[CONFIG_BG_START_MUSIC] = sConfig.GetBoolDefault("MusicInBattleground", false);
     m_configs[CONFIG_START_ALL_SPELLS] = sConfig.GetBoolDefault("PlayerStart.AllSpells", false);
@@ -1210,8 +1230,8 @@ void World::SetInitialWorldSettings()
     sLog.outString( "Cleaning up instances..." );
     sInstanceSaveManager.CleanupInstances();                              // must be called before `creature_respawn`/`gameobject_respawn` tables
 
-    sLog.outString( "Packing instances..." );
-    sInstanceSaveManager.PackInstances();
+    //sLog.outString( "Packing instances..." );
+    //sInstanceSaveManager.PackInstances();
 
     sLog.outString( "Loading Localization strings..." );
     objmgr.LoadCreatureLocales();
@@ -1303,6 +1323,9 @@ void World::SetInitialWorldSettings()
 
     sLog.outString( "Loading Gameobject Respawn Data..." ); // must be after PackInstances()
     objmgr.LoadGameobjectRespawnTimes();
+
+    sLog.outString("Loading Objects Pooling Data...");
+    //poolhandler.LoadFromDB();
 
     sLog.outString( "Loading Game Event Data...");
     gameeventmgr.LoadFromDB();
@@ -1445,6 +1468,15 @@ void World::SetInitialWorldSettings()
     sLog.outString( "Loading Scripts text locales..." );    // must be after Load*Scripts calls
     objmgr.LoadDbScriptStrings();
 
+    sLog.outString( "Loading CreatureEventAI Texts...");
+    CreatureEAI_Mgr.LoadCreatureEventAI_Texts(false);       // false, will checked in LoadCreatureEventAI_Scripts
+
+    sLog.outString( "Loading CreatureEventAI Summons...");
+    CreatureEAI_Mgr.LoadCreatureEventAI_Summons(false);     // false, will checked in LoadCreatureEventAI_Scripts
+
+    sLog.outString( "Loading CreatureEventAI Scripts...");
+    CreatureEAI_Mgr.LoadCreatureEventAI_Scripts();
+
     sLog.outString( "Initializing Scripts..." );
     if(!LoadScriptingModule())
         exit(1);
@@ -1508,18 +1540,21 @@ void World::SetInitialWorldSettings()
     sLog.outString("Deleting expired bans..." );
     LoginDatabase.Execute("DELETE FROM ip_banned WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
 
+    sLog.outString("Starting objects Pooling system...");
+    //poolhandler.Initialize();
+
     sLog.outString("Calculate next daily quest reset time..." );
     InitDailyQuestResetTime();
 
-    sLog.outString("Loadin special daily quests..." );
+    sLog.outString("Loading special daily quests..." );
     objmgr.LoadSpecialQuests();
 
     sLog.outString("Starting Game Event system..." );
     uint32 nextGameEvent = gameeventmgr.Initialize();
     m_timers[WUPDATE_EVENTS].SetInterval(nextGameEvent);    //depend on next event
 
-    sLog.outString("Initialize AuctionHouseBot...");
-    auctionbot.Initialize();
+    //sLog.outString("Initialize AuctionHouseBot...");
+    //auctionbot.Initialize();
 
     sLog.outString( "Activating AntiCheat" );
     if (m_ac.activate() == -1)
@@ -1610,12 +1645,6 @@ void World::Update(time_t diff)
 
             m_updateTimeSum = m_updateTime;
             m_updateTimeCount = 1;
-            
-            if(GetUptime() > 43000 && !m_ShutdownTimer)
-            { 
-                SendWorldText(LANG_SYSTEMMESSAGE, "Autorestart in 10 mins");
-                ShutdownServ(600, SHUTDOWN_MASK_RESTART, RESTART_EXIT_CODE);
-            }
         }
         else
         {
@@ -1645,7 +1674,7 @@ void World::Update(time_t diff)
         ResetDailyQuests();
         m_NextDailyQuestReset += DAY;
     }
-    
+
     /// <ul><li> Handle auctions when the timer has passed
     if (m_timers[WUPDATE_AUCTIONS].Passed())
     {
@@ -1746,7 +1775,7 @@ void World::Update(time_t diff)
     RecordTimeDiff("UpdateGameEvents");
 
     /// </ul>
-    
+
     // update the instance reset times
     sInstanceSaveManager.Update();
     RecordTimeDiff("UpdateSaveMGR");
@@ -1968,7 +1997,7 @@ void World::SendGlobalText(const char* text, WorldSession *self)
     WorldPacket data;
 
     // need copy to prevent corruption by strtok call in LineFromMessage original string
-    char* buf = strdup(text);
+    char* buf = mangos_strdup(text);
     char* pos = buf;
 
     while(char* line = ChatHandler::LineFromMessage(pos))
@@ -1977,7 +2006,7 @@ void World::SendGlobalText(const char* text, WorldSession *self)
         SendGlobalMessage(&data, self);
     }
 
-    free(buf);
+    delete [] buf;
 }
 
 /// Send a packet to all players (or players selected team) in the zone (except self if mentioned)
@@ -2051,14 +2080,17 @@ bool World::KickPlayer(const std::string& playerName)
 }
 
 /// Ban an account or ban an IP address, duration will be parsed using TimeStringToSecs if it is positive, otherwise permban
-BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, std::string duration, std::string reason, std::string author)
+BanReturn World::BanAccount(BanMode mode, std::string nameIPOrMail, std::string duration, std::string reason, std::string author)
 {
-    LoginDatabase.escape_string(nameOrIP);
+    LoginDatabase.escape_string(nameIPOrMail);
     LoginDatabase.escape_string(reason);
     std::string safe_author=author;
     LoginDatabase.escape_string(safe_author);
 
-    uint32 duration_secs = TimeStringToSecs(duration);
+    uint32 duration_secs = 0;
+    if (mode != BAN_EMAIL)
+        duration_secs = TimeStringToSecs(duration);
+
     QueryResult_AutoPtr resultAccounts = QueryResult_AutoPtr(NULL);                     //used for kicking
 
     ///- Update the database with ban information
@@ -2066,16 +2098,20 @@ BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, std::string dura
     {
         case BAN_IP:
             //No SQL injection as strings are escaped
-            resultAccounts = LoginDatabase.PQuery("SELECT id FROM account WHERE last_ip = '%s'",nameOrIP.c_str());
-            LoginDatabase.PExecute("INSERT INTO ip_banned VALUES ('%s',UNIX_TIMESTAMP(),UNIX_TIMESTAMP()+%u,'%s','%s')",nameOrIP.c_str(),duration_secs,safe_author.c_str(),reason.c_str());
+            resultAccounts = LoginDatabase.PQuery("SELECT id FROM account WHERE last_ip = '%s'",nameIPOrMail.c_str());
+            LoginDatabase.PExecute("INSERT INTO ip_banned VALUES ('%s',UNIX_TIMESTAMP(),UNIX_TIMESTAMP()+%u,'%s','%s')",nameIPOrMail.c_str(),duration_secs,safe_author.c_str(),reason.c_str());
             break;
         case BAN_ACCOUNT:
             //No SQL injection as string is escaped
-            resultAccounts = LoginDatabase.PQuery("SELECT id FROM account WHERE username = '%s'",nameOrIP.c_str());
+            resultAccounts = LoginDatabase.PQuery("SELECT id FROM account WHERE username = '%s'",nameIPOrMail.c_str());
             break;
         case BAN_CHARACTER:
             //No SQL injection as string is escaped
-            resultAccounts = CharacterDatabase.PQuery("SELECT account FROM characters WHERE name = '%s'",nameOrIP.c_str());
+            resultAccounts = CharacterDatabase.PQuery("SELECT account FROM characters WHERE name = '%s'",nameIPOrMail.c_str());
+            break;
+        case BAN_EMAIL:
+            resultAccounts = LoginDatabase.PQuery("SELECT account FROM account WHERE email = '%s'",nameIPOrMail.c_str());
+            LoginDatabase.PExecute("INSERT INTO email_banned VALUES ('%s',UNIX_TIMESTAMP(),'%s','%s')",nameIPOrMail.c_str(),safe_author.c_str(),reason.c_str());
             break;
         default:
             return BAN_SYNTAX_ERROR;
@@ -2083,10 +2119,10 @@ BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, std::string dura
 
     if(!resultAccounts)
     {
-        if(mode==BAN_IP)
+        if(mode == BAN_IP || mode == BAN_EMAIL)
             return BAN_SUCCESS;                             // ip correctly banned but nobody affected (yet)
         else
-            return BAN_NOTFOUND;                                // Nobody to ban
+            return BAN_NOTFOUND;                            // Nobody to ban
     }
 
     ///- Disconnect all affected players (for IP it can be several)
@@ -2095,7 +2131,7 @@ BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, std::string dura
         Field* fieldsAccount = resultAccounts->Fetch();
         uint32 account = fieldsAccount->GetUInt32();
 
-        if(mode!=BAN_IP)
+        if(mode != BAN_IP && mode != BAN_EMAIL)
         {
             //No SQL injection as strings are escaped
             LoginDatabase.PExecute("INSERT INTO account_banned VALUES ('%u', UNIX_TIMESTAMP(), UNIX_TIMESTAMP()+%u, '%s', '%s', '1')",
@@ -2112,26 +2148,32 @@ BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, std::string dura
 }
 
 /// Remove a ban from an account or IP address
-bool World::RemoveBanAccount(BanMode mode, std::string nameOrIP)
+bool World::RemoveBanAccount(BanMode mode, std::string nameIPOrMail)
 {
-    if (mode == BAN_IP)
+    switch(mode)
     {
-        LoginDatabase.escape_string(nameOrIP);
-        LoginDatabase.PExecute("DELETE FROM ip_banned WHERE ip = '%s'",nameOrIP.c_str());
-    }
-    else
-    {
-        uint32 account = 0;
-        if (mode == BAN_ACCOUNT)
-            account = accmgr.GetId (nameOrIP);
-        else if (mode == BAN_CHARACTER)
-            account = objmgr.GetPlayerAccountIdByPlayerName (nameOrIP);
+        case BAN_IP:
+            LoginDatabase.escape_string(nameIPOrMail);
+            LoginDatabase.PExecute("DELETE FROM ip_banned WHERE ip = '%s'",nameIPOrMail.c_str());
+            break;
+        case BAN_EMAIL:
+            LoginDatabase.escape_string(nameIPOrMail);
+            LoginDatabase.PExecute("DELETE FROM email_banned WHERE email = '%s'",nameIPOrMail.c_str());
+            break;
+        case BAN_ACCOUNT:
+        case BAN_CHARACTER:
+            uint32 account = 0;
+            if (mode == BAN_ACCOUNT)
+                account = accmgr.GetId (nameIPOrMail);
+            else if (mode == BAN_CHARACTER)
+                account = objmgr.GetPlayerAccountIdByPlayerName (nameIPOrMail);
 
-        if (!account)
-            return false;
+            if (!account)
+                return false;
 
-        //NO SQL injection as account is uint32
-        LoginDatabase.PExecute("UPDATE account_banned SET active = '0' WHERE id = '%u'",account);
+            //NO SQL injection as account is uint32
+            LoginDatabase.PExecute("UPDATE account_banned SET active = '0' WHERE id = '%u'",account);
+            break;
     }
     return true;
 }
@@ -2175,20 +2217,8 @@ void World::ShutdownServ(uint32 time, uint32 options, uint8 exitcode)
     m_ShutdownMask = options;
     m_ExitCode = exitcode;
 
-    ///- If the shutdown time is 0, set m_stopEvent (except if shutdown is 'idle' with remaining sessions)
-    if(time==0)
-    {
-        if(!(options & SHUTDOWN_MASK_IDLE) || GetActiveAndQueuedSessionCount()==0)
-            m_stopEvent = true;                             // exist code already set
-        else
-            m_ShutdownTimer = 1;                            //So that the session count is re-evaluated at next world tick
-    }
-    ///- Else set the shutdown timer and warn users
-    else
-    {
-        m_ShutdownTimer = time;
-        ShutdownMsg(true);
-    }
+    m_ShutdownTimer = time;
+    ShutdownMsg(true);
 }
 
 /// Display a shutdown message to the user(s)
@@ -2410,22 +2440,22 @@ void World::ResetDailyQuests()
         if(itr->second->GetPlayer())
             itr->second->GetPlayer()->ResetDailyQuestStatus();
 
-    uint32 heroicQuest[15] = { 11369, 11384, 11382, 11363, 11362, 11375, 11354, 11386, 11373, 11378, 11374, 11372, 11368, 11388, 11370 };
-    uint32 normalQuest[8]  = { 11389, 11371, 11376, 11383, 11364, 11500, 11385, 11387 };
+    uint32 heroicQuest[15] = { 11369, 11384, 11382, 11363, 11362, 11375, 11354, 11386, 11373, /*11378,*/ 11374, 11372, 11368, 11388, 11370 };
+    uint32 normalQuest[8]  = { 11389, 11371, 11376, 11383, 11364, /*11500,*/ 11385, 11387 };
     uint32 cookingQuest[4] = { 11380, 11377, 11381, 11379 };
     uint32 fishingQuest[5] = { 11666, 11665, 11669,11668, 11667 };
     uint32 alliancePVP[4]  = { 11335, 11336, 11337, 11338 };
     uint32 hordePVP[4]     = { 11339, 11340, 11341, 11342 };
 
-    uint32 temp = heroicQuest[urand(0,14)];
+    uint32 temp = heroicQuest[urand(0,13)];
     while(temp && temp == specialQuest[HEROIC])
-        temp = heroicQuest[urand(0,14)];
+        temp = heroicQuest[urand(0,13)];
 
     specialQuest[HEROIC]  = temp;
 
-    temp = normalQuest[urand(0,7)];
+    temp = normalQuest[urand(0,6)];
     while(temp && temp == specialQuest[QNORMAL])
-        temp = normalQuest[urand(0,7)];
+        temp = normalQuest[urand(0,6)];
 
     specialQuest[QNORMAL] = temp;
 

@@ -22,6 +22,7 @@ SDCategory: Naxxramas
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_naxxramas.h"
 
 #define EMOTE_BREATH            -1533082
 #define EMOTE_ENRAGE            -1533083
@@ -35,7 +36,12 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_sapphironAI : public ScriptedAI
 {
-    boss_sapphironAI(Creature* c) : ScriptedAI(c) {}
+    boss_sapphironAI(Creature* c) : ScriptedAI(c)
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
+
+    ScriptedInstance * pInstance;
 
     uint32 Icebolt_Count;
     uint32 Icebolt_Timer;
@@ -63,11 +69,23 @@ struct TRINITY_DLL_DECL boss_sapphironAI : public ScriptedAI
         Icebolt_Count = 0;
         IsInFly = false;
 
-        m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_LEVITATING + MOVEMENTFLAG_ONTRANSPORT);
+        m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_LEVITATING | MOVEMENTFLAG_ONTRANSPORT);
+
+        if (pInstance)
+            pInstance->SetData(DATA_SAPPHIRON, NOT_STARTED);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
+
+        if (pInstance)
+            pInstance->SetData(DATA_SAPPHIRON, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_SAPPHIRON, DONE);
     }
 
     void UpdateAI(const uint32 diff)
@@ -103,7 +121,7 @@ struct TRINITY_DLL_DECL boss_sapphironAI : public ScriptedAI
                     {
                         phase = 2;
                         m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
-                        m_creature->AddUnitMovementFlag(MOVEMENTFLAG_LEVITATING + MOVEMENTFLAG_ONTRANSPORT);
+                        m_creature->AddUnitMovementFlag(MOVEMENTFLAG_LEVITATING | MOVEMENTFLAG_ONTRANSPORT);
                         m_creature->GetMotionMaster()->Clear(false);
                         m_creature->GetMotionMaster()->MoveIdle();
                         m_creature->setHover(true);
@@ -141,7 +159,7 @@ struct TRINITY_DLL_DECL boss_sapphironAI : public ScriptedAI
                     {
                         phase = 1;
                         m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
-                        m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_LEVITATING + MOVEMENTFLAG_ONTRANSPORT);
+                        m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_LEVITATING | MOVEMENTFLAG_ONTRANSPORT);
                         m_creature->GetMotionMaster()->Clear(false);
                         m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
                         m_creature->setHover(true);

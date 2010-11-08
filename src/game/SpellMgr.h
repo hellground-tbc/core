@@ -305,13 +305,15 @@ enum SpellLinkedType
     SPELL_LINK_CAST     = 0,            // +: cast; -: remove
     SPELL_LINK_HIT      = 1 * 200000,
     SPELL_LINK_AURA     = 2 * 200000,   // +: aura; -: immune
+    SPELL_LINK_PRECAST  = 3 * 200000,
     SPELL_LINK_REMOVE   = 0,
 };
 
 SpellSpecific GetSpellSpecific(uint32 spellId);
 
 // Different spell properties
-inline float GetSpellRadius(SpellRadiusEntry const *radius) { return (radius ? radius->Radius : 0); }
+inline float GetSpellRadiusForHostile(SpellRadiusEntry const *radius) { return (radius ? radius->radiusHostile : 0); }
+inline float GetSpellRadiusForFriend(SpellRadiusEntry const *radius) { return (radius ? radius->radiusFriend : 0); }
 uint32 GetSpellCastTime(SpellEntry const* spellInfo, Spell const* spell = NULL);
 uint32 GetSpellBaseCastTime(SpellEntry const *spellInfo);
 inline float GetSpellMinRange(SpellRangeEntry const *range) { return (range ? range->minRange : 0); }
@@ -320,6 +322,38 @@ inline uint32 GetSpellRangeType(SpellRangeEntry const *range) { return (range ? 
 inline uint32 GetSpellRecoveryTime(SpellEntry const *spellInfo) { return spellInfo->RecoveryTime > spellInfo->CategoryRecoveryTime ? spellInfo->RecoveryTime : spellInfo->CategoryRecoveryTime; }
 int32 GetSpellDuration(SpellEntry const *spellInfo);
 int32 GetSpellMaxDuration(SpellEntry const *spellInfo);
+void ApplySpellThreatModifiers(SpellEntry const *spellInfo, float &threat);
+
+inline float GetSpellRadius(SpellEntry const *spellInfo, uint32 effectIdx, bool positive)
+{
+    return positive
+        ? GetSpellRadiusForFriend(sSpellRadiusStore.LookupEntry(spellInfo->EffectRadiusIndex[effectIdx]))
+        : GetSpellRadiusForHostile(sSpellRadiusStore.LookupEntry(spellInfo->EffectRadiusIndex[effectIdx]));
+}
+
+inline float GetSpellMaxRange(SpellEntry const *spellInfo)
+{
+    return GetSpellMaxRange(sSpellRangeStore.LookupEntry(spellInfo->rangeIndex));
+}
+
+inline float GetSpellMinRange(SpellEntry const *spellInfo)
+{
+    return GetSpellMinRange(sSpellRangeStore.LookupEntry(spellInfo->rangeIndex));
+}
+
+inline float GetSpellMinRange(uint32 id)
+{
+    SpellEntry const *spellInfo = GetSpellStore()->LookupEntry(id);
+    if(!spellInfo) return 0;
+    return GetSpellMinRange(spellInfo);
+}
+
+inline float GetSpellMaxRange(uint32 id)
+{
+    SpellEntry const *spellInfo = GetSpellStore()->LookupEntry(id);
+    if(!spellInfo) return 0;
+    return GetSpellMaxRange(spellInfo);
+}
 
 inline bool IsSpellHaveEffect(SpellEntry const *spellInfo, SpellEffects effect)
 {
@@ -344,10 +378,27 @@ inline bool IsElementalShield(SpellEntry const *spellInfo)
     return (spellInfo->SpellFamilyFlags & 0x42000000400LL) || spellInfo->Id == 23552;
 }
 
+uint32 CalculatePowerCost(SpellEntry const * spellInfo, Unit const * caster, SpellSchoolMask schoolMask);
 int32 CompareAuraRanks(uint32 spellId_1, uint32 effIndex_1, uint32 spellId_2, uint32 effIndex_2);
 bool IsSingleFromSpellSpecificPerCaster(uint32 spellSpec1, uint32 spellSpec2);
 bool IsSingleFromSpellSpecificPerTarget(uint32 spellSpec1, uint32 spellSpec2);
+
 bool IsPassiveSpell(uint32 spellId);
+bool IsPassiveSpell(SpellEntry const* spellProto);
+
+inline bool IsPassiveSpellStackableWithRanks(SpellEntry const* spellProto)
+{
+    if(!IsPassiveSpell(spellProto))
+        return false;
+
+    return !IsSpellHaveEffect(spellProto,SPELL_EFFECT_APPLY_AURA);
+}
+
+inline bool IsDeathOnlySpell(SpellEntry const *spellInfo)
+{
+    return spellInfo->AttributesEx3 & SPELL_ATTR_EX3_CAST_ON_DEAD
+        || spellInfo->Id == 2584;
+}
 
 inline bool IsDeathPersistentSpell(SpellEntry const *spellInfo)
 {
@@ -746,12 +797,26 @@ enum AttributesCu
     SPELL_ATTR_CU_AURA_SPELL      = 0x00000080,
     SPELL_ATTR_CU_DIRECT_DAMAGE   = 0x00000100,
     SPELL_ATTR_CU_CHARGE          = 0x00000200,
-    SPELL_ATTR_CU_LINK_CAST       = 0x00000400,
+    SPELL_ATTR_CU_LINK_CAST       = 0x00000400,     // after cast bar
     SPELL_ATTR_CU_LINK_HIT        = 0x00000800,
     SPELL_ATTR_CU_LINK_AURA       = 0x00001000,
     SPELL_ATTR_CU_LINK_REMOVE     = 0x00002000,
-    SPELL_ATTR_CU_MOVEMENT_IMPAIR = 0x00004000,
+    SPELL_ATRR_CU_LINK_PRECAST    = 0x00004000,     // before cast barem
+    SPELL_ATTR_CU_MOVEMENT_IMPAIR = 0x00008000,
 };
+
+inline bool IgnoreMagnetTargetAura(SpellEntry const* spellInfo)
+{
+    switch(spellInfo->Id)
+    {
+        case 41410:     //RoS: Deaden
+        case 41426:     //RoS: Spirit Shock
+            return true;
+        default:
+            return false;
+    }
+}
+
 
 typedef std::map<int32, std::vector<int32> > SpellLinkedMap;
 
@@ -917,7 +982,8 @@ class SpellMgr
         bool IsRankSpellDueToSpell(SpellEntry const *spellInfo_1,uint32 spellId_2) const;
         static bool canStackSpellRanks(SpellEntry const *spellInfo);
         bool IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool sameCaster) const;
-        bool IsSpecialStackCase(uint32 spellId_1, uint32 spellId_2, bool sameCaster, bool recur = true) const;
+        bool IsSpecialStackCase(SpellEntry const *spellInfo_1, SpellEntry const *spellInfo_2, bool sameCaster, bool recur = true) const;
+        bool IsSpecialNoStackCase(SpellEntry const *spellInfo_1, SpellEntry const *spellInfo_2, bool sameCaster, bool recur = true) const;
 
         SpellEntry const* SelectAuraRankForPlayerLevel(SpellEntry const* spellInfo, uint32 playerLevel) const;
 

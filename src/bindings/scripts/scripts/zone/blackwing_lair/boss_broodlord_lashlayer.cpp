@@ -22,6 +22,7 @@ SDCategory: Blackwing Lair
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_blackwing_lair.h"
 
 #define SAY_AGGRO               -1469000
 #define SAY_LEASH               -1469001
@@ -33,13 +34,19 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_broodlordAI : public ScriptedAI
 {
-    boss_broodlordAI(Creature *c) : ScriptedAI(c) {}
+    boss_broodlordAI(Creature *c) : ScriptedAI(c)
+    {
+        c->GetPosition(wLoc);
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
 
+    ScriptedInstance * pInstance;
     uint32 Cleave_Timer;
     uint32 BlastWave_Timer;
     uint32 MortalStrike_Timer;
     uint32 KnockBack_Timer;
     uint32 LeashCheck_Timer;
+    WorldLocation wLoc;
 
     void Reset()
     {
@@ -49,14 +56,23 @@ struct TRINITY_DLL_DECL boss_broodlordAI : public ScriptedAI
         KnockBack_Timer = 30000;
         LeashCheck_Timer = 2000;
 
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
-        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
+        if (pInstance && pInstance->GetData(DATA_BROODLORD_LASHLAYER_EVENT) != DONE)
+            pInstance->SetData(DATA_BROODLORD_LASHLAYER_EVENT, NOT_STARTED);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
         DoZoneInCombat();
+
+        if (pInstance)
+            pInstance->SetData(DATA_BROODLORD_LASHLAYER_EVENT, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_BROODLORD_LASHLAYER_EVENT, DONE);
     }
 
     void UpdateAI(const uint32 diff)
@@ -67,10 +83,7 @@ struct TRINITY_DLL_DECL boss_broodlordAI : public ScriptedAI
         //LeashCheck_Timer
         if (LeashCheck_Timer < diff)
         {
-            float rx,ry,rz;
-            m_creature->GetRespawnCoord(rx, ry, rz);
-            float spawndist = m_creature->GetDistance(rx,ry,rz);
-            if ( spawndist > 250 )
+            if (!m_creature->IsWithinDistInMap(&wLoc, 250))
             {
                 DoScriptText(SAY_LEASH, m_creature);
                 EnterEvadeMode();

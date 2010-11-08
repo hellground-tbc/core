@@ -187,7 +187,8 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         if(pInstance)
         {
             // Not in progress
-            pInstance->SetData(DATA_SHADEOFARAN_EVENT, NOT_STARTED);
+            if (pInstance->GetData(DATA_SHADEOFARAN_EVENT) != DONE)
+                pInstance->SetData(DATA_SHADEOFARAN_EVENT, NOT_STARTED);
 
             if(GameObject* Door = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_GAMEOBJECT_LIBRARY_DOOR)))
                 Door->SetGoState(0);
@@ -201,11 +202,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
 
     void KilledUnit(Unit *victim)
     {
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(SAY_KILL1, m_creature); break;
-        case 1: DoScriptText(SAY_KILL2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_KILL1, SAY_KILL2), m_creature);
     }
 
     void TeleportCenter()
@@ -244,21 +241,12 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         return false;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if (PlayerHaveAtiesh())
-        {
             DoScriptText(SAY_ATIESH, m_creature);
-        }
         else
-        {
-            switch(rand()%3)
-            {
-            case 0: DoScriptText(SAY_AGGRO1, m_creature); break;
-            case 1: DoScriptText(SAY_AGGRO2, m_creature); break;
-            case 2: DoScriptText(SAY_AGGRO3, m_creature); break;
-            }
-        }
+            DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), m_creature);
 
         if(pInstance)
         {
@@ -328,7 +316,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         //Check_Timer
         if(CheckTimer < diff)
         {
-            if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 35.0f)
+            if(!m_creature->IsWithinDistInMap(&wLoc, 35.0f))
                 EnterEvadeMode();
             else
                 DoZoneInCombat();
@@ -478,7 +466,6 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         {
             switch (rand()%2)
             {
-
                 case 0:
                     AddSpellToCast(m_creature, SPELL_AOE_CS);
                     break;
@@ -487,6 +474,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                         AddSpellToCast(pUnit, SPELL_CHAINSOFICE);
                     break;
             }
+
             SecondarySpellTimer = 5000 + (rand()%15000);
         }
         else
@@ -698,8 +686,6 @@ struct TRINITY_DLL_DECL water_elementalAI : public ScriptedAI
         CastTimer = 2000 + (rand()%3000);
     }
 
-    void Aggro(Unit* who) {}
-
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim() )
@@ -728,8 +714,6 @@ struct TRINITY_DLL_DECL shadow_of_aranAI : public ScriptedAI
     {
         CastTimer = 2000;
     }
-
-    void Aggro(Unit* who) {}
 
     void UpdateAI(const uint32 diff)
     {
@@ -776,8 +760,6 @@ struct TRINITY_DLL_DECL circular_blizzardAI : public ScriptedAI
         currentWaypoint = 0;
         waypointTimer = 0;
     }
-
-    void Aggro(Unit* who){}
 
     void JustDied(Unit* killer){}
 

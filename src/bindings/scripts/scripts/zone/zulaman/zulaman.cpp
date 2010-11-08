@@ -36,6 +36,21 @@ EndContentData */
 #define SPELL_PUSH_MOJO             43923
 #define ENTRY_FOREST_FROG           24396
 
+enum npc
+{
+    NPC_KRAZ = 24024,
+    NPC_MANNUTH = 24397,
+    NPC_DEEZ = 24403,
+    NPC_GALATHRYN = 24404,
+    NPC_ADARRAH = 24405,
+    NPC_FUDGERICK = 24406,
+    NPC_DARWEN = 24407,
+    NPC_MITZI = 24445,
+    NPC_CHRISTIAN = 24448,
+    NPC_BRENNAN = 24453,
+    NPC_HOLLEE = 24455,
+};
+
 struct TRINITY_DLL_DECL npc_forest_frogAI : public ScriptedAI
 {
     npc_forest_frogAI(Creature* c) : ScriptedAI(c)
@@ -47,27 +62,13 @@ struct TRINITY_DLL_DECL npc_forest_frogAI : public ScriptedAI
 
     void Reset() { }
 
-    void Aggro(Unit *who) { }
+    void EnterCombat(Unit *who) { }
 
     void DoSpawnRandom()
     {
         if( pInstance )
         {
-            uint32 cEntry = 0;
-            switch(rand()%11)
-            {
-                case 0: cEntry = 24024; break;          //Kraz
-                case 1: cEntry = 24397; break;          //Mannuth
-                case 2: cEntry = 24403; break;          //Deez
-                case 3: cEntry = 24404; break;          //Galathryn
-                case 4: cEntry = 24405; break;          //Adarrah
-                case 5: cEntry = 24406; break;          //Fudgerick
-                case 6: cEntry = 24407; break;          //Darwen
-                case 7: cEntry = 24445; break;          //Mitzi
-                case 8: cEntry = 24448; break;          //Christian
-                case 9: cEntry = 24453; break;          //Brennan
-                case 10: cEntry = 24455; break;         //Hollee
-            }
+            uint32 cEntry = RAND(NPC_KRAZ, NPC_MANNUTH, NPC_DEEZ, NPC_GALATHRYN, NPC_ADARRAH, NPC_FUDGERICK, NPC_DARWEN, NPC_MITZI, NPC_CHRISTIAN, NPC_BRENNAN, NPC_HOLLEE);
 
             if( !pInstance->GetData(TYPE_RAND_VENDOR_1) )
                 if(rand()%10 == 1) cEntry = 24408;      //Gunter
@@ -111,7 +112,7 @@ struct TRINITY_DLL_DECL npc_zulaman_hostageAI : public ScriptedAI
     bool IsLoot;
     uint64 PlayerGUID;
     void Reset() {}
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
     void JustDied(Unit *)
     {
         Player* player = Unit::GetPlayer(PlayerGUID);

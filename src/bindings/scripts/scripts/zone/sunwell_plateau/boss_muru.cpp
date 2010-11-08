@@ -137,7 +137,7 @@ struct TRINITY_DLL_DECL boss_entropiusAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit *who) {
+    void EnterCombat(Unit *who) {
         DoCastAOE(SPELL_NEGATIVE_ENERGY_E, true);
         DoCast(m_creature, SPELL_ENTROPIUS_SPAWN, false);
     }
@@ -226,11 +226,11 @@ struct TRINITY_DLL_DECL boss_muruAI : public Scripted_NoMovementAI
         Summons.DespawnAll();
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->SetVisibility(VISIBILITY_ON);
-        if(pInstance)
+        if(pInstance && pInstance->GetData(DATA_MURU_EVENT) != DONE)
             pInstance->SetData(DATA_MURU_EVENT, NOT_STARTED);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if(pInstance)
             pInstance->SetData(DATA_MURU_EVENT, IN_PROGRESS);
@@ -363,7 +363,7 @@ struct TRINITY_DLL_DECL npc_muru_portalAI : public Scripted_NoMovementAI
         Summons.DespawnAll();
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void JustSummoned(Creature* summoned)
     {
@@ -428,7 +428,7 @@ struct TRINITY_DLL_DECL npc_dark_fiendAI : public ScriptedAI
         m_creature->addUnitState(UNIT_STAT_STUNNED);
     };
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void SpellHit(Unit* caster, const SpellEntry* Spell){
         for(uint8 i = 0; i < 3; ++i)
@@ -458,7 +458,7 @@ struct TRINITY_DLL_DECL npc_dark_fiendAI : public ScriptedAI
             }
             else
             {
-                if(m_creature->GetDistance(m_creature->getVictim()) < 5)
+                if(m_creature->IsWithinDistInMap(m_creature->getVictim(), 5))
                 {
                     DoCastAOE(SPELL_DARKFIEND_AOE, false);
                     m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
@@ -498,7 +498,7 @@ struct TRINITY_DLL_DECL npc_void_sentinelAI : public ScriptedAI
         DoTeleportTo(x,y,71);
     };
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void JustDied(Unit* killer){
         for (uint8 i = 0; i < 8; ++i){
@@ -552,7 +552,7 @@ struct TRINITY_DLL_DECL npc_blackholeAI : public ScriptedAI
         DoCastAOE(SPELL_BLACKHOLE_SPAWN, true);
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void UpdateAI(const uint32 diff)
     {

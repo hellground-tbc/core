@@ -184,7 +184,7 @@ struct TRINITY_DLL_DECL boss_hexlord_addAI : public ScriptedAI
 
     void Reset() {}
 
-    void Aggro(Unit* who) {DoZoneInCombat();}
+    void EnterCombat(Unit* who) {DoZoneInCombat();}
 
     void UpdateAI(const uint32 diff)
     {
@@ -206,9 +206,16 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
         SelectAddEntry();
         for(uint8 i = 0; i < 4; ++i)
             AddGUID[i] = 0;
+
+        wLoc.x = 119.223;
+        wLoc.y = 1035.45;
+        wLoc.z = 29.4481;
+        wLoc.mapid = c->GetMapId();
     }
 
     ScriptedInstance *pInstance;
+
+    WorldLocation wLoc;
 
     uint64 AddGUID[4];
     uint32 AddEntry[4];
@@ -228,7 +235,7 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
 
     void Reset()
     {
-        if(pInstance)
+        if(pInstance && pInstance->GetData(DATA_HEXLORDEVENT)!= DONE)
             pInstance->SetData(DATA_HEXLORDEVENT, NOT_STARTED);
 
         SpiritBolts_Timer = 20000;
@@ -245,7 +252,7 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
         m_creature->SetByteValue(UNIT_FIELD_BYTES_2, 0, SHEATH_STATE_MELEE );
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         if(pInstance)
             pInstance->SetData(DATA_HEXLORDEVENT, IN_PROGRESS);
@@ -340,7 +347,7 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
 
         if(ResetTimer < diff)
         {
-            if(m_creature->GetDistance(119.223,1035.45,29.4481) <= 10)
+            if(m_creature->IsWithinDistInMap(&wLoc, 10))
             {
                 EnterEvadeMode();
                 return;
@@ -537,11 +544,8 @@ struct TRINITY_DLL_DECL boss_alyson_antilleAI : public boss_hexlord_addAI
                 m_creature->AddThreat(who, 0.0f);
             }
 
-            if (!InCombat)
-            {
-                Aggro(who);
-                InCombat = true;
-            }
+            if (!m_creature->isInCombat())
+                EnterCombat(who);
         }
     }
 
@@ -620,12 +624,6 @@ struct TRINITY_DLL_DECL boss_gazakrothAI : public boss_hexlord_addAI
             {
                 m_creature->GetMotionMaster()->MoveChase(who, 20);
                 m_creature->AddThreat(who, 0.0f);
-            }
-
-            if (!InCombat)
-            {
-                Aggro(who);
-                InCombat = true;
             }
         }
     }
@@ -740,12 +738,6 @@ struct TRINITY_DLL_DECL boss_slitherAI : public boss_hexlord_addAI
             {
                 m_creature->GetMotionMaster()->MoveChase(who, 20);
                 m_creature->AddThreat(who, 0.0f);
-            }
-
-            if (!InCombat)
-            {
-                Aggro(who);
-                InCombat = true;
             }
         }
     }

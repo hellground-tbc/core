@@ -204,7 +204,9 @@ void Player::UpdateMaxHealth()
         value += 30000;
         SetMaxHealth((uint32)value);
         SetHealth((uint32)value);
-    }else SetMaxHealth((uint32)value);
+    }
+    else
+        SetMaxHealth((uint32)value);
 }
 
 void Player::UpdateMaxPower(Powers power)
@@ -713,7 +715,11 @@ void Creature::UpdateArmor()
 void Creature::UpdateMaxHealth()
 {
     float value = GetTotalAuraModValue(UNIT_MOD_HEALTH);
+    float hpDiff = GetMaxHealth() - GetHealth();
     SetMaxHealth((uint32)value);
+
+    if (GetTypeId() == TYPEID_UNIT)
+        SetHealth((uint32)(value - hpDiff));
 }
 
 void Creature::UpdateMaxPower(Powers power)
@@ -833,7 +839,12 @@ bool Pet::UpdateStats(Stats stat)
     if ( stat == STAT_STAMINA )
     {
         if(owner && (getPetType() == HUNTER_PET || owner->getClass() == CLASS_WARLOCK))
+        {
             value += float(owner->GetStat(stat)) * 0.3f;
+            /*// Leggings of Beast Mastery
+            if(getPetType() == HUNTER_PET && owner->HasAura(38297, 1))
+                value += 52;*/
+        }
     }
                                                             //warlock's and mage's pets gain 30% of owner's intellect
     else if ( stat == STAT_INTELLECT && getPetType() == SUMMON_PET )
@@ -903,7 +914,12 @@ void Pet::UpdateArmor()
     Unit *owner = GetOwner();
     // hunter and warlock pets gain 35% of owner's armor value
     if(owner && (getPetType() == HUNTER_PET || getPetType() == SUMMON_PET && owner->getClass() == CLASS_WARLOCK))
+    {
         bonus_armor = 0.35f * float(owner->GetArmor());
+        /*// Leggings of Beast Mastery
+        if(getPetType() == HUNTER_PET && owner->HasAura(38297, 1))
+            bonus_armor += 490;*/
+    }
 
     value  = GetModifierValue(unitMod, BASE_VALUE);
     value *= GetModifierValue(unitMod, BASE_PCT);
@@ -962,6 +978,9 @@ void Pet::UpdateAttackPowerAndDamage(bool ranged)
         {
             bonusAP = owner->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.22f;
             SetBonusDamage( int32(owner->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.125f));
+            /*//Leggings of Beast Mastery
+            if(owner->HasAura(38297, 1))
+                bonusAP += 70.0f;*/
         }
         //demons benefit from warlocks shadow or fire damage
         else if(getPetType() == SUMMON_PET && owner->getClass() == CLASS_WARLOCK)

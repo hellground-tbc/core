@@ -28,6 +28,7 @@
 #include "ObjectMgr.h"
 #include "BattleGroundMgr.h"
 #include "SharedDefines.h"
+#include "MapManager.h"
 
 enum BattleGroundSounds
 {
@@ -361,6 +362,8 @@ class BattleGround
         /* Location */
         void SetMapId(uint32 MapID) { m_MapId = MapID; }
         uint32 GetMapId() const { return m_MapId; }
+        void SetMap(Map* map){ m_Map = map; }
+        Map* GetMap() { return m_Map ? m_Map : m_Map = MapManager::Instance().FindMap(GetMapId(),GetInstanceID()); }
 
         void SetTeamStartLoc(uint32 TeamID, float X, float Y, float Z, float O);
         void GetTeamStartLoc(uint32 TeamID, float &X, float &Y, float &Z, float &O) const
@@ -521,7 +524,7 @@ class BattleGround
         bool   m_PrematureCountDown;
         uint32 m_PrematureCountDownTimer;
         char const *m_Name;
-                    
+
 
         /* Player lists */
         std::vector<uint64> m_ResurrectQueue;               // Player GUID
@@ -558,6 +561,7 @@ class BattleGround
         float m_TeamStartLocY[2];
         float m_TeamStartLocZ[2];
         float m_TeamStartLocO[2];
+        Map * m_Map;
 };
 #endif
 

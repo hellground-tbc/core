@@ -33,7 +33,7 @@ class TemporarySummon : public Creature
         void Summon(TempSummonType type, uint32 lifetime);
         void UnSummon();
         void SaveToDB();
-        Unit* GetSummoner() const { return m_summoner ? ObjectAccessor::GetUnit(*this, m_summoner) : NULL; }
+        Unit* GetSummoner() const { return m_summoner ? GetMap()->GetUnit(m_summoner) : NULL; }
     private:
         TempSummonType m_type;
         uint32 m_timer;

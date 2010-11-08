@@ -17,5 +17,6 @@
 #define DATA_VOIDREAVEREVENT                11
 #define DATA_ALAR                           12
 #define DATA_EXPLODE                        13
+
 #endif
 

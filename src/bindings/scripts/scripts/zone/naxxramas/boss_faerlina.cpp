@@ -22,6 +22,7 @@ SDCategory: Naxxramas
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_naxxramas.h"
 
 #define SAY_GREET                   -1533009
 #define SAY_AGGRO1                  -1533010
@@ -40,7 +41,12 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_faerlinaAI : public ScriptedAI
 {
-    boss_faerlinaAI(Creature *c) : ScriptedAI(c) {}
+    boss_faerlinaAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
+
+    ScriptedInstance * pInstance;
 
     uint32 PoisonBoltVolley_Timer;
     uint32 RainOfFire_Timer;
@@ -53,17 +59,17 @@ struct TRINITY_DLL_DECL boss_faerlinaAI : public ScriptedAI
         RainOfFire_Timer = 16000;
         Enrage_Timer = 60000;
         HasTaunted = false;
+
+        if (pInstance)
+            pInstance->SetData(DATA_GRAND_WIDOW_FAERLINA, NOT_STARTED);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
-        switch (rand()%4)
-        {
-        case 0: DoScriptText(SAY_AGGRO1, m_creature); break;
-        case 1: DoScriptText(SAY_AGGRO2, m_creature); break;
-        case 2: DoScriptText(SAY_AGGRO3, m_creature); break;
-        case 3: DoScriptText(SAY_AGGRO4, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3, SAY_AGGRO4), m_creature);
+
+        if (pInstance)
+            pInstance->SetData(DATA_GRAND_WIDOW_FAERLINA, IN_PROGRESS);
     }
 
     void MoveInLineOfSight(Unit *who)
@@ -79,16 +85,14 @@ struct TRINITY_DLL_DECL boss_faerlinaAI : public ScriptedAI
 
     void KilledUnit(Unit* victim)
     {
-        switch (rand()%2)
-        {
-            case 0: DoScriptText(SAY_SLAY1, m_creature); break;
-            case 1: DoScriptText(SAY_SLAY2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), m_creature);
     }
 
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_DEATH, m_creature);
+        if (pInstance)
+            pInstance->SetData(DATA_GRAND_WIDOW_FAERLINA, DONE);
     }
 
     void UpdateAI(const uint32 diff)

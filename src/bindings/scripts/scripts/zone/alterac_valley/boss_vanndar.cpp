@@ -16,7 +16,7 @@
 
 /* ScriptData
 SDName: Boss_Vanndar
-SD%Complete: 
+SD%Complete:
 SDComment: Some spells listed on wowwiki but doesn't exist on wowhead
 EndScriptData */
 
@@ -67,20 +67,15 @@ struct TRINITY_DLL_DECL boss_vanndarAI : public ScriptedAI
         CheckTimer              = 2000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoScriptText(YELL_AGGRO, m_creature);
     }
 
     void JustRespawned()
     {
-        InCombat = false;
         Reset();
-        switch(rand()%1)
-        {
-            case 0: DoScriptText(YELL_RESPAWN1, m_creature); break;
-            case 1: DoScriptText(YELL_RESPAWN2, m_creature); break;
-        }
+        DoScriptText(RAND(YELL_RESPAWN1, YELL_RESPAWN2), m_creature);
     }
 
     void KilledUnit(Unit* victim){}
@@ -94,43 +89,45 @@ struct TRINITY_DLL_DECL boss_vanndarAI : public ScriptedAI
 
         if(CheckTimer < diff)
         {
-            if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 20.0f)
+            if(!m_creature->IsWithinDistInMap(&wLoc, 20.0f))
                 EnterEvadeMode();
-          
+
             CheckTimer = 2000;
-        }else CheckTimer -= diff;
+        }
+        else
+            CheckTimer -= diff;
 
         if (AvatarTimer < diff)
         {
             DoCast(m_creature->getVictim(), SPELL_AVATAR);
             AvatarTimer =  (15+rand()%5)*1000;
-        }else AvatarTimer -= diff;
+        }
+        else
+            AvatarTimer -= diff;
 
         if (ThunderclapTimer < diff)
         {
             DoCast(m_creature->getVictim(), SPELL_THUNDERCLAP);
             ThunderclapTimer = (5+rand()%10)*1000;
-        }else ThunderclapTimer -= diff;
+        }
+        else
+            ThunderclapTimer -= diff;
 
         if (StormboltTimer < diff)
         {
             DoCast(m_creature->getVictim(), SPELL_STORMBOLT);
             StormboltTimer = (10+rand()%15)*1000;
-        }else StormboltTimer -= diff;
+        }
+        else
+            StormboltTimer -= diff;
 
-        if (YellTimer < diff) {
-            switch(rand()%6)
-            {
-                case 0: DoScriptText(YELL_RANDOM1, m_creature); break;
-                case 1: DoScriptText(YELL_RANDOM2, m_creature); break;
-                case 2: DoScriptText(YELL_RANDOM3, m_creature); break;
-                case 3: DoScriptText(YELL_RANDOM4, m_creature); break;
-                case 4: DoScriptText(YELL_RANDOM5, m_creature); break;
-                case 5: DoScriptText(YELL_RANDOM6, m_creature); break;
-                case 6: DoScriptText(YELL_RANDOM7, m_creature); break;
-            }
-        YellTimer = (20+rand()%10)*1000; //20 to 30 seconds
-        } else YellTimer -= diff;
+        if (YellTimer < diff)
+        {
+            DoScriptText(RAND(YELL_RANDOM1, YELL_RANDOM2, YELL_RANDOM3, YELL_RANDOM4, YELL_RANDOM5, YELL_RANDOM6, YELL_RANDOM7), m_creature);
+            YellTimer = (20+rand()%10)*1000; //20 to 30 seconds
+        }
+        else
+            YellTimer -= diff;
 
         DoMeleeAttackIfReady();
     }

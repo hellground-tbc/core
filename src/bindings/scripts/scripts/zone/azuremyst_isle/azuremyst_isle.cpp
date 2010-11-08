@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Azuremyst_Isle
 SD%Complete: 75
-SDComment: Quest support: 9283, 9537, 9582, 9554, 9531, 9303(special flight path, proper model for mount missing). Injured Draenei cosmetic only
+SDComment: Quest support: 9283, 9528, 9537, 9544, 9582, 9554, 9531, 9303(special flight path, proper model for mount missing). Injured Draenei cosmetic only, 9582
 SDCategory: Azuremyst Isle
 EndScriptData */
 
@@ -30,10 +30,14 @@ npc_susurrus
 npc_geezle
 mob_nestlewood_owlkin
 mob_siltfin_murloc
+npc_stillpine_capitive
+go_bristlelimb_cage
+go_ravager_cage
+npc_death_ravager
 EndContentData */
 
 #include "precompiled.h"
-#include "../../npc/npc_escortAI.h"
+#include "escort_ai.h"
 #include <cmath>
 
 /*######
@@ -78,27 +82,13 @@ struct TRINITY_DLL_DECL npc_draenei_survivorAI : public ScriptedAI
         m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, PLAYER_STATE_SLEEP);
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void MoveInLineOfSight(Unit *who)
     {
         if (CanSayHelp && who->GetTypeId() == TYPEID_PLAYER && m_creature->IsFriendlyTo(who) && m_creature->IsWithinDistInMap(who, 25.0f))
         {
-            switch (rand()%4)                               //Random switch between 4 texts
-            {
-                case 0:
-                    DoScriptText(HELP1, m_creature);
-                    break;
-                case 1:
-                    DoScriptText(HELP2, m_creature);
-                    break;
-                case 2:
-                    DoScriptText(HELP3, m_creature);
-                    break;
-                case 3:
-                    DoScriptText(HELP4, m_creature);
-                    break;
-            }
+            DoScriptText(RAND(HELP1, HELP2, HELP3, HELP4), m_creature);
 
             SayHelpTimer = 20000;
             CanSayHelp = false;
@@ -132,24 +122,20 @@ struct TRINITY_DLL_DECL npc_draenei_survivorAI : public ScriptedAI
                     if (pPlayer->GetTypeId() != TYPEID_PLAYER)
                         return;
 
-                    switch (rand()%4)
-                    {
-                        case 0: DoScriptText(SAY_HEAL1, m_creature, pPlayer); break;
-                        case 1: DoScriptText(SAY_HEAL2, m_creature, pPlayer); break;
-                        case 2: DoScriptText(SAY_HEAL3, m_creature, pPlayer); break;
-                        case 3: DoScriptText(SAY_HEAL4, m_creature, pPlayer); break;
-                    }
+                    DoScriptText(RAND(SAY_HEAL1, SAY_HEAL2, SAY_HEAL3, SAY_HEAL4), m_creature, pPlayer);
 
                     pPlayer->TalkedToCreature(m_creature->GetEntry(),m_creature->GetGUID());
                 }
-            
+
                 m_creature->GetMotionMaster()->Clear();
                 m_creature->GetMotionMaster()->MovePoint(0, -4115.053711f, -13754.831055f, 73.508949f);
                 RunAwayTimer = 10000;
                 SayThanksTimer = 0;
 
-            }else SayThanksTimer -= diff;
-            
+            }
+            else
+                SayThanksTimer -= diff;
+
             return;
         }
 
@@ -165,8 +151,10 @@ struct TRINITY_DLL_DECL npc_draenei_survivorAI : public ScriptedAI
                 m_creature->CombatStop();
                 m_creature->DeleteThreatList();
                 m_creature->RemoveCorpse();
-            }else RunAwayTimer -= diff;
-            
+            }
+            else
+                RunAwayTimer -= diff;
+
             return;
         }
 
@@ -174,7 +162,9 @@ struct TRINITY_DLL_DECL npc_draenei_survivorAI : public ScriptedAI
         {
             CanSayHelp = true;
             SayHelpTimer = 20000;
-        }else SayHelpTimer -= diff;
+        }
+        else
+            SayHelpTimer -= diff;
     }
 };
 CreatureAI* GetAI_npc_draenei_survivor(Creature *_Creature)
@@ -208,18 +198,20 @@ struct TRINITY_DLL_DECL npc_engineer_spark_overgrindAI : public ScriptedAI
         m_creature->setFaction(875);
     }
 
-    void Aggro(Unit *who) { }
+    void EnterCombat(Unit *who) { }
 
     void UpdateAI(const uint32 diff)
     {
-        if( !InCombat )
+        if( !m_creature->isInCombat() )
         {
             if (Emote_Timer < diff)
             {
                 DoScriptText(SAY_TEXT, m_creature);
                 DoScriptText(SAY_EMOTE, m_creature);
                 Emote_Timer = 120000 + rand()%30000;
-            }else Emote_Timer -= diff;
+            }
+            else
+                Emote_Timer -= diff;
         }
 
         if(!UpdateVictim())
@@ -229,7 +221,9 @@ struct TRINITY_DLL_DECL npc_engineer_spark_overgrindAI : public ScriptedAI
         {
             DoCast(m_creature->getVictim(), SPELL_DYNAMITE);
             Dynamite_Timer = 8000;
-        } else Dynamite_Timer -= diff;
+        }
+        else
+            Dynamite_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }
@@ -273,14 +267,11 @@ struct TRINITY_DLL_DECL npc_injured_draeneiAI : public ScriptedAI
     {
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
         m_creature->SetHealth(int(m_creature->GetMaxHealth()*.15));
-        switch (rand()%2)
-        {
-            case 0: m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, PLAYER_STATE_SIT); break;
-            case 1: m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, PLAYER_STATE_SLEEP); break;
-        }
+
+        m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, RAND(PLAYER_STATE_SIT, PLAYER_STATE_SLEEP));
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void MoveInLineOfSight(Unit *who)
     {
@@ -302,79 +293,63 @@ CreatureAI* GetAI_npc_injured_draenei(Creature *_Creature)
 ## npc_magwin
 ######*/
 
-#define SAY_START               -1000111
-#define SAY_AGGRO               -1000112
-#define SAY_PROGRESS            -1000113
-#define SAY_END1                -1000114
-#define SAY_END2                -1000115
-#define EMOTE_HUG               -1000116
+enum eMagwin
+{
+    SAY_START                   = -1000111,
+    SAY_AGGRO                   = -1000112,
+    SAY_PROGRESS                = -1000113,
+    SAY_END1                    = -1000114,
+    SAY_END2                    = -1000115,
+    EMOTE_HUG                   = -1000116,
 
-#define QUEST_A_CRY_FOR_HELP    9528
+    QUEST_A_CRY_FOR_SAY_HELP    = 9528
+};
 
 struct TRINITY_DLL_DECL npc_magwinAI : public npc_escortAI
 {
     npc_magwinAI(Creature *c) : npc_escortAI(c) {}
 
-
     void WaypointReached(uint32 i)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
+        Player* pPlayer = GetPlayerForEscort();
 
-        if (!player)
+         if (!pPlayer)
             return;
 
         switch(i)
         {
         case 0:
-            DoScriptText(SAY_START, m_creature, player);
+            DoScriptText(SAY_START, m_creature, pPlayer);
             break;
         case 17:
-            DoScriptText(SAY_PROGRESS, m_creature, player);
+            DoScriptText(SAY_PROGRESS, m_creature, pPlayer);
             break;
         case 28:
-            DoScriptText(SAY_END1, m_creature, player);
+            DoScriptText(SAY_END1, m_creature, pPlayer);
             break;
         case 29:
-            DoScriptText(EMOTE_HUG, m_creature, player);
-            DoScriptText(SAY_END2, m_creature, player);
-            player->GroupEventHappens(QUEST_A_CRY_FOR_HELP,m_creature);
+            DoScriptText(EMOTE_HUG, m_creature, pPlayer);
+            DoScriptText(SAY_END2, m_creature, pPlayer);
+            pPlayer->GroupEventHappens(QUEST_A_CRY_FOR_SAY_HELP,m_creature);
             break;
         }
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         DoScriptText(SAY_AGGRO, m_creature, who);
     }
 
-    void Reset()
-    {
-        if (!IsBeingEscorted)
-            m_creature->setFaction(80);
-    }
-
-    void JustDied(Unit* killer)
-    {
-        if (PlayerGUID)
-        {
-            Player* player = Unit::GetPlayer(PlayerGUID);
-            if (player)
-                player->FailQuest(QUEST_A_CRY_FOR_HELP);
-        }
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-        npc_escortAI::UpdateAI(diff);
-    }
+    void Reset() { }
 };
 
-bool QuestAccept_npc_magwin(Player* player, Creature* creature, Quest const* quest)
+bool QuestAccept_npc_magwin(Player* pPlayer, Creature* pCreature, Quest const* quest)
 {
-    if (quest->GetQuestId() == QUEST_A_CRY_FOR_HELP)
+    if (quest->GetQuestId() == QUEST_A_CRY_FOR_SAY_HELP)
     {
-        creature->setFaction(113);
-        ((npc_escortAI*)(creature->AI()))->Start(true, true, false, player->GetGUID());
+        pCreature->setFaction(113);
+        if (npc_escortAI* pEscortAI = CAST_AI(npc_escortAI, pCreature->AI()))
+            pEscortAI->Start(true, false, pPlayer->GetGUID());
     }
     return true;
 }
@@ -491,8 +466,6 @@ struct TRINITY_DLL_DECL npc_geezleAI : public ScriptedAI
         StartEvent();
     }
 
-    void Aggro(Unit* who){}
-
     void StartEvent()
     {
         Step = 1;
@@ -572,7 +545,9 @@ struct TRINITY_DLL_DECL npc_geezleAI : public ScriptedAI
                 else
                     (*itr)->Respawn();
             }
-        } else error_log("SD2 ERROR: FlagList is empty!");
+        }
+        else
+            error_log("SD2 ERROR: FlagList is empty!");
     }
 
     void UpdateAI(const uint32 diff)
@@ -583,7 +558,9 @@ struct TRINITY_DLL_DECL npc_geezleAI : public ScriptedAI
             {
                 SayTimer = NextStep(++Step);
             }
-        }else SayTimer -= diff;
+        }
+        else
+            SayTimer -= diff;
     }
 };
 
@@ -614,7 +591,7 @@ struct TRINITY_DLL_DECL mob_nestlewood_owlkinAI : public ScriptedAI
         Hitted = false;
     }
 
-    void Aggro(Unit *who){}
+    void EnterCombat(Unit *who){}
 
     void SpellHit(Unit* caster, const SpellEntry* spell)
     {
@@ -636,7 +613,9 @@ struct TRINITY_DLL_DECL mob_nestlewood_owlkinAI : public ScriptedAI
             m_creature->RemoveCorpse();
             m_creature->SummonCreature(INOCULATED_OWLKIN, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 180000);
             Channeled = true;
-        }else ChannelTimer -= diff;
+        }
+        else
+            ChannelTimer -= diff;
 
         DoMeleeAttackIfReady();
     }
@@ -655,12 +634,12 @@ struct TRINITY_DLL_DECL mob_siltfin_murlocAI : public ScriptedAI
 {
     mob_siltfin_murlocAI(Creature *c) : ScriptedAI(c) {}
 
-    void Aggro(Unit *who){}
+    void EnterCombat(Unit *who){}
 
     void JustDied(Unit *player)
     {
         player = player->GetCharmerOrOwnerPlayerOrPlayerItself();
-         
+
         if(roll_chance_i(20) && player)
         {
             if(((Player*)player)->GetQuestStatus(9595) == QUEST_STATUS_INCOMPLETE)
@@ -670,13 +649,151 @@ struct TRINITY_DLL_DECL mob_siltfin_murlocAI : public ScriptedAI
             }
         }
      }
-    
+
 };
 
 CreatureAI* GetAI_mob_siltfin_murlocAI(Creature *_Creature)
 {
     return new mob_siltfin_murlocAI (_Creature);
 }
+
+/*######
+## npc_death_ravager
+######*/
+
+enum eRavegerCage
+{
+    NPC_DEATH_RAVAGER       = 17556,
+
+    SPELL_REND              = 13443,
+    SPELL_ENRAGING_BITE     = 30736,
+
+    QUEST_STRENGTH_ONE      = 9582
+};
+
+bool go_ravager_cage(Player* pPlayer, GameObject* pGo)
+{
+
+    if (pPlayer->GetQuestStatus(QUEST_STRENGTH_ONE) == QUEST_STATUS_INCOMPLETE)
+    {
+        if (Creature* ravager = GetClosestCreatureWithEntry(pGo, NPC_DEATH_RAVAGER, 5.0f))
+        {
+            ravager->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
+            ravager->SetReactState(REACT_AGGRESSIVE);
+            ravager->AI()->AttackStart(pPlayer);
+        }
+    }
+    return true ;
+}
+
+struct npc_death_ravagerAI : public ScriptedAI
+{
+    npc_death_ravagerAI(Creature *c) : ScriptedAI(c){}
+
+    uint32 RendTimer;
+    uint32 EnragingBiteTimer;
+
+    void Reset()
+    {
+        RendTimer = 30000;
+        EnragingBiteTimer = 20000;
+
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        me->SetReactState(REACT_PASSIVE);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim())
+            return;
+
+        if (RendTimer <= diff)
+        {
+            DoCast(me->getVictim(), SPELL_REND);
+            RendTimer = 30000;
+        }
+        else RendTimer -= diff;
+
+        if (EnragingBiteTimer <= diff)
+        {
+            DoCast(me->getVictim(), SPELL_ENRAGING_BITE);
+            EnragingBiteTimer = 15000;
+        }
+        else EnragingBiteTimer -= diff;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_death_ravagerAI(Creature* pCreature)
+{
+    return new npc_death_ravagerAI(pCreature);
+}
+
+/*########
+## Quest: The Prophecy of Akida
+########*/
+
+enum BristlelimbCage
+{
+    CAPITIVE_SAY_1                      = -1600474,
+    CAPITIVE_SAY_2                      = -1600475,
+    CAPITIVE_SAY_3                      = -1600476,
+
+    QUEST_THE_PROPHECY_OF_AKIDA         = 9544,
+    NPC_STILLPINE_CAPITIVE              = 17375,
+    GO_BRISTELIMB_CAGE                  = 181714
+
+};
+
+
+struct npc_stillpine_capitiveAI : public ScriptedAI
+{
+    npc_stillpine_capitiveAI(Creature *c) : ScriptedAI(c){}
+
+    uint32 FleeTimer;
+
+    void Reset()
+    {
+        FleeTimer = 0;
+        GameObject* cage = FindGameObject(GO_BRISTELIMB_CAGE, 5.0f, me);
+        if(cage)
+            cage->ResetDoorOrButton();
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(FleeTimer)
+        {
+            if(FleeTimer <= diff)
+                me->ForcedDespawn();
+            else FleeTimer -= diff;
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_stillpine_capitiveAI(Creature* pCreature)
+{
+    return new npc_stillpine_capitiveAI(pCreature);
+}
+
+bool go_bristlelimb_cage(Player* pPlayer, GameObject* pGo)
+{
+    if(pPlayer->GetQuestStatus(QUEST_THE_PROPHECY_OF_AKIDA) == QUEST_STATUS_INCOMPLETE)
+    {
+        Creature* pCreature = GetClosestCreatureWithEntry(pGo, NPC_STILLPINE_CAPITIVE, 5.0f);
+        if(pCreature)
+        {
+            DoScriptText(RAND(CAPITIVE_SAY_1, CAPITIVE_SAY_2, CAPITIVE_SAY_3), pCreature, pPlayer);
+            pCreature->GetMotionMaster()->MoveFleeing(pPlayer, 3500);
+            pPlayer->KilledMonster(pCreature->GetEntry(), pCreature->GetGUID());
+            CAST_AI(npc_stillpine_capitiveAI, pCreature->AI())->FleeTimer = 3500;
+            return false;
+        }
+    }
+    return true;
+}
+
 void AddSC_azuremyst_isle()
 {
     Script *newscript;
@@ -725,5 +842,23 @@ void AddSC_azuremyst_isle()
     newscript->GetAI = &GetAI_mob_siltfin_murlocAI;
     newscript->RegisterSelf();
 
-}
+    newscript = new Script;
+    newscript->Name="npc_death_ravager";
+    newscript->GetAI = &GetAI_npc_death_ravagerAI;
+    newscript->RegisterSelf();
 
+    newscript = new Script;
+    newscript->Name="go_ravager_cage";
+    newscript->pGOHello = &go_ravager_cage;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_stillpine_capitive";
+    newscript->GetAI = &GetAI_npc_stillpine_capitiveAI;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name="go_bristlelimb_cage";
+    newscript->pGOHello = &go_bristlelimb_cage;
+    newscript->RegisterSelf();
+}

@@ -24,6 +24,7 @@ EndScriptData */
 /* ContentData
 npc_highlord_demitrian
 npcs_rutgar_and_frankal
+npc_cenarion_scout_jalia
 EndContentData */
 
 #include "precompiled.h"
@@ -200,6 +201,65 @@ bool GossipSelect_npcs_rutgar_and_frankal(Player *player, Creature *_Creature, u
     return true;
 }
 
+/*######
+## npc_cenarion_scout_jalia
+######*/
+
+#define GOSSIP_ITEM_JALIA "Create Hive'Ashi Scout Report."
+
+bool GossipHello_npc_cenarion_scout_jalia(Player *player, Creature *_Creature)
+{
+    if (_Creature->isQuestGiver())
+        player->PrepareQuestMenu( _Creature->GetGUID() );
+
+    if( player->GetQuestStatus(8739) == QUEST_STATUS_INCOMPLETE )
+	if(!player->HasItemCount(21161,1))	
+        player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_JALIA, GOSSIP_SENDER_MAIN, GOSSIP_SENDER_INFO );
+
+    player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+    player->CLOSE_GOSSIP_MENU();
+    return true;
+}
+
+bool GossipSelect_npc_cenarion_scout_jalia(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+{
+    if( action == GOSSIP_SENDER_INFO )
+    {
+        player->CastSpell( player, 25845, false);
+        player->CLOSE_GOSSIP_MENU();
+    }
+    return true;
+}
+
+/*######
+## npc_cenarion_scout_azenel
+######*/
+
+#define GOSSIP_ITEM_AZENEL "Create Hive'Zora Scout Report."
+
+bool GossipHello_npc_cenarion_scout_azenel(Player *player, Creature *_Creature)
+{
+    if (_Creature->isQuestGiver())
+        player->PrepareQuestMenu( _Creature->GetGUID() );
+
+    if( player->GetQuestStatus(8534) == QUEST_STATUS_INCOMPLETE )
+	if(!player->HasItemCount(21158,1))	
+        player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_AZENEL, GOSSIP_SENDER_MAIN, GOSSIP_SENDER_INFO );
+
+    player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+    player->CLOSE_GOSSIP_MENU();
+    return true;
+}
+
+bool GossipSelect_npc_cenarion_scout_azenel(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+{
+    if( action == GOSSIP_SENDER_INFO )
+    {
+        player->CastSpell( player, 25843, false);
+    }
+    return true;
+}
+
 /*###
 ##
 ####*/
@@ -218,6 +278,18 @@ void AddSC_silithus()
     newscript->Name="npcs_rutgar_and_frankal";
     newscript->pGossipHello =   &GossipHello_npcs_rutgar_and_frankal;
     newscript->pGossipSelect =  &GossipSelect_npcs_rutgar_and_frankal;
+    newscript->RegisterSelf();
+	
+	newscript = new Script;
+    newscript->Name="npc_cenarion_scout_jalia";
+    newscript->pGossipHello = &GossipHello_npc_cenarion_scout_jalia;
+    newscript->pGossipSelect = &GossipSelect_npc_cenarion_scout_jalia;
+    newscript->RegisterSelf();
+	
+    newscript = new Script;
+    newscript->Name="npc_cenarion_scout_azenel";
+    newscript->pGossipHello = &GossipHello_npc_cenarion_scout_azenel;
+    newscript->pGossipSelect = &GossipSelect_npc_cenarion_scout_azenel;
     newscript->RegisterSelf();
 }
 

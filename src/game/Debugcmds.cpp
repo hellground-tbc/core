@@ -17,6 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+#include <iomanip>
 
 #include "Common.h"
 #include "Database/DatabaseEnv.h"
@@ -35,6 +36,71 @@
 #include "BattleGroundMgr.h"
 #include <fstream>
 #include "ObjectMgr.h"
+#include "InstanceData.h"
+
+bool ChatHandler::HandleAddWPCommand(const char* args)
+{
+    std::fstream file;
+    file.open("waypoints.txt", std::ios_base::app);
+    if (file.fail())
+        return false;
+
+    file << "INSERT INTO `waypoint_data` VALUES ('0', '1', '"
+         << m_session->GetPlayer()->GetPositionX() << "', '"
+         << m_session->GetPlayer()->GetPositionY() << "', '"
+         << m_session->GetPlayer()->GetPositionZ() << "', '0', '0', '0', '100', '0');" << std::endl;
+    if (*args)
+    {
+        int dist = atoi((char*)args);
+        float x = m_session->GetPlayer()->GetPositionX() + dist*cos(m_session->GetPlayer()->GetOrientation());
+        float y = m_session->GetPlayer()->GetPositionY() + dist*sin(m_session->GetPlayer()->GetOrientation());
+        float z = m_session->GetPlayer()->GetMap()->GetHeight(x, y, m_session->GetPlayer()->GetPositionZ(), false);
+        file << "'" << x << "', '" << y << "', '" << z << "'" << std::endl;
+    }
+    file.close();
+    return true;
+}
+
+bool ChatHandler::HandleAddFormationCommand(const char* args)
+{
+    if (!args)
+        return false;
+
+    std::fstream file;
+    file.open("formations.txt", std::ios_base::app);
+    if (file.fail())
+        return false;
+
+    uint32 leader = atoi((char*)args);
+    uint32 member = 0;
+    if (Unit *sel = getSelectedUnit())
+        member = ((Creature *)sel)->GetDBTableGUIDLow();
+
+    file << "INSERT INTO `creature_formations` VALUES ('" << leader << "', '" << member << "', '0', '0', '2');" << std::endl;
+    file.close();
+    return true;
+}
+
+bool ChatHandler::HandleRelocateCreatureCommand(const char* args)
+{
+    if (!args)
+        return false;
+
+    std::fstream file;
+    file.open("position.txt", std::ios_base::app);
+    if (file.fail())
+        return false;
+
+    uint32 guid = atoi((char*)args);
+
+    file << "UPDATE `creature` SET `position_x`='" << m_session->GetPlayer()->GetPositionX()
+         << "', `position_y`='" << m_session->GetPlayer()->GetPositionY()
+         << "', `position_z`='" << m_session->GetPlayer()->GetPositionZ()
+         << "' WHERE `guid`='" << guid << "';" << std::endl;
+    file.close();
+    return true;
+}
+
 
 bool ChatHandler::HandleDebugInArcCommand(const char* /*args*/)
 {
@@ -194,11 +260,11 @@ bool ChatHandler::HandleSendOpcodeCommand(const char* /*args*/)
         }
         else if(type == "pguid")
         {
-            data.append(unit->GetPackGUID());
+            data << unit->GetPackGUID();
         }
         else if(type == "myguid")
         {
-            data.append(player->GetPackGUID());
+            data << player->GetPackGUID();
         }
         else if(type == "pos")
         {
@@ -591,3 +657,108 @@ bool ChatHandler::HandleDebugHostilRefList(const char * /*args*/)
     return true;
 }
 
+bool ChatHandler::HandleSetInstanceDataCommand(const char *args)
+{
+    if (!args || !m_session->GetPlayer())
+        return false;
+
+    InstanceData *pInstance = m_session->GetPlayer()->GetInstanceData();
+    if (!pInstance)
+    if (!pInstance)
+    {
+    PSendSysMessage("You are not in scripted instance.");
+        SetSentErrorMessage(true);
+      return false;
+    }
+
+    char *id = strtok((char*)args, " ");
+    char *data = strtok(NULL, " ");
+    char *trash = strtok(NULL, " ");
+
+    if (!id || !data)
+        return false;
+
+    uint32 _id = uint32(atoi(id));
+    uint32 _data = uint32(atoi(data));
+
+    pInstance->SetData(_id, _data);
+    return true;
+}
+
+bool ChatHandler::HandleGetInstanceDataCommand(const char *args)
+{
+    if (!args || !m_session->GetPlayer())
+        return false;
+
+    InstanceData *pInstance = m_session->GetPlayer()->GetInstanceData();
+    if (!pInstance)
+    {
+        PSendSysMessage("You are not in scripted instance.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    char *id = strtok((char*)args, " ");
+    char *trash = strtok(NULL, " ");
+
+    if (!id)
+        return false;
+
+    uint32 _id = uint32(atoi(id));
+
+    PSendSysMessage("Result: %u", pInstance->GetData(_id));
+    return true;
+}
+
+bool ChatHandler::HandleSetInstanceData64Command(const char *args)
+{
+    if (!args || !m_session->GetPlayer())
+        return false;
+
+    InstanceData *pInstance = m_session->GetPlayer()->GetInstanceData();
+    if (!pInstance)
+    if (!pInstance)
+    {
+    PSendSysMessage("You are not in scripted instance.");
+        SetSentErrorMessage(true);
+      return false;
+    }
+
+    char *id = strtok((char*)args, " ");
+    char *data = strtok(NULL, " ");
+    char *trash = strtok(NULL, " ");
+
+    if (!id || !data)
+        return false;
+
+    uint32 _id = uint32(atoi(id));
+    uint64 _data = uint64(atoi(data));
+
+    pInstance->SetData64(_id, _data);
+    return true;
+}
+
+bool ChatHandler::HandleGetInstanceData64Command(const char *args)
+{
+    if (!args || !m_session->GetPlayer())
+        return false;
+
+    InstanceData *pInstance = m_session->GetPlayer()->GetInstanceData();
+    if (!pInstance)
+    {
+        PSendSysMessage("You are not in scripted instance.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    char *id = strtok((char*)args, " ");
+    char *trash = strtok(NULL, " ");
+
+    if (!id)
+        return false;
+
+    uint32 _id = uint32(atoi(id));
+
+    PSendSysMessage("Result: %u", pInstance->GetData64(_id));
+    return true;
+}

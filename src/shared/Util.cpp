@@ -29,29 +29,34 @@ typedef ACE_TSS<MTRand> MTRandTSS;
 
 static MTRandTSS mtRand;
 
-int32 irand (int32 min, int32 max)
+int32 irand(int32 min, int32 max)
 {
-  return mtRand->randInt (max-min) + min;
+    return mtRand->randInt (max-min) + min;
 }
 
-uint32 urand (uint32 min, uint32 max)
+float frand(float min, float max)
 {
-  return mtRand->randInt (max - min) + min;
+    return mtRand->randExc(max - min) + min;
 }
 
-int32 rand32 ()
+uint32 urand(uint32 min, uint32 max)
 {
-  return mtRand->randInt ();
+  return mtRand->randInt(max - min) + min;
+}
+
+int32 rand32()
+{
+    return mtRand->randInt();
 }
 
 double rand_norm(void)
 {
-  return mtRand->randExc ();
+    return mtRand->randExc();
 }
 
-double rand_chance (void)
+double rand_chance(void)
 {
-  return mtRand->randExc (100.0);
+    return mtRand->randExc(100.0);
 }
 
 Tokens StrSplit(const std::string &src, const std::string &sep)

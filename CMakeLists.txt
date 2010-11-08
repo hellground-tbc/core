@@ -4,6 +4,7 @@ cmake_policy(SET CMP0005 OLD)
 
 include(CheckIncludeFiles)
 include(cmake/FindAce.cmake)
+include(cmake/FindTbb.cmake)
 include(cmake/FindMySql.cmake)
 include(cmake/FindPostgreSql.cmake)
 include(cmake/FindReadline.cmake)
@@ -164,6 +165,15 @@ return()
 #message(STATUS "And link using: ${ACE_LIBRARY}")
 endif(ACE_FOUND)
 
+FIND_TBB(tbb)
+if(TBB_FOUND)
+message(STATUS "Found TBB libraries: ${TBB_LIBRARY} ${TBB_LIBRARY_MALLOC} ${TBB_LIBRARY_MALLOC_PROXY}")
+message(STATUS "Include dir is: ${TBB_INCLUDE_DIR}")
+else(TBB_FOUND)
+message(SEND_ERROR "** TBB library not found! Trinity Core cannot be compiled!")
+return()
+endif(TBB_FOUND)
+
 #somehow line below don't work. so for now change it to if exist
 #check_include_files(${ACE_INCLUDE_DIR}/ace/Stack_Trace.h HAVE_ACE_STACK_TRACE_H)
 IF(EXISTS ${ACE_INCLUDE_DIR}/ace/Stack_Trace.h)
@@ -203,7 +213,7 @@ src/framework
 src/shared/Database 
 src/shared/vmap
 src/game 
-src/bindings/scripts/base
+src/bindings/scripts/scripts/npc
 ${CMAKE_BINARY_DIR}
 ${SCRIPT_INCLUDE}
 ${MYSQL_INCLUDE_DIR} 
@@ -211,6 +221,7 @@ ${POSTGRESQL_INCLUDE_DIR}
 ${CMAKE_CURRENT_BINARY_DIR}/src/shared 
 ${CMAKE_CURRENT_SOURCE_DIR}/..
 ${ACE_INCLUDE_DIR}
+${TBB_INCLUDE_DIR}
 ${READLINE_INCLUDE_DIR}
 )
 
@@ -220,7 +231,5 @@ SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 add_subdirectory(dep)
-add_subdirectory(doc)
+#add_subdirectory(doc)
 add_subdirectory(src)
-add_subdirectory(sql)
-

@@ -79,7 +79,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="ACE.lib libmySQL.lib libeay32.lib ws2_32.lib winmm.lib odbc32.lib odbccp32.lib advapi32.lib dbghelp.lib MSVCPRT.LIB msvcrt.lib"
+				AdditionalDependencies="ACE.lib libmySQL.lib libeay32.lib ws2_32.lib winmm.lib odbc32.lib odbccp32.lib advapi32.lib dbghelp.lib"
 				OutputFile="..\..\bin\$(PlatformName)_$(ConfigurationName)\TrinityRealm.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -177,7 +177,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="ACEd.lib libmySQL.lib libeay32.lib ws2_32.lib winmm.lib odbc32.lib odbccp32.lib advapi32.lib dbghelp.lib MSVCPRTD.LIB msvcrtd.lib"
+				AdditionalDependencies="ACEd.lib libmySQL.lib libeay32.lib ws2_32.lib winmm.lib odbc32.lib odbccp32.lib advapi32.lib dbghelp.lib"
 				OutputFile="..\..\bin\$(PlatformName)_$(ConfigurationName)\TrinityRealm.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -276,7 +276,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="zthread.lib libmySQL.lib libeay32.lib ws2_32.lib winmm.lib odbc32.lib odbccp32.lib advapi32.lib dbghelp.lib MSVCPRT.LIB msvcrt.lib"
+				AdditionalDependencies="zthread.lib libmySQL.lib libeay32.lib ws2_32.lib winmm.lib odbc32.lib odbccp32.lib advapi32.lib dbghelp.lib"
 				OutputFile="..\..\bin\$(PlatformName)_$(ConfigurationName)\TrinityRealm.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -371,7 +371,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="zthread.lib libmySQL.lib libeay32.lib ws2_32.lib winmm.lib odbc32.lib odbccp32.lib advapi32.lib dbghelp.lib MSVCPRTD.LIB msvcrtd.lib"
+				AdditionalDependencies="zthread.lib libmySQL.lib libeay32.lib ws2_32.lib winmm.lib odbc32.lib odbccp32.lib advapi32.lib dbghelp.lib"
 				OutputFile="..\..\bin\$(PlatformName)_$(ConfigurationName)\TrinityRealm.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"

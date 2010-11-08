@@ -339,8 +339,26 @@ bool OutdoorPvPObjectiveTF::Update(uint32 diff)
                 m_TowerState = TF_TOWERSTATE_N;
                 break;
             }
+            Map * tmpMap = GetMap();
+            if (!tmpMap)
+            {
+                GameObjectData const* data = objmgr.GetGOData(GUID_LOPART(m_CapturePoint));
 
-            GameObject* flag = HashMapHolder<GameObject>::Find(m_CapturePoint);
+                if (!data)
+                {
+                    sLog.outError("OutdoorPvPObjectiveTF::Update: data not found");
+                    return false;
+                }
+
+                Map * tmpMap = GetMap(data->mapid);
+                if (!tmpMap)
+                {
+                    sLog.outError("OutdoorPvPObjectiveTF::Update: map not found (id %u)", data->mapid);
+                    return false;
+                }
+            }
+
+            GameObject* flag = tmpMap->GetGameObject(m_CapturePoint);
             if(flag)
             {
                 flag->SetGoArtKit(artkit);

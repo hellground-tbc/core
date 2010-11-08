@@ -100,7 +100,7 @@ struct TRINITY_DLL_DECL boss_kelidan_the_breakerAI : public ScriptedAI
         SummonChannelers();
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_WAKE, m_creature);
         if (m_creature->IsNonMeleeSpellCasted(false))
@@ -113,11 +113,7 @@ struct TRINITY_DLL_DECL boss_kelidan_the_breakerAI : public ScriptedAI
         if (rand()%2)
             return;
 
-        switch(rand()%2)
-        {
-            case 0: DoScriptText(SAY_KILL_1, m_creature); break;
-            case 1: DoScriptText(SAY_KILL_2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_KILL_1, SAY_KILL_2), m_creature);
     }
 
     void ChannelerEngaged(Unit* who)
@@ -125,13 +121,9 @@ struct TRINITY_DLL_DECL boss_kelidan_the_breakerAI : public ScriptedAI
         if(who && !addYell)
         {
             addYell = true;
-            switch(rand()%3)
-            {
-                case 0: DoScriptText(SAY_ADD_AGGRO_1, m_creature); break;
-                case 1: DoScriptText(SAY_ADD_AGGRO_2, m_creature); break;
-                default: DoScriptText(SAY_ADD_AGGRO_3, m_creature); break;
-            }
+            DoScriptText(RAND(SAY_ADD_AGGRO_1, SAY_ADD_AGGRO_2, SAY_ADD_AGGRO_3), m_creature);
         }
+
         for(int i=0; i<5; ++i)
         {
             Creature *channeler = Unit::GetCreature(*m_creature, Channelers[i]);
@@ -293,12 +285,13 @@ struct TRINITY_DLL_DECL mob_shadowmoon_channelerAI : public ScriptedAI
             m_creature->InterruptNonMeleeSpells(true);
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         if(Creature *Kelidan = (Creature *)FindCreature(ENTRY_KELIDAN, 100, m_creature))
             ((boss_kelidan_the_breakerAI*)Kelidan->AI())->ChannelerEngaged(who);
         if (m_creature->IsNonMeleeSpellCasted(false))
             m_creature->InterruptNonMeleeSpells(true);
+
         DoStartMovement(who);
     }
 

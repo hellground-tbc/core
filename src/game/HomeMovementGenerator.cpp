@@ -20,11 +20,19 @@
 
 #include "HomeMovementGenerator.h"
 #include "Creature.h"
+#include "CreatureAI.h"
 #include "Traveller.h"
 #include "MapManager.h"
 #include "ObjectAccessor.h"
 #include "DestinationHolderImp.h"
 #include "WorldPacket.h"
+
+void
+HomeMovementGenerator<Creature>::Finalize(Creature & owner)
+{
+    if (owner.IsAIEnabled)
+        owner.AI()->MovementInform(HOME_MOTION_TYPE, RAND_MAX);
+}
 
 void
 HomeMovementGenerator<Creature>::Initialize(Creature & owner)
@@ -75,6 +83,7 @@ HomeMovementGenerator<Creature>::Update(Creature &owner, const uint32& time_diff
             owner.BuildHeartBeatMsg(&packet);
             owner.SendMessageToSet(&packet, false);
         }
+        owner.AI()->JustReachedHome();
         return false;
     }
 

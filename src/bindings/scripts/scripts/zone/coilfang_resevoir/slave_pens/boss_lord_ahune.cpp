@@ -56,7 +56,7 @@ struct TRINITY_DLL_DECL boss_lord_ahune_coreAI : public Scripted_NoMovementAI
         Ahune = 0;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
     }
 
@@ -158,7 +158,7 @@ struct TRINITY_DLL_DECL boss_lord_ahuneAI : public Scripted_NoMovementAI
         me->LowerPlayerDamageReq(me->GetHealth() / 2 + 1);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if(pInstance)
             pInstance->SetData(DATA_AHUNEEVENT, IN_PROGRESS);
@@ -195,9 +195,9 @@ struct TRINITY_DLL_DECL boss_lord_ahuneAI : public Scripted_NoMovementAI
 
     void JustSummoned(Creature* summoned)
     {
-        DoZoneInCombat(summoned);
         if(summoned->AI() && me->getVictim())
             summoned->AI()->AttackStart(me->getVictim());
+
         Summons.Summon(summoned);
     }
 
@@ -330,8 +330,6 @@ struct TRINITY_DLL_DECL npc_ice_spear_bunnyAI : public Scripted_NoMovementAI
         Knockback = false;
         Despawn = false;
     }
-
-    void Aggro(Unit *) {}
 
     void KnockbackPlayers()
     {

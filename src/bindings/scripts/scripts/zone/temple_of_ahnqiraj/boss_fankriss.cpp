@@ -22,6 +22,7 @@ SDCategory: Temple of Ahn'Qiraj
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_temple_of_ahnqiraj.h"
 
 #define SOUND_SENTENCE_YOU 8588
 #define SOUND_SERVE_TO     8589
@@ -37,8 +38,12 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_fankrissAI : public ScriptedAI
 {
-    boss_fankrissAI(Creature *c) : ScriptedAI(c) {}
+    boss_fankrissAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+    }
 
+    ScriptedInstance *pInstance;
     uint32 MortalWound_Timer;
     uint32 SpawnHatchlings_Timer;
     uint32 SpawnSpawns_Timer;
@@ -54,6 +59,9 @@ struct TRINITY_DLL_DECL boss_fankrissAI : public ScriptedAI
         MortalWound_Timer = 10000 + rand()%5000;
         SpawnHatchlings_Timer = 6000 + rand()%6000;
         SpawnSpawns_Timer = 15000 + rand()%30000;
+
+        if (pInstance)
+            pInstance->SetData(DATA_FANKRISS_THE_UNYIELDING, NOT_STARTED);
     }
 
     void SummonSpawn(Unit* victim)
@@ -80,8 +88,16 @@ struct TRINITY_DLL_DECL boss_fankrissAI : public ScriptedAI
             ((CreatureAI*)Spawn->AI())->AttackStart(victim);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
+        if (pInstance)
+            pInstance->SetData(DATA_FANKRISS_THE_UNYIELDING, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_FANKRISS_THE_UNYIELDING, DONE);
     }
 
     void UpdateAI(const uint32 diff)

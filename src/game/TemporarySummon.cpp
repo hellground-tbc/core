@@ -28,6 +28,7 @@
 TemporarySummon::TemporarySummon( uint64 summoner ) :
 Creature(), m_type(TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN), m_timer(0), m_lifetime(0), m_summoner(summoner)
 {
+     m_unit_movement_flags = 0;
 }
 
 void TemporarySummon::Update( uint32 diff )
@@ -175,7 +176,7 @@ void TemporarySummon::UnSummon()
     CleanupsBeforeDelete();
     AddObjectToRemoveList();
 
-    Unit* sum = m_summoner ? ObjectAccessor::GetUnit(*this, m_summoner) : NULL;
+    Unit* sum = m_summoner ? GetMap()->GetUnit(m_summoner) : NULL;
     if (sum  && sum->GetTypeId() == TYPEID_UNIT && ((Creature*)sum)->IsAIEnabled)
     {
         ((Creature*)sum)->AI()->SummonedCreatureDespawn(this);

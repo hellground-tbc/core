@@ -91,7 +91,7 @@ static void AttemptAddMore(Player* _player)
     if(!_player->m_lookingForGroup.more.canAutoJoin())
         return;
 
-    ObjectAccessor::Guard guard(*HashMapHolder<Player>::GetLock());
+    //ObjectAccessor::Guard guard(*HashMapHolder<Player>::GetLock());
     HashMapHolder<Player>::MapType const& players = ObjectAccessor::Instance().GetPlayers();
     for(HashMapHolder<Player>::MapType::const_iterator iter = players.begin(); iter != players.end(); ++iter)
     {
@@ -284,7 +284,7 @@ void WorldSession::SendLfgResult(uint32 type, uint32 entry, uint8 lfg_type)
 
         ++number;
 
-        data.append(plr->GetPackGUID());                    // packed guid
+        data << plr->GetPackGUID();                         // packed guid
         data << plr->getLevel();                            // level
         data << plr->GetZoneId();                           // current zone
         data << lfg_type;                                   // 0x00 - LFG, 0x01 - LFM
@@ -304,7 +304,7 @@ void WorldSession::SendLfgResult(uint32 type, uint32 entry, uint8 lfg_type)
                 Player *member = itr->getSource();
                 if(member && member->GetGUID() != plr->GetGUID())
                 {
-                    data.append(member->GetPackGUID());     // packed guid
+                    data << member->GetPackGUID();          // packed guid
                     data << member->getLevel();             // player level
                 }
             }

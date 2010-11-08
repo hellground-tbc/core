@@ -22,6 +22,7 @@ SDCategory: Naxxramas
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_naxxramas.h"
 
 #define SPELL_MORTALWOUND       25646
 #define SPELL_DECIMATE          28374
@@ -67,7 +68,12 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_gluthAI : public ScriptedAI
 {
-    boss_gluthAI(Creature *c) : ScriptedAI(c) {}
+    boss_gluthAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
+
+    ScriptedInstance * pInstance;
 
     uint32 MortalWound_Timer;
     uint32 Decimate_Timer;
@@ -84,10 +90,22 @@ struct TRINITY_DLL_DECL boss_gluthAI : public ScriptedAI
         Frenzy_Timer = 15000;
         Enrage_Timer = 304000;
         Summon_Timer = 10000;
+
+        if (pInstance)
+            pInstance->SetData(DATA_GLUTH, NOT_STARTED);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
+
+        if (pInstance)
+            pInstance->SetData(DATA_GLUTH, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_GLUTH, DONE);
     }
 
     void UpdateAI(const uint32 diff)

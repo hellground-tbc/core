@@ -17,36 +17,66 @@
 /* ScriptData
 SDName: Boss_Kurinnaxx
 SD%Complete: 100
-SDComment: VERIFY SCRIPT AND SQL
+SDComment: Timers may be incorrect, not working summon
 SDCategory: Ruins of Ahn'Qiraj
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_ruins_of_ahnqiraj.h"
 
-#define SPELL_MORTALWOUND 25646
-#define SPELL_SANDTRAP 25656
-#define SPELL_ENRAGE 28798
+#define SPELL_MORTALWOUND       25646
+#define SPELL_SANDTRAP          25648 //sandtrap summoning
+#define SPELL_ENRAGE            26527
+#define SPELL_CLEAVE            25814
+#define SPELL_THRASH_AURA       3417
+#define SPELL_SUMMON            26446 //sometimes summons player in front of him
 
 struct TRINITY_DLL_DECL boss_kurinnaxxAI : public ScriptedAI
 {
-    boss_kurinnaxxAI(Creature *c) : ScriptedAI(c) {}
+    boss_kurinnaxxAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
 
+    ScriptedInstance * pInstance;
+    GameObject* Trap;
     Unit *pTarget;
+    Unit *sand_trap_target;
     uint32 MORTALWOUND_Timer;
     uint32 SANDTRAP_Timer;
+    uint32 CLEAVE_Timer;
+    uint32 SUMMON_Chance;
     uint32 i;
+    bool trap;
 
     void Reset()
     {
         i=0;
         pTarget = NULL;
-        MORTALWOUND_Timer = 30000;
-        SANDTRAP_Timer = 30000;
+        sand_trap_target = NULL;
+        Trap = NULL;
+        MORTALWOUND_Timer = 9000; //15 sec duration
+        SANDTRAP_Timer = 7000; //according to videos, as I couldn't find any timers...
+        CLEAVE_Timer = 8000; //a guess
+        trap = false;
+
+        if (pInstance)
+            pInstance->SetData(DATA_KURINNAXX, NOT_STARTED);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
+        m_creature->CastSpell(m_creature, SPELL_THRASH_AURA, true);
         pTarget = who;
+
+        if (pInstance)
+            pInstance->SetData(DATA_KURINNAXX, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_KURINNAXX, DONE);
     }
 
     void UpdateAI(const uint32 diff)
@@ -65,19 +95,44 @@ struct TRINITY_DLL_DECL boss_kurinnaxxAI : public ScriptedAI
         if (MORTALWOUND_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_MORTALWOUND);
-            MORTALWOUND_Timer = 30000;
-        }else MORTALWOUND_Timer -= diff;
+            MORTALWOUND_Timer = 9000;
+        }
+        else MORTALWOUND_Timer -= diff;
 
         //SANDTRAP_Timer
         if (SANDTRAP_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_SANDTRAP);
-            SANDTRAP_Timer = 30000;
-        }else SANDTRAP_Timer -= diff;
+            if (trap)
+                {
+                    if (Trap = FindGameObject(180647, 100, m_creature))
+                    Trap->Delete(); //one trap at a time
+                }
+            if(sand_trap_target = SelectUnit(SELECT_TARGET_RANDOM, 0, 70, true))
+                sand_trap_target->CastSpell(sand_trap_target, SPELL_SANDTRAP, true, 0, 0, me->GetGUID());// summon sand trap under victim
 
+            if (!trap)
+                trap = true; //at least one trap exist
+            SANDTRAP_Timer = 7000;
+        }
+        else SANDTRAP_Timer -= diff;
+
+        //CLEAVE_Timer
+        if(CLEAVE_Timer < diff)
+            {
+                DoCast(m_creature->getVictim(), SPELL_CLEAVE);
+                CLEAVE_Timer = 6000 + rand()%6000;
+            }
+        else CLEAVE_Timer -= diff;
+
+        /*
+        if ((SUMMON_Chance = urand(0, 100))%100 == 0) //1% chance to summon enemy every update
+            DoCast(m_creature->getVictim(), SPELL_SUMMON);
+            A bit buggy.
+        */
         DoMeleeAttackIfReady();
     }
 };
+
 CreatureAI* GetAI_boss_kurinnaxx(Creature *_Creature)
 {
     return new boss_kurinnaxxAI (_Creature);

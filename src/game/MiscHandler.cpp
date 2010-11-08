@@ -47,6 +47,7 @@
 #include "SocialMgr.h"
 #include "CellImpl.h"
 #include "AccountMgr.h"
+#include "Group.h"
 
 void WorldSession::HandleRepopRequestOpcode( WorldPacket & /*recv_data*/ )
 {
@@ -272,6 +273,7 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recv_data )
             continue;
 
         uint32 pzoneid = itr->second->GetZoneId();
+        uint8 gender = itr->second->getGender();
 
         bool z_show = true;
         for(uint32 i = 0; i < zones_count; i++)
@@ -327,13 +329,13 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recv_data )
         if (!s_show)
             continue;
 
-        data << pname;                                      // player name
-        data << gname;                                      // guild name
-        data << uint32( lvl );                              // player level
-        data << uint32( class_ );                           // player class
-        data << uint32( race );                             // player race
-        data << uint8(0);                                   // new 2.4.0
-        data << uint32( pzoneid );                          // player zone id
+        data << pname;                                    // player name
+        data << gname;                                    // guild name
+        data << uint32(lvl );                             // player level
+        data << uint32(class_);                           // player class
+        data << uint32(race);                             // player race
+        data << uint8(gender);                            // player gender
+        data << uint32(pzoneid);                          // player zone id
 
         // 49 is maximum player count sent to client - can be overridden
         // through config, but is unstable
@@ -341,8 +343,8 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recv_data )
             break;
     }
 
-    data.put( 0,              clientcount );                //insert right count
-    data.put( sizeof(uint32), clientcount );                //insert right count
+    data.put(0, clientcount );                //insert right count
+    data.put(4, clientcount );                //insert right count
 
     SendPacket(&data);
     sLog.outDebug( "WORLD: Send SMSG_WHO Message" );
@@ -385,7 +387,7 @@ void WorldSession::HandleLogoutRequestOpcode( WorldPacket & /*recv_data*/ )
         GetPlayer()->SetStandState(PLAYER_STATE_SIT);
 
         WorldPacket data( SMSG_FORCE_MOVE_ROOT, (8+4) );    // guess size
-        data.append(GetPlayer()->GetPackGUID());
+        data << GetPlayer()->GetPackGUID();
         data << (uint32)2;
         SendPacket( &data );
         GetPlayer()->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE);
@@ -417,7 +419,7 @@ void WorldSession::HandleLogoutCancelOpcode( WorldPacket & /*recv_data*/ )
     {
         //!we can move again
         data.Initialize( SMSG_FORCE_MOVE_UNROOT, 8 );       // guess size
-        data.append(GetPlayer()->GetPackGUID());
+        data << GetPlayer()->GetPackGUID();
         data << uint32(0);
         SendPacket( &data );
 
@@ -488,7 +490,7 @@ void WorldSession::HandleSetTargetOpcode( WorldPacket & recv_data )
     _player->SetUInt32Value(UNIT_FIELD_TARGET,guid);
 
     // update reputation list if need
-    Unit* unit = ObjectAccessor::GetUnit(*_player, guid );
+    Unit* unit = _player->GetMap()->GetUnit(guid );
     if(!unit)
         return;
 
@@ -505,7 +507,7 @@ void WorldSession::HandleSetSelectionOpcode( WorldPacket & recv_data )
     _player->SetSelection(guid);
 
     // update reputation list if need
-    Unit* unit = ObjectAccessor::GetUnit(*_player, guid );
+    Unit* unit = _player->GetMap()->GetUnit(guid );
     if(!unit)
         return;
 
@@ -520,7 +522,8 @@ void WorldSession::HandleStandStateChangeOpcode( WorldPacket & recv_data )
     uint8 animstate;
     recv_data >> animstate;
 
-    _player->SetStandState(animstate);
+    if(!GetPlayer()->isPossessed() && !GetPlayer()->isCharmed())
+        _player->SetStandState(animstate);
 }
 
 void WorldSession::HandleFriendListOpcode( WorldPacket & recv_data )
@@ -566,12 +569,12 @@ void WorldSession::HandleAddFriendOpcodeCallBack(QueryResult_AutoPtr result, uin
     uint64 friendAcctid;
     uint32 team;
     FriendsResult friendResult;
- 
+
     WorldSession * session = sWorld.FindSession(accountId);
 
     if(!session || !session->GetPlayer())
         return;
- 
+
     friendResult = FRIEND_NOT_FOUND;
     friendGuid = 0;
 
@@ -654,12 +657,12 @@ void WorldSession::HandleAddIgnoreOpcodeCallBack(QueryResult_AutoPtr result, uin
 {
     uint64 IgnoreGuid;
     FriendsResult ignoreResult;
- 
+
     WorldSession * session = sWorld.FindSession(accountId);
 
     if(!session || !session->GetPlayer())
         return;
- 
+
     ignoreResult = FRIEND_IGNORE_NOT_FOUND;
     IgnoreGuid = 0;
 
@@ -676,7 +679,7 @@ void WorldSession::HandleAddIgnoreOpcodeCallBack(QueryResult_AutoPtr result, uin
             else
             {
                 ignoreResult = FRIEND_IGNORE_ADDED;
- 
+
                 // ignore list full
                 if(!session->GetPlayer()->GetSocial()->AddToSocialList(GUID_LOPART(IgnoreGuid), true))
                     ignoreResult = FRIEND_IGNORE_FULL;
@@ -1156,9 +1159,9 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recv_data)
         return;
 
     uint32 talent_points = 0x3D;
-    uint32 guid_size = plr->GetPackGUID().wpos();
+    uint32 guid_size = plr->GetPackGUID().size();
     WorldPacket data(SMSG_INSPECT_TALENT, guid_size+4+talent_points);
-    data.append(plr->GetPackGUID());
+    data << plr->GetPackGUID();
     data << uint32(talent_points);
 
     // fill by 0 talents array
@@ -1469,29 +1472,58 @@ void WorldSession::HandleChooseTitleOpcode( WorldPacket & recv_data )
     GetPlayer()->SetUInt32Value(PLAYER_CHOSEN_TITLE, title);
 }
 
-void WorldSession::HandleAllowMoveAckOpcode( WorldPacket & recv_data )
+void WorldSession::HandleTimeSyncResp( WorldPacket & recv_data )
 {
     CHECK_PACKET_SIZE(recv_data, 4+4);
 
-    sLog.outDebug("CMSG_ALLOW_MOVE_ACK");
+    sLog.outDebug("CMSG_TIME_SYNC_RESP");
 
-    uint32 counter, time_;
-    recv_data >> counter >> time_;
+    uint32 counter, clientTicks;
+    recv_data >> counter >> clientTicks;
 
-    // time_ seems always more than getMSTime()
-    uint32 diff = getMSTimeDiff(getMSTime(),time_);
+    if(counter != _player->m_timeSyncCounter - 1)
+        sLog.outDebug("Wrong time sync counter from player %s (cheater?)", _player->GetName());
 
-    sLog.outDebug("response sent: counter %u, time %u (HEX: %X), ms. time %u, diff %u", counter, time_, time_, getMSTime(), diff);
+    sLog.outDebug("Time sync received: counter %u, client ticks %u, time since last sync %u", counter, clientTicks, clientTicks - _player->m_timeSyncClient);
+
+    uint32 ourTicks = clientTicks + (getMSTime() - _player->m_timeSyncServer);
+
+    // diff should be small
+    sLog.outDebug("Our ticks: %u, diff %u, latency %u", ourTicks, ourTicks - clientTicks, GetLatency());
+
+    _player->m_timeSyncClient = clientTicks;
 }
 
 void WorldSession::HandleResetInstancesOpcode( WorldPacket & /*recv_data*/ )
 {
     sLog.outDebug("WORLD: CMSG_RESET_INSTANCES");
-    Group *pGroup = _player->GetGroup();
-    if(pGroup)
+    if(Group *pGroup = _player->GetGroup())
     {
-        if(pGroup->IsLeader(_player->GetGUID()))
-            pGroup->ResetInstances(INSTANCE_RESET_ALL, _player);
+        if(!pGroup->IsLeader(_player->GetGUID()))
+            return;
+
+        std::list<GroupMemberSlot> memberSlotList = pGroup->GetMemberSlots();
+        for(std::list<GroupMemberSlot>::const_iterator citr = memberSlotList.begin(); citr != memberSlotList.end(); ++citr)
+        {
+            if(Player *pl = objmgr.GetPlayer(citr->guid))
+            {
+                const MapEntry *mapEntry = sMapStore.LookupEntry(pl->GetMapId());
+                if(mapEntry->IsRaid())
+                {
+                    sLog.outError("WorldSession::HandleResetInstancesOpcode: player %d tried to reset instances while player %d inside raid instance!", _player->GetGUIDLow(), pl->GetGUIDLow());
+                    _player->SendResetInstanceFailed(0, pl->GetMapId());
+                    return;
+                }
+            }
+            else
+            {
+                sLog.outError("WorldSession::HandleResetInstancesOpcode: player %d tried to reset instances while player %d offline!", _player->GetGUIDLow(), citr->guid);
+                //_player->SendResetInstanceFailed(0, /* mapid pl ktorego nie ma ;] */);
+                return;
+            }
+        }
+
+        pGroup->ResetInstances(INSTANCE_RESET_ALL, _player);
     }
     else
         _player->ResetInstances(INSTANCE_RESET_ALL);
@@ -1528,6 +1560,36 @@ void WorldSession::HandleDungeonDifficultyOpcode( WorldPacket & recv_data )
     Group *pGroup = _player->GetGroup();
     if(pGroup)
     {
+        if (pGroup->isRaidGroup())
+        {
+            sLog.outError("WorldSession::HandleDungeonDifficultyOpcode: player %d tried to change difficulty while in raid group!", _player->GetGUIDLow());
+            ChatHandler(this).SendSysMessage(LANG_CHANGE_DIFFICULTY_RAID);
+            return;
+        }
+
+        std::list<GroupMemberSlot> memberSlotList = pGroup->GetMemberSlots();
+
+        for(std::list<GroupMemberSlot>::const_iterator citr = memberSlotList.begin(); citr != memberSlotList.end(); ++citr)
+        {
+            Player * pl = objmgr.GetPlayer(citr->guid);
+            if (pl)
+            {
+                const MapEntry *mapEntry = sMapStore.LookupEntry(pl->GetMapId());
+                if(mapEntry->IsRaid())
+                {
+                    sLog.outError("WorldSession::HandleDungeonDifficultyOpcode: player %d tried to change difficulty while player %d inside raid instance!", _player->GetGUIDLow(), pl->GetGUIDLow());
+                    ChatHandler(this).SendSysMessage(LANG_CHANGE_DIFFICULTY_INSIDE);
+                    return;
+                }
+            }
+            else
+            {
+                sLog.outError("WorldSession::HandleDungeonDifficultyOpcode: player %d tried to change difficulty while player %d offline!", _player->GetGUIDLow(), citr->guid);
+                ChatHandler(this).SendSysMessage(LANG_CHANGE_DIFFICULTY_OFFLINE);
+                return;
+            }
+        }
+
         if(pGroup->IsLeader(_player->GetGUID()))
         {
             // the difficulty is set even if the instances can't be reset
@@ -1587,29 +1649,17 @@ void WorldSession::HandleDismountOpcode( WorldPacket & /*recv_data*/ )
 
 void WorldSession::HandleMoveFlyModeChangeAckOpcode( WorldPacket & recv_data )
 {
-    CHECK_PACKET_SIZE(recv_data, 8+4+4);
-
     // fly mode on/off
     sLog.outDebug("WORLD: CMSG_MOVE_SET_CAN_FLY_ACK");
     //recv_data.hexlike();
+    MovementInfo movementInfo;
 
-    uint64 guid;
-    uint32 unk;
-    uint32 flags;
+    recv_data.read_skip<uint64>();                          // guid
+    recv_data.read_skip<uint32>();                          // unk
+    recv_data >> movementInfo;
+    recv_data.read_skip<uint32>();                          // unk2
 
-    recv_data >> guid >> unk >> flags;
-
-    _player->SetUnitMovementFlags(flags);
-    /*
-    on:
-    25 00 00 00 00 00 00 00 | 00 00 00 00 00 00 80 00
-    85 4E A9 01 19 BA 7A C3 | 42 0D 70 44 44 B0 A8 42
-    78 15 94 40 39 03 00 00 | 00 00 80 3F
-    off:
-    25 00 00 00 00 00 00 00 | 00 00 00 00 00 00 00 00
-    10 FD A9 01 19 BA 7A C3 | 42 0D 70 44 44 B0 A8 42
-    78 15 94 40 39 03 00 00 | 00 00 00 00
-    */
+    _player->SetUnitMovementFlags(movementInfo.GetMovementFlags());
 }
 
 void WorldSession::HandleRequestPetInfoOpcode( WorldPacket & /*recv_data */)

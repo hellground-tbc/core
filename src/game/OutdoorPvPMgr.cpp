@@ -59,7 +59,6 @@ void OutdoorPvPMgr::InitOutdoorPvP()
         sLog.outDebug("OutdoorPvP : HP successfully initiated.");
     }
 
-
     pOP = new OutdoorPvPNA;
     // respawn, init variables
     if(!pOP->SetupOutdoorPvP())
@@ -72,7 +71,6 @@ void OutdoorPvPMgr::InitOutdoorPvP()
         m_OutdoorPvPSet.push_back(pOP);
         sLog.outDebug("OutdoorPvP : NA successfully initiated.");
     }
-
 
     pOP = new OutdoorPvPTF;
     // respawn, init variables
@@ -176,11 +174,12 @@ void OutdoorPvPMgr::Update(uint32 diff)
     if(m_UpdateTimer < diff)
     {
         for(OutdoorPvPSet::iterator itr = m_OutdoorPvPSet.begin(); itr != m_OutdoorPvPSet.end(); ++itr)
-        {
             (*itr)->Update(diff);
-        }
+
         m_UpdateTimer = OUTDOORPVP_OBJECTIVE_UPDATE_INTERVAL;
-    } else m_UpdateTimer -= diff;
+    }
+    else
+        m_UpdateTimer -= diff;
 }
 
 bool OutdoorPvPMgr::HandleCustomSpell(Player *plr, uint32 spellId, GameObject * go)

@@ -83,14 +83,9 @@ struct TRINITY_DLL_DECL boss_darkweaver_sythAI : public ScriptedAI
         summon10 = false;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
-        switch(rand()%3)
-        {
-            case 0: DoScriptText(SAY_AGGRO_1, m_creature); break;
-            case 1: DoScriptText(SAY_AGGRO_2, m_creature); break;
-            case 2: DoScriptText(SAY_AGGRO_3, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), m_creature);
     }
 
     void JustDied(Unit* Killer)
@@ -103,11 +98,7 @@ struct TRINITY_DLL_DECL boss_darkweaver_sythAI : public ScriptedAI
         if (rand()%2)
             return;
 
-        switch(rand()%2)
-        {
-            case 0: DoScriptText(SAY_SLAY_1, m_creature); break;
-            case 1: DoScriptText(SAY_SLAY_2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), m_creature);
     }
 
     void JustSummoned(Creature *summoned)
@@ -222,7 +213,7 @@ struct TRINITY_DLL_DECL mob_syth_fireAI : public ScriptedAI
         flamebuffet_timer = 5000;
     }
 
-    void Aggro(Unit *who) { }
+    void EnterCombat(Unit *who) { }
 
     void UpdateAI(const uint32 diff)
     {
@@ -235,7 +226,9 @@ struct TRINITY_DLL_DECL mob_syth_fireAI : public ScriptedAI
                 DoCast(target,SPELL_FLAME_SHOCK);
 
             flameshock_timer = 5000;
-        }else flameshock_timer -= diff;
+        }
+        else
+            flameshock_timer -= diff;
 
         if(flamebuffet_timer < diff)
         {
@@ -243,7 +236,9 @@ struct TRINITY_DLL_DECL mob_syth_fireAI : public ScriptedAI
                 DoCast(target,SPELL_FLAME_BUFFET);
 
             flamebuffet_timer = 5000;
-        }else flamebuffet_timer -= diff;
+        }
+        else
+            flamebuffet_timer -= diff;
 
         DoMeleeAttackIfReady();
     }
@@ -273,7 +268,7 @@ struct TRINITY_DLL_DECL mob_syth_arcaneAI : public ScriptedAI
         arcanebuffet_timer = 5000;
     }
 
-    void Aggro(Unit *who) { }
+    void EnterCombat(Unit *who) { }
 
     void UpdateAI(const uint32 diff)
     {
@@ -286,7 +281,9 @@ struct TRINITY_DLL_DECL mob_syth_arcaneAI : public ScriptedAI
                 DoCast(target,SPELL_ARCANE_SHOCK);
 
             arcaneshock_timer = 5000;
-        }else arcaneshock_timer -= diff;
+        }
+        else
+            arcaneshock_timer -= diff;
 
         if(arcanebuffet_timer < diff)
         {
@@ -294,7 +291,9 @@ struct TRINITY_DLL_DECL mob_syth_arcaneAI : public ScriptedAI
                 DoCast(target,SPELL_ARCANE_BUFFET);
 
             arcanebuffet_timer = 5000;
-        }else arcanebuffet_timer -= diff;
+        }
+        else
+            arcanebuffet_timer -= diff;
 
         DoMeleeAttackIfReady();
     }
@@ -324,7 +323,7 @@ struct TRINITY_DLL_DECL mob_syth_frostAI : public ScriptedAI
         frostbuffet_timer = 5000;
     }
 
-    void Aggro(Unit *who) { }
+    void EnterCombat(Unit *who) { }
 
     void UpdateAI(const uint32 diff)
     {
@@ -337,7 +336,9 @@ struct TRINITY_DLL_DECL mob_syth_frostAI : public ScriptedAI
                 DoCast(target,SPELL_FROST_SHOCK);
 
             frostshock_timer = 5000;
-        }else frostshock_timer -= diff;
+        }
+        else
+            frostshock_timer -= diff;
 
         if(frostbuffet_timer < diff)
         {
@@ -345,7 +346,9 @@ struct TRINITY_DLL_DECL mob_syth_frostAI : public ScriptedAI
                 DoCast(target,SPELL_FROST_BUFFET);
 
             frostbuffet_timer = 5000;
-        }else frostbuffet_timer -= diff;
+        }
+        else
+            frostbuffet_timer -= diff;
 
         DoMeleeAttackIfReady();
     }
@@ -375,7 +378,7 @@ struct TRINITY_DLL_DECL mob_syth_shadowAI : public ScriptedAI
         shadowbuffet_timer = 5000;
     }
 
-    void Aggro(Unit *who) { }
+    void EnterCombat(Unit *who) { }
 
     void UpdateAI(const uint32 diff)
     {
@@ -388,7 +391,9 @@ struct TRINITY_DLL_DECL mob_syth_shadowAI : public ScriptedAI
                 DoCast(target,SPELL_SHADOW_SHOCK);
 
             shadowshock_timer = 5000;
-        }else shadowshock_timer -= diff;
+        }
+        else
+            shadowshock_timer -= diff;
 
         if(shadowbuffet_timer < diff)
         {
@@ -396,7 +401,9 @@ struct TRINITY_DLL_DECL mob_syth_shadowAI : public ScriptedAI
                 DoCast(target,SPELL_SHADOW_BUFFET);
 
             shadowbuffet_timer = 5000;
-        }else shadowbuffet_timer -= diff;
+        }
+        else
+            shadowbuffet_timer -= diff;
 
         DoMeleeAttackIfReady();
     }

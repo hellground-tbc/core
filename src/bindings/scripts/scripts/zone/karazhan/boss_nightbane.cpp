@@ -69,7 +69,7 @@ struct TRINITY_DLL_DECL boss_nightbaneAI : public ScriptedAI
     ScriptedInstance* pInstance;
 
     uint32 Phase;
-    
+
     bool Summoned;
     bool RainBones;
     bool Skeletons;
@@ -99,7 +99,7 @@ struct TRINITY_DLL_DECL boss_nightbaneAI : public ScriptedAI
     {
         if(Summoned)
         {
-            if(pInstance->GetData64(DATA_NIGHTBANE))
+            if(pInstance->GetData64(DATA_NIGHTBANE) || pInstance->GetData(DATA_NIGHTBANE_EVENT) == DONE)
             {
                 m_creature->setDeathState(JUST_DIED);
                 m_creature->RemoveCorpse();
@@ -125,13 +125,13 @@ struct TRINITY_DLL_DECL boss_nightbaneAI : public ScriptedAI
         MovePhase = 0;
 
         m_creature->SetSpeed(MOVE_RUN, 2.0f);
-        m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
+        m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
         m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
         m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
         m_creature->setActive(true);
 
-        if(pInstance)
+        if(pInstance && pInstance->GetData(DATA_NIGHTBANE_EVENT) != DONE)
             pInstance->SetData(DATA_NIGHTBANE_EVENT, NOT_STARTED);
 
         HandleTerraceDoors(true);
@@ -156,7 +156,7 @@ struct TRINITY_DLL_DECL boss_nightbaneAI : public ScriptedAI
             Door->SetUInt32Value(GAMEOBJECT_STATE, open ? 0 : 1);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if(pInstance)
             pInstance->SetData(DATA_NIGHTBANE_EVENT, IN_PROGRESS);
@@ -245,7 +245,7 @@ struct TRINITY_DLL_DECL boss_nightbaneAI : public ScriptedAI
 
         m_creature->InterruptSpell(CURRENT_GENERIC_SPELL);
         m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
-        m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
+        m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
         (*m_creature).GetMotionMaster()->Clear(false);
         (*m_creature).GetMotionMaster()->MovePoint(0,IntroWay[2][0],IntroWay[2][1],IntroWay[2][2]);
 
@@ -268,7 +268,7 @@ struct TRINITY_DLL_DECL boss_nightbaneAI : public ScriptedAI
             {
                 if(MovePhase >= 7)
                 {
-                    m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
+                    m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
                     m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
                     m_creature->GetMotionMaster()->MovePoint(8,IntroWay[7][0],IntroWay[7][1],IntroWay[7][2]);
                 }
@@ -283,7 +283,7 @@ struct TRINITY_DLL_DECL boss_nightbaneAI : public ScriptedAI
             {
                 if(MovePhase >= 7)
                 {
-                    m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
+                    m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
                     m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
                     m_creature->GetMotionMaster()->MovePoint(8,IntroWay[7][0],IntroWay[7][1],IntroWay[7][2]);
                 }

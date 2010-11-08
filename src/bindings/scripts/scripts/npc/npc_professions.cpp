@@ -459,6 +459,7 @@ void SendActionMenu_npc_prof_alchemy(Player *player, Creature *_Creature, uint32
                 _Creature->CastSpell(player, S_UNLEARN_TRANSMUTE, true);
                 player->ModifyMoney(-DoHighUnlearnCost(player));
                 RemoveProffesionQuest(10899, player);
+                RemoveProffesionQuest(10907, player);
             }
             else
                 player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
@@ -470,6 +471,7 @@ void SendActionMenu_npc_prof_alchemy(Player *player, Creature *_Creature, uint32
                 _Creature->CastSpell(player, S_UNLEARN_ELIXIR, true);
                 player->ModifyMoney(-DoHighUnlearnCost(player));
                 RemoveProffesionQuest(10902, player);
+                RemoveProffesionQuest(10906, player);
             }
             else
                 player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);
@@ -481,6 +483,7 @@ void SendActionMenu_npc_prof_alchemy(Player *player, Creature *_Creature, uint32
                 _Creature->CastSpell(player, S_UNLEARN_POTION, true);
                 player->ModifyMoney(-DoHighUnlearnCost(player));
                 RemoveProffesionQuest(10897, player);
+                RemoveProffesionQuest(10905, player);
             }
             else
                 player->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, _Creature, 0, 0);

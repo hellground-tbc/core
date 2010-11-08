@@ -59,10 +59,15 @@ struct TRINITY_DLL_DECL boss_kriAI : public ScriptedAI
 
         VemDead = false;
         Death = false;
+
+        if (pInstance)
+            pInstance->SetData(DATA_BUG_TRIO, NOT_STARTED);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
+        if (pInstance)
+            pInstance->SetData(DATA_BUG_TRIO, IN_PROGRESS);
     }
 
     void JustDied(Unit* killer)
@@ -73,7 +78,7 @@ struct TRINITY_DLL_DECL boss_kriAI : public ScriptedAI
                                                             // Unlootable if death
                 m_creature->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
 
-            pInstance->SetData(DATA_BUG_TRIO_DEATH, 1);
+            pInstance->SetData(DATA_BUG_TRIO, DONE);
         }
     }
     void UpdateAI(const uint32 diff)
@@ -107,7 +112,7 @@ struct TRINITY_DLL_DECL boss_kriAI : public ScriptedAI
             //Checking if Vem is dead. If yes we will enrage.
             if(Check_Timer < diff)
             {
-                if(pInstance && pInstance->GetData(DATA_VEMISDEAD))
+                if(pInstance && pInstance->GetData(DATA_VEM))
                 {
                     DoCast(m_creature, SPELL_ENRAGE);
                     VemDead = true;
@@ -142,22 +147,28 @@ struct TRINITY_DLL_DECL boss_vemAI : public ScriptedAI
         Enrage_Timer = 120000;
 
         Enraged = false;
+
+        if (pInstance)
+            pInstance->SetData(DATA_BUG_TRIO, NOT_STARTED);
     }
 
     void JustDied(Unit* Killer)
     {
         if(pInstance)
         {
-            pInstance->SetData(DATA_VEM_DEATH, 0);
+            pInstance->SetData(DATA_VEM, 1);
             if(pInstance->GetData(DATA_BUG_TRIO_DEATH) < 2)
                                                             // Unlootable if death
                 m_creature->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
-            pInstance->SetData(DATA_BUG_TRIO_DEATH, 1);
+
+            pInstance->SetData(DATA_BUG_TRIO, DONE);
         }
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
+        if (pInstance)
+            pInstance->SetData(DATA_BUG_TRIO, IN_PROGRESS);
     }
 
     void UpdateAI(const uint32 diff)
@@ -223,6 +234,9 @@ struct TRINITY_DLL_DECL boss_yaujAI : public ScriptedAI
         Check_Timer = 2000;
 
         VemDead = false;
+
+        if (pInstance)
+            pInstance->SetData(DATA_BUG_TRIO, NOT_STARTED);
     }
 
     void JustDied(Unit* Killer)
@@ -232,7 +246,8 @@ struct TRINITY_DLL_DECL boss_yaujAI : public ScriptedAI
             if(pInstance->GetData(DATA_BUG_TRIO_DEATH) < 2)
                                                             // Unlootable if death
                 m_creature->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
-            pInstance->SetData(DATA_BUG_TRIO_DEATH, 1);
+
+            pInstance->SetData(DATA_BUG_TRIO, DONE);
         }
 
         for(int i = 0; i < 10;i++)
@@ -244,8 +259,10 @@ struct TRINITY_DLL_DECL boss_yaujAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
+        if (pInstance)
+            pInstance->SetData(DATA_BUG_TRIO, IN_PROGRESS);
     }
 
     void UpdateAI(const uint32 diff)
@@ -296,7 +313,7 @@ struct TRINITY_DLL_DECL boss_yaujAI : public ScriptedAI
             {
                 if(pInstance)
                 {
-                    if(pInstance->GetData(DATA_VEMISDEAD))
+                    if(pInstance->GetData(DATA_VEM))
                     {
                         DoCast(m_creature, SPELL_ENRAGE);
                         VemDead = true;

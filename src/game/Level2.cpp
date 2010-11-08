@@ -35,6 +35,7 @@
 #include "World.h"
 #include "GameEvent.h"
 #include "SpellMgr.h"
+#include "PoolHandler.h"
 #include "AccountMgr.h"
 #include "WaypointManager.h"
 #include "Util.h"
@@ -75,7 +76,7 @@ bool ChatHandler::HandleMuteCommand(const char* args)
         mutereasonstr = "No reason.";
     else
         mutereasonstr = mutereason;
-        
+
     uint32 notspeaktime = (uint32) atoi(timetonotspeak);
 
     if(!normalizePlayerName(cname))
@@ -249,7 +250,7 @@ bool ChatHandler::HandleTargetObjectCommand(const char* args)
 
         result = WorldDatabase.PQuery("SELECT gameobject.guid, id, position_x, position_y, position_z, orientation, map, "
             "(POW(position_x - %f, 2) + POW(position_y - %f, 2) + POW(position_z - %f, 2)) AS order_ FROM gameobject "
-            "LEFT OUTER JOIN game_event_gameobject on gameobject.guid=game_event_gameobject.guid WHERE map = '%i' %s ORDER BY order_ ASC LIMIT 1",
+            "LEFT OUTER JOIN game_event_gameobject on gameobject.guid=game_event_gameobject.guid WHERE map = '%i' %s ORDER BY order_ ASC LIMIT 10",
             m_session->GetPlayer()->GetPositionX(), m_session->GetPlayer()->GetPositionY(), m_session->GetPlayer()->GetPositionZ(), m_session->GetPlayer()->GetMapId(),eventFilter.str().c_str());
     }
 
@@ -259,14 +260,32 @@ bool ChatHandler::HandleTargetObjectCommand(const char* args)
         return true;
     }
 
-    Field *fields = result->Fetch();
-    uint32 lowguid = fields[0].GetUInt32();
-    uint32 id = fields[1].GetUInt32();
-    float x = fields[2].GetFloat();
-    float y = fields[3].GetFloat();
-    float z = fields[4].GetFloat();
-    float o = fields[5].GetFloat();
-    int mapid = fields[6].GetUInt16();
+    bool found = false;
+    float x, y, z, o;
+    uint32 lowguid, id;
+    uint16 mapid, pool_id;
+
+    do
+    {
+        Field *fields = result->Fetch();
+        lowguid = fields[0].GetUInt32();
+        id =      fields[1].GetUInt32();
+        x =       fields[2].GetFloat();
+        y =       fields[3].GetFloat();
+        z =       fields[4].GetFloat();
+        o =       fields[5].GetFloat();
+        mapid =   fields[6].GetUInt16();
+        pool_id = poolhandler.IsPartOfAPool(lowguid, TYPEID_GAMEOBJECT);
+        if (!pool_id || (pool_id && poolhandler.IsSpawnedObject(pool_id, lowguid, TYPEID_GAMEOBJECT)))
+            found = true;
+    } while (result->NextRow() && (!found));
+
+    if (!found)
+    {
+        PSendSysMessage(LANG_GAMEOBJECT_NOT_EXIST,id);
+        return false;
+    }
+
 
     GameObjectInfo const* goI = objmgr.GetGameObjectInfo(id);
 
@@ -1042,7 +1061,7 @@ bool ChatHandler::HandleDelObjectCommand(const char* args)
     uint64 owner_guid = obj->GetOwnerGUID();
     if(owner_guid)
     {
-        Unit* owner = ObjectAccessor::GetUnit(*m_session->GetPlayer(),owner_guid);
+        Unit* owner = m_session->GetPlayer()->GetMap()->GetUnit(owner_guid);
         if(!owner && !IS_PLAYER_GUID(owner_guid))
         {
             PSendSysMessage(LANG_COMMAND_DELOBJREFERCREATURE, GUID_LOPART(owner_guid), obj->GetGUIDLow());
@@ -3152,8 +3171,16 @@ bool ChatHandler::HandleAnimCommand(const char* args)
     if (!*args)
         return false;
 
+    Unit *pTarget = NULL;
+
+    if(m_session->GetPlayer()->GetSelection())
+        pTarget = Unit::GetUnit(*(m_session->GetPlayer()), m_session->GetPlayer()->GetSelection());
+
+    if(!pTarget)
+        pTarget = m_session->GetPlayer();
+
     uint32 anim_id = atoi((char*)args);
-    m_session->GetPlayer()->HandleEmoteCommand(anim_id);
+    pTarget->HandleEmoteCommand(anim_id);
     return true;
 }
 
@@ -3731,7 +3758,7 @@ bool ChatHandler::HandleNpcUnFollowCommand(const char* /*args*/)
     if (/*creature->GetMotionMaster()->empty() ||*/
         creature->GetMotionMaster()->GetCurrentMovementGeneratorType ()!=TARGETED_MOTION_TYPE)
     {
-        PSendSysMessage(LANG_CREATURE_NOT_FOLLOW_YOU);
+        PSendSysMessage(LANG_CREATURE_NOT_FOLLOW_YOU, creature->GetName());
         SetSentErrorMessage(true);
         return false;
     }
@@ -3741,7 +3768,7 @@ bool ChatHandler::HandleNpcUnFollowCommand(const char* /*args*/)
 
     if(mgen->GetTarget()!=player)
     {
-        PSendSysMessage(LANG_CREATURE_NOT_FOLLOW_YOU);
+        PSendSysMessage(LANG_CREATURE_NOT_FOLLOW_YOU, creature->GetName());
         SetSentErrorMessage(true);
         return false;
     }
@@ -3786,7 +3813,7 @@ bool ChatHandler::HandleCreatePetCommand(const char* args)
 
     if(!pet)
       return false;
-    
+
     if(!pet->CreateBaseAtCreature(creatureTarget))
     {
         delete pet;

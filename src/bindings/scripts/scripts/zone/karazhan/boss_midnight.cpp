@@ -47,7 +47,7 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_midnightAI : public ScriptedAI
 {
-    boss_midnightAI(Creature *c) : ScriptedAI(c) 
+    boss_midnightAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
         m_creature->GetPosition(wLoc);
@@ -80,7 +80,7 @@ struct TRINITY_DLL_DECL boss_midnightAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         if(pInstance)
             pInstance->SetData(DATA_ATTUMEN_EVENT, IN_PROGRESS);
@@ -102,11 +102,11 @@ struct TRINITY_DLL_DECL boss_midnightAI : public ScriptedAI
 
         if(CheckTimer < diff)
         {
-            if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 50.0f)
+            if(!m_creature->IsWithinDistInMap(&wLoc, 50.0f))
                 EnterEvadeMode();
             else
                 DoZoneInCombat();
-            
+
             CheckTimer = 3000;
         }
         else
@@ -115,18 +115,14 @@ struct TRINITY_DLL_DECL boss_midnightAI : public ScriptedAI
         if(Phase == 1 && (m_creature->GetHealth()*100)/m_creature->GetMaxHealth() < 95)
         {
             Phase = 2;
-            Creature *pAttumen = DoSpawnCreature(SUMMON_ATTUMEN, 0, 0, 0, 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 30000);
+            Creature *pAttumen = m_creature->SummonCreature(SUMMON_ATTUMEN, 0, 0, 0, 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 30000); //DoSpawnCreature(SUMMON_ATTUMEN, 0, 0, 0, 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 30000);
             if(pAttumen)
             {
                 Attumen = pAttumen->GetGUID();
                 pAttumen->AI()->AttackStart(m_creature->getVictim());
                 SetMidnight(pAttumen, m_creature->GetGUID());
-                switch(rand()%3)
-                {
-                case 0: DoScriptText(SAY_APPEAR1, pAttumen); break;
-                case 1: DoScriptText(SAY_APPEAR2, pAttumen); break;
-                case 2: DoScriptText(SAY_APPEAR3, pAttumen); break;
-                }
+
+                DoScriptText(RAND(SAY_APPEAR1, SAY_APPEAR2, SAY_APPEAR3), pAttumen);
             }
         }
         else if(Phase == 2 && (m_creature->GetHealth()*100)/m_creature->GetMaxHealth() < 25)
@@ -143,14 +139,14 @@ struct TRINITY_DLL_DECL boss_midnightAI : public ScriptedAI
                     Mount_Timer = 0;
                     m_creature->SetVisibility(VISIBILITY_OFF);
                     m_creature->GetMotionMaster()->MoveIdle();
-                    if (Unit *pAttumen = Unit::GetUnit(*m_creature, Attumen))
+                    if (Creature *pAttumen = Unit::GetCreature(*m_creature, Attumen))
                     {
                         pAttumen->SetUInt32Value(UNIT_FIELD_DISPLAYID, MOUNTED_DISPLAYID);
                         pAttumen->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                         if(pAttumen->getVictim())
                         {
                             pAttumen->GetMotionMaster()->MoveChase(pAttumen->getVictim());
-                            pAttumen->SetUInt64Value(UNIT_FIELD_TARGET, pAttumen->getVictim()->GetGUID());
+                            pAttumen->SetSelection(pAttumen->getVictimGUID());
                         }
                         pAttumen->SetFloatValue(OBJECT_FIELD_SCALE_X,1);
                     }
@@ -224,15 +220,9 @@ struct TRINITY_DLL_DECL boss_attumenAI : public ScriptedAI
         ResetTimer = 2000;
     }
 
-    void Aggro(Unit* who) {}
-
     void KilledUnit(Unit *victim)
     {
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(SAY_KILL1, m_creature); break;
-        case 1: DoScriptText(SAY_KILL2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_KILL1, SAY_KILL2), m_creature);
     }
 
     void JustDied(Unit *victim)
@@ -240,7 +230,7 @@ struct TRINITY_DLL_DECL boss_attumenAI : public ScriptedAI
         DoScriptText(SAY_DEATH, m_creature);
         if (Unit *pMidnight = Unit::GetUnit(*m_creature, Midnight))
             pMidnight->DealDamage(pMidnight, pMidnight->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-        
+
         if(pInstance)
             pInstance->SetData(DATA_ATTUMEN_EVENT, DONE);
     }
@@ -289,11 +279,8 @@ struct TRINITY_DLL_DECL boss_attumenAI : public ScriptedAI
 
         if(RandomYellTimer < diff)
         {
-            switch(rand()%2)
-            {
-            case 0: DoScriptText(SAY_RANDOM1, m_creature); break;
-            case 1: DoScriptText(SAY_RANDOM2, m_creature); break;
-            }
+            DoScriptText(RAND(SAY_RANDOM1, SAY_RANDOM2), m_creature);
+
             RandomYellTimer = 30000 + (rand()%31)*1000;
         }
         else

@@ -75,7 +75,7 @@ TotemAI::UpdateAI(const uint32 /*diff*/)
     // SPELLMOD_RANGE not applied in this place just because not existence range mods for attacking totems
 
     // pointer to appropriate target if found any
-    Unit* victim = i_victimGuid ? ObjectAccessor::GetUnit(i_totem, i_victimGuid) : NULL;
+    Unit* victim = i_victimGuid ? i_totem.GetMap()->GetUnit(i_victimGuid) : NULL;
 
     if(!max_range)
         victim = &i_totem;

@@ -197,6 +197,17 @@ extern char const* localeNames[MAX_LOCALE];
 
 LocaleConstant GetLocaleByName(const std::string& name);
 
+//operator new[] based version of strdup() function! Release memory by using operator delete[] !
+inline char * mangos_strdup(const char * source)
+{
+    const size_t length = strlen(source);
+    char * dest = new char[length + 1];
+    //set terminating end-of-string symbol
+    dest[length] = 0;
+    strcpy(dest, source);
+    return dest;
+}
+
 // we always use stdlibc++ std::max/std::min, undefine some not C++ standard defines (Win API and some other platforms)
 #ifdef max
 #undef max
@@ -209,5 +220,14 @@ LocaleConstant GetLocaleByName(const std::string& name);
 #ifndef M_PI
 #define M_PI            3.14159265358979323846
 #endif
+
+// used for creating values for respawn for example
+#define MAKE_PAIR64(l, h)  uint64(uint32(l) | (uint64(h) << 32))
+#define PAIR64_HIPART(x)   (uint32)((uint64(x) >> 32) & UI64LIT(0x00000000FFFFFFFF))
+#define PAIR64_LOPART(x)   (uint32)(uint64(x)         & UI64LIT(0x00000000FFFFFFFF))
+
+#define MAKE_PAIR32(l, h)  uint32(uint16(l) | (uint32(h) << 16))
+#define PAIR32_HIPART(x)   (uint16)((uint32(x) >> 16) & 0x0000FFFF)
+#define PAIR32_LOPART(x)   (uint16)(uint32(x)         & 0x0000FFFF)
 
 #endif

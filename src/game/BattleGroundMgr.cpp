@@ -332,11 +332,14 @@ bool BattleGroundQueue::InviteGroupToBG(GroupQueueInfo * ginfo, BattleGround * b
 }
 
 // used to recursively select groups from eligible groups
-bool BattleGroundQueue::SelectionPool::Build(uint32 MinPlayers, uint32 MaxPlayers, EligibleGroups::iterator startitr)
+bool BattleGroundQueue::SelectionPool::Build(uint32 MinPlayers, uint32 MaxPlayers, EligibleGroups::iterator startitr, bool premade)
 {
     // start from the specified start iterator
     for(EligibleGroups::iterator itr1 = startitr; itr1 != m_CurrEligGroups->end(); ++itr1)
     {
+        if ((premade && !(*itr1)->Premade) || (!premade && (*itr1)->Premade))
+            continue;
+
         // if it fits in, select it
         if(GetPlayerCount() + (*itr1)->Players.size() <= MaxPlayers)
         {
@@ -350,7 +353,7 @@ bool BattleGroundQueue::SelectionPool::Build(uint32 MinPlayers, uint32 MaxPlayer
             }
             // try building from the rest of the elig. groups
             // if that succeeds, return true
-            if(Build(MinPlayers,MaxPlayers,next))
+            if(Build(MinPlayers,MaxPlayers,next, premade))
                 return true;
             // the rest didn't succeed, so this group cannot be included
             RemoveGroup((*itr1));
@@ -361,7 +364,7 @@ bool BattleGroundQueue::SelectionPool::Build(uint32 MinPlayers, uint32 MaxPlayer
 }
 
 // this function is responsible for the selection of queued groups when trying to create new battlegrounds
-bool BattleGroundQueue::BuildSelectionPool(uint32 bgTypeId, uint32 queue_id, uint32 MinPlayers, uint32 MaxPlayers,  SelectionPoolBuildMode mode, uint8 ArenaType, bool isRated, uint32 MinRating, uint32 MaxRating, uint32 DisregardTime, uint32 excludeTeam)
+bool BattleGroundQueue::BuildSelectionPool(uint32 bgTypeId, uint32 queue_id, uint32 MinPlayers, uint32 MaxPlayers,  SelectionPoolBuildMode mode, uint8 ArenaType, bool isRated, uint32 MinRating, uint32 MaxRating, uint32 DisregardTime, uint32 excludeTeam, bool premade)
 {
     uint32 side;
     switch(mode)
@@ -389,11 +392,12 @@ bool BattleGroundQueue::BuildSelectionPool(uint32 bgTypeId, uint32 queue_id, uin
     // and set m_CurrEligGroups pointer
     // we set it this way to only have one EligibleGroups object to save some memory
     m_SelectionPools[mode].Init(&m_EligibleGroups);
-    // build succeeded
-    if(m_SelectionPools[mode].Build(MinPlayers,MaxPlayers,m_EligibleGroups.begin()))
+
+    // build succeeded for premade
+    if(m_SelectionPools[mode].Build(MinPlayers,MaxPlayers,m_EligibleGroups.begin(), premade))
     {
         // the selection pool is set, return
-        sLog.outDebug("Battleground-debug: pool build succeeded, return true");
+        sLog.outDebug("Battleground-debug: pool build succeeded, return true premade");
         sLog.outDebug("Battleground-debug: Player size for mode %u is %u", mode, m_SelectionPools[mode].GetPlayerCount());
         for(std::list<GroupQueueInfo* >::iterator itr = m_SelectionPools[mode].SelectedGroups.begin(); itr != m_SelectionPools[mode].SelectedGroups.end(); ++itr)
         {
@@ -403,6 +407,8 @@ bool BattleGroundQueue::BuildSelectionPool(uint32 bgTypeId, uint32 queue_id, uin
         }
         return true;
     }
+
+
     // failed to build a selection pool matching the given values
     return false;
 }
@@ -470,6 +476,9 @@ this method is called when group is inserted, or player / group is removed from 
 it must be called after fully adding the members of a group to ensure group joining
 should be called after removeplayer functions in some cases
 */
+
+#define PREMADE_REMOVE_TIME MINUTE*15*1000
+
 void BattleGroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype, bool isRated, uint32 arenaRating)
 {
     if (queue_id >= MAX_BATTLEGROUND_QUEUES)
@@ -572,17 +581,34 @@ void BattleGroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
     if(sBattleGroundMgr.GetMaxRatingDifference() && getMSTime() >= sBattleGroundMgr.GetRatingDiscardTimer())
         discardTime = getMSTime() - sBattleGroundMgr.GetRatingDiscardTimer();
 
-    // try to build the selection pools
-    bool bAllyOK = BuildSelectionPool(bgTypeId, queue_id, MinPlayersPerTeam, MaxPlayersPerTeam, NORMAL_ALLIANCE, arenatype, isRated, arenaMinRating, arenaMaxRating, discardTime);
+    // try to build the selection pools "premade"
+    bool bAllyOK = BuildSelectionPool(bgTypeId, queue_id, MinPlayersPerTeam, MaxPlayersPerTeam, NORMAL_ALLIANCE, arenatype, isRated, arenaMinRating, arenaMaxRating, discardTime, 0, true);
     if(bAllyOK)
-        sLog.outDebug("Battleground: ally pool successfully built");
+        sLog.outDebug("Battleground: ally premade  pool successfully built");
     else
-        sLog.outDebug("Battleground: ally pool wasn't created");
-    bool bHordeOK = BuildSelectionPool(bgTypeId, queue_id, MinPlayersPerTeam, MaxPlayersPerTeam, NORMAL_HORDE, arenatype, isRated, arenaMinRating, arenaMaxRating, discardTime);
+        sLog.outDebug("Battleground: ally premade pool wasn't created");
+
+    bool bHordeOK = BuildSelectionPool(bgTypeId, queue_id, MinPlayersPerTeam, MaxPlayersPerTeam, NORMAL_HORDE, arenatype, isRated, arenaMinRating, arenaMaxRating, discardTime, 0, true);
     if(bHordeOK)
-        sLog.outDebug("Battleground: horde pool successfully built");
+        sLog.outDebug("Battleground: horde premade pool successfully built");
     else
-        sLog.outDebug("Battleground: horde pool wasn't created");
+        sLog.outDebug("Battleground: horde premade pool wasn't created");
+
+    if (!bAllyOK || !bHordeOK)
+    {
+        bAllyOK = bHordeOK = false;
+        bAllyOK = BuildSelectionPool(bgTypeId, queue_id, MinPlayersPerTeam, MaxPlayersPerTeam, NORMAL_ALLIANCE, arenatype, isRated, arenaMinRating, arenaMaxRating, discardTime);
+        if(bAllyOK)
+            sLog.outDebug("Battleground: ally pool successfully built");
+        else
+            sLog.outDebug("Battleground: ally pool wasn't created");
+
+        bHordeOK = BuildSelectionPool(bgTypeId, queue_id, MinPlayersPerTeam, MaxPlayersPerTeam, NORMAL_HORDE, arenatype, isRated, arenaMinRating, arenaMaxRating, discardTime);
+        if(bHordeOK)
+            sLog.outDebug("Battleground: horde pool successfully built");
+        else
+            sLog.outDebug("Battleground: horde pool wasn't created");
+    }
 
     // if selection pools are ready, create the new bg
     if (bAllyOK && bHordeOK)
@@ -849,6 +875,14 @@ void BattleGroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
             bg2->StartBattleGround();
         }
     }
+
+    // remove premade status after 15 min
+    for(QueuedGroupsList::iterator itr = m_QueuedGroups[queue_id].begin(); itr != m_QueuedGroups[queue_id].end(); ++itr)
+    {
+        GroupQueueInfo *group_info = *itr;
+        if (group_info->Premade && (group_info->JoinTime + PREMADE_REMOVE_TIME >= getMSTime()))
+            group_info->Premade = false;
+    }
 }
 
 /*********************************************************/
@@ -999,7 +1033,8 @@ void BattleGroundMgr::Update(time_t diff)
     {
         next = itr;
         ++next;
-        itr->second->Update(diff);
+        
+        //itr->second->Update(diff);
         // use the SetDeleteThis variable
         // direct deletion caused crashes
         if(itr->second->m_SetDeleteThis)

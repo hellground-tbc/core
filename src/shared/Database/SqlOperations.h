@@ -50,8 +50,8 @@ class SqlStatement : public SqlOperation
     private:
         const char *m_sql;
     public:
-        SqlStatement(const char *sql) : m_sql(strdup(sql)){}
-        ~SqlStatement() { void* tofree = const_cast<char*>(m_sql); free(tofree); }
+        SqlStatement(const char *sql) : m_sql(mangos_strdup(sql)){}
+        ~SqlStatement() { void* tofree = const_cast<char*>(m_sql); delete [] tofree; }
         void Execute(Database *db);
 };
 
@@ -65,8 +65,8 @@ class SqlTransaction : public SqlOperation
         void DelayExecute(const char *sql)
         {
             m_Mutex.acquire();
-            
-            char* _sql = strdup(sql);
+
+            char* _sql = mangos_strdup(sql);
             if (_sql)
                 m_queue.push(_sql);
 
@@ -99,8 +99,8 @@ class SqlQuery : public SqlOperation
         SqlResultQueue * m_queue;
     public:
         SqlQuery(const char *sql, Trinity::IQueryCallback * callback, SqlResultQueue * queue)
-            : m_sql(strdup(sql)), m_callback(callback), m_queue(queue) {}
-        ~SqlQuery() { void* tofree = const_cast<char*>(m_sql); free(tofree); }
+            : m_sql(mangos_strdup(sql)), m_callback(callback), m_queue(queue) {}
+        ~SqlQuery() { void* tofree = const_cast<char*>(m_sql); delete [] tofree; }
         void Execute(Database *db);
 };
 
@@ -150,7 +150,7 @@ class SqlAsyncTask : public ACE_Method_Request
         {
             if(m_db == NULL || m_op == NULL)
                 return -1;
-        
+
             try
             {
                 m_op->Execute(m_db);

@@ -2,34 +2,23 @@
 ########### next target ###############
 
 SET(vmaps_STAT_SRCS
-   AABSPTree.h
-   BaseModel.cpp
-   BaseModel.h
-   CoordModelMapping.cpp
-   CoordModelMapping.h
-   DebugCmdLogger.cpp
-   DebugCmdLogger.h
+   BIH.h
+   BIH.cpp
    IVMapManager.h
-   ManagedModelContainer.cpp
-   ManagedModelContainer.h
-   ModelContainer.cpp
-   ModelContainer.h
-   NodeValueAccess.h
-   ShortBox.h
-   ShortVector.h
-   SubModel.cpp
-   SubModel.h
-   TileAssembler.cpp
+   MapTree.h
+   MapTree.cpp
+   ModelInstance.h
+   ModelInstance.cpp
    TileAssembler.h
-   TreeNode.cpp
-   TreeNode.h
+   TileAssembler.cpp
    VMapDefinitions.h
-   VMapFactory.cpp
    VMapFactory.h
-   VMapManager.cpp
-   VMapManager.h
+   VMapFactory.cpp
+   VMapManager2.h
+   VMapManager2.cpp
    VMapTools.h
+   WorldModel.h
+   WorldModel.cpp
 )
 
 add_library(vmaps STATIC ${vmaps_STAT_SRCS})
-

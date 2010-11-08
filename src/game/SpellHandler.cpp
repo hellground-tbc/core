@@ -37,9 +37,6 @@
 
 void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
 {
-    // TODO: add targets.read() check
-    CHECK_PACKET_SIZE(recvPacket,1+1+1+1+8);
-
     Player* pUser = _player;
     uint8 bagIndex, slot;
     uint8 spell_count;                                      // number of spells at item, not used
@@ -119,8 +116,33 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     }
 
     SpellCastTargets targets;
-    if(!targets.read(&recvPacket, pUser))
-        return;
+
+    recvPacket >> targets.ReadForCaster(pUser);
+
+    if(!targets.getUnitTarget())
+    {
+        for(int i = 0; i < 5; ++i)
+        {
+            _Spell const& spellData = pItem->GetProto()->Spells[i];
+            if(!spellData.SpellId)
+                continue;
+
+            // wrong triggering type
+            if( spellData.SpellTrigger != ITEM_SPELLTRIGGER_ON_USE && spellData.SpellTrigger != ITEM_SPELLTRIGGER_ON_NO_DELAY_USE)
+                continue;
+
+            SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellData.SpellId);
+            if(!spellInfo)
+            {
+                sLog.outError("Item (Entry: %u) in have wrong spell id %u, ignoring ",proto->ItemId, spellData.SpellId);
+                continue;
+            }
+
+            if(spellInfo->EffectImplicitTargetA[0] == 6 || spellInfo->EffectImplicitTargetA[1] == 6 || spellInfo->EffectImplicitTargetA[2] == 6)
+                if(Unit *tUnit = Unit::GetUnit(*GetPlayer(), GetPlayer()->GetSelection()))
+                    targets.setUnitTarget(tUnit);
+        }
+    }
 
     //Note: If script stop casting it must send appropriate data to client to prevent stuck item in gray state.
     if(!Script->ItemUse(pUser,pItem,targets))
@@ -294,14 +316,14 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 
     SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId );
 
-    if(!spellInfo)
+    if (!spellInfo)
     {
         sLog.outError("WORLD: unknown spell id %u", spellId);
         return;
     }
 
     // not have spell or spell passive and not casted by client
-    if ( !_player->HasSpell (spellId) || IsPassiveSpell(spellId) )
+    if (!_player->HasSpell (spellId) || IsPassiveSpell(spellId) )
     {
         //cheater? kick? ban?
         return;
@@ -313,17 +335,20 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 
     // client provided targets
     SpellCastTargets targets;
-    if(!targets.read(&recvPacket,_player))
-        return;
+    recvPacket >> targets.ReadForCaster(_player);
 
     // auto-selection buff level base at target level (in spellInfo)
-    if(targets.getUnitTarget())
+    if (Unit* target = targets.getUnitTarget())
     {
-        SpellEntry const *actualSpellInfo = spellmgr.SelectAuraRankForPlayerLevel(spellInfo,targets.getUnitTarget()->getLevel());
-
         // if rank not found then function return NULL but in explicit cast case original spell can be casted and later failed with appropriate error message
-        if(actualSpellInfo)
+        if (SpellEntry const *actualSpellInfo = spellmgr.SelectAuraRankForPlayerLevel(spellInfo, target->getLevel()))
             spellInfo = actualSpellInfo;
+    }
+
+    if (spellInfo->AttributesEx2 & SPELL_ATTR_EX2_AUTOREPEAT_FLAG)
+    {
+        if (_player->m_currentSpells[CURRENT_AUTOREPEAT_SPELL] && _player->m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Id == spellInfo->Id)
+            return;
     }
 
     Spell *spell = new Spell(_player, spellInfo, false);
@@ -391,7 +416,7 @@ void WorldSession::HandlePetCancelAuraOpcode( WorldPacket& recvPacket)
         return;
     }
 
-    Creature* pet=ObjectAccessor::GetCreatureOrPet(*_player,guid);
+    Creature* pet = _player->GetMap()->GetCreatureOrPet(guid);
 
     if(!pet)
     {

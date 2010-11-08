@@ -91,8 +91,6 @@ struct TRINITY_DLL_DECL mob_freed_soulAI : public ScriptedAI
             case 3: DoSay(SAY_ZAPPED3,LANG_UNIVERSAL,NULL); break;
         }
     }
-
-    void Aggro(Unit* who) { }
 };
 
 CreatureAI* GetAI_mob_freed_soul(Creature *_Creature)
@@ -124,8 +122,6 @@ struct TRINITY_DLL_DECL mob_restless_soulAI : public ScriptedAI
         Die_Timer = 5000;
         Tagged = false;
     }
-
-    void Aggro(Unit* who) { }
 
     void SpellHit(Unit *caster, const SpellEntry *spell)
     {
@@ -186,8 +182,6 @@ struct TRINITY_DLL_DECL mobs_spectral_ghostly_citizenAI : public ScriptedAI
         Die_Timer = 5000;
         Tagged = false;
     }
-
-    void Aggro(Unit* who) { }
 
     void SpellHit(Unit *caster, const SpellEntry *spell)
     {

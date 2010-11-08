@@ -29,7 +29,7 @@ EndContentData */
 
 #include "precompiled.h"
 #include "def_karazhan.h"
-#include "../../npc/npc_escortAI.h"
+#include "escort_ai.h"
 
 /*######
 # npc_barnesAI
@@ -128,6 +128,15 @@ struct TRINITY_DLL_DECL npc_barnesAI : public npc_escortAI
     bool RaidWiped;
     bool IsTalking;
 
+    void EnterEvadeMode()
+    {
+        m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+        npc_escortAI::EnterEvadeMode();
+
+        if(pInstance)
+            pInstance->SetData(DATA_OPERA_EVENT, NOT_STARTED);
+    }
+
     void Reset()
     {
         TalkCount = 0;
@@ -138,8 +147,13 @@ struct TRINITY_DLL_DECL npc_barnesAI : public npc_escortAI
         PerformanceReady = false;
         IsTalking = false;
 
+        SetDespawnAtEnd(false);
+
         if(pInstance)
         {
+            if(pInstance->GetData(DATA_OPERA_EVENT) == IN_PROGRESS)
+                return;
+
             pInstance->SetData(DATA_OPERA_EVENT, NOT_STARTED);
 
             Event = pInstance->GetData(DATA_OPERA_PERFORMANCE);
@@ -148,20 +162,20 @@ struct TRINITY_DLL_DECL npc_barnesAI : public npc_escortAI
                  Door->SetGoState(pInstance->GetData(DATA_OPERA_EVENT) == DONE ? 0 : 1);
 
              if (GameObject* Curtain = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_CURTAINS)))
-                Curtain->SetGoState(1);
+             {
+                 Curtain->SetGoState(1);
+             }
         }
     }
-
-    void Aggro(Unit* who) {}
 
     void WaypointReached(uint32 i)
     {
         switch(i)
         {
             case 2:
-                IsBeingEscorted = false;
-                TalkCount = 0;
+                SetEscortPaused(true);
                 IsTalking = true;
+                TalkCount = 0;
 
                 float x,y,z;
                 m_creature->GetPosition(x, y, z);
@@ -178,8 +192,11 @@ struct TRINITY_DLL_DECL npc_barnesAI : public npc_escortAI
                 {
                     if (GameObject* Door = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_STAGEDOORLEFT)))
                         Door->SetGoState(1);
+
+                    if (GameObject* Curtain = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_CURTAINS)))
+                        Curtain->SetGoState(0);
                 }
-                IsBeingEscorted = false;
+
                 PerformanceReady = true;
                 break;
         }
@@ -229,13 +246,13 @@ struct TRINITY_DLL_DECL npc_barnesAI : public npc_escortAI
                 {
                     if (Unit* Spotlight = Unit::GetUnit((*m_creature), SpotlightGUID))
                     {
-                        Spotlight->RemoveAllAuras();
-                        Spotlight->SetVisibility(VISIBILITY_OFF);
+                        Spotlight->Kill(Spotlight, false);
+                        ((Creature*)Spotlight)->RemoveCorpse();
                     }
 
                     m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_STAND);
                     IsTalking = false;
-                    IsBeingEscorted = true;
+                    SetEscortPaused(false);
                     return;
                 }
 
@@ -250,17 +267,19 @@ struct TRINITY_DLL_DECL npc_barnesAI : public npc_escortAI
             if(CurtainTimer)
             {
                 if(CurtainTimer <= diff)
-            {
-                PrepareEncounter();
+                {
+                    PrepareEncounter();
 
-                if(!pInstance)
-                    return;
+                    if(!pInstance)
+                        return;
 
-                if (GameObject* Curtain = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_CURTAINS)))
-                    Curtain->SetGoState(0);
+                    //if (GameObject* Curtain = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_CURTAINS)))
+                    //    Curtain->SetGoState(0);
 
-                CurtainTimer = 0;
-            }else CurtainTimer -= diff;
+                    CurtainTimer = 0;
+                }
+                else
+                    CurtainTimer -= diff;
             }
 
             if(!RaidWiped)
@@ -277,7 +296,7 @@ struct TRINITY_DLL_DECL npc_barnesAI : public npc_escortAI
                     RaidWiped = true;
                     for(Map::PlayerList::const_iterator i = PlayerList.begin();i != PlayerList.end(); ++i)
                     {
-                        if (i->getSource()->isAlive() && !i->getSource()->isGameMaster())
+                        if (i->getSource()->isAlive() && i->getSource()->isInCombat() && !i->getSource()->isGameMaster())
                         {
                             RaidWiped = false;
                             break;
@@ -292,7 +311,9 @@ struct TRINITY_DLL_DECL npc_barnesAI : public npc_escortAI
                     }
 
                     WipeTimer = 15000;
-                }else WipeTimer -= diff;
+                }
+                else
+                    WipeTimer -= diff;
             }
 
         }
@@ -316,7 +337,7 @@ struct TRINITY_DLL_DECL npc_barnesAI : public npc_escortAI
         m_creature->CastSpell(m_creature, SPELL_TUXEDO, true);
         m_creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
 
-        Start(false, false, false);
+        Start(false, false);
     }
 
     void PrepareEncounter()
@@ -511,7 +532,7 @@ struct TRINITY_DLL_DECL npc_image_of_medivhAI : public ScriptedAI
         if(!Arcanagos)
             return;
         ArcanagosGUID = Arcanagos->GetGUID();
-        Arcanagos->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
+        Arcanagos->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
         (*Arcanagos).GetMotionMaster()->MovePoint(0,ArcanagosPos[0],ArcanagosPos[1],ArcanagosPos[2]);
         Arcanagos->SetOrientation(ArcanagosPos[3]);
         m_creature->SetOrientation(MedivPos[3]);

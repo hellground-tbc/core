@@ -98,24 +98,6 @@ bool ItemUse_item_only_for_flight(Player *player, Item* _Item, SpellCastTargets 
 }
 
 /*#####
-# item_attuned_crystal_cores
-#####*/
-
-bool ItemUse_item_attuned_crystal_cores(Player *player, Item* _Item, SpellCastTargets const& targets)
-{
-    if( targets.getUnitTarget() && targets.getUnitTarget()->GetTypeId()==TYPEID_UNIT &&
-        targets.getUnitTarget()->GetEntry() == 24972 && targets.getUnitTarget()->isDead() &&
-        (player->GetQuestStatus(11524) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(11525) == QUEST_STATUS_INCOMPLETE) )
-    {
-        ((Creature*)targets.getUnitTarget())->RemoveCorpse();
-        return false;
-    }
-
-    player->SendEquipError(EQUIP_ERR_CANT_DO_RIGHT_NOW,_Item,NULL);
-    return true;
-}
-
-/*#####
 # item_blackwhelp_net
 #####*/
 
@@ -188,26 +170,14 @@ bool ItemUse_item_draenei_fishing_net(Player *player, Item* _Item, SpellCastTarg
                 Item* item = player->StoreNewItem(dest,23614,true);
                 if( item )
                     player->SendNewItem(item,1,false,true);
-            }else
-            player->SendEquipError(msg,NULL,NULL);
+            }
+            else
+                player->SendEquipError(msg,NULL,NULL);
         }
     }
     return false;
 }
 
-/*#####
-# item_disciplinary_rod
-#####*/
-
-bool ItemUse_item_disciplinary_rod(Player *player, Item* _Item, SpellCastTargets const& targets)
-{
-    if( targets.getUnitTarget() && targets.getUnitTarget()->GetTypeId()==TYPEID_UNIT &&
-        (targets.getUnitTarget()->GetEntry() == 15941 || targets.getUnitTarget()->GetEntry() == 15945) )
-        return false;
-
-    player->SendEquipError(EQUIP_ERR_CANT_DO_RIGHT_NOW,_Item,NULL);
-    return true;
-}
 
 /*#####
 # item_nether_wraith_beacon
@@ -321,39 +291,6 @@ bool ItemUse_item_muiseks_vessel(Player *player, Item* _Item, SpellCastTargets c
 }
 
 /*#####
-# item_inoculating_crystal
-#####*/
-
-bool ItemUse_item_inoculating_crystal(Player *player, Item* _Item, SpellCastTargets const& targets)
-{
-    if( targets.getUnitTarget() && targets.getUnitTarget()->GetTypeId()==TYPEID_UNIT &&
-        targets.getUnitTarget()->GetEntry() == 16518 )
-        return false;
-
-    WorldPacket data(SMSG_CAST_FAILED, (4+2));              // prepare packet error message
-    data << uint32(_Item->GetEntry());                      // itemId
-    data << uint8(SPELL_FAILED_BAD_TARGETS);                // reason
-    player->GetSession()->SendPacket(&data);                // send message: Invalid target
-
-    player->SendEquipError(EQUIP_ERR_NONE,_Item,NULL);      // break spell
-    return true;
-}
-
-/*#####
-# item_razorthorn_flayer_gland
-#####*/
-
-bool ItemUse_item_razorthorn_flayer_gland(Player *player, Item* _Item, SpellCastTargets const& targets)
-{
-    if( targets.getUnitTarget() && targets.getUnitTarget()->GetTypeId()==TYPEID_UNIT &&
-        targets.getUnitTarget()->GetEntry() == 24922 )
-        return false;
-
-    player->SendEquipError(EQUIP_ERR_YOU_CAN_NEVER_USE_THAT_ITEM,_Item,NULL);
-    return true;
-}
-
-/*#####
 # item_tame_beast_rods
 #####*/
 
@@ -400,85 +337,6 @@ bool ItemUse_item_tame_beast_rods(Player *player, Item* _Item, SpellCastTargets 
 }
 
 /*#####
-# item_protovoltaic_magneto_collector
-#####*/
-
-bool ItemUse_item_protovoltaic_magneto_collector(Player *player, Item* _Item, SpellCastTargets const& targets)
-{
-    if( targets.getUnitTarget() && targets.getUnitTarget()->GetTypeId()==TYPEID_UNIT &&
-        targets.getUnitTarget()->GetEntry() == 21729 )
-        return false;
-
-    player->SendEquipError(EQUIP_ERR_CANT_DO_RIGHT_NOW,_Item,NULL);
-    return true;
-}
-
-/*#####
-# item_soul_cannon
-#####*/
-
-bool ItemUse_item_soul_cannon(Player *player, Item* _Item, SpellCastTargets const& targets)
-{
-    // allow use
-    if( targets.getUnitTarget() && targets.getUnitTarget()->GetTypeId()==TYPEID_UNIT &&
-        targets.getUnitTarget()->GetEntry() == 22357 )
-        return false;
-
-    // error
-    player->SendEquipError(EQUIP_ERR_YOU_CAN_NEVER_USE_THAT_ITEM,_Item,NULL);
-    return true;
-}
-
-/*#####
-# item_sparrowhawk_net
-#####*/
-
-bool ItemUse_item_sparrowhawk_net(Player *player, Item* _Item, SpellCastTargets const& targets)
-{
-    if( targets.getUnitTarget() && targets.getUnitTarget()->GetTypeId()==TYPEID_UNIT &&
-        targets.getUnitTarget()->GetEntry() == 22979 )
-        return false;
-
-    player->SendEquipError(EQUIP_ERR_YOU_CAN_NEVER_USE_THAT_ITEM,_Item,NULL);
-    return true;
-}
-
-/*#####
-# item_voodoo_charm
-#####*/
-
-bool ItemUse_item_voodoo_charm(Player *player, Item* _Item, SpellCastTargets const& targets)
-{
-    if( targets.getUnitTarget() && targets.getUnitTarget()->GetTypeId()==TYPEID_UNIT && targets.getUnitTarget()->isDead() &&
-        targets.getUnitTarget()->GetEntry()==7318 )
-        return false;
-
-    WorldPacket data(SMSG_CAST_FAILED, (4+2));              // prepare packet error message
-    data << uint32(_Item->GetEntry());                      // itemId
-    data << uint8(SPELL_FAILED_BAD_TARGETS);                // reason
-    player->GetSession()->SendPacket(&data);                // send message: Invalid target
-
-    player->SendEquipError(EQUIP_ERR_NONE,_Item,NULL);      // break spell
-    return true;
-}
-
-/*#####
-# item_vorenthals_presence
-#####*/
-
-bool ItemUse_item_vorenthals_presence(Player *player, Item* _Item, SpellCastTargets const& targets)
-{
-    // allow use
-    if( targets.getUnitTarget() && targets.getUnitTarget()->GetTypeId()==TYPEID_UNIT &&
-        targets.getUnitTarget()->GetEntry() == 20132 )
-        return false;
-
-    // error
-    player->SendEquipError(EQUIP_ERR_YOU_CAN_NEVER_USE_THAT_ITEM,_Item,NULL);
-    return true;
-}
-
-/*#####
 # item_yehkinyas_bramble
 #####*/
 
@@ -504,18 +362,111 @@ bool ItemUse_item_yehkinyas_bramble(Player *player, Item* _Item, SpellCastTarget
     player->SendEquipError(EQUIP_ERR_NONE,_Item,NULL);      // break spell
     return true;
 }
-
 /*#####
-# item_zezzak_shard
+# item_specific_target
 #####*/
 
-bool ItemUse_item_zezzak_shard(Player *player, Item* _Item, SpellCastTargets const& targets)
+enum aliveMask
 {
-    if( targets.getUnitTarget() && targets.getUnitTarget()->GetTypeId()==TYPEID_UNIT &&
-        targets.getUnitTarget()->GetEntry() == 19440 )
-        return false;
+    T_ALIVE = 0x1,
+    T_DEAD  = 0x2
+};
 
-    player->SendEquipError(EQUIP_ERR_YOU_CAN_NEVER_USE_THAT_ITEM,_Item,NULL);
+#define MAX_TARGETS 4
+
+bool ItemUse_item_specific_target(Player *player, Item* _Item, SpellCastTargets const& targets)
+{
+    Unit *uTarget = targets.getUnitTarget() ? targets.getUnitTarget() : Unit::GetUnit(*player, player->GetSelection());
+
+    uint32 iEntry = _Item->GetEntry();
+    uint32 cEntry[MAX_TARGETS] = { 0, 0, 0, 0 };
+    bool removeCorpse = false;
+
+    uint8 targetState = T_ALIVE & T_DEAD;
+
+    switch(iEntry)
+    {
+        case 8149:  cEntry[0] = 7318; targetState = T_DEAD; break; // Voodoo Charm
+        case 22783: cEntry[0] = 16329; break; // Sunwell Blade
+        case 22784: cEntry[0] = 16329; break; // Sunwell Orb
+        case 22962: cEntry[0] = 16518; break; // Inoculating Crystal
+        case 30259: cEntry[0] = 20132; break; // Voren'thal's Presence
+        case 30656: cEntry[0] = 21729; break; // Protovoltaic Magneto Collector
+        case 31463: cEntry[0] = 19440; break; // Zezzak's Shard
+        case 32321: cEntry[0] = 22979; break; // Sparrowhawk Net
+        case 32825: cEntry[0] = 22357; break; // Soul Cannon
+        case 34255: cEntry[0] = 24922; break; // Razorthorn Flayer Gland
+        case 25552: cEntry[0] = 17148; cEntry[1] = 17147; cEntry[2] = 17146; targetState = T_DEAD; removeCorpse = true; break; // Warmaul Ogre Banner
+        case 22473: cEntry[0] = 15941; cEntry[1] = 15945; break; // Disciplinary Rod
+        case 34368: cEntry[0] = 24972; targetState = T_DEAD; removeCorpse = true; break; // Attuned Crystal Cores
+        case 29513: cEntry[0] = 19354; break; // Staff of the Dreghood Elders
+        case 32680: cEntry[0] = 23311; targetState = T_ALIVE; break; // Booterang
+        case 30251: cEntry[0] = 20058; break; // Rina's Diminution Powder
+        case 23417: cEntry[0] = 16975; break; // Sanctified Crystal
+        case 32698: cEntry[0] = 22181; break; // Wrangling Rope
+    }
+
+    if(uTarget && uTarget->GetTypeId() == TYPEID_UNIT)
+    {
+        bool properTarget = false;
+        for(uint8 i = 0; i < MAX_TARGETS; i++)
+        {
+            if(uTarget->GetEntry() == cEntry[i])
+            {
+                properTarget = true;
+                break;
+            }
+        }
+
+        if(properTarget)
+        {
+            switch(targetState)
+            {
+                case(T_ALIVE & T_DEAD):
+                    return false;
+                case T_ALIVE:
+                {
+                    if(uTarget->isAlive())
+                        return false;
+                    else
+                    {
+                        WorldPacket data(SMSG_CAST_FAILED, (4+2));              // prepare packet error message
+                        data << uint32(_Item->GetEntry());                      // itemId
+                        data << uint8(SPELL_FAILED_TARGETS_DEAD);               // reason
+                        player->GetSession()->SendPacket(&data);                // send message: Invalid target
+                        player->SendEquipError(EQUIP_ERR_NONE,_Item,NULL);
+                        return true;
+                    }
+                }
+                case T_DEAD:
+                {
+                    if(!uTarget->isAlive())
+                    {
+                        if(removeCorpse)
+                            ((Creature*)uTarget)->RemoveCorpse();
+
+                        return false;
+                    }
+                    else
+                    {
+                        WorldPacket data(SMSG_CAST_FAILED, (4+2));              // prepare packet error message
+                        data << uint32(_Item->GetEntry());                      // itemId
+                        data << uint8(SPELL_FAILED_TARGET_NOT_DEAD);            // reason
+                        player->GetSession()->SendPacket(&data);                // send message: Invalid target
+                        player->SendEquipError(EQUIP_ERR_NONE,_Item,NULL);
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
+    WorldPacket data(SMSG_CAST_FAILED, (4+2));              // prepare packet error message
+    data << uint32(_Item->GetEntry());                      // itemId
+    data << uint8(SPELL_FAILED_BAD_TARGETS);                // reason
+    player->GetSession()->SendPacket(&data);                // send message: Invalid target
+
+    player->SendEquipError(EQUIP_ERR_NONE,_Item,NULL);      // break spell
     return true;
 }
 
@@ -534,18 +485,8 @@ void AddSC_item_scripts()
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="item_attuned_crystal_cores";
-    newscript->pItemUse = &ItemUse_item_attuned_crystal_cores;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
     newscript->Name="item_blackwhelp_net";
     newscript->pItemUse = &ItemUse_item_blackwhelp_net;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name="item_disciplinary_rod";
-    newscript->pItemUse = &ItemUse_item_disciplinary_rod;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -573,44 +514,10 @@ void AddSC_item_scripts()
     newscript->pItemUse = &ItemUse_item_muiseks_vessel;
     newscript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name="item_inoculating_crystal";
-    newscript->pItemUse = &ItemUse_item_inoculating_crystal;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name="item_razorthorn_flayer_gland";
-    newscript->pItemUse = &ItemUse_item_razorthorn_flayer_gland;
-    newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="item_tame_beast_rods";
     newscript->pItemUse = &ItemUse_item_tame_beast_rods;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name="item_protovoltaic_magneto_collector";
-    newscript->pItemUse = &ItemUse_item_protovoltaic_magneto_collector;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name="item_soul_cannon";
-    newscript->pItemUse = &ItemUse_item_soul_cannon;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name="item_sparrowhawk_net";
-    newscript->pItemUse = &ItemUse_item_sparrowhawk_net;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name="item_voodoo_charm";
-    newscript->pItemUse = &ItemUse_item_voodoo_charm;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name="item_vorenthals_presence";
-    newscript->pItemUse = &ItemUse_item_vorenthals_presence;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -619,8 +526,8 @@ void AddSC_item_scripts()
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="item_zezzaks_shard";
-    newscript->pItemUse = &ItemUse_item_zezzak_shard;
+    newscript->Name="item_specific_target";
+    newscript->pItemUse = &ItemUse_item_specific_target;
     newscript->RegisterSelf();
 }
 

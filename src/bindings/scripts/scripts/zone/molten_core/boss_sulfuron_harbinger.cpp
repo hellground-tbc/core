@@ -56,10 +56,21 @@ struct TRINITY_DLL_DECL boss_sulfuronAI : public ScriptedAI
         Inspire_Timer = 13000;
         Knockdown_Timer = 6000;
         Flamespear_Timer = 2000;
+
+        if (pInstance)
+            pInstance->SetData(DATA_SULFURON_HARBRINGER_EVENT, NOT_STARTED);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
+        if (pInstance)
+            pInstance->SetData(DATA_SULFURON_HARBRINGER_EVENT, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_SULFURON_HARBRINGER_EVENT, DONE);
     }
 
     void UpdateAI(const uint32 diff)
@@ -142,7 +153,7 @@ struct TRINITY_DLL_DECL mob_flamewaker_priestAI : public ScriptedAI
         Immolate_Timer = 8000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
     }
 

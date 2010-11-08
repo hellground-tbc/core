@@ -123,7 +123,7 @@ struct TRINITY_DLL_DECL flesh_tentacleAI : public Scripted_NoMovementAI
         CheckTimer = 1000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
     }
 
@@ -136,12 +136,12 @@ struct TRINITY_DLL_DECL eye_of_cthunAI : public Scripted_NoMovementAI
 {
     eye_of_cthunAI(Creature *c) : Scripted_NoMovementAI(c)
     {
-        pInst = (ScriptedInstance*)c->GetInstanceData();
-        if (!pInst)
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+        if (!pInstance)
             error_log("TSCR: No Instance eye_of_cthunAI");
     }
 
-    ScriptedInstance* pInst;
+    ScriptedInstance* pInstance;
 
     //Global variables
     uint32 PhaseTimer;
@@ -178,13 +178,24 @@ struct TRINITY_DLL_DECL eye_of_cthunAI : public Scripted_NoMovementAI
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
 
         //Reset Phase
-        if (pInst)
-            pInst->SetData(DATA_CTHUN_PHASE, 0);
+        if (pInstance)
+        {
+            pInstance->SetData(DATA_CTHUN_PHASE, 0);
+            pInstance->SetData(DATA_C_THUN, NOT_STARTED);
+        }
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoZoneInCombat();
+        if (pInstance)
+            pInstance->SetData(DATA_C_THUN, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_C_THUN, DONE);
     }
 
     void SpawnEyeTentacle(float x, float y)
@@ -208,10 +219,10 @@ struct TRINITY_DLL_DECL eye_of_cthunAI : public Scripted_NoMovementAI
             return;
 
         //No instance
-        if (!pInst)
+        if (!pInstance)
             return;
 
-        switch (pInst->GetData(DATA_CTHUN_PHASE))
+        switch (pInstance->GetData(DATA_CTHUN_PHASE))
         {
             case 0:
             {
@@ -227,7 +238,7 @@ struct TRINITY_DLL_DECL eye_of_cthunAI : public Scripted_NoMovementAI
                         DoCast(target,SPELL_GREEN_BEAM);
 
                         //Correctly update our target
-                        m_creature->SetUInt64Value(UNIT_FIELD_TARGET, target->GetGUID());
+                        m_creature->SetSelection(target->GetGUID());
                     }
 
                     //Beam every 3 seconds
@@ -277,7 +288,7 @@ struct TRINITY_DLL_DECL eye_of_cthunAI : public Scripted_NoMovementAI
                 if (PhaseTimer < diff)
                 {
                     //Switch to Dark Beam
-                    pInst->SetData(DATA_CTHUN_PHASE, 1);
+                    pInstance->SetData(DATA_CTHUN_PHASE, 1);
 
                     m_creature->InterruptNonMeleeSpells(false);
 
@@ -288,7 +299,7 @@ struct TRINITY_DLL_DECL eye_of_cthunAI : public Scripted_NoMovementAI
                     if (target)
                     {
                         //Correctly update our target
-                        m_creature->SetUInt64Value(UNIT_FIELD_TARGET, target->GetGUID());
+                        m_creature->SetSelection(target->GetGUID());
 
                         //Face our target
                         DarkGlareAngle = m_creature->GetAngle(target);
@@ -316,7 +327,7 @@ struct TRINITY_DLL_DECL eye_of_cthunAI : public Scripted_NoMovementAI
                     if (DarkGlareTickTimer < diff)
                 {
                     //Remove any target
-                    m_creature->SetUInt64Value(UNIT_FIELD_TARGET, 0);
+                    m_creature->SetSelection(0);
 
                     //Set angle and cast
                     if (ClockWise)
@@ -339,7 +350,7 @@ struct TRINITY_DLL_DECL eye_of_cthunAI : public Scripted_NoMovementAI
                 if (PhaseTimer < diff)
                 {
                     //Switch to Eye Beam
-                    pInst->SetData(DATA_CTHUN_PHASE, 0);
+                    pInstance->SetData(DATA_CTHUN_PHASE, 0);
 
                     BeamTimer = 3000;
                     EyeTentacleTimer = 45000;               //Always spawns 5 seconds before Dark Beam
@@ -363,7 +374,7 @@ struct TRINITY_DLL_DECL eye_of_cthunAI : public Scripted_NoMovementAI
             case 2:
             {
                 //Remove any target
-                m_creature->SetUInt64Value(UNIT_FIELD_TARGET, 0);
+                m_creature->SetSelection(0);
                 m_creature->SetHealth(0);
             }
 
@@ -378,10 +389,10 @@ struct TRINITY_DLL_DECL eye_of_cthunAI : public Scripted_NoMovementAI
     void DamageTaken(Unit *done_by, uint32 &damage)
     {
         //No instance
-        if (!pInst)
+        if (!pInstance)
             return;
 
-        switch (pInst->GetData(DATA_CTHUN_PHASE))
+        switch (pInstance->GetData(DATA_CTHUN_PHASE))
         {
             case 0:
             case 1:
@@ -401,10 +412,10 @@ struct TRINITY_DLL_DECL eye_of_cthunAI : public Scripted_NoMovementAI
                 m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
 
                 //Remove Target field
-                m_creature->SetUInt64Value(UNIT_FIELD_TARGET, 0);
+                m_creature->SetSelection(0);
 
                 //Death animation/respawning;
-                pInst->SetData(DATA_CTHUN_PHASE, 2);
+                pInstance->SetData(DATA_CTHUN_PHASE, 2);
 
                 m_creature->SetHealth(0);
                 damage = 0;
@@ -435,12 +446,12 @@ struct TRINITY_DLL_DECL cthunAI : public Scripted_NoMovementAI
 {
     cthunAI(Creature *c) : Scripted_NoMovementAI(c)
     {
-        pInst = (ScriptedInstance*)c->GetInstanceData();
-        if (!pInst)
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+        if (!pInstance)
             error_log("TSCR: No Instance eye_of_cthunAI");
     }
 
-    ScriptedInstance* pInst;
+    ScriptedInstance* pInstance;
 
     //Out of combat whisper timer
     uint32 WisperTimer;
@@ -494,11 +505,11 @@ struct TRINITY_DLL_DECL cthunAI : public Scripted_NoMovementAI
         m_creature->RemoveAurasDueToSpell(SPELL_TRANSFORM);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
 
-        if (pInst)
-            pInst->SetData(DATA_CTHUN_PHASE, 0);
+        if (pInstance)
+            pInstance->SetData(DATA_CTHUN_PHASE, 0);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoZoneInCombat();
     }
@@ -583,13 +594,13 @@ struct TRINITY_DLL_DECL cthunAI : public Scripted_NoMovementAI
             return;
         }
 
-        m_creature->SetUInt64Value(UNIT_FIELD_TARGET, 0);
+        m_creature->SetSelection(0);
 
         //No instance
-        if (!pInst)
+        if (!pInstance)
             return;
 
-        switch (pInst->GetData(DATA_CTHUN_PHASE))
+        switch (pInstance->GetData(DATA_CTHUN_PHASE))
         {
             //Transition phase
             case 2:
@@ -598,7 +609,7 @@ struct TRINITY_DLL_DECL cthunAI : public Scripted_NoMovementAI
                 if (PhaseTimer < diff)
                 {
                     //Switch
-                    pInst->SetData(DATA_CTHUN_PHASE, 3);
+                    pInstance->SetData(DATA_CTHUN_PHASE, 3);
 
                     //Switch to c'thun model
                     m_creature->InterruptNonMeleeSpells(false);
@@ -651,12 +662,12 @@ struct TRINITY_DLL_DECL cthunAI : public Scripted_NoMovementAI
             case 3:
             {
                 //Remove Target field
-                m_creature->SetUInt64Value(UNIT_FIELD_TARGET, 0);
+                m_creature->SetSelection(0);
 
                 //Weaken
                 if (FleshTentaclesKilled > 1)
                 {
-                    pInst->SetData(DATA_CTHUN_PHASE, 4);
+                    pInstance->SetData(DATA_CTHUN_PHASE, 4);
 
                     DoScriptText(EMOTE_WEAKENED, m_creature);
                     PhaseTimer = 45000;
@@ -831,7 +842,7 @@ struct TRINITY_DLL_DECL cthunAI : public Scripted_NoMovementAI
                 if (PhaseTimer < diff)
                 {
                     //Switch
-                    pInst->SetData(DATA_CTHUN_PHASE, 3);
+                    pInstance->SetData(DATA_CTHUN_PHASE, 3);
 
                     //Remove red coloration
                     m_creature->RemoveAurasDueToSpell(SPELL_RED_COLORATION);
@@ -866,17 +877,17 @@ struct TRINITY_DLL_DECL cthunAI : public Scripted_NoMovementAI
     void JustDied(Unit* pKiller)
     {
         //Switch
-        if( pInst )
-            pInst->SetData(DATA_CTHUN_PHASE, 5);
+        if( pInstance )
+            pInstance->SetData(DATA_CTHUN_PHASE, 5);
     }
 
     void DamageTaken(Unit *done_by, uint32 &damage)
     {
         //No instance
-        if (!pInst)
+        if (!pInstance)
             return;
 
-        switch (pInst->GetData(DATA_CTHUN_PHASE))
+        switch (pInstance->GetData(DATA_CTHUN_PHASE))
         {
             case 3:
             {
@@ -939,7 +950,7 @@ struct TRINITY_DLL_DECL eye_tentacleAI : public Scripted_NoMovementAI
         KillSelfTimer = 35000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoZoneInCombat();
     }
@@ -1001,7 +1012,7 @@ struct TRINITY_DLL_DECL claw_tentacleAI : public Scripted_NoMovementAI
         EvadeTimer = 5000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoZoneInCombat();
     }
@@ -1097,7 +1108,7 @@ struct TRINITY_DLL_DECL giant_claw_tentacleAI : public Scripted_NoMovementAI
         EvadeTimer = 5000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoZoneInCombat();
     }
@@ -1195,7 +1206,7 @@ struct TRINITY_DLL_DECL giant_eye_tentacleAI : public Scripted_NoMovementAI
         BeamTimer = 500;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoZoneInCombat();
     }

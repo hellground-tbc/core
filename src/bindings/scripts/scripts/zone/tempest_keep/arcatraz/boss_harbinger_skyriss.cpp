@@ -104,14 +104,14 @@ struct TRINITY_DLL_DECL boss_harbinger_skyrissAI : public ScriptedAI
         ScriptedAI::MoveInLineOfSight(who);
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_DEATH, m_creature);
         if(pInstance)
             pInstance->SetData(TYPE_HARBINGERSKYRISS,DONE);
-        
+
         if(pInstance && HeroicMode)
         {
             if(Unit* millhouse = (Unit*)FindCreature(NPC_MILLHOUSE, 100, m_creature))
@@ -119,7 +119,7 @@ struct TRINITY_DLL_DECL boss_harbinger_skyrissAI : public ScriptedAI
                 if(millhouse->isAlive())
                 {
                     MapRefManager::const_iterator player = pInstance->instance->GetPlayers().begin();
-                    
+
                     if(player != pInstance->instance->GetPlayers().end())
                         player->getSource()->GroupEventHappens(QUEST_10886, m_creature);
 
@@ -147,11 +147,7 @@ struct TRINITY_DLL_DECL boss_harbinger_skyrissAI : public ScriptedAI
         if( victim->GetEntry() == 21436 )
             return;
 
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(SAY_KILL_1, m_creature); break;
-        case 1: DoScriptText(SAY_KILL_2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_KILL_1, SAY_KILL_2), m_creature);
     }
 
     void DoSplit(uint32 val)
@@ -221,7 +217,7 @@ struct TRINITY_DLL_DECL boss_harbinger_skyrissAI : public ScriptedAI
 
         if( MindRend_Timer < diff )
         {
-            if( Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1, GetSpellMaxRange(SPELL_MIND_REND), true, m_creature->getVictim()) )
+            if( Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1, GetSpellMaxRange(SPELL_MIND_REND), true, m_creature->getVictimGUID()) )
                 DoCast(target,HeroicMode ? H_SPELL_MIND_REND : SPELL_MIND_REND);
             else
                 DoCast(m_creature->getVictim(),HeroicMode ? H_SPELL_MIND_REND : SPELL_MIND_REND);
@@ -234,13 +230,9 @@ struct TRINITY_DLL_DECL boss_harbinger_skyrissAI : public ScriptedAI
             if( m_creature->IsNonMeleeSpellCasted(false) )
                 return;
 
-            switch(rand()%2)
-            {
-            case 0: DoScriptText(SAY_FEAR_1, m_creature); break;
-            case 1: DoScriptText(SAY_FEAR_2, m_creature); break;
-            }
+            DoScriptText(RAND(SAY_FEAR_1, SAY_FEAR_2), m_creature);
 
-            if( Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1, GetSpellMaxRange(SPELL_FEAR), true, m_creature->getVictim()) )
+            if( Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1, GetSpellMaxRange(SPELL_FEAR), true, m_creature->getVictimGUID()) )
                 DoCast(target,SPELL_FEAR);
             else
                 DoCast(m_creature->getVictim(),SPELL_FEAR);
@@ -253,13 +245,9 @@ struct TRINITY_DLL_DECL boss_harbinger_skyrissAI : public ScriptedAI
             if( m_creature->IsNonMeleeSpellCasted(false) )
                 return;
 
-            switch(rand()%2)
-            {
-            case 0: DoScriptText(SAY_MIND_1, m_creature); break;
-            case 1: DoScriptText(SAY_MIND_2, m_creature); break;
-            }
+            DoScriptText(RAND(SAY_MIND_1, SAY_MIND_2), m_creature);
 
-            if( Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1, GetSpellMaxRange(SPELL_DOMINATION), true, m_creature->getVictim()) )
+            if( Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1, GetSpellMaxRange(SPELL_DOMINATION), true, m_creature->getVictimGUID()) )
                 DoCast(target,HeroicMode ? H_SPELL_DOMINATION : SPELL_DOMINATION);
             else
                 DoCast(m_creature->getVictim(),HeroicMode ? H_SPELL_DOMINATION : SPELL_DOMINATION);
@@ -274,7 +262,7 @@ struct TRINITY_DLL_DECL boss_harbinger_skyrissAI : public ScriptedAI
                 if( m_creature->IsNonMeleeSpellCasted(false) )
                     return;
 
-                if( Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1, GetSpellMaxRange(H_SPELL_MANA_BURN), true, m_creature->getVictim()) )
+                if( Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1, GetSpellMaxRange(H_SPELL_MANA_BURN), true, m_creature->getVictimGUID()) )
                     DoCast(target,H_SPELL_MANA_BURN);
 
                 ManaBurn_Timer = 16000+rand()%16000;
@@ -306,7 +294,7 @@ struct TRINITY_DLL_DECL boss_harbinger_skyriss_illusionAI : public ScriptedAI
 
     void Reset() { }
 
-    void Aggro(Unit *who) { }
+    void EnterCombat(Unit *who) { }
 };
 
 CreatureAI* GetAI_boss_harbinger_skyriss_illusion(Creature *_Creature)

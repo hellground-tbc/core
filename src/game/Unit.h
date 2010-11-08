@@ -83,7 +83,8 @@ enum SpellAuraInterruptFlags
     AURA_INTERRUPT_FLAG_UNK21               = 0x00200000,   // 21
     AURA_INTERRUPT_FLAG_TELEPORTED          = 0x00400000,   // 22
     AURA_INTERRUPT_FLAG_ENTER_PVP_COMBAT    = 0x00800000,   // 23   removed by entering pvp combat
-    AURA_INTERRUPT_FLAG_DIRECT_DAMAGE       = 0x01000000    // 24   removed by any direct damage
+    AURA_INTERRUPT_FLAG_DIRECT_DAMAGE       = 0x01000000,    // 24   removed by any direct damage
+    AURA_INTERRUPT_FLAG_NOT_VICTIM = (AURA_INTERRUPT_FLAG_HITBYSPELL | AURA_INTERRUPT_FLAG_DAMAGE | AURA_INTERRUPT_FLAG_DIRECT_DAMAGE),
 };
 
 enum SpellModOp
@@ -183,6 +184,8 @@ enum SheathState
     SHEATH_STATE_RANGED   = 2                               // prepared ranged weapon
 };
 
+#define MAX_SHEATH_STATE    3
+
 // byte (1 from 0..3) of UNIT_FIELD_BYTES_2
 enum UnitBytes2_Flags
 {
@@ -265,6 +268,7 @@ class Item;
 class Pet;
 class Path;
 class PetAura;
+class UnitAI;
 
 struct SpellImmune
 {
@@ -387,12 +391,30 @@ enum UnitState
     UNIT_STAT_CASTING         = 0x00008000,
     UNIT_STAT_POSSESSED       = 0x00010000,
     UNIT_STAT_CHARGING        = 0x00020000,
-    UNIT_STAT_MOVE            = 0x00040000,
+    UNIT_STAT_JUMPING         = 0x00040000,
+    UNIT_STAT_MOVE            = 0x00100000,
+    UNIT_STAT_ROTATING        = 0x00200000,
+    UNIT_STAT_EVADE           = 0x00400000,
     UNIT_STAT_MOVING          = (UNIT_STAT_ROAMING | UNIT_STAT_CHASE),
     UNIT_STAT_LOST_CONTROL    = (UNIT_STAT_CONFUSED | UNIT_STAT_STUNNED | UNIT_STAT_FLEEING | UNIT_STAT_CHARGING),
     UNIT_STAT_SIGHTLESS       = (UNIT_STAT_LOST_CONTROL),
     UNIT_STAT_CANNOT_AUTOATTACK     = (UNIT_STAT_LOST_CONTROL | UNIT_STAT_CASTING),
+    UNIT_STAT_CANNOT_TURN     = (UNIT_STAT_LOST_CONTROL | UNIT_STAT_ROTATING),
     UNIT_STAT_ALL_STATE       = 0xffffffff                      //(UNIT_STAT_STOPPED | UNIT_STAT_MOVING | UNIT_STAT_IN_COMBAT | UNIT_STAT_IN_FLIGHT)
+};
+
+enum UnitStandStateType
+{
+    UNIT_STAND_STATE_STAND             = 0,
+    UNIT_STAND_STATE_SIT               = 1,
+    UNIT_STAND_STATE_SIT_CHAIR         = 2,
+    UNIT_STAND_STATE_SLEEP             = 3,
+    UNIT_STAND_STATE_SIT_LOW_CHAIR     = 4,
+    UNIT_STAND_STATE_SIT_MEDIUM_CHAIR  = 5,
+    UNIT_STAND_STATE_SIT_HIGH_CHAIR    = 6,
+    UNIT_STAND_STATE_DEAD              = 7,
+    UNIT_STAND_STATE_KNEEL             = 8,
+    UNIT_STAND_STATE_SUBMERGED         = 9
 };
 
 enum UnitMoveType
@@ -410,8 +432,6 @@ enum UnitMoveType
 #define MAX_MOVE_TYPE 8
 
 extern float baseMoveSpeed[MAX_MOVE_TYPE];
-// assume it is 25 yard per 0.6 second
-#define SPEED_CHARGE    42.0f
 
 enum WeaponAttackType
 {
@@ -483,7 +503,7 @@ enum UnitFlags
     UNIT_FLAG_PREPARATION         = 0x00000020,                // don't take reagents for spells with SPELL_ATTR_EX5_NO_REAGENT_WHILE_PREP
     UNIT_FLAG_UNKNOWN9            = 0x00000040,
     UNIT_FLAG_NOT_ATTACKABLE_1    = 0x00000080,                // ?? (UNIT_FLAG_PVP_ATTACKABLE | UNIT_FLAG_NOT_ATTACKABLE_1) is NON_PVP_ATTACKABLE
-    UNIT_FLAG_NOT_ATTACKABLE_2    = 0x00000100,                // 2.0.8
+    UNIT_FLAG_NOT_ATTACKABLE_2    = 0x00000100,                // not attackable when out of combat
     UNIT_FLAG_UNKNOWN11           = 0x00000200,
     UNIT_FLAG_LOOTING             = 0x00000400,                // loot animation
     UNIT_FLAG_PET_IN_COMBAT       = 0x00000800,                // in combat?, 2.0.8
@@ -588,8 +608,100 @@ enum MovementFlags
     MOVEMENTFLAG_SPLINE2        = 0x08000000,               // used for flight paths
     MOVEMENTFLAG_WATERWALKING   = 0x10000000,               // prevent unit from falling through water
     MOVEMENTFLAG_SAFE_FALL      = 0x20000000,               // active rogue safe fall spell (passive)
-    MOVEMENTFLAG_UNK3           = 0x40000000
+    MOVEMENTFLAG_UNK3           = 0x40000000,
+
+    MOVEMENTFLAG_MOVING         =
+        MOVEMENTFLAG_FORWARD |MOVEMENTFLAG_BACKWARD  |MOVEMENTFLAG_STRAFE_LEFT|MOVEMENTFLAG_STRAFE_RIGHT|
+        MOVEMENTFLAG_PITCH_UP|MOVEMENTFLAG_PITCH_DOWN|MOVEMENTFLAG_FLY_UNK1   |
+        MOVEMENTFLAG_JUMPING |MOVEMENTFLAG_FALLING   |MOVEMENTFLAG_FLY_UP     |
+        MOVEMENTFLAG_FLYING2 |MOVEMENTFLAG_SPLINE,
+
+    MOVEMENTFLAG_TURNING        =
+        MOVEMENTFLAG_LEFT | MOVEMENTFLAG_RIGHT,
+ };
+
+struct Position
+{
+    Position() : x(0.0f), y(0.0f), z(0.0f), o(0.0f) {}
+    float x, y, z, o;
 };
+
+class MovementInfo
+{
+    public:
+        MovementInfo() : moveFlags(MOVEFLAG_NONE), moveFlags2(0), time(0), t_guid(0),
+            t_time(0), s_pitch(0.0f), fallTime(0), j_velocity(0.0f), j_sinAngle(0.0f),
+            j_cosAngle(0.0f), j_xyspeed(0.0f), u_unk1(0.0f) {}
+
+        // Read/Write methods
+        void Read(ByteBuffer &data);
+        void Write(ByteBuffer &data) const;
+
+        // Movement flags manipulations
+        void AddMovementFlag(MovementFlags f) { moveFlags |= f; }
+        void RemoveMovementFlag(MovementFlags f) { moveFlags &= ~f; }
+        bool HasMovementFlag(MovementFlags f) const { return moveFlags & f; }
+        MovementFlags GetMovementFlags() const { return MovementFlags(moveFlags); }
+        void SetMovementFlags(MovementFlags f) { moveFlags = f; }
+
+        // Position manipulations
+        Position const *GetPos() const { return &pos; }
+        void SetTransportData(uint64 guid, float x, float y, float z, float o, uint32 time)
+        {
+            t_guid = guid;
+            t_pos.x = x;
+            t_pos.y = y;
+            t_pos.z = z;
+            t_pos.o = o;
+            t_time = time;
+        }
+        void ClearTransportData()
+        {
+            t_guid = 0;
+            t_pos.x = 0.0f;
+            t_pos.y = 0.0f;
+            t_pos.z = 0.0f;
+            t_pos.o = 0.0f;
+            t_time = 0;
+        }
+        uint64 const& GetTransportGuid() const { return t_guid; }
+        Position const *GetTransportPos() const { return &t_pos; }
+        uint32 GetTransportTime() const { return t_time; }
+        uint32 GetFallTime() const { return fallTime; }
+        void ChangePosition(float x, float y, float z, float o) { pos.x = x; pos.y = y; pos.z = z; pos.o = o; }
+        void UpdateTime(uint32 _time) { time = _time; }
+
+    //private:
+        // common
+        uint32  moveFlags;                                  // see enum MovementFlags
+        uint8   moveFlags2;
+        uint32  time;
+        Position pos;
+        // transport
+        uint64  t_guid;
+        Position t_pos;
+        uint32  t_time;
+        // swimming and unknown
+        float   s_pitch;
+        // last fall time
+        uint32  fallTime;
+        // jumping
+        float   j_velocity, j_sinAngle, j_cosAngle, j_xyspeed;
+        // spline
+        float   u_unk1;
+};
+
+inline ByteBuffer& operator<< (ByteBuffer& buf, MovementInfo const& mi)
+{
+    mi.Write(buf);
+    return buf;
+}
+
+inline ByteBuffer& operator>> (ByteBuffer& buf, MovementInfo& mi)
+{
+    mi.Read(buf);
+    return buf;
+}
 
 enum DiminishingLevels
 {
@@ -733,11 +845,22 @@ struct TRINITY_DLL_SPEC CharmInfo
         void InitPetActionBar();
         void InitEmptyActionBar(bool withAttack = true);
                                                             //return true if successful
-        bool AddSpellToAB(uint32 oldid, uint32 newid, ActiveStates newstate = ACT_DECIDE);
+        bool AddSpellToActionBar(uint32 oldid, uint32 newid, ActiveStates newstate = ACT_DECIDE);
         void ToggleCreatureAutocast(uint32 spellid, bool apply);
 
         UnitActionBarEntry* GetActionBarEntry(uint8 index) { return &(PetActionBar[index]); }
         CharmSpellEntry* GetCharmSpell(uint8 index) { return &(m_charmspells[index]); }
+
+        void SetIsCommandAttack(bool val);
+        bool IsCommandAttack();
+        void SetIsAtStay(bool val);
+        bool IsAtStay();
+        void SetIsFollowing(bool val);
+        bool IsFollowing();
+        void SetIsReturning(bool val);
+        bool IsReturning();
+        void SaveStayPosition();
+        void GetStayPosition(float &x, float &y, float &z);
     private:
         Unit* m_unit;
         UnitActionBarEntry PetActionBar[10];
@@ -749,6 +872,14 @@ struct TRINITY_DLL_SPEC CharmInfo
 
         //for restoration after charmed
         ReactStates     m_oldReactState;
+
+        bool m_isCommandAttack;
+        bool m_isAtStay;
+        bool m_isFollowing;
+        bool m_isReturning;
+        float m_stayX;
+        float m_stayY;
+        float m_stayZ;
 };
 
 // for clearing special attacks
@@ -792,11 +923,19 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         void CleanupsBeforeDelete();                        // used in ~Creature/~Player (or before mass creature delete to remove cross-references to already deleted units)
 
+        float GetObjectBoundingRadius() const               // overwrite WorldObject version
+        {
+            return m_floatValues[UNIT_FIELD_BOUNDINGRADIUS];
+        }
+
         DiminishingLevels GetDiminishing(DiminishingGroup  group);
         void IncrDiminishing(DiminishingGroup group);
         void ApplyDiminishingToDuration(DiminishingGroup  group, int32 &duration,Unit* caster, DiminishingLevels Level, SpellEntry const *tSpell = NULL);
         void ApplyDiminishingAura(DiminishingGroup  group, bool apply);
         void ClearDiminishings() { m_Diminishing.clear(); }
+
+        //target dependent checks
+        uint32 GetSpellRadiusForTarget(Unit* target,const SpellRadiusEntry * radiusEntry);
 
         virtual void Update( uint32 time );
 
@@ -809,7 +948,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         void SetCanDualWield(bool value) { m_canDualWield = value; }
         float GetCombatReach() const { return m_floatValues[UNIT_FIELD_COMBATREACH]; }
         float GetMeleeReach() const { float reach = m_floatValues[UNIT_FIELD_COMBATREACH]; return reach > MIN_MELEE_REACH ? reach : MIN_MELEE_REACH; }
-        bool IsWithinCombatRange(Unit *obj, float dist2compare) const;
+        bool IsWithinCombatRange(const Unit *obj, float dist2compare) const;
         bool IsWithinMeleeRange(Unit *obj, float dist = MELEE_RANGE) const;
         void GetRandomContactPoint( const Unit* target, float &x, float &y, float &z, float distance2dMin, float distance2dMax ) const;
         uint32 m_extraAttacks;
@@ -844,9 +983,12 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         AttackerSet const& getAttackers() const { return m_attackers; }
         bool isAttackingPlayer() const;
         Unit* getVictim() const { return m_attacking; }
+        uint64 getVictimGUID() const { return m_attacking ? m_attacking->GetGUID() : 0; }
         void CombatStop(bool cast = false);
         void CombatStopWithPets(bool cast = false);
         Unit* SelectNearbyTarget(float dist = NOMINAL_MELEE_RANGE) const;
+        void SendMeleeAttackStop(Unit* victim);
+        void SendMeleeAttackStart(Unit* pVictim);
 
         void addUnitState(uint32 f) { m_state |= f; }
         bool hasUnitState(const uint32 f) const { return (m_state & f); }
@@ -1008,8 +1150,8 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         bool isInFlight()  const { return hasUnitState(UNIT_STAT_IN_FLIGHT); }
 
         bool isInCombat()  const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT); }
-        void CombatStart(Unit* target);
-        void SetInCombatState(bool PvP);
+        void CombatStart(Unit* target, bool initialAggro = true);
+        void SetInCombatState(bool PvP, Unit* enemy = NULL);
         void SetInCombatWith(Unit* enemy);
         void ClearInCombat();
         uint32 GetCombatTimer() const { return m_CombatTimer; }
@@ -1057,7 +1199,6 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         void DeMorph();
 
-        void SendAttackStart(Unit* pVictim);
         void SendAttackStateUpdate(MeleeDamageLog *damageInfo);
         void SendAttackStateUpdate(uint32 HitInfo, Unit *target, uint8 SwingType, SpellSchoolMask damageSchoolMask, uint32 Damage, uint32 AbsorbDamage, uint32 Resist, VictimState TargetState, uint32 BlockedAmount);
         void SendSpellNonMeleeDamageLog(SpellDamageLog *log);
@@ -1068,10 +1209,13 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 Time, Player* player = NULL);
         //void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint8 type, uint32 MovementFlags, uint32 Time, Player* player = NULL);
         void SendMonsterMoveByPath(Path const& path, uint32 start, uint32 end);
-        void SendMonsterMoveWithSpeed(float x, float y, float z, uint32 MovementFlags, uint32 transitTime = 0, Player* player = NULL);
-        void SendMonsterMoveWithSpeedToCurrentDestination(Player* player = NULL);
+        void SendMonsterMoveWithSpeed(float x, float y, float z, uint32 transitTime = 0, Player* player = NULL);
 
-        virtual void MoveOutOfRange(Player &) {  };
+        void SendMonsterMoveWithSpeedToCurrentDestination(Player* player = NULL);
+        void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 MoveFlags, uint32 time, float speedZ, Player *player = NULL);
+
+        void SendMovementFlagUpdate();
+        virtual void MoveOutOfRange(Player &) {};
 
         bool isAlive() const { return (m_deathState == ALIVE); };
         bool isDead() const { return ( m_deathState == DEAD || m_deathState == CORPSE ); };
@@ -1162,8 +1306,10 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         void RemoveSpellsCausingAura(AuraType auraType);
         void RemoveAuraTypeByCaster(AuraType auraType, uint64 casterGUID);
+        void RemoveAurasByType(AuraType auraType, uint64 casterGUID = 0, Aura * except = NULL, bool negative = true, bool positive = true);
         void RemoveRankAurasDueToSpell(uint32 spellId);
         bool RemoveNoStackAurasDueToAura(Aura *Aur);
+        void RemoveAurasWithAttribute(uint32 flags);
         void RemoveAurasWithInterruptFlags(uint32 flags, uint32 except = 0);
         void RemoveAurasWithDispelType( DispelType type );
         void RemoveMovementImpairingAuras();
@@ -1212,6 +1358,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         void InterruptNonMeleeSpells(bool withDelayed, uint32 spellid = 0, bool withInstant = true);
 
         Spell* FindCurrentSpellBySpellId(uint32 spell_id) const;
+        int32 GetCurrentSpellCastTime(uint32 spell_id) const;
 
         Spell* m_currentSpells[CURRENT_MAX_SPELL];
 
@@ -1229,6 +1376,8 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         float m_threatModifier[MAX_SPELL_SCHOOL];
         float m_modAttackSpeedPct[3];
+
+        float m_TempSpeed;
 
         // Event handler
         EventProcessor m_Events;
@@ -1257,9 +1406,15 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         void SetBaseWeaponDamage(WeaponAttackType attType ,WeaponDamageRange damageRange, float value) { m_weaponDamage[attType][damageRange] = value; }
 
         bool isInFront(Unit const* target,float distance, float arc = M_PI) const;
+        bool isInFront(GameObject const* target,float distance, float arc = M_PI) const;
         void SetInFront(Unit const* target);
+        void SetFacingToObject(WorldObject* pObject);
         bool isInBack(Unit const* target, float distance, float arc = M_PI) const;
+        bool isInBack(GameObject const* target, float distance, float arc = M_PI) const;
         bool isInLine(Unit const* target, float distance) const;
+        bool isInLine(GameObject const* target, float distance) const;
+
+        bool isBetween(WorldObject *s, WorldObject *e, float offset = 1.5f) const;
 
         // Visibility system
         UnitVisibility GetVisibility() const { return m_Visibility; }
@@ -1277,7 +1432,6 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         // function for low level grid visibility checks in player/creature cases
         virtual bool IsVisibleInGridForPlayer(Player const* pl) const = 0;
 
-        bool waterbreath;
         AuraList      & GetSingleCastAuras()       { return m_scAuras; }
         AuraList const& GetSingleCastAuras() const { return m_scAuras; }
         SpellImmuneList m_spellImmune[MAX_SPELL_IMMUNITY];
@@ -1378,6 +1532,8 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         float GetSpeedRate( UnitMoveType mtype ) const { return m_speed_rate[mtype]; }
         void SetSpeed(UnitMoveType mtype, float rate, bool forced = false);
 
+        void KnockBackFrom(Unit* target, float horizintalSpeed, float verticalSpeed);
+
         void _RemoveAllAuraMods();
         void _ApplyAllAuraMods();
 
@@ -1389,12 +1545,19 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         void addFollower(FollowerReference* pRef) { m_FollowingRefManager.insertFirst(pRef); }
         void removeFollower(FollowerReference* /*pRef*/ ) { /* nothing to do yet */ }
         static Unit* GetUnit(WorldObject& object, uint64 guid);
+        static Unit* GetUnit(const Unit& unit, uint64 guid);
         static Player* GetPlayer(uint64 guid);
         static Creature* GetCreature(WorldObject& object, uint64 guid);
+
+        Unit* GetUnit(uint64 guid);
+        Creature* GetCreature(uint64 guid);
 
         MotionMaster* GetMotionMaster() { return &i_motionMaster; }
 
         bool IsStopped() const { return !(hasUnitState(UNIT_STAT_MOVING)); }
+
+        virtual bool SetPosition(float x, float y, float z, float ang, bool teleport = false);
+
         void StopMoving();
 
         void AddUnitMovementFlag(uint32 f) { m_unit_movement_flags |= f; }
@@ -1458,6 +1621,9 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         void ApplyMeleeAPAttackerBonus(int32 value, bool apply);
         int32 GetMeleeApAttackerBonus() { return m_meleeAPAttackerBonus; }
+
+        virtual float GetFollowAngle() const { return PET_FOLLOW_ANGLE; }
+        void SetFlying(bool apply);
 
         bool IsAIEnabled, NeedChangeAI;
     protected:
@@ -1523,8 +1689,6 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         int32 m_meleeAPAttackerBonus;
     private:
-        void SendAttackStop(Unit* victim);                  // only from AttackStop(Unit*)
-        //void SendAttackStart(Unit* pVictim);                // only from Unit::AttackStart(Unit*)
 
         bool IsTriggeredAtSpellProcEvent( Aura* aura, SpellEntry const* procSpell, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, bool isVictim, bool active, SpellProcEventEntry const*& spellProcEvent );
         bool HandleDummyAuraProc(   Unit *pVictim, uint32 damage, Aura* triggredByAura, SpellEntry const *procSpell, uint32 procFlag, uint32 procEx, uint32 cooldown);

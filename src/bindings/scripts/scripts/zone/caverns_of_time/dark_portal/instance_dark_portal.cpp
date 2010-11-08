@@ -425,7 +425,7 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
         float x,y,z;
         source->GetRandomPoint(source->GetPositionX(),source->GetPositionY(),source->GetPositionZ(),10.0f,x,y,z);
         //normalize Z-level if we can, if rift is not at ground level.
-        z = std::max(instance->GetHeight(x, y, MAX_HEIGHT), instance->GetWaterLevel(x, y));
+        z = instance->GetWaterOrGroundLevel(x, y, MAX_HEIGHT);
 
         debug_log("TSCR: Instance Dark Portal: Summoning rift boss entry %u.",entry);
 

@@ -123,7 +123,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zl /MP"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\src\framework;..\..\dep\ACE_wrappers"
+				AdditionalIncludeDirectories="..\..\src\framework;..\..\dep\ACE_wrappers;..\..\dep\tbb\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
 				StringPooling="true"
 				MinimalRebuild="false"
@@ -385,6 +385,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\framework\Policies\MemoryManagement.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\framework\Policies\ObjectLifeTime.cpp"
 				>
 			</File>
@@ -425,15 +429,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\framework\Utilities\UnorderedMap.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\framework\Utilities\LinkedList.h"
 				>
 			</File>
 			<File
 				RelativePath="..\..\src\framework\Utilities\TypeList.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\framework\Utilities\UnorderedMap.h"
 				>
 			</File>
 			<Filter

@@ -22,6 +22,7 @@ SDCategory: Blackwing Lair
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_blackwing_lair.h"
 
 #define SAY_LINE1           -1469026
 #define SAY_LINE2           -1469027
@@ -45,8 +46,10 @@ struct TRINITY_DLL_DECL boss_vaelAI : public ScriptedAI
         c->SetUInt32Value(UNIT_NPC_FLAGS,1);
         c->setFaction(35);
         c->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
     }
 
+    ScriptedInstance * pInstance;
     uint64 PlayerGUID;
     uint32 SpeachTimer;
     uint32 SpeachNum;
@@ -73,8 +76,8 @@ struct TRINITY_DLL_DECL boss_vaelAI : public ScriptedAI
         HasYelled = false;
         DoingSpeach = false;
 
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
-        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
+        if (pInstance && pInstance->GetData(DATA_VAELASTRASZ_THE_CORRUPT_EVENT) != DONE)
+            pInstance->SetData(DATA_VAELASTRASZ_THE_CORRUPT_EVENT, NOT_STARTED);
     }
 
     void BeginSpeach(Unit* target)
@@ -100,11 +103,20 @@ struct TRINITY_DLL_DECL boss_vaelAI : public ScriptedAI
         DoScriptText(SAY_KILLTARGET, m_creature, victim);
     }
 
-    void Aggro(Unit *who)
+    void JustDied(Unit * killer)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_VAELASTRASZ_THE_CORRUPT_EVENT, DONE);
+    }
+
+    void EnterCombat(Unit *who)
     {
         DoCast(m_creature,SPELL_ESSENCEOFTHERED);
         DoZoneInCombat();
         m_creature->SetHealth(int(m_creature->GetMaxHealth()*.3));
+
+        if (pInstance)
+            pInstance->SetData(DATA_VAELASTRASZ_THE_CORRUPT_EVENT, IN_PROGRESS);
     }
 
     void UpdateAI(const uint32 diff)

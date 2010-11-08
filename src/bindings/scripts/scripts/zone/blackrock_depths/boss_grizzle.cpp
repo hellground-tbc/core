@@ -39,7 +39,7 @@ struct TRINITY_DLL_DECL boss_grizzleAI : public ScriptedAI
         Frenzy_Timer =0;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
     }
 
@@ -54,7 +54,9 @@ struct TRINITY_DLL_DECL boss_grizzleAI : public ScriptedAI
         {
             DoCast(m_creature->getVictim(),SPELL_GROUNDTREMOR);
             GroundTremor_Timer = 8000;
-        }else GroundTremor_Timer -= diff;
+        }
+        else
+            GroundTremor_Timer -= diff;
 
         //Frenzy_Timer
         if ( m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 51 )
@@ -65,7 +67,9 @@ struct TRINITY_DLL_DECL boss_grizzleAI : public ScriptedAI
                 DoTextEmote("goes into a killing frenzy!",NULL);
 
                 Frenzy_Timer = 15000;
-            }else Frenzy_Timer -= diff;
+            }
+            else
+                Frenzy_Timer -= diff;
         }
 
         DoMeleeAttackIfReady();

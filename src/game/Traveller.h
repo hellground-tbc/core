@@ -47,22 +47,39 @@ struct TRINITY_DLL_DECL Traveller
 
     operator T&(void) { return i_traveller; }
     operator const T&(void) { return i_traveller; }
-    inline float GetPositionX() const { return i_traveller.GetPositionX(); }
-    inline float GetPositionY() const { return i_traveller.GetPositionY(); }
-    inline float GetPositionZ() const { return i_traveller.GetPositionZ(); }
-    inline T& GetTraveller(void) { return i_traveller; }
+    float GetPositionX() const { return i_traveller.GetPositionX(); }
+    float GetPositionY() const { return i_traveller.GetPositionY(); }
+    float GetPositionZ() const { return i_traveller.GetPositionZ(); }
+    T& GetTraveller(void) { return i_traveller; }
 
     float Speed(void) { assert(false); return 0.0f; }
+    float GetMoveDestinationTo(float x, float y, float z);
+    uint32 GetTotalTrevelTimeTo(float x, float y, float z);
+
     void Relocation(float x, float y, float z, float orientation) {}
     void Relocation(float x, float y, float z) { Relocation(x, y, z, i_traveller.GetOrientation()); }
     void MoveTo(float x, float y, float z, uint32 t) {}
 };
 
+template<class T>
+inline uint32 Traveller<T>::GetTotalTrevelTimeTo(float x, float y, float z)
+{
+    float dist = GetMoveDestinationTo(x,y,z);
+    float speed = Speed();;
+    if (speed <= 0.0f)
+        return 0xfffffffe;  // almost infinity-unit should stop
+    else
+        speed *= 0.001f;   // speed is in seconds so convert from second to millisecond
+    return static_cast<uint32>(dist/speed);
+}
+
 // specialization for creatures
 template<>
 inline float Traveller<Creature>::Speed()
 {
-    if(i_traveller.HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))
+    if(i_traveller.hasUnitState(UNIT_STAT_CHARGING))
+        return i_traveller.m_TempSpeed;
+    else if(i_traveller.HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))
         return i_traveller.GetSpeed(MOVE_WALK);
     else if(i_traveller.HasUnitMovementFlag(MOVEMENTFLAG_FLYING2))
         return i_traveller.GetSpeed(MOVE_FLIGHT);
@@ -77,6 +94,19 @@ inline void Traveller<Creature>::Relocation(float x, float y, float z, float ori
 }
 
 template<>
+inline float Traveller<Creature>::GetMoveDestinationTo(float x, float y, float z)
+{
+    float dx = x - GetPositionX();
+    float dy = y - GetPositionY();
+    float dz = z - GetPositionZ();
+
+    //if(i_traveller.HasUnitMovementFlag(MOVEMENTFLAG_FLYING2))
+        return sqrt((dx*dx) + (dy*dy) + (dz*dz));
+    //else                                                    //Walking on the ground
+    //    return sqrt((dx*dx) + (dy*dy));
+}
+
+template<>
 inline void Traveller<Creature>::MoveTo(float x, float y, float z, uint32 t)
 {
     i_traveller.AI_SendMoveToPacket(x, y, z, t, i_traveller.GetUnitMovementFlags(), 0);
@@ -86,16 +116,31 @@ inline void Traveller<Creature>::MoveTo(float x, float y, float z, uint32 t)
 template<>
 inline float Traveller<Player>::Speed()
 {
-    if (i_traveller.isInFlight())
+    if(i_traveller.hasUnitState(UNIT_STAT_CHARGING))
+        return i_traveller.m_TempSpeed;
+    else if(i_traveller.isInFlight())
         return PLAYER_FLIGHT_SPEED;
     else
         return i_traveller.GetSpeed(i_traveller.HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE) ? MOVE_WALK : MOVE_RUN);
 }
 
 template<>
+inline float Traveller<Player>::GetMoveDestinationTo(float x, float y, float z)
+{
+    float dx = x - GetPositionX();
+    float dy = y - GetPositionY();
+    float dz = z - GetPositionZ();
+
+    //if (i_traveller.isInFlight())
+        return sqrt((dx*dx) + (dy*dy) + (dz*dz));
+    //else                                                    //Walking on the ground
+    //    return sqrt((dx*dx) + (dy*dy));
+}
+
+template<>
 inline void Traveller<Player>::Relocation(float x, float y, float z, float orientation)
 {
-    i_traveller.GetMap()->PlayerRelocation(&i_traveller, x, y, z, orientation);
+    i_traveller.SetPosition(x, y, z, orientation);
 }
 
 template<>

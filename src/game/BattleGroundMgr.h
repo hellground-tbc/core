@@ -61,6 +61,27 @@ struct GroupQueueInfo                                       // stores informatio
     uint32  IsInvitedToBGInstanceGUID;                      // was invited to certain BG
     uint32  ArenaTeamRating;                                // if rated match, inited to the rating of the team
     uint32  OpponentsTeamRating;                            // for rated arena matches
+    bool Premade;
+};
+
+struct QueueTimer
+{
+    uint32 average_time;
+    uint32 overalltime;
+    uint32 count;
+
+    QueueTimer() : average_time(0), overalltime(0), count(0) {}
+
+    void updateTime(uint32 time)
+    {
+        overalltime += time;
+        if (++count == 10)
+        {
+            average_time = overalltime/count;
+            overalltime = 0;
+            count = 0;
+        }
+    }
 };
 
 class BattleGround;
@@ -83,6 +104,7 @@ class BattleGroundQueue
 
         typedef std::list<GroupQueueInfo*> QueuedGroupsList;
         QueuedGroupsList m_QueuedGroups[MAX_BATTLEGROUND_QUEUES];
+        QueueTimer m_queueTimers[MAX_BATTLEGROUND_QUEUES];
 
         // class to hold pointers to the groups eligible for a specific selection pool building mode
         class EligibleGroups : public std::list<GroupQueueInfo *>
@@ -101,7 +123,7 @@ class BattleGroundQueue
             void AddGroup(GroupQueueInfo * group);
             void RemoveGroup(GroupQueueInfo * group);
             uint32 GetPlayerCount() const {return PlayerCount;}
-            bool Build(uint32 MinPlayers, uint32 MaxPlayers, EligibleGroups::iterator startitr);
+            bool Build(uint32 MinPlayers, uint32 MaxPlayers, EligibleGroups::iterator startitr, bool premade);
         public:
             std::list<GroupQueueInfo *> SelectedGroups;
         private:
@@ -123,7 +145,7 @@ class BattleGroundQueue
 
         SelectionPool m_SelectionPools[NUM_SELECTION_POOL_TYPES];
 
-        bool BuildSelectionPool(uint32 bgTypeId, uint32 queue_id, uint32 MinPlayers, uint32 MaxPlayers, SelectionPoolBuildMode mode, uint8 ArenaType = 0, bool isRated = false, uint32 MinRating = 0, uint32 MaxRating = 0, uint32 DisregardTime = 0, uint32 excludeTeam = 0);
+        bool BuildSelectionPool(uint32 bgTypeId, uint32 queue_id, uint32 MinPlayers, uint32 MaxPlayers, SelectionPoolBuildMode mode, uint8 ArenaType = 0, bool isRated = false, uint32 MinRating = 0, uint32 MaxRating = 0, uint32 DisregardTime = 0, uint32 excludeTeam = 0, bool premade = false);
 
     private:
 

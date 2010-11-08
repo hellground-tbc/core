@@ -23,7 +23,7 @@ EndScriptData */
 
 #include "precompiled.h"
 #include "def_serpent_shrine.h"
-#include "../../../npc/npc_escortAI.h"
+#include "escort_ai.h"
 
 #define SAY_AGGRO                   -1548021
 #define SAY_GAIN_BLESSING           -1548022
@@ -83,21 +83,21 @@ EndScriptData */
 #define OLUM_O                     0.401581f
 
 const uint32 SpellID[2] =
-{ 
+{
     38433,     // summon Sporebat
     38431      // summon Lurker
-}; 
-const uint32 PetID[2] = 
-{ 
+};
+const uint32 PetID[2] =
+{
     22120,     // Sporebat entry
     22119      // Lurker entry
-}; 
+};
 const int32 AbilityTEXT[3] = { -1548023, -1548024, -1548025 }; // text on ability gain
-const uint32 Ability[3]  = 
-{ 
+const uint32 Ability[3]  =
+{
     38455,    // Power of Sharkkis
     38452,    // Power of Tidalvess
-    38451     // Power of Caribdis 
+    38451     // Power of Caribdis
 };
 
 //Fathom-Lord Karathress AI
@@ -108,7 +108,7 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
         m_creature->GetPosition(wLoc);
 
-        for(int i=0; i<3; ++i)        
+        for(int i=0; i<3; ++i)
             Advisors[i] = 0;
 
     }
@@ -137,8 +137,8 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
         CataclysmicBolt_Timer = 10000;
         Enrage_Timer = 600000;                 // 10 minutes
         SearNova_Timer = 20000+rand()%40000;   // 20 - 60 seconds
-        AuraCheck_Timer = 3000; 
-        TidalSurge_Timer = 15000+rand()%5000; 
+        AuraCheck_Timer = 3000;
+        TidalSurge_Timer = 15000+rand()%5000;
 
         BlessingOfTides = false;
         BlessingOfTidesCounter = 0;
@@ -153,7 +153,7 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
             RAdvisors[0] = pInstance->GetData64(DATA_SHARKKIS);
             RAdvisors[1] = pInstance->GetData64(DATA_TIDALVESS);
             RAdvisors[2] = pInstance->GetData64(DATA_CARIBDIS);
-            
+
             // Don't respawn adds if encounter is done
             if(pInstance->GetData(DATA_KARATHRESSEVENT) == DONE)
             {
@@ -164,7 +164,7 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
             //Respawn of the 3 Advisors
             Creature* pAdvisor = NULL;
             for( int i=0; i<3; i++ ){
-                
+
                 ExtraAbility[i] = false;
 
                 if(RAdvisors[i])
@@ -180,8 +180,6 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
             }
             pInstance->SetData(DATA_KARATHRESSEVENT, NOT_STARTED);
         }
-
-
     }
 
     void EventAdvisorDeath(int adv)
@@ -222,12 +220,7 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
 
     void KilledUnit(Unit *victim)
     {
-        switch(rand()%3)
-        {
-            case 0: DoScriptText(SAY_SLAY1, m_creature); break;
-            case 1: DoScriptText(SAY_SLAY2, m_creature); break;
-            case 2: DoScriptText(SAY_SLAY3, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2, SAY_SLAY3), m_creature);
     }
 
     void JustDied(Unit *killer)
@@ -241,7 +234,7 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
         m_creature->SummonCreature(SEER_OLUM, OLUM_X, OLUM_Y, OLUM_Z, OLUM_O, TEMPSUMMON_TIMED_DESPAWN, 3600000);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         StartEvent(who);
     }
@@ -249,7 +242,7 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
     void UpdateAI(const uint32 diff)
     {
         //Only if not incombat check if the event is started
-        if (!InCombat && pInstance && pInstance->GetData(DATA_KARATHRESSEVENT))
+        if (!m_creature->isInCombat() && pInstance && pInstance->GetData(DATA_KARATHRESSEVENT))
         {
             Unit* target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_KARATHRESSEVENT_STARTER));
 
@@ -274,7 +267,7 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
         //Aura Check
         if(AuraCheck_Timer < diff)
         {
-            if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 135.0f)
+            if(!m_creature->IsWithinDistInMap(&wLoc, 135.0f))
                 EnterEvadeMode();
             else
                 DoZoneInCombat();
@@ -295,8 +288,8 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
         {
             if (TidalSurge_Timer < diff)
             {
-                Unit *who = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_TIDAL_SURGE), true, m_creature->getVictim());
-                                            
+                Unit *who = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_TIDAL_SURGE), true, m_creature->getVictimGUID());
+
                 if(who && who->isAlive())
                 {
                     DoCast(who, SPELL_TIDAL_SURGE);
@@ -313,7 +306,7 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
         if(CataclysmicBolt_Timer < diff)
         {
             //if there aren't other units, cast on the tank
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_CATACLYSMIC_BOLT), true, m_creature->getVictim()))
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_CATACLYSMIC_BOLT), true, m_creature->getVictimGUID()))
                 DoCast(target, SPELL_CATACLYSMIC_BOLT);
             else
                 DoCast(m_creature->getVictim(), SPELL_CATACLYSMIC_BOLT);
@@ -348,7 +341,7 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
             BlessingOfTidesCounter = 0;
             bool continueTriggering = false;
             Creature* Advisor;
-            for(uint8 i = 0; i < 4; ++i) 
+            for(uint8 i = 0; i < 4; ++i)
             {
                 if(Advisors[i])
                 {
@@ -358,14 +351,14 @@ struct TRINITY_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
                 }
             }
 
-            if(BlessingOfTidesCounter) 
+            if(BlessingOfTidesCounter)
             {
                 DoYell(SAY_GAIN_BLESSING_OF_TIDES, LANG_UNIVERSAL, NULL);
                 DoPlaySoundToSet(m_creature, SOUND_GAIN_BLESSING_OF_TIDES);
             }
         }
 
-        if(BlessingOfTides && BlessingOfTidesCounter) 
+        if(BlessingOfTides && BlessingOfTidesCounter)
         {
             m_creature->CastSpell(m_creature, SPELL_BLESSING_OF_THE_TIDES,true);
             BlessingOfTidesCounter--;
@@ -412,7 +405,7 @@ struct TRINITY_DLL_DECL boss_fathomguard_sharkkisAI : public ScriptedAI
                 Pet->AI()->AttackStart(target);
                 if(pInstance)
                     pInstance->SetData64(DATA_SHARKKIS_PET,Pet->GetGUID());
-            } 
+            }
         }
     }
 
@@ -428,7 +421,7 @@ struct TRINITY_DLL_DECL boss_fathomguard_sharkkisAI : public ScriptedAI
        }
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if(pInstance)
             pInstance->SetData64(DATA_KARATHRESSEVENT_STARTER, who->GetGUID());
@@ -437,7 +430,7 @@ struct TRINITY_DLL_DECL boss_fathomguard_sharkkisAI : public ScriptedAI
     void UpdateAI(const uint32 diff)
     {
         //Only if not incombat check if the event is started
-        if (!InCombat && pInstance && pInstance->GetData(DATA_KARATHRESSEVENT))
+        if (!m_creature->isInCombat() && pInstance && pInstance->GetData(DATA_KARATHRESSEVENT))
         {
             if(Unit* target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_KARATHRESSEVENT_STARTER)))
                 AttackStart(target);
@@ -531,13 +524,13 @@ struct TRINITY_DLL_DECL boss_fathomguard_tidalvessAI : public ScriptedAI
         if(pInstance)
         {
             Creature *Karathress = Unit::GetCreature((*m_creature), pInstance->GetData64(DATA_KARATHRESS));
-            
+
             if(Karathress && Karathress->isAlive())
                 ((boss_fathomlord_karathressAI*)Karathress->AI())->EventAdvisorDeath(1);
         }
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if (pInstance)
             pInstance->SetData64(DATA_KARATHRESSEVENT_STARTER, who->GetGUID());
@@ -548,7 +541,7 @@ struct TRINITY_DLL_DECL boss_fathomguard_tidalvessAI : public ScriptedAI
     void UpdateAI(const uint32 diff)
     {
         //Only if not incombat check if the event is started
-        if (!InCombat && pInstance && pInstance->GetData(DATA_KARATHRESSEVENT))
+        if (!m_creature->isInCombat() && pInstance && pInstance->GetData(DATA_KARATHRESSEVENT))
         {
             if(Unit* target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_KARATHRESSEVENT_STARTER)))
                 AttackStart(target);
@@ -638,30 +631,20 @@ struct TRINITY_DLL_DECL boss_fathomguard_caribdisAI : public ScriptedAI
     Unit* selectAdvisorUnit()
     {
         Unit* pUnit = NULL;
-        
+
         if(pInstance)
         {
-            switch(rand()%4)
-            {
-                case 0:
-                    pUnit = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_KARATHRESS));
-                break;
-                case 1:
-                    pUnit = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_SHARKKIS));
-                break;
-                case 2:
-                    pUnit = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_TIDALVESS));
-                break;
-                case 3:
-                    pUnit = m_creature;
-                break;
-            }
+            pUnit = RAND (Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_KARATHRESS)),
+                          Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_SHARKKIS)),
+                          Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_TIDALVESS)),
+                          (Unit*)m_creature);
         }
         else
             pUnit = m_creature;
 
         return pUnit;
     }
+
     void JustDied(Unit *victim)
     {
         if(pInstance)
@@ -672,7 +655,7 @@ struct TRINITY_DLL_DECL boss_fathomguard_caribdisAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if(pInstance)
             pInstance->SetData64(DATA_KARATHRESSEVENT_STARTER, who->GetGUID());
@@ -681,7 +664,7 @@ struct TRINITY_DLL_DECL boss_fathomguard_caribdisAI : public ScriptedAI
     void UpdateAI(const uint32 diff)
     {
         //Only if not incombat check if the event is started
-        if(pInstance && !InCombat && pInstance->GetData(DATA_KARATHRESSEVENT))
+        if(pInstance && !m_creature->isInCombat() && pInstance->GetData(DATA_KARATHRESSEVENT))
         {
             if(Unit* target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_KARATHRESSEVENT_STARTER)))
                 AttackStart(target);
@@ -736,7 +719,7 @@ struct TRINITY_DLL_DECL boss_fathomguard_caribdisAI : public ScriptedAI
         }
         else
             Cyclone_Timer -= diff;
-        
+
         //Heal_Timer
         if(Heal_Timer < diff)
         {
@@ -771,21 +754,21 @@ struct TRINITY_DLL_DECL mob_caribdis_cycloneAI : public ScriptedAI
         Swap_Timer = 0;
     }
 
-    void Aggro(Unit *who) 
+    void EnterCombat(Unit *who)
     {
         AttackStart(who);
     }
-    
+
     void UpdateAI(const uint32 diff)
     {
         //Return since we have no target
         if (!UpdateVictim() )
             return;
 
-        if(Swap_Timer < diff)                                            
+        if(Swap_Timer < diff)
         {
             if(Unit* target = SelectUnit(SELECT_TARGET_FARTHEST, 0, 100, true))
-            {                
+            {
                 if(target)
                 {
                     DoResetThreat();
@@ -801,7 +784,7 @@ struct TRINITY_DLL_DECL mob_caribdis_cycloneAI : public ScriptedAI
         if(Check_Timer < diff)
         {
             Map* pMap = m_creature->GetMap();
-            Map::PlayerList const &PlayerList = pMap->GetPlayers();                
+            Map::PlayerList const &PlayerList = pMap->GetPlayers();
             if (!PlayerList.isEmpty())
             {
                 for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)

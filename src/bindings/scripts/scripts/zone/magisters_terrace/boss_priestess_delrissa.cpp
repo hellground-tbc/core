@@ -146,7 +146,7 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
         }else error_log(ERROR_INST_DATA);
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
 
@@ -391,8 +391,6 @@ struct TRINITY_DLL_DECL boss_priestess_guestAI : public ScriptedAI
         ResetThreatTimer = 5000 + rand()%15000;             // These guys like to switch targets often, and are not meant to be tanked.
     }
 
-    void Aggro(Unit* who) {}
-
     void JustDied(Unit* killer)
     {
         if(!pInstance)
@@ -552,32 +550,6 @@ struct TRINITY_DLL_DECL boss_kagani_nightstrikeAI : public boss_priestess_guestA
 //#define CREATURE_IMP                 44163
 //#define CREATURE_FIZZLE              24656
 
-/*struct TRINITY_DLL_DECL mob_fizzleAI : public ScriptedAI
-{
-    mob_fizzleAI(Creature *c) : ScriptedAI(c) {}
-
-    uint64 EllrisGUID;
-    uint32 Firebal_Timer;
-
-    void Reset() { EllrisGUID = 0; }
-
-    void KilledUnit(Unit* victim);
-    void JustDied(Unit* killer);
-
-    void Aggro(Unit* who){}
-
-    void UpdateAI(const uint32 diff)
-    {
-        if (!UpdateVictim() )
-            return;
-
-        //Chain cast
-        if (!m_creature->IsNonMeleeSpellCasted(false))
-            DoCast(m_creature->getVictim(),SPELL_IMP_FIREBALL);
-        else DoMeleeAttackIfReady();
-    }
-};*/
-
 struct TRINITY_DLL_DECL boss_ellris_duskhallowAI : public boss_priestess_guestAI
 {
     //Warlock
@@ -655,7 +627,7 @@ struct TRINITY_DLL_DECL boss_ellris_duskhallowAI : public boss_priestess_guestAI
             Fear_Timer = 10000;
         }else Fear_Timer -= diff;
 
-        if (m_creature->GetDistance(m_creature->getVictim()) <= 10)
+        if (m_creature->IsWithinDistInMap(m_creature->getVictim(), 10))
             m_creature->StopMoving();
         //DoMeleeAttackIfReady();//should not melee, she's a warlock
     }
@@ -829,7 +801,7 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
             Blink_Timer = 8000;
         }else Blink_Timer -= diff;
 
-        if (m_creature->getVictim() && m_creature->GetDistance(m_creature->getVictim()) <= 10)
+        if (m_creature->getVictim() && m_creature->IsWithinDistInMap(m_creature->getVictim(), 10))
             m_creature->StopMoving();
 
         //DoMeleeAttackIfReady(); //mage type, no melee needed
@@ -868,7 +840,7 @@ struct TRINITY_DLL_DECL boss_warlord_salarisAI : public boss_priestess_guestAI
         boss_priestess_guestAI::Reset();
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         DoCast(m_creature, SPELL_BATTLE_SHOUT);
     }
@@ -943,21 +915,6 @@ struct TRINITY_DLL_DECL boss_warlord_salarisAI : public boss_priestess_guestAI
 #define SPELL_FREEZING_TRAP         44136
 
 #define CREATURE_SLIVER             24552
-
-/*struct TRINITY_DLL_DECL mob_sliverAI : public ScriptedAI
-{
-    mob_sliverAI(Creature *c) : ScriptedAI(c) {}
-
-    uint64 GaraxxasGUID;
-
-    void Reset() { GaraxxasGUID = 0; }
-
-    void KilledUnit(Unit* victim);
-    void JustDied(Unit* killer);
-
-    void Aggro(Unit* who){}
-
-};*/
 
 struct TRINITY_DLL_DECL boss_garaxxasAI : public boss_priestess_guestAI
 {
@@ -1125,33 +1082,37 @@ struct TRINITY_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
 
         if(Totem_Timer < diff)
         {
-            switch(rand()%3)
-            {
-                case 0: DoCast(m_creature, SPELL_WINDFURY_TOTEM); break;
-                case 1: DoCast(m_creature, SPELL_FIRE_NOVA_TOTEM); break;
-                case 2: DoCast(m_creature, SPELL_EARTHBIND_TOTEM); break;
-            }
+            DoCast(m_creature, RAND(SPELL_WINDFURY_TOTEM, SPELL_FIRE_NOVA_TOTEM, SPELL_EARTHBIND_TOTEM));
+
             ++Totem_Amount;
             Totem_Timer = Totem_Amount*2000;
-        }else Totem_Timer -= diff;
+        }
+        else
+            Totem_Timer -= diff;
 
         if(War_Stomp_Timer < diff)
         {
             DoCast(m_creature, SPELL_WAR_STOMP);
             War_Stomp_Timer = 10000;
-        }else War_Stomp_Timer -= diff;
+        }
+        else
+            War_Stomp_Timer -= diff;
 
         if(Purge_Timer < diff)
         {
             DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_PURGE);
             Purge_Timer = 15000;
-        }else Purge_Timer -= diff;
+        }
+        else
+            Purge_Timer -= diff;
 
         if(Frost_Shock_Timer < diff)
         {
             DoCast(m_creature->getVictim(), SPELL_FROST_SHOCK);
             Frost_Shock_Timer = 7000;
-        }else Frost_Shock_Timer -= diff;
+        }
+        else
+            Frost_Shock_Timer -= diff;
 
         if(Healing_Wave_Timer < diff)
         {
@@ -1166,7 +1127,9 @@ struct TRINITY_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
             Healing_Wave_Timer = 5000;
             //    }
             // }
-        }else Healing_Wave_Timer -= diff;
+        }
+        else
+            Healing_Wave_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }
@@ -1212,7 +1175,7 @@ struct TRINITY_DLL_DECL boss_zelfanAI : public boss_priestess_guestAI
 
         if(Goblin_Dragon_Gun_Timer < diff)
         {
-            if (m_creature->GetDistance(m_creature->getVictim()) <= 5)
+            if (m_creature->IsWithinDistInMap(m_creature->getVictim(), 5))
             {
                 Goblin_Dragon_Gun_Timer = 10000;
                 DoCast(m_creature->getVictim(), SPELL_GOBLIN_DRAGON_GUN);
@@ -1265,7 +1228,7 @@ struct TRINITY_DLL_DECL boss_zelfanAI : public boss_priestess_guestAI
 //
 //    void JustDied(Unit *Killer){}
 //
-//    void Aggro(Unit *who){}
+//    void EnterCombat(Unit *who){}
 //
 //    void UpdateAI(const uint32 diff)
 //    {

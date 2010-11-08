@@ -61,12 +61,13 @@ struct TRINITY_DLL_DECL mob_yennikuAI : public ScriptedAI
 
                 bReset = true;
                 Reset_Timer = 60000;
+				
             }
         }
         return;
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void UpdateAI(const uint32 diff)
     {
@@ -107,6 +108,15 @@ CreatureAI* GetAI_mob_yenniku(Creature *_Creature)
     return new mob_yennikuAI (_Creature);
 }
 
+bool ChooseReward_npc_Riggle_Bassbait(Player *player, Creature *_Creature, const Quest *_Quest, uint32 slot){
+	if(_Quest->GetQuestId()==8193){
+	_Creature->Yell("We have this week Stranglethorn Fishing Extravaganza winner. Congratulations $N",0,player->GetGUID());
+	player->Kill(_Creature);
+	_Creature->SetVisibility(VISIBILITY_OFF);
+	}
+	return true;
+}
+	
 /*######
 ##
 ######*/
@@ -119,5 +129,10 @@ void AddSC_stranglethorn_vale()
     newscript->Name = "mob_yenniku";
     newscript->GetAI = &GetAI_mob_yenniku;
     newscript->RegisterSelf();
+
+	newscript = new Script;
+    newscript->Name = "npc_riggle_bassbait";
+	newscript->pChooseReward = &ChooseReward_npc_Riggle_Bassbait;
+	newscript->RegisterSelf();
 }
 

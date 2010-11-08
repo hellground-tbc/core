@@ -159,6 +159,8 @@ void WorldSession::HandleBattleGroundJoinOpcode( WorldPacket & recv_data )
     {
         sLog.outDebug("Battleground: the following players are joining as group:");
         GroupQueueInfo * ginfo = sBattleGroundMgr.m_BattleGroundQueues[bgQueueTypeId].AddGroup(_player, bgTypeId, 0, false, 0);
+
+        ginfo->Premade = grp->GetMembersCount() >= bg->GetMaxPlayersPerTeam() * 0.6;
         for(GroupReference *itr = grp->GetFirstMember(); itr != NULL; itr = itr->next())
         {
             Player *member = itr->getSource();
@@ -171,7 +173,7 @@ void WorldSession::HandleBattleGroundJoinOpcode( WorldPacket & recv_data )
 
             WorldPacket data;
                                                             // send status packet (in queue)
-            sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, bg, member->GetTeam(), queueSlot, STATUS_WAIT_QUEUE, 0, 0);
+            sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, bg, member->GetTeam(), queueSlot, STATUS_WAIT_QUEUE, sBattleGroundMgr.m_BattleGroundQueues[bgQueueTypeId].m_queueTimers[_player->GetBattleGroundQueueIdFromLevel()].average_time, 0);
             member->GetSession()->SendPacket(&data);
             sBattleGroundMgr.BuildGroupJoinedBattlegroundPacket(&data, bgTypeId);
             member->GetSession()->SendPacket(&data);
@@ -190,7 +192,7 @@ void WorldSession::HandleBattleGroundJoinOpcode( WorldPacket & recv_data )
 
         WorldPacket data;
                                                             // send status packet (in queue)
-        sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, bg, _player->GetTeam(), queueSlot, STATUS_WAIT_QUEUE, 0, 0);
+        sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, bg, _player->GetTeam(), queueSlot, STATUS_WAIT_QUEUE, sBattleGroundMgr.m_BattleGroundQueues[bgQueueTypeId].m_queueTimers[_player->GetBattleGroundQueueIdFromLevel()].average_time, 0);
         SendPacket(&data);
 
         GroupQueueInfo * ginfo = sBattleGroundMgr.m_BattleGroundQueues[bgQueueTypeId].AddGroup(_player, bgTypeId, 0, false, 0);
@@ -493,26 +495,14 @@ void WorldSession::HandleBattleGroundPlayerPortOpcode( WorldPacket &recv_data )
     }
 }
 
-void WorldSession::HandleBattleGroundLeaveOpcode( WorldPacket & /*recv_data*/ )
+void WorldSession::HandleBattleGroundLeaveOpcode( WorldPacket &recv_data)
 {
-    //CHECK_PACKET_SIZE(recv_data, 1+1+4+2);
-
     sLog.outDebug( "WORLD: Recvd CMSG_LEAVE_BATTLEFIELD Message");
 
-    //uint8 unk1, unk2;
-    //uint32 bgTypeId;                                        // id from DBC
-    //uint16 unk3;
-
-    //recv_data >> unk1 >> unk2 >> bgTypeId >> unk3; - no used currently
-
-    //if(bgTypeId >= MAX_BATTLEGROUND_TYPES)                  // cheating? but not important in this case
-    //    return;
-
-    // not allow leave battleground in combat
-    if(_player->isInCombat())
-        if(BattleGround* bg = _player->GetBattleGround())
-            if(bg->GetStatus() != STATUS_WAIT_LEAVE)
-                return;
+    recv_data.read_skip<uint8>();                           // unk1
+    recv_data.read_skip<uint8>();                           // unk2
+    recv_data.read_skip<uint32>();                          // BattleGroundTypeId
+    recv_data.read_skip<uint16>();                          // unk3
 
     _player->LeaveBattleground();
 }

@@ -38,8 +38,10 @@ struct TRINITY_DLL_DECL boss_the_black_stalkerAI : public ScriptedAI
     boss_the_black_stalkerAI(Creature *c) : ScriptedAI(c)
     {
         HeroicMode = m_creature->GetMap()->IsHeroic();
+        c->GetPosition(wLoc);
     }
 
+    WorldLocation wLoc;
     bool HeroicMode;
     uint32 SporeStriders_Timer;
     uint32 Levitate_Timer;
@@ -63,14 +65,14 @@ struct TRINITY_DLL_DECL boss_the_black_stalkerAI : public ScriptedAI
         Striders.clear();
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void JustSummoned(Creature *summon)
     {
         if(summon && summon->GetEntry() == ENTRY_SPORE_STRIDER)
         {
             Striders.push_back(summon->GetGUID());
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,1, 200, true, m_creature->getVictim()))
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true, m_creature->getVictimGUID()))
                 summon->AI()->AttackStart(target);
             else
                 if(m_creature->getVictim())
@@ -97,9 +99,7 @@ struct TRINITY_DLL_DECL boss_the_black_stalkerAI : public ScriptedAI
         // Evade if too far
         if(check_Timer < diff)
         {
-            float x,y,z,o;
-            m_creature->GetHomePosition(x,y,z,o);
-            if(m_creature->GetDistance(x,y,z) > 60)
+            if(!m_creature->IsWithinDistInMap(&wLoc, 60))
             {
                 EnterEvadeMode();
                 return;
@@ -144,7 +144,7 @@ struct TRINITY_DLL_DECL boss_the_black_stalkerAI : public ScriptedAI
         }
         if(Levitate_Timer < diff)
         {
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,1, 200, true, m_creature->getVictim()))
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true, m_creature->getVictimGUID()))
             {
                 DoCast(target, SPELL_LEVITATE);
                 LevitatedTarget = target->GetGUID();

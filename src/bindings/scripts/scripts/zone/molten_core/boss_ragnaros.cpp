@@ -22,6 +22,7 @@ SDCategory: Molten Core
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_molten_core.h"
 
 #define SAY_REINFORCEMENTS1         -1409013
 #define SAY_REINFORCEMENTS2         -1409014
@@ -85,8 +86,12 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_ragnarosAI : public Scripted_NoMovementAI
 {
-    boss_ragnarosAI(Creature *c) : Scripted_NoMovementAI(c) {}
+    boss_ragnarosAI(Creature *c) : Scripted_NoMovementAI(c)
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
 
+    ScriptedInstance * pInstance;
     uint32 WrathOfRagnaros_Timer;
     uint32 HandOfRagnaros_Timer;
     uint32 LavaBurst_Timer;
@@ -117,6 +122,9 @@ struct TRINITY_DLL_DECL boss_ragnarosAI : public Scripted_NoMovementAI
 
         m_creature->CastSpell(m_creature,SPELL_MELTWEAPON,true);
         HasAura = true;
+
+        if (pInstance)
+            pInstance->SetData(DATA_RAGNAROS_EVENT, NOT_STARTED);
     }
 
     void KilledUnit(Unit* victim)
@@ -127,8 +135,16 @@ struct TRINITY_DLL_DECL boss_ragnarosAI : public Scripted_NoMovementAI
         DoScriptText(SAY_KILL, m_creature);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
+        if (pInstance)
+            pInstance->SetData(DATA_RAGNAROS_EVENT, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_RAGNAROS_EVENT, DONE);
     }
 
     void UpdateAI(const uint32 diff)

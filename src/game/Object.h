@@ -26,9 +26,8 @@
 #include "UpdateFields.h"
 #include "UpdateData.h"
 #include "GameSystem/GridReference.h"
-#include "ObjectDefines.h"
+#include "ObjectGuid.h"
 #include "GridDefines.h"
-#include "CreatureAI.h"
 #include "Map.h"
 
 #include <set>
@@ -47,34 +46,6 @@
 #define MIN_MELEE_REACH             2.0f
 #define NOMINAL_MELEE_RANGE         5.0f
 #define MELEE_RANGE                 (NOMINAL_MELEE_RANGE - MIN_MELEE_REACH * 2) //center to center for players
-
-enum TypeMask
-{
-    TYPEMASK_OBJECT         = 0x0001,
-    TYPEMASK_ITEM           = 0x0002,
-    TYPEMASK_CONTAINER      = 0x0006,                       // TYPEMASK_ITEM | 0x0004
-    TYPEMASK_UNIT           = 0x0008,
-    TYPEMASK_PLAYER         = 0x0010,
-    TYPEMASK_GAMEOBJECT     = 0x0020,
-    TYPEMASK_DYNAMICOBJECT  = 0x0040,
-    TYPEMASK_CORPSE         = 0x0080,
-    TYPEMASK_AIGROUP        = 0x0100,
-    TYPEMASK_AREATRIGGER    = 0x0200
-};
-
-enum TypeID
-{
-    TYPEID_OBJECT        = 0,
-    TYPEID_ITEM          = 1,
-    TYPEID_CONTAINER     = 2,
-    TYPEID_UNIT          = 3,
-    TYPEID_PLAYER        = 4,
-    TYPEID_GAMEOBJECT    = 5,
-    TYPEID_DYNAMICOBJECT = 6,
-    TYPEID_CORPSE        = 7,
-    TYPEID_AIGROUP       = 8,
-    TYPEID_AREATRIGGER   = 9
-};
 
 uint32 GuidHigh2TypeId(uint32 guid_hi);
 
@@ -99,6 +70,7 @@ class Player;
 class UpdateMask;
 class InstanceData;
 class GameObject;
+class CreatureAI;
 
 typedef UNORDERED_MAP<Player*, UpdateData> UpdateDataMapType;
 
@@ -148,7 +120,7 @@ class TRINITY_DLL_SPEC Object
         uint32 GetGUIDLow() const { return GUID_LOPART(GetUInt64Value(0)); }
         uint32 GetGUIDMid() const { return GUID_ENPART(GetUInt64Value(0)); }
         uint32 GetGUIDHigh() const { return GUID_HIPART(GetUInt64Value(0)); }
-        const ByteBuffer& GetPackGUID() const { return m_PackGUID; }
+        PackedGuid const& GetPackGUID() const { return m_PackGUID; }
         uint32 GetEntry() const { return GetUInt32Value(OBJECT_FIELD_ENTRY); }
         void SetEntry(uint32 entry) { SetUInt32Value(OBJECT_FIELD_ENTRY, entry); }
 
@@ -325,7 +297,7 @@ class TRINITY_DLL_SPEC Object
         virtual void _SetUpdateBits(UpdateMask *updateMask, Player *target) const;
 
         virtual void _SetCreateBits(UpdateMask *updateMask, Player *target) const;
-        void BuildMovementUpdate(ByteBuffer * data, uint8 flags, uint32 flags2 ) const;
+        void BuildMovementUpdate(ByteBuffer * data, uint8 updateFlags) const;
         void BuildValuesUpdate(uint8 updatetype, ByteBuffer *data, UpdateMask *updateMask, Player *target ) const;
 
         uint16 m_objectType;
@@ -349,7 +321,7 @@ class TRINITY_DLL_SPEC Object
     private:
         bool m_inWorld;
 
-        ByteBuffer m_PackGUID;
+        PackedGuid m_PackGUID;
 
         // for output helpfull error messages from asserts
         bool PrintIndexError(uint32 index, bool set) const;
@@ -359,7 +331,7 @@ class TRINITY_DLL_SPEC Object
 
 struct WorldObjectChangeAccumulator;
 
-class TRINITY_DLL_SPEC WorldObject : public Object
+class TRINITY_DLL_SPEC WorldObject : public Object, public WorldLocation
 {
     friend struct WorldObjectChangeAccumulator;
 
@@ -420,12 +392,16 @@ class TRINITY_DLL_SPEC WorldObject : public Object
             GetNearPoint(obj,x,y,z,obj->GetObjectSize(),distance2d,GetAngle( obj ));
         }
 
+        virtual float GetObjectBoundingRadius() const { return DEFAULT_WORLD_OBJECT_SIZE; }
+
         float GetObjectSize() const
         {
             return ( m_valuesCount > UNIT_FIELD_COMBATREACH ) ? m_floatValues[UNIT_FIELD_COMBATREACH] : DEFAULT_WORLD_OBJECT_SIZE;
         }
         bool IsPositionValid() const;
+
         void UpdateGroundPositionZ(float x, float y, float &z) const;
+        void UpdateAllowedPositionZ(float x, float y, float &z) const;
 
         void GetRandomPoint( float x, float y, float z, float distance, float &rand_x, float &rand_y, float &rand_z ) const;
 
@@ -449,13 +425,49 @@ class TRINITY_DLL_SPEC WorldObject : public Object
         float GetDistanceSq(const float &x, const float &y, const float &z) const;
         float GetDistance2d(const WorldObject* obj) const;
         float GetDistance2d(const float x, const float y) const;
-        bool GetDistanceOrder(WorldObject const* obj1, WorldObject const* obj2, bool is3D /* = true */) const;
+        bool GetDistanceOrder(WorldObject const* obj1, WorldObject const* obj2, bool is3D = true) const;
         float GetExactDistance2d(const float x, const float y) const;
         float GetDistanceZ(const WorldObject* obj) const;
+
+        float GetExactDist2dSq(float x, float y) const
+            { float dx = m_positionX - x; float dy = m_positionY - y; return dx*dx + dy*dy; }
+        float GetExactDist2d(const float x, const float y) const
+            { return sqrt(GetExactDist2dSq(x, y)); }
+        float GetExactDist2dSq(const WorldLocation *pos) const
+            { float dx = m_positionX - pos->x; float dy = m_positionY - pos->y; return dx*dx + dy*dy; }
+        float GetExactDist2d(const WorldLocation *pos) const
+            { return sqrt(GetExactDist2dSq(pos)); }
+        float GetExactDistSq(float x, float y, float z) const
+            { float dz = m_positionZ - z; return GetExactDist2dSq(x, y) + dz*dz; }
+        float GetExactDist(float x, float y, float z) const
+            { return sqrt(GetExactDistSq(x, y, z)); }
+        float GetExactDistSq(const WorldLocation *pos) const
+            { float dx = m_positionX - pos->x; float dy = m_positionY - pos->y; float dz = m_positionZ - pos->z; return dx*dx + dy*dy + dz*dz; }
+        float GetExactDist(const WorldLocation *pos) const
+            { return sqrt(GetExactDistSq(pos)); }
+
         bool IsInMap(const WorldObject* obj) const { return GetMapId()==obj->GetMapId() && GetInstanceId()==obj->GetInstanceId(); }
-        bool IsWithinDistInMap(const WorldObject* obj, const float dist2compare, const bool is3D = true) const;
+
+        bool _IsWithinDist(WorldObject const* obj, float dist2compare, bool is3D) const;
+        bool _IsWithinDist(WorldLocation const* wLoc, float dist2compare, bool is3D) const;
+        bool IsWithinDist(WorldObject const* obj, float dist2compare, bool is3D = true) const
+        {
+            return obj && _IsWithinDist(obj,dist2compare,is3D);
+        }
+        bool IsWithinDistInMap(WorldObject const* obj, float dist2compare, bool is3D = true) const
+        {
+            return obj && IsInMap(obj) && _IsWithinDist(obj,dist2compare,is3D);
+        }
+        bool IsWithinDistInMap(WorldLocation const* wLoc, float dist2compare, bool is3D = true) const
+        {
+            return wLoc && GetMapId() == wLoc->mapid && _IsWithinDist(wLoc,dist2compare,is3D);
+        }
         bool IsWithinLOS(const float x, const float y, const float z ) const;
         bool IsWithinLOSInMap(const WorldObject* obj) const;
+
+        bool IsInRange(WorldObject const* obj, float minRange, float maxRange, bool is3D = true) const;
+        bool IsInRange2d(float x, float y, float minRange, float maxRange) const;
+        bool IsInRange3d(float x, float y, float z, float minRange, float maxRange) const;
 
         float GetAngle( const WorldObject* obj ) const;
         float GetAngle( const float x, const float y ) const;
@@ -474,6 +486,7 @@ class TRINITY_DLL_SPEC WorldObject : public Object
         void MonsterWhisper(const char* text, uint64 receiver, bool IsBossWhisper = false);
         void MonsterSay(int32 textId, uint32 language, uint64 TargetGuid);
         void MonsterYell(int32 textId, uint32 language, uint64 TargetGuid);
+        void MonsterYellToZone(int32 textId, uint32 language, uint64 TargetGuid);
         void MonsterTextEmote(int32 textId, uint64 TargetGuid, bool IsBossEmote = false, bool withoutPrename = false);
         void MonsterWhisper(int32 textId, uint64 receiver, bool IsBossWhisper = false);
         void BuildMonsterChat(WorldPacket *data, uint8 msgtype, char const* text, uint32 language, char const* name, uint64 TargetGuid, bool withoutPrename = false) const;
@@ -506,7 +519,7 @@ class TRINITY_DLL_SPEC WorldObject : public Object
         Creature* SummonCreature(uint32 id, float x, float y, float z, float ang,TempSummonType spwtype,uint32 despwtime);
         GameObject* SummonGameObject(uint32 entry, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime);
         Creature* SummonTrigger(float x, float y, float z, float ang, uint32 dur, CreatureAI* (*GetAI)(Creature*) = NULL);
-        
+
         bool isActiveObject() const { return m_isActive; }
         void setActive(bool isActiveObject);
         void SetWorldObject(bool apply);

@@ -25,26 +25,19 @@
 #include "World.h"
 #include "ObjectAccessor.h"
 #include "CreatureAI.h"
-#include "ObjectDefines.h"
+#include "ObjectGuid.h"
 
 void WorldSession::HandleAttackSwingOpcode( WorldPacket & recv_data )
 {
-    CHECK_PACKET_SIZE(recv_data,8);
-
     uint64 guid;
     recv_data >> guid;
 
     DEBUG_LOG( "WORLD: Recvd CMSG_ATTACKSWING Message guidlow:%u guidhigh:%u", GUID_LOPART(guid), GUID_HIPART(guid) );
 
-    Unit *pEnemy = ObjectAccessor::GetUnit(*_player, guid);
+    Unit *pEnemy = _player->GetMap()->GetUnit(guid);
 
     if(!pEnemy)
     {
-        if(!IS_UNIT_GUID(guid))
-            sLog.outDebug("WORLD: Object %u (TypeID: %u) isn't player, pet or creature",GUID_LOPART(guid),GuidHigh2TypeId(GUID_HIPART(guid)));
-        else
-            sLog.outDebug( "WORLD: Enemy %s %u not found",GetLogNameForGuid(guid),GUID_LOPART(guid));
-
         // stop attack state at client
         SendAttackStop(NULL);
         return;
@@ -74,16 +67,20 @@ void WorldSession::HandleSetSheathedOpcode( WorldPacket & recv_data )
     uint32 sheathed;
     recv_data >> sheathed;
 
-    //sLog.outDebug( "WORLD: Recvd CMSG_SETSHEATHED Message guidlow:%u value1:%u", GetPlayer()->GetGUIDLow(), sheathed );
+    if(sheathed >= MAX_SHEATH_STATE)
+    {
+        sLog.outError("Unknown sheath state %u ??",sheathed);
+        return;
+    }
 
     GetPlayer()->SetSheath(sheathed);
 }
 
 void WorldSession::SendAttackStop(Unit const* enemy)
 {
-    WorldPacket data( SMSG_ATTACKSTOP, (4+20) );            // we guess size
-    data.append(GetPlayer()->GetPackGUID());
-    data.append(enemy ? enemy->GetPackGUID() : 0);          // must be packed guid
+    WorldPacket data(SMSG_ATTACKSTOP, (4+20));            // we guess size
+    data << GetPlayer()->GetPackGUID();
+    data << (enemy ? enemy->GetPackGUID() : PackedGuid());  // must be packed guid
     data << uint32(0);                                      // unk, can be 1 also
     SendPacket(&data);
 }

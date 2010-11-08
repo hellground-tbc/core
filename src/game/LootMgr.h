@@ -224,6 +224,7 @@ struct Loot
 
     std::vector<LootItem> items;
     std::vector<LootItem> quest_items;
+    std::set<uint32> unique_items;
     std::set<uint64> players_allowed_to_loot;           
     uint32 gold;
     uint8 unlootedCount;
@@ -254,6 +255,7 @@ struct Loot
 
         items.clear();
         quest_items.clear();
+        unique_items.clear();
         gold = 0;
         unlootedCount = 0;
         i_LootValidatorRefManager.clearReferences();

@@ -153,6 +153,7 @@ struct CreatureInfo
 {
     uint32  Entry;
     uint32  HeroicEntry;
+    uint32  KillCredit;
     uint32  Modelid_A1;
     uint32  Modelid_A2;
     uint32  Modelid_H1;
@@ -315,6 +316,18 @@ enum InhabitTypeValues
     INHABIT_ANYWHERE = INHABIT_GROUND | INHABIT_WATER | INHABIT_AIR
 };
 
+// Enums used by StringTextData::Type (CreatureEventAI)
+enum ChatType
+{
+    CHAT_TYPE_SAY               = 0,
+    CHAT_TYPE_YELL              = 1,
+    CHAT_TYPE_TEXT_EMOTE        = 2,
+    CHAT_TYPE_BOSS_EMOTE        = 3,
+    CHAT_TYPE_WHISPER           = 4,
+    CHAT_TYPE_BOSS_WHISPER      = 5,
+    CHAT_TYPE_ZONE_YELL         = 6
+};
+
 // GCC have alternative #pragma pack() syntax and old gcc version not support pack(pop), also any gcc version not support it at some platform
 #if defined( __GNUC__ )
 #pragma pack()
@@ -414,6 +427,7 @@ class TRINITY_DLL_SPEC Creature : public Unit
 
         void AddToWorld();
         void RemoveFromWorld();
+        void DisappearAndDie();
 
         bool Create (uint32 guidlow, Map *map, uint32 Entry, uint32 team, const CreatureData *data = NULL);
         bool LoadCreaturesAddon(bool reload = false);
@@ -502,6 +516,9 @@ class TRINITY_DLL_SPEC Creature : public Unit
         uint32 GetCurrentEquipmentId() { return m_equipmentId; }
         float GetSpellDamageMod(int32 Rank);
 
+        void SetSelection(uint64 guid){ SetUInt64Value(UNIT_FIELD_TARGET, guid); }
+        uint64 GetSelection() { return GetUInt64Value(UNIT_FIELD_TARGET); }
+
         VendorItemData const* GetVendorItems() const;
         uint32 GetVendorItemCurrentCount(VendorItem const* vItem);
         uint32 UpdateVendorItemCurrentCount(VendorItem const* vItem, uint32 used_count);
@@ -511,6 +528,7 @@ class TRINITY_DLL_SPEC Creature : public Unit
         CreatureInfo const *GetCreatureInfo() const { return m_creatureInfo; }
         CreatureDataAddon const* GetCreatureAddon() const;
 
+        std::string GetAIName() const;
         std::string GetScriptName();
         uint32 GetScriptId();
 
@@ -573,10 +591,14 @@ class TRINITY_DLL_SPEC Creature : public Unit
         float GetAttackDistance(Unit const* pl) const;
 
         Unit* SelectNearestTarget(float dist = 0) const;
+        void CallForHelp(float fRadius);
         void CallAssistance();
         void SetNoCallAssistance(bool val) { m_AlreadyCallAssistance = val; }
-        bool CanAssistTo(const Unit* u, const Unit* enemy) const;
-        void DoFleeToGetAssistance(float radius = 50);
+        void SetNoSearchAssistance(bool val) { m_AlreadySearchedAssistance = val; }
+        bool HasSearchedAssistance() { return m_AlreadySearchedAssistance; }
+
+        bool CanAssistTo(const Unit* u, const Unit* enemy, bool checkfaction = true) const;
+        void DoFleeToGetAssistance();
 
         MovementGeneratorType GetDefaultMovementType() const { return m_defaultMovementType; }
         void SetDefaultMovementType(MovementGeneratorType mgt) { m_defaultMovementType = mgt; }
@@ -589,6 +611,7 @@ class TRINITY_DLL_SPEC Creature : public Unit
         bool IsVisibleInGridForPlayer(Player const* pl) const;
 
         void RemoveCorpse();
+        void ForcedDespawn(uint32 timeMSToDespawn = 0);
 
         time_t const& GetRespawnTime() const { return m_respawnTime; }
         time_t GetRespawnTimeEx() const;
@@ -607,6 +630,7 @@ class TRINITY_DLL_SPEC Creature : public Unit
         const CreatureData* GetLinkedRespawnCreatureData() const;
 
         void SendZoneUnderAttackMessage(Player* attacker);
+        void SetInCombatWithZone();
 
         bool hasQuest(uint32 quest_id) const;
         bool hasInvolvedQuest(uint32 quest_id)  const;
@@ -650,6 +674,8 @@ class TRINITY_DLL_SPEC Creature : public Unit
         void ResetPlayerDamageReq() { m_PlayerDamageReq = GetHealth() / 2; }
         uint32 m_PlayerDamageReq;
 
+        bool GetIsDeadByDefault() { return m_isDeadByDefault; }
+
     protected:
         bool CreateFromProto(uint32 guidlow,uint32 Entry,uint32 team, const CreatureData *data = NULL);
         bool InitEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data=NULL);
@@ -689,6 +715,8 @@ class TRINITY_DLL_SPEC Creature : public Unit
         uint32 m_equipmentId;
 
         bool m_AlreadyCallAssistance;
+        bool m_AlreadySearchedAssistance;
+
         bool m_regenHealth;
         bool m_isDeadByDefault;
 
@@ -727,6 +755,16 @@ class AssistDelayEvent : public BasicEvent
         uint64            m_victim;
         std::list<uint64> m_assistants;
         Unit&             m_owner;
+};
+
+class ForcedDespawnDelayEvent : public BasicEvent
+{
+    public:
+        ForcedDespawnDelayEvent(Creature& owner) : BasicEvent(), m_owner(owner) { }
+        bool Execute(uint64 e_time, uint32 p_time);
+
+    private:
+        Creature& m_owner;
 };
 
 #endif

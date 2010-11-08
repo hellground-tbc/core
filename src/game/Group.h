@@ -127,19 +127,21 @@ struct InstanceGroupBind
     InstanceGroupBind() : save(NULL), perm(false) {}
 };
 
+struct GroupMemberSlot
+{
+    uint64      guid;
+    std::string name;
+    uint8       group;
+    bool        assistant;
+};
+
 /** request member stats checken **/
 /** todo: uninvite people that not accepted invite **/
 class TRINITY_DLL_SPEC Group
 {
     public:
-        struct MemberSlot
-        {
-            uint64      guid;
-            std::string name;
-            uint8       group;
-            bool        assistant;
-        };
-        typedef std::list<MemberSlot> MemberSlotList;
+
+        typedef std::list<GroupMemberSlot> MemberSlotList;
         typedef MemberSlotList::const_iterator member_citerator;
 
         typedef UNORDERED_MAP< uint32 /*mapId*/, InstanceGroupBind> BoundInstancesMap;
@@ -218,7 +220,7 @@ class TRINITY_DLL_SPEC Group
             return SameSubGroup(guid1,&*mslot2);
         }
 
-        bool SameSubGroup(uint64 guid1, MemberSlot const* slot2) const
+        bool SameSubGroup(uint64 guid1, GroupMemberSlot const* slot2) const
         {
             member_citerator mslot1 = _getMemberCSlot(guid1);
             if(mslot1==m_memberSlots.end() || !slot2)

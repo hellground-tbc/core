@@ -31,7 +31,7 @@ npc_bessy
 EndContentData */
 
 #include "precompiled.h"
-#include "../../npc/npc_escortAI.h"
+#include "escort_ai.h"
 
 /*######
 ## npc_manaforge_control_console
@@ -84,7 +84,7 @@ struct TRINITY_DLL_DECL npc_manaforge_control_consoleAI : public ScriptedAI
         Creature* add = NULL;
     }
 
-    void Aggro(Unit *who) { return; }
+    void EnterCombat(Unit *who) { return; }
 
     /*void SpellHit(Unit *caster, const SpellEntry *spell)
     {
@@ -259,6 +259,7 @@ struct TRINITY_DLL_DECL npc_manaforge_control_consoleAI : public ScriptedAI
                         Player* player = Unit::GetPlayer(someplayer);
                         if(player)
                            player->KilledMonster(m_creature->GetEntry(),m_creature->GetGUID());
+
                         DoCast(m_creature,SPELL_DISABLE_VISUAL);
                     }
                     if( goConsole )
@@ -392,7 +393,7 @@ struct TRINITY_DLL_DECL npc_commander_dawnforgeAI : public ScriptedAI
         isEvent = false;
     }
 
-    void Aggro(Unit *who) { }
+    void EnterCombat(Unit *who) { }
 
     //Select any creature in a grid
     Creature* SelectCreatureInGrid(uint32 entry, float range)
@@ -813,7 +814,7 @@ struct TRINITY_DLL_DECL mob_phase_hunterAI : public ScriptedAI
         ManaBurnTimer = 5000 + (rand()%3 * 1000); // 5-8 sec cd
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if(Player *player = who->GetCharmerOrOwnerPlayerOrPlayerItself())
             PlayerGUID = player->GetGUID();
@@ -909,20 +910,15 @@ struct TRINITY_DLL_DECL npc_bessyAI : public npc_escortAI
 
     npc_bessyAI(Creature *c) : npc_escortAI(c) {}
 
-    bool Completed;
-
     void JustDied(Unit* killer)
     {
-        if (PlayerGUID)
-        {
-            if (Player* player = Unit::GetPlayer(PlayerGUID))
-                player->FailQuest(Q_ALMABTRIEB);
-        }
+        if (Player* pPlayer = GetPlayerForEscort())
+            pPlayer->FailQuest(Q_ALMABTRIEB);
     }
 
     void WaypointReached(uint32 i)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
+        Player* player = GetPlayerForEscort();
 
         if (!player)
             return;
@@ -941,18 +937,21 @@ struct TRINITY_DLL_DECL npc_bessyAI : public npc_escortAI
                 break;
 
             case 12:
+            {
                 if (player)
-                {
                     player->GroupEventHappens(Q_ALMABTRIEB, m_creature);
-                    Completed = true;
-                }
-                {Unit* Thadell = FindCreature(N_THADELL, 30, m_creature);
-                if(Thadell)
-                    DoScriptText(SAY_THADELL_1, m_creature);}break;
+
+                if (Unit* Thadell = FindCreature(N_THADELL, 30, m_creature))
+                    DoScriptText(SAY_THADELL_1, m_creature);
+                break;
+            }
             case 13:
-                {Unit* Thadell = FindCreature(N_THADELL, 30, m_creature);
+            {
+                Unit* Thadell = FindCreature(N_THADELL, 30, m_creature);
                 if(Thadell)
-                    DoScriptText(SAY_THADELL_2, m_creature, player);}break;
+                    DoScriptText(SAY_THADELL_2, m_creature, player);
+            }
+                break;
         }
     }
 
@@ -961,17 +960,11 @@ struct TRINITY_DLL_DECL npc_bessyAI : public npc_escortAI
         summoned->AI()->AttackStart(m_creature);
     }
 
-    void Aggro(Unit* who){}
+    void EnterCombat(Unit* who){}
 
     void Reset()
     {
-        Completed = false;
-        m_creature->setFaction(35);
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-        npc_escortAI::UpdateAI(diff);
+        me->RestoreFaction();
     }
 
 };
@@ -982,7 +975,8 @@ bool QuestAccept_npc_bessy(Player* player, Creature* creature, Quest const* ques
     {
         creature->setFaction(113);
         creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        ((npc_escortAI*)(creature->AI()))->Start(true, true, false, player->GetGUID());
+        if (npc_escortAI* pEscortAI = CAST_AI(npc_bessyAI, creature->AI()))
+            pEscortAI->Start(true, true, player->GetGUID(), quest);
     }
     return true;
 }
@@ -1023,7 +1017,7 @@ struct TRINITY_DLL_DECL mob_talbukAI : public ScriptedAI
         Tagged_Timer = 60000;
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void UpdateAI(const uint32 diff)
     {
@@ -1065,7 +1059,7 @@ struct TRINITY_DLL_DECL npc_withered_corpseAI : public ScriptedAI
         m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, PLAYER_STATE_DEAD);
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void MoveInLineOfSight(Unit* who)
     {
@@ -1164,7 +1158,7 @@ struct TRINITY_DLL_DECL npc_warp_chaserAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void Reset()
     {
@@ -1199,7 +1193,7 @@ struct TRINITY_DLL_DECL mob_epextractionAI : public ScriptedAI
        PowerExtracted = false;
     }
 
-    void Aggro(Unit *who){}
+    void EnterCombat(Unit *who){}
 
     void SpellHit(Unit *caster, const SpellEntry *spell)
     {
@@ -1221,6 +1215,119 @@ CreatureAI* GetAI_mob_epextraction(Creature *_Creature)
 {
     return new mob_epextractionAI (_Creature);
 }
+
+#define BOOM_BOT_TARGET 20392
+#define BOOM_BOT 19692
+
+struct TRINITY_DLL_DECL mob_dr_boomAI : public Scripted_NoMovementAI
+{
+    mob_dr_boomAI(Creature *c) : Scripted_NoMovementAI(c) {}
+
+    std::vector<uint64> targetGUID;
+
+    uint32 SummonTimer;
+
+    void Reset()
+    {
+        SummonTimer = 2000;
+
+        std::list<Creature*> temp = DoFindAllCreaturesWithEntry(BOOM_BOT_TARGET, 30.0f);
+
+        targetGUID.clear();
+
+        for(std::list<Creature*>::iterator it = temp.begin(); it != temp.end(); it++)
+            targetGUID.push_back((*it)->GetGUID());
+    }
+
+    void UpdateAI(const uint32 diff)
+    { 
+        if(SummonTimer <= diff)
+        {
+            if(targetGUID.size())
+            {
+                if(Unit* target = Unit::GetUnit(*m_creature, targetGUID[rand()%targetGUID.size()]))
+                {
+                    if(Unit* bot = DoSpawnCreature(BOOM_BOT, 0, 0, 0, 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 30000))
+                        bot->GetMotionMaster()->MovePoint(0, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
+                }
+            }
+            else
+                Reset();
+
+            SummonTimer = 3000;
+        }
+        else
+            SummonTimer -= diff;
+
+        if(!UpdateVictim())
+            return;
+
+        if(!m_creature->IsWithinDistInMap(m_creature->getVictim(), 30.0f))
+        {
+            EnterEvadeMode();
+            return;
+        }
+
+        if(m_creature->isAttackReady())
+        {
+            DoCast(m_creature->getVictim(), 35276, true);
+            m_creature->resetAttackTimer();
+        }
+    }
+};
+
+CreatureAI* GetAI_mob_dr_boom(Creature *_Creature)
+{
+    return new mob_dr_boomAI (_Creature);
+}
+
+struct TRINITY_DLL_DECL mob_boom_botAI : public ScriptedAI
+{
+    mob_boom_botAI(Creature *c) : ScriptedAI(c) {}
+
+    void Reset()
+    {
+    }
+    
+    void EnterCombat(Unit *who){ return; }
+
+    void MovementInform(uint32 type, uint32 id)
+    {
+        if (type != POINT_MOTION_TYPE)
+            return;
+
+        DoCast(m_creature, 35132, true);    //proper Boom spell
+        m_creature->Kill(m_creature, false);
+        m_creature->RemoveCorpse();
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if(!who->isCharmedOwnedByPlayerOrPlayer())
+            return;
+
+        if(m_creature->IsWithinDistInMap(who, 6.0f, false))
+        {
+            DoCast(m_creature, 35132, true);    //proper Boom spell
+            m_creature->Kill(m_creature, false);
+            m_creature->RemoveCorpse();
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_boom_bot(Creature *_Creature)
+{
+    return new mob_boom_botAI (_Creature);
+}
+
 /*######
 ## AddSC_netherstrom
 ######*/
@@ -1302,6 +1409,16 @@ void AddSC_netherstorm()
     newscript = new Script;
     newscript->Name = "mob_epextraction";
     newscript->GetAI = &GetAI_npc_warp_chaser;
+    newscript->RegisterSelf();
+    newscript = new Script;
+
+    newscript->Name = "mob_dr_boom";
+    newscript->GetAI = &GetAI_mob_dr_boom;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_boom_bot";
+    newscript->GetAI = &GetAI_mob_boom_bot;
     newscript->RegisterSelf();
 }
 

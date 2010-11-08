@@ -157,12 +157,7 @@ struct TRINITY_DLL_DECL boss_high_king_maulgarAI : public ScriptedAI
 
     void KilledUnit()
     {
-        switch(rand()%3)
-        {
-            case 0: DoScriptText(SAY_SLAY1, m_creature); break;
-            case 1: DoScriptText(SAY_SLAY2, m_creature); break;
-            case 2: DoScriptText(SAY_SLAY3, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2, SAY_SLAY3), m_creature);
     }
 
     void JustDied(Unit* Killer)
@@ -174,16 +169,10 @@ struct TRINITY_DLL_DECL boss_high_king_maulgarAI : public ScriptedAI
     }
     void AddDeath()
     {
-        switch(rand()%4)
-        {
-            case 0: DoScriptText(SAY_OGRE_DEATH1, m_creature);break;
-            case 1: DoScriptText(SAY_OGRE_DEATH2, m_creature);break;
-            case 2: DoScriptText(SAY_OGRE_DEATH3, m_creature);break;
-            case 3: DoScriptText(SAY_OGRE_DEATH4, m_creature);break;
-        }
+        DoScriptText(RAND(SAY_OGRE_DEATH1, SAY_OGRE_DEATH2, SAY_OGRE_DEATH3, SAY_OGRE_DEATH4), m_creature);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         StartEvent(who);
     }
@@ -215,7 +204,7 @@ struct TRINITY_DLL_DECL boss_high_king_maulgarAI : public ScriptedAI
     void UpdateAI(const uint32 diff)
     {
         //Only if not incombat check if the event is started
-        if(!InCombat && pInstance && pInstance->GetData(DATA_MAULGAREVENT))
+        if(!m_creature->isInCombat() && pInstance && pInstance->GetData(DATA_MAULGAREVENT))
         {
             if(Unit* target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_MAULGAREVENT_TANK)))
             {
@@ -340,7 +329,7 @@ struct TRINITY_DLL_DECL boss_olm_the_summonerAI : public ScriptedAI
             pInstance->SetData(DATA_MAULGAREVENT, NOT_STARTED);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if(pInstance)
         {
@@ -366,7 +355,7 @@ struct TRINITY_DLL_DECL boss_olm_the_summonerAI : public ScriptedAI
     void UpdateAI(const uint32 diff)
     {
         //Only if not incombat check if the event is started
-        if(!InCombat && pInstance && pInstance->GetData(DATA_MAULGAREVENT))
+        if(!m_creature->isInCombat() && pInstance && pInstance->GetData(DATA_MAULGAREVENT))
         {
             if(Unit* target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_MAULGAREVENT_TANK)))
                 AttackStart(target);
@@ -448,7 +437,7 @@ struct TRINITY_DLL_DECL boss_kiggler_the_crazedAI : public ScriptedAI
             pInstance->SetData(DATA_MAULGAREVENT, NOT_STARTED);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if(pInstance)
         {
@@ -474,7 +463,7 @@ struct TRINITY_DLL_DECL boss_kiggler_the_crazedAI : public ScriptedAI
     void UpdateAI(const uint32 diff)
     {
         //Only if not incombat check if the event is started
-        if(!InCombat && pInstance && pInstance->GetData(DATA_MAULGAREVENT))
+        if(!m_creature->isInCombat() && pInstance && pInstance->GetData(DATA_MAULGAREVENT))
         {
             if(Unit* target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_MAULGAREVENT_TANK)))
                 AttackStart(target);
@@ -563,7 +552,7 @@ struct TRINITY_DLL_DECL boss_blindeye_the_seerAI : public ScriptedAI
             pInstance->SetData(DATA_MAULGAREVENT, NOT_STARTED);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if(pInstance)
         {
@@ -584,10 +573,10 @@ struct TRINITY_DLL_DECL boss_blindeye_the_seerAI : public ScriptedAI
         }
     }
 
-     void UpdateAI(const uint32 diff)
+    void UpdateAI(const uint32 diff)
     {
         //Only if not incombat check if the event is started
-        if(!InCombat && pInstance && pInstance->GetData(DATA_MAULGAREVENT))
+        if(!m_creature->isInCombat() && pInstance && pInstance->GetData(DATA_MAULGAREVENT))
         {
             if(Unit* target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_MAULGAREVENT_TANK)))
                 AttackStart(target);
@@ -654,7 +643,7 @@ struct TRINITY_DLL_DECL boss_krosh_firehandAI : public ScriptedAI
             pInstance->SetData(DATA_MAULGAREVENT, NOT_STARTED);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if(pInstance)
         {
@@ -678,7 +667,7 @@ struct TRINITY_DLL_DECL boss_krosh_firehandAI : public ScriptedAI
     void UpdateAI(const uint32 diff)
     {
         //Only if not incombat check if the event is started
-        if(!InCombat && pInstance && pInstance->GetData(DATA_MAULGAREVENT))
+        if(!m_creature->isInCombat() && pInstance && pInstance->GetData(DATA_MAULGAREVENT))
         {
             if(Unit* target = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_MAULGAREVENT_TANK)))
                 AttackStart(target, false);

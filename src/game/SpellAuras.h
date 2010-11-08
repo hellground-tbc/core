@@ -111,6 +111,7 @@ class TRINITY_DLL_SPEC Aura
         void HandleAuraModRegenInterrupt(bool Apply, bool Real);
         void HandleHaste(bool Apply, bool Real);
         void HandlePeriodicTriggerSpell(bool Apply, bool Real);
+        void HandlePeriodicTriggerSpellWithValue(bool apply, bool Real);
         void HandlePeriodicEnergize(bool Apply, bool Real);
         void HandleAuraModResistanceExclusive(bool Apply, bool Real);
         void HandleModStealth(bool Apply, bool Real);
@@ -164,6 +165,7 @@ class TRINITY_DLL_SPEC Aura
         void HandleModPowerCost(bool Apply, bool Real);
         void HandleFarSight(bool Apply, bool Real);
         void HandleModPossessPet(bool Apply, bool Real);
+        void HandleModStateImmunityMask(bool Apply, bool Real);
         void HandleModMechanicImmunity(bool Apply, bool Real);
         void HandleAuraModSkill(bool Apply, bool Real);
         void HandleModDamagePercentDone(bool Apply, bool Real);
@@ -277,30 +279,36 @@ class TRINITY_DLL_SPEC Aura
         bool IsPermanent() const { return m_permanent; }
         bool IsAreaAura() const { return m_isAreaAura; }
         bool IsPeriodic() const { return m_isPeriodic; }
-        bool IsTrigger() const { return m_isTrigger; }
         bool IsPassive() const { return m_isPassive; }
         bool IsPersistent() const { return m_isPersistent; }
         bool IsDeathPersistent() const { return m_isDeathPersist; }
         bool IsRemovedOnShapeLost() const { return m_isRemovedOnShapeLost; }
         bool IsInUse() const { return m_in_use;}
         bool StackNotByCaster()
-        { 
+        {
             return (GetId() == 22959 ||     // Improved Scorch
                     GetId() == 12579 ||     // Winter's Chill
                     GetId() == 15258 ||     // Shadow Weaving
                     GetId() == 25225 ||     // Sunder Armor
                     GetId() == 36478 ||     // Magic Disruption
-                    GetId() == 36482        // Armor Disruption
+                    GetId() == 36482 ||     // Armor Disruption
+                    GetId() == 27189
                     );
         }
 
         bool DiffPerCaster()
-        { 
-            if( this->GetSpellProto()->SpellFamilyFlags & 0x800000LL && this->GetSpellProto()->SpellIconID == 548 ) // Mind Flay
+        {
+            if(GetSpellProto()->SpellFamilyName == SPELLFAMILY_PRIEST && GetSpellProto()->SpellFamilyFlags & 0x800000LL) // Mind Flay
                 return true;
 
-            if( this->GetSpellProto()->SpellFamilyFlags & 0x40000000000LL ) // Vampiric Touch
-                return false;
+            if(GetSpellProto()->Id == 34456) // Ferocious Inspiration
+                return true;
+
+            if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_PRIEST && GetSpellProto()->SpellFamilyFlags & 0x40000000000LL) // Vampiric Touch
+                return true;
+    
+            if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_SHAMAN && this->GetSpellProto()->SpellIconID == 1677 ) // Grounding Totem
+                return true;
 
             return false;
         }
@@ -315,6 +323,7 @@ class TRINITY_DLL_SPEC Aura
         void _RemoveAura();
 
         void TriggerSpell();
+        void TriggerSpellWithValue();
 
         bool IsUpdated() { return m_updated; }
         void SetUpdated(bool val) { m_updated = val; }
@@ -366,7 +375,6 @@ class TRINITY_DLL_SPEC Aura
         bool m_positive:1;
         bool m_permanent:1;
         bool m_isPeriodic:1;
-        bool m_isTrigger:1;
         bool m_isAreaAura:1;
         bool m_isPassive:1;
         bool m_isPersistent:1;

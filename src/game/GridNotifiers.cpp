@@ -39,6 +39,11 @@ VisibleChangesNotifier::Visit(PlayerMapType &m)
             continue;
 
         iter->getSource()->UpdateVisibilityOf(&i_object);
+
+
+        if(!iter->getSource()->GetSharedVisionList().empty())
+            for(SharedVisionList::const_iterator i = iter->getSource()->GetSharedVisionList().begin(); i != iter->getSource()->GetSharedVisionList().end(); ++i)
+                (*i)->UpdateVisibilityOf(&i_object);
     }
 }
 
@@ -86,7 +91,7 @@ PlayerVisibilityNotifier::Notify()
             if(!IS_PLAYER_GUID(*iter))
                 continue;
 
-            Player* plr = ObjectAccessor::GetPlayer(i_player,*iter);
+            Player* plr = ObjectAccessor::GetPlayer(*iter);
             if(plr)
                 plr->UpdateVisibilityOf(&i_player);
         }
@@ -205,9 +210,6 @@ ObjectUpdater::Visit(GridRefManager<T> &m)
     }
 }
 
-template void ObjectUpdater::Visit<GameObject>(GameObjectMapType &);
-template void ObjectUpdater::Visit<DynamicObject>(DynamicObjectMapType &);
-
 bool CannibalizeObjectCheck::operator()(Corpse* u)
 {
     // ignore bones
@@ -224,4 +226,7 @@ bool CannibalizeObjectCheck::operator()(Corpse* u)
 
     return false;
 }
+
+template void ObjectUpdater::Visit<GameObject>(GameObjectMapType &);
+template void ObjectUpdater::Visit<DynamicObject>(DynamicObjectMapType &);
 

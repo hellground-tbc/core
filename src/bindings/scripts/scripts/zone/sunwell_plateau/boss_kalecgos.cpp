@@ -141,7 +141,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
 
         m_creature->setFaction(14);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE + UNIT_FLAG_NOT_SELECTABLE);
-        m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
+        m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
         m_creature->SetVisibility(VISIBILITY_ON);
         m_creature->SetStandState(PLAYER_STATE_SLEEP);
 
@@ -165,12 +165,15 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             damage = 0;
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         m_creature->SetStandState(PLAYER_STATE_NONE);
         DoScriptText(SAY_EVIL_AGGRO, m_creature);
+
         GameObject *Door = GameObject::GetGameObject(*m_creature, DoorGUID);
-        if(Door) Door->SetLootState(GO_ACTIVATED);
+        if(Door)
+            Door->SetLootState(GO_ACTIVATED);
+
         DoZoneInCombat();
 
         if(pInstance)
@@ -179,16 +182,19 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
 
     void KilledUnit(Unit *victim)
     {
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(SAY_EVIL_SLAY1, m_creature); break;
-        case 1: DoScriptText(SAY_EVIL_SLAY2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_EVIL_SLAY1, SAY_EVIL_SLAY2), m_creature);
     }
 
     void MovementInform(uint32 type,uint32 id)
     {
+        if(type != POINT_MOTION_TYPE)
+            return;
+
+        if(id != 1)
+            return;
+
         m_creature->SetVisibility(VISIBILITY_OFF);
+
         if(isFriendly)
             m_creature->setDeathState(JUST_DIED);
         else
@@ -211,7 +217,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             TalkTimer = 10000;
             break;
         case 3:
-            m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
+            m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
             m_creature->GetMotionMaster()->Clear();
             m_creature->GetMotionMaster()->MovePoint(0,FLY_X,FLY_Y,FLY_Z);
             TalkTimer = 600000;
@@ -230,7 +236,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             TalkTimer = 3000;
             break;
         case 2:
-            m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
+            m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
             m_creature->GetMotionMaster()->Clear();
             m_creature->GetMotionMaster()->MovePoint(0,FLY_X,FLY_Y,FLY_Z);
             TalkTimer = 600000;
@@ -289,11 +295,11 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
         isEnraged = false;
         isBanished = false;
 
-        if(pInstance)
+        if(pInstance && pInstance->GetData(DATA_KALECGOS_EVENT) != DONE)
             pInstance->SetData(DATA_KALECGOS_EVENT, NOT_STARTED);
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         Creature *Kalec = m_creature->SummonCreature(MOB_KALEC, m_creature->GetPositionX() + 10, m_creature->GetPositionY() + 5, m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 0);
         if(Kalec)
@@ -324,11 +330,8 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
             EnterEvadeMode();
             return;
         }
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(SAY_SATH_SLAY1, m_creature); break;
-        case 1: DoScriptText(SAY_SATH_SLAY2, m_creature); break;
-        }
+
+        DoScriptText(RAND(SAY_SATH_SLAY1, SAY_SATH_SLAY2), m_creature);
     }
 
     void JustDied(Unit *killer)
@@ -408,7 +411,7 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
             {
                 for(std::list<HostilReference*>::iterator itr = m_creature->getThreatManager().getThreatList().begin(); itr != m_creature->getThreatManager().getThreatList().end(); ++itr)
                 {
-                    if(((*itr)->getUnitGuid()) ==  (m_creature->getVictim()->GetGUID()))
+                    if(((*itr)->getUnitGuid()) ==  (m_creature->getVictimGUID()))
                     {
                         (*itr)->removeReference();
                         break;
@@ -473,8 +476,6 @@ struct TRINITY_DLL_DECL boss_kalecAI : public ScriptedAI
 
         isEnraged = false;
     }
-
-    void Aggro(Unit* who) {}
 
     void DamageTaken(Unit *done_by, uint32 &damage)
     {

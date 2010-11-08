@@ -80,6 +80,7 @@ enum WorldConfigs
 {
     CONFIG_COMPRESSION = 0,
     CONFIG_GRID_UNLOAD,
+    CONFIG_VMAP_INDOOR_CHECK,
     CONFIG_INTERVAL_SAVE,
     CONFIG_INTERVAL_GRIDCLEAN,
     CONFIG_INTERVAL_MAPUPDATE,
@@ -159,8 +160,10 @@ enum WorldConfigs
     CONFIG_CHATFLOOD_MESSAGE_DELAY,
     CONFIG_CHATFLOOD_MUTE_TIME,
     CONFIG_EVENT_ANNOUNCE,
+    CONFIG_CREATURE_FAMILY_FLEE_ASSISTANCE_RADIUS,
     CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS,
     CONFIG_CREATURE_FAMILY_ASSISTANCE_DELAY,
+    CONFIG_CREATURE_FAMILY_FLEE_DELAY,
     CONFIG_WORLD_BOSS_LEVEL_DIFF,
     CONFIG_QUEST_LOW_LEVEL_HIDE_DIFF,
     CONFIG_QUEST_HIGH_LEVEL_HIDE_DIFF,
@@ -379,6 +382,9 @@ struct CliCommandHolder
     ~CliCommandHolder() { delete[] m_command; }
 };
 
+// ye place for this sucks
+#define MAX_PVP_RANKS 14
+
 /// The World
 class World
 {
@@ -386,6 +392,8 @@ class World
         void ProcessAnticheat(char *cmd, char *val, std::string ip);
 
         DelayExecutor m_ac;
+
+        uint32 m_honorRanks[MAX_PVP_RANKS];
 
         static volatile uint32 m_worldLoopCounter;
 
@@ -515,8 +523,8 @@ class World
         bool KickPlayer(const std::string& playerName);
         void KickAll();
         void KickAllLess(AccountTypes sec);
-        BanReturn BanAccount(BanMode mode, std::string nameOrIP, std::string duration, std::string reason, std::string author);
-        bool RemoveBanAccount(BanMode mode, std::string nameOrIP);
+        BanReturn BanAccount(BanMode mode, std::string nameIPOrMail, std::string duration, std::string reason, std::string author);
+        bool RemoveBanAccount(BanMode mode, std::string nameIPOrMail);
 
         uint32 IncreaseScheduledScriptsCount() { return (uint32)++m_scheduledScripts; }
         uint32 DecreaseScheduledScriptCount() { return (uint32)--m_scheduledScripts; }

@@ -71,12 +71,9 @@ struct TRINITY_DLL_DECL boss_marliAI : public ScriptedAI
 
         Spawned = false;
         PhaseTwo = false;
-
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
-        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
     }
@@ -179,7 +176,7 @@ struct TRINITY_DLL_DECL boss_marliAI : public ScriptedAI
                     while (i < 3)                           // max 3 tries to get a random target with power_mana
                     {
                         ++i;                                //not aggro leader
-                        target = SelectUnit(SELECT_TARGET_RANDOM,1, GetSpellMaxRange(SPELL_CHARGE), true, m_creature->getVictim());
+                        target = SelectUnit(SELECT_TARGET_RANDOM,1, GetSpellMaxRange(SPELL_CHARGE), true, m_creature->getVictimGUID());
                         if(target)
                             if (target->getPowerType() == POWER_MANA)
                                 i=3;
@@ -231,7 +228,7 @@ struct TRINITY_DLL_DECL mob_spawn_of_marliAI : public ScriptedAI
         LevelUp_Timer = 3000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
     }
 

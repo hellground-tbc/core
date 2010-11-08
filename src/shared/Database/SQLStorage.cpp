@@ -23,8 +23,8 @@
 
 extern Database WorldDatabase;
 
-const char CreatureInfosrcfmt[]="iiiiiisssiiiiiiiiiiffiffiiiiiiiiiiiffiiiiiiiiiiiiiiiiiiiisiilliiis";
-const char CreatureInfodstfmt[]="iiiiiisssiiiiiiiiiiffiffiiiiiiiiiiiffiiiiiiiiiiiiiiiiiiiisiilliiii";
+const char CreatureInfosrcfmt[]="iiiiiiisssiiiiiiiiiiffiffiiiiiiiiiiiffiiiiiiiiiiiiiiiiiiiisiilliiis";
+const char CreatureInfodstfmt[]="iiiiiiisssiiiiiiiiiiffiffiiiiiiiiiiiffiiiiiiiiiiiiiiiiiiiisiilliiii";
 const char CreatureDataAddonInfofmt[]="iiiiiiiis";
 const char CreatureModelfmt[]="iffbi";
 const char CreatureInfoAddonInfofmt[]="iiiiiiiis";

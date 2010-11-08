@@ -747,7 +747,7 @@ void AuctionHouseBot::addNewAuctionBuyerBotBid(Player *AHBplayer, AHBConfig *con
         }
     }
 }
-
+/*
 void AuctionHouseBot::Update()
 {
     time_t _newrun = time(NULL);
@@ -790,7 +790,7 @@ void AuctionHouseBot::Update()
         _lastrun_n = _newrun;
     }
     ObjectAccessor::Instance().RemoveObject(&_AHBplayer);
-}
+}*/
 
 void AuctionHouseBot::Initialize()
 {

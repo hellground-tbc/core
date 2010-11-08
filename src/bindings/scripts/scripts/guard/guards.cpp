@@ -2513,7 +2513,7 @@ struct TRINITY_DLL_DECL guard_shattrath_aldorAI : public guardAI
         CanTeleport = false;
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void UpdateAI(const uint32 diff)
     {
@@ -2532,20 +2532,25 @@ struct TRINITY_DLL_DECL guard_shattrath_aldorAI : public guardAI
                 playerGUID = 0;
                 Exile_Timer = 8500;
                 CanTeleport = false;
-            }else Exile_Timer -= diff;
-        }
-        else if( Banish_Timer < diff )
-        {
-            Unit* temp = m_creature->getVictim();
-            if( temp && temp->GetTypeId() == TYPEID_PLAYER )
-            {
-                DoCast(temp,SPELL_BANISHED_SHATTRATH_A);
-                Banish_Timer = 9000;
-                playerGUID = temp->GetGUID();
-                if( playerGUID )
-                    CanTeleport = true;
             }
-        }else Banish_Timer -= diff;
+            else
+                Exile_Timer -= diff;
+        }
+        else
+            if( Banish_Timer < diff )
+            {
+                Unit* temp = m_creature->getVictim();
+                if( temp && temp->GetTypeId() == TYPEID_PLAYER )
+                {
+                    DoCast(temp,SPELL_BANISHED_SHATTRATH_A);
+                    Banish_Timer = 9000;
+                    playerGUID = temp->GetGUID();
+                    if( playerGUID )
+                        CanTeleport = true;
+                }
+            }
+            else
+                Banish_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }
@@ -2709,7 +2714,7 @@ struct TRINITY_DLL_DECL guard_shattrath_scryerAI : public guardAI
         CanTeleport = false;
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void UpdateAI(const uint32 diff)
     {
@@ -2728,20 +2733,25 @@ struct TRINITY_DLL_DECL guard_shattrath_scryerAI : public guardAI
                 playerGUID = 0;
                 Exile_Timer = 8500;
                 CanTeleport = false;
-            }else Exile_Timer -= diff;
-        }
-        else if( Banish_Timer < diff )
-        {
-            Unit* temp = m_creature->getVictim();
-            if( temp && temp->GetTypeId() == TYPEID_PLAYER )
-            {
-                DoCast(temp,SPELL_BANISHED_SHATTRATH_S);
-                Banish_Timer = 9000;
-                playerGUID = temp->GetGUID();
-                if( playerGUID )
-                    CanTeleport = true;
             }
-        }else Banish_Timer -= diff;
+            else
+                Exile_Timer -= diff;
+        }
+        else
+            if( Banish_Timer < diff )
+            {
+                Unit* temp = m_creature->getVictim();
+                if( temp && temp->GetTypeId() == TYPEID_PLAYER )
+                {
+                    DoCast(temp,SPELL_BANISHED_SHATTRATH_S);
+                    Banish_Timer = 9000;
+                    playerGUID = temp->GetGUID();
+                    if( playerGUID )
+                        CanTeleport = true;
+                }
+            }
+            else
+                Banish_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }

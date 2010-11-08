@@ -130,7 +130,7 @@ struct TRINITY_DLL_DECL boss_dorotheeAI : public ScriptedAI
         TitoDied = false;
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         DoScriptText(SAY_DOROTHEE_AGGRO, m_creature);
     }
@@ -159,6 +159,17 @@ struct TRINITY_DLL_DECL boss_dorotheeAI : public ScriptedAI
             return;
 
         ScriptedAI::MoveInLineOfSight(who);
+    }
+
+    void EnterEvadeMode()
+    {
+        ScriptedAI::EnterEvadeMode();
+
+        if(pInstance)
+            pInstance->SetData(DATA_OPERA_EVENT, NOT_STARTED);
+
+        me->Kill(me, false);
+        me->RemoveCorpse();
     }
 
     void UpdateAI(const uint32 diff)
@@ -212,8 +223,6 @@ struct TRINITY_DLL_DECL mob_titoAI : public ScriptedAI
 
         YipTimer = 10000;
     }
-
-    void Aggro(Unit* who) {}
 
     void JustDied(Unit* killer)
     {
@@ -284,6 +293,17 @@ struct TRINITY_DLL_DECL boss_strawmanAI : public ScriptedAI
         ScriptedAI::AttackStart(who);
     }
 
+    void EnterEvadeMode()
+    {
+        ScriptedAI::EnterEvadeMode();
+
+        if(pInstance)
+            pInstance->SetData(DATA_OPERA_EVENT, NOT_STARTED);
+
+        me->Kill(me, false);
+        me->RemoveCorpse();
+    }
+
     void MoveInLineOfSight(Unit* who)
     {
         if(m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
@@ -292,7 +312,7 @@ struct TRINITY_DLL_DECL boss_strawmanAI : public ScriptedAI
         ScriptedAI::MoveInLineOfSight(who);
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         DoScriptText(SAY_STRAWMAN_AGGRO, m_creature);
     }
@@ -370,7 +390,18 @@ struct TRINITY_DLL_DECL boss_tinheadAI : public ScriptedAI
         RustCount   = 0;
     }
 
-    void Aggro(Unit* who)
+    void EnterEvadeMode()
+    {
+        ScriptedAI::EnterEvadeMode();
+
+        if(pInstance)
+            pInstance->SetData(DATA_OPERA_EVENT, NOT_STARTED);
+
+        me->Kill(me, false);
+        me->RemoveCorpse();
+    }
+
+    void EnterCombat(Unit* who)
     {
         DoScriptText(SAY_TINHEAD_AGGRO, m_creature);
     }
@@ -469,6 +500,17 @@ struct TRINITY_DLL_DECL boss_roarAI : public ScriptedAI
         ScriptedAI::MoveInLineOfSight(who);
     }
 
+    void EnterEvadeMode()
+    {
+        ScriptedAI::EnterEvadeMode();
+
+        if(pInstance)
+            pInstance->SetData(DATA_OPERA_EVENT, NOT_STARTED);
+
+        me->Kill(me, false);
+        me->RemoveCorpse();
+    }
+
     void AttackStart(Unit* who)
     {
         if(m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
@@ -477,7 +519,7 @@ struct TRINITY_DLL_DECL boss_roarAI : public ScriptedAI
         ScriptedAI::AttackStart(who);
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         DoScriptText(SAY_ROAR_AGGRO, m_creature);
     }
@@ -503,7 +545,9 @@ struct TRINITY_DLL_DECL boss_roarAI : public ScriptedAI
             {
                 m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 AggroTimer = 0;
-            }else AggroTimer -= diff;
+            }
+            else
+                AggroTimer -= diff;
         }
 
         if(!UpdateVictim())
@@ -549,15 +593,23 @@ struct TRINITY_DLL_DECL boss_croneAI : public ScriptedAI
         ChainLightningTimer = 10000;
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(SAY_CRONE_AGGRO, m_creature); break;
-        case 1: DoScriptText(SAY_CRONE_AGGRO2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_CRONE_AGGRO, SAY_CRONE_AGGRO2), m_creature);
+
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
+    }
+
+    void EnterEvadeMode()
+    {
+        ScriptedAI::EnterEvadeMode();
+
+        if(pInstance)
+            pInstance->SetData(DATA_OPERA_EVENT, NOT_STARTED);
+
+        me->Kill(me, false);
+        me->RemoveCorpse();
     }
 
     void JustDied(Unit* killer)
@@ -565,14 +617,7 @@ struct TRINITY_DLL_DECL boss_croneAI : public ScriptedAI
         DoScriptText(SAY_CRONE_DEATH, m_creature);
 
         if(pInstance)
-        {
             pInstance->SetData(DATA_OPERA_EVENT, DONE);
-
-            if (GameObject* lDoor = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_STAGEDOORLEFT)))
-                lDoor->SetGoState(0);
-            if (GameObject* rDoor = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_STAGEDOORRIGHT)))
-                rDoor->SetGoState(0);
-        }
     }
 
     void UpdateAI(const uint32 diff)
@@ -612,7 +657,6 @@ struct TRINITY_DLL_DECL mob_cycloneAI : public ScriptedAI
         MoveTimer = 1000;
     }
 
-    void Aggro(Unit* who) {}
 
     void MoveInLineOfSight(Unit* who)
     {
@@ -748,7 +792,18 @@ struct TRINITY_DLL_DECL boss_bigbadwolfAI : public ScriptedAI
         IsChasing = false;
     }
 
-    void Aggro(Unit* who)
+    void EnterEvadeMode()
+    {
+        ScriptedAI::EnterEvadeMode();
+
+        if(pInstance)
+            pInstance->SetData(DATA_OPERA_EVENT, NOT_STARTED);
+
+        me->Kill(me, false);
+        me->RemoveCorpse();
+    }
+
+    void EnterCombat(Unit* who)
     {
         DoScriptText(SAY_WOLF_AGGRO, m_creature);
     }
@@ -758,14 +813,7 @@ struct TRINITY_DLL_DECL boss_bigbadwolfAI : public ScriptedAI
         DoPlaySoundToSet(m_creature, SOUND_WOLF_DEATH);
 
         if(pInstance)
-        {
             pInstance->SetData(DATA_OPERA_EVENT, DONE);
-
-            if (GameObject* lDoor = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_STAGEDOORLEFT)))
-                lDoor->SetGoState(0);
-            if (GameObject* rDoor = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_STAGEDOORRIGHT)))
-                rDoor->SetGoState(0);
-        }
     }
 
     void UpdateAI(const uint32 diff)
@@ -904,13 +952,14 @@ void Resurrect(Creature* target)
     target->SetHealth(target->GetMaxHealth());
     target->SetUInt32Value(UNIT_FIELD_BYTES_1, PLAYER_STATE_NONE);
     target->CastSpell(target, SPELL_RES_VISUAL, true);
-    
+
     if(target->getVictim())
     {
         target->GetMotionMaster()->MoveChase(target->getVictim());
         target->AI()->AttackStart(target->getVictim());
     }
-    else target->GetMotionMaster()->Initialize();
+    else
+        target->GetMotionMaster()->Initialize();
 };
 
 struct TRINITY_DLL_DECL boss_julianneAI : public ScriptedAI
@@ -926,7 +975,7 @@ struct TRINITY_DLL_DECL boss_julianneAI : public ScriptedAI
 
     uint32 EntryYellTimer;
     uint32 AggroYellTimer;
-    
+
     uint32 Phase;
     uint64 RomuloGUID;
     uint32 BlindingPassionTimer;
@@ -937,7 +986,7 @@ struct TRINITY_DLL_DECL boss_julianneAI : public ScriptedAI
     uint32 ResurrectTimer;
     uint32 DrinkPoisonTimer;
     uint32 ResurrectSelfTimer;
-    
+
     bool IsFakingDeath;
     bool SummonedRomulo;
     bool RomuloDead;
@@ -964,7 +1013,7 @@ struct TRINITY_DLL_DECL boss_julianneAI : public ScriptedAI
         ResurrectTimer = 10000;
         DrinkPoisonTimer = 0;
         ResurrectSelfTimer = 0;
-        
+
         if(IsFakingDeath)
             Resurrect(m_creature);
 
@@ -972,8 +1021,6 @@ struct TRINITY_DLL_DECL boss_julianneAI : public ScriptedAI
         SummonedRomulo = false;
         RomuloDead = false;
     }
-
-    void Aggro(Unit* who) {}
 
     void AttackStart(Unit* who)
     {
@@ -983,6 +1030,17 @@ struct TRINITY_DLL_DECL boss_julianneAI : public ScriptedAI
         ScriptedAI::AttackStart(who);
     }
 
+    void EnterEvadeMode()
+    {
+        ScriptedAI::EnterEvadeMode();
+
+        if(pInstance)
+            pInstance->SetData(DATA_OPERA_EVENT, NOT_STARTED);
+
+        me->Kill(me, false);
+        me->RemoveCorpse();
+    }
+
     void MoveInLineOfSight(Unit* who)
     {
         if(m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
@@ -990,7 +1048,7 @@ struct TRINITY_DLL_DECL boss_julianneAI : public ScriptedAI
 
         ScriptedAI::MoveInLineOfSight(who);
     }
-    
+
     void SpellHit(Unit* caster, const SpellEntry *Spell)
     {
         if (Spell->Id == SPELL_DRINK_POISON)
@@ -999,7 +1057,7 @@ struct TRINITY_DLL_DECL boss_julianneAI : public ScriptedAI
             DrinkPoisonTimer = 2500;
         }
     }
-    
+
     void DamageTaken(Unit* done_by, uint32 &damage);
 
     void JustDied(Unit* killer)
@@ -1007,12 +1065,7 @@ struct TRINITY_DLL_DECL boss_julianneAI : public ScriptedAI
         DoScriptText(SAY_JULIANNE_DEATH02, m_creature);
 
         if(pInstance)
-        {
             pInstance->SetData(DATA_OPERA_EVENT, DONE);
-            GameObject* Door = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_STAGEDOORRIGHT));
-            if(Door)
-                Door->UseDoorOrButton();
-        }
     }
 
     void KilledUnit(Unit* victim)
@@ -1031,9 +1084,9 @@ struct TRINITY_DLL_DECL boss_romuloAI : public ScriptedAI
         EntryYellTimer = 8000;
         AggroYellTimer = 15000;
     }
-    
+
     ScriptedInstance* pInstance;
-    
+
     uint64 JulianneGUID;
 
     uint32 Phase;
@@ -1060,14 +1113,25 @@ struct TRINITY_DLL_DECL boss_romuloAI : public ScriptedAI
         DeadlySwatheTimer = 25000;
         PoisonThrustTimer = 10000;
         ResurrectTimer = 10000;
-        
+
         IsFakingDeath = false;
         JulianneDead = false;
     }
 
     void DamageTaken(Unit* done_by, uint32 &damage);
 
-    void Aggro(Unit* who)
+    void EnterEvadeMode()
+    {
+        ScriptedAI::EnterEvadeMode();
+
+        if(pInstance)
+            pInstance->SetData(DATA_OPERA_EVENT, NOT_STARTED);
+
+        me->Kill(me, false);
+        me->RemoveCorpse();
+    }
+
+    void EnterCombat(Unit* who)
     {
         DoScriptText(SAY_ROMULO_AGGRO, m_creature);
         if(JulianneGUID)
@@ -1091,16 +1155,9 @@ struct TRINITY_DLL_DECL boss_romuloAI : public ScriptedAI
     void JustDied(Unit* killer)
     {
         DoScriptText(SAY_ROMULO_DEATH, m_creature);
-        
-        if (pInstance)
-        {
-            pInstance->SetData(DATA_OPERA_EVENT, DONE);
 
-            if (GameObject* lDoor = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_STAGEDOORLEFT)))
-                lDoor->SetGoState(0);
-            if (GameObject* rDoor = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_STAGEDOORRIGHT)))
-                rDoor->SetGoState(0);
-        }
+        if (pInstance)
+            pInstance->SetData(DATA_OPERA_EVENT, DONE);
     }
 
     void KilledUnit(Unit* victim)
@@ -1119,7 +1176,7 @@ void boss_julianneAI::DamageTaken(Unit* done_by, uint32 &damage)
     if(Phase == PHASE_JULIANNE)
     {
         damage = 0;
-        
+
         if (IsFakingDeath)
             return;
 
@@ -1266,13 +1323,13 @@ void boss_julianneAI::UpdateAI(const uint32 diff)
                 ((boss_romuloAI*)Romulo->AI())->JulianneGUID = m_creature->GetGUID();
                 ((boss_romuloAI*)Romulo->AI())->Phase = PHASE_ROMULO;
                 Romulo->setFaction(16);
- 
+
                 if(m_creature->getVictim())
                 {
                     Romulo->AddThreat(m_creature->getVictim(), 0.0f);
                 }
 
-                DoZoneInCombat(Romulo);
+                Romulo->AI()->DoZoneInCombat();
             }
             SummonedRomulo = true;
         }else SummonRomuloTimer -= diff;
@@ -1370,7 +1427,7 @@ void boss_romuloAI::UpdateAI(const uint32 diff)
 
     if(BackwardLungeTimer < diff)
     {
-        Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, 200, true, m_creature->getVictim());
+        Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, 200, true, m_creature->getVictimGUID());
         if(target && !m_creature->HasInArc(M_PI, target))
         {
             DoCast(target, SPELL_BACKWARD_LUNGE);

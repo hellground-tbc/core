@@ -22,6 +22,7 @@ SDCategory: Temple of Ahn'Qiraj
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_temple_of_ahnqiraj.h"
 
 #define SAY_AGGRO                   -1531008
 #define SAY_SLAY                    -1531009
@@ -38,7 +39,12 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_sarturaAI : public ScriptedAI
 {
-    boss_sarturaAI(Creature *c) : ScriptedAI(c) {}
+    boss_sarturaAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+    }
+
+    ScriptedInstance *pInstance;
 
     uint32 WhirlWind_Timer;
     uint32 WhirlWindRandom_Timer;
@@ -66,16 +72,23 @@ struct TRINITY_DLL_DECL boss_sarturaAI : public ScriptedAI
         Enraged = false;
         EnragedHard = false;
 
+        if (pInstance)
+            pInstance->SetData(DATA_BATTLEGUARD_SARTURA, NOT_STARTED);
+
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
+        if (pInstance)
+            pInstance->SetData(DATA_BATTLEGUARD_SARTURA, IN_PROGRESS);
     }
 
      void JustDied(Unit* Killer)
      {
          DoScriptText(SAY_DEATH, m_creature);
+         if (pInstance)
+            pInstance->SetData(DATA_BATTLEGUARD_SARTURA, DONE);
      }
 
      void KilledUnit(Unit* victim)
@@ -94,7 +107,7 @@ struct TRINITY_DLL_DECL boss_sarturaAI : public ScriptedAI
             if (WhirlWindRandom_Timer < diff)
             {
                 //Attack random Gamers
-                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1, 200, true, m_creature->getVictim()))
+                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1, 200, true, m_creature->getVictimGUID()))
                     AttackStart(target);
 
                 WhirlWindRandom_Timer = 3000 + rand()%4000;
@@ -119,7 +132,7 @@ struct TRINITY_DLL_DECL boss_sarturaAI : public ScriptedAI
             if (AggroReset_Timer < diff)
             {
                 //Attack random Gamers
-                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1, 200, true, m_creature->getVictim()))
+                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1, 200, true, m_creature->getVictimGUID()))
                     m_creature->TauntApply(target);
 
                     AggroReset = true;
@@ -188,7 +201,7 @@ struct TRINITY_DLL_DECL mob_sartura_royal_guardAI : public ScriptedAI
         AggroReset = false;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
     }
 
@@ -211,7 +224,7 @@ struct TRINITY_DLL_DECL mob_sartura_royal_guardAI : public ScriptedAI
             if (WhirlWindRandom_Timer < diff)
             {
                 //Attack random Gamers
-                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1, 200, true, m_creature->getVictim()))
+                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1, 200, true, m_creature->getVictimGUID()))
                     m_creature->TauntApply(target);
 
                 WhirlWindRandom_Timer = 3000 + rand()%4000;
@@ -228,7 +241,7 @@ struct TRINITY_DLL_DECL mob_sartura_royal_guardAI : public ScriptedAI
             if (AggroReset_Timer < diff)
             {
                 //Attack random Gamers
-                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1, 200, true, m_creature->getVictim()))
+                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1, 200, true, m_creature->getVictimGUID()))
                     AttackStart(target);
 
                 AggroReset = true;

@@ -22,6 +22,7 @@ SDCategory: Naxxramas
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_naxxramas.h"
 
 #define SAY_AGGRO1          "You are mine now!"
 #define SAY_AGGRO2          "I see you!"
@@ -64,7 +65,12 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_loathebAI : public ScriptedAI
 {
-    boss_loathebAI(Creature *c) : ScriptedAI(c) {}
+    boss_loathebAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
+
+    ScriptedInstance * pInstance;
 
     uint32 CorruptedMind_Timer;
     uint32 PoisonAura_Timer;
@@ -81,9 +87,12 @@ struct TRINITY_DLL_DECL boss_loathebAI : public ScriptedAI
         InevitableDoom5mins_Timer = 300000;
         RemoveCurse_Timer = 30000;
         Summon_Timer = 8000;
+
+        if (pInstance)
+            pInstance->SetData(DATA_LOATHEB, NOT_STARTED);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         switch (rand()%3)
         {
@@ -100,6 +109,9 @@ struct TRINITY_DLL_DECL boss_loathebAI : public ScriptedAI
                 DoPlaySoundToSet(m_creature,SOUND_AGGRO3);
                 break;
         }
+
+        if (pInstance)
+            pInstance->SetData(DATA_LOATHEB, IN_PROGRESS);
     }
 
     void KilledUnit(Unit* victim)
@@ -137,6 +149,8 @@ struct TRINITY_DLL_DECL boss_loathebAI : public ScriptedAI
     {
         DoYell(SAY_DEATH,LANG_UNIVERSAL,NULL);
         DoPlaySoundToSet(m_creature,SOUND_DEATH);
+        if (pInstance)
+            pInstance->SetData(DATA_LOATHEB, DONE);
     }
 
     void UpdateAI(const uint32 diff)

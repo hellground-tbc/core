@@ -20,6 +20,8 @@
 #define OUTDOOR_PVP_H_
 
 #include "Util.h"
+#include "Map.h"
+#include "MapManager.h"
 
 #include <map>
 #include <set>
@@ -116,6 +118,20 @@ public:
     virtual bool HandleDropFlag(Player * plr, uint32 spellId);
 
     virtual void DeleteSpawns();
+
+    Map * GetMap(int32 id = -1)
+    {
+        if (id == -1)
+            return m_Map;
+
+        return m_Map ? m_Map : m_Map = MapManager::Instance().FindMap(id);
+    }
+
+    Map * GetMap(Map * map)
+    {
+        return m_Map ? m_Map : m_Map = map;
+    }
+
 protected:
 
     virtual bool AddCapturePoint(uint32 entry, uint32 map, float x, float y, float z, float o, float rotation0, float rotation1, float rotation2, float rotation3);
@@ -156,6 +172,8 @@ protected:
     std::map<uint64,uint32> m_CreatureTypes;
     uint64 m_CapturePoint;
     uint64 m_CapturePointCreature;
+
+    Map * m_Map;
 };
 
 // base class for specific outdoor pvp handlers
@@ -214,12 +232,21 @@ public:
     virtual bool HandleGossipOption(Player *plr, uint64 guid, uint32 gossipid);
 
     virtual bool CanTalkTo(Player * plr, Creature * c, GossipOption &gso);
+
+    Map * GetMap(uint32 id = 0)
+    {
+        if (!id)
+            return m_Map;
+
+        return m_Map ? m_Map : m_Map = MapManager::Instance().FindMap(id);
+    }
 protected:
     // the map of the objectives belonging to this outdoorpvp
     OutdoorPvPObjectiveSet m_OutdoorPvPObjectives;
     // players in the zones of this outdoorpvp, 0 - alliance, 1 - horde
     std::set<uint64> m_PlayerGuids[2];
     uint32 m_TypeId;
+    Map * m_Map;
 };
 
 #endif /*OUTDOOR_PVP_H_*/

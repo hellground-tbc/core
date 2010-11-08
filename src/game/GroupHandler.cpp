@@ -228,27 +228,17 @@ void WorldSession::HandleGroupAcceptOpcode( WorldPacket & /*recv_data*/ )
 void WorldSession::HandleGroupDeclineOpcode( WorldPacket & /*recv_data*/ )
 {
     Group  *group  = GetPlayer()->GetGroupInvite();
-    if (!group) return;
+    if (!group)
+        return;
 
     Player *leader = objmgr.GetPlayer(group->GetLeaderGUID());
+
+    GetPlayer()->UninviteFromGroup();
 
     /** error handling **/
     if(!leader || !leader->GetSession())
         return;
     /********************/
-
-    // everything's fine, do it
-    if(!group->IsCreated())
-    {
-        // note: this means that if you invite more than one person
-        // and one of them declines before the first one accepts
-        // all invites will be cleared
-        // fixme: is that ok ?
-        group->RemoveAllInvites();
-        delete group;
-    }
-
-    GetPlayer()->SetGroupInvite(NULL);
 
     WorldPacket data( SMSG_GROUP_DECLINE, 10 );             // guess size
     data << GetPlayer()->GetName();
@@ -532,6 +522,7 @@ void WorldSession::HandleRaidConvertOpcode( WorldPacket & /*recv_data*/ )
 
     // everything's fine, do it (is it 0 (PARTY_OP_INVITE) correct code)
     SendPartyResult(PARTY_OP_INVITE, "", PARTY_RESULT_OK);
+    group->SetDifficulty(DIFFICULTY_NORMAL);
     group->ConvertToRaid();
 }
 
@@ -683,8 +674,8 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player *player, WorldPacke
             byteCount += GroupUpdateLength[i];
 
     data->Initialize(SMSG_PARTY_MEMBER_STATS, 8 + 4 + byteCount);
-    data->append(player->GetPackGUID());
-    *data << (uint32) mask;
+    *data << player->GetPackGUID();
+    *data << uint32(mask);
 
     if (mask & GROUP_UPDATE_FLAG_STATUS)
     {
@@ -848,7 +839,7 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode( WorldPacket &recv_data )
     Pet *pet = player->GetPet();
 
     WorldPacket data(SMSG_PARTY_MEMBER_STATS_FULL, 4+2+2+2+1+2*6+8+1+8);
-    data.append(player->GetPackGUID());
+    data << player->GetPackGUID();
 
     uint32 mask1 = 0x00040BFF;                              // common mask, real flags used 0x000040BFF
     if(pet)

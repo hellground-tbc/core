@@ -142,7 +142,7 @@ struct TRINITY_DLL_DECL boss_nalorakkAI : public ScriptedAI
             (*m_creature).GetMotionMaster()->MovePoint(0,NalorakkWay[7][0],NalorakkWay[7][1],NalorakkWay[7][2]);
         }
 
-        if(pInstance)
+        if(pInstance && pInstance->GetData(DATA_NALORAKKEVENT) != DONE)
             pInstance->SetData(DATA_NALORAKKEVENT, NOT_STARTED);
 
         Surge_Timer = 15000 + rand()%5000;
@@ -269,7 +269,7 @@ struct TRINITY_DLL_DECL boss_nalorakkAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if(pInstance)
             pInstance->SetData(DATA_NALORAKKEVENT, IN_PROGRESS);
@@ -361,7 +361,7 @@ struct TRINITY_DLL_DECL boss_nalorakkAI : public ScriptedAI
 
         if (checkTimer < diff)
         {
-            if (m_creature->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 75 && !MoveEvent)
+            if (!m_creature->IsWithinDistInMap(&wLoc, 75) && !MoveEvent)
                 EnterEvadeMode();
             else
                 DoZoneInCombat();
@@ -428,7 +428,7 @@ struct TRINITY_DLL_DECL boss_nalorakkAI : public ScriptedAI
             {
                 DoYell(YELL_SURGE, LANG_UNIVERSAL, NULL);
                 DoPlaySoundToSet(m_creature, SOUND_YELL_SURGE);
-                if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_SURGE), true, m_creature->getVictim()))
+                if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_SURGE), true, m_creature->getVictimGUID()))
                     DoCast(target, SPELL_SURGE);
                 Surge_Timer = 15000 + rand()%5000;
             }else Surge_Timer -= diff;

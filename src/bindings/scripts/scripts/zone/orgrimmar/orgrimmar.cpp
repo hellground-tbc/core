@@ -91,8 +91,6 @@ struct TRINITY_DLL_DECL npc_shenthulAI : public ScriptedAI
         playerGUID = 0;
     }
 
-    void Aggro(Unit* who) { }
-
     void UpdateAI(const uint32 diff)
     {
         if( CanEmote )
@@ -174,7 +172,7 @@ struct TRINITY_DLL_DECL npc_thrall_warchiefAI : public ScriptedAI
         Shock_Timer = 8000;
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void UpdateAI(const uint32 diff)
     {

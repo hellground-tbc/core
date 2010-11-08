@@ -103,7 +103,7 @@ struct TRINITY_DLL_DECL boss_halazziAI : public ScriptedAI
 
     void Reset()
     {
-        if(pInstance)
+        if(pInstance && pInstance->GetData(DATA_HALAZZIEVENT) != DONE)
             pInstance->SetData(DATA_HALAZZIEVENT, NOT_STARTED);
 
         TransformCount = 0;
@@ -118,7 +118,7 @@ struct TRINITY_DLL_DECL boss_halazziAI : public ScriptedAI
         checkTimer2 = 3000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if(pInstance)
             pInstance->SetData(DATA_HALAZZIEVENT, IN_PROGRESS);
@@ -215,7 +215,7 @@ struct TRINITY_DLL_DECL boss_halazziAI : public ScriptedAI
 
         if (checkTimer2 < diff)
         {
-            if (m_creature->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 50)
+            if (!m_creature->IsWithinDistInMap(&wLoc, 50))
                 EnterEvadeMode();
             else
                 DoZoneInCombat();
@@ -370,7 +370,7 @@ struct TRINITY_DLL_DECL boss_spiritlynxAI : public ScriptedAI
             ScriptedAI::AttackStart(who);
     }
 
-    void Aggro(Unit *who) {/*DoZoneInCombat();*/}
+    void EnterCombat(Unit *who) {/*DoZoneInCombat();*/}
 
     void UpdateAI(const uint32 diff)
     {

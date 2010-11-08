@@ -42,6 +42,7 @@ void instance_karazhan::Initialize()
     TerestianGUID       = 0;
     MoroesGUID          = 0;
     AranGUID            = 0;
+    BlizzardGUID        = 0;
 
     NightbaneGUID       = 0;
 
@@ -52,6 +53,8 @@ void instance_karazhan::Initialize()
     NetherspaceDoor     = 0;
     MastersTerraceDoor[0]= 0;
     MastersTerraceDoor[1]= 0;
+    SideEntranceDoor    = 0;
+    ServentAccessDoor   = 0;
     ImageGUID           = 0;
     MedivhGUID          = 0;
     CheckTimer          = 5000;
@@ -93,34 +96,67 @@ uint32 instance_karazhan::GetData(uint32 identifier)
     return 0;
 }
 
+uint32 GetEncounterForEntry(uint32 entry)
+{
+    switch(entry)
+    {
+        case 15688:
+            return DATA_TERESTIAN_EVENT;
+        case 15687:
+            return DATA_MOROES_EVENT;
+        case 16524:
+            return DATA_SHADEOFARAN_EVENT;
+        case 15691:
+            return DATA_CURATOR_EVENT;
+        case 16457:
+            return DATA_MAIDENOFVIRTUE_EVENT;
+        case 16151:
+            return DATA_ATTUMEN_EVENT;
+        case 15689:
+            return DATA_NETHERSPITE_EVENT;
+        case 17225:
+            return DATA_NIGHTBANE_EVENT;
+        case 15690:
+            return DATA_MALCHEZZAR_EVENT;
+        default:
+            return 0;
+    }
+}
+
 void instance_karazhan::OnCreatureCreate(Creature *creature, uint32 entry)
 {
-    uint64 temp;
+    uint32 data = 0;
     switch (creature->GetEntry())
     {
-        case 17229:   KilrekGUID = creature->GetGUID();      break;
-        case 15688:   TerestianGUID = creature->GetGUID();   break;
-        case 15687:   MoroesGUID = creature->GetGUID();      break;
-        case 16524:   AranGUID = creature->GetGUID();        break;
-        case 16816:   MedivhGUID = creature->GetGUID(); creature->SetReactState(REACT_PASSIVE);      break;
-		/*case 22519:
-		case 17469:
-		case 17211:
-		case 21748:
-		case 21664:
-		case 21750:
-		case 21683:
-		case 21747:
-		case 21682:
-		case 21726:
-		case 21160:
-		case 21752:
-		case 21684:
-			temp = creature->GetGUID();
-			forChessList.push_back(temp);
-			printf("\n||%u", creature->GetGUID());
-			creature->SetReactState(REACT_PASSIVE);
-			break;*/
+        case 17229:
+            KilrekGUID = creature->GetGUID();
+            break;
+        case 15688:
+            TerestianGUID = creature->GetGUID();
+            break;
+        case 15687:
+            MoroesGUID = creature->GetGUID();
+            break;
+        case 16524:
+            AranGUID = creature->GetGUID();
+            break;
+        case 16816:
+            MedivhGUID = creature->GetGUID();
+            break;
+        case 17161:
+            BlizzardGUID = creature->GetGUID();
+            creature->SetReactState(REACT_PASSIVE);
+            break;
+    }
+
+    const CreatureData *tmp = creature->GetLinkedRespawnCreatureData();
+    if (!tmp)
+        return;
+
+    if (GetEncounterForEntry(tmp->id) && creature->isAlive() && GetData(GetEncounterForEntry(tmp->id)) == DONE)
+    {
+        creature->Kill(creature, false);
+        creature->RemoveCorpse();
     }
 }
 
@@ -140,10 +176,11 @@ uint64 instance_karazhan::GetData64(uint32 data)
         case DATA_GAMEOBJECT_GAME_DOOR:        return GamesmansDoor;
         case DATA_GAMEOBJECT_GAME_EXIT_DOOR:   return GamesmansExitDoor;
         case DATA_GAMEOBJECT_NETHER_DOOR:      return NetherspaceDoor;
-        case DATA_MASTERS_TERRACE_DOOR_1:      return NetherspaceDoor;
+        case DATA_MASTERS_TERRACE_DOOR_1:      return MastersTerraceDoor[0];
         case DATA_MASTERS_TERRACE_DOOR_2:      return MastersTerraceDoor[1];
         case DATA_ARAN:                        return AranGUID;
-        case DATA_CHESS_ECHO_OF_MEDIVH:        return MedivhGUID;
+        case DATA_BLIZZARD:                    return BlizzardGUID;
+	case DATA_CHESS_ECHO_OF_MEDIVH:        return MedivhGUID;
     }
 
     return 0;
@@ -170,8 +207,19 @@ void instance_karazhan::SetData(uint32 type, uint32 data)
             Encounters[3] = data;
         break;
     case DATA_OPERA_EVENT:
+        if(data == DONE)
+        {
+            HandleGameObject(SideEntranceDoor, true);
+            HandleGameObject(ServentAccessDoor, true);
+            HandleGameObject(StageDoorLeftGUID, true);
+            HandleGameObject(StageDoorRightGUID, true);
+        }
+
         if(Encounters[4] != DONE)
             Encounters[4] = data;
+
+        if(data == NOT_STARTED)
+            OzDeathCount = 0;
         break;
     case DATA_CURATOR_EVENT:
         if(Encounters[5] != DONE)
@@ -202,8 +250,8 @@ void instance_karazhan::SetData(uint32 type, uint32 data)
             Encounters[10] = data;
         break;
     case DATA_NIGHTBANE_EVENT:
-        if(Encounters[1] != DONE)
-            Encounters[1] = data;
+        if(Encounters[11] != DONE)
+            Encounters[11] = data;
         break;
     case DATA_OPERA_OZ_DEATHCOUNT:
         ++OzDeathCount;
@@ -235,15 +283,23 @@ void instance_karazhan::OnObjectCreate(GameObject* go)
     {
     case 183932:
         CurtainGUID           = go->GetGUID();
+        if(Encounters[4] == DONE)
+            HandleGameObject(NULL,true,go);
         break;
     case 184278:
         StageDoorLeftGUID     = go->GetGUID();
+        if(Encounters[4] == DONE)
+            HandleGameObject(NULL,true,go);
         break;
     case 184279:
         StageDoorRightGUID    = go->GetGUID();
+        if(Encounters[4] == DONE)
+            HandleGameObject(NULL,true,go);
         break;
     case 184517:
         LibraryDoor           = go->GetGUID();
+        if(GetData(DATA_SHADEOFARAN_EVENT) == DONE) // open door from Shade of Aran whenever event is saved as DONE
+            go->SetGoState(0);
         break;
     case 185521:
         MassiveDoor           = go->GetGUID();
@@ -262,6 +318,16 @@ void instance_karazhan::OnObjectCreate(GameObject* go)
         break;
     case 184280:
         MastersTerraceDoor[1] = go->GetGUID();
+        break;
+    case 184275:
+        SideEntranceDoor      = go->GetGUID();
+        if(Encounters[4] == DONE)
+            HandleGameObject(NULL,true,go);
+        break;
+    case 184281:
+        ServentAccessDoor = go->GetGUID();
+        if(Encounters[4] == DONE)
+            HandleGameObject(NULL,true,go);
         break;
     }
 

@@ -44,7 +44,7 @@ struct TRINITY_DLL_DECL boss_draganthaurissanAI : public ScriptedAI
         //Counter= 0;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoYell(SAY_AGGRO,LANG_UNIVERSAL,NULL);
     }
@@ -84,7 +84,9 @@ struct TRINITY_DLL_DECL boss_draganthaurissanAI : public ScriptedAI
         {
             DoCast(m_creature->getVictim(),SPELL_AVATAROFFLAME);
             AvatarOfFlame_Timer = 18000;
-        }else AvatarOfFlame_Timer -= diff;
+        }
+        else
+            AvatarOfFlame_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }

@@ -56,9 +56,6 @@ struct TRINITY_DLL_DECL boss_temporusAI : public ScriptedAI
 
     void Reset()
     {
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
-        m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
-
         MortalWound_Timer = 5000;
         canApplyWound = false;
         WingBuffet_Timer = 10000;
@@ -74,18 +71,14 @@ struct TRINITY_DLL_DECL boss_temporusAI : public ScriptedAI
         DoScriptText(SAY_ENTER, m_creature);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
     }
 
     void KilledUnit(Unit *victim)
     {
-        switch(rand()%2)
-        {
-            case 0: DoScriptText(SAY_SLAY1, m_creature); break;
-            case 1: DoScriptText(SAY_SLAY2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), m_creature);
     }
 
     void JustDied(Unit *victim)
@@ -116,7 +109,7 @@ struct TRINITY_DLL_DECL boss_temporusAI : public ScriptedAI
         ScriptedAI::MoveInLineOfSight(who);
     }
 
-    void DamageMade(Unit* target, uint32 & damage, bool direct_damage) 
+    void DamageMade(Unit* target, uint32 & damage, bool direct_damage)
     {
         if(canApplyWound)
             DoCast(target, SPELL_MORTAL_WOUND);

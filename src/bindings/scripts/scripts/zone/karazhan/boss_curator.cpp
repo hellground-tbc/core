@@ -48,11 +48,13 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_curatorAI : public ScriptedAI
 {
-    boss_curatorAI(Creature *c) : ScriptedAI(c) 
+    boss_curatorAI(Creature *c) : ScriptedAI(c)
     {
-        m_creature->GetPosition(wLoc);
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        m_creature->GetPosition(wLoc);
     }
+
+    ScriptedInstance* pInstance;
 
     uint32 AddTimer;
     uint32 HatefulBoltTimer;
@@ -64,10 +66,6 @@ struct TRINITY_DLL_DECL boss_curatorAI : public ScriptedAI
     bool Enraged;
     bool Evocating;
 
-    bool Enabled;
-
-    ScriptedInstance * pInstance;
-
     void Reset()
     {
         AddTimer = 10000;
@@ -76,57 +74,49 @@ struct TRINITY_DLL_DECL boss_curatorAI : public ScriptedAI
         CheckTimer = 3000;
         Enraged = false;
         Evocating = false;
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
-        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_ATTACK_ME, true);
         m_creature->ApplySpellImmune(2, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_ARCANE, true);
         m_creature->ApplySpellImmune(3, IMMUNITY_STATE, SPELL_AURA_PERIODIC_LEECH, true);
         m_creature->ApplySpellImmune(4, IMMUNITY_STATE, SPELL_AURA_PERIODIC_MANA_LEECH, true);
         m_creature->ApplySpellImmune(5, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
         m_creature->ApplySpellImmune(6, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
 
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-        Enabled = false;
+        if(pInstance && pInstance->GetData(DATA_CURATOR_EVENT) != DONE)
+            pInstance->SetData(DATA_CURATOR_EVENT, NOT_STARTED);
     }
 
     void KilledUnit(Unit *victim)
     {
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(SAY_KILL1, m_creature); break;
-        case 1: DoScriptText(SAY_KILL2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_KILL1,SAY_KILL2), m_creature);
     }
 
     void JustDied(Unit *victim)
     {
         DoScriptText(SAY_DEATH, m_creature);
+
+        if (pInstance)
+            pInstance->SetData(DATA_CURATOR_EVENT, DONE);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
+
+        if(pInstance)
+            pInstance->SetData(DATA_CURATOR_EVENT, IN_PROGRESS);
     }
 
     void UpdateAI(const uint32 diff)
     {
-        if (!Enabled && pInstance->GetData(DATA_OPERA_EVENT) == DONE)
-        {
-            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-            Enabled = true;
-        }
-
         if (!UpdateVictim() )
             return;
 
         if(CheckTimer < diff)
         {
-            if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 135.0f)
+            if(!m_creature->IsWithinDistInMap(&wLoc, 135.0f))
                 EnterEvadeMode();
             else
                 DoZoneInCombat();
-            
+
             CheckTimer = 3000;
         }else CheckTimer -= diff;
 
@@ -160,23 +150,27 @@ struct TRINITY_DLL_DECL boss_curatorAI : public ScriptedAI
                 //Reduce Mana by 10%
                 int32 mana = (int32)(0.1f*(m_creature->GetMaxPower(POWER_MANA)));
                 m_creature->ModifyPower(POWER_MANA, -mana);
-                switch(rand()%4)
-                {
-                    case 0: DoScriptText(SAY_SUMMON1, m_creature);break;
-                    case 1: DoScriptText(SAY_SUMMON2, m_creature);break;
-                }
+
+                if(rand()%2)
+                    DoScriptText(RAND(SAY_SUMMON1, SAY_SUMMON2), m_creature);
+
                 AddTimer = 10000;
-            }else AddTimer -= diff;
+            }
+            else
+                AddTimer -= diff;
 
             if (HatefulBoltTimer < diff)
             {
                 Unit* target = NULL;
                 target = SelectUnit(SELECT_TARGET_TOPAGGRO, 1, GetSpellMaxRange(SPELL_HATEFUL_BOLT), m_creature->getVictim());
+
                 if(target)
                     DoCast(target, SPELL_HATEFUL_BOLT);
 
                 HatefulBoltTimer = (Enraged) ? 7000 : 15000;
-            }else HatefulBoltTimer -= diff;
+            }
+            else
+                HatefulBoltTimer -= diff;
 
             if (m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 15)
             {
@@ -190,7 +184,9 @@ struct TRINITY_DLL_DECL boss_curatorAI : public ScriptedAI
         {
             DoCast(m_creature, SPELL_BERSERK);
             DoScriptText(SAY_ENRAGE, m_creature);
-        }else BerserkTimer -= diff;
+        }
+        else
+            BerserkTimer -= diff;
 
         DoMeleeAttackIfReady();
     }

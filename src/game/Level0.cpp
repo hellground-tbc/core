@@ -87,6 +87,29 @@ bool ChatHandler::HandleStartCommand(const char* /*args*/)
     return true;
 }
 
+bool ChatHandler::HandleAccountWeatherCommand(const char* args)
+{
+    if (!*args)
+    {
+        SendSysMessage(LANG_USE_BOL);
+        return true;
+    }
+
+    std::string argstr = (char*)args;
+    if (argstr == "on")
+        m_session->SetOpcodeDisableFlag(OPC_DISABLE_WEATHER);
+    else if (argstr == "off")
+        m_session->RemoveOpcodeDisableFlag(OPC_DISABLE_WEATHER);
+    else
+    {
+        SendSysMessage(LANG_USE_BOL);
+        return true;
+    }
+
+    PSendSysMessage(LANG_SET_WEATHER, argstr.c_str());
+    return true;
+}
+
 bool ChatHandler::HandleServerInfoCommand(const char* /*args*/)
 {
     uint32 activeClientsNum = sWorld.GetActiveSessionCount();
@@ -142,34 +165,6 @@ bool ChatHandler::HandleSaveCommand(const char* /*args*/)
     uint32 save_interval = sWorld.getConfig(CONFIG_INTERVAL_SAVE);
     if(save_interval==0 || save_interval > 20*1000 && player->GetSaveTimer() <= save_interval - 20*1000)
         player->SaveToDB();
-
-    return true;
-}
-
-bool ChatHandler::HandleGMListIngameCommand(const char* /*args*/)
-{
-    bool first = true;
-
-    ObjectAccessor::Guard guard(*HashMapHolder<Player>::GetLock());
-    HashMapHolder<Player>::MapType &m = ObjectAccessor::Instance().GetPlayers();
-    for (HashMapHolder<Player>::MapType::const_iterator itr = m.begin(); itr != m.end(); ++itr)
-    {
-        if (itr->second->GetSession()->GetSecurity() &&
-            (itr->second->isGameMaster() || sWorld.getConfig(CONFIG_GM_IN_GM_LIST)) &&
-            (!m_session || itr->second->IsVisibleGloballyFor(m_session->GetPlayer())) )
-        {
-            if(first)
-            {
-                SendSysMessage(LANG_GMS_ON_SRV);
-                first = false;
-            }
-
-            SendSysMessage(itr->second->GetName());
-        }
-    }
-
-    if(first)
-        SendSysMessage(LANG_GMS_NOT_LOGGED);
 
     return true;
 }

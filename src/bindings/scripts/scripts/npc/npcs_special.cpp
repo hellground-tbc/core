@@ -34,9 +34,12 @@ npc_sayge               100%    Darkmoon event fortune teller, buff player based
 npc_snake_trap_serpents 80%     AI for snakes that summoned by Snake Trap
 npc_flight_master       100%    AI for flight masters.
 npc_lazy_peon                   AI for peons for quest 5441 (Lazy Peons)
+npc_mojo                %       AI for companion Mojo (summoned by item: 33993)
+npc_master_omarion      100%    Master Craftsman Omarion, patterns menu
 EndContentData */
 
 #include "precompiled.h"
+#include "Totem.h"
 
 /*########
 # npc_chicken_cluck
@@ -63,7 +66,7 @@ struct TRINITY_DLL_DECL npc_chicken_cluckAI : public ScriptedAI
         m_creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void UpdateAI(const uint32 diff)
     {
@@ -74,7 +77,9 @@ struct TRINITY_DLL_DECL npc_chicken_cluckAI : public ScriptedAI
             {
                 EnterEvadeMode();
                 return;
-            }else ResetFlagTimer -= diff;
+            }
+            else
+                ResetFlagTimer -= diff;
         }
 
         if(UpdateVictim())
@@ -171,11 +176,11 @@ struct TRINITY_DLL_DECL npc_dancing_flamesAI : public ScriptedAI
                 active = true;
                 can_iteract = 3500;
                 m_creature->HandleEmoteCommand(EMOTE_ONESHOT_DANCE);
-            }else can_iteract -= diff;
+            }
+            else
+                can_iteract -= diff;
         }
     }
-
-    void Aggro(Unit* who){}
 };
 
 CreatureAI* GetAI_npc_dancing_flames(Creature *_Creature)
@@ -337,8 +342,6 @@ struct TRINITY_DLL_DECL npc_doctorAI : public ScriptedAI
     void PatientDied(Location* Point);
     void PatientSaved(Creature* soldier, Player* player, Location* Point);
     void UpdateAI(const uint32 diff);
-
-    void Aggro(Unit* who){}
 };
 
 /*#####
@@ -383,8 +386,6 @@ struct TRINITY_DLL_DECL npc_injured_patientAI : public ScriptedAI
                 break;
         }
     }
-
-    void Aggro(Unit* who){}
 
     void SpellHit(Unit *caster, const SpellEntry *spell)
     {
@@ -618,7 +619,7 @@ struct TRINITY_DLL_DECL npc_guardianAI : public ScriptedAI
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoYell(SAY_AGGRO,LANG_UNIVERSAL,NULL);
     }
@@ -912,7 +913,7 @@ struct TRINITY_DLL_DECL npc_steam_tonkAI : public ScriptedAI
     npc_steam_tonkAI(Creature *c) : ScriptedAI(c) {}
 
     void Reset() {}
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void OnPossess(bool apply)
     {
@@ -951,7 +952,7 @@ struct TRINITY_DLL_DECL npc_tonk_mineAI : public ScriptedAI
         ExplosionTimer = 3000;
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
     void AttackStart(Unit *who) {}
     void MoveInLineOfSight(Unit *who) {}
 
@@ -1030,7 +1031,7 @@ struct TRINITY_DLL_DECL npc_snake_trap_serpentsAI : public ScriptedAI
     Unit *Owner;
     bool IsViper;
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void Reset()
     {
@@ -1048,9 +1049,6 @@ struct TRINITY_DLL_DECL npc_snake_trap_serpentsAI : public ScriptedAI
         uint32 delta = (rand() % 7) *100;
         m_creature->SetStatFloatValue(UNIT_FIELD_BASEATTACKTIME, Info->baseattacktime + delta);
         m_creature->SetStatFloatValue(UNIT_FIELD_RANGED_ATTACK_POWER , Info->attackpower);
-
-        InCombat = false;
-
     }
 
     //Redefined for random target selection:
@@ -1072,7 +1070,6 @@ struct TRINITY_DLL_DECL npc_snake_trap_serpentsAI : public ScriptedAI
                     m_creature->setAttackTimer(BASE_ATTACK, (rand() % 10) * 100);
                     SpellTimer = (rand() % 10) * 100;
                     AttackStart(who);
-                    InCombat = true;
                 }
             }
         }
@@ -1084,7 +1081,7 @@ struct TRINITY_DLL_DECL npc_snake_trap_serpentsAI : public ScriptedAI
             return;
 
         //Follow if not in combat
-        if (!m_creature->hasUnitState(UNIT_STAT_FOLLOW)&& !InCombat)
+        if (!m_creature->hasUnitState(UNIT_STAT_FOLLOW) && !m_creature->isInCombat())
         {
             m_creature->GetMotionMaster()->Clear();
             m_creature->GetMotionMaster()->MoveFollow(Owner,PET_FOLLOW_DIST,PET_FOLLOW_ANGLE);
@@ -1093,10 +1090,8 @@ struct TRINITY_DLL_DECL npc_snake_trap_serpentsAI : public ScriptedAI
         //No victim -> get new from owner (need this because MoveInLineOfSight won't work while following -> corebug)
         if (!m_creature->getVictim())
         {
-            if (InCombat)
+            if (m_creature->isInCombat())
                 DoStopAttack();
-
-            InCombat = false;
 
             if(Owner->getAttackerForHelper())
                 AttackStart(Owner->getAttackerForHelper());
@@ -1127,7 +1122,10 @@ struct TRINITY_DLL_DECL npc_snake_trap_serpentsAI : public ScriptedAI
                     DoCast(m_creature->getVictim(),SPELL_DEADLY_POISON);
                 SpellTimer = VENOMOUS_SNAKE_TIMER + (rand() %5)*100;
             }
-        }else SpellTimer-=diff;
+        }
+        else
+            SpellTimer-=diff;
+
         DoMeleeAttackIfReady();
     }
 };
@@ -1154,7 +1152,7 @@ const char type[] = "WGBHD";
 struct TRINITY_DLL_DECL npc_flight_masterAI : public ScriptedAI
 {
     npc_flight_masterAI(Creature *c) : ScriptedAI(c) {}
-    
+
     void Reset(){}
     void SummonAdvisor()
     {
@@ -1179,7 +1177,7 @@ struct TRINITY_DLL_DECL npc_flight_masterAI : public ScriptedAI
        }
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         SummonAdvisor();
     }
@@ -1187,7 +1185,7 @@ struct TRINITY_DLL_DECL npc_flight_masterAI : public ScriptedAI
     {
         if(!UpdateVictim())
             return;
-        
+
         DoMeleeAttackIfReady();
     }
 };
@@ -1264,14 +1262,14 @@ struct TRINITY_DLL_DECL npc_garments_of_questsAI : public ScriptedAI
         m_creature->SetVisibility(VISIBILITY_ON);
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void SpellHit(Unit* pCaster, const SpellEntry *Spell)
     {
         if(Spell->Id == SPELL_LESSER_HEAL_R2 || Spell->Id == SPELL_FORTITUDE_R1)
         {
             //not while in combat
-            if(InCombat)
+            if(m_creature->isInCombat())
                 return;
 
             //nothing to be done now
@@ -1395,7 +1393,7 @@ struct TRINITY_DLL_DECL npc_garments_of_questsAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (CanRun && !InCombat)
+        if (CanRun && !m_creature->isInCombat())
         {
             if (RunAwayTimer <= diff)
             {
@@ -1429,7 +1427,9 @@ struct TRINITY_DLL_DECL npc_garments_of_questsAI : public ScriptedAI
                     EnterEvadeMode();                       //something went wrong
 
                 RunAwayTimer = 30000;
-            }else RunAwayTimer -= diff;
+            }
+            else
+                RunAwayTimer -= diff;
         }
 
        DoMeleeAttackIfReady();
@@ -1441,53 +1441,446 @@ CreatureAI* GetAI_npc_garments_of_quests(Creature* pCreature)
     return new npc_garments_of_questsAI(pCreature);
 }
 
-#define MIN_TIME_TO_GO_ASLEEP    60000         //1 minute
-#define MAX_TIME_TO_GO_ASLEEP    600000        //10 minutes
+/*########
+# npc_mojo
+#########*/
 
-struct TRINITY_DLL_DECL npc_lazy_peonAI : public ScriptedAI
+#define SPELL_FEELING_FROGGY    43906
+#define SPELL_HEARTS            20372   //wrong ?
+#define MOJO_WHISPS_COUNT       8
+
+struct TRINITY_DLL_DECL npc_mojoAI : public ScriptedAI
 {
-    npc_lazy_peonAI(Creature *c) : ScriptedAI(c) {Reset();}
+    npc_mojoAI(Creature *c) : ScriptedAI(c) {}
 
-    uint32 reAuraTimer;
+    uint32 heartsResetTimer;
+    bool hearts;
 
-    void Reset() 
+    void Reset()
     {
-        reAuraTimer = urand(MIN_TIME_TO_GO_ASLEEP, MAX_TIME_TO_GO_ASLEEP);
+        heartsResetTimer = 15000;
+        hearts = false;
+        m_creature->GetMotionMaster()->Clear();
+        m_creature->GetMotionMaster()->MoveFollow(m_creature->GetOwner(), 2.0, M_PI/2);
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
-    void SpellHit(Unit* pCaster, const SpellEntry *spell)
+    void OnAuraApply(Aura* aur, Unit* caster, bool stackApply)
     {
-        if (spell->Id == 19938 && m_creature->HasAura(17743, 0))
-            m_creature->RemoveAura(17743, 0);
+        if (aur->GetId() == SPELL_HEARTS)
+        {
+            hearts = true;
+            heartsResetTimer = 15000;
+        }
     }
 
     void UpdateAI(const uint32 diff)
     {
-        if (m_creature->HasAura(17743, 0))
-            return;
-
-        if (reAuraTimer < diff)
+        if (hearts)
         {
-            if (!m_creature->HasAura(17743, 0))
+            if (heartsResetTimer <= diff)
             {
-                m_creature->CastSpell(m_creature, 17743, true);
-                reAuraTimer = urand(MIN_TIME_TO_GO_ASLEEP, MAX_TIME_TO_GO_ASLEEP);
-                
-                return;
+                m_creature->RemoveAurasDueToSpell(SPELL_HEARTS);
+                hearts = false;
+                m_creature->GetMotionMaster()->Clear(true);
+                m_creature->GetMotionMaster()->MoveFollow(m_creature->GetOwner(), 2.0, M_PI/2);
+                m_creature->SetSelection(NULL);
+            }
+            else
+                heartsResetTimer -= diff;
+        }
+    }
+};
+
+bool ReceiveEmote_npc_mojo( Player *player, Creature *_Creature, uint32 emote )
+{
+    if( emote == TEXTEMOTE_KISS )
+    {
+        if (!_Creature->HasAura(SPELL_HEARTS, 0))
+        {
+            //affect only the same conflict side (horde -> horde or ally -> ally)
+            if( player->GetTeam() == _Creature->GetCharmerOrOwnerPlayerOrPlayerItself()->GetTeam() )
+            {
+                player->CastSpell(player, SPELL_FEELING_FROGGY, false);
+                _Creature->CastSpell(_Creature, SPELL_HEARTS, false);
+                _Creature->SetSelection(player->GetGUID());
+                _Creature->StopMoving();
+                _Creature->GetMotionMaster()->Clear();
+                _Creature->GetMotionMaster()->MoveFollow(player, 1.0, 0);
+
+                char * text;
+
+                switch (urand(0, MOJO_WHISPS_COUNT))
+                {
+                    case 0:
+                        text = "Now that's what I call froggy-style!";
+                        break;
+                    case 1:
+                        text = "Your lily pad or mine?";
+                        break;
+                    case 2:
+                        text = "This won't take long, did it?";
+                        break;
+                    case 3:
+                        text = "I thought you'd never ask!";
+                        break;
+                    case 4:
+                        text = "I promise not to give you warts...";
+                        break;
+                    case 5:
+                        text = "Feelin' a little froggy, are ya?";
+                        break;
+                    case 6:
+                        text = "Listen, $n, I know of a little swamp not too far from here....";
+                        break;
+                    default:
+                        text = "There's just never enough Mojo to go around...";
+                        break;
+                }
+
+                _Creature->Whisper(text, player->GetGUID(), false);
             }
         }
+    }
+
+    return true;
+}
+
+CreatureAI* GetAI_npc_mojo(Creature *_Creature)
+{
+    return new npc_mojoAI(_Creature);
+}
+
+
+/*########
+# npc_woeful_healer
+#########*/
+
+#define SPELL_PREYER_OF_HEALING     30604
+
+struct TRINITY_DLL_DECL npc_woeful_healerAI : public ScriptedAI
+{
+    npc_woeful_healerAI(Creature *c) : ScriptedAI(c) {Reset();}
+
+    uint32 healTimer;
+
+    void Reset()
+    {
+        healTimer = urand(2500, 7500);
+        m_creature->GetMotionMaster()->MoveFollow(m_creature->GetOwner(), 2.0, M_PI/2);
+    }
+
+    void EnterCombat(Unit *who) {}
+
+    void UpdateAI(const uint32 diff)
+    {
+        Unit * owner = m_creature->GetCharmerOrOwner();
+
+        if (healTimer <= diff)
+        {
+            healTimer = urand(2500, 7500);
+            if (!owner || !owner->isInCombat())
+                return;
+            m_creature->CastSpell(m_creature, SPELL_PREYER_OF_HEALING, false);
+        }
         else
-            reAuraTimer -= diff;
+            healTimer -= diff;
+    }
+};
+
+CreatureAI* GetAI_npc_woeful_healer(Creature* pCreature)
+{
+    return new npc_woeful_healerAI(pCreature);
+}
+
+#define GOSSIP_VIOLET_SIGNET    "I have lost my Violet Signet, could you make me a new one?"
+#define GOSSIP_ETERNAL_BAND    "I have lost my Eternal Band, could you make me a new one?"
+
+// Archmage Leryda from Karazhan and Soridormi from Mount Hyjal
+bool GossipHello_npc_ring_specialist(Player* player, Creature* _Creature)
+{
+    if (_Creature->isQuestGiver())
+        player->PrepareQuestMenu( _Creature->GetGUID() );
+    uint32 entry = _Creature->GetEntry();
+    switch(entry)
+    {
+        // Archmage Leryda
+        case 18253:
+            // player has none of the rings
+            if((!player->HasItemCount(29287, 1, true) && !player->HasItemCount(29279, 1, true) && !player->HasItemCount(29283, 1, true) && !player->HasItemCount(29290, 1, true))
+                && // and had completed one of the chains
+               (player->GetQuestRewardStatus(10725) || player->GetQuestRewardStatus(10728) || player->GetQuestRewardStatus(10727) || player->GetQuestRewardStatus(10726)))
+                    player->ADD_GOSSIP_ITEM( 0, GOSSIP_VIOLET_SIGNET, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            break;
+        // Soridormi
+        case 19935:
+            // player has none of the rings
+            if((!player->HasItemCount(29305, 1, true) && !player->HasItemCount(29309, 1, true) && !player->HasItemCount(29301, 1, true) && !player->HasItemCount(29297, 1, true))
+                && // and had completed one of the chains
+               (player->GetQuestRewardStatus(10472) || player->GetQuestRewardStatus(10473) || player->GetQuestRewardStatus(10474) || player->GetQuestRewardStatus(10475)))
+                    player->ADD_GOSSIP_ITEM( 0, GOSSIP_ETERNAL_BAND,   GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+            break;
+    }
+
+    player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+    return true;
+}
+
+void RestoreQuestRingItem(Player* player, uint32 id)
+{
+        ItemPosCountVec dest;
+        uint8 msg = player->CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, id, 1);
+        if( msg == EQUIP_ERR_OK )
+        {
+            Item* item = player->StoreNewItem( dest, id, true);
+            player->SendNewItem(item, 1, true, false);
+        }
+}
+
+bool GossipSelect_npc_ring_specialist(Player* player, Creature* _Creature, uint32 sender, uint32 action)
+{
+    switch( action )
+    {
+        case GOSSIP_ACTION_INFO_DEF + 1:
+            if(player->GetQuestRewardStatus(10725))
+                RestoreQuestRingItem(player, 29287);
+            if(player->GetQuestRewardStatus(10728))
+                RestoreQuestRingItem(player, 29279);
+            if(player->GetQuestRewardStatus(10727))
+                RestoreQuestRingItem(player, 29283);
+            if(player->GetQuestRewardStatus(10726))
+                RestoreQuestRingItem(player, 29290);
+            player->CLOSE_GOSSIP_MENU();
+            break;
+        case GOSSIP_ACTION_INFO_DEF + 2:
+            if(player->GetQuestRewardStatus(10472))
+                RestoreQuestRingItem(player, 29305);
+            if(player->GetQuestRewardStatus(10473))
+                RestoreQuestRingItem(player, 29309);
+            if(player->GetQuestRewardStatus(10474))
+                RestoreQuestRingItem(player, 29301);
+            if(player->GetQuestRewardStatus(10475))
+                RestoreQuestRingItem(player, 29297);
+            player->CLOSE_GOSSIP_MENU();
+            break;
+    }
+    return true;
+}
+
+/*########
+# npc_elemental_guardian
+#########*/
+
+struct TRINITY_DLL_DECL npc_elemental_guardianAI : public ScriptedAI
+{
+    npc_elemental_guardianAI(Creature *c) : ScriptedAI(c){}
+
+    uint32 m_checkTimer;
+
+    void Reset()
+    {
+        m_checkTimer = 2000;
+    }
+
+    void Despawn()
+    {
+        m_creature->Kill(m_creature, false);
+        m_creature->RemoveCorpse();
+    }
+
+    void EnterCombat(Unit *who){}
+
+    void MoveInLineOfSight(Unit *pWho)
+    {
+        if(pWho->GetTypeId() == TYPEID_PLAYER && pWho->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_SANCTUARY))
+            return;
+
+        if(!m_creature->getVictim() && m_creature->IsHostileTo(pWho))
+        {
+            Creature *pTotem = m_creature->GetCreature(*m_creature, m_creature->GetOwnerGUID());
+            if(pTotem && pTotem->IsWithinDistInMap(pWho, 30.0f))
+                AttackStart(pWho);
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(m_checkTimer < diff)
+        {
+            Creature *pTotem = m_creature->GetCreature(*m_creature, m_creature->GetOwnerGUID());
+            
+            if(!me->getVictim() && pTotem)
+            {
+                if(!m_creature->hasUnitState(UNIT_STAT_FOLLOW))
+                    m_creature->GetMotionMaster()->MoveFollow(pTotem, 2.0f, M_PI);
+
+                if(Unit *pOwner = pTotem->GetOwner()) 
+                {
+                    if(pOwner->GetTypeId() != TYPEID_PLAYER || !pOwner->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_SANCTUARY))
+                    {
+                        if(Unit *pTemp = pTotem->SelectNearestTarget(30.0))
+                            AttackStart(pTemp);
+                    }
+                }
+            }
+
+            if(pTotem)
+            {
+                if(!pTotem->isAlive())
+                {
+                    Despawn();
+                    return;
+                }
+
+                if(!m_creature->IsWithinDistInMap(pTotem, 30.0f))
+                {
+                    EnterEvadeMode();
+                    m_creature->GetMotionMaster()->MoveFollow(pTotem, 2.0f, M_PI);
+                }
+            }
+            else
+                Despawn();
+
+            m_checkTimer = 2000;
+        }
+        else
+            m_checkTimer -= diff;
 
         DoMeleeAttackIfReady();
     }
 };
 
-CreatureAI* GetAI_npc_lazy_peon(Creature* pCreature)
+CreatureAI* GetAI_npc_elemental_guardian(Creature* pCreature)
 {
-    return new npc_lazy_peonAI(pCreature);
+    return new npc_elemental_guardianAI(pCreature);
+}
+
+//Blacksmithing
+#define GOSSIP_ITEM_OMARION0  "Learn Icebane Bracers pattern."
+#define GOSSIP_ITEM_OMARION1  "Learn Icebane Gauntlets pattern."
+#define GOSSIP_ITEM_OMARION2  "Learn Icebane Breastplate pattern."
+//Leatherworking
+#define GOSSIP_ITEM_OMARION3  "Learn Polar Bracers pattern."
+#define GOSSIP_ITEM_OMARION4  "Learn Polar Gloves pattern."
+#define GOSSIP_ITEM_OMARION5  "Learn Polar Tunic pattern."
+#define GOSSIP_ITEM_OMARION6  "Learn Icy Scale Bracers pattern."
+#define GOSSIP_ITEM_OMARION7  "Learn Icy Scale Gauntlets pattern."
+#define GOSSIP_ITEM_OMARION8  "Learn Icy Scale Breastplate pattern."
+//Tailoring
+#define GOSSIP_ITEM_OMARION9  "Learn Glacial Wrists pattern."
+#define GOSSIP_ITEM_OMARION10 "Learn Glacial Gloves pattern."
+#define GOSSIP_ITEM_OMARION11 "Learn Glacial Vest pattern."
+#define GOSSIP_ITEM_OMARION12 "Learn Glacial Cloak pattern."
+
+bool GossipHello_npc_master_omarion(Player *player, Creature *_Creature)
+{
+bool isexalted,isrevered;
+isexalted = false;
+isrevered = false;
+  if(player->GetReputation(529) >= 21000)
+  {
+    isrevered = true;
+    if(player->GetReputation(529) >= 42000)
+      isexalted = true;
+  }
+
+  if(player->GetBaseSkillValue(SKILL_BLACKSMITHING)>=300) // Blacksmithing +300
+  {
+    if(isrevered)
+    {
+      player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION0    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+      player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION1    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2); 
+    if(isexalted)
+    {
+      player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION2    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
+    }
+    }
+  }
+  if(player->GetBaseSkillValue(SKILL_LEATHERWORKING)>=300) // Leatherworking +300
+  {
+    if(isrevered)
+    {
+      player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION3    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
+      player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION4    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5);
+    if(isexalted)
+    {
+      player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION5    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 6);
+    }
+    }
+    if(isrevered)
+    {
+      player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION6    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 7);
+      player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION7    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 8);
+    if(isexalted)
+    {
+      player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION8    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 9);
+    }
+    }
+  }
+  if(player->GetBaseSkillValue(SKILL_TAILORING)>=300) // Tailoring +300
+  {
+    if(isrevered)
+    {
+      player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION9    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 10);
+      player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION10   , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 11);
+    if(isexalted) 
+    {
+      player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION11   , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 12);
+      player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION12   , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 13);
+    }
+    }
+  }
+player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+return true;
+}
+
+bool GossipSelect_npc_master_omarion(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+{
+switch (action)
+{    
+      case GOSSIP_ACTION_INFO_DEF + 1:         // Icebane Bracers
+        player->learnSpell( 28244 );
+        break;
+      case GOSSIP_ACTION_INFO_DEF + 2:         // Icebane Gauntlets
+        player->learnSpell( 28243 );
+        break;
+      case GOSSIP_ACTION_INFO_DEF + 3:         // Icebane Breastplate
+        player->learnSpell( 28242 );
+        break;
+      case GOSSIP_ACTION_INFO_DEF + 4:         // Polar Bracers
+        player->learnSpell( 28221 );
+        break;
+      case GOSSIP_ACTION_INFO_DEF + 5:         // Polar Gloves
+        player->learnSpell( 28220 );
+        break;
+      case GOSSIP_ACTION_INFO_DEF + 6:         // Polar Tunic
+        player->learnSpell( 28219 );
+        break;
+      case GOSSIP_ACTION_INFO_DEF + 7:         // Icy Scale Bracers
+        player->learnSpell( 28224 );
+        break;
+      case GOSSIP_ACTION_INFO_DEF + 8:         // Icy Scale Gauntlets
+        player->learnSpell( 28223 );
+        break;
+      case GOSSIP_ACTION_INFO_DEF + 9:         // Icy Scale Breastplate
+        player->learnSpell( 28222 );
+        break;
+      case GOSSIP_ACTION_INFO_DEF + 10:        // Glacial Wrists
+        player->learnSpell( 28209 );
+        break; 
+      case GOSSIP_ACTION_INFO_DEF + 11:        // Glacial Gloves
+        player->learnSpell( 28205 );
+        break;
+      case GOSSIP_ACTION_INFO_DEF + 12:        // Glacial Vest
+        player->learnSpell( 28207 );
+        break;
+      case GOSSIP_ACTION_INFO_DEF + 13:        // Glacial Cloak
+        player->learnSpell( 28208 );
+        break;
+    }
+    player->CLOSE_GOSSIP_MENU();
+    return true;
 }
 
 void AddSC_npcs_special()
@@ -1578,8 +1971,31 @@ void AddSC_npcs_special()
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_lazy_peon";
-    newscript->GetAI = &GetAI_npc_lazy_peon;
+    newscript->Name="npc_mojo";
+    newscript->GetAI = &GetAI_npc_mojo;
+    newscript->pReceiveEmote =  &ReceiveEmote_npc_mojo;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_woeful_healer";
+    newscript->GetAI = &GetAI_npc_woeful_healer;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_ring_specialist";
+    newscript->pGossipHello = &GossipHello_npc_ring_specialist;
+    newscript->pGossipSelect = &GossipSelect_npc_ring_specialist;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_elemental_guardian";
+    newscript->GetAI = &GetAI_npc_elemental_guardian;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name="npc_master_omarion";
+    newscript->pGossipHello =  &GossipHello_npc_master_omarion;
+    newscript->pGossipSelect = &GossipSelect_npc_master_omarion;
     newscript->RegisterSelf();
 }
 

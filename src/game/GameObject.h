@@ -416,6 +416,9 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
         explicit GameObject();
         ~GameObject();
 
+        void SendCustomAnimation();
+        void SendSpawnAnimation();
+
         void AddToWorld();
         void RemoveFromWorld();
 
@@ -513,6 +516,8 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
         uint32 GetGoAnimProgress() const { return GetUInt32Value(GAMEOBJECT_ANIMPROGRESS); }
         void SetGoAnimProgress(uint32 animprogress) { SetUInt32Value(GAMEOBJECT_ANIMPROGRESS, animprogress); }
 
+        float GetObjectBoundingRadius() const;              // overwrite WorldObject version
+
         void Use(Unit* user);
 
         LootState getLootState() const { return m_lootState; }
@@ -539,6 +544,7 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
         bool hasQuest(uint32 quest_id) const;
         bool hasInvolvedQuest(uint32 quest_id) const;
         bool ActivateToQuest(Player *pTarget) const;
+        void ResetDoorOrButton();
         void UseDoorOrButton(uint32 time_to_restore = 0);   // 0 = use `gameobject`.`spawntimesecs`
 
         uint32 GetLinkedGameObjectEntry() const
@@ -578,6 +584,7 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
         GridReference<GameObject> &GetGridRef() { return m_gridRef; }
 
         void CastSpell(Unit *target, uint32 spell);
+        void CastSpell(GameObject *target, uint32 spell);
     protected:
         uint32      m_charges;                              // Spell charges for GAMEOBJECT_TYPE_SPELLCASTER (22)
         uint32      m_spellId;

@@ -51,7 +51,7 @@ struct TRINITY_DLL_DECL mob_stolen_soulAI : public ScriptedAI
         Class_Timer = 1000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     { }
 
     void SetMyClass(uint8 myclass)
@@ -184,14 +184,9 @@ struct TRINITY_DLL_DECL boss_exarch_maladaarAI : public ScriptedAI
     }
 
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
-        switch (rand()%3)
-        {
-            case 0: DoScriptText(SAY_AGGRO_1, m_creature); break;
-            case 1: DoScriptText(SAY_AGGRO_2, m_creature); break;
-            case 2: DoScriptText(SAY_AGGRO_3, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), m_creature);
     }
 
     void JustSummoned(Creature *summoned)
@@ -217,11 +212,7 @@ struct TRINITY_DLL_DECL boss_exarch_maladaarAI : public ScriptedAI
         if (rand()%2)
             return;
 
-        switch (rand()%2)
-        {
-            case 0: DoScriptText(SAY_SLAY_1, m_creature); break;
-            case 1: DoScriptText(SAY_SLAY_2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), m_creature);
     }
 
     void JustDied(Unit* Killer)
@@ -273,7 +264,9 @@ struct TRINITY_DLL_DECL boss_exarch_maladaarAI : public ScriptedAI
                     StolenSoul_Timer = 20000 + rand()% 10000;
                 } else StolenSoul_Timer = 1000;
             }
-        }else StolenSoul_Timer -= diff;
+        }
+        else
+            StolenSoul_Timer -= diff;
 
         if (Ribbon_of_Souls_timer < diff)
         {
@@ -281,13 +274,17 @@ struct TRINITY_DLL_DECL boss_exarch_maladaarAI : public ScriptedAI
                 DoCast(target,SPELL_RIBBON_OF_SOULS);
 
             Ribbon_of_Souls_timer = 5000 + (rand()%20 * 1000);
-        }else Ribbon_of_Souls_timer -= diff;
+        }
+        else
+            Ribbon_of_Souls_timer -= diff;
 
         if (Fear_timer < diff)
         {
             DoCast(m_creature,SPELL_SOUL_SCREAM);
             Fear_timer = 15000 + rand()% 15000;
-        }else Fear_timer -= diff;
+        }
+        else
+            Fear_timer -= diff;
 
         DoMeleeAttackIfReady();
     }
@@ -312,7 +309,7 @@ struct TRINITY_DLL_DECL mob_avatar_of_martyredAI : public ScriptedAI
         Mortal_Strike_timer = 10000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
     }
 
@@ -325,7 +322,9 @@ struct TRINITY_DLL_DECL mob_avatar_of_martyredAI : public ScriptedAI
         {
             DoCast(m_creature->getVictim(), SPELL_AV_MORTAL_STRIKE);
             Mortal_Strike_timer = 10000 + rand()%20 * 1000;
-        } else Mortal_Strike_timer -= diff;
+        }
+        else
+            Mortal_Strike_timer -= diff;
 
         DoMeleeAttackIfReady();
     }

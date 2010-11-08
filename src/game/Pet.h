@@ -21,7 +21,7 @@
 #ifndef TRINITYCORE_PET_H
 #define TRINITYCORE_PET_H
 
-#include "ObjectDefines.h"
+#include "ObjectGuid.h"
 #include "Creature.h"
 #include "Unit.h"
 
@@ -123,15 +123,11 @@ typedef std::vector<uint32> AutoSpellList;
 
 #define HAPPINESS_LEVEL_SIZE        333000
 
-extern const uint32 LevelUpLoyalty[6];
 extern const uint32 LevelStartLoyalty[6];
 
 #define ACTIVE_SPELLS_MAX           4
 
 #define OWNER_MAX_DISTANCE 200
-
-#define PET_FOLLOW_DIST  1
-#define PET_FOLLOW_ANGLE (M_PI/2)
 
 class Pet : public Creature
 {

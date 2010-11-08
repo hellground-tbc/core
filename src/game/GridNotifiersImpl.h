@@ -218,6 +218,9 @@ inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
         if(target->HasAura(31943,eff_index))
             return;
 
+    if(target->GetTypeId() == TYPEID_UNIT && target->GetEntry() == 23111)
+        return;
+
     PersistentAreaAura* Aur = new PersistentAreaAura(spellInfo, eff_index, NULL, target, i_dynobject.GetCaster(), NULL, i_dynobject.GetGUID());
 
     target->AddAura(Aur);

@@ -22,6 +22,7 @@ SDCategory: Naxxramas
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_naxxramas.h"
 
 #define SAY_AGGRO1              -1533017
 #define SAY_AGGRO2              -1533018
@@ -39,7 +40,12 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_patchwerkAI : public ScriptedAI
 {
-    boss_patchwerkAI(Creature *c) : ScriptedAI(c) {}
+    boss_patchwerkAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
+
+    ScriptedInstance * pInstance;
 
     uint32 HatefullStrike_Timer;
     uint32 Enrage_Timer;
@@ -52,6 +58,9 @@ struct TRINITY_DLL_DECL boss_patchwerkAI : public ScriptedAI
         Enrage_Timer = 420000;                              //7 minutes 420,000
         Slimebolt_Timer = 450000;                           //7.5 minutes 450,000
         Enraged = false;
+
+        if (pInstance)
+            pInstance->SetData(DATA_PATCHWERK, NOT_STARTED);
     }
 
     void KilledUnit(Unit* Victim)
@@ -65,18 +74,16 @@ struct TRINITY_DLL_DECL boss_patchwerkAI : public ScriptedAI
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_DEATH, m_creature);
+        if (pInstance)
+            pInstance->SetData(DATA_PATCHWERK, DONE);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
-        if (rand()%2)
-        {
-             DoScriptText(SAY_AGGRO1, m_creature);
-        }
-        else
-        {
-           DoScriptText(SAY_AGGRO2, m_creature);
-        }
+        DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2), m_creature);
+
+        if (pInstance)
+            pInstance->SetData(DATA_PATCHWERK, IN_PROGRESS);
     }
 
     void UpdateAI(const uint32 diff)

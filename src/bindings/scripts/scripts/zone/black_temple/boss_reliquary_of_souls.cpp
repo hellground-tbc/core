@@ -82,21 +82,14 @@ EndScriptData */
 #define SPELL_SUBMERGE                  37550 //dropout 'head'
 
 #define CREATURE_ENSLAVED_SOUL          23469
-#define NUMBER_ENSLAVED_SOUL            8
+#define NUMBER_ENSLAVED_SOUL            16
 
-struct Position
+#define ROS_TRIGGER_ID                  23472
+#define SPELL_SUMMON_ENSLAVE_SOUL       41538
+
+struct cPosition
 {
     float x,y;
-};
-
-static Position Coords[]=
-{
-    {450.4, 212.3},
-    {542.1, 212.3},
-    {542.1, 168.3},
-    {542.1, 137.4},
-    {450.4, 137.4},
-    {450.4, 168.3}
 };
 
 struct TRINITY_DLL_DECL npc_enslaved_soulAI : public ScriptedAI
@@ -107,12 +100,27 @@ struct TRINITY_DLL_DECL npc_enslaved_soulAI : public ScriptedAI
     }
 
     ScriptedInstance *pInstance;
+    uint32 checkTimer;
 
-    void Reset(){}
+    void Reset()
+    {
+        checkTimer = 3000;
+    }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         DoCast(m_creature, ENSLAVED_SOUL_PASSIVE, true);
+    }
+
+    void JustRespawned()
+    {
+        if(pInstance)
+        {
+            DoZoneInCombat();
+
+            if(Unit * target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
+                AttackStart(target);
+        }
     }
 
     void JustDied(Unit *killer)
@@ -123,14 +131,37 @@ struct TRINITY_DLL_DECL npc_enslaved_soulAI : public ScriptedAI
         DoCast(m_creature, SPELL_SOUL_RELEASE, true);
     }
 
+    void UpdateAI(const uint32 diff)
+    {
+        if (checkTimer <= diff)
+        {
+            if (pInstance)
+            {
+                if (pInstance->GetData(DATA_RELIQUARYOFSOULSEVENT) != IN_PROGRESS)
+                    m_creature->Kill(m_creature, false);
+            }
+            else
+                m_creature->Kill(m_creature, false);
+
+            checkTimer = 3000;
+        }
+        else
+            checkTimer -= diff;
+
+        if (!UpdateVictim())
+            return;
+
+        DoMeleeAttackIfReady();
+    }
 };
 
-struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public ScriptedAI
+struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
 {
-    boss_reliquary_of_soulsAI(Creature *c) : ScriptedAI(c)
+    boss_reliquary_of_soulsAI(Creature *c) : Scripted_NoMovementAI(c)
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
         EssenceGUID = 0;
+        m_creature->setActive(true);
     }
 
     ScriptedInstance* pInstance;
@@ -145,6 +176,7 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public ScriptedAI
     uint32 SoulDeathCount;
 
     uint32 CheckTimer;
+    uint32 DelayTimer;
 
     void Reset()
     {
@@ -164,59 +196,60 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public ScriptedAI
         Phase = 0;
 
         CheckTimer = 2000;
+        DelayTimer = 0;
 
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_ONESHOT_NONE);
         m_creature->RemoveAurasDueToSpell(SPELL_SUBMERGE);
     }
 
-    void Aggro(Unit* who)
+    void StartEvent(Unit *who)
     {
-        m_creature->AddThreat(who, 10000.0f);
-        DoZoneInCombat();
-        
-        if(pInstance)
-            pInstance->SetData(DATA_RELIQUARYOFSOULSEVENT, IN_PROGRESS);
-
-        Phase = 1;
-        Counter = 0;
-        Timer = 0;
-    }
-
-    void AttackStart(Unit* who)
-    {
-        if (!InCombat)
+        if(!m_creature->isInCombat())
         {
-            Aggro(who);
-            InCombat = true;
+            if (m_creature->IsWithinDistInMap(who, 100))
+            {
+                m_creature->AddThreat(who, 10000.0f);
+                DoZoneInCombat();
+
+                if(pInstance)
+                    pInstance->SetData(DATA_RELIQUARYOFSOULSEVENT, IN_PROGRESS);
+                Phase = 1;
+                Counter = 0;
+                Timer = 0;
+                DelayTimer = 15000;
+            }
         }
+        
     }
 
-    bool SummonSoul()
+    void EnterCombat(Unit* who)
     {
-        uint32 random = rand()%6;
-        float x = Coords[random].x;
-        float y = Coords[random].y;
-        
-        Creature* Soul = m_creature->SummonCreature(CREATURE_ENSLAVED_SOUL, x, y, m_creature->GetPositionZ(), m_creature->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000);
-        
-        if(!Soul)
-            return false;
+        m_creature->SetSelection(NULL);
+    }
 
-        if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
-            Soul->AI()->AttackStart(target);
-        else
-            EnterEvadeMode();
+    void SummonSouls()
+    {
+        std::list<Creature*> triggerList = DoFindAllCreaturesWithEntry(ROS_TRIGGER_ID, 100);
 
-        return true;
+        for (int i = 0; i < NUMBER_ENSLAVED_SOUL; i++)
+        {
+            uint32 random = rand()%triggerList.size();
+
+            std::list<Creature*>::iterator itr = triggerList.begin();
+
+            advance(itr, random);
+
+            Creature * trigger = *itr;
+            if (trigger)
+                trigger->CastSpell(trigger, SPELL_SUMMON_ENSLAVE_SOUL, false);
+        }
     }
 
     void JustDied(Unit* killer)
     {
         if(pInstance)
             pInstance->SetData(DATA_RELIQUARYOFSOULSEVENT, DONE);
-
-        InCombat = false;
     }
 
     bool FindPlayers()
@@ -228,7 +261,7 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public ScriptedAI
         for(std::list<HostilReference*>::iterator itr = m_threatlist.begin(); itr != m_threatlist.end(); ++itr)
         {
             Unit* pUnit = Unit::GetUnit((*m_creature), (*itr)->getUnitGuid());
-            if(pUnit && pUnit->isAlive() && pUnit->isInCombat() && m_creature->canAttack(pUnit) && pUnit->IsWithinDistInMap(m_creature, 200.0f)) 
+            if(pUnit && pUnit->isAlive() && pUnit->isInCombat() && m_creature->canAttack(pUnit) && pUnit->IsWithinDistInMap(m_creature, 100.0f))
                 return true;
         }
         return false;
@@ -236,6 +269,14 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
+        if(DelayTimer > diff)
+        {
+            DelayTimer -= diff;
+            return;
+        }
+        else
+            DelayTimer = 0;
+
         if(!Phase)
             return;
 
@@ -257,6 +298,8 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public ScriptedAI
                 EnterEvadeMode();
                 return;
             }
+
+            m_creature->SetSelection(NULL);
 
             CheckTimer = 2000;
         }
@@ -334,7 +377,7 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public ScriptedAI
                     return;
 
                 Timer = 1500;
-                if(Essence->IsWithinDistInMap(m_creature, 10))
+                if(Essence->IsWithinDistInMap(m_creature, 3))
                     m_creature->RemoveAurasDueToSpell(SPELL_SUBMERGE);
                 else
                 {
@@ -355,6 +398,7 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public ScriptedAI
                     DoScriptText(DESI_SAY_AFTER, Essence);
 
                 Essence->SetVisibility(VISIBILITY_OFF);
+                Essence->DestroyForNearbyPlayers();
                 Essence->setDeathState(DEAD);
                 m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE,0);
 
@@ -365,25 +409,16 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public ScriptedAI
                 break;
             }
             case 6:
-                if(SoulCount < NUMBER_ENSLAVED_SOUL)
-                {
-                    if(pInstance && !SoulCount)
-                        pInstance->SetData(DATA_ENSLAVED_SOUL, 0);
-                        
-                    if(SummonSoul())
-                        SoulCount++;
-
-                    Timer = 200;
-                    return;
-                }
+                SummonSouls();
+                Timer = urand(35000, 40000);//200;
                 break;
             case 7:
-                if(pInstance->GetData(DATA_ENSLAVED_SOUL) >= SoulCount)
-                {
+                /*if(pInstance->GetData(DATA_ENSLAVED_SOUL) >= SoulCount)
+                {*/
                     Counter = 1;
                     Phase++;
                     Timer = 5000;
-                }
+                //}
                 return;
             default:
                 break;
@@ -395,6 +430,48 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public ScriptedAI
     }
 };
 
+struct TRINITY_DLL_DECL npc_ros_triggerAI : public ScriptedAI
+{
+    npc_ros_triggerAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
+
+    ScriptedInstance *pInstance;
+    uint64 RosGUID;
+
+    void Reset()
+    {
+        RosGUID = 0;
+    }
+
+    void EnterCombat(Unit* who){}
+
+    void JustRespawned(){}
+
+    void MoveInLineOfSight(Unit * who)
+    {
+        if (!RosGUID)
+            RosGUID = pInstance->GetData64(DATA_RELIQUARYOFSOULSEVENT);
+
+        if (!pInstance)
+             pInstance = (ScriptedInstance*)m_creature->GetInstanceData();
+
+        if (pInstance && pInstance->GetData(DATA_RELIQUARYOFSOULSEVENT) == NOT_STARTED && who->GetTypeId() == TYPEID_PLAYER)
+        {
+            Creature * ros = Unit::GetCreature(*m_creature, RosGUID);
+            if (ros && !((Player*)who)->isGameMaster())
+            {
+                ((boss_reliquary_of_soulsAI*)(ros->AI()))->StartEvent(who);
+            }
+        }
+    }
+
+    void JustDied(Unit *killer){}
+
+    void UpdateAI(const uint32 diff){}
+};
+
 //This is used to sort the players by distance in preparation for the Fixate cast.
 struct TargetDistanceOrder : public std::binary_function<const Unit, const Unit, bool>
 {
@@ -403,7 +480,7 @@ struct TargetDistanceOrder : public std::binary_function<const Unit, const Unit,
     // functor for operator "<"
     bool operator()(const Unit* _Left, const Unit* _Right) const
     {
-        return (MainTarget->GetDistance(_Left) < MainTarget->GetDistance(_Right));
+        return (MainTarget->GetDistanceSq(_Left->GetPositionX(), _Left->GetPositionY(), _Left->GetPositionZ()) < MainTarget->GetDistanceSq(_Right->GetPositionX(), _Right->GetPositionY(), _Right->GetPositionZ()));
     }
 };
 
@@ -424,6 +501,7 @@ struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
     uint32 EnrageTimer;
     uint32 SoulDrainTimer;
     uint32 AuraTimer;
+    uint32 checkTimer;
 
     bool emoteDone;
     bool backToCage;
@@ -435,12 +513,15 @@ struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
 
         AggroYellTimer = 5000;
         FixateTimer = 5000;
-        EnrageTimer = 30000;
-        SoulDrainTimer = 45000;
+        EnrageTimer = 44000 +rand()%3000;
+        SoulDrainTimer = 20000 +rand()%5000;
         AuraTimer = 5000;
+        checkTimer = 3000;
 
         emoteDone = false;
         backToCage = false;
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
+        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
     }
 
     void DamageTaken(Unit *done_by, uint32 &damage)
@@ -458,7 +539,7 @@ struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoZoneInCombat();
         DoScriptText(SUFF_SAY_FREED, m_creature);
@@ -472,12 +553,7 @@ struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
         if(victim->GetGUID() == FixateVictimGUID)
             FixateTimer = 0;
 
-        switch(rand()%3)
-        {
-            case 0: DoScriptText(SUFF_SAY_SLAY1, m_creature); break;
-            case 1: DoScriptText(SUFF_SAY_SLAY2, m_creature); break;
-            case 2: DoScriptText(SUFF_SAY_SLAY3, m_creature); break;
-        }
+        DoScriptText(RAND(SUFF_SAY_SLAY1, SUFF_SAY_SLAY2, SUFF_SAY_SLAY3), m_creature);
     }
 
     void CastFixate()
@@ -502,7 +578,7 @@ struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
 
         targets.sort(TargetDistanceOrder(m_creature)); // Sort players by distance.
         targets.resize(1); // Only need closest target.
-        
+
         Unit* target = targets.front();
         if(target)
         {
@@ -517,7 +593,7 @@ struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(InCombat)
+        if(m_creature->isInCombat())
         {
             //Supposed to be cast on nearest target
             if(FixateTimer < diff)
@@ -526,7 +602,7 @@ struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
                 if(urand(0,16) == 0)
                     DoScriptText(SUFF_SAY_AGGRO, m_creature);
 
-                FixateTimer = 5000; 
+                FixateTimer = 5000;
             }
             else
                 FixateTimer -= diff;
@@ -536,25 +612,32 @@ struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
+        if (checkTimer <= diff)
+        {
+            m_creature->SetSpeed(MOVE_RUN, 2.5);
+            checkTimer = 3000;
+        }
+        else
+            checkTimer -= diff;
+
         if(EnrageTimer < diff)
         {
             DoCast(m_creature, SPELL_ENRAGE, true);
             DoScriptText(SUFF_EMOTE_ENRAGE, m_creature);
-            EnrageTimer = 60000;
+            EnrageTimer = 44000 +rand()%3000;
         }
         else
             EnrageTimer -= diff;
 
         if(SoulDrainTimer < diff)
         {
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0, 200, true))
-                DoCast(target, SPELL_SOUL_DRAIN);
+            DoCast(m_creature, SPELL_SOUL_DRAIN);
 
-            SoulDrainTimer = 60000;
+            SoulDrainTimer = 20000 +rand()%5000;
         }
         else
             SoulDrainTimer -= diff;
-        
+
         if(!backToCage)
             DoMeleeAttackIfReady();
     }
@@ -567,15 +650,17 @@ struct TRINITY_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
     uint32 RuneShieldTimer;
     uint32 DeadenTimer;
     uint32 SoulShockTimer;
+    uint32 checkTimer;
 
     bool emoteDone;
     bool backToCage;
 
     void Reset()
     {
-        RuneShieldTimer = 60000;
+        RuneShieldTimer = 15000;
         DeadenTimer = 30000;
         SoulShockTimer = 5000;
+        checkTimer = 3000;
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
 
         emoteDone = false;
@@ -621,7 +706,7 @@ struct TRINITY_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if(m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
              return;
@@ -633,12 +718,7 @@ struct TRINITY_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
 
     void KilledUnit(Unit *victim)
     {
-        switch(rand()%3)
-        {
-            case 0: DoScriptText(DESI_SAY_SLAY1, m_creature); break;
-            case 1: DoScriptText(DESI_SAY_SLAY2, m_creature); break;
-            case 2: DoScriptText(DESI_SAY_SLAY3, m_creature); break;
-        }
+        DoScriptText(RAND(DESI_SAY_SLAY1, DESI_SAY_SLAY2, DESI_SAY_SLAY3), m_creature);
     }
 
     void UpdateAI(const uint32 diff)
@@ -646,43 +726,48 @@ struct TRINITY_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
+        if (checkTimer <= diff)
+        {
+            m_creature->SetSpeed(MOVE_RUN, 2.5);
+            checkTimer = 3000;
+        }
+        else
+            checkTimer -= diff;
+
         if(RuneShieldTimer < diff)
         {
-            m_creature->InterruptNonMeleeSpells(false);
-            DoCast(m_creature, SPELL_RUNE_SHIELD, true);
-            SoulShockTimer += 2000;
-            DeadenTimer += 2000;
-            RuneShieldTimer = 60000;
+            ForceSpellCast(m_creature, SPELL_RUNE_SHIELD);
+
+            RuneShieldTimer = 15000;
         }
         else
             RuneShieldTimer -= diff;
 
         if(SoulShockTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_SOUL_SHOCK);
+            AddSpellToCast(m_creature->getVictim(), SPELL_SOUL_SHOCK);
             SoulShockTimer = 5000;
-
-            if(DeadenTimer < 1200)
-                DeadenTimer = 1200;
         }
         else
             SoulShockTimer -= diff;
 
         if(DeadenTimer < diff)
         {
-            m_creature->InterruptNonMeleeSpells(false);
-            DoCast(m_creature->getVictim(), SPELL_DEADEN);
-
             if(urand(0,1))
-                DoScriptText(DESI_SAY_SPEC, m_creature);
+                AddSpellToCastWithScriptText(m_creature->getVictim(), SPELL_DEADEN, DESI_SAY_SPEC);
+            else
+                AddSpellToCast(m_creature->getVictim(), SPELL_DEADEN);
 
-            DeadenTimer = 25000 + rand()%10000;
+            DeadenTimer = 30000;
         }
         else
             DeadenTimer -= diff;
 
         if(!backToCage)
+        {
+            CastNextSpellIfAnyAndReady();
             DoMeleeAttackIfReady();
+        }
     }
 };
 
@@ -711,15 +796,13 @@ struct TRINITY_DLL_DECL boss_essence_of_angerAI : public ScriptedAI
         SpiteTargetGUID.clear();
 
         CheckedAggro = false;
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
+        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(ANGER_SAY_FREED, m_creature); break;
-        case 1: DoScriptText(ANGER_SAY_FREED2, m_creature); break;
-        }
+        DoScriptText(RAND(ANGER_SAY_FREED, ANGER_SAY_FREED2), m_creature);
 
         DoZoneInCombat();
         DoCast(m_creature, AURA_OF_ANGER, true);
@@ -732,11 +815,7 @@ struct TRINITY_DLL_DECL boss_essence_of_angerAI : public ScriptedAI
 
     void KilledUnit(Unit *victim)
     {
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(ANGER_SAY_SLAY1, m_creature); break;
-        case 1: DoScriptText(ANGER_SAY_SLAY2, m_creature); break;
-        }
+        DoScriptText(RAND(ANGER_SAY_SLAY1, ANGER_SAY_SLAY2), m_creature);
     }
 
     void UpdateAI(const uint32 diff)
@@ -747,18 +826,21 @@ struct TRINITY_DLL_DECL boss_essence_of_angerAI : public ScriptedAI
 
         if(!CheckedAggro)
         {
-            AggroTargetGUID = m_creature->getVictim()->GetGUID();
+            AggroTargetGUID = m_creature->getVictimGUID();
             CheckedAggro = true;
         }
 
         if(CheckTankTimer < diff)
         {
-            if(m_creature->getVictim()->GetGUID() != AggroTargetGUID)
+            if(m_creature->getVictimGUID() != AggroTargetGUID)
             {
                 DoScriptText(ANGER_SAY_BEFORE, m_creature);
                 DoCast(m_creature, SPELL_SELF_SEETHE, true);
-                AggroTargetGUID = m_creature->getVictim()->GetGUID();
+                AggroTargetGUID = m_creature->getVictimGUID();
             }
+
+            m_creature->SetSpeed(MOVE_RUN, 2.5);
+
             CheckTankTimer = 2000;
         }
         else
@@ -766,12 +848,12 @@ struct TRINITY_DLL_DECL boss_essence_of_angerAI : public ScriptedAI
 
         if(SoulScreamTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_SOUL_SCREAM);
+            DoCast(m_creature, SPELL_SOUL_SCREAM);
 
             if(!urand(0,2))
                 DoScriptText(ANGER_SAY_SPEC, m_creature);
-            
-            SoulScreamTimer = 9000 + rand()%2000;
+
+            SoulScreamTimer = 10000;
         }
         else
             SoulScreamTimer -= diff;
@@ -815,6 +897,11 @@ CreatureAI* GetAI_npc_enslaved_soul(Creature *_Creature)
     return new npc_enslaved_soulAI (_Creature);
 }
 
+CreatureAI* GetAI_npc_ros_trigger(Creature *_Creature)
+{
+    return new npc_ros_triggerAI (_Creature);
+}
+
 void AddSC_boss_reliquary_of_souls()
 {
     Script *newscript;
@@ -841,6 +928,11 @@ void AddSC_boss_reliquary_of_souls()
     newscript = new Script;
     newscript->Name="npc_enslaved_soul";
     newscript->GetAI = &GetAI_npc_enslaved_soul;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_ros_trigger";
+    newscript->GetAI = &GetAI_npc_ros_trigger;
     newscript->RegisterSelf();
 }
 

@@ -68,13 +68,13 @@ struct TRINITY_DLL_DECL boss_scarlet_commander_mograineAI : public ScriptedAI
         Consecration3_Timer = 30000;
         BlessingOfWisdom_Timer = 45000;
         BlessingOfProtection3_Timer = 45000;
-        
+
         if(pInstance)
             pInstance->HandleGameObject(pInstance->GetData64(DATA_DOOR_WHITEMANE), false);
 
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_MO_AGGRO, m_creature);
         DoCast(m_creature,SPELL_RETRIBUTIONAURA3);
@@ -84,12 +84,12 @@ struct TRINITY_DLL_DECL boss_scarlet_commander_mograineAI : public ScriptedAI
     {
         DoScriptText(SAY_MO_KILL, m_creature);
     }
-    
+
     void JustDied(Unit *who)
     {
         if(!pInstance)
             return;
-            
+
         pInstance->HandleGameObject(pInstance->GetData64(DATA_DOOR_WHITEMANE), true);
     }
 
@@ -104,21 +104,13 @@ struct TRINITY_DLL_DECL boss_scarlet_commander_mograineAI : public ScriptedAI
             //heal_Timer
             if (Heal_Timer < diff)
             {
-                //Switch between 2 different charge methods
-                switch (rand()%2)
-                {
-                    case 0:
-                        DoCast(m_creature,SPELL_HOLYLIGHT6);
-                        break;
-                    case 1:
-                        DoCast(m_creature,SPELL_FLASHHEAL6);
-                        break;
-                }
-                return;
+                DoCast(m_creature, RAND(SPELL_HOLYLIGHT6, SPELL_FLASHHEAL6));
 
                 //60 seconds until we should cast this agian
                 Heal_Timer = 60000;
-            }else Heal_Timer -= diff;
+            }
+            else
+                Heal_Timer -= diff;
         }
 
         //DivineShield2_Timer
@@ -126,42 +118,54 @@ struct TRINITY_DLL_DECL boss_scarlet_commander_mograineAI : public ScriptedAI
         {
             DoCast(m_creature,SPELL_DIVINESHIELD2);
             DivineShield2_Timer = 60000;
-        }else DivineShield2_Timer -= diff;
+        }
+        else
+            DivineShield2_Timer -= diff;
 
         //CrusaderStrike5_Timer
         if (CrusaderStrike5_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_CRUSADERSTRIKE5);
             CrusaderStrike5_Timer = 20000;
-        }else CrusaderStrike5_Timer -= diff;
+        }
+        else
+            CrusaderStrike5_Timer -= diff;
 
         //HammerOfJustice3_Timer
         if (HammerOfJustice3_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_HAMMEROFJUSTICE3);
             HammerOfJustice3_Timer = 30000;
-        }else HammerOfJustice3_Timer -= diff;
+        }
+        else
+            HammerOfJustice3_Timer -= diff;
 
         //Consecration3_Timer
         if (Consecration3_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_CONSECRATION3);
             Consecration3_Timer = 20000;
-        }else Consecration3_Timer -= diff;
+        }
+        else
+            Consecration3_Timer -= diff;
 
         //BlessingOfWisdom_Timer
         if (BlessingOfWisdom_Timer < diff)
         {
             DoCast(m_creature,SPELL_BLESSINGOFWISDOM);
             BlessingOfWisdom_Timer = 45000;
-        }else BlessingOfWisdom_Timer -= diff;
+        }
+        else
+            BlessingOfWisdom_Timer -= diff;
 
         //BlessingOfProtection3_Timer
         if (BlessingOfProtection3_Timer < diff)
         {
             DoCast(m_creature,SPELL_BLESSINGOFPROTECTION3);
             BlessingOfProtection3_Timer = 50000;
-        }else BlessingOfProtection3_Timer -= diff;
+        }
+        else
+            BlessingOfProtection3_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }
@@ -211,7 +215,7 @@ struct TRINITY_DLL_DECL boss_high_inquisitor_whitemaneAI : public ScriptedAI
         MindBlast6_Timer = 6000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_WH_INTRO, m_creature);
     }
@@ -249,7 +253,9 @@ struct TRINITY_DLL_DECL boss_high_inquisitor_whitemaneAI : public ScriptedAI
 
                 //22-32 seconds until we should cast this agian
                 Healing_Timer = 22000 + rand()%10000;
-            }else Healing_Timer -= diff;
+            }
+            else
+                Healing_Timer -= diff;
         }
 
         if (m_creature->GetHealth()*100 / m_creature->GetMaxHealth() <= 30)
@@ -258,7 +264,9 @@ struct TRINITY_DLL_DECL boss_high_inquisitor_whitemaneAI : public ScriptedAI
             {
                 DoCast(m_creature,SPELL_RENEW);
                 Renew_Timer = 30000;
-            }else Renew_Timer -= diff;
+            }
+            else
+                Renew_Timer -= diff;
         }
 
         //PowerWordShield_Timer
@@ -266,42 +274,54 @@ struct TRINITY_DLL_DECL boss_high_inquisitor_whitemaneAI : public ScriptedAI
         {
             DoCast(m_creature,SPELL_POWERWORDSHIELD);
             PowerWordShield_Timer = 25000;
-        }else PowerWordShield_Timer -= diff;
+        }
+        else
+            PowerWordShield_Timer -= diff;
 
         //CrusaderStrike_Timer
         if (CrusaderStrike_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_CRUSADERSTRIKE);
             CrusaderStrike_Timer = 15000;
-        }else CrusaderStrike_Timer -= diff;
+        }
+        else
+            CrusaderStrike_Timer -= diff;
 
         //HammerOfJustice_Timer
         if (HammerOfJustice_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_HAMMEROFJUSTICE);
             HammerOfJustice_Timer = 12000;
-        }else HammerOfJustice_Timer -= diff;
+        }
+        else
+            HammerOfJustice_Timer -= diff;
 
         //HolySmite6_Timer
         if (HolySmite6_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_HOLYSMITE6);
             HolySmite6_Timer = 10000;
-        }else HolySmite6_Timer -= diff;
+        }
+        else
+            HolySmite6_Timer -= diff;
 
         //HolyFire5_Timer
         if (HolyFire5_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_HOLYFIRE5);
             HolyFire5_Timer = 15000;
-        }else HolyFire5_Timer -= diff;
+        }
+        else
+            HolyFire5_Timer -= diff;
 
         //MindBlast6_Timer
         if (MindBlast6_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_MINDBLAST6);
             MindBlast6_Timer = 8000;
-        }else MindBlast6_Timer -= diff;
+        }
+        else
+            MindBlast6_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }

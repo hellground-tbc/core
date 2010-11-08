@@ -71,7 +71,7 @@ struct TRINITY_DLL_DECL boss_nethermancer_sepethreaAI : public ScriptedAI
             pInstance->SetData(DATA_NETHERMANCER_EVENT, NOT_STARTED);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if(pInstance)
             pInstance->SetData(DATA_NETHERMANCER_EVENT, IN_PROGRESS);
@@ -83,11 +83,7 @@ struct TRINITY_DLL_DECL boss_nethermancer_sepethreaAI : public ScriptedAI
 
     void KilledUnit(Unit* victim)
     {
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(SAY_SLAY1, m_creature); break;
-        case 1: DoScriptText(SAY_SLAY2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), m_creature);
     }
 
     void JustDied(Unit* Killer)
@@ -126,11 +122,7 @@ struct TRINITY_DLL_DECL boss_nethermancer_sepethreaAI : public ScriptedAI
                 if (rand()%2)
                     return;
 
-                switch(rand()%2)
-                {
-                case 0: DoScriptText(SAY_DRAGONS_BREATH_1, m_creature); break;
-                case 1: DoScriptText(SAY_DRAGONS_BREATH_2, m_creature); break;
-                }
+                DoScriptText(RAND(SAY_DRAGONS_BREATH_1, SAY_DRAGONS_BREATH_2), m_creature);
             }
             dragons_breath_Timer = 12000 + rand()%10000;
         }else dragons_breath_Timer -= diff;
@@ -190,7 +182,7 @@ struct TRINITY_DLL_DECL mob_ragin_flamesAI : public ScriptedAI
         m_creature->SetSpeed(MOVE_RUN, HeroicMode ? 0.7f : 0.5f);
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
     }
 

@@ -133,7 +133,7 @@ struct TRINITY_DLL_DECL mob_abyssalAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit*) {DoZoneInCombat();}
+    void EnterCombat(Unit*) {DoZoneInCombat();}
     void AttackStart(Unit *who) {if(!trigger) ScriptedAI::AttackStart(who);}
     void MoveInLineOfSight(Unit *who) {if(!trigger) ScriptedAI::MoveInLineOfSight(who);}
 
@@ -212,18 +212,15 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public ScriptedAI
 
     void Reset()
     {
+        if (!pInstance)
+            pInstance = (ScriptedInstance*)m_creature->GetInstanceData();
+
         if(pInstance)
         {
-            if(pInstance->GetData(DATA_MAGTHERIDON_EVENT) == DONE)
-            {
-                 m_creature->setDeathState(JUST_DIED);
-                 m_creature->RemoveCorpse();
-            }
-            else
-                pInstance->SetData(DATA_MAGTHERIDON_EVENT, NOT_STARTED);
-
             pInstance->SetData(DATA_COLLAPSE, false);
             pInstance->SetData(DATA_CHANNELER_EVENT, NOT_STARTED);
+            if (pInstance->GetData(DATA_MAGTHERIDON_EVENT) != DONE)
+                pInstance->SetData(DATA_MAGTHERIDON_EVENT, NOT_STARTED);
         }
 
         Berserk_Timer = 1320000;
@@ -238,8 +235,6 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public ScriptedAI
 
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
-        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
         m_creature->CastSpell(m_creature, SPELL_SHADOW_CAGE_C, true);
     }
 
@@ -319,7 +314,7 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public ScriptedAI
             ScriptedAI::AttackStart(who);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if(pInstance)
             pInstance->SetData(DATA_MAGTHERIDON_EVENT, IN_PROGRESS);
@@ -332,9 +327,18 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public ScriptedAI
         DoScriptText(SAY_FREED, m_creature);
    }
 
+    void OnAuraRemove(Aura* aur, bool removeStack)
+    {
+        if(aur->GetId() == 30205)
+        {
+            m_creature->SetHealth(m_creature->GetMaxHealth());
+            DoResetThreat();
+        }
+    }
+
     void UpdateAI(const uint32 diff)
     {
-        if (!InCombat)
+        if (!m_creature->isInCombat())
         {
             if (RandChat_Timer < diff)
             {
@@ -480,7 +484,7 @@ struct TRINITY_DLL_DECL mob_hellfire_channelerAI : public ScriptedAI
         Summons.DespawnAll();
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if(pInstance)
             pInstance->SetData(DATA_CHANNELER_EVENT, IN_PROGRESS);
@@ -529,7 +533,7 @@ struct TRINITY_DLL_DECL mob_hellfire_channelerAI : public ScriptedAI
 
         if(Fear_Timer < diff)
         {
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_FEAR), true, m_creature->getVictim()))
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_FEAR), true, m_creature->getVictimGUID()))
                 DoCast(target, SPELL_FEAR);
 
             Fear_Timer = 25000 + rand()%15000;

@@ -54,14 +54,16 @@ Corpse::~Corpse()
 void Corpse::AddToWorld()
 {
     ///- Register the corpse for guid lookup
-    if(!IsInWorld()) ObjectAccessor::Instance().AddObject(this);
+    if(!IsInWorld()) HashMapHolder<Corpse>::Insert(this);
     Object::AddToWorld();
 }
 
 void Corpse::RemoveFromWorld()
 {
     ///- Remove the corpse from the accessor
-    if(IsInWorld()) ObjectAccessor::Instance().RemoveObject(this);
+    if(IsInWorld())
+        HashMapHolder<Corpse>::Remove(this);
+
     Object::RemoveFromWorld();
 }
 

@@ -90,8 +90,6 @@ struct TRINITY_DLL_DECL boss_moroesAI : public ScriptedAI
         Gouge_Timer = 23000;
         Wait_Timer = 0;
         CheckAdds_Timer = 5000;
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
-        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_ATTACK_ME, true);
         Enrage = false;
         InVanish = false;
         if(m_creature->GetHealth() > 0)
@@ -99,7 +97,7 @@ struct TRINITY_DLL_DECL boss_moroesAI : public ScriptedAI
             SpawnAdds();
         }
 
-        if(pInstance)
+        if(pInstance && pInstance->GetData(DATA_MOROES_EVENT) != DONE)
             pInstance->SetData(DATA_MOROES_EVENT, NOT_STARTED);
     }
 
@@ -111,7 +109,7 @@ struct TRINITY_DLL_DECL boss_moroesAI : public ScriptedAI
         DoZoneInCombat();
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         StartEvent();
 
@@ -122,12 +120,7 @@ struct TRINITY_DLL_DECL boss_moroesAI : public ScriptedAI
 
     void KilledUnit(Unit* victim)
     {
-        switch (rand()%3)
-        {
-        case 0: DoScriptText(SAY_KILL_1, m_creature); break;
-        case 1: DoScriptText(SAY_KILL_2, m_creature); break;
-        case 2: DoScriptText(SAY_KILL_3, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_KILL_1, SAY_KILL_2, SAY_KILL_3), m_creature);
     }
 
     void JustDied(Unit* victim)
@@ -188,7 +181,7 @@ struct TRINITY_DLL_DECL boss_moroesAI : public ScriptedAI
         {
             for(int i = 0; i < 4; i++)
             {
-                Creature *pCreature = m_creature->SummonCreature(AddId[i], Locations[i][0], Locations[i][1], POS_Z, Locations[i][2], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);                
+                Creature *pCreature = m_creature->SummonCreature(AddId[i], Locations[i][0], Locations[i][1], POS_Z, Locations[i][2], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);
                 if (pCreature)
                 {
                     AddGUID[i] = pCreature->GetGUID();
@@ -237,8 +230,9 @@ struct TRINITY_DLL_DECL boss_moroesAI : public ScriptedAI
                 if (Temp && Temp->isAlive())
                 {
                     Temp->AI()->AttackStart(m_creature->getVictim());
-                    DoZoneInCombat(Temp);
-                }else
+                    Temp->AI()->DoZoneInCombat();
+                }
+                else
                     EnterEvadeMode();
             }
         }
@@ -315,11 +309,7 @@ struct TRINITY_DLL_DECL boss_moroesAI : public ScriptedAI
         {
             if(Wait_Timer < diff)
             {
-                switch(rand()%2)
-                {
-                    case 0: DoScriptText(SAY_SPECIAL_1, m_creature); break;
-                    case 1: DoScriptText(SAY_SPECIAL_2, m_creature); break;
-                }
+                DoScriptText(RAND(SAY_SPECIAL_1, SAY_SPECIAL_2), m_creature);
 
                 if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 50, true))
                    target->CastSpell(target, SPELL_GARROTE,true);
@@ -354,8 +344,6 @@ struct TRINITY_DLL_DECL boss_moroes_guestAI : public ScriptedAI
         if(pInstance)
             pInstance->SetData(DATA_MOROES_EVENT, NOT_STARTED);
     }
-
-    void Aggro(Unit* who) {}
 
     void AcquireGUID()
     {

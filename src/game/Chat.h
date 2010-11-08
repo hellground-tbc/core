@@ -72,6 +72,8 @@ class ChatHandler
 
         int ParseCommands(const char* text);
 
+        bool ContainsNotAllowedSigns(std::string text);
+
         virtual char const* GetName() const;
         static ChatCommand* getCommandTable();
     protected:
@@ -96,6 +98,7 @@ class ChatHandler
         bool HandleAccountSetAddonCommand(const char* args);
         bool HandleAccountSetGmLevelCommand(const char* args);
         bool HandleAccountSetPasswordCommand(const char* args);
+        bool HandleAccountWeatherCommand(const char*args);
         bool HandleAccountSpecialLogCommand(const char* args);
 
         bool HandleHelpCommand(const char* args);
@@ -104,7 +107,6 @@ class ChatHandler
         bool HandleStartCommand(const char* args);
         bool HandleDismountCommand(const char* args);
         bool HandleSaveCommand(const char* args);
-        bool HandleGMListIngameCommand(const char* args);
         bool HandleGMListFullCommand(const char* args);
 
         bool HandleNamegoCommand(const char* args);
@@ -306,8 +308,14 @@ class ChatHandler
         bool HandleSendQuestPartyMsgCommand(const char* args);
         bool HandleSendQuestInvalidMsgCommand(const char* args);
 
+        bool HandleDebugWPCommand(const char* args);
+
         bool HandleDebugInArcCommand(const char* args);
         bool HandleDebugSpellFailCommand(const char* args);
+
+        bool HandleAddWPCommand(const char* args);
+        bool HandleAddFormationCommand(const char* args);
+        bool HandleRelocateCreatureCommand(const char *args);
 
         bool HandleGUIDCommand(const char* args);
         bool HandleNameCommand(const char* args);
@@ -342,15 +350,19 @@ class ChatHandler
         bool HandleBanAccountCommand(const char* args);
         bool HandleBanCharacterCommand(const char* args);
         bool HandleBanIPCommand(const char* args);
+        bool HandleBanEmailCommand(const char* args);
         bool HandleUnBanAccountCommand(const char* args);
         bool HandleUnBanCharacterCommand(const char* args);
         bool HandleUnBanIPCommand(const char* args);
+        bool HandleUnBanEmailCommand(const char* args);
         bool HandleBanInfoAccountCommand(const char* args);
         bool HandleBanInfoCharacterCommand(const char* args);
         bool HandleBanInfoIPCommand(const char* args);
+        bool HandleBanInfoEmailCommand(const char* args);
         bool HandleBanListAccountCommand(const char* args);
         bool HandleBanListCharacterCommand(const char* args);
         bool HandleBanListIPCommand(const char* args);
+        bool HandleBanListEmailCommand(const char* args);
         bool HandleGoXYCommand(const char* args);
         bool HandleGoXYZCommand(const char* args);
         bool HandleGoZoneXYCommand(const char* args);
@@ -369,6 +381,7 @@ class ChatHandler
         bool HandleDieCommand(const char* args);
         bool HandleDamageCommand(const char *args);
         bool HandleReviveCommand(const char* args);
+        bool HandleReviveGroupCommand(const char* args);
         bool HandleMorphCommand(const char* args);
         bool HandleAuraCommand(const char* args);
         bool HandleUnAuraCommand(const char* args);
@@ -484,7 +497,6 @@ class ChatHandler
         bool HandleAddQuest(const char * args);
         bool HandleRemoveQuest(const char * args);
         bool HandleCompleteQuest(const char * args);
-        bool HandleSaveAllCommand(const char* args);
         bool HandleGetItemState(const char * args);
         bool HandleGetLootRecipient(const char * args);
         bool HandleDebugArenaCommand(const char * args);
@@ -494,6 +506,10 @@ class ChatHandler
         bool HandleUnPossessCommand(const char* args);
         bool HandleBindSightCommand(const char* args);
         bool HandleUnbindSightCommand(const char* args);
+        bool HandleSetInstanceDataCommand(const char* args);
+        bool HandleGetInstanceDataCommand(const char* args);
+        bool HandleSetInstanceData64Command(const char* args);
+        bool HandleGetInstanceData64Command(const char* args);
 
         bool HandleBindFollowCommand(const char* args);
         bool HandleUnbindFollowCommand(const char* args);

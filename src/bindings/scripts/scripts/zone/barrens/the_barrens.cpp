@@ -1,28 +1,31 @@
-/* Copyright (C) 2006 - 2008 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+/*
+ * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 /* ScriptData
 SDName: The_Barrens
 SD%Complete: 90
-SDComment: Quest support: 2458, 4921, 6981, 1719, 863
+SDComment: Quest support: 2458, 4921, 6981, 1719, 863, 898
 SDCategory: Barrens
 EndScriptData */
 
 /* ContentData
 npc_beaten_corpse
+npc_gilthares
 npc_sputtervalve
 npc_taskmaster_fizzule
 npc_twiggy_flathead
@@ -30,7 +33,7 @@ npc_wizzlecrank_shredder
 EndContentData */
 
 #include "precompiled.h"
-#include "../../npc/npc_escortAI.h"
+#include "escort_ai.h"
 
 /*######
 ## npc_beaten_corpse
@@ -53,6 +56,101 @@ bool GossipSelect_npc_beaten_corpse(Player *player, Creature *_Creature, uint32 
     {
         player->SEND_GOSSIP_MENU(3558, _Creature->GetGUID());
         player->KilledMonster( 10668,_Creature->GetGUID() );
+    }
+    return true;
+}
+
+/*######
+# npc_gilthares
+######*/
+
+enum eGilthares
+{
+    SAY_GIL_START               = -1600370,
+    SAY_GIL_AT_LAST             = -1600371,
+    SAY_GIL_PROCEED             = -1600372,
+    SAY_GIL_FREEBOOTERS         = -1600373,
+    SAY_GIL_AGGRO_1             = -1600374,
+    SAY_GIL_AGGRO_2             = -1600375,
+    SAY_GIL_AGGRO_3             = -1600376,
+    SAY_GIL_AGGRO_4             = -1600377,
+    SAY_GIL_ALMOST              = -1600378,
+    SAY_GIL_SWEET               = -1600379,
+    SAY_GIL_FREED               = -1600380,
+
+    QUEST_FREE_FROM_HOLD        = 898,
+    AREA_MERCHANT_COAST         = 391,
+    FACTION_ESCORTEE            = 232                       //guessed, possible not needed for this quest
+};
+
+struct npc_giltharesAI : public npc_escortAI
+{
+    npc_giltharesAI(Creature* pCreature) : npc_escortAI(pCreature) { }
+
+    void Reset() { }
+
+    void WaypointReached(uint32 uiPointId)
+    {
+        Player* pPlayer = GetPlayerForEscort();
+
+        if (!pPlayer)
+            return;
+
+        switch(uiPointId)
+        {
+            case 16:
+                DoScriptText(SAY_GIL_AT_LAST, me, pPlayer);
+                break;
+            case 17:
+                DoScriptText(SAY_GIL_PROCEED, me, pPlayer);
+                break;
+            case 18:
+                DoScriptText(SAY_GIL_FREEBOOTERS, me, pPlayer);
+                break;
+            case 37:
+                DoScriptText(SAY_GIL_ALMOST, me, pPlayer);
+                break;
+            case 47:
+                DoScriptText(SAY_GIL_SWEET, me, pPlayer);
+                break;
+            case 53:
+                DoScriptText(SAY_GIL_FREED, me, pPlayer);
+                pPlayer->GroupEventHappens(QUEST_FREE_FROM_HOLD, me);
+                break;
+        }
+    }
+
+    void EnterCombat(Unit* pWho)
+    {
+        //not always use
+        if (rand()%4)
+            return;
+
+        //only aggro text if not player and only in this area
+        if (pWho->GetTypeId() != TYPEID_PLAYER && me->GetAreaId() == AREA_MERCHANT_COAST)
+        {
+            //appears to be pretty much random (possible only if escorter not in combat with pWho yet?)
+            DoScriptText(RAND(SAY_GIL_AGGRO_1, SAY_GIL_AGGRO_2, SAY_GIL_AGGRO_3, SAY_GIL_AGGRO_4), me, pWho);
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_gilthares(Creature* pCreature)
+{
+    return new npc_giltharesAI(pCreature);
+}
+
+bool QuestAccept_npc_gilthares(Player* pPlayer, Creature* pCreature, const Quest* pQuest)
+{
+    if (pQuest->GetQuestId() == QUEST_FREE_FROM_HOLD)
+    {
+        pCreature->setFaction(FACTION_ESCORTEE);
+        pCreature->SetStandState(UNIT_STAND_STATE_STAND);
+
+        DoScriptText(SAY_GIL_START, pCreature, pPlayer);
+
+        if (npc_giltharesAI* pEscortAI = CAST_AI(npc_giltharesAI, pCreature->AI()))
+            pEscortAI->Start(false, false, pPlayer->GetGUID(), pQuest);
     }
     return true;
 }
@@ -135,8 +233,6 @@ struct TRINITY_DLL_DECL npc_taskmaster_fizzuleAI : public ScriptedAI
             }
         }
     }
-
-    void Aggro(Unit* who) { }
 
     void UpdateAI(const uint32 diff)
     {
@@ -227,7 +323,7 @@ struct TRINITY_DLL_DECL npc_twiggy_flatheadAI : public ScriptedAI
         BigWill = 0;
     }
 
-    void Aggro(Unit *who) { }
+    void EnterCombat(Unit *who) { }
 
     void MoveInLineOfSight(Unit *who)
     {
@@ -244,16 +340,21 @@ struct TRINITY_DLL_DECL npc_twiggy_flatheadAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (EventInProgress) {
+        if (EventInProgress)
+        {
             Player* pWarrior = NULL;
 
             if(PlayerGUID)
                 pWarrior = Unit::GetPlayer(PlayerGUID);
 
             if(!pWarrior)
+            {
+                Reset();
                 return;
+            }
 
-            if(!pWarrior->isAlive() && pWarrior->GetQuestStatus(1719) == QUEST_STATUS_INCOMPLETE) {
+            if(!pWarrior->isAlive() && pWarrior->GetQuestStatus(1719) == QUEST_STATUS_INCOMPLETE)
+            {
                 EventInProgress = false;
                 DoScriptText(SAY_TWIGGY_FLATHEAD_DOWN, m_creature);
                 pWarrior->FailQuest(1719);
@@ -263,7 +364,8 @@ struct TRINITY_DLL_DECL npc_twiggy_flatheadAI : public ScriptedAI
                     if (AffrayChallenger[i])
                     {
                         Creature* pCreature = Unit::GetCreature((*m_creature), AffrayChallenger[i]);
-                        if(pCreature) {
+                        if(pCreature)
+                        {
                             if(pCreature->isAlive())
                             {
                                 pCreature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
@@ -279,8 +381,10 @@ struct TRINITY_DLL_DECL npc_twiggy_flatheadAI : public ScriptedAI
                 if (BigWill)
                 {
                     Creature* pCreature = Unit::GetCreature((*m_creature), BigWill);
-                    if(pCreature) {
-                        if(pCreature->isAlive()) {
+                    if(pCreature)
+                    {
+                        if(pCreature->isAlive())
+                        {
                             pCreature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
                             pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                             pCreature->setDeathState(JUST_DIED);
@@ -304,6 +408,7 @@ struct TRINITY_DLL_DECL npc_twiggy_flatheadAI : public ScriptedAI
                         Creature* pCreature = m_creature->SummonCreature(AFFRAY_CHALLENGER, AffrayChallengerLoc[i][0], AffrayChallengerLoc[i][1], AffrayChallengerLoc[i][2], AffrayChallengerLoc[i][3], TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 600000);
                         if(!pCreature)
                             continue;
+
                         pCreature->setFaction(35);
                         pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                         pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -332,7 +437,9 @@ struct TRINITY_DLL_DECL npc_twiggy_flatheadAI : public ScriptedAI
                         }
                     }
                     Challenger_checker = 1000;
-                } else Challenger_checker -= diff;
+                }
+                else
+                    Challenger_checker -= diff;
 
                 if(Wave_Timer < diff)
                 {
@@ -351,7 +458,8 @@ struct TRINITY_DLL_DECL npc_twiggy_flatheadAI : public ScriptedAI
                             Wave_Timer = 20000;
                         }
                     }
-                    else if (Wave >= 6 && !EventBigWill) {
+                    else if (Wave >= 6 && !EventBigWill)
+                    {
                         if(Creature* pCreature = m_creature->SummonCreature(BIG_WILL, -1722, -4341, 6.12, 6.26, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 480000))
                         {
                             BigWill = pCreature->GetGUID();
@@ -377,7 +485,9 @@ struct TRINITY_DLL_DECL npc_twiggy_flatheadAI : public ScriptedAI
                             Wave = 0;
                         }
                     }
-                } else Wave_Timer -= diff;
+                }
+                else
+                    Wave_Timer -= diff;
             }
         }
     }
@@ -392,94 +502,153 @@ CreatureAI* GetAI_npc_twiggy_flathead(Creature *_Creature)
 ## npc_wizzlecrank_shredder
 #####*/
 
-#define SAY_PROGRESS_1  -1000272
-#define SAY_PROGRESS_2  -1000273
-#define SAY_PROGRESS_3  -1000274
-
-#define SAY_MERCENARY_4 -1000275
-
-#define SAY_PROGRESS_5  -1000276
-#define SAY_PROGRESS_6  -1000277
-#define SAY_PROGRESS_7  -1000278
-#define SAY_PROGRESS_8  -1000279
-
-#define QUEST_ESCAPE    863
-#define NPC_PILOT       3451
-#define MOB_MERCENARY   3282
+enum eEnums_Wizzlecrank
+{
+    SAY_START           = -1000272,
+    SAY_STARTUP1        = -1000273,
+    SAY_STARTUP2        = -1000274,
+    SAY_MERCENARY       = -1000275,
+    SAY_PROGRESS_1      = -1000276,
+    SAY_PROGRESS_2      = -1000277,
+    SAY_PROGRESS_3      = -1000278,
+    SAY_END             = -1000279,
+ 
+    QUEST_ESCAPE        = 863,
+    FACTION_RATCHET     = 637,
+    NPC_PILOT_WIZZ      = 3451,
+    NPC_MERCENARY       = 3282,
+};
 
 struct TRINITY_DLL_DECL npc_wizzlecrank_shredderAI : public npc_escortAI
 {
-    npc_wizzlecrank_shredderAI(Creature* c) : npc_escortAI(c) {}
+    npc_wizzlecrank_shredderAI(Creature* c) : npc_escortAI(c)
+    {
+        m_bIsPostEvent = false;
+        m_uiPostEventTimer = 1000;
+        m_uiPostEventCount = 0;
+    }
 
-    bool Completed;
+    bool m_bIsPostEvent;
+    uint32 m_uiPostEventTimer;
+    uint32 m_uiPostEventCount;
+
+    void Reset()
+    {
+        if (!HasEscortState(STATE_ESCORT_ESCORTING))
+        {
+            m_creature->setDeathState(ALIVE);
+            m_bIsPostEvent = false;
+            m_uiPostEventTimer = 1000;
+            m_uiPostEventCount = 0;
+        }
+    }
 
     void WaypointReached(uint32 i)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
+        Player* player = GetPlayerForEscort();
 
         if(!player)
             return;
 
         switch(i)
         {
-        case 0: DoScriptText(SAY_PROGRESS_1, m_creature);
-            m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE); break;
-        case 1: DoScriptText(SAY_PROGRESS_2, m_creature); break;
-        case 10: DoScriptText(SAY_PROGRESS_3, m_creature, player);
-            m_creature->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE); break;
-        case 20:{
-            Unit* Mercenary = FindCreature(MOB_MERCENARY, 99, m_creature);
-            if(Mercenary)
+        case 0:
+            DoScriptText(SAY_STARTUP1, m_creature);
+            break;
+        case 9:
+            SetRun(false);
+            break;
+        case 17:
+            if (Creature* pTemp = m_creature->SummonCreature(NPC_MERCENARY, 1128.489f, -3037.611f, 92.701f, 1.472f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000))
             {
-                DoScriptText(SAY_MERCENARY_4, Mercenary);
-                ((Creature*)Mercenary)->AI()->AttackStart(m_creature);
-                AttackStart(Mercenary);
+                DoScriptText(SAY_MERCENARY, pTemp);
+                m_creature->SummonCreature(NPC_MERCENARY, 1160.172f, -2980.168f, 97.313f, 3.690f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
             }
-                }break;
-        case 21: DoScriptText(SAY_PROGRESS_5, m_creature);
-            m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE); break;
-        case 28: DoScriptText(SAY_PROGRESS_6, m_creature); break;
-        case 29: DoScriptText(SAY_PROGRESS_7, m_creature); break;
-        case 30: DoScriptText(SAY_PROGRESS_8, m_creature); break;
-        case 31: m_creature->SummonCreature(NPC_PILOT, 1088.77, -2985.39, 91.84, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 300000);
-            m_creature->setDeathState(JUST_DIED);
-            Completed = true;
-            player->GroupEventHappens(QUEST_ESCAPE, m_creature);
+            break;
+        case 24:
+            m_bIsPostEvent = true;
             break;
         }
     }
 
-    void Reset()
+    void WaypointStart(uint32 uiPointId)
     {
-        m_creature->setDeathState(ALIVE);
-        Completed = false;
-        m_creature->setFaction(69);
-    }
+        Player* pPlayer = GetPlayerForEscort();
+        if (!pPlayer)
+            return;
 
-    void Aggro(Unit* who){}
-
-    void JustDied(Unit* killer)
-    {
-        if (PlayerGUID && !Completed)
+        switch(uiPointId)
         {
-            Player* player = Unit::GetPlayer(PlayerGUID);
-            if (player)
-                player->FailQuest(QUEST_ESCAPE);
+            case 9:
+                DoScriptText(SAY_STARTUP2, m_creature, pPlayer);
+                break;
+            case 18:
+                DoScriptText(SAY_PROGRESS_1, m_creature, pPlayer);
+                SetRun();
+                break;
         }
     }
 
-    void UpdateAI(const uint32 diff)
+    void JustSummoned(Creature* pSummoned)
     {
-        npc_escortAI::UpdateAI(diff);
+        if (pSummoned->GetEntry() == NPC_PILOT_WIZZ)
+            m_creature->setDeathState(JUST_DIED);
+
+        if (pSummoned->GetEntry() == NPC_MERCENARY)
+            pSummoned->AI()->AttackStart(m_creature);
+    }
+
+    void EnterCombat(Unit* who){}
+
+    void UpdateEscortAI(const uint32 uiDiff)
+    {
+        if (!UpdateVictim())
+        {
+            if (m_bIsPostEvent)
+            {
+                if (m_uiPostEventTimer < uiDiff)
+                {
+                    switch(m_uiPostEventCount)
+                    {
+                        case 0:
+                            DoScriptText(SAY_PROGRESS_2, m_creature);
+                            break;
+                        case 1:
+                            DoScriptText(SAY_PROGRESS_3, m_creature);
+                            break;
+                        case 2:
+                            DoScriptText(SAY_END, m_creature);
+                            break;
+                        case 3:
+                            if (Player* pPlayer = GetPlayerForEscort())
+                            {
+                                pPlayer->GroupEventHappens(QUEST_ESCAPE, m_creature);
+                                m_creature->SummonCreature(NPC_PILOT_WIZZ, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 180000);
+                            }
+                            break;
+                    }
+
+                    ++m_uiPostEventCount;
+                    m_uiPostEventTimer = 5000;
+                }
+                else
+                    m_uiPostEventTimer -= uiDiff;
+            }
+
+            return;
+        }
+
+        DoMeleeAttackIfReady();
     }
 };
 
-bool QuestAccept_npc_wizzlecrank_shredder(Player* player, Creature* creature, Quest const* quest)
+bool QuestAccept_npc_wizzlecrank_shredder(Player* pPlayer, Creature* pCreature, Quest const* quest)
 {
     if (quest->GetQuestId() == QUEST_ESCAPE)
     {
-        ((npc_escortAI*)(creature->AI()))->Start(true, true, false, player->GetGUID());
-        creature->setFaction(113);
+        pCreature->setFaction(FACTION_RATCHET);
+        if (npc_escortAI* pEscortAI = CAST_AI(npc_wizzlecrank_shredderAI, pCreature->AI()))
+            pEscortAI->Start(true, false, pPlayer->GetGUID());
     }
     return true;
 }
@@ -532,6 +701,12 @@ void AddSC_the_barrens()
     newscript->Name="npc_beaten_corpse";
     newscript->pGossipHello = &GossipHello_npc_beaten_corpse;
     newscript->pGossipSelect = &GossipSelect_npc_beaten_corpse;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_gilthares";
+    newscript->GetAI = &GetAI_npc_gilthares;
+    newscript->pQuestAccept = &QuestAccept_npc_gilthares;
     newscript->RegisterSelf();
 
     newscript = new Script;

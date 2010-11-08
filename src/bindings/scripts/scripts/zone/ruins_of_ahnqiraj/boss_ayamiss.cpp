@@ -17,26 +17,43 @@
 /* ScriptData
 SDName: Boss_Ayamiss
 SD%Complete: 50
-SDComment: VERIFY SCRIPT
+SDComment: VERIFY SCRIPT, Wasp include missing, larvas and sacrifice too, not flying in phase one
 SDCategory: Ruins of Ahn'Qiraj
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_ruins_of_ahnqiraj.h"
 
 /*
 To do:
 make him fly from 70-100%
 */
 
-#define SPELL_STINGERSPRAY 25749
-#define SPELL_POISONSTINGER 25748                           //only used in phase1
-#define SPELL_SUMMONSWARMER 25844                           //might be 25708
-// #define SPELL_PARALYZE 23414 doesnt work correct (core)
+#define SPELL_STINGERSPRAY      25749
+#define SPELL_POISONSTINGER     25748                           //only used in phase1
+#define SPELL_SUMMONSWARMER     25844                           //might be 25708
+#define SPELL_PARALYZE          25725                           //23414(wtf?) doesnt work correct (core)
+
+#define CREATURE_LARVA  15555       //tries to eat paralyzed target
+#define SPELL_FEED      25721       //used by larva on paralyzed target
+
+#define CREATURE_SWARMER        15546                           //propably we need to summon them manually
+
+static float position[3] =
+{
+    -9664.55,
+    1562.54,
+    22.05
+};
 
 struct TRINITY_DLL_DECL boss_ayamissAI : public ScriptedAI
 {
-    boss_ayamissAI(Creature *c) : ScriptedAI(c) {}
+    boss_ayamissAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
 
+    ScriptedInstance * pInstance;
     Unit *pTarget;
     uint32 STINGERSPRAY_Timer;
     uint32 POISONSTINGER_Timer;
@@ -47,14 +64,37 @@ struct TRINITY_DLL_DECL boss_ayamissAI : public ScriptedAI
     {
         pTarget = NULL;
         STINGERSPRAY_Timer = 30000;
-        POISONSTINGER_Timer = 30000;
+        POISONSTINGER_Timer = 3500;
         SUMMONSWARMER_Timer = 60000;
         phase=1;
+        m_creature->SetUnitMovementFlags(MOVEMENTFLAG_LEVITATING);
+
+        if (pInstance)
+            pInstance->SetData(DATA_AYAMISS_THE_HUNTER, NOT_STARTED);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         pTarget = who;
+        m_creature->SetUnitMovementFlags(MOVEMENTFLAG_LEVITATING);
+        m_creature->GetMotionMaster()->MovePoint(0, position[0], position[1], position[2]);
+
+        if (pInstance)
+            pInstance->SetData(DATA_AYAMISS_THE_HUNTER, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_AYAMISS_THE_HUNTER, DONE);
+    }
+
+    void AttackStart(Unit* who)
+    {
+        if(phase==1)
+            AttackStartNoMove(who);
+        else
+            ScriptedAI::AttackStart(who);
     }
 
     void UpdateAI(const uint32 diff)
@@ -68,33 +108,57 @@ struct TRINITY_DLL_DECL boss_ayamissAI : public ScriptedAI
             phase=2;
         }
 
-        //STINGERSPRAY_Timer (only in phase2)
-        if (phase==2 && STINGERSPRAY_Timer < diff)
+        //STINGERSPRAY_Timer
+        if (STINGERSPRAY_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_STINGERSPRAY);
             STINGERSPRAY_Timer = 30000;
-        }else STINGERSPRAY_Timer -= diff;
+        }
+        else STINGERSPRAY_Timer -= diff;
 
         //POISONSTINGER_Timer (only in phase1)
         if (phase==1 && POISONSTINGER_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_POISONSTINGER);
-            POISONSTINGER_Timer = 30000;
-        }else POISONSTINGER_Timer -= diff;
+            POISONSTINGER_Timer = 3500;
+        }
+        else POISONSTINGER_Timer -= diff;
 
-        //SUMMONSWARMER_Timer (only in phase1)
+        //SUMMONSWARMER_Timer
         if (SUMMONSWARMER_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_SUMMONSWARMER);
             SUMMONSWARMER_Timer = 60000;
-        }else SUMMONSWARMER_Timer -= diff;
+        }
+        else SUMMONSWARMER_Timer -= diff;
 
+        //melee in phase 2 only
+        if (phase!=1)
         DoMeleeAttackIfReady();
     }
 };
 CreatureAI* GetAI_boss_ayamiss(Creature *_Creature)
 {
     return new boss_ayamissAI (_Creature);
+}
+
+struct TRINITY_DLL_DECL larvaAI : public ScriptedAI
+{
+    larvaAI(Creature *c) : ScriptedAI(c){}
+
+    uint32 WP;
+
+    void Reset()
+    {
+        WP = 0;
+    }
+    void UpdateAI(const uint32 diff)
+    {}
+};
+
+CreatureAI* GetAI_larva(Creature *_Creature)
+{
+    return new larvaAI (_Creature);
 }
 
 void AddSC_boss_ayamiss()
@@ -106,3 +170,11 @@ void AddSC_boss_ayamiss()
     newscript->RegisterSelf();
 }
 
+void AddSC_larva()
+{
+    Script *newscript;
+    newscript = new Script;
+    newscript->Name="larva";
+    newscript->GetAI = &GetAI_larva;
+    newscript->RegisterSelf();
+}

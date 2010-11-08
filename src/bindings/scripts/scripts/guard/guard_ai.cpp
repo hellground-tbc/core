@@ -34,7 +34,7 @@ void guardAI::Reset()
     BuffTimer = 0;                                          //Rebuff as soon as we can
 }
 
-void guardAI::Aggro(Unit *who)
+void guardAI::EnterCombat(Unit *who)
 {
     if (m_creature->GetEntry() == 15184)
     {
@@ -71,7 +71,7 @@ void guardAI::UpdateAI(const uint32 diff)
     else GlobalCooldown = 0;
 
     //Buff timer (only buff when we are alive and not in combat
-    if (m_creature->isAlive() && !InCombat)
+    if (m_creature->isAlive() && !m_creature->isInCombat())
         if (BuffTimer < diff )
     {
         //Find a spell that targets friendly and applies an aura (these are generally buffs)
@@ -88,8 +88,11 @@ void guardAI::UpdateAI(const uint32 diff)
             //Set our timer to 10 minutes before rebuff
             BuffTimer = 600000;
         }                                                   //Try agian in 30 seconds
-        else BuffTimer = 30000;
-    }else BuffTimer -= diff;
+        else
+            BuffTimer = 30000;
+    }
+    else
+        BuffTimer -= diff;
 
     //Return since we have no target
     if (!UpdateVictim())

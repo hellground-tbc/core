@@ -155,6 +155,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "account",        SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleBanAccountCommand,          "", NULL },
         { "character",      SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleBanCharacterCommand,        "", NULL },
         { "ip",             SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleBanIPCommand,               "", NULL },
+        { "email",          SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleBanEmailCommand,            "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 
@@ -163,6 +164,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "account",        SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleBanInfoAccountCommand,      "", NULL },
         { "character",      SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleBanInfoCharacterCommand,    "", NULL },
         { "ip",             SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleBanInfoIPCommand,           "", NULL },
+        { "email",          SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleBanInfoEmailCommand,        "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 
@@ -171,6 +173,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "account",        SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleBanListAccountCommand,      "", NULL },
         { "character",      SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleBanListCharacterCommand,    "", NULL },
         { "ip",             SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleBanListIPCommand,           "", NULL },
+        { "email",          SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleBanListEmailCommand,        "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 
@@ -179,7 +182,8 @@ ChatCommand * ChatHandler::getCommandTable()
         { "account",        SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleUnBanAccountCommand,      "", NULL },
         { "character",      SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleUnBanCharacterCommand,    "", NULL },
         { "ip",             SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleUnBanIPCommand,           "", NULL },
-        { NULL,             0,                  false, NULL,                                           "", NULL }
+        { "email",          SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleUnBanEmailCommand,        "", NULL },
+        { NULL,             0,                  false, NULL,                                         "", NULL }
     };
 
     static ChatCommand debugCommandTable[] =
@@ -193,6 +197,11 @@ ChatCommand * ChatHandler::getCommandTable()
         { "sellerr",        SEC_ADMINISTRATOR,  false, &ChatHandler::HandleSellErrorCommand,           "", NULL },
         { "buyerr",         SEC_ADMINISTRATOR,  false, &ChatHandler::HandleBuyErrorCommand,            "", NULL },
         { "sendopcode",     SEC_ADMINISTRATOR,  false, &ChatHandler::HandleSendOpcodeCommand,          "", NULL },
+
+        { "rel",            SEC_ADMINISTRATOR,  false, &ChatHandler::HandleRelocateCreatureCommand,    "", NULL },
+        { "wp",             SEC_ADMINISTRATOR,  false, &ChatHandler::HandleAddWPCommand,               "", NULL },
+        { "form",           SEC_ADMINISTRATOR,  false, &ChatHandler::HandleAddFormationCommand,        "", NULL },
+
         { "uws",            SEC_ADMINISTRATOR,  false, &ChatHandler::HandleUpdateWorldStateCommand,    "", NULL },
         { "ps",             SEC_ADMINISTRATOR,  false, &ChatHandler::HandlePlaySound2Command,          "", NULL },
         { "scn",            SEC_ADMINISTRATOR,  false, &ChatHandler::HandleSendChannelNotifyCommand,   "", NULL },
@@ -207,6 +216,10 @@ ChatCommand * ChatHandler::getCommandTable()
         { "lootrecipient",  SEC_GAMEMASTER,     false, &ChatHandler::HandleGetLootRecipient,           "", NULL },
         { "arena",          SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugArenaCommand,          "", NULL },
         { "threatlist",     SEC_GAMEMASTER,     false, &ChatHandler::HandleDebugThreatList,            "", NULL },
+        { "setinstdata",    SEC_ADMINISTRATOR,  false, &ChatHandler::HandleSetInstanceDataCommand,     "", NULL },
+        { "getinstdata",    SEC_ADMINISTRATOR,  false, &ChatHandler::HandleGetInstanceDataCommand,     "", NULL },
+        { "setinstdata64",  SEC_ADMINISTRATOR,  false, &ChatHandler::HandleSetInstanceData64Command,   "", NULL },
+        { "getinstdata64",  SEC_ADMINISTRATOR,  false, &ChatHandler::HandleGetInstanceData64Command,   "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 
@@ -496,7 +509,6 @@ ChatCommand * ChatHandler::getCommandTable()
     static ChatCommand gmCommandTable[] =
     {
         { "chat",           SEC_MODERATOR,      false, &ChatHandler::HandleGMChatCommand,              "", NULL },
-        { "ingame",         SEC_PLAYER,         true,  &ChatHandler::HandleGMListIngameCommand,        "", NULL },
         { "list",           SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleGMListFullCommand,          "", NULL },
         { "visible",        SEC_MODERATOR,      false, &ChatHandler::HandleVisibleCommand,             "", NULL },
         { "fly",            SEC_ADMINISTRATOR,  false, &ChatHandler::HandleFlyModeCommand,             "", NULL },
@@ -574,6 +586,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "demorph",        SEC_GAMEMASTER,     false, &ChatHandler::HandleDeMorphCommand,             "", NULL },
         { "die",            SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDieCommand,                 "", NULL },
         { "revive",         SEC_ADMINISTRATOR,  false, &ChatHandler::HandleReviveCommand,              "", NULL },
+        { "revivegroup",    SEC_ADMINISTRATOR,  false, &ChatHandler::HandleReviveGroupCommand,         "", NULL },
         { "dismount",       SEC_PLAYER,         false, &ChatHandler::HandleDismountCommand,            "", NULL },
         { "gps",            SEC_MODERATOR,      false, &ChatHandler::HandleGPSCommand,                 "", NULL },
         { "guid",           SEC_GAMEMASTER,     false, &ChatHandler::HandleGUIDCommand,                "", NULL },
@@ -584,7 +597,6 @@ ChatCommand * ChatHandler::getCommandTable()
         { "distance",       SEC_ADMINISTRATOR,  false, &ChatHandler::HandleGetDistanceCommand,         "", NULL },
         { "recall",         SEC_MODERATOR,      false, &ChatHandler::HandleRecallCommand,              "", NULL },
         { "save",           SEC_PLAYER,         false, &ChatHandler::HandleSaveCommand,                "", NULL },
-        { "saveall",        SEC_MODERATOR,      true,  &ChatHandler::HandleSaveAllCommand,             "", NULL },
         { "kick",           SEC_GAMEMASTER,     true,  &ChatHandler::HandleKickPlayerCommand,          "", NULL },
         { "ban",            SEC_ADMINISTRATOR,  true,  NULL,                                           "", banCommandTable },
         { "unban",          SEC_ADMINISTRATOR,  true,  NULL,                                           "", unbanCommandTable },
@@ -611,6 +623,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "whispers",       SEC_MODERATOR,      false, &ChatHandler::HandleWhispersCommand,            "", NULL },
         { "pinfo",          SEC_GAMEMASTER,     true,  &ChatHandler::HandlePInfoCommand,               "", NULL },
         { "password",       SEC_PLAYER,         false, &ChatHandler::HandlePasswordCommand,            "", NULL },
+        { "weather",        SEC_PLAYER,         true,  &ChatHandler::HandleAccountWeatherCommand,      "", NULL },
         { "lockaccount",    SEC_PLAYER,         false, &ChatHandler::HandleLockAccountCommand,         "", NULL },
         { "respawn",        SEC_ADMINISTRATOR,  false, &ChatHandler::HandleRespawnCommand,             "", NULL },
         { "senditems",      SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleSendItemsCommand,           "", NULL },
@@ -725,7 +738,7 @@ void ChatHandler::SendSysMessage(const char *str)
     WorldPacket data;
 
     // need copy to prevent corruption by strtok call in LineFromMessage original string
-    char* buf = strdup(str);
+    char* buf = mangos_strdup(str);
     char* pos = buf;
 
     while(char* line = LineFromMessage(pos))
@@ -734,7 +747,7 @@ void ChatHandler::SendSysMessage(const char *str)
         m_session->SendPacket(&data);
     }
 
-    free(buf);
+    delete [] buf;
 }
 
 void ChatHandler::SendGlobalSysMessage(const char *str)
@@ -743,7 +756,7 @@ void ChatHandler::SendGlobalSysMessage(const char *str)
     WorldPacket data;
 
     // need copy to prevent corruption by strtok call in LineFromMessage original string
-    char* buf = strdup(str);
+    char* buf = mangos_strdup(str);
     char* pos = buf;
 
     while(char* line = LineFromMessage(pos))
@@ -752,7 +765,7 @@ void ChatHandler::SendGlobalSysMessage(const char *str)
         sWorld.SendGlobalMessage(&data);
     }
 
-    free(buf);
+    delete [] buf;
 }
 
 void ChatHandler::SendGlobalGMSysMessage(const char *str)
@@ -761,7 +774,7 @@ void ChatHandler::SendGlobalGMSysMessage(const char *str)
     WorldPacket data;
 
     // need copy to prevent corruption by strtok call in LineFromMessage original string
-    char* buf = strdup(str);
+    char* buf = mangos_strdup(str);
     char* pos = buf;
 
     while(char* line = LineFromMessage(pos))
@@ -769,7 +782,7 @@ void ChatHandler::SendGlobalGMSysMessage(const char *str)
         FillSystemMessageData(&data, line);
         sWorld.SendGlobalGMMessage(&data);
      }
-    free(buf);
+    delete [] buf;
 }
 
 void ChatHandler::SendSysMessage(int32 entry)
@@ -847,9 +860,10 @@ bool ChatHandler::ExecuteCommandInTable(ChatCommand *table, const char* text, co
                 {
                     Player* p = m_session->GetPlayer();
                     uint64 sel_guid = p->GetSelection();
-                    sLog.outCommand(m_session->GetAccountId(),"Command: %s [Player: %s (Account: %u) X: %f Y: %f Z: %f Map: %u Selected: %s (GUID: %u)]",
+                    if(table[i].Name != "password")
+                    sLog.outCommand(m_session->GetAccountId(),"Command: %s [Player: %s (Account: %u) X: %f Y: %f Z: %f Map: %u Selected: (GUID: %u)]",
                         fullcmd.c_str(),p->GetName(),m_session->GetAccountId(),p->GetPositionX(),p->GetPositionY(),p->GetPositionZ(),p->GetMapId(),
-                        GetLogNameForGuid(sel_guid),GUID_LOPART(sel_guid));
+                        GUID_LOPART(sel_guid));
                 }
             }
         }
@@ -865,6 +879,16 @@ bool ChatHandler::ExecuteCommandInTable(ChatCommand *table, const char* text, co
         return true;
     }
 
+    return false;
+}
+
+bool ChatHandler::ContainsNotAllowedSigns(std::string text /*copy of text because we change it*/)
+{
+    for (uint32 i = 0; i < text.length(); ++i)
+        text[i] = tolower(text[i]);
+
+    if (text.find("blizz.blp") != text.npos)
+        return true;
     return false;
 }
 
@@ -1101,7 +1125,7 @@ Unit* ChatHandler::getSelectedUnit()
     if (guid == 0)
         return m_session->GetPlayer();
 
-    return ObjectAccessor::GetUnit(*m_session->GetPlayer(),guid);
+    return m_session->GetPlayer()->GetMap()->GetUnit(guid);
 }
 
 Creature* ChatHandler::getSelectedCreature()
@@ -1109,7 +1133,9 @@ Creature* ChatHandler::getSelectedCreature()
     if(!m_session)
         return NULL;
 
-    return ObjectAccessor::GetCreatureOrPet(*m_session->GetPlayer(),m_session->GetPlayer()->GetSelection());
+    Player * tmp = m_session->GetPlayer();
+
+    return tmp->GetMap()->GetCreatureOrPet(tmp->GetSelection());
 }
 
 char* ChatHandler::extractKeyFromLink(char* text, char const* linkType, char** something1)

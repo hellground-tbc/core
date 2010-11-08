@@ -36,7 +36,7 @@ npc_rocknot
 EndContentData */
 
 #include "precompiled.h"
-#include "../../npc/npc_escortAI.h"
+#include "escort_ai.h"
 #include "def_blackrock_depths.h"
 
 #define C_GRIMSTONE         10096
@@ -137,7 +137,7 @@ struct TRINITY_DLL_DECL npc_grimstoneAI : public npc_escortAI
         CanWalk = false;
     }
 
-    void Aggro(Unit *who) { }
+    void EnterCombat(Unit *who) { }
 
     void DoGate(uint32 id, uint32 state)
     {
@@ -173,12 +173,12 @@ struct TRINITY_DLL_DECL npc_grimstoneAI : public npc_escortAI
         switch(i)
         {
         case 0:
-            DoScriptText(-1000000, m_creature);//2
+            DoScriptText(-1000002, m_creature);//2
             CanWalk = false;
             Event_Timer = 5000;
             break;
         case 1:
-            DoScriptText(-1000000, m_creature);//4
+            DoScriptText(-1000003, m_creature);//4
             CanWalk = false;
             Event_Timer = 5000;
             break;
@@ -186,10 +186,10 @@ struct TRINITY_DLL_DECL npc_grimstoneAI : public npc_escortAI
             CanWalk = false;
             break;
         case 3:
-            DoScriptText(-1000000, m_creature);//5
+            DoScriptText(-1000005, m_creature);//5
             break;
         case 4:
-            DoScriptText(-1000000, m_creature);//6
+            DoScriptText(-1000006, m_creature);//6
             CanWalk = false;
             Event_Timer = 5000;
             break;
@@ -243,7 +243,9 @@ struct TRINITY_DLL_DECL npc_grimstoneAI : public npc_escortAI
                         }
                     }
                 }
-            }else MobDeath_Timer -= diff;
+            }
+            else
+                MobDeath_Timer -= diff;
         }
 
         if (Event_Timer)
@@ -253,9 +255,9 @@ struct TRINITY_DLL_DECL npc_grimstoneAI : public npc_escortAI
                 switch(EventPhase)
                 {
                 case 0:
-                    DoScriptText(-1000000, m_creature);//1
+                    DoScriptText(-1000001, m_creature);//1
                     DoGate(DATA_ARENA4,1);
-                    Start(false, false, false);
+                    Start(false, false);
                     CanWalk = true;
                     Event_Timer = 0;
                     break;
@@ -288,7 +290,7 @@ struct TRINITY_DLL_DECL npc_grimstoneAI : public npc_escortAI
                 case 7:
                     m_creature->SetVisibility(VISIBILITY_ON);
                     DoGate(DATA_ARENA1,1);
-                    DoScriptText(-1000000, m_creature);//4
+                    DoScriptText(-1000004, m_creature);//4
                     CanWalk = true;
                     Event_Timer = 0;
                     break;
@@ -311,7 +313,9 @@ struct TRINITY_DLL_DECL npc_grimstoneAI : public npc_escortAI
                     break;
                 }
                 ++EventPhase;
-            }else Event_Timer -= diff;
+            }
+            else
+                Event_Timer -= diff;
         }
 
         if (CanWalk)
@@ -353,7 +357,7 @@ struct TRINITY_DLL_DECL mob_phalanxAI : public ScriptedAI
         MightyBlow_Timer = 15000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
     }
 
@@ -368,7 +372,9 @@ struct TRINITY_DLL_DECL mob_phalanxAI : public ScriptedAI
         {
             DoCast(m_creature->getVictim(),SPELL_THUNDERCLAP);
             ThunderClap_Timer = 10000;
-        }else ThunderClap_Timer -= diff;
+        }
+        else
+            ThunderClap_Timer -= diff;
 
         //FireballVolley_Timer
         if( m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 51 )
@@ -377,7 +383,9 @@ struct TRINITY_DLL_DECL mob_phalanxAI : public ScriptedAI
             {
                 DoCast(m_creature->getVictim(),SPELL_FIREBALLVOLLEY);
                 FireballVolley_Timer = 15000;
-            }else FireballVolley_Timer -= diff;
+            }
+            else
+                FireballVolley_Timer -= diff;
         }
 
         //MightyBlow_Timer
@@ -385,7 +393,9 @@ struct TRINITY_DLL_DECL mob_phalanxAI : public ScriptedAI
         {
             DoCast(m_creature->getVictim(),SPELL_MIGHTYBLOW);
             MightyBlow_Timer = 10000;
-        }else MightyBlow_Timer -= diff;
+        }
+        else
+            MightyBlow_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }
@@ -548,10 +558,14 @@ struct TRINITY_DLL_DECL npc_dughal_stormwingAI : public npc_escortAI
 
     void WaypointReached(uint32 i)
     {
+        Player *player = GetPlayerForEscort();
+        if(!player)
+            return;
+
         switch(i)
         {
             case 0:
-                m_creature->Say(SAY_DUGHAL_FREE, LANG_UNIVERSAL, PlayerGUID);
+                m_creature->Say(SAY_DUGHAL_FREE, LANG_UNIVERSAL, player->GetGUID());
                 break;
             case 2:
                 m_creature->SetVisibility(VISIBILITY_OFF);
@@ -562,7 +576,6 @@ struct TRINITY_DLL_DECL npc_dughal_stormwingAI : public npc_escortAI
         }
     }
 
-    void Aggro(Unit* who){ }
     void Reset()
     {
         m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
@@ -570,7 +583,7 @@ struct TRINITY_DLL_DECL npc_dughal_stormwingAI : public npc_escortAI
 
     void JustDied(Unit* killer)
     {
-        if( IsBeingEscorted && killer == m_creature)
+        if( HasEscortState(STATE_ESCORT_ESCORTING) && killer == m_creature)
         {
             m_creature->SetVisibility(VISIBILITY_OFF);
             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -636,7 +649,7 @@ bool GossipSelect_npc_dughal_stormwing(Player *player, Creature *_Creature, uint
     if(action == GOSSIP_ACTION_INFO_DEF + 1)
     {
         player->CLOSE_GOSSIP_MENU();
-        ((npc_escortAI*)(_Creature->AI()))->Start(false, false, true, player->GetGUID());
+        CAST_AI(npc_escortAI, (_Creature->AI()))->Start(false, false, player->GetGUID());
         _Creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
         pInstance->SetData(DATA_QUEST_JAIL_BREAK, IN_PROGRESS);
     }
@@ -680,21 +693,25 @@ struct TRINITY_DLL_DECL npc_marshal_windsorAI : public npc_escortAI
 
     void WaypointReached(uint32 i)
     {
-    switch( i )
+        Player *player = GetPlayerForEscort();
+        if(!player)
+            return;
+
+        switch( i )
         {
         case 1:
-            m_creature->Say(SAY_WINDSOR_1, LANG_UNIVERSAL, PlayerGUID);
+            m_creature->Say(SAY_WINDSOR_1, LANG_UNIVERSAL, player->GetGUID());
             break;
         case 7:
             m_creature->HandleEmoteCommand(EMOTE_STATE_POINT);
-            m_creature->Say(SAY_WINDSOR_4_1, LANG_UNIVERSAL, PlayerGUID);
+            m_creature->Say(SAY_WINDSOR_4_1, LANG_UNIVERSAL, player->GetGUID());
             WaitEvent = DUGHAL;
             break;
         case 10:
             m_creature->setFaction(534);
             break;
         case 12:
-            m_creature->Say(SAY_WINDSOR_6, LANG_UNIVERSAL, PlayerGUID);
+            m_creature->Say(SAY_WINDSOR_6, LANG_UNIVERSAL, player->GetGUID());
             pInstance->SetData(DATA_SUPPLY_ROOM, IN_PROGRESS);
             break;
         case 13:
@@ -704,7 +721,7 @@ struct TRINITY_DLL_DECL npc_marshal_windsorAI : public npc_escortAI
             m_creature->setFaction(11);
             break;
         case 16:
-            m_creature->Say(SAY_WINDSOR_9, LANG_UNIVERSAL, PlayerGUID);
+            m_creature->Say(SAY_WINDSOR_9, LANG_UNIVERSAL, player->GetGUID());
             break;
         case 17:
             m_creature->HandleEmoteCommand(EMOTE_STATE_USESTANDING);//EMOTE_STATE_WORK
@@ -721,15 +738,21 @@ struct TRINITY_DLL_DECL npc_marshal_windsorAI : public npc_escortAI
         }
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         switch(rand()%3)
         {
-            case 0:m_creature->Say(SAY_WINDSOR_AGGRO1, LANG_UNIVERSAL, PlayerGUID);break;
-            case 1:m_creature->Say(SAY_WINDSOR_AGGRO2, LANG_UNIVERSAL, PlayerGUID);break;
-            case 2:m_creature->Say(SAY_WINDSOR_AGGRO3, LANG_UNIVERSAL, PlayerGUID);break;
+            case 0:
+                m_creature->Say(SAY_WINDSOR_AGGRO1, LANG_UNIVERSAL, who->GetGUID());
+                break;
+            case 1:
+                m_creature->Say(SAY_WINDSOR_AGGRO2, LANG_UNIVERSAL, who->GetGUID());
+                break;
+            case 2:
+                m_creature->Say(SAY_WINDSOR_AGGRO3, LANG_UNIVERSAL, who->GetGUID());
+                break;
         }
-    }
+        }
 
     void Reset()
     {
@@ -745,21 +768,25 @@ struct TRINITY_DLL_DECL npc_marshal_windsorAI : public npc_escortAI
     {
         if(!pInstance || pInstance->GetData(DATA_QUEST_JAIL_BREAK) == NOT_STARTED)
             return;
-        
+
+        Player *player = GetPlayerForEscort();
+        if(!player)
+            return;
+
         switch(WaitEvent)
         {
             case DUGHAL:
             {
                 if(pInstance->GetData(DATA_DUGHAL) == NOT_STARTED)
                 {
-                    IsOnHold = true;
+                    SetEscortPaused(true);
                     pInstance->SetData(DATA_DUGHAL, IN_PROGRESS);
                 }
 
                 if(pInstance->GetData(DATA_DUGHAL) == DONE)
                 {
-                    IsOnHold = false;
-                    m_creature->Say(SAY_WINDSOR_4_3, LANG_UNIVERSAL, PlayerGUID);
+                    SetEscortPaused(false);
+                    m_creature->Say(SAY_WINDSOR_4_3, LANG_UNIVERSAL, player->GetGUID());
                     WaitEvent = NONE;
                 }
             }
@@ -822,7 +849,7 @@ bool QuestAccept_npc_marshal_windsor(Player *player, Creature *creature, Quest c
 
         if( pInstance->GetData(DATA_QUEST_JAIL_BREAK) == NOT_STARTED )
         {
-            ((npc_escortAI*)(creature->AI()))->Start(true, true, false, player->GetGUID());
+            CAST_AI(npc_escortAI, (creature->AI()))->Start(true, true, player->GetGUID());
             pInstance->SetData64(Q_STARTER, player->GetGUID());
             pInstance->SetData(DATA_QUEST_JAIL_BREAK, IN_PROGRESS);
             creature->setFaction(11);
@@ -862,54 +889,58 @@ struct TRINITY_DLL_DECL npc_marshal_reginald_windsorAI : public npc_escortAI
 
     void WaypointReached(uint32 i)
     {
+        Player* player = GetPlayerForEscort();
+        if(!player)
+            return;
+
         switch(i)
         {
             case 0:
                 m_creature->setFaction(11);
-                m_creature->Say(SAY_REGINALD_WINDSOR_0_1, LANG_UNIVERSAL, PlayerGUID);
+                m_creature->Say(SAY_REGINALD_WINDSOR_0_1, LANG_UNIVERSAL, player->GetGUID());
             break;
             case 1:
-                m_creature->Say(SAY_REGINALD_WINDSOR_0_2, LANG_UNIVERSAL, PlayerGUID);
+                m_creature->Say(SAY_REGINALD_WINDSOR_0_2, LANG_UNIVERSAL, player->GetGUID());
             break;
             case 7:
-                m_creature->Say(SAY_REGINALD_WINDSOR_5_1, LANG_UNIVERSAL, PlayerGUID);
+                m_creature->Say(SAY_REGINALD_WINDSOR_5_1, LANG_UNIVERSAL, player->GetGUID());
                 WaitEvent = JAZ;
                 break;
             case 8:
-                m_creature->Say(SAY_REGINALD_WINDSOR_5_2, LANG_UNIVERSAL, PlayerGUID);
+                m_creature->Say(SAY_REGINALD_WINDSOR_5_2, LANG_UNIVERSAL, player->GetGUID());
             break;
             case 11:
                 m_creature->HandleEmoteCommand(EMOTE_STATE_POINT);
-                m_creature->Say(SAY_REGINALD_WINDSOR_7_1, LANG_UNIVERSAL, PlayerGUID);
+                m_creature->Say(SAY_REGINALD_WINDSOR_7_1, LANG_UNIVERSAL, player->GetGUID());
                 WaitEvent = SHILL;
             break;
             case 12:
-                m_creature->Say(SAY_REGINALD_WINDSOR_7_2, LANG_UNIVERSAL, PlayerGUID);
+                m_creature->Say(SAY_REGINALD_WINDSOR_7_2, LANG_UNIVERSAL, player->GetGUID());
             break;
             case 13:
-                m_creature->Say(SAY_REGINALD_WINDSOR_7_3, LANG_UNIVERSAL, PlayerGUID);
+                m_creature->Say(SAY_REGINALD_WINDSOR_7_3, LANG_UNIVERSAL, player->GetGUID());
             break;
             case 20:
                 m_creature->HandleEmoteCommand(EMOTE_STATE_POINT);
-                m_creature->Say(SAY_REGINALD_WINDSOR_13_1, LANG_UNIVERSAL, PlayerGUID);
+                m_creature->Say(SAY_REGINALD_WINDSOR_13_1, LANG_UNIVERSAL, player->GetGUID());
                 WaitEvent = CREST;
             break;
             case 21:
-                m_creature->Say(SAY_REGINALD_WINDSOR_13_3, LANG_UNIVERSAL, PlayerGUID);
+                m_creature->Say(SAY_REGINALD_WINDSOR_13_3, LANG_UNIVERSAL, player->GetGUID());
             break;
             case 23:
                 m_creature->HandleEmoteCommand(EMOTE_STATE_POINT);
-                m_creature->Say(SAY_REGINALD_WINDSOR_14_1, LANG_UNIVERSAL, PlayerGUID);
+                m_creature->Say(SAY_REGINALD_WINDSOR_14_1, LANG_UNIVERSAL, player->GetGUID());
                 WaitEvent = TOBIAS;
             break;
             case 24:
-                m_creature->Say(SAY_REGINALD_WINDSOR_14_2, LANG_UNIVERSAL, PlayerGUID);
+                m_creature->Say(SAY_REGINALD_WINDSOR_14_2, LANG_UNIVERSAL, player->GetGUID());
             break;
             case 31:
-                m_creature->Say(SAY_REGINALD_WINDSOR_20_1, LANG_UNIVERSAL, PlayerGUID);
+                m_creature->Say(SAY_REGINALD_WINDSOR_20_1, LANG_UNIVERSAL, player->GetGUID());
             break;
             case 32:
-                m_creature->Say(SAY_REGINALD_WINDSOR_20_2, LANG_UNIVERSAL, PlayerGUID);
+                m_creature->Say(SAY_REGINALD_WINDSOR_20_2, LANG_UNIVERSAL, player->GetGUID());
 
                 if(pInstance)
                 {
@@ -925,7 +956,7 @@ struct TRINITY_DLL_DECL npc_marshal_reginald_windsorAI : public npc_escortAI
 
     void MoveInLineOfSight(Unit *who)
     {
-        if( IsBeingEscorted )
+        if( HasEscortState(STATE_ESCORT_ESCORTING) )
             return;
 
         if( who->GetTypeId() == TYPEID_PLAYER )
@@ -935,8 +966,8 @@ struct TRINITY_DLL_DECL npc_marshal_reginald_windsorAI : public npc_escortAI
                 float Radius = 10.0;
                 if( m_creature->IsWithinDistInMap(who, Radius) )
                 {
-                    IsOnHold = false;
-                    ((npc_escortAI*)(m_creature->AI()))->Start(true, true, false, who->GetGUID());
+                    SetEscortPaused(false);
+                    CAST_AI(npc_escortAI, (m_creature->AI()))->Start(true, true, who->GetGUID());
                 }
             }
         }
@@ -947,19 +978,25 @@ struct TRINITY_DLL_DECL npc_marshal_reginald_windsorAI : public npc_escortAI
         WaitEvent = NONE;
     }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
         switch(rand()%3)
         {
-            case 0:m_creature->Say(SAY_WINDSOR_AGGRO1, LANG_UNIVERSAL, PlayerGUID);break;
-            case 1:m_creature->Say(SAY_WINDSOR_AGGRO2, LANG_UNIVERSAL, PlayerGUID);break;
-            case 2:m_creature->Say(SAY_WINDSOR_AGGRO3, LANG_UNIVERSAL, PlayerGUID);break;
+            case 0:
+                m_creature->Say(SAY_WINDSOR_AGGRO1, LANG_UNIVERSAL, who->GetGUID());
+                break;
+            case 1:
+                m_creature->Say(SAY_WINDSOR_AGGRO2, LANG_UNIVERSAL, who->GetGUID());
+                break;
+            case 2:
+                m_creature->Say(SAY_WINDSOR_AGGRO3, LANG_UNIVERSAL, who->GetGUID());
+                break;
         }
     }
 
     void JustDied(Unit *slayer)
     {
-        if(pInstance) 
+        if(pInstance)
             pInstance->SetData(DATA_QUEST_JAIL_BREAK, FAIL);
     }
 
@@ -968,19 +1005,23 @@ struct TRINITY_DLL_DECL npc_marshal_reginald_windsorAI : public npc_escortAI
         if(!pInstance || pInstance->GetData(DATA_QUEST_JAIL_BREAK) == NOT_STARTED)
             return;
 
+        Player* player = GetPlayerForEscort();
+        if(!player)
+            return;
+
         switch(WaitEvent)
         {
             case JAZ:
             {
                 if(pInstance->GetData(DATA_JAZ) == NOT_STARTED)
                 {
-                    IsOnHold = true;
+                    SetEscortPaused(true);
                     pInstance->SetData(DATA_JAZ, IN_PROGRESS);
                 }
 
                 if(pInstance->GetData(DATA_JAZ) == DONE)
                 {
-                    IsOnHold = false;
+                    SetEscortPaused(false);
                     WaitEvent = NONE;
                 }
             }
@@ -989,13 +1030,13 @@ struct TRINITY_DLL_DECL npc_marshal_reginald_windsorAI : public npc_escortAI
             {
                 if(pInstance->GetData(DATA_SHILL) == NOT_STARTED)
                 {
-                    IsOnHold = true;
+                    SetEscortPaused(true);
                     pInstance->SetData(DATA_SHILL, IN_PROGRESS);
                 }
 
                 if(pInstance->GetData(DATA_SHILL) == DONE)
                 {
-                    IsOnHold = false;
+                    SetEscortPaused(false);
                     WaitEvent = NONE;
                 }
             }
@@ -1004,14 +1045,14 @@ struct TRINITY_DLL_DECL npc_marshal_reginald_windsorAI : public npc_escortAI
             {
                 if(pInstance->GetData(DATA_CREST) == NOT_STARTED)
                 {
-                    IsOnHold = true;
-                    m_creature->Say(SAY_REGINALD_WINDSOR_13_2, LANG_UNIVERSAL, PlayerGUID);
+                    SetEscortPaused(true);
+                    m_creature->Say(SAY_REGINALD_WINDSOR_13_2, LANG_UNIVERSAL, player->GetGUID());
                     pInstance->SetData(DATA_CREST, IN_PROGRESS);
                 }
 
                 if(pInstance->GetData(DATA_CREST) == DONE)
                 {
-                    IsOnHold = false;
+                    SetEscortPaused(false);
                     WaitEvent = NONE;
                 }
             }
@@ -1020,13 +1061,13 @@ struct TRINITY_DLL_DECL npc_marshal_reginald_windsorAI : public npc_escortAI
             {
                 if(pInstance->GetData(DATA_TOBIAS) == NOT_STARTED)
                 {
-                    IsOnHold = true;
+                    SetEscortPaused(true);
                     pInstance->SetData(DATA_TOBIAS, IN_PROGRESS);
                 }
 
                 if(pInstance->GetData(DATA_TOBIAS) == DONE)
                 {
-                    IsOnHold = false;
+                    SetEscortPaused(false);
                     WaitEvent = NONE;
                 }
             }
@@ -1095,9 +1136,6 @@ struct TRINITY_DLL_DECL npc_tobias_seecherAI : public npc_escortAI
 
     ScriptedInstance *pInstance;
 
-    void Aggro(Unit* who)
-    {
-    }
     void Reset()
     {
         m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
@@ -1105,12 +1143,12 @@ struct TRINITY_DLL_DECL npc_tobias_seecherAI : public npc_escortAI
 
     void JustDied(Unit* killer)
     {
-        if (IsBeingEscorted && killer == m_creature)
+        if (HasEscortState(STATE_ESCORT_ESCORTING) && killer == m_creature)
         {
             m_creature->SetVisibility(VISIBILITY_OFF);
             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-            
+
             if(pInstance)
                 pInstance->SetData(DATA_TOBIAS,DONE);
         }
@@ -1118,10 +1156,14 @@ struct TRINITY_DLL_DECL npc_tobias_seecherAI : public npc_escortAI
 
     void WaypointReached(uint32 i)
     {
-    switch(i)
+        Player* player = GetPlayerForEscort();
+        if(!player)
+            return;
+
+        switch(i)
         {
         case 0:
-            m_creature->Say(SAY_TOBIAS_FREE, LANG_UNIVERSAL, PlayerGUID);
+            m_creature->Say(SAY_TOBIAS_FREE, LANG_UNIVERSAL, player->GetGUID());
             break;
         case 2:
             pInstance->SetData(DATA_TOBIAS, DONE);
@@ -1194,7 +1236,7 @@ bool GossipSelect_npc_tobias_seecher(Player *player, Creature *_Creature, uint32
     if (action == GOSSIP_ACTION_INFO_DEF + 1)
     {
         player->CLOSE_GOSSIP_MENU();
-        ((npc_escortAI*)(_Creature->AI()))->Start(false, false, true, player->GetGUID());
+        CAST_AI(npc_escortAI, (_Creature->AI()))->Start(false, false, player->GetGUID());
         _Creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
         pInstance->SetData(DATA_TOBIAS,IN_PROGRESS);
     }
@@ -1247,14 +1289,14 @@ struct TRINITY_DLL_DECL npc_rocknotAI : public npc_escortAI
 
     void Reset()
     {
-        if (IsBeingEscorted)
+        if (HasEscortState(STATE_ESCORT_ESCORTING))
             return;
 
         BreakKeg_Timer = 0;
         BreakDoor_Timer = 0;
     }
 
-    void Aggro(Unit *who) { }
+    void EnterCombat(Unit *who) { }
 
     void DoGo(uint32 id, uint32 state)
     {
@@ -1300,7 +1342,9 @@ struct TRINITY_DLL_DECL npc_rocknotAI : public npc_escortAI
                 DoGo(DATA_GO_BAR_KEG,0);
                 BreakKeg_Timer = 0;
                 BreakDoor_Timer = 1000;
-            }else BreakKeg_Timer -= diff;
+            }
+            else
+                BreakKeg_Timer -= diff;
         }
 
         if (BreakDoor_Timer)
@@ -1319,7 +1363,9 @@ struct TRINITY_DLL_DECL npc_rocknotAI : public npc_escortAI
                 pInstance->SetData(TYPE_BAR,DONE);
 
                 BreakDoor_Timer = 0;
-            }else BreakDoor_Timer -= diff;
+            }
+            else
+                BreakDoor_Timer -= diff;
         }
 
         npc_escortAI::UpdateAI(diff);
@@ -1358,7 +1404,8 @@ bool ChooseReward_npc_rocknot(Player *player, Creature *_Creature, const Quest *
         {
             DoScriptText(SAY_GOT_BEER, _Creature);
             _Creature->CastSpell(_Creature,SPELL_DRUNKEN_RAGE,false);
-            ((npc_escortAI*)(_Creature->AI()))->Start(false, false, false);
+            if (npc_escortAI* pEscortAI = CAST_AI(npc_rocknotAI, _Creature->AI()))
+                pEscortAI->Start(false, false);
         }
     }
 
@@ -1473,7 +1520,7 @@ void AddSC_blackrock_depths()
      newscript->Name="npc_shill";
      newscript->pGossipHello =  &GossipHello_npc_shill;
      newscript->RegisterSelf();
-    
+
      newscript = new Script;
      newscript->Name="npc_crest";
      newscript->pGossipHello =  &GossipHello_npc_crest;

@@ -36,7 +36,7 @@ EndScriptData */
 #define SPELL_ARCANE_ORB            34172
 #define SPELL_KNOCK_AWAY            25778
 #define SPELL_BERSERK               27680
-#define TRIGGER                     29530 
+#define TRIGGER                     29530
 
 struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
 {
@@ -65,24 +65,17 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
         KnockAway_Timer = 30000;
         Berserk_Timer = 600000;
         Check_Timer = 3000;
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
-        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
         m_creature->ApplySpellImmune(2, IMMUNITY_EFFECT, SPELL_EFFECT_HEALTH_LEECH, true);
         m_creature->ApplySpellImmune(3, IMMUNITY_STATE, SPELL_AURA_PERIODIC_LEECH, true);
         m_creature->ApplySpellImmune(4, IMMUNITY_STATE, SPELL_AURA_PERIODIC_MANA_LEECH, true);
 
-        if (pInstance && m_creature->isAlive())
+        if (pInstance && pInstance->GetData(DATA_VOIDREAVEREVENT) != DONE)
             pInstance->SetData(DATA_VOIDREAVEREVENT, NOT_STARTED);
     }
 
     void KilledUnit(Unit *victim)
     {
-        switch(rand()%3)
-        {
-            case 0: DoScriptText(SAY_SLAY1, m_creature); break;
-            case 1: DoScriptText(SAY_SLAY2, m_creature); break;
-            case 2: DoScriptText(SAY_SLAY3, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2, SAY_SLAY3), m_creature);
     }
 
     void JustDied(Unit *victim)
@@ -93,15 +86,15 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
             pInstance->SetData(DATA_VOIDREAVEREVENT, DONE);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
         DoZoneInCombat();
-        
+
         if(pInstance)
             pInstance->SetData(DATA_VOIDREAVEREVENT, IN_PROGRESS);
     }
-    
+
     void SpellHitTarget(Unit *target, SpellEntry *spell)
     {
         if(spell->Id == SPELL_KNOCK_AWAY)
@@ -119,11 +112,11 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
         //Check_Timer
         if(Check_Timer < diff)
         {
-            if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 135.0f)
+            if(!m_creature->IsWithinDistInMap(&wLoc, 135.0f))
                 EnterEvadeMode();
             else
                 DoZoneInCombat();
-            
+
             Check_Timer = 3000;
         }
         else
@@ -135,11 +128,7 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
             m_creature->InterruptNonMeleeSpells(false);
             DoCast(m_creature->getVictim(),SPELL_POUNDING);
 
-            switch(rand()%2)
-            {
-                case 0: DoScriptText(SAY_POUNDING1, m_creature); break;
-                case 1: DoScriptText(SAY_POUNDING2, m_creature); break;
-            }
+            DoScriptText(RAND(SAY_POUNDING1, SAY_POUNDING2), m_creature);
 
             if(KnockAway_Timer < 3100)
                 KnockAway_Timer = 3100;

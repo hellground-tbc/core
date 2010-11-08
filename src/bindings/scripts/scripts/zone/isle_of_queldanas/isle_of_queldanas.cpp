@@ -85,10 +85,7 @@ struct TRINITY_DLL_DECL npc_converted_sentryAI : public ScriptedAI
         Timer = 2500;
     }
 
-    void MoveInLineOfSight(Unit *who)
-        { return; }
-    void Aggro(Unit* who)
-        { }
+    void MoveInLineOfSight(Unit *who){ return; }
 
     void UpdateAI(const uint32 diff)
     {
@@ -153,11 +150,9 @@ struct TRINITY_DLL_DECL npc_greengill_slaveAI : public ScriptedAI
 
     uint64 PlayerGUID;
 
-    void Aggro(Unit* who){}
-
     void Reset()
     {
-    PlayerGUID = 0;
+        PlayerGUID = 0;
     }
 
     void SpellHit(Unit* caster, const SpellEntry* spell)

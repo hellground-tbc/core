@@ -22,6 +22,7 @@ SDCategory: Molten Core
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_molten_core.h"
 
 // Garr spells
 #define SPELL_ANTIMAGICPULSE        19492
@@ -34,8 +35,12 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_garrAI : public ScriptedAI
 {
-    boss_garrAI(Creature *c) : ScriptedAI(c) {}
+    boss_garrAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
 
+    ScriptedInstance* pInstance;
     uint32 AntiMagicPulse_Timer;
     uint32 MagmaShackles_Timer;
     uint32 CheckAdds_Timer;
@@ -47,10 +52,21 @@ struct TRINITY_DLL_DECL boss_garrAI : public ScriptedAI
         AntiMagicPulse_Timer = 25000;                       //These times are probably wrong
         MagmaShackles_Timer = 15000;
         CheckAdds_Timer = 2000;
+
+        if (pInstance && pInstance->GetData(DATA_GARR_EVENT) != DONE)
+            pInstance->SetData(DATA_GARR_EVENT, NOT_STARTED);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
+        if (pInstance)
+            pInstance->SetData(DATA_GARR_EVENT, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_GARR_EVENT, DONE);
     }
 
     void UpdateAI(const uint32 diff)
@@ -87,7 +103,7 @@ struct TRINITY_DLL_DECL mob_fireswornAI : public ScriptedAI
         Immolate_Timer = 4000;                              //These times are probably wrong
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
     }
 

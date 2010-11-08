@@ -64,7 +64,7 @@ char * command_finder(const char* text, int state)
       idx++;
       //printf("Checking %s \n", cmd[idx].Name);
       if (strncmp(ret, text, len) == 0)
-    return strdup(ret);
+    return mangos_strdup(ret);
       if(cmd[idx].Name == NULL)
     break;
     }
@@ -77,7 +77,7 @@ char ** cli_completion(const char * text, int start, int end)
 {
   char ** matches;
   matches = (char**)NULL;
-  
+
   if(start == 0)
     matches = rl_completion_matches((char*)text,&command_finder);
   else
@@ -312,10 +312,8 @@ bool ChatHandler::HandleAccountSpecialLogCommand(const char* args)
     if(uint32 account_id = accmgr.GetId(args))
     {
         if(WorldSession *s = sWorld.FindSession(account_id))
-        {
             s->SetSpecialLog(!(s->SpecialLog()));
-        }
-       
+
         LoginDatabase.PExecute("UPDATE account SET speciallog = !speciallog WHERE id = '%u'", account_id);
         PSendSysMessage("SpecialLog has been updated.");
     }

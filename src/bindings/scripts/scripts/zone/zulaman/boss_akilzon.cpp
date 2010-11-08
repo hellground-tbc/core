@@ -91,7 +91,7 @@ struct TRINITY_DLL_DECL boss_akilzonAI : public ScriptedAI
 
     void Reset()
     {
-        if(pInstance)
+        if(pInstance && pInstance->GetData(DATA_AKILZONEVENT) != DONE)
             pInstance->SetData(DATA_AKILZONEVENT, NOT_STARTED);
 
         StaticDisruption_Timer = (10+rand()%10)*1000; //10 to 20 seconds (bosskillers)
@@ -118,7 +118,7 @@ struct TRINITY_DLL_DECL boss_akilzonAI : public ScriptedAI
         checkTimer = 3000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoYell(SAY_ONAGGRO, LANG_UNIVERSAL, NULL);
         DoPlaySoundToSet(m_creature, SOUND_ONAGGRO);
@@ -249,7 +249,7 @@ struct TRINITY_DLL_DECL boss_akilzonAI : public ScriptedAI
 
         if (checkTimer < diff)
         {
-            if (m_creature->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 45)
+            if (!m_creature->IsWithinDistInMap(&wLoc, 45))
                 EnterEvadeMode();
             else
                 DoZoneInCombat();
@@ -283,7 +283,7 @@ struct TRINITY_DLL_DECL boss_akilzonAI : public ScriptedAI
         }else Enrage_Timer -= diff;
 
         if (StaticDisruption_Timer < diff) {
-            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_STATIC_DISRUPTION), true, m_creature->getVictim());
+            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_STATIC_DISRUPTION), true, m_creature->getVictimGUID());
             if(!target) target = m_creature->getVictim();
             TargetGUID = target->GetGUID();
             m_creature->CastSpell(target, SPELL_STATIC_DISRUPTION, false);
@@ -296,7 +296,7 @@ struct TRINITY_DLL_DECL boss_akilzonAI : public ScriptedAI
         }else StaticDisruption_Timer -= diff;
 
         if (GustOfWind_Timer < diff) {
-            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_GUST_OF_WIND), true, m_creature->getVictim());
+            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_GUST_OF_WIND), true, m_creature->getVictimGUID());
             if(!target) target = m_creature->getVictim();
             DoCast(target, SPELL_GUST_OF_WIND);
             GustOfWind_Timer = (20+rand()%10)*1000; //20 to 30 seconds(bosskillers)
@@ -397,16 +397,7 @@ struct TRINITY_DLL_DECL mob_soaring_eagleAI : public ScriptedAI
         m_creature->SetUnitMovementFlags(MOVEMENTFLAG_LEVITATING);
     }
 
-    void Aggro(Unit *who) {DoZoneInCombat();}
-
-    void AttackStart(Unit *who)
-    {
-        if (!InCombat)
-        {
-            Aggro(who);
-            InCombat = true;
-        }
-    }
+    void EnterCombat(Unit *who) {DoZoneInCombat();}
 
     void MoveInLineOfSight(Unit *) {}
 

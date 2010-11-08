@@ -44,7 +44,7 @@ struct TRINITY_DLL_DECL mob_treantAI  : public ScriptedAI
         check_Timer = 0;
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void MoveInLineOfSight(Unit*) {}
 
@@ -70,7 +70,7 @@ struct TRINITY_DLL_DECL mob_treantAI  : public ScriptedAI
             return;
         }
 
-        if (m_creature->getVictim()->GetGUID() !=  WarpGuid)
+        if (m_creature->getVictimGUID() !=  WarpGuid)
             DoMeleeAttackIfReady();
     }
 };
@@ -133,18 +133,14 @@ struct TRINITY_DLL_DECL boss_warp_splinterAI : public ScriptedAI
         m_creature->SetSpeed( MOVE_RUN, 0.7f, true);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
     }
 
     void KilledUnit(Unit* victim)
     {
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(SAY_SLAY_1, m_creature); break;
-        case 1: DoScriptText(SAY_SLAY_2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), m_creature);
     }
 
     void JustDied(Unit* Killer)
@@ -165,11 +161,8 @@ struct TRINITY_DLL_DECL boss_warp_splinterAI : public ScriptedAI
             if(Creature *pTreant = m_creature->SummonCreature(CREATURE_TREANT,treant_pos[i][0],treant_pos[i][1],treant_pos[i][2],O,TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN,25000))
                 ((mob_treantAI*)pTreant->AI())->WarpGuid = m_creature->GetGUID();
         }
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(SAY_SUMMON_1, m_creature); break;
-        case 1: DoScriptText(SAY_SUMMON_2, m_creature); break;
-        }
+
+        DoScriptText(RAND(SAY_SUMMON_1, SAY_SUMMON_2), m_creature);
     }
 
     void UpdateAI(const uint32 diff)
@@ -187,14 +180,15 @@ struct TRINITY_DLL_DECL boss_warp_splinterAI : public ScriptedAI
         //Check_Timer
         if(Check_Timer < diff)
         {
-            if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 30.0f)
+            if(!m_creature->IsWithinDistInMap(&wLoc, 30.0f))
                 EnterEvadeMode();
             else
                 DoZoneInCombat();
-                Check_Timer = 3000;
-            }
-            else 
-                Check_Timer -= diff;
+
+            Check_Timer = 3000;
+        }
+        else
+            Check_Timer -= diff;
 
         //Check for Arcane Volley
         if(Arcane_Volley_Timer < diff)

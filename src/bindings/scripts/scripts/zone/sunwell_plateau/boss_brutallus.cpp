@@ -115,11 +115,11 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
         else
             EndIntro();
 
-        if(pInstance)
+        if(pInstance && pInstance->GetData(DATA_BRUTALLUS_EVENT) != DONE)
             pInstance->SetData(DATA_BRUTALLUS_EVENT, NOT_STARTED);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoScriptText(YELL_AGGRO, m_creature);
 
@@ -129,12 +129,7 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
 
     void KilledUnit(Unit* victim)
     {
-        switch(rand()%3)
-        {
-            case 0: DoScriptText(YELL_KILL1, m_creature); break;
-            case 1: DoScriptText(YELL_KILL2, m_creature); break;
-            case 2: DoScriptText(YELL_KILL3, m_creature); break;
-        }
+        DoScriptText(RAND(YELL_KILL1, YELL_KILL2, YELL_KILL3), m_creature);
     }
 
     void JustDied(Unit* Killer)
@@ -195,7 +190,7 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
                 break;
             case 3:
                 DoCast(m_creature, SPELL_INTRO_FROST_BLAST);
-                Madrigosa->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
+                Madrigosa->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
                 IntroFrostBoltTimer = 3000;
                 IntroPhaseTimer = 28000;
                 ++IntroPhase;
@@ -282,12 +277,8 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
 
         if(StompTimer < diff)
         {
-            switch(rand()%3)
-            {
-                case 0: DoScriptText(YELL_LOVE1, m_creature); break;
-                case 1: DoScriptText(YELL_LOVE2, m_creature); break;
-                case 2: DoScriptText(YELL_LOVE3, m_creature); break;
-            }
+            DoScriptText(RAND(YELL_LOVE1, YELL_LOVE2, YELL_LOVE3), m_creature);
+
             DoCast(m_creature->getVictim(), SPELL_STOMP);
             StompTimer = 30000;
         }else StompTimer -= diff;

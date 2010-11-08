@@ -37,6 +37,8 @@
 #include "Group.h"
 #include "MapRefManager.h"
 #include "WaypointManager.h"
+#include "BattleGround.h"
+#include "GridMap.h"
 
 #include "MapInstanced.h"
 #include "InstanceSaveMgr.h"
@@ -45,9 +47,6 @@
 #define DEFAULT_GRID_EXPIRY     300
 #define MAX_GRID_LOAD_TIME      50
 #define MAX_CREATURE_ATTACK_RADIUS  (45.0f * sWorld.getRate(RATE_CREATURE_AGGRO))
-
-// magic *.map header
-const char MAP_MAGIC[] = "MAP_2.50";
 
 struct ScriptAction
 {
@@ -65,57 +64,6 @@ Map::~Map()
 
     if(!m_scriptSchedule.empty())
         sWorld.DecreaseScheduledScriptCount(m_scriptSchedule.size());
-
-}
-
-bool Map::ExistMap(uint32 mapid,int x,int y)
-{
-    int len = sWorld.GetDataPath().length()+strlen("maps/%03u%02u%02u.map")+1;
-    char* tmp = new char[len];
-    snprintf(tmp, len, (char *)(sWorld.GetDataPath()+"maps/%03u%02u%02u.map").c_str(),mapid,x,y);
-
-    FILE *pf=fopen(tmp,"rb");
-
-    if(!pf)
-    {
-        sLog.outError("Check existing of map file '%s': not exist!",tmp);
-        delete[] tmp;
-        return false;
-    }
-
-    char magic[8];
-    fread(magic,1,8,pf);
-    if(strncmp(MAP_MAGIC,magic,8))
-    {
-        sLog.outError("Map file '%s' is non-compatible version (outdated?). Please, create new using ad.exe program.",tmp);
-        delete [] tmp;
-        fclose(pf);                                         //close file before return
-        return false;
-    }
-
-    delete [] tmp;
-    fclose(pf);
-    return true;
-}
-
-bool Map::ExistVMap(uint32 mapid,int x,int y)
-{
-    if(VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager())
-    {
-        if(vmgr->isMapLoadingEnabled())
-        {
-                                                            // x and y are swapped !! => fixed now
-            bool exists = vmgr->existsMap((sWorld.GetDataPath()+ "vmaps").c_str(),  mapid, x,y);
-            if(!exists)
-            {
-                std::string name = vmgr->getDirFileName(mapid,x,y);
-                sLog.outError("VMap file '%s' is missing or point to wrong version vmap file, redo vmaps with latest vmap_assembler.exe program", (sWorld.GetDataPath()+"vmaps/"+name).c_str());
-                return false;
-            }
-        }
-    }
-
-    return true;
 }
 
 void Map::LoadVMap(int x,int y)
@@ -167,35 +115,21 @@ void Map::LoadMap(uint32 mapid, uint32 instanceid, int x,int y)
 
     // map file name
     char *tmp=NULL;
+
     // Pihhan: dataPath length + "maps/" + 3+2+2+ ".map" length may be > 32 !
     int len = sWorld.GetDataPath().length()+strlen("maps/%03u%02u%02u.map")+1;
     tmp = new char[len];
     snprintf(tmp, len, (char *)(sWorld.GetDataPath()+"maps/%03u%02u%02u.map").c_str(),mapid,x,y);
     sLog.outDetail("Loading map %s",tmp);
+
     // loading data
-    FILE *pf=fopen(tmp,"rb");
-    if(!pf)
+    GridMaps[x][y] = new GridMap();
+    if (!GridMaps[x][y]->loadData(tmp))
     {
-        delete [] tmp;
-        return;
+        sLog.outError("Error load map file: \n %s\n", tmp);
     }
-
-    char magic[8];
-    fread(magic,1,8,pf);
-    if(strncmp(MAP_MAGIC,magic,8))
-    {
-        sLog.outError("Map file '%s' is non-compatible version (outdated?). Please, create new using ad.exe program.",tmp);
-        delete [] tmp;
-        fclose(pf);                                         //close file before return
-        return;
-    }
-    delete []  tmp;
-
-    GridMap * buf= new GridMap;
-    fread(buf,1,sizeof(GridMap),pf);
-    fclose(pf);
-
-    GridMaps[x][y] = buf;
+    delete [] tmp;
+    return;
 }
 
 void Map::LoadMapAndVMap(uint32 mapid, uint32 instanceid, int x,int y)
@@ -485,7 +419,7 @@ Map::EnsureGridLoaded(const Cell &cell, Player *player)
         ResetGridExpiry(*getNGrid(cell.GridX(), cell.GridY()), 0.1f);
         grid->SetGridState(GRID_STATE_ACTIVE);
     }
-    
+
     if(player)
         AddToGrid(player,grid,cell);
 }
@@ -550,7 +484,7 @@ Map::Add(T *obj)
 
     AddToGrid(obj,grid,cell);
     obj->AddToWorld();
-    
+
     if(obj->isActiveObject())
         AddToActive(obj);
 
@@ -893,7 +827,7 @@ void Map::SendObjectUpdates()
     UpdateDataMapType update_players;
     for(std::set<Object*>::const_iterator it = i_objectsToClientUpdate.begin();it!= i_objectsToClientUpdate.end();++it)
         (*it)->BuildUpdate(update_players);
- 
+
     i_objectsToClientUpdate.clear();
 
     WorldPacket packet;                                     // here we allocate a std::vector with a size of 0x10000
@@ -953,7 +887,7 @@ bool Map::RemoveBones(uint64 guid, float x, float y)
 {
     if (IsRemovalGrid(x, y))
     {
-        Corpse * corpse = ObjectAccessor::Instance().GetObjectInWorld(GetId(), x, y, guid, (Corpse*)NULL);
+        Corpse * corpse = ObjectAccessor::GetCorpse(this->GetId() ,x, y, guid);
         if(corpse && corpse->GetTypeId() == TYPEID_CORPSE && corpse->GetType() == CORPSE_BONES)
             corpse->DeleteBonesFromWorld();
         else
@@ -997,8 +931,7 @@ Map::Remove(T *obj, bool remove)
     }
 }
 
-void
-Map::PlayerRelocation(Player *player, float x, float y, float z, float orientation)
+void Map::PlayerRelocation(Player *player, float x, float y, float z, float orientation)
 {
     assert(player);
 
@@ -1038,8 +971,7 @@ Map::PlayerRelocation(Player *player, float x, float y, float z, float orientati
     }
 }
 
-void
-Map::CreatureRelocation(Creature *creature, float x, float y, float z, float ang)
+void Map::CreatureRelocation(Creature *creature, float x, float y, float z, float ang)
 {
     assert(CheckGridIntegrity(creature,false));
 
@@ -1255,7 +1187,12 @@ bool Map::UnloadGrid(const uint32 &x, const uint32 &y, bool unloadAll)
     {
         if (i_InstanceId == 0)
         {
-            if(GridMaps[gx][gy]) delete (GridMaps[gx][gy]);
+            if (GridMaps[gx][gy])
+            {
+                GridMaps[gx][gy]->unloadData();
+                delete GridMaps[gx][gy];
+            }
+
             VMAP::VMapFactory::createOrGetVMapManager()->unloadMap(GetId(), gx, gy);
         }
         else
@@ -1279,105 +1216,59 @@ void Map::UnloadAll()
     }
 }
 
-float Map::GetHeight(float x, float y, float z, bool pUseVmaps) const
+bool Map::hasVMapHeight()
 {
-    GridPair p = Trinity::ComputeGridPair(x, y);
+    VMAP::IVMapManager *vMgr = VMAP::VMapFactory::createOrGetVMapManager();
+    return vMgr && vMgr->isHeightCalcEnabled(GetId());
+}
 
-    // half opt method
-    int gx=(int)(32-x/SIZE_OF_GRIDS);                       //grid x
-    int gy=(int)(32-y/SIZE_OF_GRIDS);                       //grid y
+float Map::_getHeight(float x, float y, float z, float mapHeight, float maxSearchDist) const
+{
+    // if mapHeight has been found search vmap height at least until mapHeight point
+    // this prevent case when original Z "too high above ground and vmap height search fail"
+    // this will not affect most normal cases (no map in instance, or stay at ground at continent)
+    float z2 = z +2.0f;
+    if (mapHeight > INVALID_HEIGHT && z2 - mapHeight > maxSearchDist)
+        maxSearchDist = z2 - mapHeight + 1.0f;      // 1.0 make sure that we not fail for case when map height near but above for vamp height
 
-    float lx=128*(32 -x/SIZE_OF_GRIDS - gx);
-    float ly=128*(32 -y/SIZE_OF_GRIDS - gy);
+    // look from a bit higher pos to find the floor
+    float vmapHeight;
+    VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
+    vmapHeight = vmgr->getHeight(GetId(), x, y, z2, maxSearchDist);
 
-    // ensure GridMap is loaded
-    const_cast<Map*>(this)->EnsureGridCreated(GridPair(63-gx,63-gy));
+    // mapHeight set for any above raw ground Z or <= INVALID_HEIGHT
+    // vmapheight set for any under Z value or <= INVALID_HEIGHT
 
-    // find raw .map surface under Z coordinates
-    float mapHeight;
-    if(GridMap* gmap = GridMaps[gx][gy])
+    if (vmapHeight > INVALID_HEIGHT)
     {
-        int lx_int = (int)lx;
-        int ly_int = (int)ly;
-
-        lx -= lx_int;
-        ly -= ly_int;
-
-        float a,b,c;
-        if (lx+ly < 1)
+        if (mapHeight > INVALID_HEIGHT)
         {
-            if (lx > ly)
-            {
-                // 1
-                float h1 = gmap->v9[lx_int][ly_int];
-                float h2 = gmap->v9[lx_int+1][ly_int];
-                float h5 = 2 * gmap->v8[lx_int][ly_int];
-                a = h2-h1;
-                b = h5-h1-h2;
-                c = h1;
-            }
+            // we have mapheight and vmapheight and must select more appropriate
+
+            // we are already under the surface or vmap height above map heigt
+            // or if the distance of the vmap height is less the land height distance
+            if (z < mapHeight || vmapHeight > mapHeight || fabs(mapHeight-z) > fabs(vmapHeight-z))
+                return vmapHeight;
             else
-            {
-                // 2
-                float h1 = gmap->v9[lx_int][ly_int];
-                float h3 = gmap->v9[lx_int][ly_int+1];
-                float h5 = 2 * gmap->v8[lx_int][ly_int];
-                a = h5 - h1 - h3;
-                b = h3 - h1;
-                c = h1;
-            }
+                return mapHeight;                           // better use .map surface height
         }
         else
-        {
-            if (lx > ly)
-            {
-                // 3
-                float h2 = gmap->v9[lx_int+1][ly_int];
-                float h4 = gmap->v9[lx_int+1][ly_int+1];
-                float h5 = 2 * gmap->v8[lx_int][ly_int];
-                a = h2 + h4 - h5;
-                b = h4 - h2;
-                c = h5 - h4;
-            }
-            else
-            {
-                // 4
-                float h3 = gmap->v9[lx_int][ly_int+1];
-                float h4 = gmap->v9[lx_int+1][ly_int+1];
-                float h5 = 2 * gmap->v8[lx_int][ly_int];
-                a = h4 - h3;
-                b = h3 + h4 - h5;
-                c = h5 - h4;
-            }
-        }
-        float _mapheight = a * lx + b * ly + c;
+            return vmapHeight;                              // we have only vmapHeight (if have)
+    }
 
-        // In some very rare case this will happen. Need find a better way.
-        if(lx_int == MAP_RESOLUTION) --lx_int;
-        if(ly_int == MAP_RESOLUTION) --ly_int;
+    return mapHeight;
+}
 
-        /*
-        float zi[4];
-        // Probe 4 nearest points (except border cases)
-        zi[0] = gmap->Z[lx_int][ly_int];
-        zi[1] = lx < MAP_RESOLUTION-1 ? gmap->Z[lx_int+1][ly_int] : zi[0];
-        zi[2] = ly < MAP_RESOLUTION-1 ? gmap->Z[lx_int][ly_int+1] : zi[0];
-        zi[3] = lx < MAP_RESOLUTION-1 && ly < MAP_RESOLUTION-1 ? gmap->Z[lx_int+1][ly_int+1] : zi[0];
-        // Recalculate them like if their x,y positions were in the range 0,1
-        float b[4];
-        b[0] = zi[0];
-        b[1] = zi[1]-zi[0];
-        b[2] = zi[2]-zi[0];
-        b[3] = zi[0]-zi[1]-zi[2]+zi[3];
-        // Normalize the dx and dy to be in range 0..1
-        float fact_x = lx - lx_int;
-        float fact_y = ly - ly_int;
-        // Use the simplified bilinear equation, as described in [url="http://en.wikipedia.org/wiki/Bilinear_interpolation"]http://en.wikipedia.org/wiki/Bilinear_interpolation[/url]
-        float _mapheight = b[0] + (b[1]*fact_x) + (b[2]*fact_y) + (b[3]*fact_x*fact_y);
+float Map::GetHeight(float x, float y, float z, bool pUseVmaps, float maxSearchDist) const
+{
+    // find raw .map surface under Z coordinates
+    float mapHeight;
+    if (GridMap *gmap = const_cast<Map*>(this)->GetGrid(x, y))
+    {
+        float _mapheight = gmap->getHeight(x,y);
 
-        */
         // look from a bit higher pos to find the floor, ignore under surface case
-        if(z + 2.0f > _mapheight)
+        if (z + 2.0f > _mapheight)
             mapHeight = _mapheight;
         else
             mapHeight = VMAP_INVALID_HEIGHT_VALUE;
@@ -1386,14 +1277,11 @@ float Map::GetHeight(float x, float y, float z, bool pUseVmaps) const
         mapHeight = VMAP_INVALID_HEIGHT_VALUE;
 
     float vmapHeight;
-    if(pUseVmaps)
+    if (pUseVmaps)
     {
         VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
-        if(vmgr->isHeightCalcEnabled())
-        {
-            // look from a bit higher pos to find the floor
-            vmapHeight = vmgr->getHeight(GetId(), x, y, z + 2.0f);
-        }
+        if (vmgr->isHeightCalcEnabled(GetId()))
+            return _getHeight(x, y, z + 2.0f, mapHeight, maxSearchDist);
         else
             vmapHeight = VMAP_INVALID_HEIGHT_VALUE;
     }
@@ -1402,122 +1290,227 @@ float Map::GetHeight(float x, float y, float z, bool pUseVmaps) const
 
     // mapHeight set for any above raw ground Z or <= INVALID_HEIGHT
     // vmapheight set for any under Z value or <= INVALID_HEIGHT
-
-    if( vmapHeight > INVALID_HEIGHT)
+    if (vmapHeight > INVALID_HEIGHT)
     {
-        if( mapHeight > INVALID_HEIGHT)
+        if (mapHeight > INVALID_HEIGHT)
         {
             // we have mapheight and vmapheight and must select more appropriate
-
             // we are already under the surface or vmap height above map heigt
             // or if the distance of the vmap height is less the land height distance
-            if( z < mapHeight || vmapHeight > mapHeight || fabs(mapHeight-z) > fabs(vmapHeight-z))
+            if (z < mapHeight || vmapHeight > mapHeight || fabs(mapHeight-z) > fabs(vmapHeight-z))
                 return vmapHeight;
             else
                 return mapHeight;                           // better use .map surface height
-
         }
         else
             return vmapHeight;                              // we have only vmapHeight (if have)
     }
     else
     {
-        if(!pUseVmaps)
+        if (!pUseVmaps)
             return mapHeight;                               // explicitly use map data (if have)
-        else if(mapHeight > INVALID_HEIGHT && (z < mapHeight + 2 || z == MAX_HEIGHT))
+        else if (mapHeight > INVALID_HEIGHT && (z < mapHeight + 2 || z == MAX_HEIGHT))
             return mapHeight;                               // explicitly use map data if original z < mapHeight but map found (z+2 > mapHeight)
         else
             return VMAP_INVALID_HEIGHT_VALUE;               // we not have any height
     }
 }
 
-float Map::GetVmapHeight(float x, float y, float z, bool useMaps) const
+float Map::GetWaterLevel(float x, float y, float z, float* pGround /*= NULL*/) const
 {
-    float mapHeight;
-    float vmapHeight;
-    if (useMaps)
+    if (const_cast<Map*>(this)->GetGrid(x, y))
     {
-        mapHeight = GetHeight(x, y, z, false);
-        if (fabs(mapHeight - z) < 0.1)
-            return mapHeight;
+        // we need ground level (including grid height version) for proper return water level in point
+        float ground_z = GetHeight(x, y, z, true, DEFAULT_WATER_SEARCH);
+        if (pGround)
+            *pGround = ground_z;
+
+        GridMapLiquidData liquid_status;
+
+        GridMapLiquidStatus res = getLiquidStatus(x, y, ground_z, MAP_ALL_LIQUIDS, &liquid_status);
+        if (!res)
+            return VMAP_INVALID_HEIGHT_VALUE;
+
+        return liquid_status.level;
     }
-    else
-        mapHeight = INVALID_HEIGHT;
-    VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
-    if (vmgr->isLineOfSightCalcEnabled())
-        bool result = vmgr->getObjectHitPos(GetId(), x, y, z + 2.0f, x, y, mapHeight, x, y, vmapHeight, 0);
-    else
-        return INVALID_HEIGHT;
-    return vmapHeight;
+
+    return VMAP_INVALID_HEIGHT_VALUE;
 }
 
-uint16 Map::GetAreaFlag(float x, float y) const
+float Map::GetWaterOrGroundLevel(float x, float y, float z, float* pGround /*= NULL*/, bool swim /*= false*/) const
 {
-    //local x,y coords
-    float lx,ly;
-    int gx,gy;
-    GridPair p = Trinity::ComputeGridPair(x, y);
+    if (const_cast<Map*>(this)->GetGrid(x, y))
+    {
+        // we need ground level (including grid height version) for proper return water level in point
+        float ground_z = GetHeight(x, y, z, true, DEFAULT_WATER_SEARCH);
+        if (pGround)
+            *pGround = ground_z;
 
-    // half opt method
-    gx=(int)(32-x/SIZE_OF_GRIDS) ;                          //grid x
-    gy=(int)(32-y/SIZE_OF_GRIDS);                           //grid y
+        GridMapLiquidData liquid_status;
 
-    lx=16*(32 -x/SIZE_OF_GRIDS - gx);
-    ly=16*(32 -y/SIZE_OF_GRIDS - gy);
-    //DEBUG_LOG("my %d %d si %d %d",gx,gy,p.x_coord,p.y_coord);
+        GridMapLiquidStatus res = getLiquidStatus(x, y, ground_z, MAP_ALL_LIQUIDS, &liquid_status);
+        return res ? ( swim ? liquid_status.level - 2.0f : liquid_status.level) : ground_z;
+    }
 
-    // ensure GridMap is loaded
-    const_cast<Map*>(this)->EnsureGridCreated(GridPair(63-gx,63-gy));
+    return VMAP_INVALID_HEIGHT_VALUE;
+}
 
-    if(GridMaps[gx][gy])
-        return GridMaps[gx][gy]->area_flag[(int)(lx)][(int)(ly)];
-    // this used while not all *.map files generated (instances)
+inline bool IsOutdoorWMO(uint32 mogpFlags, int32 adtId, int32 rootId, int32 groupId, WMOAreaTableEntry const* wmoEntry, AreaTableEntry const* atEntry)
+{
+    bool outdoor = true;
+
+    if(wmoEntry && atEntry)
+    {
+        if(atEntry->flags & AREA_FLAG_OUTSIDE)
+            return true;
+        if(atEntry->flags & AREA_FLAG_INSIDE)
+            return false;
+    }
+
+    outdoor = mogpFlags & 0x8;
+
+    if(wmoEntry)
+    {
+        if(wmoEntry->Flags & 4)
+            return true;
+        if((wmoEntry->Flags & 2)!=0)
+            outdoor = false;
+    }
+    return outdoor;
+}
+
+bool Map::IsOutdoors(float x, float y, float z) const
+{
+    uint32 mogpFlags;
+    int32 adtId, rootId, groupId;
+
+    // no wmo found? -> outside by default
+    if(!GetAreaInfo(x, y, z, mogpFlags, adtId, rootId, groupId))
+        return true;
+
+    AreaTableEntry const* atEntry = 0;
+    WMOAreaTableEntry const* wmoEntry= GetWMOAreaTableEntryByTripple(rootId, adtId, groupId);
+    if(wmoEntry)
+    {
+        DEBUG_LOG("Got WMOAreaTableEntry! flag %u, areaid %u", wmoEntry->Flags, wmoEntry->areaId);
+        atEntry = GetAreaEntryByAreaID(wmoEntry->areaId);
+    }
+    return IsOutdoorWMO(mogpFlags, adtId, rootId, groupId, wmoEntry, atEntry);
+}
+
+bool Map::GetAreaInfo(float x, float y, float z, uint32 &flags, int32 &adtId, int32 &rootId, int32 &groupId) const
+{
+    float vmap_z = z;
+    VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
+    if (vmgr->getAreaInfo(GetId(), x, y, vmap_z, flags, adtId, rootId, groupId))
+    {
+        // check if there's terrain between player height and object height
+        if(GridMap *gmap = const_cast<Map*>(this)->GetGrid(x, y))
+        {
+            float _mapheight = gmap->getHeight(x,y);
+            // z + 2.0f condition taken from GetHeight(), not sure if it's such a great choice...
+            if(z + 2.0f > _mapheight &&  _mapheight > vmap_z)
+                return false;
+        }
+        return true;
+    }
+    return false;
+}
+
+uint16 Map::GetAreaFlag(float x, float y, float z, bool *isOutdoors) const
+{
+    uint32 mogpFlags;
+    int32 adtId, rootId, groupId;
+    WMOAreaTableEntry const* wmoEntry = 0;
+    AreaTableEntry const* atEntry = 0;
+    bool haveAreaInfo = false;
+
+    if(GetAreaInfo(x, y, z, mogpFlags, adtId, rootId, groupId))
+    {
+        haveAreaInfo = true;
+        if(wmoEntry = GetWMOAreaTableEntryByTripple(rootId, adtId, groupId))
+            atEntry = GetAreaEntryByAreaID(wmoEntry->areaId);
+    }
+
+    uint16 areaflag;
+    if (atEntry)
+        areaflag = atEntry->exploreFlag;
     else
-        return GetAreaFlagByMapId(i_id);
+    {
+        if(GridMap *gmap = const_cast<Map*>(this)->GetGrid(x, y))
+            areaflag = gmap->getArea(x, y);
+        // this used while not all *.map files generated (instances)
+        else
+            areaflag = GetAreaFlagByMapId(i_id);
+    }
+
+    if (isOutdoors)
+    {
+        if (haveAreaInfo)
+            *isOutdoors = IsOutdoorWMO(mogpFlags, adtId, rootId, groupId, wmoEntry, atEntry);
+        else
+            *isOutdoors = true;
+    }
+    return areaflag;
 }
 
 uint8 Map::GetTerrainType(float x, float y) const
 {
-    //local x,y coords
-    float lx,ly;
-    int gx,gy;
-
-    // half opt method
-    gx=(int)(32-x/SIZE_OF_GRIDS) ;                          //grid x
-    gy=(int)(32-y/SIZE_OF_GRIDS);                           //grid y
-
-    lx=16*(32 -x/SIZE_OF_GRIDS - gx);
-    ly=16*(32 -y/SIZE_OF_GRIDS - gy);
-
-    // ensure GridMap is loaded
-    const_cast<Map*>(this)->EnsureGridCreated(GridPair(63-gx,63-gy));
-
-    if(GridMaps[gx][gy])
-        return GridMaps[gx][gy]->terrain_type[(int)(lx)][(int)(ly)];
+    if (GridMap *gmap = const_cast<Map*>(this)->GetGrid(x, y))
+        return gmap->getTerrainType(x, y);
     else
         return 0;
 }
 
-float Map::GetWaterLevel(float x, float y) const
+GridMapLiquidStatus Map::getLiquidStatus(float x, float y, float z, uint8 ReqLiquidType, GridMapLiquidData *data) const
 {
-    //local x,y coords
-    float lx,ly;
-    int gx,gy;
+    GridMapLiquidStatus result = LIQUID_MAP_NO_WATER;
+    VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
 
-    // half opt method
-    gx=(int)(32-x/SIZE_OF_GRIDS) ;                          //grid x
-    gy=(int)(32-y/SIZE_OF_GRIDS);                           //grid y
+    float liquid_level, ground_level = INVALID_HEIGHT;
 
-    lx=128*(32 -x/SIZE_OF_GRIDS - gx);
-    ly=128*(32 -y/SIZE_OF_GRIDS - gy);
+    uint32 liquid_type;
+    if (vmgr->GetLiquidLevel(GetId(), x, y, z, ReqLiquidType, liquid_level, ground_level, liquid_type))
+    {
+        DEBUG_LOG("getLiquidStatus(): vmap liquid level: %f ground: %f type: %u", liquid_level, ground_level, liquid_type);
+        // Check water level and ground level
+        if (liquid_level > ground_level && z > ground_level - 2)
+        {
+            // All ok in water -> store data
+            if (data)
+            {
+                data->type  = liquid_type;
+                data->level = liquid_level;
+                data->depth_level = ground_level;
+            }
 
-    // ensure GridMap is loaded
-    const_cast<Map*>(this)->EnsureGridCreated(GridPair(63-gx,63-gy));
+            // For speed check as int values
+            int delta = int((liquid_level - z) * 10);
 
-    if(GridMaps[gx][gy])
-        return GridMaps[gx][gy]->liquid_level[(int)(lx)][(int)(ly)];
-    else
-        return 0;
+            // Get position delta
+            if (delta > 20)                   // Under water
+                return LIQUID_MAP_UNDER_WATER;
+            if (delta > 0 )                   // In water
+                return LIQUID_MAP_IN_WATER;
+            if (delta > -1)                   // Walk on water
+                return LIQUID_MAP_WATER_WALK;
+            result = LIQUID_MAP_ABOVE_WATER;
+        }
+    }
+
+    if(GridMap* gmap = const_cast<Map*>(this)->GetGrid(x, y))
+    {
+        GridMapLiquidData map_data;
+        GridMapLiquidStatus map_result = gmap->getLiquidStatus(x, y, z, ReqLiquidType, &map_data);
+        // Not override LIQUID_MAP_ABOVE_WATER with LIQUID_MAP_NO_WATER:
+        if (map_result != LIQUID_MAP_NO_WATER && (map_data.level > ground_level))
+        {
+            if (data)
+                *data = map_data;
+            return map_result;
+        }
+    }
+    return result;
 }
 
 uint32 Map::GetAreaId(uint16 areaflag,uint32 map_id)
@@ -1540,26 +1533,30 @@ uint32 Map::GetZoneId(uint16 areaflag,uint32 map_id)
         return 0;
 }
 
-bool Map::IsInWater(float x, float y, float pZ) const
+bool Map::IsInWater(float x, float y, float pZ, GridMapLiquidData *data) const
 {
-    // This method is called too often to use vamps for that (4. parameter = false).
-    // The pZ pos is taken anyway for future use
-    float z = GetHeight(x,y,pZ,false);                      // use .map base surface height
-
-    // underground or instance without vmap
-    if(z <= INVALID_HEIGHT)
-        return false;
-
-    float water_z = GetWaterLevel(x,y);
-    uint8 flag = GetTerrainType(x,y);
-    return (z < (water_z-2)) && (flag & 0x01);
+    // Check surface in x, y point for liquid
+    if (const_cast<Map*>(this)->GetGrid(x, y))
+    {
+        GridMapLiquidData liquid_status;
+        GridMapLiquidData *liquid_ptr = data ? data : &liquid_status;
+        if (getLiquidStatus(x, y, pZ, MAP_ALL_LIQUIDS, liquid_ptr))
+        {
+            //if (liquid_prt->level - liquid_prt->depth_level > 2) //???
+                return true;
+        }
+    }
+    return false;
 }
 
 bool Map::IsUnderWater(float x, float y, float z) const
 {
-    float water_z = GetWaterLevel(x,y);
-    uint8 flag = GetTerrainType(x,y);
-    return (z < (water_z-2)) && (flag & 0x01);
+    if (const_cast<Map*>(this)->GetGrid(x, y))
+    {
+        if (getLiquidStatus(x, y, z, MAP_LIQUID_TYPE_WATER | MAP_LIQUID_TYPE_OCEAN) & LIQUID_MAP_UNDER_WATER)
+            return true;
+    }
+    return false;
 }
 
 bool Map::CheckGridIntegrity(Creature* c, bool moved) const
@@ -1761,7 +1758,7 @@ void Map::RemoveAllObjectsInRemoveList()
         {
             case TYPEID_CORPSE:
             {
-                Corpse* corpse = ObjectAccessor::Instance().GetCorpse(*obj, obj->GetGUID());
+                Corpse* corpse = ObjectAccessor::Instance().GetCorpse(obj->GetGUID());
                 if (!corpse)
                     sLog.outError("Try delete corpse/bones %u that not in map", obj->GetGUIDLow());
                 else
@@ -1977,7 +1974,7 @@ void Map::ScriptsProcess()
                         break;
                     }
                 case HIGHGUID_UNIT:
-                    source = HashMapHolder<Creature>::Find(step.sourceGUID);
+                    source = GetCreature(step.sourceGUID);
                     break;
                 case HIGHGUID_PET:
                     source = HashMapHolder<Pet>::Find(step.sourceGUID);
@@ -1986,7 +1983,7 @@ void Map::ScriptsProcess()
                     source = HashMapHolder<Player>::Find(step.sourceGUID);
                     break;
                 case HIGHGUID_GAMEOBJECT:
-                    source = HashMapHolder<GameObject>::Find(step.sourceGUID);
+                    source = GetGameObject(step.sourceGUID);
                     break;
                 case HIGHGUID_CORPSE:
                     source = HashMapHolder<Corpse>::Find(step.sourceGUID);
@@ -2016,7 +2013,7 @@ void Map::ScriptsProcess()
             switch(GUID_HIPART(step.targetGUID))
             {
                 case HIGHGUID_UNIT:
-                    target = HashMapHolder<Creature>::Find(step.targetGUID);
+                    target = GetCreature(step.targetGUID);
                     break;
                 case HIGHGUID_PET:
                     target = HashMapHolder<Pet>::Find(step.targetGUID);
@@ -2025,7 +2022,7 @@ void Map::ScriptsProcess()
                     target = HashMapHolder<Player>::Find(step.targetGUID);
                     break;
                 case HIGHGUID_GAMEOBJECT:
-                    target = HashMapHolder<GameObject>::Find(step.targetGUID);
+                    target = GetGameObject(step.targetGUID);
                     break;
                 case HIGHGUID_CORPSE:
                     target = HashMapHolder<Corpse>::Find(step.targetGUID);
@@ -2129,7 +2126,7 @@ void Map::ScriptsProcess()
                     sLog.outError("SCRIPT_COMMAND_MOVE_TO call for non-creature (TypeId: %u), skipping.",source->GetTypeId());
                     break;
                 }
-                ((Unit *)source)->SendMonsterMoveWithSpeed(step.script->x, step.script->y, step.script->z, ((Unit *)source)->GetUnitMovementFlags(), step.script->datalong2 );
+                ((Unit *)source)->SendMonsterMoveWithSpeed(step.script->x, step.script->y, step.script->z, step.script->datalong2 );
                 ((Unit *)source)->GetMap()->CreatureRelocation(((Creature *)source), step.script->x, step.script->y, step.script->z, 0);
                 break;
             case SCRIPT_COMMAND_FLAG_SET:
@@ -2590,7 +2587,7 @@ void Map::ScriptsProcess()
                 else //check hashmap holders
                 {
                     if(CreatureData const* data = objmgr.GetCreatureData(step.script->datalong))
-                        target = ObjectAccessor::GetObjectInWorld<Creature>(data->mapid, data->posX, data->posY, MAKE_NEW_GUID(step.script->datalong, data->id, HIGHGUID_UNIT), target);
+                        target = GetCreature(MAKE_NEW_GUID(step.script->datalong, data->id, HIGHGUID_UNIT), data->posX, data->posY);
                 }
                 //sLog.outDebug("attempting to pass target...");
                 if(!target)
@@ -2660,7 +2657,7 @@ void Map::ScriptsProcess()
                             ((Creature*)source)->DealDamage(((Creature*)target), ((Creature*)target)->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                         break;
                 }
-                
+
 
                 switch(step.script->dataint)
                 {
@@ -2719,11 +2716,20 @@ InstanceMap::~InstanceMap()
 void InstanceMap::InitVisibilityDistance()
 {
     //init visibility distance for instances
-    
-    if(i_mapEntry->MapID == 550 || i_mapEntry->MapID == 534)    // The Eye & Hyjal Summit
-       m_VisibleDistance = 100.0f;
-    else
-        m_VisibleDistance = sWorld.GetMaxVisibleDistanceInInstances();
+
+    switch (i_mapEntry->MapID)
+    {
+        case 550:   //The Eye
+        case 534:   //Hyjal Summit
+            m_VisibleDistance = 100.0f;
+            break;
+        case 564:   //Black Temple
+            m_VisibleDistance = 125.0f;
+            break;
+        default:
+            m_VisibleDistance = sWorld.GetMaxVisibleDistanceInInstances();
+            break;
+    }
 }
 
 /*
@@ -2733,7 +2739,7 @@ bool InstanceMap::EncounterInProgress(Player *player)
 {
     if(!player->isGameMaster() && GetInstanceData() && GetInstanceData()->IsEncounterInProgress())
     {
-        sLog.outError("InstanceMap: Player '%s' can't enter instance '%s' while an encounter is in progress.", player->GetName(),GetMapName());
+        sLog.outDebug("InstanceMap: Player '%s' can't enter instance '%s' while an encounter is in progress.", player->GetName(),GetMapName());
         player->SendTransferAborted(GetId(),TRANSFER_ABORT_ZONE_IN_COMBAT);
         return true;
     }
@@ -3031,16 +3037,18 @@ void InstanceMap::SetResetSchedule(bool on)
     if(!HavePlayers() && !IsRaid() && !IsHeroic())
     {
         InstanceSave *save = sInstanceSaveManager.GetInstanceSave(GetInstanceId());
-        if(!save) sLog.outError("InstanceMap::SetResetSchedule: cannot turn schedule %s, no save available for instance %d of %d", on ? "on" : "off", GetInstanceId(), GetId());
-        else sInstanceSaveManager.ScheduleReset(on, save->GetResetTime(), InstanceSaveManager::InstResetEvent(0, GetId(), GetInstanceId()));
+        if(!save)
+            sLog.outError("InstanceMap::SetResetSchedule: cannot turn schedule %s, no save available for instance %d (mapid: %d)", on ? "on" : "off", GetInstanceId(), GetId());
+        else
+            sInstanceSaveManager.ScheduleReset(on, save->GetResetTime(), InstanceSaveManager::InstResetEvent(0, GetId(), GetInstanceId()));
     }
 }
 
 /* ******* Battleground Instance Maps ******* */
 
-BattleGroundMap::BattleGroundMap(uint32 id, time_t expiry, uint32 InstanceId)
-  : Map(id, expiry, InstanceId, DIFFICULTY_NORMAL)
+BattleGroundMap::BattleGroundMap(uint32 id, time_t expiry, uint32 InstanceId, BattleGround *bg): Map(id, expiry, InstanceId, DIFFICULTY_NORMAL)
 {
+    m_bg = bg;
     BattleGroundMap::InitVisibilityDistance();
 }
 
@@ -3072,6 +3080,13 @@ bool BattleGroundMap::CanEnter(Player * player)
     // player number limit is checked in bgmgr, no need to do it here
 
     return Map::CanEnter(player);
+}
+
+void BattleGroundMap::Update(const uint32& t_diff)
+{
+    Map::Update(t_diff);
+
+    m_bg->Update(time_t(t_diff));
 }
 
 bool BattleGroundMap::Add(Player * player)
@@ -3114,54 +3129,377 @@ void BattleGroundMap::UnloadAll()
     Map::UnloadAll();
 }
 
-Creature*
-Map::GetCreature(uint64 guid)
+Creature * Map::GetCreature(uint64 guid)
 {
-    Creature * ret = ObjectAccessor::GetObjectInWorld(guid, (Creature*)NULL);
+    CreaturesMapType::const_accessor a;
 
-    if(!ret)
-        return NULL;
+    if (creaturesMap.find(a, guid))
+    {
+        if (a->second->GetInstanceId() != GetInstanceId())
+            return NULL;
+        else
+            return a->second;
+    }
 
-    if(ret->GetMapId() != GetId())
-        return NULL;
-
-    if(ret->GetInstanceId() != GetInstanceId())
-        return NULL;
-
-    return ret;
+    return NULL;
 }
 
-GameObject*
-Map::GetGameObject(uint64 guid)
+Creature * Map::GetCreature(uint64 guid, float x, float y)
 {
-    GameObject * ret = ObjectAccessor::GetObjectInWorld(guid, (GameObject*)NULL);
+    CreaturesMapType::const_accessor a;
 
-    if(!ret)
-        return NULL;
+    if (creaturesMap.find(a, guid))
+    {
+        CellPair p = Trinity::ComputeCellPair(x,y);
+        if(p.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || p.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP )
+        {
+            sLog.outError("Map::GetCorpse: invalid coordinates supplied X:%f Y:%f grid cell [%u:%u]", x, y, p.x_coord, p.y_coord);
+            return NULL;
+        }
 
-    if(ret->GetMapId() != GetId())
-        return NULL;
+        CellPair q = Trinity::ComputeCellPair(a->second->GetPositionX(), a->second->GetPositionY());
+        if(q.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || q.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP )
+        {
+            sLog.outError("Map::GetCorpse: object "UI64FMTD" has invalid coordinates X:%f Y:%f grid cell [%u:%u]", a->second->GetGUID(), a->second->GetPositionX(), a->second->GetPositionY(), q.x_coord, q.y_coord);
+            return NULL;
+        }
 
-    if(ret->GetInstanceId() != GetInstanceId())
-        return NULL;
+        int32 dx = int32(p.x_coord) - int32(q.x_coord);
+        int32 dy = int32(p.y_coord) - int32(q.y_coord);
 
-    return ret;
+        if (dx > -2 && dx < 2 && dy > -2 && dy < 2)
+            return a->second;
+        else
+            return NULL;
+    }
+
+    return NULL;
 }
 
-DynamicObject*
-Map::GetDynamicObject(uint64 guid)
+Creature * Map::GetCreatureOrPet(uint64 guid)
 {
-    DynamicObject * ret = ObjectAccessor::GetObjectInWorld(guid, (DynamicObject*)NULL);
-
-    if(!ret)
+    if(IS_PLAYER_GUID(guid))
         return NULL;
 
-    if(ret->GetMapId() != GetId())
-        return NULL;
+    if(IS_PET_GUID(guid))
+        return ObjectAccessor::GetPet(guid);
 
-    if(ret->GetInstanceId() != GetInstanceId())
-        return NULL;
-
-    return ret;
+    return GetCreature(guid);
 }
 
+GameObject * Map::GetGameObject(uint64 guid)
+{
+    GObjectMapType::const_accessor a;
+
+    if (gameObjectsMap.find(a, guid))
+    {
+        if (a->second->GetInstanceId() != GetInstanceId())
+            return NULL;
+        else
+            return a->second;
+    }
+
+    return NULL;
+}
+
+DynamicObject * Map::GetDynamicObject(uint64 guid)
+{
+    DObjectMapType::const_accessor a;
+
+    if (dynamicObjectsMap.find(a, guid))
+    {
+        if (a->second->GetInstanceId() != GetInstanceId())
+            return NULL;
+        else
+            return a->second;
+    }
+
+    return NULL;
+}
+
+Unit * Map::GetUnit(uint64 guid)
+{
+    if(!guid)
+        return NULL;
+
+    if(IS_PLAYER_GUID(guid))
+        return ObjectAccessor::FindPlayer(guid);
+
+    return GetCreatureOrPet(guid);
+}
+
+Object* Map::GetObjectByTypeMask(Player const &p, uint64 guid, uint32 typemask)
+{
+    Object *obj = NULL;
+
+    if(typemask & TYPEMASK_PLAYER)
+    {
+        obj = ObjectAccessor::FindPlayer(guid);
+        if(obj) return obj;
+    }
+
+    if(typemask & TYPEMASK_UNIT)
+    {
+        obj = GetCreatureOrPet(guid);
+        if(obj) return obj;
+    }
+
+    if(typemask & TYPEMASK_GAMEOBJECT)
+    {
+        obj = GetGameObject(guid);
+        if(obj) return obj;
+    }
+
+    if(typemask & TYPEMASK_DYNAMICOBJECT)
+    {
+        obj = GetDynamicObject(guid);
+        if(obj) return obj;
+    }
+
+    if(typemask & TYPEMASK_ITEM)
+    {
+        obj = p.GetItemByGuid( guid );
+        if(obj) return obj;
+    }
+
+    return NULL;
+}
+
+std::list<uint64> Map::GetCreaturesGUIDList(uint32 id, GetCreatureGuidType type , uint32 max)
+{
+    std::list<uint64> returnList;
+    CreatureIdToGuidListMapType::const_accessor a;
+    if (creatureIdToGuidMap.find(a, id))
+    {
+        std::list<uint64> tmpList = a->second;
+
+        if (!max || max > tmpList.size())
+        {
+            max = tmpList.size();
+            if (type == GET_RANDOM_CREATURE_GUID)
+                type = GET_FIRST_CREATURE_GUID;
+        }
+        uint64 count = 0;
+        switch (type)
+        {
+            case GET_FIRST_CREATURE_GUID:
+                for (std::list<uint64>::iterator itr = tmpList.begin(); count != max; ++itr, ++count)
+                    returnList.push_back(*itr);
+                break;
+            case GET_LAST_CREATURE_GUID:
+                for (std::list<uint64>::reverse_iterator itr = tmpList.rbegin(); count != max; ++itr, ++count)
+                    returnList.push_back(*itr);
+                break;
+            case GET_RANDOM_CREATURE_GUID:
+                for (count = 0; count != max; ++count)
+                {
+                    std::list<uint64>::iterator itr = tmpList.begin();
+                    std::advance(itr, rand()%(tmpList.size()-1));
+                    returnList.push_back(*itr);
+                    tmpList.erase(itr);
+                }
+                break;
+        }
+    }
+
+    return returnList;
+}
+
+uint64 Map::GetCreatureGUID(uint32 id, GetCreatureGuidType type)
+{
+    uint64 returnGUID = 0;
+
+    CreatureIdToGuidListMapType::const_accessor a;
+    if (creatureIdToGuidMap.find(a, id))
+    {
+        switch(type)
+        {
+            case GET_FIRST_CREATURE_GUID:
+                returnGUID = a->second.front();
+                break;
+            case GET_LAST_CREATURE_GUID:
+                returnGUID = a->second.back();
+                break;
+            case GET_RANDOM_CREATURE_GUID:
+                std::list<uint64>::const_iterator itr= a->second.begin();
+                std::advance(itr, rand()%(a->second.size()-1));
+                returnGUID = *itr;
+                break;
+        }
+    }
+
+    return returnGUID;
+}
+
+void Map::InsertIntoCreatureGUIDList(Creature * obj)
+{
+    CreatureIdToGuidListMapType::accessor a;
+    if (creatureIdToGuidMap.insert(a, obj->GetEntry()))
+    {
+        std::list<uint64> tmp;
+        tmp.push_back(obj->GetGUID());
+        a->second = tmp;
+    }
+    else
+    {
+        a.release();
+        if (creatureIdToGuidMap.find(a, obj->GetEntry()))
+            a->second.push_back(obj->GetGUID());
+    }
+}
+
+void Map::RemoveFromCreatureGUIDList(Creature * obj)
+{
+    CreatureIdToGuidListMapType::accessor a;
+    if (creatureIdToGuidMap.find(a, obj->GetEntry()))
+        a->second.remove(obj->GetGUID());
+}
+
+
+void Map::InsertIntoObjMap(Object * obj)
+{
+    ObjectGuid guid(obj->GetGUID());
+
+    switch(guid.GetHigh())
+    {
+        case HIGHGUID_UNIT:
+            {
+                CreaturesMapType::accessor a;
+
+                if (creaturesMap.insert(a, guid.GetRawValue()))
+                {
+                    a->second = (Creature*)obj;
+                    InsertIntoCreatureGUIDList(a->second);
+                }
+                else
+                    error_log("Map::InsertIntoCreatureMap: GUID %u already in map", guid.GetRawValue());
+
+                a.release();
+                break;
+            }
+        case HIGHGUID_GAMEOBJECT:
+            {
+                GObjectMapType::accessor a;
+
+                if (gameObjectsMap.insert(a, guid.GetRawValue()))
+                    a->second = (GameObject*)obj;
+                else
+                    error_log("Map::InsertIntoGameObjectMap: GUID %u already in map", guid.GetRawValue());
+
+                a.release();
+                break;
+            }
+        case HIGHGUID_DYNAMICOBJECT:
+            {
+                DObjectMapType::accessor a;
+
+                if (dynamicObjectsMap.insert(a, guid.GetRawValue()))
+                    a->second = (DynamicObject*)obj;
+                else
+                    error_log("Map::InsertIntoDynamicObjectMap: GUID %u already in map", guid.GetRawValue());
+
+                a.release();
+                break;
+            }
+        case HIGHGUID_PET:
+            ObjectAccessor::Instance().AddPet((Pet*)obj);
+            break;
+
+        case HIGHGUID_PLAYER:
+            ObjectAccessor::Instance().AddPlayer((Player*)obj);
+            break;
+
+        case HIGHGUID_CORPSE:
+            ObjectAccessor::Instance().AddCorpse((Corpse*)obj);
+            break;
+        default:
+            break;
+    }
+}
+
+void Map::RemoveFromObjMap(uint64 guid)
+{
+    ObjectGuid objGuid(guid);
+
+    switch(objGuid.GetHigh())
+    {
+        case HIGHGUID_UNIT:
+            if (!creaturesMap.erase(guid))
+                error_log("Map::RemoveFromCreatureMap: Creature GUID %u not in map", guid);
+            break;
+
+        case HIGHGUID_GAMEOBJECT:
+            if (!gameObjectsMap.erase(guid))
+                error_log("Map::RemoveFromGameObjectMap: Game Object GUID %u not in map", guid);
+            break;
+
+        case HIGHGUID_DYNAMICOBJECT:
+            if (!dynamicObjectsMap.erase(guid))
+                error_log("Map::RemoveFromDynamicObjectMap: Dynamic Object GUID %u not in map", guid);
+            break;
+
+        case HIGHGUID_PET:
+            ObjectAccessor::Instance().RemovePet(guid);
+            break;
+
+        case HIGHGUID_PLAYER:
+            ObjectAccessor::Instance().RemovePlayer(guid);
+            break;
+
+        case HIGHGUID_CORPSE:
+            HashMapHolder<Corpse>::Remove(guid);
+            break;
+        default:
+            break;
+    }
+}
+
+void Map::RemoveFromObjMap(Object * obj)
+{
+    ObjectGuid objGuid(obj->GetGUID());
+
+    switch(objGuid.GetHigh())
+    {
+        case HIGHGUID_UNIT:
+            RemoveFromCreatureGUIDList((Creature*)obj);
+            if (!creaturesMap.erase(objGuid.GetRawValue()))
+                error_log("Map::RemoveFromCreatureMap: Creature GUID %u not in map", objGuid.GetRawValue());
+            break;
+
+        case HIGHGUID_GAMEOBJECT:
+            if (!gameObjectsMap.erase(objGuid.GetRawValue()))
+                error_log("Map::RemoveFromGameObjectMap: Game Object GUID %u not in map", objGuid.GetRawValue());
+            break;
+
+        case HIGHGUID_DYNAMICOBJECT:
+            if (!dynamicObjectsMap.erase(objGuid.GetRawValue()))
+                error_log("Map::RemoveFromDynamicObjectMap: Dynamic Object GUID %u not in map", objGuid.GetRawValue());
+            break;
+
+        case HIGHGUID_PET:
+            ObjectAccessor::Instance().RemovePet(objGuid.GetRawValue());
+            break;
+
+        case HIGHGUID_PLAYER:
+            ObjectAccessor::Instance().RemovePlayer(objGuid.GetRawValue());
+            break;
+
+        case HIGHGUID_CORPSE:
+            HashMapHolder<Corpse>::Remove(objGuid.GetRawValue());
+            break;
+        default:
+            break;
+    }
+}
+
+inline GridMap *Map::GetGrid(float x, float y)
+{
+    // half opt method
+    int gx=(int)(32-x/SIZE_OF_GRIDS);                       //grid x
+    int gy=(int)(32-y/SIZE_OF_GRIDS);                       //grid y
+
+    // ensure GridMap is loaded
+    EnsureGridCreated(GridPair(63-gx,63-gy));
+
+    return GridMaps[gx][gy];
+}

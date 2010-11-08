@@ -155,7 +155,7 @@ struct TRINITY_DLL_DECL npc_medivh_bmAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void SpellHit(Unit* caster, const SpellEntry* spell)
     {
@@ -328,7 +328,7 @@ struct TRINITY_DLL_DECL npc_time_riftAI : public ScriptedAI
         m_creature->setActive(true);
 
     }
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void JustDied(Unit* who)
     {
@@ -351,7 +351,7 @@ struct TRINITY_DLL_DECL npc_time_riftAI : public ScriptedAI
         m_creature->GetRandomPoint(m_creature->GetPositionX(),m_creature->GetPositionY(),m_creature->GetPositionZ(),10.0f,x,y,z);
 
         //normalize Z-level if we can, if rift is not at ground level.
-        z = std::max(m_creature->GetMap()->GetHeight(x, y, MAX_HEIGHT), m_creature->GetMap()->GetWaterLevel(x, y));
+        z = m_creature->GetMap()->GetWaterOrGroundLevel(x, y, MAX_HEIGHT);
 
         Unit *Summon = m_creature->SummonCreature(creature_entry,x,y,z,m_creature->GetOrientation(),
             TEMPSUMMON_CORPSE_TIMED_DESPAWN,30000);
@@ -529,7 +529,7 @@ struct TRINITY_DLL_DECL rift_summonAI : public ScriptedAI
         }
 
     }
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if(who->GetTypeId() == TYPEID_UNIT)
             aggro = false;
@@ -595,7 +595,7 @@ struct TRINITY_DLL_DECL rift_summonAI : public ScriptedAI
                             Spell_Timer2 = 3000;
                         else
                         {
-                            Unit* target = SelectUnit(SELECT_TARGET_NEAREST,0,70,true,m_creature->getVictim());
+                            Unit* target = SelectUnit(SELECT_TARGET_NEAREST, 0, 70, true, m_creature->getVictimGUID());
                             if(target)
                                 DoCast(target, HeroicMode?38535:36277);
                             else if(target = m_creature->getVictim())
@@ -616,7 +616,7 @@ struct TRINITY_DLL_DECL rift_summonAI : public ScriptedAI
 
                     if(HeroicMode && Spell_Timer4 < diff)    //polymorph
                     {
-                        Unit* target = SelectUnit(SELECT_TARGET_NEAREST,0,70,true,m_creature->getVictim());
+                        Unit* target = SelectUnit(SELECT_TARGET_NEAREST, 0, 70, true, m_creature->getVictimGUID());
                         if(target)
                             DoCast(target, 13323);
                         Spell_Timer4 = 30000;

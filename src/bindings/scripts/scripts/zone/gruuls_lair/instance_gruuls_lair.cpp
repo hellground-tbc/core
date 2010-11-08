@@ -71,15 +71,48 @@ struct TRINITY_DLL_DECL instance_gruuls_lair : public ScriptedInstance
         return false;
     }
 
+    uint32 GetEncounterForEntry(uint32 entry)
+    {
+        switch(entry)
+        {
+            case 18831:
+                return DATA_MAULGAREVENT;
+            case 19044:
+                return DATA_GRUULEVENT;
+            default:
+                return 0;
+        }
+    }
+
     void OnCreatureCreate(Creature *creature, uint32 creature_entry)
     {
         switch(creature_entry)
         {
-            case 18835: KigglerTheCrazed = creature->GetGUID(); break;
-            case 18836: BlindeyeTheSeer = creature->GetGUID();  break;
-            case 18834: OlmTheSummoner = creature->GetGUID();   break;
-            case 18832: KroshFirehand = creature->GetGUID();    break;
-            case 18831: Maulgar = creature->GetGUID();          break;
+            case 18835:
+                KigglerTheCrazed = creature->GetGUID();
+                break;
+            case 18836:
+                BlindeyeTheSeer = creature->GetGUID();
+                break;
+            case 18834:
+                OlmTheSummoner = creature->GetGUID();
+                break;
+            case 18832:
+                KroshFirehand = creature->GetGUID();
+                break;
+            case 18831:
+                Maulgar = creature->GetGUID();
+                break;
+        }
+
+        const CreatureData *tmp = creature->GetLinkedRespawnCreatureData();
+        if (!tmp)
+            return;
+
+        if (GetEncounterForEntry(tmp->id) && creature->isAlive() && GetData(GetEncounterForEntry(tmp->id)) == DONE)
+        {
+            creature->Kill(creature, false);
+            creature->RemoveCorpse();
         }
     }
 
@@ -124,16 +157,16 @@ struct TRINITY_DLL_DECL instance_gruuls_lair : public ScriptedInstance
             case DATA_MAULGAREVENT:
                 if(data == DONE)
                     HandleGameObject(MaulgarDoor, true);
-                
+
                 if(Encounters[0] != DONE)
                     Encounters[0] = data;
                 break;
-            case DATA_GRUULEVENT:                
+            case DATA_GRUULEVENT:
                 if(data == IN_PROGRESS)
                     HandleGameObject(GruulDoor, false);
                 else
                     HandleGameObject(GruulDoor, true);
-                
+
                 if(Encounters[1] != DONE)
                     Encounters[1] = data;
                 break;

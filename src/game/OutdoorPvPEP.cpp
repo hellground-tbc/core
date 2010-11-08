@@ -89,9 +89,27 @@ bool OutdoorPvPObjectiveEP_EWT::Update(uint32 diff)
                 m_TowerState = EP_TS_N_H;
                 break;
             }
+            Map * tmpMap = GetMap();
+            if (!tmpMap)
+            {
+                GameObjectData const* data = objmgr.GetGOData(GUID_LOPART(m_CapturePoint));
 
-            GameObject* flag = HashMapHolder<GameObject>::Find(m_CapturePoint);
-            GameObject* flag2 = HashMapHolder<GameObject>::Find(m_Objects[EP_EWT_FLAGS]);
+                if (!data)
+                {
+                    sLog.outError("OutdoorPvPObjectiveEP_EWT::Update: data not found");
+                    return false;
+                }
+
+                Map * tmpMap = GetMap(data->mapid);
+                if (!tmpMap)
+                {
+                    sLog.outError("OutdoorPvPObjectiveEP_EWT::Update: map not found (id %u)", data->mapid);
+                    return false;
+                }
+            }
+
+            GameObject* flag = tmpMap->GetGameObject(m_CapturePoint);
+            GameObject* flag2 = tmpMap->GetGameObject(m_Objects[EP_EWT_FLAGS]);
             if(flag)
             {
                 flag->SetGoArtKit(artkit);
@@ -265,9 +283,27 @@ bool OutdoorPvPObjectiveEP_NPT::Update(uint32 diff)
                 m_TowerState = EP_TS_N_H;
                 break;
             }
+            Map * tmpMap = GetMap();
+            if (!tmpMap)
+            {
+                GameObjectData const* data = objmgr.GetGOData(GUID_LOPART(m_CapturePoint));
 
-            GameObject* flag = HashMapHolder<GameObject>::Find(m_CapturePoint);
-            GameObject* flag2 = HashMapHolder<GameObject>::Find(m_Objects[EP_NPT_FLAGS]);
+                if (!data)
+                {
+                    sLog.outError("OutdoorPvPObjectiveEP_NPT::Update: data not found");
+                    return false;
+                }
+
+                Map * tmpMap = GetMap(data->mapid);
+                if (!tmpMap)
+                {
+                    sLog.outError("OutdoorPvPObjectiveEP_NPT::Update: map not found (id %u)", data->mapid);
+                    return false;
+                }
+            }
+
+            GameObject* flag = tmpMap->GetGameObject(m_CapturePoint);
+            GameObject* flag2 = tmpMap->GetGameObject(m_Objects[EP_NPT_FLAGS]);
             if(flag)
             {
                 flag->SetGoArtKit(artkit);
@@ -364,7 +400,18 @@ void OutdoorPvPObjectiveEP_NPT::SummonGO(uint32 team)
         m_SummonedGOSide = team;
         DelObject(EP_NPT_BUFF);
         AddObject(EP_NPT_BUFF,EP_NPT_LordaeronShrine.entry,EP_NPT_LordaeronShrine.map,EP_NPT_LordaeronShrine.x,EP_NPT_LordaeronShrine.y,EP_NPT_LordaeronShrine.z,EP_NPT_LordaeronShrine.o,EP_NPT_LordaeronShrine.rot0,EP_NPT_LordaeronShrine.rot1,EP_NPT_LordaeronShrine.rot2,EP_NPT_LordaeronShrine.rot3);
-        GameObject * go = HashMapHolder<GameObject>::Find(m_Objects[EP_NPT_BUFF]);
+        Map * tmpMap = GetMap();
+        if (!tmpMap)
+        {
+            Map * tmpMap = GetMap(EP_NPT_LordaeronShrine.map);
+            if (!tmpMap)
+            {
+                sLog.outError("OutdoorPvPObjectiveEP_NPT::SummonGO: map not found (id %u)", EP_NPT_LordaeronShrine.map);
+                return;
+            }
+        }
+
+        GameObject * go = tmpMap->GetGameObject(m_Objects[EP_NPT_BUFF]);
         if(go)
             go->SetUInt32Value(GAMEOBJECT_FACTION,(team == ALLIANCE ? 84 : 83));
     }
@@ -432,9 +479,27 @@ bool OutdoorPvPObjectiveEP_CGT::Update(uint32 diff)
                 m_TowerState = EP_TS_N_H;
                 break;
             }
+            Map * tmpMap = GetMap();
+            if (!tmpMap)
+            {
+                GameObjectData const* data = objmgr.GetGOData(GUID_LOPART(m_CapturePoint));
 
-            GameObject* flag = HashMapHolder<GameObject>::Find(m_CapturePoint);
-            GameObject* flag2 = HashMapHolder<GameObject>::Find(m_Objects[EP_CGT_FLAGS]);
+                if (!data)
+                {
+                    sLog.outError("OutdoorPvPObjectiveEP_CGT::Update: data not found");
+                    return false;
+                }
+
+                Map * tmpMap = GetMap(data->mapid);
+                if (!tmpMap)
+                {
+                    sLog.outError("OutdoorPvPObjectiveEP_CGT::Update: map not found (id %u)", data->mapid);
+                    return false;
+                }
+            }
+
+            GameObject* flag = tmpMap->GetGameObject(m_CapturePoint);
+            GameObject* flag2 = tmpMap->GetGameObject(m_Objects[EP_CGT_FLAGS]);
             if(flag)
             {
                 flag->SetGoArtKit(artkit);
@@ -598,9 +663,27 @@ bool OutdoorPvPObjectiveEP_PWT::Update(uint32 diff)
                 m_TowerState = EP_TS_N_H;
                 break;
             }
+            Map * tmpMap = GetMap();
+            if (!tmpMap)
+            {
+                GameObjectData const* data = objmgr.GetGOData(GUID_LOPART(m_CapturePoint));
 
-            GameObject* flag = HashMapHolder<GameObject>::Find(m_CapturePoint);
-            GameObject* flag2 = HashMapHolder<GameObject>::Find(m_Objects[EP_PWT_FLAGS]);
+                if (!data)
+                {
+                    sLog.outError("OutdoorPvPObjectiveEP_PWT::Update: data not found");
+                    return false;
+                }
+
+                Map * tmpMap = GetMap(data->mapid);
+                if (!tmpMap)
+                {
+                    sLog.outError("OutdoorPvPObjectiveEP_PWT::Update: map not found (id %u)", data->mapid);
+                    return false;
+                }
+            }
+
+            GameObject* flag = tmpMap->GetGameObject(m_CapturePoint);
+            GameObject* flag2 = tmpMap->GetGameObject(m_Objects[EP_PWT_FLAGS]);
             if(flag)
             {
                 flag->SetGoArtKit(artkit);
@@ -697,7 +780,10 @@ void OutdoorPvPObjectiveEP_PWT::SummonFlightMaster(uint32 team)
         m_FlightMasterSpawned = team;
         DelCreature(EP_PWT_FLIGHTMASTER);
         AddCreature(EP_PWT_FLIGHTMASTER,EP_PWT_FlightMaster.entry,team,EP_PWT_FlightMaster.map,EP_PWT_FlightMaster.x,EP_PWT_FlightMaster.y,EP_PWT_FlightMaster.z,EP_PWT_FlightMaster.o);
-        Creature * c = HashMapHolder<Creature>::Find(m_Creatures[EP_PWT_FLIGHTMASTER]);
+        Map * tmpMap = GetMap(EP_PWT_FlightMaster.map);
+        Creature * c = NULL;
+        if (tmpMap)
+            c = tmpMap->GetCreature(m_Creatures[EP_PWT_FLIGHTMASTER]);
         if(c)
         {
             GossipOption gso;
@@ -742,7 +828,7 @@ bool OutdoorPvPObjectiveEP_PWT::HandleGossipOption(Player *plr, uint64 guid, uin
     std::map<uint64,uint32>::iterator itr = m_CreatureTypes.find(guid);
     if(itr != m_CreatureTypes.end())
     {
-        Creature * cr = HashMapHolder<Creature>::Find(guid);
+        Creature * cr = plr->GetMap()->GetCreature(guid);
         if(!cr)
             return true;
         if(itr->second == EP_PWT_FLIGHTMASTER)
@@ -804,12 +890,14 @@ bool OutdoorPvPEP::Update(uint32 diff)
     {
         m_AllianceTowersControlled = 0;
         m_HordeTowersControlled = 0;
+
         for(int i = 0; i < EP_TOWER_NUM; ++i)
         {
             if(EP_Controls[i] == ALLIANCE)
                 ++m_AllianceTowersControlled;
             else if(EP_Controls[i] == HORDE)
                 ++m_HordeTowersControlled;
+
             SendUpdateWorldState(EP_UI_TOWER_COUNT_A,m_AllianceTowersControlled);
             SendUpdateWorldState(EP_UI_TOWER_COUNT_H,m_HordeTowersControlled);
             BuffTeams();

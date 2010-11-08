@@ -52,7 +52,7 @@ struct TRINITY_DLL_DECL boss_renatakiAI : public ScriptedAI
         Ambushed = false;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
     }
 
@@ -118,7 +118,7 @@ struct TRINITY_DLL_DECL boss_renatakiAI : public ScriptedAI
         {
             if(Aggro_Timer < diff)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1, 200, true, m_creature->getVictim());
+                Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1, 200, true, m_creature->getVictimGUID());
                 if(DoGetThreat(m_creature->getVictim()))
                     DoModifyThreatPercent(m_creature->getVictim(),-50);
 

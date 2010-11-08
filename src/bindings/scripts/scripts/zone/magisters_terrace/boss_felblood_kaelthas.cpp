@@ -144,11 +144,11 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public ScriptedAI
         {
             victim->RemoveAurasDueToSpell(SPELL_GRAVITY_LAPSE_FLY);
             victim->RemoveAurasDueToSpell(SPELL_GRAVITY_LAPSE_DOT);
-            WorldPacket data(12);
+            /*WorldPacket data(12);
             data.SetOpcode(SMSG_MOVE_UNSET_CAN_FLY);
             data.append(victim->GetPackGUID());
             data << uint32(0);
-            victim->SendMessageToSet(&data, true);
+            victim->SendMessageToSet(&data, true);*/
         }
     }
     void JustDied(Unit *killer)
@@ -165,7 +165,7 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public ScriptedAI
             RemoveGravityLapse();                           // Remove Gravity Lapse so that players fall to ground if they kill him when in air.
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
         if(pInstance)
@@ -196,7 +196,7 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public ScriptedAI
         m_creature->InterruptNonMeleeSpells(true);
         m_creature->RemoveAllAuras();
         m_creature->DeleteThreatList();
-        m_creature->CombatStop();
+        m_creature->CombatStop(true);
         m_creature->LoadCreaturesAddon();
 
         if( m_creature->isAlive() )
@@ -204,7 +204,6 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public ScriptedAI
 
         m_creature->SetLootRecipient(NULL);
 
-        InCombat = false;
         Reset();
     }
 
@@ -256,11 +255,11 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public ScriptedAI
                     // Also needs an exception in spell system.
                     i_pl->CastSpell(i_pl, SPELL_GRAVITY_LAPSE_FLY, true, 0, 0, m_creature->GetGUID());
                     // Use packet hack
-                    WorldPacket data(12);
+                    /*WorldPacket data(12);
                     data.SetOpcode(SMSG_MOVE_SET_CAN_FLY);
                     data.append(i_pl->GetPackGUID());
                     data << uint32(0);
-                    i_pl->SendMessageToSet(&data, true);
+                    i_pl->SendMessageToSet(&data, true);*/
                     i_pl->SetSpeed(MOVE_FLIGHT, 2.0f);
                 }
             }
@@ -278,11 +277,11 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public ScriptedAI
             {
                 i_pl->RemoveAurasDueToSpell(SPELL_GRAVITY_LAPSE_FLY);
                 i_pl->RemoveAurasDueToSpell(SPELL_GRAVITY_LAPSE_DOT);
-                WorldPacket data(12);
+                /*WorldPacket data(12);
                 data.SetOpcode(SMSG_MOVE_UNSET_CAN_FLY);
                 data.append(i_pl->GetPackGUID());
                 data << uint32(0);
-                i_pl->SendMessageToSet(&data, true);
+                i_pl->SendMessageToSet(&data, true);*/
             }
         }
     }
@@ -479,7 +478,7 @@ struct TRINITY_DLL_DECL mob_felkael_flamestrikeAI : public ScriptedAI
         DoCast(m_creature, SPELL_FLAMESTRIKE2, true);
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
     void MoveInLineOfSight(Unit *who) {}
     void UpdateAI(const uint32 diff)
     {
@@ -513,8 +512,6 @@ struct TRINITY_DLL_DECL mob_felkael_phoenixAI : public ScriptedAI
         phase = 0;
         end = false;
     }
-
-    void Aggro(Unit* who) {}
 
     void JustDied(Unit* slayer)
     {
@@ -576,7 +573,6 @@ struct TRINITY_DLL_DECL mob_felkael_phoenix_eggAI : public Scripted_NoMovementAI
     ScriptedInstance* pInstance;
     void Reset() {   HatchTimer = 15000;   }
 
-    void Aggro(Unit* who) {}
     void MoveInLineOfSight(Unit* who) {}
     void UpdateAI(const uint32 diff)
     {
@@ -623,8 +619,6 @@ struct TRINITY_DLL_DECL mob_arcane_sphereAI : public ScriptedAI
         m_creature->setFaction(14);
         DoCast(m_creature, SPELL_ARCANE_SPHERE_PASSIVE, true);
     }
-
-    void Aggro(Unit* who) {}
 
     void StalkTarget(Unit* target)
     {

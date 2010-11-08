@@ -87,7 +87,7 @@ void WorldSession::HandleGuildInviteOpcode(WorldPacket& recvPacket)
     recvPacket >> Invitedname;
 
     if(normalizePlayerName(Invitedname))
-        player = ObjectAccessor::Instance().FindPlayerByName(Invitedname.c_str());
+        player = ObjectAccessor::Instance().GetPlayerByName(Invitedname);
 
     if(!player)
     {
@@ -986,7 +986,7 @@ void WorldSession::HandleGuildBankDeposit( WorldPacket & recv_data )
         sLog.outSpecial("Player %s (Account: %u) deposit money (Amount: %u) to guild bank (Guild ID %u)",
             _player->GetName(),_player->GetSession()->GetAccountId(),money,GuildId);
     }
-    
+
     // logging money
     if(_player->GetSession()->GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_LOG_TRADE))
     {
@@ -1503,7 +1503,7 @@ void WorldSession::HandleGuildBankDepositItem( WorldPacket & recv_data )
                     pItemChar->GetProto()->Name1,pItemChar->GetEntry(),pItemChar->GetCount(),
                     GuildId);
             }
-            
+
             if(_player->GetSession()->SpecialLog())
             {
                 sLog.outSpecial("Player %s (Account: %u) deposit item: %s (Entry: %d Count: %u) to guild bank (Guild ID: %u )",

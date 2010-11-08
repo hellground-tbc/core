@@ -90,6 +90,9 @@ struct TRINITY_DLL_DECL boss_twinemperorsAI : public ScriptedAI
         m_creature->clearUnitState(UNIT_STAT_STUNNED);
         DontYellWhenDead = false;
         EnrageTimer = 15*60000;
+
+        if (pInstance)
+            pInstance->SetData(DATA_TWIN_EMPERORS, NOT_STARTED);
     }
 
     Creature *GetOtherBoss()
@@ -131,8 +134,12 @@ struct TRINITY_DLL_DECL boss_twinemperorsAI : public ScriptedAI
             pOtherBoss->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
             ((boss_twinemperorsAI *)pOtherBoss->AI())->DontYellWhenDead = true;
         }
+
         if (!DontYellWhenDead)                              // I hope AI is not threaded
             DoPlaySoundToSet(m_creature, IAmVeklor() ? SOUND_VL_DEATH : SOUND_VN_DEATH);
+
+        if (pInstance)
+            pInstance->SetData(DATA_TWIN_EMPERORS, DONE);
     }
 
     void KilledUnit(Unit* victim)
@@ -140,23 +147,24 @@ struct TRINITY_DLL_DECL boss_twinemperorsAI : public ScriptedAI
         DoPlaySoundToSet(m_creature, IAmVeklor() ? SOUND_VL_KILL : SOUND_VN_KILL);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoZoneInCombat();
-        InCombat = true;
         Creature *pOtherBoss = GetOtherBoss();
         if (pOtherBoss)
         {
             // TODO: we should activate the other boss location so he can start attackning even if nobody
             // is near I dont know how to do that
             ScriptedAI *otherAI = (ScriptedAI*)pOtherBoss->AI();
-            if (!otherAI->InCombat)
+            if (!pOtherBoss->isInCombat())
             {
                 DoPlaySoundToSet(m_creature, IAmVeklor() ? SOUND_VL_AGGRO : SOUND_VN_AGGRO);
                 otherAI->AttackStart(who);
                 otherAI->DoZoneInCombat();
             }
         }
+        if (pInstance)
+            pInstance->SetData(DATA_TWIN_EMPERORS, IN_PROGRESS);
     }
 
     void SpellHit(Unit *caster, const SpellEntry *entry)
@@ -198,7 +206,7 @@ struct TRINITY_DLL_DECL boss_twinemperorsAI : public ScriptedAI
         if (Heal_Timer < diff)
         {
             Unit *pOtherBoss = GetOtherBoss();
-            if (pOtherBoss && (pOtherBoss->GetDistance((const Creature *)m_creature) <= 60))
+            if (pOtherBoss && (pOtherBoss->IsWithinDistInMap(m_creature, 60)))
             {
                 DoCast(pOtherBoss, SPELL_HEAL_BROTHER);
                 Heal_Timer = 1000;
@@ -552,7 +560,7 @@ struct TRINITY_DLL_DECL boss_veklorAI : public boss_twinemperorsAI
         //ShadowBolt_Timer
         if (ShadowBolt_Timer < diff)
         {
-            if (m_creature->GetDistance(m_creature->getVictim()) > 45)
+            if (m_creature->IsWithinDistInMap(m_creature, 45))
                 m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim(), VEKLOR_DIST, 0);
             else
                 DoCast(m_creature->getVictim(),SPELL_SHADOWBOLT);
@@ -610,11 +618,8 @@ struct TRINITY_DLL_DECL boss_veklorAI : public boss_twinemperorsAI
                 m_creature->AddThreat(who, 0.0f);
             }
 
-            if (!InCombat)
-            {
-                InCombat = true;
-                Aggro(who);
-            }
+            if (!m_creature->isInCombat())
+                EnterCombat(who);
         }
     }
 };

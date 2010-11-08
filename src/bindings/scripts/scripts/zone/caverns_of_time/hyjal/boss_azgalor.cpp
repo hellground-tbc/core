@@ -68,7 +68,7 @@ struct TRINITY_DLL_DECL boss_azgalorAI : public hyjal_trashAI
             pInstance->SetData(DATA_AZGALOREVENT, NOT_STARTED);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if(pInstance && IsEvent)
             pInstance->SetData(DATA_AZGALOREVENT, IN_PROGRESS);
@@ -120,6 +120,7 @@ struct TRINITY_DLL_DECL boss_azgalorAI : public hyjal_trashAI
         hyjal_trashAI::JustDied(victim);
         if(pInstance && IsEvent)
             pInstance->SetData(DATA_AZGALOREVENT, DONE);
+        
         DoPlaySoundToSet(m_creature, SOUND_ONDEATH);
     }
 
@@ -134,16 +135,16 @@ struct TRINITY_DLL_DECL boss_azgalorAI : public hyjal_trashAI
                 go = true;
                 if(pInstance)
                 {
-                    ((npc_escortAI*)(m_creature->AI()))->AddWaypoint(0, 5492.91,    -2404.61,    1462.63);
-                    ((npc_escortAI*)(m_creature->AI()))->AddWaypoint(1, 5531.76,    -2460.87,    1469.55);
-                    ((npc_escortAI*)(m_creature->AI()))->AddWaypoint(2, 5554.58,    -2514.66,    1476.12);
-                    ((npc_escortAI*)(m_creature->AI()))->AddWaypoint(3, 5554.16,    -2567.23,    1479.90);
-                    ((npc_escortAI*)(m_creature->AI()))->AddWaypoint(4, 5540.67,    -2625.99,    1480.89);
-                    ((npc_escortAI*)(m_creature->AI()))->AddWaypoint(5, 5508.16,    -2659.2,    1480.15);
-                    ((npc_escortAI*)(m_creature->AI()))->AddWaypoint(6, 5489.62,    -2704.05,    1482.18);
-                    ((npc_escortAI*)(m_creature->AI()))->AddWaypoint(7, 5457.04,    -2726.26,    1485.10);
-                    ((npc_escortAI*)(m_creature->AI()))->Start(false, true, true);
-                    ((npc_escortAI*)(m_creature->AI()))->SetDespawnAtEnd(false);
+                    AddWaypoint(0, 5492.91,    -2404.61,    1462.63);
+                    AddWaypoint(1, 5531.76,    -2460.87,    1469.55);
+                    AddWaypoint(2, 5554.58,    -2514.66,    1476.12);
+                    AddWaypoint(3, 5554.16,    -2567.23,    1479.90);
+                    AddWaypoint(4, 5540.67,    -2625.99,    1480.89);
+                    AddWaypoint(5, 5508.16,    -2659.2,    1480.15);
+                    AddWaypoint(6, 5489.62,    -2704.05,    1482.18);
+                    AddWaypoint(7, 5457.04,    -2726.26,    1485.10);
+                    Start(false, true);
+                    SetDespawnAtEnd(false);
                 }
             }
         }
@@ -163,30 +164,45 @@ struct TRINITY_DLL_DECL boss_azgalorAI : public hyjal_trashAI
 
         if(RainTimer < diff)
         {
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0,30,true))    
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 40, true))
+            {
                 DoCast(target, SPELL_RAIN_OF_FIRE);
-            RainTimer = 20000+rand()%15000;
-        }else RainTimer -= diff;
+                RainTimer = urand(20000, 35000);
+            }
+        }
+        else
+            RainTimer -= diff;
 
+        //only set timer when target exist, cause with exclude defined we return NULL that now can be acceptable spell target
         if(DoomTimer < diff)
         {
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,3,100,true, m_creature->getVictim()))
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true, m_creature->getVictimGUID()))
+            {
                 DoCast(target, SPELL_DOOM);//never on tank
-            DoomTimer = 45000+rand()%5000;
-        }else DoomTimer -= diff;
+                DoomTimer = urand(45000, 50000);
+            }
+        }
+        else
+            DoomTimer -= diff;
 
         if(HowlTimer < diff)
         {
             DoCast(m_creature, SPELL_HOWL_OF_AZGALOR);
             HowlTimer = 30000;
-        }else HowlTimer -= diff;
+        }
+        else
+            HowlTimer -= diff;
 
         if(CleaveTimer < diff)
         {
             if(Unit *target = m_creature->getVictim())
+            {
                 DoCast(target, SPELL_CLEAVE);
-            CleaveTimer = 10000+rand()%5000;
-        }else CleaveTimer -= diff;
+                CleaveTimer = urand(10000, 15000);
+            }
+        }
+        else
+            CleaveTimer -= diff;
 
         if(EnrageTimer < diff && !enraged)
         {
@@ -194,7 +210,9 @@ struct TRINITY_DLL_DECL boss_azgalorAI : public hyjal_trashAI
             DoCast(m_creature, SPELL_BERSERK, true);
             enraged = true;
             EnrageTimer = 600000;
-        }else EnrageTimer -= diff;
+        }
+        else
+            EnrageTimer -= diff;
 
         DoMeleeAttackIfReady();
     }
@@ -214,68 +232,55 @@ struct TRINITY_DLL_DECL mob_lesser_doomguardAI : public hyjal_trashAI
     mob_lesser_doomguardAI(Creature *c) : hyjal_trashAI(c)
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
-        if(pInstance)
-            AzgalorGUID = pInstance->GetData64(DATA_AZGALOR);
     }
 
     uint32 CrippleTimer;
     uint32 WarstompTimer;
     uint32 CheckTimer;
-    uint64 AzgalorGUID;
+
     ScriptedInstance* pInstance;
 
     void Reset()
     {
         CrippleTimer = 50000;
         WarstompTimer = 10000;
-        DoCast(m_creature, SPELL_THRASH);
-        CheckTimer = 5000;
+        CheckTimer = 2000;
     }
 
-    void Aggro(Unit *who)
+    void WaypointReached(uint32){}
+
+    void JustRespawned()
     {
-    }
-
-    void KilledUnit(Unit *victim)
-    {
-
-    }
-
-    void WaypointReached(uint32 i)
-    {
-
+        DoCast(m_creature, SPELL_THRASH, true);
     }
 
     void MoveInLineOfSight(Unit *who)
     {
-        if (m_creature->GetDistance(who) <= 50 && !InCombat && m_creature->IsHostileTo(who))
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, 50) && m_creature->IsHostileTo(who))
         {
             m_creature->AddThreat(who,0.0);
             m_creature->Attack(who,false);
         }
     }
 
-    void JustDied(Unit *victim)
-    {
-
-    }
-
     void UpdateAI(const uint32 diff)
     {
         if(CheckTimer < diff)
         {
-            if(AzgalorGUID)
+            if(pInstance)
             {
-                Creature* boss = Unit::GetCreature((*m_creature),AzgalorGUID);
-                if(!boss || (boss && boss->isDead()))
+                Creature *pAzgalor = pInstance->GetCreature(pInstance->GetData64(DATA_AZGALOR));
+                if(!pAzgalor || !pAzgalor->isAlive())
                 {
                     m_creature->setDeathState(JUST_DIED);
                     m_creature->RemoveCorpse();
                     return;
                 }
             }
-            CheckTimer = 5000;
-        }else CheckTimer -= diff;
+            CheckTimer = 2000;
+        }
+        else
+            CheckTimer -= diff;
 
         //Return since we have no target
         if (!UpdateVictim() )
@@ -284,15 +289,21 @@ struct TRINITY_DLL_DECL mob_lesser_doomguardAI : public hyjal_trashAI
         if(WarstompTimer < diff)
         {
             DoCast(m_creature, SPELL_WARSTOMP);
-            WarstompTimer = 10000+rand()%5000;
-        }else WarstompTimer -= diff;
+            WarstompTimer = urand(10000, 25000);
+        }
+        else
+            WarstompTimer -= diff;
 
         if(CrippleTimer < diff)
         {
             if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0,100,true))
+            {
                 DoCast(target, SPELL_CRIPPLE);
-            CrippleTimer = 25000+rand()%5000;
-        }else CrippleTimer -= diff;
+                CrippleTimer = urand(25000, 30000);
+            }
+        }
+        else
+            CrippleTimer -= diff;
 
         DoMeleeAttackIfReady();
     }

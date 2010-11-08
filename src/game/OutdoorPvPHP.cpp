@@ -245,9 +245,27 @@ bool OutdoorPvPObjectiveHP::Update(uint32 diff)
                 artkit2 = HP_TowerArtKit_H[m_TowerType];
                 break;
             }
+            Map * tmpMap = GetMap();
+            if (!tmpMap)
+            {
+                GameObjectData const* data = objmgr.GetGOData(GUID_LOPART(m_CapturePoint));
 
-            GameObject* flag = HashMapHolder<GameObject>::Find(m_CapturePoint);
-            GameObject* flag2 = HashMapHolder<GameObject>::Find(m_Objects[m_TowerType]);
+                if (!data)
+                {
+                    sLog.outError("OutdoorPvPObjectiveHP::Update: data not found");
+                    return false;
+                }
+
+                Map * tmpMap = GetMap(data->mapid);
+                if (!tmpMap)
+                {
+                    sLog.outError("OutdoorPvPObjectiveHP::Update: map not found (id %u)", data->mapid);
+                    return false;
+                }
+            }
+
+            GameObject* flag = tmpMap->GetGameObject(m_CapturePoint);
+            GameObject* flag2 = tmpMap->GetGameObject(m_Objects[m_TowerType]);
             if(flag)
             {
                 flag->SetGoArtKit(artkit);

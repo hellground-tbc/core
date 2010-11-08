@@ -192,7 +192,6 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
         Intro = false;
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE); //set it only once on creature create (no need do intro if wiped)
         Entangle = false;
-        InCombat = false;
         CanAttack = false;
 
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
@@ -206,7 +205,7 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
                 remo->setDeathState(JUST_DIED);
         }
 
-        if(pInstance)
+        if(pInstance && pInstance->GetData(DATA_LADYVASHJEVENT) != DONE)
             pInstance->SetData(DATA_LADYVASHJEVENT, NOT_STARTED);
         ShieldGeneratorChannel[0] = 0;
         ShieldGeneratorChannel[1] = 0;
@@ -215,11 +214,12 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
 
         m_creature->SetCorpseDelay(1000*60*60);
     }
+
     void Paralyze(bool apply)
     {
         Map *map = m_creature->GetMap();
         Map::PlayerList const &PlayerList = map->GetPlayers();
-           
+
         for(Map::PlayerList::const_iterator i = PlayerList.begin();i != PlayerList.end(); ++i)
         {
             Player* i_pl = i->getSource();
@@ -241,14 +241,10 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
         if(TaintedElemental_Timer > 50000)
             TaintedElemental_Timer = 50000;
     }
+
     void KilledUnit(Unit *victim)
     {
-        switch(rand()%3)
-        {
-            case 0: DoScriptText(SAY_SLAY1, m_creature); break;
-            case 1: DoScriptText(SAY_SLAY2, m_creature); break;
-            case 2: DoScriptText(SAY_SLAY3, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2, SAY_SLAY3), m_creature);
     }
 
     void JustDied(Unit *victim)
@@ -262,13 +258,7 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
 
     void StartEvent()
     {
-        switch(rand()%4)
-        {
-            case 0: DoScriptText(SAY_AGGRO1, m_creature); break;
-            case 1: DoScriptText(SAY_AGGRO2, m_creature); break;
-            case 2: DoScriptText(SAY_AGGRO3, m_creature); break;
-            case 3: DoScriptText(SAY_AGGRO4, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3, SAY_AGGRO4), m_creature);
 
         InCombat = true;
         Phase = 1;
@@ -277,7 +267,7 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
             pInstance->SetData(DATA_LADYVASHJEVENT, IN_PROGRESS);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if (pInstance)
         {
@@ -292,11 +282,11 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
                 }
             }
         }
+
         if(Phase != 2)
             AttackStart(who);
 
-        if(!InCombat)
-            StartEvent();
+        StartEvent();
     }
 
     void MoveInLineOfSight(Unit *who)
@@ -308,6 +298,7 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
         }
         if (!CanAttack)
             return;
+
         if (!who || m_creature->getVictim())
             return;
 
@@ -322,7 +313,7 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
                 if(Phase != 2)
                     AttackStart(who);
 
-                if(!InCombat)
+                if(!m_creature->isInCombat())
                     StartEvent();
             }
         }
@@ -330,27 +321,14 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
 
     void CastShootOrMultishot()
     {
-        switch(rand()%2)
-        {
-            case 0:
-                //Shoot
-                //Used in Phases 1 and 3 after Entangle or while having nobody in melee range. A shot that hits her target for 4097-5543 Physical damage.
-                DoCast(m_creature->getVictim(), SPELL_SHOOT);
-                break;
-            case 1:
-                //Multishot
-                //Used in Phases 1 and 3 after Entangle or while having nobody in melee range. A shot that hits 1 person and 4 people around him for 6475-7525 physical damage.
-                DoCast(m_creature->getVictim(), SPELL_MULTI_SHOT);
-                break;
-        }
+        //Shoot
+        //Used in Phases 1 and 3 after Entangle or while having nobody in melee range. A shot that hits her target for 4097-5543 Physical damage.
+        //Multishot
+        //Used in Phases 1 and 3 after Entangle or while having nobody in melee range. A shot that hits 1 person and 4 people around him for 6475-7525 physical damage.
+        DoCast(m_creature->getVictim(), RAND(SPELL_SHOOT, SPELL_MULTI_SHOT));
+
         if(rand()%3)
-        {
-            switch(rand()%2)
-            {
-                case 0: DoScriptText(SAY_BOWSHOT1, m_creature); break;
-                case 1: DoScriptText(SAY_BOWSHOT2, m_creature); break;
-            }
-        }
+            DoScriptText(RAND(SAY_BOWSHOT1, SAY_BOWSHOT2), m_creature);
     }
 
     void UpdateAI(const uint32 diff)
@@ -404,7 +382,7 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
            else
                ParalyzeCheck_Timer -= diff;
         }
-    
+
         if(Phase == 1 || Phase == 3)
         {
             //ShockBlast_Timer
@@ -466,7 +444,7 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
                     //Phase 2 begins when Vashj hits 70%. She will run to the middle of her platform and surround herself in a shield making her invulerable.
                     Phase = 2;
 
-                    m_creature->GetMotionMaster()->Clear();
+                    m_creature->GetMotionMaster()->MovementExpired();
                     DoTeleportTo(MIDDLE_X, MIDDLE_Y, MIDDLE_Z);
 
                     Creature *pCreature;
@@ -476,6 +454,8 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
                         if (pCreature)
                             ShieldGeneratorChannel[i] = pCreature->GetGUID();
                     }
+
+                    m_creature->CastSpell(m_creature, SPELL_MAGIC_BARRIER,true);
                     DoScriptText(SAY_PHASE2, m_creature);
                 }
             }
@@ -559,13 +539,13 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
             if(EnchantedElemental_Timer < diff)
             {
                 Creature *Elemental;
-                
+
                 for (int i = 0; i < 4; i++)
                 {
                     EnchantedElemental_Pos = i * 2 + (rand()%2);
                     Elemental = m_creature->SummonCreature(ENCHANTED_ELEMENTAL, ElementPos[EnchantedElemental_Pos][0], ElementPos[EnchantedElemental_Pos][1], ElementPos[EnchantedElemental_Pos][2], ElementPos[EnchantedElemental_Pos][3], TEMPSUMMON_CORPSE_DESPAWN, 0);
                 }
-                
+
                 if (Elemental)
                     EnchantedElemental_Timer = 20000+rand()%5000;
 
@@ -682,7 +662,7 @@ struct TRINITY_DLL_DECL mob_enchanted_elementalAI : public ScriptedAI
             Vashj = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_LADYVASHJ));
     }
 
-    void Aggro(Unit *who) { return; }
+    void EnterCombat(Unit *who) { return; }
 
     void MoveInLineOfSight(Unit *who){return;}
 
@@ -772,7 +752,7 @@ struct TRINITY_DLL_DECL mob_tainted_elementalAI : public Scripted_NoMovementAI
         }
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         m_creature->AddThreat(who, 0.1f);
     }
@@ -833,7 +813,7 @@ struct TRINITY_DLL_DECL mob_toxic_sporebatAI : public ScriptedAI
         Check_Timer = 1000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
 
     }
@@ -854,10 +834,6 @@ struct TRINITY_DLL_DECL mob_toxic_sporebatAI : public ScriptedAI
 
     void UpdateAI (const uint32 diff)
     {
-
-        /*if(!m_creature->isInCombat())
-            m_creature->SetInCombatState(false);*/
-
         //Random movement
         if (movement_timer < diff)
         {
@@ -920,7 +896,7 @@ struct TRINITY_DLL_DECL mob_coilfang_eliteAI : public ScriptedAI
     {
         m_creature->SetSpeed(MOVE_WALK,3);
         m_creature->SetSpeed(MOVE_RUN,3);
-        
+
         for(int i = 0; i < 3; ++i)
         {
             if(m_creature->GetDistance(StriderNagaWP[i*4][0],StriderNagaWP[i*4][1],StriderNagaWP[i*4][2]) < 5)
@@ -929,24 +905,22 @@ struct TRINITY_DLL_DECL mob_coilfang_eliteAI : public ScriptedAI
                 break;
             }
         }
-        
+
         Cleave_Timer = 10000+rand()%5000;
         Check_Timer  = 2000;
-        
+
         MoveWP = 1;
         Move = false;
         OnPath = true;
-        
+
         m_creature->GetMotionMaster()->MovePoint(MoveWP,StriderNagaWP[4*path_nr + 1][0],StriderNagaWP[4*path_nr + 1][1],StriderNagaWP[4*path_nr + 1][2]);
     }
-
-    void Aggro(Unit* who){}
 
     void MoveInLineOfSight(Unit* who)
     {
         if(OnPath)
             return;
-        
+
         ScriptedAI::MoveInLineOfSight(who);
     }
 
@@ -979,15 +953,15 @@ struct TRINITY_DLL_DECL mob_coilfang_eliteAI : public ScriptedAI
             if(MoveWP >= 4)
             {
                 m_creature->GetMotionMaster()->Clear(false);
-                
+
                 m_creature->SetSpeed(MOVE_WALK,1.5);
                 m_creature->SetSpeed(MOVE_RUN,1.5);
 
                 OnPath = false;
-                
+
                 if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,60,true))
                     DoStartMovement(target);
-            
+
             }else
                 m_creature->GetMotionMaster()->MovePoint(MoveWP,StriderNagaWP[4*path_nr + MoveWP][0],StriderNagaWP[4*path_nr + MoveWP][1],StriderNagaWP[4*path_nr + MoveWP][2]);
 
@@ -1000,7 +974,7 @@ struct TRINITY_DLL_DECL mob_coilfang_eliteAI : public ScriptedAI
 
             if(pInstance && pInstance->GetData(DATA_LADYVASHJEVENT) != IN_PROGRESS)
                 m_creature->Kill(m_creature,false);
-               
+
               Check_Timer = 2000;
         }else Check_Timer -= diff;
 
@@ -1047,25 +1021,23 @@ struct TRINITY_DLL_DECL mob_coilfang_striderAI : public ScriptedAI
                 break;
             }
         }
-        
+
         MindBlast_Timer = 3000+rand()%10000;
         Check_Timer     = 2000;
-        
+
         MoveWP = 1;
         Move = false;
         OnPath = true;
-        
+
         m_creature->CastSpell(m_creature,38257,true);
         m_creature->GetMotionMaster()->MovePoint(MoveWP,StriderNagaWP[4*path_nr + 1][0],StriderNagaWP[4*path_nr + 1][1],StriderNagaWP[4*path_nr + 1][2]);
     }
-
-    void Aggro(Unit* who){}
 
     void MoveInLineOfSight(Unit* who)
     {
         if(OnPath)
             return;
-        
+
         ScriptedAI::MoveInLineOfSight(who);
     }
 
@@ -1079,7 +1051,7 @@ struct TRINITY_DLL_DECL mob_coilfang_striderAI : public ScriptedAI
             m_creature->GetMotionMaster()->Clear(false);
             DoStartMovement(done_by);
             OnPath = false;
-        } 
+        }
     }
 
     void MovementInform(uint32 type, uint32 id)
@@ -1099,10 +1071,10 @@ struct TRINITY_DLL_DECL mob_coilfang_striderAI : public ScriptedAI
             {
                 m_creature->SetSpeed(MOVE_WALK,1.5);
                 m_creature->SetSpeed(MOVE_RUN,1.5);
-                
+
                 m_creature->GetMotionMaster()->Clear(false);
                 OnPath = false;
-                
+
                 if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,60,true))
                     DoStartMovement(target);
             }
@@ -1111,14 +1083,14 @@ struct TRINITY_DLL_DECL mob_coilfang_striderAI : public ScriptedAI
 
             Move = false;
         }
-        
+
         if(Check_Timer)
         {
             DoZoneInCombat();
 
             if(pInstance && pInstance->GetData(DATA_LADYVASHJEVENT) != IN_PROGRESS)
                 m_creature->Kill(m_creature,false);
-               
+
               Check_Timer = 2000;
         }else Check_Timer -= diff;
 
@@ -1153,7 +1125,7 @@ struct TRINITY_DLL_DECL mob_shield_generator_channelAI : public ScriptedAI
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
     }
 
-    void Aggro(Unit *who) { return; }
+    void EnterCombat(Unit *who) { return; }
 
     void MoveInLineOfSight(Unit *who) { return; }
 

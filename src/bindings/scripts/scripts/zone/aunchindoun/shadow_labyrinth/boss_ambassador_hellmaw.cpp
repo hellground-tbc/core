@@ -100,27 +100,18 @@ struct TRINITY_DLL_DECL boss_ambassador_hellmawAI : public ScriptedAI
             pInstance->SetData(TYPE_HELLMAW, IN_PROGRESS);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         if(IsBanished)
             EnterEvadeMode();
 
         m_creature->GetMotionMaster()->Clear();
-        switch(rand()%3)
-        {
-            case 0: DoScriptText(SAY_AGGRO1, m_creature); break;
-            case 1: DoScriptText(SAY_AGGRO2, m_creature); break;
-            case 2: DoScriptText(SAY_AGGRO3, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), m_creature);
     }
 
     void KilledUnit(Unit *victim)
     {
-        switch(rand()%2)
-        {
-            case 0: DoScriptText(SAY_SLAY1, m_creature); break;
-            case 1: DoScriptText(SAY_SLAY2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), m_creature);
     }
 
     void JustDied(Unit *victim)
@@ -162,14 +153,14 @@ struct TRINITY_DLL_DECL boss_ambassador_hellmawAI : public ScriptedAI
                 EventCheck_Timer -= diff;
         }
 
-        if (!InCombat && !IsBanished && !OnPath_Delay)
+        if (!m_creature->isInCombat() && !IsBanished && !OnPath_Delay)
         {
             m_creature->GetMotionMaster()->MovePath(PATH_PATROL, false);
             OnPath_Delay = 55000;
             patrol = false;
         }
 
-        if (!InCombat && !patrol && OnPath_Delay < diff)
+        if (!m_creature->isInCombat() && !patrol && OnPath_Delay < diff)
         {
             m_creature->GetMotionMaster()->Clear();
             m_creature->GetMotionMaster()->MovePath(PATH_FINAL, true);
@@ -204,7 +195,7 @@ struct TRINITY_DLL_DECL boss_ambassador_hellmawAI : public ScriptedAI
                 DoCast(m_creature,SPELL_ENRAGE);
                 Enrage_Timer = 5*MINUTE*1000;
             }
-            else 
+            else
                 Enrage_Timer -= diff;
         }
 

@@ -219,7 +219,7 @@ enum SpellCategory
 #define SPELL_ATTR_ON_NEXT_SWING_1                0x00000004            // 2 on next swing
 #define SPELL_ATTR_UNK3                           0x00000008            // 3 not set in 2.4.2
 #define SPELL_ATTR_UNK4                           0x00000010            // 4
-#define SPELL_ATTR_UNK5                           0x00000020            // 5 trade spells?
+#define SPELL_ATTR_TRADESPELL                     0x00000020            // 5 trade/profession spells, will be added by client to a sublist of profession spell
 #define SPELL_ATTR_PASSIVE                        0x00000040            // 6 Passive spell
 #define SPELL_ATTR_UNK7                           0x00000080            // 7 visible?
 #define SPELL_ATTR_UNK8                           0x00000100            // 8
@@ -237,52 +237,54 @@ enum SpellCategory
 #define SPELL_ATTR_STOP_ATTACK_TARGET             0x00100000            // 20 Stop attack after use this spell (and not begin attack if use)
 #define SPELL_ATTR_IMPOSSIBLE_DODGE_PARRY_BLOCK   0x00200000            // 21 Cannot be dodged/parried/blocked
 #define SPELL_ATTR_UNK22                          0x00400000            // 22 shoot spells
-#define SPELL_ATTR_UNK23                          0x00800000            // 23 castable while dead?
+#define SPELL_ATTR_CASTABLE_WHILE_DEAD            0x00800000            // 23 ??castable while dead?
 #define SPELL_ATTR_CASTABLE_WHILE_MOUNTED         0x01000000            // 24 castable while mounted
 #define SPELL_ATTR_DISABLED_WHILE_ACTIVE          0x02000000            // 25 Activate and start cooldown after aura fade or remove summoned creature or go
 #define SPELL_ATTR_UNK26                          0x04000000            // 26 Aura ignore immune?
+//in TC2: #define SPELL_ATTR_NEGATIVE_1                     0x04000000            // 26 Many negative spells have this attr
 #define SPELL_ATTR_CASTABLE_WHILE_SITTING         0x08000000            // 27 castable while sitting
 #define SPELL_ATTR_CANT_USED_IN_COMBAT            0x10000000            // 28 Cannot be used in combat
 #define SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY  0x20000000            // 29 unaffected by invulnerability (hmm possible not...)
 #define SPELL_ATTR_BREAKABLE_BY_DAMAGE            0x40000000            // 30 breakable by damage?
 #define SPELL_ATTR_CANT_CANCEL                    0x80000000            // 31 positive aura can't be canceled
 
-#define SPELL_ATTR_EX_UNK0                        0x00000001            // 0
+#define SPELL_ATTR_EX_SUMMON_PET                  0x00000001            // 0 many summon/control pet spells have this attr (like enslave, min control, call pet, summon warlock minion)
 #define SPELL_ATTR_EX_DRAIN_ALL_POWER             0x00000002            // 1 use all power (Only paladin Lay of Hands and Bunyanize)
 #define SPELL_ATTR_EX_CHANNELED_1                 0x00000004            // 2 channeled 1
-#define SPELL_ATTR_EX_UNK3                        0x00000008            // 3
+#define SPELL_ATTR_EX_PUT_CASTER_IN_COMBAT        0x00000008            // 3 spells that cause a caster to enter a combat
 #define SPELL_ATTR_EX_UNK4                        0x00000010            // 4
 #define SPELL_ATTR_EX_NOT_BREAK_STEALTH           0x00000020            // 5 Not break stealth
-#define SPELL_ATTR_EX_CHANNELED_2                 0x00000040            // 6 channeled 2
+#define SPELL_ATTR_EX_CHANNELED_2                 0x00000040            // 6 channeled self
 #define SPELL_ATTR_EX_NEGATIVE                    0x00000080            // 7
 #define SPELL_ATTR_EX_NOT_IN_COMBAT_TARGET        0x00000100            // 8 Spell req target not to be in combat state
-#define SPELL_ATTR_EX_UNK9                        0x00000200            // 9
-#define SPELL_ATTR_EX_UNK10                       0x00000400            // 10
-#define SPELL_ATTR_EX_UNK11                       0x00000800            // 11
+#define SPELL_ATTR_EX_UNK9                        0x00000200            // 9 melee spells
+#define SPELL_ATTR_EX_NO_THREAT                   0x00000400            // 10 no generates threat on cast 100% (old NO_INITIAL_AGGRO)
+#define SPELL_ATTR_EX_UNK11                       0x00000800            // 11 aura
 #define SPELL_ATTR_EX_UNK12                       0x00001000            // 12
 #define SPELL_ATTR_EX_UNK13                       0x00002000            // 13
-#define SPELL_ATTR_EX_UNK14                       0x00004000            // 14
+#define SPELL_ATTR_EX_STACK_FOR_DIFF_CASTERS      0x00004000            // 14
 #define SPELL_ATTR_EX_DISPEL_AURAS_ON_IMMUNITY    0x00008000            // 15 remove auras on immunity
-#define SPELL_ATTR_EX_UNAFFECTED_BY_SCHOOL_IMMUNE 0x00010000            // 16 unaffected by school immunity
+#define SPELL_ATTR_EX_UNAFFECTED_BY_SCHOOL_IMMUNE 0x00010000            // 16 unaffected by school immunity/on immunity
 #define SPELL_ATTR_EX_UNAUTOCASTABLE_BY_PET       0x00020000            // 17
 #define SPELL_ATTR_EX_UNK18                       0x00040000            // 18
-#define SPELL_ATTR_EX_UNK19                       0x00080000            // 19
+#define SPELL_ATTR_EX_CANT_TARGET_SELF            0x00080000            // 19 Applies only to unit target - for example Divine Intervention (19752)
 #define SPELL_ATTR_EX_REQ_COMBO_POINTS1           0x00100000            // 20 Req combo points on target
 #define SPELL_ATTR_EX_UNK21                       0x00200000            // 21
 #define SPELL_ATTR_EX_REQ_COMBO_POINTS2           0x00400000            // 22 Req combo points on target
 #define SPELL_ATTR_EX_UNK23                       0x00800000            // 23
 #define SPELL_ATTR_EX_UNK24                       0x01000000            // 24 Req fishing pole??
 #define SPELL_ATTR_EX_UNK25                       0x02000000            // 25 not set in 2.4.2
-#define SPELL_ATTR_EX_UNK26                       0x04000000            // 26
+#define SPELL_ATTR_EX_UNK26                       0x04000000            // 26 works correctly with [target=focus] and [target=mouseover] macros?
 #define SPELL_ATTR_EX_UNK27                       0x08000000            // 27
 #define SPELL_ATTR_EX_UNK28                       0x10000000            // 28
+//in TC2: #define SPELL_ATTR_EX_IGNORE_IMMUNITY             0x10000000            // 28 ?? removed from Chains of Ice 3.3.0
 #define SPELL_ATTR_EX_UNK29                       0x20000000            // 29
-#define SPELL_ATTR_EX_UNK30                       0x40000000            // 30 overpower
+#define SPELL_ATTR_EX_ENABLE_AT_DODGE             0x40000000            // 30 overpower
 #define SPELL_ATTR_EX_UNK31                       0x80000000            // 31
 
 #define SPELL_ATTR_EX2_UNK0                       0x00000001            // 0
-#define SPELL_ATTR_EX2_UNK1                       0x00000002            // 1
-#define SPELL_ATTR_EX2_UNK2                       0x00000004            // 2 boss spells?
+#define SPELL_ATTR_EX2_UNK1                       0x00000002            // 1 ? many triggered spells have this flag
+#define SPELL_ATTR_EX2_CANT_REFLECTED             0x00000004            // 2 ? used for detect can or not spell reflected
 #define SPELL_ATTR_EX2_UNK3                       0x00000008            // 3
 #define SPELL_ATTR_EX2_UNK4                       0x00000010            // 4
 #define SPELL_ATTR_EX2_AUTOREPEAT_FLAG            0x00000020            // 5
@@ -301,16 +303,16 @@ enum SpellCategory
 #define SPELL_ATTR_EX2_UNK18                      0x00040000            // 18 Only Revive pet - possible req dead pet
 #define SPELL_ATTR_EX2_NOT_NEED_SHAPESHIFT        0x00080000            // 19 does not necessarly need shapeshift
 #define SPELL_ATTR_EX2_UNK20                      0x00100000            // 20
-#define SPELL_ATTR_EX2_UNK21                      0x00200000            // 21
+#define SPELL_ATTR_EX2_DAMAGE_REDUCED_SHIELD      0x00200000            // 21 for ice blocks, pala immunity buffs, priest absorb shields, but used also for other spells -> not sure!
 #define SPELL_ATTR_EX2_UNK22                      0x00400000            // 22
 #define SPELL_ATTR_EX2_UNK23                      0x00800000            // 23 Only mage Arcane Concentration have this flag
 #define SPELL_ATTR_EX2_UNK24                      0x01000000            // 24
 #define SPELL_ATTR_EX2_UNK25                      0x02000000            // 25
 #define SPELL_ATTR_EX2_UNK26                      0x04000000            // 26 unaffected by school immunity
 #define SPELL_ATTR_EX2_UNK27                      0x08000000            // 27
-#define SPELL_ATTR_EX2_UNK28                      0x10000000            // 28
+#define SPELL_ATTR_EX2_UNK28                      0x10000000            // 28 no breaks stealth if it fails??
 #define SPELL_ATTR_EX2_CANT_CRIT                  0x20000000            // 29 Spell can't crit
-#define SPELL_ATTR_EX2_UNK30                      0x40000000            // 30
+#define SPELL_ATTR_EX2_TRIGGERED_CAN_TRIGGER      0x40000000            // 30 spell can trigger even if triggered
 #define SPELL_ATTR_EX2_FOOD                       0x80000000            // 31 food, well-fed, and a few others
 
 #define SPELL_ATTR_EX3_UNK0                       0x00000001            // 0
@@ -320,26 +322,26 @@ enum SpellCategory
 #define SPELL_ATTR_EX3_UNK4                       0x00000010            // 4 Druid Rebirth only this spell have this flag
 #define SPELL_ATTR_EX3_UNK5                       0x00000020            // 5
 #define SPELL_ATTR_EX3_UNK6                       0x00000040            // 6
-#define SPELL_ATTR_EX3_UNK7                       0x00000080            // 7
+#define SPELL_ATTR_EX3_STACK_FOR_DIFF_CASTERS     0x00000080            // 7 separate stack for every caster
 #define SPELL_ATTR_EX3_PLAYERS_ONLY               0x00000100            // 8 Player only?
-#define SPELL_ATTR_EX3_UNK9                       0x00000200            // 9
+#define SPELL_ATTR_EX3_TRIGGERED_CAN_TRIGGER_2    0x00000200            // 9 triggered from effect?
 #define SPELL_ATTR_EX3_MAIN_HAND                  0x00000400            // 10 Main hand weapon required
 #define SPELL_ATTR_EX3_BATTLEGROUND               0x00000800            // 11 Can casted only on battleground
-#define SPELL_ATTR_EX3_UNK12                      0x00001000            // 12
+#define SPELL_ATTR_EX3_CAST_ON_DEAD               0x00001000            // 12 target is a dead player (not every spell has this flag)
 #define SPELL_ATTR_EX3_UNK13                      0x00002000            // 13
 #define SPELL_ATTR_EX3_UNK14                      0x00004000            // 14 "Honorless Target" only this spells have this flag
 #define SPELL_ATTR_EX3_UNK15                      0x00008000            // 15 Auto Shoot, Shoot, Throw,  - this is autoshot flag
 #define SPELL_ATTR_EX3_UNK16                      0x00010000            // 16
 #define SPELL_ATTR_EX3_NO_INITIAL_AGGRO           0x00020000            // 17 no initial aggro
 #define SPELL_ATTR_EX3_UNK18                      0x00040000            // 18
-#define SPELL_ATTR_EX3_UNK19                      0x00080000            // 19
+#define SPELL_ATTR_EX3_DISABLE_PROC               0x00080000            // 19 during aura proc no spells can trigger (20178, 20375)
 #define SPELL_ATTR_EX3_DEATH_PERSISTENT           0x00100000            // 20 Death persistent spells
 #define SPELL_ATTR_EX3_UNK21                      0x00200000            // 21
 #define SPELL_ATTR_EX3_REQ_WAND                   0x00400000            // 22 Req wand
 #define SPELL_ATTR_EX3_UNK23                      0x00800000            // 23
 #define SPELL_ATTR_EX3_REQ_OFFHAND                0x01000000            // 24 Req offhand weapon
 #define SPELL_ATTR_EX3_UNK25                      0x02000000            // 25
-#define SPELL_ATTR_EX3_UNK26                      0x04000000            // 26
+#define SPELL_ATTR_EX3_CAN_PROC_TRIGGERED         0x04000000            // 26
 #define SPELL_ATTR_EX3_UNK27                      0x08000000            // 27
 #define SPELL_ATTR_EX3_UNK28                      0x10000000            // 28
 #define SPELL_ATTR_EX3_UNK29                      0x20000000            // 29
@@ -354,7 +356,7 @@ enum SpellCategory
 #define SPELL_ATTR_EX4_UNK5                       0x00000020            // 5
 #define SPELL_ATTR_EX4_NOT_STEALABLE              0x00000040            // 6 although such auras might be dispellable, they cannot be stolen
 #define SPELL_ATTR_EX4_UNK7                       0x00000080            // 7
-#define SPELL_ATTR_EX4_UNK8                       0x00000100            // 8
+#define SPELL_ATTR_EX4_STACK_DOT_MODIFIER         0x00000100            // 8 no effect on non DoTs?
 #define SPELL_ATTR_EX4_UNK9                       0x00000200            // 9
 #define SPELL_ATTR_EX4_SPELL_VS_EXTEND_COST       0x00000400            // 10 Rogue Shiv have this flag
 #define SPELL_ATTR_EX4_UNK11                      0x00000800            // 11
@@ -389,6 +391,7 @@ enum SpellCategory
 #define SPELL_ATTR_EX5_UNK7                       0x00000080            // 7
 #define SPELL_ATTR_EX5_UNK8                       0x00000100            // 8
 #define SPELL_ATTR_EX5_UNK9                       0x00000200            // 9
+//in TC2 & mangos: #define SPELL_ATTR_EX5_START_PERIODIC_AT_APPLY    0x00000200            // 9  begin periodic tick at aura apply
 #define SPELL_ATTR_EX5_UNK10                      0x00000400            // 10
 #define SPELL_ATTR_EX5_UNK11                      0x00000800            // 11
 #define SPELL_ATTR_EX5_UNK12                      0x00001000            // 12
@@ -653,14 +656,14 @@ enum SpellEffects
     SPELL_EFFECT_APPLY_AREA_AURA_ENEMY     = 129,
     SPELL_EFFECT_REDIRECT_THREAT           = 130,
     SPELL_EFFECT_131                       = 131,
-    SPELL_EFFECT_132                       = 132,
+    SPELL_EFFECT_PLAY_MUSIC                = 132,
     SPELL_EFFECT_UNLEARN_SPECIALIZATION    = 133,
     SPELL_EFFECT_KILL_CREDIT               = 134,
-    SPELL_EFFECT_135                       = 135,
+    SPELL_EFFECT_CALL_PET                  = 135,
     SPELL_EFFECT_HEAL_PCT                  = 136,
     SPELL_EFFECT_ENERGIZE_PCT              = 137,
-    SPELL_EFFECT_138                       = 138,
-    SPELL_EFFECT_139                       = 139,
+    SPELL_EFFECT_LEAP_BACK                 = 138,
+    SPELL_EFFECT_CLEAR_QUEST               = 139,
     SPELL_EFFECT_FORCE_CAST                = 140,
     SPELL_EFFECT_141                       = 141,
     SPELL_EFFECT_TRIGGER_SPELL_WITH_VALUE  = 142,
@@ -750,6 +753,14 @@ enum Mechanics
     (1<<MECHANIC_KNOCKOUT)|(1<<MECHANIC_POLYMORPH)|(1<<MECHANIC_BANISH)| \
     (1<<MECHANIC_SHACKLE )|(1<<MECHANIC_TURN     )|(1<<MECHANIC_HORROR)| \
     (1<<MECHANIC_DAZE    )|(1<<MECHANIC_SAPPED   ) )
+
+// Used for spell 40081 Immune Incapacitation Effects (? verify the list!!)
+#define IMMUNE_TO_INCAPACITATE_MASK ( \
+    (1<<MECHANIC_CHARM   )|(1<<MECHANIC_CONFUSED )|(1<<MECHANIC_FEAR  )| \
+    (1<<MECHANIC_ROOT    )|(1<<MECHANIC_PACIFY   )|(1<<MECHANIC_SLEEP )| \
+    (1<<MECHANIC_SNARE   )|(1<<MECHANIC_STUN     )|(1<<MECHANIC_FREEZE)| \
+    (1<<MECHANIC_KNOCKOUT)|(1<<MECHANIC_POLYMORPH)|(1<<MECHANIC_BANISH)| \
+    (1<<MECHANIC_HORROR) )
 
 // Spell dispel type
 enum DispelType
@@ -1596,9 +1607,23 @@ enum CreatureFamily
 
 enum CreatureTypeFlags
 {
-    CREATURE_TYPEFLAGS_TAMEABLE   = 0x0001,
-    CREATURE_TYPEFLAGS_HERBLOOT   = 0x0100,
-    CREATURE_TYPEFLAGS_MININGLOOT = 0x0200
+    CREATURE_TYPEFLAGS_TAMEABLE        = 0x00001,           //tameable by any hunter
+    CREATURE_TYPEFLAGS_UNK2            = 0x00002,           //? Related to spirits/ghosts in any form? Allow gossip interaction if player is also ghost? Visibility?
+    CREATURE_TYPEFLAGS_UNK3            = 0x00004,
+    CREATURE_TYPEFLAGS_UNK4            = 0x00008,
+    CREATURE_TYPEFLAGS_UNK5            = 0x00010,
+    CREATURE_TYPEFLAGS_UNK6            = 0x00020,
+    CREATURE_TYPEFLAGS_UNK7            = 0x00040,
+    CREATURE_TYPEFLAGS_UNK8            = 0x00080,
+    CREATURE_TYPEFLAGS_HERBLOOT        = 0x00100,           //can be looted by herbalist
+    CREATURE_TYPEFLAGS_MININGLOOT      = 0x00200,           //can be looted by miner
+    CREATURE_TYPEFLAGS_UNK11           = 0x00400,
+    CREATURE_TYPEFLAGS_UNK12           = 0x00800,           //? Related to mounts in some way. If mounted, fight mounted, mount appear as independant when rider dies?
+    CREATURE_TYPEFLAGS_UNK13           = 0x01000,           //? Can aid any player in combat if in range?
+    CREATURE_TYPEFLAGS_UNK14           = 0x02000,
+    CREATURE_TYPEFLAGS_UNK15           = 0x04000,           //? Possibly not in use
+    CREATURE_TYPEFLAGS_ENGINEERLOOT    = 0x08000,           //can be looted by engineer
+    CREATURE_TYPEFLAGS_EXOTIC          = 0x10000           //can be tamed by hunter as exotic pet
 };
 
 enum CreatureEliteType
@@ -1981,6 +2006,9 @@ enum PetDiet
 
 #define MAX_PET_DIET 9
 
+#define PET_FOLLOW_DIST  1
+#define PET_FOLLOW_ANGLE (M_PI/2)
+
 #define CHAIN_SPELL_JUMP_RADIUS 10
 
 // Max values for Guild & Guild Bank
@@ -2028,7 +2056,7 @@ enum DiminishingGroup
     // Shared Class Specific
     DIMINISHING_BLIND_CYCLONE,                              // From 2.3.0
     DIMINISHING_DISARM,                                     // From 2.3.0
-    DIMINISHING_SILENCE,                                    // From 2.3.0
+    DIMINISHING_UNSTABLE_AFFLICTION,                        // From 2.3.0
     DIMINISHING_FREEZE,                                     // Hunter's Freezing Trap
     DIMINISHING_KNOCKOUT,                                   // Also with Sap, all Knockout mechanics are here
     DIMINISHING_BANISH,
@@ -2065,6 +2093,13 @@ enum SummonType
     SUMMON_TYPE_UNKNOWN5    = 409,
     SUMMON_TYPE_POSESSED3   = 427,
     SUMMON_TYPE_POSESSED2   = 428
+};
+
+enum EventId
+{
+    EVENT_SPELLCLICK        = 1001,
+    EVENT_FALL_GROUND       = 1002,
+    EVENT_CHARGE            = 1003,
 };
 
 enum ResponseCodes
@@ -2176,7 +2211,8 @@ enum BanMode
 {
     BAN_ACCOUNT,
     BAN_CHARACTER,
-    BAN_IP
+    BAN_IP,
+    BAN_EMAIL
 };
 
 /// Ban function return codes

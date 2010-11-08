@@ -664,12 +664,15 @@ void ObjectMgr::LoadCreatureAddons()
     for(uint32 i = 1; i < sCreatureInfoAddonStorage.MaxEntry; ++i)
     {
         CreatureDataAddon const* addon = sCreatureInfoAddonStorage.LookupEntry<CreatureDataAddon>(i);
-        if(!addon)
+        if (!addon)
             continue;
+
+        if (!sEmotesStore.LookupEntry(addon->emote))
+            sLog.outErrorDb("Creature (GUID: %u) have invalid emote (%u) defined in `creature_addon`.", addon->guidOrEntry, addon->emote);
 
         ConvertCreatureAddonAuras(const_cast<CreatureDataAddon*>(addon), "creature_template_addon", "Entry");
 
-        if(!sCreatureStorage.LookupEntry<CreatureInfo>(addon->guidOrEntry))
+        if (!sCreatureStorage.LookupEntry<CreatureInfo>(addon->guidOrEntry))
             sLog.outErrorDb("Creature (Entry: %u) does not exist but has a record in `creature_template_addon`",addon->guidOrEntry);
     }
 
@@ -682,12 +685,15 @@ void ObjectMgr::LoadCreatureAddons()
     for(uint32 i = 1; i < sCreatureDataAddonStorage.MaxEntry; ++i)
     {
         CreatureDataAddon const* addon = sCreatureDataAddonStorage.LookupEntry<CreatureDataAddon>(i);
-        if(!addon)
+        if (!addon)
             continue;
+
+        if (!sEmotesStore.LookupEntry(addon->emote))
+            sLog.outErrorDb("Creature (GUID: %u) have invalid emote (%u) defined in `creature_template_addon`.", addon->guidOrEntry, addon->emote);
 
         ConvertCreatureAddonAuras(const_cast<CreatureDataAddon*>(addon), "creature_addon", "GUIDLow");
 
-        if(mCreatureDataMap.find(addon->guidOrEntry)==mCreatureDataMap.end())
+        if (mCreatureDataMap.find(addon->guidOrEntry)==mCreatureDataMap.end())
             sLog.outErrorDb("Creature (GUID: %u) does not exist but has a record in `creature_addon`",addon->guidOrEntry);
     }
 }
@@ -771,7 +777,7 @@ bool ObjectMgr::CheckCreatureLinkedRespawn(uint32 guid, uint32 linkedGuid) const
 {
     const CreatureData* const slave = GetCreatureData(guid);
     const CreatureData* const master = GetCreatureData(linkedGuid);
-    
+
     if(!slave || !master) // they must have a corresponding entry in db
     {
         sLog.outError("LinkedRespawn: Creature '%u' linking to '%u' which doesn't exist",guid,linkedGuid);
@@ -779,7 +785,7 @@ bool ObjectMgr::CheckCreatureLinkedRespawn(uint32 guid, uint32 linkedGuid) const
     }
 
     const MapEntry* const map = sMapStore.LookupEntry(master->mapid);
-        
+
     if(master->mapid != slave->mapid        // link only to same map
         && (!map || map->Instanceable()))   // or to unistanced world
     {
@@ -896,9 +902,11 @@ void ObjectMgr::LoadCreatures()
     QueryResult_AutoPtr result = WorldDatabase.Query("SELECT creature.guid, id, map, modelid,"
     //   4             5           6           7           8            9              10         11
         "equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint,"
-    //   12         13       14          15            16         17
-        "curhealth, curmana, DeathState, MovementType, spawnMask, event "
-        "FROM creature LEFT OUTER JOIN game_event_creature ON creature.guid = game_event_creature.guid");
+    //   12         13       14          15            16         17     18
+        "curhealth, curmana, DeathState, MovementType, spawnMask, event, pool_entry "
+        "FROM creature LEFT OUTER JOIN game_event_creature ON creature.guid = game_event_creature.guid "
+        "LEFT OUTER JOIN pool_creature ON creature.guid = pool_creature.guid");
+
 
     if(!result)
     {
@@ -925,11 +933,19 @@ void ObjectMgr::LoadCreatures()
         Field *fields = result->Fetch();
         bar.step();
 
-        uint32 guid = fields[0].GetUInt32();
+        uint32 guid         = fields[ 0].GetUInt32();
+        uint32 entry        = fields[ 1].GetUInt32();
+
+        CreatureInfo const* cInfo = GetCreatureTemplate(entry);
+        if (!cInfo)
+        {
+            sLog.outErrorDb("Table `creature` has creature (GUID: %u) with non existing creature entry %u, skipped.", guid, entry);
+            continue;
+        }
 
         CreatureData& data = mCreatureDataMap[guid];
 
-        data.id             = fields[ 1].GetUInt32();
+        data.id             = entry;
         data.mapid          = fields[ 2].GetUInt32();
         data.displayid      = fields[ 3].GetUInt32();
         data.equipmentId    = fields[ 4].GetUInt32();
@@ -946,13 +962,7 @@ void ObjectMgr::LoadCreatures()
         data.movementType   = fields[15].GetUInt8();
         data.spawnMask      = fields[16].GetUInt8();
         int16 gameEvent     = fields[17].GetInt16();
-
-        CreatureInfo const* cInfo = GetCreatureTemplate(data.id);
-        if(!cInfo)
-        {
-            sLog.outErrorDb("Table `creature` have creature (GUID: %u) with not existed creature entry %u, skipped.",guid,data.id );
-            continue;
-        }
+        int16 PoolId        = fields[18].GetInt16();
 
         if(heroicCreatures.find(data.id)!=heroicCreatures.end())
         {
@@ -1003,7 +1013,7 @@ void ObjectMgr::LoadCreatures()
             }
         }
 
-        if (gameEvent==0)                                   // if not this is to be managed by GameEvent System
+        if (gameEvent == 0 && PoolId == 0)                    // if not this is to be managed by GameEvent System
             AddCreatureToGrid(guid, &data);
         ++count;
 
@@ -1051,9 +1061,10 @@ void ObjectMgr::LoadGameobjects()
 
     //                                                       0                1   2    3           4           5           6
     QueryResult_AutoPtr result = WorldDatabase.Query("SELECT gameobject.guid, id, map, position_x, position_y, position_z, orientation,"
-    //   7          8          9          10         11             12            13     14         15
-        "rotation0, rotation1, rotation2, rotation3, spawntimesecs, animprogress, state, spawnMask, event "
-        "FROM gameobject LEFT OUTER JOIN game_event_gameobject ON gameobject.guid = game_event_gameobject.guid");
+    //   7          8          9          10         11             12            13     14         15     16
+        "rotation0, rotation1, rotation2, rotation3, spawntimesecs, animprogress, state, spawnMask, event, pool_entry "
+        "FROM gameobject LEFT OUTER JOIN game_event_gameobject ON gameobject.guid = game_event_gameobject.guid "
+        "LEFT OUTER JOIN pool_gameobject ON gameobject.guid = pool_gameobject.guid");
 
     if(!result)
     {
@@ -1073,11 +1084,20 @@ void ObjectMgr::LoadGameobjects()
         Field *fields = result->Fetch();
         bar.step();
 
-        uint32 guid = fields[0].GetUInt32();
+        uint32 guid         = fields[ 0].GetUInt32();
+        uint32 entry        = fields[ 1].GetUInt32();
+
+        GameObjectInfo const* gInfo = GetGameObjectInfo(entry);
+        if (!gInfo)
+        {
+            sLog.outErrorDb("Table `gameobject` has gameobject (GUID: %u) with non existing gameobject entry %u, skipped.", guid, entry);
+            continue;
+        }
+
 
         GameObjectData& data = mGameObjectDataMap[guid];
 
-        data.id             = fields[ 1].GetUInt32();
+        data.id             = entry;
         data.mapid          = fields[ 2].GetUInt32();
         data.posX           = fields[ 3].GetFloat();
         data.posY           = fields[ 4].GetFloat();
@@ -1093,15 +1113,15 @@ void ObjectMgr::LoadGameobjects()
         data.ArtKit         = 0;
         data.spawnMask      = fields[14].GetUInt8();
         int16 gameEvent     = fields[15].GetInt16();
+        int16 PoolId        = fields[16].GetInt16();
 
-        GameObjectInfo const* gInfo = GetGameObjectInfo(data.id);
-        if(!gInfo)
+        if (gInfo->displayId && !sGameObjectDisplayInfoStore.LookupEntry(gInfo->displayId))
         {
-            sLog.outErrorDb("Table `gameobject` have gameobject (GUID: %u) with not existed gameobject entry %u, skipped.",guid,data.id );
+            sLog.outErrorDb("Gameobject (GUID: %u Entry %u GoType: %u) have invalid displayId (%u), not loaded.",guid, gInfo->displayId, gInfo->type, gInfo->displayId);
             continue;
         }
 
-        if (gameEvent==0)                                   // if not this is to be managed by GameEvent System
+        if (gameEvent == 0 && PoolId == 0)                          // if not this is to be managed by GameEvent System
             AddGameobjectToGrid(guid, &data);
         ++count;
 
@@ -3480,6 +3500,16 @@ void ObjectMgr::LoadScripts(ScriptMapMap& scripts, char const* tablename)
                 break;
             }
 
+            case SCRIPT_COMMAND_EMOTE:
+            {
+                if(!sEmotesStore.LookupEntry(tmp.datalong))
+                {
+                    sLog.outErrorDb("Table `%s` has invalid emote id (datalong = %u) in SCRIPT_COMMAND_EMOTE for script id %u",tablename,tmp.datalong,tmp.id);
+                    continue;
+                }
+                break;
+            }
+
             case SCRIPT_COMMAND_TELEPORT_TO:
             {
                 if(!sMapStore.LookupEntry(tmp.datalong))
@@ -4533,7 +4563,7 @@ void ObjectMgr::LoadGraveyardZones()
 WorldSafeLocsEntry const *ObjectMgr::GetClosestGraveYard(float x, float y, float z, uint32 MapId, uint32 team)
 {
     // search for zone associated closest graveyard
-    uint32 zoneId = MapManager::Instance().GetZoneId(MapId,x,y);
+    uint32 zoneId = MapManager::Instance().GetZoneId(MapId,x,y,z);
 
     // Simulate std. algorithm:
     //   found some graveyard associated to (ghost_zone,ghost_map)
@@ -4546,7 +4576,7 @@ WorldSafeLocsEntry const *ObjectMgr::GetClosestGraveYard(float x, float y, float
     GraveYardMap::const_iterator graveUp   = mGraveYardMap.upper_bound(zoneId);
     if(graveLow==graveUp)
     {
-        sLog.outErrorDb("Table `game_graveyard_zone` incomplete: Zone %u Team %u does not have a linked graveyard.",zoneId,team);
+        sLog.outDebug("Table `game_graveyard_zone` incomplete: Zone %u Team %u does not have a linked graveyard.",zoneId,team);
         return NULL;
     }
 
@@ -4731,7 +4761,7 @@ void ObjectMgr::LoadAreaTriggerTeleports()
 
     uint32 count = 0;
 
-    //                                                       0       1           2              3               4                   5                   6  
+    //                                                       0       1           2              3               4                   5                   6
     QueryResult_AutoPtr result = WorldDatabase.Query("SELECT id, access_id, target_map, target_position_x, target_position_y, target_position_z, target_orientation FROM areatrigger_teleport");
     if( !result )
     {
@@ -4772,7 +4802,7 @@ void ObjectMgr::LoadAreaTriggerTeleports()
             sLog.outErrorDb("Area trigger (ID:%u) does not exist in `AreaTrigger.dbc`.",Trigger_ID);
             continue;
         }
-        
+
         MapEntry const* mapEntry = sMapStore.LookupEntry(at.target_mapId);
         if(!mapEntry)
         {
@@ -6112,29 +6142,50 @@ void ObjectMgr::LoadGameObjectForQuests()
 
 bool ObjectMgr::LoadTrinityStrings(DatabaseType& db, char const* table, int32 min_value, int32 max_value)
 {
+    int32 start_value = min_value;
+    int32 end_value   = max_value;
+    // some string can have negative indexes range
+    if (start_value < 0)
+    {
+        if (end_value >= start_value)
+        {
+            sLog.outErrorDb("Table '%s' attempt loaded with invalid range (%d - %d), strings not loaded.",table,min_value,max_value);
+            return false;
+        }
+
+        // real range (max+1,min+1) exaple: (-10,-1000) -> -999...-10+1
+        std::swap(start_value,end_value);
+        ++start_value;
+        ++end_value;
+    }
+    else
+    {
+        if (start_value >= end_value)
+        {
+            sLog.outErrorDb("Table '%s' attempt loaded with invalid range (%d - %d), strings not loaded.",table,min_value,max_value);
+            return false;
+        }
+    }
+
     // cleanup affected map part for reloading case
     for(TrinityStringLocaleMap::iterator itr = mTrinityStringLocaleMap.begin(); itr != mTrinityStringLocaleMap.end();)
     {
-        if(itr->first >= min_value && itr->first <= max_value)
-        {
-            TrinityStringLocaleMap::iterator itr2 = itr;
-            ++itr;
-            mTrinityStringLocaleMap.erase(itr2);
-        }
+        if (itr->first >= start_value && itr->first < end_value)
+            mTrinityStringLocaleMap.erase(itr++);
         else
             ++itr;
     }
 
     QueryResult_AutoPtr result = db.PQuery("SELECT entry,content_default,content_loc1,content_loc2,content_loc3,content_loc4,content_loc5,content_loc6,content_loc7,content_loc8 FROM %s",table);
 
-    if(!result)
+    if (!result)
     {
         barGoLink bar(1);
 
         bar.step();
 
-        sLog.outString("");
-        if(min_value == MIN_TRINITY_STRING_ID)               // error only in case internal strings
+        sLog.outString();
+        if (min_value == MIN_TRINITY_STRING_ID)              // error only in case internal strings
             sLog.outErrorDb(">> Loaded 0 trinity strings. DB table `%s` is empty. Cannot continue.",table);
         else
             sLog.outString(">> Loaded 0 string templates. DB table `%s` is empty.",table);
@@ -6157,11 +6208,9 @@ bool ObjectMgr::LoadTrinityStrings(DatabaseType& db, char const* table, int32 mi
             sLog.outErrorDb("Table `%s` contain reserved entry 0, ignored.",table);
             continue;
         }
-        else if(entry < min_value || entry > max_value)
+        else if (entry < start_value || entry >= end_value)
         {
-            int32 start = min_value > 0 ? min_value : max_value;
-            int32 end   = min_value > 0 ? max_value : min_value;
-            sLog.outErrorDb("Table `%s` contain entry %i out of allowed range (%d - %d), ignored.",table,entry,start,end);
+            sLog.outErrorDb("Table `%s` contain entry %i out of allowed range (%d - %d), ignored.",table,entry,min_value,max_value);
             continue;
         }
 
@@ -6238,15 +6287,15 @@ void ObjectMgr::LoadSpecialQuests()
     {
         if(!(sWorld.specialQuest[HEROIC] = (*result)[1].GetUInt32()))
         {
-            uint32 heroicQuest[15] = { 11369, 11384, 11382, 11363, 11362, 11375, 11354, 11386, 11373, 11378, 11374, 11372, 11368, 11388, 11370 };
-            sWorld.specialQuest[HEROIC] = heroicQuest[urand(0,14)];
+            uint32 heroicQuest[15] = { 11369, 11384, 11382, 11363, 11362, 11375, 11354, 11386, 11373/*, 11378 OHF*/, 11374, 11372, 11368, 11388, 11370 };
+            sWorld.specialQuest[HEROIC] = heroicQuest[urand(0,13)];
             CharacterDatabase.PExecute("UPDATE saved_variables set HeroicQuest='%u'", sWorld.specialQuest[HEROIC]);
         }
-        
+
         if(!(sWorld.specialQuest[QNORMAL] = (*result)[2].GetUInt32()))
         {
-            uint32 normalQuest[8]  = { 11389, 11371, 11376, 11383, 11364, 11500, 11385, 11387 };
-            sWorld.specialQuest[QNORMAL] = normalQuest[urand(0,7)];
+            uint32 normalQuest[8]  = { 11389, 11371, 11376, 11383, 11364/*11500 MGT normal*/, 11385, 11387 };
+            sWorld.specialQuest[QNORMAL] = normalQuest[urand(0,6)];
             CharacterDatabase.PExecute("UPDATE saved_variables set NormalQuest='%u'", sWorld.specialQuest[QNORMAL]);
         }
 
@@ -7210,15 +7259,15 @@ uint32 GetAreaTriggerScriptId(uint32 trigger_id)
 
 bool LoadTrinityStrings(DatabaseType& db, char const* table,int32 start_value, int32 end_value)
 {
-    if(start_value >= 0 || start_value <= end_value)        // start/end reversed for negative values
+    // MAX_DB_SCRIPT_STRING_ID is max allowed negative value for scripts (scrpts can use only more deep negative values
+    // start/end reversed for negative values
+    if (start_value > MAX_DB_SCRIPT_STRING_ID || end_value >= start_value)
     {
-        sLog.outErrorDb("Table '%s' attempt loaded with invalid range (%d - %d), use (%d - %d) instead.",table,start_value,end_value,-1,std::numeric_limits<int32>::min());
-        start_value = -1;
-        end_value = std::numeric_limits<int32>::min();
+        sLog.outErrorDb("Table '%s' attempt loaded with reserved by core range (%d - %d), strings not loaded.",table,start_value,end_value+1);
+        return false;
     }
 
-    // for scripting localized strings allowed use _only_ negative entries
-    return objmgr.LoadTrinityStrings(db,table,end_value,start_value);
+    return objmgr.LoadTrinityStrings(db,table,start_value,end_value);
 }
 
 uint32 TRINITY_DLL_SPEC GetScriptId(const char *name)

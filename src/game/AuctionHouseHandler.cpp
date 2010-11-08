@@ -228,6 +228,12 @@ void WorldSession::HandleAuctionSellItem( WorldPacket & recv_data )
         return;
     }
 
+    if (it->IsBag() && !((Bag*)it)->IsEmpty())
+    {
+        SendAuctionCommandResult(0, AUCTION_SELL_ITEM, AUCTION_INTERNAL_ERROR);
+        return;
+    }
+
     AuctionHouseObject* auctionHouse = auctionmgr.GetAuctionsMap( pCreature->getFaction() );
 
     //we have to take deposit :
@@ -588,8 +594,6 @@ void WorldSession::HandleAuctionListOwnerItems( WorldPacket & recv_data )
 //this void is called when player clicks on search button
 void WorldSession::HandleAuctionListItems( WorldPacket & recv_data )
 {
-    CHECK_PACKET_SIZE(recv_data,8+4+1+1+1+4+4+4+4+1);
-
     std::string searchedname;
     uint8 levelmin, levelmax, usable;
     uint32 listfrom, auctionSlotID, auctionMainCategory, auctionSubCategory, quality;
@@ -599,12 +603,20 @@ void WorldSession::HandleAuctionListItems( WorldPacket & recv_data )
     recv_data >> listfrom;                                  // start, used for page control listing by 50 elements
     recv_data >> searchedname;
 
-    // recheck with known string size
-    CHECK_PACKET_SIZE(recv_data,8+4+(searchedname.size()+1)+1+1+4+4+4+4+1);
-
     recv_data >> levelmin >> levelmax;
     recv_data >> auctionSlotID >> auctionMainCategory >> auctionSubCategory;
     recv_data >> quality >> usable;
+
+    recv_data.read_skip<uint8>();                           // unk
+
+    // this block looks like it uses some lame byte packing or similar...
+    uint8 unkCnt;
+    recv_data >> unkCnt;
+    for (uint8 i = 0; i < unkCnt; i++)
+    {
+        recv_data.read_skip<uint8>();
+        recv_data.read_skip<uint8>();
+    }
 
     Creature *pCreature = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_AUCTIONEER);
     if (!pCreature)

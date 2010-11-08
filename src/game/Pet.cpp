@@ -41,17 +41,6 @@ char const* petTypeSuffix[MAX_PET_TYPE] =
     "'s Companion"                                          // MINI_PET
 };
 
-//numbers represent minutes * 100 while happy (you get 100 loyalty points per min while happy)
-uint32 const LevelUpLoyalty[6] =
-{
-    5500,
-    11500,
-    17000,
-    23500,
-    31000,
-    39500,
-};
-
 uint32 const LevelStartLoyalty[6] =
 {
     2000,
@@ -106,7 +95,7 @@ Pet::~Pet()
     {
         for (PetSpellMap::iterator i = m_spells.begin(); i != m_spells.end(); ++i)
             delete i->second;
-        ObjectAccessor::Instance().RemoveObject(this);
+        GetMap()->RemoveFromObjMap(GetGUID());
     }
 
     delete m_declinedname;
@@ -116,8 +105,8 @@ void Pet::AddToWorld()
 {
     ///- Register the pet for guid lookup
     if(!IsInWorld())
-    {   
-        ObjectAccessor::Instance().AddObject(this);
+    {
+        ObjectAccessor::Instance().AddPet(this);
         Unit::AddToWorld();
     }
 }
@@ -127,9 +116,8 @@ void Pet::RemoveFromWorld()
     ///- Remove the pet from the accessor
     if(IsInWorld())
     {
-        ObjectAccessor::Instance().RemoveObject(this);
-        ///- Don't call the function for Creature, normal mobs + totems go in a different storage
         Unit::RemoveFromWorld();
+        ObjectAccessor::Instance().RemovePet(this);
     }
 }
 
@@ -830,6 +818,20 @@ int32 Pet::GetTPForSpell(uint32 spellid)
 
 uint32 Pet::GetMaxLoyaltyPoints(uint32 level)
 {
+    //numbers represent minutes * 100 while happy (you get 100 loyalty points per min while happy)
+    uint32 LevelUpLoyalty[6] =
+    {
+        5500,
+        11500,
+        17000,
+        23500,
+        31000,
+        39500,
+    };
+
+    if( level -1 > 5)
+        return LevelUpLoyalty[5];
+
     return LevelUpLoyalty[level - 1];
 }
 
@@ -1035,7 +1037,7 @@ bool Pet::InitStatsForLevel(uint32 petlevel)
         else if (getLevel() <= cFamily->minScaleLevel)
             scale = cFamily->minScale;
         else
-          scale = cFamily->minScale + (float)(getLevel() - cFamily->minScaleLevel) / (float)cFamily->maxScaleLevel * (cFamily->maxScale - cFamily->minScale);
+          scale = cFamily->minScale + float(getLevel() - cFamily->minScaleLevel) / (float)cFamily->maxScaleLevel * (cFamily->maxScale - cFamily->minScale);
 
         SetFloatValue(OBJECT_FIELD_SCALE_X, scale);
     }
@@ -1183,6 +1185,10 @@ bool Pet::InitStatsForLevel(uint32 petlevel)
                     SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel * 4 - petlevel));
                     SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel * 4 + petlevel));
                     break;
+                case 17503: //Woeful Healer
+                    SetCreateMana(100000);  //arbitrary
+                    SetCreateHealth(28 + 30*petlevel);
+                    break;
                 case 19833: //Snake Trap - Venomous Snake
                     SetCreateHealth(uint32(107 * (petlevel - 40) * 0.025f));
                     SetCreateMana(0);
@@ -1310,6 +1316,9 @@ void Pet::_LoadSpellCooldowns()
 
 void Pet::_SaveSpellCooldowns()
 {
+    if(getPetType() == SUMMON_PET) //don't save cooldowns for temp pets, thats senseless
+        return;
+
     CharacterDatabase.PExecute("DELETE FROM pet_spell_cooldown WHERE guid = '%u'", m_charmInfo->GetPetNumber());
 
     time_t curTime = time(NULL);
@@ -1511,6 +1520,9 @@ bool Pet::addSpell(uint16 spell_id, uint16 active, PetSpellState state, uint16 s
     if (spellInfo->AttributesEx & SPELL_ATTR_EX_UNAUTOCASTABLE_BY_PET)
         active = ACT_CAST;
 
+    if (spellInfo->Id == 31707)
+        active = ACT_ENABLED;
+
     PetSpellMap::iterator itr = m_spells.find(spell_id);
     if (itr != m_spells.end())
     {
@@ -1526,6 +1538,12 @@ bool Pet::addSpell(uint16 spell_id, uint16 active, PetSpellState state, uint16 s
         {
             // can be in case spell loading but learned at some previous spell loading
             itr->second->state = PETSPELL_UNCHANGED;
+
+            if (active == ACT_ENABLED)
+                ToggleAutocast(spell_id, true);
+            else if (active == ACT_DISABLED)
+                ToggleAutocast(spell_id, false);
+
             return false;
         }
         else
@@ -1587,7 +1605,7 @@ bool Pet::addSpell(uint16 spell_id, uint16 active, PetSpellState state, uint16 s
     if (IsPassiveSpell(spell_id))
         CastSpell(this, spell_id, true);
     else if(state == PETSPELL_NEW)
-        m_charmInfo->AddSpellToAB(oldspell_id, spell_id, (ActiveStates)active);
+        m_charmInfo->AddSpellToActionBar(oldspell_id, spell_id, (ActiveStates)active);
 
     if(newspell->active == ACT_ENABLED)
         ToggleAutocast(spell_id, true);
@@ -1644,12 +1662,15 @@ bool Pet::_removeSpell(uint16 spell_id)
 void Pet::InitPetCreateSpells()
 {
     m_charmInfo->InitPetActionBar();
-
     m_spells.clear();
+
     int32 usedtrainpoints = 0, petspellid;
     PetCreateSpellEntry const* CreateSpells = objmgr.GetPetCreateSpellEntry(GetEntry());
     if(CreateSpells)
     {
+        Unit* owner = GetOwner();
+        Player* p_owner = owner && owner->GetTypeId() == TYPEID_PLAYER ? (Player*)owner : NULL;
+
         for(uint8 i = 0; i < 4; i++)
         {
             if(!CreateSpells->spellid[i])
@@ -1662,11 +1683,11 @@ void Pet::InitPetCreateSpells()
             if(learn_spellproto->Effect[0] == SPELL_EFFECT_LEARN_SPELL || learn_spellproto->Effect[0] == SPELL_EFFECT_LEARN_PET_SPELL)
             {
                 petspellid = learn_spellproto->EffectTriggerSpell[0];
-                Unit* owner = GetOwner();
-                if(owner->GetTypeId() == TYPEID_PLAYER && !((Player*)owner)->HasSpell(learn_spellproto->Id))
+
+                if(p_owner && !p_owner->HasSpell(learn_spellproto->Id))
                 {
                     if(IsPassiveSpell(petspellid))          //learn passive skills when tamed, not sure if thats right
-                        ((Player*)owner)->learnSpell(learn_spellproto->Id);
+                        p_owner->learnSpell(learn_spellproto->Id);
                     else
                         AddTeachSpell(learn_spellproto->EffectTriggerSpell[0], learn_spellproto->Id);
                 }

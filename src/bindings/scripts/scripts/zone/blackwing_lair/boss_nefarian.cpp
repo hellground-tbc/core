@@ -22,6 +22,7 @@ SDCategory: Blackwing Lair
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_blackwing_lair.h"
 
 #define SAY_AGGRO               -1469007
 #define SAY_XHEALTH             -1469008
@@ -60,8 +61,12 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_nefarianAI : public ScriptedAI
 {
-    boss_nefarianAI(Creature *c) : ScriptedAI(c) {}
+    boss_nefarianAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
 
+    ScriptedInstance * pInstance;
     uint32 ShadowFlame_Timer;
     uint32 BellowingRoar_Timer;
     uint32 VeilOfShadow_Timer;
@@ -84,8 +89,8 @@ struct TRINITY_DLL_DECL boss_nefarianAI : public ScriptedAI
 
         DespawnTimer = 5000;
 
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
-        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
+        if (pInstance && pInstance->GetData(DATA_NEFARIAN_EVENT) != DONE)
+            pInstance->SetData(DATA_NEFARIAN_EVENT, NOT_STARTED);
     }
 
     void KilledUnit(Unit* Victim)
@@ -99,19 +104,20 @@ struct TRINITY_DLL_DECL boss_nefarianAI : public ScriptedAI
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_DEATH, m_creature);
+
+        if (pInstance)
+            pInstance->SetData(DATA_NEFARIAN_EVENT, DONE);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
-        switch (rand()%3)
-        {
-            case 0: DoScriptText(SAY_XHEALTH, m_creature); break;
-            case 1: DoScriptText(SAY_AGGRO, m_creature); break;
-            case 2: DoScriptText(SAY_SHADOWFLAME, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_XHEALTH, SAY_AGGRO, SAY_SHADOWFLAME), m_creature);
 
         DoCast(who,SPELL_SHADOWFLAME_INITIAL);
         DoZoneInCombat();
+
+        if (pInstance)
+            pInstance->SetData(DATA_NEFARIAN_EVENT, IN_PROGRESS);
     }
 
     void UpdateAI(const uint32 diff)
@@ -125,7 +131,9 @@ struct TRINITY_DLL_DECL boss_nefarianAI : public ScriptedAI
                 m_creature->RemoveCorpse();
             }
             DespawnTimer = 5000;
-        }else DespawnTimer -= diff;
+        }
+        else
+            DespawnTimer -= diff;
 
         if (!UpdateVictim() )
             return;
@@ -135,28 +143,36 @@ struct TRINITY_DLL_DECL boss_nefarianAI : public ScriptedAI
         {
             DoCast(m_creature->getVictim(),SPELL_SHADOWFLAME);
             ShadowFlame_Timer = 12000;
-        }else ShadowFlame_Timer -= diff;
+        }
+        else
+            ShadowFlame_Timer -= diff;
 
         //BellowingRoar_Timer
         if (BellowingRoar_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_BELLOWINGROAR);
             BellowingRoar_Timer = 30000;
-        }else BellowingRoar_Timer -= diff;
+        }
+        else
+            BellowingRoar_Timer -= diff;
 
         //VeilOfShadow_Timer
         if (VeilOfShadow_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_VEILOFSHADOW);
             VeilOfShadow_Timer = 15000;
-        }else VeilOfShadow_Timer -= diff;
+        }
+        else
+            VeilOfShadow_Timer -= diff;
 
         //Cleave_Timer
         if (Cleave_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_CLEAVE);
             Cleave_Timer = 7000;
-        }else Cleave_Timer -= diff;
+        }
+        else
+            Cleave_Timer -= diff;
 
         //TailLash_Timer
         if (TailLash_Timer < diff)
@@ -165,7 +181,9 @@ struct TRINITY_DLL_DECL boss_nefarianAI : public ScriptedAI
             //DoCast(m_creature->getVictim(),SPELL_TAILLASH);
 
             TailLash_Timer = 10000;
-        }else TailLash_Timer -= diff;
+        }
+        else
+            TailLash_Timer -= diff;
 
         //ClassCall_Timer
         if (ClassCall_Timer < diff)
@@ -215,7 +233,9 @@ struct TRINITY_DLL_DECL boss_nefarianAI : public ScriptedAI
             }
 
             ClassCall_Timer = 35000 + (rand() % 5000);
-        }else ClassCall_Timer -= diff;
+        }
+        else
+            ClassCall_Timer -= diff;
 
         //Phase3 begins when we are below X health
         if (!Phase3 && (m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 20)

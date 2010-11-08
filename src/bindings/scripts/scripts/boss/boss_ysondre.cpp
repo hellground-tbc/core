@@ -63,7 +63,7 @@ struct TRINITY_DLL_DECL boss_ysondreAI : public ScriptedAI
         SummonDruids3_Timer = 0;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
     }
 
@@ -103,14 +103,18 @@ struct TRINITY_DLL_DECL boss_ysondreAI : public ScriptedAI
                 DoCast(target,SPELL_SLEEP);
 
             Sleep_Timer = 8000 + rand()%7000;
-        }else Sleep_Timer -= diff;
+        }
+        else
+            Sleep_Timer -= diff;
 
         //NoxiousBreath_Timer
         if (NoxiousBreath_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_NOXIOUSBREATH);
             NoxiousBreath_Timer = 14000 + rand()%6000;
-        }else NoxiousBreath_Timer -= diff;
+        }
+        else
+            NoxiousBreath_Timer -= diff;
 
         //Tailsweep every 2 seconds
         if (TailSweep_Timer < diff)
@@ -119,7 +123,9 @@ struct TRINITY_DLL_DECL boss_ysondreAI : public ScriptedAI
                 DoCast(target,SPELL_TAILSWEEP);
 
             TailSweep_Timer = 2000;
-        }else TailSweep_Timer -= diff;
+        }
+        else
+            TailSweep_Timer -= diff;
 
         //MarkOfNature_Timer
         //if (MarkOfNature_Timer < diff)
@@ -136,7 +142,9 @@ struct TRINITY_DLL_DECL boss_ysondreAI : public ScriptedAI
                 DoCast(target,SPELL_LIGHTNINGWAVE);
 
             LightningWave_Timer = 7000 + rand()%5000;
-        }else LightningWave_Timer -= diff;
+        }
+        else
+            LightningWave_Timer -= diff;
 
         //Summon Druids
         if ( (int) (m_creature->GetHealth()*100 / m_creature->GetMaxHealth() +0.5) == 75)
@@ -152,7 +160,9 @@ struct TRINITY_DLL_DECL boss_ysondreAI : public ScriptedAI
                 }
 
                 SummonDruids1_Timer = 60000;
-            } else SummonDruids1_Timer -= diff;
+            }
+            else
+                SummonDruids1_Timer -= diff;
         }
 
         //Summon Druids
@@ -169,7 +179,9 @@ struct TRINITY_DLL_DECL boss_ysondreAI : public ScriptedAI
                 }
 
                 SummonDruids2_Timer = 60000;
-            } else SummonDruids2_Timer -= diff;
+            }
+            else
+                SummonDruids2_Timer -= diff;
         }
 
         //Summon Druids
@@ -186,7 +198,9 @@ struct TRINITY_DLL_DECL boss_ysondreAI : public ScriptedAI
                 }
 
                 SummonDruids3_Timer = 60000;
-            } else SummonDruids3_Timer -= diff;
+            }
+            else
+                SummonDruids3_Timer -= diff;
         }
         DoMeleeAttackIfReady();
     }
@@ -203,7 +217,7 @@ struct TRINITY_DLL_DECL mob_dementeddruidsAI : public ScriptedAI
         MoonFire_Timer = 3000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
     }
 
@@ -217,7 +231,9 @@ struct TRINITY_DLL_DECL mob_dementeddruidsAI : public ScriptedAI
         {
             DoCast(m_creature->getVictim(),SPELL_MOONFIRE);
             MoonFire_Timer = 5000;
-        }else MoonFire_Timer -= diff;
+        }
+        else
+            MoonFire_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }

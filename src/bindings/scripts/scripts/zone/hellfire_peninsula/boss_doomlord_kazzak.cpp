@@ -85,13 +85,9 @@ struct TRINITY_DLL_DECL boss_doomlordkazzakAI : public ScriptedAI
         DoScriptText(SAY_INTRO, m_creature);
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(SAY_AGGRO1, m_creature); break;
-        case 1: DoScriptText(SAY_AGGRO2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2), m_creature);
     }
 
     void KilledUnit(Unit* victim)
@@ -100,14 +96,9 @@ struct TRINITY_DLL_DECL boss_doomlordkazzakAI : public ScriptedAI
          if (victim->GetTypeId() != TYPEID_PLAYER)
              return;
 
-            DoCast(m_creature,SPELL_CAPTURESOUL);
+        DoCast(m_creature,SPELL_CAPTURESOUL);
 
-            switch(rand()%3)
-            {
-            case 0: DoScriptText(SAY_KILL1, m_creature); break;
-            case 1: DoScriptText(SAY_KILL2, m_creature); break;
-            case 2: DoScriptText(SAY_KILL3, m_creature); break;
-            }
+        DoScriptText(RAND(SAY_KILL1, SAY_KILL2, SAY_KILL3), m_creature);
     }
 
     void JustDied(Unit *victim)
@@ -123,14 +114,14 @@ struct TRINITY_DLL_DECL boss_doomlordkazzakAI : public ScriptedAI
 
         if(Check_Timer < diff)
         {
-            if(m_creature->GetDistance(wLoc.x,wLoc.y,wLoc.z) > 50.0f)
+            if(!m_creature->IsWithinDistInMap(&wLoc, 50.0f))
                 EnterEvadeMode();
 
             Check_Timer = 2000;
         }
         else
             Check_Timer -= diff;
-        
+
         //ShadowVolley_Timer
         if (ShadowVolley_Timer < diff)
         {
@@ -138,7 +129,7 @@ struct TRINITY_DLL_DECL boss_doomlordkazzakAI : public ScriptedAI
 
             if(Enraged)
             {
-                SVolley_count++; 
+                SVolley_count++;
 
                 if(SVolley_count >= 6)
                 {
@@ -184,7 +175,7 @@ struct TRINITY_DLL_DECL boss_doomlordkazzakAI : public ScriptedAI
         if(MarkOfKazzak_Timer < diff)
         {
             Unit* victim = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_MARKOFKAZZAK), true);
-            if(victim->GetPower(POWER_MANA))
+            if(victim && victim->GetPower(POWER_MANA))
             {
                 DoCast(victim, SPELL_MARKOFKAZZAK);
                 MarkOfKazzak_Timer = 20000;

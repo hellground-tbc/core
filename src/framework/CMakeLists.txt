@@ -1,6 +1,7 @@
 SET(trinityframework_STAT_SRCS
    Policies/ObjectLifeTime.cpp
    Utilities/EventProcessor.cpp
+   Policies/MemoryManagement.cpp
 )
 include_directories(
 ${CMAKE_CURRENT_SRC_DIR}

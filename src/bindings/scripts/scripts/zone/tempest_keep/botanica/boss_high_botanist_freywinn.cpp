@@ -64,7 +64,7 @@ struct TRINITY_DLL_DECL boss_high_botanist_freywinnAI : public ScriptedAI
         MoveFree = true;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
     }
@@ -75,24 +75,9 @@ struct TRINITY_DLL_DECL boss_high_botanist_freywinnAI : public ScriptedAI
             Adds_List.push_back(summoned->GetGUID());
     }
 
-    void DoSummonSeedling()
-    {
-        switch(rand()%4)
-        {
-            case 0: DoCast(m_creature,SPELL_PLANT_WHITE); break;
-            case 1: DoCast(m_creature,SPELL_PLANT_GREEN); break;
-            case 2: DoCast(m_creature,SPELL_PLANT_BLUE); break;
-            case 3: DoCast(m_creature,SPELL_PLANT_RED); break;
-        }
-    }
-
     void KilledUnit(Unit* victim)
     {
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(SAY_KILL_1, m_creature); break;
-        case 1: DoScriptText(SAY_KILL_2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_KILL_1, SAY_KILL_2), m_creature);
     }
 
     void JustDied(Unit* Killer)
@@ -107,11 +92,7 @@ struct TRINITY_DLL_DECL boss_high_botanist_freywinnAI : public ScriptedAI
 
         if( TreeForm_Timer < diff )
         {
-            switch(rand()%2)
-            {
-            case 0: DoScriptText(SAY_TREE_1, m_creature); break;
-            case 1: DoScriptText(SAY_TREE_2, m_creature); break;
-            }
+            DoScriptText(RAND(SAY_TREE_1, SAY_TREE_2), m_creature);
 
             if( m_creature->IsNonMeleeSpellCasted(false) )
                 m_creature->InterruptNonMeleeSpells(true);
@@ -174,7 +155,7 @@ struct TRINITY_DLL_DECL boss_high_botanist_freywinnAI : public ScriptedAI
         //one random seedling every 5 secs, but not in tree form
         if( SummonSeedling_Timer < diff )
         {
-            DoSummonSeedling();
+            DoCast(m_creature, RAND(SPELL_PLANT_WHITE, SPELL_PLANT_GREEN, SPELL_PLANT_BLUE, SPELL_PLANT_RED));
             SummonSeedling_Timer = 6000;
         }else SummonSeedling_Timer -= diff;
 

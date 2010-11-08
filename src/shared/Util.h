@@ -49,6 +49,9 @@ TRINITY_DLL_SPEC int32 irand(int32 min, int32 max);
 * between max and min should be less than RAND32_MAX. */
 TRINITY_DLL_SPEC uint32 urand(uint32 min, uint32 max);
 
+/* Return a random number in the range min..max (inclusive). */
+TRINITY_DLL_SPEC float frand(float min, float max);
+
 /* Return a random number in the range 0 .. RAND32_MAX. */
 TRINITY_DLL_SPEC int32 rand32();
 
@@ -94,7 +97,8 @@ inline void ApplyPercentModFloatVar(float& var, float val, bool apply)
 {
     if (!apply && val == -100.0f)
         val = -99.99f;
-    var *= (apply?(100.0f+val)/100.0f : 100.0f / (100.0f+val));
+
+    var *= apply ? (100.0f+val)/100.0f : 100.0f / (100.0f+val);
 }
 
 bool Utf8toWStr(const std::string& utf8str, std::wstring& wstr);

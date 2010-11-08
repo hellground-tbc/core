@@ -26,6 +26,7 @@
 #include "Player.h"
 #include "ObjectMgr.h"
 #include "SpellMgr.h"
+#include "CreatureAI.h"
 
 Totem::Totem() : Creature()
 {
@@ -104,6 +105,10 @@ void Totem::Summon(Unit* owner)
 
     if(GetEntry() == SENTRY_TOTEM_ENTRY)
         SetReactState(REACT_AGGRESSIVE);
+
+    // call JustSummoned function when totem summoned from spell
+    if(owner->GetTypeId() == TYPEID_UNIT && ((Creature*)owner)->IsAIEnabled)
+        ((Creature*)owner)->AI()->JustSummoned(this);
 }
 
 void Totem::UnSummon()
@@ -143,6 +148,10 @@ void Totem::UnSummon()
                 }
             }
         }
+
+        // call SummonedCreatureDespawn function when totem UnSummoned
+        if(owner->GetTypeId() == TYPEID_UNIT && ((Creature*)owner)->IsAIEnabled)
+            ((Creature*)owner)->AI()->SummonedCreatureDespawn(this);
     }
 
     CleanupsBeforeDelete();
@@ -165,7 +174,7 @@ Unit *Totem::GetOwner()
     uint64 ownerid = GetOwnerGUID();
     if(!ownerid)
         return NULL;
-    return ObjectAccessor::GetUnit(*this, ownerid);
+    return GetMap()->GetUnit(ownerid);
 }
 
 void Totem::SetTypeBySummonSpell(SpellEntry const * spellProto)

@@ -66,6 +66,18 @@ enum SpellModType
     SPELLMOD_PCT          = 108                             // SPELL_AURA_ADD_PCT_MODIFIER
 };
 
+// 2^n values, Player::m_isunderwater is a bitmask. These are internal values, they are never send to any client
+enum PlayerUnderwaterState
+{
+    UNDERWATER_NONE                     = 0x00,
+    UNDERWATER_INWATER                  = 0x01,             // terrain type is water and player is afflicted by it
+    UNDERWATER_INLAVA                   = 0x02,             // terrain type is lava and player is afflicted by it
+    UNDERWATER_INSLIME                  = 0x04,             // terrain type is lava and player is afflicted by it
+    UNDERWATER_INDARKWATER              = 0x08,             // terrain type is dark water and player is afflicted by it
+
+    UNDERWATER_EXIST_TIMERS             = 0x10
+};
+
 enum PlayerSpellState
 {
     PLAYERSPELL_UNCHANGED = 0,
@@ -444,6 +456,24 @@ enum PlayerFlags
 #define PLAYER_TITLE_HAND_OF_ADAL          0x0000008000000000LL // 39
 #define PLAYER_TITLE_VENGEFUL_GLADIATOR    0x0000010000000000LL // 40
 
+#define MAX_PVP_RANKS 14
+
+#define PLAYER_TITLE_PVP \
+       (PLAYER_TITLE_PRIVATE | PLAYER_TITLE_CORPORAL |  \
+        PLAYER_TITLE_SERGEANT_A | PLAYER_TITLE_MASTER_SERGEANT | \
+        PLAYER_TITLE_SERGEANT_MAJOR | PLAYER_TITLE_KNIGHT | \
+        PLAYER_TITLE_KNIGHT_LIEUTENANT | PLAYER_TITLE_KNIGHT_CAPTAIN | \
+        PLAYER_TITLE_KNIGHT_CHAMPION | PLAYER_TITLE_LIEUTENANT_COMMANDER | \
+        PLAYER_TITLE_COMMANDER | PLAYER_TITLE_MARSHAL | \
+        PLAYER_TITLE_FIELD_MARSHAL | PLAYER_TITLE_GRAND_MARSHAL | \
+        PLAYER_TITLE_SCOUT | PLAYER_TITLE_GRUNT | \
+        PLAYER_TITLE_SERGEANT_H | PLAYER_TITLE_SENIOR_SERGEANT | \
+        PLAYER_TITLE_FIRST_SERGEANT | PLAYER_TITLE_STONE_GUARD | \
+        PLAYER_TITLE_BLOOD_GUARD | PLAYER_TITLE_LEGIONNAIRE | \
+        PLAYER_TITLE_CENTURION | PLAYER_TITLE_CHAMPION | \
+        PLAYER_TITLE_LIEUTENANT_GENERAL | PLAYER_TITLE_GENERAL | \
+        PLAYER_TITLE_WARLORD | PLAYER_TITLE_HIGH_WARLORD)
+
 // used in PLAYER_FIELD_BYTES values
 enum PlayerFieldByteFlags
 {
@@ -494,6 +524,8 @@ enum MirrorTimerType
     BREATH_TIMER       = 1,
     FIRE_TIMER         = 2
 };
+#define MAX_TIMERS      3
+#define DISABLED_MIRROR_TIMER   -1
 
 // 2^n values
 enum PlayerExtraFlags
@@ -711,52 +743,6 @@ enum InstanceResetWarningType
     RAID_INSTANCE_WELCOME           = 4                     // Welcome to %s. This raid instance is scheduled to reset in %s.
 };
 
-struct MovementInfo
-{
-    // common
-    //uint32  flags;
-    uint8   unk1;
-    uint32  time;
-    float   x, y, z, o;
-    // transport
-    uint64  t_guid;
-    float   t_x, t_y, t_z, t_o;
-    uint32  t_time;
-    // swimming and unk
-    float   s_pitch;
-    // last fall time
-    uint32  fallTime;
-    // jumping
-    float   j_unk, j_sinAngle, j_cosAngle, j_xyspeed;
-    // spline
-    float   u_unk1;
-
-    MovementInfo()
-    {
-        //flags =
-        time = t_time = fallTime = 0;
-        unk1 = 0;
-        x = y = z = o = t_x = t_y = t_z = t_o = s_pitch = j_unk = j_sinAngle = j_cosAngle = j_xyspeed = u_unk1 = 0.0f;
-        t_guid = 0;
-    }
-
-    /*void SetMovementFlags(uint32 _flags)
-    {
-        flags = _flags;
-    }*/
-};
-
-// flags that use in movement check for example at spell casting
-MovementFlags const movementFlagsMask = MovementFlags(
-    MOVEMENTFLAG_FORWARD |MOVEMENTFLAG_BACKWARD  |MOVEMENTFLAG_STRAFE_LEFT|MOVEMENTFLAG_STRAFE_RIGHT|
-    MOVEMENTFLAG_PITCH_UP|MOVEMENTFLAG_PITCH_DOWN|MOVEMENTFLAG_FLY_UNK1    |
-    MOVEMENTFLAG_JUMPING |MOVEMENTFLAG_FALLING   |MOVEMENTFLAG_FLY_UP      |
-    MOVEMENTFLAG_FLYING  |MOVEMENTFLAG_SPLINE
-);
-
-MovementFlags const movementOrTurningFlagsMask = MovementFlags(
-    movementFlagsMask | MOVEMENTFLAG_LEFT | MOVEMENTFLAG_RIGHT
-);
 class InstanceSave;
 
 enum RestType
@@ -1043,6 +1029,8 @@ class TRINITY_DLL_SPEC Player : public Unit
         void Whisper(const std::string& text, const uint32 language,uint64 receiver);
         void BuildPlayerChat(WorldPacket *data, uint8 msgtype, const std::string& text, uint32 language) const;
 
+        uint8 GetClass(){ return m_class; }
+
         /*********************************************************/
         /***                    STORAGE SYSTEM                 ***/
         /*********************************************************/
@@ -1266,6 +1254,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         void SendQuestFailed( uint32 quest_id );
         void SendQuestTimerFailed( uint32 quest_id );
         void SendCanTakeQuestResponse( uint32 msg );
+        void SendQuestConfirmAccept(Quest const* pQuest, Player* pReceiver);
         void SendPushToPartyResponse( Player *pPlayer, uint32 msg );
         void SendQuestUpdateAddItem( Quest const* pQuest, uint32 item_idx, uint32 count );
         void SendQuestUpdateAddCreatureOrGo( Quest const* pQuest, uint64 guid, uint32 creatureOrGO_idx, uint32 old_count, uint32 add_count );
@@ -1309,6 +1298,7 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         bool m_mailsLoaded;
         bool m_mailsUpdated;
+        bool saving;
 
         void SetBindPoint(uint64 guid);
         void SendTalentWipeConfirm(uint64 guid);
@@ -1521,6 +1511,8 @@ class TRINITY_DLL_SPEC Player : public Unit
         void UpdateZone(uint32 newZone);
         void UpdateArea(uint32 newArea);
 
+        void UpdatePvpTitles();
+
         void UpdateZoneDependentAuras( uint32 zone_id );    // zones
         void UpdateAreaDependentAuras( uint32 area_id );    // subzones
 
@@ -1682,6 +1674,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         uint32 DurabilityRepairAll(bool cost, float discountMod, bool guildBank);
         uint32 DurabilityRepair(uint16 pos, bool cost, float discountMod, bool guildBank);
 
+        void UpdateMirrorTimers();
         void StopMirrorTimers()
         {
             StopMirrorTimer(FATIGUE_TIMER);
@@ -1715,7 +1708,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         void SetDontMove(bool dontMove);
         bool GetDontMove() const { return m_dontMove; }
 
-        void CheckExploreSystem(void);
+        void CheckAreaExploreAndOutdoor(void);
 
         static uint32 TeamForRace(uint8 race);
         uint32 GetTeam() const { return m_team; }
@@ -1724,6 +1717,7 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         bool IsAtGroupRewardDistance(WorldObject const* pRewardSource) const;
         bool RewardPlayerAndGroupAtKill(Unit* pVictim);
+        void RewardPlayerAndGroupAtEvent(uint32 creature_id,WorldObject* pRewardSource);
 
         FactionStateList m_factions;
         ForcedReactions m_forcedReactions;
@@ -1745,7 +1739,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         bool SetFactionReputation(uint32 FactionTemplateId, int32 standing);
         bool SetFactionReputation(FactionEntry const* factionEntry, int32 standing);
         bool SetOneFactionReputation(FactionEntry const* factionEntry, int32 standing);
-        int32 CalculateReputationGain(uint32 creatureOrQuestLevel, int32 rep, bool for_quest);
+        int32 CalculateReputationGain(uint32 creatureOrQuestLevel, int32 rep, int32 faction, bool for_quest);
         void RewardReputation(Unit *pVictim, float rate);
         void RewardReputation(Quest const *pQuest);
         void SetInitialFactions();
@@ -1771,7 +1765,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         /*********************************************************/
         void UpdateArenaFields();
         void UpdateHonorFields();
-        bool RewardHonor(Unit *pVictim, uint32 groupsize, float honor = -1, bool pvptoken = false);
+        bool RewardHonor(Unit *pVictim, uint32 groupsize, float honor = -1, bool pvptoken = false, bool killer = true);
         uint32 GetHonorPoints() { return GetUInt32Value(PLAYER_FIELD_HONOR_CURRENCY); }
         uint32 GetArenaPoints() { return GetUInt32Value(PLAYER_FIELD_ARENA_CURRENCY); }
         void ModifyHonorPoints( int32 value );
@@ -1973,7 +1967,8 @@ class TRINITY_DLL_SPEC Player : public Unit
         /***              ENVIROMENTAL SYSTEM                  ***/
         /*********************************************************/
 
-        void EnvironmentalDamage(uint64 guid, EnviromentalDamage type, uint32 damage);
+        void EnvironmentalDamage(EnviromentalDamage type, uint32 damage);
+        void UpdateFallInformationIfNeed( MovementInfo const& minfo,uint16 opcode );
 
         /*********************************************************/
         /***               FLOOD FILTER SYSTEM                 ***/
@@ -1994,13 +1989,13 @@ class TRINITY_DLL_SPEC Player : public Unit
             m_lastFallTime = time;
             m_lastFallZ = z;
         }
-        bool isMoving() const { return HasUnitMovementFlag(movementFlagsMask); }
-        bool isMovingOrTurning() const { return HasUnitMovementFlag(movementOrTurningFlagsMask); }
+        bool isMoving() const { return HasUnitMovementFlag(MOVEMENTFLAG_MOVING); }
+        bool isMovingOrTurning() const { return HasUnitMovementFlag(MOVEMENTFLAG_TURNING); }
 
         bool CanFly() const { return HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY); }
-        bool IsFlying() const { return HasUnitMovementFlag(MOVEMENTFLAG_FLYING); }
+        bool IsFlying() const { return HasUnitMovementFlag(MOVEMENTFLAG_FLYING2); }
 
-        void HandleDrowning();
+        void HandleDrowning(uint32 time_diff);
         void HandleFallDamage(MovementInfo& movementInfo);
         void HandleFallUnderMap();
 
@@ -2013,11 +2008,11 @@ class TRINITY_DLL_SPEC Player : public Unit
         Transport * GetTransport() const { return m_transport; }
         void SetTransport(Transport * t) { m_transport = t; }
 
-        float GetTransOffsetX() const { return m_movementInfo.t_x; }
-        float GetTransOffsetY() const { return m_movementInfo.t_y; }
-        float GetTransOffsetZ() const { return m_movementInfo.t_z; }
-        float GetTransOffsetO() const { return m_movementInfo.t_o; }
-        uint32 GetTransTime() const { return m_movementInfo.t_time; }
+        float GetTransOffsetX() const { return m_movementInfo.GetTransportPos()->x; }
+        float GetTransOffsetY() const { return m_movementInfo.GetTransportPos()->y; }
+        float GetTransOffsetZ() const { return m_movementInfo.GetTransportPos()->z; }
+        float GetTransOffsetO() const { return m_movementInfo.GetTransportPos()->o; }
+        uint32 GetTransTime() const { return m_movementInfo.GetTransportTime(); }
 
         uint32 GetSaveTimer() const { return m_nextSave; }
         void   SetSaveTimer(uint32 timer) { m_nextSave = timer; }
@@ -2131,6 +2126,9 @@ class TRINITY_DLL_SPEC Player : public Unit
         bool HasTitle(CharTitlesEntry const* title) { return HasTitle(title->bit_index); }
         void SetTitle(CharTitlesEntry const* title);
 
+        void ResetTimeSync();
+        void SendTimeSync();
+
         // you can't follow while being followed
         void setGMFollow(uint64 guid) {m_GMfollow_GUID = guid; m_GMfollowtarget_GUID = 0;}
         void setFollowTarget(uint64 guid) {m_GMfollowtarget_GUID = guid; m_GMfollow_GUID = 0;}
@@ -2221,13 +2219,10 @@ class TRINITY_DLL_SPEC Player : public Unit
         /*********************************************************/
         /***              ENVIRONMENTAL SYSTEM                 ***/
         /*********************************************************/
-        void HandleLava();
         void HandleSobering();
-        void StartMirrorTimer(MirrorTimerType Type, uint32 MaxValue);
-        void ModifyMirrorTimer(MirrorTimerType Type, uint32 MaxValue, uint32 CurrentValue, uint32 Regen);
+        void SendMirrorTimer(MirrorTimerType Type, uint32 MaxValue, uint32 CurrentValue, int32 Regen);
         void StopMirrorTimer(MirrorTimerType Type);
-        uint8 m_isunderwater;
-        bool m_isInWater;
+        int32 getMaxTimer(MirrorTimerType timer);
 
         /*********************************************************/
         /***                  HONOR SYSTEM                     ***/
@@ -2308,7 +2303,6 @@ class TRINITY_DLL_SPEC Player : public Unit
         time_t m_lastDailyQuestTime;
 
         uint32 m_regenTimer;
-        uint32 m_breathTimer;
         uint32 m_drunkTimer;
         uint16 m_drunk;
         uint32 m_weaponChangeTimer;
@@ -2378,7 +2372,7 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         DeclinedName *m_declinedname;
 
-        ACE_Thread_Mutex saveMutex;
+        ACE_Thread_Mutex updateMutex;
 
     private:
         // internal common parts for CanStore/StoreItem functions
@@ -2387,11 +2381,21 @@ class TRINITY_DLL_SPEC Player : public Unit
         uint8 _CanStoreItem_InInventorySlots( uint8 slot_begin, uint8 slot_end, ItemPosCountVec& dest, ItemPrototype const *pProto, uint32& count, bool merge, Item *pSrcItem, uint8 skip_bag, uint8 skip_slot ) const;
         Item* _StoreItem( uint16 pos, Item *pItem, uint32 count, bool clone, bool update );
 
+        int32 m_MirrorTimer[MAX_TIMERS];
+        uint8 m_MirrorTimerFlags;
+        uint8 m_MirrorTimerFlagsLast;
+        bool m_isInWater;
+
         GridReference<Player> m_gridRef;
         MapReference m_mapRef;
 
         uint64 m_GMfollowtarget_GUID; // za kim chodzi
         uint64 m_GMfollow_GUID;       // gm ktory chodzi za playerem
+
+        uint32 m_timeSyncCounter;
+        uint32 m_timeSyncTimer;
+        uint32 m_timeSyncClient;
+        uint32 m_timeSyncServer;
 };
 
 void AddItemsSetItem(Player*player,Item *item);

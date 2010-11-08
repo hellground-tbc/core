@@ -5,19 +5,24 @@
 #ifndef DEF_TEMPLE_OF_AHNQIRAJ_H
 #define DEF_TEMPLE_OF_AHNQIRAJ_H
 
-#define DATA_SKERAM              1
-#define DATA_KRI                 2
-#define DATA_VEM                 3
-#define DATA_VEMISDEAD           4
-#define DATA_VEM_DEATH           5
-#define DATA_VEKLOR              6
-#define DATA_VEKLORISDEAD        7
-#define DATA_VEKLOR_DEATH        8
-#define DATA_VEKNILASH           9
-#define DATA_VEKNILASHISDEAD    10
-#define DATA_VEKNILASH_DEATH    11
-#define DATA_BUG_TRIO_DEATH     14
+#define DATA_THE_PROPHET_SKERAM         0
+#define DATA_BATTLEGUARD_SARTURA        1
+#define DATA_FANKRISS_THE_UNYIELDING    2
+#define DATA_PRINCESS_HUHURAN           3
+#define DATA_TWIN_EMPERORS              4
+#define DATA_C_THUN                     5
+#define DATA_BUG_TRIO                   6
+#define DATA_VISCIDUS                   7
+#define DATA_OURO                       8
 
-#define DATA_CTHUN_PHASE        20
+#define DATA_SKERAM                     9
+#define DATA_KRI                        10
+#define DATA_VEM                        11
+#define DATA_VEKLOR                     12
+#define DATA_VEKNILASH                  13
+#define DATA_BUG_TRIO_DEATH             14
+
+#define DATA_CTHUN_PHASE                20
+
 #endif
 

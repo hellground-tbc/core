@@ -30,37 +30,10 @@ npc_saikkal_the_elder
 npc_skyguard_handler_irena
 npc_bloodmaul_brutebane
 npc_ogre_brute
+npc_aether_ray
 EndContentData */
 
 #include "precompiled.h"
-
-/*######
-## mobs_bladespire_ogre
-######*/
-
-//TODO: add support for quest 10512 + creature abilities
-struct TRINITY_DLL_DECL mobs_bladespire_ogreAI : public ScriptedAI
-{
-    mobs_bladespire_ogreAI(Creature *c) : ScriptedAI(c) {}
-
-    void Reset()
-    {
-    }
-
-    void Aggro(Unit* who)
-    {
-    }
-
-    void JustDied(Unit* Killer)
-    {
-        if (Killer->GetTypeId() == TYPEID_PLAYER)
-            ((Player*)Killer)->KilledMonster(19995, m_creature->GetGUID());
-    }
-};
-CreatureAI* GetAI_mobs_bladespire_ogre(Creature *_Creature)
-{
-    return new mobs_bladespire_ogreAI (_Creature);
-}
 
 /*######
 ## mobs_nether_drake
@@ -100,19 +73,19 @@ struct TRINITY_DLL_DECL mobs_nether_drakeAI : public ScriptedAI
     {
         NihilSpeech_Timer = 2000;
         IsNihil = false;
+
         if( m_creature->GetEntry() == ENTRY_NIHIL )
         {
             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             IsNihil = true;
         }
+
         NihilSpeech_Phase = 1;
 
         ArcaneBlast_Timer = 7500;
         ManaBurn_Timer = 10000;
         IntangiblePresence_Timer = 15000;
     }
-
-    void Aggro(Unit* who) { }
 
     void SpellHit(Unit *caster, const SpellEntry *spell)
     {
@@ -123,49 +96,23 @@ struct TRINITY_DLL_DECL mobs_nether_drakeAI : public ScriptedAI
             switch( m_creature->GetEntry() )
             {
                 case ENTRY_WHELP:
-                    switch(rand()%4)
-                    {
-                        case 0: cEntry = ENTRY_PROTO; break;
-                        case 1: cEntry = ENTRY_ADOLE; break;
-                        case 2: cEntry = ENTRY_MATUR; break;
-                        case 3: cEntry = ENTRY_NIHIL; break;
-                    }
+                    cEntry = RAND(ENTRY_PROTO, ENTRY_ADOLE, ENTRY_MATUR, ENTRY_NIHIL);
                     break;
                 case ENTRY_PROTO:
-                    switch(rand()%3)
-                    {
-                        case 0: cEntry = ENTRY_ADOLE; break;
-                        case 1: cEntry = ENTRY_MATUR; break;
-                        case 2: cEntry = ENTRY_NIHIL; break;
-                    }
+                    cEntry = RAND(ENTRY_ADOLE, ENTRY_MATUR, ENTRY_NIHIL);
                     break;
                 case ENTRY_ADOLE:
-                    switch(rand()%3)
-                    {
-                        case 0: cEntry = ENTRY_PROTO; break;
-                        case 1: cEntry = ENTRY_MATUR; break;
-                        case 2: cEntry = ENTRY_NIHIL; break;
-                    }
+                    cEntry = RAND(ENTRY_PROTO, ENTRY_MATUR, ENTRY_NIHIL);
                     break;
                 case ENTRY_MATUR:
-                    switch(rand()%3)
-                    {
-                        case 0: cEntry = ENTRY_PROTO; break;
-                        case 1: cEntry = ENTRY_ADOLE; break;
-                        case 2: cEntry = ENTRY_NIHIL; break;
-                    }
+                    cEntry = RAND(ENTRY_PROTO, ENTRY_ADOLE, ENTRY_NIHIL);
                     break;
                 case ENTRY_NIHIL:
                     if( NihilSpeech_Phase )
                     {
                         DoScriptText(SAY_NIHIL_INTERRUPT, m_creature);
                         IsNihil = false;
-                        switch(rand()%3)
-                        {
-                            case 0: cEntry = ENTRY_PROTO; break;
-                            case 1: cEntry = ENTRY_ADOLE; break;
-                            case 2: cEntry = ENTRY_MATUR; break;
-                        }
+                        cEntry = RAND(ENTRY_PROTO, ENTRY_ADOLE, ENTRY_MATUR);
                     }
                     break;
             }
@@ -179,8 +126,7 @@ struct TRINITY_DLL_DECL mobs_nether_drakeAI : public ScriptedAI
                     m_creature->InterruptNonMeleeSpells(true);
                     m_creature->RemoveAllAuras();
                     m_creature->DeleteThreatList();
-                    m_creature->CombatStop();
-                    InCombat = false;
+                    m_creature->CombatStop(true);
                     Reset();
                 }
             }
@@ -215,7 +161,7 @@ struct TRINITY_DLL_DECL mobs_nether_drakeAI : public ScriptedAI
                             break;
                         case 5:
                             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                                                            // + MOVEMENTFLAG_LEVITATING
+                                                            // | MOVEMENTFLAG_LEVITATING
                             m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT);
                             //then take off to random location. creature is initially summoned, so don't bother do anything else.
                             m_creature->GetMotionMaster()->MovePoint(0, m_creature->GetPositionX()+100, m_creature->GetPositionY(), m_creature->GetPositionZ()+100);
@@ -223,7 +169,9 @@ struct TRINITY_DLL_DECL mobs_nether_drakeAI : public ScriptedAI
                             break;
                     }
                     NihilSpeech_Timer = 5000;
-                }else NihilSpeech_Timer -=diff;
+                }
+                else
+                    NihilSpeech_Timer -=diff;
             }
             return;                                         //anything below here is not interesting for Nihil, so skip it
         }
@@ -235,7 +183,9 @@ struct TRINITY_DLL_DECL mobs_nether_drakeAI : public ScriptedAI
         {
             DoCast(m_creature->getVictim(),SPELL_INTANGIBLE_PRESENCE);
             IntangiblePresence_Timer = 15000+rand()%15000;
-        }else IntangiblePresence_Timer -= diff;
+        }
+        else
+            IntangiblePresence_Timer -= diff;
 
         if( ManaBurn_Timer <= diff )
         {
@@ -243,13 +193,17 @@ struct TRINITY_DLL_DECL mobs_nether_drakeAI : public ScriptedAI
             if( target && target->getPowerType() == POWER_MANA )
                 DoCast(target,SPELL_MANA_BURN);
             ManaBurn_Timer = 8000+rand()%8000;
-        }else ManaBurn_Timer -= diff;
+        }
+        else
+            ManaBurn_Timer -= diff;
 
         if( ArcaneBlast_Timer <= diff )
         {
             DoCast(m_creature->getVictim(),SPELL_ARCANE_BLAST);
             ArcaneBlast_Timer = 2500+rand()%5000;
-        }else ArcaneBlast_Timer -= diff;
+        }
+        else
+            ArcaneBlast_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }
@@ -270,10 +224,6 @@ struct TRINITY_DLL_DECL npc_daranelleAI : public ScriptedAI
     npc_daranelleAI(Creature *c) : ScriptedAI(c) {}
 
     void Reset()
-    {
-    }
-
-    void Aggro(Unit* who)
     {
     }
 
@@ -424,8 +374,6 @@ struct npc_bloodmaul_brutebaneAI : public ScriptedAI
         OgreGUID = 0;
     }
 
-    void Aggro(Unit* who) {}
-
     void UpdateAI(const uint32 uiDiff) {}
 };
 
@@ -448,8 +396,6 @@ struct npc_ogre_bruteAI : public ScriptedAI
     {
         PlayerGUID = 0;
     }
-
-    void Aggro(Unit* who) {}
 
     void MoveInLineOfSight(Unit *who)
     {
@@ -491,6 +437,149 @@ CreatureAI* GetAI_npc_ogre_brute(Creature* pCreature)
     return new npc_ogre_bruteAI(pCreature);
 }
 
+/*######
+## npc_vim_bunny
+######*/
+
+#define SPELL_PENTAGRAM 39921
+#define GO_FLAME_CIRCLE 185555
+#define PENTAGRAM_TRIGGER 23040
+#define MAIN_SPAWN 22911
+
+struct TRINITY_DLL_DECL npc_vim_bunnyAI : public ScriptedAI
+{
+    npc_vim_bunnyAI(Creature *c) : ScriptedAI(c){}
+
+    uint32 CheckTimer;
+
+    void Reset()
+    {
+        CheckTimer = 1000;
+    }
+
+    bool GetPlayer()
+    {
+        Player *pPlayer = NULL;
+        Trinity::AnyPlayerInObjectRangeCheck p_check(m_creature, 3.0f);
+        Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(pPlayer, p_check);
+        me->VisitNearbyObject(3.0f, searcher);
+        return pPlayer;
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(CheckTimer < diff)
+        {
+            if(me->GetDistance2d(3279.80f, 4639.76f) < 5.0)
+            {
+                if(GetClosestCreatureWithEntry(me, MAIN_SPAWN, 80.0f))
+                {
+                    CheckTimer = 20000;
+                    return;
+                }
+
+                // WE NEED HERE TO BE SURE THAT SPAWN IS VALID !
+                std::list<Creature*> triggers = DoFindAllCreaturesWithEntry(PENTAGRAM_TRIGGER, 50.0);
+                if(triggers.size() >= 5)
+                {
+                    DoSpawnCreature(MAIN_SPAWN,0,0,0,0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000);
+                    CheckTimer = 20000;
+                    return;
+                }
+                CheckTimer = 1000;
+            }
+            else
+            {
+                if(GetPlayer())
+                {
+                    Unit *temp = DoSpawnCreature(PENTAGRAM_TRIGGER,0,0,2.0,0, TEMPSUMMON_TIMED_DESPAWN, 15000);
+                    temp->CastSpell(temp, SPELL_PENTAGRAM, false);
+                    CheckTimer = 16000;
+                    return;
+                }
+                CheckTimer = 2000;
+            }
+        }
+        else
+            CheckTimer -= diff;
+    }
+};
+
+CreatureAI* GetAI_npc_vim_bunny(Creature *_Creature)
+{
+    return new npc_vim_bunnyAI (_Creature);
+}
+
+/*######
+## Wrangle Some Aether Rays
+######*/
+
+// Spells
+#define EMOTE_WEAK     "appears ready to be wrangled."
+#define SPELL_SUMMON_WRANGLED   40917
+#define SPELL_CHANNEL           40626
+
+struct TRINITY_DLL_DECL mob_aetherrayAI : public ScriptedAI
+{
+
+    mob_aetherrayAI(Creature *c) : ScriptedAI(c) {}
+
+    bool Weak;
+    uint64 PlayerGUID;
+
+    void Reset()
+    {
+        Weak = false;
+    }
+
+    void EnterCombat(Unit *who)
+    {
+        if(Player *player = who->GetCharmerOrOwnerPlayerOrPlayerItself())
+            PlayerGUID = player->GetGUID();
+    }
+
+    void JustSummoned(Creature* summoned)
+    {
+        summoned->GetMotionMaster()->MoveFollow(Unit::GetPlayer(PlayerGUID), PET_FOLLOW_DIST, m_creature->GetFollowAngle(), MOTION_SLOT_ACTIVE);
+    }
+        
+    void UpdateAI(const uint32 diff)
+    {
+
+    if (!UpdateVictim())
+            return;
+
+    if(PlayerGUID) // start: support for quest 11066 and 11065
+        {
+            Player* target = Unit::GetPlayer(PlayerGUID);
+
+            if(target && !Weak && m_creature->GetHealth() < (m_creature->GetMaxHealth() / 100 * 40)
+                && (target->GetQuestStatus(11066) == QUEST_STATUS_INCOMPLETE || target->GetQuestStatus(11065) == QUEST_STATUS_INCOMPLETE))
+            {
+                me->MonsterTextEmote(EMOTE_WEAK, 0, false);
+                Weak = true;
+            }
+
+            if(Weak && m_creature->HasAura(40856, 0))
+            {
+                me->CastSpell(target, SPELL_SUMMON_WRANGLED, false);
+                target->KilledMonster(23343, m_creature->GetGUID());
+                m_creature->AttackStop(); // delete the normal mob
+                m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                m_creature->RemoveCorpse();          
+            }
+        }
+
+        DoMeleeAttackIfReady();
+    }
+
+
+};
+
+CreatureAI* GetAI_mob_aetherray(Creature *_Creature)
+{
+    return new mob_aetherrayAI (_Creature);
+}
 
 /*######
 ## AddSC
@@ -499,11 +588,6 @@ CreatureAI* GetAI_npc_ogre_brute(Creature* pCreature)
 void AddSC_blades_edge_mountains()
 {
     Script *newscript;
-
-    newscript = new Script;
-    newscript->Name="mobs_bladespire_ogre";
-    newscript->GetAI = &GetAI_mobs_bladespire_ogre;
-    newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="mobs_nether_drake";
@@ -543,5 +627,14 @@ void AddSC_blades_edge_mountains()
     newscript->GetAI = &GetAI_npc_ogre_brute;
     newscript->RegisterSelf();
 
-}
+    newscript = new Script;
+    newscript->Name = "npc_vim_bunny";
+    newscript->GetAI = &GetAI_npc_vim_bunny;
+    newscript->RegisterSelf();
 
+    newscript = new Script;
+    newscript->Name = "mob_aetherray";
+    newscript->GetAI = &GetAI_mob_aetherray;
+    newscript->RegisterSelf();
+    
+}

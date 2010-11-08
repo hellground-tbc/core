@@ -59,7 +59,7 @@ struct TRINITY_DLL_DECL boss_shirrak_the_dead_watcherAI : public ScriptedAI
         focusedTarget = NULL;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
     }
 
@@ -112,7 +112,7 @@ struct TRINITY_DLL_DECL boss_shirrak_the_dead_watcherAI : public ScriptedAI
                                 m_creature->AddAura(SPELL_INHIBITMAGIC, i_pl);
                             if(dist < 15)
                                m_creature->AddAura(SPELL_INHIBITMAGIC, i_pl);
-                        }                                
+                        }
                     }
                 }
             }
@@ -148,7 +148,7 @@ struct TRINITY_DLL_DECL boss_shirrak_the_dead_watcherAI : public ScriptedAI
         if (FocusFire_Timer < diff)
         {
             // Summon Focus Fire & Emote
-            Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0,60, true, m_creature->getVictim());
+            Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0,60, true, m_creature->getVictimGUID());
             if (target && target->GetTypeId() == TYPEID_PLAYER && target->isAlive())
             {
                 focusedTarget = target;
@@ -192,7 +192,7 @@ struct TRINITY_DLL_DECL mob_focus_fireAI : public ScriptedAI
         fiery1 = fiery2 = true;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     { }
 
     void UpdateAI(const uint32 diff)
@@ -206,11 +206,16 @@ struct TRINITY_DLL_DECL mob_focus_fireAI : public ScriptedAI
         {
             DoCast(m_creature,SPELL_FIERY_BLAST);
 
-            if(fiery1) fiery1 = false;
-            else if(fiery2) fiery2 = false;
+            if(fiery1)
+                fiery1 = false;
+            else
+                if(fiery2)
+                    fiery2 = false;
 
             FieryBlast_Timer = 1000;
-        }else FieryBlast_Timer -= diff;
+        }
+        else
+            FieryBlast_Timer -= diff;
 
         //DoMeleeAttackIfReady();
     }

@@ -140,14 +140,9 @@ struct TRINITY_DLL_DECL boss_nexusprince_shaffarAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
-        switch(rand()%3)
-        {
-            case 0: DoScriptText(SAY_AGGRO_1, m_creature); break;
-            case 1: DoScriptText(SAY_AGGRO_2, m_creature); break;
-            case 2: DoScriptText(SAY_AGGRO_3, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), m_creature);
 
         // Send initial beacons to join the fight if not already
         for(uint8 i = 0; i < NR_INITIAL_BEACONS; i++)
@@ -168,11 +163,7 @@ struct TRINITY_DLL_DECL boss_nexusprince_shaffarAI : public ScriptedAI
 
     void KilledUnit(Unit* victim)
     {
-        switch(rand()%2)
-        {
-            case 0: DoScriptText(SAY_SLAY_1, m_creature); break;
-            case 1: DoScriptText(SAY_SLAY_2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), m_creature);
     }
 
     void JustDied(Unit* Killer)
@@ -193,19 +184,25 @@ struct TRINITY_DLL_DECL boss_nexusprince_shaffarAI : public ScriptedAI
             DoCast(m_creature,SPELL_FROSTNOVA);
             FrostNova_Timer  = 17500 + rand()%7500;
             CanBlink = true;
-        }else FrostNova_Timer -= diff;
+        }
+        else
+            FrostNova_Timer -= diff;
 
         if( Frostbolt_Timer < diff )
         {
             DoCast(m_creature->getVictim(),SPELL_FROSTBOLT);
             Frostbolt_Timer = 4500 + rand()%1500;
-        }else Frostbolt_Timer -= diff;
+        }
+        else
+            Frostbolt_Timer -= diff;
 
         if( FireBall_Timer < diff )
         {
             DoCast(m_creature->getVictim(),SPELL_FIREBALL);
             FireBall_Timer = 4500 + rand()%1500;
-        }else FireBall_Timer -= diff;
+        }
+        else
+            FireBall_Timer -= diff;
 
         if( CanBlink )
         {
@@ -217,7 +214,9 @@ struct TRINITY_DLL_DECL boss_nexusprince_shaffarAI : public ScriptedAI
                 DoCast(m_creature,SPELL_BLINK);
                 Blink_Timer = 1000 + rand()%1500;
                 CanBlink = false;
-            }else Blink_Timer -= diff;
+            }
+            else
+                Blink_Timer -= diff;
         }
 
         if( Beacon_Timer < diff)
@@ -231,7 +230,9 @@ struct TRINITY_DLL_DECL boss_nexusprince_shaffarAI : public ScriptedAI
             DoCast(m_creature,SPELL_ETHEREAL_BEACON);
 
             Beacon_Timer = 10000;
-        }else Beacon_Timer -= diff;
+        }
+        else
+            Beacon_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }
@@ -269,7 +270,7 @@ struct TRINITY_DLL_DECL mob_ethereal_beaconAI : public ScriptedAI
         Check_Timer = 1000;
     }
 
-    void Aggro(Unit *who)
+    void EnterCombat(Unit *who)
     {
         // Send Shaffar to fight
         Unit* Shaffar = FindCreature(ENTRY_SHAFFAR, 100, m_creature);
@@ -278,6 +279,7 @@ struct TRINITY_DLL_DECL mob_ethereal_beaconAI : public ScriptedAI
             KillSelf();
             return;
         }
+
         if(!Shaffar->isInCombat())
             ((Creature*)Shaffar)->AI()->AttackStart(who);
     }
@@ -308,13 +310,17 @@ struct TRINITY_DLL_DECL mob_ethereal_beaconAI : public ScriptedAI
                 return;
             }
             Check_Timer = 1000;
-        }else Check_Timer -= diff;
+        }
+        else
+            Check_Timer -= diff;
 
         if( ArcaneBolt_Timer < diff )
         {
             DoCast(m_creature->getVictim(),SPELL_ARCANE_BOLT);
             ArcaneBolt_Timer = 2000 + rand()%2500;
-        }else ArcaneBolt_Timer -= diff;
+        }
+        else
+            ArcaneBolt_Timer -= diff;
 
         if( Apprentice_Timer < diff )
         {
@@ -326,7 +332,9 @@ struct TRINITY_DLL_DECL mob_ethereal_beaconAI : public ScriptedAI
                 ((Pet*)m_creature)->SetDuration(0);
             KillSelf();
             return;
-        }else Apprentice_Timer -= diff;
+        }
+        else
+            Apprentice_Timer -= diff;
     }
 };
 
@@ -352,8 +360,6 @@ struct TRINITY_DLL_DECL mob_ethereal_apprenticeAI : public ScriptedAI
         isFireboltTurn = true;
     }
 
-    void Aggro(Unit* who) {}
-
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -365,12 +371,16 @@ struct TRINITY_DLL_DECL mob_ethereal_apprenticeAI : public ScriptedAI
             {
                 m_creature->CastSpell(m_creature->getVictim(), SPELL_ETHEREAL_APPRENTICE_FIREBOLT, true);
                 isFireboltTurn = false;
-            }else{
+            }
+            else
+            {
                 m_creature->CastSpell(m_creature->getVictim(), SPELL_ETHEREAL_APPRENTICE_FROSTBOLT, true);
                 isFireboltTurn = true;
             }
             Cast_Timer = 3000;
-        }else Cast_Timer -= diff;
+        }
+        else
+            Cast_Timer -= diff;
     }
 };
 
@@ -392,7 +402,7 @@ void AddSC_boss_nexusprince_shaffar()
     newscript->Name="mob_ethereal_beacon";
     newscript->GetAI = &GetAI_mob_ethereal_beacon;
     newscript->RegisterSelf();
-    
+
     newscript = new Script;
     newscript->Name="mob_ethereal_apprentice";
     newscript->GetAI = &GetAI_mob_ethereal_apprentice;

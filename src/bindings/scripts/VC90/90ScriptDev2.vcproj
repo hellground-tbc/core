@@ -213,7 +213,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/MP"
-				AdditionalIncludeDirectories="..\..\..\..\dep\include\;..\..\..\shared\;..\..\..\shared\Database;..\..\..\framework\;..\..\..\game\;..\include\;..\scripts\npc\;..\..\..\..\dep\ACE_wrappers"
+				AdditionalIncludeDirectories="..\..\..\..\dep\include\;..\scripts\npc;..\..\..\shared\;..\..\..\shared\Database;..\..\..\framework\;..\..\..\game\;..\include\;..\scripts\npc\;..\..\..\..\dep\ACE_wrappers;..\system;..\..\..\..\dep\tbb\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SCRIPT"
 				MinimalRebuild="false"
 				RuntimeLibrary="2"
@@ -386,14 +386,6 @@
 				Name="creature"
 				>
 				<File
-					RelativePath="..\scripts\creature\mob_event_ai.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\scripts\creature\mob_event_ai.h"
-					>
-				</File>
-				<File
 					RelativePath="..\scripts\creature\mob_generic_creature.cpp"
 					>
 				</File>
@@ -430,11 +422,19 @@
 				Name="npc"
 				>
 				<File
-					RelativePath="..\scripts\npc\npc_escortAI.cpp"
+					RelativePath="..\scripts\npc\escort_ai.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\scripts\npc\npc_escortAI.h"
+					RelativePath="..\scripts\npc\escort_ai.h"
+					>
+				</File>
+				<File
+					RelativePath="..\scripts\npc\follower_ai.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\scripts\npc\follower_ai.h"
 					>
 				</File>
 				<File
@@ -592,6 +592,10 @@
 				<Filter
 					Name="Desolace"
 					>
+					<File
+						RelativePath="..\scripts\zone\desolace\desolace.cpp"
+						>
+					</File>
 				</Filter>
 				<Filter
 					Name="Dire Maul"
@@ -608,6 +612,10 @@
 				<Filter
 					Name="Durotar"
 					>
+					<File
+						RelativePath="..\scripts\zone\durotar\durotar.cpp"
+						>
+					</File>
 				</Filter>
 				<Filter
 					Name="Duskwood"
@@ -784,6 +792,10 @@
 				<Filter
 					Name="Swamp of Sorrows"
 					>
+					<File
+						RelativePath="..\scripts\zone\swamp of sorrows\swamp_of_sorrows.cpp"
+						>
+					</File>
 				</Filter>
 				<Filter
 					Name="Scarlet Monastery"
@@ -1100,6 +1112,14 @@
 						RelativePath="..\scripts\zone\onyxias_lair\boss_onyxia.cpp"
 						>
 					</File>
+					<File
+						RelativePath="..\scripts\zone\onyxias_lair\def_onyxia_lair.h"
+						>
+					</File>
+					<File
+						RelativePath="..\scripts\zone\onyxias_lair\instance_onyxia_lair.cpp"
+						>
+					</File>
 				</Filter>
 				<Filter
 					Name="Ragefire Chasm"
@@ -1108,6 +1128,10 @@
 				<Filter
 					Name="Razorfen Downs"
 					>
+					<File
+						RelativePath="..\scripts\zone\razorfen_downs\boss_amnennar_the_coldbringer.cpp"
+						>
+					</File>
 					<File
 						RelativePath="..\scripts\zone\razorfen_downs\instance_razorfen_downs.cpp"
 						>
@@ -1228,6 +1252,10 @@
 				<Filter
 					Name="Teldrassil"
 					>
+					<File
+						RelativePath="..\scripts\zone\teldrassil\teldrassil.cpp"
+						>
+					</File>
 				</Filter>
 				<Filter
 					Name="Temple of Ahn&apos;Qiraj"
@@ -1321,7 +1349,15 @@
 					Name="Wailing Caverns"
 					>
 					<File
+						RelativePath="..\scripts\zone\wailing_caverns\def_wailing_caverns.h"
+						>
+					</File>
+					<File
 						RelativePath="..\scripts\zone\wailing_caverns\instance_wailing_caverns.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\scripts\zone\wailing_caverns\wailing_caverns.cpp"
 						>
 					</File>
 				</Filter>
@@ -1344,6 +1380,10 @@
 				<Filter
 					Name="Wetlands"
 					>
+					<File
+						RelativePath="..\scripts\zone\wetlands\wetlands.cpp"
+						>
+					</File>
 				</Filter>
 				<Filter
 					Name="Winterspring"
@@ -1542,6 +1582,10 @@
 					>
 					<File
 						RelativePath="..\scripts\zone\black_temple\black_temple.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\scripts\zone\black_temple\black_temple_trash.cpp"
 						>
 					</File>
 					<File
@@ -2429,6 +2473,14 @@
 						>
 					</File>
 				</Filter>
+				<Filter
+					Name="Hinterlands"
+					>
+					<File
+						RelativePath="..\scripts\zone\hinterlands\hinterlands.cpp"
+						>
+					</File>
+				</Filter>
 			</Filter>
 		</Filter>
 		<Filter
@@ -2495,6 +2547,26 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="System"
+			>
+			<File
+				RelativePath="..\system\ScriptLoader.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\system\ScriptLoader.h"
+				>
+			</File>
+			<File
+				RelativePath="..\system\system.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\system\system.h"
+				>
+			</File>
+		</Filter>
 		<File
 			RelativePath="..\config.h"
 			>
@@ -2509,10 +2581,6 @@
 		</File>
 		<File
 			RelativePath="..\svn_revision.h"
-			>
-		</File>
-		<File
-			RelativePath="..\system.cpp"
 			>
 		</File>
 		<File

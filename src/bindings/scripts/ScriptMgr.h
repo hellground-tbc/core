@@ -5,8 +5,8 @@
  * This program is free software licensed under GPL version 2
  * Please see the included DOCS/LICENSE.TXT for more information */
 
-#ifndef SCRIPTMGR_H
-#define SCRIPTMGR_H
+#ifndef SC_SCRIPTMGR_H
+#define SC_SCRIPTMGR_H
 
 #include "Common.h"
 #include "Platform/CompilerDefs.h"
@@ -23,6 +23,7 @@ class SpellCastTargets;
 class Map;
 class Unit;
 class WorldObject;
+struct ItemPrototype;
 
 #define MAX_SCRIPTS         5000                            //72 bytes each (approx 351kb)
 #define VISIBLE_RANGE       (166.0f)                        //MAX visible range (size of grid)
@@ -34,7 +35,7 @@ struct Script
         pGossipHello(NULL), pQuestAccept(NULL), pGossipSelect(NULL), pGossipSelectWithCode(NULL),
         pQuestSelect(NULL), pQuestComplete(NULL), pNPCDialogStatus(NULL), pGODialogStatus(NULL), pChooseReward(NULL),
         pItemHello(NULL), pGOHello(NULL), pAreaTrigger(NULL), pItemQuestAccept(NULL), pGOQuestAccept(NULL),
-        pGOChooseReward(NULL),pReceiveEmote(NULL),pItemUse(NULL), GetAI(NULL), GetInstanceData(NULL)
+        pGOChooseReward(NULL),pReceiveEmote(NULL),pItemUse(NULL), pEffectDummyCreature(NULL), GetAI(NULL), GetInstanceData(NULL)
     {}
 
     std::string Name;
@@ -59,6 +60,7 @@ struct Script
     bool (*pGOChooseReward      )(Player*, GameObject*, Quest const*, uint32 );
     bool (*pReceiveEmote        )(Player*, Creature*, uint32 );
     bool (*pItemUse             )(Player*, Item*, SpellCastTargets const& );
+    bool (*pEffectDummyCreature )(Unit*, uint32, uint32, Creature*);
 
     CreatureAI* (*GetAI)(Creature*);
     InstanceData* (*GetInstanceData)(Map*);

@@ -31,7 +31,7 @@ npc_wounded_blood_elf
 EndContentData */
 
 #include "precompiled.h"
-#include "../../npc/npc_escortAI.h"
+#include "escort_ai.h"
 
 /*######
 ## npc_aeranas
@@ -68,7 +68,7 @@ struct TRINITY_DLL_DECL npc_aeranasAI : public ScriptedAI
         DoScriptText(SAY_SUMMON, m_creature);
     }
 
-    void Aggro(Unit *who) {}
+    void EnterCombat(Unit *who) {}
 
     void UpdateAI(const uint32 diff)
     {
@@ -275,8 +275,7 @@ struct TRINITY_DLL_DECL npc_wounded_blood_elfAI : public npc_escortAI
 
     void WaypointReached(uint32 i)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
-
+        Player* player = GetPlayerForEscort();
         if (!player)
             return;
 
@@ -305,47 +304,22 @@ struct TRINITY_DLL_DECL npc_wounded_blood_elfAI : public npc_escortAI
         case 27:
             DoScriptText(SAY_ELF_COMPLETE, m_creature, player);
             // Award quest credit
-            Player* player = Unit::GetPlayer(PlayerGUID);
-            if (player)
-                player->GroupEventHappens(QUEST_ROAD_TO_FALCON_WATCH,m_creature);
+            player->GroupEventHappens(QUEST_ROAD_TO_FALCON_WATCH,m_creature);
             break;
         }
     }
 
-    void Reset()
-    {
-        if (!IsBeingEscorted)
-            m_creature->setFaction(1604);
-    }
+    void Reset() { }
 
-    void Aggro(Unit* who)
+    void EnterCombat(Unit* who)
     {
-        if (IsBeingEscorted)
+        if (HasEscortState(STATE_ESCORT_ESCORTING))
             DoScriptText(SAY_ELF_AGGRO, m_creature);
     }
 
     void JustSummoned(Creature* summoned)
     {
         summoned->AI()->AttackStart(m_creature);
-    }
-
-    void JustDied(Unit* killer)
-    {
-        if (!IsBeingEscorted)
-            return;
-
-        if (PlayerGUID)
-        {
-            // If NPC dies, player fails the quest
-            Player* player = Unit::GetPlayer(PlayerGUID);
-            if (player)
-                player->FailQuest(QUEST_ROAD_TO_FALCON_WATCH);
-        }
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-        npc_escortAI::UpdateAI(diff);
     }
 };
 
@@ -385,13 +359,15 @@ CreatureAI* GetAI_npc_wounded_blood_elf(Creature *_Creature)
     return (CreatureAI*)welfAI;
 }
 
-bool QuestAccept_npc_wounded_blood_elf(Player* player, Creature* creature, Quest const* quest)
+bool QuestAccept_npc_wounded_blood_elf(Player* player, Creature* pCreature, Quest const* quest)
 {
     if (quest->GetQuestId() == QUEST_ROAD_TO_FALCON_WATCH)
     {
-        ((npc_escortAI*)(creature->AI()))->Start(true, true, false, player->GetGUID());
+        if (npc_escortAI* pEscortAI = CAST_AI(npc_wounded_blood_elfAI, pCreature->AI()))
+            pEscortAI->Start(true, false, player->GetGUID());
+
         // Change faction so mobs attack
-        creature->setFaction(775);
+        pCreature->setFaction(775);
     }
 
     return true;
@@ -442,8 +418,6 @@ struct TRINITY_DLL_DECL npc_demoniac_scryerAI : public  Scripted_NoMovementAI
     {
         Reset();
     }
-
-    void Aggro(Unit *) {}
 
     void JustSummoned(Creature* summoned)
     {

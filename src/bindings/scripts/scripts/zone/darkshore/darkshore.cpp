@@ -27,7 +27,7 @@ npc_therylune
 EndContentData */
 
 #include "precompiled.h"
-#include "../../npc/npc_escortAI.h"
+#include "escort_ai.h"
 
 /*######
 ## npc_prospector_remtravel
@@ -46,24 +46,24 @@ struct TRINITY_DLL_DECL npc_prospector_remtravel : public npc_escortAI
 
 	void WaypointReached(uint32 i)
 	{
-		Player* player = Unit::GetPlayer(PlayerGUID);
+		Player* player = GetPlayerForEscort();
 
 		if (!player)
 			return;
 
-		switch(i) {  
+		switch(i) {
 		case 10: DoScriptText(-1581002, m_creature);break;
 		case 12: DoScriptText(-1581003, m_creature);break;
 		case 14: DoScriptText(-1581004, m_creature);break;
-		case 16: DoScriptText(-1581005, m_creature);break;	
-		case 17:  
+		case 16: DoScriptText(-1581005, m_creature);break;
+		case 17:
 			DoScriptText(-1581006, m_creature);
 			m_creature->SummonCreature(2158, 4628.38, 638.456, 6.402, 6.20, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
 			m_creature->SummonCreature(2158, 4625.13, 645.962, 6.73182, 6.27, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
 			break;
 		case 25: DoScriptText(-1581007, m_creature);break;
 		case 32: DoScriptText(-1581008, m_creature);break;
-		case 35:                 
+		case 35:
 			m_creature->SummonCreature(2158, 4570.04, 557.292, 1.989, 6.20, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
 			m_creature->SummonCreature(2159, 4573.17, 557.583, 3.328, 6.27, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
 			m_creature->SummonCreature(2160, 4564.94, 551.357, 5.91, 6.27, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
@@ -78,14 +78,10 @@ struct TRINITY_DLL_DECL npc_prospector_remtravel : public npc_escortAI
 
 	void Reset(){}
 
-	void Aggro(Unit* who)
+	void EnterCombat(Unit* who)
 	{
-		switch (rand()%3)
-		{
-		case 0: DoScriptText(SAY_prospector_AGGRO_1, m_creature); break;
-		case 1: DoScriptText(SAY_prospector_AGGRO_2, m_creature); break;
-		case 2: DoScriptText(SAY_prospector_AGGRO_3, m_creature); break;
-		}
+		DoScriptText(RAND(SAY_prospector_AGGRO_1, SAY_prospector_AGGRO_2, SAY_prospector_AGGRO_3), m_creature);
+
 		m_creature->Attack(who, true);
 	}
 
@@ -93,39 +89,7 @@ struct TRINITY_DLL_DECL npc_prospector_remtravel : public npc_escortAI
 	{
 		summoned->AI()->AttackStart(m_creature);
 	}
-
-	void JustDied(Unit* killer)
-	{
-		if (PlayerGUID)
-		{
-			if (Player* player = Unit::GetPlayer(PlayerGUID))
-				player->FailQuest(Q_Absent_Minded_Prospector);
-		}
-	}
-
-
-	void UpdateAI(const uint32 diff)
-	{
-		npc_escortAI::UpdateAI(diff);
-		if (!UpdateVictim())
-			return;
-	}
 };
-
-bool QuestAccept_npc_prospector_remtravel(Player* player, Creature* creature, Quest const* quest)
-{
-	if (quest->GetQuestId() == Q_Absent_Minded_Prospector)
-	{
-		creature->setFaction(113);
-		creature->SetHealth(creature->GetMaxHealth());
-		creature->SetUInt32Value(UNIT_FIELD_BYTES_1,0);
-		creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
-		DoScriptText(SAY_prospector_ACC, creature, player);
-		((npc_escortAI*)(creature->AI()))->Start(true, true, false, player->GetGUID());
-
-	}
-	return true;
-}
 
 CreatureAI* GetAI_npc_prospector_remtravel(Creature *_Creature)
 {
@@ -190,6 +154,20 @@ CreatureAI* GetAI_npc_prospector_remtravel(Creature *_Creature)
 	return (CreatureAI*)prospector_remtravel;
 }
 
+bool QuestAccept_npc_prospector_remtravel(Player* player, Creature* creature, Quest const* quest)
+{
+	if (quest->GetQuestId() == Q_Absent_Minded_Prospector)
+	{
+		creature->setFaction(113);
+		creature->SetHealth(creature->GetMaxHealth());
+		creature->SetUInt32Value(UNIT_FIELD_BYTES_1,0);
+		creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
+		DoScriptText(SAY_prospector_ACC, creature, player);
+		((npc_escortAI*)creature->AI())->Start(true, true, player->GetGUID(), quest);
+	}
+	return true;
+}
+
 /*######
 ## npc_therylune
 ######*/
@@ -204,12 +182,12 @@ struct TRINITY_DLL_DECL npc_therylune : public npc_escortAI
 
 	void WaypointReached(uint32 i)
 	{
-		Player* player = Unit::GetPlayer(PlayerGUID);
+		Player* player = GetPlayerForEscort();
 
 		if (!player)
 			return;
 
-		switch(i) {  		
+		switch(i) {
 		case 20:
 			DoScriptText(SAY_therylune_COMP, m_creature, player);
 			player->GroupEventHappens(Q_Therylune_Escape, m_creature);
@@ -219,18 +197,15 @@ struct TRINITY_DLL_DECL npc_therylune : public npc_escortAI
 
 	void Reset(){}
 
-	void Aggro(Unit* who)
+	void EnterCombat(Unit* who)
 	{
 		m_creature->Attack(who, true);
 	}
 
 	void JustDied(Unit* killer)
 	{
-		if (PlayerGUID)
-		{
-			if (Player* player = Unit::GetPlayer(PlayerGUID))
-				player->FailQuest(Q_Therylune_Escape);
-		}
+        if (Player* player = GetPlayerForEscort())
+		    player->FailQuest(Q_Therylune_Escape);
 	}
 
 
@@ -251,7 +226,7 @@ bool QuestAccept_npc_therylune(Player* player, Creature* creature, Quest const* 
 		creature->SetUInt32Value(UNIT_FIELD_BYTES_1,0);
 		creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
 		DoScriptText(SAY_therylune_ACC, creature, player);
-		((npc_escortAI*)(creature->AI()))->Start(true, true, false, player->GetGUID());
+		((npc_escortAI*)creature->AI())->Start(true, true, player->GetGUID(), quest);
 
 	}
 	return true;

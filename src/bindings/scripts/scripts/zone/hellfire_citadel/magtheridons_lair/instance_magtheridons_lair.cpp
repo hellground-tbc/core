@@ -74,19 +74,40 @@ struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
         return false;
     }
 
+    uint32 GetEncounterForEntry(uint32 entry)
+    {
+        switch(entry)
+        {
+            case 17257:
+                return DATA_MAGTHERIDON_EVENT;
+            default:
+                return 0;
+        }
+    }
+
     void OnCreatureCreate(Creature *creature, uint32 creature_entry)
     {
         switch(creature->GetEntry())
         {
-        case 17257:
-            MagtheridonGUID = creature->GetGUID();
-            break;
-        case 17256:
-            ChannelerGUID.insert(creature->GetGUID());
-            break;
-        case 666:
-            STCasterGUID = creature->GetGUID();
-            break;
+            case 17257:
+                MagtheridonGUID = creature->GetGUID();
+                break;
+            case 17256:
+                ChannelerGUID.insert(creature->GetGUID());
+                break;
+            case 666:
+                STCasterGUID = creature->GetGUID();
+                break;
+        }
+
+        const CreatureData * tmp = creature->GetLinkedRespawnCreatureData();
+        if (!tmp)
+            return;
+
+        if(GetEncounterForEntry(tmp->id) && creature->isAlive() && GetData(GetEncounterForEntry(tmp->id)) == DONE)
+        {
+            creature->Kill(creature, false);
+            creature->RemoveCorpse();
         }
     }
 
