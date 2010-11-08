@@ -169,34 +169,6 @@ bool ChatHandler::HandleSaveCommand(const char* /*args*/)
     return true;
 }
 
-bool ChatHandler::HandleGMListIngameCommand(const char* /*args*/)
-{
-    bool first = true;
-
-    ObjectAccessor::Guard guard(*HashMapHolder<Player>::GetLock());
-    HashMapHolder<Player>::MapType &m = ObjectAccessor::Instance().GetPlayers();
-    for (HashMapHolder<Player>::MapType::const_iterator itr = m.begin(); itr != m.end(); ++itr)
-    {
-        if (itr->second->GetSession()->GetSecurity() &&
-            (itr->second->isGameMaster() || sWorld.getConfig(CONFIG_GM_IN_GM_LIST)) &&
-            (!m_session || itr->second->IsVisibleGloballyFor(m_session->GetPlayer())) )
-        {
-            if(first)
-            {
-                SendSysMessage(LANG_GMS_ON_SRV);
-                first = false;
-            }
-
-            SendSysMessage(itr->second->GetName());
-        }
-    }
-
-    if(first)
-        SendSysMessage(LANG_GMS_NOT_LOGGED);
-
-    return true;
-}
-
 bool ChatHandler::HandlePasswordCommand(const char* args)
 {
     if(!*args)

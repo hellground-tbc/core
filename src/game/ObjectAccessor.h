@@ -24,7 +24,6 @@
 #include "Platform/Define.h"
 #include "Policies/Singleton.h"
 #include "ace/Thread_Mutex.h"
-#include "Utilities/UnorderedMap.h"
 #include "Policies/ThreadingModel.h"
 
 #include "ByteBuffer.h"

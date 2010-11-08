@@ -107,7 +107,6 @@ class ChatHandler
         bool HandleStartCommand(const char* args);
         bool HandleDismountCommand(const char* args);
         bool HandleSaveCommand(const char* args);
-        bool HandleGMListIngameCommand(const char* args);
         bool HandleGMListFullCommand(const char* args);
 
         bool HandleNamegoCommand(const char* args);
@@ -509,6 +508,8 @@ class ChatHandler
         bool HandleUnbindSightCommand(const char* args);
         bool HandleSetInstanceDataCommand(const char* args);
         bool HandleGetInstanceDataCommand(const char* args);
+        bool HandleSetInstanceData64Command(const char* args);
+        bool HandleGetInstanceData64Command(const char* args);
 
         bool HandleBindFollowCommand(const char* args);
         bool HandleUnbindFollowCommand(const char* args);

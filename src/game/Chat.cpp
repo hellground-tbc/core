@@ -218,6 +218,8 @@ ChatCommand * ChatHandler::getCommandTable()
         { "threatlist",     SEC_GAMEMASTER,     false, &ChatHandler::HandleDebugThreatList,            "", NULL },
         { "setinstdata",    SEC_ADMINISTRATOR,  false, &ChatHandler::HandleSetInstanceDataCommand,     "", NULL },
         { "getinstdata",    SEC_ADMINISTRATOR,  false, &ChatHandler::HandleGetInstanceDataCommand,     "", NULL },
+        { "setinstdata64",  SEC_ADMINISTRATOR,  false, &ChatHandler::HandleSetInstanceData64Command,   "", NULL },
+        { "getinstdata64",  SEC_ADMINISTRATOR,  false, &ChatHandler::HandleGetInstanceData64Command,   "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 
@@ -507,7 +509,6 @@ ChatCommand * ChatHandler::getCommandTable()
     static ChatCommand gmCommandTable[] =
     {
         { "chat",           SEC_MODERATOR,      false, &ChatHandler::HandleGMChatCommand,              "", NULL },
-        { "ingame",         SEC_PLAYER,         true,  &ChatHandler::HandleGMListIngameCommand,        "", NULL },
         { "list",           SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleGMListFullCommand,          "", NULL },
         { "visible",        SEC_MODERATOR,      false, &ChatHandler::HandleVisibleCommand,             "", NULL },
         { "fly",            SEC_ADMINISTRATOR,  false, &ChatHandler::HandleFlyModeCommand,             "", NULL },
