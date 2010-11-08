@@ -2236,6 +2236,34 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo, int32 crit_chance, int32 mis
         }
     }
 
+    // Max 40% chance to score a glancing blow against mobs that are higher level (can do only players and pets and not with ranged weapon)
+    if (attType != RANGED_ATTACK && getLevel() < pVictim->getLevelForTarget(this) &&
+        (GetTypeId() == TYPEID_PLAYER || ((Creature*)this)->isPet())  &&
+        pVictim->GetTypeId() != TYPEID_PLAYER && !((Creature*)pVictim)->isPet())
+    {
+        // cap possible value (with bonuses > max skill)
+        int32 skill = attackerWeaponSkill;
+        int32 maxskill = attackerMaxSkillValueForLevel;
+        skill = (skill > maxskill) ? maxskill : skill;
+
+        int32 glancing_chance = (10 + (victimDefenseSkill - skill)) * 100;
+        glancing_chance = glancing_chance > 4000 ? 4000 : glancing_chance;
+        sum += glancing_chance;
+        if (roll < sum)
+        {
+//            DEBUG_LOG ("RollMeleeOutcomeAgainst: GLANCING <%d, %d)", sum-4000, sum);
+            damageInfo->hitInfo |= HITINFO_GLANCING;
+            damageInfo->targetState = VICTIMSTATE_NORMAL;
+            damageInfo->procEx |= PROC_EX_NORMAL_HIT;
+            int32 leveldif = int32(pVictim->getLevel()) - int32(getLevel());
+            if (leveldif > 3) leveldif = 3;
+            float reducePercent = 1 - leveldif * 0.1f;
+            damageInfo->damage   = uint32(reducePercent *  damageInfo->damage);
+            damageInfo->rageDamage = damageInfo->damage;
+            return;
+        }
+    }
+
     if (GetTypeId() == TYPEID_UNIT && ((Creature *)this)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_BLOCK_ON_ATTACK)
         block_chance = 0;
 
@@ -2259,6 +2287,7 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo, int32 crit_chance, int32 mis
                 }
                 else
                     damageInfo->procEx |= PROC_EX_NORMAL_HIT;     // Partial blocks can still cause attacker procs
+
                 damageInfo->rageDamage = damageInfo->damage;
                 damageInfo->damage      -= damageInfo->blocked;
                 return;
@@ -2271,7 +2300,6 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo, int32 crit_chance, int32 mis
         crit_chance += skillBonus2;
         if (crit_chance > 0)
         {
-
             sum += crit_chance;
             if (roll < sum)
             {
@@ -2306,38 +2334,10 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo, int32 crit_chance, int32 mis
                     uint32 resilienceReduction = ((Player*)pVictim)->GetMeleeCritDamageReduction(damageInfo->damage);
                     damageInfo->damage      -= resilienceReduction;
                 }
-                damageInfo->rageDamage = damageInfo->damage;
 
+                damageInfo->rageDamage = damageInfo->damage;
                 return;
             }
-        }
-    }
-
-    // Max 40% chance to score a glancing blow against mobs that are higher level (can do only players and pets and not with ranged weapon)
-    if (attType != RANGED_ATTACK && getLevel() < pVictim->getLevelForTarget(this) &&
-        (GetTypeId() == TYPEID_PLAYER || ((Creature*)this)->isPet())  &&
-        pVictim->GetTypeId() != TYPEID_PLAYER && !((Creature*)pVictim)->isPet())
-    {
-        // cap possible value (with bonuses > max skill)
-        int32 skill = attackerWeaponSkill;
-        int32 maxskill = attackerMaxSkillValueForLevel;
-        skill = (skill > maxskill) ? maxskill : skill;
-
-        int32 glancing_chance = (10 + (victimDefenseSkill - skill)) * 100;
-        glancing_chance = glancing_chance > 4000 ? 4000 : glancing_chance;
-        sum += glancing_chance;
-        if (roll < sum)
-        {
-//            DEBUG_LOG ("RollMeleeOutcomeAgainst: GLANCING <%d, %d)", sum-4000, sum);
-            damageInfo->hitInfo |= HITINFO_GLANCING;
-            damageInfo->targetState = VICTIMSTATE_NORMAL;
-            damageInfo->procEx |= PROC_EX_NORMAL_HIT;
-            int32 leveldif = int32(pVictim->getLevel()) - int32(getLevel());
-            if (leveldif > 3) leveldif = 3;
-            float reducePercent = 1 - leveldif * 0.1f;
-            damageInfo->damage   = uint32(reducePercent *  damageInfo->damage);
-            damageInfo->rageDamage = damageInfo->damage;
-            return;
         }
     }
 
