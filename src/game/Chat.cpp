@@ -218,6 +218,8 @@ ChatCommand * ChatHandler::getCommandTable()
         { "threatlist",     SEC_GAMEMASTER,     false, &ChatHandler::HandleDebugThreatList,            "", NULL },
         { "setinstdata",    SEC_ADMINISTRATOR,  false, &ChatHandler::HandleSetInstanceDataCommand,     "", NULL },
         { "getinstdata",    SEC_ADMINISTRATOR,  false, &ChatHandler::HandleGetInstanceDataCommand,     "", NULL },
+        { "setinstdata64",  SEC_ADMINISTRATOR,  false, &ChatHandler::HandleSetInstanceData64Command,   "", NULL },
+        { "getinstdata64",  SEC_ADMINISTRATOR,  false, &ChatHandler::HandleGetInstanceData64Command,   "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 

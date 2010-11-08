@@ -508,6 +508,8 @@ class ChatHandler
         bool HandleUnbindSightCommand(const char* args);
         bool HandleSetInstanceDataCommand(const char* args);
         bool HandleGetInstanceDataCommand(const char* args);
+        bool HandleSetInstanceData64Command(const char* args);
+        bool HandleGetInstanceData64Command(const char* args);
 
         bool HandleBindFollowCommand(const char* args);
         bool HandleUnbindFollowCommand(const char* args);
