@@ -159,8 +159,14 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
             case GAMEOBJECT_FISHINGNODE_ENTRY:
                 if(LurkerSubEvent == LURKER_NOT_STARTED)
                 {
-                    FishingTimer = 10000+rand()%30000;//random time before lurker emerges
-                    LurkerSubEvent = LURKER_FISHING;
+                    if (Unit *pTemp = instance->GetCreature(DATA_THELURKERBELOW))
+                    {
+                        if (go->GetDistance2d(pTemp) > 16.0f)
+                            return;
+
+                        FishingTimer = 10000+rand()%30000;//random time before lurker emerges
+                        LurkerSubEvent = LURKER_FISHING;
+                    }
                 }
                 break;
 

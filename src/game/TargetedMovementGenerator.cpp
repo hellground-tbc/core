@@ -34,14 +34,14 @@
 template<class T>
 void TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
 {
-    if( !i_target.isValid() || !&owner )
+    if (!i_target.isValid() || !&owner)
         return;
 
-    if( owner.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED) )
+    if (owner.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED))
         return;
 
     float x, y, z;
-    if(!i_offset)
+    if (!i_offset)
     {
         // to nearest random contact position
         i_target->GetRandomContactPoint( &owner, x, y, z, 0, MELEE_RANGE - 0.5f );
@@ -68,6 +68,10 @@ void TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
         if( i_destinationHolder.HasDestination() && i_destinationHolder.GetDestinationDiff(x,y,z) < bothObjectSize )
             return;
     */
+
+    if (owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->canFly())
+        z = i_target->GetPositionZ();
+
     Traveller<T> traveller(owner);
     i_destinationHolder.SetDestination(traveller, x, y, z);
     owner.addUnitState(UNIT_STAT_CHASE);
@@ -78,7 +82,7 @@ void TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
 template<class T>
 void TargetedMovementGenerator<T>::_adaptSpeedToTarget(T &owner)
 {
-    if(!owner.GetOwner())
+    if (!owner.GetOwner())
         return;
 
     float lowerCritDist = 3*i_offset;
@@ -87,25 +91,26 @@ void TargetedMovementGenerator<T>::_adaptSpeedToTarget(T &owner)
     float maxSpeed    = owner.GetMaxSpeedRate(MOVE_RUN);
     float currSpeed   = owner.GetSpeedRate(MOVE_RUN);
     float targetSpeed = i_target->GetSpeedRate(MOVE_RUN);
-    if( targetSpeed > maxSpeed )
+
+    if (targetSpeed > maxSpeed)
         targetSpeed = maxSpeed;
 
-    float dist_to_target = owner.GetDistance2d( i_target.getTarget() );
+    float dist_to_target = owner.GetDistance2d(i_target.getTarget());
 
-    if( dist_to_target <= lowerCritDist && currSpeed < targetSpeed )
+    if (dist_to_target <= lowerCritDist && currSpeed < targetSpeed)
         owner.SetSpeed(MOVE_RUN, targetSpeed, true);
     // distance is greater than threashold: go to max speed
-    else if( dist_to_target > upperCritDist && currSpeed < maxSpeed )
+    else if (dist_to_target > upperCritDist && currSpeed < maxSpeed)
         owner.SetSpeed(MOVE_RUN, maxSpeed, true);
 }
 
 template<class T>
 void TargetedMovementGenerator<T>::Initialize(T &owner)
 {
-    if(!&owner)
+    if (!&owner)
         return;
 
-    if(owner.GetTypeId() != TYPEID_UNIT || !(((Creature*)&owner)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_ALWAYS_WALK) )
+    if (owner.GetTypeId() != TYPEID_UNIT || !(((Creature*)&owner)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_ALWAYS_WALK) )
         owner.RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
 
     if (owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->canFly())
@@ -120,7 +125,7 @@ void TargetedMovementGenerator<T>::Finalize(T &owner)
     owner.clearUnitState(UNIT_STAT_CHASE);
 
     // make sure that owner is at maxspeed
-    if( owner.GetSpeedRate(MOVE_RUN) != owner.GetMaxSpeedRate(MOVE_RUN) )
+    if (owner.GetSpeedRate(MOVE_RUN) != owner.GetMaxSpeedRate(MOVE_RUN))
         owner.SetSpeed(MOVE_RUN, owner.GetMaxSpeedRate(MOVE_RUN), true);
 
 }

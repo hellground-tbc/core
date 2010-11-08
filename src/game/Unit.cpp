@@ -2289,7 +2289,7 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo, int32 crit_chance, int32 mis
                     damageInfo->procEx |= PROC_EX_NORMAL_HIT;     // Partial blocks can still cause attacker procs
 
                 damageInfo->rageDamage = damageInfo->damage;
-                damageInfo->damage      -= damageInfo->blocked;
+                damageInfo->damage -= damageInfo->blocked;
                 return;
             }
         }

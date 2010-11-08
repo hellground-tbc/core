@@ -730,7 +730,8 @@ bool ChatHandler::HandleGPSCommand(const char* args)
         else
             PSendSysMessage("You are indoor");
     }
-    else PSendSysMessage("no VMAP available for area info");
+    else
+        PSendSysMessage("no VMAP available for area info");
 
     PSendSysMessage(LANG_MAP_POSITION,
         obj->GetMapId(), (mapEntry ? mapEntry->name[m_session->GetSessionDbcLocale()] : "<unknown>" ),

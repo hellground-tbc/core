@@ -336,7 +336,7 @@ inline void Cell::VisitCircle(const CellPair &standing_cell, TypeContainerVisito
 template<class T>
 inline void Cell::VisitGridObjects(const WorldObject *center_obj, T &visitor, float radius, bool dont_load)
 {
-    CellPair p(MaNGOS::ComputeCellPair(center_obj->GetPositionX(), center_obj->GetPositionY()));
+    CellPair p(Trinity::ComputeCellPair(center_obj->GetPositionX(), center_obj->GetPositionY()));
     Cell cell(p);
     if (dont_load)
         cell.SetNoCreate();
@@ -347,7 +347,7 @@ inline void Cell::VisitGridObjects(const WorldObject *center_obj, T &visitor, fl
 template<class T>
 inline void Cell::VisitWorldObjects(const WorldObject *center_obj, T &visitor, float radius, bool dont_load)
 {
-    CellPair p(MaNGOS::ComputeCellPair(center_obj->GetPositionX(), center_obj->GetPositionY()));
+    CellPair p(Trinity::ComputeCellPair(center_obj->GetPositionX(), center_obj->GetPositionY()));
     Cell cell(p);
     if (dont_load)
         cell.SetNoCreate();
@@ -358,7 +358,7 @@ inline void Cell::VisitWorldObjects(const WorldObject *center_obj, T &visitor, f
 template<class T>
 inline void Cell::VisitAllObjects(const WorldObject *center_obj, T &visitor, float radius, bool dont_load)
 {
-    CellPair p(MaNGOS::ComputeCellPair(center_obj->GetPositionX(), center_obj->GetPositionY()));
+    CellPair p(Trinity::ComputeCellPair(center_obj->GetPositionX(), center_obj->GetPositionY()));
     Cell cell(p);
     if (dont_load)
         cell.SetNoCreate();
@@ -371,7 +371,7 @@ inline void Cell::VisitAllObjects(const WorldObject *center_obj, T &visitor, flo
 template<class T>
 inline void Cell::VisitGridObjects(float x, float y, Map *map, T &visitor, float radius, bool dont_load)
 {
-    CellPair p(MaNGOS::ComputeCellPair(x, y));
+    CellPair p(Trinity::ComputeCellPair(x, y));
     Cell cell(p);
     if (dont_load)
         cell.SetNoCreate();
@@ -382,7 +382,7 @@ inline void Cell::VisitGridObjects(float x, float y, Map *map, T &visitor, float
 template<class T>
 inline void Cell::VisitWorldObjects(float x, float y, Map *map, T &visitor, float radius, bool dont_load)
 {
-    CellPair p(MaNGOS::ComputeCellPair(x, y));
+    CellPair p(Trinity::ComputeCellPair(x, y));
     Cell cell(p);
     if (dont_load)
         cell.SetNoCreate();
@@ -393,7 +393,7 @@ inline void Cell::VisitWorldObjects(float x, float y, Map *map, T &visitor, floa
 template<class T>
 inline void Cell::VisitAllObjects(float x, float y, Map *map, T &visitor, float radius, bool dont_load)
 {
-    CellPair p(MaNGOS::ComputeCellPair(x, y));
+    CellPair p(Trinity::ComputeCellPair(x, y));
     Cell cell(p);
     if (dont_load)
         cell.SetNoCreate();

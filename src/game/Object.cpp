@@ -2012,10 +2012,10 @@ namespace Trinity
                 float angle = i_object.GetAngle(u)-i_angle;
 
                 // move angle to range -pi ... +pi
-                while( angle > M_PI_F)
-                    angle -= 2.0f * M_PI_F;
-                while(angle < -M_PI_F)
-                    angle += 2.0f * M_PI_F;
+                while( angle > M_PI)
+                    angle -= 2.0f * M_PI;
+                while(angle < -M_PI)
+                    angle += 2.0f * M_PI;
 
                 // dist include size of u
                 float dist2d = i_object.GetDistance2d(x,y);
@@ -2038,24 +2038,26 @@ void WorldObject::GetNearPoint2D(float &x, float &y, float distance2d, float abs
     Trinity::NormalizeMapCoord(y);
 }
 
-void WorldObject::GetNearPoint(WorldObject const* searcher, float &x, float &y, float &z, float searcher_size, float distance2d, float absAngle ) const
+void WorldObject::GetNearPoint(WorldObject const* searcher, float &x, float &y, float &z, float searcher_bounding_radius, float distance2d, float absAngle) const
 {
     GetNearPoint2D(x, y, distance2d+searcher_bounding_radius, absAngle);
     z = GetPositionZ();
 
     // if detection disabled, return first point
-    if(!sWorld.getConfig(CONFIG_DETECT_POS_COLLISION))
+    if(!sWorld.getConfig(CONFIG_DETECT_POS_COLLISION) || !GetMap()->hasVMapHeight())
     {
         if (searcher)
             searcher->UpdateAllowedPositionZ(x,y,z);        // update to LOS height if available
         else
             UpdateGroundPositionZ(x,y,z);
+
         return;
     }
 
     // or remember first point
     float first_x = x;
     float first_y = y;
+
     bool first_los_conflict = false;                        // first point LOS problems
 
     // prepare selector for work
@@ -2064,7 +2066,7 @@ void WorldObject::GetNearPoint(WorldObject const* searcher, float &x, float &y, 
     // adding used positions around object
     {
         Trinity::NearUsedPosDo u_do(*this,searcher,absAngle,selector);
-        Trinity::WorldObjectWorker<Trinity::NearUsedPosDo> worker(this,u_do);
+        Trinity::WorldObjectWorker<Trinity::NearUsedPosDo> worker(u_do);
 
         Cell::VisitAllObjects(this, worker, distance2d);
     }
@@ -2077,7 +2079,7 @@ void WorldObject::GetNearPoint(WorldObject const* searcher, float &x, float &y, 
         else
             UpdateGroundPositionZ(x,y,z);
 
-        if(IsWithinLOS(x,y,z))
+        if (IsWithinLOS(x,y,z))
             return;
 
         first_los_conflict = true;                          // first point have LOS problems
@@ -2177,7 +2179,6 @@ void WorldObject::GetNearPoint(WorldObject const* searcher, float &x, float &y, 
         searcher->UpdateAllowedPositionZ(x,y,z);            // update to LOS height if available
     else
         UpdateGroundPositionZ(x,y,z);
-}
 }
 
 void WorldObject::GetGroundPoint(float &x, float &y, float &z, float dist, float angle)

@@ -6669,14 +6669,14 @@ void Spell::EffectTransmitted(uint32 effIndex)
     if(goinfo->type == GAMEOBJECT_TYPE_FISHINGNODE)
     {
         GridMapLiquidData liqData;
-        if(cMap->GetId() == 548 && m_caster->GetDistance(36.69, -416.38, -19.9645) <= 16)    //center of strange pool             // Hack to prevent fishing bobber from failing to land on fishing hole
+        /*if(cMap->GetId() == 548 && m_caster->GetDistance(36.69, -416.38, -19.9645) <= 16)    //center of strange pool             // Hack to prevent fishing bobber from failing to land on fishing hole
         {
             fx = 36.69 +irand(-8,8);
             fy = -416.38 +irand(-8,8);
             fz = -19.9645;
 
         }
-        else if ( !cMap->IsInWater(fx, fy, fz + 1.f/* -0.5f */, &liqData))           // Hack to prevent fishing bobber from failing to land on fishing hole
+        else */if (!cMap->IsInWater(fx, fy, fz + 1.f/* -0.5f */, &liqData))           // Hack to prevent fishing bobber from failing to land on fishing hole
         {
             // but this is not proper, we really need to ignore not materialized objects
             SendCastResult(SPELL_FAILED_NOT_HERE);

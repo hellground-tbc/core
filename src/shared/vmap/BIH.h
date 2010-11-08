@@ -120,9 +120,12 @@ class BIH
         {
             float intervalMin = -1.f;
             float intervalMax = -1.f;
+
             Vector3 org = r.origin();
             Vector3 dir = r.direction();
+
             Vector3 invDir;
+
             for (int i=0; i<3; ++i)
             {
                 invDir[i] = 1.f / dir[i];
@@ -145,6 +148,7 @@ class BIH
 
             if (intervalMin > intervalMax)
                 return;
+
             intervalMin = std::max(intervalMin, 0.f);
             intervalMax = std::min(intervalMax, maxDist);
 
@@ -170,7 +174,8 @@ class BIH
             int stackPos = 0;
             int node = 0;
 
-            while (true) {
+            while (true)
+            {
                 while (true)
                 {
                     uint32 tn = tree[node];
@@ -190,13 +195,15 @@ class BIH
                             int back = offset + offsetBack3[axis];
                             node = back;
                             // ray passes through far node only
-                            if (tf < intervalMin) {
+                            if (tf < intervalMin)
+                            {
                                 intervalMin = (tb >= intervalMin) ? tb : intervalMin;
                                 continue;
                             }
                             node = offset + offsetFront3[axis]; // front
                             // ray passes through near node only
-                            if (tb > intervalMax) {
+                            if (tb > intervalMax)
+                            {
                                 intervalMax = (tf <= intervalMax) ? tf : intervalMax;
                                 continue;
                             }
@@ -214,9 +221,11 @@ class BIH
                         {
                             // leaf - test some objects
                             int n = tree[node + 1];
-                            while (n > 0) {
+                            while (n > 0)
+                            {
                                 bool hit = intersectCallback(r, objects[offset], maxDist, stopAtFirst);
-                                if(stopAtFirst && hit) return;
+                                if(stopAtFirst && hit)
+                                    return;
                                 --n;
                                 ++offset;
                             }
