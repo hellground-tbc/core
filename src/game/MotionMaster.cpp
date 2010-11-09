@@ -116,7 +116,7 @@ void MotionMaster::UpdateMotion(uint32 diff)
             Initialize();
         }
         else if (needInitTop())
-        {        
+        {
             InitTop();
         }
         else if (m_cleanFlag & MMCF_RESET)
@@ -155,7 +155,7 @@ void MotionMaster::DelayedClean()
     while (size() > 1)
     {
         MovementGenerator *curr = top();
-        
+
         pop();
 
         if (curr)
@@ -168,9 +168,9 @@ void MotionMaster::DirectExpire(bool reset)
     if (size() > 1)
     {
         MovementGenerator *curr = top();
-       
+
         pop();
-        
+
         DirectDelete(curr);
     }
 
@@ -198,9 +198,9 @@ void MotionMaster::DelayedExpire()
     if (size() > 1)
     {
         MovementGenerator *curr = top();
-        
+
         pop();
-        
+
         DelayedDelete(curr);
     }
 
@@ -239,7 +239,7 @@ void MotionMaster::MoveTargetedHome()
         if (Unit *target = ((Creature*)i_owner)->GetCharmerOrOwner())
         {
             i_owner->addUnitState(UNIT_STAT_FOLLOW);
-            
+
             Mutate(new TargetedMovementGenerator<Creature>(*target,PET_FOLLOW_DIST,PET_FOLLOW_ANGLE), MOTION_SLOT_ACTIVE);
         }
     }
@@ -378,7 +378,7 @@ void MotionMaster::MoveSeekAssistance(float x, float y, float z)
     {
         i_owner->AttackStop();
         ((Creature*)i_owner)->SetReactState(REACT_PASSIVE);
-        
+
         Mutate(new AssistanceMovementGenerator(x,y,z), MOTION_SLOT_ACTIVE);
     }
 }
@@ -472,7 +472,7 @@ void MotionMaster::Mutate(MovementGenerator *m, MovementSlot slot)
         m->Initialize(*i_owner);
         needInit[slot] = false;
     }
-    
+
     Impl[slot] = m;
 }
 
@@ -527,7 +527,7 @@ void MotionMaster::DirectDelete(_Ty curr)
 void MotionMaster::DelayedDelete(_Ty curr)
 {
     sLog.outError("CRASH ALARM! Unit (Entry %u) is trying to delete its updating MG (Type %u)!", i_owner->GetEntry(), curr->GetMovementGeneratorType());
-    
+
     if (isStatic(curr))
         return;
 
@@ -542,6 +542,6 @@ bool MotionMaster::GetDestination(float &x, float &y, float &z)
    if (empty())
        return false;
 
-   return top()->GetDestination(x,y,z);
+   return top() ? top()->GetDestination(x,y,z) : false;
 }
 
