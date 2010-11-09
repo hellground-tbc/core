@@ -145,6 +145,7 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
 
     void JustSummoned(Unit *pSummon)
     {
+        /*przeniesione do OnCreatureCreate()
         if (pSummon->GetTypeId() == TYPEID_UNIT)
         {
             if (pSummon->GetEntry() == NPC_FEL_GEYSER)
@@ -152,7 +153,7 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
                 pSummon->setFaction(me->getFaction());
                 pSummon->CastSpell(pSummon, SPELL_FEL_GEYSER_AOE, false);
             }
-        }
+        }*/
     }
 
     void KilledUnit(Unit *victim)
