@@ -183,6 +183,11 @@ struct TRINITY_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
         m_checkTimer = 10000;
     }
 
+    void EnterCombat(Unit *pWho)
+    {
+        DoZoneInCombat();
+    }
+
     void DoMeleeAttackIfReady()
     {
         if (me->hasUnitState(UNIT_STAT_CASTING))
@@ -210,7 +215,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
 
         if (m_debilStrikeTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_DEBILITATIG_STRIKE, false);
+            AddSpellToCast(m_creature->getVictim(), SPELL_DEBILITATIG_STRIKE);
             m_debilStrikeTimer = 20000;
         }
         else
@@ -220,7 +225,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
         {
             if (m_creature->getVictim() && m_creature->getVictim()->hasUnitState(UNIT_STAT_CASTING))
             {
-                DoCast(m_creature->getVictim(), SPELL_SHIELD_BASH, false);
+                AddSpellToCast(m_creature->getVictim(), SPELL_SHIELD_BASH);
                 m_shieldBashTimer = 10000;
             }
         }
@@ -245,6 +250,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
         else
             m_checkTimer -= diff;
 
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };
@@ -854,6 +860,12 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
         }
     }
 
+    void DamageTaken(Unit *pDoneBy, uint32)
+    {
+        if (!me->GetLootRecipient() && pDoneBy->GetTypeId() == TYPEID_PLAYER)
+            me->SetLootRecipient(pDoneBy);
+    }
+    
     void TurnOffChanneling()
     {
         for (std::list<uint64>::const_iterator itr = m_channelers.begin(); itr != m_channelers.end(); ++itr)
