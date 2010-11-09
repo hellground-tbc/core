@@ -3046,7 +3046,7 @@ void Unit::_UpdateSpells( uint32 time )
     for (AuraMap::iterator i = m_Auras.begin(); i != m_Auras.end(); )
     {
         if ( i->second->IsExpired() )
-            RemoveAura(i);
+            RemoveAura(i, AURA_REMOVE_BY_EXPIRE);
         else
              ++i;
     }
@@ -3553,7 +3553,7 @@ bool Unit::AddAura(Aura *Aur)
 
     spellEffectPair spair = spellEffectPair(Aur->GetId(), Aur->GetEffIndex());
 
-    bool stackModified=false;
+    bool stackModified = false;
     // passive and persistent auras can stack with themselves any number of times
     if (!Aur->IsPassive() && !Aur->IsPersistent())
     {
@@ -3570,8 +3570,8 @@ bool Unit::AddAura(Aura *Aur)
 
             if(i2->second->GetId() == 31944)    //HACK check for Doomfire DoT stacking
             {
-                RemoveAura(i2,AURA_REMOVE_BY_STACK);
-                i2=m_Auras.lower_bound(spair);
+                RemoveAura(i2, AURA_REMOVE_BY_STACK);
+                i2 = m_Auras.lower_bound(spair);
                 continue;
             }
 
@@ -3591,15 +3591,15 @@ bool Unit::AddAura(Aura *Aur)
                     if(aurSpellInfo->StackAmount)
                     {
                         // prevent adding stack more than once
-                        stackModified=true;
+                        stackModified = true;
                         Aur->SetStackAmount(i2->second->GetStackAmount());
                         if(Aur->GetStackAmount() < aurSpellInfo->StackAmount)
                         {
                             Aur->SetStackAmount(Aur->GetStackAmount()+1);
                         }
                     }
-                    RemoveAura(i2,AURA_REMOVE_BY_STACK);
-                    i2=m_Auras.lower_bound(spair);
+                    RemoveAura(i2, AURA_REMOVE_BY_STACK);
+                    i2 = m_Auras.lower_bound(spair);
                     continue;
                 }
             }
@@ -3973,7 +3973,7 @@ void Unit::RemoveAurasDueToSpellBySteal(uint32 spellId, uint64 casterGUID, Unit 
         {
             int32 basePoints = aur->GetBasePoints();
             // construct the new aura for the attacker
-            Aura * new_aur = CreateAura(aur->GetSpellProto(), aur->GetEffIndex(), NULL/*&basePoints*/, stealer);
+            Aura * new_aur = CreateAura(aur->GetSpellProto(), aur->GetEffIndex(), NULL/*&basePoints*/, aur->GetCaster() ? aur->GetCaster() : stealer);
             if(!new_aur)
                 continue;
 
@@ -4250,15 +4250,16 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
 
     Aur->_RemoveAura();
 
-    bool stack = false;
+    bool stack = false || mode == AURA_REMOVE_BY_STACK;
     spellEffectPair spair = spellEffectPair(Aur->GetId(), Aur->GetEffIndex());
     for(AuraMap::const_iterator itr = GetAuras().lower_bound(spair); itr != GetAuras().upper_bound(spair); ++itr)
     {
-        if (itr->second->GetCasterGUID()==GetGUID())
+        if (itr->second->GetCasterGUID() == GetGUID())
         {
             stack = true;
         }
     }
+
     if (!stack)
     {
         // Remove all triggered by aura spells vs unlimited duration

@@ -306,7 +306,8 @@ enum AuraRemoveMode
     AURA_REMOVE_BY_STACK,                                   // at replace by semillar aura
     AURA_REMOVE_BY_CANCEL,
     AURA_REMOVE_BY_DISPEL,
-    AURA_REMOVE_BY_DEATH
+    AURA_REMOVE_BY_DEATH,
+    AURA_REMOVE_BY_EXPIRE
 };
 
 enum UnitMods

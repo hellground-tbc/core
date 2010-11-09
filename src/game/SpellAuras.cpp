@@ -2587,7 +2587,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 // Do final heal for real !apply
                 else if (Real)
                 {
-                    if (GetAuraDuration() <= 0 || m_removeMode == AURA_REMOVE_BY_DISPEL)
+                    if (m_removeMode == AURA_REMOVE_BY_EXPIRE || m_removeMode == AURA_REMOVE_BY_DISPEL)
                     {
                         // final heal
                         if (m_target->IsInWorld())
@@ -4496,7 +4496,8 @@ void Aura::HandlePeriodicTriggerSpell(bool apply, bool Real)
             }
             case 42783: // Wrath of the Astromancer
             {
-                m_target->CastSpell(m_target, 42787, true, 0, this);
+                if (m_removeMode == AURA_REMOVE_BY_EXPIRE)
+                    m_target->CastSpell(m_target, 42787, true, 0, this);
                 break;
             }
             case 35460: // Fury of the Dreghood Elders
@@ -6089,7 +6090,7 @@ void Aura::CleanupTriggeredSpells()
 {
     if(spellmgr.GetSpellElixirMask(m_spellProto->Id) & ELIXIR_SHATTRATH_MASK)
     {
-        m_target->RemoveAurasDueToSpell( m_spellProto->EffectTriggerSpell[1]);  // remove triggered effect of shattrath flask, when removing it
+        m_target->RemoveAurasDueToSpell(m_spellProto->EffectTriggerSpell[1]);  // remove triggered effect of shattrath flask, when removing it
         return;
     }
 
