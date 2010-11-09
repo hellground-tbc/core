@@ -148,7 +148,10 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
         if (pSummon->GetTypeId() == TYPEID_UNIT)
         {
             if (pSummon->GetEntry() == NPC_FEL_GEYSER)
+            {
+                pSummon->setFaction(me->getFaction());
                 pSummon->CastSpell(pSummon, SPELL_FEL_GEYSER_AOE, false);
+            }
         }
     }
 
@@ -214,6 +217,8 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
             if (Unit *pTarget = Unit::GetUnit(*m_creature, m_targetGUID))
             {
                 m_targetGUID = 0;
+                pTarget->RemoveAurasDueToSpell(SPELL_INSIGNIFIGANCE);
+                me->RemoveAurasDueToSpell(SPELL_INSIGNIFIGANCE);
                 if(DoGetThreat(pTarget))
                     DoModifyThreatPercent(pTarget, -100);
 
