@@ -240,6 +240,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
             case 22848:
                 AshtongueBrokenList.push_back(creature->GetGUID());
                 ashtongueBroken = true;
+                break;
             case 23254: //Fel Geyser
                 creature->CastSpell(creature, 40593, false);
                 break;
