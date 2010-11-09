@@ -212,29 +212,40 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
 
     const char* Save()
     {
-        std::ostringstream ss;
-        ss << "S " << BossKilled << " " << ChestLooted << " " << QuestMinute;
-        char* data = new char[ss.str().length()+1];
-        strcpy(data, ss.str().c_str());
-        //error_log("TSCR: Zul'aman saved, %s.", data);
-        return data;
+        OUT_SAVE_INST_DATA;
+
+        std::ostringstream stream;
+        stream << Encounters[0]  << " " << Encounters[1] << " " << Encounters[2] << " " << Encounters[3]  << " " <<
+                Encounters[4] << " " << Encounters[5] << " " << BossKilled << " " << ChestLooted << " " << QuestMinute;
+
+        char* out = new char[stream.str().length() + 1];
+        strcpy(out, stream.str().c_str());
+        if(out)
+        {
+            OUT_SAVE_INST_DATA_COMPLETE;
+            return out;
+        }
+        return NULL;
     }
 
-    void Load(const char* load)
+    void Load(const char* in)
     {
-        if(!load) return;
-        std::istringstream ss(load);
-        //error_log("TSCR: Zul'aman loaded, %s.", ss.str().c_str());
-        char dataHead; // S
-        uint16 data1, data2, data3;
-        ss >> dataHead >> data1 >> data2 >> data3;
-        //error_log("TSCR: Zul'aman loaded, %d %d %d.", data1, data2, data3);
-        if(dataHead == 'S')
+        if (!in)
         {
-            BossKilled = data1;
-            ChestLooted = data2;
-            QuestMinute = data3;
-        }else error_log("TSCR: Zul'aman: corrupted save data.");
+            OUT_LOAD_INST_DATA_FAIL;
+            return;
+        }
+
+        OUT_LOAD_INST_DATA(in);
+        std::istringstream loadStream(in);
+        loadStream >> Encounters[0] >> Encounters[1] >> Encounters[2] >> Encounters[3] >> Encounters[4] >>
+                Encounters[5] >> BossKilled >> ChestLooted >> QuestMinute;
+
+        for(uint8 i = 0; i < ENCOUNTERS; ++i)
+            if (Encounters[i] == IN_PROGRESS)
+                Encounters[i] = NOT_STARTED;
+
+        OUT_LOAD_INST_DATA_COMPLETE;
     }
 
     void SetData(uint32 type, uint32 data)
@@ -242,7 +253,8 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
         switch(type)
         {
         case DATA_NALORAKKEVENT:
-            Encounters[0] = data;
+            if (Encounters[0] != DONE)
+                Encounters[0] = data;
             if(data == DONE)
             {
                 if(QuestMinute)
@@ -254,8 +266,11 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
             }
             break;
         case DATA_AKILZONEVENT:
-            Encounters[1] = data;
+            if (Encounters[1] != DONE)
+                Encounters[1] = data;
+
             OpenDoor(AkilzonDoorGUID, data != IN_PROGRESS);
+
             if(data == DONE)
             {
                 if(QuestMinute)
@@ -267,23 +282,34 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
             }
             break;
         case DATA_JANALAIEVENT:
-            Encounters[2] = data;
-            if(data == DONE) SummonHostage(2);
+            if (Encounters[2] != DONE)
+                Encounters[2] = data;
+
+            if(data == DONE)
+                SummonHostage(2);
             break;
         case DATA_HALAZZIEVENT:
-            Encounters[3] = data;
+            if (Encounters[3] != DONE)
+                Encounters[3] = data;
+
             OpenDoor(HalazziDoorGUID, data != IN_PROGRESS);
-            if(data == DONE) SummonHostage(3);
+
+            if(data == DONE)
+                SummonHostage(3);
             break;
         case DATA_HEXLORDEVENT:
-            Encounters[4] = data;
+            if (Encounters[4] != DONE)
+                Encounters[4] = data;
+
             if(data == IN_PROGRESS)
                 OpenDoor(HexLordGateGUID, false);
             else if(data == NOT_STARTED)
                 CheckInstanceStatus();
             break;
         case DATA_ZULJINEVENT:
-            Encounters[5] = data;
+            if (Encounters[5] != DONE)
+                Encounters[5] = data;
+
             OpenDoor(ZulJinDoorGUID, data != IN_PROGRESS);
             break;
         case DATA_CHESTLOOTED:
@@ -315,16 +341,16 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
     {
         switch(type)
         {
-        case DATA_NALORAKKEVENT: return Encounters[0];
-        case DATA_AKILZONEVENT:  return Encounters[1];
-        case DATA_JANALAIEVENT:  return Encounters[2];
-        case DATA_HALAZZIEVENT:  return Encounters[3];
-        case DATA_HEXLORDEVENT:  return Encounters[4];
-        case DATA_ZULJINEVENT:   return Encounters[5];
-        case DATA_CHESTLOOTED:   return ChestLooted;
-        case TYPE_RAND_VENDOR_1: return RandVendor[0];
-        case TYPE_RAND_VENDOR_2: return RandVendor[1];
-        default:                 return 0;
+            case DATA_NALORAKKEVENT: return Encounters[0];
+            case DATA_AKILZONEVENT:  return Encounters[1];
+            case DATA_JANALAIEVENT:  return Encounters[2];
+            case DATA_HALAZZIEVENT:  return Encounters[3];
+            case DATA_HEXLORDEVENT:  return Encounters[4];
+            case DATA_ZULJINEVENT:   return Encounters[5];
+            case DATA_CHESTLOOTED:   return ChestLooted;
+            case TYPE_RAND_VENDOR_1: return RandVendor[0];
+            case TYPE_RAND_VENDOR_2: return RandVendor[1];
+            default:                 return 0;
         }
     }
 
