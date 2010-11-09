@@ -52,6 +52,43 @@ EndScriptData */
 #define SPELL_PRISMATIC_SHIELD  40879
 #define SPELL_SABER_LASH_AURA   40816
 
+float positions[34][2] =
+{
+    {927.979, 181.61},
+    {942.904, 181.996},
+    {956.791, 180.219},
+    {972.212, 186.743},
+    {961.126, 195.864},
+    {947.358, 192.311},
+    {932.846, 191.636},
+    {931.008, 202.818},
+    {940.404, 206.899},
+    {951.583, 205.207},
+    {961.637, 207.041},
+    {966.439, 219.553},
+    {955.098, 218.286},
+    {945.183, 220.835},
+    {927.697, 220.758},
+    {926.898, 231.017},
+    {939.866, 233.547},
+    {961.485, 234.489},
+    {976.464, 240.407},
+    {967.097, 248.814},
+    {952.011, 251.172},
+    {943.619, 250.804},
+    {933.353, 250.352},
+    {920.665, 247.924},
+    {919.703, 262.54},
+    {937.174, 262.04},
+    {946.208, 258.092},
+    {955.213, 262.29},
+    {971.454, 261.922},
+    {970.511, 271.813},
+    {958.936, 272.276},
+    {947.011, 271.858},
+    {938.205, 271.412},
+    {929.774, 262.897}
+};
 
 struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
 {
@@ -63,6 +100,7 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
 
     ScriptedInstance* pInstance;
 
+    uint8 position;
     uint32 BeamTimer;
     uint32 BeamCount;
     uint32 CurrentBeam;
@@ -77,6 +115,18 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
 
     bool Enraged;
 
+    void SpellHitTarget(Unit *pTarget, const SpellEntry *pSpell)
+    {
+        if (pSpell->Id == SPELL_FATAL_ATTRACTION)
+        {
+            float x = positions[position][0];
+            float y = positions[position][1];
+            float z = 192.82;
+
+            ((Player *)pTarget)->TeleportTo(pTarget->GetMapId(), x, y, z, 0.0f, TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET);
+        }
+    }
+
     void Reset()
     {
         if (pInstance)
@@ -88,10 +138,12 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         FatalAttractionTimer = 60000;
         ShriekTimer = 30000;
         SaberTimer = 35000;
-        RandomYellTimer = 70000 + rand()%41 * 1000;
+        RandomYellTimer = urand(70000, 111000);
         EnrageTimer = 600000;
 
         CheckTimer = 1000;
+
+        position = 0;
 
         Enraged = false;
     }
@@ -131,6 +183,7 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         if (CheckTimer < diff)
         {
             DoZoneInCombat();
+            me->SetSpeed(MOVE_RUN, 3.0);
             CheckTimer = 2000;
         }
         else
@@ -145,8 +198,8 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         //Randomly cast one beam.
         if (BeamTimer < diff)
         {
-            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true);
-            if (!target)
+            Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true);
+            if (!pTarget)
                 return;
 
             BeamTimer = 9000;
@@ -154,23 +207,31 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
             switch (CurrentBeam)
             {
                 case 0:
-                    DoCast(target, SPELL_BEAM_SINISTER);
+                    AddSpellToCast(pTarget, SPELL_BEAM_SINISTER);
+                    BeamCount++;
                     break;
                 case 1:
-                    DoCast(target, SPELL_BEAM_VILE);
+                    AddSpellToCast(pTarget, SPELL_BEAM_VILE);
+                    BeamCount++;
                     break;
                 case 2:
-                    DoCast(target, SPELL_BEAM_WICKED);
+                    AddSpellToCast(pTarget, SPELL_BEAM_WICKED);
+                    BeamCount++;
                     break;
                 case 3:
-                    DoCast(target, SPELL_BEAM_SINFUL);
+                    AddSpellToCast(pTarget, SPELL_BEAM_SINFUL);
+                    BeamCount++;
                     break;
             }
-            BeamCount++;
-            uint32 Beam = CurrentBeam;
+
             if (BeamCount > 3)
-                while(CurrentBeam == Beam)
-                    CurrentBeam = rand()%3;
+            {
+                uint32 Beam = CurrentBeam;
+                while (CurrentBeam == Beam)
+                    CurrentBeam = urand(0, 3);
+
+                BeamCount = 0;
+            }
         }
         else
             BeamTimer -= diff;
@@ -178,8 +239,9 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         // Select 3 random targets (can select same target more than once), teleport to a random location then make them cast explosions until they get away from each other.
         if (FatalAttractionTimer < diff)
         {
+            position = urand(0, 33);            
             ForceSpellCastWithScriptText(m_creature, SPELL_FATAL_ATTRACTION, RAND(SAY_SPELL2, SAY_SPELL3), INTERRUPT_AND_CAST_INSTANTLY);
-            FatalAttractionTimer = 40000 + rand()%31 * 1000;
+            FatalAttractionTimer = urand(40000, 71000);
         }
         else
             FatalAttractionTimer -= diff;
@@ -187,7 +249,7 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         if (ShriekTimer < diff)
         {
             AddSpellToCast(m_creature->getVictim(), SPELL_SILENCING_SHRIEK);
-            ShriekTimer = 25000 +rand()%101000;
+            ShriekTimer = urand(25000, 126000);
         }
         else
             ShriekTimer -= diff;
@@ -211,7 +273,7 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         if (RandomYellTimer < diff)
         {
             DoScriptText(RAND(SAY_TAUNT1, SAY_TAUNT2, SAY_TAUNT3), m_creature);
-            RandomYellTimer = 60000 +rand()%91000;
+            RandomYellTimer = urand(60000, 151000);
         }
         else
             RandomYellTimer -= diff;
