@@ -3973,7 +3973,7 @@ void Unit::RemoveAurasDueToSpellBySteal(uint32 spellId, uint64 casterGUID, Unit 
         {
             int32 basePoints = aur->GetBasePoints();
             // construct the new aura for the attacker
-            Aura * new_aur = CreateAura(aur->GetSpellProto(), aur->GetEffIndex(), NULL/*&basePoints*/, aur->GetCaster() ? aur->GetCaster() : stealer);
+            Aura * new_aur = CreateAura(aur->GetSpellProto(), aur->GetEffIndex(), NULL/*&basePoints*/, stealer);
             if(!new_aur)
                 continue;
 
