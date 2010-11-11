@@ -34,36 +34,26 @@ EndScriptData */
 #define GOSSIP_ITEM           "We are ready to face Illidan"
 
 // Yells for/by Akama
-#define SAY_AKAMA_BEWARE      "Be wary friends, The Betrayer meditates in the court just beyond."
-#define SOUND_AKAMA_BEWARE    11388
-#define SAY_AKAMA_MINION      "Come, my minions. Deal with this traitor as he deserves!"
-#define SOUND_AKAMA_MINION    11465
-#define SAY_AKAMA_LEAVE       "I'll deal with these mongrels. Strike now, friends! Strike at the betrayer!"
-#define SOUND_AKAMA_LEAVE     11390
+#define SAY_AKAMA_BEWARE      -1999988
+#define SAY_AKAMA_MINION      -1999989
+#define SAY_AKAMA_LEAVE       -1999990
 
 // Self explanatory
-#define SAY_KILL1             "Who shall be next to taste my blades?!"
-#define SOUND_KILL1           11473
-#define SAY_KILL2             "This is too easy!"
-#define SOUND_KILL2           11472
+#define SAY_KILL1             -1999991
+#define SAY_KILL2             -1999992
 
 // I think I'll fly now and let my subordinates take you on
-#define SAY_TAKEOFF           "I will not be touched by rabble such as you!"
-#define SOUND_TAKEOFF         11479
-#define SAY_SUMMONFLAMES      "Behold the flames of Azzinoth!"
-#define SOUND_SUMMONFLAMES    11480
+#define SAY_TAKEOFF           -1999993
+#define SAY_SUMMONFLAMES      -1999994
 
 // When casting Eye Blast. Demon Fire will be appear on places that he casts this
-#define SAY_EYE_BLAST         "Stare into the eyes of the Betrayer!"
-#define SOUND_EYE_BLAST       11481
+#define SAY_EYE_BLAST         -1999995
 
 // kk, I go big, dark and demon on you.
-#define SAY_MORPH             "Behold the power... of the demon within!"
-#define SOUND_MORPH           11475
+#define SAY_MORPH             -1999996
 
 // I KILL!
-#define SAY_ENRAGE            "You've wasted too much time mortals, now you shall fall!"
-#define SOUND_ENRAGE          11474
+#define SAY_ENRAGE            -1999997
 
 /************** Spells *************/
 // Normal Form
@@ -458,22 +448,13 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
         }
     }
 
-    void KilledUnit(Unit *victim)
+    void KilledUnit(Unit *pVictim)
     {
-        if(victim == m_creature) return;
+        if(pVictim == m_creature)
+            return;
 
-        switch(rand()%2)
-        {
-        case 0:
-            DoYell(SAY_KILL1, LANG_UNIVERSAL, victim);
-            DoPlaySoundToSet(m_creature, SOUND_KILL1);
-            break;
-        case 1:
-            DoYell(SAY_KILL2, LANG_UNIVERSAL, victim);
-            DoPlaySoundToSet(m_creature, SOUND_KILL2);
-            break;
-        }
-    }
+        DoScriptText(RAND(SAY_KILL1, SAY_KILL2), me);
+     }
 
     void DamageTaken(Unit *done_by, uint32 &damage)
     {
@@ -543,8 +524,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
             m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
             m_creature->SetUnitMovementFlags(MOVEMENTFLAG_LEVITATING | MOVEMENTFLAG_ONTRANSPORT);
             m_creature->StopMoving();
-            DoYell(SAY_TAKEOFF, LANG_UNIVERSAL, NULL);
-            DoPlaySoundToSet(m_creature, SOUND_TAKEOFF);
+            DoScriptText(SAY_TAKEOFF, me);
             Timer[EVENT_FLIGHT_SEQUENCE] = 3000;
             break;
         case 2://move to center
@@ -747,8 +727,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
             {
                 //PHASE_NORMAL
             case EVENT_BERSERK:
-                DoYell(SAY_ENRAGE, LANG_UNIVERSAL, NULL);
-                DoPlaySoundToSet(m_creature, SOUND_ENRAGE);
+                DoScriptText(SAY_ENRAGE, me);
                 DoCast(m_creature, SPELL_BERSERK, true);
                 Timer[EVENT_BERSERK] = 5000;//The buff actually lasts forever.
                 break;
@@ -1214,14 +1193,12 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
             if(GETCRE(Illidan, IllidanGUID))
             {
                 ((boss_illidan_stormrageAI*)Illidan->AI())->Timer[EVENT_TAUNT] += 30000;
-                Illidan->Yell(SAY_AKAMA_MINION, LANG_UNIVERSAL, 0);
-                DoPlaySoundToSet(Illidan, SOUND_AKAMA_MINION);
+                DoScriptText(SAY_AKAMA_MINION, Illidan);
             }
             Timer = 8000;
             break;
         case 1:
-            DoYell(SAY_AKAMA_LEAVE, LANG_UNIVERSAL, NULL);
-            DoPlaySoundToSet(m_creature, SOUND_AKAMA_LEAVE);
+            DoScriptText(SAY_AKAMA_LEAVE, me);
             Timer = 3000;
             break;
         case 2:
@@ -1273,8 +1250,7 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
             Timer = 2000;
             break;
         case 5:
-            DoYell(SAY_AKAMA_BEWARE, LANG_UNIVERSAL, NULL);
-            DoPlaySoundToSet(m_creature, SOUND_AKAMA_BEWARE);
+            DoScriptText(SAY_AKAMA_BEWARE, me);
             Channel->setDeathState(JUST_DIED);
             Spirit[0]->SetVisibility(VISIBILITY_OFF);
             Spirit[1]->SetVisibility(VISIBILITY_OFF);
@@ -2019,8 +1995,7 @@ void boss_illidan_stormrageAI::CastEyeBlast()
 {
     m_creature->InterruptNonMeleeSpells(false);
 
-    DoYell(SAY_EYE_BLAST, LANG_UNIVERSAL, NULL);
-    DoPlaySoundToSet(m_creature, SOUND_EYE_BLAST);
+    DoScriptText(SAY_EYE_BLAST, me);
 
     float distx, disty, dist[2];
     for(uint8 i = 0; i < 2; ++i)
@@ -2055,8 +2030,7 @@ void boss_illidan_stormrageAI::CastEyeBlast()
 
 void boss_illidan_stormrageAI::SummonFlamesOfAzzinoth()
 {
-    DoYell(SAY_SUMMONFLAMES, LANG_UNIVERSAL, NULL);
-    DoPlaySoundToSet(m_creature, SOUND_SUMMONFLAMES);
+    DoScriptText(SAY_SUMMONFLAMES, me);
 
     for(uint8 i = 0; i < 2; ++i)
     {
@@ -2154,8 +2128,7 @@ void boss_illidan_stormrageAI::EnterPhase(PhaseIllidan NextPhase)
         {
             TransformCount = 0;
             Timer[EVENT_TRANSFORM_SEQUENCE] = 500;
-            DoYell(SAY_MORPH, LANG_UNIVERSAL, NULL);
-            DoPlaySoundToSet(m_creature, SOUND_MORPH);
+            DoScriptText(SAY_MORPH, me);
         }
         m_creature->GetMotionMaster()->Clear();
         m_creature->AttackStop();
