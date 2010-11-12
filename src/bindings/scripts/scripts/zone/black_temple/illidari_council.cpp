@@ -231,7 +231,7 @@ struct TRINITY_DLL_DECL mob_illidari_councilAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!pInstance->GetData(DATA_ILLIDARICOUNCILEVENT) != IN_PROGRESS)
+        if (pInstance->GetData(DATA_ILLIDARICOUNCILEVENT) != IN_PROGRESS)
             return;
 
         if (m_endTimer)
@@ -245,6 +245,9 @@ struct TRINITY_DLL_DECL mob_illidari_councilAI : public ScriptedAI
 
                     pInstance->SetData(DATA_ILLIDARICOUNCILEVENT, DONE);
                     
+                    //ENABE IT LATER !
+                    //m_creature->SummonCreature(23089, 746.466980f, 304.394989f, 311.90208f, 6.272870f, TEMPSUMMON_DEAD_DESPAWN, 0);
+
                     m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                     return;
                 }
@@ -780,6 +783,7 @@ struct TRINITY_DLL_DECL boss_veras_darkshadowAI : public illidari_council_baseAI
         if (spell->Id == SPELL_DEADLY_POISON)
         {
             m_envenomGUID = pTarget->GetGUID();
+            DoStartMovement(pTarget);
             m_envenomTimer = 3000;
         }
     }
@@ -803,8 +807,8 @@ struct TRINITY_DLL_DECL boss_veras_darkshadowAI : public illidari_council_baseAI
             {
                 DoResetThreat();
 
-                AddSpellToCast(me, SPELL_VANISH);
-                AddSpellToCast(me, SPELL_DEADLY_POISON_T);
+                ForceSpellCast(me, SPELL_VANISH, INTERRUPT_AND_CAST_INSTANTLY);
+                ForceSpellCast(me, SPELL_DEADLY_POISON_T, INTERRUPT_AND_CAST_INSTANTLY);
                 m_vanishTimer = 30000;
 
                 if(Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
@@ -815,7 +819,6 @@ struct TRINITY_DLL_DECL boss_veras_darkshadowAI : public illidari_council_baseAI
             else
                 m_vanishTimer -= diff;
 
-            CastNextSpellIfAnyAndReady();
             DoMeleeAttackIfReady();
         }
         else
@@ -833,7 +836,7 @@ struct TRINITY_DLL_DECL boss_veras_darkshadowAI : public illidari_council_baseAI
             {
                 if (m_envenomGUID)
                 {
-                    if(Unit *pTarget = me->GetUnit(*me, m_envenomGUID))
+                    if(Unit *pTarget = me->GetUnit(m_envenomGUID))
                     {
                         AddSpellToCast(pTarget, SPELL_ENVENOM);
                         m_envenomGUID = 0;
