@@ -147,133 +147,36 @@ enum CreatureEntry
     CAGE_TRAP_TRIGGER       =   23292,
 };
 
-/*** Phase Names ***/
-enum PhaseIllidan
-{
-    PHASE_ILLIDAN_NULL          =   0,
-    PHASE_NORMAL                =   1,
-    PHASE_FLIGHT                =   2,
-    PHASE_NORMAL_2              =   3,
-    PHASE_DEMON                 =   4,
-    PHASE_NORMAL_MAIEV          =   5,
-    PHASE_TALK_SEQUENCE         =   6,
-    PHASE_FLIGHT_SEQUENCE       =   7,
-    PHASE_TRANSFORM_SEQUENCE    =   8,
-    PHASE_ILLIDAN_MAX           =   9,
-};//Maiev uses the same phase
-
-enum PhaseAkama
-{
-    PHASE_AKAMA_NULL        =   0,
-    PHASE_CHANNEL           =   1,
-    PHASE_WALK              =   2,
-    PHASE_TALK              =   3,
-    PHASE_FIGHT_ILLIDAN     =   4,
-    PHASE_FIGHT_MINIONS     =   5,
-    PHASE_RETURN            =   6,
-};
-
-enum EventIllidan
-{
-    EVENT_NULL                  =   0,
-    EVENT_BERSERK               =   1,
-    //normal phase
-    EVENT_TAUNT                 =   2,
-    EVENT_SHEAR                 =   3,
-    EVENT_FLAME_CRASH           =   4,
-    EVENT_PARASITIC_SHADOWFIEND =   5,
-    EVENT_PARASITE_CHECK        =   6,
-    EVENT_DRAW_SOUL             =   7,
-    EVENT_AGONIZING_FLAMES      =   8,
-    EVENT_TRANSFORM_NORMAL      =   9,
-    EVENT_ENRAGE                =   10,
-    //flight phase
-    EVENT_FIREBALL              =   2,
-    EVENT_DARK_BARRAGE          =   3,
-    EVENT_EYE_BLAST             =   4,
-    EVENT_MOVE_POINT            =   5,
-    //demon phase
-    EVENT_SHADOW_BLAST          =   2,
-    EVENT_FLAME_BURST           =   3,
-    EVENT_SHADOWDEMON           =   4,
-    EVENT_TRANSFORM_DEMON       =   5,
-    //sequence phase
-    EVENT_TALK_SEQUENCE         =   2,
-    EVENT_FLIGHT_SEQUENCE       =   2,
-    EVENT_TRANSFORM_SEQUENCE    =   2,
-};
-
-enum EventMaiev
-{
-    EVENT_MAIEV_NULL            =   0,
-    EVENT_MAIEV_STEALTH         =   1,
-    EVENT_MAIEV_TAUNT           =   2,
-    EVENT_MAIEV_SHADOW_STRIKE   =   3,
-    EVENT_MAIEV_THROW_DAGGER    =   4,
-    EVENT_MAIEV_TRAP            =   4,
-};
-
-static EventIllidan MaxTimer[]=
-{
-    EVENT_NULL,
-    EVENT_DRAW_SOUL,
-    EVENT_MOVE_POINT,
-    EVENT_TRANSFORM_NORMAL,
-    EVENT_TRANSFORM_DEMON,
-    EVENT_ENRAGE,
-    EVENT_TALK_SEQUENCE,
-    EVENT_FLIGHT_SEQUENCE,
-    EVENT_TRANSFORM_SEQUENCE
-};
-
 struct Yells
 {
-    uint32 sound;
-    char* text;
-    uint32 creature, timer, emote;
-    bool Talk;
+    int32 entry;
+    uint32 creature, timer;
 };
 
 static Yells Conversation[]=
 {
-    {11463, "Akama... your duplicity is hardly surprising. I should have slaughtered you and your malformed brethren long ago.", ILLIDAN_STORMRAGE, 8000, 0, true},
-    {0, NULL, ILLIDAN_STORMRAGE, 5000, 396, true},
-    {11389, "We've come to end your reign, Illidan. My people and all of Outland shall be free!", AKAMA, 7000, 25, true},
-    {0, NULL, AKAMA, 5000, 66, true},
-    {11464, "Boldly said. But I remain unconvinced.", ILLIDAN_STORMRAGE, 8000, 396, true},
-    {11380, "The time has come! The moment is at hand!", AKAMA, 3000, 22, true},
-    {0, NULL, AKAMA, 2000, 15, true},
-    {11466, "You are not prepared!", ILLIDAN_STORMRAGE, 3000, 406, true},
-    {0, NULL, EMPTY, 1000, 0, true},
-    {0, NULL, EMPTY, 0, 0, false},//9
-    {11476, "Is this it, mortals? Is this all the fury you can muster?", ILLIDAN_STORMRAGE, 8000, 0, true},
-    {11491, "Their fury pales before mine, Illidan. We have some unsettled business between us.", MAIEV_SHADOWSONG, 8000, 5, true},
-    {11477, "Maiev... How is this even possible?", ILLIDAN_STORMRAGE, 5000, 1, true},
-    {11492, "Ah... my long hunt is finally over. Today, Justice will be done!", MAIEV_SHADOWSONG, 8000, 15, true},
-    {11470, "Feel the hatred of ten thousand years!", ILLIDAN_STORMRAGE, 1000, 0, false},//14
-    {11496, "Ahh... It is finished. You are beaten.", MAIEV_SHADOWSONG, 6000, 0, true},//15
-    {11478, "You have won... Maiev...but the huntress... is nothing...without the hunt... you... are nothing... without me..", ILLIDAN_STORMRAGE, 30000, 65, true}, // Emote dead for now. Kill him later
-    {11497, "He is right. I feel nothing... I am nothing... Farewell, champions.", MAIEV_SHADOWSONG, 9000, 0, true},
-    {11498, NULL, MAIEV_SHADOWSONG, 5000, 0, true},
-    {11498, NULL, EMPTY, 1000, 0, true},//19 Maiev disappear
-    {11387, "The Light will fill these dismal halls once again. I swear it.", AKAMA, 8000, 0, true},
-    {0, NULL, EMPTY, 1000, 0, false}//21
-};
-
-static Yells RandomTaunts[]=
-{
-    {11467, "I can feel your hatred.", ILLIDAN_STORMRAGE, 0, 0, false},
-    {11468, "Give in to your fear!", ILLIDAN_STORMRAGE, 0, 0, false},
-    {11469, "You know nothing of power!", ILLIDAN_STORMRAGE, 0, 0, false},
-    {11471, "Such... arrogance!", ILLIDAN_STORMRAGE, 0, 0, false}
-};
-
-static Yells MaievTaunts[]=
-{
-    {11493, "That is for Naisha!", MAIEV_SHADOWSONG, 0, false},
-    {11494, "Bleed as I have bled!", MAIEV_SHADOWSONG, 0, 0, false},
-    {11495, "There shall be no prison for you this time!", MAIEV_SHADOWSONG, 0, 0, false},
-    {11500, "Meet your end, demon!", MAIEV_SHADOWSONG, 0, 0, false}
+    { -1999998, ILLIDAN_STORMRAGE, 8000},
+    { -2000012, ILLIDAN_STORMRAGE, 5000},
+    { -1999999, AKAMA, 7000},
+    { -2000013, AKAMA, 5000},
+    { -2000000, ILLIDAN_STORMRAGE, 8000},
+    { -2000001, AKAMA, 3000},
+    { -2000014, AKAMA, 2000},
+    { -2000002, ILLIDAN_STORMRAGE, 3000},
+    {        0, EMPTY, 1000},
+    {        0, EMPTY, 0},//9
+    { -2000003, ILLIDAN_STORMRAGE, 8000},
+    { -2000004, MAIEV_SHADOWSONG, 8000},
+    { -2000005, ILLIDAN_STORMRAGE, 5000},
+    { -2000006, MAIEV_SHADOWSONG, 8000},
+    { -2000007, ILLIDAN_STORMRAGE, 1000},//14
+    { -2000008, MAIEV_SHADOWSONG, 6000},//15
+    { -2000009, ILLIDAN_STORMRAGE, 30000}, // Emote dead for now. Kill him later
+    { -2000010, MAIEV_SHADOWSONG, 9000},
+    { -2000015, MAIEV_SHADOWSONG, 5000},
+    {        0, EMPTY, 1000},//19 Maiev disappear
+    { -2000011, AKAMA, 8000},
+    {        0, EMPTY, 1000}//21
 };
 
 struct Locations
@@ -346,8 +249,71 @@ static Animation DemonTransformation[]=
     {0, SPELL_DEMON_TRANSFORM_3, 0, 0, 0, 8, true}
 };
 
+enum IllidanTaunts
+{
+    ILLIDAN_TAUNT_NO1 = -2000016,
+    ILLIDAN_TAUNT_NO2 = -2000017,
+    ILLIDAN_TAUNT_NO3 = -2000018,
+    ILLIDAN_TAUNT_NO4 = -2000019
+};
 
+/*** Phase Names ***/
+enum IllidanPhase
+{
+    PHASE_ILLIDAN_NULL          =   0,
+    PHASE_NORMAL                =   1,
+    PHASE_FLIGHT                =   2,
+    PHASE_NORMAL_2              =   3,
+    PHASE_DEMON                 =   4,
+    PHASE_NORMAL_MAIEV          =   5,
+    PHASE_TALK_SEQUENCE         =   6,
+    PHASE_FLIGHT_SEQUENCE       =   7,
+    PHASE_TRANSFORM_SEQUENCE    =   8,
+    PHASE_ILLIDAN_MAX           =   9,
+};
 
+enum IllidanEvent
+{
+    EVENT_NULL                  =   0,
+    EVENT_BERSERK               =   1,
+    //normal phase
+    EVENT_TAUNT                 =   2,
+    EVENT_SHEAR                 =   3,
+    EVENT_FLAME_CRASH           =   4,
+    EVENT_PARASITIC_SHADOWFIEND =   5,
+    EVENT_PARASITE_CHECK        =   6,
+    EVENT_DRAW_SOUL             =   7,
+    EVENT_AGONIZING_FLAMES      =   8,
+    EVENT_TRANSFORM_NORMAL      =   9,
+    EVENT_ENRAGE                =   10,
+    //flight phase
+    EVENT_FIREBALL              =   2,
+    EVENT_DARK_BARRAGE          =   3,
+    EVENT_EYE_BLAST             =   4,
+    EVENT_MOVE_POINT            =   5,
+    //demon phase
+    EVENT_SHADOW_BLAST          =   2,
+    EVENT_FLAME_BURST           =   3,
+    EVENT_SHADOWDEMON           =   4,
+    EVENT_TRANSFORM_DEMON       =   5,
+    //sequence phase
+    EVENT_TALK_SEQUENCE         =   2,
+    EVENT_FLIGHT_SEQUENCE       =   2,
+    EVENT_TRANSFORM_SEQUENCE    =   2,
+};
+
+static IllidanEvent MaxTimer[]=
+{
+    EVENT_NULL,
+    EVENT_DRAW_SOUL,
+    EVENT_MOVE_POINT,
+    EVENT_TRANSFORM_NORMAL,
+    EVENT_TRANSFORM_DEMON,
+    EVENT_ENRAGE,
+    EVENT_TALK_SEQUENCE,
+    EVENT_FLIGHT_SEQUENCE,
+    EVENT_TRANSFORM_SEQUENCE
+};
 /************************************** Illidan's AI ***************************************/
 struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
 {
@@ -359,8 +325,8 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
 
     ScriptedInstance* pInstance;
 
-    PhaseIllidan Phase;
-    EventIllidan Event;
+    IllidanPhase m_phase;
+    IllidanEvent m_event;
     uint32 Timer[EVENT_ENRAGE + 1];
 
     uint32 TalkCount;
@@ -388,7 +354,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
                 if(summon->GetGUID() == FlameGUID[i])
                     FlameGUID[i] = 0;
 
-            if(!FlameGUID[0] && !FlameGUID[1] && Phase != PHASE_ILLIDAN_NULL)
+            if(!FlameGUID[0] && !FlameGUID[1] && m_phase != PHASE_ILLIDAN_NULL)
             {
                 m_creature->InterruptNonMeleeSpells(true);
                 EnterPhase(PHASE_FLIGHT_SEQUENCE);
@@ -420,10 +386,10 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
 
     void AttackStart(Unit *who)
     {
-        if(!who || Phase >= PHASE_TALK_SEQUENCE)
+        if(!who || m_phase >= PHASE_TALK_SEQUENCE)
             return;
 
-        if(Phase == PHASE_FLIGHT || Phase == PHASE_DEMON)
+        if(m_phase == PHASE_FLIGHT || m_phase == PHASE_DEMON)
             AttackStartNoMove(who);
         else
             ScriptedAI::AttackStart(who);
@@ -500,18 +466,10 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
         else if(Conversation[count].creature == MAIEV_SHADOWSONG)
             creature = (Unit::GetCreature((*m_creature), MaievGUID));
 
-        if(creature)
-        {
-            if(Conversation[count].emote)
-                creature->HandleEmoteCommand(Conversation[count].emote); // Make the creature do some animation!
-            if(Conversation[count].text)
-                creature->Yell(Conversation[count].text, LANG_UNIVERSAL, 0); // Have the creature yell out some text
-            if(Conversation[count].sound)
-                DoPlaySoundToSet(creature, Conversation[count].sound); // Play some sound on the creature
-        }
+        DoScriptText(Conversation[count].entry, creature);
     }
 
-    void EnterPhase(PhaseIllidan NextPhase);
+    void EnterPhase(IllidanPhase m_nextPhase);
     void CastEyeBlast();
     void SummonFlamesOfAzzinoth();
     void SummonMaiev();
@@ -663,29 +621,29 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
         default:
             break;
         }
-        if(Phase == PHASE_TRANSFORM_SEQUENCE)
+        if(m_phase == PHASE_TRANSFORM_SEQUENCE)
             Timer[EVENT_TRANSFORM_SEQUENCE] = DemonTransformation[TransformCount].timer;
         TransformCount++;
     }
 
     void UpdateAI(const uint32 diff)
     {
-        if((!UpdateVictim()) && Phase < PHASE_TALK_SEQUENCE)
+        if((!UpdateVictim()) && m_phase < PHASE_TALK_SEQUENCE)
             return;
 
-        Event = EVENT_NULL;
-        for(uint32 i = 1; i <= MaxTimer[Phase]; i++)
+        m_event = EVENT_NULL;
+        for(uint32 i = 1; i <= MaxTimer[m_phase]; i++)
         {
             if(Timer[i]) // Event is enabled
                 if(Timer[i] <= diff)
                 {
-                    if(!Event) // No event with higher priority
-                        Event = (EventIllidan)i;
+                    if(m_event == EVENT_NULL) // No event with higher priority
+                        m_event = IllidanEvent(i);
                 }
                 else Timer[i] -= diff;
         }
 
-        switch(Phase)
+        switch(m_phase)
         {
         case PHASE_NORMAL:
             if(HPPCT(m_creature) < 65)
@@ -703,17 +661,17 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
             break;
 
         case PHASE_TALK_SEQUENCE:
-            if(Event == EVENT_TALK_SEQUENCE)
+            if(m_event == EVENT_TALK_SEQUENCE)
                 HandleTalkSequence();
             break;
 
         case PHASE_FLIGHT_SEQUENCE:
-            if(Event == EVENT_FLIGHT_SEQUENCE)
+            if(m_event == EVENT_FLIGHT_SEQUENCE)
                 HandleFlightSequence();
             break;
 
         case PHASE_TRANSFORM_SEQUENCE:
-            if(Event == EVENT_TRANSFORM_SEQUENCE)
+            if(m_event == EVENT_TRANSFORM_SEQUENCE)
                 HandleTransformSequence();
             break;
         }
@@ -721,9 +679,9 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
         if(m_creature->IsNonMeleeSpellCasted(false))
             return;
 
-        if(Phase == PHASE_NORMAL || Phase == PHASE_NORMAL_2 || Phase == PHASE_NORMAL_MAIEV && !m_creature->HasAura(SPELL_CAGED, 0))
+        if(m_phase == PHASE_NORMAL || m_phase == PHASE_NORMAL_2 || m_phase == PHASE_NORMAL_MAIEV && !m_creature->HasAura(SPELL_CAGED, 0))
         {
-            switch(Event)
+            switch(m_event)
             {
                 //PHASE_NORMAL
             case EVENT_BERSERK:
@@ -733,18 +691,12 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
                 break;
 
             case EVENT_TAUNT:
-                {
-                    uint32 random = rand()%4;
-                    char* yell = RandomTaunts[random].text;
-                    uint32 soundid = RandomTaunts[random].sound;
-                    if(yell)
-                        DoYell(yell, LANG_UNIVERSAL, NULL);
-                    if(soundid)
-                        DoPlaySoundToSet(m_creature, soundid);
-                }
-                Timer[EVENT_TAUNT] = 25000 + rand()%10000;
+            {
+                DoScriptText(RAND(ILLIDAN_TAUNT_NO1, ILLIDAN_TAUNT_NO2, ILLIDAN_TAUNT_NO3, ILLIDAN_TAUNT_NO4), me);
+                
+                Timer[EVENT_TAUNT] = urand(25000, 35000);
                 break;
-
+            }
             case EVENT_SHEAR:
                 DoCast(m_creature->getVictim(), SPELL_SHEAR);
                 Timer[EVENT_SHEAR] = 25000 + (rand()%16 * 1000);
@@ -794,9 +746,9 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
             DoMeleeAttackIfReady();
         }
 
-        if(Phase == PHASE_FLIGHT)
+        if(m_phase == PHASE_FLIGHT)
         {
-            switch(Event)
+            switch(m_event)
             {
             case EVENT_FIREBALL:
                 if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 60, true))
@@ -816,7 +768,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
                 break;
 
             case EVENT_MOVE_POINT:
-                Phase = PHASE_FLIGHT_SEQUENCE;
+                m_phase = PHASE_FLIGHT_SEQUENCE;
                 Timer[EVENT_FLIGHT_SEQUENCE] = 0;//do not start Event when changing hover point
                 HoverPoint += (rand()%3 + 1);
                 if(HoverPoint > 3)
@@ -829,9 +781,9 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
             }
         }
 
-        if(Phase == PHASE_DEMON)
+        if(m_phase == PHASE_DEMON)
         {
-            switch(Event)
+            switch(m_event)
             {
             case EVENT_SHADOW_BLAST:
                 m_creature->GetMotionMaster()->Clear(false);
@@ -944,6 +896,17 @@ struct TRINITY_DLL_DECL flame_of_azzinothAI : public ScriptedAI
 
 
 /******* Functions and vars for Akama's AI ******/
+enum AkamaPhase
+{
+    PHASE_AKAMA_NULL        =   0,
+    PHASE_CHANNEL           =   1,
+    PHASE_WALK              =   2,
+    PHASE_TALK              =   3,
+    PHASE_FIGHT_ILLIDAN     =   4,
+    PHASE_FIGHT_MINIONS     =   5,
+    PHASE_RETURN            =   6,
+};
+
 struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
 {
     npc_akama_illidanAI(Creature* c) : ScriptedAI(c)
@@ -954,7 +917,7 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
 
     ScriptedInstance* pInstance;
 
-    PhaseAkama Phase;
+    AkamaPhase m_phase;
     bool Event;
     bool JustCreated;
     uint32 Timer;
@@ -1009,7 +972,7 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
         SpiritGUID[0] = 0;
         SpiritGUID[1] = 0;
 
-        Phase = PHASE_AKAMA_NULL;
+        m_phase = PHASE_AKAMA_NULL;
         Timer = 0;
 
         ChannelCount = 0;
@@ -1120,12 +1083,12 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
         m_creature->GetMotionMaster()->MovePoint(0, AkamaWP[WalkCount].x, AkamaWP[WalkCount].y, AkamaWP[WalkCount].z);
     }
 
-    void EnterPhase(PhaseAkama NextPhase)
+    void EnterPhase(AkamaPhase m_nextPhase)
     {
         if(!pInstance)
             return;
 
-        switch(NextPhase)
+        switch(m_nextPhase)
         {
         case PHASE_CHANNEL:
             BeginChannel();
@@ -1133,9 +1096,9 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
             ChannelCount = 0;
             break;
         case PHASE_WALK:
-            if(Phase == PHASE_CHANNEL)
+            if(m_phase == PHASE_CHANNEL)
                 WalkCount = 0;
-            else if(Phase == PHASE_TALK)
+            else if(m_phase == PHASE_TALK)
             {
                 if(GETCRE(Illidan, IllidanGUID))
                     ((boss_illidan_stormrageAI*)Illidan->AI())->DeleteFromThreatList(m_creature->GetGUID());
@@ -1148,12 +1111,12 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
             Timer = 0;
             break;
         case PHASE_TALK:
-            if(Phase == PHASE_WALK)
+            if(m_phase == PHASE_WALK)
             {
                 BeginTalk();
                 Timer = 0;
             }
-            else if(Phase == PHASE_FIGHT_ILLIDAN)
+            else if(m_phase == PHASE_FIGHT_ILLIDAN)
             {
                 Timer = 1;
                 TalkCount = 0;
@@ -1181,7 +1144,7 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
         default:
             break;
         }
-        Phase = NextPhase;
+        m_phase = m_nextPhase;
         Event = false;
     }
 
@@ -1275,7 +1238,7 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
                     Door->SetUInt32Value(GAMEOBJECT_STATE, 0);
             break;
         case 8:
-            if(Phase == PHASE_WALK)
+            if(m_phase == PHASE_WALK)
                 EnterPhase(PHASE_TALK);
             else
                 EnterPhase(PHASE_FIGHT_ILLIDAN);
@@ -1285,7 +1248,7 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
             break;
         }
 
-        if(Phase == PHASE_WALK)
+        if(m_phase == PHASE_WALK)
         {
             Timer = 0;
             WalkCount++;
@@ -1318,7 +1281,7 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
 
         if(Event)
         {
-            switch(Phase)
+            switch(m_phase)
             {
             case PHASE_CHANNEL:
                 if(JustCreated)
@@ -1379,21 +1342,40 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
 };
 
 
+
+enum MaievEvent
+{
+    EVENT_MAIEV_NULL            =   0,
+    EVENT_MAIEV_STEALTH         =   1,
+    EVENT_MAIEV_TAUNT           =   2,
+    EVENT_MAIEV_SHADOW_STRIKE   =   3,
+    EVENT_MAIEV_THROW_DAGGER    =   4,
+    EVENT_MAIEV_TRAP            =   4,
+};
+
+enum MaievTaunts
+{
+    MAIEV_TAUNT_NO1 = -2000020,
+    MAIEV_TAUNT_NO2 = -2000021,
+    MAIEV_TAUNT_NO3 = -2000022,
+    MAIEV_TAUNT_NO4 = -2000023
+};
+
 struct TRINITY_DLL_DECL boss_maievAI : public ScriptedAI
 {
     boss_maievAI(Creature *c) : ScriptedAI(c) {};
 
     uint64 IllidanGUID;
 
-    PhaseIllidan Phase;
-    EventMaiev Event;
+    IllidanPhase m_phase;
+    MaievEvent m_event;
     uint32 Timer[5];
     uint32 MaxTimer;
 
     void Reset()
     {
         MaxTimer = 0;
-        Phase = PHASE_NORMAL_MAIEV;
+        m_phase = PHASE_NORMAL_MAIEV;
         IllidanGUID = 0;
         Timer[EVENT_MAIEV_STEALTH] = 0;
         Timer[EVENT_MAIEV_TAUNT] = 22000 + rand()%21 * 1000;
@@ -1427,9 +1409,9 @@ struct TRINITY_DLL_DECL boss_maievAI : public ScriptedAI
         if(!who || Timer[EVENT_MAIEV_STEALTH])
             return;
 
-        if(Phase == PHASE_TALK_SEQUENCE)
+        if(m_phase == PHASE_TALK_SEQUENCE)
             AttackStartNoMove(who);
-        else if(Phase == PHASE_DEMON || Phase == PHASE_TRANSFORM_SEQUENCE )
+        else if(m_phase == PHASE_DEMON || m_phase == PHASE_TRANSFORM_SEQUENCE )
         {
             GETUNIT(Illidan, IllidanGUID);
             if(Illidan && m_creature->IsWithinDistInMap(Illidan, 25))
@@ -1444,12 +1426,12 @@ struct TRINITY_DLL_DECL boss_maievAI : public ScriptedAI
     void DoAction(const int32 param)
     {
         if(param > PHASE_ILLIDAN_NULL && param < PHASE_ILLIDAN_MAX)
-            EnterPhase(PhaseIllidan(param));
+            EnterPhase(IllidanPhase(param));
     }
 
-    void EnterPhase(PhaseIllidan NextPhase)//This is in fact Illidan's phase.
+    void EnterPhase(IllidanPhase m_nextPhase)//This is in fact Illidan's phase.
     {
-        switch(NextPhase)
+        switch(m_nextPhase)
         {
         case PHASE_TALK_SEQUENCE:
             if(Timer[EVENT_MAIEV_STEALTH])
@@ -1481,7 +1463,7 @@ struct TRINITY_DLL_DECL boss_maievAI : public ScriptedAI
         }
         if(Timer[EVENT_MAIEV_STEALTH])
             MaxTimer = 1;
-        Phase = NextPhase;
+        m_phase = m_nextPhase;
     }
 
     void BlinkTo(float x, float y, float z)
@@ -1519,16 +1501,17 @@ struct TRINITY_DLL_DECL boss_maievAI : public ScriptedAI
             && !Timer[EVENT_MAIEV_STEALTH])
             return;
 
-        Event = EVENT_MAIEV_NULL;
+        m_event = EVENT_MAIEV_NULL;
         for(uint8 i = 1; i <= MaxTimer; i++)
             if(Timer[i])
             {
                 if(Timer[i] <= diff)
-                    Event = (EventMaiev)i;
-                else Timer[i] -= diff;
+                    m_event = MaievEvent(i);
+                else
+                    Timer[i] -= diff;
             }
 
-            switch(Event)
+            switch(m_event)
             {
             case EVENT_MAIEV_STEALTH:
                 {
@@ -1537,23 +1520,20 @@ struct TRINITY_DLL_DECL boss_maievAI : public ScriptedAI
                     m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                     Timer[EVENT_MAIEV_STEALTH] = 0;
                     BlinkToPlayer();
-                    EnterPhase(Phase);
+                    EnterPhase(m_phase);
                 }break;
             case EVENT_MAIEV_TAUNT:
-                {
-                    uint32 random = rand()%4;
-                    char* text = MaievTaunts[random].text;
-                    uint32 sound = MaievTaunts[random].sound;
-                    DoYell(text, LANG_UNIVERSAL, NULL);
-                    DoPlaySoundToSet(m_creature, sound);
-                    Timer[EVENT_MAIEV_TAUNT] = 22000 + rand()%21 * 1000;
-                }break;
+            {
+                DoScriptText(RAND(MAIEV_TAUNT_NO1, MAIEV_TAUNT_NO2, MAIEV_TAUNT_NO3, MAIEV_TAUNT_NO4), me);
+                Timer[EVENT_MAIEV_TAUNT] = urand(22000, 43000);
+                break;
+            }
             case EVENT_MAIEV_SHADOW_STRIKE:
                 DoCast(m_creature->getVictim(), SPELL_SHADOW_STRIKE);
                 Timer[EVENT_MAIEV_SHADOW_STRIKE] = 60000;
                 break;
             case EVENT_MAIEV_TRAP:
-                if(Phase == PHASE_NORMAL_MAIEV)
+                if(m_phase == PHASE_NORMAL_MAIEV)
                 {
                     BlinkToPlayer();
                     DoCast(m_creature, SPELL_CAGE_TRAP_SUMMON);
@@ -1582,7 +1562,7 @@ struct TRINITY_DLL_DECL boss_maievAI : public ScriptedAI
                 MaxTimer = 1;
             }
 
-            if(Phase == PHASE_NORMAL_MAIEV)
+            if(m_phase == PHASE_NORMAL_MAIEV)
                 DoMeleeAttackIfReady();
     }
 };
@@ -1692,6 +1672,7 @@ bool GOHello_cage_trap(Player* plr, GameObject* go)
 
     if(trigger)
         ((cage_trap_triggerAI*)trigger->AI())->Active = true;
+
     go->SetUInt32Value(GAMEOBJECT_STATE, 0);
     return true;
 }
@@ -1702,7 +1683,10 @@ struct TRINITY_DLL_DECL shadow_demonAI : public ScriptedAI
 
     uint64 TargetGUID;
 
-    void EnterCombat(Unit *who) {DoZoneInCombat();}
+    void EnterCombat(Unit *who)
+    {
+        DoZoneInCombat();
+    }
 
     void Reset()
     {
@@ -1844,8 +1828,8 @@ void boss_illidan_stormrageAI::Reset()
         GlaiveGUID[i] = 0;
     }
 
-    Phase = PHASE_ILLIDAN_NULL;
-    Event = EVENT_NULL;
+    m_phase = PHASE_ILLIDAN_NULL;
+    m_event = EVENT_NULL;
     Timer[EVENT_BERSERK] = 1500000;
 
     HoverPoint = 0;
@@ -1871,7 +1855,7 @@ void boss_illidan_stormrageAI::JustSummoned(Creature* summon)
     {
     case PARASITIC_SHADOWFIEND:
         {
-            if(Phase == PHASE_TALK_SEQUENCE)
+            if(m_phase == PHASE_TALK_SEQUENCE)
             {
                 summon->SetVisibility(VISIBILITY_OFF);
                 summon->setDeathState(JUST_DIED);
@@ -1985,7 +1969,7 @@ void boss_illidan_stormrageAI::HandleTalkSequence()
     default:
         break;
     }
-    if(Phase == PHASE_TALK_SEQUENCE)
+    if(m_phase == PHASE_TALK_SEQUENCE)
         Talk(TalkCount); // This function does most of the talking
     TalkCount++;
 }
@@ -2062,10 +2046,10 @@ void boss_illidan_stormrageAI::SummonMaiev()
 }
 
 
-void boss_illidan_stormrageAI::EnterPhase(PhaseIllidan NextPhase)
+void boss_illidan_stormrageAI::EnterPhase(IllidanPhase m_nextPhase)
 {
     DoZoneInCombat();
-    switch(NextPhase)
+    switch(m_nextPhase)
     {
     case PHASE_NORMAL:
     case PHASE_NORMAL_2:
@@ -2077,11 +2061,11 @@ void boss_illidan_stormrageAI::EnterPhase(PhaseIllidan NextPhase)
         Timer[EVENT_PARASITIC_SHADOWFIEND] = 25000;
         Timer[EVENT_PARASITE_CHECK] = 0;
         Timer[EVENT_DRAW_SOUL] = 30000;
-        if(NextPhase == PHASE_NORMAL)
+        if(m_nextPhase == PHASE_NORMAL)
             break;
         Timer[EVENT_AGONIZING_FLAMES] = 35000;
         Timer[EVENT_TRANSFORM_NORMAL] = 60000;
-        if(NextPhase == PHASE_NORMAL_2)
+        if(m_nextPhase == PHASE_NORMAL_2)
             break;
         Timer[EVENT_ENRAGE] = 30000 + rand()%10 * 1000;
         break;
@@ -2108,7 +2092,7 @@ void boss_illidan_stormrageAI::EnterPhase(PhaseIllidan NextPhase)
         m_creature->AttackStop();
         break;
     case PHASE_FLIGHT_SEQUENCE:
-        if(Phase == PHASE_NORMAL) //lift off
+        if(m_phase == PHASE_NORMAL) //lift off
         {
             FlightCount = 1;
             Timer[EVENT_FLIGHT_SEQUENCE] = 1;
@@ -2122,7 +2106,7 @@ void boss_illidan_stormrageAI::EnterPhase(PhaseIllidan NextPhase)
             Timer[EVENT_FLIGHT_SEQUENCE] = 2000;
         break;
     case PHASE_TRANSFORM_SEQUENCE:
-        if(Phase == PHASE_DEMON)
+        if(m_phase == PHASE_DEMON)
             Timer[EVENT_TRANSFORM_SEQUENCE] = 500;
         else
         {
@@ -2140,10 +2124,10 @@ void boss_illidan_stormrageAI::EnterPhase(PhaseIllidan NextPhase)
     {
         GETCRE(Maiev, MaievGUID);
         if(Maiev && Maiev->isAlive())
-            Maiev->AI()->DoAction(NextPhase);
+            Maiev->AI()->DoAction(m_nextPhase);
     }
-    Phase = NextPhase;
-    Event = EVENT_NULL;
+    m_phase = m_nextPhase;
+    m_event = EVENT_NULL;
 }
 
 CreatureAI* GetAI_boss_illidan_stormrage(Creature *_Creature)
