@@ -137,7 +137,7 @@ struct TRINITY_DLL_DECL npc_enslaved_soulAI : public ScriptedAI
         {
             if (pInstance)
             {
-                if (pInstance->GetData(DATA_RELIQUARYOFSOULSEVENT) != IN_PROGRESS)
+                if (pInstance->GetData(EVENT_RELIQUARYOFSOULS) != IN_PROGRESS)
                     m_creature->Kill(m_creature, false);
             }
             else
@@ -181,7 +181,7 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
     void Reset()
     {
         if(pInstance)
-            pInstance->SetData(DATA_RELIQUARYOFSOULSEVENT, NOT_STARTED);
+            pInstance->SetData(EVENT_RELIQUARYOFSOULS, NOT_STARTED);
 
         if(EssenceGUID)
         {
@@ -213,7 +213,7 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
                 DoZoneInCombat();
 
                 if(pInstance)
-                    pInstance->SetData(DATA_RELIQUARYOFSOULSEVENT, IN_PROGRESS);
+                    pInstance->SetData(EVENT_RELIQUARYOFSOULS, IN_PROGRESS);
                 Phase = 1;
                 Counter = 0;
                 Timer = 0;
@@ -249,7 +249,7 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
     void JustDied(Unit* killer)
     {
         if(pInstance)
-            pInstance->SetData(DATA_RELIQUARYOFSOULSEVENT, DONE);
+            pInstance->SetData(EVENT_RELIQUARYOFSOULS, DONE);
     }
 
     bool FindPlayers()
@@ -452,12 +452,12 @@ struct TRINITY_DLL_DECL npc_ros_triggerAI : public ScriptedAI
     void MoveInLineOfSight(Unit * who)
     {
         if (!RosGUID)
-            RosGUID = pInstance->GetData64(DATA_RELIQUARYOFSOULSEVENT);
+            RosGUID = pInstance->GetData64(EVENT_RELIQUARYOFSOULS);
 
         if (!pInstance)
              pInstance = (ScriptedInstance*)m_creature->GetInstanceData();
 
-        if (pInstance && pInstance->GetData(DATA_RELIQUARYOFSOULSEVENT) == NOT_STARTED && who->GetTypeId() == TYPEID_PLAYER)
+        if (pInstance && pInstance->GetData(EVENT_RELIQUARYOFSOULS) == NOT_STARTED && who->GetTypeId() == TYPEID_PLAYER)
         {
             Creature * ros = Unit::GetCreature(*m_creature, RosGUID);
             if (ros && !((Player*)who)->isGameMaster())

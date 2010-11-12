@@ -311,7 +311,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
     void Reset()
     {
         if(pInstance)
-            pInstance->SetData(DATA_TERONGOREFIENDEVENT, NOT_STARTED);
+            pInstance->SetData(EVENT_TERONGOREFIEND, NOT_STARTED);
 
         IncinerateTimer = 40000;
         SummonDoomBlossomTimer = 10000;
@@ -336,7 +336,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
         DoScriptText(SAY_AGGRO, m_creature);
 
         if(pInstance)
-            pInstance->SetData(DATA_TERONGOREFIENDEVENT, IN_PROGRESS);
+            pInstance->SetData(EVENT_TERONGOREFIEND, IN_PROGRESS);
     }
 
     void MoveInLineOfSight(Unit *who)
@@ -373,7 +373,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
     void JustDied(Unit *victim)
     {
         if(pInstance)
-            pInstance->SetData(DATA_TERONGOREFIENDEVENT, DONE);
+            pInstance->SetData(EVENT_TERONGOREFIEND, DONE);
 
         DoScriptText(SAY_DEATH, m_creature);
     }

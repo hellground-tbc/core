@@ -108,7 +108,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
         if(pInstance)
         {
             if(m_creature->isAlive())
-                pInstance->SetData(DATA_SUPREMUSEVENT, NOT_STARTED);
+                pInstance->SetData(EVENT_SUPREMUS, NOT_STARTED);
         }
 
         MoltenFlameTimer = 10000;
@@ -138,7 +138,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
         DoZoneInCombat();
 
         if(pInstance)
-            pInstance->SetData(DATA_SUPREMUSEVENT, IN_PROGRESS);
+            pInstance->SetData(EVENT_SUPREMUS, IN_PROGRESS);
     }
 
     void MoveInLineOfSight(Unit *who)
@@ -165,7 +165,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
     {
         if(pInstance)
         {
-            pInstance->SetData(DATA_SUPREMUSEVENT, DONE);
+            pInstance->SetData(EVENT_SUPREMUS, DONE);
             ToggleDoors(false);
         }
         summons.DespawnAll();

@@ -100,7 +100,7 @@ struct TRINITY_DLL_DECL boss_najentusAI : public ScriptedAI
         DestroySpine();
 
         if(pInstance)
-            pInstance->SetData(DATA_HIGHWARLORDNAJENTUSEVENT, NOT_STARTED);
+            pInstance->SetData(EVENT_HIGHWARLORDNAJENTUS, NOT_STARTED);
     }
 
     void KilledUnit(Unit *victim)
@@ -111,7 +111,7 @@ struct TRINITY_DLL_DECL boss_najentusAI : public ScriptedAI
     void JustDied(Unit *victim)
     {
         if(pInstance)
-            pInstance->SetData(DATA_HIGHWARLORDNAJENTUSEVENT, DONE);
+            pInstance->SetData(EVENT_HIGHWARLORDNAJENTUS, DONE);
 
         DestroySpine();
 
@@ -130,7 +130,7 @@ struct TRINITY_DLL_DECL boss_najentusAI : public ScriptedAI
     void EnterCombat(Unit *who)
     {
         if(pInstance)
-            pInstance->SetData(DATA_HIGHWARLORDNAJENTUSEVENT, IN_PROGRESS);
+            pInstance->SetData(EVENT_HIGHWARLORDNAJENTUS, IN_PROGRESS);
 
         DoScriptText(SAY_AGGRO, m_creature);
         DoZoneInCombat();
@@ -265,7 +265,7 @@ struct TRINITY_DLL_DECL boss_najentusAI : public ScriptedAI
 bool GOHello_go_najentus_spine(Player *player, GameObject* _GO)
 {
     if(ScriptedInstance* pInstance = (ScriptedInstance*)_GO->GetInstanceData())
-        if(Creature* Najentus = Unit::GetCreature(*_GO, pInstance->GetData64(DATA_HIGHWARLORDNAJENTUS)))
+        if(Creature* Najentus = Unit::GetCreature(*_GO, pInstance->GetData64(EVENT_HIGHWARLORDNAJENTUS)))
             if(((boss_najentusAI*)Najentus->AI())->RemoveImpalingSpine(_GO->GetGUID()))
             {
                 player->CastSpell(player, SPELL_CREATE_NAJENTUS_SPINE, true);

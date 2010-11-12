@@ -24,7 +24,7 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_black_temple.h"
 
-#define ENCOUNTERS     9
+#define ENCOUNTERS     10
 
 /* Black Temple encounters:
 0 - High Warlord Naj'entus event
@@ -36,6 +36,7 @@ EndScriptData */
 6 - Mother Shahraz Event
 7 - Illidari Council Event
 8 - Illidan Stormrage Event
+9 - Akama open door after Illidari defeat
 */
 
 struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
@@ -148,29 +149,29 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
 
     uint32 GetEncounterForEntry(uint32 entry)
     {
-        switch(entry)
+        switch (entry)
         {
             case 22887:
-                return DATA_HIGHWARLORDNAJENTUSEVENT;
+                return EVENT_HIGHWARLORDNAJENTUS;
             case 22841:
-                return DATA_SHADEOFAKAMAEVENT;
+                return EVENT_SHADEOFAKAMA;
             case 22871:
-                return DATA_TERONGOREFIENDEVENT;
+                return EVENT_TERONGOREFIEND;
             case 22898:
-                return DATA_SUPREMUSEVENT;
+                return EVENT_SUPREMUS;
             case 22917:
-                return DATA_ILLIDANSTORMRAGEEVENT;
+                return EVENT_ILLIDANSTORMRAGE;
             case 22947:
-                return DATA_MOTHERSHAHRAZEVENT;
+                return EVENT_MOTHERSHAHRAZ;
             case 22948:
-                return DATA_GURTOGGBLOODBOILEVENT;
+                return EVENT_GURTOGGBLOODBOIL;
             case 22949:
             case 22950:
             case 22951:
             case 22952:
-                return DATA_ILLIDARICOUNCILEVENT;
+                return EVENT_ILLIDARICOUNCIL;
             case 22856:
-                return DATA_RELIQUARYOFSOULSEVENT;
+                return EVENT_RELIQUARYOFSOULS;
             default:
                 return 0;
         }
@@ -282,7 +283,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         case 185480:
             CommonDoor = go->GetGUID();
             //if(Encounters[3] == DONE)
-                HandleGameObject(NULL,true,go);
+                HandleGameObject(NULL, true, go);
             break;
         case 186153:
             TeronDoor = go->GetGUID();
@@ -334,7 +335,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         case DATA_AKAMA:                       return Akama;
         case DATA_AKAMA_SHADE:                 return Akama_Shade;
         case DATA_SHADEOFAKAMA:                return ShadeOfAkama;
-        case DATA_RELIQUARYOFSOULSEVENT:       return ReliquaryOfTheLost;
+        case EVENT_RELIQUARYOFSOULS:           return ReliquaryOfTheLost;
         case DATA_TERONGOREFIEND:              return Teron;
         case DATA_SUPREMUS:                    return Supremus;
         case DATA_ILLIDANSTORMRAGE:            return IllidanStormrage;
@@ -365,106 +366,116 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
 
     void SetData(uint32 type, uint32 data)
     {
-        switch(type)
+        switch (type)
         {
-        case DATA_HIGHWARLORDNAJENTUSEVENT:
-            if(data == DONE)
-                HandleGameObject(NajentusGate, true);
-            if(Encounters[0] != DONE)
-                Encounters[0] = data;
+            case EVENT_HIGHWARLORDNAJENTUS:
+                if (data == DONE)
+                    HandleGameObject(NajentusGate, true);
+
+                if(Encounters[0] != DONE)
+                    Encounters[0] = data;
             break;
-        case DATA_SUPREMUSEVENT:
-            if(data == DONE)
-                HandleGameObject(NajentusGate, true);
-            if(Encounters[1] != DONE)
-                Encounters[1] = data;
+            case EVENT_SUPREMUS:
+                if (data == DONE)
+                    HandleGameObject(NajentusGate, true);
+
+                if (Encounters[1] != DONE)
+                    Encounters[1] = data;
             break;
-        case DATA_SHADEOFAKAMAEVENT:
-            if(data == DONE && !AshtongueBrokenList.empty())
-            {
-                // after Shade Of Akama is defeated all Ashtongue change faction
-                for(std::list<uint64>::iterator itr = AshtongueBrokenList.begin(); itr != AshtongueBrokenList.end(); ++itr)
+            case EVENT_SHADEOFAKAMA:
+                if (data == DONE && !AshtongueBrokenList.empty())
                 {
-                    Creature* Broken = instance->GetCreature(*itr);
-                    if(Broken)
-                        Broken->setFaction(1820);
-                }
-            }
-            if(data == IN_PROGRESS)
-                HandleGameObject(ShadeOfAkamaDoor, false);
-            else
-                HandleGameObject(ShadeOfAkamaDoor, true);
-            //if(Encounters[2] != DONE)
-                Encounters[2] = data;
-            break;
-        case DATA_TERONGOREFIENDEVENT:
-            if(data == IN_PROGRESS)
-            {
-                sodList.clear();
-                HandleGameObject(TeronDoor, false);
-                HandleGameObject(CommonDoor, false);
-            }
-            else
-            {
-                HandleGameObject(TeronDoor, true);
-                HandleGameObject(CommonDoor, true);
-            }
-            if(Encounters[3] != DONE)
-                Encounters[3] = data;
-            break;
-        case DATA_GURTOGGBLOODBOILEVENT:
-            if(data == DONE)
-                HandleGameObject(GuurtogDoor, true);
-            if(Encounters[4] != DONE)
-                Encounters[4] = data;
-            break;
-        case DATA_RELIQUARYOFSOULSEVENT:
-            if(data == DONE)
-            {
-                HandleGameObject(TempleDoor, true);
-                // after RoS dies, hide all soul fragments
-                for(std::list<uint64>::iterator itr = SoulFragmentsList.begin(); itr != SoulFragmentsList.end(); ++itr)
-                {
-                    Creature* SoulFragment = instance->GetCreature(*itr);
-                    if(SoulFragment)
+                    // after Shade Of Akama is defeated all Ashtongue change faction
+                    for (std::list<uint64>::iterator itr = AshtongueBrokenList.begin(); itr != AshtongueBrokenList.end(); ++itr)
                     {
-                        SoulFragment->setFaction(35);
-                        SoulFragment->SetVisibility(VISIBILITY_OFF);
+                        if (Creature *pBroken = instance->GetCreature(*itr))
+                            pBroken->setFaction(1820);
                     }
                 }
-            }
-            if(Encounters[5] != DONE)
-                Encounters[5] = data;
+
+                if (data == IN_PROGRESS)
+                    HandleGameObject(ShadeOfAkamaDoor, false);
+                else
+                    HandleGameObject(ShadeOfAkamaDoor, true);
+
+                //if(Encounters[2] != DONE)
+                Encounters[2] = data;
             break;
-        case DATA_MOTHERSHAHRAZEVENT:
-            if(data == DONE)
-                HandleGameObject(MotherDoor, true);
-            if(Encounters[6] != DONE)
-                Encounters[6] = data;
+            case EVENT_TERONGOREFIEND:
+                if (data == IN_PROGRESS)
+                {
+                    sodList.clear();
+                    HandleGameObject(TeronDoor, false);
+                    HandleGameObject(CommonDoor, false);
+                }
+                else
+                {
+                    HandleGameObject(TeronDoor, true);
+                    HandleGameObject(CommonDoor, true);
+                }
+
+                if (Encounters[3] != DONE)
+                    Encounters[3] = data;
             break;
-        case DATA_ILLIDARICOUNCILEVENT:
-            if(data == IN_PROGRESS)
-            {
-                HandleGameObject(CouncilDoor, false);
-                HandleGameObject(SimpleDoor, false);
-            }
-            else
-            {
-                HandleGameObject(CouncilDoor, true);
-                HandleGameObject(SimpleDoor, true);
-            }
-            if(Encounters[7] != DONE)
-                Encounters[7] = data;
+            case EVENT_GURTOGGBLOODBOIL:
+                if (data == DONE)
+                    HandleGameObject(GuurtogDoor, true);
+
+                if (Encounters[4] != DONE)
+                    Encounters[4] = data;
+
             break;
-        case DATA_ILLIDANSTORMRAGEEVENT:
-            if(Encounters[8] != DONE)
-                Encounters[8] = data;
+            case EVENT_RELIQUARYOFSOULS:
+                if (data == DONE)
+                {
+                    HandleGameObject(TempleDoor, true);
+
+                    // after RoS dies, hide all soul fragments
+                    for (std::list<uint64>::iterator itr = SoulFragmentsList.begin(); itr != SoulFragmentsList.end(); ++itr)
+                    {
+                        if (Creature *pFragment = instance->GetCreature(*itr))
+                        {
+                            pFragment->setFaction(35);
+                            pFragment->SetVisibility(VISIBILITY_OFF);
+                        }
+                    }
+                }
+
+                if (Encounters[5] != DONE)
+                    Encounters[5] = data;
             break;
-        case DATA_ENSLAVED_SOUL:
-            if(data)
-                EnslavedSoulsCount++;
-            else
-                EnslavedSoulsCount = 0;
+            case EVENT_MOTHERSHAHRAZ:
+                if (data == DONE)
+                    HandleGameObject(MotherDoor, true);
+
+                if (Encounters[6] != DONE)
+                    Encounters[6] = data;
+            break;
+            case EVENT_ILLIDARICOUNCIL:
+                if (data == IN_PROGRESS)
+                {
+                    HandleGameObject(CouncilDoor, false);
+                    HandleGameObject(SimpleDoor, false);
+                }
+                else
+                {
+                    HandleGameObject(CouncilDoor, true);
+                    HandleGameObject(SimpleDoor, true);
+                }
+
+                if (Encounters[7] != DONE)
+                    Encounters[7] = data;
+            break;
+            case EVENT_ILLIDANSTORMRAGE:
+                if(Encounters[8] != DONE)
+                    Encounters[8] = data;
+            break;
+            case DATA_ENSLAVED_SOUL:
+                if(data)
+                    EnslavedSoulsCount++;
+                else
+                    EnslavedSoulsCount = 0;
+            break;
         }
 
         if (data == DONE)
@@ -475,7 +486,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
             saveStream << Encounters[0] << " " << Encounters[1] << " "
                 << Encounters[2] << " " << Encounters[3] << " " << Encounters[4]
             << " " << Encounters[5] << " " << Encounters[6] << " " << Encounters[7]
-            << " " << Encounters[8];
+            << " " << Encounters[8] << " " << Encounters[9];
 
             str_data = saveStream.str();
 
@@ -494,7 +505,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
                 //std::cout << "Player added to list" << std::endl;
             break;
             case DATA_SHADOWOFDEATH_DONE:
-                if(sodList.size() && GetData(DATA_TERONGOREFIENDEVENT) == IN_PROGRESS)
+                if(sodList.size() && GetData(EVENT_TERONGOREFIEND) == IN_PROGRESS)
                 {
                     for(std::map<uint64,uint32>::iterator itr = sodList.begin(); itr != sodList.end(); itr++)
                         if(itr->first == value)
@@ -511,24 +522,26 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
     {
         switch(type)
         {
-            case DATA_HIGHWARLORDNAJENTUSEVENT:         return Encounters[0];
-            case DATA_SUPREMUSEVENT:                    return Encounters[1];
-            case DATA_SHADEOFAKAMAEVENT:                return Encounters[2];
-            case DATA_TERONGOREFIENDEVENT:              return Encounters[3];
-            case DATA_GURTOGGBLOODBOILEVENT:            return Encounters[4];
-            case DATA_RELIQUARYOFSOULSEVENT:            return Encounters[5];
-            case DATA_MOTHERSHAHRAZEVENT:               return Encounters[6];
-            case DATA_ILLIDARICOUNCILEVENT:             return Encounters[7];
-            case DATA_ILLIDANSTORMRAGEEVENT:            return Encounters[8];
-            case DATA_ENSLAVED_SOUL:                    return EnslavedSoulsCount;
-            case DATA_WEAPONMASTER_LIST_SIZE:           return weaponmasterList.size();
+            case EVENT_HIGHWARLORDNAJENTUS: return Encounters[0];
+            case EVENT_SUPREMUS:            return Encounters[1];
+            case EVENT_SHADEOFAKAMA:        return Encounters[2];
+            case EVENT_TERONGOREFIEND:      return Encounters[3];
+            case EVENT_GURTOGGBLOODBOIL:    return Encounters[4];
+            case EVENT_RELIQUARYOFSOULS:    return Encounters[5];
+            case EVENT_MOTHERSHAHRAZ:       return Encounters[6];
+            case EVENT_ILLIDARICOUNCIL:     return Encounters[7];
+            case EVENT_ILLIDANSTORMRAGE:    return Encounters[8];
+            case EVENT_ILLIDARIDOOR:        return Encounters[9];
+
+            case DATA_ENSLAVED_SOUL:          return EnslavedSoulsCount;
+            case DATA_WEAPONMASTER_LIST_SIZE: return weaponmasterList.size();
         }
         return 0;
     }
 
     void Update(uint32 diff)
     {
-        if(GetData(DATA_TERONGOREFIENDEVENT) == IN_PROGRESS)
+        if(GetData(EVENT_TERONGOREFIEND) == IN_PROGRESS)
         {
             if(sodList.size())
             {
@@ -564,13 +577,15 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         OUT_LOAD_INST_DATA(in);
 
         std::istringstream loadStream(in);
-        loadStream >> Encounters[0] >> Encounters[1] >> Encounters[2]
-        >> Encounters[3] >> Encounters[4] >> Encounters[5] >> Encounters[6]
-        >> Encounters[7] >> Encounters[8];
+        loadStream 
+            >> Encounters[0] >> Encounters[1] >> Encounters[2] >> Encounters[3] >> Encounters[4] >> Encounters[5] >> Encounters[6]
+        >> Encounters[7] >> Encounters[8] >> Encounters[9];
 
         for(uint8 i = 0; i < ENCOUNTERS; ++i)
+        {
             if (Encounters[i] == IN_PROGRESS)
                 Encounters[i] = NOT_STARTED;
+        }
 
         OUT_LOAD_INST_DATA_COMPLETE;
     }

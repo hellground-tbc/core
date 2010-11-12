@@ -65,12 +65,14 @@ EndScriptData */
 #define SPELL_SUMMON_PARASITICS         41915 // Summons 2 Parasitic Shadowfiends on the target. It's supposed to be cast as soon as the Parasitic Shadowfiend debuff is gone, but the spells aren't linked :(
 #define SPELL_AGONIZING_FLAMES          40932 // 4k fire damage initial to target and anyone w/i 5 yards. PHASE 3 ONLY
 #define SPELL_ENRAGE                    40683 // Increases damage by 50% and attack speed by 30%. 20 seconds, PHASE 5 ONLY
+
 // Flying (Phase 2)
 #define SPELL_THROW_GLAIVE              39635 // Throws a glaive on the ground
 #define SPELL_THROW_GLAIVE2             39849 // Animation for the above spell
 #define SPELL_GLAIVE_RETURNS            39873 // Glaive flies back to Illidan
 #define SPELL_FIREBALL                  40598 // 2.5k-3.5k damage in 10 yard radius. 2 second cast time.
 #define SPELL_DARK_BARRAGE              40585 // 10 second channeled spell, 3k shadow damage per second.
+
 // Demon Form
 #define SPELL_DEMON_TRANSFORM_1         40511 // First phase of animations for transforming into Dark Illidan (fall to ground)
 #define SPELL_DEMON_TRANSFORM_2         40398 // Second phase of animations (kneel)
@@ -79,12 +81,14 @@ EndScriptData */
 #define SPELL_SHADOW_BLAST              41078 // 8k - 11k Shadow Damage. Targets highest threat. Has a splash effect, damaging anyone in 20 yards of the target.
 #define SPELL_FLAME_BURST               41126 // Hurls fire at entire raid for ~3.5k damage every 10 seconds. Resistable. (Does not work: Script effect)
 #define SPELL_FLAME_BURST_EFFECT        41131 // The actual damage. Have each player cast it on itself (workaround)
+
 // Other Illidan spells
 #define SPELL_KNEEL                     39656 // Before beginning encounter, this is how he appears (talking to skully).
 #define SPELL_SHADOW_PRISON             40647 // Illidan casts this spell to immobilize entire raid when he summons Maiev.
 #define SPELL_DEATH                     41220 // This spell doesn't do anything except stun Illidan and set him on his knees.
 #define SPELL_BERSERK                   45078 // Damage increased by 500%, attack speed by 150%
 #define SPELL_DUAL_WIELD                42459
+
 //Phase Normal spells
 #define SPELL_FLAME_CRASH_EFFECT        40836 // Firey blue ring of circle that the other flame crash summons
 #define SPELL_SUMMON_SHADOWDEMON        41117 // Summon four shadowfiends
@@ -93,6 +97,7 @@ EndScriptData */
 #define SPELL_CONSUME_SOUL              41080 // Once the Shadow Demons reach their target, they use this to kill them
 #define SPELL_PARALYZE                  41083 // Shadow Demons cast this on their target
 #define SPELL_PURPLE_BEAM               39123 // Purple Beam connecting Shadow Demon to their target
+
 //Phase Flight spells
 #define SPELL_AZZINOTH_CHANNEL          39857 // Glaives cast it on Flames. Not sure if this is the right spell.
 #define SPELL_EYE_BLAST_TRIGGER         40017 // This summons Demon Form every few seconds and deals ~20k damage in its radius
@@ -103,12 +108,14 @@ EndScriptData */
 #define SPELL_FLAME_BLAST               40631 // Flames of Azzinoth use this. Frontal cone AoE 7k-9k damage.
 #define SPELL_CHARGE                    41581 //40602 // Flames of Azzinoth charges whoever is too far from them. They enrage after this. For simplicity, we'll use the same enrage as Illidan.
 #define SPELL_FLAME_ENRAGE              45078
+
 //Akama spells
 #define SPELL_AKAMA_DOOR_CHANNEL        41268 // Akama's channel spell on the door before the Temple Summit
 #define SPELL_DEATHSWORN_DOOR_CHANNEL   41269 // Olum and Udalo's channel spell on the door before the Temple Summit
 #define SPELL_AKAMA_DOOR_FAIL           41271 // Not sure where this is really used...
 #define SPELL_HEALING_POTION            40535 // Akama uses this to heal himself to full.
 #define SPELL_CHAIN_LIGHTNING           40536 // 6938 to 8062 for 5 targets
+
 //Maiev spells
 #define SPELL_CAGE_TRAP_DUMMY           40761 // Put this in DB for cage trap GO.
 #define SPELL_CAGED                     40695 // Caged Trap triggers will cast this on Illidan if he is within 3 yards
@@ -186,47 +193,47 @@ struct Locations
 
 static Locations HoverPosition[]=
 {
-    {657, 340, 355},
-    {657, 275, 355},
-    {705, 275, 355},
-    {705, 340, 355}
+    { 657, 340, 355 },
+    { 657, 275, 355 },
+    { 705, 275, 355 },
+    { 705, 340, 355 }
 };
 
 static Locations GlaivePosition[]=
 {
-    {695.105, 305.303, 354.256},
-    {659.338, 305.303, 354.256},//the distance between two glaives is 36
-    {700.105, 305.303, 354.256},
-    {664.338, 305.303, 354.256}
+    { 695.105, 305.303, 354.256 },
+    { 659.338, 305.303, 354.256 }, //the distance between two glaives is 36
+    { 700.105, 305.303, 354.256 },
+    { 664.338, 305.303, 354.256 }
 };
 
 static Locations EyeBlast[]=
 {
-    {677, 350, 354},//start point, pass through glaive point
-    {677, 260, 354}
+    { 677, 350, 354 },          //start point, pass through glaive point
+    { 677, 260, 354 }
 };
 
-static Locations AkamaWP[]=
+static Locations AkamaPath[]=
 {
-    {770.01, 304.50, 312.29}, // Bottom of the first stairs, at the doors
-    {780.66, 304.50, 319.74}, // Top of the first stairs
-    {790.13, 319.68, 319.76}, // Bottom of the second stairs (left from the entrance)
-    {787.17, 347.38, 341.42}, // Top of the second stairs
-    {781.34, 350.31, 341.44}, // Bottom of the third stairs
-    {762.60, 361.06, 353.60}, // Top of the third stairs
-    {756.35, 360.52, 353.27}, // Before the door-thingy
-    {743.82, 342.21, 353.00}, // Somewhere further
-    {732.69, 305.13, 353.00}, // In front of Illidan - (8)
-    {738.11, 365.44, 353.00}, // in front of the door-thingy (the other one!)
-    {792.18, 366.62, 341.42}, // Down the first flight of stairs
-    {796.84, 304.89, 319.76}, // Down the second flight of stairs
-    {782.01, 304.55, 319.76}  // Final location - back at the initial gates. This is where he will fight the minions! (12)
+    { 770.01, 304.50, 312.29 }, // Bottom of the first stairs, at the doors
+    { 780.66, 304.50, 319.74 }, // Top of the first stairs
+    { 790.13, 319.68, 319.76 }, // Bottom of the second stairs (left from the entrance)
+    { 787.17, 347.38, 341.42 }, // Top of the second stairs
+    { 781.34, 350.31, 341.44 }, // Bottom of the third stairs
+    { 762.60, 361.06, 353.60 }, // Top of the third stairs
+    { 756.35, 360.52, 353.27 }, // Before the door-thingy
+    { 743.82, 342.21, 353.00 }, // Somewhere further
+    { 732.69, 305.13, 353.00 }, // In front of Illidan - (8)
+    { 738.11, 365.44, 353.00 }, // in front of the door-thingy (the other one!)
+    { 792.18, 366.62, 341.42 }, // Down the first flight of stairs
+    { 796.84, 304.89, 319.76 }, // Down the second flight of stairs
+    { 782.01, 304.55, 319.76 }  // Final location - back at the initial gates. This is where he will fight the minions! (12)
 };
 // 755.762, 304.0747, 312.1769 -- This is where Akama should be spawned
 static Locations SpiritSpawns[]=
 {
-    {755.5426, 309.9156, 312.2129},
-    {755.5426, 298.7923, 312.0834}
+    { 755.5426, 309.9156, 312.2129 },
+    { 755.5426, 298.7923, 312.0834 }
 };
 
 struct Animation // For the demon transformation
@@ -286,16 +293,19 @@ enum IllidanEvent
     EVENT_AGONIZING_FLAMES      =   8,
     EVENT_TRANSFORM_NORMAL      =   9,
     EVENT_ENRAGE                =   10,
+    
     //flight phase
     EVENT_FIREBALL              =   2,
     EVENT_DARK_BARRAGE          =   3,
     EVENT_EYE_BLAST             =   4,
     EVENT_MOVE_POINT            =   5,
+    
     //demon phase
     EVENT_SHADOW_BLAST          =   2,
     EVENT_FLAME_BURST           =   3,
     EVENT_SHADOWDEMON           =   4,
     EVENT_TRANSFORM_DEMON       =   5,
+    
     //sequence phase
     EVENT_TALK_SEQUENCE         =   2,
     EVENT_FLIGHT_SEQUENCE       =   2,
@@ -404,7 +414,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
         if(!pInstance)
             return;
 
-        pInstance->SetData(DATA_ILLIDANSTORMRAGEEVENT, DONE); // Completed
+        pInstance->SetData(EVENT_ILLIDANSTORMRAGE, DONE); // Completed
 
         for(uint8 i = DATA_GAMEOBJECT_ILLIDAN_DOOR_R; i < DATA_GAMEOBJECT_ILLIDAN_DOOR_L + 1; ++i)
         {
@@ -591,13 +601,13 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
 
         if(DemonTransformation[TransformCount].equip)
         {
-            m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY, 45479); // Requip warglaives if needed
+            m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY, 45479);     // Requip warglaives if needed
             m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY+1, 45481);
             m_creature->SetByteValue(UNIT_FIELD_BYTES_2, 0, SHEATH_STATE_MELEE );
         }
         else
         {
-            m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY, 0); // Unequip warglaives if needed
+            m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY, 0);         // Unequip warglaives if needed
             m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY+1, 0);
         }
 
@@ -621,8 +631,10 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
         default:
             break;
         }
+
         if(m_phase == PHASE_TRANSFORM_SEQUENCE)
             Timer[EVENT_TRANSFORM_SEQUENCE] = DemonTransformation[TransformCount].timer;
+
         TransformCount++;
     }
 
@@ -898,13 +910,13 @@ struct TRINITY_DLL_DECL flame_of_azzinothAI : public ScriptedAI
 /******* Functions and vars for Akama's AI ******/
 enum AkamaPhase
 {
-    PHASE_AKAMA_NULL        =   0,
-    PHASE_CHANNEL           =   1,
-    PHASE_WALK              =   2,
-    PHASE_TALK              =   3,
-    PHASE_FIGHT_ILLIDAN     =   4,
-    PHASE_FIGHT_MINIONS     =   5,
-    PHASE_RETURN            =   6,
+    PHASE_AKAMA_NULL    =   0,
+    PHASE_OPEN_DOOR     =   1,
+    PHASE_WALK          =   2,
+    PHASE_TALK          =   3,
+    PHASE_FIGHT_ILLIDAN =   4,
+    PHASE_FIGHT_MINIONS =   5,
+    PHASE_RETURN        =   6,
 };
 
 struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
@@ -915,18 +927,19 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
         JustCreated = true;
     }
 
-    ScriptedInstance* pInstance;
+    ScriptedInstance *pInstance;
 
     AkamaPhase m_phase;
+
     bool Event;
     bool JustCreated;
+
     uint32 Timer;
 
-    uint64 IllidanGUID;
-    uint64 ChannelGUID;
     uint64 SpiritGUID[2];
     uint64 GateGUID;
     uint64 DoorGUID[2];
+    uint64 ChannelGUID;
 
     uint32 ChannelCount;
     uint32 WalkCount;
@@ -939,9 +952,8 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
 
         if(pInstance)
         {
-            pInstance->SetData(DATA_ILLIDANSTORMRAGEEVENT, NOT_STARTED);
+            pInstance->SetData(EVENT_ILLIDANSTORMRAGE, NOT_STARTED);
 
-            IllidanGUID = pInstance->GetData64(DATA_ILLIDANSTORMRAGE);
             GateGUID = pInstance->GetData64(DATA_GAMEOBJECT_ILLIDAN_GATE);
             DoorGUID[0] = pInstance->GetData64(DATA_GAMEOBJECT_ILLIDAN_DOOR_R);
             DoorGUID[1] = pInstance->GetData64(DATA_GAMEOBJECT_ILLIDAN_DOOR_L);
@@ -968,10 +980,6 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
             DoorGUID[1] = 0;
         }
 
-        ChannelGUID = 0;
-        SpiritGUID[0] = 0;
-        SpiritGUID[1] = 0;
-
         m_phase = PHASE_AKAMA_NULL;
         Timer = 0;
 
@@ -981,10 +989,10 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
 
         KillAllElites();
 
-        m_creature->SetUInt32Value(UNIT_NPC_FLAGS, 0); // Database sometimes has strange values..
-        m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-        m_creature->setActive(false);
-        m_creature->SetVisibility(VISIBILITY_OFF);
+        me->SetUInt32Value(UNIT_NPC_FLAGS, 0);               // Database sometimes has strange values..
+        me->SetVisibility(VISIBILITY_OFF);
+        me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+        me->setActive(true);
     }
 
     // Do not call reset in Akama's evade mode, as this will stop him from summoning minions after he kills the first bit
@@ -996,8 +1004,7 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
         m_creature->CombatStop(true);
     }
 
-    void EnterCombat(Unit *who) {}
-    void MoveInLineOfSight(Unit *) {}
+    void MoveInLineOfSight(Unit *){}
 
     void MovementInform(uint32 MovementType, uint32 Data)
     {
@@ -1007,7 +1014,7 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
 
     void DamageTaken(Unit *done_by, uint32 &damage)
     {
-        if(damage > m_creature->GetHealth() || done_by->GetGUID() != IllidanGUID)
+        if(damage > m_creature->GetHealth() || done_by->GetGUID() != pInstance->GetData64(DATA_ILLIDANSTORMRAGE))
             damage = 0;
     }
 
@@ -1026,81 +1033,77 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
         EnterEvadeMode();
     }
 
-    void BeginTalk()
+    void StartEvent()
     {
-        if(pInstance)
-            pInstance->SetData(DATA_ILLIDANSTORMRAGEEVENT, IN_PROGRESS);
+        pInstance->SetData(EVENT_ILLIDANSTORMRAGE, IN_PROGRESS);
 
         for(uint8 i = 0; i < 2; i++)
             if(GETGO(Door, DoorGUID[i]))
                 Door->SetUInt32Value(GAMEOBJECT_STATE, 1);
 
-        if(GETCRE(Illidan, IllidanGUID))
+        if(GETCRE(Illidan, pInstance->GetData64(DATA_ILLIDANSTORMRAGE)))
         {
             Illidan->RemoveAurasDueToSpell(SPELL_KNEEL);
             m_creature->SetInFront(Illidan);
             Illidan->SetInFront(m_creature);
+
             m_creature->GetMotionMaster()->MoveIdle();
             Illidan->GetMotionMaster()->MoveIdle();
+
             ((boss_illidan_stormrageAI*)Illidan->AI())->AkamaGUID = m_creature->GetGUID();
             ((boss_illidan_stormrageAI*)Illidan->AI())->EnterPhase(PHASE_TALK_SEQUENCE);
         }
     }
 
-    void BeginChannel()
-    {
-        m_creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-        if(!JustCreated)
-            return;
-
-        m_creature->setActive(true);
-
-        float x, y, z;
-        if(GETGO(Gate, GateGUID))
-            Gate->GetPosition(x, y, z);
-        else
-            return;//if door not spawned, don't crash server
-
-        if(Creature* Channel = m_creature->SummonCreature(ILLIDAN_DOOR_TRIGGER, x, y, z+5, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 360000))
-        {
-            ChannelGUID = Channel->GetGUID();
-            Channel->SetUInt32Value(UNIT_FIELD_DISPLAYID, 11686); // Invisible but spell visuals can still be seen.
-            DoCast(Channel, SPELL_AKAMA_DOOR_FAIL);
-        }
-
-        for(uint8 i = 0; i < 2; ++i)
-            if(Creature* Spirit = m_creature->SummonCreature(i ? SPIRIT_OF_OLUM : SPIRIT_OF_UDALO, SpiritSpawns[i].x, SpiritSpawns[i].y, SpiritSpawns[i].z, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 360000))
-            {
-                Spirit->SetVisibility(VISIBILITY_OFF);
-                SpiritGUID[i] = Spirit->GetGUID();
-            }
-    }
-
     void BeginWalk()
     {
         m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+
         m_creature->SetSpeed(MOVE_RUN, 1.0f);
-        m_creature->GetMotionMaster()->MovePoint(0, AkamaWP[WalkCount].x, AkamaWP[WalkCount].y, AkamaWP[WalkCount].z);
+        m_creature->GetMotionMaster()->MovePoint(0, AkamaPath[WalkCount].x, AkamaPath[WalkCount].y, AkamaPath[WalkCount].z);
     }
 
     void EnterPhase(AkamaPhase m_nextPhase)
     {
-        if(!pInstance)
-            return;
-
-        switch(m_nextPhase)
+        switch (m_nextPhase)
         {
-        case PHASE_CHANNEL:
-            BeginChannel();
-            Timer = 5000;
-            ChannelCount = 0;
+            case PHASE_OPEN_DOOR:
+            {
+                 m_creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+
+                 m_creature->setActive(true);
+
+                 float x, y, z;
+                 if(GETGO(Gate, GateGUID))
+                     Gate->GetPosition(x, y, z);
+                 else
+                     return;//if door not spawned, don't crash server
+
+                 if(Creature* Channel = m_creature->SummonCreature(ILLIDAN_DOOR_TRIGGER, x, y, z+5, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 360000))
+                 {
+                     ChannelGUID = Channel->GetGUID();
+                     Channel->SetUInt32Value(UNIT_FIELD_DISPLAYID, 11686); // Invisible but spell visuals can still be seen.
+                     DoCast(Channel, SPELL_AKAMA_DOOR_FAIL);
+                 }
+
+                 for(uint8 i = 0; i < 2; ++i)
+                 {
+                     if(Creature* Spirit = m_creature->SummonCreature(i ? SPIRIT_OF_OLUM : SPIRIT_OF_UDALO, SpiritSpawns[i].x, SpiritSpawns[i].y, SpiritSpawns[i].z, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 360000))
+                     {
+                         Spirit->SetVisibility(VISIBILITY_OFF);
+                         SpiritGUID[i] = Spirit->GetGUID();
+                     }
+                 }
+                Timer = 5000;
+                ChannelCount = 0;
             break;
+        }
         case PHASE_WALK:
-            if(m_phase == PHASE_CHANNEL)
+            if(m_phase == PHASE_OPEN_DOOR)
                 WalkCount = 0;
             else if(m_phase == PHASE_TALK)
             {
-                if(GETCRE(Illidan, IllidanGUID))
+                if(GETCRE(Illidan, pInstance->GetData64(DATA_ILLIDANSTORMRAGE)))
                     ((boss_illidan_stormrageAI*)Illidan->AI())->DeleteFromThreatList(m_creature->GetGUID());
                 EnterEvadeMode();
                 m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -1113,7 +1116,7 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
         case PHASE_TALK:
             if(m_phase == PHASE_WALK)
             {
-                BeginTalk();
+                StartEvent();
                 Timer = 0;
             }
             else if(m_phase == PHASE_FIGHT_ILLIDAN)
@@ -1123,7 +1126,7 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
             }
             break;
         case PHASE_FIGHT_ILLIDAN:
-            if(GETUNIT(Illidan, IllidanGUID))
+            if(GETUNIT(Illidan, pInstance->GetData64(DATA_ILLIDANSTORMRAGE)))
             {
                 m_creature->AddThreat(Illidan, 10000000.0f);
                 m_creature->GetMotionMaster()->MoveChase(Illidan);
@@ -1153,7 +1156,7 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
         switch(TalkCount)
         {
         case 0:
-            if(GETCRE(Illidan, IllidanGUID))
+            if(GETCRE(Illidan, pInstance->GetData64(DATA_ILLIDANSTORMRAGE)))
             {
                 ((boss_illidan_stormrageAI*)Illidan->AI())->Timer[EVENT_TAUNT] += 30000;
                 DoScriptText(SAY_AKAMA_MINION, Illidan);
@@ -1252,7 +1255,7 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
         {
             Timer = 0;
             WalkCount++;
-            m_creature->GetMotionMaster()->MovePoint(WalkCount, AkamaWP[WalkCount].x, AkamaWP[WalkCount].y, AkamaWP[WalkCount].z);
+            m_creature->GetMotionMaster()->MovePoint(WalkCount, AkamaPath[WalkCount].x, AkamaPath[WalkCount].y, AkamaPath[WalkCount].z);
         }
     }
 
@@ -1262,7 +1265,7 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
         {
             if(Check_Timer < diff)
             {
-                if(pInstance && pInstance->GetData(DATA_ILLIDARICOUNCILEVENT) == DONE)
+                if(pInstance && pInstance->GetData(EVENT_ILLIDARICOUNCIL) == DONE)
                     m_creature->SetVisibility(VISIBILITY_ON);
 
                 Check_Timer = 5000;
@@ -1283,7 +1286,7 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
         {
             switch(m_phase)
             {
-            case PHASE_CHANNEL:
+            case PHASE_OPEN_DOOR:
                 if(JustCreated)
                     HandleChannelSequence();
                 else
@@ -1298,7 +1301,7 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
                 break;
             case PHASE_FIGHT_ILLIDAN:
                 {
-                    GETUNIT(Illidan, IllidanGUID);
+                    GETUNIT(Illidan, pInstance->GetData64(DATA_ILLIDANSTORMRAGE));
                     if(Illidan && HPPCT(Illidan) < 90)
                         EnterPhase(PHASE_TALK);
                     else
@@ -1321,7 +1324,7 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
                         m_creature->AddThreat(Elite, 1000000.0f);
                     }
                     Timer = 10000 + rand()%6000;
-                    GETUNIT(Illidan, IllidanGUID);
+                    GETUNIT(Illidan, pInstance->GetData64(DATA_ILLIDANSTORMRAGE));
                     if(Illidan && HPPCT(Illidan) < 10)
                         EnterPhase(PHASE_RETURN);
                 }
@@ -1340,8 +1343,6 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 };
-
-
 
 enum MaievEvent
 {
@@ -1573,7 +1574,7 @@ bool GossipSelect_npc_akama_at_illidan(Player *player, Creature *_Creature, uint
     if(action == GOSSIP_ACTION_INFO_DEF) // Time to begin the Event
     {
         player->CLOSE_GOSSIP_MENU();
-        ((npc_akama_illidanAI*)_Creature->AI())->EnterPhase(PHASE_CHANNEL);
+        ((npc_akama_illidanAI*)_Creature->AI())->EnterPhase(PHASE_OPEN_DOOR);
     }
     return true;
 }
@@ -1801,7 +1802,7 @@ struct TRINITY_DLL_DECL blade_of_azzinothAI : public NullCreatureAI
 void boss_illidan_stormrageAI::Reset()
 {
     if(pInstance)
-        pInstance->SetData(DATA_ILLIDANSTORMRAGEEVENT, NOT_STARTED);
+        pInstance->SetData(EVENT_ILLIDANSTORMRAGE, NOT_STARTED);
 
     AkamaGUID = pInstance->GetData64(DATA_AKAMA);
 

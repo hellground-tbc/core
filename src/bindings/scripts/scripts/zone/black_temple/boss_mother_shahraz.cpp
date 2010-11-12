@@ -130,7 +130,7 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
     void Reset()
     {
         if (pInstance)
-            pInstance->SetData(DATA_MOTHERSHAHRAZEVENT, NOT_STARTED);
+            pInstance->SetData(EVENT_MOTHERSHAHRAZ, NOT_STARTED);
 
         BeamTimer = 20000; // Timers may be incorrect
         BeamCount = 0;
@@ -151,7 +151,7 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
     void EnterCombat(Unit *who)
     {
         if (pInstance)
-            pInstance->SetData(DATA_MOTHERSHAHRAZEVENT, IN_PROGRESS);
+            pInstance->SetData(EVENT_MOTHERSHAHRAZ, IN_PROGRESS);
 
         m_creature->RemoveAurasDueToSpell(SPELL_PRISMATIC_SHIELD);
         m_creature->RemoveAurasDueToSpell(SPELL_SABER_LASH_AURA);
@@ -170,7 +170,7 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
     void JustDied(Unit *victim)
     {
         if (pInstance)
-            pInstance->SetData(DATA_MOTHERSHAHRAZEVENT, DONE);
+            pInstance->SetData(EVENT_MOTHERSHAHRAZ, DONE);
 
         DoScriptText(SAY_DEATH, m_creature);
     }

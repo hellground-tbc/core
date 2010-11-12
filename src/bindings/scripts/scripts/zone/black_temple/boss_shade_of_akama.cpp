@@ -752,7 +752,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
         m_updateSpeed = false;
 
         if (pInstance)
-            pInstance->SetData(DATA_SHADEOFAKAMAEVENT, NOT_STARTED);
+            pInstance->SetData(EVENT_SHADEOFAKAMA, NOT_STARTED);
     }
 
     void ProcessSpawning(const uint32 diff)
@@ -1147,7 +1147,7 @@ struct TRINITY_DLL_DECL npc_akamaAI : public ScriptedAI
         m_talk = 0;
         m_talkTimer = 3000;
         if (pInstance)
-            pInstance->SetData(DATA_SHADEOFAKAMAEVENT, DONE);
+            pInstance->SetData(EVENT_SHADEOFAKAMA, DONE);
     }
 
     ScriptedInstance* pInstance;
@@ -1175,7 +1175,7 @@ struct TRINITY_DLL_DECL npc_akamaAI : public ScriptedAI
 
         if (pInstance)
         {
-            if (pInstance->GetData(DATA_SHADEOFAKAMAEVENT) == NOT_STARTED)
+            if (pInstance->GetData(EVENT_SHADEOFAKAMA) == NOT_STARTED)
             {
                 m_creature->SetUInt32Value(UNIT_NPC_FLAGS, 0);
                 m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
@@ -1192,7 +1192,7 @@ struct TRINITY_DLL_DECL npc_akamaAI : public ScriptedAI
 
     void BeginEvent(Player* pl)
     {
-        pInstance->SetData(DATA_SHADEOFAKAMAEVENT, IN_PROGRESS);
+        pInstance->SetData(EVENT_SHADEOFAKAMA, IN_PROGRESS);
         m_creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
         m_creature->GetMotionMaster()->MovePoint(0, AKAMA_X, AKAMA_Y, AKAMA_Z);
     }
@@ -1267,7 +1267,7 @@ struct TRINITY_DLL_DECL npc_akamaAI : public ScriptedAI
 
     inline bool UpdateVictim()
     {
-        if (pInstance && pInstance->GetData(DATA_SHADEOFAKAMAEVENT) == IN_PROGRESS)
+        if (pInstance && pInstance->GetData(EVENT_SHADEOFAKAMA) == IN_PROGRESS)
         {
             if (!me->isInCombat())
                 return false;
@@ -1343,7 +1343,7 @@ struct TRINITY_DLL_DECL npc_akamaAI : public ScriptedAI
                 m_talkTimer -= diff;
         }
 
-        if (pInstance->GetData(DATA_SHADEOFAKAMAEVENT) != IN_PROGRESS)
+        if (pInstance->GetData(EVENT_SHADEOFAKAMA) != IN_PROGRESS)
             return;
 
         if (!m_yell && (m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 15)
@@ -1431,7 +1431,7 @@ bool GossipSelect_npc_akama(Player *player, Creature *_Creature, uint32 sender, 
 {
     if (ScriptedInstance *pInstance = (ScriptedInstance *)_Creature->GetInstanceData())
     {
-        if (pInstance->GetData(DATA_SHADEOFAKAMAEVENT) != NOT_STARTED)
+        if (pInstance->GetData(EVENT_SHADEOFAKAMA) != NOT_STARTED)
         {
             player->CLOSE_GOSSIP_MENU();
             return true;
@@ -1450,7 +1450,7 @@ bool GossipHello_npc_akama(Player *player, Creature *_Creature)
 {
     if (ScriptedInstance *pInstance = (ScriptedInstance *)_Creature->GetInstanceData())
     {
-        if (pInstance->GetData(DATA_SHADEOFAKAMAEVENT) == NOT_STARTED)
+        if (pInstance->GetData(EVENT_SHADEOFAKAMA) == NOT_STARTED)
         {
             if (player->isAlive())
             {

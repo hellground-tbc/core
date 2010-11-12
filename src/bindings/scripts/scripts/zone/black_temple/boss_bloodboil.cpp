@@ -109,7 +109,7 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
     void Reset()
     {
         if(pInstance)
-            pInstance->SetData(DATA_GURTOGGBLOODBOILEVENT, NOT_STARTED);
+            pInstance->SetData(EVENT_GURTOGGBLOODBOIL, NOT_STARTED);
 
         m_targetGUID = 0;
         m_targetThreat = 0;
@@ -140,7 +140,7 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
         DoZoneInCombat();
         DoScriptText(SAY_AGGRO, m_creature);
         if(pInstance)
-            pInstance->SetData(DATA_GURTOGGBLOODBOILEVENT, IN_PROGRESS);
+            pInstance->SetData(EVENT_GURTOGGBLOODBOIL, IN_PROGRESS);
     }
 
     void JustSummoned(Unit *pSummon)
@@ -164,7 +164,7 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
     void JustDied(Unit *victim)
     {
         if(pInstance)
-            pInstance->SetData(DATA_GURTOGGBLOODBOILEVENT, DONE);
+            pInstance->SetData(EVENT_GURTOGGBLOODBOIL, DONE);
 
         DoScriptText(SAY_DEATH, m_creature);
     }

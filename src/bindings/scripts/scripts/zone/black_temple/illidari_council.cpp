@@ -112,7 +112,7 @@ struct TRINITY_DLL_DECL mob_blood_elf_council_voice_triggerAI : public ScriptedA
 
     void UpdateAI(const uint32 diff)
     {
-        if (pInstance->GetData(DATA_ILLIDARICOUNCILEVENT) != IN_PROGRESS)
+        if (pInstance->GetData(EVENT_ILLIDARICOUNCIL) != IN_PROGRESS)
             return;
 
         if (m_counter > 3)
@@ -186,7 +186,7 @@ struct TRINITY_DLL_DECL mob_illidari_councilAI : public ScriptedAI
             }
         }
 
-        pInstance->SetData(DATA_ILLIDARICOUNCILEVENT, NOT_STARTED);
+        pInstance->SetData(EVENT_ILLIDARICOUNCIL, NOT_STARTED);
         
         if(Creature *pTrigger = pInstance->GetCreature(pInstance->GetData64(DATA_BLOOD_ELF_COUNCIL_VOICE)))
             pTrigger->AI()->EnterEvadeMode();
@@ -225,13 +225,13 @@ struct TRINITY_DLL_DECL mob_illidari_councilAI : public ScriptedAI
                 }
             }
 
-            pInstance->SetData(DATA_ILLIDARICOUNCILEVENT, IN_PROGRESS);
+            pInstance->SetData(EVENT_ILLIDARICOUNCIL, IN_PROGRESS);
         }
     }
 
     void UpdateAI(const uint32 diff)
     {
-        if (pInstance->GetData(DATA_ILLIDARICOUNCILEVENT) != IN_PROGRESS)
+        if (pInstance->GetData(EVENT_ILLIDARICOUNCIL) != IN_PROGRESS)
             return;
 
         if (m_endTimer)
@@ -243,7 +243,7 @@ struct TRINITY_DLL_DECL mob_illidari_councilAI : public ScriptedAI
                     if (Creature *pTrigger = pInstance->GetCreature(pInstance->GetData64(DATA_BLOOD_ELF_COUNCIL_VOICE)))
                         pTrigger->DealDamage(pTrigger,pTrigger->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
 
-                    pInstance->SetData(DATA_ILLIDARICOUNCILEVENT, DONE);
+                    pInstance->SetData(EVENT_ILLIDARICOUNCIL, DONE);
                     
                     //ENABE IT LATER !
                     //m_creature->SummonCreature(23089, 746.466980f, 304.394989f, 311.90208f, 6.272870f, TEMPSUMMON_DEAD_DESPAWN, 0);
@@ -628,10 +628,9 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
         if (m_boltTimer < diff)
         {
             if (!m_creature->IsNonMeleeSpellCasted(false))
-            {
                 AddSpellToCast(m_creature->getVictim(), SPELL_ARCANE_BOLT);
-                m_boltTimer = 1000;
-            }
+            
+            m_boltTimer = 1000;
         }
         else
             m_boltTimer -= diff;
