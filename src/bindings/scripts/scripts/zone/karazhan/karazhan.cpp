@@ -158,13 +158,11 @@ struct TRINITY_DLL_DECL npc_barnesAI : public npc_escortAI
 
             Event = pInstance->GetData(DATA_OPERA_PERFORMANCE);
 
-             if (GameObject* Door = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_STAGEDOORLEFT)))
-                 Door->SetGoState(pInstance->GetData(DATA_OPERA_EVENT) == DONE ? 0 : 1);
+            if (GameObject* Door = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_STAGEDOORLEFT)))
+                Door->SetGoState(pInstance->GetData(DATA_OPERA_EVENT) == DONE ? 0 : 1);
 
-             if (GameObject* Curtain = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_CURTAINS)))
-             {
-                 Curtain->SetGoState(1);
-             }
+            if (GameObject* Curtain = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_CURTAINS)))
+                Curtain->SetGoState(pInstance->GetData(DATA_OPERA_EVENT) == DONE ? 0 : 1);
         }
     }
 
@@ -310,7 +308,7 @@ struct TRINITY_DLL_DECL npc_barnesAI : public npc_escortAI
                         return;
                     }
 
-                    WipeTimer = 15000;
+                    WipeTimer = 5000;
                 }
                 else
                     WipeTimer -= diff;
