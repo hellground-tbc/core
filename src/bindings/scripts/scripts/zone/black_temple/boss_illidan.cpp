@@ -293,19 +293,19 @@ enum IllidanEvent
     EVENT_AGONIZING_FLAMES      =   8,
     EVENT_TRANSFORM_NORMAL      =   9,
     EVENT_ENRAGE                =   10,
-    
+
     //flight phase
     EVENT_FIREBALL              =   2,
     EVENT_DARK_BARRAGE          =   3,
     EVENT_EYE_BLAST             =   4,
     EVENT_MOVE_POINT            =   5,
-    
+
     //demon phase
     EVENT_SHADOW_BLAST          =   2,
     EVENT_FLAME_BURST           =   3,
     EVENT_SHADOWDEMON           =   4,
     EVENT_TRANSFORM_DEMON       =   5,
-    
+
     //sequence phase
     EVENT_TALK_SEQUENCE         =   2,
     EVENT_FLIGHT_SEQUENCE       =   2,
@@ -705,7 +705,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
             case EVENT_TAUNT:
             {
                 DoScriptText(RAND(ILLIDAN_TAUNT_NO1, ILLIDAN_TAUNT_NO2, ILLIDAN_TAUNT_NO3, ILLIDAN_TAUNT_NO4), me);
-                
+
                 Timer[EVENT_TAUNT] = urand(25000, 35000);
                 break;
             }
@@ -974,7 +974,7 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
         }
         else
         {
-            IllidanGUID = 0;
+            //IllidanGUID = 0;
             GateGUID = 0;
             DoorGUID[0] = 0;
             DoorGUID[1] = 0;
