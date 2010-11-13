@@ -178,6 +178,7 @@ struct TRINITY_DLL_DECL boss_dorotheeAI : public ScriptedAI
         {
             if(AggroTimer <= diff)
             {
+                DoZoneInCombat();
                 m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 AggroTimer = 0;
             }else AggroTimer -= diff;
@@ -342,6 +343,7 @@ struct TRINITY_DLL_DECL boss_strawmanAI : public ScriptedAI
         {
             if(AggroTimer <= diff)
             {
+                DoZoneInCombat();
                 m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 AggroTimer = 0;
             }else AggroTimer -= diff;
@@ -441,6 +443,7 @@ struct TRINITY_DLL_DECL boss_tinheadAI : public ScriptedAI
         {
             if(AggroTimer < diff)
             {
+                DoZoneInCombat();
                 m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 AggroTimer = 0;
             }else AggroTimer -= diff;
@@ -543,6 +546,7 @@ struct TRINITY_DLL_DECL boss_roarAI : public ScriptedAI
         {
             if(AggroTimer <= diff)
             {
+                DoZoneInCombat();
                 m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 AggroTimer = 0;
             }
