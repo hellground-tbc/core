@@ -1627,6 +1627,8 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         virtual float GetFollowAngle() const { return PET_FOLLOW_ANGLE; }
         void SetFlying(bool apply);
 
+        bool HasEventAISummonedUnits ();
+
         bool IsAIEnabled, NeedChangeAI;
     protected:
         explicit Unit ();

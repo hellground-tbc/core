@@ -396,3 +396,26 @@ bool UnitAI::CanCast(Unit* Target, SpellEntry const *Spell, bool Triggered)
 
     return true;
 }
+
+bool UnitAI::HasEventAISummonedUnits()
+{
+    if (eventAISummonedList.empty())
+        return false;
+
+    bool alive = false;
+
+    for (std::list<uint64>::iterator itr = eventAISummonedList.begin(); itr != eventAISummonedList.end();)
+    {
+        std::list<uint64>::iterator tmpItr = itr;
+        ++itr;
+        if (Unit * tmpU = me->GetUnit(*tmpItr))
+        {
+            if (tmpU->IsInWorld() && tmpU->isAlive())
+                alive = true;
+            else
+                eventAISummonedList.erase(tmpItr);
+        }
+    }
+
+    return alive;
+}

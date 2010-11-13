@@ -98,6 +98,8 @@ CreatureEventAI::CreatureEventAI(Creature *c ) : CreatureAI(c)
     AttackAngle = 0.0f;
     summoned = NULL;
 
+    eventAISummonedList.clear();
+
     InvinceabilityHpLevel = 0;
 
     //Handle Spawned Events
@@ -909,6 +911,8 @@ void CreatureEventAI::JustDied(Unit* killer)
             ProcessEvent(*i, killer);
     }
 
+    eventAISummonedList.clear();
+
     // reset phase after any death state events
     Phase = 0;
 }
@@ -933,7 +937,6 @@ void CreatureEventAI::JustSummoned(Creature* pUnit)
     uint32 entry = pUnit->GetEntry();
     uint32 level = me->getLevel();
     uint32 hp = 0;
-    bool check = false;
 
     pUnit->SetLevel(level);
 
@@ -941,18 +944,12 @@ void CreatureEventAI::JustSummoned(Creature* pUnit)
     {
         case 12922: //imp
             hp = 17.8 * level - 54;
-            check = true;
             break;
         case 10928: //succub
             hp = 63 * level - 986;
-            check = true;
             break;
         case 8996:  //void
             hp = 55 * level - 116;
-            check = true;
-            break;
-        case 6047:  //aqua guardian
-            check = true;
             break;
         default:
             break;
@@ -965,23 +962,13 @@ void CreatureEventAI::JustSummoned(Creature* pUnit)
         pUnit->SetMaxHealth(hp);
     }
 
-    // prevent summon pet or imp twice
-    if ((pUnit->isPet() && me->GetPet() && me->GetPet()->isAlive()) ||
-        (check && summoned && summoned->isAlive()))
-    {
-        pUnit->Kill(pUnit, false);
-        pUnit->RemoveCorpse();
-        return;
-    }
+    eventAISummonedList.push_back(pUnit->GetGUID());
 
     for (std::list<CreatureEventAIHolder>::iterator i = CreatureEventAIList.begin(); i != CreatureEventAIList.end(); ++i)
     {
         if ((*i).Event.event_type == EVENT_T_SUMMONED_UNIT)
             ProcessEvent(*i, pUnit);
     }
-
-    if (check)
-        summoned = pUnit;
 }
 
 void CreatureEventAI::EnterCombat(Unit *enemy)

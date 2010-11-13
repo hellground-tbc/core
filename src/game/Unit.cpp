@@ -53,6 +53,7 @@
 #include "CreatureAI.h"
 #include "VMapFactory.h"
 #include "Traveller.h"
+#include "UnitAI.h"
 
 #include <math.h>
 
@@ -3320,7 +3321,7 @@ bool Unit::isBetween(WorldObject *s, WorldObject *e, float offset) const
 
     xn = s->GetPositionX();
     yn = s->GetPositionY();
-    
+
     xp = e->GetPositionX();
     yp = e->GetPositionY();
 
@@ -12489,3 +12490,11 @@ uint32 Unit::GetSpellRadiusForTarget(Unit* target,const SpellRadiusEntry * radiu
         return radiusEntry->radiusHostile;
     return radiusEntry->radiusFriend;
 };
+
+bool Unit::HasEventAISummonedUnits()
+{
+    if (!IsAIEnabled || !i_AI)
+        return false;
+
+    return i_AI->HasEventAISummonedUnits();
+}
