@@ -3792,7 +3792,7 @@ void Spell::EffectDistract(uint32 /*i*/)
         return;
 
     float angle = unitTarget->GetAngle(m_targets.m_destX, m_targets.m_destY);
-    
+
     unitTarget->SetStandState(PLAYER_STATE_NONE);
 
     if ( unitTarget->GetTypeId() == TYPEID_PLAYER )
@@ -6588,6 +6588,16 @@ void Spell::EffectModifyThreatPercent(uint32 /*effIndex*/)
 void Spell::EffectTransmitted(uint32 effIndex)
 {
     uint32 name_id = m_spellInfo->EffectMiscValue[effIndex];
+
+    // Create Soulwell hack
+    if (m_spellInfo->Id == 29886)
+    {
+        if (m_caster->HasAura(18693, 0))    //imp healthstone rank 2
+            name_id = 183511;
+        else
+            if (m_caster->HasAura(18692, 0))//imp healthstone rank 1
+                name_id = 183510;
+    }
 
     GameObjectInfo const* goinfo = objmgr.GetGameObjectInfo(name_id);
 
