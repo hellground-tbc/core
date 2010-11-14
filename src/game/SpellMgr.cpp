@@ -2611,6 +2611,8 @@ void SpellMgr::LoadSpellCustomAttr()
         case 40834: // Agonizing Flames
             spellInfo->MaxAffectedTargets = 1;
             break;
+        case 39992: // Najentus: Needle Spine
+            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_PLAYERS_ONLY;
         case 41357: // L1 Acane Charge
         case 41376: // Spite
         case 29576: //Multi-Shot
@@ -2619,7 +2621,6 @@ void SpellMgr::LoadSpellCustomAttr()
         case 45248: //Shadow Blades
         case 41303: // Soul Drain
         case 31298: // Anetheron: Sleep
-        case 39992: // Najentus: Needle Spine
             spellInfo->MaxAffectedTargets = 3;
             break;
         case 38310: //Multi-Shot

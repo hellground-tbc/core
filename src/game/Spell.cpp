@@ -2099,13 +2099,8 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
 
         if(!unitList.empty())
         {
-            if(m_spellValue->MaxAffectedTargets)
-            {
-                if(m_spellInfo->Id == 5246) //Intimidating Shout
-                    unitList.remove(m_targets.getUnitTarget());
-
-                Trinity::RandomResizeList(unitList, m_spellValue->MaxAffectedTargets);
-            }else if(m_spellInfo->Id == 27285) // Seed of Corruption proc spell
+            
+            if(m_spellInfo->Id == 27285) // Seed of Corruption proc spell
                 unitList.remove(m_targets.getUnitTarget());
             else if(m_spellInfo->Id == 39968) // Needle Spine Explosion proc
                 unitList.remove(m_targets.getUnitTarget());
@@ -2113,6 +2108,11 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 unitList.remove(m_targets.getUnitTarget());
             else if(m_spellInfo->Id == 41067) // Blood Splash proc
                 unitList.remove(m_targets.getUnitTarget());
+            else if(m_spellInfo->Id == 5246) //Intimidating Shout
+                    unitList.remove(m_targets.getUnitTarget());
+
+            if (m_spellValue->MaxAffectedTargets)
+                Trinity::RandomResizeList(unitList, m_spellValue->MaxAffectedTargets);
 
             for(std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
                 AddUnitTarget(*itr, i);
