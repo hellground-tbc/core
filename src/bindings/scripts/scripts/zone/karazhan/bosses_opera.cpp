@@ -172,13 +172,17 @@ struct TRINITY_DLL_DECL boss_dorotheeAI : public ScriptedAI
         me->RemoveCorpse();
     }
 
+    void JustRespawned()
+    {
+        DoZoneInCombat();
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if(AggroTimer)
         {
             if(AggroTimer <= diff)
             {
-                DoZoneInCombat();
                 m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 AggroTimer = 0;
             }else AggroTimer -= diff;
@@ -337,13 +341,17 @@ struct TRINITY_DLL_DECL boss_strawmanAI : public ScriptedAI
         DoScriptText(SAY_STRAWMAN_SLAY, m_creature);
     }
 
+    void JustRespawned()
+    {
+        DoZoneInCombat();
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if(AggroTimer)
         {
             if(AggroTimer <= diff)
             {
-                DoZoneInCombat();
                 m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 AggroTimer = 0;
             }else AggroTimer -= diff;
@@ -437,13 +445,17 @@ struct TRINITY_DLL_DECL boss_tinheadAI : public ScriptedAI
         DoScriptText(SAY_TINHEAD_SLAY, m_creature);
     }
 
+    void JustRespawned()
+    {
+        DoZoneInCombat();
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if(AggroTimer)
         {
             if(AggroTimer < diff)
             {
-                DoZoneInCombat();
                 m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 AggroTimer = 0;
             }else AggroTimer -= diff;
@@ -540,13 +552,17 @@ struct TRINITY_DLL_DECL boss_roarAI : public ScriptedAI
         DoScriptText(SAY_ROAR_SLAY, m_creature);
     }
 
+    void JustRespawned()
+    {
+        DoZoneInCombat();
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if(AggroTimer)
         {
             if(AggroTimer <= diff)
             {
-                DoZoneInCombat();
                 m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 AggroTimer = 0;
             }

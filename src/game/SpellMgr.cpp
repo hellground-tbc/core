@@ -1764,6 +1764,10 @@ bool SpellMgr::IsSpecialStackCase(SpellEntry const *spellInfo_1, SpellEntry cons
             && spellInfo_2->SpellFamilyName == SPELLFAMILY_PALADIN && spellInfo_2->SpellFamilyFlags & 0x80000 && spellInfo_2->SpellIconID == 206) // wisdom
         return !sameCaster;
 
+    // Dragonmaw Illusion - should stack with everything ?
+    if (spellId_1 == 40214 || spellId_2 == 40214)
+        return true;
+
     // hourglass of unraveller stacks with blood fury
     if(spellId_1 == 33649 && spellId_2 == 20572)
         return true;
@@ -1772,10 +1776,6 @@ bool SpellMgr::IsSpecialStackCase(SpellEntry const *spellInfo_1, SpellEntry cons
     if( (spellId_1 == 38348 || spellId_1 == 34321 || spellId_1 == 35084) &&
             (spellId_2 == 38348 || spellId_2 == 34321 || spellId_2 == 35084) &&
             (spellId_1 != spellId_2) )
-        return true;
-
-    // Illidari Agent Illusion & DragonMaw Illusion
-    if (spellId_1 == 38224 && spellId_2 == 40214)
         return true;
 
     if(recur)
