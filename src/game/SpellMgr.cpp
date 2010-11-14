@@ -1774,6 +1774,10 @@ bool SpellMgr::IsSpecialStackCase(SpellEntry const *spellInfo_1, SpellEntry cons
             (spellId_1 != spellId_2) )
         return true;
 
+    // Illidari Agent Illusion & DragonMaw Illusion
+    if (spellId_1 == 38224 && spellId_2 == 40214)
+        return true;
+
     if(recur)
         return IsSpecialStackCase(spellInfo_2, spellInfo_1, sameCaster, false);
 
