@@ -117,6 +117,9 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
 
     void SpellHitTarget(Unit *pTarget, const SpellEntry *pSpell)
     {
+        if (pTarget->GetTypeId() != TYPEID_PLAYER)
+            return;
+
         if (pSpell->Id == SPELL_FATAL_ATTRACTION)
         {
             float x = positions[position][0];
