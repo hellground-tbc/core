@@ -1209,6 +1209,9 @@ bool SpellMgr::IsAffectedBySpell(SpellEntry const *spellInfo, uint32 spellId, ui
     if (!affect_spell)
         return false;
 
+    if (spellId == 37706 && (spellInfo->Effect[0] == SPELL_EFFECT_HEAL || spellInfo->EffectApplyAuraName[0] == SPELL_AURA_PERIODIC_HEAL))
+        return true;
+
     // False if spellFamily not equal
     if (affect_spell->SpellFamilyName != spellInfo->SpellFamilyName)
         return false;
