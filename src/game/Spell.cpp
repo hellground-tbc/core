@@ -2057,7 +2057,6 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                         else
                             SearchAreaTarget(unitList, radius, pushType, SPELL_TARGETS_ENTRY, i_spellST->second.targetEntry, tmp);
                     }
-
                 }
                 break;
             }
@@ -2110,6 +2109,12 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 unitList.remove(m_targets.getUnitTarget());
             else if(m_spellInfo->Id == 5246) //Intimidating Shout
                     unitList.remove(m_targets.getUnitTarget());
+
+            for(std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
+            {
+                if (m_spellInfo->Id == 40869 && (*itr)->HasAura(43690, 0))
+                    unitList.remove(*itr);
+            }
 
             if (m_spellValue->MaxAffectedTargets)
                 Trinity::RandomResizeList(unitList, m_spellValue->MaxAffectedTargets);

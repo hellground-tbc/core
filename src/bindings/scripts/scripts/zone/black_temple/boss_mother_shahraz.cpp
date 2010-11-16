@@ -38,14 +38,10 @@ EndScriptData */
 #define SAY_DEATH               -1564028
 
 //Spells
-#define SPELL_BEAM_SINISTER     40859
-#define SPELL_BEAM_VILE         40860
-#define SPELL_BEAM_WICKED       40861
-#define SPELL_BEAM_SINFUL       40827
+
 #define SPELL_SILENCING_SHRIEK  40823
 #define SPELL_ENRAGE            23537
 #define SPELL_SABER_LASH        40810
-#define SPELL_SABER_LASH_IMM    43690
 #define SPELL_FATAL_ATTRACTION  40869
 #define SPELL_BERSERK           45078
 
@@ -90,6 +86,14 @@ float positions[34][2] =
     {929.774, 262.897}
 };
 
+enum beamSpells
+{
+    SPELL_SINFUL_BEAM   = 40862,
+    SPELL_SINISTER_BEAM = 40863,
+    SPELL_VILE_BEAM     = 40865,
+    SPELL_WICKED_BEAM   = 40866
+};
+
 struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
 {
     boss_shahrazAI(Creature *c) : ScriptedAI(c)
@@ -101,9 +105,7 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
     ScriptedInstance* pInstance;
 
     uint8 position;
-    uint32 BeamTimer;
-    uint32 BeamCount;
-    uint32 CurrentBeam;
+
     uint32 ShriekTimer;
     uint32 SaberTimer;
     uint32 RandomYellTimer;
@@ -135,9 +137,6 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         if (pInstance)
             pInstance->SetData(EVENT_MOTHERSHAHRAZ, NOT_STARTED);
 
-        BeamTimer = 20000; // Timers may be incorrect
-        BeamCount = 0;
-        CurrentBeam = 0;                                    // 0 - Sinister, 1 - Vile, 2 - Wicked, 3 - Sinful
         FatalAttractionTimer = 60000;
         ShriekTimer = 30000;
         SaberTimer = 35000;
@@ -151,15 +150,39 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         Enraged = false;
     }
 
+    void OnAuraRemove(Aura *pAura, bool removeStack)
+    {
+        if (pInstance->GetData(EVENT_MOTHERSHAHRAZ) != IN_PROGRESS)
+            return;
+
+        switch (pAura->GetId())
+        {
+            case SPELL_SINFUL_BEAM:
+                ForceSpellCast(me, RAND(SPELL_SINISTER_BEAM, SPELL_VILE_BEAM, SPELL_WICKED_BEAM));
+                break;
+            case SPELL_SINISTER_BEAM:
+                ForceSpellCast(me, RAND(SPELL_SINFUL_BEAM, SPELL_VILE_BEAM, SPELL_WICKED_BEAM));
+                break;
+            case SPELL_VILE_BEAM:
+                ForceSpellCast(me, RAND(SPELL_SINFUL_BEAM, SPELL_SINISTER_BEAM, SPELL_WICKED_BEAM));
+                break;
+            case SPELL_WICKED_BEAM:
+                ForceSpellCast(me, RAND(SPELL_SINFUL_BEAM, SPELL_SINISTER_BEAM, SPELL_VILE_BEAM));
+                break;
+        }
+    }
+
     void EnterCombat(Unit *who)
     {
         if (pInstance)
             pInstance->SetData(EVENT_MOTHERSHAHRAZ, IN_PROGRESS);
 
-        m_creature->RemoveAurasDueToSpell(SPELL_PRISMATIC_SHIELD);
-        m_creature->RemoveAurasDueToSpell(SPELL_SABER_LASH_AURA);
-        ForceSpellCast(m_creature, SPELL_PRISMATIC_SHIELD, INTERRUPT_AND_CAST_INSTANTLY);
-        ForceSpellCast(m_creature, SPELL_SABER_LASH_AURA, INTERRUPT_AND_CAST_INSTANTLY);
+        me->RemoveAurasDueToSpell(SPELL_PRISMATIC_SHIELD);
+        me->RemoveAurasDueToSpell(SPELL_SABER_LASH_AURA);
+
+        ForceSpellCast(me, SPELL_PRISMATIC_SHIELD, INTERRUPT_AND_CAST_INSTANTLY);
+        ForceSpellCast(me, SPELL_SABER_LASH_AURA, INTERRUPT_AND_CAST_INSTANTLY);
+        ForceSpellCast(me, RAND(SPELL_SINFUL_BEAM, SPELL_SINISTER_BEAM, SPELL_WICKED_BEAM, SPELL_VILE_BEAM), INTERRUPT_AND_CAST_INSTANTLY);
 
         DoZoneInCombat();
         DoScriptText(SAY_AGGRO, m_creature);
@@ -197,47 +220,6 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
             Enraged = true;
             ForceSpellCastWithScriptText(m_creature, SPELL_ENRAGE, SAY_ENRAGE, INTERRUPT_AND_CAST_INSTANTLY);
         }
-
-        //Randomly cast one beam.
-        if (BeamTimer < diff)
-        {
-            Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true);
-            if (!pTarget)
-                return;
-
-            BeamTimer = 9000;
-
-            switch (CurrentBeam)
-            {
-                case 0:
-                    AddSpellToCast(pTarget, SPELL_BEAM_SINISTER);
-                    BeamCount++;
-                    break;
-                case 1:
-                    AddSpellToCast(pTarget, SPELL_BEAM_VILE);
-                    BeamCount++;
-                    break;
-                case 2:
-                    AddSpellToCast(pTarget, SPELL_BEAM_WICKED);
-                    BeamCount++;
-                    break;
-                case 3:
-                    AddSpellToCast(pTarget, SPELL_BEAM_SINFUL);
-                    BeamCount++;
-                    break;
-            }
-
-            if (BeamCount > 3)
-            {
-                uint32 Beam = CurrentBeam;
-                while (CurrentBeam == Beam)
-                    CurrentBeam = urand(0, 3);
-
-                BeamCount = 0;
-            }
-        }
-        else
-            BeamTimer -= diff;
 
         // Select 3 random targets (can select same target more than once), teleport to a random location then make them cast explosions until they get away from each other.
         if (FatalAttractionTimer < diff)
