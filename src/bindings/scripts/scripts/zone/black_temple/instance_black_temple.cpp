@@ -476,6 +476,9 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
                 else
                     EnslavedSoulsCount = 0;
             break;
+            case EVENT_ILLIDARIDOOR:
+                Encounters[9] = data;
+            break;
         }
 
         if (data == DONE)

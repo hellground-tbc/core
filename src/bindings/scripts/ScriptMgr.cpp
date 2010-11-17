@@ -200,6 +200,9 @@ void DoScriptText(int32 iTextEntry, WorldObject* pSource, Unit* pTarget, bool wi
             pSource->MonsterYellToZone(iTextEntry, pData->uiLanguage, pTarget ? pTarget->GetGUID() : 0);
             break;
     }
+
+    if (pTarget && pTarget->GetTypeId() == TYPEID_UNIT)
+        ((Creature*)pTarget)->AI()->ReceiveScriptText(pSource, iTextEntry);
 }
 
 //*********************************
