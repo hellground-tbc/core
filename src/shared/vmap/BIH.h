@@ -188,9 +188,9 @@ class BIH
                         {
                             uint32 tmpFront = node + offsetFront[axis];
                             uint32 tmpBack = node + offsetBack[axis];
-                            if (tmpFront > tree.size())
+                            if (tmpFront >= tree.size())
                                 continue;
-                            if (tmpBack > tree.size())
+                            if (tmpBack >= tree.size())
                                 continue;
                             // "normal" interior node
                             float tf = (intBitsToFloat(tree[tmpFront]) - org[axis]) * invDir[axis];
