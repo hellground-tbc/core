@@ -186,9 +186,15 @@ class BIH
                     {
                         if (axis < 3)
                         {
+                            uint32 tmpFront = node + offsetFront[axis];
+                            uint32 tmpBack = node + offsetBack[axis];
+                            if (tmpFront > tree.size())
+                                continue;
+                            if (tmpBack > tree.size())
+                                continue;
                             // "normal" interior node
-                            float tf = (intBitsToFloat(tree[node + offsetFront[axis]]) - org[axis]) * invDir[axis];
-                            float tb = (intBitsToFloat(tree[node + offsetBack[axis]]) - org[axis]) * invDir[axis];
+                            float tf = (intBitsToFloat(tree[tmpFront]) - org[axis]) * invDir[axis];
+                            float tb = (intBitsToFloat(tree[tmpBack]) - org[axis]) * invDir[axis];
                             // ray passes between clip zones
                             if (tf < intervalMin && tb > intervalMax)
                                 break;
