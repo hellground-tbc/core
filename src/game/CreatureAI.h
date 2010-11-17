@@ -147,12 +147,13 @@ class TRINITY_DLL_SPEC CreatureAI : public UnitAI
         //virtual void SpellClick(Player *player) {}
  
         // Called at reaching home after evade
-        virtual void JustReachedHome() { }
+        virtual void JustReachedHome() {}
  
         void DoZoneInCombat(float max_dist = 200.0f);
  
         // Called at text emote receive from player 
         virtual void ReceiveEmote(Player* pPlayer, uint32 text_emote) {}
+        virtual void ReceiveScriptText(WorldObject *pSource, int32 iTextEntry) {}
 
         ///== Triggered Actions Requested ==================
  
