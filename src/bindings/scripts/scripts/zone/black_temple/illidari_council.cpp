@@ -806,8 +806,8 @@ struct TRINITY_DLL_DECL boss_veras_darkshadowAI : public illidari_council_baseAI
             {
                 DoResetThreat();
 
-                ForceSpellCast(me, SPELL_VANISH, INTERRUPT_AND_CAST_INSTANTLY);
                 ForceSpellCast(me, SPELL_DEADLY_POISON_T, INTERRUPT_AND_CAST_INSTANTLY);
+                ForceSpellCast(me, SPELL_VANISH, INTERRUPT_AND_CAST_INSTANTLY);
                 m_vanishTimer = 30000;
 
                 if(Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
