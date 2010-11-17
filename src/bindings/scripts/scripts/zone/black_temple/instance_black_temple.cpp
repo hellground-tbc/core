@@ -502,7 +502,6 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         {
             case DATA_SHADOWOFDEATH_APPLY:
                 sodList[value] = 70000;
-                //std::cout << "Player added to list" << std::endl;
             break;
             case DATA_SHADOWOFDEATH_DONE:
                 if(sodList.size() && GetData(EVENT_TERONGOREFIEND) == IN_PROGRESS)
@@ -511,7 +510,6 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
                         if(itr->first == value)
                         {
                             sodList.erase(itr);
-                            //std::cout << "Player removed from list" << std::endl;
                         }
                 }
             break;
