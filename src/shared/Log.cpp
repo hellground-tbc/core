@@ -40,7 +40,7 @@ const int LogType_count = int(LogError) +1;
 
 Log::Log() :
     raLogfile(NULL), logfile(NULL), gmLogfile(NULL), charLogfile(NULL), specialLogFile(NULL),
-    dberLogfile(NULL), arenaLogFile(NULL), bossLogFile(NULL), cheatLogFile(NULL), m_colored(false), m_includeTime(false), m_gmlog_per_account(false)
+    dberLogfile(NULL), arenaLogFile(NULL), bossLogFile(NULL), cheatLogFile(NULL), acLogFile(NULL), m_colored(false), m_includeTime(false), m_gmlog_per_account(false)
 {
     Initialize();
 }
@@ -238,6 +238,8 @@ void Log::Initialize()
     bossLogFile = openLogFile("BossLogFile", NULL, "a");
 
     cheatLogFile = openLogFile("CheatLogFile", NULL, "a");
+
+    acLogFile = openLogFile("ACLogFile", NULL, "a");
 
     // Main log file settings
     m_includeTime  = sConfig.GetBoolDefault("LogTime", false);
@@ -483,6 +485,24 @@ void Log::outCheat( const char * str, ... )
         fprintf(cheatLogFile, "\n" );
         va_end(ap);
         fflush(cheatLogFile);
+    }
+    //fflush(stdout);
+}
+
+void Log::outAC( const char * str, ... )
+{
+    if( !str )
+        return;
+
+    if(acLogFile)
+    {
+        va_list ap;
+        outTimestamp(acLogFile);
+        va_start(ap, str);
+        vfprintf(acLogFile, str, ap);
+        fprintf(acLogFile, "\n" );
+        va_end(ap);
+        fflush(acLogFile);
     }
     //fflush(stdout);
 }

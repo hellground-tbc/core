@@ -221,6 +221,28 @@ void kick_player(std::string ip)
     while (result->NextRow());
 }
 
+void ACLogPlayer(std::string ip)
+{
+    QueryResult_AutoPtr result = LoginDatabase.PQuery("SELECT id FROM account WHERE last_ip = '%s'", ip.c_str());
+    if (!result)
+    {
+        sLog.outError("ANTICHEAT: Couldn't find accounts with last_ip = '%s'", ip.c_str());
+        return;
+    }
+
+    sLog.outAC("AC: Cheat Detected! ip: %s", ip);
+
+    do
+    {
+        Field *acc_field = result->Fetch();
+        uint32 account = acc_field->GetUInt32();
+
+        if (WorldSession* sess = sWorld.FindSession(account))
+            sLog.outAC("AC: Player Name (ip: %s): %s", ip, sess->GetPlayerName());
+    }
+    while (result->NextRow());
+}
+
 void World::ProcessAnticheat(char *cmd, char *val, std::string ip)
 {
     switch (*cmd)
@@ -233,7 +255,8 @@ void World::ProcessAnticheat(char *cmd, char *val, std::string ip)
         case CMD_KICK:
             if (*val == VAL_KICK_CHEAT_DETECTED)
             {
-                kick_player(ip);
+                ACLogPlayer(ip);
+                //kick_player(ip);
                 // delete from auth list
                 //m_ac_auth.erase(ip.c_str());
             }
@@ -1123,7 +1146,7 @@ void World::LoadConfigSettings(bool reload)
     VMAP::VMapFactory::createOrGetVMapManager()->setLOSonmaps(losMaps.c_str());
     VMAP::VMapFactory::createOrGetVMapManager()->setHeightonmaps(heightMaps.c_str());
     VMAP::VMapFactory::preventSpellsFromBeingTestedForLoS(ignoreSpellIds.c_str());
-    
+
     sLog.outString( "WORLD: VMap support included. LineOfSight on maps: %s, height on maps: %s",losMaps.c_str(), heightMaps.c_str());
     sLog.outString( "WORLD: VMap data directory is: %svmaps",m_dataPath.c_str());
     //sLog.outString( "WORLD: VMap config keys are: vmap.enableLOS, vmap.enableHeight, vmap.ignoreMapIds, vmap.ignoreSpellIds");

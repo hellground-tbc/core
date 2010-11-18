@@ -59,7 +59,7 @@ extern int m_ServiceStatus;
 
 INSTANTIATE_SINGLETON_1( Master );
 
-#ifdef ANTICHEAT_SOCK
+//#ifdef ANTICHEAT_SOCK
 class AntiCheatSocket : public TcpSocket
 {
     public:
@@ -109,7 +109,7 @@ class AntiCheatRunnable : public ACE_Based::Runnable
             }
         }
 };
-#endif//anticheatsock
+//#endif//anticheatsock
 
 volatile uint32 Master::m_masterLoopCounter = 0;
 
@@ -296,11 +296,11 @@ int Master::Run()
         t.setPriority(ACE_Based::Highest);
     }
 
-#ifdef ANTICHEAT_SOCK
+//#ifdef ANTICHEAT_SOCK
     AntiCheatRunnable *acr = new AntiCheatRunnable();
     if (acr)
         ACE_Based::Thread t2(*acr);
-#endif
+//#endif
 
     ///- Launch the world listener socket
     port_t wsport = sWorld.getConfig (CONFIG_PORT_WORLD);
