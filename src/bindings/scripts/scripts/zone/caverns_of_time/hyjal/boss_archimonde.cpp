@@ -310,7 +310,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
         Map::PlayerList const &tmp = me->GetMap()->GetPlayers();
         for(Map::PlayerList::const_iterator i = tmp.begin(); i != tmp.end(); ++i)
-            if (Player* i_pl = i->getSource())
+            if (Player* i_pl = i->getSource() && !i_pl->isGameMaster())
                 playersList.push_back(i_pl->GetGUID());
 
         if(pInstance)
