@@ -2098,7 +2098,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
 
         if(!unitList.empty())
         {
-            
+
             if(m_spellInfo->Id == 27285) // Seed of Corruption proc spell
                 unitList.remove(m_targets.getUnitTarget());
             else if(m_spellInfo->Id == 39968) // Needle Spine Explosion proc
@@ -2112,7 +2112,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
 
             for(std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
             {
-                if (m_spellInfo->Id == 40869 && (*itr)->HasAura(43690, 0))
+                if (m_spellInfo->Id == 40869 && (*itr) && (*itr)->IsInWorld() && (*itr)->HasAura(43690, 0))
                     unitList.remove(*itr);
             }
 
