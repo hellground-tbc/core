@@ -99,23 +99,21 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
     boss_shahrazAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
-        m_creature->GetPosition(wLoc);
     }
 
     ScriptedInstance* pInstance;
 
-    uint8 position;
+    uint8 m_position;
 
-    uint32 ShriekTimer;
-    uint32 SaberTimer;
-    uint32 RandomYellTimer;
-    uint32 EnrageTimer;
-    uint32 FatalAttractionTimer;
+    uint32 m_shriekTimer;
+    uint32 m_saberTimer;
+    uint32 m_yellTimer;
+    uint32 m_attractionTimer;
+    uint32 m_enrageTimer;
 
-    uint32 CheckTimer;
-    WorldLocation wLoc;
+    uint32 m_checkTimer;
 
-    bool Enraged;
+    bool m_enraged;
 
     void SpellHitTarget(Unit *pTarget, const SpellEntry *pSpell)
     {
@@ -124,8 +122,8 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
 
         if (pSpell->Id == SPELL_FATAL_ATTRACTION)
         {
-            float x = positions[position][0];
-            float y = positions[position][1];
+            float x = positions[m_position][0];
+            float y = positions[m_position][1];
             float z = 192.82;
 
             ((Player *)pTarget)->TeleportTo(pTarget->GetMapId(), x, y, z, 0.0f, TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET);
@@ -134,20 +132,17 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
 
     void Reset()
     {
-        if (pInstance)
-            pInstance->SetData(EVENT_MOTHERSHAHRAZ, NOT_STARTED);
+        pInstance->SetData(EVENT_MOTHERSHAHRAZ, NOT_STARTED);
 
-        FatalAttractionTimer = 60000;
-        ShriekTimer = 30000;
-        SaberTimer = 35000;
-        RandomYellTimer = urand(70000, 111000);
-        EnrageTimer = 600000;
+        m_attractionTimer = 60000;
+        m_shriekTimer = 30000;
+        m_saberTimer = 35000;
+        m_yellTimer = urand(70000, 111000);
+        m_enrageTimer = 600000;
 
-        CheckTimer = 1000;
+        m_checkTimer = 1000;
 
-        position = 0;
-
-        Enraged = false;
+        m_position = 0;
     }
 
     void OnAuraRemove(Aura *pAura, bool removeStack)
@@ -174,31 +169,38 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
 
     void EnterCombat(Unit *who)
     {
-        if (pInstance)
-            pInstance->SetData(EVENT_MOTHERSHAHRAZ, IN_PROGRESS);
-
+        // Cleanup prismatic shield auras
         me->RemoveAurasDueToSpell(SPELL_PRISMATIC_SHIELD);
-        me->RemoveAurasDueToSpell(SPELL_SABER_LASH_AURA);
+        ForceSpellCast(me, SPELL_PRISMATIC_SHIELD);
 
-        ForceSpellCast(me, SPELL_PRISMATIC_SHIELD, INTERRUPT_AND_CAST_INSTANTLY);
-        ForceSpellCast(me, SPELL_SABER_LASH_AURA, INTERRUPT_AND_CAST_INSTANTLY);
-        ForceSpellCast(me, RAND(SPELL_SINFUL_BEAM, SPELL_SINISTER_BEAM, SPELL_WICKED_BEAM, SPELL_VILE_BEAM), INTERRUPT_AND_CAST_INSTANTLY);
+        // Cleanup saber lash auras
+        me->RemoveAurasDueToSpell(SPELL_SABER_LASH_AURA);
+        ForceSpellCast(me, SPELL_SABER_LASH_AURA);
+
+        // Cleanup beam auras
+        me->RemoveAurasDueToSpell(SPELL_SINFUL_BEAM);
+        me->RemoveAurasDueToSpell(SPELL_SINISTER_BEAM);
+        me->RemoveAurasDueToSpell(SPELL_WICKED_BEAM);
+        me->RemoveAurasDueToSpell(SPELL_VILE_BEAM);
+        ForceSpellCast(me, RAND(SPELL_SINFUL_BEAM, SPELL_SINISTER_BEAM, SPELL_WICKED_BEAM, SPELL_VILE_BEAM));
+
+        DoScriptText(SAY_AGGRO, me);
+
+        pInstance->SetData(EVENT_MOTHERSHAHRAZ, IN_PROGRESS);
 
         DoZoneInCombat();
-        DoScriptText(SAY_AGGRO, m_creature);
     }
 
     void KilledUnit(Unit *victim)
     {
-        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), m_creature);
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), me);
     }
 
     void JustDied(Unit *victim)
     {
-        if (pInstance)
-            pInstance->SetData(EVENT_MOTHERSHAHRAZ, DONE);
+        pInstance->SetData(EVENT_MOTHERSHAHRAZ, DONE);
 
-        DoScriptText(SAY_DEATH, m_creature);
+        DoScriptText(SAY_DEATH, me);
     }
 
     void UpdateAI(const uint32 diff)
@@ -206,62 +208,64 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
-        if (CheckTimer < diff)
+        if (m_checkTimer < diff)
         {
             DoZoneInCombat();
             me->SetSpeed(MOVE_RUN, 3.0);
-            CheckTimer = 2000;
+            
+            m_checkTimer = 2000;
         }
         else
-            CheckTimer -= diff;
+            m_checkTimer -= diff;
 
-        if (!Enraged && ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 10))
+        if (!m_enraged && ((me->GetHealth()*100 / me->GetMaxHealth()) < 10))
         {
-            Enraged = true;
-            ForceSpellCastWithScriptText(m_creature, SPELL_ENRAGE, SAY_ENRAGE, INTERRUPT_AND_CAST_INSTANTLY);
+            ForceSpellCastWithScriptText(me, SPELL_ENRAGE, SAY_ENRAGE);
+            m_enraged = true;
         }
 
         // Select 3 random targets (can select same target more than once), teleport to a random location then make them cast explosions until they get away from each other.
-        if (FatalAttractionTimer < diff)
+        if (m_attractionTimer < diff)
         {
-            position = urand(0, 33);            
-            ForceSpellCastWithScriptText(m_creature, SPELL_FATAL_ATTRACTION, RAND(SAY_SPELL2, SAY_SPELL3), INTERRUPT_AND_CAST_INSTANTLY);
-            FatalAttractionTimer = urand(40000, 71000);
+            m_position = urand(0, 33);            
+            ForceSpellCastWithScriptText(me, SPELL_FATAL_ATTRACTION, RAND(SAY_SPELL2, SAY_SPELL3));
+            
+            m_attractionTimer = urand(40000, 71000);
         }
         else
-            FatalAttractionTimer -= diff;
+            m_attractionTimer -= diff;
 
-        if (ShriekTimer < diff)
+        if (m_shriekTimer < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_SILENCING_SHRIEK);
-            ShriekTimer = urand(25000, 126000);
+            AddSpellToCast(me->getVictim(), SPELL_SILENCING_SHRIEK);
+            m_shriekTimer = urand(25000, 126000);
         }
         else
-            ShriekTimer -= diff;
+            m_shriekTimer -= diff;
 
         //Enrage
-        if (EnrageTimer)
+        if (m_enrageTimer)
         {
-            if (!m_creature->HasAura(SPELL_BERSERK, 0))
+            if (!me->HasAura(SPELL_BERSERK, 0))
             {
-                if (EnrageTimer <= diff)
+                if (m_enrageTimer <= diff)
                 {
-                    EnrageTimer = 0;
-                    ForceSpellCastWithScriptText(m_creature, SPELL_BERSERK, SAY_ENRAGE, INTERRUPT_AND_CAST_INSTANTLY);
+                    m_enrageTimer = 0;
+                    ForceSpellCastWithScriptText(me, SPELL_BERSERK, SAY_ENRAGE, INTERRUPT_AND_CAST);
                 }
                 else
-                    EnrageTimer -= diff;
+                    m_enrageTimer -= diff;
             }
         }
 
         //Random taunts
-        if (RandomYellTimer < diff)
+        if (m_yellTimer < diff)
         {
-            DoScriptText(RAND(SAY_TAUNT1, SAY_TAUNT2, SAY_TAUNT3), m_creature);
-            RandomYellTimer = urand(60000, 151000);
+            DoScriptText(RAND(SAY_TAUNT1, SAY_TAUNT2, SAY_TAUNT3), me);
+            m_yellTimer = urand(60000, 151000);
         }
         else
-            RandomYellTimer -= diff;
+            m_yellTimer -= diff;
 
         CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
@@ -277,7 +281,7 @@ void AddSC_boss_mother_shahraz()
 {
     Script *newscript;
     newscript = new Script;
-    newscript->Name="boss_mother_shahraz";
+    newscript->Name = "boss_mother_shahraz";
     newscript->GetAI = &GetAI_boss_shahraz;
     newscript->RegisterSelf();
 }
