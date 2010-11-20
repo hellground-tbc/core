@@ -2108,12 +2108,20 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             else if(m_spellInfo->Id == 41067) // Blood Splash proc
                 unitList.remove(m_targets.getUnitTarget());
             else if(m_spellInfo->Id == 5246) //Intimidating Shout
-                    unitList.remove(m_targets.getUnitTarget());
+                unitList.remove(m_targets.getUnitTarget());
 
-            for(std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
+            // We don't need immune targets to be taken into list for Fatal Attraction, i now that thix hack is ugly ;]
+            if (m_spellInfo->Id == 40869)
             {
-                if (m_spellInfo->Id == 40869 && (*itr) && (*itr)->IsInWorld() && (*itr)->HasAura(43690, 0))
-                    unitList.remove(*itr);
+                std::list<Unit*>::iterator next;
+                for(std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); itr = next)
+                {
+                    next = itr;
+                    ++next;
+
+                    if ((*itr)->HasAura(43690, 0))
+                        unitList.remove(*itr);
+                }
             }
 
             if (m_spellValue->MaxAffectedTargets)
