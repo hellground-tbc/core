@@ -248,8 +248,8 @@ class BIH
                             continue;
                         if (tmpBack >= tree.size())
                             continue;
-                        float tf = (intBitsToFloat(tree[node + tmpFront]) - org[axis]) * invDir[axis];
-                        float tb = (intBitsToFloat(tree[node + tmpBack]) - org[axis]) * invDir[axis];
+                        float tf = (intBitsToFloat(tree[tmpFront]) - org[axis]) * invDir[axis];
+                        float tb = (intBitsToFloat(tree[tmpBack]) - org[axis]) * invDir[axis];
                         node = offset;
                         intervalMin = (tf >= intervalMin) ? tf : intervalMin;
                         intervalMax = (tb <= intervalMax) ? tb : intervalMax;
