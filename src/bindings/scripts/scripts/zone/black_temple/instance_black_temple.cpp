@@ -43,20 +43,20 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
 {
     instance_black_temple(Map *map) : ScriptedInstance(map) {Initialize();};
 
-    uint64 Najentus;
-    uint64 Akama;                                           // This is the Akama that starts the Illidan encounter.
-    uint64 Akama_Shade;                                     // This is the Akama that starts the Shade of Akama encounter.
-    uint64 ShadeOfAkama;
-    uint64 Teron;
-    uint64 Supremus;
-    uint64 LadyMalande;
-    uint64 GathiosTheShatterer;
-    uint64 HighNethermancerZerevor;
-    uint64 VerasDarkshadow;
-    uint64 IllidariCouncil;
-    uint64 BloodElfCouncilVoice;
-    uint64 IllidanStormrage;
-    uint64 ReliquaryOfTheLost;
+    uint64 m_najentusGUID;
+    uint64 m_akamaillidanGUID;    // This is the Akama that starts the Illidan encounter.
+    uint64 m_akamashadeGUID;      // This is the Akama that starts the Shade of Akama encounter.
+    uint64 m_shadeGUID;
+    uint64 m_teronGUID;
+    uint64 m_supremusGUID;
+    uint64 m_malandeGUID;
+    uint64 m_gathiosGUID;
+    uint64 m_zerevorGUID;
+    uint64 m_verasGUID;
+    uint64 m_illidariGUID;
+    uint64 m_voiceGUID;
+    uint64 m_illidanGUID;
+    uint64 m_reliquaryGUID;
 
     uint64 NajentusGate;
     uint64 MainTempleDoors;
@@ -87,30 +87,37 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         SoulFragmentsList.clear();
         AshtongueBrokenList.clear();
 
-        Najentus = 0;
-        Akama = 0;
-        Akama_Shade = 0;
-        ShadeOfAkama = 0;
-        Teron = 0;
-        Supremus = 0;
-        LadyMalande = 0;
-        GathiosTheShatterer = 0;
-        HighNethermancerZerevor = 0;
-        VerasDarkshadow = 0;
-        IllidariCouncil = 0;
-        BloodElfCouncilVoice = 0;
-        IllidanStormrage = 0;
-        ReliquaryOfTheLost = 0;
+        m_shadeGUID = 0;
+        m_akamashadeGUID = 0;
 
-        NajentusGate    = 0;
-        MainTempleDoors = 0;
-        ShadeOfAkamaDoor= 0;
-        CommonDoor              = 0;//teron
+        m_teronGUID = 0;
+
+        m_supremusGUID = 0;
+
+        m_najentusGUID = 0;
+
+        m_akamaillidanGUID = 0;
+        m_illidanGUID = 0;
+
+        m_malandeGUID = 0;
+        m_gathiosGUID = 0;
+        m_zerevorGUID = 0;
+        m_verasGUID = 0;
+        
+        m_illidariGUID = 0;
+        m_voiceGUID = 0;
+        
+        m_reliquaryGUID = 0;
+
+        NajentusGate     = 0;
+        MainTempleDoors  = 0;
+        ShadeOfAkamaDoor = 0;
+        CommonDoor              = 0; //teron
         TeronDoor               = 0;
         GuurtogDoor             = 0;
         MotherDoor              = 0;
         TempleDoor              = 0;
-        SimpleDoor              = 0;//Bycouncil
+        SimpleDoor              = 0; //Bycouncil
         CouncilDoor             = 0;
         IllidanGate     = 0;
         IllidanDoor[0]  = 0;
@@ -118,25 +125,26 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
 
         EnslavedSoulsCount = 0;
 
-        for(uint8 i = 0; i < ENCOUNTERS; ++i)
+        for (uint8 i = 0; i < ENCOUNTERS; ++i)
             Encounters[i] = NOT_STARTED;
     }
 
     bool IsEncounterInProgress() const
     {
-        for(uint8 i = 0; i < ENCOUNTERS; ++i)
-            if(Encounters[i] == IN_PROGRESS) return true;
-
+        for (uint8 i = 0; i < ENCOUNTERS; ++i)
+        {
+            if (Encounters[i] == IN_PROGRESS)
+                return true;
+        }
         return false;
     }
 
     Player* GetPlayerInMap()
     {
         Map::PlayerList const& players = instance->GetPlayers();
-
         if (!players.isEmpty())
         {
-            for(Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+            for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
             {
                 if (Player* plr = itr->getSource())
                     return plr;
@@ -177,60 +185,67 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         }
     }
 
-    void OnCreatureCreate(Creature *creature, uint32 creature_entry)
+    void OnCreatureCreate(Creature *pCreature, uint32 cEntry)
     {
         bool ashtongueBroken = false;
-        switch(creature_entry)
+        switch (cEntry)
         {
-            case 22887: // High Warlord Naj'entus
-                Najentus = creature->GetGUID();
+            // High Warlord Naj'entus
+            case 22887:
+                m_najentusGUID = pCreature->GetGUID();
                 break;
             case 23089:
-                Akama = creature->GetGUID();
+                m_akamaillidanGUID = pCreature->GetGUID();
                 break;
             case 23191:
-                Akama_Shade = creature->GetGUID();
+                m_akamashadeGUID = pCreature->GetGUID();
                 break;
-            case 22841: // Shade of Akama
-                ShadeOfAkama = creature->GetGUID();
+            // Shade of Akama
+            case 22841:
+                m_shadeGUID = pCreature->GetGUID();
                 break;
-            case 22871: // Teron Gorefiend
-                Teron = creature->GetGUID();
+            // Teron Gorefiend
+            case 22871:
+                m_teronGUID = pCreature->GetGUID();
                 break;
-            case 22898: // Supremus
-                Supremus = creature->GetGUID();
+            // Supremus
+            case 22898:
+                m_supremusGUID = pCreature->GetGUID();
                 break;
-            case 22917: // Illidan Stormrage
-                IllidanStormrage = creature->GetGUID();
+            // Illidan Stormrage
+            case 22917:
+                m_illidanGUID = pCreature->GetGUID();
                 break;
+            // Illidari Council
             case 22949:
-                GathiosTheShatterer = creature->GetGUID();
+                m_gathiosGUID = pCreature->GetGUID();
                 break;
             case 22950:
-                HighNethermancerZerevor = creature->GetGUID();
+                m_zerevorGUID = pCreature->GetGUID();
                 break;
             case 22951:
-                LadyMalande = creature->GetGUID();
+                m_malandeGUID = pCreature->GetGUID();
                 break;
             case 22952:
-                VerasDarkshadow = creature->GetGUID();
+                m_verasGUID = pCreature->GetGUID();
                 break;
             case 23426:
-                IllidariCouncil = creature->GetGUID();
-                break;
-            case 22856: // Reliquary of the Lost
-                ReliquaryOfTheLost = creature->GetGUID();
+                m_illidariGUID = pCreature->GetGUID();
                 break;
             case 23499:
-                BloodElfCouncilVoice = creature->GetGUID();
+                m_voiceGUID = pCreature->GetGUID();
+                break;
+            // Reliquary of the Lost
+            case 22856:
+                m_reliquaryGUID = pCreature->GetGUID();
                 break;
             case 23047:
-                weaponmasterList.push_back(creature->GetGUID());
+                weaponmasterList.push_back(pCreature->GetGUID());
                 break;
             case 23398:
             case 23401:
             case 23399:
-                SoulFragmentsList.push_back(creature->GetGUID());
+                SoulFragmentsList.push_back(pCreature->GetGUID());
                 break;
             case 22844:
             case 22849:
@@ -239,26 +254,26 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
             case 23374:
             case 22846:
             case 22848:
-                AshtongueBrokenList.push_back(creature->GetGUID());
+                AshtongueBrokenList.push_back(pCreature->GetGUID());
                 ashtongueBroken = true;
                 break;
             case 23254: //Fel Geyser
-                creature->CastSpell(creature, 40593, false);
+                pCreature->CastSpell(pCreature, 40593, false);
                 break;
         }
 
-        const CreatureData *tmp = creature->GetLinkedRespawnCreatureData();
+        const CreatureData *tmp = pCreature->GetLinkedRespawnCreatureData();
         if (!tmp)
             return;
 
-        if (GetEncounterForEntry(tmp->id) && creature->isAlive() && GetData(GetEncounterForEntry(tmp->id)) == DONE)
+        if (GetEncounterForEntry(tmp->id) && pCreature->isAlive() && GetData(GetEncounterForEntry(tmp->id)) == DONE)
         {
             if (ashtongueBroken)
-                creature->setFaction(1820);
+                pCreature->setFaction(1820);
             else
             {
-                creature->Kill(creature, false);
-                creature->RemoveCorpse();
+                pCreature->Kill(pCreature, false);
+                pCreature->RemoveCorpse();
             }
         }
     }
@@ -268,31 +283,31 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         switch(go->GetEntry())
         {
         case 185483:
-            NajentusGate = go->GetGUID();// Gate past Naj'entus (at the entrance to Supermoose's courtyards)
+            NajentusGate = go->GetGUID();       // Gate past Naj'entus (at the entrance to Supermoose's courtyards)
             if(Encounters[0] == DONE)
-                HandleGameObject(NULL,true,go);
+                HandleGameObject(NULL, true, go);
             break;
         case 185882:
-            MainTempleDoors = go->GetGUID();// Main Temple Doors - right past Supermoose (Supremus)
+            MainTempleDoors = go->GetGUID();    // Main Temple Doors - right past Supermoose (Supremus)
             if(Encounters[1] == DONE)
-                HandleGameObject(NULL,true,go);
+                HandleGameObject(NULL, true, go);
             break;
         case 185478:
             ShadeOfAkamaDoor = go->GetGUID();
             break;
         case 185480:
             CommonDoor = go->GetGUID();
-            //if(Encounters[3] == DONE)
+            if(Encounters[3] == DONE)
                 HandleGameObject(NULL, true, go);
             break;
         case 186153:
             TeronDoor = go->GetGUID();
-            //if(Encounters[3] == DONE)
+            if(Encounters[3] == DONE)
                 HandleGameObject(NULL,true,go);
             break;
         case 185892:
             GuurtogDoor = go->GetGUID();
-            //if(Encounters[4] == DONE)
+            if(Encounters[4] == DONE)
                 HandleGameObject(NULL,true,go);
             break;
         case 185479:
@@ -331,36 +346,37 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
     {
         switch(identifier)
         {
-        case DATA_HIGHWARLORDNAJENTUS:         return Najentus;
-        case DATA_AKAMA:                       return Akama;
-        case DATA_AKAMA_SHADE:                 return Akama_Shade;
-        case DATA_SHADEOFAKAMA:                return ShadeOfAkama;
-        case EVENT_RELIQUARYOFSOULS:           return ReliquaryOfTheLost;
-        case DATA_TERONGOREFIEND:              return Teron;
-        case DATA_SUPREMUS:                    return Supremus;
-        case DATA_ILLIDANSTORMRAGE:            return IllidanStormrage;
-        case DATA_GATHIOSTHESHATTERER:         return GathiosTheShatterer;
-        case DATA_HIGHNETHERMANCERZEREVOR:     return HighNethermancerZerevor;
-        case DATA_LADYMALANDE:                 return LadyMalande;
-        case DATA_VERASDARKSHADOW:             return VerasDarkshadow;
-        case DATA_ILLIDARICOUNCIL:             return IllidariCouncil;
-        case DATA_GAMEOBJECT_NAJENTUS_GATE:    return NajentusGate;
-        case DATA_GAMEOBJECT_ILLIDAN_GATE:     return IllidanGate;
-        case DATA_GAMEOBJECT_ILLIDAN_DOOR_R:   return IllidanDoor[0];
-        case DATA_GAMEOBJECT_ILLIDAN_DOOR_L:   return IllidanDoor[1];
-        case DATA_GAMEOBJECT_SUPREMUS_DOORS:   return MainTempleDoors;
-        case DATA_BLOOD_ELF_COUNCIL_VOICE:     return BloodElfCouncilVoice;
-        case DATA_WEAPONMASTER_SOLDIER:
-        case DATA_WEAPONMASTER_SOLDIER+1:
-        case DATA_WEAPONMASTER_SOLDIER+2:
-        case DATA_WEAPONMASTER_SOLDIER+3:
-        case DATA_WEAPONMASTER_SOLDIER+4:
-        case DATA_WEAPONMASTER_SOLDIER+5:
-        case DATA_WEAPONMASTER_SOLDIER+6:
-        case DATA_WEAPONMASTER_SOLDIER+7:
-            return weaponmasterList[identifier-30];
-        }
+            case DATA_HIGHWARLORDNAJENTUS:         return m_najentusGUID;
+            case DATA_AKAMA:                       return m_akamaillidanGUID;
+            case DATA_AKAMA_SHADE:                 return m_akamashadeGUID;
+            case DATA_SHADEOFAKAMA:                return m_shadeGUID;
+            case EVENT_RELIQUARYOFSOULS:           return m_reliquaryGUID;
+            case DATA_TERONGOREFIEND:              return m_teronGUID;
+            case DATA_SUPREMUS:                    return m_supremusGUID;
+            case DATA_ILLIDANSTORMRAGE:            return m_illidanGUID;
+            case DATA_GATHIOSTHESHATTERER:         return m_gathiosGUID;
+            case DATA_HIGHNETHERMANCERZEREVOR:     return m_zerevorGUID;
+            case DATA_LADYMALANDE:                 return m_malandeGUID;
+            case DATA_VERASDARKSHADOW:             return m_verasGUID;
+            case DATA_ILLIDARICOUNCIL:             return m_illidariGUID;
+            case DATA_BLOOD_ELF_COUNCIL_VOICE:     return m_voiceGUID;
 
+            case DATA_GAMEOBJECT_NAJENTUS_GATE:    return NajentusGate;
+            case DATA_GAMEOBJECT_ILLIDAN_GATE:     return IllidanGate;
+            case DATA_GAMEOBJECT_ILLIDAN_DOOR_R:   return IllidanDoor[0];
+            case DATA_GAMEOBJECT_ILLIDAN_DOOR_L:   return IllidanDoor[1];
+            case DATA_GAMEOBJECT_SUPREMUS_DOORS:   return MainTempleDoors;
+ 
+            case DATA_WEAPONMASTER_SOLDIER:
+            case DATA_WEAPONMASTER_SOLDIER+1:
+            case DATA_WEAPONMASTER_SOLDIER+2:
+            case DATA_WEAPONMASTER_SOLDIER+3:
+            case DATA_WEAPONMASTER_SOLDIER+4:
+            case DATA_WEAPONMASTER_SOLDIER+5:
+            case DATA_WEAPONMASTER_SOLDIER+6:
+            case DATA_WEAPONMASTER_SOLDIER+7:
+                return weaponmasterList[identifier-30];
+        }
         return 0;
     }
 
@@ -505,17 +521,17 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         {
             case DATA_SHADOWOFDEATH_APPLY:
                 sodList[value] = 70000;
-            break;
+                break;
             case DATA_SHADOWOFDEATH_DONE:
                 if(sodList.size() && GetData(EVENT_TERONGOREFIEND) == IN_PROGRESS)
                 {
                     for(std::map<uint64,uint32>::iterator itr = sodList.begin(); itr != sodList.end(); itr++)
+                    {
                         if(itr->first == value)
-                        {
                             sodList.erase(itr);
-                        }
+                    }
                 }
-            break;
+                break;
         }
     }
 

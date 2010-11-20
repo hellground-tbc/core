@@ -288,8 +288,6 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
         m_creature->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 10);   //custom, should be verified
         m_creature->SetFloatValue(UNIT_FIELD_COMBATREACH, 12);
-
-        playersList.clear();
     }
 
     void RemoveSoulCharges()
@@ -431,8 +429,6 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
                 return;
             }
             DoZoneInCombat();
-            CheckPlayers();
-
             m_creature->SetSpeed(MOVE_RUN, 3.0);
 
             CheckTimer = 1000;
