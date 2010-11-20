@@ -186,12 +186,14 @@ class BIH
                     {
                         if (axis < 3)
                         {
+                            if (stackPos > MAX_STACK_SIZE)
+                                break;
                             uint32 tmpFront = node + offsetFront[axis];
                             uint32 tmpBack = node + offsetBack[axis];
                             if (tmpFront >= tree.size())
-                                continue;
+                                break;
                             if (tmpBack >= tree.size())
-                                continue;
+                                break;
                             // "normal" interior node
                             float tf = (intBitsToFloat(tree[tmpFront]) - org[axis]) * invDir[axis];
                             float tb = (intBitsToFloat(tree[tmpBack]) - org[axis]) * invDir[axis];
@@ -245,9 +247,9 @@ class BIH
                         uint32 tmpFront = node + offsetFront[axis];
                         uint32 tmpBack = node + offsetBack[axis];
                         if (tmpFront >= tree.size())
-                            continue;
+                            break;
                         if (tmpBack >= tree.size())
-                            continue;
+                            break;
                         float tf = (intBitsToFloat(tree[tmpFront]) - org[axis]) * invDir[axis];
                         float tb = (intBitsToFloat(tree[tmpBack]) - org[axis]) * invDir[axis];
                         node = offset;
