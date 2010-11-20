@@ -186,7 +186,7 @@ class BIH
                     {
                         if (axis < 3)
                         {
-                            if (stackPos > MAX_STACK_SIZE)
+                            if (stackPos >= MAX_STACK_SIZE)
                                 break;
                             uint32 tmpFront = node + offsetFront[axis];
                             uint32 tmpBack = node + offsetBack[axis];
