@@ -247,8 +247,6 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
     uint32 chargeSpell;
     uint32 unleashSpell;
 
-    std::list<uint64> playersList;
-
     bool Enraged;
     bool BelowTenPercent;
     bool HasProtected;
@@ -307,12 +305,6 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         DoScriptText(SAY_AGGRO, m_creature);
         RemoveSoulCharges();
         DoZoneInCombat();
-
-        Map::PlayerList const &tmp = me->GetMap()->GetPlayers();
-        for(Map::PlayerList::const_iterator i = tmp.begin(); i != tmp.end(); ++i)
-            if (Player* i_pl = i->getSource())
-                if (!i_pl->isGameMaster())
-                    playersList.push_back(i_pl->GetGUID());
 
         if(pInstance)
             pInstance->SetData(DATA_ARCHIMONDEEVENT, IN_PROGRESS);
@@ -380,20 +372,6 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         }
     }
 
-    void CheckPlayers()
-    {
-        for (std::list<uint64>::iterator itr = playersList.begin(); itr != playersList.end();)
-        {
-            std::list<uint64>::iterator tmpItr = itr;
-            ++itr;
-            Player * tmp = ObjectAccessor::GetPlayer(*tmpItr);
-            if (!tmp || !tmp->IsInWorld() || !tmp->IsInMap(me))
-            {
-                pInstance->OnPlayerDeath(tmp);
-                playersList.erase(tmpItr);
-            }
-        }
-    }
 
     void UpdateAI(const uint32 diff)
     {

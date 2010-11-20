@@ -281,50 +281,63 @@ void WorldSession::LogoutPlayer(bool Save)
             _player->BuildPlayerRepop();
             _player->RepopAtGraveyard();
         }
-        else if (!_player->getAttackers().empty())
+        else
         {
-            _player->CombatStop();
-            _player->getHostilRefManager().setOnlineOfflineState(false);
-            _player->RemoveAllAurasOnDeath();
 
-            // build set of player who attack _player or who have pet attacking of _player
-            std::set<Player*> aset;
-            for(Unit::AttackerSet::const_iterator itr = _player->getAttackers().begin(); itr != _player->getAttackers().end(); ++itr)
+            InstanceMap *pTempMap = NULL;
+            if (_player->GetMap() && _player->GetMap()->IsDungeon())
+                pTempMap = ((InstanceMap*)_player->GetMap());
+        
+            if (!_player->getAttackers().empty() || (pTempMap && pTempMap->EncounterInProgress(_player)))
             {
-                Unit* owner = (*itr)->GetOwner();           // including player controlled case
-                if(owner)
+                _player->CombatStop();
+                _player->getHostilRefManager().setOnlineOfflineState(false);
+                _player->RemoveAllAurasOnDeath();
+
+                // build set of player who attack _player or who have pet attacking of _player
+                std::set<Player*> aset;
+                if (!_player->getAttackers().empty())
                 {
-                    if(owner->GetTypeId()==TYPEID_PLAYER)
-                        aset.insert((Player*)owner);
+                    for (Unit::AttackerSet::const_iterator itr = _player->getAttackers().begin(); itr != _player->getAttackers().end(); ++itr)
+                    {
+                        // including player controlled case
+                        if(Unit* owner = (*itr)->GetOwner())
+                        {
+                            if(owner->GetTypeId()==TYPEID_PLAYER)
+                                aset.insert((Player*)owner);
+                        }
+                        else
+                            if((*itr)->GetTypeId()==TYPEID_PLAYER)
+                                aset.insert((Player*)(*itr));
+                    }
                 }
-                else
-                    if((*itr)->GetTypeId()==TYPEID_PLAYER)
-                        aset.insert((Player*)(*itr));
+
+                _player->SetPvPDeath(!aset.empty());
+                _player->KillPlayer();
+                _player->BuildPlayerRepop();
+                _player->RepopAtGraveyard();
+
+                // give honor to all attackers from set like group case
+                for(std::set<Player*>::const_iterator itr = aset.begin(); itr != aset.end(); ++itr)
+                    (*itr)->RewardHonor(_player,aset.size());
+
+                // give bg rewards and update counters like kill by first from attackers
+                // this can't be called for all attackers.
+                if(!aset.empty())
+                {
+                    if(BattleGround *bg = _player->GetBattleGround())
+                        bg->HandleKillPlayer(_player,*aset.begin());
+                }
             }
-
-            _player->SetPvPDeath(!aset.empty());
-            _player->KillPlayer();
-            _player->BuildPlayerRepop();
-            _player->RepopAtGraveyard();
-
-            // give honor to all attackers from set like group case
-            for(std::set<Player*>::const_iterator itr = aset.begin(); itr != aset.end(); ++itr)
-                (*itr)->RewardHonor(_player,aset.size());
-
-            // give bg rewards and update counters like kill by first from attackers
-            // this can't be called for all attackers.
-            if(!aset.empty())
-                if(BattleGround *bg = _player->GetBattleGround())
-                    bg->HandleKillPlayer(_player,*aset.begin());
-        }
-        else if(_player->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION))
-        {
-            // this will kill character by SPELL_AURA_SPIRIT_OF_REDEMPTION
-            _player->RemoveSpellsCausingAura(SPELL_AURA_MOD_SHAPESHIFT);
-            //_player->SetDeathPvP(*); set at SPELL_AURA_SPIRIT_OF_REDEMPTION apply time
-            _player->KillPlayer();
-            _player->BuildPlayerRepop();
-            _player->RepopAtGraveyard();
+            else if(_player->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION))
+            {
+                // this will kill character by SPELL_AURA_SPIRIT_OF_REDEMPTION
+                _player->RemoveSpellsCausingAura(SPELL_AURA_MOD_SHAPESHIFT);
+                //_player->SetDeathPvP(*); set at SPELL_AURA_SPIRIT_OF_REDEMPTION apply time
+                _player->KillPlayer();
+                _player->BuildPlayerRepop();
+                _player->RepopAtGraveyard();
+            }
         }
 
         //drop a flag if player is carrying it

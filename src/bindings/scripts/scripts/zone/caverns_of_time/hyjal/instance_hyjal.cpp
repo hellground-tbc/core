@@ -95,16 +95,9 @@ struct TRINITY_DLL_DECL instance_mount_hyjal : public ScriptedInstance
     {
         if(GetData(DATA_ARCHIMONDEEVENT) != NOT_STARTED && GetData(DATA_ARCHIMONDEEVENT) != DONE)
         {
-            Unit *Archimonde = Unit::GetUnit((*pVictim), GetData64(DATA_ARCHIMONDE));
-
+            Unit *Archimonde = GetCreature(GetData64(DATA_ARCHIMONDE));
             if(!Archimonde)
                 return;
-
-            if (!pVictim)
-            {
-                Archimonde->CastSpell(Archimonde, RAND(SPELL_SOUL_CHARGE_RED, SPELL_SOUL_CHARGE_YELLOW, SPELL_SOUL_CHARGE_GREEN), true);
-                return;
-            }
 
             switch(pVictim->getClass())
             {
