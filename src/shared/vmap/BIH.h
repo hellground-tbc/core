@@ -242,8 +242,14 @@ class BIH
                     {
                         if (axis>2)
                             return; // should not happen
-                        float tf = (intBitsToFloat(tree[node + offsetFront[axis]]) - org[axis]) * invDir[axis];
-                        float tb = (intBitsToFloat(tree[node + offsetBack[axis]]) - org[axis]) * invDir[axis];
+                        uint32 tmpFront = node + offsetFront[axis];
+                        uint32 tmpBack = node + offsetBack[axis];
+                        if (tmpFront >= tree.size())
+                            continue;
+                        if (tmpBack >= tree.size())
+                            continue;
+                        float tf = (intBitsToFloat(tree[node + tmpFront]) - org[axis]) * invDir[axis];
+                        float tb = (intBitsToFloat(tree[node + tmpBack]) - org[axis]) * invDir[axis];
                         node = offset;
                         intervalMin = (tf >= intervalMin) ? tf : intervalMin;
                         intervalMax = (tb <= intervalMax) ? tb : intervalMax;
