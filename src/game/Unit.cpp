@@ -11561,17 +11561,17 @@ bool Unit::HandleMeandingAuraProc( Aura* triggeredByAura )
     // current aura expire
     triggeredByAura->m_procCharges = 1;             // will removed at next charges decrease
 
-    // next target selection
-    if(jumps > 0 && GetTypeId()==TYPEID_PLAYER && IS_PLAYER_GUID(caster_guid))
+    if(Player* caster = ((Player*)triggeredByAura->GetCaster()))
     {
-        float radius;
-        if (spellProto->EffectRadiusIndex[effIdx])
-            radius = GetSpellRadius(spellProto,effIdx,false);
-        else
-            radius = GetSpellMaxRange(sSpellRangeStore.LookupEntry(spellProto->rangeIndex));
-
-        if(Player* caster = ((Player*)triggeredByAura->GetCaster()))
+        // next target selection
+        if(jumps > 0 && GetTypeId()==TYPEID_PLAYER && IS_PLAYER_GUID(caster_guid))
         {
+            float radius;
+            if (spellProto->EffectRadiusIndex[effIdx])
+                radius = GetSpellRadius(spellProto,effIdx,false);
+            else
+                radius = GetSpellMaxRange(sSpellRangeStore.LookupEntry(spellProto->rangeIndex));
+
             caster->ApplySpellMod(spellProto->Id, SPELLMOD_RADIUS, radius,NULL);
 
             if(Player* target = ((Player*)this)->GetNextRandomRaidMember(radius))
@@ -11589,11 +11589,10 @@ bool Unit::HandleMeandingAuraProc( Aura* triggeredByAura )
 
                 caster->AddSpellMod(mod, true);
                 CastCustomSpell(target,spellProto->Id,&heal,NULL,NULL,true,NULL,triggeredByAura,caster->GetGUID());
-                caster->AddSpellMod(mod, false);
-
-                heal = caster->SpellHealingBonus(spellProto, heal, HEAL, this);
+                caster->AddSpellMod(mod, false);      
             }
         }
+        heal = caster->SpellHealingBonus(spellProto, heal, HEAL, this);
     }
 
     // heal
