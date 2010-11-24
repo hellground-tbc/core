@@ -5081,7 +5081,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
             // Incanter's Regalia set (add trigger chance to Mana Shield)
             if (dummySpell->SpellFamilyFlags & 0x0000000000008000LL)
             {
-                if(GetTypeId() != TYPEID_PLAYER)
+                if(GetTypeId() != TYPEID_PLAYER || !HasAura(37424, 0))
                     return false;
 
                 target = this;
@@ -11589,7 +11589,7 @@ bool Unit::HandleMeandingAuraProc( Aura* triggeredByAura )
 
                 caster->AddSpellMod(mod, true);
                 CastCustomSpell(target,spellProto->Id,&heal,NULL,NULL,true,NULL,triggeredByAura,caster->GetGUID());
-                caster->AddSpellMod(mod, false);      
+                caster->AddSpellMod(mod, false);
             }
         }
         heal = caster->SpellHealingBonus(spellProto, heal, HEAL, this);
