@@ -7121,7 +7121,7 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
     //if(m_attacking->GetTypeId()==TYPEID_UNIT && ((Creature*)m_attacking)->IsAIEnabled)
     //    ((Creature*)m_attacking)->AI()->AttackedBy(this);
 
-    if(GetTypeId()==TYPEID_UNIT)
+    if(GetTypeId() == TYPEID_UNIT && !((Creature*)this)->isPet())
     {
         // should not let player enter combat by right clicking target
         SetInCombatWith(victim);

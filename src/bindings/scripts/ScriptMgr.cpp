@@ -24,7 +24,6 @@ Config TScriptConfig;
 
 void FillSpellSummary();
 void LoadOverridenSQLData();
-void LoadOverridenDBCData();
 
 // -------------------
 void LoadDatabase()
@@ -117,8 +116,6 @@ void ScriptsInit(char const* cfg_file = "trinitycore.conf")
 
     outstring_log(">> Load Overriden SQL Data.");
     LoadOverridenSQLData();
-    outstring_log(">> Load Overriden DBC Data.");
-    LoadOverridenDBCData();
 }
 
 //*********************************

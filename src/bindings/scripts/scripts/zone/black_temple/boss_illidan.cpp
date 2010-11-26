@@ -93,10 +93,6 @@ EndScriptData */
 #define SPELL_FLAME_CRASH_EFFECT        40836 // Firey blue ring of circle that the other flame crash summons
 #define SPELL_SUMMON_SHADOWDEMON        41117 // Summon four shadowfiends
 #define SPELL_SHADOWFIEND_PASSIVE       41913 // Passive aura for shadowfiends
-#define SPELL_SHADOW_DEMON_PASSIVE      41079 // Adds the "shadowform" aura to Shadow Demons.
-#define SPELL_CONSUME_SOUL              41080 // Once the Shadow Demons reach their target, they use this to kill them
-#define SPELL_PARALYZE                  41083 // Shadow Demons cast this on their target
-#define SPELL_PURPLE_BEAM               39123 // Purple Beam connecting Shadow Demon to their target
 
 //Phase Flight spells
 #define SPELL_AZZINOTH_CHANNEL          39857 // Glaives cast it on Flames. Not sure if this is the right spell.
@@ -109,20 +105,12 @@ EndScriptData */
 #define SPELL_CHARGE                    41581 //40602 // Flames of Azzinoth charges whoever is too far from them. They enrage after this. For simplicity, we'll use the same enrage as Illidan.
 #define SPELL_FLAME_ENRAGE              45078
 
-//Maiev spells
-#define SPELL_CAGE_TRAP_DUMMY           40761 // Put this in DB for cage trap GO.
-#define SPELL_CAGED                     40695 // Caged Trap triggers will cast this on Illidan if he is within 3 yards
-#define SPELL_CAGE_TRAP_SUMMON          40694 // Summons a Cage Trap GO (bugged) on the ground along with a Cage Trap Disturb Trigger mob (working)
-#define SPELL_CAGE_TRAP_BEAM            40713 // 8 Triggers on the ground in an octagon cast spells like this on Illidan 'caging him'
-#define SPELL_TELEPORT_VISUAL           41232 // Teleport visual for Maiev
-#define SPELL_SHADOW_STRIKE             40685 // 4375 to 5625 every 3 seconds for 12 seconds
-#define SPELL_THROW_DAGGER              41152 // 5400 to 6600 damage, need dagger
-#define SPELL_FAN_BLADES                39954 // bugged visual
-
 // Other defines
 #define CENTER_X            676.740
 #define CENTER_Y            305.297
 #define CENTER_Z            353.192
+
+#define SPELL_CAGED                     40695 // Caged Trap triggers will cast this on Illidan if he is within 3 yards
 
 #define FLAME_ENRAGE_DISTANCE   30
 #define FLAME_CHARGE_DISTANCE   50
@@ -889,8 +877,9 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
             pInstance->HandleGameObject(pInstance->GetData64(DATA_GAMEOBJECT_ILLIDAN_DOOR_L), true);
             pInstance->HandleGameObject(pInstance->GetData64(DATA_GAMEOBJECT_ILLIDAN_GATE), true);
 
-            me->GetMap()->CreatureRelocation(me, AkamaPath[8].x, AkamaPath[8].y, AkamaPath[8].z, 0);
             me->SetSelection(pInstance->GetData64(DATA_ILLIDANSTORMRAGE));
+            me->SetHomePosition(AkamaPath[8].x, AkamaPath[8].y, AkamaPath[8].z, me->GetOrientation());
+            me->GetMap()->CreatureRelocation(me, AkamaPath[8].x, AkamaPath[8].y, AkamaPath[8].z, 0);
 
             m_walkStep = 9;
         }
@@ -1247,6 +1236,16 @@ enum MaievTaunts
     MAIEV_TAUNT_NO4 = -1529023
 };
 
+
+//Maiev spells
+#define SPELL_CAGE_TRAP_DUMMY           40761 // Put this in DB for cage trap GO.
+#define SPELL_CAGE_TRAP_SUMMON          40694 // Summons a Cage Trap GO (bugged) on the ground along with a Cage Trap Disturb Trigger mob (working)
+#define SPELL_CAGE_TRAP_BEAM            40713 // 8 Triggers on the ground in an octagon cast spells like this on Illidan 'caging him'
+#define SPELL_TELEPORT_VISUAL           41232 // Teleport visual for Maiev
+#define SPELL_SHADOW_STRIKE             40685 // 4375 to 5625 every 3 seconds for 12 seconds
+#define SPELL_THROW_DAGGER              41152 // 5400 to 6600 damage, need dagger
+#define SPELL_FAN_BLADES                39954 // bugged visual
+
 struct TRINITY_DLL_DECL boss_maievAI : public ScriptedAI
 {
     boss_maievAI(Creature *c) : ScriptedAI(c) {};
@@ -1301,7 +1300,7 @@ struct TRINITY_DLL_DECL boss_maievAI : public ScriptedAI
         {
             GETUNIT(Illidan, IllidanGUID);
             if(Illidan && me->IsWithinDistInMap(Illidan, 25))
-                BlinkToPlayer();//Do not let dread aura hurt her.
+                BlinkToPlayer();    //Do not let dread aura hurt her.
 
             AttackStartNoMove(who);
         }
@@ -1347,8 +1346,10 @@ struct TRINITY_DLL_DECL boss_maievAI : public ScriptedAI
         default:
             break;
         }
+
         if(Timer[EVENT_MAIEV_STEALTH])
             MaxTimer = 1;
+
         m_phase = m_nextPhase;
     }
 
@@ -1365,7 +1366,7 @@ struct TRINITY_DLL_DECL boss_maievAI : public ScriptedAI
     {
         if(GETCRE(Illidan, IllidanGUID))
         {
-            Unit* target = ((boss_illidan_stormrageAI*)Illidan->AI())->SelectUnit(SELECT_TARGET_RANDOM, 0, 20, true);
+            Unit* target = ((boss_illidan_stormrageAI*)Illidan->AI())->SelectUnit(SELECT_TARGET_RANDOM, 0, 80, true, 0, 20);
 
             if(!target || !me->IsWithinDistInMap(target, 80))
             {
@@ -1383,15 +1384,15 @@ struct TRINITY_DLL_DECL boss_maievAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if((!UpdateVictim())
-            && !Timer[EVENT_MAIEV_STEALTH])
+        if(!UpdateVictim() && !Timer[EVENT_MAIEV_STEALTH])
             return;
 
         m_event = EVENT_MAIEV_NULL;
         for(uint8 i = 1; i <= MaxTimer; i++)
-            if(Timer[i])
+        {
+            if( Timer[i])
             {
-                if(Timer[i] <= diff)
+                if (Timer[i] <= diff)
                     m_event = MaievEvent(i);
                 else
                     Timer[i] -= diff;
@@ -1407,7 +1408,8 @@ struct TRINITY_DLL_DECL boss_maievAI : public ScriptedAI
                     Timer[EVENT_MAIEV_STEALTH] = 0;
                     BlinkToPlayer();
                     EnterPhase(m_phase);
-                }break;
+                }
+                break;
             case EVENT_MAIEV_TAUNT:
             {
                 DoScriptText(RAND(MAIEV_TAUNT_NO1, MAIEV_TAUNT_NO2, MAIEV_TAUNT_NO3, MAIEV_TAUNT_NO4), me);
@@ -1429,6 +1431,7 @@ struct TRINITY_DLL_DECL boss_maievAI : public ScriptedAI
                 {
                     if(!me->IsWithinDistInMap(me->getVictim(), 40))
                         me->GetMotionMaster()->MoveChase(me->getVictim(), 30);
+
                     DoCast(me->getVictim(), SPELL_THROW_DAGGER);
                     Timer[EVENT_MAIEV_THROW_DAGGER] = 2000;
                 }
@@ -1450,6 +1453,7 @@ struct TRINITY_DLL_DECL boss_maievAI : public ScriptedAI
 
             if(m_phase == PHASE_NORMAL_MAIEV)
                 DoMeleeAttackIfReady();
+        }
     }
 };
 
@@ -1563,11 +1567,19 @@ bool GOHello_cage_trap(Player* plr, GameObject* go)
     return true;
 }
 
+enum demonSpells
+{
+    SPELL_SHADOW_DEMON_PASSIVE      = 41079,  // Adds the "shadowform" aura to Shadow Demons.
+    SPELL_SHADOW_DEMON_CONSUME_SOUL = 41080,  // Once the Shadow Demons reach their target, they use this to kill them
+    SPELL_SHADOW_DEMON_PARALYZE     = 41083,  // Shadow Demons cast this on their target
+    SPELL_SHADOW_DEMON_PURPLE_BEAM  = 39123   // Purple Beam connecting Shadow Demon to their target
+};
+
 struct TRINITY_DLL_DECL shadow_demonAI : public ScriptedAI
 {
     shadow_demonAI(Creature *c) : ScriptedAI(c) {}
 
-    uint64 TargetGUID;
+    uint64 m_targetGUID;
 
     void EnterCombat(Unit *who)
     {
@@ -1576,32 +1588,39 @@ struct TRINITY_DLL_DECL shadow_demonAI : public ScriptedAI
 
     void Reset()
     {
-        TargetGUID = 0;
-        me->CastSpell(me, SPELL_SHADOW_DEMON_PASSIVE, true);
+        m_targetGUID = 0;
+        ForceSpellCast(me, SPELL_SHADOW_DEMON_PASSIVE, INTERRUPT_AND_CAST_INSTANTLY);
     }
 
     void JustDied(Unit *killer)
     {
-        if(Unit* target = Unit::GetUnit((*me), TargetGUID))
-            target->RemoveAurasDueToSpell(SPELL_PARALYZE);
+        if (Unit *pTarget = me->GetUnit(m_targetGUID))
+            pTarget->RemoveAurasDueToSpell(SPELL_SHADOW_DEMON_PARALYZE);
     }
 
     void UpdateAI(const uint32 diff)
     {
-        if(!UpdateVictim()) return;
+        if (!UpdateVictim())
+            return;
 
-        if(me->getVictim()->GetTypeId() != TYPEID_PLAYER) return; // Only cast the below on players.
+        // Only cast the below on players.
+        if (me->getVictim() && me->getVictim()->GetTypeId() != TYPEID_PLAYER)
+            return;
 
-        if(!me->getVictim()->HasAura(SPELL_PARALYZE, 0))
+        if(!me->getVictim()->HasAura(SPELL_SHADOW_DEMON_PARALYZE, 0))
         {
-            TargetGUID = me->getVictimGUID();
+            m_targetGUID = me->getVictimGUID();
+
             me->AddThreat(me->getVictim(), 10000000.0f);
-            DoCast(me->getVictim(), SPELL_PURPLE_BEAM, true);
-            DoCast(me->getVictim(), SPELL_PARALYZE, true);
+
+            ForceSpellCast(me->getVictim(), SPELL_SHADOW_DEMON_PURPLE_BEAM);
+            ForceSpellCast(me->getVictim(), SPELL_SHADOW_DEMON_PARALYZE);
         }
         // Kill our target if we're very close.
-        if(me->IsWithinDistInMap(me->getVictim(), 3))
-            DoCast(me->getVictim(), SPELL_CONSUME_SOUL);
+        if (me->IsWithinDistInMap(me->getVictim(), 3.0f))
+            ForceSpellCast(me->getVictim(), SPELL_SHADOW_DEMON_CONSUME_SOUL);
+
+        CastNextSpellIfAnyAndReady();
     }
 };
 
@@ -1625,20 +1644,21 @@ struct TRINITY_DLL_DECL mob_parasitic_shadowfiendAI : public ScriptedAI
             IllidanGUID = 0;
 
         CheckTimer = 5000;
-        DoCast(me, SPELL_SHADOWFIEND_PASSIVE, true);
+        ForceSpellCast(me, SPELL_SHADOWFIEND_PASSIVE, INTERRUPT_AND_CAST_INSTANTLY);
     }
 
-    void EnterCombat(Unit* who) { DoZoneInCombat(); }
+    void EnterCombat(Unit* who)
+    {
+        DoZoneInCombat();
+    }
 
     void DoMeleeAttackIfReady()
     {
-        if( me->isAttackReady() && me->IsWithinMeleeRange(me->getVictim()))
+        if (me->isAttackReady() && me->IsWithinMeleeRange(me->getVictim()))
         {
-            if(!me->getVictim()->HasAura(SPELL_PARASITIC_SHADOWFIEND, 0)
-                && !me->getVictim()->HasAura(SPELL_PARASITIC_SHADOWFIEND2, 0))
-            {
+            if(!me->getVictim()->HasAura(SPELL_PARASITIC_SHADOWFIEND, 0) && !me->getVictim()->HasAura(SPELL_PARASITIC_SHADOWFIEND2, 0))
                 me->CastSpell(me->getVictim(), SPELL_PARASITIC_SHADOWFIEND2, true, 0, 0, IllidanGUID); //do not stack
-            }
+
             me->AttackerStateUpdate(me->getVictim());
             me->resetAttackTimer();
         }
@@ -1646,10 +1666,10 @@ struct TRINITY_DLL_DECL mob_parasitic_shadowfiendAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(!me->getVictim())
+        if (!me->getVictim())
         {
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 999, true))
-                AttackStart(target);
+            if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 999, true))
+                AttackStart(pTarget);
             else
             {
                 me->SetVisibility(VISIBILITY_OFF);
@@ -1658,16 +1678,20 @@ struct TRINITY_DLL_DECL mob_parasitic_shadowfiendAI : public ScriptedAI
             }
         }
 
-        if(CheckTimer < diff)
+        if (CheckTimer < diff)
         {
             GETUNIT(Illidan, IllidanGUID);
-            if(!Illidan || ((Creature*)Illidan)->IsInEvadeMode())
+            if (!Illidan || ((Creature*)Illidan)->IsInEvadeMode())
             {
                 me->SetVisibility(VISIBILITY_OFF);
                 me->setDeathState(JUST_DIED);
                 return;
-            }else CheckTimer = 5000;
-        }else CheckTimer -= diff;
+            }
+            else
+                CheckTimer = 5000;
+        }
+        else
+            CheckTimer -= diff;
 
         DoMeleeAttackIfReady();
     }
@@ -1702,7 +1726,6 @@ struct TRINITY_DLL_DECL blade_of_azzinothAI : public Scripted_NoMovementAI
         if (spell->Id == SPELL_THROW_GLAIVE2 || spell->Id == SPELL_THROW_GLAIVE)
         {
             me->SetUInt32Value(UNIT_FIELD_DISPLAYID, 21431);
-
             AddSpellToCast(me, SPELL_SUMMON_FLAME);
         }
     }
@@ -1779,7 +1802,6 @@ struct TRINITY_DLL_DECL flame_of_azzinothAI : public ScriptedAI
                 AttackStart(pTarget);
 
                 AddSpellToCast(pTarget, SPELL_CHARGE);
-
                 DoTextEmote("sets its gaze on $N!", pTarget);
             }
         }
@@ -1842,11 +1864,11 @@ void boss_illidan_stormrageAI::Reset()
 
     AkamaGUID = pInstance->GetData64(DATA_AKAMA);
 
-    if(AkamaGUID)
+    if (AkamaGUID)
     {
-        if(GETCRE(Akama, AkamaGUID))
+        if (GETCRE(Akama, AkamaGUID))
         {
-            if(!Akama->isAlive())
+            if (!Akama->isAlive())
                 Akama->Respawn();
             else
             {
@@ -1924,7 +1946,6 @@ void boss_illidan_stormrageAI::JustSummoned(Creature* summon)
     default:
         break;
     }
-    me->MonsterSay("DONE", LANG_UNIVERSAL, 0);
 }
 
 void boss_illidan_stormrageAI::HandleTalkSequence()
@@ -1945,7 +1966,6 @@ void boss_illidan_stormrageAI::HandleTalkSequence()
         {
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE + UNIT_FLAG_NOT_SELECTABLE);
             me->AddThreat(Akama, 100.0f);
-            //((npc_akama_illidanAI*)Akama->AI())->EnterPhase(PHASE_FIGHT_ILLIDAN);
             EnterPhase(PHASE_NORMAL);
         }
         break;

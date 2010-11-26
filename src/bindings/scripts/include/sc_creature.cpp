@@ -1130,16 +1130,6 @@ void LoadOverridenSQLData()
             goInfo->trap.radius = 50;
 }
 
-void LoadOverridenDBCData()
-{
-    SpellEntry *spellInfo;
-
-    // Black Temple : Illidan : Parasitic Shadowfiend Passive
-    spellInfo = const_cast<SpellEntry*>(GetSpellStore()->LookupEntry(41913));
-    if(spellInfo)
-        spellInfo->EffectApplyAuraName[0] = 4; // proc debuff, and summon infinite fiends
-}
-
 Creature* GetClosestCreatureWithEntry(WorldObject* pSource, uint32 Entry, float MaxSearchRange)
 {
     Creature* pCreature = NULL;
