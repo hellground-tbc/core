@@ -4950,30 +4950,6 @@ void Spell::EffectScriptEffect(uint32 effIndex)
 
     switch(m_spellInfo->Id)
     {
-        // Demon Broiled Surprise HACKY WAY
-        /*case 43723:
-        {
-            bool cast = false;
-            std::list<Creature*> pList;
-            Trinity::AllCreaturesOfEntryInRange u_check(m_creature, entry, range);
-            Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(pList, u_check);
-            m_creature->VisitNearbyObject(range, searcher);
-            for (std::list<Creature*>::iterator itr = pList.begin(); itr != pList.end(); ++itr)
-            {
-                if (tmp && tmp->GetEntry() == 19973 && !tmp->isAlive())
-                {
-                    cast = true;
-                    break;
-                }
-            }
-
-            if (cast)
-                m_caster->CastSpell(m_caster, 43753, false);
-            else
-                SendCastResult(SPELL_FAILED_BAD_TARGETS);
-
-            return;
-        }*/
         // Gurtogg Bloodboil: Eject
         case 40486:
         {
@@ -5463,6 +5439,91 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             {
                 m_caster->CastSpell(m_caster, 41159, true);
             }
+            break;
+        }
+        // Green Helper Box, Red Helper Box, Snowman Kit  (based on EffectSummonCritter)
+        case 26532:
+        case 26541:
+        case 26469:
+        {
+            if(m_caster->GetTypeId() != TYPEID_PLAYER)
+                return;
+            Player* player = (Player*)m_caster;
+
+            uint32 pet_entry;
+            switch (m_spellInfo->Id)
+            {
+                case 26532: //green
+                    pet_entry = 15698;
+                    break;
+                case 26541: //red
+                    pet_entry = 15705;
+                    break;
+                case 26469: //snowman
+                    pet_entry = 15710;
+                    break;
+            }
+            if(!pet_entry)
+                return;
+
+            Pet* old_critter = player->GetMiniPet();
+
+            // for same pet just despawn
+            if(old_critter && old_critter->GetEntry() == pet_entry)
+            {
+                player->RemoveMiniPet();
+                return;
+            }
+
+            // despawn old pet before summon new
+            if(old_critter)
+                player->RemoveMiniPet();
+
+            // summon new pet
+            Pet* critter = new Pet(MINI_PET);
+
+            Map *map = m_caster->GetMap();
+            uint32 pet_number = objmgr.GeneratePetNumber();
+            if(!critter->Create(objmgr.GenerateLowGuid(HIGHGUID_PET),
+                map, pet_entry, pet_number))
+            {
+                sLog.outError("Spell::EffectSummonCritter, spellid %u: no such creature entry %u", m_spellInfo->Id, pet_entry);
+                delete critter;
+                return;
+            }
+
+            float x,y,z;
+            m_caster->GetClosePoint(x,y,z,critter->GetObjectSize());
+
+            critter->Relocate(x,y,z,m_caster->GetOrientation());
+
+            if(!critter->IsPositionValid())
+            {
+                sLog.outError("ERROR: Pet (guidlow %d, entry %d) not summoned. Suggested coordinates isn't valid (X: %f Y: %f)",
+                    critter->GetGUIDLow(), critter->GetEntry(), critter->GetPositionX(), critter->GetPositionY());
+                delete critter;
+                return;
+            }
+
+            critter->SetOwnerGUID(m_caster->GetGUID());
+            critter->SetCreatorGUID(m_caster->GetGUID());
+            critter->SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE,m_caster->getFaction());
+            critter->SetUInt32Value(UNIT_CREATED_BY_SPELL, m_spellInfo->Id);
+
+            critter->AIM_Initialize();
+            critter->InitPetCreateSpells();
+            critter->SetMaxHealth(1);
+            critter->SetHealth(1);
+            critter->SetLevel(1);
+
+            std::string name = player->GetName();
+            name.append(petTypeSuffix[critter->getPetType()]);
+            critter->SetName( name );
+            if (pet_entry == 15710) //snowman
+                critter->SetStunned(true);
+            player->SetMiniPet(critter);
+
+            map->Add((Creature*)critter);
             break;
         }
     }
