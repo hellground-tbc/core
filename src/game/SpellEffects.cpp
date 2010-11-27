@@ -659,12 +659,35 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                 }
                 break;
             }
+            case SPELLFAMILY_SHAMAN:
+            {
+                // Lightning Bolt & Chain Lightning
+                if (m_spellInfo->SpellFamilyFlags & 0x0003LL)
+                {
+                    Unit::AuraList const& auras = GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
+                    for (Unit::AuraList::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
+                    {
+                        switch ((*itr)->GetId())
+                        {
+                            case 28857:
+                            case 34230:
+                            case 41040:
+                                damage += (*itr)->GetModifierValue();
+                                itr = auras.end();
+                                break;
+                        }
+                    }
+                }
+                break;
+            }
         }
 
         if(m_originalCaster && damage > 0)
             damage = m_originalCaster->SpellDamageBonus(unitTarget, m_spellInfo, (uint32)damage, SPELL_DIRECT_DAMAGE);
+        
         if(attackPowerCoefficient)
             damage += attackPowerCoefficient * (m_caster->GetTotalAttackPowerValue(BASE_ATTACK) + unitTarget->GetMeleeApAttackerBonus());
+        
         if(rangedAttackPowerCoefficient)
             damage += rangedAttackPowerCoefficient * (m_caster->GetTotalAttackPowerValue(RANGED_ATTACK) + unitTarget->GetTotalAuraModifier(SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS));
         damage *= totalDmgModPct;
