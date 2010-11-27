@@ -664,6 +664,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                 // Lightning Bolt & Chain Lightning
                 if (m_spellInfo->SpellFamilyFlags & 0x0003LL)
                 {
+                    bool stop = false;
                     Unit::AuraList const& auras = m_caster->GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
                     for (Unit::AuraList::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
                     {
@@ -673,9 +674,12 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                             case 34230:
                             case 41040:
                                 damage += (*itr)->GetModifierValue();
-                                itr = auras.end();
+                                stop = true;
                                 break;
                         }
+
+                        if (stop)
+                            break;
                     }
                 }
                 break;
