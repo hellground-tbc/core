@@ -797,7 +797,7 @@ uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, cons
             return 0;
     }
 
-    if(pVictim->GetTypeId() == TYPEID_PLAYER) )
+    if(pVictim->GetTypeId() == TYPEID_PLAYER)
     {
         // hacky way -.-
         if (spellProto && SpellCantDealDmgToPlayer(spellProto->Id))
