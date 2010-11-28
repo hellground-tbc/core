@@ -42,6 +42,45 @@
 #include "Chat.h"
 #include "SocialMgr.h"
 
+bool MapSessionFilter::Process(WorldPacket * packet)
+{
+    OpcodeHandler const& opHandle = opcodeTable[packet->GetOpcode()];
+    //let's check if our opcode can be really processed in Map::Update()
+    if (opHandle.packetProcessing == PROCESS_INPLACE)
+        return true;
+
+    if (opHandle.packetProcessing == PROCESS_THREADUNSAFE)
+        return false;
+
+    Player * plr = m_pSession->GetPlayer();
+    if(!plr)
+        return false;
+
+    //in Map::Update() we do not process packets where player is not in world!
+    return plr->IsInWorld();
+}
+
+//we should process ALL packets when player is not in world/logged in
+//OR packet handler is not thread-safe!
+bool WorldSessionFilter::Process(WorldPacket* packet)
+{
+    OpcodeHandler const& opHandle = opcodeTable[packet->GetOpcode()];
+    //check if packet handler is supposed to be safe
+    if(opHandle.packetProcessing == PROCESS_INPLACE)
+        return true;
+
+     if(opHandle.packetProcessing == PROCESS_THREADUNSAFE)
+         return true;
+
+    //no player attached? -> our client! ^^
+    Player * plr = m_pSession->GetPlayer();
+    if(!plr)
+        return true;
+
+    //lets process all packets for non-in-the-world player
+    return (plr->IsInWorld() == false);
+}
+
 /// WorldSession constructor
 WorldSession::WorldSession(uint32 id, WorldSocket *sock, uint32 sec, uint8 expansion, time_t mute_time, LocaleConstant locale, bool speciallog, uint16 opcDisabled) :
 LookingForGroup_auto_join(false), LookingForGroup_auto_add(false), m_muteTime(mute_time),
@@ -167,12 +206,12 @@ void WorldSession::logUnexpectedOpcode(WorldPacket* packet, const char *reason)
 }
 
 /// Update the WorldSession (triggered by World update)
-bool WorldSession::Update(uint32 diff)
+bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 {
     if (!m_inQueue && !m_playerLoading && (!_player || !_player->IsInWorld()))
     {
         if (m_kickTimer < diff)
-           KickPlayer();
+            KickPlayer();
         else
             m_kickTimer -= diff;
     }
@@ -182,7 +221,7 @@ bool WorldSession::Update(uint32 diff)
     ///- Retrieve packets from the receive queue and call the appropriate handlers
     /// not proccess packets if socket already closed
     WorldPacket* packet;
-    while (m_Socket && !m_Socket->IsClosed() && _recvQueue.next(packet))
+    while (m_Socket && !m_Socket->IsClosed() && _recvQueue.next(packet, updater))
     {
         if(packet->GetOpcode() >= NUM_MSG_TYPES)
         {
@@ -233,14 +272,18 @@ bool WorldSession::Update(uint32 diff)
                     break;
             }
         }
-
         delete packet;
     }
 
-    ///- If necessary, log the player out
-    time_t currTime = time(NULL);
-    if (!m_Socket || (ShouldLogOut(currTime) && !m_playerLoading))
-        LogoutPlayer(true);
+    //check if we are safe to proceed with logout
+    //logout procedure should happen only in World::UpdateSessions() method!!!
+    if(updater.ProcessLogout())
+    {
+        ///- If necessary, log the player out
+        time_t currTime = time(NULL);
+        if (!m_Socket || (ShouldLogOut(currTime) && !m_playerLoading))
+            LogoutPlayer(true);
+    }
 
     ///- Cleanup socket pointer if need
     if (m_Socket && m_Socket->IsClosed())

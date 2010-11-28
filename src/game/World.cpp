@@ -2337,11 +2337,13 @@ void World::UpdateSessions( time_t diff )
 #endif // ANTICHEAT_SOCK
 
         ///- and remove not active sessions from the list
-        if(!itr->second->Update(diff))                      // As interval = 0
+        WorldSession * pSession = itr->second;
+        WorldSessionFilter updater(pSession);
+        if (!pSession->Update(diff, updater))    // As interval = 0
         {
-            if(!RemoveQueuedPlayer(itr->second))
+            if (!RemoveQueuedPlayer(pSession))
             {
-                if(getConfig(CONFIG_INTERVAL_DISCONNECT_TOLERANCE))
+                if (getConfig(CONFIG_INTERVAL_DISCONNECT_TOLERANCE))
                 {
                     std::pair<uint32, time_t> tPair;
                     tPair.first = itr->second->GetAccountId();
@@ -2350,10 +2352,8 @@ void World::UpdateSessions( time_t diff )
                     addDisconnectTime(tPair);
                 }
             }
-
-            WorldSession *temp = itr->second;
             m_sessions.erase(itr);
-            delete temp;
+            delete pSession;
         }
     }
 }
