@@ -770,6 +770,18 @@ void Unit::SendDamageLog(DamageLog *damageInfo)
     }
 }
 
+bool SpellCantDealDmgToPlayer(uint32 id)
+{
+    switch (id)
+    {
+        case 35139:         // Throw Heavy Bomb (bomb from DR.Doom q)
+        case 33836:         // Dropping Heavy Bomb (bomb from q in HP)
+            return true;
+        default:
+            return false;
+    }
+}
+
 // tymczasowo to kopia starej funkcji - trzeba zmienic
 uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, const SpellEntry *spellProto, bool durabilityLoss)
 {
@@ -785,23 +797,30 @@ uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, cons
             return 0;
     }
 
-    // Handle Blessed Life
-    // w combat logu bedzie pokazane zawsze full dmg, ktos wie jak mozna to lepiej zrobic?
-    if(pVictim->GetTypeId() == TYPEID_PLAYER && pVictim->getClass() == CLASS_PALADIN)
+    if(pVictim->GetTypeId() == TYPEID_PLAYER) )
     {
-        AuraList procTriggerAuras = pVictim->GetAurasByType(SPELL_AURA_PROC_TRIGGER_SPELL);
-        for(AuraList::iterator i = procTriggerAuras.begin(); i != procTriggerAuras.end(); ++i)
+        // hacky way -.-
+        if (spellProto && SpellCantDealDmgToPlayer(spellProto->Id))
+            return 0;
+
+        // Handle Blessed Life
+        // w combat logu bedzie pokazane zawsze full dmg, ktos wie jak mozna to lepiej zrobic?
+        if (pVictim->getClass() == CLASS_PALADIN)
         {
-            switch((*i)->GetSpellProto()->Id)
+            AuraList procTriggerAuras = pVictim->GetAurasByType(SPELL_AURA_PROC_TRIGGER_SPELL);
+            for(AuraList::iterator i = procTriggerAuras.begin(); i != procTriggerAuras.end(); ++i)
             {
-                 case 31828: // Rank 1
-                 case 31829: // Rank 2
-                 case 31830: // Rank 3
-                 {
-                     if(roll_chance_i((*i)->GetSpellProto()->procChance))
-                        damageInfo->damage /= 2;
-                     break;
-                 }
+                switch((*i)->GetSpellProto()->Id)
+                {
+                     case 31828: // Rank 1
+                     case 31829: // Rank 2
+                     case 31830: // Rank 3
+                     {
+                         if(roll_chance_i((*i)->GetSpellProto()->procChance))
+                            damageInfo->damage /= 2;
+                         break;
+                     }
+                }
             }
         }
     }
