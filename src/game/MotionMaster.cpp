@@ -495,7 +495,7 @@ void MotionMaster::propagateSpeedChange()
 
 MovementGeneratorType MotionMaster::GetCurrentMovementGeneratorType() const
 {
-   if (empty())
+   if (empty() || !top())
        return IDLE_MOTION_TYPE;
 
    return top()->GetMovementGeneratorType();
