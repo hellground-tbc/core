@@ -41,7 +41,6 @@ ArenaTeam::ArenaTeam()
 
 ArenaTeam::~ArenaTeam()
 {
-
 }
 
 bool ArenaTeam::Create(uint64 captainGuid, uint32 type, std::string ArenaTeamName)
@@ -549,17 +548,19 @@ int32 ArenaTeam::LostAgainst(uint32 againstRating)
 void ArenaTeam::MemberLost(Player * plr, uint32 againstRating)
 {
     // called for each participant of a match after losing
-    for(MemberList::iterator itr = members.begin(); itr !=  members.end(); ++itr)
+    for (MemberList::iterator itr = members.begin(); itr !=  members.end(); ++itr)
     {
-        if(itr->guid == plr->GetGUID())
+        if (itr->guid == plr->GetGUID())
         {
             // update personal rating
             float chance = GetChanceAgainst(itr->personal_rating, againstRating);
             int32 mod = (int32)ceil(32.0f * (0.0f - chance));
             itr->ModifyPersonalRating(plr, mod, GetSlot());
+            
             // update personal played stats
             itr->games_week +=1;
             itr->games_season +=1;
+            
             // update the unit fields
             plr->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + 6 * GetSlot() + 2, itr->games_week);
             plr->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + 6 * GetSlot() + 3, itr->games_season);

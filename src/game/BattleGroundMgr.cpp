@@ -408,7 +408,6 @@ bool BattleGroundQueue::BuildSelectionPool(uint32 bgTypeId, uint32 queue_id, uin
         return true;
     }
 
-
     // failed to build a selection pool matching the given values
     return false;
 }

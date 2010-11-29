@@ -2019,7 +2019,7 @@ void Player::RewardRage( uint32 damage, uint32 weaponSpeedHitFactor, bool attack
 
         // Berserker Rage effect
         if(HasAura(18499,0))
-            addRage *= 1.3;
+            addRage *= 2.0f;
     }
 
     addRage *= sWorld.getRate(RATE_POWER_RAGE_INCOME);

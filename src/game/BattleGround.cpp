@@ -857,6 +857,7 @@ void BattleGround::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
                         winner_arena_team = objmgr.GetArenaTeamById(GetArenaTeamIdForTeam(HORDE));
                         loser_arena_team = objmgr.GetArenaTeamById(GetArenaTeamIdForTeam(ALLIANCE));
                     }
+
                     if(winner_arena_team && loser_arena_team)
                     {
                         loser_arena_team->MemberLost(plr,winner_arena_team->GetRating());
@@ -896,6 +897,7 @@ void BattleGround::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
 
         // Do next only if found in battleground
         plr->SetBattleGroundId(0);                          // We're not in BG.
+        
         // reset destination bg team
         plr->SetBGTeam(0);
         plr->GetMotionMaster()->MovementExpired();
@@ -1718,12 +1720,12 @@ void BattleGround::HandleKillUnit(Creature *creature, Player *killer)
 // This method should be called when player logs out from running battleground
 void BattleGround::EventPlayerLoggedOut(Player* player)
 {
-    if( GetStatus() == STATUS_IN_PROGRESS )
+    if (GetStatus() == STATUS_IN_PROGRESS)
     {
         if( isBattleGround() )
             EventPlayerDroppedFlag(player);
     }
 
-    if( isArena() )
+    if (isArena())
         player->LeaveBattleground();
 }

@@ -497,7 +497,7 @@ void WorldSession::HandleBattleGroundPlayerPortOpcode( WorldPacket &recv_data )
 
 void WorldSession::HandleBattleGroundLeaveOpcode( WorldPacket &recv_data)
 {
-    sLog.outDebug( "WORLD: Recvd CMSG_LEAVE_BATTLEFIELD Message");
+    sLog.outDebug("WORLD: Recvd CMSG_LEAVE_BATTLEFIELD Message");
 
     recv_data.read_skip<uint8>();                           // unk1
     recv_data.read_skip<uint8>();                           // unk2
