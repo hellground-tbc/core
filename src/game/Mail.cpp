@@ -491,7 +491,7 @@ void WorldSession::HandleTakeItem(WorldPacket & recv_data )
 
                 if(_player->GetSession()->SpecialLog())
                 {
-                    sLog.outCommand(GetAccountId(),"Player %s (Account: %u) receive mail item: %s (Entry: %u Count: %u) and send COD money: %u to player: %s (Account: %u)",
+                    sLog.outSpecial(GetAccountId(),"Player %s (Account: %u) receive mail item: %s (Entry: %u Count: %u) and send COD money: %u to player: %s (Account: %u)",
                         GetPlayerName(),GetAccountId(),it->GetProto()->Name1,it->GetEntry(),it->GetCount(),m->COD,sender_name.c_str(),sender_accId);
                 }
                 else
