@@ -3110,6 +3110,8 @@ void Spell::EffectEnergize(uint32 i)
         return;
 
     int32 gain = unitTarget->ModifyPower(power,damage);
+//No threat from life tap
+    if (m_spellInfo->Id!=31818)
     unitTarget->getHostilRefManager().threatAssist(m_caster, float(gain) * 0.5f, m_spellInfo);
 
     m_caster->SendEnergizeSpellLog(unitTarget, m_spellInfo->Id, damage, power);
