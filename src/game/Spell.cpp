@@ -963,7 +963,11 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
 
         int32 gain = unitTarget->ModifyHealth( int32(addhealth) );
 
-        unitTarget->getHostilRefManager().threatAssist(caster, float(gain) * 0.5f, m_spellInfo);
+        // prayer of mending and earthshield generates threat for target instead of caster
+        if(m_spellInfo->Id == 33110 || m_spellInfo->Id == 379)
+            unitTarget->getHostilRefManager().threatAssist(unitTarget, float(gain) * 0.5f, m_spellInfo);
+        else
+            unitTarget->getHostilRefManager().threatAssist(caster, float(gain) * 0.5f, m_spellInfo);
         if(caster->GetTypeId()==TYPEID_PLAYER)
             if(BattleGround *bg = ((Player*)caster)->GetBattleGround())
                 bg->UpdatePlayerScore(((Player*)caster), SCORE_HEALING_DONE, gain);
@@ -2079,14 +2083,23 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 {
                     for(GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
                     {
-                        Player* Target = itr->getSource();
-
-                        // IsHostileTo check duel and controlled by enemy
-                        if( Target && targetPlayer->IsWithinDistInMap(Target, radius) &&
-                            targetPlayer->getClass() == Target->getClass() &&
-                            !m_caster->IsHostileTo(Target) )
+                        if( Player* Target = itr->getSource() )
                         {
-                            AddUnitTarget(Target, i);
+                            // IsHostileTo check duel and controlled by enemy   
+                            if( targetPlayer->IsWithinDistInMap(Target, radius) &&
+                                targetPlayer->getClass() == Target->getClass() &&
+                                !m_caster->IsHostileTo(Target))
+                            {
+                                AddUnitTarget(Target, i);
+                            }
+
+                            if( Target->GetPet() &&  targetPlayer->IsWithinDistInMap(Target->GetPet(), radius) && !m_caster->IsHostileTo(Target->GetPet()))
+                            {
+                                if(targetPlayer->GetClass() == CLASS_WARRIOR && (Target->GetClass() == CLASS_HUNTER || Target->GetPet()->GetEntry() == 17252))
+                                    AddUnitTarget(Target->GetPet(), i);
+                                else if(targetPlayer->GetClass() == CLASS_WARLOCK && Target->GetClass() == CLASS_WARLOCK && Target->GetPet()->GetEntry() != 17252)
+                                    AddUnitTarget(Target->GetPet(), i);
+                            }
                         }
                     }
                 }
