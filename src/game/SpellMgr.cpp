@@ -971,6 +971,7 @@ bool IsBinaryResistable(SpellEntry const* spellInfo)
         case 31344:     // Howl of Azgalor
         case 31447:     // Mark of Kaz'Rogal
         case 34190:     // Void - Arcane Orb
+        case 37675:     // Leotheras - Chaos Blast
         case 37730:     // Morogrim - Tidal Wave
         case 38441:     // Fathom - Cataclysm bolt
         case 38509:     // Vashj - Shock Blast
