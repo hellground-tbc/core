@@ -688,10 +688,10 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
 
         if(m_originalCaster && damage > 0)
             damage = m_originalCaster->SpellDamageBonus(unitTarget, m_spellInfo, (uint32)damage, SPELL_DIRECT_DAMAGE);
-        
+
         if(attackPowerCoefficient)
             damage += attackPowerCoefficient * (m_caster->GetTotalAttackPowerValue(BASE_ATTACK) + unitTarget->GetMeleeApAttackerBonus());
-        
+
         if(rangedAttackPowerCoefficient)
             damage += rangedAttackPowerCoefficient * (m_caster->GetTotalAttackPowerValue(RANGED_ATTACK) + unitTarget->GetTotalAuraModifier(SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS));
         damage *= totalDmgModPct;
@@ -5372,30 +5372,31 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             unitTarget->CastCustomSpell(unitTarget, 46576, &ChillDamage, NULL, NULL, true, 0, ChillingAura, m_caster->GetGUID());
             break;
         }
-        case 48025:                                     // Headless Horseman's Mount
+        // Headless Horseman's Mount
+        case 48025:
         {
                 if(!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
                     return;
 
-                if (unitTarget->GetMap()->IsDungeon() || unitTarget->GetMap()->IsRaid())
-                    return;
+                //if (unitTarget->GetMap()-> IsDungeon() || unitTarget->GetMap()->IsRaid())
+                //    return;
 
                 if(GetVirtualMapForMapAndZone(unitTarget->GetMapId(),unitTarget->GetZoneId()) != 530)
                 {
                     switch(((Player*)unitTarget)->GetBaseSkillValue(762))
                     {
-                    case 75: unitTarget->CastSpell(unitTarget, 51621, true); break;;
-                    case 150: case 225: case 300: unitTarget->CastSpell(unitTarget, 48024, true); break;
+                    case 75: unitTarget->CastSpell(unitTarget, 51621, false); break;;
+                    case 150: case 225: case 300: unitTarget->CastSpell(unitTarget, 48024, false); break;
                     default: break;
                     }
                 }else
                 {
                     switch(((Player*)unitTarget)->GetBaseSkillValue(762))
                     {
-                    case 75: unitTarget->CastSpell(unitTarget, 51621, true); break;;
-                    case 150: unitTarget->CastSpell(unitTarget, 48024, true); break;
-                    case 225: unitTarget->CastSpell(unitTarget, 51617, true); break;
-                    case 300: unitTarget->CastSpell(unitTarget, 48023, true); break;
+                    case 75: unitTarget->CastSpell(unitTarget, 51621, false); break;;
+                    case 150: unitTarget->CastSpell(unitTarget, 48024, false); break;
+                    case 225: unitTarget->CastSpell(unitTarget, 51617, false); break;
+                    case 300: unitTarget->CastSpell(unitTarget, 48023, false); break;
                     default: break;
                     }
                 }

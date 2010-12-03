@@ -3376,7 +3376,7 @@ bool GossipSelect_npc_overlord_orbarokh(Player *player, Creature *_Creature, uin
 # npc_thane_yoregar
 ####*/
 
-#define GOSSIP_ITEM_YOREGAR "Restore Kor'kron Flare Gun."
+#define GOSSIP_ITEM_YOREGAR "Restore Wildhammer Flare Gun."
 
 bool GossipHello_npc_thane_yoregar(Player *player, Creature *_Creature)
 {
@@ -3565,13 +3565,13 @@ void AddSC_shadowmoon_valley()
     newscript->Name="mob_deathbringer_joovan";
     newscript->GetAI = &GetAI_mob_deathbringer_joovanAI;
     newscript->RegisterSelf();
-	
+
 	newscript = new Script;
     newscript->Name="npc_overlord_orbarokh";
     newscript->pGossipHello = &GossipHello_npc_overlord_orbarokh;
     newscript->pGossipSelect = &GossipSelect_npc_overlord_orbarokh;
     newscript->RegisterSelf();
-	
+
     newscript = new Script;
     newscript->Name="npc_thane_yoregar";
     newscript->pGossipHello = &GossipHello_npc_thane_yoregar;
