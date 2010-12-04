@@ -36,6 +36,7 @@ npc_flight_master       100%    AI for flight masters.
 npc_lazy_peon                   AI for peons for quest 5441 (Lazy Peons)
 npc_mojo                %       AI for companion Mojo (summoned by item: 33993)
 npc_master_omarion      100%    Master Craftsman Omarion, patterns menu
+npc_lorekeeper_lydros   100%    Dialogue (story) + add A Dull and Flat Elven Blade
 EndContentData */
 
 #include "precompiled.h"
@@ -1883,6 +1884,61 @@ switch (action)
     return true;
 }
 
+
+#define GOSSIP_ITEM_LOREKEEPER1 "Fascinating, Lorekeeper. Continue please."
+#define GOSSIP_ITEM_LOREKEEPER2 "(Continue)"
+#define GOSSIP_ITEM_LOREKEEPER3 "Eh?"
+#define GOSSIP_ITEM_LOREKEEPER4 "Maybe... What do I do now?"
+
+bool GossipHello_npc_lorekeeper_lydros(Player *player, Creature *_Creature)
+{
+    if (_Creature->isQuestGiver())
+        player->PrepareQuestMenu( _Creature->GetGUID() );
+    if(player->GetQuestRewardStatus(7507) && !player->HasItemCount(18513,1))
+        player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_LOREKEEPER1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1 );
+		
+player->SEND_GOSSIP_MENU(24999, _Creature->GetGUID());
+return true;
+}
+
+bool GossipSelect_npc_lorekeeper_lydros(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+{
+  switch (action)
+    {
+        case GOSSIP_ACTION_INFO_DEF+1:
+            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_LOREKEEPER2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+            player->SEND_GOSSIP_MENU(25000, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+2:
+            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_LOREKEEPER2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
+            player->SEND_GOSSIP_MENU(25001, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+3:
+            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_LOREKEEPER2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+4);
+            player->SEND_GOSSIP_MENU(25002, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+4:
+            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_LOREKEEPER3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);
+            player->SEND_GOSSIP_MENU(25003, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+5:
+            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_LOREKEEPER4, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+6);
+            player->SEND_GOSSIP_MENU(25004, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+6:
+            ItemPosCountVec dest;
+            uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 18513, 1);
+            if (msg == EQUIP_ERR_OK)
+            {
+                 Item* item = player->StoreNewItem(dest, 18513, true);
+                 player->SendNewItem(item,1,true,false,true);
+            }
+            player->CLOSE_GOSSIP_MENU();
+            break;
+    }
+    return true;
+}
+
 void AddSC_npcs_special()
 {
     Script *newscript;
@@ -1996,6 +2052,12 @@ void AddSC_npcs_special()
     newscript->Name="npc_master_omarion";
     newscript->pGossipHello =  &GossipHello_npc_master_omarion;
     newscript->pGossipSelect = &GossipSelect_npc_master_omarion;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name="npc_lorekeeper_lydros";
+    newscript->pGossipHello =  &GossipHello_npc_lorekeeper_lydros;
+    newscript->pGossipSelect = &GossipSelect_npc_lorekeeper_lydros;
     newscript->RegisterSelf();
 }
 
