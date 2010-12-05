@@ -11580,20 +11580,21 @@ bool Unit::HandleMeandingAuraProc( Aura* triggeredByAura )
     // current aura expire
     triggeredByAura->m_procCharges = 1;             // will removed at next charges decrease
 
-    if(Player* caster = ((Player*)triggeredByAura->GetCaster()))
+    if(Unit* caster = triggeredByAura->GetCaster())
     {
         // next target selection
-        if(jumps > 0 && GetTypeId()==TYPEID_PLAYER && IS_PLAYER_GUID(caster_guid))
+        if(jumps > 0 && caster->GetTypeId()==TYPEID_PLAYER)
         {
+            Player *PlayerCaster = (Player*)caster;
             float radius;
             if (spellProto->EffectRadiusIndex[effIdx])
                 radius = GetSpellRadius(spellProto,effIdx,false);
             else
                 radius = GetSpellMaxRange(sSpellRangeStore.LookupEntry(spellProto->rangeIndex));
 
-            caster->ApplySpellMod(spellProto->Id, SPELLMOD_RADIUS, radius,NULL);
+            PlayerCaster->ApplySpellMod(spellProto->Id, SPELLMOD_RADIUS, radius,NULL);
 
-            if(Player* target = ((Player*)this)->GetNextRandomRaidMember(radius))
+            if(Unit* target = GetNextRandomRaidMember(radius))
             {
                 // aura will applied from caster, but spell casted from current aura holder
                 SpellModifier *mod = new SpellModifier;
@@ -11606,9 +11607,9 @@ bool Unit::HandleMeandingAuraProc( Aura* triggeredByAura )
                 mod->mask = spellProto->SpellFamilyFlags;
                 mod->charges = 0;
 
-                caster->AddSpellMod(mod, true);
+                PlayerCaster->AddSpellMod(mod, true);
                 CastCustomSpell(target,spellProto->Id,&heal,NULL,NULL,true,NULL,triggeredByAura,caster->GetGUID());
-                caster->AddSpellMod(mod, false);
+                PlayerCaster->AddSpellMod(mod, false);
             }
         }
         heal = caster->SpellHealingBonus(spellProto, heal, HEAL, this);
@@ -12515,4 +12516,43 @@ bool Unit::HasEventAISummonedUnits()
         return false;
 
     return i_AI->HasEventAISummonedUnits();
+}
+
+Unit* Unit::GetNextRandomRaidMember(float radius)
+{
+    Player *pPlayer = GetCharmerOrOwnerPlayerOrPlayerItself();
+    if(!pPlayer)
+        return NULL;
+    Group *pGroup = pPlayer->GetGroup();
+    if(!pGroup)
+        return NULL;
+
+    std::vector<Unit*> nearMembers;
+    nearMembers.reserve(pGroup->GetMembersCount()*2);
+
+    for(GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
+    {
+        Player* Target = itr->getSource();
+
+        if( Target )
+        {
+            // IsHostileTo check duel and controlled by enemy
+            if( Target != this && IsWithinDistInMap(Target, radius) &&
+                !Target->HasInvisibilityAura() && !IsHostileTo(Target) &&
+                !Target->HasAuraType(SPELL_AURA_MOD_UNATTACKABLE))
+                    nearMembers.push_back(Target);
+                
+            if( Pet *pet = Target->GetPet())
+                if( pet != this && IsWithinDistInMap(pet, radius) &&
+                    !pet->HasInvisibilityAura() && !IsHostileTo(pet) && 
+                    !pet->HasAuraType(SPELL_AURA_MOD_UNATTACKABLE))
+                    nearMembers.push_back(pet);
+        }
+    }
+
+    if (nearMembers.empty())
+        return NULL;
+
+    uint32 randTarget = GetMap()->urand(0,nearMembers.size()-1);
+    return nearMembers[randTarget];
 }

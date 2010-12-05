@@ -1051,6 +1051,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         bool IsInRaidWith(Unit const* unit) const;
         void GetPartyMember(std::list<Unit*> &units, float dist);
         void GetRaidMember(std::list<Unit*> &units, float dist);
+        Unit* GetNextRandomRaidMember(float radius);
         bool IsContestedGuard() const
         {
             if(FactionTemplateEntry const* entry = getFactionTemplateEntry())

@@ -2092,14 +2092,14 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                             {
                                 AddUnitTarget(Target, i);
                             }
-
-                            if( Target->GetPet() &&  targetPlayer->IsWithinDistInMap(Target->GetPet(), radius) && !m_caster->IsHostileTo(Target->GetPet()))
-                            {
-                                if(targetPlayer->GetClass() == CLASS_WARRIOR && (Target->GetClass() == CLASS_HUNTER || Target->GetPet()->GetEntry() == 17252))
-                                    AddUnitTarget(Target->GetPet(), i);
-                                else if(targetPlayer->GetClass() == CLASS_WARLOCK && Target->GetClass() == CLASS_WARLOCK && Target->GetPet()->GetEntry() != 17252)
-                                    AddUnitTarget(Target->GetPet(), i);
-                            }
+                            if( Pet *pet = Target->GetPet())
+                                if( targetPlayer->IsWithinDistInMap(pet, radius) && !m_caster->IsHostileTo(pet))
+                                {
+                                    if(targetPlayer->GetClass() == CLASS_WARRIOR && (Target->GetClass() == CLASS_HUNTER || pet->GetEntry() == 17252))
+                                        AddUnitTarget(pet, i);
+                                    else if(targetPlayer->GetClass() == CLASS_WARLOCK && Target->GetClass() == CLASS_WARLOCK && pet->GetEntry() != 17252)
+                                        AddUnitTarget(pet, i);
+                                }
                         }
                     }
                 }

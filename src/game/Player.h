@@ -2111,7 +2111,6 @@ class TRINITY_DLL_SPEC Player : public Unit
         uint64 GetAuraUpdateMask() { return m_auraUpdateMask; }
         void SetAuraUpdateMask(uint8 slot) { m_auraUpdateMask |= (uint64(1) << slot); }
         void UnsetAuraUpdateMask(uint8 slot) { m_auraUpdateMask &= ~(uint64(1) << slot); }
-        Player* GetNextRandomRaidMember(float radius);
         PartyResult CanUninviteFromGroup() const;
 
         GridReference<Player> &GetGridRef() { return m_gridRef; }
