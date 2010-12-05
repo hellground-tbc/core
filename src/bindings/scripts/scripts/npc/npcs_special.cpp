@@ -1757,6 +1757,10 @@ CreatureAI* GetAI_npc_elemental_guardian(Creature* pCreature)
     return new npc_elemental_guardianAI(pCreature);
 }
 
+/*########
+# npc_master_omarion
+#########*/
+
 //Blacksmithing
 #define GOSSIP_ITEM_OMARION0  "Learn Icebane Bracers pattern."
 #define GOSSIP_ITEM_OMARION1  "Learn Icebane Gauntlets pattern."
@@ -1884,6 +1888,10 @@ switch (action)
     return true;
 }
 
+
+/*########
+# npc_lorekeeper_lydros
+#########*/
 
 #define GOSSIP_ITEM_LOREKEEPER1 "Fascinating, Lorekeeper. Continue please."
 #define GOSSIP_ITEM_LOREKEEPER2 "(Continue)"

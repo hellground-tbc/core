@@ -26,6 +26,7 @@ mobs_spitelashes
 npc_loramus_thalipedes
 mob_rizzle_sprysprocket
 mob_depth_charge
+mob_spirit_of_azuregos
 EndContentData */
 
 #include "precompiled.h"
@@ -485,6 +486,111 @@ CreatureAI* GetAI_mob_depth_charge(Creature *_Creature)
     return new mob_depth_chargeAI (_Creature);
 }
 
+/*########
+# mob_spirit_of_azuregos
+#########*/
+
+#define GOSSIP_ITEM_AZUREGOS1 "How did you know? I mean, yes... Yes I am looking for that shard. Do you have it?"
+#define GOSSIP_ITEM_AZUREGOS2 "Alright. Where?"
+#define GOSSIP_ITEM_AZUREGOS3 "By Bronzebeard's... um, beard! What are you talking about?"
+#define GOSSIP_ITEM_AZUREGOS4 "Fish? You gave a piece of what could be the key to saving all life on Kalimdor to a fish?"
+#define GOSSIP_ITEM_AZUREGOS5 "A minnow? The oceans are filled with minnows! There could be a hundred million million minnows out there!"
+#define GOSSIP_ITEM_AZUREGOS6 "..."
+#define GOSSIP_ITEM_AZUREGOS7 "You put the piece on a minnow and placed the minnow somewhere in the waters of the sea between here and the Eastern Kingdoms? And this minnow has special powers?"
+#define GOSSIP_ITEM_AZUREGOS8 "You're insane."
+#define GOSSIP_ITEM_AZUREGOS9 "I'm all ears."
+#define GOSSIP_ITEM_AZUREGOS10 "Come again."
+#define GOSSIP_ITEM_AZUREGOS11 "Ok, let me get this straight. You put the scepter entrusted to your Flight by Anachronos on a minnow of your own making and now you expect me to build an... an arcanite buoy or something... to force your minnow out of hiding? AND potentially incur the wrath of an Elemental Lord? Did I miss anything? Perhaps I am to do this without any clothes on, during a solar eclipse, on a leap year?"
+#define GOSSIP_ITEM_AZUREGOS12 "FINE! And how, dare I ask, am I supposed to acquire an arcanite buoy?"
+#define GOSSIP_ITEM_AZUREGOS13 "But..."
+#define azuregos_bye_bye       "I said GOOD DAY!"
+
+bool GossipHello_mob_spirit_of_azuregos(Player *player, Creature *_Creature)
+{
+    if (_Creature->isQuestGiver())
+        player->PrepareQuestMenu( _Creature->GetGUID() );
+    if(player->GetQuestRewardStatus(8555) && !player->HasItemCount(20949,1))
+    {
+        player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_AZUREGOS1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1 );
+        player->SEND_GOSSIP_MENU(25005, _Creature->GetGUID());
+    }
+    else
+    {
+        player->SEND_GOSSIP_MENU(25006, _Creature->GetGUID());
+    }
+return true;
+}
+
+bool GossipSelect_mob_spirit_of_azuregos(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+{
+  switch (action)
+  {
+        case GOSSIP_ACTION_INFO_DEF+1:
+            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_AZUREGOS2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+            player->SEND_GOSSIP_MENU(25007, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+2:
+            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_AZUREGOS3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
+            player->SEND_GOSSIP_MENU(25008, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+3:
+            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_AZUREGOS4, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+4);
+            player->SEND_GOSSIP_MENU(25009, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+4:
+            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_AZUREGOS5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);
+            player->SEND_GOSSIP_MENU(25010, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+5:
+            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_AZUREGOS6, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+6);
+            player->SEND_GOSSIP_MENU(25011, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+6:
+            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_AZUREGOS7, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+7);
+            player->SEND_GOSSIP_MENU(25012, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+7:
+            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_AZUREGOS8, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+8);
+            player->SEND_GOSSIP_MENU(25013, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+8:
+            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_AZUREGOS9, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+9);
+            player->SEND_GOSSIP_MENU(25014, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+9:
+            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_AZUREGOS10, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+10);
+            player->SEND_GOSSIP_MENU(25015, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+10:
+            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_AZUREGOS11, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+11);
+            player->SEND_GOSSIP_MENU(25016, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+11:
+            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_AZUREGOS12, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+12);
+            player->SEND_GOSSIP_MENU(25017, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+12:
+        {
+            ItemPosCountVec dest;
+            uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 20949, 1);
+            if (msg == EQUIP_ERR_OK)
+            {
+                Item* item = player->StoreNewItem(dest, 20949, true);
+                player->SendNewItem(item,1,true,false,true);
+            }
+        player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_AZUREGOS13, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+13);
+        player->SEND_GOSSIP_MENU(25018, _Creature->GetGUID());
+        break;
+        }
+        case GOSSIP_ACTION_INFO_DEF+13:
+            player->CLOSE_GOSSIP_MENU();
+            _Creature->Say(azuregos_bye_bye,LANG_UNIVERSAL,player->GetGUID() );
+            break;
+  }
+return true;
+}
+
+
 void AddSC_azshara()
 {
     Script *newscript;
@@ -510,6 +616,12 @@ void AddSC_azshara()
     newscript = new Script;
     newscript->Name="mob_depth_charge";
     newscript->GetAI = &GetAI_mob_depth_charge;
+    newscript->RegisterSelf();
+	
+    newscript = new Script;
+    newscript->Name="mob_spirit_of_azuregos";
+    newscript->pGossipHello =  &GossipHello_mob_spirit_of_azuregos;
+    newscript->pGossipSelect = &GossipSelect_mob_spirit_of_azuregos;
     newscript->RegisterSelf();
 }
 
