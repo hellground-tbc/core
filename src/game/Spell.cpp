@@ -963,11 +963,8 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
 
         int32 gain = unitTarget->ModifyHealth( int32(addhealth) );
 
-        // prayer of mending and earthshield generates threat for target instead of caster
-        if(m_spellInfo->Id == 33110 || m_spellInfo->Id == 379)
-            unitTarget->getHostilRefManager().threatAssist(unitTarget, float(gain) * 0.5f, m_spellInfo);
-        else
-            unitTarget->getHostilRefManager().threatAssist(caster, float(gain) * 0.5f, m_spellInfo);
+        unitTarget->getHostilRefManager().threatAssist(caster, float(gain) * 0.5f, m_spellInfo);
+
         if(caster->GetTypeId()==TYPEID_PLAYER)
             if(BattleGround *bg = ((Player*)caster)->GetBattleGround())
                 bg->UpdatePlayerScore(((Player*)caster), SCORE_HEALING_DONE, gain);
