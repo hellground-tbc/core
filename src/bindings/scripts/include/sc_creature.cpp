@@ -446,6 +446,34 @@ void ScriptedAI::SetAutocast (uint32 spellId, uint32 timer, bool startImmediatel
     autocast = startImmediately;
 }
 
+void ScriptedAI::RemoveFromCastQueue(uint32 spellId)
+{
+    if (!spellId || spellList.empty())
+        return;
+
+    for (std::list<SpellToCast>::iterator itr = spellList.begin(); itr != spellList.end(); )
+    {
+        std::list<SpellToCast>::iterator tmpItr = itr;
+        itr++;
+        if ((*tmpItr).spellId == spellId)
+            spellList.erase(tmpItr);
+    }
+}
+
+void ScriptedAI::RemoveFromCastQueue(uint64 targetGUID)
+{
+    if (!targetGUID || spellList.empty())
+        return;
+
+    for (std::list<SpellToCast>::iterator itr = spellList.begin(); itr != spellList.end(); )
+    {
+        std::list<SpellToCast>::iterator tmpItr = itr;
+        itr++;
+        if ((*tmpItr).targetGUID == targetGUID)
+            spellList.erase(tmpItr);
+    }
+}
+
 void ScriptedAI::DoSay(const char* text, uint32 language, Unit* target, bool SayEmote)
 {
     if (target)

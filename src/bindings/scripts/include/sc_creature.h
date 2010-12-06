@@ -278,6 +278,11 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
     void StartAutocast() { autocast = true; }
     void StopAutocast() { autocast = false; }
 
+    //Additional
+    void ClearCastQueue() { spellList.clear(); }
+    void RemoveFromCastQueue(uint32 spellId);
+    void RemoveFromCastQueue(uint64 targetGUID);
+
     //Cast spell by spell info
     void DoCastSpell(Unit* who, SpellEntry const *spellInfo, bool triggered = false);
 
