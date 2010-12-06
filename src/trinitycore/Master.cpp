@@ -172,6 +172,7 @@ public:
                 {
                     if (getMSTimeDiff(w_lastchange,curtime) > 30000 && !BIH::possibleFreeze)
                     {
+                        sLog.outError("Freeze Detector: World Thread hangs, trying prevent VMAP Freeze.");
                         BIH::possibleFreeze = true;
                     }
                 }
