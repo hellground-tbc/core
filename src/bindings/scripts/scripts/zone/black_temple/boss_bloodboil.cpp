@@ -42,7 +42,7 @@ EndScriptData */
 // Phase1
 #define SPELL_BEWILDERING_STRIKE    40491
 #define SPELL_BLOODBOIL             42005
-#define SPELL_ACIDIC_WOUND          40484
+#define SPELL_ACIDIC_WOUND          40481 /*40484*/
 
 //Phase2
 #define SPELL_SUMMON_FEL_GEYSER     40569
@@ -92,6 +92,7 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
     uint32 BloodboilTimer;
 
     uint32 BewilderingStrikeTimer;
+    uint32 AcidicWoundTimer;
 
     uint32 ArcingSmashTimer;
     uint32 FelAcidTimer;
@@ -117,6 +118,7 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
         BloodboilTimer = 10000;
 
         BewilderingStrikeTimer = urand(5000, 65000);
+        AcidicWoundTimer = 2000;
 
         ArcingSmashTimer = 10000;
         FelAcidTimer = urand(20000, 25000);
@@ -130,7 +132,7 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
         Phase1 = true;
         ChargeTimer = 2000;
 
-        DoCast(m_creature, SPELL_ACIDIC_WOUND, true);
+        //DoCast(m_creature, SPELL_ACIDIC_WOUND, true);
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
         m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
     }
@@ -284,6 +286,14 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
 
         if (Phase1)
         {
+            if (AcidicWoundTimer < diff)
+            {
+                AddSpellToCast(m_creature->getVictim(), SPELL_ACIDIC_WOUND);
+                AcidicWoundTimer = 2000;
+            }
+            else
+                AcidicWoundTimer -= diff;
+
             if (BewilderingStrikeTimer < diff)
             {
                 AddSpellToCast(m_creature->getVictim(), SPELL_BEWILDERING_STRIKE);
@@ -331,8 +341,9 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
             {
                 if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 65.0f, true))
                 {
+                    ClearCastQueue();
                     ForceSpellCast(pTarget, SPELL_SUMMON_FEL_GEYSER, INTERRUPT_AND_CAST_INSTANTLY);
-                    m_creature->RemoveAurasDueToSpell(SPELL_ACIDIC_WOUND);
+                    //m_creature->RemoveAurasDueToSpell(SPELL_ACIDIC_WOUND);
 
                     m_creature->SetSpeed(MOVE_RUN, 3.0);
 
@@ -387,7 +398,7 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
                 PhaseChangeTimer = 59000;
 
                 m_creature->SetSpeed(MOVE_RUN, 2.0);
-                ForceSpellCast(m_creature, SPELL_ACIDIC_WOUND, INTERRUPT_AND_CAST_INSTANTLY);
+                //ForceSpellCast(m_creature, SPELL_ACIDIC_WOUND, INTERRUPT_AND_CAST_INSTANTLY);
             }
         }
         else
