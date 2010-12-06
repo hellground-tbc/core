@@ -566,7 +566,7 @@ bool GossipSelect_go_ancient_skull_pile(Player *player, GameObject* _GO, uint32 
     switch(sender)
     {
         case GOSSIP_SENDER_MAIN:
-            // player->CastSpell(player,41004,false); 
+            // player->CastSpell(player,41004,false);
             // terokk should be summoned by above spell, but it doesn't work; summoninng him in other way
             if(player->HasItemCount(32720, 1))
             {
@@ -588,7 +588,7 @@ bool GossipSelect_go_ancient_skull_pile(Player *player, GameObject* _GO, uint32 
 #define SPELL_SHADOW_BOLT_VOLLEY    40721
 #define SPELL_CLEAVE                15284
 #define SPELL_DIVINE_SHIELD         40733
-#define SPELL_ENRAGE                28747   
+#define SPELL_ENRAGE                28747
 #define SPELL_WILL_OF_ARRAKOA_GOD   40722
 #define SPELL_CHOSEN_ONE            40726
 #define SPELL_ANCIENT_FLAMES        40657
@@ -671,7 +671,7 @@ struct TRINITY_DLL_DECL mob_terokkAI : public ScriptedAI
         for(int i = 0; i < 3; i++)
         {
             if(SkyguardGUIDs[i])
-                if(Creature* skyguard = Creature::GetCreature(*m_creature, SkyguardGUIDs[i]))            
+                if(Creature* skyguard = Creature::GetCreature(*m_creature, SkyguardGUIDs[i]))
                     skyguard->GetMotionMaster()->MovePoint(SKYGUARD_WP_DESPAWN, skyguardSpawn[i][0], skyguardSpawn[i][1], skyguardAltitude);
             SkyguardGUIDs[i] = 0;
         }
@@ -706,7 +706,7 @@ struct TRINITY_DLL_DECL mob_terokkAI : public ScriptedAI
             DoCast(m_creature->getVictim(), SPELL_CLEAVE);
             Cleave_Timer = 7000 + rand() % 2000;
         }
-        else 
+        else
             Cleave_Timer -= diff;
 
         if( ChosenOneTarget )
@@ -753,7 +753,7 @@ struct TRINITY_DLL_DECL mob_terokkAI : public ScriptedAI
                     skyguard->GetMotionMaster()->MovePoint(SKYGUARD_WP_AFTER_SPAWN, skyguardWPStart[i][0], skyguardWPStart[i][1], skyguardAltitude );
                     skyguard->Mount(21158);
                 }
-            
+
             CheckTimer = 2000;
             SkyguardFlare_Timer = 15000;
         }
@@ -813,7 +813,7 @@ CreatureAI* GetAI_mob_terokk(Creature *_Creature)
 
 struct TRINITY_DLL_DECL npc_skyguard_aceAI : public ScriptedAI
 {
-    
+
     npc_skyguard_aceAI(Creature* c) : ScriptedAI(c) {}
 
     uint64 TargetGUID;
@@ -836,7 +836,7 @@ struct TRINITY_DLL_DECL npc_skyguard_aceAI : public ScriptedAI
     {
         if(type != POINT_MOTION_TYPE)
             return;
-        
+
         if(id < SKYGUARD_WP_CIRCLE_MAX)
         {
             NextWP = (id + 1) % SKYGUARD_WP_CIRCLE_MAX;
@@ -859,7 +859,7 @@ struct TRINITY_DLL_DECL npc_skyguard_aceAI : public ScriptedAI
             NextWP = rand() % SKYGUARD_WP_CIRCLE_MAX;
             Move_Timer = 9000;
         }
- 
+
     }
 
     void JustSummoned(Creature *creature)
@@ -873,7 +873,7 @@ struct TRINITY_DLL_DECL npc_skyguard_aceAI : public ScriptedAI
             creature->CastSpell(creature, SPELL_SKYGUARD_FLARE_TARGET, true);
             TargetGUID = creature->GetGUID();
             TargetLifetime = 20500;
-            AncientFlame_Timer = 5500;  
+            AncientFlame_Timer = 5500;
             DoCast(creature, SPELL_ANCIENT_FLAMES, false);
         }
     }
@@ -895,7 +895,7 @@ struct TRINITY_DLL_DECL npc_skyguard_aceAI : public ScriptedAI
             else
                 TargetLifetime -= diff;
         }
-        
+
         if(Move_Timer >= 0)
         {
             if(Move_Timer < diff)
@@ -916,7 +916,7 @@ struct TRINITY_DLL_DECL npc_skyguard_aceAI : public ScriptedAI
                     target->CastStop();
                     target->RemoveAurasDueToSpell(SPELL_SKYGUARD_FLARE_TARGET);
                     // HACK: cast ancient flames so players can be damaged by it, we keep cast ancient flames by skyguard ace only for animation
-                    target->CastSpell(target, SPELL_ANCIENT_FLAMES, true);          
+                    target->CastSpell(target, SPELL_ANCIENT_FLAMES, true);
                 }
                 AncientFlame_Timer = -1;
             } else
@@ -937,7 +937,7 @@ Script for Quest: Hungry Nether Rays (11093)
 struct TRINITY_DLL_DECL npc_blackwing_warp_chaser : public ScriptedAI
 {
     npc_blackwing_warp_chaser(Creature *c) : ScriptedAI(c) {}
-    
+
     Unit* HungryNetherRay;
 
     void JustDied(Unit* slayer)
@@ -953,10 +953,10 @@ struct TRINITY_DLL_DECL npc_blackwing_warp_chaser : public ScriptedAI
             }
         }
     }
-    
+
     void EnterCombat(Unit *who) {}
 
-    void Reset() 
+    void Reset()
     {
         HungryNetherRay = NULL;
     }
@@ -1002,7 +1002,7 @@ struct TRINITY_DLL_DECL npc_skyguard_prisonerAI : public npc_escortAI
 
         switch(i)
         {
-        case 0: 
+        case 0:
             {
             GameObject* Cage = FindGameObject(GO_CAGE, 10, m_creature);
             if(Cage)
@@ -1066,6 +1066,267 @@ CreatureAI* GetAI_npc_skyguard_prisonerAI(Creature* _Creature)
     thisAI->AddWaypoint(12, -4178.90, 3093.35, 323.98, 6000);//SAY_PROGRESS_3
 
     return (CreatureAI*)thisAI;
+}
+
+/*######
+## npc_letoll
+######*/
+
+enum
+{
+    SAY_LE_START                    = -1000510,
+    SAY_LE_KEEP_SAFE                = -1000511,
+    SAY_LE_NORTH                    = -1000512,
+    SAY_LE_ARRIVE                   = -1000513,
+    SAY_LE_BURIED                   = -1000514,
+    SAY_LE_ALMOST                   = -1000515,
+    SAY_LE_DRUM                     = -1000516,
+    SAY_LE_DRUM_REPLY               = -1000517,
+    SAY_LE_DISCOVERY                = -1000518,
+    SAY_LE_DISCOVERY_REPLY          = -1000519,
+    SAY_LE_NO_LEAVE                 = -1000520,
+    SAY_LE_NO_LEAVE_REPLY1          = -1000521,
+    SAY_LE_NO_LEAVE_REPLY2          = -1000522,
+    SAY_LE_NO_LEAVE_REPLY3          = -1000523,
+    SAY_LE_NO_LEAVE_REPLY4          = -1000524,
+    SAY_LE_SHUT                     = -1000525,
+    SAY_LE_REPLY_HEAR               = -1000526,
+    SAY_LE_IN_YOUR_FACE             = -1000527,
+    SAY_LE_HELP_HIM                 = -1000528,
+    EMOTE_LE_PICK_UP                = -1000529,
+    SAY_LE_THANKS                   = -1000530,
+
+    QUEST_DIGGING_BONES             = 10922,
+
+    NPC_RESEARCHER                  = 22464,
+    NPC_BONE_SIFTER                 = 22466,
+
+    MAX_RESEARCHER                  = 4
+};
+
+//Some details still missing from here, and will also have issues if followers evade for any reason.
+struct npc_letollAI : public npc_escortAI
+{
+    npc_letollAI(Creature* pCreature) : npc_escortAI(pCreature)
+    {
+        m_uiEventTimer = 5000;
+        m_uiEventCount = 0;
+        Reset();
+    }
+
+    std::list<Creature*> m_lResearchersList;
+
+    uint32 m_uiEventTimer;
+    uint32 m_uiEventCount;
+
+    void Reset() {}
+
+    //will make them follow, but will only work until they enter combat with any unit
+    void SetFormation()
+    {
+        uint32 uiCount = 0;
+
+        for (std::list<Creature*>::iterator itr = m_lResearchersList.begin(); itr != m_lResearchersList.end(); ++itr)
+        {
+            float fAngle = uiCount < MAX_RESEARCHER ? M_PI/MAX_RESEARCHER - (uiCount*2*M_PI/MAX_RESEARCHER) : 0.0f;
+
+            if ((*itr)->isAlive() && !(*itr)->isInCombat())
+                (*itr)->GetMotionMaster()->MoveFollow(me, 2.5f, fAngle);
+
+            ++uiCount;
+        }
+    }
+
+    Creature* GetAvailableResearcher(uint8 uiListNum)
+    {
+        if (!m_lResearchersList.empty())
+        {
+            uint8 uiNum = 1;
+
+            for (std::list<Creature*>::iterator itr = m_lResearchersList.begin(); itr != m_lResearchersList.end(); ++itr)
+            {
+                if (uiListNum && uiListNum != uiNum)
+                {
+                    ++uiNum;
+                    continue;
+                }
+
+                if ((*itr)->isAlive() && (*itr)->IsWithinDistInMap(me, 20.0f))
+                    return (*itr);
+            }
+        }
+
+        return NULL;
+    }
+
+    void JustStartedEscort()
+    {
+        m_uiEventTimer = 5000;
+        m_uiEventCount = 0;
+
+        m_lResearchersList.clear();
+
+        float x, y, z;
+        me->GetPosition(x, y, z);
+
+        CellPair pair(Oregon::ComputeCellPair(x, y));
+        Cell cell(pair);
+        cell.data.Part.reserved = ALL_DISTRICT;
+        cell.SetNoCreate();
+
+        Trinity::AllCreaturesOfEntryInRange check(me, NPC_RESEARCHER, 25);
+        Trinity::CreatureListSearcher<Oregon::AllCreaturesOfEntryInRange> searcher(m_lResearchersList, check);
+        TypeContainerVisitor<Oregon::CreatureListSearcher<Oregon::AllCreaturesOfEntryInRange>, GridTypeMapContainer> cSearcher(searcher);
+        cell.Visit(pair, cSearcher, *(me->GetMap()));
+
+        if (!m_lResearchersList.empty())
+            SetFormation();
+    }
+
+    void WaypointReached(uint32 uiPointId)
+    {
+        switch(uiPointId)
+        {
+            case 0:
+                if (Player* pPlayer = GetPlayerForEscort())
+                    DoScriptText(SAY_LE_KEEP_SAFE, me, pPlayer);
+                break;
+            case 1:
+                DoScriptText(SAY_LE_NORTH, me);
+                break;
+            case 10:
+                DoScriptText(SAY_LE_ARRIVE, me);
+                break;
+            case 12:
+                DoScriptText(SAY_LE_BURIED, me);
+                SetEscortPaused(true);
+                break;
+            case 13:
+                SetRun();
+                break;
+        }
+    }
+
+    void Aggro(Unit* pWho)
+    {
+        if (pWho->isInCombat() && pWho->GetTypeId() == TYPEID_UNIT && pWho->GetEntry() == NPC_BONE_SIFTER)
+            DoScriptText(SAY_LE_HELP_HIM, me);
+    }
+
+    void JustSummoned(Creature* pSummoned)
+    {
+        Player* pPlayer = GetPlayerForEscort();
+
+        if (pPlayer && pPlayer->isAlive())
+            pSummoned->AI()->AttackStart(pPlayer);
+        else
+            pSummoned->AI()->AttackStart(me);
+    }
+
+    void UpdateEscortAI(const uint32 uiDiff)
+    {
+        if (!UpdateVictim())
+        {
+            if (HasEscortState(STATE_ESCORT_PAUSED))
+            {
+                if (m_uiEventTimer < uiDiff)
+                {
+                    m_uiEventTimer = 7000;
+
+                    switch(m_uiEventCount)
+                    {
+                        case 0:
+                            DoScriptText(SAY_LE_ALMOST, me);
+                            break;
+                        case 1:
+                            DoScriptText(SAY_LE_DRUM, me);
+                            break;
+                        case 2:
+                            if (Creature* pResearcher = GetAvailableResearcher(0))
+                                DoScriptText(SAY_LE_DRUM_REPLY, pResearcher);
+                            break;
+                        case 3:
+                            DoScriptText(SAY_LE_DISCOVERY, me);
+                            break;
+                        case 4:
+                            if (Creature* pResearcher = GetAvailableResearcher(0))
+                                DoScriptText(SAY_LE_DISCOVERY_REPLY, pResearcher);
+                            break;
+                        case 5:
+                            DoScriptText(SAY_LE_NO_LEAVE, me);
+                            break;
+                        case 6:
+                            if (Creature* pResearcher = GetAvailableResearcher(1))
+                                DoScriptText(SAY_LE_NO_LEAVE_REPLY1, pResearcher);
+                            break;
+                        case 7:
+                            if (Creature* pResearcher = GetAvailableResearcher(2))
+                                DoScriptText(SAY_LE_NO_LEAVE_REPLY2, pResearcher);
+                            break;
+                        case 8:
+                            if (Creature* pResearcher = GetAvailableResearcher(3))
+                                DoScriptText(SAY_LE_NO_LEAVE_REPLY3, pResearcher);
+                            break;
+                        case 9:
+                            if (Creature* pResearcher = GetAvailableResearcher(4))
+                                DoScriptText(SAY_LE_NO_LEAVE_REPLY4, pResearcher);
+                            break;
+                        case 10:
+                            DoScriptText(SAY_LE_SHUT, me);
+                            break;
+                        case 11:
+                            if (Creature* pResearcher = GetAvailableResearcher(0))
+                                DoScriptText(SAY_LE_REPLY_HEAR, pResearcher);
+                            break;
+                        case 12:
+                            DoScriptText(SAY_LE_IN_YOUR_FACE, me);
+                            me->SummonCreature(NPC_BONE_SIFTER, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                            break;
+                        case 13:
+                            DoScriptText(EMOTE_LE_PICK_UP, me);
+
+                            if (Player* pPlayer = GetPlayerForEscort())
+                            {
+                                DoScriptText(SAY_LE_THANKS, me, pPlayer);
+                                pPlayer->GroupEventHappens(QUEST_DIGGING_BONES, me);
+                            }
+
+                            SetEscortPaused(false);
+                            break;
+                    }
+
+                    ++m_uiEventCount;
+                }
+                else
+                    m_uiEventTimer -= uiDiff;
+            }
+
+            return;
+        }
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_letoll(Creature* pCreature)
+{
+    return new npc_letollAI(pCreature);
+}
+
+bool QuestAccept_npc_letoll(Player* pPlayer, Creature* pCreature, const Quest* pQuest)
+{
+    if (pQuest->GetQuestId() == QUEST_DIGGING_BONES)
+    {
+        if (npc_letollAI* pEscortAI = dynamic_cast<npc_letollAI*>(pCreature->AI()))
+        {
+            DoScriptText(SAY_LE_START, pCreature);
+            pCreature->setFaction(FACTION_ESCORT_N_NEUTRAL_PASSIVE);
+
+            pEscortAI->Start(false, false, pPlayer->GetGUID(), pQuest, true);
+        }
+    }
+
+    return true;
 }
 
 void AddSC_terokkar_forest()
@@ -1142,5 +1403,11 @@ void AddSC_terokkar_forest()
     newscript->GetAI = &GetAI_npc_skyguard_prisonerAI;
     newscript->pQuestAccept = &QuestAccept_npc_skyguard_prisoner;
     newscript->RegisterSelf();
-}
 
+    newscript = new Script;
+    newscript->Name= "npc_letoll";
+    newscript->GetAI = &GetAI_npc_letollAI;
+    newscript->pQuestAccept = &QuestAccept_npc_letoll;
+    newscript->RegisterSelf();
+
+}
