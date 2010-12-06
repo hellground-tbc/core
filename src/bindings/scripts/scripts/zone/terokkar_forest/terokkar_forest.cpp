@@ -1169,14 +1169,14 @@ struct npc_letollAI : public npc_escortAI
         float x, y, z;
         me->GetPosition(x, y, z);
 
-        CellPair pair(Oregon::ComputeCellPair(x, y));
+        CellPair pair(Trinity::ComputeCellPair(x, y));
         Cell cell(pair);
         cell.data.Part.reserved = ALL_DISTRICT;
         cell.SetNoCreate();
 
         Trinity::AllCreaturesOfEntryInRange check(me, NPC_RESEARCHER, 25);
-        Trinity::CreatureListSearcher<Oregon::AllCreaturesOfEntryInRange> searcher(m_lResearchersList, check);
-        TypeContainerVisitor<Oregon::CreatureListSearcher<Oregon::AllCreaturesOfEntryInRange>, GridTypeMapContainer> cSearcher(searcher);
+        Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(m_lResearchersList, check);
+        TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> cSearcher(searcher);
         cell.Visit(pair, cSearcher, *(me->GetMap()));
 
         if (!m_lResearchersList.empty())
@@ -1308,7 +1308,7 @@ struct npc_letollAI : public npc_escortAI
     }
 };
 
-CreatureAI* GetAI_npc_letoll(Creature* pCreature)
+CreatureAI* GetAI_npc_letollAI(Creature* pCreature)
 {
     return new npc_letollAI(pCreature);
 }
