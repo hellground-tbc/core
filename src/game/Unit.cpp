@@ -5853,12 +5853,9 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
             // Earth Shield
             if(dummySpell->SpellFamilyFlags==0x40000000000LL)
             {
-                // Now correctly uses the Shaman's own spell critical strike chance to determine the chance of a critical heal.
-                originalCaster = triggeredByAura->GetCasterGUID();
                 basepoints0 = triggeredByAura->GetModifier()->m_amount;
-                target = this;
-                triggered_spell_id = 379;
-                break;
+                CastCustomSpell(this, 379, &basepoints0, NULL, NULL, true);
+                return true;
             }
             // Lightning Overload
             if (dummySpell->SpellIconID == 2018)            // only this spell have SpellFamily Shaman SpellIconID == 2018 and dummy aura
@@ -8103,7 +8100,8 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
     // Some spells are not healing spells itself, but they just trigger other healing spell (with fixed amount of healing)
     // Don't apply SPELL_AURA_MOD_HEALING_PCT on them (it will be applied on triggered spell)
     if( (spellProto->Id == 33763 && damagetype != DOT) ||                                                       // lifebloom final heal
-        (spellProto->SpellFamilyName == SPELLFAMILY_SHAMAN && spellProto->SpellFamilyFlags == 0x40000000000l )) // earth shield
+        (spellProto->SpellFamilyName == SPELLFAMILY_SHAMAN && spellProto->SpellFamilyFlags == 0x40000000000l ) || // earth shield
+        spellProto->Id == 41635)                                                                                  // prayer of mending
         TotalMod = 1.0f;
 
     // These Spells are doing fixed amount of healing (TODO found less hack-like check)
@@ -8113,7 +8111,7 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
         spellProto->Id == 22845 || spellProto->Id == 33504 ||
         spellProto->Id == 34299 || spellProto->Id == 27813 ||
         spellProto->Id == 27817 || spellProto->Id == 27818 ||
-        spellProto->Id == 5707)
+        spellProto->Id == 5707  || spellProto->Id == 33110)
         return healamount*TotalMod;
 
     int32 AdvertisedBenefit = SpellBaseHealingBonus(GetSpellSchoolMask(spellProto));
@@ -8252,6 +8250,9 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
                 // Holy Nova - 14%
                 if ((spellProto->SpellFamilyFlags & 0x8000000LL) && spellProto->SpellIconID == 1874)
                     CastingTime = 500;
+                // Prayer of Mending - 42.86%
+                if( spellProto->Id == 41635)
+                    CastingTime = 1500;
                 break;
             case SPELLFAMILY_PALADIN:
                 // Seal and Judgement of Light
@@ -11616,7 +11617,7 @@ bool Unit::HandleMeandingAuraProc( Aura* triggeredByAura )
     }
 
     // heal
-    CastCustomSpell(this,33110,&heal,NULL,NULL,true,NULL,NULL,caster_guid);
+    CastCustomSpell(this,33110,&heal,NULL,NULL,true);
     return true;
 }
 
