@@ -626,6 +626,7 @@ struct SpellEnchantProcEntry
 {
     uint32      customChance;
     float       PPMChance;
+    uint32      procFlags;
     uint32      procEx;
 };
 

@@ -1587,8 +1587,8 @@ void SpellMgr::LoadSpellEnchantProcData()
 
     uint32 count = 0;
 
-    //                                                       0      1             2          3
-    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT entry, customChance, PPMChance, procEx FROM spell_enchant_proc_data");
+    //                                                       0      1             2          3          4
+    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT entry, customChance, PPMChance, procFlags, procEx FROM spell_enchant_proc_data");
     if( !result )
     {
 
@@ -1621,7 +1621,8 @@ void SpellMgr::LoadSpellEnchantProcData()
 
         spe.customChance = fields[1].GetUInt32();
         spe.PPMChance = fields[2].GetFloat();
-        spe.procEx = fields[3].GetUInt32();
+        spe.procFlags = fields[3].GetUInt32();
+        spe.procEx = fields[4].GetUInt32();
 
         mSpellEnchantProcEventMap[enchantId] = spe;
 

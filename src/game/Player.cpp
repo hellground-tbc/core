@@ -7365,12 +7365,21 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                 }
             }
 
-            SpellEnchantProcEntry const* entry =  spellmgr.GetSpellEnchantProcEvent(enchant_id);
-            if (entry && entry->procEx)
+            SpellEnchantProcEntry const* entry = spellmgr.GetSpellEnchantProcEvent(enchant_id);
+            if (entry && (entry->procEx || entry->procFlags))
             {
-                // Check hit/crit/dodge/parry requirement
-                if((entry->procEx & procEx) == 0)
-                    continue;
+                if (entry->procFlags)
+                {
+                    if ((procVictim & entry->procFlags) == 0)
+                        continue;
+                }
+
+                if (entry->procEx)
+                {
+                    // Check hit/crit/dodge/parry requirement
+                    if((entry->procEx & procEx) == 0)
+                        continue;
+                }
             }
             else
             {
