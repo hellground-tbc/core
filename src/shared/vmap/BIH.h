@@ -81,7 +81,9 @@ class BIH
 {
     public:
         BIH() {};
+        #ifndef WIN32
         static volatile bool possibleFreeze;
+        #endif
         template< class T, class BoundsFunc >
         void build(const std::vector<T> &primitives, BoundsFunc &getBounds, uint32 leafSize = 3, bool printStats=false)
         {
@@ -179,8 +181,10 @@ class BIH
             {
                 while (true)
                 {
+                    #ifndef WIN32
                     if (possibleFreeze)
                         return;
+                    #endif
                     uint32 tn = tree[node];
                     uint32 axis = (tn & (3 << 30)) >> 30;
                     bool BVH2 = tn & (1 << 29);
@@ -229,8 +233,10 @@ class BIH
                             int n = tree[node + 1];
                             while (n > 0)
                             {
+                                #ifndef WIN32
                                 if (possibleFreeze)
                                     return;
+                                #endif
                                 bool hit = intersectCallback(r, objects[offset], maxDist, stopAtFirst);
                                 if(stopAtFirst && hit)
                                     return;

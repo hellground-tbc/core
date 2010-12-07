@@ -39,7 +39,10 @@
 #include "CliRunnable.h"
 #include "ScriptCalls.h"
 #include "Util.h"
+
+#ifndef WIN32
 #include "vmap/BIH.h"
+#endif
 
 #include "sockets/TcpSocket.h"
 #include "sockets/Utility.h"
@@ -113,7 +116,9 @@ class AntiCheatRunnable : public ACE_Based::Runnable
 #endif//anticheatsock
 
 volatile uint32 Master::m_masterLoopCounter = 0;
+#ifndef WIN32
 volatile bool BIH::possibleFreeze = false;
+#endif
 
 class FreezeDetectorRunnable : public ACE_Based::Runnable
 {
@@ -158,7 +163,9 @@ public:
             {
                 w_lastchange = curtime;
                 w_loops = World::m_worldLoopCounter;
+                #ifndef WIN32
                 BIH::possibleFreeze = false;
+                #endif
             }
             // possible freeze
             else
@@ -168,6 +175,7 @@ public:
                     sLog.outError("World Thread hangs, kicking out server!");
                     *((uint32 volatile*)NULL) = 0;                       // bang crash
                 }
+                #ifndef WIN32
                 else
                 {
                     if (getMSTimeDiff(w_lastchange,curtime) > 30000 && !BIH::possibleFreeze)
@@ -176,6 +184,7 @@ public:
                         BIH::possibleFreeze = true;
                     }
                 }
+                #endif
             }
         }
         sLog.outString("Anti-freeze thread exiting without problems.");
