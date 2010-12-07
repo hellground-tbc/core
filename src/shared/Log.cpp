@@ -39,7 +39,7 @@ enum LogType
 const int LogType_count = int(LogError) +1;
 
 Log::Log() :
-    raLogfile(NULL), logfile(NULL), gmLogfile(NULL), charLogfile(NULL), specialLogFile(NULL),
+    logfile(NULL), gmLogfile(NULL), charLogfile(NULL), specialLogFile(NULL),
     dberLogfile(NULL), arenaLogFile(NULL), bossLogFile(NULL), cheatLogFile(NULL), acLogFile(NULL), m_colored(false), m_includeTime(false), m_gmlog_per_account(false)
 {
     Initialize();
@@ -229,7 +229,6 @@ void Log::Initialize()
     charLogfile = openLogFile("CharLogFile","CharLogTimestamp","a");
 
     dberLogfile = openLogFile("DBErrorLogFile",NULL,"a");
-    raLogfile = openLogFile("RaLogFile",NULL,"a");
 
     specialLogFile = openLogFile("SpecialLogFile",NULL,"a");
 
@@ -822,23 +821,6 @@ void Log::outMenu( const char * str, ... )
 
         fprintf(logfile, "\n" );
         fflush(logfile);
-    }
-    //fflush(stdout);
-}
-
-void Log::outRALog(    const char * str, ... )
-{
-    if( !str )
-        return;
-    va_list ap;
-    if (raLogfile)
-    {
-        outTimestamp(raLogfile);
-        va_start(ap, str);
-        vfprintf(raLogfile, str, ap);
-        fprintf(raLogfile, "\n" );
-        va_end(ap);
-        fflush(raLogfile);
     }
     //fflush(stdout);
 }
