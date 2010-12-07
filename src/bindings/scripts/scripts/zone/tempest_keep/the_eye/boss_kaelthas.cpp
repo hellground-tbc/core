@@ -1514,13 +1514,14 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
         Yell = false;
         Check_Timer = 3000;
 
-        SetAutocast(SPELL_CAPERNIAN_FIREBALL, 2500);
+        SetAutocast(SPELL_CAPERNIAN_FIREBALL, 2500, true);
 
         advisorbase_ai::Reset();
     }
 
     void JustDied(Unit* pKiller)
     {
+        StopAutocast();
         DoScriptText(SAY_CAPERNIAN_DEATH, m_creature);
     }
 
@@ -1529,6 +1530,7 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
         if (!who || m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
             return;
 
+        ClearCastQueue();
         StartAutocast();
         DoScriptText(SAY_CAPERNIAN_AGGRO, m_creature);
     }
@@ -1611,7 +1613,7 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
         else
             ArcaneExplosion_Timer -= diff;
 
-        CastNextSpellIfAnyAndReady();
+        CastNextSpellIfAnyAndReady(diff);
         //Do NOT deal any melee damage.
     }
 };
