@@ -5854,7 +5854,18 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
             if(dummySpell->SpellFamilyFlags==0x40000000000LL)
             {
                 basepoints0 = triggeredByAura->GetModifier()->m_amount;
-                CastCustomSpell(this, 379, &basepoints0, NULL, NULL, true);
+                triggered_spell_id = 379;
+
+                // Adding cooldown to earth shield caster, so earth shield casted on creature still will have cooldown
+                if(Unit *caster = triggeredByAura->GetCaster())
+                    if(caster->GetTypeId() == TYPEID_PLAYER && cooldown)
+                    {
+                        if(((Player*)caster)->HasSpellCooldown(triggered_spell_id))
+                            return false;
+                        ((Player*)caster)->AddSpellCooldown(triggered_spell_id,0,time(NULL) + cooldown);
+                    }
+
+                CastCustomSpell(this, triggered_spell_id, &basepoints0, NULL, NULL, true);
                 return true;
             }
             // Lightning Overload
