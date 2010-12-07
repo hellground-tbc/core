@@ -1521,17 +1521,15 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
 
     void JustDied(Unit* pKiller)
     {
-        StopAutocast();
         DoScriptText(SAY_CAPERNIAN_DEATH, m_creature);
     }
 
     void EnterCombat(Unit *who)
     {
-        if (who || m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
+        if (!who || m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
             return;
 
         StartAutocast();
-
         DoScriptText(SAY_CAPERNIAN_AGGRO, m_creature);
     }
 
