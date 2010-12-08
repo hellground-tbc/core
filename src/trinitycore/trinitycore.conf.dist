@@ -141,12 +141,12 @@ EAIErrorLevel = 2
 #        Map ids where LOS calculations will be enabled.
 #
 #    vmap.heightMaps
-#        Map ids where height calculations will be enabled. 
+#        Map ids where height calculations will be enabled.
 #
 #    vmap.ignoreSpellIds
 #        These spells are ignored for LoS calculation
 #        List of ids with delimiter ','
-#        
+#
 #    vmap.petLOS
 #        Check LOS for pets, to avoid them going through walls etc.
 #        Default: 0 (disable, less CPU usage)
@@ -156,7 +156,7 @@ EAIErrorLevel = 2
 #        Use VMAP for totem summon place calculation
 #        Default: 0 (disable, less CPU usage)
 #                 1 (enable, each totem created check LOS)
-#       
+#
 #    DetectPosCollision
 #        Check final move position, summon position, etc for visible collision with other objects or
 #        wall (wall only if vmaps are enabled)
@@ -177,6 +177,11 @@ EAIErrorLevel = 2
 #        Periodically check if the process got freezed, if this is the case force crash after the specified
 #        amount of seconds. Must be > 0. Recommended > 10 secs if you use this.
 #        Default: 0 (Disabled)
+#
+#    MaxVmapCalcTime
+#        Periodically check if the process got freezed, if this is the case force prevent VMAP freeze after the specified
+#        amount of seconds. Must be > 0.
+#        Default: 30 (seconds)
 #
 #    AddonChannel
 #        Permit/disable the use of the addon channel through the server
@@ -216,6 +221,7 @@ DetectPosCollision = 1
 TargetPosRecalculateRange = 1.5
 UpdateUptimeInterval = 10
 MaxCoreStuckTime = 0
+MaxVmapCalcTime = 30
 AddonChannel = 1
 MapUpdate.Threads = 1
 

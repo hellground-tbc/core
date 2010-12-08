@@ -127,6 +127,7 @@ public:
     uint32 m_loops, m_lastchange;
     uint32 w_loops, w_lastchange;
     uint32 _delaytime;
+    uint32 maxVmapCalcTime;
     void SetDelayTime(uint32 t) { _delaytime = t; }
     void run(void)
     {
@@ -137,6 +138,10 @@ public:
         w_loops = 0;
         m_lastchange = 0;
         w_lastchange = 0;
+        #ifndef WIN32
+        maxVmapCalcTime = sConfig.GetIntDefault("MaxVmapCalcTime", 30);
+        maxVmapCalcTime *= 1000;
+        #endif
         while(!World::IsStopped())
         {
             ACE_Based::Thread::Sleep(1000);
@@ -178,7 +183,7 @@ public:
                 #ifndef WIN32
                 else
                 {
-                    if (getMSTimeDiff(w_lastchange,curtime) > 30000 && !BIH::possibleFreeze)
+                    if (getMSTimeDiff(w_lastchange,curtime) > maxVmapCalcTime && !BIH::possibleFreeze)
                     {
                         sLog.outError("Freeze Detector: World Thread hangs, trying prevent VMAP Freeze.");
                         BIH::possibleFreeze = true;

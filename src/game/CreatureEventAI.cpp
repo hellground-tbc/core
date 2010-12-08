@@ -509,10 +509,7 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
         case ACTION_T_SUMMON:
         {
             if (HasEventAISummonedUnits())
-            {
-                pHolder.UpdateRepeatTimer(m_creature, event.summon_unit.repeatMin, event.summon_unit.repeatMax);
                 break;
-            }
 
             Unit* target = GetTargetByType(action.summon.target, pActionInvoker);
 
@@ -669,10 +666,7 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
         case ACTION_T_SUMMON_ID:
         {
             if (HasEventAISummonedUnits())
-            {
-                pHolder.UpdateRepeatTimer(m_creature, event.summon_unit.repeatMin, event.summon_unit.repeatMax);
                 break;
-            }
 
             Unit* target = GetTargetByType(action.summon_id.target, pActionInvoker);
 
