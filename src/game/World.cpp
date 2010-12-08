@@ -443,7 +443,7 @@ bool World::RemoveQueuedPlayer(WorldSession* sess)
 
     for(;iter != m_QueuedPlayer.end(); ++iter, ++position)
     {
-        if(*iter==sess)
+        if(*iter == sess)
         {
             sess->SetInQueue(false);
             iter = m_QueuedPlayer.erase(iter);
@@ -456,11 +456,11 @@ bool World::RemoveQueuedPlayer(WorldSession* sess)
     // position store position of removed socket and then new position next socket after removed
 
     // if session not queued then we need decrease sessions count
-    if(!found && sessions)
+    if (!found && sessions)
         --sessions;
 
     // accept first in queue
-    if( (!m_playerLimit || (sessions < m_playerLimit)) && !m_QueuedPlayer.empty() )
+    if ((!m_playerLimit || (sessions < m_playerLimit)) && !m_QueuedPlayer.empty())
     {
         WorldSession* pop_sess = m_QueuedPlayer.front();
         pop_sess->SetInQueue(false);
@@ -474,9 +474,17 @@ bool World::RemoveQueuedPlayer(WorldSession* sess)
 
     // update position from iter to end()
     // iter point to first not updated socket, position store new position
-    for(; iter != m_QueuedPlayer.end(); ++iter, ++position)
+    for (; iter != m_QueuedPlayer.end(); ++iter, ++position)
         (*iter)->SendAuthWaitQue(position);
 
+    if (!found && getConfig(CONFIG_INTERVAL_DISCONNECT_TOLERANCE))
+    {
+        std::pair<uint32, time_t> tPair;
+        tPair.first = itr->second->GetAccountId();
+        tPair.second = time(NULL);
+
+        addDisconnectTime(tPair);
+    }
     return found;
 }
 
@@ -2341,17 +2349,8 @@ void World::UpdateSessions( time_t diff )
         WorldSessionFilter updater(pSession);
         if (!pSession->Update(diff, updater))    // As interval = 0
         {
-            if (!RemoveQueuedPlayer(pSession))
-            {
-                if (getConfig(CONFIG_INTERVAL_DISCONNECT_TOLERANCE))
-                {
-                    std::pair<uint32, time_t> tPair;
-                    tPair.first = itr->second->GetAccountId();
-                    tPair.second = time(NULL);
+            RemoveQueuedPlayer(pSession);
 
-                    addDisconnectTime(tPair);
-                }
-            }
             m_sessions.erase(itr);
             delete pSession;
         }
