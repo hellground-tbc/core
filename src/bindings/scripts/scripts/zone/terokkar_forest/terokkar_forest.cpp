@@ -1329,6 +1329,328 @@ bool QuestAccept_npc_letoll(Player* pPlayer, Creature* pCreature, const Quest* p
     return true;
 }
 
+
+/*######
+## npc_sarthis & his companions
+######*/
+
+#define GOSSIP_SARTHIS_SELECT       "Lord Balthas sent me to gather flawless arcane essence"
+
+static float SummonCoord[][3] = 
+{
+    {-2469.45, 4696.66, 157.01}
+};
+
+static float MinionCoord[][3] = 
+{
+    {-2459.4, 4689.6, 165.5},    //Air start
+    {-2474.5, 4685.7, 156.7},    //Air final
+    {-2485.7, 4678.7, 157.0},    //Water start
+    {-2483.0, 4703.3, 154.3},    //Water final
+    {-2480.9, 4676.1, 157.8},    //Earth start
+    {-2479.0, 4689.4, 155.4},    //Earth final
+    {-2478.8, 4720.4, 153.5},    //Fire start
+    {-2476.0, 4707.2, 155.0}     //Fire final
+};
+
+enum eSarthis 
+{
+    QUEST_THE_SOUL_CANNON_OF_RETHHEDRON     = 11089,
+
+    SPELL_SUMMON_AIR_ELEMENTAL              = 40129,
+    SPELL_SUMMON_WATER_ELEMENTAL            = 40130,
+    SPELL_SUMMON_EARTH_ELEMENTAL            = 40132,
+    SPELL_SUMMON_FIRE_ELEMENTAL             = 40133,
+    SPELL_SUMMON_ARCANE_ELEMENTAL           = 40134,
+    SPELL_RED_BEAM                          = 40228,
+    SPELL_GREEN_BEAM                        = 40227,
+    SPELL_BLUE_BEAM                         = 40225,
+
+    SAY_SARTHIS_INTRO                       = -1600007, // "So my blood was not a sufficient payment, eh? Fine, let us recover your arcane essence. After this, I owe Balthas nothing."
+    EMOTE_SARTHIS_FETISH                    = -1600008, // "Sar\'this places a fetish at the ritual pile."
+    SAY_SARTHIS_START                       = -1600009, // "The process is arduous. We must first summon forth acolytes of the elements. you must then destroy these acolytes so that my minions can make preparations."
+    SAY_SARTHIS_KILLED_ACOLYTE              = -1600010, // "Well done! Let\'s continue."
+    SAY_SARTHIS_WATER                       = -1600011, // "Prepare yourself! The acolyte of water is soon to come..."
+    SAY_SARTHIS_EARTH                       = -1600012, // "Come forth, acolyte of earth!"
+    SAY_SARTHIS_FIRE                        = -1600013, // "Fire, show yourself!"
+    SAY_SARTHIS_ARCANE                      = -1600014, // "Now we call forth the the arcane acolyte."
+    SAY_ELEMENTAL_1                         = -1600015, // "I require your life essence to maintain my existence in this realm."
+    SAY_SARTHIS_FINAL                       = -1600016, // "It is yours my lord!"
+
+    GO_SARTHIS_FETISH                       = 185856,
+    NPC_SARTHIS                             = 23093,
+    NPC_MINION_OF_SARTHIS                   = 23094,
+    NPC_ARCANE_ELEMENTAL                    = 23100
+};
+
+struct TRINITY_DLL_DECL npc_sarthisAI : public npc_escortAI
+{
+    npc_sarthisAI(Creature* c) : npc_escortAI(c) {}
+
+    uint64 fetishGUID;
+    std::list<uint64> MinionGUID;
+    bool speech;
+    uint32 SpeechTimer;
+    uint32 SpeechTimer2;
+    uint32 CastTimer;
+    uint32 ResetTimer;
+
+    void Reset()
+    {
+        fetishGUID = NULL;
+        CastTimer = 0;
+        speech = false;
+        MinionGUID.clear();
+        SpeechTimer = 0;
+        SpeechTimer2 = 0;
+        ResetTimer = 120000;
+    }
+
+    void WaypointReached(uint32 i)
+    {
+        Player* pPlayer = GetPlayerForEscort();
+
+        switch(i)
+        {
+            case 2:
+            {
+                DoScriptText(EMOTE_SARTHIS_FETISH, m_creature, pPlayer);
+                GameObject* Fetish = m_creature->SummonGameObject(GO_SARTHIS_FETISH, SummonCoord[0][0], SummonCoord[0][1], SummonCoord[0][2], 0, 0, 0, 0, 0, 180000);
+                Unit* Trigger = m_creature->SummonCreature(12999, SummonCoord[0][0], SummonCoord[0][1], SummonCoord[0][2], 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
+                if(Fetish)
+                    fetishGUID = Fetish->GetGUID();
+                DoScriptText(SAY_SARTHIS_START, m_creature, pPlayer);
+                break;
+            }
+            case 6:
+            {
+                SetEscortPaused(true);
+                if(Unit* Minion = FindCreature(NPC_MINION_OF_SARTHIS, 20, me))
+                    MinionGUID.push_front(Minion->GetGUID());
+                DoCast(m_creature, SPELL_SUMMON_AIR_ELEMENTAL);
+                break;
+            }
+            case 11:
+            {
+                SetEscortPaused(true);
+                if(Unit* Minion = FindCreature(NPC_MINION_OF_SARTHIS, 20, me))
+                    MinionGUID.push_front(Minion->GetGUID());
+                DoScriptText(SAY_SARTHIS_WATER, m_creature, pPlayer);
+                DoCast(m_creature, SPELL_SUMMON_WATER_ELEMENTAL);
+                break;
+            }
+            case 15:
+            {
+                SetEscortPaused(true);
+                if(Unit* Minion = FindCreature(NPC_MINION_OF_SARTHIS, 30, me))
+                    MinionGUID.push_front(Minion->GetGUID());
+                DoScriptText(SAY_SARTHIS_EARTH, m_creature, pPlayer);
+                DoCast(m_creature, SPELL_SUMMON_EARTH_ELEMENTAL);
+                break;
+            }
+            case 21:
+            {
+                SetEscortPaused(true);
+                if(Unit* Minion = FindCreature(NPC_MINION_OF_SARTHIS, 30, me))
+                    MinionGUID.push_front(Minion->GetGUID());
+                DoScriptText(SAY_SARTHIS_FIRE, m_creature, pPlayer);
+                DoCast(m_creature, SPELL_SUMMON_FIRE_ELEMENTAL);
+                break;
+            }
+            case 23:
+            {
+                uint8 j = 0;
+                SetEscortPaused(true);
+                for(std::list<uint64>::iterator i = MinionGUID.begin(); i != MinionGUID.end(); ++i)
+                {
+                    if(Unit* Minion = me->GetMap()->GetCreature(*i))
+                    {
+                        Minion->Relocate(MinionCoord[j][0], MinionCoord[j][1], MinionCoord[j][2], 0);
+                        j++;
+                        Minion->GetMotionMaster()->Clear();
+                        Minion->GetMotionMaster()->MoveIdle();
+                        Minion->GetMotionMaster()->MovePoint(1, MinionCoord[j][0], MinionCoord[j][1], MinionCoord[j][2]);
+                        j++;
+                    }
+                }
+                if(Unit* Fetish = FindCreature(12999, 40, me))
+                    m_creature->SetFacingToObject(Fetish);
+                DoScriptText(SAY_SARTHIS_ARCANE, m_creature, pPlayer);
+                speech = true;
+                SpeechTimer = 15000;
+                CastTimer = 10000;
+            }
+        }
+    }
+
+    void JustDied(Unit* who)
+    {
+        float x, y, z, o;
+        for(std::list<uint64>::iterator i = MinionGUID.begin(); i != MinionGUID.end(); ++i)
+        {
+            if(Unit* Minion = me->GetMap()->GetCreature(*i))
+            {
+                ((Creature*)Minion)->GetHomePosition(x, y, z, o);
+                Minion->Kill(Minion, false);
+                Minion->Relocate(x, y, z, o);
+                ((Creature*)Minion)->Respawn();
+            }
+        }
+        if(Unit* Fetish = FindCreature(12999, 40, me))
+            Fetish->Kill(Fetish, false);
+    }
+
+    void DamageTaken(Unit* done_by, uint32& )
+    {
+        if(done_by->GetTypeId() == TYPEID_UNIT)
+            done_by->Kill(m_creature, false);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(speech && CastTimer < diff)
+        {
+            DoCast(m_creature, SPELL_SUMMON_ARCANE_ELEMENTAL);
+            CastTimer = 120000; //not let cast again;
+        }
+        else
+            CastTimer -= diff;
+
+        if(speech && SpeechTimer < diff)
+        {
+            if(Unit* ArcaneAcolyte = FindCreature(NPC_ARCANE_ELEMENTAL, 30, me))
+            {
+                m_creature->SetFacingToObject(ArcaneAcolyte);
+                ArcaneAcolyte->MonsterSay(SAY_ELEMENTAL_1, 0, me->GetGUID());
+            }
+            SpeechTimer = 120000;   //not let speak again;
+            SpeechTimer2 = 4000;
+        }
+        else
+            SpeechTimer -= diff;
+
+        if(speech && SpeechTimer2 < diff)
+        {
+            if(Unit* ArcaneAcolyte = FindCreature(NPC_ARCANE_ELEMENTAL, 30, me))
+            {
+                DoScriptText(SAY_SARTHIS_FINAL, m_creature, ArcaneAcolyte);
+                ArcaneAcolyte->setFaction(16);
+                ((Creature*)ArcaneAcolyte)->AI()->AttackStart(m_creature);
+            }
+            speech = false;
+        }
+        else
+            SpeechTimer2 -= diff;
+
+        if(HasEscortState(STATE_ESCORT_PAUSED))
+        {
+            if(ResetTimer < diff)
+            {
+                me->Kill(me, false);
+                me->Respawn();
+                if(Unit* ArcaneAcolyte = FindCreature(NPC_ARCANE_ELEMENTAL, 100, me))
+                    ((Creature*)ArcaneAcolyte)->ForcedDespawn();
+                ResetTimer = 120000;
+            }
+            else
+                ResetTimer -= diff;
+        }
+        npc_escortAI::UpdateAI(diff);
+    }
+};
+
+CreatureAI* GetAI_npc_sarthisAI(Creature* _Creature)
+{
+    return new npc_sarthisAI(_Creature);
+}
+
+struct TRINITY_DLL_DECL npc_sarthis_elementalAI : public ScriptedAI
+{
+    npc_sarthis_elementalAI(Creature* c) : ScriptedAI(c) {}
+
+    void JustDied(Unit* killer)
+    {
+        if(Creature* Sarthis = (Creature*)FindCreature(NPC_SARTHIS, 30, me))
+        {
+            DoScriptText(SAY_SARTHIS_KILLED_ACOLYTE, Sarthis);
+            CAST_AI(npc_sarthisAI,Sarthis->AI())->SetEscortPaused(false);
+            CAST_AI(npc_sarthisAI,Sarthis->AI())->ResetTimer = 120000;
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_sarthis_elementalAI(Creature* _Creature)
+{
+    return new npc_sarthis_elementalAI(_Creature);
+}
+
+struct TRINITY_DLL_DECL npc_minion_of_sarthisAI : public ScriptedAI
+{
+    npc_minion_of_sarthisAI(Creature* c) : ScriptedAI(c) {}
+
+    uint32 delay;
+
+    void Reset() {delay = 5000;}
+
+    void MovementInform(uint32 Type, uint32 Id)
+    {
+        if (Type != POINT_MOTION_TYPE)
+            return;
+
+        uint32 BeamId = RAND(SPELL_BLUE_BEAM, SPELL_GREEN_BEAM, SPELL_RED_BEAM);
+
+        if (Id == 1)
+        {
+            if(Unit* Fetish = FindCreature(12999, 40, me))
+            {
+                m_creature->CastSpell(Fetish, BeamId, false);
+                m_creature->SetFacingToObject(Fetish);
+            }
+            m_creature->GetMotionMaster()->Clear();
+            m_creature->GetMotionMaster()->MoveIdle();
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        
+    }
+};
+
+CreatureAI* GetAI_npc_minion_of_sarthisAI(Creature* _Creature)
+{
+    return new npc_minion_of_sarthisAI(_Creature);
+}
+
+bool GossipHello_npc_sarthis(Player* pPlayer, Creature *_Creature )
+{
+    if( pPlayer->GetQuestStatus(QUEST_THE_SOUL_CANNON_OF_RETHHEDRON) == QUEST_STATUS_INCOMPLETE )
+        pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_SARTHIS_SELECT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+
+    pPlayer->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+    return true;
+}
+
+bool GossipSelect_npc_sarthis(Player* pPlayer, Creature* _Creature, uint32 sender, uint32 action )
+{
+    if(action == GOSSIP_ACTION_INFO_DEF+1)
+    {
+        pPlayer->CLOSE_GOSSIP_MENU();
+        DoScriptText(SAY_SARTHIS_INTRO, _Creature, pPlayer);
+        CAST_AI(npc_sarthisAI,_Creature->AI())->Start(false, false, pPlayer->GetGUID());
+        CAST_AI(npc_sarthisAI,_Creature->AI())->SetMaxPlayerDistance(200.0f);
+    }
+    return true;
+}
+
 void AddSC_terokkar_forest()
 {
     Script *newscript;
@@ -1410,4 +1732,20 @@ void AddSC_terokkar_forest()
     newscript->pQuestAccept = &QuestAccept_npc_letoll;
     newscript->RegisterSelf();
 
+    newscript = new Script;
+    newscript->Name= "npc_sarthis";
+    newscript->GetAI = &GetAI_npc_sarthisAI;
+    newscript->pGossipHello  = &GossipHello_npc_sarthis;
+    newscript->pGossipSelect = &GossipSelect_npc_sarthis;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name= "npc_sarthis_elemental";
+    newscript->GetAI = &GetAI_npc_sarthis_elementalAI;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name= "npc_minion_of_sarthis";
+    newscript->GetAI = &GetAI_npc_minion_of_sarthisAI;
+    newscript->RegisterSelf();
 }

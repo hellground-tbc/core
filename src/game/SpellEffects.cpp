@@ -2655,6 +2655,11 @@ void Spell::EffectPowerDrain(uint32 i)
 
 void Spell::EffectSendEvent(uint32 EffectIndex)
 {
+    if(m_caster->GetTypeId() == TYPEID_UNIT && m_spellInfo->Id == 40134)        // Summon Arcane Elemental
+    {
+        if(Unit* Arcane = m_caster->SummonCreature(23100, -2469.59, 4700.71, 155.86, 3.15, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 300000))
+            Arcane->setFaction(35);
+    }
     if (m_caster->GetTypeId() == TYPEID_PLAYER && ((Player*)m_caster)->InBattleGround())
     {
         BattleGround* bg = ((Player *)m_caster)->GetBattleGround();

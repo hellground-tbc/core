@@ -2299,6 +2299,18 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     }
                 }
                 return;
+            case 40129:                                     // Summon Air Elemental
+                caster->SummonCreature(23096, -2434.87, 4705.98, 174.66, 3.92, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 600000);
+                break;
+            case 40130:                                     // Summon Water Elemental
+                caster->SummonCreature(23097, -2441.46, 4638.00, 158.12, 1.03, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 600000);
+                break;
+            case 40132:                                     // Summon Earth Elemental
+                caster->SummonCreature(23098, -2386.14, 4572.63, 165.48, 2.59, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 600000);
+                break;
+            case 40133:                                     // Summon Fire Elemental
+                caster->SummonCreature(23099, -2459.64, 4754.64, 153.20, 4.89, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 600000);
+                break;
             case 39850:                                     // Rocket Blast
                 if(roll_chance_i(20))                       // backfire stun
                     m_target->CastSpell(m_target, 51581, true, NULL, this);
