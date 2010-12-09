@@ -969,6 +969,14 @@ bool ChatHandler::HandleReloadSpellProcEventCommand(const char*)
     return true;
 }
 
+bool ChatHandler::HandleReloadSpellEnchantDataCommand(const char*)
+{
+    sLog.outString( "Re-Loading Spell Enchant Proc Data conditions..." );
+    spellmgr.LoadSpellEnchantProcData();
+    SendGlobalGMSysMessage("DB table `spell_enchant_proc_data` (spell enchant proc trigger requirements) reloaded.");
+    return true;
+}
+
 bool ChatHandler::HandleReloadSpellScriptTargetCommand(const char*)
 {
     sLog.outString( "Re-Loading SpellsScriptTarget..." );

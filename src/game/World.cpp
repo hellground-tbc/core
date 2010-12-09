@@ -334,7 +334,7 @@ void World::AddSession_ (WorldSession* s)
         }
     }
 
-    m_sessions[s->GetAccountId ()] = s;
+    m_sessions[s->GetAccountId()] = s;
 
     uint32 Sessions = GetActiveAndQueuedSessionCount ();
     uint32 pLimit = GetPlayerAmountLimit ();
@@ -480,7 +480,7 @@ bool World::RemoveQueuedPlayer(WorldSession* sess)
     if (!found && getConfig(CONFIG_INTERVAL_DISCONNECT_TOLERANCE))
     {
         std::pair<uint32, time_t> tPair;
-        tPair.first = itr->second->GetAccountId();
+        tPair.first = sess->GetAccountId();
         tPair.second = time(NULL);
 
         addDisconnectTime(tPair);
