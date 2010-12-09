@@ -990,7 +990,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         if (missInfo != SPELL_MISS_REFLECT)
         {
             caster->ProcDamageAndSpell(unitTarget, procAttacker, procVictim, procEx, damageInfo.damage, m_attackType, m_spellInfo, m_canTrigger);
-            if(caster->GetTypeId() == TYPEID_PLAYER)
+            if(caster->GetTypeId() == TYPEID_PLAYER && !((Player *)caster)->IsInFeralForm())
                 ((Player *)caster)->CastItemCombatSpell(unitTarget, m_attackType, procVictim, procEx, m_spellInfo);
         }
 
