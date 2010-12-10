@@ -134,7 +134,7 @@ namespace VMAP
 
     void VMapManager2::setPosCollisiononmaps(const char* pMapIdString)
     {
-        mapsWithHeight.clear();
+        mapsWithPosCollision.clear();
         if (pMapIdString != NULL)
         {
             std::string map_str;
