@@ -143,6 +143,10 @@ EAIErrorLevel = 2
 #    vmap.heightMaps
 #        Map ids where height calculations will be enabled.
 #
+#    vmap.posCollisionMaps
+#        Map ids where position calculations will be enabled (if DetectPosCollision is set to 1).
+#        Needs enabled height on this maps.
+#
 #    vmap.ignoreSpellIds
 #        These spells are ignored for LoS calculation
 #        List of ids with delimiter ','
@@ -213,6 +217,7 @@ vmap.enableLOS = 0
 vmap.enableHeight = 0
 vmap.losMaps = ""
 vmap.heightMaps = ""
+vmap.posCollisionMaps = ""
 vmap.ignoreSpellIds = "7720"
 vmap.petLOS = 0
 vmap.totem = 0

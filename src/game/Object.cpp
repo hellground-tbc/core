@@ -122,10 +122,10 @@ void Object::_Create( uint32 guidlow, uint32 entry, HighGuid guidhigh )
         _InitValues();
 
     uint64 guid = MAKE_NEW_GUID(guidlow, entry, guidhigh);  // required more changes to make it working
-    
+
     SetUInt64Value( OBJECT_FIELD_GUID, guid );
     SetUInt32Value( OBJECT_FIELD_TYPE, m_objectType );
-    
+
     m_PackGUID.Set(guid);
 }
 
@@ -2044,7 +2044,7 @@ void WorldObject::GetNearPoint(WorldObject const* searcher, float &x, float &y, 
     z = GetPositionZ();
 
     // if detection disabled, return first point
-    if(!sWorld.getConfig(CONFIG_DETECT_POS_COLLISION) || !GetMap()->hasVMapHeight())
+    if(!sWorld.getConfig(CONFIG_DETECT_POS_COLLISION) || !GetMap()->hasPosCollisionCalcEnabled() || !GetMap()->hasVMapHeight())
     {
         if (searcher)
             searcher->UpdateAllowedPositionZ(x,y,z);        // update to LOS height if available

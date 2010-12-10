@@ -51,6 +51,7 @@ namespace VMAP
         protected:
             G3D::Table<unsigned int , bool> mapsWithLOS;
             G3D::Table<unsigned int , bool> mapsWithHeight;
+            G3D::Table<unsigned int , bool> mapsWithPosCollision;
         public:
             IVMapManager() : iEnableLineOfSightCalc(true), iEnableHeightCalc(true) {}
 
@@ -88,6 +89,7 @@ namespace VMAP
 
             bool isLineOfSightCalcEnabled(unsigned int pMapId) const { return(iEnableLineOfSightCalc && mapsWithLOS.containsKey(pMapId)); }
             bool isHeightCalcEnabled(unsigned int pMapId) const { return(iEnableHeightCalc && mapsWithHeight.containsKey(pMapId)); }
+            bool isPosCollisionCalcEnabled(unsigned int pMapId) const { return mapsWithPosCollision.containsKey(pMapId); }
             bool isMapLoadingEnabled(unsigned int pMapId) const { return isHeightCalcEnabled(pMapId) || isLineOfSightCalcEnabled(pMapId); }
 
             virtual std::string getDirFileName(unsigned int pMapId, int x, int y) const =0;
@@ -99,6 +101,7 @@ namespace VMAP
             //virtual void preventMapsFromBeingUsed(const char* pMapIdString) =0;
             virtual void setLOSonmaps(const char* pMapIdString) =0;
             virtual void setHeightonmaps(const char* pMapIdString) =0;
+            virtual void setPosCollisiononmaps(const char* pMapIdString) =0;
             /**
             Query world model area info.
             \param z gets adjusted to the ground height for which this are info is valid

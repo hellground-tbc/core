@@ -1150,11 +1150,13 @@ void World::LoadConfigSettings(bool reload)
     bool enableHeight = sConfig.GetBoolDefault("vmap.enableHeight", false);
     std::string losMaps = sConfig.GetStringDefault("vmap.losMaps", "");
     std::string heightMaps = sConfig.GetStringDefault("vmap.heightMaps", "");
+    std::string posCollisionMaps = sConfig.GetStringDefault("vmap.posCollisionMaps", "");
     std::string ignoreSpellIds = sConfig.GetStringDefault("vmap.ignoreSpellIds", "");
     VMAP::VMapFactory::createOrGetVMapManager()->setEnableLineOfSightCalc(enableLOS);
     VMAP::VMapFactory::createOrGetVMapManager()->setEnableHeightCalc(enableHeight);
     VMAP::VMapFactory::createOrGetVMapManager()->setLOSonmaps(losMaps.c_str());
     VMAP::VMapFactory::createOrGetVMapManager()->setHeightonmaps(heightMaps.c_str());
+    VMAP::VMapFactory::createOrGetVMapManager()->setPosCollisiononmaps(posCollisionMaps.c_str());
     VMAP::VMapFactory::preventSpellsFromBeingTestedForLoS(ignoreSpellIds.c_str());
 
     sLog.outString( "WORLD: VMap support included. LineOfSight on maps: %s, height on maps: %s",losMaps.c_str(), heightMaps.c_str());
@@ -1803,7 +1805,7 @@ void World::Update(time_t diff)
         m_timers[WUPDATE_UPTIME].Reset();
         WorldDatabase.PExecute("UPDATE uptime SET uptime = %d, maxplayers = %d WHERE starttime = " UI64FMTD, tmpDiff, maxClientsNum, uint64(m_startTime));
     }
-    
+
     if (sWorld.getConfig(CONFIG_AUTOBROADCAST_INTERVAL))
     {
         if (m_timers[WUPDATE_AUTOBROADCAST].Passed())
@@ -1821,7 +1823,7 @@ void World::Update(time_t diff)
             sWorld.SendWorldText(LANG_AUTO_ANN, msg.c_str());
         }
     }
-  
+
     RecordTimeDiff(NULL);
     /// <li> Handle all other objects
     ///- Update objects when the timer has passed (maps, transport, creatures,...)

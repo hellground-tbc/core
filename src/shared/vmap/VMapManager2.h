@@ -86,6 +86,7 @@ namespace VMAP
 
             void setHeightonmaps(const char* pMapIdString);
             void setLOSonmaps(const char* pMapIdString);
+            void setPosCollisiononmaps(const char* pMapIdString);
 
             void unloadMap(unsigned int pMapId, int x, int y);
             void unloadMap(unsigned int pMapId);
