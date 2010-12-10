@@ -65,14 +65,16 @@ enum ShutdownExitCode
 /// Timers for different object refresh rates
 enum WorldTimers
 {
-    WUPDATE_OBJECTS     = 0,
-    WUPDATE_SESSIONS    = 1,
-    WUPDATE_AUCTIONS    = 2,
-    WUPDATE_WEATHERS    = 3,
-    WUPDATE_UPTIME      = 4,
-    WUPDATE_CORPSES     = 5,
-    WUPDATE_EVENTS      = 6,
-    WUPDATE_COUNT       = 7
+    WUPDATE_OBJECTS       = 0,
+    WUPDATE_SESSIONS      = 1,
+    WUPDATE_AUCTIONS      = 2,
+    WUPDATE_WEATHERS      = 3,
+    WUPDATE_UPTIME        = 4,
+    WUPDATE_CORPSES       = 5,
+    WUPDATE_EVENTS        = 6,
+    WUPDATE_AUTOBROADCAST = 7,
+
+    WUPDATE_COUNT         = 8
 };
 
 /// Configuration elements
@@ -219,6 +221,7 @@ enum WorldConfigs
     CONFIG_VMAP_TOTEM,
     CONFIG_NUMTHREADS,
     CONFIG_ANNOUNCE_BG_START,
+    CONFIG_AUTOBROADCAST_INTERVAL,
 
     CONFIG_VALUE_COUNT
 };
@@ -492,6 +495,7 @@ class World
         static void StopNow(uint8 exitcode) { m_stopEvent = true; m_ExitCode = exitcode; }
         static bool IsStopped() { return m_stopEvent; }
 
+        void LoadAutobroadcasts();
         void Update(time_t diff);
 
         void UpdateSessions( time_t diff );
@@ -644,6 +648,8 @@ class World
         //sessions that are added async
         void AddSession_(WorldSession* s);
         ACE_Based::LockedQueue<WorldSession*, ACE_Thread_Mutex> addSessQueue;
+
+        std::list<std::string> m_Autobroadcasts;
 
         //used versions
         std::string m_DBVersion;

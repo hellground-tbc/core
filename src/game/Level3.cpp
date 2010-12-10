@@ -533,6 +533,13 @@ bool ChatHandler::HandleAHBotOptionsCommand(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleReloadAutobroadcastCommand(const char*)
+{
+    sWorld.LoadAutobroadcasts();
+    SendGlobalGMSysMessage("DB table `autobroadcast` reloaded.");
+    return true;
+}
+
 //reload commands
 bool ChatHandler::HandleReloadCommand(const char* arg)
 {
@@ -560,6 +567,8 @@ bool ChatHandler::HandleReloadAllCommand(const char*)
     HandleReloadTrinityStringCommand("");
     HandleReloadGameTeleCommand("");
     HandleReloadUnqueuedAccountListCommand("");
+    HandleReloadAutobroadcastCommand("");
+
     return true;
 }
 

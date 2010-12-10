@@ -190,8 +190,8 @@ EAIErrorLevel = 2
 #                 0 (do not permit addon channel)
 #
 #    MapUpdate.Threads
-#	Number of threads to update maps.
-#	Default: 1
+#	     Number of threads to update maps.
+#	     Default: 1
 #
 ###################################################################################################################
 
@@ -208,15 +208,15 @@ MapUpdateInterval = 100
 ChangeWeatherInterval = 600000
 PlayerSaveInterval = 900000
 DisconnectToleranceInterval = 0
+
 vmap.enableLOS = 0
 vmap.enableHeight = 0
-
 vmap.losMaps = ""
 vmap.heightMaps = ""
-
 vmap.ignoreSpellIds = "7720"
 vmap.petLOS = 0
 vmap.totem = 0
+
 DetectPosCollision = 1
 TargetPosRecalculateRange = 1.5
 UpdateUptimeInterval = 10
@@ -314,11 +314,6 @@ MapUpdate.Threads = 1
 #                     in form Logname_#ID_YYYY-MM-DD_HH-MM-SS.Ext
 #                     or form Logname_#ID.Ext
 #
-#    RaLogFile
-#        Log file of RA commands
-#        Default: "Ra.log"
-#                 "" - Empty name for disable
-#
 #	ArenaLogFile
 #        Log file of arena fights and arena team creations
 #        Default: "" - do not create arena log file
@@ -350,7 +345,6 @@ CharLogDump = 0
 GmLogFile = "gm_commands.log"
 GmLogTimestamp = 0
 GmLogPerAccount = 0
-RaLogFile = "ra_commands.log"
 ArenaLogFile = ""
 CheatLogFile = "cheat.log"
 ACLogFile = "AC.log"
@@ -1517,40 +1511,6 @@ AuctionHouseBot.DisableTGsBelowReqSkillRank = 0
 AuctionHouseBot.DisableTGsAboveReqSkillRank = 0
 
 ###################################################################################################################
-# CONSOLE AND REMOTE ACCESS
-#
-#    Console.Enable
-#        Enable console
-#        Default: 1 - on
-#                 0 - off
-#
-#    Ra.Enable
-#        Enable remote console
-#        Default: 0 - off
-#                 1 - on
-#
-#    Ra.IP
-#        Default remote console ip address, use 0.0.0.0 for every address
-#
-#    Ra.Port
-#        Default remote console port
-#
-#    Ra.MinLevel
-#        Minimum level that's required to login,3 by default
-#
-#    Ra.Secure
-#        Kick client on wrong pass
-#
-###################################################################################################################
-
-Console.Enable = 1
-Ra.Enable = 0
-Ra.IP = 0.0.0.0
-Ra.Port = 3443
-Ra.MinLevel = 3
-Ra.Secure = 1
-
-###################################################################################################################
 # CUSTOM SERVER OPTIONS
 #
 #	PlayerStart.AllReputation
@@ -1643,4 +1603,12 @@ RecordUpdateTimeDiffInterval = 60000
 MinRecordUpdateTimeDiff = 10
 PlayerStart.String = ""
 
-AnnounceBGStart = 1
+###################################################################################################################
+#
+#    AutoBroadcast.Timer
+#        set interval between sending next advertising on chat(in minutes)
+#        0 = disable autoannounce
+#
+###################################################################################################################
+
+AutoBroadcast.Timer = 0

@@ -664,6 +664,8 @@ void World::LoadConfigSettings(bool reload)
 
     ///- Read other configuration items from the config file
 
+    m_configs[CONFIG_AUTOBROADCAST_INTERVAL] = (sConfig.GetIntDefault("AutoBroadcast.Timer", 35)*MINUTE*1000);
+
     m_configs[CONFIG_COMPRESSION] = sConfig.GetIntDefault("Compression", 1);
     if(m_configs[CONFIG_COMPRESSION] < 1 || m_configs[CONFIG_COMPRESSION] > 9)
     {
@@ -1488,6 +1490,9 @@ void World::SetInitialWorldSettings()
     sLog.outString( "Returning old mails..." );
     objmgr.ReturnOrDeleteOldMails(false);
 
+    sLog.outString("Loading Autobroadcasts...");
+    LoadAutobroadcasts();
+
     ///- Load and initialize scripts
     sLog.outString( "Loading Scripts..." );
     objmgr.LoadQuestStartScripts();                         // must be after load Creature/Gameobject(Template/Data) and QuestTemplate
@@ -1536,6 +1541,8 @@ void World::SetInitialWorldSettings()
     m_timers[WUPDATE_UPTIME].SetInterval(m_configs[CONFIG_UPTIME_UPDATE]*MINUTE*1000);
                                                             //Update "uptime" table based on configuration entry in minutes.
     m_timers[WUPDATE_CORPSES].SetInterval(20*MINUTE*1000);  //erase corpses every 20 minutes
+
+    m_timers[WUPDATE_AUTOBROADCAST].SetInterval(getConfig(CONFIG_AUTOBROADCAST_INTERVAL));
 
     //to set mailtimer to return mails every day between 4 and 5 am
     //mailtimer is increased when updating auctions
@@ -1664,6 +1671,32 @@ void World::RecordTimeDiff(const char *text, ...)
     m_currentTime = thisTime;
 }
 
+void World::LoadAutobroadcasts()
+{
+    m_Autobroadcasts.clear();
+
+    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT text FROM autobroadcast");
+
+    if (!result)
+    {
+        sLog.outString();
+        sLog.outString(">> Loaded 0 autobroadcasts definitions");
+        return;
+    }
+
+    uint32 count = 0;
+    do
+    {
+        Field *fields = result->Fetch();
+        std::string message = fields[0].GetCppString();
+        m_Autobroadcasts.push_back(message);
+        count++;
+    } while (result->NextRow());
+
+    sLog.outString();
+    sLog.outString(">> Loaded %u autobroadcast definitions", count);
+}
+
 /// Update the World !
 void World::Update(time_t diff)
 {
@@ -1770,7 +1803,25 @@ void World::Update(time_t diff)
         m_timers[WUPDATE_UPTIME].Reset();
         WorldDatabase.PExecute("UPDATE uptime SET uptime = %d, maxplayers = %d WHERE starttime = " UI64FMTD, tmpDiff, maxClientsNum, uint64(m_startTime));
     }
+    
+    if (sWorld.getConfig(CONFIG_AUTOBROADCAST_INTERVAL))
+    {
+        if (m_timers[WUPDATE_AUTOBROADCAST].Passed())
+        {
+            m_timers[WUPDATE_AUTOBROADCAST].Reset();
+            if (m_Autobroadcasts.empty())
+                return;
 
+            std::string msg;
+
+            std::list<std::string>::const_iterator itr = m_Autobroadcasts.begin();
+            std::advance(itr, rand() % m_Autobroadcasts.size());
+            msg = *itr;
+
+            sWorld.SendWorldText(LANG_AUTO_ANN, msg.c_str());
+        }
+    }
+  
     RecordTimeDiff(NULL);
     /// <li> Handle all other objects
     ///- Update objects when the timer has passed (maps, transport, creatures,...)
