@@ -379,7 +379,7 @@ struct TRINITY_DLL_DECL npc_zulaman_door_triggerAI : public Scripted_NoMovementA
     {
         if(CheckTimer < diff)
         {
-            if(CountChannelingPlayers() >= 1)
+            if(CountChannelingPlayers() >= 5)
                 StoperTime += (2000+diff);
             CheckTimer = 2000;
         }
