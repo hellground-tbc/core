@@ -722,7 +722,7 @@ bool ChatHandler::HandleGPSCommand(const char* args)
 
     uint32 have_map = GridMap::ExistMap(obj->GetMapId(),gx,gy) ? 1 : 0;
     uint32 have_vmap = GridMap::ExistVMap(obj->GetMapId(),gx,gy) ? 1 : 0;
-    uint32 have_posCollisionEnabled = map->hasPosCollisionCalcEnabled();
+    uint32 have_posCollisionEnabled = obj->GetMap()->hasPosCollisionCalcEnabled();
 
     if(have_vmap)
     {
