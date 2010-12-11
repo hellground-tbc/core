@@ -1159,7 +1159,7 @@ void World::LoadConfigSettings(bool reload)
     VMAP::VMapFactory::createOrGetVMapManager()->setPosCollisiononmaps(posCollisionMaps.c_str());
     VMAP::VMapFactory::preventSpellsFromBeingTestedForLoS(ignoreSpellIds.c_str());
 
-    sLog.outString( "WORLD: VMap support included. LineOfSight on maps: %s, height on maps: %s",losMaps.c_str(), heightMaps.c_str());
+    sLog.outString( "WORLD: VMap support included. \nLineOfSight on maps: %s \nheight on maps: %s \npos collision on maps: %s",losMaps.c_str(), heightMaps.c_str(), posCollisionMaps.c_str());
     sLog.outString( "WORLD: VMap data directory is: %svmaps",m_dataPath.c_str());
     //sLog.outString( "WORLD: VMap config keys are: vmap.enableLOS, vmap.enableHeight, vmap.ignoreMapIds, vmap.ignoreSpellIds");
 
