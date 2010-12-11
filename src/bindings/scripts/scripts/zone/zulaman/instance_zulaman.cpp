@@ -24,7 +24,7 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_zulaman.h"
 
-#define ENCOUNTERS     6
+#define ENCOUNTERS     7
 #define RAND_VENDOR    2
 
 //187021 //Harkor's Satchel
@@ -57,7 +57,10 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
     uint64 TanzarsTrunkGUID;
     uint64 AshlisBagGUID;
     uint64 KrazsPackageGUID;
+    uint64 StrangeGongGUID;
+    uint64 MassiveGateGUID;
 
+    uint64 HarrisonGUID;
     uint64 HexLordGateGUID;
     uint64 ZulJinGateGUID;
     uint64 AkilzonDoorGUID;
@@ -79,14 +82,17 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
         AshlisBagGUID = 0;
         KrazsPackageGUID = 0;
 
-        uint64 HexLordGateGUID = 0;
-        uint64 ZulJinGateGUID = 0;
-        uint64 AkilzonDoorGUID = 0;
-        uint64 HalazziDoorGUID = 0;
-        uint64 ZulJinDoorGUID = 0;
+        StrangeGongGUID = 0;
+        MassiveGateGUID = 0;
+        HarrisonGUID = 0;
+        HexLordGateGUID = 0;
+        ZulJinGateGUID = 0;
+        AkilzonDoorGUID = 0;
+        HalazziDoorGUID = 0;
+        ZulJinDoorGUID = 0;
 
         QuestTimer = 0;
-        QuestMinute = 21;
+        QuestMinute = 0;
         BossKilled = 0;
         ChestLooted = 0;
 
@@ -129,6 +135,9 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
     {
         switch(creature_entry)
         {
+        case 24375://harrison jones
+            HarrisonGUID = creature->GetGUID();
+            break;
         case 23578://janalai
         case 23863://zuljin
         case 24239://hexlord
@@ -152,6 +161,13 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
     {
         switch(go->GetEntry())
         {
+        case 187359: StrangeGongGUID = go->GetGUID(); break;
+        case 186728: MassiveGateGUID = go->GetGUID();
+            if (Encounters[0] == IN_PROGRESS || Encounters[0] == DONE)
+                    go->SetGoState(0);  //opened
+            else
+                go->SetGoState(1);   //closed
+                break;
         case 186303: HalazziDoorGUID = go->GetGUID(); break;
         case 186304: ZulJinGateGUID  = go->GetGUID(); break;
         case 186305: HexLordGateGUID = go->GetGUID(); break;
@@ -216,7 +232,7 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
 
         std::ostringstream stream;
         stream << Encounters[0]  << " " << Encounters[1] << " " << Encounters[2] << " " << Encounters[3]  << " " <<
-                Encounters[4] << " " << Encounters[5] << " " << BossKilled << " " << ChestLooted << " " << QuestMinute;
+                Encounters[4] << " " << Encounters[5] << " " << Encounters[6] << " " << BossKilled << " " << ChestLooted << " " << QuestMinute;
 
         char* out = new char[stream.str().length() + 1];
         strcpy(out, stream.str().c_str());
@@ -239,7 +255,7 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
         OUT_LOAD_INST_DATA(in);
         std::istringstream loadStream(in);
         loadStream >> Encounters[0] >> Encounters[1] >> Encounters[2] >> Encounters[3] >> Encounters[4] >>
-                Encounters[5] >> BossKilled >> ChestLooted >> QuestMinute;
+                Encounters[5] >> Encounters[6] >> BossKilled >> ChestLooted >> QuestMinute;
 
         for(uint8 i = 0; i < ENCOUNTERS; ++i)
             if (Encounters[i] == IN_PROGRESS)
@@ -252,6 +268,16 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
     {
         switch(type)
         {
+        case TYPE_EVENT_RUN:
+            if (data == IN_PROGRESS)
+            {
+                OpenDoor(MassiveGateGUID, true);
+                QuestMinute = 21;
+                UpdateWorldState(WORLD_STATE_COUNTER, QuestMinute);
+                UpdateWorldState(WORLD_STATE_ID,1);
+                Encounters[0] = data;
+            }
+            break;
         case DATA_NALORAKKEVENT:
             if (Encounters[0] != DONE)
                 Encounters[0] = data;
@@ -341,17 +367,49 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
     {
         switch(type)
         {
-            case DATA_NALORAKKEVENT: return Encounters[0];
-            case DATA_AKILZONEVENT:  return Encounters[1];
-            case DATA_JANALAIEVENT:  return Encounters[2];
-            case DATA_HALAZZIEVENT:  return Encounters[3];
-            case DATA_HEXLORDEVENT:  return Encounters[4];
-            case DATA_ZULJINEVENT:   return Encounters[5];
+            case TYPE_EVENT_RUN:     return Encounters[0];
+            case DATA_NALORAKKEVENT: return Encounters[1];
+            case DATA_AKILZONEVENT:  return Encounters[2];
+            case DATA_JANALAIEVENT:  return Encounters[3];
+            case DATA_HALAZZIEVENT:  return Encounters[4];
+            case DATA_HEXLORDEVENT:  return Encounters[5];
+            case DATA_ZULJINEVENT:   return Encounters[6];
             case DATA_CHESTLOOTED:   return ChestLooted;
             case TYPE_RAND_VENDOR_1: return RandVendor[0];
             case TYPE_RAND_VENDOR_2: return RandVendor[1];
             default:                 return 0;
         }
+    }
+
+    uint64 GetData64(uint32 data)
+    {
+        switch(data)
+        {
+            /*
+            case DATA_AKILZONEVENT:
+                return AkilzonGUID;
+            case DATA_NALORAKKEVENT:
+                return NalorakkGUID;
+            case DATA_JANALAIEVENT:
+                return JanalaiGUID;
+            case DATA_HALAZZIEVENT:
+                return HalazziGUID;
+            case DATA_SPIRIT_LYNX:
+                return SpiritLynxGUID;
+            case DATA_ZULJINEVENT:
+                return ZuljinGUID;
+            case DATA_HEXLORDEVENT:
+                return HexLordGateGUID;*/
+            case DATA_HARRISON:
+                return HarrisonGUID;
+            case DATA_GO_GONG:
+                return StrangeGongGUID;
+            case DATA_GO_ENTRANCE:
+                return MassiveGateGUID;
+            /*case DATA_GO_MALACRASS_GATE:
+                return MalacrassEntranceGUID;*/
+        }
+        return 0;
     }
 
     void Update(uint32 diff)
@@ -367,7 +425,8 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
                 {
                     UpdateWorldState(3104, 1);
                     UpdateWorldState(3106, QuestMinute);
-                }else UpdateWorldState(3104, 0);
+                }
+                else UpdateWorldState(3104, 0);
             }
             QuestTimer -= diff;
         }
