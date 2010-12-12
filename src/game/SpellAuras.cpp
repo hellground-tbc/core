@@ -6224,6 +6224,13 @@ void Aura::PeriodicTick()
                             return;
                         }
                         break;
+                    case 41351: // Curse Of Vitality
+                        if (m_target->GetHealth() <= 0.5*m_target->GetMaxHealth())
+                        {
+                            m_target->RemoveAurasDueToSpell(GetId());
+                            return;
+                        }
+                        break;
                     case 38772:
                     {
                         uint32 percent =
