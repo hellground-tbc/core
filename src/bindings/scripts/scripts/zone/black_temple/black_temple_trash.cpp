@@ -7,7 +7,7 @@
 
 /* ScriptData
 SDName: Black_Temple_Trash
-SD%Complete: 81% (55/68)
+SD%Complete: 93% (63/68)
 SDComment: Trash NPCs divided by to boss links
 SDCategory: Black Temple
 EndScriptData */
@@ -39,10 +39,13 @@ EndScriptData */
 * Aqueous Lord - id 22878
 *****************/
 
-#define SPELL_VILE_SLIME        40099
-#define SPELL_CRASHING_WAVE     40100
+enum AqueousLord
+{
+    SPELL_VILE_SLIME    = 40099,
+    SPELL_CRASHING_WAVE = 40100,
 
-#define NPC_AQUEOUS_SPAWN       22883
+    NPC_AQUEOUS_SPAWN   = 22883
+};
 
 
 
@@ -114,10 +117,13 @@ struct TRINITY_DLL_DECL mob_aqueous_lordAI : public ScriptedAI
 * Aqueous Spawn - id 22883
 *****************/
 
-#define SPELL_SLUDGE_NOVA       40102
-#define SPELL_MERGE             40106
+enum AqeousSpawn
+{
+    SPELL_SLUDGE_NOVA   = 40102,
+    SPELL_MERGE         = 40106,
 
-#define NPC_AQUEOUS_LORD       22878
+    NPC_AQUEOUS_LORD    = 22878
+};
 
 struct TRINITY_DLL_DECL mob_aqueous_spawnAI : public ScriptedAI
 {
@@ -175,11 +181,14 @@ struct TRINITY_DLL_DECL mob_aqueous_spawnAI : public ScriptedAI
 * Coilscar General - id 22873
 *****************/
 
-#define SAY_FREE_FRIEND             -1650022
+enum CoilscarGeneral
+{
+    SAY_FREE_FRIEND          = -1650022,
 
-#define SPELL_BOOMING_VOICE            40080
-#define SPELL_FREE_FRIEND              40081
-#define SPELL_CLEAVE                   40504    // guessed
+    SPELL_BOOMING_VOICE      = 40080,
+    SPELL_FREE_FRIEND        = 40081,
+    SPELL_CLEAVE             = 40504    // guessed
+};
 
 struct TRINITY_DLL_DECL mob_coilskar_generalAI : public ScriptedAI
 {
@@ -266,9 +275,12 @@ struct TRINITY_DLL_DECL mob_coilskar_generalAI : public ScriptedAI
 * Coilscar Harpooner - id 22874
 *****************/
 
-#define SPELL_HARPOONERS_MARK          40084
-#define SPELL_HOOKED_NET               40082
-#define SPELL_SPEAR_THROW              40083
+enum CoilscarHarpooner
+{
+    SPELL_HARPOONERS_MARK        = 40084,
+    SPELL_HOOKED_NET             = 40082,
+    SPELL_SPEAR_THROW            = 40083
+};
 
 struct TRINITY_DLL_DECL mob_coilskar_harpoonerAI : public ScriptedAI
 {
@@ -350,9 +362,12 @@ struct TRINITY_DLL_DECL mob_coilskar_harpoonerAI : public ScriptedAI
 * Coilskar Sea-Caller - id 22875
 *****************/
 
-#define SPELL_FORKED_LIGHTNING         40088
-#define SPELL_HURRICANE                40090
-#define SPELL_SUMMON_GEYSER            40091
+enum CoilscarSeaCaller
+{
+    SPELL_FORKED_LIGHTNING       = 40088,
+    SPELL_HURRICANE              = 40090,
+    SPELL_SUMMON_GEYSER          = 40091
+};
 
 struct TRINITY_DLL_DECL mob_coilskar_seacallerAI : public ScriptedAI
 {
@@ -420,9 +435,12 @@ struct TRINITY_DLL_DECL mob_coilskar_seacallerAI : public ScriptedAI
 * Coilskar Geyser - id 23080
 ****/
 
-#define SPELL_GEYSER                   40089
+enum CoilscarGeyser
+{
+    SPELL_GEYSER                 = 40089,
 
-#define MOB_COILSCAR_SEACALLER         22875
+    MOB_COILSCAR_SEACALLER       = 22875
+};
 
 struct TRINITY_DLL_DECL mob_coilskar_geyserAI : public Scripted_NoMovementAI
 {
@@ -451,8 +469,11 @@ struct TRINITY_DLL_DECL mob_coilskar_geyserAI : public Scripted_NoMovementAI
 * Coilskar Soothsayer - id 22876
 *****************/
 
-#define SPELL_HOLY_NOVA                40096
-#define SPELL_RESTORATION              40097
+enum CoilscarSoothsayer
+{
+    SPELL_HOLY_NOVA              = 40096,
+    SPELL_RESTORATION            = 40097
+};
 
 struct TRINITY_DLL_DECL mob_coilskar_soothsayerAI : public ScriptedAI
 {
@@ -504,11 +525,14 @@ struct TRINITY_DLL_DECL mob_coilskar_soothsayerAI : public ScriptedAI
 * Coilscar Wrangler - id 22877
 *****************/
 
-#define SPELL_CLEAVE_1                 15284
-#define SPELL_ELECTRIC_SPUR            40076
-#define SPELL_LIGHTNING_PROD           40066
+enum CoilscarWrangler
+{
+    SPELL_CLEAVE_1               = 15284,
+    SPELL_ELECTRIC_SPUR          = 40076,
+    SPELL_LIGHTNING_PROD         = 40066,
 
-#define MOB_LEVIATHAN                  22884
+    MOB_LEVIATHAN                = 22884
+};
 
 struct TRINITY_DLL_DECL mob_coilskar_wranglerAI : public ScriptedAI
 {
@@ -569,8 +593,11 @@ struct TRINITY_DLL_DECL mob_coilskar_wranglerAI : public ScriptedAI
 * Dragon Turtle - id 22885
 *****************/
 
-#define SPELL_SHELL_SHIELD             40087
-#define SPELL_WATER_SPIT               40086
+enum DragonTurtle
+{
+    SPELL_SHELL_SHIELD           = 40087,
+    SPELL_WATER_SPIT             = 40086
+};
 
 struct TRINITY_DLL_DECL mob_dragon_turtleAI : public ScriptedAI
 {
@@ -646,9 +673,12 @@ struct TRINITY_DLL_DECL mob_dragon_turtleAI : public ScriptedAI
 * Leviathan - id 22884
 *****************/
 
-#define SPELL_DEBILITATING_SPRAY       40079
-#define SPELL_POISON_SPIT              40078
-#define SPELL_TAIL_SWEEP               40077
+enum Leviathan
+{
+    SPELL_DEBILITATING_SPRAY     = 40079,
+    SPELL_POISON_SPIT            = 40078,
+    SPELL_TAIL_SWEEP             = 40077
+};
 
 struct TRINITY_DLL_DECL mob_leviathanAI : public ScriptedAI
 {
@@ -4486,6 +4516,695 @@ CreatureAI* GetAI_mob_suffering_soul_fragment(Creature *_Creature)
     * Temple Concubine
 */
 
+/****************
+* Priestess of Dementia - id 22957
+*****************/
+
+enum PristessOfDementia
+{
+    NPC_IMAGE_OF_DEMENTIA   = 23436,
+
+    SPELL_CONFUSION         = 41397,
+    SPELL_DEMENTIA          = 41404,
+    SPELL_WHIRLWIND_3       = 41399
+};
+
+struct TRINITY_DLL_DECL mob_pristess_of_dementiaAI: public ScriptedAI
+{
+    mob_pristess_of_dementiaAI(Creature *c) : ScriptedAI(c) { }
+
+    uint32 Confusion;
+    uint32 Dementia;
+    uint32 ImageSummon;
+
+    void Reset()
+    {
+        Confusion = urand(5000, 15000);
+        Dementia = 3000;
+        ImageSummon = 15000;
+    }
+
+    void EnterCombat(Unit *)
+    {
+        DoZoneInCombat(80.0f);
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(Confusion < diff)
+        {
+            AddSpellToCast(m_creature, SPELL_CONFUSION);
+            Confusion = urand(15000, 25000);
+        }
+        else
+            Confusion -= diff;
+
+        if(Dementia < diff)
+        {
+            AddSpellToCast(m_creature, SPELL_DEMENTIA);
+            Dementia = urand(40000, 50000);
+        }
+        else
+            Dementia -= diff;
+
+        if(ImageSummon < diff)
+        {
+            float x, y, z;
+            for(uint8 i=0;i<2;++i)
+            {
+                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200.0f, true))
+                {
+                    target->GetClosePoint(x, y, z, 5.0f);
+                    m_creature->SummonCreature(NPC_IMAGE_OF_DEMENTIA, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN, 15000);
+                }
+            }
+            ImageSummon = urand(25000, 35000);
+        }
+        else
+            ImageSummon -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_pristess_of_dementia(Creature *_Creature)
+{
+    return new mob_pristess_of_dementiaAI(_Creature);
+}
+
+struct TRINITY_DLL_DECL mob_image_of_dementiaAI: public ScriptedAI
+{
+    mob_image_of_dementiaAI(Creature *c) : ScriptedAI(c) { }
+
+    uint32 MoveTimer;
+
+    void Reset()
+    {
+        m_creature->CastSpell(m_creature, SPELL_WHIRLWIND_3, false);
+        MoveTimer = 1000;
+        DoZoneInCombat(80.0f);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(MoveTimer < diff)
+        {
+            float x, y, z = 0;
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200.0f, true))
+            {
+                target->GetGroundPointAroundUnit(x, y, z, 10.0, 3.14*RAND(0, 1/6, 2/6, 3/6, 4/6, 5/6, 1));
+                m_creature->GetMotionMaster()->Clear();
+                m_creature->SetSpeed(MOVE_RUN, 2.5, true);
+                m_creature->GetMotionMaster()->MovePoint(0, x, y, z);
+            }
+            MoveTimer = urand(1500, 3000);
+        }
+        else
+            MoveTimer -= diff;
+    }
+};
+
+CreatureAI* GetAI_mob_image_of_dementia(Creature *_Creature)
+{
+    return new mob_image_of_dementiaAI(_Creature);
+}
+
+/****************
+* Priestess of Delight - id 22962
+*****************/
+
+enum PristessOfDelight
+{
+    SPELL_CURSE_OF_VITALITY = 41351,
+    SPELL_POLYMORPH         = 41334
+};
+
+struct TRINITY_DLL_DECL mob_pristess_of_delightAI: public ScriptedAI
+{
+    mob_pristess_of_delightAI(Creature *c) : ScriptedAI(c) { }
+
+    uint32 CurseOfVitality;
+    uint32 Polymorph;
+
+    void Reset()
+    {
+        CurseOfVitality = urand(1000, 3000);
+        Polymorph = urand(5000, 10000);
+    }
+
+    void EnterCombat(Unit *)
+    {
+        DoZoneInCombat(80.0f);
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(Polymorph < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0f, true))
+                AddSpellToCast(target, SPELL_POLYMORPH, false, true);
+            Polymorph = urand(15000, 18000);
+        }
+        else
+            Polymorph -= diff;
+
+        if(CurseOfVitality < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0f, true))
+                AddSpellToCast(target, SPELL_CURSE_OF_VITALITY);
+            CurseOfVitality = urand(5000, 8000);
+        }
+        else
+            CurseOfVitality -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_pristess_of_delight(Creature *_Creature)
+{
+    return new mob_pristess_of_delightAI(_Creature);
+}
+
+/****************
+* Sister of Pain - id 22956
+*****************/
+
+enum SisterOfPain
+{
+    NPC_SISTER_OF_PAIN          = 22956,
+    NPC_SISTER_OF_PLEASURE      = 22964,
+
+    SPELL_LASH_OF_PAIN          = 41353,
+    SPELL_PAINFUL_RAGE          = 41369,
+    SPELL_SHADOW_WORD_PAIN      = 41355,
+    SPELL_SHELL_OF_PAIN         = 41371,
+    SPELL_SHARED_BONDS          = 41363
+};
+
+#define YELL_SISTER_OF_PAIN "Pain is inevitable, but the suffering is optional."
+
+struct TRINITY_DLL_DECL mob_sister_of_painAI: public ScriptedAI
+{
+    mob_sister_of_painAI(Creature *c) : ScriptedAI(c) { }
+
+    uint32 LashOfPain;
+    uint32 ShadowWordPain;
+    uint32 ShellOfPain;
+
+    void Reset()
+    {
+        LashOfPain = urand(3000, 5000);
+        ShadowWordPain = urand(1000, 3000);
+        ShellOfPain = urand(10000, 20000);
+    }
+
+    void EnterCombat(Unit *)
+    {
+        DoZoneInCombat(80.0f);
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
+
+    void DamageTaken(Unit* who, uint32 &damage)
+    {
+        uint32 HPPercent = m_creature->GetHealth()*100 / m_creature->GetMaxHealth();
+        uint8 stack = 0;
+        if(m_creature->HasAura(SPELL_PAINFUL_RAGE, 0))
+        {
+            if(Aura* Rage = m_creature->GetAura(SPELL_PAINFUL_RAGE, 0))
+                stack = Rage->GetStackAmount();
+        }
+        if(damage)
+        {
+            if(HPPercent < (95 - 10*stack))
+                m_creature->CastSpell(m_creature, SPELL_PAINFUL_RAGE, true);
+            if(HPPercent < 30)
+            {
+                if(Unit* Sister = FindCreature(NPC_SISTER_OF_PLEASURE, 30, m_creature))
+                {
+                    if(!m_creature->HasAura(SPELL_SHARED_BONDS, 0))
+                        Sister->CastSpell(m_creature, SPELL_SHARED_BONDS, false);
+                }
+            }
+            if(urand(1, 100) > 95)
+                DoYell(YELL_SISTER_OF_PAIN, 0, who);
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(LashOfPain < diff)
+        {
+            AddSpellToCast(m_creature->getVictim(), SPELL_LASH_OF_PAIN);
+            LashOfPain = urand(12000, 15000);
+        }
+        else
+            LashOfPain -= diff;
+
+        if(ShadowWordPain < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 60.0f, true))
+                AddSpellToCast(target, SPELL_SHADOW_WORD_PAIN);
+            ShadowWordPain = urand(5000, 8000);
+        }
+        else
+            ShadowWordPain -= diff;
+
+        if(ShellOfPain < diff)
+        {
+            AddSpellToCast(m_creature, SPELL_SHELL_OF_PAIN);
+            ShellOfPain = urand(30000, 50000);
+        }
+        else
+            ShellOfPain -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_sister_of_pain(Creature *_Creature)
+{
+    return new mob_sister_of_painAI(_Creature);
+}
+
+/****************
+* Sister of Pleasure - id 22964
+*****************/
+
+enum SisterOfPleasure
+{
+    SPELL_GREATER_HEAL          = 41378,
+    SPELL_HOLY_NOVA_1           = 41380,
+    SPELL_SHELL_OF_LIFE         = 41381
+};
+
+#define YELL_SISTER_OF_PLEASURE "When it comes to the needs of Illidan's troops, Mother Shahraz knows best."
+
+struct TRINITY_DLL_DECL mob_sister_of_pleasureAI: public ScriptedAI
+{
+    mob_sister_of_pleasureAI(Creature *c) : ScriptedAI(c) { }
+
+    uint32 GreaterHeal;
+    uint32 HolyNova;
+    uint32 ShellOfLife;
+    bool cooldown;
+
+    void Reset()
+    {
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
+        GreaterHeal = 2000;
+        HolyNova = urand(5000, 10000);
+        ShellOfLife = 20000;
+        cooldown = false;
+    }
+
+    void EnterCombat(Unit* who)
+    {
+        DoZoneInCombat(80.0f);
+        DoYell(YELL_SISTER_OF_PLEASURE, 0, who);
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
+
+    void DamageTaken(Unit* who, uint32 &damage)
+    {
+        uint32 HPPercent = m_creature->GetHealth()*100 / m_creature->GetMaxHealth();
+        if(damage)
+        {
+            if(HPPercent < 75 && !cooldown)
+            {
+                ForceSpellCast(m_creature, SPELL_SHELL_OF_LIFE);
+                cooldown = true;
+            }
+            if(HPPercent < 30)
+            {
+                if(Unit* Sister = FindCreature(NPC_SISTER_OF_PAIN, 30, m_creature))
+                {
+                    if(!m_creature->HasAura(SPELL_SHARED_BONDS, 0))
+                        Sister->CastSpell(m_creature, SPELL_SHARED_BONDS, false);
+                }
+            }
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(HolyNova < diff)
+        {
+            DoCastAOE(SPELL_HOLY_NOVA_1);
+            HolyNova = urand(7000, 14000);
+        }
+        else
+            HolyNova -= diff;
+
+        if(GreaterHeal < diff)
+        {
+            Unit* healTarget = DoSelectLowestHpFriendly(40.0f, 20000);
+            if(healTarget)
+                AddSpellToCast(healTarget, SPELL_GREATER_HEAL);
+            GreaterHeal = urand(5000, 10000);     //check targets each 5-10s
+        }
+        else
+            GreaterHeal -= diff;
+
+        if(cooldown && ShellOfLife < diff)
+        {
+            cooldown = false;
+            ShellOfLife = urand(15000, 25000);
+        }
+        else
+            ShellOfLife -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_sister_of_pleasure(Creature *_Creature)
+{
+    return new mob_sister_of_pleasureAI(_Creature);
+}
+
+/****************
+* Charming Courtesan - id 22955
+*****************/
+
+enum CharmingCourtesan
+{
+    SPELL_INFATUATION           = 41345,
+    SPELL_POISONOUS_THROW       = 41346
+};
+
+#define YELL_CHARMING_COURTESAN "That which you desire lies this way, hero."
+
+struct TRINITY_DLL_DECL mob_charming_courtesanAI: public ScriptedAI
+{
+    mob_charming_courtesanAI(Creature *c) : ScriptedAI(c) { }
+
+    uint32 Infatuation;
+    uint32 PoisonousThrow;
+
+    void Reset()
+    {
+        Infatuation = urand(5000, 8000);
+        PoisonousThrow = urand(2000, 10000);
+    }
+
+    void EnterCombat(Unit* who)
+    {
+        DoZoneInCombat(80.0f);
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(Infatuation < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100.0f, true))
+            {
+                if(urand(1,10) > 6)
+                    DoYell(YELL_CHARMING_COURTESAN, 0, target);
+                AddSpellToCast(target, SPELL_INFATUATION);
+            }
+            Infatuation = urand(20000, 30000);
+        }
+        else
+            Infatuation -= diff;
+
+        if(PoisonousThrow < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 60.0f, true))
+                AddSpellToCast(target, SPELL_INFATUATION);
+            PoisonousThrow = urand(6000, 10000);
+        }
+        else
+            PoisonousThrow -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_charming_courtesan(Creature *_Creature)
+{
+    return new mob_charming_courtesanAI(_Creature);
+}
+
+/****************
+* Spellbound Attendent - id 22959
+*****************/
+
+enum SpellboundAttendent
+{
+    SPELL_KICK          = 41395,
+    SPELL_SLEEP         = 41396
+};
+
+struct TRINITY_DLL_DECL mob_spellbound_attendentAI: public ScriptedAI
+{
+    mob_spellbound_attendentAI(Creature *c) : ScriptedAI(c) { }
+
+    uint32 Kick;
+    uint32 Sleep;
+    bool cooldown;
+
+    void Reset()
+    {
+        Sleep = urand(3000, 8000);
+        Kick = 10000;
+        cooldown = false;
+    }
+
+    void EnterCombat(Unit* who)
+    {
+        DoZoneInCombat(80.0f);
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(m_creature->getVictim() && m_creature->getVictim()->IsNonMeleeSpellCasted(false) && !cooldown)
+        {
+            ForceSpellCast(m_creature->getVictim(), SPELL_KICK, INTERRUPT_AND_CAST_INSTANTLY);
+            cooldown = true;
+        }
+
+        if(cooldown && Kick < diff)
+        {
+            cooldown = false;
+            Kick = 10000;   //10s cooldown as rogue's ability
+        }
+        else
+            Kick -= diff;
+
+        if(Sleep < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, 30.0f, true))
+                AddSpellToCast(target, SPELL_SLEEP, false, true);
+            Sleep = urand(10000, 18000);
+        }
+        else
+            Sleep -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_spellbound_attendent(Creature *_Creature)
+{
+    return new mob_spellbound_attendentAI(_Creature);
+}
+
+/****************
+* Enslaved Servant - id 22965
+*****************/
+
+enum EnslavedSevrant
+{
+    SPELL_UPPERCUT          = 41388,
+    SPELL_KIDNEY_SHOT       = 41389
+};
+
+struct TRINITY_DLL_DECL mob_enslaved_servantAI: public ScriptedAI
+{
+    mob_enslaved_servantAI(Creature *c) : ScriptedAI(c) { }
+
+    uint32 Uppercut;
+    uint32 KidneyShot;
+
+    void Reset()
+    {
+        Uppercut = urand(5000, 15000);
+        KidneyShot = urand(3000, 10000);;
+    }
+
+    void EnterCombat(Unit* who)
+    {
+        DoZoneInCombat(80.0f);
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(KidneyShot < diff)
+        {
+            AddSpellToCast(m_creature->getVictim(), SPELL_KIDNEY_SHOT);
+            KidneyShot = urand(20000, 30000);
+        }
+        else
+            KidneyShot -= diff;
+
+        if(Uppercut < diff)
+        {
+            AddSpellToCast(m_creature->getVictim(), SPELL_UPPERCUT);
+            Uppercut = urand(5000, 10000);
+        }
+        else
+            Uppercut -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_enslaved_servant(Creature *_Creature)
+{
+    return new mob_enslaved_servantAI(_Creature);
+}
+
+/****************
+* Temple Concubine - id 22939
+*****************/
+
+enum TempleConcubine
+{
+    SPELL_LOVE_TAP  = 41338
+};
+
+#define YELL_TEMPLE_CONCUBINE "Business… or pleasure?"
+
+struct TRINITY_DLL_DECL mob_temple_concubineAI: public ScriptedAI
+{
+    mob_temple_concubineAI(Creature *c) : ScriptedAI(c) { }
+
+    uint32 LoveTap;
+    uint32 Polymorph;
+
+    void Reset()
+    {
+        LoveTap = urand(2000, 15000);
+        Polymorph = urand(5000, 10000);
+    }
+
+    void EnterCombat(Unit* who)
+    {
+        DoZoneInCombat(80.0f);
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(LoveTap < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 10.0f, true))
+                AddSpellToCast(target, SPELL_LOVE_TAP, false, true);
+            LoveTap = urand(10000, 20000);
+        }
+        else
+            LoveTap -= diff;
+
+        if(Polymorph < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0f, true))
+            {
+                AddSpellToCast(target, SPELL_POLYMORPH, false, true);
+                if(urand(1,10) > 3)
+                    DoYell(YELL_TEMPLE_CONCUBINE, 0, target);
+            }
+            Polymorph = urand(15000, 25000);
+        }
+        else
+            Polymorph -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_temple_concubine(Creature *_Creature)
+{
+    return new mob_temple_concubineAI(_Creature);
+}
+
 /* ============================
 *
 *      ILLIDARI  COUNCIL
@@ -4768,5 +5487,51 @@ void AddSC_black_temple_trash()
     newscript = new Script;
     newscript->Name = "mob_suffering_soul_fragment";
     newscript->GetAI = &GetAI_mob_suffering_soul_fragment;
+    newscript->RegisterSelf();
+
+    // Mother Shahraz
+    newscript = new Script;
+    newscript->Name = "mob_pristess_of_dementia";
+    newscript->GetAI = &GetAI_mob_pristess_of_dementia;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_image_of_dementia";
+    newscript->GetAI = &GetAI_mob_image_of_dementia;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_pristess_of_delight";
+    newscript->GetAI = &GetAI_mob_pristess_of_delight;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_sister_of_pain";
+    newscript->GetAI = &GetAI_mob_sister_of_pain;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_sister_of_pleasure";
+    newscript->GetAI = &GetAI_mob_sister_of_pleasure;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_charming_courtesan";
+    newscript->GetAI = &GetAI_mob_charming_courtesan;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_spellbound_attendent";
+    newscript->GetAI = &GetAI_mob_spellbound_attendent;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_enslaved_servant";
+    newscript->GetAI = &GetAI_mob_enslaved_servant;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_temple_concubine";
+    newscript->GetAI = &GetAI_mob_temple_concubine;
     newscript->RegisterSelf();
 }
