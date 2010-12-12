@@ -9047,6 +9047,10 @@ bool Unit::isVisibleForOrDetect(Unit const* u, bool detect, bool inVisibleList, 
     if(!u || !IsInMap(u))
         return false;
 
+    // Arena Preparation hack
+    if (GetTypeId() == TYPEID_PLAYER && u->GetTypeId() == TYPEID_PLAYER && HasAura(32727, 1) &&  ((Player*)u)->GetTeam() != ((Player*)this)->GetTeam())
+        return false;
+
     return u->canSeeOrDetect(this, detect, inVisibleList, is3dDistance);
 }
 
@@ -12553,10 +12557,10 @@ Unit* Unit::GetNextRandomRaidMember(float radius)
                 !Target->HasInvisibilityAura() && !IsHostileTo(Target) &&
                 !Target->HasAuraType(SPELL_AURA_MOD_UNATTACKABLE))
                     nearMembers.push_back(Target);
-                
+
             if( Pet *pet = Target->GetPet())
                 if( pet != this && IsWithinDistInMap(pet, radius) &&
-                    !pet->HasInvisibilityAura() && !IsHostileTo(pet) && 
+                    !pet->HasInvisibilityAura() && !IsHostileTo(pet) &&
                     !pet->HasAuraType(SPELL_AURA_MOD_UNATTACKABLE))
                     nearMembers.push_back(pet);
         }

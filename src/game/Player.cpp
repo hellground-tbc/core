@@ -5570,7 +5570,11 @@ void Player::SaveRecallPosition()
 
 void Player::SendMessageToSet(WorldPacket *data, bool self, bool to_possessor)
 {
-    GetMap()->MessageBroadcast(this, data, self, to_possessor);
+    // Arena Preparation hack
+    if (HasAura(32727, 1))
+        GetMap()->MessageDistBroadcast(this, data, 20.0, self, to_possessor);
+    else
+        GetMap()->MessageBroadcast(this, data, self, to_possessor);
 }
 
 void Player::SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool to_possessor)
@@ -18429,7 +18433,7 @@ bool Player::IsVisibleGloballyFor( Player* u ) const
 
 void Player::UpdateVisibilityOf(WorldObject* target)
 {
-    if(HaveAtClient(target))
+    if (HaveAtClient(target))
     {
         if(!target->isVisibleForInState(this,true))
         {
@@ -18444,20 +18448,20 @@ void Player::UpdateVisibilityOf(WorldObject* target)
     }
     else
     {
-        if(target->isVisibleForInState(this,false))
+        if (target->isVisibleForInState(this,false))
         {
             target->SendCreateUpdateToPlayer(this);
-            if(target->GetTypeId()!=TYPEID_GAMEOBJECT||!((GameObject*)target)->IsTransport())
+            if (target->GetTypeId()!=TYPEID_GAMEOBJECT||!((GameObject*)target)->IsTransport())
                 m_clientGUIDs.insert(target->GetGUID());
 
             #ifdef TRINITY_DEBUG
-            if((sLog.getLogFilter() & LOG_FILTER_VISIBILITY_CHANGES)==0)
+            if ((sLog.getLogFilter() & LOG_FILTER_VISIBILITY_CHANGES)==0)
                 sLog.outDebug("Object %u (Type: %u) is visible now for player %u. Distance = %f",target->GetGUIDLow(),target->GetTypeId(),GetGUIDLow(),GetDistance(target));
             #endif
 
             // target aura duration for caster show only if target exist at caster client
             // send data at target visibility change (adding to client)
-            if(target->isType(TYPEMASK_UNIT))
+            if (target->isType(TYPEMASK_UNIT))
                 SendInitialVisiblePackets((Unit*)target);
         }
     }

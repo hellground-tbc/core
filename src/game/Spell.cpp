@@ -2082,7 +2082,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                     {
                         if( Player* Target = itr->getSource() )
                         {
-                            // IsHostileTo check duel and controlled by enemy   
+                            // IsHostileTo check duel and controlled by enemy
                             if( targetPlayer->IsWithinDistInMap(Target, radius) &&
                                 targetPlayer->getClass() == Target->getClass() &&
                                 !m_caster->IsHostileTo(Target))
@@ -2249,6 +2249,7 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
 
         m_caster->SetCurrentCastedSpell( this );
         m_selfContainer = &(m_caster->m_currentSpells[GetCurrentContainer()]);
+
         SendSpellStart();
 
         if(m_caster->GetTypeId() == TYPEID_PLAYER)
