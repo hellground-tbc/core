@@ -502,11 +502,15 @@ void Master::_OnSignal(int s)
             World::StopNow(RESTART_EXIT_CODE);
             break;
         case SIGTERM:
+            // 3 - LANG_SYSTEMMESSAGE
+            sWorld.SendWorldText(3, "Server is going to perform daily database backups. We are back online in approx ~30 min.");
+            sWorld.ShutdownServ(600, 0 ,SHUTDOWN_EXIT_CODE);
+            break;
         #ifdef _WIN32
         case SIGBREAK:
-        #endif
             World::StopNow(SHUTDOWN_EXIT_CODE);
             break;
+        #endif
     }
 
     signal(s, _OnSignal);

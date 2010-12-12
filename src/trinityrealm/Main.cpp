@@ -327,7 +327,7 @@ void OnSignal(int s)
     switch (s)
     {
         case SIGINT:
-        case SIGTERM:
+        //case SIGTERM:
             stopEvent = true;
             break;
         #ifdef _WIN32
