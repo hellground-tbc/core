@@ -7380,7 +7380,7 @@ bool ChatHandler::HandleFreezeCommand(const char *args)
         return true;
     }
 
-    if (player==m_session->GetPlayer())
+    if (player == m_session->GetPlayer() || player->GetSession()->GetSecurity() > m_session->GetSecurity())
     {
         SendSysMessage(LANG_COMMAND_FREEZE_ERROR);
         return true;
