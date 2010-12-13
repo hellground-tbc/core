@@ -9048,7 +9048,7 @@ bool Unit::isVisibleForOrDetect(Unit const* u, bool detect, bool inVisibleList, 
         return false;
 
     // Arena Preparation hack
-    if (HasAura(32727, 1) && IsInPartyWith(u))
+    if (HasAura(32727, 1) && !IsInPartyWith(u))
         return false;
 
     return u->canSeeOrDetect(this, detect, inVisibleList, is3dDistance);
