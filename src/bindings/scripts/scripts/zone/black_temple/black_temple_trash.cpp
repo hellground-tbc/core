@@ -4771,7 +4771,7 @@ struct TRINITY_DLL_DECL mob_sister_of_painAI: public ScriptedAI
                         Sister->CastSpell(m_creature, SPELL_SHARED_BONDS, false);
                 }
             }
-            if(urand(1, 100) > 95)
+            if(urand(1, 1000) > 995)
                 DoYell(YELL_SISTER_OF_PAIN, 0, who);
         }
     }
