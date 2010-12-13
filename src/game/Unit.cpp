@@ -9048,8 +9048,12 @@ bool Unit::isVisibleForOrDetect(Unit const* u, bool detect, bool inVisibleList, 
         return false;
 
     // Arena Preparation hack
-    if (HasAura(32727, 1) && !IsInPartyWith(u))
-        return false;
+    if (!IsInPartyWith(u))
+    {
+        Player *pPlayer = GetCharmerOrOwnerPlayerOrPlayerItself();
+        if (pPlayer && pPlayer->InArena() && pPlayer->GetBattleGround()->GetStatus() != STATUS_IN_PROGRESS)
+            return false;
+    }
 
     return u->canSeeOrDetect(this, detect, inVisibleList, is3dDistance);
 }

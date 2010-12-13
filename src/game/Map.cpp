@@ -511,9 +511,11 @@ void Map::MessageBroadcast(Player *player, WorldPacket *msg, bool to_self, bool 
     if( !loaded(GridPair(cell.data.Part.grid_x, cell.data.Part.grid_y)))
         return;
 
+    float dist = GetVisibilityDistance();
+
     Trinity::MessageDeliverer post_man(*player, msg, to_possessor, to_self);
     TypeContainerVisitor<Trinity::MessageDeliverer, WorldTypeMapContainer > message(post_man);
-    cell.Visit(p, message, *this, *player, GetVisibilityDistance());
+    cell.Visit(p, message, *this, *player, dist);
 }
 
 void Map::MessageBroadcast(WorldObject *obj, WorldPacket *msg, bool to_possessor)
@@ -533,9 +535,11 @@ void Map::MessageBroadcast(WorldObject *obj, WorldPacket *msg, bool to_possessor
     if( !loaded(GridPair(cell.data.Part.grid_x, cell.data.Part.grid_y)))
         return;
 
+    float dist = GetVisibilityDistance();
+
     Trinity::ObjectMessageDeliverer post_man(*obj, msg, to_possessor);
     TypeContainerVisitor<Trinity::ObjectMessageDeliverer, WorldTypeMapContainer > message(post_man);
-    cell.Visit(p, message, *this, *obj, GetVisibilityDistance());
+    cell.Visit(p, message, *this, *obj, dist);
 }
 
 void Map::MessageDistBroadcast(Player *player, WorldPacket *msg, float dist, bool to_self, bool to_possessor, bool own_team_only)

@@ -5571,8 +5571,8 @@ void Player::SaveRecallPosition()
 void Player::SendMessageToSet(WorldPacket *data, bool self, bool to_possessor)
 {
     // Arena Preparation hack
-    if (HasAura(32727, 1))
-        GetMap()->MessageDistBroadcast(this, data, 20.0, self, to_possessor);
+    if (InArena() && GetBattleGround()->GetStatus() != STATUS_IN_PROGRESS)
+        GetMap()->MessageDistBroadcast(this, data, 10.0, self, to_possessor);
     else
         GetMap()->MessageBroadcast(this, data, self, to_possessor);
 }
