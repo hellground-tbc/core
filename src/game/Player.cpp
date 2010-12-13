@@ -1377,7 +1377,6 @@ void Player::Update( uint32 p_time )
     {
         if (p_time >= m_DetectInvTimer)
         {
-
             HandleStealthedUnitsDetection();
             m_DetectInvTimer = InArena() ? 1000 : 3000;
         }
@@ -1423,10 +1422,8 @@ void Player::Update( uint32 p_time )
 
     Pet* pet = GetPet();
     if(pet && !IsWithinDistInMap(pet, OWNER_MAX_DISTANCE) && !pet->isPossessed())
-    {
         RemovePet(pet, PET_SAVE_NOT_IN_SLOT, true);
-        //return;
-    }
+
     updateMutex.release();
 }
 
