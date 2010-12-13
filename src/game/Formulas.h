@@ -85,9 +85,14 @@ namespace Trinity
             if( mob_level >= pl_level )
             {
                 uint32 nLevelDiff = mob_level - pl_level;
-                if (nLevelDiff > 4)
-                    nLevelDiff = 4;
-                return ((pl_level*5 + nBaseExp) * (20 + nLevelDiff)/10 + 1)/2;
+                if (nLevelDiff < 9)
+                {
+                    if (nLevelDiff > 4)
+                        nLevelDiff = 4;
+                    return ((pl_level*5 + nBaseExp) * (20 + nLevelDiff)/10 + 1)/2;
+                }
+                else
+                    return 0;
             }
             else
             {
