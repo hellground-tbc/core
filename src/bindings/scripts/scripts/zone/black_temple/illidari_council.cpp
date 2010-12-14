@@ -138,7 +138,7 @@ struct TRINITY_DLL_DECL mob_blood_elf_council_voice_triggerAI : public ScriptedA
             if (Creature* pMember = pInstance->GetCreature(m_council[m_counter]))
             {
                 pMember->CastSpell(pMember, SPELL_BERSERK, true);
-                
+
                 DoScriptText(CouncilEnrage[m_counter].entry, pMember);
                 m_enrageTimer = CouncilEnrage[m_counter].timer;
             }
@@ -169,7 +169,7 @@ struct TRINITY_DLL_DECL mob_illidari_councilAI : public ScriptedAI
     void Reset()
     {
         m_checkTimer = 2000;
-        
+
         m_endTimer = 0;
         m_deathCount = 0;
 
@@ -187,7 +187,7 @@ struct TRINITY_DLL_DECL mob_illidari_councilAI : public ScriptedAI
         }
 
         pInstance->SetData(EVENT_ILLIDARICOUNCIL, NOT_STARTED);
-        
+
         if(Creature *pTrigger = pInstance->GetCreature(pInstance->GetData64(DATA_BLOOD_ELF_COUNCIL_VOICE)))
             pTrigger->AI()->EnterEvadeMode();
 
@@ -244,7 +244,7 @@ struct TRINITY_DLL_DECL mob_illidari_councilAI : public ScriptedAI
                         pTrigger->DealDamage(pTrigger,pTrigger->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
 
                     pInstance->SetData(EVENT_ILLIDARICOUNCIL, DONE);
-                    
+
                     //ENABE IT LATER !
                     //m_creature->SummonCreature(23089, 746.466980f, 304.394989f, 311.90208f, 6.272870f, TEMPSUMMON_DEAD_DESPAWN, 0);
 
@@ -342,7 +342,7 @@ struct TRINITY_DLL_DECL illidari_council_baseAI : public ScriptedAI
             case 22950: DoScriptText(SAY_ZERE_SLAY, m_creature); break; // Zerevor
             case 22951: DoScriptText(SAY_MALA_SLAY, m_creature); break; // Melande
             case 22952: DoScriptText(SAY_VERA_SLAY, m_creature); break; // Veras
-        }        
+        }
     }
 
     void JustDied(Unit *pVictim)
@@ -353,7 +353,7 @@ struct TRINITY_DLL_DECL illidari_council_baseAI : public ScriptedAI
             case 22950: DoScriptText(SAY_ZERE_DEATH, m_creature); break; // Zerevor
             case 22951: DoScriptText(SAY_MALA_DEATH, m_creature); break; // Melande
             case 22952: DoScriptText(SAY_VERA_DEATH, m_creature); break; // Veras
-        }  
+        }
     }
 
     void EnterEvadeMode()
@@ -406,7 +406,7 @@ enum gathiosSpells
     SPELL_HAMMER_OF_JUSTICE    = 41468,
     SPELL_SEAL_OF_COMMAND      = 41469,
     SPELL_SEAL_OF_BLOOD        = 41459,
-    SPELL_JUDGEMENT            = 41467,
+    SPELL_GATHIOS_JUDGEMENT    = 41467,
     SPELL_CHROMATIC_AURA       = 41453,
     SPELL_DEVOTION_AURA        = 41452
 };
@@ -518,7 +518,7 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public illidari_council_b
 
         if (m_judgementTimer < diff)
         {
-            AddSpellToCast(me->getVictim(), SPELL_JUDGEMENT);
+            AddSpellToCast(me->getVictim(), SPELL_GATHIOS_JUDGEMENT);
             m_judgementTimer = urand(15000, 35000);
         }
         else
@@ -564,7 +564,7 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
         m_dampenTimer = 2000;
         m_aexpTimer = 14000;
         m_boltTimer = 1000;
-        
+
         m_checkTimer = 1000;
     }
 
@@ -618,7 +618,7 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
         {
             if (!m_creature->IsNonMeleeSpellCasted(false))
                 AddSpellToCast(m_creature->getVictim(), SPELL_ARCANE_BOLT);
-            
+
             m_boltTimer = 1000;
         }
         else
@@ -758,7 +758,7 @@ struct TRINITY_DLL_DECL boss_veras_darkshadowAI : public illidari_council_baseAI
         m_poisonTimer = 20000;
         m_vanishTimer = 10000;
         m_envenomTimer = 3000;
-        
+
         m_checkTimer = 1000;
 
         m_creature->SetVisibility(VISIBILITY_ON);
