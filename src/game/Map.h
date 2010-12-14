@@ -520,6 +520,7 @@ class TRINITY_DLL_SPEC BattleGroundMap : public Map
         virtual void InitVisibilityDistance();
         void SetUnload();
         void UnloadAll();
+        void SetBattleGround(BattleGround *pBg){ m_bg = pBg; }
     private:
         BattleGround *m_bg;
 };
