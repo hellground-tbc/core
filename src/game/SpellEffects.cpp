@@ -5449,89 +5449,34 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             }
             break;
         }
-        // Green Helper Box, Red Helper Box, Snowman Kit  (based on EffectSummonCritter)
+        // Green Helper Box, Red Helper Box, Snowman Kit, Jingling Bell
         case 26532:
         case 26541:
         case 26469:
+        case 26528:
         {
-            if(m_caster->GetTypeId() != TYPEID_PLAYER)
-                return;
-            Player* player = (Player*)m_caster;
-
-            uint32 pet_entry;
+            uint32 summon_spell_entry = 0;
             switch (m_spellInfo->Id)
             {
                 case 26532: //green
-                    pet_entry = 15698;
+                    summon_spell_entry = 26533;
                     break;
                 case 26541: //red
-                    pet_entry = 15705;
+                    summon_spell_entry = 26536;
                     break;
                 case 26469: //snowman
-                    pet_entry = 15710;
+                    summon_spell_entry = 26045;
+                    break;
+                case 26528: //reindeer
+                    summon_spell_entry = 26529;
                     break;
             }
-            if(!pet_entry)
+
+            if(!summon_spell_entry)
                 return;
 
-            Pet* old_critter = player->GetMiniPet();
+            m_caster->CastSpell(m_caster, summon_spell_entry, false);
 
-            // for same pet just despawn
-            if(old_critter && old_critter->GetEntry() == pet_entry)
-            {
-                player->RemoveMiniPet();
-                return;
-            }
-
-            // despawn old pet before summon new
-            if(old_critter)
-                player->RemoveMiniPet();
-
-            // summon new pet
-            Pet* critter = new Pet(MINI_PET);
-
-            Map *map = m_caster->GetMap();
-            uint32 pet_number = objmgr.GeneratePetNumber();
-            if(!critter->Create(objmgr.GenerateLowGuid(HIGHGUID_PET),
-                map, pet_entry, pet_number))
-            {
-                sLog.outError("Spell::EffectSummonCritter, spellid %u: no such creature entry %u", m_spellInfo->Id, pet_entry);
-                delete critter;
-                return;
-            }
-
-            float x,y,z;
-            m_caster->GetClosePoint(x,y,z,critter->GetObjectSize());
-
-            critter->Relocate(x,y,z,m_caster->GetOrientation());
-
-            if(!critter->IsPositionValid())
-            {
-                sLog.outError("ERROR: Pet (guidlow %d, entry %d) not summoned. Suggested coordinates isn't valid (X: %f Y: %f)",
-                    critter->GetGUIDLow(), critter->GetEntry(), critter->GetPositionX(), critter->GetPositionY());
-                delete critter;
-                return;
-            }
-
-            critter->SetOwnerGUID(m_caster->GetGUID());
-            critter->SetCreatorGUID(m_caster->GetGUID());
-            critter->SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE,m_caster->getFaction());
-            critter->SetUInt32Value(UNIT_CREATED_BY_SPELL, m_spellInfo->Id);
-
-            critter->AIM_Initialize();
-            critter->InitPetCreateSpells();
-            critter->SetMaxHealth(1);
-            critter->SetHealth(1);
-            critter->SetLevel(1);
-
-            std::string name = player->GetName();
-            name.append(petTypeSuffix[critter->getPetType()]);
-            critter->SetName( name );
-            if (pet_entry == 15710) //snowman
-                critter->SetStunned(true);
-            player->SetMiniPet(critter);
-
-            map->Add((Creature*)critter);
             break;
         }
     }
