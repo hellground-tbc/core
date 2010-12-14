@@ -405,9 +405,8 @@ enum gathiosSpells
     SPELL_CONSECRATION         = 41541,
     SPELL_HAMMER_OF_JUSTICE    = 41468,
     SPELL_SEAL_OF_COMMAND      = 41469,
-    SPELL_JUDGEMENT_OF_COMMAND = 41470,
     SPELL_SEAL_OF_BLOOD        = 41459,
-    SPELL_JUDGEMENT_OF_BLOOD   = 41461,
+    SPELL_JUDGEMENT            = 41467,
     SPELL_CHROMATIC_AURA       = 41453,
     SPELL_DEVOTION_AURA        = 41452
 };
@@ -519,21 +518,8 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public illidari_council_b
 
         if (m_judgementTimer < diff)
         {
-            bool hasSeal = false;
-
-            if (me->HasAura(SPELL_SEAL_OF_COMMAND,0))
-            {
-                hasSeal = true;
-                AddSpellToCast(me->getVictim(), SPELL_JUDGEMENT_OF_COMMAND);
-            }
-
-            if (me->HasAura(SPELL_SEAL_OF_BLOOD,0))
-            {
-                hasSeal = true;
-                AddSpellToCast(me->getVictim(), SPELL_JUDGEMENT_OF_BLOOD);
-            }
-
-            m_judgementTimer = hasSeal ? 45000 : 15000;
+            AddSpellToCast(me->getVictim(), SPELL_JUDGEMENT);
+            m_judgementTimer = urand(15000, 35000);
         }
         else
             m_judgementTimer -= diff;
@@ -589,6 +575,9 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
 
         if (m_checkTimer < diff)
         {
+            if (me->GetDistance2d(me->getVictim()) < 20.0f)
+                me->StopMoving();
+
             DoZoneInCombat();
             m_checkTimer = 1000;
         }
@@ -642,14 +631,14 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
             {
                 if (Unit *pUnit = pInstance->GetCreature((*i)->getUnitGuid()))
                 {
-                    if (pUnit->IsWithinDistInMap(m_creature, 5))
+                    if (pUnit->IsWithinDistInMap(me, 5))
                     {
-                        ForceAOESpellCast(SPELL_ARCANE_EXPLOSION);
+                        ForceAOESpellCast(SPELL_ARCANE_EXPLOSION, INTERRUPT_AND_CAST);
                         break;
                     }
                 }
             }
-            m_aexpTimer = urand(2000, 4000);
+            m_aexpTimer = 1000;
         }
         else
             m_aexpTimer -= diff;
@@ -657,7 +646,6 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
         CastNextSpellIfAnyAndReady();
     }
 };
-
 
 // Lady Malande's spells
 enum malandeSpells
@@ -750,7 +738,7 @@ enum verasSpells
     SPELL_DEADLY_POISON   = 41485,
     SPELL_DEADLY_POISON_T = 41480,
     SPELL_ENVENOM         = 41487,
-    SPELL_VANISH          = 41479
+    SPELL_VANISH          = 41476
 };
 
 struct TRINITY_DLL_DECL boss_veras_darkshadowAI : public illidari_council_baseAI
@@ -783,7 +771,7 @@ struct TRINITY_DLL_DECL boss_veras_darkshadowAI : public illidari_council_baseAI
         {
             m_envenomGUID = pTarget->GetGUID();
             DoStartMovement(pTarget);
-            m_envenomTimer = 3000;
+            m_envenomTimer = 3600;
         }
     }
 

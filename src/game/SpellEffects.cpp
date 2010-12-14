@@ -4957,10 +4957,30 @@ void Spell::EffectScriptEffect(uint32 effIndex)
 
     switch(m_spellInfo->Id)
     {
+        // Gathios the Shatterer: Judgement
+        case 41467:
+        {
+            Unit::AuraList const& mDummyAuras = m_caster->GetAurasByType(SPELL_AURA_DUMMY);
+            for(Unit::AuraList::const_iterator i = mDummyAuras.begin();i != mDummyAuras.end(); ++i)
+            {
+                if ((*i)->GetId() == 41459) // Seal of Blood
+                {
+                    m_caster->CastSpell(unitTarget, 41461, true);
+                    return;
+                }
+
+                if ((*i)->GetId() == 41469)
+                {
+                    m_caster->CastSpell(unitTarget, 41470, true);
+                    return;
+                }
+            }
+            break;
+        }
         // Gurtogg Bloodboil: Eject
         case 40486:
         {
-            if(!m_caster->CanHaveThreatList())
+            if (!m_caster->CanHaveThreatList())
                 return;
 
             m_caster->getThreatManager().modifyThreatPercent(unitTarget, -25);
