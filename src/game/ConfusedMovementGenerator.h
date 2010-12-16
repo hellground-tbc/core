@@ -25,7 +25,8 @@
 #include "DestinationHolder.h"
 #include "Traveller.h"
 
-#define MAX_CONF_WAYPOINTS 24
+#define WANDER_DISTANCE    5.0f
+#define MAX_CONF_WAYPOINTS 15
 
 template<class T>
 class TRINITY_DLL_SPEC ConfusedMovementGenerator
@@ -41,10 +42,14 @@ class TRINITY_DLL_SPEC ConfusedMovementGenerator
 
         bool GetDestination(float &x, float &y, float &z) const
         {
-            if(i_destinationHolder.HasArrived()) return false;
+            if(i_destinationHolder.HasArrived())
+                return false;
+
             i_destinationHolder.GetDestination(x,y,z);
             return true;
         }
+
+        void GenerateMovement(T &unit);
 
         MovementGeneratorType GetMovementGeneratorType() { return CONFUSED_MOTION_TYPE; }
     private:
