@@ -9048,7 +9048,7 @@ bool Unit::isVisibleForOrDetect(Unit const* u, bool detect, bool inVisibleList, 
         return false;
 
     // Arena Preparation hack
-    if (!IsInPartyWith(u))
+    if (!IsInRaidWith(u))
     {
         Player *pPlayer = GetCharmerOrOwnerPlayerOrPlayerItself();
         if (pPlayer && pPlayer->InArena() && pPlayer->GetBattleGround()->GetStatus() != STATUS_IN_PROGRESS)
