@@ -1115,11 +1115,11 @@ void ObjectMgr::LoadGameobjects()
         int16 gameEvent     = fields[15].GetInt16();
         int16 PoolId        = fields[16].GetInt16();
 
-        if (gInfo->displayId && !sGameObjectDisplayInfoStore.LookupEntry(gInfo->displayId))
+        /*if (gInfo->displayId && !sGameObjectDisplayInfoStore.LookupEntry(gInfo->displayId))
         {
             sLog.outErrorDb("Gameobject (GUID: %u Entry %u GoType: %u) have invalid displayId (%u), not loaded.",guid, gInfo->displayId, gInfo->type, gInfo->displayId);
             continue;
-        }
+        }*/
 
         if (gameEvent == 0 && PoolId == 0)                          // if not this is to be managed by GameEvent System
             AddGameobjectToGrid(guid, &data);
