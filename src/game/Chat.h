@@ -348,6 +348,8 @@ class ChatHandler
         bool HandleUnFreezeCommand(const char *args);
         bool HandleListFreezeCommand(const char* args);
 
+        bool HandleNearGridObjectCommand(const char* args);
+
         bool HandleCharacterDeleteCommand(const char* args);
         bool HandleBanAccountCommand(const char* args);
         bool HandleBanCharacterCommand(const char* args);

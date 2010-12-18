@@ -732,7 +732,7 @@ namespace Trinity
             Unit const* i_funit;
             float i_range;
     };
-    
+
     // do attack at call of help to friendly crearture
     class CallOfHelpCreatureInRangeDo
     {
@@ -997,6 +997,19 @@ namespace Trinity
         }
     private:
         uint32 entry;
+    };
+
+    class AllGameObjectsInRange
+    {
+    public:
+        AllGameObjectsInRange(Unit const * pUn, uint32 ran) : pUnit(pUn), range(range) {}
+        bool operator() (GameObject* g)
+        {
+            return pUnit->IsWithinDistInMap(g, range);
+        }
+    private:
+        Unit const * pUnit;
+        uint32 range;
     };
 
     class AllCreaturesOfEntryInRange

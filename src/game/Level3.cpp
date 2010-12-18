@@ -2939,6 +2939,8 @@ bool ChatHandler::HandleNearObjectCommand(const char* args)
                 continue;
 
             PSendSysMessage(LANG_GO_LIST_CHAT, guid, guid, gInfo->name, x, y, z, mapid);
+            GameObject * tmp = pl->GetMap()->GetGameObject(MAKE_NEW_GUID(guid, entry, HIGHGUID_GAMEOBJECT));
+            PSendSysMessage("Is in Map Guid Store: %s, Is in world: %s", tmp ? "Yes" : "No", tmp ? (tmp->IsInWorld() ? "Yes" : "No") : "No!");
 
             ++count;
         } while (result->NextRow());
@@ -7641,3 +7643,33 @@ bool ChatHandler::HandleUnbindSightCommand(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleNearGridObjectCommand(const char* args)
+{
+    std::list<GameObject*> tmpL;
+    Trinity::AllGameObjectsInRange go_check(m_session->GetPlayer(), 20.0f);
+    Trinity::GameObjectListSearcher<Trinity::AllGameObjectsInRange> searcher(tmpL, go_check);
+    m_session->GetPlayer()->VisitNearbyObject(20, searcher);
+
+    PSendSysMessage("All Game Objects in 20 yd range:");
+    PSendSysMessage("--------------------------------");
+    for (std::list<GameObject*>::const_iterator itr = tmpL.begin(); itr != tmpL.end(); ++itr)
+    {
+        GameObject * tmp = *itr;
+        if (tmp)
+        {
+            GameObject * tmp2 = tmp->GetMap()->GetGameObject(tmp->GetGUID());
+            GameObjectInfo const * gInfo = objmgr.GetGameObjectInfo(tmp->GetEntry());
+
+            if(!gInfo)
+                continue;
+
+            PSendSysMessage(LANG_GO_LIST_CHAT, tmp->GetGUID(), tmp->GetDBTableGUIDLow(), gInfo->name, tmp->GetPositionX(), tmp->GetPositionY(), tmp->GetPositionZ(), tmp->GetMapId());
+            PSendSysMessage("is in world: %s | is in map guid store: %s", tmp->IsInWorld() ? "Yes" : "No", tmp2 ? "Yes" : "No");
+            PSendSysMessage("--------------------------------");
+        }
+        else
+            PSendSysMessage("Broken Pointer");
+    }
+
+    return true;
+}
