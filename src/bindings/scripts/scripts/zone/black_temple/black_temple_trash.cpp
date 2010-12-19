@@ -3152,7 +3152,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_reaverAI : public ScriptedAI
     }
     void SpellHit(Unit* caster, const SpellEntry* spell)
     {
-        if(caster->GetTypeId() == TYPEID_PLAYER && m_creature->HasAura(SPELL_SPELL_ABSORPTION, 0) && spell->SchoolMask == SPELL_SCHOOL_MASK_MAGIC && spell->Dispel != DISPEL_POISON)
+        if(caster->GetTypeId() == TYPEID_PLAYER && m_creature->HasAura(SPELL_SPELL_ABSORPTION, 0) && (spell->SchoolMask == SPELL_SCHOOL_MASK_MAGIC || spell->Dispel != DISPEL_POISON))
             m_creature->CastSpell(m_creature, 41033, true, 0, m_creature->GetAura(SPELL_SPELL_ABSORPTION, 0));
     }
     void UpdateAI(const uint32 diff)
@@ -4948,6 +4948,8 @@ struct TRINITY_DLL_DECL mob_charming_courtesanAI: public ScriptedAI
 
     void EnterCombat(Unit* who)
     {
+        if(urand(1,100) > 85)
+            DoYell(YELL_CHARMING_COURTESAN, 0, who);
         DoZoneInCombat(80.0f);
     }
 
@@ -4965,11 +4967,7 @@ struct TRINITY_DLL_DECL mob_charming_courtesanAI: public ScriptedAI
         if(Infatuation < diff)
         {
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100.0f, true))
-            {
-                if(urand(1,10) > 6)
-                    DoYell(YELL_CHARMING_COURTESAN, 0, target);
                 AddSpellToCast(target, SPELL_INFATUATION);
-            }
             Infatuation = urand(20000, 30000);
         }
         else
@@ -5218,6 +5216,518 @@ CreatureAI* GetAI_mob_temple_concubine(Creature *_Creature)
     * Illidari Blood Lord
     * Promenade Sentinel
 */
+
+/****************
+* Illidari Archon - id 23400
+*****************/
+
+enum IllidariArchon
+{
+    SPELL_HOLY_SMITE        = 41370,
+    SPELL_HEAL              = 41372,
+    SPELL_POWER_WORD_SHIELD = 41373,
+    SPELL_SHADOWFORM        = 29406,
+    SPELL_MIND_FLAY         = 37276,
+    SPELL_POWER_WORD_DEATH  = 41375,
+    SPELL_MIND_BLAST        = 41374,
+
+    HOLY_TYPE               = 100,
+    SHADOW_TYPE             = 101
+};
+
+struct TRINITY_DLL_DECL mob_illidari_archonAI: public ScriptedAI
+{
+    mob_illidari_archonAI(Creature *c) : ScriptedAI(c) { }
+
+    uint32 type;
+    uint32 shieldCooldownTimer;
+    uint32 Heal;
+    bool shieldCooldown;
+
+    uint32 MindFlay;
+    uint32 MindBlast;
+    uint32 wordDeathTimer;
+    bool wordDeathCooldown;
+
+    void Reset()
+    {
+        type = RAND(HOLY_TYPE, SHADOW_TYPE);
+        switch(type)
+        {
+            case HOLY_TYPE:
+                {
+                    DoCast(m_creature, SPELL_POWER_WORD_SHIELD);
+                    Heal = 2500;
+                    shieldCooldownTimer = 15000;
+                    shieldCooldown = true;
+                    SetAutocast(SPELL_HOLY_SMITE, 4800, true, AUTOCAST_TANK, 40, true);
+                    StartAutocast();
+                    break;
+                }
+                break;
+            case SHADOW_TYPE:
+                {
+                    StopAutocast();
+                    DoCast(m_creature, SPELL_SHADOWFORM);
+                    MindFlay = 6000;
+                    MindBlast = 2000;
+                    wordDeathTimer = 8000;
+                    wordDeathCooldown = false;
+                    break;
+                }
+                break;
+        }
+    }
+
+    void EnterCombat(Unit* who)
+    {
+        DoZoneInCombat(80.0f);
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        switch(type)
+        {
+            case HOLY_TYPE:
+            {
+                if(!shieldCooldown)
+                {
+                    if(Unit* shieldTarget = DoSelectLowestHpFriendly(40, 20000))
+                    {
+                        AddSpellToCast(shieldTarget, SPELL_POWER_WORD_SHIELD, false, true);
+                        shieldCooldown = true;
+                    }
+                }
+                if(shieldCooldown && shieldCooldownTimer < diff)
+                {
+                    shieldCooldown = false;
+                    shieldCooldownTimer = 15000;   //15s cooldown as priest's ability
+                }
+                else
+                    shieldCooldownTimer -= diff;
+                if(Heal < diff)
+                {
+                    if(Unit* healTarget = DoSelectLowestHpFriendly(40, 60000))
+                        AddSpellToCast(healTarget, SPELL_HEAL, false, true);
+                    Heal = 2600;
+                }
+                else
+                    Heal -= diff;
+            }
+            break;
+            case SHADOW_TYPE:
+            {
+                if(!wordDeathCooldown)
+                {
+                    if(m_creature->getVictim()->GetHealth()*100 / m_creature->getVictim()->GetMaxHealth() < 30)
+                    {
+                        ClearCastQueue();
+                        ForceSpellCast(m_creature->getVictim(), SPELL_POWER_WORD_DEATH, INTERRUPT_AND_CAST);
+                        wordDeathCooldown = true;
+                        wordDeathTimer = 8000;
+                    }
+                }
+                if(wordDeathCooldown && wordDeathTimer < diff)
+                {
+                    wordDeathCooldown = false;
+                    wordDeathTimer = 8000;
+                }
+                else
+                    wordDeathTimer -= diff;
+                if(MindFlay < diff)
+                {
+                    if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 20.0f, true))
+                        AddSpellToCast(target, SPELL_MIND_FLAY);
+                    MindFlay = urand(6000, 9000);
+                }
+                else
+                    MindFlay -= diff;
+                if(MindBlast < diff)
+                {
+                    if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0f, true))
+                        AddSpellToCast(target, SPELL_MIND_BLAST);
+                    MindBlast = urand(12000, 18000);
+                }
+                else
+                    MindBlast -= diff;
+            }
+            break;
+        }
+
+        CastNextSpellIfAnyAndReady(diff);
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_illidari_archon(Creature *_Creature)
+{
+    return new mob_illidari_archonAI(_Creature);
+}
+
+/****************
+* Illidari Assassin - id 23403
+*****************/
+
+enum IllidariAssassin
+{
+    SPELL_PARALYZING_POISON     = 3609,
+    SPELL_RIPOSTE_AURA          = 41393,
+    SPELL_VANISH                = 39667,
+    SPELL_AMBUSH                = 41390
+};
+
+struct TRINITY_DLL_DECL mob_illidari_assassinAI: public ScriptedAI
+{
+    mob_illidari_assassinAI(Creature *c) : ScriptedAI(c) { }
+
+    uint32 VanishEvent;
+    uint32 ParalyzingPoison;
+    uint64 AmbushTagetGUID;
+    bool ambushed;
+
+    void Reset()
+    {
+        DoCast(m_creature, SPELL_RIPOSTE_AURA);
+        VanishEvent = urand(6000, 8000);
+        ParalyzingPoison = 15000;
+        AmbushTagetGUID = 0;
+        ambushed = false;
+    }
+
+    void EnterCombat(Unit* who)
+    {
+        DoZoneInCombat(80.0f);
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(VanishEvent < diff)
+        {
+            ClearCastQueue();
+            ForceSpellCast(m_creature, SPELL_VANISH, INTERRUPT_AND_CAST);
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0f, true))
+            {
+                AmbushTagetGUID = target->GetGUID();
+                DoStartMovement(target);
+                ambushed = false;
+            }
+            VanishEvent = urand(12000, 18000);
+        }
+        else
+            VanishEvent -= diff;
+
+        if(!ambushed && m_creature->HasAura(SPELL_VANISH, 1))
+        {
+            if(Player* PlayerTarget = m_creature->GetPlayer(AmbushTagetGUID))
+            {
+                if(m_creature->IsWithinDistInMap(PlayerTarget, 14.0))
+                {
+                    ForceSpellCast(PlayerTarget, SPELL_AMBUSH);
+                    ambushed = true;
+                }
+            }
+            return;
+        }
+        else
+            DoMeleeAttackIfReady();
+
+        if(ParalyzingPoison < diff)
+        {
+            AddSpellToCast(m_creature->getVictim(), SPELL_PARALYZING_POISON);
+            ParalyzingPoison = urand(10000, 14000);
+        }
+        else
+            ParalyzingPoison -= diff;
+
+        CastNextSpellIfAnyAndReady();
+    }
+};
+
+CreatureAI* GetAI_mob_illidari_assassin(Creature *_Creature)
+{
+    return new mob_illidari_assassinAI(_Creature);
+}
+
+/****************
+* Illidari Battle-mage - id 23402
+*****************/
+
+enum IllidariBattlemage
+{
+    SPELL_BLIZZARD          = 41382,
+    SPELL_FLAMESTRIKE       = 41379,
+    SPELL_FIREBALL          = 41383,
+    SPELL_FROSTBOLT         = 41384
+};
+
+struct TRINITY_DLL_DECL mob_illidari_battle_mageAI: public ScriptedAI
+{
+    mob_illidari_battle_mageAI(Creature *c) : ScriptedAI(c) { }
+
+    uint32 Blizzard;
+    uint32 Flamestrike;
+    uint32 DirectTimer;
+
+    void Reset()
+    {
+        DirectTimer = urand(2500, 5000);
+        Flamestrike = 6000;
+        Blizzard = 12000;
+    }
+
+    void EnterCombat(Unit* who)
+    {
+        DoZoneInCombat(80.0f);
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(DirectTimer < diff)
+        {
+            uint32 spellId = RAND(SPELL_FIREBALL, SPELL_FROSTBOLT);
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 40.0f, true))
+                AddSpellToCast(target, spellId, false, true);
+            DirectTimer = urand(2500, 3500);
+        }
+        else
+            DirectTimer -= diff;
+
+        if(Flamestrike < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0f, true))
+                AddSpellToCast(target, SPELL_FLAMESTRIKE, false, true);
+            Flamestrike = urand(12000, 18000);
+        }
+        else
+            Flamestrike -= diff;
+
+        if(Blizzard < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 45.0f, true))
+                AddSpellToCast(target, SPELL_BLIZZARD);
+            DirectTimer = urand(10000, 13000);
+            Blizzard = urand(18000, 25000);
+        }
+        else
+            Blizzard -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_illidari_battle_mage(Creature *_Creature)
+{
+    return new mob_illidari_battle_mageAI(_Creature);
+}
+
+/****************
+* Illidari Blood Lord - id 23397
+*****************/
+
+enum IllidariBloodLord
+{
+    SPELL_HAMMER_OF_JUSTICE     = 13005,
+    SPELL_JUDGEMENT_OF_COMMAND  = 41368,
+    SPELL_DIVINE_SHIELD         = 41367
+};
+
+#define YELL_ILLIDARI_BLOOD_LORD    "This world belongs to the Illidari"
+
+struct TRINITY_DLL_DECL mob_illidari_blood_lordAI: public ScriptedAI
+{
+    mob_illidari_blood_lordAI(Creature *c) : ScriptedAI(c) { }
+
+    uint32 HammerOfJustice;
+    uint32 JudgmentOfCommand;
+    bool shielded;
+
+    void Reset()
+    {
+        HammerOfJustice = urand(6000,8000);
+        JudgmentOfCommand = urand(8000, 10000);
+        shielded = false;
+    }
+
+    void EnterCombat(Unit* who)
+    {
+        DoZoneInCombat(80.0f);
+        if(urand(1,10) > 7)
+            DoYell(YELL_ILLIDARI_BLOOD_LORD, 0, who);
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 20 && !shielded)
+        {
+            ForceSpellCast(m_creature, SPELL_DIVINE_SHIELD, INTERRUPT_AND_CAST);
+            shielded = true;
+        }
+
+        if(HammerOfJustice < diff)
+        {
+            AddSpellToCast(m_creature->getVictim(), SPELL_HAMMER_OF_JUSTICE);
+            HammerOfJustice = urand(15000, 25000);
+        }
+        else
+            HammerOfJustice -= diff;
+
+        if(JudgmentOfCommand < diff)
+        {
+            AddSpellToCast(m_creature->getVictim(), SPELL_JUDGEMENT_OF_COMMAND);
+            JudgmentOfCommand = urand(3000, 8000);
+        }
+        else
+            JudgmentOfCommand -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_illidari_blood_lord(Creature *_Creature)
+{
+    return new mob_illidari_blood_lordAI(_Creature);
+}
+
+/****************
+* Promenade Sentinel - id 23394
+*****************/
+
+enum PromenadeSentinel
+{
+    SPELL_L1_ARCANE_CHARGE          = 41359,
+    SPELL_SPOTLIGHT                 = 41347,
+    SPELL_L4_ARCANE_CHARGE_SUMMON   = 41348,
+    SPELL_L4_ARCANE_CHARGE          = 41349,
+    SPELL_L5_ARCANE_CHARGE          = 41360
+};
+
+#define YELL_PROMENADE_SENTINEL    "Unauthorized entry detected. Engaging annihilation protocols." 
+
+struct TRINITY_DLL_DECL mob_promenade_sentinelAI: public ScriptedAI
+{
+    mob_promenade_sentinelAI(Creature *c) : ScriptedAI(c) { }
+
+    uint32 L5arcane;
+    uint32 L4arcane;
+
+    void Reset()
+    {
+        L5arcane = urand(3000, 6000);
+        L4arcane = urand(1000, 3000);
+    }
+
+    void EnterCombat(Unit* who)
+    {
+        DoZoneInCombat(80.0f);
+        DoYell(YELL_PROMENADE_SENTINEL, 0, who);
+        DoCast(m_creature, SPELL_L1_ARCANE_CHARGE);
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
+            AttackStart(who);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(L5arcane < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 45.0f, true))
+                AddSpellToCast(target, SPELL_L5_ARCANE_CHARGE, false, true);
+            L5arcane = urand(25000, 45000);
+        }
+        else
+            L5arcane -= diff;
+
+        if(L4arcane < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 60.0f, true))
+                AddSpellToCast(target, SPELL_L4_ARCANE_CHARGE_SUMMON);
+            L4arcane = urand(10000, 15000);
+        }
+        else
+            L4arcane -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_promenade_sentinel(Creature *_Creature)
+{
+    return new mob_promenade_sentinelAI(_Creature);
+}
+
+struct TRINITY_DLL_DECL mob_arcane_chargeAI : public Scripted_NoMovementAI
+{
+    mob_arcane_chargeAI(Creature *c) : Scripted_NoMovementAI(c) {}
+
+    uint32 Delay;
+
+    void Reset()
+    {
+        DoCast(m_creature, SPELL_SPOTLIGHT);
+        Delay = 3000;
+    }
+    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+    void UpdateAI(const uint32 diff)
+    {
+        if(Delay < diff)
+        {
+            DoCast(m_creature, SPELL_L4_ARCANE_CHARGE);
+            Delay = 10000;
+        }
+        else
+            Delay -= diff;
+    }
+};
+
+CreatureAI* GetAI_mob_arcane_charge(Creature *_Creature)
+{
+    return new mob_arcane_chargeAI(_Creature);
+}
 
 void AddSC_black_temple_trash()
 {
@@ -5533,5 +6043,36 @@ void AddSC_black_temple_trash()
     newscript = new Script;
     newscript->Name = "mob_temple_concubine";
     newscript->GetAI = &GetAI_mob_temple_concubine;
+    newscript->RegisterSelf();
+
+    // Illidari Council
+    newscript = new Script;
+    newscript->Name = "mob_illidari_archon";
+    newscript->GetAI = &GetAI_mob_illidari_archon;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_illidari_assassin";
+    newscript->GetAI = &GetAI_mob_illidari_assassin;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_illidari_battle_mage";
+    newscript->GetAI = &GetAI_mob_illidari_battle_mage;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_illidari_blood_lord";
+    newscript->GetAI = &GetAI_mob_illidari_blood_lord;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_promenade_sentinel";
+    newscript->GetAI = &GetAI_mob_promenade_sentinel;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_arcane_charge";
+    newscript->GetAI = &GetAI_mob_arcane_charge;
     newscript->RegisterSelf();
 }
