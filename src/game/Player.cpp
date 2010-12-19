@@ -14932,6 +14932,24 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
 
     _LoadDeclinedNames(holder->GetResult(PLAYER_LOGIN_QUERY_LOADDECLINEDNAMES));
 
+    if (m_class == CLASS_SHAMAN)
+    {
+        // ES || Totem of Wrath
+        if (HasSpell(974) || HasSpell(30706)
+        {
+            if (!HasAura(28878,0))
+                learnSpell(28878);
+
+            removeSpell(6562);
+        }
+        else if(HasSpell(17364))
+        {
+            if (!HasAura(6562,0))
+                learnSpell(6562);
+
+            removeSpell(28878);
+        }
+    }
     return true;
 }
 
