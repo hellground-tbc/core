@@ -14935,7 +14935,7 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
     if (m_class == CLASS_SHAMAN)
     {
         // ES || Totem of Wrath
-        if (HasSpell(974) || HasSpell(30706)
+        if (HasSpell(974) || HasSpell(30706))
         {
             if (!HasAura(28878,0))
                 learnSpell(28878);
