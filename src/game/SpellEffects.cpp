@@ -540,6 +540,9 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                             break;
                         }
                 }
+                // L5 Arcane Charge (its weird that it is claimed to be DRUID spell :D)
+                if(m_spellInfo->Id == 41360)
+                    damage = unitTarget->GetMaxHealth();
                 break;
             }
             case SPELLFAMILY_ROGUE:

@@ -2621,15 +2621,15 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_PLAYERS_ONLY;
         case 41357: // L1 Acane Charge
         case 41376: // Spite
-        case 29576: //Multi-Shot
-        case 37790: //Spread Shot
-        case 46771: //Flame Sear
-        case 45248: //Shadow Blades
+        case 29576: // Multi-Shot
+        case 37790: // Spread Shot
+        case 46771: // Flame Sear
+        case 45248: // Shadow Blades
         case 41303: // Soul Drain
         case 31298: // Anetheron: Sleep
             spellInfo->MaxAffectedTargets = 3;
             break;
-        case 38310: //Multi-Shot
+        case 38310: // Multi-Shot
             spellInfo->MaxAffectedTargets = 4;
             break;
         case 42005: // Bloodboil
@@ -2643,23 +2643,23 @@ void SpellMgr::LoadSpellCustomAttr()
         case 41625: // Fel Rage 3
             spellInfo->Stances = 0;
             break;
-        case 38296: //Spitfire Totem
-        case 37676: //Insidious Whisper
-        case 46008: //Negative Energy
-        case 45641: //Fire Bloom
+        case 38296: // Spitfire Totem
+        case 37676: // Insidious Whisper
+        case 46008: // Negative Energy
+        case 45641: // Fire Bloom
             spellInfo->MaxAffectedTargets = 5;
             break;
-        case 40827: //Sinful Beam
-        case 40859: //Sinister Beam
-        case 40860: //Vile Beam
-        case 40861: //Wicked Beam
+        case 40827: // Sinful Beam
+        case 40859: // Sinister Beam
+        case 40860: // Vile Beam
+        case 40861: // Wicked Beam
             spellInfo->MaxAffectedTargets = 10;
             break;
         case 8122: case 8124: case 10888: case 10890: // Psychic Scream
         case 12494: // Frostbite
             spellInfo->Attributes |= SPELL_ATTR_BREAKABLE_BY_DAMAGE;
             break;
-        case 38794: case 33711: //Murmur's Touch
+        case 38794: case 33711: // Murmur's Touch
             spellInfo->MaxAffectedTargets = 1;
             spellInfo->EffectTriggerSpell[0] = 33760;
             break;
@@ -2720,7 +2720,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 40251:
             spellInfo->EffectApplyAuraName[1] = SPELL_AURA_DUMMY;
             break;
-        case 36819: //Kael Pyroblast
+        case 36819: // Kael Pyroblast
             spellInfo->rangeIndex = 6;  // from 40yd to 100yd to avoid running from dmg
             break;
         case 40334:
