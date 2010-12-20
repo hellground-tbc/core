@@ -1756,9 +1756,16 @@ class TRINITY_DLL_SPEC Player : public Unit
         void UpdateSkillsToMaxSkillsForLevel();             // for .levelup
         void ModifySkillBonus(uint32 skillid,int32 val, bool talent);
 
+        /*********************************************************/
+        /***                 ANTICHEAT SYSTEM                  ***/
+        /*********************************************************/
+        float GetLastSpeedRate() { return fLastSpeedRate; }
+        void SetLastSpeedRate(float fSpeedRateRate) { fLastSpeedRate = fSpeedRateRate; }
 
         uint32 m_AC_timer;
-        uint32 m_lastmovetime;
+        uint32 m_AC_count;
+
+        float fLastSpeedRate;
 
         /*********************************************************/
         /***                  PVP SYSTEM                       ***/

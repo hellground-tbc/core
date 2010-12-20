@@ -254,7 +254,20 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
         GetPlayer()->SetInWater(!GetPlayer()->IsInWater() || GetPlayer()->GetBaseMap()->IsUnderWater(movementInfo.GetPos()->x, movementInfo.GetPos()->y, movementInfo.GetPos()->z));
     }
 
+    if (sWorld.m_ac.activated() && GetPlayer()->m_taxi.empty() && !GetPlayer()->hasUnitState(UNIT_STAT_LOST_CONTROL | UNIT_STAT_NOT_MOVE) && !GetPlayer()->IsBeingTeleported() && /*!GetPlayer()->isGameMaster() &&*/ GetPlayer()->m_AC_timer == 0 && recv_data.GetOpcode() != MSG_MOVE_SET_FACING)
+        sWorld.m_ac.execute(new ACRequest(GetPlayer(), GetLatency(), GetPlayer()->m_movementInfo, movementInfo, GetPlayer()->GetLastSpeedRate()));
+
     /*----------------------*/
+    uint8 uiMoveType = 0;
+
+    if (GetPlayer()->IsFlying())
+       uiMoveType = MOVE_FLIGHT;
+    else if (GetPlayer()->IsUnderWater())
+        uiMoveType = MOVE_SWIM;
+    else 
+        uiMoveType = MOVE_RUN;
+
+    GetPlayer()->SetLastSpeedRate(GetPlayer()->GetSpeedRate(UnitMoveType(uiMoveType)));
 
     /* process position-change */
     recv_data.put<uint32>(5, getMSTime());                  // offset flags(4) + unk(1)
@@ -262,10 +275,6 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
     data << GetPlayer()->GetPackGUID();
     data.append(recv_data.contents(), recv_data.size());
     GetPlayer()->SendMessageToSet(&data, false);
-
-    if (sWorld.m_ac.activated() && GetPlayer()->m_taxi.empty() && !GetPlayer()->hasUnitState(UNIT_STAT_LOST_CONTROL) && !GetPlayer()->isGameMaster() && (GetPlayer()->m_AC_timer == 0))
-        sWorld.m_ac.execute(new ACRequest(GetPlayer(), GetAccountId(), GetLatency(),
-                            movementInfo.GetPos()->x, movementInfo.GetPos()->y, movementInfo.GetPos()->z, movementInfo.GetMovementFlags()));
 
     GetPlayer()->SetPosition(movementInfo.GetPos()->x, movementInfo.GetPos()->y, movementInfo.GetPos()->z, movementInfo.GetPos()->o);
     GetPlayer()->m_movementInfo = movementInfo;

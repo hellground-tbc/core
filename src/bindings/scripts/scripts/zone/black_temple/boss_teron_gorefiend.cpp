@@ -177,6 +177,10 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
     {
     }
 
+    void JustDied(Unit *pKiller)
+    {
+        me->RemoveCorpse();
+    }
     void AttackStart(Unit* who)
     {
         // unit or target with posses spirit immune cannot be taken as targets
