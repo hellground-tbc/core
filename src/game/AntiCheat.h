@@ -32,7 +32,7 @@ class ACRequest : public ACE_Method_Request
                 return -1;
 
             // is on taxi
-            if (pPlayer->hasUnitState(UNIT_FLAG_TAXI_FLIGHT))
+            if (pPlayer->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_TAXI_FLIGHT))
                 return -1;
 
             // speed rate differs from prev packet
