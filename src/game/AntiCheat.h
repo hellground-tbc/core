@@ -53,7 +53,7 @@ class ACRequest : public ACE_Method_Request
             float fClientRate = (fDistance2d * 1000 / uiDiffTime) / m_speed;
             float fServerRate = m_speed * uiDiffTime / 1000 +1.0f;
 
-            if (fDistance2d > 0.0f && fClientRate > fServerRate)
+            if (fDistance2d > 0.5f && fClientRate > fServerRate)
             {
                 if (m_speed +0.2 > m_speed*fClientRate)
                     return -1;
