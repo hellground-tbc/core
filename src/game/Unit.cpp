@@ -12482,7 +12482,7 @@ void Unit::KnockBackFrom(Unit* target, float horizintalSpeed, float verticalSpee
     float vcos = cos(angle);
 
     // Effect propertly implemented only for players
-    if(GetTypeId()==TYPEID_PLAYER)
+    if (GetTypeId() == TYPEID_PLAYER)
     {
         WorldPacket data(SMSG_MOVE_KNOCK_BACK, 8+4+4+4+4+4);
         data << GetPackGUID();
@@ -12492,6 +12492,8 @@ void Unit::KnockBackFrom(Unit* target, float horizintalSpeed, float verticalSpee
         data << float(horizintalSpeed);                     // Horizontal speed
         data << float(-verticalSpeed);                      // Z Movement speed (vertical)
         ((Player*)this)->GetSession()->SendPacket(&data);
+
+        ((Player*)this)->m_AC_timer = 5 *IN_MILISECONDS;
     }
     else
     {

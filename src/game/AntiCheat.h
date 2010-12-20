@@ -67,7 +67,7 @@ class ACRequest : public ACE_Method_Request
                     return -1;
 
                 pPlayer->m_AC_count++;
-                pPlayer->m_AC_timer = 1 *MINUTE;
+                pPlayer->m_AC_timer = 5 *IN_MILISECONDS;
                 
                 if (!(pPlayer->m_AC_count %5))
                     sWorld.SendGMText(LANG_ANTICHEAT, pPlayer->GetName(), pPlayer->m_AC_count, m_speed, m_speed*fClientRate);

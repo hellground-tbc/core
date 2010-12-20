@@ -254,7 +254,7 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
         GetPlayer()->SetInWater(!GetPlayer()->IsInWater() || GetPlayer()->GetBaseMap()->IsUnderWater(movementInfo.GetPos()->x, movementInfo.GetPos()->y, movementInfo.GetPos()->z));
     }
 
-    if (sWorld.m_ac.activated() && GetPlayer()->m_taxi.empty() && !GetPlayer()->hasUnitState(UNIT_STAT_LOST_CONTROL | UNIT_STAT_NOT_MOVE) && !GetPlayer()->IsBeingTeleported() && !GetPlayer()->isGameMaster() && GetPlayer()->m_AC_timer == 0 && recv_data.GetOpcode() != MSG_MOVE_SET_FACING)
+    if (sWorld.m_ac.activated() && !GetPlayer()->hasUnitState(UNIT_STAT_LOST_CONTROL | UNIT_STAT_NOT_MOVE) && !GetPlayer()->IsBeingTeleported() && !GetPlayer()->isGameMaster() && GetPlayer()->m_AC_timer == 0 && recv_data.GetOpcode() != MSG_MOVE_SET_FACING)
         sWorld.m_ac.execute(new ACRequest(GetPlayer(), GetLatency(), GetPlayer()->m_movementInfo, movementInfo, GetPlayer()->GetLastSpeedRate()));
 
     /*----------------------*/
