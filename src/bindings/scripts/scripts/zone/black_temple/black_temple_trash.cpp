@@ -3856,7 +3856,7 @@ struct TRINITY_DLL_DECL mob_bonechewer_shield_discipleAI: public ScriptedAI
     {
         if(damage)
         {
-            if(m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 30)
+            if(m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 30 && !m_creature->HasAura(SPELL_SHIELD_WALL, 0))
                 ForceSpellCast(m_creature, SPELL_SHIELD_WALL);
         }
     }
