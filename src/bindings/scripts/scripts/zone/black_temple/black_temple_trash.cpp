@@ -2345,17 +2345,18 @@ struct TRINITY_DLL_DECL mob_illidari_heartseekerAI : public ScriptedAI
             {
                 if(m_creature->GetDistance(target) > 25)
                 {
+                    m_creature->SetSpeed(MOVE_RUN, 2.0);
                     m_creature->GetMotionMaster()->MoveChase(target, 25);
-                    m_creature->SetSpeed(MOVE_RUN, 1,5);
+                    Shoot = 500;
                 }
                 else if(!target->IsWithinDistInMap(m_creature, 5.0))
                 {
                     m_creature->GetMotionMaster()->Clear();
                     m_creature->GetMotionMaster()->MoveIdle();
                     ForceSpellCast(target, SPELL_SHOOT);
+                    Shoot = 1800;
                 }
             }
-            Shoot = 2000;
         }
         else
             Shoot -= diff;
