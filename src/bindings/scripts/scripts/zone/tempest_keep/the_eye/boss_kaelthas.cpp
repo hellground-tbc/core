@@ -1555,7 +1555,8 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
             if (Check_Timer < diff)
             {
                 DoZoneInCombat();
-                Check_Timer = 3000;
+                m_creature->SetSpeed(MOVE_RUN, 2.5f);
+                Check_Timer = 1500;
             }
             else
                 Check_Timer -= diff;

@@ -7,7 +7,7 @@
 
 /* ScriptData
 SDName: Black_Temple_Trash
-SD%Complete: 93% (63/68)
+SD%Complete: 99.9% (68/68)
 SDComment: Trash NPCs divided by to boss links
 SDCategory: Black Temple
 EndScriptData */
@@ -2343,9 +2343,9 @@ struct TRINITY_DLL_DECL mob_illidari_heartseekerAI : public ScriptedAI
         {
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
             {
-                if(m_creature->GetDistance(target) > 30)
+                if(m_creature->GetDistance(target) > 25)
                 {
-                    m_creature->GetMotionMaster()->MoveChase(target, 20, 0);
+                    m_creature->GetMotionMaster()->MoveChase(target, 25);
                     m_creature->SetSpeed(MOVE_RUN, 1,5);
                 }
                 else if(!target->IsWithinDistInMap(m_creature, 5.0))
@@ -5412,6 +5412,12 @@ struct TRINITY_DLL_DECL mob_illidari_assassinAI: public ScriptedAI
     {
         if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
             AttackStart(who);
+    }
+
+    void OnAuraRemove(Aura* Aur, bool stack)
+    {
+        if(Aur->GetId() == SPELL_VANISH)
+            AttackStart(m_creature->getVictim());
     }
 
     void UpdateAI(const uint32 diff)
