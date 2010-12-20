@@ -31,15 +31,23 @@ class ACRequest : public ACE_Method_Request
             if (!pPlayer)
                 return -1;
 
+            // is on taxi
+            if (pPlayer->m_taxi.GetTaxiSource())
+                return -1;
+
+            // speed rate differs from prev packet
             if (m_speedRate != m_lastSpeedRate)
                 return -1;
 
+            // we don't love that movement flags
             if (m_newPacket.GetMovementFlags() & (MOVEMENTFLAG_JUMPING | MOVEMENTFLAG_FALLING | MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_ONTRANSPORT))
                 return -1;
 
+            // charging
             if (pPlayer->hasUnitState(UNIT_STAT_CHARGING))
                 return -1;
 
+            // who is cheating on arena ?
             if (pPlayer->GetMap() && pPlayer->GetMap()->IsBattleGroundOrArena())
                 return -1;
 
@@ -61,7 +69,7 @@ class ACRequest : public ACE_Method_Request
                 pPlayer->m_AC_count++;
                 pPlayer->m_AC_timer = 1 *MINUTE;
                 
-                if (!(pPlayer->m_AC_count %10))
+                if (!(pPlayer->m_AC_count %5))
                     sWorld.SendGMText(LANG_ANTICHEAT, pPlayer->GetName(), pPlayer->m_AC_count);
 
                 sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) moved for distance %f with server speed : %f (client speed: %f). MapID: %u, player's coord before X:%f Y:%f Z:%f. Player's coord now X:%f Y:%f Z:%f. MOVEMENTFLAGS: %u LATENCY: %u",
