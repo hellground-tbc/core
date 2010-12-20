@@ -30,7 +30,10 @@ class ACRequest : public ACE_Method_Request
             Player *pPlayer = objmgr.GetPlayer(m_ownerGUID);
             if (!pPlayer)
                 return -1;
-           
+
+            if (m_speedRate != m_lastSpeedRate)
+                return -1;
+
             if (m_newPacket.GetMovementFlags() & (MOVEMENTFLAG_JUMPING | MOVEMENTFLAG_FALLING | MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_ONTRANSPORT))
                 return -1;
 
