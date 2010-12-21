@@ -248,6 +248,8 @@ class BattleGroundMgr
         uint32 BGTemplateId(uint32 bgQueueTypeId) const;
         uint8 BGArenaType(uint32 bgQueueTypeId) const;
 
+        void ScheduleQueueUpdate(uint32 bgQueueTypeId, uint32 bgTypeId, uint32 bracket_id);
+
         uint32 GetMaxRatingDifference() const {return m_MaxRatingDifference;}
         uint32 GetRatingDiscardTimer() const {return m_RatingDiscardTimer;}
 
@@ -259,6 +261,8 @@ class BattleGroundMgr
 
         void SetHolidayWeekends(uint32 mask);
     private:
+
+        std::vector<uint32> m_QueueUpdateScheduler;
 
         /* Battlegrounds */
         BattleGroundSet m_BattleGrounds;

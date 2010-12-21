@@ -965,7 +965,7 @@ bool BGQueueRemoveEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
             }
             plr->RemoveBattleGroundQueueId(bgQueueTypeId);
             sBattleGroundMgr.m_BattleGroundQueues[bgQueueTypeId].RemovePlayer(m_PlayerGuid, true);
-            sBattleGroundMgr.m_BattleGroundQueues[bgQueueTypeId].Update(bgQueueTypeId, bg->GetQueueType());
+            sBattleGroundMgr.ScheduleQueueUpdate(bgQueueTypeId, bgQueueTypeId, bg->GetQueueType());
             WorldPacket data;
             sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, bg, m_PlayersTeam, queueSlot, STATUS_NONE, 0, 0);
             plr->GetSession()->SendPacket(&data);
@@ -1008,7 +1008,7 @@ BattleGroundMgr::~BattleGroundMgr()
 
 void BattleGroundMgr::DeleteAlllBattleGrounds()
 {
-    for(BattleGroundSet::iterator itr = m_BattleGrounds.begin(); itr != m_BattleGrounds.end();)
+    for (BattleGroundSet::iterator itr = m_BattleGrounds.begin(); itr != m_BattleGrounds.end();)
     {
         BattleGround * bg = itr->second;
         m_BattleGrounds.erase(itr++);
@@ -1016,10 +1016,10 @@ void BattleGroundMgr::DeleteAlllBattleGrounds()
     }
 
     // destroy template battlegrounds that listed only in queues (other already terminated)
-    for(uint32 bgTypeId = 0; bgTypeId < MAX_BATTLEGROUND_TYPE_ID; ++bgTypeId)
+    for (uint32 bgTypeId = 0; bgTypeId < MAX_BATTLEGROUND_TYPE_ID; ++bgTypeId)
     {
         // ~BattleGround call unregistring BG from queue
-        while(!BGFreeSlotQueue[bgTypeId].empty())
+        while (!BGFreeSlotQueue[bgTypeId].empty())
             delete BGFreeSlotQueue[bgTypeId].front();
     }
 }
@@ -1033,9 +1033,6 @@ void BattleGroundMgr::Update(time_t diff)
         next = itr;
         ++next;
         
-        //itr->second->Update(diff);
-        // use the SetDeleteThis variable
-        // direct deletion caused crashes
         if(itr->second->m_SetDeleteThis)
         {
             BattleGround * bg = itr->second;
@@ -1043,8 +1040,23 @@ void BattleGroundMgr::Update(time_t diff)
             delete bg;
         }
     }
+
+    if (!m_QueueUpdateScheduler.empty())
+    {
+         //copy vector and clear the other
+        std::vector<uint32> scheduled(m_QueueUpdateScheduler);
+        m_QueueUpdateScheduler.clear();
+        for (uint8 i = 0; i < scheduled.size(); i++)
+        {
+            BattleGroundQueueTypeId bgQueueTypeId = BattleGroundQueueTypeId(scheduled[i] / 65536);
+            uint32 bgTypeId = uint32((scheduled[i] % 65536) / 256);
+            uint32 bracket_id = uint32(scheduled[i] % 256);
+            m_BattleGroundQueues[bgQueueTypeId].Update(bgTypeId, bracket_id);
+        }
+    }
+
     // if rating difference counts, maybe force-update queues
-    if(m_MaxRatingDifference)
+    if (m_MaxRatingDifference)
     {
         // it's time to force update
         if(m_NextRatingDiscardUpdate < diff)
@@ -1058,13 +1070,14 @@ void BattleGroundMgr::Update(time_t diff)
         else
             m_NextRatingDiscardUpdate -= diff;
     }
-    if(m_AutoDistributePoints)
+
+    if (m_AutoDistributePoints)
     {
         if(m_AutoDistributionTimeChecker < diff)
         {
-            if(time(NULL) > m_NextAutoDistributionTime)
+            if (time(NULL) > m_NextAutoDistributionTime)
             {
-                if(!m_ApAnnounce)
+                if (!m_ApAnnounce)
                 {
                     sWorld.SendWorldText(LANG_SYSTEMMESSAGE, "Distributing arena points to players will be performed in 2 minutes.");
                     m_AutoDistributionTimeChecker = 120000;
@@ -1081,6 +1094,25 @@ void BattleGroundMgr::Update(time_t diff)
         else
             m_AutoDistributionTimeChecker -= diff;
     }
+}
+
+void BattleGroundMgr::ScheduleQueueUpdate(uint32 bgQueueTypeId, uint32 bgTypeId, uint32 bracket_id)
+{
+    //This method must be atomic!
+    //we will use only 1 number created of bgTypeId and bracket_id
+    uint32 schedule_id = (bgQueueTypeId * 65536) + (bgTypeId * 256) + bracket_id;
+    bool found = false;
+    for (uint8 i = 0; i < m_QueueUpdateScheduler.size(); i++)
+    {
+        if (m_QueueUpdateScheduler[i] == schedule_id)
+        {
+            found = true;
+            break;
+        }
+    }
+
+    if (!found)
+        m_QueueUpdateScheduler.push_back(schedule_id);
 }
 
 void BattleGroundMgr::BuildBattleGroundStatusPacket(WorldPacket *data, BattleGround *bg, uint32 team, uint8 QueueSlot, uint8 StatusID, uint32 Time1, uint32 Time2, uint32 arenatype, uint8 israted)
