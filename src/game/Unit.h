@@ -506,7 +506,7 @@ enum UnitFlags
     UNIT_FLAG_UNKNOWN9            = 0x00000040,
     UNIT_FLAG_NOT_ATTACKABLE_1    = 0x00000080,                // ?? (UNIT_FLAG_PVP_ATTACKABLE | UNIT_FLAG_NOT_ATTACKABLE_1) is NON_PVP_ATTACKABLE
     UNIT_FLAG_NOT_ATTACKABLE_2    = 0x00000100,                // not attackable when out of combat
-    UNIT_FLAG_UNKNOWN11           = 0x00000200,
+    UNIT_FLAG_PASSIVE             = 0x00000200,                // makes you unable to attack everything. Almost identical to our "civilian"-term. Will ignore it's surroundings and not engage in combat unless "called upon" or engaged by another unit.
     UNIT_FLAG_LOOTING             = 0x00000400,                // loot animation
     UNIT_FLAG_PET_IN_COMBAT       = 0x00000800,                // in combat?, 2.0.8
     UNIT_FLAG_PVP                 = 0x00001000,
@@ -521,7 +521,7 @@ enum UnitFlags
     UNIT_FLAG_DISARMED            = 0x00200000,                // disable melee spells casting..., "Required melee weapon" added to melee spells tooltip.
     UNIT_FLAG_CONFUSED            = 0x00400000,
     UNIT_FLAG_FLEEING             = 0x00800000,
-    UNIT_FLAG_UNKNOWN5            = 0x01000000,                // used in spell Eyes of the Beast for pet...
+    UNIT_FLAG_PLAYER_CONTROLLED   = 0x01000000,           // used in spell Eyes of the Beast for pet... let attack by controlled creature
     UNIT_FLAG_NOT_SELECTABLE      = 0x02000000,
     UNIT_FLAG_SKINNABLE           = 0x04000000,
     UNIT_FLAG_MOUNT               = 0x08000000,

@@ -12186,7 +12186,7 @@ void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
     if(possess)
     {
         addUnitState(UNIT_STAT_POSSESSED);
-        SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNKNOWN5);
+        SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
         AddPlayerToVision((Player*)charmer);
         ((Player*)charmer)->SetViewport(GetGUID(), true);
         charmer->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
@@ -12238,7 +12238,7 @@ void Unit::RemoveCharmedOrPossessedBy(Unit *charmer)
     if(possess)
     {
         clearUnitState(UNIT_STAT_POSSESSED);
-        RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNKNOWN5);
+        RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
     }
 
     if(GetTypeId() == TYPEID_UNIT)
