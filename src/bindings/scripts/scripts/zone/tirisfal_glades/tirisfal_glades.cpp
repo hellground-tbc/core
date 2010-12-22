@@ -94,17 +94,10 @@ GameObject* SearchMausoleumGo(Unit *source, uint32 entry, float range)
 {
     GameObject* pGo = NULL;
 
-    CellPair pair(Trinity::ComputeCellPair(source->GetPositionX(), source->GetPositionY()));
-    Cell cell(pair);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-
     Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*source, entry, range);
     Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher(pGo, go_check);
 
-    TypeContainerVisitor<Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck>, GridTypeMapContainer> go_searcher(searcher);
-
-    cell.Visit(pair, go_searcher,*(source->GetMap()));
+    Cell::VisitGridObjects(source, searcher, range);
 
     return pGo;
 }

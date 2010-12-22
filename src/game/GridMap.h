@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MANGOS_GRIDMAP_H
-#define MANGOS_GRIDMAP_H
+#ifndef TRINITY_GRIDMAP_H
+#define TRINITY_GRIDMAP_H
 
 #include "Platform/Define.h"
 #include "DBCStructure.h"

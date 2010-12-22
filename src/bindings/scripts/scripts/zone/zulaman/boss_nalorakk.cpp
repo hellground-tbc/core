@@ -162,19 +162,11 @@ struct TRINITY_DLL_DECL boss_nalorakkAI : public ScriptedAI
         std::list<Creature*> templist;
         float x, y, z;
         m_creature->GetPosition(x, y, z);
-
         {
-            CellPair pair(Trinity::ComputeCellPair(x, y));
-            Cell cell(pair);
-            cell.data.Part.reserved = ALL_DISTRICT;
-            cell.SetNoCreate();
-
             Trinity::AllFriendlyCreaturesInGrid check(m_creature);
             Trinity::CreatureListSearcher<Trinity::AllFriendlyCreaturesInGrid> searcher(templist, check);
 
-            TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllFriendlyCreaturesInGrid>, GridTypeMapContainer> cSearcher(searcher);
-
-            cell.Visit(pair, cSearcher, *(m_creature->GetMap()));
+            Cell::VisitGridObjects(me, searcher, me->GetMap()->GetVisibilityDistance());
         }
 
         if(!templist.size())

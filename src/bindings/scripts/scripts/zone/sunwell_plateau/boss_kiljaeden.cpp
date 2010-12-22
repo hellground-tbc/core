@@ -323,15 +323,10 @@ struct TRINITY_DLL_DECL boss_kalecgos_kjAI : public ScriptedAI
 
     void FindOrbs()
     {
-        CellPair pair(Trinity::ComputeCellPair(m_creature->GetPositionX(), m_creature->GetPositionY()));
-        Cell cell(pair);
-        cell.data.Part.reserved = ALL_DISTRICT;
-        cell.SetNoCreate();
         std::list<GameObject*> orbList;
         AllOrbsInGrid check;
         Trinity::GameObjectListSearcher<AllOrbsInGrid> searcher(orbList, check);
-        TypeContainerVisitor<Trinity::GameObjectListSearcher<AllOrbsInGrid>, GridTypeMapContainer> visitor(searcher);
-        cell.Visit(pair, visitor, *(m_creature->GetMap()));
+        Cell::VisitGridObjects(me, searcher, me->GetMap()->GetVisibilityDistance());
         if(orbList.empty())
             return;
         uint8 i = 0;

@@ -9152,7 +9152,8 @@ void Unit::DestroyForNearbyPlayers()
     std::list<Unit*> targets;
     Trinity::AnyUnitInObjectRangeCheck check(this, GetMap()->GetVisibilityDistance());
     Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(targets, check);
-    VisitNearbyWorldObject(GetMap()->GetVisibilityDistance(), searcher);
+    Cell::VisitWorldObjects(this, searcher, GetMap()->GetVisibilityDistance());
+    
     for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
         if(*iter != this && (*iter)->GetTypeId() == TYPEID_PLAYER
             && ((Player*)(*iter))->HaveAtClient(this))
@@ -11234,7 +11235,8 @@ Unit* Unit::SelectNearbyTarget(float dist) const
     std::list<Unit *> targets;
     Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(this, this, dist);
     Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(targets, u_check);
-    VisitNearbyObject(dist, searcher);
+    
+    Cell::VisitWorldObjects(this, searcher, dist);
 
     // remove current target
     if(getVictim())

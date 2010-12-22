@@ -1906,7 +1906,7 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
         float range = 20.0f;
         Trinity::AnyUnitInObjectRangeCheck check(m_creature, range);
         Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(targets, check);
-        me->VisitNearbyWorldObject(range, searcher);
+        Cell::VisitAllObjects(me, searcher, range);
     }
 
     void StartEvent()
@@ -3282,9 +3282,10 @@ struct TRINITY_DLL_DECL mob_deathbringer_joovanAI : public ScriptedAI
                         WarbringerSay(WARBRINGER_SAY4);
 
                         std::list<Unit*> pList;
-                        Trinity::AnyUnitInObjectRangeCheck u_check(me, 20);
+                        Trinity::AnyUnitInObjectRangeCheck u_check(me, 20.0f);
                         Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(pList, u_check);
-                        me->VisitNearbyObject(20, searcher);
+
+                        Cell::VisitWorldObjects(me, searcher, 20.0f);
 
                         Creature* warbringer = (Creature*)me->GetUnit(*me, ImageOfWarbringerGUID);
                         if(!warbringer)

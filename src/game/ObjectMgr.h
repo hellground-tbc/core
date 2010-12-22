@@ -123,7 +123,7 @@ typedef UNORDERED_MAP<uint32/*(mapid,spawnMode) pair*/,CellObjectGuidsMap> MapOb
 typedef UNORDERED_MAP<uint64/*(instance,guid) pair*/,time_t> RespawnTimes;
 
 // trinity string ranges
-#define MIN_TRINITY_STRING_ID           1                    // 'mangos_string'
+#define MIN_TRINITY_STRING_ID           1                    // 'TRINITY_string'
 #define MAX_TRINITY_STRING_ID           2000000000
 #define MIN_DB_SCRIPT_STRING_ID        MAX_TRINITY_STRING_ID // 'db_script_string'
 #define MAX_DB_SCRIPT_STRING_ID        2000010000

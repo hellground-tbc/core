@@ -1945,27 +1945,23 @@ void Creature::DoFleeToGetAssistance()
     if (!getVictim())
         return;
 
-    if(HasAuraType(SPELL_AURA_PREVENTS_FLEEING))
+    if (HasAuraType(SPELL_AURA_PREVENTS_FLEEING))
         return;
 
     float radius = sWorld.getConfig(CONFIG_CREATURE_FAMILY_FLEE_ASSISTANCE_RADIUS);
-    if (radius >0)
+    if (radius > 0)
     {
         Creature* pCreature = NULL;
 
-        CellPair p(Trinity::ComputeCellPair(GetPositionX(), GetPositionY()));
-        Cell cell(p);
-        cell.data.Part.reserved = ALL_DISTRICT;
-        cell.SetNoCreate();
         Trinity::NearestAssistCreatureInCreatureRangeCheck u_check(this, getVictim(), radius);
         Trinity::CreatureLastSearcher<Trinity::NearestAssistCreatureInCreatureRangeCheck> searcher(pCreature, u_check);
-
-        TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestAssistCreatureInCreatureRangeCheck>, GridTypeMapContainer > grid_creature_searcher(searcher);
-
-        cell.Visit(p, grid_creature_searcher, *GetMap(), *this, radius);
+        
+        Cell::VisitGridObjects(this, searcher, radius);
 
         SetNoSearchAssistance(true);
-        if(!pCreature)
+        UpdateSpeed(MOVE_RUN, false);
+
+        if (!pCreature)
             SetControlled(true, UNIT_STAT_FLEEING);
         else
             GetMotionMaster()->MoveSeekAssistance(pCreature->GetPositionX(), pCreature->GetPositionY(), pCreature->GetPositionZ());
@@ -1974,22 +1970,12 @@ void Creature::DoFleeToGetAssistance()
 
 Unit* Creature::SelectNearestTarget(float dist) const
 {
-    CellPair p(Trinity::ComputeCellPair(GetPositionX(), GetPositionY()));
-    Cell cell(p);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-
     Unit *target = NULL;
-
     {
         Trinity::NearestHostileUnitInAttackDistanceCheck u_check(this, dist);
         Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAttackDistanceCheck> searcher(target, u_check);
 
-        TypeContainerVisitor<Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAttackDistanceCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
-        TypeContainerVisitor<Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAttackDistanceCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
-
-        cell.Visit(p, world_unit_searcher, *GetMap(), *this, 5.0f);
-        cell.Visit(p, grid_unit_searcher, *GetMap(), *this, 5.0f);
+        Cell::VisitAllObjects(this, searcher, dist);
     }
 
     return target;
@@ -2000,7 +1986,7 @@ void Creature::CallAssistance()
     if (!getVictim() || isPet() || isCharmed())
         return;
 
-    if(CreatureGroup *formation = GetFormation())
+    if (CreatureGroup *formation = GetFormation())
     {
         formation->MemberAttackStart(this, getVictim());
     }
@@ -2012,21 +1998,14 @@ void Creature::CallAssistance()
         SetNoCallAssistance(true);
 
         float radius = sWorld.getConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS);
-        if(radius > 0)
+        if (radius > 0)
         {
             std::list<Creature*> assistList;
             {
-                CellPair p(Trinity::ComputeCellPair(GetPositionX(), GetPositionY()));
-                Cell cell(p);
-                cell.data.Part.reserved = ALL_DISTRICT;
-                cell.SetNoCreate();
-
                 Trinity::AnyAssistCreatureInRangeCheck u_check(this, getVictim(), radius);
                 Trinity::CreatureListSearcher<Trinity::AnyAssistCreatureInRangeCheck> searcher(assistList, u_check);
 
-                TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AnyAssistCreatureInRangeCheck>, GridTypeMapContainer >  grid_creature_searcher(searcher);
-
-                cell.Visit(p, grid_creature_searcher, *GetMap(), *this, radius);
+                Cell::VisitGridObjects(this, searcher, radius);
             }
 
             if (!assistList.empty())
@@ -2049,31 +2028,24 @@ void Creature::CallForHelp(float fRadius)
     if (fRadius <= 0.0f || !getVictim() || isPet() || isCharmed())
         return;
 
-    CellPair p(Trinity::ComputeCellPair(GetPositionX(), GetPositionY()));
-    Cell cell(p);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-
     Trinity::CallOfHelpCreatureInRangeDo u_do(this, getVictim(), fRadius);
     Trinity::CreatureWorker<Trinity::CallOfHelpCreatureInRangeDo> worker(this, u_do);
 
-    TypeContainerVisitor<Trinity::CreatureWorker<Trinity::CallOfHelpCreatureInRangeDo>, GridTypeMapContainer >  grid_creature_searcher(worker);
-
-    cell.Visit(p, grid_creature_searcher, *GetMap(), *this, fRadius);
+    Cell::VisitGridObjects(this,worker, fRadius);
 }
 
 bool Creature::CanAssistTo(const Unit* u, const Unit* enemy, bool checkfaction /*= true*/) const
 {
     // is it true?
-    if(!HasReactState(REACT_AGGRESSIVE))
+    if (!HasReactState(REACT_AGGRESSIVE))
         return false;
 
     // we don't need help from zombies :)
-    if( !isAlive() )
+    if (!isAlive())
         return false;
 
     // skip fighting creature
-    if( isInCombat() )
+    if (isInCombat())
         return false;
 
     // only from same creature faction
@@ -2089,11 +2061,11 @@ bool Creature::CanAssistTo(const Unit* u, const Unit* enemy, bool checkfaction /
     }
 
     // only free creature
-    if( GetCharmerOrOwnerGUID() )
+    if (GetCharmerOrOwnerGUID())
         return false;
 
     // skip non hostile to caster enemy creatures
-    if( !IsHostileTo(enemy) )
+    if (!IsHostileTo(enemy))
         return false;
 
     return true;
@@ -2101,10 +2073,10 @@ bool Creature::CanAssistTo(const Unit* u, const Unit* enemy, bool checkfaction /
 
 void Creature::SaveRespawnTime()
 {
-    if(isPet() || !m_DBTableGuid)
+    if (isPet() || !m_DBTableGuid)
         return;
 
-    if(m_respawnTime > time(NULL))                          // dead (no corpse)
+    if (m_respawnTime > time(NULL))                          // dead (no corpse)
         objmgr.SaveCreatureRespawnTime(m_DBTableGuid,GetInstanceId(),m_respawnTime);
     else if(m_deathTimer > 0)                               // dead (corpse)
         objmgr.SaveCreatureRespawnTime(m_DBTableGuid,GetInstanceId(),time(NULL)+m_respawnDelay+m_deathTimer/1000);
@@ -2112,22 +2084,19 @@ void Creature::SaveRespawnTime()
 
 bool Creature::IsOutOfThreatArea(Unit* pVictim) const
 {
-    if(!pVictim)
+    if (!pVictim)
         return true;
 
-    if(!pVictim->IsInMap(this))
+    if (!pVictim->IsInMap(this))
         return true;
 
-    if(!canAttack(pVictim))
+    if (!canAttack(pVictim))
         return true;
 
-//    if (!pVictim->isVisibleForOrDetect(this,false))
-//        return true;
-
-    if(!pVictim->isInAccessiblePlaceFor(this))
+    if (!pVictim->isInAccessiblePlaceFor(this))
         return true;
 
-    if(sMapStore.LookupEntry(GetMapId())->IsDungeon())
+    if (sMapStore.LookupEntry(GetMapId())->IsDungeon())
         return false;
 
     float length = pVictim->GetDistance(mHome_X, mHome_Y, mHome_Z);
@@ -2135,7 +2104,7 @@ bool Creature::IsOutOfThreatArea(Unit* pVictim) const
     uint32 ThreatRadius = sWorld.getConfig(CONFIG_THREAT_RADIUS);
 
     //Use AttackDistance in distance check if threat radius is lower. This prevents creature bounce in and out of combat every update tick.
-    return ( length > (ThreatRadius > AttackDist ? ThreatRadius : AttackDist));
+    return (length > (ThreatRadius > AttackDist ? ThreatRadius : AttackDist));
 }
 
 CreatureDataAddon const* Creature::GetCreatureAddon() const
@@ -2154,7 +2123,7 @@ CreatureDataAddon const* Creature::GetCreatureAddon() const
 bool Creature::LoadCreaturesAddon(bool reload)
 {
     CreatureDataAddon const *cainfo = GetCreatureAddon();
-    if(!cainfo)
+    if (!cainfo)
         return false;
 
     if (cainfo->mount != 0)
@@ -2179,7 +2148,7 @@ bool Creature::LoadCreaturesAddon(bool reload)
     if (cainfo->path_id != 0)
         m_path_id = cainfo->path_id;
 
-    if(cainfo->auras)
+    if (cainfo->auras)
     {
         for (CreatureDataAddonAura const* cAura = cainfo->auras; cAura->spell_id; ++cAura)
         {
@@ -2238,7 +2207,7 @@ void Creature::SetInCombatWithZone()
     if (PlList.isEmpty())
         return;
 
-    for(Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
+    for (Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
     {
         if (Player* pPlayer = i->getSource())
         {

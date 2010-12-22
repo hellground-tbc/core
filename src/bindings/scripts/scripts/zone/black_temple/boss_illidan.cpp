@@ -1547,18 +1547,11 @@ bool GOHello_cage_trap(Player* plr, GameObject* go)
 
     Creature* trigger = NULL;
 
-    CellPair pair(Trinity::ComputeCellPair(x, y));
-    Cell cell(pair);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-
     // Grid search for nearest live creature of entry 23304 within 10 yards
     Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck check(*plr, 23304, true, 10);
     Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(trigger, check);
 
-    TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> cSearcher(searcher);
-
-    cell.Visit(pair, cSearcher, *(plr->GetMap()));
+    Cell::VisitGridObjects(plr, searcher, 10.0);
 
     if(trigger)
         ((cage_trap_triggerAI*)trigger->AI())->Active = true;

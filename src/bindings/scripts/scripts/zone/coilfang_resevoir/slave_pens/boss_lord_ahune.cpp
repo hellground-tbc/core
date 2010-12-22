@@ -337,7 +337,7 @@ struct TRINITY_DLL_DECL npc_ice_spear_bunnyAI : public Scripted_NoMovementAI
         uint32 knockbackRadius = 3;
         Trinity::AnyUnitInObjectRangeCheck  check(me, knockbackRadius);
         Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck > searcher(PlayerList, check);
-        me->VisitNearbyWorldObject(knockbackRadius, searcher);
+        Cell::VisitWorldObjects(me, searcher, knockbackRadius);
 
         for(std::list<Unit*>::iterator i = PlayerList.begin(); i != PlayerList.end(); i++)
         {

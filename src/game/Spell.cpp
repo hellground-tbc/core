@@ -438,9 +438,11 @@ void Spell::FillTargetMap()
 
                             Trinity::CannibalizeObjectCheck u_check(m_caster, max_range);
                             Trinity::WorldObjectSearcher<Trinity::CannibalizeObjectCheck > searcher(result, u_check);
-                            m_caster->VisitNearbyGridObject(max_range, searcher);
-                            if(!result)
-                                m_caster->VisitNearbyWorldObject(max_range, searcher);
+                            
+                            Cell::VisitGridObjects(m_caster, searcher, max_range);
+                            
+                            if (!result)
+                                Cell::VisitWorldObjects(m_caster, searcher, max_range);
 
 
                             if(result)
@@ -1433,21 +1435,19 @@ void Spell::SearchAreaTarget(std::list<Unit*> &TagUnitMap, float radius, const u
         case SPELL_TARGET_TYPE_CREATURE:
         {
             Trinity::SpellNotifierCreatureAndPlayer notifier(*this, TagUnitMap, radius, type, TargetType, entry, x, y, z);
-            if((m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY)
-                || TargetType == SPELL_TARGETS_ENTRY && !entry)
-                m_caster->GetMap()->VisitWorld(x, y, radius, notifier);
+            if((m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY) || TargetType == SPELL_TARGETS_ENTRY && !entry)
+                Cell::VisitWorldObjects(x, y, m_caster->GetMap(), notifier, radius);
             else
-                m_caster->GetMap()->VisitAll(x, y, radius, notifier);
+                Cell::VisitAllObjects(x, y, m_caster->GetMap(), notifier, radius);
             break;
         }
         case SPELL_TARGET_TYPE_DEAD:
         {
             Trinity::SpellNotifierDeadCreature notifier(*this, TagUnitMap, radius, type, TargetType, entry, x, y, z);
-            if((m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY)
-                || TargetType == SPELL_TARGETS_ENTRY && !entry)
-                m_caster->GetMap()->VisitWorld(x, y, radius, notifier);
+            if((m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY) || TargetType == SPELL_TARGETS_ENTRY && !entry)
+                Cell::VisitWorldObjects(x, y, m_caster->GetMap(), notifier, radius);
             else
-                m_caster->GetMap()->VisitAll(x, y, radius, notifier);
+                Cell::VisitAllObjects(x, y, m_caster->GetMap(), notifier, radius);
             break;
         }
         default:
@@ -1500,18 +1500,13 @@ void Spell::SearchAreaTarget(std::list<GameObject*> &goList, float radius, const
             if((m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY) || TargetType == SPELL_TARGETS_ENTRY && !entry)
             {
                 Trinity::SpellNotifierGameObject notifier(*this, goList, radius, type, TargetType, entry, x, y, z);
-                m_caster->GetMap()->VisitWorld(x, y, radius, notifier);
+                Cell::VisitWorldObjects(x, y, m_caster->GetMap(), notifier, radius);
             }
             else
             {
-                CellPair pair(Trinity::ComputeCellPair(m_caster->GetPositionX(), m_caster->GetPositionY()));
-                Cell cell(pair);
-                cell.data.Part.reserved = ALL_DISTRICT;
-                cell.SetNoCreate();
                 Trinity::AllGameObjectsWithEntryInGrid go_check(entry);
                 Trinity::GameObjectListSearcher<Trinity::AllGameObjectsWithEntryInGrid> go_search(goList, go_check);
-                TypeContainerVisitor<Trinity::GameObjectListSearcher<Trinity::AllGameObjectsWithEntryInGrid>, GridTypeMapContainer> go_visit(go_search);
-                cell.Visit(pair, go_visit, *(m_caster->GetMap()));
+                Cell::VisitGridObjects(x, y, m_caster->GetMap(), go_search, radius);
             }
             break;
         }
@@ -1553,7 +1548,8 @@ WorldObject* Spell::SearchNearbyTarget(float range, SpellTargets TargetType)
                         {
                             Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*m_caster,i_spellST->second.targetEntry,range);
                             Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> checker(p_GameObject,go_check);
-                            m_caster->VisitNearbyGridObject(range, checker);
+                            
+                            Cell::VisitGridObjects(m_caster, checker, range);
 
                             if(p_GameObject)
                             {
@@ -1583,7 +1579,7 @@ WorldObject* Spell::SearchNearbyTarget(float range, SpellTargets TargetType)
 
                         Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck u_check(*m_caster,i_spellST->second.targetEntry,i_spellST->second.type!=SPELL_TARGET_TYPE_DEAD,range);
                         Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(p_Creature, u_check);
-                        m_caster->VisitNearbyObject(range, searcher);
+                         Cell::VisitGridObjects(m_caster, searcher, range);
 
                         if(p_Creature )
                         {
@@ -1607,7 +1603,8 @@ WorldObject* Spell::SearchNearbyTarget(float range, SpellTargets TargetType)
             Unit *target = NULL;
             Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(m_caster, m_caster, range);
             Trinity::UnitLastSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(target, u_check);
-            m_caster->VisitNearbyObject(range, searcher);
+
+            Cell::VisitWorldObjects(m_caster, searcher, range);
             return target;
         }
         case SPELL_TARGETS_ALLY:
@@ -1615,7 +1612,8 @@ WorldObject* Spell::SearchNearbyTarget(float range, SpellTargets TargetType)
             Unit *target = NULL;
             Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(m_caster, m_caster, range);
             Trinity::UnitLastSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(target, u_check);
-            m_caster->VisitNearbyObject(range, searcher);
+
+            Cell::VisitWorldObjects(m_caster, searcher, range);
             return target;
         }
     }
@@ -4883,19 +4881,13 @@ uint8 Spell::CheckItems()
 
     if(m_spellInfo->RequiresSpellFocus)
     {
-        CellPair p(Trinity::ComputeCellPair(m_caster->GetPositionX(), m_caster->GetPositionY()));
-        Cell cell(p);
-        cell.data.Part.reserved = ALL_DISTRICT;
-
         GameObject* ok = NULL;
         Trinity::GameObjectFocusCheck go_check(m_caster,m_spellInfo->RequiresSpellFocus);
         Trinity::GameObjectSearcher<Trinity::GameObjectFocusCheck> checker(ok,go_check);
 
-        TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectFocusCheck>, GridTypeMapContainer > object_checker(checker);
-        Map& map = *m_caster->GetMap();
-        cell.Visit(p, object_checker, map, *m_caster, map.GetVisibilityDistance());
+        Cell::VisitGridObjects(m_caster, checker, m_caster->GetMap()->GetVisibilityDistance());
 
-        if(!ok)
+        if (!ok)
             return (uint8)SPELL_FAILED_REQUIRES_SPELL_FOCUS;
 
         focusObject = ok;                                   // game object found in range

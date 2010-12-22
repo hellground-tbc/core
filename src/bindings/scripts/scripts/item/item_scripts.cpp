@@ -141,16 +141,10 @@ bool ItemUse_item_draenei_fishing_net(Player *player, Item* _Item, SpellCastTarg
     {
         GameObject* pGo = NULL;
 
-        CellPair pair(Trinity::ComputeCellPair(player->GetPositionX(), player->GetPositionY()));
-        Cell cell(pair);
-        cell.data.Part.reserved = ALL_DISTRICT;
-        cell.SetNoCreate();
-
         Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*player, 181616, 10);
         Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher(pGo, go_check);
-        TypeContainerVisitor<Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck>, GridTypeMapContainer> go_searcher(searcher);
 
-        cell.Visit(pair, go_searcher,*(player->GetMap()));
+        Cell::VisitGridObjects(player, searcher, 10.0f);
 
         if(!pGo)
             return true;

@@ -6129,31 +6129,24 @@ bool ChatHandler::HandleRespawnCommand(const char* /*args*/)
 
     // accept only explicitly selected target (not implicitly self targeting case)
     Unit* target = getSelectedUnit();
-    if(pl->GetSelection() && target)
+    if (pl->GetSelection() && target)
     {
-        if(target->GetTypeId()!=TYPEID_UNIT)
+        if (target->GetTypeId()!=TYPEID_UNIT)
         {
             SendSysMessage(LANG_SELECT_CREATURE);
             SetSentErrorMessage(true);
             return false;
         }
 
-        if(target->isDead())
+        if (target->isDead())
             ((Creature*)target)->Respawn();
         return true;
     }
 
-    CellPair p(Trinity::ComputeCellPair(pl->GetPositionX(), pl->GetPositionY()));
-    Cell cell(p);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-
     Trinity::RespawnDo u_do;
     Trinity::WorldObjectWorker<Trinity::RespawnDo> worker(u_do);
 
-    TypeContainerVisitor<Trinity::WorldObjectWorker<Trinity::RespawnDo>, GridTypeMapContainer > obj_worker(worker);
-    cell.Visit(p, obj_worker, *pl->GetMap());
-
+    Cell::VisitGridObjects(pl, worker, pl->GetMap()->GetVisibilityDistance());
     return true;
 }
 
@@ -7648,7 +7641,8 @@ bool ChatHandler::HandleNearGridObjectCommand(const char* args)
     std::list<GameObject*> tmpL;
     Trinity::AllGameObjectsInRange go_check(m_session->GetPlayer(), 20.0f);
     Trinity::GameObjectListSearcher<Trinity::AllGameObjectsInRange> searcher(tmpL, go_check);
-    m_session->GetPlayer()->VisitNearbyObject(20, searcher);
+    
+    Cell::VisitWorldObjects(m_session->GetPlayer(), searcher, 20.0f);
 
     PSendSysMessage("All Game Objects in 20 yd range:");
     PSendSysMessage("--------------------------------");

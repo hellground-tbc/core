@@ -992,21 +992,11 @@ void hyjalAI::JustDied(Unit* killer)
 }
 void hyjalAI::HideNearPos(float x, float y)
 {
-    CellPair pair(Trinity::ComputeCellPair(x, y));
-    Cell cell(pair);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-
     // First get all creatures.
     std::list<Creature*> creatures;
     Trinity::AllFriendlyCreaturesInGrid creature_check(m_creature);
     Trinity::CreatureListSearcher<Trinity::AllFriendlyCreaturesInGrid> creature_searcher(creatures, creature_check);
-    TypeContainerVisitor
-        <Trinity::CreatureListSearcher<Trinity::AllFriendlyCreaturesInGrid>,
-        GridTypeMapContainer> creature_visitor(creature_searcher);
-
-    // Get Creatures
-    cell.Visit(pair, creature_visitor, *(m_creature->GetMap()));
+    Cell::VisitGridObjects(me, creature_searcher, me->GetMap()->GetVisibilityDistance());
 
     if(!creatures.empty())
     {
@@ -1020,15 +1010,9 @@ void hyjalAI::HideNearPos(float x, float y)
 
 void hyjalAI::RespawnNearPos(float x, float y)
 {
-    CellPair p(Trinity::ComputeCellPair(x, y));
-    Cell cell(p);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-
     Trinity::RespawnDo u_do;
     Trinity::WorldObjectWorker<Trinity::RespawnDo> worker(u_do);
-    TypeContainerVisitor<Trinity::WorldObjectWorker<Trinity::RespawnDo>, GridTypeMapContainer > obj_worker(worker);
-    cell.Visit(p, obj_worker, *m_creature->GetMap());
+    Cell::VisitGridObjects(me, worker, me->GetMap()->GetVisibilityDistance());
 }
 
 void hyjalAI::WaypointReached(uint32 i)
@@ -1051,22 +1035,11 @@ void hyjalAI::WaypointReached(uint32 i)
                 Dummy->CastSpell(m_creature,SPELL_MASS_TELEPORT,false);
             }
         }
-        //do some talking
-        //all alive guards walk near here
-        CellPair pair(Trinity::ComputeCellPair(m_creature->GetPositionX(), m_creature->GetPositionY()));
-        Cell cell(pair);
-        cell.data.Part.reserved = ALL_DISTRICT;
-        cell.SetNoCreate();
-
         // First get all creatures.
         std::list<Creature*> creatures;
         Trinity::AllFriendlyCreaturesInGrid creature_check(m_creature);
         Trinity::CreatureListSearcher<Trinity::AllFriendlyCreaturesInGrid> creature_searcher(creatures, creature_check);
-        TypeContainerVisitor
-            <Trinity::CreatureListSearcher<Trinity::AllFriendlyCreaturesInGrid>,
-            GridTypeMapContainer> creature_visitor(creature_searcher);
-
-        cell.Visit(pair, creature_visitor, *(m_creature->GetMap()));
+        Cell::VisitGridObjects(me, creature_searcher, me->GetMap()->GetVisibilityDistance());
 
         if(!creatures.empty())
         {
@@ -1096,19 +1069,10 @@ void hyjalAI::DoOverrun(uint32 faction, const uint32 diff)
     {
         if(TeleportTimer < diff)
         {
-            CellPair pair(Trinity::ComputeCellPair(m_creature->GetPositionX(), m_creature->GetPositionY()));
-            Cell cell(pair);
-            cell.data.Part.reserved = ALL_DISTRICT;
-            cell.SetNoCreate();
-
             std::list<Creature*> creatures;
             Trinity::AllFriendlyCreaturesInGrid creature_check(m_creature);
             Trinity::CreatureListSearcher<Trinity::AllFriendlyCreaturesInGrid> creature_searcher(creatures, creature_check);
-            TypeContainerVisitor
-                <Trinity::CreatureListSearcher<Trinity::AllFriendlyCreaturesInGrid>,
-                GridTypeMapContainer> creature_visitor(creature_searcher);
-
-            cell.Visit(pair, creature_visitor, *(m_creature->GetMap()));
+            Cell::VisitGridObjects(me, creature_searcher, me->GetMap()->GetVisibilityDistance());
 
             if(!creatures.empty())
             {

@@ -184,22 +184,12 @@ struct TRINITY_DLL_DECL boss_akilzonAI : public ScriptedAI
             for(uint8 i = 2; i < StormCount; ++i)
                 bp0 *= 2;
 
-            CellPair p(Trinity::ComputeCellPair(m_creature->GetPositionX(), m_creature->GetPositionY()));
-            Cell cell(p);
-            cell.data.Part.reserved = ALL_DISTRICT;
-            cell.SetNoCreate();
-
             std::list<Unit *> tempUnitMap;
 
             {
                 Trinity::AnyAoETargetUnitInObjectRangeCheck u_check(m_creature, m_creature, 999);
                 Trinity::UnitListSearcher<Trinity::AnyAoETargetUnitInObjectRangeCheck> searcher(tempUnitMap, u_check);
-
-                TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyAoETargetUnitInObjectRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
-                TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyAoETargetUnitInObjectRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
-
-                cell.Visit(p, world_unit_searcher, *(m_creature->GetMap()));
-                cell.Visit(p, grid_unit_searcher, *(m_creature->GetMap()));
+                Cell::VisitAllObjects(me, searcher, 999);
             }
             //dealdamege
             for(std::list<Unit*>::iterator i = tempUnitMap.begin(); i != tempUnitMap.end(); ++i)

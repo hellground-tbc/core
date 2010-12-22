@@ -1,7 +1,5 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2010 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -10,12 +8,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 #ifndef TRINITY_CELL_H
@@ -29,38 +27,21 @@
 class Map;
 class WorldObject;
 
-enum District
-{
-    UPPER_DISTRICT = 1,
-    LOWER_DISTRICT = 1 << 1,
-    LEFT_DISTRICT  = 1 << 2,
-    RIGHT_DISTRICT = 1 << 3,
-    CENTER_DISTRICT = 1 << 4,
-    UPPER_LEFT_DISTRICT = (UPPER_DISTRICT | LEFT_DISTRICT),
-    UPPER_RIGHT_DISTRICT = (UPPER_DISTRICT | RIGHT_DISTRICT),
-    LOWER_LEFT_DISTRICT = (LOWER_DISTRICT | LEFT_DISTRICT),
-    LOWER_RIGHT_DISTRICT = (LOWER_DISTRICT | RIGHT_DISTRICT),
-    ALL_DISTRICT = (UPPER_DISTRICT | LOWER_DISTRICT | LEFT_DISTRICT | RIGHT_DISTRICT | CENTER_DISTRICT)
-};
-
 struct TRINITY_DLL_DECL CellArea
 {
-    CellArea() : right_offset(0), left_offset(0), upper_offset(0), lower_offset(0) {}
-    CellArea(int right, int left, int upper, int lower) : right_offset(right), left_offset(left), upper_offset(upper), lower_offset(lower) {}
-    bool operator!() const { return !right_offset && !left_offset && !upper_offset && !lower_offset; }
+    CellArea() {}
+    CellArea(CellPair low, CellPair high) : low_bound(low), high_bound(high) {}
+
+    bool operator!() const { return low_bound == high_bound; }
 
     void ResizeBorders(CellPair& begin_cell, CellPair& end_cell) const
     {
-        begin_cell << left_offset;
-        begin_cell -= lower_offset;
-        end_cell >> right_offset;
-        end_cell += upper_offset;
+        begin_cell = low_bound;
+        end_cell = high_bound;
     }
 
-    int right_offset;
-    int left_offset;
-    int upper_offset;
-    int lower_offset;
+    CellPair low_bound;
+    CellPair high_bound;
 };
 
 struct TRINITY_DLL_DECL Cell
@@ -69,56 +50,19 @@ struct TRINITY_DLL_DECL Cell
     Cell(const Cell &cell) { data.All = cell.data.All; }
     explicit Cell(CellPair const& p);
 
-    void operator|=(Cell &cell)
-    {
-        data.Part.reserved = 0;
-        cell.data.Part.reserved = 0;
-        uint32 x, y, old_x, old_y;
-        Compute(x, y);
-        cell.Compute(old_x, old_y);
-
-        if( std::abs(int(x-old_x)) > 1 || std::abs(int(y-old_y)) > 1)
-        {
-            data.Part.reserved = ALL_DISTRICT;
-            cell.data.Part.reserved = ALL_DISTRICT;
-            return;
-        }
-
-        if( x < old_x )
-        {
-            data.Part.reserved |= LEFT_DISTRICT;
-            cell.data.Part.reserved |= RIGHT_DISTRICT;
-        }
-        else if( old_x < x )
-        {
-            data.Part.reserved |= RIGHT_DISTRICT;
-            cell.data.Part.reserved |= LEFT_DISTRICT;
-        }
-        if( y < old_y )
-        {
-            data.Part.reserved |= UPPER_DISTRICT;
-            cell.data.Part.reserved |= LOWER_DISTRICT;
-        }
-        else if( old_y < y )
-        {
-            data.Part.reserved |= LOWER_DISTRICT;
-            cell.data.Part.reserved |= UPPER_DISTRICT;
-        }
-    }
-
     void Compute(uint32 &x, uint32 &y) const
     {
         x = data.Part.grid_x*MAX_NUMBER_OF_CELLS + data.Part.cell_x;
         y = data.Part.grid_y*MAX_NUMBER_OF_CELLS + data.Part.cell_y;
     }
 
-    inline bool DiffCell(const Cell &cell) const
+    bool DiffCell(const Cell &cell) const
     {
         return( data.Part.cell_x != cell.data.Part.cell_x ||
             data.Part.cell_y != cell.data.Part.cell_y );
     }
 
-    inline bool DiffGrid(const Cell &cell) const
+    bool DiffGrid(const Cell &cell) const
     {
         return( data.Part.grid_x != cell.data.Part.grid_x ||
             data.Part.grid_y != cell.data.Part.grid_y );
@@ -131,6 +75,8 @@ struct TRINITY_DLL_DECL Cell
     bool NoCreate() const { return data.Part.nocreate; }
     void SetNoCreate() { data.Part.nocreate = 1; }
 
+    GridPair gridPair() const { return GridPair(GridX(),GridY()); }
+
     CellPair cellPair() const
     {
         return CellPair(
@@ -140,7 +86,7 @@ struct TRINITY_DLL_DECL Cell
 
     Cell& operator=(const Cell &cell)
     {
-        this->data.All = cell.data.All;
+        data.All = cell.data.All;
         return *this;
     }
 
@@ -160,11 +106,10 @@ struct TRINITY_DLL_DECL Cell
         uint32 All;
     } data;
 
-    template<class T, class CONTAINER> void Visit(const CellPair &, TypeContainerVisitor<T, CONTAINER> &visitor, Map &) const;
-    template<class T, class CONTAINER> void Visit(const CellPair &, TypeContainerVisitor<T, CONTAINER> &visitor, Map &, float radius, float x_off, float y_off) const;
-    template<class T, class CONTAINER> void Visit(const CellPair &, TypeContainerVisitor<T, CONTAINER> &visitor, Map &m, const WorldObject &obj, float radius) const;
+    template<class T, class CONTAINER> void Visit(const CellPair &cellPair, TypeContainerVisitor<T, CONTAINER> &visitor, Map &m, float x, float y, float radius) const;
+    template<class T, class CONTAINER> void Visit(const CellPair &cellPair, TypeContainerVisitor<T, CONTAINER> &visitor, Map &m, const WorldObject& obj, float radius) const;
 
-    static CellArea CalculateCellArea(const WorldObject &obj, float radius);
+    static CellArea CalculateCellArea(float x, float y, float radius);
 
     template<class T> static void VisitGridObjects(const WorldObject *obj, T &visitor, float radius, bool dont_load = true);
     template<class T> static void VisitWorldObjects(const WorldObject *obj, T &visitor, float radius, bool dont_load = true);
@@ -175,8 +120,7 @@ struct TRINITY_DLL_DECL Cell
     template<class T> static void VisitAllObjects(float x, float y, Map *map, T &visitor, float radius, bool dont_load = true);
 
 private:
-    template<class T, class CONTAINER> void VisitCircle(const CellPair &, TypeContainerVisitor<T, CONTAINER> &, Map &, const CellPair& , const CellPair& ) const;
+    template<class T, class CONTAINER> void VisitCircle(TypeContainerVisitor<T, CONTAINER> &, Map &, const CellPair& , const CellPair& ) const;
 };
 
 #endif
-

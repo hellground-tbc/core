@@ -76,6 +76,7 @@ volatile uint32 World::m_worldLoopCounter = 0;
 
 float World::m_MaxVisibleDistance             = DEFAULT_VISIBILITY_DISTANCE;
 float World::m_MaxVisibleDistanceOnContinents = DEFAULT_VISIBILITY_DISTANCE;
+float World::m_MaxSpecialVisibleDistance      = DEFAULT_VISIBILITY_DISTANCE;
 float World::m_MaxVisibleDistanceInInstances  = DEFAULT_VISIBILITY_INSTANCE;
 float World::m_MaxVisibleDistanceInArenas     = DEFAULT_VISIBILITY_BGARENAS;
 float World::m_MaxVisibleDistanceInBG         = DEFAULT_VISIBILITY_BGARENAS;
@@ -1067,6 +1068,18 @@ void World::LoadConfigSettings(bool reload)
         m_MaxVisibleDistanceOnContinents = MAX_VISIBILITY_DISTANCE - m_VisibleUnitGreyDistance;
     }
     //visibility in instances
+    m_MaxSpecialVisibleDistance        = sConfig.GetFloatDefault("Visibility.Distance.Special", DEFAULT_VISIBILITY_INSTANCE);
+    if(m_MaxVisibleDistanceInInstances < 45*sWorld.getRate(RATE_CREATURE_AGGRO))
+    {
+        sLog.outError("Visibility.Distance.Special can't be less max aggro radius %f",45*sWorld.getRate(RATE_CREATURE_AGGRO));
+        m_MaxVisibleDistanceInInstances = 45*sWorld.getRate(RATE_CREATURE_AGGRO);
+    }
+    else if(m_MaxSpecialVisibleDistance + m_VisibleUnitGreyDistance >  MAX_VISIBILITY_DISTANCE)
+    {
+        sLog.outError("Visibility.Distance.Special can't be greater %f",MAX_VISIBILITY_DISTANCE - m_VisibleUnitGreyDistance);
+        m_MaxSpecialVisibleDistance = MAX_VISIBILITY_DISTANCE - m_VisibleUnitGreyDistance;
+    }
+
     m_MaxVisibleDistanceInInstances        = sConfig.GetFloatDefault("Visibility.Distance.Instances",       DEFAULT_VISIBILITY_INSTANCE);
     if(m_MaxVisibleDistanceInInstances < 45*sWorld.getRate(RATE_CREATURE_AGGRO))
     {

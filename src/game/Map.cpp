@@ -497,97 +497,31 @@ Map::Add(T *obj)
 
 void Map::MessageBroadcast(Player *player, WorldPacket *msg, bool to_self, bool to_possessor)
 {
-    CellPair p = Trinity::ComputeCellPair(player->GetPositionX(), player->GetPositionY());
-
-    if(p.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || p.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP)
-    {
-        sLog.outError("Map::MessageBroadcast: Player (GUID: %u) have invalid coordinates X:%f Y:%f grid cell [%u:%u]", player->GetGUIDLow(), player->GetPositionX(), player->GetPositionY(), p.x_coord, p.y_coord);
-        return;
-    }
-
-    Cell cell(p);
-    cell.data.Part.reserved = ALL_DISTRICT;
-
-    if( !loaded(GridPair(cell.data.Part.grid_x, cell.data.Part.grid_y)))
-        return;
-
-    float dist = GetVisibilityDistance();
-
     Trinity::MessageDeliverer post_man(*player, msg, to_possessor, to_self);
-    TypeContainerVisitor<Trinity::MessageDeliverer, WorldTypeMapContainer > message(post_man);
-    cell.Visit(p, message, *this, *player, dist);
+    Cell::VisitWorldObjects(player, post_man, GetVisibilityDistance());
 }
 
 void Map::MessageBroadcast(WorldObject *obj, WorldPacket *msg, bool to_possessor)
 {
-    CellPair p = Trinity::ComputeCellPair(obj->GetPositionX(), obj->GetPositionY());
-
-    if(p.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || p.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP)
-    {
-        sLog.outError("Map::MessageBroadcast: Object " UI64FMTD " have invalid coordinates X:%f Y:%f grid cell [%u:%u]", obj->GetGUID(), obj->GetPositionX(), obj->GetPositionY(), p.x_coord, p.y_coord);
-        return;
-    }
-
-    Cell cell(p);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-
-    if( !loaded(GridPair(cell.data.Part.grid_x, cell.data.Part.grid_y)))
-        return;
-
-    float dist = GetVisibilityDistance();
-
     Trinity::ObjectMessageDeliverer post_man(*obj, msg, to_possessor);
-    TypeContainerVisitor<Trinity::ObjectMessageDeliverer, WorldTypeMapContainer > message(post_man);
-    cell.Visit(p, message, *this, *obj, dist);
+    Cell::VisitWorldObjects(obj, post_man, GetVisibilityDistance());
 }
 
 void Map::MessageDistBroadcast(Player *player, WorldPacket *msg, float dist, bool to_self, bool to_possessor, bool own_team_only)
 {
-    CellPair p = Trinity::ComputeCellPair(player->GetPositionX(), player->GetPositionY());
-
-    if(p.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || p.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP)
-    {
-        sLog.outError("Map::MessageBroadcast: Player (GUID: %u) have invalid coordinates X:%f Y:%f grid cell [%u:%u]", player->GetGUIDLow(), player->GetPositionX(), player->GetPositionY(), p.x_coord, p.y_coord);
-        return;
-    }
-
-    Cell cell(p);
-    cell.data.Part.reserved = ALL_DISTRICT;
-
-    if( !loaded(GridPair(cell.data.Part.grid_x, cell.data.Part.grid_y)))
-        return;
-
     Trinity::MessageDistDeliverer post_man(*player, msg, to_possessor, dist, to_self, own_team_only);
-    TypeContainerVisitor<Trinity::MessageDistDeliverer , WorldTypeMapContainer > message(post_man);
-    cell.Visit(p, message, *this, *player, dist);
+    Cell::VisitWorldObjects(player, post_man, GetVisibilityDistance());
 }
 
 void Map::MessageDistBroadcast(WorldObject *obj, WorldPacket *msg, float dist, bool to_possessor)
 {
-    CellPair p = Trinity::ComputeCellPair(obj->GetPositionX(), obj->GetPositionY());
-
-    if(p.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || p.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP)
-    {
-        sLog.outError("Map::MessageBroadcast: Object " UI64FMTD " have invalid coordinates X:%f Y:%f grid cell [%u:%u]", obj->GetGUID(), obj->GetPositionX(), obj->GetPositionY(), p.x_coord, p.y_coord);
-        return;
-    }
-
-    Cell cell(p);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-
-    if( !loaded(GridPair(cell.data.Part.grid_x, cell.data.Part.grid_y)))
-        return;
-
     Trinity::ObjectMessageDistDeliverer post_man(*obj, msg, to_possessor, dist);
-    TypeContainerVisitor<Trinity::ObjectMessageDistDeliverer, WorldTypeMapContainer > message(post_man);
-    cell.Visit(p, message, *this, *obj, dist);
+    Cell::VisitWorldObjects(obj, post_man, GetVisibilityDistance());
 }
 
 bool Map::loaded(const GridPair &p) const
 {
-    return ( getNGrid(p.x_coord, p.y_coord) && isGridObjectDataLoaded(p.x_coord, p.y_coord));
+    return (getNGrid(p.x_coord, p.y_coord) && isGridObjectDataLoaded(p.x_coord, p.y_coord));
 }
 
 void Map::RelocationNotify()
@@ -603,7 +537,7 @@ void Map::RelocationNotify()
 
         unit->m_NotifyListPos = -1;
 
-        if(unit->m_Notified)
+        if (unit->m_Notified)
             continue;
 
         unit->m_Notified = true;
@@ -612,33 +546,34 @@ void Map::RelocationNotify()
         if(dist > 10.0f)
         {
             Trinity::VisibleChangesNotifier notifier(*unit);
-            VisitWorld(unit->oldX, unit->oldY, GetVisibilityDistance(), notifier);
+            Cell::VisitWorldObjects(unit->oldX, unit->oldY, unit->GetMap(), notifier, dist);
             dist = 0;
         }
 
-        if(unit->GetTypeId() == TYPEID_PLAYER)
+        if (unit->GetTypeId() == TYPEID_PLAYER)
         {
             Trinity::PlayerRelocationNotifier notifier(*((Player*)unit));
-            //if(((Player*)unit)->m_seer != unit)
-            VisitAll(((Player*)unit)->GetPositionX(), ((Player*)unit)->GetPositionY(), unit->GetMap()->GetVisibilityDistance() + dist, notifier);
-            //else
-            //VisitAll(((Player*)unit)->GetPositionX(), ((Player*)unit)->GetPositionY(), unit->GetMap()->GetVisibilityDistance() + dist, notifier);
+            Cell::VisitAllObjects(((Player*)unit)->GetPositionX(), ((Player*)unit)->GetPositionY(), ((Player*)unit)->GetMap(), notifier, unit->GetMap()->GetVisibilityDistance() + dist);
             notifier.Notify();
         }
         else
         {
             Trinity::CreatureRelocationNotifier notifier(*((Creature*)unit));
-            VisitAll(unit->GetPositionX(), unit->GetPositionY(), GetVisibilityDistance() + dist, notifier);
+            Cell::VisitAllObjects(unit->GetPositionX(), unit->GetPositionY(), unit->GetMap(), notifier, unit->GetMap()->GetVisibilityDistance() + dist);
         }
     }
+
     for (std::vector<Unit*>::iterator iter = i_unitsToNotify.begin(); iter != i_unitsToNotify.end(); ++iter)
-        if(*iter)
+    {
+        if (*iter)
             (*iter)->m_Notified = false;
+    }
+
     i_unitsToNotify.clear();
 
     i_notifyLock = false;
 
-    if(!i_unitsToNotifyBacklog.empty())
+    if (!i_unitsToNotifyBacklog.empty())
     {
         i_unitsToNotify.insert(i_unitsToNotify.end(), i_unitsToNotifyBacklog.begin(), i_unitsToNotifyBacklog.end());
         i_unitsToNotifyBacklog.clear();
@@ -647,12 +582,12 @@ void Map::RelocationNotify()
 
 void Map::AddUnitToNotify(Unit* u)
 {
-    if(u->m_NotifyListPos < 0 && u->IsInWorld())
+    if (u->m_NotifyListPos < 0 && u->IsInWorld())
     {
         u->oldX = u->GetPositionX();
         u->oldY = u->GetPositionY();
 
-        if(i_notifyLock)
+        if (i_notifyLock)
         {
             u->m_NotifyListPos = i_unitsToNotifyBacklog.size();
             i_unitsToNotifyBacklog.push_back(u);
@@ -668,11 +603,11 @@ void Map::AddUnitToNotify(Unit* u)
 void Map::RemoveUnitFromNotify(Unit *unit)
 {
     int32 slot = unit->m_NotifyListPos;
-    if(i_notifyLock)
+    if (i_notifyLock)
     {
-        if(slot < i_unitsToNotifyBacklog.size() && i_unitsToNotifyBacklog[slot] == unit)
+        if (slot < i_unitsToNotifyBacklog.size() && i_unitsToNotifyBacklog[slot] == unit)
             i_unitsToNotifyBacklog[slot] = NULL;
-        else if(slot < i_unitsToNotify.size() && i_unitsToNotify[slot] == unit)
+        else if (slot < i_unitsToNotify.size() && i_unitsToNotify[slot] == unit)
             i_unitsToNotify[slot] = NULL;
         else
             assert(false);
@@ -729,24 +664,14 @@ void Map::Update(const uint32 &t_diff)
     {
         Player* plr = m_mapRefIter->getSource();
 
-        if(!plr->IsInWorld())
+        if (!plr->IsInWorld() || !plr->IsPositionValid())
             continue;
 
-        CellPair standing_cell(Trinity::ComputeCellPair(plr->GetPositionX(), plr->GetPositionY()));
-
-        // Check for correctness of standing_cell, it also avoids problems with update_cell
-        if (standing_cell.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || standing_cell.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP)
-            continue;
-
-        // the overloaded operators handle range checking
-        // so ther's no need for range checking inside the loop
-        CellPair begin_cell(standing_cell), end_cell(standing_cell);
-        CellArea area = Cell::CalculateCellArea(*plr, GetVisibilityDistance());
-        area.ResizeBorders(begin_cell, end_cell);
-
-        for(uint32 x = begin_cell.x_coord; x <= end_cell.x_coord; ++x)
+        CellArea area = Cell::CalculateCellArea(plr->GetPositionX(), plr->GetPositionY(), GetVisibilityDistance());
+        
+        for(uint32 x = area.low_bound.x_coord; x <= area.high_bound.x_coord; ++x)
         {
-            for(uint32 y = begin_cell.y_coord; y <= end_cell.y_coord; ++y)
+            for(uint32 y = area.low_bound.y_coord; y <= area.high_bound.y_coord; ++y)
             {
                 // marked cells are those that have been visited
                 // don't visit the same cell twice
@@ -756,9 +681,9 @@ void Map::Update(const uint32 &t_diff)
                     markCell(cell_id);
                     CellPair pair(x,y);
                     Cell cell(pair);
-                    cell.data.Part.reserved = CENTER_DISTRICT;
-                    cell.Visit(pair, grid_object_update,  *this);
-                    cell.Visit(pair, world_object_update, *this);
+                    cell.SetNoCreate();
+                    Visit(cell, grid_object_update);
+                    Visit(cell, world_object_update);
                 }
             }
         }
@@ -776,7 +701,7 @@ void Map::Update(const uint32 &t_diff)
             // step to next-next, and if we step to end() then newly added objects can wait next update.
             ++m_activeNonPlayersIter;
 
-            if(!obj->IsInWorld())
+            if (!obj->IsInWorld() || !obj->IsPositionValid())
                 continue;
 
             // Update bindsight players
@@ -786,26 +711,16 @@ void Map::Update(const uint32 &t_diff)
                     if(caster->GetTypeId() == TYPEID_PLAYER && caster->GetUInt64Value(PLAYER_FARSIGHT) == obj->GetGUID())
                     {
                         Trinity::PlayerVisibilityNotifier notifier(*((Player*)caster));
-                        VisitAll(obj->GetPositionX(), obj->GetPositionY(), obj->GetMap()->GetVisibilityDistance(), notifier);
+                        Cell::VisitAllObjects(obj->GetPositionX(), obj->GetPositionY(), obj->GetMap(), notifier, obj->GetMap()->GetVisibilityDistance());
                         notifier.Notify();
                     }
             }
 
-            CellPair standing_cell(Trinity::ComputeCellPair(obj->GetPositionX(), obj->GetPositionY()));
+            CellArea area = Cell::CalculateCellArea(obj->GetPositionX(), obj->GetPositionY(), GetVisibilityDistance());
 
-            // Check for correctness of standing_cell, it also avoids problems with update_cell
-            if (standing_cell.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || standing_cell.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP)
-                continue;
-
-            // the overloaded operators handle range checking
-            // so ther's no need for range checking inside the loop
-            CellPair begin_cell(standing_cell), end_cell(standing_cell);
-            begin_cell << 1; begin_cell -= 1;               // upper left
-            end_cell >> 1; end_cell += 1;                   // lower right
-
-            for(uint32 x = begin_cell.x_coord; x <= end_cell.x_coord; ++x)
+            for(uint32 x = area.low_bound.x_coord; x <= area.high_bound.x_coord; ++x)
             {
-                for(uint32 y = begin_cell.y_coord; y <= end_cell.y_coord; ++y)
+                for(uint32 y = area.low_bound.y_coord; y <= area.high_bound.y_coord; ++y)
                 {
                     // marked cells are those that have been visited
                     // don't visit the same cell twice
@@ -815,10 +730,9 @@ void Map::Update(const uint32 &t_diff)
                         markCell(cell_id);
                         CellPair pair(x,y);
                         Cell cell(pair);
-                        cell.data.Part.reserved = CENTER_DISTRICT;
-                        //cell.SetNoCreate();
-                        cell.Visit(pair, grid_object_update,  *this);
-                        cell.Visit(pair, world_object_update, *this);
+                        cell.SetNoCreate();
+                        Visit(cell, grid_object_update);
+                        Visit(cell, world_object_update);
                     }
                 }
             }
@@ -957,7 +871,6 @@ void Map::PlayerRelocation(Player *player, float x, float y, float z, float orie
 
     Cell old_cell(old_val);
     Cell new_cell(new_val);
-    new_cell |= old_cell;
     bool same_cell = (new_cell == old_cell);
 
     player->Relocate(x, y, z, orientation);
@@ -1608,7 +1521,6 @@ const char* Map::GetMapName() const
 
 void Map::UpdateObjectVisibility( WorldObject* obj, Cell cell, CellPair cellpair)
 {
-    cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
     Trinity::VisibleChangesNotifier notifier(*obj);
     TypeContainerVisitor<Trinity::VisibleChangesNotifier, WorldTypeMapContainer > player_notifier(notifier);
@@ -2267,23 +2179,18 @@ void Map::ScriptsProcess()
                 GameObject *go = NULL;
                 int32 time_to_despawn = step.script->datalong2<5 ? 5 : (int32)step.script->datalong2;
 
-                CellPair p(Trinity::ComputeCellPair(summoner->GetPositionX(), summoner->GetPositionY()));
-                Cell cell(p);
-                cell.data.Part.reserved = ALL_DISTRICT;
-
                 Trinity::GameObjectWithDbGUIDCheck go_check(*summoner,step.script->datalong);
                 Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck> checker(go,go_check);
 
-                TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck>, GridTypeMapContainer > object_checker(checker);
-                cell.Visit(p, object_checker, *(summoner->GetMap()));
+                Cell::VisitGridObjects(summoner, checker, GetVisibilityDistance());
 
-                if ( !go )
+                if (!go)
                 {
                     sLog.outError("SCRIPT_COMMAND_RESPAWN_GAMEOBJECT failed for gameobject(guid: %u).", step.script->datalong);
                     break;
                 }
 
-                if( go->GetGoType()==GAMEOBJECT_TYPE_FISHINGNODE ||
+                if (go->GetGoType()==GAMEOBJECT_TYPE_FISHINGNODE ||
                     go->GetGoType()==GAMEOBJECT_TYPE_FISHINGNODE ||
                     go->GetGoType()==GAMEOBJECT_TYPE_DOOR        ||
                     go->GetGoType()==GAMEOBJECT_TYPE_BUTTON      ||
@@ -2293,7 +2200,7 @@ void Map::ScriptsProcess()
                     break;
                 }
 
-                if( go->isSpawned() )
+                if (go->isSpawned())
                     break;                                  //gameobject already spawned
 
                 go->SetLootState(GO_READY);
@@ -2327,51 +2234,46 @@ void Map::ScriptsProcess()
                 GameObject *door = NULL;
                 int32 time_to_close = step.script->datalong2 < 15 ? 15 : (int32)step.script->datalong2;
 
-                CellPair p(Trinity::ComputeCellPair(caster->GetPositionX(), caster->GetPositionY()));
-                Cell cell(p);
-                cell.data.Part.reserved = ALL_DISTRICT;
-
                 Trinity::GameObjectWithDbGUIDCheck go_check(*caster,step.script->datalong);
                 Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck> checker(door,go_check);
 
-                TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck>, GridTypeMapContainer > object_checker(checker);
-                cell.Visit(p, object_checker, *(((Unit*)source)->GetMap()));
+                Cell::VisitGridObjects(caster, checker, GetVisibilityDistance());
 
-                if ( !door )
+                if (!door)
                 {
                     sLog.outError("SCRIPT_COMMAND_OPEN_DOOR failed for gameobject(guid: %u).", step.script->datalong);
                     break;
                 }
-                if ( door->GetGoType() != GAMEOBJECT_TYPE_DOOR )
+                if (door->GetGoType() != GAMEOBJECT_TYPE_DOOR)
                 {
                     sLog.outError("SCRIPT_COMMAND_OPEN_DOOR failed for non-door(GoType: %u).", door->GetGoType());
                     break;
                 }
 
-                if( !door->GetGoState() )
+                if (!door->GetGoState())
                     break;                                  //door already  open
 
                 door->UseDoorOrButton(time_to_close);
 
-                if(target && target->isType(TYPEMASK_GAMEOBJECT) && ((GameObject*)target)->GetGoType()==GAMEOBJECT_TYPE_BUTTON)
+                if (target && target->isType(TYPEMASK_GAMEOBJECT) && ((GameObject*)target)->GetGoType()==GAMEOBJECT_TYPE_BUTTON)
                     ((GameObject*)target)->UseDoorOrButton(time_to_close);
                 break;
             }
             case SCRIPT_COMMAND_CLOSE_DOOR:
             {
-                if(!step.script->datalong)                  // guid for door not specified
+                if (!step.script->datalong)                  // guid for door not specified
                 {
                     sLog.outError("SCRIPT_COMMAND_CLOSE_DOOR call for NULL door.");
                     break;
                 }
 
-                if(!source)
+                if (!source)
                 {
                     sLog.outError("SCRIPT_COMMAND_CLOSE_DOOR call for NULL unit.");
                     break;
                 }
 
-                if(!source->isType(TYPEMASK_UNIT))          // must be any Unit (creature or player)
+                if (!source->isType(TYPEMASK_UNIT))          // must be any Unit (creature or player)
                 {
                     sLog.outError("SCRIPT_COMMAND_CLOSE_DOOR call for non-unit (TypeId: %u), skipping.",source->GetTypeId());
                     break;
@@ -2382,33 +2284,29 @@ void Map::ScriptsProcess()
                 GameObject *door = NULL;
                 int32 time_to_open = step.script->datalong2 < 15 ? 15 : (int32)step.script->datalong2;
 
-                CellPair p(Trinity::ComputeCellPair(caster->GetPositionX(), caster->GetPositionY()));
-                Cell cell(p);
-                cell.data.Part.reserved = ALL_DISTRICT;
-
                 Trinity::GameObjectWithDbGUIDCheck go_check(*caster,step.script->datalong);
                 Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck> checker(door,go_check);
 
-                TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck>, GridTypeMapContainer > object_checker(checker);
-                cell.Visit(p, object_checker, *(((Unit*)source)->GetMap()));
+                Cell::VisitGridObjects(caster, checker, GetVisibilityDistance());
 
-                if ( !door )
+                if (!door)
                 {
                     sLog.outError("SCRIPT_COMMAND_CLOSE_DOOR failed for gameobject(guid: %u).", step.script->datalong);
                     break;
                 }
-                if ( door->GetGoType() != GAMEOBJECT_TYPE_DOOR )
+
+                if (door->GetGoType() != GAMEOBJECT_TYPE_DOOR)
                 {
                     sLog.outError("SCRIPT_COMMAND_CLOSE_DOOR failed for non-door(GoType: %u).", door->GetGoType());
                     break;
                 }
 
-                if( door->GetGoState() )
+                if (door->GetGoState())
                     break;                                  //door already closed
 
                 door->UseDoorOrButton(time_to_open);
 
-                if(target && target->isType(TYPEMASK_GAMEOBJECT) && ((GameObject*)target)->GetGoType()==GAMEOBJECT_TYPE_BUTTON)
+                if (target && target->isType(TYPEMASK_GAMEOBJECT) && ((GameObject*)target)->GetGoType()==GAMEOBJECT_TYPE_BUTTON)
                     ((GameObject*)target)->UseDoorOrButton(time_to_open);
 
                 break;
@@ -2596,16 +2494,11 @@ void Map::ScriptsProcess()
 
                 if(source) //using grid searcher
                 {
-                    CellPair p(Trinity::ComputeCellPair(((Unit*)source)->GetPositionX(), ((Unit*)source)->GetPositionY()));
-                    Cell cell(p);
-                    cell.data.Part.reserved = ALL_DISTRICT;
-
                     //sLog.outDebug("Attempting to find Creature: Db GUID: %i", step.script->datalong);
                     Trinity::CreatureWithDbGUIDCheck target_check(((Unit*)source), step.script->datalong);
                     Trinity::CreatureSearcher<Trinity::CreatureWithDbGUIDCheck> checker(target,target_check);
 
-                    TypeContainerVisitor<Trinity::CreatureSearcher <Trinity::CreatureWithDbGUIDCheck>, GridTypeMapContainer > unit_checker(checker);
-                    cell.Visit(p, unit_checker, *(((Unit*)source)->GetMap()));
+                    Cell::VisitGridObjects((Unit*)source, checker, GetVisibilityDistance());
                 }
                 else //check hashmap holders
                 {
@@ -2739,15 +2632,12 @@ InstanceMap::~InstanceMap()
 void InstanceMap::InitVisibilityDistance()
 {
     //init visibility distance for instances
-
     switch (i_mapEntry->MapID)
     {
         case 550:   //The Eye
         case 534:   //Hyjal Summit
-            m_VisibleDistance = 100.0f;
-            break;
         case 564:   //Black Temple
-            m_VisibleDistance = 125.0f;
+            m_VisibleDistance = sWorld.GetMaxSpecialVisibleDistance();
             break;
         default:
             m_VisibleDistance = sWorld.GetMaxVisibleDistanceInInstances();

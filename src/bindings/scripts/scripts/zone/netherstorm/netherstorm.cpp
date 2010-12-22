@@ -402,17 +402,10 @@ struct TRINITY_DLL_DECL npc_commander_dawnforgeAI : public ScriptedAI
     {
         Creature* pCreature = NULL;
 
-        CellPair pair(Trinity::ComputeCellPair(m_creature->GetPositionX(), m_creature->GetPositionY()));
-        Cell cell(pair);
-        cell.data.Part.reserved = ALL_DISTRICT;
-        cell.SetNoCreate();
-
         Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*m_creature, entry, true, range);
         Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
 
-        TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> creature_searcher(searcher);
-
-        cell.Visit(pair, creature_searcher,*(m_creature->GetMap()));
+        Cell::VisitGridObjects(me, searcher, range);
 
         return pCreature;
     }
@@ -636,17 +629,10 @@ Creature* SearchDawnforge(Player *source, uint32 entry, float range)
 {
     Creature* pCreature = NULL;
 
-    CellPair pair(Trinity::ComputeCellPair(source->GetPositionX(), source->GetPositionY()));
-    Cell cell(pair);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-
     Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*source, entry, true, range);
     Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
 
-    TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> creature_searcher(searcher);
-
-    cell.Visit(pair, creature_searcher,*(source->GetMap()));
+    Cell::VisitGridObjects(source, searcher, range);
 
     return pCreature;
 }

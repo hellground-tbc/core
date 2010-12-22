@@ -758,7 +758,7 @@ struct TRINITY_DLL_DECL npc_kaelthas_imageAI : public ScriptedAI
             uint32 shattrathRadius = 1000;
             Trinity::AnyUnitInObjectRangeCheck  check(me, shattrathRadius);
             Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck > searcher(PlayerList, check);
-            me->VisitNearbyWorldObject(shattrathRadius, searcher);
+            Cell::VisitWorldObjects(me, searcher, shattrathRadius);
 
             for(std::list<Unit*>::iterator i = PlayerList.begin(); i != PlayerList.end(); i++)
             {

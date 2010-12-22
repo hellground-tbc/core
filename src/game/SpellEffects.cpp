@@ -777,7 +777,7 @@ void Spell::EffectDummy(uint32 i)
                             Trinity::GameObjectSearcher<Trinity::AllGameObjectsWithEntryInGrid> searcher(target, go_check);
 
                             // Find GO that matches this trigger:
-                            unitTarget->VisitNearbyGridObject(3, searcher);
+                            Cell::VisitGridObjects(unitTarget, searcher, 3.0f);
 
                             // Add q objective and clean up
                             if(target)
@@ -2283,13 +2283,14 @@ void Spell::EffectTriggerSpell(uint32 i)
         case 37492:
         {
             std::list<Creature*> pList;
-            Trinity::AllCreaturesOfEntryInRange u_check(m_caster, 21633, 70);
+            Trinity::AllCreaturesOfEntryInRange u_check(m_caster, 21633, 70.0f);
             Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(pList, u_check);
-            m_caster->VisitNearbyObject(70, searcher);
-            if(pList.size() == 0)
+         
+            Cell::VisitWorldObjects(m_caster, searcher, 70.0f);
+            
+            if (pList.size() == 0)
             {
-                Creature * summon = m_caster->SummonCreature(21633, -3361, 2962, 170, 5.83, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 90000);
-                if(summon)
+                if (Creature * summon = m_caster->SummonCreature(21633, -3361, 2962, 170, 5.83, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 90000))
                     summon->setActive(true);
             }
             return;
@@ -5655,10 +5656,13 @@ void Spell::EffectSanctuary(uint32 /*i*/)
         return;
 
     std::list<Unit*> targets;
+
     Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(unitTarget, unitTarget, m_caster->GetMap()->GetVisibilityDistance());
     Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(targets, u_check);
-    unitTarget->VisitNearbyObject(m_caster->GetMap()->GetVisibilityDistance(), searcher);
-    for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
+    
+    Cell::VisitWorldObjects(unitTarget, searcher, m_caster->GetMap()->GetVisibilityDistance());
+
+    for (std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
     {
         if(!(*iter)->hasUnitState(UNIT_STAT_CASTING))
             continue;

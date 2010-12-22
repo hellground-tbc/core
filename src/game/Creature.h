@@ -590,7 +590,7 @@ class TRINITY_DLL_SPEC Creature : public Unit
         bool canStartAttack(Unit const* u) const;
         float GetAttackDistance(Unit const* pl) const;
 
-        Unit* SelectNearestTarget(float dist = 0) const;
+        Unit* SelectNearestTarget(float dist = 5.0f) const;
         void CallForHelp(float fRadius);
         void CallAssistance();
         void SetNoCallAssistance(bool val) { m_AlreadyCallAssistance = val; }

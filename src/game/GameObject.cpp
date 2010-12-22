@@ -345,54 +345,37 @@ void GameObject::Update(uint32 diff)
 
                 bool NeedDespawn = (goInfo->trap.charges != 0);
 
-                CellPair p(Trinity::ComputeCellPair(GetPositionX(),GetPositionY()));
-                Cell cell(p);
-                cell.data.Part.reserved = ALL_DISTRICT;
-
                 // Note: this hack with search required until GO casting not implemented
                 // search unfriendly creature
-                if(owner && NeedDespawn)                    // hunter trap
+                if (owner && NeedDespawn)                    // hunter trap
                 {
                     Trinity::AnyUnfriendlyNoTotemUnitInObjectRangeCheck u_check(this, owner, radius);
                     Trinity::UnitSearcher<Trinity::AnyUnfriendlyNoTotemUnitInObjectRangeCheck> checker(ok, u_check);
 
-                    TypeContainerVisitor<Trinity::UnitSearcher<Trinity::AnyUnfriendlyNoTotemUnitInObjectRangeCheck>, GridTypeMapContainer > grid_object_checker(checker);
-                    //cell_lock->Visit(cell_lock, grid_object_checker, *MapManager::Instance().GetMap(GetMapId(), this));
-                    cell.Visit(p, grid_object_checker, *GetMap(), *this, radius);
+                    Cell::VisitGridObjects(this, checker, radius);
 
-                    // or unfriendly player/pet
-                    if(!ok)
-                    {
-                        TypeContainerVisitor<Trinity::UnitSearcher<Trinity::AnyUnfriendlyNoTotemUnitInObjectRangeCheck>, WorldTypeMapContainer > world_object_checker(checker);
-                        //cell_lock->Visit(cell_lock, world_object_checker, *MapManager::Instance().GetMap(GetMapId(), this));
-                        cell.Visit(p, world_object_checker, *GetMap(), *this, radius);
-                    }
+                    if (!ok)
+                        Cell::VisitWorldObjects(this, checker, radius);
                 }
                 else                                        // environmental trap
                 {
-                    // environmental damage spells already have around enemies targeting but this not help in case not existed GO casting support
-
                     // affect only players
                     Player* p_ok = NULL;
                     Trinity::AnyPlayerInObjectRangeCheck p_check(this, radius);
                     Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck>  checker(p_ok, p_check);
 
-                    TypeContainerVisitor<Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck>, WorldTypeMapContainer > world_object_checker(checker);
-                    //cell_lock->Visit(cell_lock, world_object_checker, *MapManager::Instance().GetMap(GetMapId(), this));
-                    cell.Visit(p, world_object_checker, *GetMap(), *this, radius);
+                    Cell::VisitWorldObjects(this,checker, radius);
+
                     ok = p_ok;
                 }
 
                 if (ok)
                 {
-                    //Unit *caster =  owner ? owner : ok;
-
-                    //caster->CastSpell(ok, goInfo->trap.spellId, true);
                     CastSpell(ok, goInfo->trap.spellId);
                     m_cooldownTime = time(NULL) + 4;        // 4 seconds
                     SendCustomAnimation();
 
-                    if(NeedDespawn)
+                    if (NeedDespawn)
                         SetLootState(GO_JUST_DEACTIVATED);  // can be despawned or destroyed
 
                     if(IsBattleGroundTrap && ok->GetTypeId() == TYPEID_PLAYER)
@@ -876,14 +859,14 @@ bool GameObject::ActivateToQuest( Player *pTarget)const
     return false;
 }
 
-void GameObject::TriggeringLinkedGameObject( uint32 trapEntry, Unit* target)
+void GameObject::TriggeringLinkedGameObject(uint32 trapEntry, Unit* target)
 {
     GameObjectInfo const* trapInfo = sGOStorage.LookupEntry<GameObjectInfo>(trapEntry);
-    if(!trapInfo || trapInfo->type!=GAMEOBJECT_TYPE_TRAP)
+    if (!trapInfo || trapInfo->type!=GAMEOBJECT_TYPE_TRAP)
         return;
 
     SpellEntry const* trapSpell = sSpellStore.LookupEntry(trapInfo->trap.spellId);
-    if(!trapSpell)                                          // checked at load already
+    if (!trapSpell)                                          // checked at load already
         return;
 
     float range = GetSpellMaxRange(sSpellRangeStore.LookupEntry(trapSpell->rangeIndex));
@@ -892,38 +875,26 @@ void GameObject::TriggeringLinkedGameObject( uint32 trapEntry, Unit* target)
     GameObject* trapGO = NULL;
     {
         // using original GO distance
-        CellPair p(Trinity::ComputeCellPair(GetPositionX(), GetPositionY()));
-        Cell cell(p);
-        cell.data.Part.reserved = ALL_DISTRICT;
+        Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*target, trapEntry, range);
+        Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> checker(trapGO, go_check);
 
-        Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*target,trapEntry,range);
-        Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> checker(trapGO,go_check);
-
-        TypeContainerVisitor<Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck>, GridTypeMapContainer > object_checker(checker);
-        //cell_lock->Visit(cell_lock, object_checker, *MapManager::Instance().GetMap(GetMapId(), this));
-        cell.Visit(p, object_checker, *GetMap(), *target, range);
+        Cell::VisitGridObjects(this, checker, range);
     }
 
     // found correct GO
     // FIXME: when GO casting will be implemented trap must cast spell to target
-    if(trapGO)
-        target->CastSpell(target,trapSpell,true);
+    if (trapGO)
+        target->CastSpell(target, trapSpell ,true);
 }
 
 GameObject* GameObject::LookupFishingHoleAround(float range)
 {
     GameObject* ok = NULL;
 
-    CellPair p(Trinity::ComputeCellPair(GetPositionX(),GetPositionY()));
-    Cell cell(p);
-    cell.data.Part.reserved = ALL_DISTRICT;
     Trinity::NearestGameObjectFishingHole u_check(*this, range);
     Trinity::GameObjectSearcher<Trinity::NearestGameObjectFishingHole> checker(ok, u_check);
 
-    TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::NearestGameObjectFishingHole>, GridTypeMapContainer > grid_object_checker(checker);
-    //cell_lock->Visit(cell_lock, grid_object_checker, *MapManager::Instance().GetMap(GetMapId(), this));
-    cell.Visit(p, grid_object_checker, *GetMap(), *this, range);
-
+    Cell::VisitGridObjects(this, checker, range);
     return ok;
 }
 

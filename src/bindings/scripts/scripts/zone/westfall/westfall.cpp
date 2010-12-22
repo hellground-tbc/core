@@ -409,17 +409,10 @@ bool QuestAccept_npc_Mikhail(Player* player, Creature* creature, Quest const* qu
         float x, y, z;
         creature->GetPosition(x, y, z);
 
-        CellPair pair(Trinity::ComputeCellPair(x, y));
-        Cell cell(pair);
-        cell.data.Part.reserved = ALL_DISTRICT;
-        cell.SetNoCreate();
-
         Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck check(*creature, 4962, true, 10);
         Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(trigger, check);
 
-        TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> cSearcher(searcher);
-
-        cell.Visit(pair, cSearcher, *(creature->GetMap()));
+        Cell::VisitGridObjects(creature, searcher, 10.0);
 
         if(trigger)
         {

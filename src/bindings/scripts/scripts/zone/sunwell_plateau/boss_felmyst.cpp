@@ -518,17 +518,11 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         m_creature->GetPosition(x, y, z);
 
         {
-            CellPair pair(Trinity::ComputeCellPair(x, y));
-            Cell cell(pair);
-            cell.data.Part.reserved = ALL_DISTRICT;
-            cell.SetNoCreate();
 
             Trinity::AllCreaturesOfEntryInRange check(m_creature, entry, 100);
             Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(templist, check);
 
-            TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> cSearcher(searcher);
-
-            cell.Visit(pair, cSearcher, *(m_creature->GetMap()));
+            Cell::VisitGridObjects(me, searcher, 100.0f);
         }
 
         for(std::list<Creature*>::iterator i = templist.begin(); i != templist.end(); ++i)

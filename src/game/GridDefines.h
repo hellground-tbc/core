@@ -36,7 +36,7 @@ class Player;
 #ifdef LARGE_CELL
 #define MAX_NUMBER_OF_CELLS     8
 #else
-#define MAX_NUMBER_OF_CELLS     8
+#define MAX_NUMBER_OF_CELLS     16
 #endif
 
 #define MAX_NUMBER_OF_GRIDS      64
@@ -140,6 +140,13 @@ struct TRINITY_DLL_DECL CoordPair
             y_coord = LIMIT - 1;
     }
 
+    CoordPair& normalize()
+    {
+        x_coord = std::min(x_coord, LIMIT);
+        y_coord = std::min(y_coord, LIMIT);
+        return *this;
+    }
+
     uint32 x_coord;
     uint32 y_coord;
 };
@@ -169,18 +176,6 @@ namespace Trinity
     inline CellPair ComputeCellPair(float x, float y)
     {
         return Compute<CellPair, CENTER_GRID_CELL_ID>(x, y, CENTER_GRID_CELL_OFFSET, SIZE_OF_GRID_CELL);
-    }
-
-    inline CellPair ComputeCellPair(float x, float y, float &x_off, float &y_off)
-    {
-        double x_offset = (double(x) - CENTER_GRID_CELL_OFFSET)/SIZE_OF_GRID_CELL;
-        double y_offset = (double(y) - CENTER_GRID_CELL_OFFSET)/SIZE_OF_GRID_CELL;
-
-        int x_val = int(x_offset + CENTER_GRID_CELL_ID + 0.5);
-        int y_val = int(y_offset + CENTER_GRID_CELL_ID + 0.5);
-        x_off = (float(x_offset) - x_val + CENTER_GRID_CELL_ID) * SIZE_OF_GRID_CELL;
-        y_off = (float(y_offset) - y_val + CENTER_GRID_CELL_ID) * SIZE_OF_GRID_CELL;
-        return CellPair(x_val, y_val);
     }
 
     inline void NormalizeMapCoord(float &c)

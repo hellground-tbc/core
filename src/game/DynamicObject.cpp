@@ -114,19 +114,21 @@ void DynamicObject::Update(uint32 p_time)
 
     bool deleteThis = false;
 
-    if(m_aliveDuration > int32(p_time))
+    if( m_aliveDuration > int32(p_time))
         m_aliveDuration -= p_time;
     else
         deleteThis = true;
 
-    if(m_effIndex < 4)
+    if (m_effIndex < 4)
     {
-        if(m_updateTimer < p_time)
+        if (m_updateTimer < p_time)
         {
             Trinity::DynamicObjectUpdater notifier(*this,caster);
-            VisitNearbyObject(GetRadius(), notifier);
+            Cell::VisitAllObjects(this, notifier, m_radius);
             m_updateTimer = 600; // is this official-like?
-        }else m_updateTimer -= p_time;
+        }
+        else
+            m_updateTimer -= p_time;
     }
 
     if(deleteThis)

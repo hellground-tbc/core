@@ -238,17 +238,10 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
         m_creature->GetPosition(x, y, z);
 
         {
-            CellPair pair(Trinity::ComputeCellPair(x, y));
-            Cell cell(pair);
-            cell.data.Part.reserved = ALL_DISTRICT;
-            cell.SetNoCreate();
-
             Trinity::AllCreaturesOfEntryInRange check(m_creature, MOB_EGG, 100);
             Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(templist, check);
 
-            TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> cSearcher(searcher);
-
-            cell.Visit(pair, cSearcher, *(m_creature->GetMap()));
+            Cell::VisitGridObjects(me, searcher, 100);
         }
 
         //error_log("Eggs %d at middle", templist.size());
@@ -272,17 +265,10 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
         m_creature->GetPosition(x, y, z);
 
         {
-            CellPair pair(Trinity::ComputeCellPair(x, y));
-            Cell cell(pair);
-            cell.data.Part.reserved = ALL_DISTRICT;
-            cell.SetNoCreate();
-
             Trinity::AllCreaturesOfEntryInRange check(m_creature, MOB_FIRE_BOMB, 100);
             Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(templist, check);
 
-            TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> cSearcher(searcher);
-
-            cell.Visit(pair, cSearcher, *(m_creature->GetMap()));
+            Cell::VisitGridObjects(me, searcher, me->GetMap()->GetVisibilityDistance());
         }
         for(std::list<Creature*>::iterator i = templist.begin(); i != templist.end(); ++i)
         {
@@ -526,17 +512,10 @@ struct TRINITY_DLL_DECL mob_amanishi_hatcherAI : public ScriptedAI
         m_creature->GetPosition(x, y, z);
 
         {
-            CellPair pair(Trinity::ComputeCellPair(x, y));
-            Cell cell(pair);
-            cell.data.Part.reserved = ALL_DISTRICT;
-            cell.SetNoCreate();
-
             Trinity::AllCreaturesOfEntryInRange check(m_creature, 23817, 50);
             Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(templist, check);
 
-            TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> cSearcher(searcher);
-
-            cell.Visit(pair, cSearcher, *(m_creature->GetMap()));
+            Cell::VisitGridObjects(me, searcher, 50);
         }
 
         //error_log("Eggs %d at %d", templist.size(), side);

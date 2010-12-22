@@ -339,17 +339,11 @@ struct TRINITY_DLL_DECL boss_twinemperorsAI : public ScriptedAI
 
     Creature *RespawnNearbyBugsAndGetOne()
     {
-        CellPair p(Trinity::ComputeCellPair(m_creature->GetPositionX(), m_creature->GetPositionY()));
-        Cell cell(p);
-        cell.data.Part.reserved = ALL_DISTRICT;
-        cell.SetNoCreate();
-
         std::list<Creature*> unitList;
 
         AnyBugCheck u_check(m_creature, 150);
         Trinity::CreatureListSearcher<AnyBugCheck> searcher(unitList, u_check);
-        TypeContainerVisitor<Trinity::CreatureListSearcher<AnyBugCheck>, GridTypeMapContainer >  grid_creature_searcher(searcher);
-        cell.Visit(p, grid_creature_searcher, *(m_creature->GetMap()));
+        Cell::VisitGridObjects(me, searcher, 150);
 
         Creature *nearb = NULL;
 

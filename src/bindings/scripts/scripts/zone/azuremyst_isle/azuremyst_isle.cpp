@@ -523,16 +523,9 @@ struct TRINITY_DLL_DECL npc_geezleAI : public ScriptedAI
 
     void DespawnNagaFlag(bool despawn)
     {
-        CellPair pair(Trinity::ComputeCellPair(m_creature->GetPositionX(), m_creature->GetPositionY()));
-        Cell cell(pair);
-        cell.data.Part.reserved = ALL_DISTRICT;
-        cell.SetNoCreate();
-
         Trinity::AllGameObjectsWithEntryInGrid go_check(GO_NAGA_FLAG);
         Trinity::GameObjectListSearcher<Trinity::AllGameObjectsWithEntryInGrid> go_search(FlagList, go_check);
-        TypeContainerVisitor
-            <Trinity::GameObjectListSearcher<Trinity::AllGameObjectsWithEntryInGrid>, GridTypeMapContainer> go_visit(go_search);
-        cell.Visit(pair, go_visit, *(m_creature->GetMap()));
+        Cell::VisitGridObjects(me, go_search, me->GetMap()->GetVisibilityDistance());
 
         Player* player = NULL;
         if (!FlagList.empty())

@@ -402,7 +402,7 @@ struct TRINITY_DLL_DECL npc_demoniac_scryerAI : public  Scripted_NoMovementAI
         uint32 questDist = 60;                      // sWorld.getConfig(CONFIG_GROUP_XP_DISTANCE);
         Trinity::AnyUnitInObjectRangeCheck  check(me, questDist);
         Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck > searcher(PlayerList, check);
-        me->VisitNearbyWorldObject(questDist, searcher);
+        Cell::VisitAllObjects(me, searcher, questDist);
 
         for(std::list<Unit*>::iterator i = PlayerList.begin(); i != PlayerList.end(); i++)
         {
