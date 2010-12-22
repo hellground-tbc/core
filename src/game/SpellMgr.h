@@ -804,6 +804,8 @@ enum AttributesCu
     SPELL_ATTR_CU_LINK_REMOVE     = 0x00002000,
     SPELL_ATRR_CU_LINK_PRECAST    = 0x00004000,     // before cast barem
     SPELL_ATTR_CU_MOVEMENT_IMPAIR = 0x00008000,
+    SPELL_ATTR_CU_ONLY_PLAYER     = 0x00010000,
+    SPELL_ATTR_CU_ONLY_CREATURE   = 0x00020000
 };
 
 inline bool IgnoreMagnetTargetAura(SpellEntry const* spellInfo)

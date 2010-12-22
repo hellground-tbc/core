@@ -819,11 +819,11 @@ void Spell::AddGOTarget(GameObject* pVictim, uint32 effIndex)
     }
 
     // This is new target calculate data for him
-
     GOTargetInfo target;
     target.targetGUID = targetGUID;
     target.effectMask = 1<<effIndex;
     target.processed  = false;                              // Effects not apply on target
+    target.deleted    = false;
 
     // Spell have speed - need calculate incoming time
     if (m_spellInfo->speed > 0.0f)
@@ -1497,12 +1497,22 @@ void Spell::SearchAreaTarget(std::list<GameObject*> &goList, float radius, const
     {
         case SPELL_TARGET_TYPE_GAMEOBJECT:
         {
-            Trinity::SpellNotifierGameObject notifier(*this, goList, radius, type, TargetType, entry, x, y, z);
-            if((m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY)
-                || TargetType == SPELL_TARGETS_ENTRY && !entry)
+            if((m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY) || TargetType == SPELL_TARGETS_ENTRY && !entry)
+            {
+                Trinity::SpellNotifierGameObject notifier(*this, goList, radius, type, TargetType, entry, x, y, z);
                 m_caster->GetMap()->VisitWorld(x, y, radius, notifier);
+            }
             else
-                m_caster->GetMap()->VisitAll(x, y, radius, notifier);
+            {
+                CellPair pair(Trinity::ComputeCellPair(m_caster->GetPositionX(), m_caster->GetPositionY()));
+                Cell cell(pair);
+                cell.data.Part.reserved = ALL_DISTRICT;
+                cell.SetNoCreate();
+                Trinity::AllGameObjectsWithEntryInGrid go_check(entry);
+                Trinity::GameObjectListSearcher<Trinity::AllGameObjectsWithEntryInGrid> go_search(goList, go_check);
+                TypeContainerVisitor<Trinity::GameObjectListSearcher<Trinity::AllGameObjectsWithEntryInGrid>, GridTypeMapContainer> go_visit(go_search);
+                cell.Visit(pair, go_visit, *(m_caster->GetMap()));
+            }
             break;
         }
         default:
@@ -2108,7 +2118,6 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
 
         if(!unitList.empty())
         {
-
             if(m_spellInfo->Id == 27285) // Seed of Corruption proc spell
                 unitList.remove(m_targets.getUnitTarget());
             else if(m_spellInfo->Id == 39968) // Needle Spine Explosion proc
@@ -2141,12 +2150,12 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 AddUnitTarget(*itr, i);
         }
 
-        if(!goList.empty())
+        if (!goList.empty())
         {
-            if(m_spellValue->MaxAffectedTargets)
+            if (m_spellValue->MaxAffectedTargets)
                 Trinity::RandomResizeList(goList, m_spellValue->MaxAffectedTargets);
 
-            for(std::list<GameObject*>::iterator itr = goList.begin(); itr != goList.end(); ++itr)
+            for (std::list<GameObject*>::iterator itr = goList.begin(); itr != goList.end(); ++itr)
                 AddGOTarget(*itr, i);
         }
     } // Chain or Area
@@ -2517,7 +2526,6 @@ void Spell::handle_immediate()
 
         DoAllEffectOnTarget(&(*ihit));
     }
-
 
     for(std::list<GOTargetInfo>::iterator ihit= m_UniqueGOTargetInfo.begin();ihit != m_UniqueGOTargetInfo.end();++ihit)
     {

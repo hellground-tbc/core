@@ -245,9 +245,6 @@ struct TRINITY_DLL_DECL mob_illidari_councilAI : public ScriptedAI
 
                     pInstance->SetData(EVENT_ILLIDARICOUNCIL, DONE);
 
-                    //ENABE IT LATER !
-                    //m_creature->SummonCreature(23089, 746.466980f, 304.394989f, 311.90208f, 6.272870f, TEMPSUMMON_DEAD_DESPAWN, 0);
-
                     m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                     return;
                 }
@@ -278,7 +275,6 @@ struct TRINITY_DLL_DECL mob_illidari_councilAI : public ScriptedAI
                         if (pMember->isAlive() && !pMember->getVictim())
                         {
                             m_evadeCheck += 1;
-
                             if (m_evadeCheck > 3)
                                 Reset();
                         }

@@ -718,6 +718,14 @@ void Spell::EffectDummy(uint32 i)
         {
             switch(m_spellInfo->Id )
             {
+                case 38002:
+                {
+                    if (m_caster->GetTypeId() != TYPEID_PLAYER)
+                        return;
+
+                    m_caster->CastSpell((Unit*)NULL, 38003, true);
+                }
+
                 // Fatal Attraction
                 case 40869:
                 {
@@ -4957,9 +4965,13 @@ void Spell::EffectSummonObjectWild(uint32 i)
 void Spell::EffectScriptEffect(uint32 effIndex)
 {
     // TODO: we must implement hunter pet summon at login there (spell 6962)
-
     switch(m_spellInfo->Id)
     {
+        case 38055:
+        {
+            m_caster->CastSpell(m_caster, 38054, true);
+            return;
+        }
         // Gathios the Shatterer: Judgement
         case 41467:
         {
@@ -5827,7 +5839,7 @@ static ScriptInfo generateActivateCommand()
 
 void Spell::EffectActivateObject(uint32 effect_idx)
 {
-    if(!gameObjTarget)
+    if (!gameObjTarget)
         return;
 
     static ScriptInfo activateCommand = generateActivateCommand();

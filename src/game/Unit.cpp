@@ -1276,7 +1276,7 @@ void Unit::CastSpell(GameObject *go, uint32 spellId, bool triggered, Item *castI
     if(!go)
         return;
 
-    SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId );
+    SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
 
     if(!spellInfo)
     {
@@ -1296,10 +1296,18 @@ void Unit::CastSpell(GameObject *go, uint32 spellId, bool triggered, Item *castI
     if(!originalCaster && triggeredByAura)
         originalCaster = triggeredByAura->GetCasterGUID();
 
-    Spell *spell = new Spell(this, spellInfo, triggered, originalCaster );
+    Spell *spell = new Spell(this, spellInfo, triggered, originalCaster);
 
     SpellCastTargets targets;
-    targets.setGOTarget(go);
+
+    if (go)
+        targets.setGOTarget(go);
+    else
+    {
+        spell->FillTargetMap();
+        targets = spell->m_targets;
+    }
+
     spell->m_CastItem = castItem;
     spell->prepare(&targets, triggeredByAura);
 }

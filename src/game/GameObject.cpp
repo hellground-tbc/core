@@ -422,6 +422,15 @@ void GameObject::Update(uint32 diff)
                         SetLootState(GO_JUST_DEACTIVATED);
                     }
                     break;
+                case GAMEOBJECT_TYPE_GOOBER:
+                    if (m_cooldownTime < time(NULL))
+                    {
+                        RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
+
+                        SetLootState(GO_JUST_DEACTIVATED);
+                        m_cooldownTime = 0;
+                    }
+                    break;
                 case GAMEOBJECT_TYPE_CHEST:
                     if(m_groupLootTimer && lootingGroupLeaderGUID)
                     {
@@ -1058,7 +1067,7 @@ void GameObject::Use(Unit* user)
         {
             GameObjectInfo const* info = GetGOInfo();
 
-            if(user->GetTypeId()==TYPEID_PLAYER)
+            if(user->GetTypeId() == TYPEID_PLAYER)
             {
                 Player* player = (Player*)user;
 
@@ -1071,12 +1080,39 @@ void GameObject::Use(Unit* user)
                 }
 
                 // possible quest objective for active quests
-                player->CastedCreatureOrGO(info->id, GetGUID(), 0);
+                if (info->goober.questId && objmgr.GetQuestTemplate(info->goober.questId))
+                {
+                    //Quest require to be active for GO using
+                    if (player->GetQuestStatus(info->goober.questId) != QUEST_STATUS_INCOMPLETE)
+                        break;
+                }
+
+                player->CastedCreatureOrGO(GetEntry(), GetGUID(), 0);
             }
+
+            if (uint32 trapEntry = info->goober.linkedTrapId)
+                TriggeringLinkedGameObject(trapEntry, user);
+
+            SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
+            SetLootState(GO_ACTIVATED);
+
+            uint32 time_to_restore = GetAutoCloseTime();
+
+            // this appear to be ok, however others exist in addition to this that should have custom (ex: 190510, 188692, 187389)
+            if (time_to_restore && info->goober.customAnim)
+            {
+                WorldPacket data(SMSG_GAMEOBJECT_CUSTOM_ANIM, 8+4);
+                data << uint64(GetGUID());
+                data << uint32(0);                                      // not known what this is
+                SendMessageToSet(&data, true);
+            }
+            else
+                SetGoState(0);
+
+            m_cooldownTime = time(NULL) + time_to_restore;
 
             // cast this spell later if provided
             spellId = info->goober.spellId;
-
             break;
         }
         case GAMEOBJECT_TYPE_CAMERA:                        //13
