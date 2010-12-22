@@ -819,11 +819,11 @@ void Spell::AddGOTarget(GameObject* pVictim, uint32 effIndex)
     }
 
     // This is new target calculate data for him
-
     GOTargetInfo target;
     target.targetGUID = targetGUID;
     target.effectMask = 1<<effIndex;
     target.processed  = false;                              // Effects not apply on target
+    target.deleted    = false;
 
     // Spell have speed - need calculate incoming time
     if (m_spellInfo->speed > 0.0f)
@@ -2517,7 +2517,6 @@ void Spell::handle_immediate()
 
         DoAllEffectOnTarget(&(*ihit));
     }
-
 
     for(std::list<GOTargetInfo>::iterator ihit= m_UniqueGOTargetInfo.begin();ihit != m_UniqueGOTargetInfo.end();++ihit)
     {
