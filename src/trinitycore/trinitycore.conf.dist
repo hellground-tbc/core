@@ -986,6 +986,7 @@ GM.AllowFriend    = 0
 
 Visibility.GroupMode = 0
 
+Visibility.Distance.Special       = 132
 Visibility.Distance.Continents    = 132
 Visibility.Distance.Instances     = 132
 Visibility.Distance.Arenas        = 132
