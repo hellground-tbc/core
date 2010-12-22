@@ -2580,6 +2580,12 @@ void SpellMgr::LoadSpellCustomAttr()
 
         switch(i)
         {
+        case 38054:
+            spellInfo->MaxAffectedTargets = 10;
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_AREA_ENTRY_SRC;
+            spellInfo->Targets = TARGET_FLAG_OBJECT & TARGET_FLAG_DEST_LOCATION;
+            spellInfo->EffectMiscValue[0] = 0;
+            break;
         case 33824:
             spellInfo->Effect[2] = 0;
             break;
