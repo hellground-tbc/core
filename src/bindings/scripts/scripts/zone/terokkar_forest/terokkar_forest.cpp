@@ -391,7 +391,7 @@ struct TRINITY_DLL_DECL npc_isla_starmaneAI : public npc_escortAI
             {
             GameObject* Cage = FindGameObject(GO_CAGE, 10, m_creature);
             if(Cage)
-                Cage->SetGoState(0);
+                Cage->SetGoState(GO_STATE_ACTIVE);
             }break;
         case 2: DoScriptText(SAY_PROGRESS_1, m_creature, player); break;
         case 5: DoScriptText(SAY_PROGRESS_2, m_creature, player); break;
@@ -518,7 +518,7 @@ void SendActionMenu_go_skull_pile(Player *player, GameObject* _GO, uint32 action
     // GO should be despawned by spell casted below, but it's not working :(
     if(player->HasItemCount(32620, 10))
     {
-        _GO->SetGoState(0);
+        _GO->SetGoState(GO_STATE_ACTIVE);
         _GO->SetRespawnTime(600);
         player->CLOSE_GOSSIP_MENU();
     }
@@ -573,7 +573,7 @@ bool GossipSelect_go_ancient_skull_pile(Player *player, GameObject* _GO, uint32 
                 player->DestroyItemCount(32720, 1, true);
                 player->SummonCreature(21838, _GO->GetPositionX(), _GO->GetPositionY(), _GO->GetPositionZ(), player->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 0);
                 player->CLOSE_GOSSIP_MENU();
-                _GO->SetGoState(0);
+                _GO->SetGoState(GO_STATE_ACTIVE);
                 _GO->SetRespawnTime(600);
             }
             break;
@@ -1006,7 +1006,7 @@ struct TRINITY_DLL_DECL npc_skyguard_prisonerAI : public npc_escortAI
             {
             GameObject* Cage = FindGameObject(GO_CAGE, 10, m_creature);
             if(Cage)
-                Cage->SetGoState(0);
+                Cage->SetGoState(GO_STATE_ACTIVE);
             DoScriptText(SAY_PROGRESS_1, m_creature, player);
             }
             break;

@@ -1087,7 +1087,7 @@ float ethereum_NPC[2][7] =
 
 bool GOHello_go_ethereum_prison(Player *player, GameObject* _GO)
 {
- _GO->SetGoState(0);
+ _GO->SetGoState(GO_STATE_ACTIVE);
  uint32 entry;
 
 switch(rand()%2)

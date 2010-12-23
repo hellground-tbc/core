@@ -1034,7 +1034,7 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
                 }
 
                 if (GameObject *pDoor = me->GetMap()->GetGameObject(pInstance->GetData64(DATA_GAMEOBJECT_ILLIDAN_GATE)))
-                    pDoor->SetGoState(0);
+                    pDoor->SetGoState(GO_STATE_ACTIVE);
 
                 m_phaseTimer = 2000;
                 break;

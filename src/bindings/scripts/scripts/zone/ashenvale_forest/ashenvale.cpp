@@ -198,7 +198,7 @@ struct TRINITY_DLL_DECL npc_ruul_snowhoofAI : public npc_escortAI
                 m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
                 GameObject* Cage = FindGameObject(GO_CAGE, 20, m_creature);
                 if(Cage)
-                    Cage->SetGoState(0);
+                    Cage->SetGoState(GO_STATE_ACTIVE);
                 break;
         }
         case 13:
@@ -223,7 +223,7 @@ struct TRINITY_DLL_DECL npc_ruul_snowhoofAI : public npc_escortAI
     void Reset()
     {
         if (GameObject* Cage = FindGameObject(GO_CAGE, 20, m_creature))
-            Cage->SetGoState(1);
+            Cage->SetGoState(GO_STATE_READY);
     }
 };
 
@@ -371,7 +371,7 @@ struct TRINITY_DLL_DECL npc_muglashAI : public npc_escortAI
                     {
                         pGo->SetLootState(GO_JUST_DEACTIVATED);
                         pGo->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_UNK1);
-                        pGo->SetGoState(1);
+                        pGo->SetGoState(GO_STATE_READY);
                     }
                 }
                 DoScriptText(SAY_MUG_RETURN, m_creature);
@@ -429,7 +429,7 @@ struct TRINITY_DLL_DECL npc_muglashAI : public npc_escortAI
                 {
                     pGo->SetLootState(GO_JUST_DEACTIVATED);
                     pGo->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_UNK1);
-                    pGo->SetGoState(1);
+                    pGo->SetGoState(GO_STATE_READY);
                 }
             }
         }

@@ -227,7 +227,7 @@ void GameObject::Update(uint32 diff)
                         Unit* caster = GetOwner();
                         if(caster && caster->GetTypeId()==TYPEID_PLAYER)
                         {
-                            SetGoState(0);
+                            SetGoState(GO_STATE_ACTIVE);
                             SetUInt32Value(GAMEOBJECT_FLAGS, GO_FLAG_NODESPAWN);
 
                             UpdateData udata;
@@ -519,7 +519,7 @@ void GameObject::Delete()
 {
     SendObjectDeSpawnAnim(GetGUID());
 
-    SetGoState(1);
+    SetGoState(GO_STATE_READY);
     SetUInt32Value(GAMEOBJECT_FLAGS, GetGOInfo()->flags);
 
     uint16 poolid = poolhandler.IsPartOfAPool(GetGUIDLow(), TYPEID_GAMEOBJECT);
@@ -939,9 +939,9 @@ void GameObject::SwitchDoorOrButton(bool activate)
         RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
 
     if(GetGoState())                                        //if closed -> open
-        SetGoState(0);
+        SetGoState(GO_STATE_ACTIVE);
     else                                                    //if open -> close
-        SetGoState(1);
+        SetGoState(GO_STATE_READY);
 }
 
 void GameObject::Use(Unit* user)
@@ -1079,7 +1079,7 @@ void GameObject::Use(Unit* user)
                 SendMessageToSet(&data, true);
             }
             else
-                SetGoState(0);
+                SetGoState(GO_STATE_ACTIVE);
 
             m_cooldownTime = time(NULL) + time_to_restore;
             */

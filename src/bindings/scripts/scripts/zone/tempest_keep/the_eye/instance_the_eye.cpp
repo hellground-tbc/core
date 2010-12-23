@@ -181,14 +181,14 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
                     for(std::set<uint64>::iterator i = DoorGUID.begin(); i != DoorGUID.end(); ++i)
                     {
                         if(GameObject *Door = instance->GetGameObject(*i))
-                        Door->SetGoState(0);
+                        Door->SetGoState(GO_STATE_ACTIVE);
                     }
                 }
                 else
                     for(std::set<uint64>::iterator i = DoorGUID.begin(); i != DoorGUID.end(); ++i)
                     {
                         if(GameObject *Door = instance->GetGameObject(*i))
-                        Door->SetGoState(1);
+                        Door->SetGoState(GO_STATE_READY);
                     }
                 if(Encounters[3] != DONE)
                     Encounters[3] = data;

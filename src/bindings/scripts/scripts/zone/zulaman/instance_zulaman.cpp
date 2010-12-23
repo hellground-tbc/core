@@ -164,9 +164,9 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
         case 187359: StrangeGongGUID = go->GetGUID(); break;
         case 186728: MassiveGateGUID = go->GetGUID();
             if (Encounters[0] == IN_PROGRESS || Encounters[0] == DONE)
-                    go->SetGoState(0);  //opened
+                    go->SetGoState(GO_STATE_ACTIVE);  //opened
             else
-                go->SetGoState(1);   //closed
+                go->SetGoState(GO_STATE_READY);   //closed
                 break;
         case 186303: HalazziDoorGUID = go->GetGUID(); break;
         case 186304: ZulJinGateGUID  = go->GetGUID(); break;

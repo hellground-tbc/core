@@ -338,7 +338,7 @@ const uint32 NpcStasisEntry[] =
 
 bool GOHello_go_ethereum_stasis(Player* pPlayer, GameObject* pGo)
 {
-    pGo->SetGoState(0);
+    pGo->SetGoState(GO_STATE_ACTIVE);
     pPlayer->SummonCreature(NpcStasisEntry[rand()%5],pGo->GetPositionX(), pGo->GetPositionY(), pGo->GetPositionZ(), pGo->GetAngle(pPlayer), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
     pGo->SetRespawnTime(120);
     return false;

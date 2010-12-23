@@ -155,9 +155,9 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
         if(GameObject* Doors = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_GAMEOBJECT_SUPREMUS_DOORS)))
         {
             if(close)
-                Doors->SetGoState(1);                   // Closed
+                Doors->SetGoState(GO_STATE_READY);                   // Closed
             else
-                Doors->SetGoState(0);                   // Opened
+                Doors->SetGoState(GO_STATE_ACTIVE);                   // Opened
         }
     }
 

@@ -154,7 +154,7 @@ struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
             if(data != IN_PROGRESS)
             {
                 if(GameObject *Door = instance->GetGameObject(DoorGUID))
-                    Door->SetGoState(0);
+                    Door->SetGoState(GO_STATE_ACTIVE);
             }
             break;
         case DATA_CHANNELER_EVENT:
@@ -176,7 +176,7 @@ struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
                     }
                     CageTimer = 0;
                     if(GameObject *Door = instance->GetGameObject(DoorGUID))
-                        Door->SetGoState(0);
+                        Door->SetGoState(GO_STATE_ACTIVE);
                 }break;
             case IN_PROGRESS: // Event start.
                 if(Encounters[1] != IN_PROGRESS)
@@ -202,7 +202,7 @@ struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
                         CageTimer = 120000;
                     }
                     if(GameObject *Door = instance->GetGameObject(DoorGUID))
-                        Door->SetGoState(1);
+                        Door->SetGoState(GO_STATE_READY);
                 }break;
             case DONE: // Add buff and check if all channelers are dead.
                 Creature *STCaster = instance->GetCreature(STCasterGUID);
