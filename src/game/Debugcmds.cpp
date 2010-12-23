@@ -622,12 +622,12 @@ bool ChatHandler::HandleDebugThreatList(const char * /*args*/)
     if(!target || target->isTotem() || target->isPet())
         return false;
 
-    Player *pOwner = GetSession()->GetPlayer();
+    Player *pOwner = m_session->GetPlayer();
     if (!pOwner || pOwner->HasSpellCooldown(COMMAND_COOLDOWN))
         return;
 
     uint32 max_count = 0;
-    if (GetSession()->GetSecurity() <= SEC_PLAYER)
+    if (m_session()->GetSecurity() <= SEC_PLAYER)
     {
         pOwner->AddSpellCooldown(COMMAND_COOLDOWN, 0, time(NULL) +30);
         max_count = 3;
