@@ -627,7 +627,7 @@ bool ChatHandler::HandleDebugThreatList(const char * /*args*/)
         return;
 
     uint32 max_count = 0;
-    if (m_session()->GetSecurity() <= SEC_PLAYER)
+    if (m_session->GetSecurity() <= SEC_PLAYER)
     {
         pOwner->AddSpellCooldown(COMMAND_COOLDOWN, 0, time(NULL) +30);
         max_count = 3;
