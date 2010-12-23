@@ -375,10 +375,8 @@ void Unit::Update( uint32 p_time )
     // Spells must be processed with event system BEFORE they go to _UpdateSpells.
     // Or else we may have some SPELL_STATE_FINISHED spells stalled in pointers, that is bad.
 
-    sWorld.m_spellUpdateLock.acquire();
-        m_Events.Update( p_time );
-        _UpdateSpells( p_time );
-    sWorld.m_spellUpdateLock.release();
+    m_Events.Update( p_time );
+    _UpdateSpells( p_time );
 
     // update combat timer only for players and pets
     if (isInCombat() && isCharmedOwnedByPlayerOrPlayer())
@@ -9153,7 +9151,7 @@ void Unit::DestroyForNearbyPlayers()
     Trinity::AnyUnitInObjectRangeCheck check(this, GetMap()->GetVisibilityDistance());
     Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(targets, check);
     Cell::VisitWorldObjects(this, searcher, GetMap()->GetVisibilityDistance());
-    
+
     for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
         if(*iter != this && (*iter)->GetTypeId() == TYPEID_PLAYER
             && ((Player*)(*iter))->HaveAtClient(this))
@@ -11235,7 +11233,7 @@ Unit* Unit::SelectNearbyTarget(float dist) const
     std::list<Unit *> targets;
     Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(this, this, dist);
     Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(targets, u_check);
-    
+
     Cell::VisitWorldObjects(this, searcher, dist);
 
     // remove current target

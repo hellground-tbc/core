@@ -573,7 +573,6 @@ class World
 
         void RecordTimeDiff(const char * text, ...);
         void addDisconnectTime(std::pair<uint32,time_t> tPair){ m_disconnects.insert(tPair); }
-        ACE_Thread_Mutex m_spellUpdateLock;
 
         // available heroic quests
         uint32 specialQuest[6];
