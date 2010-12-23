@@ -23,6 +23,7 @@
 #include "Cell.h"
 #include "Map.h"
 #include <cmath>
+#include "Object.h"
 
 inline Cell::Cell(CellPair const& p)
 {
