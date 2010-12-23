@@ -672,17 +672,21 @@ void WorldSession::HandleAddIgnoreOpcodeCallBack(QueryResult_AutoPtr result, uin
 
         if(IgnoreGuid)
         {
-            if(IgnoreGuid==session->GetPlayer()->GetGUID())              //not add yourself
-                ignoreResult = FRIEND_IGNORE_SELF;
-            else if( session->GetPlayer()->GetSocial()->HasIgnore(GUID_LOPART(IgnoreGuid)) )
-                ignoreResult = FRIEND_IGNORE_ALREADY;
-            else
+            Player * tmp = ObjectAccessor::GetPlayer(IgnoreGuid);
+            if (!tmp || tmp->GetSession()->GetSecurity() <= session->GetSecurity()) //add only players with the same or lower security level
             {
-                ignoreResult = FRIEND_IGNORE_ADDED;
+                if (IgnoreGuid==session->GetPlayer()->GetGUID())              //not add yourself
+                    ignoreResult = FRIEND_IGNORE_SELF;
+                else if( session->GetPlayer()->GetSocial()->HasIgnore(GUID_LOPART(IgnoreGuid)) )
+                    ignoreResult = FRIEND_IGNORE_ALREADY;
+                else
+                {
+                    ignoreResult = FRIEND_IGNORE_ADDED;
 
-                // ignore list full
-                if(!session->GetPlayer()->GetSocial()->AddToSocialList(GUID_LOPART(IgnoreGuid), true))
-                    ignoreResult = FRIEND_IGNORE_FULL;
+                    // ignore list full
+                    if(!session->GetPlayer()->GetSocial()->AddToSocialList(GUID_LOPART(IgnoreGuid), true))
+                        ignoreResult = FRIEND_IGNORE_FULL;
+                }
             }
         }
     }
