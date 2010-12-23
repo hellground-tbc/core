@@ -10794,8 +10794,8 @@ Item* Player::EquipItem( uint16 pos, Item *pItem, bool update )
                     AddItemsSetItem(this,pItem);
 
                 _ApplyItemMods(pItem, slot, true);
-
-                if(pProto && isInCombat()&& pProto->Class == ITEM_CLASS_WEAPON && m_weaponChangeTimer == 0)
+                                            // weapon or idol/relic
+                if(pProto && isInCombat()&& (pProto->Class == ITEM_CLASS_WEAPON || pProto->Class == ITEM_CLASS_ARMOR) && m_weaponChangeTimer == 0)
                 {
                     uint32 cooldownSpell = SPELL_ID_WEAPON_SWITCH_COOLDOWN_1_5s;
 
@@ -11512,6 +11512,10 @@ void Player::SwapItem( uint16 src, uint16 dst )
         return;
     }
 
+    InterruptNonMeleeSpells(false);
+    resetAttackTimer(BASE_ATTACK);
+    resetAttackTimer(OFF_ATTACK);
+    resetAttackTimer(RANGED_ATTACK);
     // DST checks
 
     if (pDstItem)
@@ -17441,7 +17445,7 @@ void Player::HandleStealthedUnitsDetection()
     std::list<Unit*> stealthedUnits;
     Trinity::AnyStealthedCheck u_check;
     Trinity::UnitListSearcher<Trinity::AnyStealthedCheck > searcher(stealthedUnits, u_check);
-    
+
     Cell::VisitAllObjects(this, searcher, MAX_PLAYER_STEALTH_DETECT_RANGE);
 
     for (std::list<Unit*>::const_iterator i = stealthedUnits.begin(); i != stealthedUnits.end(); ++i)
