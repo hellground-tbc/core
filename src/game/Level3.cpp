@@ -6855,6 +6855,72 @@ bool ChatHandler::HandleInstanceUnbindCommand(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleInstanceSelfUnbindCommand(const char* args)
+{
+    if(!*args)
+        return false;
+
+    std::string cmd = args;
+    if(cmd == "all")
+    {
+        Player* player = m_session->GetPlayer();
+        uint32 counter = 0;
+        for(uint8 i = 0; i < TOTAL_DIFFICULTIES; i++)
+        {
+            Player::BoundInstancesMap &binds = player->GetBoundInstances(i);
+            for(Player::BoundInstancesMap::iterator itr = binds.begin(); itr != binds.end();)
+            {
+                if(itr->first != player->GetMapId())
+                {
+                    InstanceSave *save = itr->second.save;
+                    std::string timeleft = GetTimeString(save->GetResetTime() - time(NULL));
+                    PSendSysMessage("unbinding map: %d inst: %d perm: %s diff: %s canReset: %s TTR: %s", itr->first, save->GetInstanceId(), itr->second.perm ? "yes" : "no",  save->GetDifficulty() == DIFFICULTY_NORMAL ? "normal" : "heroic", save->CanReset() ? "yes" : "no", timeleft.c_str());
+                    player->UnbindInstance(itr, i);
+                    counter++;
+                }
+                else
+                    ++itr;
+            }
+        }
+        PSendSysMessage("instances unbound: %d", counter);
+    }
+    else
+    {
+        Player* player = m_session->GetPlayer();
+        uint32 unbInst = 0;
+        for(uint8 i = 0; i < TOTAL_DIFFICULTIES; i++)
+        {
+            Player::BoundInstancesMap &binds = player->GetBoundInstances(i);
+            for(Player::BoundInstancesMap::iterator itr = binds.begin(); itr != binds.end(); ++itr)
+            {
+                if(itr->first != player->GetMapId())
+                {
+                    InstanceSave *save = itr->second.save;
+                    char * tmp = new char[20];
+                    sprintf(tmp, "%u", save->GetInstanceId());
+                    std::string instId = tmp;
+
+                    if (cmd == instId)
+                    {
+                        unbInst = save->GetInstanceId();
+                        std::string timeleft = GetTimeString(save->GetResetTime() - time(NULL));
+                        PSendSysMessage("unbinding map: %d inst: %d perm: %s diff: %s canReset: %s TTR: %s", itr->first, save->GetInstanceId(), itr->second.perm ? "yes" : "no",  save->GetDifficulty() == DIFFICULTY_NORMAL ? "normal" : "heroic", save->CanReset() ? "yes" : "no", timeleft.c_str());
+                        player->UnbindInstance(itr, i);
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (unbInst)
+            PSendSysMessage("instance unbound: %d", unbInst);
+        else
+            PSendSysMessage("instance id %s not found or player in instance", args);
+    }
+
+    return true;
+}
+
 bool ChatHandler::HandleInstanceStatsCommand(const char* /*args*/)
 {
     PSendSysMessage("instances loaded: %d", MapManager::Instance().GetNumInstances());
@@ -7641,7 +7707,7 @@ bool ChatHandler::HandleNearGridObjectCommand(const char* args)
     std::list<GameObject*> tmpL;
     Trinity::AllGameObjectsInRange go_check(m_session->GetPlayer(), 20.0f);
     Trinity::GameObjectListSearcher<Trinity::AllGameObjectsInRange> searcher(tmpL, go_check);
-    
+
     Cell::VisitWorldObjects(m_session->GetPlayer(), searcher, 20.0f);
 
     PSendSysMessage("All Game Objects in 20 yd range:");
