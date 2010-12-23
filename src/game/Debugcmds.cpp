@@ -38,6 +38,8 @@
 #include "ObjectMgr.h"
 #include "InstanceData.h"
 
+#define COMMAND_COOLDOWN 2
+
 bool ChatHandler::HandleAddWPCommand(const char* args)
 {
     std::fstream file;
@@ -620,15 +622,31 @@ bool ChatHandler::HandleDebugThreatList(const char * /*args*/)
     if(!target || target->isTotem() || target->isPet())
         return false;
 
+    Player *pOwner = GetSession()->GetPlayer();
+    if (!pOwner || pOwner->HasSpellCooldown(COMMAND_COOLDOWN))
+        return;
+
+    uint32 max_count = 0;
+    if (GetSession()->GetSecurity() <= SEC_PLAYER)
+    {
+        pOwner->AddSpellCooldown(COMMAND_COOLDOWN, 0, time(NULL) +30);
+        max_count = 3;
+    }
+
     std::list<HostilReference*>& tlist = target->getThreatManager().getThreatList();
     std::list<HostilReference*>::iterator itr;
     uint32 cnt = 0;
+
     PSendSysMessage("Threat list of %s (guid %u)",target->GetName(), target->GetGUIDLow());
     for(itr = tlist.begin(); itr != tlist.end(); ++itr)
     {
-        Unit* unit = (*itr)->getTarget();
+        if (max_count && max_count >= cnt)
+            break;
+
+        Unit *unit = (*itr)->getTarget();
         if(!unit)
             continue;
+
         ++cnt;
         PSendSysMessage("   %u.   %s   (guid %u)  - threat %f",cnt,unit->GetName(), unit->GetGUIDLow(), (*itr)->getThreat());
     }
