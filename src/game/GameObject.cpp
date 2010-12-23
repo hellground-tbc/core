@@ -405,7 +405,7 @@ void GameObject::Update(uint32 diff)
                         SetLootState(GO_JUST_DEACTIVATED);
                     }
                     break;
-                case GAMEOBJECT_TYPE_GOOBER:
+                /*case GAMEOBJECT_TYPE_GOOBER:
                     if (m_cooldownTime < time(NULL))
                     {
                         RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
@@ -414,7 +414,7 @@ void GameObject::Update(uint32 diff)
                         m_cooldownTime = 0;
                     }
                     break;
-                case GAMEOBJECT_TYPE_CHEST:
+                */case GAMEOBJECT_TYPE_CHEST:
                     if(m_groupLootTimer && lootingGroupLeaderGUID)
                     {
                         if(diff <= m_groupLootTimer)
@@ -1064,6 +1064,7 @@ void GameObject::Use(Unit* user)
             if (uint32 trapEntry = info->goober.linkedTrapId)
                 TriggeringLinkedGameObject(trapEntry, user);
 
+            /*           
             SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
             SetLootState(GO_ACTIVATED);
 
@@ -1081,7 +1082,7 @@ void GameObject::Use(Unit* user)
                 SetGoState(0);
 
             m_cooldownTime = time(NULL) + time_to_restore;
-
+            */
             // cast this spell later if provided
             spellId = info->goober.spellId;
             break;
