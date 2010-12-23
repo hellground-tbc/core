@@ -1604,7 +1604,7 @@ WorldObject* Spell::SearchNearbyTarget(float range, SpellTargets TargetType)
             Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(m_caster, m_caster, range);
             Trinity::UnitLastSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(target, u_check);
 
-            Cell::VisitWorldObjects(m_caster, searcher, range);
+            Cell::VisitAllObjects(m_caster, searcher, range);
             return target;
         }
         case SPELL_TARGETS_ALLY:
@@ -1613,7 +1613,7 @@ WorldObject* Spell::SearchNearbyTarget(float range, SpellTargets TargetType)
             Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(m_caster, m_caster, range);
             Trinity::UnitLastSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(target, u_check);
 
-            Cell::VisitWorldObjects(m_caster, searcher, range);
+            Cell::VisitAllObjects(m_caster, searcher, range);
             return target;
         }
     }

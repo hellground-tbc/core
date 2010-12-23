@@ -7708,7 +7708,7 @@ bool ChatHandler::HandleNearGridObjectCommand(const char* args)
     Trinity::AllGameObjectsInRange go_check(m_session->GetPlayer(), 20.0f);
     Trinity::GameObjectListSearcher<Trinity::AllGameObjectsInRange> searcher(tmpL, go_check);
 
-    Cell::VisitWorldObjects(m_session->GetPlayer(), searcher, 20.0f);
+    Cell::VisitGridObjects(m_session->GetPlayer(), searcher, 20.0f);
 
     PSendSysMessage("All Game Objects in 20 yd range:");
     PSendSysMessage("--------------------------------");

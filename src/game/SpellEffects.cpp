@@ -2286,7 +2286,7 @@ void Spell::EffectTriggerSpell(uint32 i)
             Trinity::AllCreaturesOfEntryInRange u_check(m_caster, 21633, 70.0f);
             Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(pList, u_check);
          
-            Cell::VisitWorldObjects(m_caster, searcher, 70.0f);
+            Cell::VisitAllObjects(m_caster, searcher, 70.0f);
             
             if (pList.size() == 0)
             {
@@ -5660,7 +5660,7 @@ void Spell::EffectSanctuary(uint32 /*i*/)
     Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(unitTarget, unitTarget, m_caster->GetMap()->GetVisibilityDistance());
     Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(targets, u_check);
     
-    Cell::VisitWorldObjects(unitTarget, searcher, m_caster->GetMap()->GetVisibilityDistance());
+    Cell::VisitAllObjects(unitTarget, searcher, m_caster->GetMap()->GetVisibilityDistance());
 
     for (std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
     {

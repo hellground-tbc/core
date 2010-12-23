@@ -3556,7 +3556,7 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
         Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(m_target, m_target, m_target->GetMap()->GetVisibilityDistance());
         Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(targets, u_check);
         
-        Cell::VisitWorldObjects(m_target, searcher, m_target->GetMap()->GetVisibilityDistance());
+        Cell::VisitAllObjects(m_target, searcher, m_target->GetMap()->GetVisibilityDistance());
 
         for (std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
         {

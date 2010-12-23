@@ -3285,7 +3285,7 @@ struct TRINITY_DLL_DECL mob_deathbringer_joovanAI : public ScriptedAI
                         Trinity::AnyUnitInObjectRangeCheck u_check(me, 20.0f);
                         Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(pList, u_check);
 
-                        Cell::VisitWorldObjects(me, searcher, 20.0f);
+                        Cell::VisitAllObjects(me, searcher, 20.0f);
 
                         Creature* warbringer = (Creature*)me->GetUnit(*me, ImageOfWarbringerGUID);
                         if(!warbringer)

@@ -1040,7 +1040,7 @@ Unit* FindCreature(uint32 entry, float range, Unit* Finder)
     Trinity::AllCreaturesOfEntryInRange check(Finder, entry, range);
     Trinity::CreatureSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(target, check);
     
-    Cell::VisitWorldObjects(Finder, searcher, range);
+    Cell::VisitAllObjects(Finder, searcher, range);
     return target;
 }
 
@@ -1061,7 +1061,7 @@ Unit* ScriptedAI::DoSelectLowestHpFriendly(float range, uint32 MinHPDiff)
     Trinity::MostHPMissingInRange u_check(m_creature, range, MinHPDiff);
     Trinity::UnitLastSearcher<Trinity::MostHPMissingInRange> searcher(pUnit, u_check);
     
-    Cell::VisitWorldObjects(m_creature, searcher, range);
+    Cell::VisitAllObjects(m_creature, searcher, range);
     return pUnit;
 }
 
@@ -1089,7 +1089,7 @@ std::list<Creature*> ScriptedAI::DoFindFriendlyCC(float range)
     Trinity::FriendlyCCedInRange u_check(m_creature, range);
     Trinity::CreatureListSearcher<Trinity::FriendlyCCedInRange> searcher(pList, u_check);
 
-    Cell::VisitWorldObjects(m_creature, searcher, range);
+    Cell::VisitAllObjects(m_creature, searcher, range);
     return pList;
 }
 
@@ -1099,7 +1099,7 @@ std::list<Creature*> ScriptedAI::DoFindFriendlyMissingBuff(float range, uint32 s
     Trinity::FriendlyMissingBuffInRange u_check(m_creature, range, spellid);
     Trinity::CreatureListSearcher<Trinity::FriendlyMissingBuffInRange> searcher(pList, u_check);
 
-    Cell::VisitWorldObjects(m_creature, searcher, range);
+    Cell::VisitAllObjects(m_creature, searcher, range);
     return pList;
 }
 
@@ -1109,7 +1109,7 @@ std::list<Unit*> ScriptedAI::DoFindAllDeadInRange(float range)
     Trinity::AllDeadUnitsInRange u_check(m_creature, range);
     Trinity::UnitListSearcher<Trinity::AllDeadUnitsInRange> searcher(pList, u_check);
 
-    Cell::VisitWorldObjects(m_creature, searcher, range);
+    Cell::VisitAllObjects(m_creature, searcher, range);
     return pList;
 }
 
