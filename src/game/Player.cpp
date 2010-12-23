@@ -14936,26 +14936,10 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
 
     if (m_class == CLASS_SHAMAN && m_race == RACE_DRAENEI)
     {
-        // ES || Totem of Wrath
-        if (HasSpell(974) || HasSpell(30706))
-        {
-            if (!HasAura(28878,0))
-                learnSpell(28878);
+        if (!HasAura(28878,0))
+            learnSpell(28878);
 
-            removeSpell(6562);
-        }
-        else if(HasSpell(17364))
-        {
-            if (!HasAura(6562,0))
-                learnSpell(6562);
-
-            removeSpell(28878);
-        }
-    }
-    else if(m_class == CLASS_SHAMAN && m_race != RACE_DRAENEI)
-    {
         removeSpell(6562);
-        removeSpell(28878);
     }
     return true;
 }
