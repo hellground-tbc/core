@@ -984,8 +984,8 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         // caster->SendSpellNonMeleeDamageLog(&damageInfo);
 
         procEx = createProcExtendMask(&damageInfo, missInfo);
-        procVictim |= PROC_FLAG_TAKEN_ANY_DAMAGE;
-
+        if(damageInfo.damage)
+            procVictim |= PROC_FLAG_TAKEN_ANY_DAMAGE;
 
         caster->DealSpellDamage(&damageInfo, true);
         // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)

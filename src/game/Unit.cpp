@@ -1549,7 +1549,6 @@ void Unit::CalculateMeleeDamage(MeleeDamageLog *damageInfo)
     // Calculate absorb resist
     if(int32(damageInfo->damage) > 0)
     {
-        damageInfo->procVictim |= PROC_FLAG_TAKEN_ANY_DAMAGE;
         // Calculate absorb & resists
         CalcAbsorbResist(damageInfo->target, SpellSchoolMask(damageInfo->schoolMask), DIRECT_DAMAGE, damageInfo->damage, &damageInfo->absorb, &damageInfo->resist);
         damageInfo->damage -= damageInfo->absorb + damageInfo->resist;
@@ -1562,6 +1561,8 @@ void Unit::CalculateMeleeDamage(MeleeDamageLog *damageInfo)
         }
         if (damageInfo->resist)
             damageInfo->hitInfo |= HITINFO_RESIST;
+        if (damageInfo->damage)
+            damageInfo->procVictim |= PROC_FLAG_TAKEN_ANY_DAMAGE;
     }
     else // Umpossible get negative result but....
         damageInfo->damage = 0;
@@ -5343,7 +5344,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     if( procSpell->SpellFamilyFlags & 0x0000000000008000LL )
                         triggered_spell_id = 40441;
                     // Renew
-                    else if( procSpell->SpellFamilyFlags & 0x0000000000000010LL )
+                    else if( procSpell->SpellFamilyFlags & 0x0000000000000040LL )
                         triggered_spell_id = 40440;
                     else
                         return false;
@@ -10866,7 +10867,6 @@ void Unit::ProcDamageAndSpellFor( bool isVictim, Unit * pTarget, uint32 procFlag
             {
                 sLog.outDebug("ProcDamageAndSpell: casting mending (triggered by %s dummy aura of spell %u)",
                     (isVictim?"a victim's":"an attacker's"),triggeredByAura->GetId());
-
                 HandleMeandingAuraProc(triggeredByAura);
                 break;
             }
@@ -12569,13 +12569,13 @@ Unit* Unit::GetNextRandomRaidMember(float radius)
             // IsHostileTo check duel and controlled by enemy
             if( Target != this && IsWithinDistInMap(Target, radius) &&
                 !Target->HasInvisibilityAura() && !IsHostileTo(Target) &&
-                !Target->HasAuraType(SPELL_AURA_MOD_UNATTACKABLE))
+                !Target->HasAuraType(SPELL_AURA_MOD_UNATTACKABLE) && Target->isAlive())
                     nearMembers.push_back(Target);
 
             if( Pet *pet = Target->GetPet())
                 if( pet != this && IsWithinDistInMap(pet, radius) &&
                     !pet->HasInvisibilityAura() && !IsHostileTo(pet) &&
-                    !pet->HasAuraType(SPELL_AURA_MOD_UNATTACKABLE))
+                    !pet->HasAuraType(SPELL_AURA_MOD_UNATTACKABLE) && pet->isAlive())
                     nearMembers.push_back(pet);
         }
     }
