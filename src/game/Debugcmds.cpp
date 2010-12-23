@@ -624,7 +624,7 @@ bool ChatHandler::HandleDebugThreatList(const char * /*args*/)
 
     Player *pOwner = m_session->GetPlayer();
     if (!pOwner || pOwner->HasSpellCooldown(COMMAND_COOLDOWN))
-        return;
+        return false;
 
     uint32 max_count = 0;
     if (m_session->GetSecurity() <= SEC_PLAYER)
