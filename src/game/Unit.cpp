@@ -1695,18 +1695,19 @@ void Unit::DealMeleeDamage(MeleeDamageLog *damageInfo, bool durabilityLoss)
                alreadyDone.insert(*i);
                uint32 damage=(*i)->GetModifier()->m_amount;
 
-               if(pVictim->HasAura(37190,0))
-                   damage += 15;
-
                SpellEntry const *spellProto = sSpellStore.LookupEntry((*i)->GetId());
                if(!spellProto)
                    continue;
 
-               WorldPacket data(SMSG_SPELLDAMAGESHIELD,(8+8+4+4));
+               if(pVictim->HasAura(37190,0) && spellProto->SpellFamilyName == SPELLFAMILY_PALADIN && spellProto->SpellFamilyFlags == 0x8)
+                   damage += 15;
+
+               WorldPacket data(SMSG_SPELLDAMAGESHIELD,(8+8+4+4+4));
                data << uint64(pVictim->GetGUID());
                data << uint64(GetGUID());
-               data << uint32(spellProto->SchoolMask);
+               data << uint32(spellProto->Id);
                data << uint32(damage);
+               data << uint32(spellProto->SchoolMask);
                pVictim->SendMessageToSet(&data, true );
 
                pVictim->DealDamage(this, damage, SPELL_DIRECT_DAMAGE, GetSpellSchoolMask(spellProto), spellProto, true);
