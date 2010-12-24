@@ -4852,19 +4852,19 @@ void Spell::EffectInterruptCast(uint32 i)
 
     // TODO: not all spells that used this effect apply cooldown at school spells
     // also exist case: apply cooldown to interrupted cast only and to all spells
-    for (uint32 i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_MAX_SPELL; i++)
+    for (uint32 k = CURRENT_FIRST_NON_MELEE_SPELL; k < CURRENT_MAX_SPELL; k++)
     {
-        if (unitTarget->m_currentSpells[i])
+        if (unitTarget->m_currentSpells[k])
         {
             // check if we can interrupt spell
-            if ( (unitTarget->m_currentSpells[i]->getState() == SPELL_STATE_CASTING || (unitTarget->m_currentSpells[i]->getState() == SPELL_STATE_PREPARING && unitTarget->m_currentSpells[i]->GetCastTime() > 0.0f)) && unitTarget->m_currentSpells[i]->m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_INTERRUPT && unitTarget->m_currentSpells[i]->m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE )
+            if ( (unitTarget->m_currentSpells[k]->getState() == SPELL_STATE_CASTING || (unitTarget->m_currentSpells[k]->getState() == SPELL_STATE_PREPARING && unitTarget->m_currentSpells[k]->GetCastTime() > 0.0f)) && unitTarget->m_currentSpells[k]->m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_INTERRUPT && unitTarget->m_currentSpells[k]->m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE )
             {
                 if(m_originalCaster)
                 {
                     int32 duration = m_originalCaster->CalculateSpellDuration(m_spellInfo, i, unitTarget);
-                    unitTarget->ProhibitSpellScholl(GetSpellSchoolMask(unitTarget->m_currentSpells[i]->m_spellInfo), duration/*GetSpellDuration(m_spellInfo)*/);
+                    unitTarget->ProhibitSpellScholl(GetSpellSchoolMask(unitTarget->m_currentSpells[k]->m_spellInfo), duration/*GetSpellDuration(m_spellInfo)*/);
                 }
-                unitTarget->InterruptSpell(i,false);
+                unitTarget->InterruptSpell(k,false);
             }
         }
     }
