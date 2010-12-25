@@ -163,6 +163,7 @@ class TRINITY_DLL_SPEC Aura
         void HandleAuraModIncreaseSwimSpeed(bool Apply, bool Real);
         void HandleModPowerCostPCT(bool Apply, bool Real);
         void HandleModPowerCost(bool Apply, bool Real);
+        void HandleAuraReflectSpellSchool(bool Apply, bool Real);
         void HandleFarSight(bool Apply, bool Real);
         void HandleModPossessPet(bool Apply, bool Real);
         void HandleModStateImmunityMask(bool Apply, bool Real);

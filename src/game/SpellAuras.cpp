@@ -129,7 +129,7 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleModSpellCritChanceShool,                   // 71 SPELL_AURA_MOD_SPELL_CRIT_CHANCE_SCHOOL
     &Aura::HandleModPowerCostPCT,                           // 72 SPELL_AURA_MOD_POWER_COST_SCHOOL_PCT
     &Aura::HandleModPowerCost,                              // 73 SPELL_AURA_MOD_POWER_COST_SCHOOL
-    &Aura::HandleNoImmediateEffect,                         // 74 SPELL_AURA_REFLECT_SPELLS_SCHOOL  implemented in Unit::SpellHitResult
+    &Aura::HandleAuraReflectSpellSchool,                    // 74 SPELL_AURA_REFLECT_SPELLS_SCHOOL  implemented in Unit::SpellHitResult
     &Aura::HandleNoImmediateEffect,                         // 75 SPELL_AURA_MOD_LANGUAGE
     &Aura::HandleFarSight,                                  // 76 SPELL_AURA_FAR_SIGHT
     &Aura::HandleModMechanicImmunity,                       // 77 SPELL_AURA_MECHANIC_IMMUNITY
@@ -2550,37 +2550,6 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 case 41425:
                     m_target->ModifyAuraState(AURA_STATE_HYPOTHERMIA,apply);
                     return;
-
-                case 11094:
-                case 13043:
-                case 11189:
-                case 28332:
-                {
-                    if (m_target->GetTypeId() != TYPEID_PLAYER)
-                        return;
-
-                    if (apply)
-                    {
-                        SpellModifier *mod = new SpellModifier;
-                        mod->op = SPELLMOD_EFFECT2;
-                        mod->value = GetModifierValue();
-                        mod->type = SPELLMOD_PCT;
-                        mod->spellId = GetId();
-                        mod->effectId = m_effIndex;
-                        mod->lastAffected = NULL;
-
-                        if (GetId() == 11094 || GetId() == 13043)
-                            mod->mask = 0x8LL;
-                        else
-                            mod->mask = 0x17FFLL;
-
-                        mod->charges = 0;
-                        m_spellmod = mod;
-                    }
-
-                    ((Player*)m_target)->AddSpellMod(m_spellmod, apply);
-                    return;
-                }
             }
             break;
         }
@@ -7223,6 +7192,38 @@ void Aura::HandleAuraMeleeAPAttackerBonus(bool apply, bool Real)
     }
 
     m_target->ApplyMeleeAPAttackerBonus(GetModifierValue(), apply);
+}
+
+void Aura::HandleAuraReflectSpellSchool(bool Apply, bool Real)
+{
+    if(!Real)
+        return;
+
+
+    // Frost Ward and Fire Ward
+    if(Apply && m_spellProto->SpellFamilyName == SPELLFAMILY_MAGE && m_spellProto->SpellFamilyFlags & 0x80108)
+    {
+        if(Unit *caster = GetCaster())
+            if(caster->GetTypeId() == TYPEID_PLAYER)
+            {
+                Player *playerCaster = (Player*)caster;
+
+                if(m_spellProto->SpellFamilyFlags & 0x8)
+                {
+                    if(playerCaster->HasSpell(13043))
+                        m_modifier.m_amount += 20;
+                    else if(playerCaster->HasSpell(11094))
+                        m_modifier.m_amount += 10;
+                } 
+                else
+                {
+                    if(playerCaster->HasSpell(28332))
+                        m_modifier.m_amount += 20;
+                    else if(playerCaster->HasSpell(11189))
+                        m_modifier.m_amount += 10;
+                }
+            }
+    }
 }
 
 void Aura::UnregisterSingleCastAura()
