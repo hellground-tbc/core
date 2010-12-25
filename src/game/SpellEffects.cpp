@@ -3734,11 +3734,19 @@ void Spell::EffectDispel(uint32 i)
                 if ( Player* modOwner = caster->GetSpellModOwner() )
                     modOwner->ApplySpellMod(spellInfo->Id, SPELLMOD_RESIST_DISPEL_CHANCE, miss_chance, this);
             }
-            // Try dispel
-            if (roll_chance_i(miss_chance))
-                fail_list.push_back(aur->GetId());
+
+            if(miss_chance < 100)
+            {
+                // Try dispel
+                if (roll_chance_i(miss_chance))
+                    fail_list.push_back(aur->GetId());
+                else
+                    success_list.push_back(std::pair<uint32,uint64>(aur->GetId(),aur->GetCasterGUID()));
+            }
+            // don't try to dispell effects with 100% dispell resistance (patch 2.4.3 notes)
             else
-                success_list.push_back(std::pair<uint32,uint64>(aur->GetId(),aur->GetCasterGUID()));
+                count--;
+
             // Remove buff from list for prevent doubles
             for (std::vector<Aura *>::iterator j = dispel_list.begin(); j != dispel_list.end(); )
             {
@@ -6984,11 +6992,19 @@ void Spell::EffectStealBeneficialBuff(uint32 i)
                 if ( Player* modOwner = caster->GetSpellModOwner() )
                     modOwner->ApplySpellMod(aur->GetSpellProto()->Id, SPELLMOD_RESIST_DISPEL_CHANCE, miss_chance, this);
             }
-            // Try dispel
-            if (roll_chance_i(miss_chance))
-                fail_list.push_back(aur->GetId());
+            
+            
+            if(miss_chance < 100)
+            {
+                // Try dispel
+                if (roll_chance_i(miss_chance))
+                    fail_list.push_back(aur->GetId());
+                else
+                    success_list.push_back( std::pair<uint32,uint64>(aur->GetId(),aur->GetCasterGUID()));
+            }
+            // don't try to dispell effects with 100% dispell resistance (patch 2.4.3 notes)
             else
-                success_list.push_back( std::pair<uint32,uint64>(aur->GetId(),aur->GetCasterGUID()));
+                count--;
 
             // Remove buff from list for prevent doubles
             for (std::vector<Aura *>::iterator j = steal_list.begin(); j != steal_list.end(); )
