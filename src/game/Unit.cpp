@@ -8772,7 +8772,8 @@ void Unit::Unmount()
     SetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID, 0);
     RemoveFlag( UNIT_FIELD_FLAGS, UNIT_FLAG_MOUNT );
 
-    m_AC_timer = 5000;
+    if (GetTypeId() == TYPEID_PLAYER)
+        ((Player*)this)->m_AC_timer = 5000;
 
     // only resummon old pet if the player is already added to a map
     // this prevents adding a pet to a not created map which would otherwise cause a crash
