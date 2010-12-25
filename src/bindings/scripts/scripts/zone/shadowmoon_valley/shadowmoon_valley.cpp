@@ -1918,7 +1918,7 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
         Creature* Succub1 = m_creature->SummonCreature(ILLIDARI_SUCCUBUS,SuccubPos1[0],SuccubPos1[1],SuccubPos1[2],SuccubPos1[3],TEMPSUMMON_CORPSE_TIMED_DESPAWN,0);
         Creature* Succub2 = m_creature->SummonCreature(ILLIDARI_SUCCUBUS,SuccubPos2[0],SuccubPos2[1],SuccubPos2[2],SuccubPos2[3],TEMPSUMMON_CORPSE_TIMED_DESPAWN,0);
 
-        if(!Vagath || !Succub1 || !Succub2)
+        if (!Vagath || !Succub1 || !Succub2)
             return;
 
         VagathGUID = Vagath->GetGUID();
@@ -1944,30 +1944,30 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
             return 0;
 
             case 1:
-                if(vaga)
-                ((Creature*)vaga)->Say(SAY_DIALOG_VAGATH_1,LANG_UNIVERSAL,NULL);
+                if (vaga)
+                    ((Creature*)vaga)->Say(SAY_DIALOG_VAGATH_1,LANG_UNIVERSAL,NULL);
                 return 3000;
 
             case 2:
-                for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
+                for (std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
                 {
-                    if((*iter)->GetTypeId() == TYPEID_PLAYER)
-                    DoWhisper(SAY_WHISPER_AKAMA_2, (*iter));
+                    if ((*iter)->GetTypeId() == TYPEID_PLAYER)
+                        DoWhisper(SAY_WHISPER_AKAMA_2, (*iter));
                 }
                 return 1000;
 
             case 3:
-                for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
+                for (std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
                 {
-                    if((*iter)->GetTypeId() == TYPEID_PLAYER)
-                    DoCast((*iter), SPELL_FAKE_KILL_VISUAL);
+                    if ((*iter)->GetTypeId() == TYPEID_PLAYER && (*iter)->IsInWorld())
+                        DoCast((*iter), SPELL_FAKE_KILL_VISUAL);
                 }
                 return 1000;
 
             case 4:
-                for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
+                for (std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
                 {
-                    if((*iter)->GetTypeId() == TYPEID_PLAYER)
+                    if ((*iter)->GetTypeId() == TYPEID_PLAYER && (*iter)->IsInWorld())
                     {
                         (*iter)->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
                         (*iter)->SetHealth(1);
@@ -1982,31 +1982,31 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
                 return 12000;
 
             case 6:
-                if(vaga)
-                ((Creature*)vaga)->Say(SAY_DIALOG_VAGATH_4,LANG_UNIVERSAL,NULL);
+                if (vaga)
+                    ((Creature*)vaga)->Say(SAY_DIALOG_VAGATH_4,LANG_UNIVERSAL,NULL);
                 return 15000;
 
             case 7:
-                if(vaga)
-                ((Creature*)vaga)->setDeathState(CORPSE);
-                if(Succub1)
-                ((Creature*)Succub1)->setDeathState(CORPSE);
-                if(Succub2)
-                ((Creature*)Succub2)->setDeathState(CORPSE);
+                if (vaga)
+                    ((Creature*)vaga)->setDeathState(CORPSE);
+                if (Succub1)
+                    ((Creature*)Succub1)->setDeathState(CORPSE);
+                if (Succub2)
+                    ((Creature*)Succub2)->setDeathState(CORPSE);
                 return 3000;
 
             case 8:
-                for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
+                for (std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
                 {
-                    if((*iter)->GetTypeId() == TYPEID_PLAYER)
-                    DoCast((*iter), SPELL_RESURECTION_VISUAL);
+                    if ((*iter)->GetTypeId() == TYPEID_PLAYER && (*iter)->IsInWorld())
+                        DoCast((*iter), SPELL_RESURECTION_VISUAL);
                 }
                 return 2000;
 
             case 9:
-                for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
+                for (std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
                 {
-                    if((*iter)->GetTypeId() == TYPEID_PLAYER)
+                    if ((*iter)->GetTypeId() == TYPEID_PLAYER && (*iter)->IsInWorld())
                     {
                         (*iter)->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
                         (*iter)->SetHealth((*iter)->GetMaxHealth());
@@ -2017,8 +2017,8 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
                 return 12000;
 
             case 10:
-                if(maiev)
-                ((Creature*)maiev)->Say(SAY_DIALOG_MAIEV_6,LANG_UNIVERSAL,NULL);
+                if (maiev)
+                    ((Creature*)maiev)->Say(SAY_DIALOG_MAIEV_6,LANG_UNIVERSAL,NULL);
                 return 12000;
 
             case 11:
@@ -2026,8 +2026,8 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
                 return 12000;
 
             case 12:
-                if(maiev)
-                ((Creature*)maiev)->Say(SAY_DIALOG_MAIEV_8,LANG_UNIVERSAL,NULL);
+                if (maiev)
+                    ((Creature*)maiev)->Say(SAY_DIALOG_MAIEV_8,LANG_UNIVERSAL,NULL);
                 return 1000;
 
             case 13:
@@ -2049,7 +2049,8 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
 
         Creature* Olum = m_creature->SummonCreature(SEER_OLUM,OlumPos[0],OlumPos[1],OlumPos[2],OlumPos[3],TEMPSUMMON_CORPSE_TIMED_DESPAWN,45000);    // despawn corpse after 45 seconds - Blizzlike
 
-        if(!Olum)return;
+        if (!Olum)
+            return;
 
         OlumGUID = Olum->GetGUID();
         DoScriptText(SAY_DIALOG_OLUM_1,Olum);
@@ -2067,29 +2068,49 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
         switch(Step)
         {
             case 0:
-            return 0;
+                return 0;
 
-            case 1: DoScriptText(SAY_DIALOG_PRE_AKAMA_1,m_creature); return 4000;
-            case 2: if(olum) DoScriptText(SAY_DIALOG_OLUM_2,(Creature*)olum); return 8000;
-            case 3: DoScriptText(SAY_DIALOG_PRE_AKAMA_2,m_creature); return 7000;
-            case 4: if(olum) DoScriptText(SAY_DIALOG_OLUM_3,(Creature*)olum); return 27500;
-            case 5: DoScriptText(SAY_DIALOG_PRE_AKAMA_3,m_creature); return 5000;
-            case 6: if(olum) DoScriptText(SAY_DIALOG_OLUM_4,(Creature*)olum); return 16000;
-            case 7: DoScriptText(SAY_DIALOG_PRE_AKAMA_4,m_creature); return 8000;
-            case 8: if(olum) DoScriptText(SAY_DIALOG_OLUM_5,(Creature*)olum); return 14500;
+            case 1:
+                DoScriptText(SAY_DIALOG_PRE_AKAMA_1,m_creature);
+                return 4000;
+            case 2:
+                if (olum)
+                    DoScriptText(SAY_DIALOG_OLUM_2,(Creature*)olum);
+                return 8000;
+            case 3:
+                DoScriptText(SAY_DIALOG_PRE_AKAMA_2,m_creature);
+                return 7000;
+            case 4:
+                if (olum)
+                    DoScriptText(SAY_DIALOG_OLUM_3,(Creature*)olum);
+                return 27500;
+            case 5:
+                DoScriptText(SAY_DIALOG_PRE_AKAMA_3,m_creature);
+                return 5000;
+            case 6:
+                if (olum)
+                    DoScriptText(SAY_DIALOG_OLUM_4,(Creature*)olum);
+                return 16000;
+            case 7:
+                DoScriptText(SAY_DIALOG_PRE_AKAMA_4,m_creature);
+                return 8000;
+            case 8:
+                if (olum)
+                    DoScriptText(SAY_DIALOG_OLUM_5,(Creature*)olum);
+                return 14500;
             case 9:
                 m_creature->SendMonsterMove(AkamaNewPos[0],AkamaNewPos[1],AkamaNewPos[2],2000);
                 m_creature->Relocate(AkamaNewPos[0],AkamaNewPos[1],AkamaNewPos[2], AkamaNewPos[3]);
                 return 2500;
             case 10:
-                if(olum)
+                if (olum)
                     DoCast(olum,SPELL_OLUMS_SACRIFICE);
                 return 6800;
             case 11:
-                if(olum)
+                if (olum)
                 {
                     olum->setDeathState(JUST_DIED);
-                    if(Creature* spirit = m_creature->SummonCreature(OLUMS_SPIRIT,OlumNewPos[0],OlumNewPos[1],OlumNewPos[2],OlumNewPos[3]-2.0f,TEMPSUMMON_TIMED_DESPAWN,16000))
+                    if (Creature* spirit = m_creature->SummonCreature(OLUMS_SPIRIT,OlumNewPos[0],OlumNewPos[1],OlumNewPos[2],OlumNewPos[3]-2.0f,TEMPSUMMON_TIMED_DESPAWN,16000))
                     {
                         spirit->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                         spirit->SetUnitMovementFlags(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
@@ -2113,21 +2134,31 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
                 m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE,68);
                 return 200;
             case 16:
-                if(Illidan)    DoPlaySoundToSet(Illidan,ILLIDAN_APPEARING); return 7000;
+                if (Illidan)
+                    DoPlaySoundToSet(Illidan,ILLIDAN_APPEARING);
+                return 7000;
             case 17:
-                if(Illidan)    DoScriptText(SAY_DIALOG_ILLIDAN_1,(Creature*)Illidan); return 14000;
+                if (Illidan)
+                    DoScriptText(SAY_DIALOG_ILLIDAN_1,(Creature*)Illidan);
+                return 14000;
             case 18:
                 DoScriptText(SAY_DIALOG_PRE_AKAMA_7,m_creature);
                 return 19000;
             case 19:
-                if(Illidan)    DoScriptText(SAY_DIALOG_ILLIDAN_2,(Creature*)Illidan); return 21000;
+                if (Illidan)
+                    DoScriptText(SAY_DIALOG_ILLIDAN_2,(Creature*)Illidan);
+                return 21000;
             case 20:
-                if(Illidan)    DoScriptText(SAY_DIALOG_ILLIDAN_3,(Creature*)Illidan); return 22000;
+                if (Illidan)
+                    DoScriptText(SAY_DIALOG_ILLIDAN_3,(Creature*)Illidan);
+                return 22000;
             case 21:
                 DoScriptText(SAY_DIALOG_PRE_AKAMA_8,m_creature);
                 return 1000;
             case 22:
-                if(Illidan)    Illidan->setDeathState(CORPSE);    return 1000;
+                if (Illidan)
+                    Illidan->setDeathState(CORPSE);
+                return 1000;
             case 23:
                 PreludeReset();
                 return 100;
@@ -2139,9 +2170,9 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(EventStarted && VagathGUID)
+        if (EventStarted && VagathGUID)
         {
-            if(TalkTimer < diff)
+            if (TalkTimer < diff)
             {
                 TalkTimer = NextStep(Step++);
             }
@@ -2151,7 +2182,7 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
 
         if(PreludeEventStarted && OlumGUID)
         {
-            if(Step == 16 && !IllidanGUID && TalkTimer < diff)
+            if (Step == 16 && !IllidanGUID && TalkTimer < diff)
             {
                 Creature* Illidan = m_creature->SummonCreature(ILLIDAN,OlumNewPos[0]-3.0f,OlumNewPos[1]+0.5f,OlumNewPos[2],OlumNewPos[3],TEMPSUMMON_CORPSE_DESPAWN,0);
                 Illidan->SetFloatValue(OBJECT_FIELD_SCALE_X,0.65f);
@@ -2159,7 +2190,7 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
                 Illidan->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NOT_SELECTABLE);
                 IllidanGUID = Illidan->GetGUID();
             }
-            if(TalkTimer < diff)
+            if (TalkTimer < diff)
             {
                 TalkTimer = PreludeNextStep(Step++);
             }
@@ -2178,13 +2209,13 @@ bool ChooseReward_npc_Akama(Player *player, Creature *_Creature, const Quest *_Q
     bool EventStarted = ((npc_AkamaAI*)_Creature->AI())->EventStarted;
     bool PreludeEventStarted = ((npc_AkamaAI*)_Creature->AI())->PreludeEventStarted;
 
-    if(EventStarted || PreludeEventStarted)
+    if (EventStarted || PreludeEventStarted)
         return false;
 
-    if(!EventStarted && _Quest->GetQuestId() == 10628)
+    if (!EventStarted && _Quest->GetQuestId() == 10628)
         ((npc_AkamaAI*)_Creature->AI())->StartEvent();
 
-    if(!PreludeEventStarted && _Quest->GetQuestId() == 10944)
+    if (!PreludeEventStarted && _Quest->GetQuestId() == 10944)
         ((npc_AkamaAI*)_Creature->AI())->StartPreludeEvent();
 
     return false;
