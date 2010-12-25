@@ -1,0 +1,2 @@
+UPDATE creature_template SET mindmg = 1900, maxdmg = 5300, maxhealth = 110000, faction_a = 1813, faction_H = 1813 WHERE entry = 23371;
+UPDATE creature_template SET ScriptName = "mob_wrathbone_flayer" WHERE entry = 22953;
