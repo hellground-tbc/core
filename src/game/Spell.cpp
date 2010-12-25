@@ -965,7 +965,9 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
 
         int32 gain = unitTarget->ModifyHealth( int32(addhealth) );
 
-        unitTarget->getHostilRefManager().threatAssist(caster, float(gain) * 0.5f, m_spellInfo);
+        float threat = gain * 0.5f;
+        ApplySpellThreatModifiers(m_spellInfo, threat);
+        unitTarget->getHostilRefManager().threatAssist(caster, threat, m_spellInfo);
 
         if(caster->GetTypeId()==TYPEID_PLAYER)
             if(BattleGround *bg = ((Player*)caster)->GetBattleGround())

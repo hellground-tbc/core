@@ -325,6 +325,9 @@ void ApplySpellThreatModifiers(SpellEntry const *spellInfo, float &threat)
     else if(spellInfo->SpellFamilyName == SPELLFAMILY_DRUID && spellInfo->SpellFamilyFlags == 0x10000000000LL) // Lacerate
         threat *= 0.20f;
 
+    else if(spellInfo->SpellFamilyName == SPELLFAMILY_PRIEST && (spellInfo->SpellFamilyFlags & 8400000LL))    // Holy Nova
+        threat = 1.0f;
+
     else if(spellInfo->Id == 33619) // Reflective shield
         threat = 1.0f;
 }
@@ -2741,7 +2744,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 35413: // Summon Goliathon cooldown
             spellInfo->RecoveryTime = 300000;
             break;
-        case 13278: // Gnomish Death Ray
+        case 13280: // Gnomish Death Ray
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
             break;
         case 6947:  // Curse of the Bleakheart
@@ -2777,6 +2780,12 @@ void SpellMgr::LoadSpellCustomAttr()
         case 42683:
         case 42684:
             spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_NOT_USABLE_IN_ARENA;
+            break;
+        case 43730: // Stormchops effect
+            spellInfo->EffectTriggerSpell[0] = 43733;
+            spellInfo->EffectTriggerSpell[1] = 43731;
+            spellInfo->EffectImplicitTargetA[1] = 1;
+            spellInfo->EffectImplicitTargetB[1] = 0;
             break;
         default:
             break;

@@ -978,13 +978,9 @@ void Spell::EffectDummy(uint32 i)
                 // Gnomish Death Ray
                 // TODO: poprawic animacje, oraz skalowanie dmg z poziomem
                 case 13280:
-                    if(!unitTarget)
-                        return;
                     m_caster->CastSpell(unitTarget, 13279, true);     // Gnomish Death Ray direct damage
                     return;
                 case 13278:
-                    if(!unitTarget)
-                        return;
                     m_caster->CastSpell(unitTarget, 13493, true);  // Gnomish Death Ray self DOT
                     return;
                 case 13180:                                 // Gnomish Mind Control Cap
