@@ -319,8 +319,11 @@ void ApplySpellThreatModifiers(SpellEntry const *spellInfo, float &threat)
     else if(spellInfo->SpellFamilyName == SPELLFAMILY_SHAMAN && spellInfo->SpellFamilyFlags == SPELLFAMILYFLAG_SHAMAN_FROST_SHOCK)
         threat *= 2.0f;
 
-    else if(spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN && spellInfo->SpellFamilyFlags == 0x4000000000l) // Holy shield
+    else if(spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN && spellInfo->SpellFamilyFlags == 0x4000000000LL) // Holy shield
         threat *= 1.35f;
+
+    else if(spellInfo->SpellFamilyName == SPELLFAMILY_DRUID && spellInfo->SpellFamilyFlags == 0x10000000000LL) // Lacerate
+        threat *= 0.20f;
 
     else if(spellInfo->Id == 33619) // Reflective shield
         threat = 1.0f;
