@@ -723,7 +723,7 @@ void Spell::EffectDummy(uint32 i)
                     if (m_caster->GetTypeId() != TYPEID_PLAYER)
                         return;
 
-                    m_caster->CastSpell((Unit*)NULL, 38003, true);
+                    m_caster->CastSpell((Unit*)NULL, 38003, false);
                 }
 
                 // Fatal Attraction
