@@ -4402,7 +4402,7 @@ uint8 Spell::CanCast(bool strict)
                     if(!priest_buffs.empty())
                     {
                         // remove random aura from caster
-                        uint32 rand_buff = m_caster->GetMap()->urand(0,priest_buffs.size()-1);
+                        uint32 rand_buff = urand(0,priest_buffs.size()-1);
                         m_caster->RemoveAurasDueToSpell(priest_buffs[rand_buff]);
                     }
                     else    // if nothing to dispell, send error and break a spell

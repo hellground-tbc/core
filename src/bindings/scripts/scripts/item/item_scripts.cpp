@@ -464,6 +464,31 @@ bool ItemUse_item_specific_target(Player *player, Item* _Item, SpellCastTargets 
     return true;
 }
 
+/*#####
+# item_rood_rofl - custom event mount
+#####*/
+
+bool ItemUse_item_rood_rofl(Player *player, Item* _Item, SpellCastTargets const& targets)
+{
+    // player must have riding skill
+    if(!player->HasSkill(762))
+    {
+        player->SendEquipError(EQUIP_ERR_YOU_CAN_NEVER_USE_THAT_ITEM,_Item,NULL);
+        return true;
+    }
+    // player must have possibility to use 60% flying mount
+    if(player->GetBaseSkillValue(762) < 225)
+    {
+        player->SendEquipError(EQUIP_ERR_YOU_CAN_NEVER_USE_THAT_ITEM,_Item,NULL);
+        return true;
+    }
+
+    if (player->HasAuraType(SPELL_AURA_MOUNTED))
+        player->RemoveSpellsCausingAura(SPELL_AURA_MOUNTED);
+
+    return false;
+}
+
 void AddSC_item_scripts()
 {
     Script *newscript;
@@ -522,6 +547,11 @@ void AddSC_item_scripts()
     newscript = new Script;
     newscript->Name="item_specific_target";
     newscript->pItemUse = &ItemUse_item_specific_target;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="item_rood_rofl";
+    newscript->pItemUse = &ItemUse_item_rood_rofl;
     newscript->RegisterSelf();
 }
 
