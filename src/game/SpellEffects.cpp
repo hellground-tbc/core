@@ -2281,7 +2281,7 @@ void Spell::EffectTriggerSpell(uint32 i)
             std::list<Creature*> pList;
             Trinity::AllCreaturesOfEntryInRange u_check(m_caster, 21633, 70.0f);
             Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(pList, u_check);
-         
+
             Cell::VisitAllObjects(m_caster, searcher, 70.0f);
             
             if (pList.size() == 0)
@@ -2289,6 +2289,12 @@ void Spell::EffectTriggerSpell(uint32 i)
                 if (Creature * summon = m_caster->SummonCreature(21633, -3361, 2962, 170, 5.83, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 90000))
                     summon->setActive(true);
             }
+            return;
+        }
+        // Desperate Defense (self root)
+        case 33897:
+        {
+            m_caster->CastSpell(m_caster, 33356, true, NULL, NULL, m_originalCasterGUID);
             return;
         }
     }

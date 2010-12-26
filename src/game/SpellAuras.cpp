@@ -4414,6 +4414,21 @@ void Aura::HandleAuraProcTriggerSpell(bool apply, bool Real)
             default: break;
         }
     }
+    else
+    {
+        // triggered when removed
+        switch (GetId())
+        {
+            case 33896: // Desperate Defense, remove self root with aura
+                if (Unit* caster = GetCaster())
+                {
+                    if (caster->HasAura(33356, 0))
+                        caster->RemoveAurasDueToSpell(33356);
+                }
+                break;
+            default: break;
+        }
+    }
 
     // Void Star Talisman's pet resistance bonus
     if (GetId() == 37386)
