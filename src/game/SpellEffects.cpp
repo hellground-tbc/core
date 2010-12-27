@@ -60,7 +60,7 @@
 #include "CellImpl.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
-
+using namespace std;
 pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
 {
     &Spell::EffectNULL,                                     //  0
@@ -4986,20 +4986,20 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         // Gathios the Shatterer: Judgement
         case 41467:
         {
-            Unit::AuraList const& mDummyAuras = m_caster->GetAurasByType(SPELL_AURA_DUMMY);
-            for(Unit::AuraList::const_iterator i = mDummyAuras.begin();i != mDummyAuras.end(); ++i)
-            {
-                if ((*i)->GetId() == 41459) // Seal of Blood
-                {
-                    m_caster->CastSpell(unitTarget, 41461, true);
-                    return;
-                }
+            if (m_caster->GetTypeId() != TYPEID_UNIT)
+                return;
 
-                if ((*i)->GetId() == 41469)
-                {
-                    m_caster->CastSpell(unitTarget, 41470, true);
-                    return;
-                }
+            if(m_caster->HasAura(41459, 2)) // Seal of Blood
+            {
+                m_caster->CastSpell(m_caster->getVictim(), 41461, true); // Judgement of Blood
+                m_caster->RemoveAurasDueToSpell(41459);
+                return;
+            }
+            if(m_caster->HasAura(41469, 2)) // Seal of Command
+            {
+                m_caster->CastSpell(m_caster->getVictim(), 41470, true); // Judgement of Command
+                m_caster->RemoveAurasDueToSpell(41469);
+                return;
             }
             break;
         }

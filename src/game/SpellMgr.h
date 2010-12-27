@@ -367,6 +367,9 @@ inline bool IsSpellHaveEffect(SpellEntry const *spellInfo, SpellEffects effect)
 
 inline bool IsSealSpell(SpellEntry const *spellInfo)
 {
+    // Seal of Command should meet requirements, but mysteriously is not
+    if(spellInfo->Id == 41469)
+        return true;
     //Collection of all the seal family flags. No other paladin spell has any of those.
     return spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN &&
         ( spellInfo->SpellFamilyFlags & 0x4000A000200LL );
