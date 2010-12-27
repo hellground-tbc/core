@@ -4606,6 +4606,12 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
                     m_modifier.m_amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * 3 / 100);
                 return;
             }
+            // Envenom
+            if (!apply && m_spellProto->Id == 41485)
+            {
+                if(urand(0, 8))
+                    caster->CastSpell(m_target, 41487, true, 0, this);
+            }
             break;
         }
         case SPELLFAMILY_WARRIOR:
