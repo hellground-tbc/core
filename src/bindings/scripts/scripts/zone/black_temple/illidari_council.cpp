@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Illidari_Council
-SD%Complete: 95
-SDComment: Circle of Healing not working properly.
+SD%Complete: 99
+SDComment: Test event reseting and saving to DB (simplify some code..?)
 SDCategory: Black Temple
 EndScriptData */
 
@@ -73,6 +73,48 @@ static CouncilYells CouncilEnrage[]=
 };
 
 #define SPELL_BERSERK 45078
+
+// Gathios the Shatterer's spells
+enum gathiosSpells
+{
+    SPELL_BLESS_PROTECTION     = 41450,
+    SPELL_BLESS_SPELLWARD      = 41451,
+    SPELL_CONSECRATION         = 41541,
+    SPELL_HAMMER_OF_JUSTICE    = 41468,
+    SPELL_SEAL_OF_COMMAND      = 41469,
+    SPELL_SEAL_OF_BLOOD        = 41459,
+    SPELL_GATHIOS_JUDGEMENT    = 41467,
+    SPELL_CHROMATIC_AURA       = 41453,
+    SPELL_DEVOTION_AURA        = 41452
+};
+
+// High Nethermancer Zerevor's spells
+enum zerevorSpells
+{
+    SPELL_FLAMESTRIKE       = 41481,
+    SPELL_BLIZZARD          = 41482,
+    SPELL_ARCANE_BOLT       = 41483,
+    SPELL_ARCANE_EXPLOSION  = 41524,
+    SPELL_DAMPEN_MAGIC      = 41478
+};
+
+// Lady Malande's spells
+enum malandeSpells
+{
+    SPELL_EMPOWERED_SMITE   = 41471,
+    SPELL_CIRCLE_OF_HEALING = 41455,
+    SPELL_REFLECTIVE_SHIELD = 41475,
+    SPELL_DIVINE_WRATH      = 41472,
+    SPELL_HEAL_VISUAL       = 24171
+};
+
+// Veras Darkshadow's spells
+enum verasSpells
+{
+    SPELL_DEADLY_POISON = 41480,
+    SPELL_VANISH          = 41476
+    // Spell Envenom triggered by Deadly Poison in Aura::HandlePeriodicDamage
+};
 
 struct TRINITY_DLL_DECL mob_blood_elf_council_voice_triggerAI : public ScriptedAI
 {
@@ -191,14 +233,9 @@ struct TRINITY_DLL_DECL mob_illidari_councilAI : public ScriptedAI
         if(Creature *pTrigger = pInstance->GetCreature(pInstance->GetData64(DATA_BLOOD_ELF_COUNCIL_VOICE)))
             pTrigger->AI()->EnterEvadeMode();
 
-        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->SetDisplayId(11686);
     }
-
-    void EnterCombat(Unit *pWho){}
-    void AttackStart(Unit *pWho) {}
-    void MoveInLineOfSight(Unit *pWho){}
 
     void StartEvent(Unit *pTarget)
     {
@@ -271,6 +308,7 @@ struct TRINITY_DLL_DECL mob_illidari_councilAI : public ScriptedAI
                 {
                     if (Creature *pMember = pInstance->GetCreature(m_council[i]))
                     {
+                        pMember->SetSpeed(MOVE_RUN, 2.5f);
                         // This is the evade/death check.
                         if (pMember->isAlive() && !pMember->getVictim())
                         {
@@ -319,6 +357,13 @@ struct TRINITY_DLL_DECL illidari_council_baseAI : public ScriptedAI
             ((mob_illidari_councilAI*)pController->AI())->StartEvent(pWho);
 
         DoZoneInCombat();
+
+        if(me->GetEntry() == 22950)  // Zerevor
+        {
+            ClearCastQueue();
+            DoCast(pWho, SPELL_ARCANE_BOLT);
+            StartAutocast();
+        }
 
         if (!loadedGUIDs)
         {
@@ -393,20 +438,7 @@ struct TRINITY_DLL_DECL illidari_council_baseAI : public ScriptedAI
 
 };
 
-// Gathios the Shatterer's spells
-enum gathiosSpells
-{
-    SPELL_BLESS_PROTECTION     = 41450,
-    SPELL_BLESS_SPELLWARD      = 41451,
-    SPELL_CONSECRATION         = 41541,
-    SPELL_HAMMER_OF_JUSTICE    = 41468,
-    SPELL_SEAL_OF_COMMAND      = 41469,
-    SPELL_SEAL_OF_BLOOD        = 41459,
-    SPELL_GATHIOS_JUDGEMENT    = 41467,
-    SPELL_CHROMATIC_AURA       = 41453,
-    SPELL_DEVOTION_AURA        = 41452
-};
-
+// Gathios the Shatterer's AI
 struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public illidari_council_baseAI
 {
     boss_gathios_the_shattererAI(Creature *c) : illidari_council_baseAI(c){}
@@ -422,12 +454,12 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public illidari_council_b
 
     void Reset()
     {
-        m_consecrationTimer = 40000;
+        m_consecrationTimer = urand(6000, 10000);
         m_hammerTimer = 10000;
-        m_sealTimer = 40000;
-        m_auraTimer = 90000;
-        m_blessingTimer = 60000;
-        m_judgementTimer = 45000;
+        m_sealTimer = 1000;
+        m_auraTimer = urand(3000, 30000);
+        m_blessingTimer = urand(35000, 50000);
+        m_judgementTimer = 16000;
 
         m_checkTimer = 1000;
     }
@@ -452,7 +484,7 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public illidari_council_b
         return me;
     }
 
-    void ApplyAura(uint32 m_spellId)
+    void ApplyAura(uint32 m_spellId)        //should that be casted on ALL members? or just be applied as area aura within 30 yd??
     {
         for (uint8 i = 0; i < 4; ++i)
         {
@@ -479,7 +511,7 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public illidari_council_b
             if(Unit *pUnit = SelectCouncil())
             {
                 AddSpellToCast(pUnit, RAND(SPELL_BLESS_SPELLWARD, SPELL_BLESS_PROTECTION));
-                m_blessingTimer = 15000;
+                m_blessingTimer = RAND(urand(15000, 20000), urand(25000, 35000));
             }
         }
         else
@@ -488,7 +520,7 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public illidari_council_b
         if (m_consecrationTimer < diff)
         {
             AddSpellToCast(m_creature, SPELL_CONSECRATION);
-            m_consecrationTimer = 30000;
+            m_consecrationTimer = urand(30000, 35000);
         }
         else
             m_consecrationTimer -= diff;
@@ -498,7 +530,7 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public illidari_council_b
             if(Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 40, true, 0, 10.0f))
             {
                 AddSpellToCast(pTarget, SPELL_HAMMER_OF_JUSTICE);
-                m_hammerTimer = 20000;
+                m_hammerTimer = urand(10000, 20000);
             }
         }
         else
@@ -507,15 +539,15 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public illidari_council_b
         if (m_sealTimer < diff)
         {
             AddSpellToCast(m_creature, RAND(SPELL_SEAL_OF_COMMAND, SPELL_SEAL_OF_BLOOD));
-            m_sealTimer = 40000;
+            m_sealTimer = urand(17000, 20000);
         }
         else
             m_sealTimer -= diff;
 
         if (m_judgementTimer < diff)
         {
-            AddSpellToCast(me->getVictim(), SPELL_GATHIOS_JUDGEMENT);
-            m_judgementTimer = urand(15000, 35000);
+            ForceSpellCast(me->getVictim(), SPELL_GATHIOS_JUDGEMENT, INTERRUPT_AND_CAST);
+            m_judgementTimer = 15000;
         }
         else
             m_judgementTimer -= diff;
@@ -523,7 +555,7 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public illidari_council_b
         if (m_auraTimer < diff)
         {
             ApplyAura(RAND(SPELL_DEVOTION_AURA, SPELL_CHROMATIC_AURA));
-            m_auraTimer = 90000;
+            m_auraTimer = 60000;
         }
         else
             m_auraTimer -= diff;
@@ -533,16 +565,7 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public illidari_council_b
     }
 };
 
-// High Nethermancer Zerevor's spells
-enum zerevorSpells
-{
-    SPELL_FLAMESTRIKE       = 41481,
-    SPELL_BLIZZARD          = 41482,
-    SPELL_ARCANE_BOLT       = 41483,
-    SPELL_ARCANE_EXPLOSION  = 41524,
-    SPELL_DAMPEN_MAGIC      = 41478
-};
-
+// High Nethermancer Zerevor's AI
 struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_council_baseAI
 {
     boss_high_nethermancer_zerevorAI(Creature *c) : illidari_council_baseAI(c){}
@@ -551,15 +574,14 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
     uint32 m_flamestrikeTimer;
     uint32 m_dampenTimer;
     uint32 m_aexpTimer;
-    uint32 m_boltTimer;
 
     void Reset()
     {
-        m_blizzardTimer = urand(30000, 91000);
-        m_flamestrikeTimer = urand(30000, 91000);
+        m_blizzardTimer = urand(12000, 20000);
+        m_flamestrikeTimer = 3800;
         m_dampenTimer = 2000;
-        m_aexpTimer = 14000;
-        m_boltTimer = 1000;
+        m_aexpTimer = 3000;
+        SetAutocast(SPELL_ARCANE_BOLT, 2000, true, AUTOCAST_TANK, 40.0f, true);
 
         m_checkTimer = 1000;
     }
@@ -571,8 +593,10 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
 
         if (m_checkTimer < diff)
         {
-            if (me->GetDistance2d(me->getVictim()) < 20.0f)
-                me->StopMoving();
+            if (me->GetDistance2d(me->getVictim()) <= 40.0f)
+                me->GetMotionMaster()->MoveIdle();
+            else
+                me->GetMotionMaster()->MoveChase(me->getVictim(), 40);
 
             DoZoneInCombat();
             m_checkTimer = 1000;
@@ -583,17 +607,17 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
         if (m_dampenTimer < diff)
         {
             ForceSpellCast(m_creature, SPELL_DAMPEN_MAGIC);
-            m_dampenTimer = 67200;                      // almost 1,12 minutes
+            m_dampenTimer = 290000;//67200;                      // almost 1,12 minutes (??)
         }
         else
             m_dampenTimer -= diff;
 
         if (m_blizzardTimer < diff)
         {
-            if(Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
+            if(Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
             {
                 AddSpellToCast(pTarget, SPELL_BLIZZARD);
-                m_blizzardTimer = urand(45000, 90000);
+                m_blizzardTimer = urand(11000, 17000);
             }
         }
         else
@@ -604,32 +628,23 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
             if(Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
             {
                 AddSpellToCast(pTarget, SPELL_FLAMESTRIKE);
-                m_flamestrikeTimer = urand(55000, 100000);
+                m_flamestrikeTimer = urand(9000, 12000);
             }
         }
         else
             m_flamestrikeTimer -= diff;
-
-        if (m_boltTimer < diff)
-        {
-            if (!m_creature->IsNonMeleeSpellCasted(false))
-                AddSpellToCast(m_creature->getVictim(), SPELL_ARCANE_BOLT);
-
-            m_boltTimer = 1000;
-        }
-        else
-            m_boltTimer -= diff;
 
         if (m_aexpTimer < diff)
         {
             std::list<HostilReference*>& m_threatlist = m_creature->getThreatManager().getThreatList();
             for (std::list<HostilReference*>::iterator i = m_threatlist.begin(); i!= m_threatlist.end();++i)
             {
-                if (Unit *pUnit = pInstance->GetCreature((*i)->getUnitGuid()))
+                if (Unit* pUnit = Unit::GetUnit((*m_creature), (*i)->getUnitGuid()))
                 {
-                    if (pUnit->IsWithinDistInMap(me, 5))
+                    if (pUnit->IsWithinDistInMap(me, 5) && pUnit->GetTypeId() == TYPEID_PLAYER)
                     {
                         ForceAOESpellCast(SPELL_ARCANE_EXPLOSION, INTERRUPT_AND_CAST);
+                        m_aexpTimer = 11000;
                         break;
                     }
                 }
@@ -639,20 +654,11 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
         else
             m_aexpTimer -= diff;
 
-        CastNextSpellIfAnyAndReady();
+        CastNextSpellIfAnyAndReady(diff);
     }
 };
 
-// Lady Malande's spells
-enum malandeSpells
-{
-    SPELL_EMPOWERED_SMITE   = 41471,
-    SPELL_CIRCLE_OF_HEALING = 41455,
-    SPELL_REFLECTIVE_SHIELD = 41475,
-    SPELL_DIVINE_WRATH      = 41472,
-    SPELL_HEAL_VISUAL       = 24171
-};
-
+// Lady Malande's AI
 struct TRINITY_DLL_DECL boss_lady_malandeAI : public illidari_council_baseAI
 {
     boss_lady_malandeAI(Creature *c) : illidari_council_baseAI(c){}
@@ -664,9 +670,9 @@ struct TRINITY_DLL_DECL boss_lady_malandeAI : public illidari_council_baseAI
 
     void Reset()
     {
-        m_smiteTimer = 18000;
+        m_smiteTimer = 2000;
         m_cohTimer = 20000;
-        m_wrathTimer = 40000;
+        m_wrathTimer = urand(8000,12000);
         m_shieldTimer = 15000;
 
         m_checkTimer = 1000;
@@ -690,7 +696,7 @@ struct TRINITY_DLL_DECL boss_lady_malandeAI : public illidari_council_baseAI
             if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
             {
                 AddSpellToCast(pTarget, SPELL_EMPOWERED_SMITE);
-                m_smiteTimer = 30000;
+                m_smiteTimer = urand(5000, 9000);
             }
         }
         else
@@ -699,7 +705,7 @@ struct TRINITY_DLL_DECL boss_lady_malandeAI : public illidari_council_baseAI
         if (m_cohTimer < diff)
         {
             AddSpellToCast(m_creature, SPELL_CIRCLE_OF_HEALING);
-            m_cohTimer = 30000;
+            m_cohTimer = urand(19000, 23000);
         }
         else
             m_cohTimer -= diff;
@@ -709,7 +715,7 @@ struct TRINITY_DLL_DECL boss_lady_malandeAI : public illidari_council_baseAI
             if(Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
             {
                 AddSpellToCast(pTarget, SPELL_DIVINE_WRATH);
-                m_wrathTimer = urand(20000, 40000);
+                m_wrathTimer = urand(15000, 30000);
             }
         }
         else
@@ -718,7 +724,7 @@ struct TRINITY_DLL_DECL boss_lady_malandeAI : public illidari_council_baseAI
         if (m_shieldTimer < diff)
         {
             AddSpellToCast(m_creature, SPELL_REFLECTIVE_SHIELD);
-            m_shieldTimer = 45000;
+            m_shieldTimer = urand(40000, 55000);
         }
         else
             m_shieldTimer -= diff;
@@ -728,46 +734,25 @@ struct TRINITY_DLL_DECL boss_lady_malandeAI : public illidari_council_baseAI
     }
 };
 
-// Veras Darkshadow's spells
-enum verasSpells
-{
-    SPELL_DEADLY_POISON   = 41485,
-    SPELL_DEADLY_POISON_T = 41480,
-    SPELL_ENVENOM         = 41487,
-    SPELL_VANISH          = 41476
-};
-
+// Veras Darkshadow's AI
 struct TRINITY_DLL_DECL boss_veras_darkshadowAI : public illidari_council_baseAI
 {
     boss_veras_darkshadowAI(Creature *c) : illidari_council_baseAI(c){}
 
-    uint64 m_envenomGUID;
-
-    uint32 m_poisonTimer;
     uint32 m_vanishTimer;
-    uint32 m_envenomTimer;
 
     void Reset()
     {
-        m_envenomGUID = 0;
-
-        m_poisonTimer = 20000;
-        m_vanishTimer = 10000;
-        m_envenomTimer = 3000;
-
+        m_vanishTimer = urand(15000, 25000);
         m_checkTimer = 1000;
-
-        m_creature->SetVisibility(VISIBILITY_ON);
-        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
     }
 
-    void SpellHitTarget(Unit *pTarget, const SpellEntry *spell)
+    void OnAuraRemove(Aura* aur, bool stackRemove)
     {
-        if (spell->Id == SPELL_DEADLY_POISON)
+        if(aur->GetId() == SPELL_VANISH)
         {
-            m_envenomGUID = pTarget->GetGUID();
-            DoStartMovement(pTarget);
-            m_envenomTimer = 3600;
+            DoResetThreat();
+            DoStartMovement(me->getVictim());
         }
     }
 
@@ -776,62 +761,33 @@ struct TRINITY_DLL_DECL boss_veras_darkshadowAI : public illidari_council_baseAI
         if (!UpdateVictim())
             return;
 
-        if (m_checkTimer < diff)
+        if (m_vanishTimer < diff)
         {
-            DoZoneInCombat();
-            m_checkTimer = 1000;
+            float x, y, z;
+            ForceSpellCast(me, SPELL_VANISH, INTERRUPT_AND_CAST_INSTANTLY);
+            ForceSpellCast(me, SPELL_DEADLY_POISON, INTERRUPT_AND_CAST_INSTANTLY);
+            if(Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 1, 35, true))
+            {
+                pTarget->GetGroundPointAroundUnit(x, y, z, 5.0, 3.14*RAND(0, 1/6, 2/6, 3/6, 4/6, 5/6, 1));
+                DoTeleportTo(x, y, z);
+                m_creature->GetMotionMaster()->MoveIdle();
+            }
+            else
+            {
+                me->GetGroundPointAroundUnit(x, y, z, 30.0, 3.14*RAND(0, 1/6, 2/6, 3/6, 4/6, 5/6, 1));
+                DoTeleportTo(x, y, z);
+                m_creature->GetMotionMaster()->MoveIdle();
+            }
+            m_vanishTimer = 60000;
         }
         else
-            m_checkTimer -= diff;
-
-        if (me->GetVisibility() == VISIBILITY_ON)
-        {
-            if (m_vanishTimer < diff)
-            {
-                DoResetThreat();
-
-                ForceSpellCast(me, SPELL_DEADLY_POISON_T, INTERRUPT_AND_CAST_INSTANTLY);
-                ForceSpellCast(me, SPELL_VANISH, INTERRUPT_AND_CAST_INSTANTLY);
-                m_vanishTimer = 30000;
-
-                if(Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
-                    DoStartMovement(pTarget);
-
-                me->SetVisibility(VISIBILITY_OFF);
-            }
-            else
                 m_vanishTimer -= diff;
 
-            DoMeleeAttackIfReady();
-        }
-        else
-        {
-            if (m_vanishTimer < diff)
-            {
-                me->SetVisibility(VISIBILITY_ON);
-                m_vanishTimer = 55000;
-                return;
-            }
-            else
-                m_vanishTimer -= diff;
+        if(me->HasAura(SPELL_VANISH, 1))
+            return;
 
-            if (m_envenomTimer < diff)
-            {
-                if (m_envenomGUID)
-                {
-                    if(Unit *pTarget = me->GetUnit(m_envenomGUID))
-                    {
-                        AddSpellToCast(pTarget, SPELL_ENVENOM);
-                        m_envenomGUID = 0;
-                    }
-                }
-                m_envenomTimer = 3000;
-            }
-            else
-                m_envenomTimer -= diff;
-
-            CastNextSpellIfAnyAndReady();
-        }
+        DoMeleeAttackIfReady();
+        CastNextSpellIfAnyAndReady();
     }
 };
 
