@@ -107,9 +107,13 @@ void TicketMgr::LoadGMTickets()
     QueryResult_AutoPtr result = CharacterDatabase.Query( "SELECT `guid`, `playerGuid`, `name`, `message`, `createtime`, `map`, `posX`, `posY`, `posZ`, `timestamp`, `closed`, `assignedto`, `comment` FROM `gm_tickets`" );
     GM_Ticket *ticket;
 
-    if(!result)
+    if (!result)
+		{
+		ticketmgr.InitTicketID();
+		sLog.outString();
+		sLog.outString(">> GM Tickets table is empty, no tickets were loaded.");
         return;
-
+		}
     // Assign values from SQL to the object holder
     do
     {
