@@ -2790,9 +2790,6 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetA[1] = 1;
             spellInfo->EffectImplicitTargetB[1] = 0;
             break;
-        case 44824:
-            spellInfo->CastingTimeIndex = 14;   // Flying Reindeer - 1.5 sec cast for custom event mount
-            break;
         default:
             break;
         }
