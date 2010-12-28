@@ -594,6 +594,7 @@ extern void AddSC_boss_nalorakk();
 extern void AddSC_boss_zuljin();
 extern void AddSC_instance_zulaman();
 extern void AddSC_zulaman();
+extern void AddSC_zulaman_trash();
 
 void AddScripts()
 {
@@ -1187,6 +1188,7 @@ void AddScripts()
     AddSC_boss_zuljin();
     AddSC_instance_zulaman();
     AddSC_zulaman();
+    AddSC_zulaman_trash();
 
     // -------------------
 }

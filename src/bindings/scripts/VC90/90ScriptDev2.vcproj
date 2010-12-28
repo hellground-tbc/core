@@ -2318,6 +2318,10 @@
 						RelativePath="..\scripts\zone\zulaman\zulaman.cpp"
 						>
 					</File>
+					<File
+						RelativePath="..\scripts\zone\zulaman\zulaman_trash.cpp"
+						>
+					</File>
 				</Filter>
 				<Filter
 					Name="Isle of Quel&apos;Danas"
