@@ -65,6 +65,7 @@
 #include "SocialMgr.h"
 #include "GameEvent.h"
 #include "GridMap.h"
+#include "Config/ConfigEnv.h"
 
 #include "PlayerAI.h"
 
@@ -3807,21 +3808,6 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
 {
     uint32 guid = GUID_LOPART(playerguid);
 
-    /*if(QueryResult_AutoPtr result= CharacterDatabase.PQuery("SELECT data FROM characters WHERE guid='%u'",guid))
-    {
-        Field *fields = result->Fetch();
-
-        Tokens data = StrSplit(fields[0].GetCppString(), " ");
-        uint32 plLevel = Player::GetUInt32ValueFromArray(data,UNIT_FIELD_LEVEL);
-
-        if(plLevel >= 40)
-        {
-            CharacterDatabase.PExecute("UPDATE characters SET account = '1' WHERE guid ='%u'", guid);
-            if(updateRealmChars) sWorld.UpdateRealmCharCount(accountId);
-            return;
-        }
-    }*/
-
     // convert corpse to bones if exist (to prevent exiting Corpse in World without DB entry)
     // bones will be deleted by corpse/bones deleting thread shortly
     ObjectAccessor::Instance().ConvertCorpseForPlayer(playerguid);
@@ -3934,6 +3920,25 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
             WorldSession::SendReturnToSender(MAIL_NORMAL, pl_account, guid, sender, subject, itemTextId, &mi, money, mailTemplateId);
         }
         while (resultMail->NextRow());
+    }
+
+    if (sConfig.GetBoolDefault("DontDeleteChars", false))
+    {
+        if (QueryResult_AutoPtr result= CharacterDatabase.PQuery("SELECT data FROM characters WHERE guid='%u'",guid))
+        {
+            Field *fields = result->Fetch();
+
+            Tokens data = StrSplit(fields[0].GetCppString(), " ");
+            uint32 plLevel = Player::GetUInt32ValueFromArray(data,UNIT_FIELD_LEVEL);
+
+            if (plLevel >= sConfig.GetIntDefault("DontDeleteCharsLvl", 40))
+            {
+                CharacterDatabase.PExecute("Call PreventCharDelete(%u)", guid);
+
+                if(updateRealmChars) sWorld.UpdateRealmCharCount(accountId);
+                return;
+            }
+        }
     }
 
     // unsummon and delete for pets in world is not required: player deleted from CLI or character list with not loaded pet.

@@ -625,6 +625,16 @@ IrcParser = "parser.trc"
 #        Default: 0 - disable
 #                 1 - enable
 #
+#    DontDeleteChars
+#        If enabled characters to delete will be moved to account with id 1 (arena teams, guilds and mails will be deleted, name will be changed). 
+#        Uses stored procedure "PreventCharDelete(characterGuid)"
+#        Default: 0 - disable
+#                 1 - enable
+#
+#    DontDeleteCharsLvl
+#        Minimum character lvl for "DontDeleteChars" option.
+#        Default: 40
+#
 ###################################################################################################################
 
 GameType = 1
@@ -671,8 +681,11 @@ MailDeliveryDelay = 3600
 SkillChance.Prospecting = 0
 Event.Announce = 0
 BeepAtStart = 1
-Motd = "Welcome to a Trinity Core server."
+Motd = "HellGround.pl"
 Server.LoginInfo = 0
+
+DontDeleteChars = 0
+DontDeleteCharsLvl = 40
 
 ###################################################################################################################
 # PLAYER INTERACTION
