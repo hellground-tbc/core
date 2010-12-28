@@ -2300,14 +2300,14 @@ void Spell::EffectTriggerSpell(uint32 i)
         // Electrical Storm
         case 43657:
         {
+            int32 damage = 800;
             if(m_caster->HasAura(43648, 1))
             {
                 uint32 tick = 0;
-                uint32 damage = 800;
                 if(Aura* Aur = m_caster->GetAura(43648, 1))
                 {
                     tick = Aur->GetTickNumber();
-                    uint32 damage = urand(800, 1200)*tick;
+                    damage = urand(800, 1200)*tick;
                 }
             }
             m_caster->CastCustomSpell(unitTarget, triggered_spell_id, &damage, NULL, NULL, true, m_CastItem, NULL, m_originalCasterGUID);
