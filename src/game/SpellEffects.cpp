@@ -60,7 +60,7 @@
 #include "CellImpl.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
-using namespace std;
+
 pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
 {
     &Spell::EffectNULL,                                     //  0
@@ -2295,6 +2295,22 @@ void Spell::EffectTriggerSpell(uint32 i)
         case 33897:
         {
             m_caster->CastSpell(m_caster, 33356, true, NULL, NULL, m_originalCasterGUID);
+            return;
+        }
+        // Electrical Storm
+        case 43657:
+        {
+            if(m_caster->HasAura(43648, 1))
+            {
+                uint32 tick = 0;
+                uint32 damage = 800;
+                if(Aura* Aur = m_caster->GetAura(43648, 1))
+                {
+                    tick = Aur->GetTickNumber();
+                    uint32 damage = urand(800, 1200)*tick;
+                }
+            }
+            m_caster->CastCustomSpell(unitTarget, triggered_spell_id, &damage, NULL, NULL, true, m_CastItem, NULL, m_originalCasterGUID);
             return;
         }
     }
@@ -4978,9 +4994,16 @@ void Spell::EffectScriptEffect(uint32 effIndex)
     // TODO: we must implement hunter pet summon at login there (spell 6962)
     switch(m_spellInfo->Id)
     {
+        // Destroy Deathforged Infernal
         case 38055:
         {
             m_caster->CastSpell(m_caster, 38054, true);
+            return;
+        }
+        // Static Disruption visual
+        case 44008:
+        {
+            m_caster->CastSpell(unitTarget, 45265, true);
             return;
         }
         // Gathios the Shatterer: Judgement
