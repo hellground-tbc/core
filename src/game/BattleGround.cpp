@@ -116,10 +116,8 @@ BattleGround::~BattleGround()
     // unload map
     Map * map = GetMap();
     if (map && map->IsBattleGroundOrArena())
-    {
-        ((BattleGroundMap*)map)->SetBattleGround(NULL);
         ((BattleGroundMap*)map)->SetUnload();
-    }
+
     // remove from bg free slot queue
     this->RemoveFromBGFreeSlotQueue();
 }
@@ -918,7 +916,7 @@ void BattleGround::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
     {
         // if no players left AND no invitees left, set this bg to delete in next update
         // direct deletion could cause crashes
-        m_SetDeleteThis = true;
+        SetDeleteThis();
         // return to prevent addition to freeslotqueue
         return;
     }
