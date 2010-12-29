@@ -2130,7 +2130,8 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 unitList.remove(m_targets.getUnitTarget());
 
             // We don't need immune targets to be taken into list for Fatal Attraction, i now that thix hack is ugly ;]
-            if (m_spellInfo->Id == 40869)
+            // Same thing happens with Akil'zon: Eye of the Storm effect of Electrical Storm
+            if (m_spellInfo->Id == 40869 || m_spellInfo->Id == 43657)
             {
                 std::list<Unit*>::iterator next;
                 for(std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); itr = next)
@@ -2138,8 +2139,17 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                     next = itr;
                     ++next;
 
-                    if ((*itr)->HasAura(43690, 0))
-                        unitList.remove(*itr);
+                    switch(m_spellInfo->Id)
+                    {
+                        case 40869:
+                            if ((*itr)->HasAura(43690, 0))
+                                unitList.remove(*itr);
+                            break;
+                        case 43657:
+                            if ((*itr)->HasAura(44007, 0))
+                                unitList.remove(*itr);
+                            break;
+                    }
                 }
             }
 

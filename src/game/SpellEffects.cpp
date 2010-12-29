@@ -2310,7 +2310,7 @@ void Spell::EffectTriggerSpell(uint32 i)
                     damage = urand(800, 1200)*tick;
                 }
             }
-            m_caster->CastCustomSpell(unitTarget, triggered_spell_id, &damage, NULL, NULL, true, m_CastItem, NULL, m_originalCasterGUID);
+            m_caster->CastCustomSpell((Unit*)NULL, triggered_spell_id, &damage, NULL, NULL, true, m_CastItem, NULL, m_originalCasterGUID);
             return;
         }
     }
