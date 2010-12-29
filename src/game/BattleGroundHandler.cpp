@@ -746,8 +746,8 @@ void WorldSession::HandleBattleGroundArenaJoin( WorldPacket & recv_data )
             avg_pers_rating /= arenatype;
 
         // if avg personal rating is more than 150 points below the teams rating, the team will be queued against an opponent matching or similar to the average personal rating
-        if(avg_pers_rating + 150 < arenaRating)
-            arenaRating = avg_pers_rating;
+        //if(avg_pers_rating + 150 < arenaRating)
+        //    arenaRating = avg_pers_rating;
     }
 
     if(asGroup)
