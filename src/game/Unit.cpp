@@ -1203,7 +1203,7 @@ void Unit::CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit*
     SpellCastTargets targets;
     uint32 targetMask = spellInfo->Targets;
 
-    //check unit target
+    //check unit target but only for spells with direct targeting effect
     for(int i = 0; i < 3; ++i)
     {
         if(spellmgr.SpellTargetType[spellInfo->EffectImplicitTargetA[i]] == TARGET_TYPE_UNIT_TARGET)
@@ -1217,7 +1217,6 @@ void Unit::CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit*
                 break;
         }
     }
-    targets.setUnitTarget(Victim);
 
     //check destination
     if(targetMask & (TARGET_FLAG_SOURCE_LOCATION|TARGET_FLAG_DEST_LOCATION))
@@ -1234,6 +1233,15 @@ void Unit::CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit*
         originalCaster = triggeredByAura->GetCasterGUID();
 
     Spell *spell = new Spell(this, spellInfo, triggered, originalCaster );
+
+    // if victim is defined use it, if not, search for targets
+    if(Victim)
+        targets.setUnitTarget(Victim);
+    else
+    {
+        spell->FillTargetMap();
+        targets = spell->m_targets;
+    }
 
     if(castItem)
     {
