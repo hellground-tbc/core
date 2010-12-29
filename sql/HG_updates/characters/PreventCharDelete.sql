@@ -8,11 +8,11 @@ CREATE TABLE deleted_chars
     PRIMARY KEY (id)
 );
 
-
+DROP PROCEDURE IF EXISTS PreventCharDelete;
 delimiter //
 CREATE PROCEDURE PreventCharDelete(IN charguid INT UNSIGNED)
 BEGIN
-    INSERT INTO deleted_chars VALUES ('XXX', guid, (SELECT account FROM characters WHERE guid = charguid), CAST(NOW() AS DATETIME));
+    INSERT INTO deleted_chars VALUES ('XXX', charguid, (SELECT account FROM characters WHERE guid = charguid), CAST(NOW() AS DATETIME));
     UPDATE characters SET account = 1 WHERE guid = charguid;
     UPDATE characters SET name = CONCAT('DEL', name, 'DEL') WHERE guid = charguid;
     DELETE FROM character_social WHERE guid = charguid OR friend = charguid;
