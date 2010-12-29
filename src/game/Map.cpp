@@ -2999,7 +2999,8 @@ void BattleGroundMap::Update(const uint32& t_diff)
 {
     Map::Update(t_diff);
 
-    m_bg->Update(time_t(t_diff));
+    if(m_bg)
+        m_bg->Update(time_t(t_diff));
 }
 
 bool BattleGroundMap::Add(Player * player)
