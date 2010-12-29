@@ -476,11 +476,7 @@ class BattleGround
         bool IsPlayerInBattleGround(uint64 guid);
         void PlayerRelogin(uint64 guid);
 
-        void SetDeleteThis()
-        { 
-            ((BattleGroundMap*)GetMap())->SetBattleGround(NULL);
-            m_SetDeleteThis = true;
-        }
+        void SetDeleteThis(){ m_SetDeleteThis = true; }
 
     protected:
         //this method is called, when BG cannot spawn its own spirit guide, or something is wrong, It correctly ends BattleGround

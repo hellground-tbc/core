@@ -247,6 +247,7 @@ void BattleGroundQueue::RemovePlayer(uint64 guid, bool decreaseInvitedCount)
                 BattleGround* bg = sBattleGroundMgr.GetBattleGround(group->IsInvitedToBGInstanceGUID);
                 if (bg)
                     bg->DecreaseInvitedCount(group->Team);
+                
                 if (bg && !bg->GetPlayersSize() && !bg->GetInvitedCount(ALLIANCE) && !bg->GetInvitedCount(HORDE))
                 {
                     // no more players on battleground, set delete it
@@ -1037,6 +1038,7 @@ void BattleGroundMgr::Update(time_t diff)
         {
             BattleGround * bg = itr->second;
             m_BattleGrounds.erase(itr);
+            ((BattleGroundMap*)(bg->GetMap()))->SetBattleGround(NULL);
             delete bg;
         }
     }
