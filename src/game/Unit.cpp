@@ -2223,6 +2223,14 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo, int32 crit_chance, int32 mis
     {
         if (pVictim->GetTypeId() == TYPEID_PLAYER)
             dodge_chance = 0;
+
+        parry_chance = 0;
+        block_chance = 0;
+    }
+
+    if (pVictim->IsNonMeleeSpellCasted(false))
+    {
+        dodge_chance = 0;
         parry_chance = 0;
         block_chance = 0;
     }
