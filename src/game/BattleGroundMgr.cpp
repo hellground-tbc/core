@@ -1038,7 +1038,6 @@ void BattleGroundMgr::Update(time_t diff)
         {
             BattleGround * bg = itr->second;
             m_BattleGrounds.erase(itr);
-            ((BattleGroundMap*)(bg->GetMap()))->SetBattleGround(NULL);
             delete bg;
         }
     }
