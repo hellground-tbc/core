@@ -2454,7 +2454,12 @@ void Spell::cast(bool skipCheck)
     }
 
     if(m_spellInfo->AttributesCu & SPELL_ATTR_CU_CHARGE)
-        EffectCharge(0);
+    {
+        if(m_spellInfo->Effect[0] == SPELL_EFFECT_CHARGE2) //swoop is always first effect
+            EffectCharge2(0);
+        else
+            EffectCharge(0);
+    }
 
     // Okay, everything is prepared. Now we need to distinguish between immediate and evented delayed spells
     if (m_spellInfo->speed > 0.0f && !IsChanneledSpell(m_spellInfo))
@@ -4080,6 +4085,7 @@ uint8 Spell::CanCast(bool strict)
                 break;
             }
             case SPELL_EFFECT_CHARGE:
+            case SPELL_EFFECT_CHARGE2:
             {
                 if (m_caster->hasUnitState(UNIT_STAT_ROOT))
                     return SPELL_FAILED_ROOTED;

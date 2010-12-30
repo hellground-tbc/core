@@ -2550,6 +2550,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesCu |= SPELL_ATTR_CU_DIRECT_DAMAGE;
                     break;
                 case SPELL_EFFECT_CHARGE:
+                case SPELL_EFFECT_CHARGE2:
                     if(!spellInfo->speed && !spellInfo->SpellFamilyName)
                         spellInfo->speed = SPEED_CHARGE;
                     spellInfo->AttributesCu |= SPELL_ATTR_CU_CHARGE;
