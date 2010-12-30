@@ -242,10 +242,10 @@ struct TRINITY_DLL_DECL npc_harrison_jones_zaAI : public npc_escortAI
         m_creature->RemoveAllAuras();
     }
 
-    void StartEvent()
+    void StartEvent(Player* pPlayer)
     {
         DoScriptText(SAY_START, m_creature);
-        Start();
+        Start(true, false, pPlayer->GetGUID(), 0, false, true);
     }
 
     void SetHoldState(bool bOnHold)
@@ -253,7 +253,7 @@ struct TRINITY_DLL_DECL npc_harrison_jones_zaAI : public npc_escortAI
         SetEscortPaused(bOnHold);
 
         //Stop banging gong if still
-        if (m_pInstance && m_pInstance->GetData(TYPE_EVENT_RUN) == SPECIAL && m_creature->HasAura(SPELL_BANGING_THE_GONG, 0))
+        if (m_creature->HasAura(SPELL_BANGING_THE_GONG, 0))
         {
             m_creature->RemoveAurasDueToSpell(SPELL_BANGING_THE_GONG);
             DoPlaySoundToSet(m_creature, SOUND_CELEBRATE);
@@ -263,7 +263,7 @@ struct TRINITY_DLL_DECL npc_harrison_jones_zaAI : public npc_escortAI
     void UpdateAI(const uint32 diff)
     {
         if(HasEscortState(STATE_ESCORT_PAUSED))
-        {
+        {/*
             if(ResetTimer < diff)
             {
                 me->Kill(me, false);
@@ -271,7 +271,7 @@ struct TRINITY_DLL_DECL npc_harrison_jones_zaAI : public npc_escortAI
                 ResetTimer = 600000;
             }
             else
-                ResetTimer -= diff;
+                ResetTimer -= diff;*/
         }
         npc_escortAI::UpdateAI(diff);
     }
@@ -296,7 +296,7 @@ bool GossipSelect_npc_harrison_jones_za(Player* pPlayer, Creature* pCreature, ui
     if (uiAction == GOSSIP_ACTION_INFO_DEF+1)
     {
         if (npc_harrison_jones_zaAI* pHarrisonAI = dynamic_cast<npc_harrison_jones_zaAI*>(pCreature->AI()))
-            pHarrisonAI->StartEvent();
+            pHarrisonAI->StartEvent(pPlayer);
         
         pPlayer->CLOSE_GOSSIP_MENU();
     }

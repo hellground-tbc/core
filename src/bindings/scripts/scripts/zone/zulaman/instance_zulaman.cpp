@@ -273,7 +273,7 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
         switch(type)
         {
         case TYPE_EVENT_RUN:
-            if (data == IN_PROGRESS)
+            if (data == SPECIAL)
             {
                 OpenDoor(MassiveGateGUID, true);
                 QuestMinute = 21;

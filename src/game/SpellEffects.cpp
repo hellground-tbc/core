@@ -6428,7 +6428,7 @@ void Spell::EffectCharge2(uint32 /*i*/)
         y = m_targets.m_destY;
         z = m_targets.m_destZ;
 
-        if (unitTarget->GetTypeId() != TYPEID_PLAYER)
+        if (unitTarget && unitTarget->GetTypeId() != TYPEID_PLAYER)
             ((Creature *)unitTarget)->StopMoving();
     }
     else if (unitTarget && unitTarget != m_caster)
