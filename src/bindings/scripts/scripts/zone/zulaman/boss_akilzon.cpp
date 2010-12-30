@@ -28,7 +28,6 @@ EndScriptData */
 #include "Weather.h"
 
 #define SPELL_STATIC_DISRUPTION     43622
-#define SPELL_STATIC_VISUAL         45265
 #define SPELL_CALL_LIGHTNING        43661 //Missing timer
 #define SPELL_GUST_OF_WIND          43621
 #define SPELL_ELECTRICAL_STORM      43648
@@ -61,16 +60,12 @@ struct TRINITY_DLL_DECL boss_akilzonAI : public ScriptedAI
 {
     boss_akilzonAI(Creature *c) : ScriptedAI(c)
     {
-        SpellEntry *TempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_ELECTRICAL_DAMAGE);
-        if(TempSpell)
-            TempSpell->EffectBasePoints[1] = 49;//disable bugged lightning until fixed in core
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
         m_creature->GetPosition(wLoc);
     }
     ScriptedInstance *pInstance;
 
     uint64 BirdGUIDs[8];
-    //uint64 TargetGUID;
     uint64 CycloneGUID;
     uint64 CloudGUID;
 
@@ -80,9 +75,6 @@ struct TRINITY_DLL_DECL boss_akilzonAI : public ScriptedAI
     uint32 ElectricalStorm_Timer;
     uint32 SummonEagles_Timer;
     uint32 Enrage_Timer;
-
-    uint32 StormCount;
-    uint32 StormSequenceTimer;
 
     bool isRaining;
 
@@ -95,21 +87,17 @@ struct TRINITY_DLL_DECL boss_akilzonAI : public ScriptedAI
             pInstance->SetData(DATA_AKILZONEVENT, NOT_STARTED);
 
         StaticDisruption_Timer = urand(5000, 10000);
-        GustOfWind_Timer = (8000, 15000);
+        GustOfWind_Timer = urand(8000, 15000);
         CallLighting_Timer = urand(8000, 12000);
-        ElectricalStorm_Timer = 60*1000;
-        Enrage_Timer = 10*60*1000; //10 minutes till enrage(bosskillers)
+        ElectricalStorm_Timer = 60000;
+        Enrage_Timer = 480000; //8 minutes to enrage
         SummonEagles_Timer = 99999;
 
-        //TargetGUID = 0;
         CloudGUID = 0;
         CycloneGUID = 0;
         DespawnSummons();
         for(uint8 i = 0; i < 8; i++)
             BirdGUIDs[i] = 0;
-
-        StormCount = 6000000;
-        StormSequenceTimer = 0;
 
         isRaining = false;
 
@@ -122,7 +110,7 @@ struct TRINITY_DLL_DECL boss_akilzonAI : public ScriptedAI
     {
         DoYell(SAY_ONAGGRO, LANG_UNIVERSAL, NULL);
         DoPlaySoundToSet(m_creature, SOUND_ONAGGRO);
-        //DoZoneInCombat();
+        DoZoneInCombat();
         if(pInstance)
             pInstance->SetData(DATA_AKILZONEVENT, IN_PROGRESS);
     }
@@ -174,63 +162,6 @@ struct TRINITY_DLL_DECL boss_akilzonAI : public ScriptedAI
 
         map->SendToPlayers(&data);
     }
-/*
-    void HandleStormSequence(Unit *Cloud) // 1: begin, 2-9: tick, 10: end
-    {
-        if(StormCount < 10 && StormCount > 1)
-        {
-            // deal damage
-            int32 bp0 = 800;
-            for(uint8 i = 2; i < StormCount; ++i)
-                bp0 *= 2;
-
-            std::list<Unit *> tempUnitMap;
-
-            {
-                Trinity::AnyAoETargetUnitInObjectRangeCheck u_check(m_creature, m_creature, 999);
-                Trinity::UnitListSearcher<Trinity::AnyAoETargetUnitInObjectRangeCheck> searcher(tempUnitMap, u_check);
-                Cell::VisitAllObjects(me, searcher, 999);
-            }
-            //dealdamege
-            for(std::list<Unit*>::iterator i = tempUnitMap.begin(); i != tempUnitMap.end(); ++i)
-            {
-                if(Cloud->GetDistance2d(*i)>= 6)
-                {
-                    Cloud->CastCustomSpell(*i, 43137, &bp0, NULL, NULL, true, 0, 0, m_creature->GetGUID());
-                }
-            }
-            // visual
-            float x,y,z;
-            z = m_creature->GetPositionZ();
-            for(uint8 i = 0; i < 5+rand()%5; ++i)
-            {
-                x = 343+rand()%60;
-                y = 1380+rand()%60;
-                if(Unit *trigger = m_creature->SummonTrigger(x, y, z, 0, 2000))
-                {
-                    trigger->setFaction(35);
-                    trigger->SetMaxHealth(100000);
-                    trigger->SetHealth(100000);
-                    trigger->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                    if (Cloud)
-                        Cloud->CastCustomSpell(trigger, 43137, &bp0, NULL, NULL,true, 0, 0, Cloud->GetGUID());
-                }
-            }
-        }
-        StormCount++;
-        if(StormCount > 10)
-        {
-            StormCount = 0; // finish
-            SummonEagles_Timer = 5000;
-            m_creature->InterruptNonMeleeSpells(false);
-            CloudGUID = 0;
-            if (Cloud)
-                Cloud->DealDamage(Cloud, Cloud->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-            SetWeather(WEATHER_STATE_FINE, 0.0f);
-            isRaining = false;
-        }
-        StormSequenceTimer = 1000;
-    }*/
 
     void UpdateAI(const uint32 diff)
     {
@@ -239,48 +170,17 @@ struct TRINITY_DLL_DECL boss_akilzonAI : public ScriptedAI
 
         if (checkTimer < diff)
         {
-            if (!m_creature->IsWithinDistInMap(&wLoc, 45))
+            if (!m_creature->IsWithinDistInMap(&wLoc, 110.0f))
                 EnterEvadeMode();
             else
+            {
+                m_creature->SetSpeed(MOVE_RUN, 2.0);
                 DoZoneInCombat();
-            checkTimer = 3000;
+            }
+            checkTimer = 1000;
         }
         else
             checkTimer -= diff;
-
-        // TO BE REDONE!!
-        if(StormCount < diff)
-        {
-            StormCount = 6000000; // finish
-            SummonEagles_Timer = 5000;
-            //m_creature->InterruptNonMeleeSpells(false);
-            //CloudGUID = 0;
-            //if (Cloud)
-                //Cloud->DealDamage(Cloud, Cloud->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-            SetWeather(WEATHER_STATE_FINE, 0.0f);
-            isRaining = false;
-        }
-        else
-            StormCount -= diff;
-
-        /*
-        if(StormCount)
-        {
-            Unit* target = Unit::GetUnit(*m_creature, CloudGUID);
-            if(!target || !target->isAlive())
-            {
-                EnterEvadeMode();
-                return;
-            }
-            else if(Unit* Cyclone = Unit::GetUnit(*m_creature, CycloneGUID))
-                Cyclone->CastSpell(target, 25160, true); // keep casting or...
-
-            if(StormSequenceTimer < diff) {
-                HandleStormSequence(target);
-            }
-            else StormSequenceTimer -= diff;
-            return;
-        }*/
 
         if (Enrage_Timer < diff)
         {
@@ -298,18 +198,20 @@ struct TRINITY_DLL_DECL boss_akilzonAI : public ScriptedAI
             if(!target)
                 target = m_creature->getVictim();
             AddSpellToCast(target, SPELL_STATIC_DISRUPTION, false, true);
-            StaticDisruption_Timer = urand(5000, 15000);
+            StaticDisruption_Timer = urand(7000, 14000);
         }
         else
             StaticDisruption_Timer -= diff;
 
         if (GustOfWind_Timer < diff)
         {
-            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_GUST_OF_WIND), true, m_creature->getVictimGUID());
-            if(!target)
-                target = m_creature->getVictim();
-            AddSpellToCast(target, SPELL_GUST_OF_WIND);
-            GustOfWind_Timer = RAND(urand(10000, 12000), urand(20000, 25000));
+            //we dont want to start a storm with player in the air
+            if(ElectricalStorm_Timer < 9000)
+                GustOfWind_Timer += 20000;
+
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_GUST_OF_WIND), true, m_creature->getVictimGUID()))
+                AddSpellToCast(target, SPELL_GUST_OF_WIND);
+            GustOfWind_Timer = urand(8000, 14000);
         }
         else
             GustOfWind_Timer -= diff;
@@ -322,48 +224,36 @@ struct TRINITY_DLL_DECL boss_akilzonAI : public ScriptedAI
         else
             CallLighting_Timer -= diff;
 
-        if (!isRaining && ElectricalStorm_Timer < (urand(5000, 10000)))
+        if (!isRaining && ElectricalStorm_Timer < urand(8000, 12000))
         {
             SetWeather(WEATHER_STATE_HEAVY_RAIN, 0.9999f);
             isRaining = true;
         }
 
+        if (isRaining && ElectricalStorm_Timer > 50000)
+        {
+            SetWeather(WEATHER_STATE_FINE, 0.0f);
+            SummonEagles_Timer = 13000;
+            isRaining = false;
+        }
+
         if (ElectricalStorm_Timer < diff)
         {
-            if(GustOfWind_Timer < 10000)
-                GustOfWind_Timer += 10000;
-
             Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_ELECTRICAL_STORM), true);
+
             if(!target)
             {
                 EnterEvadeMode();
                 return;
             }
-            //target->CastSpell(target, 44007, true);//cloud visual
-            m_creature->CastSpell(target, SPELL_ELECTRICAL_STORM, false);//storm cyclon + visual
+            // throw player to air and cast electrical storm on
             float x,y,z;
             target->GetPosition(x,y,z);
-            if (target)
-            {
-                target->SetUnitMovementFlags(MOVEMENTFLAG_LEVITATING);
-                target->SendMonsterMove(x,y,m_creature->GetPositionZ()+15,0);
-            }
-            //Unit *Cloud = m_creature->SummonTrigger(x, y, m_creature->GetPositionZ()+16, 0, 15000);
-            /*if(Cloud)
-            {
-                CloudGUID = Cloud->GetGUID();
-                Cloud->SetUnitMovementFlags(MOVEMENTFLAG_LEVITATING);
-                Cloud->StopMoving();
-                Cloud->SetFloatValue(OBJECT_FIELD_SCALE_X, 1.0f);
-                Cloud->setFaction(35);
-                Cloud->SetMaxHealth(9999999);
-                Cloud->SetHealth(9999999);
-                Cloud->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-            }*/
+            target->SendMonsterMove(x,y,m_creature->GetPositionZ()+15,0);
+            m_creature->CastSpell(target, SPELL_ELECTRICAL_STORM, false);
+
             ElectricalStorm_Timer = 60000;
-            StormCount = 9000;
-            //StormCount = 1;
-            //StormSequenceTimer = 0;
+            StaticDisruption_Timer += 10000;
         }
         else
             ElectricalStorm_Timer -= diff;
