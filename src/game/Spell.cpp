@@ -2649,19 +2649,12 @@ void Spell::_handle_immediate_phase()
     for(std::list<ItemTargetInfo>::iterator ihit= m_UniqueItemInfo.begin();ihit != m_UniqueItemInfo.end();++ihit)
         DoAllEffectOnTarget(&(*ihit));
 
-    if(!m_originalCaster)
-        return;
     // process ground
-    for(uint32 j = 0; j < 3; ++j)
+    for(int j = 0; j < 3; ++j)
     {
-        if(spellmgr.EffectTargetType[m_spellInfo->Effect[j]] == SPELL_REQUIRE_DEST)
-        {
-            if(!m_targets.HasDst()) // FIXME: this will ignore dest set in effect
-                m_targets.setDestination(m_caster);
-            HandleEffects(m_originalCaster, NULL, NULL, j);
-        }
-        else if(spellmgr.EffectTargetType[m_spellInfo->Effect[j]] == SPELL_REQUIRE_NONE)
-            HandleEffects(m_originalCaster, NULL, NULL, j);
+        // persistent area auras target only the ground
+        if(m_spellInfo->Effect[j] == SPELL_EFFECT_PERSISTENT_AREA_AURA)
+            HandleEffects(NULL, NULL, NULL, j);
     }
 }
 
