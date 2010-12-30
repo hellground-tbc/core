@@ -57,8 +57,6 @@
 
 #include <math.h>
 
-using namespace std;
-
 float baseMoveSpeed[MAX_MOVE_TYPE] =
 {
     2.5f,                                                   // MOVE_WALK
