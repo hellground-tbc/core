@@ -4470,10 +4470,17 @@ void Aura::HandlePeriodicTriggerSpell(bool apply, bool Real)
 
     m_isPeriodic = apply;
 
+    // on aura remove
     if (!apply)
     {
         switch (m_spellProto->Id)
         {
+            case 43648: // Electrical Storm makes target levitating
+            {
+                if(!m_target->HasUnitMovementFlag(MOVEMENTFLAG_LEVITATING))
+                    m_target->SetUnitMovementFlags(MOVEMENTFLAG_LEVITATING);
+                break;
+            }
             case 40106: // Merge
             {
                 if(!m_target)
@@ -4504,6 +4511,18 @@ void Aura::HandlePeriodicTriggerSpell(bool apply, bool Real)
                     return;
 
                 ((Creature*)m_target)->UpdateEntry(20680); // Transform into Arzeth the Powerless
+                break;
+            }
+        }
+    }
+    else    // on aura apply
+    {
+        switch (m_spellProto->Id)
+        {
+            case 43648: // Electrical Storm - stop levitating when spell ends
+            {
+                if(m_target->HasUnitMovementFlag(MOVEMENTFLAG_LEVITATING))
+                    m_target->RemoveUnitMovementFlag(MOVEMENTFLAG_LEVITATING);
                 break;
             }
         }
