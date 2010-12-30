@@ -2649,8 +2649,8 @@ void Spell::_handle_immediate_phase()
     for(std::list<ItemTargetInfo>::iterator ihit= m_UniqueItemInfo.begin();ihit != m_UniqueItemInfo.end();++ihit)
         DoAllEffectOnTarget(&(*ihit));
 
-        if(!m_originalCaster)
-            return;
+    if(!m_originalCaster)
+        return;
 
     // process ground
         for(uint32 j = 0; j < 3; ++j)
@@ -2663,6 +2663,7 @@ void Spell::_handle_immediate_phase()
             }
             else if(spellmgr.EffectTargetType[m_spellInfo->Effect[j]] == SPELL_REQUIRE_NONE)
                 HandleEffects(m_originalCaster, NULL, NULL, j);
+        }
 }
 
 void Spell::_handle_finish_phase()
