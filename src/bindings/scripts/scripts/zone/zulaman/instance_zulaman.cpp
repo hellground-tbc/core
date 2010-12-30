@@ -61,6 +61,7 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
     uint64 MassiveGateGUID;
 
     uint64 HarrisonGUID;
+    uint64 AkilzonGUID;
     uint64 HexLordGateGUID;
     uint64 ZulJinGateGUID;
     uint64 AkilzonDoorGUID;
@@ -137,6 +138,9 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
         {
         case 24375://harrison jones
             HarrisonGUID = creature->GetGUID();
+            break;
+        case 23574:
+            AkilzonGUID = creature->GetGUID();
             break;
         case 23578://janalai
         case 23863://zuljin
@@ -385,9 +389,9 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
     {
         switch(data)
         {
-            /*
             case DATA_AKILZONEVENT:
                 return AkilzonGUID;
+                /*
             case DATA_NALORAKKEVENT:
                 return NalorakkGUID;
             case DATA_JANALAIEVENT:
