@@ -1262,8 +1262,8 @@ void World::SetInitialWorldSettings()
     CharacterDatabase.PExecute("DELETE FROM corpse WHERE corpse_type = '0'");
 
     ///- Remove characters deleted 3 months (or more) ago
-    CharacterDatabase.PExecute("DELETE FROM characters WHERE account = 1 AND guid in (SELECT char_guid FROM deleted_chars WHERE period_diff(date_format(now(), '%Y%m'), date_format(date, '%Y%m')) > 2)'");
-    CharacterDatabase.PExecute("DELETE FROM deleted_chars WHERE period_diff(date_format(now(), '%Y%m'), date_format(date, '%Y%m')) > 2'");
+    CharacterDatabase.Execute("DELETE FROM characters WHERE account = 1 AND guid in (SELECT char_guid FROM deleted_chars WHERE period_diff(date_format(now(), '%Y%m'), date_format(date, '%Y%m')) > 2)'");
+    CharacterDatabase.Execute("DELETE FROM deleted_chars WHERE period_diff(date_format(now(), '%Y%m'), date_format(date, '%Y%m')) > 2'");
 
     ///- Load the DBC files
     sLog.outString("Initialize data stores...");
