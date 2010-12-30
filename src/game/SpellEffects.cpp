@@ -2398,7 +2398,9 @@ void Spell::EffectTriggerMissileSpell(uint32 effect_idx)
     Spell *spell = new Spell(m_caster, spellInfo, true, m_originalCasterGUID );
 
     SpellCastTargets targets;
-    targets.setDestination(m_targets.m_destX,m_targets.m_destY,m_targets.m_destZ);
+    // destination location filled by triggered spell targeting
+    targets.setUnitTarget(unitTarget);
+    //targets.setDestination(m_targets.m_destX,m_targets.m_destY,m_targets.m_destZ);        //not working for some spells
     spell->m_CastItem = m_CastItem;
     spell->prepare(&targets, NULL);
 }
@@ -4998,12 +5000,6 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         case 38055:
         {
             m_caster->CastSpell(m_caster, 38054, true);
-            return;
-        }
-        // Static Disruption visual
-        case 44008:
-        {
-            m_caster->CastSpell(unitTarget, 45265, true);
             return;
         }
         // Gathios the Shatterer: Judgement
