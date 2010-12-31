@@ -374,7 +374,7 @@ void Unit::Update( uint32 p_time )
     // Or else we may have some SPELL_STATE_FINISHED spells stalled in pointers, that is bad.
 
     m_Events.Update( p_time );
-    
+
     if (!IsInWorld())
         return;
 
@@ -4201,12 +4201,15 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
 {
     Aura* Aur = i->second;
 
+    if (!Aur || Aur->IsInUse())
+        return;
+
     if (this->GetTypeId() == TYPEID_UNIT && this->IsAIEnabled)
         ((Creature *)this)->AI()->OnAuraRemove(Aur, false);
 
 
     // HACK: teleport players that leave Incite Chaos 2yds up to prevent falling into textures
-    if(Aur && Aur->GetId() == 33684)
+    if(Aur->GetId() == 33684)
     {
         if(this->GetTypeId() == TYPEID_PLAYER)
             ((Player*)this)->TeleportTo(this->GetMapId(), this->GetPositionX(), this->GetPositionY(), (this->GetPositionZ() + 2.0), this->GetOrientation(), TELE_TO_NOT_LEAVE_COMBAT);
