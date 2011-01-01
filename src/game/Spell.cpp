@@ -2654,13 +2654,13 @@ void Spell::_handle_immediate_phase()
     for(std::list<ItemTargetInfo>::iterator ihit= m_UniqueItemInfo.begin();ihit != m_UniqueItemInfo.end();++ihit)
         DoAllEffectOnTarget(&(*ihit));
 
-    if(!m_originalCaster)
+    if(!m_originalCaster || m_spellInfo->Id == 43622)
         return;
 
     // process ground
         for(uint32 j = 0; j < 3; ++j)
         {
-            if(spellmgr.EffectTargetType[m_spellInfo->Effect[j]] == SPELL_REQUIRE_DEST && m_spellInfo->Effect[j] != SPELL_EFFECT_TRIGGER_MISSILE)
+            if(spellmgr.EffectTargetType[m_spellInfo->Effect[j]] == SPELL_REQUIRE_DEST/* && m_spellInfo->Effect[j] != SPELL_EFFECT_TRIGGER_MISSILE*/)
             {
                 if(!m_targets.HasDst()) // FIXME: this will ignore dest set in effect
                     m_targets.setDestination(m_caster);
