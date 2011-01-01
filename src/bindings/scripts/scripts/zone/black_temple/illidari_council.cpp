@@ -310,7 +310,7 @@ struct TRINITY_DLL_DECL mob_illidari_councilAI : public ScriptedAI
                     {
                         pMember->SetSpeed(MOVE_RUN, 2.5f);
                         // This is the evade/death check.
-                        if (pMember->isAlive() && !pMember->getVictim())
+                        if (pMember->isAlive() && !pMember->isInCombat())
                         {
                             m_evadeCheck += 1;
                             if (m_evadeCheck > 3)

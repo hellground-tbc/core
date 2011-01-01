@@ -5657,7 +5657,7 @@ struct TRINITY_DLL_DECL mob_promenade_sentinelAI: public ScriptedAI
 
     void Reset()
     {
-        L5arcane = urand(3000, 6000);
+        L5arcane = urand(7000, 10000);
         L4arcane = urand(1000, 3000);
     }
 
@@ -5683,7 +5683,7 @@ struct TRINITY_DLL_DECL mob_promenade_sentinelAI: public ScriptedAI
         {
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 45.0f, true))
                 AddSpellToCast(target, SPELL_L5_ARCANE_CHARGE, false, true);
-            L5arcane = urand(25000, 45000);
+            L5arcane = urand(15000, 25000);
         }
         else
             L5arcane -= diff;
