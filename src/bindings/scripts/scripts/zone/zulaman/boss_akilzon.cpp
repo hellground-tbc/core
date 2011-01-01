@@ -132,6 +132,7 @@ struct TRINITY_DLL_DECL boss_akilzonAI : public ScriptedAI
             {
                 Eagle->setFaction(me->getFaction());
                 Eagle->SetUnitMovementFlags(MOVEMENTFLAG_LEVITATING | MOVEMENTFLAG_ONTRANSPORT);
+                Eagle->GetMotionMaster()->MoveIdle();
             }
         }
     }

@@ -2307,7 +2307,13 @@ void Spell::EffectTriggerSpell(uint32 i)
                 if(Aura* Aur = m_caster->GetAura(43648, 1))
                 {
                     tick = Aur->GetTickNumber();
-                    damage = urand(800, 1200)*tick;
+                    // FIXME: disable last tick damage until we find easy way to remove from
+                    // target list players within eye of the storm;
+                    // If not in eye of the storm all should be dead before anyway ;]
+                    if(tick == 8)
+                        damage = 0;
+                    else
+                        damage = urand(800, 1200)*tick;
                 }
             }
             m_caster->CastCustomSpell((Unit*)NULL, triggered_spell_id, &damage, NULL, NULL, true, m_CastItem, NULL, m_originalCasterGUID);
