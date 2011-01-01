@@ -205,6 +205,16 @@ struct TRINITY_DLL_DECL npc_harrison_jones_zaAI : public npc_escortAI
     ScriptedInstance* m_pInstance;
     uint32 ResetTimer;
 
+    void DamageTaken(Unit* done_by, uint32 &damage)
+    {
+        // if hitted by Amani'shi Guardian, killed immediately
+        if(done_by->GetTypeId() == TYPEID_UNIT && damage)
+        {
+            damage = m_creature->GetMaxHealth();
+            done_by->GetMotionMaster()->MoveChase(GetPlayerForEscort());
+        }
+    }
+
     void WaypointReached(uint32 uiPointId)
     {
         if (!m_pInstance)
@@ -229,10 +239,12 @@ struct TRINITY_DLL_DECL npc_harrison_jones_zaAI : public npc_escortAI
                 DoScriptText(SAY_OPEN_GATE, m_creature);
                 break;
            case 5:
-                m_pInstance->SetData(TYPE_EVENT_RUN,IN_PROGRESS);
+               m_pInstance->SetData(TYPE_EVENT_RUN,SPECIAL);
+               if(Unit* Guardian = FindCreature(23597, 40, me))
+                   ((Creature*)Guardian)->GetMotionMaster()->MoveChase(me);
+                break;
                 //TODO: Spawn group of Amani'shi Savage and make them run to entrance
                 //TODO: Add, and modify reseting of the event, reseting quote is missing
-                break;
         }
     }
 
