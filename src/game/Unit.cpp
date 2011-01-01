@@ -5255,7 +5255,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     uint64 casterGuid = triggeredByAura->GetCasterGUID();
 
                     // Remove aura (before cast for prevent infinite loop handlers)
-                    RemoveAurasDueToSpell(triggeredByAura->GetId());
+                    RemoveAurasByCasterSpell(triggeredByAura->GetId(), casterGuid);
 
                     // Cast finish spell (triggeredByAura already not exist!)
                     if(Unit* caster = GetUnit(*this, casterGuid))
@@ -5278,7 +5278,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     uint64 casterGuid = triggeredByAura->GetCasterGUID();
 
                     // Remove aura (before cast for prevent infinite loop handlers)
-                    RemoveAurasDueToSpell(triggeredByAura->GetId());
+                    RemoveAurasByCasterSpell(triggeredByAura->GetId(), casterGuid);
 
                     // Cast finish spell (triggeredByAura already not exist!)
                     if(Unit* caster = GetUnit(*this, casterGuid))
