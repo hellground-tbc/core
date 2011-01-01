@@ -283,8 +283,8 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
             }
             break;
         case DATA_NALORAKKEVENT:
-            if (Encounters[0] != DONE)
-                Encounters[0] = data;
+            if (Encounters[1] != DONE)
+                Encounters[1] = data;
             if(data == DONE)
             {
                 if(QuestMinute)
@@ -296,8 +296,8 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
             }
             break;
         case DATA_AKILZONEVENT:
-            if (Encounters[1] != DONE)
-                Encounters[1] = data;
+            if (Encounters[2] != DONE)
+                Encounters[2] = data;
 
             OpenDoor(AkilzonDoorGUID, data != IN_PROGRESS);
 
@@ -312,15 +312,15 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
             }
             break;
         case DATA_JANALAIEVENT:
-            if (Encounters[2] != DONE)
-                Encounters[2] = data;
+            if (Encounters[3] != DONE)
+                Encounters[3] = data;
 
             if(data == DONE)
                 SummonHostage(2);
             break;
         case DATA_HALAZZIEVENT:
-            if (Encounters[3] != DONE)
-                Encounters[3] = data;
+            if (Encounters[4] != DONE)
+                Encounters[4] = data;
 
             OpenDoor(HalazziDoorGUID, data != IN_PROGRESS);
 
@@ -328,8 +328,8 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
                 SummonHostage(3);
             break;
         case DATA_HEXLORDEVENT:
-            if (Encounters[4] != DONE)
-                Encounters[4] = data;
+            if (Encounters[5] != DONE)
+                Encounters[5] = data;
 
             if(data == IN_PROGRESS)
                 OpenDoor(HexLordGateGUID, false);
@@ -337,8 +337,8 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
                 CheckInstanceStatus();
             break;
         case DATA_ZULJINEVENT:
-            if (Encounters[5] != DONE)
-                Encounters[5] = data;
+            if (Encounters[6] != DONE)
+                Encounters[6] = data;
 
             OpenDoor(ZulJinDoorGUID, data != IN_PROGRESS);
             break;
