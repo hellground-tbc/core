@@ -200,34 +200,10 @@ struct TRINITY_DLL_DECL mob_illidari_councilAI : public ScriptedAI
     }
 
     ScriptedInstance* pInstance;
-
     uint64 m_council[4];
-
-    uint32 m_checkTimer;
-    uint32 m_endTimer;
-
-    uint8 m_deathCount;
 
     void Reset()
     {
-        m_checkTimer = 2000;
-
-        m_endTimer = 0;
-        m_deathCount = 0;
-
-        for (uint8 i = 0; i < 4; ++i)
-        {
-            if(Creature* pMember = pInstance->GetCreature(m_council[i]))
-            {
-                if (!pMember->isAlive())
-                {
-                    pMember->RemoveCorpse();
-                    pMember->Respawn();
-                }
-                pMember->AI()->EnterEvadeMode();
-            }
-        }
-
         pInstance->SetData(EVENT_ILLIDARICOUNCIL, NOT_STARTED);
 
         if(Creature *pTrigger = pInstance->GetCreature(pInstance->GetData64(DATA_BLOOD_ELF_COUNCIL_VOICE)))
@@ -261,77 +237,16 @@ struct TRINITY_DLL_DECL mob_illidari_councilAI : public ScriptedAI
                     }
                 }
             }
-
             pInstance->SetData(EVENT_ILLIDARICOUNCIL, IN_PROGRESS);
         }
     }
 
-    void UpdateAI(const uint32 diff)
+    void JustDied(Unit *pVictim)
     {
-        if (pInstance->GetData(EVENT_ILLIDARICOUNCIL) != IN_PROGRESS)
-            return;
+        if (Creature *pTrigger = pInstance->GetCreature(pInstance->GetData64(DATA_BLOOD_ELF_COUNCIL_VOICE)))
+            pTrigger->Kill(pTrigger, false);
 
-        if (m_endTimer)
-        {
-            if (m_endTimer < diff)
-            {
-                if (m_deathCount > 3)
-                {
-                    if (Creature *pTrigger = pInstance->GetCreature(pInstance->GetData64(DATA_BLOOD_ELF_COUNCIL_VOICE)))
-                        pTrigger->DealDamage(pTrigger,pTrigger->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-
-                    pInstance->SetData(EVENT_ILLIDARICOUNCIL, DONE);
-
-                    m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-                    return;
-                }
-
-                if (Creature *pMember = pInstance->GetCreature(m_council[m_deathCount]))
-                {
-                    if (pMember->isAlive())
-                        pMember->DealDamage(pMember, pMember->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-                }
-
-                ++m_deathCount;
-                m_endTimer = 1500;
-            }
-            else
-                m_endTimer -= diff;
-        }
-
-        if (m_checkTimer)
-        {
-            if (m_checkTimer < diff)
-            {
-                uint8 m_evadeCheck = 0;
-                for (uint8 i = 0; i < 4; ++i)
-                {
-                    if (Creature *pMember = pInstance->GetCreature(m_council[i]))
-                    {
-                        pMember->SetSpeed(MOVE_RUN, 2.5f);
-                        // This is the evade/death check.
-                        if (pMember->isAlive() && !pMember->isInCombat())
-                        {
-                            m_evadeCheck += 1;
-                            if (m_evadeCheck > 3)
-                                Reset();
-                        }
-                        else
-                        {
-                            if (!pMember->isAlive())         // If even one member dies, kill the rest, set instance data, and kill self.
-                            {
-                                m_endTimer = 1000;
-                                m_checkTimer = 0;
-                                return;
-                            }
-                        }
-                    }
-                }
-                m_checkTimer = 2000;
-            }
-            else
-                m_checkTimer -= diff;
-        }
+        pInstance->SetData(EVENT_ILLIDARICOUNCIL, DONE);
     }
 };
 
@@ -395,47 +310,70 @@ struct TRINITY_DLL_DECL illidari_council_baseAI : public ScriptedAI
             case 22951: DoScriptText(SAY_MALA_DEATH, m_creature); break; // Melande
             case 22952: DoScriptText(SAY_VERA_DEATH, m_creature); break; // Veras
         }
+        if (Creature *pCouncil = pInstance->GetCreature(pInstance->GetData64(DATA_ILLIDARICOUNCIL)))
+        {
+            if(pCouncil->isAlive())
+                pCouncil->Kill(pCouncil, false);
+        }
     }
 
     void EnterEvadeMode()
     {
+        if(!pInstance)
+            return;
+        pInstance->SetData(EVENT_ILLIDARICOUNCIL, NOT_STARTED);
+
+        if(Creature *pTrigger = pInstance->GetCreature(pInstance->GetData64(DATA_BLOOD_ELF_COUNCIL_VOICE)))
+            pTrigger->AI()->EnterEvadeMode();
+        ScriptedAI::EnterEvadeMode();
+    }
+
+    void SharedRule(uint32 &damage)
+    {
+        uint32 HP = 0;
+        bool canKill = false;
+        // get shared HP
         for (uint8 i = 0; i < 4; ++i)
         {
-            if (Creature *pTemp = pInstance->GetCreature(m_council[i]))
+            if (Creature *pUnit = pInstance->GetCreature(m_council[i]))
             {
-                if (pTemp != me && pTemp->getVictim())
+                if(pUnit->GetHealth() == 0)
+                    canKill = true;
+                HP += pUnit->GetHealth();
+                pUnit->LowerPlayerDamageReq(damage);
+            }
+        }
+        // set shared HP
+        for (uint8 i = 0; i < 4; ++i)
+        {
+            if (Creature *pUnit = pInstance->GetCreature(m_council[i]))
+            {
+                if (pUnit->isAlive())
                 {
-                    AttackStart(pTemp->getVictim());
-                    return;
+                    if(HP)
+                        pUnit->SetHealth(HP/4);
                 }
             }
         }
-        ScriptedAI::EnterEvadeMode();
+        // if one dies, they die all
+        if(!canKill)
+            return;
+        for (uint8 i = 0; i < 4; ++i)
+        {
+            if (Creature *pUnit = pInstance->GetCreature(m_council[i]))
+            {
+                if(pUnit->isAlive())
+                    pUnit->Kill(pUnit, false);
+            }
+        }
     }
 
     void DamageTaken(Unit* done_by, uint32 &damage)
     {
         if(done_by == m_creature)
             return;
-
-        damage /= 4;
-        for (uint8 i = 0; i < 4; ++i)
-        {
-            if (Creature *pUnit = pInstance->GetCreature(m_council[i]))
-            {
-                if (pUnit != m_creature && pUnit->isAlive())
-                {
-                    pUnit->LowerPlayerDamageReq(damage);
-
-                    if (damage <= pUnit->GetHealth())
-                        pUnit->SetHealth(pUnit->GetHealth() - damage);
-                    else
-                        pUnit->Kill(pUnit, false);
-                }
-            }
-        }
+        SharedRule(damage);
     }
-
 };
 
 // Gathios the Shatterer's AI
@@ -501,6 +439,8 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public illidari_council_b
         if (m_checkTimer < diff)
         {
             DoZoneInCombat();
+            uint32 damage = 0;
+            SharedRule(damage);
             m_checkTimer = 1000;
         }
         else
@@ -598,6 +538,8 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
             else
                 me->GetMotionMaster()->MoveChase(me->getVictim(), 40);
 
+            uint32 damage = 0;
+            SharedRule(damage);
             DoZoneInCombat();
             m_checkTimer = 1000;
         }
@@ -685,6 +627,8 @@ struct TRINITY_DLL_DECL boss_lady_malandeAI : public illidari_council_baseAI
 
         if (m_checkTimer < diff)
         {
+            uint32 damage = 0;
+            SharedRule(damage);
             DoZoneInCombat();
             m_checkTimer = 1000;
         }
@@ -760,6 +704,16 @@ struct TRINITY_DLL_DECL boss_veras_darkshadowAI : public illidari_council_baseAI
     {
         if (!UpdateVictim())
             return;
+
+        if (m_checkTimer < diff)
+        {
+            uint32 damage = 0;
+            SharedRule(damage);
+            DoZoneInCombat();
+            m_checkTimer = 1000;
+        }
+        else
+            m_checkTimer -= diff;
 
         if (m_vanishTimer < diff)
         {
