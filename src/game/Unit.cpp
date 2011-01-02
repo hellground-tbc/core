@@ -1933,6 +1933,9 @@ void Unit::CalcAbsorb(Unit *pVictim,SpellSchoolMask schoolMask, const uint32 dam
         {
             Aura *aur = (*i);
             ++i;
+            // Balance of Power cosmetics workaround, do not remove this aura when expires
+            if (aur->GetId() == 41341)
+                continue;
             if (aur->GetModifier()->m_amount <= 0)
             {
                 uint32 removedAuras = pVictim->m_removedAurasCount;
