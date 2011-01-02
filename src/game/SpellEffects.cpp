@@ -1288,6 +1288,16 @@ void Spell::EffectDummy(uint32 i)
                     }
                     return;
                 }*/
+                // Polarity Shift (Thaddius)
+                case 28089:
+                    if (unitTarget)
+                        unitTarget->CastSpell(unitTarget, roll_chance_i(50) ? 28059 : 28084, true, NULL, NULL, m_caster->GetGUID());
+                    break;
+                // Polarity Shift (Mechano-Lord Capacitus)
+                case 39096:
+                    if (unitTarget)
+                        unitTarget->CastSpell(unitTarget, roll_chance_i(50) ? 39088 : 39091, true, NULL, NULL, m_caster->GetGUID());
+                    break;
                 case 29200:                                 // Purify Helboar Meat
                 {
                     if( m_caster->GetTypeId() != TYPEID_PLAYER )
@@ -1356,6 +1366,12 @@ void Spell::EffectDummy(uint32 i)
 
                     int32 basepoints0 = 100;
                     m_caster->CastCustomSpell(unitTarget,37675,&basepoints0,NULL,NULL,true);
+                    return;
+                }
+                case 40109:                                 // Knockdown Fel Cannon: The Bolt
+                {
+                    if(unitTarget)
+                        unitTarget->CastSpell(unitTarget, 40075, true);
                     return;
                 }
                 case 40802:                                 // Mingo's Fortune Generator (Mingo's Fortune Giblets)
