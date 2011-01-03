@@ -1513,6 +1513,10 @@
 							RelativePath="..\scripts\zone\aunchindoun\mana_tombs\boss_pandemonius.cpp"
 							>
 						</File>
+						<File
+							RelativePath="..\scripts\zone\aunchindoun\mana_tombs\boss_yor.cpp"
+							>
+						</File>
 					</Filter>
 					<Filter
 						Name="Sethekk Halls"

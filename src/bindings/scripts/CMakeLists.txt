@@ -45,6 +45,7 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/aunchindoun/auchenai_crypts/boss_shirrak_the_dead_watcher.cpp
    scripts/zone/aunchindoun/mana_tombs/boss_nexusprince_shaffar.cpp
    scripts/zone/aunchindoun/mana_tombs/boss_pandemonius.cpp
+   scripts/zone/aunchindoun/mana_tombs/boss_yor.cpp
    scripts/zone/aunchindoun/sethekk_halls/boss_darkweaver_syth.cpp
    scripts/zone/aunchindoun/sethekk_halls/boss_tailonking_ikiss.cpp
    scripts/zone/aunchindoun/sethekk_halls/def_sethekk_halls.h

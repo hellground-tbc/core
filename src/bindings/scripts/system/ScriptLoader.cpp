@@ -67,6 +67,7 @@ extern void AddSC_boss_shirrak_the_dead_watcher();
 //--Mana Tombs
 extern void AddSC_boss_nexusprince_shaffar();
 extern void AddSC_boss_pandemonius();
+extern void AddSC_boss_yor();
 
 //--Sekketh Halls
 extern void AddSC_boss_darkweaver_syth();
@@ -664,6 +665,7 @@ void AddScripts()
     //--Mana Tombs
     AddSC_boss_nexusprince_shaffar();
     AddSC_boss_pandemonius();
+    AddSC_boss_yor();
 
     //--Sekketh Halls
     AddSC_boss_darkweaver_syth();
