@@ -3618,6 +3618,24 @@ bool Unit::AddAura(Aura *Aur)
     // passive and persistent auras can stack with themselves any number of times
     if (!Aur->IsPassive() && !Aur->IsPersistent())
     {
+        bool isDotOrHot = false;
+        for(uint8 i = 0; i < 3; i++)
+            switch(aurSpellInfo->EffectApplyAuraName[i])
+            {
+                // DOT or HOT from different casters will stack
+                case SPELL_AURA_PERIODIC_DAMAGE:
+                case SPELL_AURA_PERIODIC_HEAL:
+                case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
+                case SPELL_AURA_PERIODIC_ENERGIZE:
+                case SPELL_AURA_PERIODIC_MANA_LEECH:
+                case SPELL_AURA_PERIODIC_LEECH:
+                case SPELL_AURA_POWER_BURN_MANA:
+                case SPELL_AURA_OBS_MOD_MANA:
+                case SPELL_AURA_OBS_MOD_HEALTH:
+                    isDotOrHot = true;
+                    break;
+            }
+
         for(AuraMap::iterator i2 = m_Auras.lower_bound(spair); i2 != m_Auras.upper_bound(spair);)
         {
             if(Aur->DiffPerCaster() && Aur->GetCasterGUID() != i2->second->GetCasterGUID())
@@ -3664,20 +3682,10 @@ bool Unit::AddAura(Aura *Aur)
                     continue;
                 }
             }
-            switch(aurSpellInfo->EffectApplyAuraName[Aur->GetEffIndex()])
+            if(isDotOrHot)
             {
-                // DOT or HOT from different casters will stack
-                case SPELL_AURA_PERIODIC_DAMAGE:
-                case SPELL_AURA_PERIODIC_HEAL:
-                case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
-                case SPELL_AURA_PERIODIC_ENERGIZE:
-                case SPELL_AURA_PERIODIC_MANA_LEECH:
-                case SPELL_AURA_PERIODIC_LEECH:
-                case SPELL_AURA_POWER_BURN_MANA:
-                case SPELL_AURA_OBS_MOD_MANA:
-                case SPELL_AURA_OBS_MOD_HEALTH:
-                    ++i2;
-                    continue;
+                ++i2;
+                continue;
             }
             if( GetSpellMaxDuration(aurSpellInfo) > Aur->GetAuraMaxDuration() &&        // HACK check for spellsteal case
                 Aur->GetAuraDuration() < (*i2).second->GetAuraDuration())               // don't override longer bufs when spellstealing
