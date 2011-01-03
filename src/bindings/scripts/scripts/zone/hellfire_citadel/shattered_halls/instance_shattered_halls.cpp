@@ -24,7 +24,7 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_shattered_halls.h"
 
-#define ENCOUNTERS  2
+#define ENCOUNTERS  3
 
 #define DOOR_NETHEKURSE     1
 
@@ -71,6 +71,9 @@ struct TRINITY_DLL_DECL instance_shattered_halls : public ScriptedInstance
             case TYPE_OMROGG:
                 Encounter[1] = data;
                 break;
+            case TYPE_PORUNG:
+                Encounter[2] = data;
+                break;
         }
     }
 
@@ -82,6 +85,8 @@ struct TRINITY_DLL_DECL instance_shattered_halls : public ScriptedInstance
                 return Encounter[0];
             case TYPE_OMROGG:
                 return Encounter[1];
+            case TYPE_PORUNG:
+                return Encounter[2];
         }
         return 0;
     }

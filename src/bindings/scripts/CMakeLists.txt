@@ -45,6 +45,7 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/aunchindoun/auchenai_crypts/boss_shirrak_the_dead_watcher.cpp
    scripts/zone/aunchindoun/mana_tombs/boss_nexusprince_shaffar.cpp
    scripts/zone/aunchindoun/mana_tombs/boss_pandemonius.cpp
+   scripts/zone/aunchindoun/mana_tombs/boss_yor.cpp
    scripts/zone/aunchindoun/sethekk_halls/boss_darkweaver_syth.cpp
    scripts/zone/aunchindoun/sethekk_halls/boss_tailonking_ikiss.cpp
    scripts/zone/aunchindoun/sethekk_halls/def_sethekk_halls.h
@@ -187,6 +188,7 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/hellfire_citadel/shattered_halls/def_shattered_halls.h
    scripts/zone/hellfire_citadel/shattered_halls/instance_shattered_halls.cpp
    scripts/zone/hellfire_citadel/shattered_halls/boss_warchief_kargath_bladefist.cpp
+   scripts/zone/hellfire_citadel/shattered_halls/boss_blood_guard_porung.cpp
    scripts/zone/hellfire_peninsula/boss_doomlord_kazzak.cpp
    scripts/zone/hellfire_peninsula/hellfire_peninsula.cpp
    scripts/zone/hinterlands/hinterlands.cpp

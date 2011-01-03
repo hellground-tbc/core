@@ -1513,6 +1513,10 @@
 							RelativePath="..\scripts\zone\aunchindoun\mana_tombs\boss_pandemonius.cpp"
 							>
 						</File>
+						<File
+							RelativePath="..\scripts\zone\aunchindoun\mana_tombs\boss_yor.cpp"
+							>
+						</File>
 					</Filter>
 					<Filter
 						Name="Sethekk Halls"
@@ -1725,6 +1729,10 @@
 					<Filter
 						Name="Shattered Halls"
 						>
+						<File
+							RelativePath="..\scripts\zone\hellfire_citadel\shattered_halls\boss_blood_guard_porung.cpp"
+							>
+						</File>
 						<File
 							RelativePath="..\scripts\zone\hellfire_citadel\shattered_halls\boss_nethekurse.cpp"
 							>
