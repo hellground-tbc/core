@@ -2421,11 +2421,10 @@ void Spell::EffectTriggerMissileSpell(uint32 effect_idx)
 
     SpellCastTargets targets;
 
-    spell->FillTargetMap();
-    targets = spell->m_targets;
-    // destination location filled by triggered spell targeting
-    //targets.setUnitTarget(unitTarget);
-    //targets.setDestination(m_targets.m_destX,m_targets.m_destY,m_targets.m_destZ);        //not working for some spells
+    if(triggered_spell_id == 44008)     // Static Disruption needs direct targeting
+        targets.setUnitTarget(unitTarget);
+    else
+        targets.setDestination(m_targets.m_destX,m_targets.m_destY,m_targets.m_destZ);
     spell->m_CastItem = m_CastItem;
     spell->prepare(&targets, NULL);
 }
