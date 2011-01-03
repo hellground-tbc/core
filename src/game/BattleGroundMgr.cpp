@@ -247,7 +247,7 @@ void BattleGroundQueue::RemovePlayer(uint64 guid, bool decreaseInvitedCount)
                 BattleGround* bg = sBattleGroundMgr.GetBattleGround(group->IsInvitedToBGInstanceGUID);
                 if (bg)
                     bg->DecreaseInvitedCount(group->Team);
-                
+
                 if (bg && !bg->GetPlayersSize() && !bg->GetInvitedCount(ALLIANCE) && !bg->GetInvitedCount(HORDE))
                 {
                     // no more players on battleground, set delete it
@@ -508,16 +508,24 @@ void BattleGroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
             BattleGround* bg = *itr; //we have to store battleground pointer here, because when battleground is full, it is removed from free queue (not yet implemented!!)
             // and iterator is invalid
 
-            for(QueuedGroupsList::iterator itr = m_QueuedGroups[queue_id].begin(); itr != m_QueuedGroups[queue_id].end(); ++itr)
+            for(QueuedGroupsList::iterator itr = m_QueuedGroups[queue_id].begin(); itr != m_QueuedGroups[queue_id].end();)
             {
+                ueuedGroupsList::iterator tmpItr = itr;
+                ++itr;
+                if (!(*tmpItr))
+                {
+                    m_QueuedGroups[queue_id].erase(tmpItr);
+                    continue;
+                }
+
                 // did the group join for this bg type?
-                if((*itr)->BgTypeId != bgTypeId)
+                if((*tmpItr)->BgTypeId != bgTypeId)
                     continue;
                 // if so, check if fits in
-                if(bg->GetFreeSlotsForTeam((*itr)->Team) >= (*itr)->Players.size())
+                if(bg->GetFreeSlotsForTeam((*tmpItr)->Team) >= (*tmpItr)->Players.size())
                 {
                     // if group fits in, invite it
-                    InviteGroupToBG((*itr),bg,(*itr)->Team);
+                    InviteGroupToBG((*tmpItr),bg,(*tmpItr)->Team);
                 }
             }
 
@@ -1033,7 +1041,7 @@ void BattleGroundMgr::Update(time_t diff)
     {
         next = itr;
         ++next;
-        
+
         if(itr->second->m_SetDeleteThis)
         {
             BattleGround * bg = itr->second;
