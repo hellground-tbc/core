@@ -1700,7 +1700,6 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             RepopAtGraveyard();                             // teleport to near graveyard if on transport, looks blizz like :)
 
         SendTransferAborted(mapid, TRANSFER_ABORT_INSUF_EXPAN_LVL1);
-
         return false;                                       // normal client can't teleport to this map...
     }
     else
@@ -1788,7 +1787,6 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         {
             // don't reset teleport semaphore while logging out, otherwise m_teleport_dest won't be used in Player::SaveToDB
             SetSemaphoreTeleport(false);
-
             UpdateZone(GetZoneId());
         }
 
@@ -1906,6 +1904,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
                     data << float(z);
                     data << float(orientation);
                 }
+
                 GetSession()->SendPacket( &data );
                 SendSavedInstances();
 
@@ -1920,7 +1919,8 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
                 }
 
                 // remove from old map now
-                if(oldmap) oldmap->Remove(this, false);
+                if(oldmap)
+                    oldmap->Remove(this, false);
             }
 
             // new final coordinates
@@ -1948,16 +1948,11 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             // move packet sent by client always after far teleport
             // SetPosition(final_x, final_y, final_z, final_o, true);
             SetDontMove(true);
-
             // code for finish transfer to new map called in WorldSession::HandleMoveWorldportAckOpcode at client packet
         }
         else
             return false;
     }
-
-    if(Group *pGroup = GetGroup())
-        pGroup->UpdatePlayerOutOfRange(this);
-
     return true;
 }
 
@@ -12502,7 +12497,7 @@ void Player::SendNewItem(Item *item, uint32 count, bool received, bool created, 
     data << GetItemCount(item->GetEntry());                 // count of items in inventory
 
     if (broadcast && GetGroup())
-        GetGroup()->BroadcastPacket(&data);
+        GetGroup()->BroadcastPacket(&data, false);
     else
         GetSession()->SendPacket(&data);
 }
@@ -14554,6 +14549,7 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
 
                 SetBattleGroundId(currentBg->GetInstanceID());
                 SetBGTeam(bgteam);
+                currentBg->AddOrSetPlayerToCorrectBgGroup(this, GetGUID(), bgteam);
 
                 SetInviteForBattleGroundQueueType(bgQueueTypeId,currentBg->GetInstanceID());
             }
@@ -18739,40 +18735,6 @@ void Player::SendInitialPacketsAfterAddToMap()
         SendMessageToSet(&data,true);
     }
 
-    // setup BG group membership if need
-    if(BattleGround* currentBg = GetBattleGround())
-    {
-        // call for invited (join) or listed (relogin) and avoid other cases (GM teleport)
-        if (IsInvitedForBattleGroundInstance(GetBattleGroundId()) ||
-            currentBg->IsPlayerInBattleGround(GetGUID()))
-        {
-            currentBg->PlayerRelogin(GetGUID());
-            if(currentBg->GetMapId() == GetMapId())             // we teleported/login to/in bg
-            {
-                uint32 team = currentBg->GetPlayerTeam(GetGUID());
-                if(!team)
-                    team = GetTeam();
-                Group* group = currentBg->GetBgRaid(team);
-                if(!group)                                      // first player joined
-                {
-                    group = new Group;
-                    currentBg->SetBgRaid(team, group);
-                    group->Create(GetGUIDLow(), GetName());
-                }
-                else                                            // raid already exist
-                {
-                    if(group->IsMember(GetGUID()))
-                    {
-                        uint8 subgroup = group->GetMemberGroup(GetGUID());
-                        SetGroup(group, subgroup);
-                    }
-                    else
-                        currentBg->GetBgRaid(team)->AddMember(GetGUID(), GetName());
-                }
-            }
-        }
-    }
-
     SendEnchantmentDurations();                             // must be after add to map
     SendItemDurations();                                    // must be after add to map
 }
@@ -18781,6 +18743,7 @@ void Player::SendUpdateToOutOfRangeGroupMembers()
 {
     if (m_groupUpdateMask == GROUP_UPDATE_FLAG_NONE)
         return;
+
     if(Group* group = GetGroup())
         group->UpdatePlayerOutOfRange(this);
 
@@ -19727,6 +19690,41 @@ PartyResult Player::CanUninviteFromGroup() const
         return PARTY_RESULT_INVITE_RESTRICTED;
 
     return PARTY_RESULT_OK;
+}
+
+void Player::SetBattleGroundRaid(Group* group, int8 subgroup)
+{
+    //we must move references from m_group to m_originalGroup
+    SetOriginalGroup(GetGroup(), GetSubGroup());
+
+    m_group.unlink();
+    m_group.link(group, this);
+    m_group.setSubGroup((uint8)subgroup);
+}
+
+void Player::RemoveFromBattleGroundRaid()
+{
+    //remove existing reference
+    m_group.unlink();
+    if (Group* group = GetOriginalGroup())
+    {
+        m_group.link(group, this);
+        m_group.setSubGroup(GetOriginalSubGroup());
+    }
+    SetOriginalGroup(NULL);
+}
+
+void Player::SetOriginalGroup(Group *group, int8 subgroup)
+{
+    if (group == NULL)
+        m_originalGroup.unlink();
+    else
+    {
+        // never use SetOriginalGroup without a subgroup unless you specify NULL for group
+        //MANGOS_ASSERT(subgroup >= 0);
+        m_originalGroup.link(group, this);
+        m_originalGroup.setSubGroup((uint8)subgroup);
+    }
 }
 
 void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)

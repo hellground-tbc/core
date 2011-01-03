@@ -107,20 +107,20 @@ void WorldSession::HandleGroupInviteOpcode( WorldPacket & recv_data )
         return;
     }
 
-    if(player->GetSocial()->HasIgnore(GetPlayer()->GetGUIDLow()))
-    {
-        SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_TARGET_IGNORE_YOU);
-        return;
-    }
+    Group *group = GetPlayer()->GetGroup();
+    if( group && group->isBGGroup() )
+        group = GetPlayer()->GetOriginalGroup();
+
+    Group *group2 = player->GetGroup();
+    if( group2 && group2->isBGGroup() )
+        group2 = player->GetOriginalGroup();
 
     // player already in another group or invited
-    if(player->GetGroup() || player->GetGroupInvite() )
+    if( group2 || player->GetGroupInvite() )
     {
         SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_ALREADY_IN_GROUP);
         return;
     }
-
-    Group *group = GetPlayer()->GetGroup();
 
     if(group)
     {
@@ -468,7 +468,7 @@ void WorldSession::HandleRandomRollOpcode(WorldPacket& recv_data)
     data << roll;
     data << GetPlayer()->GetGUID();
     if(GetPlayer()->GetGroup())
-        GetPlayer()->GetGroup()->BroadcastPacket(&data);
+        GetPlayer()->GetGroup()->BroadcastPacket(&data, false);
     else
         SendPacket(&data);
 }
@@ -555,8 +555,8 @@ void WorldSession::HandleGroupChangeSubGroupOpcode( WorldPacket & recv_data )
     // everything's fine, do it
     if (Player* player = objmgr.GetPlayer(name.c_str()))
         group->ChangeMembersGroup(player, groupNr);
-    else
-        group->ChangeMembersGroup(objmgr.GetPlayerGUIDByName(name.c_str()), groupNr);
+    else if (uint64 guid = objmgr.GetPlayerGUIDByName(name.c_str()))
+        group->ChangeMembersGroup(guid, groupNr);
 }
 
 void WorldSession::HandleGroupAssistantOpcode( WorldPacket & recv_data )
@@ -825,7 +825,7 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode( WorldPacket &recv_data )
     uint64 Guid;
     recv_data >> Guid;
 
-    Player *player = objmgr.GetPlayer(Guid);
+    Player *player = ObjectAccessor::GetPlayer(Guid);
     if(!player)
     {
         WorldPacket data(SMSG_PARTY_MEMBER_STATS_FULL, 3+4+2);
