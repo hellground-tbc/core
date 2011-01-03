@@ -510,7 +510,7 @@ void BattleGroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
 
             for(QueuedGroupsList::iterator itr = m_QueuedGroups[queue_id].begin(); itr != m_QueuedGroups[queue_id].end();)
             {
-                ueuedGroupsList::iterator tmpItr = itr;
+                QueuedGroupsList::iterator tmpItr = itr;
                 ++itr;
                 if (!(*tmpItr))
                 {
