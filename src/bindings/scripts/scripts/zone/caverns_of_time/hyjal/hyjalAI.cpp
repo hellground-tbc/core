@@ -996,7 +996,7 @@ void hyjalAI::HideNearPos(float x, float y)
     std::list<Creature*> creatures;
     Trinity::AllFriendlyCreaturesInGrid creature_check(m_creature);
     Trinity::CreatureListSearcher<Trinity::AllFriendlyCreaturesInGrid> creature_searcher(creatures, creature_check);
-    Cell::VisitGridObjects(me, creature_searcher, me->GetMap()->GetVisibilityDistance());
+    Cell::VisitGridObjects(x, y, me->GetMap(), creature_searcher, me->GetMap()->GetVisibilityDistance());
 
     if(!creatures.empty())
     {
@@ -1012,7 +1012,7 @@ void hyjalAI::RespawnNearPos(float x, float y)
 {
     Trinity::RespawnDo u_do;
     Trinity::WorldObjectWorker<Trinity::RespawnDo> worker(u_do);
-    Cell::VisitGridObjects(me, worker, me->GetMap()->GetVisibilityDistance());
+    Cell::VisitGridObjects(x, y, me->GetMap(), worker, me->GetMap()->GetVisibilityDistance());
 }
 
 void hyjalAI::WaypointReached(uint32 i)
