@@ -187,6 +187,7 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/hellfire_citadel/shattered_halls/def_shattered_halls.h
    scripts/zone/hellfire_citadel/shattered_halls/instance_shattered_halls.cpp
    scripts/zone/hellfire_citadel/shattered_halls/boss_warchief_kargath_bladefist.cpp
+   scripts/zone/hellfire_citadel/shattered_halls/boss_blood_guard_porung.cpp
    scripts/zone/hellfire_peninsula/boss_doomlord_kazzak.cpp
    scripts/zone/hellfire_peninsula/hellfire_peninsula.cpp
    scripts/zone/hinterlands/hinterlands.cpp
