@@ -825,7 +825,7 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode( WorldPacket &recv_data )
     uint64 Guid;
     recv_data >> Guid;
 
-    Player *player = objmgr.GetPlayer(Guid);
+    Player *player = ObjectAccessor::GetPlayer(Guid);
     if(!player)
     {
         WorldPacket data(SMSG_PARTY_MEMBER_STATS_FULL, 3+4+2);

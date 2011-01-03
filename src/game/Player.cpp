@@ -1954,10 +1954,6 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         else
             return false;
     }
-
-    if(Group *pGroup = GetGroup())
-        pGroup->UpdatePlayerOutOfRange(this);
-
     return true;
 }
 
