@@ -330,7 +330,7 @@ void WorldSession::LogoutPlayer(bool Save)
             InstanceMap *pTempMap = NULL;
             if (_player->GetMap() && _player->GetMap()->IsDungeon())
                 pTempMap = ((InstanceMap*)_player->GetMap());
-        
+
             if (!_player->getAttackers().empty() || (pTempMap && pTempMap->EncounterInProgress(_player)))
             {
                 _player->CombatStop();
@@ -448,6 +448,8 @@ void WorldSession::LogoutPlayer(bool Save)
         sSocialMgr.SendFriendStatus(_player, FRIEND_OFFLINE, _player->GetGUIDLow(), true);
         sSocialMgr.RemovePlayerSocial(_player->GetGUIDLow ());
 
+        _player->updateMutex.acquire();
+
         ///- Delete the player object
         _player->CleanupsBeforeDelete();
 
@@ -461,7 +463,6 @@ void WorldSession::LogoutPlayer(bool Save)
         // RemoveFromWorld does cleanup that requires the player to be in the accessor
         ObjectAccessor::Instance().RemovePlayer(_player);
 
-        _player->updateMutex.acquire();
         delete _player;
         _player = NULL;
 
