@@ -22,6 +22,7 @@ SDCategory: Tempest Keep, The Mechanar
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_mechanar.h"
 
 #define SAY_AGGRO_1                     -1554006
 #define SAY_HAMMER_1                    -1554007
@@ -62,9 +63,15 @@ struct TRINITY_DLL_DECL boss_gatewatcher_iron_handAI : public ScriptedAI
         Jackhammer_Timer = 45000;
         Stream_of_Machine_Fluid_Timer = 55000;
 
+        if(pInstance)
+            pInstance->SetData(DATA_IRONHAND_EVENT, NOT_STARTED);
+
     }
     void EnterCombat(Unit *who)
     {
+        if(pInstance)
+            pInstance->SetData(DATA_IRONHAND_EVENT, IN_PROGRESS);
+
         DoScriptText(SAY_AGGRO_1, m_creature);
     }
 
@@ -83,7 +90,8 @@ struct TRINITY_DLL_DECL boss_gatewatcher_iron_handAI : public ScriptedAI
         if (!pInstance)
             return;
 
-        //TODO: Add door check/open code
+        if(pInstance)
+            pInstance->SetData(DATA_IRONHAND_EVENT, DONE);
     }
 
     void UpdateAI(const uint32 diff)

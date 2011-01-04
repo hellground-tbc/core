@@ -83,17 +83,20 @@ struct TRINITY_DLL_DECL mob_voidtravelerAI : public ScriptedAI
         VorpilGUID = NULL;
         move = 0;
         sacrificed = false;
+        m_creature->setActive(true);
     }
 
     void EnterCombat(Unit *who){}
 
     void UpdateAI(const uint32 diff)
     {
+        /*
         if(Unit *Vorpil = Unit::GetUnit(*m_creature, VorpilGUID))
         {
             m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
             return;
         }
+        */
 
         if(move < diff)
         {
@@ -103,19 +106,17 @@ struct TRINITY_DLL_DECL mob_voidtravelerAI : public ScriptedAI
 
             if(sacrificed)
             {
-                SpellEntry *spell = (SpellEntry *)GetSpellStore()->LookupEntry(HeroicMode?H_SPELL_EMPOWERING_SHADOWS:SPELL_EMPOWERING_SHADOWS);
-                if(spell)
-                    Vorpil->AddAura(new EmpoweringShadowsAura(spell, 0, NULL, Vorpil, m_creature));
-
-                if(Vorpil->isAlive())
-                    Vorpil->ModifyHealth(Vorpil->GetMaxHealth()/25);
-
+                Vorpil->CastSpell(Vorpil, HeroicMode?H_SPELL_EMPOWERING_SHADOWS:SPELL_EMPOWERING_SHADOWS, true);
                 DoCast(m_creature, SPELL_SHADOW_NOVA, true);
-                m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                //m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                m_creature->setDeathState(CORPSE);
+                m_creature->RemoveCorpse();
                 return;
             }
 
             m_creature->GetMotionMaster()->MoveFollow(Vorpil,0,0);
+            m_creature->SetSpeed(MOVE_RUN, 0.3f, true);
+
             if(m_creature->IsWithinDistInMap(Vorpil, 3))
             {
                 DoCast(m_creature, SPELL_SACRIFICE, false);
@@ -123,6 +124,7 @@ struct TRINITY_DLL_DECL mob_voidtravelerAI : public ScriptedAI
                 move = 500;
                 return;
             }
+
             if(!Vorpil->isInCombat() || Vorpil->isDead())
             {
                 m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);

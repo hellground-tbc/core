@@ -24,7 +24,11 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_mechanar.h"
 
-#define ENCOUNTERS      1
+#define ENCOUNTERS      3
+
+#define GO_MOARGDOOR1           184632     
+#define GO_MOARGDOOR2           184322
+#define GO_NETHERMANCERDOOR     184449
 
 struct TRINITY_DLL_DECL instance_mechanar : public ScriptedInstance
 {
@@ -32,15 +36,43 @@ struct TRINITY_DLL_DECL instance_mechanar : public ScriptedInstance
 
 
     uint32 Encounters[ENCOUNTERS];
+    uint64 MoargDoor1;
+    uint64 MoargDoor2;
+    uint64 NethermancerDoor;
 
     void OnCreatureCreate (Creature *creature, uint32 creature_entry)
     {
+    }
+
+    void OnObjectCreate(GameObject* go)
+    {
+        switch(go->GetEntry())
+        {
+            case GO_MOARGDOOR1:
+                MoargDoor1 = go->GetGUID();
+                if(GetData(DATA_IRONHAND_EVENT) == DONE)
+                    HandleGameObject(NULL, true, go);
+                break;
+            case GO_MOARGDOOR2:
+                MoargDoor2 = go->GetGUID();
+                if(GetData(DATA_GYROKILL_EVENT) == DONE)
+                    HandleGameObject(NULL, true, go);
+                break;
+            case GO_NETHERMANCERDOOR:
+                NethermancerDoor = go->GetGUID();
+                HandleGameObject(NULL, true, go);
+                break;
+        }
     }
 
     void Initialize()
     {
         for(uint8 i = 0; i < ENCOUNTERS; ++i)
             Encounters[i] = NOT_STARTED;
+
+        MoargDoor1 = 0;
+        MoargDoor2 = 0;
+        NethermancerDoor = 0;
     }
 
     bool IsEncounterInProgress() const
@@ -57,6 +89,8 @@ struct TRINITY_DLL_DECL instance_mechanar : public ScriptedInstance
         switch(type)
         {
         case DATA_NETHERMANCER_EVENT:   return Encounters[0];
+        case DATA_IRONHAND_EVENT:       return Encounters[1];
+        case DATA_GYROKILL_EVENT:       return Encounters[2];
         }
 
         return false;
@@ -71,7 +105,32 @@ struct TRINITY_DLL_DECL instance_mechanar : public ScriptedInstance
     {
         switch(type)
         {
-        case DATA_NETHERMANCER_EVENT:   Encounters[0] = data;   break;
+            case DATA_NETHERMANCER_EVENT:   
+                if(Encounters[0] != DONE)
+                {
+                    Encounters[0] = data;
+                    if(data == IN_PROGRESS)
+                        HandleGameObject(NethermancerDoor, false);
+                    else
+                        HandleGameObject(NethermancerDoor, true);
+                }
+                break;
+            case DATA_IRONHAND_EVENT:       
+                if(Encounters[1] != DONE)
+                {
+                    Encounters[1] = data;
+                    if(data == DONE)
+                        HandleGameObject(MoargDoor1, true);
+                }
+                break;
+            case DATA_GYROKILL_EVENT:
+                if(Encounters[2] != DONE)
+                {
+                    Encounters[2] = data;
+                    if(data == DONE)
+                        HandleGameObject(MoargDoor2, true);
+                }
+                break;
         }
     }
 };

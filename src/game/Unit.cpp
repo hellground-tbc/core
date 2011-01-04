@@ -2820,6 +2820,13 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool 
         &&(!IsHostileTo(pVictim)))  //prevent from affecting enemy by "positive" spell
         return SPELL_MISS_NONE;
 
+    // Spells of Vengeful Spirit (Teron fight) can't miss
+    if(spell->Id == 40157 ||
+       spell->Id == 40175 ||
+       spell->Id == 40314 ||
+       spell->Id == 40325)
+       return SPELL_MISS_NONE;
+
     // Check for immune (use charges)
     // Check if Spell cannot be immuned
     if (!(spell->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY))
@@ -3618,6 +3625,24 @@ bool Unit::AddAura(Aura *Aur)
     // passive and persistent auras can stack with themselves any number of times
     if (!Aur->IsPassive() && !Aur->IsPersistent())
     {
+        bool isDotOrHot = false;
+        for(uint8 i = 0; i < 3; i++)
+            switch(aurSpellInfo->EffectApplyAuraName[i])
+            {
+                // DOT or HOT from different casters will stack
+                case SPELL_AURA_PERIODIC_DAMAGE:
+                case SPELL_AURA_PERIODIC_HEAL:
+                case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
+                case SPELL_AURA_PERIODIC_ENERGIZE:
+                case SPELL_AURA_PERIODIC_MANA_LEECH:
+                case SPELL_AURA_PERIODIC_LEECH:
+                case SPELL_AURA_POWER_BURN_MANA:
+                case SPELL_AURA_OBS_MOD_MANA:
+                case SPELL_AURA_OBS_MOD_HEALTH:
+                    isDotOrHot = true;
+                    break;
+            }
+
         for(AuraMap::iterator i2 = m_Auras.lower_bound(spair); i2 != m_Auras.upper_bound(spair);)
         {
             if(Aur->DiffPerCaster() && Aur->GetCasterGUID() != i2->second->GetCasterGUID())
@@ -3664,20 +3689,10 @@ bool Unit::AddAura(Aura *Aur)
                     continue;
                 }
             }
-            switch(aurSpellInfo->EffectApplyAuraName[Aur->GetEffIndex()])
+            if(isDotOrHot)
             {
-                // DOT or HOT from different casters will stack
-                case SPELL_AURA_PERIODIC_DAMAGE:
-                case SPELL_AURA_PERIODIC_HEAL:
-                case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
-                case SPELL_AURA_PERIODIC_ENERGIZE:
-                case SPELL_AURA_PERIODIC_MANA_LEECH:
-                case SPELL_AURA_PERIODIC_LEECH:
-                case SPELL_AURA_POWER_BURN_MANA:
-                case SPELL_AURA_OBS_MOD_MANA:
-                case SPELL_AURA_OBS_MOD_HEALTH:
-                    ++i2;
-                    continue;
+                ++i2;
+                continue;
             }
             if( GetSpellMaxDuration(aurSpellInfo) > Aur->GetAuraMaxDuration() &&        // HACK check for spellsteal case
                 Aur->GetAuraDuration() < (*i2).second->GetAuraDuration())               // don't override longer bufs when spellstealing

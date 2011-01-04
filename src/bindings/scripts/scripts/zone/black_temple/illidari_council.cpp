@@ -549,7 +549,7 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
         if (m_dampenTimer < diff)
         {
             ForceSpellCast(m_creature, SPELL_DAMPEN_MAGIC);
-            m_dampenTimer = 290000;//67200;                      // almost 1,12 minutes (??)
+            m_dampenTimer = 67200;                      // almost 1,12 minutes (??)
         }
         else
             m_dampenTimer -= diff;
@@ -583,15 +583,16 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
             {
                 if (Unit* pUnit = Unit::GetUnit((*m_creature), (*i)->getUnitGuid()))
                 {
-                    if (pUnit->IsWithinDistInMap(me, 5) && pUnit->GetTypeId() == TYPEID_PLAYER)
+                    if (pUnit->IsWithinDistInMap(me, 5) && pUnit->GetTypeId() == TYPEID_PLAYER && pUnit->isAlive() && !pUnit->IsImmunedToDamage(SPELL_SCHOOL_MASK_ARCANE))
                     {
                         ForceAOESpellCast(SPELL_ARCANE_EXPLOSION, INTERRUPT_AND_CAST);
-                        m_aexpTimer = 11000;
+                        m_aexpTimer = 3000;
                         break;
                     }
+                    else
+                        m_aexpTimer = 1000;
                 }
             }
-            m_aexpTimer = 1000;
         }
         else
             m_aexpTimer -= diff;

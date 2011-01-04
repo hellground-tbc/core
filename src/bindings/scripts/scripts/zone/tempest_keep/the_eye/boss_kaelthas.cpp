@@ -1599,7 +1599,7 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
             {
                 Unit* pUnit = Unit::GetUnit((*m_creature), (*i)->getUnitGuid());
                                                             //if in melee range
-                if(pUnit && pUnit->IsWithinDistInMap(m_creature, 5) && pUnit->GetTypeId() == TYPEID_PLAYER && !pUnit->IsImmunedToDamage(SPELL_SCHOOL_MASK_ARCANE))
+                if(pUnit && pUnit->IsWithinDistInMap(m_creature, 5) && pUnit->GetTypeId() == TYPEID_PLAYER && pUnit->isAlive() && !pUnit->IsImmunedToDamage(SPELL_SCHOOL_MASK_ARCANE))
                 {
                     InMeleeRange = true;
                     break;

@@ -36,6 +36,7 @@
 #define DATA_ARAN                       29
 #define DATA_NIGHTBANE                  30
 #define DATA_BLIZZARD                   31
+#define DATA_BARNES                     32
 #define SPELL_BROKEN_PACT               30065
 
 // Opera Performances

@@ -257,7 +257,9 @@ struct TRINITY_DLL_DECL npc_barnesAI : public npc_escortAI
                 m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_TALK);
                 Talk(TalkCount);
                 ++TalkCount;
-            }else TalkTimer -= diff;
+            }
+            else
+                TalkTimer -= diff;
         }
 
         if(PerformanceReady)
@@ -279,47 +281,7 @@ struct TRINITY_DLL_DECL npc_barnesAI : public npc_escortAI
                 else
                     CurtainTimer -= diff;
             }
-
-            if(!RaidWiped)
-            {
-                if(WipeTimer < diff)
-                {
-                    Map *map = m_creature->GetMap();
-                    if(!map->IsDungeon()) return;
-
-                    Map::PlayerList const &PlayerList = map->GetPlayers();
-                    if(PlayerList.isEmpty())
-                        return;
-
-                    RaidWiped = true;
-                    for(Map::PlayerList::const_iterator i = PlayerList.begin();i != PlayerList.end(); ++i)
-                    {
-                        if (i->getSource()->isAlive() && i->getSource()->isInCombat() && !i->getSource()->isGameMaster())
-                        {
-                            RaidWiped = false;
-                            break;
-                        }
-                    }
-
-                    if(RaidWiped)
-                    {
-                        RaidWiped = true;
-                        EnterEvadeMode();
-                        return;
-                    }
-
-                    WipeTimer = 5000;
-                }
-                else
-                    WipeTimer -= diff;
-            }
-
         }
-
-        if(!UpdateVictim())
-            return;
-
-        DoMeleeAttackIfReady();
     }
 
     void StartEvent()
