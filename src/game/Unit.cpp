@@ -2820,6 +2820,13 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool 
         &&(!IsHostileTo(pVictim)))  //prevent from affecting enemy by "positive" spell
         return SPELL_MISS_NONE;
 
+    // Spells of Vengeful Spirit (Teron fight) can't miss
+    if(spell->Id == 40157 ||
+       spell->Id == 40175 ||
+       spell->Id == 40314 ||
+       spell->Id == 40325)
+       return SPELL_MISS_NONE;
+
     // Check for immune (use charges)
     // Check if Spell cannot be immuned
     if (!(spell->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY))
