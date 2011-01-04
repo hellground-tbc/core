@@ -549,7 +549,7 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
         if (m_dampenTimer < diff)
         {
             ForceSpellCast(m_creature, SPELL_DAMPEN_MAGIC);
-            m_dampenTimer = 290000;//67200;                      // almost 1,12 minutes (??)
+            m_dampenTimer = 67200;                      // almost 1,12 minutes (??)
         }
         else
             m_dampenTimer -= diff;
