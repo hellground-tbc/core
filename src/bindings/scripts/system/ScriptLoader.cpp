@@ -511,6 +511,7 @@ extern void AddSC_the_eye();
 
 //--The Mechanar
 extern void AddSC_boss_gatewatcher_iron_hand();
+extern void AddSC_boss_gatewatcher_gyro_kill();
 extern void AddSC_boss_nethermancer_sepethrea();
 extern void AddSC_boss_pathaleon_the_calculator();
 extern void AddSC_instance_mechanar();
@@ -1107,6 +1108,7 @@ void AddScripts()
 
     //--The Mechanar
     AddSC_boss_gatewatcher_iron_hand();
+    AddSC_boss_gatewatcher_gyro_kill();
     AddSC_boss_nethermancer_sepethrea();
     AddSC_boss_pathaleon_the_calculator();
     AddSC_instance_mechanar();
