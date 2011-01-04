@@ -48,6 +48,7 @@ struct TRINITY_DLL_DECL instance_karazhan : public ScriptedInstance
     uint64 AranGUID;
     uint64 BlizzardGUID;
     uint64 MedivhGUID;
+    uint64 BarnesGUID;
     uint32 CheckTimer;
 
     bool needRespawn;

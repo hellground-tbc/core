@@ -43,6 +43,7 @@ void instance_karazhan::Initialize()
     MoroesGUID          = 0;
     AranGUID            = 0;
     BlizzardGUID        = 0;
+    BarnesGUID          = 0;
 
     NightbaneGUID       = 0;
 
@@ -146,6 +147,9 @@ void instance_karazhan::OnCreatureCreate(Creature *creature, uint32 entry)
             BlizzardGUID = creature->GetGUID();
             creature->SetReactState(REACT_PASSIVE);
             break;
+        case 16812:
+            BarnesGUID = creature->GetGUID();
+            break;
     }
 
     const CreatureData *tmp = creature->GetLinkedRespawnCreatureData();
@@ -163,22 +167,23 @@ uint64 instance_karazhan::GetData64(uint32 data)
 {
     switch (data)
     {
-        case DATA_KILREK:                      return KilrekGUID;
-        case DATA_TERESTIAN:                   return TerestianGUID;
-        case DATA_MOROES:                      return MoroesGUID;
-        case DATA_NIGHTBANE:                   return NightbaneGUID;
-        case DATA_GAMEOBJECT_STAGEDOORLEFT:    return StageDoorLeftGUID;
-        case DATA_GAMEOBJECT_STAGEDOORRIGHT:   return StageDoorRightGUID;
-        case DATA_GAMEOBJECT_CURTAINS:         return CurtainGUID;
-        case DATA_GAMEOBJECT_LIBRARY_DOOR:     return LibraryDoor;
-        case DATA_GAMEOBJECT_MASSIVE_DOOR:     return MassiveDoor;
-        case DATA_GAMEOBJECT_GAME_DOOR:        return GamesmansDoor;
-        case DATA_GAMEOBJECT_GAME_EXIT_DOOR:   return GamesmansExitDoor;
-        case DATA_GAMEOBJECT_NETHER_DOOR:      return NetherspaceDoor;
-        case DATA_MASTERS_TERRACE_DOOR_1:      return MastersTerraceDoor[0];
-        case DATA_MASTERS_TERRACE_DOOR_2:      return MastersTerraceDoor[1];
-        case DATA_ARAN:                        return AranGUID;
-        case DATA_BLIZZARD:                    return BlizzardGUID;
+        case DATA_KILREK:                       return KilrekGUID;
+        case DATA_TERESTIAN:                    return TerestianGUID;
+        case DATA_MOROES:                       return MoroesGUID;
+        case DATA_NIGHTBANE:                    return NightbaneGUID;
+        case DATA_GAMEOBJECT_STAGEDOORLEFT:     return StageDoorLeftGUID;
+        case DATA_GAMEOBJECT_STAGEDOORRIGHT:    return StageDoorRightGUID;
+        case DATA_GAMEOBJECT_CURTAINS:          return CurtainGUID;
+        case DATA_GAMEOBJECT_LIBRARY_DOOR:      return LibraryDoor;
+        case DATA_GAMEOBJECT_MASSIVE_DOOR:      return MassiveDoor;
+        case DATA_GAMEOBJECT_GAME_DOOR:         return GamesmansDoor;
+        case DATA_GAMEOBJECT_GAME_EXIT_DOOR:    return GamesmansExitDoor;
+        case DATA_GAMEOBJECT_NETHER_DOOR:       return NetherspaceDoor;
+        case DATA_MASTERS_TERRACE_DOOR_1:       return MastersTerraceDoor[0];
+        case DATA_MASTERS_TERRACE_DOOR_2:       return MastersTerraceDoor[1];
+        case DATA_ARAN:                         return AranGUID;
+        case DATA_BLIZZARD:                     return BlizzardGUID;
+        case DATA_BARNES:                       return BarnesGUID;
     }
 
     return 0;
