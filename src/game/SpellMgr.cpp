@@ -2793,6 +2793,9 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetA[1] = 1;
             spellInfo->EffectImplicitTargetB[1] = 0;
             break;
+        case 41470: //Judgement of Command should be reflectable
+            spellInfo->AttributesEx2 = 0;
+            break;
         default:
             break;
         }
