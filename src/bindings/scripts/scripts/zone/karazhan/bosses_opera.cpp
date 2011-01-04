@@ -515,8 +515,7 @@ struct TRINITY_DLL_DECL boss_tinheadAI : public ScriptedAI
             if (RustTimer < diff)
             {
                 RustCount++;
-                DoScriptText(EMOTE_RUST, m_creature);
-                AddSpellToCast(m_creature, SPELL_RUST);
+                AddSpellToCastWithScriptText(m_creature, SPELL_RUST, EMOTE_RUST);
                 RustTimer = 6000;
             }
             else
