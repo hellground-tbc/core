@@ -18,13 +18,13 @@ class ACRequest : public ACE_Method_Request
             : m_ownerGUID(player->GetGUID()), m_latency(latency), m_oldPacket(pOldPacket), m_newPacket(pNewPacket), m_lastSpeedRate(fLastSpeedRate)
         {
             UnitMoveType m_type = player->IsFlying() ? MOVE_FLIGHT : player->IsUnderWater() ? MOVE_SWIM : MOVE_RUN;
-            
+
             m_speedRate = player->GetSpeedRate(m_type);
             m_speed = player->GetSpeed(m_type);
-            
+
             player->GetPosition(m_pos.x, m_pos.y, m_pos.z);
         }
-          
+
         virtual int call()
         {
             Player *pPlayer = objmgr.GetPlayer(m_ownerGUID);
@@ -50,14 +50,14 @@ class ACRequest : public ACE_Method_Request
             if (pPlayer->hasUnitState(UNIT_STAT_CHARGING))
                 return -1;
 
-            // who is cheating on arena ?
-            if (pPlayer->GetMap() && pPlayer->GetMap()->IsBattleGroundOrArena())
-                return -1;
+            //// who is cheating on arena ?
+            //if (pPlayer->GetMap() && pPlayer->GetMap()->IsBattleGroundOrArena())
+            //    return -1;
 
             float dx = m_newPacket.pos.x - m_pos.x;
             float dy = m_newPacket.pos.y - m_pos.y;
             float fDistance2d = sqrt(dx*dx + dy*dy);
-            
+
             // time between packets
             uint32 uiDiffTime = getMSTimeDiff(m_oldPacket.time, m_newPacket.time);
 
@@ -71,22 +71,22 @@ class ACRequest : public ACE_Method_Request
 
                 pPlayer->m_AC_count++;
                 pPlayer->m_AC_timer = 5 *IN_MILISECONDS;
-                
+
                 if (!(pPlayer->m_AC_count %5))
                     sWorld.SendGMText(LANG_ANTICHEAT, pPlayer->GetName(), pPlayer->m_AC_count, m_speed, m_speed*fClientRate);
 
-                sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) moved for distance %f with server speed : %f (client speed: %f). MapID: %u, player's coord before X:%f Y:%f Z:%f. Player's coord now X:%f Y:%f Z:%f. MOVEMENTFLAGS: %u LATENCY: %u",
-                              pPlayer->GetName(), pPlayer->GetGUIDLow(), pPlayer->GetSession()->GetAccountId(), fDistance2d, m_speed, m_speed*fClientRate, pPlayer->GetMapId(), m_pos.x, m_pos.y, m_pos.z, m_newPacket.pos.x, m_newPacket.pos.y, m_newPacket.pos.z, m_newPacket.GetMovementFlags(), m_latency);
+                sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) moved for distance %f with server speed : %f (client speed: %f). MapID: %u, player's coord before X:%f Y:%f Z:%f. Player's coord now X:%f Y:%f Z:%f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s",
+                              pPlayer->GetName(), pPlayer->GetGUIDLow(), pPlayer->GetSession()->GetAccountId(), fDistance2d, m_speed, m_speed*fClientRate, pPlayer->GetMapId(), m_pos.x, m_pos.y, m_pos.z, m_newPacket.pos.x, m_newPacket.pos.y, m_newPacket.pos.z, m_newPacket.GetMovementFlags(), m_latency, pPlayer->GetMap() ? (pPlayer->GetMap()->IsBattleGroundOrArena() ? "Yes" : "No") : "No");
             }
             return 0;
         }
 
     private:
         uint64 m_ownerGUID;
-        
+
         MovementInfo m_oldPacket;
         MovementInfo m_newPacket;
-        
+
         Position m_pos;
 
         uint32 m_latency;
