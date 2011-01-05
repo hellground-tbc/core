@@ -4819,7 +4819,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     if (!target)
                         return false;
 
-                    if (procSpell->Id == 20647 && target->GetHealth() > target->GetMaxHealth() *0.2f)
+                    if (procSpell && procSpell->Id == 20647 && target->GetHealth() > target->GetMaxHealth() *0.2f)
                         return false;
 
                     triggered_spell_id = 12723;
@@ -6601,7 +6601,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
     switch (auraSpellInfo->Id)
     {
         // Persistent Shield (Scarab Brooch trinket)
-        // This spell originally trigger 13567 - Dummy Trigger (vs dummy efect)
+        // This spell originally trigger 13567 - Dummy Trigger (vs dummy effect)
         case 26467:
         {
             basepoints0 = damage * 15 / 100;
@@ -6656,7 +6656,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         }
     }
 
-    // Costum basepoints/target for exist spell
+    // Custom basepoints/target for exist spell
     // dummy basepoints or other customs
     switch(trigger_spell_id)
     {
