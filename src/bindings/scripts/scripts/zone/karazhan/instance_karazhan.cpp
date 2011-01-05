@@ -210,7 +210,10 @@ void instance_karazhan::SetData(uint32 type, uint32 data)
             Encounters[3] = data;
         break;
     case DATA_OPERA_EVENT:
-        if(data == DONE)
+        if (Encounters[4] == SPECIAL && data == DONE)
+            data = NOT_STARTED;
+
+        if (data == DONE)
         {
             HandleGameObject(SideEntranceDoor, true);
             HandleGameObject(ServentAccessDoor, true);
@@ -218,10 +221,10 @@ void instance_karazhan::SetData(uint32 type, uint32 data)
             HandleGameObject(StageDoorRightGUID, true);
         }
 
-        if(Encounters[4] != DONE)
+        if (Encounters[4] != DONE)
             Encounters[4] = data;
 
-        if(data == NOT_STARTED)
+        if (data == NOT_STARTED)
             OzDeathCount = 0;
         break;
     case DATA_CURATOR_EVENT:
