@@ -133,7 +133,7 @@ struct TRINITY_DLL_DECL npc_barnesAI : public npc_escortAI
         m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
         npc_escortAI::EnterEvadeMode();
 
-        if(pInstance)
+        if(pInstance && pInstance->GetData(DATA_OPERA_EVENT) != SPECIAL)
             pInstance->SetData(DATA_OPERA_EVENT, NOT_STARTED);
     }
 
