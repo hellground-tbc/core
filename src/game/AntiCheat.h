@@ -39,6 +39,9 @@ class ACRequest : public ACE_Method_Request
             if (m_speedRate != m_lastSpeedRate)
                 return -1;
 
+            if (m_newPacket.GetMovementFlags() != m_oldPacket.GetMovementFlags())
+                return -1;
+
             // we don't love that movement flags
             if (m_newPacket.GetMovementFlags() & (MOVEMENTFLAG_JUMPING | MOVEMENTFLAG_FALLING | MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_ONTRANSPORT))
                 return -1;
