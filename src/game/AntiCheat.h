@@ -70,9 +70,9 @@ class ACRequest : public ACE_Method_Request
                     return -1;
 
                 pPlayer->m_AC_count++;
-                pPlayer->m_AC_timer = 5 *IN_MILISECONDS;
+                pPlayer->m_AC_timer = IN_MILISECONDS;   // 1 sek
 
-                if (!(pPlayer->m_AC_count %5))
+                //if (!(pPlayer->m_AC_count %5))
                     sWorld.SendGMText(LANG_ANTICHEAT, pPlayer->GetName(), pPlayer->m_AC_count, m_speed, m_speed*fClientRate);
 
                 sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) moved for distance %f with server speed : %f (client speed: %f). MapID: %u, player's coord before X:%f Y:%f Z:%f. Player's coord now X:%f Y:%f Z:%f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s",
