@@ -4812,11 +4812,14 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 case 35429:
                 {
                     // prevent trigger from execute and from self
-                    if(procSpell && (procSpell->Id == 20647 || procSpell->Id == 12723))
+                    if (procSpell && procSpell->Id == 12723)
                         return false;
 
-                    target = SelectNearbyTarget(8);
-                    if(!target)
+                    target = SelectNearbyTarget(8.0f);
+                    if (!target)
+                        return false;
+
+                    if (procSpell->Id == 20647 && target->GetHealth() > target->GetMaxHealth() *0.2f)
                         return false;
 
                     triggered_spell_id = 12723;
