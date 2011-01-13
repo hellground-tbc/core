@@ -497,7 +497,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "near",           SEC_ADMINISTRATOR,  false, &ChatHandler::HandleNearObjectCommand,          "", NULL },
         { "activate",       SEC_GAMEMASTER,     false, &ChatHandler::HandleActivateObjectCommand,      "", NULL },
         { "addtemp",        SEC_GAMEMASTER,     false, &ChatHandler::HandleTempGameObjectCommand,      "", NULL },
-        { "neargrid",       SEC_ADMINISTRATOR,  false, &ChatHandler::HandleNearGridObjectCommand,      "", NULL },
+        { "grid",           SEC_ADMINISTRATOR,  false, &ChatHandler::HandleNearGridObjectCommand,      "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 
