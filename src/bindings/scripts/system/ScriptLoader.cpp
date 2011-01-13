@@ -200,6 +200,7 @@ extern void AddSC_boss_the_lurker_below();
 
 //--Slave Pens
 extern void AddSC_boss_lord_ahune();
+extern void AddSC_boss_mennu_the_betrayer();
 extern void AddSC_instance_slave_pens();
 
 //--Steam Vault
@@ -796,6 +797,7 @@ void AddScripts()
 
     //--Slave Pens
     AddSC_boss_lord_ahune();
+    AddSC_boss_mennu_the_betrayer();
     AddSC_instance_slave_pens();
 
     //--Steam Vault
