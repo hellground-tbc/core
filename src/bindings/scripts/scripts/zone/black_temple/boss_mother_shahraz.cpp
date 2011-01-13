@@ -40,7 +40,7 @@ EndScriptData */
 //Spells
 
 #define SPELL_SILENCING_SHRIEK  40823
-#define SPELL_ENRAGE            23537
+#define SPELL_ENRAGE            34670
 #define SPELL_SABER_LASH        40810
 #define SPELL_FATAL_ATTRACTION  40869
 #define SPELL_BERSERK           45078
@@ -106,14 +106,15 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
     uint8 m_position;
 
     uint32 m_shriekTimer;
-    uint32 m_saberTimer;
     uint32 m_yellTimer;
     uint32 m_attractionTimer;
     uint32 m_enrageTimer;
+    uint32 m_enragePeriodic;
 
     uint32 m_checkTimer;
 
     bool m_enraged;
+    bool b_canEnrage;
 
     void SpellHitTarget(Unit *pTarget, const SpellEntry *pSpell)
     {
@@ -134,11 +135,13 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
     {
         pInstance->SetData(EVENT_MOTHERSHAHRAZ, NOT_STARTED);
 
-        m_attractionTimer = 60000;
-        m_shriekTimer = 30000;
-        m_saberTimer = 35000;
+        m_attractionTimer = urand(20000, 30000);
+        m_shriekTimer = 20000;
         m_yellTimer = urand(70000, 111000);
         m_enrageTimer = 600000;
+        m_enragePeriodic = 5000;
+        m_enraged = false;
+        b_canEnrage = false;
 
         m_checkTimer = 1000;
 
@@ -212,7 +215,7 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         {
             DoZoneInCombat();
             me->SetSpeed(MOVE_RUN, 3.0);
-            
+
             m_checkTimer = 2000;
         }
         else
@@ -220,17 +223,25 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
 
         if (!m_enraged && ((me->GetHealth()*100 / me->GetMaxHealth()) < 10))
         {
-            ForceSpellCastWithScriptText(me, SPELL_ENRAGE, SAY_ENRAGE);
             m_enraged = true;
+            b_canEnrage = true;
         }
+
+        if (b_canEnrage && m_enragePeriodic < diff)
+        {
+            ForceSpellCast(me, SPELL_ENRAGE);
+            m_enragePeriodic = urand(20000, 30000);
+        }
+        else
+            m_enragePeriodic -= diff;
 
         // Select 3 random targets (can select same target more than once), teleport to a random location then make them cast explosions until they get away from each other.
         if (m_attractionTimer < diff)
         {
-            m_position = urand(0, 33);            
+            m_position = urand(0, 33);
             ForceSpellCastWithScriptText(me, SPELL_FATAL_ATTRACTION, RAND(SAY_SPELL2, SAY_SPELL3));
-            
-            m_attractionTimer = urand(40000, 71000);
+
+            m_attractionTimer = urand(23000, 30000);
         }
         else
             m_attractionTimer -= diff;
@@ -238,7 +249,7 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         if (m_shriekTimer < diff)
         {
             AddSpellToCast(me->getVictim(), SPELL_SILENCING_SHRIEK);
-            m_shriekTimer = urand(25000, 126000);
+            m_shriekTimer = 20000;
         }
         else
             m_shriekTimer -= diff;
@@ -285,4 +296,3 @@ void AddSC_boss_mother_shahraz()
     newscript->GetAI = &GetAI_boss_shahraz;
     newscript->RegisterSelf();
 }
-
