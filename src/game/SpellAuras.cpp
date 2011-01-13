@@ -3527,7 +3527,7 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
         std::list<Unit*> targets;
         Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(m_target, m_target, m_target->GetMap()->GetVisibilityDistance());
         Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(targets, u_check);
-        
+
         Cell::VisitAllObjects(m_target, searcher, m_target->GetMap()->GetVisibilityDistance());
 
         for (std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
@@ -3799,7 +3799,7 @@ void Aura::HandleAuraModSilence(bool apply, bool Real)
     if (apply)
     {
         m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SILENCED);
-        
+
         // Stop cast only spells vs PreventionType == SPELL_PREVENTION_TYPE_SILENCE
         for (uint32 i = CURRENT_MELEE_SPELL; i < CURRENT_MAX_SPELL;i++)
         {
@@ -4568,6 +4568,13 @@ void Aura::HandlePeriodicHeal(bool apply, bool Real)
     // For prevent double apply bonuses
     bool loading = (m_target->GetTypeId() == TYPEID_PLAYER && ((Player*)m_target)->GetSession()->PlayerLoading());
 
+    Unit *caster = GetCaster();
+    if(apply && caster)
+    {
+        m_casterModifiers.Apply = false;
+        caster->SpellHealingBonus(m_spellProto, 100, DOT, m_target, &m_casterModifiers);
+    }
+
     if (!loading && apply)
     {
         switch (m_spellProto->SpellFamilyName)
@@ -4615,6 +4622,12 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
     bool loading = (m_target->GetTypeId() == TYPEID_PLAYER && ((Player*)m_target)->GetSession()->PlayerLoading());
 
     Unit *caster = GetCaster();
+
+    if(caster && apply)
+    {
+        m_casterModifiers.Apply = false;
+        caster->SpellDamageBonus(m_target, m_spellProto, 100, DOT, &m_casterModifiers);
+    }
 
     switch (m_spellProto->SpellFamilyName)
     {
@@ -4811,10 +4824,20 @@ void Aura::HandlePeriodicDamagePCT(bool apply, bool Real)
 
 void Aura::HandlePeriodicLeech(bool apply, bool Real)
 {
+    if (!Real)
+        return;
+
     if (m_periodicTimer <= 0)
         m_periodicTimer += m_amplitude;
 
     m_isPeriodic = apply;
+
+    Unit *caster = GetCaster();
+    if(apply && caster)
+    {
+        m_casterModifiers.Apply = false;
+        caster->SpellDamageBonus(m_target, m_spellProto, 100, DOT, &m_casterModifiers);
+    }
 }
 
 void Aura::HandlePeriodicManaLeech(bool apply, bool Real)
@@ -5166,7 +5189,7 @@ void Aura::HandleModRegen(bool apply, bool Real)            // eating
         {
             m_periodicTimer += 5000;
             int32 gain = m_target->ModifyHealth(GetModifierValue());
-            
+
             if (Unit *caster = GetCaster())
             {
                 SpellEntry const *spellProto = GetSpellProto();
@@ -6301,7 +6324,8 @@ void Aura::PeriodicTick()
 
             if (m_modifier.m_auraname == SPELL_AURA_PERIODIC_DAMAGE)
             {
-                damageInfo.damage = pCaster->SpellDamageBonus(m_target,GetSpellProto(), amount,DOT);
+                m_casterModifiers.Apply = true;
+                damageInfo.damage = pCaster->SpellDamageBonus(m_target,GetSpellProto(), amount,DOT,&m_casterModifiers);
 
                 // Calculate armor mitigation if it is a physical spell
                 // But not for bleed mechanic spells
@@ -6404,7 +6428,8 @@ void Aura::PeriodicTick()
 
             damageInfo.damage = GetModifierValuePerStack() > 0 ? GetModifierValuePerStack() : 0;
 
-            damageInfo.damage = pCaster->SpellDamageBonus(m_target, GetSpellProto(), damageInfo.damage,DOT);
+            m_casterModifiers.Apply = true;
+            damageInfo.damage = pCaster->SpellDamageBonus(m_target, GetSpellProto(), damageInfo.damage,DOT, &m_casterModifiers);
 
             //Calculate armor mitigation if it is a physical spell
             if (GetSpellSchoolMask(GetSpellProto()) & SPELL_SCHOOL_MASK_NORMAL)
@@ -6550,7 +6575,10 @@ void Aura::PeriodicTick()
             if (m_modifier.m_auraname == SPELL_AURA_OBS_MOD_HEALTH)
                 pdamage = uint32(m_target->GetMaxHealth() * amount/100);
             else
-                pdamage = pCaster->SpellHealingBonus(GetSpellProto(), amount, DOT, m_target);
+            {
+                m_casterModifiers.Apply = true;
+                pdamage = pCaster->SpellHealingBonus(GetSpellProto(), amount, DOT, m_target, &m_casterModifiers);
+            }
 
             pdamage *= GetStackAmount();
 
@@ -6576,7 +6604,7 @@ void Aura::PeriodicTick()
                     bg->UpdatePlayerScore(((Player*)pCaster), SCORE_HEALING_DONE, gain);
 
             //Do check before because m_modifier.auraName can be invalidate by DealDamage.
-            bool procSpell = (m_modifier.m_auraname == SPELL_AURA_PERIODIC_HEAL); // && m_target != pCaster);  
+            bool procSpell = (m_modifier.m_auraname == SPELL_AURA_PERIODIC_HEAL); // && m_target != pCaster);
 
             m_target->getHostilRefManager().threatAssist(pCaster, float(gain) * 0.5f, GetSpellProto());
 
@@ -7257,7 +7285,7 @@ void Aura::HandleAuraReflectSpellSchool(bool Apply, bool Real)
                         m_modifier.m_amount += 20;
                     else if(playerCaster->HasSpell(11094))
                         m_modifier.m_amount += 10;
-                } 
+                }
                 else
                 {
                     if(playerCaster->HasSpell(28332))

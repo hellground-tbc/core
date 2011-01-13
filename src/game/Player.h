@@ -891,6 +891,8 @@ class TRINITY_DLL_SPEC Player : public Unit
     friend class WorldSession;
     friend void Item::AddToUpdateQueueOf(Player *player);
     friend void Item::RemoveFromUpdateQueueOf(Player *player);
+    friend uint32 Unit::SpellDamageBonus(Unit *, SpellEntry const *, uint32, DamageEffectType, CasterModifiers *);
+    friend uint32 Unit::SpellHealingBonus(SpellEntry const *, uint32, DamageEffectType, Unit *, CasterModifiers *);
     public:
         explicit Player (WorldSession *session);
         ~Player ( );

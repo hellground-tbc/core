@@ -804,7 +804,6 @@ uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, cons
             return 0;
 
         // Handle Blessed Life
-        // w combat logu bedzie pokazane zawsze full dmg, ktos wie jak mozna to lepiej zrobic?
         if (pVictim->getClass() == CLASS_PALADIN)
         {
             AuraList procTriggerAuras = pVictim->GetAurasByType(SPELL_AURA_PROC_TRIGGER_SPELL);
@@ -7521,7 +7520,7 @@ void Unit::SendEnergizeSpellLog(Unit *pVictim, uint32 SpellID, uint32 Damage, Po
     SendMessageToSet(&data, true);
 }
 
-uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint32 pdamage, DamageEffectType damagetype)
+uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint32 pdamage, DamageEffectType damagetype, CasterModifiers *casterModifiers)
 {
     if(!spellProto || !pVictim || damagetype==DIRECT_DAMAGE )
         return pdamage;
@@ -7546,7 +7545,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
         else if (((Creature*)this)->isTotem() && ((Totem*)this)->GetTotemType()!=TOTEM_STATUE)
         {
             if(Unit* owner = GetOwner())
-                return owner->SpellDamageBonus(pVictim, spellProto, pdamage, damagetype);
+                return owner->SpellDamageBonus(pVictim, spellProto, pdamage, damagetype, casterModifiers);
         }
     }
 
@@ -7556,6 +7555,14 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
     // Taken/Done fixed damage bonus auras
     int32 DoneAdvertisedBenefit  = SpellBaseDamageBonus(GetSpellSchoolMask(spellProto))+BonusDamage;
     int32 TakenAdvertisedBenefit = SpellBaseDamageBonusForVictim(GetSpellSchoolMask(spellProto), pVictim);
+
+    if(casterModifiers)
+    {
+        if(casterModifiers->Apply)
+            DoneAdvertisedBenefit = casterModifiers->AdvertisedBenefit;
+        else
+            casterModifiers->AdvertisedBenefit = DoneAdvertisedBenefit;
+    }
 
     // Damage over Time spells bonus calculation
     float DotFactor = 1.0f;
@@ -7623,6 +7630,14 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
     for(AuraList::const_iterator i = mDamageDoneVersus.begin();i != mDamageDoneVersus.end(); ++i)
         if(creatureTypeMask & uint32((*i)->GetModifier()->m_miscvalue))
             DoneTotalMod *= ((*i)->GetModifierValue() +100.0f)/100.0f;
+
+    if(casterModifiers)
+    {
+        if(casterModifiers->Apply)
+            DoneTotalMod = casterModifiers->DamagePercentDone;
+        else
+            casterModifiers->DamagePercentDone = DoneTotalMod;
+    }
 
     // ..taken
     AuraList const& mModDamagePercentTaken = pVictim->GetAurasByType(SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN);
@@ -7956,6 +7971,14 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
     //SpellModSpellDamage /= 100.0f;
     CoefficientPtc /= 100.0f;
 
+    if(casterModifiers)
+    {
+        if(casterModifiers->Apply)
+            CoefficientPtc = casterModifiers->CoefficientPtc;
+        else
+            casterModifiers->CoefficientPtc = CoefficientPtc;
+    }
+
     //float DoneActualBenefit = DoneAdvertisedBenefit * (CastingTime / 3500.0f) * DotFactor * SpellModSpellDamage * LvlPenalty;
 
     float DoneActualBenefit = DoneAdvertisedBenefit * CoefficientPtc * LvlPenalty;
@@ -7966,11 +7989,34 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
     float tmpDamage = (float(pdamage)+DoneActualBenefit)*DoneTotalMod;
 
     // Add flat bonus from spell damage versus
-    tmpDamage += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_FLAT_SPELL_DAMAGE_VERSUS, creatureTypeMask);
+    int32 flatSpellDamageVersus = GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_FLAT_SPELL_DAMAGE_VERSUS, creatureTypeMask);
+    if(casterModifiers)
+    {
+        if(casterModifiers->Apply)
+            flatSpellDamageVersus = casterModifiers->FlatDamageVersus;
+        else
+            casterModifiers->FlatDamageVersus = flatSpellDamageVersus;
+    }
+    tmpDamage += flatSpellDamageVersus;
 
     // apply spellmod to Done damage
     if(Player* modOwner = GetSpellModOwner())
+    {
+        SpellModList tmpModList;
+        if(casterModifiers && casterModifiers->Apply && damagetype == DOT)
+        {
+            tmpModList = modOwner->m_spellMods[SPELLMOD_DOT];
+            modOwner->m_spellMods[SPELLMOD_DOT] = casterModifiers->SpellModDot;
+        }
+
         modOwner->ApplySpellMod(spellProto->Id, damagetype == DOT ? SPELLMOD_DOT : SPELLMOD_DAMAGE, tmpDamage);
+
+        if(casterModifiers && casterModifiers->Apply && damagetype == DOT)
+           modOwner->m_spellMods[SPELLMOD_DOT] = tmpModList;
+
+        if(casterModifiers && !casterModifiers->Apply && damagetype == DOT)
+            casterModifiers->SpellModDot = modOwner->m_spellMods[SPELLMOD_DOT];
+    }
 
     tmpDamage = (tmpDamage+TakenActualBenefit)*TakenTotalMod;
 
@@ -8153,12 +8199,12 @@ uint32 Unit::SpellCriticalBonus(SpellEntry const *spellProto, uint32 damage, Uni
     return damage;
 }
 
-uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, DamageEffectType damagetype, Unit *pVictim)
+uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, DamageEffectType damagetype, Unit *pVictim, CasterModifiers *casterModifiers)
 {
     // For totems get healing bonus from owner (statue isn't totem in fact)
     if( GetTypeId()==TYPEID_UNIT && ((Creature*)this)->isTotem() && ((Totem*)this)->GetTotemType()!=TOTEM_STATUE)
         if(Unit* owner = GetOwner())
-            return owner->SpellHealingBonus(spellProto, healamount, damagetype, pVictim);
+            return owner->SpellHealingBonus(spellProto, healamount, damagetype, pVictim, casterModifiers);
 
     float TotalMod = 1.0f;
     // Healing taken percent
@@ -8188,6 +8234,15 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
         return healamount*TotalMod;
 
     int32 AdvertisedBenefit = SpellBaseHealingBonus(GetSpellSchoolMask(spellProto));
+
+    if(casterModifiers)
+    {
+        if(casterModifiers->Apply)
+            AdvertisedBenefit = casterModifiers->AdvertisedBenefit;
+        else
+            casterModifiers->AdvertisedBenefit = AdvertisedBenefit;
+    }
+
     uint32 CastingTime = !IsChanneledSpell(spellProto) ? GetSpellCastTime(spellProto) : GetSpellDuration(spellProto);
 
     // Healing Taken
@@ -8352,22 +8407,58 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
         //SpellModSpellDamage /= 100.0f;
         CoefficientPtc /= 100.0f;
 
+        if(casterModifiers)
+        {
+            if(casterModifiers->Apply)
+                CoefficientPtc = casterModifiers->CoefficientPtc;
+            else
+                casterModifiers->CoefficientPtc = CoefficientPtc;
+        }
+
         //ActualBenefit = (float)AdvertisedBenefit * ((float)CastingTime / 3500.0f) * DotFactor * SpellModSpellDamage * LvlPenalty;
         ActualBenefit = (float)AdvertisedBenefit * CoefficientPtc * LvlPenalty;
     }
+    else if(casterModifiers && !casterModifiers->Apply)
+        casterModifiers->CoefficientPtc = 1.0f;
 
     // use float as more appropriate for negative values and percent applying
     float heal = healamount + ActualBenefit;
 
     // TODO: check for ALL/SPELLS type
     // Healing done percent
+    float HealingDonePct = 1.0f;
     AuraList const& mHealingDonePct = GetAurasByType(SPELL_AURA_MOD_HEALING_DONE_PERCENT);
     for(AuraList::const_iterator i = mHealingDonePct.begin();i != mHealingDonePct.end(); ++i)
-        heal *= (100.0f + (*i)->GetModifierValue()) / 100.0f;
+
+        HealingDonePct *= (100.0f + (*i)->GetModifierValue()) / 100.0f;
+    if(casterModifiers)
+    {
+        if(casterModifiers->Apply)
+            HealingDonePct = casterModifiers->DamagePercentDone;
+        else
+            casterModifiers->DamagePercentDone = HealingDonePct;
+    }
+
+    heal *= HealingDonePct;
 
     // apply spellmod to Done amount
     if(Player* modOwner = GetSpellModOwner())
+    {
+        SpellModList tmpModList;
+        if(casterModifiers && casterModifiers->Apply && damagetype == DOT)
+        {
+            tmpModList = modOwner->m_spellMods[SPELLMOD_DOT];
+            modOwner->m_spellMods[SPELLMOD_DOT] = casterModifiers->SpellModDot;
+        }
+
         modOwner->ApplySpellMod(spellProto->Id, damagetype == DOT ? SPELLMOD_DOT : SPELLMOD_DAMAGE, heal);
+
+        if(casterModifiers && casterModifiers->Apply && damagetype == DOT)
+            modOwner->m_spellMods[SPELLMOD_DOT] = tmpModList;
+
+        if(casterModifiers && !casterModifiers->Apply && damagetype == DOT)
+            casterModifiers->SpellModDot = modOwner->m_spellMods[SPELLMOD_DOT];
+    }
 
     // Healing Wave cast
     if (spellProto->SpellFamilyName == SPELLFAMILY_SHAMAN && spellProto->SpellFamilyFlags & 0x0000000000000040LL)
