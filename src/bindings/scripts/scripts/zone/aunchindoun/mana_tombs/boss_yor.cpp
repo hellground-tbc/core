@@ -14,7 +14,7 @@ struct TRINITY_DLL_DECL boss_yorAI : public ScriptedAI
     uint32 DoubleBreath_Timer;
     uint32 Stomp_Timer;
 
-    void Reset() 
+    void Reset()
     {
         DoubleBreath_Timer = 8000+rand()%5000;
         Stomp_Timer = 15000+rand()%5000;
@@ -62,6 +62,7 @@ CreatureAI* GetAI_boss_yor(Creature *_Creature)
 bool GOHello_go_shaffars_stasis_chamber(Player *player, GameObject* _GO)
 {
     _GO->SummonCreature(BOSS_YOR, _GO->GetPositionX(), _GO->GetPositionY(), _GO->GetPositionZ(), 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 120000);
+    _GO->Delete();
     return true;
 }
 
