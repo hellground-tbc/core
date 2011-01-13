@@ -19987,28 +19987,24 @@ bool Player::isTotalImmunity()
 
 void Player::AddGlobalCooldown(SpellEntry const *spellInfo, Spell const *spell)
 {
-    if(!spellInfo || (!spellInfo->StartRecoveryTime && !spell->m_CastItem))
+    if (!spellInfo || !spellInfo->StartRecoveryTime)
         return;
 
-    uint32 cdTime = 0;
-    if(spellInfo->StartRecoveryTime)
-    {
-        cdTime = spellInfo->StartRecoveryTime;
+    uint32 cdTime = spellInfo->StartRecoveryTime;
 
-        if( !(spellInfo->Attributes & (SPELL_ATTR_UNK4|SPELL_ATTR_TRADESPELL)) )
-            cdTime *= GetFloatValue(UNIT_MOD_CAST_SPEED);
-        else if (spell->IsRangedSpell() && !spell->IsAutoRepeat())
-            cdTime *= m_modAttackSpeedPct[RANGED_ATTACK];
+    if (!(spellInfo->Attributes & (SPELL_ATTR_UNK4|SPELL_ATTR_TRADESPELL)))
+        cdTime *= GetFloatValue(UNIT_MOD_CAST_SPEED);
+    else if (spell->IsRangedSpell() && !spell->IsAutoRepeat())
+        cdTime *= m_modAttackSpeedPct[RANGED_ATTACK];
 
-        cdTime = (cdTime < 1000 || cdTime > 1500) ? 1000 : cdTime;
-    }
+    cdTime = (cdTime < 1000 || cdTime > 1500) ? 1000 : cdTime;
 
     m_globalCooldowns[spellInfo->StartRecoveryCategory] = cdTime;
 }
 
 bool Player::HasGlobalCooldown(SpellEntry const *spellInfo) const
 {
-    if(!spellInfo)
+    if (!spellInfo)
         return false;
 
     std::map<uint32, uint32>::const_iterator itr = m_globalCooldowns.find(spellInfo->StartRecoveryCategory);
@@ -20017,7 +20013,7 @@ bool Player::HasGlobalCooldown(SpellEntry const *spellInfo) const
 
 void Player::RemoveGlobalCooldown(SpellEntry const *spellInfo)
 {
-    if(!spellInfo)
+    if (!spellInfo || !spellInfo->StartRecoveryTime)
         return;
 
     m_globalCooldowns[spellInfo->StartRecoveryCategory] = 0;
