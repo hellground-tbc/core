@@ -131,10 +131,11 @@ struct TRINITY_DLL_DECL npc_barnesAI : public npc_escortAI
     void EnterEvadeMode()
     {
         m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-        npc_escortAI::EnterEvadeMode();
 
         if(pInstance && pInstance->GetData(DATA_OPERA_EVENT) != SPECIAL)
             pInstance->SetData(DATA_OPERA_EVENT, NOT_STARTED);
+
+        npc_escortAI::EnterEvadeMode();
     }
 
     void Reset()
@@ -154,12 +155,12 @@ struct TRINITY_DLL_DECL npc_barnesAI : public npc_escortAI
             if(pInstance->GetData(DATA_OPERA_EVENT) == IN_PROGRESS)
                 return;
 
-            pInstance->SetData(DATA_OPERA_EVENT, NOT_STARTED);
+            if (pInstance->GetData(DATA_OPERA_EVENT) != SPECIAL)
+                pInstance->SetData(DATA_OPERA_EVENT, NOT_STARTED);
 
             Event = pInstance->GetData(DATA_OPERA_PERFORMANCE);
 
-            if (GameObject* Door = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_STAGEDOORLEFT)))
-                Door->SetGoState(pInstance->GetData(DATA_OPERA_EVENT) == DONE ? 0 : 1);
+            pInstance->HandleGameObject(pInstance->GetData64(DATA_GAMEOBJECT_STAGEDOORLEFT), true);
 
             if (GameObject* Curtain = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_CURTAINS)))
                 Curtain->SetGoState(pInstance->GetData(DATA_OPERA_EVENT) == DONE ? 0 : 1);
@@ -640,4 +641,3 @@ void AddSC_karazhan()
     newscript->GetAI = &GetAI_npc_image_of_medivh;
     newscript->RegisterSelf();
 }
-

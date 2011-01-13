@@ -163,13 +163,13 @@ struct TRINITY_DLL_DECL boss_dorotheeAI : public ScriptedAI
 
     void EnterEvadeMode()
     {
+        if (AggroTimer)
+            return;
+
         ScriptedAI::EnterEvadeMode();
 
         if(pInstance)
             pInstance->SetData(DATA_OPERA_EVENT, SPECIAL);
-
-        if (AggroTimer)
-            return;
 
         if (Creature * barnes = me->GetCreature(pInstance->GetData64(DATA_BARNES)))
             barnes->AI()->EnterEvadeMode();
@@ -317,13 +317,13 @@ struct TRINITY_DLL_DECL boss_strawmanAI : public ScriptedAI
 
     void EnterEvadeMode()
     {
+        if (AggroTimer)
+            return;
+
         ScriptedAI::EnterEvadeMode();
 
         if (pInstance)
             pInstance->SetData(DATA_OPERA_EVENT, SPECIAL);
-
-        if (AggroTimer)
-            return;
 
         if (Creature * barnes = me->GetCreature(pInstance->GetData64(DATA_BARNES)))
             barnes->AI()->EnterEvadeMode();
@@ -432,13 +432,13 @@ struct TRINITY_DLL_DECL boss_tinheadAI : public ScriptedAI
 
     void EnterEvadeMode()
     {
+        if (AggroTimer)
+            return;
+
         ScriptedAI::EnterEvadeMode();
 
         if (pInstance)
             pInstance->SetData(DATA_OPERA_EVENT, SPECIAL);
-
-        if (AggroTimer)
-            return;
 
         if (Creature * barnes = me->GetCreature(pInstance->GetData64(DATA_BARNES)))
             barnes->AI()->EnterEvadeMode();
@@ -559,13 +559,13 @@ struct TRINITY_DLL_DECL boss_roarAI : public ScriptedAI
 
     void EnterEvadeMode()
     {
+        if (AggroTimer)
+            return;
+
         ScriptedAI::EnterEvadeMode();
 
         if (pInstance)
             pInstance->SetData(DATA_OPERA_EVENT, SPECIAL);
-
-        if (AggroTimer)
-            return;
 
         if (Creature * barnes = me->GetCreature(pInstance->GetData64(DATA_BARNES)))
             barnes->AI()->EnterEvadeMode();
@@ -1660,4 +1660,3 @@ void AddSC_bosses_opera()
     newscript->Name = "boss_romulo";
     newscript->RegisterSelf();
 }
-
