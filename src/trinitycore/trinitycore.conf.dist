@@ -617,6 +617,10 @@ IrcParser = "parser.trc"
 #        Default: 1 (true)
 #                 0 (false)
 #
+#    ShowProgressBars
+#        Control show progress bars for load steps at server startup
+#        Default: 1 (true) 0(false)
+#
 #    Motd
 #        Message of the Day. Displayed at worldlogin for every user ('@' for a newline).
 #
@@ -626,7 +630,7 @@ IrcParser = "parser.trc"
 #                 1 - enable
 #
 #    DontDeleteChars
-#        If enabled characters to delete will be moved to account with id 1 (arena teams, guilds and mails will be deleted, name will be changed). 
+#        If enabled characters to delete will be moved to account with id 1 (arena teams, guilds and mails will be deleted, name will be changed).
 #        Uses stored procedure "PreventCharDelete(characterGuid)"
 #        Default: 0 - disable
 #                 1 - enable
@@ -681,6 +685,7 @@ MailDeliveryDelay = 3600
 SkillChance.Prospecting = 0
 Event.Announce = 0
 BeepAtStart = 1
+ShowProgressBars = 1
 Motd = "HellGround.pl"
 Server.LoginInfo = 0
 
