@@ -34,7 +34,7 @@ class Field
             DB_TYPE_BOOL    = 0x04
         };
 
-        FField() : mValue(NULL), mType(DB_TYPE_UNKNOWN) {}
+        Field() : mValue(NULL), mType(DB_TYPE_UNKNOWN) {}
         Field(const char *value, enum DataTypes type) : mType(type) { mValue = const_cast<char * >(value); }
 
         ~Field() {}

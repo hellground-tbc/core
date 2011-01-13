@@ -153,6 +153,7 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/coilfang_resevoir/underbog/boss_hungarfen.cpp
    scripts/zone/coilfang_resevoir/underbog/boss_the_black_stalker.cpp
    scripts/zone/coilfang_resevoir/slave_pens/instance_slave_pens.cpp
+   scripts/zone/coilfang_resevoir/slave_pens/boss_mennu_the_betrayer.cpp
    scripts/zone/coilfang_resevoir/slave_pens/boss_lord_ahune.cpp
    scripts/zone/darkshore/darkshore.cpp
    scripts/zone/desolace/desolace.cpp
