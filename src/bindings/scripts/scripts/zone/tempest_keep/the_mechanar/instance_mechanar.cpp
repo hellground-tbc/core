@@ -26,11 +26,14 @@ EndScriptData */
 
 #define ENCOUNTERS      3
 
-#define GO_MOARGDOOR1           184632     
+#define GO_MOARGDOOR1           184632
 #define GO_MOARGDOOR2           184322
 #define GO_NETHERMANCERDOOR     184449
 
-struct TRINITY_DLL_DECL instance_mechanar : public ScriptedInstance
+#define NPC_IRONHAND            19710
+#define NPC_GYROKILL            19218
+
+struct instance_mechanar : public ScriptedInstance
 {
     instance_mechanar(Map *map) : ScriptedInstance(map) {Initialize();};
 
@@ -105,7 +108,7 @@ struct TRINITY_DLL_DECL instance_mechanar : public ScriptedInstance
     {
         switch(type)
         {
-            case DATA_NETHERMANCER_EVENT:   
+            case DATA_NETHERMANCER_EVENT:
                 if(Encounters[0] != DONE)
                 {
                     Encounters[0] = data;
@@ -115,7 +118,7 @@ struct TRINITY_DLL_DECL instance_mechanar : public ScriptedInstance
                         HandleGameObject(NethermancerDoor, true);
                 }
                 break;
-            case DATA_IRONHAND_EVENT:       
+            case DATA_IRONHAND_EVENT:
                 if(Encounters[1] != DONE)
                 {
                     Encounters[1] = data;
@@ -132,6 +135,39 @@ struct TRINITY_DLL_DECL instance_mechanar : public ScriptedInstance
                 }
                 break;
         }
+        if(data == DONE)
+            SaveToDB();
+    }
+
+    const char* Save()
+    {
+        OUT_SAVE_INST_DATA;
+        std::ostringstream stream;
+        stream << Encounters[0] << " " << Encounters[1] << " " << Encounters[2];
+        char* out = new char[stream.str().length() + 1];
+        strcpy(out, stream.str().c_str());
+        if(out)
+        {
+            OUT_SAVE_INST_DATA_COMPLETE;
+            return out;
+        }
+        return NULL;
+    }
+
+    void Load(const char* in)
+    {
+        if(!in)
+        {
+            OUT_LOAD_INST_DATA_FAIL;
+            return;
+        }
+        OUT_LOAD_INST_DATA(in);
+        std::istringstream stream(in);
+        stream >> Encounters[0] >> Encounters[1] >> Encounters[2];
+        for(uint8 i = 0; i < ENCOUNTERS; ++i)
+            if(Encounters[i] == IN_PROGRESS)
+                Encounters[i] = NOT_STARTED;
+        OUT_LOAD_INST_DATA_COMPLETE;
     }
 };
 
@@ -148,4 +184,3 @@ void AddSC_instance_mechanar()
     newscript->GetInstanceData = &GetInstanceData_instance_mechanar;
     newscript->RegisterSelf();
 }
-
