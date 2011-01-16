@@ -1875,7 +1875,7 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
     uint32 TalkTimer;
     uint32 Step;
 
-    std::list<Unit*> targets;
+    std::list<uint64> targets;
 
     bool EventStarted;
     bool PreludeEventStarted;
@@ -1904,10 +1904,15 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
     void BuildNearbyUnitsList()
     {
         float range = 20.0f;
+        std::list<Unit*> tempTargets;
         Trinity::AnyUnitInObjectRangeCheck check(m_creature, range);
-        Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(targets, check);
+        Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(tempTargets, check);
         Cell::VisitAllObjects(me, searcher, range);
+        for (std::list<Unit*>::iterator iter = tempTargets.begin(); iter != tempTargets.end(); ++iter)
+            if ((*iter)->GetTypeId() == TYPEID_PLAYER)
+                targets.push_back((*iter)->GetGUID());
     }
+
 
     void StartEvent()
     {
@@ -1949,30 +1954,32 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
                 return 3000;
 
             case 2:
-                for (std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
+                for (std::list<uint64>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
                 {
-                    if ((*iter)->GetTypeId() == TYPEID_PLAYER)
-                        DoWhisper(SAY_WHISPER_AKAMA_2, (*iter));
+                    if (Unit * target = me->GetUnit(*iter))
+                        DoWhisper(SAY_WHISPER_AKAMA_2, target);
+
                 }
                 return 1000;
 
             case 3:
-                for (std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
+                for (std::list<uint64>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
                 {
-                    if ((*iter)->GetTypeId() == TYPEID_PLAYER && (*iter)->IsInWorld())
-                        DoCast((*iter), SPELL_FAKE_KILL_VISUAL);
+                    if (Unit * target = me->GetUnit(*iter))
+                        DoCast(target, SPELL_FAKE_KILL_VISUAL);
+
                 }
                 return 1000;
 
             case 4:
-                for (std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
+                for (std::list<uint64>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
                 {
-                    if ((*iter)->GetTypeId() == TYPEID_PLAYER && (*iter)->IsInWorld())
+                    if (Unit * target = me->GetUnit(*iter))
                     {
-                        (*iter)->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
-                        (*iter)->SetHealth(1);
-                        ((Player*)(*iter))->setRegenTimer(60000);
-                        (*iter)->SetStunned(true);
+                        target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
+                        target->SetHealth(1);
+                        ((Player*)target)->setRegenTimer(60000);
+                        target->SetStunned(true);
                     }
                 }
                 return 3000;
@@ -1996,21 +2003,21 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
                 return 3000;
 
             case 8:
-                for (std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
+                for (std::list<uint64>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
                 {
-                    if ((*iter)->GetTypeId() == TYPEID_PLAYER && (*iter)->IsInWorld())
-                        DoCast((*iter), SPELL_RESURECTION_VISUAL);
+                    if (Unit * target = me->GetUnit(*iter))
+                        DoCast(target, SPELL_RESURECTION_VISUAL);
                 }
                 return 2000;
 
             case 9:
-                for (std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
+                for (std::list<uint64>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
                 {
-                    if ((*iter)->GetTypeId() == TYPEID_PLAYER && (*iter)->IsInWorld())
+                    if (Unit * target = me->GetUnit(*iter))
                     {
-                        (*iter)->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
-                        (*iter)->SetHealth((*iter)->GetMaxHealth());
-                        (*iter)->SetStunned(false);
+                        target->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
+                        target->SetHealth((*iter)->GetMaxHealth());
+                        target->SetStunned(false);
                     }
                 }
                 m_creature->Say(SAY_DIALOG_AKAMA_5, LANG_UNIVERSAL, NULL);
