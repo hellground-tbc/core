@@ -1764,7 +1764,7 @@ bool ChatHandler::HandleKickPlayerCommand(const char *args)
             return false;
         }
 
-        if(player==m_session->GetPlayer())
+        if(player == m_session->GetPlayer() || player->GetSession()->GetSecurity() > m_session->GetSecurity())
         {
             SendSysMessage(LANG_COMMAND_KICKSELF);
             SetSentErrorMessage(true);
