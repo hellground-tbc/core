@@ -31,16 +31,6 @@ struct DamageManaShield
     uint32 m_currAbsorb;
 };
 
-struct CasterModifiers
-{
-    int32 AdvertisedBenefit;
-    float DamagePercentDone;
-    float CoefficientPtc;
-    int32 FlatDamageVersus;
-    SpellModList SpellModDot;
-    bool Apply;
-};
-
 struct Modifier
 {
     AuraType m_auraname;
@@ -317,7 +307,7 @@ class TRINITY_DLL_SPEC Aura
 
             if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_PRIEST && GetSpellProto()->SpellFamilyFlags & 0x40000000000LL) // Vampiric Touch
                 return true;
-
+    
             if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_SHAMAN && this->GetSpellProto()->SpellIconID == 1677 ) // Grounding Totem
                 return true;
 
@@ -400,7 +390,6 @@ class TRINITY_DLL_SPEC Aura
         int32 m_amplitude;
         uint32 m_PeriodicEventId;
         DiminishingGroup m_AuraDRGroup;
-        CasterModifiers m_casterModifiers;
 
         int32 m_stackAmount;
     private:
