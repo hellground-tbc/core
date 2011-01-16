@@ -3527,7 +3527,7 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
         std::list<Unit*> targets;
         Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(m_target, m_target, m_target->GetMap()->GetVisibilityDistance());
         Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(targets, u_check);
-        
+
         Cell::VisitAllObjects(m_target, searcher, m_target->GetMap()->GetVisibilityDistance());
 
         for (std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
@@ -3799,7 +3799,7 @@ void Aura::HandleAuraModSilence(bool apply, bool Real)
     if (apply)
     {
         m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SILENCED);
-        
+
         // Stop cast only spells vs PreventionType == SPELL_PREVENTION_TYPE_SILENCE
         for (uint32 i = CURRENT_MELEE_SPELL; i < CURRENT_MAX_SPELL;i++)
         {
@@ -5166,7 +5166,7 @@ void Aura::HandleModRegen(bool apply, bool Real)            // eating
         {
             m_periodicTimer += 5000;
             int32 gain = m_target->ModifyHealth(GetModifierValue());
-            
+
             if (Unit *caster = GetCaster())
             {
                 SpellEntry const *spellProto = GetSpellProto();
@@ -6199,7 +6199,7 @@ void Aura::HandleSchoolAbsorb(bool apply, bool Real)
 
 void Aura::PeriodicTick()
 {
-    if (!m_target->isAlive())
+    if (!m_target->isAlive() || !m_target->IsInWorld())
         return;
 
     if (GetId() == 38575 && m_tickNumber < 3)  // Toxic - Spores delay deal damage
@@ -6576,7 +6576,7 @@ void Aura::PeriodicTick()
                     bg->UpdatePlayerScore(((Player*)pCaster), SCORE_HEALING_DONE, gain);
 
             //Do check before because m_modifier.auraName can be invalidate by DealDamage.
-            bool procSpell = (m_modifier.m_auraname == SPELL_AURA_PERIODIC_HEAL); // && m_target != pCaster);  
+            bool procSpell = (m_modifier.m_auraname == SPELL_AURA_PERIODIC_HEAL); // && m_target != pCaster);
 
             m_target->getHostilRefManager().threatAssist(pCaster, float(gain) * 0.5f, GetSpellProto());
 
@@ -7257,7 +7257,7 @@ void Aura::HandleAuraReflectSpellSchool(bool Apply, bool Real)
                         m_modifier.m_amount += 20;
                     else if(playerCaster->HasSpell(11094))
                         m_modifier.m_amount += 10;
-                } 
+                }
                 else
                 {
                     if(playerCaster->HasSpell(28332))
