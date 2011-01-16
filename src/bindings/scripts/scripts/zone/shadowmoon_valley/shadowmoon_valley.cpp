@@ -2016,7 +2016,7 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
                     if (Unit * target = me->GetUnit(*iter))
                     {
                         target->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
-                        target->SetHealth((*iter)->GetMaxHealth());
+                        target->SetHealth(target->GetMaxHealth());
                         target->SetStunned(false);
                     }
                 }

@@ -16320,8 +16320,8 @@ void Player::_SaveInventory()
                     GetSession()->SetSpecialLog(true);
                 }
 
-                //LoginDatabase.PExecute("INSERT INTO account_banned VALUES(%i, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'Siof', 'With love: cheater -.-', 1)", GetSession()->GetAccountId());
-                //GetSession()->KickPlayer();
+                LoginDatabase.PExecute("INSERT INTO account_banned VALUES(%i, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'Siof', 'With love: cheater -.-', 1)", GetSession()->GetAccountId());
+                GetSession()->KickPlayer();
             }
             else if (test != item)
             {
@@ -16338,8 +16338,8 @@ void Player::_SaveInventory()
                     GetSession()->SetSpecialLog(true);
                 }
 
-                //LoginDatabase.PExecute("INSERT INTO account_banned VALUES(%i, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'Siof', 'With love: cheater -.-', 1)", GetSession()->GetAccountId());
-                //GetSession()->KickPlayer();
+                LoginDatabase.PExecute("INSERT INTO account_banned VALUES(%i, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'Siof', 'With love: cheater -.-', 1)", GetSession()->GetAccountId());
+                GetSession()->KickPlayer();
 
                 continue;
             }

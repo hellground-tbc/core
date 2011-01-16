@@ -3176,6 +3176,9 @@ void Spell::SendLogExecute()
 {
     Unit *target = m_targets.getUnitTarget() ? m_targets.getUnitTarget() : m_caster;
 
+    if (!target || !target->IsInWorld())
+        return;
+
     WorldPacket data(SMSG_SPELLLOGEXECUTE, (8+4+4+4+4+8));
 
     if(m_caster->GetTypeId() == TYPEID_PLAYER)
