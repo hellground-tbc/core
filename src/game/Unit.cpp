@@ -8002,20 +8002,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
     // apply spellmod to Done damage
     if(Player* modOwner = GetSpellModOwner())
     {
-        SpellModList tmpModList;
-        if(casterModifiers && casterModifiers->Apply && damagetype == DOT)
-        {
-            tmpModList = modOwner->m_spellMods[SPELLMOD_DOT];
-            modOwner->m_spellMods[SPELLMOD_DOT] = casterModifiers->SpellModDot;
-        }
-
         modOwner->ApplySpellMod(spellProto->Id, damagetype == DOT ? SPELLMOD_DOT : SPELLMOD_DAMAGE, tmpDamage);
-
-        if(casterModifiers && casterModifiers->Apply && damagetype == DOT)
-           modOwner->m_spellMods[SPELLMOD_DOT] = tmpModList;
-
-        if(casterModifiers && !casterModifiers->Apply && damagetype == DOT)
-            casterModifiers->SpellModDot = modOwner->m_spellMods[SPELLMOD_DOT];
     }
 
     tmpDamage = (tmpDamage+TakenActualBenefit)*TakenTotalMod;
@@ -8444,20 +8431,7 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
     // apply spellmod to Done amount
     if(Player* modOwner = GetSpellModOwner())
     {
-        SpellModList tmpModList;
-        if(casterModifiers && casterModifiers->Apply && damagetype == DOT)
-        {
-            tmpModList = modOwner->m_spellMods[SPELLMOD_DOT];
-            modOwner->m_spellMods[SPELLMOD_DOT] = casterModifiers->SpellModDot;
-        }
-
         modOwner->ApplySpellMod(spellProto->Id, damagetype == DOT ? SPELLMOD_DOT : SPELLMOD_DAMAGE, heal);
-
-        if(casterModifiers && casterModifiers->Apply && damagetype == DOT)
-            modOwner->m_spellMods[SPELLMOD_DOT] = tmpModList;
-
-        if(casterModifiers && !casterModifiers->Apply && damagetype == DOT)
-            casterModifiers->SpellModDot = modOwner->m_spellMods[SPELLMOD_DOT];
     }
 
     // Healing Wave cast
