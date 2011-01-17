@@ -640,7 +640,7 @@ bool ChatHandler::HandleDebugThreatList(const char * /*args*/)
     PSendSysMessage("Threat list of %s (guid %u)",target->GetName(), target->GetGUIDLow());
     for(itr = tlist.begin(); itr != tlist.end(); ++itr)
     {
-        if (max_count && max_count >= cnt)
+        if (max_count &&  cnt > max_count)
             break;
 
         Unit *unit = (*itr)->getTarget();
