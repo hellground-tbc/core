@@ -30,7 +30,7 @@ class TRINITY_DLL_SPEC barGoLink
         ~barGoLink();
 
         void step();
-        static void SetOutputState(bool on) { m_showOutput = on; }
+        static void SetOutputState(bool on);
 
     private:
         static char const * const empty;

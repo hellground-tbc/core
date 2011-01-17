@@ -38,6 +38,12 @@ barGoLink::~barGoLink()
     fflush(stdout);
 }
 
+// avoid use inline version because linking problems with private static field
+void barGoLink::SetOutputState(bool on)
+{
+    m_showOutput = on;
+}
+
 barGoLink::barGoLink(int row_count)
 {
     if (!m_showOutput)
