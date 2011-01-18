@@ -1,0 +1,1 @@
+ALTER TABLE `spell_enchant_proc_data`     ADD COLUMN `procFlags` INT UNSIGNED DEFAULT '0' NOT NULL AFTER `PPMChance`,    CHANGE `PPMChance` `PPMChance` FLOAT UNSIGNED DEFAULT '0' NOT NULL,     CHANGE `procEx` `procEx` INT UNSIGNED DEFAULT '0' NOT NULL;

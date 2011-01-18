@@ -1,0 +1,9 @@
+#ifndef DEF_MECHANAR_H
+#define DEF_MECHANAR_H
+
+#define DATA_NETHERMANCER_EVENT 1
+#define DATA_IRONHAND_EVENT     2
+#define DATA_GYROKILL_EVENT     3
+
+#endif
+
