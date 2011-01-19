@@ -404,7 +404,7 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public illidari_council_b
 
     Unit* SelectCouncil()
     {
-        if(urand(0, 8))
+        if(urand(0, 8)) // 8/9 chances to select Malande
         {
             if (Unit *pMelande = pInstance->GetCreature(m_council[0]))
             {
@@ -413,7 +413,7 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public illidari_council_b
             }
         }
 
-        if (Unit *pCouncil = pInstance->GetCreature(m_council[urand(1,3)]))
+        if (Unit *pCouncil = pInstance->GetCreature(m_council[urand(0,1)?1:3])) // else, select others, but never self
         {
             if (pCouncil->isAlive())
                 return pCouncil;
@@ -519,8 +519,9 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
     {
         m_blizzardTimer = urand(12000, 20000);
         m_flamestrikeTimer = 3800;
-        m_dampenTimer = 2000;
+        m_dampenTimer = 67200;
         m_aexpTimer = 3000;
+        ForceSpellCast(m_creature, SPELL_DAMPEN_MAGIC);
         SetAutocast(SPELL_ARCANE_BOLT, 2000, true, AUTOCAST_TANK, 40.0f, true);
 
         m_checkTimer = 1000;
