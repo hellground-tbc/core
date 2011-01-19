@@ -269,7 +269,7 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
         {
             if (Phase1)
             {
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 65, true))
+                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 15, true))
                 {
                     AddSpellToCast(pTarget, SPELL_FEL_ACID, false, true);
                     FelAcidTimer = urand(20000, 25000);
