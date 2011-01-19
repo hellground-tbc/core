@@ -25,28 +25,34 @@ EndScriptData */
 #include "def_black_temple.h"
 
 //Speech'n'Sounds
-#define SAY_TAUNT1              -1564018
-#define SAY_TAUNT2              -1564019
-#define SAY_TAUNT3              -1564020
-#define SAY_AGGRO               -1564021
-#define SAY_SPELL1              -1564022
-#define SAY_SPELL2              -1564023
-#define SAY_SPELL3              -1564024
-#define SAY_SLAY1               -1564025
-#define SAY_SLAY2               -1564026
-#define SAY_ENRAGE              -1564027
-#define SAY_DEATH               -1564028
+enum MotherSay
+{
+    SAY_TAUNT1              = -1564018,
+    SAY_TAUNT2              = -1564019,
+    SAY_TAUNT3              = -1564020,
+    SAY_AGGRO               = -1564021,
+    SAY_SPELL1              = -1564022,
+    SAY_SPELL2              = -1564023,
+    SAY_SPELL3              = -1564024,
+    SAY_SLAY1               = -1564025,
+    SAY_SLAY2               = -1564026,
+    SAY_ENRAGE              = -1564027,
+    SAY_DEATH               = -1564028,
+    EMOTE_ENRAGE            = -1564097
+};
 
 //Spells
+enum MotherSpells
+{
+    SPELL_SILENCING_SHRIEK  = 40823,
+    SPELL_ENRAGE            = 34670,
+    SPELL_SABER_LASH        = 40810,
+    SPELL_FATAL_ATTRACTION  = 40869,
+    SPELL_BERSERK           = 45078,
 
-#define SPELL_SILENCING_SHRIEK  40823
-#define SPELL_ENRAGE            34670
-#define SPELL_SABER_LASH        40810
-#define SPELL_FATAL_ATTRACTION  40869
-#define SPELL_BERSERK           45078
-
-#define SPELL_PRISMATIC_SHIELD  40879
-#define SPELL_SABER_LASH_AURA   40816
+    SPELL_PRISMATIC_SHIELD  = 40879,
+    SPELL_SABER_LASH_AURA   = 40816
+};
 
 float positions[34][2] =
 {
@@ -139,7 +145,7 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         m_shriekTimer = 20000;
         m_yellTimer = urand(70000, 111000);
         m_enrageTimer = 600000;
-        m_enragePeriodic = 5000;
+        m_enragePeriodic = 2000;
         m_enraged = false;
         b_canEnrage = false;
 
@@ -153,6 +159,7 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         if (pInstance->GetData(EVENT_MOTHERSHAHRAZ) != IN_PROGRESS)
             return;
 
+        ClearCastQueue();
         switch (pAura->GetId())
         {
             case SPELL_SINFUL_BEAM:
@@ -223,17 +230,21 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
 
         if (!m_enraged && ((me->GetHealth()*100 / me->GetMaxHealth()) < 10))
         {
+            DoScriptText(EMOTE_ENRAGE, m_creature, 0, true);
             m_enraged = true;
             b_canEnrage = true;
         }
 
-        if (b_canEnrage && m_enragePeriodic < diff)
+        if (b_canEnrage)
         {
-            ForceSpellCast(me, SPELL_ENRAGE);
-            m_enragePeriodic = urand(20000, 30000);
+            if (m_enragePeriodic < diff)
+            {
+                ForceSpellCast(me, SPELL_ENRAGE);
+                m_enragePeriodic = urand(20000, 30000);
+            }
+            else
+                m_enragePeriodic -= diff;
         }
-        else
-            m_enragePeriodic -= diff;
 
         // Select 3 random targets (can select same target more than once), teleport to a random location then make them cast explosions until they get away from each other.
         if (m_attractionTimer < diff)
