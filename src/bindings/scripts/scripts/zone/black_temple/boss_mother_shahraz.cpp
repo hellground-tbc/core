@@ -139,6 +139,9 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
 
     void Reset()
     {
+        if (!pInstance)
+            pInstance = ((ScriptedInstance*)me->GetInstanceData());
+
         pInstance->SetData(EVENT_MOTHERSHAHRAZ, NOT_STARTED);
 
         m_attractionTimer = urand(20000, 30000);
@@ -159,7 +162,7 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         if (pInstance->GetData(EVENT_MOTHERSHAHRAZ) != IN_PROGRESS)
             return;
 
-        ClearCastQueue();
+        //ClearCastQueue();
         switch (pAura->GetId())
         {
             case SPELL_SINFUL_BEAM:

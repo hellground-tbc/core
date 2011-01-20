@@ -164,4 +164,3 @@ class TRINITY_DLL_DECL MapManager : public Trinity::Singleton<MapManager, Trinit
         uint32 i_MaxInstanceId;
 };
 #endif
-
