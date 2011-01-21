@@ -50,6 +50,13 @@ class ACRequest : public ACE_Method_Request
             if (pPlayer->hasUnitState(UNIT_STAT_CHARGING))
                 return -1;
 
+            if (m_newPacket.GetMovementFlags() & (MOVEMENTFLAG_FLYING2 | MOVEMENTFLAG_FLYING | MOVEMENTFLAG_CAN_FLY) && !(pPlayer->HasAuraType(SPELL_AURA_FLY) || pPlayer->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED)))
+            {
+                sWorld.SendGMText(LANG_ANTICHEAT_FLY, pPlayer->GetName());
+                sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) - possible Fly Cheat. MapId: %u, coords: x: %f, y: %f, z: %f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s",
+                              pPlayer->GetName(), pPlayer->GetGUIDLow(), pPlayer->GetSession()->GetAccountId(), pPlayer->GetMapId(), m_newPacket.pos.x, m_newPacket.pos.y, m_newPacket.pos.z, m_newPacket.GetMovementFlags(), m_latency, pPlayer->GetMap() ? (pPlayer->GetMap()->IsBattleGroundOrArena() ? "Yes" : "No") : "No");
+            }
+
             //// who is cheating on arena ?
             //if (pPlayer->GetMap() && pPlayer->GetMap()->IsBattleGroundOrArena())
             //    return -1;
