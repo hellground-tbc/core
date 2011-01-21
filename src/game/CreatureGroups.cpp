@@ -78,7 +78,7 @@ void CreatureGroupManager::LoadCreatureFormations()
     CreatureGroupMap.clear();
 
     //Check Integrity of the table
-    QueryResult_AutoPtr result = WorldDatabase.PQuery("SELECT MAX(`leaderGUID`) FROM `creature_formations`");
+    QueryResult *  result = WorldDatabase.PQuery("SELECT MAX(`leaderGUID`) FROM `creature_formations`");
 
     if(!result)
     {
@@ -129,7 +129,7 @@ void CreatureGroupManager::LoadCreatureFormations()
         }
 
         CreatureGroupMap[memberGUID] = group_member;
-    } 
+    }
     while(result->NextRow()) ;
 
     sLog.outString();

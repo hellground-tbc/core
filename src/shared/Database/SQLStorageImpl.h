@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,19 +16,22 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifndef SQLSTORAGE_IMPL_H
+#define SQLSTORAGE_IMPL_H
+
 #include "ProgressBar.h"
 #include "Log.h"
 #include "dbcfile.h"
 
 template<class T>
 template<class S, class D>
-void SQLStorageLoaderBase<T>::convert(uint32 field_pos, S src, D &dst)
+void SQLStorageLoaderBase<T>::convert(uint32 /*field_pos*/, S src, D &dst)
 {
     dst = D(src);
 }
 
 template<class T>
-void SQLStorageLoaderBase<T>::convert_str_to_str(uint32 field_pos, char *src, char *&dst)
+void SQLStorageLoaderBase<T>::convert_str_to_str(uint32 /*field_pos*/, char const *src, char *&dst)
 {
     if(!src)
     {
@@ -45,7 +48,7 @@ void SQLStorageLoaderBase<T>::convert_str_to_str(uint32 field_pos, char *src, ch
 
 template<class T>
 template<class S>
-void SQLStorageLoaderBase<T>::convert_to_str(uint32 field_pos, S src, char * & dst)
+void SQLStorageLoaderBase<T>::convert_to_str(uint32 /*field_pos*/, S /*src*/, char * & dst)
 {
     dst = new char[1];
     *dst = 0;
@@ -53,14 +56,14 @@ void SQLStorageLoaderBase<T>::convert_to_str(uint32 field_pos, S src, char * & d
 
 template<class T>
 template<class D>
-void SQLStorageLoaderBase<T>::convert_from_str(uint32 field_pos, char * src, D& dst)
+void SQLStorageLoaderBase<T>::convert_from_str(uint32 /*field_pos*/, char const* /*src*/, D& dst)
 {
     dst = 0;
 }
 
 template<class T>
 template<class V>
-void SQLStorageLoaderBase<T>::storeValue(V value, SQLStorage &store, char *p, int x, uint32 &offset)
+void SQLStorageLoaderBase<T>::storeValue(V value, SQLStorage &store, char *p, uint32 x, uint32 &offset)
 {
     T * subclass = (static_cast<T*>(this));
     switch(store.dst_format[x])
@@ -89,7 +92,7 @@ void SQLStorageLoaderBase<T>::storeValue(V value, SQLStorage &store, char *p, in
 }
 
 template<class T>
-void SQLStorageLoaderBase<T>::storeValue(char * value, SQLStorage &store, char *p, int x, uint32 &offset)
+void SQLStorageLoaderBase<T>::storeValue(char const* value, SQLStorage &store, char *p, uint32 x, uint32 &offset)
 {
     T * subclass = (static_cast<T*>(this));
     switch(store.dst_format[x])
@@ -122,7 +125,7 @@ void SQLStorageLoaderBase<T>::Load(SQLStorage &store)
 {
     uint32 maxi;
     Field *fields;
-    QueryResult_AutoPtr result  = WorldDatabase.PQuery("SELECT MAX(%s) FROM %s", store.entry_field, store.table);
+    QueryResult *result  = WorldDatabase.PQuery("SELECT MAX(%s) FROM %s", store.entry_field, store.table);
     if(!result)
     {
         sLog.outError("Error loading %s table (not exist?)\n", store.table);
@@ -130,12 +133,14 @@ void SQLStorageLoaderBase<T>::Load(SQLStorage &store)
     }
 
     maxi = (*result)[0].GetUInt32()+1;
+    delete result;
 
     result = WorldDatabase.PQuery("SELECT COUNT(*) FROM %s", store.table);
     if(result)
     {
         fields = result->Fetch();
         store.RecordCount = fields[0].GetUInt32();
+        delete result;
     }
     else
         store.RecordCount = 0;
@@ -156,6 +161,7 @@ void SQLStorageLoaderBase<T>::Load(SQLStorage &store)
     {
         store.RecordCount = 0;
         sLog.outError("Error in %s table, probably sql file format was updated (there should be %d fields in sql).\n", store.table, store.iNumFields);
+        delete result;
         exit(1);                                            // Stop server at loading broken or non-compatible table.
     }
 
@@ -198,13 +204,16 @@ void SQLStorageLoaderBase<T>::Load(SQLStorage &store)
                 case FT_FLOAT:
                     storeValue((float)fields[x].GetFloat(), store, p, x, offset); break;
                 case FT_STRING:
-                    storeValue((char*)fields[x].GetString(), store, p, x, offset); break;
+                    storeValue((char const*)fields[x].GetString(), store, p, x, offset); break;
             }
         ++count;
     }while( result->NextRow() );
+
+    delete result;
 
     store.pIndex = newIndex;
     store.MaxEntry = maxi;
     store.data = _data;
 }
 
+#endif

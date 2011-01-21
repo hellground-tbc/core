@@ -240,6 +240,11 @@ int Master::Run()
 
     ///- Initialize the World
     sWorld.SetInitialWorldSettings();
+    //server loaded successfully => enable async DB requests
+    //this is done to forbid any async transactions during server startup!
+    //CharacterDatabase.InitDelayThread();
+    //WorldDatabase.InitDelayThread();
+    //LoginDatabase.InitDelayThread();
 
     ///- Catch termination signals
     _HookSignals();
@@ -310,6 +315,9 @@ int Master::Run()
 
     uint32 socketSelecttime = sWorld.getConfig(CONFIG_SOCKET_SELECTTIME);
 
+    //server has started up successfully => enable async DB requests
+    //LoginDatabase.InitDelayThread();
+
     // maximum counter for next ping
     uint32 numLoops = (sConfig.GetIntDefault( "MaxPingTime", 30 ) * (MINUTE * 1000000 / socketSelecttime));
     uint32 loopCounter = 0;
@@ -344,7 +352,7 @@ int Master::Run()
     sWorldSocketMgr->Wait ();
 
     // set server offline
-    LoginDatabase.PExecute("UPDATE realmlist SET color = 2 WHERE id = '%d'",realmID);
+    LoginDatabase.DirectPExecute("UPDATE realmlist SET color = 2 WHERE id = '%d'",realmID);
 
     ///- Remove signal handling before leaving
     _UnhookSignals();
@@ -421,10 +429,11 @@ bool Master::_StartDB()
         sLog.outError("Database not specified in configuration file");
         return false;
     }
-    sLog.outDetail("World Database: %s", dbstring.c_str());
+    int nConnections = sConfig.GetIntDefault("WorldDatabaseConnections", 1);
+    sLog.outDetail("World Database: %s, total connections: %i", dbstring.c_str(), nConnections + 1);
 
     ///- Initialise the world database
-    if(!WorldDatabase.Initialize(dbstring.c_str()))
+    if(!WorldDatabase.Initialize(dbstring.c_str(), nConnections))
     {
         sLog.outError("Cannot connect to world database %s",dbstring.c_str());
         return false;
@@ -435,12 +444,13 @@ bool Master::_StartDB()
         sLog.outError("Character Database not specified in configuration file");
         return false;
     }
+    nConnections = sConfig.GetIntDefault("CharacterDatabaseConnections", 1);
     sLog.outDetail("Character Database: %s", dbstring.c_str());
 
     ///- Initialise the Character database
-    if(!CharacterDatabase.Initialize(dbstring.c_str()))
+    if(!CharacterDatabase.Initialize(dbstring.c_str(), nConnections))
     {
-        sLog.outError("Cannot connect to Character database %s",dbstring.c_str());
+        sLog.outError("Character Database: %s, total connections: %i", dbstring.c_str(), nConnections + 1);
         return false;
     }
 
@@ -450,10 +460,10 @@ bool Master::_StartDB()
         sLog.outError("Login database not specified in configuration file");
         return false;
     }
-
+    nConnections = sConfig.GetIntDefault("LoginDatabaseConnections", 1);
     ///- Initialise the login database
-    sLog.outDetail("Login Database: %s", dbstring.c_str() );
-    if(!LoginDatabase.Initialize(dbstring.c_str()))
+    sLog.outString("Login Database: %s, total connections: %i", dbstring.c_str(), nConnections + 1);
+    if(!LoginDatabase.Initialize(dbstring.c_str(), nConnections))
     {
         sLog.outError("Cannot connect to login database %s",dbstring.c_str());
         return false;

@@ -1,7 +1,5 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,29 +16,22 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#if !defined(QUERYRESULT_H)
+#ifndef QUERYRESULT_H
 #define QUERYRESULT_H
 
-#include <ace/Refcounted_Auto_Ptr.h>
-#include <ace/Null_Mutex.h>
-
+#include "Common.h"
+#include "Errors.h"
 #include "Field.h"
-
-#ifdef WIN32
-#define FD_SETSIZE 1024
-#include <winsock2.h>
-#include <mysql/mysql.h>
-#else
-#include <mysql.h>
-#endif
 
 class TRINITY_DLL_SPEC QueryResult
 {
     public:
-        QueryResult(MYSQL_RES *result, MYSQL_FIELD *fields, uint64 rowCount, uint32 fieldCount);
-        ~QueryResult();
+        QueryResult(uint64 rowCount, uint32 fieldCount)
+            : mFieldCount(fieldCount), mRowCount(rowCount) {}
 
-        bool NextRow();
+        virtual ~QueryResult() {}
+
+        virtual bool NextRow() = 0;
 
         Field *Fetch() const { return mCurrentRow; }
 
@@ -53,14 +44,8 @@ class TRINITY_DLL_SPEC QueryResult
         Field *mCurrentRow;
         uint32 mFieldCount;
         uint64 mRowCount;
-
-    private:
-        enum Field::DataTypes ConvertNativeType(enum_field_types mysqlType) const;
-        void EndQuery();
-        MYSQL_RES *mResult;
 };
 
-typedef ACE_Refcounted_Auto_Ptr<QueryResult, ACE_Null_Mutex> QueryResult_AutoPtr;
 typedef std::vector<std::string> QueryFieldNames;
 
 class TRINITY_DLL_SPEC QueryNamedResult
@@ -95,5 +80,5 @@ class TRINITY_DLL_SPEC QueryNamedResult
         QueryResult *mQuery;
         QueryFieldNames mFieldNames;
 };
-#endif
 
+#endif

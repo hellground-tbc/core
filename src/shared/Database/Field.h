@@ -1,7 +1,5 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +16,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#if !defined(FIELD_H)
+#ifndef FIELD_H
 #define FIELD_H
+
+#include "Common.h"
 
 class Field
 {
@@ -40,6 +40,7 @@ class Field
         ~Field() {}
 
         enum DataTypes GetType() const { return mType; }
+        bool IsNULL() const { return mValue == NULL; }
 
         const char *GetString() const { return mValue; }
         std::string GetCppString() const
@@ -64,20 +65,10 @@ class Field
             else
                 return 0;
         }
-        uint64 GetInt64() const
-        {
-            if(mValue)
-            {
-                int64 value;
-                sscanf(mValue,SI64FMTD,&value);
-                return value;
-            }
-            else
-                return 0;
-        }
 
         void SetType(enum DataTypes type) { mType = type; }
-
+        //no need for memory allocations to store resultset field strings
+        //all we need is to cache pointers returned by different DBMS APIs
         void SetValue(const char *value) { mValue = const_cast<char * >(value); };
 
     private:
@@ -88,4 +79,3 @@ class Field
         enum DataTypes mType;
 };
 #endif
-

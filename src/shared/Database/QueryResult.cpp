@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-
+/*
 #include "DatabaseEnv.h"
 
 QueryResult::QueryResult(MYSQL_RES *result, MYSQL_FIELD *fields, uint64 rowCount, uint32 fieldCount)
@@ -103,3 +103,4 @@ enum Field::DataTypes QueryResult::ConvertNativeType(enum_field_types mysqlType)
             return Field::DB_TYPE_UNKNOWN;
     }
 }
+*/

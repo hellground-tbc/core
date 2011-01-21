@@ -98,7 +98,7 @@ void LootStore::LoadLootTable()
     sLog.outString( "%s :", GetName());
 
     //                                                        0      1     2                    3        4              5         6              7                 8
-    QueryResult_AutoPtr result = WorldDatabase.PQuery("SELECT entry, item, ChanceOrQuestChance, groupid, mincountOrRef, maxcount, lootcondition, condition_value1, condition_value2 FROM %s",GetName());
+    QueryResult *  result = WorldDatabase.PQuery("SELECT entry, item, ChanceOrQuestChance, groupid, mincountOrRef, maxcount, lootcondition, condition_value1, condition_value2 FROM %s",GetName());
 
     if (result)
     {
@@ -369,7 +369,7 @@ void Loot::AddItem(LootStoreItem const & item)
         ItemPrototype const* proto = objmgr.GetItemPrototype(item.itemid);
 
         // items with quality >= RARE are unique in loot, except for epic junk (-> tier tokens)
-        if(proto->Quality >= ITEM_QUALITY_RARE &&                                               
+        if(proto->Quality >= ITEM_QUALITY_RARE &&
             (proto->Quality != ITEM_QUALITY_EPIC || proto->Class != ITEM_CLASS_JUNK))
             unique_items.insert(item.itemid);
 
@@ -411,7 +411,7 @@ void Loot::loadLootFromDB(Creature *pCreature)
 
     m_creatureGUID = pCreature->GetGUID();
 
-    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT itemId, itemCount FROM group_saved_loot WHERE creatureId='%u' AND instanceId='%u'", pCreature->GetEntry(), pCreature->GetInstanceId());
+    QueryResult *  result = CharacterDatabase.PQuery("SELECT itemId, itemCount FROM group_saved_loot WHERE creatureId='%u' AND instanceId='%u'", pCreature->GetEntry(), pCreature->GetInstanceId());
     if (result)
     {
         do
@@ -460,7 +460,7 @@ void Loot::removeItemFromSavedLoot(uint8 lootIndex)
     if (!pCreature)
         return;
 
-    QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT itemCount FROM group_saved_loot WHERE itemId='%u' AND instanceId='%u' AND creatureId='%u'", item->itemid, pCreature->GetInstanceId(), pCreature->GetEntry());
+    QueryResult *  result = CharacterDatabase.PQuery("SELECT itemCount FROM group_saved_loot WHERE itemId='%u' AND instanceId='%u' AND creatureId='%u'", item->itemid, pCreature->GetInstanceId(), pCreature->GetEntry());
     if (!result)
         return;
 
@@ -982,7 +982,7 @@ LootStoreItem const * LootTemplate::LootGroup::Roll(std::set<uint32> &except) co
     if (!EqualChanced.empty())                              // If nothing selected yet - an item is taken from equal-chanced part
     {
         std::vector<uint32> allowed;
-        
+
         int counter = 0;
         for(LootStoreItemList::const_iterator i = EqualChanced.begin(); i != EqualChanced.end(); ++i)
         {

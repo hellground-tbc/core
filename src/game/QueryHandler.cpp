@@ -77,7 +77,7 @@ void WorldSession::SendNameQueryOpcodeFromDB(uint64 guid)
         UNIT_FIELD_BYTES_0, UNIT_FIELD_BYTES_0+1, UNIT_FIELD_BYTES_0, GUID_LOPART(guid));
 }
 
-void WorldSession::SendNameQueryOpcodeFromDBCallBack(QueryResult_AutoPtr result, uint32 accountId)
+void WorldSession::SendNameQueryOpcodeFromDBCallBack(QueryResult *  result, uint32 accountId)
 {
     if(!result)
         return;

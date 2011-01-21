@@ -82,7 +82,7 @@ void RealmList::UpdateRealms(bool init)
 {
     sLog.outDetail("Updating Realm List...");
 
-    QueryResult_AutoPtr result = LoginDatabase.Query( "SELECT id, name, address, port, icon, color, timezone, allowedSecurityLevel, population FROM realmlist WHERE color <> 3 ORDER BY name" );
+    QueryResult *  result = LoginDatabase.Query( "SELECT id, name, address, port, icon, color, timezone, allowedSecurityLevel, population FROM realmlist WHERE color <> 3 ORDER BY name" );
 
     ///- Circle through results and add them to the realm map
     if(result)

@@ -47,7 +47,7 @@ AccountOpResult AccountMgr::CreateAccount(std::string username, std::string pass
     LoginDatabase.escape_string(username);
     LoginDatabase.escape_string(password);
 
-    QueryResult_AutoPtr result = LoginDatabase.PQuery("SELECT 1 FROM account WHERE username = '%s'", username.c_str());
+    QueryResult *  result = LoginDatabase.PQuery("SELECT 1 FROM account WHERE username = '%s'", username.c_str());
     if(result)
         return AOR_NAME_ALREDY_EXIST;                       // username does already exist
 
@@ -60,7 +60,7 @@ AccountOpResult AccountMgr::CreateAccount(std::string username, std::string pass
 
 AccountOpResult AccountMgr::DeleteAccount(uint32 accid)
 {
-    QueryResult_AutoPtr result = LoginDatabase.PQuery("SELECT 1 FROM account WHERE id='%d'", accid);
+    QueryResult *  result = LoginDatabase.PQuery("SELECT 1 FROM account WHERE id='%d'", accid);
     if(!result)
         return AOR_NAME_NOT_EXIST;                          // account doesn't exist
 
@@ -104,7 +104,7 @@ AccountOpResult AccountMgr::DeleteAccount(uint32 accid)
 
 AccountOpResult AccountMgr::ChangeUsername(uint32 accid, std::string new_uname, std::string new_passwd)
 {
-    QueryResult_AutoPtr result = LoginDatabase.PQuery("SELECT 1 FROM account WHERE id='%d'", accid);
+    QueryResult *  result = LoginDatabase.PQuery("SELECT 1 FROM account WHERE id='%d'", accid);
     if(!result)
         return AOR_NAME_NOT_EXIST;                          // account doesn't exist
 
@@ -127,7 +127,7 @@ AccountOpResult AccountMgr::ChangeUsername(uint32 accid, std::string new_uname, 
 
 AccountOpResult AccountMgr::ChangePassword(uint32 accid, std::string new_passwd)
 {
-    QueryResult_AutoPtr result = LoginDatabase.PQuery("SELECT 1 FROM account WHERE id='%d'", accid);
+    QueryResult *  result = LoginDatabase.PQuery("SELECT 1 FROM account WHERE id='%d'", accid);
     if(!result)
         return AOR_NAME_NOT_EXIST;                          // account doesn't exist
 
@@ -146,7 +146,7 @@ AccountOpResult AccountMgr::ChangePassword(uint32 accid, std::string new_passwd)
 uint32 AccountMgr::GetId(std::string username)
 {
     LoginDatabase.escape_string(username);
-    QueryResult_AutoPtr result = LoginDatabase.PQuery("SELECT id FROM account WHERE username = '%s'", username.c_str());
+    QueryResult *  result = LoginDatabase.PQuery("SELECT id FROM account WHERE username = '%s'", username.c_str());
     if(!result)
         return 0;
     else
@@ -158,7 +158,7 @@ uint32 AccountMgr::GetId(std::string username)
 
 uint32 AccountMgr::GetSecurity(uint32 acc_id)
 {
-    QueryResult_AutoPtr result = LoginDatabase.PQuery("SELECT gmlevel FROM account WHERE id = '%u'", acc_id);
+    QueryResult *  result = LoginDatabase.PQuery("SELECT gmlevel FROM account WHERE id = '%u'", acc_id);
     if(result)
     {
         uint32 sec = (*result)[0].GetUInt32();
@@ -170,7 +170,7 @@ uint32 AccountMgr::GetSecurity(uint32 acc_id)
 
 bool AccountMgr::GetName(uint32 acc_id, std::string &name)
 {
-    QueryResult_AutoPtr result = LoginDatabase.PQuery("SELECT username FROM account WHERE id = '%u'", acc_id);
+    QueryResult *  result = LoginDatabase.PQuery("SELECT username FROM account WHERE id = '%u'", acc_id);
     if(result)
     {
         name = (*result)[0].GetCppString();
@@ -185,7 +185,7 @@ bool AccountMgr::CheckPassword(uint32 accid, std::string passwd)
     normilizeString(passwd);
     LoginDatabase.escape_string(passwd);
 
-    QueryResult_AutoPtr result = LoginDatabase.PQuery("SELECT 1 FROM account WHERE id='%d' AND sha_pass_hash=SHA1(CONCAT(username,':','%s'))", accid, passwd.c_str());
+    QueryResult *  result = LoginDatabase.PQuery("SELECT 1 FROM account WHERE id='%d' AND sha_pass_hash=SHA1(CONCAT(username,':','%s'))", accid, passwd.c_str());
     if (result)
         return true;
 
