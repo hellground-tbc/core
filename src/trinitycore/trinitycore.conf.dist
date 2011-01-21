@@ -31,6 +31,14 @@ ConfVersion=2009102901
 #                .;/path/to/unix_socket;username;password;database - use Unix sockets at Unix/Linux
 #                    Unix sockets: experimental, not tested
 #
+#   LoginDatabaseConnections
+#   WorldDatabaseConnections
+#   CharacterDatabaseConnections
+#       Amount of connections to database which will be used for SELECT queries. Maximum 16 connections per database.
+#       Please, note, for data consistency only one connection for each database is used for transactions and async SELECTs.
+#       So formula to find out how many connections will be established: X = �_connections + 1
+#       Default: 1 connection for SELECT statements
+#
 #    MaxPingTime
 #        Settings for maximum database-ping interval (minutes between pings)
 #
@@ -48,6 +56,9 @@ LogsDir = ""
 LoginDatabaseInfo     = "127.0.0.1;3306;trinity;trinity;realmd"
 WorldDatabaseInfo     = "127.0.0.1;3306;trinity;trinity;world"
 CharacterDatabaseInfo = "127.0.0.1;3306;trinity;trinity;characters"
+LoginDatabaseConnections = 1
+WorldDatabaseConnections = 1
+CharacterDatabaseConnections = 1
 MaxPingTime = 30
 WorldServerPort = 8085
 BindIP = "0.0.0.0"

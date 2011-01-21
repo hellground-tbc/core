@@ -123,7 +123,7 @@ class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ACE_
                                                             // any log level
         void outMenu( const char * str, ... )        ATTR_PRINTF(2,3);
                                                             // any log level
-        void outErrorDb( const char * str, ... )     ATTR_PRINTF(2,3);
+        void outErrorDb( const char * str = "", ... )     ATTR_PRINTF(2,3);
                                                             // any log level
         void outChar( const char * str, ... )        ATTR_PRINTF(2,3);
         void outSpecial( const char * str, ... )     ATTR_PRINTF(2,3);

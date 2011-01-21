@@ -118,9 +118,11 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
     uint32 m_enragePeriodic;
 
     uint32 m_checkTimer;
+    uint32 prevBeam;
 
     bool m_enraged;
     bool b_canEnrage;
+    bool castBeam;
 
     void SpellHitTarget(Unit *pTarget, const SpellEntry *pSpell)
     {
@@ -139,6 +141,9 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
 
     void Reset()
     {
+        if (!pInstance)
+            pInstance = ((ScriptedInstance*)me->GetInstanceData());
+
         pInstance->SetData(EVENT_MOTHERSHAHRAZ, NOT_STARTED);
 
         m_attractionTimer = urand(20000, 30000);
@@ -148,6 +153,8 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         m_enragePeriodic = 2000;
         m_enraged = false;
         b_canEnrage = false;
+        castBeam = false;
+        prevBeam = 0;
 
         m_checkTimer = 1000;
 
@@ -159,22 +166,9 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         if (pInstance->GetData(EVENT_MOTHERSHAHRAZ) != IN_PROGRESS)
             return;
 
-        ClearCastQueue();
-        switch (pAura->GetId())
-        {
-            case SPELL_SINFUL_BEAM:
-                ForceSpellCast(me, RAND(SPELL_SINISTER_BEAM, SPELL_VILE_BEAM, SPELL_WICKED_BEAM));
-                break;
-            case SPELL_SINISTER_BEAM:
-                ForceSpellCast(me, RAND(SPELL_SINFUL_BEAM, SPELL_VILE_BEAM, SPELL_WICKED_BEAM));
-                break;
-            case SPELL_VILE_BEAM:
-                ForceSpellCast(me, RAND(SPELL_SINFUL_BEAM, SPELL_SINISTER_BEAM, SPELL_WICKED_BEAM));
-                break;
-            case SPELL_WICKED_BEAM:
-                ForceSpellCast(me, RAND(SPELL_SINFUL_BEAM, SPELL_SINISTER_BEAM, SPELL_VILE_BEAM));
-                break;
-        }
+        //ClearCastQueue();
+        prevBeam = pAura->GetId();
+        castBeam = true;
     }
 
     void EnterCombat(Unit *who)
@@ -288,6 +282,26 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         }
         else
             m_yellTimer -= diff;
+
+        if (castBeam)
+        {
+            switch (prevBeam)
+            {
+                case SPELL_SINFUL_BEAM:
+                    ForceSpellCast(me, RAND(SPELL_SINISTER_BEAM, SPELL_VILE_BEAM, SPELL_WICKED_BEAM));
+                    break;
+                case SPELL_SINISTER_BEAM:
+                    ForceSpellCast(me, RAND(SPELL_SINFUL_BEAM, SPELL_VILE_BEAM, SPELL_WICKED_BEAM));
+                    break;
+                case SPELL_VILE_BEAM:
+                    ForceSpellCast(me, RAND(SPELL_SINFUL_BEAM, SPELL_SINISTER_BEAM, SPELL_WICKED_BEAM));
+                    break;
+                case SPELL_WICKED_BEAM:
+                    ForceSpellCast(me, RAND(SPELL_SINFUL_BEAM, SPELL_SINISTER_BEAM, SPELL_VILE_BEAM));
+                    break;
+            }
+            castBeam = false;
+        }
 
         CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();

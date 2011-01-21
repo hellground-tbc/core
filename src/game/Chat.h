@@ -531,8 +531,8 @@ class ChatHandler
         GameObject* GetObjectGlobalyWithGuidOrNearWithDbGuid(uint32 lowguid,uint32 entry);
 
         // Utility methods for commands
-        bool LookupPlayerSearchCommand(QueryResult_AutoPtr result, int32 limit);
-        bool HandleBanListHelper(QueryResult_AutoPtr result);
+        bool LookupPlayerSearchCommand(QueryResultAutoPtr result, int32 limit);
+        bool HandleBanListHelper(QueryResultAutoPtr result);
         bool HandleBanHelper(BanMode mode,char const* args);
         bool HandleBanInfoHelper(uint32 accountid, char const* accountname);
         bool HandleUnBanHelper(BanMode mode,char const* args);
