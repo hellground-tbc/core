@@ -46,6 +46,7 @@ class TRINITY_DLL_SPEC QueryResult
         uint64 mRowCount;
 };
 
+typedef ACE_Refcounted_Auto_Ptr<QueryResult, ACE_Null_Mutex> QueryResultAutoPtr;
 typedef std::vector<std::string> QueryFieldNames;
 
 class TRINITY_DLL_SPEC QueryNamedResult
@@ -77,7 +78,7 @@ class TRINITY_DLL_SPEC QueryNamedResult
         }
 
     protected:
-        QueryResult *mQuery;
+        QueryResultAutoPtrmQuery;
         QueryFieldNames mFieldNames;
 };
 

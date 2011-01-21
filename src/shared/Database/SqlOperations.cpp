@@ -162,7 +162,7 @@ QueryResult* SqlQueryHolder::GetResult(size_t index)
         return NULL;
 }
 
-void SqlQueryHolder::SetResult(size_t index, QueryResult *result)
+void SqlQueryHolder::SetResult(size_t index, QueryResultAutoPtrresult)
 {
     /// store the result in the holder
     if(index < m_queries.size())

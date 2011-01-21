@@ -107,7 +107,7 @@ void Bag::SaveToDB()
     Item::SaveToDB();
 }
 
-bool Bag::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResult * result)
+bool Bag::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResultAutoPtr result)
 {
     if(!Item::LoadFromDB(guid, owner_guid, result))
         return false;

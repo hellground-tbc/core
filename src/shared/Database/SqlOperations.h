@@ -111,7 +111,7 @@ class SqlQueryHolder
         bool SetPQuery(size_t index, const char *format, ...) ATTR_PRINTF(3,4);
         void SetSize(size_t size);
         QueryResult* GetResult(size_t index);
-        void SetResult(size_t index, QueryResult *result);
+        void SetResult(size_t index, QueryResultAutoPtrresult);
         bool Execute(Trinity::IQueryCallback * callback, SqlDelayThread *thread, SqlResultQueue *queue);
 };
 

@@ -382,7 +382,7 @@ PoolHandler::PoolHandler()
 
 void PoolHandler::LoadFromDB()
 {
-    QueryResult * result = WorldDatabase.Query("SELECT MAX(entry) FROM pool_template");
+    QueryResultAutoPtr result = WorldDatabase.Query("SELECT MAX(entry) FROM pool_template");
     if (!result)
     {
         sLog.outString(">> Table pool_template is empty.");
@@ -655,7 +655,7 @@ void PoolHandler::LoadFromDB()
 // The initialize method will spawn all pools not in an event and not in another pool, this is why there is 2 left joins with 2 null checks
 void PoolHandler::Initialize()
 {
-    QueryResult * result = WorldDatabase.Query("SELECT DISTINCT pool_template.entry FROM pool_template LEFT JOIN game_event_pool ON pool_template.entry=game_event_pool.pool_entry LEFT JOIN pool_pool ON pool_template.entry=pool_pool.pool_id WHERE game_event_pool.pool_entry IS NULL AND pool_pool.pool_id IS NULL");
+    QueryResultAutoPtr result = WorldDatabase.Query("SELECT DISTINCT pool_template.entry FROM pool_template LEFT JOIN game_event_pool ON pool_template.entry=game_event_pool.pool_entry LEFT JOIN pool_pool ON pool_template.entry=pool_pool.pool_id WHERE game_event_pool.pool_entry IS NULL AND pool_pool.pool_id IS NULL");
     uint32 count=0;
     if (result)
     {

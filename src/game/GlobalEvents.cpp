@@ -33,7 +33,7 @@
 #include "Corpse.h"
 #include "Map.h"
 
-static void CorpsesEraseCallBack(QueryResult * result, bool bones)
+static void CorpsesEraseCallBack(QueryResultAutoPtr result, bool bones)
 {
     if(!result)
         return;

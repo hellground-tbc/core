@@ -665,7 +665,7 @@ ChatCommand * ChatHandler::getCommandTable()
     {
         load_command_table = false;
 
-        QueryResult * result = WorldDatabase.Query("SELECT name,security,help FROM command");
+        QueryResultAutoPtr result = WorldDatabase.Query("SELECT name,security,help FROM command");
         if (result)
         {
             do
