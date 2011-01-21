@@ -34,7 +34,7 @@ void WaypointStore::Free()
 
 void WaypointStore::Load()
 {
-    QueryResult *  result = WorldDatabase.PQuery("SELECT MAX(`id`) FROM `waypoint_data`");
+    QueryResult * result = WorldDatabase.PQuery("SELECT MAX(`id`) FROM `waypoint_data`");
     if(!result)
     {
         sLog.outError(" an error occured while loading the table `waypoint_data` ( maybe it doesn't exist ?)\n");
@@ -100,7 +100,7 @@ void WaypointStore::UpdatePath(uint32 id)
     if(waypoint_map.find(id)!= waypoint_map.end())
         waypoint_map[id]->clear();
 
-    QueryResult *  result = WorldDatabase.PQuery("SELECT `id`,`point`,`position_x`,`position_y`,`position_z`,`move_flag`,`delay`,`action`,`action_chance` FROM `waypoint_data` WHERE id = %u ORDER BY `point`", id);
+    QueryResult * result = WorldDatabase.PQuery("SELECT `id`,`point`,`position_x`,`position_y`,`position_z`,`move_flag`,`delay`,`action`,`action_chance` FROM `waypoint_data` WHERE id = %u ORDER BY `point`", id);
 
     if(!result)
         return;

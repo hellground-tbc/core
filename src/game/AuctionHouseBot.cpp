@@ -874,7 +874,7 @@ void AuctionHouseBot::Initialize()
 
     if (AHBSeller)
     {
-        QueryResult *  results = NULL;
+        QueryResult * results = NULL;
         char npcQuery[] = "SELECT distinct `item` FROM `npc_vendor`";
         results = WorldDatabase.PQuery(npcQuery);
         if (results != NULL)

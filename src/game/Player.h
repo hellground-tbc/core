@@ -936,7 +936,7 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         void Update( uint32 time );
 
-        void BuildEnumData( QueryResult *  result,  WorldPacket * p_data );
+        void BuildEnumData( QueryResult * result,  WorldPacket * p_data );
 
         void SetInWater(bool apply);
 
@@ -1275,7 +1275,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         /*********************************************************/
 
         bool LoadFromDB(uint32 guid, SqlQueryHolder *holder);
-        bool MinimalLoadFromDB(QueryResult *  result, uint32 guid);
+        bool MinimalLoadFromDB(QueryResult * result, uint32 guid);
         static bool   LoadValuesArrayFromDB(Tokens& data,uint64 guid);
         static uint32 GetUInt32ValueFromArray(Tokens const& data, uint16 index);
         static float  GetFloatValueFromArray(Tokens const& data, uint16 index);
@@ -1472,7 +1472,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         void RemoveSpellCooldown(uint32 spell_id) { m_spellCooldowns.erase(spell_id); }
         void RemoveArenaSpellCooldowns();
         void RemoveAllSpellCooldown();
-        void _LoadSpellCooldowns(QueryResult *  result);
+        void _LoadSpellCooldowns(QueryResult * result);
         void _SaveSpellCooldowns();
 
         // global cooldown
@@ -2188,23 +2188,23 @@ class TRINITY_DLL_SPEC Player : public Unit
         /***                   LOAD SYSTEM                     ***/
         /*********************************************************/
 
-        void _LoadActions(QueryResult *  result);
-        void _LoadAuras(QueryResult *  result, uint32 timediff);
-        void _LoadBoundInstances(QueryResult *  result);
-        void _LoadInventory(QueryResult *  result, uint32 timediff);
-        void _LoadMailInit(QueryResult *  resultUnread, QueryResult *  resultDelivery);
+        void _LoadActions(QueryResult * result);
+        void _LoadAuras(QueryResult * result, uint32 timediff);
+        void _LoadBoundInstances(QueryResult * result);
+        void _LoadInventory(QueryResult * result, uint32 timediff);
+        void _LoadMailInit(QueryResult * resultUnread, QueryResult * resultDelivery);
         void _LoadMail();
         void _LoadMailedItems(Mail *mail);
-        void _LoadQuestStatus(QueryResult *  result);
-        void _LoadDailyQuestStatus(QueryResult *  result);
-        void _LoadGroup(QueryResult *  result);
-        void _LoadReputation(QueryResult *  result);
-        void _LoadSpells(QueryResult *  result);
-        void _LoadTutorials(QueryResult *  result);
-        void _LoadFriendList(QueryResult *  result);
-        bool _LoadHomeBind(QueryResult *  result);
-        void _LoadDeclinedNames(QueryResult *  result);
-        void _LoadArenaTeamInfo(QueryResult *  result);
+        void _LoadQuestStatus(QueryResult * result);
+        void _LoadDailyQuestStatus(QueryResult * result);
+        void _LoadGroup(QueryResult * result);
+        void _LoadReputation(QueryResult * result);
+        void _LoadSpells(QueryResult * result);
+        void _LoadTutorials(QueryResult * result);
+        void _LoadFriendList(QueryResult * result);
+        bool _LoadHomeBind(QueryResult * result);
+        void _LoadDeclinedNames(QueryResult * result);
+        void _LoadArenaTeamInfo(QueryResult * result);
 
         /*********************************************************/
         /***                   SAVE SYSTEM                     ***/
