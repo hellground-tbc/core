@@ -1885,7 +1885,14 @@ void Aura::TriggerSpell()
                                 }
                             }
                         }
-                        trigger_spell_id = 40871;
+                        if(m_tickNumber < 4)
+                        {
+                            int32 basepoints = m_tickNumber * 750;
+                            m_target->CastCustomSpell(target, 40871, &basepoints, NULL, NULL, true, 0, this, originalCasterGUID);
+                        }
+                        else
+                            m_target->CastSpell(target, 40871, true, 0, this, originalCasterGUID);
+                        return;
                     }
                     break;
                     // Aura of Desire
@@ -2196,6 +2203,32 @@ void Aura::TriggerSpell()
                     }
                 }
                 break;
+            }
+            // Mother Shahraz' beams targeting
+            case 40862:
+            case 40863:
+            case 40865:
+            case 40866:
+            {
+                if(caster->CanHaveThreatList())
+                {
+                    target = NULL;
+                    std::list<HostilReference*> targets(caster->getThreatManager().getThreatList());
+                    while(!targets.empty())
+                    {
+                        std::list<HostilReference*>::iterator i = targets.begin();
+                        advance(i, rand()%targets.size());
+                        Unit *unit = caster->GetUnit((*i)->getUnitGuid());
+                        if(unit && unit->GetTypeId() == TYPEID_PLAYER && !caster->IsWithinDist(unit, 10, false))
+                        {
+                            target = unit;
+                            break;
+                        } else
+                            targets.erase(i);
+                    }
+                    if(!target)
+                        return;
+                }
             }
         }
     }

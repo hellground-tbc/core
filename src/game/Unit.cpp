@@ -1610,7 +1610,11 @@ void Unit::DealMeleeDamage(MeleeDamageLog *damageInfo, bool durabilityLoss)
         float offtime  = float(pVictim->getAttackTimer(OFF_ATTACK));
         float basetime = float(pVictim->getAttackTimer(BASE_ATTACK));
         // Reduce attack time
-        if (pVictim->haveOffhandWeapon() && offtime < basetime)
+        if(pVictim->GetTypeId() != TYPEID_PLAYER && ((Creature*)pVictim)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_PARRY_HASTEN)
+        {
+            ; // No parry haste
+        }
+        else if (pVictim->haveOffhandWeapon() && offtime < basetime)
         {
             float percent20 = pVictim->GetAttackTime(OFF_ATTACK) * 0.20;
             float percent60 = 3 * percent20;

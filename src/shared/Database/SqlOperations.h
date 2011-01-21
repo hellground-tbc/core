@@ -1,7 +1,5 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,22 +22,21 @@
 #include "Common.h"
 
 #include "ace/Thread_Mutex.h"
-#include "ace/Method_Request.h"
 #include "LockedQueue.h"
 #include <queue>
 #include "Utilities/Callback.h"
-#include "QueryResult.h"
 
 /// ---- BASE ---
 
 class Database;
+class SqlConnection;
 class SqlDelayThread;
 
 class SqlOperation
 {
     public:
         virtual void OnRemove() { delete this; }
-        virtual void Execute(Database *db) = 0;
+        virtual void Execute(SqlConnection *conn) = 0;
         virtual ~SqlOperation() {}
 };
 
@@ -51,29 +48,26 @@ class SqlStatement : public SqlOperation
         const char *m_sql;
     public:
         SqlStatement(const char *sql) : m_sql(mangos_strdup(sql)){}
-        ~SqlStatement() { void* tofree = const_cast<char*>(m_sql); delete [] tofree; }
-        void Execute(Database *db);
+        ~SqlStatement() { char* tofree = const_cast<char*>(m_sql); delete [] tofree; }
+        void Execute(SqlConnection *conn);
 };
 
 class SqlTransaction : public SqlOperation
 {
     private:
-        std::queue<const char*> m_queue;
-        ACE_Thread_Mutex m_Mutex;
+        std::vector<const char *> m_queue;
+
     public:
         SqlTransaction() {}
+        ~SqlTransaction();
+
         void DelayExecute(const char *sql)
         {
-            m_Mutex.acquire();
-
             char* _sql = mangos_strdup(sql);
-            if (_sql)
-                m_queue.push(_sql);
-
-            m_Mutex.release();
+            m_queue.push_back(_sql);
         }
 
-        void Execute(Database *db);
+        void Execute(SqlConnection *conn);
 };
 
 /// ---- ASYNC QUERIES ----
@@ -100,15 +94,15 @@ class SqlQuery : public SqlOperation
     public:
         SqlQuery(const char *sql, Trinity::IQueryCallback * callback, SqlResultQueue * queue)
             : m_sql(mangos_strdup(sql)), m_callback(callback), m_queue(queue) {}
-        ~SqlQuery() { void* tofree = const_cast<char*>(m_sql); delete [] tofree; }
-        void Execute(Database *db);
+        ~SqlQuery() { char* tofree = const_cast<char*>(m_sql); delete [] tofree; }
+        void Execute(SqlConnection *conn);
 };
 
 class SqlQueryHolder
 {
     friend class SqlQueryHolderEx;
     private:
-        typedef std::pair<const char*, QueryResult_AutoPtr> SqlResultPair;
+        typedef std::pair<const char*, QueryResult*> SqlResultPair;
         std::vector<SqlResultPair> m_queries;
     public:
         SqlQueryHolder() {}
@@ -116,8 +110,8 @@ class SqlQueryHolder
         bool SetQuery(size_t index, const char *sql);
         bool SetPQuery(size_t index, const char *format, ...) ATTR_PRINTF(3,4);
         void SetSize(size_t size);
-        QueryResult_AutoPtr GetResult(size_t index);
-        void SetResult(size_t index, QueryResult_AutoPtr result);
+        QueryResult* GetResult(size_t index);
+        void SetResult(size_t index, QueryResultAutoPtrresult);
         bool Execute(Trinity::IQueryCallback * callback, SqlDelayThread *thread, SqlResultQueue *queue);
 };
 
@@ -130,39 +124,6 @@ class SqlQueryHolderEx : public SqlOperation
     public:
         SqlQueryHolderEx(SqlQueryHolder *holder, Trinity::IQueryCallback * callback, SqlResultQueue * queue)
             : m_holder(holder), m_callback(callback), m_queue(queue) {}
-        void Execute(Database *db);
-};
-
-class SqlAsyncTask : public ACE_Method_Request
-{
-    public:
-        SqlAsyncTask(Database * db, SqlOperation * op) : m_db(db), m_op(op){}
-        ~SqlAsyncTask()
-        {
-            if (!m_op)
-                return;
-
-            delete m_op;
-            m_op = NULL;
-        }
-
-        int call()
-        {
-            if(m_db == NULL || m_op == NULL)
-                return -1;
-
-            try
-            {
-                m_op->Execute(m_db);
-            }
-            catch(...)
-            {
-                return -1;
-            }
-            return 0;
-        }
-    private:
-        Database * m_db;
-        SqlOperation * m_op;
+        void Execute(SqlConnection *conn);
 };
 #endif                                                      //__SQLOPERATIONS_H

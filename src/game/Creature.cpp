@@ -1073,7 +1073,7 @@ void Creature::OnPoiSelect(Player* player, GossipOption const *gossip)
 
 uint32 Creature::GetGossipTextId(uint32 action, uint32 zoneid)
 {
-    QueryResult_AutoPtr result= WorldDatabase.PQuery("SELECT textid FROM npc_gossip_textid WHERE action = '%u' AND zoneid ='%u'", action, zoneid );
+    QueryResultAutoPtr result= WorldDatabase.PQuery("SELECT textid FROM npc_gossip_textid WHERE action = '%u' AND zoneid ='%u'", action, zoneid );
 
     if(!result)
         return 0;
@@ -1955,7 +1955,7 @@ void Creature::DoFleeToGetAssistance()
 
         Trinity::NearestAssistCreatureInCreatureRangeCheck u_check(this, getVictim(), radius);
         Trinity::CreatureLastSearcher<Trinity::NearestAssistCreatureInCreatureRangeCheck> searcher(pCreature, u_check);
-        
+
         Cell::VisitGridObjects(this, searcher, radius);
 
         SetNoSearchAssistance(true);

@@ -39,7 +39,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Texts(bool check_entry_use)
     objmgr.LoadTrinityStrings(WorldDatabase,"creature_ai_texts",MIN_CREATURE_AI_TEXT_STRING_ID,MAX_CREATURE_AI_TEXT_STRING_ID);
 
     // Gather Additional data from EventAI Texts
-    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT entry, sound, type, language, emote FROM creature_ai_texts");
+    QueryResultAutoPtr result = WorldDatabase.Query("SELECT entry, sound, type, language, emote FROM creature_ai_texts");
 
     sLog.outString("Loading EventAI Texts additional data...");
     if (result)
@@ -154,7 +154,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Summons(bool check_entry_use)
     m_CreatureEventAI_Summon_Map.clear();
 
     // Gather additional data for EventAI
-    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT id, position_x, position_y, position_z, orientation, spawntimesecs FROM creature_ai_summons");
+    QueryResultAutoPtr result = WorldDatabase.Query("SELECT id, position_x, position_y, position_z, orientation, spawntimesecs FROM creature_ai_summons");
     if (result)
     {
         barGoLink bar(result->GetRowCount());
@@ -241,7 +241,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
     m_CreatureEventAI_Event_Map.clear();
 
     // Gather event data
-    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT id, creature_id, event_type, event_inverse_phase_mask, event_chance, event_flags, "
+    QueryResultAutoPtr result = WorldDatabase.Query("SELECT id, creature_id, event_type, event_inverse_phase_mask, event_chance, event_flags, "
         "event_param1, event_param2, event_param3, event_param4, "
         "action1_type, action1_param1, action1_param2, action1_param3, "
         "action2_type, action2_param1, action2_param2, action2_param3, "
@@ -336,7 +336,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
 
                         if ((temp.spell_hit.schoolMask & pSpell->SchoolMask) != pSpell->SchoolMask)
                             sLog.outErrorDb("CreatureEventAI:  Creature %u has param1(spellId %u) but param2 is not -1 and not equal to spell's school mask. Event %u can never trigger.", temp.creature_id, temp.spell_hit.schoolMask, i);
-                    
+
                         // if you fill schoolmask field it will show an error
                         if (temp.spell_hit.schoolMask)
                             sLog.outErrorDb("CreatureEventAI:  Creature %u has param1(spellId %u) but param2 is not 0. Event %u can never trigger.", temp.creature_id, temp.spell_hit.schoolMask, i);
@@ -802,7 +802,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
                 {
                     //sLog.outErrorDb("CreatureEventAI: Creature Entry %u has EventAI script but it also has C++ script. EventAI script will be overriden.", cInfo->Entry);
                 }
-            }            
+            }
         }while (result->NextRow());
 
         CheckUnusedAITexts();

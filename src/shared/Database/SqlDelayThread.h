@@ -1,7 +1,5 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,29 +20,35 @@
 #define __SQLDELAYTHREAD_H
 
 #include "ace/Thread_Mutex.h"
-#include "ace/Activation_Queue.h"
+#include "LockedQueue.h"
 #include "Threading.h"
+
 
 class Database;
 class SqlOperation;
+class SqlConnection;
 
 class SqlDelayThread : public ACE_Based::Runnable
 {
-    typedef ACE_Activation_Queue SqlQueue;
+    typedef ACE_Based::LockedQueue<SqlOperation*, ACE_Thread_Mutex> SqlQueue;
+
     private:
         SqlQueue m_sqlQueue;                                ///< Queue of SQL statements
         Database* m_dbEngine;                               ///< Pointer to used Database engine
+        SqlConnection * m_dbConnection;                     ///< Pointer to DB connection
         volatile bool m_running;
 
-        SqlDelayThread();
+        //process all enqueued requests
+        void ProcessRequests();
+
     public:
-        SqlDelayThread(Database* db);
+        SqlDelayThread(Database* db, SqlConnection* conn);
+        ~SqlDelayThread();
 
         ///< Put sql statement to delay queue
-        bool Delay(SqlOperation* sql);
+        bool Delay(SqlOperation* sql) { m_sqlQueue.add(sql); return true; }
 
-        void Stop();                                ///< Stop event
+        virtual void Stop();                                ///< Stop event
         virtual void run();                                 ///< Main Thread loop
 };
 #endif                                                      //__SQLDELAYTHREAD_H
-

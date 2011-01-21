@@ -1,7 +1,5 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#if !defined(DATABASEENV_H)
+#ifndef DATABASEENV_H
 #define DATABASEENV_H
 
 #include "Common.h"
@@ -28,9 +26,10 @@
 #include "Database/DBCStores.h"
 #include "Database/Field.h"
 #include "Database/QueryResult.h"
-
+#include "Database/QueryResultMysql.h"
 #include "Database/Database.h"
-typedef Database DatabaseType;
+#include "Database/DatabaseMysql.h"
+typedef DatabaseMysql DatabaseType;
 #define _LIKE_           "LIKE"
 #define _TABLE_SIM_      "`"
 #define _CONCAT3_(A,B,C) "CONCAT( " A " , " B " , " C " )"
@@ -41,4 +40,3 @@ extern DatabaseType CharacterDatabase;
 extern DatabaseType LoginDatabase;
 
 #endif
-

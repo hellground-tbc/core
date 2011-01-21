@@ -668,7 +668,7 @@ void Map::Update(const uint32 &t_diff)
             continue;
 
         CellArea area = Cell::CalculateCellArea(plr->GetPositionX(), plr->GetPositionY(), GetVisibilityDistance());
-        
+
         for(uint32 x = area.low_bound.x_coord; x <= area.high_bound.x_coord; ++x)
         {
             for(uint32 y = area.low_bound.y_coord; y <= area.high_bound.y_coord; ++y)
@@ -2826,7 +2826,7 @@ void InstanceMap::CreateInstanceData(bool load)
     if(load)
     {
         // TODO: make a global storage for this
-        QueryResult_AutoPtr result = CharacterDatabase.PQuery("SELECT data FROM instance WHERE map = '%u' AND id = '%u'", GetId(), i_InstanceId);
+        QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT data FROM instance WHERE map = '%u' AND id = '%u'", GetId(), i_InstanceId);
         if (result)
         {
             Field* fields = result->Fetch();

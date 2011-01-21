@@ -94,7 +94,7 @@ void SummonList::DespawnAll()
 
 
 ScriptedAI::ScriptedAI(Creature* pCreature) :
-CreatureAI(pCreature), m_creature(pCreature), IsFleeing(false), m_bCombatMovement(true), m_uiEvadeCheckCooldown(2500)
+CreatureAI(pCreature), m_creature(pCreature), IsFleeing(false), m_bCombatMovement(true), m_uiEvadeCheckCooldown(2500), autocast(false)
 {
     HeroicMode = m_creature->GetMap()->IsHeroic();
 }
@@ -182,47 +182,46 @@ void ScriptedAI::CastNextSpellIfAnyAndReady(uint32 diff)
 
     if (!spellList.empty() && !casted)
     {
-        SpellToCast *temp = &spellList.front();
+        SpellToCast temp(spellList.front());
+        spellList.pop_front();
 
-        if (!temp && !temp->triggered)
+        if (!temp.spellId)
             return;
 
-        if (temp->scriptTextEntry)
-            DoScriptText(temp->scriptTextEntry, m_creature, m_creature->getVictim());
+        if (temp.scriptTextEntry)
+            DoScriptText(temp.scriptTextEntry, m_creature, m_creature->getVictim());
 
-        if (temp->isDestCast)
+        if (temp.isDestCast)
         {
-            m_creature->CastSpell(temp->castDest[0], temp->castDest[1], temp->castDest[2], temp->spellId, temp->triggered);
-            spellList.pop_front();
+            m_creature->CastSpell(temp.castDest[0], temp.castDest[1], temp.castDest[2], temp.spellId, temp.triggered);
             casted = true;
             return;
         }
 
-        if (temp->targetGUID)
+        if (temp.targetGUID)
         {
-            Unit * tempU = m_creature->GetUnit(*m_creature, temp->targetGUID);
+            Unit * tempU = m_creature->GetUnit(*m_creature, temp.targetGUID);
 
             if (tempU && tempU->IsInWorld() && tempU->isAlive() && tempU->IsInMap(m_creature))
-                if (temp->spellId)
+                if (temp.spellId)
                 {
-                    if(temp->setAsTarget)
-                        m_creature->SetSelection(temp->targetGUID);
+                    if(temp.setAsTarget)
+                        m_creature->SetSelection(temp.targetGUID);
 
-                    m_creature->CastSpell(tempU, temp->spellId, temp->triggered);
+                    m_creature->CastSpell(tempU, temp.spellId, temp.triggered);
                 }
         }
         else
         {
-            if (temp->isAOECast)
+            if (temp.isAOECast)
             {
-                if (temp->spellId)
-                    m_creature->CastSpell(m_creature, temp->spellId, temp->triggered);
+                if (temp.spellId)
+                    m_creature->CastSpell(m_creature, temp.spellId, temp.triggered);
             }
             else
-                m_creature->CastSpell((Unit*)NULL, temp->spellId, temp->triggered);
+                m_creature->CastSpell((Unit*)NULL, temp.spellId, temp.triggered);
         }
 
-        spellList.pop_front();
         casted = true;
     }
 
@@ -1039,7 +1038,7 @@ Unit* FindCreature(uint32 entry, float range, Unit* Finder)
     Creature* target = NULL;
     Trinity::AllCreaturesOfEntryInRange check(Finder, entry, range);
     Trinity::CreatureSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(target, check);
-    
+
     Cell::VisitAllObjects(Finder, searcher, range);
     return target;
 }
@@ -1060,7 +1059,7 @@ Unit* ScriptedAI::DoSelectLowestHpFriendly(float range, uint32 MinHPDiff)
     Unit* pUnit = NULL;
     Trinity::MostHPMissingInRange u_check(m_creature, range, MinHPDiff);
     Trinity::UnitLastSearcher<Trinity::MostHPMissingInRange> searcher(pUnit, u_check);
-    
+
     Cell::VisitAllObjects(m_creature, searcher, range);
     return pUnit;
 }

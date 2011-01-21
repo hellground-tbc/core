@@ -1,7 +1,5 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -10,64 +8,39 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 #include "DatabaseEnv.h"
-#include "Config/ConfigEnv.h"
-#include "Common.h"
-
-#include "../../game/UpdateFields.h"
-#include "Util.h"
-#include "Policies/SingletonImp.h"
-#include "Platform/Define.h"
-#include "Threading.h"
-#include "Database/SqlDelayThread.h"
+#include "Config/Config.h"
 #include "Database/SqlOperations.h"
-#include "Timer.h"
 
 #include <ctime>
 #include <iostream>
 #include <fstream>
 
-size_t Database::db_count = 0;
-
-Database::Database() : mMysql(NULL) 
-{
-    // before first connection
-    if (db_count++ == 0)
-    {
-        // Mysql Library Init
-        mysql_library_init(-1, NULL, NULL);
-        if (!mysql_thread_safe())
-        {
-            sLog.outError("FATAL ERROR: Used MySQL library isn't thread-safe.");
-            exit(1);
-        }
-    }
-}
+#define MIN_CONNECTION_POOL_SIZE 1
+#define MAX_CONNECTION_POOL_SIZE 16
 
 Database::~Database()
 {
-    if (m_delayThread)
-        HaltDelayThread();
+    HaltDelayThread();
+    /*Delete objects*/
+    delete m_pResultQueue;
+    delete m_pAsyncConn;
 
-    if (mMysql)
-        mysql_close(mMysql);
-
-    // Free Mysql library pointers for last ~DB
-    if (--db_count == 0)
-        mysql_library_end();
+    for (int i = 0; i < m_pQueryConnections.size(); ++i)
+        delete m_pQueryConnections[i];
 }
 
-bool Database::Initialize(const char *infoString)
+bool Database::Initialize(const char * infoString, int nConns /*= 1*/)
 {
-    // Enable logging of SQL commands (usally only GM commands)
+    // Enable logging of SQL commands (usually only GM commands)
     // (See method: PExecuteLog)
     m_logSQL = sConfig.GetBoolDefault("LogSQL", false);
     m_logsDir = sConfig.GetStringDefault("LogsDir","");
@@ -77,123 +50,87 @@ bool Database::Initialize(const char *infoString)
             m_logsDir.append("/");
     }
 
-    tranThread = NULL;
+    m_pingIntervallms = sConfig.GetIntDefault ("MaxPingTime", 30) * (MINUTE * 1000);
 
-    MYSQL *mysqlInit;
-    mysqlInit = mysql_init(NULL);
+    //create DB connections
 
-    if (!mysqlInit)
+    //setup connection pool size
+    if(nConns < MIN_CONNECTION_POOL_SIZE)
+        m_nQueryConnPoolSize = MIN_CONNECTION_POOL_SIZE;
+    else if(nConns > MAX_CONNECTION_POOL_SIZE)
+        m_nQueryConnPoolSize = MAX_CONNECTION_POOL_SIZE;
+    else
+        m_nQueryConnPoolSize = nConns;
+
+    //create connection pool for sync requests
+    for (int i = 0; i < m_nQueryConnPoolSize; ++i)
     {
-        sLog.outError("Could not initialize Mysql connection");
-        return false;
+        SqlConnection * pConn = CreateConnection();
+        if(!pConn->Initialize(infoString))
+        {
+            delete pConn;
+            return false;
+        }
+
+        m_pQueryConnections.push_back(pConn);
     }
+
+    //create and initialize connection for async requests
+    m_pAsyncConn = CreateConnection();
+    if(!m_pAsyncConn->Initialize(infoString))
+        return false;
 
     InitDelayThread();
+    return true;
+}
 
-    Tokens tokens = StrSplit(infoString, ";");
-    Tokens::iterator iter;
-    std::string host, port_or_socket, user, password, database;
-    int port;
-    char const* unix_socket;
+SqlDelayThread * Database::CreateDelayThread()
+{
+    assert(m_pAsyncConn);
+    return new SqlDelayThread(this, m_pAsyncConn);
+}
 
-    iter = tokens.begin();
+void Database::InitDelayThread()
+{
+    assert(!m_delayThread);
 
-    if (iter != tokens.end())
-        host = *iter++;
+    m_pResultQueue = new SqlResultQueue;
+    //New delay thread for delay execute
+    m_threadBody = CreateDelayThread();              // will deleted at m_delayThread delete
+    m_delayThread = new ACE_Based::Thread(m_threadBody);
+}
 
-    if (iter != tokens.end())
-        port_or_socket = *iter++;
+void Database::HaltDelayThread()
+{
+    if (!m_threadBody || !m_delayThread) return;
 
-    if (iter != tokens.end())
-        user = *iter++;
+    m_threadBody->Stop();                                   //Stop event
+    m_delayThread->wait();                                  //Wait for flush to DB
+    delete m_delayThread;                                   //This also deletes m_threadBody
+    m_delayThread = NULL;
+    m_threadBody = NULL;
 
-    if (iter != tokens.end())
-        password = *iter++;
-
-    if (iter != tokens.end())
-        database = *iter++;
-
-    mysql_options(mysqlInit, MYSQL_SET_CHARSET_NAME, "utf8");
-
-    #ifdef WIN32
-
-    if (host==".")                                           // named pipe use option (Windows)
+    //stop async result queue
+    if(m_pResultQueue)
     {
-        unsigned int opt = MYSQL_PROTOCOL_PIPE;
-
-        mysql_options(mysqlInit, MYSQL_OPT_PROTOCOL, (char const*)&opt);
-        port = 0;
-        unix_socket = 0;
-    }
-    else                                                    // generic case
-    {
-        port = atoi(port_or_socket.c_str());
-        unix_socket = 0;
-    }
-
-    #else
-
-    if (host==".")                                           // socket use option (Unix/Linux)
-    {
-        unsigned int opt = MYSQL_PROTOCOL_SOCKET;
-
-        mysql_options(mysqlInit, MYSQL_OPT_PROTOCOL, (char const*)&opt);
-        host = "localhost";
-        port = 0;
-        unix_socket = port_or_socket.c_str();
-    }
-    else                                                    // generic case
-    {
-        port = atoi(port_or_socket.c_str());
-        unix_socket = 0;
-    }
-    #endif
-
-    mMysql = mysql_real_connect(mysqlInit, host.c_str(), user.c_str(),
-             password.c_str(), database.c_str(), port, unix_socket, 0);
-
-    if (mMysql)
-    {
-        sLog.outDetail("Connected to MySQL database at %s", host.c_str());
-        sLog.outString("MySQL client library: %s", mysql_get_client_info());
-        sLog.outString("MySQL server ver: %s ", mysql_get_server_info( mMysql));
-
-        if (!mysql_autocommit(mMysql, 1))
-            sLog.outDetail("AUTOCOMMIT SUCCESSFULLY SET TO 1");
-        else
-            sLog.outDetail("AUTOCOMMIT NOT SET TO 1");
-
-        // set connection properties to UTF8 to properly handle locales for different
-        // server configs - core sends data in UTF8, so MySQL must expect UTF8 too
-        PExecute("SET NAMES `utf8`");
-        PExecute("SET CHARACTER SET `utf8`");
-    #if MYSQL_VERSION_ID >= 50003
-        my_bool my_true = (my_bool)1;
-        if (mysql_options(mMysql, MYSQL_OPT_RECONNECT, &my_true))
-            sLog.outDetail("Failed to turn on MYSQL_OPT_RECONNECT.");
-        else
-           sLog.outDetail("Successfully turned on MYSQL_OPT_RECONNECT.");
-    #else
-        #warning "Your mySQL client lib version does not support reconnecting after a timeout.\nIf this causes you any trouble we advice you to upgrade your mySQL client libs to at least mySQL 5.0.13 to resolve this problem."
-    #endif
-        return true;
-    }
-    else
-    {
-        sLog.outError("Could not connect to MySQL database at %s: %s\n", host.c_str(),mysql_error(mysqlInit));
-        mysql_close(mysqlInit);
-        return false;
+        m_pResultQueue->Update();
+        delete m_pResultQueue;
+        m_pResultQueue = NULL;
     }
 }
 
 void Database::ThreadStart()
 {
-    mysql_thread_init();
 }
 
 void Database::ThreadEnd()
 {
-    mysql_thread_end();
+}
+
+void Database::ProcessResultQueue()
+{
+    if(m_pResultQueue)
+        m_pResultQueue->Update();
 }
 
 void Database::escape_string(std::string& str)
@@ -202,17 +139,38 @@ void Database::escape_string(std::string& str)
         return;
 
     char* buf = new char[str.size()*2+1];
-    escape_string(buf,str.c_str(),str.size());
+    //we don't care what connection to use - escape string will be the same
+    m_pQueryConnections[0]->escape_string(buf,str.c_str(),str.size());
     str = buf;
     delete[] buf;
 }
 
-unsigned long Database::escape_string(char *to, const char *from, unsigned long length)
+SqlConnection * Database::getQueryConnection()
 {
-    if (!mMysql || !to || !from || !length)
-        return 0;
+    int nCount = 0;
 
-    return(mysql_real_escape_string(mMysql, to, from, length));
+    if(m_nQueryCounter == long(1 << 31))
+        m_nQueryCounter = 0;
+    else
+        nCount = ++m_nQueryCounter;
+
+    return m_pQueryConnections[nCount % m_nQueryConnPoolSize];
+}
+
+void Database::Ping()
+{
+    const char * sql = "SELECT 1";
+
+    {
+        SqlConnection::Lock guard(m_pAsyncConn);
+        delete guard->Query(sql);
+    }
+
+    for (int i = 0; i < m_nQueryConnPoolSize; ++i)
+    {
+        SqlConnection::Lock guard(m_pQueryConnections[i]);
+        delete guard->Query(sql);
+    }
 }
 
 bool Database::PExecuteLog(const char * format,...)
@@ -259,76 +217,9 @@ bool Database::PExecuteLog(const char * format,...)
     return Execute(szQuery);
 }
 
-void Database::SetResultQueue(SqlResultQueue * queue)
+QueryResult* Database::PQuery(const char *format,...)
 {
-    m_queryQueues[ACE_Based::Thread::current()] = queue;
-}
-
-
-bool Database::_Query(const char *sql, MYSQL_RES **pResult, MYSQL_FIELD **pFields, uint64* pRowCount, uint32* pFieldCount)
-{
-    if (!mMysql)
-        return 0;
-
-    {
-        // guarded block for thread-safe mySQL request
-        ACE_Guard<ACE_Thread_Mutex> query_connection_guard(mMutex);
-
-        #ifdef TRINITY_DEBUG
-        uint32 _s = getMSTime();
-        #endif
-        if (mysql_query(mMysql, sql))
-        {
-            sLog.outErrorDb("SQL: %s", sql);
-            sLog.outErrorDb("query ERROR: %s", mysql_error(mMysql));
-            return false;
-        }
-        else
-        {
-            #ifdef TRINITY_DEBUG
-            sLog.outDebug("[%u ms] SQL: %s", getMSTimeDiff(_s,getMSTime()), sql );
-            #endif
-        }
-
-        *pResult = mysql_store_result(mMysql);
-        *pRowCount = mysql_affected_rows(mMysql);
-        *pFieldCount = mysql_field_count(mMysql);
-    }
-
-    if (!*pResult )
-        return false;
-
-    if (!*pRowCount)
-    {
-        mysql_free_result(*pResult);
-        return false;
-    }
-
-    *pFields = mysql_fetch_fields(*pResult);
-    return true;
-}
-
-QueryResult_AutoPtr Database::Query(const char *sql)
-{
-    MYSQL_RES *result = NULL;
-    MYSQL_FIELD *fields = NULL;
-
-    uint64 rowCount = 0;
-    uint32 fieldCount = 0;
-
-    if (!_Query(sql, &result, &fields, &rowCount, &fieldCount))
-        return QueryResult_AutoPtr(NULL);
-
-    QueryResult *queryResult = new QueryResult(result, fields, rowCount, fieldCount);
-    queryResult->NextRow();
-
-    return QueryResult_AutoPtr(queryResult);
-}
-
-QueryResult_AutoPtr Database::PQuery(const char *format,...)
-{
-    if(!format)
-        return QueryResult_AutoPtr(NULL);
+    if(!format) return NULL;
 
     va_list ap;
     char szQuery [MAX_QUERY_LEN];
@@ -339,31 +230,10 @@ QueryResult_AutoPtr Database::PQuery(const char *format,...)
     if(res==-1)
     {
         sLog.outError("SQL Query truncated (and not execute) for format: %s",format);
-        return QueryResult_AutoPtr(NULL);
+        return false;
     }
 
     return Query(szQuery);
-}
-
-QueryNamedResult* Database::QueryNamed(const char *sql)
-{
-    MYSQL_RES *result = NULL;
-    MYSQL_FIELD *fields = NULL;
-
-    uint64 rowCount = 0;
-    uint32 fieldCount = 0;
-
-    if (!_Query(sql, &result, &fields, &rowCount, &fieldCount))
-        return NULL;
-
-    QueryFieldNames names(fieldCount);
-    for (uint32 i = 0; i < fieldCount; i++)
-         names[i] = fields[i].name;
-
-    QueryResult *queryResult = new QueryResult(result, fields, rowCount, fieldCount);
-    queryResult->NextRow();
-
-    return new QueryNamedResult(queryResult, names);
 }
 
 QueryNamedResult* Database::PQueryNamed(const char *format,...)
@@ -384,25 +254,27 @@ QueryNamedResult* Database::PQueryNamed(const char *format,...)
 
     return QueryNamed(szQuery);
 }
+
 bool Database::Execute(const char *sql)
 {
-    if (!mMysql)
+    if (!m_pAsyncConn)
         return false;
 
-    // don't use queued execution if it has not been initialized
-    if (!m_threadBody)
-        return DirectExecute(sql);
-
-    nMutex.acquire();
-    tranThread = ACE_Based::Thread::current();              // owner of this transaction
-
-    TransactionQueues::iterator i = m_tranQueues.find(tranThread);
-    if (i != m_tranQueues.end() && i->second != NULL)
-        i->second->DelayExecute(sql);                       // Statement for transaction
+    SqlTransaction * pTrans = m_TransStorage->get();
+    if(pTrans)
+    {
+        //add SQL request to trans queue
+        pTrans->DelayExecute(sql);
+    }
     else
-        m_threadBody->Delay(new SqlStatement(sql));         // Simple sql statement
+    {
+        // Simple sql statement
+        pTrans = new SqlTransaction;
+        pTrans->DelayExecute(sql);
 
-    nMutex.release();
+        m_threadBody->Delay(pTrans);
+    }
+
     return true;
 }
 
@@ -428,29 +300,13 @@ bool Database::PExecute(const char * format,...)
 
 bool Database::DirectExecute(const char* sql)
 {
-    if (!mMysql)
+    if(!m_pAsyncConn)
         return false;
 
-    {
-        // guarded block for thread-safe mySQL request
-        ACE_Guard<ACE_Thread_Mutex> query_connection_guard(mMutex);
+    SqlTransaction trans;
+    trans.DelayExecute(sql);
 
-        #ifdef TRINITY_DEBUG
-        uint32 _s = getMSTime();
-        #endif
-        if (mysql_query(mMysql, sql))
-        {
-            sLog.outErrorDb("SQL: %s", sql);
-            sLog.outErrorDb("SQL ERROR: %s", mysql_error(mMysql));
-            return false;
-        }
-        else
-        {
-            #ifdef TRINITY_DEBUG
-            sLog.outDebug("[%u ms] SQL: %s", getMSTimeDiff(_s,getMSTime()), sql);
-            #endif
-        }
-    }
+    trans.Execute(m_pAsyncConn);
     return true;
 }
 
@@ -474,141 +330,174 @@ bool Database::DirectPExecute(const char * format,...)
     return DirectExecute(szQuery);
 }
 
-bool Database::_TransactionCmd(const char *sql)
-{
-    if (mysql_query(mMysql, sql))
-    {
-        sLog.outError("SQL: %s", sql);
-        sLog.outError("SQL ERROR: %s", mysql_error(mMysql));
-        return false;
-    }
-    else
-        DEBUG_LOG("SQL: %s", sql);
-
-    return true;
-}
-
 bool Database::BeginTransaction()
 {
-    if (!mMysql)
+    if (!m_pAsyncConn)
         return false;
 
-    // don't use queued execution if it has not been initialized
-    if (!m_threadBody)
-    {
-        if (tranThread == ACE_Based::Thread::current())
-            return false;                                   // huh? this thread already started transaction
-
-        mMutex.acquire();
-
-        if (!_TransactionCmd("START TRANSACTION"))
-        {
-            mMutex.release();                               // can't start transaction
-            return false;
-        }
-        return true;                                        // transaction started
-    }
-
-    nMutex.acquire();
-    tranThread = ACE_Based::Thread::current();              // owner of this transaction
-
-    TransactionQueues::iterator i = m_tranQueues.find(tranThread);
-    if (i != m_tranQueues.end() && i->second != NULL)
-        // If for thread exists queue and also contains transaction
-        // delete that transaction (not allow trans in trans)
-        delete i->second;
-
-    m_tranQueues[tranThread] = new SqlTransaction();
-    nMutex.release();
-
+    //initiate transaction on current thread
+    //currently we do not support queued transactions
+    m_TransStorage->init();
     return true;
 }
 
 bool Database::CommitTransaction()
 {
-    if (!mMysql)
+    if (!m_pAsyncConn)
         return false;
 
-    bool _res = false;
+    //check if we have pending transaction
+    if(!m_TransStorage->get())
+        return false;
 
-    // don't use queued execution if it has not been initialized
-    if (!m_threadBody)
-    {
-        if (tranThread != ACE_Based::Thread::current())
-            return false;
+    //add SqlTransaction to the async queue
+    m_threadBody->Delay(m_TransStorage->detach());
+    return true;
+}
 
-        _res = _TransactionCmd("COMMIT");
+bool Database::CommitTransactionDirect()
+{
+    if (!m_pAsyncConn)
+        return false;
 
-        tranThread = NULL;
-        mMutex.release();
-        return _res;
-    }
+    //check if we have pending transaction
+    if(!m_TransStorage->get())
+        return false;
 
-    nMutex.acquire();
-    tranThread = ACE_Based::Thread::current();
+    //directly execute SqlTransaction
+    SqlTransaction * pTrans = m_TransStorage->detach();
+    pTrans->Execute(m_pAsyncConn);
+    delete pTrans;
 
-    TransactionQueues::iterator i = m_tranQueues.find(tranThread);
-    if (i != m_tranQueues.end() && i->second != NULL)
-    {
-        m_threadBody->Delay(i->second);
-        m_tranQueues.erase(i);
-        _res = true;
-    }
-
-    nMutex.release();
-    return _res;
+    return true;
 }
 
 bool Database::RollbackTransaction()
 {
-    if (!mMysql)
+    if (!m_pAsyncConn)
         return false;
 
-    // don't use queued execution if it has not been initialized
-    if (!m_threadBody)
-    {
-        if (tranThread != ACE_Based::Thread::current())
-            return false;
+    if(!m_TransStorage->get())
+        return false;
 
-        bool _res = _TransactionCmd("ROLLBACK");
+    //remove scheduled transaction
+    m_TransStorage->reset();
 
-        tranThread = NULL;
-        mMutex.release();
-        return _res;
-    }
-
-    nMutex.acquire();
-    tranThread = ACE_Based::Thread::current();
-    TransactionQueues::iterator i = m_tranQueues.find(tranThread);
-    if (i != m_tranQueues.end() && i->second != NULL)
-    {
-        delete i->second;
-        i->second = NULL;
-        m_tranQueues.erase(i);
-    }
-
-    nMutex.release();
     return true;
 }
 
-void Database::InitDelayThread()
+bool Database::CheckRequiredField( char const* table_name, char const* required_name )
 {
-    assert(!m_delayThread);
+    // check required field
+    QueryResult* result = PQuery("SELECT %s FROM %s LIMIT 1",required_name,table_name);
+    if(result)
+    {
+        delete result;
+        return true;
+    }
 
-    //New delay thread for delay execute
-    m_threadBody = new SqlDelayThread(this);              // will deleted at m_delayThread delete
-    m_delayThread = new ACE_Based::Thread(m_threadBody);
+    // check fail, prepare readabale error message
+
+    // search current required_* field in DB
+    const char* db_name;
+    if(!strcmp(table_name, "db_version"))
+        db_name = "WORLD";
+    else if(!strcmp(table_name, "character_db_version"))
+        db_name = "CHARACTER";
+    else if(!strcmp(table_name, "realmd_db_version"))
+        db_name = "REALMD";
+    else
+        db_name = "UNKNOWN";
+
+    char const* req_sql_update_name = required_name+strlen("required_");
+
+    QueryNamedResult* result2 = PQueryNamed("SELECT * FROM %s LIMIT 1",table_name);
+    if(result2)
+    {
+        QueryFieldNames const& namesMap = result2->GetFieldNames();
+        std::string reqName;
+        for(QueryFieldNames::const_iterator itr = namesMap.begin(); itr != namesMap.end(); ++itr)
+        {
+            if(itr->substr(0,9)=="required_")
+            {
+                reqName = *itr;
+                break;
+            }
+        }
+
+        delete result2;
+
+        std::string cur_sql_update_name = reqName.substr(strlen("required_"),reqName.npos);
+
+        if(!reqName.empty())
+        {
+            sLog.outErrorDb("The table `%s` in your [%s] database indicates that this database is out of date!",table_name,db_name);
+            sLog.outErrorDb();
+            sLog.outErrorDb("  [A] You have: --> `%s.sql`",cur_sql_update_name.c_str());
+            sLog.outErrorDb();
+            sLog.outErrorDb("  [B] You need: --> `%s.sql`",req_sql_update_name);
+            sLog.outErrorDb();
+            sLog.outErrorDb("You must apply all updates after [A] to [B] to use mangos with this database.");
+            sLog.outErrorDb("These updates are included in the sql/updates folder.");
+            sLog.outErrorDb("Please read the included [README] in sql/updates for instructions on updating.");
+        }
+        else
+        {
+            sLog.outErrorDb("The table `%s` in your [%s] database is missing its version info.",table_name,db_name);
+            sLog.outErrorDb("MaNGOS cannot find the version info needed to check that the db is up to date.");
+            sLog.outErrorDb();
+            sLog.outErrorDb("This revision of MaNGOS requires a database updated to:");
+            sLog.outErrorDb("`%s.sql`",req_sql_update_name);
+            sLog.outErrorDb();
+
+            if(!strcmp(db_name, "WORLD"))
+                sLog.outErrorDb("Post this error to your database provider forum or find a solution there.");
+            else
+                sLog.outErrorDb("Reinstall your [%s] database with the included sql file in the sql folder.",db_name);
+        }
+    }
+    else
+    {
+        sLog.outErrorDb("The table `%s` in your [%s] database is missing or corrupt.",table_name,db_name);
+        sLog.outErrorDb("MaNGOS cannot find the version info needed to check that the db is up to date.");
+        sLog.outErrorDb();
+        sLog.outErrorDb("This revision of mangos requires a database updated to:");
+        sLog.outErrorDb("`%s.sql`",req_sql_update_name);
+        sLog.outErrorDb();
+
+        if(!strcmp(db_name, "WORLD"))
+            sLog.outErrorDb("Post this error to your database provider forum or find a solution there.");
+        else
+            sLog.outErrorDb("Reinstall your [%s] database with the included sql file in the sql folder.",db_name);
+    }
+
+    return false;
 }
 
-void Database::HaltDelayThread()
+Database::TransHelper::~TransHelper()
 {
-    if (!m_threadBody || !m_delayThread)
-        return;
+    reset();
+}
 
-    m_threadBody->Stop();                                   //Stop event
-    m_delayThread->wait();                                  //Wait for flush to DB
-    delete m_delayThread;                                   //This also deletes m_threadBody
-    
-    m_delayThread = NULL;
-    m_threadBody = NULL;
+SqlTransaction * Database::TransHelper::init()
+{
+    ASSERT(!m_pTrans);   //if we will get a nested transaction request - we MUST fix code!!!
+    m_pTrans = new SqlTransaction;
+    return m_pTrans;
+}
+
+SqlTransaction * Database::TransHelper::detach()
+{
+    SqlTransaction * pRes = m_pTrans;
+    m_pTrans = NULL;
+    return pRes;
+}
+
+void Database::TransHelper::reset()
+{
+    if(m_pTrans)
+    {
+        delete m_pTrans;
+        m_pTrans = NULL;
+    }
 }

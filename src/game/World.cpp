@@ -107,7 +107,6 @@ World::World()
     m_startTime=m_gameTime;
     m_maxActiveSessionCount = 0;
     m_maxQueuedSessionCount = 0;
-    m_resultQueue = NULL;
     m_NextDailyQuestReset = 0;
     m_scheduledScripts = 0;
 
@@ -159,8 +158,6 @@ World::~World()
 
     VMAP::VMapFactory::clear();
 
-    if(m_resultQueue) delete m_resultQueue;
-
     //TODO free addSessQueue
 }
 
@@ -201,7 +198,7 @@ enum
 
 void kick_player(std::string ip)
 {
-    QueryResult_AutoPtr result = LoginDatabase.PQuery("SELECT id FROM account WHERE last_ip = '%s'", ip.c_str());
+    QueryResultAutoPtr result = LoginDatabase.PQuery("SELECT id FROM account WHERE last_ip = '%s'", ip.c_str());
     if (!result)
     {
         sLog.outError("ANTICHEAT: Couldn't find accounts with last_ip = '%s'", ip.c_str());
@@ -224,7 +221,7 @@ void kick_player(std::string ip)
 
 void ACLogPlayer(std::string ip)
 {
-    QueryResult_AutoPtr result = LoginDatabase.PQuery("SELECT id FROM account WHERE last_ip = '%s'", ip.c_str());
+    QueryResultAutoPtr result = LoginDatabase.PQuery("SELECT id FROM account WHERE last_ip = '%s'", ip.c_str());
     if (!result)
     {
         sLog.outError("ANTICHEAT: Couldn't find accounts with last_ip = '%s'", ip.c_str());
@@ -1693,7 +1690,7 @@ void World::LoadAutobroadcasts()
 {
     m_Autobroadcasts.clear();
 
-    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT text FROM autobroadcast");
+    QueryResultAutoPtr result = WorldDatabase.Query("SELECT text FROM autobroadcast");
 
     if (!result)
     {
@@ -2192,7 +2189,7 @@ BanReturn World::BanAccount(BanMode mode, std::string nameIPOrMail, std::string 
     if (mode != BAN_EMAIL)
         duration_secs = TimeStringToSecs(duration);
 
-    QueryResult_AutoPtr resultAccounts = QueryResult_AutoPtr(NULL);                     //used for kicking
+    QueryResultAutoPtr resultAccounts = NULL;                     //used for kicking
 
     ///- Update the database with ban information
     switch(mode)
@@ -2450,13 +2447,15 @@ void World::ProcessCliCommands()
 
 void World::InitResultQueue()
 {
-    m_resultQueue = new SqlResultQueue;
-    CharacterDatabase.SetResultQueue(m_resultQueue);
+
 }
 
 void World::UpdateResultQueue()
 {
-    m_resultQueue->Update();
+    //process async result queues
+    CharacterDatabase.ProcessResultQueue();
+    WorldDatabase.ProcessResultQueue();
+    LoginDatabase.ProcessResultQueue();
 }
 
 void World::UpdateRealmCharCount(uint32 accountId)
@@ -2465,14 +2464,17 @@ void World::UpdateRealmCharCount(uint32 accountId)
         "SELECT COUNT(guid) FROM characters WHERE account = '%u'", accountId);
 }
 
-void World::_UpdateRealmCharCount(QueryResult_AutoPtr resultCharCount, uint32 accountId)
+void World::_UpdateRealmCharCount(QueryResultAutoPtr resultCharCount, uint32 accountId)
 {
     if (resultCharCount)
     {
         Field *fields = resultCharCount->Fetch();
         uint32 charCount = fields[0].GetUInt32();
+
+        LoginDatabase.BeginTransaction();
         LoginDatabase.PExecute("DELETE FROM realmcharacters WHERE acctid= '%d' AND realmid = '%d'", accountId, realmID);
         LoginDatabase.PExecute("INSERT INTO realmcharacters (numchars, acctid, realmid) VALUES (%u, %u, %u)", charCount, accountId, realmID);
+        LoginDatabase.CommitTransaction();
     }
 }
 
@@ -2480,7 +2482,7 @@ void World::InitDailyQuestResetTime()
 {
     time_t mostRecentQuestTime;
 
-    QueryResult_AutoPtr result = CharacterDatabase.Query("SELECT MAX(time) FROM character_queststatus_daily");
+    QueryResultAutoPtr result = CharacterDatabase.Query("SELECT MAX(time) FROM character_queststatus_daily");
     if(result)
     {
         Field *fields = result->Fetch();
@@ -2516,7 +2518,7 @@ void World::InitDailyQuestResetTime()
 
 void World::UpdateAllowedSecurity()
 {
-     QueryResult_AutoPtr result = LoginDatabase.PQuery("SELECT allowedSecurityLevel from realmlist WHERE id = '%d'", realmID);
+     QueryResultAutoPtr result = LoginDatabase.PQuery("SELECT allowedSecurityLevel from realmlist WHERE id = '%d'", realmID);
      if (result)
      {
         m_allowedSecurityLevel = AccountTypes(result->Fetch()->GetUInt16());
@@ -2591,7 +2593,7 @@ void World::UpdateMaxSessionCounters()
 
 void World::LoadDBVersion()
 {
-    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT db_version FROM version LIMIT 1");
+    QueryResultAutoPtr result = WorldDatabase.Query("SELECT db_version FROM version LIMIT 1");
     if(result)
     {
         Field* fields = result->Fetch();
