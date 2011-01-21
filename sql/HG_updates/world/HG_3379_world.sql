@@ -1,0 +1,1 @@
+UPDATE creature_template SET ScriptName = "mob_ashtongue_mystic" WHERE entry = 22845;
