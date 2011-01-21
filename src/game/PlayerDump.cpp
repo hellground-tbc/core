@@ -372,7 +372,7 @@ DumpReturn PlayerDumpReader::LoadDump(const std::string& file, uint32 account, s
     if(!fin)
         return DUMP_FILE_OPEN_ERROR;
 
-    QueryResultAutoPtr result = NULL;
+    QueryResultAutoPtr result = QueryResultAutoPtr(NULL);
     char newguid[20], chraccount[20], newpetid[20], currpetid[20], lastpetid[20];
 
     // make sure the same guid doesn't already exist and is safe to use

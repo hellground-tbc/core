@@ -118,7 +118,7 @@ bool SqlQueryHolder::SetQuery(size_t index, const char *sql)
     }
 
     /// not executed yet, just stored (it's not called a holder for nothing)
-    m_queries[index] = SqlResultPair(mangos_strdup(sql), (QueryResult*)NULL);
+    m_queries[index] = SqlResultPair(mangos_strdup(sql), (QueryResultAutoPtr)NULL);
     return true;
 }
 
@@ -145,7 +145,7 @@ bool SqlQueryHolder::SetPQuery(size_t index, const char *format, ...)
     return SetQuery(index,szQuery);
 }
 
-QueryResult* SqlQueryHolder::GetResult(size_t index)
+QueryResultAutoPtr SqlQueryHolder::GetResult(size_t index)
 {
     if(index < m_queries.size())
     {
@@ -159,10 +159,10 @@ QueryResult* SqlQueryHolder::GetResult(size_t index)
         return m_queries[index].second;
     }
     else
-        return NULL;
+        return QueryResultAutoPtr(NULL);
 }
 
-void SqlQueryHolder::SetResult(size_t index, QueryResultAutoPtrresult)
+void SqlQueryHolder::SetResult(size_t index, QueryResultAutoPtr result)
 {
     /// store the result in the holder
     if(index < m_queries.size())
@@ -176,11 +176,7 @@ SqlQueryHolder::~SqlQueryHolder()
         /// if the result was never used, free the resources
         /// results used already (getresult called) are expected to be deleted
         if(m_queries[i].first != NULL)
-        {
             delete [] (const_cast<char*>(m_queries[i].first));
-            if(m_queries[i].second)
-                delete m_queries[i].second;
-        }
     }
 }
 

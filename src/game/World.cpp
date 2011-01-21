@@ -2189,7 +2189,7 @@ BanReturn World::BanAccount(BanMode mode, std::string nameIPOrMail, std::string 
     if (mode != BAN_EMAIL)
         duration_secs = TimeStringToSecs(duration);
 
-    QueryResultAutoPtr resultAccounts = NULL;                     //used for kicking
+    QueryResultAutoPtr resultAccounts = QueryResultAutoPtr(NULL);   //used for kicking
 
     ///- Update the database with ban information
     switch(mode)

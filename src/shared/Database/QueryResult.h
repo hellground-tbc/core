@@ -19,6 +19,9 @@
 #ifndef QUERYRESULT_H
 #define QUERYRESULT_H
 
+#include <ace/Refcounted_Auto_Ptr.h>
+#include <ace/Null_Mutex.h>
+
 #include "Common.h"
 #include "Errors.h"
 #include "Field.h"
@@ -46,14 +49,14 @@ class TRINITY_DLL_SPEC QueryResult
         uint64 mRowCount;
 };
 
-typedef ACE_Refcounted_Auto_Ptr<QueryResult, ACE_Null_Mutex> QueryResultAutoPtr;
+typedef ACE_Refcounted_Auto_Ptr <QueryResult, ACE_Null_Mutex> QueryResultAutoPtr;
 typedef std::vector<std::string> QueryFieldNames;
 
 class TRINITY_DLL_SPEC QueryNamedResult
 {
     public:
-        explicit QueryNamedResult(QueryResult* query, QueryFieldNames const& names) : mQuery(query), mFieldNames(names) {}
-        ~QueryNamedResult() { delete mQuery; }
+        explicit QueryNamedResult(QueryResultAutoPtr query, QueryFieldNames const& names) : mQuery(query), mFieldNames(names) {}
+        ~QueryNamedResult() { }
 
         // compatible interface with QueryResult
         bool NextRow() { return mQuery->NextRow(); }
@@ -78,7 +81,7 @@ class TRINITY_DLL_SPEC QueryNamedResult
         }
 
     protected:
-        QueryResultAutoPtrmQuery;
+        QueryResultAutoPtr mQuery;
         QueryFieldNames mFieldNames;
 };
 

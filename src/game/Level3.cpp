@@ -2730,7 +2730,7 @@ bool ChatHandler::HandleListItemCommand(const char* args)
             item_id,uint32(count));
     }
     else
-        result = NULL;
+        result = QueryResultAutoPtr(NULL);
 
     if(result)
     {
@@ -2761,7 +2761,7 @@ bool ChatHandler::HandleListItemCommand(const char* args)
 
     // auction case
     uint32 auc_count = 0;
-    result=CharacterDatabase.PQuery("SELECT COUNT(item_template) FROM auctionhouse WHERE item_template='%u'",item_id);
+    result = CharacterDatabase.PQuery("SELECT COUNT(item_template) FROM auctionhouse WHERE item_template='%u'",item_id);
     if(result)
         auc_count = (*result)[0].GetUInt32();
 
@@ -2774,7 +2774,7 @@ bool ChatHandler::HandleListItemCommand(const char* args)
             item_id,uint32(count));
     }
     else
-        result = NULL;
+        result = QueryResultAutoPtr(NULL);
 
     if(result)
     {

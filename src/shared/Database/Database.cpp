@@ -163,13 +163,13 @@ void Database::Ping()
 
     {
         SqlConnection::Lock guard(m_pAsyncConn);
-        delete guard->Query(sql);
+        guard->Query(sql);
     }
 
     for (int i = 0; i < m_nQueryConnPoolSize; ++i)
     {
         SqlConnection::Lock guard(m_pQueryConnections[i]);
-        delete guard->Query(sql);
+        guard->Query(sql);
     }
 }
 
@@ -217,9 +217,10 @@ bool Database::PExecuteLog(const char * format,...)
     return Execute(szQuery);
 }
 
-QueryResult* Database::PQuery(const char *format,...)
+QueryResultAutoPtr Database::PQuery(const char *format,...)
 {
-    if(!format) return NULL;
+    if(!format)
+        return QueryResultAutoPtr(NULL);
 
     va_list ap;
     char szQuery [MAX_QUERY_LEN];
@@ -230,7 +231,7 @@ QueryResult* Database::PQuery(const char *format,...)
     if(res==-1)
     {
         sLog.outError("SQL Query truncated (and not execute) for format: %s",format);
-        return false;
+        return QueryResultAutoPtr(NULL);
     }
 
     return Query(szQuery);
@@ -389,12 +390,9 @@ bool Database::RollbackTransaction()
 bool Database::CheckRequiredField( char const* table_name, char const* required_name )
 {
     // check required field
-    QueryResult* result = PQuery("SELECT %s FROM %s LIMIT 1",required_name,table_name);
+    QueryResultAutoPtr result = PQuery("SELECT %s FROM %s LIMIT 1",required_name,table_name);
     if(result)
-    {
-        delete result;
         return true;
-    }
 
     // check fail, prepare readabale error message
 

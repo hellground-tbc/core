@@ -42,7 +42,7 @@ class TRINITY_DLL_SPEC SqlConnection
         //method for initializing DB connection
         virtual bool Initialize(const char *infoString) = 0;
         //public methods for making queries
-        virtual QueryResult* Query(const char *sql) = 0;
+        virtual QueryResultAutoPtr Query(const char *sql) = 0;
         virtual QueryNamedResult* QueryNamed(const char *sql) = 0;
 
         //public methods for making requests
@@ -85,7 +85,7 @@ class TRINITY_DLL_SPEC Database
         virtual void HaltDelayThread();
 
         /// Synchronous DB queries
-        inline QueryResult* Query(const char *sql)
+        inline QueryResultAutoPtr Query(const char *sql)
         {
             SqlConnection::Lock guard(getQueryConnection());
             return guard->Query(sql);
@@ -97,7 +97,7 @@ class TRINITY_DLL_SPEC Database
             return guard->QueryNamed(sql);
         }
 
-        QueryResult* PQuery(const char *format,...) ATTR_PRINTF(2,3);
+        QueryResultAutoPtr PQuery(const char *format,...) ATTR_PRINTF(2,3);
         QueryNamedResult* PQueryNamed(const char *format,...) ATTR_PRINTF(2,3);
 
         bool DirectExecute(const char* sql);
@@ -107,41 +107,41 @@ class TRINITY_DLL_SPEC Database
 
         // Query / member
         template<class Class>
-            bool AsyncQuery(Class *object, void (Class::*method)(QueryResult*), const char *sql);
+            bool AsyncQuery(Class *object, void (Class::*method)(QueryResultAutoPtr), const char *sql);
         template<class Class, typename ParamType1>
-            bool AsyncQuery(Class *object, void (Class::*method)(QueryResult*, ParamType1), ParamType1 param1, const char *sql);
+            bool AsyncQuery(Class *object, void (Class::*method)(QueryResultAutoPtr, ParamType1), ParamType1 param1, const char *sql);
         template<class Class, typename ParamType1, typename ParamType2>
-            bool AsyncQuery(Class *object, void (Class::*method)(QueryResult*, ParamType1, ParamType2), ParamType1 param1, ParamType2 param2, const char *sql);
+            bool AsyncQuery(Class *object, void (Class::*method)(QueryResultAutoPtr, ParamType1, ParamType2), ParamType1 param1, ParamType2 param2, const char *sql);
         template<class Class, typename ParamType1, typename ParamType2, typename ParamType3>
-            bool AsyncQuery(Class *object, void (Class::*method)(QueryResult*, ParamType1, ParamType2, ParamType3), ParamType1 param1, ParamType2 param2, ParamType3 param3, const char *sql);
+            bool AsyncQuery(Class *object, void (Class::*method)(QueryResultAutoPtr, ParamType1, ParamType2, ParamType3), ParamType1 param1, ParamType2 param2, ParamType3 param3, const char *sql);
         // Query / static
         template<typename ParamType1>
-            bool AsyncQuery(void (*method)(QueryResult*, ParamType1), ParamType1 param1, const char *sql);
+            bool AsyncQuery(void (*method)(QueryResultAutoPtr, ParamType1), ParamType1 param1, const char *sql);
         template<typename ParamType1, typename ParamType2>
-            bool AsyncQuery(void (*method)(QueryResult*, ParamType1, ParamType2), ParamType1 param1, ParamType2 param2, const char *sql);
+            bool AsyncQuery(void (*method)(QueryResultAutoPtr, ParamType1, ParamType2), ParamType1 param1, ParamType2 param2, const char *sql);
         template<typename ParamType1, typename ParamType2, typename ParamType3>
-            bool AsyncQuery(void (*method)(QueryResult*, ParamType1, ParamType2, ParamType3), ParamType1 param1, ParamType2 param2, ParamType3 param3, const char *sql);
+            bool AsyncQuery(void (*method)(QueryResultAutoPtr, ParamType1, ParamType2, ParamType3), ParamType1 param1, ParamType2 param2, ParamType3 param3, const char *sql);
         // PQuery / member
         template<class Class>
-            bool AsyncPQuery(Class *object, void (Class::*method)(QueryResult*), const char *format,...) ATTR_PRINTF(4,5);
+            bool AsyncPQuery(Class *object, void (Class::*method)(QueryResultAutoPtr), const char *format,...) ATTR_PRINTF(4,5);
         template<class Class, typename ParamType1>
-            bool AsyncPQuery(Class *object, void (Class::*method)(QueryResult*, ParamType1), ParamType1 param1, const char *format,...) ATTR_PRINTF(5,6);
+            bool AsyncPQuery(Class *object, void (Class::*method)(QueryResultAutoPtr, ParamType1), ParamType1 param1, const char *format,...) ATTR_PRINTF(5,6);
         template<class Class, typename ParamType1, typename ParamType2>
-            bool AsyncPQuery(Class *object, void (Class::*method)(QueryResult*, ParamType1, ParamType2), ParamType1 param1, ParamType2 param2, const char *format,...) ATTR_PRINTF(6,7);
+            bool AsyncPQuery(Class *object, void (Class::*method)(QueryResultAutoPtr, ParamType1, ParamType2), ParamType1 param1, ParamType2 param2, const char *format,...) ATTR_PRINTF(6,7);
         template<class Class, typename ParamType1, typename ParamType2, typename ParamType3>
-            bool AsyncPQuery(Class *object, void (Class::*method)(QueryResult*, ParamType1, ParamType2, ParamType3), ParamType1 param1, ParamType2 param2, ParamType3 param3, const char *format,...) ATTR_PRINTF(7,8);
+            bool AsyncPQuery(Class *object, void (Class::*method)(QueryResultAutoPtr, ParamType1, ParamType2, ParamType3), ParamType1 param1, ParamType2 param2, ParamType3 param3, const char *format,...) ATTR_PRINTF(7,8);
         // PQuery / static
         template<typename ParamType1>
-            bool AsyncPQuery(void (*method)(QueryResult*, ParamType1), ParamType1 param1, const char *format,...) ATTR_PRINTF(4,5);
+            bool AsyncPQuery(void (*method)(QueryResultAutoPtr, ParamType1), ParamType1 param1, const char *format,...) ATTR_PRINTF(4,5);
         template<typename ParamType1, typename ParamType2>
-            bool AsyncPQuery(void (*method)(QueryResult*, ParamType1, ParamType2), ParamType1 param1, ParamType2 param2, const char *format,...) ATTR_PRINTF(5,6);
+            bool AsyncPQuery(void (*method)(QueryResultAutoPtr, ParamType1, ParamType2), ParamType1 param1, ParamType2 param2, const char *format,...) ATTR_PRINTF(5,6);
         template<typename ParamType1, typename ParamType2, typename ParamType3>
-            bool AsyncPQuery(void (*method)(QueryResult*, ParamType1, ParamType2, ParamType3), ParamType1 param1, ParamType2 param2, ParamType3 param3, const char *format,...) ATTR_PRINTF(6,7);
+            bool AsyncPQuery(void (*method)(QueryResultAutoPtr, ParamType1, ParamType2, ParamType3), ParamType1 param1, ParamType2 param2, ParamType3 param3, const char *format,...) ATTR_PRINTF(6,7);
         template<class Class>
         // QueryHolder
-            bool DelayQueryHolder(Class *object, void (Class::*method)(QueryResult*, SqlQueryHolder*), SqlQueryHolder *holder);
+            bool DelayQueryHolder(Class *object, void (Class::*method)(QueryResultAutoPtr, SqlQueryHolder*), SqlQueryHolder *holder);
         template<class Class, typename ParamType1>
-            bool DelayQueryHolder(Class *object, void (Class::*method)(QueryResult*, SqlQueryHolder*, ParamType1), SqlQueryHolder *holder, ParamType1 param1);
+            bool DelayQueryHolder(Class *object, void (Class::*method)(QueryResultAutoPtr, SqlQueryHolder*, ParamType1), SqlQueryHolder *holder, ParamType1 param1);
 
         bool Execute(const char *sql);
         bool PExecute(const char *format,...) ATTR_PRINTF(2,3);
