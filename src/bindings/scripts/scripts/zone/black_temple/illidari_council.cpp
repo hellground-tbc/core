@@ -276,7 +276,8 @@ struct TRINITY_DLL_DECL illidari_council_baseAI : public ScriptedAI
         if(me->GetEntry() == 22950)  // Zerevor
         {
             ClearCastQueue();
-            DoCast(pWho, SPELL_ARCANE_BOLT);
+            ForceSpellCast(m_creature, SPELL_DAMPEN_MAGIC);
+            AddSpellToCast(pWho, SPELL_ARCANE_BOLT);
             StartAutocast();
         }
 
@@ -521,7 +522,6 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
         m_flamestrikeTimer = 3800;
         m_dampenTimer = 67200;
         m_aexpTimer = 3000;
-        ForceSpellCast(m_creature, SPELL_DAMPEN_MAGIC);
         SetAutocast(SPELL_ARCANE_BOLT, 2000, true, AUTOCAST_TANK, 40.0f, true);
 
         m_checkTimer = 1000;
