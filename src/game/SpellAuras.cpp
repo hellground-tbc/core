@@ -2918,6 +2918,9 @@ void Aura::HandleAuraModShapeshift(bool apply, bool Real)
         case FORM_CREATUREBEAR:
             modelid = 902;
             break;
+        case FORM_CREATURECAT:
+            modelid = 2031;
+            break;
         case FORM_GHOSTWOLF:
             modelid = 4613;
             break;
