@@ -29,13 +29,7 @@
 
 Database::~Database()
 {
-    HaltDelayThread();
-    /*Delete objects*/
-    delete m_pResultQueue;
-    delete m_pAsyncConn;
-
-    for (int i = 0; i < m_pQueryConnections.size(); ++i)
-        delete m_pQueryConnections[i];
+    StopServer();
 }
 
 bool Database::Initialize(const char * infoString, int nConns /*= 1*/)
@@ -80,8 +74,33 @@ bool Database::Initialize(const char * infoString, int nConns /*= 1*/)
     if(!m_pAsyncConn->Initialize(infoString))
         return false;
 
+    m_pResultQueue = new SqlResultQueue;
+
     InitDelayThread();
     return true;
+}
+
+void Database::StopServer()
+{
+    HaltDelayThread();
+    /*Delete objects*/
+    if(m_pResultQueue)
+    {
+        delete m_pResultQueue;
+        m_pResultQueue = NULL;
+    }
+
+    if(m_pAsyncConn)
+    {
+        delete m_pAsyncConn;
+        m_pAsyncConn = NULL;
+    }
+
+    for (size_t i = 0; i < m_pQueryConnections.size(); ++i)
+        delete m_pQueryConnections[i];
+
+    m_pQueryConnections.clear();
+
 }
 
 SqlDelayThread * Database::CreateDelayThread()
@@ -94,7 +113,6 @@ void Database::InitDelayThread()
 {
     assert(!m_delayThread);
 
-    m_pResultQueue = new SqlResultQueue;
     //New delay thread for delay execute
     m_threadBody = CreateDelayThread();              // will deleted at m_delayThread delete
     m_delayThread = new ACE_Based::Thread(m_threadBody);
@@ -109,14 +127,6 @@ void Database::HaltDelayThread()
     delete m_delayThread;                                   //This also deletes m_threadBody
     m_delayThread = NULL;
     m_threadBody = NULL;
-
-    //stop async result queue
-    if(m_pResultQueue)
-    {
-        m_pResultQueue->Update();
-        delete m_pResultQueue;
-        m_pResultQueue = NULL;
-    }
 }
 
 void Database::ThreadStart()
@@ -163,13 +173,13 @@ void Database::Ping()
 
     {
         SqlConnection::Lock guard(m_pAsyncConn);
-        guard->Query(sql);
+        delete guard->Query(sql);
     }
 
     for (int i = 0; i < m_nQueryConnPoolSize; ++i)
     {
         SqlConnection::Lock guard(m_pQueryConnections[i]);
-        guard->Query(sql);
+        delete guard->Query(sql);
     }
 }
 
@@ -219,8 +229,7 @@ bool Database::PExecuteLog(const char * format,...)
 
 QueryResultAutoPtr Database::PQuery(const char *format,...)
 {
-    if(!format)
-        return QueryResultAutoPtr(NULL);
+    if(!format) return NULL;
 
     va_list ap;
     char szQuery [MAX_QUERY_LEN];
@@ -231,7 +240,7 @@ QueryResultAutoPtr Database::PQuery(const char *format,...)
     if(res==-1)
     {
         sLog.outError("SQL Query truncated (and not execute) for format: %s",format);
-        return QueryResultAutoPtr(NULL);
+        return false;
     }
 
     return Query(szQuery);
@@ -269,6 +278,10 @@ bool Database::Execute(const char *sql)
     }
     else
     {
+        //if async execution is not available
+        if(!m_bAllowAsyncTransactions)
+            return DirectExecute(sql);
+
         // Simple sql statement
         pTrans = new SqlTransaction;
         pTrans->DelayExecute(sql);
@@ -297,18 +310,6 @@ bool Database::PExecute(const char * format,...)
     }
 
     return Execute(szQuery);
-}
-
-bool Database::DirectExecute(const char* sql)
-{
-    if(!m_pAsyncConn)
-        return false;
-
-    SqlTransaction trans;
-    trans.DelayExecute(sql);
-
-    trans.Execute(m_pAsyncConn);
-    return true;
 }
 
 bool Database::DirectPExecute(const char * format,...)
@@ -351,6 +352,10 @@ bool Database::CommitTransaction()
     if(!m_TransStorage->get())
         return false;
 
+    //if async execution is not available
+    if(!m_bAllowAsyncTransactions)
+        return CommitTransactionDirect();
+
     //add SqlTransaction to the async queue
     m_threadBody->Delay(m_TransStorage->detach());
     return true;
@@ -392,7 +397,10 @@ bool Database::CheckRequiredField( char const* table_name, char const* required_
     // check required field
     QueryResultAutoPtr result = PQuery("SELECT %s FROM %s LIMIT 1",required_name,table_name);
     if(result)
+    {
+        delete result;
         return true;
+    }
 
     // check fail, prepare readabale error message
 
@@ -479,7 +487,7 @@ Database::TransHelper::~TransHelper()
 
 SqlTransaction * Database::TransHelper::init()
 {
-    ASSERT(!m_pTrans);   //if we will get a nested transaction request - we MUST fix code!!!
+    MANGOS_ASSERT(!m_pTrans);   //if we will get a nested transaction request - we MUST fix code!!!
     m_pTrans = new SqlTransaction;
     return m_pTrans;
 }

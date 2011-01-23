@@ -242,9 +242,9 @@ int Master::Run()
     sWorld.SetInitialWorldSettings();
     //server loaded successfully => enable async DB requests
     //this is done to forbid any async transactions during server startup!
-    //CharacterDatabase.InitDelayThread();
-    //WorldDatabase.InitDelayThread();
-    //LoginDatabase.InitDelayThread();
+    CharacterDatabase.AllowAsyncTransactions();
+    WorldDatabase.AllowAsyncTransactions();
+    LoginDatabase.AllowAsyncTransactions();
 
     ///- Catch termination signals
     _HookSignals();
@@ -316,7 +316,7 @@ int Master::Run()
     uint32 socketSelecttime = sWorld.getConfig(CONFIG_SOCKET_SELECTTIME);
 
     //server has started up successfully => enable async DB requests
-    //LoginDatabase.InitDelayThread();
+    LoginDatabase.AllowAsyncTransactions();
 
     // maximum counter for next ping
     uint32 numLoops = (sConfig.GetIntDefault( "MaxPingTime", 30 ) * (MINUTE * 1000000 / socketSelecttime));

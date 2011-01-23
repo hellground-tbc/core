@@ -34,7 +34,7 @@ class SqlQueryHolder;
 #define MAX_QUERY_LEN   32*1024
 
 //
-class TRINITY_DLL_SPEC SqlConnection
+class MANGOS_DLL_SPEC SqlConnection
 {
     public:
         virtual ~SqlConnection() {}
@@ -75,13 +75,15 @@ class TRINITY_DLL_SPEC SqlConnection
         LOCK_TYPE m_mutex;
 };
 
-class TRINITY_DLL_SPEC Database
+class MANGOS_DLL_SPEC Database
 {
     public:
         virtual ~Database();
 
         virtual bool Initialize(const char *infoString, int nConns = 1);
+        //start worker thread for async DB request execution
         virtual void InitDelayThread();
+        //stop worker thread
         virtual void HaltDelayThread();
 
         /// Synchronous DB queries
@@ -100,7 +102,15 @@ class TRINITY_DLL_SPEC Database
         QueryResultAutoPtr PQuery(const char *format,...) ATTR_PRINTF(2,3);
         QueryNamedResult* PQueryNamed(const char *format,...) ATTR_PRINTF(2,3);
 
-        bool DirectExecute(const char* sql);
+        inline bool DirectExecute(const char* sql)
+        {
+            if(!m_pAsyncConn)
+                return false;
+
+            SqlConnection::Lock guard(m_pAsyncConn);
+            return guard->Execute(sql);
+        }
+
         bool DirectPExecute(const char *format,...) ATTR_PRINTF(2,3);
 
         /// Async queries and query holders, implemented in DatabaseImpl.h
@@ -174,19 +184,26 @@ class TRINITY_DLL_SPEC Database
         //function to ping database connections
         void Ping();
 
+        //set this to allow async transactions
+        //you should call it explicitly after your server successfully started up
+        //NO ASYNC TRANSACTIONS DURING SERVER STARTUP - ONLY DURING RUNTIME!!!
+        void AllowAsyncTransactions() { m_bAllowAsyncTransactions = true; }
+
     protected:
         Database() : m_pAsyncConn(NULL), m_pResultQueue(NULL), m_threadBody(NULL), m_delayThread(NULL),
-            m_logSQL(false), m_pingIntervallms(0), m_nQueryConnPoolSize(1)
+            m_logSQL(false), m_pingIntervallms(0), m_nQueryConnPoolSize(1), m_bAllowAsyncTransactions(false)
         {
             m_nQueryCounter = -1;
         }
+
+        void StopServer();
 
         //factory method to create SqlConnection objects
         virtual SqlConnection * CreateConnection() = 0;
         //factory method to create SqlDelayThread objects
         virtual SqlDelayThread * CreateDelayThread();
 
-        class TRINITY_DLL_SPEC TransHelper
+        class MANGOS_DLL_SPEC TransHelper
         {
             public:
                 TransHelper() : m_pTrans(NULL) {}
@@ -232,6 +249,8 @@ class TRINITY_DLL_SPEC Database
         SqlResultQueue *    m_pResultQueue;                  ///< Transaction queues from diff. threads
         SqlDelayThread *    m_threadBody;                    ///< Pointer to delay sql executer (owned by m_delayThread)
         ACE_Based::Thread * m_delayThread;                   ///< Pointer to executer thread
+
+        bool m_bAllowAsyncTransactions;                      ///< flag which specifies if async transactions are enabled
 
     private:
 
