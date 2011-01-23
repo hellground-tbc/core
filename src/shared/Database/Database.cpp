@@ -173,13 +173,11 @@ void Database::Ping()
 
     {
         SqlConnection::Lock guard(m_pAsyncConn);
-        delete guard->Query(sql);
     }
 
     for (int i = 0; i < m_nQueryConnPoolSize; ++i)
     {
         SqlConnection::Lock guard(m_pQueryConnections[i]);
-        delete guard->Query(sql);
     }
 }
 
@@ -229,7 +227,8 @@ bool Database::PExecuteLog(const char * format,...)
 
 QueryResultAutoPtr Database::PQuery(const char *format,...)
 {
-    if(!format) return NULL;
+    if(!format)
+        return QueryResultAutoPtr(NULL);
 
     va_list ap;
     char szQuery [MAX_QUERY_LEN];
@@ -240,7 +239,7 @@ QueryResultAutoPtr Database::PQuery(const char *format,...)
     if(res==-1)
     {
         sLog.outError("SQL Query truncated (and not execute) for format: %s",format);
-        return false;
+        return QueryResultAutoPtr(NULL);
     }
 
     return Query(szQuery);
@@ -398,7 +397,6 @@ bool Database::CheckRequiredField( char const* table_name, char const* required_
     QueryResultAutoPtr result = PQuery("SELECT %s FROM %s LIMIT 1",required_name,table_name);
     if(result)
     {
-        delete result;
         return true;
     }
 
@@ -487,7 +485,7 @@ Database::TransHelper::~TransHelper()
 
 SqlTransaction * Database::TransHelper::init()
 {
-    MANGOS_ASSERT(!m_pTrans);   //if we will get a nested transaction request - we MUST fix code!!!
+    ASSERT(!m_pTrans);   //if we will get a nested transaction request - we MUST fix code!!!
     m_pTrans = new SqlTransaction;
     return m_pTrans;
 }

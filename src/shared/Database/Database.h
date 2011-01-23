@@ -34,7 +34,7 @@ class SqlQueryHolder;
 #define MAX_QUERY_LEN   32*1024
 
 //
-class MANGOS_DLL_SPEC SqlConnection
+class TRINITY_DLL_SPEC SqlConnection
 {
     public:
         virtual ~SqlConnection() {}
@@ -75,7 +75,7 @@ class MANGOS_DLL_SPEC SqlConnection
         LOCK_TYPE m_mutex;
 };
 
-class MANGOS_DLL_SPEC Database
+class TRINITY_DLL_SPEC Database
 {
     public:
         virtual ~Database();
@@ -203,7 +203,7 @@ class MANGOS_DLL_SPEC Database
         //factory method to create SqlDelayThread objects
         virtual SqlDelayThread * CreateDelayThread();
 
-        class MANGOS_DLL_SPEC TransHelper
+        class TRINITY_DLL_SPEC TransHelper
         {
             public:
                 TransHelper() : m_pTrans(NULL) {}
