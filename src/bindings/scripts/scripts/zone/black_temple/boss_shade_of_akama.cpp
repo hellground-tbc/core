@@ -302,7 +302,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_spiritbinderAI : public ScriptedAI
             AttackStart(pAkama);
     }
 
-    Unit *FindSpiritHealTarget()
+    /*Unit *FindSpiritHealTarget()
     {
         Unit *pTarget = NULL;
 
@@ -342,7 +342,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_spiritbinderAI : public ScriptedAI
             return pTarget;
         else
             return NULL;
-    }
+    }*/
 
     void UpdateAI(const uint32 diff)
     {
@@ -367,13 +367,13 @@ struct TRINITY_DLL_DECL mob_ashtongue_spiritbinderAI : public ScriptedAI
 
         if (m_spiritHealTimer < diff)
         {
-            if(Unit *pFriend = FindSpiritHealTarget())
-            {
-                AddSpellToCast(pFriend, SPELL_SPIRIT_HEAL, false);
+            //if(Unit *pFriend = FindSpiritHealTarget())
+            //{
+                AddSpellToCast(NULL, SPELL_SPIRIT_HEAL, false, true);
                 m_spiritHealTimer = 10000;
-            }
-            else
-                m_spiritHealTimer = 5000;
+            //}
+            //else
+                //m_spiritHealTimer = 5000;
         }
         else
             m_spiritHealTimer -= diff;
