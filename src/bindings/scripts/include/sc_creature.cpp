@@ -240,7 +240,7 @@ void ScriptedAI::CastNextSpellIfAnyAndReady(uint32 diff)
                         victim = m_creature->getVictim();
                         // prevent from LoS exploiting, probably some general check should be implemented for this
                         uint8 i = 0;
-                        while(!m_creature->IsWithinLOSInMap(victim) && i < me->getThreatManager().getThreatList().size())
+                        while(victim && !m_creature->IsWithinLOSInMap(victim) && i < m_creature->getThreatManager().getThreatList().size())
                         {
                             ++i;
                             victim = SelectUnit(SELECT_TARGET_TOPAGGRO, i, GetSpellMaxRange(autocastId), true);
