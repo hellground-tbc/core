@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
@@ -56,23 +55,7 @@ DatabaseMysql::DatabaseMysql()
 
 DatabaseMysql::~DatabaseMysql()
 {
-    if (m_delayThread)
-        HaltDelayThread();
-
-    //destroy SqlConnection objects
-    if(m_pQueryConnections.size())
-    {
-        for (int i  = 0; i < m_pQueryConnections.size(); ++i)
-            delete m_pQueryConnections[i];
-
-        m_pQueryConnections.clear();
-    }
-
-    if(m_pAsyncConn)
-    {
-        delete m_pAsyncConn;
-        m_pAsyncConn = NULL;
-    }
+    StopServer();
 
     //Free Mysql library pointers for last ~DB
     if(--db_count == 0)
@@ -204,6 +187,10 @@ bool MySQLConnection::_Query(const char *sql, MYSQL_RES **pResult, MYSQL_FIELD *
         sLog.outErrorDb( "SQL: %s", sql );
         sLog.outErrorDb("query ERROR: %s", mysql_error(mMysql));
         return false;
+    }
+    else
+    {
+        sLog.outDebug("[%u ms] SQL: %s", WorldTimer::getMSTimeDiff(_s,WorldTimer::getMSTime()), sql );
     }
 
     *pResult = mysql_store_result(mMysql);

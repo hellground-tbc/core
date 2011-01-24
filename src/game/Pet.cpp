@@ -469,19 +469,18 @@ void Pet::SavePetToDB(PetSaveMode mode)
                 << uint32(getPetType()) << ")";
 
             CharacterDatabase.Execute( ss.str().c_str() );
-
-            CharacterDatabase.CommitTransaction();
             break;
         }
         case PET_SAVE_AS_DELETED:
         {
             RemoveAllAuras();
-            DeleteFromDB(m_charmInfo->GetPetNumber());
+            DeleteFromDB(m_charmInfo->GetPetNumber(), false);
             break;
         }
         default:
             sLog.outError("Unknown pet save/remove mode: %d",mode);
     }
+    CharacterDatabase.CommitTransaction();
 }
 
 void Pet::DeleteFromDB(uint32 guidlow, bool separate_transaction)
