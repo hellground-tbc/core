@@ -236,8 +236,17 @@ void ScriptedAI::CastNextSpellIfAnyAndReady(uint32 diff)
                 switch(autocastMode)
                 {
                     case AUTOCAST_TANK:
+                    {
                         victim = m_creature->getVictim();
+                        // prevent from LoS exploiting, probably some general check should be implemented for this
+                        uint8 i = 0;
+                        while(!m_creature->IsWithinLOSInMap(victim) && i < me->getThreatManager().getThreatList().size())
+                        {
+                            ++i;
+                            victim = SelectUnit(SELECT_TARGET_TOPAGGRO, i, GetSpellMaxRange(autocastId), true);
+                        }
                         break;
+                    }
                     case AUTOCAST_NULL:
                         m_creature->CastSpell((Unit*)NULL, autocastId, false);
                         break;
@@ -258,7 +267,10 @@ void ScriptedAI::CastNextSpellIfAnyAndReady(uint32 diff)
                 }
 
                 if (victim)
+                {
+                    m_creature->SetSelection(victim->GetGUID());    // for autocast always target actual victim
                     m_creature->CastSpell(victim, autocastId, false);
+                }
 
                 autocastTimer = autocastTimerDef;
             }
