@@ -2234,8 +2234,9 @@ void Spell::EffectTriggerSpell(uint32 i)
         }
         // just skip
         case 23770:                                         // Sayge's Dark Fortune of *
-        case 2641:                                          // Dismiss Pet handled elsewhere
-        case 32982:                                         // Fire Elemental Totem not known effect
+        case 47531:                                         // Dismiss Pet handled elsewhere
+        case 32186:                                         // Fire Elemental Totem not known effect
+        case 32184:                                         // Earth Elemental Totem not known effect
             // not exist, common cooldown can be implemented in scripts if need.
             return;
         // Brittle Armor - (need add max stack of 24575 Brittle Armor)
@@ -2267,7 +2268,7 @@ void Spell::EffectTriggerSpell(uint32 i)
             return;
         }
         // Unstable Mushroom Primer
-        case 35273:
+        case 35256:
             triggered_spell_id = 35362;
             break;
         // Cloak of Shadows
