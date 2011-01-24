@@ -440,6 +440,7 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public illidari_council_b
         if (m_checkTimer < diff)
         {
             DoZoneInCombat();
+            m_creature->SetSpeed(MOVE_RUN, 2.0);
             uint32 damage = 0;
             SharedRule(damage);
             m_checkTimer = 1000;
@@ -542,6 +543,7 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
             uint32 damage = 0;
             SharedRule(damage);
             DoZoneInCombat();
+            m_creature->SetSpeed(MOVE_RUN, 2.0);
             m_checkTimer = 1000;
         }
         else
@@ -632,6 +634,7 @@ struct TRINITY_DLL_DECL boss_lady_malandeAI : public illidari_council_baseAI
             uint32 damage = 0;
             SharedRule(damage);
             DoZoneInCombat();
+            m_creature->SetSpeed(MOVE_RUN, 2.0);
             m_checkTimer = 1000;
         }
         else
@@ -712,6 +715,7 @@ struct TRINITY_DLL_DECL boss_veras_darkshadowAI : public illidari_council_baseAI
             uint32 damage = 0;
             SharedRule(damage);
             DoZoneInCombat();
+            m_creature->SetSpeed(MOVE_RUN, 2.0);
             m_checkTimer = 1000;
         }
         else
