@@ -2195,11 +2195,16 @@ void Aura::TriggerSpell()
                 {
                     std::list<HostilReference*>& m_threatlist = caster->getThreatManager().getThreatList();
                     std::list<HostilReference*>::iterator i = m_threatlist.begin();
-                    if(m_threatlist.size())
+                    while(m_threatlist.size())
                     {
                         advance(i, rand()%m_threatlist.size());
                         target = Unit::GetUnit(*caster,(*i)->getUnitGuid());
-                        break;
+                        if(!target || !target->isAlive() || target->GetTypeId() != TYPEID_PLAYER)
+                        {
+                            m_threatlist.erase(i);
+                        }
+                        else
+                           break;
                     }
                 }
                 break;
