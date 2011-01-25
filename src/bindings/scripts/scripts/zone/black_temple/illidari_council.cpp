@@ -567,7 +567,8 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
         {
             if(Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
             {
-                AddSpellToCast(pTarget, SPELL_BLIZZARD);
+                ClearCastQueue();
+                AddSpellToCast(pTarget, SPELL_BLIZZARD, true);
                 m_blizzardTimer = urand(11000, 17000);
             }
         }
@@ -578,6 +579,12 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
         {
             if(Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
             {
+                if(!m_creature->IsWithinLOSInMap(pTarget))
+                {
+                    m_flamestrikeTimer = 0;
+                    return;
+                }
+                ClearCastQueue();
                 AddSpellToCast(pTarget, SPELL_FLAMESTRIKE);
                 m_flamestrikeTimer = urand(9000, 12000);
             }
