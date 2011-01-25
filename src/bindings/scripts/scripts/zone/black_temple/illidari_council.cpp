@@ -541,12 +541,10 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
                 me->GetMotionMaster()->MoveChase(me->getVictim(), 40);
 
             // do not let boss to go below textures level
-            float z_floor = m_creature->GetMap()->GetHeight(m_creature->GetPositionX(), m_creature->GetPositionY(), MAX_HEIGHT, true);
-            if(m_creature->GetPositionZ() < (z_floor-1))
-            {
-                m_creature->Relocate(m_creature->GetPositionX()-0.5, m_creature->GetPositionY(), z_floor+1);
-                m_creature->GetMotionMaster()->Clear();
-            }
+            //float z_floor = m_creature->GetMap()->GetHeight(m_creature->GetPositionX(), m_creature->GetPositionY(), MAX_HEIGHT, true);
+            float ground_lower = 271;
+            if(m_creature->GetPositionZ() < ground_lower)
+                m_creature->Relocate(642.3, 306, 271.7);
 
             uint32 damage = 0;
             SharedRule(damage);
