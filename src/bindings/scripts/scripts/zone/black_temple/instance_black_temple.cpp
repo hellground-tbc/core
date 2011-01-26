@@ -401,6 +401,8 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
             case EVENT_SHADEOFAKAMA:
                 if (data == DONE && !AshtongueBrokenList.empty())
                 {
+                    if(Encounters[5] == DONE && Encounters[3] == DONE && Encounters[4] == DONE)
+                        HandleGameObject(TempleDoor, true);
                     // after Shade Of Akama is defeated all Ashtongue change faction
                     for (std::list<uint64>::iterator itr = AshtongueBrokenList.begin(); itr != AshtongueBrokenList.end(); ++itr)
                     {
@@ -429,13 +431,19 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
                     HandleGameObject(TeronDoor, true);
                     HandleGameObject(CommonDoor, true);
                 }
+                if(data == DONE && Encounters[2] == DONE && Encounters[4] == DONE && Encounters[5] == DONE)
+                    HandleGameObject(TempleDoor, true);
 
                 if (Encounters[3] != DONE)
                     Encounters[3] = data;
             break;
             case EVENT_GURTOGGBLOODBOIL:
                 if (data == DONE)
+                {
+                    if(Encounters[2] == DONE && Encounters[3] == DONE && Encounters[5] == DONE)
+                        HandleGameObject(TempleDoor, true);
                     HandleGameObject(GuurtogDoor, true);
+                }
 
                 if (Encounters[4] != DONE)
                     Encounters[4] = data;
@@ -444,7 +452,8 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
             case EVENT_RELIQUARYOFSOULS:
                 if (data == DONE)
                 {
-                    HandleGameObject(TempleDoor, true);
+                    if(Encounters[2] == DONE && Encounters[3] == DONE && Encounters[4] == DONE)
+                        HandleGameObject(TempleDoor, true);
 
                     // after RoS dies, hide all soul fragments
                     for (std::list<uint64>::iterator itr = SoulFragmentsList.begin(); itr != SoulFragmentsList.end(); ++itr)
