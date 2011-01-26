@@ -2197,6 +2197,7 @@ void Aura::TriggerSpell()
                     std::list<HostilReference*>::iterator i = m_threatlist.begin();
                     while(m_threatlist.size())
                     {
+                        i = m_threatlist.begin();
                         advance(i, rand()%m_threatlist.size());
                         target = Unit::GetUnit(*caster,(*i)->getUnitGuid());
                         if(!target || !target->isAlive() || target->GetTypeId() != TYPEID_PLAYER)
