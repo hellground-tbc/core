@@ -312,7 +312,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
             break;
         case 185479:
             TempleDoor = go->GetGUID();
-            if(Encounters[5] == DONE)
+            if(Encounters[2] == DONE && Encounters[3] == DONE && Encounters[4] == DONE && Encounters[5] == DONE)
                 HandleGameObject(NULL,true,go);
             break;
         case 185482:
