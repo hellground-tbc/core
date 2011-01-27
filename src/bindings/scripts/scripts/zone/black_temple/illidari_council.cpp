@@ -544,7 +544,7 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
             //float z_floor = m_creature->GetMap()->GetHeight(m_creature->GetPositionX(), m_creature->GetPositionY(), MAX_HEIGHT, true);
             float ground_lower = 271;
             if(m_creature->GetPositionZ() < ground_lower)
-                m_creature->Relocate(642.3, 306, 271.7);
+                m_creature->GetMap()->CreatureRelocation(m_creature, 642.3, 306, 271.7, m_creature->GetAngle(m_creature->getVictim()));
 
             uint32 damage = 0;
             SharedRule(damage);

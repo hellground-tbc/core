@@ -4686,7 +4686,7 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
             // Envenom
             if (!apply && m_spellProto->Id == 41485)
             {
-                if(urand(0, 8))
+                if(urand(0, 8) && caster && m_target)
                     caster->CastSpell(m_target, 41487, true, 0, this);
             }
             break;
