@@ -1610,11 +1610,13 @@ void Group::UnbindInstance(uint32 mapid, uint8 difficulty, bool unload)
     BoundInstancesMap::iterator itr = m_boundInstances[difficulty].find(mapid);
     if(itr != m_boundInstances[difficulty].end())
     {
+        CharacterDatabase.BeginTransaction();
         if(!unload)
             CharacterDatabase.PExecute("DELETE FROM group_instance WHERE leaderGuid = '%u' AND instance = '%u'", GUID_LOPART(GetLeaderGUID()), itr->second.save->GetInstanceId());
 
         CharacterDatabase.PExecute("DELETE FROM group_saved_loot WHERE instanceId='%u'", (*itr).second.save->GetInstanceId());
         itr->second.save->RemoveGroup(this);                // save can become invalid
+        CharacterDatabase.CommitTransaction();
         m_boundInstances[difficulty].erase(itr);
     }
 }
