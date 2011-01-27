@@ -655,7 +655,7 @@ struct TRINITY_DLL_DECL boss_lady_malandeAI : public illidari_council_baseAI
         {
             if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
             {
-                AddSpellToCast(pTarget, SPELL_EMPOWERED_SMITE);
+                AddSpellToCast(pTarget, SPELL_EMPOWERED_SMITE, false, true);
                 m_smiteTimer = urand(5000, 9000);
             }
         }
@@ -674,7 +674,7 @@ struct TRINITY_DLL_DECL boss_lady_malandeAI : public illidari_council_baseAI
         {
             if(Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
             {
-                AddSpellToCast(pTarget, SPELL_DIVINE_WRATH);
+                AddSpellToCast(pTarget, SPELL_DIVINE_WRATH, false, true);
                 m_wrathTimer = urand(15000, 30000);
             }
         }
