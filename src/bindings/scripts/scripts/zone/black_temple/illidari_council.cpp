@@ -528,6 +528,22 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
         m_checkTimer = 1000;
     }
 
+    void CheckStairsPos()   // nasty workaround, remove when other options available
+    {
+        float x, y, z, good_z;
+        float top_x = 688.7;
+        float top_z = 277.5;
+        x = me->GetPositionX();
+        y = me->GetPositionY();
+        z = me->GetPositionZ();
+        if(y > 286 && y < 324 && top_x > x)
+        {
+            good_z = 0.452*(top_x-x);
+            if(z < good_z)
+                m_creature->GetMap()->CreatureRelocation(m_creature, x, y, good_z+0.3, m_creature->GetAngle(m_creature->getVictim()));
+        }
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim())
@@ -540,11 +556,8 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
             else
                 me->GetMotionMaster()->MoveChase(me->getVictim(), 40);
 
-            // do not let boss to go below textures level
-            //float z_floor = m_creature->GetMap()->GetHeight(m_creature->GetPositionX(), m_creature->GetPositionY(), MAX_HEIGHT, true);
-            float ground_lower = 271;
-            if(m_creature->GetPositionZ() < ground_lower)
-                m_creature->GetMap()->CreatureRelocation(m_creature, 642.3, 306, 271.7, m_creature->GetAngle(m_creature->getVictim()));
+            // On front stairs, do not let boss to go into textures;
+            CheckStairsPos();
 
             uint32 damage = 0;
             SharedRule(damage);
@@ -727,6 +740,9 @@ struct TRINITY_DLL_DECL boss_veras_darkshadowAI : public illidari_council_baseAI
             SharedRule(damage);
             DoZoneInCombat();
             m_creature->SetSpeed(MOVE_RUN, 2.0);
+            // move always after stun recovery
+            if(!me->hasUnitState(UNIT_STAT_STUNNED) && !me->HasAura(SPELL_VANISH, 1))
+                DoStartMovement(me->getVictim());
             m_checkTimer = 1000;
         }
         else
