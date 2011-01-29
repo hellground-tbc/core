@@ -1615,6 +1615,82 @@ void Spell::EffectDummy(uint32 i)
                     }
                     return;
                 }
+                case 26373: // Lunar Invitation teleports
+                {
+                    static uint32 LunarEntry[6] = 
+                    {
+                        15905, // Darnassus
+                        15906, // Ironforge
+                        15694, // Stormwind
+                        15908, // Orgrimmar
+                        15719, // Thunderbluff
+                        15907 // Undercity
+                    };
+
+                    if(m_caster->GetTypeId() != TYPEID_PLAYER)
+                        return;
+
+                    if(m_caster->GetZoneId() != 493)   // Moonglade
+                        m_caster->CastSpell(m_caster, 26451, false);
+                    else
+                    {
+                        uint32 LunarId = -1;
+                        for(uint8 i=0;i<6;++i)
+                        {
+                            Creature *pCreature = NULL;
+                            Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*m_caster, LunarEntry[i], true, 7.0);
+                            Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
+                            Cell::VisitGridObjects(m_caster, searcher, 7.0);
+
+                            if(pCreature)
+                            {
+                                LunarId = i;
+                                break;
+                            }
+                        }
+
+                        switch(((Player*)m_caster)->GetTeam())
+                        {
+                            case ALLIANCE:
+                            {
+                                switch(LunarId)
+                                {
+                                    case 0:
+                                        m_caster->CastSpell(m_caster, 26450, false);  // Darnassus
+                                        return;
+                                    case 1:
+                                        m_caster->CastSpell(m_caster, 26452, false); // Ironforge
+                                        return;
+                                    case 2:
+                                        m_caster->CastSpell(m_caster, 26454, false); // Stormwind
+                                        return;
+                                    default:
+                                        break;
+                                }
+                                break;
+                            }
+                            case HORDE:
+                            {
+                                switch(LunarId)
+                                {
+                                    case 3:
+                                        m_caster->CastSpell(m_caster, 26453, false);  // Orgrimmar
+                                        return;
+                                    case 4:
+                                        m_caster->CastSpell(m_caster, 26455, false); // Thunderbluff
+                                        return;
+                                    case 5:
+                                        m_caster->CastSpell(m_caster, 26456, false); // Undercity
+                                        return;
+                                    default:
+                                        break;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    return;
+                }
             }
             break;
         case SPELLFAMILY_WARRIOR:
@@ -5905,23 +5981,6 @@ void Spell::EffectActivateObject(uint32 effect_idx)
 {
     if (!gameObjTarget)
         return;
-
-    // Lunar Fireworks workaround
-    if(gameObjTarget->GetEntry() == 180868 || gameObjTarget->GetEntry() == 180869)
-    {
-        if(m_caster->GetTypeId() == TYPEID_PLAYER && ((Player*)m_caster)->GetQuestStatus(8867) == QUEST_STATUS_INCOMPLETE)
-        {
-            switch(gameObjTarget->GetEntry())
-            {
-                case 180868:
-                    ((Player*)m_caster)->KilledMonster(15893, 0);
-                    break;
-                case 180869:
-                    ((Player*)m_caster)->KilledMonster(15894, 0);
-                    break;
-            }
-        }
-    }
 
     static ScriptInfo activateCommand = generateActivateCommand();
 

@@ -2796,27 +2796,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 41470: //Judgement of Command should be reflectable
             spellInfo->AttributesEx2 = 0;
             break;
-        case 26286: // Lunar Fireworks
-        case 26292:
-        case 26293:
-        case 26294:
-        case 26295:
-        case 26304:
-        case 26325:
-        case 26326:
-        case 26327:
-        case 26328:
-        case 26329:
-        case 26333:
-        case 26334:
-        case 26335:
-        case 26336:
-        case 26337:
-        case 26338:
-            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_NEARBY_ENTRY;
-            break;
-        case 26291:
-            spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_NEARBY_ENTRY;
+        case 26373: // Lunar Invitation
+            spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_CASTER;
+            spellInfo->EffectImplicitTargetB[1] = 0;
             break;
         default:
             break;
