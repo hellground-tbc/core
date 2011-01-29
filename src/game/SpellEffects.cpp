@@ -5906,6 +5906,23 @@ void Spell::EffectActivateObject(uint32 effect_idx)
     if (!gameObjTarget)
         return;
 
+    // Lunar Fireworks workaround
+    if(gameObjTarget->GetEntry() == 180868 || gameObjTarget->GetEntry() == 180869)
+    {
+        if(m_caster->GetTypeId() == TYPEID_PLAYER && ((Player*)m_caster)->GetQuestStatus(8867) == QUEST_STATUS_INCOMPLETE)
+        {
+            switch(gameObjTarget->GetEntry())
+            {
+                case 180868:
+                    ((Player*)m_caster)->KilledMonster(15893, 0);
+                    break;
+                case 180869:
+                    ((Player*)m_caster)->KilledMonster(15894, 0);
+                    break;
+            }
+        }
+    }
+
     static ScriptInfo activateCommand = generateActivateCommand();
 
     int32 delay_secs = m_spellInfo->EffectMiscValue[effect_idx];
