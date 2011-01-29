@@ -24,7 +24,7 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_mechanar.h"
 
-#define ENCOUNTERS      3
+#define ENCOUNTERS      5
 
 #define GO_MOARGDOOR1           184632
 #define GO_MOARGDOOR2           184322
@@ -37,11 +37,13 @@ struct TRINITY_DLL_DECL instance_mechanar : public ScriptedInstance
 {
     instance_mechanar(Map *map) : ScriptedInstance(map) {Initialize();};
 
-
+    bool Heroic;
     uint32 Encounters[ENCOUNTERS];
     uint64 MoargDoor1;
     uint64 MoargDoor2;
     uint64 NethermancerDoor;
+    uint32 CheckTimer;
+    bool CleanupCharges;
 
     void OnCreatureCreate (Creature *creature, uint32 creature_entry)
     {
@@ -73,9 +75,12 @@ struct TRINITY_DLL_DECL instance_mechanar : public ScriptedInstance
         for(uint8 i = 0; i < ENCOUNTERS; ++i)
             Encounters[i] = NOT_STARTED;
 
+        Heroic = instance->IsHeroic();
         MoargDoor1 = 0;
         MoargDoor2 = 0;
         NethermancerDoor = 0;
+        CheckTimer = 3000;
+        CleanupCharges = false;
     }
 
     bool IsEncounterInProgress() const
@@ -91,9 +96,11 @@ struct TRINITY_DLL_DECL instance_mechanar : public ScriptedInstance
     {
         switch(type)
         {
-        case DATA_NETHERMANCER_EVENT:   return Encounters[0];
-        case DATA_IRONHAND_EVENT:       return Encounters[1];
-        case DATA_GYROKILL_EVENT:       return Encounters[2];
+        case DATA_NETHERMANCER_EVENT:       return Encounters[0];
+        case DATA_IRONHAND_EVENT:           return Encounters[1];
+        case DATA_GYROKILL_EVENT:           return Encounters[2];
+        case DATA_CACHE_OF_LEGION_EVENT:    return Encounters[3];
+        case DATA_MECHANO_LORD_EVENT:       return Encounters[4];
         }
 
         return false;
@@ -134,9 +141,73 @@ struct TRINITY_DLL_DECL instance_mechanar : public ScriptedInstance
                         HandleGameObject(MoargDoor2, true);
                 }
                 break;
+            case DATA_CACHE_OF_LEGION_EVENT:
+                if(Encounters[3] != DONE)
+                    Encounters[3] = data;
+                break;
+            case DATA_MECHANO_LORD_EVENT:
+                if(Encounters[4] != DONE)
+                    Encounters[4] = data;
+                if(data == DONE)
+                    CleanupCharges = true;
+                break;
         }
         if(data == DONE)
             SaveToDB();
+    }
+
+    void Update(uint32 diff)
+    {
+        if(Heroic && GetData(DATA_MECHANO_LORD_EVENT) == IN_PROGRESS)
+        {
+            if(CheckTimer < diff)
+            {
+                const Map::PlayerList& players = instance->GetPlayers();
+                for(Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
+                {
+                    Player *sourcePlayer = i->getSource();
+                    if(sourcePlayer->isGameMaster())
+                        continue;
+
+                    sourcePlayer->RemoveAurasDueToSpell(39089);
+                    sourcePlayer->RemoveAurasDueToSpell(39092);
+
+                    int chargeid = GET_CHARGE_ID(sourcePlayer);
+                    if(!chargeid)
+                        continue;
+                    int counter = 0;
+                    for(Map::PlayerList::const_iterator j = players.begin(); j != players.end(); ++j)
+                    {
+                        Player *checkPlayer = j->getSource();
+                        if(checkPlayer->isGameMaster() || sourcePlayer == checkPlayer)
+                            continue;
+
+                        if(chargeid == GET_CHARGE_ID(checkPlayer) && sourcePlayer->IsWithinDist(checkPlayer, 10))
+                            counter++;
+                    }
+                    while(counter--)
+                        sourcePlayer->CastSpell(sourcePlayer, chargeid == 1 ? 39089 : 39092, true);
+                }
+    
+                CheckTimer = 3000;
+            } else
+                CheckTimer -= diff;
+        }
+        if(Heroic && CleanupCharges)
+        {
+            const Map::PlayerList& players = instance->GetPlayers();
+            for(Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
+            {
+                Player *sourcePlayer = i->getSource();
+                if(sourcePlayer->isGameMaster())
+                    continue;
+
+                sourcePlayer->RemoveAurasDueToSpell(39089);
+                sourcePlayer->RemoveAurasDueToSpell(39092);
+            }
+            CleanupCharges = false;
+        }
+
     }
 
     const char* Save()
@@ -176,11 +247,54 @@ InstanceData* GetInstanceData_instance_mechanar(Map* map)
     return new instance_mechanar(map);
 }
 
+bool GOHello_go_cache_of_the_legion(Player *player, GameObject* _GO)
+{
+    Map* m = player->GetMap();
+    if(!m->IsHeroic())
+        return true;
+
+    if(ScriptedInstance* pInstance = ((ScriptedInstance*)_GO->GetInstanceData()))
+    {
+        if(pInstance->GetData(DATA_CACHE_OF_LEGION_EVENT) == NOT_STARTED)
+        {
+            const Map::PlayerList& players = _GO->GetMap()->GetPlayers();
+            
+            ItemPosCountVec dest;
+            uint32 no_space = 0;
+            uint8 msg;
+
+            for(Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
+            {
+                Player *player = i->getSource();
+                if(player->isGameMaster())
+                    continue;
+                msg = player->CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, 29434, 1, &no_space );
+                if( msg != EQUIP_ERR_OK )
+                    continue;
+
+                Item *pItem = player->StoreNewItem(dest, 29434, true);
+                if(pItem)
+                    player->SendNewItem(pItem, 1, true, true);
+            }
+    
+            ((InstanceMap*)m)->PermBindAllPlayers(player);    
+            pInstance->SetData(DATA_CACHE_OF_LEGION_EVENT, DONE);
+            return true;
+        }
+    }
+    return false;;
+}
+
 void AddSC_instance_mechanar()
 {
     Script *newscript;
     newscript = new Script;
     newscript->Name = "instance_mechanar";
     newscript->GetInstanceData = &GetInstanceData_instance_mechanar;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "go_cache_of_the_legion";
+    newscript->pGOHello = &GOHello_go_cache_of_the_legion;
     newscript->RegisterSelf();
 }

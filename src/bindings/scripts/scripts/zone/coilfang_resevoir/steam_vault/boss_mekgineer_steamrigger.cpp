@@ -221,14 +221,7 @@ struct TRINITY_DLL_DECL mob_steamrigger_mechanicAI : public ScriptedAI
                 {
                     if (m_creature->IsWithinDistInMap(pMekgineer, MAX_REPAIR_RANGE))
                     {
-                        //are we already channeling? Doesn't work very well, find better check?
-                        if (!m_creature->GetUInt32Value(UNIT_CHANNEL_SPELL))
-                        {
-                            //m_creature->GetMotionMaster()->MovementExpired();
-                            //m_creature->GetMotionMaster()->MoveIdle();
-
-                            DoCast(m_creature,HeroicMode ? H_SPELL_REPAIR : SPELL_REPAIR, true);
-                        }
+                        DoCast(pMekgineer,HeroicMode ? H_SPELL_REPAIR : SPELL_REPAIR);                       
                         Repair_Timer = 5000;
                     }
                     else

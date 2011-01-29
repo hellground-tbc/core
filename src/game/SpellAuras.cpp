@@ -2494,6 +2494,18 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 Map *pMap = m_target->GetMap();
                 if(((InstanceMap*)pMap)->GetInstanceData())
                     ((InstanceMap*)pMap)->GetInstanceData()->SetData64(29, m_target->GetGUID());
+                break;
+            }
+            case 28059:     // Positive/Negative Charge
+            case 28084:
+            case 39088:
+            case 39091:
+            {
+                m_target->RemoveAurasDueToSpell(29659);
+                m_target->RemoveAurasDueToSpell(29660);
+                m_target->RemoveAurasDueToSpell(39089);
+                m_target->RemoveAurasDueToSpell(39092);
+                return;
             }
         }
     }
