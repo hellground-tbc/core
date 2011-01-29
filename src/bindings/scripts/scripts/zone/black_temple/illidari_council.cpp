@@ -536,11 +536,15 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
         x = me->GetPositionX();
         y = me->GetPositionY();
         z = me->GetPositionZ();
-        if(y > 286 && y < 324 && top_x > x)
+        if(y > 286 && y < 324 && x > 676.2)
         {
-            good_z = 0.452*(top_x-x);
+            if(top_x > x)
+                good_z = 0.452*(top_x-x);
+            else
+                good_z = top_z;
+
             if(z < good_z)
-                m_creature->GetMap()->CreatureRelocation(m_creature, x, y, good_z+0.3, m_creature->GetAngle(m_creature->getVictim()));
+                    m_creature->GetMap()->CreatureRelocation(m_creature, x, y, good_z+0.15, m_creature->GetAngle(m_creature->getVictim()));
         }
     }
 
