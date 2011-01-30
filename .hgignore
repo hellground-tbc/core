@@ -10,10 +10,14 @@ bin/
 *~
 .git/
 win/VC90/*/
+win/VC10/*/
 *.ncb
+*.sdf
+*.opensdf
 *.suo
 dep/lib/win32*
 src/bindings/scripts/VC90/*/
+src/bindings/scripts/VC10/*/
 src/mangosd/
 src/realmd/
 *.*-*
