@@ -140,7 +140,7 @@
     <Link>
       <AdditionalDependencies>trinitycore.lib;ACE.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)TrinityScript.dll</OutputFile>
-      <AdditionalLibraryDirectories>..\..\..\..\dep\lib\$(Platform)_$(Configuration);..\..\..\..\win\VC90\trinitycore__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\..\dep\lib\$(Platform)_$(Configuration);..\..\..\..\win\VC10\trinitycore__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
