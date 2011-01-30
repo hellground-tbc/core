@@ -188,7 +188,7 @@ struct TRINITY_DLL_DECL instance_mechanar : public ScriptedInstance
                     while(counter--)
                         sourcePlayer->CastSpell(sourcePlayer, chargeid == 1 ? 39089 : 39092, true);
                 }
-    
+
                 CheckTimer = 3000;
             } else
                 CheckTimer -= diff;
@@ -258,7 +258,7 @@ bool GOHello_go_cache_of_the_legion(Player *player, GameObject* _GO)
         if(pInstance->GetData(DATA_CACHE_OF_LEGION_EVENT) == NOT_STARTED)
         {
             const Map::PlayerList& players = _GO->GetMap()->GetPlayers();
-            
+
             ItemPosCountVec dest;
             uint32 no_space = 0;
             uint8 msg;
@@ -274,10 +274,10 @@ bool GOHello_go_cache_of_the_legion(Player *player, GameObject* _GO)
 
                 Item *pItem = player->StoreNewItem(dest, 29434, true);
                 if(pItem)
-                    player->SendNewItem(pItem, 1, true, true);
+                    player->SendNewItem(pItem, 1, false, true);
             }
-    
-            ((InstanceMap*)m)->PermBindAllPlayers(player);    
+
+            ((InstanceMap*)m)->PermBindAllPlayers(player);
             pInstance->SetData(DATA_CACHE_OF_LEGION_EVENT, DONE);
             return true;
         }

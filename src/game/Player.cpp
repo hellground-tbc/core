@@ -16311,10 +16311,12 @@ void Player::_SaveInventory()
                 CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE bag=%u AND slot=%u", bagTestGUID, item->GetSlot());
                 // also THIS item should be somewhere else, cheat attempt
                 item->FSetState(ITEM_REMOVED); // we are IN updateQueue right now, can't use SetState which modifies the queue
+                item->RemoveFromWorld();
                 // don't skip, let the switch delete it
                 //continue;
 
                 //zostawiam special log dla pewnosci, autobana sie przywroci jesli bedzie potrzeba
+                LoginDatabase.BeginTransaction();
                 if(!GetSession()->SpecialLog())
                 {
                     LoginDatabase.PExecute("UPDATE account SET speciallog = '1' WHERE id = '%u'", GetSession()->GetAccountId());
@@ -16322,6 +16324,7 @@ void Player::_SaveInventory()
                 }
 
                 LoginDatabase.PExecute("INSERT INTO account_banned VALUES(%i, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'Siof', 'With love: cheater -.-', 1)", GetSession()->GetAccountId());
+                LoginDatabase.CommitTransaction();
                 GetSession()->KickPlayer();
             }
             else if (test != item)
@@ -16333,6 +16336,7 @@ void Player::_SaveInventory()
                 // ...but do not save position in invntory
 
                 //zostawiam special log dla pewnosci, autobana sie przywroci jesli bedzie potrzeba
+                LoginDatabase.BeginTransaction();
                 if(!GetSession()->SpecialLog())
                 {
                     LoginDatabase.PExecute("UPDATE account SET speciallog = '1' WHERE id = '%u'", GetSession()->GetAccountId());
@@ -16340,6 +16344,7 @@ void Player::_SaveInventory()
                 }
 
                 LoginDatabase.PExecute("INSERT INTO account_banned VALUES(%i, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'Siof', 'With love: cheater -.-', 1)", GetSession()->GetAccountId());
+                LoginDatabase.CommitTransaction();
                 GetSession()->KickPlayer();
 
                 continue;
