@@ -250,31 +250,31 @@ InstanceData* GetInstanceData_instance_mechanar(Map* map)
 bool GOHello_go_cache_of_the_legion(Player *player, GameObject* _GO)
 {
     Map* m = player->GetMap();
-    if(!m->IsHeroic())
+    if (!m->IsHeroic())
         return true;
 
-    if(ScriptedInstance* pInstance = ((ScriptedInstance*)_GO->GetInstanceData()))
+    if (ScriptedInstance* pInstance = ((ScriptedInstance*)_GO->GetInstanceData()))
     {
-        if(pInstance->GetData(DATA_CACHE_OF_LEGION_EVENT) == NOT_STARTED)
+        if (pInstance->GetData(DATA_CACHE_OF_LEGION_EVENT) == NOT_STARTED)
         {
             const Map::PlayerList& players = _GO->GetMap()->GetPlayers();
 
-            ItemPosCountVec dest;
-            uint32 no_space = 0;
-            uint8 msg;
-
-            for(Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
+            for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
             {
                 Player *player = i->getSource();
-                if(player->isGameMaster())
-                    continue;
-                msg = player->CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, 29434, 1, &no_space );
-                if( msg != EQUIP_ERR_OK )
+                if (player->isGameMaster())
                     continue;
 
-                Item *pItem = player->StoreNewItem(dest, 29434, true);
-                if(pItem)
-                    player->SendNewItem(pItem, 1, false, true);
+                ItemPosCountVec dest;
+                uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 29434, 1);
+                if (msg == EQUIP_ERR_OK )
+                {
+                    Item* item = player->StoreNewItem(dest,29434,true);
+                    if (item)
+                        player->SendNewItem(item,1,false,true);
+                    else
+                        player->SendEquipError(msg,NULL,NULL);
+                }
             }
 
             ((InstanceMap*)m)->PermBindAllPlayers(player);
