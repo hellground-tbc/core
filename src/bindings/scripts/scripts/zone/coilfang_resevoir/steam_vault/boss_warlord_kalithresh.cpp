@@ -152,8 +152,8 @@ struct TRINITY_DLL_DECL boss_warlord_kalithreshAI : public ScriptedAI
         if(CurrentDistiller)
             if(Unit *distiler = me->GetUnit(CurrentDistiller))
             {
-                m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                distiler->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                distiler->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 CurrentDistiller = NULL;
             }
 
