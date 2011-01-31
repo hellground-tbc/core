@@ -6693,26 +6693,89 @@ void Spell::EffectPlayerPull(uint32 i)
 
 void Spell::EffectDispelMechanic(uint32 i)
 {
-    if(!unitTarget)
+   if(!unitTarget)
         return;
 
-    uint32 mechanic = m_spellInfo->EffectMiscValue[i];
-
-    Unit::AuraMap& Auras = unitTarget->GetAuras();
-    for(Unit::AuraMap::iterator iter = Auras.begin(), next; iter != Auras.end(); iter = next)
+    if(unitTarget->IsHostileTo(m_caster))
     {
-        next = iter;
-        ++next;
+        m_caster->SetInCombatWith(unitTarget);
+        unitTarget->SetInCombatWith(m_caster);
+    }
+
+    // Fill possible dispel list
+    std::list <Aura *> dispel_list;
+    uint32 mechanic = m_spellInfo->EffectMiscValue[i];
+    Unit::AuraMap& Auras = unitTarget->GetAuras();
+    for(Unit::AuraMap::iterator iter = Auras.begin(), next; iter != Auras.end(); ++iter)
+    {
         SpellEntry const *spell = sSpellStore.LookupEntry(iter->second->GetSpellProto()->Id);
         if(spell->Mechanic == mechanic || spell->EffectMechanic[iter->second->GetEffIndex()] == mechanic)
         {
-            unitTarget->RemoveAurasDueToSpell(spell->Id);
-            if(Auras.empty())
-                break;
-            else
-                next = Auras.begin();
+            dispel_list.push_back(iter->second);
         }
     }
+
+    // Ok if exist some buffs for dispel try dispel it
+    if (!dispel_list.empty())
+    {
+        std::list < std::pair<uint32,uint64> > success_list;// (spell_id,casterGuid)
+        std::list < uint32 > fail_list;                     // spell_id
+        
+        while(!dispel_list.empty())
+        {
+            Aura *aur = dispel_list.back();
+           // dispel_list.pop_back();
+            SpellEntry const* spellInfo = aur->GetSpellProto();
+
+            // Base dispel chance
+            // TODO: possible chance depend from spell level??
+            int32 miss_chance = 0;
+            // Apply dispel mod from aura caster    
+            if (Unit *caster = aur->GetCaster())
+            {
+                if ( Player* modOwner = caster->GetSpellModOwner() )
+                {
+                    modOwner->ApplySpellMod(spellInfo->Id, SPELLMOD_RESIST_DISPEL_CHANCE, miss_chance, this);
+                    std::stringstream ss;
+                    ss << miss_chance;
+                    modOwner->Say(ss.str().c_str(), 0);
+                }
+            }
+
+            ((Player*)m_caster)->Say("sasa", 0);
+            // Try dispel
+            if (roll_chance_i(miss_chance))
+                fail_list.push_back(aur->GetId());
+            else
+                unitTarget->RemoveAurasByCasterSpell(spellInfo->Id, aur->GetCasterGUID());
+            
+
+            for (std::list<Aura *>::iterator j = dispel_list.begin(); j != dispel_list.end(); )
+            {
+                Aura *dispelled = *j;
+                if (dispelled->GetId() == aur->GetId() && dispelled->GetCasterGUID() == aur->GetCasterGUID())
+                {
+                    j = dispel_list.erase(j);
+                }
+                else
+                    ++j;
+            }
+        }
+
+        // Send fail log to client
+        if (!fail_list.empty())
+        {
+            // Failed to dispell
+            WorldPacket data(SMSG_DISPEL_FAILED, 8+8+4+4*fail_list.size());
+            data << uint64(m_caster->GetGUID());            // Caster GUID
+            data << uint64(unitTarget->GetGUID());          // Victim GUID
+            data << uint32(m_spellInfo->Id);                // dispel spell id
+            for (std::list< uint32 >::iterator j = fail_list.begin(); j != fail_list.end(); ++j)
+                data << uint32(*j);                         // Spell Id
+            m_caster->SendMessageToSet(&data, true);
+        }
+    }
+
     return;
 }
 
