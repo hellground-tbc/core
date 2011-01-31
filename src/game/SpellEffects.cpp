@@ -6736,13 +6736,9 @@ void Spell::EffectDispelMechanic(uint32 i)
                 if ( Player* modOwner = caster->GetSpellModOwner() )
                 {
                     modOwner->ApplySpellMod(spellInfo->Id, SPELLMOD_RESIST_DISPEL_CHANCE, miss_chance, this);
-                    std::stringstream ss;
-                    ss << miss_chance;
-                    modOwner->Say(ss.str().c_str(), 0);
                 }
             }
 
-            ((Player*)m_caster)->Say("sasa", 0);
             // Try dispel
             if (roll_chance_i(miss_chance))
                 fail_list.push_back(aur->GetId());
