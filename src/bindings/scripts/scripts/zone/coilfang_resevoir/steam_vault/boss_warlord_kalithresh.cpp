@@ -146,17 +146,18 @@ struct TRINITY_DLL_DECL boss_warlord_kalithreshAI : public ScriptedAI
     {
         //hack :(
         if (spell->Id == SPELL_WARLORDS_RAGE_PROC)
+        {
             if (pInstance)
                 if (pInstance->GetData(TYPE_DISTILLER) == DONE)
                     m_creature->RemoveAurasDueToSpell(SPELL_WARLORDS_RAGE_PROC);
-        if(CurrentDistiller)
-            if(Unit *distiler = me->GetUnit(CurrentDistiller))
-            {
-                distiler->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                distiler->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                CurrentDistiller = NULL;
-            }
-
+            if(CurrentDistiller)
+                if(Unit *distiler = me->GetUnit(CurrentDistiller))
+                {
+                    distiler->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                    distiler->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    CurrentDistiller = NULL;
+                }
+        }
     }
 
     void JustDied(Unit* Killer)
