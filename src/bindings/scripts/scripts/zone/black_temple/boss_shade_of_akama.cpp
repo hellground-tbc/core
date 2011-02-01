@@ -175,6 +175,8 @@ struct TRINITY_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
         m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, false);
 
@@ -278,6 +280,8 @@ struct TRINITY_DLL_DECL mob_ashtongue_spiritbinderAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         m_chainHealTimer  = urand(10000, 15000);
         m_spiritHealTimer = urand(7000, 10000);
         m_spiritMendTimer = urand(14000, 20000);
@@ -422,6 +426,8 @@ struct TRINITY_DLL_DECL mob_ashtongue_elementalistAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         m_rainofFireTimer  = urand(5000, 18000);
         m_lightningBoltTimer = urand(2000, 4000);
         m_checkTimer = 5000;
@@ -515,6 +521,8 @@ struct TRINITY_DLL_DECL mob_ashtongue_rogueAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         m_debilPoisonTimer  = urand(5000, 15000);
         m_eviscerateTimer = urand(2000, 7000);
         m_checkTimer = 5000;
@@ -1166,6 +1174,8 @@ struct TRINITY_DLL_DECL npc_akamaAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         m_destructiveTimer = 5000;
         m_lightningBoltTimer = 8000;
 

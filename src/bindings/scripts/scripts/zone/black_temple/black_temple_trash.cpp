@@ -59,6 +59,8 @@ struct TRINITY_DLL_DECL mob_aqueous_lordAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         VileSlime = 5000;
         SummonTimer = urand(5000,10000);
         CrashingWave = 15000;
@@ -135,6 +137,8 @@ struct TRINITY_DLL_DECL mob_aqueous_spawnAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         SludgeNova = 5000;
         MergeTimer = urand(10000, 50000);
         merging = false;
@@ -200,6 +204,8 @@ struct TRINITY_DLL_DECL mob_coilskar_generalAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         FreeFriend = 1000;
         Cleave = 10000;
         BoomingVoice = 40000;
@@ -294,6 +300,8 @@ struct TRINITY_DLL_DECL mob_coilskar_harpoonerAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         SpearThrow = urand(1000, 5000);
         HookedNet = urand(15000, 20000);
         HarpoonersMark = 15000;
@@ -384,6 +392,8 @@ struct TRINITY_DLL_DECL mob_coilskar_seacallerAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
         ForkedLightning = urand(1000, 3000);
         Hurricane = urand(20000, 30000);
@@ -484,6 +494,8 @@ struct TRINITY_DLL_DECL mob_coilskar_soothsayerAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         HolyNova = urand(5000, 15000);
         Restoration = (8000, 12000);
     }
@@ -544,6 +556,8 @@ struct TRINITY_DLL_DECL mob_coilskar_wranglerAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         Cleave = urand(2000, 6000);
         ElectricSpur = urand(15000, 40000);
         LightningProd = urand(8000, 15000);
@@ -609,6 +623,8 @@ struct TRINITY_DLL_DECL mob_dragon_turtleAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         WaterSpit = urand(2000, 10000);
         ShellShield = 3000;
         CanBeShielded = false;
@@ -690,6 +706,8 @@ struct TRINITY_DLL_DECL mob_leviathanAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         DebilitatingSpray = urand(3000, 9000);
         PoisonSpit = urand(6000, 15000);
         TailSweep = 6000;
@@ -970,6 +988,8 @@ struct TRINITY_DLL_DECL mob_dragonmaw_skystalkerAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         immolationArrowTimer = 10000 + urand(0, 5000);
         distCheckTimer = 1000;
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
@@ -1088,6 +1108,8 @@ struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         doomBoltTimer = 5000 + urand(0, 5000);
         freezeTimer = 10000 + urand(0, 5000);
         distCheckTimer = 3000;
@@ -1324,6 +1346,8 @@ struct TRINITY_DLL_DECL mob_illidari_fearbringerAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         checkTimer = 2000;
         flamesTimer = 5000 + urand(0, 10000);
         rainTimer = 15000 + urand(0, 10000);
@@ -1473,6 +1497,8 @@ struct TRINITY_DLL_DECL mob_ashtongue_battlelordAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         Cleave = urand(3000, 10000);
         ConcussionBlow = urand(10500, 25000);
         ConcussionThrow = urand(10500, 25000);
@@ -1553,6 +1579,8 @@ struct TRINITY_DLL_DECL mob_ashtongue_feral_spiritAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         ChargeRage = urand(10000, 30000);
         SpiritBond = urand(15000, 25000);
     }
@@ -1624,6 +1652,8 @@ struct TRINITY_DLL_DECL totem_ashtongue_mysticAI : public Scripted_NoMovementAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         DoZoneInCombat(80.0f);
         switch(m_creature->GetEntry())
         {
@@ -1695,6 +1725,8 @@ struct TRINITY_DLL_DECL mob_ashtongue_mysticAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         FrostShock = urand(5000, 22000);
         FlameShock = urand(10000, 30000);
         ChainHeal = 5000;
@@ -1827,6 +1859,8 @@ struct TRINITY_DLL_DECL mob_ashtongue_primalistAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         canShoot = true;
         MultiShot = urand(20000, 40000);
         Shoot = 500;
@@ -1935,6 +1969,8 @@ struct TRINITY_DLL_DECL mob_ashtongue_stalkerAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         DoCast(m_creature, SPELL_STEALTH);
         DoCast(m_creature, SPELL_DUAL_WIELD);
         Blind = urand(10000, 20000);
@@ -2017,6 +2053,8 @@ struct TRINITY_DLL_DECL mob_ashtongue_stormcallerAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
         ChainLightning = urand(6000, 25000);
         LightningBolt = urand(1500, 3000);
@@ -2094,6 +2132,8 @@ struct TRINITY_DLL_DECL mob_illidari_boneslicerAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         CloakOfShadows = 15000;
         Gouge = urand(1000, 10000);;
         Shadowstep = urand(5000, 15000);
@@ -2176,6 +2216,8 @@ struct TRINITY_DLL_DECL mob_illidari_centurionAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         Cleave = urand(3000, 10000);
         SonicStrike = urand(5000, 15000);
     }
@@ -2236,6 +2278,8 @@ struct TRINITY_DLL_DECL mob_illidari_defilerAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         FelImmolate = urand(15000, 25000);
         CurseOfAgony = urand(20000, 35000);
         Banish = urand(10000, 30000);
@@ -2319,6 +2363,8 @@ struct TRINITY_DLL_DECL mob_illidari_heartseekerAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         RapidShot = urand(10000, 20000);
         Shoot = 500;
         SkeletonShot = urand(15000, 35000);
@@ -2424,6 +2470,8 @@ struct TRINITY_DLL_DECL mob_illidari_nightlordAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
         CurseOfMending = urand(10000, 20000);
         Fear = urand(3000, 15000);
@@ -2504,6 +2552,8 @@ struct TRINITY_DLL_DECL mob_storm_furyAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         StormBlink = urand(15000, 25000);
     }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
@@ -2619,6 +2669,8 @@ struct TRINITY_DLL_DECL mob_shadowmoon_blood_mageAI: public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
         BloodSiphon = urand(3000, 20000);
         Bloodbolt = urand(5000, 15000);
@@ -2700,6 +2752,8 @@ struct TRINITY_DLL_DECL mob_shadowmoon_championAI: public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         ChaoticLight = urand(2000, 5000);
         WhirlingBlade = 0;
     }
@@ -2752,6 +2806,8 @@ struct TRINITY_DLL_DECL mob_whirling_bladeAI: public Scripted_NoMovementAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         DoCast(m_creature, SPELL_WHIRLWIND, true);
         Whirl = 6000;
         DieTimer = 14000;
@@ -2807,6 +2863,8 @@ struct TRINITY_DLL_DECL mob_shadowmoon_deathshaperAI: public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         Shadowbolt = urand(500, 5000);
         DeathCoil = urand(5000, 20000);
         DemonArmor = 1800000;
@@ -2999,6 +3057,8 @@ struct TRINITY_DLL_DECL mob_shadowmoon_houndmasterAI: public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         if(Creature* Hound = GetClosestCreatureWithEntry(m_creature, MOB_SHADOWMOON_RIDING_HOUND, 80))
         {
             Hound->Kill(Hound, false);
@@ -3142,6 +3202,8 @@ struct TRINITY_DLL_DECL mob_shadowmoon_reaverAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         SpellAbsorption = 10000;
         ShadowResonance = urand(5000, 20000);
     }
@@ -3205,6 +3267,8 @@ struct TRINITY_DLL_DECL mob_shadowmoon_riding_houndAI: public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         Charge = urand(5000, 20000);
         Enrage = 15000;
     }
@@ -3278,6 +3342,8 @@ struct TRINITY_DLL_DECL mob_shadowmoon_soldierAI: public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         Strike = urand(3000, 8000);
     }
 
@@ -3391,6 +3457,8 @@ struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         m_creature->LoadEquipment(484, true);
         Stance = DEFENSIVE;
         KnockAway = urand(3000, 20000);
@@ -3645,6 +3713,8 @@ struct TRINITY_DLL_DECL mob_wrathbone_flayerAI: public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         Cleave = 1500;
         Ignored = urand(3000, 10000);
     }
@@ -3731,6 +3801,8 @@ struct TRINITY_DLL_DECL mob_bonechewer_behemothAI: public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         Type = RAND(MELEE_TYPE, RANGED_TYPE);
         SpellTimer = Type ? urand(5000, 20000) : urand(3000, 15000);
         Frenzy = 35000;
@@ -3841,6 +3913,8 @@ struct TRINITY_DLL_DECL mob_bonechewer_shield_discipleAI: public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         Intervene = urand(15000, 20000);
         ShieldBash = urand(4000, 15000);
         ThrowShield = urand(7000, 17000);
@@ -3935,6 +4009,8 @@ struct TRINITY_DLL_DECL mob_bonechewer_blade_furyAI: public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         Whirlwind = urand(5000, 15000);
         MoveTimer = 0;
     }
@@ -4023,6 +4099,8 @@ struct TRINITY_DLL_DECL mob_bonechewer_blood_prophetAI: public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         BloodDrain = urand(5000, 25000);
         Bloodbolt = urand(1000, 10000);
         ProphecyOfBlood = 12000;
@@ -4151,6 +4229,8 @@ struct TRINITY_DLL_DECL mob_bonechewer_brawlerAI: public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         Enrage = urand(15000, 25000);
     }
 
@@ -4207,6 +4287,8 @@ struct TRINITY_DLL_DECL mob_bonechewer_combatantAI: public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         CombatRage = urand(3000, 10000);
     }
 
@@ -4271,6 +4353,8 @@ struct TRINITY_DLL_DECL mob_bonechewer_spectatorAI: public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         Charge = urand(3000, 6000);
         Cleave = urand(5000, 15000);
         MortalWound = urand(2000, 6000);
@@ -4375,6 +4459,8 @@ struct TRINITY_DLL_DECL mob_angered_soul_fragmentAI: public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         Anger = urand(1500, 6000);
     }
 
@@ -4464,6 +4550,8 @@ struct TRINITY_DLL_DECL mob_suffering_soul_fragmentAI: public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         SoulBlast = urand(2000, 5000);
     }
 
@@ -4540,6 +4628,8 @@ struct TRINITY_DLL_DECL mob_pristess_of_dementiaAI: public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         Confusion = urand(5000, 15000);
         Dementia = 3000;
         ImageSummon = 15000;
@@ -4659,6 +4749,8 @@ struct TRINITY_DLL_DECL mob_pristess_of_delightAI: public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         CurseOfVitality = urand(1000, 3000);
         Polymorph = urand(5000, 10000);
     }
@@ -4735,6 +4827,8 @@ struct TRINITY_DLL_DECL mob_sister_of_painAI: public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         LashOfPain = urand(3000, 5000);
         ShadowWordPain = urand(1000, 3000);
         ShellOfPain = urand(10000, 20000);
@@ -4841,6 +4935,8 @@ struct TRINITY_DLL_DECL mob_sister_of_pleasureAI: public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
         GreaterHeal = 2000;
         HolyNova = urand(5000, 10000);
@@ -4943,6 +5039,8 @@ struct TRINITY_DLL_DECL mob_charming_courtesanAI: public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         Infatuation = urand(5000, 8000);
         PoisonousThrow = urand(2000, 10000);
     }
@@ -5013,6 +5111,8 @@ struct TRINITY_DLL_DECL mob_spellbound_attendentAI: public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         Sleep = urand(3000, 8000);
         Kick = 10000;
         cooldown = false;
@@ -5086,6 +5186,8 @@ struct TRINITY_DLL_DECL mob_enslaved_servantAI: public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         Uppercut = urand(5000, 15000);
         KidneyShot = urand(3000, 10000);;
     }
@@ -5152,6 +5254,8 @@ struct TRINITY_DLL_DECL mob_temple_concubineAI: public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         LoveTap = urand(2000, 15000);
         Polymorph = urand(5000, 10000);
     }
@@ -5252,6 +5356,8 @@ struct TRINITY_DLL_DECL mob_illidari_archonAI: public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         type = RAND(HOLY_TYPE, SHADOW_TYPE);
         switch(type)
         {
@@ -5397,6 +5503,8 @@ struct TRINITY_DLL_DECL mob_illidari_assassinAI: public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         DoCast(m_creature, SPELL_RIPOSTE_AURA);
         VanishEvent = urand(6000, 8000);
         ParalyzingPoison = 15000;
@@ -5495,6 +5603,8 @@ struct TRINITY_DLL_DECL mob_illidari_battle_mageAI: public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         DirectTimer = urand(2500, 5000);
         Flamestrike = 6000;
         Blizzard = 12000;
@@ -5578,6 +5688,8 @@ struct TRINITY_DLL_DECL mob_illidari_blood_lordAI: public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         HammerOfJustice = urand(6000,8000);
         JudgmentOfCommand = urand(8000, 10000);
         shielded = false;
@@ -5657,6 +5769,8 @@ struct TRINITY_DLL_DECL mob_promenade_sentinelAI: public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         L5arcane = urand(7000, 10000);
         L4arcane = urand(1000, 3000);
     }

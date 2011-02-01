@@ -409,6 +409,8 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         m_creature->SetNoCallAssistance(true);
         Fireball_Timer = 5000+rand()%10000;
         Arcane_Timer1 = 20000;
@@ -1507,6 +1509,8 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
 
     void Reset()
     {
+        ClearCastQueue();
+
         Fireball_Timer = 1000;
         Conflagration_Timer = 20000;
         ArcaneExplosion_Timer = 5000;

@@ -107,6 +107,8 @@ struct TRINITY_DLL_DECL boss_warlord_kalithreshAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         Reflection_Timer = 10000;
         Impale_Timer = 7000+rand()%7000;
         Rage_Timer = 45000;

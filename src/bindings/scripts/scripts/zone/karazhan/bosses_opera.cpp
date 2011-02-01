@@ -120,6 +120,8 @@ struct TRINITY_DLL_DECL boss_dorotheeAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         AggroTimer = 500;
 
         WaterBoltTimer = 5000;
@@ -238,6 +240,8 @@ struct TRINITY_DLL_DECL mob_titoAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         DorotheeGUID = 0;
 
         YipTimer = 10000;
@@ -302,6 +306,8 @@ struct TRINITY_DLL_DECL boss_strawmanAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         AggroTimer = 13000;
         BrainBashTimer = 5000;
         BrainWipeTimer = 7000;
@@ -423,6 +429,8 @@ struct TRINITY_DLL_DECL boss_tinheadAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         AggroTimer = 15000;
         CleaveTimer = 5000;
         RustTimer   = 30000;
@@ -543,6 +551,8 @@ struct TRINITY_DLL_DECL boss_roarAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         AggroTimer = 20000;
         MangleTimer = 5000;
         ShredTimer  = 10000;
@@ -664,6 +674,8 @@ struct TRINITY_DLL_DECL boss_croneAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         CycloneTimer = 30000;
         ChainLightningTimer = 10000;
     }
@@ -867,6 +879,8 @@ struct TRINITY_DLL_DECL boss_bigbadwolfAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         ChaseTimer = 30000;
         FearTimer = 25000 + rand()%10000;
         SwipeTimer = 5000;

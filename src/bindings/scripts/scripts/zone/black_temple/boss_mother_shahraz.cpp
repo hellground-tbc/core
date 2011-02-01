@@ -143,6 +143,8 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         if (!pInstance)
             pInstance = ((ScriptedInstance*)me->GetInstanceData());
 

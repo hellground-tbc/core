@@ -255,6 +255,8 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         if(pInstance)
             pInstance->SetData(DATA_ARCHIMONDEEVENT, NOT_STARTED);
 

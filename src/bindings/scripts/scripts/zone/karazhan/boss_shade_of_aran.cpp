@@ -156,6 +156,8 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         SecondarySpellTimer = 5000;
         NormalCastTimer     = 0;
         SuperCastTimer      = 30000;
@@ -683,6 +685,8 @@ struct TRINITY_DLL_DECL water_elementalAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         CastTimer = 2000 + (rand()%3000);
     }
 

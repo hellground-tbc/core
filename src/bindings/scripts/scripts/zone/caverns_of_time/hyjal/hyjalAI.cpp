@@ -349,6 +349,8 @@ void hyjalAI::SummonedCreatureDespawn(Creature* summoned)
 
 void hyjalAI::Reset()
 {
+    ClearCastQueue();
+
     IsDummy = false;
     m_creature->setActive(true);
     // GUIDs

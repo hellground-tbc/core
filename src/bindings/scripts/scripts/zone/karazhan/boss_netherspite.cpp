@@ -75,6 +75,8 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         Berserk = false;
         NetherInfusionTimer = 540000;
         VoidZoneTimer = 15000;

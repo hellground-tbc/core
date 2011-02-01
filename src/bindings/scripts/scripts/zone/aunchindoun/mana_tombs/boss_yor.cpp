@@ -16,6 +16,8 @@ struct TRINITY_DLL_DECL boss_yorAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         DoubleBreath_Timer = 8000+rand()%5000;
         Stomp_Timer = 15000+rand()%5000;
     }

@@ -657,6 +657,8 @@ struct TRINITY_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         RuneShieldTimer = 15000;
         DeadenTimer = 30000;
         SoulShockTimer = 5000;

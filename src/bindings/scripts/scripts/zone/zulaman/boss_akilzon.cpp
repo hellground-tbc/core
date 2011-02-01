@@ -74,6 +74,8 @@ struct TRINITY_DLL_DECL boss_akilzonAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         if(pInstance && pInstance->GetData(DATA_AKILZONEVENT) != DONE)
             pInstance->SetData(DATA_AKILZONEVENT, NOT_STARTED);
 

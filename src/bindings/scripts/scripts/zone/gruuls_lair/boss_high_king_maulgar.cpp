@@ -127,6 +127,8 @@ struct TRINITY_DLL_DECL boss_high_king_maulgarAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         if(pInstance)
             pInstance->SetData(DATA_MAULGAREVENT, NOT_STARTED);
 
@@ -320,6 +322,8 @@ struct TRINITY_DLL_DECL boss_olm_the_summonerAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         DarkDecay_Timer = 10000;
         Summon_Timer = 15000;
         DeathCoil_Timer = 20000;
@@ -427,6 +431,8 @@ struct TRINITY_DLL_DECL boss_kiggler_the_crazedAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         GreaterPolymorph_Timer = 5000;
         LightningBolt_Timer = 10000;
         ArcaneShock_Timer = 20000;
@@ -543,6 +549,8 @@ struct TRINITY_DLL_DECL boss_blindeye_the_seerAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         Shield_PoH_Timer = 15000;
         Heal_Timer = 7000 + rand()%3000;
         shieldCasted = false;
@@ -634,6 +642,8 @@ struct TRINITY_DLL_DECL boss_krosh_firehandAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         GreaterFireball_Timer = 4000;
         SpellShield_Timer = 0;
         BlastWave_Timer = 5000;

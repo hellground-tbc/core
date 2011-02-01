@@ -105,11 +105,10 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
 
     void Reset()
     {
-        if(pInstance)
-        {
-            if(m_creature->isAlive())
-                pInstance->SetData(EVENT_SUPREMUS, NOT_STARTED);
-        }
+        ClearCastQueue();
+
+        if (pInstance)
+            pInstance->SetData(EVENT_SUPREMUS, NOT_STARTED);
 
         MoltenFlameTimer = 10000;
         HatefulStrikeTimer = 5000;

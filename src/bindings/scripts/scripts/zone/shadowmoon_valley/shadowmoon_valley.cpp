@@ -2395,6 +2395,8 @@ struct TRINITY_DLL_DECL mob_shadowlord_deathwailAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         m_creature->SetNoCallAssistance(true);
         Check_Timer = 2000;
         landed = true;

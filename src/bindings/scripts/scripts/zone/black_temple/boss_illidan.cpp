@@ -1711,6 +1711,8 @@ struct TRINITY_DLL_DECL blade_of_azzinothAI : public Scripted_NoMovementAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         m_checkTimer = 2000;
     }
 
@@ -1772,6 +1774,8 @@ struct TRINITY_DLL_DECL flame_of_azzinothAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         m_blastTimer = 15000;
         m_checkTimer = 5000;
     }
@@ -1852,6 +1856,8 @@ struct TRINITY_DLL_DECL flame_of_azzinothAI : public ScriptedAI
 
 void boss_illidan_stormrageAI::Reset()
 {
+    ClearCastQueue();
+
     if(pInstance)
         pInstance->SetData(EVENT_ILLIDANSTORMRAGE, NOT_STARTED);
 

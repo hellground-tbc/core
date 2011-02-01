@@ -109,6 +109,8 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         if(pInstance)
             pInstance->SetData(EVENT_GURTOGGBLOODBOIL, NOT_STARTED);
 

@@ -393,6 +393,8 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public illidari_council_b
 
     void Reset()
     {
+        ClearCastQueue();
+
         m_consecrationTimer = urand(6000, 10000);
         m_hammerTimer = 10000;
         m_sealTimer = 1000;
@@ -527,6 +529,8 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
 
     void Reset()
     {
+        ClearCastQueue();
+
         m_blizzardTimer = urand(12000, 20000);
         m_flamestrikeTimer = 3800;
         m_dampenTimer = 67200;
@@ -652,6 +656,8 @@ struct TRINITY_DLL_DECL boss_lady_malandeAI : public illidari_council_baseAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         m_smiteTimer = 2000;
         m_cohTimer = 20000;
         m_wrathTimer = urand(8000,12000);
@@ -728,6 +734,8 @@ struct TRINITY_DLL_DECL boss_veras_darkshadowAI : public illidari_council_baseAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         m_vanishTimer = urand(15000, 25000);
         m_checkTimer = 1000;
     }

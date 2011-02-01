@@ -42,6 +42,8 @@ struct TRINITY_DLL_DECL boss_mennu_the_betrayerAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         HealingWard_Timer = 15000;
         NovaTotem_Timer = 45000;
         LightningBolt_Timer = 10000;

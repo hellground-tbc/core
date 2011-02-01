@@ -314,6 +314,8 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         if(pInstance)
             pInstance->SetData(EVENT_TERONGOREFIEND, NOT_STARTED);
 
