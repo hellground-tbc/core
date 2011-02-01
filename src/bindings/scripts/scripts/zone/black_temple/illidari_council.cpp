@@ -526,6 +526,7 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
     uint32 m_flamestrikeTimer;
     uint32 m_dampenTimer;
     uint32 m_aexpTimer;
+    uint32 m_immunityTimer;
 
     void Reset()
     {
@@ -535,7 +536,10 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
         m_flamestrikeTimer = 3800;
         m_dampenTimer = 67200;
         m_aexpTimer = 3000;
+        m_immunityTimer = 60000;
         SetAutocast(SPELL_ARCANE_BOLT, 2000, true, AUTOCAST_TANK, 40.0f, true);
+        // no slowing for Zerevor
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
 
         m_checkTimer = 1000;
     }
@@ -584,6 +588,14 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
         else
             m_checkTimer -= diff;
 
+        if (m_immunityTimer < diff)
+        {
+            m_creature->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_INTERRUPT, false);
+            m_immunityTimer = 60000;
+        }
+        else
+            m_immunityTimer -= diff;
+
         if (m_dampenTimer < diff)
         {
             ForceSpellCast(m_creature, SPELL_DAMPEN_MAGIC);
@@ -612,8 +624,10 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
                     m_flamestrikeTimer = 0;
                     return;
                 }
+                m_creature->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_INTERRUPT, true);
                 AddSpellToCast(pTarget, SPELL_FLAMESTRIKE);
                 m_flamestrikeTimer = urand(9000, 12000);
+                m_immunityTimer = 3000;
             }
         }
         else
@@ -628,7 +642,7 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
                 {
                     if (pUnit->IsWithinDistInMap(me, 5) && pUnit->GetTypeId() == TYPEID_PLAYER && pUnit->isAlive() && !pUnit->IsImmunedToDamage(SPELL_SCHOOL_MASK_ARCANE))
                     {
-                        ForceAOESpellCast(SPELL_ARCANE_EXPLOSION, INTERRUPT_AND_CAST);
+                        ForceAOESpellCast(SPELL_ARCANE_EXPLOSION);
                         m_aexpTimer = 3000;
                         break;
                     }
