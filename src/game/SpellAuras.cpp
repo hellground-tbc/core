@@ -2312,7 +2312,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
         {
             case 1515:                                      // Tame beast
                 // FIX_ME: this is 2.0.12 threat effect replaced in 2.1.x by dummy aura, must be checked for correctness
-                if( caster && m_target->CanHaveThreatList())
+                if(caster && m_target->CanHaveThreatList())
                     m_target->AddThreat(caster, 10.0f);
                 return;
             case 7057:                                      // Haunting Spirits
@@ -2320,27 +2320,40 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 m_modifier.periodictime = 30*IN_MILISECONDS;
                 m_periodicTimer = m_modifier.periodictime;
                 return;
+            case 10255:                             // Stoned
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (caster->GetTypeId() != TYPEID_UNIT)
+                        return;
+
+                    caster->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                    caster->addUnitState(UNIT_STAT_ROOT);
+                }
+                return;
+            }
             case 13139:                                     // net-o-matic
                 // root to self part of (root_target->charge->root_self sequence
                 if(caster)
                     caster->CastSpell(caster,13138,true,NULL,this);
                 return;
-            case 37096:                                     // Blood Elf Disguise
-                if(caster)
+            // Gender spells
+            case 38224:                             // Illidari Agent Illusion
+            case 37096:                             // Blood Elf Illusion
+            case 46354:                             // Blood Elf Illusion
+            {
+                uint8 gender = m_target->getGender();
+                uint32 spellId;
+                switch (GetId())
                 {
-                    switch(caster->getGender())
-                    {
-                        case GENDER_FEMALE:
-                            caster->CastSpell(m_target,37095,true,NULL,this);
-                            break;
-                        case GENDER_MALE:
-                            caster->CastSpell(m_target,37093,true,NULL,this);
-                            break;
-                        default:
-                            break;
-                    }
+                    case 38224: spellId = (gender == GENDER_MALE ? 38225 : 38227); break;
+                    case 37096: spellId = (gender == GENDER_MALE ? 37092 : 37094); break;
+                    case 46354: spellId = (gender == GENDER_MALE ? 46355 : 46356); break;
+                    default: return;
                 }
+                m_target->CastSpell(m_target, spellId, true, NULL, this);
                 return;
+            }
             case 40129:                                     // Summon Air Elemental
                 caster->SummonCreature(23096, -2434.87, 4705.98, 174.66, 3.92, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 600000);
                 break;
@@ -2365,22 +2378,6 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 if(caster->GetTypeId() == TYPEID_PLAYER)
                     ((Player*)caster)->SendPlaySound(11965, false);
                 return;
-            case 46354:                                     // Blood Elf Illusion
-                if(caster)
-                {
-                    switch(caster->getGender())
-                    {
-                        case GENDER_FEMALE:
-                            caster->CastSpell(m_target,46356,true,NULL,this);
-                            break;
-                        case GENDER_MALE:
-                            caster->CastSpell(m_target,46355,true,NULL,this);
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                return;
             case 46699:                                     // Requires No Ammo
                 if(m_target->GetTypeId()==TYPEID_PLAYER)
                     ((Player*)m_target)->RemoveAmmo();      // not use ammo and not allow use
@@ -2388,7 +2385,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
         }
 
         // Earth Shield
-        if ( caster && GetSpellProto()->SpellFamilyName == SPELLFAMILY_SHAMAN && (GetSpellProto()->SpellFamilyFlags & 0x40000000000LL))
+        if (caster && GetSpellProto()->SpellFamilyName == SPELLFAMILY_SHAMAN && (GetSpellProto()->SpellFamilyFlags & 0x40000000000LL))
         {
             // prevent double apply bonuses
             if(m_target->GetTypeId()!=TYPEID_PLAYER || !((Player*)m_target)->GetSession()->PlayerLoading())
@@ -2399,14 +2396,14 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
     // AT REMOVE
     else
     {
-        if( m_target->GetTypeId() == TYPEID_PLAYER && GetSpellProto()->Effect[0]==72 )
+        if(m_target->GetTypeId() == TYPEID_PLAYER && GetSpellProto()->Effect[0]==72 )
         {
             // spells with SpellEffect=72 and aura=4: 6196, 6197, 21171, 21425
             ((Player*)m_target)->ClearFarsight();
             return;
         }
 
-        if( (IsQuestTameSpell(GetId())) && caster && caster->isAlive() && m_target->isAlive())
+        if((IsQuestTameSpell(GetId())) && caster && caster->isAlive() && m_target->isAlive())
         {
             uint32 finalSpelId = 0;
             switch(GetId())
@@ -2439,6 +2436,18 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
         // AT REMOVE
         switch(GetId())
         {
+            case 10255:                                     // Stoned
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (caster->GetTypeId() != TYPEID_UNIT)
+                        return;
+
+                    // see dummy effect of spell 10254 for removal of flags etc
+                    caster->CastSpell(caster, 10254, true);
+                }
+                return;
+            }
             case 2584:          // Waiting to Resurrect
             {
                 // Waiting to resurrect spell cancel, we must remove player from resurrect queue
@@ -2447,12 +2456,22 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                         bg->RemovePlayerFromResurrectQueue(m_target->GetGUID());
                 return;
             }
+            case 12479:                                     // Hex of Jammal'an
+                m_target->CastSpell(m_target, 12480, true, NULL, this);
+                return;
             case 28169:        // Mutating Injection
             {
                 // Mutagen Explosion
                 m_target->CastSpell(m_target, 28206, true, NULL, this);
                 // Poison Cloud
                 m_target->CastSpell(m_target, 28240, true, NULL, this);
+                return;
+            }
+            case 32286:                                     // Focus Target Visual
+            {
+                if (m_removeMode == AURA_REMOVE_BY_EXPIRE)
+                    m_target->CastSpell(m_target, 32301, true, NULL, this);
+
                 return;
             }
             case 6946:                                     // Curse of Bleakheart
@@ -2505,6 +2524,36 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 m_target->RemoveAurasDueToSpell(29660);
                 m_target->RemoveAurasDueToSpell(39089);
                 m_target->RemoveAurasDueToSpell(39092);
+                return;
+            }
+            case 41099:                                     // Battle Stance
+            {
+                // Battle Aura
+                m_target->RemoveAurasDueToSpell(41106);
+                return;
+            }
+            case 41100:                                     // Berserker Stance
+            {
+                // Berserker Aura
+                m_target->RemoveAurasDueToSpell(41107);
+                return;
+            }
+            case 41101:                                     // Defensive Stance
+            {
+                // Defensive Aura
+                m_target->RemoveAurasDueToSpell(41105);
+                return;
+            }
+            case 42517:                                     // Beam to Zelfrax
+            {
+                // expecting target to be a dummy creature
+                Creature* pSummon = m_target->SummonCreature(23864, 0.0f, 0.0f, 0.0f, m_target->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 0);
+
+                Unit* pCaster = GetCaster();
+
+                if (pSummon && pCaster)
+                    pSummon->GetMotionMaster()->MovePoint(0, pCaster->GetPositionX(), pCaster->GetPositionY(), pCaster->GetPositionZ());
+
                 return;
             }
         }
@@ -2593,8 +2642,78 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 }
                 return;
             }
-
+            if (GetId() == 42515)                                 // Jarl Beam
+            {
+                // aura animate dead (fainted) state for the duration, but we need to animate the death itself (correct way below?)
+                if (Unit* pCaster = GetCaster())
+                    pCaster->ApplyModFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH, apply);
+                
+                // Beam to Zelfrax at remove
+                if (!apply)
+                    m_target->CastSpell(m_target, 42517, true);
+                return;
+            }
             break;
+        }
+        case SPELLFAMILY_WARRIOR:
+        {
+            if (!apply)
+                return;
+
+            switch(GetId())
+            {
+                case 41099:                             // Battle Stance
+                {
+                    if (m_target->GetTypeId() != TYPEID_UNIT)
+                        return;
+
+                    // Stance Cooldown
+                    m_target->CastSpell(m_target, 41102, true, NULL, this);
+
+                    // Battle Aura
+                    m_target->CastSpell(m_target, 41106, true, NULL, this);
+
+                    // equipment
+                    m_target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + 0, 32614);
+                    m_target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + 1, 0);
+                    m_target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + 2, 0);
+                    return;
+                }
+                case 41100:                             // Berserker Stance
+                {
+                    if (m_target->GetTypeId() != TYPEID_UNIT)
+                        return;
+
+                    // Stance Cooldown
+                    m_target->CastSpell(m_target, 41102, true, NULL, this);
+
+                    // Berserker Aura
+                    m_target->CastSpell(m_target, 41107, true, NULL, this);
+
+                    // equipment
+                    m_target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + 0, 32614);
+                    m_target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + 1, 0);
+                    m_target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + 2, 0);
+                    return;
+                }
+                case 41101:                             // Defensive Stance
+                {
+                    if (m_target->GetTypeId() != TYPEID_UNIT)
+                        return;
+
+                    // Stance Cooldown
+                    m_target->CastSpell(m_target, 41102, true, NULL, this);
+
+                    // Defensive Aura
+                    m_target->CastSpell(m_target, 41105, true, NULL, this);
+
+                    // equipment
+                    m_target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + 0, 32604);
+                    m_target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + 1, 31467);
+                    m_target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + 2, 0);
+                    return;
+                }
+            }
         }
         case SPELLFAMILY_MAGE:
         {
