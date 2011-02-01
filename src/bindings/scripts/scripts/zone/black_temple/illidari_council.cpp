@@ -432,6 +432,13 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public illidari_council_b
         }
     }
 
+    void RegenMana()
+    {
+        uint32 maxMana = me->GetMaxPower(POWER_MANA);
+        uint32 Mana = me->GetPower(POWER_MANA);
+        me->SetPower(POWER_MANA, Mana+0.01*maxMana);
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim())
@@ -488,6 +495,7 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public illidari_council_b
 
         if (m_judgementTimer < diff)
         {
+            RegenMana();
             ForceSpellCast(me->getVictim(), SPELL_GATHIOS_JUDGEMENT, INTERRUPT_AND_CAST);
             m_judgementTimer = 15000;
         }
@@ -544,7 +552,7 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
                 good_z = top_z;
 
             if(z < good_z)
-                    m_creature->GetMap()->CreatureRelocation(m_creature, x, y, good_z+0.15, m_creature->GetAngle(m_creature->getVictim()));
+                m_creature->GetMap()->CreatureRelocation(m_creature, x, y, good_z+0.15, m_creature->GetAngle(m_creature->getVictim()));
         }
     }
 
