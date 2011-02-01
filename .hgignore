@@ -26,3 +26,4 @@ src/realmd/
 syntax: regexp
 
 ^src/shared/revision\.h
+glob:*.ipch

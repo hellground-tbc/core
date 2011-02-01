@@ -421,7 +421,7 @@ struct TRINITY_DLL_DECL npc_dirty_larryAI : public ScriptedAI
     uint32 SayTimer;
     uint32 EvadeTimer;
     uint32 Step;
-	
+    
     WorldLocation wLoc;
 
     void Reset()
@@ -442,7 +442,7 @@ struct TRINITY_DLL_DECL npc_dirty_larryAI : public ScriptedAI
         {
             ((Creature*)Creepjack)->AI()->EnterEvadeMode();
             Creepjack->setFaction(1194);
-            Creepjack->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);	
+            Creepjack->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);    
         }
         Unit* Malone = FindCreature(NPC_MALONE, 20, m_creature);
         if(Malone)
@@ -450,13 +450,13 @@ struct TRINITY_DLL_DECL npc_dirty_larryAI : public ScriptedAI
             ((Creature*)Malone)->AI()->EnterEvadeMode();
             Malone->setFaction(1194);
             Malone->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-	    }
+        }
     }
 
     uint32 NextStep(uint32 Step)
     {
         Player *player = Unit::GetPlayer(PlayerGUID);
-		
+        
         switch(Step)
         {
         case 0:
@@ -467,7 +467,7 @@ struct TRINITY_DLL_DECL npc_dirty_larryAI : public ScriptedAI
                 Creepjack->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
             Unit* Malone = FindCreature(NPC_MALONE, 20, m_creature);
             if(Malone)
-                Malone->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);	
+                Malone->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);    
             m_creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
         }return 2000;
         case 1: DoScriptText(SAY_1, m_creature, player); return 3000;
@@ -556,7 +556,7 @@ struct TRINITY_DLL_DECL npc_dirty_larryAI : public ScriptedAI
                 player->GroupEventHappens(QUEST_WBI, m_creature);
             Reset();
         }
-		if(EvadeTimer < diff)
+        if(EvadeTimer < diff)
         {
                 if(m_creature->GetDistance2d(wLoc.x, wLoc.y) >= 50)
                 EnterEvadeMode();

@@ -5174,7 +5174,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
 
             uint32 iTmpSpellId;
 
-            switch(m_caster->GetMap()->urand(0,3))
+            switch(urand(0,3))
             {
                 case 0:
                     iTmpSpellId = 26272;
@@ -5191,7 +5191,6 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             }
 
             unitTarget->CastSpell(unitTarget, iTmpSpellId, true);
-
             return;
         }
 
@@ -5328,6 +5327,42 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             return;
         }
         break;
+        case 24194:                                 // Uther's Tribute
+        case 24195:                                 // Grom's Tribute
+        {
+            if (m_caster->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+            uint8 race = m_caster->getRace();
+            uint32 spellId = 0;
+
+            switch(m_spellInfo->Id)
+            {
+                case 24194:
+                    switch(race)
+                    {
+                        case RACE_HUMAN:            spellId = 24105; break;
+                        case RACE_DWARF:            spellId = 24107; break;
+                        case RACE_NIGHTELF:         spellId = 24108; break;
+                        case RACE_GNOME:            spellId = 24106; break;
+                    }
+                break;
+                case 24195:
+                    switch(race)
+                    {
+                        case RACE_ORC:              spellId = 24104; break;
+                        case RACE_UNDEAD:           spellId = 24103; break;
+                        case RACE_TAUREN:           spellId = 24102; break;
+                        case RACE_TROLL:            spellId = 24101; break;
+                    }
+                break;
+            }
+
+            if (spellId)
+                m_caster->CastSpell(m_caster, spellId, true);
+
+            return;
+        }
         // Hallowed Wand
         // Random Costume
         case 24720:
@@ -5397,6 +5432,16 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 m_caster->CastSpell(unitTarget,24736,true);
         }
         break;
+        case 26218:
+        {
+            if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+            uint32 spells[3] = {26206, 26207, 45036};
+
+            m_caster->CastSpell(unitTarget, spells[urand(0, 2)], true);
+            return;
+        }
         // Summon Black Qiraji Battle Tank
         case 26656:
         {
@@ -5459,7 +5504,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         case 29830:
         {
             uint32 item = 0;
-            switch ( m_caster->GetMap()->urand(1,6) )
+            switch (urand(1,6))
             {
                 case 1: case 2: case 3: item = 23584; break;// Loch Modan Lager
                 case 4: case 5:         item = 23585; break;// Stouthammer Lite
@@ -5512,6 +5557,23 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             unitTarget->CastSpell(unitTarget,33671,true,0,0,m_caster->GetGUID());
             break;
         }
+        case 41055:                                 // Copy Weapon
+        {
+            if (m_caster->GetTypeId() != TYPEID_UNIT || !unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+            if (Item* pItem = ((Player*)unitTarget)->GetWeaponForAttack(BASE_ATTACK))
+            {
+                if (const ItemEntry *dbcitem = sItemStore.LookupEntry(pItem->GetProto()->ItemId))
+                {
+                    m_caster->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + 0, dbcitem->ID);
+
+                    // Unclear what this spell should do
+                    unitTarget->CastSpell(m_caster, m_spellInfo->EffectBasePoints[effIndex], true);
+                }
+            }
+            return;
+        }
         // Goblin Weather Machine
         case 46203:
         {
@@ -5519,7 +5581,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 return;
 
             uint32 spellId;
-            switch((uint32)m_caster->GetMap()->rand32()%4)
+            switch(urand(0,3))
             {
                 case 0:
                     spellId=46740;
@@ -5668,7 +5730,10 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         // Draw Soul
         case 40904: unitTarget->CastSpell(m_caster, 40903, true); break;
         // Flame Crash
-        //case 41126: unitTarget->CastSpell(unitTarget, 41131, true); break;
+        case 41126:
+            unitTarget->CastSpell(unitTarget, 41131, true);
+            return;
+        break;
         case 41931:
         {
             int bag=19;
@@ -5696,7 +5761,14 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             }
         }
         // Force Cast - Portal Effect: Sunwell Isle
-        case 44876: unitTarget->CastSpell(unitTarget, 44870, true); break;
+        case 44876:
+        {
+            if (!unitTarget)
+                return;
+
+            unitTarget->CastSpell(unitTarget, 44870, true);
+            break;
+        }
         //Brutallus - Burn
         case 45141: case 45151:
         {
@@ -5714,18 +5786,46 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 unitTarget->RemoveAurasDueToSpell(46394);
             break;
         }
+        case 45206:                                 // Copy Off-hand Weapon
+        {
+            if (m_caster->GetTypeId() != TYPEID_UNIT || !unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+            if (Item* pItem = ((Player*)unitTarget)->GetWeaponForAttack(OFF_ATTACK))
+            {
+                if (const ItemEntry *dbcitem = sItemStore.LookupEntry(pItem->GetProto()->ItemId))
+                {
+                    m_caster->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + 1, dbcitem->ID);
+
+                    // Unclear what this spell should do
+                    unitTarget->CastSpell(m_caster, m_spellInfo->EffectBasePoints[effIndex], true);
+                }
+            }
+            return;
+        }
         // Negative Energy
         case 46289: m_caster->CastSpell(unitTarget, 46285, true); break;
         //5,000 Gold
         case 46642:
         {
-            if(unitTarget->GetTypeId() == TYPEID_PLAYER)
+            if (unitTarget->GetTypeId() == TYPEID_PLAYER)
                 ((Player*)unitTarget)->ModifyMoney(50000000);
             break;
         }
+        case 48917:
+        {
+            if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+            // Male Shadowy Disguise / Female Shadowy Disguise
+            unitTarget->CastSpell(unitTarget, unitTarget->getGender() == GENDER_MALE ? 38080 : 38081, true);
+            // Shadowy Disguise
+            unitTarget->CastSpell(unitTarget, 32756, true);
+            return;
+        }
     }
 
-    if( m_spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN )
+    if(m_spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN)
     {
         switch(m_spellInfo->SpellFamilyFlags)
         {
@@ -5741,13 +5841,13 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                     SpellEntry const *spellInfo = (*itr)->GetSpellProto();
 
                     // search seal (all seals have judgement's aura dummy spell id in 2 effect
-                    if ( !spellInfo || !IsSealSpell((*itr)->GetSpellProto()) || (*itr)->GetEffIndex() != 2 )
+                    if (!spellInfo || !IsSealSpell((*itr)->GetSpellProto()) || (*itr)->GetEffIndex() != 2 )
                         continue;
 
                     // must be calculated base at raw base points in spell proto, GetModifier()->m_value for S.Righteousness modified by SPELLMOD_DAMAGE
                     spellId2 = (*itr)->GetSpellProto()->EffectBasePoints[2]+1;
 
-                    if(spellId2 <= 1)
+                    if (spellId2 <= 1)
                         continue;
 
                     // found, remove seal

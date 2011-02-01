@@ -617,7 +617,7 @@ void AddSC_azshara()
     newscript->Name="mob_depth_charge";
     newscript->GetAI = &GetAI_mob_depth_charge;
     newscript->RegisterSelf();
-	
+    
     newscript = new Script;
     newscript->Name="mob_spirit_of_azuregos";
     newscript->pGossipHello =  &GossipHello_mob_spirit_of_azuregos;

@@ -138,9 +138,9 @@ bool GameEvent::StartEvent( uint16 event_id, bool overwrite )
 
 void GameEvent::StopEvent( uint16 event_id, bool overwrite )
 {
-	if(event_id==15){
-		CharacterDatabase.Execute("DELETE FROM character_inventory WHERE item_template=19807");
-	}
+    if(event_id==15){
+        CharacterDatabase.Execute("DELETE FROM character_inventory WHERE item_template=19807");
+    }
     bool serverwide_evt = mGameEvent[event_id].state != GAMEEVENT_NORMAL;
 
     RemoveActiveEvent(event_id);

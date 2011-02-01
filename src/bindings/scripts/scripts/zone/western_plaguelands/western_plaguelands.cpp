@@ -335,7 +335,7 @@ bool QuestAccept_npc_anchorite_truuen(Player* pPlayer, Creature* pCreature, Ques
 }
 
 /*######
-##	npcs_andorhal_tower 
+##    npcs_andorhal_tower 
 ######*/
 
 enum eAndorhalTower
@@ -394,7 +394,7 @@ void AddSC_western_plaguelands()
     newscript->GetAI = &GetAI_npc_anchorite_truuen;
     newscript->pQuestAccept =  &QuestAccept_npc_anchorite_truuen;
     newscript->RegisterSelf();
-	
+    
     newscript = new Script;
     newscript->Name = "npc_andorhal_tower";
     newscript->GetAI = &GetAI_npc_andorhal_tower;

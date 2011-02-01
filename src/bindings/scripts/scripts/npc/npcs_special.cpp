@@ -986,13 +986,6 @@ bool ReceiveEmote_npc_winter_reveler( Player *player, Creature *_Creature, uint3
     {
         _Creature->CastSpell(_Creature, 26218, false);
         player->CastSpell(player, 26218, false);
-
-        switch(urand(0,3))
-        {
-            case 0: player->CastSpell(player, 26207, false); break;
-            case 1: player->CastSpell(player, 26206, false); break;
-            case 2: player->CastSpell(player, 45036, false); break;
-        }
         player->AddSpellCooldown(26218, 0, time(NULL) + 3600);
     }
     return true;
@@ -1905,7 +1898,7 @@ bool GossipHello_npc_lorekeeper_lydros(Player *player, Creature *_Creature)
         player->PrepareQuestMenu( _Creature->GetGUID() );
     if(player->GetQuestRewardStatus(7507) && !player->HasItemCount(18513,1))
         player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_LOREKEEPER1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1 );
-		
+        
 player->SEND_GOSSIP_MENU(24999, _Creature->GetGUID());
 return true;
 }

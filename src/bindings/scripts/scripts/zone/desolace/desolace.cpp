@@ -436,7 +436,7 @@ void AddSC_desolace()
     newscript->GetAI = &GetAI_npc_melizza_brimbuzzle;
     newscript->pQuestAccept = &QuestAccept_npc_melizza_brimbuzzle;
     newscript->RegisterSelf();
-	
+    
     newscript = new Script;
     newscript->Name="npc_rokaro";
     newscript->pGossipHello = &GossipHello_npc_rokaro;

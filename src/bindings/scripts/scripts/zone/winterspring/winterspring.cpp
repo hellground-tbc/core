@@ -198,7 +198,7 @@ void AddSC_winterspring()
     newscript->pGossipHello =  &GossipHello_npc_witch_doctor_mauari;
     newscript->pGossipSelect = &GossipSelect_npc_witch_doctor_mauari;
     newscript->RegisterSelf();
-	
+    
     newscript = new Script;
     newscript->Name="npc_haleh";
     newscript->pGossipHello = &GossipHello_npc_haleh;

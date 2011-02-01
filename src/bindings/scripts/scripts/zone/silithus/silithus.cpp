@@ -215,7 +215,7 @@ bool GossipHello_npc_cenarion_scout_jalia(Player *player, Creature *_Creature)
         player->PrepareQuestMenu( _Creature->GetGUID() );
 
     if( player->GetQuestStatus(8739) == QUEST_STATUS_INCOMPLETE )
-	if(!player->HasItemCount(21161,1))	
+    if(!player->HasItemCount(21161,1))    
         player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_JALIA, GOSSIP_SENDER_MAIN, GOSSIP_SENDER_INFO );
 
     player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
@@ -244,7 +244,7 @@ bool GossipHello_npc_cenarion_scout_azenel(Player *player, Creature *_Creature)
         player->PrepareQuestMenu( _Creature->GetGUID() );
 
     if( player->GetQuestStatus(8534) == QUEST_STATUS_INCOMPLETE )
-	if(!player->HasItemCount(21158,1))	
+    if(!player->HasItemCount(21158,1))    
         player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_AZENEL, GOSSIP_SENDER_MAIN, GOSSIP_SENDER_INFO );
 
     player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
@@ -273,7 +273,7 @@ bool GossipHello_npc_cenarion_scout_landion(Player *player, Creature *_Creature)
         player->PrepareQuestMenu( _Creature->GetGUID() );
 
     if( player->GetQuestStatus(8738) == QUEST_STATUS_INCOMPLETE )
-       if(!player->HasItemCount(21160,1))	
+       if(!player->HasItemCount(21160,1))    
           player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_LANDION, GOSSIP_SENDER_MAIN, GOSSIP_SENDER_INFO );
 
     player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
@@ -310,19 +310,19 @@ void AddSC_silithus()
     newscript->pGossipHello =   &GossipHello_npcs_rutgar_and_frankal;
     newscript->pGossipSelect =  &GossipSelect_npcs_rutgar_and_frankal;
     newscript->RegisterSelf();
-	
-	newscript = new Script;
+    
+    newscript = new Script;
     newscript->Name="npc_cenarion_scout_jalia";
     newscript->pGossipHello = &GossipHello_npc_cenarion_scout_jalia;
     newscript->pGossipSelect = &GossipSelect_npc_cenarion_scout_jalia;
     newscript->RegisterSelf();
-	
+    
     newscript = new Script;
     newscript->Name="npc_cenarion_scout_azenel";
     newscript->pGossipHello = &GossipHello_npc_cenarion_scout_azenel;
     newscript->pGossipSelect = &GossipSelect_npc_cenarion_scout_azenel;
     newscript->RegisterSelf();
-	
+    
     newscript = new Script;
     newscript->Name="npc_cenarion_scout_landion";
     newscript->pGossipHello = &GossipHello_npc_cenarion_scout_landion;

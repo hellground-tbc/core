@@ -719,13 +719,13 @@ void AddSC_blades_edge_mountains()
     newscript->Name = "mob_aetherray";
     newscript->GetAI = &GetAI_mob_aetherray;
     newscript->RegisterSelf();
-	
+    
     newscript = new Script;
     newscript->Name="npc_wildlord_antelarion";
     newscript->pGossipHello = &GossipHello_npc_wildlord_antelarion;
     newscript->pGossipSelect = &GossipSelect_npc_wildlord_antelarion;
     newscript->RegisterSelf();
-	
+    
     newscript = new Script;
     newscript->Name="npc_kolphis_darkscale";
     newscript->pGossipHello = &GossipHello_npc_kolphis_darkscale;

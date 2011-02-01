@@ -3389,10 +3389,10 @@ bool GossipHello_npc_overlord_orbarokh(Player *player, Creature *_Creature)
     if (_Creature->isQuestGiver())
         player->PrepareQuestMenu( _Creature->GetGUID() );
 
-		if(player->GetQuestStatus(10751) || player->GetQuestStatus(10765) || player->GetQuestStatus(10768) || player->GetQuestStatus(10769) == QUEST_STATUS_INCOMPLETE )
-			if(!player->HasItemCount(31108,1))
-				player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_ORBAROKH, GOSSIP_SENDER_MAIN, GOSSIP_SENDER_INFO );
-				player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+        if(player->GetQuestStatus(10751) || player->GetQuestStatus(10765) || player->GetQuestStatus(10768) || player->GetQuestStatus(10769) == QUEST_STATUS_INCOMPLETE )
+            if(!player->HasItemCount(31108,1))
+                player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_ORBAROKH, GOSSIP_SENDER_MAIN, GOSSIP_SENDER_INFO );
+                player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
     return true;
 }
 
@@ -3402,7 +3402,7 @@ bool GossipSelect_npc_overlord_orbarokh(Player *player, Creature *_Creature, uin
     {
             ItemPosCountVec dest;
             uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 31108, 1);
-			if (msg == EQUIP_ERR_OK)
+            if (msg == EQUIP_ERR_OK)
             {
                  Item* item = player->StoreNewItem(dest, 31108, true);
                      player->SendNewItem(item,1,true,false,true);
@@ -3422,10 +3422,10 @@ bool GossipHello_npc_thane_yoregar(Player *player, Creature *_Creature)
     if (_Creature->isQuestGiver())
         player->PrepareQuestMenu( _Creature->GetGUID() );
 
-		if(player->GetQuestStatus(10773) || player->GetQuestStatus(10774) || player->GetQuestStatus(10775) || player->GetQuestStatus(10776) == QUEST_STATUS_INCOMPLETE )
-			if(!player->HasItemCount(31310,1))
-				player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_YOREGAR, GOSSIP_SENDER_MAIN, GOSSIP_SENDER_INFO );
-				player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+        if(player->GetQuestStatus(10773) || player->GetQuestStatus(10774) || player->GetQuestStatus(10775) || player->GetQuestStatus(10776) == QUEST_STATUS_INCOMPLETE )
+            if(!player->HasItemCount(31310,1))
+                player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_YOREGAR, GOSSIP_SENDER_MAIN, GOSSIP_SENDER_INFO );
+                player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
     return true;
 }
 
@@ -3435,7 +3435,7 @@ bool GossipSelect_npc_thane_yoregar(Player *player, Creature *_Creature, uint32 
     {
             ItemPosCountVec dest;
             uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 31310, 1);
-			if (msg == EQUIP_ERR_OK)
+            if (msg == EQUIP_ERR_OK)
             {
                  Item* item = player->StoreNewItem(dest, 31310, true);
                      player->SendNewItem(item,1,true,false,true);
@@ -3605,7 +3605,7 @@ void AddSC_shadowmoon_valley()
     newscript->GetAI = &GetAI_mob_deathbringer_joovanAI;
     newscript->RegisterSelf();
 
-	newscript = new Script;
+    newscript = new Script;
     newscript->Name="npc_overlord_orbarokh";
     newscript->pGossipHello = &GossipHello_npc_overlord_orbarokh;
     newscript->pGossipSelect = &GossipSelect_npc_overlord_orbarokh;
