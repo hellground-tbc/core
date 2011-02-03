@@ -257,8 +257,8 @@ struct TRINITY_DLL_DECL advisorbase_ai : public ScriptedAI
         m_creature->setDeathState(ALIVE);
         DoCast(m_creature, SPELL_RES_VISUAL, false);
 
-        if(m_creature->GetDistance2d(dLoc.x,dLoc.y) > 1.0)
-            DoTeleportTo(dLoc.x, dLoc.y, dLoc.z);
+        if(m_creature->GetDistance2d(dLoc.coord_x,dLoc.coord_y) > 1.0)
+            DoTeleportTo(dLoc.coord_x, dLoc.coord_y, dLoc.coord_z);
 
         DoZoneInCombat(); // So we have now new shiny target list ;]
 

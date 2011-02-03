@@ -92,8 +92,8 @@ struct TRINITY_DLL_DECL mob_aqueous_lordAI : public ScriptedAI
             {
                 if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
                 {
-                    target->GetClosePoint(temp.x, temp.y, temp.z, 15.0);
-                    Creature* Spawn = m_creature->SummonCreature(NPC_AQUEOUS_SPAWN, temp.x, temp.y, temp.z, 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
+                    target->GetClosePoint(temp.coord_x, temp.coord_y, temp.coord_z, 15.0);
+                    Creature* Spawn = m_creature->SummonCreature(NPC_AQUEOUS_SPAWN, temp.coord_x, temp.coord_y, temp.coord_z, 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
                     Spawn->AI()->AttackStart(target);
                 }
             }

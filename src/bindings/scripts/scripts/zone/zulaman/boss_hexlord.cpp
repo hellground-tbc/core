@@ -207,9 +207,9 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
         for(uint8 i = 0; i < 4; ++i)
             AddGUID[i] = 0;
 
-        wLoc.x = 119.223;
-        wLoc.y = 1035.45;
-        wLoc.z = 29.4481;
+        wLoc.coord_x = 119.223;
+        wLoc.coord_y = 1035.45;
+        wLoc.coord_z = 29.4481;
         wLoc.mapid = c->GetMapId();
     }
 

@@ -167,7 +167,7 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
                 me->SetSelection(0);
 
                 WorldLocation wLoc;
-                me->GetClosePoint(wLoc.x, wLoc.y, wLoc.z, 0, 95.0f, 0);
+                me->GetClosePoint(wLoc.coord_x, wLoc.coord_y, wLoc.coord_z, 0, 95.0f, 0);
                
                 Map *pMap = me->GetMap();
                 Map::PlayerList const& players = pMap->GetPlayers();
@@ -197,7 +197,7 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
                     if (!me->HasInArc(M_PI, pPlayer))
                         continue;
 
-                    Unit *pTemp = me->SummonCreature(WORLD_TRIGGER, wLoc.x, wLoc.y, wLoc.z, 0, TEMPSUMMON_TIMED_DESPAWN, 1000);
+                    Unit *pTemp = me->SummonCreature(WORLD_TRIGGER, wLoc.coord_x, wLoc.coord_y, wLoc.coord_z, 0, TEMPSUMMON_TIMED_DESPAWN, 1000);
                     if (!pTemp)
                         continue;
 

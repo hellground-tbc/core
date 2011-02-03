@@ -218,7 +218,7 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
 
         if (m_checkTimer < diff)
         {
-            if(me->GetDistance(wLoc.x, wLoc.y, wLoc.z) > 110)
+            if(me->GetDistance(wLoc.coord_x, wLoc.coord_y, wLoc.coord_z) > 110)
                 EnterEvadeMode();
             DoZoneInCombat();
             me->SetSpeed(MOVE_RUN, 3.0);

@@ -77,9 +77,9 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
         pInstance = (ScriptedInstance*)c->GetInstanceData();
         DefaultMoveSpeedRate = c->GetSpeedRate(MOVE_RUN);
         //m_creature->GetPosition(wLoc);
-        wLoc.x = 331;
-        wLoc.y = 0.01;
-        wLoc.z = -2.59;
+        wLoc.coord_x = 331;
+        wLoc.coord_y = 0.01;
+        wLoc.coord_z = -2.59;
         wLoc.mapid = c->GetMapId();
     }
 
@@ -317,7 +317,7 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
                         return;
                     case WE_DIE:
                         ForceMove = false;
-                        DoTeleportTo(wLoc.x, wLoc.y, wLoc.z, 0.0f);
+                        DoTeleportTo(wLoc.coord_x, wLoc.coord_y, wLoc.coord_z, 0.0f);
                         WaitTimer = 5000;
                         WaitEvent = WE_REVIVE;
                         return;

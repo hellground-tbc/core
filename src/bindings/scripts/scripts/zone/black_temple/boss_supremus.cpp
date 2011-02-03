@@ -286,8 +286,8 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
                     else
                     {
                         WorldLocation temp;
-                        target->GetClosePoint(temp.x, temp.y, temp.z, 20.0f, false, m_creature->GetOrientation());  //if boss >40yd from victim make him run fast till 20yd and charge without damage
-                        m_creature->SendMonsterMoveWithSpeed(temp.x, temp.y, temp.z, MOVEMENTFLAG_WALK_MODE);
+                        target->GetClosePoint(temp.coord_x, temp.coord_y, temp.coord_z, 20.0f, false, m_creature->GetOrientation());  //if boss >40yd from victim make him run fast till 20yd and charge without damage
+                        m_creature->SendMonsterMoveWithSpeed(temp.coord_x, temp.coord_y, temp.coord_z, MOVEMENTFLAG_WALK_MODE);
                         m_creature->CastSpell(target, SPELL_CHARGE, false);
                     }
                 }

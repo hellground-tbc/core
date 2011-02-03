@@ -221,7 +221,7 @@ struct TRINITY_DLL_DECL boss_hydross_the_unstableAI : public ScriptedAI
 
         if(PulseCombat_Timer < diff)
         {
-            if(m_creature->GetDistance2d(wLoc.x, wLoc.y) < 100.0)
+            if(m_creature->GetDistance2d(wLoc.coord_x, wLoc.coord_y) < 100.0)
                 DoZoneInCombat();
             else
                 EnterEvadeMode();

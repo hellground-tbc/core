@@ -81,7 +81,7 @@ Object::Object( )
     m_PackGUID.Set(0);
 }
 
-Object::~Object( )
+Object::~Object()
 {
     if(m_uint32Values)
     {
@@ -1221,12 +1221,12 @@ bool WorldObject::_IsWithinDist(WorldObject const* obj, float dist2compare, bool
 
 bool WorldObject::_IsWithinDist(WorldLocation const* wLoc, float dist2compare, bool is3D) const
 {
-    float dx = GetPositionX() - wLoc->x;
-    float dy = GetPositionY() - wLoc->y;
+    float dx = GetPositionX() - wLoc->coord_x;
+    float dy = GetPositionY() - wLoc->coord_y;
     float distsq = dx*dx + dy*dy;
     if(is3D)
     {
-        float dz = GetPositionZ() - wLoc->z;
+        float dz = GetPositionZ() - wLoc->coord_z;
         distsq += dz*dz;
     }
     float maxdist = dist2compare + GetObjectSize();

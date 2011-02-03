@@ -210,8 +210,8 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
     void TeleportCenter()
     {
         m_creature->CastSpell(m_creature, SPELL_BLINK_CENTER, true);
-        m_creature->Relocate(wLoc.x,wLoc.y,wLoc.z);
-        m_creature->SendMonsterMove(wLoc.x,wLoc.y,wLoc.z, 0);
+        m_creature->Relocate(wLoc.coord_x,wLoc.coord_y,wLoc.coord_z);
+        m_creature->SendMonsterMove(wLoc.coord_x,wLoc.coord_y,wLoc.coord_z, 0);
     }
 
     void JustDied(Unit *victim)
@@ -774,13 +774,13 @@ struct TRINITY_DLL_DECL circular_blizzardAI : public ScriptedAI
             Creature *pAran = Unit::GetCreature(*m_creature, pInstance->GetData64(DATA_ARAN));
             if(pAran)
             {
-                wLoc.x = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[0][0];
-                wLoc.y = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[1][0];
-                wLoc.z = pAran->GetPositionZ();
+                wLoc.coord_x = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[0][0];
+                wLoc.coord_y = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[1][0];
+                wLoc.coord_z = pAran->GetPositionZ();
             }
 
-            if(wLoc.x || wLoc.y || wLoc.z)
-                DoTeleportTo(wLoc.x, wLoc.y, wLoc.z);
+            if(wLoc.coord_x || wLoc.coord_y || wLoc.coord_z)
+                DoTeleportTo(wLoc.coord_x, wLoc.coord_y, wLoc.coord_z);
 
             currentWaypoint = 0;
             waypointTimer = 0;
@@ -806,11 +806,11 @@ struct TRINITY_DLL_DECL circular_blizzardAI : public ScriptedAI
             Creature *pAran = Unit::GetCreature(*m_creature, pInstance->GetData64(DATA_ARAN));
             if(pAran)
             {
-                wLoc.x = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[0][currentWaypoint];
-                wLoc.y = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[1][currentWaypoint];
+                wLoc.coord_x = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[0][currentWaypoint];
+                wLoc.coord_y = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[1][currentWaypoint];
             }
 
-            m_creature->GetMotionMaster()->MovePoint(currentWaypoint, wLoc.x, wLoc.y, wLoc.z);
+            m_creature->GetMotionMaster()->MovePoint(currentWaypoint, wLoc.coord_x, wLoc.coord_y, wLoc.coord_z);
             waypointTimer = 3000;
         }
         else

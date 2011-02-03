@@ -623,12 +623,6 @@ enum MovementFlags
         MOVEMENTFLAG_LEFT | MOVEMENTFLAG_RIGHT,
  };
 
-struct Position
-{
-    Position() : x(0.0f), y(0.0f), z(0.0f), o(0.0f) {}
-    float x, y, z, o;
-};
-
 class MovementInfo
 {
     public:

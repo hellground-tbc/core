@@ -113,8 +113,7 @@ void MapManager::checkAndCorrectGridStatesArray()
         assert(false);                                      // force a crash. Too many errors
 }
 
-Map*
-MapManager::_createBaseMap(uint32 id)
+Map* MapManager::_createBaseMap(uint32 id)
 {
     Map *m = _findMap(id);
 

@@ -109,9 +109,9 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
             TempSpell->EffectImplicitTargetA[0] = 1;
             TempSpell->EffectImplicitTargetB[0] = 0;
         }
-        wLoc.x = -33.93;
-        wLoc.y = 1149.27;
-        wLoc.z = 19;
+        wLoc.coord_x = -33.93;
+        wLoc.coord_y = 1149.27;
+        wLoc.coord_z = 19;
         wLoc.mapid = c->GetMapId();
     }
 

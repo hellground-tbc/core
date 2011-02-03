@@ -558,7 +558,7 @@ struct TRINITY_DLL_DECL npc_dirty_larryAI : public ScriptedAI
         }
         if(EvadeTimer < diff)
         {
-                if(m_creature->GetDistance2d(wLoc.x, wLoc.y) >= 50)
+                if(m_creature->GetDistance2d(wLoc.coord_x, wLoc.coord_y) >= 50)
                 EnterEvadeMode();
                 EvadeTimer = 3000;
                 return;

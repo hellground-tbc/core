@@ -458,7 +458,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
             if(CheckDistanceTimer < diff)
             {
-                if(m_creature->GetDistance2d(wLoc.x, wLoc.y) > 80.0)
+                if(m_creature->GetDistance2d(wLoc.coord_x, wLoc.coord_y) > 80.0)
                 {
                     m_creature->GetMotionMaster()->Clear(false);
                     m_creature->GetMotionMaster()->MoveIdle();

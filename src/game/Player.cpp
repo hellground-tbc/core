@@ -1984,16 +1984,16 @@ void Player::RemoveFromWorld()
         RemoveGuardians();
     }
 
+    ///- Do not add/remove the player from the object storage
+    ///- It will crash when updating the ObjectAccessor
+    ///- The player should only be removed when logging out
+    Unit::RemoveFromWorld();
+
     for(int i = PLAYER_SLOT_START; i < PLAYER_SLOT_END; i++)
     {
         if(m_items[i])
             m_items[i]->RemoveFromWorld();
     }
-
-    ///- Do not add/remove the player from the object storage
-    ///- It will crash when updating the ObjectAccessor
-    ///- The player should only be removed when logging out
-    Unit::RemoveFromWorld();
 }
 
 void Player::RewardRage( uint32 damage, uint32 weaponSpeedHitFactor, bool attacker )
@@ -3303,6 +3303,19 @@ void Player::removeSpell(uint32 spell_id, bool disabled)
 
     for(SpellLearnSpellMap::const_iterator itr2 = spell_begin; itr2 != spell_end; ++itr2)
         removeSpell(itr2->second.spell, disabled);
+}
+
+void Player::RemoveSpellCooldown(uint32 spell_id, bool update /* = false */)
+{
+    m_spellCooldowns.erase(spell_id);
+
+    if (update)
+    {
+        WorldPacket data(SMSG_CLEAR_COOLDOWN, (4+8));
+        data << uint32(spell_id);
+        data << uint64(GetGUID());
+        SendDirectMessage(&data);
+    }
 }
 
 void Player::RemoveArenaSpellCooldowns()
@@ -14859,7 +14872,7 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
             Relocate(nodeEntry->x, nodeEntry->y, nodeEntry->z,0.0f);
             SaveRecallPosition();                           // save as recall also to prevent recall and fall from sky
         }
-        m_taxi.ClearTaxiDestinations();
+        CleanupAfterTaxiFlight();
     }
     else if(uint32 node_id = m_taxi.GetTaxiSource())
     {
@@ -16041,10 +16054,10 @@ void Player::SaveToDB()
         ss << GetTeleportDest().mapid << ", "
         << (uint32)0 << ", "
         << (uint32)GetDifficulty() << ", "
-        << finiteAlways(GetTeleportDest().x) << ", "
-        << finiteAlways(GetTeleportDest().y) << ", "
-        << finiteAlways(GetTeleportDest().z) << ", "
-        << finiteAlways(GetTeleportDest().o) << ", '";
+        << finiteAlways(GetTeleportDest().coord_x) << ", "
+        << finiteAlways(GetTeleportDest().coord_y) << ", "
+        << finiteAlways(GetTeleportDest().coord_z) << ", "
+        << finiteAlways(GetTeleportDest().orientation) << ", '";
     }
 
     uint16 i;
@@ -17495,15 +17508,23 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_i
         return false;
 
     // not let cheating with start flight mounted
-    if(IsMounted())
+    if (IsMounted())
     {
         WorldPacket data(SMSG_ACTIVATETAXIREPLY, 4);
         data << uint32(ERR_TAXIPLAYERALREADYMOUNTED);
         GetSession()->SendPacket(&data);
         return false;
     }
+ 
+    if (GetSession()->isLogingOut() || isInCombat() || hasUnitState(UNIT_STAT_STUNNED) || hasUnitState(UNIT_STAT_ROOT))
+    {
+        WorldPacket data(SMSG_ACTIVATETAXIREPLY, 4);
+        data << uint32(ERR_TAXIPLAYERBUSY);
+        GetSession()->SendPacket(&data);
+        return false;
+    }
 
-    if( m_ShapeShiftFormSpellId && m_form != FORM_BATTLESTANCE && m_form != FORM_BERSERKERSTANCE && m_form != FORM_DEFENSIVESTANCE && m_form != FORM_SHADOW )
+    if (m_ShapeShiftFormSpellId && m_form != FORM_BATTLESTANCE && m_form != FORM_BERSERKERSTANCE && m_form != FORM_DEFENSIVESTANCE && m_form != FORM_SHADOW )
     {
         WorldPacket data(SMSG_ACTIVATETAXIREPLY, 4);
         data << uint32(ERR_TAXIPLAYERSHAPESHIFTED);
@@ -17552,7 +17573,7 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_i
     TradeCancel(true);
 
     // clean not finished taxi path if any
-    m_taxi.ClearTaxiDestinations();
+    CleanupAfterTaxiFlight();
 
     // 0 element current node
     m_taxi.AddTaxiDestination(sourcenode);
@@ -17573,7 +17594,7 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_i
 
         if(!path)
         {
-            m_taxi.ClearTaxiDestinations();
+            CleanupAfterTaxiFlight();
             return false;
         }
 
@@ -17595,7 +17616,7 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_i
         WorldPacket data(SMSG_ACTIVATETAXIREPLY, 4);
         data << uint32(ERR_TAXIUNSPECIFIEDSERVERERROR);
         GetSession()->SendPacket(&data);
-        m_taxi.ClearTaxiDestinations();
+        CleanupAfterTaxiFlight();
         return false;
     }
 
@@ -17611,7 +17632,7 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_i
         WorldPacket data(SMSG_ACTIVATETAXIREPLY, 4);
         data << uint32(ERR_TAXINOTENOUGHMONEY);
         GetSession()->SendPacket(&data);
-        m_taxi.ClearTaxiDestinations();
+        CleanupAfterTaxiFlight();
         return false;
     }
 
@@ -17630,6 +17651,14 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_i
     GetSession()->SendDoFlight(mount_id, sourcepath);
 
     return true;
+}
+
+void Player::CleanupAfterTaxiFlight()
+{
+    m_taxi.ClearTaxiDestinations();        // not destinations, clear source node
+    Unmount();
+    RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_TAXI_FLIGHT);
+    getHostilRefManager().setOnlineOfflineState(true);
 }
 
 void Player::ProhibitSpellScholl(SpellSchoolMask idSchoolMask, uint32 unTimeMs )
@@ -17716,9 +17745,13 @@ void Player::InitDataForForm(bool reapplyMods)
 bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint64 bagguid, uint8 slot)
 {
     // cheating attempt
-    if(count < 1) count = 1;
+    if (count < 1) count = 1;
 
-    if(!isAlive())
+    // cheating attempt
+    if (slot > MAX_BAG_SIZE && slot != NULL_SLOT)
+        return false;
+
+    if (!isAlive())
         return false;
 
     ItemPrototype const *pProto = objmgr.GetItemPrototype( item );
@@ -19208,7 +19241,7 @@ void Player::SummonIfPossible(bool agree)
     if(isInFlight())
     {
         GetMotionMaster()->MovementExpired();
-        m_taxi.ClearTaxiDestinations();
+        CleanupAfterTaxiFlight();
     }
 
     // drop flag at summon
