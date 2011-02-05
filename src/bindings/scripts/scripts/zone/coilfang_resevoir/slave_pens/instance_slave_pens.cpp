@@ -33,8 +33,6 @@ struct TRINITY_DLL_DECL instance_slave_pens : public ScriptedInstance
 
     uint32 Encounters[ENCOUNTERS];
 
-    std::string str_data;
-
     void Initialize()
     {
         AhuneGUID = 0;
@@ -111,17 +109,7 @@ struct TRINITY_DLL_DECL instance_slave_pens : public ScriptedInstance
         }
 
         if (Heroic && data == DONE)
-        {
-            OUT_SAVE_INST_DATA;
-
-            std::ostringstream saveStream;
-            saveStream << Encounters[0];
-
-            str_data = saveStream.str();
-
             SaveToDB();
-            OUT_SAVE_INST_DATA_COMPLETE;
-        }
     }
 
     uint32 GetData(uint32 type)
@@ -136,7 +124,14 @@ struct TRINITY_DLL_DECL instance_slave_pens : public ScriptedInstance
 
     std::string GetSaveData()
     {
-        return str_data.c_str();
+       OUT_SAVE_INST_DATA;
+
+        std::ostringstream stream;
+        stream << Encounters[0];
+
+        OUT_SAVE_INST_DATA_COMPLETE;
+
+        return stream.str();
     }
 
     void Load(const char* in)

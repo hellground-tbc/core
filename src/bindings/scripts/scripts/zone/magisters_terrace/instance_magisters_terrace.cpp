@@ -140,11 +140,17 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
 
     std::string GetSaveData()
     {
-        std::ostringstream ss;
-        ss << "S " << DoorState[0] << " " << DoorState[1] << " " << DoorState[2];
-        char* data = new char[ss.str().length()+1];
-        strcpy(data, ss.str().c_str());
-        return data;
+        OUT_SAVE_INST_DATA;
+
+        std::ostringstream stream;
+        stream << "S ";
+        stream << DoorState[0] << " ";
+        stream << DoorState[1] << " ";
+        stream << DoorState[2];
+
+        OUT_SAVE_INST_DATA_COMPLETE;
+
+        return stream.str();
     }
 
     void Load(const char* load)

@@ -74,7 +74,6 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
     uint32 EnslavedSoulsCount;
 
     uint32 Encounters[ENCOUNTERS];
-    std::string str_data;
 
     std::map<uint64, uint32> sodList;
     std::vector<uint64> weaponmasterList;
@@ -507,20 +506,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         }
 
         if (data == DONE)
-        {
-            OUT_SAVE_INST_DATA;
-
-            std::ostringstream saveStream;
-            saveStream << Encounters[0] << " " << Encounters[1] << " "
-                << Encounters[2] << " " << Encounters[3] << " " << Encounters[4]
-            << " " << Encounters[5] << " " << Encounters[6] << " " << Encounters[7]
-            << " " << Encounters[8] << " " << Encounters[9];
-
-            str_data = saveStream.str();
-
             SaveToDB();
-            OUT_SAVE_INST_DATA_COMPLETE;
-        }
     }
 
 
@@ -589,7 +575,23 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
 
     std::string GetSaveData()
     {
-        return str_data.c_str();
+        OUT_SAVE_INST_DATA;
+
+        std::ostringstream stream;
+        stream << Encounters[0] << " ";
+        stream << Encounters[1] << " ";
+        stream << Encounters[2] << " ";
+        stream << Encounters[3] << " ";
+        stream << Encounters[4] << " ";
+        stream << Encounters[5] << " ";
+        stream << Encounters[6] << " ";
+        stream << Encounters[7] << " ";
+        stream << Encounters[8] << " ";
+        stream << Encounters[9];
+
+        OUT_SAVE_INST_DATA_COMPLETE;
+
+        return stream.str();
     }
 
     void Load(const char* in)

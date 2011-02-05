@@ -216,16 +216,16 @@ struct TRINITY_DLL_DECL instance_steam_vault : public ScriptedInstance
    std::string GetSaveData()
     {
         OUT_SAVE_INST_DATA;
+        
         std::ostringstream stream;
-        stream << Encounter[0] << " " << Encounter[1] << " " << Encounter[2] << " " << Encounter[3];
-        char* out = new char[stream.str().length() + 1];
-        strcpy(out, stream.str().c_str());
-        if(out)
-        {
-            OUT_SAVE_INST_DATA_COMPLETE;
-            return out;
-        }
-        return NULL;
+        stream << Encounter[0] << " ";
+        stream << Encounter[1] << " ";
+        stream << Encounter[2] << " ";
+        stream << Encounter[3];
+
+        OUT_SAVE_INST_DATA_COMPLETE;
+
+        return stream.str();
     }
 
     void Load(const char* in)

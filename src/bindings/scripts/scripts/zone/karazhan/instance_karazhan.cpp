@@ -347,6 +347,8 @@ void instance_karazhan::OnObjectCreate(GameObject* go)
 
 std::string instance_karazhan::GetSaveData()
 {
+    OUT_SAVE_INST_DATA;
+
     std::ostringstream stream;
     stream << Encounters[0] << " ";
     stream << Encounters[1] << " ";
@@ -360,6 +362,8 @@ std::string instance_karazhan::GetSaveData()
     stream << Encounters[9]  << " ";
     stream << Encounters[10] << " ";
     stream << Encounters[11];
+
+    OUT_SAVE_INST_DATA_COMPLETE;
 
     return stream.str();
 }

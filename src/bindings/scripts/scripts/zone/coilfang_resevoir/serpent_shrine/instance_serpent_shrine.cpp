@@ -360,6 +360,8 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
 
     std::string GetSaveData()
     {
+        OUT_SAVE_INST_DATA;
+
         std::ostringstream stream;
         stream << Encounters[0] << " ";
         stream << Encounters[1] << " ";
@@ -367,7 +369,10 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
         stream << Encounters[3] << " ";
         stream << Encounters[4] << " ";
         stream << Encounters[5] << " ";
+
         stream << TrashCount;
+
+        OUT_SAVE_INST_DATA_COMPLETE;
 
         return stream.str();
     }

@@ -35,8 +35,6 @@ struct instance_razorfen_downs : public ScriptedInstance
 
     uint8 uiGongWaves;
 
-    std::string str_data;
-
     void Initialize()
     {
         uiGongGUID = 0;
@@ -50,15 +48,15 @@ struct instance_razorfen_downs : public ScriptedInstance
     {
         OUT_SAVE_INST_DATA;
 
-        std::ostringstream saveStream;
+        std::ostringstream stream;
 
-        saveStream << "T C " << m_auiEncounter[0]
-            << " " << uiGongWaves;
-
-        str_data = saveStream.str();
+        stream << "T C ";
+        stream << m_auiEncounter[0]  << " ";
+        stream << uiGongWaves;
 
         OUT_SAVE_INST_DATA_COMPLETE;
-        return str_data.c_str();
+        
+        return stream.str();
     }
 
     void Load(const char* in)

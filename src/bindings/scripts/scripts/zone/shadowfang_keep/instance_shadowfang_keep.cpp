@@ -31,7 +31,6 @@ struct TRINITY_DLL_DECL instance_shadowfang_keep : public ScriptedInstance
     instance_shadowfang_keep(Map *map) : ScriptedInstance(map) {Initialize();};
 
     uint32 Encounters[ENCOUNTERS];
-    std::string str_data;
 
     uint64 DoorCourtyardGUID;
     uint64 DoorSorcererGUID;
@@ -86,17 +85,7 @@ struct TRINITY_DLL_DECL instance_shadowfang_keep : public ScriptedInstance
         }
 
         if (data == DONE)
-        {
-            OUT_SAVE_INST_DATA;
-
-            std::ostringstream saveStream;
-            saveStream << Encounters[0] << " " << Encounters[1] << " " << Encounters[2] << " " << Encounters[3];
-
-            str_data = saveStream.str();
-
             SaveToDB();
-            OUT_SAVE_INST_DATA_COMPLETE;
-        }
     }
 
     uint32 GetData(uint32 type)
@@ -117,7 +106,17 @@ struct TRINITY_DLL_DECL instance_shadowfang_keep : public ScriptedInstance
 
     std::string GetSaveData()
     {
-        return str_data.c_str();
+        OUT_SAVE_INST_DATA;
+
+        std::ostringstream stream;
+        stream << Encounters[0] << " ";
+        stream << Encounters[1] << " ";
+        stream << Encounters[2] << " ";
+        stream << Encounters[3];
+
+        OUT_SAVE_INST_DATA_COMPLETE;
+
+        return stream.str();
     }
 
     void Load(const char* in)

@@ -60,7 +60,6 @@ struct TRINITY_DLL_DECL instance_blackrock_depths : public ScriptedInstance
     instance_blackrock_depths(Map *map) : ScriptedInstance(map) {Initialize();};
 
     uint32 Encounter[ENCOUNTERS];
-    std::string str_data;
 
     uint64 EmperorGUID;
     uint64 PhalanxGUID;
@@ -225,18 +224,7 @@ struct TRINITY_DLL_DECL instance_blackrock_depths : public ScriptedInstance
         }
 
         if (data == DONE)
-        {
-            OUT_SAVE_INST_DATA;
-
-            std::ostringstream saveStream;
-            saveStream << Encounter[0] << " " << Encounter[1] << " " << Encounter[2] << " "
-                << Encounter[3] << " " << Encounter[4] << " " << Encounter[5];
-
-            str_data = saveStream.str();
-
             SaveToDB();
-            OUT_SAVE_INST_DATA_COMPLETE;
-        }
     }
 
     void SetData64(uint32 type, uint64 data)
@@ -244,6 +232,7 @@ struct TRINITY_DLL_DECL instance_blackrock_depths : public ScriptedInstance
         if(type == Q_STARTER)
             PlayerGUID = data;
     }
+
     uint32 GetData(uint32 type)
     {
         switch(type)
@@ -311,7 +300,19 @@ struct TRINITY_DLL_DECL instance_blackrock_depths : public ScriptedInstance
 
     std::string GetSaveData()
     {
-        return str_data.c_str();
+        OUT_SAVE_INST_DATA;
+
+        std::ostringstream stream;
+        stream << Encounter[0] << " ";
+        stream << Encounter[1] << " ";
+        stream << Encounter[2] << " ";
+        stream << Encounter[3] << " ";
+        stream << Encounter[4] << " ";
+        stream << Encounter[5];
+
+        OUT_SAVE_INST_DATA_COMPLETE;
+
+        return stream.str();
     }
 
     void Load(const char* in)

@@ -41,7 +41,6 @@ struct TRINITY_DLL_DECL instance_shadow_labyrinth : public ScriptedInstance
     instance_shadow_labyrinth(Map *map) : ScriptedInstance(map) {Initialize();};
 
     uint32 Encounter[ENCOUNTERS];
-    std::string str_data;
 
     uint64 RefectoryDoorGUID;
     uint64 ScreamingHallDoorGUID;
@@ -156,16 +155,7 @@ struct TRINITY_DLL_DECL instance_shadow_labyrinth : public ScriptedInstance
             if (type == TYPE_RITUALIST && RitualistCount != 0)
                 return;
 
-            OUT_SAVE_INST_DATA;
-
-            std::ostringstream saveStream;
-            saveStream << Encounter[0] << " " << Encounter[1] << " "
-                << Encounter[2] << " " << Encounter[3] << " " << Encounter[4];
-
-            str_data = saveStream.str();
-
             SaveToDB();
-            OUT_SAVE_INST_DATA_COMPLETE;
         }
     }
 
@@ -209,7 +199,18 @@ struct TRINITY_DLL_DECL instance_shadow_labyrinth : public ScriptedInstance
 
     std::string GetSaveData()
     {
-        return str_data.c_str();
+        OUT_SAVE_INST_DATA;
+
+        std::ostringstream stream;
+        stream << Encounter[0] << " ";
+        stream << Encounter[1] << " ";
+        stream << Encounter[2] << " ";
+        stream << Encounter[3] << " ";
+        stream << Encounter[4];
+
+        OUT_SAVE_INST_DATA_COMPLETE;
+
+        return stream.str();
     }
 
     void Load(const char* in)

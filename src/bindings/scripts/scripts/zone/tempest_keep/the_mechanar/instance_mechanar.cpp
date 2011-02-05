@@ -213,16 +213,15 @@ struct TRINITY_DLL_DECL instance_mechanar : public ScriptedInstance
     std::string GetSaveData()
     {
         OUT_SAVE_INST_DATA;
+
         std::ostringstream stream;
-        stream << Encounters[0] << " " << Encounters[1] << " " << Encounters[2];
-        char* out = new char[stream.str().length() + 1];
-        strcpy(out, stream.str().c_str());
-        if(out)
-        {
-            OUT_SAVE_INST_DATA_COMPLETE;
-            return out;
-        }
-        return NULL;
+        stream << Encounters[0] << " ";
+        stream << Encounters[1] << " ";
+        stream << Encounters[2];
+
+        OUT_SAVE_INST_DATA_COMPLETE;
+
+        return stream.str();
     }
 
     void Load(const char* in)
