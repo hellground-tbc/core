@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Boss_Ragnaros
 SD%Complete: 75
-SDComment: Intro Dialog and event NYI
+SDComment: Intro Dialog and event NYI, some submerge/emerge bugs, boss should emerge after 90 secs or killing adds
 SDCategory: Molten Core
 EndScriptData */
 

@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Boss_Baron_Geddon
 SD%Complete: 100
-SDComment:
+SDComment: DMG in DB is propably wrong (30 on plate tank?)
 SDCategory: Molten Core
 EndScriptData */
 
@@ -29,7 +29,7 @@ EndScriptData */
 #define SPELL_INFERNO               19695
 #define SPELL_IGNITEMANA            19659
 #define SPELL_LIVINGBOMB            20475
-#define SPELL_ARMAGEDDOM            20479
+#define SPELL_ARMAGEDDOM            20478 //20479 triggered
 
 struct TRINITY_DLL_DECL boss_baron_geddonAI : public ScriptedAI
 {
@@ -42,12 +42,14 @@ struct TRINITY_DLL_DECL boss_baron_geddonAI : public ScriptedAI
     uint32 Inferno_Timer;
     uint32 IgniteMana_Timer;
     uint32 LivingBomb_Timer;
+	uint32 Armageddon_Timer;
 
     void Reset()
     {
         Inferno_Timer = 45000;                              //These times are probably wrong
         IgniteMana_Timer = 30000;
         LivingBomb_Timer = 35000;
+		Armageddon_Timer = 0;
 
         if (pInstance && pInstance->GetData(DATA_BARON_GEDDON_EVENT) != DONE)
             pInstance->SetData(DATA_BARON_GEDDON_EVENT, NOT_STARTED);
@@ -71,12 +73,16 @@ struct TRINITY_DLL_DECL boss_baron_geddonAI : public ScriptedAI
             return;
 
         //If we are <2% hp cast Armageddom
-        if (m_creature->GetHealth()*100 / m_creature->GetMaxHealth() <= 2)
+        if (m_creature->GetHealth()*100 / m_creature->GetMaxHealth() <= 2 && Armageddon_Timer < diff)
         {
+			Armageddon_Timer = 9000;//We don't want him to cast while being under Armageddon effect
+			Inferno_Timer = 9000;
+			IgniteMana_Timer = 9000;
+			LivingBomb_Timer = 9000;
             m_creature->InterruptNonMeleeSpells(true);
             DoCast(m_creature,SPELL_ARMAGEDDOM);
             DoScriptText(EMOTE_SERVICE, m_creature);
-            return;
+            return;	
         }
 
         //Inferno_Timer

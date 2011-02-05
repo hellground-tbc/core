@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Instance_Molten_Core
-SD%Complete: 0
-SDComment: Place Holder
+SD%Complete: 50
+SDComment: Encounter progress saved, some boss runes missing
 SDCategory: Molten Core
 EndScriptData */
 
