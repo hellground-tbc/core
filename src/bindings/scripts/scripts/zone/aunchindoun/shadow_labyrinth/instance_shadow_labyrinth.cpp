@@ -110,7 +110,7 @@ struct TRINITY_DLL_DECL instance_shadow_labyrinth : public ScriptedInstance
         }
 
         if (GameObject *go = instance->GetGameObject(guid))
-            go->SetGoState(state);
+            go->SetGoState(GOState(state));
     }
 
     void SetData(uint32 type, uint32 data)
@@ -207,7 +207,7 @@ struct TRINITY_DLL_DECL instance_shadow_labyrinth : public ScriptedInstance
         }
     }
 
-    const char* Save()
+    std::string GetSaveData()
     {
         return str_data.c_str();
     }

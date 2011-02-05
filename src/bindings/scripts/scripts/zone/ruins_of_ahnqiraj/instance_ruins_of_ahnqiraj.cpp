@@ -152,7 +152,7 @@ struct TRINITY_DLL_DECL instance_ruins_of_ahnqiraj : public ScriptedInstance
         return 0;
     }
 
-    const char* Save()
+    std::string GetSaveData()
     {
         OUT_SAVE_INST_DATA;
         std::ostringstream stream;

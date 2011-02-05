@@ -65,7 +65,7 @@ struct TRINITY_DLL_DECL mob_doom_blossomAI : public NullCreatureAI
 {
     mob_doom_blossomAI(Creature *c) : NullCreatureAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         TeronGUID = pInstance ? pInstance->GetData64(DATA_TERONGOREFIEND) : 0;
     }
 
@@ -151,7 +151,7 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
 {
     mob_shadowy_constructAI(Creature* c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     ScriptedInstance* pInstance;
@@ -279,7 +279,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
 {
     boss_teron_gorefiendAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         m_creature->GetPosition(wLoc);
 
         SpellEntry *ShadowTempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_CRUSHING_SHADOWS);

@@ -587,7 +587,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         }
     }
 
-    const char* Save()
+    std::string GetSaveData()
     {
         return str_data.c_str();
     }

@@ -19,15 +19,15 @@
 #ifndef OUTDOOR_PVP_SI_
 #define OUTDOOR_PVP_SI_
 
-#include "OutdoorPvP.h"
+#include "OutdoorPvPImpl.h"
 
-const uint32 SI_SILITHYST_FLAG_GO_SPELL = 29518;
-
-const uint32 SI_SILITHYST_FLAG = 29519;
-
-const uint32 SI_TRACES_OF_SILITHYST = 29534;
-
-const uint32 SI_CENARION_FAVOR = 30754;
+enum OutdoorPvPSISpells
+{
+    SI_SILITHYST_FLAG_GO_SPELL = 29518,
+    SI_SILITHYST_FLAG = 29519,
+    SI_TRACES_OF_SILITHYST = 29534,
+    SI_CENARION_FAVOR = 30754
+};
 
 const uint32 SI_MAX_RESOURCES = 200;
 
@@ -64,7 +64,6 @@ public:
     bool HandleAreaTrigger(Player * plr, uint32 trigger);
     bool HandleDropFlag(Player * plr, uint32 spellId);
     bool HandleCustomSpell(Player * plr, uint32 spellId, GameObject *go);
-    void BuffTeam(uint32 team);
     void UpdateWorldState();
 private:
     uint32 m_Gathered_A;

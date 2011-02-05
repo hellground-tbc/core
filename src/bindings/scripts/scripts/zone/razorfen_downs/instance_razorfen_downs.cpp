@@ -46,7 +46,7 @@ struct instance_razorfen_downs : public ScriptedInstance
         memset(&m_auiEncounter, 0, sizeof(m_auiEncounter));
     }
 
-    const char* Save()
+    std::string GetSaveData()
     {
         OUT_SAVE_INST_DATA;
 

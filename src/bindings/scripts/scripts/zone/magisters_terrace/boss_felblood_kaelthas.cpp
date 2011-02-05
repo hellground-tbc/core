@@ -83,7 +83,7 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public ScriptedAI
 {
     boss_felblood_kaelthasAI(Creature* c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());        Heroic = c->GetMap()->IsHeroic();
+        pInstance = (c->GetInstanceData());        Heroic = c->GetMap()->IsHeroic();
     }
 
     ScriptedInstance* pInstance;
@@ -494,7 +494,7 @@ struct TRINITY_DLL_DECL mob_felkael_phoenixAI : public ScriptedAI
 {
     mob_felkael_phoenixAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
     uint32 BurnTimer;
     uint32 CheckTimer;
@@ -566,7 +566,7 @@ struct TRINITY_DLL_DECL mob_felkael_phoenix_eggAI : public Scripted_NoMovementAI
 {
     mob_felkael_phoenix_eggAI(Creature *c) : Scripted_NoMovementAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     uint32 HatchTimer;
@@ -599,7 +599,7 @@ struct TRINITY_DLL_DECL mob_arcane_sphereAI : public ScriptedAI
 {
     mob_arcane_sphereAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
     uint32 DespawnTimer;
     uint32 ChangeTargetTimer;

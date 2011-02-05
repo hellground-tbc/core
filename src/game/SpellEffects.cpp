@@ -858,7 +858,7 @@ void Spell::EffectDummy(uint32 i)
 
                     if (!pGameObj->Create(objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT), 181574, creatureTarget->GetMap(),
                         creatureTarget->GetPositionX(), creatureTarget->GetPositionY(), creatureTarget->GetPositionZ(),
-                        creatureTarget->GetOrientation(), 0, 0, 0, 0, 100, 1))
+                        creatureTarget->GetOrientation(), 0, 0, 0, 0, 100, GO_STATE_READY))
                     {
                         delete pGameObj;
                         return;
@@ -5002,7 +5002,7 @@ void Spell::EffectSummonObjectWild(uint32 i)
     Map *map = target->GetMap();
 
     if(!pGameObj->Create(objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT), gameobject_id, map,
-        x, y, z, target->GetOrientation(), 0, 0, 0, 0, 100, 1))
+        x, y, z, target->GetOrientation(), 0, 0, 0, 0, 100, GO_STATE_READY))
     {
         delete pGameObj;
         return;
@@ -5055,7 +5055,7 @@ void Spell::EffectSummonObjectWild(uint32 i)
     {
         GameObject* linkedGO = new GameObject;
         if(linkedGO->Create(objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT), linkedEntry, map,
-            x, y, z, target->GetOrientation(), 0, 0, 0, 0, 100, 1))
+            x, y, z, target->GetOrientation(), 0, 0, 0, 0, 100, GO_STATE_READY))
         {
             linkedGO->SetRespawnTime(duration > 0 ? duration/1000 : 0);
             linkedGO->SetSpellId(m_spellInfo->Id);
@@ -5954,7 +5954,7 @@ void Spell::EffectDuel(uint32 i)
         m_caster->GetPositionX()+(unitTarget->GetPositionX()-m_caster->GetPositionX())/2 ,
         m_caster->GetPositionY()+(unitTarget->GetPositionY()-m_caster->GetPositionY())/2 ,
         m_caster->GetPositionZ(),
-        m_caster->GetOrientation(), 0, 0, 0, 0, 0, 1))
+        m_caster->GetOrientation(), 0, 0, 0, 0, 0, GO_STATE_READY))
     {
         delete pGameObj;
         return;
@@ -6094,14 +6094,6 @@ void Spell::EffectSummonTotem(uint32 i)
     if (m_caster->GetTypeId()==TYPEID_PLAYER)
         team = ((Player*)m_caster)->GetTeam();
 
-    Totem* pTotem = new Totem;
-
-    if(!pTotem->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT), m_caster->GetMap(), m_spellInfo->EffectMiscValue[i], team ))
-    {
-        delete pTotem;
-        return;
-    }
-
     float angle = slot < MAX_TOTEM ? M_PI/MAX_TOTEM - (slot*2*M_PI/MAX_TOTEM) : 0;
 
     float x,y,z;
@@ -6109,23 +6101,30 @@ void Spell::EffectSummonTotem(uint32 i)
     if(((Player*)m_caster)->InArena())
         m_caster->GetPosition(x,y,z);
     else
-        m_caster->GetClosePoint(x,y,z,pTotem->GetObjectSize(),2.0f,angle);
+        m_caster->GetClosePoint(x, y, z, 0.0f ,2.0f, angle);
 
     // totem must be at same Z in case swimming caster and etc.
     if( fabs( z - m_caster->GetPositionZ() ) > 5 )
         z = m_caster->GetPositionZ();
 
-    pTotem->Relocate(x, y, z, m_caster->GetOrientation());
+    Totem* pTotem = new Totem;
 
-    if(slot < MAX_TOTEM)
+    if (!pTotem->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT), m_caster->GetMap(), m_spellInfo->EffectMiscValue[i], team, x, y, z, m_caster->GetOrientation()))
+    {
+        delete pTotem;
+        return;
+    }
+
+    if (slot < MAX_TOTEM)
         m_caster->m_TotemSlot[slot] = pTotem->GetGUID();
 
     pTotem->SetOwner(m_caster->GetGUID());
     pTotem->SetTypeBySummonSpell(m_spellInfo);              // must be after Create call where m_spells initilized
 
     int32 duration=GetSpellDuration(m_spellInfo);
-    if(Player* modOwner = m_caster->GetSpellModOwner())
+    if (Player* modOwner = m_caster->GetSpellModOwner())
         modOwner->ApplySpellMod(m_spellInfo->Id,SPELLMOD_DURATION, duration);
+
     pTotem->SetDuration(duration);
 
     if (damage)                                             // if not spell info, DB values used
@@ -6311,7 +6310,7 @@ void Spell::EffectSummonObject(uint32 i)
         m_caster->GetClosePoint(x,y,z,DEFAULT_WORLD_OBJECT_SIZE);
 
     Map *map = m_caster->GetMap();
-    if(!pGameObj->Create(objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT), go_id, map, x, y, z, m_caster->GetOrientation(), 0, 0, rot2, rot3, 0, 1))
+    if(!pGameObj->Create(objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT), go_id, map, x, y, z, m_caster->GetOrientation(), 0, 0, rot2, rot3, 0, GO_STATE_READY))
     {
         delete pGameObj;
         return;
@@ -6877,8 +6876,6 @@ void Spell::EffectSummonDeadPet(uint32 /*i*/)
     pet->clearUnitState(UNIT_STAT_ALL_STATE);
     pet->SetHealth( uint32(pet->GetMaxHealth()*(float(damage)/100)));
 
-    pet->AIM_Initialize();
-
     pet->SavePetToDB(PET_SAVE_AS_CURRENT);
 }
 
@@ -7040,7 +7037,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
     GameObject* pGameObj = new GameObject;
 
     if(!pGameObj->Create(objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT), name_id, cMap,
-        fx, fy, fz, m_caster->GetOrientation(), 0, 0, 0, 0, 100, 1))
+        fx, fy, fz, m_caster->GetOrientation(), 0, 0, 0, 0, 100, GO_STATE_READY))
     {
         delete pGameObj;
         return;
@@ -7111,7 +7108,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
     {
         GameObject* linkedGO = new GameObject;
         if(linkedGO->Create(objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT), linkedEntry, cMap,
-            fx, fy, fz, m_caster->GetOrientation(), 0, 0, 0, 0, 100, 1))
+            fx, fy, fz, m_caster->GetOrientation(), 0, 0, 0, 0, 100, GO_STATE_READY))
         {
             linkedGO->SetRespawnTime(duration > 0 ? duration/1000 : 0);
             //linkedGO->SetUInt32Value(GAMEOBJECT_LEVEL, m_caster->getLevel() );

@@ -2433,7 +2433,7 @@ bool ChatHandler::HandleNameTeleCommand(const char * args)
     else if (uint64 guid = objmgr.GetPlayerGUIDByName(name.c_str()))
     {
         PSendSysMessage(LANG_TELEPORTING_TO, name.c_str(), GetTrinityString(LANG_OFFLINE), tele->name.c_str());
-        Player::SavePositionInDB(tele->mapId,tele->position_x,tele->position_y,tele->position_z,tele->orientation,MapManager::Instance().GetZoneId(tele->mapId,tele->position_x,tele->position_y,tele->position_z),guid);
+        Player::SavePositionInDB(tele->mapId,tele->position_x,tele->position_y,tele->position_z,tele->orientation,sMapMgr.GetZoneId(tele->mapId,tele->position_x,tele->position_y,tele->position_z),guid);
     }
     else
         PSendSysMessage(LANG_NO_PLAYER, name.c_str());
@@ -2647,7 +2647,7 @@ bool ChatHandler::HandleGoXYCommand(const char* args)
     else
         _player->SaveRecallPosition();
 
-    Map const *map = MapManager::Instance().CreateBaseMap(mapid);
+    Map const *map = sMapMgr.CreateBaseMap(mapid);
     float z = map->GetWaterOrGroundLevel(x, y, MAX_HEIGHT);
 
     _player->TeleportTo(mapid, x, y, z, _player->GetOrientation());
@@ -2735,7 +2735,7 @@ bool ChatHandler::HandleGoZoneXYCommand(const char* args)
     // update to parent zone if exist (client map show only zones without parents)
     AreaTableEntry const* zoneEntry = areaEntry->zone ? GetAreaEntryByAreaID(areaEntry->zone) : areaEntry;
 
-    Map const *map = MapManager::Instance().CreateBaseMap(zoneEntry->mapid);
+    Map const *map = sMapMgr.CreateBaseMap(zoneEntry->mapid);
 
     if(map->Instanceable())
     {
@@ -2810,7 +2810,7 @@ bool ChatHandler::HandleGoGridCommand(const char* args)
     else
         _player->SaveRecallPosition();
 
-    Map const *map = MapManager::Instance().CreateBaseMap(mapid);
+    Map const *map = sMapMgr.CreateBaseMap(mapid);
     float z = map->GetWaterOrGroundLevel(x, y, MAX_HEIGHT);
     _player->TeleportTo(mapid, x, y, z, _player->GetOrientation());
 

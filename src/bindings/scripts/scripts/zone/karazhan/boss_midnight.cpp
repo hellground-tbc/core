@@ -49,7 +49,7 @@ struct TRINITY_DLL_DECL boss_midnightAI : public ScriptedAI
 {
     boss_midnightAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         m_creature->GetPosition(wLoc);
     }
 
@@ -195,7 +195,7 @@ struct TRINITY_DLL_DECL boss_attumenAI : public ScriptedAI
 {
     boss_attumenAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         Phase = 1;
 
         CleaveTimer = 10000 + (rand()%6)*1000;

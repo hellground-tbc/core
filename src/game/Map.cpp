@@ -91,7 +91,7 @@ void Map::LoadMap(int gx,int gy, bool reload)
         if (GridMaps[gx][gy])
             return;
 
-        Map* baseMap = const_cast<Map*>(MapManager::Instance().CreateBaseMap(i_id));
+        Map* baseMap = const_cast<Map*>(sMapMgr.CreateBaseMap(i_id));
 
         // load gridmap for base map
         if (!baseMap->GridMaps[gx][gy])
@@ -1139,7 +1139,7 @@ bool Map::UnloadGrid(const uint32 &x, const uint32 &y, bool unloadAll)
             VMAP::VMapFactory::createOrGetVMapManager()->unloadMap(GetId(), gx, gy);
         }
         else
-            ((MapInstanced*)(MapManager::Instance().CreateBaseMap(i_id)))->RemoveGridMapReference(GridPair(gx, gy));
+            ((MapInstanced*)(sMapMgr.CreateBaseMap(i_id)))->RemoveGridMapReference(GridPair(gx, gy));
         GridMaps[gx][gy] = NULL;
     }
     DEBUG_LOG("Unloading grid[%u,%u] for map %u finished", x,y, i_id);
@@ -1553,7 +1553,7 @@ void Map::SendInitSelf( Player * player)
 void Map::SendInitTransports( Player * player)
 {
     // Hack to send out transports
-    MapManager::TransportMap& tmap = MapManager::Instance().m_TransportsByMap;
+    MapManager::TransportMap& tmap = sMapMgr.m_TransportsByMap;
 
     // no transports at map
     if (tmap.find(player->GetMapId()) == tmap.end())
@@ -1583,7 +1583,7 @@ void Map::SendInitTransports( Player * player)
 void Map::SendRemoveTransports( Player * player)
 {
     // Hack to send out transports
-    MapManager::TransportMap& tmap = MapManager::Instance().m_TransportsByMap;
+    MapManager::TransportMap& tmap = sMapMgr.m_TransportsByMap;
 
     // no transports at map
     if (tmap.find(player->GetMapId()) == tmap.end())
@@ -1912,7 +1912,7 @@ void Map::ScriptsProcess()
                     source = HashMapHolder<Corpse>::Find(step.sourceGUID);
                     break;
                 case HIGHGUID_MO_TRANSPORT:
-                    for (MapManager::TransportSet::iterator iter = MapManager::Instance().m_Transports.begin(); iter != MapManager::Instance().m_Transports.end(); ++iter)
+                    for (MapManager::TransportSet::iterator iter = sMapMgr.m_Transports.begin(); iter != sMapMgr.m_Transports.end(); ++iter)
                     {
                         if((*iter)->GetGUID() == step.sourceGUID)
                         {
@@ -2238,7 +2238,7 @@ void Map::ScriptsProcess()
                     break;
                 }
 
-                if (!door->GetGoState())
+                if (door->GetGoState() != GO_STATE_READY)
                     break;                                  //door already  open
 
                 door->UseDoorOrButton(time_to_close);
@@ -2289,7 +2289,7 @@ void Map::ScriptsProcess()
                     break;
                 }
 
-                if (door->GetGoState())
+                if (door->GetGoState() == GO_STATE_READY)
                     break;                                  //door already closed
 
                 door->UseDoorOrButton(time_to_open);
@@ -2819,7 +2819,7 @@ void InstanceMap::CreateInstanceData(bool load)
         {
             Field* fields = result->Fetch();
             const char* data = fields[0].GetString();
-            if(data)
+            if (data && data != "")
             {
                 sLog.outDebug("Loading instance data for `%s` with id %u", objmgr.GetScriptName(i_script_id), i_InstanceId);
                 i_data->Load(data);

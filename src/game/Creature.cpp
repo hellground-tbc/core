@@ -153,7 +153,7 @@ lootForPickPocketed(false), lootForBody(false), m_lootMoney(0), m_lootRecipient(
 m_deathTimer(0), m_respawnTime(0), m_respawnDelay(300), m_corpseDelay(60), m_respawnradius(0.0f),
 m_gossipOptionLoaded(false), m_emoteState(0), m_isPet(false), m_isTotem(false), m_reactState(REACT_AGGRESSIVE),
 m_regenTimer(2000), m_defaultMovementType(IDLE_MOTION_TYPE), m_equipmentId(0), m_AlreadyCallAssistance(false),
-m_regenHealth(true), m_isDeadByDefault(false), m_AlreadySearchedAssistance(false),
+m_regenHealth(true), m_isDeadByDefault(false), m_AlreadySearchedAssistance(false), m_creatureData(NULL),
 m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),m_creatureInfo(NULL), m_DBTableGuid(0), m_formation(NULL), m_PlayerDamageReq(0)
 {
     m_valuesCount = UNIT_END;
@@ -190,6 +190,10 @@ void Creature::AddToWorld()
         GetMap()->InsertIntoObjMap(this);
         Unit::AddToWorld();
         SearchFormation();
+        AIM_Initialize();
+
+        if (m_zoneScript)
+            m_zoneScript->OnCreatureCreate(this, true);
     }
 }
 
@@ -198,9 +202,8 @@ void Creature::RemoveFromWorld()
     ///- Remove the creature from the accessor
     if(IsInWorld())
     {
-        if(Map *map = FindMap())
-            if(map->IsDungeon() && ((InstanceMap*)map)->GetInstanceData())
-                ((InstanceMap*)map)->GetInstanceData()->OnCreatureRemove(this);
+        if (m_zoneScript)
+            m_zoneScript->OnCreatureCreate(this, false);
 
         if(m_formation)
             formation_mgr.RemoveCreatureFromGroup(m_formation, this);
@@ -636,11 +639,17 @@ bool Creature::AIM_Initialize(CreatureAI* ai)
     return true;
 }
 
-bool Creature::Create (uint32 guidlow, Map *map, uint32 Entry, uint32 team, const CreatureData *data)
+bool Creature::Create(uint32 guidlow, Map *map, uint32 Entry, uint32 team, float x, float y, float z, float ang, const CreatureData *data)
 {
+    Relocate(x, y, z, ang);
+    if (!IsPositionValid())
+    {
+        sLog.outError("Creature (guidlow %d, entry %d) not loaded. Suggested coordinates isn't valid (X: %f Y: %f)",guidlow,Entry,x,y);
+        return false;
+    }
+
     SetMapId(map->GetId());
     SetInstanceId(map->GetInstanceId());
-    //m_DBTableGuid = guidlow;
 
     //oX = x;     oY = y;    dX = x;    dY = y;    m_moveTime = 0;    m_startMove = 0;
     const bool bResult = CreateFromProto(guidlow, Entry, team, data);
@@ -1391,8 +1400,16 @@ float Creature::GetSpellDamageMod(int32 Rank)
 
 bool Creature::CreateFromProto(uint32 guidlow, uint32 Entry, uint32 team, const CreatureData *data)
 {
+    SetZoneScript();
+    if (m_zoneScript && data)
+    {
+        Entry = m_zoneScript->GetCreatureEntry(guidlow, data);
+        if (!Entry)
+            return false;
+    }
+
     CreatureInfo const *cinfo = objmgr.GetCreatureTemplate(Entry);
-    if(!cinfo)
+    if (!cinfo)
     {
         sLog.outErrorDb("Error: creature entry %u does not exist.", Entry);
         return false;
@@ -1401,15 +1418,8 @@ bool Creature::CreateFromProto(uint32 guidlow, uint32 Entry, uint32 team, const 
 
     Object::_Create(guidlow, Entry, HIGHGUID_UNIT);
 
-    if(!UpdateEntry(Entry, team, data))
+    if (!UpdateEntry(Entry, team, data))
         return false;
-
-    //Notify the map's instance data.
-    //Only works if you create the object in it, not if it is moves to that map.
-    //Normally non-players do not teleport to other maps.
-    //Map *map = FindMap();
-    //if(map && map->IsDungeon() && ((InstanceMap*)map)->GetInstanceData())
-    //    ((InstanceMap*)map)->GetInstanceData()->OnCreatureCreate(this, Entry);
 
     return true;
 }
@@ -1428,16 +1438,9 @@ bool Creature::LoadFromDB(uint32 guid, Map *map)
     if (map->GetInstanceId() != 0) guid = objmgr.GenerateLowGuid(HIGHGUID_UNIT);
 
     uint16 team = 0;
-    if(!Create(guid,map,data->id,team,data))
+    if (!Create(guid,map,data->id,team,data->posX,data->posY,data->posZ,data->orientation,data))
         return false;
 
-    Relocate(data->posX,data->posY,data->posZ,data->orientation);
-
-    if(!IsPositionValid())
-    {
-        sLog.outError("ERROR: Creature (guidlow %d, entry %d) not loaded. Suggested coordinates isn't valid (X: %f Y: %f)",GetGUIDLow(),GetEntry(),GetPositionX(),GetPositionY());
-        return false;
-    }
     //We should set first home position, because then AI calls home movement
     SetHomePosition(data->posX,data->posY,data->posZ,data->orientation);
 
@@ -1476,12 +1479,7 @@ bool Creature::LoadFromDB(uint32 guid, Map *map)
     // checked at creature_template loading
     m_defaultMovementType = MovementGeneratorType(data->movementType);
 
-    AIM_Initialize();
-
-    Map *tmpMap = FindMap();
-    if(tmpMap && tmpMap->IsDungeon() && ((InstanceMap*)tmpMap)->GetInstanceData())
-        ((InstanceMap*)tmpMap)->GetInstanceData()->OnCreatureCreate(this, data->id);
-
+    m_creatureData = data;
     return true;
 }
 
@@ -2073,7 +2071,7 @@ bool Creature::CanAssistTo(const Unit* u, const Unit* enemy, bool checkfaction /
 
 void Creature::SaveRespawnTime()
 {
-    if (isPet() || !m_DBTableGuid)
+    if (isPet() || !m_DBTableGuid || m_creatureData && !m_creatureData->dbData)
         return;
 
     if (m_respawnTime > time(NULL))                          // dead (no corpse)
@@ -2514,7 +2512,7 @@ time_t Creature::GetLinkedCreatureRespawnTime() const
             if(data->mapid == GetMapId())   // look up on the same map
                 targetMap = GetMap();
             else                            // it shouldn't be instanceable map here
-                targetMap = MapManager::Instance().FindMap(data->mapid);
+                targetMap = sMapMgr.FindMap(data->mapid);
         }
         if(targetMap)
             return objmgr.GetCreatureRespawnTime(targetGuid,targetMap->GetInstanceId());

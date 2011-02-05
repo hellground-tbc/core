@@ -71,6 +71,7 @@ class UpdateMask;
 class InstanceData;
 class GameObject;
 class CreatureAI;
+class ZoneScript;
 
 typedef UNORDERED_MAP<Player*, UpdateData> UpdateDataMapType;
 
@@ -521,6 +522,8 @@ class TRINITY_DLL_SPEC WorldObject : public Object, public WorldLocation
         Map      * FindMap() const  { return m_map ? m_map : const_cast<WorldObject*>(this)->_findMap(); }
         Map const* GetBaseMap() const;
 
+        void SetZoneScript();
+
         void BuildUpdateData(UpdateDataMapType &);
         void AddToClientUpdateList();
         void RemoveFromClientUpdateList();
@@ -542,6 +545,8 @@ class TRINITY_DLL_SPEC WorldObject : public Object, public WorldLocation
         explicit WorldObject();
         std::string m_name;
         bool m_isActive;
+
+        ZoneScript *m_zoneScript;
 
     private:
         uint32 m_mapId;

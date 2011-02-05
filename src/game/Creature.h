@@ -261,6 +261,7 @@ struct EquipmentInfo
 // from `creature` table
 struct CreatureData
 {
+    explicit CreatureData() : dbData(true) {}
     uint32 id;                                              // entry in creature_template
     uint16 mapid;
     uint32 displayid;
@@ -277,6 +278,7 @@ struct CreatureData
     bool  is_dead;
     uint8 movementType;
     uint8 spawnMask;
+    bool dbData;
 };
 
 struct CreatureDataAddonAura
@@ -429,7 +431,7 @@ class TRINITY_DLL_SPEC Creature : public Unit
         void RemoveFromWorld();
         void DisappearAndDie();
 
-        bool Create (uint32 guidlow, Map *map, uint32 Entry, uint32 team, const CreatureData *data = NULL);
+        bool Create(uint32 guidlow, Map *map, uint32 Entry, uint32 team, float x, float y, float z, float ang, const CreatureData *data = NULL);
         bool LoadCreaturesAddon(bool reload = false);
         void SelectLevel(const CreatureInfo *cinfo);
         void LoadEquipment(uint32 equip_entry, bool force=false);
@@ -526,6 +528,7 @@ class TRINITY_DLL_SPEC Creature : public Unit
         TrainerSpellData const* GetTrainerSpells() const;
 
         CreatureInfo const *GetCreatureInfo() const { return m_creatureInfo; }
+        CreatureData const *GetCreatureData() const { return m_creatureData; }
         CreatureDataAddon const* GetCreatureAddon() const;
 
         std::string GetAIName() const;
@@ -729,6 +732,8 @@ class TRINITY_DLL_SPEC Creature : public Unit
         float mHome_O;
 
         bool DisableReputationGain;
+
+        CreatureData const* m_creatureData;
 
     private:
         //WaypointMovementGenerator vars

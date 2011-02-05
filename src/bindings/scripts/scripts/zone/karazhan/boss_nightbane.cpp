@@ -61,7 +61,7 @@ struct TRINITY_DLL_DECL boss_nightbaneAI : public ScriptedAI
 {
     boss_nightbaneAI(Creature* c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         Intro = true;
         Summoned = true;
     }

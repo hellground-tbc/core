@@ -48,7 +48,7 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
 {
     boss_netherspiteAI(Creature* c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
 
         // need core fix
         for(int i=0; i<3; ++i)
@@ -372,7 +372,7 @@ struct TRINITY_DLL_DECL mob_void_zoneAI : public Scripted_NoMovementAI
 {
     mob_void_zoneAI(Creature* c) : Scripted_NoMovementAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     ScriptedInstance* pInstance;

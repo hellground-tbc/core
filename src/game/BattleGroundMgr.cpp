@@ -1449,7 +1449,7 @@ BattleGround * BattleGroundMgr::CreateNewBattleGround(uint32 bgTypeId)
     }
 
     // generate a new instance id
-    bg->SetInstanceID(MapManager::Instance().GenerateInstanceId()); // set instance id
+    bg->SetInstanceID(sMapMgr.GenerateInstanceId()); // set instance id
 
     // reset the new bg (set status to status_wait_queue from status_none)
     bg->Reset();

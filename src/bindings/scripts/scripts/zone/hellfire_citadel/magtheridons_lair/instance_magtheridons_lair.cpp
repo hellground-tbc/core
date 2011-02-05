@@ -224,7 +224,7 @@ struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
             for(std::set<uint64>::iterator i = ColumnGUID.begin(); i != ColumnGUID.end(); ++i)
             {
                 if(GameObject *Column = instance->GetGameObject(*i))
-                    Column->SetGoState(!data);
+                    Column->SetGoState(GOState(!data));
             }
             break;
         default:
@@ -275,7 +275,8 @@ struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
             }else RespawnTimer -= diff;
         }
     }
-    const char* Save()
+
+    std::string GetSaveData()
     {
         OUT_SAVE_INST_DATA;
         std::ostringstream stream;

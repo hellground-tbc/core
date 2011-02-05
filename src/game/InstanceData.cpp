@@ -21,21 +21,153 @@
 #include "InstanceData.h"
 #include "Database/DatabaseEnv.h"
 #include "Map.h"
+#include "GameObject.h"
+#include "Creature.h"
 
 void InstanceData::SaveToDB()
 {
-    if(!Save()) return;
-    std::string data = Save();
+    std::string data = GetSaveData();
+    if (data.empty())
+        return;
+
     CharacterDatabase.escape_string(data);
     CharacterDatabase.PExecute("UPDATE instance SET data = '%s' WHERE id = '%d'", data.c_str(), instance->GetInstanceId());
 }
 
-void InstanceData::HandleGameObject(uint64 GUID, bool open, GameObject *go) 
-{            
-    if(!go)
+void InstanceData::HandleGameObject(uint64 GUID, bool open, GameObject *go)
+{
+    if (!go)
         go = instance->GetGameObject(GUID);
-    if(go)
-        go->SetGoState(open ? 0 : 1);
+
+    if (go)
+        go->SetGoState(open ? GO_STATE_ACTIVE : GO_STATE_READY);
     else
         debug_log("TSCR: InstanceData: HandleGameObject failed");
+}
+
+bool InstanceData::IsEncounterInProgress() const
+{
+    for (std::vector<BossInfo>::const_iterator itr = bosses.begin(); itr != bosses.end(); ++itr)
+        if (itr->state == IN_PROGRESS)
+            return true;
+
+    return false;
+}
+
+//This will be removed in the future, just compitiable with Mangos
+void InstanceData::OnCreatureCreate(Creature *creature, bool add)
+{
+   OnCreatureCreate(creature, creature->GetEntry());
+}
+
+void InstanceData::LoadDoorData(const DoorData *data)
+{
+    while (data->entry)
+    {
+        if (data->bossId < bosses.size())
+            doors.insert(std::make_pair(data->entry, DoorInfo(&bosses[data->bossId], data->type)));
+
+        ++data;
+    }
+    sLog.outDebug("InstanceData::LoadDoorData: %u doors loaded.", doors.size());
+}
+
+void InstanceData::UpdateDoorState(GameObject *door)
+{
+    DoorInfoMap::iterator lower = doors.lower_bound(door->GetEntry());
+    DoorInfoMap::iterator upper = doors.upper_bound(door->GetEntry());
+    if (lower == upper)
+        return;
+
+    bool open = true;
+    for (DoorInfoMap::iterator itr = lower; itr != upper; ++itr)
+    {
+        if (itr->second.type == DOOR_TYPE_ROOM)
+        {
+            if (itr->second.bossInfo->state == IN_PROGRESS)
+            {
+                open = false;
+                break;
+            }
+        }
+        else if (itr->second.type == DOOR_TYPE_PASSAGE)
+        {
+            if (itr->second.bossInfo->state != DONE)
+            {
+                open = false;
+                break;
+            }
+        }
+    }
+
+    door->SetGoState(open ? GO_STATE_ACTIVE : GO_STATE_READY);
+}
+
+void InstanceData::AddDoor(GameObject *door, bool add)
+{
+    DoorInfoMap::iterator lower = doors.lower_bound(door->GetEntry());
+    DoorInfoMap::iterator upper = doors.upper_bound(door->GetEntry());
+    if (lower == upper)
+        return;
+
+    for (DoorInfoMap::iterator itr = lower; itr != upper; ++itr)
+    {
+        if (add)
+            itr->second.bossInfo->door[itr->second.type].insert(door);
+        else
+            itr->second.bossInfo->door[itr->second.type].erase(door);
+    }
+
+    if (add)
+        UpdateDoorState(door);
+}
+
+bool InstanceData::SetBossState(uint32 id, EncounterState state)
+{
+    if (id < bosses.size())
+    {
+        BossInfo *bossInfo = &bosses[id];
+        if (bossInfo->state == TO_BE_DECIDED) // loading
+        {
+            bossInfo->state = state;
+            return false;
+        }
+        else
+        {
+            if (bossInfo->state == state)
+                return false;
+            bossInfo->state = state;
+            SaveToDB();
+        }
+
+        for (uint32 type = 0; type < MAX_DOOR_TYPES; ++type)
+            for (DoorSet::iterator i = bossInfo->door[type].begin(); i != bossInfo->door[type].end(); ++i)
+                UpdateDoorState(*i);
+
+        return true;
+    }
+    return false;
+}
+
+std::string InstanceData::LoadBossState(const char * data)
+{
+    if (!data) return NULL;
+    std::istringstream loadStream(data);
+    uint32 buff;
+    uint32 bossId = 0;
+    for (std::vector<BossInfo>::iterator i = bosses.begin(); i != bosses.end(); ++i, ++bossId)
+    {
+        loadStream >> buff;
+        if (buff < TO_BE_DECIDED)
+            SetBossState(bossId, (EncounterState)buff);
+    }
+    return loadStream.str();
+}
+
+std::string InstanceData::GetBossSaveData()
+{
+    std::ostringstream saveStream;
+    for (std::vector<BossInfo>::iterator i = bosses.begin(); i != bosses.end(); ++i)
+        saveStream << (uint32)i->state << " ";
+    return saveStream.str();
 }

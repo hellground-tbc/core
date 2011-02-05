@@ -142,7 +142,7 @@ float HordeOverrunWP[21][3]=//waypoints in the horde base used in the end in the
 
 hyjal_trashAI::hyjal_trashAI(Creature *c) : npc_escortAI(c)
 {
-    pInstance = ((ScriptedInstance*)c->GetInstanceData());
+    pInstance = (c->GetInstanceData());
     IsEvent = false;
     Delay = 0;
     LastOverronPos = 0;
@@ -387,7 +387,7 @@ struct mob_giant_infernalAI : public hyjal_trashAI
 {
     mob_giant_infernalAI(Creature* c) : hyjal_trashAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         meteor = false;//call once!
         CanMove = false;
         Delay = rand()%30000;
@@ -534,7 +534,7 @@ struct mob_abominationAI : public hyjal_trashAI
 {
     mob_abominationAI(Creature* c) : hyjal_trashAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         go = false;
         pos = 0;
         Reset();
@@ -641,7 +641,7 @@ struct mob_ghoulAI : public hyjal_trashAI
 {
     mob_ghoulAI(Creature* c) : hyjal_trashAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         go = false;
         pos = 0;
         Reset();
@@ -775,7 +775,7 @@ struct mob_necromancerAI : public hyjal_trashAI
 {
     mob_necromancerAI(Creature* c) : hyjal_trashAI(c), summons(m_creature)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         go = false;
         pos = 0;
         Reset();
@@ -946,7 +946,7 @@ struct mob_bansheeAI : public hyjal_trashAI
 {
     mob_bansheeAI(Creature* c) : hyjal_trashAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         go = false;
         pos = 0;
         Reset();
@@ -1078,7 +1078,7 @@ struct mob_crypt_fiendAI : public hyjal_trashAI
 {
     mob_crypt_fiendAI(Creature* c) : hyjal_trashAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         go = false;
         pos = 0;
         Reset();
@@ -1190,7 +1190,7 @@ struct mob_fel_stalkerAI : public hyjal_trashAI
 {
     mob_fel_stalkerAI(Creature* c) : hyjal_trashAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         go = false;
         pos = 0;
         Reset();
@@ -1298,7 +1298,7 @@ struct mob_frost_wyrmAI : public hyjal_trashAI
 {
     mob_frost_wyrmAI(Creature* c) : hyjal_trashAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         go = false;
         pos = 0;
         Reset();
@@ -1348,7 +1348,7 @@ struct mob_frost_wyrmAI : public hyjal_trashAI
 
         if(IsEvent || IsOverrun)
         {
-            ((hyjal_trashAI*)m_creature->AI())->SetCanMelee(false);
+            ((hyjal_trashAI*)m_creature->AI())->SetCanAttack(false);
             npc_escortAI::UpdateAI(diff);
         }
         if (IsEvent)
@@ -1419,7 +1419,7 @@ struct mob_gargoyleAI : public hyjal_trashAI
 {
     mob_gargoyleAI(Creature* c) : hyjal_trashAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         go = false;
         pos = 0;
         DummyTarget[0] = 0;DummyTarget[1] = 0;DummyTarget[2] = 0;
@@ -1472,7 +1472,7 @@ struct mob_gargoyleAI : public hyjal_trashAI
 
         if(IsEvent || IsOverrun)
         {
-            ((hyjal_trashAI*)m_creature->AI())->SetCanMelee(false);
+            ((hyjal_trashAI*)m_creature->AI())->SetCanAttack(false);
             npc_escortAI::UpdateAI(diff);
         }
 

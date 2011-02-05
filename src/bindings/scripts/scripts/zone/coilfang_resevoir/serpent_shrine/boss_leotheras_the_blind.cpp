@@ -156,7 +156,7 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
     {
         m_creature->GetPosition(x,y,z);
         m_creature->GetPosition(wLoc);
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         Demon = 0;
         Berserk_Timer = 600000;
 

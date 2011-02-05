@@ -11150,7 +11150,10 @@ void Unit::SendPetClearCooldown(uint32 spellid)
     if (!owner || owner->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    ((Player*)owner)->RemoveSpellCooldown(spellid, true);
+    WorldPacket data(SMSG_CLEAR_COOLDOWN, (4+8));
+    data << uint32(spellid);
+    data << uint64(GetGUID());
+    ((Player*)owner)->GetSession()->SendPacket(&data);
 }
 
 void Unit::SendPetAIReaction(uint64 guid)
@@ -11622,7 +11625,7 @@ Pet* Unit::CreateTamedPetFrom(Creature* creatureTarget,uint32 spell_id)
 
     pet->GetCharmInfo()->SetPetNumber(objmgr.GeneratePetNumber(), true);
     // this enables pet details window (Shift+P)
-    pet->AIM_Initialize();
+
     pet->InitPetCreateSpells();
     pet->SetHealth(pet->GetMaxHealth());
 
@@ -12000,14 +12003,16 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
         if(OutdoorPvP * pvp = player->GetOutdoorPvP())
             pvp->HandleKill(player, pVictim);
 
-    if(pVictim->GetTypeId() == TYPEID_PLAYER)
+    if (pVictim->GetTypeId() == TYPEID_PLAYER)
     {
+        /*
         if(OutdoorPvP * pvp = ((Player*)pVictim)->GetOutdoorPvP())
             pvp->HandlePlayerActivityChanged((Player*)pVictim);
+        */
 
-        if(Map *pMap = pVictim->GetMap())       // call OnPlayerDeath function
+        if (Map *pMap = pVictim->GetMap())       // call OnPlayerDeath function
         {
-            if(pMap->IsRaid() || pMap->IsDungeon())
+            if (pMap->IsRaid() || pMap->IsDungeon())
             {
                 if(((InstanceMap*)pMap)->GetInstanceData())
                     ((InstanceMap*)pMap)->GetInstanceData()->OnPlayerDeath((Player*)pVictim);

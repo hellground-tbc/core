@@ -159,7 +159,7 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
 {
     boss_reliquary_of_soulsAI(Creature *c) : Scripted_NoMovementAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         EssenceGUID = 0;
         m_creature->setActive(true);
     }

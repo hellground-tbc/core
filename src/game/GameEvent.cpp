@@ -1121,7 +1121,7 @@ void GameEvent::UpdateEventNPCFlags(uint16 event_id)
         // get the creature data from the low guid to get the entry, to be able to find out the whole guid
         if( CreatureData const* data = objmgr.GetCreatureData(itr->first) )
         {
-            Map * map = MapManager::Instance().FindMap(data->mapid);
+            Map * map = sMapMgr.FindMap(data->mapid);
             if(map)
             {
                 Creature * cr = map->GetCreature(MAKE_NEW_GUID(itr->first,data->id,HIGHGUID_UNIT));
@@ -1134,8 +1134,6 @@ void GameEvent::UpdateEventNPCFlags(uint16 event_id)
                     cr->SetUInt32Value(UNIT_NPC_FLAGS,npcflag);
                     // reset gossip options, since the flag change might have added / removed some
                     cr->ResetGossipOptions();
-                    // update to world
-                    //cr->SendUpdateObjectToAllExcept(NULL);
                 }
                 // if we didn't find it, then the npcflag will be updated when the creature is loaded
             }
@@ -1181,7 +1179,7 @@ void GameEvent::GameEventSpawn(int16 event_id)
             objmgr.AddCreatureToGrid(*itr, data);
 
             // Spawn if necessary (loaded grids only)
-            Map* map = const_cast<Map*>(MapManager::Instance().CreateBaseMap(data->mapid));
+            Map* map = const_cast<Map*>(sMapMgr.CreateBaseMap(data->mapid));
             // We use spawn coords to spawn
             if(!map->Instanceable() && map->IsLoaded(data->posX,data->posY))
             {
@@ -1214,7 +1212,7 @@ void GameEvent::GameEventSpawn(int16 event_id)
             objmgr.AddGameobjectToGrid(*itr, data);
             // Spawn if necessary (loaded grids only)
             // this base map checked as non-instanced and then only existed
-            Map* map = const_cast<Map*>(MapManager::Instance().CreateBaseMap(data->mapid));
+            Map* map = const_cast<Map*>(sMapMgr.CreateBaseMap(data->mapid));
             // We use current coords to unspawn, not spawn coords since creature can have changed grid
             if(!map->Instanceable() && map->IsLoaded(data->posX, data->posY))
             {
@@ -1267,7 +1265,7 @@ void GameEvent::GameEventUnspawn(int16 event_id)
         {
             objmgr.RemoveCreatureFromGrid(*itr, data);
 
-            Map * tmpMap = MapManager::Instance().FindMap(data->mapid);
+            Map * tmpMap = sMapMgr.FindMap(data->mapid);
             if(tmpMap)
             {
                 if (Creature * pCreature = tmpMap->GetCreature(MAKE_NEW_GUID(*itr, data->id, HIGHGUID_UNIT)))
@@ -1295,7 +1293,7 @@ void GameEvent::GameEventUnspawn(int16 event_id)
         {
             objmgr.RemoveGameobjectFromGrid(*itr, data);
 
-            Map * tmpMap = MapManager::Instance().FindMap(data->mapid);
+            Map * tmpMap = sMapMgr.FindMap(data->mapid);
             if(tmpMap)
                 if (GameObject* pGameobject = tmpMap->GetGameObject(MAKE_NEW_GUID(*itr, data->id, HIGHGUID_GAMEOBJECT)))
                     pGameobject->AddObjectToRemoveList();
@@ -1322,7 +1320,7 @@ void GameEvent::ChangeEquipOrModel(int16 event_id, bool activate)
             continue;
 
         // Update if spawned
-        Map * tmpMap = MapManager::Instance().FindMap(data->mapid);
+        Map * tmpMap = sMapMgr.FindMap(data->mapid);
         if (!tmpMap)
             continue;
 

@@ -1033,25 +1033,17 @@ bool Object::PrintIndexError(uint32 index, bool set) const
 }
 
 WorldObject::WorldObject()
+    : m_mapId(0), m_InstanceId(0),
+    m_positionX(0.0f), m_positionY(0.0f), m_positionZ(0.0f), m_orientation(0.0f)
+    , m_map(NULL), m_zoneScript(NULL)
+    , m_isActive(false), IsTempWorldObject(false)
+    , m_name("")
 {
-    m_positionX         = 0.0f;
-    m_positionY         = 0.0f;
-    m_positionZ         = 0.0f;
-    m_orientation       = 0.0f;
-
-    m_mapId             = 0;
-    m_InstanceId        = 0;
-    m_map               = NULL;
-
-    m_name = "";
 
     m_groupLootTimer    = 0;
     lootingGroupLeaderGUID = 0;
 
     mSemaphoreTeleport  = false;
-
-    m_isActive          = false;
-    IsTempWorldObject   = false;
 }
 
 void WorldObject::SetWorldObject(bool on)
@@ -1697,17 +1689,17 @@ void WorldObject::SendObjectDeSpawnAnim(uint64 guid)
 
 Map* WorldObject::_getMap()
 {
-    return m_map = MapManager::Instance().GetMap(GetMapId(), this);
+    return m_map = sMapMgr.GetMap(GetMapId(), this);
 }
 
 Map* WorldObject::_findMap()
 {
-    return m_map = MapManager::Instance().FindMap(GetMapId(), GetInstanceId());
+    return m_map = sMapMgr.FindMap(GetMapId(), GetInstanceId());
 }
 
 Map const* WorldObject::GetBaseMap() const
 {
-    return MapManager::Instance().CreateBaseMap(GetMapId());
+    return sMapMgr.CreateBaseMap(GetMapId());
 }
 
 void WorldObject::AddObjectToRemoveList()
@@ -1732,20 +1724,8 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
     if (GetTypeId()==TYPEID_PLAYER)
         team = ((Player*)this)->GetTeam();
 
-    if (!pCreature->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT), GetMap(), id, team))
+    if (!pCreature->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT), GetMap(), id, team, x, y, z, ang))
     {
-        delete pCreature;
-        return NULL;
-    }
-
-    if (x == 0.0f && y == 0.0f && z == 0.0f)
-        GetClosePoint(x, y, z, pCreature->GetObjectSize());
-
-    pCreature->Relocate(x, y, z, ang);
-
-    if(!pCreature->IsPositionValid())
-    {
-        sLog.outError("ERROR: Creature (guidlow %d, entry %d) not summoned. Suggested coordinates isn't valid (X: %f Y: %f)",pCreature->GetGUIDLow(),pCreature->GetEntry(),pCreature->GetPositionX(),pCreature->GetPositionY());
         delete pCreature;
         return NULL;
     }
@@ -1767,17 +1747,19 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
         pCreature->CastSpell(pCreature, pCreature->m_spells[0], false, 0, 0, GetGUID());
     }
 
-    if(Map *pMap = GetMap())       // call OnPlayerDeath function
-    {
-        if(pMap->IsRaid() || pMap->IsDungeon())
-        {
-            if(((InstanceMap*)pMap)->GetInstanceData())
-                ((InstanceMap*)pMap)->GetInstanceData()->OnCreatureCreate(pCreature, id);
-        }
-    }
-
     //return the creature therewith the summoner has access to it
     return pCreature;
+}
+
+void WorldObject::SetZoneScript()
+{
+    if (Map *map = FindMap())
+    {
+        if (map->IsDungeon())
+            m_zoneScript = (ZoneScript*)((InstanceMap*)map)->GetInstanceData();
+        else if (!map->IsBattleGroundOrArena())
+            m_zoneScript = sOutdoorPvPMgr.GetZoneScript(GetZoneId());
+    }
 }
 
 Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 duration)
@@ -1836,8 +1818,6 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
 
     // this enables pet details window (Shift+P)
     pet->GetCharmInfo()->SetPetNumber(pet_number, false);
-
-    pet->AIM_Initialize();
 
     map->Add((Creature*)pet);
 
@@ -1901,7 +1881,7 @@ GameObject* WorldObject::SummonGameObject(uint32 entry, float x, float y, float 
     }
     Map *map = GetMap();
     GameObject *go = new GameObject();
-    if(!go->Create(objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT),entry,map,x,y,z,ang,rotation0,rotation1,rotation2,rotation3,100,1))
+    if(!go->Create(objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT),entry,map,x,y,z,ang,rotation0,rotation1,rotation2,rotation3,100, GO_STATE_READY))
     {
         delete go;
         return NULL;

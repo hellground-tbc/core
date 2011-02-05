@@ -23,7 +23,7 @@ struct TRINITY_DLL_DECL boss_mennu_the_betrayerAI : public ScriptedAI
 {
     boss_mennu_the_betrayerAI(Creature *c) : ScriptedAI(c), Summons(m_creature)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         HeroicMode = m_creature->GetMap()->IsHeroic();
     }
 
@@ -144,7 +144,7 @@ struct TRINITY_DLL_DECL npc_corrupted_nova_totemAI : public Scripted_NoMovementA
 {
     npc_corrupted_nova_totemAI(Creature *c) : Scripted_NoMovementAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         HeroicMode = m_creature->GetMap()->IsHeroic();
     }
 
@@ -204,7 +204,7 @@ struct TRINITY_DLL_DECL npc_mennu_healing_wardAI : public ScriptedAI
 {
     npc_mennu_healing_wardAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         HeroicMode = m_creature->GetMap()->IsHeroic();
     }
 

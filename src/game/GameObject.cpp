@@ -60,6 +60,7 @@ GameObject::GameObject() : WorldObject()
     m_charges = 5;
     m_cooldownTime = 0;
     m_goInfo = NULL;
+    m_goData = NULL;
 
     m_DBTableGuid = 0;
 }
@@ -117,6 +118,9 @@ void GameObject::AddToWorld()
     {
         GetMap()->InsertIntoObjMap(this);
         WorldObject::AddToWorld();
+
+        if (m_zoneScript)
+            m_zoneScript->OnGameObjectCreate(this, true);
     }
 }
 
@@ -125,22 +129,21 @@ void GameObject::RemoveFromWorld()
     ///- Remove the gameobject from the accessor
     if(IsInWorld())
     {
-        if(Map *map = FindMap())
-            if(map->IsDungeon() && ((InstanceMap*)map)->GetInstanceData())
-                ((InstanceMap*)map)->GetInstanceData()->OnObjectRemove(this);
+        if (m_zoneScript)
+            m_zoneScript->OnGameObjectCreate(this, false);
 
         WorldObject::RemoveFromWorld();
         GetMap()->RemoveFromObjMap(GetGUID());
     }
 }
 
-bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 animprogress, uint32 go_state, uint32 ArtKit)
+bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 animprogress, GOState go_state, uint32 ArtKit)
 {
     Relocate(x,y,z,ang);
     SetMapId(map->GetId());
     SetInstanceId(map->GetInstanceId());
 
-    if(!IsPositionValid())
+    if (!IsPositionValid())
     {
         sLog.outError("ERROR: Gameobject (GUID: %u Entry: %u ) not created. Suggested coordinates isn't valid (X: %f Y: %f)",guidlow,name_id,x,y);
         return false;
@@ -193,13 +196,7 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, float x, float
     if (goinfo->type == GAMEOBJECT_TYPE_SPELLCASTER)
         m_charges = goinfo->spellcaster.charges;
 
-    //Notify the map's instance data.
-    //Only works if you create the object in it, not if it is moves to that map.
-    //Normally non-players do not teleport to other maps.
-    if(map->IsDungeon() && ((InstanceMap*)map)->GetInstanceData())
-    {
-        ((InstanceMap*)map)->GetInstanceData()->OnObjectCreate(this);
-    }
+    SetZoneScript();
 
     return true;
 }
@@ -294,8 +291,9 @@ void GameObject::Update(uint32 diff)
                         case GAMEOBJECT_TYPE_DOOR:
                         case GAMEOBJECT_TYPE_BUTTON:
                             //we need to open doors if they are closed (add there another condition if this code breaks some usage, but it need to be here for battlegrounds)
-                            if( !GetGoState() )
-                                SwitchDoorOrButton(false);
+                            if (GetGoState() != GO_STATE_READY)
+                                //SwitchDoorOrButton(false);
+                                ResetDoorOrButton();
                             //flags in AB are type_button and we need to add them here so no break!
                         default:
                             if(!m_spawnedByDefault)         // despawn timer
@@ -408,10 +406,11 @@ void GameObject::Update(uint32 diff)
             {
                 case GAMEOBJECT_TYPE_DOOR:
                 case GAMEOBJECT_TYPE_BUTTON:
-                    if(GetAutoCloseTime() && (m_cooldownTime < time(NULL)))
+                    if (GetAutoCloseTime() && (m_cooldownTime < time(NULL)))
                     {
-                        SwitchDoorOrButton(false);
-                        SetLootState(GO_JUST_DEACTIVATED);
+                        ResetDoorOrButton();
+                        //SwitchDoorOrButton(false);
+                        //SetLootState(GO_JUST_DEACTIVATED);
                     }
                     break;
                 /*case GAMEOBJECT_TYPE_GOOBER:
@@ -611,8 +610,8 @@ void GameObject::SaveToDB(uint32 mapid, uint8 spawnMask)
         << GetFloatValue(GAMEOBJECT_ROTATION+2) << ", "
         << GetFloatValue(GAMEOBJECT_ROTATION+3) << ", "
         << m_respawnDelayTime << ", "
-        << GetGoAnimProgress() << ", "
-        << GetGoState() << ")";
+        << uint32(GetGoAnimProgress()) << ", "
+        << uint32(GetGoState()) << ")";
 
     WorldDatabase.BeginTransaction();
     WorldDatabase.PExecuteLog("DELETE FROM gameobject WHERE guid = '%u'", m_DBTableGuid);
@@ -624,7 +623,7 @@ bool GameObject::LoadFromDB(uint32 guid, Map *map)
 {
     GameObjectData const* data = objmgr.GetGOData(guid);
 
-    if( !data )
+    if (!data)
     {
         sLog.outErrorDb("ERROR: Gameobject (GUID: %u) not found in table `gameobject`, can't load. ",guid);
         return false;
@@ -643,14 +642,18 @@ bool GameObject::LoadFromDB(uint32 guid, Map *map)
     float rotation3 = data->rotation3;
 
     uint32 animprogress = data->animprogress;
-    uint32 go_state = data->go_state;
+    GOState go_state = data->go_state;
     uint32 ArtKit = data->ArtKit;
 
     m_DBTableGuid = guid;
-    if (map->GetInstanceId() != 0) guid = objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT);
+    if (map->GetInstanceId() != 0)
+        guid = objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT);
 
-    if (!Create(guid,entry, map, x, y, z, ang, rotation0, rotation1, rotation2, rotation3, animprogress, go_state, ArtKit) )
+    if (!Create(guid,entry, map, x, y, z, ang, rotation0, rotation1, rotation2, rotation3, animprogress, go_state, ArtKit))
+    {
+        sLog.outDetail("Couldn't create gameobject with entry: %u", entry);
         return false;
+    }
 
     switch(GetGOInfo()->type)
     {
@@ -684,6 +687,7 @@ bool GameObject::LoadFromDB(uint32 guid, Map *map)
             }
             break;
     }
+    m_goData = data;
 
     return true;
 }
@@ -699,11 +703,6 @@ void GameObject::DeleteFromDB()
 GameObject* GameObject::GetGameObject(WorldObject& object, uint64 guid)
 {
     return object.GetMap()->GetGameObject(guid);
-}
-
-GameObjectInfo const *GameObject::GetGOInfo() const
-{
-    return m_goInfo;
 }
 
 uint32 GameObject::GetLootId(GameObjectInfo const* ginfo)
@@ -764,7 +763,7 @@ Unit* GameObject::GetOwner() const
 
 void GameObject::SaveRespawnTime()
 {
-    if(m_respawnTime > time(NULL) && m_spawnedByDefault)
+    if(m_goData && m_goData->dbData && m_respawnTime > time(NULL) && m_spawnedByDefault)
         objmgr.SaveGORespawnTime(m_DBTableGuid,GetInstanceId(),m_respawnTime);
 }
 
@@ -917,38 +916,37 @@ void GameObject::ResetDoorOrButton()
     m_cooldownTime = 0;
 }
 
-void GameObject::UseDoorOrButton(uint32 time_to_restore)
+void GameObject::UseDoorOrButton(uint32 time_to_restore, bool alternative /* = false */)
 {
-    if(m_lootState != GO_READY)
+    if (m_lootState != GO_READY)
         return;
 
-    if(!time_to_restore)
+    if (!time_to_restore)
         time_to_restore = GetAutoCloseTime();
 
-    SwitchDoorOrButton(true);
+    SwitchDoorOrButton(true, alternative);
     SetLootState(GO_ACTIVATED);
 
     m_cooldownTime = time(NULL) + time_to_restore;
-
 }
 
 void GameObject::SetGoArtKit(uint32 kit)
 {
     SetUInt32Value(GAMEOBJECT_ARTKIT, kit);
     GameObjectData *data = const_cast<GameObjectData*>(objmgr.GetGOData(m_DBTableGuid));
-    if(data)
+    if (data)
         data->ArtKit = kit;
 }
 
-void GameObject::SwitchDoorOrButton(bool activate)
+void GameObject::SwitchDoorOrButton(bool activate, bool alternative /* = false */)
 {
-    if(activate)
+    if (activate)
         SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
     else
         RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
 
-    if(GetGoState())                                        //if closed -> open
-        SetGoState(GO_STATE_ACTIVE);
+    if (GetGoState() == GO_STATE_READY)                     //if closed -> open
+        SetGoState(alternative ? GO_STATE_ACTIVE_ALTERNATIVE : GO_STATE_ACTIVE);
     else                                                    //if open -> close
         SetGoState(GO_STATE_READY);
 }
@@ -1404,7 +1402,6 @@ void GameObject::CastSpell(Unit* target, uint32 spell)
     //trigger->RemoveCorpse();
 }
 
-
 void GameObject::CastSpell(GameObject* target, uint32 spell)
 {
     //summon world trigger
@@ -1423,7 +1420,6 @@ void GameObject::CastSpell(GameObject* target, uint32 spell)
         trigger->CastSpell(target, spell, true, 0, 0, target->GetGUID());
     }
 }
-
 
 // overwrite WorldObject function for proper name localization
 const char* GameObject::GetNameForLocaleIdx(int32 loc_idx) const

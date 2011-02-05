@@ -967,17 +967,8 @@ bool ChatHandler::HandleNpcAddCommand(const char* args)
     Map *map = chr->GetMap();
 
     Creature* pCreature = new Creature;
-    if (!pCreature->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT), map, id, (uint32)teamval))
+    if (!pCreature->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT), map, id, uint32(teamval), x, y, z, o))
     {
-        delete pCreature;
-        return false;
-    }
-
-    pCreature->Relocate(x,y,z,o);
-
-    if(!pCreature->IsPositionValid())
-    {
-        sLog.outError("ERROR: Creature (guidlow %d, entry %d) not created. Suggested coordinates isn't valid (X: %f Y: %f)",pCreature->GetGUIDLow(),pCreature->GetEntry(),pCreature->GetPositionX(),pCreature->GetPositionY());
         delete pCreature;
         return false;
     }
@@ -2615,17 +2606,9 @@ bool ChatHandler::HandleWpModifyCommand(const char* args)
                 wpCreature->AddObjectToRemoveList();
                 // re-create
                 Creature* wpCreature2 = new Creature;
-                if (!wpCreature2->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT), map, VISUAL_WAYPOINT, 0))
+                if (!wpCreature2->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT), map, VISUAL_WAYPOINT, 0, chr->GetPositionX(), chr->GetPositionY(), chr->GetPositionZ(), chr->GetOrientation()))
                 {
                     PSendSysMessage(LANG_WAYPOINT_VP_NOTCREATED, VISUAL_WAYPOINT);
-                    delete wpCreature2;
-                    return false;
-                }
-                wpCreature2->Relocate(chr->GetPositionX(), chr->GetPositionY(), chr->GetPositionZ(), chr->GetOrientation());
-
-                if(!wpCreature2->IsPositionValid())
-                {
-                    sLog.outError("ERROR: Creature (guidlow %d, entry %d) not created. Suggested coordinates isn't valid (X: %f Y: %f)",wpCreature2->GetGUIDLow(),wpCreature2->GetEntry(),wpCreature2->GetPositionX(),wpCreature2->GetPositionY());
                     delete wpCreature2;
                     return false;
                 }
@@ -2842,18 +2825,9 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
             float o = chr->GetOrientation();
 
             Creature* wpCreature = new Creature;
-            if (!wpCreature->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT), map, id, 0))
+            if (!wpCreature->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT), map, id, 0, x, y, z, o))
             {
                 PSendSysMessage(LANG_WAYPOINT_VP_NOTCREATED, id);
-                delete wpCreature;
-                return false;
-            }
-
-            wpCreature->Relocate(x, y, z, o);
-
-            if(!wpCreature->IsPositionValid())
-            {
-                sLog.outError("ERROR: Creature (guidlow %d, entry %d) not created. Suggested coordinates isn't valid (X: %f Y: %f)",wpCreature->GetGUIDLow(),wpCreature->GetEntry(),wpCreature->GetPositionX(),wpCreature->GetPositionY());
                 delete wpCreature;
                 return false;
             }
@@ -2901,18 +2875,9 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
         Map *map = chr->GetMap();
 
         Creature* pCreature = new Creature;
-        if (!pCreature->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT),map, id, 0))
+        if (!pCreature->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT),map, id, 0, x, y, z, o))
         {
             PSendSysMessage(LANG_WAYPOINT_VP_NOTCREATED, id);
-            delete pCreature;
-            return false;
-        }
-
-        pCreature->Relocate(x, y, z, o);
-
-        if(!pCreature->IsPositionValid())
-        {
-            sLog.outError("ERROR: Creature (guidlow %d, entry %d) not created. Suggested coordinates isn't valid (X: %f Y: %f)",pCreature->GetGUIDLow(),pCreature->GetEntry(),pCreature->GetPositionX(),pCreature->GetPositionY());
             delete pCreature;
             return false;
         }
@@ -2958,18 +2923,9 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
         Map *map = chr->GetMap();
 
         Creature* pCreature = new Creature;
-        if (!pCreature->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT), map, id, 0))
+        if (!pCreature->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT), map, id, 0, x, y, z, o))
         {
             PSendSysMessage(LANG_WAYPOINT_NOTCREATED, id);
-            delete pCreature;
-            return false;
-        }
-
-        pCreature->Relocate(x, y, z, o);
-
-        if(!pCreature->IsPositionValid())
-        {
-            sLog.outError("ERROR: Creature (guidlow %d, entry %d) not created. Suggested coordinates isn't valid (X: %f Y: %f)",pCreature->GetGUIDLow(),pCreature->GetEntry(),pCreature->GetPositionX(),pCreature->GetPositionY());
             delete pCreature;
             return false;
         }
@@ -3131,13 +3087,13 @@ bool ChatHandler::HandleGameObjectCommand(const char* args)
     GameObject* pGameObj = new GameObject;
     uint32 db_lowGUID = objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT);
 
-    if(!pGameObj->Create(db_lowGUID, goI->id, map, x, y, z, o, 0, 0, rot2, rot3, 0, 1))
+    if (!pGameObj->Create(db_lowGUID, goI->id, map, x, y, z, o, 0, 0, rot2, rot3, 0, GO_STATE_READY))
     {
         delete pGameObj;
         return false;
     }
 
-    if( spawntimeSecs )
+    if (spawntimeSecs)
     {
         uint32 value = atoi((char*)spawntimeSecs);
         pGameObj->SetRespawnTime(value);
@@ -3148,7 +3104,7 @@ bool ChatHandler::HandleGameObjectCommand(const char* args)
     pGameObj->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()));
 
     // this will generate a new guid if the object is in an instance
-    if(!pGameObj->LoadFromDB(db_lowGUID, map))
+    if (!pGameObj->LoadFromDB(db_lowGUID, map))
     {
         delete pGameObj;
         return false;
@@ -3173,7 +3129,7 @@ bool ChatHandler::HandleAnimCommand(const char* args)
 
     Unit *pTarget = NULL;
 
-    if(m_session->GetPlayer()->GetSelection())
+    if (m_session->GetPlayer()->GetSelection())
         pTarget = Unit::GetUnit(*(m_session->GetPlayer()), m_session->GetPlayer()->GetSelection());
 
     if(!pTarget)
@@ -3202,7 +3158,7 @@ bool ChatHandler::HandleAddHonorCommand(const char* args)
         return false;
 
     Player *target = getSelectedPlayer();
-    if(!target)
+    if (!target)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
         SetSentErrorMessage(true);
@@ -3217,7 +3173,7 @@ bool ChatHandler::HandleAddHonorCommand(const char* args)
 bool ChatHandler::HandleHonorAddKillCommand(const char* /*args*/)
 {
     Unit *target = getSelectedUnit();
-    if(!target)
+    if (!target)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
         SetSentErrorMessage(true);
@@ -3231,7 +3187,7 @@ bool ChatHandler::HandleHonorAddKillCommand(const char* /*args*/)
 bool ChatHandler::HandleUpdateHonorFieldsCommand(const char* /*args*/)
 {
     Player *target = getSelectedPlayer();
-    if(!target)
+    if (!target)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
         SetSentErrorMessage(true);
@@ -3842,7 +3798,7 @@ bool ChatHandler::HandleCreatePetCommand(const char* args)
 
      pet->GetCharmInfo()->SetPetNumber(objmgr.GeneratePetNumber(), true);
      // this enables pet details window (Shift+P)
-     pet->AIM_Initialize();
+
      pet->InitPetCreateSpells();
      pet->SetHealth(pet->GetMaxHealth());
 

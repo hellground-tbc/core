@@ -72,11 +72,11 @@ struct TRINITY_DLL_DECL npc_escortAI : public ScriptedAI
         void SetEscortPaused(bool uPaused);
 
         bool HasEscortState(uint32 uiEscortState) { return (m_uiEscortState & uiEscortState); }
+        virtual bool IsEscorted() { return (m_uiEscortState & STATE_ESCORT_ESCORTING); }
 
         void SetMaxPlayerDistance(float newMax) { MaxPlayerDistance = newMax; }
         float GetMaxPlayerDistance() { return MaxPlayerDistance; }
 
-        void SetCanMelee(bool usemelee) { CanMelee = usemelee; }
         void SetDespawnAtEnd(bool despawn) { DespawnAtEnd = despawn; }
         void SetDespawnAtFar(bool despawn) { DespawnAtFar = despawn; }
         bool GetAttack() { return m_bIsActiveAttacker; }//used in EnterEvadeMode override
@@ -109,7 +109,6 @@ struct TRINITY_DLL_DECL npc_escortAI : public ScriptedAI
         bool m_bIsRunning;                                  //all creatures are walking by default (has flag MOVEMENTFLAG_WALK)
         bool m_bCanInstantRespawn;                          //if creature should respawn instantly after escort over (if not, database respawntime are used)
         bool m_bCanReturnToStart;                           //if creature can walk same path (loop) without despawn. Not for regular escort quests.
-        bool CanMelee;
         bool DespawnAtEnd;
         bool DespawnAtFar;
         bool ScriptWP;

@@ -7,7 +7,7 @@ struct TRINITY_DLL_DECL boss_blood_guard_porungAI : public ScriptedAI
 {
     boss_blood_guard_porungAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     ScriptedInstance* pInstance;

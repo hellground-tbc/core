@@ -141,7 +141,7 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
 {
     boss_lady_vashjAI (Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     ScriptedInstance *pInstance;
@@ -623,7 +623,7 @@ struct TRINITY_DLL_DECL mob_enchanted_elementalAI : public ScriptedAI
 {
     mob_enchanted_elementalAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     ScriptedInstance *pInstance;
@@ -727,7 +727,7 @@ struct TRINITY_DLL_DECL mob_tainted_elementalAI : public Scripted_NoMovementAI
 {
     mob_tainted_elementalAI(Creature *c) : Scripted_NoMovementAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     ScriptedInstance *pInstance;
@@ -787,7 +787,7 @@ struct TRINITY_DLL_DECL mob_toxic_sporebatAI : public ScriptedAI
 {
     mob_toxic_sporebatAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         EnterEvadeMode();
         SpellEntry *TempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_TOXIC_SPORES);
         if(TempSpell)
@@ -882,7 +882,7 @@ struct TRINITY_DLL_DECL mob_coilfang_eliteAI : public ScriptedAI
 {
     mob_coilfang_eliteAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     ScriptedInstance *pInstance;
@@ -995,7 +995,7 @@ struct TRINITY_DLL_DECL mob_coilfang_striderAI : public ScriptedAI
 {
     mob_coilfang_striderAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     ScriptedInstance *pInstance;
@@ -1110,7 +1110,7 @@ struct TRINITY_DLL_DECL mob_shield_generator_channelAI : public ScriptedAI
 {
     mob_shield_generator_channelAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     ScriptedInstance *pInstance;
@@ -1164,7 +1164,7 @@ bool ItemUse_item_tainted_core(Player *player, Item* _Item, SpellCastTargets con
     else if(targets.getUnitTarget() && targets.getUnitTarget()->GetTypeId() == TYPEID_UNIT )
             return false;
 
-    ScriptedInstance *pInstance = (player->GetInstanceData()) ? ((ScriptedInstance*)player->GetInstanceData()) : NULL;
+    ScriptedInstance *pInstance = (player->GetInstanceData()) ? (player->GetInstanceData()) : NULL;
 
     if(!pInstance)
     {

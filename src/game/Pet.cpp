@@ -108,6 +108,7 @@ void Pet::AddToWorld()
     {
         ObjectAccessor::Instance().AddPet(this);
         Unit::AddToWorld();
+        AIM_Initialize();
     }
 }
 
@@ -186,13 +187,13 @@ bool Pet::LoadPetFromDB( Unit* owner, uint32 petentry, uint32 petnumber, bool cu
     SetUInt32Value(UNIT_CREATED_BY_SPELL, summon_spell_id);
 
     CreatureInfo const *cinfo = GetCreatureInfo();
-    if(cinfo->type == CREATURE_TYPE_CRITTER)
+    if (cinfo->type == CREATURE_TYPE_CRITTER)
     {
-        AIM_Initialize();
         map->Add((Creature*)this);
         return true;
     }
-    if(getPetType()==HUNTER_PET || (getPetType()==SUMMON_PET && cinfo->type == CREATURE_TYPE_DEMON && owner->getClass() == CLASS_WARLOCK))
+
+    if (getPetType()==HUNTER_PET || (getPetType()==SUMMON_PET && cinfo->type == CREATURE_TYPE_DEMON && owner->getClass() == CLASS_WARLOCK))
         m_charmInfo->SetPetNumber(pet_number, true);
     else
         m_charmInfo->SetPetNumber(pet_number, false);
@@ -326,7 +327,6 @@ bool Pet::LoadPetFromDB( Unit* owner, uint32 petentry, uint32 petnumber, bool cu
         }
     }
 
-    AIM_Initialize();
     map->Add((Creature*)this);
 
     // Spells should be loaded after pet is added to map, because in CanCast is check on it

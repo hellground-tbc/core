@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef OREGON_OBJECT_GUID_H
-#define OREGON_OBJECT_GUID_H
+#ifndef TRINITY_OBJECT_GUID_H
+#define TRINITY_OBJECT_GUID_H
 
 #include "Common.h"
 #include "ByteBuffer.h"
