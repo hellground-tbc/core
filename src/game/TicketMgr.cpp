@@ -26,13 +26,13 @@
 #include "Player.h"
 #include "Common.h"
 #include "ObjectAccessor.h"
-INSTANTIATE_SINGLETON_1( TicketMgr );
+INSTANTIATE_SINGLETON_1(TicketMgr);
 
 GM_Ticket* TicketMgr::GetGMTicket(uint64 ticketGuid)
 {
-    for(GmTicketList::iterator i = GM_TicketList.begin(); i != GM_TicketList.end();)
+    for (GmTicketList::iterator i = GM_TicketList.begin(); i != GM_TicketList.end();)
     {
-        if((*i)->guid == ticketGuid)
+        if ((*i)->guid == ticketGuid)
         {
             return (*i);
         }
@@ -43,9 +43,9 @@ GM_Ticket* TicketMgr::GetGMTicket(uint64 ticketGuid)
 
 GM_Ticket* TicketMgr::GetGMTicketByPlayer(uint64 playerGuid)
 {
-    for(GmTicketList::iterator i = GM_TicketList.begin(); i != GM_TicketList.end();)
+    for (GmTicketList::iterator i = GM_TicketList.begin(); i != GM_TicketList.end();)
     {
-        if((*i)->playerGuid == playerGuid && (*i)->closed == 0)
+        if ((*i)->playerGuid == playerGuid && (*i)->closed == 0)
         {
             return (*i);
         }
@@ -57,16 +57,16 @@ GM_Ticket* TicketMgr::GetGMTicketByPlayer(uint64 playerGuid)
 GM_Ticket* TicketMgr::GetGMTicketByName(const char* name)
 {
     std::string pname = name;
-    if(!normalizePlayerName(pname))
+    if (!normalizePlayerName(pname))
         return NULL;
 
     uint64 playerGuid = objmgr.GetPlayerGUIDByName(pname.c_str());
-    if(!playerGuid)
+    if (!playerGuid)
         return NULL;
 
-    for(GmTicketList::iterator i = GM_TicketList.begin(); i != GM_TicketList.end();)
+    for (GmTicketList::iterator i = GM_TicketList.begin(); i != GM_TicketList.end();)
     {
-        if((*i)->playerGuid == playerGuid && (*i)->closed == 0)
+        if ((*i)->playerGuid == playerGuid && (*i)->closed == 0)
         {
             return (*i);
         }
@@ -77,19 +77,19 @@ GM_Ticket* TicketMgr::GetGMTicketByName(const char* name)
 
 void TicketMgr::AddGMTicket(GM_Ticket *ticket, bool startup)
 {
-    ASSERT( ticket );
+    ASSERT(ticket);
     GM_TicketList.push_back(ticket);
 
     // save
-    if(!startup)
+    if (!startup)
         SaveGMTicket(ticket);
 }
 
 void TicketMgr::DeleteGMTicketPermanently(uint64 ticketGuid)
 {
-    for(GmTicketList::iterator i = GM_TicketList.begin(); i != GM_TicketList.end();)
+    for (GmTicketList::iterator i = GM_TicketList.begin(); i != GM_TicketList.end();)
     {
-        if((*i)->guid == ticketGuid)
+        if ((*i)->guid == ticketGuid)
             i = GM_TicketList.erase(i);
         else
             ++i;
@@ -104,7 +104,7 @@ void TicketMgr::LoadGMTickets()
 {
     // Delete all out of object holder
     GM_TicketList.clear();
-    QueryResultAutoPtr result = CharacterDatabase.Query( "SELECT `guid`, `playerGuid`, `name`, `message`, `createtime`, `map`, `posX`, `posY`, `posZ`, `timestamp`, `closed`, `assignedto`, `comment` FROM `gm_tickets`" );
+    QueryResultAutoPtr result = CharacterDatabase.Query("SELECT `guid`, `playerGuid`, `name`, `message`, `createtime`, `map`, `posX`, `posY`, `posZ`, `timestamp`, `closed`, `assignedto`, `comment` FROM `gm_tickets`");
     GM_Ticket *ticket;
 
     if (!result)
@@ -135,16 +135,16 @@ void TicketMgr::LoadGMTickets()
 
         AddGMTicket(ticket, true);
 
-    } while( result->NextRow() );
+    } while (result->NextRow());
 
     sWorld.SendGMText(LANG_COMMAND_TICKETRELOAD, result->GetRowCount());
 }
 
 void TicketMgr::RemoveGMTicket(uint64 ticketGuid, uint64 GMguid)
 {
-    for(GmTicketList::iterator i = GM_TicketList.begin(); i != GM_TicketList.end();)
+    for (GmTicketList::iterator i = GM_TicketList.begin(); i != GM_TicketList.end();)
     {
-        if((*i)->guid == ticketGuid && (*i)->closed == 0)
+        if ((*i)->guid == ticketGuid && (*i)->closed == 0)
         {
             (*i)->closed = GMguid;
             SaveGMTicket((*i));
@@ -156,9 +156,9 @@ void TicketMgr::RemoveGMTicket(uint64 ticketGuid, uint64 GMguid)
 
 void TicketMgr::RemoveGMTicketByPlayer(uint64 playerGuid, uint64 GMguid)
 {
-    for(GmTicketList::iterator i = GM_TicketList.begin(); i != GM_TicketList.end();)
+    for (GmTicketList::iterator i = GM_TicketList.begin(); i != GM_TicketList.end();)
     {
-        if((*i)->playerGuid == playerGuid && (*i)->closed == 0)
+        if ((*i)->playerGuid == playerGuid && (*i)->closed == 0)
         {
             (*i)->closed = GMguid;
             SaveGMTicket((*i));
@@ -200,7 +200,7 @@ void TicketMgr::UpdateGMTicket(GM_Ticket *ticket)
 void TicketMgr::InitTicketID()
 {
     QueryResultAutoPtr result = CharacterDatabase.Query("SELECT MAX(guid) FROM gm_tickets");
-    if(result)
+    if (result)
         m_ticketid = result->Fetch()[0].GetUInt64();
 }
 

@@ -43,7 +43,7 @@ class TRINITY_DLL_DECL WorldLog : public Trinity::Singleton<WorldLog, Trinity::C
     /// Close the file in destructor
     ~WorldLog()
     {
-        if( i_file != NULL )
+        if (i_file != NULL)
             fclose(i_file);
         i_file = NULL;
     }
@@ -55,7 +55,7 @@ class TRINITY_DLL_DECL WorldLog : public Trinity::Singleton<WorldLog, Trinity::C
         /// %Log to the file
         inline void Log(char const *fmt, ...)
         {
-            if( LogWorld() )
+            if (LogWorld())
             {
                 Guard guard(*this);
                 ASSERT(i_file);

@@ -28,7 +28,7 @@
 #include "Database/DatabaseEnv.h"
 
 // GCC have alternative #pragma pack(N) syntax and old gcc version not support pack(push,N), also any gcc version not support it at some platform
-#if defined( __GNUC__ )
+#if defined(__GNUC__)
 #pragma pack(1)
 #else
 #pragma pack(push,1)
@@ -399,7 +399,7 @@ struct GameObjectData
 };
 
 // GCC have alternative #pragma pack() syntax and old gcc version not support pack(pop), also any gcc version not support it at some platform
-#if defined( __GNUC__ )
+#if defined(__GNUC__)
 #pragma pack()
 #else
 #pragma pack(pop)
@@ -473,7 +473,7 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
         uint32 GetLootId() const { return GetLootId(GetGOInfo()); }
         uint32 GetLockId() const
         {
-            switch(GetGoType())
+            switch (GetGoType())
             {
                 case GAMEOBJECT_TYPE_DOOR:       return GetGOInfo()->door.lockId;
                 case GAMEOBJECT_TYPE_BUTTON:     return GetGOInfo()->button.lockId;
@@ -494,7 +494,7 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
         time_t GetRespawnTimeEx() const
         {
             time_t now = time(NULL);
-            if(m_respawnTime > now)
+            if (m_respawnTime > now)
                 return m_respawnTime;
             else
                 return now;
@@ -568,7 +568,7 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
 
         uint32 GetLinkedGameObjectEntry() const
         {
-            switch(GetGoType())
+            switch (GetGoType())
             {
                 case GAMEOBJECT_TYPE_CHEST:       return GetGOInfo()->chest.linkedTrapId;
                 case GAMEOBJECT_TYPE_SPELL_FOCUS: return GetGOInfo()->spellFocus.linkedTrapId;
@@ -580,7 +580,7 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
         uint32 GetAutoCloseTime() const
         {
             uint32 autoCloseTime = 0;
-            switch(GetGoType())
+            switch (GetGoType())
             {
                 case GAMEOBJECT_TYPE_DOOR:          autoCloseTime = GetGOInfo()->door.autoCloseTime; break;
                 case GAMEOBJECT_TYPE_BUTTON:        autoCloseTime = GetGOInfo()->button.autoCloseTime; break;
@@ -593,7 +593,7 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
             return autoCloseTime / 0x10000;
         }
 
-        void TriggeringLinkedGameObject( uint32 trapEntry, Unit* target);
+        void TriggeringLinkedGameObject(uint32 trapEntry, Unit* target);
 
         bool isVisibleForInState(Player const* u, bool inVisibleList) const;
         bool canDetectTrap(Player const* u, float distance) const;

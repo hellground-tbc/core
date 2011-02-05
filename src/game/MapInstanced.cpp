@@ -36,7 +36,7 @@ MapInstanced::MapInstanced(uint32 id, time_t expiry) : Map(id, expiry, 0, 0)
 
 void MapInstanced::InitVisibilityDistance()
 {
-    if(m_InstancedMaps.empty())
+    if (m_InstancedMaps.empty())
         return;
 
     //initialize visibility distances for all instance copies
@@ -56,7 +56,7 @@ void MapInstanced::Update(const uint32& t)
 
     while (i != m_InstancedMaps.end())
     {
-        if(i->second->CanUnload(t))
+        if (i->second->CanUnload(t))
         {
             DestroyInstance(i);                             // iterator incremented
         }
@@ -167,20 +167,20 @@ InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave *save,
 
     // make sure we have a valid map id
     const MapEntry* entry = sMapStore.LookupEntry(GetId());
-    if(!entry)
+    if (!entry)
     {
         sLog.outError("CreateInstance: no entry for map %d", GetId());
         assert(false);
     }
     const InstanceTemplate * iTemplate = objmgr.GetInstanceTemplate(GetId());
-    if(!iTemplate)
+    if (!iTemplate)
     {
         sLog.outError("CreateInstance: no instance template for map %d", GetId());
         assert(false);
     }
 
     // some instances only have one difficulty
-    if(!entry->SupportsHeroicMode()) difficulty = DIFFICULTY_NORMAL;
+    if (!entry->SupportsHeroicMode()) difficulty = DIFFICULTY_NORMAL;
 
     sLog.outDebug("MapInstanced::CreateInstance: %smap instance %d for %d created with difficulty %s", save?"":"new ", InstanceId, GetId(), difficulty?"heroic":"normal");
 
@@ -211,7 +211,7 @@ BattleGroundMap* MapInstanced::CreateBattleGround(uint32 InstanceId, BattleGroun
 void MapInstanced::DestroyInstance(uint32 InstanceId)
 {
     InstancedMaps::iterator itr = m_InstancedMaps.find(InstanceId);
-    if(itr != m_InstancedMaps.end())
+    if (itr != m_InstancedMaps.end())
         DestroyInstance(itr);
 }
 
@@ -220,7 +220,7 @@ void MapInstanced::DestroyInstance(InstancedMaps::iterator &itr)
 {
     itr->second->UnloadAll();
     // should only unload VMaps if this is the last instance and grid unloading is enabled
-    if(m_InstancedMaps.size() <= 1 && sWorld.getConfig(CONFIG_GRID_UNLOAD))
+    if (m_InstancedMaps.size() <= 1 && sWorld.getConfig(CONFIG_GRID_UNLOAD))
     {
         VMAP::VMapFactory::createOrGetVMapManager()->unloadMap(itr->second->GetId());
         // in that case, unload grids of the base map, too
@@ -235,7 +235,7 @@ void MapInstanced::DestroyInstance(InstancedMaps::iterator &itr)
 
 bool MapInstanced::CanEnter(Player *player)
 {
-    if(Map* map = GetInstance(player))
+    if (Map* map = GetInstance(player))
         return map->CanEnter(player);
 
     return false;

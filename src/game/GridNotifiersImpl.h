@@ -32,35 +32,35 @@
 inline void
 Trinity::ObjectUpdater::Visit(CreatureMapType &m)
 {
-    for(CreatureMapType::iterator iter=m.begin(); iter != m.end(); ++iter)
-        if(iter->getSource()->IsInWorld() && !iter->getSource()->isSpiritService())
+    for (CreatureMapType::iterator iter=m.begin(); iter != m.end(); ++iter)
+        if (iter->getSource()->IsInWorld() && !iter->getSource()->isSpiritService())
             iter->getSource()->Update(i_timeDiff);
 }
 
 inline void PlayerCreatureRelocationWorker(Player* pl, Creature* c)
 {
-    if(!pl->isAlive() || !c->isAlive() || pl->isInFlight())
+    if (!pl->isAlive() || !c->isAlive() || pl->isInFlight())
         return;
 
     // Creature AI reaction
-    if(c->HasReactState(REACT_AGGRESSIVE) && !c->hasUnitState(UNIT_STAT_SIGHTLESS))
+    if (c->HasReactState(REACT_AGGRESSIVE) && !c->hasUnitState(UNIT_STAT_SIGHTLESS))
     {
-        if( c->IsAIEnabled && c->IsWithinSightDist(pl) && !c->IsInEvadeMode() )
+        if (c->IsAIEnabled && c->IsWithinSightDist(pl) && !c->IsInEvadeMode())
             c->AI()->MoveInLineOfSight(pl);
     }
 }
 
 inline void CreatureCreatureRelocationWorker(Creature* c1, Creature* c2)
 {
-    if(c1->HasReactState(REACT_AGGRESSIVE) && !c1->hasUnitState(UNIT_STAT_SIGHTLESS))
+    if (c1->HasReactState(REACT_AGGRESSIVE) && !c1->hasUnitState(UNIT_STAT_SIGHTLESS))
     {
-        if( c1->IsAIEnabled && c1->IsWithinSightDist(c2) && !c1->IsInEvadeMode() )
+        if (c1->IsAIEnabled && c1->IsWithinSightDist(c2) && !c1->IsInEvadeMode())
             c1->AI()->MoveInLineOfSight(c2);
     }
 
-    if(c2->HasReactState(REACT_AGGRESSIVE) && !c2->hasUnitState(UNIT_STAT_SIGHTLESS))
+    if (c2->HasReactState(REACT_AGGRESSIVE) && !c2->hasUnitState(UNIT_STAT_SIGHTLESS))
     {
-        if( c2->IsAIEnabled && c1->IsWithinSightDist(c2) && !c2->IsInEvadeMode() )
+        if (c2->IsAIEnabled && c1->IsWithinSightDist(c2) && !c2->IsInEvadeMode())
             c2->AI()->MoveInLineOfSight(c1);
     }
 }
@@ -69,7 +69,7 @@ template<class T>
 inline void
 Trinity::PlayerVisibilityNotifier::Visit(GridRefManager<T> &m)
 {
-    for(typename GridRefManager<T>::iterator iter = m.begin(); iter != m.end(); ++iter)
+    for (typename GridRefManager<T>::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
         i_player.UpdateVisibilityOf(iter->getSource(),i_data,i_visibleNow);
         i_clientGUIDs.erase(iter->getSource()->GetGUID());
@@ -80,11 +80,11 @@ template<>
 inline void
 Trinity::PlayerRelocationNotifier::Visit(PlayerMapType &m)
 {
-    for(PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+    for (PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
         i_clientGUIDs.erase(iter->getSource()->GetGUID());
 
-        if(iter->getSource()->m_Notified) //self is also skipped in this check
+        if (iter->getSource()->m_Notified) //self is also skipped in this check
             continue;
 
         i_player.UpdateVisibilityOf(iter->getSource(),i_data,i_visibleNow);
@@ -95,8 +95,8 @@ Trinity::PlayerRelocationNotifier::Visit(PlayerMapType &m)
         //        (*it)->UpdateVisibilityOf(iter->getSource());
 
         // Cancel Trade
-        if(i_player.GetTrader()==iter->getSource())
-            if(!i_player.IsWithinDistInMap(iter->getSource(), 5)) // iteraction distance
+        if (i_player.GetTrader()==iter->getSource())
+            if (!i_player.IsWithinDistInMap(iter->getSource(), 5)) // iteraction distance
                 i_player.GetSession()->SendCancelTrade();   // will clode both side trade windows
     }
 }
@@ -105,11 +105,11 @@ template<>
 inline void
 Trinity::PlayerRelocationNotifier::Visit(CreatureMapType &m)
 {
-    for(CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+    for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
         i_clientGUIDs.erase(iter->getSource()->GetGUID());
 
-        if(iter->getSource()->m_Notified)
+        if (iter->getSource()->m_Notified)
             continue;
 
         i_player.UpdateVisibilityOf(iter->getSource(),i_data,i_visibleNow);
@@ -122,9 +122,9 @@ template<>
 inline void
 Trinity::CreatureRelocationNotifier::Visit(PlayerMapType &m)
 {
-    for(PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+    for (PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
-        if(iter->getSource()->m_Notified)
+        if (iter->getSource()->m_Notified)
             continue;
 
         iter->getSource()->UpdateVisibilityOf(&i_creature);
@@ -137,15 +137,15 @@ template<>
 inline void
 Trinity::CreatureRelocationNotifier::Visit(CreatureMapType &m)
 {
-    if(!i_creature.isAlive())
+    if (!i_creature.isAlive())
         return;
 
-    for(CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+    for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
-        if(iter->getSource()->m_Notified)
+        if (iter->getSource()->m_Notified)
             continue;
         
-        if(!iter->getSource()->isAlive())
+        if (!iter->getSource()->isAlive())
             continue;
 
         CreatureCreatureRelocationWorker(iter->getSource(), &i_creature);
@@ -154,10 +154,10 @@ Trinity::CreatureRelocationNotifier::Visit(CreatureMapType &m)
 
 inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
 {
-    if(!target->isAlive() || target->isInFlight() )
+    if (!target->isAlive() || target->isInFlight())
         return;
 
-    if(target->GetTypeId()==TYPEID_UNIT && ((Creature*)target)->isTotem())
+    if (target->GetTypeId()==TYPEID_UNIT && ((Creature*)target)->isTotem())
         return;
 
     if (!i_dynobject.IsWithinDistInMap(target, i_dynobject.GetRadius()))
@@ -168,11 +168,11 @@ inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
         return;
 
     // Evade target
-    if( target->GetTypeId()==TYPEID_UNIT && ((Creature*)target)->IsInEvadeMode() )
+    if (target->GetTypeId()==TYPEID_UNIT && ((Creature*)target)->IsInEvadeMode())
         return;
 
     //Check player targets and remove if in GM mode or GM invisibility (for not self casting case)
-    if( target->GetTypeId()==TYPEID_PLAYER && target != i_check && (((Player*)target)->isGameMaster() || ((Player*)target)->GetVisibility()==VISIBILITY_OFF) )
+    if (target->GetTypeId()==TYPEID_PLAYER && target != i_check && (((Player*)target)->isGameMaster() || ((Player*)target)->GetVisibility()==VISIBILITY_OFF))
         return;
 
     if (i_dynobject.IsAffecting(target))
@@ -180,22 +180,22 @@ inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
 
     SpellEntry const *spellInfo = sSpellStore.LookupEntry(i_dynobject.GetSpellId());
     uint32 eff_index  = i_dynobject.GetEffIndex();
-    if(spellInfo->EffectImplicitTargetB[eff_index] == TARGET_DEST_DYNOBJ_ALLY
+    if (spellInfo->EffectImplicitTargetB[eff_index] == TARGET_DEST_DYNOBJ_ALLY
         || spellInfo->EffectImplicitTargetB[eff_index] == TARGET_UNIT_AREA_ALLY_DST)
     {
-        if(!i_check->IsFriendlyTo(target))
+        if (!i_check->IsFriendlyTo(target))
             return;
     }
-    else if( i_check->GetTypeId()==TYPEID_PLAYER )
+    else if (i_check->GetTypeId()==TYPEID_PLAYER)
     {
-        if (i_check->IsFriendlyTo( target ))
+        if (i_check->IsFriendlyTo(target))
             return;
 
         i_check->CombatStart(target);
     }
     else
     {
-        if (!i_check->IsHostileTo( target ))
+        if (!i_check->IsHostileTo(target))
             return;
 
         i_check->CombatStart(target);
@@ -206,19 +206,19 @@ inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
         return;
 
     // Apply PersistentAreaAura on target
-    if(spellInfo->Id == 38575)  //Toxic Spores
-        if(target->HasAura(38575,eff_index))
+    if (spellInfo->Id == 38575)  //Toxic Spores
+        if (target->HasAura(38575,eff_index))
             return;
 
-    if(spellInfo->Id == 40253)  //Molten Flame
-        if(target->HasAura(40253,eff_index))
+    if (spellInfo->Id == 40253)  //Molten Flame
+        if (target->HasAura(40253,eff_index))
             return;
 
-    if(spellInfo->Id == 31943)  //Doomfire
-        if(target->HasAura(31943,eff_index))
+    if (spellInfo->Id == 31943)  //Doomfire
+        if (target->HasAura(31943,eff_index))
             return;
 
-    if(target->GetTypeId() == TYPEID_UNIT && target->GetEntry() == 23111)
+    if (target->GetTypeId() == TYPEID_UNIT && target->GetEntry() == 23111)
         return;
 
     PersistentAreaAura* Aur = new PersistentAreaAura(spellInfo, eff_index, NULL, target, i_dynobject.GetCaster(), NULL, i_dynobject.GetGUID());
@@ -231,7 +231,7 @@ template<>
 inline void
 Trinity::DynamicObjectUpdater::Visit(CreatureMapType  &m)
 {
-    for(CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
         VisitHelper(itr->getSource());
 }
 
@@ -239,7 +239,7 @@ template<>
 inline void
 Trinity::DynamicObjectUpdater::Visit(PlayerMapType  &m)
 {
-    for(PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
         VisitHelper(itr->getSource());
 }
 
@@ -251,12 +251,12 @@ template<class Check>
 void Trinity::WorldObjectSearcher<Check>::Visit(GameObjectMapType &m)
 {
     // already found
-    if(i_object)
+    if (i_object)
         return;
 
-    for(GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
     {
-        if(i_check(itr->getSource()))
+        if (i_check(itr->getSource()))
         {
             i_object = itr->getSource();
             return;
@@ -268,12 +268,12 @@ template<class Check>
 void Trinity::WorldObjectSearcher<Check>::Visit(PlayerMapType &m)
 {
     // already found
-    if(i_object)
+    if (i_object)
         return;
 
-    for(PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
     {
-        if(i_check(itr->getSource()))
+        if (i_check(itr->getSource()))
         {
             i_object = itr->getSource();
             return;
@@ -285,12 +285,12 @@ template<class Check>
 void Trinity::WorldObjectSearcher<Check>::Visit(CreatureMapType &m)
 {
     // already found
-    if(i_object)
+    if (i_object)
         return;
 
-    for(CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
     {
-        if(i_check(itr->getSource()))
+        if (i_check(itr->getSource()))
         {
             i_object = itr->getSource();
             return;
@@ -302,12 +302,12 @@ template<class Check>
 void Trinity::WorldObjectSearcher<Check>::Visit(CorpseMapType &m)
 {
     // already found
-    if(i_object)
+    if (i_object)
         return;
 
-    for(CorpseMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (CorpseMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
     {
-        if(i_check(itr->getSource()))
+        if (i_check(itr->getSource()))
         {
             i_object = itr->getSource();
             return;
@@ -319,12 +319,12 @@ template<class Check>
 void Trinity::WorldObjectSearcher<Check>::Visit(DynamicObjectMapType &m)
 {
     // already found
-    if(i_object)
+    if (i_object)
         return;
 
-    for(DynamicObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (DynamicObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
     {
-        if(i_check(itr->getSource()))
+        if (i_check(itr->getSource()))
         {
             i_object = itr->getSource();
             return;
@@ -335,40 +335,40 @@ void Trinity::WorldObjectSearcher<Check>::Visit(DynamicObjectMapType &m)
 template<class Check>
 void Trinity::WorldObjectListSearcher<Check>::Visit(PlayerMapType &m)
 {
-    for(PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if(i_check(itr->getSource()))
+    for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+        if (i_check(itr->getSource()))
             i_objects.push_back(itr->getSource());
 }
 
 template<class Check>
 void Trinity::WorldObjectListSearcher<Check>::Visit(CreatureMapType &m)
 {
-    for(CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if(i_check(itr->getSource()))
+    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+        if (i_check(itr->getSource()))
             i_objects.push_back(itr->getSource());
 }
 
 template<class Check>
 void Trinity::WorldObjectListSearcher<Check>::Visit(CorpseMapType &m)
 {
-    for(CorpseMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if(i_check(itr->getSource()))
+    for (CorpseMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+        if (i_check(itr->getSource()))
             i_objects.push_back(itr->getSource());
 }
 
 template<class Check>
 void Trinity::WorldObjectListSearcher<Check>::Visit(GameObjectMapType &m)
 {
-    for(GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if(i_check(itr->getSource()))
+    for (GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+        if (i_check(itr->getSource()))
             i_objects.push_back(itr->getSource());
 }
 
 template<class Check>
 void Trinity::WorldObjectListSearcher<Check>::Visit(DynamicObjectMapType &m)
 {
-    for(DynamicObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if(i_check(itr->getSource()))
+    for (DynamicObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+        if (i_check(itr->getSource()))
             i_objects.push_back(itr->getSource());
 }
 
@@ -378,12 +378,12 @@ template<class Check>
 void Trinity::GameObjectSearcher<Check>::Visit(GameObjectMapType &m)
 {
     // already found
-    if(i_object)
+    if (i_object)
         return;
 
-    for(GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
     {
-        if(i_check(itr->getSource()))
+        if (i_check(itr->getSource()))
         {
             i_object = itr->getSource();
             return;
@@ -394,9 +394,9 @@ void Trinity::GameObjectSearcher<Check>::Visit(GameObjectMapType &m)
 template<class Check>
 void Trinity::GameObjectLastSearcher<Check>::Visit(GameObjectMapType &m)
 {
-    for(GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
     {
-        if(i_check(itr->getSource()))
+        if (i_check(itr->getSource()))
             i_object = itr->getSource();
     }
 }
@@ -404,8 +404,8 @@ void Trinity::GameObjectLastSearcher<Check>::Visit(GameObjectMapType &m)
 template<class Check>
 void Trinity::GameObjectListSearcher<Check>::Visit(GameObjectMapType &m)
 {
-    for(GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if(i_check(itr->getSource()))
+    for (GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+        if (i_check(itr->getSource()))
             i_objects.push_back(itr->getSource());
 }
 
@@ -415,12 +415,12 @@ template<class Check>
 void Trinity::UnitSearcher<Check>::Visit(CreatureMapType &m)
 {
     // already found
-    if(i_object)
+    if (i_object)
         return;
 
-    for(CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
     {
-        if(i_check(itr->getSource()))
+        if (i_check(itr->getSource()))
         {
             i_object = itr->getSource();
             return;
@@ -432,12 +432,12 @@ template<class Check>
 void Trinity::UnitSearcher<Check>::Visit(PlayerMapType &m)
 {
     // already found
-    if(i_object)
+    if (i_object)
         return;
 
-    for(PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
     {
-        if(i_check(itr->getSource()))
+        if (i_check(itr->getSource()))
         {
             i_object = itr->getSource();
             return;
@@ -448,9 +448,9 @@ void Trinity::UnitSearcher<Check>::Visit(PlayerMapType &m)
 template<class Check>
 void Trinity::UnitLastSearcher<Check>::Visit(CreatureMapType &m)
 {
-    for(CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
     {
-        if(i_check(itr->getSource()))
+        if (i_check(itr->getSource()))
             i_object = itr->getSource();
     }
 }
@@ -458,9 +458,9 @@ void Trinity::UnitLastSearcher<Check>::Visit(CreatureMapType &m)
 template<class Check>
 void Trinity::UnitLastSearcher<Check>::Visit(PlayerMapType &m)
 {
-    for(PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
     {
-        if(i_check(itr->getSource()))
+        if (i_check(itr->getSource()))
             i_object = itr->getSource();
     }
 }
@@ -468,16 +468,16 @@ void Trinity::UnitLastSearcher<Check>::Visit(PlayerMapType &m)
 template<class Check>
 void Trinity::UnitListSearcher<Check>::Visit(PlayerMapType &m)
 {
-    for(PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if(i_check(itr->getSource()))
+    for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+        if (i_check(itr->getSource()))
             i_objects.push_back(itr->getSource());
 }
 
 template<class Check>
 void Trinity::UnitListSearcher<Check>::Visit(CreatureMapType &m)
 {
-    for(CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if(i_check(itr->getSource()))
+    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+        if (i_check(itr->getSource()))
             i_objects.push_back(itr->getSource());
 }
 
@@ -487,12 +487,12 @@ template<class Check>
 void Trinity::CreatureSearcher<Check>::Visit(CreatureMapType &m)
 {
     // already found
-    if(i_object)
+    if (i_object)
         return;
 
-    for(CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
     {
-        if(i_check(itr->getSource()))
+        if (i_check(itr->getSource()))
         {
             i_object = itr->getSource();
             return;
@@ -503,9 +503,9 @@ void Trinity::CreatureSearcher<Check>::Visit(CreatureMapType &m)
 template<class Check>
 void Trinity::CreatureLastSearcher<Check>::Visit(CreatureMapType &m)
 {
-    for(CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
     {
-        if(i_check(itr->getSource()))
+        if (i_check(itr->getSource()))
             i_object = itr->getSource();
     }
 }
@@ -513,8 +513,8 @@ void Trinity::CreatureLastSearcher<Check>::Visit(CreatureMapType &m)
 template<class Check>
 void Trinity::CreatureListSearcher<Check>::Visit(CreatureMapType &m)
 {
-    for(CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if(i_check(itr->getSource()))
+    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+        if (i_check(itr->getSource()))
             i_objects.push_back(itr->getSource());
 }
 
@@ -530,12 +530,12 @@ template<class Check>
 void Trinity::PlayerSearcher<Check>::Visit(PlayerMapType &m)
 {
     // already found
-    if(i_object)
+    if (i_object)
         return;
 
-    for(PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
     {
-        if(i_check(itr->getSource()))
+        if (i_check(itr->getSource()))
         {
             i_object = itr->getSource();
             return;

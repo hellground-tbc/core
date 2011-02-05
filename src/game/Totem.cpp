@@ -35,7 +35,7 @@ Totem::Totem() : Creature()
     m_type = TOTEM_PASSIVE;
 }
 
-void Totem::Update( uint32 time )
+void Totem::Update(uint32 time)
 {
     Unit *owner = GetOwner();
     if (!owner || !owner->isAlive() || !this->isAlive())
@@ -52,7 +52,7 @@ void Totem::Update( uint32 time )
     else
         m_duration -= time;
 
-    Creature::Update( time );
+    Creature::Update(time);
 }
 
 void Totem::Summon(Unit* owner)
@@ -61,18 +61,18 @@ void Totem::Summon(Unit* owner)
     if (owner->GetTypeId()==TYPEID_PLAYER && cinfo)
     {
         uint32 modelid = 0;
-        if(((Player*)owner)->GetTeam() == HORDE)
+        if (((Player*)owner)->GetTeam() == HORDE)
         {
-            if(cinfo->Modelid_H1)
+            if (cinfo->Modelid_H1)
                 modelid = cinfo->Modelid_H1;
-            else if(cinfo->Modelid_H2)
+            else if (cinfo->Modelid_H2)
                 modelid = cinfo->Modelid_H2;
         }
         else
         {
-            if(cinfo->Modelid_A1)
+            if (cinfo->Modelid_A1)
                 modelid = cinfo->Modelid_A1;
-            else if(cinfo->Modelid_A2)
+            else if (cinfo->Modelid_A2)
                 modelid = cinfo->Modelid_A2;
         }
         if (modelid)
@@ -90,10 +90,10 @@ void Totem::Summon(Unit* owner)
     data << GetGUID();
     SendMessageToSet(&data,true);
 
-    switch(m_type)
+    switch (m_type)
     {
         case TOTEM_PASSIVE:
-            if(GetSpell(1))
+            if (GetSpell(1))
                 CastSpell(this, GetSpell(1), true);
             CastSpell(this, GetSpell(), true);
             break;
@@ -101,11 +101,11 @@ void Totem::Summon(Unit* owner)
         default: break;
     }
 
-    if(GetEntry() == SENTRY_TOTEM_ENTRY)
+    if (GetEntry() == SENTRY_TOTEM_ENTRY)
         SetReactState(REACT_AGGRESSIVE);
 
     // call JustSummoned function when totem summoned from spell
-    if(owner->GetTypeId() == TYPEID_UNIT && ((Creature*)owner)->IsAIEnabled)
+    if (owner->GetTypeId() == TYPEID_UNIT && ((Creature*)owner)->IsAIEnabled)
         ((Creature*)owner)->AI()->JustSummoned(this);
 }
 
@@ -119,9 +119,9 @@ void Totem::UnSummon()
     if (owner)
     {
         // clear owenr's totem slot
-        for(int i = 0; i < MAX_TOTEM; ++i)
+        for (int i = 0; i < MAX_TOTEM; ++i)
         {
-            if(owner->m_TotemSlot[i]==GetGUID())
+            if (owner->m_TotemSlot[i]==GetGUID())
             {
                 owner->m_TotemSlot[i] = 0;
                 break;
@@ -138,17 +138,17 @@ void Totem::UnSummon()
             pGroup = ((Player*)owner)->GetGroup();
             if (pGroup)
             {
-                for(GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
+                for (GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
                 {
                     Player* Target = itr->getSource();
-                    if(Target && pGroup->SameSubGroup((Player*)owner, Target))
+                    if (Target && pGroup->SameSubGroup((Player*)owner, Target))
                         Target->RemoveAurasDueToSpell(GetSpell());
                 }
             }
         }
 
         // call SummonedCreatureDespawn function when totem UnSummoned
-        if(owner->GetTypeId() == TYPEID_UNIT && ((Creature*)owner)->IsAIEnabled)
+        if (owner->GetTypeId() == TYPEID_UNIT && ((Creature*)owner)->IsAIEnabled)
             ((Creature*)owner)->AI()->SummonedCreatureDespawn(this);
     }
 
@@ -170,7 +170,7 @@ void Totem::SetOwner(uint64 guid)
 Unit *Totem::GetOwner()
 {
     uint64 ownerid = GetOwnerGUID();
-    if(!ownerid)
+    if (!ownerid)
         return NULL;
     return GetMap()->GetUnit(ownerid);
 }
@@ -185,7 +185,7 @@ void Totem::SetTypeBySummonSpell(SpellEntry const * spellProto)
         if (GetSpellCastTime(totemSpell))
             m_type = TOTEM_ACTIVE;
     }
-    if(spellProto->SpellIconID==2056)
+    if (spellProto->SpellIconID==2056)
         m_type = TOTEM_STATUE;                              //Jewelery statue
 }
 
@@ -193,7 +193,7 @@ bool Totem::IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges)
 {
 /*    for (int i=0;i<3;i++)
     {
-        switch(spellInfo->EffectApplyAuraName[i])
+        switch (spellInfo->EffectApplyAuraName[i])
         {
             case SPELL_AURA_PERIODIC_DAMAGE:
             case SPELL_AURA_PERIODIC_LEECH:

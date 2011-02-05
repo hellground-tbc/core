@@ -71,7 +71,7 @@ struct CreatureMover
 };
 
 // GCC have alternative #pragma pack(N) syntax and old gcc version not support pack(push,N), also any gcc version not support it at some platform
-#if defined( __GNUC__ )
+#if defined(__GNUC__)
 #pragma pack(1)
 #else
 #pragma pack(push,1)
@@ -96,7 +96,7 @@ enum LevelRequirementVsMode
     LEVELREQUIREMENT_HEROIC = 70
 };
 
-#if defined( __GNUC__ )
+#if defined(__GNUC__)
 #pragma pack()
 #else
 #pragma pack(pop)
@@ -130,8 +130,8 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         // currently unused for normal maps
         bool CanUnload(uint32 diff)
         {
-            if(!m_unloadTimer) return false;
-            if(m_unloadTimer <= diff) return true;
+            if (!m_unloadTimer) return false;
+            if (m_unloadTimer <= diff) return true;
             m_unloadTimer -= diff;
             return false;
         }
@@ -166,7 +166,7 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         bool IsRemovalGrid(float x, float y) const
         {
             GridPair p = Trinity::ComputeGridPair(x, y);
-            return( !getNGrid(p.x_coord, p.y_coord) || getNGrid(p.x_coord, p.y_coord)->GetGridState() == GRID_STATE_REMOVAL );
+            return(!getNGrid(p.x_coord, p.y_coord) || getNGrid(p.x_coord, p.y_coord)->GetGridState() == GRID_STATE_REMOVAL);
         }
 
         bool IsLoaded(float x, float y) const
@@ -212,7 +212,7 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
 
         bool IsOutdoors(float x, float y, float z) const;
 
-        uint8 GetTerrainType(float x, float y ) const;
+        uint8 GetTerrainType(float x, float y) const;
 
         bool IsUnderWater(float x, float y, float z) const;
         bool IsInWater(float x, float y, float z,  GridMapLiquidData *data = 0) const;
@@ -343,7 +343,7 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
 
         void RemoveUpdateObject(Object *obj)
         {
-            i_objectsToClientUpdate.erase( obj );
+            i_objectsToClientUpdate.erase(obj);
         }
 
     private:
@@ -354,10 +354,10 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         void SetTimer(uint32 t) { i_gridExpiry = t < MIN_GRID_DELAY ? MIN_GRID_DELAY : t; }
         //uint64 CalculateGridMask(const uint32 &y) const;
 
-        void SendInitSelf( Player * player );
+        void SendInitSelf(Player * player);
 
-        void SendInitTransports( Player * player );
-        void SendRemoveTransports( Player * player );
+        void SendInitTransports(Player * player);
+        void SendRemoveTransports(Player * player);
 
         bool CreatureCellRelocation(Creature *creature, Cell new_cell);
 
@@ -453,12 +453,12 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         void RemoveFromActiveHelper(T* obj)
         {
             // Map::Update for active object in proccess
-            if(m_activeNonPlayersIter != m_activeNonPlayers.end())
+            if (m_activeNonPlayersIter != m_activeNonPlayers.end())
             {
                 ActiveNonPlayers::iterator itr = m_activeNonPlayers.find(obj);
-                if(itr == m_activeNonPlayers.end())
+                if (itr == m_activeNonPlayers.end())
                     return;
-                if(itr==m_activeNonPlayersIter)
+                if (itr==m_activeNonPlayersIter)
                     ++m_activeNonPlayersIter;
                 m_activeNonPlayers.erase(itr);
             }
@@ -532,7 +532,7 @@ Map::Visit(const Cell& cell, TypeContainerVisitor<T, CONTAINER> &visitor)
     const uint32 cell_x = cell.CellX();
     const uint32 cell_y = cell.CellY();
 
-    if( !cell.NoCreate() || loaded(GridPair(x,y)) )
+    if (!cell.NoCreate() || loaded(GridPair(x,y)))
     {
         EnsureGridLoaded(cell);
         getNGrid(x, y)->Visit(cell_x, cell_y, visitor);

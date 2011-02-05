@@ -88,7 +88,7 @@ void MotionMaster::UpdateMotion(uint32 diff)
     if (i_owner->hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED))
         return;
 
-    assert( !empty() );
+    assert(!empty());
 
     m_cleanFlag |= MMCF_UPDATE;
 
@@ -245,7 +245,7 @@ void MotionMaster::MoveTargetedHome()
     }
     else
     {
-        sLog.outError("Player (GUID: %u) attempt targeted home", i_owner->GetGUIDLow() );
+        sLog.outError("Player (GUID: %u) attempt targeted home", i_owner->GetGUIDLow());
     }
 }
 
@@ -264,7 +264,7 @@ void MotionMaster::MoveConfused()
 void MotionMaster::MoveChase(Unit* target, float dist, float angle)
 {
     // ignore movement request if target not exist
-    if(!target || target == i_owner)
+    if (!target || target == i_owner)
         return;
 
     i_owner->clearUnitState(UNIT_STAT_FOLLOW);
@@ -282,7 +282,7 @@ void MotionMaster::MoveChase(Unit* target, float dist, float angle)
 void MotionMaster::MoveFollow(Unit* target, float dist, float angle, MovementSlot slot)
 {
     // ignore movement request if target not exist
-    if(!target || target == i_owner)
+    if (!target || target == i_owner)
         return;
 
     i_owner->addUnitState(UNIT_STAT_FOLLOW);
@@ -344,7 +344,7 @@ void MotionMaster::MoveJump(float x, float y, float z, float speedXY, float spee
 
 void MotionMaster::MoveCharge(float x, float y, float z, float speed, uint32 id)
 {
-    if(Impl[MOTION_SLOT_CONTROLLED] && Impl[MOTION_SLOT_CONTROLLED]->GetMovementGeneratorType() != DISTRACT_MOTION_TYPE)
+    if (Impl[MOTION_SLOT_CONTROLLED] && Impl[MOTION_SLOT_CONTROLLED]->GetMovementGeneratorType() != DISTRACT_MOTION_TYPE)
         return;
 
     i_owner->addUnitState(UNIT_STAT_CHARGING);
@@ -488,7 +488,7 @@ void MotionMaster::propagateSpeedChange()
 {
     for (int i = 0; i <= i_top; ++i)
     {
-        if(Impl[i])
+        if (Impl[i])
             Impl[i]->unitSpeedChanged();
     }
 }

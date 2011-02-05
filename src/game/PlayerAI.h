@@ -90,7 +90,7 @@ void Reset()
         VolleySpell = selectHighestRank(VOLLEY_R1);
         RapidSpell = selectHighestRank(RAPIDFIRE);
         AutoSpell = selectHighestRank(AUTO);
-        if(!(BestialSpell = selectHighestRank(BESTIAL)))
+        if (!(BestialSpell = selectHighestRank(BESTIAL)))
             bestial = false;
 
         Steady_Timer = 1000+urand(0, 4000);
@@ -196,26 +196,26 @@ struct WarlockAI: public PlayerAI
 
     void Reset()
     {
-        if(!(AOESpell = selectHighestRank(SHADOWFURY_R1)))
+        if (!(AOESpell = selectHighestRank(SHADOWFURY_R1)))
             AOESpell = selectHighestRank(RAINOFFIRE_R1);
 
         bool fire = me->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_FIRE) > me->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_SHADOW);
 
         DOTSpell = NULL;
-        if(!(DOTSpell = selectHighestRank(UNSTABLEAFF_R1)))
+        if (!(DOTSpell = selectHighestRank(UNSTABLEAFF_R1)))
         {
-            if(fire)
+            if (fire)
                 DOTSpell = selectHighestRank(IMMOLATE_R1);
-            if(!DOTSpell)
+            if (!DOTSpell)
                 DOTSpell = selectHighestRank(CORRUPTION_R1);
         }
 
         FearSpell = selectHighestRank(HOWLOFTERROR_R1);
 
         NormalSpell = NULL;
-        if(fire)
+        if (fire)
             NormalSpell = selectHighestRank(INCINERATE_R1);
-        if(!NormalSpell)
+        if (!NormalSpell)
             NormalSpell = selectHighestRank(SHADOWBOLT_R1);
 
         AOE_Timer = 5000;
@@ -361,9 +361,9 @@ struct ShamanAI: public PlayerAI
 
     void Reset()
     {
-        if(Totem = selectHighestRank(30706))
+        if (Totem = selectHighestRank(30706))
             ShieldSpell = selectHighestRank(WATER_SHIELD_R1);
-        else if(ShieldSpell = selectHighestRank(EARTH_SHIELD_R1))
+        else if (ShieldSpell = selectHighestRank(EARTH_SHIELD_R1))
             heal = true;
         else
             ShieldSpell = selectHighestRank(LIGHTNING_SHIELD_R1);
@@ -371,7 +371,7 @@ struct ShamanAI: public PlayerAI
         HealSpell = selectHighestRank(CHAIN_HEAL_R1);
         LightningSpell = selectHighestRank(CHAIN_LIGHTNING_R1);
 
-        if(!(BLSpell = selectHighestRank(BL)))
+        if (!(BLSpell = selectHighestRank(BL)))
             BLSpell = selectHighestRank(HERO);
 
         Shield_Timer = 10000;
@@ -484,22 +484,22 @@ struct MageAI: public PlayerAI
         bool FireMage = me->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_FIRE) > me->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_FROST);
         bool Special = false;
 
-        if(FireMage)
+        if (FireMage)
             MassiveAOESpell = selectHighestRank(FLAMESTRIKE_R1);
         else
             MassiveAOESpell = selectHighestRank(BLIZZARD_R1);
 
-        if(!(ConeSpell = selectHighestRank(DRAGONBREATH_R1)))
+        if (!(ConeSpell = selectHighestRank(DRAGONBREATH_R1)))
             ConeSpell = selectHighestRank(CONEOFCOLD_R1);
 
-        if(!(AOESpell = selectHighestRank(BLASTWAVE_R1)))
+        if (!(AOESpell = selectHighestRank(BLASTWAVE_R1)))
             AOESpell = selectHighestRank(ARCANEEXPLO_R1);
 
         ConeSpell_Timer = 5000;
         MassiveAOE_Timer = 10000;
         AOESpell_Timer = 2000;
 
-        if(FireMage)
+        if (FireMage)
             NormalSpell = selectHighestRank(FIREBALL_R1);
         else
             NormalSpell = selectHighestRank(FROSTBOLT_R1);

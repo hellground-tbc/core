@@ -90,7 +90,7 @@ void OPvPCapturePointZM_Beacon::ChangeState()
         sWorld.SendZoneText(ZM_GRAVEYARD_ZONE,objmgr.GetTrinityStringForDBCLocale(ZMBeaconLooseH[m_TowerType]));
     }
 
-    switch(m_State)
+    switch (m_State)
     {
         case OBJECTIVESTATE_ALLIANCE:
             m_TowerState = ZM_TOWERSTATE_A;
@@ -289,7 +289,7 @@ void OPvPCapturePointZM_GraveYard::SetBeaconState(uint32 controlling_faction)
         return;
     m_BothControllingFaction = controlling_faction;
 
-    switch(controlling_faction)
+    switch (controlling_faction)
     {
     case ALLIANCE:
         // if ally already controls the gy and taken back both beacons, return, nothing to do for us
@@ -380,7 +380,7 @@ bool OPvPCapturePointZM_GraveYard::HandleGossipOption(Player *plr, uint64 guid, 
 
 bool OPvPCapturePointZM_GraveYard::HandleDropFlag(Player * /*plr*/, uint32 spellId)
 {
-    switch(spellId)
+    switch (spellId)
     {
     case ZM_BATTLE_STANDARD_A:
         m_FlagCarrierGUID = 0;

@@ -102,7 +102,7 @@ struct ArenaTeamMember
             personal_rating = 0;
         else
             personal_rating += mod;
-        if(plr)
+        if (plr)
             plr->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot*6) + 5, personal_rating);
     }
 };
@@ -164,7 +164,7 @@ class ArenaTeam
         ArenaTeamMember* GetMember(const uint64& guid)
         {
             for (MemberList::iterator itr = members.begin(); itr != members.end(); ++itr)
-                if(itr->guid == guid)
+                if (itr->guid == guid)
                     return &(*itr);
 
             return NULL;
@@ -173,7 +173,7 @@ class ArenaTeam
         ArenaTeamMember* GetMember(const std::string& name)
         {
             for (MemberList::iterator itr = members.begin(); itr != members.end(); ++itr)
-                if(itr->name == name)
+                if (itr->name == name)
                     return &(*itr);
 
             return NULL;
