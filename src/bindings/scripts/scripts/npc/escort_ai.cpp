@@ -22,7 +22,6 @@ enum ePoints
 npc_escortAI::npc_escortAI(Creature* pCreature) : ScriptedAI(pCreature),
     m_uiPlayerGUID(0),
     MaxPlayerDistance(DEFAULT_MAX_PLAYER_DISTANCE),
-    CanMelee(true),
     m_uiPlayerCheckTimer(1000),
     m_uiWPWaitTimer(2500),
     m_uiEscortState(STATE_ESCORT_NONE),
@@ -94,7 +93,7 @@ bool npc_escortAI::AssistPlayerInCombat(Unit* pWho)
 
 void npc_escortAI::MoveInLineOfSight(Unit* pWho)
 {
-    if (!m_creature->hasUnitState(UNIT_STAT_STUNNED) && pWho->isTargetableForAttack() && pWho->isInAccessiblePlaceFor(m_creature))
+    if (!m_creature->hasUnitState(UNIT_STAT_STUNNED) && pWho->isTargetableForAttack() && pWho->isInAccessiblePlacefor(m_creature))
     {
         if (HasEscortState(STATE_ESCORT_ESCORTING) && AssistPlayerInCombat(pWho))
             return;
@@ -309,8 +308,10 @@ void npc_escortAI::UpdateAI(const uint32 uiDiff)
 
 void npc_escortAI::UpdateEscortAI(const uint32 uiDiff)
 {
-    if (CanMelee && UpdateVictim())
-        DoMeleeAttackIfReady();
+    if (!UpdateVictim())
+        return;
+
+    DoMeleeAttackIfReady();
 }
 
 void npc_escortAI::MovementInform(uint32 uiMoveType, uint32 uiPointId)

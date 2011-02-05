@@ -77,7 +77,7 @@ struct TRINITY_DLL_DECL instance_razorfen_kraul : public ScriptedInstance
         }
 
         if (GameObject *go = GameObject::GetGameObject(*player,guid))
-            go->SetGoState(state);
+            go->SetGoState(GOState(state));
     }
 
     void Update(uint32 diff)

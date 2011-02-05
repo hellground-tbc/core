@@ -196,7 +196,7 @@ struct TRINITY_DLL_DECL mob_illidari_councilAI : public ScriptedAI
 {
     mob_illidari_councilAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     ScriptedInstance* pInstance;
@@ -254,7 +254,7 @@ struct TRINITY_DLL_DECL illidari_council_baseAI : public ScriptedAI
 {
     illidari_council_baseAI(Creature* c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         loadedGUIDs = false;
     }
 

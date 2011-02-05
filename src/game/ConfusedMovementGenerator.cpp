@@ -106,9 +106,9 @@ bool ConfusedMovementGenerator<T>::Update(T &unit, const uint32 &diff)
 
     if (i_destinationHolder.UpdateTraveller(traveller, diff))
     {
-        if ( i_destinationHolder.HasArrived())
+        if (i_destinationHolder.HasArrived())
         {
-            assert( i_nextMove <= MAX_CONF_WAYPOINTS );
+            assert(i_nextMove <= MAX_CONF_WAYPOINTS);
             const float x = i_waypoints[i_nextMove][0];
             const float y = i_waypoints[i_nextMove][1];
             const float z = i_waypoints[i_nextMove][2];

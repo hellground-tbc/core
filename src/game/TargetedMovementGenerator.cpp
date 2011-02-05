@@ -44,7 +44,7 @@ void TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
     if (!i_offset)
     {
         // to nearest random contact position
-        i_target->GetRandomContactPoint( &owner, x, y, z, 0, MELEE_RANGE - 0.5f );
+        i_target->GetRandomContactPoint(&owner, x, y, z, 0, MELEE_RANGE - 0.5f);
     }
     else
     {
@@ -65,7 +65,7 @@ void TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
 
         //We don't update Mob Movement, if the difference between New destination and last destination is < BothObjectSize
         float  bothObjectSize = i_target->GetObjectSize() + owner.GetObjectSize() + CONTACT_DISTANCE;
-        if( i_destinationHolder.HasDestination() && i_destinationHolder.GetDestinationDiff(x,y,z) < bothObjectSize )
+        if (i_destinationHolder.HasDestination() && i_destinationHolder.GetDestinationDiff(x,y,z) < bothObjectSize)
             return;
     */
 
@@ -110,7 +110,7 @@ void TargetedMovementGenerator<T>::Initialize(T &owner)
     if (!&owner)
         return;
 
-    if (owner.GetTypeId() != TYPEID_UNIT || !(((Creature*)&owner)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_ALWAYS_WALK) )
+    if (owner.GetTypeId() != TYPEID_UNIT || !(((Creature*)&owner)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_ALWAYS_WALK))
         owner.RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
 
     if (owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->canFly())
@@ -151,7 +151,7 @@ bool TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
     // prevent movement while casting spells with cast time or channel time
     if (owner.IsNonMeleeSpellCasted(false, false,  true) && (!owner.m_currentSpells[CURRENT_GENERIC_SPELL] || owner.m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT))
     {
-        if(!owner.IsStopped())
+        if (!owner.IsStopped())
             owner.StopMoving();
 
         return true;
@@ -194,7 +194,7 @@ bool TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
             i_recalculateTravel = false;
         }
         // Update the Angle of the target only for Map::, no need to send packet for player
-        else if (!i_angle && !owner.HasInArc( 0.01f, i_target.getTarget()))
+        else if (!i_angle && !owner.HasInArc(0.01f, i_target.getTarget()))
             owner.SetInFront(i_target.getTarget());
 
         if ((owner.IsStopped() && !i_destinationHolder.HasArrived()))
@@ -203,7 +203,7 @@ bool TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
             owner.SetInFront(i_target.getTarget());
 
             owner.StopMoving();
-            if(owner.IsWithinMeleeRange(i_target.getTarget()) && !owner.hasUnitState(UNIT_STAT_FOLLOW))
+            if (owner.IsWithinMeleeRange(i_target.getTarget()) && !owner.hasUnitState(UNIT_STAT_FOLLOW))
                 owner.Attack(i_target.getTarget(),true);
         }
     }

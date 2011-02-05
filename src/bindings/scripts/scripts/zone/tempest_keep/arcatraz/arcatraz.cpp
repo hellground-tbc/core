@@ -63,7 +63,7 @@ struct TRINITY_DLL_DECL npc_millhouse_manastormAI : public ScriptedAI
 {
     npc_millhouse_manastormAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     ScriptedInstance* pInstance;
@@ -249,7 +249,7 @@ struct TRINITY_DLL_DECL npc_warden_mellicharAI : public ScriptedAI
 {
     npc_warden_mellicharAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     ScriptedInstance* pInstance;
@@ -282,7 +282,7 @@ struct TRINITY_DLL_DECL npc_warden_mellicharAI : public ScriptedAI
         if( IsRunning )
             return;
 
-        if( !m_creature->getVictim() && who->isTargetableForAttack() && ( m_creature->IsHostileTo( who )) && who->isInAccessiblePlaceFor(m_creature) )
+        if( !m_creature->getVictim() && who->isTargetableForAttack() && ( m_creature->IsHostileTo( who )) && who->isInAccessiblePlacefor(m_creature) )
         {
             if (!m_creature->canFly() && m_creature->GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE)
                 return;

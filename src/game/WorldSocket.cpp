@@ -46,7 +46,7 @@
 #include "Log.h"
 #include "WorldLog.h"
 
-#if defined( __GNUC__ )
+#if defined(__GNUC__)
 #pragma pack(1)
 #else
 #pragma pack(push,1)
@@ -64,7 +64,7 @@ struct ClientPktHeader
     uint32 cmd;
 };
 
-#if defined( __GNUC__ )
+#if defined(__GNUC__)
 #pragma pack()
 #else
 #pragma pack(pop)
@@ -382,7 +382,7 @@ int WorldSocket::handle_input_header (void)
     EndianConvert(header.cmd);
 
     if ((header.size < 4) || (header.size > 10240) ||
-        (header.cmd  < 0) || (header.cmd  > 10240) )
+        (header.cmd  < 0) || (header.cmd  > 10240))
     {
         sLog.outError ("WorldSocket::handle_input_header: client sent malformed packet size = %d , cmd = %d",
                        header.size, header.cmd);
@@ -395,7 +395,7 @@ int WorldSocket::handle_input_header (void)
 
     ACE_NEW_RETURN (m_RecvWPct, WorldPacket ((uint16) header.cmd, header.size), -1);
 
-    if(header.size > 0)
+    if (header.size > 0)
     {
         m_RecvWPct->resize (header.size);
         m_RecvPct.base ((char*) m_RecvWPct->contents (), m_RecvWPct->size ());
@@ -435,7 +435,7 @@ int WorldSocket::handle_input_missing_data (void)
 {
     char buf [4096];
 
-    ACE_Data_Block db ( sizeof (buf),
+    ACE_Data_Block db (sizeof (buf),
                         ACE_Message_Block::MB_DATA,
                         buf,
                         0,
@@ -717,7 +717,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
 
     uint8 expansion = fields[8].GetUInt8();
     uint32 world_expansion = sWorld.getConfig(CONFIG_EXPANSION);
-    if(expansion > world_expansion)
+    if (expansion > world_expansion)
         expansion = world_expansion;
     //expansion = ((sWorld.getConfig(CONFIG_EXPANSION) > fields[8].GetUInt8()) ? fields[8].GetUInt8() : sWorld.getConfig(CONFIG_EXPANSION));
 

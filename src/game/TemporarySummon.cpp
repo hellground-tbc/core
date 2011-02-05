@@ -25,20 +25,20 @@
 #include "ObjectAccessor.h"
 #include "CreatureAI.h"
 
-TemporarySummon::TemporarySummon( uint64 summoner ) :
+TemporarySummon::TemporarySummon(uint64 summoner) :
 Creature(), m_type(TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN), m_timer(0), m_lifetime(0), m_summoner(summoner)
 {
      m_unit_movement_flags = 0;
 }
 
-void TemporarySummon::Update( uint32 diff )
+void TemporarySummon::Update(uint32 diff)
 {
     if (m_deathState == DEAD)
     {
         UnSummon();
         return;
     }
-    switch(m_type)
+    switch (m_type)
     {
         case TEMPSUMMON_MANUAL_DESPAWN:
             break;
@@ -73,7 +73,7 @@ void TemporarySummon::Update( uint32 diff )
 
         case TEMPSUMMON_CORPSE_TIMED_DESPAWN:
         {
-            if ( m_deathState == CORPSE)
+            if (m_deathState == CORPSE)
             {
                 if (m_timer <= diff)
                 {
@@ -88,7 +88,7 @@ void TemporarySummon::Update( uint32 diff )
         case TEMPSUMMON_CORPSE_DESPAWN:
         {
             // if m_deathState is DEAD, CORPSE was skipped
-            if ( m_deathState == CORPSE || m_deathState == DEAD)
+            if (m_deathState == CORPSE || m_deathState == DEAD)
             {
                 UnSummon();
                 return;
@@ -98,7 +98,7 @@ void TemporarySummon::Update( uint32 diff )
         }
         case TEMPSUMMON_DEAD_DESPAWN:
         {
-            if ( m_deathState == DEAD )
+            if (m_deathState == DEAD)
             {
                 UnSummon();
                 return;
@@ -108,7 +108,7 @@ void TemporarySummon::Update( uint32 diff )
         case TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN:
         {
             // if m_deathState is DEAD, CORPSE was skipped
-            if ( m_deathState == CORPSE || m_deathState == DEAD)
+            if (m_deathState == CORPSE || m_deathState == DEAD)
             {
                 UnSummon();
                 return;
@@ -137,7 +137,7 @@ void TemporarySummon::Update( uint32 diff )
                 return;
             }
 
-            if (!isInCombat() && isAlive() )
+            if (!isInCombat() && isAlive())
             {
                 if (m_timer <= diff)
                 {
@@ -157,7 +157,7 @@ void TemporarySummon::Update( uint32 diff )
             break;
     }
 
-    Creature::Update( diff );
+    Creature::Update(diff);
 }
 
 void TemporarySummon::Summon(TempSummonType type, uint32 lifetime)
@@ -167,8 +167,6 @@ void TemporarySummon::Summon(TempSummonType type, uint32 lifetime)
     m_lifetime = lifetime;
 
     GetMap()->Add((Creature*)this);
-
-    AIM_Initialize();
 }
 
 void TemporarySummon::UnSummon()

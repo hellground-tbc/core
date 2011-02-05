@@ -28,7 +28,7 @@
 #include "Database/DatabaseEnv.h"
 
 // GCC have alternative #pragma pack(N) syntax and old gcc version not support pack(push,N), also any gcc version not support it at some platform
-#if defined( __GNUC__ )
+#if defined(__GNUC__)
 #pragma pack(1)
 #else
 #pragma pack(push,1)
@@ -374,9 +374,12 @@ enum GOState
     GO_STATE_ACTIVE_ALTERNATIVE = 2                         // show in world as used in alt way and not reset (closed door open by cannon fire)
 };
 
+#define MAX_GO_STATE 3
+
 // from `gameobject`
 struct GameObjectData
 {
+    explicit GameObjectData() : dbData(true) {}
     uint32 id;                                              // entry in gamobject_template
     uint32 mapid;
     float posX;
@@ -389,13 +392,14 @@ struct GameObjectData
     float rotation3;
     int32  spawntimesecs;
     uint32 animprogress;
-    uint32 go_state;
+    GOState go_state;
     uint8 spawnMask;
     uint32 ArtKit;
+    bool dbData;
 };
 
 // GCC have alternative #pragma pack() syntax and old gcc version not support pack(pop), also any gcc version not support it at some platform
-#if defined( __GNUC__ )
+#if defined(__GNUC__)
 #pragma pack()
 #else
 #pragma pack(pop)
@@ -430,10 +434,11 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
         void AddToWorld();
         void RemoveFromWorld();
 
-        bool Create(uint32 guidlow, uint32 name_id, Map *map, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 animprogress, uint32 go_state, uint32 ArtKit = 0);
+        bool Create(uint32 guidlow, uint32 name_id, Map *map, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 animprogress, GOState go_state, uint32 ArtKit = 0);
         void Update(uint32 diff);
         static GameObject* GetGameObject(WorldObject& object, uint64 guid);
-        GameObjectInfo const* GetGOInfo() const;
+        GameObjectInfo const* GetGOInfo() const { return m_goInfo; }
+        GameObjectData const* GetGOData() const { return m_goData; }
 
         bool IsTransport() const;
 
@@ -463,12 +468,12 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
         void SaveToDB(uint32 mapid, uint8 spawnMask);
         bool LoadFromDB(uint32 guid, Map *map);
         void DeleteFromDB();
-        void SetLootState(LootState s) { m_lootState = s; }
+
         static uint32 GetLootId(GameObjectInfo const* info);
         uint32 GetLootId() const { return GetLootId(GetGOInfo()); }
         uint32 GetLockId() const
         {
-            switch(GetGoType())
+            switch (GetGoType())
             {
                 case GAMEOBJECT_TYPE_DOOR:       return GetGOInfo()->door.lockId;
                 case GAMEOBJECT_TYPE_BUTTON:     return GetGOInfo()->button.lockId;
@@ -489,7 +494,7 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
         time_t GetRespawnTimeEx() const
         {
             time_t now = time(NULL);
-            if(m_respawnTime > now)
+            if (m_respawnTime > now)
                 return m_respawnTime;
             else
                 return now;
@@ -517,10 +522,13 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
         void getFishLoot(Loot *loot);
         GameobjectTypes GetGoType() const { return GameobjectTypes(GetUInt32Value(GAMEOBJECT_TYPE_ID)); }
         void SetGoType(GameobjectTypes type) { SetUInt32Value(GAMEOBJECT_TYPE_ID, type); }
-        uint32 GetGoState() const { return GetUInt32Value(GAMEOBJECT_STATE); }
-        void SetGoState(uint32 state) { SetUInt32Value(GAMEOBJECT_STATE, state); }
+        
+        GOState GetGoState() const { return GOState(GetUInt32Value(GAMEOBJECT_STATE)); }
+        void SetGoState(GOState state) { SetUInt32Value(GAMEOBJECT_STATE, state); }
+        
         uint32 GetGoArtKit() const { return GetUInt32Value(GAMEOBJECT_ARTKIT); }
         void SetGoArtKit(uint32 artkit);
+        
         uint32 GetGoAnimProgress() const { return GetUInt32Value(GAMEOBJECT_ANIMPROGRESS); }
         void SetGoAnimProgress(uint32 animprogress) { SetUInt32Value(GAMEOBJECT_ANIMPROGRESS, animprogress); }
 
@@ -528,6 +536,7 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
 
         void Use(Unit* user);
 
+        void SetLootState(LootState s) { m_lootState = s; }
         LootState getLootState() const { return m_lootState; }
 
         void AddToSkillupList(uint32 PlayerGuidLow) { m_SkillupList.push_back(PlayerGuidLow); }
@@ -552,12 +561,14 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
         bool hasQuest(uint32 quest_id) const;
         bool hasInvolvedQuest(uint32 quest_id) const;
         bool ActivateToQuest(Player *pTarget) const;
+
+        void UseDoorOrButton(uint32 time_to_restore = 0, bool alternative = false);
         void ResetDoorOrButton();
-        void UseDoorOrButton(uint32 time_to_restore = 0);   // 0 = use `gameobject`.`spawntimesecs`
+        // 0 = use `gameobject`.`spawntimesecs`
 
         uint32 GetLinkedGameObjectEntry() const
         {
-            switch(GetGoType())
+            switch (GetGoType())
             {
                 case GAMEOBJECT_TYPE_CHEST:       return GetGOInfo()->chest.linkedTrapId;
                 case GAMEOBJECT_TYPE_SPELL_FOCUS: return GetGOInfo()->spellFocus.linkedTrapId;
@@ -569,7 +580,7 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
         uint32 GetAutoCloseTime() const
         {
             uint32 autoCloseTime = 0;
-            switch(GetGoType())
+            switch (GetGoType())
             {
                 case GAMEOBJECT_TYPE_DOOR:          autoCloseTime = GetGOInfo()->door.autoCloseTime; break;
                 case GAMEOBJECT_TYPE_BUTTON:        autoCloseTime = GetGOInfo()->button.autoCloseTime; break;
@@ -582,7 +593,7 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
             return autoCloseTime / 0x10000;
         }
 
-        void TriggeringLinkedGameObject( uint32 trapEntry, Unit* target);
+        void TriggeringLinkedGameObject(uint32 trapEntry, Unit* target);
 
         bool isVisibleForInState(Player const* u, bool inVisibleList) const;
         bool canDetectTrap(Player const* u, float distance) const;
@@ -608,9 +619,11 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
         uint32 m_usetimes;
 
         uint32 m_DBTableGuid;                               ///< For new or temporary gameobjects is 0 for saved it is lowguid
+        
         GameObjectInfo const* m_goInfo;
+        GameObjectData const* m_goData;
     private:
-        void SwitchDoorOrButton(bool activate);
+        void SwitchDoorOrButton(bool activate, bool alternative = false);
 
         GridReference<GameObject> m_gridRef;
 };

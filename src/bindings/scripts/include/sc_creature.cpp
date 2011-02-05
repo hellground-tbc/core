@@ -1158,6 +1158,45 @@ void Scripted_NoMovementAI::AttackStart(Unit* pWho)
         DoStartNoMovement(pWho);
 }
 
+BossAI::BossAI(Creature *c, uint32 id) : ScriptedAI(c),
+    bossId(id), summons(me), instance(c->GetInstanceData())
+{
+}
+
+void BossAI::_Reset()
+{
+    events.Reset();
+    summons.DespawnAll();
+    if (instance)
+        instance->SetBossState(bossId, NOT_STARTED);
+}
+
+void BossAI::_JustDied()
+{
+    events.Reset();
+    summons.DespawnAll();
+    if (instance)
+        instance->SetBossState(bossId, DONE);
+}
+
+void BossAI::_EnterCombat()
+{
+    DoZoneInCombat();
+    if (instance)
+        instance->SetBossState(bossId, IN_PROGRESS);
+}
+
+void BossAI::JustSummoned(Creature *summon)
+{
+    summons.Summon(summon);
+    summon->AI()->DoZoneInCombat();
+}
+
+void BossAI::SummonedCreatureDespawn(Creature *summon)
+{
+    summons.Despawn(summon);
+}
+
 #define GOBJECT(x) (const_cast<GameObjectInfo*>(GetGameObjectInfo(x)))
 
 void LoadOverridenSQLData()

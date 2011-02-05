@@ -42,7 +42,7 @@ struct TRINITY_DLL_DECL boss_maiden_of_virtueAI : public ScriptedAI
 {
     boss_maiden_of_virtueAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         m_creature->GetPosition(wLoc);
     }
 

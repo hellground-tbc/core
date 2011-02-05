@@ -69,7 +69,7 @@ struct TRINITY_DLL_DECL instance_karazhan : public ScriptedInstance
 
     void OnObjectCreate(GameObject* go);
 
-    const char* Save();
+    std::string GetSaveData();
 
     void Load(const char* in);
 

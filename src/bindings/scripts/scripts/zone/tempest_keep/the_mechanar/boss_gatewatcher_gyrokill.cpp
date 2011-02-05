@@ -41,7 +41,7 @@ struct TRINITY_DLL_DECL boss_gatewatcher_gyro_killAI : public ScriptedAI
 {
     boss_gatewatcher_gyro_killAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         HeroicMode = m_creature->GetMap()->IsHeroic();
     }
 

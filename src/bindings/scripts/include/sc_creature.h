@@ -368,6 +368,31 @@ struct TRINITY_DLL_DECL Scripted_NoMovementAI : public ScriptedAI
     void AttackStart(Unit *);
 };
 
+struct TRINITY_DLL_DECL BossAI : public ScriptedAI
+{
+    BossAI(Creature *c, uint32 id);
+
+    uint32 bossId;
+    EventMap events;
+    SummonList summons;
+    InstanceData *instance;
+
+    void JustSummoned(Creature *summon);
+    void SummonedCreatureDespawn(Creature *summon);
+
+    void UpdateAI(const uint32 diff) = 0;
+
+    void Reset() { _Reset(); }
+    void EnterCombat(Unit *who) { _EnterCombat(); }
+    void JustDied(Unit *killer) { _JustDied(); }
+
+    protected:
+        void _Reset();
+        void _EnterCombat();
+        void _JustDied();
+};
+
+// SD2 grid searchers
 Creature* GetClosestCreatureWithEntry(WorldObject* pSource, uint32 Entry, float MaxSearchRange);
 
 #endif

@@ -19,26 +19,30 @@
 #ifndef OUTDOOR_PVP_ZM_
 #define OUTDOOR_PVP_ZM_
 
-#include "OutdoorPvP.h"
+#include "OutdoorPvPImpl.h"
 #include "Language.h"
 
 const uint32 OutdoorPvPZMBuffZonesNum = 5;
 // the buff is cast in these zones
 const uint32 OutdoorPvPZMBuffZones[OutdoorPvPZMBuffZonesNum] = {3521,3607,3717,3715,3716};
-// cast on the players of the controlling faction
-const uint32 ZM_CAPTURE_BUFF = 33779;  // twin spire blessing
-// spell that the field scout casts on the player to carry the flag
-const uint32 ZM_BATTLE_STANDARD_A = 32430;
-// spell that the field scout casts on the player to carry the flag
-const uint32 ZM_BATTLE_STANDARD_H = 32431;
 // linked when the central tower is controlled
 const uint32 ZM_GRAVEYARD_ZONE = 3521;
 // linked when the central tower is controlled
 const uint32 ZM_GRAVEYARD_ID = 969;
-// token create spell
-const uint32 ZM_AlliancePlayerKillReward = 32155;
-// token create spell
-const uint32 ZM_HordePlayerKillReward = 32158;
+
+enum OutdoorPvPZMSpells
+{
+    // cast on the players of the controlling faction
+    ZM_CAPTURE_BUFF = 33779,  // twin spire blessing
+    // spell that the field scout casts on the player to carry the flag
+    ZM_BATTLE_STANDARD_A = 32430,
+    // spell that the field scout casts on the player to carry the flag
+    ZM_BATTLE_STANDARD_H = 32431,
+    // token create spell
+    ZM_AlliancePlayerKillReward = 32155,
+    // token create spell
+    ZM_HordePlayerKillReward = 32158
+};
 
 // banners 182527, 182528, 182529, gotta check them ingame
 const go_type ZM_Banner_A = { 182527,530,253.54,7083.81,36.7728,-0.017453,0,0,0.008727,-0.999962 };
@@ -148,19 +152,18 @@ enum ZM_TowerStateMask{
 };
 
 class OutdoorPvPZM;
-class OutdoorPvPObjectiveZM_Beacon : public OutdoorPvPObjective
+class OPvPCapturePointZM_Beacon : public OPvPCapturePoint
 {
 friend class OutdoorPvPZM;
 public:
-    OutdoorPvPObjectiveZM_Beacon(OutdoorPvP * pvp, ZM_BeaconType type);
-    bool Update(uint32 diff);
+    OPvPCapturePointZM_Beacon(OutdoorPvP * pvp, ZM_BeaconType type);
+    void ChangeState();
+    void SendChangePhase();
     void FillInitialWorldStates(WorldPacket & data);
     // used when player is activated/inactivated in the area
     bool HandlePlayerEnter(Player * plr);
     void HandlePlayerLeave(Player * plr);
     void UpdateTowerState();
-protected:
-    bool HandleCapturePointEvent(Player * plr, uint32 eventId);
 protected:
     ZM_BeaconType m_TowerType;
     uint32 m_TowerState;
@@ -172,12 +175,13 @@ enum ZM_GraveYardState{
     ZM_GRAVEYARD_H = 4
 };
 
-class OutdoorPvPObjectiveZM_GraveYard : public OutdoorPvPObjective
+class OPvPCapturePointZM_GraveYard : public OPvPCapturePoint
 {
 friend class OutdoorPvPZM;
 public:
-    OutdoorPvPObjectiveZM_GraveYard(OutdoorPvP * pvp);
+    OPvPCapturePointZM_GraveYard(OutdoorPvP * pvp);
     bool Update(uint32 diff);
+    void ChangeState() {}
     void FillInitialWorldStates(WorldPacket & data);
     void UpdateTowerState();
     int32 HandleOpenGo(Player *plr, uint64 guid);
@@ -194,7 +198,7 @@ protected:
 
 class OutdoorPvPZM : public OutdoorPvP
 {
-friend class OutdoorPvPObjectiveZM_Beacon;
+friend class OPvPCapturePointZM_Beacon;
 public:
     OutdoorPvPZM();
     bool SetupOutdoorPvP();
@@ -204,9 +208,8 @@ public:
     void FillInitialWorldStates(WorldPacket &data);
     void SendRemoveWorldStates(Player * plr);
     void HandleKillImpl(Player * plr, Unit * killed);
-    void BuffTeam(uint32 team);
 private:
-    OutdoorPvPObjectiveZM_GraveYard * m_GraveYard;
+    OPvPCapturePointZM_GraveYard * m_GraveYard;
     uint32 m_AllianceTowersControlled;
     uint32 m_HordeTowersControlled;
 };

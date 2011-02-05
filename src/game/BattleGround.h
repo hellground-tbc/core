@@ -328,7 +328,7 @@ class BattleGround
         void IncreaseInvitedCount(uint32 team)      { (team == ALLIANCE) ? ++m_InvitedAlliance : ++m_InvitedHorde; }
         uint32 GetInvitedCount(uint32 team) const
         {
-            if( team == ALLIANCE )
+            if (team == ALLIANCE)
                 return m_InvitedAlliance;
             else
                 return m_InvitedHorde;
@@ -363,7 +363,7 @@ class BattleGround
         void SetMapId(uint32 MapID) { m_MapId = MapID; }
         uint32 GetMapId() const { return m_MapId; }
         void SetMap(Map* map){ m_Map = map; }
-        Map* GetMap() { return m_Map ? m_Map : m_Map = MapManager::Instance().FindMap(GetMapId(),GetInstanceID()); }
+        Map* GetMap() { return m_Map ? m_Map : m_Map = sMapMgr.FindMap(GetMapId(),GetInstanceID()); }
 
         void SetTeamStartLoc(uint32 TeamID, float X, float Y, float Z, float O);
         void GetTeamStartLoc(uint32 TeamID, float &X, float &Y, float &Z, float &O) const
@@ -402,8 +402,8 @@ class BattleGround
         void SetBgRaid(uint32 TeamID, Group *bg_raid)
         {
             Group* &old_raid = TeamID == ALLIANCE ? m_BgRaids[BG_TEAM_ALLIANCE] : m_BgRaids[BG_TEAM_HORDE];
-            if(old_raid) old_raid->SetBattlegroundGroup(NULL);
-            if(bg_raid) bg_raid->SetBattlegroundGroup(this);
+            if (old_raid) old_raid->SetBattlegroundGroup(NULL);
+            if (bg_raid) bg_raid->SetBattlegroundGroup(this);
             old_raid = bg_raid;
         }
 
@@ -414,7 +414,7 @@ class BattleGround
         uint32 GetAlivePlayersCountByTeam(uint32 Team) const;   // used in arenas to correctly handle death in spirit of redemption / last stand etc. (killer = killed) cases
         void UpdatePlayersCountByTeam(uint32 Team, bool remove)
         {
-            if(remove)
+            if (remove)
                 --m_PlayersCount[GetTeamIndexByTeamId(Team)];
             else
                 ++m_PlayersCount[GetTeamIndexByTeamId(Team)];

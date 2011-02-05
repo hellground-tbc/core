@@ -70,15 +70,15 @@ void CreatureAI::DoZoneInCombat(float max_dist)
 
 void CreatureAI::MoveInLineOfSight(Unit *who)
 {
-    if(me->getVictim())
+    if (me->getVictim())
         return;
 
-    if(me->canStartAttack(who))
+    if (me->canStartAttack(who))
     {
         AttackStart(who);
         who->CombatStart(me);
     }
-    //else if(who->getVictim() && me->IsFriendlyTo(who)
+    //else if (who->getVictim() && me->IsFriendlyTo(who)
     //    && me->IsWithinDistInMap(who, sWorld.getConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS))
     //    && me->canAttack(who->getVictim()))
     //    AttackStart(who->getVictim());
@@ -86,7 +86,7 @@ void CreatureAI::MoveInLineOfSight(Unit *who)
 
 void CreatureAI::SelectNearestTarget(Unit *who)
 {
-    if(me->getVictim() && me->GetDistanceOrder(who, me->getVictim()) && me->canAttack(who))
+    if (me->getVictim() && me->GetDistanceOrder(who, me->getVictim()) && me->canAttack(who))
     {
         me->getThreatManager().modifyThreatPercent(me->getVictim(), -100);
         me->AddThreat(who, 1000000.0f);
@@ -95,12 +95,12 @@ void CreatureAI::SelectNearestTarget(Unit *who)
 
 void CreatureAI::EnterEvadeMode()
 {
-    if(!_EnterEvadeMode())
+    if (!_EnterEvadeMode())
         return;
 
     sLog.outDebug("Creature %u enters evade mode.", me->GetEntry());
 
-    if(Unit *owner = me->GetCharmerOrOwner())
+    if (Unit *owner = me->GetCharmerOrOwner())
     {
         me->GetMotionMaster()->Clear(false);
         me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, m_creature->GetFollowAngle(), MOTION_SLOT_ACTIVE);
@@ -110,8 +110,8 @@ void CreatureAI::EnterEvadeMode()
     Reset();
 }
 
-/*void CreatureAI::AttackedBy( Unit* attacker )
+/*void CreatureAI::AttackedBy(Unit* attacker)
  {
-    if(!m_creature->getVictim())
+    if (!m_creature->getVictim())
         AttackStart(attacker);
 }*/

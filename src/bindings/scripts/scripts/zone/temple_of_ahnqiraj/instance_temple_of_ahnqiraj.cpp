@@ -227,7 +227,7 @@ struct TRINITY_DLL_DECL instance_temple_of_ahnqiraj : public ScriptedInstance
         return 0;
     }                                                       // end GetData64
 
-    const char* Save()
+    std::string GetSaveData()
     {
         OUT_SAVE_INST_DATA;
         std::ostringstream stream;

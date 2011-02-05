@@ -176,7 +176,7 @@ enum ShapeshiftForm
     FORM_SPIRITOFREDEMPTION = 0x20
 };
 
-// low byte ( 0 from 0..3 ) of UNIT_FIELD_BYTES_2
+// low byte (0 from 0..3) of UNIT_FIELD_BYTES_2
 enum SheathState
 {
     SHEATH_STATE_UNARMED  = 0,                              // non prepared weapon
@@ -911,7 +911,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         typedef std::set<AuraType> AuraTypeSet;
         typedef std::set<uint32> ComboPointHolderSet;
 
-        virtual ~Unit ( );
+        virtual ~Unit ();
 
         void AddToWorld();
         void RemoveFromWorld();
@@ -934,7 +934,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         //target dependent checks
         uint32 GetSpellRadiusForTarget(Unit* target,const SpellRadiusEntry * radiusEntry);
 
-        virtual void Update( uint32 time );
+        virtual void Update(uint32 time);
 
         void setAttackTimer(WeaponAttackType type, uint32 time) { m_attackTimer[type] = time; }
         void resetAttackTimer(WeaponAttackType type = BASE_ATTACK);
@@ -947,20 +947,20 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         float GetMeleeReach() const { float reach = m_floatValues[UNIT_FIELD_COMBATREACH]; return reach > MIN_MELEE_REACH ? reach : MIN_MELEE_REACH; }
         bool IsWithinCombatRange(const Unit *obj, float dist2compare) const;
         bool IsWithinMeleeRange(Unit *obj, float dist = MELEE_RANGE) const;
-        void GetRandomContactPoint( const Unit* target, float &x, float &y, float &z, float distance2dMin, float distance2dMax ) const;
+        void GetRandomContactPoint(const Unit* target, float &x, float &y, float &z, float distance2dMin, float distance2dMax) const;
         uint32 m_extraAttacks;
         bool m_canDualWield;
 
         void _addAttacker(Unit *pAttacker)                  // must be called only from Unit::Attack(Unit*)
         {
             AttackerSet::iterator itr = m_attackers.find(pAttacker);
-            if(itr == m_attackers.end())
+            if (itr == m_attackers.end())
                 m_attackers.insert(pAttacker);
         }
         void _removeAttacker(Unit *pAttacker)               // must be called only from Unit::AttackStop()
         {
             AttackerSet::iterator itr = m_attackers.find(pAttacker);
-            if(itr != m_attackers.end())
+            if (itr != m_attackers.end())
                 m_attackers.erase(itr);
         }
         Unit * getAttackerForHelper()                       // If someone wants to help, who to give them
@@ -993,7 +993,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         bool CanFreeMove() const
         {
             return !hasUnitState(UNIT_STAT_CONFUSED | UNIT_STAT_FLEEING | UNIT_STAT_IN_FLIGHT |
-                UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED ) && GetOwnerGUID()==0;
+                UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED) && GetOwnerGUID()==0;
         }
 
         uint32 getLevel() const { return GetUInt32Value(UNIT_FIELD_LEVEL); }
@@ -1015,15 +1015,15 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         uint32 GetHealth()    const { return GetUInt32Value(UNIT_FIELD_HEALTH); }
         uint32 GetMaxHealth() const { return GetUInt32Value(UNIT_FIELD_MAXHEALTH); }
-        void SetHealth(   uint32 val);
+        void SetHealth(  uint32 val);
         void SetMaxHealth(uint32 val);
         int32 ModifyHealth(int32 val);
 
         Powers getPowerType() const { return Powers(GetByteValue(UNIT_FIELD_BYTES_0, 3)); }
         void setPowerType(Powers power);
-        uint32 GetPower(   Powers power) const { return GetUInt32Value(UNIT_FIELD_POWER1   +power); }
+        uint32 GetPower(  Powers power) const { return GetUInt32Value(UNIT_FIELD_POWER1   +power); }
         uint32 GetMaxPower(Powers power) const { return GetUInt32Value(UNIT_FIELD_MAXPOWER1+power); }
-        void SetPower(   Powers power, uint32 val);
+        void SetPower(  Powers power, uint32 val);
         void SetMaxPower(Powers power, uint32 val);
         int32 ModifyPower(Powers power, int32 val);
         void ApplyPowerMod(Powers power, uint32 val, bool apply);
@@ -1036,7 +1036,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         // faction template id
         uint32 getFaction() const { return GetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE); }
-        void setFaction(uint32 faction) { SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, faction ); }
+        void setFaction(uint32 faction) { SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, faction); }
         FactionTemplateEntry const* getFactionTemplateEntry() const;
         bool IsHostileTo(Unit const* unit) const;
         bool IsHostileToPlayers() const;
@@ -1049,13 +1049,13 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         Unit* GetNextRandomRaidMember(float radius);
         bool IsContestedGuard() const
         {
-            if(FactionTemplateEntry const* entry = getFactionTemplateEntry())
+            if (FactionTemplateEntry const* entry = getFactionTemplateEntry())
                 return entry->IsContestedGuardFaction();
 
             return false;
         }
         bool IsPvP() const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP); }
-        void SetPvP(bool state) { if(state) SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP); else RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP); }
+        void SetPvP(bool state) { if (state) SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP); else RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP); }
         uint32 GetCreatureType() const;
         uint32 GetCreatureTypeMask() const
         {
@@ -1068,7 +1068,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         bool IsStandState() const;
         void SetStandState(uint8 state);
 
-        bool IsMounted() const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_MOUNT ); }
+        bool IsMounted() const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_MOUNT); }
         uint32 GetMountID() const { return GetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID); }
         void Mount(uint32 mount);
         void Unmount();
@@ -1084,10 +1084,10 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         void Kill(Unit *pVictim, bool durabilityLoss = true);
 
         void ProcDamageAndSpell(Unit *pVictim, uint32 procAttacker, uint32 procVictim, uint32 procEx, uint32 amount, WeaponAttackType attType = BASE_ATTACK, SpellEntry const *procSpell = NULL, bool canTrigger = true);
-        void ProcDamageAndSpellFor( bool isVictim, Unit * pTarget, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, SpellEntry const * procSpell, uint32 damage );
+        void ProcDamageAndSpellfor (bool isVictim, Unit * pTarget, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, SpellEntry const * procSpell, uint32 damage);
 
         void HandleEmoteCommand(uint32 anim_id);
-        void AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType = BASE_ATTACK, bool extra = false );
+        void AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType = BASE_ATTACK, bool extra = false);
 
         //float MeleeMissChanceCalc(const Unit *pVictim, WeaponAttackType attType) const;
 
@@ -1118,29 +1118,29 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         void RollMeleeHit(MeleeDamageLog *) const;
         void RollMeleeHit(MeleeDamageLog *, int32 crit_chance, int32 miss_chance, int32 dodge_chance, int32 parry_chance, int32 block_chance) const;
 
-        bool isVendor()       const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_VENDOR ); }
-        bool isTrainer()      const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_TRAINER ); }
-        bool isQuestGiver()   const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER ); }
-        bool isGossip()       const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP ); }
-        bool isTaxi()         const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_FLIGHTMASTER ); }
-        bool isGuildMaster()  const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_PETITIONER ); }
-        bool isBattleMaster() const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_BATTLEMASTER ); }
-        bool isBanker()       const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_BANKER ); }
-        bool isInnkeeper()    const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_INNKEEPER ); }
-        bool isSpiritHealer() const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPIRITHEALER ); }
-        bool isSpiritGuide()  const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPIRITGUIDE ); }
-        bool isTabardDesigner()const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_TABARDDESIGNER ); }
-        bool isAuctioner()    const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_AUCTIONEER ); }
-        bool isArmorer()      const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_REPAIR ); }
+        bool isVendor()       const { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_VENDOR); }
+        bool isTrainer()      const { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_TRAINER); }
+        bool isQuestGiver()   const { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER); }
+        bool isGossip()       const { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP); }
+        bool isTaxi()         const { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_FLIGHTMASTER); }
+        bool isGuildMaster()  const { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_PETITIONER); }
+        bool isBattleMaster() const { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_BATTLEMASTER); }
+        bool isBanker()       const { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_BANKER); }
+        bool isInnkeeper()    const { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_INNKEEPER); }
+        bool isSpiritHealer() const { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPIRITHEALER); }
+        bool isSpiritGuide()  const { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPIRITGUIDE); }
+        bool isTabardDesigner()const { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_TABARDDESIGNER); }
+        bool isAuctioner()    const { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_AUCTIONEER); }
+        bool isArmorer()      const { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_REPAIR); }
         bool isServiceProvider() const
         {
-            return HasFlag( UNIT_NPC_FLAGS,
+            return HasFlag(UNIT_NPC_FLAGS,
                 UNIT_NPC_FLAG_VENDOR | UNIT_NPC_FLAG_TRAINER | UNIT_NPC_FLAG_FLIGHTMASTER |
                 UNIT_NPC_FLAG_PETITIONER | UNIT_NPC_FLAG_BATTLEMASTER | UNIT_NPC_FLAG_BANKER |
                 UNIT_NPC_FLAG_INNKEEPER | UNIT_NPC_FLAG_GUARD | UNIT_NPC_FLAG_SPIRITHEALER |
-                UNIT_NPC_FLAG_SPIRITGUIDE | UNIT_NPC_FLAG_TABARDDESIGNER | UNIT_NPC_FLAG_AUCTIONEER );
+                UNIT_NPC_FLAG_SPIRITGUIDE | UNIT_NPC_FLAG_TABARDDESIGNER | UNIT_NPC_FLAG_AUCTIONEER);
         }
-        bool isSpiritService() const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPIRITHEALER | UNIT_NPC_FLAG_SPIRITGUIDE ); }
+        bool isSpiritService() const { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPIRITHEALER | UNIT_NPC_FLAG_SPIRITGUIDE); }
 
         //Need fix or use this
         bool isGuard() const  { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GUARD); }
@@ -1179,7 +1179,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         bool canAttack(Unit const* target, bool force = true) const;
         virtual bool IsInWater() const;
         virtual bool IsUnderWater() const;
-        bool isInAccessiblePlaceFor(Creature const* c) const;
+        bool isInAccessiblePlacefor (Creature const* c) const;
 
         void SendHealSpellLog(Unit *pVictim, uint32 SpellID, uint32 Damage, bool critical = false);
         void SendEnergizeSpellLog(Unit *pVictim, uint32 SpellID, uint32 Damage,Powers powertype);
@@ -1216,7 +1216,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         virtual void MoveOutOfRange(Player &) {};
 
         bool isAlive() const { return (m_deathState == ALIVE); };
-        bool isDead() const { return ( m_deathState == DEAD || m_deathState == CORPSE ); };
+        bool isDead() const { return (m_deathState == DEAD || m_deathState == CORPSE); };
         DeathState getDeathState() { return m_deathState; };
         virtual void setDeathState(DeathState s);           // overwrited in Creature/Player/Pet
 
@@ -1232,7 +1232,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         uint64 GetCharmerOrOwnerGUID() const { return GetCharmerGUID() ? GetCharmerGUID() : GetOwnerGUID(); }
         uint64 GetCharmerOrOwnerOrOwnGUID() const
         {
-            if(uint64 guid = GetCharmerOrOwnerGUID())
+            if (uint64 guid = GetCharmerOrOwnerGUID())
                 return guid;
             return GetGUID();
         }
@@ -1247,7 +1247,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         Unit* GetCharmerOrOwner() const { return GetCharmerGUID() ? GetCharmer() : GetOwner(); }
         Unit* GetCharmerOrOwnerOrSelf() const
         {
-            if(Unit *u = GetCharmerOrOwner())
+            if (Unit *u = GetCharmerOrOwner())
                 return u;
 
             return (Unit*)this;
@@ -1265,7 +1265,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         bool isPossessedByPlayer() const { return hasUnitState(UNIT_STAT_POSSESSED) && IS_PLAYER_GUID(GetCharmerGUID()); }
         bool isPossessing() const
         {
-            if(Unit *u = GetCharm())
+            if (Unit *u = GetCharm())
                 return u->isPossessed();
             else
                 return false;
@@ -1309,7 +1309,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         bool RemoveNoStackAurasDueToAura(Aura *Aur);
         void RemoveAurasWithAttribute(uint32 flags);
         void RemoveAurasWithInterruptFlags(uint32 flags, uint32 except = 0);
-        void RemoveAurasWithDispelType( DispelType type );
+        void RemoveAurasWithDispelType(DispelType type);
         void RemoveMovementImpairingAuras();
 
         void RemoveAllAuras();
@@ -1317,14 +1317,14 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         void RemoveAllAurasOnDeath();
         void DelayAura(uint32 spellId, uint32 effindex, int32 delaytime);
 
-        float GetResistanceBuffMods(SpellSchools school, bool positive) const { return GetFloatValue(positive ? UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE+school : UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE+school ); }
+        float GetResistanceBuffMods(SpellSchools school, bool positive) const { return GetFloatValue(positive ? UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE+school : UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE+school); }
         void SetResistanceBuffMods(SpellSchools school, bool positive, float val) { SetFloatValue(positive ? UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE+school : UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE+school,val); }
         void ApplyResistanceBuffModsMod(SpellSchools school, bool positive, float val, bool apply) { ApplyModSignedFloatValue(positive ? UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE+school : UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE+school, val, apply); }
         void ApplyResistanceBuffModsPercentMod(SpellSchools school, bool positive, float val, bool apply) { ApplyPercentModFloatValue(positive ? UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE+school : UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE+school, val, apply); }
         void InitStatBuffMods()
         {
-            for(int i = STAT_STRENGTH; i < MAX_STATS; ++i) SetFloatValue(UNIT_FIELD_POSSTAT0+i, 0);
-            for(int i = STAT_STRENGTH; i < MAX_STATS; ++i) SetFloatValue(UNIT_FIELD_NEGSTAT0+i, 0);
+            for (int i = STAT_STRENGTH; i < MAX_STATS; ++i) SetFloatValue(UNIT_FIELD_POSSTAT0+i, 0);
+            for (int i = STAT_STRENGTH; i < MAX_STATS; ++i) SetFloatValue(UNIT_FIELD_NEGSTAT0+i, 0);
         }
         void ApplyStatBuffMod(Stats stat, float val, bool apply) { ApplyModSignedFloatValue((val > 0 ? UNIT_FIELD_POSSTAT0+stat : UNIT_FIELD_NEGSTAT0+stat), val, apply); }
         void ApplyStatPercentBuffMod(Stats stat, float val, bool apply)
@@ -1343,7 +1343,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         float GetCreateStat(Stats stat) const { return m_createStats[stat]; }
 
         void SetCurrentCastedSpell(Spell * pSpell);
-        virtual void ProhibitSpellScholl(SpellSchoolMask /*idSchoolMask*/, uint32 /*unTimeMs*/ ) { }
+        virtual void ProhibitSpellScholl(SpellSchoolMask /*idSchoolMask*/, uint32 /*unTimeMs*/) { }
         void InterruptSpell(uint32 spellType, bool withDelayed = true, bool withInstant = true);
         void FinishSpell(CurrentSpellTypes spellType, bool ok = true);
         
@@ -1444,7 +1444,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         void TauntFadeOut(Unit *taunter);
         ThreatManager& getThreatManager() { return m_ThreatManager; }
         void addHatedBy(HostilReference* pHostilReference) { m_HostilRefManager.insertFirst(pHostilReference); };
-        void removeHatedBy(HostilReference* /*pHostilReference*/ ) { /* nothing to do yet */ }
+        void removeHatedBy(HostilReference* /*pHostilReference*/) { /* nothing to do yet */ }
         HostilRefManager& getHostilRefManager() { return m_HostilRefManager; }
 
         Aura* GetAura(uint32 spellId, uint32 effindex);
@@ -1510,7 +1510,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         void SetContestedPvP(Player *attackedPlayer = NULL);
 
         void MeleeDamageBonus(Unit *pVictim, uint32 *damage, WeaponAttackType attType, SpellEntry const *spellProto = NULL);
-        uint32 GetCastingTimeForBonus( SpellEntry const *spellProto, DamageEffectType damagetype, uint32 CastingTime );
+        uint32 GetCastingTimeForBonus(SpellEntry const *spellProto, DamageEffectType damagetype, uint32 CastingTime);
 
         void ApplySpellImmune(uint32 spellId, uint32 op, uint32 type, bool apply);
         void ApplySpellDispelImmunity(const SpellEntry * spellProto, DispelType type, bool apply);
@@ -1526,9 +1526,9 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         bool CalcBinaryResist(Unit *pVictim, SpellSchoolMask schoolMask);
 
         void  UpdateSpeed(UnitMoveType mtype, bool forced);
-        float GetSpeed( UnitMoveType mtype ) const;
-        float GetMaxSpeedRate( UnitMoveType mtype ) const { return m_max_speed_rate[mtype]; }
-        float GetSpeedRate( UnitMoveType mtype ) const { return m_speed_rate[mtype]; }
+        float GetSpeed(UnitMoveType mtype) const;
+        float GetMaxSpeedRate(UnitMoveType mtype) const { return m_max_speed_rate[mtype]; }
+        float GetSpeedRate(UnitMoveType mtype) const { return m_speed_rate[mtype]; }
         void SetSpeed(UnitMoveType mtype, float rate, bool forced = false);
 
         void KnockBackFrom(Unit* target, float horizintalSpeed, float verticalSpeed);
@@ -1542,7 +1542,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         void ModSpellCastTime(SpellEntry const* spellProto, int32 & castTime, Spell * spell);
 
         void addFollower(FollowerReference* pRef) { m_FollowingRefManager.insertFirst(pRef); }
-        void removeFollower(FollowerReference* /*pRef*/ ) { /* nothing to do yet */ }
+        void removeFollower(FollowerReference* /*pRef*/) { /* nothing to do yet */ }
         static Unit* GetUnit(WorldObject& object, uint64 guid);
         static Unit* GetUnit(const Unit& unit, uint64 guid);
         static Player* GetPlayer(uint64 guid);
@@ -1592,7 +1592,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         // reactive attacks
         void ClearAllReactives();
-        void StartReactiveTimer( ReactiveType reactive ) { m_reactiveTimer[reactive] = REACTIVE_TIMER_START;}
+        void StartReactiveTimer(ReactiveType reactive) { m_reactiveTimer[reactive] = REACTIVE_TIMER_START;}
         void UpdateReactives(uint32 p_time);
 
         // group updates
@@ -1691,9 +1691,9 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         int32 m_meleeAPAttackerBonus;
     private:
 
-        bool IsTriggeredAtSpellProcEvent( Aura* aura, SpellEntry const* procSpell, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, bool isVictim, bool active, SpellProcEventEntry const*& spellProcEvent );
-        bool HandleDummyAuraProc(   Unit *pVictim, uint32 damage, Aura* triggredByAura, SpellEntry const *procSpell, uint32 procFlag, uint32 procEx, uint32 cooldown);
-        bool HandleHasteAuraProc(   Unit *pVictim, uint32 damage, Aura* triggredByAura, SpellEntry const *procSpell, uint32 procFlag, uint32 procEx, uint32 cooldown);
+        bool IsTriggeredAtSpellProcEvent(Aura* aura, SpellEntry const* procSpell, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, bool isVictim, bool active, SpellProcEventEntry const*& spellProcEvent);
+        bool HandleDummyAuraProc(  Unit *pVictim, uint32 damage, Aura* triggredByAura, SpellEntry const *procSpell, uint32 procFlag, uint32 procEx, uint32 cooldown);
+        bool HandleHasteAuraProc(  Unit *pVictim, uint32 damage, Aura* triggredByAura, SpellEntry const *procSpell, uint32 procFlag, uint32 procEx, uint32 cooldown);
         bool HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggredByAura, SpellEntry const *procSpell, uint32 procFlag, uint32 procEx, uint32 cooldown);
         bool HandleOverrideClassScriptAuraProc(Unit *pVictim, Aura* triggredByAura, SpellEntry const *procSpell, uint32 cooldown);
         bool HandleMeandingAuraProc(Aura* triggeredByAura);
@@ -1725,7 +1725,7 @@ namespace Trinity
     template<class T>
     void RandomResizeList(std::list<T> &_list, uint32 _size)
     {
-        while(_list.size() > _size)
+        while (_list.size() > _size)
         {
             typename std::list<T>::iterator itr = _list.begin();
             advance(itr, urand(0, _list.size() - 1));

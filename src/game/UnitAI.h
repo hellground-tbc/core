@@ -62,7 +62,7 @@ class TRINITY_DLL_SPEC UnitAI
         virtual void AttackStart(Unit *);
         virtual void UpdateAI(const uint32 diff) = 0;
 
-        virtual void InitializeAI() { if(!me->isDead()) Reset(); }
+        virtual void InitializeAI() { if (!me->isDead()) Reset(); }
 
         virtual void Reset() {};
 

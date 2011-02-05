@@ -293,7 +293,6 @@
     <ClCompile Include="..\..\src\game\OutdoorPvPHP.cpp" />
     <ClCompile Include="..\..\src\game\OutdoorPvPMgr.cpp" />
     <ClCompile Include="..\..\src\game\OutdoorPvPNA.cpp" />
-    <ClCompile Include="..\..\src\game\OutdoorPvPObjectiveAI.cpp" />
     <ClCompile Include="..\..\src\game\OutdoorPvPSI.cpp" />
     <ClCompile Include="..\..\src\game\OutdoorPvPTF.cpp" />
     <ClCompile Include="..\..\src\game\OutdoorPvPZM.cpp" />
@@ -380,6 +379,7 @@
     <ClInclude Include="..\..\src\game\GameEvent.h" />
     <ClInclude Include="..\..\src\game\GossipDef.h" />
     <ClInclude Include="..\..\src\game\Mail.h" />
+    <ClInclude Include="..\..\src\game\OutdoorPvPImpl.h" />
     <ClInclude Include="..\..\src\game\QuestDef.h" />
     <ClInclude Include="..\..\src\game\UpdateData.h" />
     <ClInclude Include="..\..\src\game\World.h" />
@@ -445,7 +445,6 @@
     <ClInclude Include="..\..\src\game\OutdoorPvPHP.h" />
     <ClInclude Include="..\..\src\game\OutdoorPvPMgr.h" />
     <ClInclude Include="..\..\src\game\OutdoorPvPNA.h" />
-    <ClInclude Include="..\..\src\game\OutdoorPvPObjectiveAI.h" />
     <ClInclude Include="..\..\src\game\OutdoorPvPSI.h" />
     <ClInclude Include="..\..\src\game\OutdoorPvPTF.h" />
     <ClInclude Include="..\..\src\game\OutdoorPvPZM.h" />
@@ -511,6 +510,7 @@
     <ClInclude Include="..\..\src\game\SocialMgr.h" />
     <ClInclude Include="..\..\src\game\TicketMgr.h" />
     <ClInclude Include="..\..\src\game\MapUpdater.h" />
+    <ClInclude Include="..\..\src\game\ZoneScript.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="shared.vcxproj">

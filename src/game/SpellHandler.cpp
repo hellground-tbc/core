@@ -46,43 +46,43 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     recvPacket >> bagIndex >> slot >> spell_count >> cast_count >> item_guid;
 
     Item *pItem = pUser->GetItemByPos(bagIndex, slot);
-    if(!pItem)
+    if (!pItem)
     {
-        pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, NULL, NULL );
+        pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, NULL, NULL);
         return;
     }
 
-    if(pItem->GetGUID() != item_guid)
+    if (pItem->GetGUID() != item_guid)
     {
-        pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, NULL, NULL );
+        pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, NULL, NULL);
         return;
     }
 
     sLog.outDetail("WORLD: CMSG_USE_ITEM packet, bagIndex: %u, slot: %u, spell_count: %u , cast_count: %u, Item: %u, data length = %i", bagIndex, slot, spell_count, cast_count, pItem->GetEntry(), recvPacket.size());
 
     ItemPrototype const *proto = pItem->GetProto();
-    if(!proto)
+    if (!proto)
     {
-        pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, pItem, NULL );
+        pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, pItem, NULL);
         return;
     }
 
     // some item classes can be used only in equipped state
-    if(proto->InventoryType != INVTYPE_NON_EQUIP && !pItem->IsEquipped())
+    if (proto->InventoryType != INVTYPE_NON_EQUIP && !pItem->IsEquipped())
     {
-        pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, pItem, NULL );
+        pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, pItem, NULL);
         return;
     }
 
     uint8 msg = pUser->CanUseItem(pItem);
-    if( msg != EQUIP_ERR_OK )
+    if (msg != EQUIP_ERR_OK)
     {
-        pUser->SendEquipError( msg, pItem, NULL );
+        pUser->SendEquipError(msg, pItem, NULL);
         return;
     }
 
     // only allow conjured consumable, bandage, poisons (all should have the 2^21 item flag set in DB)
-    if( proto->Class == ITEM_CLASS_CONSUMABLE &&
+    if (proto->Class == ITEM_CLASS_CONSUMABLE &&
         !(proto->Flags & ITEM_FLAGS_USEABLE_IN_ARENA) &&
         pUser->InArena())
     {
@@ -92,7 +92,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
 
     if (pUser->isInCombat())
     {
-        for(int i = 0; i < 5; ++i)
+        for (int i = 0; i < 5; ++i)
         {
             if (SpellEntry const *spellInfo = sSpellStore.LookupEntry(proto->Spells[i].SpellId))
             {
@@ -106,12 +106,12 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     }
 
     // check also  BIND_WHEN_PICKED_UP and BIND_QUEST_ITEM for .additem or .additemset case by GM (not binded at adding to inventory)
-    if( pItem->GetProto()->Bonding == BIND_WHEN_USE || pItem->GetProto()->Bonding == BIND_WHEN_PICKED_UP || pItem->GetProto()->Bonding == BIND_QUEST_ITEM )
+    if (pItem->GetProto()->Bonding == BIND_WHEN_USE || pItem->GetProto()->Bonding == BIND_WHEN_PICKED_UP || pItem->GetProto()->Bonding == BIND_QUEST_ITEM)
     {
         if (!pItem->IsSoulBound())
         {
             pItem->SetState(ITEM_CHANGED, pUser);
-            pItem->SetBinding( true );
+            pItem->SetBinding(true);
         }
     }
 
@@ -119,43 +119,43 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
 
     recvPacket >> targets.ReadForCaster(pUser);
 
-    if(!targets.getUnitTarget())
+    if (!targets.getUnitTarget())
     {
-        for(int i = 0; i < 5; ++i)
+        for (int i = 0; i < 5; ++i)
         {
             _Spell const& spellData = pItem->GetProto()->Spells[i];
-            if(!spellData.SpellId)
+            if (!spellData.SpellId)
                 continue;
 
             // wrong triggering type
-            if( spellData.SpellTrigger != ITEM_SPELLTRIGGER_ON_USE && spellData.SpellTrigger != ITEM_SPELLTRIGGER_ON_NO_DELAY_USE)
+            if (spellData.SpellTrigger != ITEM_SPELLTRIGGER_ON_USE && spellData.SpellTrigger != ITEM_SPELLTRIGGER_ON_NO_DELAY_USE)
                 continue;
 
             SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellData.SpellId);
-            if(!spellInfo)
+            if (!spellInfo)
             {
                 sLog.outError("Item (Entry: %u) in have wrong spell id %u, ignoring ",proto->ItemId, spellData.SpellId);
                 continue;
             }
 
-            if(spellInfo->EffectImplicitTargetA[0] == 6 || spellInfo->EffectImplicitTargetA[1] == 6 || spellInfo->EffectImplicitTargetA[2] == 6)
-                if(Unit *tUnit = Unit::GetUnit(*GetPlayer(), GetPlayer()->GetSelection()))
+            if (spellInfo->EffectImplicitTargetA[0] == 6 || spellInfo->EffectImplicitTargetA[1] == 6 || spellInfo->EffectImplicitTargetA[2] == 6)
+                if (Unit *tUnit = Unit::GetUnit(*GetPlayer(), GetPlayer()->GetSelection()))
                     targets.setUnitTarget(tUnit);
         }
     }
 
     //Note: If script stop casting it must send appropriate data to client to prevent stuck item in gray state.
-    if(!Script->ItemUse(pUser,pItem,targets))
+    if (!Script->ItemUse(pUser,pItem,targets))
     {
         // no script or script not process request by self
 
         // special learning case
-        if(pItem->GetProto()->Spells[0].SpellId==SPELL_ID_GENERIC_LEARN)
+        if (pItem->GetProto()->Spells[0].SpellId==SPELL_ID_GENERIC_LEARN)
         {
             uint32 learning_spell_id = pItem->GetProto()->Spells[1].SpellId;
 
             SpellEntry const *spellInfo = sSpellStore.LookupEntry(SPELL_ID_GENERIC_LEARN);
-            if(!spellInfo)
+            if (!spellInfo)
             {
                 sLog.outError("Item (Entry: %u) in have wrong spell id %u, ignoring ",proto->ItemId, SPELL_ID_GENERIC_LEARN);
                 pUser->SendEquipError(EQUIP_ERR_NONE,pItem,NULL);
@@ -173,20 +173,20 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
         // use triggered flag only for items with many spell casts and for not first cast
         int count = 0;
 
-        for(int i = 0; i < 5; ++i)
+        for (int i = 0; i < 5; ++i)
         {
             _Spell const& spellData = pItem->GetProto()->Spells[i];
 
             // no spell
-            if(!spellData.SpellId)
+            if (!spellData.SpellId)
                 continue;
 
             // wrong triggering type
-            if( spellData.SpellTrigger != ITEM_SPELLTRIGGER_ON_USE && spellData.SpellTrigger != ITEM_SPELLTRIGGER_ON_NO_DELAY_USE)
+            if (spellData.SpellTrigger != ITEM_SPELLTRIGGER_ON_USE && spellData.SpellTrigger != ITEM_SPELLTRIGGER_ON_NO_DELAY_USE)
                 continue;
 
             SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellData.SpellId);
-            if(!spellInfo)
+            if (!spellInfo)
             {
                 sLog.outError("Item (Entry: %u) in have wrong spell id %u, ignoring ",proto->ItemId, spellData.SpellId);
                 continue;
@@ -222,41 +222,41 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
     sLog.outDetail("bagIndex: %u, slot: %u",bagIndex,slot);
 
     Item *pItem = pUser->GetItemByPos(bagIndex, slot);
-    if(!pItem)
+    if (!pItem)
     {
-        pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, NULL, NULL );
+        pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, NULL, NULL);
         return;
     }
 
     ItemPrototype const *proto = pItem->GetProto();
-    if(!proto)
+    if (!proto)
     {
-        pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, pItem, NULL );
+        pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, pItem, NULL);
         return;
     }
 
     // locked item
     uint32 lockId = proto->LockID;
-    if(lockId)
+    if (lockId)
     {
         LockEntry const *lockInfo = sLockStore.LookupEntry(lockId);
 
         if (!lockInfo)
         {
-            pUser->SendEquipError(EQUIP_ERR_ITEM_LOCKED, pItem, NULL );
-            sLog.outError( "WORLD::OpenItem: item [guid = %u] has an unknown lockId: %u!", pItem->GetGUIDLow() , lockId);
+            pUser->SendEquipError(EQUIP_ERR_ITEM_LOCKED, pItem, NULL);
+            sLog.outError("WORLD::OpenItem: item [guid = %u] has an unknown lockId: %u!", pItem->GetGUIDLow() , lockId);
             return;
         }
 
         // required picklocking
-        if(lockInfo->requiredlockskill || lockInfo->requiredminingskill)
+        if (lockInfo->requiredlockskill || lockInfo->requiredminingskill)
         {
-            pUser->SendEquipError(EQUIP_ERR_ITEM_LOCKED, pItem, NULL );
+            pUser->SendEquipError(EQUIP_ERR_ITEM_LOCKED, pItem, NULL);
             return;
         }
     }
 
-    if(pItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_WRAPPED))// wrapped?
+    if (pItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_WRAPPED))// wrapped?
     {
         QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT entry, flags FROM character_gifts WHERE item_guid = '%u'", pItem->GetGUIDLow());
         if (result)
@@ -282,7 +282,7 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
         pUser->SendLoot(pItem->GetGUID(),LOOT_CORPSE);
 }
 
-void WorldSession::HandleGameObjectUseOpcode( WorldPacket & recv_data )
+void WorldSession::HandleGameObjectUseOpcode(WorldPacket & recv_data)
 {
     CHECK_PACKET_SIZE(recv_data, 8);
 
@@ -290,10 +290,10 @@ void WorldSession::HandleGameObjectUseOpcode( WorldPacket & recv_data )
 
     recv_data >> guid;
 
-    sLog.outDebug( "WORLD: Recvd CMSG_GAMEOBJ_USE Message [guid=%u]", GUID_LOPART(guid));
+    sLog.outDebug("WORLD: Recvd CMSG_GAMEOBJ_USE Message [guid=%u]", GUID_LOPART(guid));
     GameObject *obj = GetPlayer()->GetMap()->GetGameObject(guid);
 
-    if(!obj)
+    if (!obj)
         return;
 
     if (Script->GOHello(_player, obj))
@@ -314,7 +314,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     sLog.outDebug("WORLD: got cast spell packet, spellId - %u, cast_count: %u data length = %i",
         spellId, cast_count, recvPacket.size());
 
-    SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId );
+    SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
 
     if (!spellInfo)
     {
@@ -323,14 +323,14 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     }
 
     // not have spell or spell passive and not casted by client
-    if (!_player->HasSpell (spellId) || IsPassiveSpell(spellId) )
+    if (!_player->HasSpell (spellId) || IsPassiveSpell(spellId))
     {
         //cheater? kick? ban?
         return;
     }
 
     // can't use our own spells when we're in possession of another unit,
-    if(_player->isPossessing())
+    if (_player->isPossessing())
         return;
 
     // client provided targets
@@ -363,11 +363,11 @@ void WorldSession::HandleCancelCastOpcode(WorldPacket& recvPacket)
     uint32 spellId;
     recvPacket >> spellId;
 
-    if(!_player->isCharmed() && !_player->isPossessed() && _player->IsNonMeleeSpellCasted(false))
+    if (!_player->isCharmed() && !_player->isPossessed() && _player->IsNonMeleeSpellCasted(false))
         _player->InterruptNonMeleeSpells(false,spellId,false);
 }
 
-void WorldSession::HandleCancelAuraOpcode( WorldPacket& recvPacket)
+void WorldSession::HandleCancelAuraOpcode(WorldPacket& recvPacket)
 {
     uint32 spellId;
     recvPacket >> spellId;
@@ -387,7 +387,7 @@ void WorldSession::HandleCancelAuraOpcode( WorldPacket& recvPacket)
         {
             // except own aura spells
             bool allow = false;
-            for(int k = 0; k < 3; ++k)
+            for (int k = 0; k < 3; ++k)
             {
                 if (spellInfo->EffectApplyAuraName[k] == SPELL_AURA_MOD_POSSESS ||
                     spellInfo->EffectApplyAuraName[k] == SPELL_AURA_MOD_POSSESS_PET)
@@ -398,7 +398,7 @@ void WorldSession::HandleCancelAuraOpcode( WorldPacket& recvPacket)
             }
 
             // this also include case when aura not found
-            if(!allow)
+            if (!allow)
                 return;
         }
         else
@@ -408,9 +408,9 @@ void WorldSession::HandleCancelAuraOpcode( WorldPacket& recvPacket)
     // channeled spell case (it currently casted then)
     if (IsChanneledSpell(spellInfo))
     {
-        if(Spell* spell = _player->m_currentSpells[CURRENT_CHANNELED_SPELL])
+        if (Spell* spell = _player->m_currentSpells[CURRENT_CHANNELED_SPELL])
         {
-            if(spell->m_spellInfo->Id == spellId)
+            if (spell->m_spellInfo->Id == spellId)
                 _player->InterruptSpell(CURRENT_CHANNELED_SPELL);
         }
         return;
@@ -420,7 +420,7 @@ void WorldSession::HandleCancelAuraOpcode( WorldPacket& recvPacket)
     _player->RemoveAurasDueToSpellByCancel(spellId);
 }
 
-void WorldSession::HandlePetCancelAuraOpcode( WorldPacket& recvPacket)
+void WorldSession::HandlePetCancelAuraOpcode(WorldPacket& recvPacket)
 {
     uint64 guid;
     uint32 spellId;
@@ -428,8 +428,8 @@ void WorldSession::HandlePetCancelAuraOpcode( WorldPacket& recvPacket)
     recvPacket >> guid;
     recvPacket >> spellId;
 
-    SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId );
-    if(!spellInfo)
+    SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
+    if (!spellInfo)
     {
         sLog.outError("WORLD: unknown PET spell id %u", spellId);
         return;
@@ -437,19 +437,19 @@ void WorldSession::HandlePetCancelAuraOpcode( WorldPacket& recvPacket)
 
     Creature* pet = _player->GetMap()->GetCreatureOrPet(guid);
 
-    if(!pet)
+    if (!pet)
     {
-        sLog.outError( "Pet %u not exist.", uint32(GUID_LOPART(guid)) );
+        sLog.outError("Pet %u not exist.", uint32(GUID_LOPART(guid)));
         return;
     }
 
-    if(pet != GetPlayer()->GetPet() && pet != GetPlayer()->GetCharm())
+    if (pet != GetPlayer()->GetPet() && pet != GetPlayer()->GetCharm())
     {
-        sLog.outError( "HandlePetCancelAura.Pet %u isn't pet of player %s", uint32(GUID_LOPART(guid)),GetPlayer()->GetName() );
+        sLog.outError("HandlePetCancelAura.Pet %u isn't pet of player %s", uint32(GUID_LOPART(guid)),GetPlayer()->GetName());
         return;
     }
 
-    if(!pet->isAlive())
+    if (!pet->isAlive())
     {
         pet->SendPetActionFeedback(FEEDBACK_PET_DEAD);
         return;
@@ -460,12 +460,12 @@ void WorldSession::HandlePetCancelAuraOpcode( WorldPacket& recvPacket)
     pet->AddCreatureSpellCooldown(spellId);
 }
 
-void WorldSession::HandleCancelGrowthAuraOpcode( WorldPacket& /*recvPacket*/)
+void WorldSession::HandleCancelGrowthAuraOpcode(WorldPacket& /*recvPacket*/)
 {
     // nothing do
 }
 
-void WorldSession::HandleCancelAutoRepeatSpellOpcode( WorldPacket& /*recvPacket*/)
+void WorldSession::HandleCancelAutoRepeatSpellOpcode(WorldPacket& /*recvPacket*/)
 {
     // may be better send SMSG_CANCEL_AUTO_REPEAT?
     // cancel and prepare for deleting
@@ -473,7 +473,7 @@ void WorldSession::HandleCancelAutoRepeatSpellOpcode( WorldPacket& /*recvPacket*
 }
 
 /// \todo Complete HandleCancelChanneling function
-void WorldSession::HandleCancelChanneling( WorldPacket & /*recv_data */)
+void WorldSession::HandleCancelChanneling(WorldPacket & /*recv_data */)
 {
     /*
         CHECK_PACKET_SIZE(recv_data, 4);
@@ -483,7 +483,7 @@ void WorldSession::HandleCancelChanneling( WorldPacket & /*recv_data */)
     */
 }
 
-void WorldSession::HandleTotemDestroy( WorldPacket& recvPacket)
+void WorldSession::HandleTotemDestroy(WorldPacket& recvPacket)
 {
     CHECK_PACKET_SIZE(recvPacket, 1);
 
@@ -494,23 +494,23 @@ void WorldSession::HandleTotemDestroy( WorldPacket& recvPacket)
     if (slotId >= MAX_TOTEM)
         return;
 
-    if(!_player->m_TotemSlot[slotId])
+    if (!_player->m_TotemSlot[slotId])
         return;
 
     Creature* totem = GetPlayer()->GetMap()->GetCreature(_player->m_TotemSlot[slotId]);
     // Don't unsummon sentry totem
-    if(totem && totem->isTotem() && totem->GetEntry() != SENTRY_TOTEM_ENTRY)
+    if (totem && totem->isTotem() && totem->GetEntry() != SENTRY_TOTEM_ENTRY)
         ((Totem*)totem)->UnSummon();
 }
 
-void WorldSession::HandleSelfResOpcode( WorldPacket & /*recv_data*/ )
+void WorldSession::HandleSelfResOpcode(WorldPacket & /*recv_data*/)
 {
     sLog.outDebug("WORLD: CMSG_SELF_RES");                  // empty opcode
 
-    if(_player->GetUInt32Value(PLAYER_SELF_RES_SPELL))
+    if (_player->GetUInt32Value(PLAYER_SELF_RES_SPELL))
     {
         SpellEntry const *spellInfo = sSpellStore.LookupEntry(_player->GetUInt32Value(PLAYER_SELF_RES_SPELL));
-        if(spellInfo)
+        if (spellInfo)
             _player->CastSpell(_player,spellInfo,false,0);
 
         _player->SetUInt32Value(PLAYER_SELF_RES_SPELL, 0);

@@ -79,7 +79,7 @@ struct TRINITY_DLL_DECL instance_blood_furnace : public ScriptedInstance
         }
 
         if (GameObject *go = GameObject::GetGameObject(*player,guid))
-            go->SetGoState(state);
+            go->SetGoState(GOState(state));
     }
 
     void SetData(uint32 type, uint32 data)

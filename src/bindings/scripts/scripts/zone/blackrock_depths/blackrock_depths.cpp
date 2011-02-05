@@ -77,7 +77,7 @@ float RingLocations[6][3]=
 
 bool AreaTrigger_at_ring_of_law(Player *player, AreaTriggerEntry *at)
 {
-    ScriptedInstance* pInstance = ((ScriptedInstance*)player->GetInstanceData());
+    ScriptedInstance* pInstance = (player->GetInstanceData());
 
     if(pInstance)
     {
@@ -101,7 +101,7 @@ struct TRINITY_DLL_DECL npc_grimstoneAI : public npc_escortAI
 {
     npc_grimstoneAI(Creature *c) : npc_escortAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         MobSpawnId = rand()%6;
     }
 
@@ -142,7 +142,7 @@ struct TRINITY_DLL_DECL npc_grimstoneAI : public npc_escortAI
     void DoGate(uint32 id, uint32 state)
     {
         if (GameObject *go = GameObject::GetGameObject(*m_creature,pInstance->GetData64(id)))
-            go->SetGoState(state);
+            go->SetGoState(GOState(state));
 
         debug_log("TSCR: npc_grimstone, arena gate update state.");
     }
@@ -685,7 +685,7 @@ struct TRINITY_DLL_DECL npc_marshal_windsorAI : public npc_escortAI
 {
     npc_marshal_windsorAI(Creature *c) : npc_escortAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     ScriptedInstance *pInstance;
@@ -842,7 +842,7 @@ bool QuestAccept_npc_marshal_windsor(Player *player, Creature *creature, Quest c
 {
     if( quest->GetQuestId() == QUEST_JAIL_BREAK )
     {
-        ScriptedInstance *pInstance = ((ScriptedInstance*)creature->GetInstanceData());
+        ScriptedInstance *pInstance = (creature->GetInstanceData());
 
         if(!pInstance)
             return false;
@@ -1279,7 +1279,7 @@ struct TRINITY_DLL_DECL npc_rocknotAI : public npc_escortAI
 {
     npc_rocknotAI(Creature *c) : npc_escortAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     ScriptedInstance* pInstance;
@@ -1301,7 +1301,7 @@ struct TRINITY_DLL_DECL npc_rocknotAI : public npc_escortAI
     void DoGo(uint32 id, uint32 state)
     {
         if (GameObject *go = GameObject::GetGameObject(*m_creature,pInstance->GetData64(id)))
-            go->SetGoState(state);
+            go->SetGoState(GOState(state));
     }
 
     void WaypointReached(uint32 i)
@@ -1384,7 +1384,7 @@ CreatureAI* GetAI_npc_rocknot(Creature *_Creature)
 
 bool ChooseReward_npc_rocknot(Player *player, Creature *_Creature, const Quest *_Quest, uint32 item)
 {
-    ScriptedInstance* pInstance = ((ScriptedInstance*)_Creature->GetInstanceData());
+    ScriptedInstance* pInstance = (_Creature->GetInstanceData());
 
     if (!pInstance)
         return true;

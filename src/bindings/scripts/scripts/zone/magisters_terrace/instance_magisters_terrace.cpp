@@ -138,7 +138,7 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
         }
     }
 
-    const char* Save()
+    std::string GetSaveData()
     {
         std::ostringstream ss;
         ss << "S " << DoorState[0] << " " << DoorState[1] << " " << DoorState[2];
@@ -179,18 +179,18 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
         {
             case 187896:
                 VexallusDoorGUID = go->GetGUID();
-                go->SetGoState(DoorState[1]);
+                go->SetGoState(GOState(DoorState[1]));
                 break;
             //SunwellRaid Gate 02
             case 187979:
                 SelinDoorGUID = go->GetGUID();
-                go->SetGoState(DoorState[0]);
+                go->SetGoState(GOState(DoorState[0]));
                 break;
             //Assembly Chamber Door
             case 188065:  SelinEncounterDoorGUID = go->GetGUID(); break;
             case 187770:
                 DelrissaDoorGUID = go->GetGUID();
-                go->SetGoState(DoorState[2]);
+                go->SetGoState(GOState(DoorState[2]));
                 break;
             case 188165:  KaelStatue[0] = go->GetGUID();          break;
             case 188166:  KaelStatue[1] = go->GetGUID();          break;

@@ -198,7 +198,7 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
                 for(std::set<uint64>::iterator i = ExplodeObjectGUID.begin(); i != ExplodeObjectGUID.end(); ++i)
                 {
                     if(GameObject *ExplodeObject = instance->GetGameObject(*i))
-                    ExplodeObject->SetGoState(!data);
+                    ExplodeObject->SetGoState(GOState(!data));
                 }
         }
 
@@ -218,7 +218,7 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
         return 0;
     }
 
-    const char* Save()
+    std::string GetSaveData()
     {
         OUT_SAVE_INST_DATA;
         std::ostringstream stream;

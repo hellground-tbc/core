@@ -243,9 +243,6 @@
     <ClCompile Include="..\..\src\game\OutdoorPvPNA.cpp">
       <Filter>Outdoor PvP</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\game\OutdoorPvPObjectiveAI.cpp">
-      <Filter>Outdoor PvP</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\game\OutdoorPvPSI.cpp">
       <Filter>Outdoor PvP</Filter>
     </ClCompile>
@@ -693,9 +690,6 @@
     <ClInclude Include="..\..\src\game\OutdoorPvPNA.h">
       <Filter>Outdoor PvP</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\game\OutdoorPvPObjectiveAI.h">
-      <Filter>Outdoor PvP</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\game\OutdoorPvPSI.h">
       <Filter>Outdoor PvP</Filter>
     </ClInclude>
@@ -889,5 +883,11 @@
       <Filter>Managers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\game\MapUpdater.h" />
+    <ClInclude Include="..\..\src\game\ZoneScript.h">
+      <Filter>Outdoor PvP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\OutdoorPvPImpl.h">
+      <Filter>Outdoor PvP</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

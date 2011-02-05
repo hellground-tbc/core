@@ -112,7 +112,7 @@ class TRINITY_DLL_SPEC CreatureAI : public UnitAI
         virtual void KilledUnit(Unit *) {}
 
         // Called when the creature summon successfully other creature
-        virtual void JustSummoned(Creature* ) {}
+        virtual void JustSummoned(Creature*) {}
         virtual void IsSummonedBy(Unit *summoner) {}
 
         virtual void SummonedCreatureDespawn(Creature* /*unit*/) {}
@@ -162,7 +162,7 @@ class TRINITY_DLL_SPEC CreatureAI : public UnitAI
         //virtual void AttackStart(Unit *) {}
 
         // Called at World update tick
-        //virtual void UpdateAI(const uint32 diff ) {}
+        //virtual void UpdateAI(const uint32 diff) {}
 
         ///== State checks =================================
 

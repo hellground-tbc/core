@@ -201,7 +201,7 @@ struct TRINITY_DLL_DECL advisorbase_ai : public ScriptedAI
 {
     advisorbase_ai(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     ScriptedInstance* pInstance;
@@ -314,7 +314,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
 {
     boss_kaelthasAI(Creature *c) : ScriptedAI(c), summons(m_creature)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
 
         for(int i = 0; i < 4; i++)
             AdvisorGuid[i] = 0;
@@ -1793,7 +1793,7 @@ struct TRINITY_DLL_DECL mob_phoenix_tkAI : public ScriptedAI
 {
     mob_phoenix_tkAI(Creature *c) : ScriptedAI(c)
     {
-       pInstance = ((ScriptedInstance*)c->GetInstanceData());
+       pInstance = (c->GetInstanceData());
     }
 
     ScriptedInstance* pInstance;
@@ -1871,7 +1871,7 @@ struct TRINITY_DLL_DECL mob_phoenix_egg_tkAI : public ScriptedAI
 {
     mob_phoenix_egg_tkAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     uint32 Rebirth_Timer;
@@ -1956,7 +1956,7 @@ struct TRINITY_DLL_DECL mob_nether_vaporAI : public ScriptedAI
 {
     mob_nether_vaporAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     ScriptedInstance* pInstance;
@@ -2025,7 +2025,7 @@ struct TRINITY_DLL_DECL weapon_advisorAI : public ScriptedAI
 {
     weapon_advisorAI(Creature *c) : ScriptedAI(c)
     {
-       pInstance = ((ScriptedInstance*)c->GetInstanceData());
+       pInstance = (c->GetInstanceData());
     }
 
     ScriptedInstance* pInstance;

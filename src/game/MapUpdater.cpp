@@ -85,7 +85,7 @@ MapUpdater::wait ()
 {
   ACE_GUARD_RETURN(ACE_Thread_Mutex,guard,this->m_mutex,-1);
 
-  while(this->pedning_requests > 0)
+  while (this->pedning_requests > 0)
     this->m_condition.wait ();
 
   return 0;
@@ -98,7 +98,7 @@ MapUpdater::schedule_update(Map& map, ACE_UINT32 diff)
 
   ++this->pedning_requests;
 
-  if( this->m_executor.execute (new MapUpdateRequest(map,*this,diff)) == -1)
+  if (this->m_executor.execute (new MapUpdateRequest(map,*this,diff)) == -1)
     {
       ACE_DEBUG ((LM_ERROR,
                   ACE_TEXT ("(%t) \n"),

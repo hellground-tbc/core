@@ -552,7 +552,7 @@ bool GridMap::ExistMap(uint32 mapid,int gx,int gy)
 
     FILE *pf=fopen(tmp,"rb");
 
-    if(!pf)
+    if (!pf)
     {
         sLog.outError("Check existing of map file '%s': not exist!",tmp);
         delete[] tmp;
@@ -577,13 +577,13 @@ bool GridMap::ExistMap(uint32 mapid,int gx,int gy)
 
 bool GridMap::ExistVMap(uint32 mapid,int gx,int gy)
 {
-    if(VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager())
+    if (VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager())
     {
-        if(vmgr->isMapLoadingEnabled(mapid))
+        if (vmgr->isMapLoadingEnabled(mapid))
         {
                                                             // x and y are swapped !! => fixed now
             bool exists = vmgr->existsMap((sWorld.GetDataPath()+ "vmaps").c_str(), mapid, gx,gy);
-            if(!exists)
+            if (!exists)
             {
                 std::string name = vmgr->getDirFileName(mapid,gx,gy);
                 sLog.outError("VMap file '%s' is missing or point to wrong version vmap file, redo vmaps with latest vmap_assembler.exe program", (sWorld.GetDataPath()+"vmaps/"+name).c_str());

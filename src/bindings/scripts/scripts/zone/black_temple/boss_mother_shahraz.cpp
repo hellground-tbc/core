@@ -104,7 +104,7 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
 {
     boss_shahrazAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         c->GetPosition(wLoc);
     }
 
@@ -146,7 +146,7 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         ClearCastQueue();
 
         if (!pInstance)
-            pInstance = ((ScriptedInstance*)me->GetInstanceData());
+            pInstance = (me->GetInstanceData());
 
         pInstance->SetData(EVENT_MOTHERSHAHRAZ, NOT_STARTED);
 

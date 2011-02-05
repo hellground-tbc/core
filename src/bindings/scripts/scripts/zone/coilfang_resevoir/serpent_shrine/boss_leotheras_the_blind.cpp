@@ -156,7 +156,7 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
     {
         m_creature->GetPosition(x,y,z);
         m_creature->GetPosition(wLoc);
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         Demon = 0;
         Berserk_Timer = 600000;
 
@@ -248,7 +248,7 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
         if(m_creature->HasAura(AURA_BANISH, 0))
             return;
 
-        if( !m_creature->getVictim() && who->isTargetableForAttack() && ( m_creature->IsHostileTo( who )) && who->isInAccessiblePlaceFor(m_creature) )
+        if( !m_creature->getVictim() && who->isTargetableForAttack() && ( m_creature->IsHostileTo( who )) && who->isInAccessiblePlacefor(m_creature) )
         {
             if (m_creature->GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE)
                 return;

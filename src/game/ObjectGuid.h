@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef OREGON_OBJECT_GUID_H
-#define OREGON_OBJECT_GUID_H
+#ifndef TRINITY_OBJECT_GUID_H
+#define TRINITY_OBJECT_GUID_H
 
 #include "Common.h"
 #include "ByteBuffer.h"
@@ -91,7 +91,7 @@ enum HighGuid
 
 inline bool IsGuidHaveEnPart(uint64 const& guid)
 {
-    switch(GUID_HIPART(guid))
+    switch (GUID_HIPART(guid))
     {
         case HIGHGUID_ITEM:
         case HIGHGUID_PLAYER:
@@ -164,7 +164,7 @@ class TRINITY_DLL_SPEC ObjectGuid
 
         TypeID GetTypeId()
         {
-            switch(GetHigh())
+            switch (GetHigh())
             {
                 case HIGHGUID_ITEM:         return TYPEID_ITEM;
                 //case HIGHGUID_CONTAINER:    return TYPEID_CONTAINER; HIGHGUID_CONTAINER==HIGHGUID_ITEM currently
@@ -186,7 +186,7 @@ class TRINITY_DLL_SPEC ObjectGuid
     private:                                                // internal functions
         bool HasEntry() const
         {
-            switch(GetHigh())
+            switch (GetHigh())
             {
                 case HIGHGUID_ITEM:
                 case HIGHGUID_PLAYER:

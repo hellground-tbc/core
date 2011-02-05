@@ -210,7 +210,7 @@ struct TRINITY_DLL_DECL instance_mechanar : public ScriptedInstance
 
     }
 
-    const char* Save()
+    std::string GetSaveData()
     {
         OUT_SAVE_INST_DATA;
         std::ostringstream stream;
@@ -253,7 +253,7 @@ bool GOHello_go_cache_of_the_legion(Player *player, GameObject* _GO)
     if (!m->IsHeroic())
         return true;
 
-    if (ScriptedInstance* pInstance = ((ScriptedInstance*)_GO->GetInstanceData()))
+    if (ScriptedInstance* pInstance = (_GO->GetInstanceData()))
     {
         if (pInstance->GetData(DATA_CACHE_OF_LEGION_EVENT) == NOT_STARTED)
         {

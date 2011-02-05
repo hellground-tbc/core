@@ -53,7 +53,7 @@ struct TRINITY_DLL_DECL boss_akilzonAI : public ScriptedAI
 {
     boss_akilzonAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         m_creature->GetPosition(wLoc);
     }
     ScriptedInstance *pInstance;

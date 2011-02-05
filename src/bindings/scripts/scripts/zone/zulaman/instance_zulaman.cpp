@@ -230,7 +230,7 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
         instance->SendToPlayers(&data);
     }
 
-    const char* Save()
+    std::string GetSaveData()
     {
         OUT_SAVE_INST_DATA;
 

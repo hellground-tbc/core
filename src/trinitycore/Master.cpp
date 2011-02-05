@@ -430,7 +430,7 @@ bool Master::_StartDB()
         return false;
     }
     int nConnections = sConfig.GetIntDefault("WorldDatabaseConnections", 1);
-    sLog.outDetail("World Database: %s, total connections: %i", dbstring.c_str(), nConnections + 1);
+    sLog.outString("World Database: %s, total connections: %i", dbstring.c_str(), nConnections + 1);
 
     ///- Initialise the world database
     if(!WorldDatabase.Initialize(dbstring.c_str(), nConnections))
@@ -450,7 +450,7 @@ bool Master::_StartDB()
     ///- Initialise the Character database
     if(!CharacterDatabase.Initialize(dbstring.c_str(), nConnections))
     {
-        sLog.outError("Character Database: %s, total connections: %i", dbstring.c_str(), nConnections + 1);
+        sLog.outString("Character Database: %s, total connections: %i", dbstring.c_str(), nConnections + 1);
         return false;
     }
 

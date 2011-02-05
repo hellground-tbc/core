@@ -34,7 +34,7 @@
 int
 TotemAI::Permissible(const Creature *creature)
 {
-    if( creature->isTotem() )
+    if (creature->isTotem())
         return PERMIT_BASE_PROACTIVE;
 
     return PERMIT_BASE_NO;
@@ -77,13 +77,13 @@ TotemAI::UpdateAI(const uint32 /*diff*/)
     // pointer to appropriate target if found any
     Unit* victim = i_victimGuid ? i_totem.GetMap()->GetUnit(i_victimGuid) : NULL;
 
-    if(!max_range)
+    if (!max_range)
         victim = &i_totem;
 
     // Search victim if no, not attackable, or out of range, or friendly (possible in case duel end)
-    if( !victim ||
+    if (!victim ||
         !victim->isTargetableForAttack() || !i_totem.IsWithinDistInMap(victim, max_range) ||
-        ( i_totem.IsFriendlyTo(victim) && victim != &i_totem ) || !victim->isVisibleForOrDetect(&i_totem,false) )
+        (i_totem.IsFriendlyTo(victim) && victim != &i_totem) || !victim->isVisibleForOrDetect(&i_totem,false))
     {
         victim = NULL;
 

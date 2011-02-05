@@ -538,7 +538,7 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
                 NextPortal_Timer -= diff;
     }
 
-    const char* Save()
+    std::string GetSaveData()
     {
         return str_data.c_str();
     }

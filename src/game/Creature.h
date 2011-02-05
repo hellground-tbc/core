@@ -142,7 +142,7 @@ enum CreatureFlagsExtra
 };
 
 // GCC have alternative #pragma pack(N) syntax and old gcc version not support pack(push,N), also any gcc version not support it at some platform
-#if defined( __GNUC__ )
+#if defined(__GNUC__)
 #pragma pack(1)
 #else
 #pragma pack(push,1)
@@ -224,9 +224,9 @@ struct CreatureInfo
     // helpers
     SkillType GetRequiredLootSkill() const
     {
-        if(type_flags & CREATURE_TYPEFLAGS_HERBLOOT)
+        if (type_flags & CREATURE_TYPEFLAGS_HERBLOOT)
             return SKILL_HERBALISM;
-        else if(type_flags & CREATURE_TYPEFLAGS_MININGLOOT)
+        else if (type_flags & CREATURE_TYPEFLAGS_MININGLOOT)
             return SKILL_MINING;
         else
             return SKILL_SKINNING;                          // normal case
@@ -261,6 +261,7 @@ struct EquipmentInfo
 // from `creature` table
 struct CreatureData
 {
+    explicit CreatureData() : dbData(true) {}
     uint32 id;                                              // entry in creature_template
     uint16 mapid;
     uint32 displayid;
@@ -277,6 +278,7 @@ struct CreatureData
     bool  is_dead;
     uint8 movementType;
     uint8 spawnMask;
+    bool dbData;
 };
 
 struct CreatureDataAddonAura
@@ -329,7 +331,7 @@ enum ChatType
 };
 
 // GCC have alternative #pragma pack() syntax and old gcc version not support pack(pop), also any gcc version not support it at some platform
-#if defined( __GNUC__ )
+#if defined(__GNUC__)
 #pragma pack()
 #else
 #pragma pack(pop)
@@ -354,16 +356,16 @@ struct VendorItemData
 
     VendorItem* GetItem(uint32 slot) const
     {
-        if(slot>=m_items.size()) return NULL;
+        if (slot>=m_items.size()) return NULL;
         return m_items[slot];
     }
     bool Empty() const { return m_items.empty(); }
     uint8 GetItemCount() const { return m_items.size(); }
-    void AddItem( uint32 item, uint32 maxcount, uint32 ptime, uint32 ExtendedCost)
+    void AddItem(uint32 item, uint32 maxcount, uint32 ptime, uint32 ExtendedCost)
     {
         m_items.push_back(new VendorItem(item, maxcount, ptime, ExtendedCost));
     }
-    bool RemoveItem( uint32 item_id );
+    bool RemoveItem(uint32 item_id);
     VendorItem const* FindItem(uint32 item_id) const;
     size_t FindItemSlot(uint32 item_id) const;
 
@@ -429,7 +431,7 @@ class TRINITY_DLL_SPEC Creature : public Unit
         void RemoveFromWorld();
         void DisappearAndDie();
 
-        bool Create (uint32 guidlow, Map *map, uint32 Entry, uint32 team, const CreatureData *data = NULL);
+        bool Create(uint32 guidlow, Map *map, uint32 Entry, uint32 team, float x, float y, float z, float ang, const CreatureData *data = NULL);
         bool LoadCreaturesAddon(bool reload = false);
         void SelectLevel(const CreatureInfo *cinfo);
         void LoadEquipment(uint32 equip_entry, bool force=false);
@@ -437,7 +439,7 @@ class TRINITY_DLL_SPEC Creature : public Unit
         uint32 GetDBTableGUIDLow() const { return m_DBTableGuid; }
         char const* GetSubName() const { return GetCreatureInfo()->SubName; }
 
-        void Update( uint32 time );                         // overwrited Unit::Update
+        void Update(uint32 time);                         // overwrited Unit::Update
         void GetRespawnCoord(float &x, float &y, float &z, float* ori = NULL, float* dist =NULL) const;
         uint32 GetEquipmentId() const { return m_equipmentId; }
 
@@ -464,7 +466,7 @@ class TRINITY_DLL_SPEC Creature : public Unit
                                                             // redefine Unit::IsImmunedToSpellEffect
         bool isElite() const
         {
-            if(isPet())
+            if (isPet())
                 return false;
 
             uint32 rank = GetCreatureInfo()->rank;
@@ -473,7 +475,7 @@ class TRINITY_DLL_SPEC Creature : public Unit
 
         bool isWorldBoss() const
         {
-            if(isPet())
+            if (isPet())
                 return false;
 
             return GetCreatureInfo()->rank == CREATURE_ELITE_WORLDBOSS;
@@ -526,14 +528,15 @@ class TRINITY_DLL_SPEC Creature : public Unit
         TrainerSpellData const* GetTrainerSpells() const;
 
         CreatureInfo const *GetCreatureInfo() const { return m_creatureInfo; }
+        CreatureData const *GetCreatureData() const { return m_creatureData; }
         CreatureDataAddon const* GetCreatureAddon() const;
 
         std::string GetAIName() const;
         std::string GetScriptName();
         uint32 GetScriptId();
 
-        void prepareGossipMenu( Player *pPlayer, uint32 gossipid = 0 );
-        void sendPreparedGossip( Player* player );
+        void prepareGossipMenu(Player *pPlayer, uint32 gossipid = 0);
+        void sendPreparedGossip(Player* player);
         void OnGossipSelect(Player* player, uint32 option);
         void OnPoiSelect(Player* player, GossipOption const *gossip);
 
@@ -541,7 +544,7 @@ class TRINITY_DLL_SPEC Creature : public Unit
         uint32 GetNpcTextId();
         void LoadGossipOptions();
         void ResetGossipOptions();
-        GossipOption const* GetGossipOption( uint32 id ) const;
+        GossipOption const* GetGossipOption(uint32 id) const;
         void addGossipOption(GossipOption const& gso) { m_goptions.push_back(gso); }
 
         void setEmoteState(uint8 emote) { m_emoteState = emote; };
@@ -668,7 +671,7 @@ class TRINITY_DLL_SPEC Creature : public Unit
         bool IsDamageEnoughForLootingAndReward() { return m_PlayerDamageReq == 0; }
         void LowerPlayerDamageReq(uint32 unDamage)
         {
-            if(m_PlayerDamageReq)
+            if (m_PlayerDamageReq)
                 m_PlayerDamageReq > unDamage ? m_PlayerDamageReq -= unDamage : m_PlayerDamageReq = 0;
         }
         void ResetPlayerDamageReq() { m_PlayerDamageReq = GetHealth() / 2; }
@@ -729,6 +732,8 @@ class TRINITY_DLL_SPEC Creature : public Unit
         float mHome_O;
 
         bool DisableReputationGain;
+
+        CreatureData const* m_creatureData;
 
     private:
         //WaypointMovementGenerator vars

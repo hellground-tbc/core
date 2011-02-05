@@ -94,7 +94,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
 {
     boss_aranAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         m_creature->GetPosition(wLoc);
         SpellEntry *TempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_ARCMISSLE);
         if(TempSpell)
@@ -749,7 +749,7 @@ struct TRINITY_DLL_DECL circular_blizzardAI : public ScriptedAI
 {
     circular_blizzardAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     uint16 currentWaypoint;
