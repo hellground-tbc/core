@@ -464,7 +464,10 @@ void OPvPCapturePointEP::SummonFlightMaster(uint32 team)
         {
             // Change the flightmasters's faction to horde if required
             if (team == HORDE)
+            {
                 c->SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, c->GetCreatureInfo()->faction_H);
+                c->SetUInt32Value(UNIT_FIELD_AURA, EP_PWT_FlightMasterAura);
+            }
 
             GossipOption gso;
             for (uint8 i = 0; i < EP_TOWER_NUM-1; ++i)

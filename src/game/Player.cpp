@@ -15062,10 +15062,10 @@ void Player::_LoadAuras(QueryResultAutoPtr result, uint32 timediff)
             // negative effects should continue counting down after logout
             if (remaintime != -1 && !IsPositiveEffect(spellid, effindex))
             {
-                if (remaintime  <= int32(timediff))
+                if (remaintime/IN_MILISECONDS <= int32(timediff))
                     continue;
 
-                remaintime -= timediff;
+                remaintime -= timediff*IN_MILISECONDS;
             }
 
             // prevent wrong values of remaincharges

@@ -725,7 +725,11 @@ void WorldSession::SendListInventory(uint64 vendorguid)
     VendorItemData const* vItems = pCreature->GetVendorItems();
     if (!vItems)
     {
-        _player->SendSellError(SELL_ERR_CANT_FIND_VENDOR, NULL, 0, 0);
+        WorldPacket data(SMSG_LIST_INVENTORY, (8+1+1));
+        data << uint64(vendorguid);
+        data << uint8(0);                                   // count==0, next will be error code
+        data << uint8(0);                                   // "Vendor has no inventory"
+        SendPacket(&data);
         return;
     }
 
@@ -1259,4 +1263,3 @@ void WorldSession::HandleCancelTempItemEnchantmentOpcode(WorldPacket& recv_data)
     GetPlayer()->ApplyEnchantment(item,TEMP_ENCHANTMENT_SLOT,false);
     item->ClearEnchantment(TEMP_ENCHANTMENT_SLOT);
 }
-
