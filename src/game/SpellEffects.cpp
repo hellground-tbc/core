@@ -6687,7 +6687,6 @@ void Spell::EffectSummonCritter(uint32 i)
     critter->SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE,m_caster->getFaction());
     critter->SetUInt32Value(UNIT_CREATED_BY_SPELL, m_spellInfo->Id);
 
-    critter->AIM_Initialize();
     critter->InitPetCreateSpells();                         // e.g. disgusting oozeling has a create spell as critter...
     critter->SetMaxHealth(1);
     critter->SetHealth(1);
