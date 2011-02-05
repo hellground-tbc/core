@@ -254,14 +254,10 @@ void ObjectAccessor::AddCorpsesToGrid(GridPair const& gridpair,GridType& grid,Ma
         if (map->Instanceable())
         {
             if (iter->second->GetInstanceId() == map->GetInstanceId())
-            {
-                grid.AddWorldObject(iter->second,iter->second->GetGUID());
-            }
+                grid.AddWorldObject(iter->second);
         }
         else
-        {
-            grid.AddWorldObject(iter->second,iter->second->GetGUID());
-        }
+            grid.AddWorldObject(iter->second);
     }
 }
 

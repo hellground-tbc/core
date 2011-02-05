@@ -188,13 +188,13 @@ void Map::InitVisibilityDistance()
 template<class T>
 void Map::AddToGrid(T* obj, NGridType *grid, Cell const& cell)
 {
-    (*grid)(cell.CellX(), cell.CellY()).template AddGridObject<T>(obj, obj->GetGUID());
+    (*grid)(cell.CellX(), cell.CellY()).template AddGridObject<T>(obj);
 }
 
 template<>
 void Map::AddToGrid(Player* obj, NGridType *grid, Cell const& cell)
 {
-    (*grid)(cell.CellX(), cell.CellY()).AddWorldObject(obj, obj->GetGUID());
+    (*grid)(cell.CellX(), cell.CellY()).AddWorldObject(obj);
 }
 
 template<>
@@ -203,12 +203,12 @@ void Map::AddToGrid(Corpse *obj, NGridType *grid, Cell const& cell)
     // add to world object registry in grid
     if (obj->GetType()!=CORPSE_BONES)
     {
-        (*grid)(cell.CellX(), cell.CellY()).AddWorldObject(obj, obj->GetGUID());
+        (*grid)(cell.CellX(), cell.CellY()).AddWorldObject(obj);
     }
     // add to grid object store
     else
     {
-        (*grid)(cell.CellX(), cell.CellY()).AddGridObject(obj, obj->GetGUID());
+        (*grid)(cell.CellX(), cell.CellY()).AddGridObject(obj);
     }
 }
 
@@ -218,12 +218,12 @@ void Map::AddToGrid(Creature* obj, NGridType *grid, Cell const& cell)
     // add to world object registry in grid
     if (obj->isPet() || obj->IsTempWorldObject)
     {
-        (*grid)(cell.CellX(), cell.CellY()).AddWorldObject<Creature>(obj, obj->GetGUID());
+        (*grid)(cell.CellX(), cell.CellY()).AddWorldObject<Creature>(obj);
     }
     // add to grid object store
     else
     {
-        (*grid)(cell.CellX(), cell.CellY()).AddGridObject<Creature>(obj, obj->GetGUID());
+        (*grid)(cell.CellX(), cell.CellY()).AddGridObject<Creature>(obj);
     }
     obj->SetCurrentCell(cell);
 }
@@ -232,21 +232,21 @@ template<>
 void Map::AddToGrid(DynamicObject* obj, NGridType *grid, Cell const& cell)
 {
     if (obj->isActiveObject()) // only farsight
-        (*grid)(cell.CellX(), cell.CellY()).AddWorldObject<DynamicObject>(obj, obj->GetGUID());
+        (*grid)(cell.CellX(), cell.CellY()).AddWorldObject<DynamicObject>(obj);
     else
-        (*grid)(cell.CellX(), cell.CellY()).AddGridObject<DynamicObject>(obj, obj->GetGUID());
+        (*grid)(cell.CellX(), cell.CellY()).AddGridObject<DynamicObject>(obj);
 }
 
 template<class T>
 void Map::RemoveFromGrid(T* obj, NGridType *grid, Cell const& cell)
 {
-    (*grid)(cell.CellX(), cell.CellY()).template RemoveGridObject<T>(obj, obj->GetGUID());
+    (*grid)(cell.CellX(), cell.CellY()).template RemoveGridObject<T>(obj);
 }
 
 template<>
 void Map::RemoveFromGrid(Player* obj, NGridType *grid, Cell const& cell)
 {
-    (*grid)(cell.CellX(), cell.CellY()).RemoveWorldObject(obj, obj->GetGUID());
+    (*grid)(cell.CellX(), cell.CellY()).RemoveWorldObject(obj);
 }
 
 template<>
@@ -255,12 +255,12 @@ void Map::RemoveFromGrid(Corpse *obj, NGridType *grid, Cell const& cell)
     // remove from world object registry in grid
     if (obj->GetType()!=CORPSE_BONES)
     {
-        (*grid)(cell.CellX(), cell.CellY()).RemoveWorldObject(obj, obj->GetGUID());
+        (*grid)(cell.CellX(), cell.CellY()).RemoveWorldObject(obj);
     }
     // remove from grid object store
     else
     {
-        (*grid)(cell.CellX(), cell.CellY()).RemoveGridObject(obj, obj->GetGUID());
+        (*grid)(cell.CellX(), cell.CellY()).RemoveGridObject(obj);
     }
 }
 
@@ -270,12 +270,12 @@ void Map::RemoveFromGrid(Creature* obj, NGridType *grid, Cell const& cell)
     // remove from world object registry in grid
     if (obj->isPet() || obj->IsTempWorldObject)
     {
-        (*grid)(cell.CellX(), cell.CellY()).RemoveWorldObject<Creature>(obj, obj->GetGUID());
+        (*grid)(cell.CellX(), cell.CellY()).RemoveWorldObject<Creature>(obj);
     }
     // remove from grid object store
     else
     {
-        (*grid)(cell.CellX(), cell.CellY()).RemoveGridObject<Creature>(obj, obj->GetGUID());
+        (*grid)(cell.CellX(), cell.CellY()).RemoveGridObject<Creature>(obj);
     }
 }
 
@@ -283,9 +283,9 @@ template<>
 void Map::RemoveFromGrid(DynamicObject* obj, NGridType *grid, Cell const& cell)
 {
     if (obj->isActiveObject()) // only farsight
-        (*grid)(cell.CellX(), cell.CellY()).RemoveWorldObject<DynamicObject>(obj, obj->GetGUID());
+        (*grid)(cell.CellX(), cell.CellY()).RemoveWorldObject<DynamicObject>(obj);
     else
-        (*grid)(cell.CellX(), cell.CellY()).RemoveGridObject<DynamicObject>(obj, obj->GetGUID());
+        (*grid)(cell.CellX(), cell.CellY()).RemoveGridObject<DynamicObject>(obj);
 }
 
 template<class T>
@@ -310,23 +310,13 @@ void Map::SwitchGridContainers(T* obj, bool on)
 
     if (on)
     {
-        grid.RemoveGridObject<T>(obj, obj->GetGUID());
-        grid.AddWorldObject<T>(obj, obj->GetGUID());
-        /*if(!grid.RemoveGridObject<T>(obj, obj->GetGUID())
-            || !grid.AddWorldObject<T>(obj, obj->GetGUID()))
-        {
-            assert(false);
-        }*/
+        grid.RemoveGridObject<T>(obj);
+        grid.AddWorldObject<T>(obj);
     }
     else
     {
-        grid.RemoveWorldObject<T>(obj, obj->GetGUID());
-        grid.AddGridObject<T>(obj, obj->GetGUID());
-        /*if(!grid.RemoveWorldObject<T>(obj, obj->GetGUID())
-            || !grid.AddGridObject<T>(obj, obj->GetGUID()))
-        {
-            assert(false);
-        }*/
+        grid.RemoveWorldObject<T>(obj);
+        grid.AddGridObject<T>(obj);
     }
     obj->IsTempWorldObject = on;
 }
