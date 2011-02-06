@@ -325,7 +325,7 @@ void ApplySpellThreatModifiers(SpellEntry const *spellInfo, float &threat)
     else if (spellInfo->SpellFamilyName == SPELLFAMILY_DRUID && spellInfo->SpellFamilyFlags == 0x10000000000LL) // Lacerate
         threat *= 0.20f;
 
-    else if (spellInfo->SpellFamilyName == SPELLFAMILY_PRIEST && (spellInfo->SpellFamilyFlags & 8400000LL))    // Holy Nova
+    else if (spellInfo->SpellFamilyName == SPELLFAMILY_PRIEST && (spellInfo->SpellFamilyFlags & 0x8400000LL))    // Holy Nova
         threat = 1.0f;
 
     else if (spellInfo->Id == 33619) // Reflective shield

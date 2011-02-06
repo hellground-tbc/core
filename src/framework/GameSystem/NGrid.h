@@ -157,7 +157,7 @@ class TRINITY_DLL_DECL NGrid
 
         template<class SPECIFIC_OBJECT> bool RemoveGridObject(const uint32 x, const uint32 y, SPECIFIC_OBJECT *obj)
         {
-             return getGridType(x, y).RemoveGridObject(obj, hdl);
+             return getGridType(x, y).RemoveGridObject(obj);
         }
 
     private:
