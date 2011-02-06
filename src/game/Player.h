@@ -807,14 +807,6 @@ enum PlayerLoginQueryIndex
     MAX_PLAYER_LOGIN_QUERY
 };
 
-enum PlayerDelayedOperations
-{
-    DELAYED_SAVE_PLAYER = 1,
-    DELAYED_RESURRECT_PLAYER = 2,
-    DELAYED_SPELL_CAST_DESERTER = 4,
-    DELAYED_END
-};
-
 // Player summoning auto-decline time (in secs)
 #define MAX_PLAYER_SUMMON_DELAY                   (2*MINUTE)
 #define MAX_MONEY_AMOUNT                       (0x7FFFFFFF-1)
@@ -1719,12 +1711,8 @@ class TRINITY_DLL_SPEC Player : public Unit
         void learnSkillRewardedSpells(uint32 id);
         void learnSkillRewardedSpells();
 
-        bool IsBeingTeleported() const { return mSemaphoreTeleport_Near || mSemaphoreTeleport_Far; }
-        bool IsBeingTeleportedNear() const { return mSemaphoreTeleport_Near; }
-        bool IsBeingTeleportedFar() const { return mSemaphoreTeleport_Far; }
-        void SetSemaphoreTeleportNear(bool semphsetting) { mSemaphoreTeleport_Near = semphsetting; }
-        void SetSemaphoreTeleportFar(bool semphsetting) { mSemaphoreTeleport_Far = semphsetting; }
-        void ProcessDelayedOperations();
+        void SetDontMove(bool dontMove);
+        bool GetDontMove() const { return m_dontMove; }
 
         void CheckAreaExploreAndOutdoor(void);
 
@@ -2408,27 +2396,6 @@ class TRINITY_DLL_SPEC Player : public Unit
         uint8 m_MirrorTimerFlagsLast;
         bool m_isInWater;
 
-        void SetCanDelayTeleport(bool setting) { m_bCanDelayTeleport = setting; }
-        bool IsHasDelayedTeleport() const
-        {
-            // we should not execute delayed teleports for now dead players but has been alive at teleport
-            // because we don't want player's ghost teleported from graveyard
-            return m_bHasDelayedTeleport && (isAlive() || !m_bHasBeenAliveAtDelayedTeleport);
-        }
-
-        bool SetDelayedTeleportFlagIfCan()
-        {
-            m_bHasDelayedTeleport = m_bCanDelayTeleport;
-            m_bHasBeenAliveAtDelayedTeleport = isAlive();
-            return m_bHasDelayedTeleport;
-        }
-
-        void ScheduleDelayedOperation(uint32 operation)
-        {
-            if (operation < DELAYED_END)
-                m_DelayedOperations |= operation;
-        }
-
         GridReference<Player> m_gridRef;
         MapReference m_mapRef;
 
@@ -2442,14 +2409,6 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         // Current teleport data
         WorldLocation m_teleport_dest;
-        uint32 m_teleport_options;
-        bool mSemaphoreTeleport_Near;
-        bool mSemaphoreTeleport_Far;
-
-        uint32 m_DelayedOperations;
-        bool m_bCanDelayTeleport;
-        bool m_bHasBeenAliveAtDelayedTeleport;
-        bool m_bHasDelayedTeleport;
 
         // Temporary removed pet cache
         uint32 m_temporaryUnsummonedPetNumber;

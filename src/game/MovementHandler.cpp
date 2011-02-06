@@ -41,22 +41,13 @@ void WorldSession::HandleMoveWorldportAckOpcode(WorldPacket & /*recv_data*/)
 
 void WorldSession::HandleMoveWorldportAckOpcode()
 {
-    // ignore unexpected far teleports
-    if (!GetPlayer()->IsBeingTeleportedFar())
-        return;
-
     // get the teleport destination
     WorldLocation &loc = GetPlayer()->GetTeleportDest();
 
     // possible errors in the coordinate validity check
     if (!MapManager::IsValidMapCoord(loc.mapid, loc.coord_x, loc.coord_y, loc.coord_z, loc.orientation))
     {
-        sLog.outError("WorldSession::HandleMoveWorldportAckOpcode: player %s (%d) was teleported far to a not valid location. (map:%u, x:%f, y:%f, "
-            "z:%f) We port him to his homebind instead..", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), loc.mapid, loc.coord_x, loc.coord_y, loc.coord_z);
-        // stop teleportation else we would try this again and again in LogoutPlayer...
-        GetPlayer()->SetSemaphoreTeleportFar(false);
-        // and teleport the player to a valid place
-        GetPlayer()->TeleportToHomebind();
+        LogoutPlayer(false);
         return;
     }
 
@@ -68,7 +59,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     if (GetPlayer()->m_InstanceValid == false && !mInstance)
         GetPlayer()->m_InstanceValid = true;
 
-    GetPlayer()->SetSemaphoreTeleportFar(false);
+    GetPlayer()->SetSemaphoreTeleport(false);
 
     // relocate the player to the teleport destination
     GetPlayer()->SetMapId(loc.mapid);
@@ -86,10 +77,10 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     // while the player is in transit, for example the map may get full
     if (!GetPlayer()->GetMap()->Add(GetPlayer()))
     {
-        sLog.outError("WorldSession::HandleMoveWorldportAckOpcode: player %s (%d) was teleported far but couldn't be added to map. (map:%u, x:%f, y:%f, "
-            "z:%f) We port him to his homebind instead..", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), loc.mapid, loc.coord_x, loc.coord_y, loc.coord_z);
+        sLog.outDebug("WORLD: teleport of player %s (%d) to location %d, %f, %f, %f, %f failed", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), loc.mapid, loc.coord_x, loc.coord_y, loc.coord_z, loc.orientation);
 
         // teleport the player home
+        GetPlayer()->SetDontMove(false);
         if (!GetPlayer()->TeleportToHomebind())
         {
             // the player must always be able to teleport home
@@ -128,6 +119,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
         if (!_player->InBattleGround())
         {
             // short preparations to continue flight
+            GetPlayer()->SetDontMove(false);
             FlightPathMovementGenerator* flight = (FlightPathMovementGenerator*)(GetPlayer()->GetMotionMaster()->top());
             flight->Initialize(*GetPlayer());
             return;
@@ -176,69 +168,16 @@ void WorldSession::HandleMoveWorldportAckOpcode()
         GetPlayer()->m_temporaryUnsummonedPetNumber = 0;
     }
 
-    //lets process all delayed operations on successful teleport
-    GetPlayer()->ProcessDelayedOperations();
+    GetPlayer()->SetDontMove(false);
 }
 
 void WorldSession::HandleMoveTeleportAck(WorldPacket& recv_data)
 {
     sLog.outDebug("MSG_MOVE_TELEPORT_ACK");
-    uint64 guid;
-    uint32 flags, time;
-
-    recv_data >> guid;
-    recv_data >> flags >> time;
-    sLog.outDebug("Guid " UI64FMTD, guid);
-    sLog.outDebug("Flags %u, time %u", flags, time/IN_MILISECONDS);
-
-    Player* plMover = GetPlayer();
-
-    if (!plMover || !plMover->IsBeingTeleportedNear())
-        return;
-
-    if (guid != plMover->GetGUID())
-        return;
-
-    plMover->SetSemaphoreTeleportNear(false);
-
-    uint32 old_zone = plMover->GetZoneId();
-
-    WorldLocation const& dest = plMover->GetTeleportDest();
-
-    plMover->SetPosition(dest.coord_x, dest.coord_y, dest.coord_z, dest.orientation, true);
-
-    uint32 newzone = plMover->GetZoneId();
-
-    plMover->UpdateZone(newzone);
-
-    // new zone
-    if (old_zone != newzone)
-    {
-        // honorless target
-        if (plMover->pvpInfo.inHostileArea)
-            plMover->CastSpell(plMover, 2479, true);
-    }
-
-    // resummon pet
-    if (GetPlayer()->m_temporaryUnsummonedPetNumber)
-    {
-        Pet* NewPet = new Pet;
-        if (!NewPet->LoadPetFromDB(GetPlayer(), 0, GetPlayer()->m_temporaryUnsummonedPetNumber, true))
-            delete NewPet;
-
-        GetPlayer()->m_temporaryUnsummonedPetNumber = 0;
-    }
-
-    //lets process all delayed operations on successful teleport
-    GetPlayer()->ProcessDelayedOperations();
 }
 
 void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
 {
-    // ignore, waiting processing in WorldSession::HandleMoveWorldportAckOpcode and WorldSession::HandleMoveTeleportAck
-    if (GetPlayer()->IsBeingTeleportedFar())
-        return;
-
     /* extract packet */
 
     MovementInfo movementInfo;
@@ -264,7 +203,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
         return;
     }
 
-    if (GetPlayer()->isCharmed())
+    if (GetPlayer()->GetDontMove() || GetPlayer()->isCharmed())
         return;
 
     //Save movement flags
@@ -360,6 +299,9 @@ void WorldSession::HandlePossessedMovement(WorldPacket& recv_data, MovementInfo&
     // If current player is controlling, it must be handled like the controlled player sent these opcodes
 
     Unit* pos_unit = GetPlayer()->GetCharm();
+
+    if (pos_unit->GetTypeId() == TYPEID_PLAYER && ((Player*)pos_unit)->GetDontMove())
+        return;
 
     //Save movement flags
     pos_unit->SetUnitMovementFlags(movementInfo.GetMovementFlags());

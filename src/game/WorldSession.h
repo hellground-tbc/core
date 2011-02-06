@@ -685,8 +685,6 @@ class TRINITY_DLL_SPEC WorldSession
         // private trade methods
         void moveItems(Item* myItems[], Item* hisItems[]);
 
-        void ExecuteOpcode(OpcodeHandler const& opHandle, WorldPacket* packet);
-
         // logging helper
         void logUnexpectedOpcode(WorldPacket *packet, const char * reason);
         Player *_player;
