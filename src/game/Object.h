@@ -174,7 +174,7 @@ class TRINITY_DLL_SPEC Object
             return *(((uint8*)&m_uint32Values[ index ])+offset);
         }
 
-        uint8 GetUInt16Value(uint16 index, uint8 offset) const
+        uint16 GetUInt16Value(uint16 index, uint8 offset) const
         {
             ASSERT(index < m_valuesCount || PrintIndexError(index , false));
             ASSERT(offset < 2);
@@ -501,6 +501,7 @@ class TRINITY_DLL_SPEC WorldObject : public Object, public WorldLocation
         void BuildMonsterChat(WorldPacket *data, uint8 msgtype, char const* text, uint32 language, char const* name, uint64 TargetGuid, bool withoutPrename = false) const;
 
         void SendObjectDeSpawnAnim(uint64 guid);
+        void SendGameObjectCustomAnim(uint64 guid);
 
         virtual void SaveRespawnTime() {}
 
