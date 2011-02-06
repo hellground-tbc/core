@@ -362,7 +362,7 @@ void WorldSession::HandleLogoutRequestOpcode(WorldPacket & /*recv_data*/)
         GetPlayer()->duel         ||                        //...is in Duel
         GetPlayer()->HasAura(9454,0)         ||             //...is frozen by GM via freeze command
                                                             //...is jumping ...is falling
-        GetPlayer()->HasUnitMovementFlag(MOVEMENTFLAG_JUMPING | MOVEMENTFLAG_FALLING))
+        GetPlayer()->HasUnitMovementFlag(MOVEFLAG_FALLING | MOVEFLAG_FALLINGFAR))
     {
         WorldPacket data(SMSG_LOGOUT_RESPONSE, (2+4)) ;
         data << (uint8)0xC;
@@ -907,7 +907,7 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recv_data)
         GetPlayer()->SetRestType(REST_TYPE_IN_TAVERN);
 
         if (sWorld.IsFFAPvPRealm())
-            GetPlayer()->RemoveFlag(PLAYER_FLAGS,PLAYER_FLAGS_FFA_PVP);
+            GetPlayer()->SetFFAPvP(false);
 
         return;
     }
@@ -1089,22 +1089,6 @@ void WorldSession::HandleMoveRootAck(WorldPacket&/* recv_data*/)
         DEBUG_LOG("Y %f",PositionY);
         DEBUG_LOG("Z %f",PositionZ);
         DEBUG_LOG("O %f",Orientation);
-    */
-}
-
-void WorldSession::HandleMoveTeleportAck(WorldPacket&/* recv_data*/)
-{
-    /*
-        CHECK_PACKET_SIZE(recv_data,8+4);
-
-        sLog.outDebug("MSG_MOVE_TELEPORT_ACK");
-        uint64 guid;
-        uint32 flags, time;
-
-        recv_data >> guid;
-        recv_data >> flags >> time;
-        DEBUG_LOG("Guid " I64FMTD,guid);
-        DEBUG_LOG("Flags %u, time %u",flags, time/1000);
     */
 }
 

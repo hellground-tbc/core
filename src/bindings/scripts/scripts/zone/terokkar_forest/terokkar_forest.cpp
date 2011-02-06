@@ -407,7 +407,7 @@ struct TRINITY_DLL_DECL npc_isla_starmaneAI : public npc_escortAI
             m_creature->SetInFront(player); break;
         case 30: m_creature->HandleEmoteCommand(EMOTE_ONESHOT_WAVE); break;
         case 31: DoCast(m_creature, SPELL_CAT);
-            m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE); break;
+            m_creature->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE); break;
         }
     }
 

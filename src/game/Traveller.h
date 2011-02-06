@@ -79,9 +79,9 @@ inline float Traveller<Creature>::Speed()
 {
     if (i_traveller.hasUnitState(UNIT_STAT_CHARGING))
         return i_traveller.m_TempSpeed;
-    else if (i_traveller.HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))
+    else if (i_traveller.HasUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE))
         return i_traveller.GetSpeed(MOVE_WALK);
-    else if (i_traveller.HasUnitMovementFlag(MOVEMENTFLAG_FLYING2))
+    else if (i_traveller.HasUnitMovementFlag(SPLINEFLAG_FLYINGING2))
         return i_traveller.GetSpeed(MOVE_FLIGHT);
     else
         return i_traveller.GetSpeed(MOVE_RUN);
@@ -121,7 +121,7 @@ inline float Traveller<Player>::Speed()
     else if (i_traveller.isInFlight())
         return PLAYER_FLIGHT_SPEED;
     else
-        return i_traveller.GetSpeed(i_traveller.HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE) ? MOVE_WALK : MOVE_RUN);
+        return i_traveller.GetSpeed(i_traveller.HasUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE) ? MOVE_WALK : MOVE_RUN);
 }
 
 template<>
@@ -146,7 +146,7 @@ inline void Traveller<Player>::Relocation(float x, float y, float z, float orien
 template<>
 inline void Traveller<Player>::MoveTo(float x, float y, float z, uint32 t)
 {
-    //Only send MOVEMENTFLAG_WALK_MODE, client has strange issues with other move flags
+    //Only send SPLINEFLAG_WALKMODE_MODE, client has strange issues with other move flags
     i_traveller.SendMonsterMove(x, y, z, t);
 }
 

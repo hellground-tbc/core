@@ -678,7 +678,7 @@ struct TRINITY_DLL_DECL mob_enchanted_elementalAI : public ScriptedAI
 
         if(move < diff)
         {
-            m_creature->SetUnitMovementFlags(MOVEMENTFLAG_WALK_MODE);
+            m_creature->SetUnitMovementFlags(SPLINEFLAG_WALKMODE_MODE);
             if (phase == 1)
             {
                 m_creature->GetMotionMaster()->MovePoint(0, x, y, z);
@@ -805,7 +805,7 @@ struct TRINITY_DLL_DECL mob_toxic_sporebatAI : public ScriptedAI
 
     void Reset()
     {
-        m_creature->AddUnitMovementFlag(/*MOVEMENTFLAG_ONTRANSPORT + */MOVEMENTFLAG_LEVITATING);
+        m_creature->AddUnitMovementFlag(/*MOVEFLAG_ONTRANSPORT + */MOVEFLAG_LEVITATING);
         m_creature->setFaction(14);
         movement_timer = 0;
         ToxicSpore_Timer = 5000;

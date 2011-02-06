@@ -242,7 +242,8 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                             logUnexpectedOpcode(packet, "the player has not logged in yet");
                     }
                     else if (_player->IsInWorld())
-                        (this->*opHandle.handler)(*packet);
+                        ExecuteOpcode(opHandle, packet);
+
                     // lag can cause STATUS_LOGGEDIN opcodes to arrive after the player started a transfer
                     break;
                 case STATUS_TRANSFER_PENDING:
@@ -251,7 +252,8 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                     else if (_player->IsInWorld())
                         logUnexpectedOpcode(packet, "the player is still in world");
                     else
-                        (this->*opHandle.handler)(*packet);
+                        ExecuteOpcode(opHandle, packet);
+
                     break;
                 case STATUS_AUTHED:
                     // prevent cheating with skip queue wait
@@ -262,7 +264,8 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                     }
 
                     m_playerRecentlyLogout = false;
-                    (this->*opHandle.handler)(*packet);
+                    ExecuteOpcode(opHandle, packet);
+
                     break;
                 case STATUS_NEVER:
                     if (packet->GetOpcode() != CMSG_MOVE_NOT_ACTIVE_MOVER)
@@ -275,6 +278,13 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
         delete packet;
     }
 
+    ///- Cleanup socket pointer if need
+    if (m_Socket && m_Socket->IsClosed())
+    {
+        m_Socket->RemoveReference();
+        m_Socket = NULL;
+    }
+
     //check if we are safe to proceed with logout
     //logout procedure should happen only in World::UpdateSessions() method!!!
     if (updater.ProcessLogout())
@@ -283,13 +293,6 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
         time_t currTime = time(NULL);
         if (!m_Socket || (ShouldLogOut(currTime) && !m_playerLoading))
             LogoutPlayer(true);
-    }
-
-    ///- Cleanup socket pointer if need
-    if (m_Socket && m_Socket->IsClosed())
-    {
-        m_Socket->RemoveReference();
-        m_Socket = NULL;
     }
 
     if (!m_Socket)
@@ -305,7 +308,7 @@ void WorldSession::LogoutPlayer(bool Save)
         return;
 
     // finish pending transfers before starting the logout
-    while (_player && _player->IsBeingTeleported())
+    while (_player && _player->IsBeingTeleportedFar())
         HandleMoveWorldportAckOpcode();
 
     m_playerLogout = true;
@@ -386,6 +389,19 @@ void WorldSession::LogoutPlayer(bool Save)
         //drop a flag if player is carrying it
         if (BattleGround *bg = _player->GetBattleGround())
             bg->EventPlayerLoggedOut(_player);
+
+        ///- Teleport to home if the player is in an invalid instance
+        if (!_player->m_InstanceValid && !_player->isGameMaster())
+        {
+            _player->TeleportToHomebind();
+            //this is a bad place to call for far teleport because we need player to be in world for successful logout
+            //maybe we should implement delayed far teleport logout?
+        }
+
+        // FG: finish pending transfers after starting the logout
+        // this should fix players beeing able to logout and login back with full hp at death position
+        while (_player->IsBeingTeleportedFar())
+            HandleMoveWorldportAckOpcode();
 
         sOutdoorPvPMgr.HandlePlayerLeaveZone(_player,_player->GetZoneId());
 
@@ -592,4 +608,28 @@ void WorldSession::SendAuthWaitQue(uint32 position)
         packet << uint32 (position);
         SendPacket(&packet);
     }
+}
+
+void WorldSession::ExecuteOpcode(OpcodeHandler const& opHandle, WorldPacket* packet)
+{
+    // need prevent do internal far teleports in handlers because some handlers do lot steps
+    // or call code that can do far teleports in some conditions unexpectedly for generic way work code
+    if (_player)
+        _player->SetCanDelayTeleport(true);
+
+    (this->*opHandle.handler)(*packet);
+
+    if (_player)
+    {
+        // can be not set in fact for login opcode, but this not create porblems.
+        _player->SetCanDelayTeleport(false);
+
+        //we should execute delayed teleports only for alive(!) players
+        //because we don't want player's ghost teleported from graveyard
+        if (_player->IsHasDelayedTeleport())
+            _player->TeleportTo(_player->m_teleport_dest, _player->m_teleport_options);
+    }
+
+    //if (packet->rpos() < packet->wpos())
+    //    LogUnprocessedTail(packet);
 }

@@ -43,14 +43,14 @@ class ACRequest : public ACE_Method_Request
                 return -1;
 
             // we don't love that movement flags
-            if (m_newPacket.GetMovementFlags() & (MOVEMENTFLAG_JUMPING | MOVEMENTFLAG_FALLING | MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_ONTRANSPORT))
+            if (m_newPacket.GetMovementFlags() & (MOVEFLAG_FALLING | MOVEFLAG_FALLINGFAR | MOVEFLAG_SWIMMING | MOVEFLAG_ONTRANSPORT))
                 return -1;
 
             // charging
             if (pPlayer->hasUnitState(UNIT_STAT_CHARGING))
                 return -1;
 
-            if (m_newPacket.GetMovementFlags() & (MOVEMENTFLAG_FLYING2 | MOVEMENTFLAG_FLYING | MOVEMENTFLAG_CAN_FLY) && !(pPlayer->HasAuraType(SPELL_AURA_FLY) || pPlayer->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED)))
+            if (m_newPacket.GetMovementFlags() & MOVEFLAG_CAN_FLY && !(pPlayer->HasAuraType(SPELL_AURA_FLY) || pPlayer->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED)))
             {
                 sWorld.SendGMText(LANG_ANTICHEAT_FLY, pPlayer->GetName());
                 sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) - possible Fly Cheat. MapId: %u, coords: x: %f, y: %f, z: %f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s",

@@ -48,7 +48,7 @@ GameObject::GameObject() : WorldObject()
     m_objectType |= TYPEMASK_GAMEOBJECT;
     m_objectTypeId = TYPEID_GAMEOBJECT;
                                                             // 2.3.2 - 0x58
-    m_updateFlag = (UPDATEFLAG_LOWGUID | UPDATEFLAG_HIGHGUID | UPDATEFLAG_HASPOSITION);
+    m_updateFlag = (UPDATEFLAG_LOWGUID | UPDATEFLAG_HIGHGUID | UPDATEFLAG_HAS_POSITION);
 
     m_valuesCount = GAMEOBJECT_END;
     m_respawnTime = 0;
@@ -327,7 +327,7 @@ void GameObject::Update(uint32 diff)
                 bool IsBattleGroundTrap = false;
                 //FIXME: this is activation radius (in different casting radius that must be selected from spell data)
                 //TODO: move activated state code (cast itself) to GO_ACTIVATED, in this place only check activating and set state
-                float radius = goInfo->trap.radius;
+                float radius = (float)(goInfo->trap.radius)/2; // TODO rename radius to diameter (goInfo->trap.radius) should be (goInfo->trap.diameter)
 
                 if (!radius)
                 {
@@ -467,6 +467,9 @@ void GameObject::Update(uint32 diff)
 
             if (GetOwnerGUID())
             {
+                if (Unit* owner = GetOwner())
+                    owner->RemoveGameObject(this, false);
+
                 m_respawnTime = 0;
                 Delete();
                 return;
@@ -655,37 +658,33 @@ bool GameObject::LoadFromDB(uint32 guid, Map *map)
         return false;
     }
 
-    switch (GetGOInfo()->type)
+    if (!GetDespawnPossibility())
     {
-        case GAMEOBJECT_TYPE_DOOR:
-        case GAMEOBJECT_TYPE_BUTTON:
-            /* this code (in comment) isn't correct because in battlegrounds we need despawnable doors and buttons, pls remove
-            SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NODESPAWN);
+        SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NODESPAWN);
+        m_spawnedByDefault = true;
+        m_respawnDelayTime = 0;
+        m_respawnTime = 0;
+    }
+    else
+    {
+        if (data->spawntimesecs >= 0)
+        {
             m_spawnedByDefault = true;
-            m_respawnDelayTime = 0;
-            m_respawnTime = 0;
-            break;*/
-        default:
-            if (data->spawntimesecs >= 0)
-            {
-                m_spawnedByDefault = true;
-                m_respawnDelayTime = data->spawntimesecs;
-                m_respawnTime = objmgr.GetGORespawnTime(m_DBTableGuid, map->GetInstanceId());
+            m_respawnDelayTime = data->spawntimesecs;
+            m_respawnTime = objmgr.GetGORespawnTime(m_DBTableGuid, map->GetInstanceId());
 
-                                                            // ready to respawn
-                if (m_respawnTime && m_respawnTime <= time(NULL))
-                {
-                    m_respawnTime = 0;
-                    objmgr.SaveGORespawnTime(m_DBTableGuid,GetInstanceId(),0);
-                }
-            }
-            else
+            // ready to respawn
+            if (m_respawnTime && m_respawnTime <= time(NULL))
             {
-                m_spawnedByDefault = false;
-                m_respawnDelayTime = -data->spawntimesecs;
                 m_respawnTime = 0;
+                objmgr.SaveGORespawnTime(m_DBTableGuid,GetInstanceId(),0);
             }
-            break;
+        }
+        else
+        {
+            m_spawnedByDefault = false;
+            m_respawnDelayTime = -data->spawntimesecs;
+        }
     }
     m_goData = data;
 

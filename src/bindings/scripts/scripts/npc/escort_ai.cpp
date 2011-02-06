@@ -324,10 +324,10 @@ void npc_escortAI::MovementInform(uint32 uiMoveType, uint32 uiPointId)
     {
         debug_log("TSCR: EscortAI has returned to original position before combat");
 
-        if (m_bIsRunning && m_creature->HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))
-            m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
-        else if (!m_bIsRunning && !m_creature->HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))
-            m_creature->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+        if (m_bIsRunning && m_creature->HasUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE))
+            m_creature->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+        else if (!m_bIsRunning && !m_creature->HasUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE))
+            m_creature->AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
 
         RemoveEscortState(STATE_ESCORT_RETURNING);
 
@@ -419,14 +419,14 @@ void npc_escortAI::SetRun(bool bRun)
     if (bRun)
     {
         if (!m_bIsRunning)
-            m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+            m_creature->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
         else
             debug_log("TSCR: EscortAI attempt to set run mode, but is already running.");
     }
     else
     {
         if (m_bIsRunning)
-            m_creature->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+            m_creature->AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
         else
             debug_log("TSCR: EscortAI attempt to set walk mode, but is already walking.");
     }
@@ -493,9 +493,9 @@ void npc_escortAI::Start(bool bIsActiveAttacker, bool bRun, uint64 uiPlayerGUID,
 
     //Set initial speed
     if (m_bIsRunning)
-        m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+        m_creature->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
     else
-        m_creature->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+        m_creature->AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
 
     AddEscortState(STATE_ESCORT_ESCORTING);
 }

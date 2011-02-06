@@ -99,13 +99,13 @@ void RandomMovementGenerator<Creature>::_setRandomLocation(Creature &creature)
     if (is_air_ok)
     {
         i_nextMoveTime.Reset(i_destinationHolder.GetTotalTravelTime());
-        creature.AddUnitMovementFlag(MOVEMENTFLAG_FLYING2);
+        creature.AddUnitMovementFlag(SPLINEFLAG_FLYINGING2);
     }
     //else if (is_water_ok)                                 // Swimming mode to be done with more than this check
     else
     {
         i_nextMoveTime.Reset(urand(500+i_destinationHolder.GetTotalTravelTime(), 10000+i_destinationHolder.GetTotalTravelTime()));
-        creature.AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+        creature.AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
     }
 }
 
@@ -116,9 +116,9 @@ void RandomMovementGenerator<Creature>::Initialize(Creature &creature)
         return;
 
     if (creature.canFly())
-        creature.AddUnitMovementFlag(MOVEMENTFLAG_FLYING2);
+        creature.AddUnitMovementFlag(SPLINEFLAG_FLYINGING2);
     else
-        creature.AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+        creature.AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
 
     _setRandomLocation(creature);
 }
@@ -154,15 +154,15 @@ bool RandomMovementGenerator<Creature>::Update(Creature &creature, const uint32 
         if (i_nextMoveTime.Passed())
         {
             if (creature.canFly())
-                creature.AddUnitMovementFlag(MOVEMENTFLAG_FLYING2);
+                creature.AddUnitMovementFlag(SPLINEFLAG_FLYINGING2);
             else
-                creature.AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+                creature.AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
 
             _setRandomLocation(creature);
         }
         else if (creature.isPet() && creature.GetOwner() && !creature.IsWithinDist(creature.GetOwner(), PET_FOLLOW_DIST+2.5f))
         {
-           creature.AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+           creature.AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
            _setRandomLocation(creature);
         }
     }

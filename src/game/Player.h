@@ -807,6 +807,14 @@ enum PlayerLoginQueryIndex
     MAX_PLAYER_LOGIN_QUERY
 };
 
+enum PlayerDelayedOperations
+{
+    DELAYED_SAVE_PLAYER = 1,
+    DELAYED_RESURRECT_PLAYER = 2,
+    DELAYED_SPELL_CAST_DESERTER = 4,
+    DELAYED_END
+};
+
 // Player summoning auto-decline time (in secs)
 #define MAX_PLAYER_SUMMON_DELAY                   (2*MINUTE)
 #define MAX_MONEY_AMOUNT                       (0x7FFFFFFF-1)
@@ -919,7 +927,7 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         bool TeleportTo(WorldLocation const &loc, uint32 options = 0)
         {
-            return TeleportTo(loc.mapid, loc.coord_x, loc.coord_y, loc.coord_z, options);
+            return TeleportTo(loc.mapid, loc.coord_x, loc.coord_y, loc.coord_z, loc.orientation, options);
         }
 
         void SetSummonPoint(uint32 mapid, float x, float y, float z)
@@ -1511,6 +1519,9 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         PvPInfo pvpInfo;
         void UpdatePvP(bool state, bool ovrride=false);
+        bool IsFFAPvP() const { return HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP); }
+        void SetFFAPvP(bool state);
+
         void UpdateZone(uint32 newZone);
         void UpdateArea(uint32 newArea);
 
@@ -1708,8 +1719,12 @@ class TRINITY_DLL_SPEC Player : public Unit
         void learnSkillRewardedSpells(uint32 id);
         void learnSkillRewardedSpells();
 
-        void SetDontMove(bool dontMove);
-        bool GetDontMove() const { return m_dontMove; }
+        bool IsBeingTeleported() const { return mSemaphoreTeleport_Near || mSemaphoreTeleport_Far; }
+        bool IsBeingTeleportedNear() const { return mSemaphoreTeleport_Near; }
+        bool IsBeingTeleportedFar() const { return mSemaphoreTeleport_Far; }
+        void SetSemaphoreTeleportNear(bool semphsetting) { mSemaphoreTeleport_Near = semphsetting; }
+        void SetSemaphoreTeleportFar(bool semphsetting) { mSemaphoreTeleport_Far = semphsetting; }
+        void ProcessDelayedOperations();
 
         void CheckAreaExploreAndOutdoor(void);
 
@@ -2000,11 +2015,14 @@ class TRINITY_DLL_SPEC Player : public Unit
             m_lastFallTime = time;
             m_lastFallZ = z;
         }
-        bool isMoving() const { return HasUnitMovementFlag(MOVEMENTFLAG_MOVING); }
-        bool isMovingOrTurning() const { return HasUnitMovementFlag(MOVEMENTFLAG_TURNING); }
 
-        bool CanFly() const { return HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY); }
-        bool IsFlying() const { return HasUnitMovementFlag(MOVEMENTFLAG_FLYING2); }
+        void BuildTeleportAckMsg( WorldPacket *data, float x, float y, float z, float ang) const;
+
+        bool isMoving() const { return HasUnitMovementFlag(MOVEFLAG_MOVING); }
+        bool isMovingOrTurning() const { return HasUnitMovementFlag(MOVEFLAG_TURNING); }
+
+        bool CanFly() const { return HasUnitMovementFlag(MOVEFLAG_CAN_FLY); }
+        bool IsFlying() const { return HasUnitMovementFlag(SPLINEFLAG_FLYINGING2); }
 
         void HandleDrowning(uint32 time_diff);
         void HandleFallDamage(MovementInfo& movementInfo);
@@ -2044,6 +2062,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         float m_homebindZ;
 
         void RelocateToHomebind() { SetMapId(m_homebindMapId); Relocate(m_homebindX,m_homebindY,m_homebindZ); }
+        bool TeleportToHomebind(uint32 options = 0) { return TeleportTo(m_homebindMapId, m_homebindX, m_homebindY, m_homebindZ, GetOrientation(), options); }
 
         // currently visible objects at player client
         typedef std::set<uint64> ClientGUIDs;
@@ -2358,10 +2377,6 @@ class TRINITY_DLL_SPEC Player : public Unit
         uint32 m_groupUpdateMask;
         uint64 m_auraUpdateMask;
 
-        // Temporarily removed pet cache
-        uint32 m_temporaryUnsummonedPetNumber;
-        uint32 m_oldpetspell;
-
         uint64 m_miniPet;
         GuardianPetList m_guardianPets;
 
@@ -2374,9 +2389,6 @@ class TRINITY_DLL_SPEC Player : public Unit
         float  m_summon_x;
         float  m_summon_y;
         float  m_summon_z;
-
-        // Far Teleport
-        WorldLocation m_teleport_dest;
 
         bool m_farsightVision;
 
@@ -2396,6 +2408,27 @@ class TRINITY_DLL_SPEC Player : public Unit
         uint8 m_MirrorTimerFlagsLast;
         bool m_isInWater;
 
+        void SetCanDelayTeleport(bool setting) { m_bCanDelayTeleport = setting; }
+        bool IsHasDelayedTeleport() const
+        {
+            // we should not execute delayed teleports for now dead players but has been alive at teleport
+            // because we don't want player's ghost teleported from graveyard
+            return m_bHasDelayedTeleport && (isAlive() || !m_bHasBeenAliveAtDelayedTeleport);
+        }
+
+        bool SetDelayedTeleportFlagIfCan()
+        {
+            m_bHasDelayedTeleport = m_bCanDelayTeleport;
+            m_bHasBeenAliveAtDelayedTeleport = isAlive();
+            return m_bHasDelayedTeleport;
+        }
+
+        void ScheduleDelayedOperation(uint32 operation)
+        {
+            if (operation < DELAYED_END)
+                m_DelayedOperations |= operation;
+        }
+
         GridReference<Player> m_gridRef;
         MapReference m_mapRef;
 
@@ -2406,6 +2439,21 @@ class TRINITY_DLL_SPEC Player : public Unit
         uint32 m_timeSyncTimer;
         uint32 m_timeSyncClient;
         uint32 m_timeSyncServer;
+
+        // Current teleport data
+        WorldLocation m_teleport_dest;
+        uint32 m_teleport_options;
+        bool mSemaphoreTeleport_Near;
+        bool mSemaphoreTeleport_Far;
+
+        uint32 m_DelayedOperations;
+        bool m_bCanDelayTeleport;
+        bool m_bHasBeenAliveAtDelayedTeleport;
+        bool m_bHasDelayedTeleport;
+
+        // Temporary removed pet cache
+        uint32 m_temporaryUnsummonedPetNumber;
+        uint32 m_oldpetspell;
 };
 
 void AddItemsSetItem(Player*player,Item *item);

@@ -326,9 +326,16 @@ Player::Player (WorldSession *session): Unit()
 
     m_atLoginFlags = AT_LOGIN_NONE;
 
-    m_dontMove = false;
+    mSemaphoreTeleport_Near = false;
+    mSemaphoreTeleport_Far = false;
 
+    m_DelayedOperations = 0;
+    m_bCanDelayTeleport = false;
+    m_bHasDelayedTeleport = false;
+    m_bHasBeenAliveAtDelayedTeleport = true;                // overwrite always at setup teleport data, so not used infact
+    m_teleport_options = 0;
     pTrader = 0;
+
     ClearTrade();
 
     m_cinematic = 0;
@@ -443,8 +450,6 @@ Player::Player (WorldSession *session): Unit()
     m_declinedname = NULL;
 
     m_isActive = true;
-
-    m_farsightVision = false;
 
     m_globalCooldowns.clear();
 
@@ -1178,7 +1183,10 @@ void Player::Update(uint32 p_time)
         }
     }
 
+    //used to implement delayed far teleports
+    SetCanDelayTeleport(true);
     Unit::Update(p_time);
+    SetCanDelayTeleport(false);
 
     time_t now = time (NULL);
 
@@ -1426,6 +1434,9 @@ void Player::Update(uint32 p_time)
     Pet* pet = GetPet();
     if (pet && !IsWithinDistInMap(pet, OWNER_MAX_DISTANCE) && !pet->isPossessed())
         RemovePet(pet, PET_SAVE_NOT_IN_SLOT, true);
+
+    if (IsHasDelayedTeleport())
+        TeleportTo(m_teleport_dest, m_teleport_options);
 
     updateMutex.release();
 }
@@ -1716,8 +1727,6 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         m_movementInfo.ClearTransportData();
     }
 
-    SetSemaphoreTeleport(true);
-
     m_AC_timer = 3000;
 
     // The player was ported to another map and looses the duel immediatly.
@@ -1735,25 +1744,20 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
     if ((GetMapId() == mapid) && (!m_transport))
     {
-        // prepare zone change detect
-        uint32 old_zone = GetZoneId();
-
-        // near teleport
-        if (!GetSession()->PlayerLogout())
+        //lets reset far teleport flag if it wasn't reset during chained teleports
+        SetSemaphoreTeleportFar(false);
+        //setup delayed teleport flag
+        //if teleport spell is casted in Unit::Update() func
+        //then we need to delay it until update process will be finished
+        if (SetDelayedTeleportFlagIfCan())
         {
-            WorldPacket data;
-            BuildTeleportAckMsg(&data, x, y, z, orientation);
-            GetSession()->SendPacket(&data);
-            SetPosition(x, y, z, orientation, true);
-        }
-        else
-            // this will be used instead of the current location in SaveToDB
+            SetSemaphoreTeleportNear(true);
+            //lets save teleport destination for player
             m_teleport_dest = WorldLocation(mapid, x, y, z, orientation);
+            m_teleport_options = options;
+            return true;
+        }
 
-        SetFallInformation(0, z);
-
-        //BuildHeartBeatMsg(&data);
-        //SendMessageToSet(&data, true);
         if (!(options & TELE_TO_NOT_UNSUMMON_PET))
         {
             //same map, only remove pet if out of range
@@ -1771,33 +1775,20 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         if (!(options & TELE_TO_NOT_LEAVE_COMBAT))
             CombatStop();
 
-        if (!(options & TELE_TO_NOT_UNSUMMON_PET))
-        {
-            // resummon pet
-            if (pet && m_temporaryUnsummonedPetNumber)
-            {
-                Pet* NewPet = new Pet;
-                if (!NewPet->LoadPetFromDB(this, 0, m_temporaryUnsummonedPetNumber, true))
-                    delete NewPet;
+        // this will be used instead of the current location in SaveToDB
+        m_teleport_dest = WorldLocation(mapid, x, y, z, orientation);
+        SetFallInformation(0, z);
 
-                m_temporaryUnsummonedPetNumber = 0;
-            }
-        }
+        // code for finish transfer called in WorldSession::HandleMovementOpcodes() 
+        // at client packet MSG_MOVE_TELEPORT_ACK
+        SetSemaphoreTeleportNear(true);
 
+        // near teleport, triggering send MSG_MOVE_TELEPORT_ACK from client at landing
         if (!GetSession()->PlayerLogout())
         {
-            // don't reset teleport semaphore while logging out, otherwise m_teleport_dest won't be used in Player::SaveToDB
-            SetSemaphoreTeleport(false);
-
-            UpdateZone(GetZoneId());
-        }
-
-        // new zone
-        if (old_zone != GetZoneId())
-        {
-            // honorless target
-            if (pvpInfo.inHostileArea)
-                CastSpell(this, 2479, true);
+            WorldPacket data;
+            BuildTeleportAckMsg(&data, x, y, z, orientation);
+            GetSession()->SendPacket(&data);
         }
 
         if (getFollowingGM())
@@ -1819,21 +1810,14 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         // Check enter rights before map getting to avoid creating instance copy for player
         // this check not dependent from map instance copy and same for all instance copies of selected map
         if (!sMapMgr.CanPlayerEnter(mapid, this))
-        {
-            SetSemaphoreTeleport(false);
             return false;
-        }
 
         if (InstanceGroupBind *igb = GetGroup() ? GetGroup()->GetBoundInstance(mapid, GetDifficulty()) : NULL)
         {
             if (Map *iMap = sMapMgr.FindMap(mapid,igb->save->GetInstanceId()))
             {
                 if (iMap->EncounterInProgress(this))
-                {
-                    //sLog.outError("mapid: %u", iMap->GetInstanceId());
-                    SetSemaphoreTeleport(false);
                     return false;
-                }
             }
         }
 
@@ -1842,6 +1826,20 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         Map *map = sMapMgr.FindMap(mapid);
         if (!map || map->CanEnter(this))
         {
+            //lets reset near teleport flag if it wasn't reset during chained teleports
+            SetSemaphoreTeleportNear(false);
+            //setup delayed teleport flag
+            //if teleport spell is casted in Unit::Update() func
+            //then we need to delay it until update process will be finished
+            if (SetDelayedTeleportFlagIfCan())
+            {
+                SetSemaphoreTeleportFar(true);
+                //lets save teleport destination for player
+                m_teleport_dest = WorldLocation(mapid, x, y, z, orientation);
+                m_teleport_options = options;
+                return true;
+            }
+
             SetSelection(0);
             CombatStop();
             ResetContestedPvP();
@@ -1876,6 +1874,9 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             if (!(options & TELE_TO_SPELL))
                 if (IsNonMeleeSpellCasted(true))
                     InterruptNonMeleeSpells(true);
+
+            //remove auras before removing from map...
+            RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_CHANGE_MAP | AURA_INTERRUPT_FLAG_MOVE | AURA_INTERRUPT_FLAG_TURNING);
 
             if (!GetSession()->PlayerLogout())
             {
@@ -1943,18 +1944,54 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             // if the player is saved before worldportack (at logout for example)
             // this will be used instead of the current location in SaveToDB
 
-            RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_CHANGE_MAP);
-
             // move packet sent by client always after far teleport
-            // SetPosition(final_x, final_y, final_z, final_o, true);
-            SetDontMove(true);
 
             // code for finish transfer to new map called in WorldSession::HandleMoveWorldportAckOpcode at client packet
+            SetSemaphoreTeleportFar(true);
         }
         else
             return false;
     }
     return true;
+}
+
+void Player::ProcessDelayedOperations()
+{
+    if (m_DelayedOperations == 0)
+        return;
+
+    if (m_DelayedOperations & DELAYED_RESURRECT_PLAYER)
+    {
+        ResurrectPlayer(0.0f, false);
+
+        if (GetMaxHealth() > m_resurrectHealth)
+            SetHealth( m_resurrectHealth );
+        else
+            SetHealth( GetMaxHealth() );
+
+        if (GetMaxPower(POWER_MANA) > m_resurrectMana)
+            SetPower(POWER_MANA, m_resurrectMana );
+        else
+            SetPower(POWER_MANA, GetMaxPower(POWER_MANA) );
+
+        SetPower(POWER_RAGE, 0 );
+        SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY) );
+
+        SpawnCorpseBones();
+    }
+
+    if (m_DelayedOperations & DELAYED_SAVE_PLAYER)
+    {
+        SaveToDB();
+    }
+
+    if (m_DelayedOperations & DELAYED_SPELL_CAST_DESERTER)
+    {
+        CastSpell(this, 26013, true);               // Deserter
+    }
+
+    //we have executed ALL delayed ops, so clear the flag
+    m_DelayedOperations = 0;
 }
 
 void Player::AddToWorld()
@@ -2293,7 +2330,7 @@ void Player::SetGameMaster(bool on)
 
         // restore FFA PvP Server state
         if (sWorld.IsFFAPvPRealm())
-            SetFlag(PLAYER_FLAGS,PLAYER_FLAGS_FFA_PVP);
+            SetFFAPvP(true);
 
         // restore FFA PvP area state, remove not allowed for GM mounts
         UpdateArea(m_areaUpdateId);
@@ -5552,11 +5589,6 @@ void Player::removeActionButton(uint8 button)
     sLog.outDetail("Action Button '%u' Removed from Player '%u'", button, GetGUIDLow());
 }
 
-void Player::SetDontMove(bool dontMove)
-{
-    m_dontMove = dontMove;
-}
-
 bool Player::SetPosition(float x, float y, float z, float orientation, bool teleport)
 {
     if (!Unit::SetPosition(x, y, z, orientation, teleport))
@@ -6448,8 +6480,8 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor, bool pvpt
         {
             // Check if allowed to receive it in current map
             uint8 MapType = sWorld.getConfig(CONFIG_PVP_TOKEN_MAP_TYPE);
-            if ((MapType == 1 && !InBattleGround() && !HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP))
-                || (MapType == 2 && !HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP))
+            if ((MapType == 1 && !InBattleGround() && !IsFFAPvP())
+                || (MapType == 2 && !IsFFAPvP())
                 || (MapType == 3 && !InBattleGround()))
                 return true;
 
@@ -6589,14 +6621,14 @@ void Player::UpdateArea(uint32 newArea)
     if (area && (area->flags & AREA_FLAG_ARENA))
     {
         if (!isGameMaster())
-            SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP);
+            SetFFAPvP(true);
     }
     else
     {
         // remove ffa flag only if not ffapvp realm
         // removal in sanctuaries and capitals is handled in zone update
-        if (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP) && !sWorld.IsFFAPvPRealm())
-            RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP);
+        if (IsFFAPvP() && !sWorld.IsFFAPvPRealm())
+            SetFFAPvP(false);
     }
 
     UpdateAreaDependentAuras(newArea);
@@ -6660,7 +6692,7 @@ void Player::UpdateZone(uint32 newZone)
     {
         SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_SANCTUARY);
         if (sWorld.IsFFAPvPRealm())
-            RemoveFlag(PLAYER_FLAGS,PLAYER_FLAGS_FFA_PVP);
+           SetFFAPvP(false);
     }
     else
     {
@@ -6674,7 +6706,7 @@ void Player::UpdateZone(uint32 newZone)
         InnEnter(time(0),GetMapId(),0,0,0);
 
         if (sWorld.IsFFAPvPRealm())
-            RemoveFlag(PLAYER_FLAGS,PLAYER_FLAGS_FFA_PVP);
+            SetFFAPvP(false);
     }
     else                                                    // anywhere else
     {
@@ -6688,7 +6720,7 @@ void Player::UpdateZone(uint32 newZone)
                     SetRestType(REST_TYPE_NO);
 
                     if (sWorld.IsFFAPvPRealm())
-                        SetFlag(PLAYER_FLAGS,PLAYER_FLAGS_FFA_PVP);
+                        SetFFAPvP(true);
                 }
             }
             else                                            // not in tavern (leave city then)
@@ -6698,7 +6730,7 @@ void Player::UpdateZone(uint32 newZone)
 
                 // Set player to FFA PVP when not in rested environment.
                 if (sWorld.IsFFAPvPRealm())
-                    SetFlag(PLAYER_FLAGS,PLAYER_FLAGS_FFA_PVP);
+                    SetFFAPvP(true);
             }
         }
     }
@@ -6757,7 +6789,7 @@ void Player::CheckDuelDistance(time_t currTime)
 
 bool Player::IsOutdoorPvPActive()
 {
-    return (isAlive() && !HasInvisibilityAura() && !HasStealthAura() && (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP) || sWorld.IsPvPRealm())  && !HasUnitMovementFlag(MOVEMENTFLAG_FLYING2) && !isInFlight());
+    return (isAlive() && !HasInvisibilityAura() && !HasStealthAura() && (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP) || sWorld.IsPvPRealm())  && !HasUnitMovementFlag(SPLINEFLAG_FLYINGING2) && !isInFlight());
 }
 
 void Player::DuelComplete(DuelCompleteType type)
@@ -12540,7 +12572,11 @@ void Player::PrepareQuestMenu(uint64 guid)
     }
     else
     {
-        GameObject *pGameObject = GetMap()->GetGameObject(guid);
+        //we should obtain map pointer from GetMap() in 99% of cases. Special case
+        //only for quests which cast teleport spells on player
+        Map * _map = IsInWorld() ? GetMap() : MapManager::Instance().FindMap(GetMapId(), GetInstanceId());
+        ASSERT(_map);
+        GameObject *pGameObject = _map->GetGameObject(guid);
         if (pGameObject)
         {
             pObject = (Object*)pGameObject;
@@ -13067,11 +13103,6 @@ void Player::RewardQuest(Quest const *pQuest, uint32 reward, Object* questGiver,
 
     RewardReputation(pQuest);
 
-    if (pQuest->GetRewSpellCast() > 0)
-        CastSpell(this, pQuest->GetRewSpellCast(), true);
-    else if (pQuest->GetRewSpell() > 0)
-        CastSpell(this, pQuest->GetRewSpell(), true);
-
     uint16 log_slot = FindQuestSlot(quest_id);
     if (log_slot < MAX_QUEST_LOG_SIZE)
         SetQuestSlot(log_slot,0);
@@ -13177,6 +13208,11 @@ void Player::RewardQuest(Quest const *pQuest, uint32 reward, Object* questGiver,
         SendQuestReward(pQuest, XP, questGiver);
 
     if (q_status.uState != QUEST_NEW) q_status.uState = QUEST_CHANGED;
+
+    if (pQuest->GetRewSpellCast() > 0)
+        CastSpell(this, pQuest->GetRewSpellCast(), true);
+    else if (pQuest->GetRewSpell() > 0)
+        CastSpell(this, pQuest->GetRewSpell(), true);
 }
 
 void Player::FailQuest(uint32 quest_id)
@@ -15978,6 +16014,13 @@ void Player::SaveToDB()
     // delay auto save at any saves (manual, in code, or autosave)
     m_nextSave = sWorld.getConfig(CONFIG_INTERVAL_SAVE);
 
+    //lets allow only players in world to be saved
+    if (IsBeingTeleportedFar())
+    {
+        ScheduleDelayedOperation(DELAYED_SAVE_PLAYER);
+        return;
+    }
+
     // first save/honor gain after midnight will also update the player's honor fields
     UpdateHonorFields();
 
@@ -16842,6 +16885,14 @@ void Player::UpdatePvPFlag(time_t currTime)
         return;
 
     UpdatePvP(false);
+}
+
+void Player::SetFFAPvP(bool state)
+{
+    if (state)
+        SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP);
+    else
+        RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP);
 }
 
 void Player::UpdateDuelFlag(time_t currTime)
@@ -18018,7 +18069,7 @@ void Player::UpdateHomebindTime(uint32 time)
         if (time >= m_HomebindTimer)
         {
             // teleport to homebind location
-            TeleportTo(m_homebindMapId, m_homebindX, m_homebindY, m_homebindZ, GetOrientation());
+            TeleportToHomebind();
         }
         else
             m_HomebindTimer -= time;
@@ -18259,7 +18310,16 @@ void Player::LeaveBattleground(bool teleportToEntryPoint)
 
         if (bg->isBattleGround() && sWorld.getConfig(CONFIG_BATTLEGROUND_CAST_DESERTER))
             if (bg->GetStatus() == STATUS_IN_PROGRESS || bg->GetStatus() == STATUS_WAIT_JOIN)
+            {
+                //lets check if player was teleported from BG and schedule delayed Deserter spell cast
+                if (IsBeingTeleportedFar())
+                {
+                    ScheduleDelayedOperation(DELAYED_SPELL_CAST_DESERTER);
+                    return;
+                }
+
                 CastSpell(this, 26013, true);               // Deserter
+            }
     }
 }
 
@@ -18741,7 +18801,7 @@ void Player::SendInitialPacketsBeforeAddToMap()
 
     // set fly flag if in fly form or taxi flight to prevent visually drop at ground in showup moment
     if (HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED) || isInFlight())
-        AddUnitMovementFlag(MOVEMENTFLAG_FLYING2);
+        AddUnitMovementFlag(SPLINEFLAG_FLYINGING2);
 }
 
 void Player::SendInitialPacketsAfterAddToMap()
@@ -19561,6 +19621,14 @@ uint32 Player::GetBaseWeaponSkillValue (WeaponAttackType attType) const
 
 void Player::ResurectUsingRequestData()
 {
+    //we cannot resurrect player when we triggered far teleport
+    //player will be resurrected upon teleportation
+    if (IsBeingTeleportedFar())
+    {
+        ScheduleDelayedOperation(DELAYED_RESURRECT_PLAYER);
+        return;
+    }
+
     ResurrectPlayer(0.0f,false);
 
     if (GetMaxHealth() > m_resurrectHealth)
@@ -20054,7 +20122,14 @@ void Player::AddGlobalCooldown(SpellEntry const *spellInfo, Spell const *spell)
     else if (spell->IsRangedSpell() && !spell->IsAutoRepeat())
         cdTime *= m_modAttackSpeedPct[RANGED_ATTACK];
 
-    cdTime = (cdTime < 1000 || cdTime > 1500) ? 1000 : cdTime;
+    if (cdTime > 1500)
+        cdTime = 1500;
+
+    if (cdTime < 1000)
+        cdTime = 1000;
+
+    if (cdTime > 0)
+        m_globalCooldowns[spellInfo->StartRecoveryCategory] = cdTime;
 
     m_globalCooldowns[spellInfo->StartRecoveryCategory] = cdTime;
 }
@@ -20106,6 +20181,21 @@ void Player::RemoveGlobalCooldown(SpellEntry const *spellInfo, Spell const *pSpe
         }
     }
     m_globalCooldowns[spellInfo->StartRecoveryCategory] = 0;
+}
+
+void Player::BuildTeleportAckMsg(WorldPacket *data, float x, float y, float z, float ang) const
+{
+    data->Initialize(MSG_MOVE_TELEPORT_ACK, 41);
+    *data << GetPackGUID();
+    *data << uint32(0);                                     // this value increments every time
+    *data << uint32(GetUnitMovementFlags());                // movement flags
+    *data << uint8(0);                                      // 2.3.0
+    *data << uint32(getMSTime());                           // time
+    *data << x;
+    *data << y;
+    *data << z;
+    *data << ang;
+    *data << uint32(0);
 }
 
 void Player::ResetTimeSync()

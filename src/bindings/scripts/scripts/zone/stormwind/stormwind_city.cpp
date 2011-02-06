@@ -420,7 +420,7 @@ struct npc_marzon_silent_bladeAI : public ScriptedAI
 {
     npc_marzon_silent_bladeAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
-        me->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+        me->AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
     }
 
     void Reset()

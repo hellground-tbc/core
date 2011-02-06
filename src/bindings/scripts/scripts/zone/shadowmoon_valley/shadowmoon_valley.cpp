@@ -97,7 +97,7 @@ struct TRINITY_DLL_DECL mob_mature_netherwing_drakeAI : public ScriptedAI
         {
             float PlayerX, PlayerY, PlayerZ;
             caster->GetClosePoint(PlayerX, PlayerY, PlayerZ, m_creature->GetObjectSize());
-            m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
+            m_creature->AddUnitMovementFlag(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
             m_creature->GetMotionMaster()->MovePoint(1, PlayerX, PlayerY, PlayerZ);
             PlayerGUID = caster->GetGUID();
         }
@@ -113,7 +113,7 @@ struct TRINITY_DLL_DECL mob_mature_netherwing_drakeAI : public ScriptedAI
             IsEating = true;
             EatTimer = 5000;
             m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_ONESHOT_ATTACKUNARMED);
-            m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
+            m_creature->RemoveUnitMovementFlag(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
         }
     }
 
@@ -194,7 +194,7 @@ struct TRINITY_DLL_DECL mob_enslaved_netherwing_drakeAI : public ScriptedAI
             m_creature->setFaction(FACTION_DEFAULT);
 
         FlyTimer = 10000;
-        m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
+        m_creature->RemoveUnitMovementFlag(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
         m_creature->SetVisibility(VISIBILITY_ON);
     }
 
@@ -241,7 +241,7 @@ struct TRINITY_DLL_DECL mob_enslaved_netherwing_drakeAI : public ScriptedAI
                 PlayerGUID = 0;
             }
             m_creature->SetVisibility(VISIBILITY_OFF);
-            m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
+            m_creature->RemoveUnitMovementFlag(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
             m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
             m_creature->RemoveCorpse();
         }
@@ -280,7 +280,7 @@ struct TRINITY_DLL_DECL mob_enslaved_netherwing_drakeAI : public ScriptedAI
                             dz += 25;
                         }
 
-                        m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
+                        m_creature->AddUnitMovementFlag(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
                         m_creature->GetMotionMaster()->MovePoint(1, dx, dy, dz);
                     }
                 }
@@ -329,7 +329,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_peonAI : public ScriptedAI
             float x, y, z;
             caster->GetClosePoint(x, y, z, m_creature->GetObjectSize());
 
-            m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+            m_creature->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
             m_creature->GetMotionMaster()->MovePoint(1, x, y, z);
         }
     }
@@ -822,7 +822,7 @@ struct TRINITY_DLL_DECL npc_overlord_morghorAI : public ScriptedAI
         case 19: DoScriptText(LORD_ILLIDAN_SAY_7, Illi); return 5000; break;
         case 20:
             Illi->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
-            Illi->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
+            Illi->AddUnitMovementFlag(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
             return 500; break;
         case 21: DoScriptText(OVERLORD_SAY_5, m_creature); return 500; break;
         case 22:
@@ -2120,7 +2120,7 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
                     if (Creature* spirit = m_creature->SummonCreature(OLUMS_SPIRIT,OlumNewPos[0],OlumNewPos[1],OlumNewPos[2],OlumNewPos[3]-2.0f,TEMPSUMMON_TIMED_DESPAWN,16000))
                     {
                         spirit->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                        spirit->SetUnitMovementFlags(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
+                        spirit->SetUnitMovementFlags(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
                         // spirit->SetUInt32Value(UNIT_NPC_EMOTESTATE,STATE_DROWNED); // improve Olum's Spirit animation using Drowned State, right movement flag or monster move type needed
                         spirit->SendMonsterMove(OlumNewPos[0],OlumNewPos[1],OlumNewPos[2]+8.0f,16000);
                     }
@@ -2413,7 +2413,7 @@ struct TRINITY_DLL_DECL mob_shadowlord_deathwailAI : public ScriptedAI
             if(trigger->isAlive())
             {
                 m_creature->GetMotionMaster()->Initialize();
-                m_creature->SetUnitMovementFlags(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
+                m_creature->SetUnitMovementFlags(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
                 m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 m_creature->GetMotionMaster()->MovePath(DEATHWAIL_FLYPATH, true);
                 landed = false;
@@ -2421,7 +2421,7 @@ struct TRINITY_DLL_DECL mob_shadowlord_deathwailAI : public ScriptedAI
             }
             else
             {
-                m_creature->SetUnitMovementFlags(MOVEMENTFLAG_WALK_MODE);
+                m_creature->SetUnitMovementFlags(SPLINEFLAG_WALKMODE_MODE);
                 m_creature->SetSpeed(MOVE_RUN, 1.4);
                 m_creature->GetMotionMaster()->MovePoint(1, -3247, 284, 138.1);
             }
@@ -2464,7 +2464,7 @@ struct TRINITY_DLL_DECL mob_shadowlord_deathwailAI : public ScriptedAI
             {
                 m_creature->setFaction(1813);
                 m_creature->GetMotionMaster()->Initialize();
-                m_creature->SetUnitMovementFlags(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
+                m_creature->SetUnitMovementFlags(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
                 m_creature->GetMotionMaster()->MovePoint(1, -3247, 284, 138.1);
                 m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 landed = true;
@@ -2474,9 +2474,9 @@ struct TRINITY_DLL_DECL mob_shadowlord_deathwailAI : public ScriptedAI
             if(!m_creature->isInCombat() && landed && trigger && trigger->isAlive())
                 Reset();
 
-            if(!m_creature->HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE) && m_creature->GetPositionZ() < 142)
+            if(!m_creature->HasUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE) && m_creature->GetPositionZ() < 142)
             {
-                m_creature->SetUnitMovementFlags(MOVEMENTFLAG_WALK_MODE);
+                m_creature->SetUnitMovementFlags(SPLINEFLAG_WALKMODE_MODE);
                 m_creature->SetSpeed(MOVE_WALK, 4.0);
                 m_creature->SetSpeed(MOVE_RUN, 2.0);
             }
@@ -3111,8 +3111,8 @@ struct TRINITY_DLL_DECL npc_xiriAI : public Scripted_NoMovementAI
             Unit* DeathswornAttacker = m_creature->SummonCreature(NPC_ASHTONGUE_DEATHSWORN, Deathsworn[i][0], Deathsworn[i][1], Deathsworn[i][2], Deathsworn[i][3], TEMPSUMMON_CORPSE_DESPAWN, 0);
             if(DeathswornAttacker)
             {
-                if(DeathswornAttacker->HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))
-                    DeathswornAttacker->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+                if(DeathswornAttacker->HasUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE))
+                    DeathswornAttacker->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
                 DeathswornAttacker->GetMotionMaster()->MovePoint(1, DeathswornPath[i][0], DeathswornPath[i][1], DeathswornPath[i][2]);
             }
         }

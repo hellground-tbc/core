@@ -155,7 +155,7 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) c
     if (target == this)                                      // building packet for oneself
         flags |= UPDATEFLAG_SELF;
 
-    if (flags & UPDATEFLAG_HASPOSITION)
+    if (flags & UPDATEFLAG_HAS_POSITION)
     {
         // UPDATETYPE_CREATE_OBJECT2 dynamic objects, corpses...
         if (isType(TYPEMASK_DYNAMICOBJECT) || isType(TYPEMASK_CORPSE) || isType(TYPEMASK_PLAYER))
@@ -259,7 +259,7 @@ void Object::DestroyForPlayer(Player *target) const
 
 void Object::BuildMovementUpdate(ByteBuffer * data, uint8 updateFlags) const
 {
-    uint32 moveFlags = MOVEMENTFLAG_NONE;
+    uint32 moveFlags = MOVEFLAG_NONE;
 
     *data << uint8(updateFlags);                            // update flags
 
@@ -270,8 +270,8 @@ void Object::BuildMovementUpdate(ByteBuffer * data, uint8 updateFlags) const
             case TYPEID_UNIT:
             {
                 moveFlags = ((Unit*)this)->GetUnitMovementFlags();
-                moveFlags &= ~MOVEMENTFLAG_ONTRANSPORT;
-                moveFlags &= ~MOVEMENTFLAG_SPLINE2;
+                moveFlags &= ~MOVEFLAG_ONTRANSPORT;
+                moveFlags &= ~MOVEFLAG_SPLINE_ENABLED;
             }
             break;
             case TYPEID_PLAYER:
@@ -279,17 +279,17 @@ void Object::BuildMovementUpdate(ByteBuffer * data, uint8 updateFlags) const
                 moveFlags = ((Player*)this)->GetUnitMovementFlags();
 
                 if (((Player*)this)->GetTransport())
-                    moveFlags |= MOVEMENTFLAG_ONTRANSPORT;
+                    moveFlags |= MOVEFLAG_ONTRANSPORT;
                 else
-                    moveFlags &= ~MOVEMENTFLAG_ONTRANSPORT;
+                    moveFlags &= ~MOVEFLAG_ONTRANSPORT;
 
                 // remove unknown, unused etc flags for now
-                moveFlags &= ~MOVEMENTFLAG_SPLINE2;          // will be set manually
+                moveFlags &= ~MOVEFLAG_SPLINE_ENABLED;          // will be set manually
 
                 if (((Player*)this)->isInFlight())
                 {
                     WPAssert(((Player*)this)->GetMotionMaster()->GetCurrentMovementGeneratorType() == FLIGHT_MOTION_TYPE);
-                    moveFlags = (MOVEMENTFLAG_FORWARD | MOVEMENTFLAG_SPLINE2);
+                    moveFlags = (MOVEFLAG_FORWARD | MOVEFLAG_SPLINE_ENABLED);
                 }
             }
             break;
@@ -301,7 +301,7 @@ void Object::BuildMovementUpdate(ByteBuffer * data, uint8 updateFlags) const
     }
 
     // 0x40
-    if (updateFlags & UPDATEFLAG_HASPOSITION)
+    if (updateFlags & UPDATEFLAG_HAS_POSITION)
     {
         // 0x02
         if (updateFlags & UPDATEFLAG_TRANSPORT && ((GameObject*)this)->GetGoType() == GAMEOBJECT_TYPE_MO_TRANSPORT)
@@ -324,7 +324,7 @@ void Object::BuildMovementUpdate(ByteBuffer * data, uint8 updateFlags) const
     if (updateFlags & UPDATEFLAG_LIVING)
     {
         // 0x00000200
-        if (moveFlags & MOVEMENTFLAG_ONTRANSPORT)
+        if (moveFlags & MOVEFLAG_ONTRANSPORT)
         {
             if (GetTypeId() == TYPEID_PLAYER)
             {
@@ -339,7 +339,7 @@ void Object::BuildMovementUpdate(ByteBuffer * data, uint8 updateFlags) const
         }
 
         // 0x02200000
-        if (moveFlags & (MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_FLYING2))
+        if (moveFlags & (MOVEFLAG_SWIMMING | SPLINEFLAG_FLYINGING2))
         {
             if (GetTypeId() == TYPEID_PLAYER)
                 *data << (float)((Player*)this)->m_movementInfo.s_pitch;
@@ -353,7 +353,7 @@ void Object::BuildMovementUpdate(ByteBuffer * data, uint8 updateFlags) const
             *data << uint32(0);                             // last fall time
 
         // 0x00001000
-        if (moveFlags & MOVEMENTFLAG_JUMPING)
+        if (moveFlags & MOVEFLAG_FALLING)
         {
             if (GetTypeId() == TYPEID_PLAYER)
             {
@@ -372,7 +372,7 @@ void Object::BuildMovementUpdate(ByteBuffer * data, uint8 updateFlags) const
         }
 
         // 0x04000000
-        if (moveFlags & MOVEMENTFLAG_SPLINE)
+        if (moveFlags & MOVEFLAG_SPLINE_ELEVATION)
         {
             if (GetTypeId() == TYPEID_PLAYER)
                 *data << float(((Player*)this)->m_movementInfo.u_unk1);
@@ -391,17 +391,17 @@ void Object::BuildMovementUpdate(ByteBuffer * data, uint8 updateFlags) const
         *data << ((Unit*)this)->GetSpeed(MOVE_TURN_RATE);
 
         // 0x08000000
-        if (moveFlags & MOVEMENTFLAG_SPLINE2)
+        if (moveFlags & MOVEFLAG_SPLINE_ENABLED)
         {
             if (GetTypeId() != TYPEID_PLAYER)
             {
-                sLog.outDebug("BuildMovementUpdate: MOVEMENTFLAG_SPLINE2 for non-player");
+                sLog.outDebug("BuildMovementUpdate: MOVEFLAG_SPLINE_ENABLED for non-player");
                 return;
             }
 
             if (!((Player*)this)->isInFlight())
             {
-                sLog.outDebug("BuildMovementUpdate: MOVEMENTFLAG_SPLINE2 but not in flight");
+                sLog.outDebug("BuildMovementUpdate: MOVEFLAG_SPLINE_ENABLED but not in flight");
                 return;
             }
 
@@ -507,7 +507,7 @@ void Object::BuildMovementUpdate(ByteBuffer * data, uint8 updateFlags) const
     }
 
     // 0x4
-    if (updateFlags & UPDATEFLAG_FULLGUID)
+    if (updateFlags & UPDATEFLAG_HAS_ATTACKING_TARGET)
     {
         *data << uint8(0);                                  // packed guid (probably target guid)
     }
@@ -1042,8 +1042,6 @@ WorldObject::WorldObject()
 
     m_groupLootTimer    = 0;
     lootingGroupLeaderGUID = 0;
-
-    mSemaphoreTeleport  = false;
 }
 
 void WorldObject::SetWorldObject(bool on)
@@ -1631,43 +1629,6 @@ void WorldObject::BuildMonsterChat(WorldPacket *data, uint8 msgtype, char const*
         data->append("%s ",3);
     *data << text;
     *data << (uint8)0;                                      // ChatTag
-}
-
-void WorldObject::BuildHeartBeatMsg(WorldPacket *data) const
-{
-    //Heartbeat message cannot be used for non-units
-    if (!isType(TYPEMASK_UNIT))
-        return;
-
-    data->Initialize(MSG_MOVE_HEARTBEAT, 32);
-    *data << GetPackGUID();
-    *data << uint32(((Unit*)this)->GetUnitMovementFlags()); // movement flags
-    *data << uint8(0);                                      // 2.3.0
-    *data << getMSTime();                                   // time
-    *data << m_positionX;
-    *data << m_positionY;
-    *data << m_positionZ;
-    *data << m_orientation;
-    *data << uint32(0);
-}
-
-void WorldObject::BuildTeleportAckMsg(WorldPacket *data, float x, float y, float z, float ang) const
-{
-    //TeleportAck message cannot be used for non-units
-    if (!isType(TYPEMASK_UNIT))
-        return;
-
-    data->Initialize(MSG_MOVE_TELEPORT_ACK, 41);
-    *data << GetPackGUID();
-    *data << uint32(0);                                     // this value increments every time
-    *data << uint32(((Unit*)this)->GetUnitMovementFlags()); // movement flags
-    *data << uint8(0);                                      // 2.3.0
-    *data << getMSTime();                                   // time
-    *data << x;
-    *data << y;
-    *data << z;
-    *data << ang;
-    *data << uint32(0);
 }
 
 void WorldObject::SendMessageToSet(WorldPacket *data, bool /*fake*/, bool bToPossessor)

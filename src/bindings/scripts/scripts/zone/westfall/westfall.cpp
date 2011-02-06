@@ -89,8 +89,8 @@ struct TRINITY_DLL_DECL npc_daphne_stilwellAI : public npc_escortAI
         if (!player)
             return;
 
-        if (IsWalking && !m_creature->HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))
-            m_creature->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+        if (IsWalking && !m_creature->HasUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE))
+            m_creature->AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
 
         switch (i)
         {
@@ -132,9 +132,9 @@ struct TRINITY_DLL_DECL npc_daphne_stilwellAI : public npc_escortAI
 
     void Reset()
     {
-        if (IsWalking && !m_creature->HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))
+        if (IsWalking && !m_creature->HasUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE))
         {
-            m_creature->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+            m_creature->AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
             return;
         }
         IsWalking = false;

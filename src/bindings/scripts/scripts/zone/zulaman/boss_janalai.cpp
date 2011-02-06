@@ -619,7 +619,7 @@ struct TRINITY_DLL_DECL mob_hatchlingAI : public ScriptedAI
         else
             m_creature->GetMotionMaster()->MovePoint(0,hatcherway[1][3][0]+rand()%4-2,1150+rand()%4-2,hatcherway[1][3][2]);
 
-        m_creature->SetUnitMovementFlags(MOVEMENTFLAG_LEVITATING);
+        m_creature->SetUnitMovementFlags(MOVEFLAG_LEVITATING);
     }
 
     void EnterCombat(Unit *who) {/*DoZoneInCombat();*/}

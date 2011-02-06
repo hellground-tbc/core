@@ -572,55 +572,51 @@ enum NPCFlags
     UNIT_NPC_FLAG_OUTDOORPVP            = 0x20000000,       // custom flag for outdoor pvp creatures
 };
 
-enum MoveFlags
-{
-    MOVEFLAG_NONE               = 0x00000000,
-    MOVEFLAG_SLIDE              = 0x00000002,
-    MOVEFLAG_MARCH_ON_SPOT      = 0x00000004,
-    MOVEFLAG_JUMP               = 0x00000008,
-    MOVEFLAG_WALK               = 0x00000100,
-    MOVEFLAG_FLY                = 0x00000200,   //For dragon (+walk = glide)
-    MOVEFLAG_ORIENTATION        = 0x00000400,   //Fix orientation
-};
-
 enum MovementFlags
 {
-    MOVEMENTFLAG_NONE           = 0x00000000,
-    MOVEMENTFLAG_FORWARD        = 0x00000001,
-    MOVEMENTFLAG_BACKWARD       = 0x00000002,
-    MOVEMENTFLAG_STRAFE_LEFT    = 0x00000004,
-    MOVEMENTFLAG_STRAFE_RIGHT   = 0x00000008,
-    MOVEMENTFLAG_LEFT           = 0x00000010,
-    MOVEMENTFLAG_RIGHT          = 0x00000020,
-    MOVEMENTFLAG_PITCH_UP       = 0x00000040,
-    MOVEMENTFLAG_PITCH_DOWN     = 0x00000080,
-    MOVEMENTFLAG_WALK_MODE      = 0x00000100,
-    MOVEMENTFLAG_ONTRANSPORT    = 0x00000200,
-    MOVEMENTFLAG_LEVITATING     = 0x00000400,
-    MOVEMENTFLAG_FLY_UNK1       = 0x00000800,
-    MOVEMENTFLAG_JUMPING        = 0x00001000,
-    MOVEMENTFLAG_UNK4           = 0x00002000,
-    MOVEMENTFLAG_FALLING        = 0x00004000,
-    // 0x8000, 0x10000, 0x20000, 0x40000, 0x80000, 0x100000
-    MOVEMENTFLAG_SWIMMING       = 0x00200000,               // appears with fly flag also
-    MOVEMENTFLAG_FLY_UP         = 0x00400000,
-    MOVEMENTFLAG_CAN_FLY        = 0x00800000,
-    MOVEMENTFLAG_FLYING         = 0x01000000,
-    MOVEMENTFLAG_FLYING2        = 0x02000000,               // Actual flying mode
-    MOVEMENTFLAG_SPLINE         = 0x04000000,               // used for flight paths
-    MOVEMENTFLAG_SPLINE2        = 0x08000000,               // used for flight paths
-    MOVEMENTFLAG_WATERWALKING   = 0x10000000,               // prevent unit from falling through water
-    MOVEMENTFLAG_SAFE_FALL      = 0x20000000,               // active rogue safe fall spell (passive)
-    MOVEMENTFLAG_UNK3           = 0x40000000,
+    MOVEFLAG_NONE               = 0x00000000,
+    MOVEFLAG_FORWARD            = 0x00000001,
+    MOVEFLAG_BACKWARD           = 0x00000002,
+    MOVEFLAG_STRAFE_LEFT        = 0x00000004,
+    MOVEFLAG_STRAFE_RIGHT       = 0x00000008,
+    MOVEFLAG_TURN_LEFT          = 0x00000010,
+    MOVEFLAG_TURN_RIGHT         = 0x00000020,
+    MOVEFLAG_PITCH_UP           = 0x00000040,
+    MOVEFLAG_PITCH_DOWN         = 0x00000080,
+    SPLINEFLAG_WALKMODE_MODE          = 0x00000100,               // Walking
+    MOVEFLAG_ONTRANSPORT        = 0x00000200,               // Used for flying on some creatures
+    MOVEFLAG_LEVITATING         = 0x00000400,
+    MOVEFLAG_ROOT               = 0x00000800,
+    MOVEFLAG_FALLING            = 0x00001000,
+    MOVEFLAG_FALLINGFAR         = 0x00004000,
+    MOVEFLAG_SWIMMING           = 0x00200000,               // appears with fly flag also
+    MOVEFLAG_ASCENDING          = 0x00400000,               // swim up also
+    MOVEFLAG_CAN_FLY            = 0x00800000,
+    SPLINEFLAG_FLYINGING             = 0x01000000,
+    SPLINEFLAG_FLYINGING2            = 0x02000000,               // Actual flying mode
+    MOVEFLAG_SPLINE_ELEVATION   = 0x04000000,               // used for flight paths
+    MOVEFLAG_SPLINE_ENABLED     = 0x08000000,               // used for flight paths
+    MOVEFLAG_WATERWALKING       = 0x10000000,               // prevent unit from falling through water
+    MOVEFLAG_SAFE_FALL          = 0x20000000,               // active rogue safe fall spell (passive)
+    MOVEFLAG_HOVER              = 0x40000000,
 
-    MOVEMENTFLAG_MOVING         =
-        MOVEMENTFLAG_FORWARD |MOVEMENTFLAG_BACKWARD  |MOVEMENTFLAG_STRAFE_LEFT|MOVEMENTFLAG_STRAFE_RIGHT|
-        MOVEMENTFLAG_PITCH_UP|MOVEMENTFLAG_PITCH_DOWN|MOVEMENTFLAG_FLY_UNK1   |
-        MOVEMENTFLAG_JUMPING |MOVEMENTFLAG_FALLING   |MOVEMENTFLAG_FLY_UP     |
-        MOVEMENTFLAG_FLYING2 |MOVEMENTFLAG_SPLINE,
+    MOVEFLAG_MOVING         =
+        MOVEFLAG_FORWARD |MOVEFLAG_BACKWARD  |MOVEFLAG_STRAFE_LEFT |MOVEFLAG_STRAFE_RIGHT|
+        MOVEFLAG_PITCH_UP|MOVEFLAG_PITCH_DOWN|MOVEFLAG_ROOT        |
+        MOVEFLAG_FALLING |MOVEFLAG_FALLINGFAR|MOVEFLAG_ASCENDING   |
+        SPLINEFLAG_FLYINGING2 |MOVEFLAG_SPLINE_ELEVATION,
+    MOVEFLAG_TURNING        =
+        MOVEFLAG_TURN_LEFT | MOVEFLAG_TURN_RIGHT,
+};
 
-    MOVEMENTFLAG_TURNING        =
-        MOVEMENTFLAG_LEFT | MOVEMENTFLAG_RIGHT,
+// used in SMSG_MONSTER_MOVE
+// only some values known as correct for 2.4.3
+enum SplineFlags
+{
+    SPLINEFLAG_NONE           = 0x00000000,
+    SPLINEFLAG_JUMP           = 0x00000008,
+    SPLINEFLAG_WALKMODE       = 0x00000100,
+    SPLINEFLAG_FLYING         = 0x00000200,
  };
 
 class MovementInfo
@@ -1203,6 +1199,8 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         void SendSpellNonMeleeDamageLog(Unit *target,uint32 SpellID,uint32 Damage, SpellSchoolMask damageSchoolMask,uint32 AbsorbedDamage, uint32 Resist,bool PhysicalDamage, uint32 Blocked, bool CriticalHit = false);
         void SendSpellMiss(Unit *target, uint32 spellID, SpellMissInfo missInfo);
 
+        void NearTeleportTo(float x, float y, float z, float orientation, bool casting = false);
+
         void SendMonsterStop();
         void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 Time, Player* player = NULL);
         //void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint8 type, uint32 MovementFlags, uint32 Time, Player* player = NULL);
@@ -1213,6 +1211,9 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 MoveFlags, uint32 time, float speedZ, Player *player = NULL);
 
         void SendMovementFlagUpdate();
+
+        void BuildHeartBeatMsg(WorldPacket *data) const;
+
         virtual void MoveOutOfRange(Player &) {};
 
         bool isAlive() const { return (m_deathState == ALIVE); };

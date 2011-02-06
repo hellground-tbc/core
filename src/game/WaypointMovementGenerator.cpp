@@ -78,14 +78,14 @@ void WaypointMovementGenerator<Player>::Reset(Player &unit){}
 template<>
 void WaypointMovementGenerator<Creature>::InitTraveller(Creature &unit, const WaypointData &node)
 {
-    node.run ? unit.RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE):
-        unit.AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+    node.run ? unit.RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE):
+        unit.AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
 
     unit.SetUInt32Value(UNIT_NPC_EMOTESTATE, 0);
     unit.SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
 
     if (unit.canFly())
-         unit.AddUnitMovementFlag(MOVEMENTFLAG_FLYING2);
+         unit.AddUnitMovementFlag(SPLINEFLAG_FLYINGING2);
 
     unit.addUnitState(UNIT_STAT_ROAMING);
 }
@@ -289,7 +289,7 @@ void FlightPathMovementGenerator::Finalize(Player & player)
         if (player.pvpInfo.inHostileArea)
             player.CastSpell(&player, 2479, true);
 
-        player.SetUnitMovementFlags(MOVEMENTFLAG_WALK_MODE);
+        player.SetUnitMovementFlags(SPLINEFLAG_WALKMODE_MODE);
         player.StopMoving();
     }
 }

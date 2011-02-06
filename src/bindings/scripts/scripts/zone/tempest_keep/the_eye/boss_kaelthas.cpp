@@ -616,7 +616,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
             DoScriptText(SAY_PHASE5_NUTS, m_creature);
             return 1000;
         case 5:
-            m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
+            m_creature->AddUnitMovementFlag(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
             m_creature->SendMonsterMove(GRAVITY_X-0.5f, GRAVITY_Y, GRAVITY_Z+25.0f, 12000);
             DoCast(m_creature, SPELL_EXPLODE_SHAKE1, true);
             return 4000;
@@ -660,7 +660,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
             m_creature->InterruptNonMeleeSpells(false);
             m_creature->RemoveAurasDueToSpell(SPELL_FULLPOWER);
             m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-            m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
+            m_creature->RemoveUnitMovementFlag(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
             Phase = 6;
             if (Unit * target = SelectUnit(SELECT_TARGET_TOPAGGRO, 0))
             {
@@ -1315,7 +1315,7 @@ struct TRINITY_DLL_DECL boss_thaladred_the_darkenerAI : public advisorbase_ai
         Check_Timer = 1000;
         Check_Timer2 = 3000;
 
-        m_creature->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+        m_creature->AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
         m_creature->SetSpeed(MOVE_WALK, 2.0f, false);
 
         advisorbase_ai::Reset();
@@ -1802,7 +1802,7 @@ struct TRINITY_DLL_DECL mob_phoenix_tkAI : public ScriptedAI
 
     void Reset()
     {
-        m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);//birds can fly! :)
+        m_creature->AddUnitMovementFlag(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);//birds can fly! :)
         Cycle_Timer = 2000;
         Egg = true;
         m_creature->CastSpell(m_creature,SPELL_BURN,true);
@@ -1970,7 +1970,7 @@ struct TRINITY_DLL_DECL mob_nether_vaporAI : public ScriptedAI
         Move_Timer = 500;
 
         m_creature->setFaction(16);
-        m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
+        m_creature->AddUnitMovementFlag(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->CastSpell(m_creature, SPELL_NETHER_VAPOR, false);

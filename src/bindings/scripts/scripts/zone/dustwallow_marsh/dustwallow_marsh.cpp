@@ -786,7 +786,7 @@ struct npc_private_hendelAI : public ScriptedAI
 
     void JustSummoned(Creature* pSummoned)
     {
-        pSummoned->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+        pSummoned->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
 
         if (pSummoned->GetEntry() == NPC_TERVOSH)
         {
@@ -885,7 +885,7 @@ struct npc_private_hendelAI : public ScriptedAI
             me->RemoveAllAuras();
             me->DeleteThreatList();
             me->CombatStop(true);
-            me->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+            me->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
             me->SetHomePosition(-2892.28f,-3347.81f,31.8609f,0.160719f);
             me->GetMotionMaster()->MoveTargetedHome();
 
@@ -905,7 +905,7 @@ struct npc_private_hendelAI : public ScriptedAI
                         (*itr)->RemoveAllAuras();
                         (*itr)->DeleteThreatList();
                         (*itr)->CombatStop(true);
-                        (*itr)->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+                        (*itr)->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
                         (*itr)->GetMotionMaster()->MovePoint(0, m_afEventMoveTo[N].m_fX,  m_afEventMoveTo[N].m_fY,  m_afEventMoveTo[N].m_fZ);
                         (*itr)->ForcedDespawn(5000);
                     }

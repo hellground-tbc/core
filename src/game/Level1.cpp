@@ -2407,7 +2407,7 @@ bool ChatHandler::HandleNameTeleCommand(const char * args)
     if (chr)
     {
 
-        if (chr->IsBeingTeleported()==true)
+        if (chr->IsBeingTeleported())
         {
             PSendSysMessage(LANG_IS_TELEPORTED, chr->GetName());
             SetSentErrorMessage(true);
@@ -2565,7 +2565,7 @@ bool ChatHandler::HandleGroupgoCommand(const char* args)
         if (!pl || pl==m_session->GetPlayer() || !pl->GetSession())
             continue;
 
-        if (pl->IsBeingTeleported()==true)
+        if (pl->IsBeingTeleported())
         {
             PSendSysMessage(LANG_IS_TELEPORTED, pl->GetName());
             SetSentErrorMessage(true);

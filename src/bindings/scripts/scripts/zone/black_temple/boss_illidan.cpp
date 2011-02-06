@@ -419,7 +419,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
         {
         case 1://lift off
             me->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
-            me->SetUnitMovementFlags(MOVEMENTFLAG_LEVITATING | MOVEMENTFLAG_ONTRANSPORT);
+            me->SetUnitMovementFlags(MOVEFLAG_LEVITATING | MOVEFLAG_ONTRANSPORT);
             me->StopMoving();
             DoScriptText(SAY_TAKEOFF, me);
             Timer[EVENT_FLIGHT_SEQUENCE] = 3000;
@@ -489,7 +489,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
             Timer[EVENT_FLIGHT_SEQUENCE] = 2000;
             break;
         case 9://land
-            me->RemoveUnitMovementFlag(MOVEMENTFLAG_LEVITATING | MOVEMENTFLAG_ONTRANSPORT);
+            me->RemoveUnitMovementFlag(MOVEFLAG_LEVITATING | MOVEFLAG_ONTRANSPORT);
             me->StopMoving();
             me->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
             for(uint8 i = 0; i < 2; i++)
@@ -985,7 +985,7 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
             m_phase = PHASE_OPEN_DOOR;
         }
 
-        me->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+        me->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
         me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
         me->setActive(true);
     }
@@ -1125,7 +1125,7 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
                                 pIllidan->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY, 45479);
                                 pIllidan->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY+1, 45481);
                                 pIllidan->SetByteValue(UNIT_FIELD_BYTES_2, 0, SHEATH_STATE_MELEE );
-                                pIllidan->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+                                pIllidan->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
                             }
 
                             DoScriptText(SAY_AKAMA_NO2, me);
@@ -1898,7 +1898,7 @@ void boss_illidan_stormrageAI::Reset()
     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
     me->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY, 0);
     me->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY+1, 0);
-    me->RemoveUnitMovementFlag(MOVEMENTFLAG_LEVITATING | MOVEMENTFLAG_ONTRANSPORT);
+    me->RemoveUnitMovementFlag(MOVEFLAG_LEVITATING | MOVEFLAG_ONTRANSPORT);
     me->setActive(false);
 
     ForceSpellCast(me, SPELL_KNEEL, INTERRUPT_AND_CAST_INSTANTLY);
@@ -1958,7 +1958,7 @@ void boss_illidan_stormrageAI::HandleTalkSequence()
         me->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY, 45479);
         me->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY+1, 45481);
         me->SetByteValue(UNIT_FIELD_BYTES_2, 0, SHEATH_STATE_MELEE );
-        me->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+        me->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
         break;
     case 9:
         if(GETCRE(Akama, AkamaGUID))
@@ -2060,7 +2060,7 @@ void boss_illidan_stormrageAI::CastEyeBlast()
         return;
 
     Trigger->SetSpeed(MOVE_WALK, 3);
-    Trigger->SetUnitMovementFlags(MOVEMENTFLAG_WALK_MODE);
+    Trigger->SetUnitMovementFlags(SPLINEFLAG_WALKMODE_MODE);
     Trigger->GetMotionMaster()->MovePoint(0, final.x, final.y, final.z);
 
     me->SetSelection(Trigger->GetGUID());

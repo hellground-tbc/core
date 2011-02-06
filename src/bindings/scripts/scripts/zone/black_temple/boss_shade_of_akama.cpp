@@ -1062,8 +1062,8 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
 
                 if (m_updateSpeed)
                 {
-                    if (me->GetUnitMovementFlags() & MOVEMENTFLAG_WALK_MODE)
-                        me->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+                    if (me->GetUnitMovementFlags() & SPLINEFLAG_WALKMODE_MODE)
+                        me->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
 
                     me->UpdateSpeed(MOVE_RUN, true);
 
@@ -1337,7 +1337,7 @@ struct TRINITY_DLL_DECL npc_akamaAI : public ScriptedAI
                             if (broken)
                             {
                                 m_summons.Summon(broken);
-                                broken->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+                                broken->AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
                                 broken->GetMotionMaster()->MovePoint(0, BrokenMoveTo[i][0], BrokenMoveTo[i][1], SPAWN_Z);
                                 broken->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_KNEEL);
                             }

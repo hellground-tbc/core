@@ -133,7 +133,7 @@ struct TRINITY_DLL_DECL boss_akilzonAI : public ScriptedAI
             if(Eagle)
             {
                 Eagle->setFaction(me->getFaction());
-                Eagle->SetUnitMovementFlags(MOVEMENTFLAG_LEVITATING | MOVEMENTFLAG_ONTRANSPORT);
+                Eagle->SetUnitMovementFlags(MOVEFLAG_LEVITATING | MOVEFLAG_ONTRANSPORT);
                 Eagle->GetMotionMaster()->MoveIdle();
             }
         }
@@ -303,8 +303,8 @@ struct TRINITY_DLL_DECL mob_soaring_eagleAI : public ScriptedAI
         {
             float x, y, z;
             Akil->GetRandomPoint(Akil->GetPositionX(), Akil->GetPositionY(), Akil->GetPositionZ()+15.0f, 30.0f, x, y, z);
-            if(m_creature->HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))
-                m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+            if(m_creature->HasUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE))
+                m_creature->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
             m_creature->GetMotionMaster()->MovePoint(1, x, y, z);
             canMoveRandom = false;
         }

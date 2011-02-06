@@ -46,6 +46,8 @@ class LoginQueryHolder;
 class CharacterHandler;
 class MovementInfo;
 
+struct OpcodeHandler;
+
 #define CHECK_PACKET_SIZE(P,S) if ((P).size() < (S)) return SizeError((P),(S));
 
 enum OpcodeDisabled
@@ -682,6 +684,8 @@ class TRINITY_DLL_SPEC WorldSession
     private:
         // private trade methods
         void moveItems(Item* myItems[], Item* hisItems[]);
+
+        void ExecuteOpcode(OpcodeHandler const& opHandle, WorldPacket* packet);
 
         // logging helper
         void logUnexpectedOpcode(WorldPacket *packet, const char * reason);

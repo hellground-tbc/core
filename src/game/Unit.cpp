@@ -164,7 +164,7 @@ void MovementInfo::Read(ByteBuffer &data)
     data >> pos.z;
     data >> pos.o;
 
-    if (HasMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
+    if (HasMovementFlag(MOVEFLAG_ONTRANSPORT))
     {
         data >> t_guid;
         data >> t_pos.x;
@@ -174,11 +174,11 @@ void MovementInfo::Read(ByteBuffer &data)
         data >> t_time;
     }
 
-    if (HasMovementFlag(MovementFlags(MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_FLYING2)))
+    if (HasMovementFlag(MovementFlags(MOVEFLAG_SWIMMING | SPLINEFLAG_FLYINGING2)))
         data >> s_pitch;
 
     data >> fallTime;
-    if (HasMovementFlag(MOVEMENTFLAG_JUMPING))
+    if (HasMovementFlag(MOVEFLAG_FALLING))
     {
         data >> j_velocity;
         data >> j_sinAngle;
@@ -186,7 +186,7 @@ void MovementInfo::Read(ByteBuffer &data)
         data >> j_xyspeed;
     }
 
-    if (HasMovementFlag(MOVEMENTFLAG_SPLINE))
+    if (HasMovementFlag(MOVEFLAG_SPLINE_ELEVATION))
         data >> u_unk1;
 }
 
@@ -200,7 +200,7 @@ void MovementInfo::Write(ByteBuffer &data) const
     data << pos.z;
     data << pos.o;
 
-    if (HasMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
+    if (HasMovementFlag(MOVEFLAG_ONTRANSPORT))
     {
         data << t_guid;
         data << t_pos.x;
@@ -210,12 +210,12 @@ void MovementInfo::Write(ByteBuffer &data) const
         data << t_time;
     }
 
-    if (HasMovementFlag(MovementFlags(MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_FLYING2)))
+    if (HasMovementFlag(MovementFlags(MOVEFLAG_SWIMMING | SPLINEFLAG_FLYINGING2)))
         data << s_pitch;
 
     data << fallTime;
 
-    if (HasMovementFlag(MOVEMENTFLAG_JUMPING))
+    if (HasMovementFlag(MOVEFLAG_FALLING))
     {
         data << j_velocity;
         data << j_sinAngle;
@@ -223,7 +223,7 @@ void MovementInfo::Write(ByteBuffer &data) const
         data << j_xyspeed;
     }
 
-    if (HasMovementFlag(MOVEMENTFLAG_SPLINE))
+    if (HasMovementFlag(MOVEFLAG_SPLINE_ELEVATION))
         data << u_unk1;
 }
 
@@ -236,7 +236,7 @@ Unit::Unit()
     m_objectType |= TYPEMASK_UNIT;
     m_objectTypeId = TYPEID_UNIT;
                                                             // 2.3.2 - 0x70
-    m_updateFlag = (UPDATEFLAG_HIGHGUID | UPDATEFLAG_LIVING | UPDATEFLAG_HASPOSITION);
+    m_updateFlag = (UPDATEFLAG_HIGHGUID | UPDATEFLAG_LIVING | UPDATEFLAG_HAS_POSITION);
 
     m_attackTimer[BASE_ATTACK]   = 0;
     m_attackTimer[OFF_ATTACK]    = 0;
@@ -468,7 +468,7 @@ void Unit::SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 T
     data << getMSTime();
 
     data << uint8(0);
-    data << uint32((GetUnitMovementFlags() & MOVEMENTFLAG_LEVITATING) ? MOVEFLAG_FLY : MOVEFLAG_WALK);
+    data << uint32((GetUnitMovementFlags() & MOVEFLAG_LEVITATING) ? SPLINEFLAG_FLYING : SPLINEFLAG_WALKMODE);
 
     data << Time;                                           // Time in between points
     data << uint32(1);                                      // 1 single waypoint
@@ -494,7 +494,7 @@ void Unit::SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 M
     data << uint8(0);
     data << MoveFlags;
 
-    if (MoveFlags & MOVEFLAG_JUMP)
+    if (MoveFlags & SPLINEFLAG_JUMP)
     {
         data << time;
         data << speedZ;
@@ -527,7 +527,7 @@ void Unit::SendMonsterMoveByPath(Path const& path, uint32 start, uint32 end)
     data << uint32(getMSTime());
 
     data << uint8(0);
-    data << uint32(((GetUnitMovementFlags() & MOVEMENTFLAG_LEVITATING) || isInFlight())? (MOVEFLAG_FLY|MOVEFLAG_WALK) : MOVEFLAG_WALK);
+    data << uint32(((GetUnitMovementFlags() & MOVEFLAG_LEVITATING) || isInFlight())? (SPLINEFLAG_FLYING|SPLINEFLAG_WALKMODE) : SPLINEFLAG_WALKMODE);
     data << uint32(traveltime);
     data << uint32(pathSize);
     data.append((char*)path.GetNodes(start), pathSize * 4 * 3);
@@ -1051,7 +1051,7 @@ uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, cons
                         if (spell->getState() == SPELL_STATE_CASTING)
                         {
                             uint32 channelInterruptFlags = spell->m_spellInfo->ChannelInterruptFlags;
-                            if (channelInterruptFlags & CHANNEL_FLAG_DELAY)
+                            if (damagetype != DOT && channelInterruptFlags & CHANNEL_FLAG_DELAY)
                                 spell->DelayedChannel();
                         }
                     }
@@ -6964,7 +6964,7 @@ bool Unit::IsHostileTo(Unit const* unit) const
             return false;
 
         // PvP FFA state
-        if (pTester->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP) && pTarget->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP))
+        if (pTester->IsFFAPvP() && pTarget->IsFFAPvP())
             return true;
 
         //= PvP states
@@ -7073,7 +7073,7 @@ bool Unit::IsFriendlyTo(Unit const* unit) const
             return true;
 
         // PvP FFA state
-        if (pTester->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP) && pTarget->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP))
+        if (pTester->IsFFAPvP() && pTarget->IsFFAPvP())
             return false;
 
         //= PvP states
@@ -11203,11 +11203,10 @@ void Unit::StopMoving()
 {
     clearUnitState(UNIT_STAT_MOVING);
 
-    // send explicit stop packet
-    // rely on vmaps here because for example stormwind is in air
-    //float z = MapManager::Instance().GetBaseMap(GetMapId())->GetHeight(GetPositionX(), GetPositionY(), GetPositionZ(), true);
-    //if (fabs(GetPositionZ() - z) < 2.0f)
-    //    Relocate(GetPositionX(), GetPositionY(), z);
+    // not need send any packets if not in world
+    if (!IsInWorld())
+        return;
+
     Relocate(GetPositionX(), GetPositionY(),GetPositionZ());
 
     SendMonsterStop();
@@ -11788,6 +11787,34 @@ void Unit::RemoveAurasAtChanneledTarget(SpellEntry const* spellInfo, Unit * cast
     }
 }
 
+void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool casting /*= false*/ )
+{
+    if (GetTypeId() == TYPEID_PLAYER)
+        ((Player*)this)->TeleportTo(GetMapId(), x, y, z, orientation, TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (casting ? TELE_TO_SPELL : 0));
+    else
+    {
+        GetMap()->CreatureRelocation(((Creature*)this), x, y, z, orientation);
+
+        WorldPacket data;
+        BuildHeartBeatMsg(&data);
+        SendMessageToSet(&data, false);
+    }
+}
+
+void Unit::BuildHeartBeatMsg(WorldPacket *data) const
+{
+    data->Initialize(MSG_MOVE_HEARTBEAT, 32);
+    *data << GetPackGUID();
+    *data << uint32(((GetUnitMovementFlags() & MOVEFLAG_LEVITATING) || isInFlight())? (SPLINEFLAG_FLYING|SPLINEFLAG_WALKMODE) : GetUnitMovementFlags());
+    *data << uint8(0);                                      // 2.3.0
+    *data << uint32(getMSTime());                           // time
+    *data << float(GetPositionX());
+    *data << float(GetPositionY());
+    *data << float(GetPositionZ());
+    *data << float(GetOrientation());
+    *data << uint32(0);
+}
+
 /*-----------------------TRINITY-----------------------------*/
 
 void Unit::SetToNotify()
@@ -12219,12 +12246,12 @@ void Unit::SetFlying(bool apply)
     if (apply)
     {
         SetByteFlag(UNIT_FIELD_BYTES_1, 3, 0x02);
-        AddUnitMovementFlag(MOVEMENTFLAG_FLYING + MOVEMENTFLAG_FLYING2);
+        AddUnitMovementFlag(SPLINEFLAG_FLYINGING + SPLINEFLAG_FLYINGING2);
     }
     else
     {
         RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, 0x02);
-        RemoveUnitMovementFlag(MOVEMENTFLAG_FLYING + MOVEMENTFLAG_FLYING2);
+        RemoveUnitMovementFlag(SPLINEFLAG_FLYINGING + SPLINEFLAG_FLYINGING2);
     }
 }
 
@@ -12260,7 +12287,7 @@ void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
     if (GetTypeId() == TYPEID_PLAYER && ((Player*)this)->GetTransport())
         return;
 
-    RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+    RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
     CastStop();
     CombatStop(); //TODO: CombatStop(true) may cause crash (interrupt spells)
     DeleteThreatList();

@@ -817,94 +817,11 @@ bool ChatHandler::HandleModifyRepCommand(const char * args)
 
 bool ChatHandler::HandleNameCommand(const char* args)
 {
-    /* Temp. disabled
-        if (!*args)
-            return false;
-
-        if (strlen((char*)args)>75)
-        {
-            PSendSysMessage(LANG_TOO_LONG_NAME, strlen((char*)args)-75);
-            return true;
-        }
-
-        for (uint8 i = 0; i < strlen(args); i++)
-        {
-            if (!isalpha(args[i]) && args[i]!=' ')
-            {
-                SendSysMessage(LANG_CHARS_ONLY);
-                return false;
-            }
-        }
-
-        uint64 guid;
-        guid = m_session->GetPlayer()->GetSelection();
-        if (guid == 0)
-        {
-            SendSysMessage(LANG_NO_SELECTION);
-            return true;
-        }
-
-        Creature* pCreature = ObjectAccessor::GetCreature(*m_session->GetPlayer(), guid);
-
-        if (!pCreature)
-        {
-            SendSysMessage(LANG_SELECT_CREATURE);
-            return true;
-        }
-
-        pCreature->SetName(args);
-        uint32 idname = objmgr.AddCreatureTemplate(pCreature->GetName());
-        pCreature->SetUInt32Value(OBJECT_FIELD_ENTRY, idname);
-
-        pCreature->SaveToDB();
-    */
-
     return true;
 }
 
 bool ChatHandler::HandleSubNameCommand(const char* /*args*/)
 {
-    /* Temp. disabled
-
-    if (!*args)
-        args = "";
-
-    if (strlen((char*)args)>75)
-    {
-
-        PSendSysMessage(LANG_TOO_LONG_SUBNAME, strlen((char*)args)-75);
-        return true;
-    }
-
-    for (uint8 i = 0; i < strlen(args); i++)
-    {
-        if (!isalpha(args[i]) && args[i]!=' ')
-        {
-            SendSysMessage(LANG_CHARS_ONLY);
-            return false;
-        }
-    }
-    uint64 guid;
-    guid = m_session->GetPlayer()->GetSelection();
-    if (guid == 0)
-    {
-        SendSysMessage(LANG_NO_SELECTION);
-        return true;
-    }
-
-    Creature* pCreature = ObjectAccessor::GetCreature(*m_session->GetPlayer(), guid);
-
-    if (!pCreature)
-    {
-        SendSysMessage(LANG_SELECT_CREATURE);
-        return true;
-    }
-
-    uint32 idname = objmgr.AddCreatureSubName(pCreature->GetName(),args,pCreature->GetUInt32Value(UNIT_FIELD_DISPLAYID));
-    pCreature->SetUInt32Value(OBJECT_FIELD_ENTRY, idname);
-
-    pCreature->SaveToDB();
-    */
     return true;
 }
 

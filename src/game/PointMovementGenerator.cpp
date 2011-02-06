@@ -86,7 +86,7 @@ void PointMovementGenerator<Creature>::MovementInform(Creature &unit)
         unit.setDeathState(JUST_DIED);
         //TODO: SKY FIX TEMP!!!
         unit.SetFlying(true);
-        //unit.AddUnitMovementFlag(MOVEMENTFLAG_FLYING2);
+        //unit.AddUnitMovementFlag(SPLINEFLAG_FLYINGING2);
     }
     unit.AI()->MovementInform(POINT_MOTION_TYPE, id);
 }

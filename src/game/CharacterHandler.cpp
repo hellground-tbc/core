@@ -631,13 +631,14 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         }
     }
 
+    // normal delayed teleport protection not applied (and this correct) for this case (Player object just created)
     if (!pCurrChar->GetMap()->Add(pCurrChar))
     {
         AreaTrigger const* at = objmgr.GetGoBackTrigger(pCurrChar->GetMapId());
         if (at)
             pCurrChar->TeleportTo(at->target_mapId, at->target_X, at->target_Y, at->target_Z, pCurrChar->GetOrientation());
         else
-            pCurrChar->TeleportTo(pCurrChar->m_homebindMapId, pCurrChar->m_homebindX, pCurrChar->m_homebindY, pCurrChar->m_homebindZ, pCurrChar->GetOrientation());
+            pCurrChar->TeleportToHomebind();
     }
 
     ObjectAccessor::Instance().AddPlayer(pCurrChar);
@@ -747,7 +748,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
 
     // Set FFA PvP for non GM in non-rest mode
     if (sWorld.IsFFAPvPRealm() && !pCurrChar->isGameMaster() && !pCurrChar->HasFlag(PLAYER_FLAGS,PLAYER_FLAGS_RESTING))
-        pCurrChar->SetFlag(PLAYER_FLAGS,PLAYER_FLAGS_FFA_PVP);
+        pCurrChar->SetFFAPvP(true);
 
     if (pCurrChar->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_CONTESTED_PVP))
         pCurrChar->SetContestedPvP();

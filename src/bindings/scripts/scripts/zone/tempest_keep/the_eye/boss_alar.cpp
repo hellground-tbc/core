@@ -129,7 +129,7 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
         m_creature->SetDisplayId(m_creature->GetNativeDisplayId());
         m_creature->SetSpeed(MOVE_RUN, 3.0);
         m_creature->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_FIRE, true);
-        m_creature->SetUnitMovementFlags(MOVEMENTFLAG_LEVITATING);
+        m_creature->SetUnitMovementFlags(MOVEFLAG_LEVITATING);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->setActive(false);
@@ -141,7 +141,7 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
             pInstance->SetData(DATA_ALAREVENT, IN_PROGRESS);
 
         m_creature->SetSpeed(MOVE_RUN, DefaultMoveSpeedRate);
-        m_creature->SetUnitMovementFlags(MOVEMENTFLAG_LEVITATING); // after enterevademode will be set walk movement
+        m_creature->SetUnitMovementFlags(MOVEFLAG_LEVITATING); // after enterevademode will be set walk movement
         m_creature->setActive(true);
         DoZoneInCombat();
     }
@@ -540,7 +540,7 @@ struct TRINITY_DLL_DECL mob_ember_of_alarAI : public ScriptedAI
     mob_ember_of_alarAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = (ScriptedInstance*)c->GetInstanceData();
-        c->SetUnitMovementFlags(MOVEMENTFLAG_LEVITATING);
+        c->SetUnitMovementFlags(MOVEFLAG_LEVITATING);
         c->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_FIRE, true);
     }
 

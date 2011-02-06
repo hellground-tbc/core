@@ -597,9 +597,9 @@ void Spell::FillTargetMap()
 void Spell::prepareDataForTriggerSystem()
 {
     //==========================================================================================
-    // Now fill data for trigger system, need know:
-    // Ñan spell trigger another or not (m_canTrigger)
     // Create base triggers flags for Attacker and Victim (m_procAttacker and  m_procVictim)
+    // can spell trigger another or not (m_canTrigger)
+    // Create base triggers flags for Attacker and Victim (m_procAttacker and m_procVictim)
     //==========================================================================================
 
     // Fill flag can spell trigger or not
@@ -641,9 +641,9 @@ void Spell::prepareDataForTriggerSystem()
             break;
         }
     }
-    // Do not trigger from item cast spell
-    if (m_CastItem)
-       m_canTrigger = false;
+
+    if (m_CastItem && m_spellInfo->SpellFamilyName != SPELLFAMILY_POTION)
+        m_canTrigger = false;         // Do not trigger from item cast spell(except potions)
 
     // Get data for type of attack and fill base info for trigger
     switch (m_spellInfo->DmgClass)
@@ -925,16 +925,6 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         if (target->reflectResult == SPELL_MISS_NONE)       // If reflected spell hit caster -> do all effect on him
             DoSpellHitOnUnit(m_caster, mask);
     }
-    /*else //TODO: This is a hack. need fix
-    {
-        uint32 tempMask = 0;
-        for (uint32 i = 0; i < 3; ++i)
-            if (m_spellInfo->Effect[i] == SPELL_EFFECT_DUMMY
-                || m_spellInfo->Effect[i] == SPELL_EFFECT_TRIGGER_SPELL)
-                tempMask |= 1<<i;
-        if (tempMask &= mask)
-            DoSpellHitOnUnit(unit, tempMask);
-    }*/
 
     // All calculated do it!
     // Do healing and triggers
@@ -2794,7 +2784,7 @@ void Spell::update(uint32 difftime)
     // check if caster has moved before the spell finished
     if (m_timer != 0 &&
         (m_castPositionX != m_caster->GetPositionX() || m_castPositionY != m_caster->GetPositionY() || m_castPositionZ != m_caster->GetPositionZ()) &&
-        (m_spellInfo->Effect[0] != SPELL_EFFECT_STUCK || !m_caster->HasUnitMovementFlag(MOVEMENTFLAG_FALLING)))
+        (m_spellInfo->Effect[0] != SPELL_EFFECT_STUCK || !m_caster->HasUnitMovementFlag(MOVEFLAG_FALLINGFAR)))
     {
         if (!IsNextMeleeSwingSpell() && !IsAutoRepeat() && !m_IsTriggeredSpell && (m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT))
             cancel();
@@ -2822,7 +2812,7 @@ void Spell::update(uint32 difftime)
                 if (m_caster->GetTypeId() == TYPEID_PLAYER)
                 {
                     // check if player has jumped before the channeling finished
-                    if (m_caster->HasUnitMovementFlag(MOVEMENTFLAG_JUMPING))
+                    if (m_caster->HasUnitMovementFlag(MOVEFLAG_FALLING))
                         cancel();
                 }
 
@@ -3675,7 +3665,7 @@ uint8 Spell::CanCast(bool strict)
     if (m_caster->GetTypeId()==TYPEID_PLAYER && ((Player*)m_caster)->isMoving())
     {
         // skip stuck spell to allow use it in falling case and apply spell limitations at movement
-        if ((!m_caster->HasUnitMovementFlag(MOVEMENTFLAG_FALLING) || m_spellInfo->Effect[0] != SPELL_EFFECT_STUCK) &&
+        if ((!m_caster->HasUnitMovementFlag(MOVEFLAG_FALLINGFAR) || m_spellInfo->Effect[0] != SPELL_EFFECT_STUCK) &&
             (IsAutoRepeat() || (m_spellInfo->AuraInterruptFlags & AURA_INTERRUPT_FLAG_NOT_SEATED) != 0))
             return SPELL_FAILED_MOVING;
     }

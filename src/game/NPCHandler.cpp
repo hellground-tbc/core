@@ -435,6 +435,9 @@ void WorldSession::HandleBinderActivateOpcode(WorldPacket & recv_data)
 
 void WorldSession::SendBindPoint(Creature *npc)
 {
+    if (GetPlayer()->GetMap()->Instanceable())
+         return;
+
     uint32 bindspell = 3286;
 
     // update sql homebind
