@@ -1985,7 +1985,19 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             }
 
             for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
+            {
+                // Avenger's Shield
+                if(m_spellInfo->Id == 32700)
+                {
+                    // ppl with interruptible CC
+                    if((*itr)->hasNegativeAuraWithInterruptFlag(AURA_INTERRUPT_FLAG_CC))
+                        continue;
+                    // critters
+                    if((*itr)->GetTypeId() == TYPEID_UNIT && ((Creature*)(*itr))->GetCreatureType() == CREATURE_TYPE_CRITTER)
+                        continue;
+                }
                 AddUnitTarget(*itr, i);
+            }
         }
         else
             AddUnitTarget(target, i);

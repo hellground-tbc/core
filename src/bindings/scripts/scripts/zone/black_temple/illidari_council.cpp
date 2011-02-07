@@ -783,7 +783,7 @@ struct TRINITY_DLL_DECL boss_veras_darkshadowAI : public illidari_council_baseAI
         {
             float x, y, z;
             if(me->hasUnitState(UNIT_STAT_STUNNED))
-                me->clearUnitState(UNIT_STAT_STUNNED)
+                me->clearUnitState(UNIT_STAT_STUNNED);
             ForceSpellCast(me, SPELL_VANISH, INTERRUPT_AND_CAST_INSTANTLY);
             ForceSpellCast(me, SPELL_DEADLY_POISON, INTERRUPT_AND_CAST_INSTANTLY);
             if(Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 1, 35, true))
