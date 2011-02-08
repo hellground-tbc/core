@@ -1362,6 +1362,18 @@ void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uin
 
             if (cur->GetDistance(*next) > CHAIN_SPELL_JUMP_RADIUS)
                 break;
+            // Avenger's Shield
+            if(m_spellInfo->Id == 32700)
+            {
+                // ppl with interruptible CC & critters
+                while ((*next)->hasNegativeAuraWithInterruptFlag(AURA_INTERRUPT_FLAG_CC) ||
+                      (*next)->GetTypeId() == TYPEID_UNIT && ((Creature*)(*next))->GetCreatureType() == CREATURE_TYPE_CRITTER)
+                {
+                    ++next;
+                    if (next == tempUnitMap.end() || cur->GetDistance(*next) > CHAIN_SPELL_JUMP_RADIUS)
+                        return;
+                }
+            }
             while (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MELEE
                 && !m_caster->isInFront(*next, max_range)
                 || !m_caster->canSeeOrDetect(*next, false)
@@ -1985,19 +1997,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             }
 
             for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
-            {
-                // Avenger's Shield
-                if(m_spellInfo->Id == 32700)
-                {
-                    // ppl with interruptible CC
-                    if((*itr)->hasNegativeAuraWithInterruptFlag(AURA_INTERRUPT_FLAG_CC))
-                        continue;
-                    // critters
-                    if((*itr)->GetTypeId() == TYPEID_UNIT && ((Creature*)(*itr))->GetCreatureType() == CREATURE_TYPE_CRITTER)
-                        continue;
-                }
                 AddUnitTarget(*itr, i);
-            }
         }
         else
             AddUnitTarget(target, i);
