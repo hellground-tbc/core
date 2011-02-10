@@ -898,11 +898,8 @@ void Aura::UpdateAuraDuration()
 
     Unit *caster = GetCaster();
 
-    if (caster && caster->isCharmedOwnedByPlayerOrPlayer())
+    if (caster && (caster = caster->GetCharmerOrOwnerPlayerOrPlayerItself()))
     {
-        if (caster->GetTypeId() != TYPEID_PLAYER)
-            caster = caster->GetOwner();
-
         SendAuraDurationForCaster((Player*)caster);
 
         Group* CasterGroup = ((Player*)caster)->GetGroup();
