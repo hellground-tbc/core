@@ -244,7 +244,7 @@ struct TRINITY_DLL_DECL instance_temple_of_ahnqiraj : public ScriptedInstance
 
         OUT_SAVE_INST_DATA_COMPLETE;
 
-        return NULL;
+        return stream.str();
     }
 
     void Load(const char* in)
