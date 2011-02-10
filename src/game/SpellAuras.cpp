@@ -896,10 +896,13 @@ void Aura::UpdateAuraDuration()
     if (m_target->GetTypeId() == TYPEID_PLAYER && ((Player*)m_target)->GetSession()->PlayerLoading())
         return;
 
-    Unit* caster = GetCaster();
+    Unit *caster = GetCaster();
 
-    if (caster && caster->GetTypeId() == TYPEID_PLAYER)
+    if (caster && caster->isCharmedOwnedByPlayerOrPlayer())
     {
+        if (caster->GetTypeId() != TYPEID_PLAYER)
+            caster = caster->GetOwner();
+
         SendAuraDurationForCaster((Player*)caster);
 
         Group* CasterGroup = ((Player*)caster)->GetGroup();
