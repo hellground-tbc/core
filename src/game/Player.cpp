@@ -2211,12 +2211,16 @@ Creature* Player::GetNPCIfCanInteractWith(uint64 guid, uint32 npcflagmask)
 
     // not unfriendly
     FactionTemplateEntry const* factionTemplate = sFactionTemplateStore.LookupEntry(unit->getFaction());
-    if (factionTemplate)
+    if (factionTemplate && !m_forcedReactions[unit->getFaction()])
     {
         FactionEntry const* faction = sFactionStore.LookupEntry(factionTemplate->faction);
         if (faction->reputationListID >= 0 && GetReputationRank(faction) <= REP_UNFRIENDLY)
             return NULL;
     }
+
+    // check also forced reactions if exist
+    if (m_forcedReactions[unit->getFaction()] && m_forcedReactions[unit->getFaction()] <= REP_UNFRIENDLY)
+        return NULL;
 
     // not too far
     if (!unit->IsWithinDistInMap(this, INTERACTION_DISTANCE))
