@@ -672,9 +672,9 @@ void Map::Update(const uint32 &t_diff)
 
         CellArea area = Cell::CalculateCellArea(plr->GetPositionX(), plr->GetPositionY(), GetVisibilityDistance());
 
-        for (uint32 x = area.low_bound.x_coord; x <= area.high_bound.x_coord; ++x)
+        for (uint32 x = area.low_bound.x_coord; x < area.high_bound.x_coord; ++x)
         {
-            for (uint32 y = area.low_bound.y_coord; y <= area.high_bound.y_coord; ++y)
+            for (uint32 y = area.low_bound.y_coord; y < area.high_bound.y_coord; ++y)
             {
                 // marked cells are those that have been visited
                 // don't visit the same cell twice
@@ -721,9 +721,9 @@ void Map::Update(const uint32 &t_diff)
 
             CellArea area = Cell::CalculateCellArea(obj->GetPositionX(), obj->GetPositionY(), GetVisibilityDistance());
 
-            for (uint32 x = area.low_bound.x_coord; x <= area.high_bound.x_coord; ++x)
+            for (uint32 x = area.low_bound.x_coord; x < area.high_bound.x_coord; ++x)
             {
-                for (uint32 y = area.low_bound.y_coord; y <= area.high_bound.y_coord; ++y)
+                for (uint32 y = area.low_bound.y_coord; y < area.high_bound.y_coord; ++y)
                 {
                     // marked cells are those that have been visited
                     // don't visit the same cell twice
