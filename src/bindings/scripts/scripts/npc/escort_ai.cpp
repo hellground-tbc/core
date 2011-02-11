@@ -56,7 +56,7 @@ void npc_escortAI::AttackStart(Unit* pWho)
 //see followerAI
 bool npc_escortAI::AssistPlayerInCombat(Unit* pWho)
 {
-    if (!pWho || !pWho->getVictim())
+    if (!pWho || !pWho->getVictim() || !m_bIsActiveAttacker)
         return false;
 
     //experimental (unknown) flag not present
@@ -101,7 +101,7 @@ void npc_escortAI::MoveInLineOfSight(Unit* pWho)
         if (!m_creature->canFly() && m_creature->GetDistanceZ(pWho) > CREATURE_Z_ATTACK_RANGE)
             return;
 
-        if (m_creature->IsHostileTo(pWho))
+        if (m_creature->IsHostileTo(pWho) && m_bIsActiveAttacker)
         {
             float fAttackRadius = m_creature->GetAttackDistance(pWho);
             if (m_creature->IsWithinDistInMap(pWho, fAttackRadius) && m_creature->IsWithinLOSInMap(pWho))
