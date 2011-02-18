@@ -1592,8 +1592,8 @@ struct TRINITY_DLL_DECL npc_reginald_windsorAI : public npc_escortAI
                         {
                             fordragon->SetStandState(PLAYER_STATE_NONE);
                             fordragon->GetMotionMaster()->MoveTargetedHome();
-                            onyxia->SetVisibility(VISIBILITY_ON);
-                            onyxia->RemoveCorpse();
+                            ladyOnyxia->SetVisibility(VISIBILITY_ON);
+                            ladyOnyxia->RemoveCorpse();
 
                             if (Creature * majesty = tmpMap->GetCreature(tmpMap->GetCreatureGUID(NPC_MAJESTY_ID)))
                                 majesty->SetVisibility(VISIBILITY_ON);
@@ -1723,7 +1723,7 @@ bool QuestAccept_npc_reginald_windsor(Player * player, Creature * creature, Ques
         ((npc_reginald_windsorAI*)creature->AI())->SetMaxPlayerDistance(15);
         creature->SetUInt64Value(UNIT_FIELD_TARGET, 0);
         creature->Yell(SAY_REGINALD_1_3, LANG_UNIVERSAL, NULL);
-        Creature * tmpC = creature->GetMap()->GetCreature(creature->GetCreatureGUID(NPC_MAJESTY_ID));
+        Creature * tmpC = creature->GetMap()->GetCreature(creature->GetMap()->GetCreatureGUID(NPC_MAJESTY_ID));
 
         if (tmpC)
         {
