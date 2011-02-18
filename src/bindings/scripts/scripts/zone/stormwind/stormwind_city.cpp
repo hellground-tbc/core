@@ -1173,6 +1173,7 @@ struct TRINITY_DLL_DECL npc_reginald_windsorAI : public npc_escortAI
                                 onyxia->SetVisibility(VISIBILITY_OFF);
                                 onyxia->DestroyForNearbyPlayers();
                                 onyxia->Kill(onyxia, false);
+                                onyxia->RemoveCorpse();
                             }
                             else
                                 me->Say("Onyxia poleciala na zlot czarownic", LANG_UNIVERSAL, NULL);
@@ -1572,6 +1573,8 @@ struct TRINITY_DLL_DECL npc_reginald_windsorAI : public npc_escortAI
                             phaseTimer = 2000;
                             break;
                         case 16:
+                            fordragon->SetSpeed(MOVE_RUN, 2.0);
+                            fordragon->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
                             fordragon->GetMotionMaster()->MovePoint(0, FORDRAGON_MOVE_COORDS);
                             phaseTimer = 1500;
                             break;
@@ -1586,10 +1589,19 @@ struct TRINITY_DLL_DECL npc_reginald_windsorAI : public npc_escortAI
                             phaseTimer = 2000;
                             break;
                         case 19:
+                        {
+                            fordragon->SetStandState(PLAYER_STATE_NONE);
                             fordragon->GetMotionMaster()->MoveTargetedHome();
+                            onyxia->SetVisibility(VISIBILITY_ON);
+                            onyxia->RemoveCorpse();
+
+                            if (Creature * majesty = tmpMap->GetCreature(tmpMap->GetCreatureGUID(NPC_MAJESTY_ID)))
+                                majesty->SetVisibility(VISIBILITY_ON);
+
                             player->CompleteQuest(QUEST_THE_GREAT_THE_MASQUERADE);
                             phaseTimer = 2000;
                             break;
+                        }
                         case 20:
                             m_creature->SetVisibility(VISIBILITY_OFF);
                             m_creature->DestroyForNearbyPlayers();
@@ -1711,6 +1723,21 @@ bool QuestAccept_npc_reginald_windsor(Player * player, Creature * creature, Ques
         ((npc_reginald_windsorAI*)creature->AI())->SetMaxPlayerDistance(15);
         creature->SetUInt64Value(UNIT_FIELD_TARGET, 0);
         creature->Yell(SAY_REGINALD_1_3, LANG_UNIVERSAL, NULL);
+        Creature * tmpC = creature->GetMap()->GetCreature(creature->GetCreatureGUID(NPC_MAJESTY_ID));
+
+        if (tmpC)
+        {
+            if (!tmpC->isAlive())
+                tmpC->Respawn();
+            tmpC->SetVisibility(VISIBILITY_ON);
+        }
+
+        if (tmpC = creature->GetMap()->GetCreature(creature->GetMap()->GetCreatureGUID(NPC_LADY_KATRANA_ID)))
+        {
+            if (!tmpC->isAlive())
+                tmpC->Respawn();
+            tmpC->SetVisibility(VISIBILITY_ON);
+        }
     }
 
     return true;
