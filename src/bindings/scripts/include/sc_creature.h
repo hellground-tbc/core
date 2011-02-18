@@ -341,6 +341,9 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
     //Returns a list of all units that are flagged as DEAD or CORPSE
     std::list<Unit*> DoFindAllDeadInRange(float range);
 
+    //Return a list of all players in range
+    std::list<Player*> DoFindAllPlayersInRange(float range, Unit* finder = NULL);
+
     //Spawns a creature relative to m_creature
     Creature* DoSpawnCreature(uint32 id, float x, float y, float z, float angle, uint32 type, uint32 despawntime);
 

@@ -1085,6 +1085,17 @@ std::list<Creature*> ScriptedAI::DoFindAllCreaturesWithEntry(uint32 entry, float
     return pList;
 }
 
+std::list<Player*> ScriptedAI::DoFindAllPlayersInRange(float range, Unit * finder)
+{
+    if (!finder)
+        finder = m_creature;
+    std::list<Player*> pList;
+    Trinity::AnyPlayerInObjectRangeCheck checker(finder, range);
+    Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(finder, pList, checker);
+    Cell::VisitWorldObjects(finder, searcher, range);
+    return pList;
+}
+
 std::list<Creature*> ScriptedAI::DoFindAllFriendlyInGrid(float range)
 {
     std::list<Creature*> pList;
