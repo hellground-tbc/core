@@ -246,7 +246,7 @@ void instance_karazhan::SetData(uint32 type, uint32 data)
             Encounters[8] = data;
         break;
     case DATA_CHESS_EVENT:
-        if(Encounters[9] != DONE)
+        //if(Encounters[9] != DONE)
             Encounters[9] = data;
         break;
     case CHESS_EVENT_TEAM:

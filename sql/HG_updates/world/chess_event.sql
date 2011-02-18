@@ -423,9 +423,9 @@ INSERT INTO script_texts (entry, content_default,sound,type,comment) values('-16
 INSERT INTO script_texts (entry, content_default,sound,type,comment) values('-1650021','One must not become too complacent.',10359,0,'Chess Event - MEDIVH_CHEAT_3');
 
 #--update scripts used for chess event npc's
-update creature_template set scriptname = "npc_chesspiece" where entry in (17469,17211,21748,21664,21750,21683,21747,21682,21726,21160,21752,21684);
-update creature_template set scriptname = "npc_echo_of_medivh" where entry = 16816;
-update creature_template set scriptname = "chess_move_trigger", unit_flags = 33554436 where entry = 22519;
+update creature_template set ScriptName = 'npc_chesspiece', npcflag = npcflag | 1 where entry in (17469,17211,21748,21664,21750,21683,21747,21682,21726,21160,21752,21684);
+update creature_template set ScriptName = 'npc_echo_of_medivh', npcflag = npcflag | 1 where entry = 16816;
+update creature_template set ScriptName = 'chess_move_trigger', unit_flags = unit_flags | 33554436 where entry = 22519;
 
 #--add game_tele to chess event in karazhan
 DELETE FROM game_tele WHERE name = 'chess';

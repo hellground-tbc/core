@@ -59,7 +59,7 @@ EndScriptData */
 #define POSITION_Z                      221
 
                             //x, y, z
-#define SPAWN_POS           0.0, 0.0, 0.0
+#define SPAWN_POS           -11061.8, -1900.1, 221.1
 
 #define START_PRIORITY          100
 #define RAND_PRIORITY           100
@@ -272,7 +272,7 @@ struct ChessTile
         piece = 0;
         trigger = 0;
         ori = CHESS_ORI_CHOOSE;
-        position.z = 220.66f;
+        position.coord_z = 220.66f;
     }
 };
 
@@ -351,7 +351,7 @@ class TRINITY_DLL_DECL npc_chesspieceAI : public Scripted_NoMovementAI
 private:
     ScriptedInstance* pInstance;
 
-    Unit *npc_medivh;
+    Creature * npc_medivh;
 
     bool ReturnToHome;
     bool CanMove;
@@ -421,7 +421,7 @@ private:
     ChessTile chessBoard[8][8];
 
     // entry, index_list
-    std::map< int, std::list < std::pair<int, int> > > allowedPositions; // tylko do ustawienia
+    std::map<int, std::list<std::pair<int, int> > > allowedPositions; // tylko do ustawienia
 
 
     std::list<uint64> medivhSidePieces; //alive pieces guids
@@ -485,7 +485,7 @@ public:
     bool ChessSquareIsEmpty(uint64 trigger);
     bool CanMoveTo(uint64 trigger, uint64 piece);   //check if player can move to trigger - prevent cheating
     void AddTriggerToMove(uint64 trigger, uint64 piece, bool player);
-    Unit * FindTrigger(uint64 piece);               //find trigger where piece actually should be
+    Creature * FindTrigger(uint64 piece);               //find trigger where piece actually should be
     void MakeMove();
     int GetMoveRange(uint64 piece);
     int GetMoveRange(Unit * piece);

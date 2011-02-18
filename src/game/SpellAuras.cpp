@@ -3663,8 +3663,10 @@ void Aura::HandleModCharm(bool apply, bool Real)
     {
         if (int32(m_target->getLevel()) > m_modifier.m_amount)
             return;
-
-        m_target->SetCharmedOrPossessedBy(caster, false);
+        if (GetId() == 30019)
+            m_target->SetCharmedOrPossessedBy(caster, true);
+        else
+            m_target->SetCharmedOrPossessedBy(caster, false);
     }
     else
         m_target->RemoveCharmedOrPossessedBy(caster);

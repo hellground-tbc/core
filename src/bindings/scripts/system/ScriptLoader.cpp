@@ -906,6 +906,7 @@ void AddScripts()
     AddSC_karazhan();
     AddSC_boss_nightbane();
     AddSC_boss_netherspite();
+    AddSC_chess_event();
 
     //Loch Modan
     AddSC_loch_modan();

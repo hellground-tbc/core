@@ -31,7 +31,7 @@ void move_triggerAI::SpellHit(Unit *caster,const SpellEntry *spell)
     if(spell->Id == SPELL_MOVE_1 || spell->Id == SPELL_MOVE_2 || spell->Id == SPELL_MOVE_3 || spell->Id == SPELL_MOVE_4 ||
        spell->Id == SPELL_MOVE_5 || spell->Id == SPELL_MOVE_6 || spell->Id == SPELL_MOVE_7 || spell->Id == SPELL_CHANGE_FACING)
     {
-        boss_MedivhAI * medivh = (boss_MedivhAI*)(m_creature->GetUnit(*m_creature, MedivhGUID));
+        boss_MedivhAI * medivh = (boss_MedivhAI*)(m_creature->GetCreature(MedivhGUID)->AI());
         if (medivh)
         {
             if (medivh->CanMoveTo(m_creature->GetGUID(), caster->GetGUID()))
@@ -62,7 +62,7 @@ void move_triggerAI::MakeMove()
 
     moveTimer = 10000;
     pieceStance = PIECE_NONE;
-    Unit * temp = m_creature->GetUnit(*m_creature, unitToMove);
+    Creature * temp = m_creature->GetCreature(unitToMove);
 
     if (!temp || !temp->isAlive())
     {
@@ -76,15 +76,15 @@ void move_triggerAI::MakeMove()
         DoCast(m_creature,SPELL_MOVE_MARKER);
         temp->StopMoving();
         temp->GetMotionMaster()->Clear();
-        temp->GetMotionMaster()->MovePoint(0, wLoc.x, wLoc.y, wLoc.z);
+        temp->GetMotionMaster()->MovePoint(0, wLoc.coord_x, wLoc.coord_y, wLoc.coord_z);
         break;
     case PIECE_CHANGE_FACING:
         temp->SetInFront(m_creature);
         temp = NULL;
-        temp = m_creature->GetUnit(*m_creature, MedivhGUID);
+        temp = m_creature->GetCreature(MedivhGUID);
         if (temp)
         {
-            ((boss_MedivhAI*)temp)->SetOrientation(unitToMove);
+            ((boss_MedivhAI*)temp->AI())->SetOrientation(unitToMove);
         }
         break;
     default:
@@ -120,6 +120,7 @@ npc_chesspieceAI::npc_chesspieceAI(Creature *c) : Scripted_NoMovementAI(c)
     SpellEntry *TempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_POSSES_CHESSPIECE);
     if(TempSpell)
         TempSpell->Effect[0] = 0;  // Disable bind sight effect from SPELL_POSSES_CHESSPIECE. We handle all with dummy and charm effect.
+    m_creature->setActive(true);
 }
 
 void npc_chesspieceAI::EnterEvadeMode()
@@ -340,7 +341,7 @@ void npc_chesspieceAI::MovementInform(uint32 MovementType, uint32 Data)
 
     this->npc_medivh = m_creature->GetMap()->GetCreature(this->MedivhGUID);
     if (npc_medivh)
-        ((boss_MedivhAI*)npc_medivh)->SetOrientation(m_creature->GetGUID());
+        ((boss_MedivhAI*)npc_medivh->AI())->SetOrientation(m_creature->GetGUID());
 }
 
 void npc_chesspieceAI::MoveInLineOfSight(Unit *unit)
@@ -364,8 +365,8 @@ void npc_chesspieceAI::JustRespawned()
     float new_x = pos_x + move_lenght * cos(angle);
     float new_y = pos_y + move_lenght * sin(angle);
     m_creature->Relocate(new_x,new_y,221,2.24);
-    m_creature->CombatStop();
-    m_creature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NOT_SELECTABLE);
+    //m_creature->CombatStop();
+    //m_creature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NOT_SELECTABLE);
 }
 
 void npc_chesspieceAI::OnCharmed(bool apply)
@@ -412,11 +413,11 @@ void npc_chesspieceAI::UpdateAI(const uint32 diff)
         {
             if (urand(0, ABILITY_CHANCE_MAX) > ability1Chance)
             {
-                Unit * medivh = m_creature->GetUnit(*m_creature, MedivhGUID);
+                Creature * medivh = m_creature->GetCreature(MedivhGUID);
                 if (!medivh)
                     return;
 
-                uint64 victim = ((boss_MedivhAI*)medivh)->GetSpellTarget(m_creature->GetGUID(), GetAbilityRange(ability1ID), IsHealingSpell(ability1ID));
+                uint64 victim = ((boss_MedivhAI*)medivh->AI())->GetSpellTarget(m_creature->GetGUID(), GetAbilityRange(ability1ID), IsHealingSpell(ability1ID));
 
                 Unit * uVictim = m_creature->GetUnit(*m_creature, victim);
                 AddSpellToCast(uVictim, ability1ID);
@@ -432,11 +433,11 @@ void npc_chesspieceAI::UpdateAI(const uint32 diff)
         {
             if (urand(0, ABILITY_CHANCE_MAX) > ability2Chance)
             {
-                Unit * medivh = m_creature->GetUnit(*m_creature, this->MedivhGUID);
+                Creature * medivh = m_creature->GetCreature(MedivhGUID);
                 if (!medivh)
                     return;
 
-                uint64 victim = ((boss_MedivhAI*)medivh)->GetSpellTarget(m_creature->GetGUID(), GetAbilityRange(ability2ID), IsHealingSpell(ability2ID));
+                uint64 victim = ((boss_MedivhAI*)medivh->AI())->GetSpellTarget(m_creature->GetGUID(), GetAbilityRange(ability2ID), IsHealingSpell(ability2ID));
 
                 Unit * uVictim = m_creature->GetUnit(*m_creature, victim);
                 AddSpellToCast(uVictim, ability2ID);
@@ -478,9 +479,9 @@ void npc_chesspieceAI::DamageTaken(Unit * done_by, uint32 &damage)
         if (m_creature->isPossessed())
             m_creature->RemoveAurasDueToSpell(SPELL_POSSES_CHESSPIECE);
 
-        this->npc_medivh = m_creature->GetMap()->GetCreature(this->MedivhGUID);
+        this->npc_medivh = m_creature->GetCreature(this->MedivhGUID);
         if (npc_medivh)
-            ((boss_MedivhAI*)npc_medivh)->RemoveChessPieceFromBoard(m_creature->GetGUID());
+            ((boss_MedivhAI*)npc_medivh->AI())->RemoveChessPieceFromBoard(m_creature->GetGUID());
         else
         {
             DoSay("I'm dying ... but Medivh not found ...", LANG_UNIVERSAL, m_creature, false);
@@ -495,10 +496,10 @@ boss_MedivhAI::boss_MedivhAI(Creature *c) : ScriptedAI(c)
 {
     pInstance = ((instance_karazhan*)m_creature->GetInstanceData());
     m_creature->GetPosition(wLoc);
-    tpLoc.x = -11108.2;
-    tpLoc.y = -1841.56;
-    tpLoc.z = 229.625;
-    tpLoc.o = 5.39745;
+    tpLoc.coord_x = -11108.2;
+    tpLoc.coord_y = -1841.56;
+    tpLoc.coord_z = 229.625;
+    tpLoc.orientation = 5.39745;
 
     this->chanceToMove = urand(MIN_MOVE_CHANCE, MAX_MOVE_CHANCE);
 
@@ -516,264 +517,264 @@ boss_MedivhAI::boss_MedivhAI(Creature *c) : ScriptedAI(c)
 
     // Horde
     // A0
-    chessBoard[0][0].position.x = -11077.7;
-    chessBoard[0][0].position.y = -1849.0;
+    chessBoard[0][0].position.coord_x = -11077.7;
+    chessBoard[0][0].position.coord_y = -1849.0;
 
     // B0
-    chessBoard[0][1].position.x = -11074.0;
-    chessBoard[0][1].position.y = -1853.3;
+    chessBoard[0][1].position.coord_x = -11074.0;
+    chessBoard[0][1].position.coord_y = -1853.3;
 
     // C0
-    chessBoard[0][2].position.x = -11070.8;
-    chessBoard[0][2].position.y = -1857.7;
+    chessBoard[0][2].position.coord_x = -11070.8;
+    chessBoard[0][2].position.coord_y = -1857.7;
 
     // D0
-    chessBoard[0][3].position.x = -11067.0;
-    chessBoard[0][3].position.y = -1861.9;
+    chessBoard[0][3].position.coord_x = -11067.0;
+    chessBoard[0][3].position.coord_y = -1861.9;
 
     // E0
-    chessBoard[0][4].position.x = -11063.6;
-    chessBoard[0][4].position.y = -1866.5;
+    chessBoard[0][4].position.coord_x = -11063.6;
+    chessBoard[0][4].position.coord_y = -1866.5;
 
     // F0
-    chessBoard[0][5].position.x = -11060.3;
-    chessBoard[0][5].position.y = -1870.8;
+    chessBoard[0][5].position.coord_x = -11060.3;
+    chessBoard[0][5].position.coord_y = -1870.8;
 
     // G0
-    chessBoard[0][6].position.x = -11056.7;
-    chessBoard[0][6].position.y = -1875.0;
+    chessBoard[0][6].position.coord_x = -11056.7;
+    chessBoard[0][6].position.coord_y = -1875.0;
 
     // H0
-    chessBoard[0][7].position.x = -11053.4;
-    chessBoard[0][7].position.y = -1879.6;
+    chessBoard[0][7].position.coord_x = -11053.4;
+    chessBoard[0][7].position.coord_y = -1879.6;
 
     // A1
-    chessBoard[1][0].position.x = -11082.1;
-    chessBoard[1][0].position.y = -1852.4;
+    chessBoard[1][0].position.coord_x = -11082.1;
+    chessBoard[1][0].position.coord_y = -1852.4;
 
     // B1
-    chessBoard[1][1].position.x = -11078.5;
-    chessBoard[1][1].position.y = -1856.9;
+    chessBoard[1][1].position.coord_x = -11078.5;
+    chessBoard[1][1].position.coord_y = -1856.9;
 
     // C1
-    chessBoard[1][2].position.x = -11075.0;
-    chessBoard[1][2].position.y = -1861.1;
+    chessBoard[1][2].position.coord_x = -11075.0;
+    chessBoard[1][2].position.coord_y = -1861.1;
 
     // D1
-    chessBoard[1][3].position.x = -11071.5;
-    chessBoard[1][3].position.y = -1865.5;
+    chessBoard[1][3].position.coord_x = -11071.5;
+    chessBoard[1][3].position.coord_y = -1865.5;
 
     // E1
-    chessBoard[1][4].position.x = -11067.8;
-    chessBoard[1][4].position.y = -1869.9;
+    chessBoard[1][4].position.coord_x = -11067.8;
+    chessBoard[1][4].position.coord_y = -1869.9;
 
     // F1
-    chessBoard[1][5].position.x = -11064.3;
-    chessBoard[1][5].position.y = -1874.3;
+    chessBoard[1][5].position.coord_x = -11064.3;
+    chessBoard[1][5].position.coord_y = -1874.3;
 
     // G1
-    chessBoard[1][6].position.x = -11061.0;
-    chessBoard[1][6].position.y = -1878.6;
+    chessBoard[1][6].position.coord_x = -11061.0;
+    chessBoard[1][6].position.coord_y = -1878.6;
 
     // H1
-    chessBoard[1][7].position.x = -11057.4;
-    chessBoard[1][7].position.y = -1883.0;
+    chessBoard[1][7].position.coord_x = -11057.4;
+    chessBoard[1][7].position.coord_y = -1883.0;
     // end Horde
 
     // Empty
     // A2
-    chessBoard[2][0].position.x = -11086.5;
-    chessBoard[2][0].position.y = -1855.8;
+    chessBoard[2][0].position.coord_x = -11086.5;
+    chessBoard[2][0].position.coord_y = -1855.8;
 
     // B2
-    chessBoard[2][1].position.x = -11083.0;
-    chessBoard[2][1].position.y = -1860.6;
+    chessBoard[2][1].position.coord_x = -11083.0;
+    chessBoard[2][1].position.coord_y = -1860.6;
 
     // C2
-    chessBoard[2][2].position.x = -11079.6;
-    chessBoard[2][2].position.y = -1864.8;
+    chessBoard[2][2].position.coord_x = -11079.6;
+    chessBoard[2][2].position.coord_y = -1864.8;
 
     // D2
-    chessBoard[2][3].position.x = -11076.2;
-    chessBoard[2][3].position.y = -1868.9;
+    chessBoard[2][3].position.coord_x = -11076.2;
+    chessBoard[2][3].position.coord_y = -1868.9;
 
     // E2
-    chessBoard[2][4].position.x = -11072.5;
-    chessBoard[2][4].position.y = -1873.5;
+    chessBoard[2][4].position.coord_x = -11072.5;
+    chessBoard[2][4].position.coord_y = -1873.5;
 
     // F2
-    chessBoard[2][5].position.x = -11069.1;
-    chessBoard[2][5].position.y = -1877.8;
+    chessBoard[2][5].position.coord_x = -11069.1;
+    chessBoard[2][5].position.coord_y = -1877.8;
 
     // G2
-    chessBoard[2][6].position.x = -11065.5;
-    chessBoard[2][6].position.y = -1882.3;
+    chessBoard[2][6].position.coord_x = -11065.5;
+    chessBoard[2][6].position.coord_y = -1882.3;
 
     // H2
-    chessBoard[2][7].position.x = -11062.2;
-    chessBoard[2][7].position.y = -1886.5;
+    chessBoard[2][7].position.coord_x = -11062.2;
+    chessBoard[2][7].position.coord_y = -1886.5;
 
     // A3
-    chessBoard[2][0].position.x = -11090.6;
-    chessBoard[2][0].position.y = -1859.3;
+    chessBoard[2][0].position.coord_x = -11090.6;
+    chessBoard[2][0].position.coord_y = -1859.3;
 
     // B3
-    chessBoard[3][1].position.x = -11087.0;
-    chessBoard[3][1].position.y = -1863.7;
+    chessBoard[3][1].position.coord_x = -11087.0;
+    chessBoard[3][1].position.coord_y = -1863.7;
 
     // C3
-    chessBoard[3][2].position.x = -11083.4;
-    chessBoard[3][2].position.y = -1868.1;
+    chessBoard[3][2].position.coord_x = -11083.4;
+    chessBoard[3][2].position.coord_y = -1868.1;
 
     // D3
-    chessBoard[3][3].position.x = -11080.4;
-    chessBoard[3][3].position.y = -1872.4;
+    chessBoard[3][3].position.coord_x = -11080.4;
+    chessBoard[3][3].position.coord_y = -1872.4;
 
     // E3
-    chessBoard[3][4].position.x = -11076.7;
-    chessBoard[3][4].position.y = -1876.7;
+    chessBoard[3][4].position.coord_x = -11076.7;
+    chessBoard[3][4].position.coord_y = -1876.7;
 
     // F3
-    chessBoard[3][5].position.x = -11073.2;
-    chessBoard[3][5].position.y = -1889.4;
+    chessBoard[3][5].position.coord_x = -11073.2;
+    chessBoard[3][5].position.coord_y = -1889.4;
 
     // G3
-    chessBoard[3][6].position.x = -11069.9;
-    chessBoard[3][6].position.y = -1885.6;
+    chessBoard[3][6].position.coord_x = -11069.9;
+    chessBoard[3][6].position.coord_y = -1885.6;
 
     // H3
-    chessBoard[3][7].position.x = -11066.2;
-    chessBoard[3][7].position.y = -1889.9;
+    chessBoard[3][7].position.coord_x = -11066.2;
+    chessBoard[3][7].position.coord_y = -1889.9;
 
     // A4
-    chessBoard[4][0].position.x = -11095.0;
-    chessBoard[4][0].position.y = -1862.8;
+    chessBoard[4][0].position.coord_x = -11095.0;
+    chessBoard[4][0].position.coord_y = -1862.8;
 
     // B4
-    chessBoard[4][1].position.x = -11091.5;
-    chessBoard[4][1].position.y = -1867.3;
+    chessBoard[4][1].position.coord_x = -11091.5;
+    chessBoard[4][1].position.coord_y = -1867.3;
 
     // C4
-    chessBoard[4][2].position.x = -11088.1;
-    chessBoard[4][2].position.y = -1871.2;
+    chessBoard[4][2].position.coord_x = -11088.1;
+    chessBoard[4][2].position.coord_y = -1871.2;
 
     // D4
-    chessBoard[4][3].position.x = -11084.3;
-    chessBoard[4][3].position.y = -1875.8;
+    chessBoard[4][3].position.coord_x = -11084.3;
+    chessBoard[4][3].position.coord_y = -1875.8;
 
     // E4
-    chessBoard[4][4].position.x = -11081.1;
-    chessBoard[4][4].position.y = -1880.2;
+    chessBoard[4][4].position.coord_x = -11081.1;
+    chessBoard[4][4].position.coord_y = -1880.2;
 
     // F4
-    chessBoard[4][5].position.x = -11077.7;
-    chessBoard[4][5].position.y = -1884.6;
+    chessBoard[4][5].position.coord_x = -11077.7;
+    chessBoard[4][5].position.coord_y = -1884.6;
 
     // G4
-    chessBoard[4][6].position.x = -11074.2;
-    chessBoard[4][6].position.y = -1888.9;
+    chessBoard[4][6].position.coord_x = -11074.2;
+    chessBoard[4][6].position.coord_y = -1888.9;
 
     // H4
-    chessBoard[4][7].position.x = -11070.6;
-    chessBoard[4][7].position.y = -1893.4;
+    chessBoard[4][7].position.coord_x = -11070.6;
+    chessBoard[4][7].position.coord_y = -1893.4;
 
     // A5
-    chessBoard[5][0].position.x = -11099.5;
-    chessBoard[5][0].position.y = -1866.3;
+    chessBoard[5][0].position.coord_x = -11099.5;
+    chessBoard[5][0].position.coord_y = -1866.3;
 
     // B5
-    chessBoard[5][1].position.x = -11095.7;
-    chessBoard[5][1].position.y = -1870.7;
+    chessBoard[5][1].position.coord_x = -11095.7;
+    chessBoard[5][1].position.coord_y = -1870.7;
 
     // C5
-    chessBoard[5][2].position.x = -11092.3;
-    chessBoard[5][2].position.y = -1875.0;
+    chessBoard[5][2].position.coord_x = -11092.3;
+    chessBoard[5][2].position.coord_y = -1875.0;
 
     // D5
-    chessBoard[5][3].position.x = -11088.8;
-    chessBoard[5][3].position.y = -1879.5;
+    chessBoard[5][3].position.coord_x = -11088.8;
+    chessBoard[5][3].position.coord_y = -1879.5;
 
     // E5
-    chessBoard[5][4].position.x = -11085.2;
-    chessBoard[5][4].position.y = -1883.9;
+    chessBoard[5][4].position.coord_x = -11085.2;
+    chessBoard[5][4].position.coord_y = -1883.9;
 
     // F5
-    chessBoard[5][5].position.x = -11082.1;
-    chessBoard[5][5].position.y = -1888.3;
+    chessBoard[5][5].position.coord_x = -11082.1;
+    chessBoard[5][5].position.coord_y = -1888.3;
 
     // G5
-    chessBoard[5][6].position.x = -11078.5;
-    chessBoard[5][6].position.y = -1892.5;
+    chessBoard[5][6].position.coord_x = -11078.5;
+    chessBoard[5][6].position.coord_y = -1892.5;
 
     // H5
-    chessBoard[5][7].position.x = -11075.0;
-    chessBoard[5][7].position.y = -1897.0;
+    chessBoard[5][7].position.coord_x = -11075.0;
+    chessBoard[5][7].position.coord_y = -1897.0;
     // end Empty
 
     // Alliance
     // A6
-    chessBoard[6][0].position.x = -11103.7;
-    chessBoard[6][0].position.y = -1869.6;
+    chessBoard[6][0].position.coord_x = -11103.7;
+    chessBoard[6][0].position.coord_y = -1869.6;
 
     // B6
-    chessBoard[6][1].position.x = -11100.2;
-    chessBoard[6][1].position.y = -1874.0;
+    chessBoard[6][1].position.coord_x = -11100.2;
+    chessBoard[6][1].position.coord_y = -1874.0;
 
     // C6
-    chessBoard[6][2].position.x = -11096.8;
-    chessBoard[6][2].position.y = -1878.2;
+    chessBoard[6][2].position.coord_x = -11096.8;
+    chessBoard[6][2].position.coord_y = -1878.2;
 
     // D6
-    chessBoard[6][3].position.x = -11093.4;
-    chessBoard[6][3].position.y = -1882.6;
+    chessBoard[6][3].position.coord_x = -11093.4;
+    chessBoard[6][3].position.coord_y = -1882.6;
 
     // E6
-    chessBoard[6][4].position.x = -11089.7;
-    chessBoard[6][4].position.y = -1887.0;
+    chessBoard[6][4].position.coord_x = -11089.7;
+    chessBoard[6][4].position.coord_y = -1887.0;
 
     // F6
-    chessBoard[6][5].position.x = -11086.2;
-    chessBoard[6][5].position.y = -1891.5;
+    chessBoard[6][5].position.coord_x = -11086.2;
+    chessBoard[6][5].position.coord_y = -1891.5;
 
     // G6
-    chessBoard[6][6].position.x = -11082.9;
-    chessBoard[6][6].position.y = -1895.8;
+    chessBoard[6][6].position.coord_x = -11082.9;
+    chessBoard[6][6].position.coord_y = -1895.8;
 
     // H6
-    chessBoard[6][7].position.x = -11079.4;
-    chessBoard[6][7].position.y = -1900.2;
+    chessBoard[6][7].position.coord_x = -11079.4;
+    chessBoard[6][7].position.coord_y = -1900.2;
 
     // A7
-    chessBoard[7][0].position.x = -11108.1;
-    chessBoard[7][0].position.y = -1872.9;
+    chessBoard[7][0].position.coord_x = -11108.1;
+    chessBoard[7][0].position.coord_y = -1872.9;
 
     // B7
-    chessBoard[7][1].position.x = -11104.4;
-    chessBoard[7][1].position.y = -1877.7;
+    chessBoard[7][1].position.coord_x = -11104.4;
+    chessBoard[7][1].position.coord_y = -1877.7;
 
     // C7
-    chessBoard[7][2].position.x = -11101.0;
-    chessBoard[7][2].position.y = -1881.2;
+    chessBoard[7][2].position.coord_x = -11101.0;
+    chessBoard[7][2].position.coord_y = -1881.2;
 
     // D7
-    chessBoard[7][3].position.x = -11097.6;
-    chessBoard[7][3].position.y = -1886.4;
+    chessBoard[7][3].position.coord_x = -11097.6;
+    chessBoard[7][3].position.coord_y = -1886.4;
 
     // E7
-    chessBoard[7][4].position.x = -11094.1;
-    chessBoard[7][4].position.y = -1890.6;
+    chessBoard[7][4].position.coord_x = -11094.1;
+    chessBoard[7][4].position.coord_y = -1890.6;
 
     // F7
-    chessBoard[7][5].position.x = -11090.5;
-    chessBoard[7][5].position.y = -1895.0;
+    chessBoard[7][5].position.coord_x = -11090.5;
+    chessBoard[7][5].position.coord_y = -1895.0;
 
     // G7
-    chessBoard[7][6].position.x = -11087.2;
-    chessBoard[7][6].position.y = -1899.6;
+    chessBoard[7][6].position.coord_x = -11087.2;
+    chessBoard[7][6].position.coord_y = -1899.6;
 
     // H7
-    chessBoard[7][7].position.x = -11083.7;
-    chessBoard[7][7].position.y = -1903.9;
+    chessBoard[7][7].position.coord_x = -11083.7;
+    chessBoard[7][7].position.coord_y = -1903.9;
 
     //end Alliance
 }
@@ -979,10 +980,12 @@ bool boss_MedivhAI::IsEmptySquareInRange(uint64 piece, int range)
 
     if (tmpI < 0 || tmpJ < 0)
     {
-        Unit * uPiece = m_creature->GetUnit(*m_creature, piece);
+        Creature * uPiece = m_creature->GetCreature(piece);
 
         if (uPiece)
-            ((ScriptedAI*)uPiece)->DoSay("IsEmptySquareInRange(..) : Nie znaleziono mnie na planszy !!", LANG_UNIVERSAL, uPiece,  false);
+            ((ScriptedAI*)uPiece->AI())->DoSay("IsEmptySquareInRange(..) : Nie znaleziono mnie na planszy !!", LANG_UNIVERSAL, uPiece,  false);
+        else
+            me->Say("IsEmptySquareInRange(..) : Nie znalazlem pionka !!", LANG_UNIVERSAL, NULL);
         return false;
     }
 
@@ -1057,9 +1060,9 @@ uint64 boss_MedivhAI::GetSpellTarget(uint64 caster, int range, bool heal)
 
     if (tmpI < 0 || tmpJ < 0)
     {
-        Unit * uCaster = m_creature->GetUnit(*m_creature, caster);
+        Creature * uCaster = m_creature->GetCreature(caster);
         if (uCaster)
-            ((ScriptedAI*)uCaster)->DoSay("GetSpellTarget(..) : Nie znaleziono mnie na planszy !!", LANG_UNIVERSAL, uCaster, false);
+            ((ScriptedAI*)uCaster->AI())->DoSay("GetSpellTarget(..) : Nie znaleziono mnie na planszy !!", LANG_UNIVERSAL, uCaster, false);
         return 0;
     }
 
@@ -1398,6 +1401,8 @@ bool boss_MedivhAI::IsMedivhsPiece(Unit * unit)
                 break;
         }
     }
+    else
+        me->Say("IsMedivhsPiece: Cos unita niema", LANG_UNIVERSAL, NULL);
 
     return false;
 }
@@ -1462,9 +1467,11 @@ bool boss_MedivhAI::IsInRange(uint64 from, uint64 to, int range)
 
     if (tmpI < 0 || tmpJ < 0)
     {
-        Unit * uFrom = m_creature->GetUnit(*m_creature, from);
+        Creature * uFrom = m_creature->GetCreature(from);
         if (uFrom)
-            ((ScriptedAI*)uFrom)->DoSay("GetSpellTarget(..) : Nie znaleziono mnie na planszy !!", LANG_UNIVERSAL, uFrom, false);
+            ((ScriptedAI*)uFrom->AI())->DoSay("GetSpellTarget(..) : Nie znaleziono mnie na planszy !!", LANG_UNIVERSAL, uFrom, false);
+        else
+            me->Say("GetSpellTarget(..) : uFrom sie zapodzial", LANG_UNIVERSAL, NULL);
         return false;
     }
 
@@ -1696,8 +1703,11 @@ void boss_MedivhAI::RemoveChessPieceFromBoard(uint64 piece)
 void boss_MedivhAI::RemoveChessPieceFromBoard(Unit * piece)
 {
     printf("\n Wywolanie RemoveChessPieceFromBoard(Unit * piece)");
-    //if (!piece)
+    if (!piece)
+    {
+        me->Say("RemoveChesPieceFromBoard(..) : pionka wcielo", LANG_UNIVERSAL, NULL);
         return;
+    }
 
     if (piece->getFaction() == A_FACTION)
     {
@@ -1740,22 +1750,24 @@ void boss_MedivhAI::SpawnPawns()
     for (int i = 0; i < 8; i++)
     {
         //printf("\nSpawnPawns(): in for: i: %i", i);
-        tmp[0][i] = m_creature->SummonCreature(NPC_PAWN_A, SPAWN_POS, ORI_W, TEMPSUMMON_DEAD_DESPAWN, 0);
-        tmp[1][i] = m_creature->SummonCreature(NPC_PAWN_H, SPAWN_POS, ORI_W, TEMPSUMMON_DEAD_DESPAWN, 0);
+        tmp[0][i] = m_creature->SummonCreature(NPC_PAWN_A, SPAWN_POS, ORI_W, TEMPSUMMON_MANUAL_DESPAWN, 0);
+        tmp[1][i] = m_creature->SummonCreature(NPC_PAWN_H, SPAWN_POS, ORI_W, TEMPSUMMON_MANUAL_DESPAWN, 0);
         //printf("\n if 1");
         if (tmp[0][i])
         {
+            printf("Pawns [0][%i] : %u \n",i, tmp[0][i]->GetGUID());
             chessBoard[6][i].piece = tmp[0][i]->GetGUID();
             tmp[0][i]->SetReactState(REACT_PASSIVE);
-            tmp[0][i]->GetMotionMaster()->MovePoint(0, chessBoard[6][i].position.x, chessBoard[6][i].position.y, chessBoard[6][i].position.z);
+            tmp[0][i]->GetMotionMaster()->MovePoint(0, chessBoard[6][i].position.coord_x, chessBoard[6][i].position.coord_y, chessBoard[6][i].position.coord_z);
         }
         chessBoard[6][i].ori = CHESS_ORI_N;
         //printf("\n if 2");
         if (tmp[1][i])
         {
+            printf("Pawns [1][%i] : %u \n",i, tmp[0][i]->GetGUID());
             chessBoard[1][i].piece = tmp[1][i]->GetGUID();
             tmp[1][i]->SetReactState(REACT_PASSIVE);
-            tmp[1][i]->GetMotionMaster()->MovePoint(0, chessBoard[1][i].position.x, chessBoard[1][i].position.y, chessBoard[1][i].position.z);
+            tmp[1][i]->GetMotionMaster()->MovePoint(0, chessBoard[1][i].position.coord_x, chessBoard[1][i].position.coord_y, chessBoard[1][i].position.coord_z);
         }
         chessBoard[1][i].ori = CHESS_ORI_S;
     }
@@ -1791,45 +1803,49 @@ void boss_MedivhAI::SpawnRooks()
     printf("\n Wywolanie SpawnRooks()");
     Creature * tmp1, * tmp2, * tmp3, * tmp4;
 
-    tmp1 = m_creature->SummonCreature(NPC_ROOK_A, SPAWN_POS, ORI_W, TEMPSUMMON_DEAD_DESPAWN, 0);
+    tmp1 = m_creature->SummonCreature(NPC_ROOK_A, SPAWN_POS, ORI_W, TEMPSUMMON_MANUAL_DESPAWN, 0);
 
     if (tmp1)
     {
+        printf("Rooks [0] : %u \n", tmp1->GetGUID());
         chessBoard[7][0].piece = tmp1->GetGUID();
         chessBoard[7][0].ori = CHESS_ORI_N;
         tmp1->SetReactState(REACT_PASSIVE);
-        tmp1->GetMotionMaster()->MovePoint(0, chessBoard[7][0].position.x, chessBoard[7][0].position.y, chessBoard[7][0].position.z);
+        tmp1->GetMotionMaster()->MovePoint(0, chessBoard[7][0].position.coord_x, chessBoard[7][0].position.coord_y, chessBoard[7][0].position.coord_z);
     }
 
-    tmp2 = m_creature->SummonCreature(NPC_ROOK_A, SPAWN_POS, ORI_W, TEMPSUMMON_DEAD_DESPAWN, 0);
+    tmp2 = m_creature->SummonCreature(NPC_ROOK_A, SPAWN_POS, ORI_W, TEMPSUMMON_MANUAL_DESPAWN, 0);
 
     if (tmp2)
     {
+        printf("Rooks [1] : %u \n", tmp2->GetGUID());
         chessBoard[7][7].piece = tmp2->GetGUID();
         chessBoard[7][7].ori = CHESS_ORI_N;
         tmp2->SetReactState(REACT_PASSIVE);
-        tmp2->GetMotionMaster()->MovePoint(0, chessBoard[7][7].position.x, chessBoard[7][7].position.y, chessBoard[7][7].position.z);
+        tmp2->GetMotionMaster()->MovePoint(0, chessBoard[7][7].position.coord_x, chessBoard[7][7].position.coord_y, chessBoard[7][7].position.coord_z);
     }
 
 
-    tmp3 = m_creature->SummonCreature(NPC_ROOK_H, SPAWN_POS, ORI_W, TEMPSUMMON_DEAD_DESPAWN, 0);
+    tmp3 = m_creature->SummonCreature(NPC_ROOK_H, SPAWN_POS, ORI_W, TEMPSUMMON_MANUAL_DESPAWN, 0);
 
     if (tmp3)
     {
+        printf("Rooks [2] : %u \n", tmp3->GetGUID());
         chessBoard[0][0].piece = tmp3->GetGUID();
         chessBoard[0][0].ori = CHESS_ORI_S;
         tmp3->SetReactState(REACT_PASSIVE);
-        tmp3->GetMotionMaster()->MovePoint(0, chessBoard[0][0].position.x, chessBoard[0][0].position.y, chessBoard[0][0].position.z);
+        tmp3->GetMotionMaster()->MovePoint(0, chessBoard[0][0].position.coord_x, chessBoard[0][0].position.coord_y, chessBoard[0][0].position.coord_z);
     }
 
-    tmp4 = m_creature->SummonCreature(NPC_ROOK_H, SPAWN_POS, ORI_W, TEMPSUMMON_DEAD_DESPAWN, 0);
+    tmp4 = m_creature->SummonCreature(NPC_ROOK_H, SPAWN_POS, ORI_W, TEMPSUMMON_MANUAL_DESPAWN, 0);
 
     if (tmp4)
     {
+        printf("Rooks [3] : %u \n", tmp4->GetGUID());
         chessBoard[0][7].piece = tmp4->GetGUID();
         chessBoard[0][7].ori = CHESS_ORI_S;
         tmp4->SetReactState(REACT_PASSIVE);
-        tmp4->GetMotionMaster()->MovePoint(0, chessBoard[0][7].position.x, chessBoard[0][7].position.y, chessBoard[0][7].position.z);
+        tmp4->GetMotionMaster()->MovePoint(0, chessBoard[0][7].position.coord_x, chessBoard[0][7].position.coord_y, chessBoard[0][7].position.coord_z);
     }
 
     if (pInstance && tmp1 && tmp2 && tmp3 && tmp4)
@@ -1853,45 +1869,49 @@ void boss_MedivhAI::SpawnKnights()
     printf("\n Wywolanie SpawnKnights()");
     Creature * tmp1, * tmp2, * tmp3, * tmp4;
 
-    tmp1 = m_creature->SummonCreature(NPC_KNIGHT_A, SPAWN_POS, ORI_W, TEMPSUMMON_DEAD_DESPAWN, 0);
+    tmp1 = m_creature->SummonCreature(NPC_KNIGHT_A, SPAWN_POS, ORI_W, TEMPSUMMON_MANUAL_DESPAWN, 0);
 
     if (tmp1)
     {
+        printf("Knights [0] : %u \n", tmp1->GetGUID());
         chessBoard[7][1].piece = tmp1->GetGUID();
         chessBoard[7][1].ori = CHESS_ORI_N;
         tmp1->SetReactState(REACT_PASSIVE);
-        tmp1->GetMotionMaster()->MovePoint(0, chessBoard[7][1].position.x, chessBoard[7][1].position.y, chessBoard[7][1].position.z);
+        tmp1->GetMotionMaster()->MovePoint(0, chessBoard[7][1].position.coord_x, chessBoard[7][1].position.coord_y, chessBoard[7][1].position.coord_z);
     }
 
-    tmp2 = m_creature->SummonCreature(NPC_KNIGHT_A, SPAWN_POS, ORI_W, TEMPSUMMON_DEAD_DESPAWN, 0);
+    tmp2 = m_creature->SummonCreature(NPC_KNIGHT_A, SPAWN_POS, ORI_W, TEMPSUMMON_MANUAL_DESPAWN, 0);
 
     if (tmp2)
     {
+        printf("Knights [1] : %u \n", tmp2->GetGUID());
         chessBoard[7][6].piece = tmp2->GetGUID();
         chessBoard[7][6].ori = CHESS_ORI_N;
         tmp2->SetReactState(REACT_PASSIVE);
-        tmp2->GetMotionMaster()->MovePoint(0, chessBoard[7][6].position.x, chessBoard[7][6].position.y, chessBoard[7][6].position.z);
+        tmp2->GetMotionMaster()->MovePoint(0, chessBoard[7][6].position.coord_x, chessBoard[7][6].position.coord_y, chessBoard[7][6].position.coord_z);
     }
 
 
-    tmp3 = m_creature->SummonCreature(NPC_KNIGHT_H, SPAWN_POS, ORI_W, TEMPSUMMON_DEAD_DESPAWN, 0);
+    tmp3 = m_creature->SummonCreature(NPC_KNIGHT_H, SPAWN_POS, ORI_W, TEMPSUMMON_MANUAL_DESPAWN, 0);
 
     if (tmp3)
     {
+        printf("Knights [2] : %u \n", tmp3->GetGUID());
         chessBoard[0][1].piece = tmp3->GetGUID();
         chessBoard[0][1].ori = CHESS_ORI_S;
         tmp3->SetReactState(REACT_PASSIVE);
-        tmp3->GetMotionMaster()->MovePoint(0, chessBoard[0][1].position.x, chessBoard[0][1].position.y, chessBoard[0][1].position.z);
+        tmp3->GetMotionMaster()->MovePoint(0, chessBoard[0][1].position.coord_x, chessBoard[0][1].position.coord_y, chessBoard[0][1].position.coord_z);
     }
 
-    tmp4 = m_creature->SummonCreature(NPC_KNIGHT_H, SPAWN_POS, ORI_W, TEMPSUMMON_DEAD_DESPAWN, 0);
+    tmp4 = m_creature->SummonCreature(NPC_KNIGHT_H, SPAWN_POS, ORI_W, TEMPSUMMON_MANUAL_DESPAWN, 0);
 
     if (tmp4)
     {
+        printf("Knights [3] : %u \n", tmp4->GetGUID());
         chessBoard[0][6].piece = tmp4->GetGUID();
         chessBoard[0][6].ori = CHESS_ORI_S;
         tmp4->SetReactState(REACT_PASSIVE);
-        tmp4->GetMotionMaster()->MovePoint(0, chessBoard[0][6].position.x, chessBoard[0][6].position.y, chessBoard[0][6].position.z);
+        tmp4->GetMotionMaster()->MovePoint(0, chessBoard[0][6].position.coord_x, chessBoard[0][6].position.coord_y, chessBoard[0][6].position.coord_z);
     }
 
     if (pInstance && tmp1 && tmp2 && tmp3 && tmp4)
@@ -1915,45 +1935,49 @@ void boss_MedivhAI::SpawnBishops()
     printf("\n Wywolanie SpawnBishops()");
     Creature * tmp1, * tmp2, * tmp3, * tmp4;
 
-    tmp1 = m_creature->SummonCreature(NPC_BISHOP_A, SPAWN_POS, ORI_W, TEMPSUMMON_DEAD_DESPAWN, 0);
+    tmp1 = m_creature->SummonCreature(NPC_BISHOP_A, SPAWN_POS, ORI_W, TEMPSUMMON_MANUAL_DESPAWN, 0);
 
     if (tmp1)
     {
+        printf("Bishops [0] : %u \n", tmp1->GetGUID());
         chessBoard[7][2].piece = tmp1->GetGUID();
         chessBoard[7][2].ori = CHESS_ORI_N;
         tmp1->SetReactState(REACT_PASSIVE);
-        tmp1->GetMotionMaster()->MovePoint(0, chessBoard[7][2].position.x, chessBoard[7][2].position.y, chessBoard[7][2].position.z);
+        tmp1->GetMotionMaster()->MovePoint(0, chessBoard[7][2].position.coord_x, chessBoard[7][2].position.coord_y, chessBoard[7][2].position.coord_z);
     }
 
-    tmp2 = m_creature->SummonCreature(NPC_BISHOP_A, SPAWN_POS, ORI_W, TEMPSUMMON_DEAD_DESPAWN, 0);
+    tmp2 = m_creature->SummonCreature(NPC_BISHOP_A, SPAWN_POS, ORI_W, TEMPSUMMON_MANUAL_DESPAWN, 0);
 
     if (tmp2)
     {
+        printf("Bishops [1] : %u \n", tmp2->GetGUID());
         chessBoard[7][5].piece = tmp2->GetGUID();
         chessBoard[7][5].ori = CHESS_ORI_N;
         tmp2->SetReactState(REACT_PASSIVE);
-        tmp2->GetMotionMaster()->MovePoint(0, chessBoard[7][5].position.x, chessBoard[7][5].position.y, chessBoard[7][5].position.z);
+        tmp2->GetMotionMaster()->MovePoint(0, chessBoard[7][5].position.coord_x, chessBoard[7][5].position.coord_y, chessBoard[7][5].position.coord_z);
     }
 
 
-    tmp3 = m_creature->SummonCreature(NPC_BISHOP_H, SPAWN_POS, ORI_W, TEMPSUMMON_DEAD_DESPAWN, 0);
+    tmp3 = m_creature->SummonCreature(NPC_BISHOP_H, SPAWN_POS, ORI_W, TEMPSUMMON_MANUAL_DESPAWN, 0);
 
     if (tmp3)
     {
+        printf("Bishops [2] : %u \n", tmp3->GetGUID());
         chessBoard[0][2].piece = tmp3->GetGUID();
         chessBoard[0][2].ori = CHESS_ORI_S;
         tmp3->SetReactState(REACT_PASSIVE);
-        tmp3->GetMotionMaster()->MovePoint(0, chessBoard[0][2].position.x, chessBoard[0][2].position.y, chessBoard[0][2].position.z);
+        tmp3->GetMotionMaster()->MovePoint(0, chessBoard[0][2].position.coord_x, chessBoard[0][2].position.coord_y, chessBoard[0][2].position.coord_z);
     }
 
-    tmp4 = m_creature->SummonCreature(NPC_BISHOP_H, SPAWN_POS, ORI_W, TEMPSUMMON_DEAD_DESPAWN, 0);
+    tmp4 = m_creature->SummonCreature(NPC_BISHOP_H, SPAWN_POS, ORI_W, TEMPSUMMON_MANUAL_DESPAWN, 0);
 
     if (tmp4)
     {
+        printf("Bishops [3] : %u \n", tmp4->GetGUID());
         chessBoard[0][5].piece = tmp4->GetGUID();
         chessBoard[0][5].ori = CHESS_ORI_S;
         tmp4->SetReactState(REACT_PASSIVE);
-        tmp4->GetMotionMaster()->MovePoint(0, chessBoard[0][5].position.x, chessBoard[0][5].position.y, chessBoard[0][5].position.z);
+        tmp4->GetMotionMaster()->MovePoint(0, chessBoard[0][5].position.coord_x, chessBoard[0][5].position.coord_y, chessBoard[0][5].position.coord_z);
     }
 
     if (pInstance && tmp1 && tmp2 && tmp3 && tmp4)
@@ -1978,24 +2002,26 @@ void boss_MedivhAI::SpawnQueens()
     printf("\n Wywolanie SpawnQueens()");
     Creature * tmp1, * tmp2;
 
-    tmp1 = m_creature->SummonCreature(NPC_QUEEN_A, SPAWN_POS, ORI_W, TEMPSUMMON_DEAD_DESPAWN, 0);
+    tmp1 = m_creature->SummonCreature(NPC_QUEEN_A, SPAWN_POS, ORI_W, TEMPSUMMON_MANUAL_DESPAWN, 0);
 
     if (tmp1)
     {
+        printf("Quens [0] : %u \n", tmp1->GetGUID());
         chessBoard[7][3].piece = tmp1->GetGUID();
         chessBoard[7][3].ori = CHESS_ORI_N;
         tmp1->SetReactState(REACT_PASSIVE);
-        tmp1->GetMotionMaster()->MovePoint(0, chessBoard[7][3].position.x, chessBoard[7][3].position.y, chessBoard[7][3].position.z);
+        tmp1->GetMotionMaster()->MovePoint(0, chessBoard[7][3].position.coord_x, chessBoard[7][3].position.coord_y, chessBoard[7][3].position.coord_z);
     }
 
-    tmp2 = m_creature->SummonCreature(NPC_QUEEN_H, SPAWN_POS, ORI_W, TEMPSUMMON_DEAD_DESPAWN, 0);
+    tmp2 = m_creature->SummonCreature(NPC_QUEEN_H, SPAWN_POS, ORI_W, TEMPSUMMON_MANUAL_DESPAWN, 0);
 
     if (tmp2)
     {
+        printf("Quens [1] : %u \n", tmp2->GetGUID());
         chessBoard[0][3].piece = tmp2->GetGUID();
         chessBoard[0][3].ori = CHESS_ORI_S;
         tmp2->SetReactState(REACT_PASSIVE);
-        tmp2->GetMotionMaster()->MovePoint(0, chessBoard[0][3].position.x, chessBoard[0][3].position.y, chessBoard[0][3].position.z);
+        tmp2->GetMotionMaster()->MovePoint(0, chessBoard[0][3].position.coord_x, chessBoard[0][3].position.coord_y, chessBoard[0][3].position.coord_z);
     }
 
     if (pInstance && tmp1 && tmp2)
@@ -2017,20 +2043,22 @@ void boss_MedivhAI::SpawnKings()
 
     if (tmp1)
     {
+        printf("Kings [0] : %u \n", tmp1->GetGUID());
         chessBoard[7][4].piece = tmp1->GetGUID();
         chessBoard[7][4].ori = CHESS_ORI_N;
         tmp1->SetReactState(REACT_PASSIVE);
-        tmp1->GetMotionMaster()->MovePoint(0, chessBoard[7][4].position.x, chessBoard[7][4].position.y, chessBoard[7][4].position.z);
+        tmp1->GetMotionMaster()->MovePoint(0, chessBoard[7][4].position.coord_x, chessBoard[7][4].position.coord_y, chessBoard[7][4].position.coord_z);
     }
 
     tmp2 = m_creature->SummonCreature(NPC_KING_H, SPAWN_POS, ORI_W, TEMPSUMMON_MANUAL_DESPAWN, 0);
 
     if (tmp2)
     {
+        printf("Kings [1] : %u \n", tmp2->GetGUID());
         chessBoard[0][4].piece = tmp2->GetGUID();
         chessBoard[0][4].ori = CHESS_ORI_S;
         tmp2->SetReactState(REACT_PASSIVE);
-        tmp2->GetMotionMaster()->MovePoint(0, chessBoard[0][4].position.x, chessBoard[0][4].position.y, chessBoard[0][4].position.z);
+        tmp2->GetMotionMaster()->MovePoint(0, chessBoard[0][4].position.coord_x, chessBoard[0][4].position.coord_y, chessBoard[0][4].position.coord_z);
     }
 
     if (pInstance && tmp1 && tmp2)
@@ -2052,9 +2080,10 @@ void boss_MedivhAI::SpawnTriggers()
     {
         for (int j = 0; j < 8; j++)
         {
-            tmp = m_creature->SummonCreature(TRIGGER_ID, chessBoard[i][j].position.x, chessBoard[i][j].position.y, chessBoard[i][j].position.z, ORI_W, TEMPSUMMON_MANUAL_DESPAWN, 0);
+            tmp = m_creature->SummonCreature(TRIGGER_ID, chessBoard[i][j].position.coord_x, chessBoard[i][j].position.coord_y, chessBoard[i][j].position.coord_z, ORI_W, TEMPSUMMON_MANUAL_DESPAWN, 0);
             if (tmp)
             {
+                printf("Triggers [%i][%i] : %u \n", i, j, tmp->GetGUID());
                 chessBoard[i][j].trigger = tmp->GetGUID();
                 chessBoard[i][j].ori = CHESS_ORI_N;
                 tmp->SetReactState(REACT_PASSIVE);
@@ -2294,7 +2323,7 @@ void boss_MedivhAI::SetOrientation(uint64 piece, ChessOrientation ori)
         float tmpN, tmpS, tmpE, tmpW;
         float pieceOri;
 
-        Unit * tmpPiece = m_creature->GetUnit(*m_creature, piece);
+        Creature * tmpPiece = m_creature->GetCreature(piece);
         if (tmpPiece)
         {
             pieceOri = tmpPiece->GetOrientation();
@@ -2381,7 +2410,7 @@ void boss_MedivhAI::SetOrientation(uint64 piece, ChessOrientation ori)
     }
 }
 
-Unit * boss_MedivhAI::FindTrigger(uint64 piece)
+Creature * boss_MedivhAI::FindTrigger(uint64 piece)
 {
     printf("\n Wywolanie FindTrigger(uint64 piece)");
     for (int8 i = 0; i < 8; i++)
@@ -2389,7 +2418,7 @@ Unit * boss_MedivhAI::FindTrigger(uint64 piece)
         for (int8 j = 0; j < 8; j++)
         {
             if (chessBoard[i][j].piece == piece)
-                return m_creature->GetUnit(*m_creature, chessBoard[i][j].trigger);
+                return m_creature->GetCreature(chessBoard[i][j].trigger);
         }
     }
 
@@ -2520,9 +2549,11 @@ void boss_MedivhAI::AddTriggerToMove(uint64 trigger, uint64 piece, bool player)
 
         if (tmpI < 0 || tmpJ < 0)
         {
-            Unit * uChosen = m_creature->GetUnit(*m_creature, chosenGUID);
+            Creature * uChosen = m_creature->GetCreature(chosenGUID);
             if (uChosen)
-                ((ScriptedAI*)uChosen)->DoSay("AddTriggerToMove(..) : Nie znaleziono mnie na planszy !!", LANG_UNIVERSAL, uChosen, false);
+                ((ScriptedAI*)uChosen->AI())->DoSay("AddTriggerToMove(..) : Nie znaleziono mnie na planszy !!", LANG_UNIVERSAL, uChosen, false);
+            else
+                me->Say("wybrany nie znaleziony", LANG_UNIVERSAL, NULL);
             return;
         }
 
@@ -2668,6 +2699,7 @@ bool GossipSelect_npc_chesspiece(Player* player, Creature* _Creature, uint32 sen
 
     return true;
 }
+
 bool GossipHello_npc_echo_of_medivh(Player* player, Creature* _Creature)
 {
     ScriptedInstance* pInstance = ((ScriptedInstance*)_Creature->GetInstanceData());
@@ -2683,7 +2715,7 @@ bool GossipHello_npc_echo_of_medivh(Player* player, Creature* _Creature)
 
     if(pInstance->GetData(DATA_CHESS_EVENT) == NOT_STARTED)
     {
-        player->ADD_GOSSIP_ITEM(0, EVENT_START, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+        player->ADD_GOSSIP_ITEM(0, EVENT_START, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
 
         //if (player->isGameMaster())
         //    player->ADD_GOSSIP_ITEM(2, "Start Debug Mode", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
@@ -2698,7 +2730,7 @@ bool GossipSelect_npc_echo_of_medivh(Player* player, Creature* _Creature, uint32
 {
     ScriptedInstance* pInstance = ((ScriptedInstance*)_Creature->GetInstanceData());
 
-    if(action == GOSSIP_ACTION_INFO_DEF + 1)
+    if(action == GOSSIP_ACTION_INFO_DEF)
     {
         DoScriptText(SCRIPTTEXT_AT_EVENT_START,_Creature);
         pInstance->SetData(DATA_CHESS_EVENT, IN_PROGRESS);
@@ -2709,7 +2741,7 @@ bool GossipSelect_npc_echo_of_medivh(Player* player, Creature* _Creature, uint32
     if (action == GOSSIP_ACTION_INFO_DEF + 2)
     {
         pInstance->SetData(DATA_CHESS_EVENT, SPECIAL);
-        ((ScriptedAI*)_Creature)->DoSay("Debug mode on", LANG_UNIVERSAL, _Creature);
+        ((ScriptedAI*)_Creature->AI())->DoSay("Debug mode on", LANG_UNIVERSAL, _Creature);
     }
 
     player->CLOSE_GOSSIP_MENU();
@@ -2739,15 +2771,15 @@ void AddSC_chess_event()
     newscript = new Script;
     newscript->GetAI = &GetAI_npc_chesspiece;
     newscript->Name = "npc_chesspiece";
-    newscript->pGossipHello = GossipHello_npc_chesspiece;
-    newscript->pGossipSelect = GossipSelect_npc_chesspiece;
+    newscript->pGossipHello = &GossipHello_npc_chesspiece;
+    newscript->pGossipSelect = &GossipSelect_npc_chesspiece;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "npc_echo_of_medivh";
     newscript->GetAI = &GetAI_npc_Medivh;
-    newscript->pGossipHello = GossipHello_npc_echo_of_medivh;
-    newscript->pGossipSelect = GossipSelect_npc_echo_of_medivh;
+    newscript->pGossipHello = &GossipHello_npc_echo_of_medivh;
+    newscript->pGossipSelect = &GossipSelect_npc_echo_of_medivh;
     newscript->RegisterSelf();
 
     newscript = new Script;
