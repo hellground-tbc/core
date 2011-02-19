@@ -1,22 +1,6 @@
 #ifndef CHESS_EVENT
 #define CHESS_EVENT
 
-/* Copyright (C) 2006 - 2008 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
-
 /* ScriptData
 SDName: Chess_Event
 SD%Complete: xx
@@ -304,13 +288,13 @@ struct Priority
 // 4 3 3 3 3 3 4
 //
 
-int8 offsetTab8[8][2] = {{-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {1, 0}, {-1, 1}, {0, 1}, {1, 1}};
+int offsetTab8[8][2] = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
 
-int8 offsetTab15[12][2] = {{-2, 0}, {-2, -1}, {-1, -2}, {0. -2}, {1, -2}, {2, -1}, {2, 0}, {2, 1}, {1, 2}, {0, 2}, {-1, 2}, {-1, 2}};
+int offsetTab15[12][2] = {{-2, -1}, {-2, 0}, {-2, 1}, {-1, -2}, {-1, 2}, {0, -2}, {0, 2}, {1, -2}, {1, 2}, {2, -1}, {2, 0}, {2, 1}};
 
-int8 offsetTab20[24][2] = {{-3, 0}, {-3, -1}, {-3, -2}, {-2, -2}, {-2, -3}, {-1, -3}, {0, -3}, {1, -3}, {2, -3}, {2, -2}, {3, -2}, {3, -1}, {3, 0}, {3, -1}, {3, -2}, {2, -2}, {3, -2}, {3, -1}, {3, 0}, {3, -1}, {3, -2}, {2, -2}, {2, -3}, {1, -3}};
+int offsetTab20[24][2] = {{-3, -2}, {-3, -1}, {-3, 0}, {-3, 1}, {-3, 2}, {-2, -3}, {-2, 3}, {-1, -3}, {-1, 3}, {0, -3}, {0, 3}, {1, -3}, {1, 3}, {2, -3}, {2, 3}, {3, -2}, {3, -1}, {3, 0}, {3, 1}, {3, 2}, {2, 2}, {-2, 2}, {2, -2}, {-2, -2}};
 
-int8 offsetTab25[4][2] = {{-3, -3}, {3, -3}, {3, 3}, {-3, 3}};
+int offsetTab25[4][2] = {{-3, -3}, {3, -3}, {3, 3}, {-3, 3}};
 
 float hordeSideDeadWP[2][16] = {{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},         //X coord
                                 {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}};        //Y coord
@@ -457,7 +441,7 @@ public:
     bool IsMedivhsPiece(uint64 unit);
     bool IsEmptySquareInRange(uint64 piece, int range);
     bool IsInMoveList(uint64 unit, bool trigger = false);
-    bool IsInRange(uint64 from, uint64 to, int range);
+    bool IsInMoveRange(uint64 from, uint64 to, int range);
 
     //teleport
 
@@ -489,6 +473,7 @@ public:
     void MakeMove();
     int GetMoveRange(uint64 piece);
     int GetMoveRange(Unit * piece);
+    void ChangePlaceInBoard(uint64 piece, uint64 destTrigger);
 
     //priority
 

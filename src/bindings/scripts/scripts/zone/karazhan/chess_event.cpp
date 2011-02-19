@@ -77,15 +77,18 @@ void move_triggerAI::MakeMove()
         temp->StopMoving();
         temp->GetMotionMaster()->Clear();
         temp->GetMotionMaster()->MovePoint(0, wLoc.coord_x, wLoc.coord_y, wLoc.coord_z);
+        temp = m_creature->GetCreature(MedivhGUID);
+
+        if (temp)
+            ((boss_MedivhAI*)temp->AI())->ChangePlaceInBoard(unitToMove, me->GetGUID());
         break;
     case PIECE_CHANGE_FACING:
         temp->SetInFront(m_creature);
         temp = NULL;
         temp = m_creature->GetCreature(MedivhGUID);
+
         if (temp)
-        {
             ((boss_MedivhAI*)temp->AI())->SetOrientation(unitToMove);
-        }
         break;
     default:
         break;
@@ -358,15 +361,15 @@ void npc_chesspieceAI::JustRespawned()
 {
     printf("\n Wywolanie JustRespawned()");
     //not finally - just a presentation - need 32place two side of chesstable
-    float angle = m_creature->GetOrientation();
+    /*float angle = m_creature->GetOrientation();
     float pos_x = -11066;
     float pos_y = -1898;
     int move_lenght = 2*rand()%10;
     float new_x = pos_x + move_lenght * cos(angle);
     float new_y = pos_y + move_lenght * sin(angle);
-    m_creature->Relocate(new_x,new_y,221,2.24);
-    //m_creature->CombatStop();
-    //m_creature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NOT_SELECTABLE);
+    m_creature->Relocate(new_x,new_y,221,2.24);*/
+    m_creature->CombatStop();
+    m_creature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NOT_SELECTABLE);
 }
 
 void npc_chesspieceAI::OnCharmed(bool apply)
@@ -514,7 +517,7 @@ boss_MedivhAI::boss_MedivhAI(Creature *c) : ScriptedAI(c)
         6 A  A  A  A  A  A  A  A
         7 A  A  A  A  A  A  A  A
     */
-
+/*
     // Horde
     // A0
     chessBoard[0][0].position.coord_x = -11077.7;
@@ -776,7 +779,20 @@ boss_MedivhAI::boss_MedivhAI(Creature *c) : ScriptedAI(c)
     chessBoard[7][7].position.coord_x = -11083.7;
     chessBoard[7][7].position.coord_y = -1903.9;
 
-    //end Alliance
+    //end Alliance*/
+
+    // calc positions:
+
+    for (uint8 i = 0; i < 8; ++i)
+    {
+        for (uint8 j = 0; j < 8; ++j)
+        {
+            chessBoard[i][j].position.coord_x = -11077.66 + 3.44 * j - 4.43 * i;
+            chessBoard[i][j].position.coord_y = -1849.02 - 4.3 * j - 3.52 * i;
+            chessBoard[i][j].position.coord_z = 221.1;
+            chessBoard[i][j].position.mapid = me->GetMapId();
+        }
+    }
 }
 
 int boss_MedivhAI::GetMoveRange(uint64 piece)
@@ -1411,10 +1427,8 @@ bool boss_MedivhAI::IsMedivhsPiece(uint64 unit)
 {
     printf("\n Wywolanie IsMedivhsPiece(uint64 unit)");
     for (std::list<uint64>::iterator i = medivhSidePieces.begin(); i != medivhSidePieces.end(); ++i)
-    {
-        if (*i == unit)
+        if ((*i) == unit)
             return true;
-    }
 
     return false;
 }
@@ -1425,32 +1439,28 @@ bool boss_MedivhAI::IsInMoveList(uint64 unit, bool trigger)
     if (!trigger)
     {
         for (std::list<ChessTile>::iterator i = moveList.begin(); i != moveList.end(); ++i)
-        {
             if ((*i).piece == unit)
                 return true;
-        }
     }
     else
     {
         for (std::list<ChessTile>::iterator i = moveList.begin(); i != moveList.end(); ++i)
-        {
             if ((*i).trigger == unit)
                 return true;
-        }
     }
 
     return false;
 }
 
-bool boss_MedivhAI::IsInRange(uint64 from, uint64 to, int range)
+bool boss_MedivhAI::IsInMoveRange(uint64 from, uint64 to, int range)
 {
-    printf("\n Wywolanie IsInRange(uint64 from, uint64 to, int range)");
+    printf("\n Wywolanie IsInMoveRange(uint64 from, uint64 to, int range)");
     if (!from || !to || !range)
         return false;
 
-    int8 tmpI = -1, tmpJ = -1, i, tmpOffsetI, tmpOffsetJ;
+    int tmpI = -1, tmpJ = -1, i, tmpOffsetI, tmpOffsetJ;
 
-    for (int i = 0; i < 8; i++)
+    for (i = 0; i < 8; i++)
     {
         for (int j = 0; j < 8; j++)
         {
@@ -1475,6 +1485,51 @@ bool boss_MedivhAI::IsInRange(uint64 from, uint64 to, int range)
         return false;
     }
 
+/*
+    int testToX = -1, testToY = -1;
+    for (i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 8; j++)
+        {
+            if (chessBoard[i][j].trigger == to)
+            {
+                testToX = i; testToY = j;
+                break;
+            }
+        }
+        //if we find location of piece
+        if (testToX >= 0 && testToY >= 0)
+            break;
+    }
+
+    tmpOffsetI = tmpI - testToX;
+    tmpOffsetJ = tmpJ - testToY;
+
+    switch (range)
+    {
+        case 25:
+            for (i = 0; i < OFFSET25COUNT; ++i)
+                if (offsetTab25[i][0] == tmpOffsetI && offsetTab25[i][1] == tmpOffsetJ)
+                    return true;
+        case 20:
+            for (i = 0; i < OFFSET20COUNT; ++i)
+                if (offsetTab20[i][0] == tmpOffsetI && offsetTab20[i][1] == tmpOffsetJ)
+                    return true;
+        case 15:
+            for (i = 0; i < OFFSET15COUNT; ++i)
+                if (offsetTab15[i][0] == tmpOffsetI && offsetTab15[i][1] == tmpOffsetJ)
+                    return true;
+        case 8:
+            for (i = 0; i < OFFSET8COUNT; ++i)
+                if (offsetTab8[i][0] == tmpOffsetI && offsetTab8[i][1] == tmpOffsetJ)
+                    return true;
+            break;
+        default:
+            break;
+    }
+
+    printf("\nIsInMoveRange() : tmpI: %i, tmpJ: %i, texttox: %i, testtoy: %i, tmpoffseti: %i, tmpoffsetj: %i\n", tmpI, tmpJ, testToX, testToY, tmpOffsetI, tmpOffsetJ);
+*/
     switch (range)
     {
         case 25:
@@ -1535,6 +1590,7 @@ bool boss_MedivhAI::IsInRange(uint64 from, uint64 to, int range)
             }
             break;
         default:
+            me->Say("Jakis dziwaczny range", LANG_UNIVERSAL, NULL);
             break;
     }
 
@@ -1554,8 +1610,8 @@ void boss_MedivhAI::Reset()
     tpList.clear();
     moveList.clear();
 
-    //m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-    //m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+    m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+    m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
     //enabled = false;
 }
 
@@ -2453,17 +2509,17 @@ bool boss_MedivhAI::CanMoveTo(uint64 trigger, uint64 piece)
     if (!trigger || !piece)
         return false;
 
-    printf("\nCMT: Tablica:");
+    /*printf("\nCMT: Tablica:");
     for (int i = 0; i < 8; i++)
     {
         for (int j = 0; j < 8; j++)
         {
             printf("\ni: %i, j: %i, piece: %u, trigger: %u", i, j, chessBoard[i][j].piece, chessBoard[i][j].trigger);
         }
-    }
+    }*/
 
     int moveRange = GetMoveRange(piece);
-    bool inRange = IsInRange(piece, trigger, moveRange);
+    bool inRange = IsInMoveRange(piece, trigger, moveRange);
     bool isEmpty = ChessSquareIsEmpty(trigger);
 
     printf("\nCanMoveTo: moveRange %i, isInRange %i, isEmpty %i", moveRange, inRange, isEmpty);
@@ -2657,6 +2713,37 @@ void boss_MedivhAI::AddTriggerToMove(uint64 trigger, uint64 piece, bool player)
         temp.trigger = chosenTriggerGUID;
 
         moveList.push_back(temp);
+    }
+}
+
+void boss_MedivhAI::MakeMove()
+{
+    std::list<ChessTile>::iterator tmpItr;
+    Creature * tmpC;
+    for (std::list<ChessTile>::iterator itr = moveList.begin(); itr != moveList.end();)
+    {
+        tmpItr = itr;
+        ++itr;
+
+        if (tmpC = me->GetCreature((*tmpItr).trigger))
+            ((move_triggerAI*)tmpC->AI())->MakeMove();
+
+        moveList.erase(tmpItr);
+    }
+}
+
+void boss_MedivhAI::ChangePlaceInBoard(uint64 piece, uint64 destTrigger)
+{
+    for (uint8 i = 0; i < 8; ++i)
+    {
+        for (uint8 j = 0; j < 8; ++j)
+        {
+            if (chessBoard[i][j].piece == piece && chessBoard[i][j].trigger != destTrigger)
+                chessBoard[i][j].piece = 0;
+
+            if (chessBoard[i][j].trigger == destTrigger)
+                chessBoard[i][j].piece = piece;
+        }
     }
 }
 
