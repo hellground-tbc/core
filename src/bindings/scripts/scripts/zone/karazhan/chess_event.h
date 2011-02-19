@@ -27,8 +27,6 @@ EndScriptData */
 #define A_FACTION  1690
 #define H_FACTION  1691
 
-#define GOSSIP_POSSES       "[ Control this Chesspiece ]" // Maybe should be different gossip, visuals will be fixed at the end :]
-
 #define ECHO_OF_MEDIVH_ID   16816
 
 #define EVENT_START         "[PH] Start Chess Event" // Maybe should be different gossip, visuals will be fixed at the end :]
@@ -59,10 +57,10 @@ EndScriptData */
 
 #define attackCooldown          3000
 
-#define ORI_N   0.670312
-#define ORI_E   5.38343
-#define ORI_S   3.805620
-#define ORI_W   2.242677
+#define ORI_N   0.656777
+#define ORI_E   5.391155
+#define ORI_S   3.817220
+#define ORI_W   2.239354
 
 enum SCRIPTTEXTs
 {
@@ -383,6 +381,8 @@ public:
 
     void OnCharmed(bool apply);
 
+    void SpellHit(Unit * caster, const SpellEntry * spell);
+
     void JustDied(Unit* killer){}
 
     void UpdateAI(const uint32 diff);
@@ -404,7 +404,7 @@ private:
     ChessTile chessBoard[8][8];
 
     // entry, index_list
-    std::map<int, std::list<std::pair<int, int> > > allowedPositions; // tylko do ustawienia
+    //std::map<int, std::list<std::pair<int, int> > > allowedPositions; // tylko do ustawienia
 
     std::list<uint64> medivhSidePieces; //alive pieces guids
 
@@ -454,6 +454,7 @@ public:
 
     void ApplyDebuffsOnRaidMembers();
     void PrepareBoardForEvent();
+    void StartMiniEvent();
     void StartEvent();
     void SpawnRooks();
     void SpawnKnights();
@@ -466,13 +467,17 @@ public:
     //move
 
     bool ChessSquareIsEmpty(uint64 trigger);
+    bool ChessSquareIsEmpty(int i, int j);
     bool CanMoveTo(uint64 trigger, uint64 piece);   //check if player can move to trigger - prevent cheating
     void AddTriggerToMove(uint64 trigger, uint64 piece, bool player);
     Creature * FindTrigger(uint64 piece);               //find trigger where piece actually should be
     void MakeMoves();
     int GetMoveRange(uint64 piece);
     int GetMoveRange(Unit * piece);
+    uint32 GetMoveSpell(uint64 piece);
+    uint32 GetMoveSpell(Creature * piece);
     void ChangePlaceInBoard(uint64 piece, uint64 destTrigger);
+    void FindPlaceInBoard(uint64 unit, int & i, int & j);
 
     //priority
 
@@ -488,6 +493,7 @@ public:
     //other
 
     void SetOrientation(uint64 piece, ChessOrientation ori = CHESS_ORI_CHOOSE);
+    bool Enemy(uint64 piece1, uint64 piece2);
 
     void Reset();
     void Aggro(Unit *){}
