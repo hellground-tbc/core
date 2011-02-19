@@ -72,26 +72,26 @@ void move_triggerAI::MakeMove()
 
     switch (tmpStance)
     {
-    case PIECE_MOVE:
-        DoCast(m_creature,SPELL_MOVE_MARKER);
-        temp->StopMoving();
-        temp->GetMotionMaster()->Clear();
-        temp->GetMotionMaster()->MovePoint(0, wLoc.coord_x, wLoc.coord_y, wLoc.coord_z);
-        temp = m_creature->GetCreature(MedivhGUID);
+        case PIECE_MOVE:
+            DoCast(m_creature,SPELL_MOVE_MARKER);
+            temp->StopMoving();
+            temp->GetMotionMaster()->Clear();
+            temp->GetMotionMaster()->MovePoint(0, wLoc.coord_x, wLoc.coord_y, wLoc.coord_z);
+            temp = m_creature->GetCreature(MedivhGUID);
 
-        if (temp)
-            ((boss_MedivhAI*)temp->AI())->ChangePlaceInBoard(unitToMove, me->GetGUID());
-        break;
-    case PIECE_CHANGE_FACING:
-        temp->SetInFront(m_creature);
-        temp = NULL;
-        temp = m_creature->GetCreature(MedivhGUID);
+            if (temp)
+                ((boss_MedivhAI*)temp->AI())->ChangePlaceInBoard(unitToMove, me->GetGUID());
+            break;
+        case PIECE_CHANGE_FACING:
+            temp->SetInFront(m_creature);
+            temp = NULL;
+            temp = m_creature->GetCreature(MedivhGUID);
 
-        if (temp)
-            ((boss_MedivhAI*)temp->AI())->SetOrientation(unitToMove);
-        break;
-    default:
-        break;
+            if (temp)
+                ((boss_MedivhAI*)temp->AI())->SetOrientation(unitToMove);
+            break;
+        default:
+            break;
     }
 
     unitToMove = 0;
@@ -1606,6 +1606,7 @@ void boss_MedivhAI::Reset()
     miniEventTimer = 5000;
     hordePieces = 16;
     alliancePieces = 16;
+    moveTimer = 60000;
     medivhSidePieces.clear();
     tpList.clear();
     moveList.clear();
@@ -2330,6 +2331,7 @@ void boss_MedivhAI::UpdateAI(const uint32 diff)
                             printf("\ni: %i, j: %i, piece: %u, trigger: %u", i, j, chessBoard[i][j].piece, chessBoard[i][j].trigger);
                         }
                     }
+                    moveTimer = 7000;
                     break;
             }
             miniEventState++;
@@ -2340,16 +2342,16 @@ void boss_MedivhAI::UpdateAI(const uint32 diff)
         return;
     }
 
-    if (!eventStarted && pInstance->GetData(DATA_CHESS_EVENT) == IN_PROGRESS)
-    {
-        StartEvent();
-        return;
-    }
-
     if (!eventStarted)
         return;
 
-    //TODO: add piece move ai
+    if (moveTimer <= diff)
+    {
+        MakeMoves();
+        moveTimer = urand(6000, 8000);
+    }
+    else
+        moveTimer -= diff;
 }
 
 void boss_MedivhAI::SetOrientation(uint64 piece, ChessOrientation ori)
@@ -2716,7 +2718,7 @@ void boss_MedivhAI::AddTriggerToMove(uint64 trigger, uint64 piece, bool player)
     }
 }
 
-void boss_MedivhAI::MakeMove()
+void boss_MedivhAI::MakeMoves()
 {
     std::list<ChessTile>::iterator tmpItr;
     Creature * tmpC;
@@ -2765,8 +2767,58 @@ bool GossipHello_npc_chesspiece(Player* player, Creature* _Creature)
 
     if(!(_Creature->isPossessedByPlayer()))
     {
-        player->ADD_GOSSIP_ITEM(0, GOSSIP_POSSES, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-        player->SEND_GOSSIP_MENU(8990, _Creature->GetGUID());
+        switch (_Creature->GetEntry())
+        {
+            case NPC_PAWN_H:
+                player->ADD_GOSSIP_ITEM(0, "Control Orc Grunt", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+                player->SEND_GOSSIP_MENU(8990, _Creature->GetGUID());
+                break;
+            case NPC_PAWN_A:
+                player->ADD_GOSSIP_ITEM(0, "Control Human Footman, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+                player->SEND_GOSSIP_MENU(8952, _Creature->GetGUID());
+                break;
+            case NPC_KNIGHT_H:
+                player->ADD_GOSSIP_ITEM(0, "Control Orc Wolf", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+                player->SEND_GOSSIP_MENU(10439, _Creature->GetGUID());
+                break;
+            case NPC_KNIGHT_A:
+                player->ADD_GOSSIP_ITEM(0, "Control Human Charger", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+                player->SEND_GOSSIP_MENU(10414, _Creature->GetGUID());
+                break;
+            case NPC_QUEEN_H:
+                player->ADD_GOSSIP_ITEM(0, "Control Orc Warlock", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+                player->SEND_GOSSIP_MENU(10440, _Creature->GetGUID());
+                break;
+            case NPC_QUEEN_A:
+                player->ADD_GOSSIP_ITEM(0, "Control Human Conjurer", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+                player->SEND_GOSSIP_MENU(10417, _Creature->GetGUID());
+                break;
+            case NPC_BISHOP_H:
+                player->ADD_GOSSIP_ITEM(0, "Control Orc Necrolyte", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+                player->SEND_GOSSIP_MENU(8990, _Creature->GetGUID());
+                break;
+            case NPC_BISHOP_A:
+                player->ADD_GOSSIP_ITEM(0, "Control Human Cleric", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+                player->SEND_GOSSIP_MENU(10416, _Creature->GetGUID());
+                break;
+            case NPC_ROOK_H:
+                player->ADD_GOSSIP_ITEM(0, "Control Summoned Daemon", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+                player->SEND_GOSSIP_MENU(10426, _Creature->GetGUID());
+                break;
+            case NPC_ROOK_A:
+                player->ADD_GOSSIP_ITEM(0, "Control Conjured Water Elemental", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+                player->SEND_GOSSIP_MENU(8990, _Creature->GetGUID());
+                break;
+            case NPC_KING_H:
+                player->ADD_GOSSIP_ITEM(0, "Control Warchief Blackhand", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+                player->SEND_GOSSIP_MENU(8990, _Creature->GetGUID());
+                break;
+            case NPC_KING_A:
+                player->ADD_GOSSIP_ITEM(0, "Control King Llane", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+                player->SEND_GOSSIP_MENU(10418, _Creature->GetGUID());
+                break;
+
+        }
     }
 
     return true;
@@ -2774,10 +2826,11 @@ bool GossipHello_npc_chesspiece(Player* player, Creature* _Creature)
 
 bool GossipSelect_npc_chesspiece(Player* player, Creature* _Creature, uint32 sender, uint32 action)
 {
+    ScriptedInstance* pInstance = ((ScriptedInstance*)_Creature->GetInstanceData());
     if(action == GOSSIP_ACTION_INFO_DEF + 1)
     {
-        //if (_Creature->GetEntry() == NPC_KING_A || _Creature->GetEntry() == NPC_KING_H)
-        //    pInstance->SetData(DATA_CHESS_EVENT, IN_PROGRESS);
+        if (_Creature->GetEntry() == NPC_KING_A || _Creature->GetEntry() == NPC_KING_H)
+            pInstance->SetData(DATA_CHESS_EVENT, IN_PROGRESS);
 
         player->CastSpell(_Creature, SPELL_POSSES_CHESSPIECE, false);
     }
@@ -2795,10 +2848,10 @@ bool GossipHello_npc_echo_of_medivh(Player* player, Creature* _Creature)
         return false;
 
     if(pInstance->GetData(DATA_CHESS_EVENT) == FAIL)
-        pInstance->SetData(DATA_CHESS_EVENT,NOT_STARTED);
+        pInstance->SetData(DATA_CHESS_EVENT, NOT_STARTED);
 
     if(pInstance->GetData(DATA_CHESS_EVENT) == DONE) //for testing
-        pInstance->SetData(DATA_CHESS_EVENT,NOT_STARTED);
+        pInstance->SetData(DATA_CHESS_EVENT, NOT_STARTED);
 
     if(pInstance->GetData(DATA_CHESS_EVENT) == NOT_STARTED)
     {
@@ -2820,7 +2873,8 @@ bool GossipSelect_npc_echo_of_medivh(Player* player, Creature* _Creature, uint32
     if(action == GOSSIP_ACTION_INFO_DEF)
     {
         DoScriptText(SCRIPTTEXT_AT_EVENT_START,_Creature);
-        pInstance->SetData(DATA_CHESS_EVENT, IN_PROGRESS);
+        //pInstance->SetData(DATA_CHESS_EVENT, IN_PROGRESS);
+        ((boss_MedivhAI*)_Creature->AI())->StartEvent();
         pInstance->SetData(CHESS_EVENT_TEAM, player->GetTeam());
         _Creature->GetMotionMaster()->MoveRandom(10);
     }

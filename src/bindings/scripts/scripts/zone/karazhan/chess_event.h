@@ -42,9 +42,8 @@ EndScriptData */
 #define hordeSideDeadOrientation        1
 #define POSITION_Z                      221
 
-                            //x, y, z
-#define SPAWN_POS           -11061.8, -1900.1, 221.1
-
+                                //x, y, z
+#define SPAWN_POS               wLoc.coord_x, wLoc.coord_y, wLoc.coord_z
 #define START_PRIORITY          100
 #define RAND_PRIORITY           100
 #define MELEE_PRIORITY          50      // use: + melee count * MELEE_PRIORITY
@@ -407,7 +406,6 @@ private:
     // entry, index_list
     std::map<int, std::list<std::pair<int, int> > > allowedPositions; // tylko do ustawienia
 
-
     std::list<uint64> medivhSidePieces; //alive pieces guids
 
     bool eventStarted;
@@ -424,6 +422,7 @@ private:
     std::list<uint64> tpList;
     std::list<ChessTile> moveList; //list of triggers to make move
 
+    uint32 moveTimer;
 
 public:
     boss_MedivhAI(Creature *c);
@@ -470,7 +469,7 @@ public:
     bool CanMoveTo(uint64 trigger, uint64 piece);   //check if player can move to trigger - prevent cheating
     void AddTriggerToMove(uint64 trigger, uint64 piece, bool player);
     Creature * FindTrigger(uint64 piece);               //find trigger where piece actually should be
-    void MakeMove();
+    void MakeMoves();
     int GetMoveRange(uint64 piece);
     int GetMoveRange(Unit * piece);
     void ChangePlaceInBoard(uint64 piece, uint64 destTrigger);
