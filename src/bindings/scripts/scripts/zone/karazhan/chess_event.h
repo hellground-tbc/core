@@ -42,9 +42,18 @@ EndScriptData */
 
                                 //x, y, z
 #define SPAWN_POS               wLoc.coord_x, wLoc.coord_y, wLoc.coord_z
-#define START_PRIORITY          100
-#define RAND_PRIORITY           100
-#define MELEE_PRIORITY          50      // use: + melee count * MELEE_PRIORITY
+
+#define START_PRIORITY                  100
+#define RAND_PRIORITY                   100
+#define MELEE_PRIORITY                  50      // use: + melee count * MELEE_PRIORITY
+#define ATTACK_KING_PRIOR               50
+#define ATTACK_HEALER_PRIOR             50
+#define MELEE_ENEMY_COUNT_PRIOR_MOD_1   50
+#define MELEE_ENEMY_COUNT_PRIOR_MOD_2   25
+#define MELEE_ENEMY_COUNT_PRIOR_MOD_3   -25
+#define MELEE_ENEMY_COUNT_PRIOR_MOD_4   -50
+#define MOVE_BACK_PRIOR_MOD             -50
+#define MOVE_STRAFE_PRIOR_MOD           -25
 
 #define ABILITY_CHANCE_MAX      100
 #define ABILITY_1_CHANCE_MIN    25
@@ -58,7 +67,10 @@ EndScriptData */
 #define MIN_SELF_MOVE_CHANCE    25
 #define MAX_SELF_MOVE_CHANCE    50
 
+#define RAND_MAX_VAL            1000
+
 #define attackCooldown          3000
+#define SHARED_COOLDOWN         5000
 
 #define ADD_PIECE_TO_MOVE_TIMER urand(1000, 4000);
 
@@ -66,6 +78,10 @@ EndScriptData */
 #define ORI_E   5.391155
 #define ORI_S   3.817220
 #define ORI_W   2.239354
+
+#define CHESS_DEBUG_INFO                1
+//#define DISSABLE_MEDIVH_PIECES_MOVEMENT 1
+//#define DISSABLE_MEDIVH_PIECES_SPELLS   1
 
 enum SCRIPTTEXTs
 {
@@ -405,7 +421,7 @@ public:
 
     void SpellHit(Unit * caster, const SpellEntry * spell);
 
-    void JustDied(Unit* killer){}
+    void JustDied(Unit* killer);
 
     void UpdateAI(const uint32 diff);
 
@@ -423,7 +439,7 @@ private:
     int16 chanceToMove;     //random chance for medivh to move piece when player moved
                             //when player want to move his piece medivh tests if he can move too
 
-    int16 chaceToSelfMove;
+    int16 chanceToSelfMove;
 
     ChessTile chessBoard[8][8];
 
@@ -466,6 +482,10 @@ public:
     bool IsEmptySquareInRange(uint64 piece, int range);
     bool IsInMoveList(uint64 unit, bool trigger = false);
     bool IsInMoveRange(uint64 from, uint64 to, int range);
+    bool IsKing(uint64 piece);
+    bool IsHealer(uint64 piece);
+    bool IsKing(Creature * piece);
+    bool IsHealer(Creature * piece);
 
     //teleport
 
@@ -502,8 +522,10 @@ public:
     int GetMoveRange(Unit * piece);
     uint32 GetMoveSpell(uint64 piece);
     uint32 GetMoveSpell(Creature * piece);
+    bool FindPlaceInBoard(uint64 unit, int & i, int & j);
     void ChangePlaceInBoard(uint64 piece, uint64 destTrigger);
-    void FindPlaceInBoard(uint64 unit, int & i, int & j);
+    void ChangePieceFacing(uint64 piece, uint64 destTrigger);
+    void ChangePieceFacing(Creature * piece, Creature * destTrigger);
 
     //priority
 
