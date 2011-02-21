@@ -1653,7 +1653,8 @@ void WorldObject::SendGameObjectCustomAnim(uint64 guid)
 {
     WorldPacket data(SMSG_GAMEOBJECT_CUSTOM_ANIM, 8+4);
     data << uint64(guid);
-    data << uint32(0);  
+    data << uint32(0);
+    SendMessageToSet(&data, true);
 }
 
 Map* WorldObject::_getMap()
