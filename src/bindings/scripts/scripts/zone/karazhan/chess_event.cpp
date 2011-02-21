@@ -479,37 +479,8 @@ void npc_chesspieceAI::UpdateAI(const uint32 diff)
             attackTimer -= diff;
 
     }
-    //DoMeleeAttackIfReady();
 
     CastNextSpellIfAnyAndReady();
-}
-
-void npc_chesspieceAI::DamageTaken(Unit * done_by, uint32 &damage)
-{
-    #ifdef CHESS_DEBUG_INFO
-    printf("\n Wywolanie DamageTaken(Unit * done_by = %i, uint32 &damage = %i)", done_by ? 1 : 0, damage);
-    #endif
-    return;
-    if (damage > m_creature->GetHealth())
-    {
-        damage = 0;
-        if (m_creature->isPossessed())
-        {
-            Player * tmpP = me->GetCharmerOrOwnerPlayerOrPlayerItself();
-            if (tmpP)
-                tmpP->RemoveAurasDueToSpell(SPELL_POSSES_CHESSPIECE);
-
-            m_creature->RemoveAurasDueToSpell(SPELL_POSSES_CHESSPIECE);
-        }
-
-        InGame = false;
-
-        this->npc_medivh = m_creature->GetCreature(this->MedivhGUID);
-        if (npc_medivh)
-            ((boss_MedivhAI*)npc_medivh->AI())->RemoveChessPieceFromBoard(m_creature);
-        else
-            me->Say("I'm dying ... but Medivh not found ...", LANG_UNIVERSAL, NULL);
-    }
 }
 
 void npc_chesspieceAI::JustDied(Unit * killer)
@@ -517,20 +488,21 @@ void npc_chesspieceAI::JustDied(Unit * killer)
     #ifdef CHESS_DEBUG_INFO
     printf("\n Wywolanie JustDied(Unit * killer = %i)", killer ? 1 : 0);
     #endif
-    if (m_creature->isPossessed())
+
+    Player * tmpP = me->GetCharmerOrOwnerPlayerOrPlayerItself();
+    if (tmpP)
+        tmpP->RemoveAurasDueToSpell(SPELL_POSSES_CHESSPIECE);
+
+    m_creature->RemoveAurasDueToSpell(SPELL_POSSES_CHESSPIECE);
+
+    if (pInstance->GetData(DATA_CHESS_EVENT) == IN_PROGRESS)
     {
-        Player * tmpP = me->GetCharmerOrOwnerPlayerOrPlayerItself();
-        if (tmpP)
-            tmpP->RemoveAurasDueToSpell(SPELL_POSSES_CHESSPIECE);
-
-        m_creature->RemoveAurasDueToSpell(SPELL_POSSES_CHESSPIECE);
+        npc_medivh = m_creature->GetCreature(MedivhGUID);
+        if (npc_medivh)
+            ((boss_MedivhAI*)npc_medivh->AI())->RemoveChessPieceFromBoard(m_creature);
+        else
+            me->Say("I'm dying ... but Medivh not found ...", LANG_UNIVERSAL, NULL);
     }
-
-    npc_medivh = m_creature->GetCreature(MedivhGUID);
-    if (npc_medivh)
-        ((boss_MedivhAI*)npc_medivh->AI())->RemoveChessPieceFromBoard(m_creature);
-    else
-        me->Say("I'm dying ... but Medivh not found ...", LANG_UNIVERSAL, NULL);
 }
 
 //Medivh AI
@@ -1716,9 +1688,10 @@ void boss_MedivhAI::Reset()
     #endif
 
     eventStarted = false;
-    miniEvent = false;
-    miniEventState = MINI_EVENT_KING;
+    miniEventState = MINI_EVENT_NONE;
     miniEventTimer = 5000;
+    endGameEventState = GAMEEND_NONE;
+    endEventTimer = 2500;
     hordePieces = 16;
     alliancePieces = 16;
     moveTimer = 60000;
@@ -1728,7 +1701,6 @@ void boss_MedivhAI::Reset()
 
     m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
     m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-    //enabled = false;
 }
 
 void boss_MedivhAI::SayChessPieceDied(Unit * piece)
@@ -1779,12 +1751,18 @@ void boss_MedivhAI::SayChessPieceDied(Unit * piece)
 
                 DoScriptText(SCRIPTTEXT_MEDIVH_WIN, m_creature);
                 pInstance->SetData(DATA_CHESS_EVENT, FAIL);
+                endGameEventState = GAMEEND_MEDIVH_WIN;
+                endEventTimer = 2500;
+                endEventCount = 0;
                 break;
 
             case NPC_KING_A:
 
                 DoScriptText(SCRIPTTEXT_PLAYER_WIN, m_creature);
                 pInstance->SetData(DATA_CHESS_EVENT, DONE);
+                endGameEventState = GAMEEND_MEDIVH_LOSE;
+                endEventTimer = 2500;
+                endEventCount = 0;
                 m_creature->SummonGameObject(DUST_COVERED_CHEST, -11058, -1903, 221, 2.24, 0, 0, 0, 0, 7200000);
                 break;
 
@@ -1834,12 +1812,18 @@ void boss_MedivhAI::SayChessPieceDied(Unit * piece)
 
                 DoScriptText(SCRIPTTEXT_MEDIVH_WIN, m_creature);
                 pInstance->SetData(DATA_CHESS_EVENT, FAIL);
+                endGameEventState = GAMEEND_MEDIVH_WIN;
+                endEventTimer = 2500;
+                endEventCount = 0;
                 break;
 
             case NPC_KING_H:
 
                 DoScriptText(SCRIPTTEXT_PLAYER_WIN, m_creature);
                 pInstance->SetData(DATA_CHESS_EVENT, DONE);
+                endGameEventState = GAMEEND_MEDIVH_LOSE;
+                endEventTimer = 2500;
+                endEventCount = 0;
                 m_creature->SummonGameObject(DUST_COVERED_CHEST, -11058, -1903, 221, 2.24, 0, 0, 0, 0, 7200000);
                 break;
 
@@ -1901,14 +1885,25 @@ void boss_MedivhAI::RemoveChessPieceFromBoard(Creature * piece)
     if (FindPlaceInBoard(tmpGUID, tmpI, tmpJ))
         chessBoard[tmpI][tmpJ].piece = 0;
 
+    bool medivhPiece = false;
+
     for (std::list<uint64>::iterator itr = medivhSidePieces.begin(); itr != medivhSidePieces.end();)
     {
         std::list<uint64>::iterator tmpItr = itr;
         ++itr;
 
         if ((*tmpItr) == tmpGUID)
+        {
             medivhSidePieces.erase(tmpItr);
+            medivhPiece = true;
+            if (tmpC)
+                unusedMedivhPieces.push_back(tmpC->GetGUID());
+            break;
+        }
     }
+
+    if (!medivhPiece && tmpC)
+        unusedPlayerPieces.push_back(tmpC->GetGUID());
 
     SayChessPieceDied(piece);
 }
@@ -2395,7 +2390,7 @@ void boss_MedivhAI::ApplyDebuffsOnRaidMembers()
 
 void boss_MedivhAI::StartMiniEvent()
 {
-    miniEvent = true;
+    miniEventState = MINI_EVENT_KING;
     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
 }
 
@@ -2414,7 +2409,7 @@ void boss_MedivhAI::StartEvent()
 
 void boss_MedivhAI::UpdateAI(const uint32 diff)
 {
-    if(miniEvent)
+    if (miniEventState)
     {
         if (miniEventTimer < diff)
         {
@@ -2422,24 +2417,30 @@ void boss_MedivhAI::UpdateAI(const uint32 diff)
             {
                 case MINI_EVENT_KING:
                     PrepareBoardForEvent();
+                    miniEventState = MINI_EVENT_QUEEN;
                     break;
                 case MINI_EVENT_QUEEN:
                     SpawnQueens();
+                    miniEventState = MINI_EVENT_BISHOP;
                     break;
                 case MINI_EVENT_BISHOP:
                     SpawnBishops();
+                    miniEventState = MINI_EVENT_KNIGHT;
                     break;
                 case MINI_EVENT_KNIGHT:
                     SpawnKnights();
+                    miniEventState = MINI_EVENT_ROOK;
                     break;
                 case MINI_EVENT_ROOK:
                     SpawnRooks();
+                    miniEventState = MINI_EVENT_PAWN;
                     break;
                 case MINI_EVENT_PAWN:
                     SpawnPawns();
+                    miniEventState = MINI_EVENT_END;
                     break;
                 default:
-                    miniEvent = false;
+                    miniEventState = MINI_EVENT_NONE;
                     #ifdef CHESS_DEBUG_INFO
                     printf("\nTablica:");
                     #endif
@@ -2459,10 +2460,100 @@ void boss_MedivhAI::UpdateAI(const uint32 diff)
                     moveTimer = 10000;
                     break;
             }
-            miniEventState++;
         }
         else
             miniEventTimer -= diff;
+
+        return;
+    }
+
+    if (endGameEventState)
+    {
+        if (endEventTimer < diff)
+        {
+            Creature * tmpC;
+            switch (endGameEventState)
+            {
+                case GAMEEND_MEDIVH_WIN:
+                    for (std::list<uint64>::iterator itr = unusedMedivhPieces.begin(); itr != unusedMedivhPieces.end(); ++itr)
+                        if (tmpC = me->GetCreature(*itr))
+                            tmpC->HandleEmoteCommand(RAND(EMOTE_ONESHOT_CHEER, EMOTE_ONESHOT_APPLAUD));
+
+                    for (std::list<uint64>::iterator itr = unusedPlayerPieces.begin(); itr != unusedPlayerPieces.end(); ++itr)
+                        if (tmpC = me->GetCreature(*itr))
+                            tmpC->HandleEmoteCommand(EMOTE_ONESHOT_CRY);
+
+                    if (endEventCount >= 5)
+                        endGameEventState = GAMEEND_CLEAR_BOARD;
+                    break;
+                case GAMEEND_MEDIVH_LOSE:
+                    for (std::list<uint64>::iterator itr = unusedPlayerPieces.begin(); itr != unusedPlayerPieces.end(); ++itr)
+                        if (tmpC = me->GetCreature(*itr))
+                            tmpC->HandleEmoteCommand(RAND(EMOTE_ONESHOT_CHEER, EMOTE_ONESHOT_APPLAUD));
+
+                    for (std::list<uint64>::iterator itr = unusedMedivhPieces.begin(); itr != unusedMedivhPieces.end(); ++itr)
+                        if (tmpC = me->GetCreature(*itr))
+                            tmpC->HandleEmoteCommand(EMOTE_ONESHOT_CRY);
+
+                    if (endEventCount >= 5)
+                        endGameEventState = GAMEEND_CLEAR_BOARD;
+                    break;
+                case GAMEEND_CLEAR_BOARD:
+                    for (int i = 0; i < 8; ++i)
+                    {
+                        for (int j = 0; j < 8; ++j)
+                        {
+                            if (tmpC = me->GetCreature(chessBoard[i][j].piece))
+                            {
+                                tmpC->SetVisibility(VISIBILITY_OFF);
+                                tmpC->DestroyForNearbyPlayers();
+                                tmpC->Kill(tmpC, false);
+                            }
+
+                            if (tmpC = me->GetCreature(chessBoard[i][j].trigger))
+                            {
+                                tmpC->SetVisibility(VISIBILITY_OFF);
+                                tmpC->DestroyForNearbyPlayers();
+                                tmpC->Kill(tmpC, false);
+                            }
+
+                            chessBoard[i][j].piece = 0;
+                            chessBoard[i][j].trigger = 0;
+                            chessBoard[i][j].ori = CHESS_ORI_CHOOSE;
+                        }
+                    }
+
+                    for (std::list<uint64>::iterator itr = unusedMedivhPieces.begin(); itr != unusedMedivhPieces.end(); ++itr)
+                    {
+                        if (tmpC = me->GetCreature(*itr))
+                        {
+                            tmpC->SetVisibility(VISIBILITY_OFF);
+                            tmpC->DestroyForNearbyPlayers();
+                            tmpC->Kill(tmpC, false);
+                        }
+                    }
+
+                    for (std::list<uint64>::iterator itr = unusedPlayerPieces.begin(); itr != unusedPlayerPieces.end(); ++itr)
+                    {
+                        if (tmpC = me->GetCreature(*itr))
+                        {
+                            tmpC->SetVisibility(VISIBILITY_OFF);
+                            tmpC->DestroyForNearbyPlayers();
+                            tmpC->Kill(tmpC, false);
+                        }
+                    }
+
+                    unusedMedivhPieces.clear();
+                    unusedPlayerPieces.clear();
+                    medivhSidePieces.clear();
+                    EnterEvadeMode();
+                    break;
+            }
+            endEventCount++;
+            endEventTimer = 2500;
+        }
+        else
+            endEventTimer -= diff;
 
         return;
     }

@@ -199,13 +199,22 @@ enum ChessPIecesSpells
 
 enum MiniEvent
 {
-    MINI_EVENT_KING     = 0,
-    MINI_EVENT_QUEEN    = 1,
-    MINI_EVENT_BISHOP   = 2,
-    MINI_EVENT_KNIGHT   = 3,
-    MINI_EVENT_ROOK     = 4,
-    MINI_EVENT_PAWN     = 5,
-    MINI_EVENT_END      = 6
+    MINI_EVENT_NONE     = 0,
+    MINI_EVENT_KING     = 1,
+    MINI_EVENT_QUEEN    = 2,
+    MINI_EVENT_BISHOP   = 3,
+    MINI_EVENT_KNIGHT   = 4,
+    MINI_EVENT_ROOK     = 5,
+    MINI_EVENT_PAWN     = 6,
+    MINI_EVENT_END      = 7
+};
+
+enum GameEndEvent
+{
+    GAMEEND_NONE        = 0,
+    GAMEEND_MEDIVH_WIN  = 1,
+    GAMEEND_MEDIVH_LOSE = 2,
+    GAMEEND_CLEAR_BOARD = 3
 };
 
 enum AbilityCooldowns
@@ -423,8 +432,6 @@ public:
     void JustDied(Unit* killer);
 
     void UpdateAI(const uint32 diff);
-
-    void DamageTaken(Unit * done_by, uint32 &damage);
 };
 
 class TRINITY_DLL_DECL boss_MedivhAI : public ScriptedAI
@@ -444,15 +451,20 @@ private:
     float hordeSideDeadWP[2][16];
     float allianceSideDeadWP[2][16];
 
-    std::list<uint64> medivhSidePieces; //alive pieces guids
+    std::list<uint64> medivhSidePieces;     //alive pieces guids
+
+    std::list<uint64> unusedMedivhPieces;   //pieces that was summoned after medivh piece death
+    std::list<uint64> unusedPlayerPieces;   //pieces that was summoned after player piece death
 
     bool eventStarted;
-    bool enabled;
-    bool miniEvent;
 
-    int miniEventState;
+    GameEndEvent endGameEventState;
+    MiniEvent miniEventState;
+
+    int endEventCount;
 
     int32 miniEventTimer;
+    uint32 endEventTimer;
 
     WorldLocation wLoc;     //location of medivh
     WorldLocation tpLoc;    //location of player teleport point
