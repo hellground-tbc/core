@@ -1807,6 +1807,10 @@ bool SpellMgr::IsSpecialStackCase(SpellEntry const *spellInfo_1, SpellEntry cons
             (spellId_1 != spellId_2))
         return true;
 
+    // Warlord's Rage for Warlord Kalithresh event in Steamvault
+    if (spellId_1 == 36453 && spellId_2 == 37076)
+        return true;
+
     if (recur)
         return IsSpecialStackCase(spellInfo_2, spellInfo_1, sameCaster, false);
 
@@ -2812,6 +2816,10 @@ void SpellMgr::LoadSpellCustomAttr()
         case 26373: // Lunar Invitation
             spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_CASTER;
             spellInfo->EffectImplicitTargetB[1] = 0;
+            break;
+        case 31532: // Repair from Mekgineer event in Steamvault
+        case 37936:
+            spellInfo->Attributes &= ~SPELL_ATTR_BREAKABLE_BY_DAMAGE;
             break;
         default:
             break;

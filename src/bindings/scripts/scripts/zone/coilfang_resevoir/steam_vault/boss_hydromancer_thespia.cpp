@@ -62,6 +62,14 @@ struct TRINITY_DLL_DECL boss_thespiaAI : public ScriptedAI
         LungBurst_Timer = 7000;
         EnvelopingWinds_Timer = 9000;
 
+        std::list<Creature*> water_elementals = DoFindAllCreaturesWithEntry(17917, 100);
+        for(std::list<Creature*>::iterator it = water_elementals.begin(); it != water_elementals.end(); it++)
+        {
+            (*it)->Respawn();
+            (*it)->AI()->EnterEvadeMode();
+            (*it)->GetMotionMaster()->MoveTargetedHome();
+        }
+
         if (pInstance && m_creature->isAlive())
             pInstance->SetData(TYPE_HYDROMANCER_THESPIA, NOT_STARTED);
     }
@@ -82,6 +90,10 @@ struct TRINITY_DLL_DECL boss_thespiaAI : public ScriptedAI
     void EnterCombat(Unit *who)
     {
         DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), m_creature);
+
+        std::list<Creature*> water_elementals = DoFindAllCreaturesWithEntry(17917, 100);
+        for(std::list<Creature*>::iterator it = water_elementals.begin(); it != water_elementals.end(); it++)
+            (*it)->SetInCombatWith(who);
 
         if (pInstance)
             pInstance->SetData(TYPE_HYDROMANCER_THESPIA, IN_PROGRESS);

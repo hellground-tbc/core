@@ -104,6 +104,7 @@ struct TRINITY_DLL_DECL boss_warlord_kalithreshAI : public ScriptedAI
     uint32 Rage_Timer;
     uint64 CurrentDistiller;
     bool CanRage;
+    
 
     void Reset()
     {
@@ -114,6 +115,11 @@ struct TRINITY_DLL_DECL boss_warlord_kalithreshAI : public ScriptedAI
         Rage_Timer = 45000;
         CanRage = false;
         CurrentDistiller = NULL;
+
+        std::list<Creature*> naga_distillers = DoFindAllCreaturesWithEntry(17954, 100);
+        for(std::list<Creature*>::iterator it = naga_distillers.begin(); it != naga_distillers.end(); it++)
+            (*it)->Respawn();
+        
 
         if (pInstance)
             pInstance->SetData(TYPE_WARLORD_KALITHRESH, NOT_STARTED);
@@ -149,14 +155,12 @@ struct TRINITY_DLL_DECL boss_warlord_kalithreshAI : public ScriptedAI
         //hack :(
         if (spell->Id == SPELL_WARLORDS_RAGE_PROC)
         {
-            if (pInstance)
-                if (pInstance->GetData(TYPE_DISTILLER) == DONE)
-                    m_creature->RemoveAurasDueToSpell(SPELL_WARLORDS_RAGE_PROC);
             if(CurrentDistiller)
                 if(Unit *distiler = me->GetUnit(CurrentDistiller))
                 {
                     distiler->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     distiler->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    distiler->SetHealth(distiler->GetMaxHealth());
                     CurrentDistiller = NULL;
                 }
         }
@@ -182,11 +186,15 @@ struct TRINITY_DLL_DECL boss_warlord_kalithreshAI : public ScriptedAI
             {
                 CurrentDistiller = distiller->GetGUID();
                 DoScriptText(SAY_REGEN, m_creature);
-                AddSpellToCast(m_creature,SPELL_WARLORDS_RAGE, true);
+                DoCast(m_creature,SPELL_WARLORDS_RAGE, true);
                 ((mob_naga_distillerAI*)distiller->AI())->StartRageGen(m_creature);
             }
-            Rage_Timer = 10000+rand()%15000;
+            Rage_Timer = 15000+rand()%15000;
         }else Rage_Timer -= diff;
+
+
+        if (pInstance && m_creature->HasAura(37081, 0) && pInstance->GetData(TYPE_DISTILLER) == DONE)
+            m_creature->RemoveAurasDueToSpell(37081);
 
         //Reflection_Timer
         if (Reflection_Timer < diff)

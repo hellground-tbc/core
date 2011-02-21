@@ -3684,9 +3684,13 @@ bool Unit::AddAura(Aura *Aur)
                             Aur->SetStackAmount(Aur->GetStackAmount()+1);
                         }
                     }
-                    RemoveAura(i2, AURA_REMOVE_BY_STACK);
-                    i2 = m_Auras.lower_bound(spair);
-                    continue;
+                    // this will allow to stack dots and hots casted by different creatures
+                    if(i2->second->GetCasterGUID() == Aur->GetCasterGUID() || Aur->StackNotByCaster() || aurSpellInfo->StackAmount)
+                    {
+                        RemoveAura(i2, AURA_REMOVE_BY_STACK);
+                        i2 = m_Auras.lower_bound(spair);
+                        continue;
+                    }
                 }
             }
             if (isDotOrHot)
