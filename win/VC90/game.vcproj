@@ -556,6 +556,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\game\ObjectPosSelector.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\ObjectPosSelector.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\game\Pet.cpp"
 				>
 			</File>
@@ -779,6 +787,10 @@
 				RelativePath="..\..\src\game\ThreatManager.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\src\game\ZoneScript.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Battlegrounds"
@@ -896,6 +908,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\game\OutdoorPvPImpl.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\game\OutdoorPvPMgr.cpp"
 				>
 			</File>
@@ -909,14 +925,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\game\OutdoorPvPNA.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\game\OutdoorPvPObjectiveAI.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\game\OutdoorPvPObjectiveAI.h"
 				>
 			</File>
 			<File

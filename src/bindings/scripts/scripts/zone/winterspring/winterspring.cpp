@@ -25,6 +25,7 @@ EndScriptData */
 npc_lorax
 npc_rivern_frostwind
 npc_witch_doctor_mauari
+npc_haleh
 EndContentData */
 
 #include "precompiled.h"
@@ -143,6 +144,39 @@ bool GossipSelect_npc_witch_doctor_mauari(Player *player, Creature *_Creature, u
     return true;
 }
 
+/*####
+# npc_haleh
+####*/
+
+#define GOSSIP_ITEM_HALEH "Restore Drakefire Amulet."
+
+bool GossipHello_npc_haleh(Player *player, Creature *_Creature)
+{
+    if (_Creature->isQuestGiver())
+        player->PrepareQuestMenu( _Creature->GetGUID() );
+
+    if(player->GetQuestRewardStatus(6502) && !player->HasItemCount(16309,1))
+        player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_HALEH, GOSSIP_SENDER_MAIN, GOSSIP_SENDER_INFO );
+        player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+    return true;
+}
+
+bool GossipSelect_npc_haleh(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+{
+    if( action == GOSSIP_SENDER_INFO )
+    {
+            ItemPosCountVec dest;
+            uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 16309, 1);
+            if (msg == EQUIP_ERR_OK)
+            {
+                 Item* item = player->StoreNewItem(dest, 16309, true);
+                 player->SendNewItem(item,1,true,false,true);
+            }
+    player->CLOSE_GOSSIP_MENU();
+    }
+    return true;
+}
+
 void AddSC_winterspring()
 {
     Script *newscript;
@@ -163,6 +197,12 @@ void AddSC_winterspring()
     newscript->Name="npc_witch_doctor_mauari";
     newscript->pGossipHello =  &GossipHello_npc_witch_doctor_mauari;
     newscript->pGossipSelect = &GossipSelect_npc_witch_doctor_mauari;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name="npc_haleh";
+    newscript->pGossipHello = &GossipHello_npc_haleh;
+    newscript->pGossipSelect = &GossipSelect_npc_haleh;
     newscript->RegisterSelf();
 }
 

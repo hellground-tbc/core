@@ -181,14 +181,14 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
                     for(std::set<uint64>::iterator i = DoorGUID.begin(); i != DoorGUID.end(); ++i)
                     {
                         if(GameObject *Door = instance->GetGameObject(*i))
-                        Door->SetGoState(0);
+                        Door->SetGoState(GO_STATE_ACTIVE);
                     }
                 }
                 else
                     for(std::set<uint64>::iterator i = DoorGUID.begin(); i != DoorGUID.end(); ++i)
                     {
                         if(GameObject *Door = instance->GetGameObject(*i))
-                        Door->SetGoState(1);
+                        Door->SetGoState(GO_STATE_READY);
                     }
                 if(Encounters[3] != DONE)
                     Encounters[3] = data;
@@ -198,7 +198,7 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
                 for(std::set<uint64>::iterator i = ExplodeObjectGUID.begin(); i != ExplodeObjectGUID.end(); ++i)
                 {
                     if(GameObject *ExplodeObject = instance->GetGameObject(*i))
-                    ExplodeObject->SetGoState(!data);
+                    ExplodeObject->SetGoState(GOState(!data));
                 }
         }
 
@@ -218,19 +218,19 @@ struct TRINITY_DLL_DECL instance_the_eye : public ScriptedInstance
         return 0;
     }
 
-    const char* Save()
+    std::string GetSaveData()
     {
         OUT_SAVE_INST_DATA;
+
         std::ostringstream stream;
-        stream << Encounters[0] << " " << Encounters[1] << " " << Encounters[2] << " " << Encounters[3];
-        char* out = new char[stream.str().length() + 1];
-        strcpy(out, stream.str().c_str());
-        if(out)
-        {
-            OUT_SAVE_INST_DATA_COMPLETE;
-            return out;
-        }
-        return NULL;
+        stream << Encounters[0] << " ";
+        stream << Encounters[1] << " ";
+        stream << Encounters[2] << " ";
+        stream << Encounters[3];
+
+        OUT_SAVE_INST_DATA_COMPLETE;
+
+        return stream.str();
     }
 
     void Load(const char* in)

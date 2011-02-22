@@ -95,7 +95,7 @@ struct TRINITY_DLL_DECL boss_nalorakkAI : public ScriptedAI
     {
         MoveEvent = true;
         MovePhase = 0;
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
 
         SpellEntry *TempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_MANGLE);
         if(TempSpell)
@@ -136,7 +136,7 @@ struct TRINITY_DLL_DECL boss_nalorakkAI : public ScriptedAI
             inMove = false;
             waitTimer = 0;
             m_creature->SetSpeed(MOVE_RUN,2);
-            m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+            m_creature->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
         }else
         {
             (*m_creature).GetMotionMaster()->MovePoint(0,NalorakkWay[7][0],NalorakkWay[7][1],NalorakkWay[7][2]);
@@ -162,19 +162,11 @@ struct TRINITY_DLL_DECL boss_nalorakkAI : public ScriptedAI
         std::list<Creature*> templist;
         float x, y, z;
         m_creature->GetPosition(x, y, z);
-
         {
-            CellPair pair(Trinity::ComputeCellPair(x, y));
-            Cell cell(pair);
-            cell.data.Part.reserved = ALL_DISTRICT;
-            cell.SetNoCreate();
-
             Trinity::AllFriendlyCreaturesInGrid check(m_creature);
             Trinity::CreatureListSearcher<Trinity::AllFriendlyCreaturesInGrid> searcher(templist, check);
 
-            TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllFriendlyCreaturesInGrid>, GridTypeMapContainer> cSearcher(searcher);
-
-            cell.Visit(pair, cSearcher, *(m_creature->GetMap()));
+            Cell::VisitGridObjects(me, searcher, me->GetMap()->GetVisibilityDistance());
         }
 
         if(!templist.size())

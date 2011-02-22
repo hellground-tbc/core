@@ -200,10 +200,10 @@ bool GOHello_go_princess_stillpine_cage(Player* pPlayer, GameObject* pGO)
 
     if (pGO->GetGoType() == GAMEOBJECT_TYPE_DOOR)
     {
-		DoScriptText(-1230010-urand(0, 2), Prisoner, pPlayer);
+        DoScriptText(-1230010-urand(0, 2), Prisoner, pPlayer);
         pPlayer->CastedCreatureOrGO(17682, Prisoner->GetGUID(), 31003);
         ((Creature*)Prisoner)->GetMotionMaster()->MoveFleeing(pPlayer,4000);
-		CAST_AI(npc_princess_stillpineAI, ((Creature*)Prisoner)->AI())->FleeTimer = 4000;
+        CAST_AI(npc_princess_stillpineAI, ((Creature*)Prisoner)->AI())->FleeTimer = 4000;
     }
         
     return false;
@@ -229,13 +229,13 @@ void AddSC_bloodmyst_isle()
     newscript->pGossipHello =  &GossipHello_npc_exarch_admetius;
     newscript->pGossipSelect = &GossipSelect_npc_exarch_admetius;
     newscript->RegisterSelf();
-	
+    
     newscript = new Script;
     newscript->Name="npc_princess_stillpine";
     newscript->GetAI = &GetAI_npc_princess_stillpineAI;
     newscript->RegisterSelf();
-	
-	newscript = new Script;
+    
+    newscript = new Script;
     newscript->Name = "go_princess_stillpine_cage";
     newscript->pGOHello = &GOHello_go_princess_stillpine_cage;
     newscript->RegisterSelf();

@@ -37,7 +37,7 @@ class Totem : public Creature
     public:
         explicit Totem();
         virtual ~Totem(){};
-        void Update( uint32 time );
+        void Update(uint32 time);
         void Summon(Unit* owner);
         void UnSummon();
         uint32 GetSpell(uint8 slot = 0) const { return m_spells[slot]; }
@@ -54,7 +54,7 @@ class Totem : public Creature
         void UpdateArmor() {}
         void UpdateMaxHealth() {}
         void UpdateMaxPower(Powers /*power*/) {}
-        void UpdateAttackPowerAndDamage(bool /*ranged*/ ) {}
+        void UpdateAttackPowerAndDamage(bool /*ranged*/) {}
         void UpdateDamagePhysical(WeaponAttackType /*attType*/) {}
 
         bool IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges = false);

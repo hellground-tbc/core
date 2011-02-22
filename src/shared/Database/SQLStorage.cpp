@@ -1,7 +1,5 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +19,7 @@
 #include "SQLStorage.h"
 #include "SQLStorageImpl.h"
 
-extern Database WorldDatabase;
+extern DatabaseType WorldDatabase;
 
 const char CreatureInfosrcfmt[]="iiiiiiisssiiiiiiiiiiffiffiiiiiiiiiiiffiiiiiiiiiiiiiiiiiiiisiilliiis";
 const char CreatureInfodstfmt[]="iiiiiiisssiiiiiiiiiiffiffiiiiiiiiiiiffiiiiiiiiiiiiiiiiiiiisiilliiii";
@@ -48,6 +46,27 @@ SQLStorage sItemStorage(ItemPrototypesrcfmt, ItemPrototypedstfmt, "entry","item_
 SQLStorage sPageTextStore(PageTextfmt,"entry","page_text");
 SQLStorage sSpellThreatStore(SpellThreatfmt,"entry","spell_threat");
 SQLStorage sInstanceTemplate(InstanceTemplatesrcfmt, InstanceTemplatedstfmt, "map","instance_template");
+
+void SQLStorage::EraseEntry(uint32 id)
+{
+    uint32 offset=0;
+    for(uint32 x=0;x<iNumFields;x++)
+        if (dst_format[x]==FT_STRING)
+        {
+            if(pIndex[id])
+                delete [] *(char**)((char*)(pIndex[id])+offset);
+
+            offset += sizeof(char*);
+        }
+        else if (dst_format[x]==FT_LOGIC)
+            offset += sizeof(bool);
+        else if (dst_format[x]==FT_BYTE)
+            offset += sizeof(char);
+        else
+            offset += 4;
+
+    pIndex[id] = NULL;
+}
 
 void SQLStorage::Free ()
 {
@@ -77,4 +96,3 @@ void SQLStorage::Load()
     SQLStorageLoader loader;
     loader.Load(*this);
 }
-

@@ -81,6 +81,9 @@ class BIH
 {
     public:
         BIH() {};
+        #ifndef WIN32
+        static volatile bool possibleFreeze;
+        #endif
         template< class T, class BoundsFunc >
         void build(const std::vector<T> &primitives, BoundsFunc &getBounds, uint32 leafSize = 3, bool printStats=false)
         {
@@ -120,9 +123,12 @@ class BIH
         {
             float intervalMin = -1.f;
             float intervalMax = -1.f;
+
             Vector3 org = r.origin();
             Vector3 dir = r.direction();
+
             Vector3 invDir;
+
             for (int i=0; i<3; ++i)
             {
                 invDir[i] = 1.f / dir[i];
@@ -145,6 +151,7 @@ class BIH
 
             if (intervalMin > intervalMax)
                 return;
+
             intervalMin = std::max(intervalMin, 0.f);
             intervalMax = std::min(intervalMax, maxDist);
 
@@ -170,9 +177,14 @@ class BIH
             int stackPos = 0;
             int node = 0;
 
-            while (true) {
+            while (true)
+            {
                 while (true)
                 {
+                    #ifndef WIN32
+                    if (possibleFreeze)
+                        return;
+                    #endif
                     uint32 tn = tree[node];
                     uint32 axis = (tn & (3 << 30)) >> 30;
                     bool BVH2 = tn & (1 << 29);
@@ -181,6 +193,9 @@ class BIH
                     {
                         if (axis < 3)
                         {
+                            if (stackPos >= MAX_STACK_SIZE)
+                                break;
+
                             // "normal" interior node
                             float tf = (intBitsToFloat(tree[node + offsetFront[axis]]) - org[axis]) * invDir[axis];
                             float tb = (intBitsToFloat(tree[node + offsetBack[axis]]) - org[axis]) * invDir[axis];
@@ -190,13 +205,15 @@ class BIH
                             int back = offset + offsetBack3[axis];
                             node = back;
                             // ray passes through far node only
-                            if (tf < intervalMin) {
+                            if (tf < intervalMin)
+                            {
                                 intervalMin = (tb >= intervalMin) ? tb : intervalMin;
                                 continue;
                             }
                             node = offset + offsetFront3[axis]; // front
                             // ray passes through near node only
-                            if (tb > intervalMax) {
+                            if (tb > intervalMax)
+                            {
                                 intervalMax = (tf <= intervalMax) ? tf : intervalMax;
                                 continue;
                             }
@@ -214,9 +231,15 @@ class BIH
                         {
                             // leaf - test some objects
                             int n = tree[node + 1];
-                            while (n > 0) {
+                            while (n > 0)
+                            {
+                                #ifndef WIN32
+                                if (possibleFreeze)
+                                    return;
+                                #endif
                                 bool hit = intersectCallback(r, objects[offset], maxDist, stopAtFirst);
-                                if(stopAtFirst && hit) return;
+                                if(stopAtFirst && hit)
+                                    return;
                                 --n;
                                 ++offset;
                             }
@@ -227,8 +250,14 @@ class BIH
                     {
                         if (axis>2)
                             return; // should not happen
-                        float tf = (intBitsToFloat(tree[node + offsetFront[axis]]) - org[axis]) * invDir[axis];
-                        float tb = (intBitsToFloat(tree[node + offsetBack[axis]]) - org[axis]) * invDir[axis];
+                        uint32 tmpFront = node + offsetFront[axis];
+                        uint32 tmpBack = node + offsetBack[axis];
+                        if (tmpFront >= tree.size())
+                            break;
+                        if (tmpBack >= tree.size())
+                            break;
+                        float tf = (intBitsToFloat(tree[tmpFront]) - org[axis]) * invDir[axis];
+                        float tb = (intBitsToFloat(tree[tmpBack]) - org[axis]) * invDir[axis];
                         node = offset;
                         intervalMin = (tf >= intervalMin) ? tf : intervalMin;
                         intervalMax = (tb <= intervalMax) ? tb : intervalMax;

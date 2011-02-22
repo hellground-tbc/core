@@ -23,67 +23,52 @@
 #include "Opcodes.h"
 #include "ConfusedMovementGenerator.h"
 #include "DestinationHolderImp.h"
+#include "VMapFactory.h"
 
 template<class T>
 void ConfusedMovementGenerator<T>::Initialize(T &unit)
 {
-    const float wander_distance = 5.0f;
-    float x,y,z;
-    x = unit.GetPositionX();
-    y = unit.GetPositionY();
-    z = unit.GetPositionZ();
-    uint32 mapid=unit.GetMapId();
-
-    Map const *map = unit.GetBaseMap();
-
     i_nextMove = 1;
 
-    bool is_water_ok, is_land_ok;
-    _InitSpecific(unit, is_water_ok, is_land_ok);
-
-    for (unsigned int idx = 0; idx < MAX_CONF_WAYPOINTS+1; ++idx)
-    {
-        const float wanderX = wander_distance*rand_norm();
-        const float wanderY = wander_distance*rand_norm();
-
-        i_waypoints[idx][0] = x + wanderX;
-        i_waypoints[idx][1] = y + wanderY;
-
-        // prevent invalid coordinates generation
-        Trinity::NormalizeMapCoord(i_waypoints[idx][0]);
-        Trinity::NormalizeMapCoord(i_waypoints[idx][1]);
-
-
-        float ground, floor;
-        ground = map->GetHeight(i_waypoints[idx][0], i_waypoints[idx][1], MAX_HEIGHT, true);
-        floor  = map->GetHeight(i_waypoints[idx][0], i_waypoints[idx][1], z, true);
-        i_waypoints[idx][2] = fabs(ground - z) <= fabs(floor - z) ? ground : floor;
-
-        bool is_water = map->IsInWater(i_waypoints[idx][0],i_waypoints[idx][1], z);
-        // if in water set higher z coord
-        if (is_water)
-            i_waypoints[idx][2] = (z >= i_waypoints[idx][2]) ? z : i_waypoints[idx][2];
-
-        // if generated wrong path just ignore
-        if ( is_water && !is_water_ok || !is_water && !is_land_ok ||
-            !Trinity::IsValidMapCoord(i_waypoints[idx][0], i_waypoints[idx][1]) ||
-            fabs(i_waypoints[idx][2] - z) > 2.0f)
-        {
-            i_waypoints[idx][0] = idx > 0 ? i_waypoints[idx-1][0] : x;
-            i_waypoints[idx][1] = idx > 0 ? i_waypoints[idx-1][1] : y;
-        }
-
-        unit.UpdateAllowedPositionZ(i_waypoints[idx][0],i_waypoints[idx][1], z);
-        i_waypoints[idx][2] = z;
-    }
+    GenerateMovement(unit);
 
     unit.CastStop();
     unit.StopMoving();
-    unit.RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
-    unit.addUnitState(UNIT_STAT_CONFUSED); //.cast back 12824 triggered
+    unit.RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+    unit.addUnitState(UNIT_STAT_CONFUSED);
     unit.SetUInt64Value(UNIT_FIELD_TARGET, 0);
     unit.SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
 
+}
+
+template<class T>
+void ConfusedMovementGenerator<T>::GenerateMovement(T &unit)
+{
+    bool is_water_ok, is_land_ok;
+    _InitSpecific(unit, is_water_ok, is_land_ok);
+
+
+    for (unsigned int idx = 0; idx < MAX_CONF_WAYPOINTS+1; ++idx)
+    {
+        unit.GetNearPoint(&unit, i_waypoints[idx][0], i_waypoints[idx][1], i_waypoints[idx][2], unit.GetObjectSize(), WANDER_DISTANCE, frand(0, M_PI));
+
+        if (!is_land_ok || !is_water_ok)
+        {
+            bool inWater = unit.GetMap()->IsInWater(i_waypoints[idx][0], i_waypoints[idx][1], i_waypoints[idx][2]);
+            if (!is_water_ok && inWater || !is_land_ok && !inWater)
+            {
+                i_waypoints[idx][0] = unit.GetPositionX();
+                i_waypoints[idx][1] = unit.GetPositionY();
+                i_waypoints[idx][2] = unit.GetPositionZ();
+                continue;
+            }
+        }
+        
+        if (unit.GetMap()->hasPosCollisionCalcEnabled())
+            continue;
+
+        VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(unit.GetMapId(), unit.GetPositionX(), unit.GetPositionY(),  unit.GetPositionZ(), i_waypoints[idx][0], i_waypoints[idx][1], i_waypoints[idx][2] +0.5f,  i_waypoints[idx][0], i_waypoints[idx][1], i_waypoints[idx][2], -1.0f);
+    }
 }
 
 template<>
@@ -121,9 +106,9 @@ bool ConfusedMovementGenerator<T>::Update(T &unit, const uint32 &diff)
 
     if (i_destinationHolder.UpdateTraveller(traveller, diff))
     {
-        if ( i_destinationHolder.HasArrived())
+        if (i_destinationHolder.HasArrived())
         {
-            assert( i_nextMove <= MAX_CONF_WAYPOINTS );
+            assert(i_nextMove <= MAX_CONF_WAYPOINTS);
             const float x = i_waypoints[i_nextMove][0];
             const float y = i_waypoints[i_nextMove][1];
             const float z = i_waypoints[i_nextMove][2];

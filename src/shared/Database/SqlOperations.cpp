@@ -1,7 +1,5 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,59 +21,60 @@
 #include "DatabaseEnv.h"
 #include "DatabaseImpl.h"
 
+#define LOCK_DB_CONN(conn) SqlConnection::Lock guard(conn)
+
 /// ---- ASYNC STATEMENTS / TRANSACTIONS ----
 
-void SqlStatement::Execute(Database *db)
+void SqlStatement::Execute(SqlConnection *conn)
 {
     /// just do it
-    db->DirectExecute(m_sql);
+    LOCK_DB_CONN(conn);
+    conn->Execute(m_sql);
 }
 
-void SqlTransaction::Execute(Database *db)
+SqlTransaction::~SqlTransaction()
 {
-    const char* sql;
-    m_Mutex.acquire();
-
-    if(m_queue.empty())
-    {
-        m_Mutex.release();
-        return;
-    }
-
-    db->DirectExecute("START TRANSACTION");
     while(!m_queue.empty())
     {
-        sql = const_cast<char*>(m_queue.front());
+        delete [] (const_cast<char*>(m_queue.back()));
+        m_queue.pop_back();
+    }
+}
 
-        if(!db->DirectExecute(sql))
+void SqlTransaction::Execute(SqlConnection *conn)
+{
+    if(m_queue.empty())
+        return;
+
+    LOCK_DB_CONN(conn);
+
+    conn->BeginTransaction();
+
+    const int nItems = m_queue.size();
+    for (int i = 0; i < nItems; ++i)
+    {
+        const char *sql = m_queue[i];
+
+        if(!conn->Execute(sql))
         {
-            delete [] sql;
-            m_queue.pop();
-            db->DirectExecute("ROLLBACK");
-            while(!m_queue.empty())
-            {
-                delete [] (const_cast<char*>(m_queue.front()));
-                m_queue.pop();
-            }
-            m_Mutex.release();
+            conn->RollbackTransaction();
             return;
         }
-
-        delete [] sql;
-        m_queue.pop();
     }
-    db->DirectExecute("COMMIT");
-    m_Mutex.release();
+
+    conn->CommitTransaction();
 }
 
 /// ---- ASYNC QUERIES ----
 
-void SqlQuery::Execute(Database *db)
+void SqlQuery::Execute(SqlConnection *conn)
 {
     if(!m_callback || !m_queue)
         return;
+
+    LOCK_DB_CONN(conn);
     /// execute the query and store the result in the callback
-    m_callback->SetResult(db->Query(m_sql));
+    m_callback->SetResult(conn->Query(m_sql));
     /// add the callback to the sql result queue of the thread it originated from
     m_queue->add(m_callback);
 }
@@ -83,7 +82,7 @@ void SqlQuery::Execute(Database *db)
 void SqlResultQueue::Update()
 {
     /// execute the callbacks waiting in the synchronization queue
-    Trinity::IQueryCallback* callback;
+    Trinity::IQueryCallback* callback = NULL;
     while (next(callback))
     {
         callback->Execute();
@@ -107,19 +106,19 @@ bool SqlQueryHolder::SetQuery(size_t index, const char *sql)
 {
     if(m_queries.size() <= index)
     {
-        sLog.outError("Query index (%u) out of range (size: %u) for query: %s",index,m_queries.size(),sql);
+        sLog.outError("Query index (" SIZEFMTD ") out of range (size: " SIZEFMTD ") for query: %s", index, m_queries.size(), sql);
         return false;
     }
 
     if(m_queries[index].first != NULL)
     {
-        sLog.outError("Attempt assign query to holder index (%u) where other query stored (Old: [%s] New: [%s])",
+        sLog.outError("Attempt assign query to holder index (" SIZEFMTD ") where other query stored (Old: [%s] New: [%s])",
             index,m_queries[index].first,sql);
         return false;
     }
 
     /// not executed yet, just stored (it's not called a holder for nothing)
-    m_queries[index] = SqlResultPair(mangos_strdup(sql), QueryResult_AutoPtr(NULL));
+    m_queries[index] = SqlResultPair(mangos_strdup(sql), (QueryResultAutoPtr)NULL);
     return true;
 }
 
@@ -127,7 +126,7 @@ bool SqlQueryHolder::SetPQuery(size_t index, const char *format, ...)
 {
     if(!format)
     {
-        sLog.outError("Query (index: %u) is empty.",index);
+        sLog.outError("Query (index: " SIZEFMTD ") is empty.",index);
         return false;
     }
 
@@ -146,7 +145,7 @@ bool SqlQueryHolder::SetPQuery(size_t index, const char *format, ...)
     return SetQuery(index,szQuery);
 }
 
-QueryResult_AutoPtr SqlQueryHolder::GetResult(size_t index)
+QueryResultAutoPtr SqlQueryHolder::GetResult(size_t index)
 {
     if(index < m_queries.size())
     {
@@ -160,10 +159,10 @@ QueryResult_AutoPtr SqlQueryHolder::GetResult(size_t index)
         return m_queries[index].second;
     }
     else
-        return QueryResult_AutoPtr(NULL);
+        return QueryResultAutoPtr(NULL);
 }
 
-void SqlQueryHolder::SetResult(size_t index, QueryResult_AutoPtr result)
+void SqlQueryHolder::SetResult(size_t index, QueryResultAutoPtr result)
 {
     /// store the result in the holder
     if(index < m_queries.size())
@@ -187,19 +186,19 @@ void SqlQueryHolder::SetSize(size_t size)
     m_queries.resize(size);
 }
 
-void SqlQueryHolderEx::Execute(Database *db)
+void SqlQueryHolderEx::Execute(SqlConnection *conn)
 {
     if(!m_holder || !m_callback || !m_queue)
         return;
 
+    LOCK_DB_CONN(conn);
     /// we can do this, we are friends
     std::vector<SqlQueryHolder::SqlResultPair> &queries = m_holder->m_queries;
-
     for(size_t i = 0; i < queries.size(); i++)
     {
         /// execute all queries in the holder and pass the results
         char const *sql = queries[i].first;
-        if(sql) m_holder->SetResult(i, db->Query(sql));
+        if(sql) m_holder->SetResult(i, conn->Query(sql));
     }
 
     /// sync with the caller thread

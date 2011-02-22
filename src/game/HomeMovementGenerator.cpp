@@ -37,7 +37,7 @@ HomeMovementGenerator<Creature>::Finalize(Creature & owner)
 void
 HomeMovementGenerator<Creature>::Initialize(Creature & owner)
 {
-    owner.RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+    owner.RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
     _setTargetLocation(owner);
 }
 
@@ -49,10 +49,10 @@ HomeMovementGenerator<Creature>::Reset(Creature &)
 void
 HomeMovementGenerator<Creature>::_setTargetLocation(Creature & owner)
 {
-    if( !&owner )
+    if (!&owner)
         return;
 
-    if( owner.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED) )
+    if (owner.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED))
         return;
 
     float x, y, z;
@@ -68,15 +68,15 @@ HomeMovementGenerator<Creature>::_setTargetLocation(Creature & owner)
 bool
 HomeMovementGenerator<Creature>::Update(Creature &owner, const uint32& time_diff)
 {
-    CreatureTraveller traveller( owner);
+    CreatureTraveller traveller(owner);
     i_destinationHolder.UpdateTraveller(traveller, time_diff);
 
     if (time_diff > i_travel_timer)
     {
-        owner.AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+        owner.AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
 
         // restore orientation of not moving creature at returning to home
-        if(owner.GetDefaultMovementType()==IDLE_MOTION_TYPE)
+        if (owner.GetDefaultMovementType()==IDLE_MOTION_TYPE)
         {
             owner.SetOrientation(ori);
             WorldPacket packet;

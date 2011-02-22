@@ -26,6 +26,7 @@ npc_forest_frog
 EndContentData */
 
 #include "precompiled.h"
+#include "escort_ai.h"
 #include "def_zulaman.h"
 
 /*######
@@ -55,7 +56,7 @@ struct TRINITY_DLL_DECL npc_forest_frogAI : public ScriptedAI
 {
     npc_forest_frogAI(Creature* c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     ScriptedInstance *pInstance;
@@ -115,8 +116,8 @@ struct TRINITY_DLL_DECL npc_zulaman_hostageAI : public ScriptedAI
     void EnterCombat(Unit *who) {}
     void JustDied(Unit *)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
-        if(player) player->SendLoot(m_creature->GetGUID(), LOOT_CORPSE);
+        //Player* player = Unit::GetPlayer(PlayerGUID);
+        //if(player) player->SendLoot(m_creature->GetGUID(), LOOT_CORPSE);
     }
     void UpdateAI(const uint32 diff)
     {
@@ -140,7 +141,7 @@ bool GossipSelect_npc_zulaman_hostage(Player* player, Creature* _Creature, uint3
         return true;
     _Creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
 
-    ScriptedInstance* pInstance = ((ScriptedInstance*)_Creature->GetInstanceData());
+    ScriptedInstance* pInstance = (_Creature->GetInstanceData());
     if(pInstance)
     {
         //uint8 progress = pInstance->GetData(DATA_CHESTLOOTED);
@@ -174,6 +175,249 @@ CreatureAI* GetAI_npc_zulaman_hostage(Creature *_Creature)
     return new npc_zulaman_hostageAI(_Creature);
 }
 
+/*######
+## npc_harrison_jones_za
+######*/
+
+enum
+{
+SAY_START = -1568079,
+SAY_AT_GONG = -1568080,
+SAY_OPENING_ENTRANCE = -1568081,
+SAY_OPEN_GATE = -1568082,
+
+SPELL_BANGING_THE_GONG = 45222,
+
+SOUND_GONG = 12204,
+SOUND_CELEBRATE = 12135
+};
+
+#define GOSSIP_ITEM_BEGIN "Thanks for the concern, but we intend to explore Zul'Aman."
+
+struct TRINITY_DLL_DECL npc_harrison_jones_zaAI : public npc_escortAI
+{
+    npc_harrison_jones_zaAI(Creature* pCreature) : npc_escortAI(pCreature)
+    {
+        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        Reset();
+    }
+
+    ScriptedInstance* m_pInstance;
+    uint32 ResetTimer;
+
+    void DamageTaken(Unit* done_by, uint32 &damage)
+    {
+        // if hitted by Amani'shi Guardian, killed immediately
+        if(done_by->GetTypeId() == TYPEID_UNIT && damage)
+        {
+            damage = m_creature->GetMaxHealth();
+            done_by->GetMotionMaster()->MoveChase(GetPlayerForEscort());
+        }
+    }
+
+    void WaypointReached(uint32 uiPointId)
+    {
+        if (!m_pInstance)
+            return;
+
+        switch(uiPointId)
+        {
+            case 2:
+                DoScriptText(SAY_AT_GONG, m_creature);
+
+                if (GameObject* pEntranceDoor = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(DATA_GO_GONG)))
+                    pEntranceDoor->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_UNK1);
+
+                //Start bang gong for 10min
+                m_creature->CastSpell(m_creature, SPELL_BANGING_THE_GONG, false);
+                SetEscortPaused(true);
+                break;
+            case 3:
+                DoScriptText(SAY_OPENING_ENTRANCE, m_creature);
+                break;
+           case 4:
+                DoScriptText(SAY_OPEN_GATE, m_creature);
+                break;
+           case 5:
+               m_pInstance->SetData(TYPE_EVENT_RUN,SPECIAL);
+               if(Unit* Guardian = FindCreature(23597, 40, me))
+                   ((Creature*)Guardian)->GetMotionMaster()->MoveChase(me);
+                break;
+                //TODO: Spawn group of Amani'shi Savage and make them run to entrance
+                //TODO: Add, and modify reseting of the event, reseting quote is missing
+        }
+    }
+
+    void Reset()
+    {
+        ResetTimer = 600000;    // 10min for players to make an event
+        m_creature->RemoveAllAuras();
+    }
+
+    void StartEvent(Player* pPlayer)
+    {
+        DoScriptText(SAY_START, m_creature);
+        Start(true, false, pPlayer->GetGUID(), 0, false, true);
+    }
+
+    void SetHoldState(bool bOnHold)
+    {
+        SetEscortPaused(bOnHold);
+
+        //Stop banging gong if still
+        if (m_creature->HasAura(SPELL_BANGING_THE_GONG, 0))
+        {
+            m_creature->RemoveAurasDueToSpell(SPELL_BANGING_THE_GONG);
+            DoPlaySoundToSet(m_creature, SOUND_CELEBRATE);
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(HasEscortState(STATE_ESCORT_PAUSED))
+        {/*
+            if(ResetTimer < diff)
+            {
+                me->Kill(me, false);
+                me->Respawn();
+                ResetTimer = 600000;
+            }
+            else
+                ResetTimer -= diff;*/
+        }
+        npc_escortAI::UpdateAI(diff);
+    }
+};
+
+bool GossipHello_npc_harrison_jones_za(Player* pPlayer, Creature* pCreature)
+{
+    ScriptedInstance* pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+
+    if (pCreature->isQuestGiver())
+        pPlayer->PrepareQuestMenu(pCreature->GetGUID());
+
+    if (pInstance && pInstance->GetData(TYPE_EVENT_RUN) == NOT_STARTED)
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_BEGIN, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+
+    pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
+    return true;
+}
+
+bool GossipSelect_npc_harrison_jones_za(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
+{
+    if (uiAction == GOSSIP_ACTION_INFO_DEF+1)
+    {
+        if (npc_harrison_jones_zaAI* pHarrisonAI = dynamic_cast<npc_harrison_jones_zaAI*>(pCreature->AI()))
+            pHarrisonAI->StartEvent(pPlayer);
+        
+        pPlayer->CLOSE_GOSSIP_MENU();
+    }
+    return true;
+}
+
+CreatureAI* GetAI_npc_harrison_jones_za(Creature* pCreature)
+{
+    return new npc_harrison_jones_zaAI(pCreature);
+}
+
+/*######
+## go_strange_gong
+######*/
+
+bool GOHello_go_strange_gong(Player* pPlayer, GameObject* pGo)
+{
+    ScriptedInstance* pInstance = (ScriptedInstance*)pGo->GetInstanceData();
+
+    if (!pInstance || pPlayer->HasAura(SPELL_BANGING_THE_GONG, 0))
+        return false;
+
+    pPlayer->CastSpell(pPlayer, SPELL_BANGING_THE_GONG, false);
+    return false;
+}
+
+struct TRINITY_DLL_DECL npc_zulaman_door_triggerAI : public Scripted_NoMovementAI
+{
+    npc_zulaman_door_triggerAI(Creature *c) : Scripted_NoMovementAI(c) 
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+        Reset();
+    }
+
+    ScriptedInstance* pInstance;
+    uint32 CheckTimer;
+    uint32 StoperTime;
+
+    uint32 CountChannelingPlayers()
+    {
+        uint32 count = 0;
+        Map::PlayerList const& players = me->GetMap()->GetPlayers();
+        if (!players.isEmpty())
+        {
+            for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+            {
+                if (Player* plr = itr->getSource())
+                {
+                    if(plr->HasAura(SPELL_BANGING_THE_GONG, 0))
+                        count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    void StopBanging()
+    {
+        Map::PlayerList const& players = me->GetMap()->GetPlayers();
+        if (!players.isEmpty())
+        {
+            for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+            {
+                if (Player* plr = itr->getSource())
+                {
+                    if(plr->HasAura(SPELL_BANGING_THE_GONG, 0))
+                        plr->InterruptNonMeleeSpells(false);
+                }
+            }
+        }
+    }
+
+    void Reset()
+    {
+        StoperTime = 0;
+        CheckTimer = 2000;
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(CheckTimer < diff)
+        {
+            if(CountChannelingPlayers() >= 5)
+                StoperTime += (2000+diff);
+            CheckTimer = 2000;
+        }
+        else
+            CheckTimer -= diff;
+
+        if(StoperTime >= 30000) // to be verified
+        {
+            StopBanging();
+            if(Creature* pCreature = me->GetMap()->GetCreature(pInstance->GetData64(DATA_HARRISON)))
+            {
+                if (npc_harrison_jones_zaAI* pHarrisonAI = dynamic_cast<npc_harrison_jones_zaAI*>(pCreature->AI()))
+                    pHarrisonAI->SetHoldState(false);
+            }
+            if(GameObject* pGo = me->GetMap()->GetGameObject(pInstance->GetData64(DATA_GO_GONG)))
+                pGo->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_UNK1);
+            StoperTime = 0;
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_zulaman_door_trigger(Creature *_Creature)
+{
+    return new npc_zulaman_door_triggerAI(_Creature);
+}
+
 void AddSC_zulaman()
 {
     Script *newscript;
@@ -188,6 +432,23 @@ void AddSC_zulaman()
     newscript->GetAI = &GetAI_npc_zulaman_hostage;
     newscript->pGossipHello = &GossipHello_npc_zulaman_hostage;
     newscript->pGossipSelect = &GossipSelect_npc_zulaman_hostage;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_harrison_jones_za";
+    newscript->GetAI = &GetAI_npc_harrison_jones_za;
+    newscript->pGossipHello = &GossipHello_npc_harrison_jones_za;
+    newscript->pGossipSelect = &GossipSelect_npc_harrison_jones_za;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "go_strange_gong";
+    newscript->pGOHello = &GOHello_go_strange_gong;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_zulaman_door_trigger";
+    newscript->GetAI = &GetAI_npc_zulaman_door_trigger;
     newscript->RegisterSelf();
 }
 

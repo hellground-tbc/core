@@ -33,17 +33,17 @@ template<class T>
 void
 FleeingMovementGenerator<T>::_setTargetLocation(T &owner)
 {
-    if( !&owner )
+    if (!&owner)
         return;
 
-    if( owner.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED) )
+    if (owner.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED))
         return;
 
-//    if(!_setMoveData(owner))
+//    if (!_setMoveData(owner))
 //        return;
 
     float x, y, z;
-    if(!_getPoint(owner, x, y, z))
+    if (!_getPoint(owner, x, y, z))
         return;
 
     owner.addUnitState(UNIT_STAT_FLEEING | UNIT_STAT_ROAMING);
@@ -54,7 +54,7 @@ FleeingMovementGenerator<T>::_setTargetLocation(T &owner)
 template<>
 bool FleeingMovementGenerator<Creature>::GetDestination(float &x, float &y, float &z) const
 {
-    if(i_destinationHolder.HasArrived())
+    if (i_destinationHolder.HasArrived())
         return false;
 
     i_destinationHolder.GetDestination(x, y, z);
@@ -71,7 +71,7 @@ template<class T>
 bool
 FleeingMovementGenerator<T>::_getPoint(T &owner, float &x, float &y, float &z)
 {
-    if(!&owner)
+    if (!&owner)
         return false;
 
     x = owner.GetPositionX();
@@ -81,11 +81,11 @@ FleeingMovementGenerator<T>::_getPoint(T &owner, float &x, float &y, float &z)
     float temp_x, temp_y, temp_z, angle;
     const Map *_map = owner.GetBaseMap();
     //primitive path-finding
-    for(uint8 i = 0; i < 8; ++i)
+    for (uint8 i = 0; i < 8; ++i)
     {
         float distance = 14.0f;
 
-        switch(i)
+        switch (i)
         {
             case 0:
                 angle = i_cur_angle;
@@ -125,11 +125,11 @@ FleeingMovementGenerator<T>::_getPoint(T &owner, float &x, float &y, float &z)
 
         temp_z = (fabs(ground - z) >= fabs(floor - z)) ? floor : ground;
 
-        if(temp_z <= INVALID_HEIGHT)
+        if (temp_z <= INVALID_HEIGHT)
             continue;
 
         // if something on way get Hit Position and update distance
-        if(VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(owner.GetMapId(), x, y, z+0.5f, temp_x, temp_y, temp_z+0.5f, temp_x, temp_y, temp_z, -1.0f))
+        if (VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(owner.GetMapId(), x, y, z+0.5f, temp_x, temp_y, temp_z+0.5f, temp_x, temp_y, temp_z, -1.0f))
             distance = owner.GetDistance2d(temp_x, temp_y);
 
         float dest_floor, dest_ground;
@@ -138,10 +138,10 @@ FleeingMovementGenerator<T>::_getPoint(T &owner, float &x, float &y, float &z)
         float dest_z = z;
 
 
-        for(int j = 1; j <= 7; ++j)
+        for (int j = 1; j <= 7; ++j)
         {
             float dist = j*2.0f;
-            if(dist > distance)
+            if (dist > distance)
             {
                 dist = distance;
                 j = 8; // end loop after executing code below
@@ -153,7 +153,7 @@ FleeingMovementGenerator<T>::_getPoint(T &owner, float &x, float &y, float &z)
             dest_floor  = _map->GetHeight(temp_x, temp_y, dest_z, true);
             temp_z = (fabs(dest_ground - dest_z) >= fabs(dest_floor - dest_z)) ? dest_floor : dest_ground;
 
-            if(temp_z < INVALID_HEIGHT || fabs(temp_z - dest_z) > 1.6f)
+            if (temp_z < INVALID_HEIGHT || fabs(temp_z - dest_z) > 1.6f)
                 break;
 
             dest_x = temp_x;
@@ -161,7 +161,7 @@ FleeingMovementGenerator<T>::_getPoint(T &owner, float &x, float &y, float &z)
             dest_z = temp_z;
         }
 
-        if(i_dest_x != dest_x || i_dest_y != dest_y)
+        if (i_dest_x != dest_x || i_dest_y != dest_y)
         {
             i_dest_x = dest_x;
             i_dest_y = dest_y;
@@ -183,11 +183,11 @@ template<class T>
 void
 FleeingMovementGenerator<T>::Initialize(T &owner)
 {
-    if(!&owner)
+    if (!&owner)
         return;
 
     Unit * fright = owner.GetMap()->GetUnit(i_frightGUID);
-    if(!fright)
+    if (!fright)
         return;
 
     _Init(owner);
@@ -195,7 +195,7 @@ FleeingMovementGenerator<T>::Initialize(T &owner)
     owner.addUnitState(UNIT_STAT_FLEEING | UNIT_STAT_ROAMING);
     owner.SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
     owner.SetUInt64Value(UNIT_FIELD_TARGET, 0);
-    owner.RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+    owner.RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
     i_dest_x = i_caster_x = fright->GetPositionX();
     i_dest_y = i_caster_y = fright->GetPositionY();
     i_dest_z = i_caster_z = fright->GetPositionZ();
@@ -211,7 +211,7 @@ template<>
 void
 FleeingMovementGenerator<Creature>::_Init(Creature &owner)
 {
-    if(!&owner)
+    if (!&owner)
         return;
 
     is_water_ok = owner.canSwim();
@@ -232,7 +232,7 @@ FleeingMovementGenerator<T>::Finalize(T &owner)
 {
     owner.RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
     owner.clearUnitState(UNIT_STAT_FLEEING | UNIT_STAT_ROAMING);
-    if(owner.GetTypeId() == TYPEID_UNIT && owner.getVictim())
+    if (owner.GetTypeId() == TYPEID_UNIT && owner.getVictim())
         owner.SetUInt64Value(UNIT_FIELD_TARGET, owner.getVictimGUID());
 }
 
@@ -247,21 +247,21 @@ template<class T>
 bool
 FleeingMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
 {
-    if( !&owner || !owner.isAlive() )
+    if (!&owner || !owner.isAlive())
         return false;
-    if( owner.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED) )
+    if (owner.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED))
         return true;
 
     Traveller<T> traveller(owner);
 /*
-    if( (owner.IsStopped() && !i_destinationHolder.HasArrived()) || !i_destinationHolder.HasDestination() )
+    if ((owner.IsStopped() && !i_destinationHolder.HasArrived()) || !i_destinationHolder.HasDestination())
     {
         _setTargetLocation(owner);
         return true;
     }*/
 
     if (i_destinationHolder.UpdateTraveller(traveller, time_diff))
-        if(i_destinationHolder.HasArrived())
+        if (i_destinationHolder.HasArrived())
             _setTargetLocation(owner);
     return true;
 }
@@ -297,10 +297,10 @@ void TimedFleeingMovementGenerator::Finalize(Unit &owner)
 
 bool TimedFleeingMovementGenerator::Update(Unit & owner, const uint32 & time_diff)
 {
-    if( !owner.isAlive() )
+    if (!owner.isAlive())
         return false;
 
-    if( owner.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED) )
+    if (owner.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED))
         return true;
 
     i_totalFleeTime.Update(time_diff);

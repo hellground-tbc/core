@@ -40,7 +40,7 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
 {
     boss_anetheronAI(Creature *c) : hyjal_trashAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         go = false;
         pos = 0;
     }
@@ -54,6 +54,8 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         damageTaken = 0;
         SwarmTimer = 10000;
         SleepTimer = 60000;
@@ -253,7 +255,7 @@ struct TRINITY_DLL_DECL mob_towering_infernalAI : public ScriptedAI
 {
     mob_towering_infernalAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());  
+        pInstance = (c->GetInstanceData());  
     }
 
     uint32 CheckTimer;

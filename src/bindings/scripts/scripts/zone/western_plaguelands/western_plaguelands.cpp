@@ -278,7 +278,7 @@ struct npc_anchorite_truuenAI : public npc_escortAI
                 if(Creature* Ughost = m_creature->SummonCreature(NPC_GHOST_UTHER, 971.86,-1825.42 ,81.99 , 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
                 {
                     UghostGUID = Ughost->GetGUID();
-                    Ughost->AddUnitMovementFlag(MOVEMENTFLAG_LEVITATING);
+                    Ughost->AddUnitMovementFlag(MOVEFLAG_LEVITATING);
                     DoScriptText(SAY_WP_4, Ughost, m_creature);
                     m_uiChatTimer = 4000;
                 }
@@ -335,7 +335,7 @@ bool QuestAccept_npc_anchorite_truuen(Player* pPlayer, Creature* pCreature, Ques
 }
 
 /*######
-##	npcs_andorhal_tower 
+##    npcs_andorhal_tower 
 ######*/
 
 enum eAndorhalTower
@@ -394,7 +394,7 @@ void AddSC_western_plaguelands()
     newscript->GetAI = &GetAI_npc_anchorite_truuen;
     newscript->pQuestAccept =  &QuestAccept_npc_anchorite_truuen;
     newscript->RegisterSelf();
-	
+    
     newscript = new Script;
     newscript->Name = "npc_andorhal_tower";
     newscript->GetAI = &GetAI_npc_andorhal_tower;

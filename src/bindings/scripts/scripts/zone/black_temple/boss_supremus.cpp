@@ -79,7 +79,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
 {
     boss_supremusAI(Creature *c) : ScriptedAI(c), summons(m_creature)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         m_creature->GetPosition(wLoc);
     }
 
@@ -105,11 +105,10 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
 
     void Reset()
     {
-        if(pInstance)
-        {
-            if(m_creature->isAlive())
-                pInstance->SetData(DATA_SUPREMUSEVENT, NOT_STARTED);
-        }
+        ClearCastQueue();
+
+        if (pInstance)
+            pInstance->SetData(EVENT_SUPREMUS, NOT_STARTED);
 
         MoltenFlameTimer = 10000;
         HatefulStrikeTimer = 5000;
@@ -138,7 +137,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
         DoZoneInCombat();
 
         if(pInstance)
-            pInstance->SetData(DATA_SUPREMUSEVENT, IN_PROGRESS);
+            pInstance->SetData(EVENT_SUPREMUS, IN_PROGRESS);
     }
 
     void MoveInLineOfSight(Unit *who)
@@ -155,9 +154,9 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
         if(GameObject* Doors = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_GAMEOBJECT_SUPREMUS_DOORS)))
         {
             if(close)
-                Doors->SetGoState(1);                   // Closed
+                Doors->SetGoState(GO_STATE_READY);                   // Closed
             else
-                Doors->SetGoState(0);                   // Opened
+                Doors->SetGoState(GO_STATE_ACTIVE);                   // Opened
         }
     }
 
@@ -165,7 +164,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
     {
         if(pInstance)
         {
-            pInstance->SetData(DATA_SUPREMUSEVENT, DONE);
+            pInstance->SetData(EVENT_SUPREMUS, DONE);
             ToggleDoors(false);
         }
         summons.DespawnAll();
@@ -287,8 +286,8 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
                     else
                     {
                         WorldLocation temp;
-                        target->GetClosePoint(temp.x, temp.y, temp.z, 20.0f, false, m_creature->GetOrientation());  //if boss >40yd from victim make him run fast till 20yd and charge without damage
-                        m_creature->SendMonsterMoveWithSpeed(temp.x, temp.y, temp.z, MOVEMENTFLAG_WALK_MODE);
+                        target->GetClosePoint(temp.coord_x, temp.coord_y, temp.coord_z, 20.0f, false, m_creature->GetOrientation());  //if boss >40yd from victim make him run fast till 20yd and charge without damage
+                        m_creature->SendMonsterMoveWithSpeed(temp.coord_x, temp.coord_y, temp.coord_z, SPLINEFLAG_WALKMODE_MODE);
                         m_creature->CastSpell(target, SPELL_CHARGE, false);
                     }
                 }

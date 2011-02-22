@@ -363,7 +363,7 @@ struct TRINITY_DLL_DECL boss_headless_horsemanAI : public ScriptedAI
             speed->Effect[1] = SPELL_EFFECT_APPLY_AURA;
             speed->EffectApplyAuraName[1] = SPELL_AURA_MOD_CONFUSE;
         }*/
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     ScriptedInstance *pInstance;
@@ -426,7 +426,7 @@ struct TRINITY_DLL_DECL boss_headless_horsemanAI : public ScriptedAI
     {
         m_creature->SetVisibility(VISIBILITY_OFF);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        m_creature->AddUnitMovementFlag(MOVEMENTFLAG_FLYING2);
+        m_creature->AddUnitMovementFlag(SPLINEFLAG_FLYINGING2);
         m_creature->SetSpeed(MOVE_WALK,5.0f,true);
         wp_reached = false;
         count = 0;
@@ -463,7 +463,7 @@ struct TRINITY_DLL_DECL boss_headless_horsemanAI : public ScriptedAI
                 pInstance->SetData(GAMEOBJECT_PUMPKIN_SHRINE, 0);   //hide gameobject
             break;
         case 19:
-            m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_FLYING2);break;
+            m_creature->RemoveUnitMovementFlag(SPLINEFLAG_FLYINGING2);break;
         case 20:
             {
             Phase = 1;

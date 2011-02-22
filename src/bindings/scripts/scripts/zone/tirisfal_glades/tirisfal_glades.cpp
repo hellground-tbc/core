@@ -94,17 +94,10 @@ GameObject* SearchMausoleumGo(Unit *source, uint32 entry, float range)
 {
     GameObject* pGo = NULL;
 
-    CellPair pair(Trinity::ComputeCellPair(source->GetPositionX(), source->GetPositionY()));
-    Cell cell(pair);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-
     Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*source, entry, range);
     Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher(pGo, go_check);
 
-    TypeContainerVisitor<Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck>, GridTypeMapContainer> go_searcher(searcher);
-
-    cell.Visit(pair, go_searcher,*(source->GetMap()));
+    Cell::VisitGridObjects(source, searcher, range);
 
     return pGo;
 }
@@ -116,7 +109,7 @@ bool GOHello_go_mausoleum_door(Player *player, GameObject* _GO)
 
     if (GameObject *trigger = SearchMausoleumGo(player, GO_TRIGGER, 30))
     {
-        trigger->SetGoState(1);
+        trigger->SetGoState(GO_STATE_READY);
         player->SummonCreature(C_ULAG, 2390.26, 336.47, 40.01, 2.26, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 300000);
         return false;
     }
@@ -131,7 +124,7 @@ bool GOHello_go_mausoleum_trigger(Player *player, GameObject* _GO)
 
     if (GameObject *door = SearchMausoleumGo(player, GO_DOOR, 30))
     {
-        _GO->SetGoState(0);
+        _GO->SetGoState(GO_STATE_ACTIVE);
         door->RemoveFlag(GAMEOBJECT_FLAGS,GO_FLAG_INTERACT_COND);
         return true;
     }

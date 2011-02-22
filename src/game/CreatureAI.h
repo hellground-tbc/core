@@ -85,14 +85,14 @@ class TRINITY_DLL_SPEC CreatureAI : public UnitAI
         Creature *DoSummonFlyer(uint32 uiEntry, WorldObject *obj, float fZ, float fRadius = 5.0f, uint32 uiDespawntime = 30000, TempSummonType uiType = TEMPSUMMON_CORPSE_TIMED_DESPAWN);
 
     public:
-        explicit CreatureAI(Creature *c) : UnitAI((Unit*)c), me(c), m_creature(c) {}
+        explicit CreatureAI(Creature *c) : UnitAI((Unit*)c), me(c), m_creature(c), m_MoveInLineOfSight_locked(false) {}
 
         virtual ~CreatureAI() {}
 
         ///== Reactions At =================================
 
         // Called if IsVisible(Unit *who) is true at each *who move, reaction at visibility zone enter
-        virtual void MoveInLineOfSight(Unit *);
+        void MoveInLineOfSight_Safe(Unit *who);
 
          // Called for reaction at stopping attack at no attackers or targets
         virtual void EnterEvadeMode();
@@ -112,7 +112,7 @@ class TRINITY_DLL_SPEC CreatureAI : public UnitAI
         virtual void KilledUnit(Unit *) {}
 
         // Called when the creature summon successfully other creature
-        virtual void JustSummoned(Creature* ) {}
+        virtual void JustSummoned(Creature*) {}
         virtual void IsSummonedBy(Unit *summoner) {}
 
         virtual void SummonedCreatureDespawn(Creature* /*unit*/) {}
@@ -147,12 +147,13 @@ class TRINITY_DLL_SPEC CreatureAI : public UnitAI
         //virtual void SpellClick(Player *player) {}
  
         // Called at reaching home after evade
-        virtual void JustReachedHome() { }
+        virtual void JustReachedHome() {}
  
         void DoZoneInCombat(float max_dist = 200.0f);
  
         // Called at text emote receive from player 
         virtual void ReceiveEmote(Player* pPlayer, uint32 text_emote) {}
+        virtual void ReceiveScriptText(WorldObject *pSource, int32 iTextEntry) {}
 
         ///== Triggered Actions Requested ==================
  
@@ -161,7 +162,7 @@ class TRINITY_DLL_SPEC CreatureAI : public UnitAI
         //virtual void AttackStart(Unit *) {}
 
         // Called at World update tick
-        //virtual void UpdateAI(const uint32 diff ) {}
+        //virtual void UpdateAI(const uint32 diff) {}
 
         ///== State checks =================================
 
@@ -179,7 +180,11 @@ class TRINITY_DLL_SPEC CreatureAI : public UnitAI
         virtual void PassengerBoarded(Unit *who, int8 seatId, bool apply) {}
 
     protected:
+        virtual void MoveInLineOfSight(Unit *);
         bool _EnterEvadeMode();
+
+    private:
+        bool m_MoveInLineOfSight_locked;
 };
 
 enum Permitions

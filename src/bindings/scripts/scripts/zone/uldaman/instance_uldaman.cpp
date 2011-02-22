@@ -86,7 +86,6 @@ struct TRINITY_DLL_DECL instance_uldaman : public ScriptedInstance
     std::vector<uint64> archaedasWallMinions;    // minions lined up around the wall
 
     uint32 Encounters[ENCOUNTERS];
-    std::string str_data;
 
     void OnObjectCreate (GameObject* go)
     {
@@ -359,22 +358,10 @@ struct TRINITY_DLL_DECL instance_uldaman : public ScriptedInstance
             case DATA_IRONAYA_SEAL:
                 keystoneCheck = true;
                 break;
-    }
+        }
 
-    if(data == DONE)
-    {
-
-            OUT_SAVE_INST_DATA;
-
-            std::ostringstream saveStream;
-            saveStream << Encounters[0] << " " << Encounters[1] << " " << Encounters[2];
-
-            str_data = saveStream.str();
-
+        if (data == DONE)
             SaveToDB();
-            OUT_SAVE_INST_DATA_COMPLETE;
-        
-    }
     }
 
     void SetData64 (uint32 type, uint64 data)
@@ -445,9 +432,18 @@ struct TRINITY_DLL_DECL instance_uldaman : public ScriptedInstance
         return 0;
     } // end GetData64
 
-    const char* Save()
+    std::string GetSaveData()
     {
-        return str_data.c_str();
+        OUT_SAVE_INST_DATA;
+
+        std::ostringstream stream;
+        stream << Encounters[0] << " ";
+        stream << Encounters[1] << " ";
+        stream << Encounters[2];
+
+        OUT_SAVE_INST_DATA_COMPLETE;
+
+        return stream.str();
     }
 
     void Load(const char* in)

@@ -94,7 +94,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
 {
     boss_aranAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         m_creature->GetPosition(wLoc);
         SpellEntry *TempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_ARCMISSLE);
         if(TempSpell)
@@ -156,6 +156,8 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         SecondarySpellTimer = 5000;
         NormalCastTimer     = 0;
         SuperCastTimer      = 30000;
@@ -191,7 +193,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                 pInstance->SetData(DATA_SHADEOFARAN_EVENT, NOT_STARTED);
 
             if(GameObject* Door = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_GAMEOBJECT_LIBRARY_DOOR)))
-                Door->SetGoState(0);
+                Door->SetGoState(GO_STATE_ACTIVE);
         }
 
         if (m_creature->isAlive())
@@ -208,8 +210,8 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
     void TeleportCenter()
     {
         m_creature->CastSpell(m_creature, SPELL_BLINK_CENTER, true);
-        m_creature->Relocate(wLoc.x,wLoc.y,wLoc.z);
-        m_creature->SendMonsterMove(wLoc.x,wLoc.y,wLoc.z, 0);
+        m_creature->Relocate(wLoc.coord_x,wLoc.coord_y,wLoc.coord_z);
+        m_creature->SendMonsterMove(wLoc.coord_x,wLoc.coord_y,wLoc.coord_z, 0);
     }
 
     void JustDied(Unit *victim)
@@ -221,7 +223,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
             pInstance->SetData(DATA_SHADEOFARAN_EVENT, DONE);
 
             if(GameObject* Door = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_GAMEOBJECT_LIBRARY_DOOR)))
-                Door->SetGoState(0);
+                Door->SetGoState(GO_STATE_ACTIVE);
         }
     }
 
@@ -252,7 +254,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         {
             pInstance->SetData(DATA_SHADEOFARAN_EVENT, IN_PROGRESS);
             if(GameObject* Door = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_GAMEOBJECT_LIBRARY_DOOR)))
-                Door->SetGoState(1);
+                Door->SetGoState(GO_STATE_READY);
         }
     }
 
@@ -333,7 +335,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                 if(pInstance)
                 {
                     if(GameObject* Door = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_GAMEOBJECT_LIBRARY_DOOR)))
-                        Door->SetGoState(1);
+                        Door->SetGoState(GO_STATE_READY);
                     CloseDoorTimer = 0;
                 }
             }
@@ -683,6 +685,8 @@ struct TRINITY_DLL_DECL water_elementalAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         CastTimer = 2000 + (rand()%3000);
     }
 
@@ -745,7 +749,7 @@ struct TRINITY_DLL_DECL circular_blizzardAI : public ScriptedAI
 {
     circular_blizzardAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     uint16 currentWaypoint;
@@ -770,13 +774,13 @@ struct TRINITY_DLL_DECL circular_blizzardAI : public ScriptedAI
             Creature *pAran = Unit::GetCreature(*m_creature, pInstance->GetData64(DATA_ARAN));
             if(pAran)
             {
-                wLoc.x = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[0][0];
-                wLoc.y = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[1][0];
-                wLoc.z = pAran->GetPositionZ();
+                wLoc.coord_x = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[0][0];
+                wLoc.coord_y = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[1][0];
+                wLoc.coord_z = pAran->GetPositionZ();
             }
 
-            if(wLoc.x || wLoc.y || wLoc.z)
-                DoTeleportTo(wLoc.x, wLoc.y, wLoc.z);
+            if(wLoc.coord_x || wLoc.coord_y || wLoc.coord_z)
+                DoTeleportTo(wLoc.coord_x, wLoc.coord_y, wLoc.coord_z);
 
             currentWaypoint = 0;
             waypointTimer = 0;
@@ -802,11 +806,11 @@ struct TRINITY_DLL_DECL circular_blizzardAI : public ScriptedAI
             Creature *pAran = Unit::GetCreature(*m_creature, pInstance->GetData64(DATA_ARAN));
             if(pAran)
             {
-                wLoc.x = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[0][currentWaypoint];
-                wLoc.y = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[1][currentWaypoint];
+                wLoc.coord_x = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[0][currentWaypoint];
+                wLoc.coord_y = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[1][currentWaypoint];
             }
 
-            m_creature->GetMotionMaster()->MovePoint(currentWaypoint, wLoc.x, wLoc.y, wLoc.z);
+            m_creature->GetMotionMaster()->MovePoint(currentWaypoint, wLoc.coord_x, wLoc.coord_y, wLoc.coord_z);
             waypointTimer = 3000;
         }
         else

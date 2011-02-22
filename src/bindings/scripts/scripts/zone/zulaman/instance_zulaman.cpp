@@ -24,7 +24,7 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_zulaman.h"
 
-#define ENCOUNTERS     6
+#define ENCOUNTERS     7
 #define RAND_VENDOR    2
 
 //187021 //Harkor's Satchel
@@ -57,7 +57,11 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
     uint64 TanzarsTrunkGUID;
     uint64 AshlisBagGUID;
     uint64 KrazsPackageGUID;
+    uint64 StrangeGongGUID;
+    uint64 MassiveGateGUID;
 
+    uint64 HarrisonGUID;
+    uint64 AkilzonGUID;
     uint64 HexLordGateGUID;
     uint64 ZulJinGateGUID;
     uint64 AkilzonDoorGUID;
@@ -79,14 +83,17 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
         AshlisBagGUID = 0;
         KrazsPackageGUID = 0;
 
-        uint64 HexLordGateGUID = 0;
-        uint64 ZulJinGateGUID = 0;
-        uint64 AkilzonDoorGUID = 0;
-        uint64 HalazziDoorGUID = 0;
-        uint64 ZulJinDoorGUID = 0;
+        StrangeGongGUID = 0;
+        MassiveGateGUID = 0;
+        HarrisonGUID = 0;
+        HexLordGateGUID = 0;
+        ZulJinGateGUID = 0;
+        AkilzonDoorGUID = 0;
+        HalazziDoorGUID = 0;
+        ZulJinDoorGUID = 0;
 
         QuestTimer = 0;
-        QuestMinute = 21;
+        QuestMinute = 0;
         BossKilled = 0;
         ChestLooted = 0;
 
@@ -129,6 +136,12 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
     {
         switch(creature_entry)
         {
+        case 24375://harrison jones
+            HarrisonGUID = creature->GetGUID();
+            break;
+        case 23574:
+            AkilzonGUID = creature->GetGUID();
+            break;
         case 23578://janalai
         case 23863://zuljin
         case 24239://hexlord
@@ -152,6 +165,13 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
     {
         switch(go->GetEntry())
         {
+        case 187359: StrangeGongGUID = go->GetGUID(); break;
+        case 186728: MassiveGateGUID = go->GetGUID();
+            if (Encounters[0] == IN_PROGRESS || Encounters[0] == DONE)
+                    go->SetGoState(GO_STATE_ACTIVE);  //opened
+            else
+                go->SetGoState(GO_STATE_READY);   //closed
+                break;
         case 186303: HalazziDoorGUID = go->GetGUID(); break;
         case 186304: ZulJinGateGUID  = go->GetGUID(); break;
         case 186305: HexLordGateGUID = go->GetGUID(); break;
@@ -210,39 +230,65 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
         instance->SendToPlayers(&data);
     }
 
-    const char* Save()
+    std::string GetSaveData()
     {
-        std::ostringstream ss;
-        ss << "S " << BossKilled << " " << ChestLooted << " " << QuestMinute;
-        char* data = new char[ss.str().length()+1];
-        strcpy(data, ss.str().c_str());
-        //error_log("TSCR: Zul'aman saved, %s.", data);
-        return data;
+        OUT_SAVE_INST_DATA;
+
+        std::ostringstream stream;
+        stream << Encounters[0] << " ";
+        stream << Encounters[1] << " ";
+        stream << Encounters[2] << " ";
+        stream << Encounters[3] << " ";
+        stream << Encounters[4] << " ";
+        stream << Encounters[5] << " ";
+        stream << Encounters[6] << " ";
+
+        stream << BossKilled << " ";
+        stream << ChestLooted << " ";
+        stream << QuestMinute;
+
+        OUT_SAVE_INST_DATA_COMPLETE;
+
+        return stream.str();
     }
 
-    void Load(const char* load)
+    void Load(const char* in)
     {
-        if(!load) return;
-        std::istringstream ss(load);
-        //error_log("TSCR: Zul'aman loaded, %s.", ss.str().c_str());
-        char dataHead; // S
-        uint16 data1, data2, data3;
-        ss >> dataHead >> data1 >> data2 >> data3;
-        //error_log("TSCR: Zul'aman loaded, %d %d %d.", data1, data2, data3);
-        if(dataHead == 'S')
+        if (!in)
         {
-            BossKilled = data1;
-            ChestLooted = data2;
-            QuestMinute = data3;
-        }else error_log("TSCR: Zul'aman: corrupted save data.");
+            OUT_LOAD_INST_DATA_FAIL;
+            return;
+        }
+
+        OUT_LOAD_INST_DATA(in);
+        std::istringstream loadStream(in);
+        loadStream >> Encounters[0] >> Encounters[1] >> Encounters[2] >> Encounters[3] >> Encounters[4] >>
+                Encounters[5] >> Encounters[6] >> BossKilled >> ChestLooted >> QuestMinute;
+
+        for(uint8 i = 0; i < ENCOUNTERS; ++i)
+            if (Encounters[i] == IN_PROGRESS)
+                Encounters[i] = NOT_STARTED;
+
+        OUT_LOAD_INST_DATA_COMPLETE;
     }
 
     void SetData(uint32 type, uint32 data)
     {
         switch(type)
         {
+        case TYPE_EVENT_RUN:
+            if (data == SPECIAL)
+            {
+                OpenDoor(MassiveGateGUID, true);
+                QuestMinute = 21;
+                UpdateWorldState(WORLD_STATE_COUNTER, QuestMinute);
+                UpdateWorldState(WORLD_STATE_ID,1);
+                Encounters[0] = data;
+            }
+            break;
         case DATA_NALORAKKEVENT:
-            Encounters[0] = data;
+            if (Encounters[1] != DONE)
+                Encounters[1] = data;
             if(data == DONE)
             {
                 if(QuestMinute)
@@ -254,8 +300,11 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
             }
             break;
         case DATA_AKILZONEVENT:
-            Encounters[1] = data;
+            if (Encounters[2] != DONE)
+                Encounters[2] = data;
+
             OpenDoor(AkilzonDoorGUID, data != IN_PROGRESS);
+
             if(data == DONE)
             {
                 if(QuestMinute)
@@ -267,23 +316,34 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
             }
             break;
         case DATA_JANALAIEVENT:
-            Encounters[2] = data;
-            if(data == DONE) SummonHostage(2);
+            if (Encounters[3] != DONE)
+                Encounters[3] = data;
+
+            if(data == DONE)
+                SummonHostage(2);
             break;
         case DATA_HALAZZIEVENT:
-            Encounters[3] = data;
+            if (Encounters[4] != DONE)
+                Encounters[4] = data;
+
             OpenDoor(HalazziDoorGUID, data != IN_PROGRESS);
-            if(data == DONE) SummonHostage(3);
+
+            if(data == DONE)
+                SummonHostage(3);
             break;
         case DATA_HEXLORDEVENT:
-            Encounters[4] = data;
+            if (Encounters[5] != DONE)
+                Encounters[5] = data;
+
             if(data == IN_PROGRESS)
                 OpenDoor(HexLordGateGUID, false);
             else if(data == NOT_STARTED)
                 CheckInstanceStatus();
             break;
         case DATA_ZULJINEVENT:
-            Encounters[5] = data;
+            if (Encounters[6] != DONE)
+                Encounters[6] = data;
+
             OpenDoor(ZulJinDoorGUID, data != IN_PROGRESS);
             break;
         case DATA_CHESTLOOTED:
@@ -315,17 +375,49 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
     {
         switch(type)
         {
-        case DATA_NALORAKKEVENT: return Encounters[0];
-        case DATA_AKILZONEVENT:  return Encounters[1];
-        case DATA_JANALAIEVENT:  return Encounters[2];
-        case DATA_HALAZZIEVENT:  return Encounters[3];
-        case DATA_HEXLORDEVENT:  return Encounters[4];
-        case DATA_ZULJINEVENT:   return Encounters[5];
-        case DATA_CHESTLOOTED:   return ChestLooted;
-        case TYPE_RAND_VENDOR_1: return RandVendor[0];
-        case TYPE_RAND_VENDOR_2: return RandVendor[1];
-        default:                 return 0;
+            case TYPE_EVENT_RUN:     return Encounters[0];
+            case DATA_NALORAKKEVENT: return Encounters[1];
+            case DATA_AKILZONEVENT:  return Encounters[2];
+            case DATA_JANALAIEVENT:  return Encounters[3];
+            case DATA_HALAZZIEVENT:  return Encounters[4];
+            case DATA_HEXLORDEVENT:  return Encounters[5];
+            case DATA_ZULJINEVENT:   return Encounters[6];
+            case DATA_CHESTLOOTED:   return ChestLooted;
+            case TYPE_RAND_VENDOR_1: return RandVendor[0];
+            case TYPE_RAND_VENDOR_2: return RandVendor[1];
+            default:                 return 0;
         }
+    }
+
+    uint64 GetData64(uint32 data)
+    {
+        switch(data)
+        {
+            case DATA_AKILZONEVENT:
+                return AkilzonGUID;
+                /*
+            case DATA_NALORAKKEVENT:
+                return NalorakkGUID;
+            case DATA_JANALAIEVENT:
+                return JanalaiGUID;
+            case DATA_HALAZZIEVENT:
+                return HalazziGUID;
+            case DATA_SPIRIT_LYNX:
+                return SpiritLynxGUID;
+            case DATA_ZULJINEVENT:
+                return ZuljinGUID;
+            case DATA_HEXLORDEVENT:
+                return HexLordGateGUID;*/
+            case DATA_HARRISON:
+                return HarrisonGUID;
+            case DATA_GO_GONG:
+                return StrangeGongGUID;
+            case DATA_GO_ENTRANCE:
+                return MassiveGateGUID;
+            /*case DATA_GO_MALACRASS_GATE:
+                return MalacrassEntranceGUID;*/
+        }
+        return 0;
     }
 
     void Update(uint32 diff)
@@ -341,7 +433,8 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
                 {
                     UpdateWorldState(3104, 1);
                     UpdateWorldState(3106, QuestMinute);
-                }else UpdateWorldState(3104, 0);
+                }
+                else UpdateWorldState(3104, 0);
             }
             QuestTimer -= diff;
         }

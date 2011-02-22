@@ -97,7 +97,7 @@ class TRINITY_DLL_SPEC MotionMaster //: private std::stack<MovementGenerator *>
 
         explicit MotionMaster(Unit *unit) : i_owner(unit), m_expList(NULL), m_cleanFlag(MMCF_NONE), i_top(-1)
         {
-            for(uint8 i = 0; i < MAX_MOTION_SLOT; ++i)
+            for (uint8 i = 0; i < MAX_MOTION_SLOT; ++i)
             {
                 Impl[i] = NULL;
                 needInit[i] = true;
@@ -120,7 +120,7 @@ class TRINITY_DLL_SPEC MotionMaster //: private std::stack<MovementGenerator *>
         {
             if (m_cleanFlag & MMCF_UPDATE)
             {
-                if(reset)
+                if (reset)
                     m_cleanFlag |= MMCF_RESET;
                 else
                     m_cleanFlag &= ~MMCF_RESET;
@@ -133,7 +133,7 @@ class TRINITY_DLL_SPEC MotionMaster //: private std::stack<MovementGenerator *>
         {
             if (m_cleanFlag & MMCF_UPDATE)
             {
-                if(reset)
+                if (reset)
                     m_cleanFlag |= MMCF_RESET;
                 else
                     m_cleanFlag &= ~MMCF_RESET;

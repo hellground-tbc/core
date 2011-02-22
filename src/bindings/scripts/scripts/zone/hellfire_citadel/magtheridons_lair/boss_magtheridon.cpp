@@ -212,6 +212,8 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         if (!pInstance)
             pInstance = (ScriptedInstance*)m_creature->GetInstanceData();
 

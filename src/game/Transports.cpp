@@ -33,21 +33,21 @@
 
 void MapManager::LoadTransports()
 {
-    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT entry, name, period FROM transports");
+    QueryResultAutoPtr result = WorldDatabase.Query("SELECT entry, name, period FROM transports");
 
     uint32 count = 0;
 
-    if( !result )
+    if (!result)
     {
-        barGoLink bar( 1 );
+        barGoLink bar(1);
         bar.step();
 
         sLog.outString();
-        sLog.outString( ">> Loaded %u transports", count );
+        sLog.outString(">> Loaded %u transports", count);
         return;
     }
 
-    barGoLink bar( result->GetRowCount() );
+    barGoLink bar(result->GetRowCount());
 
     do
     {
@@ -63,14 +63,14 @@ void MapManager::LoadTransports()
 
         const GameObjectInfo *goinfo = objmgr.GetGameObjectInfo(entry);
 
-        if(!goinfo)
+        if (!goinfo)
         {
             sLog.outErrorDb("Transport ID:%u, Name: %s, will not be loaded, gameobject_template missing", entry, name.c_str());
             delete t;
             continue;
         }
 
-        if(goinfo->type != GAMEOBJECT_TYPE_MO_TRANSPORT)
+        if (goinfo->type != GAMEOBJECT_TYPE_MO_TRANSPORT)
         {
             sLog.outErrorDb("Transport ID:%u, Name: %s, will not be loaded, gameobject_template type wrong", entry, name.c_str());
             delete t;
@@ -81,7 +81,7 @@ void MapManager::LoadTransports()
 
         std::set<uint32> mapsUsed;
 
-        if(!t->GenerateWaypoints(goinfo->moTransport.taxiPathId, mapsUsed))
+        if (!t->GenerateWaypoints(goinfo->moTransport.taxiPathId, mapsUsed))
             // skip transports with empty waypoints list
         {
             sLog.outErrorDb("Transport (path id %u) path size = 0. Transport ignored, check DBC files or transport GO data0 field.",goinfo->moTransport.taxiPathId);
@@ -89,14 +89,12 @@ void MapManager::LoadTransports()
             continue;
         }
 
-        t->m_name = goinfo->name;
-
         float x, y, z, o;
         uint32 mapid;
         x = t->m_WayPoints[0].x; y = t->m_WayPoints[0].y; z = t->m_WayPoints[0].z; mapid = t->m_WayPoints[0].mapid; o = 1;
 
                                                             // creates the Gameobject
-        if(!t->Create(entry, mapid, x, y, z, o, 100, 0))
+        if (!t->Create(entry, mapid, x, y, z, o, 100, 0))
         {
             delete t;
             continue;
@@ -108,17 +106,17 @@ void MapManager::LoadTransports()
             m_TransportsByMap[*i].insert(t);
 
         //If we someday decide to use the grid to track transports, here:
-        //MapManager::Instance().LoadGrid(mapid,x,y,true);
-        //MapManager::Instance().GetMap(t->GetMapId())->Add<GameObject>((GameObject *)t);
+
         ++count;
-    } while(result->NextRow());
+    }
+    while (result->NextRow());
 
     sLog.outString();
-    sLog.outString( ">> Loaded %u transports", count );
+    sLog.outString(">> Loaded %u transports", count);
 
     // check transport data DB integrity
     result = WorldDatabase.Query("SELECT gameobject.guid,gameobject.id,transports.name FROM gameobject,transports WHERE gameobject.id = transports.entry");
-    if(result)                                              // wrong data found
+    if (result)                                              // wrong data found
     {
         do
         {
@@ -129,14 +127,14 @@ void MapManager::LoadTransports()
             std::string name = fields[2].GetCppString();
             sLog.outErrorDb("Transport %u '%s' have record (GUID: %u) in `gameobject`. Transports DON'T must have any records in `gameobject` or its behavior will be unpredictable/bugged.",entry,name.c_str(),guid);
         }
-        while(result->NextRow());
+        while (result->NextRow());
     }
 }
 
 Transport::Transport() : GameObject()
 {
                                                             // 2.3.2 - 0x5A
-    m_updateFlag = (UPDATEFLAG_TRANSPORT | UPDATEFLAG_LOWGUID | UPDATEFLAG_HIGHGUID | UPDATEFLAG_HASPOSITION);
+    m_updateFlag = (UPDATEFLAG_TRANSPORT | UPDATEFLAG_LOWGUID | UPDATEFLAG_HIGHGUID | UPDATEFLAG_HAS_POSITION);
 }
 
 bool Transport::Create(uint32 guidlow, uint32 mapid, float x, float y, float z, float ang, uint32 animprogress, uint32 dynflags)
@@ -145,7 +143,7 @@ bool Transport::Create(uint32 guidlow, uint32 mapid, float x, float y, float z, 
 
     SetMapId(mapid);
 
-    if(!IsPositionValid())
+    if (!IsPositionValid())
     {
         sLog.outError("ERROR: Transport (GUID: %u) not created. Suggested coordinates isn't valid (X: %f Y: %f)",
             guidlow,x,y);
@@ -173,12 +171,15 @@ bool Transport::Create(uint32 guidlow, uint32 mapid, float x, float y, float z, 
 
     SetUInt32Value(GAMEOBJECT_DISPLAYID, goinfo->displayId);
 
-    SetGoState(1);
+    SetGoState(GO_STATE_READY);
     SetGoType(GameobjectTypes(goinfo->type));
 
     SetGoAnimProgress(animprogress);
-    if(dynflags)
+
+    if (dynflags)
         SetUInt32Value(GAMEOBJECT_DYN_FLAGS, dynflags);
+
+    SetName(goinfo->name);
 
     return true;
 }
@@ -262,7 +263,7 @@ bool Transport::GenerateWaypoints(uint32 pathid, std::set<uint32> &mapids)
         if (keyFrames[i].actionflag == 2)
         {
             // remember first stop frame
-            if(firstStop == -1)
+            if (firstStop == -1)
                 firstStop = i;
             lastStop = i;
         }
@@ -399,7 +400,7 @@ bool Transport::GenerateWaypoints(uint32 pathid, std::set<uint32> &mapids)
 
         //        sLog.outString("T: %d, x: %f, y: %f, z: %f, t:%d", t, pos.x, pos.y, pos.z, teleport);
 /*
-        if(keyFrames[i+1].delay > 5)
+        if (keyFrames[i+1].delay > 5)
             pos.delayed = true;
 */
         //if (teleport)
@@ -434,19 +435,18 @@ Transport::WayPointMap::iterator Transport::GetNextWayPoint()
 
 void Transport::TeleportTransport(uint32 newMapid, float x, float y, float z)
 {
-    //MapManager::Instance().GetMap(oldMapid)->Remove((GameObject *)this, false);
+    Map const* oldMap = GetMap();
     SetMapId(newMapid);
-    //MapManager::Instance().LoadGrid(newMapid,x,y,true);
-    Relocate(x, y, z);
-    //MapManager::Instance().GetMap(newMapid)->Add<GameObject>((GameObject *)this);
 
-    for(PlayerSet::iterator itr = m_passengers.begin(); itr != m_passengers.end();)
+    Relocate(x, y, z);
+
+    for (PlayerSet::iterator itr = m_passengers.begin(); itr != m_passengers.end();)
     {
         PlayerSet::iterator it2 = itr;
         ++itr;
 
         Player *plr = *it2;
-        if(!plr)
+        if (!plr)
         {
             m_passengers.erase(it2);
             continue;
@@ -462,13 +462,21 @@ void Transport::TeleportTransport(uint32 newMapid, float x, float y, float z)
         //data << uint32(0);
         //plr->GetSession()->SendPacket(&data);
     }
+
+    Map const* newMap = GetMap();
+
+    if (oldMap != newMap)
+    {
+        UpdateForMap(oldMap);
+        UpdateForMap(newMap);
+    }
 }
 
 bool Transport::AddPassenger(Player* passenger)
 {
     if (m_passengers.find(passenger) == m_passengers.end())
     {
-        sLog.outDetail("Player %s boarded transport %s.", passenger->GetName(), this->m_name.c_str());
+        sLog.outDetail("Player %s boarded transport %s.", passenger->GetName(), GetName());
         m_passengers.insert(passenger);
     }
     return true;
@@ -478,7 +486,7 @@ bool Transport::RemovePassenger(Player* passenger)
 {
     if (m_passengers.find(passenger) != m_passengers.end())
     {
-        sLog.outDetail("Player %s removed from transport %s.", passenger->GetName(), this->m_name.c_str());
+        sLog.outDetail("Player %s removed from transport %s.", passenger->GetName(), GetName());
         m_passengers.erase(passenger);
     }
     return true;
@@ -487,7 +495,7 @@ bool Transport::RemovePassenger(Player* passenger)
 void Transport::CheckForEvent(uint32 entry, uint32 wp_id)
 {
     uint32 key = entry*100+wp_id;
-    if(objmgr.TransportEventMap.find(key) != objmgr.TransportEventMap.end())
+    if (objmgr.TransportEventMap.find(key) != objmgr.TransportEventMap.end())
         GetMap()->ScriptsStart(sEventScripts, objmgr.TransportEventMap[key], this, NULL);
 }
 
@@ -509,11 +517,10 @@ void Transport::Update(uint32 /*p_time*/)
         }
         else
         {
-            //MapManager::Instance().GetMap(m_curr->second.mapid)->GameobjectRelocation((GameObject *)this, m_curr->second.x, m_curr->second.y, m_curr->second.z, this->m_orientation);
             Relocate(m_curr->second.x, m_curr->second.y, m_curr->second.z);
         }
 /*
-        if(m_curr->second.delayed)
+        if (m_curr->second.delayed)
         {
             switch (GetEntry())
             {
@@ -534,28 +541,56 @@ void Transport::Update(uint32 /*p_time*/)
         }
 */
         /*
-        for(PlayerSet::iterator itr = m_passengers.begin(); itr != m_passengers.end();)
+        for (PlayerSet::iterator itr = m_passengers.begin(); itr != m_passengers.end();)
         {
             PlayerSet::iterator it2 = itr;
             ++itr;
-            //(*it2)->SetPosition( m_curr->second.x + (*it2)->GetTransOffsetX(), m_curr->second.y + (*it2)->GetTransOffsetY(), m_curr->second.z + (*it2)->GetTransOffsetZ(), (*it2)->GetTransOffsetO() );
+            //(*it2)->SetPosition(m_curr->second.x + (*it2)->GetTransOffsetX(), m_curr->second.y + (*it2)->GetTransOffsetY(), m_curr->second.z + (*it2)->GetTransOffsetZ(), (*it2)->GetTransOffsetO());
         }
         */
 
         m_nextNodeTime = m_curr->first;
 
         if (m_curr == m_WayPoints.begin() && (sLog.getLogFilter() & LOG_FILTER_TRANSPORT_MOVES)==0)
-            sLog.outDetail(" ************ BEGIN ************** %s", this->m_name.c_str());
-
-        //        MapManager::Instance().GetMap(m_curr->second.mapid)->Add(&this); // -> // ->Add(t);
-        //MapManager::Instance().GetMap(m_curr->second.mapid)->Remove((GameObject *)this, false); // -> // ->Add(t);
-        //MapManager::Instance().GetMap(m_curr->second.mapid)->Add((GameObject *)this); // -> // ->Add(t);
+            sLog.outDetail(" ************ BEGIN ************** %s", GetName());
 
         if ((sLog.getLogFilter() & LOG_FILTER_TRANSPORT_MOVES)==0)
-            sLog.outDetail("%s moved to %d %f %f %f %d", this->m_name.c_str(), m_curr->second.id, m_curr->second.x, m_curr->second.y, m_curr->second.z, m_curr->second.mapid);
+            sLog.outDetail("%s moved to %d %f %f %f %d", GetName(), m_curr->second.id, m_curr->second.x, m_curr->second.y, m_curr->second.z, m_curr->second.mapid);
 
         //Transport Event System
         CheckForEvent(this->GetEntry(), m_curr->second.id);
     }
 }
 
+void Transport::UpdateForMap(Map const* targetMap)
+{
+    Map::PlayerList const& pl = targetMap->GetPlayers();
+    if (pl.isEmpty())
+        return;
+
+    if (GetMapId()==targetMap->GetId())
+    {
+        for (Map::PlayerList::const_iterator itr = pl.begin(); itr != pl.end(); ++itr)
+        {
+            if (this != itr->getSource()->GetTransport())
+            {
+                UpdateData transData;
+                BuildCreateUpdateBlockForPlayer(&transData, itr->getSource());
+                WorldPacket packet;
+                transData.BuildPacket(&packet, true);
+                itr->getSource()->SendDirectMessage(&packet);
+            }
+        }
+    }
+    else
+    {
+        UpdateData transData;
+        BuildOutOfRangeUpdateBlock(&transData);
+        WorldPacket out_packet;
+        transData.BuildPacket(&out_packet, true);
+
+        for (Map::PlayerList::const_iterator itr = pl.begin(); itr != pl.end(); ++itr)
+            if (this != itr->getSource()->GetTransport())
+                itr->getSource()->SendDirectMessage(&out_packet);
+    }
+}

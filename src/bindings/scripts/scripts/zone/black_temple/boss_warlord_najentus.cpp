@@ -50,7 +50,7 @@ struct TRINITY_DLL_DECL boss_najentusAI : public ScriptedAI
 {
     boss_najentusAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         m_creature->GetPosition(wLoc);
     }
 
@@ -100,7 +100,7 @@ struct TRINITY_DLL_DECL boss_najentusAI : public ScriptedAI
         DestroySpine();
 
         if(pInstance)
-            pInstance->SetData(DATA_HIGHWARLORDNAJENTUSEVENT, NOT_STARTED);
+            pInstance->SetData(EVENT_HIGHWARLORDNAJENTUS, NOT_STARTED);
     }
 
     void KilledUnit(Unit *victim)
@@ -111,7 +111,7 @@ struct TRINITY_DLL_DECL boss_najentusAI : public ScriptedAI
     void JustDied(Unit *victim)
     {
         if(pInstance)
-            pInstance->SetData(DATA_HIGHWARLORDNAJENTUSEVENT, DONE);
+            pInstance->SetData(EVENT_HIGHWARLORDNAJENTUS, DONE);
 
         DestroySpine();
 
@@ -130,7 +130,7 @@ struct TRINITY_DLL_DECL boss_najentusAI : public ScriptedAI
     void EnterCombat(Unit *who)
     {
         if(pInstance)
-            pInstance->SetData(DATA_HIGHWARLORDNAJENTUSEVENT, IN_PROGRESS);
+            pInstance->SetData(EVENT_HIGHWARLORDNAJENTUS, IN_PROGRESS);
 
         DoScriptText(SAY_AGGRO, m_creature);
         DoZoneInCombat();

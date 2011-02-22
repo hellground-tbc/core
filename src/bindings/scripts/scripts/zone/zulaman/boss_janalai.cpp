@@ -101,7 +101,7 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
 {
     boss_janalaiAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance =((ScriptedInstance*)c->GetInstanceData());
+        pInstance =(c->GetInstanceData());
 
         SpellEntry *TempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_HATCH_EGG);
         if(TempSpell && TempSpell->EffectImplicitTargetA[0] != 1)
@@ -109,9 +109,9 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
             TempSpell->EffectImplicitTargetA[0] = 1;
             TempSpell->EffectImplicitTargetB[0] = 0;
         }
-        wLoc.x = -33.93;
-        wLoc.y = 1149.27;
-        wLoc.z = 19;
+        wLoc.coord_x = -33.93;
+        wLoc.coord_y = 1149.27;
+        wLoc.coord_z = 19;
         wLoc.mapid = c->GetMapId();
     }
 
@@ -238,17 +238,10 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
         m_creature->GetPosition(x, y, z);
 
         {
-            CellPair pair(Trinity::ComputeCellPair(x, y));
-            Cell cell(pair);
-            cell.data.Part.reserved = ALL_DISTRICT;
-            cell.SetNoCreate();
-
             Trinity::AllCreaturesOfEntryInRange check(m_creature, MOB_EGG, 100);
             Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(templist, check);
 
-            TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> cSearcher(searcher);
-
-            cell.Visit(pair, cSearcher, *(m_creature->GetMap()));
+            Cell::VisitGridObjects(me, searcher, 100);
         }
 
         //error_log("Eggs %d at middle", templist.size());
@@ -272,17 +265,10 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
         m_creature->GetPosition(x, y, z);
 
         {
-            CellPair pair(Trinity::ComputeCellPair(x, y));
-            Cell cell(pair);
-            cell.data.Part.reserved = ALL_DISTRICT;
-            cell.SetNoCreate();
-
             Trinity::AllCreaturesOfEntryInRange check(m_creature, MOB_FIRE_BOMB, 100);
             Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(templist, check);
 
-            TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> cSearcher(searcher);
-
-            cell.Visit(pair, cSearcher, *(m_creature->GetMap()));
+            Cell::VisitGridObjects(me, searcher, me->GetMap()->GetVisibilityDistance());
         }
         for(std::list<Creature*>::iterator i = templist.begin(); i != templist.end(); ++i)
         {
@@ -496,7 +482,7 @@ struct TRINITY_DLL_DECL mob_amanishi_hatcherAI : public ScriptedAI
 {
     mob_amanishi_hatcherAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance =((ScriptedInstance*)c->GetInstanceData());
+        pInstance =(c->GetInstanceData());
     }
 
     ScriptedInstance *pInstance;
@@ -526,17 +512,10 @@ struct TRINITY_DLL_DECL mob_amanishi_hatcherAI : public ScriptedAI
         m_creature->GetPosition(x, y, z);
 
         {
-            CellPair pair(Trinity::ComputeCellPair(x, y));
-            Cell cell(pair);
-            cell.data.Part.reserved = ALL_DISTRICT;
-            cell.SetNoCreate();
-
             Trinity::AllCreaturesOfEntryInRange check(m_creature, 23817, 50);
             Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(templist, check);
 
-            TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> cSearcher(searcher);
-
-            cell.Visit(pair, cSearcher, *(m_creature->GetMap()));
+            Cell::VisitGridObjects(me, searcher, 50);
         }
 
         //error_log("Eggs %d at %d", templist.size(), side);
@@ -626,7 +605,7 @@ struct TRINITY_DLL_DECL mob_hatchlingAI : public ScriptedAI
 {
     mob_hatchlingAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance =((ScriptedInstance*)c->GetInstanceData());
+        pInstance =(c->GetInstanceData());
     }
 
     ScriptedInstance *pInstance;
@@ -640,7 +619,7 @@ struct TRINITY_DLL_DECL mob_hatchlingAI : public ScriptedAI
         else
             m_creature->GetMotionMaster()->MovePoint(0,hatcherway[1][3][0]+rand()%4-2,1150+rand()%4-2,hatcherway[1][3][2]);
 
-        m_creature->SetUnitMovementFlags(MOVEMENTFLAG_LEVITATING);
+        m_creature->SetUnitMovementFlags(MOVEFLAG_LEVITATING);
     }
 
     void EnterCombat(Unit *who) {/*DoZoneInCombat();*/}

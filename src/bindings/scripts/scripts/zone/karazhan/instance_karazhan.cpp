@@ -43,6 +43,7 @@ void instance_karazhan::Initialize()
     MoroesGUID          = 0;
     AranGUID            = 0;
     BlizzardGUID        = 0;
+    BarnesGUID          = 0;
 
     NightbaneGUID       = 0;
 
@@ -147,6 +148,9 @@ void instance_karazhan::OnCreatureCreate(Creature *creature, uint32 entry)
             BlizzardGUID = creature->GetGUID();
             creature->SetReactState(REACT_PASSIVE);
             break;
+        case 16812:
+            BarnesGUID = creature->GetGUID();
+            break;
     }
 
     const CreatureData *tmp = creature->GetLinkedRespawnCreatureData();
@@ -164,23 +168,24 @@ uint64 instance_karazhan::GetData64(uint32 data)
 {
     switch (data)
     {
-        case DATA_KILREK:                      return KilrekGUID;
-        case DATA_TERESTIAN:                   return TerestianGUID;
-        case DATA_MOROES:                      return MoroesGUID;
-        case DATA_NIGHTBANE:                   return NightbaneGUID;
-        case DATA_GAMEOBJECT_STAGEDOORLEFT:    return StageDoorLeftGUID;
-        case DATA_GAMEOBJECT_STAGEDOORRIGHT:   return StageDoorRightGUID;
-        case DATA_GAMEOBJECT_CURTAINS:         return CurtainGUID;
-        case DATA_GAMEOBJECT_LIBRARY_DOOR:     return LibraryDoor;
-        case DATA_GAMEOBJECT_MASSIVE_DOOR:     return MassiveDoor;
-        case DATA_GAMEOBJECT_GAME_DOOR:        return GamesmansDoor;
-        case DATA_GAMEOBJECT_GAME_EXIT_DOOR:   return GamesmansExitDoor;
-        case DATA_GAMEOBJECT_NETHER_DOOR:      return NetherspaceDoor;
-        case DATA_MASTERS_TERRACE_DOOR_1:      return MastersTerraceDoor[0];
-        case DATA_MASTERS_TERRACE_DOOR_2:      return MastersTerraceDoor[1];
-        case DATA_ARAN:                        return AranGUID;
-        case DATA_BLIZZARD:                    return BlizzardGUID;
-	case DATA_CHESS_ECHO_OF_MEDIVH:        return MedivhGUID;
+        case DATA_KILREK:                       return KilrekGUID;
+        case DATA_TERESTIAN:                    return TerestianGUID;
+        case DATA_MOROES:                       return MoroesGUID;
+        case DATA_NIGHTBANE:                    return NightbaneGUID;
+        case DATA_GAMEOBJECT_STAGEDOORLEFT:     return StageDoorLeftGUID;
+        case DATA_GAMEOBJECT_STAGEDOORRIGHT:    return StageDoorRightGUID;
+        case DATA_GAMEOBJECT_CURTAINS:          return CurtainGUID;
+        case DATA_GAMEOBJECT_LIBRARY_DOOR:      return LibraryDoor;
+        case DATA_GAMEOBJECT_MASSIVE_DOOR:      return MassiveDoor;
+        case DATA_GAMEOBJECT_GAME_DOOR:         return GamesmansDoor;
+        case DATA_GAMEOBJECT_GAME_EXIT_DOOR:    return GamesmansExitDoor;
+        case DATA_GAMEOBJECT_NETHER_DOOR:       return NetherspaceDoor;
+        case DATA_MASTERS_TERRACE_DOOR_1:       return MastersTerraceDoor[0];
+        case DATA_MASTERS_TERRACE_DOOR_2:       return MastersTerraceDoor[1];
+        case DATA_ARAN:                         return AranGUID;
+        case DATA_BLIZZARD:                     return BlizzardGUID;
+        case DATA_BARNES:                       return BarnesGUID;
+        case DATA_CHESS_ECHO_OF_MEDIVH:        return MedivhGUID;
     }
 
     return 0;
@@ -207,7 +212,10 @@ void instance_karazhan::SetData(uint32 type, uint32 data)
             Encounters[3] = data;
         break;
     case DATA_OPERA_EVENT:
-        if(data == DONE)
+        if (Encounters[4] == SPECIAL && data == DONE)
+            data = NOT_STARTED;
+
+        if (data == DONE)
         {
             HandleGameObject(SideEntranceDoor, true);
             HandleGameObject(ServentAccessDoor, true);
@@ -215,10 +223,10 @@ void instance_karazhan::SetData(uint32 type, uint32 data)
             HandleGameObject(StageDoorRightGUID, true);
         }
 
-        if(Encounters[4] != DONE)
+        if (Encounters[4] != DONE)
             Encounters[4] = data;
 
-        if(data == NOT_STARTED)
+        if (data == NOT_STARTED)
             OzDeathCount = 0;
         break;
     case DATA_CURATOR_EVENT:
@@ -299,7 +307,7 @@ void instance_karazhan::OnObjectCreate(GameObject* go)
     case 184517:
         LibraryDoor           = go->GetGUID();
         if(GetData(DATA_SHADEOFARAN_EVENT) == DONE) // open door from Shade of Aran whenever event is saved as DONE
-            go->SetGoState(0);
+            go->SetGoState(GO_STATE_ACTIVE);
         break;
     case 185521:
         MassiveDoor           = go->GetGUID();
@@ -343,22 +351,27 @@ void instance_karazhan::OnObjectCreate(GameObject* go)
     }
 }
 
-const char* instance_karazhan::Save()
+std::string instance_karazhan::GetSaveData()
 {
     OUT_SAVE_INST_DATA;
-    std::ostringstream stream;
-    stream << Encounters[0] << " "  << Encounters[1] << " "  << Encounters[2] << " "  << Encounters[3] << " "
-        << Encounters[4] << " "  << Encounters[5] << " "  << Encounters[6] << " "  << Encounters[7] << " "
-        << Encounters[8] << " "  << Encounters[9] << " "  << Encounters[10] << " "  << Encounters[11];
-    char* out = new char[stream.str().length() + 1];
-    strcpy(out, stream.str().c_str());
-    if(out)
-    {
-        OUT_SAVE_INST_DATA_COMPLETE;
-        return out;
-    }
 
-    return NULL;
+    std::ostringstream stream;
+    stream << Encounters[0] << " ";
+    stream << Encounters[1] << " ";
+    stream << Encounters[2] << " ";
+    stream << Encounters[3] << " ";
+    stream << Encounters[4] << " ";
+    stream << Encounters[5] << " ";
+    stream << Encounters[6] << " ";
+    stream << Encounters[7] << " ";
+    stream << Encounters[8] << " ";
+    stream << Encounters[9]  << " ";
+    stream << Encounters[10] << " ";
+    stream << Encounters[11];
+
+    OUT_SAVE_INST_DATA_COMPLETE;
+
+    return stream.str();
 }
 
 void instance_karazhan::Load(const char* in)

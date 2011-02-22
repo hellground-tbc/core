@@ -34,17 +34,17 @@
 template<class T>
 void TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
 {
-    if( !i_target.isValid() || !&owner )
+    if (!i_target.isValid() || !&owner)
         return;
 
-    if( owner.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED) )
+    if (owner.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED))
         return;
 
     float x, y, z;
-    if(!i_offset)
+    if (!i_offset)
     {
         // to nearest random contact position
-        i_target->GetRandomContactPoint( &owner, x, y, z, 0, MELEE_RANGE - 0.5f );
+        i_target->GetRandomContactPoint(&owner, x, y, z, 0, MELEE_RANGE - 0.5f);
     }
     else
     {
@@ -65,20 +65,24 @@ void TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
 
         //We don't update Mob Movement, if the difference between New destination and last destination is < BothObjectSize
         float  bothObjectSize = i_target->GetObjectSize() + owner.GetObjectSize() + CONTACT_DISTANCE;
-        if( i_destinationHolder.HasDestination() && i_destinationHolder.GetDestinationDiff(x,y,z) < bothObjectSize )
+        if (i_destinationHolder.HasDestination() && i_destinationHolder.GetDestinationDiff(x,y,z) < bothObjectSize)
             return;
     */
+
+    if (owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->canFly())
+        z = i_target->GetPositionZ();
+
     Traveller<T> traveller(owner);
     i_destinationHolder.SetDestination(traveller, x, y, z);
     owner.addUnitState(UNIT_STAT_CHASE);
     if (owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->canFly())
-        owner.AddUnitMovementFlag(MOVEMENTFLAG_FLYING2);
+        owner.AddUnitMovementFlag(SPLINEFLAG_FLYINGING2);
 }
 
 template<class T>
 void TargetedMovementGenerator<T>::_adaptSpeedToTarget(T &owner)
 {
-    if(!owner.GetOwner())
+    if (!owner.GetOwner())
         return;
 
     float lowerCritDist = 3*i_offset;
@@ -87,29 +91,30 @@ void TargetedMovementGenerator<T>::_adaptSpeedToTarget(T &owner)
     float maxSpeed    = owner.GetMaxSpeedRate(MOVE_RUN);
     float currSpeed   = owner.GetSpeedRate(MOVE_RUN);
     float targetSpeed = i_target->GetSpeedRate(MOVE_RUN);
-    if( targetSpeed > maxSpeed )
+
+    if (targetSpeed > maxSpeed)
         targetSpeed = maxSpeed;
 
-    float dist_to_target = owner.GetDistance2d( i_target.getTarget() );
+    float dist_to_target = owner.GetDistance2d(i_target.getTarget());
 
-    if( dist_to_target <= lowerCritDist && currSpeed < targetSpeed )
+    if (dist_to_target <= lowerCritDist && currSpeed < targetSpeed)
         owner.SetSpeed(MOVE_RUN, targetSpeed, true);
     // distance is greater than threashold: go to max speed
-    else if( dist_to_target > upperCritDist && currSpeed < maxSpeed )
+    else if (dist_to_target > upperCritDist && currSpeed < maxSpeed)
         owner.SetSpeed(MOVE_RUN, maxSpeed, true);
 }
 
 template<class T>
 void TargetedMovementGenerator<T>::Initialize(T &owner)
 {
-    if(!&owner)
+    if (!&owner)
         return;
 
-    if(owner.GetTypeId() != TYPEID_UNIT || !(((Creature*)&owner)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_ALWAYS_WALK) )
-        owner.RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+    if (owner.GetTypeId() != TYPEID_UNIT || !(((Creature*)&owner)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_ALWAYS_WALK))
+        owner.RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
 
     if (owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->canFly())
-        owner.AddUnitMovementFlag(MOVEMENTFLAG_FLYING2);
+        owner.AddUnitMovementFlag(SPLINEFLAG_FLYINGING2);
 
     _setTargetLocation(owner);
 }
@@ -120,7 +125,7 @@ void TargetedMovementGenerator<T>::Finalize(T &owner)
     owner.clearUnitState(UNIT_STAT_CHASE);
 
     // make sure that owner is at maxspeed
-    if( owner.GetSpeedRate(MOVE_RUN) != owner.GetMaxSpeedRate(MOVE_RUN) )
+    if (owner.GetSpeedRate(MOVE_RUN) != owner.GetMaxSpeedRate(MOVE_RUN))
         owner.SetSpeed(MOVE_RUN, owner.GetMaxSpeedRate(MOVE_RUN), true);
 
 }
@@ -146,7 +151,7 @@ bool TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
     // prevent movement while casting spells with cast time or channel time
     if (owner.IsNonMeleeSpellCasted(false, false,  true) && (!owner.m_currentSpells[CURRENT_GENERIC_SPELL] || owner.m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT))
     {
-        if(!owner.IsStopped())
+        if (!owner.IsStopped())
             owner.StopMoving();
 
         return true;
@@ -165,7 +170,7 @@ bool TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
     {
         owner.addUnitState(UNIT_STAT_CHASE);
         if (owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->canFly())
-            owner.AddUnitMovementFlag(MOVEMENTFLAG_FLYING2);
+            owner.AddUnitMovementFlag(SPLINEFLAG_FLYINGING2);
 
         i_destinationHolder.StartTravel(traveller);
         return true;
@@ -189,7 +194,7 @@ bool TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
             i_recalculateTravel = false;
         }
         // Update the Angle of the target only for Map::, no need to send packet for player
-        else if (!i_angle && !owner.HasInArc( 0.01f, i_target.getTarget()))
+        else if (!i_angle && !owner.HasInArc(0.01f, i_target.getTarget()))
             owner.SetInFront(i_target.getTarget());
 
         if ((owner.IsStopped() && !i_destinationHolder.HasArrived()))
@@ -198,7 +203,7 @@ bool TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
             owner.SetInFront(i_target.getTarget());
 
             owner.StopMoving();
-            if(owner.IsWithinMeleeRange(i_target.getTarget()) && !owner.hasUnitState(UNIT_STAT_FOLLOW))
+            if (owner.IsWithinMeleeRange(i_target.getTarget()) && !owner.hasUnitState(UNIT_STAT_FOLLOW))
                 owner.Attack(i_target.getTarget(),true);
         }
     }

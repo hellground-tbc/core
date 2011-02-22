@@ -12,6 +12,10 @@ SET(trinitydatabase_STAT_SRCS
    QueryResult.cpp
    QueryResult.h
    QueryResult.cpp
+   QueryResultMysql.cpp
+   QueryResultMysql.h
+   DatabaseMysql.h
+   DatabaseMysql.cpp
    SQLStorage.cpp
    SQLStorage.h
    SQLStorageImpl.h

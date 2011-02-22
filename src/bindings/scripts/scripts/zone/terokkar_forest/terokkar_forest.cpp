@@ -391,7 +391,7 @@ struct TRINITY_DLL_DECL npc_isla_starmaneAI : public npc_escortAI
             {
             GameObject* Cage = FindGameObject(GO_CAGE, 10, m_creature);
             if(Cage)
-                Cage->SetGoState(0);
+                Cage->SetGoState(GO_STATE_ACTIVE);
             }break;
         case 2: DoScriptText(SAY_PROGRESS_1, m_creature, player); break;
         case 5: DoScriptText(SAY_PROGRESS_2, m_creature, player); break;
@@ -407,7 +407,7 @@ struct TRINITY_DLL_DECL npc_isla_starmaneAI : public npc_escortAI
             m_creature->SetInFront(player); break;
         case 30: m_creature->HandleEmoteCommand(EMOTE_ONESHOT_WAVE); break;
         case 31: DoCast(m_creature, SPELL_CAT);
-            m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE); break;
+            m_creature->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE); break;
         }
     }
 
@@ -518,7 +518,7 @@ void SendActionMenu_go_skull_pile(Player *player, GameObject* _GO, uint32 action
     // GO should be despawned by spell casted below, but it's not working :(
     if(player->HasItemCount(32620, 10))
     {
-        _GO->SetGoState(0);
+        _GO->SetGoState(GO_STATE_ACTIVE);
         _GO->SetRespawnTime(600);
         player->CLOSE_GOSSIP_MENU();
     }
@@ -566,14 +566,14 @@ bool GossipSelect_go_ancient_skull_pile(Player *player, GameObject* _GO, uint32 
     switch(sender)
     {
         case GOSSIP_SENDER_MAIN:
-            // player->CastSpell(player,41004,false); 
+            // player->CastSpell(player,41004,false);
             // terokk should be summoned by above spell, but it doesn't work; summoninng him in other way
             if(player->HasItemCount(32720, 1))
             {
                 player->DestroyItemCount(32720, 1, true);
                 player->SummonCreature(21838, _GO->GetPositionX(), _GO->GetPositionY(), _GO->GetPositionZ(), player->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 0);
                 player->CLOSE_GOSSIP_MENU();
-                _GO->SetGoState(0);
+                _GO->SetGoState(GO_STATE_ACTIVE);
                 _GO->SetRespawnTime(600);
             }
             break;
@@ -588,7 +588,7 @@ bool GossipSelect_go_ancient_skull_pile(Player *player, GameObject* _GO, uint32 
 #define SPELL_SHADOW_BOLT_VOLLEY    40721
 #define SPELL_CLEAVE                15284
 #define SPELL_DIVINE_SHIELD         40733
-#define SPELL_ENRAGE                28747   
+#define SPELL_ENRAGE                28747
 #define SPELL_WILL_OF_ARRAKOA_GOD   40722
 #define SPELL_CHOSEN_ONE            40726
 #define SPELL_ANCIENT_FLAMES        40657
@@ -671,7 +671,7 @@ struct TRINITY_DLL_DECL mob_terokkAI : public ScriptedAI
         for(int i = 0; i < 3; i++)
         {
             if(SkyguardGUIDs[i])
-                if(Creature* skyguard = Creature::GetCreature(*m_creature, SkyguardGUIDs[i]))            
+                if(Creature* skyguard = Creature::GetCreature(*m_creature, SkyguardGUIDs[i]))
                     skyguard->GetMotionMaster()->MovePoint(SKYGUARD_WP_DESPAWN, skyguardSpawn[i][0], skyguardSpawn[i][1], skyguardAltitude);
             SkyguardGUIDs[i] = 0;
         }
@@ -706,7 +706,7 @@ struct TRINITY_DLL_DECL mob_terokkAI : public ScriptedAI
             DoCast(m_creature->getVictim(), SPELL_CLEAVE);
             Cleave_Timer = 7000 + rand() % 2000;
         }
-        else 
+        else
             Cleave_Timer -= diff;
 
         if( ChosenOneTarget )
@@ -753,7 +753,7 @@ struct TRINITY_DLL_DECL mob_terokkAI : public ScriptedAI
                     skyguard->GetMotionMaster()->MovePoint(SKYGUARD_WP_AFTER_SPAWN, skyguardWPStart[i][0], skyguardWPStart[i][1], skyguardAltitude );
                     skyguard->Mount(21158);
                 }
-            
+
             CheckTimer = 2000;
             SkyguardFlare_Timer = 15000;
         }
@@ -813,7 +813,7 @@ CreatureAI* GetAI_mob_terokk(Creature *_Creature)
 
 struct TRINITY_DLL_DECL npc_skyguard_aceAI : public ScriptedAI
 {
-    
+
     npc_skyguard_aceAI(Creature* c) : ScriptedAI(c) {}
 
     uint64 TargetGUID;
@@ -836,7 +836,7 @@ struct TRINITY_DLL_DECL npc_skyguard_aceAI : public ScriptedAI
     {
         if(type != POINT_MOTION_TYPE)
             return;
-        
+
         if(id < SKYGUARD_WP_CIRCLE_MAX)
         {
             NextWP = (id + 1) % SKYGUARD_WP_CIRCLE_MAX;
@@ -859,7 +859,7 @@ struct TRINITY_DLL_DECL npc_skyguard_aceAI : public ScriptedAI
             NextWP = rand() % SKYGUARD_WP_CIRCLE_MAX;
             Move_Timer = 9000;
         }
- 
+
     }
 
     void JustSummoned(Creature *creature)
@@ -873,7 +873,7 @@ struct TRINITY_DLL_DECL npc_skyguard_aceAI : public ScriptedAI
             creature->CastSpell(creature, SPELL_SKYGUARD_FLARE_TARGET, true);
             TargetGUID = creature->GetGUID();
             TargetLifetime = 20500;
-            AncientFlame_Timer = 5500;  
+            AncientFlame_Timer = 5500;
             DoCast(creature, SPELL_ANCIENT_FLAMES, false);
         }
     }
@@ -895,7 +895,7 @@ struct TRINITY_DLL_DECL npc_skyguard_aceAI : public ScriptedAI
             else
                 TargetLifetime -= diff;
         }
-        
+
         if(Move_Timer >= 0)
         {
             if(Move_Timer < diff)
@@ -916,7 +916,7 @@ struct TRINITY_DLL_DECL npc_skyguard_aceAI : public ScriptedAI
                     target->CastStop();
                     target->RemoveAurasDueToSpell(SPELL_SKYGUARD_FLARE_TARGET);
                     // HACK: cast ancient flames so players can be damaged by it, we keep cast ancient flames by skyguard ace only for animation
-                    target->CastSpell(target, SPELL_ANCIENT_FLAMES, true);          
+                    target->CastSpell(target, SPELL_ANCIENT_FLAMES, true);
                 }
                 AncientFlame_Timer = -1;
             } else
@@ -937,7 +937,7 @@ Script for Quest: Hungry Nether Rays (11093)
 struct TRINITY_DLL_DECL npc_blackwing_warp_chaser : public ScriptedAI
 {
     npc_blackwing_warp_chaser(Creature *c) : ScriptedAI(c) {}
-    
+
     Unit* HungryNetherRay;
 
     void JustDied(Unit* slayer)
@@ -953,10 +953,10 @@ struct TRINITY_DLL_DECL npc_blackwing_warp_chaser : public ScriptedAI
             }
         }
     }
-    
+
     void EnterCombat(Unit *who) {}
 
-    void Reset() 
+    void Reset()
     {
         HungryNetherRay = NULL;
     }
@@ -1002,11 +1002,11 @@ struct TRINITY_DLL_DECL npc_skyguard_prisonerAI : public npc_escortAI
 
         switch(i)
         {
-        case 0: 
+        case 0:
             {
             GameObject* Cage = FindGameObject(GO_CAGE, 10, m_creature);
             if(Cage)
-                Cage->SetGoState(0);
+                Cage->SetGoState(GO_STATE_ACTIVE);
             DoScriptText(SAY_PROGRESS_1, m_creature, player);
             }
             break;
@@ -1066,6 +1066,583 @@ CreatureAI* GetAI_npc_skyguard_prisonerAI(Creature* _Creature)
     thisAI->AddWaypoint(12, -4178.90, 3093.35, 323.98, 6000);//SAY_PROGRESS_3
 
     return (CreatureAI*)thisAI;
+}
+
+/*######
+## npc_letoll
+######*/
+
+enum
+{
+    SAY_LE_START                    = -1000510,
+    SAY_LE_KEEP_SAFE                = -1000511,
+    SAY_LE_NORTH                    = -1000512,
+    SAY_LE_ARRIVE                   = -1000513,
+    SAY_LE_BURIED                   = -1000514,
+    SAY_LE_ALMOST                   = -1000515,
+    SAY_LE_DRUM                     = -1000516,
+    SAY_LE_DRUM_REPLY               = -1000517,
+    SAY_LE_DISCOVERY                = -1000518,
+    SAY_LE_DISCOVERY_REPLY          = -1000519,
+    SAY_LE_NO_LEAVE                 = -1000520,
+    SAY_LE_NO_LEAVE_REPLY1          = -1000521,
+    SAY_LE_NO_LEAVE_REPLY2          = -1000522,
+    SAY_LE_NO_LEAVE_REPLY3          = -1000523,
+    SAY_LE_NO_LEAVE_REPLY4          = -1000524,
+    SAY_LE_SHUT                     = -1000525,
+    SAY_LE_REPLY_HEAR               = -1000526,
+    SAY_LE_IN_YOUR_FACE             = -1000527,
+    SAY_LE_HELP_HIM                 = -1000528,
+    EMOTE_LE_PICK_UP                = -1000529,
+    SAY_LE_THANKS                   = -1000530,
+
+    QUEST_DIGGING_BONES             = 10922,
+
+    NPC_RESEARCHER                  = 22464,
+    NPC_BONE_SIFTER                 = 22466,
+
+    MAX_RESEARCHER                  = 4
+};
+
+//Some details still missing from here, and will also have issues if followers evade for any reason.
+struct npc_letollAI : public npc_escortAI
+{
+    npc_letollAI(Creature* pCreature) : npc_escortAI(pCreature)
+    {
+        m_uiEventTimer = 5000;
+        m_uiEventCount = 0;
+        Reset();
+    }
+
+    std::list<Creature*> m_lResearchersList;
+
+    uint32 m_uiEventTimer;
+    uint32 m_uiEventCount;
+
+    void Reset() {}
+
+    //will make them follow, but will only work until they enter combat with any unit
+    void SetFormation()
+    {
+        uint32 uiCount = 0;
+
+        for (std::list<Creature*>::iterator itr = m_lResearchersList.begin(); itr != m_lResearchersList.end(); ++itr)
+        {
+            float fAngle = uiCount < MAX_RESEARCHER ? M_PI/MAX_RESEARCHER - (uiCount*2*M_PI/MAX_RESEARCHER) : 0.0f;
+
+            if ((*itr)->isAlive() && !(*itr)->isInCombat())
+                (*itr)->GetMotionMaster()->MoveFollow(me, 2.5f, fAngle);
+
+            ++uiCount;
+        }
+    }
+
+    Creature* GetAvailableResearcher(uint8 uiListNum)
+    {
+        if (!m_lResearchersList.empty())
+        {
+            uint8 uiNum = 1;
+
+            for (std::list<Creature*>::iterator itr = m_lResearchersList.begin(); itr != m_lResearchersList.end(); ++itr)
+            {
+                if (uiListNum && uiListNum != uiNum)
+                {
+                    ++uiNum;
+                    continue;
+                }
+
+                if ((*itr)->isAlive() && (*itr)->IsWithinDistInMap(me, 20.0f))
+                    return (*itr);
+            }
+        }
+
+        return NULL;
+    }
+
+    void JustStartedEscort()
+    {
+        m_uiEventTimer = 5000;
+        m_uiEventCount = 0;
+
+        m_lResearchersList.clear();
+
+        float x, y, z;
+        me->GetPosition(x, y, z);
+
+        Trinity::AllCreaturesOfEntryInRange check(me, NPC_RESEARCHER, 25);
+        Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(m_lResearchersList, check);
+        Cell::VisitGridObjects(me, searcher, 25);
+
+        if (!m_lResearchersList.empty())
+            SetFormation();
+    }
+
+    void WaypointReached(uint32 uiPointId)
+    {
+        switch(uiPointId)
+        {
+            case 0:
+                if (Player* pPlayer = GetPlayerForEscort())
+                    DoScriptText(SAY_LE_KEEP_SAFE, me, pPlayer);
+                break;
+            case 1:
+                DoScriptText(SAY_LE_NORTH, me);
+                break;
+            case 10:
+                DoScriptText(SAY_LE_ARRIVE, me);
+                break;
+            case 12:
+                DoScriptText(SAY_LE_BURIED, me);
+                SetEscortPaused(true);
+                break;
+            case 13:
+                SetRun();
+                break;
+        }
+    }
+
+    void Aggro(Unit* pWho)
+    {
+        if (pWho->isInCombat() && pWho->GetTypeId() == TYPEID_UNIT && pWho->GetEntry() == NPC_BONE_SIFTER)
+            DoScriptText(SAY_LE_HELP_HIM, me);
+    }
+
+    void JustSummoned(Creature* pSummoned)
+    {
+        Player* pPlayer = GetPlayerForEscort();
+
+        if (pPlayer && pPlayer->isAlive())
+            pSummoned->AI()->AttackStart(pPlayer);
+        else
+            pSummoned->AI()->AttackStart(me);
+    }
+
+    void UpdateEscortAI(const uint32 uiDiff)
+    {
+        if (!UpdateVictim())
+        {
+            if (HasEscortState(STATE_ESCORT_PAUSED))
+            {
+                if (m_uiEventTimer < uiDiff)
+                {
+                    m_uiEventTimer = 7000;
+
+                    switch(m_uiEventCount)
+                    {
+                        case 0:
+                            DoScriptText(SAY_LE_ALMOST, me);
+                            break;
+                        case 1:
+                            DoScriptText(SAY_LE_DRUM, me);
+                            break;
+                        case 2:
+                            if (Creature* pResearcher = GetAvailableResearcher(0))
+                                DoScriptText(SAY_LE_DRUM_REPLY, pResearcher);
+                            break;
+                        case 3:
+                            DoScriptText(SAY_LE_DISCOVERY, me);
+                            break;
+                        case 4:
+                            if (Creature* pResearcher = GetAvailableResearcher(0))
+                                DoScriptText(SAY_LE_DISCOVERY_REPLY, pResearcher);
+                            break;
+                        case 5:
+                            DoScriptText(SAY_LE_NO_LEAVE, me);
+                            break;
+                        case 6:
+                            if (Creature* pResearcher = GetAvailableResearcher(1))
+                                DoScriptText(SAY_LE_NO_LEAVE_REPLY1, pResearcher);
+                            break;
+                        case 7:
+                            if (Creature* pResearcher = GetAvailableResearcher(2))
+                                DoScriptText(SAY_LE_NO_LEAVE_REPLY2, pResearcher);
+                            break;
+                        case 8:
+                            if (Creature* pResearcher = GetAvailableResearcher(3))
+                                DoScriptText(SAY_LE_NO_LEAVE_REPLY3, pResearcher);
+                            break;
+                        case 9:
+                            if (Creature* pResearcher = GetAvailableResearcher(4))
+                                DoScriptText(SAY_LE_NO_LEAVE_REPLY4, pResearcher);
+                            break;
+                        case 10:
+                            DoScriptText(SAY_LE_SHUT, me);
+                            break;
+                        case 11:
+                            if (Creature* pResearcher = GetAvailableResearcher(0))
+                                DoScriptText(SAY_LE_REPLY_HEAR, pResearcher);
+                            break;
+                        case 12:
+                            DoScriptText(SAY_LE_IN_YOUR_FACE, me);
+                            me->SummonCreature(NPC_BONE_SIFTER, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                            break;
+                        case 13:
+                            DoScriptText(EMOTE_LE_PICK_UP, me);
+
+                            if (Player* pPlayer = GetPlayerForEscort())
+                            {
+                                DoScriptText(SAY_LE_THANKS, me, pPlayer);
+                                pPlayer->GroupEventHappens(QUEST_DIGGING_BONES, me);
+                            }
+
+                            SetEscortPaused(false);
+                            break;
+                    }
+
+                    ++m_uiEventCount;
+                }
+                else
+                    m_uiEventTimer -= uiDiff;
+            }
+
+            return;
+        }
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_letollAI(Creature* pCreature)
+{
+    return new npc_letollAI(pCreature);
+}
+
+bool QuestAccept_npc_letoll(Player* pPlayer, Creature* pCreature, const Quest* pQuest)
+{
+    if (pQuest->GetQuestId() == QUEST_DIGGING_BONES)
+    {
+        if (npc_letollAI* pEscortAI = dynamic_cast<npc_letollAI*>(pCreature->AI()))
+        {
+            DoScriptText(SAY_LE_START, pCreature);
+            pCreature->setFaction(FACTION_ESCORT_N_NEUTRAL_PASSIVE);
+
+            pEscortAI->Start(false, false, pPlayer->GetGUID(), pQuest, true);
+        }
+    }
+
+    return true;
+}
+
+
+/*######
+## npc_sarthis & his companions
+######*/
+
+#define GOSSIP_SARTHIS_SELECT       "Lord Balthas sent me to gather flawless arcane essence"
+
+static float SummonCoord[][3] = 
+{
+    {-2469.45, 4696.66, 157.01}
+};
+
+static float MinionCoord[][3] = 
+{
+    {-2459.4, 4689.6, 165.5},    //Air start
+    {-2474.5, 4685.7, 156.7},    //Air final
+    {-2485.7, 4678.7, 157.0},    //Water start
+    {-2483.0, 4703.3, 154.3},    //Water final
+    {-2480.9, 4676.1, 157.8},    //Earth start
+    {-2479.0, 4689.4, 155.4},    //Earth final
+    {-2478.8, 4720.4, 153.5},    //Fire start
+    {-2476.0, 4707.2, 155.0}     //Fire final
+};
+
+enum eSarthis 
+{
+    QUEST_THE_SOUL_CANNON_OF_RETHHEDRON     = 11089,
+
+    SPELL_SUMMON_AIR_ELEMENTAL              = 40129,
+    SPELL_SUMMON_WATER_ELEMENTAL            = 40130,
+    SPELL_SUMMON_EARTH_ELEMENTAL            = 40132,
+    SPELL_SUMMON_FIRE_ELEMENTAL             = 40133,
+    SPELL_SUMMON_ARCANE_ELEMENTAL           = 40134,
+    SPELL_RED_BEAM                          = 40228,
+    SPELL_GREEN_BEAM                        = 40227,
+    SPELL_BLUE_BEAM                         = 40225,
+
+    SAY_SARTHIS_INTRO                       = -1600007, // "So my blood was not a sufficient payment, eh? Fine, let us recover your arcane essence. After this, I owe Balthas nothing."
+    EMOTE_SARTHIS_FETISH                    = -1600008, // "Sar\'this places a fetish at the ritual pile."
+    SAY_SARTHIS_START                       = -1600009, // "The process is arduous. We must first summon forth acolytes of the elements. you must then destroy these acolytes so that my minions can make preparations."
+    SAY_SARTHIS_KILLED_ACOLYTE              = -1600010, // "Well done! Let\'s continue."
+    SAY_SARTHIS_WATER                       = -1600011, // "Prepare yourself! The acolyte of water is soon to come..."
+    SAY_SARTHIS_EARTH                       = -1600012, // "Come forth, acolyte of earth!"
+    SAY_SARTHIS_FIRE                        = -1600013, // "Fire, show yourself!"
+    SAY_SARTHIS_ARCANE                      = -1600014, // "Now we call forth the the arcane acolyte."
+    SAY_ELEMENTAL_1                         = -1600015, // "I require your life essence to maintain my existence in this realm."
+    SAY_SARTHIS_FINAL                       = -1600016, // "It is yours my lord!"
+
+    GO_SARTHIS_FETISH                       = 185856,
+    NPC_SARTHIS                             = 23093,
+    NPC_MINION_OF_SARTHIS                   = 23094,
+    NPC_ARCANE_ELEMENTAL                    = 23100
+};
+
+struct TRINITY_DLL_DECL npc_sarthisAI : public npc_escortAI
+{
+    npc_sarthisAI(Creature* c) : npc_escortAI(c) {}
+
+    uint64 fetishGUID;
+    std::list<uint64> MinionGUID;
+    bool speech;
+    uint32 SpeechTimer;
+    uint32 SpeechTimer2;
+    uint32 CastTimer;
+    uint32 ResetTimer;
+
+    void Reset()
+    {
+        fetishGUID = NULL;
+        CastTimer = 0;
+        speech = false;
+        MinionGUID.clear();
+        SpeechTimer = 0;
+        SpeechTimer2 = 0;
+        ResetTimer = 120000;
+    }
+
+    void WaypointReached(uint32 i)
+    {
+        Player* pPlayer = GetPlayerForEscort();
+
+        switch(i)
+        {
+            case 2:
+            {
+                DoScriptText(EMOTE_SARTHIS_FETISH, m_creature, pPlayer);
+                GameObject* Fetish = m_creature->SummonGameObject(GO_SARTHIS_FETISH, SummonCoord[0][0], SummonCoord[0][1], SummonCoord[0][2], 0, 0, 0, 0, 0, 180000);
+                Unit* Trigger = m_creature->SummonCreature(12999, SummonCoord[0][0], SummonCoord[0][1], SummonCoord[0][2], 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
+                if(Fetish)
+                    fetishGUID = Fetish->GetGUID();
+                DoScriptText(SAY_SARTHIS_START, m_creature, pPlayer);
+                break;
+            }
+            case 6:
+            {
+                SetEscortPaused(true);
+                if(Unit* Minion = FindCreature(NPC_MINION_OF_SARTHIS, 20, me))
+                    MinionGUID.push_front(Minion->GetGUID());
+                DoCast(m_creature, SPELL_SUMMON_AIR_ELEMENTAL);
+                break;
+            }
+            case 11:
+            {
+                SetEscortPaused(true);
+                if(Unit* Minion = FindCreature(NPC_MINION_OF_SARTHIS, 20, me))
+                    MinionGUID.push_front(Minion->GetGUID());
+                DoScriptText(SAY_SARTHIS_WATER, m_creature, pPlayer);
+                DoCast(m_creature, SPELL_SUMMON_WATER_ELEMENTAL);
+                break;
+            }
+            case 15:
+            {
+                SetEscortPaused(true);
+                if(Unit* Minion = FindCreature(NPC_MINION_OF_SARTHIS, 30, me))
+                    MinionGUID.push_front(Minion->GetGUID());
+                DoScriptText(SAY_SARTHIS_EARTH, m_creature, pPlayer);
+                DoCast(m_creature, SPELL_SUMMON_EARTH_ELEMENTAL);
+                break;
+            }
+            case 21:
+            {
+                SetEscortPaused(true);
+                if(Unit* Minion = FindCreature(NPC_MINION_OF_SARTHIS, 30, me))
+                    MinionGUID.push_front(Minion->GetGUID());
+                DoScriptText(SAY_SARTHIS_FIRE, m_creature, pPlayer);
+                DoCast(m_creature, SPELL_SUMMON_FIRE_ELEMENTAL);
+                break;
+            }
+            case 23:
+            {
+                uint8 j = 0;
+                SetEscortPaused(true);
+                for(std::list<uint64>::iterator i = MinionGUID.begin(); i != MinionGUID.end(); ++i)
+                {
+                    if(Unit* Minion = me->GetMap()->GetCreature(*i))
+                    {
+                        Minion->Relocate(MinionCoord[j][0], MinionCoord[j][1], MinionCoord[j][2], 0);
+                        j++;
+                        Minion->GetMotionMaster()->Clear();
+                        Minion->GetMotionMaster()->MoveIdle();
+                        Minion->GetMotionMaster()->MovePoint(1, MinionCoord[j][0], MinionCoord[j][1], MinionCoord[j][2]);
+                        j++;
+                    }
+                }
+                if(Unit* Fetish = FindCreature(12999, 40, me))
+                    m_creature->SetFacingToObject(Fetish);
+                DoScriptText(SAY_SARTHIS_ARCANE, m_creature, pPlayer);
+                speech = true;
+                SpeechTimer = 15000;
+                CastTimer = 10000;
+            }
+        }
+    }
+
+    void JustDied(Unit* who)
+    {
+        float x, y, z, o;
+        for(std::list<uint64>::iterator i = MinionGUID.begin(); i != MinionGUID.end(); ++i)
+        {
+            if(Unit* Minion = me->GetMap()->GetCreature(*i))
+            {
+                ((Creature*)Minion)->GetHomePosition(x, y, z, o);
+                Minion->Kill(Minion, false);
+                Minion->Relocate(x, y, z, o);
+                ((Creature*)Minion)->Respawn();
+            }
+        }
+        if(Unit* Fetish = FindCreature(12999, 40, me))
+            Fetish->Kill(Fetish, false);
+    }
+
+    void DamageTaken(Unit* done_by, uint32& )
+    {
+        if(done_by->GetTypeId() == TYPEID_UNIT)
+            done_by->Kill(m_creature, false);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(speech && CastTimer < diff)
+        {
+            DoCast(m_creature, SPELL_SUMMON_ARCANE_ELEMENTAL);
+            CastTimer = 120000; //not let cast again;
+        }
+        else
+            CastTimer -= diff;
+
+        if(speech && SpeechTimer < diff)
+        {
+            if(Unit* ArcaneAcolyte = FindCreature(NPC_ARCANE_ELEMENTAL, 30, me))
+            {
+                m_creature->SetFacingToObject(ArcaneAcolyte);
+                ArcaneAcolyte->MonsterSay(SAY_ELEMENTAL_1, 0, me->GetGUID());
+            }
+            SpeechTimer = 120000;   //not let speak again;
+            SpeechTimer2 = 4000;
+        }
+        else
+            SpeechTimer -= diff;
+
+        if(speech && SpeechTimer2 < diff)
+        {
+            if(Unit* ArcaneAcolyte = FindCreature(NPC_ARCANE_ELEMENTAL, 30, me))
+            {
+                DoScriptText(SAY_SARTHIS_FINAL, m_creature, ArcaneAcolyte);
+                ArcaneAcolyte->setFaction(16);
+                ((Creature*)ArcaneAcolyte)->AI()->AttackStart(m_creature);
+            }
+            speech = false;
+        }
+        else
+            SpeechTimer2 -= diff;
+
+        if(HasEscortState(STATE_ESCORT_PAUSED))
+        {
+            if(ResetTimer < diff)
+            {
+                me->Kill(me, false);
+                me->Respawn();
+                if(Unit* ArcaneAcolyte = FindCreature(NPC_ARCANE_ELEMENTAL, 100, me))
+                    ((Creature*)ArcaneAcolyte)->ForcedDespawn();
+                ResetTimer = 120000;
+            }
+            else
+                ResetTimer -= diff;
+        }
+        npc_escortAI::UpdateAI(diff);
+    }
+};
+
+CreatureAI* GetAI_npc_sarthisAI(Creature* _Creature)
+{
+    return new npc_sarthisAI(_Creature);
+}
+
+struct TRINITY_DLL_DECL npc_sarthis_elementalAI : public ScriptedAI
+{
+    npc_sarthis_elementalAI(Creature* c) : ScriptedAI(c) {}
+
+    void JustDied(Unit* killer)
+    {
+        if(Creature* Sarthis = (Creature*)FindCreature(NPC_SARTHIS, 30, me))
+        {
+            DoScriptText(SAY_SARTHIS_KILLED_ACOLYTE, Sarthis);
+            CAST_AI(npc_sarthisAI,Sarthis->AI())->SetEscortPaused(false);
+            CAST_AI(npc_sarthisAI,Sarthis->AI())->ResetTimer = 120000;
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_sarthis_elementalAI(Creature* _Creature)
+{
+    return new npc_sarthis_elementalAI(_Creature);
+}
+
+struct TRINITY_DLL_DECL npc_minion_of_sarthisAI : public ScriptedAI
+{
+    npc_minion_of_sarthisAI(Creature* c) : ScriptedAI(c) {}
+
+    uint32 delay;
+
+    void Reset() {delay = 5000;}
+
+    void MovementInform(uint32 Type, uint32 Id)
+    {
+        if (Type != POINT_MOTION_TYPE)
+            return;
+
+        uint32 BeamId = RAND(SPELL_BLUE_BEAM, SPELL_GREEN_BEAM, SPELL_RED_BEAM);
+
+        if (Id == 1)
+        {
+            if(Unit* Fetish = FindCreature(12999, 40, me))
+            {
+                m_creature->CastSpell(Fetish, BeamId, false);
+                m_creature->SetFacingToObject(Fetish);
+            }
+            m_creature->GetMotionMaster()->Clear();
+            m_creature->GetMotionMaster()->MoveIdle();
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        
+    }
+};
+
+CreatureAI* GetAI_npc_minion_of_sarthisAI(Creature* _Creature)
+{
+    return new npc_minion_of_sarthisAI(_Creature);
+}
+
+bool GossipHello_npc_sarthis(Player* pPlayer, Creature *_Creature )
+{
+    if( pPlayer->GetQuestStatus(QUEST_THE_SOUL_CANNON_OF_RETHHEDRON) == QUEST_STATUS_INCOMPLETE )
+        pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_SARTHIS_SELECT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+
+    pPlayer->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+    return true;
+}
+
+bool GossipSelect_npc_sarthis(Player* pPlayer, Creature* _Creature, uint32 sender, uint32 action )
+{
+    if(action == GOSSIP_ACTION_INFO_DEF+1)
+    {
+        pPlayer->CLOSE_GOSSIP_MENU();
+        DoScriptText(SAY_SARTHIS_INTRO, _Creature, pPlayer);
+        CAST_AI(npc_sarthisAI,_Creature->AI())->Start(false, false, pPlayer->GetGUID());
+        CAST_AI(npc_sarthisAI,_Creature->AI())->SetMaxPlayerDistance(200.0f);
+    }
+    return true;
 }
 
 void AddSC_terokkar_forest()
@@ -1142,5 +1719,27 @@ void AddSC_terokkar_forest()
     newscript->GetAI = &GetAI_npc_skyguard_prisonerAI;
     newscript->pQuestAccept = &QuestAccept_npc_skyguard_prisoner;
     newscript->RegisterSelf();
-}
 
+    newscript = new Script;
+    newscript->Name= "npc_letoll";
+    newscript->GetAI = &GetAI_npc_letollAI;
+    newscript->pQuestAccept = &QuestAccept_npc_letoll;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name= "npc_sarthis";
+    newscript->GetAI = &GetAI_npc_sarthisAI;
+    newscript->pGossipHello  = &GossipHello_npc_sarthis;
+    newscript->pGossipSelect = &GossipSelect_npc_sarthis;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name= "npc_sarthis_elemental";
+    newscript->GetAI = &GetAI_npc_sarthis_elementalAI;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name= "npc_minion_of_sarthis";
+    newscript->GetAI = &GetAI_npc_minion_of_sarthisAI;
+    newscript->RegisterSelf();
+}

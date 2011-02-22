@@ -89,10 +89,10 @@ CreatureAI* GetAI_npc_kanati(Creature* pCreature)
 {
     npc_kanatiAI* kanatiAI = new npc_kanatiAI(pCreature);
 
-	kanatiAI->AddWaypoint(0, -4903.52, -1368.34, -52.611, 5000);
-	kanatiAI->AddWaypoint(1, -4906, -1367.05, -52.611);
+    kanatiAI->AddWaypoint(0, -4903.52, -1368.34, -52.611, 5000);
+    kanatiAI->AddWaypoint(1, -4906, -1367.05, -52.611);
 
-	return (CreatureAI*)kanatiAI;
+    return (CreatureAI*)kanatiAI;
 }
 
 bool QuestAccept_npc_kanati(Player* pPlayer, Creature* pCreature, const Quest* pQuest)
@@ -178,54 +178,54 @@ CreatureAI* GetAI_npc_lakota_windsong(Creature* pCreature)
 {
     npc_lakota_windsongAI* lakota_windsongAI = new npc_lakota_windsongAI(pCreature);
 
-	lakota_windsongAI->AddWaypoint(0, -4792.4, -2137.78, 82.423);
-	lakota_windsongAI->AddWaypoint(1, -4813.51, -2141.54, 80.774);
-	lakota_windsongAI->AddWaypoint(2, -4828.63, -2154.31, 82.074);
-	lakota_windsongAI->AddWaypoint(3, -4833.77, -2149.18, 81.676);
-	lakota_windsongAI->AddWaypoint(4, -4846.42, -2136.05, 77.871);
-	lakota_windsongAI->AddWaypoint(5, -4865.08, -2116.55, 76.483);
-	lakota_windsongAI->AddWaypoint(6, -4888.43, -2090.73, 80.907);
-	lakota_windsongAI->AddWaypoint(7, -4893.07, -2085.47, 82.094);
-	lakota_windsongAI->AddWaypoint(8, -4907.26, -2074.93, 84.437, 5000);
-	lakota_windsongAI->AddWaypoint(9, -4899.9, -2062.14, 83.78);
-	lakota_windsongAI->AddWaypoint(10, -4897.76, -2056.52, 84.184);
-	lakota_windsongAI->AddWaypoint(11, -4888.33, -2033.18, 83.654);
-	lakota_windsongAI->AddWaypoint(12, -4876.34, -2003.92, 90.887);
-	lakota_windsongAI->AddWaypoint(13, -4872.23, -1994.17, 91.513);
-	lakota_windsongAI->AddWaypoint(14, -4879.57, -1976.99, 92.185, 5000);
-	lakota_windsongAI->AddWaypoint(15, -4879.05, -1964.35, 92.001);
-	lakota_windsongAI->AddWaypoint(16, -4874.72, -1956.94, 90.737);
-	lakota_windsongAI->AddWaypoint(17, -4869.47, -1952.61, 89.206);
-	lakota_windsongAI->AddWaypoint(18, -4842.47, -1929, 84.147);
-	lakota_windsongAI->AddWaypoint(19, -4804.44, -1897.3, 89.362);
-	lakota_windsongAI->AddWaypoint(20, -4798.07, -1892.38, 89.368);
-	lakota_windsongAI->AddWaypoint(21, -4779.45, -1882.76, 90.169, 5000);
-	lakota_windsongAI->AddWaypoint(22, -4762.08, -1866.53, 89.481);
-	lakota_windsongAI->AddWaypoint(23, -4766.27, -1861.87, 87.847);
-	lakota_windsongAI->AddWaypoint(24, -4782.93, -1852.17, 78.354);
-	lakota_windsongAI->AddWaypoint(25, -4793.61, -1850.96, 77.658);
-	lakota_windsongAI->AddWaypoint(26, -4803.32, -1855.1, 78.958);
-	lakota_windsongAI->AddWaypoint(27, -4807.97, -1854.5, 77.743);
-	lakota_windsongAI->AddWaypoint(28, -4837.21, -1848.49, 64.488);
-	lakota_windsongAI->AddWaypoint(29, -4884.62, -1840.4, 56.219);
-	lakota_windsongAI->AddWaypoint(30, -4889.71, -1839.62, 54.417);
-	lakota_windsongAI->AddWaypoint(31, -4893.9, -1843.69, 53.012);
-	lakota_windsongAI->AddWaypoint(32, -4903.14, -1872.38, 32.266);
-	lakota_windsongAI->AddWaypoint(33, -4910.94, -1879.86, 29.94);
-	lakota_windsongAI->AddWaypoint(34, -4920.05, -1880.94, 30.597);
-	lakota_windsongAI->AddWaypoint(35, -4924.46, -1881.45, 29.292);
-	lakota_windsongAI->AddWaypoint(36, -4966.12, -1886.03, 10.977);
-	lakota_windsongAI->AddWaypoint(37, -4999.37, -1890.85, 4.43);
-	lakota_windsongAI->AddWaypoint(38, -5007.27, -1891.67, 2.771);
-	lakota_windsongAI->AddWaypoint(39, -5013.33, -1879.59, -1.947);
-	lakota_windsongAI->AddWaypoint(40, -5023.33, -1855.96, -17.103);
-	lakota_windsongAI->AddWaypoint(41, -5038.51, -1825.99, -35.821);
-	lakota_windsongAI->AddWaypoint(42, -5048.73, -1809.8, -46.457);
-	lakota_windsongAI->AddWaypoint(43, -5053.19, -1791.68, -57.186);
-	lakota_windsongAI->AddWaypoint(44, -5062.09, -1794.4, -56.515);
-	lakota_windsongAI->AddWaypoint(45, -5052.66, -1797.04, -54.734, 5000);
+    lakota_windsongAI->AddWaypoint(0, -4792.4, -2137.78, 82.423);
+    lakota_windsongAI->AddWaypoint(1, -4813.51, -2141.54, 80.774);
+    lakota_windsongAI->AddWaypoint(2, -4828.63, -2154.31, 82.074);
+    lakota_windsongAI->AddWaypoint(3, -4833.77, -2149.18, 81.676);
+    lakota_windsongAI->AddWaypoint(4, -4846.42, -2136.05, 77.871);
+    lakota_windsongAI->AddWaypoint(5, -4865.08, -2116.55, 76.483);
+    lakota_windsongAI->AddWaypoint(6, -4888.43, -2090.73, 80.907);
+    lakota_windsongAI->AddWaypoint(7, -4893.07, -2085.47, 82.094);
+    lakota_windsongAI->AddWaypoint(8, -4907.26, -2074.93, 84.437, 5000);
+    lakota_windsongAI->AddWaypoint(9, -4899.9, -2062.14, 83.78);
+    lakota_windsongAI->AddWaypoint(10, -4897.76, -2056.52, 84.184);
+    lakota_windsongAI->AddWaypoint(11, -4888.33, -2033.18, 83.654);
+    lakota_windsongAI->AddWaypoint(12, -4876.34, -2003.92, 90.887);
+    lakota_windsongAI->AddWaypoint(13, -4872.23, -1994.17, 91.513);
+    lakota_windsongAI->AddWaypoint(14, -4879.57, -1976.99, 92.185, 5000);
+    lakota_windsongAI->AddWaypoint(15, -4879.05, -1964.35, 92.001);
+    lakota_windsongAI->AddWaypoint(16, -4874.72, -1956.94, 90.737);
+    lakota_windsongAI->AddWaypoint(17, -4869.47, -1952.61, 89.206);
+    lakota_windsongAI->AddWaypoint(18, -4842.47, -1929, 84.147);
+    lakota_windsongAI->AddWaypoint(19, -4804.44, -1897.3, 89.362);
+    lakota_windsongAI->AddWaypoint(20, -4798.07, -1892.38, 89.368);
+    lakota_windsongAI->AddWaypoint(21, -4779.45, -1882.76, 90.169, 5000);
+    lakota_windsongAI->AddWaypoint(22, -4762.08, -1866.53, 89.481);
+    lakota_windsongAI->AddWaypoint(23, -4766.27, -1861.87, 87.847);
+    lakota_windsongAI->AddWaypoint(24, -4782.93, -1852.17, 78.354);
+    lakota_windsongAI->AddWaypoint(25, -4793.61, -1850.96, 77.658);
+    lakota_windsongAI->AddWaypoint(26, -4803.32, -1855.1, 78.958);
+    lakota_windsongAI->AddWaypoint(27, -4807.97, -1854.5, 77.743);
+    lakota_windsongAI->AddWaypoint(28, -4837.21, -1848.49, 64.488);
+    lakota_windsongAI->AddWaypoint(29, -4884.62, -1840.4, 56.219);
+    lakota_windsongAI->AddWaypoint(30, -4889.71, -1839.62, 54.417);
+    lakota_windsongAI->AddWaypoint(31, -4893.9, -1843.69, 53.012);
+    lakota_windsongAI->AddWaypoint(32, -4903.14, -1872.38, 32.266);
+    lakota_windsongAI->AddWaypoint(33, -4910.94, -1879.86, 29.94);
+    lakota_windsongAI->AddWaypoint(34, -4920.05, -1880.94, 30.597);
+    lakota_windsongAI->AddWaypoint(35, -4924.46, -1881.45, 29.292);
+    lakota_windsongAI->AddWaypoint(36, -4966.12, -1886.03, 10.977);
+    lakota_windsongAI->AddWaypoint(37, -4999.37, -1890.85, 4.43);
+    lakota_windsongAI->AddWaypoint(38, -5007.27, -1891.67, 2.771);
+    lakota_windsongAI->AddWaypoint(39, -5013.33, -1879.59, -1.947);
+    lakota_windsongAI->AddWaypoint(40, -5023.33, -1855.96, -17.103);
+    lakota_windsongAI->AddWaypoint(41, -5038.51, -1825.99, -35.821);
+    lakota_windsongAI->AddWaypoint(42, -5048.73, -1809.8, -46.457);
+    lakota_windsongAI->AddWaypoint(43, -5053.19, -1791.68, -57.186);
+    lakota_windsongAI->AddWaypoint(44, -5062.09, -1794.4, -56.515);
+    lakota_windsongAI->AddWaypoint(45, -5052.66, -1797.04, -54.734, 5000);
 
-	return (CreatureAI*)lakota_windsongAI;
+    return (CreatureAI*)lakota_windsongAI;
 }
 
 bool QuestAccept_npc_lakota_windsong(Player* pPlayer, Creature* pCreature, const Quest* pQuest)

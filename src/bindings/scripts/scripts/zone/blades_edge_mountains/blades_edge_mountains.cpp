@@ -31,6 +31,8 @@ npc_skyguard_handler_irena
 npc_bloodmaul_brutebane
 npc_ogre_brute
 npc_aether_ray
+npc_wildlord_antelarion
+npc_kolphis_darkscale
 EndContentData */
 
 #include "precompiled.h"
@@ -161,8 +163,8 @@ struct TRINITY_DLL_DECL mobs_nether_drakeAI : public ScriptedAI
                             break;
                         case 5:
                             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                                                            // | MOVEMENTFLAG_LEVITATING
-                            m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT);
+                                                            // | MOVEFLAG_LEVITATING
+                            m_creature->AddUnitMovementFlag(MOVEFLAG_ONTRANSPORT);
                             //then take off to random location. creature is initially summoned, so don't bother do anything else.
                             m_creature->GetMotionMaster()->MovePoint(0, m_creature->GetPositionX()+100, m_creature->GetPositionY(), m_creature->GetPositionZ()+100);
                             NihilSpeech_Phase = 0;
@@ -462,7 +464,8 @@ struct TRINITY_DLL_DECL npc_vim_bunnyAI : public ScriptedAI
         Player *pPlayer = NULL;
         Trinity::AnyPlayerInObjectRangeCheck p_check(m_creature, 3.0f);
         Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(pPlayer, p_check);
-        me->VisitNearbyObject(3.0f, searcher);
+        
+        Cell::VisitAllObjects(m_creature, searcher, 3.0f);
         return pPlayer;
     }
 
@@ -581,6 +584,86 @@ CreatureAI* GetAI_mob_aetherray(Creature *_Creature)
     return new mob_aetherrayAI (_Creature);
 }
 
+/*####
+# npc_wildlord_antelarion
+####*/
+
+#define GOSSIP_ITEM_WILDLORD "Restore Felsworn Gas Mask."
+
+bool GossipHello_npc_wildlord_antelarion(Player *player, Creature *_Creature)
+{
+    if (_Creature->isQuestGiver())
+        player->PrepareQuestMenu( _Creature->GetGUID() );
+        if(player->GetQuestStatus(10819) || player->GetQuestStatus(10820) == QUEST_STATUS_INCOMPLETE && !player->HasItemCount(31366,1))
+           player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_WILDLORD, GOSSIP_SENDER_MAIN, GOSSIP_SENDER_INFO );
+           player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+    return true;
+}
+
+bool GossipSelect_npc_wildlord_antelarion(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+{
+    if( action == GOSSIP_SENDER_INFO )
+    {
+            ItemPosCountVec dest;
+            uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 31366, 1);
+            if (msg == EQUIP_ERR_OK)
+            {
+                 Item* item = player->StoreNewItem(dest, 31366, true);
+                 player->SendNewItem(item,1,true,false,true);
+            }
+    player->CLOSE_GOSSIP_MENU();
+    }
+    return true;
+}
+
+/*########
+# npc_kolphis_darkscale
+#########*/
+
+#define GOSSIP_ITEM_KOLPHIS1 "I'm fine, thank you. You asked for me?"
+#define GOSSIP_ITEM_KOLPHIS2 "Oh, it's not my fault. I can assure you."
+#define GOSSIP_ITEM_KOLPHIS3 "Um, no...no, I don't want that at all."
+#define GOSSIP_ITEM_KOLPHIS4 "Impressive. When do we attack?"
+#define GOSSIP_ITEM_KOLPHIS5 "Absolutely!"
+
+bool GossipHello_npc_kolphis_darkscale(Player *player, Creature *_Creature)
+{
+    if(_Creature->isQuestGiver())
+        player->PrepareQuestMenu( _Creature->GetGUID() );
+    if(player->GetQuestStatus(10722) == QUEST_STATUS_INCOMPLETE)
+        player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_KOLPHIS1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1 );
+        player->SEND_GOSSIP_MENU(25019, _Creature->GetGUID());
+return true;
+}
+
+bool GossipSelect_npc_kolphis_darkscale(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+{
+  switch (action)
+  {
+        case GOSSIP_ACTION_INFO_DEF+1:
+            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_KOLPHIS2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+            player->SEND_GOSSIP_MENU(25020, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+2:
+            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_KOLPHIS3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
+            player->SEND_GOSSIP_MENU(25021, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+3:
+            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_KOLPHIS4, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+4);
+            player->SEND_GOSSIP_MENU(25022, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+4:
+            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_KOLPHIS5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);
+            player->SEND_GOSSIP_MENU(25023, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+5:
+            player->CompleteQuest(10722);
+            player->SEND_GOSSIP_MENU(25024, _Creature->GetGUID());
+            break;
+  }
+return true;
+}
+
 /*######
 ## AddSC
 ######*/
@@ -635,6 +718,18 @@ void AddSC_blades_edge_mountains()
     newscript = new Script;
     newscript->Name = "mob_aetherray";
     newscript->GetAI = &GetAI_mob_aetherray;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name="npc_wildlord_antelarion";
+    newscript->pGossipHello = &GossipHello_npc_wildlord_antelarion;
+    newscript->pGossipSelect = &GossipSelect_npc_wildlord_antelarion;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name="npc_kolphis_darkscale";
+    newscript->pGossipHello = &GossipHello_npc_kolphis_darkscale;
+    newscript->pGossipSelect = &GossipSelect_npc_kolphis_darkscale;
     newscript->RegisterSelf();
     
 }

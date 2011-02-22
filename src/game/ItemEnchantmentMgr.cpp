@@ -55,7 +55,7 @@ void LoadRandomEnchantmentsTable()
     float chance;
     uint32 count = 0;
 
-    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT entry, ench, chance FROM item_enchantment_template");
+    QueryResultAutoPtr result = WorldDatabase.Query("SELECT entry, ench, chance FROM item_enchantment_template");
 
     if (result)
     {
@@ -71,18 +71,18 @@ void LoadRandomEnchantmentsTable()
             chance = fields[2].GetFloat();
 
             if (chance > 0.000001f && chance <= 100.0f)
-                RandomItemEnch[entry].push_back( EnchStoreItem(ench, chance) );
+                RandomItemEnch[entry].push_back(EnchStoreItem(ench, chance));
 
             ++count;
         } while (result->NextRow());
 
         sLog.outString();
-        sLog.outString( ">> Loaded %u Item Enchantment definitions", count );
+        sLog.outString(">> Loaded %u Item Enchantment definitions", count);
     }
     else
     {
         sLog.outString();
-        sLog.outErrorDb( ">> Loaded 0 Item Enchantment definitions. DB table `item_enchantment_template` is empty.");
+        sLog.outErrorDb(">> Loaded 0 Item Enchantment definitions. DB table `item_enchantment_template` is empty.");
     }
 }
 
@@ -101,7 +101,7 @@ uint32 GetItemEnchantMod(uint32 entry)
     double dRoll = rand_chance();
     float fCount = 0;
 
-    for(EnchStoreList::iterator ench_iter = tab->second.begin(); ench_iter != tab->second.end(); ++ench_iter)
+    for (EnchStoreList::iterator ench_iter = tab->second.begin(); ench_iter != tab->second.end(); ++ench_iter)
     {
         fCount += ench_iter->chance;
 
@@ -112,7 +112,7 @@ uint32 GetItemEnchantMod(uint32 entry)
     dRoll =  (irand(0, (int)floor(fCount * 100) + 1)) / 100;
     fCount = 0;
 
-    for(EnchStoreList::iterator ench_iter = tab->second.begin(); ench_iter != tab->second.end(); ++ench_iter)
+    for (EnchStoreList::iterator ench_iter = tab->second.begin(); ench_iter != tab->second.end(); ++ench_iter)
     {
         fCount += ench_iter->chance;
 
@@ -126,17 +126,17 @@ uint32 GenerateEnchSuffixFactor(uint32 item_id)
 {
     ItemPrototype const *itemProto = objmgr.GetItemPrototype(item_id);
 
-    if(!itemProto)
+    if (!itemProto)
         return 0;
-    if(!itemProto->RandomSuffix)
+    if (!itemProto->RandomSuffix)
         return 0;
 
     RandomPropertiesPointsEntry const *randomProperty = sRandomPropertiesPointsStore.LookupEntry(itemProto->ItemLevel);
-    if(!randomProperty)
+    if (!randomProperty)
         return 0;
 
     uint32 suffixFactor;
-    switch(itemProto->InventoryType)
+    switch (itemProto->InventoryType)
     {
         // Items of that type don`t have points
         case INVTYPE_NON_EQUIP:

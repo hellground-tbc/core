@@ -37,7 +37,7 @@ template<class T>
 inline
 const T& RAND(const T& v1, const T& v2, const T& v3)
 {
-    switch(rand()%3)
+    switch (rand()%3)
     {
         default:
         case 0: return v1;
@@ -50,7 +50,7 @@ template<class T>
 inline
 const T& RAND(const T& v1, const T& v2, const T& v3, const T& v4)
 {
-    switch(rand()%4)
+    switch (rand()%4)
     {
         default:
         case 0: return v1;
@@ -64,7 +64,7 @@ template<class T>
 inline
 const T& RAND(const T& v1, const T& v2, const T& v3, const T& v4, const T& v5)
 {
-    switch(rand()%5)
+    switch (rand()%5)
     {
         default:
         case 0: return v1;
@@ -79,7 +79,7 @@ template<class T>
 inline
 const T& RAND(const T& v1, const T& v2, const T& v3, const T& v4, const T& v5, const T& v6)
 {
-    switch(rand()%6)
+    switch (rand()%6)
     {
         default:
         case 0: return v1;
@@ -95,7 +95,7 @@ template<class T>
 inline
 const T& RAND(const T& v1, const T& v2, const T& v3, const T& v4, const T& v5, const T& v6, const T& v7)
 {
-    switch(rand()%7)
+    switch (rand()%7)
     {
         default:
         case 0: return v1;
@@ -112,7 +112,7 @@ template<class T>
 inline
 const T& RAND(const T& v1, const T& v2, const T& v3, const T& v4, const T& v5, const T& v6, const T& v7, const T& v8)
 {
-    switch(rand()%8)
+    switch (rand()%8)
     {
         default:
         case 0: return v1;
@@ -131,7 +131,7 @@ inline
 const T& RAND(const T& v1, const T& v2, const T& v3, const T& v4, const T& v5, const T& v6, const T& v7, const T& v8,
               const T& v9)
 {
-    switch(rand()%9)
+    switch (rand()%9)
     {
         default:
         case 0: return v1;
@@ -151,7 +151,7 @@ inline
 const T& RAND(const T& v1, const T& v2, const T& v3, const T& v4, const T& v5, const T& v6, const T& v7, const T& v8,
               const T& v9, const T& v10)
 {
-    switch(rand()%10)
+    switch (rand()%10)
     {
         default:
         case 0: return v1;
@@ -172,7 +172,7 @@ inline
 const T& RAND(const T& v1, const T& v2, const T& v3, const T& v4, const T& v5, const T& v6, const T& v7, const T& v8,
               const T& v9, const T& v10, const T& v11)
 {
-    switch(rand()%11)
+    switch (rand()%11)
     {
         default:
         case 0: return v1;
@@ -194,7 +194,7 @@ inline
 const T& RAND(const T& v1, const T& v2, const T& v3, const T& v4, const T& v5, const T& v6, const T& v7, const T& v8,
               const T& v9, const T& v10, const T& v11, const T& v12)
 {
-    switch(rand()%12)
+    switch (rand()%12)
     {
         default:
         case 0: return v1;
@@ -217,7 +217,7 @@ inline
 const T& RAND(const T& v1, const T& v2, const T& v3, const T& v4, const T& v5, const T& v6, const T& v7, const T& v8,
               const T& v9, const T& v10, const T& v11, const T& v12, const T& v13)
 {
-    switch(rand()%13)
+    switch (rand()%13)
     {
         default:
         case 0: return v1;
@@ -241,7 +241,7 @@ inline
 const T& RAND(const T& v1, const T& v2, const T& v3, const T& v4, const T& v5, const T& v6, const T& v7, const T& v8,
               const T& v9, const T& v10, const T& v11, const T& v12, const T& v13, const T& v14)
 {
-    switch(rand()%14)
+    switch (rand()%14)
     {
         default:
         case 0: return v1;
@@ -266,7 +266,7 @@ inline
 const T& RAND(const T& v1, const T& v2, const T& v3, const T& v4, const T& v5, const T& v6, const T& v7, const T& v8,
               const T& v9, const T& v10, const T& v11, const T& v12, const T& v13, const T& v14, const T& v15)
 {
-    switch(rand()%15)
+    switch (rand()%15)
     {
         default:
         case 0: return v1;
@@ -292,7 +292,7 @@ inline
 const T& RAND(const T& v1, const T& v2, const T& v3, const T& v4, const T& v5, const T& v6, const T& v7, const T& v8,
               const T& v9, const T& v10, const T& v11, const T& v12, const T& v13, const T& v14, const T& v15, const T& v16)
 {
-    switch(rand()%16)
+    switch (rand()%16)
     {
         default:
         case 0: return v1;
@@ -329,19 +329,19 @@ class EventMap : private std::map<uint32, uint32>
 
         void SetPhase(uint32 phase)
         {
-            if(phase && phase < 9)
+            if (phase && phase < 9)
                 m_phase = (1 << (phase + 24));
         }
 
         void ScheduleEvent(uint32 eventId, uint32 time, uint32 gcd = 0, uint32 phase = 0)
         {
             time += m_time;
-            if(gcd && gcd < 9)
+            if (gcd && gcd < 9)
                 eventId |= (1 << (gcd + 16));
-            if(phase && phase < 9)
+            if (phase && phase < 9)
                 eventId |= (1 << (phase + 24));
             iterator itr = find(time);
-            while(itr != end())
+            while (itr != end())
             {
                 ++time;
                 itr = find(time);
@@ -357,13 +357,13 @@ class EventMap : private std::map<uint32, uint32>
 
         void RepeatEvent(uint32 time)
         {
-            if(empty())
+            if (empty())
                 return;
             uint32 eventId = begin()->second;
             erase(begin());
             time += m_time;
             iterator itr = find(time);
-            while(itr != end())
+            while (itr != end())
             {
                 ++time;
                 itr = find(time);
@@ -378,11 +378,11 @@ class EventMap : private std::map<uint32, uint32>
 
         uint32 ExecuteEvent()
         {
-            while(!empty())
+            while (!empty())
             {
-                if(begin()->first > m_time)
+                if (begin()->first > m_time)
                     return 0;
-                else if(m_phase && (begin()->second & 0xFF000000) && !(begin()->second & m_phase))
+                else if (m_phase && (begin()->second & 0xFF000000) && !(begin()->second & m_phase))
                     erase(begin());
                 else
                 {
@@ -396,11 +396,11 @@ class EventMap : private std::map<uint32, uint32>
 
         uint32 GetEvent()
         {
-            while(!empty())
+            while (!empty())
             {
-                if(begin()->first > m_time)
+                if (begin()->first > m_time)
                     return 0;
-                else if(m_phase && (begin()->second & 0xFF000000) && !(begin()->second & m_phase))
+                else if (m_phase && (begin()->second & 0xFF000000) && !(begin()->second & m_phase))
                     erase(begin());
                 else
                 {
@@ -414,11 +414,11 @@ class EventMap : private std::map<uint32, uint32>
         {
             time += m_time;
             gcd = (1 << (gcd + 16));
-            for(iterator itr = begin(); itr != end();)
+            for (iterator itr = begin(); itr != end();)
             {
-                if(itr->first >= time)
+                if (itr->first >= time)
                     break;
-                if(itr->second & gcd)
+                if (itr->second & gcd)
                 {
                     ScheduleEvent(time, itr->second);
                     erase(itr++);
@@ -430,9 +430,9 @@ class EventMap : private std::map<uint32, uint32>
 
         void CancelEvent(uint32 eventId)
         {
-            for(iterator itr = begin(); itr != end();)
+            for (iterator itr = begin(); itr != end();)
             {
-                if(eventId == (itr->second & 0x0000FFFF))
+                if (eventId == (itr->second & 0x0000FFFF))
                     erase(itr++);
                 else
                     ++itr;
@@ -441,9 +441,9 @@ class EventMap : private std::map<uint32, uint32>
 
         void CancelEventsByGCD(uint32 gcd)
         {
-            for(iterator itr = begin(); itr != end();)
+            for (iterator itr = begin(); itr != end();)
             {
-                if(itr->second & gcd)
+                if (itr->second & gcd)
                     erase(itr++);
                 else
                     ++itr;
@@ -486,7 +486,7 @@ TRINITY_DLL_SPEC AISpellInfoType * GetAISpellInfo(uint32 i);
 
 inline void CreatureAI::SetGazeOn(Unit *target)
 {
-    if(me->canAttack(target))
+    if (me->canAttack(target))
     {
         AttackStart(target);
         me->SetReactState(REACT_AGGRESSIVE);
@@ -495,34 +495,34 @@ inline void CreatureAI::SetGazeOn(Unit *target)
 
 inline bool CreatureAI::UpdateVictimWithGaze()
 {
-    if(!me->isInCombat())
+    if (!me->isInCombat())
         return false;
 
-    if(me->HasReactState(REACT_PASSIVE))
+    if (me->HasReactState(REACT_PASSIVE))
     {
-        if(me->getVictim())
+        if (me->getVictim())
             return true;
         else
             me->SetReactState(REACT_AGGRESSIVE);
     }
 
-    if(Unit *victim = me->SelectVictim())
+    if (Unit *victim = me->SelectVictim())
         AttackStart(victim);
     return me->getVictim();
 }
 
 inline bool CreatureAI::UpdateCombatState()
 {
-    if(!me->isInCombat())
+    if (!me->isInCombat())
         return false;
 
-    if(!me->HasReactState(REACT_PASSIVE))
+    if (!me->HasReactState(REACT_PASSIVE))
     {
-        if(Unit *victim = me->SelectVictim())
+        if (Unit *victim = me->SelectVictim())
             AttackStart(victim);
         return me->getVictim();
     }
-    else if(me->getThreatManager().isThreatListEmpty())
+    else if (me->getThreatManager().isThreatListEmpty())
     {
         EnterEvadeMode();
         me->SetReactState(REACT_PASSIVE);
@@ -534,28 +534,28 @@ inline bool CreatureAI::UpdateCombatState()
 
 inline bool CreatureAI::UpdateVictim()
 {
-    if(!me->isInCombat())
+    if (!me->isInCombat())
         return false;
 
-    if(me->getVictim())
+    if (me->getVictim())
     {
-        if(me->IsNonMeleeSpellCasted(false))
+        if (me->IsNonMeleeSpellCasted(false))
             return true;
         else
         {
-            if(me->GetSelection() != me->getVictimGUID())
+            if (me->GetSelection() != me->getVictimGUID())
                 me->SetSelection(me->getVictimGUID());
         }
     }
 
-    if(!me->HasReactState(REACT_PASSIVE))
+    if (!me->HasReactState(REACT_PASSIVE))
     {
-        if(Unit *pVictim = me->SelectVictim())
+        if (Unit *pVictim = me->SelectVictim())
             AttackStart(pVictim);
 
         return me->getVictim();
     }
-    else if(me->getThreatManager().isThreatListEmpty())
+    else if (me->getThreatManager().isThreatListEmpty())
     {
         EnterEvadeMode();
         me->SetReactState(REACT_PASSIVE);
@@ -568,9 +568,9 @@ inline bool CreatureAI::UpdateVictim()
 /*
 inline bool CreatureAI::UpdateVictim()
 {
-    if(!me->isInCombat())
+    if (!me->isInCombat())
         return false;
-    if(Unit *victim = me->SelectVictim())
+    if (Unit *victim = me->SelectVictim())
         AttackStart(victim);
     return me->getVictim();
 }
@@ -578,7 +578,7 @@ inline bool CreatureAI::UpdateVictim()
 
 inline bool CreatureAI::_EnterEvadeMode()
 {
-    if(!me->isAlive())
+    if (!me->isAlive())
         return false;
 
     // sometimes bosses stuck in combat?
@@ -586,7 +586,7 @@ inline bool CreatureAI::_EnterEvadeMode()
     me->CombatStop(true);
     //me->ResetPlayerDamageReq();
 
-    if(me->IsInEvadeMode())
+    if (me->IsInEvadeMode())
         return false;
 
     me->RemoveAllAuras();
@@ -599,7 +599,7 @@ inline bool CreatureAI::_EnterEvadeMode()
 
 inline void UnitAI::DoCast(Unit* victim, uint32 spellId, bool triggered)
 {
-    if(!victim || me->hasUnitState(UNIT_STAT_CASTING) && !triggered)
+    if (!victim || me->hasUnitState(UNIT_STAT_CASTING) && !triggered)
         return;
 
     me->CastSpell(victim, spellId, triggered);
@@ -612,7 +612,7 @@ inline void UnitAI::DoCastVictim(uint32 spellId, bool triggered)
 
 inline void UnitAI::DoCastAOE(uint32 spellId, bool triggered)
 {
-    if(!triggered && me->hasUnitState(UNIT_STAT_CASTING))
+    if (!triggered && me->hasUnitState(UNIT_STAT_CASTING))
         return;
 
     me->CastSpell((Unit*)NULL, spellId, triggered);
@@ -620,22 +620,22 @@ inline void UnitAI::DoCastAOE(uint32 spellId, bool triggered)
 
 inline Creature *CreatureAI::DoSummon(uint32 uiEntry, const WorldLocation &pos, uint32 uiDespawntime, TempSummonType uiType)
 {
-	return me->SummonCreature(uiEntry, pos.x, pos.y, pos.z, pos.o, uiType, uiDespawntime);
+    return me->SummonCreature(uiEntry, pos.coord_x, pos.coord_y, pos.coord_z, pos.orientation, uiType, uiDespawntime);
 }
 
 inline Creature *CreatureAI::DoSummon(uint32 uiEntry, WorldObject* obj, float fRadius, uint32 uiDespawntime, TempSummonType uiType)
 {
     WorldLocation pos;
-	obj->GetClosePoint(pos.x,pos.y,pos.z,obj->GetObjectSize(), fRadius);
-    return me->SummonCreature(uiEntry, pos.x, pos.y, pos.z, pos.o, uiType, uiDespawntime);
+    obj->GetClosePoint(pos.coord_x,pos.coord_y,pos.coord_z,obj->GetObjectSize(), fRadius);
+    return me->SummonCreature(uiEntry, pos.coord_x, pos.coord_y, pos.coord_z, pos.orientation, uiType, uiDespawntime);
 }
 
 inline Creature *CreatureAI::DoSummonFlyer(uint32 uiEntry, WorldObject *obj, float _fZ, float fRadius, uint32 uiDespawntime, TempSummonType uiType)
 {
     WorldLocation pos;
-    obj->GetClosePoint(pos.x,pos.y,pos.z,obj->GetObjectSize(), fRadius);
-    pos.z += _fZ;
-    return me->SummonCreature(uiEntry, pos.x, pos.y, pos.z, pos.o, uiType, uiDespawntime);
+    obj->GetClosePoint(pos.coord_x,pos.coord_y,pos.coord_z,obj->GetObjectSize(), fRadius);
+    pos.coord_z += _fZ;
+    return me->SummonCreature(uiEntry, pos.coord_x, pos.coord_y, pos.coord_z, pos.orientation, uiType, uiDespawntime);
 }
 
 #endif

@@ -46,7 +46,9 @@ class LoginQueryHolder;
 class CharacterHandler;
 class MovementInfo;
 
-#define CHECK_PACKET_SIZE(P,S) if((P).size() < (S)) return SizeError((P),(S));
+struct OpcodeHandler;
+
+#define CHECK_PACKET_SIZE(P,S) if ((P).size() < (S)) return SizeError((P),(S));
 
 enum OpcodeDisabled
 {
@@ -72,6 +74,43 @@ enum PartyResult
     PARTY_RESULT_TARGET_UNFRIENDLY    = 8,
     PARTY_RESULT_TARGET_IGNORE_YOU    = 9,
     PARTY_RESULT_INVITE_RESTRICTED    = 13
+};
+
+//class to deal with packet processing
+//allows to determine if next packet is safe to be processed
+class PacketFilter
+{
+public:
+    explicit PacketFilter(WorldSession * pSession) : m_pSession(pSession) {}
+    virtual ~PacketFilter() {}
+
+    virtual bool Process(WorldPacket * packet) { return true; }
+    virtual bool ProcessLogout() const { return true; }
+
+protected:
+    WorldSession * const m_pSession;
+};
+//process only thread-safe packets in Map::Update()
+class MapSessionFilter : public PacketFilter
+{
+public:
+    explicit MapSessionFilter(WorldSession * pSession) : PacketFilter(pSession) {}
+    ~MapSessionFilter() {}
+
+    virtual bool Process(WorldPacket * packet);
+    //in Map::Update() we do not process player logout!
+    virtual bool ProcessLogout() const { return false; }
+};
+
+//class used to filer only thread-unsafe packets from queue
+//in order to update only be used in World::UpdateSessions()
+class WorldSessionFilter : public PacketFilter
+{
+public:
+    explicit WorldSessionFilter(WorldSession * pSession) : PacketFilter(pSession) {}
+    ~WorldSessionFilter() {}
+
+    virtual bool Process(WorldPacket* packet);
 };
 
 /// Player session in the World
@@ -134,34 +173,34 @@ class TRINITY_DLL_SPEC WorldSession
         void KickPlayer();
 
         void QueuePacket(WorldPacket* new_packet);
-        bool Update(uint32 diff);
+        bool Update(uint32 diff, PacketFilter& updater);
 
         /// Handle the authentication waiting queue (to be completed)
         void SendAuthWaitQue(uint32 position);
 
-        //void SendTestCreatureQueryOpcode( uint32 entry, uint64 guid, uint32 testvalue );
+        //void SendTestCreatureQueryOpcode(uint32 entry, uint64 guid, uint32 testvalue);
         void SendNameQueryOpcode(Player* p);
         void SendNameQueryOpcodeFromDB(uint64 guid);
-        static void SendNameQueryOpcodeFromDBCallBack(QueryResult_AutoPtr result, uint32 accountId);
+        static void SendNameQueryOpcodeFromDBCallBack(QueryResultAutoPtr result, uint32 accountId);
 
-        void SendTrainerList( uint64 guid );
-        void SendTrainerList( uint64 guid, const std::string& strTitle );
-        void SendListInventory( uint64 guid );
-        void SendShowBank( uint64 guid );
-        void SendTabardVendorActivate( uint64 guid );
+        void SendTrainerList(uint64 guid);
+        void SendTrainerList(uint64 guid, const std::string& strTitle);
+        void SendListInventory(uint64 guid);
+        void SendShowBank(uint64 guid);
+        void SendTabardVendorActivate(uint64 guid);
         void SendSpiritResurrect();
         void SendBindPoint(Creature* npc);
         void SendGMTicketGetTicket(uint32 status, char const* text);
 
         void SendAttackStop(Unit const* enemy);
 
-        void SendBattlegGroundList( uint64 guid, uint32 bgTypeId );
+        void SendBattlegGroundList(uint64 guid, uint32 bgTypeId);
 
         void SendTradeStatus(uint32 status);
         void SendCancelTrade();
 
-        void SendStablePet(uint64 guid );
-        void SendPetitionQueryOpcode( uint64 petitionguid);
+        void SendStablePet(uint64 guid);
+        void SendPetitionQueryOpcode(uint64 petitionguid);
         void SendUpdateTrade();
 
         //pet
@@ -169,35 +208,35 @@ class TRINITY_DLL_SPEC WorldSession
 
         //mail
                                                             //used with item_page table
-        bool SendItemInfo( uint32 itemid, WorldPacket data );
+        bool SendItemInfo(uint32 itemid, WorldPacket data);
         static void SendReturnToSender(uint8 messageType, uint32 sender_acc, uint32 sender_guid, uint32 receiver_guid, const std::string& subject, uint32 itemTextId, MailItemsInfo *mi, uint32 money, uint16 mailTemplateId = 0);
         static void SendMailTo(Player* receiver, uint8 messageType, uint8 stationery, uint32 sender_guidlow_or_entry, uint32 received_guidlow, std::string subject, uint32 itemTextId, MailItemsInfo* mi, uint32 money, uint32 COD, uint32 checked, uint32 deliver_delay = 0, uint16 mailTemplateId = 0);
 
         //auction
-        void SendAuctionHello( uint64 guid, Creature * unit );
-        void SendAuctionCommandResult( uint32 auctionId, uint32 Action, uint32 ErrorCode, uint32 bidError = 0);
-        void SendAuctionBidderNotification( uint32 location, uint32 auctionId, uint64 bidder, uint32 bidSum, uint32 diff, uint32 item_template);
-        void SendAuctionOwnerNotification( AuctionEntry * auction );
-        void SendAuctionOutbiddedMail( AuctionEntry * auction, uint32 newPrice );
-        void SendAuctionCancelledToBidderMail( AuctionEntry* auction );
+        void SendAuctionHello(uint64 guid, Creature * unit);
+        void SendAuctionCommandResult(uint32 auctionId, uint32 Action, uint32 ErrorCode, uint32 bidError = 0);
+        void SendAuctionBidderNotification(uint32 location, uint32 auctionId, uint64 bidder, uint32 bidSum, uint32 diff, uint32 item_template);
+        void SendAuctionOwnerNotification(AuctionEntry * auction);
+        void SendAuctionOutbiddedMail(AuctionEntry * auction, uint32 newPrice);
+        void SendAuctionCancelledToBidderMail(AuctionEntry* auction);
 
         //Item Enchantment
         void SendEnchantmentLog(uint64 Target, uint64 Caster,uint32 ItemID,uint32 SpellID);
         void SendItemEnchantTimeUpdate(uint64 Playerguid, uint64 Itemguid,uint32 slot,uint32 Duration);
 
         //Taxi
-        void SendTaxiStatus( uint64 guid );
-        void SendTaxiMenu( Creature* unit );
-        void SendDoFlight( uint16 MountId, uint32 path, uint32 pathNode = 0 );
-        bool SendLearnNewTaxiNode( Creature* unit );
+        void SendTaxiStatus(uint64 guid);
+        void SendTaxiMenu(Creature* unit);
+        void SendDoFlight(uint16 MountId, uint32 path, uint32 pathNode = 0);
+        bool SendLearnNewTaxiNode(Creature* unit);
 
         // Guild/Arena Team
         void SendGuildCommandResult(uint32 typecmd, const std::string& str, uint32 cmdresult);
         void SendArenaTeamCommandResult(uint32 team_action, const std::string& team, const std::string& player, uint32 error_id);
         void BuildArenaTeamEventPacket(WorldPacket *data, uint8 eventid, uint8 str_count, const std::string& str1, const std::string& str2, const std::string& str3);
         void SendNotInArenaTeamPacket(uint8 type);
-        void SendPetitionShowList( uint64 guid );
-        void SendSaveGuildEmblem( uint32 msg );
+        void SendPetitionShowList(uint64 guid);
+        void SendSaveGuildEmblem(uint32 msg);
         void SendBattleGroundOrArenaJoinError(uint8 err);
 
         // Looking For Group
@@ -207,7 +246,7 @@ class TRINITY_DLL_SPEC WorldSession
 
         void BuildPartyMemberStatsChangedPacket(Player *player, WorldPacket *data);
 
-        void DoLootRelease( uint64 lguid );
+        void DoLootRelease(uint64 lguid);
 
         // Account mute time
         time_t m_muteTime;
@@ -224,7 +263,7 @@ class TRINITY_DLL_SPEC WorldSession
     public:                                                 // opcodes handlers
 
         void Handle_NULL(WorldPacket& recvPacket);          // not used
-        void Handle_EarlyProccess( WorldPacket& recvPacket);// just mark packets processed in WorldSocket::OnRead
+        void Handle_EarlyProccess(WorldPacket& recvPacket);// just mark packets processed in WorldSocket::OnRead
         void Handle_ServerSide(WorldPacket& recvPacket);    // sever side only, can't be accepted from client
         void Handle_Deprecated(WorldPacket& recvPacket);    // never used anymore by client
 
@@ -232,7 +271,7 @@ class TRINITY_DLL_SPEC WorldSession
         void HandleCharDeleteOpcode(WorldPacket& recvPacket);
         void HandleCharCreateOpcode(WorldPacket& recvPacket);
         void HandlePlayerLoginOpcode(WorldPacket& recvPacket);
-        void HandleCharEnum(QueryResult_AutoPtr result);
+        void HandleCharEnum(QueryResultAutoPtr result);
         void HandlePlayerLogin(LoginQueryHolder * holder);
 
         // played time
@@ -252,7 +291,7 @@ class TRINITY_DLL_SPEC WorldSession
         void HandleMoveWaterWalkAck(WorldPacket& recvPacket);
         void HandleFeatherFallAck(WorldPacket &recv_data);
 
-        void HandleMoveHoverAck( WorldPacket & recv_data );
+        void HandleMoveHoverAck(WorldPacket & recv_data);
 
         void HandleMountSpecialAnimOpcode(WorldPacket &recvdata);
 
@@ -267,7 +306,7 @@ class TRINITY_DLL_SPEC WorldSession
         void HandleMoveKnockBackAck(WorldPacket& recvPacket);
 
         void HandleMoveTeleportAck(WorldPacket& recvPacket);
-        void HandleForceSpeedChangeAck( WorldPacket & recv_data );
+        void HandleForceSpeedChangeAck(WorldPacket & recv_data);
 
         void HandlePingOpcode(WorldPacket& recvPacket);
         void HandleAuthSessionOpcode(WorldPacket& recvPacket);
@@ -300,10 +339,10 @@ class TRINITY_DLL_SPEC WorldSession
         void HandleEmoteOpcode(WorldPacket& recvPacket);
         void HandleFriendListOpcode(WorldPacket& recvPacket);
         void HandleAddFriendOpcode(WorldPacket& recvPacket);
-        static void HandleAddFriendOpcodeCallBack(QueryResult_AutoPtr result, uint32 accountId, std::string friendNote);
+        static void HandleAddFriendOpcodeCallBack(QueryResultAutoPtr result, uint32 accountId, std::string friendNote);
         void HandleDelFriendOpcode(WorldPacket& recvPacket);
         void HandleAddIgnoreOpcode(WorldPacket& recvPacket);
-        static void HandleAddIgnoreOpcodeCallBack(QueryResult_AutoPtr result, uint32 accountId);
+        static void HandleAddIgnoreOpcodeCallBack(QueryResultAutoPtr result, uint32 accountId);
         void HandleDelIgnoreOpcode(WorldPacket& recvPacket);
         void HandleSetFriendNoteOpcode(WorldPacket& recvPacket);
         void HandleBugOpcode(WorldPacket& recvPacket);
@@ -312,8 +351,8 @@ class TRINITY_DLL_SPEC WorldSession
 
         void HandleAreaTriggerOpcode(WorldPacket& recvPacket);
 
-        void HandleSetFactionAtWar( WorldPacket & recv_data );
-        void HandleSetFactionCheat( WorldPacket & recv_data );
+        void HandleSetFactionAtWar(WorldPacket & recv_data);
+        void HandleSetFactionCheat(WorldPacket & recv_data);
         void HandleSetWatchedFactionIndexOpcode(WorldPacket & recv_data);
         void HandleSetWatchedFactionInactiveOpcode(WorldPacket & recv_data);
 
@@ -340,7 +379,7 @@ class TRINITY_DLL_SPEC WorldSession
         void HandleMoveNotActiveMoverOpcode(WorldPacket &recv_data);
         void HandleMoveTimeSkippedOpcode(WorldPacket &recv_data);
 
-        void HandleRequestRaidInfoOpcode( WorldPacket & recv_data );
+        void HandleRequestRaidInfoOpcode(WorldPacket & recv_data);
 
         void HandleBattlefieldStatusOpcode(WorldPacket &recv_data);
         void HandleBattleMasterHelloOpcode(WorldPacket &recv_data);
@@ -353,17 +392,17 @@ class TRINITY_DLL_SPEC WorldSession
         void HandleGroupUninviteGuidOpcode(WorldPacket& recvPacket);
         void HandleGroupSetLeaderOpcode(WorldPacket& recvPacket);
         void HandleGroupLeaveOpcode(WorldPacket& recvPacket);
-        void HandleGroupPassOnLootOpcode( WorldPacket &recv_data );
+        void HandleGroupPassOnLootOpcode(WorldPacket &recv_data);
         void HandleLootMethodOpcode(WorldPacket& recvPacket);
-        void HandleLootRoll( WorldPacket &recv_data );
-        void HandleRequestPartyMemberStatsOpcode( WorldPacket &recv_data );
-        void HandleRaidIconTargetOpcode( WorldPacket & recv_data );
-        void HandleRaidReadyCheckOpcode( WorldPacket & recv_data );
-        void HandleRaidReadyCheckFinishOpcode( WorldPacket & recv_data );
-        void HandleRaidConvertOpcode( WorldPacket & recv_data );
-        void HandleGroupChangeSubGroupOpcode( WorldPacket & recv_data );
-        void HandleGroupAssistantOpcode( WorldPacket & recv_data );
-        void HandleGroupPromoteOpcode( WorldPacket & recv_data );
+        void HandleLootRoll(WorldPacket &recv_data);
+        void HandleRequestPartyMemberStatsOpcode(WorldPacket &recv_data);
+        void HandleRaidIconTargetOpcode(WorldPacket & recv_data);
+        void HandleRaidReadyCheckOpcode(WorldPacket & recv_data);
+        void HandleRaidReadyCheckFinishOpcode(WorldPacket & recv_data);
+        void HandleRaidConvertOpcode(WorldPacket & recv_data);
+        void HandleGroupChangeSubGroupOpcode(WorldPacket & recv_data);
+        void HandleGroupAssistantOpcode(WorldPacket & recv_data);
+        void HandleGroupPromoteOpcode(WorldPacket & recv_data);
 
         void HandlePetitionBuyOpcode(WorldPacket& recv_data);
         void HandlePetitionShowSignOpcode(WorldPacket& recv_data);
@@ -436,26 +475,26 @@ class TRINITY_DLL_SPEC WorldSession
         void HandleUnacceptTradeOpcode(WorldPacket& recvPacket);
 
         void HandleAuctionHelloOpcode(WorldPacket& recvPacket);
-        void HandleAuctionListItems( WorldPacket & recv_data );
-        void HandleAuctionListBidderItems( WorldPacket & recv_data );
-        void HandleAuctionSellItem( WorldPacket & recv_data );
-        void HandleAuctionRemoveItem( WorldPacket & recv_data );
-        void HandleAuctionListOwnerItems( WorldPacket & recv_data );
-        void HandleAuctionPlaceBid( WorldPacket & recv_data );
+        void HandleAuctionListItems(WorldPacket & recv_data);
+        void HandleAuctionListBidderItems(WorldPacket & recv_data);
+        void HandleAuctionSellItem(WorldPacket & recv_data);
+        void HandleAuctionRemoveItem(WorldPacket & recv_data);
+        void HandleAuctionListOwnerItems(WorldPacket & recv_data);
+        void HandleAuctionPlaceBid(WorldPacket & recv_data);
 
-        void HandleGetMail( WorldPacket & recv_data );
-        void HandleSendMail( WorldPacket & recv_data );
-        void HandleTakeMoney( WorldPacket & recv_data );
-        void HandleTakeItem( WorldPacket & recv_data );
-        void HandleMarkAsRead( WorldPacket & recv_data );
-        void HandleReturnToSender( WorldPacket & recv_data );
-        void HandleMailDelete( WorldPacket & recv_data );
-        void HandleItemTextQuery( WorldPacket & recv_data);
-        void HandleMailCreateTextItem(WorldPacket & recv_data );
-        void HandleMsgQueryNextMailtime(WorldPacket & recv_data );
-        void HandleCancelChanneling(WorldPacket & recv_data );
+        void HandleGetMail(WorldPacket & recv_data);
+        void HandleSendMail(WorldPacket & recv_data);
+        void HandleTakeMoney(WorldPacket & recv_data);
+        void HandleTakeItem(WorldPacket & recv_data);
+        void HandleMarkAsRead(WorldPacket & recv_data);
+        void HandleReturnToSender(WorldPacket & recv_data);
+        void HandleMailDelete(WorldPacket & recv_data);
+        void HandleItemTextQuery(WorldPacket & recv_data);
+        void HandleMailCreateTextItem(WorldPacket & recv_data);
+        void HandleMsgQueryNextMailtime(WorldPacket & recv_data);
+        void HandleCancelChanneling(WorldPacket & recv_data);
 
-        void SendItemPageInfo( ItemPrototype *itemProto );
+        void SendItemPageInfo(ItemPrototype *itemProto);
         void HandleSplitItemOpcode(WorldPacket& recvPacket);
         void HandleSwapInvItemOpcode(WorldPacket& recvPacket);
         void HandleDestroyItemOpcode(WorldPacket& recvPacket);
@@ -468,7 +507,7 @@ class TRINITY_DLL_SPEC WorldSession
         void HandleAutoStoreBagItemOpcode(WorldPacket& recvPacket);
         void HandleReadItem(WorldPacket& recvPacket);
         void HandleAutoEquipItemSlotOpcode(WorldPacket & recvPacket);
-        void HandleSwapItem( WorldPacket & recvPacket);
+        void HandleSwapItem(WorldPacket & recvPacket);
         void HandleBuybackItem(WorldPacket & recvPacket);
         void HandleAutoBankItemOpcode(WorldPacket& recvPacket);
         void HandleAutoStoreBankItemOpcode(WorldPacket& recvPacket);
@@ -498,8 +537,8 @@ class TRINITY_DLL_SPEC WorldSession
         void HandleQuestgiverChooseRewardOpcode(WorldPacket& recvPacket);
         void HandleQuestgiverRequestRewardOpcode(WorldPacket& recvPacket);
         void HandleQuestQueryOpcode(WorldPacket& recvPacket);
-        void HandleQuestgiverCancel(WorldPacket& recv_data );
-        void HandleQuestLogSwapQuest(WorldPacket& recv_data );
+        void HandleQuestgiverCancel(WorldPacket& recv_data);
+        void HandleQuestLogSwapQuest(WorldPacket& recv_data);
         void HandleQuestLogRemoveQuest(WorldPacket& recv_data);
         void HandleQuestConfirmAccept(WorldPacket& recv_data);
         void HandleQuestComplete(WorldPacket& recv_data);
@@ -511,8 +550,8 @@ class TRINITY_DLL_SPEC WorldSession
         void HandleTextEmoteOpcode(WorldPacket& recvPacket);
         void HandleChatIgnoredOpcode(WorldPacket& recvPacket);
 
-        void HandleCorpseReclaimOpcode( WorldPacket& recvPacket );
-        void HandleCorpseQueryOpcode( WorldPacket& recvPacket );
+        void HandleCorpseReclaimOpcode(WorldPacket& recvPacket);
+        void HandleCorpseQueryOpcode(WorldPacket& recvPacket);
         void HandleResurrectResponseOpcode(WorldPacket& recvPacket);
         void HandleSummonResponseOpcode(WorldPacket& recv_data);
 
@@ -543,25 +582,25 @@ class TRINITY_DLL_SPEC WorldSession
         void HandlePageQuerySkippedOpcode(WorldPacket& recvPacket);
         void HandlePageQueryOpcode(WorldPacket& recvPacket);
 
-        void HandleTutorialFlag ( WorldPacket & recv_data );
-        void HandleTutorialClear( WorldPacket & recv_data );
-        void HandleTutorialReset( WorldPacket & recv_data );
+        void HandleTutorialFlag (WorldPacket & recv_data);
+        void HandleTutorialClear(WorldPacket & recv_data);
+        void HandleTutorialReset(WorldPacket & recv_data);
 
         //Pet
-        void HandlePetAction( WorldPacket & recv_data );
-        void HandlePetNameQuery( WorldPacket & recv_data );
-        void HandlePetSetAction( WorldPacket & recv_data );
-        void HandlePetAbandon( WorldPacket & recv_data );
-        void HandlePetRename( WorldPacket & recv_data );
-        void HandlePetCancelAuraOpcode( WorldPacket& recvPacket );
-        void HandlePetUnlearnOpcode( WorldPacket& recvPacket );
-        void HandlePetSpellAutocastOpcode( WorldPacket& recvPacket );
-        void HandlePetCastSpellOpcode( WorldPacket& recvPacket );
+        void HandlePetAction(WorldPacket & recv_data);
+        void HandlePetNameQuery(WorldPacket & recv_data);
+        void HandlePetSetAction(WorldPacket & recv_data);
+        void HandlePetAbandon(WorldPacket & recv_data);
+        void HandlePetRename(WorldPacket & recv_data);
+        void HandlePetCancelAuraOpcode(WorldPacket& recvPacket);
+        void HandlePetUnlearnOpcode(WorldPacket& recvPacket);
+        void HandlePetSpellAutocastOpcode(WorldPacket& recvPacket);
+        void HandlePetCastSpellOpcode(WorldPacket& recvPacket);
 
         void HandleSetActionBar(WorldPacket& recv_data);
 
         void HandleChangePlayerNameOpcode(WorldPacket& recv_data);
-        static void HandleChangePlayerNameOpcodeCallBack(QueryResult_AutoPtr result, uint32 accountId, std::string newname);
+        static void HandleChangePlayerNameOpcodeCallBack(QueryResultAutoPtr result, uint32 accountId, std::string newname);
         void HandleDeclinedPlayerNameOpcode(WorldPacket& recv_data);
 
         void HandleTotemDestroy(WorldPacket& recv_data);
@@ -570,12 +609,12 @@ class TRINITY_DLL_SPEC WorldSession
         void HandleBattleGroundHelloOpcode(WorldPacket &recv_data);
         void HandleBattleGroundJoinOpcode(WorldPacket &recv_data);
         void HandleBattleGroundPlayerPositionsOpcode(WorldPacket& recv_data);
-        void HandleBattleGroundPVPlogdataOpcode( WorldPacket &recv_data );
-        void HandleBattleGroundPlayerPortOpcode( WorldPacket &recv_data );
-        void HandleBattleGroundListOpcode( WorldPacket &recv_data );
-        void HandleBattleGroundLeaveOpcode( WorldPacket &recv_data );
-        void HandleBattleGroundArenaJoin( WorldPacket &recv_data );
-        void HandleBattleGroundReportAFK( WorldPacket &recv_data );
+        void HandleBattleGroundPVPlogdataOpcode(WorldPacket &recv_data);
+        void HandleBattleGroundPlayerPortOpcode(WorldPacket &recv_data);
+        void HandleBattleGroundListOpcode(WorldPacket &recv_data);
+        void HandleBattleGroundLeaveOpcode(WorldPacket &recv_data);
+        void HandleBattleGroundArenaJoin(WorldPacket &recv_data);
+        void HandleBattleGroundReportAFK(WorldPacket &recv_data);
 
         void HandleWardenDataOpcode(WorldPacket& recv_data);
         void HandleWorldTeleportOpcode(WorldPacket& recv_data);

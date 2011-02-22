@@ -38,7 +38,7 @@ DynamicObject::DynamicObject() : WorldObject()
     m_objectType |= TYPEMASK_DYNAMICOBJECT;
     m_objectTypeId = TYPEID_DYNAMICOBJECT;
                                                             // 2.3.2 - 0x58
-    m_updateFlag = (UPDATEFLAG_LOWGUID | UPDATEFLAG_HIGHGUID | UPDATEFLAG_HASPOSITION);
+    m_updateFlag = (UPDATEFLAG_LOWGUID | UPDATEFLAG_HIGHGUID | UPDATEFLAG_HAS_POSITION);
 
     m_valuesCount = DYNAMICOBJECT_END;
 }
@@ -46,7 +46,7 @@ DynamicObject::DynamicObject() : WorldObject()
 void DynamicObject::AddToWorld()
 {
     ///- Register the dynamicObject for guid lookup
-    if(!IsInWorld())
+    if (!IsInWorld())
     {
         GetMap()->InsertIntoObjMap(this);
         WorldObject::AddToWorld();
@@ -56,36 +56,36 @@ void DynamicObject::AddToWorld()
 void DynamicObject::RemoveFromWorld()
 {
     ///- Remove the dynamicObject from the accessor
-    if(IsInWorld())
+    if (IsInWorld())
     {
         WorldObject::RemoveFromWorld();
         GetMap()->RemoveFromObjMap(GetGUID());
     }
 }
 
-bool DynamicObject::Create( uint32 guidlow, Unit *caster, uint32 spellId, uint32 effIndex, float x, float y, float z, int32 duration, float radius )
+bool DynamicObject::Create(uint32 guidlow, Unit *caster, uint32 spellId, uint32 effIndex, float x, float y, float z, int32 duration, float radius)
 {
     SetInstanceId(caster->GetInstanceId());
 
     WorldObject::_Create(guidlow, HIGHGUID_DYNAMICOBJECT, caster->GetMapId());
     Relocate(x,y,z,0);
 
-    if(!IsPositionValid())
+    if (!IsPositionValid())
     {
         sLog.outError("ERROR: DynamicObject (spell %u eff %u) not created. Suggested coordinates isn't valid (X: %f Y: %f)",spellId,effIndex,GetPositionX(),GetPositionY());
         return false;
     }
 
     SetEntry(spellId);
-    SetFloatValue( OBJECT_FIELD_SCALE_X, 1.0f );
-    SetUInt64Value( DYNAMICOBJECT_CASTER, caster->GetGUID() );
-    SetUInt32Value( DYNAMICOBJECT_BYTES, 0x00000001 );
-    SetUInt32Value( DYNAMICOBJECT_SPELLID, spellId );
-    SetFloatValue( DYNAMICOBJECT_RADIUS, radius);
-    SetFloatValue( DYNAMICOBJECT_POS_X, x );
-    SetFloatValue( DYNAMICOBJECT_POS_Y, y );
-    SetFloatValue( DYNAMICOBJECT_POS_Z, z );
-    SetUInt32Value( DYNAMICOBJECT_CASTTIME, getMSTime() );  // new 2.4.0
+    SetFloatValue(OBJECT_FIELD_SCALE_X, 1.0f);
+    SetUInt64Value(DYNAMICOBJECT_CASTER, caster->GetGUID());
+    SetUInt32Value(DYNAMICOBJECT_BYTES, 0x00000001);
+    SetUInt32Value(DYNAMICOBJECT_SPELLID, spellId);
+    SetFloatValue(DYNAMICOBJECT_RADIUS, radius);
+    SetFloatValue(DYNAMICOBJECT_POS_X, x);
+    SetFloatValue(DYNAMICOBJECT_POS_Y, y);
+    SetFloatValue(DYNAMICOBJECT_POS_Z, z);
+    SetUInt32Value(DYNAMICOBJECT_CASTTIME, getMSTime());  // new 2.4.0
 
     m_aliveDuration = duration;
     m_radius = radius;
@@ -106,7 +106,7 @@ void DynamicObject::Update(uint32 p_time)
 {
     // caster can be not in world at time dynamic object update, but dynamic object not yet deleted in Unit destructor
     Unit* caster = GetCaster();
-    if(!caster)
+    if (!caster)
     {
         Delete();
         return;
@@ -114,22 +114,24 @@ void DynamicObject::Update(uint32 p_time)
 
     bool deleteThis = false;
 
-    if(m_aliveDuration > int32(p_time))
+    if (m_aliveDuration > int32(p_time))
         m_aliveDuration -= p_time;
     else
         deleteThis = true;
 
-    if(m_effIndex < 4)
+    if (m_effIndex < 4)
     {
-        if(m_updateTimer < p_time)
+        if (m_updateTimer < p_time)
         {
             Trinity::DynamicObjectUpdater notifier(*this,caster);
-            VisitNearbyObject(GetRadius(), notifier);
+            Cell::VisitAllObjects(this, notifier, m_radius);
             m_updateTimer = 600; // is this official-like?
-        }else m_updateTimer -= p_time;
+        }
+        else
+            m_updateTimer -= p_time;
     }
 
-    if(deleteThis)
+    if (deleteThis)
     {
         caster->RemoveDynObjectWithGUID(GetGUID());
         Delete();
@@ -145,7 +147,7 @@ void DynamicObject::Delete()
 void DynamicObject::Delay(int32 delaytime)
 {
     m_aliveDuration -= delaytime;
-    for(AffectedSet::iterator iunit= m_affected.begin();iunit != m_affected.end();++iunit)
+    for (AffectedSet::iterator iunit= m_affected.begin();iunit != m_affected.end();++iunit)
         if (*iunit)
             (*iunit)->DelayAura(m_spellId, m_effIndex, delaytime);
 }

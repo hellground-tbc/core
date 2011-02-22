@@ -132,6 +132,25 @@ namespace VMAP
         }
     }
 
+    void VMapManager2::setPosCollisiononmaps(const char* pMapIdString)
+    {
+        mapsWithPosCollision.clear();
+        if (pMapIdString != NULL)
+        {
+            std::string map_str;
+            std::stringstream map_ss;
+            map_ss.str(std::string(pMapIdString));
+            while (std::getline(map_ss, map_str, ','))
+            {
+                std::stringstream ss2(map_str);
+                int map_num = -1;
+                ss2 >> map_num;
+                if (map_num >= 0)
+                    mapsWithPosCollision.set(map_num, true);
+            }
+        }
+    }
+
     //=========================================================
 
     VMAPLoadResult VMapManager2::loadMap(const char* pBasePath, unsigned int pMapId, int x, int y)
@@ -202,7 +221,7 @@ namespace VMAP
     {
         if (!isLineOfSightCalcEnabled(pMapId))
             return true;
-        
+
         bool result = true;
         InstanceTreeMap::iterator instanceTree = iInstanceMapTrees.find(pMapId);
         if (instanceTree != iInstanceMapTrees.end())

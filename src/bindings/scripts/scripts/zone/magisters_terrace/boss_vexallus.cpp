@@ -50,7 +50,7 @@ struct TRINITY_DLL_DECL boss_vexallusAI : public ScriptedAI
 {
     boss_vexallusAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());         Heroic = c->GetMap()->IsHeroic();
+        pInstance = (c->GetInstanceData());         Heroic = c->GetMap()->IsHeroic();
     }
 
     ScriptedInstance* pInstance;
@@ -96,7 +96,7 @@ struct TRINITY_DLL_DECL boss_vexallusAI : public ScriptedAI
             GameObject* Door = NULL;
             Door = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_VEXALLUS_DOOR));
             if(Door)
-                Door->SetGoState(0);
+                Door->SetGoState(GO_STATE_ACTIVE);
         }
     }
 

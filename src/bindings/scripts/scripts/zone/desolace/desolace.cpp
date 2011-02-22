@@ -17,6 +17,7 @@ npc_aged_dying_ancient_kodo
 go_iruxos
 npc_dalinda_malem
 npc_melizza_brimbuzzle
+npc_rokaro
 EndContentData */
 
 #include "precompiled.h"
@@ -375,6 +376,39 @@ bool QuestAccept_npc_melizza_brimbuzzle(Player* pPlayer, Creature* pCreature, Qu
     return true;
 }
 
+/*####
+# npc_rokaro
+####*/
+
+#define GOSSIP_ITEM_ROKARO "Restore Drakefire Amulet."
+
+bool GossipHello_npc_rokaro(Player *player, Creature *_Creature)
+{
+    if (_Creature->isQuestGiver())
+        player->PrepareQuestMenu( _Creature->GetGUID() );
+
+    if(player->GetQuestRewardStatus(6602) && !player->HasItemCount(16309,1))
+        player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_ROKARO, GOSSIP_SENDER_MAIN, GOSSIP_SENDER_INFO );
+        player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+    return true;
+}
+
+bool GossipSelect_npc_rokaro(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+{
+    if( action == GOSSIP_SENDER_INFO )
+    {
+            ItemPosCountVec dest;
+            uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 16309, 1);
+            if (msg == EQUIP_ERR_OK)
+            {
+                 Item* item = player->StoreNewItem(dest, 16309, true);
+                 player->SendNewItem(item,1,true,false,true);
+            }
+    player->CLOSE_GOSSIP_MENU();
+    }
+    return true;
+}
+
 void AddSC_desolace()
 {
     Script *newscript;
@@ -401,5 +435,11 @@ void AddSC_desolace()
     newscript->Name = "npc_melizza_brimbuzzle";
     newscript->GetAI = &GetAI_npc_melizza_brimbuzzle;
     newscript->pQuestAccept = &QuestAccept_npc_melizza_brimbuzzle;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name="npc_rokaro";
+    newscript->pGossipHello = &GossipHello_npc_rokaro;
+    newscript->pGossipSelect = &GossipSelect_npc_rokaro;
     newscript->RegisterSelf();
 }

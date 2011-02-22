@@ -179,7 +179,7 @@ struct TRINITY_DLL_DECL boss_hexlord_addAI : public ScriptedAI
 
     boss_hexlord_addAI(Creature* c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     void Reset() {}
@@ -202,14 +202,14 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
 {
     boss_hex_lord_malacrassAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         SelectAddEntry();
         for(uint8 i = 0; i < 4; ++i)
             AddGUID[i] = 0;
 
-        wLoc.x = 119.223;
-        wLoc.y = 1035.45;
-        wLoc.z = 29.4481;
+        wLoc.coord_x = 119.223;
+        wLoc.coord_y = 1035.45;
+        wLoc.coord_z = 29.4481;
         wLoc.mapid = c->GetMapId();
     }
 

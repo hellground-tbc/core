@@ -25,19 +25,22 @@
 
 class TRINITY_DLL_SPEC barGoLink
 {
-    static char const * const empty;
-    static char const * const full;
-
-    int rec_no;
-    int rec_pos;
-    int num_rec;
-    int indic_len;
-
     public:
-
-        void step( void );
-        barGoLink( int );
+        barGoLink(int);
         ~barGoLink();
+
+        void step();
+        static void SetOutputState(bool on);
+
+    private:
+        static char const * const empty;
+        static char const * const full;
+
+        static bool m_showOutput;
+
+        int rec_no;
+        int rec_pos;
+        int num_rec;
+        int indic_len;
 };
 #endif
-

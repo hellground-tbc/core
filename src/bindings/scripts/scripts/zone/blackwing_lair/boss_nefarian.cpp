@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Boss_Nefarian
 SD%Complete: 80
-SDComment: Some issues with class calls effecting more than one class
+SDComment: Some issues with class calls effecting more than one class, his throne is actually a portal -_-, should be changed
 SDCategory: Blackwing Lair
 EndScriptData */
 

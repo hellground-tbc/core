@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Instance_Molten_Core
-SD%Complete: 0
-SDComment: Place Holder
+SD%Complete: 50
+SDComment: Encounter progress saved, some boss runes missing
 SDCategory: Molten Core
 EndScriptData */
 
@@ -295,21 +295,25 @@ struct TRINITY_DLL_DECL instance_molten_core : public ScriptedInstance
             SaveToDB();
     }
 
-    const char* Save()
+    std::string GetSaveData()
     {
         OUT_SAVE_INST_DATA;
+        
         std::ostringstream stream;
-        stream << Encounter[0] << " " << Encounter[1] << " " << Encounter[2] << " " << Encounter[3] << " " << Encounter[4] << " "
-             << Encounter[5] << " " << Encounter[6] << " " << Encounter[7] << " " << Encounter[8] << " " << Encounter[9];
-        char* out = new char[stream.str().length() + 1];
-        strcpy(out, stream.str().c_str());
-        if(out)
-        {
-            OUT_SAVE_INST_DATA_COMPLETE;
-            return out;
-        }
+        stream << Encounter[0] << " ";
+        stream << Encounter[1] << " ";
+        stream << Encounter[2] << " ";
+        stream << Encounter[3] << " ";
+        stream << Encounter[4] << " ";
+        stream << Encounter[5] << " ";
+        stream << Encounter[6] << " ";
+        stream << Encounter[7] << " ";
+        stream << Encounter[8] << " ";
+        stream << Encounter[9];
 
-        return NULL;
+        OUT_SAVE_INST_DATA_COMPLETE;
+
+        return stream.str();
     }
 
     void Load(const char* in)

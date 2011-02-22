@@ -159,8 +159,14 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
             case GAMEOBJECT_FISHINGNODE_ENTRY:
                 if(LurkerSubEvent == LURKER_NOT_STARTED)
                 {
-                    FishingTimer = 10000+rand()%30000;//random time before lurker emerges
-                    LurkerSubEvent = LURKER_FISHING;
+                    if (Unit *pTemp = instance->GetCreature(DATA_THELURKERBELOW))
+                    {
+                        if (go->GetDistance2d(pTemp) > 16.0f)
+                            return;
+
+                        FishingTimer = 10000+rand()%30000;//random time before lurker emerges
+                        LurkerSubEvent = LURKER_FISHING;
+                    }
                 }
                 break;
 
@@ -351,20 +357,24 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
         }
         return 0;
     }
-    const char* Save()
+
+    std::string GetSaveData()
     {
         OUT_SAVE_INST_DATA;
+
         std::ostringstream stream;
-        stream << Encounters[0] << " " << Encounters[1] << " " << Encounters[2] << " "
-            << Encounters[3] << " " << Encounters[4] << " " << Encounters[5] << " " << TrashCount;
-        char* out = new char[stream.str().length() + 1];
-        strcpy(out, stream.str().c_str());
-        if(out)
-        {
-            OUT_SAVE_INST_DATA_COMPLETE;
-            return out;
-        }
-        return NULL;
+        stream << Encounters[0] << " ";
+        stream << Encounters[1] << " ";
+        stream << Encounters[2] << " ";
+        stream << Encounters[3] << " ";
+        stream << Encounters[4] << " ";
+        stream << Encounters[5] << " ";
+
+        stream << TrashCount;
+
+        OUT_SAVE_INST_DATA_COMPLETE;
+
+        return stream.str();
     }
 
     void Load(const char* in)
@@ -426,7 +436,7 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
                             {
                                 if(Creature* frenzy = pPlayer->SummonCreature(MOB_COILFANG_FRENZY,pPlayer->GetPositionX(),pPlayer->GetPositionY(),pPlayer->GetPositionZ(),pPlayer->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,2000))
                                 {
-                                    frenzy->AddUnitMovementFlag(MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_LEVITATING);
+                                    frenzy->AddUnitMovementFlag(MOVEFLAG_SWIMMING | MOVEFLAG_LEVITATING);
                                     frenzy->AI()->AttackStart(pPlayer);
                                 }
                                 DoSpawnFrenzy = false;

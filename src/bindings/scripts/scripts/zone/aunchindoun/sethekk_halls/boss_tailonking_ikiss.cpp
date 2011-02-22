@@ -54,7 +54,7 @@ struct TRINITY_DLL_DECL boss_talon_king_ikissAI : public ScriptedAI
 {
     boss_talon_king_ikissAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         m_creature->GetPosition(wLoc);
     }
 
@@ -88,7 +88,7 @@ struct TRINITY_DLL_DECL boss_talon_king_ikissAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit *who)
     {
-        if( !m_creature->getVictim() && who->isTargetableForAttack() && ( m_creature->IsHostileTo( who )) && who->isInAccessiblePlaceFor(m_creature) )
+        if( !m_creature->getVictim() && who->isTargetableForAttack() && ( m_creature->IsHostileTo( who )) && who->isInAccessiblePlacefor(m_creature) )
         {
             if(!Intro && m_creature->IsWithinDistInMap(who, 100))
             {
@@ -188,8 +188,8 @@ struct TRINITY_DLL_DECL boss_talon_king_ikissAI : public ScriptedAI
                 //Spell doesn't work, but we use for visual effect at least
                 DoCast(target,SPELL_BLINK);
 
-                m_creature->Relocate(wLoc.x,wLoc.y,wLoc.z);
-                m_creature->SendMonsterMove(wLoc.x,wLoc.y,wLoc.z, 0);
+                m_creature->Relocate(wLoc.coord_x,wLoc.coord_y,wLoc.coord_z);
+                m_creature->SendMonsterMove(wLoc.coord_x,wLoc.coord_y,wLoc.coord_z, 0);
 
                 DoCast(target,SPELL_BLINK_TELEPORT);
                 Blink = true;

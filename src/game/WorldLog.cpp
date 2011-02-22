@@ -37,14 +37,14 @@ void WorldLog::Initialize()
 {
     std::string logsDir = sConfig.GetStringDefault("LogsDir","");
 
-    if(!logsDir.empty())
+    if (!logsDir.empty())
     {
-        if((logsDir.at(logsDir.length()-1)!='/') && (logsDir.at(logsDir.length()-1)!='\\'))
+        if ((logsDir.at(logsDir.length()-1)!='/') && (logsDir.at(logsDir.length()-1)!='\\'))
             logsDir.append("/");
     }
 
     std::string logname = sConfig.GetStringDefault("WorldLogFile", "");
-    if(!logname.empty())
+    if (!logname.empty())
     {
         i_file = fopen((logsDir+logname).c_str(), "w");
     }

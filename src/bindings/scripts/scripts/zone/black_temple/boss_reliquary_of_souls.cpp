@@ -137,7 +137,7 @@ struct TRINITY_DLL_DECL npc_enslaved_soulAI : public ScriptedAI
         {
             if (pInstance)
             {
-                if (pInstance->GetData(DATA_RELIQUARYOFSOULSEVENT) != IN_PROGRESS)
+                if (pInstance->GetData(EVENT_RELIQUARYOFSOULS) != IN_PROGRESS)
                     m_creature->Kill(m_creature, false);
             }
             else
@@ -159,7 +159,7 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
 {
     boss_reliquary_of_soulsAI(Creature *c) : Scripted_NoMovementAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         EssenceGUID = 0;
         m_creature->setActive(true);
     }
@@ -181,7 +181,7 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
     void Reset()
     {
         if(pInstance)
-            pInstance->SetData(DATA_RELIQUARYOFSOULSEVENT, NOT_STARTED);
+            pInstance->SetData(EVENT_RELIQUARYOFSOULS, NOT_STARTED);
 
         if(EssenceGUID)
         {
@@ -213,14 +213,14 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
                 DoZoneInCombat();
 
                 if(pInstance)
-                    pInstance->SetData(DATA_RELIQUARYOFSOULSEVENT, IN_PROGRESS);
+                    pInstance->SetData(EVENT_RELIQUARYOFSOULS, IN_PROGRESS);
                 Phase = 1;
                 Counter = 0;
                 Timer = 0;
                 DelayTimer = 15000;
             }
         }
-        
+
     }
 
     void EnterCombat(Unit* who)
@@ -249,7 +249,7 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
     void JustDied(Unit* killer)
     {
         if(pInstance)
-            pInstance->SetData(DATA_RELIQUARYOFSOULSEVENT, DONE);
+            pInstance->SetData(EVENT_RELIQUARYOFSOULS, DONE);
     }
 
     bool FindPlayers()
@@ -452,12 +452,12 @@ struct TRINITY_DLL_DECL npc_ros_triggerAI : public ScriptedAI
     void MoveInLineOfSight(Unit * who)
     {
         if (!RosGUID)
-            RosGUID = pInstance->GetData64(DATA_RELIQUARYOFSOULSEVENT);
+            RosGUID = pInstance->GetData64(EVENT_RELIQUARYOFSOULS);
 
         if (!pInstance)
              pInstance = (ScriptedInstance*)m_creature->GetInstanceData();
 
-        if (pInstance && pInstance->GetData(DATA_RELIQUARYOFSOULSEVENT) == NOT_STARTED && who->GetTypeId() == TYPEID_PLAYER)
+        if (pInstance && pInstance->GetData(EVENT_RELIQUARYOFSOULS) == NOT_STARTED && who->GetTypeId() == TYPEID_PLAYER)
         {
             Creature * ros = Unit::GetCreature(*m_creature, RosGUID);
             if (ros && !((Player*)who)->isGameMaster())
@@ -473,10 +473,10 @@ struct TRINITY_DLL_DECL npc_ros_triggerAI : public ScriptedAI
 };
 
 //This is used to sort the players by distance in preparation for the Fixate cast.
-struct TargetDistanceOrder : public std::binary_function<const Unit, const Unit, bool>
+struct ROSTargetDistanceOrder : public std::binary_function<const Unit, const Unit, bool>
 {
     const Unit* MainTarget;
-    TargetDistanceOrder(const Unit* Target) : MainTarget(Target) {};
+    ROSTargetDistanceOrder(const Unit* Target) : MainTarget(Target) {};
     // functor for operator "<"
     bool operator()(const Unit* _Left, const Unit* _Right) const
     {
@@ -576,7 +576,7 @@ struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
         if(targets.empty())
             return; // No targets added for some reason. No point continuing.
 
-        targets.sort(TargetDistanceOrder(m_creature)); // Sort players by distance.
+        targets.sort(ROSTargetDistanceOrder(m_creature)); // Sort players by distance.
         targets.resize(1); // Only need closest target.
 
         Unit* target = targets.front();
@@ -657,6 +657,8 @@ struct TRINITY_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         RuneShieldTimer = 15000;
         DeadenTimer = 30000;
         SoulShockTimer = 5000;

@@ -65,14 +65,16 @@ enum ShutdownExitCode
 /// Timers for different object refresh rates
 enum WorldTimers
 {
-    WUPDATE_OBJECTS     = 0,
-    WUPDATE_SESSIONS    = 1,
-    WUPDATE_AUCTIONS    = 2,
-    WUPDATE_WEATHERS    = 3,
-    WUPDATE_UPTIME      = 4,
-    WUPDATE_CORPSES     = 5,
-    WUPDATE_EVENTS      = 6,
-    WUPDATE_COUNT       = 7
+    WUPDATE_OBJECTS       = 0,
+    WUPDATE_SESSIONS      = 1,
+    WUPDATE_AUCTIONS      = 2,
+    WUPDATE_WEATHERS      = 3,
+    WUPDATE_UPTIME        = 4,
+    WUPDATE_CORPSES       = 5,
+    WUPDATE_EVENTS        = 6,
+    WUPDATE_AUTOBROADCAST = 7,
+
+    WUPDATE_COUNT         = 8
 };
 
 /// Configuration elements
@@ -219,6 +221,7 @@ enum WorldConfigs
     CONFIG_VMAP_TOTEM,
     CONFIG_NUMTHREADS,
     CONFIG_ANNOUNCE_BG_START,
+    CONFIG_AUTOBROADCAST_INTERVAL,
 
     CONFIG_VALUE_COUNT
 };
@@ -342,7 +345,7 @@ enum SpecialQuest
 };
 
 // DB scripting commands
-#define SCRIPT_COMMAND_TALK                  0              // source = unit, target=any, datalong ( 0=say, 1=whisper, 2=yell, 3=emote text)
+#define SCRIPT_COMMAND_TALK                  0              // source = unit, target=any, datalong (0=say, 1=whisper, 2=yell, 3=emote text)
 #define SCRIPT_COMMAND_EMOTE                 1              // source = unit, datalong = anim_id
 #define SCRIPT_COMMAND_FIELD_SET             2              // source = any, datalong = field_id, datalog2 = value
 #define SCRIPT_COMMAND_MOVE_TO               3              // source = Creature, datalog2 = time, x/y/z
@@ -461,7 +464,7 @@ class World
         uint32 GetUptime() const { return uint32(m_gameTime - m_startTime); }
         /// Update time
         uint32 GetUpdateTime() const { return m_updateTime; }
-        void SetRecordDiffInterval(int32 t) { if(t >= 0) m_configs[CONFIG_INTERVAL_LOG_UPDATE] = (uint32)t; }
+        void SetRecordDiffInterval(int32 t) { if (t >= 0) m_configs[CONFIG_INTERVAL_LOG_UPDATE] = (uint32)t; }
 
         /// Get the maximum skill level a player can reach
         uint16 GetConfigMaxSkillValue() const
@@ -492,9 +495,10 @@ class World
         static void StopNow(uint8 exitcode) { m_stopEvent = true; m_ExitCode = exitcode; }
         static bool IsStopped() { return m_stopEvent; }
 
+        void LoadAutobroadcasts();
         void Update(time_t diff);
 
-        void UpdateSessions( time_t diff );
+        void UpdateSessions(time_t diff);
         /// Set a server rate (see #Rates)
         void setRate(Rates rate,float value) { rate_values[rate]=value; }
         /// Get a server rate (see #Rates)
@@ -503,14 +507,14 @@ class World
         /// Set a server configuration element (see #WorldConfigs)
         void setConfig(uint32 index,uint32 value)
         {
-            if(index<CONFIG_VALUE_COUNT)
+            if (index<CONFIG_VALUE_COUNT)
                 m_configs[index]=value;
         }
 
         /// Get a server configuration element (see #WorldConfigs)
         uint32 getConfig(uint32 index) const
         {
-            if(index<CONFIG_VALUE_COUNT)
+            if (index<CONFIG_VALUE_COUNT)
                 return m_configs[index];
             else
                 return 0;
@@ -535,6 +539,7 @@ class World
 
         // for max speed access
         static float GetMaxVisibleDistanceOnContinents()    { return m_MaxVisibleDistanceOnContinents; }
+        static float GetMaxSpecialVisibleDistance()         { return m_MaxSpecialVisibleDistance; }
         static float GetMaxVisibleDistanceInInstances()     { return m_MaxVisibleDistanceInInstances;  }
         static float GetMaxVisibleDistanceInArenas()        { return m_MaxVisibleDistanceInArenas;   }
         static float GetMaxVisibleDistanceInBG()            { return m_MaxVisibleDistanceInBG;   }
@@ -545,7 +550,7 @@ class World
         static float GetVisibleObjectGreyDistance()         { return m_VisibleObjectGreyDistance;     }
 
         void ProcessCliCommands();
-        void QueueCliCommand( CliCommandHolder::Print* zprintf, char const* input ) { cliCmdQueue.add(new CliCommandHolder(input, zprintf)); }
+        void QueueCliCommand(CliCommandHolder::Print* zprintf, char const* input) { cliCmdQueue.add(new CliCommandHolder(input, zprintf)); }
 
         void UpdateResultQueue();
         void InitResultQueue();
@@ -556,7 +561,7 @@ class World
 
         void UpdateAllowedSecurity();
 
-        LocaleConstant GetAvailableDbcLocale(LocaleConstant locale) const { if(m_availableDbcLocaleMask & (1 << locale)) return locale; else return m_defaultDbcLocale; }
+        LocaleConstant GetAvailableDbcLocale(LocaleConstant locale) const { if (m_availableDbcLocaleMask & (1 << locale)) return locale; else return m_defaultDbcLocale; }
 
         //used World DB version
         void LoadDBVersion();
@@ -568,14 +573,13 @@ class World
 
         void RecordTimeDiff(const char * text, ...);
         void addDisconnectTime(std::pair<uint32,time_t> tPair){ m_disconnects.insert(tPair); }
-        ACE_Thread_Mutex m_spellUpdateLock;
 
         // available heroic quests
         uint32 specialQuest[6];
     protected:
         void _UpdateGameTime();
         // callback for UpdateRealmCharacters
-        void _UpdateRealmCharCount(QueryResult_AutoPtr resultCharCount, uint32 accountId);
+        void _UpdateRealmCharCount(QueryResultAutoPtr resultCharCount, uint32 accountId);
 
         void InitDailyQuestResetTime();
         void ResetDailyQuests();
@@ -624,6 +628,7 @@ class World
         static float m_MaxVisibleDistance;
         static float m_MaxVisibleDistanceOnContinents;
         static float m_MaxVisibleDistanceInInstances;
+        static float m_MaxSpecialVisibleDistance;
         static float m_MaxVisibleDistanceInArenas;
         static float m_MaxVisibleDistanceInBG;
         static float m_MaxVisibleDistanceForObject;
@@ -633,7 +638,6 @@ class World
 
         // CLI command holder to be thread safe
         ACE_Based::LockedQueue<CliCommandHolder*, ACE_Thread_Mutex> cliCmdQueue;
-        SqlResultQueue *m_resultQueue;
 
         // next daily quests reset time
         time_t m_NextDailyQuestReset;
@@ -644,6 +648,8 @@ class World
         //sessions that are added async
         void AddSession_(WorldSession* s);
         ACE_Based::LockedQueue<WorldSession*, ACE_Thread_Mutex> addSessQueue;
+
+        std::list<std::string> m_Autobroadcasts;
 
         //used versions
         std::string m_DBVersion;

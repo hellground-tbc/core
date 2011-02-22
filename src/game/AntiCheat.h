@@ -14,72 +14,93 @@ class Player;
 class ACRequest : public ACE_Method_Request
 {
     public:
-        ACRequest(Player *player, uint32 acc, uint32 delay,
-              float p_x, float p_y, float p_z, uint32 movement_flags) :
-              guid(player->GetGUID()), movementFlags(movement_flags), latency(delay), mapId(player->GetMapId()),
-              x(player->GetPositionX()), y(player->GetPositionY()), z(player->GetPositionZ()), x_pack(p_x), y_pack(p_y), z_pack(p_z),
-              map_bind(player->GetInnPosMapId()), x_bind(player->GetInnPosX()), y_bind(player->GetInnPosY()), z_bind(player->GetInnPosZ()), account_id(acc)
-              {
-                  if (movement_flags & MOVEMENTFLAG_FLYING)
-                      speed = player->GetSpeed(MOVE_FLIGHT);
-                  else
-                      speed = player->GetSpeed(MOVE_RUN);
-               }
-          
+        ACRequest(Player *player, uint32 latency, MovementInfo pOldPacket, MovementInfo pNewPacket, float fLastSpeedRate)
+            : m_ownerGUID(player->GetGUID()), m_latency(latency), m_oldPacket(pOldPacket), m_newPacket(pNewPacket), m_lastSpeedRate(fLastSpeedRate)
+        {
+            UnitMoveType m_type = player->IsFlying() ? MOVE_FLIGHT : player->IsUnderWater() ? MOVE_SWIM : MOVE_RUN;
+
+            m_speedRate = player->GetSpeedRate(m_type);
+            m_speed = player->GetSpeed(m_type);
+
+            player->GetPosition(m_pos.x, m_pos.y, m_pos.z);
+        }
+
         virtual int call()
         {
-            if (movementFlags & (MOVEMENTFLAG_JUMPING | MOVEMENTFLAG_FALLING | MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_ONTRANSPORT))
+            Player *pPlayer = objmgr.GetPlayer(m_ownerGUID);
+            if (!pPlayer)
                 return -1;
 
-            if (speed < 7.0f)
+            // is on taxi
+            if (pPlayer->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_TAXI_FLIGHT))
                 return -1;
 
-            Player *player = objmgr.GetPlayer(guid);
-            if (!player || player->hasUnitState(UNIT_STAT_CHARGING))
+            // speed rate differs from prev packet
+            if (m_speedRate != m_lastSpeedRate)
                 return -1;
 
-            if (player->GetMap() && player->GetMap()->IsBattleGroundOrArena())
+            if (m_newPacket.GetMovementFlags() != m_oldPacket.GetMovementFlags())
                 return -1;
 
-            float server_distance = 2.0f + ((speed - 7.0f) * 3.5f + 0.2f/*zapas*/ );
-            if (server_distance < 0)
+            // we don't love that movement flags
+            if (m_newPacket.GetMovementFlags() & (MOVEFLAG_FALLING | MOVEFLAG_FALLINGFAR | MOVEFLAG_SWIMMING | MOVEFLAG_ONTRANSPORT))
                 return -1;
 
-            float distance = sqrt((x - x_pack)*(x - x_pack) + (y - y_pack)*(y - y_pack)) - player->GetObjectSize();
-            if (distance > server_distance)
+            // charging
+            if (pPlayer->hasUnitState(UNIT_STAT_CHARGING))
+                return -1;
+
+            if (m_newPacket.GetMovementFlags() & MOVEFLAG_CAN_FLY && !(pPlayer->HasAuraType(SPELL_AURA_FLY) || pPlayer->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED)))
             {
-                float clientspeed = (distance - 2.0f)/3.5f + 7.5f;
-                //sWorld.SendGMText(LANG_ANTICHEAT, player->GetName());
-                player->m_AC_timer = MINUTE * 1000;
-                sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) moved for distance %f with server speed %f (client speed %f). MapID: %u, player's coord before X:%f Y:%f Z:%f. Player's coord now X:%f Y:%f Z:%f. HomeBindPosition X:%f Y:%f Z:%f MAP: %u. MOVEMENTFLAGS: %u LATENCY: %u",
-                              player->GetName(), player->GetGUIDLow(), account_id, distance, speed, clientspeed, mapId, x, y, z, x_pack, y_pack, z_pack, x_bind, y_bind, z_bind, map_bind, movementFlags, latency);
+                sWorld.SendGMText(LANG_ANTICHEAT_FLY, pPlayer->GetName());
+                sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) - possible Fly Cheat. MapId: %u, coords: x: %f, y: %f, z: %f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s",
+                              pPlayer->GetName(), pPlayer->GetGUIDLow(), pPlayer->GetSession()->GetAccountId(), pPlayer->GetMapId(), m_newPacket.pos.x, m_newPacket.pos.y, m_newPacket.pos.z, m_newPacket.GetMovementFlags(), m_latency, pPlayer->GetMap() ? (pPlayer->GetMap()->IsBattleGroundOrArena() ? "Yes" : "No") : "No");
+            }
+
+            //// who is cheating on arena ?
+            //if (pPlayer->GetMap() && pPlayer->GetMap()->IsBattleGroundOrArena())
+            //    return -1;
+
+            float dx = m_newPacket.pos.x - m_pos.x;
+            float dy = m_newPacket.pos.y - m_pos.y;
+            float fDistance2d = sqrt(dx*dx + dy*dy);
+
+            // time between packets
+            uint32 uiDiffTime = getMSTimeDiff(m_oldPacket.time, m_newPacket.time);
+
+            float fClientRate = (fDistance2d * 1000 / uiDiffTime) / m_speed;
+            float fServerRate = m_speed * uiDiffTime / 1000 +1.0f;
+
+            if (fDistance2d > 0.5f && fClientRate > fServerRate)
+            {
+                if (m_speed +0.2 > m_speed*fClientRate)
+                    return -1;
+
+                pPlayer->m_AC_count++;
+                pPlayer->m_AC_timer = IN_MILISECONDS;   // 1 sek
+
+                //if (!(pPlayer->m_AC_count %5))
+                    sWorld.SendGMText(LANG_ANTICHEAT, pPlayer->GetName(), pPlayer->m_AC_count, m_speed, m_speed*fClientRate);
+
+                sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) moved for distance %f with server speed : %f (client speed: %f). MapID: %u, player's coord before X:%f Y:%f Z:%f. Player's coord now X:%f Y:%f Z:%f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s",
+                              pPlayer->GetName(), pPlayer->GetGUIDLow(), pPlayer->GetSession()->GetAccountId(), fDistance2d, m_speed, m_speed*fClientRate, pPlayer->GetMapId(), m_pos.x, m_pos.y, m_pos.z, m_newPacket.pos.x, m_newPacket.pos.y, m_newPacket.pos.z, m_newPacket.GetMovementFlags(), m_latency, pPlayer->GetMap() ? (pPlayer->GetMap()->IsBattleGroundOrArena() ? "Yes" : "No") : "No");
             }
             return 0;
         }
 
     private:
-        uint64 guid;
-        uint32 account_id;
+        uint64 m_ownerGUID;
 
-        uint64 movementFlags;
+        MovementInfo m_oldPacket;
+        MovementInfo m_newPacket;
 
-        uint32 latency;
+        Position m_pos;
 
-        uint32 mapId;
-        float x;
-        float y;
-        float z;
+        uint32 m_latency;
 
-        float x_pack;
-        float y_pack;
-        float z_pack;
-
-        uint32 map_bind;
-        float x_bind;
-        float y_bind;
-        float z_bind;
-
-        float speed;
+        float m_speed;
+        float m_speedRate;
+        float m_lastSpeedRate;
 };
 
 #endif

@@ -52,8 +52,8 @@ struct TRINITY_DLL_DECL instance_arcatraz : public ScriptedInstance
 
     uint32 Encounter[ENCOUNTERS];
 
-    GameObject *Containment_Core_Security_Field_Alpha;
-    GameObject *Containment_Core_Security_Field_Beta;
+    uint64 Containment_Core_Security_Field_Alpha;
+    uint64 Containment_Core_Security_Field_Beta;
     GameObject *Pod_Alpha;
     GameObject *Pod_Gamma;
     GameObject *Pod_Beta;
@@ -95,8 +95,16 @@ struct TRINITY_DLL_DECL instance_arcatraz : public ScriptedInstance
     {
         switch(go->GetEntry())
         {
-            case CONTAINMENT_CORE_SECURITY_FIELD_ALPHA: Containment_Core_Security_Field_Alpha = go; break;
-            case CONTAINMENT_CORE_SECURITY_FIELD_BETA:  Containment_Core_Security_Field_Beta =  go; break;
+            case CONTAINMENT_CORE_SECURITY_FIELD_ALPHA:
+                Containment_Core_Security_Field_Alpha = go->GetGUID();
+                if(GetData(TYPE_SOCCOTHRATES) == DONE)
+                    HandleGameObject(NULL, true, go);
+                break;
+            case CONTAINMENT_CORE_SECURITY_FIELD_BETA:
+                Containment_Core_Security_Field_Beta =  go->GetGUID();
+                if(GetData(TYPE_DALLIAH) == DONE)
+                    HandleGameObject(NULL, true, go);
+                break;
             case SEAL_SPHERE: GoSphereGUID = go->GetGUID(); break;
             case POD_ALPHA: Pod_Alpha = go; break;
             case POD_BETA:  Pod_Beta =  go; break;
@@ -123,15 +131,13 @@ struct TRINITY_DLL_DECL instance_arcatraz : public ScriptedInstance
 
             case TYPE_DALLIAH:
                 if( data == DONE )
-                    if( Containment_Core_Security_Field_Beta )
-                        Containment_Core_Security_Field_Beta->UseDoorOrButton();
+                   HandleGameObject(Containment_Core_Security_Field_Beta, true);
                 Encounter[1] = data;
                 break;
 
             case TYPE_SOCCOTHRATES:
                 if( data == DONE )
-                    if( Containment_Core_Security_Field_Alpha )
-                        Containment_Core_Security_Field_Alpha->UseDoorOrButton();
+                    HandleGameObject(Containment_Core_Security_Field_Alpha, true);
                 Encounter[2] = data;
                 break;
 
@@ -188,6 +194,49 @@ struct TRINITY_DLL_DECL instance_arcatraz : public ScriptedInstance
                         Wardens_Shield->UseDoorOrButton();
                 break;
         }
+
+        if(data == DONE)
+            SaveToDB();
+    }
+
+    std::string GetSaveData()
+    {
+        OUT_SAVE_INST_DATA;
+
+        std::ostringstream stream;
+        stream << Encounter[0] << " ";
+        stream << Encounter[1] << " ";
+        stream << Encounter[2]  << " ";
+        stream << Encounter[3]  << " ";
+        stream << Encounter[4]  << " ";
+        stream << Encounter[5]  << " ";
+        stream << Encounter[6]  << " ";
+        stream << Encounter[7]  << " ";
+        stream << Encounter[8];
+
+        OUT_SAVE_INST_DATA_COMPLETE;
+
+        return stream.str();
+    }
+
+    void Load(const char* in)
+    {
+        if(!in)
+        {
+            OUT_LOAD_INST_DATA_FAIL;
+            return;
+        }
+        OUT_LOAD_INST_DATA(in);
+        std::istringstream stream(in);
+        stream >> Encounter[0] >> Encounter[1] >> Encounter[2] >> Encounter[3] >> Encounter[4] >> Encounter[5] >> Encounter[6]
+            >> Encounter[7] >> Encounter[8];
+        for(uint8 i = 0; i < ENCOUNTERS; ++i)
+            if(Encounter[i] == IN_PROGRESS)
+                Encounter[i] = NOT_STARTED;
+
+        if(GetData(TYPE_HARBINGERSKYRISS) == NOT_STARTED)
+            SetData(TYPE_HARBINGERSKYRISS, NOT_STARTED);            // this will reset whole encounter
+        OUT_LOAD_INST_DATA_COMPLETE;
     }
 
     uint32 GetData(uint32 type)
@@ -236,4 +285,3 @@ void AddSC_instance_arcatraz()
     newscript->GetInstanceData = &GetInstanceData_instance_arcatraz;
     newscript->RegisterSelf();
 }
-

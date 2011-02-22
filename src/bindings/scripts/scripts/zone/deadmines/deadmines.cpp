@@ -120,7 +120,7 @@ struct TRINITY_DLL_DECL instance_deadmines : public ScriptedInstance
 
     void MoveCreatureInside(Creature *creature)
     {
-        creature->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+        creature->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
         creature->GetMotionMaster()->MovePoint(0, -102.7,-655.9, creature->GetPositionZ());
     }
 
@@ -196,7 +196,7 @@ struct TRINITY_DLL_DECL instance_deadmines : public ScriptedInstance
 
 bool ItemUse_item_defias_gunpowder(Player *player, Item* _Item, SpellCastTargets const& targets)
 {
-    ScriptedInstance *pInstance = (player->GetInstanceData()) ? ((ScriptedInstance*)player->GetInstanceData()) : NULL;
+    ScriptedInstance *pInstance = (player->GetInstanceData()) ? (player->GetInstanceData()) : NULL;
 
     if(!pInstance)
     {

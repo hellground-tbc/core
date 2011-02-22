@@ -428,7 +428,7 @@ void AuctionHouseBot::addNewAuctions(Player *AHBplayer, AHBConfig *config)
             }
 
             uint32 etime = urand(1,3);
-            switch(etime)
+            switch (etime)
             {
             case 1:
                 etime = 43200;
@@ -466,7 +466,7 @@ void AuctionHouseBot::addNewAuctions(Player *AHBplayer, AHBConfig *config)
             auctionHouse->AddAuction(auctionEntry);
             auctionEntry->SaveToDB();
 
-            switch(itemColor)
+            switch (itemColor)
             {
             case 0:
                 ++greyItems;
@@ -756,7 +756,7 @@ void AuctionHouseBot::Update()
 
     WorldSession _session(AHBplayerAccount, NULL, SEC_PLAYER, true, 0, LOCALE_enUS);
     Player _AHBplayer(&_session);
-    _AHBplayer.MinimalLoadFromDB(QueryResult_AutoPtr(NULL), AHBplayerGUID);
+    _AHBplayer.MinimalLoadFromDB(NULL, AHBplayerGUID);
     ObjectAccessor::Instance().AddObject(&_AHBplayer);
 
     // Add New Bids
@@ -874,7 +874,7 @@ void AuctionHouseBot::Initialize()
 
     if (AHBSeller)
     {
-        QueryResult_AutoPtr results = QueryResult_AutoPtr(NULL);
+        QueryResultAutoPtr results = QueryResultAutoPtr(NULL);
         char npcQuery[] = "SELECT distinct `item` FROM `npc_vendor`";
         results = WorldDatabase.PQuery(npcQuery);
         if (results != NULL)

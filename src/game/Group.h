@@ -157,7 +157,7 @@ class TRINITY_DLL_SPEC Group
 
         // group manipulation methods
         bool   Create(const uint64 &guid, const char * name);
-        bool   LoadGroupFromDB(const uint64 &leaderGuid, QueryResult_AutoPtr result = QueryResult_AutoPtr(NULL), bool loadMembers = true);
+        bool   LoadGroupFromDB(const uint64 &leaderGuid, QueryResultAutoPtr result = QueryResultAutoPtr(NULL), bool loadMembers = true);
         bool   LoadMemberFromDB(uint32 guidLow, uint8 subgroup, bool assistant);
         bool   AddInvite(Player *player);
         uint32 RemoveInvite(Player *player);
@@ -171,7 +171,7 @@ class TRINITY_DLL_SPEC Group
         bool   ChangeLeaderToFirstOnlineMember();
         void   SetLootMethod(LootMethod method) { m_lootMethod = method; }
         void   SetLooterGuid(const uint64 &guid) { m_looterGuid = guid; }
-        void   UpdateLooterGuid( WorldObject* object, bool ifneed = false );
+        void   UpdateLooterGuid(WorldObject* object, bool ifneed = false);
         void   SetLootThreshold(ItemQualities threshold) { m_lootThreshold = threshold; }
         void   Disband(bool hideDestroy=false);
 
@@ -191,9 +191,9 @@ class TRINITY_DLL_SPEC Group
         bool IsLeader(const uint64& guid) const { return (GetLeaderGUID() == guid); }
         uint64 GetMemberGUID(const std::string& name)
         {
-            for(member_citerator itr = m_memberSlots.begin(); itr != m_memberSlots.end(); ++itr)
+            for (member_citerator itr = m_memberSlots.begin(); itr != m_memberSlots.end(); ++itr)
             {
-                if(itr->name == name)
+                if (itr->name == name)
                 {
                     return itr->guid;
                 }
@@ -203,7 +203,7 @@ class TRINITY_DLL_SPEC Group
         bool IsAssistant(uint64 guid) const
         {
             member_citerator mslot = _getMemberCSlot(guid);
-            if(mslot==m_memberSlots.end())
+            if (mslot==m_memberSlots.end())
                 return false;
 
             return mslot->assistant;
@@ -214,7 +214,7 @@ class TRINITY_DLL_SPEC Group
         bool SameSubGroup(uint64 guid1,const uint64& guid2) const
         {
             member_citerator mslot2 = _getMemberCSlot(guid2);
-            if(mslot2==m_memberSlots.end())
+            if (mslot2==m_memberSlots.end())
                 return false;
 
             return SameSubGroup(guid1,&*mslot2);
@@ -223,7 +223,7 @@ class TRINITY_DLL_SPEC Group
         bool SameSubGroup(uint64 guid1, GroupMemberSlot const* slot2) const
         {
             member_citerator mslot1 = _getMemberCSlot(guid1);
-            if(mslot1==m_memberSlots.end() || !slot2)
+            if (mslot1==m_memberSlots.end() || !slot2)
                 return false;
 
             return (mslot1->group==slot2->group);
@@ -243,7 +243,7 @@ class TRINITY_DLL_SPEC Group
         uint8  GetMemberGroup(uint64 guid) const
         {
             member_citerator mslot = _getMemberCSlot(guid);
-            if(mslot==m_memberSlots.end())
+            if (mslot==m_memberSlots.end())
                 return (MAXRAIDSIZE/MAXGROUPSIZE+1);
 
             return mslot->group;
@@ -260,25 +260,25 @@ class TRINITY_DLL_SPEC Group
 
         void SetAssistant(uint64 guid, const bool &state)
         {
-            if(!isRaidGroup())
+            if (!isRaidGroup())
                 return;
-            if(_setAssistantFlag(guid, state))
+            if (_setAssistantFlag(guid, state))
                 SendUpdate();
         }
         void SetMainTank(uint64 guid)
         {
-            if(!isRaidGroup())
+            if (!isRaidGroup())
                 return;
 
-            if(_setMainTank(guid))
+            if (_setMainTank(guid))
                 SendUpdate();
         }
         void SetMainAssistant(uint64 guid)
         {
-            if(!isRaidGroup())
+            if (!isRaidGroup())
                 return;
 
-            if(_setMainAssistant(guid))
+            if (_setMainAssistant(guid))
                 SendUpdate();
         }
 
@@ -327,7 +327,7 @@ class TRINITY_DLL_SPEC Group
         void EndRoll();
 
         void LinkMember(GroupReference *pRef) { m_memberMgr.insertFirst(pRef); }
-        void DelinkMember(GroupReference* /*pRef*/ ) { }
+        void DelinkMember(GroupReference* /*pRef*/) { }
 
         InstanceGroupBind* BindToInstance(InstanceSave *save, bool permanent, bool load = false);
         void UnbindInstance(uint32 mapid, uint8 difficulty, bool unload = false);
@@ -366,7 +366,7 @@ class TRINITY_DLL_SPEC Group
 
         member_citerator _getMemberCSlot(uint64 Guid) const
         {
-            for(member_citerator itr = m_memberSlots.begin(); itr != m_memberSlots.end(); ++itr)
+            for (member_citerator itr = m_memberSlots.begin(); itr != m_memberSlots.end(); ++itr)
             {
                 if (itr->guid == Guid)
                     return itr;
@@ -376,7 +376,7 @@ class TRINITY_DLL_SPEC Group
 
         member_witerator _getMemberWSlot(uint64 Guid)
         {
-            for(member_witerator itr = m_memberSlots.begin(); itr != m_memberSlots.end(); ++itr)
+            for (member_witerator itr = m_memberSlots.begin(); itr != m_memberSlots.end(); ++itr)
             {
                 if (itr->guid == Guid)
                     return itr;

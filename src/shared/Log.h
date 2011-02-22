@@ -78,10 +78,6 @@ class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ACE_
             fclose(dberLogfile);
         dberLogfile = NULL;
 
-        if (raLogfile != NULL)
-            fclose(raLogfile);
-        raLogfile = NULL;
-
         if (ircParser != NULL)
             fclose(ircParser);
         ircParser = NULL;
@@ -101,6 +97,10 @@ class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ACE_
         if (cheatLogFile != NULL)
             fclose(cheatLogFile);
         cheatLogFile = NULL;
+
+        if (acLogFile != NULL)
+            fclose(acLogFile);
+        acLogFile = NULL;
     }
     public:
         void Initialize();
@@ -123,15 +123,15 @@ class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ACE_
                                                             // any log level
         void outMenu( const char * str, ... )        ATTR_PRINTF(2,3);
                                                             // any log level
-        void outErrorDb( const char * str, ... )     ATTR_PRINTF(2,3);
+        void outErrorDb( const char * str = "", ... )     ATTR_PRINTF(2,3);
                                                             // any log level
         void outChar( const char * str, ... )        ATTR_PRINTF(2,3);
         void outSpecial( const char * str, ... )     ATTR_PRINTF(2,3);
                                                             // any log level
         void outCharDump( const char * str, uint32 account_id, uint32 guid, const char * name );
-        void outRALog( const char * str, ... )       ATTR_PRINTF(2,3);
         void outArena( const char * str, ... )       ATTR_PRINTF(2,3);
         void outCheat( const char * str, ... )       ATTR_PRINTF(2,3);
+        void outAC( const char * str, ... )       ATTR_PRINTF(2,3);
         void outIrc( const char * str, ... )         ATTR_PRINTF(2,3);
         void outBoss( const char * str, ... )        ATTR_PRINTF(2,3);
         void SetLogLevel(char * Level);
@@ -150,13 +150,13 @@ class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ACE_
         FILE* openGmlogPerAccount(uint32 account);
 
         FILE* ircParser;
-        FILE* raLogfile;
         FILE* logfile;
         FILE* gmLogfile;
         FILE* charLogfile;
         FILE* dberLogfile;
         FILE* arenaLogFile;
         FILE* cheatLogFile;
+        FILE* acLogFile;
         FILE* specialLogFile;
         FILE* bossLogFile;
 

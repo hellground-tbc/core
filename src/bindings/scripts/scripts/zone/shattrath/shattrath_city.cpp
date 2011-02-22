@@ -421,7 +421,7 @@ struct TRINITY_DLL_DECL npc_dirty_larryAI : public ScriptedAI
     uint32 SayTimer;
     uint32 EvadeTimer;
     uint32 Step;
-	
+    
     WorldLocation wLoc;
 
     void Reset()
@@ -442,7 +442,7 @@ struct TRINITY_DLL_DECL npc_dirty_larryAI : public ScriptedAI
         {
             ((Creature*)Creepjack)->AI()->EnterEvadeMode();
             Creepjack->setFaction(1194);
-            Creepjack->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);	
+            Creepjack->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);    
         }
         Unit* Malone = FindCreature(NPC_MALONE, 20, m_creature);
         if(Malone)
@@ -450,13 +450,13 @@ struct TRINITY_DLL_DECL npc_dirty_larryAI : public ScriptedAI
             ((Creature*)Malone)->AI()->EnterEvadeMode();
             Malone->setFaction(1194);
             Malone->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-	    }
+        }
     }
 
     uint32 NextStep(uint32 Step)
     {
         Player *player = Unit::GetPlayer(PlayerGUID);
-		
+        
         switch(Step)
         {
         case 0:
@@ -467,7 +467,7 @@ struct TRINITY_DLL_DECL npc_dirty_larryAI : public ScriptedAI
                 Creepjack->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
             Unit* Malone = FindCreature(NPC_MALONE, 20, m_creature);
             if(Malone)
-                Malone->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);	
+                Malone->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);    
             m_creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
         }return 2000;
         case 1: DoScriptText(SAY_1, m_creature, player); return 3000;
@@ -556,9 +556,9 @@ struct TRINITY_DLL_DECL npc_dirty_larryAI : public ScriptedAI
                 player->GroupEventHappens(QUEST_WBI, m_creature);
             Reset();
         }
-		if(EvadeTimer < diff)
+        if(EvadeTimer < diff)
         {
-                if(m_creature->GetDistance2d(wLoc.x, wLoc.y) >= 50)
+                if(m_creature->GetDistance2d(wLoc.coord_x, wLoc.coord_y) >= 50)
                 EnterEvadeMode();
                 EvadeTimer = 3000;
                 return;
@@ -758,7 +758,7 @@ struct TRINITY_DLL_DECL npc_kaelthas_imageAI : public ScriptedAI
             uint32 shattrathRadius = 1000;
             Trinity::AnyUnitInObjectRangeCheck  check(me, shattrathRadius);
             Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck > searcher(PlayerList, check);
-            me->VisitNearbyWorldObject(shattrathRadius, searcher);
+            Cell::VisitWorldObjects(me, searcher, shattrathRadius);
 
             for(std::list<Unit*>::iterator i = PlayerList.begin(); i != PlayerList.end(); i++)
             {
@@ -767,7 +767,7 @@ struct TRINITY_DLL_DECL npc_kaelthas_imageAI : public ScriptedAI
                 PlayersInCity.push_back((*i)->GetGUID());
             }
 
-            me->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
+            me->AddUnitMovementFlag(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
             me->SetVisibility(VISIBILITY_OFF);
             me->StopMoving();
             //DoCast(me, SPELL_OTHERWORLDLY_PORTAL, true);

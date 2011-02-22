@@ -166,7 +166,7 @@ struct TRINITY_DLL_DECL npc_ranger_lilathaAI : public npc_escortAI
             m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
             GameObject* Cage = FindGameObject(GO_CAGE, 20, m_creature);
             if(Cage)
-                Cage->SetGoState(0);
+                Cage->SetGoState(GO_STATE_ACTIVE);
             DoScriptText(SAY_START, m_creature, player);
             break;
             }
@@ -189,8 +189,8 @@ struct TRINITY_DLL_DECL npc_ranger_lilathaAI : public npc_escortAI
             m_creature->AI()->AttackStart(Summ1);
             break;
             }
-        case 19: m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE); break;
-        case 25: m_creature->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE); break;
+        case 19: m_creature->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE); break;
+        case 25: m_creature->AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE); break;
         case 30:
             player->GroupEventHappens(QUEST_ESCAPE_FROM_THE_CATACOMBS,m_creature);
             break;
@@ -215,7 +215,7 @@ struct TRINITY_DLL_DECL npc_ranger_lilathaAI : public npc_escortAI
 
         GameObject* Cage = FindGameObject(GO_CAGE, 20, m_creature);
         if(Cage)
-            Cage->SetGoState(1);
+            Cage->SetGoState(GO_STATE_READY);
     }
 
 };

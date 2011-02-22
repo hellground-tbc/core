@@ -152,21 +152,21 @@ struct TRINITY_DLL_DECL instance_ruins_of_ahnqiraj : public ScriptedInstance
         return 0;
     }
 
-    const char* Save()
+    std::string GetSaveData()
     {
         OUT_SAVE_INST_DATA;
-        std::ostringstream stream;
-        stream << Encounters[0] << " " << Encounters[1] << " " << Encounters[2]
-             << " " << Encounters[3] << " " << Encounters[4] << " " << Encounters[5];
-        char* out = new char[stream.str().length() + 1];
-        strcpy(out, stream.str().c_str());
-        if(out)
-        {
-            OUT_SAVE_INST_DATA_COMPLETE;
-            return out;
-        }
 
-        return NULL;
+        std::ostringstream stream;
+        stream << Encounters[0] << " ";
+        stream << Encounters[1] << " ";
+        stream << Encounters[2] << " ";
+        stream << Encounters[3] << " ";
+        stream << Encounters[4] << " ";
+        stream << Encounters[5];
+
+        OUT_SAVE_INST_DATA_COMPLETE;
+
+        return stream.str();
     }
 
     void Load(const char* in)

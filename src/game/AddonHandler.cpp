@@ -25,7 +25,7 @@
 #include "Policies/SingletonImp.h"
 #include "zlib/zlib.h"
 
-INSTANTIATE_SINGLETON_1( AddonHandler );
+INSTANTIATE_SINGLETON_1(AddonHandler);
 
 AddonHandler::AddonHandler()
 {
@@ -69,7 +69,7 @@ bool AddonHandler::BuildAddonPacket(WorldPacket *Source, WorldPacket *Target)
     *Source >> TempValue;                                   //get real size of the packed structure
 
     // empty addon packet, nothing process, can't be received from real client
-    if(!TempValue)
+    if (!TempValue)
         return false;
 
     AddonRealSize = TempValue;                              //temp value because ZLIB only excepts uLongf
@@ -82,20 +82,20 @@ bool AddonHandler::BuildAddonPacket(WorldPacket *Source, WorldPacket *Target)
     {
         Target->Initialize(SMSG_ADDON_INFO);
 
-        while(AddOnPacked.rpos() < AddOnPacked.size())
+        while (AddOnPacked.rpos() < AddOnPacked.size())
         {
             std::string AddonNames;
             uint8 unk6;
             uint32 crc, unk7;
 
             // check next addon data format correctness
-            if(AddOnPacked.rpos()+1+4+4+1 > AddOnPacked.size())
+            if (AddOnPacked.rpos()+1+4+4+1 > AddOnPacked.size())
                 return false;
 
             AddOnPacked >> AddonNames;
 
             // recheck next addon data format correctness
-            if(AddOnPacked.rpos()+4+4+1 > AddOnPacked.size())
+            if (AddOnPacked.rpos()+4+4+1 > AddOnPacked.size())
                 return false;
 
             AddOnPacked >> crc >> unk7 >> unk6;
@@ -161,7 +161,7 @@ void AddonHandler::BuildAddonPacket(WorldPacket* Source, WorldPacket* Target, ui
         Target->Initialize(SMSG_ADDON_INFO);
 
         uint32 i = 5;                                       //offset for addon extraction
-        while(i != AddOnPacked.size())
+        while (i != AddOnPacked.size())
         {
             std::string AddonNames;
             AddOns* Addonstr = new AddOns;

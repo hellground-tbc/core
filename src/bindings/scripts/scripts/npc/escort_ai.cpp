@@ -22,7 +22,6 @@ enum ePoints
 npc_escortAI::npc_escortAI(Creature* pCreature) : ScriptedAI(pCreature),
     m_uiPlayerGUID(0),
     MaxPlayerDistance(DEFAULT_MAX_PLAYER_DISTANCE),
-    CanMelee(true),
     m_uiPlayerCheckTimer(1000),
     m_uiWPWaitTimer(2500),
     m_uiEscortState(STATE_ESCORT_NONE),
@@ -57,7 +56,7 @@ void npc_escortAI::AttackStart(Unit* pWho)
 //see followerAI
 bool npc_escortAI::AssistPlayerInCombat(Unit* pWho)
 {
-    if (!pWho || !pWho->getVictim())
+    if (!pWho || !pWho->getVictim() || !m_bIsActiveAttacker)
         return false;
 
     //experimental (unknown) flag not present
@@ -94,7 +93,7 @@ bool npc_escortAI::AssistPlayerInCombat(Unit* pWho)
 
 void npc_escortAI::MoveInLineOfSight(Unit* pWho)
 {
-    if (!m_creature->hasUnitState(UNIT_STAT_STUNNED) && pWho->isTargetableForAttack() && pWho->isInAccessiblePlaceFor(m_creature))
+    if (!m_creature->hasUnitState(UNIT_STAT_STUNNED) && pWho->isTargetableForAttack() && pWho->isInAccessiblePlacefor(m_creature))
     {
         if (HasEscortState(STATE_ESCORT_ESCORTING) && AssistPlayerInCombat(pWho))
             return;
@@ -102,7 +101,7 @@ void npc_escortAI::MoveInLineOfSight(Unit* pWho)
         if (!m_creature->canFly() && m_creature->GetDistanceZ(pWho) > CREATURE_Z_ATTACK_RANGE)
             return;
 
-        if (m_creature->IsHostileTo(pWho))
+        if (m_creature->IsHostileTo(pWho) && m_bIsActiveAttacker)
         {
             float fAttackRadius = m_creature->GetAttackDistance(pWho);
             if (m_creature->IsWithinDistInMap(pWho, fAttackRadius) && m_creature->IsWithinLOSInMap(pWho))
@@ -309,8 +308,10 @@ void npc_escortAI::UpdateAI(const uint32 uiDiff)
 
 void npc_escortAI::UpdateEscortAI(const uint32 uiDiff)
 {
-    if (CanMelee && UpdateVictim())
-        DoMeleeAttackIfReady();
+    if (!UpdateVictim())
+        return;
+
+    DoMeleeAttackIfReady();
 }
 
 void npc_escortAI::MovementInform(uint32 uiMoveType, uint32 uiPointId)
@@ -323,10 +324,10 @@ void npc_escortAI::MovementInform(uint32 uiMoveType, uint32 uiPointId)
     {
         debug_log("TSCR: EscortAI has returned to original position before combat");
 
-        if (m_bIsRunning && m_creature->HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))
-            m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
-        else if (!m_bIsRunning && !m_creature->HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))
-            m_creature->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+        if (m_bIsRunning && m_creature->HasUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE))
+            m_creature->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+        else if (!m_bIsRunning && !m_creature->HasUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE))
+            m_creature->AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
 
         RemoveEscortState(STATE_ESCORT_RETURNING);
 
@@ -418,14 +419,14 @@ void npc_escortAI::SetRun(bool bRun)
     if (bRun)
     {
         if (!m_bIsRunning)
-            m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+            m_creature->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
         else
             debug_log("TSCR: EscortAI attempt to set run mode, but is already running.");
     }
     else
     {
         if (m_bIsRunning)
-            m_creature->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+            m_creature->AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
         else
             debug_log("TSCR: EscortAI attempt to set walk mode, but is already walking.");
     }
@@ -492,9 +493,9 @@ void npc_escortAI::Start(bool bIsActiveAttacker, bool bRun, uint64 uiPlayerGUID,
 
     //Set initial speed
     if (m_bIsRunning)
-        m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+        m_creature->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
     else
-        m_creature->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+        m_creature->AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
 
     AddEscortState(STATE_ESCORT_ESCORTING);
 }

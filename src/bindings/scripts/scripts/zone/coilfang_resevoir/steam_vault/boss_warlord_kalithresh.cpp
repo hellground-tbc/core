@@ -40,11 +40,11 @@ EndScriptData */
 
 #define SPELL_WARLORDS_RAGE_PROC    36453
 
-struct TRINITY_DLL_DECL mob_naga_distillerAI : public ScriptedAI
+struct TRINITY_DLL_DECL mob_naga_distillerAI : public Scripted_NoMovementAI
 {
-    mob_naga_distillerAI(Creature *c) : ScriptedAI(c)
+    mob_naga_distillerAI(Creature *c) : Scripted_NoMovementAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     ScriptedInstance *pInstance;
@@ -72,7 +72,7 @@ struct TRINITY_DLL_DECL mob_naga_distillerAI : public ScriptedAI
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
 
-        DoCast(m_creature,SPELL_WARLORDS_RAGE_NAGA,true);
+        DoCast(caster,SPELL_WARLORDS_RAGE_NAGA,true);
 
         if (pInstance)
             pInstance->SetData(TYPE_DISTILLER,IN_PROGRESS);
@@ -84,13 +84,17 @@ struct TRINITY_DLL_DECL mob_naga_distillerAI : public ScriptedAI
             if (pInstance)
                 pInstance->SetData(TYPE_DISTILLER,DONE);
     }
+
+    void UpdateAI(const uint32 diff)
+    {
+    }
 };
 
 struct TRINITY_DLL_DECL boss_warlord_kalithreshAI : public ScriptedAI
 {
     boss_warlord_kalithreshAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     ScriptedInstance *pInstance;
@@ -98,14 +102,24 @@ struct TRINITY_DLL_DECL boss_warlord_kalithreshAI : public ScriptedAI
     uint32 Reflection_Timer;
     uint32 Impale_Timer;
     uint32 Rage_Timer;
+    uint64 CurrentDistiller;
     bool CanRage;
+    
 
     void Reset()
     {
+        ClearCastQueue();
+
         Reflection_Timer = 10000;
         Impale_Timer = 7000+rand()%7000;
         Rage_Timer = 45000;
         CanRage = false;
+        CurrentDistiller = NULL;
+
+        std::list<Creature*> naga_distillers = DoFindAllCreaturesWithEntry(17954, 100);
+        for(std::list<Creature*>::iterator it = naga_distillers.begin(); it != naga_distillers.end(); it++)
+            (*it)->Respawn();
+        
 
         if (pInstance)
             pInstance->SetData(TYPE_WARLORD_KALITHRESH, NOT_STARTED);
@@ -114,7 +128,7 @@ struct TRINITY_DLL_DECL boss_warlord_kalithreshAI : public ScriptedAI
     void EnterCombat(Unit *who)
     {
         DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), m_creature);
-
+        m_creature->SetHealth(m_creature->GetMaxHealth());
         if (pInstance)
             pInstance->SetData(TYPE_WARLORD_KALITHRESH, IN_PROGRESS);
     }
@@ -128,17 +142,10 @@ struct TRINITY_DLL_DECL boss_warlord_kalithreshAI : public ScriptedAI
     {
         Creature* pCreature = NULL;
 
-        CellPair pair(Trinity::ComputeCellPair(m_creature->GetPositionX(), m_creature->GetPositionY()));
-        Cell cell(pair);
-        cell.data.Part.reserved = ALL_DISTRICT;
-        cell.SetNoCreate();
-
         Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*m_creature, entry, true, range);
         Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
 
-        TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> creature_searcher(searcher);
-
-        cell.Visit(pair, creature_searcher,*(m_creature->GetMap()));
+        Cell::VisitGridObjects(me, searcher, range);
 
         return pCreature;
     }
@@ -147,9 +154,16 @@ struct TRINITY_DLL_DECL boss_warlord_kalithreshAI : public ScriptedAI
     {
         //hack :(
         if (spell->Id == SPELL_WARLORDS_RAGE_PROC)
-            if (pInstance)
-                if (pInstance->GetData(TYPE_DISTILLER) == DONE)
-                    m_creature->RemoveAurasDueToSpell(SPELL_WARLORDS_RAGE_PROC);
+        {
+            if(CurrentDistiller)
+                if(Unit *distiler = me->GetUnit(CurrentDistiller))
+                {
+                    distiler->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                    distiler->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    distiler->SetHealth(distiler->GetMaxHealth());
+                    CurrentDistiller = NULL;
+                }
+        }
     }
 
     void JustDied(Unit* Killer)
@@ -170,17 +184,22 @@ struct TRINITY_DLL_DECL boss_warlord_kalithreshAI : public ScriptedAI
             Creature* distiller = SelectCreatureInGrid(17954, 100);
             if (distiller)
             {
+                CurrentDistiller = distiller->GetGUID();
                 DoScriptText(SAY_REGEN, m_creature);
-                DoCast(m_creature,SPELL_WARLORDS_RAGE);
+                DoCast(m_creature,SPELL_WARLORDS_RAGE, true);
                 ((mob_naga_distillerAI*)distiller->AI())->StartRageGen(m_creature);
             }
-            Rage_Timer = 3000+rand()%15000;
+            Rage_Timer = 15000+rand()%15000;
         }else Rage_Timer -= diff;
+
+
+        if (pInstance && m_creature->HasAura(37081, 0) && pInstance->GetData(TYPE_DISTILLER) == DONE)
+            m_creature->RemoveAurasDueToSpell(37081);
 
         //Reflection_Timer
         if (Reflection_Timer < diff)
         {
-            DoCast(m_creature, SPELL_SPELL_REFLECTION);
+            AddSpellToCast(m_creature, SPELL_SPELL_REFLECTION);
             Reflection_Timer = 15000+rand()%10000;
         }else Reflection_Timer -= diff;
 
@@ -188,11 +207,12 @@ struct TRINITY_DLL_DECL boss_warlord_kalithreshAI : public ScriptedAI
         if (Impale_Timer < diff)
         {
             if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-                DoCast(target,SPELL_IMPALE);
+                AddSpellToCast(target,SPELL_IMPALE);
 
             Impale_Timer = 7500+rand()%5000;
         }else Impale_Timer -= diff;
 
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };

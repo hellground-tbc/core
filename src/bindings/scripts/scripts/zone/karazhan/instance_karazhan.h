@@ -48,6 +48,7 @@ struct TRINITY_DLL_DECL instance_karazhan : public ScriptedInstance
     uint64 ImageGUID;
     uint64 AranGUID;
     uint64 MedivhGUID;
+    uint64 BarnesGUID;
     uint32 CheckTimer;
 
     std::list<uint64> forChessList;
@@ -70,7 +71,7 @@ struct TRINITY_DLL_DECL instance_karazhan : public ScriptedInstance
 
     void OnObjectCreate(GameObject* go);
 
-    const char* Save();
+    std::string GetSaveData();
 
     void Load(const char* in);
 

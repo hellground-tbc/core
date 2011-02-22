@@ -111,7 +111,7 @@ struct TRINITY_DLL_DECL npc_barnesAI : public npc_escortAI
     npc_barnesAI(Creature* c) : npc_escortAI(c)
     {
         RaidWiped = false;
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     ScriptedInstance* pInstance;
@@ -131,10 +131,11 @@ struct TRINITY_DLL_DECL npc_barnesAI : public npc_escortAI
     void EnterEvadeMode()
     {
         m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-        npc_escortAI::EnterEvadeMode();
 
-        if(pInstance)
+        if(pInstance && pInstance->GetData(DATA_OPERA_EVENT) != SPECIAL)
             pInstance->SetData(DATA_OPERA_EVENT, NOT_STARTED);
+
+        npc_escortAI::EnterEvadeMode();
     }
 
     void Reset()
@@ -154,17 +155,15 @@ struct TRINITY_DLL_DECL npc_barnesAI : public npc_escortAI
             if(pInstance->GetData(DATA_OPERA_EVENT) == IN_PROGRESS)
                 return;
 
-            pInstance->SetData(DATA_OPERA_EVENT, NOT_STARTED);
+            if (pInstance->GetData(DATA_OPERA_EVENT) != SPECIAL)
+                pInstance->SetData(DATA_OPERA_EVENT, NOT_STARTED);
 
             Event = pInstance->GetData(DATA_OPERA_PERFORMANCE);
 
-             if (GameObject* Door = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_STAGEDOORLEFT)))
-                 Door->SetGoState(pInstance->GetData(DATA_OPERA_EVENT) == DONE ? 0 : 1);
+            pInstance->HandleGameObject(pInstance->GetData64(DATA_GAMEOBJECT_STAGEDOORLEFT), true);
 
-             if (GameObject* Curtain = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_CURTAINS)))
-             {
-                 Curtain->SetGoState(1);
-             }
+            if (GameObject* Curtain = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_CURTAINS)))
+                Curtain->SetGoState(pInstance->GetData(DATA_OPERA_EVENT) == DONE ? GO_STATE_ACTIVE : GO_STATE_READY);
         }
     }
 
@@ -191,10 +190,10 @@ struct TRINITY_DLL_DECL npc_barnesAI : public npc_escortAI
                 if(pInstance)
                 {
                     if (GameObject* Door = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_STAGEDOORLEFT)))
-                        Door->SetGoState(1);
+                        Door->SetGoState(GO_STATE_READY);
 
                     if (GameObject* Curtain = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_CURTAINS)))
-                        Curtain->SetGoState(0);
+                        Curtain->SetGoState(GO_STATE_ACTIVE);
                 }
 
                 PerformanceReady = true;
@@ -259,7 +258,9 @@ struct TRINITY_DLL_DECL npc_barnesAI : public npc_escortAI
                 m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_TALK);
                 Talk(TalkCount);
                 ++TalkCount;
-            }else TalkTimer -= diff;
+            }
+            else
+                TalkTimer -= diff;
         }
 
         if(PerformanceReady)
@@ -274,54 +275,14 @@ struct TRINITY_DLL_DECL npc_barnesAI : public npc_escortAI
                         return;
 
                     //if (GameObject* Curtain = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_CURTAINS)))
-                    //    Curtain->SetGoState(0);
+                    //    Curtain->SetGoState(GO_STATE_ACTIVE);
 
                     CurtainTimer = 0;
                 }
                 else
                     CurtainTimer -= diff;
             }
-
-            if(!RaidWiped)
-            {
-                if(WipeTimer < diff)
-                {
-                    Map *map = m_creature->GetMap();
-                    if(!map->IsDungeon()) return;
-
-                    Map::PlayerList const &PlayerList = map->GetPlayers();
-                    if(PlayerList.isEmpty())
-                        return;
-
-                    RaidWiped = true;
-                    for(Map::PlayerList::const_iterator i = PlayerList.begin();i != PlayerList.end(); ++i)
-                    {
-                        if (i->getSource()->isAlive() && i->getSource()->isInCombat() && !i->getSource()->isGameMaster())
-                        {
-                            RaidWiped = false;
-                            break;
-                        }
-                    }
-
-                    if(RaidWiped)
-                    {
-                        RaidWiped = true;
-                        EnterEvadeMode();
-                        return;
-                    }
-
-                    WipeTimer = 15000;
-                }
-                else
-                    WipeTimer -= diff;
-            }
-
         }
-
-        if(!UpdateVictim())
-            return;
-
-        DoMeleeAttackIfReady();
     }
 
     void StartEvent()
@@ -332,7 +293,7 @@ struct TRINITY_DLL_DECL npc_barnesAI : public npc_escortAI
         pInstance->SetData(DATA_OPERA_EVENT, IN_PROGRESS);
 
         if (GameObject* Door = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_STAGEDOORLEFT)))
-            Door->SetGoState(0);
+            Door->SetGoState(GO_STATE_ACTIVE);
 
         m_creature->CastSpell(m_creature, SPELL_TUXEDO, true);
         m_creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
@@ -394,7 +355,7 @@ CreatureAI* GetAI_npc_barnesAI(Creature* _Creature)
 bool GossipHello_npc_barnes(Player* player, Creature* _Creature)
 {
     // Check for death of Moroes.
-    ScriptedInstance* pInstance = ((ScriptedInstance*)_Creature->GetInstanceData());
+    ScriptedInstance* pInstance = (_Creature->GetInstanceData());
     if(pInstance && (pInstance->GetData(DATA_MOROES_EVENT) >= DONE && pInstance->GetData(DATA_OPERA_EVENT) != DONE))
     {
         player->ADD_GOSSIP_ITEM(0, OZ_GOSSIP1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
@@ -436,7 +397,7 @@ bool GossipSelect_npc_barnes(Player *player, Creature *_Creature, uint32 sender,
 
 bool GossipHello_npc_berthold(Player* player, Creature* _Creature)
 {
-    ScriptedInstance* pInstance = ((ScriptedInstance*)_Creature->GetInstanceData());
+    ScriptedInstance* pInstance = (_Creature->GetInstanceData());
                                                             // Check if Shade of Aran is dead or not
     if(pInstance && (pInstance->GetData(DATA_SHADEOFARAN_EVENT) >= DONE))
         player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_TELEPORT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
@@ -481,7 +442,7 @@ struct TRINITY_DLL_DECL npc_image_of_medivhAI : public ScriptedAI
 {
     npc_image_of_medivhAI(Creature* c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     ScriptedInstance *pInstance;
@@ -532,7 +493,7 @@ struct TRINITY_DLL_DECL npc_image_of_medivhAI : public ScriptedAI
         if(!Arcanagos)
             return;
         ArcanagosGUID = Arcanagos->GetGUID();
-        Arcanagos->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
+        Arcanagos->AddUnitMovementFlag(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
         (*Arcanagos).GetMotionMaster()->MovePoint(0,ArcanagosPos[0],ArcanagosPos[1],ArcanagosPos[2]);
         Arcanagos->SetOrientation(ArcanagosPos[3]);
         m_creature->SetOrientation(MedivPos[3]);
@@ -680,4 +641,3 @@ void AddSC_karazhan()
     newscript->GetAI = &GetAI_npc_image_of_medivh;
     newscript->RegisterSelf();
 }
-

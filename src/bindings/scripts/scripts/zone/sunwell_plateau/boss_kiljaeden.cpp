@@ -269,7 +269,7 @@ public:
 bool GOHello_go_orb_of_the_blue_flight(Player *plr, GameObject* go)
 {
     if(go->GetUInt32Value(GAMEOBJECT_FACTION) == 35){
-        ScriptedInstance* pInstance = ((ScriptedInstance*)go->GetInstanceData());
+        ScriptedInstance* pInstance = (go->GetInstanceData());
         float x,y,z, dx,dy,dz;
         go->SummonCreature(CREATURE_POWER_OF_THE_BLUE_DRAGONFLIGHT, plr->GetPositionX(), plr->GetPositionY(), plr->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 121000);
         plr->CastSpell(plr, SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT, true);
@@ -296,7 +296,7 @@ bool GOHello_go_orb_of_the_blue_flight(Player *plr, GameObject* go)
 struct TRINITY_DLL_DECL boss_kalecgos_kjAI : public ScriptedAI
 {
     boss_kalecgos_kjAI(Creature* c) : ScriptedAI(c){
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     GameObject* Orb[4];
@@ -312,7 +312,7 @@ struct TRINITY_DLL_DECL boss_kalecgos_kjAI : public ScriptedAI
         FindOrbs();
         OrbsEmpowered = 0;
         EmpowerCount = 0;
-        m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
+        m_creature->AddUnitMovementFlag(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->setActive(true);
         Searched = false;
@@ -323,15 +323,10 @@ struct TRINITY_DLL_DECL boss_kalecgos_kjAI : public ScriptedAI
 
     void FindOrbs()
     {
-        CellPair pair(Trinity::ComputeCellPair(m_creature->GetPositionX(), m_creature->GetPositionY()));
-        Cell cell(pair);
-        cell.data.Part.reserved = ALL_DISTRICT;
-        cell.SetNoCreate();
         std::list<GameObject*> orbList;
         AllOrbsInGrid check;
         Trinity::GameObjectListSearcher<AllOrbsInGrid> searcher(orbList, check);
-        TypeContainerVisitor<Trinity::GameObjectListSearcher<AllOrbsInGrid>, GridTypeMapContainer> visitor(searcher);
-        cell.Visit(pair, visitor, *(m_creature->GetMap()));
+        Cell::VisitGridObjects(me, searcher, me->GetMap()->GetVisibilityDistance());
         if(orbList.empty())
             return;
         uint8 i = 0;
@@ -408,7 +403,7 @@ CreatureAI* GetAI_boss_kalecgos_kj(Creature *_Creature)
 struct TRINITY_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
 {
     boss_kiljaedenAI(Creature* c) : Scripted_NoMovementAI(c), Summons(m_creature){
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     ScriptedInstance* pInstance;
@@ -724,7 +719,7 @@ CreatureAI* GetAI_boss_kiljaeden(Creature *_Creature)
 struct TRINITY_DLL_DECL mob_kiljaeden_controllerAI : public Scripted_NoMovementAI
 {
     mob_kiljaeden_controllerAI(Creature* c) : Scripted_NoMovementAI(c), Summons(m_creature){
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     ScriptedInstance* pInstance;
@@ -761,7 +756,7 @@ struct TRINITY_DLL_DECL mob_kiljaeden_controllerAI : public Scripted_NoMovementA
                 summoned->CastSpell(summoned, SPELL_SHADOW_CHANNELING, false);
                 break;
             case CREATURE_ANVEENA:
-                summoned->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
+                summoned->AddUnitMovementFlag(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
                 summoned->CastSpell(summoned, SPELL_ANVEENA_PRISON, true);
                 summoned->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 break;
@@ -811,7 +806,7 @@ struct TRINITY_DLL_DECL mob_hand_of_the_deceiverAI : public ScriptedAI
 {
     mob_hand_of_the_deceiverAI(Creature* c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     ScriptedInstance* pInstance;
@@ -1049,7 +1044,7 @@ CreatureAI* GetAI_mob_armageddon(Creature *_Creature)
 struct TRINITY_DLL_DECL mob_shield_orbAI : public ScriptedAI
 {
     mob_shield_orbAI(Creature* c) : ScriptedAI(c) {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     bool PointReached;
@@ -1060,7 +1055,7 @@ struct TRINITY_DLL_DECL mob_shield_orbAI : public ScriptedAI
     float x, y, r, c, mx, my;
 
     void InitializeAI(){
-        m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
+        m_creature->AddUnitMovementFlag(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
         PointReached = true;
         Timer = 500+ rand()%500;
         CheckTimer = 1000;

@@ -74,7 +74,7 @@ struct mob_ancient_wispAI : public ScriptedAI
 {
     mob_ancient_wispAI(Creature* c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     ScriptedInstance* pInstance;
@@ -116,7 +116,7 @@ struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public NullCreatureAI
 {
     mob_doomfire_targettingAI(Creature* c) : NullCreatureAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     ScriptedInstance *pInstance;
@@ -221,7 +221,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 {
     boss_archimondeAI(Creature *c) : hyjal_trashAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         m_creature->GetPosition(wLoc);
     }
 
@@ -255,6 +255,8 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         if(pInstance)
             pInstance->SetData(DATA_ARCHIMONDEEVENT, NOT_STARTED);
 
@@ -370,6 +372,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         }
     }
 
+
     void UpdateAI(const uint32 diff)
     {
 
@@ -428,7 +431,6 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
                 return;
             }
             DoZoneInCombat();
-
             m_creature->SetSpeed(MOVE_RUN, 3.0);
 
             CheckTimer = 1000;
@@ -456,7 +458,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
             if(CheckDistanceTimer < diff)
             {
-                if(m_creature->GetDistance2d(wLoc.x, wLoc.y) > 80.0)
+                if(m_creature->GetDistance2d(wLoc.coord_x, wLoc.coord_y) > 80.0)
                 {
                     m_creature->GetMotionMaster()->Clear(false);
                     m_creature->GetMotionMaster()->MoveIdle();

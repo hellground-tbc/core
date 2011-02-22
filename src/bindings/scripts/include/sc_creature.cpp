@@ -94,7 +94,7 @@ void SummonList::DespawnAll()
 
 
 ScriptedAI::ScriptedAI(Creature* pCreature) :
-CreatureAI(pCreature), m_creature(pCreature), IsFleeing(false), m_bCombatMovement(true), m_uiEvadeCheckCooldown(2500)
+CreatureAI(pCreature), m_creature(pCreature), IsFleeing(false), m_bCombatMovement(true), m_uiEvadeCheckCooldown(2500), autocast(false)
 {
     HeroicMode = m_creature->GetMap()->IsHeroic();
 }
@@ -182,47 +182,46 @@ void ScriptedAI::CastNextSpellIfAnyAndReady(uint32 diff)
 
     if (!spellList.empty() && !casted)
     {
-        SpellToCast *temp = &spellList.front();
+        SpellToCast temp(spellList.front());
+        spellList.pop_front();
 
-        if (!temp && !temp->triggered)
+        if (!temp.spellId)
             return;
 
-        if (temp->scriptTextEntry)
-            DoScriptText(temp->scriptTextEntry, m_creature, m_creature->getVictim());
+        if (temp.scriptTextEntry)
+            DoScriptText(temp.scriptTextEntry, m_creature, m_creature->getVictim());
 
-        if (temp->isDestCast)
+        if (temp.isDestCast)
         {
-            m_creature->CastSpell(temp->castDest[0], temp->castDest[1], temp->castDest[2], temp->spellId, temp->triggered);
-            spellList.pop_front();
+            m_creature->CastSpell(temp.castDest[0], temp.castDest[1], temp.castDest[2], temp.spellId, temp.triggered);
             casted = true;
             return;
         }
 
-        if (temp->targetGUID)
+        if (temp.targetGUID)
         {
-            Unit * tempU = m_creature->GetUnit(*m_creature, temp->targetGUID);
+            Unit * tempU = m_creature->GetUnit(*m_creature, temp.targetGUID);
 
             if (tempU && tempU->IsInWorld() && tempU->isAlive() && tempU->IsInMap(m_creature))
-                if (temp->spellId)
+                if (temp.spellId)
                 {
-                    if(temp->setAsTarget)
-                        m_creature->SetSelection(temp->targetGUID);
+                    if(temp.setAsTarget)
+                        m_creature->SetSelection(temp.targetGUID);
 
-                    m_creature->CastSpell(tempU, temp->spellId, temp->triggered);
+                    m_creature->CastSpell(tempU, temp.spellId, temp.triggered);
                 }
         }
         else
         {
-            if (temp->isAOECast)
+            if (temp.isAOECast)
             {
-                if (temp->spellId)
-                    m_creature->CastSpell(m_creature, temp->spellId, temp->triggered);
+                if (temp.spellId)
+                    m_creature->CastSpell(m_creature, temp.spellId, temp.triggered);
             }
             else
-                m_creature->CastSpell((Unit*)NULL, temp->spellId, temp->triggered);
+                m_creature->CastSpell((Unit*)NULL, temp.spellId, temp.triggered);
         }
 
-        spellList.pop_front();
         casted = true;
     }
 
@@ -237,8 +236,17 @@ void ScriptedAI::CastNextSpellIfAnyAndReady(uint32 diff)
                 switch(autocastMode)
                 {
                     case AUTOCAST_TANK:
+                    {
                         victim = m_creature->getVictim();
+                        // prevent from LoS exploiting, probably some general check should be implemented for this
+                        uint8 i = 0;
+                        while(victim && !m_creature->IsWithinLOSInMap(victim) && i < m_creature->getThreatManager().getThreatList().size())
+                        {
+                            ++i;
+                            victim = SelectUnit(SELECT_TARGET_TOPAGGRO, i, GetSpellMaxRange(autocastId), true);
+                        }
                         break;
+                    }
                     case AUTOCAST_NULL:
                         m_creature->CastSpell((Unit*)NULL, autocastId, false);
                         break;
@@ -259,7 +267,10 @@ void ScriptedAI::CastNextSpellIfAnyAndReady(uint32 diff)
                 }
 
                 if (victim)
+                {
+                    m_creature->SetSelection(victim->GetGUID());    // for autocast always target actual victim
                     m_creature->CastSpell(victim, autocastId, false);
+                }
 
                 autocastTimer = autocastTimerDef;
             }
@@ -444,6 +455,34 @@ void ScriptedAI::SetAutocast (uint32 spellId, uint32 timer, bool startImmediatel
     autocastTargetPlayer = player;
 
     autocast = startImmediately;
+}
+
+void ScriptedAI::RemoveFromCastQueue(uint32 spellId)
+{
+    if (!spellId || spellList.empty())
+        return;
+
+    for (std::list<SpellToCast>::iterator itr = spellList.begin(); itr != spellList.end(); )
+    {
+        std::list<SpellToCast>::iterator tmpItr = itr;
+        itr++;
+        if ((*tmpItr).spellId == spellId)
+            spellList.erase(tmpItr);
+    }
+}
+
+void ScriptedAI::RemoveFromCastQueue(uint64 targetGUID)
+{
+    if (!targetGUID || spellList.empty())
+        return;
+
+    for (std::list<SpellToCast>::iterator itr = spellList.begin(); itr != spellList.end(); )
+    {
+        std::list<SpellToCast>::iterator tmpItr = itr;
+        itr++;
+        if ((*tmpItr).targetGUID == targetGUID)
+            spellList.erase(tmpItr);
+    }
 }
 
 void ScriptedAI::DoSay(const char* text, uint32 language, Unit* target, bool SayEmote)
@@ -1007,10 +1046,12 @@ Unit* FindCreature(uint32 entry, float range, Unit* Finder)
 {
     if(!Finder)
         return NULL;
+
     Creature* target = NULL;
     Trinity::AllCreaturesOfEntryInRange check(Finder, entry, range);
     Trinity::CreatureSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(target, check);
-    Finder->VisitNearbyObject(range, searcher);
+
+    Cell::VisitAllObjects(Finder, searcher, range);
     return target;
 }
 
@@ -1021,7 +1062,7 @@ GameObject* FindGameObject(uint32 entry, float range, Unit* Finder)
     GameObject* target = NULL;
     Trinity::AllGameObjectsWithEntryInGrid go_check(entry);
     Trinity::GameObjectSearcher<Trinity::AllGameObjectsWithEntryInGrid> searcher(target, go_check);
-    Finder->VisitNearbyGridObject(range, searcher);
+    Cell::VisitGridObjects(Finder, searcher, range);
     return target;
 }
 
@@ -1030,7 +1071,8 @@ Unit* ScriptedAI::DoSelectLowestHpFriendly(float range, uint32 MinHPDiff)
     Unit* pUnit = NULL;
     Trinity::MostHPMissingInRange u_check(m_creature, range, MinHPDiff);
     Trinity::UnitLastSearcher<Trinity::MostHPMissingInRange> searcher(pUnit, u_check);
-    m_creature->VisitNearbyObject(range, searcher);
+
+    Cell::VisitAllObjects(m_creature, searcher, range);
     return pUnit;
 }
 
@@ -1039,7 +1081,18 @@ std::list<Creature*> ScriptedAI::DoFindAllCreaturesWithEntry(uint32 entry, float
     std::list<Creature*> pList;
     Trinity::AllCreaturesOfEntryInRange u_check(m_creature, entry, range);
     Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(pList, u_check);
-    m_creature->VisitNearbyObject(range, searcher);
+    Cell::VisitAllObjects(m_creature, searcher, range);
+    return pList;
+}
+
+std::list<Player*> ScriptedAI::DoFindAllPlayersInRange(float range, Unit * finder)
+{
+    if (!finder)
+        finder = m_creature;
+    std::list<Player*> pList;
+    Trinity::AnyPlayerInObjectRangeCheck checker(finder, range);
+    Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(finder, pList, checker);
+    Cell::VisitWorldObjects(finder, searcher, range);
     return pList;
 }
 
@@ -1048,7 +1101,7 @@ std::list<Creature*> ScriptedAI::DoFindAllFriendlyInGrid(float range)
     std::list<Creature*> pList;
     Trinity::AllFriendlyCreaturesInGrid u_check(m_creature);
     Trinity::CreatureListSearcher<Trinity::AllFriendlyCreaturesInGrid> searcher(pList, u_check);
-    m_creature->VisitNearbyGridObject(range, searcher);
+    Cell::VisitGridObjects(m_creature, searcher, range);
     return pList;
 }
 
@@ -1057,7 +1110,8 @@ std::list<Creature*> ScriptedAI::DoFindFriendlyCC(float range)
     std::list<Creature*> pList;
     Trinity::FriendlyCCedInRange u_check(m_creature, range);
     Trinity::CreatureListSearcher<Trinity::FriendlyCCedInRange> searcher(pList, u_check);
-    m_creature->VisitNearbyObject(range, searcher);
+
+    Cell::VisitAllObjects(m_creature, searcher, range);
     return pList;
 }
 
@@ -1066,7 +1120,8 @@ std::list<Creature*> ScriptedAI::DoFindFriendlyMissingBuff(float range, uint32 s
     std::list<Creature*> pList;
     Trinity::FriendlyMissingBuffInRange u_check(m_creature, range, spellid);
     Trinity::CreatureListSearcher<Trinity::FriendlyMissingBuffInRange> searcher(pList, u_check);
-    m_creature->VisitNearbyObject(range, searcher);
+
+    Cell::VisitAllObjects(m_creature, searcher, range);
     return pList;
 }
 
@@ -1075,7 +1130,8 @@ std::list<Unit*> ScriptedAI::DoFindAllDeadInRange(float range)
     std::list<Unit*> pList;
     Trinity::AllDeadUnitsInRange u_check(m_creature, range);
     Trinity::UnitListSearcher<Trinity::AllDeadUnitsInRange> searcher(pList, u_check);
-    m_creature->VisitNearbyObject(range, searcher);
+
+    Cell::VisitAllObjects(m_creature, searcher, range);
     return pList;
 }
 
@@ -1113,6 +1169,45 @@ void Scripted_NoMovementAI::AttackStart(Unit* pWho)
         DoStartNoMovement(pWho);
 }
 
+BossAI::BossAI(Creature *c, uint32 id) : ScriptedAI(c),
+    bossId(id), summons(me), instance(c->GetInstanceData())
+{
+}
+
+void BossAI::_Reset()
+{
+    events.Reset();
+    summons.DespawnAll();
+    if (instance)
+        instance->SetBossState(bossId, NOT_STARTED);
+}
+
+void BossAI::_JustDied()
+{
+    events.Reset();
+    summons.DespawnAll();
+    if (instance)
+        instance->SetBossState(bossId, DONE);
+}
+
+void BossAI::_EnterCombat()
+{
+    DoZoneInCombat();
+    if (instance)
+        instance->SetBossState(bossId, IN_PROGRESS);
+}
+
+void BossAI::JustSummoned(Creature *summon)
+{
+    summons.Summon(summon);
+    summon->AI()->DoZoneInCombat();
+}
+
+void BossAI::SummonedCreatureDespawn(Creature *summon)
+{
+    summons.Despawn(summon);
+}
+
 #define GOBJECT(x) (const_cast<GameObjectInfo*>(GetGameObjectInfo(x)))
 
 void LoadOverridenSQLData()
@@ -1130,30 +1225,12 @@ void LoadOverridenSQLData()
             goInfo->trap.radius = 50;
 }
 
-void LoadOverridenDBCData()
-{
-    SpellEntry *spellInfo;
-
-    // Black Temple : Illidan : Parasitic Shadowfiend Passive
-    spellInfo = const_cast<SpellEntry*>(GetSpellStore()->LookupEntry(41913));
-    if(spellInfo)
-        spellInfo->EffectApplyAuraName[0] = 4; // proc debuff, and summon infinite fiends
-}
-
 Creature* GetClosestCreatureWithEntry(WorldObject* pSource, uint32 Entry, float MaxSearchRange)
 {
-    Creature* pCreature = NULL;
-    CellPair pair(Trinity::ComputeCellPair(pSource->GetPositionX(), pSource->GetPositionY()));
-    Cell cell(pair);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-
+    Creature *pCreature = NULL;
     Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*pSource, Entry, true, MaxSearchRange);
     Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
 
-    TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> creature_searcher(searcher);
-
-    cell.Visit(pair, creature_searcher,*(pSource->GetMap()));
-
+    Cell::VisitGridObjects(pSource, searcher, MaxSearchRange);
     return pCreature;
 }

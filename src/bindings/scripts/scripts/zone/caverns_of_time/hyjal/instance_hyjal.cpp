@@ -95,8 +95,7 @@ struct TRINITY_DLL_DECL instance_mount_hyjal : public ScriptedInstance
     {
         if(GetData(DATA_ARCHIMONDEEVENT) != NOT_STARTED && GetData(DATA_ARCHIMONDEEVENT) != DONE)
         {
-            Unit *Archimonde = Unit::GetUnit((*pVictim), GetData64(DATA_ARCHIMONDE));
-            
+            Unit *Archimonde = GetCreature(GetData64(DATA_ARCHIMONDE));
             if(!Archimonde)
                 return;
 
@@ -128,16 +127,16 @@ struct TRINITY_DLL_DECL instance_mount_hyjal : public ScriptedInstance
             case 182060:
                 HordeGate = go->GetGUID();
                 if(allianceRetreat)
-                    go->SetGoState(0);
+                    go->SetGoState(GO_STATE_ACTIVE);
                 else
-                    go->SetGoState(1);
+                    go->SetGoState(GO_STATE_READY);
                 break;
             case 182061:
                 ElfGate = go->GetGUID();
                 if(hordeRetreat)
-                    go->SetGoState(0);
+                    go->SetGoState(GO_STATE_ACTIVE);
                 else
-                    go->SetGoState(1);
+                    go->SetGoState(GO_STATE_READY);
                 break;
         }
     }
@@ -293,21 +292,24 @@ struct TRINITY_DLL_DECL instance_mount_hyjal : public ScriptedInstance
         }else debug_log("TSCR: Instance Hyjal: UpdateWorldState, but PlayerList is empty!");
     }
 
-    const char* Save()
+    std::string GetSaveData()
     {
         OUT_SAVE_INST_DATA;
-        std::ostringstream stream;
-        stream << Encounters[0] << " " << Encounters[1] << " " << Encounters[2] << " "
-            << Encounters[3] << " " << Encounters[4] << " " << allianceRetreat << " " << hordeRetreat << " " << RaidDamage;
-        char* out = new char[stream.str().length() + 1];
-        strcpy(out, stream.str().c_str());
-        if(out)
-        {
-            OUT_SAVE_INST_DATA_COMPLETE;
-            return out;
-        }
 
-        return NULL;
+        std::ostringstream stream;
+        stream << Encounters[0] << " ";
+        stream << Encounters[1] << " ";
+        stream << Encounters[2] << " ";
+        stream << Encounters[3] << " ";
+        stream << Encounters[4] << " ";
+
+        stream << allianceRetreat << " ";
+        stream << hordeRetreat << " ";
+        stream << RaidDamage;
+
+        OUT_SAVE_INST_DATA_COMPLETE;
+
+        return stream.str();
     }
 
     void Load(const char* in)

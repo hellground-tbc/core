@@ -14,24 +14,7 @@
 #define OUT_LOAD_INST_DATA_COMPLETE    debug_log("TSCR: Instance Data Load for Instance %s (Map %d, Instance Id: %d) is complete.",instance->GetMapName(), instance->GetId(), instance->GetInstanceId())
 #define OUT_LOAD_INST_DATA_FAIL        error_log("TSCR: Unable to load Instance Data for Instance %s (Map %d, Instance Id: %d).",instance->GetMapName(), instance->GetId(), instance->GetInstanceId())
 
-class TRINITY_DLL_DECL ScriptedInstance : public InstanceData
-{
-    public:
-
-        ScriptedInstance(Map *map) : InstanceData(map) {}
-        ~ScriptedInstance() {}
-
-        //All-purpose data storage 64 bit
-        virtual uint64 GetData64(uint32 Data) { return 0; }
-        virtual void SetData64(uint32 Data, uint64 Value) { }
-
-        // Called every instance update
-        virtual void Update(uint32) {}
-
-        // Save and Load instance data to the database
-        const char* Save() { return NULL; }
-        void Load(const char* in) { }
-};
+#define ScriptedInstance InstanceData
 
 #endif
 

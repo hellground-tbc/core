@@ -155,6 +155,8 @@ SET(game_STAT_SRCS
    ObjectGuid.cpp
    ObjectGridLoader.cpp
    ObjectGridLoader.h
+   ObjectPosSelector.cpp
+   ObjectPosSelector.h
    Object.h
    ObjectMgr.cpp
    ObjectMgr.h
@@ -166,12 +168,11 @@ SET(game_STAT_SRCS
    OutdoorPvPEP.h
    OutdoorPvPHP.cpp
    OutdoorPvPHP.h
+   OutdoorPvPImpl.h
    OutdoorPvPMgr.cpp
    OutdoorPvPMgr.h
    OutdoorPvPNA.cpp
    OutdoorPvPNA.h
-   OutdoorPvPObjectiveAI.cpp
-   OutdoorPvPObjectiveAI.h
    OutdoorPvPSI.cpp
    OutdoorPvPSI.h
    OutdoorPvPTF.cpp
@@ -277,6 +278,7 @@ SET(game_STAT_SRCS
    GroupReference.cpp
    GroupReference.h
    GroupRefManager.h
+   ZoneScript.h
 )
 add_definitions(-fopenmp)
 add_library(game STATIC ${game_STAT_SRCS})

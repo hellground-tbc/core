@@ -50,7 +50,7 @@ struct TRINITY_DLL_DECL boss_mekgineer_steamriggerAI : public ScriptedAI
 {
     boss_mekgineer_steamriggerAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         HeroicMode = m_creature->GetMap()->IsHeroic();
     }
 
@@ -189,7 +189,7 @@ struct TRINITY_DLL_DECL mob_steamrigger_mechanicAI : public ScriptedAI
 {
     mob_steamrigger_mechanicAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         HeroicMode = m_creature->GetMap()->IsHeroic();
     }
 
@@ -200,7 +200,7 @@ struct TRINITY_DLL_DECL mob_steamrigger_mechanicAI : public ScriptedAI
 
     void Reset()
     {
-        Repair_Timer = 2000;
+        Repair_Timer = irand(500, 2500);
     }
 
     void MoveInLineOfSight(Unit* who)
@@ -221,15 +221,8 @@ struct TRINITY_DLL_DECL mob_steamrigger_mechanicAI : public ScriptedAI
                 {
                     if (m_creature->IsWithinDistInMap(pMekgineer, MAX_REPAIR_RANGE))
                     {
-                        //are we already channeling? Doesn't work very well, find better check?
-                        if (!m_creature->GetUInt32Value(UNIT_CHANNEL_SPELL))
-                        {
-                            //m_creature->GetMotionMaster()->MovementExpired();
-                            //m_creature->GetMotionMaster()->MoveIdle();
-
-                            DoCast(m_creature,HeroicMode ? H_SPELL_REPAIR : SPELL_REPAIR, true);
-                        }
-                        Repair_Timer = 5000;
+                        DoCast(pMekgineer,HeroicMode ? H_SPELL_REPAIR : SPELL_REPAIR);                       
+                        Repair_Timer = irand(1500, 3000);;
                     }
                     else
                     {
@@ -237,7 +230,7 @@ struct TRINITY_DLL_DECL mob_steamrigger_mechanicAI : public ScriptedAI
                         //m_creature->GetMotionMaster()->MoveFollow(pMekgineer,0,0);
                     }
                 }
-            }else Repair_Timer = 5000;
+            }else Repair_Timer = irand(1500, 3000);;
         }else Repair_Timer -= diff;
 
         if (!UpdateVictim())

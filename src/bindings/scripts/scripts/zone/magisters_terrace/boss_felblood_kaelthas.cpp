@@ -83,7 +83,7 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public ScriptedAI
 {
     boss_felblood_kaelthasAI(Creature* c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());        Heroic = c->GetMap()->IsHeroic();
+        pInstance = (c->GetInstanceData());        Heroic = c->GetMap()->IsHeroic();
     }
 
     ScriptedInstance* pInstance;
@@ -384,9 +384,9 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public ScriptedAI
                                 if(pInstance)
                                 {
                                     GameObject* KaelLeft = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_KAEL_STATUE_LEFT));
-                                    if(KaelLeft) KaelLeft->SetGoState(0);
+                                    if(KaelLeft) KaelLeft->SetGoState(GO_STATE_ACTIVE);
                                     GameObject* KaelRight = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_KAEL_STATUE_RIGHT));
-                                    if(KaelRight) KaelRight->SetGoState(0);
+                                    if(KaelRight) KaelRight->SetGoState(GO_STATE_ACTIVE);
                                 }
                             }else
                             {
@@ -494,7 +494,7 @@ struct TRINITY_DLL_DECL mob_felkael_phoenixAI : public ScriptedAI
 {
     mob_felkael_phoenixAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
     uint32 BurnTimer;
     uint32 CheckTimer;
@@ -566,7 +566,7 @@ struct TRINITY_DLL_DECL mob_felkael_phoenix_eggAI : public Scripted_NoMovementAI
 {
     mob_felkael_phoenix_eggAI(Creature *c) : Scripted_NoMovementAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     uint32 HatchTimer;
@@ -599,7 +599,7 @@ struct TRINITY_DLL_DECL mob_arcane_sphereAI : public ScriptedAI
 {
     mob_arcane_sphereAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
     uint32 DespawnTimer;
     uint32 ChangeTargetTimer;
@@ -609,7 +609,7 @@ struct TRINITY_DLL_DECL mob_arcane_sphereAI : public ScriptedAI
 
     void Reset()
     {
-        m_creature->SetUnitMovementFlags(MOVEMENTFLAG_LEVITATING);
+        m_creature->SetUnitMovementFlags(MOVEFLAG_LEVITATING);
         DespawnTimer = 30000;
         ChangeTargetTimer = 5000;
         CheckTimer = 1000;

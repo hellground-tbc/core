@@ -64,7 +64,7 @@ enum Races
     ((1<<(RACE_HUMAN-1))   |(1<<(RACE_ORC-1))          |(1<<(RACE_DWARF-1))   | \
     (1<<(RACE_NIGHTELF-1))|(1<<(RACE_UNDEAD_PLAYER-1))|(1<<(RACE_TAUREN-1))  | \
     (1<<(RACE_GNOME-1))   |(1<<(RACE_TROLL-1))        |(1<<(RACE_BLOODELF-1))| \
-    (1<<(RACE_DRAENEI-1)) )
+    (1<<(RACE_DRAENEI-1)))
 
 // Class value is index in ChrClasses.dbc
 enum Classes
@@ -88,7 +88,7 @@ enum Classes
 #define CLASSMASK_ALL_PLAYABLE \
     ((1<<(CLASS_WARRIOR-1))|(1<<(CLASS_PALADIN-1))|(1<<(CLASS_HUNTER-1))| \
     (1<<(CLASS_ROGUE-1))  |(1<<(CLASS_PRIEST-1)) |(1<<(CLASS_SHAMAN-1))| \
-    (1<<(CLASS_MAGE-1))   |(1<<(CLASS_WARLOCK-1))|(1<<(CLASS_DRUID-1))   )
+    (1<<(CLASS_MAGE-1))   |(1<<(CLASS_WARLOCK-1))|(1<<(CLASS_DRUID-1))  )
 
 #define CLASSMASK_WAND_USERS ((1<<(CLASS_PRIEST-1))|(1<<(CLASS_MAGE-1))|(1<<(CLASS_WARLOCK-1)))
 
@@ -157,35 +157,35 @@ enum SpellSchoolMask
 {
     SPELL_SCHOOL_MASK_NONE    = 0x00,                       // not exist
     SPELL_SCHOOL_MASK_NORMAL  = (1 << SPELL_SCHOOL_NORMAL), // PHYSICAL (Armor)
-    SPELL_SCHOOL_MASK_HOLY    = (1 << SPELL_SCHOOL_HOLY  ),
-    SPELL_SCHOOL_MASK_FIRE    = (1 << SPELL_SCHOOL_FIRE  ),
+    SPELL_SCHOOL_MASK_HOLY    = (1 << SPELL_SCHOOL_HOLY ),
+    SPELL_SCHOOL_MASK_FIRE    = (1 << SPELL_SCHOOL_FIRE ),
     SPELL_SCHOOL_MASK_NATURE  = (1 << SPELL_SCHOOL_NATURE),
-    SPELL_SCHOOL_MASK_FROST   = (1 << SPELL_SCHOOL_FROST ),
+    SPELL_SCHOOL_MASK_FROST   = (1 << SPELL_SCHOOL_FROST),
     SPELL_SCHOOL_MASK_SHADOW  = (1 << SPELL_SCHOOL_SHADOW),
     SPELL_SCHOOL_MASK_ARCANE  = (1 << SPELL_SCHOOL_ARCANE),
 
     // unions
 
     // 124, not include normal and holy damage
-    SPELL_SCHOOL_MASK_SPELL   = ( SPELL_SCHOOL_MASK_FIRE   |
+    SPELL_SCHOOL_MASK_SPELL   = (SPELL_SCHOOL_MASK_FIRE   |
                                   SPELL_SCHOOL_MASK_NATURE | SPELL_SCHOOL_MASK_FROST  |
-                                  SPELL_SCHOOL_MASK_SHADOW | SPELL_SCHOOL_MASK_ARCANE ),
+                                  SPELL_SCHOOL_MASK_SHADOW | SPELL_SCHOOL_MASK_ARCANE),
     // 126
-    SPELL_SCHOOL_MASK_MAGIC   = ( SPELL_SCHOOL_MASK_HOLY | SPELL_SCHOOL_MASK_SPELL ),
+    SPELL_SCHOOL_MASK_MAGIC   = (SPELL_SCHOOL_MASK_HOLY | SPELL_SCHOOL_MASK_SPELL),
 
     // 127
-    SPELL_SCHOOL_MASK_ALL     = ( SPELL_SCHOOL_MASK_NORMAL | SPELL_SCHOOL_MASK_MAGIC )
+    SPELL_SCHOOL_MASK_ALL     = (SPELL_SCHOOL_MASK_NORMAL | SPELL_SCHOOL_MASK_MAGIC)
 };
 
 #define SPELL_SCHOOL_MASK_MAGIC                            \
-    ( SPELL_SCHOOL_MASK_HOLY | SPELL_SCHOOL_MASK_FIRE | SPELL_SCHOOL_MASK_NATURE |  \
+    (SPELL_SCHOOL_MASK_HOLY | SPELL_SCHOOL_MASK_FIRE | SPELL_SCHOOL_MASK_NATURE |  \
       SPELL_SCHOOL_MASK_FROST | SPELL_SCHOOL_MASK_SHADOW | \
-      SPELL_SCHOOL_MASK_ARCANE )
+      SPELL_SCHOOL_MASK_ARCANE)
 
 inline SpellSchools GetFirstSchoolInMask(SpellSchoolMask mask)
 {
-    for(int i = 0; i < MAX_SPELL_SCHOOL; ++i)
-        if(mask & (1 << i))
+    for (int i = 0; i < MAX_SPELL_SCHOOL; ++i)
+        if (mask & (1 << i))
             return SpellSchools(i);
 
     return SPELL_SCHOOL_NORMAL;
@@ -511,6 +511,13 @@ enum Language
 
 #define LANGUAGES_COUNT   19
 
+enum TeamId
+{
+    TEAM_ALLIANCE = 0,
+    TEAM_HORDE,
+    TEAM_NEUTRAL,
+};
+
 enum Team
 {
     HORDE               = 67,
@@ -673,7 +680,7 @@ enum SpellEffects
     SPELL_EFFECT_146                       = 146,
     SPELL_EFFECT_QUEST_FAIL                = 147,
     SPELL_EFFECT_148                       = 148,
-    SPELL_EFFECT_149                       = 149,
+    SPELL_EFFECT_CHARGE2                   = 149,
     SPELL_EFFECT_150                       = 150,
     SPELL_EFFECT_TRIGGER_SPELL_2           = 151,
     SPELL_EFFECT_152                       = 152,
@@ -746,21 +753,21 @@ enum Mechanics
 };
 
 // Used for spell 42292 Immune Movement Impairment and Loss of Control (0x49967da6)
-#define IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK ( \
-    (1<<MECHANIC_CHARM   )|(1<<MECHANIC_CONFUSED )|(1<<MECHANIC_FEAR  )| \
-    (1<<MECHANIC_ROOT    )|(1<<MECHANIC_PACIFY   )|(1<<MECHANIC_SLEEP )| \
-    (1<<MECHANIC_SNARE   )|(1<<MECHANIC_STUN     )|(1<<MECHANIC_FREEZE)| \
+#define IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK (\
+    (1<<MECHANIC_CHARM  )|(1<<MECHANIC_CONFUSED)|(1<<MECHANIC_FEAR )| \
+    (1<<MECHANIC_ROOT   )|(1<<MECHANIC_PACIFY  )|(1<<MECHANIC_SLEEP)| \
+    (1<<MECHANIC_SNARE  )|(1<<MECHANIC_STUN    )|(1<<MECHANIC_FREEZE)| \
     (1<<MECHANIC_KNOCKOUT)|(1<<MECHANIC_POLYMORPH)|(1<<MECHANIC_BANISH)| \
-    (1<<MECHANIC_SHACKLE )|(1<<MECHANIC_TURN     )|(1<<MECHANIC_HORROR)| \
-    (1<<MECHANIC_DAZE    )|(1<<MECHANIC_SAPPED   ) )
+    (1<<MECHANIC_SHACKLE)|(1<<MECHANIC_TURN    )|(1<<MECHANIC_HORROR)| \
+    (1<<MECHANIC_DAZE   )|(1<<MECHANIC_SAPPED  ))
 
 // Used for spell 40081 Immune Incapacitation Effects (? verify the list!!)
-#define IMMUNE_TO_INCAPACITATE_MASK ( \
-    (1<<MECHANIC_CHARM   )|(1<<MECHANIC_CONFUSED )|(1<<MECHANIC_FEAR  )| \
-    (1<<MECHANIC_ROOT    )|(1<<MECHANIC_PACIFY   )|(1<<MECHANIC_SLEEP )| \
-    (1<<MECHANIC_SNARE   )|(1<<MECHANIC_STUN     )|(1<<MECHANIC_FREEZE)| \
+#define IMMUNE_TO_INCAPACITATE_MASK (\
+    (1<<MECHANIC_CHARM  )|(1<<MECHANIC_CONFUSED)|(1<<MECHANIC_FEAR )| \
+    (1<<MECHANIC_ROOT   )|(1<<MECHANIC_PACIFY  )|(1<<MECHANIC_SLEEP)| \
+    (1<<MECHANIC_SNARE  )|(1<<MECHANIC_STUN    )|(1<<MECHANIC_FREEZE)| \
     (1<<MECHANIC_KNOCKOUT)|(1<<MECHANIC_POLYMORPH)|(1<<MECHANIC_BANISH)| \
-    (1<<MECHANIC_HORROR) )
+    (1<<MECHANIC_HORROR))
 
 // Spell dispel type
 enum DispelType
@@ -778,7 +785,7 @@ enum DispelType
     DISPEL_ZG_TICKET    = 10
 };
 
-#define DISPEL_ALL_MASK ( (1<<DISPEL_MAGIC) | (1<<DISPEL_CURSE) | (1<<DISPEL_DISEASE) | (1<<DISPEL_POISON) )
+#define DISPEL_ALL_MASK ((1<<DISPEL_MAGIC) | (1<<DISPEL_CURSE) | (1<<DISPEL_DISEASE) | (1<<DISPEL_POISON))
 
 //To all Immune system,if target has immunes,
 //some spell that related to ImmuneToDispel or ImmuneToSchool or ImmuneToDamage type can't cast to it,
@@ -984,6 +991,14 @@ enum GameObjectFlags
     GO_FLAG_UNK1            = 0x00000010,                   //
     GO_FLAG_NODESPAWN       = 0x00000020,                   //never despawn, typically for doors, they just change state
     GO_FLAG_TRIGGERED       = 0x00000040                    //typically, summoned objects. Triggered by spell or other events
+};
+
+enum GameObjectDynamicLowFlags
+{
+    GO_DYNFLAG_LO_ACTIVATE          = 0x01,                 // enables interaction with GO
+    GO_DYNFLAG_LO_ANIMATE           = 0x02,                 // possibly more distinct animation of GO
+    GO_DYNFLAG_LO_NO_INTERACT       = 0x04,                 // appears to disable interaction (not fully verified)
+    GO_DYNFLAG_LO_SPARKLE           = 0x08,                 // makes GO sparkle
 };
 
 enum TextEmotes
@@ -1279,7 +1294,59 @@ enum Emote
     EMOTE_ONESHOT_CUSTOMSPELL10        = 411,
     EMOTE_STATE_EXCLAIM                = 412,
     EMOTE_STATE_SIT_CHAIR_MED          = 415,
-    EMOTE_STATE_SPELLEFFECT_HOLD       = 422
+    EMOTE_STATE_SPELLEFFECT_HOLD       = 422,
+    EMOTE_STATE_EAT_NO_SHEATHE         = 423,
+    EMOTE_STATE_MOUNT                  = 424,
+    EMOTE_STATE_READY2HL               = 425,
+    EMOTE_STATE_SIT_CHAIR_HIGH         = 426,
+    EMOTE_STATE_FALL                   = 427,
+    EMOTE_STATE_LOOT                   = 428,
+    EMOTE_STATE_SUBMERGED_NEW          = 429,
+    EMOTE_ONESHOT_COWER                = 430,
+    EMOTE_STATE_COWER                  = 431,
+    EMOTE_ONESHOT_USESTANDING          = 432,
+    EMOTE_STATE_STEALTH_STAND          = 433,
+    EMOTE_ONESHOT_OMNICAST_GHOUL       = 434,
+    EMOTE_ONESHOT_ATTACKBOW            = 435,
+    EMOTE_ONESHOT_ATTACKRIFLE          = 436,
+    EMOTE_STATE_SWIM_IDLE              = 437,
+    EMOTE_STATE_ATTACK_UNARMED         = 438,
+    EMOTE_ONESHOT_SPELLCAST_W_SOUND    = 439,
+    EMOTE_ONESHOT_DODGE                = 440,
+    EMOTE_ONESHOT_PARRY1H              = 441,
+    EMOTE_ONESHOT_PARRY2H              = 442,
+    EMOTE_ONESHOT_PARRY2HL             = 443,
+    EMOTE_STATE_FLYFALL                = 444,
+    EMOTE_ONESHOT_FLYDEATH             = 445,
+    EMOTE_STATE_FLY_FALL               = 446,
+    EMOTE_ONESHOT_FLY_SIT_GROUND_DOWN  = 447,
+    EMOTE_ONESHOT_FLY_SIT_GROUND_UP    = 448,
+    EMOTE_ONESHOT_EMERGE               = 449,
+    EMOTE_ONESHOT_DRAGONSPIT           = 450,
+    EMOTE_STATE_SPECIALUNARMED         = 451,
+    EMOTE_ONESHOT_FLYGRAB              = 452,
+    EMOTE_STATE_FLYGRABCLOSED          = 453,
+    EMOTE_ONESHOT_FLYGRABTHROWN        = 454,
+    EMOTE_STATE_FLY_SIT_GROUND         = 455,
+    EMOTE_STATE_WALKBACKWARDS          = 456,
+    EMOTE_ONESHOT_FLYTALK              = 457,
+    EMOTE_ONESHOT_FLYATTACK1H          = 458,
+    EMOTE_STATE_CUSTOMSPELL08          = 459,
+    EMOTE_ONESHOT_FLY_DRAGONSPIT       = 460,
+    EMOTE_STATE_SIT_CHAIR_LOW          = 461,
+    EMOTE_ONE_SHOT_STUN                = 462,
+    EMOTE_ONESHOT_SPELLCAST_OMNI       = 463,
+    EMOTE_STATE_READYTHROWN            = 465,
+    EMOTE_ONESHOT_WORK_CHOPWOOD        = 466,
+    EMOTE_ONESHOT_WORK_MINING          = 467,
+    EMOTE_STATE_SPELL_CHANNEL_OMNI     = 468,
+    EMOTE_STATE_SPELL_CHANNEL_DIRECTED = 469,
+    EMOTE_STAND_STATE_NONE             = 470,
+    EMOTE_STATE_READYJOUST             = 471,
+    EMOTE_STATE_STRANGULATE            = 473,
+    EMOTE_STATE_READYSPELLOMNI         = 474,
+    EMOTE_STATE_HOLD_JOUST             = 475,
+    EMOTE_ONESHOT_CRY_JAINA            = 476
 };
 
 enum Anim
@@ -1692,7 +1759,7 @@ enum QuestSort
 
 inline uint8 ClassByQuestSort(int32 QuestSort)
 {
-    switch(QuestSort)
+    switch (QuestSort)
     {
         case QUEST_SORT_WARLOCK: return CLASS_WARLOCK;
         case QUEST_SORT_WARRIOR: return CLASS_WARRIOR;
@@ -1853,7 +1920,7 @@ enum SkillType
 
 inline uint32 SkillByQuestSort(int32 QuestSort)
 {
-    switch(QuestSort)
+    switch (QuestSort)
     {
         case QUEST_SORT_HERBALISM:      return SKILL_HERBALISM;
         case QUEST_SORT_FISHING:        return SKILL_FISHING;

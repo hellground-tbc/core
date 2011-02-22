@@ -82,7 +82,6 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
     uint8 CurrentRiftId;
 
     std::list<uint64> PortalGUID;
-    std::string str_data;
 
     void Initialize()
     {
@@ -352,17 +351,7 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
         }
 
         if(data == DONE)
-        {
-            OUT_SAVE_INST_DATA;
-
-            std::ostringstream saveStream;
-            saveStream << Encounter[0] << " " << Encounter[1] << " " << Encounter[2] << " " << Encounter[3];
-
-            str_data = saveStream.str();
-
             SaveToDB();
-            OUT_SAVE_INST_DATA_COMPLETE;
-        }
     }
 
     uint32 GetData(uint32 type)
@@ -538,9 +527,19 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
                 NextPortal_Timer -= diff;
     }
 
-    const char* Save()
+    std::string GetSaveData()
     {
-        return str_data.c_str();
+        OUT_SAVE_INST_DATA;
+
+        std::ostringstream stream;
+        stream << Encounter[0] << " ";
+        stream << Encounter[1] << " ";
+        stream << Encounter[2] << " ";
+        stream << Encounter[3];
+
+        OUT_SAVE_INST_DATA_COMPLETE;
+
+        return stream.str();
     }
 
     void Load(const char* in)

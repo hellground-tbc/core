@@ -105,18 +105,18 @@ struct TRINITY_DLL_DECL boss_onyxiaAI : public ScriptedAI
 
     void Fly()
     {
-        if (m_creature->HasUnitMovementFlag(MOVEMENTFLAG_LEVITATING | MOVEMENTFLAG_ONTRANSPORT))
+        if (m_creature->HasUnitMovementFlag(MOVEFLAG_LEVITATING | MOVEFLAG_ONTRANSPORT))
         {
             m_creature->SendMeleeAttackStart(m_creature->getVictim());
             m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
-            m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_LEVITATING | MOVEMENTFLAG_ONTRANSPORT);
+            m_creature->RemoveUnitMovementFlag(MOVEFLAG_LEVITATING | MOVEFLAG_ONTRANSPORT);
             DoStartMovement(m_creature->getVictim());
         }
         else
         {
             m_creature->SendMeleeAttackStop(m_creature->getVictim());
             m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
-            m_creature->AddUnitMovementFlag(MOVEMENTFLAG_LEVITATING | MOVEMENTFLAG_ONTRANSPORT);
+            m_creature->AddUnitMovementFlag(MOVEFLAG_LEVITATING | MOVEFLAG_ONTRANSPORT);
         }
     }
 
@@ -164,7 +164,7 @@ struct TRINITY_DLL_DECL boss_onyxiaAI : public ScriptedAI
         if (pInstance)
             pInstance->SetData(DATA_ONYXIA, NOT_STARTED);
 
-        m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_LEVITATING | MOVEMENTFLAG_ONTRANSPORT);
+        m_creature->RemoveUnitMovementFlag(MOVEFLAG_LEVITATING | MOVEFLAG_ONTRANSPORT);
         m_phaseMask = PHASE_1;
 
         m_nextWay = 0;

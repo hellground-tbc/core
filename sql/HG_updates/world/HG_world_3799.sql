@@ -1,0 +1,1 @@
+REPLACE INTO script_texts VALUES(-1564097, "%s becomes enraged", 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, "mother shahraz EMOTE_ENRAGE");

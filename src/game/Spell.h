@@ -166,7 +166,7 @@ class SpellCastTargets
         void setItemTarget(Item* item);
         void updateTradeSlotItem()
         {
-            if(m_itemTarget && (m_targetMask & TARGET_FLAG_TRADE_ITEM))
+            if (m_itemTarget && (m_targetMask & TARGET_FLAG_TRADE_ITEM))
             {
                 m_itemTargetGUID = m_itemTarget->GetGUID();
                 m_itemTargetEntry = m_itemTarget->GetEntry();
@@ -215,7 +215,7 @@ struct SpellValue
 {
     explicit SpellValue(SpellEntry const *proto)
     {
-        for(uint32 i = 0; i < 3; ++i)
+        for (uint32 i = 0; i < 3; ++i)
             EffectBasePoints[i] = proto->EffectBasePoints[i];
         MaxAffectedTargets = proto->MaxAffectedTargets;
     }
@@ -254,8 +254,8 @@ class Spell
     friend struct Trinity::SpellNotifierCreatureAndPlayer;
     public:
 
-        void EffectNULL(uint32 );
-        void EffectUnused(uint32 );
+        void EffectNULL(uint32);
+        void EffectUnused(uint32);
         void EffectDistract(uint32 i);
         void EffectPull(uint32 i);
         void EffectSchoolDMG(uint32 i);
@@ -330,6 +330,7 @@ class Spell
         void EffectSelfResurrect(uint32 i);
         void EffectSkinning(uint32 i);
         void EffectCharge(uint32 i);
+        void EffectCharge2(uint32 i);
         void EffectProspecting(uint32 i);
         void EffectSendTaxi(uint32 i);
         void EffectSummonCritter(uint32 i);
@@ -359,7 +360,7 @@ class Spell
         void EffectRedirectThreat(uint32 i);
         void EffectPlayMusic(uint32 i);
 
-        Spell( Unit* Caster, SpellEntry const *info, bool triggered, uint64 originalCasterGUID = 0, Spell** triggeringContainer = NULL, bool skipCheck = false );
+        Spell(Unit* Caster, SpellEntry const *info, bool triggered, uint64 originalCasterGUID = 0, Spell** triggeringContainer = NULL, bool skipCheck = false);
         ~Spell();
 
         void prepare(SpellCastTargets * targets, Aura* triggeredByAura = NULL);
@@ -397,8 +398,8 @@ class Spell
 
         void DoCreateItem(uint32 i, uint32 itemtype);
 
-        void WriteSpellGoTargets( WorldPacket * data );
-        void WriteAmmoToPacket( WorldPacket * data );
+        void WriteSpellGoTargets(WorldPacket * data);
+        void WriteAmmoToPacket(WorldPacket * data);
         void FillTargetMap();
 
         void SetTargetMap(uint32 i, uint32 cur);
@@ -407,8 +408,8 @@ class Spell
         void HandleHitTriggerAura();
         bool CheckTarget(Unit* target, uint32 eff);
 
-        void CheckSrc() { if(!m_targets.HasSrc()) m_targets.setSrc(m_caster); }
-        void CheckDst() { if(!m_targets.HasDst()) m_targets.setDestination(m_caster); }
+        void CheckSrc() { if (!m_targets.HasSrc()) m_targets.setSrc(m_caster); }
+        void CheckDst() { if (!m_targets.HasDst()) m_targets.setDestination(m_caster); }
 
         void SendCastResult(uint8 result);
         void SendSpellStart();
@@ -649,19 +650,19 @@ namespace Trinity
         {
             assert(i_data);
 
-            if(!i_caster)
+            if (!i_caster)
                 return;
 
-            for(typename GridRefManager<T>::iterator itr = m.begin(); itr != m.end(); ++itr)
+            for (typename GridRefManager<T>::iterator itr = m.begin(); itr != m.end(); ++itr)
             {
-                if(itr->getSource()->GetTypeId() != TYPEID_GAMEOBJECT)
+                if (itr->getSource()->GetTypeId() != TYPEID_GAMEOBJECT)
                     continue;
 
                 switch (i_TargetType)
                 {
                     case SPELL_TARGETS_ENTRY:
                     {
-                        if(itr->getSource()->GetEntry()!= i_entry)
+                        if (itr->getSource()->GetEntry()!= i_entry)
                             continue;
                     }break;
                     default:
@@ -669,22 +670,22 @@ namespace Trinity
                         continue;
                 }
 
-                switch(i_push_type)
+                switch (i_push_type)
                 {
                     case PUSH_IN_FRONT:
-                        if(i_caster->isInFront((GameObject*)(itr->getSource()), i_radius, M_PI/3 ))
+                        if (i_caster->isInFront((GameObject*)(itr->getSource()), i_radius, M_PI/3))
                             i_data->push_back((GameObject*)itr->getSource());
                         break;
                     case PUSH_IN_BACK:
-                        if(i_caster->isInBack((GameObject*)(itr->getSource()), i_radius, M_PI/3 ))
+                        if (i_caster->isInBack((GameObject*)(itr->getSource()), i_radius, M_PI/3))
                             i_data->push_back((GameObject*)itr->getSource());
                         break;
                     case PUSH_IN_LINE:
-                        if(i_caster->isInLine((GameObject*)(itr->getSource()), i_radius ))
+                        if (i_caster->isInLine((GameObject*)(itr->getSource()), i_radius))
                             i_data->push_back((GameObject*)itr->getSource());
                         break;
                     default:
-                        if((itr->getSource()->GetDistanceSq(i_x, i_y, i_z) < i_radiusSq))
+                        if ((itr->getSource()->GetDistanceSq(i_x, i_y, i_z) < i_radiusSq))
                             i_data->push_back((GameObject*)itr->getSource());
                         break;
                 }
@@ -692,10 +693,10 @@ namespace Trinity
         }
 
         #ifdef WIN32
-        template<> inline void Visit(CorpseMapType & ) {}
-        template<> inline void Visit(PlayerMapType & ) {}
-        template<> inline void Visit(GameObjectMapType & ) {}
-        template<> inline void Visit(DynamicObjectMapType & ) {}
+        template<> inline void Visit(CorpseMapType &) {}
+        template<> inline void Visit(PlayerMapType &) {}
+        template<> inline void Visit(GameObjectMapType &) {}
+        template<> inline void Visit(DynamicObjectMapType &) {}
         #endif
     };
 
@@ -722,70 +723,70 @@ namespace Trinity
         {
             assert(i_data);
 
-            if(!i_caster)
+            if (!i_caster)
                 return;
 
-            for(typename GridRefManager<T>::iterator itr = m.begin(); itr != m.end(); ++itr)
+            for (typename GridRefManager<T>::iterator itr = m.begin(); itr != m.end(); ++itr)
             {
-                if( !itr->getSource()->isAlive() || (itr->getSource()->GetTypeId() == TYPEID_PLAYER && ((Player*)itr->getSource())->isInFlight()))
+                if (!itr->getSource()->isAlive() || (itr->getSource()->GetTypeId() == TYPEID_PLAYER && ((Player*)itr->getSource())->isInFlight()))
                     continue;
 
                 switch (i_TargetType)
                 {
                     case SPELL_TARGETS_ALLY:
-                        if (!itr->getSource()->isAttackableByAOE() || !i_caster->IsFriendlyTo( itr->getSource() ))
+                        if (!itr->getSource()->isAttackableByAOE() || !i_caster->IsFriendlyTo(itr->getSource()))
                             continue;
                         break;
                     case SPELL_TARGETS_ENEMY:
                     {
-                        if(itr->getSource()->GetTypeId()==TYPEID_UNIT && ((Creature*)itr->getSource())->isTotem())
+                        if (itr->getSource()->GetTypeId()==TYPEID_UNIT && ((Creature*)itr->getSource())->isTotem())
                             continue;
-                        if(!itr->getSource()->isAttackableByAOE())
+                        if (!itr->getSource()->isAttackableByAOE())
                             continue;
 
                         Unit* check = i_caster->GetCharmerOrOwnerOrSelf();
 
-                        if( check->GetTypeId()==TYPEID_PLAYER )
+                        if (check->GetTypeId()==TYPEID_PLAYER)
                         {
-                            if (check->IsFriendlyTo( itr->getSource() ))
+                            if (check->IsFriendlyTo(itr->getSource()))
                                 continue;
                         }
                         else
                         {
-                            if (!check->IsHostileTo( itr->getSource() ))
+                            if (!check->IsHostileTo(itr->getSource()))
                                 continue;
                         }
                     }break;
                     case SPELL_TARGETS_ENTRY:
                     {
-                        if(itr->getSource()->GetEntry()!= i_entry)
+                        if (itr->getSource()->GetEntry()!= i_entry)
                             continue;
                     }break;
                     default: continue;
                 }
 
-                switch(i_push_type)
+                switch (i_push_type)
                 {
                     case PUSH_IN_FRONT:
-                        if(i_caster->isInFront((Unit*)(itr->getSource()), i_radius, M_PI/3 ))
+                        if (i_caster->isInFront((Unit*)(itr->getSource()), i_radius, M_PI/3))
                             i_data->push_back(itr->getSource());
                         break;
                     case PUSH_IN_BACK:
-                        if(i_caster->isInBack((Unit*)(itr->getSource()), i_radius, M_PI/3 ))
+                        if (i_caster->isInBack((Unit*)(itr->getSource()), i_radius, M_PI/3))
                             i_data->push_back(itr->getSource());
                         break;
                     case PUSH_IN_LINE:
-                        if(i_caster->isInLine((Unit*)(itr->getSource()), i_radius ))
+                        if (i_caster->isInLine((Unit*)(itr->getSource()), i_radius))
                             i_data->push_back(itr->getSource());
                         break;
                     default:
-                        if(i_TargetType != SPELL_TARGETS_ENTRY && i_push_type == PUSH_SRC_CENTER && i_caster) // if caster then check distance from caster to target (because of model collision)
+                        if (i_TargetType != SPELL_TARGETS_ENTRY && i_push_type == PUSH_SRC_CENTER && i_caster) // if caster then check distance from caster to target (because of model collision)
                         {
-                            if(i_caster->IsWithinDistInMap(itr->getSource(), i_radius))
+                            if (i_caster->IsWithinDistInMap(itr->getSource(), i_radius))
                             {
-                                if(i_caster->GetTypeId() == TYPEID_UNIT && ((Creature*)i_caster)->isTotem())
+                                if (i_caster->GetTypeId() == TYPEID_UNIT && ((Creature*)i_caster)->isTotem())
                                 {
-                                    if(i_caster->IsWithinLOSInMap(itr->getSource()))
+                                    if (i_caster->IsWithinLOSInMap(itr->getSource()))
                                         i_data->push_back(itr->getSource());
                                 }
                                 else
@@ -794,7 +795,7 @@ namespace Trinity
                         }
                         else
                         {
-                            if((itr->getSource()->GetDistanceSq(i_x, i_y, i_z) < i_radiusSq))
+                            if ((itr->getSource()->GetDistanceSq(i_x, i_y, i_z) < i_radiusSq))
                                 i_data->push_back(itr->getSource());
                         }
                         break;
@@ -803,9 +804,9 @@ namespace Trinity
         }
 
         #ifdef WIN32
-        template<> inline void Visit(CorpseMapType & ) {}
-        template<> inline void Visit(GameObjectMapType & ) {}
-        template<> inline void Visit(DynamicObjectMapType & ) {}
+        template<> inline void Visit(CorpseMapType &) {}
+        template<> inline void Visit(GameObjectMapType &) {}
+        template<> inline void Visit(DynamicObjectMapType &) {}
         #endif
     };
 
@@ -833,70 +834,70 @@ namespace Trinity
         {
             assert(i_data);
 
-            if(!i_caster)
+            if (!i_caster)
                 return;
 
-            for(typename GridRefManager<T>::iterator itr = m.begin(); itr != m.end(); ++itr)
+            for (typename GridRefManager<T>::iterator itr = m.begin(); itr != m.end(); ++itr)
             {
-                if(itr->getSource()->getDeathState() != CORPSE || itr->getSource()->GetTypeId() != TYPEID_UNIT)
+                if (itr->getSource()->getDeathState() != CORPSE || itr->getSource()->GetTypeId() != TYPEID_UNIT)
                     continue;
 
                 switch (i_TargetType)
                 {
                     case SPELL_TARGETS_ALLY:
-                        if (!itr->getSource()->isAttackableByAOE() || !i_caster->IsFriendlyTo( itr->getSource() ))
+                        if (!itr->getSource()->isAttackableByAOE() || !i_caster->IsFriendlyTo(itr->getSource()))
                             continue;
                         break;
                     case SPELL_TARGETS_ENEMY:
                     {
-                        if(((Creature*)itr->getSource())->isTotem())
+                        if (((Creature*)itr->getSource())->isTotem())
                             continue;
-                        if(!itr->getSource()->isAttackableByAOE())
+                        if (!itr->getSource()->isAttackableByAOE())
                             continue;
 
                         Unit* check = i_caster->GetCharmerOrOwnerOrSelf();
 
-                        if( check->GetTypeId()==TYPEID_PLAYER )
+                        if (check->GetTypeId()==TYPEID_PLAYER)
                         {
-                            if (check->IsFriendlyTo( itr->getSource() ))
+                            if (check->IsFriendlyTo(itr->getSource()))
                                 continue;
                         }
                         else
                         {
-                            if (!check->IsHostileTo( itr->getSource() ))
+                            if (!check->IsHostileTo(itr->getSource()))
                                 continue;
                         }
                     }break;
                     case SPELL_TARGETS_ENTRY:
                     {
-                        if(itr->getSource()->GetEntry()!= i_entry)
+                        if (itr->getSource()->GetEntry()!= i_entry)
                             continue;
                     }break;
                     default: continue;
                 }
 
-                switch(i_push_type)
+                switch (i_push_type)
                 {
                     case PUSH_IN_FRONT:
-                        if(i_caster->isInFront((Unit*)(itr->getSource()), i_radius, M_PI/3 ))
+                        if (i_caster->isInFront((Unit*)(itr->getSource()), i_radius, M_PI/3))
                             i_data->push_back(itr->getSource());
                         break;
                     case PUSH_IN_BACK:
-                        if(i_caster->isInBack((Unit*)(itr->getSource()), i_radius, M_PI/3 ))
+                        if (i_caster->isInBack((Unit*)(itr->getSource()), i_radius, M_PI/3))
                             i_data->push_back(itr->getSource());
                         break;
                     case PUSH_IN_LINE:
-                        if(i_caster->isInLine((Unit*)(itr->getSource()), i_radius ))
+                        if (i_caster->isInLine((Unit*)(itr->getSource()), i_radius))
                             i_data->push_back(itr->getSource());
                         break;
                     default:
-                        if(i_TargetType != SPELL_TARGETS_ENTRY && i_push_type == PUSH_SRC_CENTER && i_caster) // if caster then check distance from caster to target (because of model collision)
+                        if (i_TargetType != SPELL_TARGETS_ENTRY && i_push_type == PUSH_SRC_CENTER && i_caster) // if caster then check distance from caster to target (because of model collision)
                         {
-                            if(i_caster->IsWithinDistInMap(itr->getSource(), i_radius))
+                            if (i_caster->IsWithinDistInMap(itr->getSource(), i_radius))
                             {
-                                if(i_caster->GetTypeId() == TYPEID_UNIT && ((Creature*)i_caster)->isTotem())
+                                if (i_caster->GetTypeId() == TYPEID_UNIT && ((Creature*)i_caster)->isTotem())
                                 {
-                                    if(i_caster->IsWithinLOSInMap(itr->getSource()))
+                                    if (i_caster->IsWithinLOSInMap(itr->getSource()))
                                         i_data->push_back(itr->getSource());
                                 }
                                 else
@@ -905,7 +906,7 @@ namespace Trinity
                         }
                         else
                         {
-                            if((itr->getSource()->GetDistanceSq(i_x, i_y, i_z) < i_radiusSq))
+                            if ((itr->getSource()->GetDistanceSq(i_x, i_y, i_z) < i_radiusSq))
                                 i_data->push_back(itr->getSource());
                         }
                         break;
@@ -914,27 +915,27 @@ namespace Trinity
         }
 
         #ifdef WIN32
-        template<> inline void Visit(CorpseMapType & ) {}
-        template<> inline void Visit(GameObjectMapType & ) {}
-        template<> inline void Visit(PlayerMapType & ) {}
-        template<> inline void Visit(DynamicObjectMapType & ) {}
+        template<> inline void Visit(CorpseMapType &) {}
+        template<> inline void Visit(GameObjectMapType &) {}
+        template<> inline void Visit(PlayerMapType &) {}
+        template<> inline void Visit(DynamicObjectMapType &) {}
         #endif
     };
 
     #ifndef WIN32
-    template<> inline void SpellNotifierGameObject::Visit(CorpseMapType& ) {}
-    template<> inline void SpellNotifierGameObject::Visit(CreatureMapType& ) {}
-    template<> inline void SpellNotifierGameObject::Visit(PlayerMapType& ) {}
-    template<> inline void SpellNotifierGameObject::Visit(DynamicObjectMapType& ) {}
+    template<> inline void SpellNotifierGameObject::Visit(CorpseMapType&) {}
+    template<> inline void SpellNotifierGameObject::Visit(CreatureMapType&) {}
+    template<> inline void SpellNotifierGameObject::Visit(PlayerMapType&) {}
+    template<> inline void SpellNotifierGameObject::Visit(DynamicObjectMapType&) {}
 
-    template<> inline void SpellNotifierCreatureAndPlayer::Visit(CorpseMapType& ) {}
-    template<> inline void SpellNotifierCreatureAndPlayer::Visit(GameObjectMapType& ) {}
-    template<> inline void SpellNotifierCreatureAndPlayer::Visit(DynamicObjectMapType& ) {}
+    template<> inline void SpellNotifierCreatureAndPlayer::Visit(CorpseMapType&) {}
+    template<> inline void SpellNotifierCreatureAndPlayer::Visit(GameObjectMapType&) {}
+    template<> inline void SpellNotifierCreatureAndPlayer::Visit(DynamicObjectMapType&) {}
 
-    template<> inline void SpellNotifierDeadCreature::Visit(CorpseMapType& ) {}
-    template<> inline void SpellNotifierDeadCreature::Visit(GameObjectMapType& ) {}
-    template<> inline void SpellNotifierDeadCreature::Visit(PlayerMapType& ) {}
-    template<> inline void SpellNotifierDeadCreature::Visit(DynamicObjectMapType& ) {}
+    template<> inline void SpellNotifierDeadCreature::Visit(CorpseMapType&) {}
+    template<> inline void SpellNotifierDeadCreature::Visit(GameObjectMapType&) {}
+    template<> inline void SpellNotifierDeadCreature::Visit(PlayerMapType&) {}
+    template<> inline void SpellNotifierDeadCreature::Visit(DynamicObjectMapType&) {}
     #endif
 }
 

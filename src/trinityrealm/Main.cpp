@@ -281,18 +281,18 @@ extern int main(int argc, char **argv)
         {
             // FG: protect against network system overloading
             // if that happens, force realmd close (autorestarter ftw!)
-            
+
             if(getMSTimeDiff(last_ping_time, now) < 10000)
             {
                 sLog.outError("NETWORK SYSTEM OVERLOAD");
                 raise(SIGSEGV); // force close
                 abort();
             }
-            
+
             last_ping_time = now;
             loopCounter = 0;
             sLog.outDetail("Ping MySQL to keep connection alive");
-            LoginDatabase.Query("SELECT 1 FROM realmlist LIMIT 1");
+            LoginDatabase.Ping();
         }
 
         // FG: clear flood protect buffer periodically
@@ -327,7 +327,7 @@ void OnSignal(int s)
     switch (s)
     {
         case SIGINT:
-        case SIGTERM:
+        //case SIGTERM:
             stopEvent = true;
             break;
         #ifdef _WIN32

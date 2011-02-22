@@ -21,16 +21,15 @@
 
 // TODO: "sometimes" set to neutral
 
-#include "OutdoorPvP.h"
-
+#include "OutdoorPvPImpl.h"
+enum OutdoorPvPNASpells
+{
+    NA_KILL_TOKEN_ALLIANCE = 33005,
+    NA_KILL_TOKEN_HORDE = 33004,
+    NA_CAPTURE_BUFF = 33795  // strength of the halaani
+};
 // kill credit for pks
 const uint32 NA_CREDIT_MARKER = 24867;
-
-const uint32 NA_KILL_TOKEN_ALLIANCE = 33005;
-const uint32 NA_KILL_TOKEN_HORDE = 33004;
-
-const uint32 NA_CAPTURE_BUFF = 33795;  // strength of the halaani
-
 const uint32 NA_GUARDS_MAX = 15;
 
 const uint32 NA_BUFF_ZONE = 3518;
@@ -238,12 +237,14 @@ enum HalaaStates{
 class Unit;
 class Creature;
 class OutdoorPvPNA;
-class OutdoorPvPObjectiveNA : public OutdoorPvPObjective
+class OPvPCapturePointNA : public OPvPCapturePoint
 {
 friend class OutdoorPvPNA;
 public:
-    OutdoorPvPObjectiveNA(OutdoorPvP * pvp);
+    OPvPCapturePointNA(OutdoorPvP * pvp);
     bool Update(uint32 diff);
+    void ChangeState();
+    void SendChangePhase();
     void FillInitialWorldStates(WorldPacket & data);
     // used when player is activated/inactivated in the area
     bool HandlePlayerEnter(Player * plr);
@@ -263,7 +264,6 @@ protected:
     void UpdateWyvernRoostWorldState(uint32 roost);
     void UpdateHalaaWorldState();
 
-    bool HandleCapturePointEvent(Player * plr, uint32 eventId);
 private:
     bool m_capturable;
     uint32 m_GuardsAlive;
@@ -279,7 +279,7 @@ private:
 
 class OutdoorPvPNA : public OutdoorPvP
 {
-friend class OutdoorPvPObjectiveNA;
+friend class OPvPCapturePointNA;
 public:
     OutdoorPvPNA();
     bool SetupOutdoorPvP();
@@ -289,9 +289,8 @@ public:
     void FillInitialWorldStates(WorldPacket &data);
     void SendRemoveWorldStates(Player * plr);
     void HandleKillImpl(Player * plr, Unit * killed);
-    void BuffTeam(uint32 team);
 private:
-    OutdoorPvPObjectiveNA * m_obj;
+    OPvPCapturePointNA * m_obj;
 };
 
 #endif

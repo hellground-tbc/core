@@ -50,7 +50,7 @@ struct TRINITY_DLL_DECL boss_curatorAI : public ScriptedAI
 {
     boss_curatorAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         m_creature->GetPosition(wLoc);
     }
 

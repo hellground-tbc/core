@@ -53,7 +53,7 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
 {
     boss_selin_fireheartAI(Creature* c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
 
         Crystals.clear();
         // GUIDs per instance is static, so we only need to load them once.
@@ -105,7 +105,7 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
             }
             GameObject* Door = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_SELIN_ENCOUNTER_DOOR));
             if( Door )
-                Door->SetGoState(0);                        // Open the big encounter door. Close it in Aggro and open it only in JustDied(and here)
+                Door->SetGoState(GO_STATE_ACTIVE);                        // Open the big encounter door. Close it in Aggro and open it only in JustDied(and here)
                                                             // Small door opened after event are expected to be closed by default
             // Set Inst data for encounter
             if (m_creature->isDead())
@@ -160,7 +160,7 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
             float x, y, z;                                  // coords that we move to, close to the crystal.
             CrystalChosen->GetClosePoint(x, y, z, m_creature->GetObjectSize(), CONTACT_DISTANCE);
 
-            m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+            m_creature->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
             m_creature->GetMotionMaster()->MovePoint(1, x, y, z);
             DrainingCrystal = true;
         }
@@ -190,7 +190,7 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
         {
             GameObject* EncounterDoor = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_SELIN_ENCOUNTER_DOOR));
             if( EncounterDoor )
-                EncounterDoor->SetGoState(1);               //Close the encounter door, open it in JustDied/Reset
+                EncounterDoor->SetGoState(GO_STATE_READY);               //Close the encounter door, open it in JustDied/Reset
         }
     }
 
@@ -232,11 +232,11 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
 
         GameObject* EncounterDoor = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_SELIN_ENCOUNTER_DOOR));
         if( EncounterDoor )
-            EncounterDoor->SetGoState(0);                   // Open the encounter door
+            EncounterDoor->SetGoState(GO_STATE_ACTIVE);                   // Open the encounter door
 
         GameObject* ContinueDoor = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_SELIN_DOOR));
         if( ContinueDoor )
-            ContinueDoor->SetGoState(0);                    // Open the door leading further in
+            ContinueDoor->SetGoState(GO_STATE_ACTIVE);                    // Open the door leading further in
 
     }
 
@@ -341,7 +341,7 @@ struct TRINITY_DLL_DECL mob_fel_crystalAI : public ScriptedAI
     void JustDied(Unit* killer)
     {
         m_creature->RemoveAurasDueToSpell(SPELL_MANA_RAGE);
-        if(ScriptedInstance* pInstance = ((ScriptedInstance*)m_creature->GetInstanceData()))
+        if(ScriptedInstance* pInstance = (m_creature->GetInstanceData()))
         {
             Creature* Selin = (Unit::GetCreature(*m_creature, pInstance->GetData64(DATA_SELIN)));
             if(Selin && Selin->isAlive())

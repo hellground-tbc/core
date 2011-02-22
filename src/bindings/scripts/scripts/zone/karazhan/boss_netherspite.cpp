@@ -48,7 +48,7 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
 {
     boss_netherspiteAI(Creature* c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
 
         // need core fix
         for(int i=0; i<3; ++i)
@@ -72,10 +72,11 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
     uint64 PortalGUID[3]; // guid's of portals
     uint64 BeamerGUID[3]; // guid's of auxiliary beaming portals
     uint64 BeamTarget[3]; // guid's of portals' current targets
-    Unit* ExhaustCandidate[3][10];
 
     void Reset()
     {
+        ClearCastQueue();
+
         Berserk = false;
         NetherInfusionTimer = 540000;
         VoidZoneTimer = 15000;
@@ -89,13 +90,6 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
             PortalGUID[i] = 0;
             BeamTarget[i] = 0;
             BeamerGUID[i] = 0;
-        }
-
-        // clear candidates
-        for(int j=0; j<3;++j)
-        {
-           for(int i=0; i<10;++i)
-              ExhaustCandidate[j][i] = 0;
         }
 
         m_creature->GetMotionMaster()->MovePath(NETHER_PATROL_PATH, true);
@@ -146,21 +140,6 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
         }
     }
 
-   void ExhaustHandler(int beam)
-   {
-        for(int i=0; i<10; ++i)
-        {
-            if(!ExhaustCandidate[beam][i])
-                continue;
-
-            if(!ExhaustCandidate[beam][i]->HasAura(PlayerBuff[beam],0))
-            {
-                ExhaustCandidate[beam][i]->CastSpell(ExhaustCandidate[beam][i],PlayerDebuff[beam],true);
-                ExhaustCandidate[beam][i] = NULL;
-            }
-        }
-    }
-
     void UpdatePortals() // Here we handle the beams' behavior
     {
         for(int j=0; j<3; ++j) // j = color
@@ -192,20 +171,7 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
 
                 // buff the target
                 if(target->GetTypeId() == TYPEID_PLAYER)
-                {
-                    if(!target->HasAura(PlayerBuff[j],0))
-                    {
-                        for(int i=0; i<10; ++i)
-                        {
-                           if(!ExhaustCandidate[j][i])
-                           {
-                               ExhaustCandidate[j][i] = target;
-                               break;
-                           }
-                        }
-                    }
                     target->AddAura(PlayerBuff[j], target);
-                }
                 else
                     target->AddAura(NetherBuff[j], target);
 
@@ -303,17 +269,6 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
     {
         if(!UpdateVictim())
             return;
-
-        if(ExhaustCheckTimer < diff)
-        {
-            //exhaust debuff check
-            for(int i = 0;i < 3; ++i)
-                ExhaustHandler(i);
-
-            ExhaustCheckTimer = 1000;
-        }
-        else
-            ExhaustCheckTimer -= diff;
 
         // Void Zone
         if(VoidZoneTimer < diff)
@@ -417,7 +372,7 @@ struct TRINITY_DLL_DECL mob_void_zoneAI : public Scripted_NoMovementAI
 {
     mob_void_zoneAI(Creature* c) : Scripted_NoMovementAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     ScriptedInstance* pInstance;

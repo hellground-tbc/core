@@ -31,6 +31,14 @@ ConfVersion=2009102901
 #                .;/path/to/unix_socket;username;password;database - use Unix sockets at Unix/Linux
 #                    Unix sockets: experimental, not tested
 #
+#   LoginDatabaseConnections
+#   WorldDatabaseConnections
+#   CharacterDatabaseConnections
+#       Amount of connections to database which will be used for SELECT queries. Maximum 16 connections per database.
+#       Please, note, for data consistency only one connection for each database is used for transactions and async SELECTs.
+#       So formula to find out how many connections will be established: X = �_connections + 1
+#       Default: 1 connection for SELECT statements
+#
 #    MaxPingTime
 #        Settings for maximum database-ping interval (minutes between pings)
 #
@@ -48,6 +56,9 @@ LogsDir = ""
 LoginDatabaseInfo     = "127.0.0.1;3306;trinity;trinity;realmd"
 WorldDatabaseInfo     = "127.0.0.1;3306;trinity;trinity;world"
 CharacterDatabaseInfo = "127.0.0.1;3306;trinity;trinity;characters"
+LoginDatabaseConnections = 1
+WorldDatabaseConnections = 1
+CharacterDatabaseConnections = 1
 MaxPingTime = 30
 WorldServerPort = 8085
 BindIP = "0.0.0.0"
@@ -141,12 +152,16 @@ EAIErrorLevel = 2
 #        Map ids where LOS calculations will be enabled.
 #
 #    vmap.heightMaps
-#        Map ids where height calculations will be enabled. 
+#        Map ids where height calculations will be enabled.
+#
+#    vmap.posCollisionMaps
+#        Map ids where position calculations will be enabled (if DetectPosCollision is set to 1).
+#        Needs enabled height on this maps.
 #
 #    vmap.ignoreSpellIds
 #        These spells are ignored for LoS calculation
 #        List of ids with delimiter ','
-#        
+#
 #    vmap.petLOS
 #        Check LOS for pets, to avoid them going through walls etc.
 #        Default: 0 (disable, less CPU usage)
@@ -156,7 +171,7 @@ EAIErrorLevel = 2
 #        Use VMAP for totem summon place calculation
 #        Default: 0 (disable, less CPU usage)
 #                 1 (enable, each totem created check LOS)
-#       
+#
 #    DetectPosCollision
 #        Check final move position, summon position, etc for visible collision with other objects or
 #        wall (wall only if vmaps are enabled)
@@ -178,6 +193,11 @@ EAIErrorLevel = 2
 #        amount of seconds. Must be > 0. Recommended > 10 secs if you use this.
 #        Default: 0 (Disabled)
 #
+#    MaxVmapCalcTime
+#        Periodically check if the process got freezed, if this is the case force prevent VMAP freeze after the specified
+#        amount of seconds. Must be > 0.
+#        Default: 30 (seconds)
+#
 #    AddonChannel
 #        Permit/disable the use of the addon channel through the server
 #        (some client side addons can stop work correctly with disabled addon channel)
@@ -185,8 +205,8 @@ EAIErrorLevel = 2
 #                 0 (do not permit addon channel)
 #
 #    MapUpdate.Threads
-#	Number of threads to update maps.
-#	Default: 1
+#	     Number of threads to update maps.
+#	     Default: 1
 #
 ###################################################################################################################
 
@@ -203,19 +223,21 @@ MapUpdateInterval = 100
 ChangeWeatherInterval = 600000
 PlayerSaveInterval = 900000
 DisconnectToleranceInterval = 0
+
 vmap.enableLOS = 0
 vmap.enableHeight = 0
-
 vmap.losMaps = ""
 vmap.heightMaps = ""
-
+vmap.posCollisionMaps = ""
 vmap.ignoreSpellIds = "7720"
 vmap.petLOS = 0
 vmap.totem = 0
+
 DetectPosCollision = 1
 TargetPosRecalculateRange = 1.5
 UpdateUptimeInterval = 10
 MaxCoreStuckTime = 0
+MaxVmapCalcTime = 30
 AddonChannel = 1
 MapUpdate.Threads = 1
 
@@ -308,11 +330,6 @@ MapUpdate.Threads = 1
 #                     in form Logname_#ID_YYYY-MM-DD_HH-MM-SS.Ext
 #                     or form Logname_#ID.Ext
 #
-#    RaLogFile
-#        Log file of RA commands
-#        Default: "Ra.log"
-#                 "" - Empty name for disable
-#
 #	ArenaLogFile
 #        Log file of arena fights and arena team creations
 #        Default: "" - do not create arena log file
@@ -344,9 +361,9 @@ CharLogDump = 0
 GmLogFile = "gm_commands.log"
 GmLogTimestamp = 0
 GmLogPerAccount = 0
-RaLogFile = "ra_commands.log"
 ArenaLogFile = ""
 CheatLogFile = "cheat.log"
+ACLogFile = "AC.log"
 LogColors = ""
 
 IrcParser = "parser.trc"
@@ -611,6 +628,10 @@ IrcParser = "parser.trc"
 #        Default: 1 (true)
 #                 0 (false)
 #
+#    ShowProgressBars
+#        Control show progress bars for load steps at server startup
+#        Default: 1 (true) 0(false)
+#
 #    Motd
 #        Message of the Day. Displayed at worldlogin for every user ('@' for a newline).
 #
@@ -618,6 +639,16 @@ IrcParser = "parser.trc"
 #        Enable/disable sending server info (core version) on login.
 #        Default: 0 - disable
 #                 1 - enable
+#
+#    DontDeleteChars
+#        If enabled characters to delete will be moved to account with id 1 (arena teams, guilds and mails will be deleted, name will be changed).
+#        Uses stored procedure "PreventCharDelete(characterGuid)"
+#        Default: 0 - disable
+#                 1 - enable
+#
+#    DontDeleteCharsLvl
+#        Minimum character lvl for "DontDeleteChars" option.
+#        Default: 40
 #
 ###################################################################################################################
 
@@ -665,8 +696,12 @@ MailDeliveryDelay = 3600
 SkillChance.Prospecting = 0
 Event.Announce = 0
 BeepAtStart = 1
-Motd = "Welcome to a Trinity Core server."
+ShowProgressBars = 1
+Motd = "HellGround.pl"
 Server.LoginInfo = 0
+
+DontDeleteChars = 0
+DontDeleteCharsLvl = 40
 
 ###################################################################################################################
 # PLAYER INTERACTION
@@ -980,6 +1015,7 @@ GM.AllowFriend    = 0
 
 Visibility.GroupMode = 0
 
+Visibility.Distance.Special       = 132
 Visibility.Distance.Continents    = 132
 Visibility.Distance.Instances     = 132
 Visibility.Distance.Arenas        = 132
@@ -1510,40 +1546,6 @@ AuctionHouseBot.DisableTGsBelowReqSkillRank = 0
 AuctionHouseBot.DisableTGsAboveReqSkillRank = 0
 
 ###################################################################################################################
-# CONSOLE AND REMOTE ACCESS
-#
-#    Console.Enable
-#        Enable console
-#        Default: 1 - on
-#                 0 - off
-#
-#    Ra.Enable
-#        Enable remote console
-#        Default: 0 - off
-#                 1 - on
-#
-#    Ra.IP
-#        Default remote console ip address, use 0.0.0.0 for every address
-#
-#    Ra.Port
-#        Default remote console port
-#
-#    Ra.MinLevel
-#        Minimum level that's required to login,3 by default
-#
-#    Ra.Secure
-#        Kick client on wrong pass
-#
-###################################################################################################################
-
-Console.Enable = 1
-Ra.Enable = 0
-Ra.IP = 0.0.0.0
-Ra.Port = 3443
-Ra.MinLevel = 3
-Ra.Secure = 1
-
-###################################################################################################################
 # CUSTOM SERVER OPTIONS
 #
 #	PlayerStart.AllReputation
@@ -1636,4 +1638,12 @@ RecordUpdateTimeDiffInterval = 60000
 MinRecordUpdateTimeDiff = 10
 PlayerStart.String = ""
 
-AnnounceBGStart = 1
+###################################################################################################################
+#
+#    AutoBroadcast.Timer
+#        set interval between sending next advertising on chat(in minutes)
+#        0 = disable autoannounce
+#
+###################################################################################################################
+
+AutoBroadcast.Timer = 0

@@ -77,6 +77,8 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         if(pInstance)
         {
             pInstance->SetData(DATA_THELURKERBELOWEVENT, NOT_STARTED);
@@ -88,7 +90,7 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
         m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
         
         // Do not fall to the ground ;]
-        me->AddUnitMovementFlag(MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_LEVITATING);
+        me->AddUnitMovementFlag(MOVEFLAG_SWIMMING | MOVEFLAG_LEVITATING);
 
         // Set reactstate to: Aggresive
         me->SetReactState(REACT_AGGRESSIVE);
@@ -165,7 +167,7 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
                 me->SetSelection(0);
 
                 WorldLocation wLoc;
-                me->GetClosePoint(wLoc.x, wLoc.y, wLoc.z, 0, 95.0f, 0);
+                me->GetClosePoint(wLoc.coord_x, wLoc.coord_y, wLoc.coord_z, 0, 95.0f, 0);
                
                 Map *pMap = me->GetMap();
                 Map::PlayerList const& players = pMap->GetPlayers();
@@ -195,7 +197,7 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
                     if (!me->HasInArc(M_PI, pPlayer))
                         continue;
 
-                    Unit *pTemp = me->SummonCreature(WORLD_TRIGGER, wLoc.x, wLoc.y, wLoc.z, 0, TEMPSUMMON_TIMED_DESPAWN, 1000);
+                    Unit *pTemp = me->SummonCreature(WORLD_TRIGGER, wLoc.coord_x, wLoc.coord_y, wLoc.coord_z, 0, TEMPSUMMON_TIMED_DESPAWN, 1000);
                     if (!pTemp)
                         continue;
 
@@ -384,6 +386,8 @@ struct TRINITY_DLL_DECL mob_coilfang_guardianAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         m_harmstringTimer = urand(5000, 15000);
         m_arcingTimer = urand(15000, 20000);
     }
@@ -436,6 +440,8 @@ struct TRINITY_DLL_DECL mob_coilfang_ambusherAI : public Scripted_NoMovementAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         m_spreadTimer = urand(10000, 20000);
         m_shootTimer = 2000;
     }

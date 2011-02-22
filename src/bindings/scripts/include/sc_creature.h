@@ -278,6 +278,11 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
     void StartAutocast() { autocast = true; }
     void StopAutocast() { autocast = false; }
 
+    //Additional
+    void ClearCastQueue() { spellList.clear(); }
+    void RemoveFromCastQueue(uint32 spellId);
+    void RemoveFromCastQueue(uint64 targetGUID);
+
     //Cast spell by spell info
     void DoCastSpell(Unit* who, SpellEntry const *spellInfo, bool triggered = false);
 
@@ -336,6 +341,9 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
     //Returns a list of all units that are flagged as DEAD or CORPSE
     std::list<Unit*> DoFindAllDeadInRange(float range);
 
+    //Return a list of all players in range
+    std::list<Player*> DoFindAllPlayersInRange(float range, Unit* finder = NULL);
+
     //Spawns a creature relative to m_creature
     Creature* DoSpawnCreature(uint32 id, float x, float y, float z, float angle, uint32 type, uint32 despawntime);
 
@@ -363,6 +371,31 @@ struct TRINITY_DLL_DECL Scripted_NoMovementAI : public ScriptedAI
     void AttackStart(Unit *);
 };
 
+struct TRINITY_DLL_DECL BossAI : public ScriptedAI
+{
+    BossAI(Creature *c, uint32 id);
+
+    uint32 bossId;
+    EventMap events;
+    SummonList summons;
+    InstanceData *instance;
+
+    void JustSummoned(Creature *summon);
+    void SummonedCreatureDespawn(Creature *summon);
+
+    void UpdateAI(const uint32 diff) = 0;
+
+    void Reset() { _Reset(); }
+    void EnterCombat(Unit *who) { _EnterCombat(); }
+    void JustDied(Unit *killer) { _JustDied(); }
+
+    protected:
+        void _Reset();
+        void _EnterCombat();
+        void _JustDied();
+};
+
+// SD2 grid searchers
 Creature* GetClosestCreatureWithEntry(WorldObject* pSource, uint32 Entry, float MaxSearchRange);
 
 #endif

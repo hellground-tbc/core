@@ -141,7 +141,7 @@ class TRINITY_DLL_DECL InstanceSaveManager : public Trinity::Singleton<InstanceS
         void PackInstances();
 
         void LoadResetTimes();
-        time_t GetResetTimeFor(uint32 mapid) { return m_resetTimeByMapId[mapid]; }
+        time_t GetResetTimefor (uint32 mapid) { return m_resetTimeByMapId[mapid]; }
         void ScheduleReset(bool add, time_t time, InstResetEvent event);
 
         void Update();

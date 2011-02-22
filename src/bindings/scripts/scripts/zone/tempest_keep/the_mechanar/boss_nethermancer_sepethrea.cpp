@@ -45,7 +45,7 @@ struct TRINITY_DLL_DECL boss_nethermancer_sepethreaAI : public ScriptedAI
 {
     boss_nethermancer_sepethreaAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         HeroicMode = m_creature->GetMap()->IsHeroic();
     }
 
@@ -158,7 +158,7 @@ struct TRINITY_DLL_DECL mob_ragin_flamesAI : public ScriptedAI
 {
     mob_ragin_flamesAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());        HeroicMode = m_creature->GetMap()->IsHeroic();
+        pInstance = (c->GetInstanceData());        HeroicMode = m_creature->GetMap()->IsHeroic();
     }
 
     ScriptedInstance *pInstance;
@@ -168,15 +168,14 @@ struct TRINITY_DLL_DECL mob_ragin_flamesAI : public ScriptedAI
     uint32 inferno_Timer;
     uint32 flame_timer;
     uint32 Check_Timer;
-
-    bool onlyonce;
+    uint32 ChangeTarget_Timer;
 
     void Reset()
     {
         inferno_Timer = 10000;
         flame_timer = 500;
         Check_Timer = 2000;
-        onlyonce = false;
+        ChangeTarget_Timer = 0;
         m_creature->ApplySpellImmune(0, IMMUNITY_DAMAGE, SPELL_SCHOOL_MASK_MAGIC, true);
         m_creature->ApplySpellImmune(0, IMMUNITY_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, true);
         m_creature->SetSpeed(MOVE_RUN, HeroicMode ? 0.7f : 0.5f);
@@ -184,6 +183,7 @@ struct TRINITY_DLL_DECL mob_ragin_flamesAI : public ScriptedAI
 
     void EnterCombat(Unit* who)
     {
+        DoZoneInCombat();
     }
 
     void UpdateAI(const uint32 diff)
@@ -200,24 +200,32 @@ struct TRINITY_DLL_DECL mob_ragin_flamesAI : public ScriptedAI
                     m_creature->RemoveCorpse();
                 }
             }
+            m_creature->SetSpeed(MOVE_RUN, HeroicMode ? 0.7f : 0.5f);
             Check_Timer = 1000;
-        }else Check_Timer -= diff;
+        }else 
+            Check_Timer -= diff;
 
         if (!UpdateVictim())
             return;
 
-        if (!onlyonce)
+        if (ChangeTarget_Timer < diff)
         {
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-                m_creature->GetMotionMaster()->MoveChase(target);
-            onlyonce = true;
-        }
+            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0, 5000, true))
+            {
+                m_creature->getThreatManager().setCurrentVictim((HostilReference*)target);
+                m_creature->AI()->AttackStart(target);
+                m_creature->AddThreat(target, 5000000.0f);
+            }
+            ChangeTarget_Timer = 60000;
+        } else
+            ChangeTarget_Timer -= diff;
 
         if(inferno_Timer < diff)
         {
             DoCast(m_creature->getVictim(),HeroicMode ? H_SPELL_INFERNO : SPELL_INFERNO);
-            m_creature->TauntApply(m_creature->getVictim());
+            
             inferno_Timer = 10000;
+            ChangeTarget_Timer = 8000;
         }else inferno_Timer -= diff;
 
         if(flame_timer < diff)

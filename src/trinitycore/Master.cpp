@@ -40,6 +40,10 @@
 #include "ScriptCalls.h"
 #include "Util.h"
 
+#ifndef WIN32
+#include "vmap/BIH.h"
+#endif
+
 #include "sockets/TcpSocket.h"
 #include "sockets/Utility.h"
 #include "sockets/Parse.h"
@@ -112,6 +116,9 @@ class AntiCheatRunnable : public ACE_Based::Runnable
 #endif//anticheatsock
 
 volatile uint32 Master::m_masterLoopCounter = 0;
+#ifndef WIN32
+volatile bool BIH::possibleFreeze = false;
+#endif
 
 class FreezeDetectorRunnable : public ACE_Based::Runnable
 {
@@ -120,6 +127,7 @@ public:
     uint32 m_loops, m_lastchange;
     uint32 w_loops, w_lastchange;
     uint32 _delaytime;
+    uint32 maxVmapCalcTime;
     void SetDelayTime(uint32 t) { _delaytime = t; }
     void run(void)
     {
@@ -130,6 +138,10 @@ public:
         w_loops = 0;
         m_lastchange = 0;
         w_lastchange = 0;
+        #ifndef WIN32
+        maxVmapCalcTime = sConfig.GetIntDefault("MaxVmapCalcTime", 30);
+        maxVmapCalcTime *= 1000;
+        #endif
         while(!World::IsStopped())
         {
             ACE_Based::Thread::Sleep(1000);
@@ -156,12 +168,28 @@ public:
             {
                 w_lastchange = curtime;
                 w_loops = World::m_worldLoopCounter;
+                #ifndef WIN32
+                BIH::possibleFreeze = false;
+                #endif
             }
             // possible freeze
-            else if(getMSTimeDiff(w_lastchange,curtime) > _delaytime)
+            else
             {
-                sLog.outError("World Thread hangs, kicking out server!");
-                *((uint32 volatile*)NULL) = 0;                       // bang crash
+                if(getMSTimeDiff(w_lastchange,curtime) > _delaytime)
+                {
+                    sLog.outError("World Thread hangs, kicking out server!");
+                    *((uint32 volatile*)NULL) = 0;                       // bang crash
+                }
+                #ifndef WIN32
+                else
+                {
+                    if (getMSTimeDiff(w_lastchange,curtime) > maxVmapCalcTime && !BIH::possibleFreeze)
+                    {
+                        sLog.outError("Freeze Detector: World Thread hangs, trying prevent VMAP Freeze.");
+                        BIH::possibleFreeze = true;
+                    }
+                }
+                #endif
             }
         }
         sLog.outString("Anti-freeze thread exiting without problems.");
@@ -212,6 +240,11 @@ int Master::Run()
 
     ///- Initialize the World
     sWorld.SetInitialWorldSettings();
+    //server loaded successfully => enable async DB requests
+    //this is done to forbid any async transactions during server startup!
+    CharacterDatabase.AllowAsyncTransactions();
+    WorldDatabase.AllowAsyncTransactions();
+    LoginDatabase.AllowAsyncTransactions();
 
     ///- Catch termination signals
     _HookSignals();
@@ -282,6 +315,9 @@ int Master::Run()
 
     uint32 socketSelecttime = sWorld.getConfig(CONFIG_SOCKET_SELECTTIME);
 
+    //server has started up successfully => enable async DB requests
+    LoginDatabase.AllowAsyncTransactions();
+
     // maximum counter for next ping
     uint32 numLoops = (sConfig.GetIntDefault( "MaxPingTime", 30 ) * (MINUTE * 1000000 / socketSelecttime));
     uint32 loopCounter = 0;
@@ -299,7 +335,7 @@ int Master::Run()
 #ifdef ANTICHEAT_SOCK
     AntiCheatRunnable *acr = new AntiCheatRunnable();
     if (acr)
-        ACE_Based::Thread t2(*acr);
+        ACE_Based::Thread t2(acr);
 #endif
 
     ///- Launch the world listener socket
@@ -316,7 +352,7 @@ int Master::Run()
     sWorldSocketMgr->Wait ();
 
     // set server offline
-    LoginDatabase.PExecute("UPDATE realmlist SET color = 2 WHERE id = '%d'",realmID);
+    LoginDatabase.DirectPExecute("UPDATE realmlist SET color = 2 WHERE id = '%d'",realmID);
 
     ///- Remove signal handling before leaving
     _UnhookSignals();
@@ -393,10 +429,11 @@ bool Master::_StartDB()
         sLog.outError("Database not specified in configuration file");
         return false;
     }
-    sLog.outDetail("World Database: %s", dbstring.c_str());
+    int nConnections = sConfig.GetIntDefault("WorldDatabaseConnections", 1);
+    sLog.outString("World Database: %s, total connections: %i", dbstring.c_str(), nConnections + 1);
 
     ///- Initialise the world database
-    if(!WorldDatabase.Initialize(dbstring.c_str()))
+    if(!WorldDatabase.Initialize(dbstring.c_str(), nConnections))
     {
         sLog.outError("Cannot connect to world database %s",dbstring.c_str());
         return false;
@@ -407,12 +444,13 @@ bool Master::_StartDB()
         sLog.outError("Character Database not specified in configuration file");
         return false;
     }
+    nConnections = sConfig.GetIntDefault("CharacterDatabaseConnections", 1);
     sLog.outDetail("Character Database: %s", dbstring.c_str());
 
     ///- Initialise the Character database
-    if(!CharacterDatabase.Initialize(dbstring.c_str()))
+    if(!CharacterDatabase.Initialize(dbstring.c_str(), nConnections))
     {
-        sLog.outError("Cannot connect to Character database %s",dbstring.c_str());
+        sLog.outString("Character Database: %s, total connections: %i", dbstring.c_str(), nConnections + 1);
         return false;
     }
 
@@ -422,10 +460,10 @@ bool Master::_StartDB()
         sLog.outError("Login database not specified in configuration file");
         return false;
     }
-
+    nConnections = sConfig.GetIntDefault("LoginDatabaseConnections", 1);
     ///- Initialise the login database
-    sLog.outDetail("Login Database: %s", dbstring.c_str() );
-    if(!LoginDatabase.Initialize(dbstring.c_str()))
+    sLog.outString("Login Database: %s, total connections: %i", dbstring.c_str(), nConnections + 1);
+    if(!LoginDatabase.Initialize(dbstring.c_str(), nConnections))
     {
         sLog.outError("Cannot connect to login database %s",dbstring.c_str());
         return false;
@@ -474,11 +512,15 @@ void Master::_OnSignal(int s)
             World::StopNow(RESTART_EXIT_CODE);
             break;
         case SIGTERM:
+            // 3 - LANG_SYSTEMMESSAGE
+            sWorld.SendWorldText(3, "Server is going to perform daily database backups. We are back online in approx ~30 min.");
+            sWorld.ShutdownServ(600, 0 ,SHUTDOWN_EXIT_CODE);
+            break;
         #ifdef _WIN32
         case SIGBREAK:
-        #endif
             World::StopNow(SHUTDOWN_EXIT_CODE);
             break;
+        #endif
     }
 
     signal(s, _OnSignal);

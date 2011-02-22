@@ -60,7 +60,7 @@ class TRINITY_DLL_DECL MapManager : public Trinity::Singleton<MapManager, Trinit
 
         inline void SetGridCleanUpDelay(uint32 t)
         {
-            if( t < MIN_GRID_DELAY )
+            if (t < MIN_GRID_DELAY)
                 i_gridCleanUpDelay = MIN_GRID_DELAY;
             else
                 i_gridCleanUpDelay = t;
@@ -68,7 +68,7 @@ class TRINITY_DLL_DECL MapManager : public Trinity::Singleton<MapManager, Trinit
 
         inline void SetMapUpdateInterval(uint32 t)
         {
-            if( t > MIN_MAP_UPDATE_DELAY )
+            if (t > MIN_MAP_UPDATE_DELAY)
                 t = MIN_MAP_UPDATE_DELAY;
 
             i_timer.SetInterval(t);
@@ -93,7 +93,7 @@ class TRINITY_DLL_DECL MapManager : public Trinity::Singleton<MapManager, Trinit
 
         static bool IsValidMapCoord(WorldLocation const& loc)
         {
-            return IsValidMapCoord(loc.mapid,loc.x,loc.y,loc.z,loc.o);
+            return IsValidMapCoord(loc.mapid,loc.coord_x,loc.coord_y,loc.coord_z,loc.orientation);
         }
 
         static bool IsValidMapCoord(uint32 mapid, float x,float y,float z,float o)
@@ -106,7 +106,7 @@ class TRINITY_DLL_DECL MapManager : public Trinity::Singleton<MapManager, Trinit
         {
             // fmod only supports positive numbers. Thus we have
             // to emulate negative numbers
-            if(o < 0)
+            if (o < 0)
             {
                 float mod = o *-1;
                 mod = fmod(mod, float(2.0f * M_PI));
@@ -163,5 +163,7 @@ class TRINITY_DLL_DECL MapManager : public Trinity::Singleton<MapManager, Trinit
         MapUpdater m_updater;
         uint32 i_MaxInstanceId;
 };
-#endif
 
+#define sMapMgr MapManager::Instance()
+
+#endif

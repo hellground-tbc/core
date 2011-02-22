@@ -17,7 +17,8 @@
 /* ScriptData
 SDName: Netherstorm
 SD%Complete: 75
-SDComment: Quest support: 10337, 10438, 10652 (special flight paths), 10299,10321,10322,10323,10329,10330,10338,10365(Shutting Down Manaforge), 10198
+SDComment: Quest support: 10337, 10438, 10652 (special flight paths), 10299,10321,10322,10323,10329,10330,10338,10365(Shutting Down Manaforge), 10191, 10198
+
 SDCategory: Netherstorm
 EndScriptData */
 
@@ -28,6 +29,7 @@ npc_commander_dawnforge
 npc_protectorate_nether_drake
 npc_veronia
 npc_bessy
+npc_maxx_a_million
 EndContentData */
 
 #include "precompiled.h"
@@ -400,17 +402,10 @@ struct TRINITY_DLL_DECL npc_commander_dawnforgeAI : public ScriptedAI
     {
         Creature* pCreature = NULL;
 
-        CellPair pair(Trinity::ComputeCellPair(m_creature->GetPositionX(), m_creature->GetPositionY()));
-        Cell cell(pair);
-        cell.data.Part.reserved = ALL_DISTRICT;
-        cell.SetNoCreate();
-
         Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*m_creature, entry, true, range);
         Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
 
-        TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> creature_searcher(searcher);
-
-        cell.Visit(pair, creature_searcher,*(m_creature->GetMap()));
+        Cell::VisitGridObjects(me, searcher, range);
 
         return pCreature;
     }
@@ -634,17 +629,10 @@ Creature* SearchDawnforge(Player *source, uint32 entry, float range)
 {
     Creature* pCreature = NULL;
 
-    CellPair pair(Trinity::ComputeCellPair(source->GetPositionX(), source->GetPositionY()));
-    Cell cell(pair);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-
     Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*source, entry, true, range);
     Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
 
-    TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> creature_searcher(searcher);
-
-    cell.Visit(pair, creature_searcher,*(source->GetMap()));
+    Cell::VisitGridObjects(source, searcher, range);
 
     return pCreature;
 }
@@ -1099,7 +1087,7 @@ float ethereum_NPC[2][7] =
 
 bool GOHello_go_ethereum_prison(Player *player, GameObject* _GO)
 {
- _GO->SetGoState(0);
+ _GO->SetGoState(GO_STATE_ACTIVE);
  uint32 entry;
 
 switch(rand()%2)
@@ -1329,6 +1317,138 @@ CreatureAI* GetAI_mob_boom_bot(Creature *_Creature)
 }
 
 /*######
+## npc_maxx_a_million
+######*/
+
+enum
+{
+    QUEST_MARK_V_IS_ALIVE       = 10191,
+    NPC_BOT_SPECIALIST_ALLEY    = 19578,
+    GO_DRAENEI_MACHINE          = 183771,
+
+    SAY_START                   = -1000575,
+    SAY_ALLEY_FAREWELL          = -1000576,
+    SAY_CONTINUE                = -1000577,
+    SAY_ALLEY_FINISH            = -1000578
+};
+
+struct TRINITY_DLL_DECL npc_maxx_a_million_escortAI : public npc_escortAI
+{
+    npc_maxx_a_million_escortAI(Creature* pCreature) : npc_escortAI(pCreature) {Reset();}
+
+    uint32 m_uiSubEventTimer;
+    uint8 m_uiSubEvent;
+
+    void Reset()
+    {
+        if (!HasEscortState(STATE_ESCORT_ESCORTING))
+        {
+            m_uiSubEventTimer = 0;
+            m_uiSubEvent = 0;
+            m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
+            m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PASSIVE);
+        }
+    }
+
+    void WaypointReached(uint32 uiPoint)
+    {
+        switch (uiPoint)
+        {
+            case 1:
+                m_creature->SetOrientation(5.4f);
+                DoScriptText(SAY_START, m_creature);
+                m_uiSubEventTimer = 3000;
+                m_uiSubEvent = 1;
+                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
+                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PASSIVE);
+                break;
+            case 7: 
+            case 17:
+            case 29:
+                if (GameObject* pGO = FindGameObject(GO_DRAENEI_MACHINE, INTERACTION_DISTANCE, m_creature))
+                {
+                    m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_ONESHOT_ATTACKUNARMED);
+                    m_uiSubEvent = 2;
+                    m_uiSubEventTimer = 2500;
+                }
+                break;
+            case 36:
+                if (Player* pPlayer = GetPlayerForEscort())
+                    pPlayer->GroupEventHappens(QUEST_MARK_V_IS_ALIVE, m_creature);
+                if (Unit* pAlley = FindCreature(NPC_BOT_SPECIALIST_ALLEY, INTERACTION_DISTANCE*2, m_creature))
+                    DoScriptText(SAY_ALLEY_FINISH, pAlley);
+                break;
+        }
+    }
+
+    void WaypointStart(uint32 uiPoint)
+    {
+        switch (uiPoint)
+        {
+            case 8:
+            case 18:
+            case 30:
+                DoScriptText(SAY_CONTINUE, m_creature);
+                break;
+        }
+    }
+
+    void UpdateEscortAI(const uint32 uiDiff)
+    {
+        if (m_uiSubEventTimer)
+        {
+            if (m_uiSubEventTimer <= uiDiff)
+            {
+                switch (m_uiSubEvent)
+                {
+                    case 1:
+                        if (Unit* pAlley = FindCreature(NPC_BOT_SPECIALIST_ALLEY, INTERACTION_DISTANCE*2, m_creature))
+                            DoScriptText(SAY_ALLEY_FAREWELL, pAlley);
+                        break;
+                    case 2:
+                        if (GameObject* pGO = FindGameObject(GO_DRAENEI_MACHINE, INTERACTION_DISTANCE, m_creature))
+                        {
+                            if (Player* pPlayer = GetPlayerForEscort())
+                                pGO->DestroyForPlayer(GetPlayerForEscort());
+                            m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_AT_EASE);
+                        }
+                        break;
+                }
+                m_uiSubEventTimer = 0;
+                m_uiSubEvent = 0;
+            }
+            else
+                m_uiSubEventTimer -= uiDiff;
+        }
+
+        if (UpdateVictim())
+            DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_maxx_a_million(Creature* pCreature)
+{
+    return new npc_maxx_a_million_escortAI(pCreature);
+}
+
+bool QuestAccept_npc_maxx_a_million(Player* pPlayer, Creature* pCreature, const Quest* pQuest)
+{
+    if (pQuest->GetQuestId() == QUEST_MARK_V_IS_ALIVE)
+    {
+        if (npc_maxx_a_million_escortAI* pEscortAI = dynamic_cast<npc_maxx_a_million_escortAI*>(pCreature->AI()))
+        {
+            if (pPlayer->GetTeam() == ALLIANCE)
+                pCreature->setFaction(FACTION_ESCORT_A_NEUTRAL_ACTIVE);
+            else
+                pCreature->setFaction(FACTION_ESCORT_H_NEUTRAL_ACTIVE);
+
+            pEscortAI->Start(true, false, pPlayer->GetGUID(), pQuest, true);
+        }
+    }
+    return true;
+}
+
+/*######
 ## AddSC_netherstrom
 ######*/
 
@@ -1420,5 +1540,12 @@ void AddSC_netherstorm()
     newscript->Name = "mob_boom_bot";
     newscript->GetAI = &GetAI_mob_boom_bot;
     newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_maxx_a_million";
+    newscript->GetAI = &GetAI_npc_maxx_a_million;
+    newscript->pQuestAccept = &QuestAccept_npc_maxx_a_million;
+    newscript->RegisterSelf();
+
 }
 

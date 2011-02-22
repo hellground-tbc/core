@@ -29,6 +29,7 @@ EndScriptData */
 #define SAY_STAL_SLAY           -1533024
 #define SAY_STAL_DEATH          -1533025
 
+#define STAL_TESLA_PASSIVE		28097
 #define SPELL_POWERSURGE        28134
 
 //Feugen
@@ -36,10 +37,12 @@ EndScriptData */
 #define SAY_FEUG_SLAY           -1533027
 #define SAY_FEUG_DEATH          -1533028
 
+#define FEUG_TESLA_PASSIVE		28109
 #define SPELL_MANABURN          28135
 
 //both
 #define SPELL_WARSTOMP          28125
+#define SPELL_MAGNETIC_PULL		28337	//way too strong, any ideas? maybe 28338
 
 //Thaddus
 #define SAY_GREET               -1533029
@@ -54,6 +57,7 @@ EndScriptData */
 #define SAY_SCREAM3             -1533038
 #define SAY_SCREAM4             -1533039
 
+#define SPELL_SELF_STUN						28160			//Thaddius is stunned, while Feugen and Stalagg are alive
 #define SPELL_BALL_LIGHTNING                28299
 
 #define SPELL_CHARGE_POSITIVE_DMGBUFF       29659
@@ -69,4 +73,6 @@ EndScriptData */
 
  //generic
 #define C_TESLA_COIL                        16218           //the coils (emotes "Tesla Coil overloads!")
+#define GO_TESLA_COIL1						181477
+#define GO_TESLA_COIL2						181478			//those 2 are not spawned
 

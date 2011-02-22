@@ -97,7 +97,7 @@ struct TRINITY_DLL_DECL mob_mature_netherwing_drakeAI : public ScriptedAI
         {
             float PlayerX, PlayerY, PlayerZ;
             caster->GetClosePoint(PlayerX, PlayerY, PlayerZ, m_creature->GetObjectSize());
-            m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
+            m_creature->AddUnitMovementFlag(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
             m_creature->GetMotionMaster()->MovePoint(1, PlayerX, PlayerY, PlayerZ);
             PlayerGUID = caster->GetGUID();
         }
@@ -113,7 +113,7 @@ struct TRINITY_DLL_DECL mob_mature_netherwing_drakeAI : public ScriptedAI
             IsEating = true;
             EatTimer = 5000;
             m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_ONESHOT_ATTACKUNARMED);
-            m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
+            m_creature->RemoveUnitMovementFlag(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
         }
     }
 
@@ -194,7 +194,7 @@ struct TRINITY_DLL_DECL mob_enslaved_netherwing_drakeAI : public ScriptedAI
             m_creature->setFaction(FACTION_DEFAULT);
 
         FlyTimer = 10000;
-        m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
+        m_creature->RemoveUnitMovementFlag(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
         m_creature->SetVisibility(VISIBILITY_ON);
     }
 
@@ -241,7 +241,7 @@ struct TRINITY_DLL_DECL mob_enslaved_netherwing_drakeAI : public ScriptedAI
                 PlayerGUID = 0;
             }
             m_creature->SetVisibility(VISIBILITY_OFF);
-            m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
+            m_creature->RemoveUnitMovementFlag(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
             m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
             m_creature->RemoveCorpse();
         }
@@ -280,7 +280,7 @@ struct TRINITY_DLL_DECL mob_enslaved_netherwing_drakeAI : public ScriptedAI
                             dz += 25;
                         }
 
-                        m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
+                        m_creature->AddUnitMovementFlag(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
                         m_creature->GetMotionMaster()->MovePoint(1, dx, dy, dz);
                     }
                 }
@@ -329,7 +329,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_peonAI : public ScriptedAI
             float x, y, z;
             caster->GetClosePoint(x, y, z, m_creature->GetObjectSize());
 
-            m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+            m_creature->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
             m_creature->GetMotionMaster()->MovePoint(1, x, y, z);
         }
     }
@@ -822,7 +822,7 @@ struct TRINITY_DLL_DECL npc_overlord_morghorAI : public ScriptedAI
         case 19: DoScriptText(LORD_ILLIDAN_SAY_7, Illi); return 5000; break;
         case 20:
             Illi->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
-            Illi->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
+            Illi->AddUnitMovementFlag(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
             return 500; break;
         case 21: DoScriptText(OVERLORD_SAY_5, m_creature); return 500; break;
         case 22:
@@ -1875,7 +1875,7 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
     uint32 TalkTimer;
     uint32 Step;
 
-    std::list<Unit*> targets;
+    std::list<uint64> targets;
 
     bool EventStarted;
     bool PreludeEventStarted;
@@ -1904,10 +1904,15 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
     void BuildNearbyUnitsList()
     {
         float range = 20.0f;
+        std::list<Unit*> tempTargets;
         Trinity::AnyUnitInObjectRangeCheck check(m_creature, range);
-        Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(targets, check);
-        me->VisitNearbyWorldObject(range, searcher);
+        Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(tempTargets, check);
+        Cell::VisitAllObjects(me, searcher, range);
+        for (std::list<Unit*>::iterator iter = tempTargets.begin(); iter != tempTargets.end(); ++iter)
+            if ((*iter)->GetTypeId() == TYPEID_PLAYER)
+                targets.push_back((*iter)->GetGUID());
     }
+
 
     void StartEvent()
     {
@@ -1918,7 +1923,7 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
         Creature* Succub1 = m_creature->SummonCreature(ILLIDARI_SUCCUBUS,SuccubPos1[0],SuccubPos1[1],SuccubPos1[2],SuccubPos1[3],TEMPSUMMON_CORPSE_TIMED_DESPAWN,0);
         Creature* Succub2 = m_creature->SummonCreature(ILLIDARI_SUCCUBUS,SuccubPos2[0],SuccubPos2[1],SuccubPos2[2],SuccubPos2[3],TEMPSUMMON_CORPSE_TIMED_DESPAWN,0);
 
-        if(!Vagath || !Succub1 || !Succub2)
+        if (!Vagath || !Succub1 || !Succub2)
             return;
 
         VagathGUID = Vagath->GetGUID();
@@ -1944,35 +1949,37 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
             return 0;
 
             case 1:
-                if(vaga)
-                ((Creature*)vaga)->Say(SAY_DIALOG_VAGATH_1,LANG_UNIVERSAL,NULL);
+                if (vaga)
+                    ((Creature*)vaga)->Say(SAY_DIALOG_VAGATH_1,LANG_UNIVERSAL,NULL);
                 return 3000;
 
             case 2:
-                for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
+                for (std::list<uint64>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
                 {
-                    if((*iter)->GetTypeId() == TYPEID_PLAYER)
-                    DoWhisper(SAY_WHISPER_AKAMA_2, (*iter));
+                    if (Unit * target = me->GetUnit(*iter))
+                        DoWhisper(SAY_WHISPER_AKAMA_2, target);
+
                 }
                 return 1000;
 
             case 3:
-                for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
+                for (std::list<uint64>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
                 {
-                    if((*iter)->GetTypeId() == TYPEID_PLAYER)
-                    DoCast((*iter), SPELL_FAKE_KILL_VISUAL);
+                    if (Unit * target = me->GetUnit(*iter))
+                        DoCast(target, SPELL_FAKE_KILL_VISUAL);
+
                 }
                 return 1000;
 
             case 4:
-                for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
+                for (std::list<uint64>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
                 {
-                    if((*iter)->GetTypeId() == TYPEID_PLAYER)
+                    if (Unit * target = me->GetUnit(*iter))
                     {
-                        (*iter)->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
-                        (*iter)->SetHealth(1);
-                        ((Player*)(*iter))->setRegenTimer(60000);
-                        (*iter)->SetStunned(true);
+                        target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
+                        target->SetHealth(1);
+                        ((Player*)target)->setRegenTimer(60000);
+                        target->SetStunned(true);
                     }
                 }
                 return 3000;
@@ -1982,43 +1989,43 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
                 return 12000;
 
             case 6:
-                if(vaga)
-                ((Creature*)vaga)->Say(SAY_DIALOG_VAGATH_4,LANG_UNIVERSAL,NULL);
+                if (vaga)
+                    ((Creature*)vaga)->Say(SAY_DIALOG_VAGATH_4,LANG_UNIVERSAL,NULL);
                 return 15000;
 
             case 7:
-                if(vaga)
-                ((Creature*)vaga)->setDeathState(CORPSE);
-                if(Succub1)
-                ((Creature*)Succub1)->setDeathState(CORPSE);
-                if(Succub2)
-                ((Creature*)Succub2)->setDeathState(CORPSE);
+                if (vaga)
+                    ((Creature*)vaga)->setDeathState(CORPSE);
+                if (Succub1)
+                    ((Creature*)Succub1)->setDeathState(CORPSE);
+                if (Succub2)
+                    ((Creature*)Succub2)->setDeathState(CORPSE);
                 return 3000;
 
             case 8:
-                for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
+                for (std::list<uint64>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
                 {
-                    if((*iter)->GetTypeId() == TYPEID_PLAYER)
-                    DoCast((*iter), SPELL_RESURECTION_VISUAL);
+                    if (Unit * target = me->GetUnit(*iter))
+                        DoCast(target, SPELL_RESURECTION_VISUAL);
                 }
                 return 2000;
 
             case 9:
-                for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
+                for (std::list<uint64>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
                 {
-                    if((*iter)->GetTypeId() == TYPEID_PLAYER)
+                    if (Unit * target = me->GetUnit(*iter))
                     {
-                        (*iter)->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
-                        (*iter)->SetHealth((*iter)->GetMaxHealth());
-                        (*iter)->SetStunned(false);
+                        target->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
+                        target->SetHealth(target->GetMaxHealth());
+                        target->SetStunned(false);
                     }
                 }
                 m_creature->Say(SAY_DIALOG_AKAMA_5, LANG_UNIVERSAL, NULL);
                 return 12000;
 
             case 10:
-                if(maiev)
-                ((Creature*)maiev)->Say(SAY_DIALOG_MAIEV_6,LANG_UNIVERSAL,NULL);
+                if (maiev)
+                    ((Creature*)maiev)->Say(SAY_DIALOG_MAIEV_6,LANG_UNIVERSAL,NULL);
                 return 12000;
 
             case 11:
@@ -2026,8 +2033,8 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
                 return 12000;
 
             case 12:
-                if(maiev)
-                ((Creature*)maiev)->Say(SAY_DIALOG_MAIEV_8,LANG_UNIVERSAL,NULL);
+                if (maiev)
+                    ((Creature*)maiev)->Say(SAY_DIALOG_MAIEV_8,LANG_UNIVERSAL,NULL);
                 return 1000;
 
             case 13:
@@ -2049,7 +2056,8 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
 
         Creature* Olum = m_creature->SummonCreature(SEER_OLUM,OlumPos[0],OlumPos[1],OlumPos[2],OlumPos[3],TEMPSUMMON_CORPSE_TIMED_DESPAWN,45000);    // despawn corpse after 45 seconds - Blizzlike
 
-        if(!Olum)return;
+        if (!Olum)
+            return;
 
         OlumGUID = Olum->GetGUID();
         DoScriptText(SAY_DIALOG_OLUM_1,Olum);
@@ -2067,32 +2075,52 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
         switch(Step)
         {
             case 0:
-            return 0;
+                return 0;
 
-            case 1: DoScriptText(SAY_DIALOG_PRE_AKAMA_1,m_creature); return 4000;
-            case 2: if(olum) DoScriptText(SAY_DIALOG_OLUM_2,(Creature*)olum); return 8000;
-            case 3: DoScriptText(SAY_DIALOG_PRE_AKAMA_2,m_creature); return 7000;
-            case 4: if(olum) DoScriptText(SAY_DIALOG_OLUM_3,(Creature*)olum); return 27500;
-            case 5: DoScriptText(SAY_DIALOG_PRE_AKAMA_3,m_creature); return 5000;
-            case 6: if(olum) DoScriptText(SAY_DIALOG_OLUM_4,(Creature*)olum); return 16000;
-            case 7: DoScriptText(SAY_DIALOG_PRE_AKAMA_4,m_creature); return 8000;
-            case 8: if(olum) DoScriptText(SAY_DIALOG_OLUM_5,(Creature*)olum); return 14500;
+            case 1:
+                DoScriptText(SAY_DIALOG_PRE_AKAMA_1,m_creature);
+                return 4000;
+            case 2:
+                if (olum)
+                    DoScriptText(SAY_DIALOG_OLUM_2,(Creature*)olum);
+                return 8000;
+            case 3:
+                DoScriptText(SAY_DIALOG_PRE_AKAMA_2,m_creature);
+                return 7000;
+            case 4:
+                if (olum)
+                    DoScriptText(SAY_DIALOG_OLUM_3,(Creature*)olum);
+                return 27500;
+            case 5:
+                DoScriptText(SAY_DIALOG_PRE_AKAMA_3,m_creature);
+                return 5000;
+            case 6:
+                if (olum)
+                    DoScriptText(SAY_DIALOG_OLUM_4,(Creature*)olum);
+                return 16000;
+            case 7:
+                DoScriptText(SAY_DIALOG_PRE_AKAMA_4,m_creature);
+                return 8000;
+            case 8:
+                if (olum)
+                    DoScriptText(SAY_DIALOG_OLUM_5,(Creature*)olum);
+                return 14500;
             case 9:
                 m_creature->SendMonsterMove(AkamaNewPos[0],AkamaNewPos[1],AkamaNewPos[2],2000);
                 m_creature->Relocate(AkamaNewPos[0],AkamaNewPos[1],AkamaNewPos[2], AkamaNewPos[3]);
                 return 2500;
             case 10:
-                if(olum)
+                if (olum)
                     DoCast(olum,SPELL_OLUMS_SACRIFICE);
                 return 6800;
             case 11:
-                if(olum)
+                if (olum)
                 {
                     olum->setDeathState(JUST_DIED);
-                    if(Creature* spirit = m_creature->SummonCreature(OLUMS_SPIRIT,OlumNewPos[0],OlumNewPos[1],OlumNewPos[2],OlumNewPos[3]-2.0f,TEMPSUMMON_TIMED_DESPAWN,16000))
+                    if (Creature* spirit = m_creature->SummonCreature(OLUMS_SPIRIT,OlumNewPos[0],OlumNewPos[1],OlumNewPos[2],OlumNewPos[3]-2.0f,TEMPSUMMON_TIMED_DESPAWN,16000))
                     {
                         spirit->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                        spirit->SetUnitMovementFlags(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
+                        spirit->SetUnitMovementFlags(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
                         // spirit->SetUInt32Value(UNIT_NPC_EMOTESTATE,STATE_DROWNED); // improve Olum's Spirit animation using Drowned State, right movement flag or monster move type needed
                         spirit->SendMonsterMove(OlumNewPos[0],OlumNewPos[1],OlumNewPos[2]+8.0f,16000);
                     }
@@ -2113,21 +2141,31 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
                 m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE,68);
                 return 200;
             case 16:
-                if(Illidan)    DoPlaySoundToSet(Illidan,ILLIDAN_APPEARING); return 7000;
+                if (Illidan)
+                    DoPlaySoundToSet(Illidan,ILLIDAN_APPEARING);
+                return 7000;
             case 17:
-                if(Illidan)    DoScriptText(SAY_DIALOG_ILLIDAN_1,(Creature*)Illidan); return 14000;
+                if (Illidan)
+                    DoScriptText(SAY_DIALOG_ILLIDAN_1,(Creature*)Illidan);
+                return 14000;
             case 18:
                 DoScriptText(SAY_DIALOG_PRE_AKAMA_7,m_creature);
                 return 19000;
             case 19:
-                if(Illidan)    DoScriptText(SAY_DIALOG_ILLIDAN_2,(Creature*)Illidan); return 21000;
+                if (Illidan)
+                    DoScriptText(SAY_DIALOG_ILLIDAN_2,(Creature*)Illidan);
+                return 21000;
             case 20:
-                if(Illidan)    DoScriptText(SAY_DIALOG_ILLIDAN_3,(Creature*)Illidan); return 22000;
+                if (Illidan)
+                    DoScriptText(SAY_DIALOG_ILLIDAN_3,(Creature*)Illidan);
+                return 22000;
             case 21:
                 DoScriptText(SAY_DIALOG_PRE_AKAMA_8,m_creature);
                 return 1000;
             case 22:
-                if(Illidan)    Illidan->setDeathState(CORPSE);    return 1000;
+                if (Illidan)
+                    Illidan->setDeathState(CORPSE);
+                return 1000;
             case 23:
                 PreludeReset();
                 return 100;
@@ -2139,9 +2177,9 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(EventStarted && VagathGUID)
+        if (EventStarted && VagathGUID)
         {
-            if(TalkTimer < diff)
+            if (TalkTimer < diff)
             {
                 TalkTimer = NextStep(Step++);
             }
@@ -2151,7 +2189,7 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
 
         if(PreludeEventStarted && OlumGUID)
         {
-            if(Step == 16 && !IllidanGUID && TalkTimer < diff)
+            if (Step == 16 && !IllidanGUID && TalkTimer < diff)
             {
                 Creature* Illidan = m_creature->SummonCreature(ILLIDAN,OlumNewPos[0]-3.0f,OlumNewPos[1]+0.5f,OlumNewPos[2],OlumNewPos[3],TEMPSUMMON_CORPSE_DESPAWN,0);
                 Illidan->SetFloatValue(OBJECT_FIELD_SCALE_X,0.65f);
@@ -2159,7 +2197,7 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
                 Illidan->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NOT_SELECTABLE);
                 IllidanGUID = Illidan->GetGUID();
             }
-            if(TalkTimer < diff)
+            if (TalkTimer < diff)
             {
                 TalkTimer = PreludeNextStep(Step++);
             }
@@ -2178,13 +2216,13 @@ bool ChooseReward_npc_Akama(Player *player, Creature *_Creature, const Quest *_Q
     bool EventStarted = ((npc_AkamaAI*)_Creature->AI())->EventStarted;
     bool PreludeEventStarted = ((npc_AkamaAI*)_Creature->AI())->PreludeEventStarted;
 
-    if(EventStarted || PreludeEventStarted)
+    if (EventStarted || PreludeEventStarted)
         return false;
 
-    if(!EventStarted && _Quest->GetQuestId() == 10628)
+    if (!EventStarted && _Quest->GetQuestId() == 10628)
         ((npc_AkamaAI*)_Creature->AI())->StartEvent();
 
-    if(!PreludeEventStarted && _Quest->GetQuestId() == 10944)
+    if (!PreludeEventStarted && _Quest->GetQuestId() == 10944)
         ((npc_AkamaAI*)_Creature->AI())->StartPreludeEvent();
 
     return false;
@@ -2357,6 +2395,8 @@ struct TRINITY_DLL_DECL mob_shadowlord_deathwailAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         m_creature->SetNoCallAssistance(true);
         Check_Timer = 2000;
         landed = true;
@@ -2373,7 +2413,7 @@ struct TRINITY_DLL_DECL mob_shadowlord_deathwailAI : public ScriptedAI
             if(trigger->isAlive())
             {
                 m_creature->GetMotionMaster()->Initialize();
-                m_creature->SetUnitMovementFlags(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
+                m_creature->SetUnitMovementFlags(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
                 m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 m_creature->GetMotionMaster()->MovePath(DEATHWAIL_FLYPATH, true);
                 landed = false;
@@ -2381,7 +2421,7 @@ struct TRINITY_DLL_DECL mob_shadowlord_deathwailAI : public ScriptedAI
             }
             else
             {
-                m_creature->SetUnitMovementFlags(MOVEMENTFLAG_WALK_MODE);
+                m_creature->SetUnitMovementFlags(SPLINEFLAG_WALKMODE_MODE);
                 m_creature->SetSpeed(MOVE_RUN, 1.4);
                 m_creature->GetMotionMaster()->MovePoint(1, -3247, 284, 138.1);
             }
@@ -2424,7 +2464,7 @@ struct TRINITY_DLL_DECL mob_shadowlord_deathwailAI : public ScriptedAI
             {
                 m_creature->setFaction(1813);
                 m_creature->GetMotionMaster()->Initialize();
-                m_creature->SetUnitMovementFlags(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
+                m_creature->SetUnitMovementFlags(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
                 m_creature->GetMotionMaster()->MovePoint(1, -3247, 284, 138.1);
                 m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 landed = true;
@@ -2434,9 +2474,9 @@ struct TRINITY_DLL_DECL mob_shadowlord_deathwailAI : public ScriptedAI
             if(!m_creature->isInCombat() && landed && trigger && trigger->isAlive())
                 Reset();
 
-            if(!m_creature->HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE) && m_creature->GetPositionZ() < 142)
+            if(!m_creature->HasUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE) && m_creature->GetPositionZ() < 142)
             {
-                m_creature->SetUnitMovementFlags(MOVEMENTFLAG_WALK_MODE);
+                m_creature->SetUnitMovementFlags(SPLINEFLAG_WALKMODE_MODE);
                 m_creature->SetSpeed(MOVE_WALK, 4.0);
                 m_creature->SetSpeed(MOVE_RUN, 2.0);
             }
@@ -3071,8 +3111,8 @@ struct TRINITY_DLL_DECL npc_xiriAI : public Scripted_NoMovementAI
             Unit* DeathswornAttacker = m_creature->SummonCreature(NPC_ASHTONGUE_DEATHSWORN, Deathsworn[i][0], Deathsworn[i][1], Deathsworn[i][2], Deathsworn[i][3], TEMPSUMMON_CORPSE_DESPAWN, 0);
             if(DeathswornAttacker)
             {
-                if(DeathswornAttacker->HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))
-                    DeathswornAttacker->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+                if(DeathswornAttacker->HasUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE))
+                    DeathswornAttacker->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
                 DeathswornAttacker->GetMotionMaster()->MovePoint(1, DeathswornPath[i][0], DeathswornPath[i][1], DeathswornPath[i][2]);
             }
         }
@@ -3282,9 +3322,10 @@ struct TRINITY_DLL_DECL mob_deathbringer_joovanAI : public ScriptedAI
                         WarbringerSay(WARBRINGER_SAY4);
 
                         std::list<Unit*> pList;
-                        Trinity::AnyUnitInObjectRangeCheck u_check(me, 20);
+                        Trinity::AnyUnitInObjectRangeCheck u_check(me, 20.0f);
                         Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(pList, u_check);
-                        me->VisitNearbyObject(20, searcher);
+
+                        Cell::VisitAllObjects(me, searcher, 20.0f);
 
                         Creature* warbringer = (Creature*)me->GetUnit(*me, ImageOfWarbringerGUID);
                         if(!warbringer)
@@ -3350,10 +3391,10 @@ bool GossipHello_npc_overlord_orbarokh(Player *player, Creature *_Creature)
     if (_Creature->isQuestGiver())
         player->PrepareQuestMenu( _Creature->GetGUID() );
 
-		if(player->GetQuestStatus(10751) || player->GetQuestStatus(10765) || player->GetQuestStatus(10768) || player->GetQuestStatus(10769) == QUEST_STATUS_INCOMPLETE )
-			if(!player->HasItemCount(31108,1))
-				player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_ORBAROKH, GOSSIP_SENDER_MAIN, GOSSIP_SENDER_INFO );
-				player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+        if(player->GetQuestStatus(10751) || player->GetQuestStatus(10765) || player->GetQuestStatus(10768) || player->GetQuestStatus(10769) == QUEST_STATUS_INCOMPLETE )
+            if(!player->HasItemCount(31108,1))
+                player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_ORBAROKH, GOSSIP_SENDER_MAIN, GOSSIP_SENDER_INFO );
+                player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
     return true;
 }
 
@@ -3363,7 +3404,7 @@ bool GossipSelect_npc_overlord_orbarokh(Player *player, Creature *_Creature, uin
     {
             ItemPosCountVec dest;
             uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 31108, 1);
-			if (msg == EQUIP_ERR_OK)
+            if (msg == EQUIP_ERR_OK)
             {
                  Item* item = player->StoreNewItem(dest, 31108, true);
                      player->SendNewItem(item,1,true,false,true);
@@ -3376,17 +3417,17 @@ bool GossipSelect_npc_overlord_orbarokh(Player *player, Creature *_Creature, uin
 # npc_thane_yoregar
 ####*/
 
-#define GOSSIP_ITEM_YOREGAR "Restore Kor'kron Flare Gun."
+#define GOSSIP_ITEM_YOREGAR "Restore Wildhammer Flare Gun."
 
 bool GossipHello_npc_thane_yoregar(Player *player, Creature *_Creature)
 {
     if (_Creature->isQuestGiver())
         player->PrepareQuestMenu( _Creature->GetGUID() );
 
-		if(player->GetQuestStatus(10773) || player->GetQuestStatus(10774) || player->GetQuestStatus(10775) || player->GetQuestStatus(10776) == QUEST_STATUS_INCOMPLETE )
-			if(!player->HasItemCount(31310,1))
-				player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_YOREGAR, GOSSIP_SENDER_MAIN, GOSSIP_SENDER_INFO );
-				player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+        if(player->GetQuestStatus(10773) || player->GetQuestStatus(10774) || player->GetQuestStatus(10775) || player->GetQuestStatus(10776) == QUEST_STATUS_INCOMPLETE )
+            if(!player->HasItemCount(31310,1))
+                player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_YOREGAR, GOSSIP_SENDER_MAIN, GOSSIP_SENDER_INFO );
+                player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
     return true;
 }
 
@@ -3396,7 +3437,7 @@ bool GossipSelect_npc_thane_yoregar(Player *player, Creature *_Creature, uint32 
     {
             ItemPosCountVec dest;
             uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 31310, 1);
-			if (msg == EQUIP_ERR_OK)
+            if (msg == EQUIP_ERR_OK)
             {
                  Item* item = player->StoreNewItem(dest, 31310, true);
                      player->SendNewItem(item,1,true,false,true);
@@ -3565,13 +3606,13 @@ void AddSC_shadowmoon_valley()
     newscript->Name="mob_deathbringer_joovan";
     newscript->GetAI = &GetAI_mob_deathbringer_joovanAI;
     newscript->RegisterSelf();
-	
-	newscript = new Script;
+
+    newscript = new Script;
     newscript->Name="npc_overlord_orbarokh";
     newscript->pGossipHello = &GossipHello_npc_overlord_orbarokh;
     newscript->pGossipSelect = &GossipSelect_npc_overlord_orbarokh;
     newscript->RegisterSelf();
-	
+
     newscript = new Script;
     newscript->Name="npc_thane_yoregar";
     newscript->pGossipHello = &GossipHello_npc_thane_yoregar;

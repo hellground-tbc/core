@@ -88,7 +88,7 @@ void MotionMaster::UpdateMotion(uint32 diff)
     if (i_owner->hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED))
         return;
 
-    assert( !empty() );
+    assert(!empty());
 
     m_cleanFlag |= MMCF_UPDATE;
 
@@ -116,7 +116,7 @@ void MotionMaster::UpdateMotion(uint32 diff)
             Initialize();
         }
         else if (needInitTop())
-        {        
+        {
             InitTop();
         }
         else if (m_cleanFlag & MMCF_RESET)
@@ -155,7 +155,7 @@ void MotionMaster::DelayedClean()
     while (size() > 1)
     {
         MovementGenerator *curr = top();
-        
+
         pop();
 
         if (curr)
@@ -168,9 +168,9 @@ void MotionMaster::DirectExpire(bool reset)
     if (size() > 1)
     {
         MovementGenerator *curr = top();
-       
+
         pop();
-        
+
         DirectDelete(curr);
     }
 
@@ -198,9 +198,9 @@ void MotionMaster::DelayedExpire()
     if (size() > 1)
     {
         MovementGenerator *curr = top();
-        
+
         pop();
-        
+
         DelayedDelete(curr);
     }
 
@@ -239,13 +239,13 @@ void MotionMaster::MoveTargetedHome()
         if (Unit *target = ((Creature*)i_owner)->GetCharmerOrOwner())
         {
             i_owner->addUnitState(UNIT_STAT_FOLLOW);
-            
+
             Mutate(new TargetedMovementGenerator<Creature>(*target,PET_FOLLOW_DIST,PET_FOLLOW_ANGLE), MOTION_SLOT_ACTIVE);
         }
     }
     else
     {
-        sLog.outError("Player (GUID: %u) attempt targeted home", i_owner->GetGUIDLow() );
+        sLog.outError("Player (GUID: %u) attempt targeted home", i_owner->GetGUIDLow());
     }
 }
 
@@ -264,7 +264,10 @@ void MotionMaster::MoveConfused()
 void MotionMaster::MoveChase(Unit* target, float dist, float angle)
 {
     // ignore movement request if target not exist
-    if(!target || target == i_owner)
+    if (!target || target == i_owner)
+        return;
+
+    if (i_owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
         return;
 
     i_owner->clearUnitState(UNIT_STAT_FOLLOW);
@@ -282,7 +285,10 @@ void MotionMaster::MoveChase(Unit* target, float dist, float angle)
 void MotionMaster::MoveFollow(Unit* target, float dist, float angle, MovementSlot slot)
 {
     // ignore movement request if target not exist
-    if(!target || target == i_owner)
+    if (!target || target == i_owner)
+        return;
+
+    if (i_owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
         return;
 
     i_owner->addUnitState(UNIT_STAT_FOLLOW);
@@ -324,7 +330,7 @@ void MotionMaster::MoveJumpTo(float angle, float speedXY, float speedZ)
 
 void MotionMaster::MoveJump(float x, float y, float z, float speedXY, float speedZ)
 {
-    uint32 moveFlag = MOVEFLAG_JUMP | MOVEFLAG_WALK;
+    uint32 moveFlag = SPLINEFLAG_JUMP | SPLINEFLAG_WALKMODE;
     uint32 time = speedZ * 100;
 
     i_owner->addUnitState(UNIT_STAT_CHARGING | UNIT_STAT_JUMPING);
@@ -344,7 +350,7 @@ void MotionMaster::MoveJump(float x, float y, float z, float speedXY, float spee
 
 void MotionMaster::MoveCharge(float x, float y, float z, float speed, uint32 id)
 {
-    if(Impl[MOTION_SLOT_CONTROLLED] && Impl[MOTION_SLOT_CONTROLLED]->GetMovementGeneratorType() != DISTRACT_MOTION_TYPE)
+    if (Impl[MOTION_SLOT_CONTROLLED] && Impl[MOTION_SLOT_CONTROLLED]->GetMovementGeneratorType() != DISTRACT_MOTION_TYPE)
         return;
 
     i_owner->addUnitState(UNIT_STAT_CHARGING);
@@ -378,7 +384,7 @@ void MotionMaster::MoveSeekAssistance(float x, float y, float z)
     {
         i_owner->AttackStop();
         ((Creature*)i_owner)->SetReactState(REACT_PASSIVE);
-        
+
         Mutate(new AssistanceMovementGenerator(x,y,z), MOTION_SLOT_ACTIVE);
     }
 }
@@ -472,7 +478,7 @@ void MotionMaster::Mutate(MovementGenerator *m, MovementSlot slot)
         m->Initialize(*i_owner);
         needInit[slot] = false;
     }
-    
+
     Impl[slot] = m;
 }
 
@@ -488,14 +494,14 @@ void MotionMaster::propagateSpeedChange()
 {
     for (int i = 0; i <= i_top; ++i)
     {
-        if(Impl[i])
+        if (Impl[i])
             Impl[i]->unitSpeedChanged();
     }
 }
 
 MovementGeneratorType MotionMaster::GetCurrentMovementGeneratorType() const
 {
-   if (empty())
+   if (empty() || !top())
        return IDLE_MOTION_TYPE;
 
    return top()->GetMovementGeneratorType();
@@ -527,7 +533,7 @@ void MotionMaster::DirectDelete(_Ty curr)
 void MotionMaster::DelayedDelete(_Ty curr)
 {
     sLog.outError("CRASH ALARM! Unit (Entry %u) is trying to delete its updating MG (Type %u)!", i_owner->GetEntry(), curr->GetMovementGeneratorType());
-    
+
     if (isStatic(curr))
         return;
 
@@ -542,6 +548,6 @@ bool MotionMaster::GetDestination(float &x, float &y, float &z)
    if (empty())
        return false;
 
-   return top()->GetDestination(x,y,z);
+   return top() ? top()->GetDestination(x,y,z) : false;
 }
 

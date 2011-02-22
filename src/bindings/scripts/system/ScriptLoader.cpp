@@ -67,6 +67,7 @@ extern void AddSC_boss_shirrak_the_dead_watcher();
 //--Mana Tombs
 extern void AddSC_boss_nexusprince_shaffar();
 extern void AddSC_boss_pandemonius();
+extern void AddSC_boss_yor();
 
 //--Sekketh Halls
 extern void AddSC_boss_darkweaver_syth();
@@ -199,6 +200,7 @@ extern void AddSC_boss_the_lurker_below();
 
 //--Slave Pens
 extern void AddSC_boss_lord_ahune();
+extern void AddSC_boss_mennu_the_betrayer();
 extern void AddSC_instance_slave_pens();
 
 //--Steam Vault
@@ -270,6 +272,7 @@ extern void AddSC_instance_magtheridons_lair();
 
 //--Shattered Halls
 extern void AddSC_boss_grand_warlock_nethekurse();
+extern void AddSC_boss_blood_guard_porung();
 extern void AddSC_boss_warbringer_omrogg();
 extern void AddSC_boss_warchief_kargath_bladefist();
 extern void AddSC_instance_shattered_halls();
@@ -510,6 +513,7 @@ extern void AddSC_the_eye();
 
 //--The Mechanar
 extern void AddSC_boss_gatewatcher_iron_hand();
+extern void AddSC_boss_gatewatcher_gyro_kill();
 extern void AddSC_boss_nethermancer_sepethrea();
 extern void AddSC_boss_pathaleon_the_calculator();
 extern void AddSC_instance_mechanar();
@@ -595,6 +599,7 @@ extern void AddSC_boss_nalorakk();
 extern void AddSC_boss_zuljin();
 extern void AddSC_instance_zulaman();
 extern void AddSC_zulaman();
+extern void AddSC_zulaman_trash();
 
 void AddScripts()
 {
@@ -663,6 +668,7 @@ void AddScripts()
     //--Mana Tombs
     AddSC_boss_nexusprince_shaffar();
     AddSC_boss_pandemonius();
+    AddSC_boss_yor();
 
     //--Sekketh Halls
     AddSC_boss_darkweaver_syth();
@@ -792,6 +798,7 @@ void AddScripts()
 
     //--Slave Pens
     AddSC_boss_lord_ahune();
+    AddSC_boss_mennu_the_betrayer();
     AddSC_instance_slave_pens();
 
     //--Steam Vault
@@ -865,6 +872,7 @@ void AddScripts()
     AddSC_boss_grand_warlock_nethekurse();
     AddSC_boss_warbringer_omrogg();
     AddSC_boss_warchief_kargath_bladefist();
+    AddSC_boss_blood_guard_porung();
     AddSC_instance_shattered_halls();
 
     //--Ramparts
@@ -1103,6 +1111,7 @@ void AddScripts()
 
     //--The Mechanar
     AddSC_boss_gatewatcher_iron_hand();
+    AddSC_boss_gatewatcher_gyro_kill();
     AddSC_boss_nethermancer_sepethrea();
     AddSC_boss_pathaleon_the_calculator();
     AddSC_instance_mechanar();
@@ -1188,6 +1197,7 @@ void AddScripts()
     AddSC_boss_zuljin();
     AddSC_instance_zulaman();
     AddSC_zulaman();
+    AddSC_zulaman_trash();
 
     // -------------------
 }

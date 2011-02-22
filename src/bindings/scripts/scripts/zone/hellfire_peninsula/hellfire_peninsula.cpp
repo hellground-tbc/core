@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Hellfire_Peninsula
 SD%Complete: 100
- SDComment: Quest support: 9375, 9418, 10129, 10146, 10162, 10163, 10340, 10346, 10347, 10382 (Special flight paths)
+ SDComment: Quest support: 9375, 9410, 9418, 10129, 10146, 10162, 10163, 10340, 10346, 10347, 10382 (Special flight paths)
 SDCategory: Hellfire Peninsula
 EndScriptData */
 
@@ -28,6 +28,8 @@ npc_wing_commander_dabiree
 npc_gryphoneer_windbellow
 npc_wing_commander_brack
 npc_wounded_blood_elf
+npc_earthcaller_ryga
+npc_ancestral_spirit_wolf
 EndContentData */
 
 #include "precompiled.h"
@@ -402,7 +404,7 @@ struct TRINITY_DLL_DECL npc_demoniac_scryerAI : public  Scripted_NoMovementAI
         uint32 questDist = 60;                      // sWorld.getConfig(CONFIG_GROUP_XP_DISTANCE);
         Trinity::AnyUnitInObjectRangeCheck  check(me, questDist);
         Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck > searcher(PlayerList, check);
-        me->VisitNearbyWorldObject(questDist, searcher);
+        Cell::VisitAllObjects(me, searcher, questDist);
 
         for(std::list<Unit*>::iterator i = PlayerList.begin(); i != PlayerList.end(); i++)
         {
@@ -469,10 +471,94 @@ CreatureAI* GetAI_npc_demoniac_scryer(Creature *_Creature)
     return newAI;
 }
 
-
 /*######
-##
+## npc_ancestral_spirit_wolf & npc_earthcaller_ryga
 ######*/
+
+enum AncestralSpiritWolf
+{
+    EMOTE_HEAD_UP                           = -1811000,
+    EMOTE_HOWL                              = -1811001,
+    EMOTE_RYGA                              = -1811002,
+    SPELL_ANCESTRAL_SPIRIT_WOLF_BUFF_TIMER  = 29981,
+};
+
+struct TRINITY_DLL_DECL npc_earthcaller_rygaAI : public npc_escortAI
+{
+    npc_earthcaller_rygaAI(Creature *c) : npc_escortAI(c) {}
+
+    void Reset() { }
+
+    void WaypointReached(uint32 i)
+    {
+        switch (i)
+        {
+            case 1:
+                DoScriptText(EMOTE_RYGA, me);
+                break;
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_earthcaller_ryga(Creature *_Creature)
+{
+    CreatureAI* newAI = new npc_earthcaller_rygaAI(_Creature);
+    return newAI;
+}
+
+struct TRINITY_DLL_DECL npc_ancestral_spirit_wolfAI : public npc_escortAI
+{
+    npc_ancestral_spirit_wolfAI(Creature *c) : npc_escortAI(c) {}
+
+    void Reset()
+    {
+        if(!me->HasAura(SPELL_ANCESTRAL_SPIRIT_WOLF_BUFF_TIMER, 0))
+            me->AddAura(SPELL_ANCESTRAL_SPIRIT_WOLF_BUFF_TIMER, me);
+        me->setFaction(7);
+        if(Unit* owner = me->GetOwner())
+        {
+            if(owner->GetTypeId() == TYPEID_PLAYER)
+            {
+                Start(false, false, owner->GetGUID());
+                SetMaxPlayerDistance(40.0f);
+            }
+        }
+    }
+
+    void WaypointReached(uint32 i)
+    {
+        Player* player = GetPlayerForEscort();
+        if (!player)
+            return;
+
+        switch (i)
+        {
+            case 2:
+                DoScriptText(EMOTE_HEAD_UP, me);
+                break;
+            case 6:
+                SetRun();
+                me->SetSpeed(MOVE_RUN, 0.75);
+                DoScriptText(EMOTE_HOWL, me);
+                break;
+            case 36:
+                if(Unit* Ryga = FindCreature(17123, 50, me))
+                {
+                    if (npc_escortAI* pEscortAI = CAST_AI(npc_earthcaller_rygaAI, ((Creature*)Ryga)->AI()))
+                        pEscortAI->Start(false, false, 0, 0, true);
+                }
+                break;
+        }
+    }
+
+    void EnterCombat(Unit* who) { return; }
+};
+
+CreatureAI* GetAI_npc_ancestral_spirit_wolf(Creature *_Creature)
+{
+    CreatureAI* newAI = new npc_ancestral_spirit_wolfAI(_Creature);
+    return newAI;
+}
 
 void AddSC_hellfire_peninsula()
 {
@@ -515,6 +601,16 @@ void AddSC_hellfire_peninsula()
     newscript = new Script;
     newscript->Name="npc_demoniac_scryer";
     newscript->GetAI = &GetAI_npc_demoniac_scryer;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_ancestral_spirit_wolf";
+    newscript->GetAI = &GetAI_npc_ancestral_spirit_wolf;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_earthcaller_ryga";
+    newscript->GetAI = &GetAI_npc_earthcaller_ryga;
     newscript->RegisterSelf();
 }
 

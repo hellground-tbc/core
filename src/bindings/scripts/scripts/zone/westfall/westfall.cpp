@@ -89,8 +89,8 @@ struct TRINITY_DLL_DECL npc_daphne_stilwellAI : public npc_escortAI
         if (!player)
             return;
 
-        if (IsWalking && !m_creature->HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))
-            m_creature->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+        if (IsWalking && !m_creature->HasUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE))
+            m_creature->AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
 
         switch (i)
         {
@@ -132,9 +132,9 @@ struct TRINITY_DLL_DECL npc_daphne_stilwellAI : public npc_escortAI
 
     void Reset()
     {
-        if (IsWalking && !m_creature->HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))
+        if (IsWalking && !m_creature->HasUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE))
         {
-            m_creature->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+            m_creature->AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
             return;
         }
         IsWalking = false;
@@ -409,17 +409,10 @@ bool QuestAccept_npc_Mikhail(Player* player, Creature* creature, Quest const* qu
         float x, y, z;
         creature->GetPosition(x, y, z);
 
-        CellPair pair(Trinity::ComputeCellPair(x, y));
-        Cell cell(pair);
-        cell.data.Part.reserved = ALL_DISTRICT;
-        cell.SetNoCreate();
-
         Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck check(*creature, 4962, true, 10);
         Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(trigger, check);
 
-        TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> cSearcher(searcher);
-
-        cell.Visit(pair, cSearcher, *(creature->GetMap()));
+        Cell::VisitGridObjects(creature, searcher, 10.0);
 
         if(trigger)
         {

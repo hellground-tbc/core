@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Boss_Vaelastrasz
 SD%Complete: 75
-SDComment: Burning Adrenaline not correctly implemented in core
+SDComment: Burning Adrenaline not correctly implemented in core, looks like the loot is missing or connected with other NPC
 SDCategory: Blackwing Lair
 EndScriptData */
 

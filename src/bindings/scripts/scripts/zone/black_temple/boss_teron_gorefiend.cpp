@@ -65,7 +65,7 @@ struct TRINITY_DLL_DECL mob_doom_blossomAI : public NullCreatureAI
 {
     mob_doom_blossomAI(Creature *c) : NullCreatureAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         TeronGUID = pInstance ? pInstance->GetData64(DATA_TERONGOREFIEND) : 0;
     }
 
@@ -84,7 +84,7 @@ struct TRINITY_DLL_DECL mob_doom_blossomAI : public NullCreatureAI
             m_creature->setFaction(Teron->getFaction());
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT | MOVEMENTFLAG_LEVITATING);
+        m_creature->AddUnitMovementFlag(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
 
         float newX, newY, newZ;
         m_creature->GetRandomPoint(m_creature->GetPositionX(),m_creature->GetPositionY(),m_creature->GetPositionZ(), 10.0, newX, newY, newZ);
@@ -151,7 +151,7 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
 {
     mob_shadowy_constructAI(Creature* c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     ScriptedInstance* pInstance;
@@ -177,6 +177,10 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
     {
     }
 
+    void JustDied(Unit *pKiller)
+    {
+        me->RemoveCorpse();
+    }
     void AttackStart(Unit* who)
     {
         // unit or target with posses spirit immune cannot be taken as targets
@@ -275,7 +279,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
 {
     boss_teron_gorefiendAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         m_creature->GetPosition(wLoc);
 
         SpellEntry *ShadowTempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_CRUSHING_SHADOWS);
@@ -310,8 +314,10 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         if(pInstance)
-            pInstance->SetData(DATA_TERONGOREFIENDEVENT, NOT_STARTED);
+            pInstance->SetData(EVENT_TERONGOREFIEND, NOT_STARTED);
 
         IncinerateTimer = 40000;
         SummonDoomBlossomTimer = 10000;
@@ -336,7 +342,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
         DoScriptText(SAY_AGGRO, m_creature);
 
         if(pInstance)
-            pInstance->SetData(DATA_TERONGOREFIENDEVENT, IN_PROGRESS);
+            pInstance->SetData(EVENT_TERONGOREFIEND, IN_PROGRESS);
     }
 
     void MoveInLineOfSight(Unit *who)
@@ -344,7 +350,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
         if(!who || !who->isAlive())
             return;
 
-        if(!m_creature->isInCombat() && who->isTargetableForAttack() && who->isInAccessiblePlaceFor(m_creature) && m_creature->IsHostileTo(who))
+        if(!m_creature->isInCombat() && who->isTargetableForAttack() && who->isInAccessiblePlacefor(m_creature) && m_creature->IsHostileTo(who))
         {
             float attackRadius = m_creature->GetAttackDistance(who);
 
@@ -373,7 +379,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
     void JustDied(Unit *victim)
     {
         if(pInstance)
-            pInstance->SetData(DATA_TERONGOREFIENDEVENT, DONE);
+            pInstance->SetData(EVENT_TERONGOREFIEND, DONE);
 
         DoScriptText(SAY_DEATH, m_creature);
     }

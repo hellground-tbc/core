@@ -27,25 +27,25 @@
 #include "CreatureAI.h"
 #include "ObjectGuid.h"
 
-void WorldSession::HandleAttackSwingOpcode( WorldPacket & recv_data )
+void WorldSession::HandleAttackSwingOpcode(WorldPacket & recv_data)
 {
     uint64 guid;
     recv_data >> guid;
 
-    DEBUG_LOG( "WORLD: Recvd CMSG_ATTACKSWING Message guidlow:%u guidhigh:%u", GUID_LOPART(guid), GUID_HIPART(guid) );
+    DEBUG_LOG("WORLD: Recvd CMSG_ATTACKSWING Message guidlow:%u guidhigh:%u", GUID_LOPART(guid), GUID_HIPART(guid));
 
     Unit *pEnemy = _player->GetMap()->GetUnit(guid);
 
-    if(!pEnemy)
+    if (!pEnemy)
     {
         // stop attack state at client
         SendAttackStop(NULL);
         return;
     }
 
-    if(!_player->canAttack(pEnemy))
+    if (!_player->canAttack(pEnemy))
     {
-        sLog.outDebug( "WORLD: Enemy %s %u is friendly",(IS_PLAYER_GUID(guid) ? "player" : "creature"),GUID_LOPART(guid));
+        sLog.outDebug("WORLD: Enemy %s %u is friendly",(IS_PLAYER_GUID(guid) ? "player" : "creature"),GUID_LOPART(guid));
 
         // stop attack state at client
         SendAttackStop(pEnemy);
@@ -55,19 +55,19 @@ void WorldSession::HandleAttackSwingOpcode( WorldPacket & recv_data )
     _player->Attack(pEnemy,true);
 }
 
-void WorldSession::HandleAttackStopOpcode( WorldPacket & /*recv_data*/ )
+void WorldSession::HandleAttackStopOpcode(WorldPacket & /*recv_data*/)
 {
     GetPlayer()->AttackStop();
 }
 
-void WorldSession::HandleSetSheathedOpcode( WorldPacket & recv_data )
+void WorldSession::HandleSetSheathedOpcode(WorldPacket & recv_data)
 {
     CHECK_PACKET_SIZE(recv_data,4);
 
     uint32 sheathed;
     recv_data >> sheathed;
 
-    if(sheathed >= MAX_SHEATH_STATE)
+    if (sheathed >= MAX_SHEATH_STATE)
     {
         sLog.outError("Unknown sheath state %u ??",sheathed);
         return;

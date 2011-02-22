@@ -38,7 +38,7 @@ Weather::Weather(uint32 zone, WeatherZoneChances const* weatherChances) : m_zone
     m_type = WEATHER_TYPE_FINE;
     m_grade = 0;
 
-    sLog.outDetail("WORLD: Starting weather system for zone %u (change every %u minutes).", m_zone, (uint32)(m_timer.GetInterval() / (1000*MINUTE)) );
+    sLog.outDetail("WORLD: Starting weather system for zone %u (change every %u minutes).", m_zone, (uint32)(m_timer.GetInterval() / (1000*MINUTE)));
 }
 
 /// Launch a weather update
@@ -49,14 +49,14 @@ bool Weather::Update(time_t diff)
     else m_timer.SetCurrent(0);
 
     ///- If the timer has passed, ReGenerate the weather
-    if(m_timer.Passed())
+    if (m_timer.Passed())
     {
         m_timer.Reset();
         // update only if Regenerate has changed the weather
-        if(ReGenerate())
+        if (ReGenerate())
         {
             ///- Weather will be removed if not updated (no players in zone anymore)
-            if(!UpdateWeather())
+            if (!UpdateWeather())
                 return false;
         }
     }
@@ -150,11 +150,11 @@ bool Weather::ReGenerate()
     uint32 chance3 = chance2+ m_weatherChances->data[season].stormChance;
 
     uint32 rnd = urand(0, 99);
-    if(rnd <= chance1)
+    if (rnd <= chance1)
         m_type = WEATHER_TYPE_RAIN;
-    else if(rnd <= chance2)
+    else if (rnd <= chance2)
         m_type = WEATHER_TYPE_SNOW;
-    else if(rnd <= chance3)
+    else if (rnd <= chance3)
         m_type = WEATHER_TYPE_STORM;
     else
         m_type = WEATHER_TYPE_FINE;
@@ -192,10 +192,10 @@ void Weather::SendWeatherUpdateToPlayer(Player *player)
     if (player->GetSession()->GetOpcodesDisabledFlag() & OPC_DISABLE_WEATHER)
         return;
 
-    WorldPacket data( SMSG_WEATHER, (4+4+4) );
+    WorldPacket data(SMSG_WEATHER, (4+4+4));
 
     data << uint32(GetWeatherState()) << (float)m_grade << uint8(0);
-    player->GetSession()->SendPacket( &data );
+    player->GetSession()->SendPacket(&data);
 }
 
 void Weather::SendFineWeatherUpdateToPlayer(Player *player)
@@ -203,17 +203,17 @@ void Weather::SendFineWeatherUpdateToPlayer(Player *player)
     if (player->GetSession()->GetOpcodesDisabledFlag() & OPC_DISABLE_WEATHER)
         return;
 
-    WorldPacket data( SMSG_WEATHER, (4+4+4) );
+    WorldPacket data(SMSG_WEATHER, (4+4+4));
 
     data << (uint32)WEATHER_STATE_FINE << (float)0.0f << uint8(0);
-    player->GetSession()->SendPacket( &data );
+    player->GetSession()->SendPacket(&data);
 }
 
 /// Send the new weather to all players in the zone
 bool Weather::UpdateWeather()
 {
     Player* player = sWorld.FindPlayerInZone(m_zone);
-    if(!player)
+    if (!player)
         return false;
 
     if (player->GetSession()->GetOpcodesDisabledFlag() & OPC_DISABLE_WEATHER)
@@ -227,13 +227,13 @@ bool Weather::UpdateWeather()
 
     WeatherState state = GetWeatherState();
 
-    WorldPacket data( SMSG_WEATHER, (4+4+4) );
+    WorldPacket data(SMSG_WEATHER, (4+4+4));
     data << uint32(state) << (float)m_grade << uint8(0);
-    player->SendMessageToSet( &data, true );
+    player->SendMessageToSet(&data, true);
 
     ///- Log the event
     char const* wthstr;
-    switch(state)
+    switch (state)
     {
         case WEATHER_STATE_LIGHT_RAIN:
             wthstr = "light rain";
@@ -281,7 +281,7 @@ bool Weather::UpdateWeather()
 /// Set the weather
 void Weather::SetWeather(WeatherType type, float grade)
 {
-    if(m_type == type && m_grade == grade)
+    if (m_type == type && m_grade == grade)
         return;
 
     m_type = type;
@@ -295,26 +295,26 @@ WeatherState Weather::GetWeatherState() const
     if (m_grade<0.27f)
         return WEATHER_STATE_FINE;
 
-    switch(m_type)
+    switch (m_type)
     {
         case WEATHER_TYPE_RAIN:
-            if(m_grade<0.40f)
+            if (m_grade<0.40f)
                 return WEATHER_STATE_LIGHT_RAIN;
-            else if(m_grade<0.70f)
+            else if (m_grade<0.70f)
                 return WEATHER_STATE_MEDIUM_RAIN;
             else
                 return WEATHER_STATE_HEAVY_RAIN;
         case WEATHER_TYPE_SNOW:
-            if(m_grade<0.40f)
+            if (m_grade<0.40f)
                 return WEATHER_STATE_LIGHT_SNOW;
-            else if(m_grade<0.70f)
+            else if (m_grade<0.70f)
                 return WEATHER_STATE_MEDIUM_SNOW;
             else
                 return WEATHER_STATE_HEAVY_SNOW;
         case WEATHER_TYPE_STORM:
-            if(m_grade<0.40f)
+            if (m_grade<0.40f)
                 return WEATHER_STATE_LIGHT_SANDSTORM;
-            else if(m_grade<0.70f)
+            else if (m_grade<0.70f)
                 return WEATHER_STATE_MEDIUM_SANDSTORM;
             else
                 return WEATHER_STATE_HEAVY_SANDSTORM;

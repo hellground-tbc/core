@@ -41,7 +41,7 @@ struct TRINITY_DLL_DECL boss_sarturaAI : public ScriptedAI
 {
     boss_sarturaAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
     ScriptedInstance *pInstance;

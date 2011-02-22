@@ -67,7 +67,7 @@ struct TRINITY_DLL_DECL npc_medivh_bmAI : public ScriptedAI
 {
     npc_medivh_bmAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         HeroicMode = c->GetMap()->IsHeroic();
     }
 
@@ -295,7 +295,7 @@ struct TRINITY_DLL_DECL npc_time_riftAI : public ScriptedAI
 {
     npc_time_riftAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         HeroicMode = c->GetMap()->IsHeroic();
     }
 
@@ -427,7 +427,7 @@ struct TRINITY_DLL_DECL rift_summonAI : public ScriptedAI
 {
     rift_summonAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
         HeroicMode = c->GetMap()->IsHeroic();
     }
 

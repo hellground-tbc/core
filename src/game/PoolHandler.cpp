@@ -145,7 +145,7 @@ void PoolGroup<Creature>::Despawn1Object(uint32 guid)
     if (CreatureData const* data = objmgr.GetCreatureData(guid))
     {
         objmgr.RemoveCreatureFromGrid(guid, data);
-        Map * tmpMap = MapManager::Instance().FindMap(data->mapid);
+        Map * tmpMap = sMapMgr.FindMap(data->mapid);
 
         if (!tmpMap)
         {
@@ -165,7 +165,7 @@ void PoolGroup<GameObject>::Despawn1Object(uint32 guid)
     if (GameObjectData const* data = objmgr.GetGOData(guid))
     {
         objmgr.RemoveGameobjectFromGrid(guid, data);
-        Map * tmpMap = MapManager::Instance().FindMap(data->mapid);
+        Map * tmpMap = sMapMgr.FindMap(data->mapid);
 
         if (!tmpMap)
         {
@@ -261,7 +261,7 @@ bool PoolGroup<Creature>::Spawn1Object(uint32 guid)
         objmgr.AddCreatureToGrid(guid, data);
 
         // Spawn if necessary (loaded grids only)
-        Map* map = const_cast<Map*>(MapManager::Instance().CreateBaseMap(data->mapid));
+        Map* map = const_cast<Map*>(sMapMgr.CreateBaseMap(data->mapid));
         // We use spawn coords to spawn
         if (!map->Instanceable() && map->IsLoaded(data->posX, data->posY))
         {
@@ -289,7 +289,7 @@ bool PoolGroup<GameObject>::Spawn1Object(uint32 guid)
         objmgr.AddGameobjectToGrid(guid, data);
         // Spawn if necessary (loaded grids only)
         // this base map checked as non-instanced and then only existed
-        Map* map = const_cast<Map*>(MapManager::Instance().CreateBaseMap(data->mapid));
+        Map* map = const_cast<Map*>(sMapMgr.CreateBaseMap(data->mapid));
         // We use current coords to unspawn, not spawn coords since creature can have changed grid
         if (!map->Instanceable() && map->IsLoaded(data->posX, data->posY))
         {
@@ -328,7 +328,7 @@ bool PoolGroup<Creature>::ReSpawn1Object(uint32 guid)
     if (CreatureData const* data = objmgr.GetCreatureData(guid))
     {
         objmgr.RemoveCreatureFromGrid(guid, data);
-        Map * tmpMap = MapManager::Instance().FindMap(data->mapid);
+        Map * tmpMap = sMapMgr.FindMap(data->mapid);
 
         if (!tmpMap)
         {
@@ -350,7 +350,7 @@ bool PoolGroup<GameObject>::ReSpawn1Object(uint32 guid)
     if (GameObjectData const* data = objmgr.GetGOData(guid))
     {
         objmgr.RemoveGameobjectFromGrid(guid, data);
-        Map * tmpMap = MapManager::Instance().FindMap(data->mapid);
+        Map * tmpMap = sMapMgr.FindMap(data->mapid);
 
         if (!tmpMap)
         {
@@ -382,7 +382,7 @@ PoolHandler::PoolHandler()
 
 void PoolHandler::LoadFromDB()
 {
-    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT MAX(entry) FROM pool_template");
+    QueryResultAutoPtr result = WorldDatabase.Query("SELECT MAX(entry) FROM pool_template");
     if (!result)
     {
         sLog.outString(">> Table pool_template is empty.");
@@ -655,7 +655,7 @@ void PoolHandler::LoadFromDB()
 // The initialize method will spawn all pools not in an event and not in another pool, this is why there is 2 left joins with 2 null checks
 void PoolHandler::Initialize()
 {
-    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT DISTINCT pool_template.entry FROM pool_template LEFT JOIN game_event_pool ON pool_template.entry=game_event_pool.pool_entry LEFT JOIN pool_pool ON pool_template.entry=pool_pool.pool_id WHERE game_event_pool.pool_entry IS NULL AND pool_pool.pool_id IS NULL");
+    QueryResultAutoPtr result = WorldDatabase.Query("SELECT DISTINCT pool_template.entry FROM pool_template LEFT JOIN game_event_pool ON pool_template.entry=game_event_pool.pool_entry LEFT JOIN pool_pool ON pool_template.entry=pool_pool.pool_id WHERE game_event_pool.pool_entry IS NULL AND pool_pool.pool_id IS NULL");
     uint32 count=0;
     if (result)
     {

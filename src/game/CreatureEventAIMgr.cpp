@@ -39,7 +39,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Texts(bool check_entry_use)
     objmgr.LoadTrinityStrings(WorldDatabase,"creature_ai_texts",MIN_CREATURE_AI_TEXT_STRING_ID,MAX_CREATURE_AI_TEXT_STRING_ID);
 
     // Gather Additional data from EventAI Texts
-    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT entry, sound, type, language, emote FROM creature_ai_texts");
+    QueryResultAutoPtr result = WorldDatabase.Query("SELECT entry, sound, type, language, emote FROM creature_ai_texts");
 
     sLog.outString("Loading EventAI Texts additional data...");
     if (result)
@@ -95,7 +95,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Texts(bool check_entry_use)
             ++count;
         }while (result->NextRow());
 
-        if(check_entry_use)
+        if (check_entry_use)
            CheckUnusedAITexts();
 
         sLog.outString();
@@ -115,23 +115,23 @@ void CreatureEventAIMgr::CheckUnusedAITexts()
 {
     std::set<int32> idx_set;
     // check not used strings this is negative range
-    for(CreatureEventAI_TextMap::const_iterator itr = m_CreatureEventAI_TextMap.begin(); itr != m_CreatureEventAI_TextMap.end(); ++itr)
+    for (CreatureEventAI_TextMap::const_iterator itr = m_CreatureEventAI_TextMap.begin(); itr != m_CreatureEventAI_TextMap.end(); ++itr)
         idx_set.insert(itr->first);
 
-    for(CreatureEventAI_Event_Map::const_iterator itr = m_CreatureEventAI_Event_Map.begin(); itr != m_CreatureEventAI_Event_Map.end(); ++itr)
+    for (CreatureEventAI_Event_Map::const_iterator itr = m_CreatureEventAI_Event_Map.begin(); itr != m_CreatureEventAI_Event_Map.end(); ++itr)
     {
-        for(size_t i = 0; i < itr->second.size(); ++i)
+        for (size_t i = 0; i < itr->second.size(); ++i)
         {
             CreatureEventAI_Event const& event = itr->second[i];
 
-            for(int j = 0; j < MAX_ACTIONS; ++j)
+            for (int j = 0; j < MAX_ACTIONS; ++j)
             {
                 CreatureEventAI_Action const& action = event.action[j];
-                switch(action.type)
+                switch (action.type)
                 {
                     case ACTION_T_TEXT:
                     {
-                        for(int k = 0; k < 3; ++k)
+                        for (int k = 0; k < 3; ++k)
                             if (action.text.TextId[k])
                                 idx_set.erase(action.text.TextId[k]);
                         break;
@@ -142,7 +142,7 @@ void CreatureEventAIMgr::CheckUnusedAITexts()
         }
     }
 
-    for(std::set<int32>::const_iterator itr = idx_set.begin(); itr != idx_set.end(); ++itr)
+    for (std::set<int32>::const_iterator itr = idx_set.begin(); itr != idx_set.end(); ++itr)
         sLog.outErrorDb("CreatureEventAI:  Entry %i in table `creature_ai_texts` but not used in EventAI scripts.",*itr);
 }
 
@@ -154,7 +154,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Summons(bool check_entry_use)
     m_CreatureEventAI_Summon_Map.clear();
 
     // Gather additional data for EventAI
-    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT id, position_x, position_y, position_z, orientation, spawntimesecs FROM creature_ai_summons");
+    QueryResultAutoPtr result = WorldDatabase.Query("SELECT id, position_x, position_y, position_z, orientation, spawntimesecs FROM creature_ai_summons");
     if (result)
     {
         barGoLink bar(result->GetRowCount());
@@ -174,7 +174,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Summons(bool check_entry_use)
             temp.orientation = fields[4].GetFloat();
             temp.SpawnTimeSecs = fields[5].GetUInt32();
 
-            if(!Trinity::IsValidMapCoord(temp.position_x,temp.position_y,temp.position_z,temp.orientation))
+            if (!Trinity::IsValidMapCoord(temp.position_x,temp.position_y,temp.position_z,temp.orientation))
             {
                 sLog.outErrorDb("CreatureEventAI:  Summon id %u have wrong coordinates (%f,%f,%f,%f), skipping.", i,temp.position_x,temp.position_y,temp.position_z,temp.orientation);
                 continue;
@@ -185,7 +185,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Summons(bool check_entry_use)
             ++Count;
         }while (result->NextRow());
 
-        if(check_entry_use)
+        if (check_entry_use)
             CheckUnusedAISummons();
 
         sLog.outString();
@@ -205,18 +205,18 @@ void CreatureEventAIMgr::CheckUnusedAISummons()
 {
     std::set<int32> idx_set;
     // check not used strings this is negative range
-    for(CreatureEventAI_Summon_Map::const_iterator itr = m_CreatureEventAI_Summon_Map.begin(); itr != m_CreatureEventAI_Summon_Map.end(); ++itr)
+    for (CreatureEventAI_Summon_Map::const_iterator itr = m_CreatureEventAI_Summon_Map.begin(); itr != m_CreatureEventAI_Summon_Map.end(); ++itr)
         idx_set.insert(itr->first);
 
-    for(CreatureEventAI_Event_Map::const_iterator itr = m_CreatureEventAI_Event_Map.begin(); itr != m_CreatureEventAI_Event_Map.end(); ++itr)
+    for (CreatureEventAI_Event_Map::const_iterator itr = m_CreatureEventAI_Event_Map.begin(); itr != m_CreatureEventAI_Event_Map.end(); ++itr)
     {
-        for(size_t i = 0; i < itr->second.size(); ++i)
+        for (size_t i = 0; i < itr->second.size(); ++i)
         {
             CreatureEventAI_Event const& event = itr->second[i];
-            for(int j = 0; j < MAX_ACTIONS; ++j)
+            for (int j = 0; j < MAX_ACTIONS; ++j)
             {
                 CreatureEventAI_Action const& action = event.action[j];
-                switch(action.type)
+                switch (action.type)
                 {
                     case ACTION_T_SUMMON_ID:
                     {
@@ -230,7 +230,7 @@ void CreatureEventAIMgr::CheckUnusedAISummons()
         }
     }
 
-    for(std::set<int32>::const_iterator itr = idx_set.begin(); itr != idx_set.end(); ++itr)
+    for (std::set<int32>::const_iterator itr = idx_set.begin(); itr != idx_set.end(); ++itr)
         sLog.outErrorDb("CreatureEventAI:  Entry %i in table `creature_ai_summons` but not used in EventAI scripts.",*itr);
 }
 
@@ -241,7 +241,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
     m_CreatureEventAI_Event_Map.clear();
 
     // Gather event data
-    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT id, creature_id, event_type, event_inverse_phase_mask, event_chance, event_flags, "
+    QueryResultAutoPtr result = WorldDatabase.Query("SELECT id, creature_id, event_type, event_inverse_phase_mask, event_chance, event_flags, "
         "event_param1, event_param2, event_param3, event_param4, "
         "action1_type, action1_param1, action1_param2, action1_param3, "
         "action2_type, action2_param1, action2_param2, action2_param3, "
@@ -336,7 +336,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
 
                         if ((temp.spell_hit.schoolMask & pSpell->SchoolMask) != pSpell->SchoolMask)
                             sLog.outErrorDb("CreatureEventAI:  Creature %u has param1(spellId %u) but param2 is not -1 and not equal to spell's school mask. Event %u can never trigger.", temp.creature_id, temp.spell_hit.schoolMask, i);
-                    
+
                         // if you fill schoolmask field it will show an error
                         if (temp.spell_hit.schoolMask)
                             sLog.outErrorDb("CreatureEventAI:  Creature %u has param1(spellId %u) but param2 is not 0. Event %u can never trigger.", temp.creature_id, temp.spell_hit.schoolMask, i);
@@ -359,16 +359,16 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
                         sLog.outErrorDb("CreatureEventAI:  Creature %u are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", temp.creature_id, i);
                     break;
                 case EVENT_T_SPAWNED:
-                    switch(temp.spawned.condition)
+                    switch (temp.spawned.condition)
                     {
                         case SPAWNED_EVENT_ALWAY:
                             break;
                         case SPAWNED_EVENT_MAP:
-                            if(!sMapStore.LookupEntry(temp.spawned.conditionValue1))
+                            if (!sMapStore.LookupEntry(temp.spawned.conditionValue1))
                                 sLog.outErrorDb("CreatureEventAI:  Creature %u are using spawned event(%u) with param1 = %u 'map specific' but with not existed map (%u) in param2. Event will never repeat.", temp.creature_id, i, temp.spawned.condition, temp.spawned.conditionValue1);
                             break;
                         case SPAWNED_EVENT_ZONE:
-                            if(!GetAreaEntryByAreaID(temp.spawned.conditionValue1))
+                            if (!GetAreaEntryByAreaID(temp.spawned.conditionValue1))
                                 sLog.outErrorDb("CreatureEventAI:  Creature %u are using spawned event(%u) with param1 = %u 'area specific' but with not existed area (%u) in param2. Event will never repeat.", temp.creature_id, i, temp.spawned.condition, temp.spawned.conditionValue1);
                         default:
                             sLog.outErrorDb("CreatureEventAI:  Creature %u are using invalid spawned event %u mode (%u) in param1", temp.creature_id, i, temp.spawned.condition);
@@ -497,17 +497,17 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
                     case ACTION_T_TEXT:
                     {
                        bool not_set = false;
-                       for(int k = 0; k < 3; ++k)
+                       for (int k = 0; k < 3; ++k)
                        {
                            if (action.text.TextId[k])
                            {
                                 if (k > 0 && not_set)
                                     sLog.outErrorDb("CreatureEventAI:  Event %u Action %u has param%d, but it follow after not set param. Required for randomized text.", i, j+1, k+1);
-                                if(!action.text.TextId[k])
+                                if (!action.text.TextId[k])
                                     not_set = true;
 
                                 // range negative
-                                else if(action.text.TextId[k] > MIN_CREATURE_AI_TEXT_STRING_ID || action.text.TextId[k] <= MAX_CREATURE_AI_TEXT_STRING_ID)
+                                else if (action.text.TextId[k] > MIN_CREATURE_AI_TEXT_STRING_ID || action.text.TextId[k] <= MAX_CREATURE_AI_TEXT_STRING_ID)
                                 {
                                     sLog.outErrorDb("CreatureEventAI:  Event %u Action %u param%d references out-of-range entry (%i) in texts table.", i, j+1, k+1, action.text.TextId[k]);
                                     action.text.TextId[k] = 0;
@@ -739,9 +739,9 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
                         }
                         break;
                     case ACTION_T_SET_INVINCIBILITY_HP_LEVEL:
-                        if(action.invincibility_hp_level.is_percent)
+                        if (action.invincibility_hp_level.is_percent)
                         {
-                            if(action.invincibility_hp_level.hp_level > 100)
+                            if (action.invincibility_hp_level.hp_level > 100)
                             {
                                 sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses wrong percent value %u.", i, j+1, action.invincibility_hp_level.hp_level);
                                 action.invincibility_hp_level.hp_level = 100;
@@ -785,24 +785,24 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
             m_CreatureEventAI_Event_Map[creature_id].push_back(temp);
             ++Count;
 
-            if(CreatureInfo const* cInfo = sCreatureStorage.LookupEntry<CreatureInfo>(temp.creature_id))
+            if (CreatureInfo const* cInfo = sCreatureStorage.LookupEntry<CreatureInfo>(temp.creature_id))
             {
-                if(!cInfo->AIName || !cInfo->AIName[0])
+                if (!cInfo->AIName || !cInfo->AIName[0])
                 {
                     //sLog.outErrorDb("CreatureEventAI: Creature Entry %u has EventAI script but its AIName is empty. Set to EventAI as default.", cInfo->Entry);
                     size_t len = strlen("EventAI")+1;
                     const_cast<CreatureInfo*>(cInfo)->AIName = new char[len];
                     strncpy(const_cast<char*>(cInfo->AIName), "EventAI", len);
                 }
-                if(strcmp(cInfo->AIName, "EventAI"))
+                if (strcmp(cInfo->AIName, "EventAI"))
                 {
                     //sLog.outErrorDb("CreatureEventAI: Creature Entry %u has EventAI script but it has AIName %s. EventAI script will be overriden.", cInfo->Entry, cInfo->AIName);
                 }
-                if(cInfo->ScriptID)
+                if (cInfo->ScriptID)
                 {
                     //sLog.outErrorDb("CreatureEventAI: Creature Entry %u has EventAI script but it also has C++ script. EventAI script will be overriden.", cInfo->Entry);
                 }
-            }            
+            }
         }while (result->NextRow());
 
         CheckUnusedAITexts();

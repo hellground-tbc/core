@@ -56,15 +56,15 @@ INSTANTIATE_CLASS_MUTEX(ObjectAccessor, ACE_Thread_Mutex);
 
         void Visit(PlayerMapType &m)
         {
-            for(PlayerMapType::iterator iter=m.begin(); iter != m.end(); ++iter)
+            for (PlayerMapType::iterator iter=m.begin(); iter != m.end(); ++iter)
             {
-                if( iter->getSource() == &i_player )
+                if (iter->getSource() == &i_player)
                     continue;
 
                 UpdateDataMapType::iterator iter2 = i_updatePlayers.find(iter->getSource());
-                if( iter2 == i_updatePlayers.end() )
+                if (iter2 == i_updatePlayers.end())
                 {
-                    std::pair<UpdateDataMapType::iterator, bool> p = i_updatePlayers.insert( ObjectAccessor::UpdateDataValueType(iter->getSource(), UpdateData()) );
+                    std::pair<UpdateDataMapType::iterator, bool> p = i_updatePlayers.insert(ObjectAccessor::UpdateDataValueType(iter->getSource(), UpdateData()));
                     assert(p.second);
                     iter2 = p.first;
                 }
@@ -85,7 +85,7 @@ Pet * ObjectAccessor::GetPet(uint64 guid)
 Player* ObjectAccessor::FindPlayer(uint64 guid)
 {
     Player * plr = GetPlayer(guid);
-    if(!plr || !plr->IsInWorld())
+    if (!plr || !plr->IsInWorld())
         return NULL;
 
     return plr;
@@ -195,7 +195,7 @@ Corpse * ObjectAccessor::GetCorpse(WorldObject const &u, uint64 guid)
 Corpse* ObjectAccessor::GetCorpseForPlayerGUID(uint64 guid)
 {
     Player2CorpsesMapType::const_accessor a;
-    if(i_player2corpse.find(a, guid))
+    if (i_player2corpse.find(a, guid))
     {
         assert(a->second->GetType() != CORPSE_BONES);
         return a->second;
@@ -209,7 +209,7 @@ void ObjectAccessor::RemoveCorpse(Corpse *corpse)
     assert(corpse && corpse->GetType() != CORPSE_BONES);
 
     Player2CorpsesMapType::const_accessor a;
-    if(!i_player2corpse.find(a, corpse->GetOwnerGUID()))
+    if (!i_player2corpse.find(a, corpse->GetOwnerGUID()))
         return;
     a.release();
 
@@ -247,28 +247,24 @@ void ObjectAccessor::AddCorpse(Corpse *corpse)
 void ObjectAccessor::AddCorpsesToGrid(GridPair const& gridpair,GridType& grid,Map* map)
 {
     Guard guard(i_corpseGuard);
-    for(Player2CorpsesMapType::iterator iter = i_player2corpse.begin(); iter != i_player2corpse.end(); ++iter)
-        if(iter->second->GetGrid()==gridpair)
+    for (Player2CorpsesMapType::iterator iter = i_player2corpse.begin(); iter != i_player2corpse.end(); ++iter)
+        if (iter->second->GetGrid()==gridpair)
     {
         // verify, if the corpse in our instance (add only corpses which are)
         if (map->Instanceable())
         {
             if (iter->second->GetInstanceId() == map->GetInstanceId())
-            {
-                grid.AddWorldObject(iter->second,iter->second->GetGUID());
-            }
+                grid.AddWorldObject(iter->second);
         }
         else
-        {
-            grid.AddWorldObject(iter->second,iter->second->GetGUID());
-        }
+            grid.AddWorldObject(iter->second);
     }
 }
 
 Corpse* ObjectAccessor::ConvertCorpseForPlayer(uint64 player_guid, bool insignia)
 {
     Corpse *corpse = GetCorpseForPlayerGUID(player_guid);
-    if(!corpse)
+    if (!corpse)
     {
         //in fact this function is called from several places
         //even when player doesn't have a corpse, not an error
@@ -283,8 +279,8 @@ Corpse* ObjectAccessor::ConvertCorpseForPlayer(uint64 player_guid, bool insignia
 
     // remove resurrectble corpse from grid object registry (loaded state checked into call)
     // do not load the map if it's not loaded
-    Map *map = MapManager::Instance().FindMap(corpse->GetMapId(), corpse->GetInstanceId());
-    if(map) map->Remove(corpse,false);
+    Map *map =sMapMgr.FindMap(corpse->GetMapId(), corpse->GetInstanceId());
+    if (map) map->Remove(corpse,false);
 
     // remove corpse from DB
     corpse->DeleteFromDB();
@@ -316,7 +312,7 @@ Corpse* ObjectAccessor::ConvertCorpseForPlayer(uint64 player_guid, bool insignia
 
         for (int i = 0; i < EQUIPMENT_SLOT_END; i++)
         {
-            if(corpse->GetUInt32Value(CORPSE_FIELD_ITEM + i))
+            if (corpse->GetUInt32Value(CORPSE_FIELD_ITEM + i))
                 bones->SetUInt32Value(CORPSE_FIELD_ITEM + i, 0);
         }
 
@@ -337,14 +333,14 @@ Corpse * ObjectAccessor::GetCorpse(uint32 mapid, float x, float y, uint64 guid)
     if (corpse && corpse->GetMapId() == mapid)
     {
         CellPair p = Trinity::ComputeCellPair(x,y);
-        if(p.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || p.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP )
+        if (p.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || p.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP)
         {
             sLog.outError("ObjectAccessor::GetCorpse: invalid coordinates supplied X:%f Y:%f grid cell [%u:%u]", x, y, p.x_coord, p.y_coord);
             return NULL;
         }
 
         CellPair q = Trinity::ComputeCellPair(corpse->GetPositionX(), corpse->GetPositionY());
-        if(q.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || q.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP )
+        if (q.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || q.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP)
         {
             sLog.outError("ObjectAccessor::GetCorpse: object "UI64FMTD" has invalid coordinates X:%f Y:%f grid cell [%u:%u]", corpse->GetGUID(), corpse->GetPositionX(), corpse->GetPositionY(), q.x_coord, q.y_coord);
             return NULL;

@@ -186,20 +186,17 @@ struct TRINITY_DLL_DECL instance_gruuls_lair : public ScriptedInstance
         return 0;
     }
 
-    const char* Save()
+    std::string GetSaveData()
     {
         OUT_SAVE_INST_DATA;
+        
         std::ostringstream stream;
-        stream << Encounters[0] << " " << Encounters[1];
-        char* out = new char[stream.str().length() + 1];
-        strcpy(out, stream.str().c_str());
-        if(out)
-        {
-            OUT_SAVE_INST_DATA_COMPLETE;
-            return out;
-        }
+        stream << Encounters[0] << " ";
+        stream << Encounters[1];
 
-        return NULL;
+        OUT_SAVE_INST_DATA_COMPLETE;
+
+        return stream.str();
     }
 
     void Load(const char* in)

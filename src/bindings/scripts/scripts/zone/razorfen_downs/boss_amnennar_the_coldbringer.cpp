@@ -48,6 +48,8 @@ struct TRINITY_DLL_DECL boss_amnennar_the_coldbringerAI : public ScriptedAI
 
     void Reset()
     {
+        ClearCastQueue();
+
         AmnenarsWrath_Timer = 8000;
         FrostBolt_Timer = 1000;
         Spectrals = false;

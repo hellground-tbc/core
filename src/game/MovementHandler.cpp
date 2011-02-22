@@ -33,9 +33,9 @@
 #include "InstanceSaveMgr.h"
 #include "AntiCheat.h"
 
-void WorldSession::HandleMoveWorldportAckOpcode( WorldPacket & /*recv_data*/ )
+void WorldSession::HandleMoveWorldportAckOpcode(WorldPacket & /*recv_data*/)
 {
-    sLog.outDebug( "WORLD: got MSG_MOVE_WORLDPORT_ACK." );
+    sLog.outDebug("WORLD: got MSG_MOVE_WORLDPORT_ACK.");
     HandleMoveWorldportAckOpcode();
 }
 
@@ -45,7 +45,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     WorldLocation &loc = GetPlayer()->GetTeleportDest();
 
     // possible errors in the coordinate validity check
-    if(!MapManager::IsValidMapCoord(loc.mapid,loc.x,loc.y,loc.z,loc.o))
+    if (!MapManager::IsValidMapCoord(loc.mapid, loc.coord_x, loc.coord_y, loc.coord_z, loc.orientation))
     {
         LogoutPlayer(false);
         return;
@@ -56,14 +56,14 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     InstanceTemplate const* mInstance = objmgr.GetInstanceTemplate(loc.mapid);
 
     // reset instance validity, except if going to an instance inside an instance
-    if(GetPlayer()->m_InstanceValid == false && !mInstance)
+    if (GetPlayer()->m_InstanceValid == false && !mInstance)
         GetPlayer()->m_InstanceValid = true;
 
     GetPlayer()->SetSemaphoreTeleport(false);
 
     // relocate the player to the teleport destination
     GetPlayer()->SetMapId(loc.mapid);
-    GetPlayer()->Relocate(loc.x, loc.y, loc.z, loc.o);
+    GetPlayer()->Relocate(loc.coord_x, loc.coord_y, loc.coord_z, loc.orientation);
 
     // since the MapId is set before the GetInstance call, the InstanceId must be set to 0
     // to let GetInstance() determine the proper InstanceId based on the player's binds
@@ -75,12 +75,13 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     GetPlayer()->SendInitialPacketsBeforeAddToMap();
     // the CanEnter checks are done in TeleporTo but conditions may change
     // while the player is in transit, for example the map may get full
-    if(!GetPlayer()->GetMap()->Add(GetPlayer()))
+    if (!GetPlayer()->GetMap()->Add(GetPlayer()))
     {
-        sLog.outDebug("WORLD: teleport of player %s (%d) to location %d,%f,%f,%f,%f failed", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), loc.mapid, loc.x, loc.y, loc.z, loc.o);
+        sLog.outDebug("WORLD: teleport of player %s (%d) to location %d, %f, %f, %f, %f failed", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), loc.mapid, loc.coord_x, loc.coord_y, loc.coord_z, loc.orientation);
+
         // teleport the player home
         GetPlayer()->SetDontMove(false);
-        if(!GetPlayer()->TeleportTo(GetPlayer()->m_homebindMapId, GetPlayer()->m_homebindX, GetPlayer()->m_homebindY, GetPlayer()->m_homebindZ, GetPlayer()->GetOrientation()))
+        if (!GetPlayer()->TeleportToHomebind())
         {
             // the player must always be able to teleport home
             sLog.outError("WORLD: failed to teleport player %s (%d) to homebind location %d,%f,%f,%f,%f!", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), GetPlayer()->m_homebindMapId, GetPlayer()->m_homebindX, GetPlayer()->m_homebindY, GetPlayer()->m_homebindZ, GetPlayer()->GetOrientation());
@@ -92,10 +93,10 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     //this will set player's team ... so IT MUST BE CALLED BEFORE SendInitialPacketsAfterAddToMap()
     // battleground state prepare (in case join to BG), at relogin/tele player not invited
     // only add to bg group and object, if the player was invited (else he entered through command)
-    if(_player->InBattleGround())
+    if (_player->InBattleGround())
     {
         // cleanup seting if outdated
-        if(!mEntry->IsBattleGroundOrArena())
+        if (!mEntry->IsBattleGroundOrArena())
         {
             // Do next only if found in battleground
             _player->SetBattleGroundId(0);                          // We're not in BG.
@@ -103,9 +104,9 @@ void WorldSession::HandleMoveWorldportAckOpcode()
             _player->SetBGTeam(0);
         }
         // join to bg case
-        else if(BattleGround *bg = _player->GetBattleGround())
+        else if (BattleGround *bg = _player->GetBattleGround())
         {
-            if(_player->IsInvitedForBattleGroundInstance(_player->GetBattleGroundId()))
+            if (_player->IsInvitedForBattleGroundInstance(_player->GetBattleGroundId()))
                 bg->AddPlayer(_player);
         }
     }
@@ -113,9 +114,9 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     GetPlayer()->SendInitialPacketsAfterAddToMap();
 
     // flight fast teleport case
-    if(GetPlayer()->GetMotionMaster()->GetCurrentMovementGeneratorType()==FLIGHT_MOTION_TYPE)
+    if (GetPlayer()->GetMotionMaster()->GetCurrentMovementGeneratorType()==FLIGHT_MOTION_TYPE)
     {
-        if(!_player->InBattleGround())
+        if (!_player->InBattleGround())
         {
             // short preparations to continue flight
             GetPlayer()->SetDontMove(false);
@@ -126,42 +127,42 @@ void WorldSession::HandleMoveWorldportAckOpcode()
 
         // battleground state prepare, stop flight
         GetPlayer()->GetMotionMaster()->MovementExpired();
-        GetPlayer()->m_taxi.ClearTaxiDestinations();
+        GetPlayer()->CleanupAfterTaxiFlight();
     }
 
     // resurrect character at enter into instance where his corpse exist after add to map
     Corpse *corpse = GetPlayer()->GetCorpse();
     if (corpse && corpse->GetType() != CORPSE_BONES && corpse->GetMapId() == GetPlayer()->GetMapId())
     {
-        if( mEntry->IsDungeon() )
+        if (mEntry->IsDungeon())
         {
             GetPlayer()->ResurrectPlayer(0.5f,false);
             GetPlayer()->SpawnCorpseBones();
         }
     }
 
-    if(mEntry->IsRaid() && mInstance)
+    if (mEntry->IsRaid() && mInstance)
     {
-        if(reset_notify)
+        if (reset_notify)
         {
-            uint32 timeleft = sInstanceSaveManager.GetResetTimeFor(GetPlayer()->GetMapId()) - time(NULL);
+            uint32 timeleft = sInstanceSaveManager.GetResetTimefor (GetPlayer()->GetMapId()) - time(NULL);
             GetPlayer()->SendInstanceResetWarning(GetPlayer()->GetMapId(), timeleft); // greeting at the entrance of the resort raid instance
         }
     }
 
     // mount allow check
-    if(!mEntry->IsMountAllowed())
+    if (!mEntry->IsMountAllowed())
         _player->RemoveSpellsCausingAura(SPELL_AURA_MOUNTED);
 
     // honorless target
-    if(GetPlayer()->pvpInfo.inHostileArea)
+    if (GetPlayer()->pvpInfo.inHostileArea)
         GetPlayer()->CastSpell(GetPlayer(), 2479, true);
 
     // resummon pet
-    if(GetPlayer()->m_temporaryUnsummonedPetNumber)
+    if (GetPlayer()->m_temporaryUnsummonedPetNumber)
     {
         Pet* NewPet = new Pet;
-        if(!NewPet->LoadPetFromDB(GetPlayer(), 0, GetPlayer()->m_temporaryUnsummonedPetNumber, true))
+        if (!NewPet->LoadPetFromDB(GetPlayer(), 0, GetPlayer()->m_temporaryUnsummonedPetNumber, true))
             delete NewPet;
 
         GetPlayer()->m_temporaryUnsummonedPetNumber = 0;
@@ -170,7 +171,12 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     GetPlayer()->SetDontMove(false);
 }
 
-void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
+void WorldSession::HandleMoveTeleportAck(WorldPacket& recv_data)
+{
+    sLog.outDebug("MSG_MOVE_TELEPORT_ACK");
+}
+
+void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
 {
     /* extract packet */
 
@@ -179,7 +185,7 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
 
     /*----------------*/
 
-    if(recv_data.size() != recv_data.rpos())
+    if (recv_data.size() != recv_data.rpos())
     {
         sLog.outError("MovementHandler: player %s (guid %d, account %u) sent a packet (opcode %u) that is %u bytes larger than it should be. Kicked as cheater.", _player->GetName(), _player->GetGUIDLow(), _player->GetSession()->GetAccountId(), recv_data.GetOpcode(), recv_data.size() - recv_data.rpos());
         KickPlayer();
@@ -204,26 +210,26 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
     GetPlayer()->SetUnitMovementFlags(movementInfo.GetMovementFlags());
 
     /* handle special cases */
-    if (movementInfo.HasMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
+    if (movementInfo.HasMovementFlag(MOVEFLAG_ONTRANSPORT))
     {
         // transports size limited
         // (also received at zeppelin leave by some reason with t_* as absolute in continent coordinates, can be safely skipped)
-        if( movementInfo.GetTransportPos()->x > 50 || movementInfo.GetTransportPos()->y > 50 || movementInfo.GetTransportPos()->z > 50 )
+        if (movementInfo.GetTransportPos()->x > 50 || movementInfo.GetTransportPos()->y > 50 || movementInfo.GetTransportPos()->z > 50)
             return;
 
-        if( !Trinity::IsValidMapCoord(
+        if (!Trinity::IsValidMapCoord(
             movementInfo.GetPos()->x + movementInfo.GetTransportPos()->x,
             movementInfo.GetPos()->y + movementInfo.GetTransportPos()->y,
             movementInfo.GetPos()->z + movementInfo.GetTransportPos()->z,
             movementInfo.GetPos()->o + movementInfo.GetTransportPos()->o 
-            ))
+           ))
             return;
 
         // if we boarded a transport, add us to it
         if (!GetPlayer()->m_transport)
         {
-            // elevators also cause the client to send MOVEMENTFLAG_ONTRANSPORT - just unmount if the guid can be found in the transport list
-            for (MapManager::TransportSet::iterator iter = MapManager::Instance().m_Transports.begin(); iter != MapManager::Instance().m_Transports.end(); ++iter)
+            // elevators also cause the client to send MOVEFLAG_ONTRANSPORT - just unmount if the guid can be found in the transport list
+            for (MapManager::TransportSet::iterator iter = sMapMgr.m_Transports.begin(); iter != sMapMgr.m_Transports.end(); ++iter)
             {
                 if ((*iter)->GetGUID() == movementInfo.t_guid)
                 {
@@ -248,13 +254,26 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
     if (recv_data.GetOpcode() == MSG_MOVE_FALL_LAND && !GetPlayer()->isInFlight())
         GetPlayer()->HandleFallDamage(movementInfo);
 
-    if (movementInfo.HasMovementFlag(MOVEMENTFLAG_SWIMMING) != GetPlayer()->IsInWater())
+    if (movementInfo.HasMovementFlag(MOVEFLAG_SWIMMING) != GetPlayer()->IsInWater())
     {
         // now client not include swimming flag in case jumping under water
         GetPlayer()->SetInWater(!GetPlayer()->IsInWater() || GetPlayer()->GetBaseMap()->IsUnderWater(movementInfo.GetPos()->x, movementInfo.GetPos()->y, movementInfo.GetPos()->z));
     }
 
+    if (sWorld.m_ac.activated() && !GetPlayer()->hasUnitState(UNIT_STAT_LOST_CONTROL | UNIT_STAT_NOT_MOVE) && !GetPlayer()->isGameMaster() && GetPlayer()->m_AC_timer == 0 && recv_data.GetOpcode() != MSG_MOVE_SET_FACING)
+        sWorld.m_ac.execute(new ACRequest(GetPlayer(), GetLatency(), GetPlayer()->m_movementInfo, movementInfo, GetPlayer()->GetLastSpeedRate()));
+
     /*----------------------*/
+    uint8 uiMoveType = 0;
+
+    if (GetPlayer()->IsFlying())
+       uiMoveType = MOVE_FLIGHT;
+    else if (GetPlayer()->IsUnderWater())
+        uiMoveType = MOVE_SWIM;
+    else 
+        uiMoveType = MOVE_RUN;
+
+    GetPlayer()->SetLastSpeedRate(GetPlayer()->GetSpeedRate(UnitMoveType(uiMoveType)));
 
     /* process position-change */
     recv_data.put<uint32>(5, getMSTime());                  // offset flags(4) + unk(1)
@@ -262,10 +281,6 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
     data << GetPlayer()->GetPackGUID();
     data.append(recv_data.contents(), recv_data.size());
     GetPlayer()->SendMessageToSet(&data, false);
-
-    if (sWorld.m_ac.activated() && GetPlayer()->m_taxi.empty() && !GetPlayer()->hasUnitState(UNIT_STAT_LOST_CONTROL) && !GetPlayer()->isGameMaster() && (GetPlayer()->m_AC_timer == 0))
-        sWorld.m_ac.execute(new ACRequest(GetPlayer(), GetAccountId(), GetLatency(),
-                            movementInfo.GetPos()->x, movementInfo.GetPos()->y, movementInfo.GetPos()->z, movementInfo.GetMovementFlags()));
 
     GetPlayer()->SetPosition(movementInfo.GetPos()->x, movementInfo.GetPos()->y, movementInfo.GetPos()->z, movementInfo.GetPos()->o);
     GetPlayer()->m_movementInfo = movementInfo;
@@ -292,7 +307,7 @@ void WorldSession::HandlePossessedMovement(WorldPacket& recv_data, MovementInfo&
     pos_unit->SetUnitMovementFlags(movementInfo.GetMovementFlags());
 
     // Remove possession if possessed unit enters a transport
-    if (movementInfo.HasMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
+    if (movementInfo.HasMovementFlag(MOVEFLAG_ONTRANSPORT))
     {
         GetPlayer()->Uncharm();
         return;
@@ -313,7 +328,7 @@ void WorldSession::HandlePossessedMovement(WorldPacket& recv_data, MovementInfo&
         if (recv_data.GetOpcode() == MSG_MOVE_FALL_LAND)
             plr->HandleFallDamage(movementInfo);
 
-        if (movementInfo.HasMovementFlag(MOVEMENTFLAG_SWIMMING) != plr->IsInWater())
+        if (movementInfo.HasMovementFlag(MOVEFLAG_SWIMMING) != plr->IsInWater())
         {
             // Now client not include swimming flag in case jumping under water
             plr->SetInWater(!plr->IsInWater() || plr->GetBaseMap()->IsUnderWater(movementInfo.GetPos()->x, movementInfo.GetPos()->y, movementInfo.GetPos()->z));
@@ -365,7 +380,7 @@ void WorldSession::HandleForceSpeedChangeAck(WorldPacket &recv_data)
     static char const* move_type_name[MAX_MOVE_TYPE] = {  "Walk", "Run", "RunBack", "Swim", "SwimBack", "TurnRate", "Flight", "FlightBack" };
 
     uint16 opcode = recv_data.GetOpcode();
-    switch(opcode)
+    switch (opcode)
     {
         case CMSG_FORCE_WALK_SPEED_CHANGE_ACK:          move_type = MOVE_WALK;          force_move_type = MOVE_WALK;        break;
         case CMSG_FORCE_RUN_SPEED_CHANGE_ACK:           move_type = MOVE_RUN;           force_move_type = MOVE_RUN;         break;
@@ -382,16 +397,16 @@ void WorldSession::HandleForceSpeedChangeAck(WorldPacket &recv_data)
 
     // skip all forced speed changes except last and unexpected
     // in run/mounted case used one ACK and it must be skipped.m_forced_speed_changes[MOVE_RUN} store both.
-    if(_player->m_forced_speed_changes[force_move_type] > 0)
+    if (_player->m_forced_speed_changes[force_move_type] > 0)
     {
         --_player->m_forced_speed_changes[force_move_type];
-        if(_player->m_forced_speed_changes[force_move_type] > 0)
+        if (_player->m_forced_speed_changes[force_move_type] > 0)
             return;
     }
 
     if (!_player->GetTransport() && fabs(_player->GetSpeed(move_type) - newspeed) > 0.01f)
     {
-        if(_player->GetSpeed(move_type) > newspeed)         // must be greater - just correct
+        if (_player->GetSpeed(move_type) > newspeed)         // must be greater - just correct
         {
             sLog.outError("%sSpeedChange player %s is NOT correct (must be %f instead %f), force set to correct value",
                 move_type_name[move_type], _player->GetName(), _player->GetSpeed(move_type), newspeed);
@@ -463,7 +478,7 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket & recv_data)
     GetPlayer()->m_movementInfo = movementInfo;
 }
 
-void WorldSession::HandleMoveHoverAck( WorldPacket& recv_data )
+void WorldSession::HandleMoveHoverAck(WorldPacket& recv_data)
 {
     sLog.outDebug("CMSG_MOVE_HOVER_ACK");
 
@@ -489,7 +504,7 @@ void WorldSession::HandleMoveWaterWalkAck(WorldPacket& recv_data)
 
 void WorldSession::HandleSummonResponseOpcode(WorldPacket& recv_data)
 {
-    if(!_player->isAlive() || _player->isInCombat() )
+    if (!_player->isAlive() || _player->isInCombat())
         return;
 
     uint64 summoner_guid;

@@ -154,7 +154,7 @@ struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
             if(data != IN_PROGRESS)
             {
                 if(GameObject *Door = instance->GetGameObject(DoorGUID))
-                    Door->SetGoState(0);
+                    Door->SetGoState(GO_STATE_ACTIVE);
             }
             break;
         case DATA_CHANNELER_EVENT:
@@ -176,7 +176,7 @@ struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
                     }
                     CageTimer = 0;
                     if(GameObject *Door = instance->GetGameObject(DoorGUID))
-                        Door->SetGoState(0);
+                        Door->SetGoState(GO_STATE_ACTIVE);
                 }break;
             case IN_PROGRESS: // Event start.
                 if(Encounters[1] != IN_PROGRESS)
@@ -202,7 +202,7 @@ struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
                         CageTimer = 120000;
                     }
                     if(GameObject *Door = instance->GetGameObject(DoorGUID))
-                        Door->SetGoState(1);
+                        Door->SetGoState(GO_STATE_READY);
                 }break;
             case DONE: // Add buff and check if all channelers are dead.
                 Creature *STCaster = instance->GetCreature(STCasterGUID);
@@ -224,7 +224,7 @@ struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
             for(std::set<uint64>::iterator i = ColumnGUID.begin(); i != ColumnGUID.end(); ++i)
             {
                 if(GameObject *Column = instance->GetGameObject(*i))
-                    Column->SetGoState(!data);
+                    Column->SetGoState(GOState(!data));
             }
             break;
         default:
@@ -275,20 +275,18 @@ struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
             }else RespawnTimer -= diff;
         }
     }
-    const char* Save()
+
+    std::string GetSaveData()
     {
         OUT_SAVE_INST_DATA;
+        
         std::ostringstream stream;
-        stream << Encounters[0] << " "  << Encounters[1];
-        char* out = new char[stream.str().length() + 1];
-        strcpy(out, stream.str().c_str());
-        if(out)
-        {
-            OUT_SAVE_INST_DATA_COMPLETE;
-            return out;
-        }
+        stream << Encounters[0] << " ";
+        stream << Encounters[1];
 
-        return NULL;
+        OUT_SAVE_INST_DATA_COMPLETE;
+
+        return stream.str();
     }
 
     void Load(const char* in)
