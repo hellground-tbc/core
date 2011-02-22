@@ -55,7 +55,12 @@ EndScriptData */
 #define MIN_MOVE_CHANCE         33
 #define MAX_MOVE_CHANCE         90
 
+#define MIN_SELF_MOVE_CHANCE    25
+#define MAX_SELF_MOVE_CHANCE    50
+
 #define attackCooldown          3000
+
+#define ADD_PIECE_TO_MOVE_TIMER urand(1000, 4000);
 
 #define ORI_N   0.656777
 #define ORI_E   5.391155
@@ -257,6 +262,27 @@ struct ChessTile
     }
 };
 
+struct ChessPosition
+{
+    uint64 GUID;
+    int i;
+    int j;
+
+    ChessPosition()
+    {
+        GUID = 0;
+        i = -1;
+        j = -1;
+    }
+
+    ChessPosition(uint64 guid, int i, int j)
+    {
+        this->GUID = guid;
+        this->i = i;
+        this->j = j;
+    }
+};
+
 struct Priority
 {
     uint64 GUID;
@@ -367,10 +393,6 @@ public:
 
     void SetSpellsAndCooldowns();
 
-    bool IsHealingSpell(uint32);
-
-    int GetAbilityRange(uint32);
-
     void Reset();
 
     void MovementInform(uint32 MovementType, uint32 Data);
@@ -401,6 +423,8 @@ private:
     int16 chanceToMove;     //random chance for medivh to move piece when player moved
                             //when player want to move his piece medivh tests if he can move too
 
+    int16 chaceToSelfMove;
+
     ChessTile chessBoard[8][8];
 
     // entry, index_list
@@ -423,6 +447,7 @@ private:
     std::list<ChessTile> moveList; //list of triggers to make move
 
     uint32 moveTimer;
+    uint32 addPieceToMoveCheckTimer;
 
 public:
     boss_MedivhAI(Creature *c);
@@ -431,7 +456,7 @@ public:
 
     void SayChessPieceDied(Unit * piece);
     void RemoveChessPieceFromBoard(uint64 piece);   //removes dead piece from chess board
-    void RemoveChessPieceFromBoard(Unit * piece);   //and spawn them in position near board
+    void RemoveChessPieceFromBoard(Creature * piece);   //and spawn them in position near board
 
     //check
 
@@ -466,6 +491,7 @@ public:
 
     //move
 
+    void ChoosePieceToMove();
     bool ChessSquareIsEmpty(uint64 trigger);
     bool ChessSquareIsEmpty(int i, int j);
     bool CanMoveTo(uint64 trigger, uint64 piece);   //check if player can move to trigger - prevent cheating
@@ -487,7 +513,10 @@ public:
 
     //target
 
-    uint64 GetSpellTarget(uint64 caster, int range, bool heal);
+    int GetAbilityRange(uint32 spell);      // return custom ability range <-- needed for target selection
+    bool IsOnSelfSpell(uint32 spell);       // check if spell can be only casted on self (like absorb)
+    bool IsPositive(uint32 spell);          // check if spell is positive <-- if true then select friendly target
+    uint64 GetSpellTarget(uint64 caster, uint32 spell);
     uint64 GetMeleeTarget(uint64 piece);
 
     //other

@@ -192,6 +192,8 @@ INSERT INTO spell_script_target () VALUES (37153,1,22519);#--8
 INSERT INTO spell_script_target () VALUES (30532,1,17460);
 INSERT INTO spell_script_target () VALUES (30284,1,22519);#--Change Facing
 
+UPDATE creature_template SET faction_A = 1691, faction_H = 1691 WHERE faction_A = 1689;
+
 #----ability 1 alliance
 
 #--Elemental Blast - any enemy piece
