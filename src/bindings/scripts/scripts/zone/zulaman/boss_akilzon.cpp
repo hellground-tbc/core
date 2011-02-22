@@ -197,10 +197,12 @@ struct TRINITY_DLL_DECL boss_akilzonAI : public ScriptedAI
             //we dont want to start a storm with player in the air
             if(ElectricalStorm_Timer < 8000)
                 GustOfWind_Timer += 18000;
-
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_GUST_OF_WIND), true, m_creature->getVictimGUID()))
-                AddSpellToCast(target, SPELL_GUST_OF_WIND);
-            GustOfWind_Timer = urand(8000, 14000);
+            else
+            {
+                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_GUST_OF_WIND), true, m_creature->getVictimGUID()))
+                    AddSpellToCast(target, SPELL_GUST_OF_WIND);
+                GustOfWind_Timer = urand(8000, 14000);
+            }
         }
         else
             GustOfWind_Timer -= diff;

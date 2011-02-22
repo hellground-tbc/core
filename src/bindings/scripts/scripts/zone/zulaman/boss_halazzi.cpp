@@ -25,22 +25,15 @@ EndScriptData */
 #include "def_zulaman.h"
 //#include "spell.h"
 
-#define YELL_AGGRO "Get on your knees and bow to da fang and claw!"
-#define SOUND_AGGRO                    12020
-#define YELL_SABER_ONE "You gonna leave in pieces!"
-#define YELL_SABER_TWO "Me gonna carve ya now!"
-#define YELL_SPLIT "Me gonna carve ya now!"
-#define SOUND_SPLIT                    12021
-#define YELL_MERGE "Spirit, come back to me!"
-#define SOUND_MERGE                    12022
-#define YELL_KILL_ONE "You cant fight the power!"
-#define SOUND_KILL_ONE                12026
-#define YELL_KILL_TWO "You gonna fail!"
-#define SOUND_KILL_TWO                12027
-#define YELL_DEATH "Chaga... choka'jinn."
-#define SOUND_DEATH                    12028
-#define YELL_BERSERK "Whatch you be doing? Pissin' yourselves..."
-#define SOUND_BERSERK                12025
+#define YELL_AGGRO                      -1800484
+#define YELL_SABER_ONE                  -1800485
+#define YELL_SABER_TWO                  -1800486
+#define YELL_SPLIT                      -1800487
+#define YELL_MERGE                      -1800488
+#define YELL_KILL_ONE                   -1800489
+#define YELL_KILL_TWO                   -1800490
+#define YELL_DEATH                      -1800491
+#define YELL_BERSERK                    -1800492
 
 #define SPELL_DUAL_WIELD                29651
 #define SPELL_SABER_LASH                43267
@@ -123,14 +116,14 @@ struct TRINITY_DLL_DECL boss_halazziAI : public ScriptedAI
         if(pInstance)
             pInstance->SetData(DATA_HALAZZIEVENT, IN_PROGRESS);
 
-        DoYell(YELL_AGGRO, LANG_UNIVERSAL, NULL);
-        DoPlaySoundToSet(m_creature, SOUND_AGGRO);
+        DoScriptText(YELL_AGGRO, m_creature);
 
         EnterPhase(PHASE_LYNX);
     }
 
     void JustSummoned(Creature* summon)
     {
+        summon->AI()->DoZoneInCombat();
         summon->AI()->AttackStart(m_creature->getVictim());
         if(summon->GetEntry() == MOB_SPIRIT_LYNX)
             LynxGUID = summon->GetGUID();
@@ -161,7 +154,7 @@ struct TRINITY_DLL_DECL boss_halazziAI : public ScriptedAI
         case PHASE_ENRAGE:
             if(Phase == PHASE_MERGE)
             {
-                m_creature->CastSpell(m_creature, SPELL_TRANSFORM_MERGE, true);
+                ForceSpellCast(m_creature, SPELL_TRANSFORM_MERGE, INTERRUPT_AND_CAST_INSTANTLY, true);
                 m_creature->Attack(m_creature->getVictim(), true);
                 m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
             }
@@ -178,9 +171,7 @@ struct TRINITY_DLL_DECL boss_halazziAI : public ScriptedAI
             TotemTimer = 12000;
             break;
         case PHASE_SPLIT:
-            DoYell(YELL_SPLIT, LANG_UNIVERSAL, NULL);
-            DoPlaySoundToSet(m_creature, SOUND_SPLIT);
-            m_creature->CastSpell(m_creature, SPELL_TRANSFORM_SPLIT, true);
+            AddSpellToCastWithScriptText(m_creature, SPELL_TRANSFORM_SPLIT, YELL_SPLIT, true);
             break;
         case PHASE_HUMAN:
             //DoCast(m_creature, SPELL_SUMMON_LYNX, true);
@@ -193,8 +184,7 @@ struct TRINITY_DLL_DECL boss_halazziAI : public ScriptedAI
         case PHASE_MERGE:
             if(Unit *Lynx = Unit::GetUnit(*m_creature, LynxGUID))
             {
-                DoYell(YELL_MERGE, LANG_UNIVERSAL, NULL);
-                DoPlaySoundToSet(m_creature, SOUND_MERGE);
+                DoScriptText(YELL_MERGE, m_creature);
                 Lynx->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 Lynx->GetMotionMaster()->Clear();
                 Lynx->GetMotionMaster()->MoveFollow(m_creature, 0, 0);
@@ -226,9 +216,7 @@ struct TRINITY_DLL_DECL boss_halazziAI : public ScriptedAI
 
         if(BerserkTimer < diff)
         {
-            DoYell(YELL_BERSERK, LANG_UNIVERSAL, NULL);
-            DoPlaySoundToSet(m_creature, SOUND_BERSERK);
-            DoCast(m_creature, SPELL_BERSERK, true);
+            AddSpellToCastWithScriptText(m_creature, SPELL_BERSERK, YELL_BERSERK);
             BerserkTimer = 60000;
         }else BerserkTimer -= diff;
 
@@ -236,16 +224,13 @@ struct TRINITY_DLL_DECL boss_halazziAI : public ScriptedAI
         {
             if(SaberlashTimer < diff)
             {
-                // A tank with more than 490 defense skills should receive no critical hit
-                //m_creature->CastSpell(m_creature, 41296, true);
-                m_creature->CastSpell(m_creature->getVictim(), SPELL_SABER_LASH, true);
-                //m_creature->RemoveAurasDueToSpell(41296);
+                AddSpellToCast(m_creature->getVictim(), SPELL_SABER_LASH);
                 SaberlashTimer = 30000;
             }else SaberlashTimer -= diff;
 
             if(FrenzyTimer < diff)
             {
-                DoCast(m_creature, SPELL_FRENZY);
+                AddSpellToCast(m_creature, SPELL_FRENZY);
                 FrenzyTimer = (10+rand()%5)*1000;
             }else FrenzyTimer -= diff;
 
@@ -262,7 +247,7 @@ struct TRINITY_DLL_DECL boss_halazziAI : public ScriptedAI
         {
             if(TotemTimer < diff)
             {
-                DoCast(m_creature, SPELL_SUMMON_TOTEM);
+                AddSpellToCast(m_creature, SPELL_SUMMON_TOTEM);
                 TotemTimer = 20000;
             }else TotemTimer -= diff;
 
@@ -271,9 +256,9 @@ struct TRINITY_DLL_DECL boss_halazziAI : public ScriptedAI
                 if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,GetSpellMaxRange(SPELL_EARTHSHOCK), true))
                 {
                     if(target->IsNonMeleeSpellCasted(false))
-                        DoCast(target,SPELL_EARTHSHOCK);
+                        AddSpellToCast(target,SPELL_EARTHSHOCK);
                     else
-                        DoCast(target,SPELL_FLAMESHOCK);
+                        AddSpellToCast(target,SPELL_FLAMESHOCK);
                     ShockTimer = 10000 + rand()%5000;
                 }
             }else ShockTimer -= diff;
@@ -314,23 +299,13 @@ struct TRINITY_DLL_DECL boss_halazziAI : public ScriptedAI
             }else CheckTimer -= diff;
         }
 
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 
     void KilledUnit(Unit* victim)
     {
-        switch(rand()%2)
-        {
-        case 0:
-            DoYell(YELL_KILL_ONE, LANG_UNIVERSAL, NULL);
-            DoPlaySoundToSet(m_creature, SOUND_KILL_ONE);
-            break;
-
-        case 1:
-            DoYell(YELL_KILL_TWO, LANG_UNIVERSAL, NULL);
-            DoPlaySoundToSet(m_creature, SOUND_KILL_TWO);
-            break;
-        }
+        DoScriptText(RAND(YELL_KILL_ONE, YELL_KILL_TWO), m_creature);
     }
 
     void JustDied(Unit* Killer)
@@ -338,8 +313,7 @@ struct TRINITY_DLL_DECL boss_halazziAI : public ScriptedAI
         if(pInstance)
             pInstance->SetData(DATA_HALAZZIEVENT, DONE);
 
-        DoYell(YELL_DEATH, LANG_UNIVERSAL, NULL);
-        DoPlaySoundToSet(m_creature, SOUND_DEATH);
+        DoScriptText(YELL_DEATH, m_creature);
     }
 };
 

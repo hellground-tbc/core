@@ -118,8 +118,11 @@ struct TRINITY_DLL_DECL boss_warlord_kalithreshAI : public ScriptedAI
 
         std::list<Creature*> naga_distillers = DoFindAllCreaturesWithEntry(17954, 100);
         for(std::list<Creature*>::iterator it = naga_distillers.begin(); it != naga_distillers.end(); it++)
+        {
             (*it)->Respawn();
-        
+            (*it)->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            (*it)->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        }
 
         if (pInstance)
             pInstance->SetData(TYPE_WARLORD_KALITHRESH, NOT_STARTED);

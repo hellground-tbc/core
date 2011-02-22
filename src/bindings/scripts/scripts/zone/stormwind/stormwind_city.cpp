@@ -795,7 +795,7 @@ bool GossipSelect_npc_squire_rowe(Player *player, Creature *_Creature, uint32 se
 * Stormwind Elite Guard
 *****/
 
-float StormwindEliteGuardMoveCoords[6][4]
+float StormwindEliteGuardMoveCoords[6][4] = 
 {
     // right
     {-8970.5, 520.3, 96.7, 5.38},
@@ -930,7 +930,7 @@ enum Event
     EVENT_ONYXIA            = 4
 };
 
-float StormwindGuardsCoords[7][4]
+float StormwindGuardsCoords[7][4] =
 {
     // Marcus
     {-8966.6, 511.3, 96.4, 3.78},

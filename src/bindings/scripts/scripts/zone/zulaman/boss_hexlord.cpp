@@ -24,18 +24,12 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_zulaman.h"
 
-#define YELL_AGGRO              "Da shadow gonna fall on you... "
-#define SOUND_YELL_AGGRO        12041
-#define YELL_SPIRIT_BOLTS       "Your soul gonna bleed!"
-#define SOUND_YELL_SPIRIT_BOLTS 12047
-#define YELL_DRAIN_POWER        "Darkness comin\' for you"
-#define SOUND_YELL_DRAIN_POWER  12046
-#define YELL_KILL_ONE           "Dis a nightmare ya don\' wake up from!"
-#define SOUND_YELL_KILL_ONE     12043
-#define YELL_KILL_TWO           "Azzaga choogo zinn!"
-#define SOUND_YELL_KILL_TWO     12044
-#define YELL_DEATH              "Dis not... da end of me..."
-#define SOUND_YELL_DEATH        12051
+#define YELL_AGGRO              -1800493
+#define YELL_SPIRIT_BOLTS       -1800494
+#define YELL_DRAIN_POWER        -1800495
+#define YELL_KILL_ONE           -1800496
+#define YELL_KILL_TWO           -1800497
+#define YELL_DEATH              -1800498
 
 #define SPELL_SPIRIT_BOLTS      43383
 #define SPELL_DRAIN_POWER       44131
@@ -258,8 +252,7 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
             pInstance->SetData(DATA_HEXLORDEVENT, IN_PROGRESS);
 
         DoZoneInCombat();
-        DoYell(YELL_AGGRO, LANG_UNIVERSAL, NULL);
-        DoPlaySoundToSet(m_creature, SOUND_YELL_AGGRO);
+        DoScriptText(YELL_AGGRO, m_creature);
 
         for(uint8 i = 0; i < 4; ++i)
         {
@@ -276,17 +269,7 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
 
     void KilledUnit(Unit* victim)
     {
-        switch(rand()%2)
-        {
-        case 0:
-            DoYell(YELL_KILL_ONE, LANG_UNIVERSAL, NULL);
-            DoPlaySoundToSet(m_creature, SOUND_YELL_KILL_ONE);
-            break;
-        case 1:
-            DoYell(YELL_KILL_TWO, LANG_UNIVERSAL, NULL);
-            DoPlaySoundToSet(m_creature, SOUND_YELL_KILL_TWO);
-            break;
-        }
+        DoScriptText(RAND(YELL_KILL_ONE,YELL_KILL_TWO), m_creature);
     }
 
     void JustDied(Unit* victim)
@@ -294,8 +277,7 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
         if(pInstance)
             pInstance->SetData(DATA_HEXLORDEVENT, DONE);
 
-        DoYell(YELL_DEATH, LANG_UNIVERSAL, NULL);
-        DoPlaySoundToSet(m_creature, SOUND_YELL_DEATH);
+        DoScriptText(YELL_DEATH, m_creature);
 
         for(uint8 i = 0; i < 4 ; ++i)
         {
@@ -371,10 +353,9 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
 
         if(DrainPower_Timer < diff)
         {
-            m_creature->CastSpell(m_creature, SPELL_DRAIN_POWER, true);
-            DoYell(YELL_DRAIN_POWER, LANG_UNIVERSAL, NULL);
-            DoPlaySoundToSet(m_creature, SOUND_YELL_DRAIN_POWER);
-            DrainPower_Timer = 40000 + rand()%15000;    // must cast in 60 sec, or buff/debuff will disappear
+            ClearCastQueue();
+            AddSpellToCastWithScriptText(m_creature, SPELL_DRAIN_POWER, YELL_DRAIN_POWER);
+            DrainPower_Timer = 40000 + rand()%10000;    // must cast in 60 sec, or buff/debuff will disappear
         }else DrainPower_Timer -= diff;
 
         if(SpiritBolts_Timer < diff)
@@ -383,9 +364,7 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
                 SpiritBolts_Timer = 13000;  // cast drain power first
             else
             {
-                m_creature->CastSpell(m_creature, SPELL_SPIRIT_BOLTS, false);
-                DoYell(YELL_SPIRIT_BOLTS, LANG_UNIVERSAL, NULL);
-                DoPlaySoundToSet(m_creature, SOUND_YELL_SPIRIT_BOLTS);
+                AddSpellToCastWithScriptText(m_creature, SPELL_SPIRIT_BOLTS, YELL_SPIRIT_BOLTS);
                 SpiritBolts_Timer = 40000;
                 SiphonSoul_Timer = 10000;  // ready to drain
                 PlayerAbility_Timer = 99999;
@@ -431,6 +410,7 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
             }
         }else PlayerAbility_Timer -= diff;
 
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 
@@ -461,7 +441,7 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
             break;
         }
         if(target)
-            m_creature->CastSpell(target, PlayerAbility[PlayerClass][random].spell, false);
+            AddSpellToCast(target, PlayerAbility[PlayerClass][random].spell, false);
     }
 };
 

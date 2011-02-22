@@ -6653,6 +6653,12 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                 return false;
             break;
         }
+        // Energy Storm (used by Zul'jin)
+        case 43983:
+        {
+            if (procSpell && procSpell->powerType == POWER_MANA && (procSpell->manaCost || procSpell->ManaCostPercentage))
+                trigger_spell_id = 43137;
+        }
         // Evasive Maneuvers (Commendation of Kael`thas trinket)
         case 45057:
         {

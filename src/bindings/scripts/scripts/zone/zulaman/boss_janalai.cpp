@@ -299,10 +299,6 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
             isBombing = false;
             BombTimer = 20000+rand()%20000;
             m_creature->RemoveAurasDueToSpell(SPELL_FIRE_BOMB_CHANNEL);
-            if(EnrageTimer <= 10000)
-                EnrageTimer = 0;
-            else
-                EnrageTimer -= 10000;
         }
     }
 
@@ -313,7 +309,12 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
             if(!m_creature->IsNonMeleeSpellCasted(false))
             {
                 isFlameBreathing = false;
-            }else return;
+            }else 
+            {
+                EnrageTimer -= diff;
+                HatcherTimer -= diff;
+                return;
+            }
         }
 
         if(isBombing)
@@ -321,7 +322,11 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
             if(BombSequenceTimer < diff)
             {
                 HandleBombSequence();
-            }else BombSequenceTimer -= diff;
+            }else 
+                BombSequenceTimer -= diff;
+    
+            EnrageTimer -= diff;
+            HatcherTimer -= diff;
             return;
         }
 

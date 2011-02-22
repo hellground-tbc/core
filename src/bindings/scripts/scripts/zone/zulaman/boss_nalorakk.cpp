@@ -38,14 +38,10 @@ float NalorakkWay[8][3] =
     {-80.072, 1295.775, 48.60} // waypoint 4
 };
 
-#define YELL_NALORAKK_WAVE1     "Get da move on, guards! It be killin' time!"
-#define SOUND_NALORAKK_WAVE1    12066
-#define YELL_NALORAKK_WAVE2     "Guards, go already! Who you more afraid of, dem... or me?"
-#define SOUND_NALORAKK_WAVE2    12067
-#define YELL_NALORAKK_WAVE3     "Ride now! Ride out dere and bring me back some heads!"
-#define SOUND_NALORAKK_WAVE3    12068
-#define YELL_NALORAKK_WAVE4     "I be losin' me patience! Go on: make dem wish dey was never born!"
-#define SOUND_NALORAKK_WAVE4    12069
+#define YELL_NALORAKK_WAVE1     -1800472
+#define YELL_NALORAKK_WAVE2     -1800473
+#define YELL_NALORAKK_WAVE3     -1800474
+#define YELL_NALORAKK_WAVE4     -1800475
 
 //Unimplemented SoundIDs
 /*
@@ -54,16 +50,11 @@ float NalorakkWay[8][3] =
 */
 
 //General defines
-#define YELL_AGGRO              "You be dead soon enough!"
-#define SOUND_YELL_AGGRO        12070
-#define YELL_KILL_ONE           "Mua-ha-ha! Now whatchoo got to say?"
-#define SOUND_YELL_KILL_ONE     12075
-#define YELL_KILL_TWO           "Da Amani gonna rule again!"
-#define SOUND_YELL_KILL_TWO     12076
-#define YELL_DEATH              "I... be waitin' on da udda side...."
-#define SOUND_YELL_DEATH        12077
-#define YELL_BERSERK            "You had your chance, now it be too late!" //Never seen this being used, so just guessing from what I hear.
-#define SOUND_YELL_BERSERK      12074
+#define YELL_AGGRO              -1800476
+#define YELL_KILL_ONE           -1800477
+#define YELL_KILL_TWO           -1800478
+#define YELL_DEATH              -1800479
+#define YELL_BERSERK            -1800480
 
 #define SPELL_BERSERK           45078
 
@@ -74,19 +65,15 @@ float NalorakkWay[8][3] =
 #define SPELL_SURGE             42402
 #define SPELL_BEARFORM          42377
 
-#define YELL_SURGE              "I bring da pain!"
-#define SOUND_YELL_SURGE        12071
-
-#define YELL_SHIFTEDTOTROLL     "Make way for Nalorakk!"
-#define SOUND_YELL_TOTROLL      12073
+#define YELL_SURGE              -1800481
+#define YELL_SHIFTEDTOTROLL     -1800482
 
 //Defines for Bear form
 #define SPELL_LACERATINGSLASH   42395
 #define SPELL_RENDFLESH         42397
 #define SPELL_DEAFENINGROAR     42398
 
-#define YELL_SHIFTEDTOBEAR      "You call on da beast, you gonna get more dan you bargain for!"
-#define SOUND_YELL_TOBEAR       12072
+#define YELL_SHIFTEDTOBEAR      -1800483
 
 
 struct TRINITY_DLL_DECL boss_nalorakkAI : public ScriptedAI
@@ -205,8 +192,7 @@ struct TRINITY_DLL_DECL boss_nalorakkAI : public ScriptedAI
                         case 0:
                             if(m_creature->IsWithinDistInMap(who, 50))
                             {
-                                DoYell(YELL_NALORAKK_WAVE1, LANG_UNIVERSAL, NULL);
-                                DoPlaySoundToSet(m_creature, SOUND_NALORAKK_WAVE1);
+                                DoScriptText(YELL_NALORAKK_WAVE1, m_creature);
 
                                 (*m_creature).GetMotionMaster()->MovePoint(1,NalorakkWay[1][0],NalorakkWay[1][1],NalorakkWay[1][2]);
                                 MovePhase ++;
@@ -218,8 +204,7 @@ struct TRINITY_DLL_DECL boss_nalorakkAI : public ScriptedAI
                         case 2:
                             if(m_creature->IsWithinDistInMap(who, 40))
                             {
-                                DoYell(YELL_NALORAKK_WAVE2, LANG_UNIVERSAL, NULL);
-                                DoPlaySoundToSet(m_creature, SOUND_NALORAKK_WAVE2);
+                                DoScriptText(YELL_NALORAKK_WAVE2, m_creature);
 
                                 (*m_creature).GetMotionMaster()->MovePoint(3,NalorakkWay[3][0],NalorakkWay[3][1],NalorakkWay[3][2]);
                                 MovePhase ++;
@@ -231,8 +216,7 @@ struct TRINITY_DLL_DECL boss_nalorakkAI : public ScriptedAI
                         case 5:
                             if(m_creature->IsWithinDistInMap(who, 40))
                             {
-                                DoYell(YELL_NALORAKK_WAVE3, LANG_UNIVERSAL, NULL);
-                                DoPlaySoundToSet(m_creature, SOUND_NALORAKK_WAVE3);
+                                DoScriptText(YELL_NALORAKK_WAVE3, m_creature);
 
                                 (*m_creature).GetMotionMaster()->MovePoint(6,NalorakkWay[6][0],NalorakkWay[6][1],NalorakkWay[6][2]);
                                 MovePhase ++;
@@ -246,8 +230,7 @@ struct TRINITY_DLL_DECL boss_nalorakkAI : public ScriptedAI
                             {
                                 SendAttacker(who);
 
-                                DoYell(YELL_NALORAKK_WAVE4, LANG_UNIVERSAL, NULL);
-                                DoPlaySoundToSet(m_creature, SOUND_NALORAKK_WAVE4);
+                                DoScriptText(YELL_NALORAKK_WAVE4, m_creature);
 
                                 m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                                 m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -266,8 +249,7 @@ struct TRINITY_DLL_DECL boss_nalorakkAI : public ScriptedAI
         if(pInstance)
             pInstance->SetData(DATA_NALORAKKEVENT, IN_PROGRESS);
 
-        DoYell(YELL_AGGRO, LANG_UNIVERSAL, NULL);
-        DoPlaySoundToSet(m_creature, SOUND_YELL_AGGRO);
+        DoScriptText(YELL_AGGRO, m_creature);
         DoZoneInCombat();
     }
 
@@ -276,23 +258,12 @@ struct TRINITY_DLL_DECL boss_nalorakkAI : public ScriptedAI
         if(pInstance)
             pInstance->SetData(DATA_NALORAKKEVENT, DONE);
 
-        DoYell(YELL_DEATH,LANG_UNIVERSAL,NULL);
-        DoPlaySoundToSet(m_creature, SOUND_YELL_DEATH);
+        DoScriptText(YELL_DEATH, m_creature);
     }
 
     void KilledUnit(Unit* victim)
     {
-        switch(rand()%2)
-        {
-        case 0:
-            DoYell(YELL_KILL_ONE, LANG_UNIVERSAL, NULL);
-            DoPlaySoundToSet(m_creature, SOUND_YELL_KILL_ONE);
-            break;
-        case 1:
-            DoYell(YELL_KILL_TWO, LANG_UNIVERSAL, NULL);
-            DoPlaySoundToSet(m_creature, SOUND_YELL_KILL_TWO);
-            break;
-        }
+        DoScriptText(RAND(YELL_KILL_ONE, YELL_KILL_TWO), m_creature);
     }
 
     void MovementInform(uint32 type, uint32 id)
@@ -357,6 +328,7 @@ struct TRINITY_DLL_DECL boss_nalorakkAI : public ScriptedAI
                 EnterEvadeMode();
             else
                 DoZoneInCombat();
+            m_creature->SetSpeed(MOVE_RUN,2);
             checkTimer = 3000;
         }
         else
@@ -364,9 +336,7 @@ struct TRINITY_DLL_DECL boss_nalorakkAI : public ScriptedAI
 
         if(Berserk_Timer < diff)
         {
-            DoCast(m_creature, SPELL_BERSERK, true);
-            DoYell(YELL_BERSERK, LANG_UNIVERSAL, NULL);
-            DoPlaySoundToSet(m_creature, SOUND_YELL_BERSERK);
+            AddSpellToCastWithScriptText(m_creature, SPELL_BERSERK, YELL_BERSERK, true);
             Berserk_Timer = 600000;
         }else Berserk_Timer -= diff;
 
@@ -375,8 +345,7 @@ struct TRINITY_DLL_DECL boss_nalorakkAI : public ScriptedAI
             if(inBearForm)
             {
                 m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + 1, 5122);
-                DoYell(YELL_SHIFTEDTOTROLL, LANG_UNIVERSAL, NULL);
-                DoPlaySoundToSet(m_creature, SOUND_YELL_TOTROLL);
+                DoScriptText(YELL_SHIFTEDTOTROLL, m_creature);
                 m_creature->RemoveAurasDueToSpell(SPELL_BEARFORM);
                 Surge_Timer = 15000 + rand()%5000;
                 BrutalSwipe_Timer = 7000 + rand()%5000;
@@ -387,9 +356,7 @@ struct TRINITY_DLL_DECL boss_nalorakkAI : public ScriptedAI
             else
             {
                 m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + 1, 0);
-                DoYell(YELL_SHIFTEDTOBEAR, LANG_UNIVERSAL, NULL);
-                DoPlaySoundToSet(m_creature, SOUND_YELL_TOBEAR);
-                DoCast(m_creature, SPELL_BEARFORM, true);
+                AddSpellToCastWithScriptText(m_creature, SPELL_BEARFORM, YELL_SHIFTEDTOBEAR, true);
                 LaceratingSlash_Timer = 2000; // dur 18s
                 RendFlesh_Timer = 3000;  // dur 5s
                 DeafeningRoar_Timer = 5000 + rand()%5000;  // dur 2s
@@ -402,7 +369,7 @@ struct TRINITY_DLL_DECL boss_nalorakkAI : public ScriptedAI
         {
             if(BrutalSwipe_Timer < diff)
             {
-                DoCast(m_creature->getVictim(), SPELL_BRUTALSWIPE);
+                AddSpellToCast(m_creature->getVictim(), SPELL_BRUTALSWIPE);
                 BrutalSwipe_Timer = 7000 + rand()%5000;
             }else BrutalSwipe_Timer -= diff;
 
@@ -410,7 +377,7 @@ struct TRINITY_DLL_DECL boss_nalorakkAI : public ScriptedAI
             {
                 if(m_creature->getVictim() && !m_creature->getVictim()->HasAura(SPELL_MANGLEEFFECT, 0))
                 {
-                    DoCast(m_creature->getVictim(), SPELL_MANGLE);
+                    AddSpellToCast(m_creature->getVictim(), SPELL_MANGLE);
                     Mangle_Timer = 1000;
                 }
                 else Mangle_Timer = 10000 + rand()%5000;
@@ -418,10 +385,8 @@ struct TRINITY_DLL_DECL boss_nalorakkAI : public ScriptedAI
 
             if(Surge_Timer < diff)
             {
-                DoYell(YELL_SURGE, LANG_UNIVERSAL, NULL);
-                DoPlaySoundToSet(m_creature, SOUND_YELL_SURGE);
                 if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, GetSpellMaxRange(SPELL_SURGE), true, m_creature->getVictimGUID()))
-                    DoCast(target, SPELL_SURGE);
+                    AddSpellToCastWithScriptText(target, SPELL_SURGE, YELL_SURGE);
                 Surge_Timer = 15000 + rand()%5000;
             }else Surge_Timer -= diff;
         }
@@ -429,23 +394,24 @@ struct TRINITY_DLL_DECL boss_nalorakkAI : public ScriptedAI
         {
             if(LaceratingSlash_Timer < diff)
             {
-                DoCast(m_creature->getVictim(), SPELL_LACERATINGSLASH);
+                AddSpellToCast(m_creature->getVictim(), SPELL_LACERATINGSLASH);
                 LaceratingSlash_Timer = 18000 + rand()%5000;
             }else LaceratingSlash_Timer -= diff;
 
             if(RendFlesh_Timer < diff)
             {
-                DoCast(m_creature->getVictim(), SPELL_RENDFLESH);
+                AddSpellToCast(m_creature->getVictim(), SPELL_RENDFLESH);
                 RendFlesh_Timer = 5000 + rand()%5000;
             }else RendFlesh_Timer -= diff;
 
             if(DeafeningRoar_Timer < diff)
             {
-                DoCast(m_creature->getVictim(), SPELL_DEAFENINGROAR);
+                AddSpellToCast(m_creature->getVictim(), SPELL_DEAFENINGROAR);
                 DeafeningRoar_Timer = 15000 + rand()%5000;
             }else DeafeningRoar_Timer -= diff;
         }
 
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };
