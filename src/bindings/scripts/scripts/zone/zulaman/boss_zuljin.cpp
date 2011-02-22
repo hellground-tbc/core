@@ -203,8 +203,7 @@ struct TRINITY_DLL_DECL boss_zuljinAI : public ScriptedAI
 
         DoZoneInCombat();
 
-        DoYell(YELL_INTRO,LANG_UNIVERSAL,NULL);
-        DoPlaySoundToSet(m_creature, SOUND_INTRO);
+        DoScriptText(YELL_INTRO, m_creature);
         SpawnAdds();
         EnterPhase(0);
     }
@@ -213,7 +212,7 @@ struct TRINITY_DLL_DECL boss_zuljinAI : public ScriptedAI
     {
         if(Intro_Timer)
             return;
-        DoScriptedText(RAND(YELL_KILL_ONE, YELL_KILL_TWO), m_creature);
+        DoScriptText(RAND(YELL_KILL_ONE, YELL_KILL_TWO), m_creature);
     }
 
     void JustDied(Unit* Killer)
@@ -315,7 +314,7 @@ struct TRINITY_DLL_DECL boss_zuljinAI : public ScriptedAI
             m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY, 0);
             m_creature->RemoveAurasDueToSpell(Transform[Phase].unaura);
             DoCast(m_creature, Transform[Phase].spell);
-            DoScriptedText(Transform[Phase].text, m_creature);
+            DoScriptText(Transform[Phase].text, m_creature);
             if(Phase > 0)
             {
                 if(Unit *Temp = Unit::GetUnit(*m_creature, SpiritGUID[Phase - 1]))
@@ -392,7 +391,7 @@ struct TRINITY_DLL_DECL boss_zuljinAI : public ScriptedAI
             {
                 if(Intro_Timer <= diff)
                 {
-                    DoScriptedText(YELL_AGGRO, m_creature);
+                    DoScriptText(YELL_AGGRO, m_creature);
                     Intro_Timer = 0;
                 }else Intro_Timer -= diff;
             }
