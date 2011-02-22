@@ -7167,6 +7167,9 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
     if (!victim || victim == this)
         return false;
 
+    if (GetTypeId() == TYPEID_UNIT && ((Creature*)this)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_TARGET)
+        return false;
+
     // dead units can neither attack nor be attacked
     if (!isAlive() || !victim->IsInWorld() || !victim->isAlive())
         return false;
@@ -10482,18 +10485,20 @@ void Unit::UpdateCharmAI()
     {
         if (isCharmed())
         {
-            if (((Creature*)this)->GetScriptName() == "npc_chesspiece") // UGLY AND BAD HACK, Find a way to remove it ;] 
-            {                                                          // Find better way to disalow PossessedAI to override ScriptedAI
-                i_disabledAI = NULL;                                   // or make possibility to script PossessedAI
-                return;
-            }
+            // UGLY AND BAD HACK, Find a way to remove it ;]
+            // Find better way to disalow PossessedAI to override ScriptedAI
+            // or make possibility to script PossessedAI
+            if (((Creature*)this)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_CHARM_AI)
+                i_disabledAI = NULL;
             else
+            {
                 i_disabledAI = i_AI;
 
-            if (isPossessed())
-                i_AI = new PossessedAI((Creature*)this);
-            else
-                i_AI = new PetAI((Creature*)this);
+                if (isPossessed())
+                    i_AI = new PossessedAI((Creature*)this);
+                else
+                    i_AI = new PetAI((Creature*)this);
+            }
         }
     }
 }

@@ -174,8 +174,8 @@ insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_
 insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','21752','532','1','0','0','-11063.6','-1866.47','220.667','3.84835','604800','0','0','150000','0','0','0');
 
 #--add flags to chess pieces
-UPDATE creature_template SET unit_flags = unit_flags | 530432 
-WHERE entry IN (17469,17211,21748,21664,21750,21683,21747,21682,21726,21160,21752,21684); #-- pvp, incombat, pet_in_combat flags   
+UPDATE creature_template SET unit_flags = unit_flags | 530432, flags_extra | 2129920
+WHERE entry IN (17469,17211,21748,21664,21750,21683,21747,21682,21726,21160,21752,21684); #-- pvp, incombat, pet_in_combat flags, extra flags: no_target, charm_ai
 UPDATE creature_template SET flags_extra = flags_extra | 2 WHERE entry = 22519;           #-- ignore aggro for trigger
 UPDATE creature_template SET unit_flags = unit_flags | 262148 WHERE entry = 22519;        #-- disable_Move + disable_rotate for trigger
 

@@ -347,7 +347,7 @@ void npc_chesspieceAI::JustRespawned()
     printf("\n Wywolanie JustRespawned()");
     #endif
 
-    m_creature->CombatStop();
+    m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
     m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
 }
 
@@ -357,7 +357,7 @@ void npc_chesspieceAI::OnCharmed(bool apply)
     printf("\n Wywolanie OnCharmed(bool apply = %i)", apply);
     #endif
     // Place to disable rotate and move for player on possess
-    m_creature->SetInCombatState(false);
+    m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
 }
 
 void npc_chesspieceAI::SpellHit(Unit * caster, const SpellEntry * spell)
@@ -2454,7 +2454,10 @@ void boss_MedivhAI::UpdateAI(const uint32 diff)
                             printf("\ni: %i, j: %i, piece: %u, trigger: %u", i, j, chessBoard[i][j].piece, chessBoard[i][j].trigger);
                             #endif
                             if (tmpC = me->GetCreature(chessBoard[i][j].piece))
+                            {
                                 tmpC->CastSpell(tmpC, SPELL_MOVE_MARKER, false);
+                                tmpC->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
+                            }
                         }
                     }
                     moveTimer = 10000;

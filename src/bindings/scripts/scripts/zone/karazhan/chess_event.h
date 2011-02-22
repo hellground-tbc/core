@@ -4,20 +4,17 @@
 /* ScriptData
 SDName: Chess_Event
 SD%Complete: xx
-SDComment: Based on Hectolight script.
 SDCategory: Karazhan
-
-  I think locking and unlocking cells for unit movement is done. only need to add code to unlock it when creature dies :]
 
 TODO:
  - Disable rotate for all chess pieces
+ - Disable targeting for all chess pieces
  - Disable movement for unit controlled by player
- - Teleport players to the balkony when possesing creature
- - Update instance_karazhan for now it was done only to start it ;]
- - Implement Attack Creature when is in Front or Strafe(for every chesspieces ??) with proper factions.
- - Implement in instance_karazhan dead chess_piece count per side to allow Medivh to cheat when is loosing.(Or different terms was used as a treshold for cheat ?)
- - Set proper position on left or right side from chess board for killed units.
- - and many more ...
+ - Implement Attack Creature when is in Front or Strafe (?)(for every chesspieces ??) with proper factions.
+ - Implement Medivhs cheats
+ - Fix spells
+ - Upgrade chesspiece AI for spells use
+ - Upgrade medivh pieces movement
 EndScriptData */
 
 #include "precompiled.h"
