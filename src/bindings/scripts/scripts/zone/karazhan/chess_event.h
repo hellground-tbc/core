@@ -36,9 +36,15 @@ EndScriptData */
 #define SEARCH_RANGE        5
 #define DUST_COVERED_CHEST  185119
 
-#define allianceSideDeadOrientation     1
-#define hordeSideDeadOrientation        1
-#define POSITION_Z                      221
+#define ALLIANCE_DEAD_X1        -11047.8
+#define ALLIANCE_DEAD_X2        -11046.1
+#define ALLIANCE_DEAD_Y1        -1884.2
+#define ALLIANCE_DEAD_Y2        -1886.4
+#define HORDE_DEAD_X1           -11080.4
+#define HORDE_DEAD_X2           -11078.7
+#define HORDE_DEAD_Y1           -1910.2
+#define HORDE_DEAD_Y2           -1912.2
+#define POSITION_Z              221
 
                                 //x, y, z
 #define SPAWN_POS               wLoc.coord_x, wLoc.coord_y, wLoc.coord_z
@@ -74,10 +80,10 @@ EndScriptData */
 
 #define ADD_PIECE_TO_MOVE_TIMER urand(1000, 4000);
 
-#define ORI_N   0.656777
-#define ORI_E   5.391155
-#define ORI_S   3.817220
-#define ORI_W   2.239354
+#define ORI_N           0.656777
+#define ORI_E           5.391155
+#define ORI_S           3.817220
+#define ORI_W           2.239354
 
 #define CHESS_DEBUG_INFO                1
 //#define DISSABLE_MEDIVH_PIECES_MOVEMENT 1
@@ -327,20 +333,13 @@ struct Priority
 // 4 3 3 3 3 3 4
 //
 
-int offsetTab8[8][2] = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
+const int offsetTab8[8][2] = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
 
-int offsetTab15[12][2] = {{-2, -1}, {-2, 0}, {-2, 1}, {-1, -2}, {-1, 2}, {0, -2}, {0, 2}, {1, -2}, {1, 2}, {2, -1}, {2, 0}, {2, 1}};
+const int offsetTab15[12][2] = {{-2, -1}, {-2, 0}, {-2, 1}, {-1, -2}, {-1, 2}, {0, -2}, {0, 2}, {1, -2}, {1, 2}, {2, -1}, {2, 0}, {2, 1}};
 
-int offsetTab20[24][2] = {{-3, -2}, {-3, -1}, {-3, 0}, {-3, 1}, {-3, 2}, {-2, -3}, {-2, 3}, {-1, -3}, {-1, 3}, {0, -3}, {0, 3}, {1, -3}, {1, 3}, {2, -3}, {2, 3}, {3, -2}, {3, -1}, {3, 0}, {3, 1}, {3, 2}, {2, 2}, {-2, 2}, {2, -2}, {-2, -2}};
+const int offsetTab20[24][2] = {{-3, -2}, {-3, -1}, {-3, 0}, {-3, 1}, {-3, 2}, {-2, -3}, {-2, 3}, {-1, -3}, {-1, 3}, {0, -3}, {0, 3}, {1, -3}, {1, 3}, {2, -3}, {2, 3}, {3, -2}, {3, -1}, {3, 0}, {3, 1}, {3, 2}, {2, 2}, {-2, 2}, {2, -2}, {-2, -2}};
 
-int offsetTab25[4][2] = {{-3, -3}, {3, -3}, {3, 3}, {-3, 3}};
-
-float hordeSideDeadWP[2][16] = {{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},         //X coord
-                                {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}};        //Y coord
-
-float allianceSideDeadWP[2][16] =  {{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},     //Xcoord
-                                    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}};    //Ycoord
-
+const int offsetTab25[4][2] = {{-3, -3}, {3, -3}, {3, 3}, {-3, 3}};
 
 class TRINITY_DLL_DECL move_triggerAI : public ScriptedAI
 {
@@ -442,9 +441,8 @@ private:
     int16 chanceToSelfMove;
 
     ChessTile chessBoard[8][8];
-
-    // entry, index_list
-    //std::map<int, std::list<std::pair<int, int> > > allowedPositions; // tylko do ustawienia
+    float hordeSideDeadWP[2][16];
+    float allianceSideDeadWP[2][16];
 
     std::list<uint64> medivhSidePieces; //alive pieces guids
 
@@ -545,6 +543,8 @@ public:
 
     void SetOrientation(uint64 piece, ChessOrientation ori = CHESS_ORI_CHOOSE);
     bool Enemy(uint64 piece1, uint64 piece2);
+    uint32 GetDeadEntryForPiece(Creature * piece);
+    uint32 GetDeadEntryForPiece(uint32 entry);
 
     void Reset();
     void Aggro(Unit *){}

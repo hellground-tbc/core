@@ -43,7 +43,7 @@ void move_triggerAI::SpellHit(Unit *caster,const SpellEntry *spell)
             {
                 medivh->AddTriggerToMove(m_creature->GetGUID(), caster->GetGUID(), caster->GetCharmerOrOwnerPlayerOrPlayerItself() ? true : false);
 
-                DoCast(m_creature, SPELL_MOVE_PREVISUAL);
+                me->CastSpell(m_creature, SPELL_MOVE_PREVISUAL, false);
 
                 unitToMove = caster->GetGUID();
 
@@ -84,7 +84,6 @@ void move_triggerAI::MakeMove()
             me->CastSpell(m_creature, SPELL_MOVE_MARKER, false);
             temp->StopMoving();
             temp->GetMotionMaster()->Clear();
-            //temp->SetFacingToObject(m_creature);
             temp->GetMotionMaster()->MovePoint(0, wLoc.coord_x, wLoc.coord_y, wLoc.coord_z);
 
             if (temp2)
@@ -117,7 +116,6 @@ void move_triggerAI::UpdateAI(const uint32 diff)
     }
 }
 
-
 //Chesspieces AI
 
 npc_chesspieceAI::npc_chesspieceAI(Creature *c) : Scripted_NoMovementAI(c)
@@ -136,13 +134,9 @@ void npc_chesspieceAI::EnterEvadeMode()
     printf("\n Wywolanie EnterEvadeMode()");
     #endif
     // to prevent reset chess pieces after unpossess
-    if (pInstance->GetData(DATA_CHESS_EVENT) == IN_PROGRESS ||
-        pInstance->GetData(DATA_CHESS_EVENT) == SPECIAL)
+    //if (pInstance->GetData(DATA_CHESS_EVENT) == IN_PROGRESS ||
+    //    pInstance->GetData(DATA_CHESS_EVENT) == SPECIAL)
         return;
-
-    me->Kill(me, false);
-    me->RemoveCorpse();
-    //ScriptedAI::EnterEvadeMode();
 }
 
 void npc_chesspieceAI::SetSpellsAndCooldowns()
@@ -352,14 +346,7 @@ void npc_chesspieceAI::JustRespawned()
     #ifdef CHESS_DEBUG_INFO
     printf("\n Wywolanie JustRespawned()");
     #endif
-    //not finally - just a presentation - need 32place two side of chesstable
-    /*float angle = m_creature->GetOrientation();
-    float pos_x = -11066;
-    float pos_y = -1898;
-    int move_lenght = 2*rand()%10;
-    float new_x = pos_x + move_lenght * cos(angle);
-    float new_y = pos_y + move_lenght * sin(angle);
-    m_creature->Relocate(new_x,new_y,221,2.24);*/
+
     m_creature->CombatStop();
     m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
 }
@@ -395,20 +382,10 @@ void npc_chesspieceAI::UpdateAI(const uint32 diff)
 
         if(m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
             m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-
-        if(ReturnToHome)
-        {
-            m_creature->GetMotionMaster()->Clear();
-            m_creature->GetMotionMaster()->MoveTargetedHome();
-            ReturnToHome = false;
-        }
     }
 
     if(pInstance->GetData(DATA_CHESS_EVENT) != IN_PROGRESS)
         return;
-
-    if(!ReturnToHome) // for fail
-        ReturnToHome = true;
 
     if(!InGame)
         return;
@@ -512,9 +489,10 @@ void npc_chesspieceAI::DamageTaken(Unit * done_by, uint32 &damage)
     #ifdef CHESS_DEBUG_INFO
     printf("\n Wywolanie DamageTaken(Unit * done_by = %i, uint32 &damage = %i)", done_by ? 1 : 0, damage);
     #endif
+    return;
     if (damage > m_creature->GetHealth())
     {
-        //damage = 0;
+        damage = 0;
         if (m_creature->isPossessed())
         {
             Player * tmpP = me->GetCharmerOrOwnerPlayerOrPlayerItself();
@@ -524,6 +502,7 @@ void npc_chesspieceAI::DamageTaken(Unit * done_by, uint32 &damage)
             m_creature->RemoveAurasDueToSpell(SPELL_POSSES_CHESSPIECE);
         }
 
+        InGame = false;
 
         this->npc_medivh = m_creature->GetCreature(this->MedivhGUID);
         if (npc_medivh)
@@ -546,7 +525,6 @@ void npc_chesspieceAI::JustDied(Unit * killer)
 
         m_creature->RemoveAurasDueToSpell(SPELL_POSSES_CHESSPIECE);
     }
-
 
     npc_medivh = m_creature->GetCreature(MedivhGUID);
     if (npc_medivh)
@@ -581,269 +559,6 @@ boss_MedivhAI::boss_MedivhAI(Creature *c) : ScriptedAI(c)
         6 A  A  A  A  A  A  A  A
         7 A  A  A  A  A  A  A  A
     */
-/*
-    // Horde
-    // A0
-    chessBoard[0][0].position.coord_x = -11077.7;
-    chessBoard[0][0].position.coord_y = -1849.0;
-
-    // B0
-    chessBoard[0][1].position.coord_x = -11074.0;
-    chessBoard[0][1].position.coord_y = -1853.3;
-
-    // C0
-    chessBoard[0][2].position.coord_x = -11070.8;
-    chessBoard[0][2].position.coord_y = -1857.7;
-
-    // D0
-    chessBoard[0][3].position.coord_x = -11067.0;
-    chessBoard[0][3].position.coord_y = -1861.9;
-
-    // E0
-    chessBoard[0][4].position.coord_x = -11063.6;
-    chessBoard[0][4].position.coord_y = -1866.5;
-
-    // F0
-    chessBoard[0][5].position.coord_x = -11060.3;
-    chessBoard[0][5].position.coord_y = -1870.8;
-
-    // G0
-    chessBoard[0][6].position.coord_x = -11056.7;
-    chessBoard[0][6].position.coord_y = -1875.0;
-
-    // H0
-    chessBoard[0][7].position.coord_x = -11053.4;
-    chessBoard[0][7].position.coord_y = -1879.6;
-
-    // A1
-    chessBoard[1][0].position.coord_x = -11082.1;
-    chessBoard[1][0].position.coord_y = -1852.4;
-
-    // B1
-    chessBoard[1][1].position.coord_x = -11078.5;
-    chessBoard[1][1].position.coord_y = -1856.9;
-
-    // C1
-    chessBoard[1][2].position.coord_x = -11075.0;
-    chessBoard[1][2].position.coord_y = -1861.1;
-
-    // D1
-    chessBoard[1][3].position.coord_x = -11071.5;
-    chessBoard[1][3].position.coord_y = -1865.5;
-
-    // E1
-    chessBoard[1][4].position.coord_x = -11067.8;
-    chessBoard[1][4].position.coord_y = -1869.9;
-
-    // F1
-    chessBoard[1][5].position.coord_x = -11064.3;
-    chessBoard[1][5].position.coord_y = -1874.3;
-
-    // G1
-    chessBoard[1][6].position.coord_x = -11061.0;
-    chessBoard[1][6].position.coord_y = -1878.6;
-
-    // H1
-    chessBoard[1][7].position.coord_x = -11057.4;
-    chessBoard[1][7].position.coord_y = -1883.0;
-    // end Horde
-
-    // Empty
-    // A2
-    chessBoard[2][0].position.coord_x = -11086.5;
-    chessBoard[2][0].position.coord_y = -1855.8;
-
-    // B2
-    chessBoard[2][1].position.coord_x = -11083.0;
-    chessBoard[2][1].position.coord_y = -1860.6;
-
-    // C2
-    chessBoard[2][2].position.coord_x = -11079.6;
-    chessBoard[2][2].position.coord_y = -1864.8;
-
-    // D2
-    chessBoard[2][3].position.coord_x = -11076.2;
-    chessBoard[2][3].position.coord_y = -1868.9;
-
-    // E2
-    chessBoard[2][4].position.coord_x = -11072.5;
-    chessBoard[2][4].position.coord_y = -1873.5;
-
-    // F2
-    chessBoard[2][5].position.coord_x = -11069.1;
-    chessBoard[2][5].position.coord_y = -1877.8;
-
-    // G2
-    chessBoard[2][6].position.coord_x = -11065.5;
-    chessBoard[2][6].position.coord_y = -1882.3;
-
-    // H2
-    chessBoard[2][7].position.coord_x = -11062.2;
-    chessBoard[2][7].position.coord_y = -1886.5;
-
-    // A3
-    chessBoard[2][0].position.coord_x = -11090.6;
-    chessBoard[2][0].position.coord_y = -1859.3;
-
-    // B3
-    chessBoard[3][1].position.coord_x = -11087.0;
-    chessBoard[3][1].position.coord_y = -1863.7;
-
-    // C3
-    chessBoard[3][2].position.coord_x = -11083.4;
-    chessBoard[3][2].position.coord_y = -1868.1;
-
-    // D3
-    chessBoard[3][3].position.coord_x = -11080.4;
-    chessBoard[3][3].position.coord_y = -1872.4;
-
-    // E3
-    chessBoard[3][4].position.coord_x = -11076.7;
-    chessBoard[3][4].position.coord_y = -1876.7;
-
-    // F3
-    chessBoard[3][5].position.coord_x = -11073.2;
-    chessBoard[3][5].position.coord_y = -1889.4;
-
-    // G3
-    chessBoard[3][6].position.coord_x = -11069.9;
-    chessBoard[3][6].position.coord_y = -1885.6;
-
-    // H3
-    chessBoard[3][7].position.coord_x = -11066.2;
-    chessBoard[3][7].position.coord_y = -1889.9;
-
-    // A4
-    chessBoard[4][0].position.coord_x = -11095.0;
-    chessBoard[4][0].position.coord_y = -1862.8;
-
-    // B4
-    chessBoard[4][1].position.coord_x = -11091.5;
-    chessBoard[4][1].position.coord_y = -1867.3;
-
-    // C4
-    chessBoard[4][2].position.coord_x = -11088.1;
-    chessBoard[4][2].position.coord_y = -1871.2;
-
-    // D4
-    chessBoard[4][3].position.coord_x = -11084.3;
-    chessBoard[4][3].position.coord_y = -1875.8;
-
-    // E4
-    chessBoard[4][4].position.coord_x = -11081.1;
-    chessBoard[4][4].position.coord_y = -1880.2;
-
-    // F4
-    chessBoard[4][5].position.coord_x = -11077.7;
-    chessBoard[4][5].position.coord_y = -1884.6;
-
-    // G4
-    chessBoard[4][6].position.coord_x = -11074.2;
-    chessBoard[4][6].position.coord_y = -1888.9;
-
-    // H4
-    chessBoard[4][7].position.coord_x = -11070.6;
-    chessBoard[4][7].position.coord_y = -1893.4;
-
-    // A5
-    chessBoard[5][0].position.coord_x = -11099.5;
-    chessBoard[5][0].position.coord_y = -1866.3;
-
-    // B5
-    chessBoard[5][1].position.coord_x = -11095.7;
-    chessBoard[5][1].position.coord_y = -1870.7;
-
-    // C5
-    chessBoard[5][2].position.coord_x = -11092.3;
-    chessBoard[5][2].position.coord_y = -1875.0;
-
-    // D5
-    chessBoard[5][3].position.coord_x = -11088.8;
-    chessBoard[5][3].position.coord_y = -1879.5;
-
-    // E5
-    chessBoard[5][4].position.coord_x = -11085.2;
-    chessBoard[5][4].position.coord_y = -1883.9;
-
-    // F5
-    chessBoard[5][5].position.coord_x = -11082.1;
-    chessBoard[5][5].position.coord_y = -1888.3;
-
-    // G5
-    chessBoard[5][6].position.coord_x = -11078.5;
-    chessBoard[5][6].position.coord_y = -1892.5;
-
-    // H5
-    chessBoard[5][7].position.coord_x = -11075.0;
-    chessBoard[5][7].position.coord_y = -1897.0;
-    // end Empty
-
-    // Alliance
-    // A6
-    chessBoard[6][0].position.coord_x = -11103.7;
-    chessBoard[6][0].position.coord_y = -1869.6;
-
-    // B6
-    chessBoard[6][1].position.coord_x = -11100.2;
-    chessBoard[6][1].position.coord_y = -1874.0;
-
-    // C6
-    chessBoard[6][2].position.coord_x = -11096.8;
-    chessBoard[6][2].position.coord_y = -1878.2;
-
-    // D6
-    chessBoard[6][3].position.coord_x = -11093.4;
-    chessBoard[6][3].position.coord_y = -1882.6;
-
-    // E6
-    chessBoard[6][4].position.coord_x = -11089.7;
-    chessBoard[6][4].position.coord_y = -1887.0;
-
-    // F6
-    chessBoard[6][5].position.coord_x = -11086.2;
-    chessBoard[6][5].position.coord_y = -1891.5;
-
-    // G6
-    chessBoard[6][6].position.coord_x = -11082.9;
-    chessBoard[6][6].position.coord_y = -1895.8;
-
-    // H6
-    chessBoard[6][7].position.coord_x = -11079.4;
-    chessBoard[6][7].position.coord_y = -1900.2;
-
-    // A7
-    chessBoard[7][0].position.coord_x = -11108.1;
-    chessBoard[7][0].position.coord_y = -1872.9;
-
-    // B7
-    chessBoard[7][1].position.coord_x = -11104.4;
-    chessBoard[7][1].position.coord_y = -1877.7;
-
-    // C7
-    chessBoard[7][2].position.coord_x = -11101.0;
-    chessBoard[7][2].position.coord_y = -1881.2;
-
-    // D7
-    chessBoard[7][3].position.coord_x = -11097.6;
-    chessBoard[7][3].position.coord_y = -1886.4;
-
-    // E7
-    chessBoard[7][4].position.coord_x = -11094.1;
-    chessBoard[7][4].position.coord_y = -1890.6;
-
-    // F7
-    chessBoard[7][5].position.coord_x = -11090.5;
-    chessBoard[7][5].position.coord_y = -1895.0;
-
-    // G7
-    chessBoard[7][6].position.coord_x = -11087.2;
-    chessBoard[7][6].position.coord_y = -1899.6;
-
-    // H7
-    chessBoard[7][7].position.coord_x = -11083.7;
-    chessBoard[7][7].position.coord_y = -1903.9;
-
-    //end Alliance*/
 
     // calc positions:
 
@@ -851,11 +566,20 @@ boss_MedivhAI::boss_MedivhAI(Creature *c) : ScriptedAI(c)
     {
         for (uint8 j = 0; j < 8; ++j)
         {
-            chessBoard[i][j].position.coord_x = -11077.66 + 3.44 * j - 4.40 * i;
-            chessBoard[i][j].position.coord_y = -1849.02 - 4.3 * j - 3.50 * i;
+            chessBoard[i][j].position.coord_x = -11077.66 + 3.48 * j - 4.32 * i ;
+            chessBoard[i][j].position.coord_y = -1849.02 - 4.365 * j - 3.41 * i;
             chessBoard[i][j].position.coord_z = 221.1;
             chessBoard[i][j].position.mapid = me->GetMapId();
         }
+    }
+    int j = 15;
+    for (int i = 0; i < 16; ++i)
+    {
+        allianceSideDeadWP[0][i] = (i < 8 ? ALLIANCE_DEAD_X2 : ALLIANCE_DEAD_X1) - 2.2 * 0.75 * (j < 8 ? j : j - 8);
+        allianceSideDeadWP[1][i] = (i < 8 ? ALLIANCE_DEAD_Y2 : ALLIANCE_DEAD_Y1) - 1.7 * 0.75 * (j < 8 ? j : j - 8);
+        hordeSideDeadWP[0][i] = (i < 8 ? HORDE_DEAD_X2 : HORDE_DEAD_X1) + 2.2 * 0.75 * (j < 8 ? j : j - 8);
+        hordeSideDeadWP[1][i] = (i < 8 ? HORDE_DEAD_Y2 : HORDE_DEAD_Y1) + 1.7 * 0.75 * (j < 8 ? j : j - 8);
+        j--;
     }
 }
 
@@ -1926,51 +1650,6 @@ bool boss_MedivhAI::IsInMoveRange(uint64 from, uint64 to, int range)
         return false;
     }
 
-/*
-    int testToX = -1, testToY = -1;
-    for (i = 0; i < 8; i++)
-    {
-        for (int j = 0; j < 8; j++)
-        {
-            if (chessBoard[i][j].trigger == to)
-            {
-                testToX = i; testToY = j;
-                break;
-            }
-        }
-        //if we find location of piece
-        if (testToX >= 0 && testToY >= 0)
-            break;
-    }
-
-    tmpOffsetI = tmpI - testToX;
-    tmpOffsetJ = tmpJ - testToY;
-
-    switch (range)
-    {
-        case 25:
-            for (i = 0; i < OFFSET25COUNT; ++i)
-                if (offsetTab25[i][0] == tmpOffsetI && offsetTab25[i][1] == tmpOffsetJ)
-                    return true;
-        case 20:
-            for (i = 0; i < OFFSET20COUNT; ++i)
-                if (offsetTab20[i][0] == tmpOffsetI && offsetTab20[i][1] == tmpOffsetJ)
-                    return true;
-        case 15:
-            for (i = 0; i < OFFSET15COUNT; ++i)
-                if (offsetTab15[i][0] == tmpOffsetI && offsetTab15[i][1] == tmpOffsetJ)
-                    return true;
-        case 8:
-            for (i = 0; i < OFFSET8COUNT; ++i)
-                if (offsetTab8[i][0] == tmpOffsetI && offsetTab8[i][1] == tmpOffsetJ)
-                    return true;
-            break;
-        default:
-            break;
-    }
-
-    printf("\nIsInMoveRange() : tmpI: %i, tmpJ: %i, texttox: %i, testtoy: %i, tmpoffseti: %i, tmpoffsetj: %i\n", tmpI, tmpJ, testToX, testToY, tmpOffsetI, tmpOffsetJ);
-*/
     switch (range)
     {
         case 25:
@@ -2088,34 +1767,25 @@ void boss_MedivhAI::SayChessPieceDied(Unit * piece)
                 break;
             case NPC_PAWN_H:
 
-                switch(rand()%3)
-                {
-                    case 0: DoScriptText(SCRIPTTEXT_LOSE_PAWN_P_1, m_creature);break;
-                    case 1: DoScriptText(SCRIPTTEXT_LOSE_PAWN_P_2, m_creature);break;
-                    case 2: DoScriptText(SCRIPTTEXT_LOSE_PAWN_P_3, m_creature);break;
-                }
+                DoScriptText(RAND(SCRIPTTEXT_LOSE_PAWN_P_1, SCRIPTTEXT_LOSE_PAWN_P_2, SCRIPTTEXT_LOSE_PAWN_P_3), m_creature);
                 break;
 
             case NPC_PAWN_A:
 
-                switch(rand()%2)
-                {
-                    case 0: DoScriptText(SCRIPTTEXT_LOSE_PAWN_M_1, m_creature);break;
-                    case 1: DoScriptText(SCRIPTTEXT_LOSE_PAWN_M_2, m_creature);break;
-                }
+                DoScriptText(RAND(SCRIPTTEXT_LOSE_PAWN_M_1, SCRIPTTEXT_LOSE_PAWN_M_2), m_creature);
                 break;
 
             case NPC_KING_H:
 
                 DoScriptText(SCRIPTTEXT_MEDIVH_WIN, m_creature);
-                pInstance->SetData(DATA_CHESS_EVENT,FAIL);
+                pInstance->SetData(DATA_CHESS_EVENT, FAIL);
                 break;
 
             case NPC_KING_A:
 
                 DoScriptText(SCRIPTTEXT_PLAYER_WIN, m_creature);
-                pInstance->SetData(DATA_CHESS_EVENT,DONE);
-                m_creature->SummonGameObject(DUST_COVERED_CHEST,-11058,-1903,221,2.24,0,0,0,0,7200000);
+                pInstance->SetData(DATA_CHESS_EVENT, DONE);
+                m_creature->SummonGameObject(DUST_COVERED_CHEST, -11058, -1903, 221, 2.24, 0, 0, 0, 0, 7200000);
                 break;
 
             default:
@@ -2152,34 +1822,25 @@ void boss_MedivhAI::SayChessPieceDied(Unit * piece)
                 break;
             case NPC_PAWN_A:
 
-                switch(rand()%3)
-                {
-                    case 0: DoScriptText(SCRIPTTEXT_LOSE_PAWN_P_1, m_creature);break;
-                    case 1: DoScriptText(SCRIPTTEXT_LOSE_PAWN_P_2, m_creature);break;
-                    case 2: DoScriptText(SCRIPTTEXT_LOSE_PAWN_P_3, m_creature);break;
-                }
+                DoScriptText(RAND(SCRIPTTEXT_LOSE_PAWN_P_1, SCRIPTTEXT_LOSE_PAWN_P_2, SCRIPTTEXT_LOSE_PAWN_P_3), m_creature);
                 break;
 
             case NPC_PAWN_H:
 
-                switch(rand()%2)
-                {
-                    case 0: DoScriptText(SCRIPTTEXT_LOSE_PAWN_M_1, m_creature);break;
-                    case 1: DoScriptText(SCRIPTTEXT_LOSE_PAWN_M_2, m_creature);break;
-                }
+                DoScriptText(RAND(SCRIPTTEXT_LOSE_PAWN_M_1, SCRIPTTEXT_LOSE_PAWN_M_2), m_creature);
                 break;
 
             case NPC_KING_A:
 
                 DoScriptText(SCRIPTTEXT_MEDIVH_WIN, m_creature);
-                pInstance->SetData(DATA_CHESS_EVENT,FAIL);
+                pInstance->SetData(DATA_CHESS_EVENT, FAIL);
                 break;
 
             case NPC_KING_H:
 
                 DoScriptText(SCRIPTTEXT_PLAYER_WIN, m_creature);
-                pInstance->SetData(DATA_CHESS_EVENT,DONE);
-                m_creature->SummonGameObject(DUST_COVERED_CHEST,-11058,-1903,221,2.24,0,0,0,0,7200000);
+                pInstance->SetData(DATA_CHESS_EVENT, DONE);
+                m_creature->SummonGameObject(DUST_COVERED_CHEST, -11058, -1903, 221, 2.24, 0, 0, 0, 0, 7200000);
                 break;
 
             default:
@@ -2194,8 +1855,7 @@ void boss_MedivhAI::RemoveChessPieceFromBoard(uint64 piece)
     printf("\n Wywolanie RemoveChessPieceFromBoard(uint64 piece = %u)", piece);
     #endif
 
-    Creature * cPiece = m_creature->GetCreature(piece);
-    RemoveChessPieceFromBoard(cPiece);
+    RemoveChessPieceFromBoard(m_creature->GetCreature(piece));
 }
 
 void boss_MedivhAI::RemoveChessPieceFromBoard(Creature * piece)
@@ -2210,40 +1870,48 @@ void boss_MedivhAI::RemoveChessPieceFromBoard(Creature * piece)
         return;
     }
 
+    Creature * tmpC;
+    uint32 tmpEntry = GetDeadEntryForPiece(piece->GetEntry());
+
+    #ifdef CHESS_DEBUG_INFO
+    printf("\ntmpEntry: %u", tmpEntry);
+    #endif
     if (piece->getFaction() == A_FACTION)
     {
         --alliancePieces;
-        piece->Relocate(hordeSideDeadWP[alliancePieces][0], hordeSideDeadWP[alliancePieces][1], POSITION_Z, hordeSideDeadOrientation);
+        tmpC = me->SummonCreature(tmpEntry, allianceSideDeadWP[0][alliancePieces], allianceSideDeadWP[1][alliancePieces], POSITION_Z, ORI_W, TEMPSUMMON_CORPSE_DESPAWN, 0);
     }
     else
     {
         --hordePieces;
-        piece->Relocate(allianceSideDeadWP[hordePieces][0], allianceSideDeadWP[hordePieces][1], POSITION_Z, allianceSideDeadOrientation);
+        tmpC = me->SummonCreature(tmpEntry, hordeSideDeadWP[0][hordePieces], hordeSideDeadWP[1][hordePieces], POSITION_Z, ORI_W, TEMPSUMMON_CORPSE_DESPAWN, 0);
     }
 
-    piece->Respawn();
-    piece->CombatStop();
-    piece->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-    piece->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-    piece->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+    if (tmpC)
+    {
+        tmpC->CombatStop();
+        tmpC->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        tmpC->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        tmpC->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+    }
 
-    ((npc_chesspieceAI*)piece)->InGame = false;
-    piece->setActive(false);
-
+    int tmpI = -1, tmpJ = -1;
     uint64 tmpGUID = piece->GetGUID();
 
-    for (int8 i = 0; i < 8; i++)
-        for (int8 j = 0; j < 8; j++)
-            if (chessBoard[i][j].piece == tmpGUID)
-            {
-                chessBoard[i][j].piece = 0;
-                return;
-            }
+    if (FindPlaceInBoard(tmpGUID, tmpI, tmpJ))
+        chessBoard[tmpI][tmpJ].piece = 0;
+
+    for (std::list<uint64>::iterator itr = medivhSidePieces.begin(); itr != medivhSidePieces.end();)
+    {
+        std::list<uint64>::iterator tmpItr = itr;
+        ++itr;
+
+        if ((*tmpItr) == tmpGUID)
+            medivhSidePieces.erase(tmpItr);
+    }
 
     SayChessPieceDied(piece);
 }
-
-
 
 void boss_MedivhAI::SpawnPawns()
 {
@@ -2255,8 +1923,8 @@ void boss_MedivhAI::SpawnPawns()
 
     for (int i = 0; i < 8; i++)
     {
-        tmp[0][i] = m_creature->SummonCreature(NPC_PAWN_A, SPAWN_POS, ORI_N, TEMPSUMMON_MANUAL_DESPAWN, 0);
-        tmp[1][i] = m_creature->SummonCreature(NPC_PAWN_H, SPAWN_POS, ORI_S, TEMPSUMMON_MANUAL_DESPAWN, 0);
+        tmp[0][i] = m_creature->SummonCreature(NPC_PAWN_A, SPAWN_POS, ORI_N, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
+        tmp[1][i] = m_creature->SummonCreature(NPC_PAWN_H, SPAWN_POS, ORI_S, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
         if (tmp[0][i])
         {
             #ifdef CHESS_DEBUG_INFO
@@ -2289,7 +1957,7 @@ void boss_MedivhAI::SpawnPawns()
                 medivhSidePieces.push_back(tmp[0][i]->GetGUID());
     }
 
-    miniEventTimer = 7500;
+    miniEventTimer = 10000;
 }
 
 void boss_MedivhAI::SpawnRooks()
@@ -2299,7 +1967,7 @@ void boss_MedivhAI::SpawnRooks()
     #endif
     Creature * tmp1, * tmp2, * tmp3, * tmp4;
 
-    tmp1 = m_creature->SummonCreature(NPC_ROOK_A, SPAWN_POS, ORI_N, TEMPSUMMON_MANUAL_DESPAWN, 0);
+    tmp1 = m_creature->SummonCreature(NPC_ROOK_A, SPAWN_POS, ORI_N, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
 
     if (tmp1)
     {
@@ -2312,7 +1980,7 @@ void boss_MedivhAI::SpawnRooks()
         tmp1->GetMotionMaster()->MovePoint(0, chessBoard[7][0].position.coord_x, chessBoard[7][0].position.coord_y, chessBoard[7][0].position.coord_z);
     }
 
-    tmp2 = m_creature->SummonCreature(NPC_ROOK_A, SPAWN_POS, ORI_N, TEMPSUMMON_MANUAL_DESPAWN, 0);
+    tmp2 = m_creature->SummonCreature(NPC_ROOK_A, SPAWN_POS, ORI_N, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
 
     if (tmp2)
     {
@@ -2326,7 +1994,7 @@ void boss_MedivhAI::SpawnRooks()
     }
 
 
-    tmp3 = m_creature->SummonCreature(NPC_ROOK_H, SPAWN_POS, ORI_S, TEMPSUMMON_MANUAL_DESPAWN, 0);
+    tmp3 = m_creature->SummonCreature(NPC_ROOK_H, SPAWN_POS, ORI_S, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
 
     if (tmp3)
     {
@@ -2339,7 +2007,7 @@ void boss_MedivhAI::SpawnRooks()
         tmp3->GetMotionMaster()->MovePoint(0, chessBoard[0][0].position.coord_x, chessBoard[0][0].position.coord_y, chessBoard[0][0].position.coord_z);
     }
 
-    tmp4 = m_creature->SummonCreature(NPC_ROOK_H, SPAWN_POS, ORI_S, TEMPSUMMON_MANUAL_DESPAWN, 0);
+    tmp4 = m_creature->SummonCreature(NPC_ROOK_H, SPAWN_POS, ORI_S, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
 
     if (tmp4)
     {
@@ -2375,7 +2043,7 @@ void boss_MedivhAI::SpawnKnights()
     #endif
     Creature * tmp1, * tmp2, * tmp3, * tmp4;
 
-    tmp1 = m_creature->SummonCreature(NPC_KNIGHT_A, SPAWN_POS, ORI_N, TEMPSUMMON_MANUAL_DESPAWN, 0);
+    tmp1 = m_creature->SummonCreature(NPC_KNIGHT_A, SPAWN_POS, ORI_N, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
 
     if (tmp1)
     {
@@ -2388,7 +2056,7 @@ void boss_MedivhAI::SpawnKnights()
         tmp1->GetMotionMaster()->MovePoint(0, chessBoard[7][1].position.coord_x, chessBoard[7][1].position.coord_y, chessBoard[7][1].position.coord_z);
     }
 
-    tmp2 = m_creature->SummonCreature(NPC_KNIGHT_A, SPAWN_POS, ORI_N, TEMPSUMMON_MANUAL_DESPAWN, 0);
+    tmp2 = m_creature->SummonCreature(NPC_KNIGHT_A, SPAWN_POS, ORI_N, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
 
     if (tmp2)
     {
@@ -2402,7 +2070,7 @@ void boss_MedivhAI::SpawnKnights()
     }
 
 
-    tmp3 = m_creature->SummonCreature(NPC_KNIGHT_H, SPAWN_POS, ORI_S, TEMPSUMMON_MANUAL_DESPAWN, 0);
+    tmp3 = m_creature->SummonCreature(NPC_KNIGHT_H, SPAWN_POS, ORI_S, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
 
     if (tmp3)
     {
@@ -2415,7 +2083,7 @@ void boss_MedivhAI::SpawnKnights()
         tmp3->GetMotionMaster()->MovePoint(0, chessBoard[0][1].position.coord_x, chessBoard[0][1].position.coord_y, chessBoard[0][1].position.coord_z);
     }
 
-    tmp4 = m_creature->SummonCreature(NPC_KNIGHT_H, SPAWN_POS, ORI_S, TEMPSUMMON_MANUAL_DESPAWN, 0);
+    tmp4 = m_creature->SummonCreature(NPC_KNIGHT_H, SPAWN_POS, ORI_S, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
 
     if (tmp4)
     {
@@ -2451,7 +2119,7 @@ void boss_MedivhAI::SpawnBishops()
     #endif
     Creature * tmp1, * tmp2, * tmp3, * tmp4;
 
-    tmp1 = m_creature->SummonCreature(NPC_BISHOP_A, SPAWN_POS, ORI_N, TEMPSUMMON_MANUAL_DESPAWN, 0);
+    tmp1 = m_creature->SummonCreature(NPC_BISHOP_A, SPAWN_POS, ORI_N, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
 
     if (tmp1)
     {
@@ -2464,7 +2132,7 @@ void boss_MedivhAI::SpawnBishops()
         tmp1->GetMotionMaster()->MovePoint(0, chessBoard[7][2].position.coord_x, chessBoard[7][2].position.coord_y, chessBoard[7][2].position.coord_z);
     }
 
-    tmp2 = m_creature->SummonCreature(NPC_BISHOP_A, SPAWN_POS, ORI_N, TEMPSUMMON_MANUAL_DESPAWN, 0);
+    tmp2 = m_creature->SummonCreature(NPC_BISHOP_A, SPAWN_POS, ORI_N, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
 
     if (tmp2)
     {
@@ -2478,7 +2146,7 @@ void boss_MedivhAI::SpawnBishops()
     }
 
 
-    tmp3 = m_creature->SummonCreature(NPC_BISHOP_H, SPAWN_POS, ORI_S, TEMPSUMMON_MANUAL_DESPAWN, 0);
+    tmp3 = m_creature->SummonCreature(NPC_BISHOP_H, SPAWN_POS, ORI_S, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
 
     if (tmp3)
     {
@@ -2491,7 +2159,7 @@ void boss_MedivhAI::SpawnBishops()
         tmp3->GetMotionMaster()->MovePoint(0, chessBoard[0][2].position.coord_x, chessBoard[0][2].position.coord_y, chessBoard[0][2].position.coord_z);
     }
 
-    tmp4 = m_creature->SummonCreature(NPC_BISHOP_H, SPAWN_POS, ORI_S, TEMPSUMMON_MANUAL_DESPAWN, 0);
+    tmp4 = m_creature->SummonCreature(NPC_BISHOP_H, SPAWN_POS, ORI_S, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
 
     if (tmp4)
     {
@@ -2528,7 +2196,7 @@ void boss_MedivhAI::SpawnQueens()
     #endif
     Creature * tmp1, * tmp2;
 
-    tmp1 = m_creature->SummonCreature(NPC_QUEEN_A, SPAWN_POS, ORI_N, TEMPSUMMON_MANUAL_DESPAWN, 0);
+    tmp1 = m_creature->SummonCreature(NPC_QUEEN_A, SPAWN_POS, ORI_N, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
 
     if (tmp1)
     {
@@ -2541,7 +2209,7 @@ void boss_MedivhAI::SpawnQueens()
         tmp1->GetMotionMaster()->MovePoint(0, chessBoard[7][3].position.coord_x, chessBoard[7][3].position.coord_y, chessBoard[7][3].position.coord_z);
     }
 
-    tmp2 = m_creature->SummonCreature(NPC_QUEEN_H, SPAWN_POS, ORI_S, TEMPSUMMON_MANUAL_DESPAWN, 0);
+    tmp2 = m_creature->SummonCreature(NPC_QUEEN_H, SPAWN_POS, ORI_S, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
 
     if (tmp2)
     {
@@ -2571,7 +2239,7 @@ void boss_MedivhAI::SpawnKings()
     #endif
     Creature * tmp1, * tmp2;
 
-    tmp1 = m_creature->SummonCreature(NPC_KING_A, SPAWN_POS, ORI_N, TEMPSUMMON_MANUAL_DESPAWN, 0);
+    tmp1 = m_creature->SummonCreature(NPC_KING_A, SPAWN_POS, ORI_N, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
 
     if (tmp1)
     {
@@ -2584,7 +2252,7 @@ void boss_MedivhAI::SpawnKings()
         tmp1->GetMotionMaster()->MovePoint(0, chessBoard[7][4].position.coord_x, chessBoard[7][4].position.coord_y, chessBoard[7][4].position.coord_z);
     }
 
-    tmp2 = m_creature->SummonCreature(NPC_KING_H, SPAWN_POS, ORI_S, TEMPSUMMON_MANUAL_DESPAWN, 0);
+    tmp2 = m_creature->SummonCreature(NPC_KING_H, SPAWN_POS, ORI_S, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
 
     if (tmp2)
     {
@@ -2618,7 +2286,7 @@ void boss_MedivhAI::SpawnTriggers()
     {
         for (int j = 0; j < 8; j++)
         {
-            tmp = m_creature->SummonCreature(TRIGGER_ID, chessBoard[i][j].position.coord_x, chessBoard[i][j].position.coord_y, chessBoard[i][j].position.coord_z, ORI_W, TEMPSUMMON_MANUAL_DESPAWN, 0);
+            tmp = m_creature->SummonCreature(TRIGGER_ID, chessBoard[i][j].position.coord_x, chessBoard[i][j].position.coord_y, chessBoard[i][j].position.coord_z, ORI_W, TEMPSUMMON_DEAD_DESPAWN, 0);
             if (tmp)
             {
                 #ifdef CHESS_DEBUG_INFO
@@ -2641,60 +2309,6 @@ void boss_MedivhAI::PrepareBoardForEvent()
     #ifdef CHESS_DEBUG_INFO
     printf("\n Wywolanie PrepareBoardForEvent()");
     #endif
-    /*// Horde Tower
-    allowedPositions[NPC_ROOK_H].push_back(std::pair<int, int>(0, 0));
-    allowedPositions[NPC_ROOK_H].push_back(std::pair<int, int>(0, 7));
-    // Horde Horse
-    allowedPositions[NPC_KNIGHT_H].push_back(std::pair<int, int>(0, 1));
-    allowedPositions[NPC_KNIGHT_H].push_back(std::pair<int, int>(0, 6));
-    // Horde Laufer
-    allowedPositions[NPC_BISHOP_H].push_back(std::pair<int, int>(0, 2));
-    allowedPositions[NPC_BISHOP_H].push_back(std::pair<int, int>(0, 5));
-    // Horde Queen
-    allowedPositions[NPC_QUEEN_H].push_back(std::pair<int, int>(0, 3));
-    // Horde King
-    allowedPositions[NPC_KING_H].push_back(std::pair<int, int>(0, 4));
-    // Horde Pawn
-    allowedPositions[NPC_PAWN_H].push_back(std::pair<int, int>(1, 0));
-    allowedPositions[NPC_PAWN_H].push_back(std::pair<int, int>(1, 1));
-    allowedPositions[NPC_PAWN_H].push_back(std::pair<int, int>(1, 2));
-    allowedPositions[NPC_PAWN_H].push_back(std::pair<int, int>(1, 3));
-    allowedPositions[NPC_PAWN_H].push_back(std::pair<int, int>(1, 4));
-    allowedPositions[NPC_PAWN_H].push_back(std::pair<int, int>(1, 5));
-    allowedPositions[NPC_PAWN_H].push_back(std::pair<int, int>(1, 6));
-    allowedPositions[NPC_PAWN_H].push_back(std::pair<int, int>(1, 7));
-
-    // Alliance Tower
-    allowedPositions[NPC_ROOK_A].push_back(std::pair<int, int>(7, 0));
-    allowedPositions[NPC_ROOK_A].push_back(std::pair<int, int>(7, 7));
-    // Alliance Horse
-    allowedPositions[NPC_KNIGHT_A].push_back(std::pair<int, int>(7, 1));
-    allowedPositions[NPC_KNIGHT_A].push_back(std::pair<int, int>(7, 6));
-    // Alliance Laufer
-    allowedPositions[NPC_BISHOP_A].push_back(std::pair<int, int>(7, 2));
-    allowedPositions[NPC_BISHOP_A].push_back(std::pair<int, int>(7, 5));
-    // Alliance Queen
-    allowedPositions[NPC_QUEEN_A].push_back(std::pair<int, int>(7, 3));
-    // Alliance King
-    allowedPositions[NPC_KING_A].push_back(std::pair<int, int>(7, 4));
-    // Alliance Pawn
-    allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(6, 0));
-    allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(6, 1));
-    allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(6, 2));
-    allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(6, 3));
-    allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(6, 4));
-    allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(6, 5));
-    allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(6, 6));
-    allowedPositions[NPC_PAWN_A].push_back(std::pair<int, int>(6, 7));
-
-    // Triggers
-    for (int i = 0; i < 8; i++)
-    {
-        for (int j = 0; j < 8; j++)
-        {
-            allowedPositions[TRIGGER_ID].push_back(std::pair<int, int>(i, j));
-        }
-    }*/
 
     SpawnTriggers();
     SpawnKings();
@@ -2979,14 +2593,14 @@ void boss_MedivhAI::SetOrientation(uint64 piece, ChessOrientation ori)
                 break;
         }
 
-        me->GetMap()->CreatureRelocation(cPiece, cPiece->GetPositionX(), cPiece->GetPositionY(), cPiece->GetPositionZ(), cPiece->GetOrientation());
+        me->GetMap()->CreatureRelocation(cPiece, chessBoard[tmpi][tmpj].position.coord_x, chessBoard[tmpi][tmpj].position.coord_y, chessBoard[tmpi][tmpj].position.coord_z, cPiece->GetOrientation());
 
         Map::PlayerList const& players = m_creature->GetMap()->GetPlayers();
 
         if (!players.isEmpty())
             for(Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                 if (Player* plr = itr->getSource())
-                    cPiece->SendMonsterMove(cPiece->GetPositionX(), cPiece->GetPositionY(), cPiece->GetPositionZ(), 0, plr);
+                    cPiece->SendMonsterMove(chessBoard[tmpi][tmpj].position.coord_x, chessBoard[tmpi][tmpj].position.coord_y, chessBoard[tmpi][tmpj].position.coord_z, 0, plr);
     }
 }
 
@@ -3448,6 +3062,56 @@ void boss_MedivhAI::ChoosePieceToMove()
         #endif
         me->Say("Cosik mi sie wybrany pionek albo trigger gdzies zgubil", LANG_UNIVERSAL, NULL);
     }
+}
+
+uint32 boss_MedivhAI::GetDeadEntryForPiece(Creature * piece)
+{
+    #ifdef CHESS_DEBUG_INFO
+    printf("GetDeadEntryForPiece(Creature * piece = %i)", piece);
+    #endif
+    if (!piece)
+        return 0;
+
+    return GetDeadEntryForPiece(piece->GetEntry());
+}
+
+uint32 boss_MedivhAI::GetDeadEntryForPiece(uint32 entry)
+{
+    #ifdef CHESS_DEBUG_INFO
+    printf("GetDeadEntryForPiece(uint32 entry = %u)", entry);
+    #endif
+
+    switch (entry)
+    {
+        case NPC_PAWN_H:
+            return 16556;
+        case NPC_PAWN_A:
+            return 16567;
+        case NPC_KNIGHT_H:
+            return 16561;
+        case NPC_KNIGHT_A:
+            return 16569;
+        case NPC_QUEEN_H:
+            return 16557;
+        case NPC_QUEEN_A:
+            return 16572;
+        case NPC_BISHOP_H:
+            return 16560;
+        case NPC_BISHOP_A:
+            return 16571;
+        case NPC_ROOK_H:
+            return 16562;
+        case NPC_ROOK_A:
+            return 16570;
+        case NPC_KING_H:
+            return 16563;
+        case NPC_KING_A:
+            return 16581;
+        default:
+            return 0;
+    }
+
+    return 0;
 }
 
 //other

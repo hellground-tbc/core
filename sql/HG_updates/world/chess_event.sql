@@ -394,6 +394,11 @@ UPDATE creature_template
 SET minhealth = 150000, maxhealth = 150000, armor = 6792, speed = 1.0, mindmg = 445, maxdmg = 909, attackpower = 14205
 WHERE entry = 21684 OR entry = 21752;
 
+#--update scale for "unused" pieces ;)
+UPDATE creature_template 
+SET scale = 0.5 
+WHERE entry IN (16556, 16567, 16561, 16569, 16557, 16572, 16560, 16571, 16562, 16570, 16563, 16581);
+
 ##----
 #UPDATE creature_template 
 #SET minhealth = , maxhealth = , armor = , speed = , mindmg = , maxdmg = , attackpower = 
