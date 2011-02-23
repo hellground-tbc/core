@@ -265,7 +265,7 @@ void PetAI::UpdateAI(const uint32 diff)
     if (!me->GetCharmInfo())
         return;
 
-    if (m_creature->GetGlobalCooldown() == 0 && !m_creature->hasUnitState(UNIT_STAT_CASTING))
+    if (!m_creature->hasUnitState(UNIT_STAT_CASTING))
     {
         //Autocast
         for (uint8 i = 0; i < m_creature->GetPetAutoSpellSize(); i++)
@@ -390,7 +390,7 @@ void ImpAI::UpdateAI(const uint32 diff)
     if (!me->GetCharmInfo())
         return;
 
-    if (m_creature->GetGlobalCooldown() == 0 && !m_creature->hasUnitState(UNIT_STAT_CASTING))
+    if (!m_creature->hasUnitState(UNIT_STAT_CASTING))
     {
         //Autocast
         for (uint8 i = 0; i < m_creature->GetPetAutoSpellSize(); i++)

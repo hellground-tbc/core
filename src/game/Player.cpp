@@ -447,8 +447,6 @@ Player::Player (WorldSession *session): Unit()
 
     m_isActive = true;
 
-    m_globalCooldowns.clear();
-
     saving = false;
 }
 
@@ -1166,17 +1164,6 @@ void Player::Update(uint32 p_time)
 
         // It will be recalculate at mailbox open (for unReadMails important non-0 until mailbox open, it also will be recalculated)
         m_nextMailDelivereTime = 0;
-    }
-
-    for (std::map<uint32, uint32>::iterator itr = m_globalCooldowns.begin(); itr != m_globalCooldowns.end(); ++itr)
-    {
-        if (itr->second)
-        {
-            if (itr->second > p_time)
-                itr->second -= p_time;
-            else
-                itr->second = 0;
-        }
     }
 
     Unit::Update(p_time);
@@ -20047,95 +20034,6 @@ bool Player::isTotalImmunity()
         }
     }
     return false;
-}
-
-void Player::AddGlobalCooldown(SpellEntry const *spellInfo, Spell const *spell)
-{
-    if (!spellInfo)
-        return;
-
-    if (spell->m_CastItem)
-    {
-        if (ItemPrototype const *pProto = spell->m_CastItem->GetProto())
-        {
-            uint32 maxRecovery = 1178;
-            for (uint8 i = 0; i < 5; i++)
-            {
-                if (pProto->Spells[i].SpellId == spellInfo->Id)
-                    m_globalCooldowns[maxRecovery + pProto->Spells[i].SpellCategory] = 1000;
-            }
-        }
-    }
-
-    if (!spellInfo->StartRecoveryTime)
-        return;
-
-    uint32 cdTime = spellInfo->StartRecoveryTime;
-
-    if (!(spellInfo->Attributes & (SPELL_ATTR_UNK4|SPELL_ATTR_TRADESPELL)))
-        cdTime *= GetFloatValue(UNIT_MOD_CAST_SPEED);
-    else if (spell->IsRangedSpell() && !spell->IsAutoRepeat())
-        cdTime *= m_modAttackSpeedPct[RANGED_ATTACK];
-
-    if (cdTime > 1500)
-        cdTime = 1500;
-
-    if (cdTime < 1000)
-        cdTime = 1000;
-
-    if (cdTime > 0)
-        m_globalCooldowns[spellInfo->StartRecoveryCategory] = cdTime;
-
-    m_globalCooldowns[spellInfo->StartRecoveryCategory] = cdTime;
-}
-
-bool Player::HasGlobalCooldown(SpellEntry const *spellInfo, Spell const *pSpell) const
-{
-    if (!spellInfo)
-        return false;
-
-    if (pSpell && pSpell->m_CastItem)
-    {
-        if (ItemPrototype const *pProto = pSpell->m_CastItem->GetProto())
-        {
-            uint32 maxRecovery = 1178;
-            for (uint8 i = 0; i < 5; i++)
-            {
-                if (pProto->Spells[i].SpellId == spellInfo->Id)
-                {
-                    std::map<uint32, uint32>::const_iterator itr = m_globalCooldowns.find(maxRecovery + pProto->Spells[i].SpellCategory);
-                    if (itr != m_globalCooldowns.end() && (itr->second > sWorld.GetUpdateTime()))
-                        return true;
-                }
-            }
-        }
-    }
-
-    if (!spellInfo->StartRecoveryCategory)
-        return false;
-
-    std::map<uint32, uint32>::const_iterator itr = m_globalCooldowns.find(spellInfo->StartRecoveryCategory);
-    return itr != m_globalCooldowns.end() && (itr->second > sWorld.GetUpdateTime());
-}
-
-void Player::RemoveGlobalCooldown(SpellEntry const *spellInfo, Spell const *pSpell)
-{
-    if (!spellInfo)
-        return;
-
-    if (pSpell && pSpell->m_CastItem)
-    {
-        if (ItemPrototype const *pProto = pSpell->m_CastItem->GetProto())
-        {
-            uint32 maxRecovery = 1178;
-            for (uint8 i = 0; i < 5; i++)
-            {
-                if (pProto->Spells[i].SpellId == spellInfo->Id)
-                    m_globalCooldowns[maxRecovery + pProto->Spells[i].SpellCategory] = 0;
-            }
-        }
-    }
-    m_globalCooldowns[spellInfo->StartRecoveryCategory] = 0;
 }
 
 void Player::BuildTeleportAckMsg(WorldPacket *data, float x, float y, float z, float ang) const

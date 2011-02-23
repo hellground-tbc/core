@@ -586,7 +586,6 @@ class TRINITY_DLL_SPEC Creature : public Unit
         uint32 m_spells[CREATURE_MAX_SPELLS];
         CreatureSpellCooldowns m_CreatureSpellCooldowns;
         CreatureSpellCooldowns m_CreatureCategoryCooldowns;
-        uint32 m_GlobalCooldown;
 
         bool canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
         bool IsWithinSightDist(Unit const* u) const;
@@ -651,8 +650,6 @@ class TRINITY_DLL_SPEC Creature : public Unit
 
         void SetHomePosition(float x, float y, float z, float ori) { mHome_X = x; mHome_Y = y; mHome_Z = z; mHome_O = ori;}
         void GetHomePosition(float &x, float &y, float &z, float &ori) { x = mHome_X; y = mHome_Y; z = mHome_Z; ori = mHome_O; }
-
-        uint32 GetGlobalCooldown() const { return m_GlobalCooldown; }
 
         uint32 GetWaypointPath(){return m_path_id;}
         void LoadPath(uint32 pathid) { m_path_id = pathid; }

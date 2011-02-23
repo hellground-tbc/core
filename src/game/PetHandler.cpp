@@ -187,9 +187,6 @@ void WorldSession::HandlePetAction(WorldPacket & recv_data)
             else
                 unit_target = NULL;
 
-            if (((Creature*)pet)->GetGlobalCooldown() > 0)
-                return;
-
             // do not cast unknown spells
             SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellid);
             if (!spellInfo)
@@ -197,6 +194,10 @@ void WorldSession::HandlePetAction(WorldPacket & recv_data)
                 sLog.outError("WORLD: unknown PET spell id %i\n", spellid);
                 return;
             }
+
+            if (spellInfo->StartRecoveryCategory > 0)
+                if (pet->GetCharmInfo() && pet->GetCharmInfo()->GetGlobalCooldownMgr().HasGlobalCooldown(spellInfo))
+                    return;
 
             for (uint32 i = 0; i < 3;i++)
             {
@@ -653,7 +654,7 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPacket& recvPacket)
         return;
 
     if (spellInfo->StartRecoveryCategory > 0) //Check if spell is affected by GCD
-        if (caster->GetTypeId() == TYPEID_UNIT && ((Creature*)caster)->GetGlobalCooldown() > 0)
+        if (caster->GetTypeId() == TYPEID_UNIT && caster->GetCharmInfo() && caster->GetCharmInfo()->GetGlobalCooldownMgr().HasGlobalCooldown(spellInfo))
         {
             caster->SendPetCastFail(spellid, SPELL_FAILED_NOT_READY);
             return;

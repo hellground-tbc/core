@@ -795,6 +795,30 @@ enum ActiveStates
     ACT_DECIDE   = 0x0001
 };
 
+struct GlobalCooldown
+{
+    explicit GlobalCooldown(uint32 _dur = 0, uint32 _time = 0) : duration(_dur), cast_time(_time) {}
+
+    uint32 duration;
+    uint32 cast_time;
+};
+
+typedef UNORDERED_MAP<uint32 /*category*/, GlobalCooldown> GlobalCooldownList;
+
+class GlobalCooldownMgr                                     // Shared by Player and CharmInfo
+{
+public:
+    GlobalCooldownMgr() {}
+
+public:
+    bool HasGlobalCooldown(SpellEntry const* spellInfo) const;
+    void AddGlobalCooldown(SpellEntry const* spellInfo, uint32 gcd);
+    void CancelGlobalCooldown(SpellEntry const* spellInfo);
+
+private:
+    GlobalCooldownList m_GlobalCooldowns;
+};
+
 enum ReactStates
 {
     REACT_PASSIVE    = 0,
@@ -844,6 +868,8 @@ struct TRINITY_DLL_SPEC CharmInfo
         UnitActionBarEntry* GetActionBarEntry(uint8 index) { return &(PetActionBar[index]); }
         CharmSpellEntry* GetCharmSpell(uint8 index) { return &(m_charmspells[index]); }
 
+        GlobalCooldownMgr& GetGlobalCooldownMgr() { return m_GlobalCooldownMgr; }
+
         void SetIsCommandAttack(bool val);
         bool IsCommandAttack();
         void SetIsAtStay(bool val);
@@ -873,6 +899,8 @@ struct TRINITY_DLL_SPEC CharmInfo
         float m_stayX;
         float m_stayY;
         float m_stayZ;
+
+        GlobalCooldownMgr m_GlobalCooldownMgr;
 };
 
 // for clearing special attacks
