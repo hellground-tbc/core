@@ -418,6 +418,10 @@ CreatureAI* GetAI_npc_zulaman_door_trigger(Creature *_Creature)
     return new npc_zulaman_door_triggerAI(_Creature);
 }
 
+/*####################
+# Akilzon Gauntlet event
+#######################*/
+
 #define AKILZON_GAUNTLET_NOT_STARTED        0
 #define AKILZON_GAUNTLET_IN_PROGRESS        10
 #define AKILZON_GAUNTLET_TEMPEST_ENGAGED    11
@@ -425,6 +429,9 @@ CreatureAI* GetAI_npc_zulaman_door_trigger(Creature *_Creature)
 
 #define NPC_AMANISHI_WARRIOR        24225
 #define NPC_AMANISHI_EAGLE          24159
+#define SPELL_TALON                 43517
+#define SPELL_CHARGE                43519
+#define SPELL_KICK                  43518
 
 int32 GauntletWP[][3] =
 {
@@ -437,7 +444,7 @@ int32 GauntletWP[][3] =
 
 struct TRINITY_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
 {
-    npc_amanishi_lookoutAI(Creature *c) : ScriptedAI(c)
+    npc_amanishi_lookoutAI(Creature *c) : ScriptedAI(c), Summons(c)
     {
         pInstance = c->GetInstanceData();
         m_creature->setActive(true);
@@ -448,6 +455,7 @@ struct TRINITY_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
     bool EventStarted;
     bool Move;
     uint8 MovePoint;
+    SummonList Summons;
 
     uint32 warriorsTimer;
     uint32 eaglesTimer;
@@ -456,10 +464,10 @@ struct TRINITY_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
     {
     //    m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
     //    m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-    //    m_creature->SetVisibility(VISIBILITY_ON);
+        m_creature->SetVisibility(VISIBILITY_ON);
         EventStarted = false;
-        warriorsTimer = 10000; // TODO: set timers
-        eaglesTimer = 10000;
+        warriorsTimer = 40000;
+        eaglesTimer = 1000;
         Move = false;
 
         if(pInstance)
@@ -472,8 +480,6 @@ struct TRINITY_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
         EventStarted = true;
         DoZoneInCombat();
         // TODO: do yell
-        // DEBUG
-        m_creature->Yell("Start event", 0, 0);
     }
 
     void EnterCombat(Unit *who)
@@ -482,7 +488,23 @@ struct TRINITY_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
 
     void JustDied(Unit* Killer)
     {
-        // should not be posible
+        if(Killer != m_creature)
+        {
+            m_creature->Respawn();
+            m_creature->AI()->EnterEvadeMode();
+        }
+    }
+
+    
+    void JustSummoned(Creature* summoned)
+    {
+        Summons.Summon(summoned);
+    }
+
+
+    void SummonedCreatureDespawn(Creature *summon)
+    {
+        Summons.Despawn(summon);
     }
 
     void MoveInLineOfSight(Unit *who)
@@ -501,8 +523,7 @@ struct TRINITY_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
         {
             if(id > 3)
             {
-                // m_creature->SetVisibility(VISIBILITY_OFF);
-                m_creature->Yell("Turning visibility off", 0, 0);
+                m_creature->SetVisibility(VISIBILITY_OFF);
             }
             else
             {
@@ -519,22 +540,19 @@ struct TRINITY_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
         if(!EventStarted && pInstance && pInstance->GetData(DATA_AKILZONGAUNTLET) != AKILZON_GAUNTLET_NOT_STARTED)
         {
             StartEvent();
-            m_creature->Yell("Start event 2", 0, 0);
         }
 
         if(Move)
         {
             m_creature->GetMotionMaster()->MovePoint(MovePoint, GauntletWP[MovePoint][0], GauntletWP[MovePoint][1], GauntletWP[MovePoint][2]);
             Move = false;
-            m_creature->Yell("Move", 0, 0);
         }
 
-        if(!m_creature->isInCombat() && EventStarted)
+        if(me->getThreatManager().isThreatListEmpty() && EventStarted)
         {
             EnterEvadeMode();
             EventStarted = false;
-            // DEBUG
-            m_creature->Yell("Reset event", 0, 0);
+            Summons.DespawnAll();
         }
 
         else if (pInstance && pInstance->GetData(DATA_AKILZONGAUNTLET) == AKILZON_GAUNTLET_IN_PROGRESS)
@@ -542,8 +560,8 @@ struct TRINITY_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
             if(warriorsTimer < diff)
             {
                 for(uint8 i = 0; i < 2; i++)
-                    m_creature->SummonCreature(NPC_AMANISHI_WARRIOR, GauntletWP[0][0], GauntletWP[0][1], GauntletWP[0][2], 3.1415f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
-                warriorsTimer = 10000; // TODO: set timer
+                    m_creature->SummonCreature(NPC_AMANISHI_WARRIOR, GauntletWP[0][0] + 2*i, GauntletWP[0][1] + 2*i, GauntletWP[0][2], 3.1415f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
+                warriorsTimer = 40000;
             }
             else
                 warriorsTimer -= diff;
@@ -552,8 +570,8 @@ struct TRINITY_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
             {
                 uint8 maxEagles = RAND(5, 6);
                 for(uint8 i = 0; i < maxEagles; i++)
-                    m_creature->SummonCreature(NPC_AMANISHI_EAGLE, GauntletWP[0][0], GauntletWP[0][1], GauntletWP[0][2], 3.1415f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
-                eaglesTimer = 10000; // TODO: set timer
+                    m_creature->SummonCreature(NPC_AMANISHI_EAGLE, GauntletWP[4][0] + 2*(i%2)-4, GauntletWP[4][1] + 2*(i/2) - 4, GauntletWP[4][2], 3.1415f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
+                eaglesTimer = 25000; 
             }
             else
                 eaglesTimer -= diff;
@@ -563,10 +581,7 @@ struct TRINITY_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
         {
             Reset();
             m_creature->DealDamage(m_creature, m_creature->GetMaxHealth());
-            m_creature->Yell("Reset event done", 0, 0);
-        }
-
-        
+        }   
     }
 };
 
@@ -575,10 +590,126 @@ CreatureAI* GetAI_npc_amanishi_lookout(Creature *_Creature)
     return new npc_amanishi_lookoutAI (_Creature);
 }
 
+struct TRINITY_DLL_DECL npc_amanishi_warriorAI : public npc_escortAI
+{
+    npc_amanishi_warriorAI(Creature *c) : npc_escortAI(c)
+    {
+        pInstance = c->GetInstanceData();
+        m_creature->setActive(true);
+        SetDespawnAtEnd(false);
+        Reset();
+    }
+
+    ScriptedInstance *pInstance;
+
+    uint32 KickTimer;
+    uint32 ChargeTimer;
+
+    void Reset()
+    {
+        Start(true, true);
+        KickTimer = 9000;
+        ChargeTimer = 2000;
+    }
+
+    void UpdateEscortAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(KickTimer < diff)
+        {
+            DoCast(m_creature->getVictim(), SPELL_KICK);
+            KickTimer = 9000;
+        } else
+            KickTimer -= diff;
+
+        if(ChargeTimer < diff)
+        {
+            DoCast(m_creature->getVictim(), SPELL_CHARGE);
+            ChargeTimer = 5000;
+        } else
+            ChargeTimer -= diff;
+
+        DoMeleeAttackIfReady();
+    }
+
+    void WaypointReached(uint32 )
+    {
+    }
+};
+
+CreatureAI* GetAI_npc_amanishi_warrior(Creature *_Creature)
+{
+    npc_escortAI* ai = new npc_amanishi_warriorAI (_Creature);
+    ai->AddWaypoint(0, GauntletWP[1][0], GauntletWP[1][1], GauntletWP[1][2]);
+    ai->AddWaypoint(1, GauntletWP[2][0], GauntletWP[2][1], GauntletWP[2][2]);
+    ai->AddWaypoint(2, GauntletWP[3][0], GauntletWP[3][1], GauntletWP[3][2]);
+    ai->AddWaypoint(3, GauntletWP[4][0], GauntletWP[4][1], GauntletWP[4][2]);
+    return ai;
+}
+
+struct TRINITY_DLL_DECL npc_amani_eagleAI : public npc_escortAI
+{
+    npc_amani_eagleAI(Creature *c) : npc_escortAI(c)
+    {
+        pInstance = c->GetInstanceData();
+        m_creature->setActive(true);
+        SetDespawnAtEnd(false);
+        Reset();
+    }
+
+    ScriptedInstance *pInstance;
+    uint32 TalonTimer;
+
+    void Reset()
+    {
+        Start(true, true);
+        TalonTimer = 10000;
+    }
+
+    void UpdateEscortAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(TalonTimer < diff)
+        {
+            DoCast(m_creature->getVictim(), SPELL_TALON);
+            TalonTimer = 10000;
+        } else
+            TalonTimer -= diff;
+
+        DoMeleeAttackIfReady();
+    }
+    void WaypointReached(uint32 )
+    {
+    }
+};
+
+CreatureAI* GetAI_npc_amani_eagle(Creature *_Creature)
+{
+    npc_escortAI* ai = new npc_amani_eagleAI (_Creature);
+    ai->AddWaypoint(0, GauntletWP[3][0], GauntletWP[3][1], GauntletWP[3][2]);
+    ai->AddWaypoint(1, GauntletWP[2][0], GauntletWP[2][1], GauntletWP[2][2]);
+    ai->AddWaypoint(2, GauntletWP[1][0], GauntletWP[1][1], GauntletWP[1][2]);
+    ai->AddWaypoint(3, GauntletWP[0][0], GauntletWP[0][1], GauntletWP[0][2]);
+    return ai;
+}
 
 void AddSC_zulaman()
 {
     Script *newscript;
+
+    newscript = new Script;
+    newscript->Name="npc_amanishi_warrior";
+    newscript->GetAI = &GetAI_npc_amanishi_warrior;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_amani_eagle";
+    newscript->GetAI = &GetAI_npc_amani_eagle;
+    newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="npc_amanishi_lookout";
