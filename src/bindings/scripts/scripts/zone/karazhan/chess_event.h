@@ -8,9 +8,8 @@ SDCategory: Karazhan
 
 TODO:
  - Disable movement for unit controlled by player
- - Implement Attack Creature when is in Front or Strafe (?)(for every chesspieces ??) with proper factions.
  - Implement Medivhs cheats
- - Fix spells
+ - Fix spells (Game in session, Rain of Fire, Poison Cloud (it's all ? ))
  - Upgrade chesspiece AI for spells use
  - Upgrade medivh pieces movement
 EndScriptData */
@@ -25,10 +24,7 @@ EndScriptData */
 #define ECHO_OF_MEDIVH_ID   16816
 
 #define EVENT_START         "[PH] Start Chess Event" // Maybe should be different gossip, visuals will be fixed at the end :]
-#define NPC_ATTACK_RADIUS   7
-#define AGGRO_RANGE         1
 #define TRIGGER_ID          22519
-#define SEARCH_RANGE        5
 #define DUST_COVERED_CHEST  185119
 
 #define ALLIANCE_DEAD_X1        -11047.8
@@ -70,7 +66,7 @@ EndScriptData */
 
 #define RAND_MAX_VAL            1000
 
-#define attackCooldown          3000
+#define attackCooldown          urand(2000, 4000)
 #define SHARED_COOLDOWN         5000
 
 #define ADD_PIECE_TO_MOVE_TIMER urand(1000, 4000);
@@ -80,9 +76,10 @@ EndScriptData */
 #define ORI_S           3.817220
 #define ORI_W           2.239354
 
-#define CHESS_DEBUG_INFO                1
-//#define DISSABLE_MEDIVH_PIECES_MOVEMENT 1
-//#define DISSABLE_MEDIVH_PIECES_SPELLS   1
+#define CHESS_DEBUG_INFO                            1
+//#define CHESS_EVENT_DISSABLE_MEDIVH_PIECES_MOVEMENT 1
+//#define CHESS_EVENT_DISSABLE_MEDIVH_PIECES_SPELLS   1
+//#define CHESS_EVENT_DISSABLE_MELEE                  1
 
 enum SCRIPTTEXTs
 {
@@ -130,8 +127,6 @@ enum NPCs
 
 enum ChessEventSpells
 {
-    //BISHOP_HEAL_H  = 37456,
-    //BISHOP_HEAL_A  = 37455,
     SPELL_MOVE_1   = 37146,
     SPELL_MOVE_2   = 30012,
     SPELL_MOVE_3   = 37144,
@@ -141,7 +136,6 @@ enum ChessEventSpells
     SPELL_MOVE_7   = 37153,
 
     SPELL_MOVE_PREVISUAL = 32745,
-    //SPELL_AI_FACE_NEARBY_ENEMY = 37787,
 
     SPELL_CHANGE_FACING     = 30284,
     SPELL_MOVE_MARKER       = 32261,
@@ -152,13 +146,6 @@ enum ChessEventSpells
     SPELL_HAND_OF_MEDIVH    = 39339,  // 1st cheat: Berserk own chesspieces.
     SPELL_FURY_OF_MEDIVH    = 39383,  // 2nd cheat: AOE spell burn cell under enemy chesspieces.
     // 3rd cheat: set own creatures to max health
-
-
-    MOVE_NEAR_UNIT          = 30417,
-    SNAPSHOT_TIMER          = 37440,
-    FIND_ENEMY_ALLIANCE_M   = 32303,
-    ACTION_TIMER            = 37504,
-    GET_EMPTY_SQUARE        = 30418
 };
 
 enum ChessPIecesSpells
@@ -231,7 +218,7 @@ enum AbilityCooldowns
     CD_PAWN_2    = 5000
 };
 
-enum AttackSpells
+/*enum AttackSpells
 {
     ATTACK              = 6603,
     ATTACK_TIMER        = 32226,
@@ -253,7 +240,7 @@ enum AttackSpells
     WOLF_ATTACK         = 1000,//37339,
     DEMON_ATTACK        = 750,//37220,
     WARCHIEF_ATTACK     = 1750//37348
-};
+};*/
 
 enum ChessPiecesStances
 {

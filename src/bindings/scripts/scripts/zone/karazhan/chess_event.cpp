@@ -155,7 +155,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_KING_2;
             ability2Cooldown = CD_KING_2;
 
-            attackDamage = KING_LLANE_ATTACK;
+            //attackDamage = KING_LLANE_ATTACK;
             break;
 
         case NPC_KING_H:
@@ -167,7 +167,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_KING_2;
             ability2Cooldown = CD_KING_2;
 
-            attackDamage = WARCHIEF_ATTACK;
+            //attackDamage = WARCHIEF_ATTACK;
             break;
 
         case NPC_QUEEN_A:
@@ -179,7 +179,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_QUEEN_2;
             ability2Cooldown = CD_QUEEN_2;
 
-            attackDamage = CONJURER_ATTACK;
+            //attackDamage = CONJURER_ATTACK;
             break;
 
         case NPC_QUEEN_H:
@@ -191,7 +191,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_QUEEN_2;
             ability2Cooldown = CD_QUEEN_2;
 
-            attackDamage = WARLOCK_ATTACK;
+            //attackDamage = WARLOCK_ATTACK;
             break;
 
         case NPC_BISHOP_A:
@@ -203,7 +203,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_BISHOP_2;
             ability2Cooldown = CD_BISHOP_2;
 
-            attackDamage = CLERIC_ATTACK;
+            //attackDamage = CLERIC_ATTACK;
             break;
 
         case NPC_BISHOP_H:
@@ -215,7 +215,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_BISHOP_2;
             ability2Cooldown = CD_BISHOP_2;
 
-            attackDamage = NECROLYTE_ATTACK;
+            //attackDamage = NECROLYTE_ATTACK;
             break;
 
         case NPC_KNIGHT_A:
@@ -227,7 +227,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_KNIGHT_2;
             ability2Cooldown = CD_KNIGHT_2;
 
-            attackDamage = ELEMENTAL_ATTACK2;  //?
+            //attackDamage = ELEMENTAL_ATTACK2;  //?
             break;
 
         case NPC_KNIGHT_H:
@@ -239,7 +239,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_KNIGHT_2;
             ability2Cooldown = CD_KNIGHT_2;
 
-            attackDamage = WOLF_ATTACK;
+            //attackDamage = WOLF_ATTACK;
             break;
 
         case NPC_ROOK_A:
@@ -251,7 +251,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_ROOK_2;
             ability2Cooldown = CD_ROOK_2;
 
-            attackDamage = ELEMENTAL_ATTACK;
+            //attackDamage = ELEMENTAL_ATTACK;
             break;
 
         case NPC_ROOK_H:
@@ -263,7 +263,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_ROOK_2;
             ability2Cooldown = CD_ROOK_2;
 
-            attackDamage = DEMON_ATTACK;
+            //attackDamage = DEMON_ATTACK;
             break;
 
         case NPC_PAWN_A:
@@ -275,7 +275,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_PAWN_2;
             ability2Cooldown = CD_PAWN_2;
 
-            attackDamage = FOOTMAN_ATTACK;
+            //attackDamage = FOOTMAN_ATTACK;
             break;
 
         case NPC_PAWN_H:
@@ -287,7 +287,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_PAWN_2;
             ability2Cooldown = CD_PAWN_2;
 
-            attackDamage = GRUNT_ATTACK;
+            //attackDamage = GRUNT_ATTACK;
             break;
         default:
             break;
@@ -358,6 +358,11 @@ void npc_chesspieceAI::OnCharmed(bool apply)
     #endif
     // Place to disable rotate and move for player on possess
     m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
+    // set proper faction after charm
+    if (pInstance->GetData(CHESS_EVENT_TEAM) == ALLIANCE)
+        m_creature->setFaction(A_FACTION);
+    else
+        m_creature->setFaction(H_FACTION);
 }
 
 void npc_chesspieceAI::SpellHit(Unit * caster, const SpellEntry * spell)
@@ -390,10 +395,7 @@ void npc_chesspieceAI::UpdateAI(const uint32 diff)
     if(!InGame)
         return;
 
-    #ifdef DISSABLE_MEDIVH_PIECES_SPELLS
-    return;
-    #endif
-
+    #ifndef CHESS_EVENT_DISSABLE_MEDIVH_PIECES_SPELLS
     if((me->getFaction() == A_FACTION && pInstance->GetData(CHESS_EVENT_TEAM) == HORDE) ||
        (me->getFaction() == H_FACTION && pInstance->GetData(CHESS_EVENT_TEAM) == ALLIANCE))
     {
@@ -463,7 +465,11 @@ void npc_chesspieceAI::UpdateAI(const uint32 diff)
                 ability1Timer = SHARED_COOLDOWN;
         }
     }
+    #endif
 
+    CastNextSpellIfAnyAndReady();
+
+    #ifndef CHESS_EVENT_DISSABLE_MELEE
     if (attackTimer < diff)
     {
         attackTimer = attackCooldown;
@@ -474,12 +480,18 @@ void npc_chesspieceAI::UpdateAI(const uint32 diff)
 
         Unit * uVictim = m_creature->GetUnit(((boss_MedivhAI*)medivh->AI())->GetMeleeTarget(m_creature->GetGUID()));
         if (uVictim)
-            m_creature->DealDamage(uVictim, attackDamage, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+        {
+            m_creature->AttackerStateUpdate(uVictim);
+
+            #ifdef CHESS_DEBUG_INFO
+            m_creature->Say("Atakujem sobiem muahahahaha", LANG_UNIVERSAL, NULL);
+            printf("\nAtak %u -> %u, damage: %i", me->GetGUID(), uVictim->GetGUID(), attackDamage);
+            #endif
+        }
     }
     else
         attackTimer -= diff;
-
-    CastNextSpellIfAnyAndReady();
+    #endif
 }
 
 void npc_chesspieceAI::JustDied(Unit * killer)
@@ -1373,62 +1385,62 @@ uint64 boss_MedivhAI::GetMeleeTarget(uint64 piece)
     switch (chessBoard[tmpi][tmpj].ori)
     {
         case CHESS_ORI_N:
-            if (tmpi < 7)
+            if (tmpi > 0)
             {
                 //front
-                if (chessBoard[tmpi + 1][tmpj].piece)
-                    return chessBoard[tmpi + 1][tmpj].piece;
+                if (Enemy(piece, chessBoard[tmpi - 1][tmpj].piece))
+                    return chessBoard[tmpi - 1][tmpj].piece;
 
                 //strafe
-                if (tmpj < 7 && chessBoard[tmpi + 1][tmpj + 1].piece)
-                    return chessBoard[tmpi + 1][tmpj + 1].piece;
+                if (tmpj < 7 && Enemy(piece, chessBoard[tmpi - 1][tmpj + 1].piece))
+                    return chessBoard[tmpi - 1][tmpj + 1].piece;
 
-                if (tmpj > 0 && chessBoard[tmpi + 1][tmpj - 1].piece)
-                    return chessBoard[tmpi + 1][tmpj - 1].piece;
+                if (tmpj > 0 && Enemy(piece, chessBoard[tmpi - 1][tmpj - 1].piece))
+                    return chessBoard[tmpi - 1][tmpj - 1].piece;
             }
             break;
         case CHESS_ORI_E:
             if (tmpj < 7)
             {
                 //front
-                if (chessBoard[tmpi][tmpj + 1].piece)
+                if (Enemy(piece, chessBoard[tmpi][tmpj + 1].piece))
                     return chessBoard[tmpi][tmpj + 1].piece;
 
                 //strafe
-                if (tmpi < 7 && chessBoard[tmpi + 1][tmpj + 1].piece)
+                if (tmpi < 7 && Enemy(piece, chessBoard[tmpi + 1][tmpj + 1].piece))
                     return chessBoard[tmpi + 1][tmpj + 1].piece;
 
-                if (tmpi > 0 && chessBoard[tmpi - 1][tmpj + 1].piece)
+                if (tmpi > 0 && Enemy(piece, chessBoard[tmpi - 1][tmpj + 1].piece))
                     return chessBoard[tmpi - 1][tmpj + 1].piece;
             }
             break;
         case CHESS_ORI_S:
-            if (tmpi > 0)
+            if (tmpi < 7)
             {
                 //front
-                if (chessBoard[tmpi - 1][tmpj].piece)
-                    return chessBoard[tmpi - 1][tmpj].piece;
+                if (Enemy(piece, chessBoard[tmpi + 1][tmpj].piece))
+                    return chessBoard[tmpi + 1][tmpj].piece;
 
                 //strafe
-                if (tmpj < 7 && chessBoard[tmpi - 1][tmpj + 1].piece)
-                    return chessBoard[tmpi - 1][tmpj + 1].piece;
+                if (tmpj < 7 && Enemy(piece, chessBoard[tmpi + 1][tmpj + 1].piece))
+                    return chessBoard[tmpi + 1][tmpj + 1].piece;
 
-                if (tmpj > 0 && chessBoard[tmpi - 1][tmpj - 1].piece)
-                    return chessBoard[tmpi - 1][tmpj - 1].piece;
+                if (tmpj > 0 && Enemy(piece, chessBoard[tmpi + 1][tmpj - 1].piece))
+                    return chessBoard[tmpi + 1][tmpj - 1].piece;
             }
             break;
         case CHESS_ORI_W:
             if (tmpj > 0)
             {
                 //front
-                if (chessBoard[tmpi][tmpj - 1].piece)
+                if (Enemy(piece, chessBoard[tmpi][tmpj - 1].piece))
                     return chessBoard[tmpi][tmpj - 1].piece;
 
                 //strafe
-                if (tmpi < 7 && chessBoard[tmpi + 1][tmpj - 1].piece)
+                if (tmpi < 7 && Enemy(piece, chessBoard[tmpi + 1][tmpj - 1].piece))
                     return chessBoard[tmpi + 1][tmpj - 1].piece;
 
-                if (tmpi > 0 && chessBoard[tmpi - 1][tmpj - 1].piece)
+                if (tmpi > 0 && Enemy(piece, chessBoard[tmpi - 1][tmpj - 1].piece))
                     return chessBoard[tmpi - 1][tmpj - 1].piece;
             }
             break;
@@ -1687,7 +1699,7 @@ void boss_MedivhAI::Reset()
     tpList.clear();
     moveList.clear();
 
-    m_creature->CastSpell((Unit*)NULL, SPELL_GAME_IN_SESSION, false);
+    m_creature->CastSpell(m_creature, SPELL_GAME_IN_SESSION, false);
 
     m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
     m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -2933,7 +2945,7 @@ bool boss_MedivhAI::FindPlaceInBoard(uint64 unit, int & i, int & j)
 
 void boss_MedivhAI::ChoosePieceToMove()
 {
-    #ifdef DISSABLE_MEDIVH_PIECES_MOVEMENT
+    #ifdef CHESS_EVENT_DISSABLE_MEDIVH_PIECES_MOVEMENT
     return;
     #endif
 
@@ -3219,7 +3231,7 @@ bool GossipHello_npc_chesspiece(Player* player, Creature* _Creature)
     if(pInstance->GetData(CHESS_EVENT_TEAM) == HORDE && _Creature->getFaction() != H_FACTION)
         return false;
 
-    if (player->HasAura(SPELL_RECENTLY_IN_GAME, 0))
+    if (player->HasAura(SPELL_RECENTLY_IN_GAME, 0) || _Creature->HasAura(SPELL_RECENTLY_IN_GAME, 0))
     {
         player->SEND_GOSSIP_MENU(10505, _Creature->GetGUID());
         return false;
