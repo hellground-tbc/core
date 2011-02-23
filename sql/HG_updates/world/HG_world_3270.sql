@@ -1,0 +1,1 @@
+UPDATE `creature_template` SET `ScriptName`="npc_thane_yoregar" WHERE `entry`=21773;

@@ -1,0 +1,1 @@
+INSERT INTO `trinity_string` VALUES ( '11010','GM Tickets table is empty, no tickets were loaded.',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
