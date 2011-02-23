@@ -1,6 +1,6 @@
 #-- add triggers to chess event
 #--backup to jest!!
-delete from `creature` where (`id` IN (22519, 17459, 16816)) and `map` = 532;
+/*delete from `creature` where (`id` IN (22519, 17459, 16816)) and `map` = 532;
 insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11078.4','-1857.28','220.667','0','25','0','0','8','0','0','0');
 insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11071.2','-1865.44','220.667','0','25','0','0','8','0','0','0');
 insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','22519','532','1','0','0','-11074.7','-1861.32','220.667','0','25','0','0','8','0','0','0');
@@ -69,6 +69,7 @@ insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_
 insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','16816','532','1','0','1512','-11099.8','-1852.19','221.071','5.35504','25','0','0','18000','0','0','0');
 
 #--ten wrzucac, chwilowo powyzszego nie wyrzucam w celu backupu
+
 delete from `creature` where (`id` IN (22519, 17459, 16816)) and `map` = 532;
 INSERT INTO `creature` VALUES
 ('XXX', 16816, 532, 1, 0, 1512, -11099.8, -1852.19, 221.071, 5.35504, 25, 0, 0, 18000, 0, 0, 0),
@@ -171,17 +172,19 @@ insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_
 insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','21748','532','1','0','0','-11074','-1853.28','220.667','3.84199','604800','0','0','50000','0','0','0');
 insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','21748','532','1','0','0','-11056.7','-1875.07','220.667','3.7698','604800','0','0','50000','0','0','0');
 insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','21750','532','1','0','0','-11067','-1861.86','220.667','3.72268','604800','0','0','50000','0','0','0');
-insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','21752','532','1','0','0','-11063.6','-1866.47','220.667','3.84835','604800','0','0','150000','0','0','0');
+insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('XXX','21752','532','1','0','0','-11063.6','-1866.47','220.667','3.84835','604800','0','0','150000','0','0','0');*/
 
 #--add flags to chess pieces
 UPDATE creature_template SET unit_flags = unit_flags | 530432, flags_extra | 2129920
 WHERE entry IN (17469,17211,21748,21664,21750,21683,21747,21682,21726,21160,21752,21684); #-- pvp, incombat, pet_in_combat flags, extra flags: no_target, charm_ai
 UPDATE creature_template SET flags_extra = flags_extra | 2 WHERE entry = 22519;           #-- ignore aggro for trigger
 UPDATE creature_template SET unit_flags = unit_flags | 262148 WHERE entry = 22519;        #-- disable_Move + disable_rotate for trigger
+UPDATE creature_template SET faction_A = 1691, faction_H = 1691 WHERE faction_A = 1689;   #-- set proper faction (same as used in script)
 
 #--add spell_script_target's for spells used in chess event
 DELETE FROM spell_script_target WHERE `entry` IN(37146,30012,37144,37148,37151,37152,37153,30532, 30284, 37462, 
-37471, 37455, 37453, 37427, 37406, 37472, 37463, 37456, 37454, 37434, 37413, 37465, 37474, 37459, 37498, 37432, 37414, 37476, 37461, 37469, 37502, 37428, 37416);
+37471, 37455, 37453, 37427, 37406, 37472, 37463, 37456, 37454, 37434, 37413, 37465, 37474, 37459, 37498, 37432, 37414, 37476, 37461, 37469, 37502, 37428, 37416,
+32227, 32228, 37142, 37220, 37143, 37339, 37147, 37337, 37149, 37345, 37150, 37348);
 INSERT INTO spell_script_target () VALUES (37146,1,22519);#--8
 INSERT INTO spell_script_target () VALUES (30012,1,22519);#--unlimited
 INSERT INTO spell_script_target () VALUES (37144,1,22519);#--15
@@ -192,7 +195,109 @@ INSERT INTO spell_script_target () VALUES (37153,1,22519);#--8
 INSERT INTO spell_script_target () VALUES (30532,1,17460);
 INSERT INTO spell_script_target () VALUES (30284,1,22519);#--Change Facing
 
-UPDATE creature_template SET faction_A = 1691, faction_H = 1691 WHERE faction_A = 1689;
+
+
+
+#----melee spells
+
+#--Melee Attack: Footman
+INSERT INTO spell_script_target () VALUES (32227,1,21752);#--Melee Attack: Footman -> Warchief Blackhand
+INSERT INTO spell_script_target () VALUES (32227,1,21750);#--Melee Attack: Footman -> Orc Warlock
+INSERT INTO spell_script_target () VALUES (32227,1,21747);#--Melee Attack: Footman -> Orc Necrolyte
+INSERT INTO spell_script_target () VALUES (32227,1,21748);#--Melee Attack: Footman -> Orc Wolf
+INSERT INTO spell_script_target () VALUES (32227,1,21726);#--Melee Attack: Footman -> Summoned Daemon
+INSERT INTO spell_script_target () VALUES (32227,1,17469);#--Melee Attack: Footman -> Orc Grunt
+
+#--Melee Attack: Conjured Water Elemental
+INSERT INTO spell_script_target () VALUES (37142,1,21752);#--Melee Attack: Conjured Water Elemental -> Warchief Blackhand
+INSERT INTO spell_script_target () VALUES (37142,1,21750);#--Melee Attack: Conjured Water Elemental -> Orc Warlock
+INSERT INTO spell_script_target () VALUES (37142,1,21747);#--Melee Attack: Conjured Water Elemental -> Orc Necrolyte
+INSERT INTO spell_script_target () VALUES (37142,1,21748);#--Melee Attack: Conjured Water Elemental -> Orc Wolf
+INSERT INTO spell_script_target () VALUES (37142,1,21726);#--Melee Attack: Conjured Water Elemental -> Summoned Daemon
+INSERT INTO spell_script_target () VALUES (37142,1,17469);#--Melee Attack: Conjured Water Elemental -> Orc Grunt
+
+#--Melee Attack: Conjured Water Elemental2
+INSERT INTO spell_script_target () VALUES (37143,1,21752);#--Melee Attack: Conjured Water Elemental2 -> Warchief Blackhand
+INSERT INTO spell_script_target () VALUES (37143,1,21750);#--Melee Attack: Conjured Water Elemental2 -> Orc Warlock
+INSERT INTO spell_script_target () VALUES (37143,1,21747);#--Melee Attack: Conjured Water Elemental2 -> Orc Necrolyte
+INSERT INTO spell_script_target () VALUES (37143,1,21748);#--Melee Attack: Conjured Water Elemental2 -> Orc Wolf
+INSERT INTO spell_script_target () VALUES (37143,1,21726);#--Melee Attack: Conjured Water Elemental2 -> Summoned Daemon
+INSERT INTO spell_script_target () VALUES (37143,1,17469);#--Melee Attack: Conjured Water Elemental2 -> Orc Grunt
+
+#--Melee Attack: Human Cleric
+INSERT INTO spell_script_target () VALUES (37147,1,21752);#--Melee Attack: Human Cleric -> Warchief Blackhand
+INSERT INTO spell_script_target () VALUES (37147,1,21750);#--Melee Attack: Human Cleric -> Orc Warlock
+INSERT INTO spell_script_target () VALUES (37147,1,21747);#--Melee Attack: Human Cleric -> Orc Necrolyte
+INSERT INTO spell_script_target () VALUES (37147,1,21748);#--Melee Attack: Human Cleric -> Orc Wolf
+INSERT INTO spell_script_target () VALUES (37147,1,21726);#--Melee Attack: Human Cleric -> Summoned Daemon
+INSERT INTO spell_script_target () VALUES (37147,1,17469);#--Melee Attack: Human Cleric -> Orc Grunt
+
+#--Melee Attack: Human Conjurer
+INSERT INTO spell_script_target () VALUES (37149,1,21752);#--Melee Attack: Human Conjurer -> Warchief Blackhand
+INSERT INTO spell_script_target () VALUES (37149,1,21750);#--Melee Attack: Human Conjurer -> Orc Warlock
+INSERT INTO spell_script_target () VALUES (37149,1,21747);#--Melee Attack: Human Conjurer -> Orc Necrolyte
+INSERT INTO spell_script_target () VALUES (37149,1,21748);#--Melee Attack: Human Conjurer -> Orc Wolf
+INSERT INTO spell_script_target () VALUES (37149,1,21726);#--Melee Attack: Human Conjurer -> Summoned Daemon
+INSERT INTO spell_script_target () VALUES (37149,1,17469);#--Melee Attack: Human Conjurer -> Orc Grunt
+
+#--Melee Attack: King Llane
+INSERT INTO spell_script_target () VALUES (37150,1,21752);#--Melee Attack: King Llane -> Warchief Blackhand
+INSERT INTO spell_script_target () VALUES (37150,1,21750);#--Melee Attack: King Llane -> Orc Warlock
+INSERT INTO spell_script_target () VALUES (37150,1,21747);#--Melee Attack: King Llane -> Orc Necrolyte
+INSERT INTO spell_script_target () VALUES (37150,1,21748);#--Melee Attack: King Llane -> Orc Wolf
+INSERT INTO spell_script_target () VALUES (37150,1,21726);#--Melee Attack: King Llane -> Summoned Daemon
+INSERT INTO spell_script_target () VALUES (37150,1,17469);#--Melee Attack: King Llane -> Orc Grunt
+
+
+
+#--Melee Attack: Grunt
+INSERT INTO spell_script_target () VALUES (32228,1,21683);#--Melee Attack: Grunt -> Human Conjurer
+INSERT INTO spell_script_target () VALUES (32228,1,21684);#--Melee Attack: Grunt -> King Llane
+INSERT INTO spell_script_target () VALUES (32228,1,21682);#--Melee Attack: Grunt -> Human Cleric
+INSERT INTO spell_script_target () VALUES (32228,1,21664);#--Melee Attack: Grunt -> Human Charger
+INSERT INTO spell_script_target () VALUES (32228,1,21160);#--Melee Attack: Grunt -> Conjured Water Elemental
+INSERT INTO spell_script_target () VALUES (32228,1,17211);#--Melee Attack: Grunt -> Human Footman
+
+#--Melee Attack: Summoned Daemon
+INSERT INTO spell_script_target () VALUES (37220,1,21683);#--Melee Attack: Summoned Daemon -> Human Conjurer
+INSERT INTO spell_script_target () VALUES (37220,1,21684);#--Melee Attack: Summoned Daemon -> King Llane
+INSERT INTO spell_script_target () VALUES (37220,1,21682);#--Melee Attack: Summoned Daemon -> Human Cleric
+INSERT INTO spell_script_target () VALUES (37220,1,21664);#--Melee Attack: Summoned Daemon -> Human Charger
+INSERT INTO spell_script_target () VALUES (37220,1,21160);#--Melee Attack: Summoned Daemon -> Conjured Water Elemental
+INSERT INTO spell_script_target () VALUES (37220,1,17211);#--Melee Attack: Summoned Daemon -> Human Footman
+
+#--Melee Attack: Orc Wolf
+INSERT INTO spell_script_target () VALUES (37339,1,21683);#--Melee Attack: Orc Wolf -> Human Conjurer
+INSERT INTO spell_script_target () VALUES (37339,1,21684);#--Melee Attack: Orc Wolf -> King Llane
+INSERT INTO spell_script_target () VALUES (37339,1,21682);#--Melee Attack: Orc Wolf -> Human Cleric
+INSERT INTO spell_script_target () VALUES (37339,1,21664);#--Melee Attack: Orc Wolf -> Human Charger
+INSERT INTO spell_script_target () VALUES (37339,1,21160);#--Melee Attack: Orc Wolf -> Conjured Water Elemental
+INSERT INTO spell_script_target () VALUES (37339,1,17211);#--Melee Attack: Orc Wolf -> Human Footman
+
+#--Melee Attack: Orc Necrolyte
+INSERT INTO spell_script_target () VALUES (37337,1,21683);#--Melee Attack: Orc Necrolyte -> Human Conjurer
+INSERT INTO spell_script_target () VALUES (37337,1,21684);#--Melee Attack: Orc Necrolyte -> King Llane
+INSERT INTO spell_script_target () VALUES (37337,1,21682);#--Melee Attack: Orc Necrolyte -> Human Cleric
+INSERT INTO spell_script_target () VALUES (37337,1,21664);#--Melee Attack: Orc Necrolyte -> Human Charger
+INSERT INTO spell_script_target () VALUES (37337,1,21160);#--Melee Attack: Orc Necrolyte -> Conjured Water Elemental
+INSERT INTO spell_script_target () VALUES (37337,1,17211);#--Melee Attack: Orc Necrolyte -> Human Footman
+
+#--Melee Attack: Orc Warlock
+INSERT INTO spell_script_target () VALUES (37345,1,21683);#--Melee Attack: Orc Warlock -> Human Conjurer
+INSERT INTO spell_script_target () VALUES (37345,1,21684);#--Melee Attack: Orc Warlock -> King Llane
+INSERT INTO spell_script_target () VALUES (37345,1,21682);#--Melee Attack: Orc Warlock -> Human Cleric
+INSERT INTO spell_script_target () VALUES (37345,1,21664);#--Melee Attack: Orc Warlock -> Human Charger
+INSERT INTO spell_script_target () VALUES (37345,1,21160);#--Melee Attack: Orc Warlock -> Conjured Water Elemental
+INSERT INTO spell_script_target () VALUES (37345,1,17211);#--Melee Attack: Orc Warlock -> Human Footman
+
+#--Melee Attack: Warchief Blackhand
+INSERT INTO spell_script_target () VALUES (37348,1,21683);#--Melee Attack: Warchief Blackhand -> Human Conjurer
+INSERT INTO spell_script_target () VALUES (37348,1,21684);#--Melee Attack: Warchief Blackhand -> King Llane
+INSERT INTO spell_script_target () VALUES (37348,1,21682);#--Melee Attack: Warchief Blackhand -> Human Cleric
+INSERT INTO spell_script_target () VALUES (37348,1,21664);#--Melee Attack: Warchief Blackhand -> Human Charger
+INSERT INTO spell_script_target () VALUES (37348,1,21160);#--Melee Attack: Warchief Blackhand -> Conjured Water Elemental
+INSERT INTO spell_script_target () VALUES (37348,1,17211);#--Melee Attack: Warchief Blackhand -> Human Footman
+
 
 #----ability 1 alliance
 
@@ -428,6 +533,12 @@ INSERT INTO script_texts (entry, content_default,sound,type,comment) values('-16
 INSERT INTO script_texts (entry, content_default,sound,type,comment) values('-1650019','Perhaps a change is in order.',10357,0,'Chess Event - MEDIVH_CHEAT_1');
 INSERT INTO script_texts (entry, content_default,sound,type,comment) values('-1650020','Time for an alternative scenario.',10358,0,'Chess Event - MEDIVH_CHEAT_2');
 INSERT INTO script_texts (entry, content_default,sound,type,comment) values('-1650021','One must not become too complacent.',10359,0,'Chess Event - MEDIVH_CHEAT_3');
+
+#--add missing gossip text's
+REPLACE INTO `npc_text` (ID, text0_0) VALUES (10413, '<The water elemental is ready to surge.>');
+REPLACE INTO `npc_text` (ID, text0_0) VALUES (10425, '<The grunt''s mouth waters, anticipating bloodshed.>');
+REPLACE INTO `npc_text` (ID, text0_0) VALUES (10434, '<Dark magic ripples from the necrolyte.>');
+REPLACE INTO `npc_text` (ID, text0_0) VALUES (10442, '<Warchief Blackhand towers over the field.>');
 
 #--update scripts used for chess event npc's
 update creature_template set ScriptName = 'npc_chesspiece', npcflag = npcflag | 1 where entry in (17469,17211,21748,21664,21750,21683,21747,21682,21726,21160,21752,21684);

@@ -3369,7 +3369,7 @@ bool Unit::isInLine(Unit const* target, float distance) const
 
     float width = GetObjectSize() + target->GetObjectSize() * 0.5f;
     float angle = GetAngle(target) - GetOrientation();
-    return abs(sin(angle)) * GetExactDistance2d(target->GetPositionX(), target->GetPositionY()) < width;
+    return fabs(sin(angle)) * GetExactDistance2d(target->GetPositionX(), target->GetPositionY()) < width;
 }
 
 bool Unit::isInLine(GameObject const* target, float distance) const
@@ -3379,7 +3379,7 @@ bool Unit::isInLine(GameObject const* target, float distance) const
 
     float width = GetObjectSize() + target->GetObjectSize() * 0.5f;
     float angle = GetAngle(target) - GetOrientation();
-    return abs(sin(angle)) * GetExactDistance2d(target->GetPositionX(), target->GetPositionY()) < width;
+    return fabs(sin(angle)) * GetExactDistance2d(target->GetPositionX(), target->GetPositionY()) < width;
 }
 
 bool Unit::isBetween(WorldObject *s, WorldObject *e, float offset) const
@@ -3400,7 +3400,7 @@ bool Unit::isBetween(WorldObject *s, WorldObject *e, float offset) const
         return false;
 
     // check distance from the line
-    return (abs((xn-xp)*yh + (yp-yn)*xh - xn*yp + xp*yn) / s->GetExactDist2d(xp,yp) < offset);
+    return (fabs((xn-xp)*yh + (yp-yn)*xh - xn*yp + xp*yn) / s->GetExactDist2d(xp,yp) < offset);
 }
 
 bool Unit::isInAccessiblePlacefor (Creature const* c) const
@@ -10485,20 +10485,12 @@ void Unit::UpdateCharmAI()
     {
         if (isCharmed())
         {
-            // UGLY AND BAD HACK, Find a way to remove it ;]
-            // Find better way to disalow PossessedAI to override ScriptedAI
-            // or make possibility to script PossessedAI
-            if (((Creature*)this)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_CHARM_AI)
-                i_disabledAI = NULL;
-            else
-            {
-                i_disabledAI = i_AI;
+            i_disabledAI = i_AI;
 
-                if (isPossessed())
-                    i_AI = new PossessedAI((Creature*)this);
-                else
-                    i_AI = new PetAI((Creature*)this);
-            }
+            if (isPossessed())
+                i_AI = new PossessedAI((Creature*)this);
+            else
+                i_AI = new PetAI((Creature*)this);
         }
     }
 }

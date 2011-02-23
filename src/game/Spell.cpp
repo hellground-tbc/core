@@ -438,9 +438,9 @@ void Spell::FillTargetMap()
 
                             Trinity::CannibalizeObjectCheck u_check(m_caster, max_range);
                             Trinity::WorldObjectSearcher<Trinity::CannibalizeObjectCheck > searcher(result, u_check);
-                            
+
                             Cell::VisitGridObjects(m_caster, searcher, max_range);
-                            
+
                             if (!result)
                                 Cell::VisitWorldObjects(m_caster, searcher, max_range);
 
@@ -1545,7 +1545,7 @@ WorldObject* Spell::SearchNearbyTarget(float range, SpellTargets TargetType)
                         {
                             Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*m_caster,i_spellST->second.targetEntry,range);
                             Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> checker(p_GameObject,go_check);
-                            
+
                             Cell::VisitGridObjects(m_caster, checker, range);
 
                             if (p_GameObject)

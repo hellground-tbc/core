@@ -7,8 +7,6 @@ SD%Complete: xx
 SDCategory: Karazhan
 
 TODO:
- - Disable rotate for all chess pieces
- - Disable targeting for all chess pieces
  - Disable movement for unit controlled by player
  - Implement Attack Creature when is in Front or Strafe (?)(for every chesspieces ??) with proper factions.
  - Implement Medivhs cheats

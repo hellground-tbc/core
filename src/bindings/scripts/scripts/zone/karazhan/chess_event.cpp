@@ -462,23 +462,22 @@ void npc_chesspieceAI::UpdateAI(const uint32 diff)
             if (ability1Timer < SHARED_COOLDOWN)
                 ability1Timer = SHARED_COOLDOWN;
         }
-
-        if (attackTimer < diff)
-        {
-            attackTimer = attackCooldown;
-            Unit * medivh = m_creature->GetUnit(*m_creature, this->MedivhGUID);
-
-            if (!medivh)
-                return;
-
-            Unit * uVictim = m_creature->GetUnit(*m_creature, ((boss_MedivhAI*)medivh)->GetMeleeTarget(m_creature->GetGUID()));
-            if (uVictim)
-                m_creature->DealDamage(uVictim, attackDamage, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-        }
-        else
-            attackTimer -= diff;
-
     }
+
+    if (attackTimer < diff)
+    {
+        attackTimer = attackCooldown;
+        Creature * medivh = m_creature->GetCreature(MedivhGUID);
+
+        if (!medivh)
+            return;
+
+        Unit * uVictim = m_creature->GetUnit(((boss_MedivhAI*)medivh->AI())->GetMeleeTarget(m_creature->GetGUID()));
+        if (uVictim)
+            m_creature->DealDamage(uVictim, attackDamage, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+    }
+    else
+        attackTimer -= diff;
 
     CastNextSpellIfAnyAndReady();
 }
@@ -1369,18 +1368,7 @@ uint64 boss_MedivhAI::GetMeleeTarget(uint64 piece)
     #endif
     int tmpi, tmpj;    //temporary piece position
 
-    for (int i = 0; i < 8; i++)
-    {
-        for (int j = 0; j < 8; j++)
-        {
-            if (chessBoard[i][j].piece == piece)
-            {
-                tmpi = j;
-                tmpj = j;
-                break;
-            }
-        }
-    }
+    FindPlaceInBoard(piece, tmpi, tmpj);
 
     switch (chessBoard[tmpi][tmpj].ori)
     {
@@ -1699,8 +1687,11 @@ void boss_MedivhAI::Reset()
     tpList.clear();
     moveList.clear();
 
-    m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-    m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+    m_creature->CastSpell((Unit*)NULL, SPELL_GAME_IN_SESSION, false);
+
+    m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+    m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+    m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
 }
 
 void boss_MedivhAI::SayChessPieceDied(Unit * piece)
@@ -2391,7 +2382,8 @@ void boss_MedivhAI::ApplyDebuffsOnRaidMembers()
 void boss_MedivhAI::StartMiniEvent()
 {
     miniEventState = MINI_EVENT_KING;
-    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+    me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+    //me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
 }
 
 void boss_MedivhAI::StartEvent()
@@ -3228,7 +3220,10 @@ bool GossipHello_npc_chesspiece(Player* player, Creature* _Creature)
         return false;
 
     if (player->HasAura(SPELL_RECENTLY_IN_GAME, 0))
+    {
+        player->SEND_GOSSIP_MENU(10505, _Creature->GetGUID());
         return false;
+    }
 
     if(!(_Creature->isPossessedByPlayer()))
     {
@@ -3236,7 +3231,7 @@ bool GossipHello_npc_chesspiece(Player* player, Creature* _Creature)
         {
             case NPC_PAWN_H:
                 player->ADD_GOSSIP_ITEM(0, "Control Orc Grunt", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-                player->SEND_GOSSIP_MENU(8990, _Creature->GetGUID());
+                player->SEND_GOSSIP_MENU(10425, _Creature->GetGUID());
                 break;
             case NPC_PAWN_A:
                 player->ADD_GOSSIP_ITEM(0, "Control Human Footman", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
@@ -3260,7 +3255,7 @@ bool GossipHello_npc_chesspiece(Player* player, Creature* _Creature)
                 break;
             case NPC_BISHOP_H:
                 player->ADD_GOSSIP_ITEM(0, "Control Orc Necrolyte", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-                player->SEND_GOSSIP_MENU(8990, _Creature->GetGUID());
+                player->SEND_GOSSIP_MENU(10434, _Creature->GetGUID());
                 break;
             case NPC_BISHOP_A:
                 player->ADD_GOSSIP_ITEM(0, "Control Human Cleric", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
@@ -3272,11 +3267,11 @@ bool GossipHello_npc_chesspiece(Player* player, Creature* _Creature)
                 break;
             case NPC_ROOK_A:
                 player->ADD_GOSSIP_ITEM(0, "Control Conjured Water Elemental", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-                player->SEND_GOSSIP_MENU(8990, _Creature->GetGUID());
+                player->SEND_GOSSIP_MENU(10413, _Creature->GetGUID());
                 break;
             case NPC_KING_H:
                 player->ADD_GOSSIP_ITEM(0, "Control Warchief Blackhand", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-                player->SEND_GOSSIP_MENU(8990, _Creature->GetGUID());
+                player->SEND_GOSSIP_MENU(10442, _Creature->GetGUID());
                 break;
             case NPC_KING_A:
                 player->ADD_GOSSIP_ITEM(0, "Control King Llane", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
@@ -3329,7 +3324,7 @@ bool GossipHello_npc_echo_of_medivh(Player* player, Creature* _Creature)
         //    player->ADD_GOSSIP_ITEM(2, "Start Debug Mode", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
     }
 
-    player->SEND_GOSSIP_MENU(8990, _Creature->GetGUID());
+    player->SEND_GOSSIP_MENU(10506, _Creature->GetGUID());
 
     return true;
 }

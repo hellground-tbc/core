@@ -677,6 +677,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 31719:                                         // Suspension
         case 41406:                                         // Dementia +
         case 41409:                                         // Dementia -
+        case 30529:                                         // Chess event: Recently In Game
             return false;
     }
 
@@ -2820,6 +2821,30 @@ void SpellMgr::LoadSpellCustomAttr()
         case 31532: // Repair from Mekgineer event in Steamvault
         case 37936:
             spellInfo->Attributes &= ~SPELL_ATTR_BREAKABLE_BY_DAMAGE;
+            break;
+        case 37454: // Chess event: Bite
+        case 37453: // Chess event: Smash
+        case 37413: // Chess event: Visious Strike
+        case 37406: // Chess event: Heroic Blow
+                    // Chess event: Take Action melee
+        case 32227:
+        case 32228:
+        case 37142:
+        case 37220:
+        case 37143:
+        case 37339:
+        case 37147:
+        case 37337:
+        case 37149:
+        case 37345:
+        case 37150:
+        case 37348:
+            spellInfo->EffectRadiusIndex[0] = 7;    // effect radius from 8 to 2 yd
+            break;
+        case 37461: // Chess event: Shadow Spear
+        case 37459: // Chess event: Holy Lance
+            spellInfo->AttributesCu |= SPELL_ATTR_CU_CONE_LINE;
+            spellInfo->EffectRadiusIndex[0] = 18;   // effect radius from 18 to 15 yd
             break;
         default:
             break;

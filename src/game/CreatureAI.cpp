@@ -26,8 +26,11 @@
 
 void CreatureAI::OnCharmed(bool apply)
 {
-    me->NeedChangeAI = true;
-    me->IsAIEnabled = false;
+    if (!(m_creature->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_CHARM_AI))
+    {
+        me->NeedChangeAI = true;
+        me->IsAIEnabled = false;
+    }
 }
 
 AISpellInfoType * UnitAI::AISpellInfo;

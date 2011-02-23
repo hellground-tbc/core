@@ -7,9 +7,9 @@
 		<Project filename="projects/framework.cbp" />
 		<Project filename="projects/shared.cbp" />
 		<Project filename="projects/sockets.cbp" />
-		<Project filename="projects/game.cbp" />
+		<Project filename="projects/game.cbp" active="1" />
 		<Project filename="projects/TrinityRealm.cbp" />
-		<Project filename="../src/bindings/scripts/codeblocks/90ScriptDev2.cbp" active="1" />
+		<Project filename="../src/bindings/scripts/codeblocks/90ScriptDev2.cbp" />
 		<Project filename="projects/ScriptsInterfaces.cbp" />
 		<Project filename="projects/TrinityCore.cbp" />
 	</Workspace>

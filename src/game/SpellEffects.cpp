@@ -1545,42 +1545,43 @@ void Spell::EffectDummy(uint32 i)
                     switch (m_caster->GetEntry())
                     {
                         case 17211:     //alliance pawn (Human Footman)
-                            m_caster->CastSpell(unitTarget, 32227, true);
+                            m_caster->CastSpell((Unit*)NULL, 32227, true);
                             break;
                         case 17469:     //horde pawn (Orc Grunt)
-                            m_caster->CastSpell(unitTarget, 32228, true);
+                            m_caster->CastSpell((Unit*)NULL, 32228, true);
                             break;
                         case 21160:     //alliance rook (Conjured Water Elemental)
-                            m_caster->CastSpell(unitTarget, 37142, true);
+                            m_caster->CastSpell((Unit*)NULL, 37142, true);
                             break;
                         case 21726:     //horde rook (Summoned Daemon)
-                            m_caster->CastSpell(unitTarget, 37220, true);
+                            m_caster->CastSpell((Unit*)NULL, 37220, true);
                             break;
                         case 21664:     //alliance knight (Human Charger)
-                            m_caster->CastSpell(unitTarget, 37143, true);       //proper spell ??
+                            m_caster->CastSpell((Unit*)NULL, 37143, true);       //proper spell ??
                             break;
                         case 21748:     //horde knight (Orc Wolf)
-                            m_caster->CastSpell(unitTarget, 37339, true);
+                            m_caster->CastSpell((Unit*)NULL, 37339, true);
                             break;
                         case 21682:     //Alliance bishop (Human Cleric)
-                            m_caster->CastSpell(unitTarget, 37147, true);
+                            m_caster->CastSpell((Unit*)NULL, 37147, true);
                             break;
                         case 21747:     //Horde bishop (Orc Necrolyte)
-                            m_caster->CastSpell(unitTarget, 37337, true);
+                            m_caster->CastSpell((Unit*)NULL, 37337, true);
                             break;
                         case 21683:     //Alliance Queen (Human Conjurer)
-                            m_caster->CastSpell(unitTarget, 37149, true);
+                            m_caster->CastSpell((Unit*)NULL, 37149, true);
                             break;
                         case 21750:     //Horde Queen (Orc Warlock)
-                            m_caster->CastSpell(unitTarget, 37345, true);
+                            m_caster->CastSpell((Unit*)NULL, 37345, true);
                             break;
                         case 21684:     //Alliance King (King Llane)
-                            m_caster->CastSpell(unitTarget, 37150, true);
+                            m_caster->CastSpell((Unit*)NULL, 37150, true);
                             break;
                         case 21752:     //Horde King (Warchief Blackhand)
-                            m_caster->CastSpell(unitTarget, 37348, true);
+                            m_caster->CastSpell((Unit*)NULL, 37348, true);
                             break;
                         default:
+                            m_caster->CastSpell((Unit*)NULL, 37348, true);
                             break;
                     }
                     break;
@@ -1651,7 +1652,7 @@ void Spell::EffectDummy(uint32 i)
                 }
                 case 26373: // Lunar Invitation teleports
                 {
-                    static uint32 LunarEntry[6] = 
+                    static uint32 LunarEntry[6] =
                     {
                         15905, // Darnassus
                         15906, // Ironforge
@@ -2402,7 +2403,7 @@ void Spell::EffectTriggerSpell(uint32 i)
             Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(pList, u_check);
 
             Cell::VisitAllObjects(m_caster, searcher, 70.0f);
-            
+
             if (pList.size() == 0)
             {
                 if (Creature * summon = m_caster->SummonCreature(21633, -3361, 2962, 170, 5.83, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 90000))
@@ -5914,7 +5915,7 @@ void Spell::EffectSanctuary(uint32 /*i*/)
 
     Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(unitTarget, unitTarget, m_caster->GetMap()->GetVisibilityDistance());
     Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(targets, u_check);
-    
+
     Cell::VisitAllObjects(unitTarget, searcher, m_caster->GetMap()->GetVisibilityDistance());
 
     for (std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
@@ -6834,7 +6835,7 @@ void Spell::EffectDispelMechanic(uint32 i)
     {
         std::list < std::pair<uint32,uint64> > success_list;// (spell_id,casterGuid)
         std::list < uint32 > fail_list;                     // spell_id
-        
+
         while (!dispel_list.empty())
         {
             Aura *aur = dispel_list.back();
@@ -6844,7 +6845,7 @@ void Spell::EffectDispelMechanic(uint32 i)
             // Base dispel chance
             // TODO: possible chance depend from spell level??
             int32 miss_chance = 0;
-            // Apply dispel mod from aura caster    
+            // Apply dispel mod from aura caster
             if (Unit *caster = aur->GetCaster())
             {
                 if (Player* modOwner = caster->GetSpellModOwner())
@@ -6858,7 +6859,7 @@ void Spell::EffectDispelMechanic(uint32 i)
                 fail_list.push_back(aur->GetId());
             else
                 unitTarget->RemoveAurasByCasterSpell(spellInfo->Id, aur->GetCasterGUID());
-            
+
 
             for (std::list<Aura *>::iterator j = dispel_list.begin(); j != dispel_list.end();)
             {
@@ -7316,8 +7317,8 @@ void Spell::EffectStealBeneficialBuff(uint32 i)
                 if (Player* modOwner = caster->GetSpellModOwner())
                     modOwner->ApplySpellMod(aur->GetSpellProto()->Id, SPELLMOD_RESIST_DISPEL_CHANCE, miss_chance, this);
             }
-            
-            
+
+
             if (miss_chance < 100)
             {
                 // Try dispel
