@@ -2655,7 +2655,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 // aura animate dead (fainted) state for the duration, but we need to animate the death itself (correct way below?)
                 if (Unit* pCaster = GetCaster())
                     pCaster->ApplyModFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH, apply);
-                
+
                 // Beam to Zelfrax at remove
                 if (!apply)
                     m_target->CastSpell(m_target, 42517, true);
@@ -3663,10 +3663,8 @@ void Aura::HandleModCharm(bool apply, bool Real)
     {
         if (int32(m_target->getLevel()) > m_modifier.m_amount)
             return;
-        if (GetId() == 30019)
-            m_target->SetCharmedOrPossessedBy(caster, true);
-        else
-            m_target->SetCharmedOrPossessedBy(caster, false);
+
+        m_target->SetCharmedOrPossessedBy(caster, false);
     }
     else
         m_target->RemoveCharmedOrPossessedBy(caster);
@@ -3902,7 +3900,7 @@ void Aura::HandleInvisibility(bool apply, bool Real)
         {
             // apply glow vision
             m_target->SetFlag(PLAYER_FIELD_BYTES2,PLAYER_FIELD_BYTE2_INVISIBILITY_GLOW);
-            
+
             // remove player from the objective's active player count at invisibility
             /*
             if (OutdoorPvP * pvp = ((Player*)m_target)->GetOutdoorPvP())
@@ -3941,7 +3939,7 @@ void Aura::HandleInvisibility(bool apply, bool Real)
                 if (!m_target->HasAuraType(SPELL_AURA_MOD_STEALTH))
                 {
                     m_target->SetVisibility(VISIBILITY_ON);
-                    
+
                     /*
                     if (m_target->GetTypeId() == TYPEID_PLAYER)
                         if (OutdoorPvP * pvp = ((Player*)m_target)->GetOutdoorPvP())

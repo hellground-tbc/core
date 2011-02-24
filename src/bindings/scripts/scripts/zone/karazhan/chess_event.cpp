@@ -83,6 +83,7 @@ void move_triggerAI::MakeMove()
         case PIECE_MOVE:
             me->CastSpell(m_creature, SPELL_MOVE_MARKER, false);
             temp->StopMoving();
+            temp->RemoveUnitMovementFlag(MOVEFLAG_ROOT);
             temp->GetMotionMaster()->Clear();
             temp->GetMotionMaster()->MovePoint(0, wLoc.coord_x, wLoc.coord_y, wLoc.coord_z);
 
@@ -90,6 +91,7 @@ void move_triggerAI::MakeMove()
                 ((boss_MedivhAI*)temp2->AI())->ChangePlaceInBoard(unitToMove, me->GetGUID());
             break;
         case PIECE_CHANGE_FACING:
+            temp->RemoveUnitMovementFlag(MOVEFLAG_ROOT);
             if (temp2)
                 ((boss_MedivhAI*)temp2->AI())->ChangePieceFacing(temp, me);
             break;
@@ -123,8 +125,7 @@ npc_chesspieceAI::npc_chesspieceAI(Creature *c) : Scripted_NoMovementAI(c)
     pInstance = ((ScriptedInstance*)m_creature->GetInstanceData());
 
     SpellEntry *TempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_POSSES_CHESSPIECE);
-    if(TempSpell)
-        TempSpell->Effect[0] = 0;  // Disable bind sight effect from SPELL_POSSES_CHESSPIECE. We handle all with dummy and charm effect.
+
     m_creature->setActive(true);
 }
 
@@ -133,10 +134,8 @@ void npc_chesspieceAI::EnterEvadeMode()
     #ifdef CHESS_DEBUG_INFO
     printf("\n Wywolanie EnterEvadeMode()");
     #endif
-    // to prevent reset chess pieces after unpossess
-    //if (pInstance->GetData(DATA_CHESS_EVENT) == IN_PROGRESS ||
-    //    pInstance->GetData(DATA_CHESS_EVENT) == SPECIAL)
-        return;
+
+    return;
 }
 
 void npc_chesspieceAI::SetSpellsAndCooldowns()
@@ -329,6 +328,8 @@ void npc_chesspieceAI::MovementInform(uint32 MovementType, uint32 Data)
     npc_medivh = m_creature->GetCreature(MedivhGUID);
     if (npc_medivh)
         ((boss_MedivhAI*)npc_medivh->AI())->SetOrientation(m_creature->GetGUID());
+
+    me->AddUnitMovementFlag(MOVEFLAG_ROOT);
 }
 
 void npc_chesspieceAI::MoveInLineOfSight(Unit *unit)
@@ -356,13 +357,20 @@ void npc_chesspieceAI::OnCharmed(bool apply)
     #ifdef CHESS_DEBUG_INFO
     printf("\n Wywolanie OnCharmed(bool apply = %i)", apply);
     #endif
-    // Place to disable rotate and move for player on possess
+
     m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
     // set proper faction after charm
     if (pInstance->GetData(CHESS_EVENT_TEAM) == ALLIANCE)
         m_creature->setFaction(A_FACTION);
     else
         m_creature->setFaction(H_FACTION);
+
+    if (!apply)
+        if (Creature * medivh = me->GetCreature(MedivhGUID))
+            ((boss_MedivhAI*)medivh->AI())->SetOrientation(me->GetGUID());
+
+    me->AddUnitMovementFlag(MOVEFLAG_ROOT);
+    //42716
 }
 
 void npc_chesspieceAI::SpellHit(Unit * caster, const SpellEntry * spell)
@@ -3234,7 +3242,7 @@ bool GossipHello_npc_chesspiece(Player* player, Creature* _Creature)
     if (player->HasAura(SPELL_RECENTLY_IN_GAME, 0) || _Creature->HasAura(SPELL_RECENTLY_IN_GAME, 0))
     {
         player->SEND_GOSSIP_MENU(10505, _Creature->GetGUID());
-        return false;
+        return true;
     }
 
     if(!(_Creature->isPossessedByPlayer()))

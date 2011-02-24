@@ -7,7 +7,6 @@ SD%Complete: xx
 SDCategory: Karazhan
 
 TODO:
- - Disable movement for unit controlled by player
  - Implement Medivhs cheats
  - Fix spells (Game in session, Rain of Fire, Poison Cloud (it's all ? ))
  - Upgrade chesspiece AI for spells use
@@ -21,9 +20,7 @@ EndScriptData */
 #define A_FACTION  1690
 #define H_FACTION  1691
 
-#define ECHO_OF_MEDIVH_ID   16816
-
-#define EVENT_START         "[PH] Start Chess Event" // Maybe should be different gossip, visuals will be fixed at the end :]
+#define EVENT_START         "Prepare Chess Board" // Maybe should be different gossip, visuals will be fixed at the end :]
 #define TRIGGER_ID          22519
 #define DUST_COVERED_CHEST  185119
 
@@ -35,7 +32,7 @@ EndScriptData */
 #define HORDE_DEAD_X2           -11078.7
 #define HORDE_DEAD_Y1           -1910.2
 #define HORDE_DEAD_Y2           -1912.2
-#define POSITION_Z              221
+#define POSITION_Z              220.66
 
                                 //x, y, z
 #define SPAWN_POS               wLoc.coord_x, wLoc.coord_y, wLoc.coord_z
