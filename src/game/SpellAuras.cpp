@@ -1740,7 +1740,11 @@ void Aura::TriggerSpell()
 //                    // Arcane Flurry
 //                    case 37268: break;
                     // Spout
-                    case 37429: trigger_spell_id = 42835; break;
+                    case 37429:
+                    {
+                        trigger_spell_id = 42835;
+                        break;
+                    }
 //                    // Spout
 //                    case 37430: break;
 //                    // Karazhan - Chess NPC AI, Snapshot timer
