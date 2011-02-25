@@ -119,13 +119,13 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
 
     WorldLocation wLoc;
 
-    uint32 FireBreathTimer;
-    uint32 BombTimer;
-    uint32 BombSequenceTimer;
-    uint32 BombCount;
-    uint32 HatcherTimer;
-    uint32 EnrageTimer;
-    uint32 ResetTimer;
+    int32 FireBreathTimer;
+    int32 BombTimer;
+    int32 BombSequenceTimer;
+    int32 BombCount;
+    int32 HatcherTimer;
+    int32 EnrageTimer;
+    int32 ResetTimer;
 
     bool noeggs;
     bool enraged;
