@@ -28,7 +28,11 @@ class TemporarySummon : public Creature
 {
     public:
         explicit TemporarySummon(uint64 summoner = 0);
-        virtual ~TemporarySummon(){};
+        virtual ~TemporarySummon()
+        {
+            if (IsInWorld())
+                Creature::RemoveFromWorld();
+        }
         void Update(uint32 time);
         void Summon(TempSummonType type, uint32 lifetime);
         void UnSummon();
