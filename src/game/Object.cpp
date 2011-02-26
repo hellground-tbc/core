@@ -1619,7 +1619,7 @@ void WorldObject::BuildMonsterChat(WorldPacket *data, uint8 msgtype, int32 iText
     } else
         text = objmgr.GetTrinityStringForDBCLocale(iTextEntry);
     BuildMonsterChat(data, msgtype, text, language, name, targetGuid, withoutPrename);
-    if(GetTypeID() == TYPEID_PLAYER)
+    if(GetTypeId() == TYPEID_PLAYER)
         data->put(5, (uint64)0);  // BAD HACK
 }
 

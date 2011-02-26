@@ -14,8 +14,3 @@ INSERT INTO script_texts VALUES
 (-1800515, "It not gonna make no difference.", 0, 0, 0, 0, 0, 0, 0, 0, 12048, 1, 0, 0, "Hexlord YELL_ADD_DEAD1"),
 (-1800516, "You gonna die worse dan him.", 0, 0, 0, 0, 0, 0, 0, 0, 12049, 1, 0, 0, "Hexlord YELL_ADD_DEAD2"),
 (-1800517, "Dat no bodda me.", 0, 0, 0, 0, 0, 0, 0, 0, 12050, 1, 0, 0, "Hexlord YELL_ADD_DEAD3");
-
-INSERT INTO script_texts VALUES
-( -1800510, 
-"Wowee! It was amazing how you beat that big bad troll into the ground like that and it's too bad I can't reach the handle of this cage or I would have jumped in and blown him to bits to get back for killing all of the other poor prisoners and scaring me so badly and I feel bad for asking any more help but could you maybe come over and let me out of here?",
-0, 0, 0, 0, 0, 0,0, 0,0, 1, 0,0, "Ashli - YELL_ASHLI");
