@@ -767,6 +767,7 @@ CreatureAI* GetAI_npc_zulaman_door_trigger(Creature *_Creature)
 #define SPELL_TALON                 43517
 #define SPELL_CHARGE                43519
 #define SPELL_KICK                  43518
+#define SAY_GAUNTLET_START          -1568025
 
 int32 GauntletWP[][3] =
 {
@@ -814,7 +815,7 @@ struct TRINITY_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
         m_creature->GetMotionMaster()->MovePoint(0, 226, 1461, 26);
         EventStarted = true;
         DoZoneInCombat();
-        // TODO: do yell
+        DoGlobalScriptText(SAY_GAUNTLET_START, AKILZON, me->GetMap());
     }
 
     void EnterCombat(Unit *who)

@@ -34,7 +34,6 @@ EndScriptData */
 #define YELL_AGGRO                          -1800506
 #define YELL_BERSERK                        -1800507
 #define YELL_DEATH                          -1800508
-//Still not used, need more info
 #define YELL_INTRO                          -1800509
 
 
@@ -156,6 +155,7 @@ struct TRINITY_DLL_DECL boss_zuljinAI : public ScriptedAI
     WorldLocation wLoc;
 
     SummonList Summons;
+    bool Intro;
 
     void Reset()
     {
@@ -194,6 +194,17 @@ struct TRINITY_DLL_DECL boss_zuljinAI : public ScriptedAI
         m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY, 47174);
         m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO, 218172674);
         m_creature->SetByteValue(UNIT_FIELD_BYTES_2, 0, SHEATH_STATE_MELEE);
+        Intro = false;
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if(!Intro && me->IsHostileTo(who) && who->IsWithinDist(me, 80, false))
+        {
+            Intro = true;
+            DoScriptText(YELL_INTRO, m_creature);
+        }
+        CreatureAI::MoveInLineOfSight(who);
     }
 
     void EnterCombat(Unit *who)
@@ -203,7 +214,7 @@ struct TRINITY_DLL_DECL boss_zuljinAI : public ScriptedAI
 
         DoZoneInCombat();
 
-        DoScriptText(YELL_INTRO, m_creature);
+        DoScriptText(YELL_AGGRO, m_creature);
         SpawnAdds();
         EnterPhase(0);
     }
@@ -387,15 +398,6 @@ struct TRINITY_DLL_DECL boss_zuljinAI : public ScriptedAI
         switch (Phase)
         {
         case 0:
-            if(Intro_Timer)
-            {
-                if(Intro_Timer <= diff)
-                {
-                    DoScriptText(YELL_AGGRO, m_creature);
-                    Intro_Timer = 0;
-                }else Intro_Timer -= diff;
-            }
-
             if(Whirlwind_Timer < diff)
             {
                 DoCast(m_creature, SPELL_WHIRLWIND);

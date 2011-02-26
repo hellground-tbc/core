@@ -4,6 +4,9 @@
 #ifndef DEF_ZULAMAN_H
 #define DEF_ZULAMAN_H
 
+#define AKILZON         "Akil'zon"
+#define HEXLORD         "Hex Lord Malacrass"
+
 enum InstanceZA
 {
     MAX_ENCOUNTER = 7,
@@ -78,7 +81,6 @@ enum InstanceZA
 enum HostageState
 {
     // we can't use data == 3, because it will mess with boss killed number
-    // first 4 bits saves 
     HOSTAGE_NOT_SAVED = 0,          // default
 
     HOSTAGE_REWARD_0 = 1,           // random piece of armor

@@ -24,12 +24,18 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_zulaman.h"
 
-#define YELL_AGGRO              -1800493
-#define YELL_SPIRIT_BOLTS       -1800494
-#define YELL_DRAIN_POWER        -1800495
-#define YELL_KILL_ONE           -1800496
-#define YELL_KILL_TWO           -1800497
-#define YELL_DEATH              -1800498
+#define YELL_SPIRIT_BOLTS       -1800493
+#define YELL_DRAIN_POWER        -1800494
+#define YELL_KILL_ONE           -1800495
+#define YELL_KILL_TWO           -1800496
+#define YELL_DEATH              -1800497
+
+#define YELL_AGGRO              -1800512
+#define YELL_ENRAGE             -1800513            // enrage?
+#define YELL_SIPHON_SOUL        -1800514
+#define YELL_ADD_DEAD1          -1800515
+#define YELL_ADD_DEAD2          -1800516
+#define YELL_ADD_DEAD3          -1800517
 
 #define SPELL_SPIRIT_BOLTS      43383
 #define SPELL_DRAIN_POWER       44131
@@ -180,6 +186,13 @@ struct TRINITY_DLL_DECL boss_hexlord_addAI : public ScriptedAI
 
     void EnterCombat(Unit* who) {DoZoneInCombat();}
 
+    void JustDied(Unit* )
+    {
+        if(pInstance)
+            if(Unit *hex = me->GetUnit(pInstance->GetData64(DATA_HEXLORDEVENT)))
+                DoScriptText(RAND(YELL_ADD_DEAD1, YELL_ADD_DEAD2, YELL_ADD_DEAD3), hex);
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if(pInstance && pInstance->GetData(DATA_HEXLORDEVENT) != IN_PROGRESS)
@@ -219,13 +232,14 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
     uint32 SpiritBolts_Timer;
     uint32 DrainPower_Timer;
     uint32 SiphonSoul_Timer;
-    uint32 PlayerAbility_Timer;
+    uint32 PlayerAbility_Timer[3];
     uint32 CheckAddState_Timer;
     uint32 ResetTimer;
 
     uint32 PlayerClass;
 
     Unit* SoulDrainTarget;
+    bool Intro;
 
     void Reset()
     {
@@ -235,7 +249,6 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
         SpiritBolts_Timer = 20000;
         DrainPower_Timer = 60000;
         SiphonSoul_Timer = 100000;
-        PlayerAbility_Timer = 99999;
         CheckAddState_Timer = 5000;
         ResetTimer = 5000;
 
@@ -244,6 +257,19 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
         m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY, 46916);
         m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO, 50268674);
         m_creature->SetByteValue(UNIT_FIELD_BYTES_2, 0, SHEATH_STATE_MELEE );
+        Intro = false;
+        for(uint8 i = 0; i < 3; i++)
+            PlayerAbility_Timer[i] = 999999;
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if(!Intro && me->IsHostileTo(who) && who->IsWithinDist(me, 80, false))
+        {
+            Intro = true;
+            DoScriptText(RAND(SAY_INST_PROGRESS_1, SAY_INST_PROGRESS_2, SAY_INST_PROGRESS_3), m_creature);  // Does it realy belongs here?
+        }
+        CreatureAI::MoveInLineOfSight(who);
     }
 
     void EnterCombat(Unit* who)
@@ -351,12 +377,15 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
             CheckAddState_Timer = 5000;
         }else CheckAddState_Timer -= diff;
 
-        if(DrainPower_Timer < diff)
+        if(HealthBelowPct(80))
         {
-            ClearCastQueue();
-            AddSpellToCastWithScriptText(m_creature, SPELL_DRAIN_POWER, YELL_DRAIN_POWER);
-            DrainPower_Timer = 40000 + rand()%10000;    // must cast in 60 sec, or buff/debuff will disappear
-        }else DrainPower_Timer -= diff;
+            if(DrainPower_Timer < diff)
+            {
+                ClearCastQueue();
+                AddSpellToCastWithScriptText(m_creature, SPELL_DRAIN_POWER, YELL_DRAIN_POWER);
+                DrainPower_Timer = 40000 + rand()%10000;    // must cast in 60 sec, or buff/debuff will disappear
+            }else DrainPower_Timer -= diff;
+        }
 
         if(SpiritBolts_Timer < diff)
         {
@@ -364,10 +393,12 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
                 SpiritBolts_Timer = 13000;  // cast drain power first
             else
             {
+                ClearCastQueue();
                 AddSpellToCastWithScriptText(m_creature, SPELL_SPIRIT_BOLTS, YELL_SPIRIT_BOLTS);
                 SpiritBolts_Timer = 40000;
                 SiphonSoul_Timer = 10000;  // ready to drain
-                PlayerAbility_Timer = 99999;
+                for(uint8 i = 0; i <3; i++)
+                    PlayerAbility_Timer[i] = 99999;
             }
         }else SpiritBolts_Timer -= diff;
 
@@ -392,33 +423,37 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
                 //m_creature->SetUInt32Value(UNIT_CHANNEL_SPELL, SPELL_SIPHON_SOUL);
 
                 PlayerGUID = target->GetGUID();
-                PlayerAbility_Timer = 8000 + rand()%2000;
+                for(uint8 i = 0; i < 3; i++)
+                    PlayerAbility_Timer[i] = PlayerAbility[PlayerClass][i].cooldown;
                 PlayerClass = target->getClass() - 1;
                 if(PlayerClass == 10) PlayerClass = 9; // druid
                 if(PlayerClass == 4 && target->HasSpell(15473)) PlayerClass = 5; // shadow priest
                 SiphonSoul_Timer = 99999;   // buff lasts 30 sec
             }
+            DoScriptText(YELL_SIPHON_SOUL, m_creature);
         }else SiphonSoul_Timer -= diff;
 
-        if(PlayerAbility_Timer < diff)
+        for(uint8 i = 0; i < 3; i++)
         {
-            //Unit* target = Unit::GetUnit(*m_creature, PlayerGUID);
-            //if(target && target->isAlive())
+            if(PlayerAbility_Timer[i] < diff)
             {
-                UseAbility();
-                PlayerAbility_Timer = 8000 + rand()%2000;
-            }
-        }else PlayerAbility_Timer -= diff;
+                //Unit* target = Unit::GetUnit(*m_creature, PlayerGUID);
+                //if(target && target->isAlive())
+                {
+                    UseAbility(i);
+                    PlayerAbility_Timer[i] = PlayerAbility[PlayerClass][i].cooldown;
+                }
+            }else PlayerAbility_Timer[i] -= diff;
+        }
 
         CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 
-    void UseAbility()
+    void UseAbility(uint8 i)
     {
-        uint32 random = rand()%3;
         Unit *target = NULL;
-        switch(PlayerAbility[PlayerClass][random].target)
+        switch(PlayerAbility[PlayerClass][i].target)
         {
         case ABILITY_TARGET_SELF:
             target = m_creature;
@@ -435,13 +470,13 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
             break;
         case ABILITY_TARGET_BUFF:
             {
-                std::list<Creature*> templist = DoFindFriendlyMissingBuff(50, PlayerAbility[PlayerClass][random].spell);
+                std::list<Creature*> templist = DoFindFriendlyMissingBuff(50, PlayerAbility[PlayerClass][i].spell);
                 if(!templist.empty()) target = *(templist.begin());
             }
             break;
         }
         if(target)
-            AddSpellToCast(target, PlayerAbility[PlayerClass][random].spell, false);
+            AddSpellToCast(target, PlayerAbility[PlayerClass][i].spell, false);
     }
 };
 

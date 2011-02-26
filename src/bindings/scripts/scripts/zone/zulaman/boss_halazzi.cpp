@@ -34,6 +34,8 @@ EndScriptData */
 #define YELL_KILL_TWO                   -1800490
 #define YELL_DEATH                      -1800491
 #define YELL_BERSERK                    -1800492
+#define YELL_INTRO1                     -1800510
+#define YELL_INTRO2                     -1800511
 
 #define SPELL_DUAL_WIELD                29651
 #define SPELL_SABER_LASH                43267
@@ -93,6 +95,7 @@ struct TRINITY_DLL_DECL boss_halazziAI : public ScriptedAI
 
     uint32 checkTimer2;
     WorldLocation wLoc;
+    bool Intro;
 
     void Reset()
     {
@@ -109,6 +112,7 @@ struct TRINITY_DLL_DECL boss_halazziAI : public ScriptedAI
         EnterPhase(PHASE_LYNX);
 
         checkTimer2 = 3000;
+        Intro = false;
     }
 
     void EnterCombat(Unit *who)
@@ -127,6 +131,17 @@ struct TRINITY_DLL_DECL boss_halazziAI : public ScriptedAI
         summon->AI()->AttackStart(m_creature->getVictim());
         if(summon->GetEntry() == MOB_SPIRIT_LYNX)
             LynxGUID = summon->GetGUID();
+        
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if(!Intro && me->IsHostileTo(who) && who->IsWithinDist(me, 64, false))
+        {
+            Intro = true;
+            DoScriptText(RAND(YELL_INTRO1, YELL_INTRO2), m_creature);
+        }
+        CreatureAI::MoveInLineOfSight(who);
     }
 
     void DamageTaken(Unit *done_by, uint32 &damage)

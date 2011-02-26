@@ -54,6 +54,7 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
 
     uint64 HarrisonGUID;
     uint64 AkilzonGUID;
+    uint64 HexLordGUID;
 
     uint32 QuestTimer;
     uint16 BossKilled;
@@ -156,9 +157,12 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
             break;
         case 23578://janalai
         case 23863://zuljin
-        case 24239://hexlord
         case 23577://halazzi
         case 23576://nalorakk
+            break;
+
+        case 24239://hexlord
+            HexLordGUID = creature->GetGUID();
             break;
         case 23790: // hostages
         case 23999:
@@ -331,6 +335,7 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
                 UpdateWorldState(WORLD_STATE_COUNTER, QuestMinute);
                 UpdateWorldState(WORLD_STATE_ID,1);
                 Encounters[0] = data;
+                DoGlobalScriptText(SAY_INST_BEGIN, HEXLORD, instance);
             }
             break;
         case DATA_NALORAKKEVENT:
@@ -478,8 +483,9 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
                 return SpiritLynxGUID;
             case DATA_ZULJINEVENT:
                 return ZuljinGUID;
+                */
             case DATA_HEXLORDEVENT:
-                return HexLordGateGUID;*/
+                return HexLordGUID;
             case DATA_HARRISON:
                 return HarrisonGUID;
             case DATA_GO_GONG:
@@ -509,12 +515,21 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
                 {
                     UpdateWorldState(3104, 1);
                     UpdateWorldState(3106, QuestMinute);
+                    if(QuestMinute == 5)
+                        DoGlobalScriptText(RAND(SAY_INST_WARN_1,SAY_INST_WARN_2, SAY_INST_WARN_3, SAY_INST_WARN_4), HEXLORD, instance);
+
                 }
                 else
                 {
+                    bool Killed = false;
                     for(uint8 i = 0; i < 4; i++)
                         if(Hostages[i] == HOSTAGE_NOT_SAVED)
+                        {
                             KillHostage(i);
+                            Killed = true;
+                        }
+                    if(Killed)
+                        DoGlobalScriptText(RAND(SAY_INST_SACRIF1, SAY_INST_SACRIF2), HEXLORD, instance);
                     UpdateWorldState(3104, 0);
                 }
             }
