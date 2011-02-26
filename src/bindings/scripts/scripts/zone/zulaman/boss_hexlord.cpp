@@ -252,6 +252,7 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
         CheckAddState_Timer = 5000;
         ResetTimer = 5000;
 
+        PlayerClass = 0;
         SpawnAdds();
 
         m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY, 46916);
@@ -423,11 +424,12 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
                 //m_creature->SetUInt32Value(UNIT_CHANNEL_SPELL, SPELL_SIPHON_SOUL);
 
                 PlayerGUID = target->GetGUID();
-                for(uint8 i = 0; i < 3; i++)
-                    PlayerAbility_Timer[i] = PlayerAbility[PlayerClass][i].cooldown;
                 PlayerClass = target->getClass() - 1;
                 if(PlayerClass == 10) PlayerClass = 9; // druid
                 if(PlayerClass == 4 && target->HasSpell(15473)) PlayerClass = 5; // shadow priest
+
+                for(uint8 i = 0; i < 3; i++)
+                    PlayerAbility_Timer[i] = PlayerAbility[PlayerClass][i].cooldown;
                 SiphonSoul_Timer = 99999;   // buff lasts 30 sec
             }
             DoScriptText(YELL_SIPHON_SOUL, m_creature);
