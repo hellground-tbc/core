@@ -6653,6 +6653,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
 
             target = this;
             trigger_spell_id = 22588;
+            break;
         }
         // Greater Heal Refund (Avatar Raiment set)
         case 37594:
@@ -6677,7 +6678,11 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         case 43983:
         {
             if (procSpell && procSpell->powerType == POWER_MANA && (procSpell->manaCost || procSpell->ManaCostPercentage))
+            {
                 trigger_spell_id = 43137;
+                target = this;
+            }
+            break;
         }
         // Evasive Maneuvers (Commendation of Kael`thas trinket)
         case 45057:

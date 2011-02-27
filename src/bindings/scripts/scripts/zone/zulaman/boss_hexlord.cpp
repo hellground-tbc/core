@@ -72,7 +72,7 @@ EndScriptData */
 #define SPELL_PR_MIND_BLAST     41374
 #define SPELL_PR_SW_DEATH       41375
 #define SPELL_PR_PSYCHIC_SCREAM 43432
-#define SPELL_PR_PAIN_SUPP      44416
+#define SPELL_PR_PAIN_SUPP      33206   // not sure, it's priest's pain suppression
 
 //Rogue
 #define SPELL_RO_BLIND          43433
@@ -247,7 +247,7 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
             pInstance->SetData(DATA_HEXLORDEVENT, NOT_STARTED);
 
         SpiritBolts_Timer = 20000;
-        DrainPower_Timer = 60000;
+        DrainPower_Timer = 2000;
         SiphonSoul_Timer = 100000;
         CheckAddState_Timer = 5000;
         ResetTimer = 5000;
@@ -349,7 +349,7 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
         }
     }
 
-    void UpdateAI(const uint32 diff)
+    void UpdateAI(const int32 diff)
     {
         if(!UpdateVictim() )
             return;
@@ -547,7 +547,7 @@ struct TRINITY_DLL_DECL boss_alyson_antilleAI : public boss_hexlord_addAI
 
         boss_hexlord_addAI::Reset();
     }
-
+/*  Ponizszy kod powoduj ze Alyson ucieka pod tekstury, bardzo niefajne
     void AttackStart(Unit* who)
     {
         if (!who)
@@ -565,7 +565,7 @@ struct TRINITY_DLL_DECL boss_alyson_antilleAI : public boss_hexlord_addAI
                 EnterCombat(who);
         }
     }
-
+*/
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim() )
@@ -629,7 +629,7 @@ struct TRINITY_DLL_DECL boss_gazakrothAI : public boss_hexlord_addAI
         firebolt_timer = 2000;
         boss_hexlord_addAI::Reset();
     }
-
+/*  Ponizszy kod spowoduje ze imp bedzie wchodzil pod tekstury :(
     void AttackStart(Unit* who)
     {
         if (!who)
@@ -644,7 +644,7 @@ struct TRINITY_DLL_DECL boss_gazakrothAI : public boss_hexlord_addAI
             }
         }
     }
-
+*/
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim() )

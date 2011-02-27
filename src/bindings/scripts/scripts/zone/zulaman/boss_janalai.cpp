@@ -119,13 +119,13 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
 
     WorldLocation wLoc;
 
-    int32 FireBreathTimer;
-    int32 BombTimer;
-    int32 BombSequenceTimer;
-    int32 BombCount;
-    int32 HatcherTimer;
-    int32 EnrageTimer;
-    int32 ResetTimer;
+    uint32 FireBreathTimer;
+    uint32 BombTimer;
+    uint32 BombSequenceTimer;
+    uint32 BombCount;
+    uint32 HatcherTimer;
+    uint32 EnrageTimer;
+    uint32 ResetTimer;
 
     bool noeggs;
     bool enraged;
@@ -323,8 +323,14 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
                 isFlameBreathing = false;
             }else 
             {
-                EnrageTimer -= diff;
-                HatcherTimer -= diff;
+                if(EnrageTimer > diff)
+                    EnrageTimer -= diff;
+                else
+                    EnrageTimer = 0;
+                if(HatcherTimer > diff)
+                    HatcherTimer -= diff;
+                else
+                    HatcherTimer = 0;
                 return;
             }
         }
@@ -337,8 +343,14 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
             }else 
                 BombSequenceTimer -= diff;
     
-            EnrageTimer -= diff;
-            HatcherTimer -= diff;
+            if(EnrageTimer > diff)
+                EnrageTimer -= diff;
+            else
+                EnrageTimer = 0;
+            if(HatcherTimer > diff)
+                HatcherTimer -= diff;
+            else
+                HatcherTimer = 0;
             return;
         }
 
