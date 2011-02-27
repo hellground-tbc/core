@@ -1,0 +1,29 @@
+SET(trinitydatabase_STAT_SRCS
+   DBCStores.cpp
+   DBCStores.h
+   DBCStructure.h
+   DBCfmt.cpp
+   Database.cpp
+   Database.h
+   DatabaseEnv.h
+   DatabaseImpl.h
+   Field.cpp
+   Field.h
+   QueryResult.h
+   QueryResult.cpp
+   QueryResultMysql.cpp
+   QueryResultMysql.h
+   DatabaseMysql.h
+   DatabaseMysql.cpp
+   SQLStorage.cpp
+   SQLStorage.h
+   SQLStorageImpl.h
+   SqlDelayThread.cpp
+   SqlDelayThread.h
+   SqlOperations.cpp
+   SqlOperations.h
+   dbcfile.cpp
+   dbcfile.h
+)
+
+add_library(trinitydatabase STATIC ${trinitydatabase_STAT_SRCS})

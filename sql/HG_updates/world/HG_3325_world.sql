@@ -1,0 +1,1 @@
+UPDATE creature_template SET AIName = "", ScriptName = "mob_void_zone" WHERE entry = 16697;

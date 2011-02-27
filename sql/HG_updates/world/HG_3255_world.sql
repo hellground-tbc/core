@@ -1,0 +1,1 @@
+UPDATE creature_template SET ScriptName = "mob_ashtongue_stormcaller" WHERE entry=22846;
