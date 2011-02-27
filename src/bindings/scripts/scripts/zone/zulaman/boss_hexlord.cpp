@@ -349,7 +349,7 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
         }
     }
 
-    void UpdateAI(const int32 diff)
+    void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim() )
             return;

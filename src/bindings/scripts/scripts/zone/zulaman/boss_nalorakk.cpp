@@ -55,6 +55,9 @@ float NalorakkWay[8][3] =
 #define YELL_KILL_TWO           -1800478
 #define YELL_DEATH              -1800479
 #define YELL_BERSERK            -1800480
+#define YELL_SURGE              -1800481
+#define YELL_SHIFTEDTOTROLL     -1800482
+#define YELL_SHIFTEDTOBEAR      -1800483
 
 #define SPELL_BERSERK           45078
 
@@ -65,15 +68,10 @@ float NalorakkWay[8][3] =
 #define SPELL_SURGE             42402
 #define SPELL_BEARFORM          42377
 
-#define YELL_SURGE              -1800481
-#define YELL_SHIFTEDTOTROLL     -1800482
-
 //Defines for Bear form
 #define SPELL_LACERATINGSLASH   42395
 #define SPELL_RENDFLESH         42397
 #define SPELL_DEAFENINGROAR     42398
-
-#define YELL_SHIFTEDTOBEAR      -1800483
 
 
 struct TRINITY_DLL_DECL boss_nalorakkAI : public ScriptedAI

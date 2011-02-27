@@ -337,19 +337,7 @@ struct TRINITY_DLL_DECL boss_zuljinAI : public ScriptedAI
             {
                 m_creature->GetMotionMaster()->Clear();
                 m_creature->CastSpell(m_creature, SPELL_ENERGY_STORM, true); // enemy aura
-                for(uint8 i = 0; i < 4; i++)
-                {
-                    Creature* Vortex = DoSpawnCreature(CREATURE_FEATHER_VORTEX, 0, 0, 0, 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
-                    if(Vortex)
-                    {
-                        Vortex->CastSpell(Vortex, SPELL_CYCLONE_PASSIVE, true);
-                        Vortex->CastSpell(Vortex, SPELL_CYCLONE_VISUAL, true);
-                        Vortex->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                        Vortex->SetSpeed(MOVE_RUN, 1.0f);
-                        if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                            Vortex->AI()->AttackStart(target);
-                    }
-                }
+                m_creature->CastSpell(m_creature, SPELL_SUMMON_CYCLONE, false);
             }
             else
                 m_creature->AI()->AttackStart(m_creature->getVictim());
@@ -555,6 +543,7 @@ struct TRINITY_DLL_DECL boss_zuljinAI : public ScriptedAI
                 if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
                     m_creature->SetInFront(target);
                 DoCast(m_creature, SPELL_FLAME_BREATH);
+                DoScriptText(YELL_FIRE_BREATH, m_creature);
                 Flame_Breath_Timer = 10000;
             }else Flame_Breath_Timer -= diff;
             break;
@@ -577,9 +566,19 @@ struct TRINITY_DLL_DECL feather_vortexAI : public ScriptedAI
 {
     feather_vortexAI(Creature *c) : ScriptedAI(c) {}
 
-    void Reset() {}
+    void Reset() 
+    {
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        me->SetSpeed(MOVE_RUN, 1.0f);
+    }
 
-    void EnterCombat(Unit* target) {}
+    void EnterCombat(Unit* ) {
+        me->CastSpell(me, SPELL_CYCLONE_PASSIVE, false);
+        me->CastSpell(me, SPELL_CYCLONE_VISUAL, false);
+
+        if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            AttackStart(target);
+    }
 
     void SpellHit(Unit *caster, const SpellEntry *spell)
     {
