@@ -239,7 +239,7 @@ struct TRINITY_DLL_DECL boss_halazziAI : public ScriptedAI
         {
             if(SaberlashTimer < diff)
             {
-                AddSpellToCast(m_creature->getVictim(), SPELL_SABER_LASH);
+                AddSpellToCastWithScriptText(m_creature->getVictim(), SPELL_SABER_LASH, RAND(YELL_SABER_ONE, YELL_SABER_TWO));
                 SaberlashTimer = 30000;
             }else SaberlashTimer -= diff;
 
