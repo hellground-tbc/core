@@ -2240,6 +2240,10 @@ void Aura::TriggerSpell()
                         return;
                 }
             }
+            // Cyclone from Zul'jin event (Zul'Aman)
+            case 43120:
+                target = m_target;
+                break;
         }
     }
     if (!GetSpellMaxRange(sSpellRangeStore.LookupEntry(triggeredSpellInfo->rangeIndex)))

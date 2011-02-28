@@ -33,9 +33,11 @@ EndContentData */
 ## npc_forest_frog
 ######*/
 
-#define SPELL_REMOVE_AMANI_CURSE    43732
-#define SPELL_PUSH_MOJO             43923
-#define ENTRY_FOREST_FROG           24396
+#define SPELL_REMOVE_AMANI_CURSE        43732
+#define SPELL_PUSH_MOJO                 43923
+#define SPELL_SUMMON_MONEY_BAG          43774
+#define SPELL_SUMMON_AMANI_CHARM_CHEST  43826
+#define ENTRY_FOREST_FROG               24396
 
 enum npc
 {
@@ -69,7 +71,7 @@ struct TRINITY_DLL_DECL npc_forest_frogAI : public ScriptedAI
     {
         if( pInstance )
         {
-            uint32 cEntry = RAND(NPC_KRAZ, NPC_MANNUTH, NPC_DEEZ, NPC_GALATHRYN, NPC_ADARRAH, NPC_FUDGERICK, NPC_DARWEN, NPC_MITZI, NPC_CHRISTIAN, NPC_BRENNAN, NPC_HOLLEE);
+            uint32 cEntry = RAND(NPC_MANNUTH, NPC_DEEZ, NPC_GALATHRYN, NPC_ADARRAH, NPC_FUDGERICK, NPC_DARWEN, NPC_MITZI, NPC_CHRISTIAN, NPC_BRENNAN, NPC_HOLLEE);
 
             if( !pInstance->GetData(TYPE_RAND_VENDOR_1) )
                 if(rand()%10 == 1) cEntry = 24408;      //Gunter
@@ -78,8 +80,12 @@ struct TRINITY_DLL_DECL npc_forest_frogAI : public ScriptedAI
 
             if( cEntry ) m_creature->UpdateEntry(cEntry);
 
-            if( cEntry == 24408) pInstance->SetData(TYPE_RAND_VENDOR_1,DONE);
-            if( cEntry == 24409) pInstance->SetData(TYPE_RAND_VENDOR_2,DONE);
+            if( cEntry == 24408)
+                pInstance->SetData(TYPE_RAND_VENDOR_1,DONE);
+            else if( cEntry == 24409)
+                pInstance->SetData(TYPE_RAND_VENDOR_2,DONE);
+            else
+                DoCast(me, RAND(SPELL_SUMMON_MONEY_BAG, SPELL_SUMMON_AMANI_CHARM_CHEST, SPELL_SUMMON_AMANI_CHARM_CHEST, SPELL_SUMMON_AMANI_CHARM_CHEST));
         }
     }
 
@@ -99,18 +105,34 @@ CreatureAI* GetAI_npc_forest_frog(Creature *_Creature)
 }
 
 /*######
-## npc_zulaman_hostage
+## scripts for timed event
 ######*/
 
-#define GOSSIP_HOSTAGE1        "I am glad to help you."
+#define GOSSIP_ASHLI_1  "It's safe, little gnome. You can come out now."
+#define GOSSIP_ASHLI_2  "How'd a perky little gnome like you get caught up in a mess like this?"
+#define GOSSIP_KRAZ_1   "What happened to you, orc?"
+#define GOSSIP_HARKOR_1 "So, how does a dwarf like you end up in a place like this?"
+#define GOSSIP_TANZAR_1 "You're welcome... Now tell us what's going on here!"
+#define GOSSIP_TANZAR_2 "What can you tell us about Budd?"
 
-#define SPELL_SMASH             18944   // most probably wrong spell, but has cool visual
+
 #define GO_LOOT_BOX             186622
 #define GO_EXPLOSION_CHARGE     183410  // probably wrong go, but looks ok
 #define GO_ASHLI_VASE           186671
+
+#define SPELL_SMASH             18944   // most probably wrong spell, but has cool visual
 #define SPELL_EXPLOSION         43418   // also not sure about this
 #define SPELL_ASHLI_FIREBALL    43525
 #define SPELL_FIREBALL_VISUAL   29473   // also wrong spell
+
+#define YELL_ASHLI_KILL         -1800518
+#define YELL_ASHLI_FREED        -1800519
+#define YELL_ASHLI_FREE_ME1     -1800520
+#define YELL_ASHLI_FREE_ME2     -1800521
+#define YELL_ASHLI_FREE_ME3     -1800522
+#define YELL_ASHLI_VASE1        -1800523
+#define YELL_ASHLI_VASE2        -1800524
+#define YELL_ASHLI_VASE3        -1800525
 
 struct TRINITY_DLL_DECL npc_hostageAI : public ScriptedAI
 {
@@ -128,7 +150,7 @@ struct TRINITY_DLL_DECL npc_hostageAI : public ScriptedAI
 
     void Reset() 
     {
-        CheckTimer = 10000;
+        CheckTimer = 5000;
         EventStarted = false;
     }
     void EnterCombat(Unit *who) {}
@@ -171,7 +193,7 @@ struct TRINITY_DLL_DECL npc_hostageAI : public ScriptedAI
                     }
                     EventStarted = true;
                 }
-                CheckTimer = 2000;
+                CheckTimer = 800;
             } else 
                 CheckTimer -= diff;
         }
@@ -311,9 +333,9 @@ struct TRINITY_DLL_DECL npc_ashliAI : public ScriptedAI
     npc_ashliAI(Creature *c) : ScriptedAI(c) 
     {
         pInstance = (ScriptedInstance*)c->GetInstanceData();
-        SpellEntry *TempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_ASHLI_FIREBALL);
-        if(TempSpell)
-            TempSpell->EffectImplicitTargetA[0] = TARGET_GAMEOBJECT;
+        //SpellEntry *TempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_ASHLI_FIREBALL);
+        //if(TempSpell)
+        //    TempSpell->EffectImplicitTargetA[0] = TARGET_GAMEOBJECT;
     }
 
     ScriptedInstance *pInstance;
@@ -322,6 +344,9 @@ struct TRINITY_DLL_DECL npc_ashliAI : public ScriptedAI
     bool Move;
     bool Fire;
     bool FillTargets;
+    bool BossKilled;
+    bool YellAshliVaseDone[3];
+    uint32 FreeMeTimer;
     uint32 MovePoint;
     std::list<uint64> targets;
     uint64 LastTarget;
@@ -333,8 +358,12 @@ struct TRINITY_DLL_DECL npc_ashliAI : public ScriptedAI
         MovePoint = 0;
         Move = false;
         Fire = false;
+        BossKilled = false;
         LastTarget = 0;
+        FreeMeTimer = 0;
         targets.clear();
+        for(uint8 i = 0; i<3; i++)
+            YellAshliVaseDone[i] = false;
     }
 
     void EnterCombat(Unit *who) {}
@@ -359,6 +388,16 @@ struct TRINITY_DLL_DECL npc_ashliAI : public ScriptedAI
     void SpellHitTarget(Unit *target, const SpellEntry *entry)
     {
         GameObject *go = FindGameObject(GO_ASHLI_VASE, 5, target);
+        if(!YellAshliVaseDone[1] && MovePoint == 3)
+        {
+            DoScriptText(YELL_ASHLI_VASE2, me);
+            YellAshliVaseDone[1] = true;
+        }
+        if(!YellAshliVaseDone[2] && MovePoint == 5)
+        {
+            DoScriptText(YELL_ASHLI_VASE3, me);
+            YellAshliVaseDone[2] = true;
+        }
         if(go)
             go->Delete();
     }
@@ -367,14 +406,31 @@ struct TRINITY_DLL_DECL npc_ashliAI : public ScriptedAI
     {
         if(!EventStarted && pInstance)
         {
+            if(FreeMeTimer)
+            {
+                if(FreeMeTimer < diff)
+                {
+                    DoScriptText(RAND(YELL_ASHLI_FREE_ME1, YELL_ASHLI_FREE_ME2, YELL_ASHLI_FREE_ME3), me);
+                    FreeMeTimer = 20000;
+                } else
+                    FreeMeTimer -= diff;
+            }
+
             if(CheckTimer < diff)
             {
+                if(!BossKilled && pInstance->GetData(DATA_HOSTAGE_ASHLI_STATE) & HOSTAGE_SAVED)
+                {
+                    BossKilled = true;
+                    DoScriptText(YELL_ASHLI_KILL, me);
+                    FreeMeTimer = 20000;
+                }
                 if(pInstance->GetData(DATA_HOSTAGE_ASHLI_STATE) & HOSTAGE_FREED)
                 {
                     Move = true;
                     EventStarted = true;
+                    DoScriptText(YELL_ASHLI_FREED, me);
                 }
-                CheckTimer = 2000;
+                CheckTimer = 800;
             } else 
                 CheckTimer -= diff;
         }
@@ -397,6 +453,11 @@ struct TRINITY_DLL_DECL npc_ashliAI : public ScriptedAI
             if(target)
             {
                 me->CastSpell(target, SPELL_ASHLI_FIREBALL, false);
+                if(!YellAshliVaseDone[0] && MovePoint == 1)
+                {
+                    DoScriptText(YELL_ASHLI_VASE1, me);
+                    YellAshliVaseDone[0] = true;
+                }
                 LastTarget = target->GetGUID();
             } 
             else
@@ -461,53 +522,131 @@ bool GOHello_go_zulaman_timed_event_chest(Player* pPlayer, GameObject* pGo)
     return true;  
 }
 
-/*
-bool GossipHello_npc_zulaman_hostage(Player* player, Creature* _Creature)
+bool GossipHello_npc_tanzar(Player* player, Creature* _Creature)
 {
-    player->ADD_GOSSIP_ITEM(0, GOSSIP_HOSTAGE1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-    player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+    ScriptedInstance* pInstance = (ScriptedInstance*)_Creature->GetInstanceData();
+    if(!pInstance)
+        return false;
+
+    if(pInstance->GetData(DATA_HOSTAGE_ASHLI_STATE >= HOSTAGE_CHEST_UNLOCKED) )
+    {
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_TANZAR_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+        player->SEND_GOSSIP_MENU(25025, _Creature->GetGUID());
+    } else
+        return false;
+
     return true;
 }
 
 
-bool GossipSelect_npc_zulaman_hostage(Player* player, Creature* _Creature, uint32 sender, uint32 action)
+bool GossipSelect_npc_tanzar(Player* player, Creature* _Creature, uint32 sender, uint32 action)
 {
-    if(action == GOSSIP_ACTION_INFO_DEF + 1)
-        player->CLOSE_GOSSIP_MENU();
-
-    if(!_Creature->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP))
-        return true;
-    _Creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-
-    ScriptedInstance* pInstance = (_Creature->GetInstanceData());
-    if(pInstance)
+    switch(action)
     {
-        //uint8 progress = pInstance->GetData(DATA_CHESTLOOTED);
-        pInstance->SetData(DATA_CHESTLOOTED, 0);
-        float x, y, z;
-        _Creature->GetPosition(x, y, z);
-        uint32 entry = _Creature->GetEntry();
-        for(uint8 i = 0; i < 4; ++i)
-        {
-            if(HostageEntry[i] == entry)
-            {
-                _Creature->SummonGameObject(ChestEntry[i], x-2, y, z, 0, 0, 0, 0, 0, 0);
-                break;
-            }
-        }
-        /*Creature* summon = _Creature->SummonCreature(HostageInfo[progress], x-2, y, z, 0, TEMPSUMMON_DEAD_DESPAWN, 0);
-        if(summon)
-        {
-            ((npc_zulaman_hostageAI*)summon->AI())->PlayerGUID = player->GetGUID();
-            ((npc_zulaman_hostageAI*)summon->AI())->IsLoot = true;
-            summon->SetDisplayId(10056);
-            summon->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-            summon->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-        }*
+        case GOSSIP_ACTION_INFO_DEF + 1:
+            player->ADD_GOSSIP_ITEM(0, GOSSIP_TANZAR_2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+            player->SEND_GOSSIP_MENU(25026, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF + 2:
+            player->SEND_GOSSIP_MENU(25027, _Creature->GetGUID());
+            break;
     }
     return true;
 }
-*/
+
+
+bool GossipHello_npc_harkor(Player* player, Creature* _Creature)
+{
+    ScriptedInstance* pInstance = (ScriptedInstance*)_Creature->GetInstanceData();
+    if(!pInstance)
+        return false;
+
+    if(pInstance->GetData(DATA_HOSTAGE_HARKOR_STATE >= HOSTAGE_CHEST_UNLOCKED) )
+    {
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_HARKOR_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+        player->SEND_GOSSIP_MENU(25028, _Creature->GetGUID());
+    } else
+        return false;
+
+    return true;
+}
+
+
+bool GossipSelect_npc_harkor(Player* player, Creature* _Creature, uint32 sender, uint32 action)
+{
+    switch(action)
+    {
+        case GOSSIP_ACTION_INFO_DEF + 1:
+            player->SEND_GOSSIP_MENU(25029, _Creature->GetGUID());
+            break;
+    }
+    return true;
+}
+
+bool GossipHello_npc_kraz(Player* player, Creature* _Creature)
+{
+    ScriptedInstance* pInstance = (ScriptedInstance*)_Creature->GetInstanceData();
+    if(!pInstance)
+        return false;
+
+    if(pInstance->GetData(DATA_HOSTAGE_KRAZ_STATE >= HOSTAGE_CHEST_UNLOCKED) )
+    {
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_KRAZ_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+        player->SEND_GOSSIP_MENU(25030, _Creature->GetGUID());
+    } else
+        return false;
+
+    return true;
+}
+
+
+bool GossipSelect_npc_kraz(Player* player, Creature* _Creature, uint32 sender, uint32 action)
+{
+    switch(action)
+    {
+        case GOSSIP_ACTION_INFO_DEF + 1:
+            player->SEND_GOSSIP_MENU(25031, _Creature->GetGUID());
+            break;
+    }
+    return true;
+}
+
+bool GossipHello_npc_ashli(Player* player, Creature* _Creature)
+{
+    ScriptedInstance* pInstance = (ScriptedInstance*)_Creature->GetInstanceData();
+    if(!pInstance)
+        return false;
+
+    if(pInstance->GetData(DATA_HOSTAGE_ASHLI_STATE & HOSTAGE_SAVED))
+    {
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_ASHLI_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+        player->SEND_GOSSIP_MENU(25032, _Creature->GetGUID());
+    }
+    else if(pInstance->GetData(DATA_HOSTAGE_ASHLI_STATE >= HOSTAGE_CHEST_UNLOCKED) )
+    {
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_ASHLI_2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+        player->SEND_GOSSIP_MENU(25033, _Creature->GetGUID());
+    } else
+        return false;
+
+    return true;
+}
+
+
+bool GossipSelect_npc_ashli(Player* player, Creature* _Creature, uint32 sender, uint32 action)
+{
+    switch(action)
+    {
+        case GOSSIP_ACTION_INFO_DEF + 1:
+            player->CLOSE_GOSSIP_MENU();
+            break;
+        case GOSSIP_ACTION_INFO_DEF + 2:
+            player->SEND_GOSSIP_MENU(25034, _Creature->GetGUID());
+            break;
+    }
+    return true;
+}
+
 
 
 /*######
@@ -1060,29 +1199,29 @@ void AddSC_zulaman()
     newscript = new Script;
     newscript->Name = "npc_ashli";
     newscript->GetAI = &GetAI_npc_ashli;
-//    newscript->pGossipHello = &GossipHello_npc_zulaman_hostage;
-//    newscript->pGossipSelect = &GossipSelect_npc_zulaman_hostage;
+    newscript->pGossipHello = &GossipHello_npc_ashli;
+    newscript->pGossipSelect = &GossipSelect_npc_ashli;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "npc_kraz";
     newscript->GetAI = &GetAI_npc_kraz;
-//    newscript->pGossipHello = &GossipHello_npc_zulaman_hostage;
-//    newscript->pGossipSelect = &GossipSelect_npc_zulaman_hostage;
+    newscript->pGossipHello = &GossipHello_npc_kraz;
+    newscript->pGossipSelect = &GossipSelect_npc_kraz;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "npc_harkor";
     newscript->GetAI = &GetAI_npc_harkor;
-//    newscript->pGossipHello = &GossipHello_npc_zulaman_hostage;
-//    newscript->pGossipSelect = &GossipSelect_npc_zulaman_hostage;
+    newscript->pGossipHello = &GossipHello_npc_harkor;
+    newscript->pGossipSelect = &GossipSelect_npc_harkor;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "npc_tanzar";
     newscript->GetAI = &GetAI_npc_tanzar;
-//    newscript->pGossipHello = &GossipHello_npc_zulaman_hostage;
-//    newscript->pGossipSelect = &GossipSelect_npc_zulaman_hostage;
+    newscript->pGossipHello = &GossipHello_npc_tanzar;
+    newscript->pGossipSelect = &GossipSelect_npc_tanzar;
     newscript->RegisterSelf();
 
     newscript = new Script;
