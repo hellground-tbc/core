@@ -14,12 +14,18 @@ struct TRINITY_DLL_DECL instance_naxxramas : public ScriptedInstance
 {
     instance_naxxramas(Map *map) : ScriptedInstance(map) {Initialize();};
 
+	uint64 StalaggGUID;
+	uint64 FeugenGUID;
+	uint64 ThaddiusGUID;
     uint32 Encounters[ENCOUNTERS];
 
     void Initialize()
     {
         for(uint8 i = 0; i < ENCOUNTERS; i++)
             Encounters[i] = NOT_STARTED;
+		StalaggGUID = 0;
+		FeugenGUID = 0;
+		ThaddiusGUID = 0;
     }
 
     bool IsEncounterInProgress() const
@@ -62,6 +68,8 @@ struct TRINITY_DLL_DECL instance_naxxramas : public ScriptedInstance
             case 15932:
                 return DATA_GLUTH;
             case 15928:
+            case 15929:
+            case 15930:
                 return DATA_THADDIUS;
             case 15989:
                 return DATA_SAPPHIRON;
@@ -76,10 +84,19 @@ struct TRINITY_DLL_DECL instance_naxxramas : public ScriptedInstance
     {
         switch(creature_entry)
         {
-            case 0:
+            case 15929:
+                StalaggGUID = creature->GetGUID();
                 break;
-            default:
+            case 15930:
+                FeugenGUID = creature->GetGUID();
                 break;
+            case 15928:
+                ThaddiusGUID = creature->GetGUID();
+                break;
+            //case 0:
+            //    break;
+            //default:
+            //    break;
         }
 
         const CreatureData *tmp = creature->GetLinkedRespawnCreatureData();
@@ -210,11 +227,16 @@ struct TRINITY_DLL_DECL instance_naxxramas : public ScriptedInstance
     {
         switch(identifier)
         {
-            case 0:
-                return 0;
-            default:
-                return 0;
+			//temporary values, .h file should be added to f.e. check if all wing bosses are killed before Kel'Thuzad
+            case 1:         return ThaddiusGUID;
+            case 2:         return StalaggGUID;
+            case 3:         return FeugenGUID;
+            //case 0:
+            //    return 0;
+            //default:
+            //    
         }
+		return 0;
     }
 
     std::string GetSaveData()
