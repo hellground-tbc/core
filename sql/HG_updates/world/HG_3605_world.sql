@@ -1,0 +1,10 @@
+UPDATE creature_template SET ScriptName = "mob_pristess_of_dementia" WHERE entry = 22957; 
+UPDATE creature_template SET minlevel = 72, maxlevel = 72, minhealth = 42974, maxhealth = 43000, minmana = 3309, maxmana = 3309, armor = 6000, faction_A = 1813, faction_H = 1813, mindmg = 500, maxdmg = 900, ScriptName = "mob_image_of_dementia" WHERE entry = 23436;
+UPDATE creature_template SET ScriptName = "mob_pristess_of_delight" WHERE entry = 22962;
+UPDATE creature_template SET ScriptName = "mob_sister_of_pain" WHERE entry = 22956;
+UPDATE creature_template SET ScriptName = "mob_sister_of_pleasure" WHERE entry = 22964;
+UPDATE creature_template SET ScriptName = "mob_charming_courtesan" WHERE entry = 22955;
+UPDATE creature_template SET ScriptName = "mob_temple_concubine" WHERE entry = 22939;
+UPDATE creature_template SET ScriptName = "mob_spellbound_attendent" WHERE entry = 22959;
+UPDATE creature_template SET ScriptName = "mob_enslaved_servant" WHERE entry = 22965;
+UPDATE creature_template SET flags_extra = (flags_extra | 65536) WHERE entry = 22947;
