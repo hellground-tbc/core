@@ -205,8 +205,8 @@ EAIErrorLevel = 2
 #                 0 (do not permit addon channel)
 #
 #    MapUpdate.Threads
-#	     Number of threads to update maps.
-#	     Default: 1
+#         Number of threads to update maps.
+#         Default: 1
 #
 ###################################################################################################################
 
@@ -330,7 +330,7 @@ MapUpdate.Threads = 1
 #                     in form Logname_#ID_YYYY-MM-DD_HH-MM-SS.Ext
 #                     or form Logname_#ID.Ext
 #
-#	ArenaLogFile
+#    ArenaLogFile
 #        Log file of arena fights and arena team creations
 #        Default: "" - do not create arena log file
 #
@@ -557,9 +557,9 @@ IrcParser = "parser.trc"
 #                 1 (true)
 #
 #   Battleground.PrematureReward
-#	 Reward players in case of prematurely finished BG
-#	 Default: 1 (true)
-#	 	  0 (false)
+#     Reward players in case of prematurely finished BG
+#     Default: 1 (true)
+#           0 (false)
 #
 #    CastUnstuck
 #        Allow cast or not Unstuck spell at .start or client Help option use
@@ -1548,48 +1548,48 @@ AuctionHouseBot.DisableTGsAboveReqSkillRank = 0
 ###################################################################################################################
 # CUSTOM SERVER OPTIONS
 #
-#	PlayerStart.AllReputation
-#		Players will start with most of the high level reputations that are needed for items, mounts etc.
-#		If there are any reputation faction you want to be added, just tell me.
+#    PlayerStart.AllReputation
+#        Players will start with most of the high level reputations that are needed for items, mounts etc.
+#        If there are any reputation faction you want to be added, just tell me.
 #
-#	PlayerStart.AllSpells
-#		If enabled, players will start with all their class spells (not talents). Useful for instant 70 servers.
-#		You must import playercreateinfo_spell_custom.sql, it's included in the SQL folder.
-#		Default: 0 - off
-#				 1 - on
+#    PlayerStart.AllSpells
+#        If enabled, players will start with all their class spells (not talents). Useful for instant 70 servers.
+#        You must import playercreateinfo_spell_custom.sql, it's included in the SQL folder.
+#        Default: 0 - off
+#                 1 - on
 #
-#	PlayerStart.MapsExplored
-#		Players will start with all maps explored if enabled
+#    PlayerStart.MapsExplored
+#        Players will start with all maps explored if enabled
 #
-#	MusicInBattleground
-#		If enabled, "L70ETC - Power of the horde" will be played when BG starts ;)
+#    MusicInBattleground
+#        If enabled, "L70ETC - Power of the horde" will be played when BG starts ;)
 #
-#	HonorPointsAfterDuel
-#		The amount of honor points the duel winner will get after a duel.
-#		Default: 0 - disable
+#    HonorPointsAfterDuel
+#        The amount of honor points the duel winner will get after a duel.
+#        Default: 0 - disable
 #
-#	AlwaysMaxWeaponSkill
-#		Players will automatically gain max weapon/defense skill when logging in, leveling up etc.
+#    AlwaysMaxWeaponSkill
+#        Players will automatically gain max weapon/defense skill when logging in, leveling up etc.
 #
-#	PvPToken.Enable
-#		Enable/disable PvP Token System. Players will get a token after slaying another player that gives honor.
+#    PvPToken.Enable
+#        Enable/disable PvP Token System. Players will get a token after slaying another player that gives honor.
 #
-#	PvPToken.MapAllowType
-#		Where players can receive the pvp token
-#		4 - In all maps
-#		3 - In battlegrounds only
-#		2 - In FFA areas only (gurubashi arena etc)
-#		1 - In battlegrounds AND FFA areas only
+#    PvPToken.MapAllowType
+#        Where players can receive the pvp token
+#        4 - In all maps
+#        3 - In battlegrounds only
+#        2 - In FFA areas only (gurubashi arena etc)
+#        1 - In battlegrounds AND FFA areas only
 #
-#	PvPToken.ItemID
-#		The item players will get after killing someone if PvP Token system is enabled.
-#		Default: 29434 - Badge of justice
+#    PvPToken.ItemID
+#        The item players will get after killing someone if PvP Token system is enabled.
+#        Default: 29434 - Badge of justice
 #
-#	PvPToken.ItemCount
-#		Modify the item ID count - Default: 1
+#    PvPToken.ItemCount
+#        Modify the item ID count - Default: 1
 #
-#	NoResetTalentsCost
-#		Enable or disable no cost when reseting talents
+#    NoResetTalentsCost
+#        Enable or disable no cost when reseting talents
 #
 #   ForbiddenMaps
 #       map ids that users below SEC_GAMEMASTER cannot enter, with delimiter ','
