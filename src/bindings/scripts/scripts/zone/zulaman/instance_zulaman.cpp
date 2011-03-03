@@ -30,9 +30,9 @@ EndScriptData */
 SHostageInfo HostageInfo[] =
 {
     {23790, 24442, 187377, 186648, -146, 1347, 48, 6.17}, // bear - Tanzar
-    {23999, 24443, 187378, 187021, 408, 1488, 82, 4.49}, // eagle - Harkor
+    {23999, 24443, 187378, 187021, 408, 1488, 81.65, 4.49}, // eagle - Harkor
     {24024, 24444, 187379, 186667, -90, 1154, 6, 5.9}, // dragonhawk - Kraz
-    {24001, 24441, 187380, 186672, 347, 1087,  6, 3.1}  // lynx - Ashli
+    {24001, 24441, 187380, 186672, 337, 1087,  6.34, 3.1}  // lynx - Ashli
 };
 
 
@@ -140,7 +140,12 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
 
         WorldLocation wLoc;
         hostage->GetPosition(wLoc);
-        hostage->SummonCreature(HostageInfo[index].deadnpc, wLoc.coord_x, wLoc.coord_y, wLoc.coord_z, wLoc.orientation, TEMPSUMMON_MANUAL_DESPAWN, 0);
+        Creature *corpse = hostage->SummonCreature(HostageInfo[index].deadnpc, wLoc.coord_x, wLoc.coord_y, wLoc.coord_z, wLoc.orientation, TEMPSUMMON_MANUAL_DESPAWN, 0);
+        if(corpse)
+        {
+            corpse->SetStandState(UNIT_STAND_STATE_DEAD);
+            // TODO: add some burn effect
+        }
         hostage->Kill(hostage, false);
         hostage->RemoveCorpse();
     }
@@ -335,7 +340,6 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
                 UpdateWorldState(WORLD_STATE_COUNTER, QuestMinute);
                 UpdateWorldState(WORLD_STATE_ID,1);
                 Encounters[0] = data;
-                DoGlobalScriptText(SAY_INST_BEGIN, HEXLORD, instance);
             }
             break;
         case DATA_NALORAKKEVENT:
@@ -515,9 +519,25 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
                 {
                     UpdateWorldState(3104, 1);
                     UpdateWorldState(3106, QuestMinute);
-                    if(QuestMinute == 5)
-                        DoGlobalScriptText(RAND(SAY_INST_WARN_1,SAY_INST_WARN_2, SAY_INST_WARN_3, SAY_INST_WARN_4), HEXLORD, instance);
-
+                    if(QuestMinute > 5)
+                    {
+                        if(rand()%10 == 0)
+                        {
+                            if(GetData(DATA_NALORAKKEVENT) == NOT_STARTED)
+                                DoGlobalScriptText(RAND(SAY_INST_PROGRESS_4, SAY_INST_PROGRESS_5), NALORAKK, instance);
+                            else
+                                DoGlobalScriptText(RAND(SAY_INST_PROGRESS_1, SAY_INST_PROGRESS_2, SAY_INST_PROGRESS_3), HEXLORD, instance);
+                        }
+                    }
+                    else
+                    {
+                        int32 textid;
+                        if(QuestMinute = 4) textid = SAY_INST_WARN_1;
+                        if(QuestMinute = 3) textid = SAY_INST_WARN_2;
+                        if(QuestMinute = 2) textid = SAY_INST_WARN_3;
+                        if(QuestMinute = 1) textid = SAY_INST_WARN_4;
+                        DoGlobalScriptText(textid, HEXLORD, instance);
+                    }
                 }
                 else
                 {

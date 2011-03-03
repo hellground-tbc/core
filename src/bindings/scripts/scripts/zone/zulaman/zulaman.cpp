@@ -123,7 +123,6 @@ CreatureAI* GetAI_npc_forest_frog(Creature *_Creature)
 #define SPELL_SMASH             18944   // most probably wrong spell, but has cool visual
 #define SPELL_EXPLOSION         43418   // also not sure about this
 #define SPELL_ASHLI_FIREBALL    43525
-#define SPELL_FIREBALL_VISUAL   29473   // also wrong spell
 
 #define YELL_ASHLI_KILL         -1800518
 #define YELL_ASHLI_FREED        -1800519
@@ -325,7 +324,7 @@ float AshliWP[][3] = {
     {332, 1145, 6},
     {385, 1089, 6},
     {403, 1089, 6},
-    {374, 1087, 6}
+    {374, 1087, 7}
 };
 
 struct TRINITY_DLL_DECL npc_ashliAI : public ScriptedAI
@@ -349,7 +348,6 @@ struct TRINITY_DLL_DECL npc_ashliAI : public ScriptedAI
     uint32 FreeMeTimer;
     uint32 MovePoint;
     std::list<uint64> targets;
-    uint64 LastTarget;
 
     void Reset() 
     {
@@ -359,7 +357,6 @@ struct TRINITY_DLL_DECL npc_ashliAI : public ScriptedAI
         Move = false;
         Fire = false;
         BossKilled = false;
-        LastTarget = 0;
         FreeMeTimer = 0;
         targets.clear();
         for(uint8 i = 0; i<3; i++)
@@ -393,7 +390,7 @@ struct TRINITY_DLL_DECL npc_ashliAI : public ScriptedAI
             DoScriptText(YELL_ASHLI_VASE2, me);
             YellAshliVaseDone[1] = true;
         }
-        if(!YellAshliVaseDone[2] && MovePoint == 5)
+        if(!YellAshliVaseDone[2] && MovePoint == 6)
         {
             DoScriptText(YELL_ASHLI_VASE3, me);
             YellAshliVaseDone[2] = true;
@@ -437,13 +434,6 @@ struct TRINITY_DLL_DECL npc_ashliAI : public ScriptedAI
 
         if(Fire && !m_creature->hasUnitState(UNIT_STAT_CASTING))
         {
-            if(LastTarget)
-            {
-                if(Unit *unit = me->GetUnit(LastTarget))
-                    me->CastSpell(unit, SPELL_FIREBALL_VISUAL, true);
-                LastTarget = 0;
-            }
-
             Unit *target = NULL;
             if(!targets.empty())
             {
@@ -458,7 +448,6 @@ struct TRINITY_DLL_DECL npc_ashliAI : public ScriptedAI
                     DoScriptText(YELL_ASHLI_VASE1, me);
                     YellAshliVaseDone[0] = true;
                 }
-                LastTarget = target->GetGUID();
             } 
             else
             {
@@ -528,7 +517,7 @@ bool GossipHello_npc_tanzar(Player* player, Creature* _Creature)
     if(!pInstance)
         return false;
 
-    if(pInstance->GetData(DATA_HOSTAGE_ASHLI_STATE >= HOSTAGE_CHEST_UNLOCKED) )
+    if(pInstance->GetData(DATA_HOSTAGE_TANZAR_STATE) >= HOSTAGE_CHEST_UNLOCKED)
     {
         player->ADD_GOSSIP_ITEM(0, GOSSIP_TANZAR_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
         player->SEND_GOSSIP_MENU(25025, _Creature->GetGUID());
@@ -561,7 +550,7 @@ bool GossipHello_npc_harkor(Player* player, Creature* _Creature)
     if(!pInstance)
         return false;
 
-    if(pInstance->GetData(DATA_HOSTAGE_HARKOR_STATE >= HOSTAGE_CHEST_UNLOCKED) )
+    if(pInstance->GetData(DATA_HOSTAGE_HARKOR_STATE) >= HOSTAGE_CHEST_UNLOCKED )
     {
         player->ADD_GOSSIP_ITEM(0, GOSSIP_HARKOR_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
         player->SEND_GOSSIP_MENU(25028, _Creature->GetGUID());
@@ -589,7 +578,7 @@ bool GossipHello_npc_kraz(Player* player, Creature* _Creature)
     if(!pInstance)
         return false;
 
-    if(pInstance->GetData(DATA_HOSTAGE_KRAZ_STATE >= HOSTAGE_CHEST_UNLOCKED) )
+    if(pInstance->GetData(DATA_HOSTAGE_KRAZ_STATE) >= HOSTAGE_CHEST_UNLOCKED)
     {
         player->ADD_GOSSIP_ITEM(0, GOSSIP_KRAZ_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
         player->SEND_GOSSIP_MENU(25030, _Creature->GetGUID());
@@ -617,12 +606,12 @@ bool GossipHello_npc_ashli(Player* player, Creature* _Creature)
     if(!pInstance)
         return false;
 
-    if(pInstance->GetData(DATA_HOSTAGE_ASHLI_STATE & HOSTAGE_SAVED))
+    if(pInstance->GetData(DATA_HOSTAGE_ASHLI_STATE) & HOSTAGE_SAVED)
     {
         player->ADD_GOSSIP_ITEM(0, GOSSIP_ASHLI_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
         player->SEND_GOSSIP_MENU(25032, _Creature->GetGUID());
     }
-    else if(pInstance->GetData(DATA_HOSTAGE_ASHLI_STATE >= HOSTAGE_CHEST_UNLOCKED) )
+    else if(pInstance->GetData(DATA_HOSTAGE_ASHLI_STATE) >= HOSTAGE_CHEST_UNLOCKED )
     {
         player->ADD_GOSSIP_ITEM(0, GOSSIP_ASHLI_2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
         player->SEND_GOSSIP_MENU(25033, _Creature->GetGUID());
@@ -709,13 +698,28 @@ struct TRINITY_DLL_DECL npc_harrison_jones_zaAI : public npc_escortAI
             case 3:
                 DoScriptText(SAY_OPENING_ENTRANCE, m_creature);
                 break;
-           case 4:
+            case 4:
                 DoScriptText(SAY_OPEN_GATE, m_creature);
                 break;
-           case 5:
-               m_pInstance->SetData(TYPE_EVENT_RUN,SPECIAL);
-               if(Unit* Guardian = FindCreature(23597, 40, me))
-                   ((Creature*)Guardian)->GetMotionMaster()->MoveChase(me);
+            case 5:
+                m_pInstance->SetData(TYPE_EVENT_RUN,SPECIAL);
+                break;
+            case 6:
+                std::list<Creature*> trolls = DoFindAllCreaturesWithEntry(23889, 100);
+                for(std::list<Creature *>::iterator i = trolls.begin(); i != trolls.end(); i++)
+                {
+                    (*i)->AI()->DoZoneInCombat();
+                    (*i)->AddThreat(me, 1000);
+                }
+                trolls = DoFindAllCreaturesWithEntry(23597, 100);
+                for(std::list<Creature *>::iterator i = trolls.begin(); i != trolls.end(); i++)
+                {
+                    (*i)->AI()->DoZoneInCombat();
+                    (*i)->AddThreat(me, 1000);
+                }
+//                ((Creature*)Guardian)->GetMotionMaster()->MoveChase(me);
+                SetEscortPaused(true);
+                DoGlobalScriptText(SAY_INST_BEGIN, HEXLORD, me->GetMap());
                 break;
                 //TODO: Spawn group of Amani'shi Savage and make them run to entrance
                 //TODO: Add, and modify reseting of the event, reseting quote is missing
@@ -726,6 +730,7 @@ struct TRINITY_DLL_DECL npc_harrison_jones_zaAI : public npc_escortAI
     {
         ResetTimer = 600000;    // 10min for players to make an event
         m_creature->RemoveAllAuras();
+        m_creature->setActive(true);    // very important due to grid issues
     }
 
     void StartEvent(Player* pPlayer)
@@ -865,7 +870,7 @@ struct TRINITY_DLL_DECL npc_zulaman_door_triggerAI : public Scripted_NoMovementA
     {
         if(CheckTimer < diff)
         {
-            if(CountChannelingPlayers() >= 5)
+            if(CountChannelingPlayers() >= 0)
                 StoperTime += (2000+diff);
             CheckTimer = 2000;
         }

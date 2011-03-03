@@ -167,7 +167,11 @@ void ScriptedAI::DoStopAttack()
 
 void ScriptedAI::CastNextSpellIfAnyAndReady(uint32 diff)
 {
-    //clear spell list if caster isn't alive
+    // creature can't cast if lost control
+    if (m_creature->IsPolymorphed() || m_creature->hasUnitState(UNIT_STAT_LOST_CONTROL))
+        return;
+
+    // clear spell list if caster isn't alive
     if (!m_creature->isAlive())
     {
         spellList.clear();

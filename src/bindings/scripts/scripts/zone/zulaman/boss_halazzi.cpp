@@ -181,7 +181,7 @@ struct TRINITY_DLL_DECL boss_halazziAI : public ScriptedAI
             m_creature->SetMaxHealth(600000);
             m_creature->SetHealth(600000 - 150000 * TransformCount);
             FrenzyTimer = 16000;
-            SaberlashTimer = 20000;
+            SaberlashTimer = 5000;
             ShockTimer = 10000;
             TotemTimer = 12000;
             break;
@@ -240,7 +240,7 @@ struct TRINITY_DLL_DECL boss_halazziAI : public ScriptedAI
             if(SaberlashTimer < diff)
             {
                 AddSpellToCastWithScriptText(m_creature->getVictim(), SPELL_SABER_LASH, RAND(YELL_SABER_ONE, YELL_SABER_TWO));
-                SaberlashTimer = 30000;
+                SaberlashTimer = 5000 + rand() % 10000;
             }else SaberlashTimer -= diff;
 
             if(FrenzyTimer < diff)
