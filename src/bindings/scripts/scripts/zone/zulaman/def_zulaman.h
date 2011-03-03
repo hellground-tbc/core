@@ -6,6 +6,7 @@
 
 #define AKILZON         "Akil'zon"
 #define HEXLORD         "Hex Lord Malacrass"
+#define NALORAKK        "Nalorakk"
 
 enum InstanceZA
 {
@@ -24,6 +25,8 @@ enum InstanceZA
     SAY_INST_SACRIF1 = -1568076,
     SAY_INST_SACRIF2 = -1568077,
     SAY_INST_COMPLETE = -1568078,
+    SAY_INST_PROGRESS_4 = -1568014,
+    SAY_INST_PROGRESS_5 = -1568015,
 
     WORLD_STATE_ID = 3104,
     WORLD_STATE_COUNTER = 3106,
