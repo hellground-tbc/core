@@ -572,6 +572,8 @@ void Loot::FillLoot(uint32 loot_id, LootStore const& store, Player* loot_owner)
     {
         saveLootToDB(loot_owner);
         std::stringstream ss;
+        if (load)
+            ss << "Loaded loot: ";
         ss << "Player's group: " << loot_owner->GetName() << ":(" << loot_owner->GetGUIDLow() << ") "
            << "LootedItems: ";
         for (std::vector<LootItem>::iterator iter = items.begin(); iter != items.end(); ++iter)
