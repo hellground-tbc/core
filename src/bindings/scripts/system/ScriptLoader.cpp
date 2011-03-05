@@ -363,9 +363,6 @@ extern void AddSC_boss_noth();
 extern void AddSC_boss_gluth();
 extern void AddSC_boss_sapphiron();
 extern void AddSC_boss_four_horsemen();
-extern void AddSC_boss_thaddius();
-extern void AddSC_boss_feugen();
-extern void AddSC_boss_stalagg();
 extern void AddSC_instance_naxxramas();
 
 //Netherstorm
@@ -963,9 +960,6 @@ void AddScripts()
     AddSC_boss_gluth();
     AddSC_boss_sapphiron();
     AddSC_boss_four_horsemen();
-    AddSC_boss_thaddius();
-    AddSC_boss_feugen();
-    AddSC_boss_stalagg();
     AddSC_instance_naxxramas();
 
     //Netherstorm
