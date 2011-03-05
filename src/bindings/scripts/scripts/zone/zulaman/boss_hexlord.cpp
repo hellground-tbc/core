@@ -181,6 +181,9 @@ struct TRINITY_DLL_DECL boss_hexlord_addAI : public ScriptedAI
     boss_hexlord_addAI(Creature* c) : ScriptedAI(c)
     {
         pInstance = (c->GetInstanceData());
+        SpellEntry *TempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_PR_MIND_CONTROL);
+        if(TempSpell)
+            TempSpell->MaxAffectedTargets = 1;      // not sure about it. better then whole party under mc effect
     }
 
     void Reset() {}

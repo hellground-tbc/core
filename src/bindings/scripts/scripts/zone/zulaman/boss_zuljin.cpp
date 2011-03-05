@@ -337,7 +337,7 @@ struct TRINITY_DLL_DECL boss_zuljinAI : public ScriptedAI
             {
                 m_creature->GetMotionMaster()->Clear();
                 m_creature->CastSpell(m_creature, SPELL_ENERGY_STORM, true); // enemy aura
-                m_creature->CastSpell(m_creature, SPELL_SUMMON_CYCLONE, false);
+                m_creature->CastSpell(m_creature, SPELL_SUMMON_CYCLONE, true);
             }
             else
                 m_creature->AI()->AttackStart(m_creature->getVictim());

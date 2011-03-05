@@ -870,7 +870,7 @@ struct TRINITY_DLL_DECL npc_zulaman_door_triggerAI : public Scripted_NoMovementA
     {
         if(CheckTimer < diff)
         {
-            if(CountChannelingPlayers() >= 0)
+            if(CountChannelingPlayers() >= 5)
                 StoperTime += (2000+diff);
             CheckTimer = 2000;
         }
@@ -1177,9 +1177,106 @@ CreatureAI* GetAI_npc_amani_eagle(Creature *_Creature)
     return ai;
 }
 
+#define YELL_SCOUT_AGGRO            -1811003
+#define SPELL_ALERT_DRUMS           42177
+#define SPELL_SUMMON_SENTRIES       42183
+
+struct TRINITY_DLL_DECL npc_amanishi_scoutAI : public ScriptedAI
+{
+    npc_amanishi_scoutAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = c->GetInstanceData();
+    }
+
+    ScriptedInstance *pInstance;
+    uint8 Phase;
+    uint32 SummonTimer;
+    bool AggroYell;
+
+    void Reset()
+    {
+        Phase = 0;
+        AggroYell = false;
+        SummonTimer = 0;
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if(Phase == 0 && who && !me->IsFriendlyTo(who) && me->IsWithinDist(who, 30, true))
+        {
+            DoZoneInCombat();
+            Phase = 1;
+            AggroYell = true;
+            Unit *drums = FindCreature(22515, 50, me);
+            if(drums)
+                me->GetMotionMaster()->MovePoint(1, drums->GetPositionX(), drums->GetPositionY(), drums->GetPositionZ());
+        }
+    }
+
+    void JustSummoned(Creature *c)
+    {
+        c->AI()->AttackStart(m_creature->getVictim());
+    }
+
+    void MovementInform(uint32 type, uint32 id)
+    {
+        if(type == POINT_MOTION_TYPE && id == 1)
+        {
+            DoCast(me, SPELL_ALERT_DRUMS, false);
+            DoCast(me, SPELL_SUMMON_SENTRIES, true);
+            DoCast(me, SPELL_SUMMON_SENTRIES, true);
+            Phase = 2;
+            SummonTimer = 2000;
+        }
+    }
+
+    void EnterCombat(Unit *who)
+    {
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(AggroYell)
+        {
+            DoScriptText(YELL_SCOUT_AGGRO, me);
+            AggroYell = false;
+        }
+
+        if(SummonTimer)
+        {
+            Unit *drums = FindCreature(22515, 5, me);
+            if(drums)
+                me->GetMotionMaster()->MoveFollow(drums, 0, 0);
+
+            if(SummonTimer < diff)
+            {
+                DoCast(me, SPELL_ALERT_DRUMS, false);
+                DoCast(me, SPELL_SUMMON_SENTRIES, true);
+                DoCast(me, SPELL_SUMMON_SENTRIES, true);
+                SummonTimer = 2000;
+            } else
+                SummonTimer -= diff;
+        }
+
+        if(me->getThreatManager().isThreatListEmpty() && Phase == 2)
+            EnterEvadeMode();
+    }
+
+};
+
+CreatureAI* GetAI_npc_amanishi_scout(Creature *_Creature)
+{
+    return new npc_amanishi_scoutAI (_Creature);
+}
+
 void AddSC_zulaman()
 {
     Script *newscript;
+
+    newscript = new Script;
+    newscript->Name="npc_amanishi_scout";
+    newscript->GetAI = &GetAI_npc_amanishi_scout;
+    newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="npc_amanishi_warrior";
