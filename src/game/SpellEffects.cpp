@@ -567,7 +567,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                                 --combo;
                                 ++doses;
 
-                                unitTarget->RemoveSingleAuraFromStack((*itr)->GetId(), (*itr)->GetEffIndex());
+                                unitTarget->RemoveSingleAuraFromStackByCaster((*itr)->GetId(), (*itr)->GetEffIndex(), m_caster->GetGUID());
 
                                 itr = auras.begin();
                             }

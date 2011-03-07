@@ -4191,6 +4191,31 @@ void Unit::RemoveSingleAuraFromStack(uint32 spellId, uint32 effindex)
     }
 }
 
+void Unit::RemoveSingleAuraFromStackByCaster(uint32 spellId, uint32 effindex, uint64 casterGUID)
+{
+    spellEffectPair spair = spellEffectPair(spellId, effindex);
+    for(AuraMap::iterator iter = m_Auras.lower_bound(spair); iter != m_Auras.upper_bound(spair); iter++)
+    {
+        if(iter->second->GetCasterGUID() == casterGUID)
+        {
+            if (iter->second->GetStackAmount() > 1)
+            {
+                // reapply modifier with reduced stack amount
+                iter->second->ApplyModifier(false,true);
+                iter->second->SetStackAmount(iter->second->GetStackAmount()-1);
+                iter->second->ApplyModifier(true,true);
+
+                if (GetTypeId() == TYPEID_UNIT && IsAIEnabled)
+                    ((Creature *)this)->AI()->OnAuraRemove(iter->second, true);
+
+                iter->second->UpdateSlotCounterAndDuration();
+            } else
+                RemoveAura(iter);
+            break;
+        }
+    }
+}
+
 void Unit::RemoveAurasDueToSpell(uint32 spellId, Aura* except)
 {
     for (int i = 0; i < 3; ++i)

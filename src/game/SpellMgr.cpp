@@ -1801,14 +1801,18 @@ bool SpellMgr::IsSpecialStackCase(SpellEntry const *spellInfo_1, SpellEntry cons
     if (spellId_1 == 33649 && spellId_2 == 20572)
         return true;
 
-    // Sextant of Unstable Currents, Shiffar's Nexus-Hornand and Band of the Ethernal Sage stacks with each other
-    if ((spellId_1 == 38348 || spellId_1 == 34321 || spellId_1 == 35084) &&
-            (spellId_2 == 38348 || spellId_2 == 34321 || spellId_2 == 35084) &&
+    // Sextant of Unstable Currents, Shiffar's Nexus-Hornand, Scryer's Bloodgem and Band of the Ethernal Sage stacks with each other
+    if ((spellId_1 == 38348 || spellId_1 == 34321 || spellId_1 == 35084 || spellId_1 == 35337) &&
+            (spellId_2 == 38348 || spellId_2 == 34321 || spellId_2 == 35084 || spellId_2 == 35337) &&
             (spellId_1 != spellId_2))
         return true;
 
     // Warlord's Rage for Warlord Kalithresh event in Steamvault
     if (spellId_1 == 36453 && spellId_2 == 37076)
+        return true;
+
+    // Scroll of Agility and Idol of Terror
+    if (spellId_1 == 43738 && (spellId_2 == 8115 || spellId_2 == 8116 || spellId_2 == 8117 || spellId_2 == 12174 || spellId_2 == 33077))
         return true;
 
     if (recur)

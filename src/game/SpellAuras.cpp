@@ -4798,7 +4798,7 @@ void Aura::HandlePeriodicHeal(bool apply, bool Real)
     }
 
     // Hex Lord Malacrass Lifebloom
-    if(m_spellProto->Id = 43421 && Real && !apply && (m_removeMode == AURA_REMOVE_BY_DISPEL || m_removeMode == AURA_REMOVE_BY_EXPIRE))
+    if(m_spellProto->Id == 43421 && Real && !apply && (m_removeMode == AURA_REMOVE_BY_DISPEL || m_removeMode == AURA_REMOVE_BY_EXPIRE))
         m_target->CastSpell(m_target, 43422, true, 0, 0, 0);
 }
 
