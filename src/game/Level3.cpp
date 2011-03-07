@@ -6734,7 +6734,36 @@ bool ChatHandler::HandleCastSelfCommand(const char* args)
 
     return true;
 }
+bool ChatHandler::HandleCastNullCommand(const char* args)
+{
+    if (!*args)
+        return false;
 
+    Unit* target = getSelectedUnit();
+
+    if (!target)
+        target = m_session->GetPlayer();
+
+    // number or [name] Shift-click form |color|Hspell:spell_id|h[name]|h|r or Htalent form
+    uint32 spell = extractSpellIdFromLink((char*)args);
+    if (!spell)
+        return false;
+
+    SpellEntry const* spellInfo = sSpellStore.LookupEntry(spell);
+    if (!spellInfo)
+        return false;
+
+    if (!SpellMgr::IsSpellValid(spellInfo,m_session->GetPlayer()))
+    {
+        PSendSysMessage(LANG_COMMAND_SPELL_BROKEN,spell);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    target->CastSpell((Unit*)NULL,spell,false);
+
+    return true;
+}
 std::string GetTimeString(uint32 time)
 {
     uint16 days = time / DAY, hours = (time % DAY) / HOUR, minute = (time % HOUR) / MINUTE;

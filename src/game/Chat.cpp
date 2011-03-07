@@ -404,6 +404,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "back",           SEC_ADMINISTRATOR,  false, &ChatHandler::HandleCastBackCommand,            "", NULL },
         { "dist",           SEC_ADMINISTRATOR,  false, &ChatHandler::HandleCastDistCommand,            "", NULL },
         { "self",           SEC_ADMINISTRATOR,  false, &ChatHandler::HandleCastSelfCommand,            "", NULL },
+        { "null",           SEC_ADMINISTRATOR,  false, &ChatHandler::HandleCastNullCommand,            "", NULL },
         { "target",         SEC_ADMINISTRATOR,  false, &ChatHandler::HandleCastTargetCommand,          "", NULL },
         { "",               SEC_ADMINISTRATOR,  false, &ChatHandler::HandleCastCommand,                "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
