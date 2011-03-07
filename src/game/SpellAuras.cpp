@@ -2753,7 +2753,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     {
                         // final heal
                         if (m_target->IsInWorld())
-                            m_target->CastCustomSpell(m_target,33778,&m_modifier.m_amount,NULL,NULL,true,NULL,this,GetCasterGUID());
+                            m_target->CastCustomSpell(m_target,33778,&m_modifier.m_amount,NULL,NULL,true,NULL,this,NULL); // threat for lifebloom target //GetCasterGUID());
                     }
                 }
                 return;
@@ -4796,6 +4796,10 @@ void Aura::HandlePeriodicHeal(bool apply, bool Real)
             }
         }
     }
+
+    // Hex Lord Malacrass Lifebloom
+    if(m_spellProto->Id = 43421 && Real && !apply && (m_removeMode == AURA_REMOVE_BY_DISPEL || m_removeMode == AURA_REMOVE_BY_EXPIRE))
+        m_target->CastSpell(m_target, 43422, true, 0, 0, 0);
 }
 
 void Aura::HandlePeriodicDamage(bool apply, bool Real)

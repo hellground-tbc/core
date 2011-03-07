@@ -311,6 +311,10 @@ struct TRINITY_DLL_DECL mob_soaring_eagleAI : public ScriptedAI
             canMoveRandom = false;
         }
     }
+/*
+    void AttackStart(Unit *)
+    {
+    }*/
 
     void UpdateAI(const uint32 diff)
     {

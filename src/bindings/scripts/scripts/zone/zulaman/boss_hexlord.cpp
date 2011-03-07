@@ -56,9 +56,9 @@ EndScriptData */
 #define SPELL_HU_SNAKE_TRAP     43449
 
 //Mage
-#define SPELL_MG_FIREBALL       41383
+#define SPELL_MG_FIREBALL       41383 // fireball is probably obsolete
 #define SPELL_MG_FROSTBOLT      43428
-#define SPELL_MG_FROST_NOVA     43426 // ???
+#define SPELL_MG_FROST_NOVA     43426 
 #define SPELL_MG_ICE_LANCE      43427
 
 //Paladin
@@ -161,7 +161,7 @@ static PlayerAbilityStruct PlayerAbility[][3] =
     {SPELL_SH_HEALING_WAVE, ABILITY_TARGET_HEAL, 1000, 10000},
     {SPELL_SH_CHAIN_LIGHT, ABILITY_TARGET_ENEMY, 3000, 8000}},
     // 8 mage
-    {{SPELL_MG_FIREBALL, ABILITY_TARGET_ENEMY, 1000, 5000},
+    {{SPELL_MG_FROST_NOVA, ABILITY_TARGET_ENEMY, 5000, 15000},
     {SPELL_MG_FROSTBOLT, ABILITY_TARGET_ENEMY, 2000, 5000},
     {SPELL_MG_ICE_LANCE, ABILITY_TARGET_SPECIAL, 3000, 2000}},
     // 9 warlock
@@ -222,6 +222,10 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
         wLoc.coord_y = 1035.45;
         wLoc.coord_z = 29.4481;
         wLoc.mapid = c->GetMapId();
+
+        SpellEntry *temp = (SpellEntry *)(GetSpellStore()->LookupEntry(SPELL_SPIRIT_BOLTS));
+        if(temp)
+            temp->ChannelInterruptFlags = 0;
     }
 
     ScriptedInstance *pInstance;

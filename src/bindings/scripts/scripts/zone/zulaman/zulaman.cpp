@@ -1202,7 +1202,7 @@ struct TRINITY_DLL_DECL npc_amanishi_scoutAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit *who)
     {
-        if(Phase == 0 && who && !me->IsFriendlyTo(who) && me->IsWithinDist(who, 30, true))
+        if(Phase == 0 && who && !me->IsFriendlyTo(who) && me->IsWithinDist(who, 20, true))
         {
             DoZoneInCombat();
             Phase = 1;
