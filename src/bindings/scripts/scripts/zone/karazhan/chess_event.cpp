@@ -3379,7 +3379,7 @@ int boss_MedivhAI::CalculatePriority(uint64 piece, uint64 trigger)
                 {
                     if (tmpIP > tmpIT)
                         tmpPrior += MOVE_BACK_PRIOR_MOD;
-                    else if (tmpIP == tmpIT && tmpJP != tmpJT)
+                    else if (/*tmpIP == tmpIT && */tmpJP != tmpJT)
                         tmpPrior += MOVE_STRAFE_PRIOR_MOD;
                     else
                         tmpPrior += MOVE_DEFAULT_PRIOR_MOD;
@@ -3390,7 +3390,7 @@ int boss_MedivhAI::CalculatePriority(uint64 piece, uint64 trigger)
                     {
                         if (tmpIP < tmpIT)
                             tmpPrior += MOVE_BACK_PRIOR_MOD;
-                        else if (tmpIP == tmpIT && tmpJP != tmpJT)
+                        else if (/*tmpIP == tmpIT && */tmpJP != tmpJT)
                             tmpPrior += MOVE_STRAFE_PRIOR_MOD;
                         else
                             tmpPrior += MOVE_DEFAULT_PRIOR_MOD;
@@ -3401,7 +3401,7 @@ int boss_MedivhAI::CalculatePriority(uint64 piece, uint64 trigger)
                         {
                             if (tmpIP > tmpIT)
                                 tmpPrior += MOVE_BACK_PRIOR_MOD/2;
-                            else if (tmpIP == tmpIT && tmpJP != tmpJT)
+                            else if (/*tmpIP == tmpIT && */tmpJP != tmpJT)
                                 tmpPrior += MOVE_STRAFE_PRIOR_MOD/2;
                             else
                                 tmpPrior += MOVE_DEFAULT_PRIOR_MOD;
@@ -3412,7 +3412,7 @@ int boss_MedivhAI::CalculatePriority(uint64 piece, uint64 trigger)
                             {
                                 if (tmpIP > tmpIT)
                                     tmpPrior += MOVE_BACK_PRIOR_MOD/3;
-                                else if (tmpIP == tmpIT && tmpJP != tmpJT)
+                                else if (/*tmpIP == tmpIT && */tmpJP != tmpJT)
                                     tmpPrior += MOVE_STRAFE_PRIOR_MOD/2;
                                 else
                                     tmpPrior += MOVE_DEFAULT_PRIOR_MOD;
@@ -3423,44 +3423,44 @@ int boss_MedivhAI::CalculatePriority(uint64 piece, uint64 trigger)
             }
             else
             {
-                if (tmpIP < 2)
+                if (tmpIP > 5)
                 {
                     if (tmpIP < tmpIT)
                         tmpPrior += MOVE_BACK_PRIOR_MOD;
-                    else if (tmpIP == tmpIT && tmpJP != tmpJT)
+                    else if (/*tmpIP == tmpIT && */tmpJP != tmpJT)
                         tmpPrior += MOVE_STRAFE_PRIOR_MOD;
                     else
                         tmpPrior += MOVE_DEFAULT_PRIOR_MOD;
                 }
                 else
                 {
-                    if (tmpIP > 5)
+                    if (tmpIP < 2)
                     {
                         if (tmpIP > tmpIT)
                             tmpPrior += MOVE_BACK_PRIOR_MOD;
-                        else if (tmpIP == tmpIT && tmpJP != tmpJT)
+                        else if (/*tmpIP == tmpIT && */tmpJP != tmpJT)
                             tmpPrior += MOVE_STRAFE_PRIOR_MOD;
                         else
                             tmpPrior += MOVE_DEFAULT_PRIOR_MOD;
                     }
                     else
                     {
-                        if (tmpIP < 4)
+                        if (tmpIP > 3)
                         {
                             if (tmpIP < tmpIT)
                                 tmpPrior += MOVE_BACK_PRIOR_MOD/2;
-                            else if (tmpIP == tmpIT && tmpJP != tmpJT)
+                            else if (/*tmpIP == tmpIT && */tmpJP != tmpJT)
                                 tmpPrior += MOVE_STRAFE_PRIOR_MOD/2;
                             else
                                 tmpPrior += MOVE_DEFAULT_PRIOR_MOD;
                         }
                         else
                         {
-                            if (tmpIP > 3)
+                            if (tmpIP < 4)
                             {
                                 if (tmpIP > tmpIT)
                                     tmpPrior += MOVE_BACK_PRIOR_MOD/2;
-                                else if (tmpIP == tmpIT && tmpJP != tmpJT)
+                                else if (/*tmpIP == tmpIT && */tmpJP != tmpJT)
                                     tmpPrior += MOVE_STRAFE_PRIOR_MOD/2;
                                 else
                                     tmpPrior += MOVE_DEFAULT_PRIOR_MOD;
