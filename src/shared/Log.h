@@ -86,7 +86,7 @@ class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ACE_
             fclose(specialLogFile);
         specialLogFile = NULL;
 
-		if (mailLogFile != NULL)
+        if (mailLogFile != NULL)
             fclose(mailLogFile);
         mailLogFile = NULL;
 
@@ -131,7 +131,7 @@ class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ACE_
                                                             // any log level
         void outChar( const char * str, ... )        ATTR_PRINTF(2,3);
         void outSpecial( const char * str, ... )     ATTR_PRINTF(2,3);
-		void outMail( const char * str, ... )     ATTR_PRINTF(2,3);
+        void outMail( const char * str, ... )     ATTR_PRINTF(2,3);
                                                             // any log level
         void outCharDump( const char * str, uint32 account_id, uint32 guid, const char * name );
         void outArena( const char * str, ... )       ATTR_PRINTF(2,3);
@@ -163,7 +163,7 @@ class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ACE_
         FILE* cheatLogFile;
         FILE* acLogFile;
         FILE* specialLogFile;
-		FILE* mailLogFile;
+        FILE* mailLogFile;
         FILE* bossLogFile;
 
         // log/console control

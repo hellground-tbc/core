@@ -86,28 +86,28 @@ struct TRINITY_DLL_DECL boss_thaddiusAI : public ScriptedAI
 
     ScriptedInstance * pInstance;
     uint32 Enrage_Timer;
-    uint32 Scream_Timer;	//random screams in Naxx while Thaddius is alive
+    uint32 Scream_Timer;    //random screams in Naxx while Thaddius is alive
     uint32 PolarityShift_Timer;
     uint32 Ball_Timer;
     uint32 Chain_Timer;
-    uint32 Free_Timer;	//breaking free after killing F&S
+    uint32 Free_Timer;    //breaking free after killing F&S
 
     bool stunned;
     bool yelled;
 
     void Reset()
     {
-        //what an ugly script! But it's working						
+        //what an ugly script! But it's working
         //me->GetCreature(pInstance->GetData64(2))->Respawn();
         //me->GetCreature(pInstance->GetData64(2))->AI()->EnterEvadeMode();
         //me->GetCreature(pInstance->GetData64(3))->Respawn();
         //me->GetCreature(pInstance->GetData64(3))->AI()->EnterEvadeMode();
-		//UP - Crash mode off
+        //UP - Crash mode off
         Scream_Timer = 10000;
         PolarityShift_Timer = 30000;                        //30 secs
         Ball_Timer = 3000;                                  //only when there is noone in melee range
         Chain_Timer = 15000;                                //10-20 secs, could be wrong
-        Enrage_Timer = 300000;                              //5 mins  
+        Enrage_Timer = 300000;                              //5 mins
         Free_Timer = 20000;                                 //20 secs
         stunned = true;
         yelled = false;
@@ -118,7 +118,7 @@ struct TRINITY_DLL_DECL boss_thaddiusAI : public ScriptedAI
     void KilledUnit(Unit* Victim)
     {
         if (rand()%2)
-            return;  
+            return;
         DoScriptText(SAY_SLAY, m_creature);
     }
 
@@ -132,67 +132,67 @@ struct TRINITY_DLL_DECL boss_thaddiusAI : public ScriptedAI
     void EnterCombat(Unit *who)
     {
         /*if (stunned)
-		{
+        {
         me->CastSpell(me, 28160, true);//selfstun visual, placed here to avoid visual bugs
-		me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         DoScriptText(SAY_GREET, m_creature);
-		}*/
+        }*/
         if (pInstance)
             pInstance->SetData(DATA_THADDIUS, IN_PROGRESS);
         //temp
-		//me->RemoveAurasDueToSpell(28160);
+        //me->RemoveAurasDueToSpell(28160);
         //me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
     }
 
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim())
-        {	
+        {
             return;
         }
 
-		/*if (!me->GetCreature(pInstance->GetData64(2))->isAlive() && !me->GetCreature(pInstance->GetData64(3))->isAlive() && Free_Timer>=0)
-			Free_Timer-=diff;
+        /*if (!me->GetCreature(pInstance->GetData64(2))->isAlive() && !me->GetCreature(pInstance->GetData64(3))->isAlive() && Free_Timer>=0)
+            Free_Timer-=diff;
 
-		if (Free_Timer<=0)
-		{
-			stunned = false;
-			me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-			me->RemoveAurasDueToSpell(28160);
-		}*/
+        if (Free_Timer<=0)
+        {
+            stunned = false;
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            me->RemoveAurasDueToSpell(28160);
+        }*/
 
-		//if (!stunned)
-		//{
-			if  (!yelled)
-			{
-				DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), m_creature);
-				yelled=true;
-			}
-			if (Enrage_Timer < diff)
-			{
-				DoCast(m_creature, SPELL_BERSERK);
-				Enrage_Timer = 300000;
-			}
-			else Enrage_Timer -= diff;
+        //if (!stunned)
+        //{
+            if  (!yelled)
+            {
+                DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), m_creature);
+                yelled=true;
+            }
+            if (Enrage_Timer < diff)
+            {
+                DoCast(m_creature, SPELL_BERSERK);
+                Enrage_Timer = 300000;
+            }
+            else Enrage_Timer -= diff;
 
-			if (Chain_Timer < diff)
-			{
-				if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
-				{
-					DoCast(target, SPELL_CHAIN_LIGHTNING);
-					Chain_Timer = urand(10000, 20000);
-				}
-			}
-			else Chain_Timer -= diff;
+            if (Chain_Timer < diff)
+            {
+                if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
+                {
+                    DoCast(target, SPELL_CHAIN_LIGHTNING);
+                    Chain_Timer = urand(10000, 20000);
+                }
+            }
+            else Chain_Timer -= diff;
 
-			if (PolarityShift_Timer < diff)
-			{
-				DoCast(m_creature, 28089);
-				PolarityShift_Timer = 30000;
-			}
-			else PolarityShift_Timer -= diff;
-		//}
-		
+            if (PolarityShift_Timer < diff)
+            {
+                DoCast(m_creature, 28089);
+                PolarityShift_Timer = 30000;
+            }
+            else PolarityShift_Timer -= diff;
+        //}
+
         //Zonewide scream, while he is still alive
         if (Scream_Timer < diff)
             {
@@ -213,7 +213,7 @@ struct TRINITY_DLL_DECL boss_thaddiusAI : public ScriptedAI
                 Scream_Timer = 90000 + (rand()% 210000);
                 //shame, it only works, while he is in combat, when it should work as long as he is alive
             }
-		else Scream_Timer -= diff;
+        else Scream_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }
@@ -267,13 +267,13 @@ struct TRINITY_DLL_DECL boss_feugenAI : public ScriptedAI
         if (!UpdateVictim())
             return;
         if (Switch_Timer < diff)
-        {			
+        {
             //m_creature->getVictim()->KnockBackFrom(m_creature->getVictim(), -25,25);
             Switch_Timer = 20000;
         }
         else Switch_Timer -= diff;
-		
-		
+
+
         DoMeleeAttackIfReady();
     }
 };
@@ -290,8 +290,8 @@ struct TRINITY_DLL_DECL boss_stalaggAI : public ScriptedAI
 
     void Reset()
     {
-		Rez_Timer = 5000;
-		Switch_Timer = 20000;
+        Rez_Timer = 5000;
+        Switch_Timer = 20000;
     }
 
     void KilledUnit(Unit* Victim)
@@ -328,7 +328,7 @@ struct TRINITY_DLL_DECL boss_stalaggAI : public ScriptedAI
             Switch_Timer = 20000;
         }
         else Switch_Timer -= diff;
-		
+
         DoMeleeAttackIfReady();
     }
 };
