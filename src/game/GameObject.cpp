@@ -1361,10 +1361,9 @@ void GameObject::Use(Unit* user)
     SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
     if (!spellInfo)
     {
-        if (user->GetTypeId()!=TYPEID_PLAYER || !sOutdoorPvPMgr.HandleCustomSpell((Player*)user,spellId,this))
-            sLog.outError("WORLD: unknown spell id %u at use action for gameobject (Entry: %u GoType: %u)", spellId,GetEntry(),GetGoType());
-        else
-            sLog.outDebug("WORLD: %u non-dbc spell was handled by OutdoorPvP", spellId);
+        if (user->GetTypeId() == TYPEID_PLAYER && !sOutdoorPvPMgr.HandleCustomSpell((Player*)user,spellId,this))
+            HandleNonDbcSpell(spellId, (Player*)user);
+
         return;
     }
 
@@ -1442,4 +1441,27 @@ float GameObject::GetObjectBoundingRadius() const
         return fabs(dispEntry->unknown12) * GetGOInfo()->size;
 
     return DEFAULT_WORLD_OBJECT_SIZE;
+}
+
+void GameObject::HandleNonDbcSpell(uint32 spellId, Player* pUser)
+{
+    switch(spellId)
+    {
+        case 37639: // Nether Drake Egg
+        case 37264: // Power Converter
+        {
+            uint32 entry = spellId == 37639 ? 20021 : 21729;
+
+            float x, y, z;
+            pUser->GetClosePoint(x, y, z, 0.0f, 3.0f, frand(0, 2*M_PI));
+            if (Creature *pSummon = pUser->SummonCreature(entry, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000))
+                pSummon->AI()->AttackStart(pUser);
+
+            break;
+        }
+
+        default:
+            sLog.outDebug("Gameobject: %s, %u type: %u. casted non-handled and non-existing spell: %u", GetName(), GetEntry(), GetGoType(), spellId);
+            break;
+    }
 }

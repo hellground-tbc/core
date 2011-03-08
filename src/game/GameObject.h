@@ -636,10 +636,11 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
         
         GameObjectInfo const* m_goInfo;
         GameObjectData const* m_goData;
+
+        void HandleNonDbcSpell(uint32 spellId, Player* pUser);
     private:
         void SwitchDoorOrButton(bool activate, bool alternative = false);
 
         GridReference<GameObject> m_gridRef;
 };
 #endif
-
