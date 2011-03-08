@@ -95,7 +95,7 @@ EndScriptData */
 #define attackCooldown          urand(2000, 4000)
 #define SHARED_COOLDOWN         5000
 
-#define ADD_PIECE_TO_MOVE_TIMER urand(10000, 15000);
+#define ADD_PIECE_TO_MOVE_TIMER urand(2000, 5000);
 
 #define ORI_N           0.656777
 #define ORI_E           5.391155
@@ -104,8 +104,8 @@ EndScriptData */
 
 #define CHESS_DEBUG_INFO                            1
 //#define CHESS_EVENT_DISSABLE_MEDIVH_PIECES_MOVEMENT 1
-#define CHESS_EVENT_DISSABLE_MEDIVH_PIECES_SPELLS   1
-#define CHESS_EVENT_DISSABLE_MELEE                  1
+//#define CHESS_EVENT_DISSABLE_MEDIVH_PIECES_SPELLS   1
+//#define CHESS_EVENT_DISSABLE_MELEE                  1
 //#define CHESS_EVENT_DISSABLE_FACING                 1
 
 enum SCRIPTTEXTs
@@ -421,8 +421,6 @@ private:
     uint32 ability2ID;
     uint32 moveID;
 
-    //void MoveInLineOfSight(Unit *who);
-
 public:
     bool InGame;
 
@@ -517,14 +515,6 @@ public:
     bool IsHealer(Creature * piece);
 
     void CheckChangeFacing(uint64 piece, int i = -1, int j = -1);
-
-    //teleport
-
-    void TeleportPlayer(Player * player);           //teleport player to tpLoc
-    void TeleportPlayer(uint64 player);
-    void TeleportPlayers();                         //teleport in game players to tpLoc
-    void AddPlayerToTeleportList(Player * player);
-    void TeleportListedPlayers();
 
     //event
 
