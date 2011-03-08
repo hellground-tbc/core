@@ -364,6 +364,7 @@ GmLogPerAccount = 0
 ArenaLogFile = ""
 CheatLogFile = "cheat.log"
 ACLogFile = "AC.log"
+mailLogFile = "sendmail.log"
 LogColors = ""
 
 IrcParser = "parser.trc"
