@@ -88,7 +88,8 @@ uint32 instance_karazhan::GetData(uint32 identifier)
         case DATA_CHESS_EVENT:            return Encounters[9];
         case DATA_MALCHEZZAR_EVENT:       return Encounters[10];
         case DATA_NIGHTBANE_EVENT:        return Encounters[11];
-        case CHESS_EVENT_TEAM:            return Encounters[12];
+        case DATA_DUST_COVERED_CHEST:     return Encounters[12];
+        case CHESS_EVENT_TEAM:            return Encounters[13];
         case DATA_OPERA_PERFORMANCE:      return OperaEvent;
         case DATA_OPERA_OZ_DEATHCOUNT:    return OzDeathCount;
         case DATA_IMAGE_OF_MEDIVH:        return ImageGUID;
@@ -261,8 +262,7 @@ void instance_karazhan::SetData(uint32 type, uint32 data)
             Encounters[9] = data;
             break;
         case CHESS_EVENT_TEAM:
-            if (Encounters[13] != DONE)
-                Encounters[13] = data;
+            Encounters[13] = data;
             break;
         case DATA_DUST_COVERED_CHEST:
             if (Encounters[12] != DONE)

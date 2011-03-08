@@ -9,7 +9,6 @@ SDCategory: Karazhan
 TODO:
  - Implement Medivhs cheats
  - Fix spells (Game in session, Rain of Fire, Poison Cloud (it's all ? ))
- - Upgrade chesspiece AI for spells use
 EndScriptData */
 
 #include "precompiled.h"
@@ -79,6 +78,8 @@ EndScriptData */
 #define MOVE_DEFAULT_PRIOR_MOD          25
 
 #define ABILITY_CHANCE_MAX      100
+#define HEALING_ABILITY_CHANCE  75
+#define NORMAL_ABILITY_CHANCE   50
 #define ABILITY_1_CHANCE_MIN    25
 #define ABILITY_1_CHANCE_MAX    66
 #define ABILITY_2_CHANCE_MIN    25
@@ -387,6 +388,7 @@ public:
     void SpellHit(Unit *caster,const SpellEntry *spell);
 
     void MakeMove();
+    void RemoveFromMove(uint64 piece);
 
     void UpdateAI(const uint32 diff);
 };
@@ -431,6 +433,9 @@ public:
     void EnterEvadeMode();
 
     void SetSpellsAndCooldowns();
+    bool IsOnSelfSpell(uint32 spell);       // check if spell can be only casted on self (like absorb)
+    bool IsHealingSpell(uint32 spell);
+    bool IsNullTargetSpell(uint32 spell);
 
     void Reset();
 
@@ -514,11 +519,13 @@ public:
     bool IsKing(Creature * piece);
     bool IsHealer(Creature * piece);
 
+    bool IsHealingSpell(uint32 spell);
+    bool Heal(uint32 spell, uint64 guid);   // if isn't healing spell or creature isn't in full hp
+
     void CheckChangeFacing(uint64 piece, int i = -1, int j = -1);
 
     //event
 
-    void ApplyDebuffsOnRaidMembers();
     void PrepareBoardForEvent();
     void StartMiniEvent();
     void StartEvent();
@@ -541,7 +548,6 @@ public:
     void RemoveFromMoveList(uint64 unit);
     Creature * FindTrigger(uint64 piece);               //find trigger where piece actually should be
     uint64 FindTriggerGUID(uint64 piece);
-    //void MakeMoves();
     int GetMoveRange(uint64 piece);
     int GetMoveRange(Unit * piece);
     uint32 GetMoveSpell(uint64 piece);
@@ -555,13 +561,12 @@ public:
 
     int GetCountOfEnemyInMelee(uint64 piece, bool strafe = false);
     int GetCountOfPiecesInRange(uint64 trigger, int range, bool friendly);
-    int GetLifePriority (uint64 piece);
-    int GetAttackPriority (uint64 piece);
+    int GetLifePriority(uint64 piece);
+    int GetAttackPriority(uint64 piece);
 
     //target
 
     int GetAbilityRange(uint32 spell);      // return custom ability range <-- needed for target selection
-    bool IsOnSelfSpell(uint32 spell);       // check if spell can be only casted on self (like absorb)
     bool IsPositive(uint32 spell);          // check if spell is positive <-- if true then select friendly target
     uint64 GetSpellTarget(uint64 caster, uint32 spell);
     uint64 GetMeleeTarget(uint64 piece);

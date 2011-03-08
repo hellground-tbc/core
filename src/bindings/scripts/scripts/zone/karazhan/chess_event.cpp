@@ -108,6 +108,16 @@ void move_triggerAI::MakeMove()
     unitToMove = 0;
 }
 
+void move_triggerAI::RemoveFromMove(uint64 piece)
+{
+    if (unitToMove == piece)
+    {
+        pieceStance = PIECE_NONE;
+        unitToMove = 0;
+        moveTimer = 3000;
+    }
+}
+
 void move_triggerAI::UpdateAI(const uint32 diff)
 {
     if (pInstance->GetData(DATA_CHESS_EVENT) != IN_PROGRESS)
@@ -299,6 +309,81 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
     attackTimer = attackCooldown;
 }
 
+bool npc_chesspieceAI::IsOnSelfSpell(uint32 spell)
+{
+    #ifdef CHESS_DEBUG_INFO
+    printf("\n Wywolanie npc_chesspieceAI::IsOnSelfSpell(uint32 spell = %u)", spell);
+    #endif
+
+    switch (spell)
+    {
+        case SPELL_KING_H_2:
+        case SPELL_KING_A_2:
+        case SPELL_ROOK_H_2:
+        case SPELL_ROOK_A_2:
+        case SPELL_PAWN_H_2:
+        case SPELL_PAWN_A_2:
+            return true;
+
+        default:
+            return false;
+    }
+
+    return false;
+}
+
+bool npc_chesspieceAI::IsHealingSpell(uint32 spell)
+{
+    #ifdef CHESS_DEBUG_INFO
+    printf("\n Wywolanie IsHealingSpell(uint32 spell = %u)", spell);
+    #endif
+
+    switch (spell)
+    {
+        case SPELL_BISHOP_A_1:
+        case SPELL_BISHOP_H_1:
+            return true;
+
+        default:
+            return false;
+    }
+
+    return false;
+}
+
+bool npc_chesspieceAI::IsNullTargetSpell(uint32 spell)
+{
+    #ifdef CHESS_DEBUG_INFO
+    printf("\n Wywolanie IsHealingSpell(uint32 spell = %u)", spell);
+    #endif
+
+    switch (spell)
+    {
+        case SPELL_KING_H_1:
+        case SPELL_KING_A_1:
+        case SPELL_KNIGHT_H_1:
+        case SPELL_KNIGHT_A_1:
+        case SPELL_ROOK_H_1:
+        case SPELL_ROOK_A_1:
+        case SPELL_PAWN_H_1:
+        case SPELL_PAWN_A_1:
+        case SPELL_KING_H_2:
+        case SPELL_KING_A_2:
+        case SPELL_BISHOP_H_2:
+        case SPELL_BISHOP_A_2:
+        case SPELL_KNIGHT_H_2:
+        case SPELL_KNIGHT_A_2:
+        case SPELL_ROOK_H_2:
+        case SPELL_ROOK_A_2:
+            return true;
+
+        default:
+            return false;
+    }
+
+    return false;
+}
+
 void npc_chesspieceAI::Reset()
 {
     #ifdef CHESS_DEBUG_INFO
@@ -418,70 +503,85 @@ void npc_chesspieceAI::UpdateAI(const uint32 diff)
        (me->getFaction() == H_FACTION && pInstance->GetData(CHESS_EVENT_TEAM) == ALLIANCE))
     {
         #ifndef CHESS_EVENT_DISSABLE_MEDIVH_PIECES_SPELLS
-        bool ab1 = false, ab2 = false;
+        uint64 ab1 = 0;
+        bool ab1Self = false;
+        uint64 ab2 = 0;
+        bool ab2Self = false;
 
         if (ability1Timer <= diff)
         {
-            if (urand(0, ABILITY_CHANCE_MAX) > ability1Chance)
-                ab1 = true;
+            Creature * medivh = m_creature->GetCreature(MedivhGUID);
+            if (medivh && urand(0, ABILITY_CHANCE_MAX) < ability1Chance)
+            {
+                if (IsOnSelfSpell(ability1ID))
+                {
+                    ab1 = me->GetGUID();
+                    ab1Self = true;
+                }
+                else
+                    ab1 = ((boss_MedivhAI*)medivh->AI())->GetSpellTarget(me->GetGUID(), ability1ID);
+            }
             else
-                ability1Timer = nextTryTimer;
+                ability1Timer = urand(500, 5000);
         }
         else
             ability1Timer -= diff;
 
         if (ability2Timer <= diff)
         {
-            if (urand(0, ABILITY_CHANCE_MAX) > ability2Chance)
-                ab2 = true;
+            Creature * medivh = m_creature->GetCreature(MedivhGUID);
+            if (medivh && urand(0, ABILITY_CHANCE_MAX) < ability2Chance)
+            {
+                if (IsOnSelfSpell(ability2ID))
+                {
+                    ab2 = me->GetGUID();
+                    ab2Self = true;
+                }
+                else
+                    ab2 = ((boss_MedivhAI*)medivh->AI())->GetSpellTarget(me->GetGUID(), ability2ID);
+            }
             else
-                ability2Timer = nextTryTimer;
+                ability2Timer = urand(500, 5000);
         }
         else
             ability2Timer -= diff;
 
+
         if (ab1 && ab2)
         {
-            if (urand(0, RAND_MAX_VAL) < RAND_MAX_VAL/2)
-                ab2 = false;
+            if (urand(0, ABILITY_CHANCE_MAX) < (IsHealingSpell(ab1) ? HEALING_ABILITY_CHANCE : NORMAL_ABILITY_CHANCE))
+                ab2 = 0;
             else
-                ab1 = false;
+                ab1 = 0;
         }
 
         if (ab1)
         {
-            Creature * medivh = m_creature->GetCreature(MedivhGUID);
-            if (!medivh)
-                return;
-
-            uint64 victim = ((boss_MedivhAI*)medivh->AI())->GetSpellTarget(m_creature->GetGUID(), ability1ID);
-
-            if (victim)
+            if (IsNullTargetSpell(ability1ID))
+                AddSpellToCast((Unit*)NULL, ability1ID);
+            else
             {
-                Unit * uVictim = m_creature->GetUnit(*m_creature, victim);
-                AddSpellToCast(uVictim, ability1ID);
+                Unit * victim = me->GetUnit(ab1);
+                if (victim)
+                    AddSpellToCast(victim, ability1ID);
             }
 
             ability1Timer = ability1Cooldown;
-            if (ability2Timer < SHARED_COOLDOWN)
-                ability2Timer = SHARED_COOLDOWN;
+            ability2Timer = SHARED_COOLDOWN;
         }
         else if (ab2)
         {
-            Creature * medivh = m_creature->GetCreature(MedivhGUID);
-            if (!medivh)
-                return;
-
-            uint64 victim = ((boss_MedivhAI*)medivh->AI())->GetSpellTarget(m_creature->GetGUID(), ability2ID);
-            if (victim)
+            if (IsNullTargetSpell(ability2ID))
+                AddSpellToCast((Unit*)NULL, ability2ID);
+            else
             {
-                Unit * uVictim = m_creature->GetUnit(*m_creature, victim);
-                AddSpellToCast(uVictim, ability2ID);
+                Unit * victim = me->GetUnit(ab2);
+                if (victim)
+                    AddSpellToCast(victim, ability2ID);
             }
 
-            ability2Timer = ability2Cooldown;
-            if (ability1Timer < SHARED_COOLDOWN)
-                ability1Timer = SHARED_COOLDOWN;
+            ability2Timer = ability1Cooldown;
+            ability1Timer = SHARED_COOLDOWN;
         }
         #endif
 
@@ -662,7 +762,7 @@ bool boss_MedivhAI::Enemy(uint64 piece1, uint64 piece2)
     if (!tmp1 || !tmp2)
     {
         #ifdef CHESS_DEBUG_INFO
-        printf("piece1: %i, %i  | piece2: %i, %i", piece1, tmp1 ? 1 : 0, piece2 , tmp2 ? 1 : 0);
+        printf("\npiece1: %u, %i  | piece2: %u, %i", piece1, tmp1 ? 1 : 0, piece2 , tmp2 ? 1 : 0);
         #endif
         me->Say("Cosik pionkow 2 nie znalazlem do sprawdzenia", LANG_UNIVERSAL, NULL);
         return false;
@@ -815,7 +915,7 @@ int boss_MedivhAI::GetCountOfPiecesInRange(uint64 trigger, int range, bool frien
                         if (tmpGUID && !IsMedivhsPiece(tmpGUID))
                             ++count;
                     }
-            }
+                }
             break;
             }
     }
@@ -840,33 +940,33 @@ int boss_MedivhAI::GetLifePriority(uint64 piece)
     {
         case NPC_PAWN_A:
         case NPC_PAWN_H:
-            tmpPriority += 5;
+            tmpPriority += 10;
             break;
         case NPC_KING_A:
         case NPC_KING_H:
-            tmpPriority += 15;
+            tmpPriority += 50;
             break;
         case NPC_BISHOP_A:
         case NPC_BISHOP_H:
-            tmpPriority += 25;
+            tmpPriority += 50;
             break;
         case NPC_ROOK_A:
         case NPC_ROOK_H:
-            tmpPriority += 10;
+            tmpPriority += 20;
             break;
         case NPC_KNIGHT_A:
         case NPC_KNIGHT_H:
-            tmpPriority += 15;
+            tmpPriority += 30;
             break;
         case NPC_QUEEN_A:
         case NPC_QUEEN_H:
-            tmpPriority += 20;
+            tmpPriority += 40;
             break;
         default:
             break;
     }
 
-    tmpPriority *= (1- (uPiece->GetHealth()/uPiece->GetMaxHealth()));
+    tmpPriority += tmpPriority * (1- (uPiece->GetHealth()/uPiece->GetMaxHealth()));
 
     return tmpPriority;
 }
@@ -1001,28 +1101,6 @@ bool boss_MedivhAI::IsEmptySquareInRange(uint64 piece, int range)
 
     return false;
 }
-bool boss_MedivhAI::IsOnSelfSpell(uint32 spell)
-{
-    #ifdef CHESS_DEBUG_INFO
-    printf("\n Wywolanie IsOnSelfSpell(uint32 spell = %u)", spell);
-    #endif
-
-    switch (spell)
-    {
-        case SPELL_KING_H_2:
-        case SPELL_KING_A_2:
-        case SPELL_ROOK_H_2:
-        case SPELL_ROOK_A_2:
-        case SPELL_PAWN_H_2:
-        case SPELL_PAWN_A_2:
-            return true;
-
-        default:
-            return false;
-    }
-
-    return false;
-}
 
 bool boss_MedivhAI::IsPositive(uint32 spell)
 {
@@ -1109,13 +1187,43 @@ int boss_MedivhAI::GetAbilityRange(uint32 spell)
     return 0;
 }
 
+bool boss_MedivhAI::IsHealingSpell(uint32 spell)
+{
+    #ifdef CHESS_DEBUG_INFO
+    printf("\n Wywolanie IsHealingSpell(uint32 spell = %u)", spell);
+    #endif
+
+    switch (spell)
+    {
+        case SPELL_BISHOP_A_1:
+        case SPELL_BISHOP_H_1:
+            return true;
+
+        default:
+            return false;
+    }
+
+    return false;
+}
+
+bool boss_MedivhAI::Heal(uint32 spell, uint64 guid)
+{
+    if (!IsHealingSpell(spell))
+        return true;
+
+    Creature * tmpC = me->GetCreature(guid);
+
+    if (!tmpC)
+        return false;
+
+    return tmpC->GetHealth() != tmpC->GetMaxHealth();
+}
+
 uint64 boss_MedivhAI::GetSpellTarget(uint64 caster, uint32 spell)
 {
     #ifdef CHESS_DEBUG_INFO
     printf("\n Wywolanie GetSpellTarget(uint64 caster = %u, uint32 spell = %u)", caster, spell);
     #endif
-    if (IsOnSelfSpell(spell))
-        return caster;
 
     int tmpI = -1, tmpJ = -1, i, tmpOffsetI, tmpOffsetJ;
 
@@ -1150,7 +1258,7 @@ uint64 boss_MedivhAI::GetSpellTarget(uint64 caster, uint32 spell)
                     {
                         tmpGUID = chessBoard[tmpOffsetI][tmpOffsetJ].piece;
 
-                        if (tmpGUID && IsMedivhsPiece(tmpGUID))
+                        if (tmpGUID && IsMedivhsPiece(tmpGUID) && Heal(spell, tmpGUID))
                             tmpPossibleTargetsList.push_back(tmpGUID);
                     }
                 }
@@ -1165,7 +1273,7 @@ uint64 boss_MedivhAI::GetSpellTarget(uint64 caster, uint32 spell)
                     {
                         tmpGUID = chessBoard[tmpOffsetI][tmpOffsetJ].piece;
 
-                        if (tmpGUID && IsMedivhsPiece(tmpGUID))
+                        if (tmpGUID && IsMedivhsPiece(tmpGUID) && Heal(spell, tmpGUID))
                             tmpPossibleTargetsList.push_back(tmpGUID);
                     }
                 }
@@ -1180,7 +1288,7 @@ uint64 boss_MedivhAI::GetSpellTarget(uint64 caster, uint32 spell)
                     {
                         tmpGUID = chessBoard[tmpOffsetI][tmpOffsetJ].piece;
 
-                        if (tmpGUID && IsMedivhsPiece(tmpGUID))
+                        if (tmpGUID && IsMedivhsPiece(tmpGUID) && Heal(spell, tmpGUID))
                             tmpPossibleTargetsList.push_back(tmpGUID);
                     }
                 }
@@ -1195,7 +1303,7 @@ uint64 boss_MedivhAI::GetSpellTarget(uint64 caster, uint32 spell)
                     {
                         tmpGUID = chessBoard[tmpOffsetI][tmpOffsetJ].piece;
 
-                        if (tmpGUID && IsMedivhsPiece(tmpGUID))
+                        if (tmpGUID && IsMedivhsPiece(tmpGUID) && Heal(spell, tmpGUID))
                             tmpPossibleTargetsList.push_back(tmpGUID);
                     }
                 }
@@ -1325,13 +1433,50 @@ uint64 boss_MedivhAI::GetSpellTarget(uint64 caster, uint32 spell)
             tmpList.push_back(tempPriority);
         }
 
-        int chosen = urand(0, prioritySum), prevPrior = 0;
-
-        for (std::list<Priority>::iterator i = tmpList.begin(); i!= tmpList.end(); ++i)
+        switch (rand()%2)
         {
-            if (prevPrior < chosen && (*i).prior >= chosen)
-                return (*i).GUIDfrom;
-            prevPrior = (*i).prior;
+            case 0:
+            {
+                int chosen = urand(0, prioritySum), prevPrior = 0;
+
+                for (std::list<Priority>::iterator i = tmpList.begin(); i!= tmpList.end(); ++i)
+                {
+                    if (prevPrior < chosen && (*i).prior >= chosen)
+                        return (*i).GUIDfrom;
+                    prevPrior = (*i).prior;
+                }
+                break;
+            }
+            case 1:
+            default:
+            {
+                Priority best;
+                std::list<Priority> bestList;
+                best = tmpList.front();
+
+                for (std::list<Priority>::iterator i = tmpList.begin(); i!= tmpList.end(); ++i)
+                {
+                    if (best.prior < (*i).prior)
+                    {
+                        best = *i;
+                        bestList.clear();
+                        bestList.push_back(*i);
+                    }
+                    else if (best.prior == (*i).prior)
+                        bestList.push_back(*i);
+                }
+
+                if (bestList.empty())
+                    return 0;
+
+                std::list<Priority>::iterator tmpItr = bestList.begin();
+
+                advance(tmpItr, urand(0, bestList.size() - 1));
+
+                return (*tmpItr).GUIDfrom;
+
+                break;
+            }
         }
     }
     else        //if !positive
@@ -1523,13 +1668,48 @@ uint64 boss_MedivhAI::GetSpellTarget(uint64 caster, uint32 spell)
             tmpList.push_back(tempPriority);
         }
 
-        int chosen = urand(0, prioritySum), prevPrior = 0;
-
-        for (std::list<Priority>::iterator i = tmpList.begin(); i!= tmpList.end(); ++i)
+        switch (rand()%2)
         {
-            if (prevPrior < chosen && (*i).prior >= chosen)
-                return (*i).GUIDfrom;
-            prevPrior = (*i).prior;
+            case 0:
+            {
+                int chosen = urand(0, prioritySum), prevPrior = 0;
+
+                for (std::list<Priority>::iterator i = tmpList.begin(); i!= tmpList.end(); ++i)
+                {
+                    if (prevPrior < chosen && (*i).prior >= chosen)
+                        return (*i).GUIDfrom;
+                    prevPrior = (*i).prior;
+                }
+                break;
+            }
+            case 1:
+            default:
+            {
+                Priority best;
+                std::list<Priority> bestList;
+                best = tmpList.front();
+
+                for (std::list<Priority>::iterator i = tmpList.begin(); i!= tmpList.end(); ++i)
+                {
+                    if (best.prior < (*i).prior)
+                    {
+                        best = *i;
+                        bestList.clear();
+                        bestList.push_back(*i);
+                    }
+                    else if (best.prior == (*i).prior)
+                        bestList.push_back(*i);
+                }
+
+                if (bestList.empty())
+                    return 0;
+
+                std::list<Priority>::iterator tmpItr = bestList.begin();
+
+                advance(tmpItr, urand(0, bestList.size() - 1));
+
+                return (*tmpItr).GUIDfrom;
+            }
         }
     }
 
@@ -2053,6 +2233,8 @@ void boss_MedivhAI::RemoveChessPieceFromBoard(Creature * piece)
     int tmpI = -1, tmpJ = -1;
     uint64 tmpGUID = piece->GetGUID();
 
+    RemoveFromMoveList(tmpGUID);
+
     if (FindPlaceInBoard(tmpGUID, tmpI, tmpJ))
         chessBoard[tmpI][tmpJ].piece = 0;
 
@@ -2483,7 +2665,6 @@ void boss_MedivhAI::PrepareBoardForEvent()
 void boss_MedivhAI::StartMiniEvent()
 {
     miniEventState = MINI_EVENT_KING;
-    me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
 
     pInstance->SetData(DATA_DUST_COVERED_CHEST, IN_PROGRESS);
 }
@@ -2881,6 +3062,7 @@ void boss_MedivhAI::AddTriggerToMove(uint64 trigger, uint64 piece, bool player)
     #ifdef CHESS_DEBUG_INFO
     printf("\n Wywolanie AddTriggerToMove(uint64 trigger = %u, uint64 piece = %u, bool player = %i)", trigger, piece, player);
     #endif
+    RemoveFromMoveList(piece);
     ChessTile tmp;
     tmp.piece = piece;
     tmp.trigger = trigger;
@@ -2902,6 +3084,9 @@ void boss_MedivhAI::RemoveFromMoveList(uint64 unit)
         ++itr;
         if ((*tmpItr).piece == unit || (*tmpItr).trigger == unit)
         {
+            if (Creature * tmpC = me->GetCreature((*tmpItr).trigger))
+                ((move_triggerAI*)tmpC->AI())->RemoveFromMove((*tmpItr).piece);
+
             moveList.erase(tmpItr);
             return;
         }
@@ -3808,9 +3993,7 @@ bool GossipHello_npc_echo_of_medivh(Player* player, Creature* _Creature)
 
     pInstance->SetData(DATA_CHESS_EVENT, NOT_STARTED);
 
-    if (pInstance->GetData(DATA_CHESS_EVENT) == NOT_STARTED)
-        player->ADD_GOSSIP_ITEM(0, EVENT_START, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
-
+    player->ADD_GOSSIP_ITEM(0, EVENT_START, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
     player->SEND_GOSSIP_MENU(10506, _Creature->GetGUID());
 
     return true;
