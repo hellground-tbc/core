@@ -2444,11 +2444,6 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
         // AT REMOVE
         switch (GetId())
         {
-            case 37136:
-            {
-                if (m_target->GetTypeId() == TYPEID_UNIT)
-                    ((Creature*)m_target)->UpdateEntry(apply ? 21731 : 21729);
-            }
             case 10255:                                     // Stoned
             {
                 if (Unit* caster = GetCaster())
@@ -2577,6 +2572,12 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
     {
         case SPELLFAMILY_GENERIC:
         {
+            // Power Convert
+            if (GetId() ==37136)
+            {
+                if (m_target->GetTypeId() == TYPEID_UNIT)
+                    ((Creature*)m_target)->UpdateEntry(apply ? 21731 : 21729);
+            }
             // Unstable Power
             if (GetId() == 24658)
             {

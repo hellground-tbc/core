@@ -448,12 +448,19 @@ void GameObject::Update(uint32 diff)
 
                 if (spellId)
                 {
+                    SpellEntry const * spellInfo = sSpellStore.LookupEntry(spellId);
+
                     std::set<uint32>::iterator it = m_unique_users.begin();
                     std::set<uint32>::iterator end = m_unique_users.end();
                     for (; it != end; it++)
                     {
-                        Unit* owner = Unit::GetUnit(*this, uint64(*it));
-                        if (owner) owner->CastSpell(owner, spellId, false);
+                        if (Unit* owner = Unit::GetUnit(*this, uint64(*it)))
+                        {
+                            if (spellInfo)
+                                owner->CastSpell(owner, spellId, false);
+                            else if(owner->GetTypeId() == TYPEID_PLAYER)
+                                HandleNonDbcSpell(spellId, (Player*)owner);
+                        }
                     }
 
                     m_unique_users.clear();
@@ -1036,7 +1043,6 @@ void GameObject::Use(Unit* user)
             player->SetStandState(PLAYER_STATE_SIT_LOW_CHAIR+info->chair.height);
             return;
         }
-        //big gun, its a spell/aura
         case GAMEOBJECT_TYPE_GOOBER:                        //10
         {
             GameObjectInfo const* info = GetGOInfo();
@@ -1361,9 +1367,10 @@ void GameObject::Use(Unit* user)
     SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
     if (!spellInfo)
     {
-        if (user->GetTypeId() == TYPEID_PLAYER && !sOutdoorPvPMgr.HandleCustomSpell((Player*)user,spellId,this))
-            HandleNonDbcSpell(spellId, (Player*)user);
+        if (user->GetTypeId() != TYPEID_PLAYER || sOutdoorPvPMgr.HandleCustomSpell((Player*)user,spellId,this))
+            return;
 
+        HandleNonDbcSpell(spellId, (Player*)user);
         return;
     }
 
