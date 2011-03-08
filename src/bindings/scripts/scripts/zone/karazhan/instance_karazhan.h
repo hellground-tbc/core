@@ -18,7 +18,8 @@
 9  - Chess Event
 10 - Prince Malchezzar
 11 - Nightbane
-12 - Chess Event Team
+12 - Dust Covered Chest
+13 - Chess Event Team
 */
 
 struct TRINITY_DLL_DECL instance_karazhan : public ScriptedInstance

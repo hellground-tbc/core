@@ -1942,12 +1942,14 @@ void boss_MedivhAI::SayChessPieceDied(Unit * piece)
 
             case NPC_KING_A:
 
+                if (pInstance->GetData(DATA_DUST_COVERED_CHEST) != DONE)
+                    m_creature->SummonGameObject(DUST_COVERED_CHEST, -11058, -1903, 221, 2.24, 0, 0, 0, 0, 7200000);
+
                 DoScriptText(SCRIPTTEXT_PLAYER_WIN, m_creature);
                 pInstance->SetData(DATA_CHESS_EVENT, DONE);
                 endGameEventState = GAMEEND_MEDIVH_LOSE;
                 endEventTimer = 2500;
                 endEventCount = 0;
-                m_creature->SummonGameObject(DUST_COVERED_CHEST, -11058, -1903, 221, 2.24, 0, 0, 0, 0, 7200000);
                 break;
 
             default:
@@ -2003,12 +2005,14 @@ void boss_MedivhAI::SayChessPieceDied(Unit * piece)
 
             case NPC_KING_H:
 
+                if (pInstance->GetData(DATA_CHESS_EVENT) != DONE)
+                    m_creature->SummonGameObject(DUST_COVERED_CHEST, -11058, -1903, 221, 2.24, 0, 0, 0, 0, 7200000);
+
                 DoScriptText(SCRIPTTEXT_PLAYER_WIN, m_creature);
                 pInstance->SetData(DATA_CHESS_EVENT, DONE);
                 endGameEventState = GAMEEND_MEDIVH_LOSE;
                 endEventTimer = 2500;
                 endEventCount = 0;
-                m_creature->SummonGameObject(DUST_COVERED_CHEST, -11058, -1903, 221, 2.24, 0, 0, 0, 0, 7200000);
                 break;
 
             default:
@@ -2577,6 +2581,7 @@ void boss_MedivhAI::StartMiniEvent()
     miniEventState = MINI_EVENT_KING;
     me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
     //me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+    pInstance->SetData(DATA_DUST_COVERED_CHEST, IN_PROGRESS);
 }
 
 void boss_MedivhAI::StartEvent()
@@ -3926,8 +3931,8 @@ bool GossipHello_npc_echo_of_medivh(Player* player, Creature* _Creature)
     if(pInstance->GetData(DATA_CHESS_EVENT) == FAIL)
         pInstance->SetData(DATA_CHESS_EVENT, NOT_STARTED);
 
-    if(pInstance->GetData(DATA_CHESS_EVENT) == DONE) //for testing
-        pInstance->SetData(DATA_CHESS_EVENT, NOT_STARTED);
+    //if(pInstance->GetData(DATA_CHESS_EVENT) == DONE) //for testing
+    //    pInstance->SetData(DATA_CHESS_EVENT, NOT_STARTED);
 
     if(pInstance->GetData(DATA_CHESS_EVENT) == NOT_STARTED)
     {
