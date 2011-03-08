@@ -14,7 +14,7 @@ void move_triggerAI::Reset()
     #ifdef CHESS_DEBUG_INFO
     printf("\n Wywolanie move_triggerAI::Reset()");
     #endif
-    moveTimer   = 10000;
+    moveTimer   = 3000;
     pieceStance = PIECE_NONE;
     unitToMove = 0;
     MedivhGUID = pInstance->GetData64(DATA_CHESS_ECHO_OF_MEDIVH);
@@ -67,7 +67,7 @@ void move_triggerAI::MakeMove()
     #endif
     ChessPiecesStances tmpStance = pieceStance;
 
-    moveTimer = 10000;
+    moveTimer = 3000;
     pieceStance = PIECE_NONE;
     Creature * temp = m_creature->GetCreature(unitToMove);
     Creature * temp2 = m_creature->GetCreature(MedivhGUID);
@@ -88,12 +88,18 @@ void move_triggerAI::MakeMove()
             temp->GetMotionMaster()->MovePoint(0, wLoc.coord_x, wLoc.coord_y, wLoc.coord_z);
 
             if (temp2)
+            {
                 ((boss_MedivhAI*)temp2->AI())->ChangePlaceInBoard(unitToMove, me->GetGUID());
+                ((boss_MedivhAI*)temp2->AI())->RemoveFromMoveList(me->GetGUID());
+            }
             break;
         case PIECE_CHANGE_FACING:
             temp->RemoveUnitMovementFlag(MOVEFLAG_ROOT);
             if (temp2)
+            {
                 ((boss_MedivhAI*)temp2->AI())->ChangePieceFacing(temp, me);
+                ((boss_MedivhAI*)temp2->AI())->RemoveFromMoveList(me->GetGUID());
+            }
             break;
         default:
             break;
@@ -154,6 +160,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_KING_2;
             ability2Cooldown = CD_KING_2;
 
+            moveID = SPELL_MOVE_5;
             //attackDamage = KING_LLANE_ATTACK;
             break;
 
@@ -166,6 +173,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_KING_2;
             ability2Cooldown = CD_KING_2;
 
+            moveID = SPELL_MOVE_5;
             //attackDamage = WARCHIEF_ATTACK;
             break;
 
@@ -178,6 +186,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_QUEEN_2;
             ability2Cooldown = CD_QUEEN_2;
 
+            moveID = SPELL_MOVE_4;
             //attackDamage = CONJURER_ATTACK;
             break;
 
@@ -190,6 +199,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_QUEEN_2;
             ability2Cooldown = CD_QUEEN_2;
 
+            moveID = SPELL_MOVE_4;
             //attackDamage = WARLOCK_ATTACK;
             break;
 
@@ -202,6 +212,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_BISHOP_2;
             ability2Cooldown = CD_BISHOP_2;
 
+            moveID = SPELL_MOVE_6;
             //attackDamage = CLERIC_ATTACK;
             break;
 
@@ -214,6 +225,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_BISHOP_2;
             ability2Cooldown = CD_BISHOP_2;
 
+            moveID = SPELL_MOVE_6;
             //attackDamage = NECROLYTE_ATTACK;
             break;
 
@@ -226,6 +238,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_KNIGHT_2;
             ability2Cooldown = CD_KNIGHT_2;
 
+            moveID = SPELL_MOVE_3;
             //attackDamage = ELEMENTAL_ATTACK2;  //?
             break;
 
@@ -238,6 +251,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_KNIGHT_2;
             ability2Cooldown = CD_KNIGHT_2;
 
+            moveID = SPELL_MOVE_3;
             //attackDamage = WOLF_ATTACK;
             break;
 
@@ -250,6 +264,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_ROOK_2;
             ability2Cooldown = CD_ROOK_2;
 
+            moveID = SPELL_MOVE_7;
             //attackDamage = ELEMENTAL_ATTACK;
             break;
 
@@ -262,6 +277,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_ROOK_2;
             ability2Cooldown = CD_ROOK_2;
 
+            moveID = SPELL_MOVE_7;
             //attackDamage = DEMON_ATTACK;
             break;
 
@@ -274,6 +290,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_PAWN_2;
             ability2Cooldown = CD_PAWN_2;
 
+            moveID = SPELL_MOVE_1;
             //attackDamage = FOOTMAN_ATTACK;
             break;
 
@@ -286,6 +303,7 @@ void npc_chesspieceAI::SetSpellsAndCooldowns()
             ability2Timer = CD_PAWN_2;
             ability2Cooldown = CD_PAWN_2;
 
+            moveID = SPELL_MOVE_1;
             //attackDamage = GRUNT_ATTACK;
             break;
         default:
@@ -315,6 +333,8 @@ void npc_chesspieceAI::Reset()
     me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
 
     nextTryTimer = urand(500, 5000);
+
+    changeFacingTimer = urand (3000, 7500);
 }
 
 void npc_chesspieceAI::MovementInform(uint32 MovementType, uint32 Data)
@@ -370,7 +390,6 @@ void npc_chesspieceAI::OnCharmed(bool apply)
             ((boss_MedivhAI*)medivh->AI())->SetOrientation(me->GetGUID());
 
     me->AddUnitMovementFlag(MOVEFLAG_ROOT);
-    //42716
 }
 
 void npc_chesspieceAI::SpellHit(Unit * caster, const SpellEntry * spell)
@@ -381,6 +400,12 @@ void npc_chesspieceAI::SpellHit(Unit * caster, const SpellEntry * spell)
         ((Creature*)me)->HandleEmoteCommand(EMOTE_ONESHOT_ATTACK1H);
         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
     }
+}
+
+void npc_chesspieceAI::SpellHitTarget(Unit * caster, const SpellEntry * spell)
+{
+    if (spell->Id == moveID)
+        ((Creature*)me)->HandleEmoteCommand(EMOTE_ONESHOT_BOW);
 }
 
 void npc_chesspieceAI::UpdateAI(const uint32 diff)
@@ -403,13 +428,13 @@ void npc_chesspieceAI::UpdateAI(const uint32 diff)
     if(!InGame)
         return;
 
-    #ifndef CHESS_EVENT_DISSABLE_MEDIVH_PIECES_SPELLS
     if((me->getFaction() == A_FACTION && pInstance->GetData(CHESS_EVENT_TEAM) == HORDE) ||
        (me->getFaction() == H_FACTION && pInstance->GetData(CHESS_EVENT_TEAM) == ALLIANCE))
     {
+        #ifndef CHESS_EVENT_DISSABLE_MEDIVH_PIECES_SPELLS
         bool ab1 = false, ab2 = false;
 
-        if (ability1Timer < diff)
+        if (ability1Timer <= diff)
         {
             if (urand(0, ABILITY_CHANCE_MAX) > ability1Chance)
                 ab1 = true;
@@ -419,7 +444,7 @@ void npc_chesspieceAI::UpdateAI(const uint32 diff)
         else
             ability1Timer -= diff;
 
-        if (ability2Timer < diff)
+        if (ability2Timer <= diff)
         {
             if (urand(0, ABILITY_CHANCE_MAX) > ability2Chance)
                 ab2 = true;
@@ -472,13 +497,29 @@ void npc_chesspieceAI::UpdateAI(const uint32 diff)
             if (ability1Timer < SHARED_COOLDOWN)
                 ability1Timer = SHARED_COOLDOWN;
         }
+        #endif
+
+        #ifndef CHESS_EVENT_DISSABLE_FACING
+        if (changeFacingTimer <= diff)
+        {
+            changeFacingTimer = urand(3000, 7500);
+
+            Creature * medivh = m_creature->GetCreature(MedivhGUID);
+
+            if (!medivh)
+                return;
+
+            ((boss_MedivhAI*)medivh->AI())->CheckChangeFacing(me->GetGUID());
+        }
+        else
+            changeFacingTimer -= diff;
+        #endif
     }
-    #endif
 
     CastNextSpellIfAnyAndReady();
 
     #ifndef CHESS_EVENT_DISSABLE_MELEE
-    if (attackTimer < diff)
+    if (attackTimer <= diff)
     {
         attackTimer = attackCooldown;
         Creature * medivh = m_creature->GetCreature(MedivhGUID);
@@ -493,7 +534,7 @@ void npc_chesspieceAI::UpdateAI(const uint32 diff)
 
             #ifdef CHESS_DEBUG_INFO
             m_creature->Say("Atakujem sobiem muahahahaha", LANG_UNIVERSAL, NULL);
-            printf("\nAtak %u -> %u, damage: %i", me->GetGUID(), uVictim->GetGUID(), attackDamage);
+            printf("\nAtak %u -> %u", me->GetGUID(), uVictim->GetGUID());
             #endif
         }
     }
@@ -642,36 +683,162 @@ bool boss_MedivhAI::Enemy(uint64 piece1, uint64 piece2)
     return tmp1->getFaction() != tmp2->getFaction();
 }
 
-int boss_MedivhAI::GetCountOfEnemyInMelee(uint64 piece)
+int boss_MedivhAI::GetCountOfEnemyInMelee(uint64 piece, bool strafe)
 {
     #ifdef CHESS_DEBUG_INFO
     printf("\n Wywolanie GetCountOfEnemyInMelee(uint64 piece = %u)", piece);
     #endif
 
-    int tmpCount = 0, tmpI = -1, tmpJ = -1;
+    int tmpCount = 0, tmpI = -1, tmpJ = -1, tmpOffsetI, tmpOffsetJ;
 
     //search for position in tab of piece
 
     if (!FindPlaceInBoard(piece, tmpI, tmpJ))
         return 0;
 
-    if (tmpI+1 < 8)
-        if (Enemy(piece, chessBoard[tmpI+1][tmpJ].piece))
-            tmpCount++;
+    if (strafe)
+    {
+        for (int i = 0; i < OFFSET8COUNT; ++i)
+        {
+            tmpOffsetI = tmpI + offsetTab8[0][i];
+            tmpOffsetJ = tmpJ + offsetTab8[1][i];
+            if (tmpOffsetI >= 0 && tmpOffsetI < 8 &&
+                tmpOffsetJ >= 0 && tmpOffsetJ < 8 &&
+                Enemy(piece, chessBoard[tmpOffsetI][tmpOffsetJ].piece))
+                ++tmpCount;
+        }
+    }
+    else
+    {
+        if (tmpI+1 < 8)
+            if (Enemy(piece, chessBoard[tmpI+1][tmpJ].piece))
+                tmpCount++;
 
-    if (tmpI-1 >= 0)
-        if (Enemy(piece, chessBoard[tmpI-1][tmpJ].piece))
-            tmpCount++;
+        if (tmpI-1 >= 0)
+            if (Enemy(piece, chessBoard[tmpI-1][tmpJ].piece))
+                tmpCount++;
 
-    if (tmpJ+1 < 8)
-        if (Enemy(piece, chessBoard[tmpI][tmpJ+1].piece))
-            tmpCount++;
+        if (tmpJ+1 < 8)
+            if (Enemy(piece, chessBoard[tmpI][tmpJ+1].piece))
+                tmpCount++;
 
-    if (tmpJ-1 >= 0)
-        if (Enemy(piece, chessBoard[tmpI][tmpJ-1].piece))
-            tmpCount++;
+        if (tmpJ-1 >= 0)
+            if (Enemy(piece, chessBoard[tmpI][tmpJ-1].piece))
+                tmpCount++;
+    }
 
     return tmpCount;
+}
+
+int boss_MedivhAI::GetCountOfPiecesInRange(uint64 trigger, int range, bool friendly)
+{
+    int count = 0;
+
+    int tmpI, tmpJ, i, tmpOffsetI, tmpOffsetJ;
+    uint64 tmpGUID;
+
+    if (!FindPlaceInBoard(trigger, tmpI, tmpJ))
+        return 0;
+
+    switch (range)
+    {
+        case 25:
+            for (i = 0; i < OFFSET25COUNT; i++)
+            {
+                tmpOffsetI = tmpI + offsetTab25[i][0];
+                tmpOffsetJ = tmpJ + offsetTab25[i][1];
+
+                if (tmpOffsetI >= 0 && tmpOffsetI < 8 &&
+                    tmpOffsetJ >= 0 && tmpOffsetJ < 8)
+                {
+                    tmpGUID = chessBoard[tmpOffsetI][tmpOffsetJ].piece;
+
+                    if (friendly)
+                    {
+                        if (tmpGUID && IsMedivhsPiece(tmpGUID))
+                            ++count;
+                    }
+                    else
+                    {
+                        if (tmpGUID && !IsMedivhsPiece(tmpGUID))
+                            ++count;
+                    }
+                }
+            }
+        case 20:
+            for (i = 0; i < OFFSET20COUNT; i++)
+            {
+                tmpOffsetI = tmpI + offsetTab20[i][0];
+                tmpOffsetJ = tmpJ + offsetTab20[i][1];
+
+                if (tmpOffsetI >= 0 && tmpOffsetI < 8 &&
+                    tmpOffsetJ >= 0 && tmpOffsetJ < 8)
+                {
+                    tmpGUID = chessBoard[tmpOffsetI][tmpOffsetJ].piece;
+
+                    if (friendly)
+                    {
+                        if (tmpGUID && IsMedivhsPiece(tmpGUID))
+                            ++count;
+                    }
+                    else
+                    {
+                        if (tmpGUID && !IsMedivhsPiece(tmpGUID))
+                            ++count;
+                    }
+                }
+            }
+        case 15:
+            for (i = 0; i < OFFSET15COUNT; i++)
+            {
+                tmpOffsetI = tmpI + offsetTab15[i][0];
+                tmpOffsetJ = tmpJ + offsetTab15[i][1];
+
+                if (tmpOffsetI >= 0 && tmpOffsetI < 8 &&
+                    tmpOffsetJ >= 0 && tmpOffsetJ < 8)
+                {
+                    tmpGUID = chessBoard[tmpOffsetI][tmpOffsetJ].piece;
+
+                    if (friendly)
+                    {
+                        if (tmpGUID && IsMedivhsPiece(tmpGUID))
+                            ++count;
+                    }
+                    else
+                    {
+                        if (tmpGUID && !IsMedivhsPiece(tmpGUID))
+                            ++count;
+                    }
+                }
+            }
+        case 8:
+        default:
+            for (i = 0; i < OFFSET8COUNT; i++)
+            {
+                tmpOffsetI = tmpI + offsetTab8[i][0];
+                tmpOffsetJ = tmpJ + offsetTab8[i][1];
+
+                if (tmpOffsetI >= 0 && tmpOffsetI < 8 &&
+                    tmpOffsetJ >= 0 && tmpOffsetJ < 8)
+                {
+                    tmpGUID = chessBoard[tmpOffsetI][tmpOffsetJ].piece;
+
+                    if (friendly)
+                    {
+                        if (tmpGUID && IsMedivhsPiece(tmpGUID))
+                            ++count;
+                    }
+                    else
+                    {
+                        if (tmpGUID && !IsMedivhsPiece(tmpGUID))
+                            ++count;
+                    }
+            }
+            break;
+            }
+    }
+
+    return count;
 }
 
 int boss_MedivhAI::GetLifePriority(uint64 piece)
@@ -728,12 +895,17 @@ int boss_MedivhAI::GetAttackPriority(uint64 piece)
     printf("\n Wywolanie GetAttackPriority(uint64 piece = %u)", piece);
     #endif
 
-    Unit * uPiece = m_creature->GetUnit(*m_creature, piece);
+    Unit * uPiece = m_creature->GetUnit(piece);
 
     if (!uPiece)
+    {
+        #ifdef CHESS_DEBUG_INFO
+        printf("\nGetAttackPriority: piece not found Oo : guid: %u", piece);
+        #endif
         return 0;
+    }
 
-    int tmpPriority = 0;
+    int tmpPriority = START_PRIORITY;
 
     switch (uPiece->GetEntry())
     {
@@ -765,7 +937,7 @@ int boss_MedivhAI::GetAttackPriority(uint64 piece)
             break;
     }
 
-    tmpPriority *= (1- (uPiece->GetHealth()/uPiece->GetMaxHealth()));
+    tmpPriority += tmpPriority * (1 - (uPiece->GetHealth()/(double)uPiece->GetMaxHealth()));
 
     return tmpPriority;
 }
@@ -1162,7 +1334,7 @@ uint64 boss_MedivhAI::GetSpellTarget(uint64 caster, uint32 spell)
         {
             Priority tempPriority;
             tempPriority.prior = START_PRIORITY;
-            tempPriority.GUID = *i;
+            tempPriority.GUIDfrom = *i;
 
             tempPriority.prior += GetCountOfEnemyInMelee(*i) * MELEE_PRIORITY + urand(0, RAND_PRIORITY) + GetLifePriority(*i);
 
@@ -1175,7 +1347,7 @@ uint64 boss_MedivhAI::GetSpellTarget(uint64 caster, uint32 spell)
         for (std::list<Priority>::iterator i = tmpList.begin(); i!= tmpList.end(); ++i)
         {
             if (prevPrior < chosen && (*i).prior >= chosen)
-                return (*i).GUID;
+                return (*i).GUIDfrom;
             prevPrior = (*i).prior;
         }
     }
@@ -1360,7 +1532,7 @@ uint64 boss_MedivhAI::GetSpellTarget(uint64 caster, uint32 spell)
         {
             Priority tempPriority;
             tempPriority.prior = START_PRIORITY;
-            tempPriority.GUID = *i;
+            tempPriority.GUIDfrom = *i;
 
             tempPriority.prior += GetCountOfEnemyInMelee(*i) * MELEE_PRIORITY + urand(0, RAND_PRIORITY) + GetAttackPriority(*i);
 
@@ -1373,7 +1545,7 @@ uint64 boss_MedivhAI::GetSpellTarget(uint64 caster, uint32 spell)
         for (std::list<Priority>::iterator i = tmpList.begin(); i!= tmpList.end(); ++i)
         {
             if (prevPrior < chosen && (*i).prior >= chosen)
-                return (*i).GUID;
+                return (*i).GUIDfrom;
             prevPrior = (*i).prior;
         }
     }
@@ -1388,7 +1560,8 @@ uint64 boss_MedivhAI::GetMeleeTarget(uint64 piece)
     #endif
     int tmpi, tmpj;    //temporary piece position
 
-    FindPlaceInBoard(piece, tmpi, tmpj);
+    if (!FindPlaceInBoard(piece, tmpi, tmpj))
+        return 0;
 
     switch (chessBoard[tmpi][tmpj].ori)
     {
@@ -1874,12 +2047,12 @@ void boss_MedivhAI::RemoveChessPieceFromBoard(Creature * piece)
     if (piece->getFaction() == A_FACTION)
     {
         --alliancePieces;
-        tmpC = me->SummonCreature(tmpEntry, allianceSideDeadWP[0][alliancePieces], allianceSideDeadWP[1][alliancePieces], POSITION_Z, ORI_W, TEMPSUMMON_CORPSE_DESPAWN, 0);
+        tmpC = me->SummonCreature(tmpEntry, allianceSideDeadWP[0][alliancePieces], allianceSideDeadWP[1][alliancePieces], POSITION_Z + 1, ORI_E, TEMPSUMMON_CORPSE_DESPAWN, 0);
     }
     else
     {
         --hordePieces;
-        tmpC = me->SummonCreature(tmpEntry, hordeSideDeadWP[0][hordePieces], hordeSideDeadWP[1][hordePieces], POSITION_Z, ORI_W, TEMPSUMMON_CORPSE_DESPAWN, 0);
+        tmpC = me->SummonCreature(tmpEntry, hordeSideDeadWP[0][hordePieces], hordeSideDeadWP[1][hordePieces], POSITION_Z + 1, ORI_W, TEMPSUMMON_CORPSE_DESPAWN, 0);
     }
 
     if (tmpC)
@@ -2523,6 +2696,7 @@ void boss_MedivhAI::UpdateAI(const uint32 diff)
                                 tmpC->SetVisibility(VISIBILITY_OFF);
                                 tmpC->DestroyForNearbyPlayers();
                                 tmpC->Kill(tmpC, false);
+                                tmpC->RemoveCorpse();
                             }
 
                             if (tmpC = me->GetCreature(chessBoard[i][j].trigger))
@@ -2530,6 +2704,7 @@ void boss_MedivhAI::UpdateAI(const uint32 diff)
                                 tmpC->SetVisibility(VISIBILITY_OFF);
                                 tmpC->DestroyForNearbyPlayers();
                                 tmpC->Kill(tmpC, false);
+                                tmpC->RemoveCorpse();
                             }
 
                             chessBoard[i][j].piece = 0;
@@ -2545,6 +2720,7 @@ void boss_MedivhAI::UpdateAI(const uint32 diff)
                             tmpC->SetVisibility(VISIBILITY_OFF);
                             tmpC->DestroyForNearbyPlayers();
                             tmpC->Kill(tmpC, false);
+                            tmpC->RemoveCorpse();
                         }
                     }
 
@@ -2555,6 +2731,7 @@ void boss_MedivhAI::UpdateAI(const uint32 diff)
                             tmpC->SetVisibility(VISIBILITY_OFF);
                             tmpC->DestroyForNearbyPlayers();
                             tmpC->Kill(tmpC, false);
+                            tmpC->RemoveCorpse();
                         }
                     }
 
@@ -2562,7 +2739,7 @@ void boss_MedivhAI::UpdateAI(const uint32 diff)
                     unusedPlayerPieces.clear();
                     medivhSidePieces.clear();
                     EnterEvadeMode();
-                    break;
+                    return;
             }
             endEventCount++;
             endEventTimer = 2500;
@@ -2575,14 +2752,6 @@ void boss_MedivhAI::UpdateAI(const uint32 diff)
 
     if (!eventStarted)
         return;
-
-    if (moveTimer <= diff)
-    {
-        MakeMoves();
-        moveTimer = urand(6000, 8000);
-    }
-    else
-        moveTimer -= diff;
 
     if (addPieceToMoveCheckTimer <= diff)
     {
@@ -2710,6 +2879,23 @@ void boss_MedivhAI::SetOrientation(uint64 piece, ChessOrientation ori)
     }
 }
 
+uint64 boss_MedivhAI::FindTriggerGUID(uint64 piece)
+{
+    #ifdef CHESS_DEBUG_INFO
+    printf("\n Wywolanie FindTriggerGUID(uint64 piece = %u)", piece);
+    #endif
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 8; j++)
+        {
+            if (chessBoard[i][j].piece == piece)
+                return chessBoard[i][j].trigger;
+        }
+    }
+
+    return 0;
+}
+
 Creature * boss_MedivhAI::FindTrigger(uint64 piece)
 {
     #ifdef CHESS_DEBUG_INFO
@@ -2801,7 +2987,21 @@ void boss_MedivhAI::AddTriggerToMove(uint64 trigger, uint64 piece, bool player)
         ChoosePieceToMove();
 }
 
-void boss_MedivhAI::MakeMoves()
+void boss_MedivhAI::RemoveFromMoveList(uint64 unit)
+{
+    for (std::list<ChessTile>::iterator itr = moveList.begin(); itr != moveList.end();)
+    {
+        std::list<ChessTile>::iterator tmpItr = itr;
+        ++itr;
+        if ((*tmpItr).piece == unit || (*tmpItr).trigger == unit)
+        {
+            moveList.erase(tmpItr);
+            return;
+        }
+    }
+}
+
+/*void boss_MedivhAI::MakeMoves()
 {
     #ifdef CHESS_DEBUG_INFO
     printf("\n Wywolanie MakeMoves()");
@@ -2818,7 +3018,7 @@ void boss_MedivhAI::MakeMoves()
 
         moveList.erase(tmpItr);
     }
-}
+}*/
 
 void boss_MedivhAI::ChangePlaceInBoard(uint64 piece, uint64 destTrigger)
 {
@@ -2842,6 +3042,7 @@ void boss_MedivhAI::ChangePlaceInBoard(uint64 piece, uint64 destTrigger)
             }
         }
     }
+
 }
 
 void boss_MedivhAI::ChangePieceFacing(uint64 piece, uint64 destTrigger)
@@ -2934,7 +3135,7 @@ uint32 boss_MedivhAI::GetMoveSpell(Creature * piece)
 bool boss_MedivhAI::FindPlaceInBoard(uint64 unit, int & i, int & j)
 {
     #ifdef CHESS_DEBUG_INFO
-    printf("\nWywolanie: FindPlaceInBoard(uint64 unit = %u, int & i = %i, int & j = %i)", unit, i, j);
+    printf("\n Wywolanie: FindPlaceInBoard(uint64 unit = %u, int & i = %i, int & j = %i)", unit, i, j);
     #endif
     for (int x = 0; x < 8; ++x)
     {
@@ -2951,6 +3152,256 @@ bool boss_MedivhAI::FindPlaceInBoard(uint64 unit, int & i, int & j)
     return false;
 }
 
+/*
+pseudocode:
+
+    for each medivh piece:
+        calculate actual square priority
+        for each square in range:
+            if square is empty and isn't in move list then:
+                calculate priority
+                if priority is > 0
+                    add square info (priority) to list
+                    sum priority
+        if square info list in not empty
+            choose random priority from 0 to priority sum
+            search for square for randomed priority
+            if chosen position is better than actual position (rand(0, chosen+actual) > actual)
+                add possible move to list
+
+    sum square move priorities
+    choose random (or best ?) move from list
+
+    make move to chosen
+
+Calculate Priority:
+    set base priority for square
+    modify priority based on count of enemies in melee
+    modify priority based on count of enemies/friends in spells range
+    modify priority based on way were we want to move
+*/
+
+int boss_MedivhAI::CalculatePriority(uint64 piece, uint64 trigger)
+{
+    // set base priority for square
+    int tmpPrior = START_PRIORITY;
+    int pieceId = GetEntry(piece);
+
+    // modify priority based on count of enemies in melee
+
+    int meleeCount = GetCountOfEnemyInMelee(piece, true);
+
+    switch (pieceId)
+    {
+        case NPC_PAWN_A:
+        case NPC_PAWN_H:
+            switch (meleeCount)
+            {
+                case 0:
+                    tmpPrior += MELEE_PRIORITY_1_0;
+                    break;
+                case 1:
+                    tmpPrior += MELEE_PRIORITY_1_1;
+                    break;
+                case 2:
+                    tmpPrior += MELEE_PRIORITY_1_2;
+                    break;
+                case 3:
+                    tmpPrior += MELEE_PRIORITY_1_3;
+                    break;
+                default:
+                    tmpPrior += MELEE_PRIORITY_1_4;
+                    break;
+            }
+            break;
+
+        case NPC_ROOK_A:
+        case NPC_ROOK_H:
+        case NPC_KNIGHT_A:
+        case NPC_KNIGHT_H:
+            switch (meleeCount)
+            {
+                case 0:
+                    tmpPrior += MELEE_PRIORITY_2_0;
+                    break;
+                case 1:
+                    tmpPrior += MELEE_PRIORITY_2_1;
+                    break;
+                case 2:
+                    tmpPrior += MELEE_PRIORITY_2_2;
+                    break;
+                case 3:
+                    tmpPrior += MELEE_PRIORITY_2_3;
+                    break;
+                default:
+                    tmpPrior += MELEE_PRIORITY_2_4;
+                    break;
+            }
+            break;
+
+        case NPC_KING_A:
+        case NPC_KING_H:
+            switch (meleeCount)
+            {
+                case 0:
+                    tmpPrior += MELEE_PRIORITY_3_0;
+                    break;
+                case 1:
+                    tmpPrior += MELEE_PRIORITY_3_1;
+                    break;
+                case 2:
+                    tmpPrior += MELEE_PRIORITY_3_2;
+                    break;
+                case 3:
+                    tmpPrior += MELEE_PRIORITY_3_3;
+                    break;
+                default:
+                    tmpPrior += MELEE_PRIORITY_3_4;
+                    break;
+            }
+            break;
+
+        case NPC_QUEEN_A:
+        case NPC_QUEEN_H:
+        case NPC_BISHOP_A:
+        case NPC_BISHOP_H:
+            switch (meleeCount)
+            {
+                case 0:
+                    tmpPrior += MELEE_PRIORITY_4_0;
+                    break;
+                case 1:
+                    tmpPrior += MELEE_PRIORITY_4_1;
+                    break;
+                case 2:
+                    tmpPrior += MELEE_PRIORITY_4_2;
+                    break;
+                case 3:
+                    tmpPrior += MELEE_PRIORITY_4_3;
+                    break;
+                default:
+                    tmpPrior += MELEE_PRIORITY_4_4;
+                    break;
+            }
+            break;
+    }
+
+    //// modify priority based on count of enemies/friends in spells range
+
+    //int spellCount = GetCountOfPiecesInRange();
+
+    // modify priority based on way were we want to move
+
+    int tmpIP, tmpJP, tmpIT, tmpJT;
+
+    if (FindPlaceInBoard(piece, tmpIP, tmpJP) && FindPlaceInBoard(trigger, tmpIT, tmpJT))
+    {
+        if (tmpIP == tmpIT && tmpJP == tmpJT)
+            tmpPrior += STAY_IN_PLACE_PRIOR_MOD;
+        else
+        {
+            if (pInstance->GetData(CHESS_EVENT_TEAM) == ALLIANCE)   // if player is alliance
+            {
+                if (tmpIP < 2)
+                {
+                    if (tmpIP > tmpIT)
+                        tmpPrior += MOVE_BACK_PRIOR_MOD;
+                    else if (tmpIP == tmpIT && tmpJP != tmpJT)
+                        tmpPrior += MOVE_STRAFE_PRIOR_MOD;
+                    else
+                        tmpPrior += MOVE_DEFAULT_PRIOR_MOD;
+                }
+                else
+                {
+                    if (tmpIP > 5)
+                    {
+                        if (tmpIP < tmpIT)
+                            tmpPrior += MOVE_BACK_PRIOR_MOD;
+                        else if (tmpIP == tmpIT && tmpJP != tmpJT)
+                            tmpPrior += MOVE_STRAFE_PRIOR_MOD;
+                        else
+                            tmpPrior += MOVE_DEFAULT_PRIOR_MOD;
+                    }
+                    else
+                    {
+                        if (tmpIP < 4)
+                        {
+                            if (tmpIP > tmpIT)
+                                tmpPrior += MOVE_BACK_PRIOR_MOD/2;
+                            else if (tmpIP == tmpIT && tmpJP != tmpJT)
+                                tmpPrior += MOVE_STRAFE_PRIOR_MOD/2;
+                            else
+                                tmpPrior += MOVE_DEFAULT_PRIOR_MOD;
+                        }
+                        else
+                        {
+                            if (tmpIP > 3)
+                            {
+                                if (tmpIP > tmpIT)
+                                    tmpPrior += MOVE_BACK_PRIOR_MOD/3;
+                                else if (tmpIP == tmpIT && tmpJP != tmpJT)
+                                    tmpPrior += MOVE_STRAFE_PRIOR_MOD/2;
+                                else
+                                    tmpPrior += MOVE_DEFAULT_PRIOR_MOD;
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (tmpIP < 2)
+                {
+                    if (tmpIP < tmpIT)
+                        tmpPrior += MOVE_BACK_PRIOR_MOD;
+                    else if (tmpIP == tmpIT && tmpJP != tmpJT)
+                        tmpPrior += MOVE_STRAFE_PRIOR_MOD;
+                    else
+                        tmpPrior += MOVE_DEFAULT_PRIOR_MOD;
+                }
+                else
+                {
+                    if (tmpIP > 5)
+                    {
+                        if (tmpIP > tmpIT)
+                            tmpPrior += MOVE_BACK_PRIOR_MOD;
+                        else if (tmpIP == tmpIT && tmpJP != tmpJT)
+                            tmpPrior += MOVE_STRAFE_PRIOR_MOD;
+                        else
+                            tmpPrior += MOVE_DEFAULT_PRIOR_MOD;
+                    }
+                    else
+                    {
+                        if (tmpIP < 4)
+                        {
+                            if (tmpIP < tmpIT)
+                                tmpPrior += MOVE_BACK_PRIOR_MOD/2;
+                            else if (tmpIP == tmpIT && tmpJP != tmpJT)
+                                tmpPrior += MOVE_STRAFE_PRIOR_MOD/2;
+                            else
+                                tmpPrior += MOVE_DEFAULT_PRIOR_MOD;
+                        }
+                        else
+                        {
+                            if (tmpIP > 3)
+                            {
+                                if (tmpIP > tmpIT)
+                                    tmpPrior += MOVE_BACK_PRIOR_MOD/2;
+                                else if (tmpIP == tmpIT && tmpJP != tmpJT)
+                                    tmpPrior += MOVE_STRAFE_PRIOR_MOD/2;
+                                else
+                                    tmpPrior += MOVE_DEFAULT_PRIOR_MOD;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return tmpPrior;
+}
+
 void boss_MedivhAI::ChoosePieceToMove()
 {
     #ifdef CHESS_EVENT_DISSABLE_MEDIVH_PIECES_MOVEMENT
@@ -2961,213 +3412,276 @@ void boss_MedivhAI::ChoosePieceToMove()
     printf("\n Wywolanie ChoosePieceToMove()");
     #endif
 
-    //TODO: add some kind of check to test if actual position is better than other positions
+    std::list<Priority> possibleMoveList;
+    int possibleMovePrioritySum = 0;
 
-    std::list<Priority> tmpList;
-    std::list<ChessPosition> emptySquareList;
-
-    int prioritySum = 0;
-
-    //Select Medivh piece to move
-    //tmpList used to store move priority
-    for (std::list<uint64>::iterator i = medivhSidePieces.begin(); i != medivhSidePieces.end(); ++i)
+    // for each medivh piece
+    for (std::list<uint64>::const_iterator pieceItr = medivhSidePieces.begin(); pieceItr != medivhSidePieces.end(); ++pieceItr)
     {
-        //check neighbours and modify priority
-        //higher priority for pieces with more than 1 enemy in melee range
-        //higher priority for healers if enemy in melee range  ??
-        //set priority 0 for pieces which can't move anywhere
-        Priority tempPriority;
-        tempPriority.prior = 0;
-        tempPriority.GUID = *i;
+        if (IsInMoveList(*pieceItr))
+            continue;
 
-        if (IsEmptySquareInRange(*i, GetMoveRange(*i)))
+        std::list<Priority> tmpPriorList;
+        int priorSum = 0, i, tmpOffsetI, tmpOffsetJ, tmpI, tmpJ;
+        // calculate actual square prior
+        int actualPriority = CalculatePriority(*pieceItr, FindTriggerGUID(*pieceItr));
+
+        if (!FindPlaceInBoard(*pieceItr, tmpI, tmpJ))
+            continue;
+
+        // for each sqare in range
+        switch (GetMoveRange(*pieceItr))
         {
-            //if piece can move anywhere then modify move priority
-
-            tempPriority.prior = START_PRIORITY + GetCountOfEnemyInMelee(*i) * MELEE_PRIORITY + urand(0, RAND_PRIORITY) + GetLifePriority(*i);
-        }
-
-        prioritySum += tempPriority.prior;
-        tmpList.push_back(tempPriority);
-    }
-    #ifdef CHESS_DEBUG_INFO
-    printf("\ntempPriorityList size: %i, priorsum: %i", tmpList.size(), prioritySum);
-    #endif
-    int chosen = urand(0, prioritySum), prevPrior = 0;
-    ChessPosition chosenPiece;
-
-    for (std::list<Priority>::iterator i = tmpList.begin(); i!= tmpList.end(); ++i)
-    {
-        if (prevPrior < chosen && prevPrior + (*i).prior >= chosen)
-        {
-            chosenPiece.GUID = (*i).GUID;
-            break;
-        }
-        prevPrior += (*i).prior;
-    }
-
-    // create empty square list
-
-    int tmpI = -1, tmpJ = -1, i, j, tmpOffsetI, tmpOffsetJ;
-
-    FindPlaceInBoard(chosenPiece.GUID, tmpI, tmpJ);
-
-    if (tmpI < 0 || tmpJ < 0)
-    {
-        Creature * uChosen = m_creature->GetCreature(chosenPiece.GUID);
-        if (uChosen)
-            uChosen->Say("AddTriggerToMove(..) : Nie znaleziono mnie na planszy !!", LANG_UNIVERSAL, NULL);
-        else
-            me->Say("wybrany nie znaleziony", LANG_UNIVERSAL, NULL);
-        return;
-    }
-    #ifdef CHESS_DEBUG_INFO
-    printf("\nChosenGUID: %u | tmpI %i, tmpJ %i", chosenPiece.GUID, tmpI, tmpJ);
-    #endif
-    switch (GetMoveRange(chosenPiece.GUID))
-    {
-        case 25:
-            for (i = 0; i < OFFSET25COUNT; ++i)
-            {
-                tmpOffsetI = tmpI + offsetTab25[i][0];
-                tmpOffsetJ = tmpJ + offsetTab25[i][1];
-
-                if (tmpOffsetI >= 0 && tmpOffsetI < 8 &&
-                    tmpOffsetJ >= 0 && tmpOffsetJ < 8)
+            case 25:
+                for (i = 0; i < OFFSET25COUNT; i++)
                 {
-                   if (ChessSquareIsEmpty(tmpOffsetI, tmpOffsetJ))
-                        emptySquareList.push_back(ChessPosition(chessBoard[tmpOffsetI][tmpOffsetJ].trigger, tmpOffsetI, tmpOffsetJ));
-                }
-            }
-        case 20:
-            for (i = 0; i < OFFSET20COUNT; i++)
-            {
-                tmpOffsetI = tmpI + offsetTab20[i][0];
-                tmpOffsetJ = tmpJ + offsetTab20[i][1];
+                    tmpOffsetI = tmpI + offsetTab25[i][0];
+                    tmpOffsetJ = tmpJ + offsetTab25[i][1];
 
-                if (tmpOffsetI >= 0 && tmpOffsetI < 8 &&
-                    tmpOffsetJ >= 0 && tmpOffsetJ < 8)
+                    if (tmpOffsetI >= 0 && tmpOffsetI < 8 &&
+                        tmpOffsetJ >= 0 && tmpOffsetJ < 8 &&
+                        chessBoard[tmpOffsetI][tmpOffsetJ].piece == 0 &&            // if square is empty
+                        !IsInMoveList(chessBoard[tmpOffsetI][tmpOffsetJ].trigger, true))  // and isn't in move list
+                    {
+                        Priority prior;
+                        prior.GUIDfrom = *pieceItr;
+                        prior.GUIDto = chessBoard[tmpOffsetI][tmpOffsetJ].trigger;
+
+                        // calculate priority
+                        prior.prior = CalculatePriority(prior.GUIDfrom, prior.GUIDto);
+
+                        // if priority is > 0
+                        if (prior.prior > 0)
+                        {
+                            tmpPriorList.push_back(prior);  // add square info (priority) to list
+                            priorSum += prior.prior;        // sum priority
+                        }
+                    }
+                }
+            case 20:
+                for (i = 0; i < OFFSET20COUNT; i++)
                 {
-                   if (ChessSquareIsEmpty(tmpOffsetI, tmpOffsetJ))
-                        emptySquareList.push_back(ChessPosition(chessBoard[tmpOffsetI][tmpOffsetJ].trigger, tmpOffsetI, tmpOffsetJ));
-                }
-            }
-        case 15:
-            for (i = 0; i < OFFSET15COUNT; i++)
-            {
-                tmpOffsetI = tmpI + offsetTab15[i][0];
-                tmpOffsetJ = tmpJ + offsetTab15[i][1];
+                    tmpOffsetI = tmpI + offsetTab20[i][0];
+                    tmpOffsetJ = tmpJ + offsetTab20[i][1];
 
-                if (tmpOffsetI >= 0 && tmpOffsetI < 8 &&
-                    tmpOffsetJ >= 0 && tmpOffsetJ < 8)
+                    if (tmpOffsetI >= 0 && tmpOffsetI < 8 &&
+                        tmpOffsetJ >= 0 && tmpOffsetJ < 8 &&
+                        chessBoard[tmpOffsetI][tmpOffsetJ].piece == 0 &&            // if square is empty
+                        !IsInMoveList(chessBoard[tmpOffsetI][tmpOffsetJ].trigger, true))  // and isn't in move list
+                    {
+                        Priority prior;
+                        prior.GUIDfrom = *pieceItr;
+                        prior.GUIDto = chessBoard[tmpOffsetI][tmpOffsetJ].trigger;
+
+                        // calculate priority
+                        prior.prior = CalculatePriority(prior.GUIDfrom, prior.GUIDto);
+
+                        // if priority is > 0
+                        if (prior.prior > 0)
+                        {
+                            tmpPriorList.push_back(prior);  // add square info (priority) to list
+                            priorSum += prior.prior;        // sum priority
+                        }
+                    }
+
+                }
+            case 15:
+                for (i = 0; i < OFFSET15COUNT; i++)
                 {
-                   if (ChessSquareIsEmpty(tmpOffsetI, tmpOffsetJ))
-                        emptySquareList.push_back(ChessPosition(chessBoard[tmpOffsetI][tmpOffsetJ].trigger, tmpOffsetI, tmpOffsetJ));
-                }
-            }
-        case 8:
-            for (i = 0; i < OFFSET8COUNT; i++)
-            {
-                tmpOffsetI = tmpI + offsetTab8[i][0];
-                tmpOffsetJ = tmpJ + offsetTab8[i][1];
+                    tmpOffsetI = tmpI + offsetTab15[i][0];
+                    tmpOffsetJ = tmpJ + offsetTab15[i][1];
 
-                if (tmpOffsetI >= 0 && tmpOffsetI < 8 &&
-                    tmpOffsetJ >= 0 && tmpOffsetJ < 8)
+                    if (tmpOffsetI >= 0 && tmpOffsetI < 8 &&
+                        tmpOffsetJ >= 0 && tmpOffsetJ < 8 &&
+                        chessBoard[tmpOffsetI][tmpOffsetJ].piece == 0 &&            // if square is empty
+                        !IsInMoveList(chessBoard[tmpOffsetI][tmpOffsetJ].trigger, true))  // and isn't in move list
+                    {
+                        Priority prior;
+                        prior.GUIDfrom = *pieceItr;
+                        prior.GUIDto = chessBoard[tmpOffsetI][tmpOffsetJ].trigger;
+
+                        // calculate priority
+                        prior.prior = CalculatePriority(prior.GUIDfrom, prior.GUIDto);
+
+                        // if priority is > 0
+                        if (prior.prior > 0)
+                        {
+                            tmpPriorList.push_back(prior);  // add square info (priority) to list
+                            priorSum += prior.prior;        // sum priority
+                        }
+                    }
+
+                }
+            case 8:
+                for (i = 0; i < OFFSET8COUNT; i++)
                 {
-                   if (ChessSquareIsEmpty(tmpOffsetI, tmpOffsetJ))
-                        emptySquareList.push_back(ChessPosition(chessBoard[tmpOffsetI][tmpOffsetJ].trigger, tmpOffsetI, tmpOffsetJ));
+                    tmpOffsetI = tmpI + offsetTab8[i][0];
+                    tmpOffsetJ = tmpJ + offsetTab8[i][1];
+
+                    if (tmpOffsetI >= 0 && tmpOffsetI < 8 &&
+                        tmpOffsetJ >= 0 && tmpOffsetJ < 8 &&
+                        chessBoard[tmpOffsetI][tmpOffsetJ].piece == 0 &&            // if square is empty
+                        !IsInMoveList(chessBoard[tmpOffsetI][tmpOffsetJ].trigger, true))  // and isn't in move list
+                    {
+                        Priority prior;
+                        prior.GUIDfrom = *pieceItr;
+                        prior.GUIDto = chessBoard[tmpOffsetI][tmpOffsetJ].trigger;
+
+                        // calculate priority
+                        prior.prior = CalculatePriority(prior.GUIDfrom, prior.GUIDto);
+
+                        // if priority is > 0
+                        if (prior.prior > 0)
+                        {
+                            tmpPriorList.push_back(prior);  // add square info (priority) to list
+                            priorSum += prior.prior;        // sum priority
+                        }
+                    }
+
                 }
-            }
-            break;
-        default:
-            break;
-    }
-    #ifdef CHESS_DEBUG_INFO
-    printf("\nemptySquareList size: %i", emptySquareList.size());
-    #endif
-    if (emptySquareList.empty())
-        return;
-
-    // calculate and add square move priority
-    tmpList.clear();
-    prioritySum = 0;
-
-    for (std::list<ChessPosition>::iterator i = emptySquareList.begin(); i != emptySquareList.end(); ++i)
-    {
-        Priority tmpPrior;
-        tmpPrior.prior = START_PRIORITY;
-        tmpPrior.GUID = (*i).GUID;
-
-        switch (GetCountOfEnemyInMelee((*i).GUID))
-        {
-            case 1:
-                tmpPrior.prior += MELEE_ENEMY_COUNT_PRIOR_MOD_1;
-                break;
-            case 2:
-                tmpPrior.prior += MELEE_ENEMY_COUNT_PRIOR_MOD_2;
-                break;
-            case 3:
-                tmpPrior.prior += MELEE_ENEMY_COUNT_PRIOR_MOD_3;
-                break;
-            case 4:
-                tmpPrior.prior += MELEE_ENEMY_COUNT_PRIOR_MOD_4;
                 break;
             default:
+                me->Say("Jakis dziwaczny range", LANG_UNIVERSAL, NULL);
                 break;
         }
 
-        // modify priority for moving back
-        if (pInstance->GetData(CHESS_EVENT_TEAM) == ALLIANCE)
+        // if square info list in not empty
+        if (tmpPriorList.empty() || priorSum <= 0)
+            continue;
+
+        switch (rand()%2)
         {
-            if ((*i).i > chosenPiece.i)
-                tmpPrior.prior += MOVE_BACK_PRIOR_MOD;
+            case 0:
+            {
+                // choose random priority from 0 to priority sum
+                int chosenPrior = urand(0, priorSum);
+                int tmpPriorSum = 0;
+                // search for randomed square
+                for (std::list<Priority>::iterator priorItr = tmpPriorList.begin(); priorItr != tmpPriorList.end(); ++ priorItr)
+                {
+                    if (chosenPrior >= tmpPriorSum && chosenPrior < tmpPriorSum + (*priorItr).prior)
+                    {
+                        // rand if chosen position is better than actual position
+                        if (urand(0, actualPriority + (*priorItr).prior) > actualPriority)
+                        {
+                            possibleMoveList.push_back(*priorItr);          // add possible move to list
+                            possibleMovePrioritySum += (*priorItr).prior;   // sum square move priorities
+                        }
+                        #ifdef CHESS_DEBUG_INFO
+                        else
+                        {
+                            if (Creature * tmpC = me->GetCreature(*pieceItr))
+                                tmpC->Say("hmm ... Powinienem jednak zostac gdzie stoje ...", LANG_UNIVERSAL, NULL);
+                            printf("\nPiece: %u, prior: %i, actual: %i | STAY IN HOME", *pieceItr, (*priorItr).prior, actualPriority);
+                        }
+                        #endif
+
+                        break;
+                    }
+
+                    tmpPriorSum += (*priorItr).prior;
+                }
+                break;
+            }
+            case 1:
+            {
+                std::list<Priority> bestList;
+                if (tmpPriorList.empty())
+                    continue;
+
+                Priority best = tmpPriorList.front();
+                for (std::list<Priority>::iterator itr = tmpPriorList.begin(); itr != tmpPriorList.end(); ++itr)
+                {
+                    if (best.prior < (*itr).prior)
+                    {
+                        best = *itr;
+                        bestList.clear();
+                        bestList.push_back(*itr);
+                    }
+                    else if (best.prior == (*itr).prior)
+                    {
+                        bestList.push_back(*itr);
+                    }
+                }
+
+                if (bestList.empty())
+                    continue;
+
+                std::list<Priority>::iterator itr = bestList.begin();
+                advance(itr, urand(0, bestList.size()-1));
+
+                possibleMoveList.push_back(*itr);          // add possible move to list
+                possibleMovePrioritySum += (*itr).prior;   // sum square move priorities
+                break;
+            }
         }
-        else
-        {
-            if ((*i).i < chosenPiece.i)
-                tmpPrior.prior += MOVE_BACK_PRIOR_MOD;
-        }
-
-        // modify priority for moving to left or right
-        if ((*i).j != chosenPiece.j)
-            tmpPrior.prior += MOVE_STRAFE_PRIOR_MOD;
-
-        if (IsKing((*i).GUID))
-            tmpPrior.prior += ATTACK_KING_PRIOR;
-
-        if (IsHealer((*i).GUID))
-            tmpPrior.prior += ATTACK_HEALER_PRIOR;
-
-        prioritySum += tmpPrior.prior;
-        tmpList.push_back(tmpPrior);
     }
 
-    chosen = urand(0, prioritySum);
-    prevPrior = 0;
-    uint64 chosenTriggerGUID = 0;
+    if (possibleMoveList.empty())
+        return;
 
-    for (std::list<Priority>::iterator i = tmpList.begin(); i!= tmpList.end(); ++i)
+    Priority chosen;
+    #ifdef CHESS_DEBUG_INFO
+    int method;
+    #endif
+    if (rand()%2)
     {
-        if (prevPrior < chosen && prevPrior + (*i).prior >= chosen)
+        #ifdef CHESS_DEBUG_INFO
+        method = 1;
+        #endif
+        // choose random move from list
+        int tmpChosenPrior = urand(0, possibleMovePrioritySum);
+        int tmpPriorSum = 0;
+        for (std::list<Priority>::iterator itr = possibleMoveList.begin(); itr != possibleMoveList.end(); ++itr)
         {
-            chosenTriggerGUID = (*i).GUID;
-            break;
+            if (tmpChosenPrior >= tmpPriorSum && tmpChosenPrior < tmpPriorSum + (*itr).prior)
+            {
+                chosen = *itr;
+                break;
+            }
+
+            tmpPriorSum += (*itr).prior;
         }
-        prevPrior += (*i).prior;
+    }
+    else
+    {
+        #ifdef CHESS_DEBUG_INFO
+        method = 2;
+        #endif
+        // choose best move from list
+        Priority best = possibleMoveList.front();
+        for (std::list<Priority>::iterator itr = possibleMoveList.begin(); itr != possibleMoveList.end(); ++itr)
+            if (best.prior < (*itr).prior)
+                best = *itr;
+
+        chosen = best;
     }
 
-    Creature * tmpC = me->GetCreature(chosenPiece.GUID);
-    Creature * tmpT = me->GetCreature(chosenTriggerGUID);
+    if (!chosen.GUIDfrom || !chosen.GUIDto)
+        return;
+
+    // make move to chosen
+    Creature * tmpC = me->GetCreature(chosen.GUIDfrom);
+    Creature * tmpT = me->GetCreature(chosen.GUIDto);
 
     if (tmpC && tmpT)
         tmpC->CastSpell(tmpT, GetMoveSpell(tmpC), false);
     else
     {
         #ifdef CHESS_DEBUG_INFO
-        printf("chosenGUID: %i, %i | chosenTriggerGUID: %i, %i", chosenPiece.GUID, tmpC ? 1 : 0, chosenTriggerGUID, tmpT ? 1 : 0);
+        printf("\nchosen.GUIDfrom: %u, %i | chosen.GUIDto: %u, %i | method: %i | isMedivhPiece: %i", chosen.GUIDfrom, tmpC ? 1 : 0, chosen.GUIDto, tmpT ? 1 : 0, method, IsMedivhsPiece(chosen.GUIDfrom));
         #endif
         me->Say("Cosik mi sie wybrany pionek albo trigger gdzies zgubil", LANG_UNIVERSAL, NULL);
     }
+}
+
+uint32 boss_MedivhAI::GetEntry(uint64 piece)
+{
+    Creature * tmp = me->GetCreature(piece);
+    if (!tmp)
+        return 0;
+
+    return tmp->GetEntry();
 }
 
 uint32 boss_MedivhAI::GetDeadEntryForPiece(Creature * piece)
@@ -3219,6 +3733,85 @@ uint32 boss_MedivhAI::GetDeadEntryForPiece(uint32 entry)
 
     return 0;
 }
+
+void boss_MedivhAI::CheckChangeFacing(uint64 piece, int i, int j)
+{
+    #ifdef CHESS_DEBUG_INFO
+    printf("\n Wywolanie boss_MedivhAI::CheckChangeFacing(uint64 piece = %u, int i = %i, int j = %i)", piece, i, j);
+    #endif
+    if (i == -1 || j == -1)
+        if (!FindPlaceInBoard(piece, i, j))
+            return;
+
+    if (IsInMoveList(piece))
+        return;
+
+    ChessOrientation actualOri = chessBoard[i][j].ori;
+    ChessOrientation tmpOri;
+    ChessOrientation targetOri = CHESS_ORI_CHOOSE;
+    uint64 target = 0, tmpTarget = 0, targetTrigger = 0;
+    int targetPrior = 0, tmpPrior = 0;
+    int targetPos[2];
+
+    for (int k = 0; k < OFFSETMELEECOUNT; ++k)
+    {
+        int tmpOffsetI = offsetTabMelee[k][0];
+        int tmpOffsetJ = offsetTabMelee[k][1];
+
+        if (tmpOffsetI == 0)
+        {
+            if (tmpOffsetJ == 1)
+                tmpOri = CHESS_ORI_E;
+            else
+                tmpOri = CHESS_ORI_W;
+        }
+        else if (tmpOffsetJ == 0)
+        {
+            if (tmpOffsetI == 1)
+                tmpOri = CHESS_ORI_S;
+            else
+                tmpOri = CHESS_ORI_N;
+        }
+
+        tmpOffsetI += i;
+        tmpOffsetJ += j;
+
+        if (tmpOffsetI >= 0 && tmpOffsetI < 8 &&
+            tmpOffsetJ >= 0 && tmpOffsetJ < 8)
+        {
+            tmpTarget = chessBoard[tmpOffsetI][tmpOffsetJ].piece;
+            if (Enemy(piece, tmpTarget))
+            {
+                tmpPrior = GetAttackPriority(tmpTarget);
+
+                if (tmpPrior > targetPrior)
+                {
+                    target = tmpTarget;
+                    targetOri = tmpOri;
+                    targetPrior = tmpPrior;
+                    targetTrigger = chessBoard[tmpOffsetI][tmpOffsetJ].trigger;
+
+                }
+            }
+        }
+    }
+
+    if (targetOri != CHESS_ORI_CHOOSE)
+    {
+        if (targetOri != actualOri)
+        {
+            Creature * tmpC = me->GetCreature(piece);
+            Creature * tmpT = me->GetCreature(targetTrigger);
+            if (tmpC && tmpT)
+                tmpC->CastSpell(tmpT, SPELL_CHANGE_FACING, false);
+            #ifdef CHESS_DEBUG_INFO
+            else
+                printf("\nChangeFacing: nima tmpC (%i | guid: %u) lub tmpT (%i | guid: %u), prior: %i", tmpC ? 1 : 0, piece, tmpT ? 1 : 0, targetTrigger, targetPrior);
+            #endif
+        }
+    }
+}
+
 
 //other
 

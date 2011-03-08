@@ -678,6 +678,9 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 41406:                                         // Dementia +
         case 41409:                                         // Dementia -
         case 30529:                                         // Chess event: Recently In Game
+        case 39331:
+        case 37469:
+        case 37465:
             return false;
     }
 

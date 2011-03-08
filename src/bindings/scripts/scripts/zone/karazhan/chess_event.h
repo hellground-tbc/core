@@ -10,7 +10,6 @@ TODO:
  - Implement Medivhs cheats
  - Fix spells (Game in session, Rain of Fire, Poison Cloud (it's all ? ))
  - Upgrade chesspiece AI for spells use
- - Upgrade medivh pieces movement
 EndScriptData */
 
 #include "precompiled.h"
@@ -24,10 +23,10 @@ EndScriptData */
 #define TRIGGER_ID          22519
 #define DUST_COVERED_CHEST  185119
 
-#define ALLIANCE_DEAD_X1        -11047.8
-#define ALLIANCE_DEAD_X2        -11046.1
-#define ALLIANCE_DEAD_Y1        -1884.2
-#define ALLIANCE_DEAD_Y2        -1886.4
+#define ALLIANCE_DEAD_X1        -11081.2 //-11047.8
+#define ALLIANCE_DEAD_X2        -11082.8 //-11046.1
+#define ALLIANCE_DEAD_Y1        -1842.2
+#define ALLIANCE_DEAD_Y2        -1840.1 //-1886.4
 #define HORDE_DEAD_X1           -11080.4
 #define HORDE_DEAD_X2           -11078.7
 #define HORDE_DEAD_Y1           -1910.2
@@ -39,15 +38,45 @@ EndScriptData */
 
 #define START_PRIORITY                  100
 #define RAND_PRIORITY                   100
-#define MELEE_PRIORITY                  50      // use: + melee count * MELEE_PRIORITY
+#define MELEE_PRIORITY                  25
+
+// pawns
+#define MELEE_PRIORITY_1_0              30
+#define MELEE_PRIORITY_1_1              50
+#define MELEE_PRIORITY_1_2              25
+#define MELEE_PRIORITY_1_3              -25
+#define MELEE_PRIORITY_1_4              -50
+// rooks/knights
+#define MELEE_PRIORITY_2_0              25
+#define MELEE_PRIORITY_2_1              50
+#define MELEE_PRIORITY_2_2              75
+#define MELEE_PRIORITY_2_3              75
+#define MELEE_PRIORITY_2_4              75
+// kings
+#define MELEE_PRIORITY_3_0              25
+#define MELEE_PRIORITY_3_1              50
+#define MELEE_PRIORITY_3_2              50
+#define MELEE_PRIORITY_3_3              35
+#define MELEE_PRIORITY_3_4              -25
+// quens/bishops
+#define MELEE_PRIORITY_4_0              25
+#define MELEE_PRIORITY_4_1              30
+#define MELEE_PRIORITY_4_2              0
+#define MELEE_PRIORITY_4_3              -25
+#define MELEE_PRIORITY_4_4              -50
+
 #define ATTACK_KING_PRIOR               50
 #define ATTACK_HEALER_PRIOR             50
+
 #define MELEE_ENEMY_COUNT_PRIOR_MOD_1   50
 #define MELEE_ENEMY_COUNT_PRIOR_MOD_2   25
 #define MELEE_ENEMY_COUNT_PRIOR_MOD_3   -25
 #define MELEE_ENEMY_COUNT_PRIOR_MOD_4   -50
-#define MOVE_BACK_PRIOR_MOD             -50
-#define MOVE_STRAFE_PRIOR_MOD           -25
+
+#define MOVE_BACK_PRIOR_MOD             -75
+#define MOVE_STRAFE_PRIOR_MOD           -50
+#define STAY_IN_PLACE_PRIOR_MOD         0
+#define MOVE_DEFAULT_PRIOR_MOD          25
 
 #define ABILITY_CHANCE_MAX      100
 #define ABILITY_1_CHANCE_MIN    25
@@ -66,7 +95,7 @@ EndScriptData */
 #define attackCooldown          urand(2000, 4000)
 #define SHARED_COOLDOWN         5000
 
-#define ADD_PIECE_TO_MOVE_TIMER urand(1000, 4000);
+#define ADD_PIECE_TO_MOVE_TIMER urand(10000, 15000);
 
 #define ORI_N           0.656777
 #define ORI_E           5.391155
@@ -75,8 +104,9 @@ EndScriptData */
 
 #define CHESS_DEBUG_INFO                            1
 //#define CHESS_EVENT_DISSABLE_MEDIVH_PIECES_MOVEMENT 1
-//#define CHESS_EVENT_DISSABLE_MEDIVH_PIECES_SPELLS   1
-//#define CHESS_EVENT_DISSABLE_MELEE                  1
+#define CHESS_EVENT_DISSABLE_MEDIVH_PIECES_SPELLS   1
+#define CHESS_EVENT_DISSABLE_MELEE                  1
+//#define CHESS_EVENT_DISSABLE_FACING                 1
 
 enum SCRIPTTEXTs
 {
@@ -145,7 +175,7 @@ enum ChessEventSpells
     // 3rd cheat: set own creatures to max health
 };
 
-enum ChessPIecesSpells
+enum ChessPiecesSpells
 {
     //ability 1
     SPELL_KING_H_1    = 37476,    //Cleave
@@ -295,20 +325,23 @@ struct ChessPosition
 
 struct Priority
 {
-    uint64 GUID;
+    uint64 GUIDfrom;
+    uint64 GUIDto;
     int prior;
 
     Priority()
     {
-        GUID = 0;
+        GUIDfrom = 0;
+        GUIDto = 0;
         prior = 0;
     }
 };
 
-#define OFFSET8COUNT    8
-#define OFFSET15COUNT   12
-#define OFFSET20COUNT   24
-#define OFFSET25COUNT   4
+#define OFFSETMELEECOUNT    4
+#define OFFSET8COUNT        8
+#define OFFSET15COUNT       12
+#define OFFSET20COUNT       24
+#define OFFSET25COUNT       4
 
 // 0 - caster; 1 - 8yd range; 2 - 15yd range; 3 - 20 yd range; 4 - 25 yd range
 //
@@ -320,6 +353,8 @@ struct Priority
 // 3 3 2 2 2 3 3
 // 4 3 3 3 3 3 4
 //
+
+const int offsetTabMelee[4][2] = {{-1, 0}, {1, 0}, {0, 1}, {0, -1}};
 
 const int offsetTab8[8][2] = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
 
@@ -380,8 +415,11 @@ private:
 
     int32 nextTryTimer;     //try to cast spell after some time
 
+    uint32 changeFacingTimer;
+
     uint32 ability1ID;
     uint32 ability2ID;
+    uint32 moveID;
 
     //void MoveInLineOfSight(Unit *who);
 
@@ -407,6 +445,8 @@ public:
     void OnCharmed(bool apply);
 
     void SpellHit(Unit * caster, const SpellEntry * spell);
+
+    void SpellHitTarget(Unit * caster, const SpellEntry * spell);
 
     void JustDied(Unit* killer);
 
@@ -460,7 +500,7 @@ public:
     //remove
 
     void SayChessPieceDied(Unit * piece);
-    void RemoveChessPieceFromBoard(uint64 piece);   //removes dead piece from chess board
+    void RemoveChessPieceFromBoard(uint64 piece);       //removes dead piece from chess board
     void RemoveChessPieceFromBoard(Creature * piece);   //and spawn them in position near board
 
     //check
@@ -475,6 +515,8 @@ public:
     bool IsHealer(uint64 piece);
     bool IsKing(Creature * piece);
     bool IsHealer(Creature * piece);
+
+    void CheckChangeFacing(uint64 piece, int i = -1, int j = -1);
 
     //teleport
 
@@ -500,13 +542,16 @@ public:
 
     //move
 
+    int CalculatePriority(uint64 piece, uint64 trigger);
     void ChoosePieceToMove();
     bool ChessSquareIsEmpty(uint64 trigger);
     bool ChessSquareIsEmpty(int i, int j);
     bool CanMoveTo(uint64 trigger, uint64 piece);   //check if player can move to trigger - prevent cheating
     void AddTriggerToMove(uint64 trigger, uint64 piece, bool player);
+    void RemoveFromMoveList(uint64 unit);
     Creature * FindTrigger(uint64 piece);               //find trigger where piece actually should be
-    void MakeMoves();
+    uint64 FindTriggerGUID(uint64 piece);
+    //void MakeMoves();
     int GetMoveRange(uint64 piece);
     int GetMoveRange(Unit * piece);
     uint32 GetMoveSpell(uint64 piece);
@@ -518,7 +563,8 @@ public:
 
     //priority
 
-    int GetCountOfEnemyInMelee(uint64 piece);
+    int GetCountOfEnemyInMelee(uint64 piece, bool strafe = false);
+    int GetCountOfPiecesInRange(uint64 trigger, int range, bool friendly);
     int GetLifePriority (uint64 piece);
     int GetAttackPriority (uint64 piece);
 
@@ -534,6 +580,7 @@ public:
 
     void SetOrientation(uint64 piece, ChessOrientation ori = CHESS_ORI_CHOOSE);
     bool Enemy(uint64 piece1, uint64 piece2);
+    uint32 GetEntry(uint64 piece);
     uint32 GetDeadEntryForPiece(Creature * piece);
     uint32 GetDeadEntryForPiece(uint32 entry);
 
