@@ -719,6 +719,20 @@ void Spell::EffectDummy(uint32 i)
         {
             switch (m_spellInfo->Id)
             {
+                case 37573:
+                {
+                    if (unitTarget->GetTypeId() == TYPEID_UNIT)
+                    {
+                        uint32 entry = 0;
+                        switch(urand(0,2))
+                        {
+                            case 0: entry = 21817; break;
+                            case 1: entry = 21820; break;
+                            case 2: entry = 21821; break;
+                        }
+                        ((Creature*)unitTarget)->UpdateEntry(entry);
+                    }
+                }
                 // Illidan Stormrage: Throw Glaive (Summon Glaive after throw;p
                 case 39635:
                 {
