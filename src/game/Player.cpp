@@ -19636,6 +19636,15 @@ void Player::UpdateAreaDependentAuras(uint32 newArea)
         // use m_zoneUpdateId for speed: UpdateArea called from UpdateZone or instead UpdateZone in both cases m_zoneUpdateId up-to-date
         if (!IsSpellAllowedInLocation(iter->second->GetSpellProto(),GetMapId(),m_zoneUpdateId,newArea))
         {
+            if (iter->second->GetId() == 38157)
+            {
+                if (newArea == 3522 || newArea == 3785)
+                {
+                    iter++;
+                    continue;
+                }
+            }
+
             for (uint8 i = 0; i < 3; ++i)
             {
                 if (iter->second->GetSpellProto()->Effect[i] == SPELL_EFFECT_TRIGGER_SPELL && HasAura(iter->second->GetSpellProto()->EffectTriggerSpell[i],0))
