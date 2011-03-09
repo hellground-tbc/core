@@ -6742,7 +6742,6 @@ void Spell::EffectSendTaxi(uint32 i)
     }
 
     ((Player*)unitTarget)->ActivateTaxiPathTo(nodes,mountid);
-
 }
 
 void Spell::EffectPlayerPull(uint32 i)

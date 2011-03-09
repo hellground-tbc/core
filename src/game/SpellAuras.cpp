@@ -2572,8 +2572,14 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
     {
         case SPELLFAMILY_GENERIC:
         {
+            // Fiery Soul Visual
+            if (GetId() == 36587)
+            {
+                if (apply)
+                    caster->CastSpell(caster, 36573, true);
+            }
             // Power Convert
-            if (GetId() ==37136)
+            if (GetId() == 37136)
             {
                 if (m_target->GetTypeId() == TYPEID_UNIT)
                     ((Creature*)m_target)->UpdateEntry(apply ? 21731 : 21729);
