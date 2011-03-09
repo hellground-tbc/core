@@ -2655,6 +2655,7 @@ void boss_MedivhAI::SpawnTriggers()
 
 void boss_MedivhAI::ClearBoard()
 {
+    Creature * tmpC;
     for (int i = 0; i < 8; ++i)
     {
         for (int j = 0; j < 8; ++j)
