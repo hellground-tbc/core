@@ -349,10 +349,8 @@ bool GossipSelect_npc_skyguard_handler_irena(Player *player, Creature *_Creature
 ## npc_bloodmaul_brutebane
 ######*/
 
-
 enum eBloodmaul
 {
-    QUEST_GETTING_THE_BLADESPIRE_TANKED  = 10512,
     NPC_OGRE_BRUTE                       = 19995,
     NPC_QUEST_CREDIT                     = 21241,
     GO_KEG                               = 184315
@@ -360,23 +358,21 @@ enum eBloodmaul
 
 struct npc_bloodmaul_brutebaneAI : public ScriptedAI
 {
-    npc_bloodmaul_brutebaneAI(Creature *c) : ScriptedAI(c)
+    npc_bloodmaul_brutebaneAI(Creature *c) : ScriptedAI(c){}
+
+    void IsSummonedBy(Unit *pOwner)
     {
-       if(Unit* Ogre = FindCreature(NPC_OGRE_BRUTE, 50, m_creature))
+       if (Creature* pOgre = GetClosestCreatureWithEntry(me, NPC_OGRE_BRUTE, 50.0f))
        {
-           ((Creature*)Ogre)->SetReactState(REACT_DEFENSIVE);
-           Ogre->GetMotionMaster()->MovePoint(1, m_creature->GetPositionX()-1, m_creature->GetPositionY()+1, m_creature->GetPositionZ());
+           pOgre->SetReactState(REACT_DEFENSIVE);
+           pOgre->GetMotionMaster()->MovePoint(1, m_creature->GetPositionX()-1, m_creature->GetPositionY()+1, m_creature->GetPositionZ());
+
+           if (Player *plOwner = pOwner->GetCharmerOrOwnerPlayerOrPlayerItself())
+               plOwner->KilledMonster(NPC_QUEST_CREDIT, pOgre->GetGUID());
        }
     }
 
-    uint64 OgreGUID;
-
-    void Reset()
-    {
-        OgreGUID = 0;
-    }
-
-    void UpdateAI(const uint32 uiDiff) {}
+    void UpdateAI(const uint32 uiDiff){}
 };
 
 CreatureAI* GetAI_npc_bloodmaul_brutebane(Creature* pCreature)
@@ -390,46 +386,30 @@ CreatureAI* GetAI_npc_bloodmaul_brutebane(Creature* pCreature)
 
 struct npc_ogre_bruteAI : public ScriptedAI
 {
-    npc_ogre_bruteAI(Creature *c) : ScriptedAI(c) {}
-
-    uint64 PlayerGUID;
-
-    void Reset()
-    {
-        PlayerGUID = 0;
-    }
-
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (!who || (!who->isAlive())) return;
-
-        if (m_creature->IsWithinDistInMap(who, 50.0f) && (who->GetTypeId() == TYPEID_PLAYER) && ((Player*)who)->GetQuestStatus(QUEST_GETTING_THE_BLADESPIRE_TANKED) == QUEST_STATUS_INCOMPLETE)
-        {
-            PlayerGUID = who->GetGUID();
-        }
-    }
+    npc_ogre_bruteAI(Creature *c) : ScriptedAI(c){}
 
     void MovementInform(uint32 type, uint32 id)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
-        if(id == 1)
-        {
-            GameObject* Keg = FindGameObject(GO_KEG, 20.0, m_creature);
-            if(Keg)
-                Keg->Delete();
-            m_creature->HandleEmoteCommand(7);
-            m_creature->SetReactState(REACT_AGGRESSIVE);
-            m_creature->GetMotionMaster()->MoveTargetedHome();
-            Unit* Credit = FindCreature(NPC_QUEST_CREDIT, 50, m_creature);
-            if(player && Credit)
-                player->KilledMonster(NPC_QUEST_CREDIT, Credit->GetGUID());
-        }
+        if (type != POINT_MOTION_TYPE || id != 1)
+            return;
+
+        if (GameObject* pKeg = FindGameObject(GO_KEG, 20.0, me))
+            pKeg->Delete();
+
+        me->HandleEmoteCommand(7);
+        me->SetReactState(REACT_AGGRESSIVE);
+
+        if (!me->getVictim())
+            me->GetMotionMaster()->MoveTargetedHome();
+        else
+            me->GetMotionMaster()->MoveChase(me->getVictim());
     }
 
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim())
             return;
+
         DoMeleeAttackIfReady();
     }
 };
@@ -664,6 +644,51 @@ bool GossipSelect_npc_kolphis_darkscale(Player *player, Creature *_Creature, uin
 return true;
 }
 
+/*#########
+# npc_prophecy_trigger
+#########*/
+
+struct TRINITY_DLL_DECL npc_prophecy_triggerAI : public ScriptedAI
+{
+    npc_prophecy_triggerAI(Creature *c) : ScriptedAI(c)
+    {
+        me->SetReactState(REACT_AGGRESSIVE);
+    }
+
+    void MoveInLineOfSight(Unit *pWho)
+    {
+        if (Player *plWho = pWho->GetCharmerOrOwnerPlayerOrPlayerItself())
+        {
+            if (plWho->GetQuestStatus(10607) == QUEST_STATUS_INCOMPLETE && plWho->HasAura(37466,0) && plWho->GetDistance(me) < 20.0f)
+            {
+                switch(me->GetEntry())
+                {
+                    case 22798:
+                        me->Whisper("From the darkest night shall rise again the raven, shall take flight in the shadows, shall reveal the nature of its kind. Prepare yourself for its coming, for the faithful shall be elevated to take flight with the raven, the rest be forgotten to walk upon the ground, clipped wings and shame.", plWho->GetGUID());
+                        break;
+                    case 22799:
+                        me->Whisper("Steel your minds and guard your thoughts. The dark wings will cloud and consume the minds of the weak, a flock of thralls whose feet may never leave the ground.", plWho->GetGUID());
+                        break;
+                    case 22800:
+                        me->Whisper("The old blood will flow once again with the coming of the raven, the return of the darkness in the skies. Scarlet night, and the rise of the old.", plWho->GetGUID());
+                        break;
+                    case 22801:
+                        me->Whisper("The raven was struck down once for flying too high, unready. The eons have prepared the Dark Watcher for its ascent, to draw the dark cloak across the horizon.", plWho->GetGUID());
+                        break;
+                }
+
+                plWho->KilledMonster(me->GetEntry(), me->GetGUID());
+                me->DisappearAndDie();
+            }
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_prophecy_trigger(Creature *_Creature)
+{
+    return new npc_prophecy_triggerAI(_Creature);
+}
+
 /*######
 ## AddSC
 ######*/
@@ -731,5 +756,9 @@ void AddSC_blades_edge_mountains()
     newscript->pGossipHello = &GossipHello_npc_kolphis_darkscale;
     newscript->pGossipSelect = &GossipSelect_npc_kolphis_darkscale;
     newscript->RegisterSelf();
-    
+
+    newscript = new Script;
+    newscript->Name="npc_prophecy_trigger";
+    newscript->GetAI = &GetAI_npc_prophecy_trigger;
+    newscript->RegisterSelf();
 }

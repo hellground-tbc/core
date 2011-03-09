@@ -17,19 +17,19 @@
 /* ScriptData
 SDName: Boss_Gluth
 SD%Complete: 75
-SDComment:	Decimate NYI, zombies aren't chasing players, Gluth don't try to eat zombies
+SDComment:    Decimate NYI, zombies aren't chasing players, Gluth don't try to eat zombies
 SDCategory: Naxxramas
 EndScriptData */
 
 #include "precompiled.h"
 #include "def_naxxramas.h"
 
-#define SPELL_MORTALWOUND			25646
-#define SPELL_DECIMATE				28374	//not supported by the core
-#define SPELL_TERRIFYINGROAR		29685
-#define SPELL_FRENZY				19812
-#define SPELL_ENRAGE				28747
-#define SPELL_ZOMBIE_CHOW_SEARCH	28239 // 28404?
+#define SPELL_MORTALWOUND           25646
+#define SPELL_DECIMATE              28374    //not supported by the core
+#define SPELL_TERRIFYINGROAR        29685
+#define SPELL_FRENZY                19812
+#define SPELL_ENRAGE                28747
+#define SPELL_ZOMBIE_CHOW_SEARCH    28239 // 28404?
 
 #define ADD_1X 3269.590
 #define ADD_1Y -3161.287

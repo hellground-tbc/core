@@ -1740,7 +1740,11 @@ void Aura::TriggerSpell()
 //                    // Arcane Flurry
 //                    case 37268: break;
                     // Spout
-                    case 37429: trigger_spell_id = 42835; break;
+                    case 37429:
+                    {
+                        trigger_spell_id = 42835;
+                        break;
+                    }
 //                    // Spout
 //                    case 37430: break;
 //                    // Karazhan - Chess NPC AI, Snapshot timer
@@ -2236,6 +2240,10 @@ void Aura::TriggerSpell()
                         return;
                 }
             }
+            // Cyclone from Zul'jin event (Zul'Aman)
+            case 43120:
+                target = m_target;
+                break;
         }
     }
     if (!GetSpellMaxRange(sSpellRangeStore.LookupEntry(triggeredSpellInfo->rangeIndex)))
@@ -2572,6 +2580,18 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
     {
         case SPELLFAMILY_GENERIC:
         {
+            // Fiery Soul Visual
+            if (GetId() == 36587)
+            {
+                if (apply)
+                    caster->CastSpell(caster, 36573, true);
+            }
+            // Power Convert
+            if (GetId() == 37136)
+            {
+                if (m_target->GetTypeId() == TYPEID_UNIT)
+                    ((Creature*)m_target)->UpdateEntry(apply ? 21731 : 21729);
+            }
             // Unstable Power
             if (GetId() == 24658)
             {
@@ -2753,7 +2773,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     {
                         // final heal
                         if (m_target->IsInWorld())
-                            m_target->CastCustomSpell(m_target,33778,&m_modifier.m_amount,NULL,NULL,true,NULL,this,GetCasterGUID());
+                            m_target->CastCustomSpell(m_target,33778,&m_modifier.m_amount,NULL,NULL,true,NULL,this,NULL); // threat for lifebloom target //GetCasterGUID());
                     }
                 }
                 return;
@@ -4796,6 +4816,10 @@ void Aura::HandlePeriodicHeal(bool apply, bool Real)
             }
         }
     }
+
+    // Hex Lord Malacrass Lifebloom
+    if(m_spellProto->Id == 43421 && Real && !apply && (m_removeMode == AURA_REMOVE_BY_DISPEL || m_removeMode == AURA_REMOVE_BY_EXPIRE))
+        m_target->CastSpell(m_target, 43422, true, 0, 0, 0);
 }
 
 void Aura::HandlePeriodicDamage(bool apply, bool Real)

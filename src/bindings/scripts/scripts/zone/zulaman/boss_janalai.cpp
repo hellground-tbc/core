@@ -33,8 +33,8 @@ EndScriptData */
 #define SAY_SLAY_1                  -1568005
 #define SAY_SLAY_2                  -1568006
 #define SAY_DEATH                   -1568007
-#define SAY_EVENT_STRANGERS         -1568008
-#define SAY_EVENT_FRIENDS           -1568009
+#define SAY_EVENT_STRANGERS         -1568008        // aka INTRO1
+#define SAY_EVENT_FRIENDS           -1568009        // aka INTRO2
 
 // Jan'alai
 // --Spell
@@ -136,6 +136,7 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
     uint64 FireBombGUIDs[40];
 
     uint32 checkTimer;
+    bool Intro;
 
     void Reset()
     {
@@ -162,6 +163,17 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
         HatchAllEggs(1);
 
         checkTimer = 3000;
+        Intro = false;
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if(!Intro && me->IsHostileTo(who) && who->IsWithinDist(me, 20, false))
+        {
+            Intro = true;
+            DoScriptText(RAND(SAY_EVENT_FRIENDS, SAY_EVENT_STRANGERS), m_creature);
+        }
+        CreatureAI::MoveInLineOfSight(who);
     }
 
     void JustDied(Unit* Killer)
@@ -299,10 +311,6 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
             isBombing = false;
             BombTimer = 20000+rand()%20000;
             m_creature->RemoveAurasDueToSpell(SPELL_FIRE_BOMB_CHANNEL);
-            if(EnrageTimer <= 10000)
-                EnrageTimer = 0;
-            else
-                EnrageTimer -= 10000;
         }
     }
 
@@ -313,7 +321,18 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
             if(!m_creature->IsNonMeleeSpellCasted(false))
             {
                 isFlameBreathing = false;
-            }else return;
+            }else 
+            {
+                if(EnrageTimer > diff)
+                    EnrageTimer -= diff;
+                else
+                    EnrageTimer = 0;
+                if(HatcherTimer > diff)
+                    HatcherTimer -= diff;
+                else
+                    HatcherTimer = 0;
+                return;
+            }
         }
 
         if(isBombing)
@@ -321,7 +340,17 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
             if(BombSequenceTimer < diff)
             {
                 HandleBombSequence();
-            }else BombSequenceTimer -= diff;
+            }else 
+                BombSequenceTimer -= diff;
+    
+            if(EnrageTimer > diff)
+                EnrageTimer -= diff;
+            else
+                EnrageTimer = 0;
+            if(HatcherTimer > diff)
+                HatcherTimer -= diff;
+            else
+                HatcherTimer = 0;
             return;
         }
 
@@ -330,7 +359,7 @@ struct TRINITY_DLL_DECL boss_janalaiAI : public ScriptedAI
 
         if (checkTimer < diff)
         {
-            if (!m_creature->IsWithinDistInMap(&wLoc, 20))
+            if (!m_creature->IsWithinDistInMap(&wLoc, 23))
                 EnterEvadeMode();
             else
                 DoZoneInCombat();

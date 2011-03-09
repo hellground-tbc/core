@@ -2565,17 +2565,16 @@ void World::ResetDailyQuests()
 
     specialQuest[FISHING] = temp;
 
-    temp = hordePVP[urand(0,3)];
-    while (temp && temp == specialQuest[PVPH])
-        temp = hordePVP[urand(0,3)];
+    int pvp_rand = 0;
+    do
+    {
+        pvp_rand = urand(0, 3);
+        temp = hordePVP[pvp_rand];
+    }
+    while (temp && temp == specialQuest[PVPH]);
 
     specialQuest[PVPH] = temp;
-
-    temp = alliancePVP[urand(0,3)];
-    while (temp && temp == specialQuest[PVPA])
-        temp = alliancePVP[urand(0,3)];
-
-    specialQuest[PVPA] = temp;
+    specialQuest[PVPA] = alliancePVP[pvp_rand];
 
     CharacterDatabase.PExecute("UPDATE saved_variables set HeroicQuest='%u', NormalQuest='%u', CookingQuest='%u', FishingQuest='%u', PVPAlliance='%u', PVPHorde='%u'",specialQuest[HEROIC],specialQuest[QNORMAL],specialQuest[COOKING],specialQuest[FISHING],specialQuest[PVPA],specialQuest[PVPH]);
 }

@@ -159,7 +159,7 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
             case GAMEOBJECT_FISHINGNODE_ENTRY:
                 if(LurkerSubEvent == LURKER_NOT_STARTED)
                 {
-                    if (Unit *pTemp = instance->GetCreature(DATA_THELURKERBELOW))
+                    if (Unit *pTemp = instance->GetCreature(LurkerBelow))
                     {
                         if (go->GetDistance2d(pTemp) > 16.0f)
                             return;

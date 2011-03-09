@@ -567,7 +567,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                                 --combo;
                                 ++doses;
 
-                                unitTarget->RemoveSingleAuraFromStack((*itr)->GetId(), (*itr)->GetEffIndex());
+                                unitTarget->RemoveSingleAuraFromStackByCaster((*itr)->GetId(), (*itr)->GetEffIndex(), m_caster->GetGUID());
 
                                 itr = auras.begin();
                             }
@@ -719,6 +719,32 @@ void Spell::EffectDummy(uint32 i)
         {
             switch (m_spellInfo->Id)
             {
+                case 37573:
+                {
+                    if (unitTarget->GetTypeId() == TYPEID_UNIT)
+                    {
+                        uint32 entry = 0;
+                        switch(urand(0,2))
+                        {
+                            case 0: entry = 21817; break;
+                            case 1: entry = 21820; break;
+                            case 2: entry = 21821; break;
+                        }
+                        ((Creature*)unitTarget)->UpdateEntry(entry);
+                    }
+                    break;
+                }
+                // Illidan Stormrage: Throw Glaive (Summon Glaive after throw;p
+                case 39635:
+                {
+                    unitTarget->CastSpell(unitTarget, 41466, true);
+                    if (unitTarget->GetTypeId() == TYPEID_UNIT)
+                    {
+                        ((Creature*)unitTarget)->Kill(unitTarget, false);
+                        ((Creature*)unitTarget)->RemoveCorpse();
+                    }
+                    return;
+                }
                 case 38002:
                 {
                     if (m_caster->GetTypeId() != TYPEID_PLAYER)
@@ -1422,36 +1448,6 @@ void Spell::EffectDummy(uint32 i)
 
                     //cast spell Raptor Capture Credit
                     m_caster->CastSpell(m_caster,42337,true,NULL);
-                    return;
-                }
-                case 37573:                                 //Temporal Phase Modulator
-                {
-                    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_UNIT)
-                        return;
-
-                    TemporarySummon* tempSummon = dynamic_cast<TemporarySummon*>(unitTarget);
-                    if (!tempSummon)
-                        return;
-
-                    uint32 health = tempSummon->GetHealth();
-                    const uint32 entry_list[6] = {21821, 21820, 21817};
-
-                    float x = tempSummon->GetPositionX();
-                    float y = tempSummon->GetPositionY();
-                    float z = tempSummon->GetPositionZ();
-                    float o = tempSummon->GetOrientation();
-
-                    tempSummon->UnSummon();
-
-                    Creature* pCreature = m_caster->SummonCreature(entry_list[m_caster->GetMap()->urand(0, 2)], x, y, z, o,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,180000);
-                    if (!pCreature)
-                        return;
-
-                    pCreature->SetHealth(health);
-
-                    if (pCreature->IsAIEnabled)
-                        pCreature->AI()->AttackStart(m_caster);
-
                     return;
                 }
                 case 34665:                                 //Administer Antidote
@@ -2270,7 +2266,7 @@ void Spell::EffectForceCast(uint32 i)
         return;
     }
 
-    unitTarget->CastSpell(unitTarget,spellInfo,true,NULL,NULL,m_originalCasterGUID);
+    unitTarget->CastSpell((Unit*)NULL,spellInfo,true,NULL,NULL,m_originalCasterGUID);
 }
 
 void Spell::EffectTriggerSpell(uint32 i)
@@ -5123,6 +5119,27 @@ void Spell::EffectScriptEffect(uint32 effIndex)
     // TODO: we must implement hunter pet summon at login there (spell 6962)
     switch (m_spellInfo->Id)
     {
+        // Unbanish Azaloth
+        case 37834:
+        {                                                             
+            if (unitTarget->HasAura(37833,0))   
+            {   
+                unitTarget->RemoveAurasDueToSpell(37833);
+
+                if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                {
+                    if (((Player*)m_caster)->GetQuestStatus(10637) == QUEST_STATUS_INCOMPLETE)
+                        ((Player*)m_caster)->CompleteQuest(10637);
+
+                    if (((Player*)m_caster)->GetQuestStatus(10688) == QUEST_STATUS_INCOMPLETE)
+                        ((Player*)m_caster)->CompleteQuest(10688);
+                }
+            }
+            else
+                 SendCastResult(SPELL_FAILED_BAD_TARGETS);
+
+            break;
+        }
         // Destroy Deathforged Infernal
         case 38055:
         {
@@ -6792,7 +6809,6 @@ void Spell::EffectSendTaxi(uint32 i)
     }
 
     ((Player*)unitTarget)->ActivateTaxiPathTo(nodes,mountid);
-
 }
 
 void Spell::EffectPlayerPull(uint32 i)

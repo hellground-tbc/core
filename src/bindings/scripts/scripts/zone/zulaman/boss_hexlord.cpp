@@ -24,18 +24,18 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_zulaman.h"
 
-#define YELL_AGGRO              "Da shadow gonna fall on you... "
-#define SOUND_YELL_AGGRO        12041
-#define YELL_SPIRIT_BOLTS       "Your soul gonna bleed!"
-#define SOUND_YELL_SPIRIT_BOLTS 12047
-#define YELL_DRAIN_POWER        "Darkness comin\' for you"
-#define SOUND_YELL_DRAIN_POWER  12046
-#define YELL_KILL_ONE           "Dis a nightmare ya don\' wake up from!"
-#define SOUND_YELL_KILL_ONE     12043
-#define YELL_KILL_TWO           "Azzaga choogo zinn!"
-#define SOUND_YELL_KILL_TWO     12044
-#define YELL_DEATH              "Dis not... da end of me..."
-#define SOUND_YELL_DEATH        12051
+#define YELL_SPIRIT_BOLTS       -1800493
+#define YELL_DRAIN_POWER        -1800494
+#define YELL_KILL_ONE           -1800495
+#define YELL_KILL_TWO           -1800496
+#define YELL_DEATH              -1800497
+
+#define YELL_AGGRO              -1800512
+#define YELL_ENRAGE             -1800513            // enrage?
+#define YELL_SIPHON_SOUL        -1800514
+#define YELL_ADD_DEAD1          -1800515
+#define YELL_ADD_DEAD2          -1800516
+#define YELL_ADD_DEAD3          -1800517
 
 #define SPELL_SPIRIT_BOLTS      43383
 #define SPELL_DRAIN_POWER       44131
@@ -56,9 +56,9 @@ EndScriptData */
 #define SPELL_HU_SNAKE_TRAP     43449
 
 //Mage
-#define SPELL_MG_FIREBALL       41383
+#define SPELL_MG_FIREBALL       41383 // fireball is probably obsolete
 #define SPELL_MG_FROSTBOLT      43428
-#define SPELL_MG_FROST_NOVA     43426
+#define SPELL_MG_FROST_NOVA     43426 
 #define SPELL_MG_ICE_LANCE      43427
 
 //Paladin
@@ -72,11 +72,11 @@ EndScriptData */
 #define SPELL_PR_MIND_BLAST     41374
 #define SPELL_PR_SW_DEATH       41375
 #define SPELL_PR_PSYCHIC_SCREAM 43432
-#define SPELL_PR_PAIN_SUPP      44416
+#define SPELL_PR_PAIN_SUPP      33206   // not sure, it's priest's pain suppression
 
 //Rogue
 #define SPELL_RO_BLIND          43433
-#define SPELL_RO_SLICE_DICE     43457
+#define SPELL_RO_SLICE_DICE     43547
 #define SPELL_RO_WOUND_POISON   39665
 
 //Shaman
@@ -126,51 +126,52 @@ struct PlayerAbilityStruct
 {
     uint32 spell;
     AbilityTarget target;
+    uint32 startCooldown;
     uint32 cooldown;
 };
 
 static PlayerAbilityStruct PlayerAbility[][3] =
 {
     // 1 warrior
-    {{SPELL_WR_SPELL_REFLECT, ABILITY_TARGET_SELF, 10000},
-    {SPELL_WR_WHIRLWIND, ABILITY_TARGET_SELF, 10000},
-    {SPELL_WR_MORTAL_STRIKE, ABILITY_TARGET_VICTIM, 6000}},
+    {{SPELL_WR_SPELL_REFLECT, ABILITY_TARGET_SELF, 10000, 10000},
+    {SPELL_WR_WHIRLWIND, ABILITY_TARGET_SELF, 5000, 12000},
+    {SPELL_WR_MORTAL_STRIKE, ABILITY_TARGET_VICTIM, 1000, 8000}},  // 5s duration
     // 2 paladin
-    {{SPELL_PA_CONSECRATION, ABILITY_TARGET_SELF, 10000},
-    {SPELL_PA_HOLY_LIGHT, ABILITY_TARGET_HEAL, 10000},
-    {SPELL_PA_AVENGING_WRATH, ABILITY_TARGET_SELF, 10000}},
+    {{SPELL_PA_CONSECRATION, ABILITY_TARGET_SELF, 10000, 15000},   // 20s duration
+    {SPELL_PA_HOLY_LIGHT, ABILITY_TARGET_HEAL, 1000, 10000},
+    {SPELL_PA_AVENGING_WRATH, ABILITY_TARGET_SELF, 5000, 20000}}, //10s duration
     // 3 hunter
-    {{SPELL_HU_EXPLOSIVE_TRAP, ABILITY_TARGET_SELF, 10000},
-    {SPELL_HU_FREEZING_TRAP, ABILITY_TARGET_SELF, 10000},
-    {SPELL_HU_SNAKE_TRAP, ABILITY_TARGET_SELF, 10000}},
+    {{SPELL_HU_EXPLOSIVE_TRAP, ABILITY_TARGET_SELF, 3000, 10000},
+    {SPELL_HU_FREEZING_TRAP, ABILITY_TARGET_SELF, 8000, 10000},
+    {SPELL_HU_SNAKE_TRAP, ABILITY_TARGET_SELF, 10000, 10000}},
     // 4 rogue
-    {{SPELL_RO_WOUND_POISON, ABILITY_TARGET_VICTIM, 3000},
-    {SPELL_RO_SLICE_DICE, ABILITY_TARGET_SELF, 10000},
-    {SPELL_RO_BLIND, ABILITY_TARGET_ENEMY, 10000}},
+    {{SPELL_RO_WOUND_POISON, ABILITY_TARGET_VICTIM, 1000, 3000},
+    {SPELL_RO_SLICE_DICE, ABILITY_TARGET_SELF, 10000, 60000},    // 40s duration
+    {SPELL_RO_BLIND, ABILITY_TARGET_ENEMY, 5000, 20000}},
     // 5 priest
-    {{SPELL_PR_PAIN_SUPP, ABILITY_TARGET_HEAL, 10000},
-    {SPELL_PR_HEAL, ABILITY_TARGET_HEAL, 10000},
-    {SPELL_PR_PSYCHIC_SCREAM, ABILITY_TARGET_SELF, 10000}},
+    {{SPELL_PR_PAIN_SUPP, ABILITY_TARGET_HEAL, 5000, 16000},   // 8s duration
+    {SPELL_PR_HEAL, ABILITY_TARGET_HEAL, 1000, 10000},
+    {SPELL_PR_PSYCHIC_SCREAM, ABILITY_TARGET_SELF, 10000, 15000}},
     // 5* shadow priest
-    {{SPELL_PR_MIND_CONTROL, ABILITY_TARGET_ENEMY, 15000},
-    {SPELL_PR_MIND_BLAST, ABILITY_TARGET_ENEMY, 5000},
-    {SPELL_PR_SW_DEATH, ABILITY_TARGET_ENEMY, 10000}},
+    {{SPELL_PR_MIND_CONTROL, ABILITY_TARGET_ENEMY, 10000, 18000},
+    {SPELL_PR_MIND_BLAST, ABILITY_TARGET_ENEMY, 1000, 5000},
+    {SPELL_PR_SW_DEATH, ABILITY_TARGET_ENEMY, 5000, 10000}},
     // 7 shaman
-    {{SPELL_SH_FIRE_NOVA, ABILITY_TARGET_SELF, 10000},
-    {SPELL_SH_HEALING_WAVE, ABILITY_TARGET_HEAL, 10000},
-    {SPELL_SH_CHAIN_LIGHT, ABILITY_TARGET_ENEMY, 8000}},
+    {{SPELL_SH_FIRE_NOVA, ABILITY_TARGET_SELF, 5000, 13000},
+    {SPELL_SH_HEALING_WAVE, ABILITY_TARGET_HEAL, 1000, 10000},
+    {SPELL_SH_CHAIN_LIGHT, ABILITY_TARGET_ENEMY, 3000, 8000}},
     // 8 mage
-    {{SPELL_MG_FIREBALL, ABILITY_TARGET_ENEMY, 5000},
-    {SPELL_MG_FROSTBOLT, ABILITY_TARGET_ENEMY, 5000},
-    {SPELL_MG_ICE_LANCE, ABILITY_TARGET_SPECIAL, 2000}},
+    {{SPELL_MG_FROST_NOVA, ABILITY_TARGET_ENEMY, 5000, 15000},
+    {SPELL_MG_FROSTBOLT, ABILITY_TARGET_ENEMY, 2000, 5000},
+    {SPELL_MG_ICE_LANCE, ABILITY_TARGET_SPECIAL, 3000, 2000}},
     // 9 warlock
-    {{SPELL_WL_CURSE_OF_DOOM, ABILITY_TARGET_ENEMY, 10000},
-    {SPELL_WL_RAIN_OF_FIRE, ABILITY_TARGET_ENEMY, 10000},
-    {SPELL_WL_UNSTABLE_AFFL, ABILITY_TARGET_ENEMY, 10000}},
+    {{SPELL_WL_CURSE_OF_DOOM, ABILITY_TARGET_ENEMY, 8000, 15000},
+    {SPELL_WL_RAIN_OF_FIRE, ABILITY_TARGET_ENEMY, 2000, 10000},
+    {SPELL_WL_UNSTABLE_AFFL, ABILITY_TARGET_ENEMY, 5000, 10000}},
     // 11 druid
-    {{SPELL_DR_LIFEBLOOM, ABILITY_TARGET_HEAL, 10000},
-    {SPELL_DR_THORNS, ABILITY_TARGET_SELF, 10000},
-    {SPELL_DR_MOONFIRE, ABILITY_TARGET_ENEMY, 8000}}
+    {{SPELL_DR_LIFEBLOOM, ABILITY_TARGET_HEAL, 2000, 10000},
+    {SPELL_DR_THORNS, ABILITY_TARGET_SELF, 1000, 50000},   // 40s duration
+    {SPELL_DR_MOONFIRE, ABILITY_TARGET_ENEMY, 5000, 8000}}
 };
 
 struct TRINITY_DLL_DECL boss_hexlord_addAI : public ScriptedAI
@@ -180,11 +181,21 @@ struct TRINITY_DLL_DECL boss_hexlord_addAI : public ScriptedAI
     boss_hexlord_addAI(Creature* c) : ScriptedAI(c)
     {
         pInstance = (c->GetInstanceData());
+        SpellEntry *TempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_PR_MIND_CONTROL);
+        if(TempSpell)
+            TempSpell->MaxAffectedTargets = 1;      // not sure about it. better then whole party under mc effect
     }
 
     void Reset() {}
 
     void EnterCombat(Unit* who) {DoZoneInCombat();}
+
+    void JustDied(Unit* )
+    {
+        if(pInstance)
+            if(Unit *hex = me->GetUnit(pInstance->GetData64(DATA_HEXLORDEVENT)))
+                DoScriptText(RAND(YELL_ADD_DEAD1, YELL_ADD_DEAD2, YELL_ADD_DEAD3), hex);
+    }
 
     void UpdateAI(const uint32 diff)
     {
@@ -211,6 +222,10 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
         wLoc.coord_y = 1035.45;
         wLoc.coord_z = 29.4481;
         wLoc.mapid = c->GetMapId();
+
+        SpellEntry *temp = (SpellEntry *)(GetSpellStore()->LookupEntry(SPELL_SPIRIT_BOLTS));
+        if(temp)
+            temp->ChannelInterruptFlags = 0;
     }
 
     ScriptedInstance *pInstance;
@@ -225,13 +240,14 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
     uint32 SpiritBolts_Timer;
     uint32 DrainPower_Timer;
     uint32 SiphonSoul_Timer;
-    uint32 PlayerAbility_Timer;
+    uint32 PlayerAbility_Timer[3];
     uint32 CheckAddState_Timer;
     uint32 ResetTimer;
 
     uint32 PlayerClass;
 
     Unit* SoulDrainTarget;
+    bool Intro;
 
     void Reset()
     {
@@ -239,17 +255,31 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
             pInstance->SetData(DATA_HEXLORDEVENT, NOT_STARTED);
 
         SpiritBolts_Timer = 20000;
-        DrainPower_Timer = 60000;
+        DrainPower_Timer = 0;
         SiphonSoul_Timer = 100000;
-        PlayerAbility_Timer = 99999;
         CheckAddState_Timer = 5000;
         ResetTimer = 5000;
 
+        PlayerClass = 0;
         SpawnAdds();
 
         m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY, 46916);
         m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO, 50268674);
         m_creature->SetByteValue(UNIT_FIELD_BYTES_2, 0, SHEATH_STATE_MELEE );
+        m_creature->ApplySpellImmune(2, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true); 
+        Intro = false;
+        for(uint8 i = 0; i < 3; i++)
+            PlayerAbility_Timer[i] = 999999;
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if(!Intro && me->IsHostileTo(who) && who->IsWithinDist(me, 80, false))
+        {
+            Intro = true;
+            // No intro, just placeholder
+        }
+        CreatureAI::MoveInLineOfSight(who);
     }
 
     void EnterCombat(Unit* who)
@@ -258,8 +288,7 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
             pInstance->SetData(DATA_HEXLORDEVENT, IN_PROGRESS);
 
         DoZoneInCombat();
-        DoYell(YELL_AGGRO, LANG_UNIVERSAL, NULL);
-        DoPlaySoundToSet(m_creature, SOUND_YELL_AGGRO);
+        DoScriptText(YELL_AGGRO, m_creature);
 
         for(uint8 i = 0; i < 4; ++i)
         {
@@ -276,17 +305,7 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
 
     void KilledUnit(Unit* victim)
     {
-        switch(rand()%2)
-        {
-        case 0:
-            DoYell(YELL_KILL_ONE, LANG_UNIVERSAL, NULL);
-            DoPlaySoundToSet(m_creature, SOUND_YELL_KILL_ONE);
-            break;
-        case 1:
-            DoYell(YELL_KILL_TWO, LANG_UNIVERSAL, NULL);
-            DoPlaySoundToSet(m_creature, SOUND_YELL_KILL_TWO);
-            break;
-        }
+        DoScriptText(RAND(YELL_KILL_ONE,YELL_KILL_TWO), m_creature);
     }
 
     void JustDied(Unit* victim)
@@ -294,8 +313,7 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
         if(pInstance)
             pInstance->SetData(DATA_HEXLORDEVENT, DONE);
 
-        DoYell(YELL_DEATH, LANG_UNIVERSAL, NULL);
-        DoPlaySoundToSet(m_creature, SOUND_YELL_DEATH);
+        DoScriptText(YELL_DEATH, m_creature);
 
         for(uint8 i = 0; i < 4 ; ++i)
         {
@@ -369,26 +387,28 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
             CheckAddState_Timer = 5000;
         }else CheckAddState_Timer -= diff;
 
-        if(DrainPower_Timer < diff)
+        if(HealthBelowPct(80))
         {
-            m_creature->CastSpell(m_creature, SPELL_DRAIN_POWER, true);
-            DoYell(YELL_DRAIN_POWER, LANG_UNIVERSAL, NULL);
-            DoPlaySoundToSet(m_creature, SOUND_YELL_DRAIN_POWER);
-            DrainPower_Timer = 40000 + rand()%15000;    // must cast in 60 sec, or buff/debuff will disappear
-        }else DrainPower_Timer -= diff;
+            if(DrainPower_Timer < diff)
+            {
+                ClearCastQueue();
+                AddSpellToCastWithScriptText(m_creature, SPELL_DRAIN_POWER, YELL_DRAIN_POWER);
+                DrainPower_Timer = 40000 + rand()%10000;    // must cast in 60 sec, or buff/debuff will disappear
+            }else DrainPower_Timer -= diff;
+        }
 
         if(SpiritBolts_Timer < diff)
         {
-            if(DrainPower_Timer < 12000)    // channel 10 sec
+            if(DrainPower_Timer && DrainPower_Timer < 12000)    // channel 10 sec
                 SpiritBolts_Timer = 13000;  // cast drain power first
             else
             {
-                m_creature->CastSpell(m_creature, SPELL_SPIRIT_BOLTS, false);
-                DoYell(YELL_SPIRIT_BOLTS, LANG_UNIVERSAL, NULL);
-                DoPlaySoundToSet(m_creature, SOUND_YELL_SPIRIT_BOLTS);
+                ClearCastQueue();
+                AddSpellToCastWithScriptText(m_creature, SPELL_SPIRIT_BOLTS, YELL_SPIRIT_BOLTS);
                 SpiritBolts_Timer = 40000;
                 SiphonSoul_Timer = 10000;  // ready to drain
-                PlayerAbility_Timer = 99999;
+                for(uint8 i = 0; i <3; i++)
+                    PlayerAbility_Timer[i] = 99999;
             }
         }else SpiritBolts_Timer -= diff;
 
@@ -413,32 +433,38 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
                 //m_creature->SetUInt32Value(UNIT_CHANNEL_SPELL, SPELL_SIPHON_SOUL);
 
                 PlayerGUID = target->GetGUID();
-                PlayerAbility_Timer = 8000 + rand()%2000;
                 PlayerClass = target->getClass() - 1;
                 if(PlayerClass == 10) PlayerClass = 9; // druid
                 if(PlayerClass == 4 && target->HasSpell(15473)) PlayerClass = 5; // shadow priest
+
+                for(uint8 i = 0; i < 3; i++)
+                    PlayerAbility_Timer[i] = PlayerAbility[PlayerClass][i].startCooldown;
                 SiphonSoul_Timer = 99999;   // buff lasts 30 sec
             }
+            DoScriptText(YELL_SIPHON_SOUL, m_creature);
         }else SiphonSoul_Timer -= diff;
 
-        if(PlayerAbility_Timer < diff)
+        for(uint8 i = 0; i < 3; i++)
         {
-            //Unit* target = Unit::GetUnit(*m_creature, PlayerGUID);
-            //if(target && target->isAlive())
+            if(PlayerAbility_Timer[i] < diff)
             {
-                UseAbility();
-                PlayerAbility_Timer = 8000 + rand()%2000;
-            }
-        }else PlayerAbility_Timer -= diff;
+                //Unit* target = Unit::GetUnit(*m_creature, PlayerGUID);
+                //if(target && target->isAlive())
+                {
+                    UseAbility(i);
+                    PlayerAbility_Timer[i] = PlayerAbility[PlayerClass][i].cooldown;
+                }
+            }else PlayerAbility_Timer[i] -= diff;
+        }
 
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 
-    void UseAbility()
+    void UseAbility(uint8 i)
     {
-        uint32 random = rand()%3;
         Unit *target = NULL;
-        switch(PlayerAbility[PlayerClass][random].target)
+        switch(PlayerAbility[PlayerClass][i].target)
         {
         case ABILITY_TARGET_SELF:
             target = m_creature;
@@ -455,13 +481,13 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
             break;
         case ABILITY_TARGET_BUFF:
             {
-                std::list<Creature*> templist = DoFindFriendlyMissingBuff(50, PlayerAbility[PlayerClass][random].spell);
+                std::list<Creature*> templist = DoFindFriendlyMissingBuff(50, PlayerAbility[PlayerClass][i].spell);
                 if(!templist.empty()) target = *(templist.begin());
             }
             break;
         }
         if(target)
-            m_creature->CastSpell(target, PlayerAbility[PlayerClass][random].spell, false);
+            AddSpellToCast(target, PlayerAbility[PlayerClass][i].spell, false);
     }
 };
 
@@ -530,7 +556,7 @@ struct TRINITY_DLL_DECL boss_alyson_antilleAI : public boss_hexlord_addAI
 
         boss_hexlord_addAI::Reset();
     }
-
+/*  Ponizszy kod powoduj ze Alyson ucieka pod tekstury, bardzo niefajne
     void AttackStart(Unit* who)
     {
         if (!who)
@@ -548,7 +574,7 @@ struct TRINITY_DLL_DECL boss_alyson_antilleAI : public boss_hexlord_addAI
                 EnterCombat(who);
         }
     }
-
+*/
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim() )
@@ -612,7 +638,7 @@ struct TRINITY_DLL_DECL boss_gazakrothAI : public boss_hexlord_addAI
         firebolt_timer = 2000;
         boss_hexlord_addAI::Reset();
     }
-
+/*  Ponizszy kod spowoduje ze imp bedzie wchodzil pod tekstury :(
     void AttackStart(Unit* who)
     {
         if (!who)
@@ -627,7 +653,7 @@ struct TRINITY_DLL_DECL boss_gazakrothAI : public boss_hexlord_addAI
             }
         }
     }
-
+*/
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim() )
@@ -635,8 +661,11 @@ struct TRINITY_DLL_DECL boss_gazakrothAI : public boss_hexlord_addAI
 
         if(firebolt_timer < diff)
         {
-            m_creature->CastSpell(m_creature->getVictim(),SPELL_FIREBOLT, false);
-            firebolt_timer = 700;
+            if(Unit *target = SelectTarget(SELECT_TARGET_RANDOM))
+            {
+                m_creature->CastSpell(target,SPELL_FIREBOLT, false);
+                firebolt_timer = 700;
+            }
         }else firebolt_timer -= diff;
 
         boss_hexlord_addAI::UpdateAI(diff);
@@ -726,7 +755,7 @@ struct TRINITY_DLL_DECL boss_slitherAI : public boss_hexlord_addAI
         venomspit_timer = 5000;
         boss_hexlord_addAI::Reset();
     }
-
+/*
     void AttackStart(Unit* who)
     {
         if (!who)
@@ -741,7 +770,7 @@ struct TRINITY_DLL_DECL boss_slitherAI : public boss_hexlord_addAI
             }
         }
     }
-
+*/
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim() )

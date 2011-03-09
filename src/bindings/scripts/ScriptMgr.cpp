@@ -202,6 +202,61 @@ void DoScriptText(int32 iTextEntry, WorldObject* pSource, Unit* pTarget, bool wi
         ((Creature*)pTarget)->AI()->ReceiveScriptText(pSource, iTextEntry);
 }
 
+void DoGlobalScriptText(int32 iTextEntry, const char *npcName, Map *map)
+{
+    if (iTextEntry >= 0)
+    {
+        error_log("TSCR: DoGlobalScriptText with npc name %s attempts to process text entry %i, but text entry must be negative.", npcName, iTextEntry);
+        return;
+    }
+
+    const StringTextData* pData = pSystemMgr.GetTextData(iTextEntry);
+
+    if (!pData)
+    {
+        error_log("TSCR: DoGlobalScriptText with npc name %s could not find text entry %i.", npcName, iTextEntry);
+        return;
+    }
+    
+    bool playSound = pData->uiSoundId && GetSoundEntriesStore()->LookupEntry(pData->uiSoundId);
+    uint32 textType = 0;
+    switch(pData->uiType)
+    {
+        case CHAT_TYPE_SAY:
+            textType = CHAT_MSG_MONSTER_SAY;
+            break;
+        case CHAT_TYPE_YELL:
+        case CHAT_TYPE_ZONE_YELL:    
+            textType = CHAT_MSG_MONSTER_YELL;
+            break;
+        case CHAT_TYPE_TEXT_EMOTE:
+            textType = CHAT_MSG_MONSTER_EMOTE;
+            break;
+        case CHAT_TYPE_BOSS_EMOTE:
+            textType = CHAT_MSG_RAID_BOSS_EMOTE;
+            break;
+        case CHAT_TYPE_WHISPER:
+            textType = CHAT_MSG_MONSTER_WHISPER;
+            break;
+        case CHAT_TYPE_BOSS_WHISPER:
+            textType = CHAT_MSG_RAID_BOSS_WHISPER;
+            break;
+    }
+
+    Map::PlayerList const &players = map->GetPlayers(); 
+    for(Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
+    {
+        if(Player *player = i->getSource())
+        {
+            WorldPacket data(SMSG_MESSAGECHAT, 200);
+            player->BuildMonsterChat(&data,textType,iTextEntry,LANG_UNIVERSAL,npcName,player->GetGUID());
+            player->GetSession()->SendPacket(&data);
+            if(playSound)
+                (*i).getSource()->SendPlaySound(pData->uiSoundId, true);
+        }
+    }
+}
+
 //*********************************
 //*** Functions used internally ***
 

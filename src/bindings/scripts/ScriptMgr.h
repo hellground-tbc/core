@@ -70,6 +70,7 @@ struct Script
 
 //Generic scripting text function
 void DoScriptText(int32 textEntry, WorldObject* pSource, Unit* target = NULL, bool withoutPrename = false);
+void DoGlobalScriptText(int32 iTextEntry, const char *npcName, Map *map);
 void ScriptText(int32 textEntry, Unit* pSource, Unit* target = NULL);
 
 #if COMPILER == COMPILER_GNU

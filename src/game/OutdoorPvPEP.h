@@ -46,7 +46,7 @@ const uint32 EP_MAP_N[EP_TOWER_NUM] = {2355,2361,2352,2353};
 const uint32 EP_MAP_A[EP_TOWER_NUM] = {2378,2354,2372,2370};
 const uint32 EP_MAP_H[EP_TOWER_NUM] = {2379,2356,2373,2371};
 const uint32 EP_MAP_N_A[EP_TOWER_NUM] = {2374,2359,2362,2366};
-const uint32 EP_MAP_N_H[EP_TOWER_NUM] = {2375,2360,2363,2353}; // plaguewood tower has incorrect display value (2353 as well as logical 2367 is wrong) 
+const uint32 EP_MAP_N_H[EP_TOWER_NUM] = {2375,2360,2363,2353}; // plaguewood tower has incorrect display value (2353 as well as logical 2367 is wrong)
 
 const uint32 EP_TAXI_NODE[EP_TOWER_NUM] = {84,85,86,87};
 
@@ -67,7 +67,7 @@ enum EP_Summons {
     EP_EWT_SOLDIER4,
     EP_PWT_FLIGHTMASTER,
 };
- 
+
 enum EP_GoSummons {
     EP_NPT_SHRINE = EP_TOWER_NUM,
     EP_NPT_SHRINE_AURA,
@@ -150,7 +150,7 @@ protected:
     void UnsummonSupportUnits();
     void UnsummonFlightMaster();
 
-	uint32 EP_TOWER_EVENT_TEAM[EP_TOWER_NUM];
+    uint32 EP_TOWER_EVENT_TEAM[EP_TOWER_NUM];
 private:
     OutdoorPvPEPTowerType m_TowerType;
 };

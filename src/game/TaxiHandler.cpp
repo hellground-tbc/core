@@ -211,10 +211,6 @@ void WorldSession::HandleTaxiNextDestinationOpcode(WorldPacket& recv_data)
     if (!curDest)
         return;
 
-    // TaxiNodes: 96 -> Zangarmarsh - Quest - As the Crow Flies - End | quest support: As the Crow Flies
-    if (curDest == 96 && GetPlayer()->GetQuestStatus(9718) == QUEST_STATUS_INCOMPLETE)
-        GetPlayer()->CompleteQuest(9718);
-
     TaxiNodesEntry const* curDestNode = sTaxiNodesStore.LookupEntry(curDest);
 
     // far teleport case
@@ -264,6 +260,17 @@ void WorldSession::HandleTaxiNextDestinationOpcode(WorldPacket& recv_data)
     }
     else
         GetPlayer()->CleanupAfterTaxiFlight();              // not destinations, clear source node
+
+    // TaxiNodes: 96 -> Zangarmarsh - Quest - As the Crow Flies - End | quest support: As the Crow Flies
+    if (curDest == 96 && GetPlayer()->GetQuestStatus(9718) == QUEST_STATUS_INCOMPLETE)
+        GetPlayer()->CompleteQuest(9718);
+
+    // TaxiNodes: 158 -> Blade Edge's Mountain - Quest - Vision Guide
+    if (curDest == 158 && GetPlayer()->GetQuestStatus(10525) == QUEST_STATUS_INCOMPLETE)
+    {
+        GetPlayer()->RemoveAurasDueToSpell(36573);
+        GetPlayer()->CompleteQuest(10525);
+    }
 }
 
 void WorldSession::HandleActivateTaxiOpcode(WorldPacket & recv_data)

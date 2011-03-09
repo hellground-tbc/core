@@ -42,14 +42,14 @@ struct TRINITY_DLL_DECL boss_baron_geddonAI : public ScriptedAI
     uint32 Inferno_Timer;
     uint32 IgniteMana_Timer;
     uint32 LivingBomb_Timer;
-	uint32 Armageddon_Timer;
+    uint32 Armageddon_Timer;
 
     void Reset()
     {
         Inferno_Timer = 45000;                              //These times are probably wrong
         IgniteMana_Timer = 30000;
         LivingBomb_Timer = 35000;
-		Armageddon_Timer = 0;
+        Armageddon_Timer = 0;
 
         if (pInstance && pInstance->GetData(DATA_BARON_GEDDON_EVENT) != DONE)
             pInstance->SetData(DATA_BARON_GEDDON_EVENT, NOT_STARTED);
@@ -75,14 +75,14 @@ struct TRINITY_DLL_DECL boss_baron_geddonAI : public ScriptedAI
         //If we are <2% hp cast Armageddom
         if (m_creature->GetHealth()*100 / m_creature->GetMaxHealth() <= 2 && Armageddon_Timer < diff)
         {
-			Armageddon_Timer = 9000;//We don't want him to cast while being under Armageddon effect
-			Inferno_Timer = 9000;
-			IgniteMana_Timer = 9000;
-			LivingBomb_Timer = 9000;
+            Armageddon_Timer = 9000;    //We don't want him to cast while being under Armageddon effect
+            Inferno_Timer = 9000;
+            IgniteMana_Timer = 9000;
+            LivingBomb_Timer = 9000;
             m_creature->InterruptNonMeleeSpells(true);
             DoCast(m_creature,SPELL_ARMAGEDDOM);
             DoScriptText(EMOTE_SERVICE, m_creature);
-            return;	
+            return;
         }
 
         //Inferno_Timer

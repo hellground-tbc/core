@@ -1609,6 +1609,20 @@ void WorldObject::MonsterWhisper(int32 textId, uint64 receiver, bool IsBossWhisp
     player->GetSession()->SendPacket(&data);
 }
 
+void WorldObject::BuildMonsterChat(WorldPacket *data, uint8 msgtype, int32 iTextEntry, uint32 language, char const* name, uint64 targetGuid, bool withoutPrename) const
+{
+    char const* text = 0;
+    if(GetTypeId() == TYPEID_PLAYER)
+    {
+        uint32 loc_idx = ((Player*)this)->GetSession()->GetSessionDbLocaleIndex();
+        text = objmgr.GetTrinityString(iTextEntry,loc_idx);
+    } else
+        text = objmgr.GetTrinityStringForDBCLocale(iTextEntry);
+    BuildMonsterChat(data, msgtype, text, language, name, targetGuid, withoutPrename);
+    if(GetTypeId() == TYPEID_PLAYER)
+        data->put(5, (uint64)0);  // BAD HACK
+}
+
 void WorldObject::BuildMonsterChat(WorldPacket *data, uint8 msgtype, char const* text, uint32 language, char const* name, uint64 targetGuid, bool withoutPrename) const
 {
     bool pre = withoutPrename ? false : (msgtype==CHAT_MSG_MONSTER_EMOTE || msgtype==CHAT_MSG_RAID_BOSS_EMOTE);
@@ -1707,7 +1721,12 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
         ((Creature*)this)->AI()->JustSummoned(pCreature);
 
     if (pCreature->IsAIEnabled)
+    {
         pCreature->AI()->JustRespawned();
+        
+        if (GetTypeId() == TYPEID_UNIT || GetTypeId() == TYPEID_PLAYER)
+            pCreature->AI()->IsSummonedBy((Unit*)this);
+    }
 
     if (pCreature->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER && pCreature->m_spells[0])
     {

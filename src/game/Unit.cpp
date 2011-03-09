@@ -329,6 +329,26 @@ Unit::Unit()
     m_meleeAPAttackerBonus = 0;
 }
 
+////////////////////////////////////////////////////////////
+// Methods of class GlobalCooldownMgr
+bool GlobalCooldownMgr::HasGlobalCooldown(SpellEntry const* spellInfo) const
+{
+    GlobalCooldownList::const_iterator itr = m_GlobalCooldowns.find(spellInfo->StartRecoveryCategory);
+    return itr != m_GlobalCooldowns.end() && itr->second.duration && getMSTimeDiff(itr->second.cast_time, getMSTime()) < itr->second.duration;
+}
+
+void GlobalCooldownMgr::AddGlobalCooldown(SpellEntry const* spellInfo, uint32 gcd)
+{
+    m_GlobalCooldowns[spellInfo->StartRecoveryCategory] = GlobalCooldown(gcd, getMSTime());
+}
+
+void GlobalCooldownMgr::CancelGlobalCooldown(SpellEntry const* spellInfo)
+{
+    m_GlobalCooldowns[spellInfo->StartRecoveryCategory].duration = 0;
+}
+
+////////////////////////////////////////////////////////////
+// Methods of class Unit
 Unit::~Unit()
 {
     // set current spells as deletable
@@ -4071,7 +4091,10 @@ void Unit::RemoveAurasDueToSpellBySteal(uint32 spellId, uint64 casterGUID, Unit 
             // add the new aura to stealer
             stealer->AddAura(new_aur);
             // Remove aura as dispel
-            RemoveAura(iter, AURA_REMOVE_BY_DISPEL);
+            if(spellId == 43421)         // Special case - Hex Lord Malacrass Lifebloom (prevent lifebloom from blomming when spellstolen)
+                RemoveAura(iter, AURA_REMOVE_BY_DEFAULT);
+            else
+                RemoveAura(iter, AURA_REMOVE_BY_DISPEL);
         }
         else
             ++iter;
@@ -4165,6 +4188,31 @@ void Unit::RemoveSingleAuraFromStack(uint32 spellId, uint32 effindex)
             return; // not remove aura if stack amount > 1
         }
         RemoveAura(iter);
+    }
+}
+
+void Unit::RemoveSingleAuraFromStackByCaster(uint32 spellId, uint32 effindex, uint64 casterGUID)
+{
+    spellEffectPair spair = spellEffectPair(spellId, effindex);
+    for(AuraMap::iterator iter = m_Auras.lower_bound(spair); iter != m_Auras.upper_bound(spair); iter++)
+    {
+        if(iter->second->GetCasterGUID() == casterGUID)
+        {
+            if (iter->second->GetStackAmount() > 1)
+            {
+                // reapply modifier with reduced stack amount
+                iter->second->ApplyModifier(false,true);
+                iter->second->SetStackAmount(iter->second->GetStackAmount()-1);
+                iter->second->ApplyModifier(true,true);
+
+                if (GetTypeId() == TYPEID_UNIT && IsAIEnabled)
+                    ((Creature *)this)->AI()->OnAuraRemove(iter->second, true);
+
+                iter->second->UpdateSlotCounterAndDuration();
+            } else
+                RemoveAura(iter);
+            break;
+        }
     }
 }
 
@@ -6633,6 +6681,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
 
             target = this;
             trigger_spell_id = 22588;
+            break;
         }
         // Greater Heal Refund (Avatar Raiment set)
         case 37594:
@@ -6651,6 +6700,16 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
             // If your target is below $s1% health
             if (pVictim->GetHealth() > pVictim->GetMaxHealth() * triggerAmount / 100)
                 return false;
+            break;
+        }
+        // Energy Storm (used by Zul'jin)
+        case 43983:
+        {
+            if (procSpell && procSpell->powerType == POWER_MANA && (procSpell->manaCost || procSpell->ManaCostPercentage))
+            {
+                trigger_spell_id = 43137;
+                target = this;
+            }
             break;
         }
         // Evasive Maneuvers (Commendation of Kael`thas trinket)
@@ -12714,6 +12773,7 @@ Unit* Unit::GetNextRandomRaidMember(float radius)
     Player *pPlayer = GetCharmerOrOwnerPlayerOrPlayerItself();
     if (!pPlayer)
         return NULL;
+
     Group *pGroup = pPlayer->GetGroup();
     if (!pGroup)
         return NULL;

@@ -178,9 +178,7 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
                     if (uint8 count = m_immunemap[pPlayer->GetGUID()])
                     {
                         if (count >= 10)
-                        {
                             m_immunemap[pPlayer->GetGUID()] = 0;
-                        }
                         else
                         {
                             m_immunemap[pPlayer->GetGUID()]++;
@@ -512,5 +510,3 @@ void AddSC_boss_the_lurker_below()
     newscript->GetAI = &GetAI_mob_coilfang_ambusher;
     newscript->RegisterSelf();
 }
-
-
