@@ -5072,7 +5072,19 @@ void Spell::EffectScriptEffect(uint32 effIndex)
 {
     // TODO: we must implement hunter pet summon at login there (spell 6962)
     switch (m_spellInfo->Id)
-    {
+    {   // Unbanish Azaloth
+        case 37834:
+        {                                                             
+            if (unitTarget->HasAura(37833,0))   
+            {   
+                    unitTarget->RemoveAurasDueToSpell(37833);
+                if (((Player*)m_caster)->GetQuestStatus(10637) == QUEST_STATUS_INCOMPLETE)     ((Player*)m_caster)->CompleteQuest(10637);
+                if (((Player*)m_caster)->GetQuestStatus(10688) == QUEST_STATUS_INCOMPLETE)     ((Player*)m_caster)->CompleteQuest(10688);
+            }
+            else {
+                 SendCastResult(SPELL_FAILED_BAD_TARGETS);
+                 } 
+        }
         // Destroy Deathforged Infernal
         case 38055:
         {
@@ -6580,7 +6592,7 @@ void Spell::EffectCharge(uint32 /*i*/)
     Unit *target = m_targets.getUnitTarget();
     if (!target)
         return;
-
+         
     float x, y, z;
     target->GetContactPoint(m_caster, x, y, z);
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
@@ -6742,6 +6754,7 @@ void Spell::EffectSendTaxi(uint32 i)
     }
 
     ((Player*)unitTarget)->ActivateTaxiPathTo(nodes,mountid);
+
 }
 
 void Spell::EffectPlayerPull(uint32 i)

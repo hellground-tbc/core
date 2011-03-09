@@ -2692,11 +2692,12 @@ void SpellMgr::LoadSpellCustomAttr()
         case 40859: // Sinister Beam
         case 40860: // Vile Beam
         case 40861: // Wicked Beam
-            spellInfo->MaxAffectedTargets = 10;
-            break;
+            spellInfo->MaxAffectedTargets = 10;     
+            break;      
+        case 37834: spellInfo->Attributes |= SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY; break;   //Unbanish Azaloth
         case 8122: case 8124: case 10888: case 10890: // Psychic Scream
         case 12494: // Frostbite
-            spellInfo->Attributes |= SPELL_ATTR_BREAKABLE_BY_DAMAGE;
+            spellInfo->Attributes |= SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY;
             break;
         case 38794: case 33711: // Murmur's Touch
             spellInfo->MaxAffectedTargets = 1;
