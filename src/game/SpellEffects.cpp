@@ -732,6 +732,7 @@ void Spell::EffectDummy(uint32 i)
                         }
                         ((Creature*)unitTarget)->UpdateEntry(entry);
                     }
+                    break;
                 }
                 // Illidan Stormrage: Throw Glaive (Summon Glaive after throw;p
                 case 39635:

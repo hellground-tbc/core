@@ -352,7 +352,6 @@ bool GossipSelect_npc_skyguard_handler_irena(Player *player, Creature *_Creature
 
 enum eBloodmaul
 {
-    QUEST_GETTING_THE_BLADESPIRE_TANKED  = 10512,
     NPC_OGRE_BRUTE                       = 19995,
     NPC_QUEST_CREDIT                     = 21241,
     GO_KEG                               = 184315
@@ -360,23 +359,21 @@ enum eBloodmaul
 
 struct npc_bloodmaul_brutebaneAI : public ScriptedAI
 {
-    npc_bloodmaul_brutebaneAI(Creature *c) : ScriptedAI(c)
+    npc_bloodmaul_brutebaneAI(Creature *c) : ScriptedAI(c){}
+
+    void IsSummonedBy(Unit *pOwner)
     {
-       if(Unit* Ogre = FindCreature(NPC_OGRE_BRUTE, 50, m_creature))
+       if (Creature* pOgre = GetClosestCreatureWithEntry(me, NPC_OGRE_BRUTE, 50.0f))
        {
-           ((Creature*)Ogre)->SetReactState(REACT_DEFENSIVE);
-           Ogre->GetMotionMaster()->MovePoint(1, m_creature->GetPositionX()-1, m_creature->GetPositionY()+1, m_creature->GetPositionZ());
+           pOgre->SetReactState(REACT_DEFENSIVE);
+           pOgre->GetMotionMaster()->MovePoint(1, m_creature->GetPositionX()-1, m_creature->GetPositionY()+1, m_creature->GetPositionZ());
+
+           if (Player *plOwner = pOwner->GetCharmerOrOwnerPlayerOrPlayerItself())
+               plOwner->KilledMonster(NPC_QUEST_CREDIT, pOgre->GetGUID());
        }
     }
 
-    uint64 OgreGUID;
-
-    void Reset()
-    {
-        OgreGUID = 0;
-    }
-
-    void UpdateAI(const uint32 uiDiff) {}
+    void UpdateAI(const uint32 uiDiff){}
 };
 
 CreatureAI* GetAI_npc_bloodmaul_brutebane(Creature* pCreature)
@@ -390,46 +387,30 @@ CreatureAI* GetAI_npc_bloodmaul_brutebane(Creature* pCreature)
 
 struct npc_ogre_bruteAI : public ScriptedAI
 {
-    npc_ogre_bruteAI(Creature *c) : ScriptedAI(c) {}
-
-    uint64 PlayerGUID;
-
-    void Reset()
-    {
-        PlayerGUID = 0;
-    }
-
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (!who || (!who->isAlive())) return;
-
-        if (m_creature->IsWithinDistInMap(who, 50.0f) && (who->GetTypeId() == TYPEID_PLAYER) && ((Player*)who)->GetQuestStatus(QUEST_GETTING_THE_BLADESPIRE_TANKED) == QUEST_STATUS_INCOMPLETE)
-        {
-            PlayerGUID = who->GetGUID();
-        }
-    }
+    npc_ogre_bruteAI(Creature *c) : ScriptedAI(c){}
 
     void MovementInform(uint32 type, uint32 id)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
-        if(id == 1)
-        {
-            GameObject* Keg = FindGameObject(GO_KEG, 20.0, m_creature);
-            if(Keg)
-                Keg->Delete();
-            m_creature->HandleEmoteCommand(7);
-            m_creature->SetReactState(REACT_AGGRESSIVE);
-            m_creature->GetMotionMaster()->MoveTargetedHome();
-            Unit* Credit = FindCreature(NPC_QUEST_CREDIT, 50, m_creature);
-            if(player && Credit)
-                player->KilledMonster(NPC_QUEST_CREDIT, Credit->GetGUID());
-        }
+        if (type != POINT_MOTION_TYPE || id != 1)
+            return;
+
+        if (GameObject* pKeg = FindGameObject(GO_KEG, 20.0, me))
+            pKeg->Delete();
+
+        me->HandleEmoteCommand(7);
+        me->SetReactState(REACT_AGGRESSIVE);
+
+        if (!me->getVictim())
+            me->GetMotionMaster()->MoveTargetedHome();
+        else
+            me->GetMotionMaster()->MoveChase(me->getVictim());
     }
 
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim())
             return;
+
         DoMeleeAttackIfReady();
     }
 };

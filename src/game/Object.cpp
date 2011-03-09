@@ -1724,7 +1724,7 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
     {
         pCreature->AI()->JustRespawned();
         
-        if (GetTypeId() == TYPEID_UNIT)
+        if (GetTypeId() == TYPEID_UNIT || GetTypeId() == TYPEID_PLAYER)
             pCreature->AI()->IsSummonedBy((Unit*)this);
     }
 
