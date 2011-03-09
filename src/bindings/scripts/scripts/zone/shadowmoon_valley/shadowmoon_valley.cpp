@@ -71,9 +71,9 @@ struct TRINITY_DLL_DECL mob_azalothAI : public ScriptedAI
     void JustRespawned()
     {
         DoCast(m_creature,SPELL_BANISH);
-        std::list<Creature*> warlocks;
-        warlocks = DoFindAllCreaturesWithEntry(21503, 30.0f);
-        for (std::list<Creature*>::iterator itr = warlocks.begin(); itr != warlocks.end(); ++itr)  (*itr)->CastSpell(me,SPELL_VISUAL_BANISH, false);
+        std::list<Creature*> warlocks = DoFindAllCreaturesWithEntry(21503, 30.0f);
+        for (std::list<Creature*>::iterator itr = warlocks.begin(); itr != warlocks.end(); ++itr)
+            (*itr)->CastSpell(me,SPELL_VISUAL_BANISH, false);
     }
 
     void EnterCombat() 
@@ -82,59 +82,70 @@ struct TRINITY_DLL_DECL mob_azalothAI : public ScriptedAI
         banish_timer  = TIME_TO_BANISH;
     }
 
-    void Reset() { 
-    
+    void Reset()
+    {
         cleave_timer  = 6000;
         cripple_timer = 40000;
         rain_timer    = 15000;
         warstomp_timer= 10000;
         banish_timer  = TIME_TO_BANISH;
     }
+
     void UpdateAI(const uint32 diff)
     {    
-        if (banish_timer<diff) 
+        if (banish_timer < diff) 
         {
             DoCast(m_creature,SPELL_BANISH);
             banish_timer  = TIME_TO_BANISH;
         }
 
-        std::list<Creature*> warlocks;
-        warlocks = DoFindAllCreaturesWithEntry(21503, 30.0f);
-        for (std::list<Creature*>::iterator itr = warlocks.begin(); itr != warlocks.end(); ++itr)  (*itr)->CastSpell(me,SPELL_VISUAL_BANISH, false);
+        std::list<Creature*> warlocks = DoFindAllCreaturesWithEntry(21503, 30.0f);
+        for (std::list<Creature*>::iterator itr = warlocks.begin(); itr != warlocks.end(); ++itr)
+            (*itr)->CastSpell(me,SPELL_VISUAL_BANISH, false);
 
-        if (!UpdateVictim()) {   banish_timer-=diff;
-        return;  }
+        if (!UpdateVictim())
+        {   
+            banish_timer-=diff;
+            return;
+        }
 
         //spell cleave
         if (cleave_timer<diff)
         {
-        DoCast(m_creature->getVictim(),SPELL_CLEAVE);
-          cleave_timer  = 6000;
-        } else cleave_timer-=diff;
+            DoCast(m_creature->getVictim(), SPELL_CLEAVE);
+            cleave_timer  = 6000;
+        }
+        else
+            cleave_timer-=diff;
 
         //spell cripple
         if (cripple_timer<diff)
         {
-        DoCast(m_creature->getVictim(),SPELL_CRIPPLE);
-         cripple_timer = 40000;
-        } else cripple_timer-=diff;
+            DoCast(m_creature->getVictim(), SPELL_CRIPPLE);
+           cripple_timer = 40000;
+        }
+        else
+            cripple_timer-=diff;
 
         //spell rain of fire
         if (rain_timer<diff)
         {
-        DoCast(m_creature->getVictim(),SPELL_RAIN_OF_FIRE);
-          rain_timer    = 15000;
-        } else rain_timer-=diff;
+            DoCast(m_creature->getVictim(), SPELL_RAIN_OF_FIRE);
+            rain_timer    = 15000;
+        }
+        else
+            rain_timer-=diff;
 
         //spell warstomp
         if (warstomp_timer<diff)
         {
-        DoCast(m_creature->getVictim(),SPELL_WARSTOMP);
-          warstomp_timer= 10000;
-        } else warstomp_timer-=diff;
+            DoCast(m_creature->getVictim(), SPELL_WARSTOMP);
+            warstomp_timer= 10000;
+        }
+        else
+            warstomp_timer-=diff;
 
         DoMeleeAttackIfReady();
-        
     }
 };
 
@@ -3546,6 +3557,21 @@ bool GossipSelect_npc_thane_yoregar(Player *player, Creature *_Creature, uint32 
     return true;
 }
 
+bool GOHello_go_forged_illidari_bane(Player *pPlayer, GameObject *pGo)
+{
+    ItemPosCountVec dest;
+    uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 30876, 1);
+    if (msg == EQUIP_ERR_OK)
+    {
+        if (Item* item = pPlayer->StoreNewItem(dest,30876,true))
+            pPlayer->SendNewItem(item,1,false,true);
+        else
+            pPlayer->SendEquipError(msg,NULL,NULL);
+    }
+
+    pGo->SetLootState(GO_JUST_DEACTIVATED);
+    return true;
+}
 
 void AddSC_shadowmoon_valley()
 {
@@ -3723,5 +3749,9 @@ void AddSC_shadowmoon_valley()
     newscript->pGossipHello = &GossipHello_npc_thane_yoregar;
     newscript->pGossipSelect = &GossipSelect_npc_thane_yoregar;
     newscript->RegisterSelf();
-}
 
+    newscript = new Script;
+    newscript->Name="go_forged_illidari_bane";
+    newscript->pGOHello = &GOHello_go_forged_illidari_bane;
+    newscript->RegisterSelf();
+}
