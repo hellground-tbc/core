@@ -474,8 +474,6 @@ void npc_chesspieceAI::DamageTaken(Unit * done_by, uint32& damage)
     Player * tmpPl = done_by->GetCharmerOrOwnerPlayerOrPlayerItself();
     if (done_by->GetTypeId() == TYPEID_UNIT && tmpPl && tmpPl->GetTeam() == pInstance->GetData(CHESS_EVENT_TEAM))
         pInstance->SetData(DATA_CHESS_DAMAGE, pInstance->GetData(DATA_CHESS_DAMAGE) + damage);
-    else
-        damage = 0;
 }
 
 void npc_chesspieceAI::UpdateAI(const uint32 diff)
@@ -2655,6 +2653,61 @@ void boss_MedivhAI::SpawnTriggers()
     }
 }
 
+void boss_MedivhAI::ClearBoard()
+{
+    for (int i = 0; i < 8; ++i)
+    {
+        for (int j = 0; j < 8; ++j)
+        {
+            if (tmpC = me->GetCreature(chessBoard[i][j].piece))
+            {
+                tmpC->SetVisibility(VISIBILITY_OFF);
+                tmpC->DestroyForNearbyPlayers();
+                tmpC->Kill(tmpC, false);
+                tmpC->RemoveCorpse();
+            }
+
+            if (tmpC = me->GetCreature(chessBoard[i][j].trigger))
+            {
+                tmpC->SetVisibility(VISIBILITY_OFF);
+                tmpC->DestroyForNearbyPlayers();
+                tmpC->Kill(tmpC, false);
+                tmpC->RemoveCorpse();
+            }
+
+            chessBoard[i][j].piece = 0;
+            chessBoard[i][j].trigger = 0;
+            chessBoard[i][j].ori = CHESS_ORI_CHOOSE;
+        }
+    }
+
+    for (std::list<uint64>::iterator itr = unusedMedivhPieces.begin(); itr != unusedMedivhPieces.end(); ++itr)
+    {
+        if (tmpC = me->GetCreature(*itr))
+        {
+            tmpC->SetVisibility(VISIBILITY_OFF);
+            tmpC->DestroyForNearbyPlayers();
+            tmpC->Kill(tmpC, false);
+            tmpC->RemoveCorpse();
+        }
+    }
+
+    for (std::list<uint64>::iterator itr = unusedPlayerPieces.begin(); itr != unusedPlayerPieces.end(); ++itr)
+    {
+        if (tmpC = me->GetCreature(*itr))
+        {
+            tmpC->SetVisibility(VISIBILITY_OFF);
+            tmpC->DestroyForNearbyPlayers();
+            tmpC->Kill(tmpC, false);
+            tmpC->RemoveCorpse();
+        }
+    }
+
+    unusedMedivhPieces.clear();
+    unusedPlayerPieces.clear();
+    medivhSidePieces.clear();
+}
+
 void boss_MedivhAI::PrepareBoardForEvent()
 {
     #ifdef CHESS_DEBUG_INFO
@@ -2675,6 +2728,8 @@ void boss_MedivhAI::PrepareBoardForEvent()
 
 void boss_MedivhAI::StartMiniEvent()
 {
+    ClearBoard();
+    me->CastSpell(me, SPELL_GAME_IN_SESSION, false);
     miniEventState = MINI_EVENT_KING;
 
     pInstance->SetData(DATA_DUST_COVERED_CHEST, IN_PROGRESS);
@@ -2750,7 +2805,6 @@ void boss_MedivhAI::UpdateAI(const uint32 diff)
         }
         else
             miniEventTimer -= diff;
-
         return;
     }
 
@@ -2786,57 +2840,7 @@ void boss_MedivhAI::UpdateAI(const uint32 diff)
                         endGameEventState = GAMEEND_CLEAR_BOARD;
                     break;
                 case GAMEEND_CLEAR_BOARD:
-                    for (int i = 0; i < 8; ++i)
-                    {
-                        for (int j = 0; j < 8; ++j)
-                        {
-                            if (tmpC = me->GetCreature(chessBoard[i][j].piece))
-                            {
-                                tmpC->SetVisibility(VISIBILITY_OFF);
-                                tmpC->DestroyForNearbyPlayers();
-                                tmpC->Kill(tmpC, false);
-                                tmpC->RemoveCorpse();
-                            }
-
-                            if (tmpC = me->GetCreature(chessBoard[i][j].trigger))
-                            {
-                                tmpC->SetVisibility(VISIBILITY_OFF);
-                                tmpC->DestroyForNearbyPlayers();
-                                tmpC->Kill(tmpC, false);
-                                tmpC->RemoveCorpse();
-                            }
-
-                            chessBoard[i][j].piece = 0;
-                            chessBoard[i][j].trigger = 0;
-                            chessBoard[i][j].ori = CHESS_ORI_CHOOSE;
-                        }
-                    }
-
-                    for (std::list<uint64>::iterator itr = unusedMedivhPieces.begin(); itr != unusedMedivhPieces.end(); ++itr)
-                    {
-                        if (tmpC = me->GetCreature(*itr))
-                        {
-                            tmpC->SetVisibility(VISIBILITY_OFF);
-                            tmpC->DestroyForNearbyPlayers();
-                            tmpC->Kill(tmpC, false);
-                            tmpC->RemoveCorpse();
-                        }
-                    }
-
-                    for (std::list<uint64>::iterator itr = unusedPlayerPieces.begin(); itr != unusedPlayerPieces.end(); ++itr)
-                    {
-                        if (tmpC = me->GetCreature(*itr))
-                        {
-                            tmpC->SetVisibility(VISIBILITY_OFF);
-                            tmpC->DestroyForNearbyPlayers();
-                            tmpC->Kill(tmpC, false);
-                            tmpC->RemoveCorpse();
-                        }
-                    }
-
-                    unusedMedivhPieces.clear();
-                    unusedPlayerPieces.clear();
-                    medivhSidePieces.clear();
+                    ClearBoard();
                     EnterEvadeMode();
                     return;
             }
@@ -3468,7 +3472,7 @@ int boss_MedivhAI::CalculatePriority(uint64 piece, uint64 trigger)
                     if (tmpIP > tmpIT)
                         tmpPrior += MOVE_BACK_PRIOR_MOD;
                     else if (/*tmpIP == tmpIT && */tmpJP != tmpJT)
-                        tmpPrior += (tmpIP != tmpIT ? MOVE_STRAFE_PRIOR_MOD/2 : MOVE_STRAFE_PRIOR_MOD);
+                        tmpPrior += (tmpIP != tmpIT ? MOVE_STRAFE_PRIOR_MOD/4 : MOVE_STRAFE_PRIOR_MOD);
                     else
                         tmpPrior += MOVE_DEFAULT_PRIOR_MOD;
                 }
@@ -3479,7 +3483,7 @@ int boss_MedivhAI::CalculatePriority(uint64 piece, uint64 trigger)
                         if (tmpIP < tmpIT)
                             tmpPrior += MOVE_BACK_PRIOR_MOD;
                         else if (/*tmpIP == tmpIT && */tmpJP != tmpJT)
-                            tmpPrior += (tmpIP != tmpIT ? MOVE_STRAFE_PRIOR_MOD/2 : MOVE_STRAFE_PRIOR_MOD);
+                            tmpPrior += (tmpIP != tmpIT ? MOVE_STRAFE_PRIOR_MOD/4 : MOVE_STRAFE_PRIOR_MOD);
                         else
                             tmpPrior += MOVE_DEFAULT_PRIOR_MOD;
                     }
@@ -3490,7 +3494,7 @@ int boss_MedivhAI::CalculatePriority(uint64 piece, uint64 trigger)
                             if (tmpIP > tmpIT)
                                 tmpPrior += MOVE_BACK_PRIOR_MOD/2;
                             else if (/*tmpIP == tmpIT && */tmpJP != tmpJT)
-                                tmpPrior += (tmpIP != tmpIT ? MOVE_STRAFE_PRIOR_MOD/4 : MOVE_STRAFE_PRIOR_MOD/2);
+                                tmpPrior += (tmpIP != tmpIT ? MOVE_STRAFE_PRIOR_MOD/8 : MOVE_STRAFE_PRIOR_MOD/4);
                             else
                                 tmpPrior += MOVE_DEFAULT_PRIOR_MOD;
                         }
@@ -3501,7 +3505,7 @@ int boss_MedivhAI::CalculatePriority(uint64 piece, uint64 trigger)
                                 if (tmpIP > tmpIT)
                                     tmpPrior += MOVE_BACK_PRIOR_MOD/3;
                                 else if (/*tmpIP == tmpIT && */tmpJP != tmpJT)
-                                    tmpPrior += (tmpIP != tmpIT ? MOVE_STRAFE_PRIOR_MOD/4 : MOVE_STRAFE_PRIOR_MOD/2);
+                                    tmpPrior += (tmpIP != tmpIT ? MOVE_STRAFE_PRIOR_MOD/8 : MOVE_STRAFE_PRIOR_MOD/4);
                                 else
                                     tmpPrior += MOVE_DEFAULT_PRIOR_MOD;
                             }
@@ -3516,7 +3520,7 @@ int boss_MedivhAI::CalculatePriority(uint64 piece, uint64 trigger)
                     if (tmpIP < tmpIT)
                         tmpPrior += MOVE_BACK_PRIOR_MOD;
                     else if (/*tmpIP == tmpIT && */tmpJP != tmpJT)
-                        tmpPrior += (tmpIP != tmpIT ? MOVE_STRAFE_PRIOR_MOD/2 : MOVE_STRAFE_PRIOR_MOD);
+                        tmpPrior += (tmpIP != tmpIT ? MOVE_STRAFE_PRIOR_MOD/4 : MOVE_STRAFE_PRIOR_MOD);
                     else
                         tmpPrior += MOVE_DEFAULT_PRIOR_MOD;
                 }
@@ -3527,7 +3531,7 @@ int boss_MedivhAI::CalculatePriority(uint64 piece, uint64 trigger)
                         if (tmpIP > tmpIT)
                             tmpPrior += MOVE_BACK_PRIOR_MOD;
                         else if (/*tmpIP == tmpIT && */tmpJP != tmpJT)
-                            tmpPrior += (tmpIP != tmpIT ? MOVE_STRAFE_PRIOR_MOD/2 : MOVE_STRAFE_PRIOR_MOD);
+                            tmpPrior += (tmpIP != tmpIT ? MOVE_STRAFE_PRIOR_MOD/4 : MOVE_STRAFE_PRIOR_MOD);
                         else
                             tmpPrior += MOVE_DEFAULT_PRIOR_MOD;
                     }
@@ -3538,7 +3542,7 @@ int boss_MedivhAI::CalculatePriority(uint64 piece, uint64 trigger)
                             if (tmpIP < tmpIT)
                                 tmpPrior += MOVE_BACK_PRIOR_MOD/2;
                             else if (/*tmpIP == tmpIT && */tmpJP != tmpJT)
-                                tmpPrior += (tmpIP != tmpIT ? MOVE_STRAFE_PRIOR_MOD/4 : MOVE_STRAFE_PRIOR_MOD/2);
+                                tmpPrior += (tmpIP != tmpIT ? MOVE_STRAFE_PRIOR_MOD/8 : MOVE_STRAFE_PRIOR_MOD/4);
                             else
                                 tmpPrior += MOVE_DEFAULT_PRIOR_MOD;
                         }
@@ -3546,10 +3550,10 @@ int boss_MedivhAI::CalculatePriority(uint64 piece, uint64 trigger)
                         {
                             if (tmpIP < 4)
                             {
-                                if (tmpIP > tmpIT)
-                                    tmpPrior += MOVE_BACK_PRIOR_MOD/2;
+                                if (tmpIP < tmpIT)
+                                    tmpPrior += MOVE_BACK_PRIOR_MOD/3;
                                 else if (/*tmpIP == tmpIT && */tmpJP != tmpJT)
-                                    tmpPrior += (tmpIP != tmpIT ? MOVE_STRAFE_PRIOR_MOD/4 : MOVE_STRAFE_PRIOR_MOD/2);
+                                    tmpPrior += (tmpIP != tmpIT ? MOVE_STRAFE_PRIOR_MOD/8 : MOVE_STRAFE_PRIOR_MOD/4);
                                 else
                                     tmpPrior += MOVE_DEFAULT_PRIOR_MOD;
                             }

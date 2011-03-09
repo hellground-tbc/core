@@ -117,7 +117,7 @@ EndScriptData */
 #define THIRD_CHEAT_TIMER_MIN   120000
 #define THIRD_CHEAT_TIMER_MAX   180000
 
-#define CHESS_DEBUG_INFO                            1
+//#define CHESS_DEBUG_INFO                            1
 //#define CHESS_EVENT_DISSABLE_MEDIVH_PIECES_MOVEMENT 1
 //#define CHESS_EVENT_DISSABLE_MEDIVH_PIECES_SPELLS   1
 //#define CHESS_EVENT_DISSABLE_MELEE                  1
@@ -547,6 +547,7 @@ public:
 
     //event
 
+    void ClearBoard();
     void PrepareBoardForEvent();
     void StartMiniEvent();
     void StartEvent();
