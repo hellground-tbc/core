@@ -3446,6 +3446,21 @@ bool GossipSelect_npc_thane_yoregar(Player *player, Creature *_Creature, uint32 
     return true;
 }
 
+bool GOHello_go_forged_illidari_bane(Player *pPlayer, GameObject *pGo)
+{
+    ItemPosCountVec dest;
+    uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 30876, 1);
+    if (msg == EQUIP_ERR_OK)
+    {
+        if (Item* item = pPlayer->StoreNewItem(dest,30876,true))
+            pPlayer->SendNewItem(item,1,false,true);
+        else
+            pPlayer->SendEquipError(msg,NULL,NULL);
+    }
+
+    pGo->SetLootState(GO_JUST_DEACTIVATED);
+    return true;
+}
 
 void AddSC_shadowmoon_valley()
 {
@@ -3618,5 +3633,9 @@ void AddSC_shadowmoon_valley()
     newscript->pGossipHello = &GossipHello_npc_thane_yoregar;
     newscript->pGossipSelect = &GossipSelect_npc_thane_yoregar;
     newscript->RegisterSelf();
-}
 
+    newscript = new Script;
+    newscript->Name="go_forged_illidari_bane";
+    newscript->pGOHello = &GOHello_go_forged_illidari_bane;
+    newscript->RegisterSelf();
+}
