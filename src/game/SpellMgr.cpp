@@ -2829,20 +2829,11 @@ void SpellMgr::LoadSpellCustomAttr()
         case 37453: // Chess event: Smash
         case 37413: // Chess event: Visious Strike
         case 37406: // Chess event: Heroic Blow
-                    // Chess event: Take Action melee
-        case 32227:
-        case 32228:
-        case 37142:
-        case 37220:
-        case 37143:
-        case 37339:
-        case 37147:
-        case 37337:
-        case 37149:
-        case 37345:
-        case 37150:
-        case 37348:
-            spellInfo->EffectRadiusIndex[0] = 7;    // effect radius from 8 to 2 yd
+            spellInfo->EffectRadiusIndex[0] = 15;    // effect radius from 8 to 3 yd
+            break;
+        case 37502: // Chess event: Howl
+        case 37498: // Chess event: Stomp
+            spellInfo->EffectRadiusIndex[0] = 29;    // effect radius from 8 to 6 yd
             break;
         case 37461: // Chess event: Shadow Spear
         case 37459: // Chess event: Holy Lance

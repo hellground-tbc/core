@@ -40,6 +40,7 @@
 #define CHESS_EVENT_TEAM                33
 #define DATA_CHESS_ECHO_OF_MEDIVH       34
 #define DATA_DUST_COVERED_CHEST         35
+#define DATA_CHESS_DAMAGE               36
 
 #define SPELL_BROKEN_PACT               30065
 

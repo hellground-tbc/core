@@ -65,7 +65,7 @@ void instance_karazhan::Initialize()
 
 bool instance_karazhan::IsEncounterInProgress() const
 {
-    for (uint8 i = 0; i < ENCOUNTERS; ++i)
+    for (uint8 i = 0; i < ENCOUNTERS - 3; ++i)
         if (Encounters[i] != DONE && Encounters[i] != NOT_STARTED)
             return true;
 
@@ -90,6 +90,7 @@ uint32 instance_karazhan::GetData(uint32 identifier)
         case DATA_NIGHTBANE_EVENT:        return Encounters[11];
         case DATA_DUST_COVERED_CHEST:     return Encounters[12];
         case CHESS_EVENT_TEAM:            return Encounters[13];
+        case DATA_CHESS_DAMAGE:           return Encounters[14];
         case DATA_OPERA_PERFORMANCE:      return OperaEvent;
         case DATA_OPERA_OZ_DEATHCOUNT:    return OzDeathCount;
         case DATA_IMAGE_OF_MEDIVH:        return ImageGUID;
@@ -186,7 +187,7 @@ uint64 instance_karazhan::GetData64(uint32 data)
         case DATA_ARAN:                         return AranGUID;
         case DATA_BLIZZARD:                     return BlizzardGUID;
         case DATA_BARNES:                       return BarnesGUID;
-        case DATA_CHESS_ECHO_OF_MEDIVH:        return MedivhGUID;
+        case DATA_CHESS_ECHO_OF_MEDIVH:         return MedivhGUID;
     }
 
     return 0;
@@ -263,6 +264,9 @@ void instance_karazhan::SetData(uint32 type, uint32 data)
             break;
         case CHESS_EVENT_TEAM:
             Encounters[13] = data;
+            break;
+        case DATA_CHESS_DAMAGE:
+            Encounters[14] = data;
             break;
         case DATA_DUST_COVERED_CHEST:
             if (Encounters[12] != DONE)

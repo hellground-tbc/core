@@ -3,7 +3,7 @@
 
 #include "def_karazhan.h"
 
-#define ENCOUNTERS      14
+#define ENCOUNTERS      15
 
 /*
 0  - Attumen + Midnight (optional)
@@ -20,6 +20,7 @@
 11 - Nightbane
 12 - Dust Covered Chest
 13 - Chess Event Team
+14 - Chess Event damage done
 */
 
 struct TRINITY_DLL_DECL instance_karazhan : public ScriptedInstance

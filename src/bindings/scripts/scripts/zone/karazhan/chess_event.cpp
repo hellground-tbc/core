@@ -479,6 +479,15 @@ void npc_chesspieceAI::SpellHitTarget(Unit * caster, const SpellEntry * spell)
         ((Creature*)me)->HandleEmoteCommand(EMOTE_ONESHOT_BOW);
 }
 
+void npc_chesspieceAI::DamageTaken(Unit * done_by, uint32& damage)
+{
+    Player * tmpPl = done_by->GetCharmerOrOwnerPlayerOrPlayerItself();
+    if (done_by->GetTypeId() == TYPEID_UNIT && tmpPl && tmpPl->GetTeam() == pInstance->GetData(CHESS_EVENT_TEAM))
+        pInstance->SetData(DATA_CHESS_DAMAGE, pInstance->GetData(DATA_CHESS_DAMAGE) + damage);
+    else
+        damage = 0;
+}
+
 void npc_chesspieceAI::UpdateAI(const uint32 diff)
 {
     if (pInstance->GetData(DATA_CHESS_EVENT) == DONE || pInstance->GetData(DATA_CHESS_EVENT) == FAIL)
@@ -2660,6 +2669,14 @@ void boss_MedivhAI::PrepareBoardForEvent()
 
     SpawnTriggers();
     SpawnKings();
+
+    firstCheatTimer = urand(FIRST_CHEAT_TIMER_MIN, FIRST_CHEAT_TIMER_MAX);
+    secondCheatTimer = urand(SECOND_CHEAT_TIMER_MIN, SECOND_CHEAT_TIMER_MAX);
+    thirdCheatTimer = urand(THIRD_CHEAT_TIMER_MIN, THIRD_CHEAT_TIMER_MAX);
+    firstCheatDamageReq = urand(FIRST_CHEAT_HP_MIN*1000, FIRST_CHEAT_HP_MAX*1000)/1000.0;
+    secondCheatDamageReq = urand(SECOND_CHEAT_HP_MIN*1000, SECOND_CHEAT_HP_MAX*1000)/1000.0;
+    thirdCheatDamagereq = urand(THIRD_CHEAT_HP_MIN*1000, THIRD_CHEAT_HP_MAX*1000)/1000.0;
+    pInstance->SetData(DATA_CHESS_DAMAGE, 0);
 }
 
 void boss_MedivhAI::StartMiniEvent()
@@ -2850,6 +2867,88 @@ void boss_MedivhAI::UpdateAI(const uint32 diff)
     }
     else
         addPieceToMoveCheckTimer -= diff;
+
+    if (firstCheatTimer <= diff)
+    {
+        if (firstCheatDamageReq < pInstance->GetData(DATA_CHESS_DAMAGE))
+        {
+            std::list<ChessTile> tmpList;
+
+            for (int i = 0; i < 8; ++i)
+                for (int j = 0; j < 8; ++j)
+                    if (chessBoard[i][j].piece && !IsMedivhsPiece(chessBoard[i][j].piece))
+                        tmpList.push_back(chessBoard[i][j]);
+
+            for (int i = 0; i < 3; ++i)
+            {
+                std::list<ChessTile>::iterator itr = tmpList.begin();
+                advance(itr, urand(0, tmpList.size()-1));
+
+                if (Creature * tmpC = me->GetCreature((*itr).trigger))
+                    me->CastSpell(tmpC, SPELL_FURY_OF_MEDIVH, false);
+
+                DoScriptText(SCRIPTTEXT_MEDIVH_CHEAT_1, m_creature);
+
+                tmpList.erase(itr);
+            }
+
+            firstCheatTimer = urand(FIRST_CHEAT_TIMER_MIN, FIRST_CHEAT_TIMER_MAX)/2;
+        }
+        else
+            firstCheatTimer = 5000; // next check in 5 seconds
+    }
+    else
+        firstCheatTimer -= diff;
+
+    if (secondCheatTimer <= diff)
+    {
+        if (secondCheatDamageReq < pInstance->GetData(DATA_CHESS_DAMAGE))
+        {
+            std::list<ChessTile> tmpList;
+
+            for (int i = 0; i < 8; ++i)
+                for (int j = 0; j < 8; ++j)
+                    if (chessBoard[i][j].piece && IsMedivhsPiece(chessBoard[i][j].piece))
+                        tmpList.push_back(chessBoard[i][j]);
+
+            for (int i = 0; i < 3; ++i)
+            {
+                std::list<ChessTile>::iterator itr = tmpList.begin();
+                advance(itr, urand(0, tmpList.size()-1));
+
+                if (Creature * tmpC = me->GetCreature((*itr).trigger))
+                    me->CastSpell(tmpC, SPELL_HAND_OF_MEDIVH, false);
+
+                DoScriptText(SCRIPTTEXT_MEDIVH_CHEAT_2, m_creature);
+
+                tmpList.erase(itr);
+            }
+
+            secondCheatTimer = urand(SECOND_CHEAT_TIMER_MIN, SECOND_CHEAT_TIMER_MAX)/2;
+        }
+        else
+            secondCheatTimer = 5000; // next check in 5 seconds
+    }
+    else
+        secondCheatTimer -= diff;
+
+    if (thirdCheatTimer <= diff)
+    {
+        if (thirdCheatDamagereq < pInstance->GetData(DATA_CHESS_DAMAGE))
+        {
+            for (std::list<uint64>::iterator itr = medivhSidePieces.begin(); itr != medivhSidePieces.end(); ++itr)
+                if (Creature * tmpC = me->GetCreature(*itr))
+                    tmpC->SetHealth(tmpC->GetMaxHealth());
+
+            DoScriptText(SCRIPTTEXT_MEDIVH_CHEAT_3, m_creature);
+
+            thirdCheatTimer = urand(THIRD_CHEAT_TIMER_MIN, THIRD_CHEAT_TIMER_MAX)/2;
+        }
+        else
+            secondCheatTimer = 5000; // next check in 5 seconds
+    }
+    else
+        thirdCheatTimer -= diff;
 }
 
 void boss_MedivhAI::SetOrientation(uint64 piece, ChessOrientation ori)
@@ -3380,7 +3479,7 @@ int boss_MedivhAI::CalculatePriority(uint64 piece, uint64 trigger)
                     if (tmpIP > tmpIT)
                         tmpPrior += MOVE_BACK_PRIOR_MOD;
                     else if (/*tmpIP == tmpIT && */tmpJP != tmpJT)
-                        tmpPrior += MOVE_STRAFE_PRIOR_MOD;
+                        tmpPrior += (tmpIP != tmpIT ? MOVE_STRAFE_PRIOR_MOD/2 : MOVE_STRAFE_PRIOR_MOD);
                     else
                         tmpPrior += MOVE_DEFAULT_PRIOR_MOD;
                 }
@@ -3391,7 +3490,7 @@ int boss_MedivhAI::CalculatePriority(uint64 piece, uint64 trigger)
                         if (tmpIP < tmpIT)
                             tmpPrior += MOVE_BACK_PRIOR_MOD;
                         else if (/*tmpIP == tmpIT && */tmpJP != tmpJT)
-                            tmpPrior += MOVE_STRAFE_PRIOR_MOD;
+                            tmpPrior += (tmpIP != tmpIT ? MOVE_STRAFE_PRIOR_MOD/2 : MOVE_STRAFE_PRIOR_MOD);
                         else
                             tmpPrior += MOVE_DEFAULT_PRIOR_MOD;
                     }
@@ -3402,7 +3501,7 @@ int boss_MedivhAI::CalculatePriority(uint64 piece, uint64 trigger)
                             if (tmpIP > tmpIT)
                                 tmpPrior += MOVE_BACK_PRIOR_MOD/2;
                             else if (/*tmpIP == tmpIT && */tmpJP != tmpJT)
-                                tmpPrior += MOVE_STRAFE_PRIOR_MOD/2;
+                                tmpPrior += (tmpIP != tmpIT ? MOVE_STRAFE_PRIOR_MOD/4 : MOVE_STRAFE_PRIOR_MOD/2);
                             else
                                 tmpPrior += MOVE_DEFAULT_PRIOR_MOD;
                         }
@@ -3413,7 +3512,7 @@ int boss_MedivhAI::CalculatePriority(uint64 piece, uint64 trigger)
                                 if (tmpIP > tmpIT)
                                     tmpPrior += MOVE_BACK_PRIOR_MOD/3;
                                 else if (/*tmpIP == tmpIT && */tmpJP != tmpJT)
-                                    tmpPrior += MOVE_STRAFE_PRIOR_MOD/2;
+                                    tmpPrior += (tmpIP != tmpIT ? MOVE_STRAFE_PRIOR_MOD/4 : MOVE_STRAFE_PRIOR_MOD/2);
                                 else
                                     tmpPrior += MOVE_DEFAULT_PRIOR_MOD;
                             }
@@ -3428,7 +3527,7 @@ int boss_MedivhAI::CalculatePriority(uint64 piece, uint64 trigger)
                     if (tmpIP < tmpIT)
                         tmpPrior += MOVE_BACK_PRIOR_MOD;
                     else if (/*tmpIP == tmpIT && */tmpJP != tmpJT)
-                        tmpPrior += MOVE_STRAFE_PRIOR_MOD;
+                        tmpPrior += (tmpIP != tmpIT ? MOVE_STRAFE_PRIOR_MOD/2 : MOVE_STRAFE_PRIOR_MOD);
                     else
                         tmpPrior += MOVE_DEFAULT_PRIOR_MOD;
                 }
@@ -3439,7 +3538,7 @@ int boss_MedivhAI::CalculatePriority(uint64 piece, uint64 trigger)
                         if (tmpIP > tmpIT)
                             tmpPrior += MOVE_BACK_PRIOR_MOD;
                         else if (/*tmpIP == tmpIT && */tmpJP != tmpJT)
-                            tmpPrior += MOVE_STRAFE_PRIOR_MOD;
+                            tmpPrior += (tmpIP != tmpIT ? MOVE_STRAFE_PRIOR_MOD/2 : MOVE_STRAFE_PRIOR_MOD);
                         else
                             tmpPrior += MOVE_DEFAULT_PRIOR_MOD;
                     }
@@ -3450,7 +3549,7 @@ int boss_MedivhAI::CalculatePriority(uint64 piece, uint64 trigger)
                             if (tmpIP < tmpIT)
                                 tmpPrior += MOVE_BACK_PRIOR_MOD/2;
                             else if (/*tmpIP == tmpIT && */tmpJP != tmpJT)
-                                tmpPrior += MOVE_STRAFE_PRIOR_MOD/2;
+                                tmpPrior += (tmpIP != tmpIT ? MOVE_STRAFE_PRIOR_MOD/4 : MOVE_STRAFE_PRIOR_MOD/2);
                             else
                                 tmpPrior += MOVE_DEFAULT_PRIOR_MOD;
                         }
@@ -3461,7 +3560,7 @@ int boss_MedivhAI::CalculatePriority(uint64 piece, uint64 trigger)
                                 if (tmpIP > tmpIT)
                                     tmpPrior += MOVE_BACK_PRIOR_MOD/2;
                                 else if (/*tmpIP == tmpIT && */tmpJP != tmpJT)
-                                    tmpPrior += MOVE_STRAFE_PRIOR_MOD/2;
+                                    tmpPrior += (tmpIP != tmpIT ? MOVE_STRAFE_PRIOR_MOD/4 : MOVE_STRAFE_PRIOR_MOD/2);
                                 else
                                     tmpPrior += MOVE_DEFAULT_PRIOR_MOD;
                             }

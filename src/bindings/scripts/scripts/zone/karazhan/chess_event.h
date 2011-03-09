@@ -7,7 +7,6 @@ SD%Complete: xx
 SDCategory: Karazhan
 
 TODO:
- - Implement Medivhs cheats
  - Fix spells (Game in session, Rain of Fire, Poison Cloud (it's all ? ))
 EndScriptData */
 
@@ -103,11 +102,26 @@ EndScriptData */
 #define ORI_S           3.817220
 #define ORI_W           2.239354
 
+#define PIECES_HP_SUM           1040000
+#define FIRST_CHEAT_HP_MIN      PIECES_HP_SUM/10
+#define FIRST_CHEAT_HP_MAX      PIECES_HP_SUM/6
+#define SECOND_CHEAT_HP_MIN     PIECES_HP_SUM/5
+#define SECOND_CHEAT_HP_MAX     PIECES_HP_SUM/2
+#define THIRD_CHEAT_HP_MIN      PIECES_HP_SUM - PIECES_HP_SUM/5
+#define THIRD_CHEAT_HP_MAX      PIECES_HP_SUM - PIECES_HP_SUM/9
+
+#define FIRST_CHEAT_TIMER_MIN   60000
+#define FIRST_CHEAT_TIMER_MAX   90000
+#define SECOND_CHEAT_TIMER_MIN  75000
+#define SECOND_CHEAT_TIMER_MAX  120000
+#define THIRD_CHEAT_TIMER_MIN   120000
+#define THIRD_CHEAT_TIMER_MAX   180000
+
 #define CHESS_DEBUG_INFO                            1
-//#define CHESS_EVENT_DISSABLE_MEDIVH_PIECES_MOVEMENT 1
-//#define CHESS_EVENT_DISSABLE_MEDIVH_PIECES_SPELLS   1
-//#define CHESS_EVENT_DISSABLE_MELEE                  1
-//#define CHESS_EVENT_DISSABLE_FACING                 1
+#define CHESS_EVENT_DISSABLE_MEDIVH_PIECES_MOVEMENT 1
+#define CHESS_EVENT_DISSABLE_MEDIVH_PIECES_SPELLS   1
+#define CHESS_EVENT_DISSABLE_MELEE                  1
+#define CHESS_EVENT_DISSABLE_FACING                 1
 
 enum SCRIPTTEXTs
 {
@@ -171,8 +185,8 @@ enum ChessEventSpells
     SPELL_IN_GAME           = 30532,
     SPELL_GAME_IN_SESSION   = 39331,
     SPELL_RECENTLY_IN_GAME  = 30529,
-    SPELL_HAND_OF_MEDIVH    = 39339,  // 1st cheat: Berserk own chesspieces.
-    SPELL_FURY_OF_MEDIVH    = 39383,  // 2nd cheat: AOE spell burn cell under enemy chesspieces.
+    SPELL_FURY_OF_MEDIVH    = 39383,  // 1st cheat: AOE spell burn cell under enemy chesspieces.
+    SPELL_HAND_OF_MEDIVH    = 39339,  // 2nd cheat: Berserk own chesspieces.
     // 3rd cheat: set own creatures to max health
 };
 
@@ -451,6 +465,8 @@ public:
 
     void SpellHitTarget(Unit * caster, const SpellEntry * spell);
 
+    void DamageTaken(Unit * done_by, uint32& damage);
+
     void JustDied(Unit* killer);
 
     void UpdateAI(const uint32 diff);
@@ -487,6 +503,13 @@ private:
 
     int32 miniEventTimer;
     uint32 endEventTimer;
+
+    uint32 firstCheatTimer;
+    uint32 secondCheatTimer;
+    uint32 thirdCheatTimer;
+    double firstCheatDamageReq;
+    double secondCheatDamageReq;
+    double thirdCheatDamagereq;
 
     WorldLocation wLoc;     //location of medivh
     WorldLocation tpLoc;    //location of player teleport point
