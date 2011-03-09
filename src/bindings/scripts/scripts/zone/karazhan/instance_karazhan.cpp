@@ -234,6 +234,9 @@ void instance_karazhan::SetData(uint32 type, uint32 data)
         case DATA_CURATOR_EVENT:
             if (Encounters[5] != DONE)
                 Encounters[5] = data;
+
+            if (data == DONE)
+                HandleGameObject(GamesmansDoor, true);
             break;
         case DATA_SHADEOFARAN_EVENT:
             if (Encounters[6] != DONE)
@@ -271,6 +274,9 @@ void instance_karazhan::SetData(uint32 type, uint32 data)
         case DATA_DUST_COVERED_CHEST:
             if (Encounters[12] != DONE)
                 Encounters[12] = data;
+
+            if (data == DONE)
+                HandleGameObject(GamesmansExitDoor, true);
             break;
         case DATA_MALCHEZZAR_EVENT:
             if (Encounters[10] != DONE)
@@ -311,17 +317,17 @@ void instance_karazhan::OnObjectCreate(GameObject* go)
     case 183932:
         CurtainGUID           = go->GetGUID();
         if(Encounters[4] == DONE)
-            HandleGameObject(NULL,true,go);
+            HandleGameObject(NULL, true, go);
         break;
     case 184278:
         StageDoorLeftGUID     = go->GetGUID();
         if(Encounters[4] == DONE)
-            HandleGameObject(NULL,true,go);
+            HandleGameObject(NULL, true, go);
         break;
     case 184279:
         StageDoorRightGUID    = go->GetGUID();
         if(Encounters[4] == DONE)
-            HandleGameObject(NULL,true,go);
+            HandleGameObject(NULL, true, go);
         break;
     case 184517:
         LibraryDoor           = go->GetGUID();
@@ -333,9 +339,13 @@ void instance_karazhan::OnObjectCreate(GameObject* go)
         break;
     case 184276:
         GamesmansDoor         = go->GetGUID();
+        if(Encounters[5] == DONE)
+            HandleGameObject(NULL, true, go);
         break;
     case 184277:
         GamesmansExitDoor     = go->GetGUID();
+        //if(Encounters[12] == DONE)
+            HandleGameObject(NULL, true, go);
         break;
     case 185134:
         NetherspaceDoor       = go->GetGUID();
@@ -349,12 +359,12 @@ void instance_karazhan::OnObjectCreate(GameObject* go)
     case 184275:
         SideEntranceDoor      = go->GetGUID();
         if(Encounters[4] == DONE)
-            HandleGameObject(NULL,true,go);
+            HandleGameObject(NULL, true, go);
         break;
     case 184281:
         ServentAccessDoor = go->GetGUID();
         if(Encounters[4] == DONE)
-            HandleGameObject(NULL,true,go);
+            HandleGameObject(NULL, true, go);
         break;
     }
 

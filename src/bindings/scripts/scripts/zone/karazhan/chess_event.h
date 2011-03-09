@@ -118,10 +118,10 @@ EndScriptData */
 #define THIRD_CHEAT_TIMER_MAX   180000
 
 #define CHESS_DEBUG_INFO                            1
-#define CHESS_EVENT_DISSABLE_MEDIVH_PIECES_MOVEMENT 1
-#define CHESS_EVENT_DISSABLE_MEDIVH_PIECES_SPELLS   1
-#define CHESS_EVENT_DISSABLE_MELEE                  1
-#define CHESS_EVENT_DISSABLE_FACING                 1
+//#define CHESS_EVENT_DISSABLE_MEDIVH_PIECES_MOVEMENT 1
+//#define CHESS_EVENT_DISSABLE_MEDIVH_PIECES_SPELLS   1
+//#define CHESS_EVENT_DISSABLE_MELEE                  1
+//#define CHESS_EVENT_DISSABLE_FACING                 1
 
 enum SCRIPTTEXTs
 {
@@ -455,8 +455,6 @@ public:
 
     void MovementInform(uint32 MovementType, uint32 Data);
 
-    void MoveInLineOfSight(Unit *unit);
-
     void JustRespawned();
 
     void OnCharmed(bool apply);
@@ -603,7 +601,6 @@ public:
     uint32 GetDeadEntryForPiece(uint32 entry);
 
     void Reset();
-    void Aggro(Unit *){}
     void UpdateAI(const uint32 diff);
 };
 

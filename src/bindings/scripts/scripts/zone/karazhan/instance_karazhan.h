@@ -9,7 +9,7 @@
 0  - Attumen + Midnight (optional)
 1  - Moroes
 2  - Maiden of Virtue (optional)
-3  - Hyakiss the Lurker /  Rokad the Ravager  / Shadikith the Glider
+3  - Hyakiss the Lurker /  Rokad the Ravager  / Shadikith the Glider  (optional)
 4  - Opera Event
 5  - Curator
 6  - Shade of Aran (optional)
@@ -17,8 +17,9 @@
 8  - Netherspite (optional)
 9  - Chess Event
 10 - Prince Malchezzar
-11 - Nightbane
+11 - Nightbane  (optional)
 12 - Dust Covered Chest
+
 13 - Chess Event Team
 14 - Chess Event damage done
 */

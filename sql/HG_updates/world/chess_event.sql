@@ -1,7 +1,6 @@
 #--remove pieces
 DELETE FROM creature WHERE (id IN (21752, 21750, 21747, 21748, 21726, 17469, 21683, 21684, 21682, 21664, 21160, 17211)) AND map = 532;
 
-
 #--add flags to chess pieces
 UPDATE creature_template SET unit_flags = unit_flags | 530432, flags_extra | 2129920
 WHERE entry IN (17469,17211,21748,21664,21750,21683,21747,21682,21726,21160,21752,21684); #-- pvp, incombat, pet_in_combat flags, extra flags: no_target, charm_ai
@@ -22,107 +21,6 @@ INSERT INTO spell_script_target () VALUES (37152,1,22519);#--8
 INSERT INTO spell_script_target () VALUES (37153,1,22519);#--8
 INSERT INTO spell_script_target () VALUES (30532,1,17460);
 INSERT INTO spell_script_target () VALUES (30284,1,22519);#--Change Facing
-
-
-#----melee spells
-
-#--Melee Attack: Footman
-INSERT INTO spell_script_target () VALUES (32227,1,21752);#--Melee Attack: Footman -> Warchief Blackhand
-INSERT INTO spell_script_target () VALUES (32227,1,21750);#--Melee Attack: Footman -> Orc Warlock
-INSERT INTO spell_script_target () VALUES (32227,1,21747);#--Melee Attack: Footman -> Orc Necrolyte
-INSERT INTO spell_script_target () VALUES (32227,1,21748);#--Melee Attack: Footman -> Orc Wolf
-INSERT INTO spell_script_target () VALUES (32227,1,21726);#--Melee Attack: Footman -> Summoned Daemon
-INSERT INTO spell_script_target () VALUES (32227,1,17469);#--Melee Attack: Footman -> Orc Grunt
-
-#--Melee Attack: Conjured Water Elemental
-INSERT INTO spell_script_target () VALUES (37142,1,21752);#--Melee Attack: Conjured Water Elemental -> Warchief Blackhand
-INSERT INTO spell_script_target () VALUES (37142,1,21750);#--Melee Attack: Conjured Water Elemental -> Orc Warlock
-INSERT INTO spell_script_target () VALUES (37142,1,21747);#--Melee Attack: Conjured Water Elemental -> Orc Necrolyte
-INSERT INTO spell_script_target () VALUES (37142,1,21748);#--Melee Attack: Conjured Water Elemental -> Orc Wolf
-INSERT INTO spell_script_target () VALUES (37142,1,21726);#--Melee Attack: Conjured Water Elemental -> Summoned Daemon
-INSERT INTO spell_script_target () VALUES (37142,1,17469);#--Melee Attack: Conjured Water Elemental -> Orc Grunt
-
-#--Melee Attack: Conjured Water Elemental2
-INSERT INTO spell_script_target () VALUES (37143,1,21752);#--Melee Attack: Conjured Water Elemental2 -> Warchief Blackhand
-INSERT INTO spell_script_target () VALUES (37143,1,21750);#--Melee Attack: Conjured Water Elemental2 -> Orc Warlock
-INSERT INTO spell_script_target () VALUES (37143,1,21747);#--Melee Attack: Conjured Water Elemental2 -> Orc Necrolyte
-INSERT INTO spell_script_target () VALUES (37143,1,21748);#--Melee Attack: Conjured Water Elemental2 -> Orc Wolf
-INSERT INTO spell_script_target () VALUES (37143,1,21726);#--Melee Attack: Conjured Water Elemental2 -> Summoned Daemon
-INSERT INTO spell_script_target () VALUES (37143,1,17469);#--Melee Attack: Conjured Water Elemental2 -> Orc Grunt
-
-#--Melee Attack: Human Cleric
-INSERT INTO spell_script_target () VALUES (37147,1,21752);#--Melee Attack: Human Cleric -> Warchief Blackhand
-INSERT INTO spell_script_target () VALUES (37147,1,21750);#--Melee Attack: Human Cleric -> Orc Warlock
-INSERT INTO spell_script_target () VALUES (37147,1,21747);#--Melee Attack: Human Cleric -> Orc Necrolyte
-INSERT INTO spell_script_target () VALUES (37147,1,21748);#--Melee Attack: Human Cleric -> Orc Wolf
-INSERT INTO spell_script_target () VALUES (37147,1,21726);#--Melee Attack: Human Cleric -> Summoned Daemon
-INSERT INTO spell_script_target () VALUES (37147,1,17469);#--Melee Attack: Human Cleric -> Orc Grunt
-
-#--Melee Attack: Human Conjurer
-INSERT INTO spell_script_target () VALUES (37149,1,21752);#--Melee Attack: Human Conjurer -> Warchief Blackhand
-INSERT INTO spell_script_target () VALUES (37149,1,21750);#--Melee Attack: Human Conjurer -> Orc Warlock
-INSERT INTO spell_script_target () VALUES (37149,1,21747);#--Melee Attack: Human Conjurer -> Orc Necrolyte
-INSERT INTO spell_script_target () VALUES (37149,1,21748);#--Melee Attack: Human Conjurer -> Orc Wolf
-INSERT INTO spell_script_target () VALUES (37149,1,21726);#--Melee Attack: Human Conjurer -> Summoned Daemon
-INSERT INTO spell_script_target () VALUES (37149,1,17469);#--Melee Attack: Human Conjurer -> Orc Grunt
-
-#--Melee Attack: King Llane
-INSERT INTO spell_script_target () VALUES (37150,1,21752);#--Melee Attack: King Llane -> Warchief Blackhand
-INSERT INTO spell_script_target () VALUES (37150,1,21750);#--Melee Attack: King Llane -> Orc Warlock
-INSERT INTO spell_script_target () VALUES (37150,1,21747);#--Melee Attack: King Llane -> Orc Necrolyte
-INSERT INTO spell_script_target () VALUES (37150,1,21748);#--Melee Attack: King Llane -> Orc Wolf
-INSERT INTO spell_script_target () VALUES (37150,1,21726);#--Melee Attack: King Llane -> Summoned Daemon
-INSERT INTO spell_script_target () VALUES (37150,1,17469);#--Melee Attack: King Llane -> Orc Grunt
-
-
-
-#--Melee Attack: Grunt
-INSERT INTO spell_script_target () VALUES (32228,1,21683);#--Melee Attack: Grunt -> Human Conjurer
-INSERT INTO spell_script_target () VALUES (32228,1,21684);#--Melee Attack: Grunt -> King Llane
-INSERT INTO spell_script_target () VALUES (32228,1,21682);#--Melee Attack: Grunt -> Human Cleric
-INSERT INTO spell_script_target () VALUES (32228,1,21664);#--Melee Attack: Grunt -> Human Charger
-INSERT INTO spell_script_target () VALUES (32228,1,21160);#--Melee Attack: Grunt -> Conjured Water Elemental
-INSERT INTO spell_script_target () VALUES (32228,1,17211);#--Melee Attack: Grunt -> Human Footman
-
-#--Melee Attack: Summoned Daemon
-INSERT INTO spell_script_target () VALUES (37220,1,21683);#--Melee Attack: Summoned Daemon -> Human Conjurer
-INSERT INTO spell_script_target () VALUES (37220,1,21684);#--Melee Attack: Summoned Daemon -> King Llane
-INSERT INTO spell_script_target () VALUES (37220,1,21682);#--Melee Attack: Summoned Daemon -> Human Cleric
-INSERT INTO spell_script_target () VALUES (37220,1,21664);#--Melee Attack: Summoned Daemon -> Human Charger
-INSERT INTO spell_script_target () VALUES (37220,1,21160);#--Melee Attack: Summoned Daemon -> Conjured Water Elemental
-INSERT INTO spell_script_target () VALUES (37220,1,17211);#--Melee Attack: Summoned Daemon -> Human Footman
-
-#--Melee Attack: Orc Wolf
-INSERT INTO spell_script_target () VALUES (37339,1,21683);#--Melee Attack: Orc Wolf -> Human Conjurer
-INSERT INTO spell_script_target () VALUES (37339,1,21684);#--Melee Attack: Orc Wolf -> King Llane
-INSERT INTO spell_script_target () VALUES (37339,1,21682);#--Melee Attack: Orc Wolf -> Human Cleric
-INSERT INTO spell_script_target () VALUES (37339,1,21664);#--Melee Attack: Orc Wolf -> Human Charger
-INSERT INTO spell_script_target () VALUES (37339,1,21160);#--Melee Attack: Orc Wolf -> Conjured Water Elemental
-INSERT INTO spell_script_target () VALUES (37339,1,17211);#--Melee Attack: Orc Wolf -> Human Footman
-
-#--Melee Attack: Orc Necrolyte
-INSERT INTO spell_script_target () VALUES (37337,1,21683);#--Melee Attack: Orc Necrolyte -> Human Conjurer
-INSERT INTO spell_script_target () VALUES (37337,1,21684);#--Melee Attack: Orc Necrolyte -> King Llane
-INSERT INTO spell_script_target () VALUES (37337,1,21682);#--Melee Attack: Orc Necrolyte -> Human Cleric
-INSERT INTO spell_script_target () VALUES (37337,1,21664);#--Melee Attack: Orc Necrolyte -> Human Charger
-INSERT INTO spell_script_target () VALUES (37337,1,21160);#--Melee Attack: Orc Necrolyte -> Conjured Water Elemental
-INSERT INTO spell_script_target () VALUES (37337,1,17211);#--Melee Attack: Orc Necrolyte -> Human Footman
-
-#--Melee Attack: Orc Warlock
-INSERT INTO spell_script_target () VALUES (37345,1,21683);#--Melee Attack: Orc Warlock -> Human Conjurer
-INSERT INTO spell_script_target () VALUES (37345,1,21684);#--Melee Attack: Orc Warlock -> King Llane
-INSERT INTO spell_script_target () VALUES (37345,1,21682);#--Melee Attack: Orc Warlock -> Human Cleric
-INSERT INTO spell_script_target () VALUES (37345,1,21664);#--Melee Attack: Orc Warlock -> Human Charger
-INSERT INTO spell_script_target () VALUES (37345,1,21160);#--Melee Attack: Orc Warlock -> Conjured Water Elemental
-INSERT INTO spell_script_target () VALUES (37345,1,17211);#--Melee Attack: Orc Warlock -> Human Footman
-
-#--Melee Attack: Warchief Blackhand
-INSERT INTO spell_script_target () VALUES (37348,1,21683);#--Melee Attack: Warchief Blackhand -> Human Conjurer
-INSERT INTO spell_script_target () VALUES (37348,1,21684);#--Melee Attack: Warchief Blackhand -> King Llane
-INSERT INTO spell_script_target () VALUES (37348,1,21682);#--Melee Attack: Warchief Blackhand -> Human Cleric
-INSERT INTO spell_script_target () VALUES (37348,1,21664);#--Melee Attack: Warchief Blackhand -> Human Charger
-INSERT INTO spell_script_target () VALUES (37348,1,21160);#--Melee Attack: Warchief Blackhand -> Conjured Water Elemental
-INSERT INTO spell_script_target () VALUES (37348,1,17211);#--Melee Attack: Warchief Blackhand -> Human Footman
 
 
 #----ability 1 alliance
@@ -283,8 +181,6 @@ INSERT INTO spell_script_target () VALUES (37428,1,17211);#--Hellfire -> Human F
 #--Weapon Deflection - self only
 INSERT INTO spell_script_target () VALUES (37416,1,17469);#--Weapon Deflection -> Orc Grunt
 
-#INSERT INTO spell_script_target () VALUES (,,);#--
-
 #--update spells for chess pieces
 UPDATE creature_template SET spell1=30284, spell2=37148, spell3=37462, spell4=37465 WHERE entry=21683;#--Human Conjurer
 UPDATE creature_template SET spell1=30284, spell2=37151, spell3=37471, spell4=37474 WHERE entry=21684;#--King Llane
@@ -330,11 +226,6 @@ UPDATE creature_template
 SET scale = 0.5 
 WHERE entry IN (16556, 16567, 16561, 16569, 16557, 16572, 16560, 16571, 16562, 16570, 16563, 16581);
 
-##----
-#UPDATE creature_template 
-#SET minhealth = , maxhealth = , armor = , speed = , mindmg = , maxdmg = , attackpower = 
-#WHERE entry =  OR entry = ;
-
 #--add script_texts for chess event
 DELETE FROM script_texts WHERE entry BETWEEN -1650000 and -1650021;
 INSERT INTO script_texts (entry, content_default,sound,type,comment) values('-1650000','Very well. Let the game begin.',10338,0,'Chess Event - Event Start');
@@ -379,5 +270,7 @@ INSERT INTO game_tele VALUES ('XXX', -11096.638672, -1856.335938, 221.1, 5.40847
 INSERT INTO spell_linked_spell VALUES (-30019, 30529, 0, 'Add debuff when player stopped possessing Chesspiece');
 INSERT INTO spell_linked_spell VALUES (30019, 30532, 0, 'Add InGame aura when player start possessing Chesspiece');
 INSERT INTO spell_linked_spell VALUES (-30019, -30532, 0, 'Remove InGame aura when player stopped possessing Chesspiece');
-#INSERT INTO spell_linked_spell VALUES (30019, 39331, 0, 'Add Game In Session buff when player start possessing Chesspiece');
 
+
+#--update chess doors template
+UPDATE gameobject_template SET flags = 36 WHERE entry IN (184277, 184276);

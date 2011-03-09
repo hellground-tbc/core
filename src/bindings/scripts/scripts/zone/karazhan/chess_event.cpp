@@ -423,16 +423,6 @@ void npc_chesspieceAI::MovementInform(uint32 MovementType, uint32 Data)
     me->AddUnitMovementFlag(MOVEFLAG_ROOT);
 }
 
-void npc_chesspieceAI::MoveInLineOfSight(Unit *unit)
-{
-    if (m_creature->isPossessed())
-    {
-        m_creature->StopMoving();
-
-        return;
-    }
-}
-
 void npc_chesspieceAI::JustRespawned()
 {
     #ifdef CHESS_DEBUG_INFO
@@ -2114,8 +2104,10 @@ void boss_MedivhAI::SayChessPieceDied(Unit * piece)
 
             case NPC_KING_A:
 
+                // temporary - Uncomment when all spells will be fixed
                 if (pInstance->GetData(DATA_DUST_COVERED_CHEST) != DONE)
-                    m_creature->SummonGameObject(DUST_COVERED_CHEST, -11058, -1903, 221, 2.24, 0, 0, 0, 0, 7200000);
+                    me->Say("Teraz powinna sie skrzynka pojawic", LANG_UNIVERSAL, NULL);
+                //    m_creature->SummonGameObject(DUST_COVERED_CHEST, -11058, -1903, 221, 2.24, 0, 0, 0, 0, 7200000);
 
                 DoScriptText(SCRIPTTEXT_PLAYER_WIN, m_creature);
                 pInstance->SetData(DATA_CHESS_EVENT, DONE);
@@ -2177,8 +2169,10 @@ void boss_MedivhAI::SayChessPieceDied(Unit * piece)
 
             case NPC_KING_H:
 
+                // temporary - Uncomment when all spells will be fixed
                 if (pInstance->GetData(DATA_CHESS_EVENT) != DONE)
-                    m_creature->SummonGameObject(DUST_COVERED_CHEST, -11058, -1903, 221, 2.24, 0, 0, 0, 0, 7200000);
+                    me->Say("Teraz powinna sie skrzynka pojawic", LANG_UNIVERSAL, NULL);
+                //    m_creature->SummonGameObject(DUST_COVERED_CHEST, -11058, -1903, 221, 2.24, 0, 0, 0, 0, 7200000);
 
                 DoScriptText(SCRIPTTEXT_PLAYER_WIN, m_creature);
                 pInstance->SetData(DATA_CHESS_EVENT, DONE);
@@ -3349,7 +3343,6 @@ pseudocode:
 Calculate Priority:
     set base priority for square
     modify priority based on count of enemies in melee
-    modify priority based on count of enemies/friends in spells range
     modify priority based on way were we want to move
 */
 
@@ -3457,10 +3450,6 @@ int boss_MedivhAI::CalculatePriority(uint64 piece, uint64 trigger)
             }
             break;
     }
-
-    //// modify priority based on count of enemies/friends in spells range
-
-    //int spellCount = GetCountOfPiecesInRange();
 
     // modify priority based on way were we want to move
 
