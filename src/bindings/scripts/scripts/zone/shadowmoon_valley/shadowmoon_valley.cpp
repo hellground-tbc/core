@@ -54,7 +54,7 @@ EndContentData */
 #define SPELL_RAIN_OF_FIRE             38741
 #define SPELL_WARSTOMP                 38750
 #define SPELL_BANISH                   37833
-#define TIME_TO_BANISH                 240000 //4 min to re-banish self after 5 minutes to warlocks respawna
+#define TIME_TO_BANISH                 60000
 #define SPELL_VISUAL_BANISH            38722
 
 struct TRINITY_DLL_DECL mob_azalothAI : public ScriptedAI
@@ -85,7 +85,7 @@ struct TRINITY_DLL_DECL mob_azalothAI : public ScriptedAI
     void Reset()
     {
         cleave_timer  = 6000;
-        cripple_timer = 40000;
+        cripple_timer = 18000;
         rain_timer    = 15000;
         warstomp_timer= 10000;
         banish_timer  = TIME_TO_BANISH;
@@ -98,10 +98,14 @@ struct TRINITY_DLL_DECL mob_azalothAI : public ScriptedAI
             DoCast(m_creature,SPELL_BANISH);
             banish_timer  = TIME_TO_BANISH;
         }
-
-        std::list<Creature*> warlocks = DoFindAllCreaturesWithEntry(21503, 30.0f);
+ 
+        std::list<Creature*> warlocks = DoFindAllCreaturesWithEntry(21503, 20.0f);
         for (std::list<Creature*>::iterator itr = warlocks.begin(); itr != warlocks.end(); ++itr)
+        {
+            (*itr)->GetMotionMaster()->Clear(false);
+            (*itr)->StopMoving();
             (*itr)->CastSpell(me,SPELL_VISUAL_BANISH, false);
+        }
 
         if (!UpdateVictim())
         {   

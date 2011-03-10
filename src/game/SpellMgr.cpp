@@ -2839,6 +2839,8 @@ void SpellMgr::LoadSpellCustomAttr()
         case 37498: // Chess event: Stomp
             spellInfo->EffectRadiusIndex[0] = 29;    // effect radius from 8 to 6 yd
             break;
+        case 37834: spellInfo->Attributes |= SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY; //Unbanish Azaloth
+            break;
         case 37461: // Chess event: Shadow Spear
         case 37459: // Chess event: Holy Lance
             spellInfo->AttributesCu |= SPELL_ATTR_CU_CONE_LINE;
