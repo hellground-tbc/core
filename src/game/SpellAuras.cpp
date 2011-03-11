@@ -4862,6 +4862,13 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
                 if (urand(0, 8) && caster && m_target)
                     caster->CastSpell(m_target, 41487, true, 0, this);
             }
+            // Curse of Boundless Agony jump
+            if( (m_spellProto->Id == 45032 || m_spellProto->Id == 45034) && !apply)
+            {
+                InstanceMap *instance = dynamic_cast<InstanceMap*>(m_target->GetMap());
+                if(instance && instance->GetInstanceData() && instance->GetInstanceData()->IsEncounterInProgress())
+                    m_target->CastSpell(m_target, 45034, true, 0, this, GetCasterGUID());
+            }
             break;
         }
         case SPELLFAMILY_WARRIOR:

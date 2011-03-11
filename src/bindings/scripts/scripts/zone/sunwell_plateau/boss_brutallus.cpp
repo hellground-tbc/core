@@ -77,6 +77,7 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
     uint32 BurnTimer;
     uint32 StompTimer;
     uint32 BerserkTimer;
+    uint32 CheckTimer;
 
     uint32 IntroPhase;
     uint32 IntroPhaseTimer;
@@ -92,6 +93,7 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
         StompTimer = 30000;
         BurnTimer = 60000;
         BerserkTimer = 360000;
+        CheckTimer = 1000;
 
         IntroPhase = 0;
         IntroPhaseTimer = 0;
@@ -269,34 +271,44 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
         if(!UpdateVictim() || IsIntro)
             return;
 
+        if(CheckTimer < diff)
+        {
+            DoZoneInCombat();
+            m_creature->SetSpeed(MOVE_RUN,2);
+            CheckTimer = 1000;
+        } else
+            CheckTimer -= diff;
+
         if(SlashTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_METEOR_SLASH);
+            AddSpellToCast(m_creature, SPELL_METEOR_SLASH);
             SlashTimer = 11000;
-        }else SlashTimer -= diff;
+        }else
+            SlashTimer -= diff;
 
         if(StompTimer < diff)
         {
-            DoScriptText(RAND(YELL_LOVE1, YELL_LOVE2, YELL_LOVE3), m_creature);
-
-            DoCast(m_creature->getVictim(), SPELL_STOMP);
+            AddSpellToCastWithScriptText(m_creature->getVictim(), SPELL_STOMP, RAND(YELL_LOVE1, YELL_LOVE2, YELL_LOVE3));
             StompTimer = 30000;
-        }else StompTimer -= diff;
+        }else
+            StompTimer -= diff;
 
         if(BurnTimer < diff)
         {
             if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                target->CastSpell(target, SPELL_BURN, true);
+                AddSpellToCast(target, SPELL_BURN);
             BurnTimer = 60000;
-        }else BurnTimer -= diff;
+        }else 
+            BurnTimer -= diff;
 
         if(BerserkTimer < diff && !Enraged)
         {
-            DoScriptText(YELL_BERSERK, m_creature);
-            DoCast(m_creature, SPELL_BERSERK);
+            AddSpellToCastWithScriptText(m_creature, SPELL_BERSERK, YELL_BERSERK);
             Enraged = true;
-        }else BerserkTimer -= diff;
+        }else
+            BerserkTimer -= diff;
 
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };

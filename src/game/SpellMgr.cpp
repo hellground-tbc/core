@@ -2657,6 +2657,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 41071: // Raise Dead
         case 41172: // Rapid Shot
         case 40834: // Agonizing Flames
+        case 45032: case 45034: // Curse of Boundless Agony
             spellInfo->MaxAffectedTargets = 1;
             break;
         case 38281: // Static Charge (LV)

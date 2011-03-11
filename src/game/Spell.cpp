@@ -1089,7 +1089,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
                 return;
             }
         }
-        if (!m_caster->IsFriendlyTo(unit))
+        if ((m_originalCaster && !m_originalCaster->IsFriendlyTo(unit)) || !m_caster->IsFriendlyTo(unit))
         {
             // reset damage to 0 if target has Invisibility or Vanish aura (_only_ vanish, not stealth) and isn't visible for caster
             bool isVisibleForHit = ((unit->HasAuraType(SPELL_AURA_MOD_INVISIBILITY) || unit->HasAuraTypeWithFamilyFlags(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE ,SPELLFAMILYFLAG_ROGUE_VANISH)) && !unit->isVisibleForOrDetect(m_caster, true)) ? false : true;
@@ -2125,12 +2125,16 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 unitList.remove(m_targets.getUnitTarget());
             else if (m_spellInfo->Id == 28062 || m_spellInfo->Id == 28085 || m_spellInfo->Id == 39090 || m_spellInfo->Id == 39093)  // Positive/Negative Charge
                 unitList.remove(m_targets.getUnitTarget());
+            else if (m_spellInfo->Id == 45034) // Curse of Boundless Agony jump (Kalecgos)
+                unitList.remove(m_targets.getUnitTarget());
 
 
             // We don't need immune targets to be taken into list for Fatal Attraction, i know that thix hack is ugly ;]
             // Same thing happens with Akil'zon: Eye of the Storm effect of Electrical Storm
             // Same thing for Positive/Negative charge from Mechanar and Naxx encounters
-            if (m_spellInfo->Id == 40869 || m_spellInfo->Id == 43657 || m_spellInfo->Id == 28062 || m_spellInfo->Id == 28085 || m_spellInfo->Id == 39090 || m_spellInfo->Id == 39093)
+            // Spectral blast: exclude current target and targets with Spectral Exhaustion
+            if (m_spellInfo->Id == 40869 || m_spellInfo->Id == 43657 || m_spellInfo->Id == 28062 || m_spellInfo->Id == 28085 || m_spellInfo->Id == 39090 || m_spellInfo->Id == 39093
+                || m_spellInfo->Id == 44869)
             {
                 std::list<Unit*>::iterator next;
                 for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); itr = next)
@@ -2156,6 +2160,10 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                         case 28085:     // Negative Charge
                         case 39093:
                             if ((*itr)->HasAura(28084, 0) || (*itr)->HasAura(39091, 0))
+                                unitList.remove(*itr);
+                            break;
+                        case 44869:     // Spectral Blast
+                            if( (*itr)->HasAura(44867, 0) || (m_caster->GetTypeId() == TYPEID_UNIT && ((Creature*)m_caster)->getVictim() == (*itr)))
                                 unitList.remove(*itr);
                             break;
                     }

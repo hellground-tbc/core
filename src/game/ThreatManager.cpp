@@ -259,10 +259,6 @@ void ThreatContainer::update()
     iDirty = false;
 }
 
-//============================================================
-// return the next best victim
-// could be the current victim
-
 bool DropAggro(Creature* pAttacker, Unit * target)
 {
     if (!target)
@@ -281,6 +277,15 @@ bool DropAggro(Creature* pAttacker, Unit * target)
     if (target->isCharmed() && pAttacker->IsFriendlyTo(target))
         return true;
 
+    // forced reaction
+    FactionTemplateEntry const* faction = pAttacker->getFactionTemplateEntry();
+    if (faction && target->GetTypeId() == TYPEID_PLAYER)
+    {
+        ForcedReactions::const_iterator forceItr = ((Player const*)target)->m_forcedReactions.find(faction->faction);
+        if (forceItr!=((Player const*)target)->m_forcedReactions.end() && forceItr->second >= REP_FRIENDLY)
+            return true;
+    }
+
     //target has Spirit of Redemption aura (shapeshift effect)
     if (target->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION) || target->HasAuraType(SPELL_AURA_IGNORED))
         return true;
@@ -295,6 +300,10 @@ bool DropAggro(Creature* pAttacker, Unit * target)
 
     return false;
 }
+
+//============================================================
+// return the next best victim
+// could be the current victim
 
 HostilReference* ThreatContainer::selectNextVictim(Creature* pAttacker, HostilReference* pCurrentVictim)
 {
