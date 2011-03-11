@@ -133,7 +133,7 @@ struct PlayerAbilityStruct
 static PlayerAbilityStruct PlayerAbility[][3] =
 {
     // 1 warrior
-    {{SPELL_WR_SPELL_REFLECT, ABILITY_TARGET_SELF, 10000, 10000},
+    {{SPELL_WR_SPELL_REFLECT, ABILITY_TARGET_SELF, 3000, 5000},
     {SPELL_WR_WHIRLWIND, ABILITY_TARGET_SELF, 5000, 12000},
     {SPELL_WR_MORTAL_STRIKE, ABILITY_TARGET_VICTIM, 1000, 8000}},  // 5s duration
     // 2 paladin
@@ -142,8 +142,8 @@ static PlayerAbilityStruct PlayerAbility[][3] =
     {SPELL_PA_AVENGING_WRATH, ABILITY_TARGET_SELF, 5000, 20000}}, //10s duration
     // 3 hunter
     {{SPELL_HU_EXPLOSIVE_TRAP, ABILITY_TARGET_SELF, 3000, 10000},
-    {SPELL_HU_FREEZING_TRAP, ABILITY_TARGET_SELF, 8000, 10000},
-    {SPELL_HU_SNAKE_TRAP, ABILITY_TARGET_SELF, 10000, 10000}},
+    {SPELL_HU_FREEZING_TRAP, ABILITY_TARGET_SELF, 8000, 13000},
+    {SPELL_HU_SNAKE_TRAP, ABILITY_TARGET_SELF, 10000, 15000}},
     // 4 rogue
     {{SPELL_RO_WOUND_POISON, ABILITY_TARGET_VICTIM, 1000, 3000},
     {SPELL_RO_SLICE_DICE, ABILITY_TARGET_SELF, 10000, 60000},    // 40s duration
@@ -358,6 +358,12 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
         }
     }
 
+    void SummonedCreatureDespawn(Creature *c)
+    {
+        if(c->GetEntry() == 24320 && c->GetHealth() > 0)
+            c->CastSpell(c, 43464, true);
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim() )
@@ -391,10 +397,10 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
         {
             if(DrainPower_Timer < diff)
             {
-                ClearCastQueue();
-                AddSpellToCastWithScriptText(m_creature, SPELL_DRAIN_POWER, YELL_DRAIN_POWER);
+                ForceSpellCastWithScriptText(m_creature, SPELL_DRAIN_POWER, YELL_DRAIN_POWER, INTERRUPT_AND_CAST_INSTANTLY);
                 DrainPower_Timer = 40000 + rand()%10000;    // must cast in 60 sec, or buff/debuff will disappear
-            }else DrainPower_Timer -= diff;
+            }else
+                DrainPower_Timer -= diff;
         }
 
         if(SpiritBolts_Timer < diff)
@@ -442,19 +448,17 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
                 SiphonSoul_Timer = 99999;   // buff lasts 30 sec
             }
             DoScriptText(YELL_SIPHON_SOUL, m_creature);
-        }else SiphonSoul_Timer -= diff;
+        }else
+            SiphonSoul_Timer -= diff;
 
         for(uint8 i = 0; i < 3; i++)
         {
             if(PlayerAbility_Timer[i] < diff)
             {
-                //Unit* target = Unit::GetUnit(*m_creature, PlayerGUID);
-                //if(target && target->isAlive())
-                {
-                    UseAbility(i);
-                    PlayerAbility_Timer[i] = PlayerAbility[PlayerClass][i].cooldown;
-                }
-            }else PlayerAbility_Timer[i] -= diff;
+                UseAbility(i);
+                PlayerAbility_Timer[i] = PlayerAbility[PlayerClass][i].cooldown;
+            }else 
+                PlayerAbility_Timer[i] -= diff;
         }
 
         CastNextSpellIfAnyAndReady();
@@ -472,10 +476,6 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
         case ABILITY_TARGET_VICTIM:
             target = m_creature->getVictim();
             break;
-        case ABILITY_TARGET_ENEMY:
-        default:
-            target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-            break;
         case ABILITY_TARGET_HEAL:
             target = DoSelectLowestHpFriendly(50, 0);
             break;
@@ -484,6 +484,10 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
                 std::list<Creature*> templist = DoFindFriendlyMissingBuff(50, PlayerAbility[PlayerClass][i].spell);
                 if(!templist.empty()) target = *(templist.begin());
             }
+            break;
+        case ABILITY_TARGET_ENEMY:
+        default:
+            target = SelectUnit(SELECT_TARGET_RANDOM, 0);
             break;
         }
         if(target)
