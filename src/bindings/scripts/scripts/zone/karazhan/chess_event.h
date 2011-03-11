@@ -315,6 +315,14 @@ struct ChessTile
         ori = CHESS_ORI_CHOOSE;
         position.coord_z = 220.66f;
     }
+
+    ChessTile(const ChessTile &p)
+    {
+        piece = p.piece;
+        trigger = p.trigger;
+        ori = p.ori;
+        position = p.position;
+    }
 };
 
 struct ChessPosition

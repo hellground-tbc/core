@@ -2876,9 +2876,13 @@ void boss_MedivhAI::UpdateAI(const uint32 diff)
             for (int i = 0; i < 8; ++i)
                 for (int j = 0; j < 8; ++j)
                     if (chessBoard[i][j].piece && !IsMedivhsPiece(chessBoard[i][j].piece))
-                        tmpList.push_back(chessBoard[i][j]);
+                        tmpList.push_back(ChessTile(chessBoard[i][j]));
 
-            for (int i = 0; i < 3; ++i)
+            int tmp = 3;
+            if (tmpList.size() < 3)
+                tmp = tmpList.size();
+
+            for (int i = 0; i < tmp; ++i)
             {
                 std::list<ChessTile>::iterator itr = tmpList.begin();
                 advance(itr, urand(0, tmpList.size()-1));
@@ -2908,9 +2912,13 @@ void boss_MedivhAI::UpdateAI(const uint32 diff)
             for (int i = 0; i < 8; ++i)
                 for (int j = 0; j < 8; ++j)
                     if (chessBoard[i][j].piece && IsMedivhsPiece(chessBoard[i][j].piece))
-                        tmpList.push_back(chessBoard[i][j]);
+                        tmpList.push_back(ChessTile(chessBoard[i][j]));
 
-            for (int i = 0; i < 3; ++i)
+            int tmp = 3;
+            if (tmpList.size() < 3)
+                tmp = tmpList.size();
+
+            for (int i = 0; i < tmp; ++i)
             {
                 std::list<ChessTile>::iterator itr = tmpList.begin();
                 advance(itr, urand(0, tmpList.size()-1));
