@@ -301,6 +301,7 @@ class ChatHandler
         bool HandleServerSetLogLevelCommand(const char* args);
         bool HandleServerSetDiffTimeCommand(const char* args);
         bool HandleServerShutDownCommand(const char* args);
+        bool HandleServerRollShutDownCommand(const char* args);
         bool HandleServerShutDownCancelCommand(const char* args);
 
         bool HandleAddHonorCommand(const char* args);

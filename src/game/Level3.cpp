@@ -5276,6 +5276,31 @@ bool ChatHandler::HandleServerShutDownCommand(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleServerRollShutDownCommand(const char* args)
+{
+    if (!*args)
+        return false;
+
+    char* time_str = strtok((char*) args, " ");
+    char* exitmsg = strtok(NULL, "");
+
+    int time;
+    int roll = atoi(time_str);
+
+    if (roll <= 0)
+        return false;
+
+    if (!exitmsg)
+        exitmsg = "";
+
+    time = urand(0, roll);
+
+    sWorld.SendWorldText(LANG_ROLLSHUTDOWN, roll, time/60, time%60, exitmsg);
+
+    sWorld.ShutdownServ(time, 0, SHUTDOWN_EXIT_CODE);
+    return true;
+}
+
 bool ChatHandler::HandleServerRestartCommand(const char* args)
 {
     if (!*args)

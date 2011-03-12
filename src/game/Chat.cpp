@@ -104,6 +104,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "motd",           SEC_PLAYER,         true,  &ChatHandler::HandleServerMotdCommand,          "", NULL },
         { "restart",        SEC_ADMINISTRATOR,  true,  NULL,                                           "", serverRestartCommandTable },
         { "shutdown",       SEC_ADMINISTRATOR,  true,  NULL,                                           "", serverShutdownCommandTable },
+        { "rollshutdown",   SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleServerRollShutDownCommand,  "", NULL},
         { "set",            SEC_ADMINISTRATOR,  true,  NULL,                                           "", serverSetCommandTable },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
