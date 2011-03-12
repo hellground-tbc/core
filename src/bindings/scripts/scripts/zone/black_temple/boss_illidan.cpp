@@ -114,7 +114,8 @@ enum IllidanPhase
     PHASE_THREE   = 3,
     PHASE_FOUR    = 4,
     PHASE_FIVE    = 5,
-    PHASE_MAIEV   = 6
+    PHASE_MAIEV   = 6,
+    PHASE_DEATH   = 7
 };
 
 enum IllidanSpell
@@ -180,6 +181,9 @@ enum IllidanEvent
     EVENT_ILLIDAN_TRANSFORM_BACKNO3      = 26,
     EVENT_ILLIDAN_TRANSFORM_BACKNO4      = 27,
 
+    // Phase: Maiev summon
+    EVENT_ILLIDAN_SUMMON_MAIEV           = 28,
+
     EVENT_ILLIDAN_RANDOM_YELL
 };
 
@@ -223,12 +227,10 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
 {
     boss_illidan_stormrageAI(Creature* c) : BossAI(c, 1){}
 
-    uint32 m_akamaTalk;
-    uint32 m_illidanTalk;
-    uint32 m_maievTalk;
-
     uint64 m_maievGUID;
     uint32 m_hoverPoint;
+
+    uint32 m_combatTimer;
 
     bool b_maievPhase;
 
@@ -240,16 +242,16 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
         ClearCastQueue();
         summons.DespawnAll();
 
-        m_akamaTalk = 0;
-        m_illidanTalk = 0;
-        m_maievTalk = 0;
+        m_combatTimer = 1000;
 
         m_maievGUID = 0;
+
         m_hoverPoint = 0;
 
         b_maievPhase = false;
 
         m_phase = PHASE_NULL;
+
 
         me->RemoveUnitMovementFlag(MOVEFLAG_LEVITATING);
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -352,7 +354,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
                         DoScriptText(YELL_ILLIDAN_SUMMON_MINIONS, me);
 
                         // Call back Akama to deal with minions
-                        if (Creature *pAkama = NULL)
+                        if (Creature *pAkama = instance->GetCreature(instance->GetData64(DATA_AKAMA)))
                             pAkama->AI()->DoAction(EVENT_ILLIDAN_SUMMON_MINIONS);
                     }
                     else
@@ -454,11 +456,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
                 }
                 case EVENT_ILLIDAN_RETURN_GLAIVE:
                 {
-                    for (uint8 i = 0; i <2; i++)
-                    {
-                        if (Creature *pGlaive = GetClosestCreatureWithEntry(me, BLADE_OF_AZZINOTH, 50.0f))
-                            pGlaive->CastSpell(me, SPELL_ILLIDAN_GLAIVE_RETURN, true);
-                    }
+                    // implement SPELL_ILLIDAN_GLAIVE_RETURN visual
                     summons.DespawnEntry(BLADE_OF_AZZINOTH);
                     events.ScheduleEvent(EVENT_ILLIDAN_LAND, 1000, m_phase);
                     break;
@@ -605,6 +603,33 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
         return false;
     }
 
+    bool PhaseMaiev()
+    {
+        while (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+                case EVENT_ILLIDAN_SUMMON_MAIEV:
+                {
+                    break;
+                }
+            }
+        }
+        return false;
+    }
+
+    bool PhaseDeath()
+    {
+        while (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+            default: break;
+            }
+        }
+        return false;
+    }
+
     bool HandlePhase(IllidanPhase m_phase)
     {
         switch(m_phase)
@@ -617,6 +642,10 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
                 return PhaseTwo();
             case PHASE_FOUR:
                 return PhaseFour();
+            case PHASE_MAIEV:
+                return PhaseMaiev();
+            case PHASE_DEATH:
+                return PhaseDeath();
             default:
                 return true;
         }
@@ -652,7 +681,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
         if (m_phase == PHASE_TWO)
             return;
 
-        BossAI::MoveInLineOfSight(pWho);
+        ScriptedAI::MoveInLineOfSight(pWho);
     }
 
     void MovementInform(uint32 MovementType, uint32 uiData)
@@ -688,6 +717,14 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
     {
         if (!UpdateVictim())
             return;
+
+        if (m_combatTimer < diff)
+        {
+            DoZoneInCombat();
+            m_combatTimer = 1000;
+        }
+        else
+            m_combatTimer -= diff;
 
         if (m_phase == PHASE_ONE && HealthBelowPct(65.0f))
         {
@@ -728,7 +765,7 @@ enum AkamaSpells
     SPELL_DEATHSWORN_DOOR_CHANNEL = 41269, // Olum and Udalo's channel spell on the door before the Temple Summit
     SPELL_AKAMA_DOOR_FAIL         = 41271, // Not sure where this is really used...
     SPELL_AKAMA_POTION            = 40535,
-    SPELL_CHAIN_LIGHTNING         = 40536  // 6938 to 8062 for 5 targets
+    SPELL_AKAMA_CHAIN_LIGHTNING   = 40536  // 6938 to 8062 for 5 targets
 };
 
 enum ConversationText
@@ -748,7 +785,9 @@ enum AkamaEvents
     EVENT_AKAMA_TALK_SEQUENCE_NO4 = 5,
 
     EVENT_AKAMA_ILLIDAN_FIGHT     = 6,
-    EVENT_AKAMA_MINIONS_FIGHT     = 7
+    EVENT_AKAMA_MINIONS_FIGHT     = 7,
+
+    EVENT_AKAMA_SET_DOOR_EVENT
 };
 
 enum AkamaPath
@@ -763,12 +802,25 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
 
     bool allowUpdate;
 
+    bool doorEvent;
+
     void Reset()
     {
+        ClearCastQueue();
+        events.Reset();
+        summons.DespawnAll();
+
         allowUpdate = false;
+        doorEvent = false;
+
+        SetAutocast(SPELL_AKAMA_CHAIN_LIGHTNING, 10000, false, AUTOCAST_TANK);
 
         me->SetUInt32Value(UNIT_NPC_FLAGS, 0);
         me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+    }
+
+    void HandleDoorEvent()
+    {
     }
 
     void EnterEvadeMode()
@@ -783,6 +835,11 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
     {
         switch (action)
         {
+            case EVENT_AKAMA_SET_DOOR_EVENT:
+            {
+                doorEvent = true;
+                break;
+            }
             case EVENT_AKAMA_START:
             {
                 allowUpdate = true;
@@ -805,13 +862,21 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
             return;
 
         events.Update(diff);
+
+        if (doorEvent)
+        {
+            HandleDoorEvent();
+            CastNextSpellIfAnyAndReady();
+            return;
+        }
+
         while (uint32 eventId = events.ExecuteEvent())
         {
             switch (eventId)
             {
                 case EVENT_AKAMA_TALK_SEQUENCE_NO1:
                 {
-                    if (Creature *pIllidan = GetClosestCreatureWithEntry(me, ILLIDAN_STORMRAGE, 60.0f))
+                    if (Creature *pIllidan = instance->GetCreature(instance->GetData64(DATA_ILLIDANSTORMRAGE)))
                     {
                         me->SetSelection(pIllidan->GetGUID());
                         pIllidan->SetSelection(me->GetGUID());
@@ -829,7 +894,7 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
                 }
                 case EVENT_AKAMA_TALK_SEQUENCE_NO3:
                 {
-                    if (Creature *pIllidan = GetClosestCreatureWithEntry(me, ILLIDAN_STORMRAGE, 60.0f))
+                    if (Creature *pIllidan = instance->GetCreature(instance->GetData64(DATA_ILLIDANSTORMRAGE)))
                         DoScriptText(SAY_ILLIDAN_NO2, pIllidan);
 
                     events.ScheduleEvent(EVENT_AKAMA_TALK_SEQUENCE_NO4, 7000);
@@ -843,10 +908,12 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
                 }
                 case EVENT_AKAMA_ILLIDAN_FIGHT:
                 {
-                    if (Creature *pIllidan = GetClosestCreatureWithEntry(me, ILLIDAN_STORMRAGE, 60.0f))
+                    if (Creature *pIllidan = instance->GetCreature(instance->GetData64(DATA_ILLIDANSTORMRAGE)))
                     {
                         pIllidan->AI()->DoAction(EVENT_ILLIDAN_START);
                         AttackStart(pIllidan);
+
+                        StartAutocast();
                     }
                 }
             }
@@ -993,4 +1060,5 @@ UPDATE `creature_template` SET `ScriptName` = 'boss_illidan_glaive' WHERE `entry
 UPDATE `creature_template` SET `ScriptName` = 'boss_illidan_akama' WHERE `entry` = '22990';
 UPDATE `creature` SET `spawntimesecs`='10' WHERE `id` = '23448';
 UPDATE `script_texts` SET `type` = 0 WHERE entry IN(-1529099, -1529000, -1529001);
+DELETE FROM `creature_template_addon` WHERE `entry` = '22917';
 */
