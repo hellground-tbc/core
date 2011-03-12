@@ -5295,7 +5295,7 @@ bool ChatHandler::HandleServerRollShutDownCommand(const char* args)
 
     time = urand(0, roll);
 
-    sWorld.SendWorldText(LANG_ROLLSHUTDOWN, roll, time/60, time%60, exitmsg);
+    sWorld.SendWorldText(LANG_ROLLSHUTDOWN, roll, time, exitmsg);
 
     sWorld.ShutdownServ(time, 0, SHUTDOWN_EXIT_CODE);
     return true;
