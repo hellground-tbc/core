@@ -30,7 +30,6 @@ EndScriptData */
 
 // Yells for/by Akama
 #define SAY_AKAMA_BEWARE      -1999988
-#define SAY_AKAMA_MINION      -1999989
 #define SAY_AKAMA_LEAVE       -1999990
 
 
@@ -207,14 +206,10 @@ enum IllidanTexts
 
 enum CreatureEntries
 {
-    //AKAMA                   =   22990,
-    ILLIDAN_STORMRAGE       =   22917,
     BLADE_OF_AZZINOTH       =   22996,
     FLAME_OF_AZZINOTH       =   22997,
     MAIEV_SHADOWSONG        =   23197,
     SHADOW_DEMON            =   23375,
-    DEMON_FIRE              =   23069,
-    FLAME_CRASH             =   23336,
     ILLIDAN_DOOR_TRIGGER    =   23412,
 
     ILLIDARI_ELITE          =   23226,
@@ -251,6 +246,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
 
         m_phase = PHASE_NULL;
 
+        SetWarglaivesEquipped(false);
 
         me->RemoveUnitMovementFlag(MOVEFLAG_LEVITATING);
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -293,8 +289,6 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
 
                 if (m_phase == PHASE_ONE)
                 {
-                    me->RemoveAurasDueToSpell(SPELL_ILLIDAN_KNEEL_INTRO);
-
                     ForceSpellCast(me, SPELL_ILLIDAN_DUAL_WIELD);
                     events.ScheduleEvent(EVENT_ILLIDAN_SUMMON_MINIONS, 1000, m_phase);
                 }
@@ -354,7 +348,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
 
                         // Call back Akama to deal with minions
                         if (Creature *pAkama = instance->GetCreature(instance->GetData64(DATA_AKAMA)))
-                            pAkama->AI()->DoAction(EVENT_ILLIDAN_SUMMON_MINIONS);
+                            pAkama->AI()->DoAction(8); // EVENT_AKAMA_MINIONS_FIGHT
                     }
                     else
                         events.ScheduleEvent(EVENT_ILLIDAN_SUMMON_MINIONS, 1000, PHASE_ONE);
@@ -623,7 +617,6 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
         {
             switch (eventId)
             {
-            default: break;
             }
         }
         return false;
@@ -666,7 +659,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
 
     void AttackStart(Unit *pWho)
     {
-        if (m_phase == PHASE_TWO)
+        if (m_phase == PHASE_TWO || m_phase == PHASE_NULL)
             return;
 
         if (m_phase == PHASE_FOUR)
@@ -677,7 +670,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
 
     void MoveInLineOfSight(Unit *pWho)
     {
-        if (m_phase == PHASE_TWO)
+        if (m_phase == PHASE_TWO || m_phase == PHASE_NULL)
             return;
 
         ScriptedAI::MoveInLineOfSight(pWho);
@@ -787,6 +780,7 @@ enum AkamaEvents
 
     EVENT_AKAMA_ILLIDAN_FIGHT     = 7,
     EVENT_AKAMA_MINIONS_FIGHT     = 8,
+    EVENT_AKAMA_SUMMON_ELITE,
 
     EVENT_AKAMA_DOOR_CAST_FAIL,
     EVENT_AKAMA_SUMMON_SPIRITS,
@@ -801,13 +795,15 @@ enum AkamaDoorSpeech
     SAY_AKAMA_DOOR_SPEECH_NO2    = -1309024,
     SAY_AKAMA_DOOR_SPEECH_NO3    = -1309028,
 
+    YELL_AKAMA_FIGHT_MINIONS     = -1999989,
+
     SAY_SPIRIT_DOOR_SPEECH_NO1   = -1309026,
     SAY_SPIRIT_DOOR_SPEECH_NO2   = -1309027,
 };
 
 enum AkamaPath
 {
-    PATH_AKAMA_MINION_EVENT       = 0,
+    PATH_AKAMA_MINION_EVENT       = 2111,
     PATH_AKAMA_DOOR_EVENT_AFTER   = 2109,
     PATH_AKAMA_DOOR_EVENT_BEFORE  = 2110
 };
@@ -817,8 +813,9 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
     boss_illidan_akamaAI(Creature* c) : BossAI(c, 2){}
 
     bool allowUpdate;
-
     bool doorEvent;
+
+    uint32 m_pathId;
 
     void Reset()
     {
@@ -828,6 +825,8 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
 
         allowUpdate = false;
         doorEvent = false;
+
+        m_pathId = 0;
 
         SetAutocast(SPELL_AKAMA_CHAIN_LIGHTNING, 10000, false, AUTOCAST_TANK);
 
@@ -853,20 +852,46 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
 
     void MovementInform(uint32 type, uint32 data)
     {
-        if (type != WAYPOINT_MOTION_TYPE)
-            return;
-
-        if (doorEvent)
+        if (type == WAYPOINT_MOTION_TYPE)
         {
-            if (data == 15 && instance->GetData(EVENT_ILLIDARIDOOR) != DONE)
-                events.ScheduleEvent(EVENT_AKAMA_DOOR_CAST_FAIL, 2000);
-
-            if (data == 17)
+            if (doorEvent)
             {
-                if (Creature *pAkama = instance->GetCreature(instance->GetData64(DATA_AKAMA)))
-                    pAkama->SetVisibility(VISIBILITY_ON);
+                if (data == 15 && m_pathId == PATH_AKAMA_DOOR_EVENT_BEFORE)
+                {
+                    m_pathId = 0;
+                    events.ScheduleEvent(EVENT_AKAMA_DOOR_CAST_FAIL, 2000);
+                }
 
-                me->DisappearAndDie();
+                if (data == 17 && m_pathId == PATH_AKAMA_DOOR_EVENT_AFTER)
+                {
+                    if (Creature *pAkama = instance->GetCreature(instance->GetData64(DATA_AKAMA)))
+                        pAkama->SetVisibility(VISIBILITY_ON);
+
+                    m_pathId = 0;
+                    me->DisappearAndDie();
+                }
+            }
+            else
+            {
+                if (m_pathId == PATH_AKAMA_MINION_EVENT)
+                {
+                   if (data == 3)
+                       DoScriptText(YELL_AKAMA_FIGHT_MINIONS, me);
+
+                   if (data == 9)
+                   {
+                       m_pathId = 0;
+                       events.ScheduleEvent(EVENT_AKAMA_SUMMON_ELITE, 1000);
+                   }
+            }
+        }
+
+        if (type == POINT_MOTION_TYPE)
+        {
+            if (data == 0)
+            {
+                me->SetSelection(instance->GetData64(DATA_ILLIDANSTORMRAGE));
+                events.ScheduleEvent(EVENT_AKAMA_TALK_SEQUENCE_NO1, 500);
             }
         }
     }
@@ -943,6 +968,7 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
                 }
                 case EVENT_AKAMA_DOOR_MOVE_PATH:
                 {
+                    m_pathId = PATH_AKAMA_DOOR_EVENT_AFTER;
                     me->GetMotionMaster()->MovePath(PATH_AKAMA_DOOR_EVENT_AFTER, false);
                     break;
                 }
@@ -976,13 +1002,25 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
                 me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
 
                 if (doorEvent)
+                {
+                    m_pathId = PATH_AKAMA_DOOR_EVENT_BEFORE;
                     me->GetMotionMaster()->MovePath(PATH_AKAMA_DOOR_EVENT_BEFORE, false);
+                }
                 else
-                    events.ScheduleEvent(EVENT_AKAMA_TALK_SEQUENCE_NO1, 0);
+                {
+                    me->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE);
+                    me->GetMotionMaster()->MovePoint(0, 728.379f, 314.462f, 352.996f);
+                }
                 break;
             }
             case EVENT_AKAMA_MINIONS_FIGHT:
             {
+                StopAutocast();
+                me->InterruptNonMeleeSpells(false);
+
+                m_pathId = PATH_AKAMA_MINION_EVENT;
+
+                me->GetMotionMaster()->Clear(false);
                 me->GetMotionMaster()->MovePath(PATH_AKAMA_MINION_EVENT, false);
                 break;
             }
@@ -1012,6 +1050,7 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
                     {
                         me->SetSelection(pIllidan->GetGUID());
                         pIllidan->SetSelection(me->GetGUID());
+                        pIllidan->RemoveAurasDueToSpell(SPELL_ILLIDAN_KNEEL_INTRO);
                         DoScriptText(SAY_ILLIDAN_NO1, pIllidan);
                     }
 
@@ -1047,6 +1086,11 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
 
                         StartAutocast();
                     }
+                    break;
+                }
+                case EVENT_AKAMA_SUMMON_ELITE:
+                {
+                    break;
                 }
             }
         }
@@ -1236,6 +1280,17 @@ INSERT INTO `waypoint_data` VALUES ('2110', '13', '747.264', '324.849', '309.56'
 INSERT INTO `waypoint_data` VALUES ('2110', '14', '751.097', '308.212', '312.069', '0', '1', '0', '100', '0');
 INSERT INTO `waypoint_data` VALUES ('2110', '15', '751.998', '304.3', '312.065', '0', '1', '0', '100', '0');
 INSERT INTO `waypoint_data` VALUES ('2110', '16', '759.091', '304.063', '312.274', '0', '1', '0', '100', '0');
+
+INSERT INTO `waypoint_data` VALUES ('2111', '1', '735.911', '335.327', '352.996', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2111', '2', '748.758', '361.503', '352.996', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2111', '3', '766.342', '369.532', '353.674', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2111', '4', '775.964', '366.737', '347.46', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2111', '5', '784.779', '363.882', '341.741', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2111', '6', '792.534', '357.53', '341.418', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2111', '7', '795.411', '346.043', '341.211', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2111', '8', '795.9', '333.309', '330.807', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2111', '9', '795.997', '319.96', '319.897', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2111', '10', '794.935', '304.499', '319.761', '0', '1', '0', '100', '0');
 
 insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('180','23089','564','1','0','1679','757.588','239.638','353.281','2.26385','300','0','0','960707','607000','0','0');
 */

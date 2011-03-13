@@ -464,7 +464,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             case EVENT_SUMMON_FOG:
                 {
                     float x, y, z;
-                    m_creature->SetSpeed(SPEED_RUN, 5.0f);
+                    m_creature->SetSpeed(MOVE_RUN, 5.0f);
                     m_creature->GetPosition(x, y, z);
                     m_creature->UpdateGroundPositionZ(x, y, z);
                     if(Creature *Fog = m_creature->SummonCreature(MOB_DEATH_CLOUD, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN, 15000))
