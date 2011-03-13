@@ -194,6 +194,9 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
                 m_najentusGUID = pCreature->GetGUID();
                 break;
             case 23089:
+                if (!pCreature->GetDBTableGUIDLow())
+                    break;
+
                 m_akamaillidanGUID = pCreature->GetGUID();
                 break;
             case 23191:
@@ -330,6 +333,9 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
                 HandleGameObject(NULL,true,go);
             break;
         case 185905:
+            if(Encounters[9] == DONE)
+                HandleGameObject(NULL,true,go);
+
             IllidanGate = go->GetGUID();
             break; // Gate leading to Temple Summit
         case 186261:

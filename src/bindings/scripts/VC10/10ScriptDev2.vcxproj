@@ -274,6 +274,7 @@
     <ClCompile Include="..\scripts\zone\burning_steppes\burning_steppes.cpp" />
     <ClCompile Include="..\scripts\zone\darkshore\darkshore.cpp" />
     <ClCompile Include="..\scripts\zone\eastern_plaguelands\eastern_plaguelands.cpp" />
+    <ClCompile Include="..\scripts\zone\karazhan\chess_event.cpp" />
     <ClCompile Include="..\scripts\zone\moonglade\moonglade.cpp" />
     <ClCompile Include="..\scripts\zone\razorfen_kraul\instance_razorfen_kraul.cpp" />
     <ClCompile Include="..\scripts\zone\razorfen_kraul\razorfen_kraul.cpp" />
@@ -603,6 +604,7 @@
     <ClInclude Include="..\scripts\npc\follower_ai.h" />
     <ClInclude Include="..\scripts\zone\deadmines\def_deadmines.h" />
     <ClInclude Include="..\scripts\zone\gruuls_lair\def_gruuls_lair.h" />
+    <ClInclude Include="..\scripts\zone\karazhan\chess_event.h" />
     <ClInclude Include="..\scripts\zone\razorfen_kraul\def_razorfen_kraul.h" />
     <ClInclude Include="..\scripts\zone\scarlet_monastery\def_scarlet_monastery.h" />
     <ClInclude Include="..\scripts\zone\scholomance\def_scholomance.h" />

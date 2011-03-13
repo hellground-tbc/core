@@ -3925,7 +3925,6 @@ void boss_MedivhAI::CheckChangeFacing(uint64 piece, int i, int j)
     ChessOrientation targetOri = CHESS_ORI_CHOOSE;
     uint64 target = 0, tmpTarget = 0, targetTrigger = 0;
     int targetPrior = 0, tmpPrior = 0;
-    int targetPos[2];
 
     for (int k = 0; k < OFFSETMELEECOUNT; ++k)
     {

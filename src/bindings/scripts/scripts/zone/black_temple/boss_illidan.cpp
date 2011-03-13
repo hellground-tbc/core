@@ -207,7 +207,7 @@ enum IllidanTexts
 
 enum CreatureEntries
 {
-    AKAMA                   =   22990,
+    //AKAMA                   =   22990,
     ILLIDAN_STORMRAGE       =   22917,
     BLADE_OF_AZZINOTH       =   22996,
     FLAME_OF_AZZINOTH       =   22997,
@@ -216,8 +216,7 @@ enum CreatureEntries
     DEMON_FIRE              =   23069,
     FLAME_CRASH             =   23336,
     ILLIDAN_DOOR_TRIGGER    =   23412,
-    SPIRIT_OF_OLUM          =   23411,
-    SPIRIT_OF_UDALO         =   23410,
+
     ILLIDARI_ELITE          =   23226,
     PARASITIC_SHADOWFIEND   =   23498,
     CAGE_TRAP_TRIGGER       =   23292
@@ -752,18 +751,18 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
     }
 };
 
-static Locations SpiritSpawns[]=
+static float SpiritSpawns[][4]=
 {
-    { 755.5426, 309.9156, 312.2129 },
-    { 755.5426, 298.7923, 312.0834 }
+    {23411, 755.5426, 309.9156, 312.2129},
+    {23410, 755.5426, 298.7923, 312.0834}
 };
 
 //Akama spells
-enum AkamaSpells
+enum AkamaSpells  
 {
-    SPELL_AKAMA_DOOR_CHANNEL      = 41268, // Akama's channel spell on the door before the Temple Summit
-    SPELL_DEATHSWORN_DOOR_CHANNEL = 41269, // Olum and Udalo's channel spell on the door before the Temple Summit
-    SPELL_AKAMA_DOOR_FAIL         = 41271, // Not sure where this is really used...
+    SPELL_AKAMA_DOOR_CAST_SUCCESS = 41268,
+    SPELL_AKAMA_DOOR_CAST_FAIL    = 41271,
+    SPELL_DEATHSWORN_DOOR_CHANNEL = 41269,
     SPELL_AKAMA_POTION            = 40535,
     SPELL_AKAMA_CHAIN_LIGHTNING   = 40536  // 6938 to 8062 for 5 targets
 };
@@ -784,16 +783,33 @@ enum AkamaEvents
     EVENT_AKAMA_TALK_SEQUENCE_NO3 = 4,
     EVENT_AKAMA_TALK_SEQUENCE_NO4 = 5,
 
-    EVENT_AKAMA_ILLIDAN_FIGHT     = 6,
-    EVENT_AKAMA_MINIONS_FIGHT     = 7,
+    EVENT_AKAMA_SET_DOOR_EVENT    = 6,
 
-    EVENT_AKAMA_SET_DOOR_EVENT
+    EVENT_AKAMA_ILLIDAN_FIGHT     = 7,
+    EVENT_AKAMA_MINIONS_FIGHT     = 8,
+
+    EVENT_AKAMA_DOOR_CAST_FAIL,
+    EVENT_AKAMA_SUMMON_SPIRITS,
+    EVENT_AKAMA_DOOR_CAST_SUCCESS,
+    EVENT_AKAMA_DOOR_OPEN,
+    EVENT_AKAMA_DOOR_MOVE_PATH
+};
+
+enum AkamaDoorSpeech
+{
+    SAY_AKAMA_DOOR_SPEECH_NO1    = -1309025,
+    SAY_AKAMA_DOOR_SPEECH_NO2    = -1309024,
+    SAY_AKAMA_DOOR_SPEECH_NO3    = -1309028,
+
+    SAY_SPIRIT_DOOR_SPEECH_NO1   = -1309026,
+    SAY_SPIRIT_DOOR_SPEECH_NO2   = -1309027,
 };
 
 enum AkamaPath
 {
     PATH_AKAMA_MINION_EVENT       = 0,
-    PATH_AKAMA_DOOR_EVENT         = 1
+    PATH_AKAMA_DOOR_EVENT_AFTER   = 2109,
+    PATH_AKAMA_DOOR_EVENT_BEFORE  = 2110
 };
 
 struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
@@ -817,10 +833,122 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
 
         me->SetUInt32Value(UNIT_NPC_FLAGS, 0);
         me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+
+        if (instance->GetData(EVENT_ILLIDARIDOOR) == DONE)
+            me->SetVisibility(VISIBILITY_ON);
+        else
+        {
+            me->SetVisibility(VISIBILITY_OFF);
+            me->DestroyForNearbyPlayers();
+        }
+    }
+
+    void MoveInLineOfSight(Unit *pWho)
+    {
+        if (!me->GetDBTableGUIDLow())
+            return;
+
+        ScriptedAI::MoveInLineOfSight(pWho);
+    }
+
+    void MovementInform(uint32 type, uint32 data)
+    {
+        if (type != WAYPOINT_MOTION_TYPE)
+            return;
+
+        if (doorEvent)
+        {
+            if (data == 15 && instance->GetData(EVENT_ILLIDARIDOOR) != DONE)
+                events.ScheduleEvent(EVENT_AKAMA_DOOR_CAST_FAIL, 2000);
+
+            if (data == 17)
+            {
+                if (Creature *pAkama = instance->GetCreature(instance->GetData64(DATA_AKAMA)))
+                    pAkama->SetVisibility(VISIBILITY_ON);
+
+                me->DisappearAndDie();
+            }
+        }
     }
 
     void HandleDoorEvent()
     {
+        while (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+                case EVENT_AKAMA_DOOR_CAST_FAIL:
+                {
+                    AddSpellToCastWithScriptText((Unit*)NULL, SPELL_AKAMA_DOOR_CAST_FAIL, SAY_AKAMA_DOOR_SPEECH_NO1);
+                    events.ScheduleEvent(EVENT_AKAMA_TALK_SEQUENCE_NO1, 8500);
+                    break;
+                }
+                case EVENT_AKAMA_TALK_SEQUENCE_NO1:
+                {
+                    DoScriptText(SAY_AKAMA_DOOR_SPEECH_NO2, me);
+                    events.ScheduleEvent(EVENT_AKAMA_SUMMON_SPIRITS, 10000);
+                    break;
+                }
+                case EVENT_AKAMA_SUMMON_SPIRITS:
+                {
+                    for (uint8 i = 0; i < 2; i++)
+                    {
+                        if (Creature *pSpirit = me->SummonCreature(uint32(SpiritSpawns[i][0]), SpiritSpawns[i][1], SpiritSpawns[i][2], SpiritSpawns[i][3], me->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN, 35000))
+                            pSpirit->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+                    }
+
+                    events.ScheduleEvent(EVENT_AKAMA_TALK_SEQUENCE_NO2, 1000);
+                    break;
+                }
+                case EVENT_AKAMA_TALK_SEQUENCE_NO2:
+                {
+                    if (Creature *pCreature = GetClosestCreatureWithEntry(me, SpiritSpawns[0][0], 30.0f))
+                        DoScriptText(SAY_SPIRIT_DOOR_SPEECH_NO1, pCreature);
+
+                    events.ScheduleEvent(EVENT_AKAMA_TALK_SEQUENCE_NO3, 3000);
+                    break;
+                }
+                case EVENT_AKAMA_TALK_SEQUENCE_NO3:
+                {
+                    if (Creature *pCreature = GetClosestCreatureWithEntry(me, SpiritSpawns[1][0], 30.0f))
+                        DoScriptText(SAY_SPIRIT_DOOR_SPEECH_NO2, pCreature);
+
+                    events.ScheduleEvent(EVENT_AKAMA_DOOR_CAST_SUCCESS, 8000);
+                    break;
+                }
+                case EVENT_AKAMA_DOOR_CAST_SUCCESS:
+                {
+                    for (uint8 i = 0; i < 2; i++)
+                    {
+                        if (Creature *pSpirit = GetClosestCreatureWithEntry(me, uint32(SpiritSpawns[i][0]), 30.0f))
+                            pSpirit->CastSpell((Unit*)NULL, SPELL_DEATHSWORN_DOOR_CHANNEL, false);
+                    }
+
+                    AddSpellToCast((Unit*)NULL, SPELL_AKAMA_DOOR_CAST_SUCCESS);
+                    events.ScheduleEvent(EVENT_AKAMA_DOOR_OPEN, 15000);
+                    break;
+                }
+                case EVENT_AKAMA_DOOR_OPEN:
+                {
+                    instance->SetData(EVENT_ILLIDARIDOOR, DONE);
+                    instance->HandleGameObject(instance->GetData64(DATA_GAMEOBJECT_ILLIDAN_GATE), true);
+                    events.ScheduleEvent(EVENT_AKAMA_TALK_SEQUENCE_NO4, 3000);
+                    break;
+                }
+                case EVENT_AKAMA_TALK_SEQUENCE_NO4:
+                {
+                    DoScriptText(SAY_AKAMA_DOOR_SPEECH_NO3, me);
+                    events.ScheduleEvent(EVENT_AKAMA_DOOR_MOVE_PATH, 10000);
+                    break;
+                }
+                case EVENT_AKAMA_DOOR_MOVE_PATH:
+                {
+                    me->GetMotionMaster()->MovePath(PATH_AKAMA_DOOR_EVENT_AFTER, false);
+                    break;
+                }
+            }
+        }
+        CastNextSpellIfAnyAndReady();
     }
 
     void EnterEvadeMode()
@@ -838,6 +966,7 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
             case EVENT_AKAMA_SET_DOOR_EVENT:
             {
                 doorEvent = true;
+                me->SetVisibility(VISIBILITY_ON);
                 break;
             }
             case EVENT_AKAMA_START:
@@ -845,7 +974,11 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
                 allowUpdate = true;
 
                 me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-                events.ScheduleEvent(EVENT_AKAMA_TALK_SEQUENCE_NO1, 0);
+
+                if (doorEvent)
+                    me->GetMotionMaster()->MovePath(PATH_AKAMA_DOOR_EVENT_BEFORE, false);
+                else
+                    events.ScheduleEvent(EVENT_AKAMA_TALK_SEQUENCE_NO1, 0);
                 break;
             }
             case EVENT_AKAMA_MINIONS_FIGHT:
@@ -866,7 +999,6 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
         if (doorEvent)
         {
             HandleDoorEvent();
-            CastNextSpellIfAnyAndReady();
             return;
         }
 
@@ -1057,8 +1189,53 @@ void AddSC_boss_illidan()
 DELETE FROM `spell_script_target` WHERE `entry` = '39635';
 INSERT INTO `spell_script_target` (`entry`,`type`,`targetEntry`) VALUES ('39635','1','23448');
 UPDATE `creature_template` SET `ScriptName` = 'boss_illidan_glaive' WHERE `entry` ='22996';
-UPDATE `creature_template` SET `ScriptName` = 'boss_illidan_akama' WHERE `entry` = '22990';
+UPDATE `creature_template` SET `ScriptName` = 'boss_illidan_akama' WHERE `entry` = '23089';
 UPDATE `creature` SET `spawntimesecs`='10' WHERE `id` = '23448';
 UPDATE `script_texts` SET `type` = 0 WHERE entry IN(-1529099, -1529000, -1529001);
 DELETE FROM `creature_template_addon` WHERE `entry` = '22917';
+REPLACE INTO spell_script_target VALUES (41268, 1, 23412), (41269, 1, 23412), (41271, 1, 23412);
+
+INSERT INTO `waypoint_data` VALUES ('2109', '1', '769.23', '305.157', '312.292', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2109', '2', '775.453', '305.138', '316.401', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2109', '3', '780.276', '305.124', '319.72', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2109', '4', '785.867', '300.098', '319.76', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2109', '5', '793.835', '292.918', '319.771', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2109', '6', '796.945', '289.077', '319.836', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2109', '7', '796.373', '284.29', '323.751', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2109', '8', '795.95', '278.861', '328.191', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2109', '9', '795.542', '273.43', '332.631', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2109', '10', '795.153', '268.159', '336.941', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2109', '11', '795.024', '262.407', '341.464', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2109', '12', '791.342', '257.2', '341.464', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2109', '13', '788.019', '252.503', '341.464', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2109', '14', '783.752', '246.57', '341.724', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2109', '15', '777.176', '244.22', '346.029', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2109', '16', '772.464', '242.619', '349.101', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2109', '17', '765.657', '240.153', '353.684', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2109', '18', '757.588', '239.638', '353.281', '0', '1', '0', '100', '0');
+
+INSERT INTO `script_texts`(`entry`,`content_default`,`content_loc1`,`content_loc2`,`content_loc3`,`content_loc4`,`content_loc5`,`content_loc6`,`content_loc7`,`content_loc8`,`sound`,`type`,`language`,`emote`,`comment`)VALUES('-1309024','I cannot do this alone.',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'0','0','0','274','Akama before door\r\n');
+INSERT INTO `script_texts`(`entry`,`content_default`,`content_loc1`,`content_loc2`,`content_loc3`,`content_loc4`,`content_loc5`,`content_loc6`,`content_loc7`,`content_loc8`,`sound`,`type`,`language`,`emote`,`comment`)VALUES('-1309025','The door is all what stands between us and the Betrayer. Stand a side friends.',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'0','0','0','0','Akama door cast');
+INSERT INTO `script_texts`(`entry`,`content_default`,`content_loc1`,`content_loc2`,`content_loc3`,`content_loc4`,`content_loc5`,`content_loc6`,`content_loc7`,`content_loc8`,`sound`,`type`,`language`,`emote`,`comment`)VALUES('-1309026','You are not alone, Akama.',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'0','0','0','0','Akama speech no 1 helper');
+INSERT INTO `script_texts`(`entry`,`content_default`,`content_loc1`,`content_loc2`,`content_loc3`,`content_loc4`,`content_loc5`,`content_loc6`,`content_loc7`,`content_loc8`,`sound`,`type`,`language`,`emote`,`comment`)VALUES('-1309027','Your people will always be with you.',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'0','0','0','0','Akama speech no 2 helper');
+INSERT INTO `script_texts`(`entry`,`content_default`,`content_loc1`,`content_loc2`,`content_loc3`,`content_loc4`,`content_loc5`,`content_loc6`,`content_loc7`,`content_loc8`,`sound`,`type`,`language`,`emote`,`comment`)VALUES('-1309028','I thank you for your aid, brothers. Our people will be redeemed!',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'0','0','0','66','Akama end speech');
+
+INSERT INTO `waypoint_data` VALUES ('2110', '1', '669.205', '321.226', '271.69', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2110', '2', '666.536', '337.008', '271.69', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2110', '3', '670.742', '347.471', '271.69', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2110', '4', '679.681', '364.894', '271.681', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2110', '5', '692.234', '373.568', '271.68', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2110', '6', '701.046', '379.66', '272.862', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2110', '7', '714.898', '373.266', '278.119', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2110', '8', '722.923', '367.704', '283.035', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2110', '9', '730.117', '360.733', '289.848', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2110', '10', '736.486', '352.951', '296.095', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2110', '11', '740.103', '345.393', '300.454', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2110', '12', '744.947', '334.724', '306.903', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2110', '13', '747.264', '324.849', '309.56', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2110', '14', '751.097', '308.212', '312.069', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2110', '15', '751.998', '304.3', '312.065', '0', '1', '0', '100', '0');
+INSERT INTO `waypoint_data` VALUES ('2110', '16', '759.091', '304.063', '312.274', '0', '1', '0', '100', '0');
+
+insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('180','23089','564','1','0','1679','757.588','239.638','353.281','2.26385','300','0','0','960707','607000','0','0');
 */
