@@ -277,7 +277,7 @@ bool DropAggro(Creature* pAttacker, Unit * target)
     if (target->isCharmed() && pAttacker->IsFriendlyTo(target))
         return true;
 
-    // forced reaction
+    // check if target is friendly because of faction or forced reactions
     FactionTemplateEntry const* faction = pAttacker->getFactionTemplateEntry();
     if (faction && target->GetTypeId() == TYPEID_PLAYER)
     {
@@ -285,6 +285,7 @@ bool DropAggro(Creature* pAttacker, Unit * target)
         if (forceItr!=((Player const*)target)->m_forcedReactions.end() && forceItr->second >= REP_FRIENDLY)
             return true;
     }
+    
 
     //target has Spirit of Redemption aura (shapeshift effect)
     if (target->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION) || target->HasAuraType(SPELL_AURA_IGNORED))

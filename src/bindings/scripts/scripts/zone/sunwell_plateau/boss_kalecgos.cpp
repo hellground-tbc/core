@@ -83,7 +83,7 @@ enum Phases
     PHASE_ENRAGE = 11,          // before any boss is down to 1%
     PHASE_BANISH = 12,          // after one boss has been banished
     PHASE_DOUBLE_BANISH = 13,   // after both bosses has been banished
-    PHASE_KALEC_DEAD = 13       // when kalec is dead
+    PHASE_KALEC_DEAD = 14       // when kalec is dead
 };
 
 enum Creatures
@@ -113,8 +113,6 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
     boss_kalecgosAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = (c->GetInstanceData());
-        //SathGUID = 0;
-        //DoorGUID = 0;
     }
 
     ScriptedInstance *pInstance;
@@ -133,31 +131,12 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
     bool isEnraged;
     bool isBanished;
 
-    //uint64 SathGUID;
-    //uint64 DoorGUID;
-
     void Reset()
     {
-        /*
-        if(pInstance)
-        {
-            SathGUID = pInstance->GetData64(DATA_SATHROVARR);
-            DoorGUID = pInstance->GetData64(DATA_GO_FORCEFIELD);
-        }
-
-        Unit *Sath = Unit::GetUnit(*m_creature,SathGUID);
-        if(Sath) 
-            ((Creature*)Sath)->AI()->EnterEvadeMode();
-        */
-        /* doors should be handled in instance script
-        GameObject *Door = GameObject::GetGameObject(*m_creature, DoorGUID);
-        if(Door) Door->SetLootState(GO_JUST_DEACTIVATED);
-        */
-
         m_creature->setFaction(14);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE + UNIT_FLAG_NOT_SELECTABLE);
         m_creature->RemoveUnitMovementFlag(SPLINEFLAG_FLYINGING2 | MOVEFLAG_CAN_FLY);
-        m_creature->SetVisibility(VISIBILITY_ON);
+        //m_creature->SetVisibility(VISIBILITY_ON);
         m_creature->SetStandState(PLAYER_STATE_SLEEP);
 
         ArcaneBuffetTimer = 8000;
@@ -192,14 +171,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
         m_creature->SetStandState(PLAYER_STATE_NONE);
         DoScriptText(SAY_EVIL_AGGRO, m_creature);
 
-        /* doors should be handled in instance script
-        GameObject *Door = GameObject::GetGameObject(*m_creature, DoorGUID);
-        if(Door)
-            Door->SetLootState(GO_ACTIVATED);
-            */
-
         DoZoneInCombat();
-
         if(pInstance)
         {
             pInstance->SetData(DATA_KALECGOS_EVENT, IN_PROGRESS);
@@ -210,27 +182,14 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
     void EnterEvadeMode()
     {
         CreatureAI::EnterEvadeMode();
-
+        me->SetVisibility(VISIBILITY_OFF);
+        ResetTimer = 20000;
     }
 
     void KilledUnit(Unit *victim)
     {
         DoScriptText(RAND(SAY_EVIL_SLAY1, SAY_EVIL_SLAY2), m_creature);
     }
-
-    
-    void MovementInform(uint32 type,uint32 id)
-    {
-        if(type == HOME_MOTION_TYPE)
-        {
-            //ResetTimer = 20000;
-            //me->SetVisibility(VISIBILITY_OFF);
-            //me->SetRespawnDelay(20000);
-            //me->DealDamage(me, me->GetHealth(), DIRECT_DAMAGE);
-            //me->RemoveCorpse();
-        }
-    }
-    
 
     void GoodEnding()
     {
@@ -257,7 +216,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit *who)
     {
-        if(!TalkTimer)
+        if(!TalkTimer && !ResetTimer)
             CreatureAI::MoveInLineOfSight(who);
     }
 
@@ -285,19 +244,17 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        /*
         if(ResetTimer)
         {
-            if(ResetTimer < diff)
+            if(ResetTimer <= diff)
             {
                 ResetTimer = 0;
-                me->Respawn();
-                //me->SetVisibility(VISIBILITY_ON);
+                me->SetVisibility(VISIBILITY_ON);
             } else
                 ResetTimer -= diff;
             return;
         }
-        else */if(TalkTimer)
+        else if(TalkTimer)
         {
             if(!TalkSequence)
             {
@@ -306,13 +263,9 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
                 m_creature->RemoveAllAuras();
                 m_creature->DeleteThreatList();
                 m_creature->CombatStop();
-                /*
-                GameObject *Door = GameObject::GetGameObject(*m_creature, DoorGUID);
-                if(Door)
-                    Door->SetLootState(GO_JUST_DEACTIVATED);
-                    */
                 TalkSequence++;
             }
+
             if(TalkTimer <= diff)
             {
                 if(isFriendly)
@@ -320,7 +273,8 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
                 else
                     BadEnding();
                 TalkSequence++;
-            }else TalkTimer -= diff;
+            }else 
+                TalkTimer -= diff;
         }
         else
         {
@@ -344,7 +298,10 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             if(CheckTimer < diff)
             {
                 DoZoneInCombat();
-                if (!isEnraged && (HealthBelowPct(10) || (pInstance && pInstance->GetData(DATA_KALECGOS_PHASE) == PHASE_ENRAGE )))
+                if (pInstance && pInstance->GetData(DATA_KALECGOS_PHASE) == PHASE_ENRAGE)
+                    isEnraged = true;
+
+                if (!isEnraged && HealthBelowPct(10))
                 {
                     if(pInstance)
                         pInstance->SetData(DATA_KALECGOS_PHASE, PHASE_ENRAGE);
@@ -362,7 +319,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
                         else
                             pInstance->SetData(DATA_KALECGOS_PHASE, PHASE_BANISH);
                     }
-                 }
+                }
                 if(pInstance && pInstance->GetData(DATA_KALECGOS_PHASE) == PHASE_KALEC_DEAD)
                 {
                     TalkTimer = 1;
@@ -376,7 +333,8 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
                     return;
                 }
                 CheckTimer = 1000;
-            }else CheckTimer -= diff;
+            }else 
+                CheckTimer -= diff;
 
             // cast spells
             if(ArcaneBuffetTimer < diff)
@@ -518,13 +476,24 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!UpdateVictim())
-            return;
+        for(uint8 i = 0; i < 50; i++)  // max 50 iterations, instead of just while(true)
+        {
+            if (!UpdateVictim())
+                return;
+            
+            if(me->getVictim()->HasAura(AURA_SPECTRAL_EXHAUSTION, 0))
+            {
+                me->RemoveSpellsCausingAura(SPELL_AURA_MOD_TAUNT);
+                me->getThreatManager().modifyThreatPercent(me->getVictim(), -100);
+            } else
+                break;
+        }
+
 
         // be sure to attack only players in spectral realm
         if (me->getVictim()->HasAura(AURA_SPECTRAL_EXHAUSTION, 0))
         {
-            me->RemoveSpellsCausingAura(SPELL_AURA_MOD_TAUNT);
+            
             UpdateVictim();
         }
 
@@ -532,7 +501,11 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
         if(CheckTimer < diff)
         {
             DoZoneInCombat();
-            if (!isEnraged && (HealthBelowPct(10) || (pInstance && pInstance->GetData(DATA_KALECGOS_PHASE) == PHASE_ENRAGE)))
+
+            if (pInstance && pInstance->GetData(DATA_KALECGOS_PHASE) == PHASE_ENRAGE)
+                isEnraged = true;
+
+            if (!isEnraged && HealthBelowPct(10))
             {
                 DoCast(m_creature, SPELL_ENRAGE, true);
                 if(pInstance)
