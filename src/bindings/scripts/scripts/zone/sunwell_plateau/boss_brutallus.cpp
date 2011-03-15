@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Boss_Brutallus
-SD%Complete: 80
-SDComment: Find a way to start the intro, best code for the intro
+SD%Complete: 99
+SDComment: 
 EndScriptData */
 
 #include "precompiled.h"
@@ -56,6 +56,7 @@ enum Spells
     SPELL_BERSERK                      =   26662,
     SPELL_DUAL_WIELD                   =   42459,
     SPELL_SUMMON_DEATH_CLOUD           =   45884,
+    SPELL_DEATH_CLOUD                  =   45212,
 
     SPELL_INTRO_FROST_BLAST            =   45203,
     SPELL_INTRO_FROSTBOLT              =   44843,
@@ -63,6 +64,7 @@ enum Spells
     SPELL_INTRO_ENCAPSULATE_CHANELLING =   45661
 };
 
+#define MOB_DEATH_CLOUD 25703
 #define FELMYST 25038
 
 struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
@@ -134,7 +136,9 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
         if(pInstance)
         {
             pInstance->SetData(DATA_BRUTALLUS_EVENT, DONE);
-            float x, y, z;
+            DoCast(me, SPELL_SUMMON_DEATH_CLOUD, true);
+            /*
+            
             Unit *Madrigosa = me->GetUnit(pInstance->GetData64(DATA_MADRIGOSA));
             if(Madrigosa && Madrigosa->GetTypeId() == TYPEID_UNIT)
             {
@@ -143,13 +147,17 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
             } else
                 m_creature->GetPosition(x,y,z);
 
-            Creature *Felmyst= m_creature->SummonCreature(FELMYST, x,y,z, m_creature->GetOrientation(), TEMPSUMMON_MANUAL_DESPAWN, 0);
-            if(Felmyst)
-            {
-                Felmyst->SetHomePosition(x, y, z+25, m_creature->GetOrientation());
-                Felmyst->AI()->EnterEvadeMode();
-            }
+            me->SummonCreature(MOB_DEATH_CLOUD, x, y, z, 0, TE
+
+            
+
+            */
         }
+    }
+
+    void JustSummoned(Creature *c)
+    {
+
     }
 
     void DamageTaken(Unit *attacker, uint32 &damage)
@@ -167,6 +175,10 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
                 Madrigosa->setActive(true);
                 IsIntro = true;
                 return;
+            } else
+            {
+                ((Creature*)Madrigosa)->SetCorpseDelay(51000000);
+                Madrigosa->setDeathState(JUST_DIED);  // to update corpse delay
             }
         }
         EndIntro();
@@ -247,7 +259,8 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
             case 8:
                 DoScriptText(YELL_INTRO_KILL_MADRIGOSA, m_creature);
                 m_creature->SetOrientation(0.14);
-                Madrigosa->setDeathState(CORPSE);
+                ((Creature*)Madrigosa)->SetCorpseDelay(51000000);
+                Madrigosa->setDeathState(JUST_DIED);
                 IntroPhaseTimer = 6000;
                 ++IntroPhase;
                 break;
@@ -343,14 +356,84 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
     }
 };
 
+struct TRINITY_DLL_DECL npc_death_cloudAI : public ScriptedAI
+{
+    npc_death_cloudAI(Creature *c) : ScriptedAI(c){
+        pInstance = (c->GetInstanceData());
+    }
+    ScriptedInstance* pInstance;
+    uint32 SummonTimer;
+    
+    void Reset() 
+    {
+        SummonTimer = 1000;
+    }
+
+    void JustRespawned()
+    {
+        me->CastSpell(me, SPELL_DEATH_CLOUD, true);
+        SummonTimer = 1000;
+    }
+
+    void UpdateAI(const uint32 diff) 
+    {
+        if(SummonTimer < diff)
+        {
+            float x, y, z;
+            if(Unit *Madrigosa= me->GetUnit(pInstance->GetData64(DATA_MADRIGOSA)))
+            {
+                if(!me->IsWithinDist(Madrigosa, 5))
+                {      
+                    z = me->GetPositionZ();
+                    me->GetNearPoint2D(x, y, 5, me->GetAngle(Madrigosa));
+                    me->UpdateAllowedPositionZ(x, y, z);
+                    me->SummonCreature(MOB_DEATH_CLOUD, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN, 10000);
+                } 
+                else
+                {
+                    Unit *Felmyst= me->GetUnit(pInstance->GetData64(DATA_FELMYST));
+                    if(Felmyst && Felmyst->GetTypeId() == TYPEID_UNIT)
+                    {
+                        Madrigosa->GetPosition(x, y, z);
+                        ((Creature*)Felmyst)->Respawn();
+                        Felmyst->Relocate(x, y, z);
+                        Felmyst->RemoveUnitMovementFlag(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
+                        Felmyst->GetMotionMaster()->MoveRandom(1);
+                        //((Creature*)Felmyst)->AI()->EnterEvadeMode();
+                    }
+                    ((Creature*)Madrigosa)->RemoveCorpse();
+                }
+            }
+            //me->Kill(me, false);
+            //me->RemoveCorpse();
+            SummonTimer = 120000000;
+        } else
+            SummonTimer -= diff;
+    }
+
+    
+
+
+};
+
 CreatureAI* GetAI_boss_brutallus(Creature *_Creature)
 {
     return new boss_brutallusAI (_Creature);
 }
 
+CreatureAI* GetAI_npc_death_cloud(Creature *_Creature)
+{
+    return new npc_death_cloudAI (_Creature);
+}
+
 void AddSC_boss_brutallus()
 {
     Script *newscript;
+
+    newscript = new Script;
+    newscript->Name="npc_death_cloud";
+    newscript->GetAI = &GetAI_npc_death_cloud;
+    newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="boss_brutallus";

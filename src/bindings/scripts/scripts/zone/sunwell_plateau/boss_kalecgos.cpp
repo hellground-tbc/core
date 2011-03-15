@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Boss_Kalecgos
 SD%Complete: 95
-SDComment:
+SDComment: make using portal instant, check portal cooldown
 SDCategory: Sunwell_Plateau
 EndScriptData */
 

@@ -166,7 +166,6 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
             case 24891: Kalecgos_Human      = creature->GetGUID(); break;
             case 24892: Sathrovarr          = creature->GetGUID(); break;
             case 24882: Brutallus           = creature->GetGUID(); break;
-            case 25038: Felmyst             = creature->GetGUID(); break;
             case 25166: Alythess            = creature->GetGUID(); break;
             case 25165: Sacrolash           = creature->GetGUID(); break;
             case 25741: Muru                = creature->GetGUID(); break;
@@ -174,14 +173,11 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
             case 25608: KilJaedenController = creature->GetGUID(); break;
             case 26046: Anveena             = creature->GetGUID(); break;
             case 25319: KalecgosKJ          = creature->GetGUID(); break;
-            case 24895: 
-                Madrigosa = creature->GetGUID();
-                if(GetData(DATA_BRUTALLUS_EVENT == DONE))
-                {
-                    if(GetData(DATA_FELMYST_EVENT != DONE))
-                        creature->SummonCreature(25038, creature->GetPositionX(), creature->GetPositionY(), creature->GetPositionZ(), 0, TEMPSUMMON_MANUAL_DESPAWN, 0);
-                    creature->Kill(creature, false);
-                }
+            case 24895: Madrigosa           = creature->GetGUID(); break;
+            case 25038: 
+                Felmyst = creature->GetGUID();
+                if(GetData(DATA_BRUTALLUS_EVENT != DONE))
+                    creature->Kill(creature, false); // not working :(
                 break;
         }
 

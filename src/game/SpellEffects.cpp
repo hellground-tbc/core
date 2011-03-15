@@ -5119,6 +5119,16 @@ void Spell::EffectScriptEffect(uint32 effIndex)
     // TODO: we must implement hunter pet summon at login there (spell 6962)
     switch (m_spellInfo->Id)
     {
+        // Fog of Corruption (Felmyst)
+        case 45714:
+        {
+            if(!unitTarget->HasAura(45717, 0))
+            {
+                m_caster->CastSpell(unitTarget, 46411, true);
+                unitTarget->CastSpell(m_caster, 45717, true); // odd but working
+            }
+            break;
+        }
         // Unbanish Azaloth
         case 37834:
         {                                                             

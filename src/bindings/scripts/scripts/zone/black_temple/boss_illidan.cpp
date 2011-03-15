@@ -883,6 +883,7 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
                        m_pathId = 0;
                        events.ScheduleEvent(EVENT_AKAMA_SUMMON_ELITE, 1000);
                    }
+                }
             }
         }
 
