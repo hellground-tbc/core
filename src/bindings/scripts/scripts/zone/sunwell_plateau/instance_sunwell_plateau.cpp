@@ -176,7 +176,7 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
             case 24895: Madrigosa           = creature->GetGUID(); break;
             case 25038: 
                 Felmyst = creature->GetGUID();
-                if(GetData(DATA_BRUTALLUS_EVENT != DONE))
+                if(GetData(DATA_BRUTALLUS_EVENT) != DONE)
                     creature->Kill(creature, false); // not working :(
                 break;
         }
