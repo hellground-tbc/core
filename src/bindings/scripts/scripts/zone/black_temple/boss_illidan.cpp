@@ -1140,6 +1140,12 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
     }
 };
 
+
+enum GlaiveSpells
+{
+    SPELL_GLAIVE_SUMMON_TEAR = 39855
+};
+
 struct TRINITY_DLL_DECL boss_illidan_glaiveAI : public Scripted_NoMovementAI
 {
     boss_illidan_glaiveAI(Creature *c) : Scripted_NoMovementAI(c)
@@ -1149,6 +1155,19 @@ struct TRINITY_DLL_DECL boss_illidan_glaiveAI : public Scripted_NoMovementAI
 
     ScriptedInstance *pInstance;
 
+    uint32 m_summonTimer;
+    uint32 m_checkTimer;
+
+    uint64 m_tearGUID;
+
+    void Reset()
+    {
+        m_tearGUID = 0;
+
+        m_summonTimer = 2000;
+        m_checkTimer = 5000;
+    }
+
     void IsSummonedBy(Unit *pSummoner)
     {
         if (!pInstance)
@@ -1156,6 +1175,36 @@ struct TRINITY_DLL_DECL boss_illidan_glaiveAI : public Scripted_NoMovementAI
 
         if (Creature *pIllidan = pInstance->GetCreature(pInstance->GetData64(DATA_ILLIDANSTORMRAGE)))
             pIllidan->AI()->JustSummoned(me);
+    }
+
+    void JustSummoned(Creature *pWho)
+    {
+        m_tearGUID = pWho->GetGUID();
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (m_summonTimer)
+        {
+            if (m_summonTimer < diff)
+            {
+                AddSpellToCast(me, SPELL_GLAIVE_SUMMON_TEAR);
+                m_summonTimer = 0;
+            }
+            else
+                m_summonTimer -= diff;
+        }
+
+        if (m_checkTimer < diff)
+        {
+            if (Creature *pTear = pInstance->GetCreature(m_tearGUID))
+            {
+            }
+        }
+        else
+            m_checkTimer -= diff;
+
+        CastNextSpellIfAnyAndReady();
     }
 };
 
