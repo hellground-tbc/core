@@ -5293,7 +5293,7 @@ bool ChatHandler::HandleServerRollShutDownCommand(const char* args)
     if (!exitmsg)
         exitmsg = "";
 
-    time = urand(0, roll);
+    time = urand(1, roll);
 
     sWorld.SendWorldText(LANG_ROLLSHUTDOWN, roll, time, exitmsg);
 
@@ -5720,12 +5720,11 @@ bool ChatHandler::HandleUnBanEmailCommand(const char* args)
 
 bool ChatHandler::HandleUnBanHelper(BanMode mode, const char* args)
 {
-    std::cout << "test1  " << mode << "  " << args << std::endl;
     if (!args)
         return false;
 
     char* cnameIPOrMail = strtok ((char*)args, " ");
-    std::cout << "test2  " << mode << "  " << args  << "  " << cnameIPOrMail << std::endl;
+
     if (!cnameIPOrMail)
         return false;
 
@@ -5754,12 +5753,12 @@ bool ChatHandler::HandleUnBanHelper(BanMode mode, const char* args)
                 return false;
             break;
     }
-    std::cout << "test3  " << mode << "  " << args  << "  " << cnameIPOrMail << std::endl;
+
     if (sWorld.RemoveBanAccount(mode,nameIPOrMail))
         PSendSysMessage(LANG_UNBAN_UNBANNED,nameIPOrMail.c_str());
     else
         PSendSysMessage(LANG_UNBAN_ERROR,nameIPOrMail.c_str());
-    std::cout << "test4  " << mode << "  " << args  << "  " << cnameIPOrMail << std::endl;
+
     return true;
 }
 

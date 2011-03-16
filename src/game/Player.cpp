@@ -1141,10 +1141,13 @@ void Player::CharmAI(bool apply)
 
 void Player::Update(uint32 p_time)
 {
-    updateMutex.acquire();
+    if (updating || inDelete)   // we don't need to update one player twice
+        return;
+
+    updating = true;
     if (!IsInWorld())
     {
-        updateMutex.release();
+        updating = false;
         return;
     }
 
@@ -1415,7 +1418,7 @@ void Player::Update(uint32 p_time)
     if (pet && !IsWithinDistInMap(pet, OWNER_MAX_DISTANCE) && !pet->isPossessed())
         RemovePet(pet, PET_SAVE_NOT_IN_SLOT, true);
 
-    updateMutex.release();
+    updating = false;
 }
 
 void Player::setDeathState(DeathState s)
@@ -17525,7 +17528,7 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_i
         GetSession()->SendPacket(&data);
         return false;
     }
- 
+
     if (GetSession()->isLogingOut() || isInCombat() || hasUnitState(UNIT_STAT_STUNNED) || hasUnitState(UNIT_STAT_ROOT))
     {
         WorldPacket data(SMSG_ACTIVATETAXIREPLY, 4);

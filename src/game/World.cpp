@@ -1878,6 +1878,39 @@ void World::Update(time_t diff)
     sInstanceSaveManager.Update();
     RecordTimeDiff("UpdateSaveMGR");
 
+    if (!ObjectAccessor::Instance().playersToDelete.empty())
+    {
+        for (std::list<Player*>::iterator itr = ObjectAccessor::Instance().playersToDelete.begin(); itr != ObjectAccessor::Instance().playersToDelete.end();)
+        {
+            std::list<Player*>::iterator tmpItr = itr;
+            ++itr;
+
+            Player * player = *tmpItr;
+
+            if (player)
+            {
+                if (!player->updating)
+                {
+                    ///- Delete the player object
+                    player->CleanupsBeforeDelete();
+
+                    ///- Remove the player from the world
+                    // the player may not be in the world when logging out
+                    // e.g if he got disconnected during a transfer to another map
+                    // calls to GetMap in this case may cause crashes
+                    if (player->IsInWorld())
+                        player->GetMap()->Remove(player, false);
+
+                    delete player;
+                    player = NULL;
+                    ObjectAccessor::Instance().playersToDelete.erase(tmpItr);
+                }
+            }
+            else
+                ObjectAccessor::Instance().playersToDelete.erase(tmpItr);
+        }
+    }
+
     // And last, but not least handle the issued cli commands
     ProcessCliCommands();
 }

@@ -451,23 +451,30 @@ void WorldSession::LogoutPlayer(bool Save)
         sSocialMgr.SendFriendStatus(_player, FRIEND_OFFLINE, _player->GetGUIDLow(), true);
         sSocialMgr.RemovePlayerSocial(_player->GetGUIDLow ());
 
-        _player->updateMutex.acquire();
+        if (_player->updating)
+        {
+            _player->inDelete = true;
+            ObjectAccessor::Instance().playersToDelete.push_back(_player);
+            ObjectAccessor::Instance().RemovePlayer(_player);
+        }
+        else
+        {
+            ///- Delete the player object
+            _player->CleanupsBeforeDelete();
 
-        ///- Delete the player object
-        _player->CleanupsBeforeDelete();
+            ///- Remove the player from the world
+            // the player may not be in the world when logging out
+            // e.g if he got disconnected during a transfer to another map
+            // calls to GetMap in this case may cause crashes
+            if (_player->IsInWorld())
+                _player->GetMap()->Remove(_player, false);
 
-        ///- Remove the player from the world
-        // the player may not be in the world when logging out
-        // e.g if he got disconnected during a transfer to another map
-        // calls to GetMap in this case may cause crashes
-        if (_player->IsInWorld())
-            _player->GetMap()->Remove(_player, false);
+            // RemoveFromWorld does cleanup that requires the player to be in the accessor
+            ObjectAccessor::Instance().RemovePlayer(_player);
 
-        // RemoveFromWorld does cleanup that requires the player to be in the accessor
-        ObjectAccessor::Instance().RemovePlayer(_player);
-
-        delete _player;
-        _player = NULL;
+            delete _player;
+            _player = NULL;
+        }
 
         ///- Send the 'logout complete' packet to the client
         WorldPacket data(SMSG_LOGOUT_COMPLETE, 0);

@@ -145,10 +145,11 @@ class ObjectAccessor : public Trinity::Singleton<ObjectAccessor, Trinity::ClassL
 
         typedef ACE_Thread_Mutex LockType;
         typedef Trinity::GeneralLock<LockType> Guard;
+        std::list<Player*> playersToDelete;
     private:
 
-        Player2CorpsesMapType   i_player2corpse;
-        PlayerName2PlayerMapType  i_playerName2Player;
+        Player2CorpsesMapType       i_player2corpse;
+        PlayerName2PlayerMapType    i_playerName2Player;
 
         void _update(void);
         LockType i_playerGuard;

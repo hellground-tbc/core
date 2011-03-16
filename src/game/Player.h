@@ -934,6 +934,8 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         bool Create(uint32 guidlow, const std::string& name, uint8 race, uint8 class_, uint8 gender, uint8 skin, uint8 face, uint8 hairStyle, uint8 hairColor, uint8 facialHair, uint8 outfitId);
 
+        bool updating;
+        bool inDelete;
         void Update(uint32 time);
 
         void BuildEnumData(QueryResultAutoPtr result,  WorldPacket * p_data);
@@ -2377,8 +2379,6 @@ class TRINITY_DLL_SPEC Player : public Unit
         bool m_farsightVision;
 
         DeclinedName *m_declinedname;
-
-        ACE_Thread_Mutex updateMutex;
 
     private:
         // internal common parts for CanStore/StoreItem functions
