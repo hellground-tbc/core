@@ -5863,10 +5863,6 @@ void Spell::CancelGlobalCooldown()
     if (!m_spellInfo->StartRecoveryTime)
         return;
 
-    // Cancel global cooldown when interrupting current cast
-    if (m_caster->m_currentSpells[CURRENT_GENERIC_SPELL] != this)
-        return;
-
     // Only players or controlled units have global cooldown
     if (m_caster->GetCharmInfo())
         m_caster->GetCharmInfo()->GetGlobalCooldownMgr().CancelGlobalCooldown(m_spellInfo);
