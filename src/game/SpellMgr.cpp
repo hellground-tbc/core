@@ -2616,6 +2616,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
         switch (i)
         {
+        case 41120:
+            spellInfo->EffectImplicitTargetA[0] = TARGET_DEST_TARGET_LEFT;
+            break;
         case 38054:
             spellInfo->MaxAffectedTargets = 10;
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_AREA_ENTRY_SRC;

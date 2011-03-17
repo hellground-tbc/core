@@ -142,6 +142,7 @@ enum IllidanSpell
     SPELL_ILLIDAN_DEMON_FORM             = 40506,
     SPELL_ILLIDAN_SHADOW_BLAST           = 41078,
     SPELL_ILLIDAN_FLAME_BURST            = 41126,
+    SPELL_ILLIDAN_SHADOW_DEMON           = 41120
 };
 
 enum IllidanEvent
@@ -149,7 +150,6 @@ enum IllidanEvent
     EVENT_ILLIDAN_START                  = 1,
     EVENT_ILLIDAN_CHANGE_PHASE           = 2,
     EVENT_ILLIDAN_SUMMON_MINIONS         = 3,
-    EVENT_ILLIDAN_HARD_ENRAGE            = 4,
 
     // Phase 1,3,5 events
     EVENT_ILLIDAN_SHEAR                  = 5,
@@ -182,6 +182,7 @@ enum IllidanEvent
 
     // Phase: Maiev summon
     EVENT_ILLIDAN_SUMMON_MAIEV           = 28,
+    EVENT_ILLIDAN_CAGE_TRAP              = 29,
 
     EVENT_ILLIDAN_RANDOM_YELL
 };
@@ -219,12 +220,16 @@ enum CreatureEntries
 
 struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
 {
-    boss_illidan_stormrageAI(Creature* c) : BossAI(c, 1){}
+    boss_illidan_stormrageAI(Creature* c) : BossAI(c, 1)
+    {
+        ForceSpellCast(me, SPELL_ILLIDAN_KNEEL_INTRO, INTERRUPT_AND_CAST_INSTANTLY);
+    }
 
     uint64 m_maievGUID;
     uint32 m_hoverPoint;
 
     uint32 m_combatTimer;
+    uint32 m_enrageTimer;
 
     bool b_maievPhase;
 
@@ -237,6 +242,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
         summons.DespawnAll();
 
         m_combatTimer = 1000;
+        m_enrageTimer = 25*60000;
 
         m_maievGUID = 0;
 
@@ -269,6 +275,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
             case PHASE_FIVE:
             {
                 events.ScheduleEvent(EVENT_ILLIDAN_SOFT_ENRAGE, 40000, m_phase);
+                events.ScheduleEvent(EVENT_ILLIDAN_CAGE_TRAP, 30000, m_phase);
             }
             case PHASE_THREE:
             {
@@ -348,7 +355,12 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
 
                         // Call back Akama to deal with minions
                         if (Creature *pAkama = instance->GetCreature(instance->GetData64(DATA_AKAMA)))
+                        {
+                             if (HostilReference* pRef = me->getThreatManager().getOnlineContainer().getReferenceByTarget(pAkama))
+                                 pRef->removeReference();
+
                             pAkama->AI()->DoAction(8); // EVENT_AKAMA_MINIONS_FIGHT
+                        }
                     }
                     else
                         events.ScheduleEvent(EVENT_ILLIDAN_SUMMON_MINIONS, 1000, PHASE_ONE);
@@ -434,6 +446,46 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
                         events.ScheduleEvent(EVENT_ILLIDAN_RETURN_GLAIVE, 3000, m_phase);
                         break;
                     }
+                    /*else
+                    {
+                        std::list<Creature*> tearsList = DoFindAllCreaturesWithEntry(FLAME_OF_AZZINOTH, 200.0f);
+                        if (tearsList.size() < 2)
+                        {
+                            events.ScheduleEvent(EVENT_ILLIDAN_CHANGE_PHASE, 2000, m_phase);
+                            break;
+                        }
+
+                        std::list<Unit*> listOne, listTwo;
+                        Creature* tearOne = *tearsList.begin();
+                        Creature* tearTwo = *(++tearsList.begin());
+
+                        CAST_AI(ScriptedAI, tearOne->AI())->SelectUnitList(listOne, 25, SELECT_TARGET_FARTHEST, 100.0f, true, 25.0f);
+                        CAST_AI(ScriptedAI, tearTwo->AI())->SelectUnitList(listTwo, 25, SELECT_TARGET_FARTHEST, 100.0f, true, 25.0f);
+
+                        if (!listOne.empty() && !listTwo.empty())
+                        {
+                            for (std::list<Unit*>::iterator it = listOne.begin(); it != listOne.end(); ++it)
+                            {
+                                for (std::list<Unit*>::iterator it2 = listTwo.begin(); it2 != listTwo.end(); ++it2)
+                                {
+                                    if ((*it)->GetGUID() == (*it2)->GetGUID())
+                                    {
+                                        tearOne->CastSpell(tearOne, SPELL_FLAME_ENRAGE, true);
+                                        tearTwo->CastSpell(tearTwo, SPELL_FLAME_ENRAGE, true);
+
+                                        tearOne->CastSpell((*it), SPELL_CHARGE, true);
+                                        tearTwo->CastSpell((*it2), SPELL_CHARGE, true);
+
+                                        CAST_AI(ScriptedAI, tearOne->AI())->DoResetThreat();
+                                        CAST_AI(ScriptedAI, tearTwo->AI())->DoResetThreat();
+                                        events.ScheduleEvent(EVENT_ILLIDAN_CHANGE_PHASE, 10000, m_phase);
+                                        return false;
+
+                                    }
+                                }
+                            }
+                        }
+                    }*/
                     events.ScheduleEvent(EVENT_ILLIDAN_CHANGE_PHASE, 2000, m_phase);
                     break;
                 }
@@ -543,6 +595,12 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
                 }
                 case EVENT_ILLIDAN_SHADOW_DEMON:
                 {
+                    for (uint8 i = 0; i < 4; i++)
+                    {
+                        // YES WE CAN HAVE MULTIPLE DEMONS ON ONE TARGET
+                        if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 150.0f, true, me->getVictimGUID()))
+                            pTarget->CastSpell(me, SPELL_ILLIDAN_SHADOW_DEMON, true);
+                    }
                     break;
                 }
                 case EVENT_ILLIDAN_TRANSFORM_BACKNO1:
@@ -646,7 +704,6 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
     void EnterCombat(Unit *pWho)
     {
         DoZoneInCombat();
-        events.ScheduleEvent(EVENT_ILLIDAN_HARD_ENRAGE, 25*60000);
     }
 
     void KilledUnit(Unit *pWho)
@@ -717,6 +774,12 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
         }
         else
             m_combatTimer -= diff;
+
+        if (m_enrageTimer < diff)
+        {
+        }
+        else
+            m_enrageTimer -= diff;
 
         if (m_phase == PHASE_ONE && HealthBelowPct(65.0f))
         {
@@ -1140,10 +1203,10 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
     }
 };
 
-
 enum GlaiveSpells
 {
-    SPELL_GLAIVE_SUMMON_TEAR = 39855
+    SPELL_GLAIVE_SUMMON_TEAR      = 39855,
+    SPELL_GLAIVE_CHANNEL          = 39857
 };
 
 struct TRINITY_DLL_DECL boss_illidan_glaiveAI : public Scripted_NoMovementAI
@@ -1180,6 +1243,7 @@ struct TRINITY_DLL_DECL boss_illidan_glaiveAI : public Scripted_NoMovementAI
     void JustSummoned(Creature *pWho)
     {
         m_tearGUID = pWho->GetGUID();
+        ForceSpellCast(pWho, SPELL_GLAIVE_CHANNEL);
     }
 
     void UpdateAI(const uint32 diff)
@@ -1195,14 +1259,79 @@ struct TRINITY_DLL_DECL boss_illidan_glaiveAI : public Scripted_NoMovementAI
                 m_summonTimer -= diff;
         }
 
-        if (m_checkTimer < diff)
+        CastNextSpellIfAnyAndReady();
+    }
+};
+
+enum ShadowDemonSpells
+{
+    SPELL_SHADOW_DEMON_PASSIVE      = 41079,
+    SPELL_SHADOW_DEMON_CONSUME_SOUL = 41080,
+    SPELL_SHADOW_DEMON_FOUND_TARGET = 41082
+};
+
+struct TRINITY_DLL_DECL boss_illidan_shadowdemonAI : public ScriptedAI
+{
+    boss_illidan_shadowdemonAI(Creature *c) : ScriptedAI(c){}
+
+    uint64 m_targetGUID;
+
+    uint32 m_checkTimer;
+
+    void Reset()
+    {
+        me->SetReactState(REACT_PASSIVE);
+
+        m_checkTimer = 2000;
+        m_targetGUID = 0;
+    }
+
+    void MovementInform(uint32 type, uint32 data)
+    {
+        if (type != POINT_MOTION_TYPE || data)
+            return;
+
+        if (Unit *pTarget = me->GetUnit(m_targetGUID))
+            ForceSpellCast(pTarget, SPELL_SHADOW_DEMON_CONSUME_SOUL, INTERRUPT_AND_CAST_INSTANTLY);
+
+        if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 100.0f, true))
         {
-            if (Creature *pTear = pInstance->GetCreature(m_tearGUID))
-            {
-            }
+            m_targetGUID = pTarget->GetGUID();
+            ForceSpellCast(pTarget, SPELL_SHADOW_DEMON_FOUND_TARGET);
         }
-        else
-            m_checkTimer -= diff;
+    }
+
+    void IsSummonedBy(Unit *pSummoner)
+    {
+        DoZoneInCombat();
+
+        m_targetGUID = pSummoner->GetGUID();
+
+        ForceSpellCast(pSummoner, SPELL_SHADOW_DEMON_FOUND_TARGET);
+        ForceSpellCast(me, SPELL_SHADOW_DEMON_PASSIVE);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (m_targetGUID)
+        {
+            if (m_checkTimer < diff)
+            {
+                Unit *pUnit = me->GetUnit(m_targetGUID);
+                if (!pUnit)
+                {
+                    if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 100.0f, true))
+                    {
+                        m_targetGUID = pTarget->GetGUID();
+                        ForceSpellCast(pTarget, SPELL_SHADOW_DEMON_FOUND_TARGET);
+                    }
+                }
+
+                m_checkTimer = 2000;
+            }
+            else
+                m_checkTimer -= diff;
+        }
 
         CastNextSpellIfAnyAndReady();
     }
@@ -1225,14 +1354,6 @@ bool GossipHello_boss_illidan_akama(Player *player, Creature *_Creature)
     return true;
 }
 
-enum demonSpells
-{
-    SPELL_SHADOW_DEMON_PASSIVE      = 41079,  // Adds the "shadowform" aura to Shadow Demons.
-    SPELL_SHADOW_DEMON_CONSUME_SOUL = 41080,  // Once the Shadow Demons reach their target, they use this to kill them
-    SPELL_SHADOW_DEMON_PARALYZE     = 41083,  // Shadow Demons cast this on their target
-    SPELL_SHADOW_DEMON_PURPLE_BEAM  = 39123   // Purple Beam connecting Shadow Demon to their target
-};
-
 CreatureAI* GetAI_boss_illidan_stormrage(Creature *_Creature)
 {
     return new boss_illidan_stormrageAI (_Creature);
@@ -1251,6 +1372,11 @@ CreatureAI* GetAI_boss_illidan_maiev(Creature *_Creature)
 CreatureAI* GetAI_boss_illidan_glaive(Creature *_Creature)
 {
     return new boss_illidan_glaiveAI (_Creature);
+}
+
+CreatureAI* GetAI_boss_illidan_shadowdemon(Creature *_Creature)
+{
+    return new boss_illidan_shadowdemonAI (_Creature);
 }
 
 void AddSC_boss_illidan()
@@ -1278,12 +1404,18 @@ void AddSC_boss_illidan()
     newscript->Name = "boss_illidan_glaive";
     newscript->GetAI = &GetAI_boss_illidan_glaive;
     newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "boss_illidan_shadowdemon";
+    newscript->GetAI = &GetAI_boss_illidan_shadowdemon;
+    newscript->RegisterSelf();
 }
 /*
 DELETE FROM `spell_script_target` WHERE `entry` = '39635';
 INSERT INTO `spell_script_target` (`entry`,`type`,`targetEntry`) VALUES ('39635','1','23448');
 UPDATE `creature_template` SET `ScriptName` = 'boss_illidan_glaive' WHERE `entry` ='22996';
 UPDATE `creature_template` SET `ScriptName` = 'boss_illidan_akama' WHERE `entry` = '23089';
+UPDATE `creature_template` SET `ScriptName` = 'boss_illidan_shadowdemon' WHERE `entry` = '23375';
 UPDATE `creature` SET `spawntimesecs`='10' WHERE `id` = '23448';
 UPDATE `script_texts` SET `type` = 0 WHERE entry IN(-1529099, -1529000, -1529001);
 DELETE FROM `creature_template_addon` WHERE `entry` = '22917';
