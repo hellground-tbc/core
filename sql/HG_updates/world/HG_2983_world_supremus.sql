@@ -1,0 +1,1 @@
+UPDATE creature_template SET mindmg = 6690, maxdmg = 13950, flags_extra = (flags_extra | 65536) WHERE entry=22898;
