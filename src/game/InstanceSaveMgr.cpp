@@ -48,7 +48,7 @@
 
 INSTANTIATE_SINGLETON_1(InstanceSaveManager);
 
-InstanceSaveManager::InstanceSaveManager() : lock_instLists(false), unbinded(true)
+InstanceSaveManager::InstanceSaveManager() : lock_instLists(false), unbinded(false)
 {
 }
 
