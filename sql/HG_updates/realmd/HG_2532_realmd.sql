@@ -1,0 +1,1 @@
+ALTER TABLE `realmdt`.`account`     ADD COLUMN `speciallog` BINARY(1) DEFAULT '0' NULL AFTER `locale`;

@@ -1,0 +1,2 @@
+UPDATE quest_template SET SpecialFlags=1 WHERE entry IN (11031, 11032, 11033, 11034, 11103, 11104, 11105, 11106);
+UPDATE creature_template SET ScriptName="npc_ring_specialist" WHERE entry IN (18253, 19935);

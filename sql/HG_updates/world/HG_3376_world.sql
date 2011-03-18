@@ -1,0 +1,1 @@
+UPDATE creature SET spawntimesecs = 10800 WHERE id IN (22844, 22849, 22845, 22847, 23374, 22846, 22848);
