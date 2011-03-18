@@ -116,8 +116,9 @@ struct TRINITY_DLL_DECL boss_doomwalkerAI : public ScriptedAI
         {
             if(Enrage_Timer < diff)
             {
+                m_creature->RemoveAurasDueToSpell(SPELL_ENRAGE);
                 DoCast(m_creature,SPELL_ENRAGE);
-                Enrage_Timer = 6000;
+                Enrage_Timer = 600000;
                 InEnrage = true;
             }else Enrage_Timer -= diff;
         }
@@ -147,6 +148,7 @@ struct TRINITY_DLL_DECL boss_doomwalkerAI : public ScriptedAI
                 m_creature->RemoveAura(SPELL_ENRAGE, 0);
 
             DoCast(m_creature,SPELL_EARTHQUAKE);
+            Enrage_Timer = 8000;
             Quake_Timer = 30000 + rand()%25000;
         }else Quake_Timer -= diff;
 

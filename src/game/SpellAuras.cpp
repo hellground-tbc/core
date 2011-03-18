@@ -2390,6 +2390,10 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 if (m_target->GetTypeId()==TYPEID_PLAYER)
                     ((Player*)m_target)->RemoveAmmo();      // not use ammo and not allow use
                 return;
+            case 44867:     // Spectral Exhaustion
+                if(m_target->GetTypeId() == TYPEID_PLAYER)
+                    ((Player*)m_target)->m_forcedReactions[960] = REP_FRIENDLY;
+                return;
         }
 
         // Earth Shield

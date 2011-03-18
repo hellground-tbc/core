@@ -32,13 +32,13 @@ enum Quotes
     YELL_TAKEOFF    =       -1580040,
     YELL_BERSERK    =       -1580041,
     YELL_DEATH      =       -1580042,
-    YELL_KALECGOS   =       -1580043 //after felmyst's death spawned and say this
+    YELL_KALECGOS   =       -1580043, //after felmyst's death spawned and say this
+    EMOTE_BREATH    =       -1811004
 };
 
 enum Spells
 {
     //Aura
-    AURA_SUNWELL_RADIANCE       =   45769,
     AURA_NOXIOUS_FUMES          =   47002,
 
     //Land phase
@@ -130,7 +130,7 @@ float FlightNodes[2][2][3] = {
     { { 1466, 671, 60}, {1466, 517, 60} },
 };
 
-#define FELMYST_FLY_FLAGS (MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING)
+#define FELMYST_FLY_FLAGS (MOVEFLAG_LEVITATING)
 
 struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
 {
@@ -186,7 +186,6 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
     {
         m_creature->setActive(true);
         DoZoneInCombat();
-        m_creature->CastSpell(m_creature, AURA_SUNWELL_RADIANCE, true);
         m_creature->CastSpell(m_creature, AURA_NOXIOUS_FUMES, true);
         m_creature->RemoveUnitMovementFlag(FELMYST_FLY_FLAGS);
         EnterPhase(PHASE_GROUND);
@@ -195,6 +194,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             pInstance->SetData(DATA_FELMYST_EVENT, IN_PROGRESS);
     }
 
+    
     void AttackStart(Unit *who)
     {
         if(Phase != PHASE_FLIGHT)
@@ -206,6 +206,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         if(Phase != PHASE_FLIGHT)
             ScriptedAI::MoveInLineOfSight(who);
     }
+
 
     void KilledUnit(Unit* victim)
     {
@@ -283,13 +284,20 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         switch(Id)
         {
             case 0:
-                Timer[EVENT_FLIGHT_SEQUENCE] = 1;
+                Timer[EVENT_FLIGHT_SEQUENCE] = 1000;
+                me->setHover(true);
                 break;
             case 1:
-                //DoTextEmote("takes a deep breath.", NULL);
-                Timer[EVENT_FLIGHT_SEQUENCE] = 2;
+                DoScriptText(EMOTE_BREATH, m_creature);
+                me->setHover(true);
+                Timer[EVENT_FLIGHT_SEQUENCE] = 2000;
                 break;
             case 2:
+                m_creature->RemoveAurasDueToSpell(SPELL_FOG_BREATH);
+                me->setHover(true);
+                Timer[EVENT_FLIGHT_SEQUENCE] = 10000;
+                break;
+            case 4:
                 Timer[EVENT_FLIGHT_SEQUENCE] = 1;
                 break;
 
@@ -388,11 +396,10 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             break;
         }
         case 8:
-            m_creature->RemoveAurasDueToSpell(SPELL_FOG_BREATH);
             BreathCount++;
             Timer[EVENT_SUMMON_FOG] = 0;
             Timer[EVENT_FLIGHT_SEQUENCE] = 1;
-            if(BreathCount < 3) FlightCount = 4;
+            if(BreathCount < 3) FlightCount = 5;
             break;
         case 9:
             if(Unit* target = SelectUnit(SELECT_TARGET_TOPAGGRO, 0))
@@ -406,14 +413,14 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 EnterEvadeMode();
                 return;
             }
-            Timer[EVENT_FLIGHT_SEQUENCE] = 5000;
+            Timer[EVENT_FLIGHT_SEQUENCE] = 0;
             break;
         case 10:
             m_creature->RemoveUnitMovementFlag(FELMYST_FLY_FLAGS);
             m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
-            m_creature->GetMotionMaster()->MovementExpired();
             EnterPhase(PHASE_GROUND);
-            m_creature->AI()->AttackStart(SelectUnit(SELECT_TARGET_TOPAGGRO, 0));
+            AttackStart(m_creature->getVictim());
+            DoStartMovement(m_creature->getVictim());
             break;
         default:
             break;
@@ -485,7 +492,6 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 EnterPhase(PHASE_FLIGHT);
                 break;
             case EVENT_CHECK:
-                //m_creature->SetSpeed(MOVE_RUN, 2.0f);
                 DoZoneInCombat();
                 Timer[EVENT_CHECK]=1000;
                 break;
@@ -508,25 +514,21 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 HandleFlightSequence();
                 break;
             case EVENT_SUMMON_FOG:
-                {
-                    float x, y, z;
-           //         m_creature->SetSpeed(MOVE_RUN, 5.0f);
-           //         m_creature->SetSpeed(MOVE_FLIGHT, 5.0f);
-                    m_creature->GetPosition(x, y, z);
-                    m_creature->UpdateGroundPositionZ(x, y, z);
-                    if(Creature *Fog = m_creature->SummonCreature(MOB_FOG_OF_CORRUPTION, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN, 15000))
-                    {
-                        Fog->CastSpell(Fog, SPELL_FOG_TRIGGER, true);
-                    }
-                }
+            {
+                float x, y, z;
+                m_creature->SetSpeed(MOVE_WALK, 10.0f);
+                m_creature->GetPosition(x, y, z);
+                m_creature->UpdateGroundPositionZ(x, y, z);
+                if(Creature *Fog = m_creature->SummonCreature(MOB_FOG_OF_CORRUPTION, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN, 15000))
+                    Fog->CastSpell(Fog, SPELL_FOG_TRIGGER, true);
+                
                 Timer[EVENT_SUMMON_FOG] = 200;
                 break;
+            }
             case EVENT_CHECK:
                 if(Timer[EVENT_FLIGHT_SEQUENCE])
-                {
-        //            m_creature->SetSpeed(MOVE_RUN, 5.0f);
-        //            m_creature->SetSpeed(MOVE_FLIGHT, 5.0f);
-                }
+                    m_creature->SetSpeed(MOVE_WALK, 5.0f);
+                
                 DoZoneInCombat();
                 Timer[EVENT_CHECK] = 1000;
                 break;
@@ -571,6 +573,7 @@ struct TRINITY_DLL_DECL mob_felmyst_vaporAI : public ScriptedAI
     {
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->SetSpeed(MOVE_RUN, 0.8);
+        m_creature->SetFloatValue(UNIT_FIELD_COMBATREACH, 0.01);
     }
     void Reset() {}
     void EnterCombat(Unit* who)
@@ -592,7 +595,7 @@ struct TRINITY_DLL_DECL mob_felmyst_trailAI : public ScriptedAI
     {
         m_creature->CastSpell(m_creature, SPELL_TRAIL_TRIGGER, true);
         m_creature->SetSelection(m_creature->GetGUID());
-        //m_creature->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 0.01); // core bug
+        //m_creature->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 0.01);
         //m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
     }
 

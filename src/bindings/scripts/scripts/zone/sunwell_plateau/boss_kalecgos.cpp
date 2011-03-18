@@ -52,7 +52,6 @@ enum Quotes
 
 enum SpellIds
 {
-    AURA_SUNWELL_RADIANCE       =   45769,
     AURA_SPECTRAL_EXHAUSTION    =   44867,
     AURA_SPECTRAL_REALM         =   46021,
     AURA_SPECTRAL_INVISIBILITY  =   44801,
@@ -136,7 +135,6 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
         m_creature->setFaction(14);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE + UNIT_FLAG_NOT_SELECTABLE);
         m_creature->RemoveUnitMovementFlag(SPLINEFLAG_FLYINGING2 | MOVEFLAG_CAN_FLY);
-        //m_creature->SetVisibility(VISIBILITY_ON);
         m_creature->SetStandState(PLAYER_STATE_SLEEP);
 
         ArcaneBuffetTimer = 8000;
@@ -207,7 +205,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             m_creature->AddUnitMovementFlag(SPLINEFLAG_FLYINGING2 | MOVEFLAG_CAN_FLY);
             m_creature->GetMotionMaster()->Clear();
             m_creature->GetMotionMaster()->MovePoint(0,FLY_X,FLY_Y,FLY_Z);
-            TalkTimer = 600000;
+            TalkTimer = 60000;
             break;
         default:
             break;
@@ -284,6 +282,8 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             // be sure to not attack players in spectral realm
             if (me->getVictim()->HasAura(AURA_SPECTRAL_REALM, 0))
             {
+                // if player in spectral realm is on top of threat list eirther
+                // he has taunted us or there is no alive player outside spectral realm
                 me->RemoveSpellsCausingAura(SPELL_AURA_MOD_TAUNT);
                 if(!UpdateVictim())
                     return;
@@ -305,7 +305,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
                 {
                     if(pInstance)
                         pInstance->SetData(DATA_KALECGOS_PHASE, PHASE_ENRAGE);
-                    me->CastSpell(m_creature, SPELL_ENRAGE, true);
+                    me->CastSpell(m_creature, SPELL_ENRAGE, true);  // this will affect also sathrovarr
                     isEnraged = true;
                 }
                 if(!isBanished && HealthBelowPct(1))
@@ -476,25 +476,15 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        for(uint8 i = 0; i < 50; i++)  // max 50 iterations, instead of just while(true)
-        {
-            if (!UpdateVictim())
-                return;
-            
-            if(me->getVictim()->HasAura(AURA_SPECTRAL_EXHAUSTION, 0))
-            {
-                me->RemoveSpellsCausingAura(SPELL_AURA_MOD_TAUNT);
-                me->getThreatManager().modifyThreatPercent(me->getVictim(), -100);
-            } else
-                break;
-        }
-
+        if(!UpdateVictim())
+            return;
 
         // be sure to attack only players in spectral realm
         if (me->getVictim()->HasAura(AURA_SPECTRAL_EXHAUSTION, 0))
         {
-            
-            UpdateVictim();
+            me->RemoveSpellsCausingAura(SPELL_AURA_MOD_TAUNT);
+            if(!UpdateVictim())
+                return;
         }
 
         // interaction with kalecgos
@@ -507,7 +497,7 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
 
             if (!isEnraged && HealthBelowPct(10))
             {
-                DoCast(m_creature, SPELL_ENRAGE, true);
+                DoCast(m_creature, SPELL_ENRAGE, true); // this will cast enrage also on kalecgos
                 if(pInstance)
                     pInstance->SetData(DATA_KALECGOS_PHASE, PHASE_ENRAGE);
                 isEnraged = true;
@@ -532,7 +522,7 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
                 m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 return;
             }
-            if(pInstance && pInstance->GetData(DATA_KALECGOS_EVENT) == NOT_STARTED)
+            if(pInstance && pInstance->GetData(DATA_KALECGOS_EVENT) == NOT_STARTED) // kalecgos evaded
             {
                 TeleportAllPlayersBack();
                 EnterEvadeMode();
@@ -661,10 +651,13 @@ struct TRINITY_DLL_DECL boss_kalecAI : public ScriptedAI
 bool GOkalecgos_teleporter(Player *player, GameObject* _GO)
 {
     if(player->HasAura(AURA_SPECTRAL_EXHAUSTION, 0))
+    {
         player->GetSession()->SendNotification(GO_FAILED);
+        return true;
+    }
     else
-        player->CastSpell(player, SPELL_TELEPORT_SPECTRAL, true);
-    return true;
+        return false; //player->CastSpell(player, SPELL_TELEPORT_SPECTRAL, true);
+    
 }
 
 CreatureAI* GetAI_boss_kalecgos(Creature *_Creature)
