@@ -727,7 +727,7 @@ void Spell::EffectDummy(uint32 i)
                     unitTarget->GetClosePoint(x,y,z, 2.0f, 0.0f, unitTarget->GetAngle(m_caster));
                     m_caster->GetMotionMaster()->MovePoint(0, x, y, z);
 
-                    m_caster->CastSpell(unitTarget, 39123, false);
+                    m_caster->CastSpell(unitTarget, 39123, true);
                     break;
                 }
                 case 37573:
