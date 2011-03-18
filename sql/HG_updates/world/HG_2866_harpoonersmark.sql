@@ -1,0 +1,1 @@
+REPLACE INTO spell_script_target (`entry`, `type`, `targetEntry`) VALUES (40085, 1, 22885);
