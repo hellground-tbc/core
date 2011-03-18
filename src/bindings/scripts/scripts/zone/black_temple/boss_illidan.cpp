@@ -243,6 +243,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
 
         SetWarglaivesEquipped(false);
 
+        me->SetReactState(REACT_AGGRESSIVE);
         me->RemoveUnitMovementFlag(MOVEFLAG_LEVITATING);
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
     }
@@ -345,7 +346,10 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
                         // Call back Akama to deal with minions
                         if (Creature *pAkama = instance->GetCreature(instance->GetData64(DATA_AKAMA)))
                         {
-                             if (HostilReference* pRef = me->getThreatManager().getOnlineContainer().getReferenceByTarget(pAkama))
+                            pAkama->AttackStop();
+                            pAkama->SetReactState(REACT_PASSIVE);
+
+                            if (HostilReference* pRef = me->getThreatManager().getOnlineContainer().getReferenceByTarget(pAkama))
                                  pRef->removeReference();
 
                             pAkama->AI()->DoAction(8); // EVENT_AKAMA_MINIONS_FIGHT
@@ -739,6 +743,13 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
     void JustReachedHome()
     {
         ForceSpellCast(me, SPELL_ILLIDAN_KNEEL_INTRO, INTERRUPT_AND_CAST_INSTANTLY);
+
+        if (Creature *pAkama = instance->GetCreature(instance->GetData64(DATA_AKAMA)))
+        {
+            pAkama->AI()->Reset();
+            pAkama->AI()->EnterEvadeMode();
+            pAkama->GetMotionMaster()->MoveTargetedHome();
+        }
     }
 
     void DoAction(const int32 action)
@@ -1241,6 +1252,9 @@ struct TRINITY_DLL_DECL boss_illidan_glaiveAI : public Scripted_NoMovementAI
     {
         m_tearGUID = pWho->GetGUID();
         ForceSpellCast(pWho, SPELL_GLAIVE_CHANNEL);
+
+        if (Creature *pIllidan = pInstance->GetCreature(pInstance->GetData64(DATA_ILLIDANSTORMRAGE)))
+            pIllidan->AI()->JustSummoned(pWho);
     }
 
     void UpdateAI(const uint32 diff)
@@ -1479,5 +1493,5 @@ INSERT INTO `waypoint_data` VALUES ('2111', '9', '795.997', '319.96', '319.897',
 INSERT INTO `waypoint_data` VALUES ('2111', '10', '794.935', '304.499', '319.761', '0', '1', '0', '100', '0');
 
 insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values(DEFAULT,'23089','564','1','0','1679','757.588','239.638','353.281','2.26385','300','0','0','960707','607000','0','0');
-insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values(DEFAULT,'22917','564','1','0','442','701.94','307.019','354.27','0.154','4294967295','0','0','6070400','7588','0','0');
+insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values(DEFAULT,'22917','564','1','0','442','701.94','307.019','354.27','0.7300','4294967295','0','0','6070400','7588','0','0');
 */
