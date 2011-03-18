@@ -27,6 +27,7 @@ EndScriptData */
 /************* Quotes and Sounds ***********************/
 // Gossip for when a player clicks Akama
 #define GOSSIP_ITEM           "We are ready to face Illidan"
+#define GOSSIP_ITEM1          "We are not ready to face Illidan yet. "
 
 // Yells for/by Akama
 #define SAY_AKAMA_BEWARE      -1999988
@@ -43,24 +44,14 @@ EndScriptData */
 // I KILL!
 #define SAY_ENRAGE            -1999997
 
-/************** Spells *************/
-// Normal Form
-#define SPELL_PARASITIC_SHADOWFIEND     41917 // DoT of 3k Shadow every 2 seconds. Lasts 10 seconds. (Script effect: Summon 2 parasites once the debuff has ticked off)
-#define SPELL_PARASITIC_SHADOWFIEND2    41914 // Used by Parasitic
-#define SPELL_SUMMON_PARASITICS         41915 // Summons 2 Parasitic Shadowfiends on the target. It's supposed to be cast as soon as the Parasitic Shadowfiend debuff is gone, but the spells aren't linked :(
-#define SPELL_AGONIZING_FLAMES          40932 // 4k fire damage initial to target and anyone w/i 5 yards. PHASE 3 ONLY
 #define SPELL_ENRAGE                    40683 // Increases damage by 50% and attack speed by 30%. 20 seconds, PHASE 5 ONLY
 
 #define SPELL_SHADOW_PRISON             40647 // Illidan casts this spell to immobilize entire raid when he summons Maiev.
 #define SPELL_DEATH                     41220 // This spell doesn't do anything except stun Illidan and set him on his knees.
 #define SPELL_BERSERK                   45078 // Damage increased by 500%, attack speed by 150%
 
-//Phase Normal spells
-#define SPELL_SUMMON_SHADOWDEMON        41117 // Summon four shadowfiends
 #define SPELL_SHADOWFIEND_PASSIVE       41913 // Passive aura for shadowfiends
 
-//Phase Flight spells
-#define SPELL_AZZINOTH_CHANNEL          39857 // Glaives cast it on Flames. Not sure if this is the right spell.
 #define SPELL_BLAZE_EFFECT              40610 // Green flame on the ground, triggers damage (5k) every few seconds
 #define SPELL_BLAZE_SUMMON              40637 // Summons the Blaze creature
 #define SPELL_FLAME_BLAST               40631 // Flames of Azzinoth use this. Frontal cone AoE 7k-9k damage.
@@ -73,9 +64,6 @@ EndScriptData */
 #define CENTER_Z            353.192
 
 #define SPELL_CAGED                     40695 // Caged Trap triggers will cast this on Illidan if he is within 3 yards
-
-#define FLAME_ENRAGE_DISTANCE   30
-#define FLAME_CHARGE_DISTANCE   50
 
 struct Locations
 {
@@ -127,6 +115,9 @@ enum IllidanSpell
     SPELL_ILLIDAN_DRAW_SOUL              = 40904, // need to implement scripteffect
     SPELL_ILLIDAN_FLAME_CRASH            = 40832,
     SPELL_ILLIDAN_PARASITIC_SHADOWFIEND  = 41917,
+
+    // Phase 3 spells
+    SPELL_ILLIDAN_AGONIZING_FLAMES       = 40932,
 
     // Phase 2 spells
     SPELL_ILLIDAN_THROW_GLAIVE           = 39635,
@@ -210,8 +201,6 @@ enum CreatureEntries
     BLADE_OF_AZZINOTH       =   22996,
     FLAME_OF_AZZINOTH       =   22997,
     MAIEV_SHADOWSONG        =   23197,
-    SHADOW_DEMON            =   23375,
-    ILLIDAN_DOOR_TRIGGER    =   23412,
 
     ILLIDARI_ELITE          =   23226,
     PARASITIC_SHADOWFIEND   =   23498,
@@ -279,7 +268,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
             }
             case PHASE_THREE:
             {
-                events.ScheduleEvent(EVENT_ILLIDAN_AGONIZING_FLAMES, 1000, m_phase);
+                events.ScheduleEvent(EVENT_ILLIDAN_AGONIZING_FLAMES, urand(28000, 35000), m_phase);
                 events.ScheduleEvent(EVENT_ILLIDAN_CHANGE_PHASE, m_phase == PHASE_FIVE ? 60000 : urand(40000, 55000), m_phase);
             }
             case PHASE_ONE:
@@ -402,6 +391,14 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
                         AddSpellToCast(pTarget, SPELL_ILLIDAN_PARASITIC_SHADOWFIEND);
 
                     events.ScheduleEvent(EVENT_ILLIDAN_PARASITIC_SHADOWFIEND, 30000, m_phase);
+                    break;
+                }
+                case EVENT_ILLIDAN_AGONIZING_FLAMES:
+                {
+                    if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0 , 150.0f, true, 0, 15.0f))
+                        AddSpellToCast(pTarget, SPELL_ILLIDAN_AGONIZING_FLAMES);
+
+                    events.ScheduleEvent(EVENT_ILLIDAN_AGONIZING_FLAMES, urand(30000, 35000), m_phase);
                     break;
                 }
             }
@@ -597,8 +594,8 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
                 {
                     for (uint8 i = 0; i < 4; i++)
                     {
-                        // YES WE CAN HAVE MULTIPLE DEMONS ON ONE TARGET
-                        if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 150.0f, true, me->getVictimGUID()))
+                        // Yes we can have multiple demons assigned to one person, Tank shouldn't be excluded from search :]
+                        if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 150.0f, true))
                             pTarget->CastSpell(me, SPELL_ILLIDAN_SHADOW_DEMON, true);
                     }
                     break;
@@ -1344,12 +1341,19 @@ bool GossipSelect_boss_illidan_akama(Player *pPlayer, Creature *pCreature, uint3
         pPlayer->CLOSE_GOSSIP_MENU();
         pCreature->AI()->DoAction(EVENT_AKAMA_START);
     }
+    else
+        pPlayer->CLOSE_GOSSIP_MENU();
+
     return true;
 }
 
 bool GossipHello_boss_illidan_akama(Player *player, Creature *_Creature)
 {
-    player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+    if (player->isGameMaster())
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+    else
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+
     player->SEND_GOSSIP_MENU(10465, _Creature->GetGUID());
     return true;
 }
@@ -1474,5 +1478,6 @@ INSERT INTO `waypoint_data` VALUES ('2111', '8', '795.9', '333.309', '330.807', 
 INSERT INTO `waypoint_data` VALUES ('2111', '9', '795.997', '319.96', '319.897', '0', '1', '0', '100', '0');
 INSERT INTO `waypoint_data` VALUES ('2111', '10', '794.935', '304.499', '319.761', '0', '1', '0', '100', '0');
 
-insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values('180','23089','564','1','0','1679','757.588','239.638','353.281','2.26385','300','0','0','960707','607000','0','0');
+insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values(DEFAULT,'23089','564','1','0','1679','757.588','239.638','353.281','2.26385','300','0','0','960707','607000','0','0');
+insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values(DEFAULT,'22917','564','1','0','442','701.94','307.019','354.27','0.154','4294967295','0','0','6070400','7588','0','0');
 */
