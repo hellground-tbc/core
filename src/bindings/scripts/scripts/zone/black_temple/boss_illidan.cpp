@@ -31,8 +31,6 @@ EndScriptData */
 
 // Yells for/by Akama
 #define SAY_AKAMA_BEWARE      -1999988
-#define SAY_AKAMA_LEAVE       -1999990
-
 
 // I think I'll fly now and let my subordinates take you on
 #define SAY_SUMMONFLAMES      -1999994
@@ -748,6 +746,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
         {
             pAkama->AI()->Reset();
             pAkama->AI()->EnterEvadeMode();
+            pAkama->GetMotionMaster()->MovementExpired();
             pAkama->GetMotionMaster()->MoveTargetedHome();
         }
     }
@@ -860,13 +859,13 @@ enum AkamaEvents
     EVENT_AKAMA_DOOR_MOVE_PATH
 };
 
-enum AkamaDoorSpeech
+enum AkamaTexts
 {
     SAY_AKAMA_DOOR_SPEECH_NO1    = -1309025,
     SAY_AKAMA_DOOR_SPEECH_NO2    = -1309024,
     SAY_AKAMA_DOOR_SPEECH_NO3    = -1309028,
 
-    YELL_AKAMA_FIGHT_MINIONS     = -1999989,
+    YELL_AKAMA_FIGHT_MINIONS     = -1999990,
 
     SAY_SPIRIT_DOOR_SPEECH_NO1   = -1309026,
     SAY_SPIRIT_DOOR_SPEECH_NO2   = -1309027,
