@@ -50,12 +50,6 @@ EndScriptData */
 
 #define SPELL_SHADOWFIEND_PASSIVE       41913 // Passive aura for shadowfiends
 
-#define SPELL_BLAZE_EFFECT              40610 // Green flame on the ground, triggers damage (5k) every few seconds
-#define SPELL_BLAZE_SUMMON              40637 // Summons the Blaze creature
-#define SPELL_FLAME_BLAST               40631 // Flames of Azzinoth use this. Frontal cone AoE 7k-9k damage.
-#define SPELL_CHARGE                    41581 //40602 // Flames of Azzinoth charges whoever is too far from them. They enrage after this. For simplicity, we'll use the same enrage as Illidan.
-#define SPELL_FLAME_ENRAGE              45078
-
 // Other defines
 #define CENTER_X            676.740
 #define CENTER_Y            305.297
@@ -345,6 +339,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
                         if (Creature *pAkama = instance->GetCreature(instance->GetData64(DATA_AKAMA)))
                         {
                             pAkama->AttackStop();
+                            pAkama->DeleteThreatList();
                             pAkama->SetReactState(REACT_PASSIVE);
 
                             if (HostilReference* pRef = me->getThreatManager().getOnlineContainer().getReferenceByTarget(pAkama))
@@ -746,7 +741,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
         {
             pAkama->AI()->Reset();
             pAkama->AI()->EnterEvadeMode();
-            pAkama->GetMotionMaster()->MovementExpired();
+            pAkama->GetMotionMaster()->Clear(false); // need reset waypoint movegen, to test
             pAkama->GetMotionMaster()->MoveTargetedHome();
         }
     }
@@ -1087,7 +1082,7 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
             case EVENT_AKAMA_MINIONS_FIGHT:
             {
                 StopAutocast();
-                me->InterruptNonMeleeSpells(false);
+                me->InterruptNonMeleeSpells(true);
 
                 m_pathId = PATH_AKAMA_MINION_EVENT;
 
@@ -1273,6 +1268,102 @@ struct TRINITY_DLL_DECL boss_illidan_glaiveAI : public Scripted_NoMovementAI
     }
 };
 
+enum FlameEvents
+{
+    EVENT_FLAME_RANGE_CHECK = 1,
+    EVENT_FLAME_FLAME_BLAST = 2,
+    EVENT_FLAME_BLAZE       = 3
+};
+
+enum FlameSpells
+{
+    SPELL_FLAME_FLAME_BLAST = 40631,
+    SPELL_FLAME_BLAZE       = 40637,
+    SPELL_FLAME_CHARGE      = 40602,
+    SPELL_FLAME_ENRAGE      = 45078
+};
+
+struct TRINITY_DLL_DECL boss_illidan_flameofazzinothAI : public ScriptedAI
+{
+    boss_illidan_flameofazzinothAI(Creature *c) : ScriptedAI(c), summons(me){}
+
+    EventMap events;
+    SummonList summons;
+
+    void Reset()
+    {
+        events.Reset();
+        summons.DespawnAll();
+        ClearCastQueue();
+    }
+
+    void EnterCombat(Unit *pWho)
+    {
+        events.ScheduleEvent(EVENT_FLAME_RANGE_CHECK, 6000);
+        events.ScheduleEvent(EVENT_FLAME_FLAME_BLAST, urand(25000, 30000));
+        events.ScheduleEvent(EVENT_FLAME_BLAZE, urand(32000, 36000));
+    }
+
+    void JustDied(Unit *pKiller)
+    {
+        me->RemoveCorpse();
+    }
+
+    void JustSummoned(Creature *pWho)
+    {
+        summons.Summon(pWho);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim())
+            return;
+
+        events.Update(diff);
+        while(uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+                case EVENT_FLAME_RANGE_CHECK:
+                {
+                    DoZoneInCombat();
+
+                    if (Unit *pTarget = SelectUnit(SELECT_TARGET_FARTHEST, 0, 200.0f, true, 0, 40.0f))
+                    {
+                        // wipe mode on :]
+                        DoResetThreat();
+                        ForceSpellCast(me, SPELL_FLAME_ENRAGE);
+                        ForceSpellCast(pTarget, SPELL_FLAME_CHARGE);
+
+                        me->AI()->AttackStart(pTarget);
+
+                        events.ScheduleEvent(EVENT_FLAME_RANGE_CHECK, 15000);
+                    }
+                    else
+                        events.ScheduleEvent(EVENT_FLAME_RANGE_CHECK, 2000);
+
+                    break;
+                }
+                case EVENT_FLAME_FLAME_BLAST:
+                {
+                    AddSpellToCast(me->getVictim(), SPELL_FLAME_FLAME_BLAST);
+                    events.ScheduleEvent(EVENT_FLAME_FLAME_BLAST, urand(25000, 30000));
+                    break;
+                }
+                case EVENT_FLAME_BLAZE:
+                {
+                    AddSpellToCast(me, SPELL_FLAME_FLAME_BLAST);
+                    events.ScheduleEvent(EVENT_FLAME_BLAZE, urand(32000, 36000));
+                    break;
+                }
+            }
+        }
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
 enum ShadowDemonSpells
 {
     SPELL_SHADOW_DEMON_PASSIVE      = 41079,
@@ -1373,7 +1464,7 @@ bool GossipHello_boss_illidan_akama(Player *player, Creature *_Creature)
 
 CreatureAI* GetAI_boss_illidan_stormrage(Creature *_Creature)
 {
-    return new boss_illidan_stormrageAI (_Creature);
+    return new boss_illidan_stormrageAI(_Creature);
 }
 
 CreatureAI* GetAI_boss_illidan_akama(Creature *_Creature)
@@ -1383,17 +1474,22 @@ CreatureAI* GetAI_boss_illidan_akama(Creature *_Creature)
 
 CreatureAI* GetAI_boss_illidan_maiev(Creature *_Creature)
 {
-    return new boss_illidan_maievAI (_Creature);
+    return new boss_illidan_maievAI(_Creature);
 }
 
 CreatureAI* GetAI_boss_illidan_glaive(Creature *_Creature)
 {
-    return new boss_illidan_glaiveAI (_Creature);
+    return new boss_illidan_glaiveAI(_Creature);
 }
 
 CreatureAI* GetAI_boss_illidan_shadowdemon(Creature *_Creature)
 {
-    return new boss_illidan_shadowdemonAI (_Creature);
+    return new boss_illidan_shadowdemonAI(_Creature);
+}
+
+CreatureAI* GetAI_boss_illidan_flameofazzinoth(Creature *_Creature)
+{
+    return new boss_illidan_flameofazzinothAI(_Creature);
 }
 
 void AddSC_boss_illidan()
@@ -1425,6 +1521,11 @@ void AddSC_boss_illidan()
     newscript = new Script;
     newscript->Name = "boss_illidan_shadowdemon";
     newscript->GetAI = &GetAI_boss_illidan_shadowdemon;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "boss_illidan_flameofazzinoth";
+    newscript->GetAI = &GetAI_boss_illidan_flameofazzinoth;
     newscript->RegisterSelf();
 }
 /*
@@ -1493,4 +1594,5 @@ INSERT INTO `waypoint_data` VALUES ('2111', '10', '794.935', '304.499', '319.761
 
 insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values(DEFAULT,'23089','564','1','0','1679','757.588','239.638','353.281','2.26385','300','0','0','960707','607000','0','0');
 insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values(DEFAULT,'22917','564','1','0','442','701.94','307.019','354.27','0.7300','4294967295','0','0','6070400','7588','0','0');
+UPDATE `creature_template` SET `ScriptName`='boss_illidan_flameofazzinoth', `flags_extra` = `flags_extra` | 262144 WHERE `entry`='22997';
 */
