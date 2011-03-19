@@ -959,7 +959,8 @@ struct TRINITY_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
         m_creature->GetMotionMaster()->MovePoint(0, 226, 1461, 26);
         EventStarted = true;
         DoZoneInCombat();
-        DoGlobalScriptText(SAY_GAUNTLET_START, AKILZON, me->GetMap());
+        if(pInstance && pInstance->GetData(DATA_AKILZONEVENT) != DONE)
+            DoGlobalScriptText(SAY_GAUNTLET_START, AKILZON, me->GetMap());
     }
 
     void EnterCombat(Unit *who)
@@ -989,8 +990,15 @@ struct TRINITY_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit *who)
     {
-        if(!EventStarted && m_creature->IsHostileTo( who ) && m_creature->IsWithinDistInMap(who, 50))
+        if(me->getVictim())
+            return;
+       // if(EventStarted)
+       //     return;
+
+        if (me->canStartAttack(who))
         {
+            AttackStart(who);
+            who->CombatStart(me);
             StartEvent();
             if(pInstance)
                 pInstance->SetData(DATA_AKILZONGAUNTLET, AKILZON_GAUNTLET_IN_PROGRESS);
@@ -1014,6 +1022,11 @@ struct TRINITY_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
         }
     }
 
+    void AttackStart(Unit *pWho) 
+    {
+        m_creature->Attack(pWho, true);
+    }
+
     void UpdateAI(const uint32 diff)
     {   
         // Event started by entering combat with gauntlet mob
@@ -1026,13 +1039,6 @@ struct TRINITY_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
         {
             m_creature->GetMotionMaster()->MovePoint(MovePoint, GauntletWP[MovePoint][0], GauntletWP[MovePoint][1], GauntletWP[MovePoint][2]);
             Move = false;
-        }
-
-        if(me->getThreatManager().isThreatListEmpty() && EventStarted)
-        {
-            EnterEvadeMode();
-            EventStarted = false;
-            Summons.DespawnAll();
         }
 
         else if (pInstance && pInstance->GetData(DATA_AKILZONGAUNTLET) == AKILZON_GAUNTLET_IN_PROGRESS)
@@ -1062,6 +1068,13 @@ struct TRINITY_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
             Reset();
             m_creature->DealDamage(m_creature, m_creature->GetMaxHealth());
         }   
+
+        if(EventStarted && !UpdateVictim())
+        {
+            EnterEvadeMode();
+            EventStarted = false;
+            Summons.DespawnAll();
+        }
     }
 };
 

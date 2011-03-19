@@ -2229,7 +2229,7 @@ void Aura::TriggerSpell()
                         std::list<HostilReference*>::iterator i = targets.begin();
                         advance(i, rand()%targets.size());
                         Unit *unit = caster->GetUnit((*i)->getUnitGuid());
-                        if (unit && unit->GetTypeId() == TYPEID_PLAYER && !caster->IsWithinDist(unit, 10, false))
+                        if (unit && unit->GetTypeId() == TYPEID_PLAYER && !caster->IsWithinMeleeRange(unit))
                         {
                             target = unit;
                             break;
