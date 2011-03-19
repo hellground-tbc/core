@@ -256,7 +256,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
         ClearCastQueue();
         events.CancelEventsByGCD(m_phase);
 
-        me->RemoveUnitMovementFlag(SPLINEFLAG_WALK_MODE);
+        me->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
 
         switch (m_phase = phase)
         {
