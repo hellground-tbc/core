@@ -35,12 +35,6 @@ EndScriptData */
 // I think I'll fly now and let my subordinates take you on
 #define SAY_SUMMONFLAMES      -1999994
 
-// I KILL!
-#define SAY_ENRAGE            -1999997
-
-#define SPELL_DEATH                     41220 // This spell doesn't do anything except stun Illidan and set him on his knees.
-#define SPELL_BERSERK                   45078 // Damage increased by 500%, attack speed by 150%
-
 #define SPELL_SHADOWFIEND_PASSIVE       41913 // Passive aura for shadowfiends
 
 // Other defines
@@ -125,7 +119,11 @@ enum IllidanSpell
     SPELL_ILLIDAN_SHADOW_DEMON_CAST      = 41117,
 
     SPELL_ILLIDAN_INPRISON_RAID          = 40647,
-    SPELL_ILLIDAN_SUMMON_MAIEV           = 40403
+    SPELL_ILLIDAN_SUMMON_MAIEV           = 40403,
+
+    SPELL_ILLIDAN_HARD_ENRAGE            = 45078,
+
+    SPELL_ILLIDAN_DEATH_OUTRO            = 41220
 };
 
 enum IllidanEvent
@@ -167,6 +165,9 @@ enum IllidanEvent
     EVENT_ILLIDAN_SUMMON_MAIEV           = 28,
     EVENT_ILLIDAN_CAGE_TRAP              = 29,
 
+    EVENT_ILLIDAN_KILL                   = 30,
+    EVENT_ILLIDAN_DEATH_SPEECH           = 31,
+
     EVENT_ILLIDAN_RANDOM_YELL
 };
 
@@ -187,7 +188,9 @@ enum IllidanTexts
     YELL_ILLIDAN_TAUNT_NO3               = -1529018,
     YELL_ILLIDAN_TAUNT_NO4               = -1529019,
 
-    YELL_ILLIDAN_INPRISON_RAID           = -1529003
+    YELL_ILLIDAN_INPRISON_RAID           = -1529003,
+    YELL_ILLIDAN_DEATH_SPEECH            = -1529009,
+    YELL_ILLIDAN_HARD_ENRAGE             = -1999997
 };
 
 enum CreatureEntries
@@ -252,6 +255,8 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
     {
         ClearCastQueue();
         events.CancelEventsByGCD(m_phase);
+
+        me->RemoveUnitMovementFlag(SPLINEFLAG_WALK_MODE);
 
         switch (m_phase = phase)
         {
@@ -330,6 +335,20 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
                 events.ScheduleEvent(EVENT_ILLIDAN_SUMMON_MAIEV, 6000, m_phase);
                 break;
             }
+            case PHASE_DEATH:
+            {
+                ForceSpellCast(me, SPELL_ILLIDAN_DEATH_OUTRO, INTERRUPT_AND_CAST_INSTANTLY);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+
+                if (Creature *pMaiev = GetClosestCreatureWithEntry(me, 23197, 200.0f))
+                {
+                    pMaiev->AttackStop();
+                    pMaiev->AI()->DoAction(7); // teleport to Illidan, and speech
+                }
+
+                events.ScheduleEvent(EVENT_ILLIDAN_DEATH_SPEECH, 6000, m_phase);
+                break;
+            }
         }
     }
 
@@ -354,6 +373,12 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
 
                             if (HostilReference* pRef = me->getThreatManager().getOnlineContainer().getReferenceByTarget(pAkama))
                                  pRef->removeReference();
+
+                            if (me->getThreatManager().isThreatListEmpty())
+                            {
+                                me->AI()->EnterEvadeMode();
+                                return false;
+                            }
 
                             pAkama->AI()->DoAction(8); // EVENT_AKAMA_MINIONS_FIGHT
                         }
@@ -687,6 +712,17 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
         {
             switch (eventId)
             {
+                case EVENT_ILLIDAN_DEATH_SPEECH:
+                {
+                    DoScriptText(YELL_ILLIDAN_DEATH_SPEECH, me);
+                    events.ScheduleEvent(EVENT_ILLIDAN_KILL, 20000, m_phase);
+                    break;
+                }
+                case EVENT_ILLIDAN_KILL:
+                {
+                    me->Kill(me, false);
+                    break;
+                }
             }
         }
         return false;
@@ -743,6 +779,16 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
             return;
 
         ScriptedAI::MoveInLineOfSight(pWho);
+    }
+
+    void DamageTaken(Unit *done_by, uint32 &damage)
+    {
+        if (damage > me->GetHealth() && done_by != me)
+        {
+            damage = 0;
+            if (m_phase != PHASE_DEATH)
+                ChangePhase(PHASE_DEATH);
+        }
     }
 
     void MovementInform(uint32 MovementType, uint32 uiData)
@@ -802,6 +848,8 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
 
         if (m_enrageTimer < diff)
         {
+            ForceSpellCastWithScriptText(me, SPELL_ILLIDAN_HARD_ENRAGE, YELL_ILLIDAN_HARD_ENRAGE, INTERRUPT_AND_CAST_INSTANTLY);
+            m_enrageTimer = 25000;
         }
         else
             m_enrageTimer -= diff;
@@ -1209,7 +1257,8 @@ enum MaievTexts
 {
     YELL_MAIEV_TALK_SEQUENCE_NO1  = -1529004,
     YELL_MAIEV_TALK_SEQUENCE_NO2  = -1529006,
-    YELL_ILLIDAN_TALK_SQUENCE_NO1 = -1529005
+    YELL_ILLIDAN_TALK_SQUENCE_NO1 = -1529005,
+    YELL_MAIEV_ILLIDAN_END        = -1529008
 };
 
 enum MaievEvents
@@ -1219,7 +1268,8 @@ enum MaievEvents
     EVENT_MAIEV_TALK_SEQUENCE_NO3 = 3,
     EVENT_MAIEV_RANGE_ATTACK      = 4,
     EVENT_MAIEV_CAGE_TRAP         = 5,
-    EVENT_MAIEV_BEGIN_FIGHT       = 6
+    EVENT_MAIEV_BEGIN_FIGHT       = 6,
+    EVENT_MAIEV_END_FIGHT_SPEECH  = 7
 };
 
 enum MaievSpells
@@ -1248,6 +1298,7 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
 
     void IsSummonedBy(Unit *pSummoner)
     {
+        me->NearTeleportTo(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() +1.0f, 0.0f);
         ForceSpellCast(me, SPELL_MAIEV_TELEPORT_VISUAL);
 
         if (pSummoner->GetTypeId() == TYPEID_UNIT)
@@ -1272,11 +1323,15 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
                     m_canMelee = false;
 
                     me->GetMotionMaster()->Clear(false);
-                    ForceSpellCast(me, SPELL_MAIEV_TELEPORT_VISUAL, INTERRUPT_AND_CAST_INSTANTLY);
 
-                    float x, y, z;
-                    me->GetClosePoint(x, y, z, 0.0f, 45.0f, me->GetAngle(CENTER_X, CENTER_Y));
-                    me->NearTeleportTo(x, y, z, 0.0f);
+                    if (Creature *pIllidan = instance->GetCreature(instance->GetData64(DATA_ILLIDANSTORMRAGE)))
+                    {
+                        float x, y, z;
+                        pIllidan->GetClosePoint(x, y, z, 0.0f, 45.0f, pIllidan->GetAngle(CENTER_X, CENTER_Y));
+                        me->NearTeleportTo(x, y, z +1.0f, 0.0f);
+                    }
+
+                    ForceSpellCast(me, SPELL_MAIEV_TELEPORT_VISUAL, INTERRUPT_AND_CAST_INSTANTLY);
 
                     SetAutocast(SPELL_MAIEV_THROW_DAGGER, 2000, false, AUTOCAST_TANK);
                     StartAutocast();
@@ -1293,6 +1348,20 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
             }
             case EVENT_MAIEV_CAGE_TRAP:
             {
+                break;
+            }
+            case EVENT_MAIEV_END_FIGHT_SPEECH:
+            {
+                if (Creature *pIllidan = instance->GetCreature(instance->GetData64(DATA_ILLIDANSTORMRAGE)))
+                {
+                    float x, y, z;
+                    pIllidan->GetClosePoint(x, y, z, 0.0f, 7.0f, pIllidan->GetOrientation());
+                    me->NearTeleportTo(x, y, z +0.5f, 0.0f);
+                }
+
+                ForceSpellCast(me, SPELL_MAIEV_TELEPORT_VISUAL, INTERRUPT_AND_CAST_INSTANTLY);
+
+                DoScriptText(YELL_MAIEV_ILLIDAN_END, me);
                 break;
             }
         }
@@ -1375,6 +1444,9 @@ struct TRINITY_DLL_DECL boss_illidan_glaiveAI : public Scripted_NoMovementAI
 
         m_summonTimer = 2000;
         m_checkTimer = 5000;
+
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
     }
 
     void IsSummonedBy(Unit *pSummoner)
@@ -1554,10 +1626,9 @@ struct TRINITY_DLL_DECL boss_illidan_shadowdemonAI : public ScriptedAI
 
     void JustDied(Unit *pKiller)
     {
-        me->InterruptNonMeleeSpells(true);
-
         if (Unit *pUnit = me->GetUnit(m_targetGUID))
         {
+            pUnit->RemoveAurasByCasterSpell(SPELL_SHADOW_DEMON_BEAM, me->GetGUID());
             if (!pUnit->HasAura(SPELL_SHADOW_DEMON_BEAM, 0))
                 pUnit->RemoveAurasDueToSpell(SPELL_SHADOW_DEMON_PARALYZE);
         }

@@ -719,6 +719,12 @@ void Spell::EffectDummy(uint32 i)
         {
             switch (m_spellInfo->Id)
             {
+                case 41232:
+                {
+                    unitTarget->GetMap()->AddUnitToNotify(unitTarget);
+                    unitTarget->SendMovementFlagUpdate();
+                    break;
+                }
                 case 41082:
                 {
                     m_caster->CastSpell(unitTarget, 41083, true);
