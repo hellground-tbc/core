@@ -264,6 +264,9 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
             {
                 events.ScheduleEvent(EVENT_ILLIDAN_AGONIZING_FLAMES, urand(28000, 35000), m_phase);
                 events.ScheduleEvent(EVENT_ILLIDAN_CHANGE_PHASE, m_phase == PHASE_FIVE ? 60000 : urand(40000, 55000), m_phase);
+
+                if (Creature *pMaiev = GetClosestCreatureWithEntry(me, 23197, 200.0f))
+                    pMaiev->AI()->DoAction(4); // SET MELEE ATTACK TYPE
             }
             case PHASE_ONE:
             {
@@ -306,11 +309,14 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
                 events.ScheduleEvent(EVENT_ILLIDAN_THROW_GLAIVE, 15000, m_phase);
                 events.ScheduleEvent(EVENT_ILLIDAN_EYE_BLAST, urand(30000, 40000), m_phase);
                 events.ScheduleEvent(EVENT_ILLIDAN_DARK_BARRAGE, 80000, m_phase);
-                events.ScheduleEvent(EVENT_ILLIDAN_CHANGE_PHASE, 90000, m_phase); // DEBUG ONLY ! SET TO 20-30s
+                events.ScheduleEvent(EVENT_ILLIDAN_CHANGE_PHASE, 30000, m_phase); // DEBUG ONLY ! SET TO 20-30s
                 break;
             }
             case PHASE_FOUR:
             {
+                if (Creature *pMaiev = GetClosestCreatureWithEntry(me, 23197, 200.0f))
+                    pMaiev->AI()->DoAction(4); // SET RANGE ATTACK TYPE
+
                 SetAutocast(SPELL_ILLIDAN_SHADOW_BLAST, 3000, false, AUTOCAST_TANK);
                 events.ScheduleEvent(EVENT_ILLIDAN_TRANSFORM_NO1, 0, m_phase);
                 events.ScheduleEvent(EVENT_ILLIDAN_FLAME_BURST, 20000, m_phase);
@@ -319,6 +325,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
             }
             case PHASE_MAIEV:
             {
+                b_maievPhase = false;
                 ForceAOESpellCastWithScriptText(SPELL_ILLIDAN_INPRISON_RAID, YELL_ILLIDAN_INPRISON_RAID);
                 events.ScheduleEvent(EVENT_ILLIDAN_SUMMON_MAIEV, 6000, m_phase);
                 break;
@@ -1218,6 +1225,7 @@ enum MaievEvents
 enum MaievSpells
 {
     SPELL_MAIEV_TELEPORT_VISUAL   = 41232,
+    SPELL_MAIEV_THROW_DAGGER      = 41152
 };
 
 //Maiev spells
@@ -1225,7 +1233,6 @@ enum MaievSpells
 #define SPELL_CAGE_TRAP_SUMMON          40694 // Summons a Cage Trap GO (bugged) on the ground along with a Cage Trap Disturb Trigger mob (working)
 #define SPELL_CAGE_TRAP_BEAM            40713 // 8 Triggers on the ground in an octagon cast spells like this on Illidan 'caging him'
 #define SPELL_SHADOW_STRIKE             40685 // 4375 to 5625 every 3 seconds for 12 seconds
-#define SPELL_THROW_DAGGER              41152 // 5400 to 6600 damage, need dagger
 #define SPELL_FAN_BLADES                39954 // bugged visual
 
 struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
@@ -1236,7 +1243,7 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
 
     void Reset()
     {
-        m_canMelee = true;
+        m_canMelee = false;
     }
 
     void IsSummonedBy(Unit *pSummoner)
@@ -1263,12 +1270,24 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
                 if (m_canMelee)
                 {
                     m_canMelee = false;
+
+                    me->GetMotionMaster()->Clear(false);
+                    ForceSpellCast(me, SPELL_MAIEV_TELEPORT_VISUAL, INTERRUPT_AND_CAST_INSTANTLY);
+
+                    float x, y, z;
+                    me->GetClosePoint(x, y, z, 0.0f, 45.0f, me->GetAngle(CENTER_X, CENTER_Y));
+                    me->NearTeleportTo(x, y, z, 0.0f);
+
+                    SetAutocast(SPELL_MAIEV_THROW_DAGGER, 2000, false, AUTOCAST_TANK);
                     StartAutocast();
                 }
                 else
                 {
                     m_canMelee = true;
                     StopAutocast();
+
+                    if (me->getVictim())
+                        me->GetMotionMaster()->MoveChase(me->getVictim());
                 }
                 break;
             }
@@ -1535,6 +1554,8 @@ struct TRINITY_DLL_DECL boss_illidan_shadowdemonAI : public ScriptedAI
 
     void JustDied(Unit *pKiller)
     {
+        me->InterruptNonMeleeSpells(true);
+
         if (Unit *pUnit = me->GetUnit(m_targetGUID))
         {
             if (!pUnit->HasAura(SPELL_SHADOW_DEMON_BEAM, 0))
@@ -1551,6 +1572,8 @@ struct TRINITY_DLL_DECL boss_illidan_shadowdemonAI : public ScriptedAI
                 Unit *pUnit = me->GetUnit(m_targetGUID);
                 if (!pUnit || pUnit->isDead())
                 {
+                    DoZoneInCombat();
+
                     if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 100.0f, true))
                     {
                         m_targetGUID = pTarget->GetGUID();
