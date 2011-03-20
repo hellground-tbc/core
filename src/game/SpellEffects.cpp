@@ -721,8 +721,7 @@ void Spell::EffectDummy(uint32 i)
             {
                 case 41232:
                 {
-                    unitTarget->GetMap()->AddUnitToNotify(unitTarget);
-                    unitTarget->SendMovementFlagUpdate();
+                    unitTarget->SendMonsterMove(unitTarget->GetPositionX(), unitTarget->GetPositionY(), unitTarget->GetPositionZ(), 0);
                     break;
                 }
                 case 41082:
@@ -5136,6 +5135,14 @@ void Spell::EffectScriptEffect(uint32 effIndex)
     // TODO: we must implement hunter pet summon at login there (spell 6962)
     switch (m_spellInfo->Id)
     {
+        // Cage Trap Trigger (Maiev)
+        case 40761:
+        {
+            if (unitTarget->GetTypeId() == TYPEID_UNIT)
+                ((Creature*)unitTarget)->AI()->DoAction();
+
+            break;
+        }
         // Fog of Corruption (Felmyst)
         case 45714:
         {

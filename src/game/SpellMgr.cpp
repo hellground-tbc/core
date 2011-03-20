@@ -2808,9 +2808,6 @@ void SpellMgr::LoadSpellCustomAttr()
         case 42835: // set visual only
             spellInfo->Effect[0] = 0;
             break;
-        case 41913: // Parasitic Shadowfiend Passive
-            spellInfo->EffectApplyAuraName[0] = SPELL_AURA_DUMMY;
-            break;
         case 47977: // Broom Broom
         case 42679:
         case 42673:

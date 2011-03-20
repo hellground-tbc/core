@@ -4861,6 +4861,14 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
                     m_modifier.m_amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * 3 / 100);
                 return;
             }
+            if (m_spellProto->Id == 41917 && !apply && caster)
+            {
+                if (m_target->HasAura(40647, 1))
+                    return;
+
+                m_target->CastSpell(m_target, 41915, true, 0, this, caster->GetGUID());
+                break;
+            }
             // Envenom
             if (!apply && m_spellProto->Id == 41485)
             {

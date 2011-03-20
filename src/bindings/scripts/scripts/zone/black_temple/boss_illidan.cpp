@@ -263,7 +263,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
             case PHASE_FIVE:
             {
                 events.ScheduleEvent(EVENT_ILLIDAN_SOFT_ENRAGE, 40000, m_phase);
-                events.ScheduleEvent(EVENT_ILLIDAN_CAGE_TRAP, 30000, m_phase);
+                events.ScheduleEvent(EVENT_ILLIDAN_CAGE_TRAP, urand(25000, 32000), m_phase);
             }
             case PHASE_THREE:
             {
@@ -287,6 +287,8 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
 
                 if (m_phase == PHASE_ONE)
                 {
+                    instance->SetData(EVENT_ILLIDANSTORMRAGE, IN_PROGRESS);
+
                     ForceSpellCast(me, SPELL_ILLIDAN_DUAL_WIELD);
                     events.ScheduleEvent(EVENT_ILLIDAN_SUMMON_MINIONS, 1000, m_phase);
                 }
@@ -331,12 +333,16 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
             case PHASE_MAIEV:
             {
                 b_maievPhase = false;
+                me->AttackStop();
                 ForceAOESpellCastWithScriptText(SPELL_ILLIDAN_INPRISON_RAID, YELL_ILLIDAN_INPRISON_RAID);
                 events.ScheduleEvent(EVENT_ILLIDAN_SUMMON_MAIEV, 6000, m_phase);
                 break;
             }
             case PHASE_DEATH:
             {
+                me->AttackStop();
+                me->RemoveAllAuras();
+
                 ForceSpellCast(me, SPELL_ILLIDAN_DEATH_OUTRO, INTERRUPT_AND_CAST_INSTANTLY);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
 
@@ -436,6 +442,14 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
                 case EVENT_ILLIDAN_SOFT_ENRAGE:
                 {
                     ForceSpellCast(me, SPELL_ILLIDAN_ENRAGE);
+                    break;
+                }
+                case EVENT_ILLIDAN_CAGE_TRAP:
+                {
+                    if (Creature *pMaiev = GetClosestCreatureWithEntry(me, 23197, 200.0f))
+                        pMaiev->AI()->DoAction(5); // Force to place trap
+
+                    events.ScheduleEvent(EVENT_ILLIDAN_CAGE_TRAP, urand(20000,30000), m_phase);
                     break;
                 }
             }
@@ -721,6 +735,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
                 case EVENT_ILLIDAN_KILL:
                 {
                     me->Kill(me, false);
+                    instance->SetData(EVENT_ILLIDANSTORMRAGE, DONE);
                     break;
                 }
             }
@@ -808,6 +823,28 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
             pAkama->GetMotionMaster()->Clear(false); // need reset waypoint movegen, to test
             pAkama->GetMotionMaster()->MoveTargetedHome();
         }
+    }
+
+    void JustSummoned(Creature *pWho)
+    {
+        if (pWho->GetEntry() == 23498)
+        {
+            pWho->CastSpell(pWho, 41913, true);
+            pWho->AI()->DoZoneInCombat();
+            if (Unit *pTarget = pWho->AI()->SelectTarget(SELECT_TARGET_RANDOM, urand(0,3), 200.0f, true))
+            {
+                pWho->AddThreat(pTarget, 100000.0f);
+                pWho->AI()->AttackStart(pTarget);
+            }
+        }
+
+        BossAI::JustSummoned(pWho);
+    }
+
+    void OnAuraRemove(Aura *pAur, bool stack)
+    {
+        if (pAur->GetId() == 40695)
+            ChangePhase(PHASE_FOUR);
     }
 
     void DoAction(const int32 action)
@@ -1269,19 +1306,18 @@ enum MaievEvents
     EVENT_MAIEV_RANGE_ATTACK      = 4,
     EVENT_MAIEV_CAGE_TRAP         = 5,
     EVENT_MAIEV_BEGIN_FIGHT       = 6,
-    EVENT_MAIEV_END_FIGHT_SPEECH  = 7
+    EVENT_MAIEV_END_FIGHT_SPEECH  = 7,
+    EVENT_MAIEV_RANDOM_TAUNT      = 8
 };
 
 enum MaievSpells
 {
     SPELL_MAIEV_TELEPORT_VISUAL   = 41232,
-    SPELL_MAIEV_THROW_DAGGER      = 41152
+    SPELL_MAIEV_THROW_DAGGER      = 41152,
+    SPELL_MAIEV_SUMMON_CAGE_TRAP  = 40694,
+    SPELL_MAIEV_CAGE_TRAP_TRIGGER = 40761
 };
 
-//Maiev spells
-#define SPELL_CAGE_TRAP_DUMMY           40761 // Put this in DB for cage trap GO.
-#define SPELL_CAGE_TRAP_SUMMON          40694 // Summons a Cage Trap GO (bugged) on the ground along with a Cage Trap Disturb Trigger mob (working)
-#define SPELL_CAGE_TRAP_BEAM            40713 // 8 Triggers on the ground in an octagon cast spells like this on Illidan 'caging him'
 #define SPELL_SHADOW_STRIKE             40685 // 4375 to 5625 every 3 seconds for 12 seconds
 #define SPELL_FAN_BLADES                39954 // bugged visual
 
@@ -1322,16 +1358,15 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
                 {
                     m_canMelee = false;
 
-                    me->GetMotionMaster()->Clear(false);
-
                     if (Creature *pIllidan = instance->GetCreature(instance->GetData64(DATA_ILLIDANSTORMRAGE)))
                     {
                         float x, y, z;
-                        pIllidan->GetClosePoint(x, y, z, 0.0f, 45.0f, pIllidan->GetAngle(CENTER_X, CENTER_Y));
+                        pIllidan->GetClosePoint(x, y, z, 0.0f, 45.0f, -pIllidan->GetAngle(CENTER_X, CENTER_Y));
                         me->NearTeleportTo(x, y, z +1.0f, 0.0f);
                     }
 
                     ForceSpellCast(me, SPELL_MAIEV_TELEPORT_VISUAL, INTERRUPT_AND_CAST_INSTANTLY);
+                    me->GetMotionMaster()->MovementExpired();
 
                     SetAutocast(SPELL_MAIEV_THROW_DAGGER, 2000, false, AUTOCAST_TANK);
                     StartAutocast();
@@ -1348,6 +1383,12 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
             }
             case EVENT_MAIEV_CAGE_TRAP:
             {
+                float x, y, z;
+                me->GetClosePoint(x, y, z, 0.0f, 15.0f, frand(0, 2*M_PI));
+                me->NearTeleportTo(x, y, z +2.0f, 0.0f);
+
+                ForceSpellCast(me, SPELL_MAIEV_TELEPORT_VISUAL, INTERRUPT_AND_CAST_INSTANTLY);
+                ForceSpellCast(me, SPELL_MAIEV_SUMMON_CAGE_TRAP, INTERRUPT_AND_CAST_INSTANTLY);
                 break;
             }
             case EVENT_MAIEV_END_FIGHT_SPEECH:
@@ -1358,6 +1399,7 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
                     pIllidan->GetClosePoint(x, y, z, 0.0f, 7.0f, pIllidan->GetOrientation());
                     me->NearTeleportTo(x, y, z +0.5f, 0.0f);
                 }
+                events.CancelEvent(EVENT_MAIEV_RANDOM_TAUNT);
 
                 ForceSpellCast(me, SPELL_MAIEV_TELEPORT_VISUAL, INTERRUPT_AND_CAST_INSTANTLY);
 
@@ -1406,6 +1448,13 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
                         pIllidan->AI()->AttackStart(me);
                         AttackStart(pIllidan);
                     }
+                    events.ScheduleEvent(EVENT_MAIEV_RANDOM_TAUNT, urand(30000, 40000));
+                    break;
+                }
+                case EVENT_MAIEV_RANDOM_TAUNT:
+                {
+                    DoScriptText(RAND(MAIEV_TAUNT_NO1, MAIEV_TAUNT_NO2, MAIEV_TAUNT_NO3, MAIEV_TAUNT_NO4), me);
+                    events.ScheduleEvent(EVENT_MAIEV_RANDOM_TAUNT, urand(30000, 40000));
                     break;
                 }
             }
@@ -1686,6 +1735,74 @@ bool GossipHello_boss_illidan_akama(Player *player, Creature *_Creature)
     return true;
 }
 
+bool GOUse_boss_illidan_cage_trap(Player* pPlayer, GameObject* pGo)
+{
+    if (pGo->GetGoState() == GO_STATE_ACTIVE)
+        return false;
+
+    pGo->CastSpell((Unit*)NULL, SPELL_MAIEV_CAGE_TRAP_TRIGGER);
+    pGo->SetGoState(GO_STATE_ACTIVE);
+    return true;
+}
+
+struct TRINITY_DLL_DECL boss_illidan_cage_beamerAI : public ScriptedAI
+{
+    boss_illidan_cage_beamerAI(Creature *c) : ScriptedAI(c), summons(c){}
+
+    SummonList summons;
+
+    void JustSummoned(Creature *pWho)
+    {
+        uint32 spellId = 0;
+        uint32 entry = 0;
+
+        switch (pWho->GetEntry())
+        {
+            case 23296:
+                spellId = 40704;
+                entry = 23292;
+                break;
+            case 23297:
+                spellId = 40707;
+                entry = 23293;
+                break;
+            case 23298:
+                spellId = 40708;
+                entry = 23294;
+                break;
+            case 23299:
+                spellId = 40709;
+                entry = 23295;
+                break;
+        }
+
+        if (Creature *pTarget = GetClosestCreatureWithEntry(me, entry, 12.0f))
+        {
+            pWho->CastSpell(pTarget, spellId, false);
+            pTarget->CastSpell(pWho, spellId, false);
+        }
+    }
+
+    void DoAction(const int32 action)
+    {
+        if (Creature *pIllidan = GetClosestCreatureWithEntry(me, 22917, 8.0f))
+        {
+            if (pIllidan->HasAura(40695,0) || CAST_AI(boss_illidan_stormrageAI, pIllidan->AI())->m_phase == PHASE_FOUR)
+                return;
+
+            me->SetOrientation(me->GetAngle(pIllidan));
+
+            // set 8 beam triggers
+            for (uint32 i = 40696; i <= 40703; i++)
+                me->CastSpell(pIllidan, i, false);
+
+            pIllidan->RemoveAurasDueToSpell(SPELL_ILLIDAN_ENRAGE);
+            pIllidan->CastSpell(pIllidan, 40695, true);
+        }
+        me->ForcedDespawn(15000);
+    }
+};
+
 CreatureAI* GetAI_boss_illidan_stormrage(Creature *_Creature)
 {
     return new boss_illidan_stormrageAI(_Creature);
@@ -1714,6 +1831,11 @@ CreatureAI* GetAI_boss_illidan_shadowdemon(Creature *_Creature)
 CreatureAI* GetAI_boss_illidan_flameofazzinoth(Creature *_Creature)
 {
     return new boss_illidan_flameofazzinothAI(_Creature);
+}
+
+CreatureAI* GetAI_boss_illidan_cage_beamer(Creature *_Creature)
+{
+    return new boss_illidan_cage_beamerAI(_Creature);
 }
 
 void AddSC_boss_illidan()
@@ -1751,8 +1873,19 @@ void AddSC_boss_illidan()
     newscript->Name = "boss_illidan_flameofazzinoth";
     newscript->GetAI = &GetAI_boss_illidan_flameofazzinoth;
     newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "boss_illidan_cage_trap";
+    newscript->pGOHello = &GOUse_boss_illidan_cage_trap;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "boss_illidan_cage_beamer";
+    newscript->GetAI = &GetAI_boss_illidan_cage_beamer;
+    newscript->RegisterSelf();
 }
 /*
+23304
 DELETE FROM `spell_script_target` WHERE `entry` = '39635';
 INSERT INTO `spell_script_target` (`entry`,`type`,`targetEntry`) VALUES ('39635','1','23448');
 UPDATE `creature_template` SET `ScriptName` = 'boss_illidan_glaive' WHERE `entry` ='22996';
@@ -1822,4 +1955,8 @@ UPDATE `creature_template` SET `ScriptName`='boss_illidan_flameofazzinoth', `fla
 ....
 UPDATE script_texts SET TYPE = 1 WHERE entry IN(-1999998,-1529099,-1529000,-1529001);
 UPDATE `creature_template` SET `ScriptName` = 'boss_illidan_maiev' WHERE `entry` ='23197';
+REPLACE INTO spell_script_target VALUES (40761, 1, 23304);
+UPDATE gameobject_template SET scriptname="boss_illidan_cage_trap" WHERE entry = 185916;
+UPDATE creature_template SET scriptname = "boss_illidan_cage_beamer" WHERE entry = '23304';
+DELETE from spell_script_target where `spell_effect`='41915';
 */
