@@ -651,6 +651,7 @@ bool AreaAura::CheckTarget(Unit *target)
             case 691:   // Strength of Earth
             case 338:   // Mana Spring
             case 337:   // Grace of Air
+            case 340:   // Wrath of Air
             case 174:   // Windwall
             {
                 if (target->HasAura(GetId(), m_effIndex))
