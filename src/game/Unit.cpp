@@ -6785,6 +6785,14 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                 return false;
             break;
         }
+        case 41914:
+        case 41917:
+        {
+            if (!target || target->HasAura(41914, 0) || target->HasAura(41917, 0))
+                return false;
+
+            break;
+        }
     }
 
     SpellEntry const *spellInfo = sSpellStore.LookupEntry(trigger_spell_id);

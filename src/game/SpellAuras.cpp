@@ -4861,7 +4861,7 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
                     m_modifier.m_amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * 3 / 100);
                 return;
             }
-            if (m_spellProto->Id == 41917 && !apply && caster)
+            if ((m_spellProto->Id == 41917 || m_spellProto->Id == 41914) && !apply && caster)
             {
                 if (m_target->HasAura(40647, 1))
                     return;
