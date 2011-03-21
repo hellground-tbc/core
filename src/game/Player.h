@@ -2380,6 +2380,8 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         DeclinedName *m_declinedname;
 
+        ACE_Thread_Mutex updateMutex;
+
     private:
         // internal common parts for CanStore/StoreItem functions
         uint8 _CanStoreItem_InSpecificSlot(uint8 bag, uint8 slot, ItemPosCountVec& dest, ItemPrototype const *pProto, uint32& count, bool swap, Item *pSrcItem) const;

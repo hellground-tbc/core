@@ -316,6 +316,8 @@ void WorldSession::LogoutPlayer(bool Save)
 
     if (_player)
     {
+        _player->updateMutex.acquire();
+
         if (uint64 lguid = GetPlayer()->GetLootGUID())
             DoLootRelease(lguid);
 
@@ -451,30 +453,22 @@ void WorldSession::LogoutPlayer(bool Save)
         sSocialMgr.SendFriendStatus(_player, FRIEND_OFFLINE, _player->GetGUIDLow(), true);
         sSocialMgr.RemovePlayerSocial(_player->GetGUIDLow ());
 
-        if (_player->updating)
-        {
-            _player->inDelete = true;
-            ObjectAccessor::Instance().playersToDelete.push_back(_player);
-            ObjectAccessor::Instance().RemovePlayer(_player);
-        }
-        else
-        {
-            ///- Delete the player object
-            _player->CleanupsBeforeDelete();
 
-            ///- Remove the player from the world
-            // the player may not be in the world when logging out
-            // e.g if he got disconnected during a transfer to another map
-            // calls to GetMap in this case may cause crashes
-            if (_player->IsInWorld())
-                _player->GetMap()->Remove(_player, false);
+        ///- Delete the player object
+        _player->CleanupsBeforeDelete();
 
-            // RemoveFromWorld does cleanup that requires the player to be in the accessor
-            ObjectAccessor::Instance().RemovePlayer(_player);
+        ///- Remove the player from the world
+        // the player may not be in the world when logging out
+        // e.g if he got disconnected during a transfer to another map
+        // calls to GetMap in this case may cause crashes
+        if (_player->IsInWorld())
+            _player->GetMap()->Remove(_player, false);
 
-            delete _player;
-            _player = NULL;
-        }
+        // RemoveFromWorld does cleanup that requires the player to be in the accessor
+        ObjectAccessor::Instance().RemovePlayer(_player);
+
+        delete _player;
+        _player = NULL;
 
         ///- Send the 'logout complete' packet to the client
         WorldPacket data(SMSG_LOGOUT_COMPLETE, 0);

@@ -1141,13 +1141,11 @@ void Player::CharmAI(bool apply)
 
 void Player::Update(uint32 p_time)
 {
-    if (updating || inDelete)   // we don't need to update one player twice
-        return;
+    updateMutex.acquire();
 
-    updating = true;
     if (!IsInWorld())
     {
-        updating = false;
+        updateMutex.release();
         return;
     }
 
@@ -1418,7 +1416,7 @@ void Player::Update(uint32 p_time)
     if (pet && !IsWithinDistInMap(pet, OWNER_MAX_DISTANCE) && !pet->isPossessed())
         RemovePet(pet, PET_SAVE_NOT_IN_SLOT, true);
 
-    updating = false;
+    updateMutex.release();
 }
 
 void Player::setDeathState(DeathState s)
