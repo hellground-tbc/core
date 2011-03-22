@@ -283,6 +283,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
 
                 SetWarglaivesEquipped(true);
 
+                StopAutocast();
                 DoResetThreat();
 
                 if (m_phase == PHASE_ONE)
