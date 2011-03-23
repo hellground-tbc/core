@@ -11446,7 +11446,7 @@ Unit* Unit::SelectNearbyTarget(float dist) const
     // remove not LoS targets
     for (std::list<Unit *>::iterator tIter = targets.begin(); tIter != targets.end();)
     {
-        if (!IsWithinLOSInMap(*tIter) || (*tIter)->GetTypeId() == TYPEID_UNIT && (((Creature*)(*tIter))->isCivilian() || ((Creature*)(*tIter))->isTrigger()))
+        if (!IsWithinLOSInMap(*tIter) || (*tIter)->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE) || (*tIter)->GetTypeId() == TYPEID_UNIT && (((Creature*)(*tIter))->isCivilian() || ((Creature*)(*tIter))->isTrigger()))
         {
             std::list<Unit *>::iterator tIter2 = tIter;
             ++tIter;
