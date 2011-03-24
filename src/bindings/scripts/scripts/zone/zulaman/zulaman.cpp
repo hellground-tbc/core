@@ -1212,18 +1212,32 @@ struct TRINITY_DLL_DECL npc_amanishi_scoutAI : public ScriptedAI
         AggroYell = false;
         SummonTimer = 0;
     }
-
+/*
     void MoveInLineOfSight(Unit *who)
     {
+        if (me->getVictim())
+            return;
+
+        if (me->canStartAttack(who))
+        {
+            AttackStart(who);
+            who->CombatStart(me);
+
+
+        }
+
         if(Phase == 0 && who && !me->IsFriendlyTo(who) && me->IsWithinDist(who, 20, true))
         {
             DoZoneInCombat();
             Phase = 1;
             AggroYell = true;
-            Unit *drums = FindCreature(22515, 50, me);
-            if(drums)
-                me->GetMotionMaster()->MovePoint(1, drums->GetPositionX(), drums->GetPositionY(), drums->GetPositionZ());
+            
         }
+    }
+*/
+    void AttackStart(Unit *pWho)
+    {
+        m_creature->Attack(pWho, true);
     }
 
     void JustSummoned(Creature *c)
@@ -1245,15 +1259,16 @@ struct TRINITY_DLL_DECL npc_amanishi_scoutAI : public ScriptedAI
 
     void EnterCombat(Unit *who)
     {
+        DoScriptText(YELL_SCOUT_AGGRO, me);
+        Unit *drums = FindCreature(22515, 50, me);
+        if(drums)
+            me->GetMotionMaster()->MovePoint(1, drums->GetPositionX(), drums->GetPositionY(), drums->GetPositionZ());
     }
 
     void UpdateAI(const uint32 diff)
     {
-        if(AggroYell)
-        {
-            DoScriptText(YELL_SCOUT_AGGRO, me);
-            AggroYell = false;
-        }
+        if(!UpdateVictim())
+            return;
 
         if(SummonTimer)
         {
@@ -1270,9 +1285,6 @@ struct TRINITY_DLL_DECL npc_amanishi_scoutAI : public ScriptedAI
             } else
                 SummonTimer -= diff;
         }
-
-        if(me->getThreatManager().isThreatListEmpty() && Phase == 2)
-            EnterEvadeMode();
     }
 
 };

@@ -153,7 +153,7 @@ static PlayerAbilityStruct PlayerAbility[][3] =
     {SPELL_PR_HEAL, ABILITY_TARGET_HEAL, 1000, 10000},
     {SPELL_PR_PSYCHIC_SCREAM, ABILITY_TARGET_SELF, 10000, 15000}},
     // 5* shadow priest
-    {{SPELL_PR_MIND_CONTROL, ABILITY_TARGET_ENEMY, 10000, 18000},
+    {{SPELL_PR_MIND_CONTROL, ABILITY_TARGET_VICTIM, 10000, 18000},
     {SPELL_PR_MIND_BLAST, ABILITY_TARGET_ENEMY, 1000, 5000},
     {SPELL_PR_SW_DEATH, ABILITY_TARGET_ENEMY, 5000, 10000}},
     // 7 shaman
@@ -429,11 +429,13 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
             }
             else
             {
+                /*
                 trigger->SetUInt32Value(UNIT_FIELD_DISPLAYID, 11686);
                 trigger->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 trigger->CastSpell(target, SPELL_SIPHON_SOUL, true);
                 trigger->GetMotionMaster()->MoveChase(m_creature);
-
+*/
+                DoCast(target, SPELL_SIPHON_SOUL, true);
                 //m_creature->CastSpell(target, SPELL_SIPHON_SOUL, true);
                 //m_creature->SetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT, target->GetGUID());
                 //m_creature->SetUInt32Value(UNIT_CHANNEL_SPELL, SPELL_SIPHON_SOUL);

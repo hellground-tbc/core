@@ -275,11 +275,14 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
             HandleGameObject(HexLordExitGateGUID, true);
     }
 
-    void UpdateWorldState(uint32 field, uint32 value)
+    void UpdateWorldState(uint32 field, uint32 value, Player* player = NULL)
     {
         WorldPacket data(SMSG_UPDATE_WORLD_STATE, 8);
         data << field << value;
-        instance->SendToPlayers(&data);
+        if(player)
+            player->GetSession()->SendPacket(data);
+        else
+            instance->SendToPlayers(&data);
     }
 
     std::string GetSaveData()
@@ -505,6 +508,16 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
         }
         return 0;
     }
+
+    void OnPlayerEnter(Player *player)
+    {
+        if(QuestMinute)
+        {
+            UpdateWorldState(3104, 1, player);
+            UpdateWorldState(3106, QuestMinute, player);
+        }
+    }
+
 
     void Update(uint32 diff)
     {

@@ -91,7 +91,8 @@ enum Creatures
     MOB_FLIGHT_RIGHT   =   25358,
     MOB_FOG_OF_CORRUPTION    =   25266,
     MOB_VAPOR          =   25265,
-    MOB_VAPOR_TRAIL    =   25267
+    MOB_VAPOR_TRAIL    =   25267,
+    MOB_KALECGOS       =   24844        // dunno if it's right one
 };
 
 enum PhaseFelmyst
@@ -159,6 +160,10 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
     uint32 BreathCount;
     uint32 BreathPath;
 
+    uint32 OutroPhase;
+    uint32 OutroTimer;
+    uint64 KalecgosGUID;
+
     float BreathX, BreathY;
 
     void Reset()
@@ -169,11 +174,13 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         Timer[EVENT_CHECK] = 1000;
         FlightCount = 0;
         EvadeTimer = 0;
+        OutroPhase = 0;
+        OutroTimer = 0;
 
         m_creature->AddUnitMovementFlag(FELMYST_FLY_FLAGS);
         m_creature->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 10);
         m_creature->SetFloatValue(UNIT_FIELD_COMBATREACH, 10);
-        m_creature->GetMotionMaster()->MoveRandom(10);
+        m_creature->setHover(true);
 
         DespawnSummons(MOB_VAPOR_TRAIL);
         m_creature->setActive(true);
@@ -227,6 +234,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         if(pInstance)
             pInstance->SetData(DATA_FELMYST_EVENT, DONE);
 
+        me->SummonCreature(MOB_KALECGOS, 1555, 737, 88, 0, TEMPSUMMON_TIMED_DESPAWN, 300000);
     }
 
     void EnterEvadeMode()
@@ -241,31 +249,6 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             }
     }
 
-    void SpellHit(Unit *caster, const SpellEntry *spell)
-    {
-        // workaround for linked aura
-        /*if(spell->Id == SPELL_VAPOR_FORCE)
-        {
-            caster->CastSpell(caster, SPELL_VAPOR_TRIGGER, true);
-        }*/
-        // workaround for mind control
-        /*
-        if(spell->Id == SPELL_FOG_INFORM)
-        {
-            float x, y, z;
-            caster->GetPosition(x, y, z);
-            Unit* summon = m_creature->SummonCreature(MOB_DEAD, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
-            if(summon)
-            {
-                summon->SetMaxHealth(caster->GetMaxHealth());
-                summon->SetHealth(caster->GetMaxHealth());
-                summon->CastSpell(summon, SPELL_FOG_CHARM, true);
-                summon->CastSpell(summon, SPELL_FOG_CHARM2, true);
-            }
-            m_creature->DealDamage(caster, caster->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-        }
-        */
-    }
 
     void JustSummoned(Creature *summon)
     {
@@ -273,34 +256,45 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         {
             summon->AI()->AttackStart(SelectUnit(SELECT_TARGET_RANDOM, 0));
             summon->CastSpell(summon, SPELL_DEAD_PASSIVE, true);
+        } 
+        else if(summon->GetEntry() == MOB_KALECGOS)
+        {
+            summon->setActive(true);
+            summon->AddUnitMovementFlag(SPLINEFLAG_FLYINGING2 | MOVEFLAG_CAN_FLY);
+            summon->GetMotionMaster()->MovePoint(0, 1471, 632, 37);
+            KalecgosGUID = summon->GetGUID();
+            OutroTimer = 20000;
         }
     }
 
     void MovementInform(uint32 Type, uint32 Id)
     {
-        if(Type != POINT_MOTION_TYPE)
-            return;
+        if(Type == HOME_MOTION_TYPE)
+            m_creature->setHover(true);
         
-        switch(Id)
-        {
-            case 0:
-                Timer[EVENT_FLIGHT_SEQUENCE] = 1000;
-                me->setHover(true);
-                break;
-            case 1:
-                DoScriptText(EMOTE_BREATH, m_creature);
-                me->setHover(true);
-                Timer[EVENT_FLIGHT_SEQUENCE] = 2000;
-                break;
-            case 2:
-                m_creature->RemoveAurasDueToSpell(SPELL_FOG_BREATH);
-                me->setHover(true);
-                Timer[EVENT_FLIGHT_SEQUENCE] = 10000;
-                break;
-            case 4:
-                Timer[EVENT_FLIGHT_SEQUENCE] = 1;
-                break;
+        else if(Type == POINT_MOTION_TYPE)
+        {        
+            switch(Id)
+            {
+                case 0:
+                    Timer[EVENT_FLIGHT_SEQUENCE] = 1000;
+                    me->setHover(true);
+                    break;
+                case 1:
+                    DoScriptText(EMOTE_BREATH, m_creature);
+                    me->setHover(true);
+                    Timer[EVENT_FLIGHT_SEQUENCE] = 2000;
+                    break;
+                case 2:
+                    m_creature->RemoveAurasDueToSpell(SPELL_FOG_BREATH);
+                    me->setHover(true);
+                    Timer[EVENT_FLIGHT_SEQUENCE] = 10000;
+                    break;
+                case 4:
+                    Timer[EVENT_FLIGHT_SEQUENCE] = 1;
+                    break;
 
+            }
         }
     }
 
@@ -334,6 +328,27 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             break;
         }
         Phase = NextPhase;
+    }
+
+    void DoOutro()
+    {
+        Unit *Kalecgos = me->GetUnit(KalecgosGUID);
+        if(!Kalecgos)
+            return;
+
+        switch(OutroPhase)
+        {
+            case 0:
+                DoScriptText(YELL_KALECGOS, Kalecgos);
+                OutroTimer = 10000;
+                break;
+            case 1:
+                Kalecgos->GetMotionMaster()->MovePoint(0, 1768, 598, 173);
+                OutroTimer = 0;
+                break;
+        }
+
+        OutroPhase++;
     }
 
     void HandleFlightSequence()
@@ -440,6 +455,15 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 return;
             } else
                 EvadeTimer -= diff;
+        }
+
+        if(OutroTimer)
+        {
+            if(OutroTimer <= diff)
+            {
+                DoOutro();
+            } else
+                OutroTimer -= diff;
         }
 
         if (!UpdateVictim())

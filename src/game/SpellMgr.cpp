@@ -665,6 +665,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 40322:                                         // Spirit Shield
         case 41151:                                         // Lightning Shield
         case 34970:                                         // Frenzy
+        case 43550:                                         // Mind Control (Hex Lord Malacrass)
             return true;
         case 46392:                                         // Focused Assault
         case 46393:                                         // Brutal Assault

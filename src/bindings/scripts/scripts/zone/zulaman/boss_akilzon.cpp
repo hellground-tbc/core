@@ -312,8 +312,9 @@ struct TRINITY_DLL_DECL mob_soaring_eagleAI : public ScriptedAI
         }
     }
 
-    void AttackStart(Unit *)
+    void AttackStart(Unit *pWho)
     {
+        m_creature->Attack(pWho, true);
     }
 
     void UpdateAI(const uint32 diff)
