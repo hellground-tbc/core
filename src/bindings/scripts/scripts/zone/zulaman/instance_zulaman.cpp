@@ -280,7 +280,7 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
         WorldPacket data(SMSG_UPDATE_WORLD_STATE, 8);
         data << field << value;
         if(player)
-            player->GetSession()->SendPacket(data);
+            player->GetSession()->SendPacket(&data);
         else
             instance->SendToPlayers(&data);
     }
