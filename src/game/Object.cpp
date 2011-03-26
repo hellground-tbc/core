@@ -1036,7 +1036,7 @@ WorldObject::WorldObject()
     m_positionX(0.0f), m_positionY(0.0f), m_positionZ(0.0f), m_orientation(0.0f)
     , m_map(NULL), m_zoneScript(NULL)
     , m_isActive(false), IsTempWorldObject(false)
-    , m_name("")
+    , m_name(""), m_notifyflags(0), m_executed_notifies(0)
 {
 
     m_groupLootTimer    = 0;
@@ -2137,12 +2137,11 @@ void WorldObject::GetGroundPoint(float &x, float &y, float &z, float dist, float
     UpdateGroundPositionZ(x, y, z);
 }
 
-void WorldObject::UpdateObjectVisibility()
+void WorldObject::UpdateObjectVisibility(bool /*forced*/)
 {
-    CellPair p = Trinity::ComputeCellPair(GetPositionX(), GetPositionY());
-    Cell cell(p);
-
-    GetMap()->UpdateObjectVisibility(this, cell, p);
+    //updates object's visibility for nearby players
+    Trinity::VisibleChangesNotifier notifier(*this);
+    Cell::VisitWorldObjects(this, notifier, GetMap()->GetVisibilityDistance());
 }
 
 void WorldObject::AddToClientUpdateList()

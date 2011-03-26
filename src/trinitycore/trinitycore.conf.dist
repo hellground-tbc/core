@@ -1028,6 +1028,10 @@ Visibility.Distance.InFlight      = 132
 Visibility.Distance.Grey.Unit   = 1
 Visibility.Distance.Grey.Object = 10
 
+Visibility.Notify.Period.OnContinents = 1000
+Visibility.Notify.Period.InInstances  = 1000
+Visibility.Notify.Period.InBGArenas   = 1000
+
 ###################################################################################################################
 # SERVER RATES
 #

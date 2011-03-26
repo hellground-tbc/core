@@ -1774,7 +1774,6 @@ void Creature::Respawn()
         if (poolid)
             poolhandler.UpdatePool(poolid, GetGUIDLow(), TYPEID_UNIT);
     }
-    SetToNotify();
 }
 
 void Creature::ForcedDespawn(uint32 timeMSToDespawn)

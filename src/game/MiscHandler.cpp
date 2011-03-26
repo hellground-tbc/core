@@ -1436,7 +1436,7 @@ void WorldSession::HandleFarSightOpcode(WorldPacket & recv_data)
             return;
     }
 
-    GetPlayer()->SetToNotify();
+    GetPlayer()->UpdateVisibilityForPlayer();
 }
 
 void WorldSession::HandleChooseTitleOpcode(WorldPacket & recv_data)

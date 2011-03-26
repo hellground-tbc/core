@@ -232,7 +232,6 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
 
         void MoveAllCreaturesInMoveList();
         void RemoveAllObjectsInRemoveList();
-        void RelocationNotify();
 
         bool CreatureRespawnRelocation(Creature *c);        // used only in MoveAllCreaturesInMoveList and ObjectGridUnloader
 
@@ -261,6 +260,8 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         virtual bool RemoveBones(uint64 guid, float x, float y);
 
         void UpdateObjectVisibility(WorldObject* obj, Cell cell, CellPair cellpair);
+        void UpdatePlayerVisibility( Player* player, Cell cell, CellPair cellpair );
+        void UpdateObjectsVisibilityFor(Player* player, Cell cell, CellPair cellpair );
 
         void resetMarkedCells() { marked_cells.reset(); }
         bool isCellMarked(uint32 pCellId) { return marked_cells.test(pCellId); }
@@ -269,9 +270,6 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         bool HavePlayers() const { return !m_mapRefManager.isEmpty(); }
         uint32 GetPlayersCountExceptGMs() const;
         bool ActiveObjectsNearGrid(uint32 x, uint32 y) const;
-
-        void AddUnitToNotify(Unit* unit);
-        void RemoveUnitFromNotify(Unit *unit);
 
         void SendToPlayers(WorldPacket const* data) const;
 
@@ -410,6 +408,8 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         MapRefManager m_mapRefManager;
         MapRefManager::iterator m_mapRefIter;
 
+        int32 m_VisibilityNotifyPeriod;
+
         typedef std::set<WorldObject*> ActiveNonPlayers;
         ActiveNonPlayers m_activeNonPlayers;
         ActiveNonPlayers::iterator m_activeNonPlayersIter;
@@ -419,13 +419,14 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         GridMap *GridMaps[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
         std::bitset<TOTAL_NUMBER_OF_CELLS_PER_MAP*TOTAL_NUMBER_OF_CELLS_PER_MAP> marked_cells;
 
+        //these functions used to process player/mob aggro reactions and
+        //visibility calculations. Highly optimized for massive calculations
+        void ProcessRelocationNotifies(const uint32 &diff);
+
         time_t i_gridExpiry;
 
-        IntervalTimer m_notifyTimer;
+        bool i_scriptLock;
 
-        bool i_notifyLock, i_scriptLock;
-        std::vector<Unit*> i_unitsToNotifyBacklog;
-        std::vector<Unit*> i_unitsToNotify;
         std::set<WorldObject *> i_objectsToRemove;
         std::map<WorldObject*, bool> i_objectsToSwitch;
         std::multimap<time_t, ScriptAction> m_scriptSchedule;
@@ -433,9 +434,6 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         // Type specific code for add/remove to/from grid
         template<class T>
             void AddToGrid(T*, NGridType *, Cell const&);
-
-        template<class T>
-            void AddNotifier(T*);
 
         template<class T>
             void RemoveFromGrid(T*, NGridType *, Cell const&);

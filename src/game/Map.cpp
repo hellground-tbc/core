@@ -157,13 +157,10 @@ void Map::DeleteStateMachine()
 
 Map::Map(uint32 id, time_t expiry, uint32 InstanceId, uint8 SpawnMode)
    : i_mapEntry (sMapStore.LookupEntry(id)), i_spawnMode(SpawnMode),
-   i_id(id), i_InstanceId(InstanceId), m_unloadTimer(0), i_gridExpiry(expiry),
-   m_VisibleDistance(DEFAULT_VISIBILITY_DISTANCE),
-   m_activeNonPlayersIter(m_activeNonPlayers.end())
-   , i_notifyLock(true), i_scriptLock(true)
+     i_id(id), i_InstanceId(InstanceId), m_unloadTimer(0), i_gridExpiry(expiry),
+     m_VisibleDistance(DEFAULT_VISIBILITY_DISTANCE), m_activeNonPlayersIter(m_activeNonPlayers.end()), i_scriptLock(true),
+     m_VisibilityNotifyPeriod(DEFAULT_VISIBILITY_NOTIFY_PERIOD)
 {
-    m_notifyTimer.SetInterval(500);
-
     for (unsigned int idx=0; idx < MAX_NUMBER_OF_GRIDS; ++idx)
     {
         for (unsigned int j=0; j < MAX_NUMBER_OF_GRIDS; ++j)
@@ -173,6 +170,8 @@ Map::Map(uint32 id, time_t expiry, uint32 InstanceId, uint8 SpawnMode)
             setNGrid(NULL, idx, j);
         }
     }
+
+    m_VisibilityNotifyPeriod = World::GetVisibilityNotifyPeriodOnContinents();
 
     //lets initialize visibility distance for map
     Map::InitVisibilityDistance();
@@ -331,27 +330,6 @@ void Map::DeleteFromWorld(T* obj)
     delete obj;
 }
 
-template<class T>
-void Map::AddNotifier(T*)
-{
-}
-
-template<>
-void Map::AddNotifier(Player* obj)
-{
-    //obj->m_Notified = false;
-    //obj->m_IsInNotifyList = false;
-    AddUnitToNotify(obj);
-}
-
-template<>
-void Map::AddNotifier(Creature* obj)
-{
-    //obj->m_Notified = false;
-    //obj->m_IsInNotifyList = false;
-    AddUnitToNotify(obj);
-}
-
 void Map::EnsureGridCreated(const GridPair &p)
 {
     if (!getNGrid(p.x_coord, p.y_coord))
@@ -381,30 +359,17 @@ void Map::EnsureGridCreated(const GridPair &p)
 
 void Map::EnsureGridLoadedAtEnter(const Cell &cell, Player *player)
 {
-    NGridType *grid;
+    EnsureGridLoaded(cell);
+    NGridType *grid = getNGrid(cell.GridX(), cell.GridY());
+    ASSERT(grid != NULL);
 
-    if (EnsureGridLoaded(cell))
+
+    // refresh grid state & timer
+    if (grid->GetGridState() != GRID_STATE_ACTIVE)
     {
-        grid = getNGrid(cell.GridX(), cell.GridY());
-
-        if (player)
-        {
-            player->SendDelayResponse(MAX_GRID_LOAD_TIME);
-            DEBUG_LOG("Player %s enter cell[%u,%u] triggers of loading grid[%u,%u] on map %u", player->GetName(), cell.CellX(), cell.CellY(), cell.GridX(), cell.GridY(), GetId());
-        }
-        else
-        {
-            DEBUG_LOG("Active object nearby triggers of loading grid [%u,%u] on map %u", cell.GridX(), cell.GridY(), GetId());
-        }
-
-        ResetGridExpiry(*getNGrid(cell.GridX(), cell.GridY()), 0.1f);
+        ResetGridExpiry(*grid, 0.1f);;
         grid->SetGridState(GRID_STATE_ACTIVE);
     }
-    else
-        grid = getNGrid(cell.GridX(), cell.GridY());
-
-    if (player)
-        AddToGrid(player,grid,cell);
 }
 
 bool Map::EnsureGridLoaded(const Cell &cell)
@@ -438,21 +403,30 @@ void Map::LoadGrid(float x, float y)
 
 bool Map::Add(Player *player)
 {
-    player->GetMapRef().link(this, player);
-
     player->SetInstanceId(GetInstanceId());
 
-    // update player state for other player and visa-versa
     CellPair p = Trinity::ComputeCellPair(player->GetPositionX(), player->GetPositionY());
+    if(p.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || p.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP )
+    {
+        sLog.outError("Map::Add: Player (GUID: %u) have invalid coordinates X:%f Y:%f grid cell [%u:%u]", player->GetGUIDLow(), player->GetPositionX(), player->GetPositionY(), p.x_coord, p.y_coord);
+        return false;
+    }
+
+    player->GetMapRef().link(this, player);
+
     Cell cell(p);
     EnsureGridLoadedAtEnter(cell, player);
+    NGridType *grid = getNGrid(cell.GridX(), cell.GridY());
+    ASSERT(grid != NULL);
+    AddToGrid(player, grid, cell);
+
     player->AddToWorld();
 
     SendInitSelf(player);
     SendInitTransports(player);
 
     player->m_clientGUIDs.clear();
-    //AddNotifier(player);
+    player->UpdateObjectVisibility(true);
 
     return true;
 }
@@ -472,8 +446,7 @@ Map::Add(T *obj)
     Cell cell(p);
     if (obj->IsInWorld()) // need some clean up later
     {
-        UpdateObjectVisibility(obj,cell,p); // is this needed?
-        AddNotifier(obj);
+        obj->UpdateObjectVisibility(true);
         return;
     }
 
@@ -493,9 +466,8 @@ Map::Add(T *obj)
 
     DEBUG_LOG("Object %u enters grid[%u,%u]", GUID_LOPART(obj->GetGUID()), cell.GridX(), cell.GridY());
 
-    UpdateObjectVisibility(obj,cell,p);
-
-    AddNotifier(obj);
+    //trigger needs to cast spell, if not update, cannot see visual
+    obj->UpdateObjectVisibility(true);
 }
 
 void Map::MessageBroadcast(Player *player, WorldPacket *msg, bool to_self, bool to_possessor)
@@ -527,111 +499,8 @@ bool Map::loaded(const GridPair &p) const
     return (getNGrid(p.x_coord, p.y_coord) && isGridObjectDataLoaded(p.x_coord, p.y_coord));
 }
 
-void Map::RelocationNotify()
-{
-    i_notifyLock = true;
-
-    //Notify
-    for (std::vector<Unit*>::iterator iter = i_unitsToNotify.begin(); iter != i_unitsToNotify.end(); ++iter)
-    {
-        Unit *unit = *iter;
-        if (!unit)
-            continue;
-
-        unit->m_NotifyListPos = -1;
-
-        if (unit->m_Notified)
-            continue;
-
-        unit->m_Notified = true;
-
-        float dist = abs(unit->GetPositionX() - unit->oldX) + abs(unit->GetPositionY() - unit->oldY);
-        if (dist > 10.0f)
-        {
-            Trinity::VisibleChangesNotifier notifier(*unit);
-            Cell::VisitWorldObjects(unit->oldX, unit->oldY, unit->GetMap(), notifier, dist);
-            dist = 0;
-        }
-
-        if (unit->GetTypeId() == TYPEID_PLAYER)
-        {
-            Trinity::PlayerRelocationNotifier notifier(*((Player*)unit));
-            Cell::VisitAllObjects(((Player*)unit)->GetPositionX(), ((Player*)unit)->GetPositionY(), ((Player*)unit)->GetMap(), notifier, unit->GetMap()->GetVisibilityDistance() + dist);
-            notifier.Notify();
-        }
-        else
-        {
-            Trinity::CreatureRelocationNotifier notifier(*((Creature*)unit));
-            Cell::VisitAllObjects(unit->GetPositionX(), unit->GetPositionY(), unit->GetMap(), notifier, unit->GetMap()->GetVisibilityDistance() + dist);
-        }
-    }
-
-    for (std::vector<Unit*>::iterator iter = i_unitsToNotify.begin(); iter != i_unitsToNotify.end(); ++iter)
-    {
-        if (*iter)
-            (*iter)->m_Notified = false;
-    }
-
-    i_unitsToNotify.clear();
-
-    i_notifyLock = false;
-
-    if (!i_unitsToNotifyBacklog.empty())
-    {
-        i_unitsToNotify.insert(i_unitsToNotify.end(), i_unitsToNotifyBacklog.begin(), i_unitsToNotifyBacklog.end());
-        i_unitsToNotifyBacklog.clear();
-    }
-}
-
-void Map::AddUnitToNotify(Unit* u)
-{
-    if (u->m_NotifyListPos < 0 && u->IsInWorld())
-    {
-        u->oldX = u->GetPositionX();
-        u->oldY = u->GetPositionY();
-
-        if (i_notifyLock)
-        {
-            u->m_NotifyListPos = i_unitsToNotifyBacklog.size();
-            i_unitsToNotifyBacklog.push_back(u);
-        }
-        else
-        {
-            u->m_NotifyListPos = i_unitsToNotify.size();
-            i_unitsToNotify.push_back(u);
-        }
-    }
-}
-
-void Map::RemoveUnitFromNotify(Unit *unit)
-{
-    int32 slot = unit->m_NotifyListPos;
-    if (i_notifyLock)
-    {
-        if (slot < i_unitsToNotifyBacklog.size() && i_unitsToNotifyBacklog[slot] == unit)
-            i_unitsToNotifyBacklog[slot] = NULL;
-        else if (slot < i_unitsToNotify.size() && i_unitsToNotify[slot] == unit)
-            i_unitsToNotify[slot] = NULL;
-        else
-            assert(false);
-    }
-    else
-    {
-        assert(slot < i_unitsToNotify.size());
-        i_unitsToNotify[slot] = NULL;
-    }
-
-    unit->m_NotifyListPos = -1;
-}
 void Map::Update(const uint32 &t_diff)
 {
-    m_notifyTimer.Update(t_diff);
-    if (m_notifyTimer.Passed())
-    {
-        m_notifyTimer.Reset();
-        RelocationNotify();
-    }
-
     /// update worldsessions for existing players
     for (m_mapRefIter = m_mapRefManager.begin(); m_mapRefIter != m_mapRefManager.end(); ++m_mapRefIter)
     {
@@ -707,18 +576,6 @@ void Map::Update(const uint32 &t_diff)
             if (!obj->IsInWorld() || !obj->IsPositionValid())
                 continue;
 
-            // Update bindsight players
-            if (obj->GetTypeId() == TYPEID_DYNAMICOBJECT)
-            {
-                if (Unit *caster = ((DynamicObject*)obj)->GetCaster())
-                    if (caster->GetTypeId() == TYPEID_PLAYER && caster->GetUInt64Value(PLAYER_FARSIGHT) == obj->GetGUID())
-                    {
-                        Trinity::PlayerVisibilityNotifier notifier(*((Player*)caster));
-                        Cell::VisitAllObjects(obj->GetPositionX(), obj->GetPositionY(), obj->GetMap(), notifier, obj->GetMap()->GetVisibilityDistance());
-                        notifier.Notify();
-                    }
-            }
-
             CellArea area = Cell::CalculateCellArea(obj->GetPositionX(), obj->GetPositionY(), GetVisibilityDistance());
 
             for (uint32 x = area.low_bound.x_coord; x < area.high_bound.x_coord; ++x)
@@ -754,6 +611,99 @@ void Map::Update(const uint32 &t_diff)
     }
 
     MoveAllCreaturesInMoveList();
+
+    if(!m_mapRefManager.isEmpty() || !m_activeNonPlayers.empty())
+        ProcessRelocationNotifies(t_diff);
+}
+
+struct ResetNotifier
+{
+    template<class T>inline void resetNotify(GridRefManager<T> &m)
+    {
+        for(typename GridRefManager<T>::iterator iter=m.begin(); iter != m.end(); ++iter)
+            iter->getSource()->ResetAllNotifies();
+    }
+
+    template<class T> void Visit(GridRefManager<T> &) {}
+    void Visit(CreatureMapType &m) { resetNotify<Creature>(m);}
+    void Visit(PlayerMapType &m) { resetNotify<Player>(m);}
+};
+
+void Map::ProcessRelocationNotifies(const uint32 & diff)
+{
+    for(GridRefManager<NGridType>::iterator i = GridRefManager<NGridType>::begin(); i != GridRefManager<NGridType>::end(); ++i)
+    {
+        NGridType *grid = i->getSource();
+
+        if (grid->GetGridState() != GRID_STATE_ACTIVE)
+            continue;
+
+        grid->getGridInfoRef()->getRelocationTimer().TUpdate(diff);
+        if (!grid->getGridInfoRef()->getRelocationTimer().TPassed())
+            continue;
+
+        uint32 gx = grid->getX(), gy = grid->getY();
+
+        CellPair cell_min(gx*MAX_NUMBER_OF_CELLS, gy*MAX_NUMBER_OF_CELLS);
+        CellPair cell_max(cell_min.x_coord + MAX_NUMBER_OF_CELLS, cell_min.y_coord+MAX_NUMBER_OF_CELLS);
+
+        for (uint32 x = cell_min.x_coord; x < cell_max.x_coord; ++x)
+        {
+            for (uint32 y = cell_min.y_coord; y < cell_max.y_coord; ++y)
+            {
+                uint32 cell_id = (y * TOTAL_NUMBER_OF_CELLS_PER_MAP) + x;
+                if (!isCellMarked(cell_id))
+                    continue;
+
+                CellPair pair(x,y);
+                Cell cell(pair);
+                cell.SetNoCreate();
+
+                Trinity::DelayedUnitRelocation cell_relocation(cell, pair, *this, GetVisibilityDistance());
+                TypeContainerVisitor<Trinity::DelayedUnitRelocation, GridTypeMapContainer  > grid_object_relocation(cell_relocation);
+                TypeContainerVisitor<Trinity::DelayedUnitRelocation, WorldTypeMapContainer > world_object_relocation(cell_relocation);
+                Visit(cell, grid_object_relocation);
+                Visit(cell, world_object_relocation);
+            }
+        }
+    }
+
+    ResetNotifier reset;
+    TypeContainerVisitor<ResetNotifier, GridTypeMapContainer >  grid_notifier(reset);
+    TypeContainerVisitor<ResetNotifier, WorldTypeMapContainer > world_notifier(reset);
+
+    for (GridRefManager<NGridType>::iterator i = GridRefManager<NGridType>::begin(); i != GridRefManager<NGridType>::end(); ++i)
+    {
+        NGridType *grid = i->getSource();
+
+        if (grid->GetGridState() != GRID_STATE_ACTIVE)
+            continue;
+
+        if (!grid->getGridInfoRef()->getRelocationTimer().TPassed())
+            continue;
+
+        grid->getGridInfoRef()->getRelocationTimer().TReset(diff, m_VisibilityNotifyPeriod);
+        uint32 gx = grid->getX(), gy = grid->getY();
+
+        CellPair cell_min(gx*MAX_NUMBER_OF_CELLS, gy*MAX_NUMBER_OF_CELLS);
+        CellPair cell_max(cell_min.x_coord + MAX_NUMBER_OF_CELLS, cell_min.y_coord+MAX_NUMBER_OF_CELLS);
+
+        for (uint32 x = cell_min.x_coord; x < cell_max.x_coord; ++x)
+        {
+            for (uint32 y = cell_min.y_coord; y < cell_max.y_coord; ++y)
+            {
+                uint32 cell_id = (y * TOTAL_NUMBER_OF_CELLS_PER_MAP) + x;
+                if (!isCellMarked(cell_id))
+                    continue;
+
+                CellPair pair(x,y);
+                Cell cell(pair);
+                cell.SetNoCreate();
+                Visit(cell, grid_notifier);
+                Visit(cell, world_notifier);
+            }
+        }
+    }
 }
 
 void Map::SendObjectUpdates()
@@ -785,6 +735,7 @@ void Map::Remove(Player *player, bool remove)
     // instead of NULL in the case of prev
     if (m_mapRefIter == player->GetMapRef())
         m_mapRefIter = m_mapRefIter->nocheck_prev();
+
     player->GetMapRef().unlink();
     CellPair p = Trinity::ComputeCellPair(player->GetPositionX(), player->GetPositionY());
     if (p.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || p.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP)
@@ -813,8 +764,8 @@ void Map::Remove(Player *player, bool remove)
     player->RemoveFromWorld();
     RemoveFromGrid(player,grid,cell);
 
+    player->UpdateObjectVisibility(true);
     SendRemoveTransports(player);
-    UpdateObjectVisibility(player,cell,p);
 
     if (remove)
         DeleteFromWorld(player);
@@ -834,8 +785,7 @@ bool Map::RemoveBones(uint64 guid, float x, float y)
 }
 
 template<class T>
-void
-Map::Remove(T *obj, bool remove)
+void Map::Remove(T *obj, bool remove)
 {
     CellPair p = Trinity::ComputeCellPair(obj->GetPositionX(), obj->GetPositionY());
     if (p.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || p.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP)
@@ -855,9 +805,8 @@ Map::Remove(T *obj, bool remove)
     obj->RemoveFromWorld();
     if (obj->isActiveObject())
         RemoveFromActive(obj);
+    obj->UpdateObjectVisibility(true);
     RemoveFromGrid(obj,grid,cell);
-
-    UpdateObjectVisibility(obj,cell,p);
 
     if (remove)
     {
@@ -877,7 +826,6 @@ void Map::PlayerRelocation(Player *player, float x, float y, float z, float orie
 
     Cell old_cell(old_val);
     Cell new_cell(new_val);
-    bool same_cell = (new_cell == old_cell);
 
     player->Relocate(x, y, z, orientation);
 
@@ -891,20 +839,14 @@ void Map::PlayerRelocation(Player *player, float x, float y, float z, float orie
 
         NGridType* oldGrid = getNGrid(old_cell.GridX(), old_cell.GridY());
         RemoveFromGrid(player, oldGrid,old_cell);
-        if (!old_cell.DiffGrid(new_cell))
-            AddToGrid(player, oldGrid,new_cell);
-        else
+        if (old_cell.DiffGrid(new_cell))
             EnsureGridLoadedAtEnter(new_cell, player);
+
+        NGridType* newGrid = getNGrid(new_cell.GridX(), new_cell.GridY());
+        AddToGrid(player, newGrid,new_cell);
     }
 
-    AddUnitToNotify(player);
-
-    NGridType* newGrid = getNGrid(new_cell.GridX(), new_cell.GridY());
-    if (!same_cell && newGrid->GetGridState()!= GRID_STATE_ACTIVE)
-    {
-        ResetGridExpiry(*newGrid, 0.1f);
-        newGrid->SetGridState(GRID_STATE_ACTIVE);
-    }
+    player->UpdateObjectVisibility(false);
 }
 
 void Map::CreatureRelocation(Creature *creature, float x, float y, float z, float ang)
@@ -929,7 +871,7 @@ void Map::CreatureRelocation(Creature *creature, float x, float y, float z, floa
     else
     {
         creature->Relocate(x, y, z, ang);
-        AddUnitToNotify(creature);
+        creature->UpdateObjectVisibility(false);
     }
     assert(CheckGridIntegrity(creature,true));
 }
@@ -962,7 +904,7 @@ void Map::MoveAllCreaturesInMoveList()
             // update pos
             c->Relocate(cm.x, cm.y, cm.z, cm.ang);
             //CreatureRelocationNotify(c,new_cell,new_cell.cellPair());
-            AddUnitToNotify(c);
+            c->UpdateObjectVisibility(false);
         }
         else
         {
@@ -1070,7 +1012,7 @@ bool Map::CreatureRespawnRelocation(Creature *c)
         c->Relocate(resp_x, resp_y, resp_z, resp_o);
         c->GetMotionMaster()->Initialize();                 // prevent possible problems with default move generators
         //CreatureRelocationNotify(c,resp_cell,resp_cell.cellPair());
-        AddUnitToNotify(c);
+        c->UpdateObjectVisibility(false);
         return true;
     }
     else
@@ -1505,6 +1447,20 @@ void Map::UpdateObjectVisibility(WorldObject* obj, Cell cell, CellPair cellpair)
     Trinity::VisibleChangesNotifier notifier(*obj);
     TypeContainerVisitor<Trinity::VisibleChangesNotifier, WorldTypeMapContainer > player_notifier(notifier);
     cell.Visit(cellpair, player_notifier, *this, *obj, GetVisibilityDistance());
+}
+
+void Map::UpdateObjectsVisibilityFor(Player* player, Cell cell, CellPair cellpair)
+{
+    Trinity::VisibleNotifier notifier(*player);
+
+    cell.SetNoCreate();
+    TypeContainerVisitor<Trinity::VisibleNotifier, WorldTypeMapContainer > world_notifier(notifier);
+    TypeContainerVisitor<Trinity::VisibleNotifier, GridTypeMapContainer  > grid_notifier(notifier);
+    cell.Visit(cellpair, world_notifier, *this, *player, GetVisibilityDistance());
+    cell.Visit(cellpair, grid_notifier,  *this, *player, GetVisibilityDistance());
+
+    // send data
+    notifier.SendToSelf();
 }
 
 void Map::SendInitSelf(Player * player)
@@ -2599,6 +2555,8 @@ InstanceMap::InstanceMap(uint32 id, time_t expiry, uint32 InstanceId, uint8 Spaw
     // the timer is started by default, and stopped when the first player joins
     // this make sure it gets unloaded if for some reason no player joins
     m_unloadTimer = std::max(sWorld.getConfig(CONFIG_INSTANCE_UNLOAD_DELAY), (uint32)MIN_UNLOAD_DELAY);
+
+    m_VisibilityNotifyPeriod = World::GetVisibilityNotifyPeriodInInstances();
 }
 
 InstanceMap::~InstanceMap()
@@ -2944,6 +2902,8 @@ BattleGroundMap::BattleGroundMap(uint32 id, time_t expiry, uint32 InstanceId, Ba
 {
     m_bg = bg;
     BattleGroundMap::InitVisibilityDistance();
+
+    m_VisibilityNotifyPeriod = World::GetVisibilityNotifyPeriodInBGArenas();
 }
 
 BattleGroundMap::~BattleGroundMap()
