@@ -545,10 +545,10 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
                     else
                     {
                         int32 textid;
-                        if(QuestMinute = 4) textid = SAY_INST_WARN_1;
-                        if(QuestMinute = 3) textid = SAY_INST_WARN_2;
-                        if(QuestMinute = 2) textid = SAY_INST_WARN_3;
-                        if(QuestMinute = 1) textid = SAY_INST_WARN_4;
+                        if(QuestMinute == 4) textid = SAY_INST_WARN_1;
+                        if(QuestMinute == 3) textid = SAY_INST_WARN_2;
+                        if(QuestMinute == 2) textid = SAY_INST_WARN_3;
+                        if(QuestMinute == 1) textid = SAY_INST_WARN_4;
                         DoGlobalScriptText(textid, HEXLORD, instance);
                     }
                 }

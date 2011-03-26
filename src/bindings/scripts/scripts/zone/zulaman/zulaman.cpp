@@ -1193,6 +1193,7 @@ CreatureAI* GetAI_npc_amani_eagle(Creature *_Creature)
 #define YELL_SCOUT_AGGRO            -1811003
 #define SPELL_ALERT_DRUMS           42177
 #define SPELL_SUMMON_SENTRIES       42183
+#define MOB_SENTRY                  23587
 
 struct TRINITY_DLL_DECL npc_amanishi_scoutAI : public ScriptedAI
 {
@@ -1202,39 +1203,13 @@ struct TRINITY_DLL_DECL npc_amanishi_scoutAI : public ScriptedAI
     }
 
     ScriptedInstance *pInstance;
-    uint8 Phase;
     uint32 SummonTimer;
-    bool AggroYell;
 
     void Reset()
     {
-        Phase = 0;
-        AggroYell = false;
         SummonTimer = 0;
     }
-/*
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->getVictim())
-            return;
 
-        if (me->canStartAttack(who))
-        {
-            AttackStart(who);
-            who->CombatStart(me);
-
-
-        }
-
-        if(Phase == 0 && who && !me->IsFriendlyTo(who) && me->IsWithinDist(who, 20, true))
-        {
-            DoZoneInCombat();
-            Phase = 1;
-            AggroYell = true;
-            
-        }
-    }
-*/
     void AttackStart(Unit *pWho)
     {
         m_creature->Attack(pWho, true);
@@ -1249,11 +1224,8 @@ struct TRINITY_DLL_DECL npc_amanishi_scoutAI : public ScriptedAI
     {
         if(type == POINT_MOTION_TYPE && id == 1)
         {
-            DoCast(me, SPELL_ALERT_DRUMS, false);
-            DoCast(me, SPELL_SUMMON_SENTRIES, true);
-            DoCast(me, SPELL_SUMMON_SENTRIES, true);
-            Phase = 2;
-            SummonTimer = 2000;
+            //DoCast(me, SPELL_ALERT_DRUMS, false);
+            SummonTimer = 1;
         }
     }
 
@@ -1272,16 +1244,21 @@ struct TRINITY_DLL_DECL npc_amanishi_scoutAI : public ScriptedAI
 
         if(SummonTimer)
         {
+            /*
             Unit *drums = FindCreature(22515, 5, me);
             if(drums)
                 me->GetMotionMaster()->MoveFollow(drums, 0, 0);
-
-            if(SummonTimer < diff)
+*/
+            if(SummonTimer <= diff)
             {
                 DoCast(me, SPELL_ALERT_DRUMS, false);
-                DoCast(me, SPELL_SUMMON_SENTRIES, true);
-                DoCast(me, SPELL_SUMMON_SENTRIES, true);
-                SummonTimer = 2000;
+                //DoCast(me, SPELL_SUMMON_SENTRIES, true);
+                //DoCast(me, SPELL_SUMMON_SENTRIES, true);
+                float x,y,z;
+                m_creature->GetPosition(x, y, z);
+                m_creature->SummonCreature(MOB_SENTRY, x+1, y+1, z, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000);
+                m_creature->SummonCreature(MOB_SENTRY, x-1, y-1, z, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000);
+                SummonTimer = 5000;
             } else
                 SummonTimer -= diff;
         }

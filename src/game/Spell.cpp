@@ -2129,6 +2129,8 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 unitList.remove(m_targets.getUnitTarget());
             else if (m_spellInfo->Id == 43550) // Mind Control (Hex Lord Malacras)
                 unitList.remove(m_targets.getUnitTarget());
+            else if (m_spellInfo->Id == 42479) // Protective Ward
+                unitList.remove(m_targets.getUnitTarget());
 
 
             // We don't need immune targets to be taken into list for Fatal Attraction, i know that thix hack is ugly ;]
