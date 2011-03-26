@@ -122,7 +122,7 @@ void Pet::RemoveFromWorld()
     }
 }
 
-bool Pet::LoadPetFromDB(Unit* owner, uint32 petentry, uint32 petnumber, bool current)
+bool Pet::LoadPetFromDB(Unit* owner, uint32 petentry, uint32 petnumber, bool current, float x, float y, float z, float ang)
 {
     m_loading = true;
 
@@ -170,10 +170,13 @@ bool Pet::LoadPetFromDB(Unit* owner, uint32 petentry, uint32 petnumber, bool cur
     if (!Create(guid, map, petentry, pet_number))
         return false;
 
-    float px, py, pz;
-    owner->GetClosePoint(px, py, pz, GetObjectSize(), PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+    if (!x || !y)
+    {
+        owner->GetClosePoint(x, y, z, GetObjectSize(), PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+        ang = owner->GetOrientation();
+    }
 
-    Relocate(px, py, pz, owner->GetOrientation());
+    Relocate(x, y, z, ang);
 
     if (!IsPositionValid())
     {

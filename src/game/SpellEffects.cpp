@@ -3784,7 +3784,7 @@ void Spell::EffectSummon(uint32 i)
 
     // Summon in dest location
     float x,y,z;
-    if (m_targets.m_targetMask & TARGET_FLAG_DEST_LOCATION)
+    if (m_targets.HasDst())
     {
         x = m_targets.m_destX;
         y = m_targets.m_destY;
@@ -4564,6 +4564,7 @@ void Spell::EffectTameCreature(uint32 /*i*/)
 void Spell::EffectSummonPet(uint32 i)
 {
     Player *owner = NULL;
+    printf("\ntest1");
     if (m_originalCaster)
     {
         if (m_originalCaster->GetTypeId() == TYPEID_PLAYER)
@@ -4571,12 +4572,14 @@ void Spell::EffectSummonPet(uint32 i)
         else if (((Creature*)m_originalCaster)->isTotem())
             owner = m_originalCaster->GetCharmerOrOwnerPlayerOrPlayerItself();
     }
+    printf("\ntest1");
 
     if (!owner)
     {
         EffectSummonWild(i);
         return;
     }
+    printf("\ntest1");
 
     uint32 petentry = m_spellInfo->EffectMiscValue[i];
 
@@ -4585,6 +4588,7 @@ void Spell::EffectSummonPet(uint32 i)
     // if pet requested type already exist
     if (OldSummon)
     {
+    printf("\ntest1");
         if (petentry == 0 || OldSummon->GetEntry() == petentry)
         {
             // pet in corpse state can't be summoned
@@ -4595,8 +4599,18 @@ void Spell::EffectSummonPet(uint32 i)
             OldSummon->SetMapId(owner->GetMapId());
 
             float px, py, pz;
-            owner->GetClosePoint(px, py, pz, OldSummon->GetObjectSize());
 
+            if (m_targets.HasDst())
+            {
+    printf("\ntest1");
+                px = m_targets.m_destX;
+                py = m_targets.m_destY;
+                pz = m_targets.m_destZ;
+            }
+            else
+                owner->GetClosePoint(px, py, pz, OldSummon->GetObjectSize());
+
+    printf("\ntest1");
             OldSummon->Relocate(px, py, pz, OldSummon->GetOrientation());
             owner->GetMap()->Add((Creature*)OldSummon);
 
@@ -4614,16 +4628,17 @@ void Spell::EffectSummonPet(uint32 i)
     }
 
     float x, y, z;
-    if (petentry == 19668) // Shadowfiend: summon at target feet !;p
+    if (m_targets.HasDst())
     {
-        if (Unit *target = m_targets.getUnitTarget())
-            target->GetClosePoint(x, y, z, target->GetObjectSize());
-        else
-            owner->GetClosePoint(x, y, z, owner->GetObjectSize());
+    printf("\ntest1");
+        x = m_targets.m_destX;
+        y = m_targets.m_destY;
+        z = m_targets.m_destZ;
     }
     else
         owner->GetClosePoint(x, y, z, owner->GetObjectSize());
 
+    printf("\ntest8: %f, %f, %f", x, y, z);
     Pet* pet = owner->SummonPet(petentry, x, y, z, owner->GetOrientation(), SUMMON_PET, 0);
     if (!pet)
         return;
@@ -5155,9 +5170,9 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         }
         // Unbanish Azaloth
         case 37834:
-        {                                                             
-            if (unitTarget->HasAura(37833,0))   
-            {   
+        {
+            if (unitTarget->HasAura(37833,0))
+            {
                 unitTarget->RemoveAurasDueToSpell(37833);
 
                 if (m_caster->GetTypeId() == TYPEID_PLAYER)

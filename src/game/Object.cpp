@@ -1723,7 +1723,7 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
     if (pCreature->IsAIEnabled)
     {
         pCreature->AI()->JustRespawned();
-        
+
         if (GetTypeId() == TYPEID_UNIT || GetTypeId() == TYPEID_PLAYER)
             pCreature->AI()->IsSummonedBy((Unit*)this);
     }
@@ -1755,7 +1755,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
 {
     Pet* pet = new Pet(petType);
 
-    if (petType == SUMMON_PET && pet->LoadPetFromDB(this, entry))
+    if (petType == SUMMON_PET && pet->LoadPetFromDB(this, entry, 0, false, x, y, z, ang))
     {
         // Remove Demonic Sacrifice auras (known pet)
         Unit::AuraList const& auraClassScripts = GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
@@ -1772,6 +1772,13 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
 
         if (duration > 0)
             pet->SetDuration(duration);
+
+        if (entry == 19668)
+        {
+            pet->SetReactState(REACT_AGGRESSIVE);
+            pet->clearUnitState(UNIT_STAT_FOLLOW);
+            pet->SendPetAIReaction(pet->GetGUID());
+        }
 
         return NULL;
     }
@@ -2216,7 +2223,7 @@ struct WorldObjectChangeAccumulator
 void WorldObject::BuildUpdate(UpdateDataMapType& data_map)
 {
      WorldObjectChangeAccumulator notifier(*this, data_map);
-    
+
     Cell::VisitWorldObjects(this, notifier, GetMap()->GetVisibilityDistance());
 
     ClearUpdateMask(false);

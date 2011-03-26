@@ -1798,8 +1798,6 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
 
             if (cur == TARGET_DST_TARGET_ENEMY || cur == TARGET_DEST_TARGET_ANY)
             {
-                if (m_caster->GetGUID() == target->GetGUID())
-                    printf("\n-.- sam na siem castujem mimo ze to gowno powinno na targeta castowac.\n");
                 m_targets.setDestination(target);
                 break;
             }
