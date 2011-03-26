@@ -226,7 +226,7 @@ void Log::Initialize()
         }
     }
 
-    m_whisplog_filename_format = m_logsDir + "whisps/whisp_%u_.log";
+    m_whisplog_filename_format = (m_logsDir.empty() ? "." : m_logsDir) + sConfig.GetStringDefault("WhispLogDir", "whisps/") + "whisp_%u_.log";
 
     charLogfile = openLogFile("CharLogFile","CharLogTimestamp","a");
 

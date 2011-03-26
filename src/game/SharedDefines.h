@@ -2289,5 +2289,6 @@ enum BanReturn
     BAN_SYNTAX_ERROR,
     BAN_NOTFOUND
 };
+
 #endif
 

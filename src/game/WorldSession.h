@@ -26,6 +26,7 @@
 #define __WORLDSESSION_H
 
 #include "Common.h"
+#include "Log.h"
 #include "QueryResult.h"
 
 class MailItemsInfo;
@@ -118,7 +119,7 @@ class TRINITY_DLL_SPEC WorldSession
 {
     friend class CharacterHandler;
     public:
-        WorldSession(uint32 id, WorldSocket *sock, uint32 sec, uint8 expansion, time_t mute_time, LocaleConstant locale, bool speciallog = false, uint16 opcDisabled = 0, bool wLog = false);
+        WorldSession(uint32 id, WorldSocket *sock, uint32 sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint64 speciallog = 0, uint16 opcDisabled = 0);
         ~WorldSession();
 
         bool PlayerLoading() const { return m_playerLoading; }
@@ -143,10 +144,10 @@ class TRINITY_DLL_SPEC WorldSession
         std::string const& GetRemoteAddress() { return m_Address; }
         void SetPlayer(Player *plr) { _player = plr; }
         uint8 Expansion() const { return m_expansion; }
-        bool SpecialLog() const { return m_speciallog; }
-        void SetSpecialLog(bool log){ m_speciallog = log; }
-        bool WhispLog() const { return m_whisplog; }
-        void SetWhispLog(bool log) { m_whisplog = log; }
+        bool SpecialLog() const { return m_speciallogs & SPECIAL_LOG; }
+        void SetSpecialLog(bool log){ log ? m_speciallogs |= SPECIAL_LOG : m_speciallogs &= ~SPECIAL_LOG; }
+        bool WhispLog() const { return m_speciallogs & WHISP_LOG; }
+        void SetWhispLog(bool log) { log ? m_speciallogs |= WHISP_LOG : m_speciallogs &= ~WHISP_LOG; }
 
         void SetOpcodeDisableFlag(uint16 flag);
         void RemoveOpcodeDisableFlag(uint16 flag);
@@ -703,7 +704,7 @@ class TRINITY_DLL_SPEC WorldSession
         bool m_playerSave;
         bool m_playerLogout;                                // code processed in LogoutPlayer
         bool m_playerRecentlyLogout;
-        bool m_speciallog;
+        uint64 m_speciallogs;
         bool m_whisplog;
         LocaleConstant m_sessionDbcLocale;
         int m_sessionDbLocaleIndex;

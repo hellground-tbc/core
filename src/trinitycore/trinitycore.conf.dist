@@ -365,6 +365,7 @@ ArenaLogFile = ""
 CheatLogFile = "cheat.log"
 ACLogFile = "AC.log"
 mailLogFile = "sendmail.log"
+WhispLogDir = "whisps/"
 LogColors = ""
 
 IrcParser = "parser.trc"

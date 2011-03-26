@@ -34,6 +34,12 @@ enum LogFilters
     LOG_FILTER_VISIBILITY_CHANGES = 4
 };
 
+enum SpecialLogs
+{
+    SPECIAL_LOG             = 0x00000001,
+    WHISP_LOG               = 0x00000002
+};
+
 enum Color
 {
     BLACK,

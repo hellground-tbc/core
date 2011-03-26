@@ -695,9 +695,8 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
                                 "expansion, "       //8
                                 "mutetime, "        //9
                                 "locale, "          //10
-                                "speciallog, "      //11
-                                "opcodesDisabled, " //12
-                                "whisplog "          //13
+                                "speciallogs, "     //11
+                                "opcodesDisabled "  //12
                                 "FROM account "
                                 "WHERE username = '%s'",
                                 safe_account.c_str ());
@@ -797,9 +796,8 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
     if (locale >= MAX_LOCALE)
         locale = LOCALE_enUS;
 
-    bool speciallog = fields[11].GetBool();
+    uint64 speciallogs = fields[11].GetUInt64();
     uint16 opcDis = fields[12].GetUInt16();
-    bool whisplog = fields[13].GetBool();
 
     // Re-check account ban (same check as in realmd)
     QueryResultAutoPtr banresult =
@@ -877,7 +875,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
                             safe_account.c_str ());
 
     // NOTE ATM the socket is singlethreaded, have this in mind ...
-    ACE_NEW_RETURN (m_Session, WorldSession (id, this, security, expansion, mutetime, locale, speciallog, opcDis, whisplog), -1);
+    ACE_NEW_RETURN (m_Session, WorldSession (id, this, security, expansion, mutetime, locale, speciallogs, opcDis), -1);
 
     m_Crypt.SetKey (&K);
     m_Crypt.Init ();
