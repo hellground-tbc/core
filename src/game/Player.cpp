@@ -17063,10 +17063,14 @@ void Player::Whisper(const std::string& text, uint32 language,uint64 receiver)
         WorldPacket data(SMSG_MESSAGECHAT, 200);
         BuildPlayerChat(&data, CHAT_MSG_WHISPER, text, language);
         rPlayer->GetSession()->SendPacket(&data);
+        if (rPlayer->GetSession()->WhispLog())
+            sLog.outWhisp(rPlayer->GetSession()->GetAccountId(), "[%s | %u] FROM: %u (%s) : %s ", rPlayer->GetName(), rPlayer->GetGUID(), GetGUID(), GetName(), text.c_str());
 
         data.Initialize(SMSG_MESSAGECHAT, 200);
         rPlayer->BuildPlayerChat(&data, CHAT_MSG_REPLY, text, language);
         GetSession()->SendPacket(&data);
+        if (GetSession()->WhispLog())
+            sLog.outWhisp(GetSession()->GetAccountId(), "[%s | %u] TO: %u (%s), %s", GetName(), GetGUID(), rPlayer->GetGUID(), rPlayer->GetName(), text.c_str());
     }
     else
     {

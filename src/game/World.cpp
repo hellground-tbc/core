@@ -228,7 +228,7 @@ void ACLogPlayer(std::string ip)
         return;
     }
 
-    sLog.outAC("AC: Cheat Detected! ip: %s", ip);
+    sLog.outAC("AC: Cheat Detected! ip: %s", ip.c_str());
 
     do
     {
@@ -236,7 +236,7 @@ void ACLogPlayer(std::string ip)
         uint32 account = acc_field->GetUInt32();
 
         if (WorldSession* sess = sWorld.FindSession(account))
-            sLog.outAC("AC: Player Name (ip: %s): %s", ip, sess->GetPlayerName());
+            sLog.outAC("AC: Player Name (ip: %s): %s", ip.c_str(), sess->GetPlayerName());
     }
     while (result->NextRow());
 }

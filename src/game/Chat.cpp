@@ -54,6 +54,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "onlinelist",     SEC_CONSOLE,        true,  &ChatHandler::HandleAccountOnlineListCommand,   "", NULL },
         { "log",            SEC_MODERATOR,      true,  &ChatHandler::HandleAccountSpecialLogCommand,   "", NULL },
         { "set",            SEC_ADMINISTRATOR,  true,  NULL,                                           "", accountSetCommandTable },
+        { "whisp",          SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleAccountWhispLogCommand,     "", NULL },
         { "",               SEC_PLAYER,         false, &ChatHandler::HandleAccountCommand,             "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };

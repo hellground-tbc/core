@@ -226,6 +226,8 @@ void Log::Initialize()
         }
     }
 
+    m_whisplog_filename_format = m_logsDir + "whisps/whisp_%u_.log";
+
     charLogfile = openLogFile("CharLogFile","CharLogTimestamp","a");
 
     dberLogfile = openLogFile("DBErrorLogFile",NULL,"a");
@@ -287,6 +289,16 @@ FILE* Log::openGmlogPerAccount(uint32 account)
 
     char namebuf[TRINITY_PATH_MAX];
     snprintf(namebuf,TRINITY_PATH_MAX,m_gmlog_filename_format.c_str(),account);
+    return fopen(namebuf, "a");
+}
+
+FILE* Log::openWhisplogPerAccount(uint32 account)
+{
+    if(m_whisplog_filename_format.empty())
+        return NULL;
+
+    char namebuf[TRINITY_PATH_MAX];
+    snprintf(namebuf,TRINITY_PATH_MAX,m_whisplog_filename_format.c_str(),account);
     return fopen(namebuf, "a");
 }
 
@@ -786,6 +798,20 @@ void Log::outSpecial(const char * str, ... )
         fprintf(specialLogFile, "\n" );
         va_end(ap);
         fflush(specialLogFile);
+    }
+}
+
+void Log::outWhisp(uint32 account, const char * str, ...)
+{
+    if (FILE* per_file = openWhisplogPerAccount(account))
+    {
+        va_list ap;
+        outTimestamp(per_file);
+        va_start(ap, str);
+        vfprintf(per_file, str, ap);
+        fprintf(per_file, "\n" );
+        va_end(ap);
+        fclose(per_file);
     }
 }
 

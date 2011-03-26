@@ -684,19 +684,20 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
 
     QueryResultAutoPtr result =
           LoginDatabase.PQuery ("SELECT "
-                                "id, "            //0
-                                "gmlevel, "       //1
-                                "sessionkey, "    //2
-                                "last_ip, "       //3
-                                "locked, "        //4
-                                "sha_pass_hash, " //5
-                                "v, "             //6
-                                "s, "             //7
-                                "expansion, "     //8
-                                "mutetime, "      //9
-                                "locale, "         //10
-                                "speciallog, "     //11
-                                "opcodesDisabled "  //12
+                                "id, "              //0
+                                "gmlevel, "         //1
+                                "sessionkey, "      //2
+                                "last_ip, "         //3
+                                "locked, "          //4
+                                "sha_pass_hash, "   //5
+                                "v, "               //6
+                                "s, "               //7
+                                "expansion, "       //8
+                                "mutetime, "        //9
+                                "locale, "          //10
+                                "speciallog, "      //11
+                                "opcodesDisabled, " //12
+                                "whisplog "          //13
                                 "FROM account "
                                 "WHERE username = '%s'",
                                 safe_account.c_str ());
@@ -798,6 +799,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
 
     bool speciallog = fields[11].GetBool();
     uint16 opcDis = fields[12].GetUInt16();
+    bool whisplog = fields[13].GetBool();
 
     // Re-check account ban (same check as in realmd)
     QueryResultAutoPtr banresult =
@@ -875,7 +877,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
                             safe_account.c_str ());
 
     // NOTE ATM the socket is singlethreaded, have this in mind ...
-    ACE_NEW_RETURN (m_Session, WorldSession (id, this, security, expansion, mutetime, locale, speciallog, opcDis), -1);
+    ACE_NEW_RETURN (m_Session, WorldSession (id, this, security, expansion, mutetime, locale, speciallog, opcDis, whisplog), -1);
 
     m_Crypt.SetKey (&K);
     m_Crypt.Init ();

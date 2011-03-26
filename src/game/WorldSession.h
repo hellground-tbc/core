@@ -118,7 +118,7 @@ class TRINITY_DLL_SPEC WorldSession
 {
     friend class CharacterHandler;
     public:
-        WorldSession(uint32 id, WorldSocket *sock, uint32 sec, uint8 expansion, time_t mute_time, LocaleConstant locale, bool speciallog = false, uint16 opcDisabled = 0);
+        WorldSession(uint32 id, WorldSocket *sock, uint32 sec, uint8 expansion, time_t mute_time, LocaleConstant locale, bool speciallog = false, uint16 opcDisabled = 0, bool wLog = false);
         ~WorldSession();
 
         bool PlayerLoading() const { return m_playerLoading; }
@@ -145,6 +145,8 @@ class TRINITY_DLL_SPEC WorldSession
         uint8 Expansion() const { return m_expansion; }
         bool SpecialLog() const { return m_speciallog; }
         void SetSpecialLog(bool log){ m_speciallog = log; }
+        bool WhispLog() const { return m_whisplog; }
+        void SetWhispLog(bool log) { m_whisplog = log; }
 
         void SetOpcodeDisableFlag(uint16 flag);
         void RemoveOpcodeDisableFlag(uint16 flag);
@@ -702,6 +704,7 @@ class TRINITY_DLL_SPEC WorldSession
         bool m_playerLogout;                                // code processed in LogoutPlayer
         bool m_playerRecentlyLogout;
         bool m_speciallog;
+        bool m_whisplog;
         LocaleConstant m_sessionDbcLocale;
         int m_sessionDbLocaleIndex;
         uint32 m_latency;

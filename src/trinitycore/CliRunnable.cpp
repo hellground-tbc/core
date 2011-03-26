@@ -327,6 +327,29 @@ bool ChatHandler::HandleAccountSpecialLogCommand(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleAccountWhispLogCommand(const char* args)
+{
+    if(!*args)
+        return false;
+
+    if(uint32 account_id = accmgr.GetId(args))
+    {
+        if(WorldSession *s = sWorld.FindSession(account_id))
+            s->SetWhispLog(!(s->WhispLog()));
+
+        LoginDatabase.PExecute("UPDATE account SET whisplog = !whisplog WHERE id = '%u'", account_id);
+        PSendSysMessage("WhispLog has been updated.");
+    }
+    else
+    {
+        PSendSysMessage("Specified account not found.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    return true;
+}
+
 /// Set the level of logging
 bool ChatHandler::HandleServerSetLogLevelCommand(const char *args)
 {

@@ -132,7 +132,7 @@ class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ACE_
         void outChar( const char * str, ... )        ATTR_PRINTF(2,3);
         void outSpecial( const char * str, ... )     ATTR_PRINTF(2,3);
         void outMail( const char * str, ... )     ATTR_PRINTF(2,3);
-                                                            // any log level
+        void outWhisp( uint32 account, const char * str, ...) ATTR_PRINTF(3,4);
         void outCharDump( const char * str, uint32 account_id, uint32 guid, const char * name );
         void outArena( const char * str, ... )       ATTR_PRINTF(2,3);
         void outCheat( const char * str, ... )       ATTR_PRINTF(2,3);
@@ -165,6 +165,7 @@ class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ACE_
         FILE* specialLogFile;
         FILE* mailLogFile;
         FILE* bossLogFile;
+        FILE* openWhisplogPerAccount(uint32 account);
 
         // log/console control
         uint32 m_logLevel;
@@ -185,6 +186,8 @@ class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ACE_
         bool m_gmlog_per_account;
 
         std::string m_gmlog_filename_format;
+
+        std::string m_whisplog_filename_format;
 };
 
 #define sLog Trinity::Singleton<Log>::Instance()
