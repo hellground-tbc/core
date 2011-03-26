@@ -4564,7 +4564,6 @@ void Spell::EffectTameCreature(uint32 /*i*/)
 void Spell::EffectSummonPet(uint32 i)
 {
     Player *owner = NULL;
-    printf("\ntest1");
     if (m_originalCaster)
     {
         if (m_originalCaster->GetTypeId() == TYPEID_PLAYER)
@@ -4572,14 +4571,12 @@ void Spell::EffectSummonPet(uint32 i)
         else if (((Creature*)m_originalCaster)->isTotem())
             owner = m_originalCaster->GetCharmerOrOwnerPlayerOrPlayerItself();
     }
-    printf("\ntest1");
 
     if (!owner)
     {
         EffectSummonWild(i);
         return;
     }
-    printf("\ntest1");
 
     uint32 petentry = m_spellInfo->EffectMiscValue[i];
 
@@ -4588,7 +4585,6 @@ void Spell::EffectSummonPet(uint32 i)
     // if pet requested type already exist
     if (OldSummon)
     {
-    printf("\ntest1");
         if (petentry == 0 || OldSummon->GetEntry() == petentry)
         {
             // pet in corpse state can't be summoned
@@ -4602,7 +4598,6 @@ void Spell::EffectSummonPet(uint32 i)
 
             if (m_targets.HasDst())
             {
-    printf("\ntest1");
                 px = m_targets.m_destX;
                 py = m_targets.m_destY;
                 pz = m_targets.m_destZ;
@@ -4610,7 +4605,6 @@ void Spell::EffectSummonPet(uint32 i)
             else
                 owner->GetClosePoint(px, py, pz, OldSummon->GetObjectSize());
 
-    printf("\ntest1");
             OldSummon->Relocate(px, py, pz, OldSummon->GetOrientation());
             owner->GetMap()->Add((Creature*)OldSummon);
 
@@ -4630,7 +4624,6 @@ void Spell::EffectSummonPet(uint32 i)
     float x, y, z;
     if (m_targets.HasDst())
     {
-    printf("\ntest1");
         x = m_targets.m_destX;
         y = m_targets.m_destY;
         z = m_targets.m_destZ;
@@ -4638,7 +4631,6 @@ void Spell::EffectSummonPet(uint32 i)
     else
         owner->GetClosePoint(x, y, z, owner->GetObjectSize());
 
-    printf("\ntest8: %f, %f, %f", x, y, z);
     Pet* pet = owner->SummonPet(petentry, x, y, z, owner->GetOrientation(), SUMMON_PET, 0);
     if (!pet)
         return;
