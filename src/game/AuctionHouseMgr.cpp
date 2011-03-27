@@ -710,8 +710,8 @@ void AuctionEntry::DeleteFromDB() const
 void AuctionEntry::SaveToDB() const
 {
     static SqlStatementID saveAuction;
-    
     SqlStatement stmt = CharacterDatabase.CreateStatement(saveAuction, "INSERT INTO auctionhouse (id,auctioneerguid,itemguid,item_template,itemowner,buyoutprice,time,buyguid,lastbid,startbid,deposit) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
     stmt.addUInt32(Id);
     stmt.addUInt32(auctioneer);
     stmt.addUInt32(item_guidlow);

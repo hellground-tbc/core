@@ -638,12 +638,12 @@ void ArenaTeam::SaveToDB()
 
     stmt.Execute();
 
-    stmt = CharacterDatabase.CreateStatement(updateAMembers, "UPDATE arena_team_member SET played_week = ?, wons_week = ?, played_season = ?, wons_season = ?, personal_rating = ? WHERE arenateamid = ? AND guid = ?");
-
     // save team and member stats to db
     // called after a match has ended, or when calculating arena_points
     for (MemberList::iterator itr = members.begin(); itr !=  members.end(); ++itr)
     {
+        stmt = CharacterDatabase.CreateStatement(updateAMembers, "UPDATE arena_team_member SET played_week = ?, wons_week = ?, played_season = ?, wons_season = ?, personal_rating = ? WHERE arenateamid = ? AND guid = ?");
+
         stmt.addUInt32(itr->games_week);
         stmt.addUInt32(itr->wins_week);
         stmt.addUInt32(itr->games_season);
