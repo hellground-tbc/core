@@ -19,6 +19,8 @@ SET(trinitydatabase_STAT_SRCS
    SQLStorage.cpp
    SQLStorage.h
    SQLStorageImpl.h
+   SqlPreparedStatement.cpp
+   SqlPreparedStatement.h
    SqlDelayThread.cpp
    SqlDelayThread.h
    SqlOperations.cpp
