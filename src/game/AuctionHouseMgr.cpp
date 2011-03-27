@@ -709,8 +709,20 @@ void AuctionEntry::DeleteFromDB() const
 
 void AuctionEntry::SaveToDB() const
 {
-    //No SQL injection (no strings)
-    CharacterDatabase.PExecute("INSERT INTO auctionhouse (id,auctioneerguid,itemguid,item_template,itemowner,buyoutprice,time,buyguid,lastbid,startbid,deposit) "
-        "VALUES ('%u', '%u', '%u', '%u', '%u', '%u', '" UI64FMTD "', '%u', '%u', '%u', '%u')",
-        Id, auctioneer, item_guidlow, item_template, owner, buyout, (uint64)expire_time, bidder, bid, startbid, deposit);
+    static SqlStatementID saveAuction;
+    
+    SqlStatement stmt = CharacterDatabase.CreateStatement(saveAuction, "INSERT INTO auctionhouse (id,auctioneerguid,itemguid,item_template,itemowner,buyoutprice,time,buyguid,lastbid,startbid,deposit) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    stmt.addUInt32(Id);
+    stmt.addUInt32(auctioneer);
+    stmt.addUInt32(item_guidlow);
+    stmt.addUInt32(item_template);
+    stmt.addUInt32(owner);
+    stmt.addUInt32(buyout);
+    stmt.addUInt64(expire_time);
+    stmt.addUInt32(bidder);
+    stmt.addUInt32(bid);
+    stmt.addUInt32(startbid);
+    stmt.addUInt32(deposit);
+
+    stmt.Execute();
 }
