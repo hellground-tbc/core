@@ -1,1 +1,0 @@
-INSERT INTO `trinity_string` (`entry`,`content_default`) VALUES ('11002','You set weather %s.');

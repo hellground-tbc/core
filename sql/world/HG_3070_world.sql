@@ -1,1 +1,0 @@
-UPDATE `creature_template` SET `ScriptName`="npc_overlord_orbarokh" WHERE `entry`=21769;

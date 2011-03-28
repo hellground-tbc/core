@@ -341,7 +341,7 @@ void Item::SaveToDB()
             for (uint16 i = 0; i < m_valuesCount; i++)
                 ss << GetUInt32Value(i) << " ";
 
-            stmt.PExecute(GUID_LOPART(GetOwnerGUID()), ss.str().c_str(), guid);
+            stmt.PExecute(ss.str().c_str(), GUID_LOPART(GetOwnerGUID()), guid);
 
             if (HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_WRAPPED))
             {

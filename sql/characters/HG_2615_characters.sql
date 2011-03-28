@@ -1,1 +1,0 @@
-ALTER TABLE `characters` ADD COLUMN `instance_id` INT(11) UNSIGNED NOT NULL DEFAULT '0' AFTER `map`;

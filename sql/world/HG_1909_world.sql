@@ -1,1 +1,0 @@
-UPDATE gameobject_template SET faction=1375, flags=36 WHERE entry IN (184069, 184596, 184597);
