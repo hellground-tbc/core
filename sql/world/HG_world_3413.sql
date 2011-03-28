@@ -1,1 +1,0 @@
-UPDATE `creature_template` SET `ScriptName`="npc_master_omarion" where `entry`=16365;

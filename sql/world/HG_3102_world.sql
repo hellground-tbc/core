@@ -1,1 +1,0 @@
-INSERT INTO spell_proc_event values(41248,1,0,0,0,0,0,0,0);

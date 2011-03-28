@@ -1,1 +1,0 @@
-UPDATE world.creature_template SET scale = 2.0 WHERE entry = 18104 OR entry = 18095;
