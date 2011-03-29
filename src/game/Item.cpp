@@ -345,7 +345,7 @@ void Item::SaveToDB()
 
             if (HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_WRAPPED))
             {
-                stmt = CharacterDatabase.CreateStatement(updateGift, "UPDATE character_gifts SET guid = = ? WHERE item_guid = ?");
+                stmt = CharacterDatabase.CreateStatement(updateGift, "UPDATE character_gifts SET guid = ? WHERE item_guid = ?");
                 stmt.PExecute(GUID_LOPART(GetOwnerGUID()), GetGUIDLow());
             }
         }
