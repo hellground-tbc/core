@@ -1016,6 +1016,8 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
             me->SetVisibility(VISIBILITY_OFF);
             me->DestroyForNearbyPlayers();
         }
+
+        me->SetReactState(REACT_PASSIVE);
     }
 
     void MoveInLineOfSight(Unit *pWho)
