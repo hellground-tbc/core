@@ -63,11 +63,8 @@ void ConfusedMovementGenerator<T>::GenerateMovement(T &unit)
                 continue;
             }
         }
-        
-        if (unit.GetMap()->hasPosCollisionCalcEnabled())
-            continue;
 
-        VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(unit.GetMapId(), unit.GetPositionX(), unit.GetPositionY(),  unit.GetPositionZ(), i_waypoints[idx][0], i_waypoints[idx][1], i_waypoints[idx][2] +0.5f,  i_waypoints[idx][0], i_waypoints[idx][1], i_waypoints[idx][2], -1.0f);
+        VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(unit.GetMapId(), unit.GetPositionX(), unit.GetPositionY(),  unit.GetPositionZ(), i_waypoints[idx][0], i_waypoints[idx][1], i_waypoints[idx][2] +0.5f,  i_waypoints[idx][0], i_waypoints[idx][1], i_waypoints[idx][2], -2.0f);
     }
 }
 
