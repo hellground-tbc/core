@@ -16561,7 +16561,7 @@ void Player::_SaveInventory()
 
                 stmt.addUInt32(lowGuid);
                 stmt.addUInt32(bag_guid);
-                stmt.addInt8(item->GetSlot());
+                stmt.addUInt8(item->GetSlot());
                 stmt.addUInt32(item->GetGUIDLow());
                 stmt.addUInt32(item->GetEntry());
 

@@ -463,9 +463,9 @@ void Pet::SavePetToDB(PetSaveMode mode)
             stmt.addUInt32(getLevel());
             stmt.addUInt32(GetUInt32Value(UNIT_FIELD_PETEXPERIENCE));
             stmt.addUInt32(uint32(GetReactState()));
-            stmt.addUInt32(m_loyaltyPoints);
+            stmt.addInt32(m_loyaltyPoints);
             stmt.addUInt32(GetLoyaltyLevel());
-            stmt.addUInt32(m_TrainingPoints);
+            stmt.addInt32(m_TrainingPoints);
             stmt.addUInt32(uint32(mode));
             stmt.addString(name);
             stmt.addUInt32(uint32((GetByteValue(UNIT_FIELD_BYTES_2, 2) == UNIT_RENAME_ALLOWED) ? 0 : 1));
