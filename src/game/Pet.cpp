@@ -434,7 +434,7 @@ void Pet::SavePetToDB(PetSaveMode mode)
             static SqlStatementID updateCharacterPetSlotTo3;
             // remove current data
             SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCharacterPetOwner, "DELETE FROM character_pet WHERE owner = ? AND id = ?");
-            stmt.PExecute(owner,m_charmInfo->GetPetNumber());
+            stmt.PExecute(owner, m_charmInfo->GetPetNumber());
 
             // prevent duplicate using slot (except PET_SAVE_NOT_IN_SLOT)
             if (mode!=PET_SAVE_NOT_IN_SLOT)
@@ -468,7 +468,6 @@ void Pet::SavePetToDB(PetSaveMode mode)
             stmt.addUInt32(m_TrainingPoints);
             stmt.addUInt32(uint32(mode));
             stmt.addString(name);
-            stmt.addUInt64(time(NULL));
             stmt.addUInt32(uint32((GetByteValue(UNIT_FIELD_BYTES_2, 2) == UNIT_RENAME_ALLOWED) ? 0 : 1));
             stmt.addUInt32(curhealth);
             stmt.addUInt32(curmana);
@@ -492,6 +491,7 @@ void Pet::SavePetToDB(PetSaveMode mode)
 
             stmt.addString(ss2);
 
+            stmt.addUInt64(time(NULL));
             stmt.addUInt32(uint32(m_resetTalentsCost));
             stmt.addUInt64(uint64(m_resetTalentsTime));
             stmt.addUInt32(GetUInt32Value(UNIT_CREATED_BY_SPELL));

@@ -1674,20 +1674,13 @@ InstanceGroupBind* Group::BindToInstance(InstanceSave *save, bool permanent, boo
             // when a boss is killed or when copying the player's binds to the group
             if ((permanent != bind.perm || save != bind.save) && !load)
             {
-                static SqlStatementID updateGroupInstance;
-                SqlStatement stmt = CharacterDatabase.CreateStatement(updateGroupInstance, "UPDATE group_instance SET instance = ?, permanent = ? WHERE leaderGuid = ? AND instance = ?");
-                stmt.addUInt32(save->GetInstanceId());
-                stmt.addBool(permanent);
-                stmt.addUInt64(GUID_LOPART(GetLeaderGUID()));
-                stmt.addUInt32(bind.save->GetInstanceId());
+                CharacterDatabase.PExecute("UPDATE group_instance SET instance = '%u', permanent = '%u' WHERE leaderGuid = '%u' AND instance = '%u'", save->GetInstanceId(), permanent, GUID_LOPART(GetLeaderGUID()), bind.save->GetInstanceId());
             }
         }
         else
             if (!load)
             {
-                static SqlStatementID insertGroupInstance;
-                SqlStatement stmt = CharacterDatabase.CreateStatement(insertGroupInstance, "INSERT INTO group_instance (leaderGuid, instance, permanent) VALUES(?, ?, ?);");
-                stmt.PExecute(GUID_LOPART(GetLeaderGUID()), save->GetInstanceId(), permanent);
+                CharacterDatabase.PExecute("INSERT INTO group_instance (leaderGuid, instance, permanent) VALUES ('%u', '%u', '%u')", GUID_LOPART(GetLeaderGUID()), save->GetInstanceId(), permanent);
             }
 
         if (bind.save != save)
