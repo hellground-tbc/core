@@ -448,6 +448,21 @@ void WorldSession::HandleAcceptTradeOpcode(WorldPacket& /*recvPacket*/)
                     _player->GetName(),_player->GetSession()->GetAccountId());
             }
         }
+            
+            if (_player->tradeGold > 0)
+            {
+                sLog.outMail("Player %s (Account: %u) give money (Amount: %u) to player: %s (Account: %u)",
+                    _player->GetName(),_player->GetSession()->GetAccountId(),
+                    _player->tradeGold,
+                    _player->pTrader->GetName(),_player->pTrader->GetSession()->GetAccountId());
+            }
+            if (_player->pTrader->tradeGold > 0)
+            {
+                sLog.outMail("Player %s (Account: %u) give money (Amount: %u) to player: %s (Account: %u)",
+                    _player->pTrader->GetName(),_player->pTrader->GetSession()->GetAccountId(),
+                    _player->pTrader->tradeGold,
+                    _player->GetName(),_player->GetSession()->GetAccountId());
+            }
 
         // update money
         _player->ModifyMoney(-int32(_player->tradeGold));

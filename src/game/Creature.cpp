@@ -1261,29 +1261,33 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
     // updated in DB
     WorldDatabase.BeginTransaction();
 
-    WorldDatabase.PExecuteLog("DELETE FROM creature WHERE guid = '%u'", m_DBTableGuid);
+    static SqlStatementID saveCreature;
+    static SqlStatementID deleteCreature;
 
-    std::ostringstream ss;
-    ss << "INSERT INTO creature VALUES ("
-        << m_DBTableGuid << ","
-        << GetEntry() << ","
-        << mapid <<","
-        << (uint32)spawnMask << ","
-        << displayId <<","
-        << GetEquipmentId() <<","
-        << GetPositionX() << ","
-        << GetPositionY() << ","
-        << GetPositionZ() << ","
-        << GetOrientation() << ","
-        << m_respawnDelay << ","                            //respawn time
-        << (float) m_respawnradius << ","                   //spawn distance (float)
-        << (uint32) (0) << ","                              //currentwaypoint
-        << GetHealth() << ","                               //curhealth
-        << GetPower(POWER_MANA) << ","                      //curmana
-        << (m_isDeadByDefault ? 1 : 0) << ","               //is_dead
-        << GetDefaultMovementType() << ")";                 //default movement generator type
+    SqlStatement stmt = WorldDatabase.CreateStatement(deleteCreature,"DELETE FROM creature WHERE guid = ?");
+    stmt.PExecute(m_DBTableGuid);
 
-    WorldDatabase.PExecuteLog(ss.str().c_str());
+    stmt = WorldDatabase.CreateStatement(saveCreature, "INSERT INTO creature VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+    stmt.addUInt64(m_DBTableGuid);
+    stmt.addUInt32(GetEntry());
+    stmt.addUInt32(mapid);
+    stmt.addUInt32(spawnMask);
+    stmt.addUInt32(displayId);
+    stmt.addUInt32(GetEquipmentId());
+    stmt.addFloat(GetPositionX());
+    stmt.addFloat(GetPositionY());
+    stmt.addFloat(GetPositionZ());
+    stmt.addFloat(GetOrientation());
+    stmt.addUInt32(m_respawnDelay);
+    stmt.addFloat(m_respawnradius);
+    stmt.addUInt32(0);
+    stmt.addUInt32(GetHealth());
+    stmt.addUInt32(GetPower(POWER_MANA));
+    stmt.addUInt32(m_isDeadByDefault ? 1 : 0);
+    stmt.addUInt32(GetDefaultMovementType());
+
+    stmt.Execute();
 
     WorldDatabase.CommitTransaction();
 }
@@ -1774,7 +1778,6 @@ void Creature::Respawn()
         if (poolid)
             poolhandler.UpdatePool(poolid, GetGUIDLow(), TYPEID_UNIT);
     }
-    SetToNotify();
 }
 
 void Creature::ForcedDespawn(uint32 timeMSToDespawn)

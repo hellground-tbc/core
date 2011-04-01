@@ -1455,6 +1455,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         bool isVisibleForOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
         bool canDetectInvisibilityOf(Unit const* u) const;
         bool canDetectStealthOf(Unit const* u, float distance) const;
+        void UpdateObjectVisibility(bool forced = true);
 
         // virtual functions for all world objects types
         bool isVisibleForInState(Player const* u, bool inVisibleList) const;
@@ -1634,12 +1635,6 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         void AddPetAura(PetAura const* petSpell);
         void RemovePetAura(PetAura const* petSpell);
 
-        // relocation notification
-        void SetToNotify();
-        bool m_Notified;
-        int32 m_NotifyListPos;
-        float oldX, oldY;
-
         void SetReducedThreatPercent(uint32 pct, uint64 guid)
         {
             m_reducedThreatPercent = pct;
@@ -1655,6 +1650,8 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         void SetFlying(bool apply);
 
         bool HasEventAISummonedUnits ();
+
+        bool preventApplyPersistentAA(SpellEntry const *spellInfo, uint8 eff_index);
 
         bool IsAIEnabled, NeedChangeAI;
     protected:

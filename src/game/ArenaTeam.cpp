@@ -624,12 +624,35 @@ void ArenaTeam::UpdateArenaPointsHelper(std::map<uint32, uint32>& PlayerPoints)
 
 void ArenaTeam::SaveToDB()
 {
+    static SqlStatementID updateATeam;
+    static SqlStatementID updateAMembers;
+
+    SqlStatement stmt = CharacterDatabase.CreateStatement(updateATeam, "UPDATE arena_team_stats SET rating = ?, games = ?, played = ?, rank = ?, wins = ?, wins2 = ? WHERE arenateamid = ?");
+    stmt.addUInt32(stats.rating);
+    stmt.addUInt32(stats.games_week);
+    stmt.addUInt32(stats.games_season);
+    stmt.addUInt32(stats.rank);
+    stmt.addUInt32(stats.wins_week);
+    stmt.addUInt32(stats.wins_season);
+    stmt.addUInt32(GetId());
+
+    stmt.Execute();
+
     // save team and member stats to db
     // called after a match has ended, or when calculating arena_points
-    CharacterDatabase.PExecute("UPDATE arena_team_stats SET rating = '%u',games = '%u',played = '%u',rank = '%u',wins = '%u',wins2 = '%u' WHERE arenateamid = '%u'", stats.rating, stats.games_week, stats.games_season, stats.rank, stats.wins_week, stats.wins_season, GetId());
     for (MemberList::iterator itr = members.begin(); itr !=  members.end(); ++itr)
     {
-        CharacterDatabase.PExecute("UPDATE arena_team_member SET played_week = '%u', wons_week = '%u', played_season = '%u', wons_season = '%u', personal_rating = '%u' WHERE arenateamid = '%u' AND guid = '%u'", itr->games_week, itr->wins_week, itr->games_season, itr->wins_season, itr->personal_rating, Id, itr->guid);
+        stmt = CharacterDatabase.CreateStatement(updateAMembers, "UPDATE arena_team_member SET played_week = ?, wons_week = ?, played_season = ?, wons_season = ?, personal_rating = ? WHERE arenateamid = ? AND guid = ?");
+
+        stmt.addUInt32(itr->games_week);
+        stmt.addUInt32(itr->wins_week);
+        stmt.addUInt32(itr->games_season);
+        stmt.addUInt32(itr->wins_season);
+        stmt.addUInt32(itr->personal_rating);
+        stmt.addUInt32(Id);
+        stmt.addUInt32(itr->guid);
+
+        stmt.Execute();
     }
 }
 

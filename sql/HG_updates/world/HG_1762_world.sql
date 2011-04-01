@@ -1,1 +1,0 @@
-UPDATE quest_end_scripts SET command = 19, datalong = 1, datalong2 = 0, dataint = 0 WHERE id = 10850;

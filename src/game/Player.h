@@ -2063,9 +2063,11 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         void UpdateVisibilityOf(WorldObject* target);
         void SendInitialVisiblePackets(Unit* target);
+        void UpdateObjectVisibility(bool forced = true);
+        void UpdateVisibilityForPlayer();
 
         template<class T>
-            void UpdateVisibilityOf(T* target, UpdateData& data, std::set<WorldObject*>& visibleNow);
+            void UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& visibleNow);
 
         // Stealth detection system
         uint32 m_DetectInvTimer;

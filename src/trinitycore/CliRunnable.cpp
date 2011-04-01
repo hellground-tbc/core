@@ -311,11 +311,27 @@ bool ChatHandler::HandleAccountSpecialLogCommand(const char* args)
 
     if(uint32 account_id = accmgr.GetId(args))
     {
-        if(WorldSession *s = sWorld.FindSession(account_id))
+        QueryResultAutoPtr result = LoginDatabase.PQuery("SELECT speciallogs FROM account WHERE id = '%u'", account_id);
+        if (!result)
+            return false;
+
+        Field * fields = result->Fetch();
+
+        uint64 speciallogs = fields[0].GetUInt64();
+
+        if (WorldSession *s = sWorld.FindSession(account_id))
             s->SetSpecialLog(!(s->SpecialLog()));
 
-        LoginDatabase.PExecute("UPDATE account SET speciallog = !speciallog WHERE id = '%u'", account_id);
-        PSendSysMessage("SpecialLog has been updated.");
+        if (speciallogs & SPECIAL_LOG)
+        {
+            LoginDatabase.PExecute("UPDATE account SET speciallogs = speciallogs &~ 0x01 WHERE id = '%u'", account_id);
+            PSendSysMessage("SpecialLog disabled.");
+        }
+        else
+        {
+            LoginDatabase.PExecute("UPDATE account SET speciallogs = speciallogs | 0x01 WHERE id = '%u'", account_id);
+            PSendSysMessage("SpecialLog enabled.");
+        }
     }
     else
     {
@@ -334,11 +350,27 @@ bool ChatHandler::HandleAccountWhispLogCommand(const char* args)
 
     if(uint32 account_id = accmgr.GetId(args))
     {
+        QueryResultAutoPtr result = LoginDatabase.PQuery("SELECT speciallogs FROM account WHERE id = '%u'", account_id);
+        if (!result)
+            return false;
+
+        Field * fields = result->Fetch();
+
+        uint64 speciallogs = fields[0].GetUInt64();
+
         if(WorldSession *s = sWorld.FindSession(account_id))
             s->SetWhispLog(!(s->WhispLog()));
 
-        LoginDatabase.PExecute("UPDATE account SET whisplog = !whisplog WHERE id = '%u'", account_id);
-        PSendSysMessage("WhispLog has been updated.");
+        if (speciallogs & WHISP_LOG)
+        {
+            LoginDatabase.PExecute("UPDATE account SET speciallogs = speciallogs &~ 0x02 WHERE id = '%u'", account_id);
+            PSendSysMessage("WhispLog disabled.");
+        }
+        else
+        {
+            LoginDatabase.PExecute("UPDATE account SET speciallogs = speciallogs | 0x02 WHERE id = '%u'", account_id);
+            PSendSysMessage("WhispLog enabled.");
+        }
     }
     else
     {

@@ -1,1 +1,0 @@
-UPDATE world.creature_template SET ScriptName="mob_nether_vapor" WHERE entry=21002

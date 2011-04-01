@@ -400,11 +400,11 @@ void WorldSession::SendSpiritResurrect()
             _player->TeleportTo(corpseGrave->map_id, corpseGrave->x, corpseGrave->y, corpseGrave->z, _player->GetOrientation());
         // or update at original position
         else
-            _player->SetToNotify();
+            _player->UpdateObjectVisibility();
     }
     // or update at original position
     else
-        _player->SetToNotify();
+        _player->UpdateObjectVisibility();
 
     _player->SaveToDB();
 }

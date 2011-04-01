@@ -229,7 +229,7 @@ void MovementInfo::Write(ByteBuffer &data) const
 
 Unit::Unit()
 : WorldObject(), i_motionMaster(this), m_ThreatManager(this), m_HostilRefManager(this)
-, m_NotifyListPos(-1), m_Notified(false), IsAIEnabled(false), NeedChangeAI(false)
+, IsAIEnabled(false), NeedChangeAI(false)
 , i_AI(NULL), i_disabledAI(NULL), m_procDeep(0), m_AI_locked(false), m_removedAurasCount(0)
 {
     m_modAuras = new AuraList[TOTAL_AURAS];
@@ -351,6 +351,7 @@ void GlobalCooldownMgr::CancelGlobalCooldown(SpellEntry const* spellInfo)
 // Methods of class Unit
 Unit::~Unit()
 {
+    AttackStop();   // crashfix ... ale tego chyba tu nie powinno byc? Oo przydałoby sie znaleźć co jest nie tak że w destruktorze peta m_attacking nie jest NULLem
     // set current spells as deletable
     for (uint32 i = 0; i < CURRENT_MAX_SPELL; i++)
     {
@@ -6768,8 +6769,11 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         // Hunter: Expose Weakness
         case 34501:
         {
-            basepoints0 = int32(GetStat(STAT_AGILITY) *0.25);
-            break;
+            basepoints0 = int32(GetStat(STAT_AGILITY) *2.5);
+            int32 basepoints1 = int32(GetStat(STAT_AGILITY) *0.25);
+
+            CastCustomSpell(pVictim,trigger_spell_id,&basepoints0,&basepoints1,NULL,true,castItem,triggeredByAura);
+            return true;
         }
         // Shamanistic Rage triggered spell
         case 30824:
@@ -9375,11 +9379,10 @@ void Unit::SetVisibility(UnitVisibility x)
 {
     m_Visibility = x;
 
-    if (IsInWorld())
-        SetToNotify();
-
     if (x == VISIBILITY_GROUP_STEALTH)
         DestroyForNearbyPlayers();
+
+    UpdateObjectVisibility();
 }
 
 void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
@@ -10484,12 +10487,7 @@ uint32 Unit::GetCreatePowers(Powers power) const
 void Unit::AddToWorld()
 {
     if (!IsInWorld())
-    {
         WorldObject::AddToWorld();
-        m_Notified = false;
-        assert(m_NotifyListPos < 0); //instance : crash
-        SetToNotify();
-    }
 }
 
 void Unit::setHover(bool val)
@@ -10512,9 +10510,6 @@ void Unit::RemoveFromWorld()
     {
         RemoveBindSightAuras();
         RemoveNotOwnSingleTargetAuras();
-
-        if (m_NotifyListPos >= 0)
-            GetMap()->RemoveUnitFromNotify(this);
 
         WorldObject::RemoveFromWorld();
     }
@@ -11908,12 +11903,38 @@ void Unit::BuildHeartBeatMsg(WorldPacket *data) const
 }
 
 /*-----------------------TRINITY-----------------------------*/
-
-void Unit::SetToNotify()
+bool Unit::preventApplyPersistentAA(SpellEntry const *spellInfo, uint8 eff_index)
 {
-    // it is called somewhere when obj is not in world (crash when log in instance)
-    if (m_NotifyListPos < 0)
-        GetMap()->AddUnitToNotify(this);
+    bool unique = false;
+    switch (spellInfo->Id)
+    {
+        case 38575: //Toxic Spores
+        case 40253: //Molten Flame
+        case 31943: //Doomfire
+            unique = true;
+            break;
+    }
+
+    if (unique && HasAura(spellInfo->Id, eff_index))
+        return true;
+
+    if (GetTypeId() == TYPEID_UNIT && GetEntry() == 23111)
+        return true;
+
+    return false;
+}
+
+void Unit::UpdateObjectVisibility(bool forced)
+{
+    if (!forced)
+        AddToNotify(NOTIFY_VISIBILITY_CHANGED);
+    else
+    {
+        WorldObject::UpdateObjectVisibility(true);
+        // call MoveInLineOfSight for nearby creatures
+        Trinity::AIRelocationNotifier notifier(*this);
+        Cell::VisitAllObjects(this, notifier, GetMap()->GetVisibilityDistance());
+    }
 }
 
 void Unit::Kill(Unit *pVictim, bool durabilityLoss)

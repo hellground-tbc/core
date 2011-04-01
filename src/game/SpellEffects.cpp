@@ -3784,7 +3784,7 @@ void Spell::EffectSummon(uint32 i)
 
     // Summon in dest location
     float x,y,z;
-    if (m_targets.m_targetMask & TARGET_FLAG_DEST_LOCATION)
+    if (m_targets.HasDst())
     {
         x = m_targets.m_destX;
         y = m_targets.m_destY;
@@ -4595,7 +4595,15 @@ void Spell::EffectSummonPet(uint32 i)
             OldSummon->SetMapId(owner->GetMapId());
 
             float px, py, pz;
-            owner->GetClosePoint(px, py, pz, OldSummon->GetObjectSize());
+
+            if (m_targets.HasDst())
+            {
+                px = m_targets.m_destX;
+                py = m_targets.m_destY;
+                pz = m_targets.m_destZ;
+            }
+            else
+                owner->GetClosePoint(px, py, pz, OldSummon->GetObjectSize());
 
             OldSummon->Relocate(px, py, pz, OldSummon->GetOrientation());
             owner->GetMap()->Add((Creature*)OldSummon);
@@ -4614,12 +4622,11 @@ void Spell::EffectSummonPet(uint32 i)
     }
 
     float x, y, z;
-    if (petentry == 19668) // Shadowfiend: summon at target feet !;p
+    if (m_targets.HasDst())
     {
-        if (Unit *target = m_targets.getUnitTarget())
-            target->GetClosePoint(x, y, z, target->GetObjectSize());
-        else
-            owner->GetClosePoint(x, y, z, owner->GetObjectSize());
+        x = m_targets.m_destX;
+        y = m_targets.m_destY;
+        z = m_targets.m_destZ;
     }
     else
         owner->GetClosePoint(x, y, z, owner->GetObjectSize());
@@ -5155,9 +5162,9 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         }
         // Unbanish Azaloth
         case 37834:
-        {                                                             
-            if (unitTarget->HasAura(37833,0))   
-            {   
+        {
+            if (unitTarget->HasAura(37833,0))
+            {
                 unitTarget->RemoveAurasDueToSpell(37833);
 
                 if (m_caster->GetTypeId() == TYPEID_PLAYER)

@@ -106,14 +106,28 @@ void Corpse::SaveToDB()
     CharacterDatabase.BeginTransaction();
     DeleteFromDB();
 
+    static SqlStatementID saveCorpse;
+    SqlStatement stmt = CharacterDatabase.CreateStatement(saveCorpse, "INSERT INTO corpse (guid,player,position_x,position_y,position_z,orientation,zone,map,data,time,corpse_type,instance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+    stmt.addUInt64(GetGUIDLow());
+    stmt.addUInt64(GUID_LOPART(GetOwnerGUID()));
+    stmt.addFloat(GetPositionX());
+    stmt.addFloat(GetPositionY());
+    stmt.addFloat(GetPositionZ());
+    stmt.addFloat(GetOrientation());
+    stmt.addUInt32(GetZoneId());
+    stmt.addUInt32(GetMapId());
+    
     std::ostringstream ss;
-    ss  << "INSERT INTO corpse (guid,player,position_x,position_y,position_z,orientation,zone,map,data,time,corpse_type,instance) VALUES ("
-        << GetGUIDLow() << ", " << GUID_LOPART(GetOwnerGUID()) << ", " << GetPositionX() << ", " << GetPositionY() << ", " << GetPositionZ() << ", "
-        << GetOrientation() << ", "  << GetZoneId() << ", "  << GetMapId() << ", '";
     for (uint16 i = 0; i < m_valuesCount; i++)
         ss << GetUInt32Value(i) << " ";
-    ss << "'," << uint64(m_time) <<", " << uint32(GetType()) << ", " << int(GetInstanceId()) << ")";
-    CharacterDatabase.Execute(ss.str().c_str());
+
+    stmt.addString(ss);
+    stmt.addUInt64(m_time);
+    stmt.addUInt32(GetType());
+    stmt.addInt32(GetInstanceId());
+
+    stmt.Execute();
     CharacterDatabase.CommitTransaction();
 }
 

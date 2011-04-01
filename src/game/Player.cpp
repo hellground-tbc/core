@@ -1668,13 +1668,13 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         return false;
 
     // 449 - Champions' Hall (Alliance) // 450 - Hall of Legends (Horde)
-    if (mapid == 449 && GetTeam()==HORDE)
+    if (mapid == 449 && GetTeam()==HORDE && !isGameMaster())
     {
         GetSession()->SendNotification(LANG_NO_ENTER_CHAMPIONS_HALL);
         return false;
     }
 
-    if (mapid == 450 && GetTeam() == ALLIANCE)
+    if (mapid == 450 && GetTeam() == ALLIANCE && !isGameMaster())
     {
         GetSession()->SendNotification(LANG_NO_ENTER_HALL_OF_LEGENDS);
         return false;
@@ -2303,8 +2303,7 @@ void Player::SetGameMaster(bool on)
         getHostilRefManager().setOnlineOfflineState(true);
     }
 
-    //ObjectAccessor::UpdateVisibilityForPlayer(this);
-    SetToNotify();
+    UpdateObjectVisibility();
 }
 
 void Player::SetGMVisible(bool on)
@@ -4111,7 +4110,7 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
     }
 
     // update visibility
-    SetToNotify();
+    UpdateObjectVisibility();
 
     // some items limited to specific map
     DestroyZoneLimitedItem(true, GetZoneId());
@@ -5567,6 +5566,9 @@ bool Player::SetPosition(float x, float y, float z, float orientation, bool tele
     // Unit::SetPosition() checks for validity and updates our coordinates
     // so we re-fetch them instead of using "raw" coordinates from function params
     UpdateUnderwaterState(GetMap(), GetPositionX(), GetPositionY(), GetPositionZ());
+
+    if(GetTrader() && !IsWithinDistInMap(GetTrader(), 5))
+        GetSession()->SendCancelTrade();
 
     CheckAreaExploreAndOutdoor();
     return true;
@@ -18502,6 +18504,33 @@ bool Player::IsVisibleGloballyfor (Player* u) const
     return true;
 }
 
+template<class T>
+inline void UpdateVisibilityOf_helper(std::set<uint64>& s64, T* target, std::set<Unit*>& v)
+{
+    s64.insert(target->GetGUID());
+}
+
+template<>
+inline void UpdateVisibilityOf_helper(std::set<uint64>& s64, GameObject* target, std::set<Unit*>& v)
+{
+    if(!target->IsTransport())
+        s64.insert(target->GetGUID());
+}
+
+template<>
+inline void UpdateVisibilityOf_helper(std::set<uint64>& s64, Creature* target, std::set<Unit*>& v)
+{
+    s64.insert(target->GetGUID());
+    v.insert(target);
+}
+
+template<>
+inline void UpdateVisibilityOf_helper(std::set<uint64>& s64, Player* target, std::set<Unit*>& v)
+{
+    s64.insert(target->GetGUID());
+    v.insert(target);
+}
+
 void Player::UpdateVisibilityOf(WorldObject* target)
 {
     if (HaveAtClient(target))
@@ -18576,20 +18605,7 @@ void Player::SendInitialVisiblePackets(Unit* target)
 }
 
 template<class T>
-inline void UpdateVisibilityOf_helper(std::set<uint64>& s64, T* target)
-{
-    s64.insert(target->GetGUID());
-}
-
-template<>
-inline void UpdateVisibilityOf_helper(std::set<uint64>& s64, GameObject* target)
-{
-    if (!target->IsTransport())
-        s64.insert(target->GetGUID());
-}
-
-template<class T>
-void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<WorldObject*>& visibleNow)
+void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& visibleNow)
 {
     if (!target)
     return;
@@ -18610,9 +18626,8 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<WorldObjec
     {
         if (target->isVisibleForInState(this,false))
         {
-            visibleNow.insert(target);
             target->BuildCreateUpdateBlockForPlayer(&data, this);
-            UpdateVisibilityOf_helper(m_clientGUIDs,target);
+            UpdateVisibilityOf_helper(m_clientGUIDs,target,visibleNow);
 
             #ifdef TRINITY_DEBUG
             if ((sLog.getLogFilter() & LOG_FILTER_VISIBILITY_CHANGES)==0)
@@ -18622,11 +18637,32 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<WorldObjec
     }
 }
 
-template void Player::UpdateVisibilityOf(Player*        target, UpdateData& data, std::set<WorldObject*>& visibleNow);
-template void Player::UpdateVisibilityOf(Creature*      target, UpdateData& data, std::set<WorldObject*>& visibleNow);
-template void Player::UpdateVisibilityOf(Corpse*        target, UpdateData& data, std::set<WorldObject*>& visibleNow);
-template void Player::UpdateVisibilityOf(GameObject*    target, UpdateData& data, std::set<WorldObject*>& visibleNow);
-template void Player::UpdateVisibilityOf(DynamicObject* target, UpdateData& data, std::set<WorldObject*>& visibleNow);
+template void Player::UpdateVisibilityOf(Player*        target, UpdateData& data, std::set<Unit*>& visibleNow);
+template void Player::UpdateVisibilityOf(Creature*      target, UpdateData& data, std::set<Unit*>& visibleNow);
+template void Player::UpdateVisibilityOf(Corpse*        target, UpdateData& data, std::set<Unit*>& visibleNow);
+template void Player::UpdateVisibilityOf(GameObject*    target, UpdateData& data, std::set<Unit*>& visibleNow);
+template void Player::UpdateVisibilityOf(DynamicObject* target, UpdateData& data, std::set<Unit*>& visibleNow);
+
+void Player::UpdateObjectVisibility(bool forced)
+{
+    if (!forced)
+        AddToNotify(NOTIFY_VISIBILITY_CHANGED);
+    else
+    {
+        Unit::UpdateObjectVisibility(true);
+        // updates visibility of all objects around point of view for current player
+        Trinity::VisibleNotifier notifier(*this);
+        Cell::VisitAllObjects(this, notifier, GetMap()->GetVisibilityDistance());
+        notifier.SendToSelf();   // send gathered data
+    }
+}
+
+void Player::UpdateVisibilityForPlayer()
+{
+    Trinity::VisibleNotifier notifier(*this);
+    Cell::VisitAllObjects(this, notifier, GetMap()->GetVisibilityDistance());
+    notifier.SendToSelf();   // send gathered data
+}
 
 void Player::InitPrimaryProffesions()
 {

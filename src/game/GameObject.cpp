@@ -602,27 +602,33 @@ void GameObject::SaveToDB(uint32 mapid, uint8 spawnMask)
     data.ArtKit = GetUInt32Value (GAMEOBJECT_ARTKIT);
 
     // updated in DB
-    std::ostringstream ss;
-    ss << "INSERT INTO gameobject VALUES ("
-        << m_DBTableGuid << ", "
-        << GetUInt32Value (OBJECT_FIELD_ENTRY) << ", "
-        << mapid << ", "
-        << (uint32)spawnMask << ", "
-        << GetFloatValue(GAMEOBJECT_POS_X) << ", "
-        << GetFloatValue(GAMEOBJECT_POS_Y) << ", "
-        << GetFloatValue(GAMEOBJECT_POS_Z) << ", "
-        << GetFloatValue(GAMEOBJECT_FACING) << ", "
-        << GetFloatValue(GAMEOBJECT_ROTATION) << ", "
-        << GetFloatValue(GAMEOBJECT_ROTATION+1) << ", "
-        << GetFloatValue(GAMEOBJECT_ROTATION+2) << ", "
-        << GetFloatValue(GAMEOBJECT_ROTATION+3) << ", "
-        << m_respawnDelayTime << ", "
-        << uint32(GetGoAnimProgress()) << ", "
-        << uint32(GetGoState()) << ")";
+    static SqlStatementID saveGameObject;
+    static SqlStatementID deleteGameObject;
 
     WorldDatabase.BeginTransaction();
-    WorldDatabase.PExecuteLog("DELETE FROM gameobject WHERE guid = '%u'", m_DBTableGuid);
-    WorldDatabase.PExecuteLog(ss.str().c_str());
+
+    SqlStatement stmt = WorldDatabase.CreateStatement(deleteGameObject,"DELETE FROM gameobject WHERE guid = ?");
+    stmt.PExecute(m_DBTableGuid);
+
+    stmt = WorldDatabase.CreateStatement(saveGameObject,"INSERT INTO gameobject VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+    stmt.addUInt64(m_DBTableGuid);
+    stmt.addUInt32(GetUInt32Value(OBJECT_FIELD_ENTRY));
+    stmt.addUInt32(mapid);
+    stmt.addUInt32(spawnMask);
+    stmt.addFloat(GetFloatValue(GAMEOBJECT_POS_X));
+    stmt.addFloat(GetFloatValue(GAMEOBJECT_POS_Y));
+    stmt.addFloat(GetFloatValue(GAMEOBJECT_POS_Z));
+    stmt.addFloat(GetFloatValue(GAMEOBJECT_FACING));
+    stmt.addFloat(GetFloatValue(GAMEOBJECT_ROTATION));
+    stmt.addFloat(GetFloatValue(GAMEOBJECT_ROTATION+1));
+    stmt.addFloat(GetFloatValue(GAMEOBJECT_ROTATION+2));
+    stmt.addFloat(GetFloatValue(GAMEOBJECT_ROTATION+3));
+    stmt.addUInt32(m_respawnDelayTime);
+    stmt.addUInt32(GetGoAnimProgress());
+    stmt.addUInt32(GetGoState());
+
+    stmt.Execute();
     WorldDatabase.CommitTransaction();
 }
 

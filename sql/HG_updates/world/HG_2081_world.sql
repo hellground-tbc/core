@@ -1,1 +1,0 @@
-UPDATE world.creature_template SET speed = 1.2 WHERE entry=20062;

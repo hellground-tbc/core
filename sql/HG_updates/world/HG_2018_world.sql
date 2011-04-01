@@ -1,1 +1,0 @@
-UPDATE spell_proc_event SET cooldown = 15 WHERE entry = 23688;

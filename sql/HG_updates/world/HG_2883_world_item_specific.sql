@@ -1,1 +1,0 @@
-UPDATE `item_template` set `ScriptName` = 'item_specific_target' WHERE `entry` IN(25552, 22473, 34368, 29513, 32680, 30251);

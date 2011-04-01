@@ -1,6 +1,7 @@
-add_subdirectory(updates)
 add_subdirectory(tools)
-add_subdirectory(HG_updates)
+add_subdirectory(characters)
+add_subdirectory(realmd)
+add_subdirectory(world)
 
 
 ########### install files ###############
