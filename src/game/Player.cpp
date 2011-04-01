@@ -16322,6 +16322,7 @@ void Player::_SaveActions()
         switch (itr->second.uState)
         {
             case ACTIONBUTTON_NEW:
+            {
                 SqlStatement stmt = CharacterDatabase.CreateStatement(insertCharacterAction, "INSERT INTO character_action(guid, button, action, type, misc) VALUES(?, ?, ?, ?, ?);");
                 stmt.addUInt32(GetGUIDLow());
                 stmt.addUInt32((uint32)itr->first);
@@ -16333,7 +16334,9 @@ void Player::_SaveActions()
                 itr->second.uState = ACTIONBUTTON_UNCHANGED;
                 ++itr;
                 break;
+            }
             case ACTIONBUTTON_CHANGED:
+            {
                 SqlStatement stmt = CharacterDatabase.CreateStatement(updateCharacterAction, "UPDATE character_action SET action = ?, type = ?, misc = ? WHERE guid = ? AND button = ?");
                 stmt.addUInt32((uint32)itr->second.action);
                 stmt.addUInt32((uint32)itr->second.type);
@@ -16345,12 +16348,15 @@ void Player::_SaveActions()
                 itr->second.uState = ACTIONBUTTON_UNCHANGED;
                 ++itr;
                 break;
+            }
             case ACTIONBUTTON_DELETED:
+            {
                 SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCharacterAction, "DELETE FROM character_action WHERE guid = ? and button = ?");
                 stmt.PExecute(GetGUIDLow(), (uint32)itr->first);
 
                 m_actionButtons.erase(itr++);
                 break;
+            }
             default:
                 ++itr;
                 break;
@@ -16555,6 +16561,7 @@ void Player::_SaveInventory()
         switch (item->GetState())
         {
             case ITEM_NEW:
+            {
                 SqlStatement stmt = CharacterDatabase.CreateStatement(insertCharacterInventoryItem, "INSERT INTO character_inventory(guid, bag, slot, item, item_template) VALUES(?, ?, ?, ?, ?);");
 
                 stmt.addUInt32(lowGuid);
@@ -16565,7 +16572,9 @@ void Player::_SaveInventory()
 
                 stmt.Execute();
                 break;
+            }
             case ITEM_CHANGED:
+            {
                 SqlStatement stmt = CharacterDatabase.CreateStatement(updateCharacterInventoryItem, "UPDATE character_inventory SET guid = ?, bag = ?, slot = ?, item_template = ? WHERE item = ?");
 
                 stmt.addUInt32(lowGuid);
@@ -16576,10 +16585,13 @@ void Player::_SaveInventory()
 
                 stmt.Execute();
                 break;
+            }
             case ITEM_REMOVED:
+            {
                 SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCharacterInventoryItem, "DELETE FROM character_inventory WHERE item = ?");
                 stmt.PExecute(item->GetGUIDLow());
                 break;
+            }
             case ITEM_UNCHANGED:
                 break;
         }
@@ -16684,6 +16696,7 @@ void Player::_SaveQuestStatus()
         switch (i->second.uState)
         {
             case QUEST_NEW :
+            {
                 SqlStatement stmt = CharacterDatabase.CreateStatement(insertCharacterQuestStatus, "INSERT INTO character_queststatus(guid, quest, status, rewarded, explored, timer, mobcount1, mobcount2, mobcount3, mobcount4, itemcount1, itemcount2, itemcount3, itemcount4)"
                                                                                         " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
                 stmt.addUInt32(GetGUIDLow());
@@ -16703,7 +16716,9 @@ void Player::_SaveQuestStatus()
 
                 stmt.Execute();
                 break;
+            }
             case QUEST_CHANGED :
+            {
                 SqlStatement stmt = CharacterDatabase.CreateStatement(updateCharacterQuestStatus, "UPDATE character_queststatus SET status = ?, rewarded = ?, explored = ?, timer = ?, mobcount1 = ?, mobcount2 = ?, mobcount3 = ?, mobcount4 = ?, itemcount1 = ?, itemcount2 = ?, itemcount3 = ?, itemcount4 = ? WHERE guid = ? AND quest = ?");
 
                 stmt.addUInt32(i->second.m_status);
@@ -16723,6 +16738,7 @@ void Player::_SaveQuestStatus()
 
                 stmt.Execute();
                 break;
+            }
             case QUEST_UNCHANGED:
                 break;
         };

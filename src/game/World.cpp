@@ -2215,11 +2215,13 @@ BanReturn World::BanAccount(BanMode mode, std::string nameIPOrMail, std::string 
     switch (mode)
     {
         case BAN_IP:
+        {
             //No SQL injection as strings are escaped
             resultAccounts = LoginDatabase.PQuery("SELECT id FROM account WHERE last_ip = '%s'",nameIPOrMail.c_str());
             SqlStatement stmt = LoginDatabase.CreateStatement(insertIpBan, "INSERT INTO ip_banned VALUES (?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()+?, ?, ?);");
             stmt.PExecute(nameIPOrMail.c_str(), duration_secs, safe_author.c_str(), reason.c_str());
             break;
+        }
         case BAN_ACCOUNT:
             //No SQL injection as string is escaped
             resultAccounts = LoginDatabase.PQuery("SELECT id FROM account WHERE username = '%s'",nameIPOrMail.c_str());
@@ -2229,10 +2231,12 @@ BanReturn World::BanAccount(BanMode mode, std::string nameIPOrMail, std::string 
             resultAccounts = CharacterDatabase.PQuery("SELECT account FROM characters WHERE name = '%s'",nameIPOrMail.c_str());
             break;
         case BAN_EMAIL:
+        {
             resultAccounts = LoginDatabase.PQuery("SELECT account FROM account WHERE email = '%s'",nameIPOrMail.c_str());
             SqlStatement stmt = LoginDatabase.CreateStatement(insertMailBan, "INSERT INTO email_banned VALUES(?, UNIX_TIMESTAMP(), ?, ?);");
             stmt.PExecute(nameIPOrMail.c_str(), safe_author.c_str(), reason.c_str());
             break;
+        }
         default:
             return BAN_SYNTAX_ERROR;
     }
@@ -2277,17 +2281,22 @@ bool World::RemoveBanAccount(BanMode mode, std::string nameIPOrMail)
     switch (mode)
     {
         case BAN_IP:
+        {
             LoginDatabase.escape_string(nameIPOrMail);
             SqlStatement stmt = LoginDatabase.CreateStatement(deleteIpBanned, "DELETE FROM ip_banned WHERE ip = ?");
             stmt.PExecute(nameIPOrMail.c_str());
             break;
+        }
         case BAN_EMAIL:
+        {
             LoginDatabase.escape_string(nameIPOrMail);
             SqlStatement stmt = LoginDatabase.CreateStatement(deleteMailBanned, "DELETE FROM email_banned WHERE email = ?");
             stmt.PExecute(nameIPOrMail.c_str());
             break;
+        }
         case BAN_ACCOUNT:
         case BAN_CHARACTER:
+        {
             uint32 account = 0;
             if (mode == BAN_ACCOUNT)
                 account = accmgr.GetId (nameIPOrMail);
@@ -2301,6 +2310,7 @@ bool World::RemoveBanAccount(BanMode mode, std::string nameIPOrMail)
             SqlStatement stmt = LoginDatabase.CreateStatement(deleteAccountBanned, "UPDATE account_banned SET active = '0' WHERE id = ?");
             stmt.PExecute(account);
             break;
+        }
     }
     return true;
 }

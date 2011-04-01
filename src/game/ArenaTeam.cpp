@@ -475,35 +475,47 @@ void ArenaTeam::SetStats(uint32 stat_type, uint32 value)
     switch (stat_type)
     {
         case STAT_TYPE_RATING:
+        {
             stats.rating = value;
             SqlStatement stmt = CharacterDatabase.CreateStatement(updateArenaTeamStatRating, "UPDATE arena_team_stats SET rating = ? WHERE arenateamid = ?");
             stmt.PExecute(value, GetId());
             break;
+        }
         case STAT_TYPE_GAMES_WEEK:
+        {
             stats.games_week = value;
             SqlStatement stmt = CharacterDatabase.CreateStatement(updateArenaTeamStatGamesWeek, "UPDATE arena_team_stats SET games = ? WHERE arenateamid = ?");
             stmt.PExecute(value, GetId());
             break;
+        }
         case STAT_TYPE_WINS_WEEK:
+        {
             stats.wins_week = value;
             SqlStatement stmt = CharacterDatabase.CreateStatement(updateArenaTeamStatWinsWeek, "UPDATE arena_team_stats SET wins = ? WHERE arenateamid = ?");
             stmt.PExecute(value, GetId());
             break;
+        }
         case STAT_TYPE_GAMES_SEASON:
+        {
             stats.games_season = value;
             SqlStatement stmt = CharacterDatabase.CreateStatement(updateArenaTeamStatGamesSeason, "UPDATE arena_team_stats SET played = ? WHERE arenateamid = ?");
             stmt.PExecute(value, GetId());
             break;
+        }
         case STAT_TYPE_WINS_SEASON:
+        {
             stats.wins_season = value;
             SqlStatement stmt = CharacterDatabase.CreateStatement(updateArenaTeamStatWinsSeason, "UPDATE arena_team_stats SET wins2 = ? WHERE arenateamid = ?");
             stmt.PExecute(value, GetId());
             break;
+        }
         case STAT_TYPE_RANK:
+        {
             stats.rank = value;
             SqlStatement stmt = CharacterDatabase.CreateStatement(updateArenaTeamStatRank, "UPDATE arena_team_stats SET rank = ? WHERE arenateamid = ?");
             stmt.PExecute(value, GetId());
             break;
+        }
         default:
             sLog.outDebug("unknown stat type in ArenaTeam::SetStats() %u", stat_type);
             break;
