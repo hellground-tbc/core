@@ -61,3 +61,50 @@ EndScriptData */
 //Spectral Horse
 #define SPELL_STOMP                 27993
 
+struct TRINITY_DLL_DECL boss_gothikAI : public ScriptedAI
+{
+    boss_gothikAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
+
+    ScriptedInstance* pInstance;
+
+    void Reset()
+    {
+        if (pInstance && pInstance->GetData(DATA_GOTHIK_THE_HARVESTER) != DONE)
+            pInstance->SetData(DATA_GOTHIK_THE_HARVESTER, NOT_STARTED);
+    }
+
+    void EnterCombat(Unit *who)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_GOTHIK_THE_HARVESTER, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_GOTHIK_THE_HARVESTER, DONE);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim())
+            return;
+        DoMeleeAttackIfReady();
+    }
+};
+CreatureAI* GetAI_boss_gothik(Creature *_Creature)
+{
+    return new boss_gothikAI (_Creature);
+}
+void AddSC_boss_gothik()
+{
+    Script *newscript;
+
+    newscript = new Script;
+    newscript->Name="boss_gothik";
+    newscript->GetAI = &GetAI_boss_gothik;
+    newscript->RegisterSelf();
+}

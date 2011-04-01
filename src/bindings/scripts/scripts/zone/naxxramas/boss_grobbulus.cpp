@@ -30,3 +30,50 @@ Enrages 26527*/
 #include "precompiled.h"
 #include "def_naxxramas.h"
 
+struct TRINITY_DLL_DECL boss_grobbulusAI : public ScriptedAI
+{
+    boss_grobbulusAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
+
+    ScriptedInstance* pInstance;
+
+    void Reset()
+    {
+        if (pInstance && pInstance->GetData(DATA_GROBBULUS) != DONE)
+            pInstance->SetData(DATA_GROBBULUS, NOT_STARTED);
+    }
+
+    void EnterCombat(Unit *who)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_GROBBULUS, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_GROBBULUS, DONE);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim())
+            return;
+        DoMeleeAttackIfReady();
+    }
+};
+CreatureAI* GetAI_boss_grobbulus(Creature *_Creature)
+{
+    return new boss_grobbulusAI (_Creature);
+}
+void AddSC_boss_grobbulus()
+{
+    Script *newscript;
+
+    newscript = new Script;
+    newscript->Name="boss_grobbulus";
+    newscript->GetAI = &GetAI_boss_grobbulus;
+    newscript->RegisterSelf();
+}

@@ -46,3 +46,50 @@ EndScriptData */
 //Spell by eye stalks
 #define SPELL_MIND_FLAY     26143
 
+struct TRINITY_DLL_DECL boss_heiganAI : public ScriptedAI
+{
+    boss_heiganAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
+
+    ScriptedInstance* pInstance;
+
+    void Reset()
+    {
+        if (pInstance && pInstance->GetData(DATA_HEIGAN_THE_UNCLEAN) != DONE)
+            pInstance->SetData(DATA_HEIGAN_THE_UNCLEAN, NOT_STARTED);
+    }
+
+    void EnterCombat(Unit *who)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_HEIGAN_THE_UNCLEAN, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_HEIGAN_THE_UNCLEAN, DONE);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim())
+            return;
+        DoMeleeAttackIfReady();
+    }
+};
+CreatureAI* GetAI_boss_heigan(Creature *_Creature)
+{
+    return new boss_heiganAI (_Creature);
+}
+void AddSC_boss_heigan()
+{
+    Script *newscript;
+
+    newscript = new Script;
+    newscript->Name="boss_heigan";
+    newscript->GetAI = &GetAI_boss_heigan;
+    newscript->RegisterSelf();
+}
