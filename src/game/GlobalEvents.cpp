@@ -58,7 +58,7 @@ static void CorpsesEraseCallBack(QueryResultAutoPtr result, bool bones)
             {
                 sLog.outDebug("Corpse %u not found in world or bones creating forbidden. Delete from DB.",guidlow);
                 static SqlStatementID deleteBones;
-                SqlStatement stmt = CharacterDatabase.CreateStatement(deleteBones, "DELETE FROM corpse WHERE guid = ?;");
+                SqlStatement stmt = CharacterDatabase.CreateStatement(deleteBones, "DELETE FROM corpse WHERE guid = ?");
                 stmt.PExecute(guidlow);
             }
         }
@@ -69,7 +69,7 @@ static void CorpsesEraseCallBack(QueryResultAutoPtr result, bool bones)
 
             ///- remove bones from the database
             static SqlStatementID deleteBones;
-            SqlStatement stmt = CharacterDatabase.CreateStatement(deleteBones, "DELETE FROM corpse WHERE guid = ?;");
+            SqlStatement stmt = CharacterDatabase.CreateStatement(deleteBones, "DELETE FROM corpse WHERE guid = ?");
             stmt.PExecute(guidlow);
         }
     }

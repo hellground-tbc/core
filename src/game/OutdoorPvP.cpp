@@ -177,7 +177,7 @@ bool OPvPCapturePoint::DelCreature(uint32 type)
 
     static SqlStatementID deleteCreatureRespawn;
     // delete respawn time for this creature
-    SqlStatement stmt = WorldDatabase.CreateStatement(deleteCreatureRespawn, "DELETE FROM creature_respawn WHERE guid = ?;");
+    SqlStatement stmt = WorldDatabase.CreateStatement(deleteCreatureRespawn, "DELETE FROM creature_respawn WHERE guid = ?");
     stmt.PExecute(guid);
 
     cr->AddObjectToRemoveList();

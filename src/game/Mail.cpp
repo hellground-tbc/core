@@ -256,7 +256,7 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data)
 
                 static SqlStatementID updateItemInstanceOwner;
 
-                SqlStatement stmt = CharacterDatabase.CreateStatement(updateItemInstanceOwner, "UPDATE item_instance SET owner_guid = ? WHERE guid = ?;");
+                SqlStatement stmt = CharacterDatabase.CreateStatement(updateItemInstanceOwner, "UPDATE item_instance SET owner_guid = ? WHERE guid = ?");
                 stmt.PExecute(GUID_LOPART(rc), mailItem.item->GetGUIDLow());
 
                 CharacterDatabase.CommitTransaction();
@@ -427,7 +427,7 @@ void WorldSession::SendReturnToSender(uint8 messageType, uint32 sender_acc, uint
             // owner in data will set at mail receive and item extracting
 
             static SqlStatementID updateItemInstanceOwner;
-            SqlStatement stmt = CharacterDatabase.CreateStatement(updateItemInstanceOwner, "UPDATE item_instance SET owner_guid = ? WHERE guid = ?;");
+            SqlStatement stmt = CharacterDatabase.CreateStatement(updateItemInstanceOwner, "UPDATE item_instance SET owner_guid = ? WHERE guid = ?");
 
             stmt.PExecute(receiver_guid, mailItem.item->GetGUIDLow());
         }

@@ -462,14 +462,14 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResultAutoPtr result)
 void Item::DeleteFromDB()
 {
     static SqlStatementID deleteItemInstance;
-    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteItemInstance, "DELETE FROM item_instance WHERE guid = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteItemInstance, "DELETE FROM item_instance WHERE guid = ?");
     stmt.PExecute(GetGUIDLow());
 }
 
 void Item::DeleteFromInventoryDB()
 {
     static SqlStatementID deleteCharacterInventoryItem;
-    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCharacterInventoryItem, "DELETE FROM character_inventory WHERE item = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCharacterInventoryItem, "DELETE FROM character_inventory WHERE item = ?");
     stmt.PExecute(GetGUIDLow());
 }
 

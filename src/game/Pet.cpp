@@ -257,10 +257,10 @@ bool Pet::LoadPetFromDB(Unit* owner, uint32 petentry, uint32 petnumber, bool cur
 
         CharacterDatabase.BeginTransaction();
 
-        SqlStatement stmt = CharacterDatabase.CreateStatement(updateCharacterPetSlot3, "UPDATE character_pet SET slot = '3' WHERE owner = ? AND slot = '0' AND id <> ?;");
+        SqlStatement stmt = CharacterDatabase.CreateStatement(updateCharacterPetSlot3, "UPDATE character_pet SET slot = '3' WHERE owner = ? AND slot = '0' AND id <> ?");
         stmt.PExecute(ownerid, m_charmInfo->GetPetNumber());
 
-        stmt = CharacterDatabase.CreateStatement(updateCharacterPetSlot0, "UPDATE character_pet SET slot = '0' WHERE owner = ? AND id = ?;");
+        stmt = CharacterDatabase.CreateStatement(updateCharacterPetSlot0, "UPDATE character_pet SET slot = '0' WHERE owner = ? AND id = ?");
         stmt.PExecute(ownerid, m_charmInfo->GetPetNumber());
 
         CharacterDatabase.CommitTransaction();
@@ -433,13 +433,13 @@ void Pet::SavePetToDB(PetSaveMode mode)
             static SqlStatementID deleteCharacterPetInSlot03;
             static SqlStatementID updateCharacterPetSlotTo3;
             // remove current data
-            SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCharacterPetOwner, "DELETE FROM character_pet WHERE owner = ? AND id = ?;");
+            SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCharacterPetOwner, "DELETE FROM character_pet WHERE owner = ? AND id = ?");
             stmt.PExecute(owner,m_charmInfo->GetPetNumber());
 
             // prevent duplicate using slot (except PET_SAVE_NOT_IN_SLOT)
             if (mode!=PET_SAVE_NOT_IN_SLOT)
             {
-                stmt = CharacterDatabase.CreateStatement(updateCharacterPetSlotTo3, "UPDATE character_pet SET slot = 3 WHERE owner = ? AND slot = ?;");
+                stmt = CharacterDatabase.CreateStatement(updateCharacterPetSlotTo3, "UPDATE character_pet SET slot = 3 WHERE owner = ? AND slot = ?");
                 stmt.PExecute(owner, uint32(mode));
             }
 
@@ -522,19 +522,19 @@ void Pet::DeleteFromDB(uint32 guidlow, bool separate_transaction)
     static SqlStatementID deletePetSpells;
     static SqlStatementID deletePetSpellCooldowns;
 
-    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCharacterPet, "DELETE FROM character_pet WHERE id = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCharacterPet, "DELETE FROM character_pet WHERE id = ?");
     stmt.PExecute(guidlow);
 
-    stmt = CharacterDatabase.CreateStatement(deleteCharacterPetDeclinedNames, "DELETE FROM character_pet_declinedname WHERE id = ?;");
+    stmt = CharacterDatabase.CreateStatement(deleteCharacterPetDeclinedNames, "DELETE FROM character_pet_declinedname WHERE id = ?");
     stmt.PExecute(guidlow);
 
-    stmt = CharacterDatabase.CreateStatement(deletePetAuras, "DELETE FROM pet_aura WHERE guid = ?;");
+    stmt = CharacterDatabase.CreateStatement(deletePetAuras, "DELETE FROM pet_aura WHERE guid = ?");
     stmt.PExecute(guidlow);
 
-    stmt = CharacterDatabase.CreateStatement(deletePetSpells, "DELETE FROM pet_spell WHERE guid = ?;");
+    stmt = CharacterDatabase.CreateStatement(deletePetSpells, "DELETE FROM pet_spell WHERE guid = ?");
     stmt.PExecute(guidlow);
 
-    stmt = CharacterDatabase.CreateStatement(deletePetSpellCooldowns, "DELETE FROM pet_spell_cooldown WHERE guid = ?;");
+    stmt = CharacterDatabase.CreateStatement(deletePetSpellCooldowns, "DELETE FROM pet_spell_cooldown WHERE guid = ?");
     stmt.PExecute(guidlow);
 
     if (separate_transaction)
@@ -1371,7 +1371,7 @@ void Pet::_SaveSpellCooldowns()
     static SqlStatementID deletePetSpellCooldowns;
     static SqlStatementID insertPetSpellCooldown;
 
-    SqlStatement stmt = CharacterDatabase.CreateStatement(deletePetSpellCooldowns, "DELETE FROM pet_spell_cooldown WHERE guid = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(deletePetSpellCooldowns, "DELETE FROM pet_spell_cooldown WHERE guid = ?");
     stmt.PExecute(m_charmInfo->GetPetNumber());
 
     time_t curTime = time(NULL);
@@ -1419,7 +1419,7 @@ void Pet::_SaveSpells()
 
         if (itr->second->state == PETSPELL_REMOVED || itr->second->state == PETSPELL_CHANGED)
         {
-            SqlStatement stmt = CharacterDatabase.CreateStatement(deletePetSpell, "DELETE FROM pet_spell WHERE guid = ? and spell = ?;");
+            SqlStatement stmt = CharacterDatabase.CreateStatement(deletePetSpell, "DELETE FROM pet_spell WHERE guid = ? and spell = ?");
             stmt.PExecute(m_charmInfo->GetPetNumber(), itr->first);
         }
 
@@ -1516,7 +1516,7 @@ void Pet::_SaveAuras()
     static SqlStatementID deletePetAuras;
     static SqlStatementID insertPetAura;
 
-    SqlStatement stmt = CharacterDatabase.CreateStatement(deletePetAuras, "DELETE FROM pet_aura WHERE guid = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(deletePetAuras, "DELETE FROM pet_aura WHERE guid = ?");
     stmt.PExecute(m_charmInfo->GetPetNumber());
 
     AuraMap const& auras = GetAuras();

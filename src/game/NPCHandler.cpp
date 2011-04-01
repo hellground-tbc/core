@@ -442,7 +442,7 @@ void WorldSession::SendBindPoint(Creature *npc)
 
     static SqlStatementID updateCharacterHomebind;
     // update sql homebind
-    SqlStatement stmt = CharacterDatabase.CreateStatement(updateCharacterHomebind, "UPDATE character_homebind SET map = ?, zone = ?, position_x = ?, position_y = ?, position_z = ? WHERE guid = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(updateCharacterHomebind, "UPDATE character_homebind SET map = ?, zone = ?, position_x = ?, position_y = ?, position_z = ? WHERE guid = ?");
 
     stmt.addUInt32(_player->GetMapId());
     stmt.addUInt32(_player->GetZoneId());

@@ -193,8 +193,6 @@ class TRINITY_DLL_SPEC SqlStatement
     public:
         ~SqlStatement() { delete m_pParams; }
 
-        SqlStatement(){}
-
         SqlStatement(const SqlStatement& index) : m_index(index.m_index), m_pDB(index.m_pDB), m_pParams(NULL)
         {
             if(index.m_pParams)

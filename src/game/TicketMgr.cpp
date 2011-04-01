@@ -97,7 +97,7 @@ void TicketMgr::DeleteGMTicketPermanently(uint64 ticketGuid)
 
     // delete database record
     static SqlStatementID deleteTicket;
-    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteTicket, "DELETE FROM `gm_tickets` WHERE guid = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteTicket, "DELETE FROM `gm_tickets` WHERE guid = ?");
     stmt.PExecute(ticketGuid);
 }
 

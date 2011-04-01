@@ -137,16 +137,16 @@ void InstanceSaveManager::DeleteInstanceFromDB(uint32 instanceid)
 
     CharacterDatabase.BeginTransaction();
 
-    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteInstance, "DELETE FROM instance WHERE id = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteInstance, "DELETE FROM instance WHERE id = ?");
     stmt.PExecute(instanceid);
 
-    stmt = CharacterDatabase.CreateStatement(deleteGroupSavedLoot, "DELETE FROM group_saved_loot WHERE instanceId = ?;");
+    stmt = CharacterDatabase.CreateStatement(deleteGroupSavedLoot, "DELETE FROM group_saved_loot WHERE instanceId = ?");
     stmt.PExecute(instanceid);
 
     stmt = CharacterDatabase.CreateStatement(deleteCharactersInstance, "DELETE FROM character_instance WHERE instance = ?:");
     stmt.PExecute(instanceid);
 
-    stmt = CharacterDatabase.CreateStatement(deleteGroupInstance, "DELETE FROM group_instance WHERE instance = ?;");
+    stmt = CharacterDatabase.CreateStatement(deleteGroupInstance, "DELETE FROM group_instance WHERE instance = ?");
     stmt.PExecute(instanceid);
 
     CharacterDatabase.CommitTransaction();
@@ -162,7 +162,7 @@ void InstanceSaveManager::RemoveInstanceSave(uint32 InstanceId)
         if (time_t resettime = itr->second->GetResetTimeForDB())
         {
             static SqlStatementID updateInstanceResetTime;
-            SqlStatement stmt = CharacterDatabase.CreateStatement(updateInstanceResetTime, "UPDATE instance SET resettime = ? WHERE id = ?;");
+            SqlStatement stmt = CharacterDatabase.CreateStatement(updateInstanceResetTime, "UPDATE instance SET resettime = ? WHERE id = ?");
             stmt.addUInt64((uint64)resettime);
             stmt.addUInt32(InstanceId);
             stmt.Execute();

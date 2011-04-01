@@ -32,7 +32,7 @@ void InstanceData::SaveToDB()
 
     CharacterDatabase.escape_string(data);
     static SqlStatementID updateInstanceData;
-    SqlStatement stmt = CharacterDatabase.CreateStatement(updateInstanceData, "UPDATE instance SET data = ? WHERE id = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(updateInstanceData, "UPDATE instance SET data = ? WHERE id = ?");
 
     stmt.addString(data);
     stmt.addUInt32(instance->GetInstanceId());

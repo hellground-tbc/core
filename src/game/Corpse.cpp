@@ -149,17 +149,17 @@ void Corpse::DeleteFromDB()
 {
     static SqlStatementID deleteCorpse;
     static SqlStatementID deleteBones;
-    SqlStatement stmt;
+
     if (GetType() == CORPSE_BONES)
     {
         // only specific bones
-        stmt = CharacterDatabase.CreateStatement(deleteBones, "DELETE FROM corpse WHERE guid = ?;");
+        SqlStatement stmt = CharacterDatabase.CreateStatement(deleteBones, "DELETE FROM corpse WHERE guid = ?");
         stmt.PExecute(GetGUIDLow());
     }
     else
     {
         // all corpses (not bones)
-        stmt = CharacterDatabase.CreateStatement(deleteCorpse, "DELETE FROM corpse WHERE player = ? AND corpse_type <> '0';");
+        SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCorpse, "DELETE FROM corpse WHERE player = ? AND corpse_type <> '0';");
         stmt.PExecute(GUID_LOPART(GetOwnerGUID()));
     }
 }

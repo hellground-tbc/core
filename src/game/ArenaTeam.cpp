@@ -207,13 +207,13 @@ bool ArenaTeam::LoadArenaTeamFromDB(uint32 ArenaTeamId)
         // arena team is empty, delete from db
         CharacterDatabase.BeginTransaction();
 
-        SqlStatement stmt = CharacterDatabase.CreateStatement(deleteAT, "DELETE FROM arena_team WHERE arenateamid = ?;");
+        SqlStatement stmt = CharacterDatabase.CreateStatement(deleteAT, "DELETE FROM arena_team WHERE arenateamid = ?");
         stmt.PExecute(ArenaTeamId);
 
-        stmt = CharacterDatabase.CreateStatement(deleteATMs, "DELETE FROM arena_team_member WHERE arenateamid = ?;");
+        stmt = CharacterDatabase.CreateStatement(deleteATMs, "DELETE FROM arena_team_member WHERE arenateamid = ?");
         stmt.PExecute(ArenaTeamId);
 
-        stmt = CharacterDatabase.CreateStatement(deleteATS, "DELETE FROM arena_team_stats WHERE arenateamid = ?;");
+        stmt = CharacterDatabase.CreateStatement(deleteATS, "DELETE FROM arena_team_stats WHERE arenateamid = ?");
         stmt.PExecute(ArenaTeamId);
 
         CharacterDatabase.CommitTransaction();
@@ -279,7 +279,7 @@ void ArenaTeam::SetCaptain(const uint64& guid)
     CaptainGuid = guid;
 
     // update database
-    SqlStatement stmt = CharacterDatabase.CreateStatement(updateArenaTeamCaptain, "UPDATE arena_team SET captainguid = ? WHERE arenateamid = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(updateArenaTeamCaptain, "UPDATE arena_team SET captainguid = ? WHERE arenateamid = ?");
     stmt.PExecute(GUID_LOPART(guid), Id);
 
     // enable remove/promote buttons
@@ -316,7 +316,7 @@ void ArenaTeam::DelMember(uint64 guid)
         sLog.outArena("Player: %s [GUID: %u] left arena team type: %u [Id: %u].", player->GetName(), player->GetGUIDLow(), GetType(), GetId());
     }
     static SqlStatementID deleteArenaTeamMember;
-    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteArenaTeamMember, "DELETE FROM arena_team_member WHERE arenateamid = ? AND guid = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteArenaTeamMember, "DELETE FROM arena_team_member WHERE arenateamid = ? AND guid = ?");
     stmt.PExecute(GetId(), GUID_LOPART(guid));
 }
 
@@ -342,13 +342,13 @@ void ArenaTeam::Disband(WorldSession *session)
 
     CharacterDatabase.BeginTransaction();
 
-    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteArenaTeam, "DELETE FROM arena_team WHERE arenateamid = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteArenaTeam, "DELETE FROM arena_team WHERE arenateamid = ?");
     stmt.PExecute(Id);
 
-    stmt = CharacterDatabase.CreateStatement(deleteArenaTeamMembers, "DELETE FROM arena_team_member WHERE arenateamid = ?;");
+    stmt = CharacterDatabase.CreateStatement(deleteArenaTeamMembers, "DELETE FROM arena_team_member WHERE arenateamid = ?");
     stmt.PExecute(Id); //< this should be alredy done by calling DelMember(memberGuids[j]); for each member
 
-    stmt = CharacterDatabase.CreateStatement(deleteArenaTeamStats, "DELETE FROM arena_team_stats WHERE arenateamid = ?;");
+    stmt = CharacterDatabase.CreateStatement(deleteArenaTeamStats, "DELETE FROM arena_team_stats WHERE arenateamid = ?");
     stmt.PExecute(Id);
 
     CharacterDatabase.CommitTransaction();
@@ -451,7 +451,7 @@ void ArenaTeam::SetEmblem(uint32 backgroundColor, uint32 emblemStyle, uint32 emb
     BorderStyle = borderStyle;
     BorderColor = borderColor;
 
-    SqlStatement stmt = CharacterDatabase.CreateStatement(updateArenaTeamEmblem, "UPDATE arena_team SET BackgroundColor = ?, EmblemStyle = , EmblemColor = ?, BorderStyle = ?, BorderColor =  WHERE arenateamid = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(updateArenaTeamEmblem, "UPDATE arena_team SET BackgroundColor = ?, EmblemStyle = , EmblemColor = ?, BorderStyle = ?, BorderColor =  WHERE arenateamid = ?");
 
     stmt.addUInt32(BackgroundColor);
     stmt.addUInt32(EmblemStyle);
@@ -471,38 +471,37 @@ void ArenaTeam::SetStats(uint32 stat_type, uint32 value)
     static SqlStatementID updateArenaTeamStatGamesSeason;
     static SqlStatementID updateArenaTeamStatWinsSeason;
     static SqlStatementID updateArenaTeamStatRank;
-    SqlStatement stmt;
 
     switch (stat_type)
     {
         case STAT_TYPE_RATING:
             stats.rating = value;
-            stmt = CharacterDatabase.CreateStatement(updateArenaTeamStatRating, "UPDATE arena_team_stats SET rating = ? WHERE arenateamid = ?;");
+            SqlStatement stmt = CharacterDatabase.CreateStatement(updateArenaTeamStatRating, "UPDATE arena_team_stats SET rating = ? WHERE arenateamid = ?");
             stmt.PExecute(value, GetId());
             break;
         case STAT_TYPE_GAMES_WEEK:
             stats.games_week = value;
-            stmt = CharacterDatabase.CreateStatement(updateArenaTeamStatGamesWeek, "UPDATE arena_team_stats SET games = ? WHERE arenateamid = ?;");
+            SqlStatement stmt = CharacterDatabase.CreateStatement(updateArenaTeamStatGamesWeek, "UPDATE arena_team_stats SET games = ? WHERE arenateamid = ?");
             stmt.PExecute(value, GetId());
             break;
         case STAT_TYPE_WINS_WEEK:
             stats.wins_week = value;
-            stmt = CharacterDatabase.CreateStatement(updateArenaTeamStatWinsWeek, "UPDATE arena_team_stats SET wins = ? WHERE arenateamid = ?;");
+            SqlStatement stmt = CharacterDatabase.CreateStatement(updateArenaTeamStatWinsWeek, "UPDATE arena_team_stats SET wins = ? WHERE arenateamid = ?");
             stmt.PExecute(value, GetId());
             break;
         case STAT_TYPE_GAMES_SEASON:
             stats.games_season = value;
-            stmt = CharacterDatabase.CreateStatement(updateArenaTeamStatGamesSeason, "UPDATE arena_team_stats SET played = ? WHERE arenateamid = ?;");
+            SqlStatement stmt = CharacterDatabase.CreateStatement(updateArenaTeamStatGamesSeason, "UPDATE arena_team_stats SET played = ? WHERE arenateamid = ?");
             stmt.PExecute(value, GetId());
             break;
         case STAT_TYPE_WINS_SEASON:
             stats.wins_season = value;
-            stmt = CharacterDatabase.CreateStatement(updateArenaTeamStatWinsSeason, "UPDATE arena_team_stats SET wins2 = ? WHERE arenateamid = ?;");
+            SqlStatement stmt = CharacterDatabase.CreateStatement(updateArenaTeamStatWinsSeason, "UPDATE arena_team_stats SET wins2 = ? WHERE arenateamid = ?");
             stmt.PExecute(value, GetId());
             break;
         case STAT_TYPE_RANK:
             stats.rank = value;
-            stmt = CharacterDatabase.CreateStatement(updateArenaTeamStatRank, "UPDATE arena_team_stats SET rank = ? WHERE arenateamid = ?;");
+            SqlStatement stmt = CharacterDatabase.CreateStatement(updateArenaTeamStatRank, "UPDATE arena_team_stats SET rank = ? WHERE arenateamid = ?");
             stmt.PExecute(value, GetId());
             break;
         default:

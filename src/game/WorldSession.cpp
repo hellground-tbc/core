@@ -94,7 +94,7 @@ m_kickTimer(MINUTE * 15 * 1000), m_speciallogs(speciallogs)
         m_Address = sock->GetRemoteAddress ();
         sock->AddReference ();
         static SqlStatementID updateAccountOnline;
-        SqlStatement stmt = LoginDatabase.CreateStatement(updateAccountOnline, "UPDATE account SET online = 1 WHERE id = ?;");
+        SqlStatement stmt = LoginDatabase.CreateStatement(updateAccountOnline, "UPDATE account SET online = 1 WHERE id = ?");
         stmt.PExecute(GetAccountId());
     }
 }
@@ -120,10 +120,10 @@ WorldSession::~WorldSession()
 
     static SqlStatementID updateAccountOffline;
     static SqlStatementID updateCharacterOffline;
-    SqlStatement stmt = LoginDatabase.CreateStatement(updateAccountOffline, "UPDATE account SET online = 0 WHERE id = ?;");
+    SqlStatement stmt = LoginDatabase.CreateStatement(updateAccountOffline, "UPDATE account SET online = 0 WHERE id = ?");
     stmt.PExecute(GetAccountId());
 
-    stmt = CharacterDatabase.CreateStatement(updateCharacterOffline, "UPDATE characters SET online = 0 WHERE account = ?;");
+    stmt = CharacterDatabase.CreateStatement(updateCharacterOffline, "UPDATE characters SET online = 0 WHERE account = ?");
     stmt.PExecute(GetAccountId());
 }
 
@@ -143,7 +143,7 @@ void WorldSession::SetOpcodeDisableFlag(uint16 flag)
 {
     static SqlStatementID updateAccountOpcodesDisabled;
     m_opcodesDisabled |= flag;
-    SqlStatement stmt = LoginDatabase.CreateStatement(updateAccountOpcodesDisabled, "UPDATE account SET opcodesDisabled = ? WHERE id = ?;");
+    SqlStatement stmt = LoginDatabase.CreateStatement(updateAccountOpcodesDisabled, "UPDATE account SET opcodesDisabled = ? WHERE id = ?");
     stmt.PExecute(m_opcodesDisabled, GetAccountId());
 }
 
@@ -151,7 +151,7 @@ void WorldSession::RemoveOpcodeDisableFlag(uint16 flag)
 {
     static SqlStatementID updateAccountOpcodesDisabled;
     m_opcodesDisabled &= ~flag;
-    SqlStatement stmt = LoginDatabase.CreateStatement(updateAccountOpcodesDisabled, "UPDATE account SET opcodesDisabled = ? WHERE id = ?;");
+    SqlStatement stmt = LoginDatabase.CreateStatement(updateAccountOpcodesDisabled, "UPDATE account SET opcodesDisabled = ? WHERE id = ?");
     stmt.PExecute(m_opcodesDisabled, GetAccountId());
 }
 
@@ -488,7 +488,7 @@ void WorldSession::LogoutPlayer(bool Save)
         ///- Since each account can only have one online character at any given time, ensure all characters for active account are marked as offline
         //No SQL injection as AccountId is uint32
         static SqlStatementID updateCharacterOffline;
-        SqlStatement stmt = CharacterDatabase.CreateStatement(updateCharacterOffline, "UPDATE characters SET online = 0 WHERE account = ?;");
+        SqlStatement stmt = CharacterDatabase.CreateStatement(updateCharacterOffline, "UPDATE characters SET online = 0 WHERE account = ?");
         stmt.PExecute(GetAccountId());
 
         sLog.outDebug("SESSION: Sent SMSG_LOGOUT_COMPLETE Message");

@@ -173,7 +173,7 @@ void AuctionHouseMgr::SendAuctionWonMail(AuctionEntry *auction)
         static SqlStatementID updateAuctionItemInstance;
         // set owner to bidder (to prevent delete item with sender char deleting)
         // owner in `data` will set at mail receive and item extracting
-        SqlStatement stmt = CharacterDatabase.CreateStatement(updateAuctionItemInstance, "UPDATE item_instance SET owner_guid = ? WHERE guid = ?;");
+        SqlStatement stmt = CharacterDatabase.CreateStatement(updateAuctionItemInstance, "UPDATE item_instance SET owner_guid = ? WHERE guid = ?");
         stmt.PExecute(auction->bidder, pItem->GetGUIDLow());
 
         CharacterDatabase.CommitTransaction();
@@ -193,7 +193,7 @@ void AuctionHouseMgr::SendAuctionWonMail(AuctionEntry *auction)
     else
     {
         static SqlStatementID deleteItemInstance;
-        SqlStatement stmt = CharacterDatabase.CreateStatement(deleteItemInstance, "DELETE FROM item_instance WHERE guid = ?;");
+        SqlStatement stmt = CharacterDatabase.CreateStatement(deleteItemInstance, "DELETE FROM item_instance WHERE guid = ?");
         stmt.PExecute(pItem->GetGUIDLow());
         RemoveAItem(pItem->GetGUIDLow()); // we have to remove the item, before we delete it !!
         delete pItem;
@@ -308,7 +308,7 @@ void AuctionHouseMgr::SendAuctionExpiredMail(AuctionEntry * auction)
     else
     {
         static SqlStatementID deleteItemInstance;
-        SqlStatement stmt = CharacterDatabase.CreateStatement(deleteItemInstance, "DELETE FROM item_instance WHERE guid = ?;");
+        SqlStatement stmt = CharacterDatabase.CreateStatement(deleteItemInstance, "DELETE FROM item_instance WHERE guid = ?");
         stmt.PExecute(pItem->GetGUIDLow());
 
         RemoveAItem(pItem->GetGUIDLow()); // we have to remove the item, before we delete it !!
@@ -713,7 +713,7 @@ void AuctionEntry::DeleteFromDB() const
 {
     //No SQL injection (Id is integer)
     static SqlStatementID deleteAuction;
-    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteAuction, "DELETE FROM auctionhouse WHERE id = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteAuction, "DELETE FROM auctionhouse WHERE id = ?");
     stmt.PExecute(Id);
 }
 

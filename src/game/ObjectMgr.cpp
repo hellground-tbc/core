@@ -4147,7 +4147,7 @@ void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
                 // mail open and then not returned
                 for (std::vector<MailItemInfo>::iterator itr2 = m->items.begin(); itr2 != m->items.end(); ++itr2)
                 {
-                    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteItemInstance, "DELETE FROM item_instance WHERE guid = ?;");
+                    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteItemInstance, "DELETE FROM item_instance WHERE guid = ?");
                     stmt.PExecute(itr2->item_guid);
                 }
             }
@@ -4157,7 +4157,7 @@ void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
                 static SqlStatementID updateMailItemsReceiver;
                 static SqlStatementID updateItemInstanceOwner;
                 //mail will be returned:
-                SqlStatement stmt = CharacterDatabase.CreateStatement(updateMail, "UPDATE mail SET sender = ?, receiver = ?, expire_time = ?, deliver_time = ?, cod = '0', checked = ? WHERE id = ?;");
+                SqlStatement stmt = CharacterDatabase.CreateStatement(updateMail, "UPDATE mail SET sender = ?, receiver = ?, expire_time = ?, deliver_time = ?, cod = '0', checked = ? WHERE id = ?");
 
                 stmt.addUInt32(m->receiver);
                 stmt.addUInt32(m->sender);
@@ -4170,10 +4170,10 @@ void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
 
                 for (std::vector<MailItemInfo>::iterator itr2 = m->items.begin(); itr2 != m->items.end(); ++itr2)
                 {
-                    stmt = CharacterDatabase.CreateStatement(updateMailItemsReceiver, "UPDATE mail_items SET receiver = ? WHERE item_guid = ?;");
+                    stmt = CharacterDatabase.CreateStatement(updateMailItemsReceiver, "UPDATE mail_items SET receiver = ? WHERE item_guid = ?");
                     stmt.PExecute(m->sender, itr2->item_guid);
 
-                    stmt = CharacterDatabase.CreateStatement(updateItemInstanceOwner, "UPDATE item_instance SET owner_guid = ? WHERE guid = ?;");
+                    stmt = CharacterDatabase.CreateStatement(updateItemInstanceOwner, "UPDATE item_instance SET owner_guid = ? WHERE guid = ?");
                     stmt.PExecute(m->sender, itr2->item_guid);
                 }
                 delete m;
@@ -4184,14 +4184,14 @@ void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
         if (m->itemTextId)
         {
             static SqlStatementID deleteItemText;
-            SqlStatement stmt = CharacterDatabase.CreateStatement(deleteItemText, "DELETE FROM item_text WHERE id = ?;");
+            SqlStatement stmt = CharacterDatabase.CreateStatement(deleteItemText, "DELETE FROM item_text WHERE id = ?");
             stmt.PExecute(m->itemTextId);
         }
 
         //deletemail = true;
         //delmails << m->messageID << ", ";
         static SqlStatementID deleteMail;
-        SqlStatement stmt = CharacterDatabase.CreateStatement(deleteMail, "DELETE FROM mail WHERE id = ?;");
+        SqlStatement stmt = CharacterDatabase.CreateStatement(deleteMail, "DELETE FROM mail WHERE id = ?");
         stmt.PExecute(m->messageID);
         delete m;
     }
@@ -5688,7 +5688,7 @@ void ObjectMgr::SaveCreatureRespawnTime(uint32 loguid, uint32 instance, time_t t
     mCreatureRespawnTimes[MAKE_PAIR64(loguid,instance)] = t;
     WorldDatabase.BeginTransaction();
 
-    SqlStatement stmt = WorldDatabase.CreateStatement(deleteCreatureRespawnInst, "DELETE FROM creature_respawn WHERE guid = ? AND instance = ?;");
+    SqlStatement stmt = WorldDatabase.CreateStatement(deleteCreatureRespawnInst, "DELETE FROM creature_respawn WHERE guid = ? AND instance = ?");
     stmt.PExecute(loguid, instance);
 
     if (t)
@@ -5718,7 +5718,7 @@ void ObjectMgr::SaveGORespawnTime(uint32 loguid, uint32 instance, time_t t)
     mGORespawnTimes[MAKE_PAIR64(loguid,instance)] = t;
     WorldDatabase.BeginTransaction();
 
-    SqlStatement stmt = WorldDatabase.CreateStatement(deleteGameObjectRespawn, "DELETE FROM gameobject_respawn WHERE guid = ? AND instance = ?;");
+    SqlStatement stmt = WorldDatabase.CreateStatement(deleteGameObjectRespawn, "DELETE FROM gameobject_respawn WHERE guid = ? AND instance = ?");
     stmt.PExecute(loguid, instance);
 
     if (t)
@@ -5757,10 +5757,10 @@ void ObjectMgr::DeleteRespawnTimeForInstance(uint32 instance)
 
     WorldDatabase.BeginTransaction();
 
-    SqlStatement stmt = WorldDatabase.CreateStatement(deleteCreaturesRespawn, "DELETE FROM creature_respawn WHERE instance = ?;");
+    SqlStatement stmt = WorldDatabase.CreateStatement(deleteCreaturesRespawn, "DELETE FROM creature_respawn WHERE instance = ?");
     stmt.PExecute(instance);
 
-    stmt = WorldDatabase.CreateStatement(deleteGameObjectsRespawn, "DELETE FROM gameobject_respawn WHERE instance = ?;");
+    stmt = WorldDatabase.CreateStatement(deleteGameObjectsRespawn, "DELETE FROM gameobject_respawn WHERE instance = ?");
     stmt.PExecute(instance);
 
     WorldDatabase.CommitTransaction();

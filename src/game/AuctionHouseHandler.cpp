@@ -382,7 +382,7 @@ void WorldSession::HandleAuctionPlaceBid(WorldPacket & recv_data)
 
         static SqlStatementID updateAucionBidder;
         // after this update we should save player's money ...
-        SqlStatement stmt = CharacterDatabase.CreateStatement(updateAucionBidder, "UPDATE auctionhouse SET buyguid = ?, lastbid = ? WHERE id = ?;");
+        SqlStatement stmt = CharacterDatabase.CreateStatement(updateAucionBidder, "UPDATE auctionhouse SET buyguid = ?, lastbid = ? WHERE id = ?");
         stmt.PExecute(auction->bidder, auction->bid, auction->Id);
 
         SendAuctionCommandResult(auction->Id, AUCTION_PLACE_BID, AUCTION_OK, 0);

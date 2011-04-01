@@ -87,10 +87,10 @@ bool Guild::create(uint64 lGuid, std::string gname)
 
     CharacterDatabase.BeginTransaction();
 
-    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGuildRanks, "DELETE FROM guild_rank WHERE guildid = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGuildRanks, "DELETE FROM guild_rank WHERE guildid = ?");
     stmt.PExecute(Id);
 
-    stmt = CharacterDatabase.CreateStatement(deleteGuildMembers, "DELETE FROM guild_member WHERE guildid = ?;");
+    stmt = CharacterDatabase.CreateStatement(deleteGuildMembers, "DELETE FROM guild_member WHERE guildid = ?");
     stmt.PExecute(Id);
 
     stmt = CharacterDatabase.CreateStatement(insertGuild, "INSERT INTO guild(guildid, name, leaderguid, info, motd, createdate, EmblemStyle, EmblemColor, BorderStyle, BorderColor, BackgroundColor, BankMoney) "
@@ -192,7 +192,7 @@ void Guild::SetMOTD(std::string motd)
 
     // motd now can be used for encoding to DB
     CharacterDatabase.escape_string(motd);
-    SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildMOTD, "UPDATE guild SET motd = ? WHERE guildid = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildMOTD, "UPDATE guild SET motd = ? WHERE guildid = ?");
     stmt.PExecute(motd.c_str(), Id);
 }
 
@@ -203,7 +203,7 @@ void Guild::SetGINFO(std::string ginfo)
 
     // ginfo now can be used for encoding to DB
     CharacterDatabase.escape_string(ginfo);
-    SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildInfo, "UPDATE guild SET info = ? WHERE guildid = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildInfo, "UPDATE guild SET info = ? WHERE guildid = ?");
     stmt.PExecute(ginfo.c_str(), Id);
 }
 
@@ -318,7 +318,7 @@ bool Guild::LoadRanksFromDB(uint32 GuildId)
         sLog.outError("Guild %u have broken `guild_rank` data, repairing...",GuildId);
         CharacterDatabase.BeginTransaction();
 
-        SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGuildRanks, "DELETE FROM guild_rank WHERE guildid = ?;");
+        SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGuildRanks, "DELETE FROM guild_rank WHERE guildid = ?");
         stmt.PExecute(GuildId);
 
         for (size_t i = 0; i < m_ranks.size(); ++i)
@@ -462,7 +462,7 @@ void Guild::SetLeader(uint64 guid)
     leaderGuid = guid;
     ChangeRank(guid, GR_GUILDMASTER);
 
-    SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildLeader, "UPDATE guild SET leaderguid = ? WHERE guildid = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildLeader, "UPDATE guild SET leaderguid = ? WHERE guildid = ?");
     stmt.PExecute(GUID_LOPART(guid), Id);
 }
 
@@ -529,7 +529,7 @@ void Guild::DelMember(uint64 guid, bool isDisbanding)
         player->SetRank(0);
     }
     static SqlStatementID deleteGuildMember;
-    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGuildMember, "DELETE FROM guild_member WHERE guid = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGuildMember, "DELETE FROM guild_member WHERE guid = ?");
     stmt.PExecute(GUID_LOPART(guid));
 }
 
@@ -545,7 +545,7 @@ void Guild::ChangeRank(uint64 guid, uint32 newRank)
         player->SetRank(newRank);
 
     static SqlStatementID updateGuildMemberRank;
-    SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildMemberRank, "UPDATE guild_member SET rank = ? WHERE guid = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildMemberRank, "UPDATE guild_member SET rank = ? WHERE guid = ?");
     stmt.PExecute(newRank, GUID_LOPART(guid));
 }
 
@@ -561,7 +561,7 @@ void Guild::SetPNOTE(uint64 guid,std::string pnote)
     // pnote now can be used for encoding to DB
     CharacterDatabase.escape_string(pnote);
 
-    SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildMemberPNote, "UPDATE guild_member SET pnote = ? WHERE guid = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildMemberPNote, "UPDATE guild_member SET pnote = ? WHERE guid = ?");
     stmt.PExecute(pnote.c_str(), itr->first);
 }
 
@@ -575,7 +575,7 @@ void Guild::SetOFFNOTE(uint64 guid,std::string offnote)
     CharacterDatabase.escape_string(offnote);
 
     static SqlStatementID updateGuildMemberOffNote;
-    SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildMemberOffNote, "UPDATE guild_member SET offnote = ? WHERE guid = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildMemberOffNote, "UPDATE guild_member SET offnote = ? WHERE guid = ?");
     stmt.PExecute(offnote.c_str(), itr->first);
 }
 
@@ -670,7 +670,7 @@ void Guild::DelRank()
     static SqlStatementID deleteGuildRank;
     // guild_rank.rid always store rank+1 value
     uint32 rank = m_ranks.size()-1;
-    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGuildRank, "DELETE FROM guild_rank WHERE rid >= ? AND guildid = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGuildRank, "DELETE FROM guild_rank WHERE rid >= ? AND guildid = ?");
     stmt.PExecute((rank+1), Id);
 
     m_ranks.pop_back();
@@ -702,7 +702,7 @@ void Guild::SetRankName(uint32 rankId, std::string name_)
     static SqlStatementID updateGuildRankName;
     // name now can be used for encoding to DB
     CharacterDatabase.escape_string(name_);
-    SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildRankName, "UPDATE guild_rank SET rname = ? WHERE rid = ? AND guildid = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildRankName, "UPDATE guild_rank SET rname = ? WHERE rid = ? AND guildid = ?");
     stmt.PExecute(name_.c_str(), (rankId+1), Id);
 }
 
@@ -714,7 +714,7 @@ void Guild::SetRankRights(uint32 rankId, uint32 rights)
     m_ranks[rankId].rights = rights;
 
     static SqlStatementID updateGuildRankRights;
-    SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildRankRights, "UPDATE guild_rank SET rights = ? WHERE rid = ? AND guildid = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildRankRights, "UPDATE guild_rank SET rights = ? WHERE rid = ? AND guildid = ?");
     stmt.PExecute(rights, (rankId+1), Id);
 }
 
@@ -838,7 +838,7 @@ void Guild::SetEmblem(uint32 emblemStyle, uint32 emblemColor, uint32 borderStyle
     BackgroundColor = backgroundColor;
 
     static SqlStatementID updateGuildEmblem;
-    SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildEmblem, "UPDATE guild SET EmblemStyle = ?, EmblemColor = ?, BorderStyle = ?, BorderColor = ?, BackgroundColor = ? WHERE guildid = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildEmblem, "UPDATE guild SET EmblemStyle = ?, EmblemColor = ?, BorderStyle = ?, BorderColor = ?, BackgroundColor = ? WHERE guildid = ?");
 
     stmt.addUInt32(EmblemStyle);
     stmt.addUInt32(EmblemColor);
@@ -986,7 +986,7 @@ void Guild::LogGuildEvent(uint8 EventType, uint32 PlayerGuid1, uint32 PlayerGuid
         GuildEventlogEntry *OldEvent = *(m_GuildEventlog.begin());
         m_GuildEventlog.pop_front();
 
-        SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGuildEventLog, "DELETE FROM guild_eventlog WHERE guildid = ? AND LogGuid = ?;");
+        SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGuildEventLog, "DELETE FROM guild_eventlog WHERE guildid = ? AND LogGuid = ?");
         stmt.PExecute(Id, OldEvent->LogGuid);
         delete OldEvent;
     }
@@ -1193,7 +1193,7 @@ void Guild::CreateNewBankTab()
 
     CharacterDatabase.BeginTransaction();
 
-    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGuildBankTab, "DELETE FROM guild_bank_tab WHERE guildid = ? AND TabId = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGuildBankTab, "DELETE FROM guild_bank_tab WHERE guildid = ? AND TabId = ?");
     stmt.PExecute(Id, uint32(purchased_tabs-1));
 
     stmt = CharacterDatabase.CreateStatement(insertGuildBankTab, "INSERT INTO guild_bank_tab(guildid, TabId) VALUES (?, ?);");
@@ -1222,7 +1222,7 @@ void Guild::SetGuildBankTabInfo(uint8 TabId, std::string Name, std::string Icon)
     CharacterDatabase.escape_string(Icon);
 
     static SqlStatementID updateGuildBankTab;
-    SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildBankTab, "UPDATE guild_bank_tab SET TabName = ?, TabIcon = ? WHERE guildid = ? AND TabId = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildBankTab, "UPDATE guild_bank_tab SET TabName = ?, TabIcon = ? WHERE guildid = ? AND TabId = ?");
     stmt.PExecute(Name.c_str(), Icon.c_str(), Id, uint32(TabId));
 }
 
@@ -1240,7 +1240,7 @@ void Guild::CreateBankRightForTab(uint32 rankId, uint8 TabId)
 
     CharacterDatabase.BeginTransaction();
 
-    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGuildBankRight, "DELETE FROM guild_bank_right WHERE guildid = ? AND TabId = ? AND rid = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGuildBankRight, "DELETE FROM guild_bank_right WHERE guildid = ? AND TabId = ? AND rid = ?");
     stmt.PExecute(Id, uint32(TabId), rankId);
 
     stmt = CharacterDatabase.CreateStatement(insertGuildBankRight, "INSERT INTO guild_bank_right (guildid, TabId, rid) VALUES (?, ?, ?);");
@@ -1333,7 +1333,7 @@ void Guild::LoadGuildBankFromDB()
         if (!pItem->LoadFromDB(ItemGuid, 0, result))
         {
             static SqlStatementID deleteGuildBankItem;
-            SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGuildBankItem, "DELETE FROM guild_bank_item WHERE guildid = ? AND TabId = ? AND SlotId = ?;");
+            SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGuildBankItem, "DELETE FROM guild_bank_item WHERE guildid = ? AND TabId = ? AND SlotId = ?");
             stmt.PExecute(Id, uint32(TabId), uint32(SlotId));
             sLog.outError("Item GUID %u not found in item_instance, deleting from Guild Bank!", ItemGuid);
             delete pItem;
@@ -1400,7 +1400,7 @@ bool Guild::MemberMoneyWithdraw(uint32 amount, uint32 LowGuid)
 
         static SqlStatementID updateGuildMemberBankRemMoney;
 
-        SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildMemberBankRemMoney, "UPDATE guild_member SET BankRemMoney = ? WHERE guildid = ? AND guid = ?;");
+        SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildMemberBankRemMoney, "UPDATE guild_member SET BankRemMoney = ? WHERE guildid = ? AND guid = ?");
         stmt.PExecute(itr->second.BankRemMoney, Id, LowGuid);
     }
     return true;
@@ -1414,7 +1414,7 @@ void Guild::SetBankMoney(int64 money)
 
     static SqlStatementID updateGuildBankMoney;
 
-    SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildBankMoney, "UPDATE guild SET BankMoney = ? WHERE guildid = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildBankMoney, "UPDATE guild SET BankMoney = ? WHERE guildid = ?");
     stmt.PExecute(money, Id);
 }
 
@@ -1437,7 +1437,7 @@ bool Guild::MemberItemWithdraw(uint8 TabId, uint32 LowGuid)
 
         static SqlStatementID updateGuildMemberBankRemSlotsTab;
 
-        SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildMemberBankRemSlotsTab, "UPDATE guild_member SET BankRemSlotsTab? = ? WHERE guildid = ? AND guid = ?;");
+        SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildMemberBankRemSlotsTab, "UPDATE guild_member SET BankRemSlotsTab? = ? WHERE guildid = ? AND guid = ?");
         stmt.PExecute(uint32(TabId), itr->second.BankRemSlotsTab[TabId], Id, LowGuid);
     }
     return true;
@@ -1474,7 +1474,7 @@ uint32 Guild::GetMemberSlotWithdrawRem(uint32 LowGuid, uint8 TabId)
         itr->second.BankRemSlotsTab[TabId] = GetBankSlotPerDay(itr->second.RankId, TabId);
 
         static SqlStatementID updateGuildMemberBankResetTimeTab;
-        SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildMemberBankResetTimeTab, "UPDATE guild_member SET BankResetTimeTab? = ?, BankRemSlotsTab = ? WHERE guildid = ? AND guid = ?;");
+        SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildMemberBankResetTimeTab, "UPDATE guild_member SET BankResetTimeTab? = ?, BankRemSlotsTab = ? WHERE guildid = ? AND guid = ?");
         stmt.addUInt32(uint32(TabId));
         stmt.addUInt64(itr->second.BankResetTimeTab[TabId]);
         stmt.addUInt32(uint32(TabId));
@@ -1503,7 +1503,7 @@ uint32 Guild::GetMemberMoneyWithdrawRem(uint32 LowGuid)
         itr->second.BankRemMoney = GetBankMoneyPerDay(itr->second.RankId);
 
         static SqlStatementID updateGuildMemberBankResetTimeMoney;
-        SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildMemberBankResetTimeMoney, "UPDATE guild_member SET BankResetTimeMoney = ?, BankRemMoney = ? WHERE guildid = ? AND guid = ?;");
+        SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildMemberBankResetTimeMoney, "UPDATE guild_member SET BankResetTimeMoney = ?, BankRemMoney = ? WHERE guildid = ? AND guid = ?");
         stmt.PExecute(itr->second.BankResetTimeMoney, itr->second.BankRemMoney, Id, LowGuid);
     }
     return itr->second.BankRemMoney;
@@ -1526,10 +1526,10 @@ void Guild::SetBankMoneyPerDay(uint32 rankId, uint32 money)
     static SqlStatementID updateGuildRankMoneyPerDay;
     static SqlStatementID updateGuildMemberMoneyperDay;
 
-    SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildRankMoneyPerDay, "UPDATE guild_rank SET BankMoneyPerDay = ? WHERE rid = ? AND guildid = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildRankMoneyPerDay, "UPDATE guild_rank SET BankMoneyPerDay = ? WHERE rid = ? AND guildid = ?");
     stmt.PExecute(money, (rankId+1), Id);
 
-    stmt = CharacterDatabase.CreateStatement(updateGuildMemberMoneyperDay, "UPDATE guild_member SET BankResetTimeMoney = '0' WHERE guildid = ? AND rank = ?;");
+    stmt = CharacterDatabase.CreateStatement(updateGuildMemberMoneyperDay, "UPDATE guild_member SET BankResetTimeMoney = '0' WHERE guildid = ? AND rank = ?");
     stmt.PExecute(Id, rankId);
 }
 
@@ -1560,7 +1560,7 @@ void Guild::SetBankRightsAndSlots(uint32 rankId, uint8 TabId, uint32 right, uint
         static SqlStatementID insertGuildBankRight2;
         static SqlStatementID updateGuildMemberResetTabTime;
 
-        SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGuildBankRight, "DELETE FROM guild_bank_right WHERE guildid = ? AND TabId = ? AND rid = ?;");
+        SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGuildBankRight, "DELETE FROM guild_bank_right WHERE guildid = ? AND TabId = ? AND rid = ?");
         stmt.PExecute(Id, uint32(TabId), rankId);
 
         stmt = CharacterDatabase.CreateStatement(insertGuildBankRight2, "INSERT INTO guild_bank_right (guildid, TabId, rid, gbright, SlotPerDay) VALUES (?, ?, ?, ?, ?);");
@@ -1571,7 +1571,7 @@ void Guild::SetBankRightsAndSlots(uint32 rankId, uint8 TabId, uint32 right, uint
         stmt.addUInt32(m_ranks[rankId].TabSlotPerDay[TabId]);
         stmt.Execute();
 
-        stmt = CharacterDatabase.CreateStatement(updateGuildMemberResetTabTime, "UPDATE guild_member SET BankResetTimeTab? = '0' WHERE guildid = ? AND rank = ?;");
+        stmt = CharacterDatabase.CreateStatement(updateGuildMemberResetTabTime, "UPDATE guild_member SET BankResetTimeTab? = '0' WHERE guildid = ? AND rank = ?");
         stmt.PExecute(uint32(TabId), Id, rankId);
     }
 }
@@ -1670,7 +1670,7 @@ void Guild::LoadGuildBankEventLogFromDB()
     while (result->NextRow());
 
     static SqlStatementID deleteGuildBankEventLogs;
-    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGuildBankEventLogs, "DELETE FROM guild_bank_eventlog WHERE guildid = ? AND LogGuid < ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGuildBankEventLogs, "DELETE FROM guild_bank_eventlog WHERE guildid = ? AND LogGuid < ?");
 
     // Check lists size in case to many event entries in db for a tab or for money
     // This cases can happen only if a crash occured somewhere and table has too many log entries
@@ -1774,7 +1774,7 @@ void Guild::LogBankEvent(uint8 LogEntry, uint8 TabId, uint32 PlayerGuidLow, uint
         {
             GuildBankEvent *OldEvent = *(m_GuildBankEventLog_Money.begin());
             m_GuildBankEventLog_Money.pop_front();
-            SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGuildBankEventLog, "DELETE FROM guild_bank_eventlog WHERE guildid = ? AND LogGuid = ?;");
+            SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGuildBankEventLog, "DELETE FROM guild_bank_eventlog WHERE guildid = ? AND LogGuid = ?");
             stmt.PExecute(Id, OldEvent->LogGuid);
             delete OldEvent;
         }
@@ -1786,7 +1786,7 @@ void Guild::LogBankEvent(uint8 LogEntry, uint8 TabId, uint32 PlayerGuidLow, uint
         {
             GuildBankEvent *OldEvent = *(m_GuildBankEventLog_Item[TabId].begin());
             m_GuildBankEventLog_Item[TabId].pop_front();
-            SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGuildBankEventLog, "DELETE FROM guild_bank_eventlog WHERE guildid = ? AND LogGuid = ?;");
+            SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGuildBankEventLog, "DELETE FROM guild_bank_eventlog WHERE guildid = ? AND LogGuid = ?");
             stmt.PExecute(Id, OldEvent->LogGuid);
             delete OldEvent;
         }
@@ -1825,7 +1825,7 @@ bool Guild::AddGBankItemToDB(uint32 GuildId, uint32 BankTab , uint32 BankTabSlot
     static SqlStatementID deleteGuildBankItem;
     static SqlStatementID insertGuildBankItem;
 
-    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGuildBankItem, "DELETE FROM guild_bank_item WHERE guildid = ? AND TabId = ? AND SlotId = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGuildBankItem, "DELETE FROM guild_bank_item WHERE guildid = ? AND TabId = ? AND SlotId = ?");
     stmt.PExecute(GuildId, BankTab, BankTabSlot);
 
     stmt = CharacterDatabase.CreateStatement(insertGuildBankItem, "INSERT INTO guild_bank_item(guildid, TabId, SlotId, item_guid, item_entry) VALUES(?, ?, ?, ?, ?);");
@@ -1947,7 +1947,7 @@ void Guild::RemoveItem(uint8 tab, uint8 slot)
 
     m_TabListMap[tab]->Slots[slot] = NULL;
 
-    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGuildBankItem, "DELETE FROM guild_bank_item WHERE guildid = ? AND TabId = ? AND SlotId = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGuildBankItem, "DELETE FROM guild_bank_item WHERE guildid = ? AND TabId = ? AND SlotId = ?");
     stmt.PExecute(GetId(), uint32(tab), uint32(slot));
 }
 
@@ -2115,7 +2115,7 @@ void Guild::SetGuildBankTabText(uint8 TabId, std::string text)
     CharacterDatabase.escape_string(text);
 
     static SqlStatementID updateGuildBankTabText;
-    SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildBankTabText, "UPDATE guild_bank_tab SET TabText = ? WHERE guildid = ? AND TabId = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildBankTabText, "UPDATE guild_bank_tab SET TabText = ? WHERE guildid = ? AND TabId = ?");
     stmt.PExecute(text.c_str(), Id, uint32(TabId));
 }
 

@@ -333,7 +333,7 @@ void AuthSocket::_SetVSFields(const std::string& rI)
     s_hex = s.AsHexStr();
 
     static SqlStatementID updateAccountVS;
-    SqlStatement stmt = LoginDatabase.CreateStatement(updateAccountVS, "UPDATE account SET v = ?, s = ? WHERE username = ?;");
+    SqlStatement stmt = LoginDatabase.CreateStatement(updateAccountVS, "UPDATE account SET v = ?, s = ? WHERE username = ?");
     stmt.PExecute(v_hex, s_hex, _safelogin.c_str());
     OPENSSL_free((void*)v_hex);
     OPENSSL_free((void*)s_hex);
@@ -675,7 +675,7 @@ bool AuthSocket::_HandleLogonProof()
         const char* K_hex = K.AsHexStr();
 
         static SqlStatementID updateAccountLoginData;
-        SqlStatement stmt = LoginDatabase.CreateStatement(updateAccountLoginData, "UPDATE account SET sessionkey = ?, last_ip = ?, last_login = NOW(), locale = ?, failed_logins = 0 WHERE username = ?;");
+        SqlStatement stmt = LoginDatabase.CreateStatement(updateAccountLoginData, "UPDATE account SET sessionkey = ?, last_ip = ?, last_login = NOW(), locale = ?, failed_logins = 0 WHERE username = ?");
 
         stmt.addString(K_hex);
         stmt.addString(GetRemoteAddress());

@@ -439,7 +439,7 @@ void WorldSession::HandlePetitionRenameOpcode(WorldPacket & recv_data)
     CharacterDatabase.escape_string(db_newname);
 
     static SqlStatementID updatePetitionName;
-    SqlStatement stmt = CharacterDatabase.CreateStatement(updatePetitionName, "UPDATE petition SET name = ? WHERE petitionguid = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(updatePetitionName, "UPDATE petition SET name = ? WHERE petitionguid = ?");
 
     stmt.addString(db_newname);
     stmt.addUInt32(GUID_LOPART(petitionguid));
@@ -881,10 +881,10 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recv_data)
 
     CharacterDatabase.BeginTransaction();
 
-    SqlStatement stmt = CharacterDatabase.CreateStatement(deletePetition, "DELETE FROM petition WHERE petitionguid = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(deletePetition, "DELETE FROM petition WHERE petitionguid = ?");
     stmt.PExecute(GUID_LOPART(petitionguid));
 
-    stmt = CharacterDatabase.CreateStatement(deletePetitionSign, "DELETE FROM petition_sign WHERE petitionguid = ?;");
+    stmt = CharacterDatabase.CreateStatement(deletePetitionSign, "DELETE FROM petition_sign WHERE petitionguid = ?");
     stmt.PExecute(GUID_LOPART(petitionguid));
 
     CharacterDatabase.CommitTransaction();

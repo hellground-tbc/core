@@ -173,10 +173,10 @@ void GameEvent::StopEvent(uint16 event_id, bool overwrite)
             static SqlStatementID deleteGameEventSave;
             static SqlStatementID deleteGameEventConditionSave;
 
-            SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGameEventSave, "DELETE FROM game_event_save WHERE event_id = ?;");
+            SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGameEventSave, "DELETE FROM game_event_save WHERE event_id = ?");
             stmt.PExecute(event_id);
 
-            stmt = CharacterDatabase.CreateStatement(deleteGameEventConditionSave, "DELETE FROM game_event_condition_save WHERE event_id = ?;");
+            stmt = CharacterDatabase.CreateStatement(deleteGameEventConditionSave, "DELETE FROM game_event_condition_save WHERE event_id = ?");
             stmt.PExecute(event_id);
 
             CharacterDatabase.CommitTransaction();
@@ -1560,7 +1560,7 @@ void GameEvent::HandleQuestComplete(uint32 quest_id)
                 // save the change to db
                 CharacterDatabase.BeginTransaction();
 
-                SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGECond, "DELETE FROM game_event_condition_save WHERE event_id = ? AND condition_id = ?;");
+                SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGECond, "DELETE FROM game_event_condition_save WHERE event_id = ? AND condition_id = ?");
                 stmt.PExecute(event_id, condition);
 
                 stmt = CharacterDatabase.CreateStatement(insertGECond, "INSERT INTO game_event_condition_save (event_id, condition_id, done) VALUES (?, ?, ?);");
@@ -1605,7 +1605,7 @@ void GameEvent::SaveWorldEventStateToDB(uint16 event_id)
 
     CharacterDatabase.BeginTransaction();
 
-    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGESave, "DELETE FROM game_event_save WHERE event_id = ?;");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGESave, "DELETE FROM game_event_save WHERE event_id = ?");
     stmt.PExecute(event_id);
 
     stmt = CharacterDatabase.CreateStatement(insertGESave, "INSERT INTO game_event_save (event_id, state, next_start) VALUES ( ?, ?, ?)");
