@@ -130,11 +130,25 @@ InstanceSave *InstanceSaveManager::GetInstanceSave(uint32 InstanceId)
 
 void InstanceSaveManager::DeleteInstanceFromDB(uint32 instanceid)
 {
+    static SqlStatementID deleteInstance;
+    static SqlStatementID deleteGroupSavedLoot;
+    static SqlStatementID deleteCharactersInstance;
+    static SqlStatementID deleteGroupInstance;
+
     CharacterDatabase.BeginTransaction();
-    CharacterDatabase.PExecute("DELETE FROM instance WHERE id = '%u'", instanceid);
-    CharacterDatabase.PExecute("DELETE FROM group_saved_loot WHERE instanceId='%u'", instanceid);
-    CharacterDatabase.PExecute("DELETE FROM character_instance WHERE instance = '%u'", instanceid);
-    CharacterDatabase.PExecute("DELETE FROM group_instance WHERE instance = '%u'", instanceid);
+
+    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteInstance, "DELETE FROM instance WHERE id = ?;");
+    stmt.PExecute(instanceid);
+
+    stmt = CharacterDatabase.CreateStatement(deleteGroupSavedLoot, "DELETE FROM group_saved_loot WHERE instanceId = ?;");
+    stmt.PExecute(instanceid);
+
+    stmt = CharacterDatabase.CreateStatement(deleteCharactersInstance, "DELETE FROM character_instance WHERE instance = ?:");
+    stmt.PExecute(instanceid);
+
+    stmt = CharacterDatabase.CreateStatement(deleteGroupInstance, "DELETE FROM group_instance WHERE instance = ?;");
+    stmt.PExecute(instanceid);
+
     CharacterDatabase.CommitTransaction();
     // respawn times should be deleted only when the map gets unloaded
 }
@@ -146,7 +160,13 @@ void InstanceSaveManager::RemoveInstanceSave(uint32 InstanceId)
     {
         // save the resettime for normal instances only when they get unloaded
         if (time_t resettime = itr->second->GetResetTimeForDB())
-            CharacterDatabase.PExecute("UPDATE instance SET resettime = '"UI64FMTD"' WHERE id = '%u'", (uint64)resettime, InstanceId);
+        {
+            static SqlStatementID updateInstanceResetTime;
+            SqlStatement stmt = CharacterDatabase.CreateStatement(updateInstanceResetTime, "UPDATE instance SET resettime = ? WHERE id = ?;");
+            stmt.addUInt64((uint64)resettime);
+            stmt.addUInt32(InstanceId);
+            stmt.Execute();
+        }
 
         InstanceSave *temp = itr->second;
         m_instanceSaveById.erase(itr);
@@ -187,7 +207,14 @@ void InstanceSave::SaveToDB()
         }
     }
 
-    CharacterDatabase.PExecute("INSERT INTO instance VALUES ('%u', '%u', '"UI64FMTD"', '%u', '%s')", m_instanceid, GetMapId(), (uint64)GetResetTimeForDB(), GetDifficulty(), data.c_str());
+    static SqlStatementID insertInstance;
+    SqlStatement stmt = CharacterDatabase.CreateStatement(insertInstance, "INSERT INTO instance VALUES(?, ?, ?, ?, ?);");
+    stmt.addUInt32(m_instanceid);
+    stmt.addUInt32(GetMapId());
+    stmt.addUInt64((uint64)GetResetTimeForDB());
+    stmt.addUInt8(GetDifficulty());
+    stmt.addString(data);
+    stmt.Execute();
 }
 
 time_t InstanceSave::GetResetTimeForDB()
@@ -255,7 +282,8 @@ void InstanceSaveManager::_DelHelper(DatabaseType &db, const char *fields, const
                 ss << (i != 0 ? " AND " : "") << fieldTokens[i] << " = '" << fieldValue << "'";
             }
             db.PExecute("DELETE FROM %s WHERE %s", table, ss.str().c_str());
-        } while (result->NextRow());
+        }
+        while (result->NextRow());
     }
 }
 

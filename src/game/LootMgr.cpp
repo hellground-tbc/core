@@ -475,11 +475,17 @@ void Loot::removeItemFromSavedLoot(uint8 lootIndex)
     CharacterDatabase.BeginTransaction();
     if (count != 1)
     {
+        static SqlStatementID updateGroupSavedLootCount;
         count--;
-        CharacterDatabase.PExecute("UPDATE group_saved_loot SET itemCount='%u' WHERE instanceId='%u' AND itemId='%u' AND creatureId='%u'", count, pCreature->GetInstanceId(), item->itemid, pCreature->GetEntry());
+        SqlStatement stmt = CharacterDatabase.CreateStatement(updateGroupSavedLootCount, "UPDATE group_saved_loot SET itemCount = ? WHERE instanceId = ? AND itemId = ? AND creatureId = ?:");
+        stmt.PExecute(count, pCreature->GetInstanceId(), item->itemid, pCreature->GetEntry());
     }
     else
-        CharacterDatabase.PExecute("DELETE FROM group_saved_loot WHERE instanceId='%u' AND itemId='%u' AND creatureId='%u'", pCreature->GetInstanceId(), item->itemid, pCreature->GetEntry());
+    {
+        static SqlStatementID deleteGroupSavedLootItem;
+        SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGroupSavedLootItem, "DELETE FROM group_saved_loot WHERE instanceId = ? AND itemId = ? AND creatureId = ?;");
+        stmt.PExecute(pCreature->GetInstanceId(), item->itemid, pCreature->GetEntry());
+    }
     CharacterDatabase.CommitTransaction();
 }
 
@@ -492,10 +498,17 @@ void Loot::saveLootToDB(Player *owner)
     if (!pCreature)
         return;
 
+    static SqlStatementID deleteGroupSavedLootCreature;
+    static SqlStatementID insertGroupSavedLoot;
+    static SqlStatementID updateGroupSavedLoot;
+
     std::map<uint32, uint32> item_count;
     CharacterDatabase.BeginTransaction();
+
     // delete old saved loot
-    CharacterDatabase.PExecute("DELETE FROM group_saved_loot WHERE creatureId='%u' AND instanceId='%u'", pCreature->GetEntry(), pCreature->GetInstanceId());
+    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGroupSavedLootCreature, "DELETE FROM group_saved_loot WHERE creatureId = ? AND instanceId = ?;");
+    stmt.PExecute(pCreature->GetEntry(), pCreature->GetInstanceId());
+
     for (std::vector<LootItem>::iterator iter = items.begin(); iter != items.end(); ++iter)
     {
         LootItem const *item = &(*iter);
@@ -512,20 +525,24 @@ void Loot::saveLootToDB(Player *owner)
             item_count[item->itemid] += 1;
             uint32 count = item_count[item->itemid];
             if (count != 1)
-                CharacterDatabase.PExecute("UPDATE group_saved_loot SET itemCount='%u' WHERE itemId='%u' AND instanceId='%u'", count, item->itemid, pCreature->GetInstanceId());
+            {
+                stmt = CharacterDatabase.CreateStatement(updateGroupSavedLoot, "UPDATE group_saved_loot SET itemCount = ? WHERE itemId = ? AND instanceId = ?;");
+                stmt.PExecute(count, item->itemid, pCreature->GetInstanceId());
+            }
             else
-                CharacterDatabase.PExecute("INSERT INTO group_saved_loot VALUES ('%u', '%u', '%u', '%u')", pCreature->GetEntry(), pCreature->GetInstanceId(), item->itemid, count);
+            {
+                stmt = CharacterDatabase.CreateStatement(insertGroupSavedLoot, "INSERT INTO group_saved_loot VALUES (?, ?, ?, ?);");
+                stmt.PExecute(pCreature->GetEntry(), pCreature->GetInstanceId(), item->itemid, count);
+            }
         }
     }
+
     CharacterDatabase.CommitTransaction();
 }
 
 // Calls processor of corresponding LootTemplate (which handles everything including references)
 void Loot::FillLoot(uint32 loot_id, LootStore const& store, Player* loot_owner)
 {
-    if (load)
-        return;
-
     LootTemplate const* tab = store.GetLootfor (loot_id);
 
     if (!tab)
@@ -542,32 +559,32 @@ void Loot::FillLoot(uint32 loot_id, LootStore const& store, Player* loot_owner)
     // Setting access rights fow group-looting case
     if (!loot_owner)
         return;
+
     Group * pGroup=loot_owner->GetGroup();
     if (!pGroup)
         return;
+
     for (GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
     {
         //fill the quest item map for every player in the recipient's group
         Player* pl = itr->getSource();
         if (!pl)
             continue;
+
         uint32 plguid = pl->GetGUIDLow();
         QuestItemMap::iterator qmapitr = PlayerQuestItems.find(plguid);
         if (qmapitr == PlayerQuestItems.end())
-        {
             FillQuestLoot(pl);
-        }
+
         qmapitr = PlayerFFAItems.find(plguid);
         if (qmapitr == PlayerFFAItems.end())
-        {
             FillFFALoot(pl);
-        }
+
         qmapitr = PlayerNonQuestNonFFAConditionalItems.find(plguid);
         if (qmapitr == PlayerNonQuestNonFFAConditionalItems.end())
-        {
             FillNonQuestNonFFAConditionalLoot(pl);
-        }
     }
+
     if (save)
     {
         saveLootToDB(loot_owner);

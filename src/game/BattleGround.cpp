@@ -106,11 +106,18 @@ BattleGround::~BattleGround()
         DelObject(i);
     }
 
+    static SqlStatementID deleteCreaturesRespawn;
+    static SqlStatementID deleteGameObjectsRespawn;
+    static SqlStatementID deleteInstance;
     // delete creature and go respawn times
-    WorldDatabase.PExecute("DELETE FROM creature_respawn WHERE instance = '%u'",GetInstanceID());
-    WorldDatabase.PExecute("DELETE FROM gameobject_respawn WHERE instance = '%u'",GetInstanceID());
+    SqlStatement stmt = WorldDatabase.CreateStatement(deleteCreaturesRespawn, "DELETE FROM creature_respawn WHERE instance = ?;");
+    stmt.PExecute(GetInstanceID());
+
+    stmt = WorldDatabase.CreateStatement(deleteGameObjectsRespawn, "DELETE FROM gameobject_respawn WHERE instance = ?;");
+    stmt.PExecute(GetInstanceID());
     // delete instance from db
-    CharacterDatabase.PExecute("DELETE FROM instance WHERE id = '%u'",GetInstanceID());
+    stmt = CharacterDatabase.CreateStatement(deleteInstance, "DELETE FROM instance WHERE id = ?;");
+    stmt.PExecute(GetInstanceID());
     // remove from battlegrounds
     sBattleGroundMgr.RemoveBattleGround(GetInstanceID());
     // unload map
@@ -901,7 +908,7 @@ void BattleGround::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
 
         // Do next only if found in battleground
         plr->SetBattleGroundId(0);                          // We're not in BG.
-        
+
         // reset destination bg team
         plr->SetBGTeam(0);
         plr->GetMotionMaster()->MovementExpired();

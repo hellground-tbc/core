@@ -111,14 +111,40 @@ bool Group::Create(const uint64 &guid, const char * name)
 
         Player::ConvertInstancesToGroup(leader, this, guid);
 
+        static SqlStatementID deleteLeaderGroups;
+        static SqlStatementID deleteLeaderGroupMembers;
+        static SqlStatementID insertGroups;
+
         // store group in database
         CharacterDatabase.BeginTransaction();
-        CharacterDatabase.PExecute("DELETE FROM groups WHERE leaderGuid ='%u'", GUID_LOPART(m_leaderGuid));
-        CharacterDatabase.PExecute("DELETE FROM group_member WHERE leaderGuid ='%u'", GUID_LOPART(m_leaderGuid));
-        CharacterDatabase.PExecute("INSERT INTO groups(leaderGuid,mainTank,mainAssistant,lootMethod,looterGuid,lootThreshold,icon1,icon2,icon3,icon4,icon5,icon6,icon7,icon8,isRaid,difficulty) "
-            "VALUES('%u','%u','%u','%u','%u','%u','" UI64FMTD "','" UI64FMTD "','" UI64FMTD "','" UI64FMTD "','" UI64FMTD "','" UI64FMTD "','" UI64FMTD "','" UI64FMTD "','%u','%u')",
-            GUID_LOPART(m_leaderGuid), GUID_LOPART(m_mainTank), GUID_LOPART(m_mainAssistant), uint32(m_lootMethod),
-            GUID_LOPART(m_looterGuid), uint32(m_lootThreshold), m_targetIcons[0], m_targetIcons[1], m_targetIcons[2], m_targetIcons[3], m_targetIcons[4], m_targetIcons[5], m_targetIcons[6], m_targetIcons[7], isRaidGroup(), m_difficulty);
+
+        SqlStatement stmt = CharacterDatabase.CreateStatement(deleteLeaderGroups, "DELETE FROM groups WHERE leaderGuid = ?;");
+        stmt.PExecute(GUID_LOPART(m_leaderGuid));
+
+        stmt = CharacterDatabase.CreateStatement(deleteLeaderGroupMembers, "DELETE FROM group_member WHERE leaderGuid = ?;");
+        stmt.PExecute(GUID_LOPART(m_leaderGuid));
+
+        stmt = CharacterDatabase.CreateStatement(insertGroups, "INSERT INTO groups(leaderGuid, mainTank, mainAssistant, lootMethod, looterGuid, lootThreshold, icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, isRaid, difficulty) "
+                                                                "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
+
+        stmt.addUInt32(GUID_LOPART(m_leaderGuid));
+        stmt.addUInt32(GUID_LOPART(m_mainTank));
+        stmt.addUInt32(GUID_LOPART(m_mainAssistant));
+        stmt.addUInt32(uint32(m_lootMethod));
+        stmt.addUInt32(GUID_LOPART(m_looterGuid));
+        stmt.addUInt32(uint32(m_lootThreshold));
+        stmt.addUInt64(m_targetIcons[0]);
+        stmt.addUInt64(m_targetIcons[1]);
+        stmt.addUInt64(m_targetIcons[2]);
+        stmt.addUInt64(m_targetIcons[3]);
+        stmt.addUInt64(m_targetIcons[4]);
+        stmt.addUInt64(m_targetIcons[5]);
+        stmt.addUInt64(m_targetIcons[6]);
+        stmt.addUInt64(m_targetIcons[7]);
+        stmt.addUInt8(isRaidGroup());
+        stmt.addUInt8(m_difficulty);
+
+        stmt.Execute();
     }
 
     if (!AddMember(guid, name))
@@ -208,8 +234,13 @@ void Group::ConvertToRaid()
 
     _initRaidSubGroupsCounter();
 
+    static SqlStatementID updateGroupToRaid;
+
     if (!isBGGroup())
-        CharacterDatabase.PExecute("UPDATE groups SET isRaid = 1 WHERE leaderGuid='%u'", GUID_LOPART(m_leaderGuid));
+    {
+        SqlStatement stmt = CharacterDatabase.CreateStatement(updateGroupToRaid, "UPDATE groups SET isRaid = 1 WHERE leaderGuid = ?;");
+        stmt.PExecute(GUID_LOPART(m_leaderGuid));
+    }
 
     SendUpdate();
 }
@@ -450,9 +481,17 @@ void Group::Disband(bool hideDestroy)
 
     if (!isBGGroup())
     {
+        static SqlStatementID deleteLeaderGroups;
+        static SqlStatementID deleteLeaderGroupMembers;
+
         CharacterDatabase.BeginTransaction();
-        CharacterDatabase.PExecute("DELETE FROM groups WHERE leaderGuid='%u'", GUID_LOPART(m_leaderGuid));
-        CharacterDatabase.PExecute("DELETE FROM group_member WHERE leaderGuid='%u'", GUID_LOPART(m_leaderGuid));
+
+        SqlStatement stmt = CharacterDatabase.CreateStatement(deleteLeaderGroups, "DELETE FROM groups WHERE leaderGuid = ?;");
+        stmt.PExecute(GUID_LOPART(m_leaderGuid));
+
+        stmt = CharacterDatabase.CreateStatement(deleteLeaderGroupMembers, "DELETE FROM group_member WHERE leaderGuid = ?;");
+        stmt.PExecute(GUID_LOPART(m_leaderGuid));
+
         CharacterDatabase.CommitTransaction();
         ResetInstances(INSTANCE_RESET_GROUP_DISBAND, NULL);
     }
@@ -1128,7 +1167,9 @@ bool Group::_addMember(const uint64 &guid, const char* name, bool isAssistant, u
     if (!isBGGroup())
     {
         // insert into group table
-        CharacterDatabase.PExecute("INSERT INTO group_member(leaderGuid,memberGuid,assistant,subgroup) VALUES('%u','%u','%u','%u')", GUID_LOPART(m_leaderGuid), GUID_LOPART(member.guid), ((member.assistant==1)?1:0), member.group);
+        static SqlStatementID insertGroupMember;
+        SqlStatement stmt = CharacterDatabase.CreateStatement(insertGroupMember, "INSERT INTO group_member(leaderGuid, memberGuid, assistant, subgroup) VALUES(?, ?, ?, ?);");
+        stmt.PExecute(GUID_LOPART(m_leaderGuid), GUID_LOPART(member.guid), ((member.assistant == 1) ? 1 : 0), member.group);
     }
 
     return true;
@@ -1152,8 +1193,13 @@ bool Group::_removeMember(const uint64 &guid)
         m_memberSlots.erase(slot);
     }
 
+    static SqlStatementID deleteGroupMember;
+
     if (!isBGGroup())
-        CharacterDatabase.PExecute("DELETE FROM group_member WHERE memberGuid='%u'", GUID_LOPART(guid));
+    {
+        SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGroupMember, "DELETE FROM group_member WHERE memberGuid = ?;");
+        stmt.PExecute(GUID_LOPART(guid));
+    }
 
     if (m_leaderGuid == guid)                                // leader was removed
     {
@@ -1176,16 +1222,17 @@ void Group::_setLeader(const uint64 &guid)
         // TODO: set a time limit to have this function run rarely cause it can be slow
         CharacterDatabase.BeginTransaction();
 
+        static SqlStatementID deleteGroupInstanceForLeader;
+
         // update the group's bound instances when changing leaders
 
         // remove all permanent binds from the group
         // in the DB also remove solo binds that will be replaced with permbinds
         // from the new leader
-        CharacterDatabase.PExecute(
-            "DELETE FROM group_instance WHERE leaderguid='%u' AND (permanent = 1 OR "
-            "instance IN (SELECT instance FROM character_instance WHERE guid = '%u')"
-            ")", GUID_LOPART(m_leaderGuid), GUID_LOPART(slot->guid)
-       );
+        SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGroupInstanceForLeader,
+            "DELETE FROM group_instance WHERE leaderguid = ? AND (permanent = 1 OR "
+            "instance IN (SELECT instance FROM character_instance WHERE guid = ?));");
+        stmt.PExecute(GUID_LOPART(m_leaderGuid), GUID_LOPART(slot->guid));
 
         Player *player = objmgr.GetPlayer(slot->guid);
         if (player)
@@ -1204,18 +1251,27 @@ void Group::_setLeader(const uint64 &guid)
                 }
             }
         }
+        static SqlStatementID updateGroupInstanceLeader;
 
         // update the group's solo binds to the new leader
-        CharacterDatabase.PExecute("UPDATE group_instance SET leaderGuid='%u' WHERE leaderGuid = '%u'", GUID_LOPART(slot->guid), GUID_LOPART(m_leaderGuid));
+        stmt = CharacterDatabase.CreateStatement(updateGroupInstanceLeader, "UPDATE group_instance SET leaderGuid = ? WHERE leaderGuid = ?;");
+        stmt.PExecute(GUID_LOPART(slot->guid), GUID_LOPART(m_leaderGuid));
 
         // copy the permanent binds from the new leader to the group
         // overwriting the solo binds with permanent ones if necessary
         // in the DB those have been deleted already
         Player::ConvertInstancesToGroup(player, this, slot->guid);
 
+        static SqlStatementID updateGroupsLeaderGuid;
+        static SqlStatementID updateGroupMemberLeaderGuid;
+
         // update the group leader
-        CharacterDatabase.PExecute("UPDATE groups SET leaderGuid='%u' WHERE leaderGuid='%u'", GUID_LOPART(slot->guid), GUID_LOPART(m_leaderGuid));
-        CharacterDatabase.PExecute("UPDATE group_member SET leaderGuid='%u' WHERE leaderGuid='%u'", GUID_LOPART(slot->guid), GUID_LOPART(m_leaderGuid));
+        stmt = CharacterDatabase.CreateStatement(updateGroupsLeaderGuid, "UPDATE groups SET leaderGuid = ? WHERE leaderGuid = ?;");
+        stmt.PExecute(GUID_LOPART(slot->guid), GUID_LOPART(m_leaderGuid));
+
+        stmt = CharacterDatabase.CreateStatement(updateGroupMemberLeaderGuid, "UPDATE group_member SET leaderGuid = ? WHERE leaderGuid = ?;");
+        stmt.PExecute(GUID_LOPART(slot->guid), GUID_LOPART(m_leaderGuid));
+
         CharacterDatabase.CommitTransaction();
     }
 
@@ -1253,7 +1309,13 @@ bool Group::_setMembersGroup(const uint64 &guid, const uint8 &group)
 
     SubGroupCounterIncrease(group);
 
-    if (!isBGGroup()) CharacterDatabase.PExecute("UPDATE group_member SET subgroup='%u' WHERE memberGuid='%u'", group, GUID_LOPART(guid));
+    static SqlStatementID updateGroupMemberSubGroup;
+
+    if (!isBGGroup())
+    {
+        SqlStatement stmt = CharacterDatabase.CreateStatement(updateGroupMemberSubGroup, "UPDATE group_member SET subgroup = ? WHERE memberGuid = ?;");
+        stmt.PExecute(group, GUID_LOPART(guid));
+    }
 
     return true;
 }
@@ -1264,8 +1326,15 @@ bool Group::_setAssistantFlag(const uint64 &guid, const bool &state)
     if (slot==m_memberSlots.end())
         return false;
 
+    static SqlStatementID updateGroupMemberAssistant;
     slot->assistant = state;
-    if (!isBGGroup()) CharacterDatabase.PExecute("UPDATE group_member SET assistant='%u' WHERE memberGuid='%u'", (state==true)?1:0, GUID_LOPART(guid));
+
+    if (!isBGGroup())
+    {
+        SqlStatement stmt = CharacterDatabase.CreateStatement(updateGroupMemberAssistant, "UPDATE group_member SET assistant = ? WHERE memberGuid = ?;");
+        stmt.PExecute((state==true)?1:0, GUID_LOPART(guid));
+    }
+
     return true;
 }
 
@@ -1277,8 +1346,16 @@ bool Group::_setMainTank(const uint64 &guid)
 
     if (m_mainAssistant == guid)
         _setMainAssistant(0);
+
+    static SqlStatementID updateGroupsMainTank;
     m_mainTank = guid;
-    if (!isBGGroup()) CharacterDatabase.PExecute("UPDATE groups SET mainTank='%u' WHERE leaderGuid='%u'", GUID_LOPART(m_mainTank), GUID_LOPART(m_leaderGuid));
+
+    if (!isBGGroup())
+    {
+        SqlStatement stmt = CharacterDatabase.CreateStatement(updateGroupsMainTank, "UPDATE groups SET mainTank = ? WHERE leaderGuid = ?;");
+        stmt.PExecute(GUID_LOPART(m_mainTank), GUID_LOPART(m_leaderGuid));
+    }
+
     return true;
 }
 
@@ -1290,8 +1367,16 @@ bool Group::_setMainAssistant(const uint64 &guid)
 
     if (m_mainTank == guid)
         _setMainTank(0);
+
+    static SqlStatementID updateGroupsMainAssistant;
     m_mainAssistant = guid;
-    if (!isBGGroup()) CharacterDatabase.PExecute("UPDATE groups SET mainAssistant='%u' WHERE leaderGuid='%u'", GUID_LOPART(m_mainAssistant), GUID_LOPART(m_leaderGuid));
+
+    if (!isBGGroup())
+    {
+        SqlStatement stmt = CharacterDatabase.CreateStatement(updateGroupsMainAssistant, "UPDATE groups SET mainAssistant = ? WHERE leaderGuid = ?;");
+        stmt.PExecute(GUID_LOPART(m_mainAssistant), GUID_LOPART(m_leaderGuid));
+    }
+
     return true;
 }
 
@@ -1474,8 +1559,13 @@ void Roll::targetObjectBuildLink()
 
 void Group::SetDifficulty(uint8 difficulty)
 {
+    static SqlStatementID updateGroupsDifficulty;
     m_difficulty = difficulty;
-    if (!isBGGroup()) CharacterDatabase.PExecute("UPDATE groups SET difficulty = %u WHERE leaderGuid ='%u'", m_difficulty, GUID_LOPART(m_leaderGuid));
+    if (!isBGGroup())
+    {
+        SqlStatement stmt = CharacterDatabase.CreateStatement(updateGroupsDifficulty, "UPDATE groups SET difficulty = ? WHERE leaderGuid = ?;");
+        stmt.PExecute(m_difficulty, GUID_LOPART(m_leaderGuid));
+    }
 
     for (GroupReference *itr = GetFirstMember(); itr != NULL; itr = itr->next())
     {
@@ -1542,7 +1632,11 @@ void Group::ResetInstances(uint8 method, Player* SendMsgTo)
             if (p->CanReset())
                 p->DeleteFromDB();
             else
-                CharacterDatabase.PExecute("DELETE FROM group_instance WHERE instance = '%u'", p->GetInstanceId());
+            {
+                static SqlStatementID deleteGroupInstance;
+                SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGroupInstance, "DELETE FROM group_instance WHERE instance = ?;");
+                stmt.PExecute(p->GetInstanceId());
+            }
 
             // i don't know for sure if hash_map iterators
             m_boundInstances[dif].erase(itr);
@@ -1578,13 +1672,23 @@ InstanceGroupBind* Group::BindToInstance(InstanceSave *save, bool permanent, boo
         if (bind.save)
         {
             // when a boss is killed or when copying the player's binds to the group
-            if (permanent != bind.perm || save != bind.save)
-                if (!load)
-                    CharacterDatabase.PExecute("UPDATE group_instance SET instance = '%u', permanent = '%u' WHERE leaderGuid = '%u' AND instance = '%u'", save->GetInstanceId(), permanent, GUID_LOPART(GetLeaderGUID()), bind.save->GetInstanceId());
+            if ((permanent != bind.perm || save != bind.save) && !load)
+            {
+                static SqlStatementID updateGroupInstance;
+                SqlStatement stmt = CharacterDatabase.CreateStatement(updateGroupInstance, "UPDATE group_instance SET instance = ?, permanent = ? WHERE leaderGuid = ? AND instance = ?;");
+                stmt.addUInt32(save->GetInstanceId());
+                stmt.addBool(permanent);
+                stmt.addUInt64(GUID_LOPART(GetLeaderGUID()));
+                stmt.addUInt32(bind.save->GetInstanceId());
+            }
         }
         else
             if (!load)
-                CharacterDatabase.PExecute("INSERT INTO group_instance (leaderGuid, instance, permanent) VALUES ('%u', '%u', '%u')", GUID_LOPART(GetLeaderGUID()), save->GetInstanceId(), permanent);
+            {
+                static SqlStatementID insertGroupInstance;
+                SqlStatement stmt = CharacterDatabase.CreateStatement(insertGroupInstance, "INSERT INTO group_instance (leaderGuid, instance, permanent) VALUES(?, ?, ?);");
+                stmt.PExecute(GUID_LOPART(GetLeaderGUID()), save->GetInstanceId(), permanent);
+            }
 
         if (bind.save != save)
         {
@@ -1610,11 +1714,19 @@ void Group::UnbindInstance(uint32 mapid, uint8 difficulty, bool unload)
     BoundInstancesMap::iterator itr = m_boundInstances[difficulty].find(mapid);
     if (itr != m_boundInstances[difficulty].end())
     {
+        static SqlStatementID deleteLeaderGroupInstance;
+        static SqlStatementID deleteGroupSavedLoot;
         CharacterDatabase.BeginTransaction();
-        if (!unload)
-            CharacterDatabase.PExecute("DELETE FROM group_instance WHERE leaderGuid = '%u' AND instance = '%u'", GUID_LOPART(GetLeaderGUID()), itr->second.save->GetInstanceId());
 
-        CharacterDatabase.PExecute("DELETE FROM group_saved_loot WHERE instanceId='%u'", (*itr).second.save->GetInstanceId());
+        if (!unload)
+        {
+            SqlStatement stmt = CharacterDatabase.CreateStatement(deleteLeaderGroupInstance, "DELETE FROM group_instance WHERE leaderGuid = ? AND instance = ?;");
+            stmt.PExecute(GUID_LOPART(GetLeaderGUID()), itr->second.save->GetInstanceId());
+        }
+
+        SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGroupSavedLoot, "DELETE FROM group_saved_loot WHERE instanceId = ?;");
+        stmt.PExecute((*itr).second.save->GetInstanceId());
+
         itr->second.save->RemoveGroup(this);                // save can become invalid
         CharacterDatabase.CommitTransaction();
         m_boundInstances[difficulty].erase(itr);

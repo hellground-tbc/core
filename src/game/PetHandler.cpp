@@ -465,18 +465,38 @@ void WorldSession::HandlePetRename(WorldPacket & recv_data)
         }
     }
 
+    static SqlStatementID updatePetName;
+
     CharacterDatabase.BeginTransaction();
     if (isdeclined)
     {
+        static SqlStatementID deletePetDeclinedName;
+        static SqlStatementID insertPetDeclinedName;
+
         for (int i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
             CharacterDatabase.escape_string(declinedname.name[i]);
-        CharacterDatabase.PExecute("DELETE FROM character_pet_declinedname WHERE owner = '%u' AND id = '%u'", _player->GetGUIDLow(), pet->GetCharmInfo()->GetPetNumber());
-        CharacterDatabase.PExecute("INSERT INTO character_pet_declinedname (id, owner, genitive, dative, accusative, instrumental, prepositional) VALUES ('%u','%u','%s','%s','%s','%s','%s')",
-            pet->GetCharmInfo()->GetPetNumber(), _player->GetGUIDLow(), declinedname.name[0].c_str(), declinedname.name[1].c_str(), declinedname.name[2].c_str(), declinedname.name[3].c_str(), declinedname.name[4].c_str());
+
+        SqlStatement stmt = CharacterDatabase.CreateStatement(deletePetDeclinedName, "DELETE FROM character_pet_declinedname WHERE owner = ? AND id = ?;");
+        stmt.PExecute(_player->GetGUIDLow(), pet->GetCharmInfo()->GetPetNumber());
+
+        stmt = CharacterDatabase.CreateStatement(insertPetDeclinedName, "INSERT INTO character_pet_declinedname(id, owner, genitive, dative, accusative, instrumental, prepositional) VALUES(?, ?, ?, ?, ?, ?, ?);");
+
+        stmt.addUInt32(pet->GetCharmInfo()->GetPetNumber());
+        stmt.addUInt32(_player->GetGUIDLow());
+        stmt.addString(declinedname.name[0]);
+        stmt.addString(declinedname.name[1]);
+        stmt.addString(declinedname.name[2]);
+        stmt.addString(declinedname.name[3]);
+        stmt.addString(declinedname.name[4]);
+
+        stmt.Execute();
     }
 
     CharacterDatabase.escape_string(name);
-    CharacterDatabase.PExecute("UPDATE character_pet SET name = '%s', renamed = '1' WHERE owner = '%u' AND id = '%u'", name.c_str(), _player->GetGUIDLow(), pet->GetCharmInfo()->GetPetNumber());
+
+    SqlStatement stmt = CharacterDatabase.CreateStatement(updatePetName, "UPDATE character_pet SET name = ?, renamed = '1' WHERE owner = ? AND id = ?;");
+    stmt.PExecute(name.c_str(), _player->GetGUIDLow(), pet->GetCharmInfo()->GetPetNumber());
+
     CharacterDatabase.CommitTransaction();
 
     pet->SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, time(NULL));

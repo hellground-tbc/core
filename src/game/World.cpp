@@ -1146,7 +1146,7 @@ void World::LoadConfigSettings(bool reload)
 
     m_visibility_notify_periodOnContinents = sConfig.GetIntDefault("Visibility.Notify.Period.OnContinents", DEFAULT_VISIBILITY_NOTIFY_PERIOD);
     m_visibility_notify_periodInInstances = sConfig.GetIntDefault("Visibility.Notify.Period.InInstances",   DEFAULT_VISIBILITY_NOTIFY_PERIOD);
-    m_visibility_notify_periodInBGArenas = sConfig.GetIntDefault("Visibility.Notify.Period.InBGArenas",    DEFAULT_VISIBILITY_NOTIFY_PERIOD);  
+    m_visibility_notify_periodInBGArenas = sConfig.GetIntDefault("Visibility.Notify.Period.InBGArenas",    DEFAULT_VISIBILITY_NOTIFY_PERIOD);
 
     ///- Read the "Data" directory from the config file
     std::string dataPath = sConfig.GetStringDefault("DataDir","./");
@@ -1824,7 +1824,15 @@ void World::Update(time_t diff)
         uint32 maxClientsNum = sWorld.GetMaxActiveSessionCount();
 
         m_timers[WUPDATE_UPTIME].Reset();
-        WorldDatabase.PExecute("UPDATE uptime SET uptime = %d, maxplayers = %d WHERE starttime = " UI64FMTD, tmpDiff, maxClientsNum, uint64(m_startTime));
+
+        static SqlStatementID updateUptime;
+        SqlStatement stmt = WorldDatabase.CreateStatement(updateUptime, "UPDATE uptime SET uptime = ?, maxplayers = ? WHERE starttime = ?;");
+
+        stmt.addUInt32(tmpDiff);
+        stmt.addUInt32(maxClientsNum);
+        stmt.addUInt64(uint64(m_startTime));
+
+        stmt.Execute();
     }
 
     if (sWorld.getConfig(CONFIG_AUTOBROADCAST_INTERVAL))
@@ -2199,13 +2207,20 @@ BanReturn World::BanAccount(BanMode mode, std::string nameIPOrMail, std::string 
 
     QueryResultAutoPtr resultAccounts = QueryResultAutoPtr(NULL);   //used for kicking
 
+    static SqlStatementID insertIpBan;
+    static SqlStatementID insertAccountBan;
+    static SqlStatementID insertMailBan;
+
+    SqlStatement stmt;
+
     ///- Update the database with ban information
     switch (mode)
     {
         case BAN_IP:
             //No SQL injection as strings are escaped
             resultAccounts = LoginDatabase.PQuery("SELECT id FROM account WHERE last_ip = '%s'",nameIPOrMail.c_str());
-            LoginDatabase.PExecute("INSERT INTO ip_banned VALUES ('%s',UNIX_TIMESTAMP(),UNIX_TIMESTAMP()+%u,'%s','%s')",nameIPOrMail.c_str(),duration_secs,safe_author.c_str(),reason.c_str());
+            stmt = LoginDatabase.CreateStatement(insertIpBan, "INSERT INTO ip_banned VALUES (?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()+?, ?, ?);");
+            stmt.PExecute(nameIPOrMail.c_str(), duration_secs, safe_author.c_str(), reason.c_str());
             break;
         case BAN_ACCOUNT:
             //No SQL injection as string is escaped
@@ -2217,7 +2232,8 @@ BanReturn World::BanAccount(BanMode mode, std::string nameIPOrMail, std::string 
             break;
         case BAN_EMAIL:
             resultAccounts = LoginDatabase.PQuery("SELECT account FROM account WHERE email = '%s'",nameIPOrMail.c_str());
-            LoginDatabase.PExecute("INSERT INTO email_banned VALUES ('%s',UNIX_TIMESTAMP(),'%s','%s')",nameIPOrMail.c_str(),safe_author.c_str(),reason.c_str());
+            stmt = LoginDatabase.CreateStatement(insertMailBan, "INSERT INTO email_banned VALUES(?, UNIX_TIMESTAMP(), ?, ?);");
+            stmt.PExecute(nameIPOrMail.c_str(), safe_author.c_str(), reason.c_str());
             break;
         default:
             return BAN_SYNTAX_ERROR;
@@ -2240,8 +2256,8 @@ BanReturn World::BanAccount(BanMode mode, std::string nameIPOrMail, std::string 
         if (mode != BAN_IP && mode != BAN_EMAIL)
         {
             //No SQL injection as strings are escaped
-            LoginDatabase.PExecute("INSERT INTO account_banned VALUES ('%u', UNIX_TIMESTAMP(), UNIX_TIMESTAMP()+%u, '%s', '%s', '1')",
-                account,duration_secs,safe_author.c_str(),reason.c_str());
+            stmt = LoginDatabase.CreateStatement(insertAccountBan, "INSERT INTO account_banned VALUES(?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP()+?, ?, ?, '1');");
+            stmt.PExecute(account, duration_secs, safe_author.c_str(), reason.c_str());
         }
 
         if (WorldSession* sess = FindSession(account))
@@ -2256,15 +2272,23 @@ BanReturn World::BanAccount(BanMode mode, std::string nameIPOrMail, std::string 
 /// Remove a ban from an account or IP address
 bool World::RemoveBanAccount(BanMode mode, std::string nameIPOrMail)
 {
+    static SqlStatementID deleteIpBanned;
+    static SqlStatementID deleteMailBanned;
+    static SqlStatementID deleteAccountBanned;
+
+    SqlStatement stmt;
+
     switch (mode)
     {
         case BAN_IP:
             LoginDatabase.escape_string(nameIPOrMail);
-            LoginDatabase.PExecute("DELETE FROM ip_banned WHERE ip = '%s'",nameIPOrMail.c_str());
+            stmt = LoginDatabase.CreateStatement(deleteIpBanned, "DELETE FROM ip_banned WHERE ip = ?;");
+            stmt.PExecute(nameIPOrMail.c_str());
             break;
         case BAN_EMAIL:
             LoginDatabase.escape_string(nameIPOrMail);
-            LoginDatabase.PExecute("DELETE FROM email_banned WHERE email = '%s'",nameIPOrMail.c_str());
+            stmt = LoginDatabase.CreateStatement(deleteMailBanned, "DELETE FROM email_banned WHERE email = ?;");
+            stmt.PExecute(nameIPOrMail.c_str());
             break;
         case BAN_ACCOUNT:
         case BAN_CHARACTER:
@@ -2278,7 +2302,8 @@ bool World::RemoveBanAccount(BanMode mode, std::string nameIPOrMail)
                 return false;
 
             //NO SQL injection as account is uint32
-            LoginDatabase.PExecute("UPDATE account_banned SET active = '0' WHERE id = '%u'",account);
+            stmt = LoginDatabase.CreateStatement(deleteAccountBanned, "UPDATE account_banned SET active = '0' WHERE id = ?;");
+            stmt.PExecute(account);
             break;
     }
     return true;
@@ -2476,12 +2501,20 @@ void World::_UpdateRealmCharCount(QueryResultAutoPtr resultCharCount, uint32 acc
 {
     if (resultCharCount)
     {
+        static SqlStatementID deleteRealmCharCount;
+        static SqlStatementID insertRealmCharCount;
+
         Field *fields = resultCharCount->Fetch();
         uint32 charCount = fields[0].GetUInt32();
 
         LoginDatabase.BeginTransaction();
-        LoginDatabase.PExecute("DELETE FROM realmcharacters WHERE acctid= '%d' AND realmid = '%d'", accountId, realmID);
-        LoginDatabase.PExecute("INSERT INTO realmcharacters (numchars, acctid, realmid) VALUES (%u, %u, %u)", charCount, accountId, realmID);
+
+        SqlStatement stmt = LoginDatabase.CreateStatement(deleteRealmCharCount, "DELETE FROM realmcharacters WHERE acctid = ? AND realmid = ?;");
+        stmt.PExecute(accountId, realmID);
+
+        stmt = LoginDatabase.CreateStatement(insertRealmCharCount, "INSERT INTO realmcharacters(numchars, acctid, realmid) VALUES(?, ?, ?);");
+        stmt.PExecute(charCount, accountId, realmID);
+
         LoginDatabase.CommitTransaction();
     }
 }
@@ -2610,4 +2643,3 @@ void World::LoadDBVersion()
     else
         m_DBVersion = "unknown world database";
 }
-

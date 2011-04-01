@@ -3400,7 +3400,11 @@ void Player::_LoadSpellCooldowns(QueryResultAutoPtr result)
 
 void Player::_SaveSpellCooldowns()
 {
-    CharacterDatabase.PExecute("DELETE FROM character_spell_cooldown WHERE guid = '%u'", GetGUIDLow());
+    static SqlStatementID deleteCharacterSpellCooldowns;
+    static SqlStatementID insertCharacterSpellCooldowns;
+
+    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCharacterSpellCooldowns, "DELETE FROM character_spell_cooldown WHERE guid = ?;");
+    stmt.PExecute(GetGUIDLow());
 
     time_t curTime = time(NULL);
 
@@ -3411,7 +3415,9 @@ void Player::_SaveSpellCooldowns()
             m_spellCooldowns.erase(itr++);
         else
         {
-            CharacterDatabase.PExecute("INSERT INTO character_spell_cooldown (guid,spell,item,time) VALUES ('%u', '%u', '%u', '" UI64FMTD "')", GetGUIDLow(), itr->first, itr->second.itemid, uint64(itr->second.end));
+            stmt = CharacterDatabase.CreateStatement(insertCharacterSpellCooldowns, "INSERT INTO character_spell_cooldown(guid, spell, item, time) VALUES(?, ?, ?, ?);");
+            stmt.PExecute(GetGUIDLow(), itr->first, itr->second.itemid, uint64(itr->second.end));
+
             ++itr;
         }
     }
@@ -3889,7 +3895,11 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
 
             //we can return mail now
             //so firstly delete the old one
-            CharacterDatabase.PExecute("DELETE FROM mail WHERE id = '%u'", mail_id);
+            static SqlStatementID deleteMail;
+            static SqlStatementID deleteMailItems;
+
+            SqlStatement stmt = CharacterDatabase.CreateStatement(deleteMail, "DELETE FROM mail WHERE id = ?;");
+            stmt.PExecute(mail_id);
 
             MailItemsInfo mi;
             if (has_items)
@@ -3897,6 +3907,8 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
                 QueryResultAutoPtr resultItems = CharacterDatabase.PQuery("SELECT item_guid,item_template FROM mail_items WHERE mail_id='%u'", mail_id);
                 if (resultItems)
                 {
+                    static SqlStatementID deleteItemInstance;
+
                     do
                     {
                         Field *fields2 = resultItems->Fetch();
@@ -3907,7 +3919,8 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
                         ItemPrototype const* itemProto = objmgr.GetItemPrototype(item_template);
                         if (!itemProto)
                         {
-                            CharacterDatabase.PExecute("DELETE FROM item_instance WHERE guid = '%u'", item_guidlow);
+                            stmt = CharacterDatabase.CreateStatement(deleteItemInstance, "DELETE FROM item_instance WHERE guid = ?;");
+                            stmt.PExecute(item_guidlow);
                             continue;
                         }
 
@@ -3925,7 +3938,8 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
                 }
             }
 
-            CharacterDatabase.PExecute("DELETE FROM mail_items WHERE mail_id = '%u'", mail_id);
+            stmt = CharacterDatabase.CreateStatement(deleteMailItems, "DELETE FROM mail_items WHERE mail_id = ?;");
+            stmt.PExecute(mail_id);
 
             uint32 pl_account = objmgr.GetPlayerAccountIdByGUID(MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER));
 
@@ -3967,29 +3981,91 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
             uint32 petguidlow = fields3[0].GetUInt32();
             //do not create separate transaction for pet delete otherwise we will get fatal error!
             Pet::DeleteFromDB(petguidlow, false);
-        } while (resultPets->NextRow());
+        }
+        while (resultPets->NextRow());
     }
 
-    CharacterDatabase.PExecute("DELETE FROM characters WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_declinedname WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_action WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_aura WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_gifts WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_homebind WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_instance WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM group_instance WHERE leaderGuid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_queststatus WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_reputation WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_spell WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_spell_cooldown WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM gm_tickets WHERE playerGuid = '%u'", guid);
-    CharacterDatabase.PExecute("DELETE FROM item_instance WHERE owner_guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_social WHERE guid = '%u' OR friend='%u'",guid,guid);
-    CharacterDatabase.PExecute("DELETE FROM mail WHERE receiver = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM mail_items WHERE receiver = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_pet WHERE owner = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_pet_declinedname WHERE owner = '%u'",guid);
+    static SqlStatementID deleteCharacter;
+    static SqlStatementID deleteCharacterDeclinedNames;
+    static SqlStatementID deleteCharacterActions;
+    static SqlStatementID deleteCharacterAuras;
+    static SqlStatementID deleteCharacterGifts;
+    static SqlStatementID deleteCharacterHomebinds;
+    static SqlStatementID deleteCharacterInstances;
+    static SqlStatementID deleteGroupInstances;
+    static SqlStatementID deleteCharacterInventory;
+    static SqlStatementID deleteCharacterQuestStatus;
+    static SqlStatementID deleteCharacterReputations;
+    static SqlStatementID deleteCharacterSpells;
+    static SqlStatementID deleteCharacterSpellCooldowns;
+    static SqlStatementID deleteCharacterTickets;
+    static SqlStatementID deleteCharacterItemInstances;
+    static SqlStatementID deleteCharacterSocials;
+    static SqlStatementID deleteCharacterMails;
+    static SqlStatementID deleteCharacterMailItems;
+    static SqlStatementID deleteCharacterPets;
+    static SqlStatementID deleteCharacterPetsDeciledNamesOwner;
+
+    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCharacter, "DELETE FROM characters WHERE guid = ?;");
+    stmt.PExecute(guid);
+
+    stmt = CharacterDatabase.CreateStatement(deleteCharacterDeclinedNames, "DELETE FROM character_declinedname WHERE guid = ?;");
+    stmt.PExecute(guid);
+
+    stmt = CharacterDatabase.CreateStatement(deleteCharacterActions, "DELETE FROM character_action WHERE guid = ?;");
+    stmt.PExecute(guid);
+
+    stmt = CharacterDatabase.CreateStatement(deleteCharacterAuras, "DELETE FROM character_aura WHERE guid = ?;");
+    stmt.PExecute(guid);
+
+    stmt = CharacterDatabase.CreateStatement(deleteCharacterGifts, "DELETE FROM character_gifts WHERE guid = ?;");
+    stmt.PExecute(guid);
+
+    stmt = CharacterDatabase.CreateStatement(deleteCharacterHomebinds, "DELETE FROM character_homebind WHERE guid = ?;");
+    stmt.PExecute(guid);
+
+    stmt = CharacterDatabase.CreateStatement(deleteCharacterInstances, "DELETE FROM character_instance WHERE guid = ?;");
+    stmt.PExecute(guid);
+
+    stmt = CharacterDatabase.CreateStatement(deleteGroupInstances, "DELETE FROM group_instance WHERE leaderGuid = ?;");
+    stmt.PExecute(guid);
+
+    stmt = CharacterDatabase.CreateStatement(deleteCharacterInventory, "DELETE FROM character_inventory WHERE guid = ?;");
+    stmt.PExecute(guid);
+
+    stmt = CharacterDatabase.CreateStatement(deleteCharacterQuestStatus, "DELETE FROM character_queststatus WHERE guid = ?;");
+    stmt.PExecute(guid);
+
+    stmt = CharacterDatabase.CreateStatement(deleteCharacterReputations, "DELETE FROM character_reputation WHERE guid = ?;");
+    stmt.PExecute(guid);
+
+    stmt = CharacterDatabase.CreateStatement(deleteCharacterSpells, "DELETE FROM character_spell WHERE guid = ?;");
+    stmt.PExecute(guid);
+
+    stmt = CharacterDatabase.CreateStatement(deleteCharacterSpellCooldowns, "DELETE FROM character_spell_cooldown WHERE guid = ?;");
+    stmt.PExecute(guid);
+
+    stmt = CharacterDatabase.CreateStatement(deleteCharacterTickets, "DELETE FROM gm_tickets WHERE playerGuid = ?;");
+    stmt.PExecute(guid);
+
+    stmt = CharacterDatabase.CreateStatement(deleteCharacterItemInstances, "DELETE FROM item_instance WHERE owner_guid = ?;");
+    stmt.PExecute(guid);
+
+    stmt = CharacterDatabase.CreateStatement(deleteCharacterSocials, "DELETE FROM character_social WHERE guid = ? OR friend = ?;");
+    stmt.PExecute(guid, guid);
+
+    stmt = CharacterDatabase.CreateStatement(deleteCharacterMails, "DELETE FROM mail WHERE receiver = ?;");
+    stmt.PExecute(guid);
+
+    stmt = CharacterDatabase.CreateStatement(deleteCharacterMailItems, "DELETE FROM mail_items WHERE receiver = ?;");
+    stmt.PExecute(guid);
+
+    stmt = CharacterDatabase.CreateStatement(deleteCharacterPets, "DELETE FROM character_pet WHERE owner = ?;");
+    stmt.PExecute(guid);
+
+    stmt = CharacterDatabase.CreateStatement(deleteCharacterPetsDeciledNamesOwner, "DELETE FROM character_pet_declinedname WHERE owner = ?;");
+    stmt.PExecute(guid);
+
     CharacterDatabase.CommitTransaction();
 
     //LoginDatabase.PExecute("UPDATE realmcharacters SET numchars = numchars - 1 WHERE acctid = %d AND realmid = %d", accountId, realmID);
@@ -11086,7 +11162,11 @@ void Player::DestroyItem(uint8 bag, uint8 slot, bool update)
         }
 
         if (pItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_WRAPPED))
-            CharacterDatabase.PExecute("DELETE FROM character_gifts WHERE item_guid = '%u'", pItem->GetGUIDLow());
+        {
+            static SqlStatementID deleteCharacterGift;
+            SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCharacterGift, "DELETE FROM character_gifts WHERE item_guid = ?;");
+            stmt.PExecute(pItem->GetGUIDLow());
+        }
 
         RemoveEnchantmentDurations(pItem);
         RemoveItemDurations(pItem);
@@ -15148,10 +15228,18 @@ void Player::_LoadInventory(QueryResultAutoPtr result, uint32 timediff)
 
             ItemPrototype const * proto = objmgr.GetItemPrototype(item_id);
 
+            static SqlStatementID deleteCharacterInventoryItem;
+
             if (!proto)
             {
-                CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item = '%u'", item_guid);
-                CharacterDatabase.PExecute("DELETE FROM item_instance WHERE guid = '%u'", item_guid);
+                static SqlStatementID deleteItemInstance;
+
+                SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCharacterInventoryItem, "DELETE FROM character_inventory WHERE item = ?;");
+                stmt.PExecute(item_guid);
+
+                stmt = CharacterDatabase.CreateStatement(deleteItemInstance, "DELETE FROM item_instance WHERE guid = ?;");
+                stmt.PExecute(item_guid);
+
                 sLog.outError("Player::_LoadInventory: Player %s has an unknown item (id: #%u) in inventory, deleted.", GetName(),item_id);
                 continue;
             }
@@ -15161,7 +15249,10 @@ void Player::_LoadInventory(QueryResultAutoPtr result, uint32 timediff)
             if (!item->LoadFromDB(item_guid, GetGUID(), result))
             {
                 sLog.outError("Player::_LoadInventory: Player %s has broken item (id: #%u) in inventory, deleted.", GetName(),item_id);
-                CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item = '%u'", item_guid);
+
+                SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCharacterInventoryItem, "DELETE FROM character_inventory WHERE item = ?;");
+                stmt.PExecute(item_guid);
+
                 item->FSetState(ITEM_REMOVED);
                 item->SaveToDB();                           // it also deletes item object !
                 continue;
@@ -15170,7 +15261,9 @@ void Player::_LoadInventory(QueryResultAutoPtr result, uint32 timediff)
             // not allow have in alive state item limited to another map/zone
             if (isAlive() && item->IsLimitedToAnotherMapOrZone(GetMapId(),zone))
             {
-                CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item = '%u'", item_guid);
+                SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCharacterInventoryItem, "DELETE FROM character_inventory WHERE item = ?;");
+                stmt.PExecute(item_guid);
+
                 item->FSetState(ITEM_REMOVED);
                 item->SaveToDB();                           // it also deletes item object !
                 continue;
@@ -15179,7 +15272,9 @@ void Player::_LoadInventory(QueryResultAutoPtr result, uint32 timediff)
             // "Conjured items disappear if you are logged out for more than 15 minutes"
             if ((timediff > 15*60) && (item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_CONJURED)))
             {
-                CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item = '%u'", item_guid);
+                SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCharacterInventoryItem, "DELETE FROM character_inventory WHERE item = ?;");
+                stmt.PExecute(item_guid);
+
                 item->FSetState(ITEM_REMOVED);
                 item->SaveToDB();                           // it also deletes item object !
                 continue;
@@ -15242,11 +15337,15 @@ void Player::_LoadInventory(QueryResultAutoPtr result, uint32 timediff)
             else
             {
                 sLog.outError("Player::_LoadInventory: Player %s has item (GUID: %u Entry: %u) can't be loaded to inventory (Bag GUID: %u Slot: %u) by some reason, will send by mail.", GetName(),item_guid, item_id, bag_guid, slot);
-                CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item = '%u'", item_guid);
+
+                SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCharacterInventoryItem, "DELETE FROM character_inventory WHERE item = ?;");
+                stmt.PExecute(item_guid);
+
                 if (!GetSession()->SpecialLog())
                     problematicItems.push_back(item);
             }
-        } while (result->NextRow());
+        }
+        while (result->NextRow());
 
         m_itemUpdateQueueBlocked = false;
 
@@ -15664,15 +15763,18 @@ void Player::_LoadBoundInstances(QueryResultAutoPtr result)
 
             if (!perm && group)
             {
+                static SqlStatementID deleteCharacterInstanceG;
                 sLog.outError("_LoadBoundInstances: player %s(%d) is in group %d but has a non-permanent character bind to map %d,%d,%d", GetName(), GetGUIDLow(), GUID_LOPART(group->GetLeaderGUID()), mapId, instanceId, difficulty);
-                CharacterDatabase.PExecute("DELETE FROM character_instance WHERE guid = '%d' AND instance = '%d'", GetGUIDLow(), instanceId);
+                SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCharacterInstanceG, "DELETE FROM character_instance WHERE guid = ? AND instance = ?;");
+                stmt.PExecute(GetGUIDLow(), instanceId);
                 continue;
             }
 
             // since non permanent binds are always solo bind, they can always be reset
             InstanceSave *save = sInstanceSaveManager.AddInstanceSave(mapId, instanceId, difficulty, resetTime, !perm, true);
             if (save) BindToInstance(save, perm, true);
-        } while (result->NextRow());
+        }
+        while (result->NextRow());
     }
 }
 
@@ -15712,7 +15814,13 @@ void Player::UnbindInstance(BoundInstancesMap::iterator &itr, uint8 difficulty, 
 {
     if (itr != m_boundInstances[difficulty].end())
     {
-        if (!unload) CharacterDatabase.PExecute("DELETE FROM character_instance WHERE guid = '%u' AND instance = '%u'", GetGUIDLow(), itr->second.save->GetInstanceId());
+        static SqlStatementID deleteCharacterInstanceG;
+        if (!unload)
+        {
+            SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCharacterInstanceG, "DELETE FROM character_instance WHERE guid = ? AND instance = ?;");
+            stmt.PExecute(GetGUIDLow(), itr->second.save->GetInstanceId());
+        }
+
         itr->second.save->RemovePlayer(this);               // save can become invalid
         m_boundInstances[difficulty].erase(itr++);
     }
@@ -15722,15 +15830,25 @@ InstancePlayerBind* Player::BindToInstance(InstanceSave *save, bool permanent, b
 {
     if (save)
     {
+        static SqlStatementID updateCharacterInstance;
+        static SqlStatementID insertCharacterInstance;
+        SqlStatement stmt;
         InstancePlayerBind& bind = m_boundInstances[save->GetDifficulty()][save->GetMapId()];
         if (bind.save)
         {
             // update the save when the group kills a boss
-            if (permanent != bind.perm || save != bind.save)
-                if (!load) CharacterDatabase.PExecute("UPDATE character_instance SET instance = '%u', permanent = '%u' WHERE guid = '%u' AND instance = '%u'", save->GetInstanceId(), permanent, GetGUIDLow(), bind.save->GetInstanceId());
+            if ((permanent != bind.perm || save != bind.save) && !load)
+            {
+                stmt = CharacterDatabase.CreateStatement(updateCharacterInstance, "UPDATE character_instance SET instance = ?, permanent = ? WHERE guid = ? AND instance = ?;");
+                stmt.PExecute(save->GetInstanceId(), permanent, GetGUIDLow(), bind.save->GetInstanceId());
+            }
         }
         else
-            if (!load) CharacterDatabase.PExecute("INSERT INTO character_instance (guid, instance, permanent) VALUES ('%u', '%u', '%u')", GetGUIDLow(), save->GetInstanceId(), permanent);
+            if (!load)
+            {
+                stmt = CharacterDatabase.CreateStatement(insertCharacterInstance, "INSERT INTO character_instance (guid, instance, permanent) VALUES (?, ?, ?);");
+                stmt.PExecute(GetGUIDLow(), save->GetInstanceId(), permanent);
+            }
 
         if (bind.save != save)
         {
@@ -15851,10 +15969,18 @@ void Player::ConvertInstancesToGroup(Player *player, Group *group, uint64 player
         }
     }
 
+    static SqlStatementID deleteCharacterInstanceNPerm;
+
     // if the player's not online we don't know what binds it has
-    if (!player || !group || has_binds) CharacterDatabase.PExecute("REPLACE INTO group_instance SELECT guid, instance, permanent FROM character_instance WHERE guid = '%u'", GUID_LOPART(player_guid));
+    if (!player || !group || has_binds)
+        CharacterDatabase.PExecute("REPLACE INTO group_instance SELECT guid, instance, permanent FROM character_instance WHERE guid = '%u'", GUID_LOPART(player_guid));
+
     // the following should not get executed when changing leaders
-    if (!player || has_solo) CharacterDatabase.PExecute("DELETE FROM character_instance WHERE guid = '%d' AND permanent = 0", GUID_LOPART(player_guid));
+    if (!player || has_solo)
+    {
+        SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCharacterInstanceNPerm, "DELETE FROM character_instance WHERE guid = ? AND permanent = 0;");
+        stmt.PExecute(GUID_LOPART(player_guid));
+    }
 }
 
 bool Player::Satisfy(AccessRequirement const *ar, uint32 target_map, bool report)
@@ -15930,6 +16056,11 @@ bool Player::_LoadHomeBind(QueryResultAutoPtr result)
         return false;
     }
 
+    static SqlStatementID deleteCharacterHomebinds;
+    static SqlStatementID insertCharacterHomebind;
+
+    SqlStatement stmt;
+
     bool ok = false;
     if (result)
     {
@@ -15947,7 +16078,10 @@ bool Player::_LoadHomeBind(QueryResultAutoPtr result)
             ok = true;
         }
         else
-            CharacterDatabase.PExecute("DELETE FROM character_homebind WHERE guid = '%u'", GetGUIDLow());
+        {
+            stmt = CharacterDatabase.CreateStatement(deleteCharacterHomebinds, "DELETE FROM character_homebind WHERE guid = ?;");
+            stmt.PExecute(GetGUIDLow());
+        }
     }
 
     if (!ok)
@@ -15958,7 +16092,16 @@ bool Player::_LoadHomeBind(QueryResultAutoPtr result)
         m_homebindY = info->positionY;
         m_homebindZ = info->positionZ;
 
-        CharacterDatabase.PExecute("INSERT INTO character_homebind (guid,map,zone,position_x,position_y,position_z) VALUES ('%u', '%u', '%u', '%f', '%f', '%f')", GetGUIDLow(), m_homebindMapId, (uint32)m_homebindZoneId, m_homebindX, m_homebindY, m_homebindZ);
+        stmt = CharacterDatabase.CreateStatement(insertCharacterHomebind, "INSERT INTO character_homebind(guid, map, zone, position_x, position_y, position_z) VALUES(?, ?, ?, ?, ?, );");
+
+        stmt.addUInt32(GetGUIDLow());
+        stmt.addUInt32(m_homebindMapId);
+        stmt.addUInt32((uint32)m_homebindZoneId);
+        stmt.addFloat(m_homebindX);
+        stmt.addFloat(m_homebindY);
+        stmt.addFloat(m_homebindZ);
+
+        stmt.Execute();
     }
 
     DEBUG_LOG("Setting player home position: mapid is: %u, zoneid is %u, X is %f, Y is %f, Z is %f\n",
@@ -16172,24 +16315,43 @@ void Player::SaveInventoryAndGoldToDB()
 
 void Player::_SaveActions()
 {
+    static SqlStatementID insertCharacterAction;
+    static SqlStatementID updateCharacterAction;
+    static SqlStatementID deleteCharacterAction;
+    SqlStatement stmt;
+
     for (ActionButtonList::iterator itr = m_actionButtons.begin(); itr != m_actionButtons.end();)
     {
         switch (itr->second.uState)
         {
             case ACTIONBUTTON_NEW:
-                CharacterDatabase.PExecute("INSERT INTO character_action (guid,button,action,type,misc) VALUES ('%u', '%u', '%u', '%u', '%u')",
-                    GetGUIDLow(), (uint32)itr->first, (uint32)itr->second.action, (uint32)itr->second.type, (uint32)itr->second.misc);
+                stmt = CharacterDatabase.CreateStatement(insertCharacterAction, "INSERT INTO character_action(guid, button, action, type, misc) VALUES(?, ?, ?, ?, ?);");
+                stmt.addUInt32(GetGUIDLow());
+                stmt.addUInt32((uint32)itr->first);
+                stmt.addUInt32((uint32)itr->second.action);
+                stmt.addUInt32((uint32)itr->second.type);
+                stmt.addUInt32((uint32)itr->second.misc);
+                stmt.Execute();
+
                 itr->second.uState = ACTIONBUTTON_UNCHANGED;
                 ++itr;
                 break;
             case ACTIONBUTTON_CHANGED:
-                CharacterDatabase.PExecute("UPDATE character_action  SET action = '%u', type = '%u', misc= '%u' WHERE guid= '%u' AND button= '%u' ",
-                    (uint32)itr->second.action, (uint32)itr->second.type, (uint32)itr->second.misc, GetGUIDLow(), (uint32)itr->first);
+                stmt = CharacterDatabase.CreateStatement(updateCharacterAction, "UPDATE character_action SET action = ?, type = ?, misc = ? WHERE guid = ? AND button = ?;");
+                stmt.addUInt32((uint32)itr->second.action);
+                stmt.addUInt32((uint32)itr->second.type);
+                stmt.addUInt32((uint32)itr->second.misc);
+                stmt.addUInt32(GetGUIDLow());
+                stmt.addUInt32((uint32)itr->first);
+                stmt.Execute();
+
                 itr->second.uState = ACTIONBUTTON_UNCHANGED;
                 ++itr;
                 break;
             case ACTIONBUTTON_DELETED:
-                CharacterDatabase.PExecute("DELETE FROM character_action WHERE guid = '%u' and button = '%u'", GetGUIDLow(), (uint32)itr->first);
+                stmt = CharacterDatabase.CreateStatement(deleteCharacterAction, "DELETE FROM character_action WHERE guid = ? and button = ?;");
+                stmt.PExecute(GetGUIDLow(), (uint32)itr->first);
+
                 m_actionButtons.erase(itr++);
                 break;
             default:
@@ -16201,7 +16363,11 @@ void Player::_SaveActions()
 
 void Player::_SaveAuras()
 {
-    CharacterDatabase.PExecute("DELETE FROM character_aura WHERE guid = '%u'",GetGUIDLow());
+    static SqlStatementID deleteCharacterAuras;
+    static SqlStatementID insertCharacterAura;
+
+    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCharacterAuras, "DELETE FROM character_aura WHERE guid = ?;");
+    stmt.PExecute(GetGUIDLow());
 
     AuraMap const& auras = GetAuras();
 
@@ -16235,9 +16401,18 @@ void Player::_SaveAuras()
 
                     if (i == 3)
                     {
-                        CharacterDatabase.PExecute("INSERT INTO character_aura (guid,caster_guid,spell,effect_index,stackcount,amount,maxduration,remaintime,remaincharges) "
-                            "VALUES ('%u', '" UI64FMTD "' ,'%u', '%u', '%u', '%d', '%d', '%d', '%d')",
-                            GetGUIDLow(), itr2->second->GetCasterGUID(), (uint32)itr2->second->GetId(), (uint32)itr2->second->GetEffIndex(), (uint32)itr2->second->GetStackAmount(), itr2->second->GetModifier()->m_amount,int(itr2->second->GetAuraMaxDuration()),int(itr2->second->GetAuraDuration()),int(itr2->second->m_procCharges));
+                        stmt = CharacterDatabase.CreateStatement(insertCharacterAura, "INSERT INTO character_aura(guid, caster_guid, spell, effect_index, stackcount, amount, maxduration, remaintime, remaincharges) "
+                                                                                        "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);");
+                        stmt.addUInt32(GetGUIDLow());
+                        stmt.addUInt64(itr2->second->GetCasterGUID());
+                        stmt.addUInt32((uint32)itr2->second->GetId());
+                        stmt.addUInt32((uint32)itr2->second->GetEffIndex());
+                        stmt.addUInt32((uint32)itr2->second->GetStackAmount());
+                        stmt.addUInt32(itr2->second->GetModifier()->m_amount);
+                        stmt.addInt32(int(itr2->second->GetAuraMaxDuration()));
+                        stmt.addInt32(int(itr2->second->GetAuraDuration()));
+                        stmt.addInt32(int(itr2->second->m_procCharges));
+                        stmt.Execute();
                     }
                 }
             }
@@ -16259,40 +16434,53 @@ void Player::_SaveAuras()
 
 void Player::_SaveBattleGroundCoord()
 {
-    CharacterDatabase.PExecute("DELETE FROM character_bgcoord WHERE guid = '%u'", GetGUIDLow());
+    static SqlStatementID deleteCharacterBGCoords;
+    static SqlStatementID insertCharacterBGCoord;
+    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCharacterBGCoords, "DELETE FROM character_bgcoord WHERE guid = ?;");
+    stmt.PExecute(GetGUIDLow());
 
     // don't save if not needed
     if (!InBattleGround())
         return;
 
-    std::ostringstream ss;
-    ss << "INSERT INTO character_bgcoord (guid, bgid, bgteam, bgmap, bgx,"
-        "bgy, bgz, bgo) VALUES ("
-        << GetGUIDLow() << ", ";
-    ss << GetBattleGroundId();
-    ss << ", ";
-    ss << GetBGTeam();
-    ss << ", ";
-    ss << GetBattleGroundEntryPointMap() << ", "
-        << finiteAlways(GetBattleGroundEntryPointX()) << ", "
-        << finiteAlways(GetBattleGroundEntryPointY()) << ", "
-        << finiteAlways(GetBattleGroundEntryPointZ()) << ", "
-        << finiteAlways(GetBattleGroundEntryPointO());
-    ss << ")";
+    stmt = CharacterDatabase.CreateStatement(insertCharacterBGCoord, "INSERT INTO character_bgcoord (guid, bgid, bgteam, bgmap, bgx, bgy, bgz, bgo) VALUES (?, ?, ?, ?, ?, ?, ?, ?);");
 
-    CharacterDatabase.Execute(ss.str().c_str());
+    stmt.addUInt32(GetGUIDLow());
+    stmt.addUInt32(GetBattleGroundId());
+    stmt.addUInt32(GetBGTeam());
+    stmt.addUInt32(GetBattleGroundEntryPointMap());
+    stmt.addFloat(finiteAlways(GetBattleGroundEntryPointX()));
+    stmt.addFloat(finiteAlways(GetBattleGroundEntryPointY()));
+    stmt.addFloat(finiteAlways(GetBattleGroundEntryPointZ()));
+    stmt.addFloat(finiteAlways(GetBattleGroundEntryPointO()));
+
+    stmt.Execute();
 }
 
 void Player::_SaveInventory()
 {
+    static SqlStatementID deleteCharacterInventoryItem;
+    static SqlStatementID deleteItemInstance;
+    static SqlStatementID insertCharacterInventoryItem;
+    static SqlStatementID updateCharacterInventoryItem;
+
+    SqlStatement stmt;
+
     // force items in buyback slots to new state
     // and remove those that aren't already
     for (uint8 i = BUYBACK_SLOT_START; i < BUYBACK_SLOT_END; i++)
     {
         Item *item = m_items[i];
-        if (!item || item->GetState() == ITEM_NEW) continue;
-        CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item = '%u'", item->GetGUIDLow());
-        CharacterDatabase.PExecute("DELETE FROM item_instance WHERE guid = '%u'", item->GetGUIDLow());
+
+        if (!item || item->GetState() == ITEM_NEW)
+            continue;
+
+        stmt = CharacterDatabase.CreateStatement(deleteCharacterInventoryItem, "DELETE FROM character_inventory WHERE item = ?;");
+        stmt.PExecute(item->GetGUIDLow());
+
+        stmt = CharacterDatabase.CreateStatement(deleteItemInstance, "DELETE FROM item_instance WHERE guid = ?;");
+        stmt.PExecute(item->GetGUIDLow());
+
         m_items[i]->FSetState(ITEM_NEW);
     }
 
@@ -16372,13 +16560,30 @@ void Player::_SaveInventory()
         switch (item->GetState())
         {
             case ITEM_NEW:
-                CharacterDatabase.PExecute("INSERT INTO character_inventory (guid,bag,slot,item,item_template) VALUES ('%u', '%u', '%u', '%u', '%u')", lowGuid, bag_guid, item->GetSlot(), item->GetGUIDLow(), item->GetEntry());
+                stmt = CharacterDatabase.CreateStatement(insertCharacterInventoryItem, "INSERT INTO character_inventory(guid, bag, slot, item, item_template) VALUES(?, ?, ?, ?, ?);");
+
+                stmt.addUInt32(lowGuid);
+                stmt.addUInt32(bag_guid);
+                stmt.addInt8(item->GetSlot());
+                stmt.addUInt32(item->GetGUIDLow());
+                stmt.addUInt32(item->GetEntry());
+
+                stmt.Execute();
                 break;
             case ITEM_CHANGED:
-                CharacterDatabase.PExecute("UPDATE character_inventory SET guid='%u', bag='%u', slot='%u', item_template='%u' WHERE item='%u'", lowGuid, bag_guid, item->GetSlot(), item->GetEntry(), item->GetGUIDLow());
+                stmt = CharacterDatabase.CreateStatement(updateCharacterInventoryItem, "UPDATE character_inventory SET guid = ?, bag = ?, slot = ?, item_template = ? WHERE item = ?;");
+
+                stmt.addUInt32(lowGuid);
+                stmt.addUInt16(bag_guid);
+                stmt.addUInt8(item->GetSlot());
+                stmt.addUInt32(item->GetEntry());
+                stmt.addUInt32(item->GetGUIDLow());
+
+                stmt.Execute();
                 break;
             case ITEM_REMOVED:
-                CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item = '%u'", item->GetGUIDLow());
+                stmt = CharacterDatabase.CreateStatement(deleteCharacterInventoryItem, "DELETE FROM character_inventory WHERE item = ?;");
+                stmt.PExecute(item->GetGUIDLow());
                 break;
             case ITEM_UNCHANGED:
                 break;
@@ -16386,6 +16591,7 @@ void Player::_SaveInventory()
 
         item->SaveToDB();                                   // item have unchanged inventory record and can be save standalone
     }
+
     m_itemUpdateQueue.clear();
 }
 
@@ -16394,17 +16600,40 @@ void Player::_SaveMail()
     if (!m_mailsLoaded)
         return;
 
+    static SqlStatementID updateMail2;
+    static SqlStatementID deleteMailItem;
+    static SqlStatementID deleteMailItemInstance;
+    static SqlStatementID deleteMailItemText;
+    static SqlStatementID deleteMail;
+
+    SqlStatement stmt;
+
     for (PlayerMails::iterator itr = m_mail.begin(); itr != m_mail.end(); ++itr)
     {
         Mail *m = (*itr);
         if (m->state == MAIL_STATE_CHANGED)
         {
-            CharacterDatabase.PExecute("UPDATE mail SET itemTextId = '%u',has_items = '%u',expire_time = '" UI64FMTD "', deliver_time = '" UI64FMTD "',money = '%u',cod = '%u',checked = '%u' WHERE id = '%u'",
-                m->itemTextId, m->HasItems() ? 1 : 0, (uint64)m->expire_time, (uint64)m->deliver_time, m->money, m->COD, m->checked, m->messageID);
+            stmt = CharacterDatabase.CreateStatement(updateMail2, "UPDATE mail SET itemTextId = ?, has_items = ?, expire_time = ?, deliver_time = ?, money = ?, cod = ?, checked = ? WHERE id = ?;");
+
+            stmt.addUInt32(m->itemTextId);
+            stmt.addUInt32(m->HasItems() ? 1 : 0);
+            stmt.addUInt64((uint64)m->expire_time);
+            stmt.addUInt64((uint64)m->deliver_time);
+            stmt.addUInt32(m->money);
+            stmt.addUInt32(m->COD);
+            stmt.addUInt32(m->checked);
+            stmt.addUInt32(m->messageID);
+
+            stmt.Execute();
+
             if (m->removedItems.size())
             {
                 for (std::vector<uint32>::iterator itr2 = m->removedItems.begin(); itr2 != m->removedItems.end(); ++itr2)
-                    CharacterDatabase.PExecute("DELETE FROM mail_items WHERE item_guid = '%u'", *itr2);
+                {
+                    stmt = CharacterDatabase.CreateStatement(deleteMailItem, "DELETE FROM mail_items WHERE item_guid = ?;");
+                    stmt.PExecute(*itr2);
+                }
+
                 m->removedItems.clear();
             }
             m->state = MAIL_STATE_UNCHANGED;
@@ -16412,12 +16641,25 @@ void Player::_SaveMail()
         else if (m->state == MAIL_STATE_DELETED)
         {
             if (m->HasItems())
+            {
                 for (std::vector<MailItemInfo>::iterator itr2 = m->items.begin(); itr2 != m->items.end(); ++itr2)
-                    CharacterDatabase.PExecute("DELETE FROM item_instance WHERE guid = '%u'", itr2->item_guid);
+                {
+                    stmt = CharacterDatabase.CreateStatement(deleteMailItemInstance, "DELETE FROM item_instance WHERE guid = ?;");
+                    stmt.PExecute(itr2->item_guid);
+                }
+            }
+
             if (m->itemTextId)
-                CharacterDatabase.PExecute("DELETE FROM item_text WHERE id = '%u'", m->itemTextId);
-            CharacterDatabase.PExecute("DELETE FROM mail WHERE id = '%u'", m->messageID);
-            CharacterDatabase.PExecute("DELETE FROM mail_items WHERE mail_id = '%u'", m->messageID);
+            {
+                stmt = CharacterDatabase.CreateStatement(deleteMailItemText, "DELETE FROM item_text WHERE id = ?;");
+                stmt.PExecute(m->itemTextId);
+            }
+
+            stmt = CharacterDatabase.CreateStatement(deleteMail, "DELETE FROM mail WHERE id = ?;");
+            stmt.PExecute(m->messageID);
+
+            stmt = CharacterDatabase.CreateStatement(deleteMailItem, "DELETE FROM mail_items WHERE mail_id = ?;");
+            stmt.PExecute(m->messageID);
         }
     }
 
@@ -16440,19 +16682,53 @@ void Player::_SaveMail()
 
 void Player::_SaveQuestStatus()
 {
+    static SqlStatementID insertCharacterQuestStatus;
+    static SqlStatementID updateCharacterQuestStatus;
+    SqlStatement stmt;
     // we don't need transactions here.
     for (QuestStatusMap::iterator i = mQuestStatus.begin(); i != mQuestStatus.end(); ++i)
     {
         switch (i->second.uState)
         {
             case QUEST_NEW :
-                CharacterDatabase.PExecute("INSERT INTO character_queststatus (guid,quest,status,rewarded,explored,timer,mobcount1,mobcount2,mobcount3,mobcount4,itemcount1,itemcount2,itemcount3,itemcount4) "
-                    "VALUES ('%u', '%u', '%u', '%u', '%u', '" UI64FMTD "', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u')",
-                    GetGUIDLow(), i->first, i->second.m_status, i->second.m_rewarded, i->second.m_explored, uint64(i->second.m_timer / 1000 + sWorld.GetGameTime()), i->second.m_creatureOrGOcount[0], i->second.m_creatureOrGOcount[1], i->second.m_creatureOrGOcount[2], i->second.m_creatureOrGOcount[3], i->second.m_itemcount[0], i->second.m_itemcount[1], i->second.m_itemcount[2], i->second.m_itemcount[3]);
+                stmt = CharacterDatabase.CreateStatement(insertCharacterQuestStatus, "INSERT INTO character_queststatus(guid, quest, status, rewarded, explored, timer, mobcount1, mobcount2, mobcount3, mobcount4, itemcount1, itemcount2, itemcount3, itemcount4)"
+                                                                                        " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
+                stmt.addUInt32(GetGUIDLow());
+                stmt.addUInt32(i->first);
+                stmt.addUInt32(i->second.m_status);
+                stmt.addUInt32(i->second.m_rewarded);
+                stmt.addUInt32(i->second.m_explored);
+                stmt.addUInt64(uint64(i->second.m_timer / 1000 + sWorld.GetGameTime()));
+                stmt.addUInt32(i->second.m_creatureOrGOcount[0]);
+                stmt.addUInt32(i->second.m_creatureOrGOcount[1]);
+                stmt.addUInt32(i->second.m_creatureOrGOcount[2]);
+                stmt.addUInt32(i->second.m_creatureOrGOcount[3]);
+                stmt.addUInt32(i->second.m_itemcount[0]);
+                stmt.addUInt32(i->second.m_itemcount[1]);
+                stmt.addUInt32(i->second.m_itemcount[2]);
+                stmt.addUInt32(i->second.m_itemcount[3]);
+
+                stmt.Execute();
                 break;
             case QUEST_CHANGED :
-                CharacterDatabase.PExecute("UPDATE character_queststatus SET status = '%u',rewarded = '%u',explored = '%u',timer = '" UI64FMTD "',mobcount1 = '%u',mobcount2 = '%u',mobcount3 = '%u',mobcount4 = '%u',itemcount1 = '%u',itemcount2 = '%u',itemcount3 = '%u',itemcount4 = '%u'  WHERE guid = '%u' AND quest = '%u' ",
-                    i->second.m_status, i->second.m_rewarded, i->second.m_explored, uint64(i->second.m_timer / 1000 + sWorld.GetGameTime()), i->second.m_creatureOrGOcount[0], i->second.m_creatureOrGOcount[1], i->second.m_creatureOrGOcount[2], i->second.m_creatureOrGOcount[3], i->second.m_itemcount[0], i->second.m_itemcount[1], i->second.m_itemcount[2], i->second.m_itemcount[3], GetGUIDLow(), i->first);
+                stmt = CharacterDatabase.CreateStatement(updateCharacterQuestStatus, "UPDATE character_queststatus SET status = ?, rewarded = ?, explored = ?, timer = ?, mobcount1 = ?, mobcount2 = ?, mobcount3 = ?, mobcount4 = ?, itemcount1 = ?, itemcount2 = ?, itemcount3 = ?, itemcount4 = ? WHERE guid = ? AND quest = ?;");
+
+                stmt.addUInt32(i->second.m_status);
+                stmt.addUInt32(i->second.m_rewarded);
+                stmt.addUInt32(i->second.m_explored);
+                stmt.addUInt64(uint64(i->second.m_timer / 1000 + sWorld.GetGameTime()));
+                stmt.addUInt32(i->second.m_creatureOrGOcount[0]);
+                stmt.addUInt32(i->second.m_creatureOrGOcount[1]);
+                stmt.addUInt32(i->second.m_creatureOrGOcount[2]);
+                stmt.addUInt32(i->second.m_creatureOrGOcount[3]);
+                stmt.addUInt32(i->second.m_itemcount[0]);
+                stmt.addUInt32(i->second.m_itemcount[1]);
+                stmt.addUInt32(i->second.m_itemcount[2]);
+                stmt.addUInt32(i->second.m_itemcount[3]);
+                stmt.addUInt32(GetGUIDLow());
+                stmt.addUInt32(i->first);
+
+                stmt.Execute();
                 break;
             case QUEST_UNCHANGED:
                 break;
@@ -16467,26 +16743,43 @@ void Player::_SaveDailyQuestStatus()
     if (!m_DailyQuestChanged)
         return;
 
+    static SqlStatementID deleteCharacterQuestStatusDailies;
+    static SqlStatementID insertCharacterQuestStatusDaily;
+
     m_DailyQuestChanged = false;
 
     // save last daily quest time for all quests: we need only mostly reset time for reset check anyway
 
     // we don't need transactions here.
-    CharacterDatabase.PExecute("DELETE FROM character_queststatus_daily WHERE guid = '%u'",GetGUIDLow());
+
+    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCharacterQuestStatusDailies, "DELETE FROM character_queststatus_daily WHERE guid = ?;");
+    stmt.PExecute(GetGUIDLow());
+
     for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
+    {
         if (GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx))
-            CharacterDatabase.PExecute("INSERT INTO character_queststatus_daily (guid,quest,time) VALUES ('%u', '%u','" UI64FMTD "')",
-                GetGUIDLow(), GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx),uint64(m_lastDailyQuestTime));
+        {
+            stmt = CharacterDatabase.CreateStatement(insertCharacterQuestStatusDaily, "INSERT INTO character_queststatus_daily(guid, quest, time) VALUES(?, ?, ?);");
+            stmt.PExecute(GetGUIDLow(), GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx),uint64(m_lastDailyQuestTime));
+        }
+    }
 }
 
 void Player::_SaveReputation()
 {
+    static SqlStatementID deleteCharacterReputation;
+    static SqlStatementID insertCharacterReputation;
+    SqlStatement stmt;
     for (FactionStateList::iterator itr = m_factions.begin(); itr != m_factions.end(); ++itr)
     {
         if (itr->second.Changed)
         {
-            CharacterDatabase.PExecute("DELETE FROM character_reputation WHERE guid = '%u' AND faction='%u'", GetGUIDLow(), itr->second.ID);
-            CharacterDatabase.PExecute("INSERT INTO character_reputation (guid,faction,standing,flags) VALUES ('%u', '%u', '%i', '%u')", GetGUIDLow(), itr->second.ID, itr->second.Standing, itr->second.Flags);
+            stmt = CharacterDatabase.CreateStatement(deleteCharacterReputation, "DELETE FROM character_reputation WHERE guid = ? AND faction = ?;");
+            stmt.PExecute(GetGUIDLow(), itr->second.ID);
+
+            stmt = CharacterDatabase.CreateStatement(insertCharacterReputation, "INSERT INTO character_reputation(guid, faction, standing, flags) VALUES(?, ?, ?, ?);");
+            stmt.PExecute(GetGUIDLow(), itr->second.ID, itr->second.Standing, itr->second.Flags);
+
             itr->second.Changed = false;
         }
     }
@@ -16494,14 +16787,32 @@ void Player::_SaveReputation()
 
 void Player::_SaveSpells()
 {
+    static SqlStatementID deleteCharacterSpell;
+    static SqlStatementID insertCharacterSpell;
+    SqlStatement stmt;
+
     for (PlayerSpellMap::iterator itr = m_spells.begin(), next = m_spells.begin(); itr != m_spells.end(); itr = next)
     {
         ++next;
 
         if (itr->second.state == PLAYERSPELL_REMOVED || itr->second.state == PLAYERSPELL_CHANGED)
-            CharacterDatabase.PExecute("DELETE FROM character_spell WHERE guid = '%u' and spell = '%u'", GetGUIDLow(), itr->first);
+        {
+            stmt = CharacterDatabase.CreateStatement(deleteCharacterSpell, "DELETE FROM character_spell WHERE guid = ? and spell = ?;");
+            stmt.PExecute(GetGUIDLow(), itr->first);
+        }
+
         if (itr->second.state == PLAYERSPELL_NEW || itr->second.state == PLAYERSPELL_CHANGED)
-            CharacterDatabase.PExecute("INSERT INTO character_spell (guid,spell,slot,active,disabled) VALUES ('%u', '%u', '%u','%u','%u')", GetGUIDLow(), itr->first, itr->second.slotId, itr->second.active ? 1 : 0, itr->second.disabled ? 1 : 0);
+        {
+            stmt = CharacterDatabase.CreateStatement(insertCharacterSpell, "INSERT INTO character_spell(guid, spell, slot, active, disabled) VALUES(?, ?, ?, ?, ?);");
+
+            stmt.addUInt32(GetGUIDLow());
+            stmt.addUInt32(itr->first);
+            stmt.addUInt32(itr->second.slotId);
+            stmt.addUInt32(itr->second.active ? 1 : 0);
+            stmt.addUInt32(itr->second.disabled ? 1 : 0);
+
+            stmt.Execute();
+        }
 
         if (itr->second.state == PLAYERSPELL_REMOVED)
             _removeSpell(itr->first);
@@ -16515,6 +16826,11 @@ void Player::_SaveTutorials()
     if (!m_TutorialsChanged)
         return;
 
+    static SqlStatementID updateCharacterTutorial;
+    static SqlStatementID insertCharacterTutorial;
+
+    SqlStatement stmt;
+
     uint32 Rows=0;
     // it's better than rebuilding indexes multiple times
     QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT count(*) AS r FROM character_tutorial WHERE account = '%u' AND realmid = '%u'", GetSession()->GetAccountId(), realmID);
@@ -16523,12 +16839,37 @@ void Player::_SaveTutorials()
 
     if (Rows)
     {
-        CharacterDatabase.PExecute("UPDATE character_tutorial SET tut0='%u', tut1='%u', tut2='%u', tut3='%u', tut4='%u', tut5='%u', tut6='%u', tut7='%u' WHERE account = '%u' AND realmid = '%u'",
-            m_Tutorials[0], m_Tutorials[1], m_Tutorials[2], m_Tutorials[3], m_Tutorials[4], m_Tutorials[5], m_Tutorials[6], m_Tutorials[7], GetSession()->GetAccountId(), realmID);
+        stmt = CharacterDatabase.CreateStatement(updateCharacterTutorial, "UPDATE character_tutorial SET tut0 = ?, tut1 = ?, tut2 = ?, tut3 = ?, tut4 = ?, tut5 = ?, tut6 = ?, tut7 = ? WHERE account = ? AND realmid = ?;");
+
+        stmt.addUInt32(m_Tutorials[0]);
+        stmt.addUInt32(m_Tutorials[1]);
+        stmt.addUInt32(m_Tutorials[2]);
+        stmt.addUInt32(m_Tutorials[3]);
+        stmt.addUInt32(m_Tutorials[4]);
+        stmt.addUInt32(m_Tutorials[5]);
+        stmt.addUInt32(m_Tutorials[6]);
+        stmt.addUInt32(m_Tutorials[7]);
+        stmt.addUInt32(GetSession()->GetAccountId());
+        stmt.addUInt32(realmID);
+
+        stmt.Execute();
     }
     else
     {
-        CharacterDatabase.PExecute("INSERT INTO character_tutorial (account,realmid,tut0,tut1,tut2,tut3,tut4,tut5,tut6,tut7) VALUES ('%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u')", GetSession()->GetAccountId(), realmID, m_Tutorials[0], m_Tutorials[1], m_Tutorials[2], m_Tutorials[3], m_Tutorials[4], m_Tutorials[5], m_Tutorials[6], m_Tutorials[7]);
+        stmt = CharacterDatabase.CreateStatement(insertCharacterTutorial, "INSERT INTO character_tutorial(account, realmid, tut0, tut1, tut2, tut3, tut4, tut5, tut6, tut7) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
+
+        stmt.addUInt32(GetSession()->GetAccountId());
+        stmt.addUInt32(realmID);
+        stmt.addUInt32(m_Tutorials[0]);
+        stmt.addUInt32(m_Tutorials[1]);
+        stmt.addUInt32(m_Tutorials[2]);
+        stmt.addUInt32(m_Tutorials[3]);
+        stmt.addUInt32(m_Tutorials[4]);
+        stmt.addUInt32(m_Tutorials[5]);
+        stmt.addUInt32(m_Tutorials[6]);
+        stmt.addUInt32(m_Tutorials[7]);
+
+        stmt.Execute();
     };
 
     m_TutorialsChanged = false;
@@ -16604,41 +16945,51 @@ void Player::SendAttackSwingNotInRange()
 
 void Player::SavePositionInDB(uint32 mapid, float x,float y,float z,float o,uint32 zone,uint64 guid)
 {
-    std::ostringstream ss;
-    ss << "UPDATE characters SET position_x='"<<x<<"',position_y='"<<y
-        << "',position_z='"<<z<<"',orientation='"<<o<<"',map='"<<mapid
-        << "',zone='"<<zone<<"',trans_x='0',trans_y='0',trans_z='0',"
-        << "transguid='0',taxi_path='' WHERE guid='"<< GUID_LOPART(guid) <<"'";
-    sLog.outDebug(ss.str().c_str());
-    CharacterDatabase.Execute(ss.str().c_str());
+    static SqlStatementID updateCharacterPosiion;
+    SqlStatement stmt = CharacterDatabase.CreateStatement(updateCharacterPosiion, "UPDATE characters SET position_x = ?, position_y = ?, position_z = ?, orientation = ?, map = ?, zone = ?, trans_x = '0', trans_y = '0', trans_z = '0', transguid = '0', taxi_path = '' WHERE guid = ?;");
+
+    stmt.addFloat(x);
+    stmt.addFloat(y);
+    stmt.addFloat(z);
+    stmt.addFloat(o);
+    stmt.addUInt32(mapid);
+    stmt.addUInt32(zone);
+    stmt.addUInt32(GUID_LOPART(guid));
+
+    stmt.Execute();
 }
 
 void Player::SaveDataFieldToDB()
 {
+    static SqlStatementID updateCharacterData;
+
     std::ostringstream ss;
-    ss<<"UPDATE characters SET data='";
-
     for (uint16 i = 0; i < m_valuesCount; i++)
-    {
         ss << GetUInt32Value(i) << " ";
-    }
-    ss<<"' WHERE guid='"<< GUID_LOPART(GetGUIDLow()) <<"'";
 
-    CharacterDatabase.Execute(ss.str().c_str());
+    SqlStatement stmt = CharacterDatabase.CreateStatement(updateCharacterData, "UPDATE characters SET data = ? WHERE guid = ?;");
+
+    stmt.addString(ss);
+    stmt.addUInt32(GetGUIDLow());
+
+    stmt.Execute();
 }
 
 bool Player::SaveValuesArrayInDB(Tokens const& tokens, uint64 guid)
 {
-    std::ostringstream ss2;
-    ss2<<"UPDATE characters SET data='";
-    int i=0;
-    for (Tokens::const_iterator iter = tokens.begin(); iter != tokens.end(); ++iter, ++i)
-    {
-        ss2<<tokens[i]<<" ";
-    }
-    ss2<<"' WHERE guid='"<< GUID_LOPART(guid) <<"'";
+    static SqlStatementID updateCharacterData;
 
-    return CharacterDatabase.Execute(ss2.str().c_str());
+    std::ostringstream ss;
+    int i = 0;
+    for (Tokens::const_iterator iter = tokens.begin(); iter != tokens.end(); ++iter, ++i)
+        ss << tokens[i] << " ";
+
+    SqlStatement stmt = CharacterDatabase.CreateStatement(updateCharacterData, "UPDATE characters SET data = ? WHERE guid = ?;");
+
+    stmt.addString(ss);
+    stmt.addUInt32(GUID_LOPART(guid));
+
+    return stmt.Execute();
 }
 
 void Player::SetUInt32ValueInArray(Tokens& tokens,uint16 index, uint32 value)
@@ -17415,10 +17766,21 @@ void Player::SendProficiency(uint8 pr1, uint32 pr2)
 void Player::RemovePetitionsAndSigns(uint64 guid, uint32 type)
 {
     QueryResultAutoPtr result = QueryResultAutoPtr(NULL);
+
     if (type==10)
         result = CharacterDatabase.PQuery("SELECT ownerguid,petitionguid FROM petition_sign WHERE playerguid = '%u'", GUID_LOPART(guid));
     else
         result = CharacterDatabase.PQuery("SELECT ownerguid,petitionguid FROM petition_sign WHERE playerguid = '%u' AND type = '%u'", GUID_LOPART(guid), type);
+
+    static SqlStatementID deletePetitionSigns;
+    static SqlStatementID deletePetitionSignsType;
+    static SqlStatementID deletePetitions;
+    static SqlStatementID deletePetitionsType;
+    static SqlStatementID deletePetitionSignsOwner;
+    static SqlStatementID deletePetitionSignsTypeOwner;
+
+    SqlStatement stmt;
+
     if (result)
     {
         do                                                  // this part effectively does nothing, since the deletion / modification only takes place _after_ the PetitionQuery. Though I don't know if the result remains intact if I execute the delete query beforehand.
@@ -17432,24 +17794,37 @@ void Player::RemovePetitionsAndSigns(uint64 guid, uint32 type)
             if (owner)
                 owner->GetSession()->SendPetitionQueryOpcode(petitionguid);
 
-        } while (result->NextRow());
+        }
+        while (result->NextRow());
 
         if (type==10)
-            CharacterDatabase.PExecute("DELETE FROM petition_sign WHERE playerguid = '%u'", GUID_LOPART(guid));
+        {
+            stmt = CharacterDatabase.CreateStatement(deletePetitionSigns, "DELETE FROM petition_sign WHERE playerguid = ?;");
+            stmt.PExecute(GUID_LOPART(guid));
+        }
         else
-            CharacterDatabase.PExecute("DELETE FROM petition_sign WHERE playerguid = '%u' AND type = '%u'", GUID_LOPART(guid), type);
+        {
+            stmt = CharacterDatabase.CreateStatement(deletePetitionSignsType, "DELETE FROM petition_sign WHERE playerguid = ? AND type = ?;");
+            stmt.PExecute(GUID_LOPART(guid), type);
+        }
     }
 
     CharacterDatabase.BeginTransaction();
     if (type == 10)
     {
-        CharacterDatabase.PExecute("DELETE FROM petition WHERE ownerguid = '%u'", GUID_LOPART(guid));
-        CharacterDatabase.PExecute("DELETE FROM petition_sign WHERE ownerguid = '%u'", GUID_LOPART(guid));
+        stmt = CharacterDatabase.CreateStatement(deletePetitions, "DELETE FROM petition WHERE ownerguid = ?;");
+        stmt.PExecute(GUID_LOPART(guid));
+
+        stmt = CharacterDatabase.CreateStatement(deletePetitionSignsOwner, "DELETE FROM petition_sign WHERE ownerguid = ?;");
+        stmt.PExecute(GUID_LOPART(guid));
     }
     else
     {
-        CharacterDatabase.PExecute("DELETE FROM petition WHERE ownerguid = '%u' AND type = '%u'", GUID_LOPART(guid), type);
-        CharacterDatabase.PExecute("DELETE FROM petition_sign WHERE ownerguid = '%u' AND type = '%u'", GUID_LOPART(guid), type);
+        stmt = CharacterDatabase.CreateStatement(deletePetitionsType, "DELETE FROM petition WHERE ownerguid = ? AND type = ?;");
+        stmt.PExecute(GUID_LOPART(guid), type);
+
+        stmt = CharacterDatabase.CreateStatement(deletePetitionSignsTypeOwner, "DELETE FROM petition_sign WHERE ownerguid = ? AND type = ?;");
+        stmt.PExecute(GUID_LOPART(guid), type);
     }
     CharacterDatabase.CommitTransaction();
 }

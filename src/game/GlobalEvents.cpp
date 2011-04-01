@@ -57,7 +57,9 @@ static void CorpsesEraseCallBack(QueryResultAutoPtr result, bool bones)
             if (!ObjectAccessor::Instance().ConvertCorpseForPlayer(player_guid))
             {
                 sLog.outDebug("Corpse %u not found in world or bones creating forbidden. Delete from DB.",guidlow);
-                CharacterDatabase.PExecute("DELETE FROM corpse WHERE guid = '%u'",guidlow);
+                static SqlStatementID deleteBones;
+                SqlStatement stmt = CharacterDatabase.CreateStatement(deleteBones, "DELETE FROM corpse WHERE guid = ?;");
+                stmt.PExecute(guidlow);
             }
         }
         else
@@ -66,9 +68,12 @@ static void CorpsesEraseCallBack(QueryResultAutoPtr result, bool bones)
             sMapMgr.RemoveBonesFromMap(mapid, guid, positionX, positionY);
 
             ///- remove bones from the database
-            CharacterDatabase.PExecute("DELETE FROM corpse WHERE guid = '%u'",guidlow);
+            static SqlStatementID deleteBones;
+            SqlStatement stmt = CharacterDatabase.CreateStatement(deleteBones, "DELETE FROM corpse WHERE guid = ?;");
+            stmt.PExecute(guidlow);
         }
-    } while (result->NextRow());
+    }
+    while (result->NextRow());
 }
 
 /// Handle periodic erase of corpses and bones

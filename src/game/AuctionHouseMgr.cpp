@@ -170,9 +170,12 @@ void AuctionHouseMgr::SendAuctionWonMail(AuctionEntry *auction)
         //prepare mail data... :
         uint32 itemTextId = objmgr.CreateItemText(msgAuctionWonBody.str());
 
+        static SqlStatementID updateAuctionItemInstance;
         // set owner to bidder (to prevent delete item with sender char deleting)
         // owner in `data` will set at mail receive and item extracting
-        CharacterDatabase.PExecute("UPDATE item_instance SET owner_guid = '%u' WHERE guid='%u'",auction->bidder,pItem->GetGUIDLow());
+        SqlStatement stmt = CharacterDatabase.CreateStatement(updateAuctionItemInstance, "UPDATE item_instance SET owner_guid = ? WHERE guid = ?;");
+        stmt.PExecute(auction->bidder, pItem->GetGUIDLow());
+
         CharacterDatabase.CommitTransaction();
 
         MailItemsInfo mi;
@@ -189,7 +192,9 @@ void AuctionHouseMgr::SendAuctionWonMail(AuctionEntry *auction)
     // receiver not exist
     else
     {
-        CharacterDatabase.PExecute("DELETE FROM item_instance WHERE guid='%u'", pItem->GetGUIDLow());
+        static SqlStatementID deleteItemInstance;
+        SqlStatement stmt = CharacterDatabase.CreateStatement(deleteItemInstance, "DELETE FROM item_instance WHERE guid = ?;");
+        stmt.PExecute(pItem->GetGUIDLow());
         RemoveAItem(pItem->GetGUIDLow()); // we have to remove the item, before we delete it !!
         delete pItem;
     }
@@ -302,7 +307,10 @@ void AuctionHouseMgr::SendAuctionExpiredMail(AuctionEntry * auction)
     // owner not found
     else
     {
-        CharacterDatabase.PExecute("DELETE FROM item_instance WHERE guid='%u'",pItem->GetGUIDLow());
+        static SqlStatementID deleteItemInstance;
+        SqlStatement stmt = CharacterDatabase.CreateStatement(deleteItemInstance, "DELETE FROM item_instance WHERE guid = ?;");
+        stmt.PExecute(pItem->GetGUIDLow());
+
         RemoveAItem(pItem->GetGUIDLow()); // we have to remove the item, before we delete it !!
         delete pItem;
     }
@@ -704,13 +712,15 @@ uint32 AuctionEntry::GetAuctionOutBid() const
 void AuctionEntry::DeleteFromDB() const
 {
     //No SQL injection (Id is integer)
-    CharacterDatabase.PExecute("DELETE FROM auctionhouse WHERE id = '%u'",Id);
+    static SqlStatementID deleteAuction;
+    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteAuction, "DELETE FROM auctionhouse WHERE id = ?;");
+    stmt.PExecute(Id);
 }
 
 void AuctionEntry::SaveToDB() const
 {
-    static SqlStatementID saveAuction;
-    SqlStatement stmt = CharacterDatabase.CreateStatement(saveAuction, "INSERT INTO auctionhouse (id,auctioneerguid,itemguid,item_template,itemowner,buyoutprice,time,buyguid,lastbid,startbid,deposit) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    static SqlStatementID insertAuction;
+    SqlStatement stmt = CharacterDatabase.CreateStatement(insertAuction, "INSERT INTO auctionhouse (id, auctioneerguid, itemguid, item_template, itemowner, buyoutprice, time, buyguid, lastbid, startbid, deposit) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
     stmt.addUInt32(Id);
     stmt.addUInt32(auctioneer);

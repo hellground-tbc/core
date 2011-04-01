@@ -121,8 +121,10 @@ class CharacterHandler
 
 void WorldSession::HandleCharEnum(QueryResultAutoPtr result)
 {
+    static SqlStatementID updateAccountVS0;
     // keys can be non cleared if player open realm list and close it by 'cancel'
-    LoginDatabase.PExecute("UPDATE account SET v = '0', s = '0' WHERE id = '%u'", GetAccountId());
+    SqlStatement stmt = LoginDatabase.CreateStatement(updateAccountVS0, "UPDATE account SET v = '0', s = '0' WHERE id = ?;");
+    stmt.PExecute(GetAccountId());
 
     WorldPacket data(SMSG_CHAR_ENUM, 100);                  // we guess size
 
@@ -374,10 +376,16 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
 
     // Player created, save it now
     pNewChar->SaveToDB();
-    charcount+=1;
+    charcount += 1;
 
-    LoginDatabase.PExecute("DELETE FROM realmcharacters WHERE acctid= '%d' AND realmid = '%d'", GetAccountId(), realmID);
-    LoginDatabase.PExecute("INSERT INTO realmcharacters (numchars, acctid, realmid) VALUES (%u, %u, %u)",  charcount, GetAccountId(), realmID);
+    static SqlStatementID deleteRmChars;
+    static SqlStatementID insertRmChars;
+
+    SqlStatement stmt = LoginDatabase.CreateStatement(deleteRmChars, "DELETE FROM realmcharacters WHERE acctid= ? AND realmid = ?;");
+    stmt.PExecute(GetAccountId(), realmID);
+
+    stmt = LoginDatabase.CreateStatement(insertRmChars, "INSERT INTO realmcharacters (numchars, acctid, realmid) VALUES (?, ?, ?);");
+    stmt.PExecute(charcount, GetAccountId(), realmID);
 
     delete pNewChar;                                        // created only to call SaveToDB()
 
@@ -647,8 +655,14 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
 
     pCurrChar->SendInitialPacketsAfterAddToMap();
 
-    CharacterDatabase.PExecute("UPDATE characters SET online = 1 WHERE guid = '%u'", pCurrChar->GetGUIDLow());
-    LoginDatabase.PExecute("UPDATE account SET online = 1 WHERE id = '%u'", GetAccountId());
+    static SqlStatementID updateCharacterOnline;
+    static SqlStatementID updateAccountOnline;
+
+    SqlStatement stmt = CharacterDatabase.CreateStatement(updateCharacterOnline, "UPDATE characters SET online = 1 WHERE guid = ?;");
+    stmt.PExecute(pCurrChar->GetGUIDLow());
+
+    stmt = LoginDatabase.CreateStatement(updateAccountOnline, "UPDATE account SET online = 1 WHERE id = ?;");
+    stmt.PExecute(GetAccountId());
     pCurrChar->SetInGameTime(getMSTime());
 
     // announce group about member online (must be after add to player list to receive announce to self)
@@ -984,9 +998,17 @@ void WorldSession::HandleChangePlayerNameOpcodeCallBack(QueryResultAutoPtr resul
     uint64 guid = MAKE_NEW_GUID(guidLow, 0, HIGHGUID_PLAYER);
     std::string oldname = result->Fetch()[1].GetCppString();
 
+    static SqlStatementID updateCharacterName;
+    static SqlStatementID deleteCharacterDeclinedName;
+
     CharacterDatabase.BeginTransaction();
-    CharacterDatabase.PExecute("UPDATE characters set name = '%s', at_login = at_login & ~ %u WHERE guid ='%u'", newname.c_str(), uint32(AT_LOGIN_RENAME), guidLow);
-    CharacterDatabase.PExecute("DELETE FROM character_declinedname WHERE guid ='%u'", guidLow);
+
+    SqlStatement stmt = CharacterDatabase.CreateStatement(updateCharacterName, "UPDATE characters set name = ?, at_login = at_login & ~ ? WHERE guid = ?;");
+    stmt.PExecute(newname.c_str(), uint32(AT_LOGIN_RENAME), guidLow);
+
+    stmt = CharacterDatabase.CreateStatement(deleteCharacterDeclinedName, "DELETE FROM character_declinedname WHERE guid = ?;");
+    stmt.PExecute(guidLow);
+
     CharacterDatabase.CommitTransaction();
 
     sLog.outChar("Account: %d (IP: %s) Character:[%s] (guid:%u) Changed name to: %s",session->GetAccountId(), session->GetRemoteAddress().c_str(), oldname.c_str(), guidLow, newname.c_str());
@@ -1076,10 +1098,22 @@ void WorldSession::HandleDeclinedPlayerNameOpcode(WorldPacket& recv_data)
     for (int i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
         CharacterDatabase.escape_string(declinedname.name[i]);
 
+    static SqlStatementID deleteCharDeclName;
+    static SqlStatementID insertCharDeclName;
+
     CharacterDatabase.BeginTransaction();
-    CharacterDatabase.PExecute("DELETE FROM character_declinedname WHERE guid = '%u'", GUID_LOPART(guid));
-    CharacterDatabase.PExecute("INSERT INTO character_declinedname (guid, genitive, dative, accusative, instrumental, prepositional) VALUES ('%u','%s','%s','%s','%s','%s')",
-        GUID_LOPART(guid), declinedname.name[0].c_str(), declinedname.name[1].c_str(), declinedname.name[2].c_str(), declinedname.name[3].c_str(), declinedname.name[4].c_str());
+
+    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCharDeclName, "DELETE FROM character_declinedname WHERE guid = ?;");
+    stmt.PExecute(GUID_LOPART(guid));
+
+    stmt = CharacterDatabase.CreateStatement(insertCharDeclName, "INSERT INTO character_declinedname (guid, genitive, dative, accusative, instrumental, prepositional) VALUES (?, ?, ?, ?, ?, ?);");
+    stmt.addUInt64(GUID_LOPART(guid));
+    stmt.addString(declinedname.name[0]);
+    stmt.addString(declinedname.name[1]);
+    stmt.addString(declinedname.name[2]);
+    stmt.addString(declinedname.name[3]);
+    stmt.addString(declinedname.name[4]);
+    stmt.Execute();
     CharacterDatabase.CommitTransaction();
 
     WorldPacket data(SMSG_SET_PLAYER_DECLINED_NAMES_RESULT, 4+8);

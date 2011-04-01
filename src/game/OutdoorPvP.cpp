@@ -174,8 +174,12 @@ bool OPvPCapturePoint::DelCreature(uint32 type)
     // so this is a big fat workaround, if AddObjectToRemoveList and DoDelayedMovesAndRemoves worked correctly, this wouldn't be needed
     if (Map * map = sMapMgr.FindMap(cr->GetMapId()))
         map->Remove(cr,false);
+
+    static SqlStatementID deleteCreatureRespawn;
     // delete respawn time for this creature
-    WorldDatabase.PExecute("DELETE FROM creature_respawn WHERE guid = '%u'", guid);
+    SqlStatement stmt = WorldDatabase.CreateStatement(deleteCreatureRespawn, "DELETE FROM creature_respawn WHERE guid = ?;");
+    stmt.PExecute(guid);
+
     cr->AddObjectToRemoveList();
     objmgr.DeleteCreatureData(guid);
     m_CreatureTypes[m_Creatures[type]] = 0;

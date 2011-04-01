@@ -138,9 +138,13 @@ bool GameEvent::StartEvent(uint16 event_id, bool overwrite)
 
 void GameEvent::StopEvent(uint16 event_id, bool overwrite)
 {
-    if (event_id==15){
-        CharacterDatabase.Execute("DELETE FROM character_inventory WHERE item_template=19807");
+    if (event_id==15)
+    {
+        static SqlStatementID deleteCharacterInventorySpackledTastyfish;
+        SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCharacterInventorySpackledTastyfish, "DELETE FROM character_inventory WHERE item_template = 19807;");
+        stmt.Execute();
     }
+
     bool serverwide_evt = mGameEvent[event_id].state != GAMEEVENT_NORMAL;
 
     RemoveActiveEvent(event_id);
@@ -163,9 +167,18 @@ void GameEvent::StopEvent(uint16 event_id, bool overwrite)
             std::map<uint32 /*condition id*/, GameEventFinishCondition>::iterator itr;
             for (itr = mGameEvent[event_id].conditions.begin(); itr != mGameEvent[event_id].conditions.end(); ++itr)
                 itr->second.done = 0;
+
             CharacterDatabase.BeginTransaction();
-            CharacterDatabase.PExecute("DELETE FROM game_event_save WHERE event_id = '%u'",event_id);
-            CharacterDatabase.PExecute("DELETE FROM game_event_condition_save WHERE event_id = '%u'",event_id);
+
+            static SqlStatementID deleteGameEventSave;
+            static SqlStatementID deleteGameEventConditionSave;
+
+            SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGameEventSave, "DELETE FROM game_event_save WHERE event_id = ?;");
+            stmt.PExecute(event_id);
+
+            stmt = CharacterDatabase.CreateStatement(deleteGameEventConditionSave, "DELETE FROM game_event_condition_save WHERE event_id = ?;");
+            stmt.PExecute(event_id);
+
             CharacterDatabase.CommitTransaction();
         }
     }
@@ -1540,11 +1553,21 @@ void GameEvent::HandleQuestComplete(uint32 quest_id)
                 // check max limit
                 if (citr->second.done > citr->second.reqNum)
                     citr->second.done = citr->second.reqNum;
+
+                static SqlStatementID deleteGECond;
+                static SqlStatementID insertGECond;
+
                 // save the change to db
                 CharacterDatabase.BeginTransaction();
-                CharacterDatabase.PExecute("DELETE FROM game_event_condition_save WHERE event_id = '%u' AND condition_id = '%u'",event_id,condition);
-                CharacterDatabase.PExecute("INSERT INTO game_event_condition_save (event_id, condition_id, done) VALUES (%u,%u,%f)",event_id,condition,citr->second.done);
+
+                SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGECond, "DELETE FROM game_event_condition_save WHERE event_id = ? AND condition_id = ?;");
+                stmt.PExecute(event_id, condition);
+
+                stmt = CharacterDatabase.CreateStatement(insertGECond, "INSERT INTO game_event_condition_save (event_id, condition_id, done) VALUES (?, ?, ?);");
+                stmt.PExecute(event_id, condition, citr->second.done);
+
                 CharacterDatabase.CommitTransaction();
+
                 // check if all conditions are met, if so, update the event state
                 if (CheckOneGameEventConditions(event_id))
                 {
@@ -1577,12 +1600,28 @@ bool GameEvent::CheckOneGameEventConditions(uint16 event_id)
 
 void GameEvent::SaveWorldEventStateToDB(uint16 event_id)
 {
+    static SqlStatementID deleteGESave;
+    static SqlStatementID insertGESave;
+
     CharacterDatabase.BeginTransaction();
-    CharacterDatabase.PExecute("DELETE FROM game_event_save WHERE event_id = '%u'",event_id);
+
+    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteGESave, "DELETE FROM game_event_save WHERE event_id = ?;");
+    stmt.PExecute(event_id);
+
+    stmt = CharacterDatabase.CreateStatement(insertGESave, "INSERT INTO game_event_save (event_id, state, next_start) VALUES ( ?, ?, ?)");
+    stmt.addUInt16(event_id);
+    stmt.addUInt32(mGameEvent[event_id].state);
     if (mGameEvent[event_id].nextstart)
-        CharacterDatabase.PExecute("INSERT INTO game_event_save (event_id, state, next_start) VALUES ('%u','%u',FROM_UNIXTIME("UI64FMTD"))",event_id,mGameEvent[event_id].state,(uint64)(mGameEvent[event_id].nextstart));
+    {
+        char tmp[50];
+        int i = sprintf(tmp, "FROM_UNIXTIME("UI64FMTD")", (uint64)(mGameEvent[event_id].nextstart));
+        tmp[i]='\0';
+        stmt.addString(tmp);
+    }
     else
-        CharacterDatabase.PExecute("INSERT INTO game_event_save (event_id, state, next_start) VALUES ('%u','%u','0000-00-00 00:00:00')",event_id,mGameEvent[event_id].state);
+        stmt.addString("0000-00-00 00:00:00");
+
+    stmt.Execute();
     CharacterDatabase.CommitTransaction();
 }
 

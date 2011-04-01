@@ -51,9 +51,19 @@ AccountOpResult AccountMgr::CreateAccount(std::string username, std::string pass
     if (result)
         return AOR_NAME_ALREDY_EXIST;                       // username does already exist
 
-    if (!LoginDatabase.PExecute("INSERT INTO account(username,sha_pass_hash,joindate) VALUES('%s',SHA1(CONCAT('%s',':','%s')),NOW())", username.c_str(), username.c_str(), password.c_str()))
+    static SqlStatementID insertAcc;
+    static SqlStatementID insertRealmChars;
+
+    SqlStatement stmt = CharacterDatabase.CreateStatement(insertAcc, "INSERT INTO account(username, sha_pass_hash, joindate) VALUES (?, SHA1(CONCAT(?, ':', ?)), NOW());");
+    stmt.addString(username);
+    stmt.addString(username);
+    stmt.addString(password);
+
+    if (!stmt.Execute())
         return AOR_DB_INTERNAL_ERROR;                       // unexpected error
-    LoginDatabase.Execute("INSERT INTO realmcharacters (realmid, acctid, numchars) SELECT realmlist.id, account.id, 0 FROM realmlist,account LEFT JOIN realmcharacters ON acctid=account.id WHERE acctid IS NULL");
+
+    stmt = LoginDatabase.CreateStatement(insertRealmChars, "INSERT INTO realmcharacters(realmid, acctid, numchars) SELECT realmlist.id, account.id, 0 FROM realmlist, account LEFT JOIN realmcharacters ON acctid = account.id WHERE acctid IS NULL;");
+    stmt.Execute();
 
     return AOR_OK;                                          // everything's fine
 }
@@ -137,7 +147,12 @@ AccountOpResult AccountMgr::ChangePassword(uint32 accid, std::string new_passwd)
     normilizeString(new_passwd);
 
     LoginDatabase.escape_string(new_passwd);
-    if (!LoginDatabase.PExecute("UPDATE account SET sha_pass_hash=SHA1(CONCAT(username,':','%s')) WHERE id='%d'", new_passwd.c_str(), accid))
+
+    static SqlStatementID updateAccountPassword;
+    SqlStatement stmt = LoginDatabase.CreateStatement(updateAccountPassword, "UPDATE account SET sha_pass_hash = SHA1(CONCAT(username, ':', ?)) WHERE id = ?;");
+    stmt.addString(new_passwd);
+    stmt.addUInt32(accid);
+    if (!stmt.Execute())
         return AOR_DB_INTERNAL_ERROR;                       // unexpected error
 
     return AOR_OK;

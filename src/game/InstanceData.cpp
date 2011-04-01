@@ -31,7 +31,13 @@ void InstanceData::SaveToDB()
         return;
 
     CharacterDatabase.escape_string(data);
-    CharacterDatabase.PExecute("UPDATE instance SET data = '%s' WHERE id = '%d'", data.c_str(), instance->GetInstanceId());
+    static SqlStatementID updateInstanceData;
+    SqlStatement stmt = CharacterDatabase.CreateStatement(updateInstanceData, "UPDATE instance SET data = ? WHERE id = ?;");
+
+    stmt.addString(data);
+    stmt.addUInt32(instance->GetInstanceId());
+
+    stmt.Execute();
 }
 
 void InstanceData::HandleGameObject(uint64 GUID, bool open, GameObject *go)

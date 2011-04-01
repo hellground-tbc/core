@@ -630,7 +630,7 @@ bool Creature::AIM_Initialize(CreatureAI* ai)
 
     i_motionMaster.Initialize();
     i_AI = FactorySelector::selectAI(this);
-    
+
     if (oldAI)
         delete oldAI;
 
@@ -1261,13 +1261,13 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
     // updated in DB
     WorldDatabase.BeginTransaction();
 
-    static SqlStatementID saveCreature;
+    static SqlStatementID insertCreature;
     static SqlStatementID deleteCreature;
 
     SqlStatement stmt = WorldDatabase.CreateStatement(deleteCreature,"DELETE FROM creature WHERE guid = ?");
     stmt.PExecute(m_DBTableGuid);
 
-    stmt = WorldDatabase.CreateStatement(saveCreature, "INSERT INTO creature VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    stmt = WorldDatabase.CreateStatement(insertCreature, "INSERT INTO creature VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
     stmt.addUInt64(m_DBTableGuid);
     stmt.addUInt32(GetEntry());
