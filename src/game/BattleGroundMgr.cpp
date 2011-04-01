@@ -1213,6 +1213,9 @@ void BattleGroundMgr::BuildBattleGroundStatusPacket(WorldPacket *data, BattleGro
 void BattleGroundMgr::BuildPvpLogDataPacket(WorldPacket *data, BattleGround *bg)
 {
     uint8 type = (bg->isArena() ? 1 : 0);
+
+    if (bg->isArena() && bg->GetStatus() == STATUS_WAIT_JOIN)
+        return;
                                                             // last check on 2.4.1
     data->Initialize(MSG_PVP_LOG_DATA, (1+1+4+40*bg->GetPlayerScoresSize()));
     *data << uint8(type);                                   // seems to be type (battleground=0/arena=1)
