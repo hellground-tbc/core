@@ -477,7 +477,7 @@ void Loot::removeItemFromSavedLoot(uint8 lootIndex)
     {
         static SqlStatementID updateGroupSavedLootCount;
         count--;
-        SqlStatement stmt = CharacterDatabase.CreateStatement(updateGroupSavedLootCount, "UPDATE group_saved_loot SET itemCount = ? WHERE instanceId = ? AND itemId = ? AND creatureId = ?:");
+        SqlStatement stmt = CharacterDatabase.CreateStatement(updateGroupSavedLootCount, "UPDATE group_saved_loot SET itemCount = ? WHERE instanceId = ? AND itemId = ? AND creatureId = ?");
         stmt.PExecute(count, pCreature->GetInstanceId(), item->itemid, pCreature->GetEntry());
     }
     else
