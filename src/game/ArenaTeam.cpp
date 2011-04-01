@@ -451,7 +451,7 @@ void ArenaTeam::SetEmblem(uint32 backgroundColor, uint32 emblemStyle, uint32 emb
     BorderStyle = borderStyle;
     BorderColor = borderColor;
 
-    SqlStatement stmt = CharacterDatabase.CreateStatement(updateArenaTeamEmblem, "UPDATE arena_team SET BackgroundColor = ?, EmblemStyle = , EmblemColor = ?, BorderStyle = ?, BorderColor =  WHERE arenateamid = ?");
+    SqlStatement stmt = CharacterDatabase.CreateStatement(updateArenaTeamEmblem, "UPDATE arena_team SET BackgroundColor = ?, EmblemStyle = ?, EmblemColor = ?, BorderStyle = ?, BorderColor = ? WHERE arenateamid = ?");
 
     stmt.addUInt32(BackgroundColor);
     stmt.addUInt32(EmblemStyle);

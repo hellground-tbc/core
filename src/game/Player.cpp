@@ -15830,31 +15830,19 @@ InstancePlayerBind* Player::BindToInstance(InstanceSave *save, bool permanent, b
 {
     if (save)
     {
-        static SqlStatementID updateCharacterInstance;
-        static SqlStatementID insertCharacterInstance;
-
         InstancePlayerBind& bind = m_boundInstances[save->GetDifficulty()][save->GetMapId()];
         if (bind.save)
         {
             // update the save when the group kills a boss
             if ((permanent != bind.perm || save != bind.save) && !load)
             {
-                SqlStatement stmt = CharacterDatabase.CreateStatement(updateCharacterInstance, "UPDATE character_instance SET instance = ?, permanent = ? WHERE guid = ? AND instance = ?");
-                stmt.addUInt32(save->GetInstanceId());
-                stmt.addUInt8((uint8)permanent);
-                stmt.addUInt32(GetGUIDLow());
-                stmt.addUInt32(bind.save->GetInstanceId());
-                stmt.Execute();
+                CharacterDatabase.PExecute("UPDATE character_instance SET instance = '%u', permanent = '%u' WHERE guid = '%u' AND instance = '%u'", save->GetInstanceId(), permanent, GetGUIDLow(), bind.save->GetInstanceId());
             }
         }
         else
             if (!load)
             {
-                SqlStatement stmt = CharacterDatabase.CreateStatement(insertCharacterInstance, "INSERT INTO character_instance (guid, instance, permanent) VALUES (?, ?, ?);");
-                stmt.addUInt32(GetGUIDLow());
-                stmt.addUInt32(save->GetInstanceId());
-                stmt.addUInt8((uint8)permanent);
-                stmt.Execute();
+                CharacterDatabase.PExecute("INSERT INTO character_instance (guid, instance, permanent) VALUES ('%u', '%u', '%u')", GetGUIDLow(), save->GetInstanceId(), permanent);
             }
 
         if (bind.save != save)
@@ -16585,7 +16573,7 @@ void Player::_SaveInventory()
                 SqlStatement stmt = CharacterDatabase.CreateStatement(updateCharacterInventoryItem, "UPDATE character_inventory SET guid = ?, bag = ?, slot = ?, item_template = ? WHERE item = ?");
 
                 stmt.addUInt32(lowGuid);
-                stmt.addUInt16(bag_guid);
+                stmt.addUInt32(bag_guid);
                 stmt.addUInt8(item->GetSlot());
                 stmt.addUInt32(item->GetEntry());
                 stmt.addUInt32(item->GetGUIDLow());
