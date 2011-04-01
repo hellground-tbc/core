@@ -1018,6 +1018,7 @@ bool IsPartialyResistable(SpellEntry const* spellInfo)
         case 40325:     // Teron: Spirit Strike
         case 40157:     // Teron: Spirit Lance
         case 40175:     // Teron: Spirit Chains
+        case 41483:     // High Nethermancer Zerevor: Arcane Bolt
             return false;
     }
 
