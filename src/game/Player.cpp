@@ -15840,14 +15840,21 @@ InstancePlayerBind* Player::BindToInstance(InstanceSave *save, bool permanent, b
             if ((permanent != bind.perm || save != bind.save) && !load)
             {
                 SqlStatement stmt = CharacterDatabase.CreateStatement(updateCharacterInstance, "UPDATE character_instance SET instance = ?, permanent = ? WHERE guid = ? AND instance = ?");
-                stmt.PExecute(save->GetInstanceId(), permanent, GetGUIDLow(), bind.save->GetInstanceId());
+                stmt.addUInt32(save->GetInstanceId());
+                stmt.addUInt8((uint8)permanent);
+                stmt.addUInt32(GetGUIDLow());
+                stmt.addUInt32(bind.save->GetInstanceId());
+                stmt.Execute();
             }
         }
         else
             if (!load)
             {
                 SqlStatement stmt = CharacterDatabase.CreateStatement(insertCharacterInstance, "INSERT INTO character_instance (guid, instance, permanent) VALUES (?, ?, ?);");
-                stmt.PExecute(GetGUIDLow(), save->GetInstanceId(), permanent);
+                stmt.addUInt32(GetGUIDLow());
+                stmt.addUInt32(save->GetInstanceId());
+                stmt.addUInt8((uint8)permanent);
+                stmt.Execute();
             }
 
         if (bind.save != save)
@@ -16090,7 +16097,7 @@ bool Player::_LoadHomeBind(QueryResultAutoPtr result)
         m_homebindY = info->positionY;
         m_homebindZ = info->positionZ;
 
-        SqlStatement stmt = CharacterDatabase.CreateStatement(insertCharacterHomebind, "INSERT INTO character_homebind(guid, map, zone, position_x, position_y, position_z) VALUES(?, ?, ?, ?, ?, );");
+        SqlStatement stmt = CharacterDatabase.CreateStatement(insertCharacterHomebind, "INSERT INTO character_homebind(guid, map, zone, position_x, position_y, position_z) VALUES(?, ?, ?, ?, ?, ?);");
 
         stmt.addUInt32(GetGUIDLow());
         stmt.addUInt32(m_homebindMapId);

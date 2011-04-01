@@ -453,7 +453,7 @@ void Pet::SavePetToDB(PetSaveMode mode)
             static SqlStatementID insertCharacterPet;
 
             stmt = CharacterDatabase.CreateStatement(insertCharacterPet, "INSERT INTO character_pet(id, entry, owner, modelid, level, exp, Reactstate, loyaltypoints, loyalty, trainpoint, slot, name, renamed, curhealth, curmana, curhappiness, abdata, TeachSpelldata, savetime, resettalents_cost, resettalents_time, CreatedBySpell, PetType) "
-                                                                        "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, time(NULL), ?, ?, ?, ?);");
+                                                                        "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
 
             // save pet
             stmt.addUInt32(m_charmInfo->GetPetNumber());
@@ -468,6 +468,7 @@ void Pet::SavePetToDB(PetSaveMode mode)
             stmt.addUInt32(m_TrainingPoints);
             stmt.addUInt32(uint32(mode));
             stmt.addString(name);
+            stmt.addUInt64(time(NULL));
             stmt.addUInt32(uint32((GetByteValue(UNIT_FIELD_BYTES_2, 2) == UNIT_RENAME_ALLOWED) ? 0 : 1));
             stmt.addUInt32(curhealth);
             stmt.addUInt32(curmana);

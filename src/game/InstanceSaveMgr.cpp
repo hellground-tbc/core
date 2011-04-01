@@ -143,7 +143,7 @@ void InstanceSaveManager::DeleteInstanceFromDB(uint32 instanceid)
     stmt = CharacterDatabase.CreateStatement(deleteGroupSavedLoot, "DELETE FROM group_saved_loot WHERE instanceId = ?");
     stmt.PExecute(instanceid);
 
-    stmt = CharacterDatabase.CreateStatement(deleteCharactersInstance, "DELETE FROM character_instance WHERE instance = ?:");
+    stmt = CharacterDatabase.CreateStatement(deleteCharactersInstance, "DELETE FROM character_instance WHERE instance = ?");
     stmt.PExecute(instanceid);
 
     stmt = CharacterDatabase.CreateStatement(deleteGroupInstance, "DELETE FROM group_instance WHERE instance = ?");
