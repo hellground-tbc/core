@@ -175,11 +175,10 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit *who)
     {
-        if (!m_creature->isInCombat())
-        {
-            if (m_creature->IsWithinDistInMap(who, 45) && m_creature->IsHostileTo(who))
-                m_creature->AI()->AttackStart(who);
-        }
+        if (!me->IsWithinLOSInMap(who) || !me->IsWithinDistInMap(who, 45) || !me->IsHostileTo(who) || !me->isInCombat())
+            return;
+
+        ScriptedAI::AttackStart(who);
     }
 
     void CastBloodboil()
