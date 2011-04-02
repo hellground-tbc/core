@@ -200,11 +200,7 @@ void InstanceSave::SaveToDB()
     {
         assert(map->IsDungeon());
         if (InstanceData *iData = ((InstanceMap*)map)->GetInstanceData())
-        {
             data = iData->GetSaveData();
-            if (!data.empty())
-                CharacterDatabase.escape_string(data);
-        }
     }
 
     static SqlStatementID insertInstance;
@@ -213,7 +209,7 @@ void InstanceSave::SaveToDB()
     stmt.addUInt32(GetMapId());
     stmt.addUInt64((uint64)GetResetTimeForDB());
     stmt.addUInt8(GetDifficulty());
-    stmt.addString(data);
+    stmt.addString(data);       // string will be escaped inside prepared statements
     stmt.Execute();
 }
 

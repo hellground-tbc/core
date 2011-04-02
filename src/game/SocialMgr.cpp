@@ -124,11 +124,10 @@ void PlayerSocial::SetFriendNote(uint32 friend_guid, std::string note)
 
     utf8truncate(note,48);                                  // DB and client size limitation
 
-    CharacterDatabase.escape_string(note);
     static SqlStatementID updateCharacterSocialNote;
     SqlStatement stmt = CharacterDatabase.CreateStatement(updateCharacterSocialNote, "UPDATE character_social SET note = ? WHERE guid = ? AND friend = ?");
 
-    stmt.addString(note);
+    stmt.addString(note);   // string will be escaped inside prepared statements
     stmt.addUInt32(GetPlayerGUID());
     stmt.addUInt32(friend_guid);
 

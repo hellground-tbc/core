@@ -62,9 +62,6 @@ bool ArenaTeam::Create(uint64 captainGuid, uint32 type, std::string ArenaTeamNam
 
     Id = objmgr.GenerateArenaTeamId();
 
-    // ArenaTeamName already assigned to ArenaTeam::name, use it to encode string for DB
-    CharacterDatabase.escape_string(ArenaTeamName);
-
     CharacterDatabase.BeginTransaction();
 
     SqlStatement stmt = CharacterDatabase.CreateStatement(deleteATMs, "DELETE FROM arena_team_member WHERE arenateamid = ?");
@@ -72,7 +69,7 @@ bool ArenaTeam::Create(uint64 captainGuid, uint32 type, std::string ArenaTeamNam
 
     stmt = CharacterDatabase.CreateStatement(insertAT, "INSERT INTO arena_team (arenateamid, name, captainguid, type, BackgroundColor, EmblemStyle, EmblemColor, BorderStyle, BorderColor) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
     stmt.addUInt32(Id);
-    stmt.addString(ArenaTeamName);
+    stmt.addString(ArenaTeamName);  // string will be escaped inside prepared statements
     stmt.addUInt64(GUID_LOPART(CaptainGuid));
     stmt.addUInt32(Type);
     stmt.addUInt32(BackgroundColor);

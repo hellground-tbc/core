@@ -426,8 +426,8 @@ void Pet::SavePetToDB(PetSaveMode mode)
                 loyalty = GetLoyaltyLevel();
 
             uint32 owner = GUID_LOPART(GetOwnerGUID());
+            // string will be escaped inside prepared statements
             std::string name = m_name;
-            CharacterDatabase.escape_string(name);
 
             static SqlStatementID deleteCharacterPetOwner;
             static SqlStatementID deleteCharacterPetInSlot03;

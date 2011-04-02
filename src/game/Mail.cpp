@@ -883,7 +883,6 @@ void WorldSession::SendMailTo(Player* receiver, uint8 messageType, uint8 station
     static SqlStatementID insertMailItems;
 
     CharacterDatabase.BeginTransaction();
-    CharacterDatabase.escape_string(subject);
 
     SqlStatement stmt = CharacterDatabase.CreateStatement(insertMail, "INSERT INTO mail(id, messageType, stationery, mailTemplateId, sender, receiver, subject, itemTextId, has_items, expire_time, deliver_time, money, cod, checked) "
                                                                         "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
@@ -893,7 +892,7 @@ void WorldSession::SendMailTo(Player* receiver, uint8 messageType, uint8 station
     stmt.addUInt16(mailTemplateId);
     stmt.addUInt32(sender_guidlow_or_entry);
     stmt.addUInt32(receiver_guidlow);
-    stmt.addString(subject);
+    stmt.addString(subject);            // string will be escaped inside prepared statements
     stmt.addUInt32(itemTextId);
     stmt.addUInt8((mi && !mi->empty() ? 1 : 0));
     stmt.addUInt64((uint64)expire_time);
