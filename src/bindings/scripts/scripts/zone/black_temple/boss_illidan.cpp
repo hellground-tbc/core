@@ -842,10 +842,10 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
         BossAI::JustSummoned(pWho);
     }
 
-    void OnAuraRemove(Aura *pAur, bool stack)
+    void OnAuraApply(Aura *aura, Unit *, bool stackApply)
     {
-        if (pAur->GetId() == 40695)
-            ChangePhase(PHASE_FOUR);
+        if (aura->GetId() == 40695)
+            events.RescheduleEvent(EVENT_ILLIDAN_CHANGE_PHASE, 15000, m_phase);
     }
 
     void DoAction(const int32 action)
