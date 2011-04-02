@@ -312,7 +312,7 @@ class TRINITY_DLL_SPEC Aura
             if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_PRIEST && GetSpellProto()->SpellFamilyFlags & 0x800000LL) // Mind Flay
                 return true;
 
-            if (GetSpellProto()->Id == 34456) // Ferocious Inspiration
+            if (GetSpellProto()->Id == 34456 || GetSpellProto()->Id == 41083) // Ferocious Inspiration && Paralyze from shadow demon
                 return true;
 
             if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_PRIEST && GetSpellProto()->SpellFamilyFlags & 0x40000000000LL) // Vampiric Touch

@@ -1681,8 +1681,7 @@ struct TRINITY_DLL_DECL boss_illidan_shadowdemonAI : public ScriptedAI
         if (Unit *pUnit = me->GetUnit(m_targetGUID))
         {
             pUnit->RemoveAurasByCasterSpell(SPELL_SHADOW_DEMON_BEAM, me->GetGUID());
-            if (!pUnit->HasAura(SPELL_SHADOW_DEMON_BEAM, 0))
-                pUnit->RemoveAurasDueToSpell(SPELL_SHADOW_DEMON_PARALYZE);
+            pUnit->RemoveAurasByCasterSpell(SPELL_SHADOW_DEMON_PARALYZE, me->GetGUID());
         }
     }
 
