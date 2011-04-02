@@ -16406,7 +16406,7 @@ void Player::_SaveAuras()
                         stmt.addUInt32((uint32)itr2->second->GetId());
                         stmt.addUInt32((uint32)itr2->second->GetEffIndex());
                         stmt.addUInt32((uint32)itr2->second->GetStackAmount());
-                        stmt.addUInt32(itr2->second->GetModifier()->m_amount);
+                        stmt.addInt32(itr2->second->GetModifier()->m_amount);
                         stmt.addInt32(int(itr2->second->GetAuraMaxDuration()));
                         stmt.addInt32(int(itr2->second->GetAuraDuration()));
                         stmt.addInt32(int(itr2->second->m_procCharges));
