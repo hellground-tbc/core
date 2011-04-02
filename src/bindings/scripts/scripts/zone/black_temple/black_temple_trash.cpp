@@ -47,8 +47,6 @@ enum AqueousLord
     NPC_AQUEOUS_SPAWN   = 22883
 };
 
-
-
 struct TRINITY_DLL_DECL mob_aqueous_lordAI : public ScriptedAI
 {
     mob_aqueous_lordAI(Creature *c) : ScriptedAI(c) {}

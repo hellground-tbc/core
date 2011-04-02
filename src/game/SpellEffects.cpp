@@ -5213,7 +5213,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             if (!m_caster->CanHaveThreatList())
                 return;
 
-            m_caster->getThreatManager().modifyThreatPercent(unitTarget, -25);
+            m_caster->getThreatManager().modifyThreatPercent(unitTarget, -40.0f);
             break;
         }
         // Bloodbolt & Blood Splash workaround
@@ -5231,7 +5231,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             if (!m_caster->CanHaveThreatList())
                 return;
 
-            m_caster->getThreatManager().modifyThreatPercent(unitTarget, -25);
+            m_caster->getThreatManager().modifyThreatPercent(unitTarget, -40.0f);
             break;
         }
         // Incite Chaos

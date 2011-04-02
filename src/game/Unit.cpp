@@ -12775,7 +12775,7 @@ void Unit::KnockBackFrom(Unit* target, float horizintalSpeed, float verticalSpee
         float fz = oz;
 
         float fx2, fy2, fz2;                                // getObjectHitPos overwrite last args in any result case
-        if (VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(), ox,oy,oz+0.5, fx,fy,oz+0.5,fx2,fy2,fz2, -0.5))
+        if (VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(), ox,oy,oz+0.5, fx,fy,oz+0.5,fx2,fy2,fz2, -1.5f))
         {
             fx = fx2;
             fy = fy2;
