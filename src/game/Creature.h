@@ -677,6 +677,8 @@ class TRINITY_DLL_SPEC Creature : public Unit
 
         bool GetIsDeadByDefault() { return m_isDeadByDefault; }
 
+        void SetAggroRange(float t) { m_aggroRange = t; }
+
     protected:
         bool CreateFromProto(uint32 guidlow,uint32 Entry,uint32 team, const CreatureData *data = NULL);
         bool InitEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data=NULL);
@@ -737,6 +739,8 @@ class TRINITY_DLL_SPEC Creature : public Unit
         //WaypointMovementGenerator vars
         uint32 m_waypointID;
         uint32 m_path_id;
+
+        float m_aggroRange;
 
         //Formation var
         CreatureGroup *m_formation;

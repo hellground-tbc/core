@@ -49,7 +49,7 @@ enum AqueousLord
 
 struct TRINITY_DLL_DECL mob_aqueous_lordAI : public ScriptedAI
 {
-    mob_aqueous_lordAI(Creature *c) : ScriptedAI(c) {}
+    mob_aqueous_lordAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 VileSlime;
     uint32 SummonTimer;
@@ -64,13 +64,7 @@ struct TRINITY_DLL_DECL mob_aqueous_lordAI : public ScriptedAI
         CrashingWave = 15000;
     }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
 
-        ScriptedAI::MoveInLineOfSight(who);
-    }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -129,7 +123,7 @@ enum AqeousSpawn
 
 struct TRINITY_DLL_DECL mob_aqueous_spawnAI : public ScriptedAI
 {
-    mob_aqueous_spawnAI(Creature *c) : ScriptedAI(c) {}
+    mob_aqueous_spawnAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 SludgeNova;
     uint32 MergeTimer;
@@ -145,13 +139,7 @@ struct TRINITY_DLL_DECL mob_aqueous_spawnAI : public ScriptedAI
 
     }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
 
-        ScriptedAI::MoveInLineOfSight(who);
-    }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim() && !merging)
@@ -198,7 +186,7 @@ enum CoilscarGeneral
 
 struct TRINITY_DLL_DECL mob_coilskar_generalAI : public ScriptedAI
 {
-    mob_coilskar_generalAI(Creature *c) : ScriptedAI(c) {}
+    mob_coilskar_generalAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 FreeFriend;
     uint32 Cleave;
@@ -214,13 +202,7 @@ struct TRINITY_DLL_DECL mob_coilskar_generalAI : public ScriptedAI
     }
 
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
 
-        ScriptedAI::MoveInLineOfSight(who);
-    }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -294,7 +276,7 @@ enum CoilscarHarpooner
 
 struct TRINITY_DLL_DECL mob_coilskar_harpoonerAI : public ScriptedAI
 {
-    mob_coilskar_harpoonerAI(Creature *c) : ScriptedAI(c) {}
+    mob_coilskar_harpoonerAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 SpearThrow;
     uint32 HookedNet;
@@ -323,13 +305,6 @@ struct TRINITY_DLL_DECL mob_coilskar_harpoonerAI : public ScriptedAI
                 MarkTargetGUID = target->GetGUID();     //constant target for Mark per creature, selected at aggro
             }
         }
-    }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
     }
 
     void UpdateAI(const uint32 diff)
@@ -406,11 +381,7 @@ struct TRINITY_DLL_DECL mob_coilskar_seacallerAI : public ScriptedAI
         SummonGeyser = urand(3000, 8000);
     }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
-            AttackStart(who);
-    }
+
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -493,7 +464,7 @@ enum CoilscarSoothsayer
 
 struct TRINITY_DLL_DECL mob_coilskar_soothsayerAI : public ScriptedAI
 {
-    mob_coilskar_soothsayerAI(Creature *c) : ScriptedAI(c) {}
+    mob_coilskar_soothsayerAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 HolyNova;
     uint32 Restoration;
@@ -506,13 +477,7 @@ struct TRINITY_DLL_DECL mob_coilskar_soothsayerAI : public ScriptedAI
         Restoration = (8000, 12000);
     }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
 
-        ScriptedAI::MoveInLineOfSight(who);
-    }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -556,7 +521,7 @@ enum CoilscarWrangler
 
 struct TRINITY_DLL_DECL mob_coilskar_wranglerAI : public ScriptedAI
 {
-    mob_coilskar_wranglerAI(Creature *c) : ScriptedAI(c) {}
+    mob_coilskar_wranglerAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 Cleave;
     uint32 ElectricSpur;
@@ -571,13 +536,7 @@ struct TRINITY_DLL_DECL mob_coilskar_wranglerAI : public ScriptedAI
         LightningProd = urand(8000, 15000);
     }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
 
-        ScriptedAI::MoveInLineOfSight(who);
-    }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -625,7 +584,7 @@ enum DragonTurtle
 
 struct TRINITY_DLL_DECL mob_dragon_turtleAI : public ScriptedAI
 {
-    mob_dragon_turtleAI(Creature *c) : ScriptedAI(c) {}
+    mob_dragon_turtleAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     bool CanBeShielded;
     uint32 ShellShield;
@@ -640,11 +599,7 @@ struct TRINITY_DLL_DECL mob_dragon_turtleAI : public ScriptedAI
         CanBeShielded = false;
     }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
-            AttackStart(who);
-    }
+
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -708,7 +663,7 @@ enum Leviathan
 
 struct TRINITY_DLL_DECL mob_leviathanAI : public ScriptedAI
 {
-    mob_leviathanAI(Creature *c) : ScriptedAI(c) {}
+    mob_leviathanAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 DebilitatingSpray;
     uint32 PoisonSpit;
@@ -723,11 +678,7 @@ struct TRINITY_DLL_DECL mob_leviathanAI : public ScriptedAI
         TailSweep = 6000;
     }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, AGGRO_RANGE) && m_creature->IsHostileTo(who))
-            AttackStart(who);
-    }
+
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -863,7 +814,7 @@ CreatureAI* GetAI_mob_leviathan(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_bonechewer_taskmasterAI : public ScriptedAI
 {
-    mob_bonechewer_taskmasterAI(Creature *c) : ScriptedAI(c){}
+    mob_bonechewer_taskmasterAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 disgruntledTimer;
     bool disgruntledCasted;
@@ -883,15 +834,6 @@ struct TRINITY_DLL_DECL mob_bonechewer_taskmasterAI : public ScriptedAI
             disgruntledCasted = true;
         }
     }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
-    }
-
-    void JustDied(Unit *victim){}
 
     void WorkerDied()
     {
@@ -924,7 +866,7 @@ struct TRINITY_DLL_DECL mob_bonechewer_taskmasterAI : public ScriptedAI
 
 struct TRINITY_DLL_DECL mob_bonechewer_workerAI : public ScriptedAI
 {
-    mob_bonechewer_workerAI(Creature *c) : ScriptedAI(c){}
+    mob_bonechewer_workerAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 throwTimer;
 
@@ -943,13 +885,6 @@ struct TRINITY_DLL_DECL mob_bonechewer_workerAI : public ScriptedAI
                 m_creature->CastSpell(who, SPELL_WORKER_THROW_PICK, false);
             }
         }
-    }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
     }
 
     void JustDied(Unit *victim)
@@ -993,7 +928,7 @@ struct TRINITY_DLL_DECL mob_bonechewer_workerAI : public ScriptedAI
 
 struct TRINITY_DLL_DECL mob_dragonmaw_skystalkerAI : public ScriptedAI
 {
-    mob_dragonmaw_skystalkerAI(Creature *c) : ScriptedAI(c){}
+    mob_dragonmaw_skystalkerAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 immolationArrowTimer;
     uint32 distCheckTimer;
@@ -1016,15 +951,6 @@ struct TRINITY_DLL_DECL mob_dragonmaw_skystalkerAI : public ScriptedAI
         m_creature->GetMotionMaster()->Clear();
         m_creature->GetMotionMaster()->MoveChase(who, 15);
     }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
-    }
-
-    void JustDied(Unit *victim){}
 
     Unit * GetNewTarget()
     {
@@ -1114,7 +1040,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_skystalkerAI : public ScriptedAI
 
 struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
 {
-    mob_dragonmaw_windreaverAI(Creature *c) : ScriptedAI(c){}
+    mob_dragonmaw_windreaverAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 doomBoltTimer;
     uint32 freezeTimer;
@@ -1139,15 +1065,6 @@ struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
         m_creature->GetMotionMaster()->Clear();
         m_creature->GetMotionMaster()->MoveChase(who, 15);
     }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
-    }
-
-    void JustDied(Unit *victim){}
 
     Unit * CheckMeleeRange()
     {
@@ -1271,7 +1188,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
 
 struct TRINITY_DLL_DECL mob_dragonmaw_wyrmcallerAI : public ScriptedAI
 {
-    mob_dragonmaw_wyrmcallerAI(Creature *c) : ScriptedAI(c){}
+    mob_dragonmaw_wyrmcallerAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 cleaveTimer;
     uint32 fixateTimer;
@@ -1285,15 +1202,6 @@ struct TRINITY_DLL_DECL mob_dragonmaw_wyrmcallerAI : public ScriptedAI
     }
 
     void EnterCombat(Unit *who) { DoZoneInCombat(80.0f); }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
-    }
-
-    void JustDied(Unit *victim) {}
 
     void UpdateAI(const uint32 diff)
     {
@@ -1355,7 +1263,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_wyrmcallerAI : public ScriptedAI
 
 struct TRINITY_DLL_DECL mob_illidari_fearbringerAI : public ScriptedAI
 {
-    mob_illidari_fearbringerAI(Creature *c) : ScriptedAI(c){}
+    mob_illidari_fearbringerAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 flamesTimer;
     uint32 rainTimer;
@@ -1375,15 +1283,6 @@ struct TRINITY_DLL_DECL mob_illidari_fearbringerAI : public ScriptedAI
     }
 
     void EnterCombat(Unit *who) { DoZoneInCombat(80.0f); }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
-    }
-
-    void JustDied(Unit *victim){}
 
     void UpdateAI(const uint32 diff)
     {
@@ -1507,7 +1406,7 @@ CreatureAI* GetAI_mob_illidari_fearbringer(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_ashtongue_battlelordAI : public ScriptedAI
 {
-    mob_ashtongue_battlelordAI(Creature *c) : ScriptedAI(c) {}
+    mob_ashtongue_battlelordAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 Cleave;
     uint32 ConcussionBlow;
@@ -1524,13 +1423,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_battlelordAI : public ScriptedAI
         Frenzy = 5000;
     }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
 
-        ScriptedAI::MoveInLineOfSight(who);
-    }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -1593,7 +1486,7 @@ CreatureAI* GetAI_mob_ashtongue_battlelord(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_ashtongue_feral_spiritAI : public ScriptedAI
 {
-    mob_ashtongue_feral_spiritAI(Creature *c) : ScriptedAI(c) {}
+    mob_ashtongue_feral_spiritAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 ChargeRage;
     uint32 SpiritBond;
@@ -1606,14 +1499,6 @@ struct TRINITY_DLL_DECL mob_ashtongue_feral_spiritAI : public ScriptedAI
         SpiritBond = urand(15000, 25000);
     }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
-
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
-    }
 
     void UpdateAI(const uint32 diff)
     {
@@ -1736,7 +1621,7 @@ CreatureAI* GetAI_totem_ashtongue_mystic(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_ashtongue_mysticAI : public ScriptedAI
 {
-    mob_ashtongue_mysticAI(Creature *c) : ScriptedAI(c) {}
+    mob_ashtongue_mysticAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 FrostShock;
     uint32 FlameShock;
@@ -1763,13 +1648,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_mysticAI : public ScriptedAI
         DoZoneInCombat(80.0f);
         DoCast(m_creature, SPELL_BLOODLUST);
     }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
 
-        ScriptedAI::MoveInLineOfSight(who);
-    }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -1873,7 +1752,7 @@ CreatureAI* GetAI_mob_ashtongue_mystic(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_ashtongue_primalistAI : public ScriptedAI
 {
-    mob_ashtongue_primalistAI(Creature *c) : ScriptedAI(c) {}
+    mob_ashtongue_primalistAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 MultiShot;
     uint32 Shoot;
@@ -1892,17 +1771,15 @@ struct TRINITY_DLL_DECL mob_ashtongue_primalistAI : public ScriptedAI
         WyvernSting = urand(7000, 15000);
         SweepingWingClip = urand(20000, 37000);
     }
+
     void MoveInLineOfSight(Unit *who)
     {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
-
         if(m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, 5.0) && m_creature->IsHostileTo(who))
             canShoot = false;
         else
             canShoot = true;
+
+        ScriptedAI::MoveInLineOfSight(who);
     }
 
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
@@ -1988,7 +1865,7 @@ CreatureAI* GetAI_mob_ashtongue_primalist(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_ashtongue_stalkerAI : public ScriptedAI
 {
-    mob_ashtongue_stalkerAI(Creature *c) : ScriptedAI(c) {}
+    mob_ashtongue_stalkerAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 Blind;
     uint32 InstantPoison;
@@ -2005,13 +1882,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_stalkerAI : public ScriptedAI
         MindNumbingPoison = urand(5000, 10000);
     }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
 
-        ScriptedAI::MoveInLineOfSight(who);
-    }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -2074,7 +1945,7 @@ CreatureAI* GetAI_mob_ashtongue_stalker(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_ashtongue_stormcallerAI : public ScriptedAI
 {
-    mob_ashtongue_stormcallerAI(Creature *c) : ScriptedAI(c) {}
+    mob_ashtongue_stormcallerAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 ChainLightning;
     uint32 LightningBolt;
@@ -2094,13 +1965,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_stormcallerAI : public ScriptedAI
         DoZoneInCombat(80.0f);
         DoCast(m_creature, SPELL_LIGHTNING_SHIELD);
     }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
 
-        ScriptedAI::MoveInLineOfSight(who);
-    }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -2154,7 +2019,7 @@ CreatureAI* GetAI_mob_ashtongue_stormcaller(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_illidari_boneslicerAI : public ScriptedAI
 {
-    mob_illidari_boneslicerAI(Creature *c) : ScriptedAI(c) {}
+    mob_illidari_boneslicerAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 CloakOfShadows;
     uint32 Gouge;
@@ -2175,13 +2040,7 @@ struct TRINITY_DLL_DECL mob_illidari_boneslicerAI : public ScriptedAI
         DoCast(m_creature, SPELL_CLOAK_OF_SHADOWS);
         DoZoneInCombat(80.0f);
     }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
 
-        ScriptedAI::MoveInLineOfSight(who);
-    }
     void DamageMade(Unit* target, uint32 & damage, bool direct_damage)
     {
         if(damage && direct_damage)
@@ -2242,7 +2101,7 @@ CreatureAI* GetAI_mob_illidari_boneslicer(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_illidari_centurionAI : public ScriptedAI
 {
-    mob_illidari_centurionAI(Creature *c) : ScriptedAI(c) {}
+    mob_illidari_centurionAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 Cleave;
     uint32 SonicStrike;
@@ -2255,13 +2114,7 @@ struct TRINITY_DLL_DECL mob_illidari_centurionAI : public ScriptedAI
         SonicStrike = urand(5000, 15000);
     }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
 
-        ScriptedAI::MoveInLineOfSight(who);
-    }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -2304,7 +2157,7 @@ CreatureAI* GetAI_mob_illidari_centurion(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_illidari_defilerAI : public ScriptedAI
 {
-    mob_illidari_defilerAI(Creature *c) : ScriptedAI(c) {}
+    mob_illidari_defilerAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 FelImmolate;
     uint32 CurseOfAgony;
@@ -2320,17 +2173,8 @@ struct TRINITY_DLL_DECL mob_illidari_defilerAI : public ScriptedAI
         Banish = urand(10000, 30000);
         RainOfChaos = urand(3000, 15000);
     }
-    void EnterCombat(Unit*)
-    {
-        DoZoneInCombat(80.0f);
-    }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
+    void EnterCombat(Unit*){ DoZoneInCombat(80.0f); }
 
-        ScriptedAI::MoveInLineOfSight(who);
-    }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -2391,7 +2235,7 @@ CreatureAI* GetAI_mob_illidari_defiler(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_illidari_heartseekerAI : public ScriptedAI
 {
-    mob_illidari_heartseekerAI(Creature *c) : ScriptedAI(c) {}
+    mob_illidari_heartseekerAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 RapidShot;
     uint32 Shoot;
@@ -2412,13 +2256,7 @@ struct TRINITY_DLL_DECL mob_illidari_heartseekerAI : public ScriptedAI
         DoZoneInCombat(80.0f);
         AttackStart(who, false);
     }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
 
-        ScriptedAI::MoveInLineOfSight(who);
-    }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -2500,7 +2338,7 @@ CreatureAI* GetAI_mob_illidari_heartseeker(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_illidari_nightlordAI : public ScriptedAI
 {
-    mob_illidari_nightlordAI(Creature *c) : ScriptedAI(c) {}
+    mob_illidari_nightlordAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 CurseOfMending;
     uint32 Fear;
@@ -2518,13 +2356,7 @@ struct TRINITY_DLL_DECL mob_illidari_nightlordAI : public ScriptedAI
         Shadowfiends = urand(15000, 20000);
     }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
 
-        ScriptedAI::MoveInLineOfSight(who);
-    }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -2587,7 +2419,7 @@ CreatureAI* GetAI_mob_illidari_nightlord(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_storm_furyAI : public ScriptedAI
 {
-    mob_storm_furyAI(Creature *c) : ScriptedAI(c) {}
+    mob_storm_furyAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 StormBlink;
 
@@ -2598,13 +2430,7 @@ struct TRINITY_DLL_DECL mob_storm_furyAI : public ScriptedAI
         StormBlink = urand(15000, 25000);
     }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
 
-        ScriptedAI::MoveInLineOfSight(who);
-    }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -2656,7 +2482,7 @@ CreatureAI* GetAI_mob_storm_fury(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_hand_of_gorefiendAI : public ScriptedAI
 {
-    mob_hand_of_gorefiendAI(Creature *c) : ScriptedAI(c) {}
+    mob_hand_of_gorefiendAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 Enrage;
 
@@ -2665,13 +2491,7 @@ struct TRINITY_DLL_DECL mob_hand_of_gorefiendAI : public ScriptedAI
         Enrage = 10000;
     }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
 
-        ScriptedAI::MoveInLineOfSight(who);
-    }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -2707,7 +2527,7 @@ CreatureAI* GetAI_mob_hand_of_gorefiend(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_shadowmoon_blood_mageAI: public ScriptedAI
 {
-    mob_shadowmoon_blood_mageAI(Creature *c) : ScriptedAI(c) { }
+    mob_shadowmoon_blood_mageAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 BloodSiphon;
     uint32 Bloodbolt;
@@ -2725,13 +2545,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_blood_mageAI: public ScriptedAI
         m_creature->InterruptNonMeleeSpells(false, SPELL_GREEN_BEAM);
         DoZoneInCombat(80.0f);
     }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
 
-        ScriptedAI::MoveInLineOfSight(who);
-    }
     void SpellHitTarget(Unit* target, const SpellEntry*)    //workaround
     {
         if(target->HasAura(41229, 1))
@@ -2792,7 +2606,7 @@ CreatureAI* GetAI_mob_shadowmoon_blood_mage(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_shadowmoon_championAI: public ScriptedAI
 {
-    mob_shadowmoon_championAI(Creature *c) : ScriptedAI(c) { }
+    mob_shadowmoon_championAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 ChaoticLight;
     uint32 WhirlingBlade;
@@ -2806,13 +2620,6 @@ struct TRINITY_DLL_DECL mob_shadowmoon_championAI: public ScriptedAI
     }
 
     void EnterCombat(Unit *) { DoZoneInCombat(80.0f); }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
-    }
 
     void UpdateAI(const uint32 diff)
     {
@@ -2901,7 +2708,7 @@ CreatureAI* GetAI_mob_whirling_blade(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_shadowmoon_deathshaperAI: public ScriptedAI
 {
-    mob_shadowmoon_deathshaperAI(Creature *c) : ScriptedAI(c) { }
+    mob_shadowmoon_deathshaperAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 Shadowbolt;
     uint32 DeathCoil;
@@ -2927,14 +2734,6 @@ struct TRINITY_DLL_DECL mob_shadowmoon_deathshaperAI: public ScriptedAI
         m_creature->InterruptNonMeleeSpells(false, SPELL_GREEN_BEAM);
         DoCast(m_creature, SPELL_DEMON_ARMOR);
         DoZoneInCombat(80.0f);
-    }
-
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
     }
 
     uint64 SelectCorpseGUID()
@@ -3047,7 +2846,6 @@ struct TRINITY_DLL_DECL mob_shadowmoon_deathshaperAI: public ScriptedAI
     }
 };
 
-
 CreatureAI* GetAI_mob_shadowmoon_deathshaper(Creature *_Creature)
 {
     return new mob_shadowmoon_deathshaperAI(_Creature);
@@ -3059,17 +2857,11 @@ CreatureAI* GetAI_mob_shadowmoon_deathshaper(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_shadowmoon_gruntAI : public ScriptedAI
 {
-    mob_shadowmoon_gruntAI(Creature *c) : ScriptedAI(c) {}
+    mob_shadowmoon_gruntAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     void Reset() { }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
 
-        ScriptedAI::MoveInLineOfSight(who);
-    }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -3099,7 +2891,7 @@ CreatureAI* GetAI_mob_shadowmoon_grunt(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_shadowmoon_houndmasterAI: public ScriptedAI
 {
-    mob_shadowmoon_houndmasterAI(Creature *c) : ScriptedAI(c) { }
+    mob_shadowmoon_houndmasterAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 Shoot;
     uint32 FreezingTrap;
@@ -3136,14 +2928,6 @@ struct TRINITY_DLL_DECL mob_shadowmoon_houndmasterAI: public ScriptedAI
         me->GetClosePoint(x,y,z, 0.0f, frand(10.0, 15.0), frand(0.0f, 2*M_PI));
         m_creature->GetMotionMaster()->MovePoint(0,x,y,z);
         DoZoneInCombat(80.0f);
-    }
-
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
     }
 
     void UpdateAI(const uint32 diff)
@@ -3251,7 +3035,7 @@ CreatureAI* GetAI_mob_shadowmoon_houndmaster(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_shadowmoon_reaverAI : public ScriptedAI
 {
-    mob_shadowmoon_reaverAI(Creature *c) : ScriptedAI(c) {}
+    mob_shadowmoon_reaverAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 SpellAbsorption;
     uint32 ShadowResonance;
@@ -3264,13 +3048,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_reaverAI : public ScriptedAI
         ShadowResonance = urand(5000, 20000);
     }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
 
-        ScriptedAI::MoveInLineOfSight(who);
-    }
     void SpellHit(Unit* caster, const SpellEntry* spell)
     {
         if(caster->GetTypeId() == TYPEID_PLAYER && m_creature->HasAura(SPELL_SPELL_ABSORPTION, 0) && (spell->SchoolMask & SPELL_SCHOOL_MASK_MAGIC || spell->Dispel == DISPEL_POISON))
@@ -3318,7 +3096,7 @@ CreatureAI* GetAI_mob_shadowmoon_reaver(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_shadowmoon_riding_houndAI: public ScriptedAI
 {
-    mob_shadowmoon_riding_houndAI(Creature *c) : ScriptedAI(c) { }
+    mob_shadowmoon_riding_houndAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 Charge;
     uint32 Enrage;
@@ -3348,13 +3126,6 @@ struct TRINITY_DLL_DECL mob_shadowmoon_riding_houndAI: public ScriptedAI
         }
     }
     void EnterCombat(Unit *) { DoZoneInCombat(80.0f); }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
-    }
 
     void UpdateAI(const uint32 diff)
     {
@@ -3396,7 +3167,7 @@ CreatureAI* GetAI_mob_shadowmoon_riding_hound(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_shadowmoon_soldierAI: public ScriptedAI
 {
-    mob_shadowmoon_soldierAI(Creature *c) : ScriptedAI(c) { }
+    mob_shadowmoon_soldierAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 Strike;
 
@@ -3421,13 +3192,6 @@ struct TRINITY_DLL_DECL mob_shadowmoon_soldierAI: public ScriptedAI
     }
 
     void EnterCombat(Unit *) { DoZoneInCombat(80.0f); }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
-    }
 
     void UpdateAI(const uint32 diff)
     {
@@ -3638,13 +3402,6 @@ struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
         m_creature->SetArmor(m_creature->GetArmor()*2.5);   // arbitrary
         SetWeaponModelAndDamage(Stance);
     }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
-    }
 
     void UpdateAI(const uint32 diff)
     {
@@ -3770,7 +3527,7 @@ CreatureAI* GetAI_mob_shadowmoon_weapon_master(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_wrathbone_flayerAI: public ScriptedAI
 {
-    mob_wrathbone_flayerAI(Creature *c) : ScriptedAI(c) { }
+    mob_wrathbone_flayerAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 Cleave;
     uint32 Ignored;
@@ -3784,13 +3541,6 @@ struct TRINITY_DLL_DECL mob_wrathbone_flayerAI: public ScriptedAI
     }
 
     void EnterCombat(Unit *) { DoZoneInCombat(80.0f); }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
-    }
 
     void UpdateAI(const uint32 diff)
     {
@@ -3858,7 +3608,7 @@ enum Type
 
 struct TRINITY_DLL_DECL mob_bonechewer_behemothAI: public ScriptedAI
 {
-    mob_bonechewer_behemothAI(Creature *c) : ScriptedAI(c) { }
+    mob_bonechewer_behemothAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint8 Type;
     uint32 SpellTimer;
@@ -3877,13 +3627,6 @@ struct TRINITY_DLL_DECL mob_bonechewer_behemothAI: public ScriptedAI
     void EnterCombat(Unit *)
     {
         DoZoneInCombat(80.0f);
-    }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
     }
 
     void UpdateAI(const uint32 diff)
@@ -3972,7 +3715,7 @@ CreatureAI* GetAI_mob_bonechewer_behemoth(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_bonechewer_shield_discipleAI: public ScriptedAI
 {
-    mob_bonechewer_shield_discipleAI(Creature *c) : ScriptedAI(c) { }
+    mob_bonechewer_shield_discipleAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 Intervene;
     uint32 ShieldBash;
@@ -3989,13 +3732,6 @@ struct TRINITY_DLL_DECL mob_bonechewer_shield_discipleAI: public ScriptedAI
     }
 
     void EnterCombat(Unit *) { DoZoneInCombat(80.0f); }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
-    }
 
     void DamageTaken(Unit* who, uint32& damage)
     {
@@ -4072,7 +3808,7 @@ uint32 CCMechanics[8] =
 
 struct TRINITY_DLL_DECL mob_bonechewer_blade_furyAI: public ScriptedAI
 {
-    mob_bonechewer_blade_furyAI(Creature *c) : ScriptedAI(c) { }
+    mob_bonechewer_blade_furyAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 Whirlwind;
     uint32 MoveTimer;
@@ -4086,13 +3822,6 @@ struct TRINITY_DLL_DECL mob_bonechewer_blade_furyAI: public ScriptedAI
     }
 
     void EnterCombat(Unit *) { DoZoneInCombat(80.0f); }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
-    }
 
     void SetCCImmunity(bool apply)
     {
@@ -4162,7 +3891,7 @@ CreatureAI* GetAI_mob_bonechewer_blade_fury(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_bonechewer_blood_prophetAI: public ScriptedAI
 {
-    mob_bonechewer_blood_prophetAI(Creature *c) : ScriptedAI(c) { }
+    mob_bonechewer_blood_prophetAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 BloodDrain;
     uint32 Bloodbolt;
@@ -4179,13 +3908,6 @@ struct TRINITY_DLL_DECL mob_bonechewer_blood_prophetAI: public ScriptedAI
     }
 
     void EnterCombat(Unit *) { DoZoneInCombat(80.0f); }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
-    }
 
     void DamageTaken(Unit* who, uint32& damage)
     {
@@ -4255,7 +3977,7 @@ CreatureAI* GetAI_mob_bonechewer_blood_prophet(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_mutated_war_houndAI: public ScriptedAI
 {
-    mob_mutated_war_houndAI(Creature *c) : ScriptedAI(c) { }
+    mob_mutated_war_houndAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     void Reset()
     {
@@ -4264,13 +3986,6 @@ struct TRINITY_DLL_DECL mob_mutated_war_houndAI: public ScriptedAI
     }
 
     void EnterCombat(Unit *) { DoZoneInCombat(80.0f); }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
-    }
 
     void DamageTaken(Unit* who, uint32& damage)
     {
@@ -4299,7 +4014,7 @@ CreatureAI* GetAI_mob_mutated_war_hound(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_bonechewer_brawlerAI: public ScriptedAI
 {
-    mob_bonechewer_brawlerAI(Creature *c) : ScriptedAI(c) { }
+    mob_bonechewer_brawlerAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 Enrage;
 
@@ -4311,13 +4026,6 @@ struct TRINITY_DLL_DECL mob_bonechewer_brawlerAI: public ScriptedAI
     }
 
     void EnterCombat(Unit *) { DoZoneInCombat(80.0f); }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
-    }
 
     void DamageTaken(Unit* who, uint32& damage)
     {
@@ -4359,7 +4067,7 @@ CreatureAI* GetAI_mob_bonechewer_brawler(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_bonechewer_combatantAI: public ScriptedAI
 {
-    mob_bonechewer_combatantAI(Creature *c) : ScriptedAI(c) { }
+    mob_bonechewer_combatantAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 CombatRage;
 
@@ -4371,13 +4079,6 @@ struct TRINITY_DLL_DECL mob_bonechewer_combatantAI: public ScriptedAI
     }
 
     void EnterCombat(Unit *) { DoZoneInCombat(80.0f); }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
-    }
 
     void DamageTaken(Unit* who, uint32& damage)
     {
@@ -4423,7 +4124,7 @@ CreatureAI* GetAI_mob_bonechewer_combatant(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_bonechewer_spectatorAI: public ScriptedAI
 {
-    mob_bonechewer_spectatorAI(Creature *c) : ScriptedAI(c) { }
+    mob_bonechewer_spectatorAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 Charge;
     uint32 Cleave;
@@ -4443,13 +4144,6 @@ struct TRINITY_DLL_DECL mob_bonechewer_spectatorAI: public ScriptedAI
     }
 
     void EnterCombat(Unit* who) { DoZoneInCombat(80.0f); }
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
-    }
 
     void DamageTaken(Unit* who, uint32& damage)
     {
@@ -4535,7 +4229,7 @@ CreatureAI* GetAI_mob_bonechewer_spectator(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_angered_soul_fragmentAI: public ScriptedAI
 {
-    mob_angered_soul_fragmentAI(Creature *c) : ScriptedAI(c) { }
+    mob_angered_soul_fragmentAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 Anger;
 
@@ -4587,7 +4281,7 @@ CreatureAI* GetAI_mob_angered_soul_fragment(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_hungering_soul_fragmentAI: public ScriptedAI
 {
-    mob_hungering_soul_fragmentAI(Creature *c) : ScriptedAI(c) { }
+    mob_hungering_soul_fragmentAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     void Reset()
     {
@@ -4626,7 +4320,7 @@ CreatureAI* GetAI_mob_hungering_soul_fragment(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_suffering_soul_fragmentAI: public ScriptedAI
 {
-    mob_suffering_soul_fragmentAI(Creature *c) : ScriptedAI(c) { }
+    mob_suffering_soul_fragmentAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 SoulBlast;
 
@@ -4702,7 +4396,7 @@ enum PristessOfDementia
 
 struct TRINITY_DLL_DECL mob_pristess_of_dementiaAI: public ScriptedAI
 {
-    mob_pristess_of_dementiaAI(Creature *c) : ScriptedAI(c) { }
+    mob_pristess_of_dementiaAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 Confusion;
     uint32 Dementia;
@@ -4720,14 +4414,6 @@ struct TRINITY_DLL_DECL mob_pristess_of_dementiaAI: public ScriptedAI
     void EnterCombat(Unit *)
     {
         DoZoneInCombat(80.0f);
-    }
-
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
     }
 
     void UpdateAI(const uint32 diff)
@@ -4779,7 +4465,7 @@ CreatureAI* GetAI_mob_pristess_of_dementia(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_image_of_dementiaAI: public ScriptedAI
 {
-    mob_image_of_dementiaAI(Creature *c) : ScriptedAI(c) { }
+    mob_image_of_dementiaAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 MoveTimer;
 
@@ -4826,7 +4512,7 @@ enum PristessOfDelight
 
 struct TRINITY_DLL_DECL mob_pristess_of_delightAI: public ScriptedAI
 {
-    mob_pristess_of_delightAI(Creature *c) : ScriptedAI(c) { }
+    mob_pristess_of_delightAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 CurseOfVitality;
     uint32 Polymorph;
@@ -4842,14 +4528,6 @@ struct TRINITY_DLL_DECL mob_pristess_of_delightAI: public ScriptedAI
     void EnterCombat(Unit *)
     {
         DoZoneInCombat(80.0f);
-    }
-
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
     }
 
     void UpdateAI(const uint32 diff)
@@ -4905,7 +4583,7 @@ enum SisterOfPain
 
 struct TRINITY_DLL_DECL mob_sister_of_painAI: public ScriptedAI
 {
-    mob_sister_of_painAI(Creature *c) : ScriptedAI(c) { }
+    mob_sister_of_painAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 LashOfPain;
     uint32 ShadowWordPain;
@@ -4923,14 +4601,6 @@ struct TRINITY_DLL_DECL mob_sister_of_painAI: public ScriptedAI
     void EnterCombat(Unit *)
     {
         DoZoneInCombat(80.0f);
-    }
-
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
     }
 
     void DamageTaken(Unit* who, uint32 &damage)
@@ -5014,7 +4684,7 @@ enum SisterOfPleasure
 
 struct TRINITY_DLL_DECL mob_sister_of_pleasureAI: public ScriptedAI
 {
-    mob_sister_of_pleasureAI(Creature *c) : ScriptedAI(c) { }
+    mob_sister_of_pleasureAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 GreaterHeal;
     uint32 HolyNova;
@@ -5036,14 +4706,6 @@ struct TRINITY_DLL_DECL mob_sister_of_pleasureAI: public ScriptedAI
     {
         DoZoneInCombat(80.0f);
         DoYell(YELL_SISTER_OF_PLEASURE, 0, who);
-    }
-
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
     }
 
     void DamageTaken(Unit* who, uint32 &damage)
@@ -5122,7 +4784,7 @@ enum CharmingCourtesan
 
 struct TRINITY_DLL_DECL mob_charming_courtesanAI: public ScriptedAI
 {
-    mob_charming_courtesanAI(Creature *c) : ScriptedAI(c) { }
+    mob_charming_courtesanAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 Infatuation;
     uint32 PoisonousThrow;
@@ -5140,14 +4802,6 @@ struct TRINITY_DLL_DECL mob_charming_courtesanAI: public ScriptedAI
         if(urand(1,100) > 85)
             DoYell(YELL_CHARMING_COURTESAN, 0, who);
         DoZoneInCombat(80.0f);
-    }
-
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
     }
 
     void UpdateAI(const uint32 diff)
@@ -5195,7 +4849,7 @@ enum SpellboundAttendent
 
 struct TRINITY_DLL_DECL mob_spellbound_attendentAI: public ScriptedAI
 {
-    mob_spellbound_attendentAI(Creature *c) : ScriptedAI(c) { }
+    mob_spellbound_attendentAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 Kick;
     uint32 Sleep;
@@ -5213,14 +4867,6 @@ struct TRINITY_DLL_DECL mob_spellbound_attendentAI: public ScriptedAI
     void EnterCombat(Unit* who)
     {
         DoZoneInCombat(80.0f);
-    }
-
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
     }
 
     void UpdateAI(const uint32 diff)
@@ -5273,7 +4919,7 @@ enum EnslavedSevrant
 
 struct TRINITY_DLL_DECL mob_enslaved_servantAI: public ScriptedAI
 {
-    mob_enslaved_servantAI(Creature *c) : ScriptedAI(c) { }
+    mob_enslaved_servantAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 Uppercut;
     uint32 KidneyShot;
@@ -5289,14 +4935,6 @@ struct TRINITY_DLL_DECL mob_enslaved_servantAI: public ScriptedAI
     void EnterCombat(Unit* who)
     {
         DoZoneInCombat(80.0f);
-    }
-
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
     }
 
     void UpdateAI(const uint32 diff)
@@ -5343,7 +4981,7 @@ enum TempleConcubine
 
 struct TRINITY_DLL_DECL mob_temple_concubineAI: public ScriptedAI
 {
-    mob_temple_concubineAI(Creature *c) : ScriptedAI(c) { }
+    mob_temple_concubineAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 LoveTap;
     uint32 Polymorph;
@@ -5359,14 +4997,6 @@ struct TRINITY_DLL_DECL mob_temple_concubineAI: public ScriptedAI
     void EnterCombat(Unit* who)
     {
         DoZoneInCombat(80.0f);
-    }
-
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
     }
 
     void UpdateAI(const uint32 diff)
@@ -5440,7 +5070,7 @@ enum IllidariArchon
 
 struct TRINITY_DLL_DECL mob_illidari_archonAI: public ScriptedAI
 {
-    mob_illidari_archonAI(Creature *c) : ScriptedAI(c) { }
+    mob_illidari_archonAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 type;
     uint32 shieldCooldownTimer;
@@ -5487,14 +5117,6 @@ struct TRINITY_DLL_DECL mob_illidari_archonAI: public ScriptedAI
     void EnterCombat(Unit* who)
     {
         DoZoneInCombat(80.0f);
-    }
-
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
     }
 
     void UpdateAI(const uint32 diff)
@@ -5594,7 +5216,7 @@ enum IllidariAssassin
 
 struct TRINITY_DLL_DECL mob_illidari_assassinAI: public ScriptedAI
 {
-    mob_illidari_assassinAI(Creature *c) : ScriptedAI(c) { }
+    mob_illidari_assassinAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 VanishEvent;
     uint32 ParalyzingPoison;
@@ -5615,14 +5237,6 @@ struct TRINITY_DLL_DECL mob_illidari_assassinAI: public ScriptedAI
     void EnterCombat(Unit* who)
     {
         DoZoneInCombat(80.0f);
-    }
-
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
     }
 
     void OnAuraRemove(Aura* Aur, bool stack)
@@ -5697,7 +5311,7 @@ enum IllidariBattlemage
 
 struct TRINITY_DLL_DECL mob_illidari_battle_mageAI: public ScriptedAI
 {
-    mob_illidari_battle_mageAI(Creature *c) : ScriptedAI(c) { }
+    mob_illidari_battle_mageAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 Blizzard;
     uint32 Flamestrike;
@@ -5715,14 +5329,6 @@ struct TRINITY_DLL_DECL mob_illidari_battle_mageAI: public ScriptedAI
     void EnterCombat(Unit* who)
     {
         DoZoneInCombat(80.0f);
-    }
-
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
     }
 
     void UpdateAI(const uint32 diff)
@@ -5784,7 +5390,7 @@ enum IllidariBloodLord
 
 struct TRINITY_DLL_DECL mob_illidari_blood_lordAI: public ScriptedAI
 {
-    mob_illidari_blood_lordAI(Creature *c) : ScriptedAI(c) { }
+    mob_illidari_blood_lordAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 HammerOfJustice;
     uint32 JudgmentOfCommand;
@@ -5804,14 +5410,6 @@ struct TRINITY_DLL_DECL mob_illidari_blood_lordAI: public ScriptedAI
         DoZoneInCombat(80.0f);
         if(urand(1,10) > 7)
             DoYell(YELL_ILLIDARI_BLOOD_LORD, 0, who);
-    }
-
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
     }
 
     void UpdateAI(const uint32 diff)
@@ -5868,7 +5466,7 @@ enum PromenadeSentinel
 
 struct TRINITY_DLL_DECL mob_promenade_sentinelAI: public ScriptedAI
 {
-    mob_promenade_sentinelAI(Creature *c) : ScriptedAI(c) { }
+    mob_promenade_sentinelAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 L5arcane;
     uint32 L4arcane;
@@ -5886,14 +5484,6 @@ struct TRINITY_DLL_DECL mob_promenade_sentinelAI: public ScriptedAI
         DoZoneInCombat(80.0f);
         DoYell(YELL_PROMENADE_SENTINEL, 0, who);
         DoCast(m_creature, SPELL_L1_ARCANE_CHARGE);
-    }
-
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (me->isInCombat() || !me->IsWithinDistInMap(who, AGGRO_RANGE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
     }
 
     void UpdateAI(const uint32 diff)

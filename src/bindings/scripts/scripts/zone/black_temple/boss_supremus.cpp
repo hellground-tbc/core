@@ -81,6 +81,8 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
     {
         pInstance = (c->GetInstanceData());
         m_creature->GetPosition(wLoc);
+
+        me->SetAggroRange(50.0f);
     }
 
     ScriptedInstance* pInstance;
@@ -138,12 +140,6 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
 
         if(pInstance)
             pInstance->SetData(EVENT_SUPREMUS, IN_PROGRESS);
-    }
-
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, 50) && m_creature->IsHostileTo(who))
-            m_creature->AI()->AttackStart(who);
     }
 
     void ToggleDoors(bool close)

@@ -1510,6 +1510,9 @@
     <ClCompile Include="..\scripts\zone\karazhan\chess_event.cpp">
       <Filter>Scripts\zone\Karazhan</Filter>
     </ClCompile>
+    <ClCompile Include="..\scripts\zone\magisters_terrace\magisters_terrace_trash.cpp">
+      <Filter>Scripts\zone\Magister%27s Terrace</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\scripts\creature\simple_ai.h">

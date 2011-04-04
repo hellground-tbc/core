@@ -148,7 +148,7 @@ bool ForcedDespawnDelayEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 }
 
 Creature::Creature() :
-Unit(),
+Unit(), m_aggroRange(0.0),
 lootForPickPocketed(false), lootForBody(false), m_lootMoney(0), m_lootRecipient(0),
 m_deathTimer(0), m_respawnTime(0), m_respawnDelay(300), m_corpseDelay(60), m_respawnradius(0.0f),
 m_gossipOptionLoaded(false), m_emoteState(0), m_isPet(false), m_isTotem(false), m_reactState(REACT_AGGRESSIVE),
@@ -1657,7 +1657,7 @@ float Creature::GetAttackDistance(Unit const* pl) const
     if (RetDistance < 5)
         RetDistance = 5;
 
-    return (RetDistance*aggroRate);
+    return m_aggroRange ? m_aggroRange : (RetDistance*aggroRate);
 }
 
 void Creature::setDeathState(DeathState s)

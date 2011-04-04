@@ -81,6 +81,8 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
     {
         pInstance = (c->GetInstanceData());
         m_creature->GetPosition(wLoc);
+
+        me->SetAggroRange(45.0f);
     }
 
     ScriptedInstance* pInstance;
@@ -171,14 +173,6 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
             pInstance->SetData(EVENT_GURTOGGBLOODBOIL, DONE);
 
         DoScriptText(SAY_DEATH, m_creature);
-    }
-
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (!me->IsWithinLOSInMap(who) || !me->IsWithinDistInMap(who, 45) || !me->IsHostileTo(who) || !me->isInCombat())
-            return;
-
-        ScriptedAI::AttackStart(who);
     }
 
     void CastBloodboil()
