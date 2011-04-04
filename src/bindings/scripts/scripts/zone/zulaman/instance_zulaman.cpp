@@ -176,7 +176,7 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
             {
                 uint8 i = GetHostageIndex(creature_entry);
                 HostagesGUID[i] = creature->GetGUID();
-                if(Hostages[i] == HOSTAGE_NOT_SAVED && !QuestMinute)
+                if(Hostages[i] == HOSTAGE_NOT_SAVED && !QuestMinute && Encounters[0] != NOT_STARTED)
                     KillHostage(i);
                 if(Hostages[i] >= HOSTAGE_FREED)
                     creature->Relocate(HostageInfo[i].x, HostageInfo[i].y, HostageInfo[i].z, HostageInfo[i].o);
