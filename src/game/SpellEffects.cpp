@@ -3074,16 +3074,16 @@ void Spell::EffectHealthLeech(uint32 i)
         new_damage = curHealth;
 
     // multipier only affects gains of HP!
-    new_damage = int32(damage*multiplier);
+    new_damage = int32(new_damage*multiplier);
 
     if (m_caster->isAlive())
     {
         new_damage = m_caster->SpellHealingBonus(m_spellInfo, new_damage, HEAL, m_caster);
 
-        m_caster->ModifyHealth(new_damage);
+        int32 gain = m_caster->ModifyHealth(new_damage);
+        m_caster->getHostilRefManager().threatAssist(m_caster, gain * 0.5f, spellProto);
 
-        if (m_caster->GetTypeId() == TYPEID_PLAYER)
-            m_caster->SendHealSpellLog(m_caster, m_spellInfo->Id, uint32(new_damage));
+        m_caster->SendHealSpellLog(m_caster, m_spellInfo->Id, uint32(new_damage));
     }
 //    m_healthLeech+=tmpvalue;
 //    m_damage+=new_damage;
