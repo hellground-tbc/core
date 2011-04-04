@@ -148,6 +148,9 @@ enum Target
 
     TARGET_T_ACTION_INVOKER_WPET,
 
+    // use (Unit*)NULL as target
+    TARGET_T_NULL,
+
     TARGET_T_END
 };
 

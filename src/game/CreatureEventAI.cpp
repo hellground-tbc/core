@@ -451,10 +451,10 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
             Unit* target = GetTargetByType(action.cast.target, pActionInvoker);
             Unit* caster = m_creature;
 
-            if (!target)
+            if (!target && action.cast.target != TARGET_T_NULL)
                 return;
 
-            if (action.cast.castFlags & CAST_FORCE_TARGET_SELF)
+            if (action.cast.castFlags & CAST_FORCE_TARGET_SELF && action.cast.target != TARGET_T_NULL)
                 caster = target;
 
             //Allowed to cast only if not casting (unless we interrupt ourself) or if spell is triggered
@@ -1184,6 +1184,7 @@ inline Unit* CreatureEventAI::GetTargetByType(uint32 Target, Unit* pActionInvoke
             return SelectUnit(ATTACKING_TARGET_RANDOM,1);
         case TARGET_T_ACTION_INVOKER:
             return pActionInvoker;
+        case TARGET_T_NULL:
         default:
             return NULL;
     };
