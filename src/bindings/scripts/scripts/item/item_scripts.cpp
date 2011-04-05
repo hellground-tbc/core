@@ -392,7 +392,7 @@ bool ItemUse_item_specific_target(Player *player, Item* _Item, SpellCastTargets 
         case 34255: cEntry[0] = 24922; break; // Razorthorn Flayer Gland
         case 25552: cEntry[0] = 17148; cEntry[1] = 17147; cEntry[2] = 17146; targetState = T_DEAD; removeCorpse = true; break; // Warmaul Ogre Banner
         case 22473: cEntry[0] = 15941; cEntry[1] = 15945; break; // Disciplinary Rod
-        case 34368: cEntry[0] = 24972; targetState = T_DEAD; removeCorpse = true; break; // Attuned Crystal Cores
+        case 34368: cEntry[0] = 24972; targetState = T_DEAD; break; // Attuned Crystal Cores
         case 29513: cEntry[0] = 19354; break; // Staff of the Dreghood Elders
         case 32680: cEntry[0] = 23311; targetState = T_ALIVE; break; // Booterang
         case 30251: cEntry[0] = 20058; break; // Rina's Diminution Powder
@@ -435,12 +435,7 @@ bool ItemUse_item_specific_target(Player *player, Item* _Item, SpellCastTargets 
                 case T_DEAD:
                 {
                     if(!uTarget->isAlive())
-                    {
-                        if(removeCorpse)
-                            ((Creature*)uTarget)->RemoveCorpse();
-
                         return false;
-                    }
                     else
                     {
                         WorldPacket data(SMSG_CAST_FAILED, (4+2));              // prepare packet error message

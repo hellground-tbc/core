@@ -64,53 +64,6 @@ bool GossipSelect_npc_ayren_cloudbreaker(Player *player, Creature *_Creature, ui
 }
 
 /*######
-## npc_converted_sentry
-######*/
-
-#define SAY_CONVERTED_1         -1000284
-#define SAY_CONVERTED_2         -1000284
-
-#define SPELL_CONVERT_CREDIT    45009
-
-struct TRINITY_DLL_DECL npc_converted_sentryAI : public ScriptedAI
-{
-    npc_converted_sentryAI(Creature *c) : ScriptedAI(c) {}
-
-    bool Credit;
-    uint32 Timer;
-
-    void Reset()
-    {
-        Credit = false;
-        Timer = 2500;
-    }
-
-    void MoveInLineOfSight(Unit *who){ return; }
-
-    void UpdateAI(const uint32 diff)
-    {
-        if( !Credit )
-        {
-            if( Timer <= diff )
-            {
-                uint32 i = urand(1,2);
-                if( i=1 ) DoScriptText(SAY_CONVERTED_1, m_creature);
-                else DoScriptText(SAY_CONVERTED_2, m_creature);
-
-                DoCast(m_creature, SPELL_CONVERT_CREDIT);
-                if(m_creature->isPet())
-                    ((Pet*)m_creature)->SetDuration(7500);
-                Credit = true;
-            }else Timer -= diff;
-        }
-    }
-};
-CreatureAI* GetAI_npc_converted_sentry(Creature *_Creature)
-{
-    return new npc_converted_sentryAI (_Creature);
-}
-
-/*######
 ## npc_unrestrained_dragonhawk
 ######*/
 
@@ -198,11 +151,6 @@ void AddSC_isle_of_queldanas()
     newscript->Name="npc_ayren_cloudbreaker";
     newscript->pGossipHello = &GossipHello_npc_ayren_cloudbreaker;
     newscript->pGossipSelect = &GossipSelect_npc_ayren_cloudbreaker;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name="npc_converted_sentry";
-    newscript->GetAI = &GetAI_npc_converted_sentry;
     newscript->RegisterSelf();
 
     newscript = new Script;

@@ -1498,10 +1498,10 @@ void Spell::EffectDummy(uint32 i)
 
                     return;
                 }
-                case 44997:                                 // Converting Sentry
+                case 44997:                                 // Converting Sentry remove corpse
                 {
-                    //Converted Sentry Credit
-                    m_caster->CastSpell(m_caster, 45009, true);
+                    if(unitTarget && unitTarget->GetTypeId() == TYPEID_UNIT)
+                        ((Creature*)unitTarget)->RemoveCorpse();
                     return;
                 }
                 case 45030:                                 // Impale Emissary
