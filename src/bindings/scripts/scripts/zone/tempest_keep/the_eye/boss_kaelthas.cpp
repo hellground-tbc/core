@@ -495,6 +495,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
         Phase = 1;
         DoZoneInCombat();
     }
+
     void MoveInLineOfSight(Unit *who)
     {
         if (!m_creature->hasUnitState(UNIT_STAT_STUNNED) && who->isTargetableForAttack() &&
@@ -508,7 +509,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
             {
                 if (!m_creature->getVictim() && Phase >= 4)
                 {
-                    who->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
+                    DoZoneInCombat();
                     AttackStart(who);
                 }
                 else if (m_creature->GetMap()->IsDungeon())
