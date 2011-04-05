@@ -443,7 +443,10 @@ void Loot::loadLootFromDB(Creature *pCreature)
 void Loot::removeItemFromSavedLoot(uint8 lootIndex)
 {
     if (!m_creatureGUID)
+    {
+        sLog.outBoss("Loot::removeItemFromSavedLoot: m_creatureGUID == 0 !!");
         return;
+    }
 
     LootItem const *item = LootItemInSlot(lootIndex);
     if (!item)
@@ -459,7 +462,10 @@ void Loot::removeItemFromSavedLoot(uint8 lootIndex)
 
     Creature *pCreature = pPlayer->GetMap()->GetCreatureOrPet(m_creatureGUID);
     if (!pCreature)
+    {
+        sLog.outBoss("Loot::removeItemFromSavedLoot: pCreature not found !!");
         return;
+    }
 
     QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT itemCount FROM group_saved_loot WHERE itemId='%u' AND instanceId='%u' AND creatureId='%u'", item->itemid, pCreature->GetInstanceId(), pCreature->GetEntry());
     if (!result)
@@ -496,7 +502,10 @@ void Loot::saveLootToDB(Player *owner)
 
     Creature *pCreature = owner->GetMap()->GetCreatureOrPet(m_creatureGUID);
     if (!pCreature)
+    {
+        sLog.outBoss("Loot::saveLootToDB: pCreature not found !!");
         return;
+    }
 
     static SqlStatementID deleteGroupSavedLootCreature;
     static SqlStatementID insertGroupSavedLoot;
@@ -564,25 +573,28 @@ void Loot::FillLoot(uint32 loot_id, LootStore const& store, Player* loot_owner)
     if (!pGroup)
         return;
 
-    for (GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
+    if (!load)
     {
-        //fill the quest item map for every player in the recipient's group
-        Player* pl = itr->getSource();
-        if (!pl)
-            continue;
+        for (GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
+        {
+            //fill the quest item map for every player in the recipient's group
+            Player* pl = itr->getSource();
+            if (!pl)
+                continue;
 
-        uint32 plguid = pl->GetGUIDLow();
-        QuestItemMap::iterator qmapitr = PlayerQuestItems.find(plguid);
-        if (qmapitr == PlayerQuestItems.end())
-            FillQuestLoot(pl);
+            uint32 plguid = pl->GetGUIDLow();
+            QuestItemMap::iterator qmapitr = PlayerQuestItems.find(plguid);
+            if (qmapitr == PlayerQuestItems.end())
+                FillQuestLoot(pl);
 
-        qmapitr = PlayerFFAItems.find(plguid);
-        if (qmapitr == PlayerFFAItems.end())
-            FillFFALoot(pl);
+            qmapitr = PlayerFFAItems.find(plguid);
+            if (qmapitr == PlayerFFAItems.end())
+                FillFFALoot(pl);
 
-        qmapitr = PlayerNonQuestNonFFAConditionalItems.find(plguid);
-        if (qmapitr == PlayerNonQuestNonFFAConditionalItems.end())
-            FillNonQuestNonFFAConditionalLoot(pl);
+            qmapitr = PlayerNonQuestNonFFAConditionalItems.find(plguid);
+            if (qmapitr == PlayerNonQuestNonFFAConditionalItems.end())
+                FillNonQuestNonFFAConditionalLoot(pl);
+        }
     }
 
     if (save)
@@ -595,6 +607,20 @@ void Loot::FillLoot(uint32 loot_id, LootStore const& store, Player* loot_owner)
            << "LootedItems: ";
         for (std::vector<LootItem>::iterator iter = items.begin(); iter != items.end(); ++iter)
             ss << "[" << (*iter).itemid << "] ";
+
+        if (load)
+        {
+            ss << " players in instance: ";
+            Map * tmpMap = loot_owner->GetMap();
+            if (tmpMap && (tmpMap->IsDungeon() || tmpMap->IsRaid()))
+            {
+                Map::PlayerList const &PlayerList = tmpMap->GetPlayers();
+                for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                    if (Player* i_pl = i->getSource())
+                        ss << i_pl->GetName() << " (" << i_pl->GetGUIDLow() << ")  ";
+            }
+        }
+
         sLog.outBoss(ss.str().c_str());
     }
 }

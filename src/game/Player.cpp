@@ -4191,6 +4191,16 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
     // some items limited to specific map
     DestroyZoneLimitedItem(true, GetZoneId());
 
+    // restore Alchemist stone aura
+    Item * item = NULL;
+    if (!HasAura(17619, 0) && (
+        (item = HasEquiped(13503)) ||
+        (item = HasEquiped(35751)) ||
+        (item = HasEquiped(35748)) ||
+        (item = HasEquiped(35750)) ||
+        (item = HasEquiped(35749))))
+        CastSpell(this, 17619, true, item);
+
     if (!applySickness)
         return;
 
@@ -9226,6 +9236,17 @@ bool Player::IsValidPos(uint8 bag, uint8 slot) const
     return false;
 }
 
+Item * Player::HasEquiped(uint32 item) const
+{
+    for (int i = EQUIPMENT_SLOT_START; i < INVENTORY_SLOT_ITEM_END; i++)
+    {
+        Item *pItem = GetItemByPos(INVENTORY_SLOT_BAG_0, i);
+        if (pItem && pItem->GetEntry() == item)
+            return pItem;
+    }
+
+    return NULL;
+}
 
 bool Player::HasItemCount(uint32 item, uint32 count, bool inBankAlso) const
 {

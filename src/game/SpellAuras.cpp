@@ -1327,6 +1327,36 @@ void Aura::HandleAddModifier(bool apply, bool Real)
             m_target->CastSpell(m_target,33776,true);
         }
     }
+
+    if (m_target->getClass() == CLASS_DRUID)
+    {
+        // Improved Party Auras (Idol of the Raven Goddess)
+        if (spellInfo->Id == 39926)
+        {
+            // Tree of life
+            if (m_target->HasAura(34123, 0))
+            {
+                m_target->RemoveAurasDueToSpell(34123);
+                m_target->RemoveAurasDueToSpell(5420);
+                m_target->CastSpell(m_target, 34123, true);
+                m_target->CastSpell(m_target, 5420, true);
+            }
+
+            // Moonkin Aura
+            if (m_target->HasAura(24907, 0))
+            {
+                m_target->RemoveAurasDueToSpell(24907);
+                m_target->CastSpell(m_target, 24907, true);
+            }
+
+            // Leader of the Pack
+            if (m_target->HasAura(24932, 0))
+            {
+                m_target->RemoveAurasDueToSpell(24932);
+                m_target->CastSpell(m_target, 24932, true);
+            }
+        }
+    }
 }
 
 void Aura::TriggerSpell()

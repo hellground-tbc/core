@@ -1061,6 +1061,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         bool IsValidPos(uint16 pos) { return IsBankPos(pos >> 8,pos & 255); }
         bool IsValidPos(uint8 bag, uint8 slot) const;
         bool HasBankBagSlot(uint8 slot) const;
+        Item * HasEquiped(uint32 item) const;
         bool HasItemCount(uint32 item, uint32 count, bool inBankAlso = false) const;
         bool HasItemFitToSpellReqirements(SpellEntry const* spellInfo, Item const* ignoreItem = NULL);
         Item* GetItemOrItemWithGemEquipped(uint32 item) const;

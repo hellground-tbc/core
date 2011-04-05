@@ -3081,7 +3081,7 @@ void Spell::EffectHealthLeech(uint32 i)
         new_damage = m_caster->SpellHealingBonus(m_spellInfo, new_damage, HEAL, m_caster);
 
         int32 gain = m_caster->ModifyHealth(new_damage);
-        m_caster->getHostilRefManager().threatAssist(m_caster, gain * 0.5f, spellProto);
+        m_caster->getHostilRefManager().threatAssist(m_caster, gain * 0.5f, m_spellInfo);
 
         m_caster->SendHealSpellLog(m_caster, m_spellInfo->Id, uint32(new_damage));
     }
