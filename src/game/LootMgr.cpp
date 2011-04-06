@@ -557,18 +557,20 @@ void Loot::saveLootToDB(Player *owner)
 // Calls processor of corresponding LootTemplate (which handles everything including references)
 void Loot::FillLoot(uint32 loot_id, LootStore const& store, Player* loot_owner)
 {
-    LootTemplate const* tab = store.GetLootfor (loot_id);
-
-    if (!tab)
+    if (!load)
     {
-        sLog.outErrorDb("Table '%s' loot id #%u used but it doesn't have records.",store.GetName(),loot_id);
-        return;
+        LootTemplate const* tab = store.GetLootfor (loot_id);
+
+        if (!tab)
+        {
+            sLog.outErrorDb("Table '%s' loot id #%u used but it doesn't have records.",store.GetName(),loot_id);
+            return;
+        }
+
+        items.reserve(MAX_NR_LOOT_ITEMS);
+        quest_items.reserve(MAX_NR_QUEST_ITEMS);
+        tab->Process(*this, store);                             // Processing is done there, callback via Loot::AddItem()
     }
-
-    items.reserve(MAX_NR_LOOT_ITEMS);
-    quest_items.reserve(MAX_NR_QUEST_ITEMS);
-
-    tab->Process(*this, store);                             // Processing is done there, callback via Loot::AddItem()
 
     // Setting access rights fow group-looting case
     if (!loot_owner)
