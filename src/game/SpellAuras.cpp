@@ -1024,7 +1024,7 @@ void Aura::_AddAura()
                         break;
                     }
                 }
-            }
+            }            
 
             SetAuraSlot(slot);
 
@@ -1174,12 +1174,21 @@ void Aura::SetAuraFlag(uint32 slot, bool add)
     uint32 byte     = (slot % 4) * 8;
     uint32 val      = m_target->GetUInt32Value(UNIT_FIELD_AURAFLAGS + index);
     val &= ~((uint32)AFLAG_MASK << byte);
+    uint32 flags = 0;
     if (add)
     {
         if (IsPositive())
-            val |= ((uint32)AFLAG_POSITIVE << byte);
+            flags |= AFLAG_POSITIVE;
         else
-            val |= ((uint32)AFLAG_NEGATIVE << byte);
+            flags |= AFLAG_NEGATIVE;
+
+        flags |= AFLAG_EFF_INDEX_0;
+        if(GetCasterGUID() == m_target->GetGUID())
+            flags |= AFLAG_NOT_GUID;
+        if (m_maxduration > 0)
+            flags |= AFLAG_HAS_DURATION;
+
+        val |= flags << byte;
     }
     m_target->SetUInt32Value(UNIT_FIELD_AURAFLAGS + index, val);
 }
