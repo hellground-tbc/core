@@ -2323,18 +2323,24 @@ void Creature::GetRespawnCoord(float &x, float &y, float &z, float* ori, float* 
                 *ori = data->orientation;
             if (dist)
                 *dist = data->spawndist;
-
-            return;
         }
     }
-
-    x = GetPositionX();
-    y = GetPositionY();
-    z = GetPositionZ();
-    if (ori)
-        *ori = GetOrientation();
-    if (dist)
-        *dist = 0;
+    else
+    {
+        x = GetPositionX();
+        y = GetPositionY();
+        z = GetPositionZ();
+        if (ori)
+            *ori = GetOrientation();
+        if (dist)
+            *dist = 0;
+    }
+    //lets check if our creatures have valid spawn coordinates
+    if(!Trinity::IsValidMapCoord(x, y, z))
+    {
+        sLog.outError("Creature with invalid respawn coordinates: mapid = %u, guid = %u, x = %f, y = %f, z = %f", GetMapId(), GetGUIDLow(), x, y, z);
+        assert(false);
+    }
 }
 
 void Creature::AllLootRemovedFromCorpse()
