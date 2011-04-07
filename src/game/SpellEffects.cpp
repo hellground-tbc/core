@@ -988,7 +988,8 @@ void Spell::EffectDummy(uint32 i)
                     };
 
                     int32 deepWoundsDotBasePoints0 = int32(damage / 4);
-                    m_caster->CastCustomSpell(unitTarget, 12721, &deepWoundsDotBasePoints0, NULL, NULL, true, NULL);
+                    if (!m_caster->IsFriendlyTo(unitTarget))
+                         m_caster->CastCustomSpell(unitTarget, 12721, &deepWoundsDotBasePoints0, NULL, NULL, true, NULL);
                     return;
                 }
                 case 12975:                                 //Last Stand

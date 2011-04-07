@@ -5242,6 +5242,8 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 {
                     if (procSpell && procSpell->Id == 34913) // Don't proc from Molten Armor
                         return false;
+                    if (triggeredByAura->GetCaster()->IsFriendlyTo(pVictim))
+                        return false;
 
                     switch (dummySpell->Id)
                     {
