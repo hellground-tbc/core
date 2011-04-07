@@ -6863,6 +6863,8 @@ void Player::DuelComplete(DuelCompleteType type)
         data << duel->opponent->GetName();
         data << GetName();
         SendMessageToSet(&data,true);
+        if (type == DUEL_WON)
+            HandleEmoteCommand(EMOTE_ONESHOT_CHEER);
     }
 
     // cool-down duel spell
