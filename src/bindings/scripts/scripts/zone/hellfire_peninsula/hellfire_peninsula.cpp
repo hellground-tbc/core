@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Hellfire_Peninsula
 SD%Complete: 100
- SDComment: Quest support: 9375, 9410, 9418, 10129, 10146, 10162, 10163, 10340, 10346, 10347, 10382 (Special flight paths)
+ SDComment: Quest support: 9375, 9410, 9418, 10129, 10146, 10162, 10163, 10340, 10346, 10347, 10382 (Special flight paths), 11516
 SDCategory: Hellfire Peninsula
 EndScriptData */
 
@@ -30,10 +30,12 @@ npc_wing_commander_brack
 npc_wounded_blood_elf
 npc_earthcaller_ryga
 npc_ancestral_spirit_wolf
+npc_living_flare
 EndContentData */
 
 #include "precompiled.h"
 #include "escort_ai.h"
+#include "follower_ai.h"
 
 /*######
 ## npc_aeranas
@@ -560,6 +562,120 @@ CreatureAI* GetAI_npc_ancestral_spirit_wolf(Creature *_Creature)
     return newAI;
 }
 
+/*######
+## npc_living_flare
+######*/
+
+enum LivingFlare
+{
+    NPC_LIVING_FLARE                        = 24916,
+    NPC_UNSTABLE_LIVING_FLARE               = 24958,
+    NPC_GENERIC_TRIGGER                     = 24959,
+
+    OBJECT_LARGE_FIRE                       = 187084,
+    UNSTABLE_LIVING_FLARE_EXPLODE_EMOTE     = -1811010,
+
+    SPELL_FEL_FLAREUP                       = 44944,
+    SPELL_LIVING_FLARE_COSMETIC             = 44880,
+    SPELL_LIVING_FLARE_MASTER               = 44877,
+    SPELL_UNSTABLE_LIVING_FLARE_COSMETIC    = 46196,
+    SPELL_LIVING_FLARE_TO_UNSTABLE          = 44943,
+
+    QUEST_BLAST_THE_GATEWAY                 = 11516
+};
+
+float FirePos[3][3] = 
+{
+    {840.9, 2521.0, 293.4},
+    {836.5, 2508.0, 292.0},
+    {826.5, 2513.4, 291.7}
+};
+
+struct TRINITY_DLL_DECL npc_living_flareAI : public FollowerAI
+{
+    npc_living_flareAI(Creature *c) : FollowerAI(c) {}
+
+    void Reset()
+    {
+        if(Unit* owner = me->GetOwner())
+        {
+            if(owner->GetTypeId() == TYPEID_PLAYER)
+                StartFollow(((Player*)owner));
+        }
+        if(me->GetEntry() == NPC_UNSTABLE_LIVING_FLARE)
+            return;
+
+        if(!me->HasAura(SPELL_LIVING_FLARE_COSMETIC, 0))
+            me->AddAura(SPELL_LIVING_FLARE_COSMETIC, me);
+    }
+
+    void MoveInLineOfSight(Unit* pWho)
+    {
+        if(pWho->GetEntry() == NPC_GENERIC_TRIGGER && me->IsWithinDistInMap(pWho, 10.0f, true))
+            Detonate();
+    }
+
+    void Detonate()
+    {
+        if(Unit* owner = me->GetOwner())
+        {
+            for(uint8 i=0;i<3;++i)
+                owner->SummonGameObject(OBJECT_LARGE_FIRE, FirePos[i][0], FirePos[i][1], FirePos[i][2], owner->GetOrientation(), 0, 0, 0, 0, 30);
+            if(owner->GetTypeId() == TYPEID_PLAYER)
+                if(((Player*)owner)->GetQuestStatus(QUEST_BLAST_THE_GATEWAY) == QUEST_STATUS_INCOMPLETE)
+                    ((Player*)owner)->AreaExploredOrEventHappens(QUEST_BLAST_THE_GATEWAY);
+        }
+        DoCast(me, SPELL_LIVING_FLARE_TO_UNSTABLE);
+        DoScriptText(UNSTABLE_LIVING_FLARE_EXPLODE_EMOTE, me);
+        me->SetVisibility(VISIBILITY_OFF);
+        me->setDeathState(JUST_DIED);
+        me->RemoveCorpse();
+    }
+
+    void MorphToUnstable()
+    {
+        if(me->GetEntry() != NPC_UNSTABLE_LIVING_FLARE)
+        {
+            DoCast(me, SPELL_FEL_FLAREUP);
+            me->UpdateEntry(NPC_UNSTABLE_LIVING_FLARE);
+        }
+        else
+            return;
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        if(Unit* owner = me->GetOwner())
+            me->setFaction(owner->getFaction());
+        if(me->HasAura(SPELL_LIVING_FLARE_COSMETIC, 0))
+            me->RemoveAurasDueToSpell(SPELL_LIVING_FLARE_COSMETIC);
+        DoCast(me, SPELL_LIVING_FLARE_TO_UNSTABLE);
+        DoCast(me, SPELL_UNSTABLE_LIVING_FLARE_COSMETIC);
+    }
+
+    void SpellHit(Unit* caster, const SpellEntry* spell)
+    {
+        if(spell->Id == SPELL_LIVING_FLARE_MASTER)
+        {
+            uint32 stack = 0;
+            if(me->HasAura(SPELL_FEL_FLAREUP, 0))
+            {
+                if(Aura* Flare = me->GetAura(SPELL_FEL_FLAREUP, 0))
+                    stack = Flare->GetStackAmount();
+            }
+            if(stack < 7)
+                DoCast(me, SPELL_FEL_FLAREUP);
+            else
+                MorphToUnstable();
+        }
+    }
+
+    void EnterCombat(Unit* who) { return; }
+};
+
+CreatureAI* GetAI_npc_living_flare(Creature *_Creature)
+{
+    CreatureAI* newAI = new npc_living_flareAI(_Creature);
+    return newAI;
+}
+
 void AddSC_hellfire_peninsula()
 {
     Script *newscript;
@@ -611,6 +727,11 @@ void AddSC_hellfire_peninsula()
     newscript = new Script;
     newscript->Name="npc_earthcaller_ryga";
     newscript->GetAI = &GetAI_npc_earthcaller_ryga;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_living_flare";
+    newscript->GetAI = &GetAI_npc_living_flare;
     newscript->RegisterSelf();
 }
 

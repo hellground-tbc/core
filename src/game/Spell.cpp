@@ -1080,7 +1080,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
 
     if (m_caster != unit)
     {
-        if (unit->GetCharmerOrOwnerGUID() != m_caster->GetGUID())
+        if (unit->GetCharmerOrOwnerGUID() != m_caster->GetGUID() && m_spellInfo->Id != 44877)   // exception for Living Flare Master
         {
             if (unit->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
             {
@@ -5386,6 +5386,9 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
     // A player can cast spells on his pet (or other controlled unit) though in any state
     if (target != m_caster && target->GetCharmerOrOwnerGUID() != m_caster->GetGUID())
     {
+        // exception - Living Flare Master
+        if(m_spellInfo->Id == 44877)
+            return true;
         // any unattackable target skipped
         if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
             return false;
