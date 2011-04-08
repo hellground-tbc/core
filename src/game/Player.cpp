@@ -16581,8 +16581,8 @@ void Player::_SaveInventory()
             case ITEM_NEW:
             {
                 // delete item from character inventory  <--- temp fix, we should find why sometimes player already have item in inventory if it's "new" item
-                SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCharacterInventoryItem, "DELETE FROM character_inventory WHERE item = ?");
-                stmt.PExecute(item->GetGUIDLow());
+                SqlStatement stmt_temp = CharacterDatabase.CreateStatement(deleteCharacterInventoryItem, "DELETE FROM character_inventory WHERE item = ?");
+                stmt_temp.PExecute(item->GetGUIDLow());
 
                 SqlStatement stmt = CharacterDatabase.CreateStatement(insertCharacterInventoryItem, "INSERT INTO character_inventory(guid, bag, slot, item, item_template) VALUES(?, ?, ?, ?, ?);");
 
