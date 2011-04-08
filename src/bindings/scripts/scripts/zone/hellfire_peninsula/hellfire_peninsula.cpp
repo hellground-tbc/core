@@ -676,12 +676,40 @@ CreatureAI* GetAI_npc_living_flare(Creature *_Creature)
     return newAI;
 }
 
+   struct TRINITY_DLL_DECL npc_abyssal_shelf_questAI : public ScriptedAI
+{
+    npc_abyssal_shelf_questAI(Creature* c) : ScriptedAI(c) {}
+
+    void UpdateAI(const uint32 diff)
+    {
+     if (!UpdateVictim())
+         return;
+     DoMeleeAttackIfReady();
+    }
+
+     void JustDied(Unit* killer)
+    {
+        m_creature->RemoveCorpse();
+    }
+};
+
+CreatureAI* GetAI_npc_abyssal_shelf_quest(Creature *_Creature)
+{
+    CreatureAI* newAI = new npc_abyssal_shelf_questAI(_Creature);
+    return newAI;
+}
+
 void AddSC_hellfire_peninsula()
 {
     Script *newscript;
 
     newscript = new Script;
-     newscript->Name = "npc_aeranas";
+    newscript->Name = "npc_abyssal_shelf_quest";
+    newscript->GetAI = &GetAI_npc_abyssal_shelf_quest;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_aeranas";
     newscript->GetAI = &GetAI_npc_aeranas;
     newscript->RegisterSelf();
 
@@ -734,4 +762,3 @@ void AddSC_hellfire_peninsula()
     newscript->GetAI = &GetAI_npc_living_flare;
     newscript->RegisterSelf();
 }
-
