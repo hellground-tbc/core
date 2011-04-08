@@ -22,7 +22,6 @@ SDCategory: Items
 EndScriptData */
 
 /* ContentData
-item_area_52_special(i28132)        Prevents abuse of this item
 item_attuned_crystal_cores(i34368)  Prevent abuse(quest 11524 & 11525)
 item_blackwhelp_net(i31129)         Quest Whelps of the Wyrmcult (q10747). Prevents abuse
 item_draenei_fishing_net(i23654)    Hacklike implements chance to spawn item or creature
@@ -50,23 +49,6 @@ EndContentData */
 #include "WorldPacket.h"
 
 /*#####
-# item_area_52_special
-#####*/
-
-bool ItemUse_item_area_52_special(Player *player, Item* _Item, SpellCastTargets const& targets)
-{
-    if ( player->GetAreaId() == 3803 )
-    {
-        return false;
-    }
-    else
-    {
-        player->SendEquipError(EQUIP_ERR_OUT_OF_RANGE,_Item,NULL);
-        return true;
-    }
-}
-
-/*#####
 # item_only_for_flight
 #####*/
 
@@ -79,13 +61,17 @@ bool ItemUse_item_only_for_flight(Player *player, Item* _Item, SpellCastTargets 
     switch(itemId)
     {
        case 24538:
-            if(player->GetAreaId() != 3628)
-                disabled = true;
-                break;
+           if(player->GetAreaId() != 3628)
+               disabled = true;
+               break;
+       case 28132:
+           if(player->GetAreaId() != 3803)
+               disabled = true;
+               break;
        case 34489:
-            if(player->GetZoneId() != 4080)
-                disabled = true;
-                break;
+           if(player->GetZoneId() != 4080)
+               disabled = true;
+               break;
     }
 
     // allow use in flight only
@@ -488,11 +474,6 @@ bool ItemUse_item_rood_rofl(Player *player, Item* _Item, SpellCastTargets const&
 void AddSC_item_scripts()
 {
     Script *newscript;
-
-    newscript = new Script;
-    newscript->Name="item_area_52_special";
-    newscript->pItemUse = &ItemUse_item_area_52_special;
-    newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="item_only_for_flight";
