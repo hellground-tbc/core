@@ -5472,7 +5472,7 @@ struct TRINITY_DLL_DECL mob_promenade_sentinelAI: public ScriptedAI
 
         if(L5arcane < diff)
         {
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 45.0f, true))
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 45.0f, true, me->getVictimGUID()))
                 AddSpellToCast(target, SPELL_L5_ARCANE_CHARGE, false, true);
             L5arcane = urand(15000, 25000);
         }
