@@ -2251,10 +2251,17 @@ struct TRINITY_DLL_DECL mob_illidari_heartseekerAI : public ScriptedAI
         SkeletonShot = urand(15000, 35000);
         Curse = urand(1000, 20000);
     }
+
     void EnterCombat(Unit* who)
     {
         DoZoneInCombat(80.0f);
-        AttackStart(who, false);
+    }
+
+    void AttackStart(Unit *who)
+    {
+        ScriptedAI::AttackStartNoMove(who);
+
+        DoStartMovement(who, 25.0f);
     }
 
     void UpdateAI(const uint32 diff)
@@ -2266,19 +2273,8 @@ struct TRINITY_DLL_DECL mob_illidari_heartseekerAI : public ScriptedAI
         {
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
             {
-                if(m_creature->GetDistance(target) > 25)
-                {
-                    m_creature->SetSpeed(MOVE_RUN, 2.0);
-                    m_creature->GetMotionMaster()->MoveChase(target, 25);
-                    Shoot = 500;
-                }
-                else if(!target->IsWithinDistInMap(m_creature, 5.0))
-                {
-                    m_creature->GetMotionMaster()->Clear(false);
-
-                    ForceSpellCast(target, SPELL_SHOOT);
-                    Shoot = 1800;
-                }
+                AddSpellToCast(target, SPELL_SHOOT);
+                Shoot = 1800;
             }
         }
         else
@@ -2923,11 +2919,14 @@ struct TRINITY_DLL_DECL mob_shadowmoon_houndmasterAI: public ScriptedAI
         m_creature->Unmount();
         DoCast(m_creature, SPELL_SUMMON_RIDING_WARHOUND);
         DoCast(m_creature, SPELL_FREEZING_TRAP);
-        m_creature->GetMotionMaster()->Clear(false);
-        float x,y,z;
-        me->GetClosePoint(x,y,z, 0.0f, frand(10.0, 15.0), frand(0.0f, 2*M_PI));
-        m_creature->GetMotionMaster()->MovePoint(0,x,y,z);
         DoZoneInCombat(80.0f);
+    }
+
+    void AttackStart(Unit *who)
+    {
+        ScriptedAI::AttackStartNoMove(who);
+
+        DoStartMovement(who, 30.0f);
     }
 
     void UpdateAI(const uint32 diff)
@@ -2935,20 +2934,17 @@ struct TRINITY_DLL_DECL mob_shadowmoon_houndmasterAI: public ScriptedAI
         if(!UpdateVictim())
             return;
 
-        if(FreezingTrap < diff)
+        if (FreezingTrap < diff)
         {
             DoCast(m_creature, SPELL_FREEZING_TRAP);
-            m_creature->GetMotionMaster()->Clear();
-            m_creature->GetMotionMaster()->MovePoint(1, m_creature->GetPositionX()+urand(10, 15), m_creature->GetPositionY()+urand(3, 7), m_creature->GetPositionZ());
             FreezingTrap = 15000;
         }
         else
             FreezingTrap -= diff;
 
-        if(Volley < diff)
+        if (Volley < diff)
         {
-            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 40.0f, true);
-            if(target && m_creature->GetDistance(target) > 10.0f)
+            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 40.0f, true, 0.0f, 10.0f))
             {
                 AddSpellToCast(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), SPELL_VOLLEY);
                 Volley = 25000;
@@ -2961,19 +2957,9 @@ struct TRINITY_DLL_DECL mob_shadowmoon_houndmasterAI: public ScriptedAI
 
         if(Shoot < diff)
         {
-            if(Unit* target = SelectUnit(SELECT_TARGET_TOPAGGRO, 0, 100, true))
-            {
-                if(m_creature->GetDistance(target) > 30)
-                {
-                    m_creature->GetMotionMaster()->MoveChase(target, 20, 0);
-                    m_creature->SetSpeed(MOVE_RUN, 1,5);
-                }
-                else if(!target->IsWithinDistInMap(m_creature, 5.0))
-                {
-                    m_creature->GetMotionMaster()->Clear(false);
-                    ForceSpellCast(target, SPELL_SHOOT_1);
-                }
-            }
+            if (Unit* target = SelectUnit(SELECT_TARGET_TOPAGGRO, 0, 100, true))
+                AddSpellToCast(target, SPELL_SHOOT_1);
+
             Shoot = 2000;
         }
         else
@@ -2981,8 +2967,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_houndmasterAI: public ScriptedAI
 
         if(SilencingShot < diff)
         {
-            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, 35.0f, true);
-            if(target && m_creature->GetDistance(target) > 8.0f)
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, 35.0f, true, 0 , 8.0f))
             {
                 ForceSpellCast(target, SPELL_SILENCING_SHOT);
                 SilencingShot = 15000;
@@ -2998,7 +2983,6 @@ struct TRINITY_DLL_DECL mob_shadowmoon_houndmasterAI: public ScriptedAI
             if(m_creature->IsWithinDistInMap(m_creature->getVictim(), 5.0))
             {
                 AddSpellToCast(m_creature->getVictim(), SPELL_WING_CLIP);
-                m_creature->GetMotionMaster()->MovePoint(1, m_creature->GetPositionX()+urand(10, 15), m_creature->GetPositionY()+urand(3, 7), m_creature->GetPositionZ());
                 WingClip = 20000;
             }
             else
