@@ -1486,7 +1486,7 @@ CreatureAI* GetAI_mob_ashtongue_battlelord(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_ashtongue_feral_spiritAI : public ScriptedAI
 {
-    mob_ashtongue_feral_spiritAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
+    mob_ashtongue_feral_spiritAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(65.0f); }
 
     uint32 ChargeRage;
     uint32 SpiritBond;
@@ -4229,7 +4229,7 @@ CreatureAI* GetAI_mob_bonechewer_spectator(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_angered_soul_fragmentAI: public ScriptedAI
 {
-    mob_angered_soul_fragmentAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
+    mob_angered_soul_fragmentAI(Creature *c) : ScriptedAI(c) {}
 
     uint32 Anger;
 
@@ -4281,7 +4281,7 @@ CreatureAI* GetAI_mob_angered_soul_fragment(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_hungering_soul_fragmentAI: public ScriptedAI
 {
-    mob_hungering_soul_fragmentAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
+    mob_hungering_soul_fragmentAI(Creature *c) : ScriptedAI(c) {}
 
     void Reset()
     {
@@ -4320,7 +4320,7 @@ CreatureAI* GetAI_mob_hungering_soul_fragment(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_suffering_soul_fragmentAI: public ScriptedAI
 {
-    mob_suffering_soul_fragmentAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
+    mob_suffering_soul_fragmentAI(Creature *c) : ScriptedAI(c) {}
 
     uint32 SoulBlast;
 
