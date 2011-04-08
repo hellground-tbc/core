@@ -3033,11 +3033,6 @@ struct TRINITY_DLL_DECL mob_shadowmoon_reaverAI : public ScriptedAI
     }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
 
-    void SpellHit(Unit* caster, const SpellEntry* spell)
-    {
-        if(caster->GetTypeId() == TYPEID_PLAYER && m_creature->HasAura(SPELL_SPELL_ABSORPTION, 0) && (spell->SchoolMask & SPELL_SCHOOL_MASK_MAGIC || spell->Dispel == DISPEL_POISON))
-            m_creature->CastSpell(m_creature, 41033, true, 0, m_creature->GetAura(SPELL_SPELL_ABSORPTION, 0));
-    }
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
