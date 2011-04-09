@@ -330,7 +330,7 @@ OpcodeHandler opcodeTable[NUM_MSG_TYPES] =
     /*0x12B*/ { "SMSG_LEARNED_SPELL",               STATUS_NEVER,       PROCESS_INPLACE, &WorldSession::Handle_ServerSide               },
     /*0x12C*/ { "SMSG_SUPERCEDED_SPELL",            STATUS_NEVER,       PROCESS_INPLACE, &WorldSession::Handle_ServerSide               },
     /*0x12D*/ { "CMSG_NEW_SPELL_SLOT",              STATUS_NEVER,       PROCESS_INPLACE, &WorldSession::Handle_NULL                     },
-    /*0x12E*/ { "CMSG_CAST_SPELL",                  STATUS_LOGGEDIN,    PROCESS_THREADSAFE,  &WorldSession::HandleCastSpellOpcode           },
+    /*0x12E*/ { "CMSG_CAST_SPELL",                  STATUS_LOGGEDIN,    PROCESS_INPLACE,  &WorldSession::HandleCastSpellOpcode           },
     /*0x12F*/ { "CMSG_CANCEL_CAST",                 STATUS_LOGGEDIN,    PROCESS_THREADSAFE,  &WorldSession::HandleCancelCastOpcode          },
     /*0x130*/ { "SMSG_CAST_FAILED",                 STATUS_NEVER,       PROCESS_INPLACE, &WorldSession::Handle_ServerSide               },
     /*0x131*/ { "SMSG_SPELL_START",                 STATUS_NEVER,       PROCESS_INPLACE, &WorldSession::Handle_ServerSide               },

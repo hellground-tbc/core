@@ -18355,9 +18355,11 @@ void Player::ToggleMetaGemsActive(uint8 exceptslot, bool apply)
 
 void Player::LeaveBattleground(bool teleportToEntryPoint)
 {
-    if (InArena() && isInCombat() && bg->GetBattleground() && bg->GetBattleground()->GetStatus() == IN_PROGRESS) return;
     if (BattleGround *bg = GetBattleGround())
     {
+        if (InArena() && isInCombat() && bg->GetStatus() == STATUS_IN_PROGRESS)
+            return;
+
         bg->RemovePlayerAtLeave(GetGUID(), teleportToEntryPoint, true);
 
         if (bg->isBattleGround() && sWorld.getConfig(CONFIG_BATTLEGROUND_CAST_DESERTER))

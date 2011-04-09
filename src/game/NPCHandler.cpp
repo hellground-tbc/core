@@ -449,7 +449,7 @@ void WorldSession::SendBindPoint(Creature *npc)
     stmt.addFloat(_player->GetPositionX());
     stmt.addFloat(_player->GetPositionY());
     stmt.addFloat(_player->GetPositionZ());
-    stmt.addUint32(_player->GetGUIDLow());
+    stmt.addUInt32(_player->GetGUIDLow());
 
     stmt.Execute();
 
