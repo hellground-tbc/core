@@ -18355,7 +18355,7 @@ void Player::ToggleMetaGemsActive(uint8 exceptslot, bool apply)
 
 void Player::LeaveBattleground(bool teleportToEntryPoint)
 {
-    if (InArena() && isInCombat()) return;
+    if (InArena() && isInCombat() && bg->GetBattleground() && bg->GetBattleground()->GetStatus() == IN_PROGRESS) return;
     if (BattleGround *bg = GetBattleGround())
     {
         bg->RemovePlayerAtLeave(GetGUID(), teleportToEntryPoint, true);
