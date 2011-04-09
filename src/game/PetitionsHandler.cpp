@@ -231,7 +231,7 @@ void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recv_data)
     static SqlStatementID insertPetition;
 
     sLog.outDebug("Invalid petition GUIDs: %s", ssInvalidPetitionGUIDs.str().c_str());
-    // strings will be escaped inside prepared statements
+    CharacterDatabase.escape_string(name);
     CharacterDatabase.BeginTransaction();
 
     SqlStatement stmt = CharacterDatabase.CreateStatement(deletePetitionsList, "DELETE FROM petition WHERE petitionguid IN (?);");
@@ -436,11 +436,12 @@ void WorldSession::HandlePetitionRenameOpcode(WorldPacket & recv_data)
     }
 
     std::string db_newname = newname;
+    CharacterDatabase.escape_string(db_newname);
 
     static SqlStatementID updatePetitionName;
     SqlStatement stmt = CharacterDatabase.CreateStatement(updatePetitionName, "UPDATE petition SET name = ? WHERE petitionguid = ?");
 
-    stmt.addString(db_newname); // string will be escaped inside prepared statements
+    stmt.addString(db_newname);
     stmt.addUInt32(GUID_LOPART(petitionguid));
 
     stmt.Execute();

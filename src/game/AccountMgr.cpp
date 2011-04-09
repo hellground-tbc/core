@@ -146,9 +146,11 @@ AccountOpResult AccountMgr::ChangePassword(uint32 accid, std::string new_passwd)
 
     normilizeString(new_passwd);
 
+    LoginDatabase.escape_string(new_passwd);
+
     static SqlStatementID updateAccountPassword;
     SqlStatement stmt = LoginDatabase.CreateStatement(updateAccountPassword, "UPDATE account SET sha_pass_hash = SHA1(CONCAT(username, ':', ?)) WHERE id = ?");
-    stmt.addString(new_passwd); // string will be escaped inside prepared statements
+    stmt.addString(new_passwd);
     stmt.addUInt32(accid);
     if (!stmt.Execute())
         return AOR_DB_INTERNAL_ERROR;                       // unexpected error

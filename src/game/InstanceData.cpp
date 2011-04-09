@@ -30,9 +30,10 @@ void InstanceData::SaveToDB()
     if (data.empty())
         return;
 
+    CharacterDatabase.escape_string(data);
     static SqlStatementID updateInstanceData;
     SqlStatement stmt = CharacterDatabase.CreateStatement(updateInstanceData, "UPDATE instance SET data = ? WHERE id = ?");
-    // string will be escaped inside prepared statements
+
     stmt.addString(data);
     stmt.addUInt32(instance->GetInstanceId());
 

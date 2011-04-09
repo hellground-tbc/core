@@ -473,6 +473,9 @@ void WorldSession::HandlePetRename(WorldPacket & recv_data)
         static SqlStatementID deletePetDeclinedName;
         static SqlStatementID insertPetDeclinedName;
 
+        for (int i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
+            CharacterDatabase.escape_string(declinedname.name[i]);
+
         SqlStatement stmt = CharacterDatabase.CreateStatement(deletePetDeclinedName, "DELETE FROM character_pet_declinedname WHERE owner = ? AND id = ?");
         stmt.PExecute(_player->GetGUIDLow(), pet->GetCharmInfo()->GetPetNumber());
 
@@ -480,7 +483,6 @@ void WorldSession::HandlePetRename(WorldPacket & recv_data)
 
         stmt.addUInt32(pet->GetCharmInfo()->GetPetNumber());
         stmt.addUInt32(_player->GetGUIDLow());
-        // strings will be escaped inside prepared statements
         stmt.addString(declinedname.name[0]);
         stmt.addString(declinedname.name[1]);
         stmt.addString(declinedname.name[2]);
@@ -489,6 +491,8 @@ void WorldSession::HandlePetRename(WorldPacket & recv_data)
 
         stmt.Execute();
     }
+
+    CharacterDatabase.escape_string(name);
 
     SqlStatement stmt = CharacterDatabase.CreateStatement(updatePetName, "UPDATE character_pet SET name = ?, renamed = '1' WHERE owner = ? AND id = ?");
     stmt.PExecute(name.c_str(), _player->GetGUIDLow(), pet->GetCharmInfo()->GetPetNumber());

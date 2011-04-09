@@ -1095,6 +1095,9 @@ void WorldSession::HandleDeclinedPlayerNameOpcode(WorldPacket& recv_data)
         return;
     }
 
+    for (int i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
+        CharacterDatabase.escape_string(declinedname.name[i]);
+
     static SqlStatementID deleteCharDeclName;
     static SqlStatementID insertCharDeclName;
 
@@ -1105,14 +1108,11 @@ void WorldSession::HandleDeclinedPlayerNameOpcode(WorldPacket& recv_data)
 
     stmt = CharacterDatabase.CreateStatement(insertCharDeclName, "INSERT INTO character_declinedname (guid, genitive, dative, accusative, instrumental, prepositional) VALUES (?, ?, ?, ?, ?, ?);");
     stmt.addUInt64(GUID_LOPART(guid));
-
-    // strings will be escaped inside prepared statements
     stmt.addString(declinedname.name[0]);
     stmt.addString(declinedname.name[1]);
     stmt.addString(declinedname.name[2]);
     stmt.addString(declinedname.name[3]);
     stmt.addString(declinedname.name[4]);
-
     stmt.Execute();
     CharacterDatabase.CommitTransaction();
 
