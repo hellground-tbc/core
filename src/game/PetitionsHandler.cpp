@@ -219,8 +219,7 @@ void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recv_data)
         {
             Field *fields = result->Fetch();
             ssInvalidPetitionGUIDs << "'" << fields[0].GetUInt32() << "' , ";
-        }
-        while (result->NextRow());
+        } while (result->NextRow());
     }
 
     // delete petitions with the same guid as this one
@@ -233,16 +232,10 @@ void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recv_data)
     sLog.outDebug("Invalid petition GUIDs: %s", ssInvalidPetitionGUIDs.str().c_str());
     CharacterDatabase.escape_string(name);
     CharacterDatabase.BeginTransaction();
-
-    SqlStatement stmt = CharacterDatabase.CreateStatement(deletePetitionsList, "DELETE FROM petition WHERE petitionguid IN (?);");
-    stmt.PExecute(ssInvalidPetitionGUIDs.str().c_str());
-
-    stmt = CharacterDatabase.CreateStatement(deletePetitionSignsList, "DELETE FROM petition_sign WHERE petitionguid IN (?);");
-    stmt.PExecute(ssInvalidPetitionGUIDs.str().c_str());
-
-    stmt = CharacterDatabase.CreateStatement(insertPetition, "INSERT INTO petition(ownerguid, petitionguid, name, type) VALUES(?, ?, ?, ?);");
-    stmt.PExecute(_player->GetGUIDLow(), charter->GetGUIDLow(), name.c_str(), type);
-
+    CharacterDatabase.PExecute("DELETE FROM petition WHERE petitionguid IN (%s)",  ssInvalidPetitionGUIDs.str().c_str());
+    CharacterDatabase.PExecute("DELETE FROM petition_sign WHERE petitionguid IN (%s)", ssInvalidPetitionGUIDs.str().c_str());
+    CharacterDatabase.PExecute("INSERT INTO petition (ownerguid, petitionguid, name, type) VALUES ('%u', '%u', '%s', '%u')",
+        _player->GetGUIDLow(), charter->GetGUIDLow(), name.c_str(), type);
     CharacterDatabase.CommitTransaction();
 }
 
@@ -439,12 +432,8 @@ void WorldSession::HandlePetitionRenameOpcode(WorldPacket & recv_data)
     CharacterDatabase.escape_string(db_newname);
 
     static SqlStatementID updatePetitionName;
-    SqlStatement stmt = CharacterDatabase.CreateStatement(updatePetitionName, "UPDATE petition SET name = ? WHERE petitionguid = ?");
-
-    stmt.addString(db_newname);
-    stmt.addUInt32(GUID_LOPART(petitionguid));
-
-    stmt.Execute();
+    CharacterDatabase.PExecute("UPDATE petition SET name = '%s' WHERE petitionguid = '%u'",
+        db_newname.c_str(), GUID_LOPART(petitionguid));
 
     sLog.outDebug("Petition (GUID: %u) renamed to '%s'", GUID_LOPART(petitionguid), newname.c_str());
     WorldPacket data(MSG_PETITION_RENAME, (8+newname.size()+1));
@@ -560,8 +549,7 @@ void WorldSession::HandlePetitionSignOpcode(WorldPacket & recv_data)
 
     static SqlStatementID insertPetitionSign;
 
-    SqlStatement stmt = CharacterDatabase.CreateStatement(insertPetitionSign, "INSERT INTO petition_sign(ownerguid, petitionguid, playerguid, player_account) VALUES(?, ?, ?, ?);");
-    stmt.PExecute(GUID_LOPART(ownerguid),GUID_LOPART(petitionguid), plguidlo,GetAccountId());
+    CharacterDatabase.PExecute("INSERT INTO petition_sign (ownerguid,petitionguid, playerguid, player_account) VALUES ('%u', '%u', '%u','%u')", GUID_LOPART(ownerguid),GUID_LOPART(petitionguid), plguidlo,GetAccountId());
 
     sLog.outDebug("PETITION SIGN: GUID %u by player: %s (GUID: %u Account: %u)", GUID_LOPART(petitionguid), _player->GetName(),plguidlo,GetAccountId());
 
@@ -880,13 +868,8 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recv_data)
     static SqlStatementID deletePetitionSign;
 
     CharacterDatabase.BeginTransaction();
-
-    SqlStatement stmt = CharacterDatabase.CreateStatement(deletePetition, "DELETE FROM petition WHERE petitionguid = ?");
-    stmt.PExecute(GUID_LOPART(petitionguid));
-
-    stmt = CharacterDatabase.CreateStatement(deletePetitionSign, "DELETE FROM petition_sign WHERE petitionguid = ?");
-    stmt.PExecute(GUID_LOPART(petitionguid));
-
+    CharacterDatabase.PExecute("DELETE FROM petition WHERE petitionguid = '%u'", GUID_LOPART(petitionguid));
+    CharacterDatabase.PExecute("DELETE FROM petition_sign WHERE petitionguid = '%u'", GUID_LOPART(petitionguid));
     CharacterDatabase.CommitTransaction();
 
     // created

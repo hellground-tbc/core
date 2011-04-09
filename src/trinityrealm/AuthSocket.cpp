@@ -333,8 +333,7 @@ void AuthSocket::_SetVSFields(const std::string& rI)
     s_hex = s.AsHexStr();
 
     static SqlStatementID updateAccountVS;
-    SqlStatement stmt = LoginDatabase.CreateStatement(updateAccountVS, "UPDATE account SET v = ?, s = ? WHERE username = ?");
-    stmt.PExecute(v_hex, s_hex, _safelogin.c_str());
+    LoginDatabase.PExecute("UPDATE account SET v = '%s', s = '%s' WHERE username = '%s'",v_hex,s_hex, _safelogin.c_str() );
     OPENSSL_free((void*)v_hex);
     OPENSSL_free((void*)s_hex);
 }
@@ -399,8 +398,7 @@ bool AuthSocket::_HandleLogonChallenge()
     // No SQL injection possible (paste the IP address as passed by the socket)
 
     static SqlStatementID deleteOldBannedIP;
-    SqlStatement stmt = LoginDatabase.CreateStatement(deleteOldBannedIP, "DELETE FROM ip_banned WHERE unbandate <= UNIX_TIMESTAMP() AND unbandate <> bandate");
-    stmt.Execute();
+    LoginDatabase.Execute("DELETE FROM ip_banned WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
 
     std::string address = GetRemoteAddress();
     LoginDatabase.escape_string(address);
@@ -444,8 +442,7 @@ bool AuthSocket::_HandleLogonChallenge()
             {
                 //set expired bans to inactive
                 static SqlStatementID updateOldBannedAccount;
-                SqlStatement stmt = LoginDatabase.CreateStatement(updateOldBannedAccount, "UPDATE account_banned SET active = 0 WHERE unbandate <= UNIX_TIMESTAMP() AND unbandate <> bandate");
-                stmt.Execute();
+                LoginDatabase.Execute("UPDATE account_banned SET active = 0 WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
                 ///- If the account is banned, reject the logon attempt
                 QueryResultAutoPtr  banresult = LoginDatabase.PQuery("SELECT bandate,unbandate FROM account_banned WHERE id = %u AND active = 1", (*result)[1].GetUInt32());
                 if(banresult)
@@ -675,14 +672,7 @@ bool AuthSocket::_HandleLogonProof()
         const char* K_hex = K.AsHexStr();
 
         static SqlStatementID updateAccountLoginData;
-        SqlStatement stmt = LoginDatabase.CreateStatement(updateAccountLoginData, "UPDATE account SET sessionkey = ?, last_ip = ?, last_login = NOW(), locale = ?, failed_logins = 0 WHERE username = ?");
-
-        stmt.addString(K_hex);
-        stmt.addString(GetRemoteAddress());
-        stmt.addUInt8(GetLocaleByName(_localizationName));
-        stmt.addString(_safelogin);
-        stmt.Execute();
-
+        LoginDatabase.PExecute("UPDATE account SET sessionkey = '%s', last_ip = '%s', last_login = NOW(), locale = '%u', failed_logins = 0 WHERE username = '%s'", K_hex, GetRemoteAddress().c_str(), GetLocaleByName(_localizationName), _safelogin.c_str() );
         OPENSSL_free((void*)K_hex);
 
         ///- Finish SRP6 and send the final result to the client
@@ -1187,3 +1177,4 @@ void CleanupIPPropmap(uint32& flushed, uint32& blocked, uint32 &stored)
     flushed = rem.size();
    stored = _propmap.size();
 }
+

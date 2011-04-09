@@ -73,13 +73,8 @@ bool Guild::create(uint64 lGuid, std::string gname)
 
     Id = objmgr.GenerateGuildId();
 
-    // gname already assigned to Guild::name, use it to encode string for DB
-    CharacterDatabase.escape_string(gname);
-
     std::string dbGINFO = GINFO;
     std::string dbMOTD = MOTD;
-    CharacterDatabase.escape_string(dbGINFO);
-    CharacterDatabase.escape_string(dbMOTD);
 
     static SqlStatementID deleteGuildRanks;
     static SqlStatementID deleteGuildMembers;
@@ -160,8 +155,6 @@ bool Guild::AddMember(uint64 plGuid, uint32 plRank)
 
     std::string dbPnote = newmember.Pnote;
     std::string dbOFFnote = newmember.OFFnote;
-    CharacterDatabase.escape_string(dbPnote);
-    CharacterDatabase.escape_string(dbOFFnote);
 
     static SqlStatementID insertGuildMember;
 
@@ -191,7 +184,6 @@ void Guild::SetMOTD(std::string motd)
     MOTD = motd;
 
     // motd now can be used for encoding to DB
-    CharacterDatabase.escape_string(motd);
     SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildMOTD, "UPDATE guild SET motd = ? WHERE guildid = ?");
     stmt.PExecute(motd.c_str(), Id);
 }
@@ -202,7 +194,6 @@ void Guild::SetGINFO(std::string ginfo)
     GINFO = ginfo;
 
     // ginfo now can be used for encoding to DB
-    CharacterDatabase.escape_string(ginfo);
     SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildInfo, "UPDATE guild SET info = ? WHERE guildid = ?");
     stmt.PExecute(ginfo.c_str(), Id);
 }
@@ -326,7 +317,6 @@ bool Guild::LoadRanksFromDB(uint32 GuildId)
             // guild_rank.rid always store rank+1
             std::string name = m_ranks[i].name;
             uint32 rights = m_ranks[i].rights;
-            CharacterDatabase.escape_string(name);
             stmt = CharacterDatabase.CreateStatement(insertGuildRank, "INSERT INTO guild_rank(guildid, rid, rname, rights) VALUES (?, ?, ?, ?);");
             stmt.PExecute(GuildId, i+1, name.c_str(), rights);
         }
@@ -559,7 +549,6 @@ void Guild::SetPNOTE(uint64 guid,std::string pnote)
 
     static SqlStatementID updateGuildMemberPNote;
     // pnote now can be used for encoding to DB
-    CharacterDatabase.escape_string(pnote);
 
     SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildMemberPNote, "UPDATE guild_member SET pnote = ? WHERE guid = ?");
     stmt.PExecute(pnote.c_str(), itr->first);
@@ -572,7 +561,6 @@ void Guild::SetOFFNOTE(uint64 guid,std::string offnote)
         return;
     itr->second.OFFnote = offnote;
     // offnote now can be used for encoding to DB
-    CharacterDatabase.escape_string(offnote);
 
     static SqlStatementID updateGuildMemberOffNote;
     SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildMemberOffNote, "UPDATE guild_member SET offnote = ? WHERE guid = ?");
@@ -653,7 +641,6 @@ void Guild::CreateRank(std::string name_,uint32 rights)
     // name now can be used for encoding to DB
     static SqlStatementID insertGuildRank;
     SqlStatement stmt = CharacterDatabase.CreateStatement(insertGuildRank, "INSERT INTO guild_rank(guildid, rid, rname, rights) VALUES (?, ?, ?, ?);");
-    CharacterDatabase.escape_string(name_);
     stmt.PExecute(Id, m_ranks.size(), name_.c_str(), rights);
 }
 
@@ -701,7 +688,6 @@ void Guild::SetRankName(uint32 rankId, std::string name_)
 
     static SqlStatementID updateGuildRankName;
     // name now can be used for encoding to DB
-    CharacterDatabase.escape_string(name_);
     SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildRankName, "UPDATE guild_rank SET rname = ? WHERE rid = ? AND guildid = ?");
     stmt.PExecute(name_.c_str(), (rankId+1), Id);
 }
@@ -1217,9 +1203,6 @@ void Guild::SetGuildBankTabInfo(uint8 TabId, std::string Name, std::string Icon)
 
     m_TabListMap[TabId]->Name = Name;
     m_TabListMap[TabId]->Icon = Icon;
-
-    CharacterDatabase.escape_string(Name);
-    CharacterDatabase.escape_string(Icon);
 
     static SqlStatementID updateGuildBankTab;
     SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildBankTab, "UPDATE guild_bank_tab SET TabName = ?, TabIcon = ? WHERE guildid = ? AND TabId = ?");
@@ -2099,8 +2082,6 @@ void Guild::SetGuildBankTabText(uint8 TabId, std::string text)
     utf8truncate(text,500);                                 // DB and client size limitation
 
     m_TabListMap[TabId]->Text = text;
-
-    CharacterDatabase.escape_string(text);
 
     static SqlStatementID updateGuildBankTabText;
     SqlStatement stmt = CharacterDatabase.CreateStatement(updateGuildBankTabText, "UPDATE guild_bank_tab SET TabText = ? WHERE guildid = ? AND TabId = ?");

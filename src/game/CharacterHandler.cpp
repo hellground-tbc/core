@@ -1095,9 +1095,6 @@ void WorldSession::HandleDeclinedPlayerNameOpcode(WorldPacket& recv_data)
         return;
     }
 
-    for (int i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
-        CharacterDatabase.escape_string(declinedname.name[i]);
-
     static SqlStatementID deleteCharDeclName;
     static SqlStatementID insertCharDeclName;
 

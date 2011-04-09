@@ -44,9 +44,6 @@ AccountOpResult AccountMgr::CreateAccount(std::string username, std::string pass
     normilizeString(username);
     normilizeString(password);
 
-    LoginDatabase.escape_string(username);
-    LoginDatabase.escape_string(password);
-
     QueryResultAutoPtr result = LoginDatabase.PQuery("SELECT 1 FROM account WHERE username = '%s'", username.c_str());
     if (result)
         return AOR_NAME_ALREDY_EXIST;                       // username does already exist
@@ -145,8 +142,6 @@ AccountOpResult AccountMgr::ChangePassword(uint32 accid, std::string new_passwd)
         return AOR_PASS_TOO_LONG;
 
     normilizeString(new_passwd);
-
-    LoginDatabase.escape_string(new_passwd);
 
     static SqlStatementID updateAccountPassword;
     SqlStatement stmt = LoginDatabase.CreateStatement(updateAccountPassword, "UPDATE account SET sha_pass_hash = SHA1(CONCAT(username, ':', ?)) WHERE id = ?");

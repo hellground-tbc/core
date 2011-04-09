@@ -1080,13 +1080,8 @@ void WorldSession::HandleWrapItemOpcode(WorldPacket& recv_data)
         return;
     }
 
-    static SqlStatementID insertCharacterGifts;
-
     CharacterDatabase.BeginTransaction();
-
-    SqlStatement stmt = CharacterDatabase.CreateStatement(insertCharacterGifts, "INSERT INTO character_gifts VALUES (?, ?, ?, ?);");
-    stmt.PExecute(GUID_LOPART(item->GetOwnerGUID()), item->GetGUIDLow(), item->GetEntry(), item->GetUInt32Value(ITEM_FIELD_FLAGS));
-
+    CharacterDatabase.PExecute("INSERT INTO character_gifts VALUES ('%u', '%u', '%u', '%u')", GUID_LOPART(item->GetOwnerGUID()), item->GetGUIDLow(), item->GetEntry(), item->GetUInt32Value(ITEM_FIELD_FLAGS));
     item->SetEntry(gift->GetEntry());
 
     switch (item->GetEntry())

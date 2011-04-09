@@ -277,8 +277,7 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
             return;
         }
         static SqlStatementID deleteCharacterGift;
-        SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCharacterGift, "DELETE FROM character_gifts WHERE item_guid = ?");
-        stmt.PExecute(pItem->GetGUIDLow());
+        CharacterDatabase.PExecute("DELETE FROM character_gifts WHERE item_guid = '%u'", pItem->GetGUIDLow());
     }
     else
         pUser->SendLoot(pItem->GetGUID(),LOOT_CORPSE);

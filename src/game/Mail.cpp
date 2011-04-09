@@ -253,12 +253,7 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data)
                 mailItem.item->DeleteFromInventoryDB();     //deletes item from character's inventory
                 mailItem.item->SaveToDB();                  // recursive and not have transaction guard into self, item not in inventory and can be save standalone
                 // owner in data will set at mail receive and item extracting
-
-                static SqlStatementID updateItemInstanceOwner;
-
-                SqlStatement stmt = CharacterDatabase.CreateStatement(updateItemInstanceOwner, "UPDATE item_instance SET owner_guid = ? WHERE guid = ?");
-                stmt.PExecute(GUID_LOPART(rc), mailItem.item->GetGUIDLow());
-
+                CharacterDatabase.PExecute("UPDATE item_instance SET owner_guid = '%u' WHERE guid='%u'", GUID_LOPART(rc), mailItem.item->GetGUIDLow());
                 CharacterDatabase.CommitTransaction();
             }
 
@@ -425,11 +420,7 @@ void WorldSession::SendReturnToSender(uint8 messageType, uint32 sender_acc, uint
             MailItem& mailItem = mailItemIter->second;
             mailItem.item->SaveToDB();                  // item not in inventory and can be save standalone
             // owner in data will set at mail receive and item extracting
-
-            static SqlStatementID updateItemInstanceOwner;
-            SqlStatement stmt = CharacterDatabase.CreateStatement(updateItemInstanceOwner, "UPDATE item_instance SET owner_guid = ? WHERE guid = ?");
-
-            stmt.PExecute(receiver_guid, mailItem.item->GetGUIDLow());
+            CharacterDatabase.PExecute("UPDATE item_instance SET owner_guid = '%u' WHERE guid='%u'", receiver_guid, mailItem.item->GetGUIDLow());
         }
         CharacterDatabase.CommitTransaction();
     }
@@ -879,38 +870,18 @@ void WorldSession::SendMailTo(Player* receiver, uint8 messageType, uint8 station
     else if (mi)
         mi->deleteIncludedItems();
 
-    static SqlStatementID insertMail;
-    static SqlStatementID insertMailItems;
-
     CharacterDatabase.BeginTransaction();
     CharacterDatabase.escape_string(subject);
-
-    SqlStatement stmt = CharacterDatabase.CreateStatement(insertMail, "INSERT INTO mail(id, messageType, stationery, mailTemplateId, sender, receiver, subject, itemTextId, has_items, expire_time, deliver_time, money, cod, checked) "
-                                                                        "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    stmt.addUInt32(mailId);
-    stmt.addUInt8(messageType);
-    stmt.addUInt8(stationery);
-    stmt.addUInt16(mailTemplateId);
-    stmt.addUInt32(sender_guidlow_or_entry);
-    stmt.addUInt32(receiver_guidlow);
-    stmt.addString(subject);
-    stmt.addUInt32(itemTextId);
-    stmt.addUInt8((mi && !mi->empty() ? 1 : 0));
-    stmt.addUInt64((uint64)expire_time);
-    stmt.addUInt64((uint64)deliver_time);
-    stmt.addUInt32(money);
-    stmt.addUInt32(COD);
-    stmt.addUInt32(checked);
-
-    stmt.Execute();
+    CharacterDatabase.PExecute("INSERT INTO mail (id,messageType,stationery,mailTemplateId,sender,receiver,subject,itemTextId,has_items,expire_time,deliver_time,money,cod,checked) "
+        "VALUES ('%u', '%u', '%u', '%u', '%u', '%u', '%s', '%u', '%u', '" UI64FMTD "','" UI64FMTD "', '%u', '%u', '%d')",
+        mailId, messageType, stationery, mailTemplateId, sender_guidlow_or_entry, receiver_guidlow, subject.c_str(), itemTextId, (mi && !mi->empty() ? 1 : 0), (uint64)expire_time, (uint64)deliver_time, money, COD, checked);
 
     if (mi)
     {
         for (MailItemMap::const_iterator mailItemIter = mi->begin(); mailItemIter != mi->end(); ++mailItemIter)
         {
             MailItem const& mailItem = mailItemIter->second;
-            stmt = CharacterDatabase.CreateStatement(insertMailItems, "INSERT INTO mail_items(mail_id, item_guid, item_template, receiver) VALUES(?, ?, ?, ?);");
-            stmt.PExecute(mailId, mailItem.item_guidlow, mailItem.item_template,receiver_guidlow);
+            CharacterDatabase.PExecute("INSERT INTO mail_items (mail_id,item_guid,item_template,receiver) VALUES ('%u', '%u', '%u','%u')", mailId, mailItem.item_guidlow, mailItem.item_template,receiver_guidlow);
         }
     }
     CharacterDatabase.CommitTransaction();

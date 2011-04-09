@@ -151,7 +151,7 @@ class TRINITY_DLL_SPEC SqlStmtParameters
 
         //get amount of bound parameters
         int boundParams() const { return int(m_params.size()); }
-        //add parameter
+        //add parameter 
         void addParam(const SqlStmtFieldData& data) { m_params.push_back(data); }
         //empty SQL statement parameters. In case nParams > 1 - reserve memory for parameters
         //should help to reuse the same object with batched SQL requests

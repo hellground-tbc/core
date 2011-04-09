@@ -200,11 +200,7 @@ void InstanceSave::SaveToDB()
     {
         assert(map->IsDungeon());
         if (InstanceData *iData = ((InstanceMap*)map)->GetInstanceData())
-        {
             data = iData->GetSaveData();
-            if (!data.empty())
-                CharacterDatabase.escape_string(data);
-        }
     }
 
     static SqlStatementID insertInstance;
