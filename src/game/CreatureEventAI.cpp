@@ -349,7 +349,7 @@ bool CreatureEventAI::ProcessEvent(CreatureEventAIHolder& pHolder, Unit* pAction
 void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32 rnd, uint32 EventId, Unit* pActionInvoker)
 {
     switch (action.type)
-    {   
+    {
         case ACTION_T_TEXT:
         {
             if (!action.text.TextId[0])
@@ -822,7 +822,8 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
             break;
         }
         case ACTION_T_REMOVE_CORPSE:
-            {   m_creature->RemoveCorpse();
+        {
+            m_creature->RemoveCorpse();
             break;
         }
     }

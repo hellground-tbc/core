@@ -416,6 +416,8 @@ typedef std::list<GossipOption> GossipOptionList;
 
 typedef std::map<uint32,time_t> CreatureSpellCooldowns;
 
+extern std::map<uint32, uint32> CreatureAIReInitialize;
+
 // max different by z coordinate for creature aggro reaction
 #define CREATURE_Z_ATTACK_RANGE 3
 
@@ -739,6 +741,9 @@ class TRINITY_DLL_SPEC Creature : public Unit
         //WaypointMovementGenerator vars
         uint32 m_waypointID;
         uint32 m_path_id;
+
+        uint32 m_aiInitializeTime;
+        uint32 m_aiReinitializeCheckTimer;
 
         float m_aggroRange;
 

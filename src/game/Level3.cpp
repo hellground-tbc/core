@@ -54,6 +54,7 @@
 #include "InstanceSaveMgr.h"
 #include "InstanceData.h"
 #include "AuctionHouseBot.h"
+#include "CreatureEventAIMgr.h"
 
 bool ChatHandler::HandleAHBotOptionsCommand(const char* args)
 {
@@ -7772,13 +7773,39 @@ bool ChatHandler::HandleNearGridObjectCommand(const char* args)
             if (!gInfo)
                 continue;
 
-            PSendSysMessage(LANG_GO_LIST_CHAT, tmp->GetGUID(), tmp->GetDBTableGUIDLow(), gInfo->name, tmp->GetPositionX(), tmp->GetPositionY(), tmp->GetPositionZ(), tmp->GetMapId());
+            PSendSysMessage(LANG_GO_LIST_CHAT, tmp->GetGUID(), tmp->GetGUIDLow(), gInfo->name, tmp->GetPositionX(), tmp->GetPositionY(), tmp->GetPositionZ(), tmp->GetMapId());
             PSendSysMessage("is in world: %s | is in map guid store: %s", tmp->IsInWorld() ? "Yes" : "No", tmp2 ? "Yes" : "No");
             PSendSysMessage("--------------------------------");
         }
         else
             PSendSysMessage("Broken Pointer");
     }
+
+    return true;
+}
+
+bool ChatHandler::HandleEventAIReloadCommand(const char* args)
+{
+    char * cId = strtok((char*)args, " ");
+
+    uint32 creatureId = 0;
+
+    if (cId)
+        creatureId = atoi(cId);
+    else if (getSelectedCreature())
+        creatureId = getSelectedCreature()->GetEntry();
+
+    if (!creatureId)
+    {
+        PSendSysMessage("You should select creature or enter id to reload");
+        return false;
+    }
+
+    CreatureEAI_Mgr.LoadCreatureEventAI_Scripts(creatureId);
+
+    CreatureAIReInitialize[creatureId] = getMSTime();
+
+    PSendSysMessage("EventAI for creature %u prepared to replace", creatureId);
 
     return true;
 }

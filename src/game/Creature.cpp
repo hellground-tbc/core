@@ -52,6 +52,8 @@
 #include "Policies/SingletonImp.h"
 #include "Map.h"
 
+std::map<uint32, uint32> CreatureAIReInitialize;
+
 void TrainerSpellData::Clear()
 {
     for (TrainerSpellList::iterator itr = spellList.begin(); itr != spellList.end(); ++itr)
@@ -558,6 +560,16 @@ void Creature::Update(uint32 diff)
         default:
             break;
     }
+
+    if (m_aiReinitializeCheckTimer <= diff)
+    {
+        if (!isInCombat() && !IsInEvadeMode() && !isCharmed() && m_aiInitializeTime < CreatureAIReInitialize[GetEntry()])
+            AIM_Initialize();
+
+        m_aiReinitializeCheckTimer = 10000;
+    }
+    else
+        m_aiReinitializeCheckTimer -= diff;
 }
 
 void Creature::RegenerateMana()
@@ -630,12 +642,14 @@ bool Creature::AIM_Initialize(CreatureAI* ai)
 
     i_motionMaster.Initialize();
     i_AI = FactorySelector::selectAI(this);
-    
+
     if (oldAI)
         delete oldAI;
 
     IsAIEnabled = true;
     i_AI->InitializeAI();
+    m_aiInitializeTime = getMSTime();
+
     return true;
 }
 

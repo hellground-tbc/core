@@ -284,6 +284,7 @@ class ChatHandler
         bool HandleReloadLocalesPageTextCommand(const char* args);
         bool HandleReloadLocalesQuestCommand(const char* args);
         bool HandleReloadAuctionsCommand(const char* args);
+        bool HandleEventAIReloadCommand(const char* args);
 
         bool HandleInstanceListBindsCommand(const char* args);
         bool HandleInstanceUnbindCommand(const char* args);
