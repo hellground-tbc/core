@@ -3916,8 +3916,17 @@ bool ChatHandler::HandleNpcAddFormationCommand(const char* args)
     if (!*args)
         return false;
 
-    uint32 leaderGUID = (uint32) atoi((char*)args);
+    uint32 leaderGUID = (uint32)atoi(strtok((char*)args, " "));
     Creature *pCreature = getSelectedCreature();
+
+    char * ai = strtok(NULL, " ");
+    uint32 gAI = 0;
+
+    if (ai)
+        gAI = (uint32)atoi(ai);
+
+    if (gAI > 2)
+        gAI = 2;
 
     if (!pCreature || !pCreature->GetDBTableGUIDLow())
     {
@@ -3943,7 +3952,10 @@ bool ChatHandler::HandleNpcAddFormationCommand(const char* args)
     group_member->follow_angle   = pCreature->GetAngle(chr) - chr->GetOrientation();
     group_member->follow_dist    = sqrtf(pow(chr->GetPositionX() - pCreature->GetPositionX(),int(2))+pow(chr->GetPositionY()-pCreature->GetPositionY(),int(2)));
     group_member->leaderGUID     = leaderGUID;
-    group_member->groupAI        = 0;
+    group_member->groupAI        = gAI;
+
+    if (group_member->follow_angle < 0)
+        group_member->follow_angle = 0;
 
     CreatureGroupMap[lowguid] = group_member;
     pCreature->SearchFormation();

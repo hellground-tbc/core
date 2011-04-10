@@ -210,7 +210,7 @@ void CreatureGroup::FormationReset(bool dismiss)
         {
             if (Creature *mem = m_leader->GetMap()->GetCreature(itr->first))
             {
-                if (!mem->isAlive())
+                if (!mem->isAlive() || mem->isInCombat())
                     continue;
 
                 if (dismiss)
