@@ -4143,16 +4143,12 @@ void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
             //if it is mail from AH, it shouldn't be returned, but deleted
             if (m->messageType != MAIL_NORMAL || (m->checked & (MAIL_CHECK_MASK_AUCTION | MAIL_CHECK_MASK_COD_PAYMENT | MAIL_CHECK_MASK_RETURNED)))
             {
-                static SqlStatementID deleteItemInstance;
                 // mail open and then not returned
                 for (std::vector<MailItemInfo>::iterator itr2 = m->items.begin(); itr2 != m->items.end(); ++itr2)
                     CharacterDatabase.PExecute("DELETE FROM item_instance WHERE guid = '%u'", itr2->item_guid);
             }
             else
             {
-                static SqlStatementID updateMail;
-                static SqlStatementID updateMailItemsReceiver;
-                static SqlStatementID updateItemInstanceOwner;
                 //mail will be returned:
                 CharacterDatabase.PExecute("UPDATE mail SET sender = '%u', receiver = '%u', expire_time = '" UI64FMTD "', deliver_time = '" UI64FMTD "',cod = '0', checked = '%u' WHERE id = '%u'", m->receiver, m->sender, (uint64)(basetime + 30*DAY), (uint64)basetime, MAIL_CHECK_MASK_RETURNED, m->messageID);
                 for (std::vector<MailItemInfo>::iterator itr2 = m->items.begin(); itr2 != m->items.end(); ++itr2)
@@ -4166,14 +4162,10 @@ void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
         }
 
         if (m->itemTextId)
-        {
-            static SqlStatementID deleteItemText;
             CharacterDatabase.PExecute("DELETE FROM item_text WHERE id = '%u'", m->itemTextId);
-        }
 
         //deletemail = true;
         //delmails << m->messageID << ", ";
-        static SqlStatementID deleteMail;
         CharacterDatabase.PExecute("DELETE FROM mail WHERE id = '%u'", m->messageID);
         delete m;
     } while (result->NextRow());
@@ -5663,9 +5655,6 @@ void ObjectMgr::LoadWeatherZoneChances()
 
 void ObjectMgr::SaveCreatureRespawnTime(uint32 loguid, uint32 instance, time_t t)
 {
-    static SqlStatementID deleteCreatureRespawnInst;
-    static SqlStatementID insertCreatureRespawn;
-
     mCreatureRespawnTimes[MAKE_PAIR64(loguid,instance)] = t;
     WorldDatabase.BeginTransaction();
     WorldDatabase.PExecute("DELETE FROM creature_respawn WHERE guid = '%u' AND instance = '%u'", loguid, instance);
@@ -5686,9 +5675,6 @@ void ObjectMgr::DeleteCreatureData(uint32 guid)
 
 void ObjectMgr::SaveGORespawnTime(uint32 loguid, uint32 instance, time_t t)
 {
-    static SqlStatementID deleteGameObjectRespawn;
-    static SqlStatementID insertGameObjectRespawn;
-
     mGORespawnTimes[MAKE_PAIR64(loguid,instance)] = t;
     WorldDatabase.BeginTransaction();
     WorldDatabase.PExecute("DELETE FROM gameobject_respawn WHERE guid = '%u' AND instance = '%u'", loguid, instance);
@@ -5718,9 +5704,6 @@ void ObjectMgr::DeleteRespawnTimeForInstance(uint32 instance)
         if (GUID_HIPART(itr->first)==instance)
             mCreatureRespawnTimes.erase(itr);
     }
-
-    static SqlStatementID deleteCreaturesRespawn;
-    static SqlStatementID deleteGameObjectsRespawn;
 
     WorldDatabase.BeginTransaction();
     WorldDatabase.PExecute("DELETE FROM creature_respawn WHERE instance = '%u'", instance);

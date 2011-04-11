@@ -106,18 +106,11 @@ BattleGround::~BattleGround()
         DelObject(i);
     }
 
-    static SqlStatementID deleteCreaturesRespawn;
-    static SqlStatementID deleteGameObjectsRespawn;
-    static SqlStatementID deleteInstance;
     // delete creature and go respawn times
-    SqlStatement stmt = WorldDatabase.CreateStatement(deleteCreaturesRespawn, "DELETE FROM creature_respawn WHERE instance = ?");
-    stmt.PExecute(GetInstanceID());
-
-    stmt = WorldDatabase.CreateStatement(deleteGameObjectsRespawn, "DELETE FROM gameobject_respawn WHERE instance = ?");
-    stmt.PExecute(GetInstanceID());
+    WorldDatabase.PExecute("DELETE FROM creature_respawn WHERE instance = '%u'",GetInstanceID());
+    WorldDatabase.PExecute("DELETE FROM gameobject_respawn WHERE instance = '%u'",GetInstanceID());
     // delete instance from db
-    stmt = CharacterDatabase.CreateStatement(deleteInstance, "DELETE FROM instance WHERE id = ?");
-    stmt.PExecute(GetInstanceID());
+    CharacterDatabase.PExecute("DELETE FROM instance WHERE id = '%u'",GetInstanceID());
     // remove from battlegrounds
     sBattleGroundMgr.RemoveBattleGround(GetInstanceID());
     // unload map

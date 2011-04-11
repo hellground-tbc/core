@@ -252,17 +252,9 @@ bool Pet::LoadPetFromDB(Unit* owner, uint32 petentry, uint32 petnumber, bool cur
     // set current pet as current
     if (fields[10].GetUInt32() != 0)
     {
-        static SqlStatementID updateCharacterPetSlot3;
-        static SqlStatementID updateCharacterPetSlot0;
-
         CharacterDatabase.BeginTransaction();
-
-        SqlStatement stmt = CharacterDatabase.CreateStatement(updateCharacterPetSlot3, "UPDATE character_pet SET slot = '3' WHERE owner = ? AND slot = '0' AND id <> ?");
-        stmt.PExecute(ownerid, m_charmInfo->GetPetNumber());
-
-        stmt = CharacterDatabase.CreateStatement(updateCharacterPetSlot0, "UPDATE character_pet SET slot = '0' WHERE owner = ? AND id = ?");
-        stmt.PExecute(ownerid, m_charmInfo->GetPetNumber());
-
+        CharacterDatabase.PExecute("UPDATE character_pet SET slot = '3' WHERE owner = '%u' AND slot = '0' AND id <> '%u'",ownerid, m_charmInfo->GetPetNumber());
+        CharacterDatabase.PExecute("UPDATE character_pet SET slot = '0' WHERE owner = '%u' AND id = '%u'",ownerid, m_charmInfo->GetPetNumber());
         CharacterDatabase.CommitTransaction();
     }
 
@@ -427,76 +419,59 @@ void Pet::SavePetToDB(PetSaveMode mode)
 
             uint32 owner = GUID_LOPART(GetOwnerGUID());
             std::string name = m_name;
-
-            static SqlStatementID deleteCharacterPetOwner;
-            static SqlStatementID deleteCharacterPetInSlot03;
-            static SqlStatementID updateCharacterPetSlotTo3;
+            CharacterDatabase.escape_string(name);
             // remove current data
-            SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCharacterPetOwner, "DELETE FROM character_pet WHERE owner = ? AND id = ?");
-            stmt.PExecute(owner, m_charmInfo->GetPetNumber());
+            CharacterDatabase.PExecute("DELETE FROM character_pet WHERE owner = '%u' AND id = '%u'", owner,m_charmInfo->GetPetNumber());
 
             // prevent duplicate using slot (except PET_SAVE_NOT_IN_SLOT)
             if (mode!=PET_SAVE_NOT_IN_SLOT)
-            {
-                stmt = CharacterDatabase.CreateStatement(updateCharacterPetSlotTo3, "UPDATE character_pet SET slot = 3 WHERE owner = ? AND slot = ?");
-                stmt.PExecute(owner, uint32(mode));
-            }
+                CharacterDatabase.PExecute("UPDATE character_pet SET slot = 3 WHERE owner = '%u' AND slot = '%u'", owner, uint32(mode));
 
             // prevent existence another hunter pet in PET_SAVE_AS_CURRENT and PET_SAVE_NOT_IN_SLOT
             if (getPetType()==HUNTER_PET && (mode==PET_SAVE_AS_CURRENT||mode==PET_SAVE_NOT_IN_SLOT))
-            {
-                stmt = CharacterDatabase.CreateStatement(deleteCharacterPetInSlot03, "DELETE FROM character_pet WHERE owner = ? AND (slot = '0' OR slot = '3');");
-                stmt.PExecute(owner);
-            }
-
-            static SqlStatementID insertCharacterPet;
-
-            stmt = CharacterDatabase.CreateStatement(insertCharacterPet, "INSERT INTO character_pet(id, entry, owner, modelid, level, exp, Reactstate, loyaltypoints, loyalty, trainpoint, slot, name, renamed, curhealth, curmana, curhappiness, abdata, TeachSpelldata, savetime, resettalents_cost, resettalents_time, CreatedBySpell, PetType) "
-                                                                        "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
-
+                CharacterDatabase.PExecute("DELETE FROM character_pet WHERE owner = '%u' AND (slot = '0' OR slot = '3')", owner);
             // save pet
-            stmt.addUInt32(m_charmInfo->GetPetNumber());
-            stmt.addUInt32(GetEntry());
-            stmt.addUInt32(owner);
-            stmt.addUInt32(GetNativeDisplayId());
-            stmt.addUInt32(getLevel());
-            stmt.addUInt32(GetUInt32Value(UNIT_FIELD_PETEXPERIENCE));
-            stmt.addUInt32(uint32(GetReactState()));
-            stmt.addInt32(m_loyaltyPoints);
-            stmt.addUInt32(GetLoyaltyLevel());
-            stmt.addInt32(m_TrainingPoints);
-            stmt.addUInt32(uint32(mode));
-            stmt.addString(name);
-            stmt.addUInt32(uint32((GetByteValue(UNIT_FIELD_BYTES_2, 2) == UNIT_RENAME_ALLOWED) ? 0 : 1));
-            stmt.addUInt32(curhealth);
-            stmt.addUInt32(curmana);
-            stmt.addUInt32(GetPower(POWER_HAPPINESS));
-
-            std::ostringstream ss, ss2;
+            std::ostringstream ss;
+            ss  << "INSERT INTO character_pet (id, entry,  owner, modelid, level, exp, Reactstate, loyaltypoints, loyalty, trainpoint, slot, name, renamed, curhealth, curmana, curhappiness, abdata,TeachSpelldata,savetime,resettalents_cost,resettalents_time,CreatedBySpell,PetType) "
+                << "VALUES ("
+                << m_charmInfo->GetPetNumber() << ", "
+                << GetEntry() << ", "
+                << owner << ", "
+                << GetNativeDisplayId() << ", "
+                << getLevel() << ", "
+                << GetUInt32Value(UNIT_FIELD_PETEXPERIENCE) << ", "
+                << uint32(GetReactState()) << ", "
+                << m_loyaltyPoints << ", "
+                << GetLoyaltyLevel() << ", "
+                << m_TrainingPoints << ", "
+                << uint32(mode) << ", '"
+                << name.c_str() << "', "
+                << uint32((GetByteValue(UNIT_FIELD_BYTES_2, 2) == UNIT_RENAME_ALLOWED)?0:1) << ", "
+                << curhealth << ", "
+                << curmana << ", "
+                << GetPower(POWER_HAPPINESS) << ", '";
 
             for (uint32 i = 0; i < 10; i++)
                 ss << uint32(m_charmInfo->GetActionBarEntry(i)->Type) << " " << uint32(m_charmInfo->GetActionBarEntry(i)->SpellOrAction) << " ";
-
-            stmt.addString(ss);
+            ss << "', '";
 
             //save spells the pet can teach to it's Master
             {
                 int i = 0;
                 for (TeachSpellMap::iterator itr = m_teachspells.begin(); i < 4 && itr != m_teachspells.end(); ++i, ++itr)
-                    ss2 << itr->first << " " << itr->second << " ";
+                    ss << itr->first << " " << itr->second << " ";
                 for (; i < 4; ++i)
-                    ss2 << uint32(0) << " " << uint32(0) << " ";
+                    ss << uint32(0) << " " << uint32(0) << " ";
             }
 
-            stmt.addString(ss2);
+            ss  << "', "
+                << time(NULL) << ", "
+                << uint32(m_resetTalentsCost) << ", "
+                << uint64(m_resetTalentsTime) << ", "
+                << GetUInt32Value(UNIT_CREATED_BY_SPELL) << ", "
+                << uint32(getPetType()) << ")";
 
-            stmt.addUInt64(time(NULL));
-            stmt.addUInt32(uint32(m_resetTalentsCost));
-            stmt.addUInt64(uint64(m_resetTalentsTime));
-            stmt.addUInt32(GetUInt32Value(UNIT_CREATED_BY_SPELL));
-            stmt.addUInt32(uint32(getPetType()));
-
-            stmt.Execute();
+            CharacterDatabase.Execute(ss.str().c_str());
             break;
         }
         case PET_SAVE_AS_DELETED:
@@ -516,26 +491,11 @@ void Pet::DeleteFromDB(uint32 guidlow, bool separate_transaction)
     if (separate_transaction)
         CharacterDatabase.BeginTransaction();
 
-    static SqlStatementID deleteCharacterPet;
-    static SqlStatementID deleteCharacterPetDeclinedNames;
-    static SqlStatementID deletePetAuras;
-    static SqlStatementID deletePetSpells;
-    static SqlStatementID deletePetSpellCooldowns;
-
-    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCharacterPet, "DELETE FROM character_pet WHERE id = ?");
-    stmt.PExecute(guidlow);
-
-    stmt = CharacterDatabase.CreateStatement(deleteCharacterPetDeclinedNames, "DELETE FROM character_pet_declinedname WHERE id = ?");
-    stmt.PExecute(guidlow);
-
-    stmt = CharacterDatabase.CreateStatement(deletePetAuras, "DELETE FROM pet_aura WHERE guid = ?");
-    stmt.PExecute(guidlow);
-
-    stmt = CharacterDatabase.CreateStatement(deletePetSpells, "DELETE FROM pet_spell WHERE guid = ?");
-    stmt.PExecute(guidlow);
-
-    stmt = CharacterDatabase.CreateStatement(deletePetSpellCooldowns, "DELETE FROM pet_spell_cooldown WHERE guid = ?");
-    stmt.PExecute(guidlow);
+    CharacterDatabase.PExecute("DELETE FROM character_pet WHERE id = '%u'", guidlow);
+    CharacterDatabase.PExecute("DELETE FROM character_pet_declinedname WHERE id = '%u'", guidlow);
+    CharacterDatabase.PExecute("DELETE FROM pet_aura WHERE guid = '%u'", guidlow);
+    CharacterDatabase.PExecute("DELETE FROM pet_spell WHERE guid = '%u'", guidlow);
+    CharacterDatabase.PExecute("DELETE FROM pet_spell_cooldown WHERE guid = '%u'", guidlow);
 
     if (separate_transaction)
         CharacterDatabase.CommitTransaction();
@@ -1368,11 +1328,7 @@ void Pet::_SaveSpellCooldowns()
     if (getPetType() == SUMMON_PET) //don't save cooldowns for temp pets, thats senseless
         return;
 
-    static SqlStatementID deletePetSpellCooldowns;
-    static SqlStatementID insertPetSpellCooldown;
-
-    SqlStatement stmt = CharacterDatabase.CreateStatement(deletePetSpellCooldowns, "DELETE FROM pet_spell_cooldown WHERE guid = ?");
-    stmt.PExecute(m_charmInfo->GetPetNumber());
+    CharacterDatabase.PExecute("DELETE FROM pet_spell_cooldown WHERE guid = '%u'", m_charmInfo->GetPetNumber());
 
     time_t curTime = time(NULL);
 
@@ -1383,8 +1339,7 @@ void Pet::_SaveSpellCooldowns()
             m_CreatureSpellCooldowns.erase(itr++);
         else
         {
-            stmt = CharacterDatabase.CreateStatement(insertPetSpellCooldown, "INSERT INTO pet_spell_cooldown (guid, spell, time) VALUES (?, ?, ?);");
-            stmt.PExecute(m_charmInfo->GetPetNumber(), itr->first, uint64(itr->second));
+            CharacterDatabase.PExecute("INSERT INTO pet_spell_cooldown (guid,spell,time) VALUES ('%u', '%u', '" UI64FMTD "')", m_charmInfo->GetPetNumber(), itr->first, uint64(itr->second));
             ++itr;
         }
     }
@@ -1408,26 +1363,14 @@ void Pet::_LoadSpells()
 
 void Pet::_SaveSpells()
 {
-    static SqlStatementID deletePetSpell;
-    static SqlStatementID insertPetSpell;
-
     for (PetSpellMap::const_iterator itr = m_spells.begin(), next = m_spells.begin(); itr != m_spells.end(); itr = next)
     {
         ++next;
-        if (itr->second->type == PETSPELL_FAMILY) // prevent saving family passives to DB
-            continue;
-
+        if (itr->second->type == PETSPELL_FAMILY) continue; // prevent saving family passives to DB
         if (itr->second->state == PETSPELL_REMOVED || itr->second->state == PETSPELL_CHANGED)
-        {
-            SqlStatement stmt = CharacterDatabase.CreateStatement(deletePetSpell, "DELETE FROM pet_spell WHERE guid = ? and spell = ?");
-            stmt.PExecute(m_charmInfo->GetPetNumber(), itr->first);
-        }
-
+            CharacterDatabase.PExecute("DELETE FROM pet_spell WHERE guid = '%u' and spell = '%u'", m_charmInfo->GetPetNumber(), itr->first);
         if (itr->second->state == PETSPELL_NEW || itr->second->state == PETSPELL_CHANGED)
-        {
-            SqlStatement stmt = CharacterDatabase.CreateStatement(insertPetSpell, "INSERT INTO pet_spell (guid, spell, slot, active) VALUES (?, ?, ?, ?);");
-            stmt.PExecute(m_charmInfo->GetPetNumber(), itr->first, itr->second->slotId,itr->second->active);
-        }
+            CharacterDatabase.PExecute("INSERT INTO pet_spell (guid,spell,slot,active) VALUES ('%u', '%u', '%u','%u')", m_charmInfo->GetPetNumber(), itr->first, itr->second->slotId,itr->second->active);
 
         if (itr->second->state == PETSPELL_REMOVED)
             _removeSpell(itr->first);
@@ -1513,11 +1456,7 @@ void Pet::_LoadAuras(uint32 timediff)
 
 void Pet::_SaveAuras()
 {
-    static SqlStatementID deletePetAuras;
-    static SqlStatementID insertPetAura;
-
-    SqlStatement stmt = CharacterDatabase.CreateStatement(deletePetAuras, "DELETE FROM pet_aura WHERE guid = ?");
-    stmt.PExecute(m_charmInfo->GetPetNumber());
+    CharacterDatabase.PExecute("DELETE FROM pet_aura WHERE guid = '%u'", m_charmInfo->GetPetNumber());
 
     AuraMap const& auras = GetAuras();
     if (auras.empty())
@@ -1549,19 +1488,9 @@ void Pet::_SaveAuras()
 
                     if (i == 3)
                     {
-                        stmt = CharacterDatabase.CreateStatement(insertPetAura, "INSERT INTO pet_aura(guid, caster_guid, spell, effect_index, stackcount, amount, maxduration, remaintime, remaincharges) "
-                                                                                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);");
-                        stmt.addUInt32(m_charmInfo->GetPetNumber());
-                        stmt.addUInt64(itr2->second->GetCasterGUID());
-                        stmt.addUInt32((uint32)itr2->second->GetId());
-                        stmt.addUInt32((uint32)itr2->second->GetEffIndex());
-                        stmt.addUInt32((uint32)itr2->second->GetStackAmount());
-                        stmt.addInt32(itr2->second->GetModifier()->m_amount);
-                        stmt.addInt32(int(itr2->second->GetAuraMaxDuration()));
-                        stmt.addInt32(int(itr2->second->GetAuraDuration()));
-                        stmt.addInt32(int(itr2->second->m_procCharges));
-
-                        stmt.Execute();
+                        CharacterDatabase.PExecute("INSERT INTO pet_aura (guid,caster_guid,spell,effect_index,stackcount,amount,maxduration,remaintime,remaincharges) "
+                            "VALUES ('%u', '" UI64FMTD "', '%u', '%u', '%u', '%d', '%d', '%d', '%d')",
+                            m_charmInfo->GetPetNumber(), itr2->second->GetCasterGUID(),(uint32)itr2->second->GetId(), (uint32)itr2->second->GetEffIndex(), (uint32)itr2->second->GetStackAmount(), itr2->second->GetModifier()->m_amount,int(itr2->second->GetAuraMaxDuration()),int(itr2->second->GetAuraDuration()),int(itr2->second->m_procCharges));
                     }
                 }
             }
@@ -1964,3 +1893,4 @@ void Pet::CastPetAura(PetAura const* aura)
     else
         CastSpell(this, auraId, true);
 }
+

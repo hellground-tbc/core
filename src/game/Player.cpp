@@ -3400,11 +3400,7 @@ void Player::_LoadSpellCooldowns(QueryResultAutoPtr result)
 
 void Player::_SaveSpellCooldowns()
 {
-    static SqlStatementID deleteCharacterSpellCooldowns;
-    static SqlStatementID insertCharacterSpellCooldowns;
-
-    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCharacterSpellCooldowns, "DELETE FROM character_spell_cooldown WHERE guid = ?");
-    stmt.PExecute(GetGUIDLow());
+    CharacterDatabase.PExecute("DELETE FROM character_spell_cooldown WHERE guid = '%u'", GetGUIDLow());
 
     time_t curTime = time(NULL);
 
@@ -3415,9 +3411,7 @@ void Player::_SaveSpellCooldowns()
             m_spellCooldowns.erase(itr++);
         else
         {
-            stmt = CharacterDatabase.CreateStatement(insertCharacterSpellCooldowns, "INSERT INTO character_spell_cooldown(guid, spell, item, time) VALUES(?, ?, ?, ?);");
-            stmt.PExecute(GetGUIDLow(), itr->first, itr->second.itemid, uint64(itr->second.end));
-
+            CharacterDatabase.PExecute("INSERT INTO character_spell_cooldown (guid,spell,item,time) VALUES ('%u', '%u', '%u', '" UI64FMTD "')", GetGUIDLow(), itr->first, itr->second.itemid, uint64(itr->second.end));
             ++itr;
         }
     }
@@ -11115,10 +11109,7 @@ void Player::DestroyItem(uint8 bag, uint8 slot, bool update)
         }
 
         if (pItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_WRAPPED))
-        {
-            static SqlStatementID deleteCharacterGift;
             CharacterDatabase.PExecute("DELETE FROM character_gifts WHERE item_guid = '%u'", pItem->GetGUIDLow());
-        }
 
         RemoveEnchantmentDurations(pItem);
         RemoveItemDurations(pItem);
@@ -15180,12 +15171,8 @@ void Player::_LoadInventory(QueryResultAutoPtr result, uint32 timediff)
 
             ItemPrototype const * proto = objmgr.GetItemPrototype(item_id);
 
-            static SqlStatementID deleteCharacterInventoryItem;
-
             if (!proto)
             {
-                static SqlStatementID deleteItemInstance;
-
                 CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item = '%u'", item_guid);
                 CharacterDatabase.PExecute("DELETE FROM item_instance WHERE guid = '%u'", item_guid);
                 sLog.outError("Player::_LoadInventory: Player %s has an unknown item (id: #%u) in inventory, deleted.", GetName(),item_id);
@@ -15282,8 +15269,7 @@ void Player::_LoadInventory(QueryResultAutoPtr result, uint32 timediff)
                 if (!GetSession()->SpecialLog())
                     problematicItems.push_back(item);
             }
-        }
-        while (result->NextRow());
+        } while (result->NextRow());
 
         m_itemUpdateQueueBlocked = false;
 
@@ -15701,7 +15687,6 @@ void Player::_LoadBoundInstances(QueryResultAutoPtr result)
 
             if (!perm && group)
             {
-                static SqlStatementID deleteCharacterInstanceG;
                 sLog.outError("_LoadBoundInstances: player %s(%d) is in group %d but has a non-permanent character bind to map %d,%d,%d", GetName(), GetGUIDLow(), GUID_LOPART(group->GetLeaderGUID()), mapId, instanceId, difficulty);
                 CharacterDatabase.PExecute("DELETE FROM character_instance WHERE guid = '%d' AND instance = '%d'", GetGUIDLow(), instanceId);
                 continue;
@@ -15710,8 +15695,7 @@ void Player::_LoadBoundInstances(QueryResultAutoPtr result)
             // since non permanent binds are always solo bind, they can always be reset
             InstanceSave *save = sInstanceSaveManager.AddInstanceSave(mapId, instanceId, difficulty, resetTime, !perm, true);
             if (save) BindToInstance(save, perm, true);
-        }
-        while (result->NextRow());
+        } while (result->NextRow());
     }
 }
 
@@ -15751,10 +15735,7 @@ void Player::UnbindInstance(BoundInstancesMap::iterator &itr, uint8 difficulty, 
 {
     if (itr != m_boundInstances[difficulty].end())
     {
-        static SqlStatementID deleteCharacterInstanceG;
-        if (!unload)
-            CharacterDatabase.PExecute("DELETE FROM character_instance WHERE guid = '%u' AND instance = '%u'", GetGUIDLow(), itr->second.save->GetInstanceId());
-
+        if (!unload) CharacterDatabase.PExecute("DELETE FROM character_instance WHERE guid = '%u' AND instance = '%u'", GetGUIDLow(), itr->second.save->GetInstanceId());
         itr->second.save->RemovePlayer(this);               // save can become invalid
         m_boundInstances[difficulty].erase(itr++);
     }
@@ -15893,15 +15874,10 @@ void Player::ConvertInstancesToGroup(Player *player, Group *group, uint64 player
         }
     }
 
-    static SqlStatementID deleteCharacterInstanceNPerm;
-
     // if the player's not online we don't know what binds it has
-    if (!player || !group || has_binds)
-        CharacterDatabase.PExecute("REPLACE INTO group_instance SELECT guid, instance, permanent FROM character_instance WHERE guid = '%u'", GUID_LOPART(player_guid));
-
+    if (!player || !group || has_binds) CharacterDatabase.PExecute("REPLACE INTO group_instance SELECT guid, instance, permanent FROM character_instance WHERE guid = '%u'", GUID_LOPART(player_guid));
     // the following should not get executed when changing leaders
-    if (!player || has_solo) 
-        CharacterDatabase.PExecute("DELETE FROM character_instance WHERE guid = '%d' AND permanent = 0", GUID_LOPART(player_guid));
+    if (!player || has_solo) CharacterDatabase.PExecute("DELETE FROM character_instance WHERE guid = '%d' AND permanent = 0", GUID_LOPART(player_guid));
 }
 
 bool Player::Satisfy(AccessRequirement const *ar, uint32 target_map, bool report)
@@ -15976,9 +15952,6 @@ bool Player::_LoadHomeBind(QueryResultAutoPtr result)
         sLog.outError("Player have incorrect race/class pair. Can't be loaded.");
         return false;
     }
-
-    static SqlStatementID deleteCharacterHomebinds;
-    static SqlStatementID insertCharacterHomebind;
 
     bool ok = false;
     if (result)
@@ -16222,10 +16195,6 @@ void Player::SaveInventoryAndGoldToDB()
 
 void Player::_SaveActions()
 {
-    static SqlStatementID insertCharacterAction;
-    static SqlStatementID updateCharacterAction;
-    static SqlStatementID deleteCharacterAction;
-
     for (ActionButtonList::iterator itr = m_actionButtons.begin(); itr != m_actionButtons.end();)
     {
         switch (itr->second.uState)
@@ -16255,9 +16224,6 @@ void Player::_SaveActions()
 
 void Player::_SaveAuras()
 {
-    static SqlStatementID deleteCharacterAuras;
-    static SqlStatementID insertCharacterAura;
-
     CharacterDatabase.PExecute("DELETE FROM character_aura WHERE guid = '%u'",GetGUIDLow());
 
     AuraMap const& auras = GetAuras();
@@ -16316,8 +16282,6 @@ void Player::_SaveAuras()
 
 void Player::_SaveBattleGroundCoord()
 {
-    static SqlStatementID deleteCharacterBGCoords;
-    static SqlStatementID insertCharacterBGCoord;
     CharacterDatabase.PExecute("DELETE FROM character_bgcoord WHERE guid = '%u'", GetGUIDLow());
 
     // don't save if not needed
@@ -16344,11 +16308,6 @@ void Player::_SaveBattleGroundCoord()
 
 void Player::_SaveInventory()
 {
-    static SqlStatementID deleteCharacterInventoryItem;
-    static SqlStatementID deleteItemInstance;
-    static SqlStatementID insertCharacterInventoryItem;
-    static SqlStatementID updateCharacterInventoryItem;
-
     // force items in buyback slots to new state
     // and remove those that aren't already
     for (uint8 i = BUYBACK_SLOT_START; i < BUYBACK_SLOT_END; i++)
@@ -16504,9 +16463,6 @@ void Player::_SaveMail()
 
 void Player::_SaveQuestStatus()
 {
-    static SqlStatementID insertCharacterQuestStatus;
-    static SqlStatementID updateCharacterQuestStatus;
-
     // we don't need transactions here.
     for (QuestStatusMap::iterator i = mQuestStatus.begin(); i != mQuestStatus.end(); ++i)
     {
@@ -16561,9 +16517,6 @@ void Player::_SaveReputation()
 
 void Player::_SaveSpells()
 {
-    static SqlStatementID deleteCharacterSpell;
-    static SqlStatementID insertCharacterSpell;
-
     for (PlayerSpellMap::iterator itr = m_spells.begin(), next = m_spells.begin(); itr != m_spells.end(); itr = next)
     {
         ++next;
@@ -16584,9 +16537,6 @@ void Player::_SaveTutorials()
 {
     if (!m_TutorialsChanged)
         return;
-
-    static SqlStatementID updateCharacterTutorial;
-    static SqlStatementID insertCharacterTutorial;
 
     uint32 Rows=0;
     // it's better than rebuilding indexes multiple times
@@ -16677,19 +16627,15 @@ void Player::SendAttackSwingNotInRange()
 
 void Player::SavePositionInDB(uint32 mapid, float x,float y,float z,float o,uint32 zone,uint64 guid)
 {
-    static SqlStatementID updateCharacterPosiion;
-    SqlStatement stmt = CharacterDatabase.CreateStatement(updateCharacterPosiion, "UPDATE characters SET position_x = ?, position_y = ?, position_z = ?, orientation = ?, map = ?, zone = ?, trans_x = '0', trans_y = '0', trans_z = '0', transguid = '0', taxi_path = '' WHERE guid = ?");
-
-    stmt.addFloat(x);
-    stmt.addFloat(y);
-    stmt.addFloat(z);
-    stmt.addFloat(o);
-    stmt.addUInt32(mapid);
-    stmt.addUInt32(zone);
-    stmt.addUInt32(GUID_LOPART(guid));
-
-    stmt.Execute();
+    std::ostringstream ss;
+    ss << "UPDATE characters SET position_x='"<<x<<"',position_y='"<<y
+        << "',position_z='"<<z<<"',orientation='"<<o<<"',map='"<<mapid
+        << "',zone='"<<zone<<"',trans_x='0',trans_y='0',trans_z='0',"
+        << "transguid='0',taxi_path='' WHERE guid='"<< GUID_LOPART(guid) <<"'";
+    sLog.outDebug(ss.str().c_str());
+    CharacterDatabase.Execute(ss.str().c_str());
 }
+
 void Player::SaveDataFieldToDB()
 {
     std::ostringstream ss;
@@ -17492,19 +17438,10 @@ void Player::SendProficiency(uint8 pr1, uint32 pr2)
 void Player::RemovePetitionsAndSigns(uint64 guid, uint32 type)
 {
     QueryResultAutoPtr result = QueryResultAutoPtr(NULL);
-
     if (type==10)
         result = CharacterDatabase.PQuery("SELECT ownerguid,petitionguid FROM petition_sign WHERE playerguid = '%u'", GUID_LOPART(guid));
     else
         result = CharacterDatabase.PQuery("SELECT ownerguid,petitionguid FROM petition_sign WHERE playerguid = '%u' AND type = '%u'", GUID_LOPART(guid), type);
-
-    static SqlStatementID deletePetitionSigns;
-    static SqlStatementID deletePetitionSignsType;
-    static SqlStatementID deletePetitions;
-    static SqlStatementID deletePetitionsType;
-    static SqlStatementID deletePetitionSignsOwner;
-    static SqlStatementID deletePetitionSignsTypeOwner;
-
     if (result)
     {
         do                                                  // this part effectively does nothing, since the deletion / modification only takes place _after_ the PetitionQuery. Though I don't know if the result remains intact if I execute the delete query beforehand.
@@ -17518,8 +17455,7 @@ void Player::RemovePetitionsAndSigns(uint64 guid, uint32 type)
             if (owner)
                 owner->GetSession()->SendPetitionQueryOpcode(petitionguid);
 
-        }
-        while (result->NextRow());
+        } while (result->NextRow());
 
         if (type==10)
             CharacterDatabase.PExecute("DELETE FROM petition_sign WHERE playerguid = '%u'", GUID_LOPART(guid));
