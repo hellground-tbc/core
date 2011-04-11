@@ -334,12 +334,12 @@ Unit::Unit()
 bool GlobalCooldownMgr::HasGlobalCooldown(SpellEntry const* spellInfo) const
 {
     GlobalCooldownList::const_iterator itr = m_GlobalCooldowns.find(spellInfo->StartRecoveryCategory);
-    return itr != m_GlobalCooldowns.end() && itr->second.duration && getMSTimeDiff(itr->second.cast_time, getMSTime()) < itr->second.duration;
+    return itr != m_GlobalCooldowns.end() && itr->second.duration && WorldTimer::getMSTimeDiff(itr->second.cast_time, WorldTimer::getMSTime()) < itr->second.duration;
 }
 
 void GlobalCooldownMgr::AddGlobalCooldown(SpellEntry const* spellInfo, uint32 gcd)
 {
-    m_GlobalCooldowns[spellInfo->StartRecoveryCategory] = GlobalCooldown(gcd, getMSTime());
+    m_GlobalCooldowns[spellInfo->StartRecoveryCategory] = GlobalCooldown(gcd, WorldTimer::getMSTime());
 }
 
 void GlobalCooldownMgr::CancelGlobalCooldown(SpellEntry const* spellInfo)
@@ -388,18 +388,18 @@ Unit::~Unit()
     assert(m_sharedVision.empty());
 }
 
-void Unit::Update(uint32 p_time)
+void Unit::Update(uint32 update_diff, uint32 p_time)
 {
     // WARNING! Order of execution here is important, do not change.
     // Spells must be processed with event system BEFORE they go to _UpdateSpells.
     // Or else we may have some SPELL_STATE_FINISHED spells stalled in pointers, that is bad.
 
-    m_Events.Update(p_time);
+    m_Events.Update(update_diff);
 
     if (!IsInWorld())
         return;
 
-    _UpdateSpells(p_time);
+    _UpdateSpells(update_diff);
 
     // update combat timer only for players and pets
     if (isInCombat() && isCharmedOwnedByPlayerOrPlayer())
@@ -407,10 +407,10 @@ void Unit::Update(uint32 p_time)
         if (m_HostilRefManager.isEmpty())
         {
             // m_CombatTimer set at aura start and it will be freeze until aura removing
-            if (m_CombatTimer <= p_time)
+            if (m_CombatTimer <= update_diff)
                 ClearInCombat();
             else
-                m_CombatTimer -= p_time;
+                m_CombatTimer -= update_diff;
         }
     }
 
@@ -418,20 +418,20 @@ void Unit::Update(uint32 p_time)
     //if(!hasUnitState(UNIT_STAT_CASTING))
     {
         if (uint32 base_att = getAttackTimer(BASE_ATTACK))
-            setAttackTimer(BASE_ATTACK, (p_time >= base_att ? 0 : base_att - p_time));
+            setAttackTimer(BASE_ATTACK, (update_diff >= base_att ? 0 : base_att - update_diff));
         if (uint32 ranged_att = getAttackTimer(RANGED_ATTACK))
-            setAttackTimer(RANGED_ATTACK, (p_time >= ranged_att ? 0 : ranged_att - p_time));
+            setAttackTimer(RANGED_ATTACK, (update_diff >= ranged_att ? 0 : ranged_att - update_diff));
         if (uint32 off_att = getAttackTimer(OFF_ATTACK))
-            setAttackTimer(OFF_ATTACK, (p_time >= off_att ? 0 : off_att - p_time));
+            setAttackTimer(OFF_ATTACK, (update_diff >= off_att ? 0 : off_att - update_diff));
     }
 
     // update abilities available only for fraction of time
-    UpdateReactives(p_time);
+    UpdateReactives(update_diff);
 
     ModifyAuraState(AURA_STATE_HEALTHLESS_20_PERCENT, GetHealth() < GetMaxHealth()*0.20f);
     ModifyAuraState(AURA_STATE_HEALTHLESS_35_PERCENT, GetHealth() < GetMaxHealth()*0.35f);
 
-    i_motionMaster.UpdateMotion(p_time);
+    i_motionMaster.UpdateMotion(update_diff);
 }
 
 bool Unit::haveOffhandWeapon() const
@@ -473,7 +473,7 @@ void Unit::SendMonsterStop()
     WorldPacket data(SMSG_MONSTER_MOVE, (17 + GetPackGUID().size()));
     data << GetPackGUID();
     data << GetPositionX() << GetPositionY() << GetPositionZ();
-    data << getMSTime();
+    data << WorldTimer::getMSTime();
     data << uint8(1);
     SendMessageToSet(&data, true);
 
@@ -486,7 +486,7 @@ void Unit::SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 T
     data << GetPackGUID();
 
     data << GetPositionX() << GetPositionY() << GetPositionZ();
-    data << getMSTime();
+    data << WorldTimer::getMSTime();
 
     data << uint8(0);
     data << uint32((GetUnitMovementFlags() & MOVEFLAG_LEVITATING) ? SPLINEFLAG_FLYING : SPLINEFLAG_WALKMODE);
@@ -510,7 +510,7 @@ void Unit::SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 M
 
     data << uint8(0);                                       // new in 3.1
     data << GetPositionX() << GetPositionY() << GetPositionZ();
-    data << getMSTime();
+    data << WorldTimer::getMSTime();
 
     data << uint8(0);
     data << MoveFlags;
@@ -545,7 +545,7 @@ void Unit::SendMonsterMoveByPath(Path const& path, uint32 start, uint32 end)
     data << GetPositionY();
     data << GetPositionZ();
 
-    data << uint32(getMSTime());
+    data << uint32(WorldTimer::getMSTime());
 
     data << uint8(0);
     data << uint32(((GetUnitMovementFlags() & MOVEFLAG_LEVITATING) || isInFlight())? (SPLINEFLAG_FLYING|SPLINEFLAG_WALKMODE) : SPLINEFLAG_WALKMODE);
@@ -9558,7 +9558,7 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
         data << GetPackGUID();
         data << uint32(0);                                  //movement flags
         data << uint8(0);                                   //unk
-        data << uint32(getMSTime());
+        data << uint32(WorldTimer::getMSTime());
         data << float(GetPositionX());
         data << float(GetPositionY());
         data << float(GetPositionZ());
@@ -9941,7 +9941,7 @@ DiminishingLevels Unit::GetDiminishing(DiminishingGroup group)
             return DIMINISHING_LEVEL_1;
 
         // If last spell was casted more than 15 seconds ago - reset the count.
-        if (i->stack==0 && getMSTimeDiff(i->hitTime,getMSTime()) > 15000)
+        if (i->stack==0 && WorldTimer::getMSTimeDiff(i->hitTime,WorldTimer::getMSTime()) > 15000)
         {
             i->hitCount = DIMINISHING_LEVEL_1;
             return DIMINISHING_LEVEL_1;
@@ -9972,7 +9972,7 @@ void Unit::IncrDiminishing(DiminishingGroup group)
     }
 
     if (!IsExist)
-        m_Diminishing.push_back(DiminishingReturn(group,getMSTime(),DIMINISHING_LEVEL_2));
+        m_Diminishing.push_back(DiminishingReturn(group,WorldTimer::getMSTime(),DIMINISHING_LEVEL_2));
 }
 
 void Unit::ApplyDiminishingToDuration(DiminishingGroup group, int32 &duration,Unit* caster,DiminishingLevels Level, SpellEntry const *tSpell)
@@ -10025,7 +10025,7 @@ void Unit::ApplyDiminishingAura(DiminishingGroup group, bool apply)
         if (i->DRGroup != group)
             continue;
 
-        i->hitTime = getMSTime();
+        i->hitTime = WorldTimer::getMSTime();
 
         if (apply)
             i->stack += 1;
@@ -11649,7 +11649,7 @@ Aura* Unit::GetDummyAura(uint32 spell_id) const
 
 bool Unit::IsUnderLastManaUseEffect() const
 {
-    return  getMSTimeDiff(m_lastManaUse,getMSTime()) < 5000;
+    return  WorldTimer::getMSTimeDiff(m_lastManaUse,WorldTimer::getMSTime()) < 5000;
 }
 
 void Unit::SetContestedPvP(Player *attackedPlayer)
@@ -11896,7 +11896,7 @@ void Unit::BuildHeartBeatMsg(WorldPacket *data) const
     *data << GetPackGUID();
     *data << uint32(((GetUnitMovementFlags() & MOVEFLAG_LEVITATING) || isInFlight())? (SPLINEFLAG_FLYING|SPLINEFLAG_WALKMODE) : GetUnitMovementFlags());
     *data << uint8(0);                                      // 2.3.0
-    *data << uint32(getMSTime());                           // time
+    *data << uint32(WorldTimer::getMSTime());                           // time
     *data << float(GetPositionX());
     *data << float(GetPositionY());
     *data << float(GetPositionZ());

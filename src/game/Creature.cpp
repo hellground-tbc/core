@@ -420,7 +420,7 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData *data)
     return true;
 }
 
-void Creature::Update(uint32 diff)
+void Creature::Update(uint32 update_diff, uint32 diff) 
 {
     switch (m_deathState)
     {
@@ -459,17 +459,17 @@ void Creature::Update(uint32 diff)
             if (m_isDeadByDefault)
                 break;
 
-            if (m_deathTimer <= diff)
+            if (m_deathTimer <= update_diff)
             {
                 RemoveCorpse();
                 DEBUG_LOG("Removing corpse... %u ", GetUInt32Value(OBJECT_FIELD_ENTRY));
             }
             else
             {
-                m_deathTimer -= diff;
+                m_deathTimer -= update_diff;
                 if (m_groupLootTimer && lootingGroupLeaderGUID)
                 {
-                    if (diff <= m_groupLootTimer)
+                    if (update_diff <= m_groupLootTimer)
                     {
                         m_groupLootTimer -= diff;
                     }
@@ -490,18 +490,18 @@ void Creature::Update(uint32 diff)
         {
             if (m_isDeadByDefault)
             {
-                if (m_deathTimer <= diff)
+                if (m_deathTimer <= update_diff)
                 {
                     RemoveCorpse();
                     DEBUG_LOG("Removing alive corpse... %u ", GetUInt32Value(OBJECT_FIELD_ENTRY));
                 }
                 else
                 {
-                    m_deathTimer -= diff;
+                    m_deathTimer -= update_diff;
                 }
             }
 
-            Unit::Update(diff);
+            Unit::Update(update_diff, diff);
 
             // creature can be dead after Unit::Update call
             // CORPSE/DEAD state will processed at next tick (in other case death timer will be updated unexpectedly)
@@ -1156,7 +1156,7 @@ void Creature::LoadGossipOptions()
 
 void Creature::AI_SendMoveToPacket(float x, float y, float z, uint32 time, uint32 MovementFlags, uint8 type)
 {
-    /*    uint32 timeElap = getMSTime();
+    /*    uint32 timeElap = WorldTimer::getMSTime();
         if ((timeElap - m_startMove) < m_moveTime)
         {
             oX = (dX - oX) * ((timeElap - m_startMove) / m_moveTime);
@@ -1172,7 +1172,7 @@ void Creature::AI_SendMoveToPacket(float x, float y, float z, uint32 time, uint3
         dY = y;
         m_orientation = atan2((oY - dY), (oX - dX));
 
-        m_startMove = getMSTime();
+        m_startMove = WorldTimer::getMSTime();
         m_moveTime = time;*/
     SendMonsterMove(x, y, z, time);
 }

@@ -936,7 +936,7 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         bool updating;
         bool inDelete;
-        void Update(uint32 time);
+        void Update(uint32 update_diff, uint32 diff);
 
         void BuildEnumData(QueryResultAutoPtr result,  WorldPacket * p_data);
 

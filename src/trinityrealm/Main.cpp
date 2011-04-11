@@ -58,7 +58,7 @@ char serviceDescription[] = "Massive Network Game Object Server";
 int m_ServiceStatus = -1;
 #endif
 
-// FG: for getMSTime()
+// FG: for WorldTimer::getMSTime()
 #include "Timer.h"
 
 bool StartDB(std::string &dbstring);
@@ -267,7 +267,7 @@ extern int main(int argc, char **argv)
     uint32 numLoops = (sConfig.GetIntDefault( "MaxPingTime", 30 ) * (MINUTE * 1000000 / 100000));
     uint32 loopCounter = 0;
     uint32 last_ping_time = 0;
-    uint32 now = getMSTime();
+    uint32 now = WorldTimer::getMSTime();
     uint32 last_ipprops_cleanup = 0;
 
     ///- Wait for termination signal
@@ -275,14 +275,14 @@ extern int main(int argc, char **argv)
     {
 
         h.Select(0, 100000);
-        now = getMSTime();
+        now = WorldTimer::getMSTime();
 
         if( (++loopCounter) == numLoops )
         {
             // FG: protect against network system overloading
             // if that happens, force realmd close (autorestarter ftw!)
 
-            if(getMSTimeDiff(last_ping_time, now) < 10000)
+            if(WorldTimer::getMSTimeDiff(last_ping_time, now) < 10000)
             {
                 sLog.outError("NETWORK SYSTEM OVERLOAD");
                 raise(SIGSEGV); // force close
@@ -296,7 +296,7 @@ extern int main(int argc, char **argv)
         }
 
         // FG: clear flood protect buffer periodically
-        if(getMSTimeDiff(last_ipprops_cleanup, now) > 30000) // flush stored IPs every 30 secs
+        if(WorldTimer::getMSTimeDiff(last_ipprops_cleanup, now) > 30000) // flush stored IPs every 30 secs
         {
             last_ipprops_cleanup = now;
             uint32 flushed = 0, blocked = 0, stored = 0;

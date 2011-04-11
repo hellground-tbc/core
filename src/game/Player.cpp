@@ -1139,7 +1139,7 @@ void Player::CharmAI(bool apply)
     GetMotionMaster()->MovementExpired();
 }
 
-void Player::Update(uint32 p_time)
+void Player::Update(uint32 update_diff, uint32 p_time)
 {
     updateMutex.acquire();
 
@@ -1151,10 +1151,10 @@ void Player::Update(uint32 p_time)
 
     if (m_AC_timer)
     {
-        if (m_AC_timer < p_time)
+        if (m_AC_timer < update_diff)
             m_AC_timer = 0;
         else
-            m_AC_timer -= p_time;
+            m_AC_timer -= update_diff;
     }
 
     // undelivered mail
@@ -1167,13 +1167,13 @@ void Player::Update(uint32 p_time)
         m_nextMailDelivereTime = 0;
     }
 
-    Unit::Update(p_time);
+    Unit::Update(update_diff, p_time);
 
-    time_t now = time (NULL);
+    time_t now = time(NULL);
 
     UpdatePvPFlag(now);
 
-    UpdateContestedPvP(p_time);
+    UpdateContestedPvP(update_diff);
 
     UpdateDuelFlag(now);
 
@@ -1199,7 +1199,7 @@ void Player::Update(uint32 p_time)
         while (iter != m_timedquests.end())
         {
             QuestStatusData& q_status = mQuestStatus[*iter];
-            if (q_status.m_timer <= p_time)
+            if (q_status.m_timer <= update_diff)
             {
                 uint32 quest_id  = *iter;
                 ++iter;                                     // current iter will be removed in FailTimedQuest
@@ -1207,7 +1207,7 @@ void Player::Update(uint32 p_time)
             }
             else
             {
-                q_status.m_timer -= p_time;
+                q_status.m_timer -= update_diff;
                 if (q_status.uState != QUEST_NEW) q_status.uState = QUEST_CHANGED;
                 ++iter;
             }
@@ -1299,23 +1299,23 @@ void Player::Update(uint32 p_time)
 
     if (m_regenTimer > 0)
     {
-        if (p_time >= m_regenTimer)
+        if (update_diff >= m_regenTimer)
             m_regenTimer = 0;
         else
-            m_regenTimer -= p_time;
+            m_regenTimer -= update_diff;
     }
 
     if (m_weaponChangeTimer > 0)
     {
-        if (p_time >= m_weaponChangeTimer)
+        if (update_diff >= m_weaponChangeTimer)
             m_weaponChangeTimer = 0;
         else
-            m_weaponChangeTimer -= p_time;
+            m_weaponChangeTimer -= update_diff;
     }
 
     if (m_zoneUpdateTimer > 0)
     {
-        if (p_time >= m_zoneUpdateTimer)
+        if (update_diff >= m_zoneUpdateTimer)
         {
             uint32 newzone = GetZoneId();
             if (m_zoneUpdateId != newzone)
@@ -1332,15 +1332,15 @@ void Player::Update(uint32 p_time)
             }
         }
         else
-            m_zoneUpdateTimer -= p_time;
+            m_zoneUpdateTimer -= update_diff;
     }
 
     if (m_timeSyncTimer > 0)
     {
-        if (p_time >= m_timeSyncTimer)
+        if (update_diff >= m_timeSyncTimer)
             SendTimeSync();
         else
-            m_timeSyncTimer -= p_time;
+            m_timeSyncTimer -= update_diff;
     }
 
     if (isAlive())
@@ -1351,29 +1351,29 @@ void Player::Update(uint32 p_time)
 
     if (m_nextSave > 0)
     {
-        if (p_time >= m_nextSave)
+        if (update_diff >= m_nextSave)
         {
             // m_nextSave reseted in SaveToDB call
             SaveToDB();
             sLog.outDetail("Player '%s' (GUID: %u) saved", GetName(), GetGUIDLow());
         }
         else
-            m_nextSave -= p_time;
+            m_nextSave -= update_diff;
     }
 
     //Handle drowning
-    HandleDrowning(p_time);
+    HandleDrowning(update_diff);
 
     //Handle detect stealth players
     if (m_DetectInvTimer > 0)
     {
-        if (p_time >= m_DetectInvTimer)
+        if (update_diff >= m_DetectInvTimer)
         {
             HandleStealthedUnitsDetection();
             m_DetectInvTimer = InArena() ? 1000 : 3000;
         }
         else
-            m_DetectInvTimer -= p_time;
+            m_DetectInvTimer -= update_diff;
     }
 
     // Played time
@@ -1387,7 +1387,7 @@ void Player::Update(uint32 p_time)
 
     if (m_drunk)
     {
-        m_drunkTimer += p_time;
+        m_drunkTimer += update_diff;
 
         if (m_drunkTimer > 10000)
             HandleSobering();
@@ -1396,24 +1396,24 @@ void Player::Update(uint32 p_time)
     // not auto-free ghost from body in instances
     if (m_deathTimer > 0  && !GetBaseMap()->Instanceable())
     {
-        if (p_time >= m_deathTimer)
+        if (update_diff >= m_deathTimer)
         {
             m_deathTimer = 0;
             BuildPlayerRepop();
             RepopAtGraveyard();
         }
         else
-            m_deathTimer -= p_time;
+            m_deathTimer -= update_diff;
     }
 
-    UpdateEnchantTime(p_time);
-    UpdateHomebindTime(p_time);
+    UpdateEnchantTime(update_diff);
+    UpdateHomebindTime(update_diff);
 
     // group update
     SendUpdateToOutOfRangeGroupMembers();
 
     Pet* pet = GetPet();
-    if (pet && !IsWithinDistInMap(pet, OWNER_MAX_DISTANCE) && !pet->isPossessed())
+    if (pet && !IsWithinDistInMap(pet, GetMap()->GetVisibilityDistance()) && !pet->isPossessed())
         RemovePet(pet, PET_SAVE_NOT_IN_SLOT, true);
 
     updateMutex.release();
@@ -20183,7 +20183,7 @@ void Player::BuildTeleportAckMsg(WorldPacket *data, float x, float y, float z, f
     *data << uint32(0);                                     // this value increments every time
     *data << uint32(GetUnitMovementFlags());                // movement flags
     *data << uint8(0);                                      // 2.3.0
-    *data << uint32(getMSTime());                           // time
+    *data << uint32(WorldTimer::getMSTime());                           // time
     *data << x;
     *data << y;
     *data << z;
@@ -20196,7 +20196,7 @@ void Player::ResetTimeSync()
     m_timeSyncCounter = 0;
     m_timeSyncTimer = 0;
     m_timeSyncClient = 0;
-    m_timeSyncServer = getMSTime();
+    m_timeSyncServer = WorldTimer::getMSTime();
 }
 
 void Player::SendTimeSync()
@@ -20207,5 +20207,5 @@ void Player::SendTimeSync()
 
     // Schedule next sync in 10 sec
     m_timeSyncTimer = 10000;
-    m_timeSyncServer = getMSTime();
+    m_timeSyncServer = WorldTimer::getMSTime();
 }

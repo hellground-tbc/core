@@ -146,7 +146,7 @@ public:
         while(!World::IsStopped())
         {
             ACE_Based::Thread::Sleep(1000);
-            uint32 curtime = getMSTime();
+            uint32 curtime = WorldTimer::getMSTime();
             //DEBUG_LOG("anti-freeze: time=%u, counters=[%u; %u]",curtime,Master::m_masterLoopCounter,World::m_worldLoopCounter);
 
             // There is no Master anymore
@@ -158,7 +158,7 @@ public:
 //                m_loops = Master::m_masterLoopCounter;
 //            }
 //            // possible freeze
-//            else if(getMSTimeDiff(m_lastchange,curtime) > _delaytime)
+//            else if(WorldTimer::getMSTimeDiff(m_lastchange,curtime) > _delaytime)
 //            {
 //                sLog.outError("Main/Sockets Thread hangs, kicking out server!");
 //                *((uint32 volatile*)NULL) = 0;                       // bang crash
@@ -176,7 +176,7 @@ public:
             // possible freeze
             else
             {
-                if(getMSTimeDiff(w_lastchange,curtime) > _delaytime)
+                if(WorldTimer::getMSTimeDiff(w_lastchange,curtime) > _delaytime)
                 {
                     sLog.outError("World Thread hangs, kicking out server!");
                     *((uint32 volatile*)NULL) = 0;                       // bang crash
@@ -184,7 +184,7 @@ public:
                 #ifndef WIN32
                 else
                 {
-                    if (getMSTimeDiff(w_lastchange,curtime) > maxVmapCalcTime && !BIH::possibleFreeze)
+                    if (WorldTimer::getMSTimeDiff(w_lastchange,curtime) > maxVmapCalcTime && !BIH::possibleFreeze)
                     {
                         sLog.outError("Freeze Detector: World Thread hangs, trying prevent VMAP Freeze.");
                         BIH::possibleFreeze = true;
@@ -312,7 +312,7 @@ int Master::Run()
     #endif
 
     uint32 realCurrTime, realPrevTime;
-    realCurrTime = realPrevTime = getMSTime();
+    realCurrTime = realPrevTime = WorldTimer::getMSTime();
 
     uint32 socketSelecttime = sWorld.getConfig(CONFIG_SOCKET_SELECTTIME);
 

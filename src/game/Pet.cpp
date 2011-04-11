@@ -571,7 +571,7 @@ void Pet::setDeathState(DeathState s)                       // overwrite virtual
     }
 }
 
-void Pet::Update(uint32 diff)
+void Pet::Update(uint32 update_diff, uint32 p_diff)
 {
     if (m_removed || m_loading)                                           // pet already removed, just wait in remove queue, no updates
         return;
@@ -580,7 +580,7 @@ void Pet::Update(uint32 diff)
     {
         case CORPSE:
         {
-            if (m_deathTimer <= diff)
+            if (m_deathTimer <= update_diff)
             {
                 assert(getPetType()!=SUMMON_PET && "Must be already removed.");
                 Remove(PET_SAVE_NOT_IN_SLOT);               //hunters' pets never get removed because of death, NEVER!
@@ -592,7 +592,7 @@ void Pet::Update(uint32 diff)
         {
             // unsummon pet that lost owner
             Unit* owner = GetOwner();
-            if (!owner || (!IsWithinDistInMap(owner, OWNER_MAX_DISTANCE) && !isPossessed()) || isControlled() && !owner->GetPetGUID())
+            if (!owner || (!IsWithinDistInMap(owner, GetMap()->GetVisibilityDistance()) && !isPossessed()) || isControlled() && !owner->GetPetGUID())
             {
                 Remove(PET_SAVE_NOT_IN_SLOT, true);
                 return;
@@ -609,8 +609,8 @@ void Pet::Update(uint32 diff)
 
             if (m_duration > 0)
             {
-                if (m_duration > diff)
-                    m_duration -= diff;
+                if (m_duration > update_diff)
+                    m_duration -= update_diff;
                 else
                 {
                     Remove(getPetType() != SUMMON_PET ? PET_SAVE_AS_DELETED:PET_SAVE_NOT_IN_SLOT);
@@ -632,36 +632,36 @@ void Pet::Update(uint32 diff)
                 break;
 
             //regenerate Focus
-            if (m_regenTimer <= diff)
+            if (m_regenTimer <= update_diff)
             {
                 RegenerateFocus();
                 m_regenTimer = 4000;
             }
             else
-                m_regenTimer -= diff;
+                m_regenTimer -= update_diff;
 
-            if (m_happinessTimer <= diff)
+            if (m_happinessTimer <= update_diff)
             {
                 LooseHappiness();
                 m_happinessTimer = 7500;
             }
             else
-                m_happinessTimer -= diff;
+                m_happinessTimer -= update_diff;
 
-            if (m_loyaltyTimer <= diff)
+            if (m_loyaltyTimer <= update_diff)
             {
                 TickLoyaltyChange();
                 m_loyaltyTimer = 12000;
             }
             else
-                m_loyaltyTimer -= diff;
+                m_loyaltyTimer -= update_diff;
 
             break;
         }
         default:
             break;
     }
-    Creature::Update(diff);
+    Creature::Update(update_diff, p_diff);
 }
 
 void Pet::RegenerateFocus()

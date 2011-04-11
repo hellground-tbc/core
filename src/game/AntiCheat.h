@@ -66,7 +66,7 @@ class ACRequest : public ACE_Method_Request
             float fDistance2d = sqrt(dx*dx + dy*dy);
 
             // time between packets
-            uint32 uiDiffTime = getMSTimeDiff(m_oldPacket.time, m_newPacket.time);
+            uint32 uiDiffTime = WorldTimer::getMSTimeDiff(m_oldPacket.time, m_newPacket.time);
 
             float fClientRate = (fDistance2d * 1000 / uiDiffTime) / m_speed;
             float fServerRate = m_speed * uiDiffTime / 1000 +1.0f;

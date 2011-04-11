@@ -1674,12 +1674,12 @@ void World::RecordTimeDiff(const char *text, ...)
         return;
     if (!text)
     {
-        m_currentTime = getMSTime();
+        m_currentTime = WorldTimer::getMSTime();
         return;
     }
 
-    uint32 thisTime = getMSTime();
-    uint32 diff = getMSTimeDiff(m_currentTime, thisTime);
+    uint32 thisTime = WorldTimer::getMSTime();
+    uint32 diff = WorldTimer::getMSTimeDiff(m_currentTime, thisTime);
 
     if (diff > m_configs[CONFIG_MIN_LOG_UPDATE])
     {

@@ -33,7 +33,7 @@
 #include <openssl/md5.h>
 #include "Auth/Sha1.h"
 //#include "Util.h" -- for commented utf8ToUpperOnlyLatin
-// FG: for getMSTime()
+// FG: for WorldTimer::getMSTime()
 #include "Timer.h"
 
 extern RealmList m_realmList;
@@ -1123,11 +1123,11 @@ IPPropMap _propmap;
 bool AllowedToConnect(std::string ip)
 {
     IPPropMap::iterator it;
-    uint32 now = getMSTime();
+    uint32 now = WorldTimer::getMSTime();
     it = _propmap.find(ip);
     if(it != _propmap.end())
     {
-        if(getMSTimeDiff(it->second.connecttime, now) < 1000)
+        if(WorldTimer::getMSTimeDiff(it->second.connecttime, now) < 1000)
         {
             it->second.connectcount++;
             if(it->second.connectcount >= 5)
@@ -1154,7 +1154,7 @@ bool AllowedToConnect(std::string ip)
 
 void CleanupIPPropmap(uint32& flushed, uint32& blocked, uint32 &stored)
 {
-    uint32 now = getMSTime();
+    uint32 now = WorldTimer::getMSTime();
     blocked = 0;
     std::list<std::string> rem;
     for(IPPropMap::iterator it = _propmap.begin(); it != _propmap.end(); it++)

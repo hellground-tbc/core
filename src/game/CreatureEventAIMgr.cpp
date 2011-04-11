@@ -797,11 +797,11 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
                 }
                 if (strcmp(cInfo->AIName, "EventAI"))
                 {
-                    //sLog.outErrorDb("CreatureEventAI: Creature Entry %u has EventAI script but it has AIName %s. EventAI script will be overriden.", cInfo->Entry, cInfo->AIName);
+                    sLog.outErrorDb("CreatureEventAI: Creature Entry %u has EventAI script but it has AIName %s. EventAI script will be overriden.", cInfo->Entry, cInfo->AIName);
                 }
                 if (cInfo->ScriptID)
                 {
-                    //sLog.outErrorDb("CreatureEventAI: Creature Entry %u has EventAI script but it also has C++ script. EventAI script will be overriden.", cInfo->Entry);
+                    sLog.outErrorDb("CreatureEventAI: Creature Entry %u has EventAI script but it also has C++ script. EventAI script will be overriden.", cInfo->Entry);
                 }
             }
         }while (result->NextRow());

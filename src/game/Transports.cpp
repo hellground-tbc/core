@@ -499,12 +499,12 @@ void Transport::CheckForEvent(uint32 entry, uint32 wp_id)
         GetMap()->ScriptsStart(sEventScripts, objmgr.TransportEventMap[key], this, NULL);
 }
 
-void Transport::Update(uint32 /*p_time*/)
+void Transport::Update(uint32 update_diff, uint32 p_diff)
 {
     if (m_WayPoints.size() <= 1)
         return;
 
-    m_timer = getMSTime() % m_period;
+    m_timer = WorldTimer::getMSTime() % m_period;
     while (((m_timer - m_curr->first) % m_pathTime) > ((m_next->first - m_curr->first) % m_pathTime))
     {
         m_curr = GetNextWayPoint();

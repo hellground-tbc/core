@@ -148,7 +148,7 @@ GroupQueueInfo * BattleGroundQueue::AddGroup(Player *leader, uint32 BgTypeId, ui
     ginfo->ArenaTeamId               = arenateamid;
     ginfo->IsRated                   = isRated;
     ginfo->IsInvitedToBGInstanceGUID = 0;                       // maybe this should be modifiable by function arguments to enable selection of running instances?
-    ginfo->JoinTime                  = getMSTime();
+    ginfo->JoinTime                  = WorldTimer::getMSTime();
     ginfo->Team                      = leader->GetTeam();
     ginfo->ArenaTeamRating           = arenaRating;
     ginfo->OpponentsTeamRating       = 0;                       //initialize it to 0
@@ -169,7 +169,7 @@ void BattleGroundQueue::AddPlayer(Player *plr, GroupQueueInfo *ginfo)
     PlayerQueueInfo& info = m_QueuedPlayers[queue_id][plr->GetGUID()];
     info.InviteTime                 = 0;
     info.LastInviteTime             = 0;
-    info.LastOnlineTime             = getMSTime();
+    info.LastOnlineTime             = WorldTimer::getMSTime();
     info.GroupInfo                  = ginfo;
 
     // add the pinfo to ginfo's list
@@ -304,8 +304,8 @@ bool BattleGroundQueue::InviteGroupToBG(GroupQueueInfo * ginfo, BattleGround * b
         for (std::map<uint64,PlayerQueueInfo*>::iterator itr = ginfo->Players.begin(); itr != ginfo->Players.end(); ++itr)
         {
             // set status
-            itr->second->InviteTime = getMSTime();
-            itr->second->LastInviteTime = getMSTime();
+            itr->second->InviteTime = WorldTimer::getMSTime();
+            itr->second->LastInviteTime = WorldTimer::getMSTime();
 
             // get the player
             Player* plr = objmgr.GetPlayer(itr->first);
@@ -586,8 +586,8 @@ void BattleGroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
     // (after what time the ratings aren't taken into account when making teams) then
     // the discard time is current_time - time_to_discard, teams that joined after that, will have their ratings taken into account
     // else leave the discard time on 0, this way all ratings will be discarded
-    if (sBattleGroundMgr.GetMaxRatingDifference() && getMSTime() >= sBattleGroundMgr.GetRatingDiscardTimer())
-        discardTime = getMSTime() - sBattleGroundMgr.GetRatingDiscardTimer();
+    if (sBattleGroundMgr.GetMaxRatingDifference() && WorldTimer::getMSTime() >= sBattleGroundMgr.GetRatingDiscardTimer())
+        discardTime = WorldTimer::getMSTime() - sBattleGroundMgr.GetRatingDiscardTimer();
 
     // try to build the selection pools "premade"
     bool bAllyOK = BuildSelectionPool(bgTypeId, queue_id, MinPlayersPerTeam, MaxPlayersPerTeam, NORMAL_ALLIANCE, arenatype, isRated, arenaMinRating, arenaMaxRating, discardTime, 0, true);
@@ -888,7 +888,7 @@ void BattleGroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
     for (QueuedGroupsList::iterator itr = m_QueuedGroups[queue_id].begin(); itr != m_QueuedGroups[queue_id].end(); ++itr)
     {
         GroupQueueInfo *group_info = *itr;
-        if (group_info->Premade && (group_info->JoinTime + PREMADE_REMOVE_TIME >= getMSTime()))
+        if (group_info->Premade && (group_info->JoinTime + PREMADE_REMOVE_TIME >= WorldTimer::getMSTime()))
             group_info->Premade = false;
     }
 }

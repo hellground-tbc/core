@@ -276,7 +276,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     GetPlayer()->SetLastSpeedRate(GetPlayer()->GetSpeedRate(UnitMoveType(uiMoveType)));
 
     /* process position-change */
-    recv_data.put<uint32>(5, getMSTime());                  // offset flags(4) + unk(1)
+    recv_data.put<uint32>(5, WorldTimer::getMSTime());                  // offset flags(4) + unk(1)
     WorldPacket data(recv_data.GetOpcode(), (GetPlayer()->GetPackGUID().size()+recv_data.size()));
     data << GetPlayer()->GetPackGUID();
     data.append(recv_data.contents(), recv_data.size());
@@ -313,7 +313,7 @@ void WorldSession::HandlePossessedMovement(WorldPacket& recv_data, MovementInfo&
         return;
     }
 
-    recv_data.put<uint32>(5, getMSTime());
+    recv_data.put<uint32>(5, WorldTimer::getMSTime());
     WorldPacket data(recv_data.GetOpcode(), pos_unit->GetPackGUID().size()+recv_data.size());
     data << pos_unit->GetPackGUID();
     data.append(recv_data.contents(), recv_data.size());

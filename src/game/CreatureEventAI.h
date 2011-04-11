@@ -116,12 +116,12 @@ enum EventAI_ActionType
     ACTION_T_SET_STAND_STATE            = 98,
     ACTION_T_MOVE_RANDOM_POINT          = 99,
     ACTION_T_SET_VISIBILITY             = 100,
-    ACTION_T_SET_ACTIVE                 = 101,  //Apply
-    ACTION_T_SET_AGGRESSIVE             = 102,  //Apply
-    ACTION_T_ATTACK_START_PULSE         = 103,  //Distance
-    ACTION_T_SUMMON_GO                  = 104,  //GameObjectID, DespawnTime in msz
+    ACTION_T_SET_ACTIVE                 = 101,              // Apply
+    ACTION_T_SET_AGGRESSIVE             = 102,              // Apply
+    ACTION_T_ATTACK_START_PULSE         = 103,              // Distance
+    ACTION_T_SUMMON_GO                  = 104,              // GameObjectID, DespawnTime in msz
 
-    ACTION_T_END = 105,
+    ACTION_T_END
 };
 
 enum Target

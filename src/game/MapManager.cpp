@@ -282,7 +282,10 @@ MapManager::Update(time_t diff)
     sWorld.RecordTimeDiff("Delayed update");
 
     for (TransportSet::iterator iter = m_Transports.begin(); iter != m_Transports.end(); ++iter)
-        (*iter)->Update(i_timer.GetCurrent());
+    {
+        WorldObject::UpdateHelper helper((*iter));
+        helper.Update(uint32(i_timer.GetCurrent()));
+    }
 
     sWorld.RecordTimeDiff("UpdateTransports");
 

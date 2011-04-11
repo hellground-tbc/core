@@ -18,6 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
+#include "Timer.h"
 #include "Util.h"
 
 #include "sockets/socket_include.h"
@@ -57,6 +58,59 @@ double rand_norm(void)
 double rand_chance(void)
 {
     return mtRand->randExc(100.0);
+}
+
+static ACE_Time_Value g_SystemTickTime = ACE_OS::gettimeofday();
+
+uint32 WorldTimer::m_iTime = 0;
+uint32 WorldTimer::m_iPrevTime = 0;
+
+uint32 WorldTimer::tickTime() { return m_iTime; }
+uint32 WorldTimer::tickPrevTime() { return m_iPrevTime; }
+
+uint32 WorldTimer::tick()
+{
+    // Save previous world tick time
+    m_iPrevTime = m_iTime;
+
+    // Get the new one and don't forget to persist current system time in m_SystemTickTime
+    m_iTime = WorldTimer::getMSTime_internal(true);
+
+    // return tick diff
+    return WorldTimer::getMSTimeDiff(m_iPrevTime, m_iTime);
+}
+
+uint32 WorldTimer::getMSTime()
+{
+    return getMSTime_internal();
+}
+
+uint32 WorldTimer::getMSTime_internal(bool savetime /*= false*/)
+{
+    // Get current time
+    const ACE_Time_Value currTime = ACE_OS::gettimeofday();
+    // calculate time diff between two world ticks
+    // special case: curr_time < old_time - we suppose that our time has not ticked at all
+    // this should be constant value otherwise it is possible that our time can start ticking backwards until next world tick!! 
+    uint32 diff = 0;
+    // regular case: curr_time >= old_time
+    if (currTime > g_SystemTickTime)
+        diff = (currTime - g_SystemTickTime).msec();
+
+    // reset last system time value
+    if (savetime)
+        g_SystemTickTime = currTime;
+
+    // lets calculate current world time
+    uint32 iRes = m_iTime;
+    // normalize world time
+    const uint32 tmp = uint32(0xFFFFFFFF) - iRes;
+    if (tmp < diff)
+        iRes = diff - tmp;
+    else
+        iRes += diff;
+
+    return iRes;
 }
 
 Tokens StrSplit(const std::string &src, const std::string &sep)

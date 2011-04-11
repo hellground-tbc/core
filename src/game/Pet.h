@@ -151,7 +151,7 @@ class Pet : public Creature
         static void DeleteFromDB(uint32 guidlow, bool separate_transaction = true);
 
         void setDeathState(DeathState s);                   // overwrite virtual Creature::setDeathState and Unit::setDeathState
-        void Update(uint32 diff);                           // overwrite virtual Creature::Update and Unit::Update
+        void Update(uint32 update_diff, uint32 diff);       // overwrite virtual Creature::Update and Unit::Update 
 
         uint8 GetPetAutoSpellSize() const { return m_autospells.size(); }
         uint32 GetPetAutoSpellOnPos(uint8 pos) const

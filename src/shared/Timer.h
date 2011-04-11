@@ -21,40 +21,51 @@
 #ifndef TRINITY_TIMER_H
 #define TRINITY_TIMER_H
 
-#include "Platform/CompilerDefs.h"
+#include "Common.h"
+#include <ace/OS_NS_sys_time.h>
 
-#if PLATFORM == PLATFORM_WINDOWS
-#   include <ace/config-all.h>
-#   include <mmsystem.h>
-#   include <time.h>
-#else
-# if defined(__APPLE_CC__)
-#   include <time.h>
-# endif
-#   include <sys/time.h>
-#   include <sys/timeb.h>
-#endif
-
-#if PLATFORM == PLATFORM_WINDOWS
-inline uint32 getMSTime() { return GetTickCount(); }
-#else
-inline uint32 getMSTime()
+class WorldTimer
 {
-    struct timeval tv;
-    struct timezone tz;
-    gettimeofday( &tv, &tz );
-    return (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
-}
-#endif
+        public:
+        // Get current server time
+        static uint32 getMSTime();
+        // Get time difference between two timestamps 
+        static inline uint32 getMSTimeDiff(const uint32& oldMSTime, const uint32& newMSTime)
+        {
+            if (oldMSTime > newMSTime)
+            {
+                const uint32 diff_1 = (uint32(0xFFFFFFFF) - oldMSTime) + newMSTime;
+                const uint32 diff_2 = oldMSTime - newMSTime;
 
-inline uint32 getMSTimeDiff(uint32 oldMSTime, uint32 newMSTime)
-{
-    // getMSTime() have limited data range and this is case when it overflow in this tick
-    if (oldMSTime > newMSTime)
-        return (0xFFFFFFFF - oldMSTime) + newMSTime;
-    else
-        return newMSTime - oldMSTime;
-}
+                return std::min(diff_1, diff_2);
+            }
+
+            return newMSTime - oldMSTime;
+        }
+
+        // Get time difference between oldMSTime and current server time 
+        static inline uint32 getMSTimeDiffToNow(const uint32& oldMSTime)
+        {
+            return getMSTimeDiff(oldMSTime, WorldTimer::getMSTime());
+        }
+
+        // Get last world tick time
+        static uint32 tickTime();
+        // Get previous world tick time
+        static uint32 tickPrevTime();
+        // Tick world timer
+        static uint32 tick();
+
+    private:
+        WorldTimer();
+        WorldTimer(const WorldTimer& );
+
+        // Analogue to WorldTimer::getMSTime() but it persists m_SystemTickTime
+        static uint32 getMSTime_internal(bool savetime = false);
+
+        static uint32 m_iTime;
+        static uint32 m_iPrevTime;
+};
 
 class IntervalTimer
 {

@@ -409,7 +409,10 @@ ObjectUpdater::Visit(GridRefManager<T> &m)
     for (typename GridRefManager<T>::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
         if (iter->getSource()->IsInWorld())
-            iter->getSource()->Update(i_timeDiff);
+        {
+            WorldObject::UpdateHelper helper(iter->getSource());
+            helper.Update(i_timeDiff); 
+        }
     }
 }
 

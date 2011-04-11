@@ -33,7 +33,7 @@ class TemporarySummon : public Creature
             if (IsInWorld())
                 Creature::RemoveFromWorld();
         }
-        void Update(uint32 time);
+        void Update(uint32 update_diff, uint32 time); 
         void Summon(TempSummonType type, uint32 lifetime);
         void UnSummon();
         void SaveToDB();
@@ -44,5 +44,5 @@ class TemporarySummon : public Creature
         uint32 m_lifetime;
         uint64 m_summoner;
 };
-#endif
 
+#endif

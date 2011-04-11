@@ -442,7 +442,7 @@ class TRINITY_DLL_SPEC Creature : public Unit
         uint32 GetDBTableGUIDLow() const { return m_DBTableGuid; }
         char const* GetSubName() const { return GetCreatureInfo()->SubName; }
 
-        void Update(uint32 time);                         // overwrited Unit::Update
+        void Update(uint32 update_diff, uint32 diff);                         // overwrited Unit::Update 
         void GetRespawnCoord(float &x, float &y, float &z, float* ori = NULL, float* dist =NULL) const;
         uint32 GetEquipmentId() const { return m_equipmentId; }
 

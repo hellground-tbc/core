@@ -435,7 +435,7 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
         void RemoveFromWorld();
 
         bool Create(uint32 guidlow, uint32 name_id, Map *map, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 animprogress, GOState go_state, uint32 ArtKit = 0);
-        void Update(uint32 diff);
+        void Update(uint32 update_diff, uint32 time);
         static GameObject* GetGameObject(WorldObject& object, uint64 guid);
         GameObjectInfo const* GetGOInfo() const { return m_goInfo; }
         GameObjectData const* GetGOData() const { return m_goData; }

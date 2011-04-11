@@ -958,7 +958,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         //target dependent checks
         uint32 GetSpellRadiusForTarget(Unit* target,const SpellRadiusEntry * radiusEntry);
 
-        virtual void Update(uint32 time);
+        virtual void Update(uint32 update_diff, uint32 p_time);
 
         void setAttackTimer(WeaponAttackType type, uint32 time) { m_attackTimer[type] = time; }
         void resetAttackTimer(WeaponAttackType type = BASE_ATTACK);
