@@ -7811,7 +7811,7 @@ bool ChatHandler::HandleEventAIReloadCommand(const char* args)
 
     CreatureEAI_Mgr.LoadCreatureEventAI_Scripts(creatureId);
 
-    CreatureAIReInitialize[creatureId] = getMSTime();
+    CreatureAIReInitialize[creatureId] = WorldTimer::getMSTime();
 
     PSendSysMessage("EventAI for creature %u prepared to replace", creatureId);
 

@@ -648,7 +648,7 @@ bool Creature::AIM_Initialize(CreatureAI* ai)
 
     IsAIEnabled = true;
     i_AI->InitializeAI();
-    m_aiInitializeTime = getMSTime();
+    m_aiInitializeTime = WorldTimer::getMSTime();
 
     return true;
 }

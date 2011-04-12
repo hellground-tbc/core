@@ -2148,6 +2148,29 @@ void Unit::AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType, bool ex
         return;
     }
 
+    if (pVictim->HasAuraType(SPELL_AURA_ADD_CASTER_HIT_TRIGGER))
+    {
+        Unit::AuraList const& hitTriggerAuras = pVictim->GetAurasByType(SPELL_AURA_ADD_CASTER_HIT_TRIGGER);
+        for (Unit::AuraList::const_iterator itr = hitTriggerAuras.begin(); itr != hitTriggerAuras.end(); ++itr)
+        {
+            if (Unit* hitTarget = (*itr)->GetCaster())
+            {
+                if(!hitTarget->isAlive())
+                    continue;
+
+                if ((*itr)->m_procCharges > 0)
+                {
+                    (*itr)->SetAuraProcCharges((*itr)->m_procCharges-1);
+                    (*itr)->UpdateAuraCharges();
+                    if ((*itr)->m_procCharges <= 0)
+                        pVictim->RemoveAurasByCasterSpell((*itr)->GetId(), (*itr)->GetCasterGUID());
+                }
+                pVictim = hitTarget;
+                break;
+            }
+        }
+    }
+
     MeleeDamageLog damageInfo(this, pVictim, GetMeleeDamageSchoolMask(), attType);
     CalculateMeleeDamage(&damageInfo);
 

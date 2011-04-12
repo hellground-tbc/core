@@ -5505,12 +5505,14 @@ Unit* Spell::SelectMagnetTarget()
                     if ((*itr)->m_procCharges > 0)
                     {
                         (*itr)->SetAuraProcCharges((*itr)->m_procCharges-1);
-                        target = hitTarget;
-                        m_targets.setUnitTarget(target);
-                        AddUnitTarget(target, 0);
-                        uint64 targetGUID = target->GetGUID();
-                        break;
+                        (*itr)->UpdateAuraCharges();
+                        if ((*itr)->m_procCharges <= 0)
+                            target->RemoveAurasByCasterSpell((*itr)->GetId(), (*itr)->GetCasterGUID());
                     }
+                    target = hitTarget;
+                    m_targets.setUnitTarget(target);
+                    AddUnitTarget(target, 0);
+                    break;
                 }
             }
         }
