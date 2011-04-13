@@ -275,8 +275,8 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data)
                     GetPlayerName(), GetAccountId(), money, receiver.c_str(), rc_account);
             }
 
-            sLog.outMail("Player %s (Account: %u) mail money: %u to player: %s (Account: %u)",
-                GetPlayerName(), GetAccountId(), money, receiver.c_str(), rc_account);
+            sLog.outMail("Player %s (Account: %u) mail money: %u  with subject: %s and body: %s to player: %s (Account: %u)",
+                GetPlayerName(), GetAccountId(), money, subject.c_str(), body.c_str(), receiver.c_str(), rc_account);
         }
     }
 
