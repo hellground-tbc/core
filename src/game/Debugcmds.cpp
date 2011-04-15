@@ -629,7 +629,7 @@ bool ChatHandler::HandleDebugThreatList(const char * /*args*/)
     uint32 max_count = 0;
     if (m_session->GetSecurity() <= SEC_PLAYER)
     {
-        pOwner->AddSpellCooldown(COMMAND_COOLDOWN, 0, time(NULL) +30);
+        pOwner->AddSpellCooldown(COMMAND_COOLDOWN, 0, time(NULL) +10);
         max_count = 3;
     }
 

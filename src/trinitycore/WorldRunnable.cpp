@@ -57,7 +57,7 @@ void WorldRunnable::run()
         ++World::m_worldLoopCounter;
         realCurrTime = WorldTimer::getMSTime();
 
-        uint32 diff = WorldTimer::getMSTimeDiff(realPrevTime,realCurrTime);
+        uint32 diff = WorldTimer::tick();
 
         sWorld.Update( diff );
         realPrevTime = realCurrTime;

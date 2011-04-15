@@ -471,7 +471,7 @@ void Creature::Update(uint32 update_diff, uint32 diff)
                 {
                     if (update_diff <= m_groupLootTimer)
                     {
-                        m_groupLootTimer -= diff;
+                        m_groupLootTimer -= update_diff;
                     }
                     else
                     {
@@ -530,10 +530,10 @@ void Creature::Update(uint32 update_diff, uint32 diff)
                 break;
             if (m_regenTimer > 0)
             {
-                if (diff >= m_regenTimer)
+                if (update_diff >= m_regenTimer)
                     m_regenTimer = 0;
                 else
-                    m_regenTimer -= diff;
+                    m_regenTimer -= update_diff;
             }
 
             if (m_regenTimer != 0)
@@ -555,13 +555,13 @@ void Creature::Update(uint32 update_diff, uint32 diff)
             break;
         }
         case DEAD_FALLING:
-            GetMotionMaster()->UpdateMotion(diff);
+            GetMotionMaster()->UpdateMotion(update_diff);
             break;
         default:
             break;
     }
 
-    if (m_aiReinitializeCheckTimer <= diff)
+    if (m_aiReinitializeCheckTimer <= update_diff)
     {
         if (!isInCombat() && !IsInEvadeMode() && !isCharmed() && m_aiInitializeTime < CreatureAIReInitialize[GetEntry()])
             AIM_Initialize();
@@ -569,7 +569,7 @@ void Creature::Update(uint32 update_diff, uint32 diff)
         m_aiReinitializeCheckTimer = 10000;
     }
     else
-        m_aiReinitializeCheckTimer -= diff;
+        m_aiReinitializeCheckTimer -= update_diff;
 }
 
 void Creature::RegenerateMana()
