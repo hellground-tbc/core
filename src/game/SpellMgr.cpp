@@ -2855,7 +2855,7 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectRadiusIndex[0] = 18;   // effect radius from 18 to 15 yd
             break;
         case 41360: // L5 Arcane Charge should not be reflectable
-            spellInfo->AttributesEx2 = |= SPELL_ATTR_EX2_CANT_REFLECTED;
+            spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_CANT_REFLECTED;
             break;
         default:
             break;
