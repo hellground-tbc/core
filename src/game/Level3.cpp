@@ -4300,15 +4300,15 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
         if (CreatureInfo const *master = GetCreatureInfo(linked->id))
             PSendSysMessage(LANG_NPCINFO_LINKGUID, objmgr.GetLinkedRespawnGuid(target->GetDBTableGUIDLow()), linked->id, master->Name);
 
-    if ((npcflags & UNIT_NPC_FLAG_VENDOR))
-    {
+    if (npcflags & UNIT_NPC_FLAG_VENDOR)
+
         SendSysMessage(LANG_NPCINFO_VENDOR);
-    }
-    if ((npcflags & UNIT_NPC_FLAG_TRAINER))
-    {
+
+    if (npcflags & UNIT_NPC_FLAG_TRAINER)
         SendSysMessage(LANG_NPCINFO_TRAINER);
-    }
-    PSendSysMessage("m_isDeadByDefault: %i", (int)target->GetIsDeadByDefault());
+
+    PSendSysMessage("AIName: %s, ScriptName: %s", target->GetAIName().c_str(), target->GetScriptName().c_str());
+    PSendSysMessage("DeadByDefault: %i", (int)target->GetIsDeadByDefault());
 
     return true;
 }
