@@ -73,10 +73,7 @@ bool PlayerSocial::AddToSocialList(uint32 friend_guid, bool ignore)
     PlayerSocialMap::iterator itr = m_playerSocialMap.find(friend_guid);
     if (itr != m_playerSocialMap.end())
     {
-        static SqlStatementID updateCharacterSocialFlags;
-        SqlStatement stmt = CharacterDatabase.CreateStatement(updateCharacterSocialFlags, "UPDATE character_social SET flags = (flags | ?) WHERE guid = ? AND friend = ?");
-        stmt.PExecute(flag, GetPlayerGUID(), friend_guid);
-
+        CharacterDatabase.PExecute("UPDATE character_social SET flags = (flags | %u) WHERE guid = '%u' AND friend = '%u'", flag, GetPlayerGUID(), friend_guid);
         m_playerSocialMap[friend_guid].Flags |= flag;
     }
     else
@@ -102,17 +99,12 @@ void PlayerSocial::RemoveFromSocialList(uint32 friend_guid, bool ignore)
     itr->second.Flags &= ~flag;
     if (itr->second.Flags == 0)
     {
-        static SqlStatementID deleteCharacterSocialFriend;
-        SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCharacterSocialFriend, "DELETE FROM character_social WHERE guid = ? AND friend = ?");
-        stmt.PExecute(GetPlayerGUID(), friend_guid);
-
+        CharacterDatabase.PExecute("DELETE FROM character_social WHERE guid = '%u' AND friend = '%u'", GetPlayerGUID(), friend_guid);
         m_playerSocialMap.erase(itr);
     }
     else
     {
-        static SqlStatementID updateCharacterSocialFlagsRem;
-        SqlStatement stmt = CharacterDatabase.CreateStatement(updateCharacterSocialFlagsRem, "UPDATE character_social SET flags = (flags & ~?) WHERE guid = ? AND friend = ?");
-        stmt.PExecute(flag, GetPlayerGUID(), friend_guid);
+        CharacterDatabase.PExecute("UPDATE character_social SET flags = (flags & ~%u) WHERE guid = '%u' AND friend = '%u'", flag, GetPlayerGUID(), friend_guid);
     }
 }
 
@@ -124,15 +116,8 @@ void PlayerSocial::SetFriendNote(uint32 friend_guid, std::string note)
 
     utf8truncate(note,48);                                  // DB and client size limitation
 
-    static SqlStatementID updateCharacterSocialNote;
-    SqlStatement stmt = CharacterDatabase.CreateStatement(updateCharacterSocialNote, "UPDATE character_social SET note = ? WHERE guid = ? AND friend = ?");
-
-    stmt.addString(note);
-    stmt.addUInt32(GetPlayerGUID());
-    stmt.addUInt32(friend_guid);
-
-    stmt.Execute();
-
+    CharacterDatabase.escape_string(note);
+    CharacterDatabase.PExecute("UPDATE character_social SET note = '%s' WHERE guid = '%u' AND friend = '%u'", note.c_str(), GetPlayerGUID(), friend_guid);
     m_playerSocialMap[friend_guid].Note = note;
 }
 

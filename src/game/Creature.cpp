@@ -642,7 +642,7 @@ bool Creature::AIM_Initialize(CreatureAI* ai)
 
     i_motionMaster.Initialize();
     i_AI = FactorySelector::selectAI(this);
-
+    
     if (oldAI)
         delete oldAI;
 

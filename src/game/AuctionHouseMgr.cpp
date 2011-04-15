@@ -170,7 +170,6 @@ void AuctionHouseMgr::SendAuctionWonMail(AuctionEntry *auction)
         //prepare mail data... :
         uint32 itemTextId = objmgr.CreateItemText(msgAuctionWonBody.str());
 
-        static SqlStatementID updateAuctionItemInstance;
         // set owner to bidder (to prevent delete item with sender char deleting)
         // owner in `data` will set at mail receive and item extracting
         CharacterDatabase.PExecute("UPDATE item_instance SET owner_guid = '%u' WHERE guid='%u'",auction->bidder,pItem->GetGUIDLow());
@@ -190,7 +189,6 @@ void AuctionHouseMgr::SendAuctionWonMail(AuctionEntry *auction)
     // receiver not exist
     else
     {
-        static SqlStatementID deleteItemInstance;
         CharacterDatabase.PExecute("DELETE FROM item_instance WHERE guid='%u'", pItem->GetGUIDLow());
         RemoveAItem(pItem->GetGUIDLow()); // we have to remove the item, before we delete it !!
         delete pItem;
@@ -304,7 +302,6 @@ void AuctionHouseMgr::SendAuctionExpiredMail(AuctionEntry * auction)
     // owner not found
     else
     {
-        static SqlStatementID deleteItemInstance;
         CharacterDatabase.PExecute("DELETE FROM item_instance WHERE guid='%u'",pItem->GetGUIDLow());
         RemoveAItem(pItem->GetGUIDLow()); // we have to remove the item, before we delete it !!
         delete pItem;
@@ -707,14 +704,13 @@ uint32 AuctionEntry::GetAuctionOutBid() const
 void AuctionEntry::DeleteFromDB() const
 {
     //No SQL injection (Id is integer)
-    static SqlStatementID deleteAuction;
     CharacterDatabase.PExecute("DELETE FROM auctionhouse WHERE id = '%u'",Id);
 }
 
 void AuctionEntry::SaveToDB() const
 {
-    static SqlStatementID insertAuction;
-    SqlStatement stmt = CharacterDatabase.CreateStatement(insertAuction, "INSERT INTO auctionhouse (id, auctioneerguid, itemguid, item_template, itemowner, buyoutprice, time, buyguid, lastbid, startbid, deposit) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    static SqlStatementID saveAuction;
+    SqlStatement stmt = CharacterDatabase.CreateStatement(saveAuction, "INSERT INTO auctionhouse (id,auctioneerguid,itemguid,item_template,itemowner,buyoutprice,time,buyguid,lastbid,startbid,deposit) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
     stmt.addUInt32(Id);
     stmt.addUInt32(auctioneer);

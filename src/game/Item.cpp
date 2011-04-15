@@ -315,14 +315,14 @@ void Item::SaveToDB()
     {
         case ITEM_NEW:
         {
-            static SqlStatementID deleteItemInstance;
-            static SqlStatementID insertItemInstance;
+            static SqlStatementID deleteItem;
+            static SqlStatementID saveItem;
 
-            SqlStatement stmt = CharacterDatabase.CreateStatement(deleteItemInstance, "DELETE FROM item_instance WHERE guid = ?");
+            SqlStatement stmt = CharacterDatabase.CreateStatement(deleteItem, "DELETE FROM item_instance WHERE guid = ?");
             stmt.PExecute(guid);
 
-            stmt = CharacterDatabase.CreateStatement(insertItemInstance, "INSERT INTO item_instance (guid, owner_guid, data) VALUES (?, ?, ?)");
-
+            stmt = CharacterDatabase.CreateStatement(saveItem, "INSERT INTO item_instance (guid, owner_guid, data) VALUES (?, ?, ?)");
+            
             std::ostringstream ss;
             for (uint16 i = 0; i < m_valuesCount; i++)
                 ss << GetUInt32Value(i) << " ";
@@ -352,11 +352,11 @@ void Item::SaveToDB()
         break;
         case ITEM_REMOVED:
         {
-            static SqlStatementID deleteItemInstance;
+            static SqlStatementID deleteItem;
             static SqlStatementID deleteItemText;
             static SqlStatementID deleteGift;
 
-            SqlStatement stmt = CharacterDatabase.CreateStatement(deleteItemInstance, "DELETE FROM item_instance WHERE guid = ?");
+            SqlStatement stmt = CharacterDatabase.CreateStatement(deleteItem, "DELETE FROM item_instance WHERE guid = ?");
             stmt.PExecute(guid);
 
             if (GetUInt32Value(ITEM_FIELD_ITEM_TEXT_ID) > 0)
@@ -461,16 +461,12 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResultAutoPtr result)
 
 void Item::DeleteFromDB()
 {
-    static SqlStatementID deleteItemInstance;
-    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteItemInstance, "DELETE FROM item_instance WHERE guid = ?");
-    stmt.PExecute(GetGUIDLow());
+    CharacterDatabase.PExecute("DELETE FROM item_instance WHERE guid = '%u'",GetGUIDLow());
 }
 
 void Item::DeleteFromInventoryDB()
 {
-    static SqlStatementID deleteCharacterInventoryItem;
-    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCharacterInventoryItem, "DELETE FROM character_inventory WHERE item = ?");
-    stmt.PExecute(GetGUIDLow());
+    CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item = '%u'",GetGUIDLow());
 }
 
 ItemPrototype const *Item::GetProto() const

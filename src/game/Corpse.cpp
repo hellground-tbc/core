@@ -106,8 +106,8 @@ void Corpse::SaveToDB()
     CharacterDatabase.BeginTransaction();
     DeleteFromDB();
 
-    static SqlStatementID insertCorpse;
-    SqlStatement stmt = CharacterDatabase.CreateStatement(insertCorpse, "INSERT INTO corpse (guid, player, position_x, position_y, position_z, orientation, zone, map, data, time, corpse_type, instance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
+    static SqlStatementID saveCorpse;
+    SqlStatement stmt = CharacterDatabase.CreateStatement(saveCorpse, "INSERT INTO corpse (guid,player,position_x,position_y,position_z,orientation,zone,map,data,time,corpse_type,instance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
     stmt.addUInt64(GetGUIDLow());
     stmt.addUInt64(GUID_LOPART(GetOwnerGUID()));
@@ -117,7 +117,7 @@ void Corpse::SaveToDB()
     stmt.addFloat(GetOrientation());
     stmt.addUInt32(GetZoneId());
     stmt.addUInt32(GetMapId());
-
+    
     std::ostringstream ss;
     for (uint16 i = 0; i < m_valuesCount; i++)
         ss << GetUInt32Value(i) << " ";
@@ -147,21 +147,12 @@ void Corpse::DeleteBonesFromWorld()
 
 void Corpse::DeleteFromDB()
 {
-    static SqlStatementID deleteCorpse;
-    static SqlStatementID deleteBones;
-
     if (GetType() == CORPSE_BONES)
-    {
         // only specific bones
-        SqlStatement stmt = CharacterDatabase.CreateStatement(deleteBones, "DELETE FROM corpse WHERE guid = ?");
-        stmt.PExecute(GetGUIDLow());
-    }
+        CharacterDatabase.PExecute("DELETE FROM corpse WHERE guid = '%d'", GetGUIDLow());
     else
-    {
         // all corpses (not bones)
-        SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCorpse, "DELETE FROM corpse WHERE player = ? AND corpse_type <> '0';");
-        stmt.PExecute(GUID_LOPART(GetOwnerGUID()));
-    }
+        CharacterDatabase.PExecute("DELETE FROM corpse WHERE player = '%d' AND corpse_type <> '0'",  GUID_LOPART(GetOwnerGUID()));
 }
 
 bool Corpse::LoadFromDB(uint32 guid, QueryResultAutoPtr result, uint32 InstanceId)

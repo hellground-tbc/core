@@ -225,10 +225,6 @@ void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recv_data)
     // delete petitions with the same guid as this one
     ssInvalidPetitionGUIDs << "'" << charter->GetGUIDLow() << "'";
 
-    static SqlStatementID deletePetitionsList;
-    static SqlStatementID deletePetitionSignsList;
-    static SqlStatementID insertPetition;
-
     sLog.outDebug("Invalid petition GUIDs: %s", ssInvalidPetitionGUIDs.str().c_str());
     CharacterDatabase.escape_string(name);
     CharacterDatabase.BeginTransaction();
@@ -430,8 +426,6 @@ void WorldSession::HandlePetitionRenameOpcode(WorldPacket & recv_data)
 
     std::string db_newname = newname;
     CharacterDatabase.escape_string(db_newname);
-
-    static SqlStatementID updatePetitionName;
     CharacterDatabase.PExecute("UPDATE petition SET name = '%s' WHERE petitionguid = '%u'",
         db_newname.c_str(), GUID_LOPART(petitionguid));
 
@@ -546,8 +540,6 @@ void WorldSession::HandlePetitionSignOpcode(WorldPacket & recv_data)
             owner->GetSession()->SendPacket(&data);
         return;
     }
-
-    static SqlStatementID insertPetitionSign;
 
     CharacterDatabase.PExecute("INSERT INTO petition_sign (ownerguid,petitionguid, playerguid, player_account) VALUES ('%u', '%u', '%u','%u')", GUID_LOPART(ownerguid),GUID_LOPART(petitionguid), plguidlo,GetAccountId());
 
@@ -863,9 +855,6 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recv_data)
             result->NextRow();
         }
     }
-
-    static SqlStatementID deletePetition;
-    static SqlStatementID deletePetitionSign;
 
     CharacterDatabase.BeginTransaction();
     CharacterDatabase.PExecute("DELETE FROM petition WHERE petitionguid = '%u'", GUID_LOPART(petitionguid));
