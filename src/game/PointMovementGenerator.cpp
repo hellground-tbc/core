@@ -51,12 +51,15 @@ bool PointMovementGenerator<T>::Update(T &unit, const uint32 &diff)
 
     Traveller<T> traveller(unit);
 
-    i_destinationHolder.UpdateTraveller(traveller, diff);
+    if (i_destinationHolder.UpdateTraveller(traveller, diff, false))
+    {
+        if (!IsActive(unit)) // force stop processing (movement can move out active zone with cleanup movegens list)
+            return true; // not expire now, but already lost
+    }
 
     if (i_destinationHolder.HasArrived())
     {
         unit.clearUnitState(UNIT_STAT_MOVE);
-        arrived = true;
         return false;
     }
 
@@ -69,7 +72,7 @@ void PointMovementGenerator<T>:: Finalize(T &unit)
     if (unit.hasUnitState(UNIT_STAT_CHARGING))
         unit.clearUnitState(UNIT_STAT_CHARGING | UNIT_STAT_JUMPING);
 
-    if (arrived) // without this crash!
+    if (i_destinationHolder.HasArrived()) // without this crash!
         MovementInform(unit);
 }
 

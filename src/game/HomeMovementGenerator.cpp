@@ -27,27 +27,17 @@
 #include "DestinationHolderImp.h"
 #include "WorldPacket.h"
 
-void
-HomeMovementGenerator<Creature>::Finalize(Creature & owner)
-{
-    if (owner.IsAIEnabled)
-        owner.AI()->MovementInform(HOME_MOTION_TYPE, RAND_MAX);
-}
-
-void
-HomeMovementGenerator<Creature>::Initialize(Creature & owner)
+void HomeMovementGenerator<Creature>::Initialize(Creature & owner)
 {
     owner.RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
     _setTargetLocation(owner);
 }
 
-void
-HomeMovementGenerator<Creature>::Reset(Creature &)
+void HomeMovementGenerator<Creature>::Reset(Creature &)
 {
 }
 
-void
-HomeMovementGenerator<Creature>::_setTargetLocation(Creature & owner)
+void HomeMovementGenerator<Creature>::_setTargetLocation(Creature & owner)
 {
     if (!&owner)
         return;
@@ -65,13 +55,23 @@ HomeMovementGenerator<Creature>::_setTargetLocation(Creature & owner)
     owner.clearUnitState(UNIT_STAT_ALL_STATE);
 }
 
-bool
-HomeMovementGenerator<Creature>::Update(Creature &owner, const uint32& time_diff)
+bool HomeMovementGenerator<Creature>::Update(Creature &owner, const uint32& time_diff)
 {
     CreatureTraveller traveller(owner);
     i_destinationHolder.UpdateTraveller(traveller, time_diff);
 
-    if (time_diff > i_travel_timer)
+    if (time_diff >= i_travel_timer)
+    {
+        i_travel_timer = 0;                                 // Used as check in Finalize
+        return false;
+    }
+
+    i_travel_timer -= time_diff;
+    return true;
+}
+void HomeMovementGenerator<Creature>::Finalize(Creature& owner)
+{
+    if (i_travel_timer == 0)
     {
         owner.AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
 
@@ -83,12 +83,13 @@ HomeMovementGenerator<Creature>::Update(Creature &owner, const uint32& time_diff
             owner.BuildHeartBeatMsg(&packet);
             owner.SendMessageToSet(&packet, false);
         }
-        owner.AI()->JustReachedHome();
-        return false;
+
+        if (owner.IsAIEnabled)
+        {
+            owner.AI()->MovementInform(HOME_MOTION_TYPE, RAND_MAX);
+            owner.AI()->JustReachedHome();
+        }
     }
 
-    i_travel_timer -= time_diff;
-
-    return true;
 }
 

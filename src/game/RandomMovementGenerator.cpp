@@ -104,7 +104,7 @@ void RandomMovementGenerator<Creature>::_setRandomLocation(Creature &creature)
     //else if (is_water_ok)                                 // Swimming mode to be done with more than this check
     else
     {
-        i_nextMoveTime.Reset(urand(500+i_destinationHolder.GetTotalTravelTime(), 10000+i_destinationHolder.GetTotalTravelTime()));
+        i_nextMoveTime.Reset(i_destinationHolder.GetTotalTravelTime() + urand(500, 10000));
         creature.AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
     }
 }
