@@ -4012,6 +4012,10 @@ void Aura::HandleInvisibilityDetect(bool apply, bool Real)
     if (apply)
     {
         m_target->m_detectInvisibilityMask |= (1 << m_modifier.m_miscvalue);
+
+        // set 10 invisibility mask for Phase Wyrm together with detection aura
+        if(m_target->GetTypeId() == TYPEID_UNIT && m_target->GetEntry() == 24917)
+            m_target->m_invisibilityMask |= (1 << 10);
     }
     else
     {
