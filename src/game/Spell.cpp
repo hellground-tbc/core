@@ -768,7 +768,7 @@ void Spell::AddUnitTarget(Unit* pVictim, uint32 effIndex)
         target.timeDelay = 0LL;
 
     // If target reflect spell back to caster
-    if (target.missCondition==SPELL_MISS_REFLECT)
+    if (target.missCondition == SPELL_MISS_REFLECT)
     {
         // Calculate reflected spell result on caster
         target.reflectResult =  m_caster->SpellHitResult(m_caster, m_spellInfo, m_canReflect);
@@ -2306,10 +2306,6 @@ void Spell::cancel()
     if (m_spellState == SPELL_STATE_FINISHED)
         return;
 
-    SetReferencedFromCurrent(false);
-    if (m_selfContainer && *m_selfContainer == this)
-        *m_selfContainer = NULL;
-
     uint32 oldState = m_spellState;
     m_spellState = SPELL_STATE_FINISHED;
 
@@ -2321,8 +2317,8 @@ void Spell::cancel()
         {
             SendInterrupted(0);
             SendCastResult(SPELL_FAILED_INTERRUPTED);
-        } break;
-
+            break;
+        }
         case SPELL_STATE_CASTING:
         {
             for (std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
@@ -2342,14 +2338,18 @@ void Spell::cancel()
             SendChannelUpdate(0);
             SendInterrupted(0);
             SendCastResult(SPELL_FAILED_INTERRUPTED);
-        } break;
-
+            break;
+        }
         default:
-        {
-        } break;
+            break;
     }
 
     CancelGlobalCooldown();
+
+    SetReferencedFromCurrent(false);
+    if (m_selfContainer && *m_selfContainer == this)
+        *m_selfContainer = NULL;
+
     m_caster->RemoveDynObject(m_spellInfo->Id);
     m_caster->RemoveGameObject(m_spellInfo->Id,true);
 
@@ -5753,6 +5753,10 @@ void Spell::TriggerGlobalCooldown()
 void Spell::CancelGlobalCooldown()
 {
     if (!m_spellInfo->StartRecoveryTime)
+        return;
+
+    // Cancel global cooldown when interrupting current cast
+    if (m_caster->m_currentSpells[CURRENT_GENERIC_SPELL] != this)
         return;
 
     // Only players or controlled units have global cooldown
