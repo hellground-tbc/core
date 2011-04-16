@@ -10571,7 +10571,7 @@ void Unit::UpdateCharmAI()
 
     if (i_disabledAI) // disabled AI must be primary AI
     {
-        if (!isCharmed())
+        if (!isCharmed() || GetEntry() == 24922)    // allow Razorthorn Ravager to switch to ScriptedAI when charmed
         {
             if (i_AI) delete i_AI;
             i_AI = i_disabledAI;

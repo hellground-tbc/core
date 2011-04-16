@@ -1499,6 +1499,36 @@ void Spell::EffectDummy(uint32 i)
 
                     return;
                 }
+                case 44935:                                 // Expose Razorthorn Root
+                {
+                    if(!unitTarget)
+                        return;
+
+                    Player* plr = unitTarget->GetCharmerOrOwnerPlayerOrPlayerItself();
+
+                    GameObject* ok = NULL;
+                    Trinity::GameObjectFocusCheck go_check(plr,m_spellInfo->RequiresSpellFocus);
+                    Trinity::GameObjectSearcher<Trinity::GameObjectFocusCheck> checker(ok,go_check);
+
+                    Cell::VisitGridObjects(plr, checker, plr->GetMap()->GetVisibilityDistance());
+
+                    if (!ok)
+                    {
+                        WorldPacket data(SMSG_CAST_FAILED, (4+1+1));
+                        data << uint32(m_spellInfo->Id);
+                        data << uint8(SPELL_FAILED_REQUIRES_SPELL_FOCUS);
+                        data << uint8(m_cast_count);
+                        data << uint32(m_spellInfo->RequiresSpellFocus);
+                        plr->GetSession()->SendPacket(&data);
+                        return;
+                    }
+                    if(unitTarget->GetTypeId() == TYPEID_UNIT)
+                    {
+                        unitTarget->GetMotionMaster()->Clear();
+                        unitTarget->GetMotionMaster()->MovePoint(1, ok->GetPositionX(), ok->GetPositionY(), ok->GetPositionZ());
+                    }
+                    return;
+                }
                 case 44997:                                 // Converting Sentry remove corpse
                 {
                     if(unitTarget && unitTarget->GetTypeId() == TYPEID_UNIT)

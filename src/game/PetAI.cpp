@@ -223,6 +223,10 @@ void PetAI::UpdateAI(const uint32 diff)
 {
     m_owner = m_creature->GetCharmerOrOwner();
 
+    // quest support - Razorthorn Ravager, switch to ScriptedAI when charmed and not in combat
+    if (m_creature->GetEntry() == 24922 && m_creature->isCharmed() && !me->isInCombat())
+        m_creature->NeedChangeAI = true;
+
     if (m_updateAlliesTimer <= diff)
         // UpdateAllies self set update timer
         UpdateAllies();

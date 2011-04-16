@@ -30,6 +30,7 @@ npc_floon
 npc_skyguard_handler_deesak
 npc_isla_starmane
 npc_skyguard_prisoner
+npc_razorthorn_ravager
 EndContentData */
 
 #include "precompiled.h"
@@ -1645,6 +1646,189 @@ bool GossipSelect_npc_sarthis(Player* pPlayer, Creature* _Creature, uint32 sende
     return true;
 }
 
+/*#####
+# npc_razorthorn_ravager
+#####*/
+
+enum RazorthornRavager
+{
+    SPELL_RAVAGE                        = 38439,
+    SPELL_REND                          = 13443,
+    SPELL_RAVAGER_TAUNT                 = 46276,
+    SPELL_SUMMON_RAZORTHORN_ROOT        = 44941,
+
+    GAMEOBJECT_RAZORTHORN_DIRT_MOUND    = 187073
+};
+
+struct TRINITY_DLL_DECL npc_razorthorn_ravagerAI : public ScriptedAI
+{
+    npc_razorthorn_ravagerAI(Creature* c) : ScriptedAI(c) { }
+
+    uint32 RavageTimer;
+    uint32 RendTimer;
+    uint32 RavageTauntTimer;
+    uint32 DiggingTimer;
+    bool digging;
+    bool checked;
+
+    std::list<uint64> MoundList;
+
+    void Reset()
+    {
+        RavageTimer = 12000;
+        RendTimer = urand(3000, 6000);
+        RavageTauntTimer = urand(6000, 10000);
+        DiggingTimer = 5000;
+        digging = false;
+        checked = false;
+    }
+
+    void OnCharmed(bool apply)
+    {
+        if(apply)
+            MoundList.clear();
+    }
+
+    void EnterCombat(Unit*)
+    {
+        me->NeedChangeAI = true;
+        me->IsAIEnabled = false;
+    }
+
+    void MoveInLineOfSight(Unit* who)
+    {
+        if(m_creature->isCharmed())
+        {
+            if(!me->HasReactState(REACT_AGGRESSIVE))
+                return;
+            else
+            {
+                if (me->getVictim())
+                    return;
+                if (me->canStartAttack(who))
+                {
+                    EnterCombat(who);
+                    who->CombatStart(me);
+                }
+            }
+        }
+        ScriptedAI::MoveInLineOfSight(who);
+    }
+
+    void MovementInform(uint32 type, uint32 id)
+    {
+        if(type != POINT_MOTION_TYPE)
+            return;
+
+        if(id == 1)
+        {
+            me->GetMotionMaster()->MoveIdle();
+            me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_ONESHOT_ATTACKUNARMED);
+            digging = true;
+            DiggingTimer = 5000;
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(me->isCharmed() && me->GetCharmer())
+        {
+            if(me->HasReactState(REACT_DEFENSIVE) && me->GetCharmer()->isInCombat())
+            {
+                me->NeedChangeAI = true;
+                me->IsAIEnabled = false;
+            }
+        }
+
+        if(me->GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE && !checked)
+        {
+            if(GameObject* go = FindGameObject(GAMEOBJECT_RAZORTHORN_DIRT_MOUND, 15, me))
+            {
+                if(!MoundList.empty())
+                {
+                    for(std::list<uint64>::iterator itr = MoundList.begin(); itr != MoundList.end(); ++itr)
+                    {
+                        if((*itr) == go->GetGUID())
+                        {
+                            WorldPacket data(SMSG_CAST_FAILED, (4+1+1));
+                            data << uint32(SPELL_SUMMON_RAZORTHORN_ROOT);
+                            data << uint8(SPELL_FAILED_REQUIRES_SPELL_FOCUS);
+                            data << uint8(1);
+                            data << uint32(1482);
+                            me->GetCharmerOrOwnerPlayerOrPlayerItself()->GetSession()->SendPacket(&data);
+                            me->GetMotionMaster()->MoveFollow(me->GetCharmer(),PET_FOLLOW_DIST,PET_FOLLOW_ANGLE);
+                            checked = false;
+                            return;
+                        }
+                    }
+                    checked = true;
+                }
+                else
+                    checked = true;
+            }
+        }
+
+        if(digging)
+        {
+            if(DiggingTimer < diff)
+            {
+                digging = false;
+                DoCast((Unit*)NULL, SPELL_SUMMON_RAZORTHORN_ROOT);
+                me->SetUInt32Value(UNIT_NPC_EMOTESTATE,EMOTE_ONESHOT_NONE);
+                me->GetMotionMaster()->MoveFollow(me->GetCharmer(),PET_FOLLOW_DIST,PET_FOLLOW_ANGLE);
+                if(GameObject* go = FindGameObject(GAMEOBJECT_RAZORTHORN_DIRT_MOUND, 15, me))
+                {
+                    if(me->GetCharmer()->GetTypeId() == TYPEID_PLAYER)
+                    {
+                        MoundList.push_front(go->GetGUID());
+                        go->DestroyForPlayer(((Player*)me->GetCharmer()));
+                        checked = false;
+                    }
+                }
+            }
+            else
+                DiggingTimer -= diff;
+        }
+
+        if(!UpdateVictim())
+            return;
+
+        if(RavageTimer < diff)
+        {
+            if(urand(0,3))
+                AddSpellToCast(m_creature->getVictim(), SPELL_RAVAGE);
+            RavageTimer = urand(17000, 20000);
+        }
+        else
+            RavageTimer -= diff;
+
+        if(RendTimer < diff)
+        {
+            if(urand(0,3))
+                AddSpellToCast(m_creature->getVictim(), SPELL_REND);
+            RendTimer = urand(15000, 20000);
+        }
+        else
+            RendTimer -= diff;
+
+        if(RavageTauntTimer < diff)
+        {
+            AddSpellToCast(m_creature->getVictim(), SPELL_RAVAGER_TAUNT);
+            RavageTauntTimer = urand(10000, 35000);
+        }
+        else
+            RavageTauntTimer -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_razorthorn_ravagerAI(Creature *_creature)
+{
+    return new npc_razorthorn_ravagerAI(_creature);
+}
+
 void AddSC_terokkar_forest()
 {
     Script *newscript;
@@ -1741,5 +1925,10 @@ void AddSC_terokkar_forest()
     newscript = new Script;
     newscript->Name= "npc_minion_of_sarthis";
     newscript->GetAI = &GetAI_npc_minion_of_sarthisAI;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name= "npc_razorthorn_ravager";
+    newscript->GetAI = &GetAI_npc_razorthorn_ravagerAI;
     newscript->RegisterSelf();
 }
