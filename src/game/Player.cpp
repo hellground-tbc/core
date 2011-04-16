@@ -19638,6 +19638,10 @@ uint32 Player::GetBaseWeaponSkillValue (WeaponAttackType attType) const
 
 void Player::ResurectUsingRequestData()
 {
+    SpawnCorpseBones();
+
+    TeleportTo(m_resurrectMap, m_resurrectX, m_resurrectY, m_resurrectZ, GetOrientation());
+
     ResurrectPlayer(0.0f,false);
 
     if (GetMaxHealth() > m_resurrectHealth)
@@ -19653,10 +19657,6 @@ void Player::ResurectUsingRequestData()
     SetPower(POWER_RAGE, 0);
 
     SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY));
-
-    SpawnCorpseBones();
-
-    TeleportTo(m_resurrectMap, m_resurrectX, m_resurrectY, m_resurrectZ, GetOrientation());
 }
 
 void Player::SetClientControl(Unit* target, uint8 allowMove)
