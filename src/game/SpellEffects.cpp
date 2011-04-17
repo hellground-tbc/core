@@ -722,6 +722,7 @@ void Spell::EffectDummy(uint32 i)
                 case 41232:
                 {
                     unitTarget->SendMonsterMove(unitTarget->GetPositionX(), unitTarget->GetPositionY(), unitTarget->GetPositionZ(), 0);
+                    unitTarget->UpdateObjectVisibility();
                     break;
                 }
                 case 41082:

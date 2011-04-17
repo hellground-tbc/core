@@ -59,7 +59,7 @@ int CreatureEventAI::Permissible(const Creature *creature)
 CreatureEventAI::CreatureEventAI(Creature *c) : CreatureAI(c)
 {
     // Need make copy for filter unneeded steps and safe in case table reload
-    CreatureEventAI_Event_Map::const_iterator CreatureEvents = CreatureEAI_Mgr.GetCreatureEventAIMap().find(m_creature->GetEntry());
+    CreatureEventAI_Event_Map::const_iterator CreatureEvents = CreatureEAI_Mgr.GetCreatureEventAIMap().find(int64(me->GetEntry()));
     if (CreatureEvents != CreatureEAI_Mgr.GetCreatureEventAIMap().end())
     {
         std::vector<CreatureEventAI_Event>::const_iterator i;
@@ -83,39 +83,40 @@ CreatureEventAI::CreatureEventAI(Creature *c) : CreatureAI(c)
             }
             CreatureEventAIList.push_back(CreatureEventAIHolder(*i));
         }
-    }
-
-    // Need make copy for filter unneeded steps and safe in case table reload
-    CreatureEvents = CreatureEAI_Mgr.GetCreatureEventAIMap().find(-int32(me->GetGUIDLow()));
-    if (CreatureEvents != CreatureEAI_Mgr.GetCreatureEventAIMap().end())
-    {
-        std::vector<CreatureEventAI_Event>::const_iterator i;
-        for (i = (*CreatureEvents).second.begin(); i != (*CreatureEvents).second.end(); ++i)
-        {
-
-            //Debug check
-            #ifndef TRINITY_DEBUG
-            if ((*i).event_flags & EFLAG_DEBUG_ONLY)
-                continue;
-            #endif
-            if (((*i).event_flags & (EFLAG_HEROIC | EFLAG_NORMAL)) && m_creature->GetMap()->IsDungeon())
-            {
-                if ((m_creature->GetMap()->IsHeroic() && (*i).event_flags & EFLAG_HEROIC) ||
-                    (!m_creature->GetMap()->IsHeroic() && (*i).event_flags & EFLAG_NORMAL))
-                {
-                    //event flagged for instance mode
-                    CreatureEventAIList.push_back(CreatureEventAIHolder(*i));
-                }
-                continue;
-            }
-            CreatureEventAIList.push_back(CreatureEventAIHolder(*i));
-        }
-        //EventMap had events but they were not added because they must be for instance
-        if (CreatureEventAIList.empty())
-            sLog.outError("CreatureEventAI: Creature %u has events but no events added to list because of instance flags.", m_creature->GetEntry());
     }
     else
         sLog.outError("CreatureEventAI: EventMap for Creature %u is empty but creature is using CreatureEventAI.", m_creature->GetEntry());
+
+    // Need make copy for filter unneeded steps and safe in case table reload
+    CreatureEvents = CreatureEAI_Mgr.GetCreatureEventAIMap().find(-int64(me->GetGUIDLow()));
+    if (CreatureEvents != CreatureEAI_Mgr.GetCreatureEventAIMap().end())
+    {
+        std::vector<CreatureEventAI_Event>::const_iterator i;
+        for (i = (*CreatureEvents).second.begin(); i != (*CreatureEvents).second.end(); ++i)
+        {
+
+            //Debug check
+            #ifndef TRINITY_DEBUG
+            if ((*i).event_flags & EFLAG_DEBUG_ONLY)
+                continue;
+            #endif
+            if (((*i).event_flags & (EFLAG_HEROIC | EFLAG_NORMAL)) && m_creature->GetMap()->IsDungeon())
+            {
+                if ((m_creature->GetMap()->IsHeroic() && (*i).event_flags & EFLAG_HEROIC) ||
+                    (!m_creature->GetMap()->IsHeroic() && (*i).event_flags & EFLAG_NORMAL))
+                {
+                    //event flagged for instance mode
+                    CreatureEventAIList.push_back(CreatureEventAIHolder(*i));
+                }
+                continue;
+            }
+            CreatureEventAIList.push_back(CreatureEventAIHolder(*i));
+        }
+    }
+
+    // EventMap had events but they were not added because they must be for instance
+    if (CreatureEventAIList.empty())
+        sLog.outError("CreatureEventAI: Creature %u has events but no events added to list because of instance flags.", m_creature->GetEntry());
 
     bEmptyList = CreatureEventAIList.empty();
     Phase = 0;
@@ -530,6 +531,67 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
                 }
                 else
                     sLog.outErrorDb("CreatureEventAI: event %d creature %d attempt to cast spell that doesn't exist %d", EventId, m_creature->GetEntry(), action.cast.spellId);
+            }
+            break;
+        }
+        case ACTION_T_CAST_GUID:
+        {
+            CreatureData const* cr_data = objmgr.GetCreatureData(action.castguid.targetGUID);
+            
+            Unit* target = m_creature->GetMap()->GetCreature(MAKE_NEW_GUID(action.castguid.targetGUID, cr_data->id, HIGHGUID_UNIT));
+            Unit* caster = m_creature;
+
+            if (!target)
+            {
+                sLog.outErrorDb("CreatureEventAI: event %d creature %d attempt to cast spell on targetGUID %d that doesn't exists in map", EventId, m_creature->GetEntry(), action.castguid.targetGUID);
+                return;
+            }
+
+            //Allowed to cast only if not casting (unless we interrupt ourself) or if spell is triggered
+            bool canCast = !caster->IsNonMeleeSpellCasted(false) || (action.castguid.castFlags & (CAST_TRIGGERED | CAST_INTURRUPT_PREVIOUS));
+
+            // If cast flag CAST_AURA_NOT_PRESENT is active, check if target already has aura on them
+            if (action.castguid.castFlags & CAST_AURA_NOT_PRESENT)
+            {
+                if (target->HasAura(action.castguid.spellId,0))
+                    return;
+            }
+
+            if (canCast)
+            {
+                const SpellEntry* tSpell = GetSpellStore()->LookupEntry(action.castguid.spellId);
+
+                //Verify that spell exists
+                if (tSpell)
+                {
+                    //Check if cannot cast spell
+                    if (!(action.castguid.castFlags & (CAST_FORCE_TARGET_SELF | CAST_FORCE_CAST)) &&
+                        !CanCast(target, tSpell, (action.castguid.castFlags & CAST_TRIGGERED)))
+                    {
+                        //Melee current victim if flag not set
+                        if (!(action.castguid.castFlags & CAST_NO_MELEE_IF_OOM))
+                        {
+                            if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == TARGETED_MOTION_TYPE)
+                            {
+                                AttackDistance = 0.0f;
+                                AttackAngle = 0.0f;
+
+                                m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim(), AttackDistance, AttackAngle);
+                            }
+                        }
+
+                    }
+                    else
+                    {
+                        //Interrupt any previous spell
+                        if (caster->IsNonMeleeSpellCasted(false) && action.castguid.castFlags & CAST_INTURRUPT_PREVIOUS)
+                            caster->InterruptNonMeleeSpells(false);
+
+                        caster->CastSpell(target, action.castguid.spellId, (action.castguid.castFlags & CAST_TRIGGERED));
+                    }
+                }
+                else
+                    sLog.outErrorDb("CreatureEventAI: event %d creature %d attempt to cast spell that doesn't exist %d", EventId, m_creature->GetEntry(), action.castguid.spellId);
             }
             break;
         }

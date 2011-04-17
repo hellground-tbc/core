@@ -63,6 +63,15 @@ class Field
             return value;
         }
 
+        int64 GetInt64() const
+        {
+            int64 value = 0;
+            if(!mValue || sscanf(mValue,SI64FMTD,&value) == -1)
+                return 0;
+
+            return value;
+        }
+
         void SetType(enum DataTypes type) { mType = type; }
         //no need for memory allocations to store resultset field strings
         //all we need is to cache pointers returned by different DBMS APIs

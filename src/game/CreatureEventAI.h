@@ -111,6 +111,7 @@ enum EventAI_ActionType
     ACTION_T_FORCE_DESPAWN              = 41,               // No Params
     ACTION_T_SET_INVINCIBILITY_HP_LEVEL = 42,               // MinHpValue, format(0-flat,1-percent from max health)
     ACTION_T_REMOVE_CORPSE              = 43,               // No Params
+    ACTION_T_CAST_GUID                  = 44,               // SpellId, TargetGUID, CastFlags
 
     ACTION_T_SET_PHASE_MASK             = 97,
     ACTION_T_SET_STAND_STATE            = 98,
@@ -407,6 +408,13 @@ struct CreatureEventAI_Action
         {
             
         } remove_corpse;
+        // ACTION_T_CAST_GUID                               = 44
+        struct
+        {
+            uint32 spellId;
+            uint64 targetGUID;
+            uint32 castFlags;
+        } castguid;
         // RAW
         struct
         {
@@ -421,7 +429,7 @@ struct CreatureEventAI_Event
 {
     uint32 event_id;
 
-    int32 entryOrGUID;
+    int64 entryOrGUID;
 
     uint32 event_inverse_phase_mask;
 
@@ -563,7 +571,7 @@ struct CreatureEventAI_Event
 
 //Event_Map
 typedef std::vector<CreatureEventAI_Event> CreatureEventAI_Event_Vec;
-typedef UNORDERED_MAP<int32, CreatureEventAI_Event_Vec > CreatureEventAI_Event_Map;
+typedef UNORDERED_MAP<int64, CreatureEventAI_Event_Vec > CreatureEventAI_Event_Map;
 
 struct CreatureEventAI_Summon
 {
@@ -647,4 +655,5 @@ class TRINITY_DLL_SPEC CreatureEventAI : public CreatureAI
 
         Unit* summoned;
 };
+
 #endif

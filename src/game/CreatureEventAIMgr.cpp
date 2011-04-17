@@ -261,8 +261,8 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
             temp.event_id = EventAI_Type(fields[0].GetUInt32());
             uint32 i = temp.event_id;
 
-            temp.entryOrGUID = fields[1].GetInt32();
-            int32 entryOrGUID = temp.entryOrGUID;
+            temp.entryOrGUID = fields[1].GetInt64();
+            int64 entryOrGUID = temp.entryOrGUID;
 
             uint32 e_type = fields[2].GetUInt32();
             //Report any errors in event
@@ -282,19 +282,19 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
             temp.raw.param4 = fields[9].GetUInt32();
 
             //Creature does not exist in database
-            if (temp.entryOrGUID > 0)
+            if (entryOrGUID > 0)
             {
                 if (!sCreatureStorage.LookupEntry<CreatureInfo>(temp.entryOrGUID))
                 {
-                    sLog.outErrorDb("CreatureEventAI:  Event %u has script for non-existing creature entry (%u), skipping.", i, temp.entryOrGUID);
+                    sLog.outErrorDb("CreatureEventAI:  Event %u has script for non-existing creature entry (%u), skipping.", i, entryOrGUID);
                     continue;
                 }
             }
             else
             {
-                if (!objmgr.GetCreatureData(-temp.entryOrGUID))
+                if (!objmgr.GetCreatureData(-entryOrGUID))
                 {
-                    sLog.outErrorDb("CreatureEventAI:  Event %u has script for non-existing creature GUID ("UI64FMTD"), skipping.", i, temp.entryOrGUID);
+                    sLog.outErrorDb("CreatureEventAI:  Event %u has script for non-existing creature GUID ("SI64FMTD"), skipping.", i, entryOrGUID);
                     continue;
                 }
             }
@@ -592,17 +592,6 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
                         const SpellEntry *spell = sSpellStore.LookupEntry(action.cast.spellId);
                         if (!spell)
                             sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existent SpellID %u.", i, j+1, action.cast.spellId);
-                        /* FIXME: temp.raw.param3 not have event tipes with recovery time in it....
-                        else
-                        {
-                            if (spell->RecoveryTime > 0 && temp.event_flags & EFLAG_REPEATABLE)
-                            {
-                                //output as debug for now, also because there's no general rule all spells have RecoveryTime
-                                if (temp.event_param3 < spell->RecoveryTime)
-                                    sLog.outDebug("CreatureEventAI:  Event %u Action %u uses SpellID %u but cooldown is longer(%u) than minumum defined in event param3(%u).", i, j+1,action.cast.spellId, spell->RecoveryTime, temp.event_param3);
-                            }
-                        }
-                        */
 
                         //Cast is always triggered if target is forced to cast on self
                         if (action.cast.castFlags & CAST_FORCE_TARGET_SELF)
@@ -610,6 +599,20 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
 
                         if (action.cast.target >= TARGET_T_END)
                             sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
+                        break;
+                    }
+                    case ACTION_T_CAST_GUID:
+                    {
+                        const SpellEntry *spell = sSpellStore.LookupEntry(action.castguid.spellId);
+                        if (!spell)
+                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existent SpellID %u.", i, j+1, action.castguid.spellId);
+
+                        //Cast is always triggered if target is forced to cast on self
+                        if (action.castguid.castFlags & CAST_FORCE_TARGET_SELF)
+                            action.castguid.castFlags |= CAST_TRIGGERED;
+
+                        if (!action.castguid.targetGUID || !objmgr.GetCreatureData(action.castguid.targetGUID))
+                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses invalid targetGUID", i, j+1);
                         break;
                     }
                     case ACTION_T_SUMMON:
@@ -797,7 +800,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
             m_CreatureEventAI_Event_Map[entryOrGUID].push_back(temp);
             ++Count;
 
-            uint32 entry = entryOrGUID;
+            int64 entry = entryOrGUID;
 
             if (entryOrGUID < 0)
             {
@@ -844,12 +847,12 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
 void CreatureEventAIMgr::LoadCreatureEventAI_Scripts(uint32 creatureId)
 {
     // Gather event data
-    QueryResultAutoPtr result = WorldDatabase.PQuery("SELECT id, creature_id, event_type, event_inverse_phase_mask, event_chance, event_flags, "
+    QueryResultAutoPtr result = WorldDatabase.PQuery("SELECT id, entryOrGUID, event_type, event_inverse_phase_mask, event_chance, event_flags, "
         "event_param1, event_param2, event_param3, event_param4, "
         "action1_type, action1_param1, action1_param2, action1_param3, "
         "action2_type, action2_param1, action2_param2, action2_param3, "
         "action3_type, action3_param1, action3_param2, action3_param3 "
-        "FROM creature_ai_scripts WHERE creature_id = '%u'", creatureId);
+        "FROM creature_ai_scripts WHERE entryOrGUID = '%u'", creatureId);
 
     if (result)
     {
@@ -862,7 +865,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts(uint32 creatureId)
             temp.event_id = EventAI_Type(fields[0].GetUInt32());
             uint32 i = temp.event_id;
 
-            temp.entryOrGUID = fields[1].GetUInt32();
+            temp.entryOrGUID = fields[1].GetInt64();
             uint32 creature_id = temp.entryOrGUID;
 
             uint32 e_type = fields[2].GetUInt32();
@@ -1182,17 +1185,6 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts(uint32 creatureId)
                         const SpellEntry *spell = sSpellStore.LookupEntry(action.cast.spellId);
                         if (!spell)
                             sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existent SpellID %u.", i, j+1, action.cast.spellId);
-                        /* FIXME: temp.raw.param3 not have event tipes with recovery time in it....
-                        else
-                        {
-                            if (spell->RecoveryTime > 0 && temp.event_flags & EFLAG_REPEATABLE)
-                            {
-                                //output as debug for now, also because there's no general rule all spells have RecoveryTime
-                                if (temp.event_param3 < spell->RecoveryTime)
-                                    sLog.outDebug("CreatureEventAI:  Event %u Action %u uses SpellID %u but cooldown is longer(%u) than minumum defined in event param3(%u).", i, j+1,action.cast.spellId, spell->RecoveryTime, temp.event_param3);
-                            }
-                        }
-                        */
 
                         //Cast is always triggered if target is forced to cast on self
                         if (action.cast.castFlags & CAST_FORCE_TARGET_SELF)
@@ -1200,6 +1192,20 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts(uint32 creatureId)
 
                         if (action.cast.target >= TARGET_T_END)
                             sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
+                        break;
+                    }
+                    case ACTION_T_CAST_GUID:
+                    {
+                        const SpellEntry *spell = sSpellStore.LookupEntry(action.castguid.spellId);
+                        if (!spell)
+                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existent SpellID %u.", i, j+1, action.castguid.spellId);
+
+                        //Cast is always triggered if target is forced to cast on self
+                        if (action.castguid.castFlags & CAST_FORCE_TARGET_SELF)
+                            action.castguid.castFlags |= CAST_TRIGGERED;
+
+                        if (!action.castguid.targetGUID || !objmgr.GetCreatureData(action.castguid.targetGUID))
+                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses invalid targetGUID", i, j+1);
                         break;
                     }
                     case ACTION_T_SUMMON:
