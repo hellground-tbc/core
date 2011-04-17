@@ -294,7 +294,7 @@ void DynamicObjectUpdater::VisitHelper(Unit* target)
         return;
 
     // Apply PersistentAreaAura on target
-    PersistentAreaAura* Aur = new PersistentAreaAura(spellInfo, eff_index, NULL, target, i_dynobject.GetCaster());
+    PersistentAreaAura* Aur = new PersistentAreaAura(spellInfo, eff_index, NULL, target, i_dynobject.GetCaster(), NULL, i_dynobject.GetGUID());
 
     target->AddAura(Aur);
     i_dynobject.AddAffected(target);
