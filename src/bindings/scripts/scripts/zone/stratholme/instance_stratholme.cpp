@@ -38,6 +38,7 @@ EndScriptData */
 #define C_CRYSTAL               10415                       //three ziggurat crystals
 #define C_BARON                 10440
 #define C_YSIDA_TRIGGER         16100
+#define C_YSIDA                 16031
 
 #define C_RAMSTEIN              10439
 #define C_ABOM_BILE             10416
@@ -71,6 +72,7 @@ struct TRINITY_DLL_DECL instance_stratholme : public ScriptedInstance
 
     uint64 baronGUID;
     uint64 ysidaTriggerGUID;
+    uint64 ysidaGUID;
     std::set<uint64> crystalsGUID;
     std::set<uint64> abomnationGUID;
 
@@ -159,6 +161,7 @@ struct TRINITY_DLL_DECL instance_stratholme : public ScriptedInstance
         case C_CRYSTAL:         crystalsGUID.insert(creature->GetGUID()); break;
         case C_ABOM_BILE:
         case C_ABOM_VENOM:      abomnationGUID.insert(creature->GetGUID()); break;
+        case C_YSIDA:           ysidaGUID = creature->GetGUID(); break;
         }
     }
 
@@ -208,8 +211,6 @@ struct TRINITY_DLL_DECL instance_stratholme : public ScriptedInstance
                 //may add code to remove aura from players, but in theory the time should be up already and removed.
                 break;
             case DONE:
-                if (Unit *t = Unit::GetUnit(*player, ysidaTriggerGUID))
-                    t->SummonCreature(C_YSIDA,t->GetPositionX(),t->GetPositionY(),t->GetPositionZ(),t->GetOrientation(),TEMPSUMMON_TIMED_DESPAWN,1800000);
                 BaronRun_Timer = 0;
                 break;
             }
@@ -272,6 +273,9 @@ struct TRINITY_DLL_DECL instance_stratholme : public ScriptedInstance
             {
                 if (GetData(TYPE_BARON_RUN) == IN_PROGRESS)
                 {
+                    if (Unit *t = Unit::GetUnit(*player, ysidaTriggerGUID))
+                        t->SummonCreature(C_YSIDA,t->GetPositionX(),t->GetPositionY(),t->GetPositionZ(),t->GetOrientation(),TEMPSUMMON_TIMED_DESPAWN,1800000);
+
                     if (Group *pGroup = player->GetGroup())
                     {
                         for(GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
@@ -282,15 +286,28 @@ struct TRINITY_DLL_DECL instance_stratholme : public ScriptedInstance
 
                             if (pGroupie->HasAura(SPELL_BARON_ULTIMATUM,0))
                                 pGroupie->RemoveAurasDueToSpell(SPELL_BARON_ULTIMATUM);
+                            
+                            if (pGroupie->GetQuestStatus(QUEST_DEAD_MAN_PLEA) == QUEST_STATUS_INCOMPLETE)
+                            {
+                                pGroupie->CastedCreatureOrGO(C_YSIDA, ysidaGUID,0);
+                                pGroupie->AreaExploredOrEventHappens(QUEST_DEAD_MAN_PLEA);
+                            }
                         }
                     } else if (player->HasAura(SPELL_BARON_ULTIMATUM,0))
                         player->RemoveAurasDueToSpell(SPELL_BARON_ULTIMATUM);
 
                     if (Unit *temp = Unit::GetUnit(*player,GetData64(DATA_BARON)))
-                        player->GroupEventHappens(QUEST_DEAD_MAN_PLEA,temp);
-
+                    {
+                        player->CastedCreatureOrGO(C_YSIDA, ysidaGUID,0);
+                        player->AreaExploredOrEventHappens(QUEST_DEAD_MAN_PLEA);
+                    }
                     SetData(TYPE_BARON_RUN,DONE);
                 }
+            }
+
+            if (data == DONE)
+            {
+                HandleGameObject(portGauntletGUID, true);
             }
             Encounter[5] = data;
             break;
@@ -393,4 +410,3 @@ void AddSC_instance_stratholme()
     newscript->GetInstanceData = &GetInstanceData_instance_stratholme;
     newscript->RegisterSelf();
 }
-
