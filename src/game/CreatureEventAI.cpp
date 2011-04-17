@@ -83,6 +83,33 @@ CreatureEventAI::CreatureEventAI(Creature *c) : CreatureAI(c)
             }
             CreatureEventAIList.push_back(CreatureEventAIHolder(*i));
         }
+    }
+
+    // Need make copy for filter unneeded steps and safe in case table reload
+    CreatureEvents = CreatureEAI_Mgr.GetCreatureEventAIMap().find(-int32(me->GetGUIDLow()));
+    if (CreatureEvents != CreatureEAI_Mgr.GetCreatureEventAIMap().end())
+    {
+        std::vector<CreatureEventAI_Event>::const_iterator i;
+        for (i = (*CreatureEvents).second.begin(); i != (*CreatureEvents).second.end(); ++i)
+        {
+
+            //Debug check
+            #ifndef TRINITY_DEBUG
+            if ((*i).event_flags & EFLAG_DEBUG_ONLY)
+                continue;
+            #endif
+            if (((*i).event_flags & (EFLAG_HEROIC | EFLAG_NORMAL)) && m_creature->GetMap()->IsDungeon())
+            {
+                if ((m_creature->GetMap()->IsHeroic() && (*i).event_flags & EFLAG_HEROIC) ||
+                    (!m_creature->GetMap()->IsHeroic() && (*i).event_flags & EFLAG_NORMAL))
+                {
+                    //event flagged for instance mode
+                    CreatureEventAIList.push_back(CreatureEventAIHolder(*i));
+                }
+                continue;
+            }
+            CreatureEventAIList.push_back(CreatureEventAIHolder(*i));
+        }
         //EventMap had events but they were not added because they must be for instance
         if (CreatureEventAIList.empty())
             sLog.outError("CreatureEventAI: Creature %u has events but no events added to list because of instance flags.", m_creature->GetEntry());

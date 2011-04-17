@@ -421,7 +421,7 @@ struct CreatureEventAI_Event
 {
     uint32 event_id;
 
-    uint32 creature_id;
+    int32 entryOrGUID;
 
     uint32 event_inverse_phase_mask;
 
@@ -563,7 +563,7 @@ struct CreatureEventAI_Event
 
 //Event_Map
 typedef std::vector<CreatureEventAI_Event> CreatureEventAI_Event_Vec;
-typedef UNORDERED_MAP<uint32, CreatureEventAI_Event_Vec > CreatureEventAI_Event_Map;
+typedef UNORDERED_MAP<int32, CreatureEventAI_Event_Vec > CreatureEventAI_Event_Map;
 
 struct CreatureEventAI_Summon
 {
