@@ -4573,7 +4573,8 @@ uint8 Spell::CheckCasterAuras() const
                 {
                     if (GetSpellMechanicMask(itr->second->GetSpellProto(), itr->second->GetEffIndex()) & mechanic_immune)
                         continue;
-                    if (GetSpellSchoolMask(itr->second->GetSpellProto()) & school_immune)
+                    if ((GetSpellSchoolMask(itr->second->GetSpellProto()) & school_immune) &&
+                        !(itr->second->GetSpellProto()->AttributesEx & SPELL_ATTR_EX_UNAFFECTED_BY_SCHOOL_IMMUNE))
                         continue;
                     if ((1<<(itr->second->GetSpellProto()->Dispel)) & dispel_immune)
                         continue;
