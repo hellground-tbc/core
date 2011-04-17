@@ -718,7 +718,7 @@ struct DamageLog
 {
     DamageLog(uint32 op, Unit *attacker, Unit *victim, uint8 school_mask = SPELL_SCHOOL_NORMAL, WeaponAttackType attType = BASE_ATTACK) :
               opcode(op), source(attacker), target(victim), schoolMask(school_mask), attackType(attType),
-              damage(0), absorb(0), resist(0), blocked(0), hitInfo(0), rageDamage(0) {}
+              damage(0), absorb(0), resist(0), blocked(0), hitInfo(0), rageDamage(0), threatTarget(0) {}
 
     uint32 opcode;
     Unit *source;
@@ -734,12 +734,14 @@ struct DamageLog
     uint32 hitInfo;
     uint32 rageDamage;
     WeaponAttackType attackType;
+
+    uint64 threatTarget;
 };
 
 struct SpellDamageLog : public DamageLog
 {
     SpellDamageLog(uint32 spellId, Unit *attacker, Unit *victim, uint8 school_mask = SPELL_SCHOOL_NORMAL, uint8 dmgType = 0) :
-         DamageLog(SMSG_SPELLNONMELEEDAMAGELOG, attacker, victim, school_mask, BASE_ATTACK), spell_id(spellId), damageType(dmgType) {}
+         DamageLog(SMSG_SPELLNONMELEEDAMAGELOG, attacker, victim, school_mask, BASE_ATTACK), spell_id(spellId), damageType(dmgType){}
 
     uint8 damageType;
     uint32 spell_id;

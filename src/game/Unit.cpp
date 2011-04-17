@@ -1007,14 +1007,7 @@ uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, cons
 
             if (damagetype == DIRECT_DAMAGE || damagetype == SPELL_DIRECT_DAMAGE)
             {
-                //TODO: This is from procflag, I do not know which spell needs this
-                //Maim?
-                //if (!spellProto || !(spellProto->AuraInterruptFlags&AURA_INTERRUPT_FLAG_DIRECT_DAMAGE))
-                if (spellProto && spellProto->Id == 33619)                 //if it's from Reflective Shield
-                {
-                    // don't break cc
-                }
-                else
+                if (!spellProto || spellProto->Id != 33619)                 //if it's from Reflective Shield
                     pVictim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_DIRECT_DAMAGE, spellProto ? spellProto->Id : 0);
             }
 
@@ -1023,7 +1016,14 @@ uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, cons
                 Unit *threatTarget = this;
 
                 float threat = damageInfo->damage;
+
                 ApplySpellThreatModifiers(spellProto, threat);
+
+                if (damageInfo->threatTarget)
+                {
+                    if (Unit *pTarget = GetMap()->GetUnit(damageInfo->threatTarget))
+                        threatTarget = pTarget;
+                }
 
                 pVictim->AddThreat(threatTarget, threat, SpellSchoolMask(damageInfo->schoolMask), spellProto);
             }

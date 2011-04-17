@@ -963,7 +963,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         SpellDamageLog damageInfo(m_spellInfo->Id, caster, unitTarget, m_spellSchoolMask);
 
         // Add bonuses and fill damageInfo struct
-        caster->CalculateSpellDamageTaken(&damageInfo, m_damage, m_spellInfo, m_attackType,  target->crit);
+        caster->CalculateSpellDamageTaken(&damageInfo, m_damage, m_spellInfo, m_attackType, target->crit);
 
         // Send log damage message to client
         // caster->SendSpellNonMeleeDamageLog(&damageInfo);
@@ -972,7 +972,11 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         if (damageInfo.damage)
             procVictim |= PROC_FLAG_TAKEN_ANY_DAMAGE;
 
+        if (missInfo == SPELL_MISS_REFLECT)
+            damageInfo.threatTarget = unit->GetGUID();
+
         caster->DealSpellDamage(&damageInfo, true);
+
         // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)
         if (missInfo != SPELL_MISS_REFLECT)
         {
