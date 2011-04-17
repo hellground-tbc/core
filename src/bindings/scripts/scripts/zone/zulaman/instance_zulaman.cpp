@@ -261,9 +261,10 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
 
     void BossJustKilled(uint8 num)
     {
-        if(!QuestMinute)
+        BossKilled++;
+        if(num > 3 || !QuestMinute)
             return;
-        Hostages[num] = HOSTAGE_SAVED | (BossKilled+1);
+        Hostages[num] = HOSTAGE_SAVED | BossKilled;
     }
 
     void CheckInstanceStatus()
@@ -347,59 +348,67 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
             break;
         case DATA_NALORAKKEVENT:
             if (Encounters[1] != DONE)
-                Encounters[1] = data;
-            if(data == DONE)
             {
-                if(QuestMinute)
+                Encounters[1] = data;
+                if(data == DONE)
                 {
-                    QuestMinute += 15;
-                    UpdateWorldState(3106, QuestMinute);
+                    if(QuestMinute)
+                    {
+                        QuestMinute += 15;
+                        UpdateWorldState(3106, QuestMinute);
+                    }
+                    BossJustKilled(0);
                 }
-                BossJustKilled(0);
             }
             break;
         case DATA_AKILZONEVENT:
-            if (Encounters[2] != DONE)
-                Encounters[2] = data;
-
             HandleGameObject(AkilzonDoorGUID, data != IN_PROGRESS);
-
-            if(data == DONE)
+            if (Encounters[2] != DONE)
             {
-                if(QuestMinute)
+                Encounters[2] = data;        
+                if(data == DONE)
                 {
-                    QuestMinute += 10;
-                    UpdateWorldState(3106, QuestMinute);
+                    if(QuestMinute)
+                    {
+                        QuestMinute += 10;
+                        UpdateWorldState(3106, QuestMinute);
+                    }
+                    BossJustKilled(1);
                 }
-                BossJustKilled(1);
             }
             break;
         case DATA_JANALAIEVENT:
             if (Encounters[3] != DONE)
+            {
                 Encounters[3] = data;
-
-            if(data == DONE)
-                BossJustKilled(2);
+                if(data == DONE)
+                    BossJustKilled(2);
+            }
             break;
         case DATA_HALAZZIEVENT:
-            if (Encounters[4] != DONE)
-                Encounters[4] = data;
-
             HandleGameObject(HalazziEntranceDoorGUID, data != IN_PROGRESS);
-
-            if(data == DONE)
+            if (Encounters[4] != DONE)
             {
-                BossJustKilled(3);
-                HandleGameObject(HalazziExitDoorGUID, true);
+                Encounters[4] = data;
+                if(data == DONE)
+                {
+                    BossJustKilled(3);
+                    HandleGameObject(HalazziExitDoorGUID, true);
+                }
             }
             break;
         case DATA_HEXLORDEVENT:
-            if (Encounters[5] != DONE)
-                Encounters[5] = data;
-
             if(data == IN_PROGRESS)
                 HandleGameObject(HexLordEntranceGateGUID, false);
-            else if(data == NOT_STARTED)
+
+            if (Encounters[5] != DONE)
+            {
+                Encounters[5] = data;
+                if(data == DONE)
+                    BossJustKilled(4);
+            }
+            
+            if(data == NOT_STARTED)
                 CheckInstanceStatus();
             break;
         case DATA_ZULJINEVENT:
@@ -435,7 +444,6 @@ struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
 
         if(data == DONE)
         {
-            BossKilled++;
             if(QuestMinute && BossKilled >= 4)
             {
                 QuestMinute = 0;
