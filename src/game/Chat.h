@@ -209,6 +209,7 @@ class ChatHandler
         bool HandleNpcAddFormationCommand(const char* args);
         bool HandleNpcSetLinkCommand(const char* args);
         bool HandleNpcResetAICommand(const char* args);
+        bool HandleNpcDoActionCommand(const char* args);
 
         bool HandleReloadCommand(const char* args);
         bool HandleReloadAllCommand(const char* args);

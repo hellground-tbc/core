@@ -4017,3 +4017,25 @@ bool ChatHandler::HandleNpcResetAICommand(const char* args)
     PSendSysMessage("CreatureAI re-created.");
     return true;
 }
+
+bool ChatHandler::HandleNpcDoActionCommand(const char* args)
+{
+    if (!*args)
+        return false;
+
+    int32 param = (uint32) atoi((char*)args);
+
+    Creature* pCreature = getSelectedCreature();
+
+    if (!pCreature)
+    {
+        SendSysMessage(LANG_SELECT_CREATURE);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    pCreature->AI()->DoAction(param);
+
+    PSendSysMessage("Action send to creature.");
+    return true;
+}

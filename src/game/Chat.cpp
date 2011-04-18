@@ -468,6 +468,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "addformation",   SEC_MODERATOR,      false, &ChatHandler::HandleNpcAddFormationCommand,     "", NULL },
         { "setlink",        SEC_MODERATOR,      false, &ChatHandler::HandleNpcSetLinkCommand,          "", NULL },
         { "resetai",        SEC_MODERATOR,      false, &ChatHandler::HandleNpcResetAICommand,          "", NULL },
+        { "doaction",       SEC_MODERATOR,      false, &ChatHandler::HandleNpcDoActionCommand,         "", NULL },
 
         //{ TODO: fix or remove this commands
         { "name",           SEC_GAMEMASTER,     false, &ChatHandler::HandleNameCommand,                "", NULL },
