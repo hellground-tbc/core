@@ -3742,6 +3742,7 @@ void Spell::EffectSummonChangeItem(uint32 i)
             m_CastItem = NULL;
 
             player->StoreItem(dest, pNewItem, true);
+            player->ItemAddedQuestCheck(newitemid, 1);
             return;
         }
     }
