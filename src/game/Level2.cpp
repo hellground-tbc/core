@@ -45,6 +45,7 @@
 #include <map>
 #include "GlobalEvents.h"
 #include "TicketMgr.h"
+#include "CreatureAI.h"
 
 #include "TargetedMovementGenerator.h"                      // for HandleNpcUnFollowCommand
 

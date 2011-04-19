@@ -2857,11 +2857,80 @@ void Spell::EffectPowerDrain(uint32 i)
 
 void Spell::EffectSendEvent(uint32 EffectIndex)
 {
-    if (m_caster->GetTypeId() == TYPEID_UNIT && m_spellInfo->Id == 40134)        // Summon Arcane Elemental
+    switch (m_spellInfo->Id)
     {
-        if (Unit* Arcane = m_caster->SummonCreature(23100, -2469.59, 4700.71, 155.86, 3.15, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 300000))
-            Arcane->setFaction(35);
+        // Summon Arcane Elemental
+        case 40134:
+        {
+            if (m_caster->GetTypeId() == TYPEID_UNIT)
+            {
+                if (Unit* Arcane = m_caster->SummonCreature(23100, -2469.59, 4700.71, 155.86, 3.15, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 300000))
+                    Arcane->setFaction(35);
+            }
+            break;
+        }
+        // Place Belmara's Tome
+        case 34140:
+        {
+            if (m_caster->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+            if (Creature *pBelmara = m_caster->SummonCreature(19546, m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), 3.15, TEMPSUMMON_TIMED_DESPAWN, 10000))
+            {
+                pBelmara->setFaction(35);
+                pBelmara->MonsterSay("I can't sleep without a good bedtime story. Now I'm cerain to rest well.", LANG_UNIVERSAL, 0);
+
+                ((Player*)m_caster)->CastedCreatureOrGO(19547, pBelmara->GetGUID(), m_spellInfo->Id);
+            }
+            break;
+        }
+        // Place Luminrath's Mantle
+        case 34142:
+        {
+            if (m_caster->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+            if (Creature *pLuminrath = m_caster->SummonCreature(19580, m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), 3.15, TEMPSUMMON_TIMED_DESPAWN, 10000))
+            {
+                pLuminrath->setFaction(35);
+                pLuminrath->MonsterSay("I can't possibly go out without my cloak. I hope it's in here...", LANG_UNIVERSAL, 0);
+
+                ((Player*)m_caster)->CastedCreatureOrGO(19548, pLuminrath->GetGUID(), m_spellInfo->Id);
+            }
+            break;
+        }
+        // Place Cohlien's Hat
+        case 34144:
+        {
+            if (m_caster->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+            if (Creature *pCohlien = m_caster->SummonCreature(19579, m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), 3.15, TEMPSUMMON_TIMED_DESPAWN, 10000))
+            {
+                pCohlien->setFaction(35);
+                pCohlien->MonsterSay("Phew! There's my lucky hat. I've been looking for it everywhere.", LANG_UNIVERSAL, 0);
+
+                ((Player*)m_caster)->CastedCreatureOrGO(19550, pCohlien->GetGUID(), m_spellInfo->Id);
+            }
+            break;
+        }
+        // Place Dathric's Blade
+        case 34141:
+        {
+            if (m_caster->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+            if (Creature *pDathric = m_caster->SummonCreature(19543, m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), 3.15, TEMPSUMMON_TIMED_DESPAWN, 10000))
+            {
+                pDathric->setFaction(35);
+                pDathric->MonsterSay("I don't know what I was thinking, going out without my sword. I would've put it on if I'd seen it here...", LANG_UNIVERSAL, 0);
+
+                ((Player*)m_caster)->CastedCreatureOrGO(19549, pDathric->GetGUID(), m_spellInfo->Id);
+            }
+            break;
+        }
     }
+
     if (m_caster->GetTypeId() == TYPEID_PLAYER && ((Player*)m_caster)->InBattleGround())
     {
         BattleGround* bg = ((Player *)m_caster)->GetBattleGround();
