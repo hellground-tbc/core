@@ -294,16 +294,20 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
             switch (prevBeam)
             {
                 case SPELL_SINFUL_BEAM:
-                    ForceSpellCast(me, RAND(SPELL_SINISTER_BEAM, SPELL_VILE_BEAM, SPELL_WICKED_BEAM));
+                    //ForceSpellCast(me, RAND(SPELL_SINISTER_BEAM, SPELL_VILE_BEAM, SPELL_WICKED_BEAM));
+                    me->AddAura(RAND(SPELL_SINISTER_BEAM, SPELL_VILE_BEAM, SPELL_WICKED_BEAM), me);
                     break;
                 case SPELL_SINISTER_BEAM:
-                    ForceSpellCast(me, RAND(SPELL_SINFUL_BEAM, SPELL_VILE_BEAM, SPELL_WICKED_BEAM));
+                    //ForceSpellCast(me, RAND(SPELL_SINFUL_BEAM, SPELL_VILE_BEAM, SPELL_WICKED_BEAM));
+                    me->AddAura(RAND(SPELL_SINFUL_BEAM, SPELL_VILE_BEAM, SPELL_WICKED_BEAM), me);
                     break;
                 case SPELL_VILE_BEAM:
-                    ForceSpellCast(me, RAND(SPELL_SINFUL_BEAM, SPELL_SINISTER_BEAM, SPELL_WICKED_BEAM));
+                    //ForceSpellCast(me, RAND(SPELL_SINFUL_BEAM, SPELL_SINISTER_BEAM, SPELL_WICKED_BEAM));
+                    me->AddAura(RAND(SPELL_SINFUL_BEAM, SPELL_SINISTER_BEAM, SPELL_WICKED_BEAM), me);
                     break;
                 case SPELL_WICKED_BEAM:
-                    ForceSpellCast(me, RAND(SPELL_SINFUL_BEAM, SPELL_SINISTER_BEAM, SPELL_VILE_BEAM));
+                    //ForceSpellCast(me, RAND(SPELL_SINFUL_BEAM, SPELL_SINISTER_BEAM, SPELL_VILE_BEAM));
+                    me->AddAura(RAND(SPELL_SINFUL_BEAM, SPELL_SINISTER_BEAM, SPELL_VILE_BEAM), me);
                     break;
             }
             castBeam = false;

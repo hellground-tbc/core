@@ -2269,15 +2269,19 @@ void Aura::TriggerSpell()
                         std::list<HostilReference*>::iterator i = targets.begin();
                         advance(i, rand()%targets.size());
                         Unit *unit = caster->GetUnit((*i)->getUnitGuid());
-                        if (unit && unit->GetTypeId() == TYPEID_PLAYER && !caster->IsWithinMeleeRange(unit))
+                        if (unit && unit->GetTypeId() == TYPEID_PLAYER && !unit->IsWithinDistInMap(caster, 18))
                         {
                             target = unit;
                             break;
-                        } else
+                        }
+                        else
                             targets.erase(i);
                     }
                     if (!target)
                         return;
+
+                    caster->CastSpell(target, triggeredSpellInfo, true, 0, this, originalCasterGUID);
+                    return;
                 }
             }
             // Cyclone from Zul'jin event (Zul'Aman)
