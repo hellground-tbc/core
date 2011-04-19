@@ -1191,11 +1191,13 @@ struct TRINITY_DLL_DECL mob_epextractionAI : public ScriptedAI
 
     void JustDied(Unit* killer)
     {
-        if(m_creature->GetEntry() == ENTRY_RUMBLER)
-           m_creature->CastSpell(m_creature,SPELL_SUMMON_SHARD,false);
+        if(me->GetEntry() == ENTRY_RUMBLER)
+           me->CastSpell(me, SPELL_SUMMON_SHARD, true);
 
         if(PowerExtracted)
-            m_creature->CastSpell(m_creature,SPELL_CREATE_EPOWER,false);
+            me->CastSpell(me, SPELL_CREATE_EPOWER, true);
+
+        me->RemoveCorpse();
     }
 };
 
@@ -1528,10 +1530,10 @@ void AddSC_netherstorm()
 
     newscript = new Script;
     newscript->Name = "mob_epextraction";
-    newscript->GetAI = &GetAI_npc_warp_chaser;
+    newscript->GetAI = &GetAI_mob_epextraction;
     newscript->RegisterSelf();
-    newscript = new Script;
 
+    newscript = new Script;
     newscript->Name = "mob_dr_boom";
     newscript->GetAI = &GetAI_mob_dr_boom;
     newscript->RegisterSelf();
@@ -1546,6 +1548,5 @@ void AddSC_netherstorm()
     newscript->GetAI = &GetAI_npc_maxx_a_million;
     newscript->pQuestAccept = &QuestAccept_npc_maxx_a_million;
     newscript->RegisterSelf();
-
 }
 
