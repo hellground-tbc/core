@@ -676,18 +676,19 @@ CreatureAI* GetAI_npc_living_flare(Creature *_Creature)
     return newAI;
 }
 
-   struct TRINITY_DLL_DECL npc_abyssal_shelf_questAI : public ScriptedAI
+struct TRINITY_DLL_DECL npc_abyssal_shelf_questAI : public ScriptedAI
 {
     npc_abyssal_shelf_questAI(Creature* c) : ScriptedAI(c) {}
 
     void UpdateAI(const uint32 diff)
     {
-     if (!UpdateVictim())
-         return;
-     DoMeleeAttackIfReady();
+         if (!UpdateVictim())
+             return;
+
+         DoMeleeAttackIfReady();
     }
 
-     void JustDied(Unit* killer)
+    void JustDied(Unit* killer)
     {
         m_creature->RemoveCorpse();
     }
@@ -697,6 +698,62 @@ CreatureAI* GetAI_npc_abyssal_shelf_quest(Creature *_Creature)
 {
     CreatureAI* newAI = new npc_abyssal_shelf_questAI(_Creature);
     return newAI;
+}
+
+struct TRINITY_DLL_DECL npc_shattered_hand_berserkerAI : public ScriptedAI
+{
+    npc_shattered_hand_berserkerAI(Creature* c) : ScriptedAI(c) {}
+
+    uint32 m_enrageTimer;
+    uint32 m_chargeTimer;
+
+
+    void Reset()
+    {
+        m_enrageTimer = 15000;
+        m_chargeTimer = 0;
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+         if (!UpdateVictim())
+             return;
+
+         if (m_chargeTimer < diff)
+         {
+             if (me->GetDistance2d(me->getVictim()) > 8.0f)
+                 AddSpellToCast(me->getVictim(), 35570);
+
+             m_chargeTimer = 15000;
+         }
+         else
+             m_chargeTimer -= diff;
+
+         if (m_enrageTimer < diff)
+         {
+             AddSpellToCast(me->getVictim(), 8599);
+             m_enrageTimer = 120000;
+         }
+         else
+             m_enrageTimer -= diff;
+
+         CastNextSpellIfAnyAndReady();
+         DoMeleeAttackIfReady();
+    }
+
+    void JustDied(Unit* pKiller)
+    {
+        if (GetClosestCreatureWithEntry(me, 22444, 25.0f))
+        {
+            if (Creature *pSpirit = me->SummonCreature(22454, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 30000))
+                pSpirit->AI()->AttackStart(pKiller);
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_shattered_hand_berserker(Creature *_Creature)
+{
+    return new npc_shattered_hand_berserkerAI(_Creature);
 }
 
 void AddSC_hellfire_peninsula()
@@ -760,5 +817,10 @@ void AddSC_hellfire_peninsula()
     newscript = new Script;
     newscript->Name="npc_living_flare";
     newscript->GetAI = &GetAI_npc_living_flare;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_shattered_hand_berserker";
+    newscript->GetAI = &GetAI_npc_shattered_hand_berserker;
     newscript->RegisterSelf();
 }
