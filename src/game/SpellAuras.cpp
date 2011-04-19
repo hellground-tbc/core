@@ -1804,7 +1804,7 @@ void Aura::TriggerSpell()
                     // Eye of Grillok
                     case 38495:
                     {
-                        m_target->CastSpell(m_target, 38530, true);
+                        caster->CastSpell((Unit*)NULL, 38530, true);
                         return;
                     }
                     // Absorb Eye of Grillok (Zezzak's Shard)

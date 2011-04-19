@@ -5256,6 +5256,11 @@ void Spell::EffectScriptEffect(uint32 effIndex)
     // TODO: we must implement hunter pet summon at login there (spell 6962)
     switch (m_spellInfo->Id)
     {
+        case 38530:
+        {
+            m_caster->RemoveAurasDueToSpell(38495);
+            break;
+        }
         // Cage Trap Trigger (Maiev)
         case 40761:
         {
