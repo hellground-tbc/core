@@ -321,6 +321,18 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                   damage+= (uint32)unitTarget->GetMap()->rand32()%2 ? damage : 0;
                 }
 
+                if (m_spellInfo->Id == 37841)
+                {
+                    if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+                    {
+                        if (unitTarget->HasAura(37830, 0))
+                        {
+                            damage += 500;
+                            ((Player*)unitTarget)->KilledMonster(21910, 0);
+                        }
+                    }
+                }
+
                 // Meteor like spells (divided damage to targets)
                 if (m_spellInfo->AttributesCu & SPELL_ATTR_CU_SHARE_DAMAGE)
                 {
