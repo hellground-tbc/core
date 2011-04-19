@@ -455,8 +455,8 @@ void BattleGround::RewardReputationToTeam(uint32 faction_id, uint32 Reputation, 
 
         if (team == TeamID)
         {
-            int32 mod = 100 + plr->GetTotalAuraModifier(SPELL_AURA_MOD_REPUTATION_GAIN);
-            plr->ModifyFactionReputation(factionEntry, Reputation *(mod/100));
+            int32 rep = plr->CalculateReputationGain(70, Reputation, faction_id, false);
+            plr->ModifyFactionReputation(factionEntry, rep);
         }
     }
 }
