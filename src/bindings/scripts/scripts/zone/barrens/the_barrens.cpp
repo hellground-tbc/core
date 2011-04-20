@@ -392,6 +392,8 @@ struct TRINITY_DLL_DECL npc_twiggy_flatheadAI : public ScriptedAI
                     }
                 }
                 BigWill = 0;
+                Reset();
+                return;
             }
 
             if (!EventGrate && EventInProgress)
@@ -478,11 +480,7 @@ struct TRINITY_DLL_DECL npc_twiggy_flatheadAI : public ScriptedAI
                         if (!pCreature || !pCreature->isAlive())
                         {
                             DoScriptText(SAY_TWIGGY_FLATHEAD_OVER, m_creature);
-                            EventInProgress = false;
-                            EventBigWill = false;
-                            EventGrate = false;
-                            PlayerGUID = 0;
-                            Wave = 0;
+                            EnterEvadeMode();
                         }
                     }
                 }
@@ -512,7 +510,7 @@ enum eEnums_Wizzlecrank
     SAY_PROGRESS_2      = -1000277,
     SAY_PROGRESS_3      = -1000278,
     SAY_END             = -1000279,
- 
+
     QUEST_ESCAPE        = 863,
     FACTION_RATCHET     = 637,
     NPC_PILOT_WIZZ      = 3451,

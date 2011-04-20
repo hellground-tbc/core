@@ -4040,3 +4040,30 @@ bool ChatHandler::HandleNpcDoActionCommand(const char* args)
     PSendSysMessage("Action send to creature.");
     return true;
 }
+
+bool ChatHandler::HandleNpcEnterEvadeModeCommand(const char* args)
+{
+    Creature * pCreature = getSelectedCreature();
+
+    if (!pCreature)
+    {
+        PSendSysMessage("You should select creature");
+        return false;
+    }
+
+    if (m_session->GetPlayer()->GetMapId() != pCreature->GetMapId())
+    {
+        PSendSysMessage("Creature must be in same map !");
+        return false;
+    }
+
+    if (!pCreature->IsAIEnabled)
+    {
+        PSendSysMessage("Creature AI is disabled !");
+        return false;
+    }
+
+    pCreature->AI()->EnterEvadeMode();
+
+    return true;
+}
