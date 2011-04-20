@@ -151,9 +151,6 @@ struct TRINITY_DLL_DECL npc_barnesAI : public npc_escortAI
 
         if(pInstance)
         {
-            if(pInstance->GetData(DATA_OPERA_EVENT) == IN_PROGRESS)
-                return;
-
             Event = pInstance->GetData(DATA_OPERA_PERFORMANCE);
 
             pInstance->HandleGameObject(pInstance->GetData64(DATA_GAMEOBJECT_STAGEDOORLEFT), true);
