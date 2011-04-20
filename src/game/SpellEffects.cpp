@@ -5910,6 +5910,11 @@ void Spell::EffectScriptEffect(uint32 effIndex)
 
             break;
         }
+        case 51508:
+        {
+            m_caster->HandleEmoteCommand(EMOTE_STATE_DANCE);
+            break;
+        }
     }
 
     if (!unitTarget || !unitTarget->isAlive()) // can we remove this check?
