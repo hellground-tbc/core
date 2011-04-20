@@ -731,6 +731,20 @@ void Spell::EffectDummy(uint32 i)
         {
             switch (m_spellInfo->Id)
             {
+                case 38782:
+                {
+                    if (i == 0)
+                    {
+                        float x,y,z;
+                        m_caster->GetClosePoint(x,y,z, 0.0f, 10.0f, 0.0f);
+                        if (Creature *pDruid = m_caster->SummonCreature(22423, x,y,z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 40000))
+                        {
+                            pDruid->CastSpell(pDruid, 39158, true);
+                            //pDruid->UpdateEntry(22425);
+                        }
+                    }
+                    break;
+                }
                 case 32146:
                 {
                     if (unitTarget->GetTypeId() == TYPEID_UNIT)
