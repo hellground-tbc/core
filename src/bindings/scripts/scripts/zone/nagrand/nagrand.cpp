@@ -25,7 +25,6 @@ EndScriptData */
 mob_shattered_rumbler
 mob_ancient_orc_ancestor
 mob_lump
-mob_sunspring_villager
 npc_altruis_the_sufferer
 npc_greatmother_geyah
 npc_lantresor_of_the_blade
@@ -247,36 +246,6 @@ bool GossipSelect_mob_lump(Player *player, Creature *_Creature, uint32 sender, u
             break;
     }
     return true;
-}
-
-/*####
-# mob_sunspring_villager - should be done with ACID
-####*/
-
-struct TRINITY_DLL_DECL mob_sunspring_villagerAI : public ScriptedAI
-{
-    mob_sunspring_villagerAI(Creature *c) : ScriptedAI(c) {}
-
-    void Reset()
-    {
-        m_creature->SetUInt32Value(UNIT_DYNAMIC_FLAGS, 32);
-        m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1,7);   // lay down
-    }
-
-    void EnterCombat(Unit *who) {}
-
-    void SpellHit(Unit *caster, const SpellEntry *spell)
-    {
-        if(spell->Id == 32146)
-        {
-            m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-            m_creature->RemoveCorpse();
-        }
-    }
-};
-CreatureAI* GetAI_mob_sunspring_villager(Creature *_Creature)
-{
-    return new mob_sunspring_villagerAI (_Creature);
 }
 
 /*######
@@ -966,11 +935,6 @@ void AddSC_nagrand()
     newscript->GetAI = &GetAI_mob_lump;
     newscript->pGossipHello =  &GossipHello_mob_lump;
     newscript->pGossipSelect = &GossipSelect_mob_lump;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name="mob_sunspring_villager";
-    newscript->GetAI = &GetAI_mob_sunspring_villager;
     newscript->RegisterSelf();
 
     newscript = new Script;
