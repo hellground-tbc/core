@@ -605,6 +605,12 @@ namespace Trinity
             AnyUnfriendlyUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range) : i_obj(obj), i_funit(funit), i_range(range) {}
             bool operator()(Unit* u)
             {
+                if (i_obj->GetTypeId()==TYPEID_UNIT || i_obj->GetTypeId()==TYPEID_PLAYER)
+                {
+                    if((u->m_invisibilityMask || ((Unit*)i_obj)->m_invisibilityMask) && !u->canDetectInvisibilityOf(((Unit*)i_obj)))
+                        return false;
+                }
+
                 if (u->isAlive() && i_obj->IsWithinDistInMap(u, i_range) && !i_funit->IsFriendlyTo(u))
                     return true;
                 else
@@ -624,6 +630,12 @@ namespace Trinity
             {
                 if (!u->isAlive())
                     return false;
+
+                if (i_obj->GetTypeId()==TYPEID_UNIT || i_obj->GetTypeId()==TYPEID_PLAYER)
+                {
+                    if ((u->m_invisibilityMask || ((Unit*)i_obj)->m_invisibilityMask) && !u->canDetectInvisibilityOf(((Unit*)i_obj)))
+                        return false;
+                }
 
                 if (u->GetTypeId()==TYPEID_UNIT && ((Creature*)u)->isTotem())
                     return false;
@@ -724,9 +736,14 @@ namespace Trinity
             }
             bool operator()(Unit* u)
             {
-                // Check contains checks for: live, non-selectable, non-attackable flags, flight check and GM check, ignore totems
+                // Check contains checks for: live, non-selectable, non-attackable flags, invisibility mask, flight check and GM check, ignore totems
                 if (!u->isTargetableForAttack())
                     return false;
+                if (i_obj->GetTypeId()==TYPEID_UNIT || i_obj->GetTypeId()==TYPEID_PLAYER)
+                {
+                    if ((u->m_invisibilityMask || ((Unit*)i_obj)->m_invisibilityMask) && !u->canDetectInvisibilityOf(((Unit*)i_obj)))
+                        return false;
+                }
                 if (u->GetTypeId()==TYPEID_UNIT && ((Creature*)u)->isTotem())
                     return false;
 
