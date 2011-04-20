@@ -5270,6 +5270,19 @@ CurrentSpellTypes Spell::GetCurrentContainer()
         return(CURRENT_GENERIC_SPELL);
 }
 
+bool Spell::CanIgnoreNotAttackableFlags()
+{
+    switch(m_spellInfo->Id)
+    {
+        case 32958:     // Crystal Channel
+        case 44877:     // Living Flare Master
+        case 45023:     // Fel Consumption
+            return true;
+        default:
+            return false;
+    }
+}
+
 bool Spell::CheckTarget(Unit* target, uint32 eff)
 {
     // Check targets for creature type mask and remove not appropriate (skip explicit self target case, maybe need other explicit targets)
@@ -5281,11 +5294,8 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
 
     // Check targets for not_selectable unit flag and remove
     // A player can cast spells on his pet (or other controlled unit) though in any state
-    if (target != m_caster && target->GetCharmerOrOwnerGUID() != m_caster->GetGUID())
+    if (target != m_caster && target->GetCharmerOrOwnerGUID() != m_caster->GetGUID() && !CanIgnoreNotAttackableFlags())
     {
-        // exception - Living Flare Master
-        if(m_spellInfo->Id == 44877)
-            return true;
         // any unattackable target skipped
         if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
             return false;

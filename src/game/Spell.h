@@ -407,6 +407,7 @@ class Spell
         Unit* SelectMagnetTarget();
         void HandleHitTriggerAura();
         bool CheckTarget(Unit* target, uint32 eff);
+        bool CanIgnoreNotAttackableFlags();
 
         void CheckSrc() { if (!m_targets.HasSrc()) m_targets.setSrc(m_caster); }
         void CheckDst() { if (!m_targets.HasDst()) m_targets.setDestination(m_caster); }
