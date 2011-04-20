@@ -214,8 +214,10 @@ void instance_karazhan::SetData(uint32 type, uint32 data)
                 Encounters[3] = data;
             break;
         case DATA_OPERA_EVENT:
-            if (Encounters[4] == SPECIAL && data == DONE)
-                data = NOT_STARTED;
+            if (Encounters[4] == IN_PROGRESS && data == NOT_STARTED)
+                if (Creature * barnes = GetCreature(BarnesGUID))
+                    if (barnes->IsAIEnabled)
+                        barnes->AI()->EnterEvadeMode();
 
             if (data == DONE)
             {
@@ -261,7 +263,6 @@ void instance_karazhan::SetData(uint32 type, uint32 data)
                 if (data == FAIL)
                     SetData(DATA_DUST_COVERED_CHEST, SPECIAL);
             }
-
 
             Encounters[9] = data;
             break;

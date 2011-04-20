@@ -132,8 +132,7 @@ struct TRINITY_DLL_DECL npc_barnesAI : public npc_escortAI
     {
         m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
 
-        if(pInstance && pInstance->GetData(DATA_OPERA_EVENT) != SPECIAL)
-            pInstance->SetData(DATA_OPERA_EVENT, NOT_STARTED);
+        RaidWiped = true;
 
         npc_escortAI::EnterEvadeMode();
     }
@@ -155,9 +154,6 @@ struct TRINITY_DLL_DECL npc_barnesAI : public npc_escortAI
             if(pInstance->GetData(DATA_OPERA_EVENT) == IN_PROGRESS)
                 return;
 
-            if (pInstance->GetData(DATA_OPERA_EVENT) != SPECIAL)
-                pInstance->SetData(DATA_OPERA_EVENT, NOT_STARTED);
-
             Event = pInstance->GetData(DATA_OPERA_PERFORMANCE);
 
             pInstance->HandleGameObject(pInstance->GetData64(DATA_GAMEOBJECT_STAGEDOORLEFT), true);
@@ -165,6 +161,8 @@ struct TRINITY_DLL_DECL npc_barnesAI : public npc_escortAI
             if (GameObject* Curtain = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_CURTAINS)))
                 Curtain->SetGoState(pInstance->GetData(DATA_OPERA_EVENT) == DONE ? GO_STATE_ACTIVE : GO_STATE_READY);
         }
+
+        me->RemoveAurasDueToSpell(SPELL_TUXEDO);
     }
 
     void WaypointReached(uint32 i)
@@ -364,7 +362,9 @@ bool GossipHello_npc_barnes(Player* player, Creature* _Creature)
             player->SEND_GOSSIP_MENU(8970, _Creature->GetGUID());
         else
             player->SEND_GOSSIP_MENU(8975, _Creature->GetGUID());
-    }else player->SEND_GOSSIP_MENU(8978, _Creature->GetGUID());
+    }
+    else
+        player->SEND_GOSSIP_MENU(8978, _Creature->GetGUID());
 
     return true;
 }

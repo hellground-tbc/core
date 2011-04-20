@@ -105,11 +105,14 @@ struct TRINITY_DLL_DECL boss_dorotheeAI : public ScriptedAI
     boss_dorotheeAI(Creature* c) : ScriptedAI(c)
     {
         pInstance = (c->GetInstanceData());
+        evade = false;
     }
 
     ScriptedInstance* pInstance;
 
     uint32 AggroTimer;
+
+    uint32 checkTimer;
 
     uint32 WaterBoltTimer;
     uint32 FearTimer;
@@ -118,11 +121,15 @@ struct TRINITY_DLL_DECL boss_dorotheeAI : public ScriptedAI
     bool SummonedTito;
     bool TitoDied;
 
+    bool evade;
+
     void Reset()
     {
         ClearCastQueue();
 
         AggroTimer = 500;
+
+        checkTimer = 3000;
 
         WaterBoltTimer = 5000;
         FearTimer = 15000;
@@ -143,7 +150,9 @@ struct TRINITY_DLL_DECL boss_dorotheeAI : public ScriptedAI
     {
         DoScriptText(SAY_DOROTHEE_DEATH, m_creature);
 
-        if(pInstance)
+        if(evade)
+            pInstance->SetData(DATA_OPERA_EVENT, NOT_STARTED);
+        else
             SummonCroneIfReady(pInstance, m_creature);
     }
 
@@ -168,13 +177,9 @@ struct TRINITY_DLL_DECL boss_dorotheeAI : public ScriptedAI
         if (AggroTimer)
             return;
 
+        evade = true;
+
         ScriptedAI::EnterEvadeMode();
-
-        if(pInstance)
-            pInstance->SetData(DATA_OPERA_EVENT, SPECIAL);
-
-        if (Creature * barnes = me->GetCreature(pInstance->GetData64(DATA_BARNES)))
-            barnes->AI()->EnterEvadeMode();
 
         me->Kill(me, false);
         me->RemoveCorpse();
@@ -200,6 +205,14 @@ struct TRINITY_DLL_DECL boss_dorotheeAI : public ScriptedAI
 
         if (!UpdateVictim())
             return;
+
+        if (checkTimer <= diff)
+        {
+            DoZoneInCombat();
+            checkTimer = 3000;
+        }
+        else
+            checkTimer -= diff;
 
         if (WaterBoltTimer < diff)
         {
@@ -296,19 +309,24 @@ struct TRINITY_DLL_DECL boss_strawmanAI : public ScriptedAI
     boss_strawmanAI(Creature* c) : ScriptedAI(c)
     {
         pInstance = (c->GetInstanceData());
+        evade = false;
     }
 
     ScriptedInstance* pInstance;
 
     uint32 AggroTimer;
+    uint32 checkTimer;
     uint32 BrainBashTimer;
     uint32 BrainWipeTimer;
+
+    bool evade;
 
     void Reset()
     {
         ClearCastQueue();
 
         AggroTimer = 13000;
+        checkTimer = 3000;
         BrainBashTimer = 5000;
         BrainWipeTimer = 7000;
     }
@@ -326,10 +344,9 @@ struct TRINITY_DLL_DECL boss_strawmanAI : public ScriptedAI
         if (AggroTimer)
             return;
 
-        ScriptedAI::EnterEvadeMode();
+        evade = true;
 
-        if (pInstance)
-            pInstance->SetData(DATA_OPERA_EVENT, SPECIAL);
+        ScriptedAI::EnterEvadeMode();
 
         if (Creature * barnes = me->GetCreature(pInstance->GetData64(DATA_BARNES)))
             barnes->AI()->EnterEvadeMode();
@@ -361,7 +378,9 @@ struct TRINITY_DLL_DECL boss_strawmanAI : public ScriptedAI
     {
         DoScriptText(SAY_STRAWMAN_DEATH, m_creature);
 
-        if (pInstance)
+        if (evade)
+            pInstance->SetData(DATA_OPERA_EVENT, NOT_STARTED);
+        else
             SummonCroneIfReady(pInstance, m_creature);
     }
 
@@ -391,6 +410,14 @@ struct TRINITY_DLL_DECL boss_strawmanAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
+        if (checkTimer <= diff)
+        {
+            DoZoneInCombat();
+            checkTimer = 3000;
+        }
+        else
+            checkTimer -= diff;
+
         if (BrainBashTimer < diff)
         {
             AddSpellToCast(m_creature->getVictim(), SPELL_BRAIN_BASH);
@@ -417,21 +444,26 @@ struct TRINITY_DLL_DECL boss_tinheadAI : public ScriptedAI
     boss_tinheadAI(Creature* c) : ScriptedAI(c)
     {
         pInstance = (c->GetInstanceData());
+        evade = false;
     }
 
     ScriptedInstance* pInstance;
 
     uint32 AggroTimer;
+    uint32 checkTimer;
     uint32 CleaveTimer;
     uint32 RustTimer;
 
     uint8 RustCount;
+
+    bool evade;
 
     void Reset()
     {
         ClearCastQueue();
 
         AggroTimer = 15000;
+        checkTimer = 3000;
         CleaveTimer = 5000;
         RustTimer   = 30000;
 
@@ -443,10 +475,9 @@ struct TRINITY_DLL_DECL boss_tinheadAI : public ScriptedAI
         if (AggroTimer)
             return;
 
-        ScriptedAI::EnterEvadeMode();
+        evade = true;
 
-        if (pInstance)
-            pInstance->SetData(DATA_OPERA_EVENT, SPECIAL);
+        ScriptedAI::EnterEvadeMode();
 
         if (Creature * barnes = me->GetCreature(pInstance->GetData64(DATA_BARNES)))
             barnes->AI()->EnterEvadeMode();
@@ -480,7 +511,9 @@ struct TRINITY_DLL_DECL boss_tinheadAI : public ScriptedAI
     {
         DoScriptText(SAY_TINHEAD_DEATH, m_creature);
 
-        if (pInstance)
+        if (evade)
+            pInstance->SetData(DATA_OPERA_EVENT, NOT_STARTED);
+        else
             SummonCroneIfReady(pInstance, m_creature);
     }
 
@@ -509,6 +542,14 @@ struct TRINITY_DLL_DECL boss_tinheadAI : public ScriptedAI
 
         if (!UpdateVictim())
             return;
+
+        if (checkTimer <= diff)
+        {
+            DoZoneInCombat();
+            checkTimer = 3000;
+        }
+        else
+            checkTimer -= diff;
 
         if (CleaveTimer < diff)
         {
@@ -540,20 +581,25 @@ struct TRINITY_DLL_DECL boss_roarAI : public ScriptedAI
     boss_roarAI(Creature* c) : ScriptedAI(c)
     {
         pInstance = (c->GetInstanceData());
+        evade = false;
     }
 
     ScriptedInstance* pInstance;
 
     uint32 AggroTimer;
+    uint32 checkTimer;
     uint32 MangleTimer;
     uint32 ShredTimer;
     uint32 ScreamTimer;
+
+    bool evade;
 
     void Reset()
     {
         ClearCastQueue();
 
         AggroTimer = 20000;
+        checkTimer = 3000;
         MangleTimer = 5000;
         ShredTimer  = 10000;
         ScreamTimer = 15000;
@@ -572,10 +618,9 @@ struct TRINITY_DLL_DECL boss_roarAI : public ScriptedAI
         if (AggroTimer)
             return;
 
-        ScriptedAI::EnterEvadeMode();
+        evade = true;
 
-        if (pInstance)
-            pInstance->SetData(DATA_OPERA_EVENT, SPECIAL);
+        ScriptedAI::EnterEvadeMode();
 
         if (Creature * barnes = me->GetCreature(pInstance->GetData64(DATA_BARNES)))
             barnes->AI()->EnterEvadeMode();
@@ -601,7 +646,9 @@ struct TRINITY_DLL_DECL boss_roarAI : public ScriptedAI
     {
         DoScriptText(SAY_ROAR_DEATH, m_creature);
 
-        if (pInstance)
+        if (evade)
+            pInstance->SetData(DATA_OPERA_EVENT, NOT_STARTED);
+        else
             SummonCroneIfReady(pInstance, m_creature);
     }
 
@@ -630,6 +677,14 @@ struct TRINITY_DLL_DECL boss_roarAI : public ScriptedAI
 
         if (!UpdateVictim())
             return;
+
+        if (checkTimer <= diff)
+        {
+            DoZoneInCombat();
+            checkTimer = 3000;
+        }
+        else
+            checkTimer -= diff;
 
         if (MangleTimer < diff)
         {
@@ -665,12 +720,16 @@ struct TRINITY_DLL_DECL boss_croneAI : public ScriptedAI
     boss_croneAI(Creature* c) : ScriptedAI(c)
     {
         pInstance = (c->GetInstanceData());
+        evade = false;
     }
 
     ScriptedInstance* pInstance;
 
     uint32 CycloneTimer;
     uint32 ChainLightningTimer;
+    uint32 checkTimer;
+
+    bool evade;
 
     void Reset()
     {
@@ -678,6 +737,7 @@ struct TRINITY_DLL_DECL boss_croneAI : public ScriptedAI
 
         CycloneTimer = 30000;
         ChainLightningTimer = 10000;
+        checkTimer = 3000;
     }
 
     void EnterCombat(Unit* who)
@@ -690,10 +750,8 @@ struct TRINITY_DLL_DECL boss_croneAI : public ScriptedAI
 
     void EnterEvadeMode()
     {
+        evade = true;
         ScriptedAI::EnterEvadeMode();
-
-        if (pInstance)
-            pInstance->SetData(DATA_OPERA_EVENT, SPECIAL);
 
         if (Creature * barnes = me->GetCreature(pInstance->GetData64(DATA_BARNES)))
             barnes->AI()->EnterEvadeMode();
@@ -707,13 +765,21 @@ struct TRINITY_DLL_DECL boss_croneAI : public ScriptedAI
         DoScriptText(SAY_CRONE_DEATH, m_creature);
 
         if (pInstance)
-            pInstance->SetData(DATA_OPERA_EVENT, DONE);
+            pInstance->SetData(DATA_OPERA_EVENT, evade ? NOT_STARTED : DONE);
     }
 
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim())
             return;
+
+        if (checkTimer <= diff)
+        {
+            DoZoneInCombat();
+            checkTimer = 3000;
+        }
+        else
+            checkTimer -= diff;
 
         if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
             m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -864,6 +930,7 @@ struct TRINITY_DLL_DECL boss_bigbadwolfAI : public ScriptedAI
     boss_bigbadwolfAI(Creature* c) : ScriptedAI(c)
     {
         pInstance = (c->GetInstanceData());
+        evade = false;
     }
 
     ScriptedInstance* pInstance;
@@ -871,11 +938,13 @@ struct TRINITY_DLL_DECL boss_bigbadwolfAI : public ScriptedAI
     uint32 ChaseTimer;
     uint32 FearTimer;
     uint32 SwipeTimer;
+    uint32 checkTimer;
 
     uint64 HoodGUID;
     float TempThreat;
 
     bool IsChasing;
+    bool evade;
 
     void Reset()
     {
@@ -884,6 +953,7 @@ struct TRINITY_DLL_DECL boss_bigbadwolfAI : public ScriptedAI
         ChaseTimer = 30000;
         FearTimer = 25000 + rand()%10000;
         SwipeTimer = 5000;
+        checkTimer = 3000;
 
         HoodGUID = 0;
         TempThreat = 0;
@@ -893,10 +963,8 @@ struct TRINITY_DLL_DECL boss_bigbadwolfAI : public ScriptedAI
 
     void EnterEvadeMode()
     {
+        evade = true;
         ScriptedAI::EnterEvadeMode();
-
-        if (pInstance)
-            pInstance->SetData(DATA_OPERA_EVENT, SPECIAL);
 
         if (Creature * barnes = me->GetCreature(pInstance->GetData64(DATA_BARNES)))
             barnes->AI()->EnterEvadeMode();
@@ -914,14 +982,21 @@ struct TRINITY_DLL_DECL boss_bigbadwolfAI : public ScriptedAI
     {
         DoPlaySoundToSet(m_creature, SOUND_WOLF_DEATH);
 
-        if (pInstance)
-            pInstance->SetData(DATA_OPERA_EVENT, DONE);
+        pInstance->SetData(DATA_OPERA_EVENT, evade ? NOT_STARTED : DONE);
     }
 
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim())
             return;
+
+        if (checkTimer <= diff)
+        {
+            DoZoneInCombat();
+            checkTimer = 3000;
+        }
+        else
+            checkTimer -= diff;
 
         DoMeleeAttackIfReady();
 
@@ -1076,6 +1151,7 @@ struct TRINITY_DLL_DECL boss_julianneAI : public ScriptedAI
         pInstance = (c->GetInstanceData());
         EntryYellTimer = 1000;
         AggroYellTimer = 10000;
+        evade = false;
     }
 
     ScriptedInstance* pInstance;
@@ -1094,9 +1170,12 @@ struct TRINITY_DLL_DECL boss_julianneAI : public ScriptedAI
     uint32 DrinkPoisonTimer;
     uint32 ResurrectSelfTimer;
 
+    uint32 checkTimer;
+
     bool IsFakingDeath;
     bool SummonedRomulo;
     bool RomuloDead;
+    bool evade;
 
     void Reset()
     {
@@ -1121,6 +1200,8 @@ struct TRINITY_DLL_DECL boss_julianneAI : public ScriptedAI
         DrinkPoisonTimer = 0;
         ResurrectSelfTimer = 0;
 
+        checkTimer = 3000;
+
         if (IsFakingDeath)
             Resurrect(m_creature);
 
@@ -1139,10 +1220,8 @@ struct TRINITY_DLL_DECL boss_julianneAI : public ScriptedAI
 
     void EnterEvadeMode()
     {
+        evade = true;
         ScriptedAI::EnterEvadeMode();
-
-        if (pInstance)
-            pInstance->SetData(DATA_OPERA_EVENT, SPECIAL);
 
         if (Creature * barnes = me->GetCreature(pInstance->GetData64(DATA_BARNES)))
             barnes->AI()->EnterEvadeMode();
@@ -1175,7 +1254,7 @@ struct TRINITY_DLL_DECL boss_julianneAI : public ScriptedAI
         DoScriptText(SAY_JULIANNE_DEATH02, m_creature);
 
         if (pInstance)
-            pInstance->SetData(DATA_OPERA_EVENT, DONE);
+            pInstance->SetData(DATA_OPERA_EVENT, evade ? NOT_STARTED : DONE);
     }
 
     void KilledUnit(Unit* victim)
@@ -1193,6 +1272,7 @@ struct TRINITY_DLL_DECL boss_romuloAI : public ScriptedAI
         pInstance = (c->GetInstanceData());
         EntryYellTimer = 8000;
         AggroYellTimer = 15000;
+        evade = false;
     }
 
     ScriptedInstance* pInstance;
@@ -1208,9 +1288,11 @@ struct TRINITY_DLL_DECL boss_romuloAI : public ScriptedAI
     uint32 DeadlySwatheTimer;
     uint32 PoisonThrustTimer;
     uint32 ResurrectTimer;
+    uint32 checkTimer;
 
     bool JulianneDead;
     bool IsFakingDeath;
+    bool evade;
 
     void Reset()
     {
@@ -1223,6 +1305,7 @@ struct TRINITY_DLL_DECL boss_romuloAI : public ScriptedAI
         DeadlySwatheTimer = 25000;
         PoisonThrustTimer = 10000;
         ResurrectTimer = 10000;
+        checkTimer = 3000;
 
         IsFakingDeath = false;
         JulianneDead = false;
@@ -1232,10 +1315,8 @@ struct TRINITY_DLL_DECL boss_romuloAI : public ScriptedAI
 
     void EnterEvadeMode()
     {
+        evade = true;
         ScriptedAI::EnterEvadeMode();
-
-        if (pInstance)
-            pInstance->SetData(DATA_OPERA_EVENT, SPECIAL);
 
         if (Creature * barnes = me->GetCreature(pInstance->GetData64(DATA_BARNES)))
             barnes->AI()->EnterEvadeMode();
@@ -1270,7 +1351,7 @@ struct TRINITY_DLL_DECL boss_romuloAI : public ScriptedAI
         DoScriptText(SAY_ROMULO_DEATH, m_creature);
 
         if (pInstance)
-            pInstance->SetData(DATA_OPERA_EVENT, DONE);
+            pInstance->SetData(DATA_OPERA_EVENT, evade ? NOT_STARTED : DONE);
     }
 
     void KilledUnit(Unit* victim)
@@ -1477,6 +1558,14 @@ void boss_julianneAI::UpdateAI(const uint32 diff)
     if (!UpdateVictim() || IsFakingDeath)
         return;
 
+    if (checkTimer <= diff)
+    {
+        DoZoneInCombat();
+        checkTimer = 3000;
+    }
+    else
+        checkTimer -= diff;
+
     if (RomuloDead)
     {
         if (ResurrectTimer < diff)
@@ -1543,6 +1632,14 @@ void boss_romuloAI::UpdateAI(const uint32 diff)
 {
     if (!UpdateVictim() || IsFakingDeath)
         return;
+
+    if (checkTimer <= diff)
+    {
+        DoZoneInCombat();
+        checkTimer = 3000;
+    }
+    else
+        checkTimer -= diff;
 
     if (JulianneDead)
     {
