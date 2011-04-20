@@ -5921,16 +5921,19 @@ void Spell::EffectScriptEffect(uint32 effIndex)
     switch (m_spellInfo->Id)
     {
         // Dreaming Glory
-        case 28698: unitTarget->CastSpell(unitTarget, 28694, true); break;
+        case 28698:
+            unitTarget->CastSpell(unitTarget, 28694, true);
+            return;
         // Needle Spine
         //case 39835: unitTarget->CastSpell(unitTarget, 39968, true); break;
         // Draw Soul
-        case 40904: unitTarget->CastSpell(m_caster, 40903, true); break;
+        case 40904:
+            unitTarget->CastSpell(m_caster, 40903, true);
+            return;
         // Flame Crash
         case 41126:
             unitTarget->CastSpell(unitTarget, 41131, true);
             return;
-        break;
         case 41931:
         {
             int bag=19;
@@ -5948,23 +5951,22 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                     bag++;
                 }
             }
+
             if (bag < 256)
             {
                 if (((Player*)m_caster)->GetItemByPos(bag,slot)->GetCount() == 1) ((Player*)m_caster)->RemoveItem(bag,slot,true);
                 else ((Player*)m_caster)->GetItemByPos(bag,slot)->SetCount(((Player*)m_caster)->GetItemByPos(bag,slot)->GetCount()-1);
                 // Spell 42518 (Braufest - Gratisprobe des Braufest herstellen)
                 m_caster->CastSpell(m_caster,42518,true);
-                return;
             }
+
+            return;
         }
         // Force Cast - Portal Effect: Sunwell Isle
         case 44876:
         {
-            if (!unitTarget)
-                return;
-
             unitTarget->CastSpell(unitTarget, 44870, true);
-            break;
+            return;
         }
         //Brutallus - Burn
         case 45141: case 45151:
@@ -5975,14 +5977,14 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             if(!unitTarget->HasAura(46394, 0) && unitTarget != m_caster)
                 unitTarget->CastSpell(unitTarget,46394,true, 0, 0, m_originalCasterGUID);
 
-            break;
+            return;
         }
         // spell of Brutallus - Stomp
         case 45185:
         {
             if (unitTarget->HasAura(46394, 0)) // spell of Brutallus - Burn
                 unitTarget->RemoveAurasDueToSpell(46394);
-            break;
+            return;
         }
         case 45206:                                 // Copy Off-hand Weapon
         {
@@ -6002,23 +6004,34 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             return;
         }
         // Negative Energy
-        case 46289: m_caster->CastSpell(unitTarget, 46285, true); break;
+        case 46289:
+            m_caster->CastSpell(unitTarget, 46285, true);
+            return;
         //5,000 Gold
         case 46642:
         {
             if (unitTarget->GetTypeId() == TYPEID_PLAYER)
                 ((Player*)unitTarget)->ModifyMoney(50000000);
-            break;
+            return;
         }
         case 48917:
         {
-            if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+            if (unitTarget->GetTypeId() != TYPEID_PLAYER)
                 return;
 
             // Male Shadowy Disguise / Female Shadowy Disguise
             unitTarget->CastSpell(unitTarget, unitTarget->getGender() == GENDER_MALE ? 38080 : 38081, true);
             // Shadowy Disguise
             unitTarget->CastSpell(unitTarget, 32756, true);
+            return;
+        }
+        // Listening to Music (Parent)
+        case 50499:
+        {
+            if (unitTarget->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+            unitTarget->CastSpell(unitTarget, 50493, true);
             return;
         }
     }

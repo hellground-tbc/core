@@ -227,11 +227,11 @@ bool GOHello_go_crystalforge(Player* pPlayer, GameObject* pGO)
             pPlayer->ADD_GOSSIP_ITEM(NULL, GOSSIP_ITEM_BEAST_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
             pPlayer->ADD_GOSSIP_ITEM(NULL, GOSSIP_ITEM_BEAST_5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
         break;
-        
+
         case 185921: // Bashir Crystalforge
             pPlayer->ADD_GOSSIP_ITEM(NULL, GOSSIP_ITEM_SORCERER_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
             pPlayer->ADD_GOSSIP_ITEM(NULL, GOSSIP_ITEM_SORCERER_5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
-        break; 
+        break;
     }
     pPlayer->SEND_GOSSIP_MENU(pGO->GetGOInfo()->questgiver.gossipID, pGO->GetGUID());
     return true;
@@ -244,11 +244,11 @@ bool GOSelect_go_crystalforge(Player* pPlayer, GameObject* pGO, uint32 Sender, u
         case GOSSIP_ACTION_INFO_DEF+1:
             pPlayer->CastSpell(pPlayer,(pGO->GetEntry() == 185919) ? SPELL_CREATE_1_FLASK_OF_BEAST : SPELL_CREATE_1_FLASK_OF_SORCERER,false);
         break;
-        case GOSSIP_ACTION_INFO_DEF+2:    
+        case GOSSIP_ACTION_INFO_DEF+2:
             pPlayer->CastSpell(pPlayer,(pGO->GetEntry() == 185919) ? SPELL_CREATE_5_FLASK_OF_BEAST : SPELL_CREATE_5_FLASK_OF_SORCERER,false);
         break;
     }
-    
+
     pPlayer->CLOSE_GOSSIP_MENU();
     return true;
 }
@@ -413,9 +413,22 @@ bool GOHello_go_warmaul_prison(Player* pPlayer, GameObject* pGO)
         DoScriptText(-1600000-urand(0, 3), Prisoner, pPlayer);
         pPlayer->CastedCreatureOrGO(18428, Prisoner->GetGUID(), 32347);
         Prisoner->Kill(Prisoner, false);
-        ((Creature*)Prisoner)->RemoveCorpse(); 
+        ((Creature*)Prisoner)->RemoveCorpse();
     }
-        
+
+    return false;
+}
+
+/*######
+## go_DISCO
+######*/
+
+#define SPELL_LISTEN_TO_THE_MUSIC   50493
+
+bool GOHello_go_DISCO(Player* pPlayer, GameObject* pGO)
+{
+    pPlayer->CastSpell(pPlayer, SPELL_LISTEN_TO_THE_MUSIC, true);
+
     return false;
 }
 
@@ -488,7 +501,7 @@ void AddSC_go_scripts()
     newscript->Name = "go_cat_figurine";
     newscript->pGOHello =           &GOHello_go_cat_figurine;
     newscript->RegisterSelf();
-    
+
     newscript = new Script;
     newscript->Name = "go_blood_filled_orb";
     newscript->pGOHello =           &GOHello_go_blood_filled_orb;
@@ -517,6 +530,11 @@ void AddSC_go_scripts()
     newscript = new Script;
     newscript->Name = "go_warmaul_prison";
     newscript->pGOHello = &GOHello_go_warmaul_prison;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "go_DISCO";
+    newscript->pGOHello = &GOHello_go_DISCO;
     newscript->RegisterSelf();
 }
 

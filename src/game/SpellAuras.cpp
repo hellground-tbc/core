@@ -1024,7 +1024,7 @@ void Aura::_AddAura()
                         break;
                     }
                 }
-            }            
+            }
 
             SetAuraSlot(slot);
 
@@ -7436,8 +7436,10 @@ void Aura::PeriodicDummyTick()
 //        case 49466: break;
 //        // Drink Coffee
 //        case 49472: break;
-//        // Listening to Music
-//        case 50493: break;
+        // Listening to Music
+        case 50493:
+            m_target->HandleEmoteCommand(EMOTE_STATE_DANCE);
+            break;
 //        // Love Rocket Barrage
 //        case 50530: break;
         default:
