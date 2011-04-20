@@ -494,10 +494,14 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
                 }
 
                 CreatureEventAI_Action& action = temp.action[j];
+                uint64 param2_64 = NULL;
 
                 action.type = EventAI_ActionType(action_type);
                 action.raw.param1 = fields[11+(j*4)].GetUInt32();
-                action.raw.param2 = fields[12+(j*4)].GetUInt32();
+                if(action.type == ACTION_T_CAST_GUID)
+                    param2_64 = fields[12+(j*4)].GetUInt64();
+                else
+                    action.raw.param2 = fields[12+(j*4)].GetUInt32();
                 action.raw.param3 = fields[13+(j*4)].GetUInt32();
 
                 //Report any errors in actions
@@ -610,6 +614,8 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
                         //Cast is always triggered if target is forced to cast on self
                         if (action.castguid.castFlags & CAST_FORCE_TARGET_SELF)
                             action.castguid.castFlags |= CAST_TRIGGERED;
+
+                        action.castguid.targetGUID = param2_64;
 
                         if (!action.castguid.targetGUID || !objmgr.GetCreatureData(action.castguid.targetGUID))
                             sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses invalid targetGUID", i, j+1);
