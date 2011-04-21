@@ -1,0 +1,1 @@
+UPDATE item_template SET ScriptName = "item_only_for_flight" WHERE entry = 28132;
