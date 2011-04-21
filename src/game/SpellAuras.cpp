@@ -6906,7 +6906,7 @@ void Aura::PeriodicTick()
                 else
                 {
                     SpellDamageLog damageInfo(GetId(), GetTarget(), GetCaster(), GetSpellProto()->SchoolMask, 1);
-                    damageInfo.damage = MIN(gain, amount * GetStackAmount());
+                    damageInfo.damage = gain < amount * GetStackAmount() ? gain : amount * GetStackAmount();
                     //pCaster->SendSpellNonMeleeDamageLog(pCaster, GetId(), gain, GetSpellSchoolMask(GetSpellProto()), 0, 0, false, 0, false);
                     pCaster->DealDamage(&damageInfo, NODAMAGE, GetSpellProto(), true);
                 }

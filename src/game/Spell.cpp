@@ -1144,6 +1144,8 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         if (m_diminishLevel == DIMINISHING_LEVEL_IMMUNE)
         {
             m_caster->SendSpellMiss(unitTarget, m_spellInfo->Id, SPELL_MISS_IMMUNE);
+            if(IsChanneledSpell(m_spellInfo))
+                SendChannelStart(0);
             return;
         }
 
