@@ -6745,6 +6745,17 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
             if (GetHealth() - damage > GetMaxHealth() * triggerAmount / 100)
                 return false;
             break;
+        } 
+        // Pendant of the Violet Eye
+        case 29601:
+        {
+            if(!procSpell)
+                return false;
+            if(procSpell->powerType != POWER_MANA)
+                return false;
+            if(!procSpell->manaCost && !procSpell->ManaCostPercentage && !procSpell->manaCostPerlevel)
+                return false;
+            break;
         }
     }
 
