@@ -2768,7 +2768,10 @@ void Spell::EffectApplyAura(uint32 i)
 
     //mod duration of channeled aura by spell haste
     if (IsChanneledSpell(m_spellInfo))
+    {
         caster->ModSpellCastTime(m_spellInfo, duration, this);
+        SendChannelStart(duration);
+    }
 
     // if Aura removed and deleted, do not continue.
     if (duration== 0 && !(Aur->IsPermanent()))
