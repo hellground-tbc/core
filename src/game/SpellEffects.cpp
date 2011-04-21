@@ -5039,6 +5039,10 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
 
         float weapon_total_pct  = m_caster->GetModifierValue(unitMod, TOTAL_PCT);
 
+        // 50% offhand damage reduction should not affect bonus damage
+        if(unitMod == UNIT_MOD_DAMAGE_OFFHAND)
+            weapon_total_pct /= 0.5f;
+
         if (fixed_bonus)
             fixed_bonus = int32(fixed_bonus * weapon_total_pct);
         if (spell_bonus)
