@@ -133,6 +133,7 @@ struct TRINITY_DLL_DECL npc_barnesAI : public npc_escortAI
         m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
 
         RaidWiped = true;
+        RemoveEscortState(STATE_ESCORT_ESCORTING)
 
         npc_escortAI::EnterEvadeMode();
     }

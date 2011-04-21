@@ -1220,6 +1220,9 @@ struct TRINITY_DLL_DECL boss_julianneAI : public ScriptedAI
 
     void EnterEvadeMode()
     {
+        if (AggroYellTimer)
+            return;
+
         evade = true;
         ScriptedAI::EnterEvadeMode();
 
@@ -1493,6 +1496,8 @@ void boss_julianneAI::UpdateAI(const uint32 diff)
             m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             m_creature->setFaction(16);
             AggroYellTimer = 0;
+            DoZoneInCombat();
+            return;
         }
         else
             AggroYellTimer -= diff;

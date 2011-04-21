@@ -345,7 +345,7 @@ void instance_karazhan::OnObjectCreate(GameObject* go)
         break;
     case 184277:
         GamesmansExitDoor     = go->GetGUID();
-        //if(Encounters[12] == DONE)
+        if(Encounters[12] == DONE)
             HandleGameObject(NULL, true, go);
         break;
     case 185134:
