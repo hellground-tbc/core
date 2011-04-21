@@ -939,6 +939,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         }
         else
             procEx |= PROC_EX_NORMAL_HIT;
+        procEx |= PROC_EX_DAMAGE_OR_HEAL;
 
         caster->SendHealSpellLog(unitTarget, m_spellInfo->Id, addhealth, crit);
 
@@ -969,6 +970,8 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         // caster->SendSpellNonMeleeDamageLog(&damageInfo);
 
         procEx = createProcExtendMask(&damageInfo, missInfo);
+        procEx = PROC_EX_DAMAGE_OR_HEAL;
+
         if (damageInfo.damage)
             procVictim |= PROC_FLAG_TAKEN_ANY_DAMAGE;
 
@@ -1024,6 +1027,18 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         // Fill base damage struct (unitTarget - is real spell target)
         SpellDamageLog damageInfo(m_spellInfo->Id, caster, unitTarget, m_spellSchoolMask);
         procEx = createProcExtendMask(&damageInfo, missInfo);
+        bool isDamageOrHealSpell = false;
+        for(int i = 0; i < 3; i++)
+            switch(m_spellInfo->EffectApplyAuraName[i])
+            {
+                case SPELL_AURA_PERIODIC_DAMAGE: case SPELL_AURA_PERIODIC_DAMAGE_PERCENT:
+                case SPELL_AURA_PERIODIC_HEAL:   case SPELL_AURA_PERIODIC_LEECH:
+                    isDamageOrHealSpell = true;
+            }
+
+        if(isDamageOrHealSpell)
+            procEx |= PROC_EX_DAMAGE_OR_HEAL;
+
         // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)
         if (missInfo != SPELL_MISS_REFLECT)
             caster->ProcDamageAndSpell(unit, procAttacker, procVictim, procEx, 0, m_attackType, m_spellInfo, m_canTrigger);
