@@ -10016,7 +10016,12 @@ void Unit::ApplyDiminishingToDuration(DiminishingGroup group, int32 &duration,Un
         {
             duration = 10000;
             if (tSpell)
+            {
+                if(tSpell->SpellFamilyName == SPELLFAMILY_WARLOCK && tSpell->SpellFamilyFlags & 0x80000000LL) // Curse of Tongues
+                    duration = 12000;
+
                 ((Player*)source)->ApplySpellMod(tSpell->Id, SPELLMOD_DURATION, duration);
+            }
         }
     }
 
