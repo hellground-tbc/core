@@ -1,4 +1,5 @@
 #include "precompiled.h"
+#include "def_mana_tombs.h"
 
 #define BOSS_YOR 22930
 
@@ -9,8 +10,10 @@ struct TRINITY_DLL_DECL boss_yorAI : public ScriptedAI
 {
     boss_yorAI(Creature *c) : ScriptedAI(c)
     {
+        pInstance = c->GetInstanceData();
     }
 
+    ScriptedInstance *pInstance;
     uint32 DoubleBreath_Timer;
     uint32 Stomp_Timer;
 
@@ -20,14 +23,21 @@ struct TRINITY_DLL_DECL boss_yorAI : public ScriptedAI
 
         DoubleBreath_Timer = 8000+rand()%5000;
         Stomp_Timer = 15000+rand()%5000;
+
+        if(pInstance)
+            pInstance->SetData(DATA_YOREVENT, NOT_STARTED);
     }
 
     void JustDied(Unit* Killer)
     {
+        if(pInstance)
+            pInstance->SetData(DATA_YOREVENT, DONE);
     }
 
     void EnterCombat(Unit *who)
     {
+        if(pInstance)
+            pInstance->SetData(DATA_YOREVENT, IN_PROGRESS);
     }
 
     void UpdateAI(const uint32 diff)
@@ -63,8 +73,11 @@ CreatureAI* GetAI_boss_yor(Creature *_Creature)
 
 bool GOHello_go_shaffars_stasis_chamber(Player *player, GameObject* _GO)
 {
-    _GO->SummonCreature(BOSS_YOR, _GO->GetPositionX(), _GO->GetPositionY(), _GO->GetPositionZ(), 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 120000);
-    _GO->Delete();
+    if(player->GetInstanceData() && player->GetInstanceData()->GetData(DATA_YOREVENT) != DONE)
+    {
+        _GO->SummonCreature(BOSS_YOR, _GO->GetPositionX(), _GO->GetPositionY(), _GO->GetPositionZ(), 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 120000);
+        _GO->Delete();
+    }
     return true;
 }
 

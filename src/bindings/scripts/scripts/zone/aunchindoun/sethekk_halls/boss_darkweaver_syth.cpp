@@ -22,6 +22,7 @@ SDCategory: Auchindoun, Sethekk Halls
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_sethekk_halls.h"
 
 #define SAY_SUMMON                  -1556000
 
@@ -57,7 +58,10 @@ struct TRINITY_DLL_DECL boss_darkweaver_sythAI : public ScriptedAI
 
     {
         HeroicMode = m_creature->GetMap()->IsHeroic();
+        pInstance = c->GetInstanceData();
     }
+
+    ScriptedInstance *pInstance;
 
     uint32 flameshock_timer;
     uint32 arcaneshock_timer;
@@ -81,16 +85,24 @@ struct TRINITY_DLL_DECL boss_darkweaver_sythAI : public ScriptedAI
         summon90 = false;
         summon50 = false;
         summon10 = false;
+
+        if(pInstance)
+            pInstance->SetData(DATA_DARKWEAVEREVENT, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
     {
         DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), m_creature);
+        if(pInstance)
+            pInstance->SetData(DATA_DARKWEAVEREVENT, IN_PROGRESS);
     }
 
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_DEATH, m_creature);
+
+        if(pInstance)
+            pInstance->SetData(DATA_DARKWEAVEREVENT, DONE);
     }
 
     void KilledUnit(Unit* victim)

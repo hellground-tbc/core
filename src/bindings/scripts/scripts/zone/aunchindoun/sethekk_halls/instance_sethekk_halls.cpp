@@ -24,17 +24,46 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_sethekk_halls.h"
 
+#define ENCOUNTERS          3
+
 #define IKISS_DOOR          177203
 
 struct TRINITY_DLL_DECL instance_sethekk_halls : public ScriptedInstance
 {
     instance_sethekk_halls(Map *map) : ScriptedInstance(map) {Initialize();};
 
-    GameObject *IkissDoor;
+    uint32 Encounter[ENCOUNTERS];
+
+    uint64 IkissDoorGUID;
 
     void Initialize()
     {
-        IkissDoor = NULL;
+        IkissDoorGUID = 0;
+
+        for(uint8 i = 0; i < ENCOUNTERS; i++)
+            Encounter[i] = NOT_STARTED;
+    }
+
+    bool IsEncounterInProgress() const
+    {
+        for(uint8 i = 0; i < ENCOUNTERS; i++)
+            if(Encounter[i] == IN_PROGRESS) return true;
+
+        return false;
+    }
+
+    void OnCreatureCreate(Creature *creature, uint32 entry)
+    {
+        switch(entry)
+        {
+            case 23035:
+                if(GetData(DATA_ANZUEVENT) != NOT_STARTED)
+                {
+                    creature->Kill(creature);
+                    creature->RemoveCorpse();
+                }
+                break;
+        }
     }
 
     void OnObjectCreate(GameObject *go)
@@ -42,7 +71,8 @@ struct TRINITY_DLL_DECL instance_sethekk_halls : public ScriptedInstance
         switch(go->GetEntry())
         {
             case IKISS_DOOR:
-                IkissDoor = go;
+                if(GetData(DATA_IKISSEVENT) == DONE)
+                    HandleGameObject(IkissDoorGUID, true);
                 break;
         }
     }
@@ -51,12 +81,72 @@ struct TRINITY_DLL_DECL instance_sethekk_halls : public ScriptedInstance
     {
         switch(type)
         {
-            case DATA_IKISSDOOREVENT:
-                if( IkissDoor )
-                    IkissDoor->SetGoState(GO_STATE_ACTIVE);
+            case DATA_IKISSEVENT:
+                if(Encounter[0] != DONE)
+                    Encounter[0] = data;
+                if(data == DONE)
+                    HandleGameObject(IkissDoorGUID, true);
+                break;
+            case DATA_ANZUEVENT:
+                if(Encounter[1] != DONE)
+                    Encounter[1] = data;
+                break;
+            case DATA_DARKWEAVEREVENT:
+                if(Encounter[2] != DONE)
+                    Encounter[2] = data;
                 break;
         }
+
+        if (data == DONE)
+            SaveToDB();
     }
+
+    uint32 GetData(uint32 type)
+    {
+        switch( type )
+        {
+            case DATA_IKISSEVENT:           return Encounter[0];
+            case DATA_ANZUEVENT:            return Encounter[1];
+            case DATA_DARKWEAVEREVENT:      return Encounter[2];
+                        
+        }
+        return false;
+    }
+
+   std::string GetSaveData()
+    {
+        OUT_SAVE_INST_DATA;
+
+        std::ostringstream stream;
+        stream << Encounter[0] << " "
+                << Encounter[1] << " "
+                << Encounter[2];
+
+        OUT_SAVE_INST_DATA_COMPLETE;
+
+        return stream.str();
+    }
+
+    void Load(const char* in)
+    {
+        if (!in)
+        {
+            OUT_LOAD_INST_DATA_FAIL;
+            return;
+        }
+
+        OUT_LOAD_INST_DATA(in);
+
+        std::istringstream loadStream(in);
+        loadStream >> Encounter[0] >> Encounter[1] >> Encounter[2];
+
+        for(uint8 i = 0; i < ENCOUNTERS; ++i)
+            if (Encounter[i] == IN_PROGRESS || Encounter[i] == SPECIAL)
+                Encounter[i] = NOT_STARTED;
+
+        OUT_LOAD_INST_DATA_COMPLETE;
+    }
+
 };
 
 InstanceData* GetInstanceData_instance_sethekk_halls(Map* map)

@@ -22,6 +22,7 @@ SDCategory: Auchindoun, Mana Tombs
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_mana_tombs.h"
 
 #define SAY_AGGRO_1                     -1557008
 #define SAY_AGGRO_2                     -1557009
@@ -44,7 +45,10 @@ struct TRINITY_DLL_DECL boss_pandemoniusAI : public ScriptedAI
     boss_pandemoniusAI(Creature *c) : ScriptedAI(c)
     {
         HeroicMode = m_creature->GetMap()->IsHeroic();
+        pInstance = c->GetInstanceData();
     }
+
+    ScriptedInstance *pInstance;
 
     bool HeroicMode;
     uint32 VoidBlast_Timer;
@@ -56,11 +60,17 @@ struct TRINITY_DLL_DECL boss_pandemoniusAI : public ScriptedAI
         VoidBlast_Timer = 30000;
         DarkShell_Timer = 20000;
         VoidBlast_Counter = 0;
+
+        if(pInstance)
+            pInstance->SetData(DATA_PANDEMONIUSEVENT, NOT_STARTED);
     }
 
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_DEATH, m_creature);
+
+        if(pInstance)
+            pInstance->SetData(DATA_PANDEMONIUSEVENT, DONE);
     }
 
     void KilledUnit(Unit* victim)
@@ -71,6 +81,9 @@ struct TRINITY_DLL_DECL boss_pandemoniusAI : public ScriptedAI
     void EnterCombat(Unit *who)
     {
         DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), m_creature);
+
+        if(pInstance)
+            pInstance->SetData(DATA_PANDEMONIUSEVENT, IN_PROGRESS);
     }
 
     void UpdateAI(const uint32 diff)

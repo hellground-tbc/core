@@ -27,6 +27,7 @@ mob_ethereal_beacon
 EndContentData */
 
 #include "precompiled.h"
+#include "def_mana_tombs.h"
 
 #define SAY_INTRO                       -1557000
 
@@ -56,7 +57,13 @@ EndContentData */
 
 struct TRINITY_DLL_DECL boss_nexusprince_shaffarAI : public ScriptedAI
 {
-    boss_nexusprince_shaffarAI(Creature *c) : ScriptedAI(c) {}
+    boss_nexusprince_shaffarAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = c->GetInstanceData();    
+    }
+
+
+    ScriptedInstance *pInstance;
 
     uint32 Blink_Timer;
     uint32 Beacon_Timer;
@@ -100,6 +107,9 @@ struct TRINITY_DLL_DECL boss_nexusprince_shaffarAI : public ScriptedAI
             if(Beacon[i])
                 Beacon[i]->CastSpell(Beacon[i], SPELL_ETHEREAL_BEACON_VISUAL, false);
         }
+
+        if(pInstance)
+            pInstance->SetData(DATA_NEXUSPRINCEEVENT, NOT_STARTED);
     }
 
     void EnterEvadeMode()
@@ -148,6 +158,9 @@ struct TRINITY_DLL_DECL boss_nexusprince_shaffarAI : public ScriptedAI
         for(uint8 i = 0; i < NR_INITIAL_BEACONS; i++)
             if(Beacon[i] && Beacon[i]->isAlive() && !Beacon[i]->isInCombat())
                 Beacon[i]->AI()->AttackStart(who);
+
+        if(pInstance)
+            pInstance->SetData(DATA_NEXUSPRINCEEVENT, IN_PROGRESS);
     }
 
     void JustSummoned(Creature *summoned)
@@ -169,6 +182,9 @@ struct TRINITY_DLL_DECL boss_nexusprince_shaffarAI : public ScriptedAI
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_DEAD, m_creature);
+
+        if(pInstance)
+            pInstance->SetData(DATA_NEXUSPRINCEEVENT, DONE);
     }
 
     void UpdateAI(const uint32 diff)

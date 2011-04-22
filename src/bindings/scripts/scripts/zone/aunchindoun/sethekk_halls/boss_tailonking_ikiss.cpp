@@ -84,6 +84,9 @@ struct TRINITY_DLL_DECL boss_talon_king_ikissAI : public ScriptedAI
         Blink = false;
         Intro = false;
         ManaShield = false;
+
+        if(pInstance)
+            pInstance->SetData(DATA_IKISSEVENT, NOT_STARTED);
     }
 
     void MoveInLineOfSight(Unit *who)
@@ -111,6 +114,9 @@ struct TRINITY_DLL_DECL boss_talon_king_ikissAI : public ScriptedAI
     void EnterCombat(Unit *who)
     {
         DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), m_creature);
+
+        if(pInstance)
+            pInstance->SetData(DATA_IKISSEVENT, IN_PROGRESS);
     }
 
     void JustDied(Unit* Killer)
@@ -118,7 +124,7 @@ struct TRINITY_DLL_DECL boss_talon_king_ikissAI : public ScriptedAI
         DoScriptText(SAY_DEATH, m_creature);
 
         if (pInstance)
-            pInstance->SetData(DATA_IKISSDOOREVENT, DONE);
+            pInstance->SetData(DATA_IKISSEVENT, DONE);
     }
 
     void KilledUnit(Unit* victim)
