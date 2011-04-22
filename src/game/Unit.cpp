@@ -8504,6 +8504,10 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
                 if (spellProto->SpellFamilyFlags & 0x100040000LL)
                     CastingTime = 0;
                 break;
+            case SPELLFAMILY_WARLOCK:
+                if (spellProto->SpellFamilyFlags & 0x1000000LL)
+                    CastingTime = 10000;
+                break;
             case SPELLFAMILY_WARRIOR:
             case SPELLFAMILY_ROGUE:
             case SPELLFAMILY_HUNTER:
