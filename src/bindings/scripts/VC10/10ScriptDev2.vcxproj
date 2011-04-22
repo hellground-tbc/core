@@ -247,6 +247,8 @@
     <ClCompile Include="..\scripts\zone\alterac_valley\boss_drekthar.cpp" />
     <ClCompile Include="..\scripts\zone\alterac_valley\boss_galvangar.cpp" />
     <ClCompile Include="..\scripts\zone\alterac_valley\boss_vanndar.cpp" />
+    <ClCompile Include="..\scripts\zone\aunchindoun\mana_tombs\instance_mana_tombs.cpp" />
+    <ClCompile Include="..\scripts\zone\aunchindoun\sethekk_halls\boss_anzu.cpp" />
     <ClCompile Include="..\scripts\zone\azshara\azshara.cpp" />
     <ClCompile Include="..\scripts\zone\azshara\boss_azuregos.cpp" />
     <ClCompile Include="..\scripts\zone\barrens\the_barrens.cpp" />
@@ -603,6 +605,7 @@
     <ClInclude Include="..\scripts\guard\guard_ai.h" />
     <ClInclude Include="..\scripts\npc\escort_ai.h" />
     <ClInclude Include="..\scripts\npc\follower_ai.h" />
+    <ClInclude Include="..\scripts\zone\aunchindoun\mana_tombs\def_mana_tombs.h" />
     <ClInclude Include="..\scripts\zone\deadmines\def_deadmines.h" />
     <ClInclude Include="..\scripts\zone\gruuls_lair\def_gruuls_lair.h" />
     <ClInclude Include="..\scripts\zone\karazhan\chess_event.h" />

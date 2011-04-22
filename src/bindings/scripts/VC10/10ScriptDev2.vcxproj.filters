@@ -1513,6 +1513,12 @@
     <ClCompile Include="..\scripts\zone\magisters_terrace\magisters_terrace_trash.cpp">
       <Filter>Scripts\zone\Magister%27s Terrace</Filter>
     </ClCompile>
+    <ClCompile Include="..\scripts\zone\aunchindoun\sethekk_halls\boss_anzu.cpp">
+      <Filter>Scripts\zone\Aunchindoun\Sethekk Halls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\scripts\zone\aunchindoun\mana_tombs\instance_mana_tombs.cpp">
+      <Filter>Scripts\zone\Aunchindoun\Mana Tombs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\scripts\creature\simple_ai.h">
@@ -1655,6 +1661,9 @@
     <ClInclude Include="..\svn_revision.h" />
     <ClInclude Include="..\scripts\zone\karazhan\chess_event.h">
       <Filter>Scripts\zone\Karazhan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\scripts\zone\aunchindoun\mana_tombs\def_mana_tombs.h">
+      <Filter>Scripts\zone\Aunchindoun\Mana Tombs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
