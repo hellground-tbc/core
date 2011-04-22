@@ -970,7 +970,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         // caster->SendSpellNonMeleeDamageLog(&damageInfo);
 
         procEx = createProcExtendMask(&damageInfo, missInfo);
-        procEx = PROC_EX_DAMAGE_OR_HEAL;
+        procEx |= PROC_EX_DAMAGE_OR_HEAL;
 
         if (damageInfo.damage)
             procVictim |= PROC_FLAG_TAKEN_ANY_DAMAGE;
