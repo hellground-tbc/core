@@ -2619,6 +2619,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
         switch (i)
         {
+        case 40841:
+            spellInfo->EffectRadiusIndex[0] = 15;
+            break;
         case 41120:
             spellInfo->EffectImplicitTargetA[0] = TARGET_DEST_TARGET_LEFT;
             break;

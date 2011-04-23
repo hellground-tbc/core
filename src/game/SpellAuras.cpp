@@ -6522,6 +6522,12 @@ void Aura::PeriodicTick()
             {
                 switch (GetId())
                 {
+                    case 40932:
+                    {
+                        if (GetTickNumber())
+                            m_modifier.m_amount = 3000 + GetTickNumber()*133;
+                        break;
+                    }
                     case 43093:
                     case 31956:
                     case 38801:

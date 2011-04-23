@@ -426,7 +426,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
                 }
                 case EVENT_ILLIDAN_PARASITIC_SHADOWFIEND:
                 {
-                    if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 150.0f, true, me->getVictimGUID()))
+                    if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 250.0f, true, me->getVictimGUID()))
                         AddSpellToCast(pTarget, SPELL_ILLIDAN_PARASITIC_SHADOWFIEND);
 
                     events.ScheduleEvent(EVENT_ILLIDAN_PARASITIC_SHADOWFIEND, 30000, m_phase);
@@ -434,7 +434,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
                 }
                 case EVENT_ILLIDAN_AGONIZING_FLAMES:
                 {
-                    if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0 , 150.0f, true, 0, 15.0f))
+                    if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0 , 250.0f, true, 0, 15.0f))
                         AddSpellToCast(pTarget, SPELL_ILLIDAN_AGONIZING_FLAMES);
 
                     events.ScheduleEvent(EVENT_ILLIDAN_AGONIZING_FLAMES, urand(30000, 35000), m_phase);
@@ -467,7 +467,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
             {
                 WorldLocation final;
                 pTrigger->GetClosePoint(final.coord_x, final.coord_y, final.coord_z, 80.0f, false, pTrigger->GetAngle(pGlaive));
-                pTrigger->SetSpeed(MOVE_WALK, 2.5f);
+                pTrigger->SetSpeed(MOVE_WALK, 3.96f); // 6y per s, 80y per 13s
                 pTrigger->SetUnitMovementFlags(SPLINEFLAG_WALKMODE_MODE);
                 pTrigger->GetMotionMaster()->MovePoint(0, final.coord_x, final.coord_y, final.coord_z);
                 pTrigger->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -825,7 +825,8 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
         if (m_combatTimer < diff)
         {
             DoZoneInCombat();
-            m_combatTimer = 1000;
+            me->UpdateSpeed(MOVE_RUN, 3.0f);
+            m_combatTimer = 2000;
         }
         else
             m_combatTimer -= diff;
@@ -1306,16 +1307,16 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
                 if (m_canMelee)
                 {
                     m_canMelee = false;
+                    me->GetMotionMaster()->Clear();
 
                     if (Creature *pIllidan = instance->GetCreature(instance->GetData64(DATA_ILLIDANSTORMRAGE)))
                     {
                         float x, y, z;
                         pIllidan->GetClosePoint(x, y, z, 0.0f, 35.0f, -pIllidan->GetAngle(CENTER_X, CENTER_Y));
                         me->NearTeleportTo(x, y, z +0.5f, 0.0f);
-                    }
 
-                    me->GetMotionMaster()->Clear();
-                    ForceSpellCast(me, SPELL_MAIEV_TELEPORT_VISUAL, INTERRUPT_AND_CAST_INSTANTLY);
+                        ForceSpellCast(me, SPELL_MAIEV_TELEPORT_VISUAL, INTERRUPT_AND_CAST_INSTANTLY);
+                    }
 
                     SetAutocast(SPELL_MAIEV_THROW_DAGGER, 2000, false, AUTOCAST_TANK);
                     StartAutocast();
@@ -1335,7 +1336,7 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
                 me->GetMotionMaster()->Clear();
 
                 float x, y, z;
-                me->GetClosePoint(x, y, z, 0.0f, 15.0f, frand(0, 2*M_PI));
+                me->GetClosePoint(x, y, z, 0.0f, 25.0f, frand(0, 2*M_PI));
                 me->NearTeleportTo(x, y, z +0.5f, 0.0f);
 
                 ForceSpellCast(me, SPELL_MAIEV_TELEPORT_VISUAL, INTERRUPT_AND_CAST_INSTANTLY);
@@ -1490,8 +1491,7 @@ struct TRINITY_DLL_DECL boss_illidan_glaiveAI : public Scripted_NoMovementAI
 enum FlameEvents
 {
     EVENT_FLAME_RANGE_CHECK = 1,
-    EVENT_FLAME_FLAME_BLAST = 2,
-    EVENT_FLAME_BLAZE       = 3
+    EVENT_FLAME_FLAME_BLAST = 2
 };
 
 enum FlameSpells
@@ -1520,7 +1520,6 @@ struct TRINITY_DLL_DECL boss_illidan_flameofazzinothAI : public ScriptedAI
     {
         events.ScheduleEvent(EVENT_FLAME_RANGE_CHECK, 6000);
         events.ScheduleEvent(EVENT_FLAME_FLAME_BLAST, urand(25000, 30000));
-        events.ScheduleEvent(EVENT_FLAME_BLAZE, urand(32000, 36000));
     }
 
     void JustDied(Unit *pKiller)
@@ -1551,8 +1550,10 @@ struct TRINITY_DLL_DECL boss_illidan_flameofazzinothAI : public ScriptedAI
                     {
                         // wipe mode on :]
                         DoResetThreat();
-                        ForceSpellCast(me, SPELL_FLAME_ENRAGE);
+                        me->AddThreat(pTarget, 10000.0f);
+
                         ForceSpellCast(pTarget, SPELL_FLAME_CHARGE);
+                        ForceSpellCast(me, SPELL_FLAME_ENRAGE);
 
                         me->AI()->AttackStart(pTarget);
 
@@ -1566,13 +1567,8 @@ struct TRINITY_DLL_DECL boss_illidan_flameofazzinothAI : public ScriptedAI
                 case EVENT_FLAME_FLAME_BLAST:
                 {
                     AddSpellToCast(me->getVictim(), SPELL_FLAME_FLAME_BLAST);
+                    AddSpellToCast(me, SPELL_FLAME_FLAME_BLAST, true);
                     events.ScheduleEvent(EVENT_FLAME_FLAME_BLAST, urand(25000, 30000));
-                    break;
-                }
-                case EVENT_FLAME_BLAZE:
-                {
-                    AddSpellToCast(me, SPELL_FLAME_FLAME_BLAST);
-                    events.ScheduleEvent(EVENT_FLAME_BLAZE, urand(32000, 36000));
                     break;
                 }
             }
