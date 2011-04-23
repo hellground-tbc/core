@@ -1369,7 +1369,7 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
                     }
 
                     ForceSpellCast(me, SPELL_MAIEV_TELEPORT_VISUAL, INTERRUPT_AND_CAST_INSTANTLY);
-                    me->GetMotionMaster()->MovementExpired();
+                    me->GetMotionMaster()->Clear();
 
                     SetAutocast(SPELL_MAIEV_THROW_DAGGER, 2000, false, AUTOCAST_TANK);
                     StartAutocast();
@@ -1380,18 +1380,24 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
                     StopAutocast();
 
                     if (me->getVictim())
-                        me->GetMotionMaster()->MoveChase(me->getVictim());
+                        DoStartMovement(me->getVictim());
                 }
                 break;
             }
             case EVENT_MAIEV_CAGE_TRAP:
             {
+                me->GetMotionMaster()->Clear();
+
                 float x, y, z;
                 me->GetClosePoint(x, y, z, 0.0f, 15.0f, frand(0, 2*M_PI));
-                me->NearTeleportTo(x, y, z +2.0f, 0.0f);
+                me->NearTeleportTo(x, y, z +0.5f, 0.0f);
 
                 ForceSpellCast(me, SPELL_MAIEV_TELEPORT_VISUAL, INTERRUPT_AND_CAST_INSTANTLY);
-                ForceSpellCast(me, SPELL_MAIEV_SUMMON_CAGE_TRAP, INTERRUPT_AND_CAST_INSTANTLY);
+                ForceSpellCast(me, SPELL_MAIEV_SUMMON_CAGE_TRAP, INTERRUPT_AND_CAST_INSTANTLY, true);
+
+                if (me->getVictim())
+                    DoStartMovement(me->getVictim());
+
                 break;
             }
             case EVENT_MAIEV_END_FIGHT_SPEECH:
