@@ -1492,25 +1492,20 @@ struct TRINITY_DLL_DECL boss_illidan_glaiveAI : public Scripted_NoMovementAI
     ScriptedInstance *pInstance;
 
     uint32 m_summonTimer;
-    uint32 m_checkTimer;
 
     uint64 m_tearGUID;
-
-    void Reset()
-    {
-        m_tearGUID = 0;
-
-        m_summonTimer = 2000;
-        m_checkTimer = 5000;
-
-        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-    }
 
     void IsSummonedBy(Unit *pSummoner)
     {
         if (!pInstance)
             return;
+
+        m_tearGUID = 0;
+
+        m_summonTimer = 2000;
+
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
 
         if (Creature *pIllidan = pInstance->GetCreature(pInstance->GetData64(DATA_ILLIDANSTORMRAGE)))
             pIllidan->AI()->JustSummoned(me);

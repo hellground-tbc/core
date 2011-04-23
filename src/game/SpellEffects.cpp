@@ -756,6 +756,7 @@ void Spell::EffectDummy(uint32 i)
                 case 41232:
                 {
                     unitTarget->StopMoving();
+                    unitTarget->GetMotionMaster()->MovePoint(0, unitTarget->GetPositionX(), unitTarget->GetPositionY(), unitTarget->GetPositionZ());
                     break;
                 }
                 case 41082:
