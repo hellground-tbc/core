@@ -1551,11 +1551,10 @@ struct TRINITY_DLL_DECL boss_illidan_flameofazzinothAI : public ScriptedAI
                         // wipe mode on :]
                         DoResetThreat();
                         me->AddThreat(pTarget, 10000.0f);
+                        me->AI()->AttackStart(pTarget);
 
                         ForceSpellCast(pTarget, SPELL_FLAME_CHARGE);
                         ForceSpellCast(me, SPELL_FLAME_ENRAGE);
-
-                        me->AI()->AttackStart(pTarget);
 
                         events.ScheduleEvent(EVENT_FLAME_RANGE_CHECK, 15000);
                     }

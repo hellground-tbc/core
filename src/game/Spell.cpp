@@ -3846,12 +3846,8 @@ uint8 Spell::CanCast(bool strict)
 
     if (m_CastItem)
     {
-        // check pet presents
-        for (int j=0;j<3;j++)
-        {
-            if (m_spellInfo->EffectImplicitTargetA[j] == TARGET_UNIT_NEARBY_ENTRY && m_targets.IsEmpty())
-                return SPELL_FAILED_BAD_IMPLICIT_TARGETS;
-        }
+        if (m_spellInfo->EffectImplicitTargetA[0] == TARGET_UNIT_NEARBY_ENTRY && m_targets.IsEmpty())
+            return SPELL_FAILED_BAD_IMPLICIT_TARGETS;
     }
 
     // Spell casted only on battleground

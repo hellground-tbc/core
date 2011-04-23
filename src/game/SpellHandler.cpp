@@ -197,9 +197,9 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
             spell->m_cast_count = cast_count;               //set count of casts
 
             bool fillMap = false;
-            for (uint8 j = 0; j < 3; j++)
+            //for (uint8 j = 0; j < 3; j++)
             {
-                if (spellInfo->EffectImplicitTargetA[j] == TARGET_UNIT_NEARBY_ENTRY)
+                if (spellInfo->EffectImplicitTargetA[0] == TARGET_UNIT_NEARBY_ENTRY)
                 {
                     fillMap = true;
                     break;
