@@ -826,22 +826,6 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
         }
     }
 
-    void JustSummoned(Creature *pWho)
-    {
-        if (pWho->GetEntry() == 23498)
-        {
-            pWho->CastSpell(pWho, 41913, true);
-            pWho->AI()->DoZoneInCombat();
-            if (Unit *pTarget = pWho->AI()->SelectTarget(SELECT_TARGET_RANDOM, urand(0,3), 200.0f, true))
-            {
-                pWho->AddThreat(pTarget, 100000.0f);
-                pWho->AI()->AttackStart(pTarget);
-            }
-        }
-
-        BossAI::JustSummoned(pWho);
-    }
-
     void OnAuraApply(Aura *aura, Unit *, bool stackApply)
     {
         if (aura->GetId() == 40695)
@@ -1714,6 +1698,45 @@ struct TRINITY_DLL_DECL boss_illidan_shadowdemonAI : public ScriptedAI
     }
 };
 
+struct TRINITY_DLL_DECL boss_illidan_parasite_shadowfiendAI : public ScriptedAI
+{
+    boss_illidan_parasite_shadowfiendAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = c->GetInstanceData();
+    }
+
+    ScriptedInstance *pInstance;
+
+    void IsSummonedBy(Unit *pSummoner)
+    {
+        if (!pInstance)
+            return;
+
+        ForceSpellCast(me, 41913, INTERRUPT_AND_CAST, true);
+
+        if (Creature *pIllidan = pInstance->GetCreature(pInstance->GetData64(DATA_ILLIDANSTORMRAGE)))
+            pIllidan->AI()->JustSummoned(me);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!me->getVictim())
+        {
+            DoZoneInCombat();
+            if (Unit *pTemp = SelectUnit(SELECT_TARGET_RANDOM, 0, 200.0f, true, 0, 5.0f))
+            {
+                me->AddThreat(pTemp, 10000.0f);
+                ScriptedAI::AttackStart(pTemp);
+            }
+            else
+                me->DisappearAndDie();
+        }
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
 bool GossipSelect_boss_illidan_akama(Player *pPlayer, Creature *pCreature, uint32 sender, uint32 action)
 {
     if (action == GOSSIP_ACTION_INFO_DEF) // Time to begin the Event
@@ -1841,6 +1864,11 @@ CreatureAI* GetAI_boss_illidan_cage_beamer(Creature *_Creature)
     return new boss_illidan_cage_beamerAI(_Creature);
 }
 
+CreatureAI* GetAI_boss_illidan_parasite_shadowfiend(Creature *_Creature)
+{
+    return new boss_illidan_parasite_shadowfiendAI(_Creature);
+}
+
 void AddSC_boss_illidan()
 {
     Script* newscript;
@@ -1886,12 +1914,18 @@ void AddSC_boss_illidan()
     newscript->Name = "boss_illidan_cage_beamer";
     newscript->GetAI = &GetAI_boss_illidan_cage_beamer;
     newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "boss_illidan_parasite_shadowfiend";
+    newscript->GetAI = &GetAI_boss_illidan_parasite_shadowfiend;
+    newscript->RegisterSelf();
 }
 /*
 23304
 DELETE FROM `spell_script_target` WHERE `entry` = '39635';
 INSERT INTO `spell_script_target` (`entry`,`type`,`targetEntry`) VALUES ('39635','1','23448');
 UPDATE `creature_template` SET `ScriptName` = 'boss_illidan_glaive' WHERE `entry` ='22996';
+UPDATE `creature_template` SET `ScriptName` = 'boss_illidan_parasite_shadowfiend' WHERE `entry` ='23498';
 UPDATE `creature_template` SET `ScriptName` = 'boss_illidan_akama' WHERE `entry` = '23089';
 UPDATE `creature_template` SET `ScriptName` = 'boss_illidan_shadowdemon' WHERE `entry` = '23375';
 UPDATE `creature` SET `spawntimesecs`='10' WHERE `id` = '23448';
