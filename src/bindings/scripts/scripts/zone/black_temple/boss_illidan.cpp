@@ -471,6 +471,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
                 pTrigger->SetUnitMovementFlags(SPLINEFLAG_WALKMODE_MODE);
                 pTrigger->GetMotionMaster()->MovePoint(0, final.coord_x, final.coord_y, final.coord_z);
                 pTrigger->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                pTrigger->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
 
                 m_hoverPoint = urand(0,4);
                 me->GetMotionMaster()->MovePoint(1, HoverPosition[m_hoverPoint].x, HoverPosition[m_hoverPoint].y, HoverPosition[m_hoverPoint].z);
@@ -495,46 +496,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
                         events.ScheduleEvent(EVENT_ILLIDAN_RETURN_GLAIVE, 3000, m_phase);
                         break;
                     }
-                    /*else
-                    {
-                        std::list<Creature*> tearsList = DoFindAllCreaturesWithEntry(FLAME_OF_AZZINOTH, 200.0f);
-                        if (tearsList.size() < 2)
-                        {
-                            events.ScheduleEvent(EVENT_ILLIDAN_CHANGE_PHASE, 2000, m_phase);
-                            break;
-                        }
 
-                        std::list<Unit*> listOne, listTwo;
-                        Creature* tearOne = *tearsList.begin();
-                        Creature* tearTwo = *(++tearsList.begin());
-
-                        CAST_AI(ScriptedAI, tearOne->AI())->SelectUnitList(listOne, 25, SELECT_TARGET_FARTHEST, 100.0f, true, 25.0f);
-                        CAST_AI(ScriptedAI, tearTwo->AI())->SelectUnitList(listTwo, 25, SELECT_TARGET_FARTHEST, 100.0f, true, 25.0f);
-
-                        if (!listOne.empty() && !listTwo.empty())
-                        {
-                            for (std::list<Unit*>::iterator it = listOne.begin(); it != listOne.end(); ++it)
-                            {
-                                for (std::list<Unit*>::iterator it2 = listTwo.begin(); it2 != listTwo.end(); ++it2)
-                                {
-                                    if ((*it)->GetGUID() == (*it2)->GetGUID())
-                                    {
-                                        tearOne->CastSpell(tearOne, SPELL_FLAME_ENRAGE, true);
-                                        tearTwo->CastSpell(tearTwo, SPELL_FLAME_ENRAGE, true);
-
-                                        tearOne->CastSpell((*it), SPELL_CHARGE, true);
-                                        tearTwo->CastSpell((*it2), SPELL_CHARGE, true);
-
-                                        CAST_AI(ScriptedAI, tearOne->AI())->DoResetThreat();
-                                        CAST_AI(ScriptedAI, tearTwo->AI())->DoResetThreat();
-                                        events.ScheduleEvent(EVENT_ILLIDAN_CHANGE_PHASE, 10000, m_phase);
-                                        return false;
-
-                                    }
-                                }
-                            }
-                        }
-                    }*/
                     events.ScheduleEvent(EVENT_ILLIDAN_CHANGE_PHASE, 2000, m_phase);
                     break;
                 }
@@ -1348,12 +1310,12 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
                     if (Creature *pIllidan = instance->GetCreature(instance->GetData64(DATA_ILLIDANSTORMRAGE)))
                     {
                         float x, y, z;
-                        pIllidan->GetClosePoint(x, y, z, 0.0f, 45.0f, -pIllidan->GetAngle(CENTER_X, CENTER_Y));
-                        me->NearTeleportTo(x, y, z +1.0f, 0.0f);
+                        pIllidan->GetClosePoint(x, y, z, 0.0f, 35.0f, -pIllidan->GetAngle(CENTER_X, CENTER_Y));
+                        me->NearTeleportTo(x, y, z +0.5f, 0.0f);
                     }
 
-                    ForceSpellCast(me, SPELL_MAIEV_TELEPORT_VISUAL, INTERRUPT_AND_CAST_INSTANTLY);
                     me->GetMotionMaster()->Clear();
+                    ForceSpellCast(me, SPELL_MAIEV_TELEPORT_VISUAL, INTERRUPT_AND_CAST_INSTANTLY);
 
                     SetAutocast(SPELL_MAIEV_THROW_DAGGER, 2000, false, AUTOCAST_TANK);
                     StartAutocast();
@@ -1386,6 +1348,8 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
             }
             case EVENT_MAIEV_END_FIGHT_SPEECH:
             {
+                me->GetMotionMaster()->Clear();
+
                 if (Creature *pIllidan = instance->GetCreature(instance->GetData64(DATA_ILLIDANSTORMRAGE)))
                 {
                     float x, y, z;
@@ -1479,17 +1443,19 @@ struct TRINITY_DLL_DECL boss_illidan_glaiveAI : public Scripted_NoMovementAI
 
     uint64 m_tearGUID;
 
+    void MoveInLineOfSight(Unit *pWho){}
+
     void IsSummonedBy(Unit *pSummoner)
     {
-        if (!pInstance)
-            return;
-
         m_tearGUID = 0;
 
         m_summonTimer = 2000;
 
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+
+        if (!pInstance)
+            return;
 
         if (Creature *pIllidan = pInstance->GetCreature(pInstance->GetData64(DATA_ILLIDANSTORMRAGE)))
             pIllidan->AI()->JustSummoned(me);
@@ -1508,7 +1474,7 @@ struct TRINITY_DLL_DECL boss_illidan_glaiveAI : public Scripted_NoMovementAI
     {
         if (m_summonTimer)
         {
-            if (m_summonTimer < diff)
+            if (m_summonTimer <= diff)
             {
                 AddSpellToCast(me, SPELL_GLAIVE_SUMMON_TEAR);
                 m_summonTimer = 0;
@@ -1677,7 +1643,7 @@ struct TRINITY_DLL_DECL boss_illidan_shadowdemonAI : public ScriptedAI
             if (m_checkTimer < diff)
             {
                 Unit *pUnit = me->GetUnit(m_targetGUID);
-                if (!pUnit || pUnit->isDead())
+                if (!pUnit || pUnit->isDead() || pUnit->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION))
                 {
                     DoZoneInCombat();
 
