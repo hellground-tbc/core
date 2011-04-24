@@ -484,7 +484,7 @@ void Loot::removeItemFromSavedLoot(uint8 lootIndex)
     count = fields[0].GetUInt32();
 
     CharacterDatabase.BeginTransaction();
-    if (count != 1)
+    if (count > 1)
     {
         count--;
         CharacterDatabase.PExecute("UPDATE group_saved_loot SET itemCount='%u' WHERE instanceId='%u' AND itemId='%u' AND creatureId='%u'", count, pCreature->GetInstanceId(), item->itemid, pCreature->GetEntry());
@@ -525,7 +525,7 @@ void Loot::saveLootToDB(Player *owner)
         {
             item_count[item->itemid] += 1;
             uint32 count = item_count[item->itemid];
-            if (count != 1)
+            if (count > 1)
                 CharacterDatabase.PExecute("UPDATE group_saved_loot SET itemCount='%u' WHERE itemId='%u' AND instanceId='%u'", count, item->itemid, pCreature->GetInstanceId());
             else
                 CharacterDatabase.PExecute("INSERT INTO group_saved_loot VALUES ('%u', '%u', '%u', '%u')", pCreature->GetEntry(), pCreature->GetInstanceId(), item->itemid, count);
