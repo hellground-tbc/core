@@ -445,11 +445,17 @@ void Loot::loadLootFromDB(Creature *pCreature)
 void Loot::removeItemFromSavedLoot(uint8 lootIndex)
 {
     if (!m_creatureGUID)
+    {
+        //sLog.outError("Loot::removeItemFromSavedLoot: cant' find m_creatureGUID: %u", m_creatureGUID);
         return;
+    }
 
     LootItem const *item = LootItemInSlot(lootIndex);
     if (!item)
+    {
+        //sLog.outBoss("Loot::removeItemFromSavedLoot: cant' find item in slot: %u", lootIndex);
         return;
+    }
 
     uint32 p_guid = 0;
     if (PlayersLooting.begin() != PlayersLooting.end())
@@ -457,7 +463,10 @@ void Loot::removeItemFromSavedLoot(uint8 lootIndex)
 
     Player *pPlayer = ObjectAccessor::FindPlayer(p_guid);
     if (!pPlayer)
+    {
+        //sLog.outBoss("Loot::removeItemFromSavedLoot: cant' find looting player to get map.");
         return;
+    }
 
     Map * tmpMap = pPlayer->GetMap();
 
@@ -483,7 +492,7 @@ void Loot::removeItemFromSavedLoot(uint8 lootIndex)
     Field *fields = result->Fetch();
     count = fields[0].GetUInt32();
 
-    CharacterDatabase.BeginTransaction();
+    //CharacterDatabase.BeginTransaction();
     if (count > 1)
     {
         count--;
@@ -491,7 +500,7 @@ void Loot::removeItemFromSavedLoot(uint8 lootIndex)
     }
     else
         CharacterDatabase.PExecute("DELETE FROM group_saved_loot WHERE instanceId='%u' AND itemId='%u' AND creatureId='%u'", pCreature->GetInstanceId(), item->itemid, pCreature->GetEntry());
-    CharacterDatabase.CommitTransaction();
+    //CharacterDatabase.CommitTransaction();
 }
 
 void Loot::saveLootToDB(Player *owner)
