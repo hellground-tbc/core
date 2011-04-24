@@ -230,7 +230,9 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
 
         if (!m_enraged && ((me->GetHealth()*100 / me->GetMaxHealth()) < 10))
         {
-            DoScriptText(EMOTE_ENRAGE, m_creature, 0, true);
+
+            DoScriptText(EMOTE_ENRAGE, m_creature);
+            DoScriptText(SAY_ENRAGE, m_creature);
             m_enraged = true;
             b_canEnrage = true;
         }
@@ -239,6 +241,7 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         {
             if (m_enragePeriodic < diff)
             {
+                DoScriptText(SAY_ENRAGE, m_creature);
                 ForceSpellCast(me, SPELL_ENRAGE);
                 m_enragePeriodic = urand(20000, 30000);
             }
@@ -259,6 +262,8 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
 
         if (m_shriekTimer < diff)
         {
+            if(!urand(0, 2))
+                DoScriptText(SAY_SPELL1, m_creature);
             AddSpellToCast(me->getVictim(), SPELL_SILENCING_SHRIEK);
             m_shriekTimer = 20000;
         }
@@ -284,7 +289,7 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         if (m_yellTimer < diff)
         {
             DoScriptText(RAND(SAY_TAUNT1, SAY_TAUNT2, SAY_TAUNT3), me);
-            m_yellTimer = urand(60000, 151000);
+            m_yellTimer = urand(15000, 35000);
         }
         else
             m_yellTimer -= diff;

@@ -61,6 +61,7 @@ static float BrokenMoveTo[8][2] =
     {485.928, 443.373}
 };
 
+#define SPELL_STEALTH               34189
 #define GOSSIP_ITEM                 "We are ready to fight alongside you, Akama"
 
 struct Location
@@ -1187,6 +1188,7 @@ struct TRINITY_DLL_DECL npc_akamaAI : public ScriptedAI
         {
             if (pInstance->GetData(EVENT_SHADEOFAKAMA) == NOT_STARTED)
             {
+                //DoCast(m_creature, SPELL_STEALTH);
                 m_creature->SetUInt32Value(UNIT_NPC_FLAGS, 0);
                 m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                 m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_PL_SPELL_TARGET);
@@ -1204,6 +1206,7 @@ struct TRINITY_DLL_DECL npc_akamaAI : public ScriptedAI
     {
         pInstance->SetData(EVENT_SHADEOFAKAMA, IN_PROGRESS);
         m_creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+        //m_creature->RemoveAurasDueToSpell(SPELL_STEALTH);
         m_creature->GetMotionMaster()->MovePoint(0, AKAMA_X, AKAMA_Y, AKAMA_Z);
     }
 

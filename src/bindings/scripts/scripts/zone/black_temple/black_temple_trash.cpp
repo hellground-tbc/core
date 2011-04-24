@@ -808,6 +808,9 @@ CreatureAI* GetAI_mob_leviathan(Creature *_Creature)
 #define SPELL_FEARBRINGER_RAIN_OF_CHAOS     40946
 #define SPELL_FEARBRINGER_WAR_STOMP         40936
 
+#define EMOTE_CALL_FOR_HELP              -1564098
+#define EMOTE_FIXATE                     -1564099
+
 /*#####
 ##  mob Bonechewer Taskmaster - id 23028
 ###########*/
@@ -1201,7 +1204,11 @@ struct TRINITY_DLL_DECL mob_dragonmaw_wyrmcallerAI : public ScriptedAI
         jabTimer = 5000 + urand(0, 5000);
     }
 
-    void EnterCombat(Unit *who) { DoZoneInCombat(80.0f); }
+    void EnterCombat(Unit *who)
+    {
+        DoScriptText(EMOTE_CALL_FOR_HELP, me);
+        DoZoneInCombat(80.0f);
+    }
 
     void UpdateAI(const uint32 diff)
     {
@@ -1246,6 +1253,8 @@ struct TRINITY_DLL_DECL mob_dragonmaw_wyrmcallerAI : public ScriptedAI
                 target->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
                 target->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, false);
                 victim->CastSpell(target, SPELL_WYRMCALLER_FIXATE_TRIGGER, true);
+                if(target->GetTypeId() == TYPEID_UNIT)
+                    target->MonsterTextEmote(EMOTE_FIXATE, victim->GetGUID(), false);
             }
 
             fixateTimer = 15000 + urand(0, 10000);
@@ -3232,6 +3241,7 @@ static float fieldPositions [8][2] =
 #define AXE_INFO                        33488898
 
 #define BATTLE_STANCE_YELL  "Berserker stance! Attack them recklessly!"
+#define DEFENSIVE_STANCE_YELL  "Defensive Stance! Shield yourself against their blows and strike back!"
 
 enum Stances
 {
@@ -3378,6 +3388,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
         DoZoneInCombat(80.0f);
         ForceSpellCast(m_creature, SPELL_DEFENSIVE_STANCE, INTERRUPT_AND_CAST_INSTANTLY);
         ForceSpellCast(m_creature, SPELL_DEFENSIVE_AURA, INTERRUPT_AND_CAST_INSTANTLY);
+        DoYell(DEFENSIVE_STANCE_YELL, 0, m_creature);
         m_creature->SetArmor(m_creature->GetArmor()*2.5);   // arbitrary
         SetWeaponModelAndDamage(Stance);
     }
@@ -4580,6 +4591,13 @@ struct TRINITY_DLL_DECL mob_sister_of_painAI: public ScriptedAI
     void EnterCombat(Unit *)
     {
         DoZoneInCombat(80.0f);
+        // TODO: FIX this spell
+        /*
+        if(Unit* Sister = FindCreature(NPC_SISTER_OF_PLEASURE, 30, m_creature))
+        {
+            if(!m_creature->HasAura(SPELL_SHARED_BONDS, 0))
+                Sister->CastSpell(m_creature, SPELL_SHARED_BONDS, false);
+        }*/
     }
 
     void DamageTaken(Unit* who, uint32 &damage)
@@ -4595,14 +4613,6 @@ struct TRINITY_DLL_DECL mob_sister_of_painAI: public ScriptedAI
         {
             if(HPPercent < (95 - 10*stack))
                 m_creature->CastSpell(m_creature, SPELL_PAINFUL_RAGE, true);
-            if(HPPercent < 30)
-            {
-                if(Unit* Sister = FindCreature(NPC_SISTER_OF_PLEASURE, 30, m_creature))
-                {
-                    if(!m_creature->HasAura(SPELL_SHARED_BONDS, 0))
-                        Sister->CastSpell(m_creature, SPELL_SHARED_BONDS, false);
-                }
-            }
             if(urand(1, 1000) > 995)
                 DoYell(YELL_SISTER_OF_PAIN, 0, who);
         }
@@ -4685,6 +4695,14 @@ struct TRINITY_DLL_DECL mob_sister_of_pleasureAI: public ScriptedAI
     {
         DoZoneInCombat(80.0f);
         DoYell(YELL_SISTER_OF_PLEASURE, 0, who);
+
+        // TODO: FIX this spell
+        /*
+        if(Unit* Sister = FindCreature(NPC_SISTER_OF_PAIN, 30, m_creature))
+        {
+            if(!m_creature->HasAura(SPELL_SHARED_BONDS, 0))
+                Sister->CastSpell(m_creature, SPELL_SHARED_BONDS, false);
+        }*/
     }
 
     void DamageTaken(Unit* who, uint32 &damage)
@@ -4696,14 +4714,6 @@ struct TRINITY_DLL_DECL mob_sister_of_pleasureAI: public ScriptedAI
             {
                 ForceSpellCast(m_creature, SPELL_SHELL_OF_LIFE);
                 cooldown = true;
-            }
-            if(HPPercent < 30)
-            {
-                if(Unit* Sister = FindCreature(NPC_SISTER_OF_PAIN, 30, m_creature))
-                {
-                    if(!m_creature->HasAura(SPELL_SHARED_BONDS, 0))
-                        Sister->CastSpell(m_creature, SPELL_SHARED_BONDS, false);
-                }
             }
         }
     }
