@@ -2860,6 +2860,8 @@ void SpellMgr::LoadSpellCustomAttr()
         case 41360: // L5 Arcane Charge should not be reflectable
             spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_CANT_REFLECTED;
             break;
+        case 41363: // Shared Bonds
+            spellInfo->AttributesEx &= ~SPELL_ATTR_EX_CHANNELED_1;
         default:
             break;
         }

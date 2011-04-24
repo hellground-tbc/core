@@ -4591,13 +4591,12 @@ struct TRINITY_DLL_DECL mob_sister_of_painAI: public ScriptedAI
     void EnterCombat(Unit *)
     {
         DoZoneInCombat(80.0f);
-        // TODO: FIX this spell
-        /*
+
         if(Unit* Sister = FindCreature(NPC_SISTER_OF_PLEASURE, 30, m_creature))
         {
             if(!m_creature->HasAura(SPELL_SHARED_BONDS, 0))
                 Sister->CastSpell(m_creature, SPELL_SHARED_BONDS, false);
-        }*/
+        }
     }
 
     void DamageTaken(Unit* who, uint32 &damage)
@@ -4696,13 +4695,11 @@ struct TRINITY_DLL_DECL mob_sister_of_pleasureAI: public ScriptedAI
         DoZoneInCombat(80.0f);
         DoYell(YELL_SISTER_OF_PLEASURE, 0, who);
 
-        // TODO: FIX this spell
-        /*
         if(Unit* Sister = FindCreature(NPC_SISTER_OF_PAIN, 30, m_creature))
         {
             if(!m_creature->HasAura(SPELL_SHARED_BONDS, 0))
                 Sister->CastSpell(m_creature, SPELL_SHARED_BONDS, false);
-        }*/
+        }
     }
 
     void DamageTaken(Unit* who, uint32 &damage)
