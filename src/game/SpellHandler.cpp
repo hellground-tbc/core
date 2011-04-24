@@ -202,7 +202,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
                 if (spellInfo->EffectImplicitTargetA[0] == TARGET_UNIT_NEARBY_ENTRY)
                 {
                     fillMap = true;
-                    break;
+                    //break;
                 }
             }
 
