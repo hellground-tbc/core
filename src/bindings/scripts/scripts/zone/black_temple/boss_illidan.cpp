@@ -467,7 +467,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
             {
                 WorldLocation final;
                 pTrigger->GetClosePoint(final.coord_x, final.coord_y, final.coord_z, 80.0f, false, pTrigger->GetAngle(pGlaive));
-                pTrigger->SetSpeed(MOVE_WALK, 3.96f); // 6y per s, 80y per 13s
+                pTrigger->SetSpeed(MOVE_WALK, 4.15f);
                 pTrigger->SetUnitMovementFlags(SPLINEFLAG_WALKMODE_MODE);
                 pTrigger->GetMotionMaster()->MovePoint(0, final.coord_x, final.coord_y, final.coord_z);
                 pTrigger->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -825,7 +825,14 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
         if (m_combatTimer < diff)
         {
             DoZoneInCombat();
-            me->UpdateSpeed(MOVE_RUN, 3.0f);
+            me->UpdateSpeed(MOVE_RUN, 1.5f);
+
+            if (Creature *pAkama = instance->GetCreature(instance->GetData64(DATA_AKAMA)))
+                DoModifyThreatPercent(pAkama, -100);
+
+            if (Creature *pMaiev = GetClosestCreatureWithEntry(me, 23197, 200.0f))
+                DoModifyThreatPercent(pMaiev, -100);
+
             m_combatTimer = 2000;
         }
         else
@@ -909,7 +916,8 @@ enum AkamaEvents
     EVENT_AKAMA_SUMMON_SPIRITS,
     EVENT_AKAMA_DOOR_CAST_SUCCESS,
     EVENT_AKAMA_DOOR_OPEN,
-    EVENT_AKAMA_DOOR_MOVE_PATH
+    EVENT_AKAMA_DOOR_MOVE_PATH,
+    EVENT_AKAMA_RETURN_ILLIDAN
 };
 
 enum AkamaTexts
@@ -965,6 +973,7 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
         }
 
         me->SetReactState(REACT_PASSIVE);
+
     }
 
     void MoveInLineOfSight(Unit *pWho)
@@ -1000,7 +1009,7 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
             {
                 if (m_pathId == PATH_AKAMA_MINION_EVENT)
                 {
-                   if (data == 1)
+                   if (data == 0)
                        DoScriptText(YELL_AKAMA_FIGHT_MINIONS, me);
 
                    if (data == 9)
@@ -1111,10 +1120,31 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
         me->CombatStop(true);
     }
 
+    void KilledUnit(Unit *pWho)
+    {
+    }
+
     void DoAction(const int32 action)
     {
         switch (action)
         {
+            case EVENT_AKAMA_RETURN_ILLIDAN:
+            {
+                events.CancelEvent(EVENT_AKAMA_SUMMON_ELITE);
+                summons.DespawnAll();
+
+                EnterEvadeMode();
+
+                if (Creature *pIllidan = instance->GetCreature(instance->GetData64(DATA_ILLIDANSTORMRAGE)))
+                {
+                    float x,y,z;
+                    pIllidan->GetClosePoint(x, y, z, 0.0f, 8.0f, -pIllidan->GetAngle(CENTER_X, CENTER_Y));
+                    me->NearTeleportTo(x, y, z +0.5f, 0.0f);
+
+                    me->StopMoving();
+                }
+                break;
+            }
             case EVENT_AKAMA_SET_DOOR_EVENT:
             {
                 doorEvent = true;
@@ -1216,6 +1246,14 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
                 }
                 case EVENT_AKAMA_SUMMON_ELITE:
                 {
+                    if (Creature *pElite = DoSummon(23226, me, 5.0f, 10000.0f, TEMPSUMMON_DEAD_DESPAWN))
+                    {
+                        pElite->AI()->AttackStart(me);
+                        if (!me->getVictim())
+                            AttackStart(pElite);
+
+                        events.ScheduleEvent(EVENT_AKAMA_SUMMON_ELITE, 12000);
+                    }
                     break;
                 }
             }
@@ -1518,7 +1556,7 @@ struct TRINITY_DLL_DECL boss_illidan_flameofazzinothAI : public ScriptedAI
 
     void EnterCombat(Unit *pWho)
     {
-        events.ScheduleEvent(EVENT_FLAME_RANGE_CHECK, 6000);
+        events.ScheduleEvent(EVENT_FLAME_RANGE_CHECK, 2000);
         events.ScheduleEvent(EVENT_FLAME_FLAME_BLAST, urand(25000, 30000));
     }
 
@@ -1545,6 +1583,7 @@ struct TRINITY_DLL_DECL boss_illidan_flameofazzinothAI : public ScriptedAI
                 case EVENT_FLAME_RANGE_CHECK:
                 {
                     DoZoneInCombat();
+                    me->UpdateSpeed(MOVE_RUN, 1.5f);
 
                     if (Unit *pTarget = SelectUnit(SELECT_TARGET_FARTHEST, 0, 200.0f, true, 0, 40.0f))
                     {
@@ -1566,7 +1605,7 @@ struct TRINITY_DLL_DECL boss_illidan_flameofazzinothAI : public ScriptedAI
                 case EVENT_FLAME_FLAME_BLAST:
                 {
                     AddSpellToCast(me->getVictim(), SPELL_FLAME_FLAME_BLAST);
-                    AddSpellToCast(me, SPELL_FLAME_FLAME_BLAST, true);
+                    AddSpellToCast(me,  SPELL_FLAME_BLAZE, true);
                     events.ScheduleEvent(EVENT_FLAME_FLAME_BLAST, urand(25000, 30000));
                     break;
                 }

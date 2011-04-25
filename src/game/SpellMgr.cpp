@@ -2013,8 +2013,9 @@ void SpellMgr::LoadSpellChains()
 
         //get only spell with lowest ability_id to prevent doubles
         uint32 spell_id=AbilityInfo->spellId;
-        if (spell_id==20154) //exception to these rules (not needed in 3.0.3)
+        if (spell_id == 20154) //exception to these rules (not needed in 3.0.3)
             continue;
+
         bool found=false;
         for (uint32 i=0; i<ChainedSpells.size(); i++)
         {
