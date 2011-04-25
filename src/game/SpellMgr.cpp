@@ -2169,6 +2169,7 @@ void SpellMgr::LoadSpellChains()
     }
 
     // BIG UGLY PIECE OF CODE ! BUT WORKS :p
+    // Bear Form
     uint32 spell_id = 5487;
     mSpellChains[spell_id].prev = 0;
     mSpellChains[spell_id].next = 9634;
@@ -2181,6 +2182,21 @@ void SpellMgr::LoadSpellChains()
     mSpellChains[spell_id].next = 0;
     mSpellChains[spell_id].first = 5487;
     mSpellChains[spell_id].last = 9634;
+    mSpellChains[spell_id].rank = 2;
+
+    // Flight form
+    spell_id = 33943;
+    mSpellChains[spell_id].prev = 0;
+    mSpellChains[spell_id].next = 40120;
+    mSpellChains[spell_id].first = 33943;
+    mSpellChains[spell_id].last = 40120;
+    mSpellChains[spell_id].rank = 1;
+
+    spell_id = 40120;
+    mSpellChains[spell_id].prev = 33943;
+    mSpellChains[spell_id].next = 0;
+    mSpellChains[spell_id].first = 33943;
+    mSpellChains[spell_id].last = 40120;
     mSpellChains[spell_id].rank = 2;
 
 //uncomment these two lines to print yourself list of spell_chains on startup
