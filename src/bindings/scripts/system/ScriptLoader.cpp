@@ -489,6 +489,7 @@ extern void AddSC_boss_eredar_twins();
 extern void AddSC_boss_muru();
 extern void AddSC_boss_kiljaeden();
 extern void AddSC_sunwell_plateau();
+extern void AddSC_sunwell_plateau_trash();
 
 //Swamp Of Sorrows
 extern void AddSC_swamp_of_sorrows();
@@ -1094,6 +1095,7 @@ void AddScripts()
     AddSC_boss_muru();
     AddSC_boss_kiljaeden();
     AddSC_sunwell_plateau();
+    AddSC_sunwell_plateau_trash();
 
     //Swamp Of Sorrows
     AddSC_swamp_of_sorrows();

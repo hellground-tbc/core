@@ -336,6 +336,7 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/sunwell_plateau/boss_brutallus.cpp
    scripts/zone/sunwell_plateau/boss_kalecgos.cpp
    scripts/zone/sunwell_plateau/sunwell_plateau.cpp
+   scripts/zone/sunwell_plateau/sunwell_plateau_trash.cpp
    scripts/zone/sunwell_plateau/def_sunwell_plateau.h
    scripts/zone/sunwell_plateau/instance_sunwell_plateau.cpp
    scripts/zone/swamp\ of\ sorrows/swamp_of_sorrows.cpp

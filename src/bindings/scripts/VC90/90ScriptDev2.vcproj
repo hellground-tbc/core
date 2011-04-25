@@ -2440,6 +2440,10 @@
 						RelativePath="..\scripts\zone\sunwell_plateau\sunwell_plateau.cpp"
 						>
 					</File>
+					<File
+						RelativePath="..\scripts\zone\sunwell_plateau\sunwell_plateau_trash.cpp"
+						>
+					</File>
 				</Filter>
 				<Filter
 					Name="Blackrock Depths"
