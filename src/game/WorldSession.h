@@ -126,6 +126,8 @@ class TRINITY_DLL_SPEC WorldSession
         bool PlayerLogout() const { return m_playerLogout; }
         bool PlayerLogoutWithSave() const { return m_playerLogout && m_playerSave; }
 
+        bool CanMoveTo(MovementInfo & movementInfoPrev, MovementInfo & movementInfoNew);
+
         void SizeError(WorldPacket const& packet, uint32 size) const;
 
         void SendPacket(WorldPacket const* packet);

@@ -745,6 +745,15 @@ DontDeleteCharsLvl = 40
 #        Default: 1 (allow)
 #                 0 (not allow)
 #
+#    DisableDuel
+#        Default: 0 (enabled)
+#                 1 (disabled duel)
+#
+#    DisablePVP
+#        Disallow players to togle pvp
+#        Default: 0 (enable)
+#                 1 (disable pvp)
+#
 ###################################################################################################################
 
 AllowTwoSide.Accounts = 0
@@ -758,6 +767,8 @@ AllowTwoSide.WhoList = 0
 AllowTwoSide.AddFriend = 0
 AllowTwoSide.Trade = 0
 TalentsInspecting = 1
+DisableDuel = 0
+DisablePVP = 0
 
 ###################################################################################################################
 # CREATURE SETTINGS

@@ -18076,6 +18076,13 @@ void Player::UpdateHomebindTime(uint32 time)
 
 void Player::UpdatePvP(bool state, bool ovrride)
 {
+    if (sWorld.getConfig(CONFIG_DISABLE_DUEL))
+    {
+        state = false;
+        ovrride = true;
+        ApplyModFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP, false);
+    }
+
     if (!state || ovrride)
     {
         SetPvP(state);
