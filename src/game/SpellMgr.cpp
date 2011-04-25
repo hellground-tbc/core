@@ -2168,6 +2168,21 @@ void SpellMgr::LoadSpellChains()
         }
     }
 
+    // BIG UGLY PIECE OF CODE ! BUT WORKS :p
+    uint32 spell_id = 5487;
+    mSpellChains[spell_id].prev = 0;
+    mSpellChains[spell_id].next = 9634;
+    mSpellChains[spell_id].first = 5487;
+    mSpellChains[spell_id].last = 9634;
+    mSpellChains[spell_id].rank = 1;
+
+    spell_id = 9634;
+    mSpellChains[spell_id].prev = 5487;
+    mSpellChains[spell_id].next = 0;
+    mSpellChains[spell_id].first = 5487;
+    mSpellChains[spell_id].last = 9634;
+    mSpellChains[spell_id].rank = 2;
+
 //uncomment these two lines to print yourself list of spell_chains on startup
 //    for (UNORDERED_MAP<uint32, SpellChainNode>::iterator itr=mSpellChains.begin();itr!=mSpellChains.end();itr++)
 //       sLog.outString("Id: %u, Rank: %d , %s",itr->first,itr->second.rank, sSpellStore.LookupEntry(itr->first)->Rank[sWorld.GetDefaultDbcLocale()]);
