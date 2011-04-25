@@ -140,6 +140,21 @@ bool GossipSelect_npc_ragged_john(Player *player, Creature *_Creature, uint32 se
     return true;
 }
 
+#define NPC_SHANI_PROUDTUSK 9136 
+
+bool GOHello_go_proudtuskremains(Player *player, GameObject* _GO)
+{
+    if (!GetClosestCreatureWithEntry(_GO, NPC_SHANI_PROUDTUSK, 30.0f))
+    {
+        float x,y,z;
+        player->GetClosePoint(x,y,z, 0.0f, 5.0f, frand(0, 2*M_PI));
+        player->SummonCreature(NPC_SHANI_PROUDTUSK, x,y,z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 120000);
+    }
+    else
+        return true;
+    return false;
+}
+
 void AddSC_burning_steppes()
 {
     Script *newscript;
@@ -149,6 +164,11 @@ void AddSC_burning_steppes()
     newscript->GetAI = &GetAI_npc_ragged_john;
     newscript->pGossipHello =  &GossipHello_npc_ragged_john;
     newscript->pGossipSelect = &GossipSelect_npc_ragged_john;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "go_proudtuskremains";
+    newscript->pGOHello = &GOHello_go_proudtuskremains;
     newscript->RegisterSelf();
 }
 
