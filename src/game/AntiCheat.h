@@ -46,7 +46,7 @@ class ACRequest : public ACE_Method_Request
             }
 
             // is on taxi
-            if (pPlayer->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_TAXI_FLIGHT))
+            if (pPlayer->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_TAXI_FLIGHT) || !pPlayer->m_taxi.empty())
                 return -1;
 
             // speed rate differs from prev packet
