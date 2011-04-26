@@ -20,8 +20,8 @@ CREATE TABLE `account` (
   `expansion` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `mutetime` bigint(40) unsigned NOT NULL DEFAULT '0',
   `locale` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `opcodesDisabled` int(11) NOT NULL,
-  `speciallog` binary(1) DEFAULT '0',
+  `opcodesDisabled` int(11) NOT NULL DEFAULT '0',
+  `speciallogs` double DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_username` (`username`),
   KEY `idx_gmlevel` (`gmlevel`)
