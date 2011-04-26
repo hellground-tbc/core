@@ -205,7 +205,10 @@ enum CreatureEntries
 
 struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
 {
-    boss_illidan_stormrageAI(Creature* c) : BossAI(c, 1){}
+    boss_illidan_stormrageAI(Creature* c) : BossAI(c, 1)
+    {
+        ForceSpellCast(me, SPELL_ILLIDAN_KNEEL_INTRO, INTERRUPT_AND_CAST_INSTANTLY);
+    }
 
     uint32 m_hoverPoint;
 
@@ -224,7 +227,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
         summons.DespawnAll();
 
         m_combatTimer = 1000;
-        m_enrageTimer = 25*60000 +30000;
+        m_enrageTimer = 25*60000 +34000; // DBM value
 
         m_hoverPoint = 0;
 
@@ -285,6 +288,19 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
                 if (m_phase == PHASE_ONE)
                 {
                     instance->SetData(EVENT_ILLIDANSTORMRAGE, IN_PROGRESS);
+
+                    Map::PlayerList const &plList = me->GetMap()->GetPlayers();
+                    for (Map::PlayerList::const_iterator i = plList.begin(); i != plList.end(); ++i)
+                    {
+                        if (Player* pPlayer = i->getSource())
+                        {
+                            if (pPlayer->isGameMaster())
+                                continue;
+
+                            if (pPlayer->isAlive() && me->IsWithinDistInMap(pPlayer, 150.0f))
+                                me->AddThreat(pPlayer, 3000.0f);
+                        }
+                    }
 
                     ForceSpellCast(me, SPELL_ILLIDAN_DUAL_WIELD);
                     events.ScheduleEvent(EVENT_ILLIDAN_SUMMON_MINIONS, 1000, m_phase);
@@ -800,19 +816,6 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
                 DoScriptText(YELL_ILLIDAN_AGGRO, me);
                 me->SetReactState(REACT_AGGRESSIVE);
 
-                Map::PlayerList const &plList = me->GetMap()->GetPlayers();
-                for (Map::PlayerList::const_iterator i = plList.begin(); i != plList.end(); ++i)
-                {
-                    if (Player* pPlayer = i->getSource())
-                    {
-                        if (pPlayer->isGameMaster())
-                            continue;
-
-                        if (pPlayer->isAlive() && me->IsWithinDistInMap(pPlayer, 150.0f))
-                            me->AddThreat(pPlayer, 10.0f);
-                    }
-                }
-
                 me->RemoveAurasDueToSpell(SPELL_ILLIDAN_KNEEL_INTRO);
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
 
@@ -984,6 +987,9 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
 
         me->SetReactState(REACT_PASSIVE);
 
+        float x,y,z;
+        me->GetRespawnCoord(x,y,z);
+        me->SetHomePosition(x,y,z, 2.53f);
     }
 
     void MoveInLineOfSight(Unit *pWho)
@@ -1173,6 +1179,10 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
             }
             case EVENT_AKAMA_START:
             {
+                Creature *pIllidan = instance->GetCreature(instance->GetData64(DATA_ILLIDANSTORMRAGE));
+                if (!pIllidan || !pIllidan->isAlive())
+                    return;
+
                 allowUpdate = true;
 
                 me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
@@ -1268,11 +1278,15 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
                 {
                     if (Creature *pElite = DoSummon(23226, me, 5.0f, 10000.0f, TEMPSUMMON_DEAD_DESPAWN))
                     {
+                        pElite->AddThreat(me, 10000.0f);
                         pElite->AI()->AttackStart(me);
+
                         if (!me->getVictim())
                             AttackStartNoMove(pElite);
 
-                        events.ScheduleEvent(EVENT_AKAMA_SUMMON_ELITE, 12000);
+                        StartAutocast();
+
+                        events.ScheduleEvent(EVENT_AKAMA_SUMMON_ELITE, 9000);
                     }
                     break;
                 }

@@ -497,8 +497,20 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
                     Encounters[7] = data;
             break;
             case EVENT_ILLIDANSTORMRAGE:
+                if (data == IN_PROGRESS)
+                {
+                    HandleGameObject(IllidanDoor[0], false);
+                    HandleGameObject(IllidanDoor[1], false);
+                }
+                else
+                {
+                    HandleGameObject(IllidanDoor[0], true);
+                    HandleGameObject(IllidanDoor[1], true);
+                }
+
                 if (Encounters[8] != DONE)
                     Encounters[8] = data;
+
             break;
             case DATA_ENSLAVED_SOUL:
                 if (data)
