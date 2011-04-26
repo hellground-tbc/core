@@ -885,6 +885,8 @@ enum TrinityStrings
     LANG_GM_TICKETS_TABLE_EMPTY         = 11010,
     LANG_ANTICHEAT_FLY                  = 11011,
     LANG_ROLLSHUTDOWN                   = 11012,
+    LANG_ANTICHEAT_WATERWALK            = 11013,
+    LANG_ANTICHEAT_NOFALLDMG            = 11014,
 
     // NOT RESERVED IDS                   12000-1999999999
     // `db_script_string` table index     2000000000-2000009999 (MIN_DB_SCRIPT_STRING_ID-MAX_DB_SCRIPT_STRING_ID)

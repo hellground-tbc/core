@@ -195,19 +195,73 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     if (!Trinity::IsValidMapCoord(movementInfo.GetPos()->x, movementInfo.GetPos()->y, movementInfo.GetPos()->z, movementInfo.GetPos()->o))
         return;
 
+    Player * pPlayer = GetPlayer();
+
     // Handle possessed unit movement separately
-    Unit* pos_unit = GetPlayer()->GetCharm();
+    Unit* pos_unit = pPlayer->GetCharm();
     if (pos_unit && pos_unit->isPossessed()) // can be charmed but not possessed
     {
         HandlePossessedMovement(recv_data, movementInfo);
         return;
     }
 
-    if (GetPlayer()->GetDontMove() || GetPlayer()->isCharmed())
+    if (pPlayer->GetDontMove() || pPlayer->isCharmed())
         return;
 
+    MovementInfo oldMovementInfo = pPlayer->m_movementInfo;
+
+    // No fall damage cheat
+    if (oldMovementInfo.GetMovementFlags() & (MOVEFLAG_FALLING | MOVEFLAG_FALLINGFAR))
+    {
+        if (oldMovementInfo.GetFallTime() == 357)
+        {
+            // falltime = 357 <--- WEH  No Fall Damage Cheat
+            sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) - possible no fall damage cheat. Killing! MapId: %u, falltime: %u, coords old: %f, %f, %f,coords new: %f, %f, %f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s\n",
+                       pPlayer->GetName(), pPlayer->GetGUIDLow(), pPlayer->GetSession()->GetAccountId(), pPlayer->GetMapId(), oldMovementInfo.GetFallTime(), oldMovementInfo.pos.x, oldMovementInfo.pos.y, oldMovementInfo.pos.z, movementInfo.pos.x, movementInfo.pos.y, movementInfo.pos.z, movementInfo.pos.z, movementInfo.GetMovementFlags(), m_latency, pPlayer->GetMap() ? (pPlayer->GetMap()->IsBattleGroundOrArena() ? "Yes" : "No") : "No");
+
+            //pPlayer->Kill(pPlayer, true);
+            sWorld.SendGMText(LANG_ANTICHEAT_NOFALLDMG, pPlayer->GetName());
+        }
+    }
+
+/*
+    // TP cheat
+    UnitMoveType m_type = pPlayer->IsFlying() ? MOVE_FLIGHT : pPlayer->IsUnderWater() ? MOVE_SWIM : MOVE_RUN;
+
+    float m_speedRate = pPlayer->GetSpeedRate(m_type);
+    float m_lastSpeedRate = pPlayer->GetLastSpeedRate();
+    float m_speed = pPlayer->GetSpeed(m_type);
+
+    if (!pPlayer->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_TAXI_FLIGHT) && pPlayer->m_taxi.empty() && m_speedRate == m_speed)
+    {
+        Position m_pos = oldMovementInfo.pos;
+        float dx = movementInfo.pos.x - m_pos.x;
+        float dy = movementInfo.pos.y - m_pos.y;
+        float dz = movementInfo.pos.z - m_pos.z;
+        float fDistance3d = sqrt(dx*dx + dy*dy + dz*dz);
+
+        // time between packets
+        uint32 uiDiffTime = WorldTimer::getMSTimeDiff(oldMovementInfo.time, movementInfo.time);
+
+        float fClientRate = (fDistance3d * 1000 / uiDiffTime) / m_speed;
+        float fServerRate = m_speed * uiDiffTime / 1000 +1.0f;
+
+        if (fDistance3d > 500.0f && fClientRate > fServerRate*4 && m_speed +0.2 < m_speed*fClientRate)
+        {
+            pPlayer->m_AC_count++;
+            pPlayer->m_AC_timer = IN_MILISECONDS;   // 1 sek
+
+            sWorld.SendGMText(LANG_ANTICHEAT, pPlayer->GetName(), pPlayer->m_AC_count, m_speed, m_speed*fClientRate);
+
+            sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) moved for distance %f with server speed : %f (client speed: %f). MapID: %u, player's coord before X:%f Y:%f Z:%f. Player's coord now X:%f Y:%f Z:%f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s",
+                          pPlayer->GetName(), pPlayer->GetGUIDLow(), pPlayer->GetSession()->GetAccountId(), fDistance3d, m_speed, m_speed*fClientRate, pPlayer->GetMapId(), m_pos.x, m_pos.y, m_pos.z, movementInfo.pos.x, movementInfo.pos.y, movementInfo.pos.z, movementInfo.GetMovementFlags(), m_latency, pPlayer->GetMap() ? (pPlayer->GetMap()->IsBattleGroundOrArena() ? "Yes" : "No") : "No");
+            pPlayer->Relocate(oldMovementInfo.pos);
+        }
+    }
+*/
+
     //Save movement flags
-    GetPlayer()->SetUnitMovementFlags(movementInfo.GetMovementFlags());
+    pPlayer->SetUnitMovementFlags(movementInfo.GetMovementFlags());
 
     /* handle special cases */
     if (movementInfo.HasMovementFlag(MOVEFLAG_ONTRANSPORT))
@@ -221,12 +275,12 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
             movementInfo.GetPos()->x + movementInfo.GetTransportPos()->x,
             movementInfo.GetPos()->y + movementInfo.GetTransportPos()->y,
             movementInfo.GetPos()->z + movementInfo.GetTransportPos()->z,
-            movementInfo.GetPos()->o + movementInfo.GetTransportPos()->o 
+            movementInfo.GetPos()->o + movementInfo.GetTransportPos()->o
            ))
             return;
 
         // if we boarded a transport, add us to it
-        if (!GetPlayer()->m_transport)
+        if (!pPlayer->m_transport)
         {
             // elevators also cause the client to send MOVEFLAG_ONTRANSPORT - just unmount if the guid can be found in the transport list
             for (MapManager::TransportSet::iterator iter = sMapMgr.m_Transports.begin(); iter != sMapMgr.m_Transports.end(); ++iter)
@@ -234,63 +288,63 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                 if ((*iter)->GetGUID() == movementInfo.t_guid)
                 {
                     // unmount before boarding
-                    GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_MOUNTED);
+                    pPlayer->RemoveSpellsCausingAura(SPELL_AURA_MOUNTED);
 
-                    GetPlayer()->m_transport = (*iter);
-                    (*iter)->AddPassenger(GetPlayer());
+                    pPlayer->m_transport = (*iter);
+                    (*iter)->AddPassenger(pPlayer);
                     break;
                 }
             }
         }
     }
-    else if (GetPlayer()->m_transport)                      // if we were on a transport, leave
+    else if (pPlayer->m_transport)                      // if we were on a transport, leave
     {
-        GetPlayer()->m_transport->RemovePassenger(GetPlayer());
-        GetPlayer()->m_transport = NULL;
+        pPlayer->m_transport->RemovePassenger(pPlayer);
+        pPlayer->m_transport = NULL;
         movementInfo.ClearTransportData();
     }
 
     // fall damage generation (ignore in flight case that can be triggered also at lags in moment teleportation to another map).
-    if (recv_data.GetOpcode() == MSG_MOVE_FALL_LAND && !GetPlayer()->isInFlight())
-        GetPlayer()->HandleFallDamage(movementInfo);
+    if (recv_data.GetOpcode() == MSG_MOVE_FALL_LAND && !pPlayer->isInFlight())
+        pPlayer->HandleFallDamage(movementInfo);
 
-    if (movementInfo.HasMovementFlag(MOVEFLAG_SWIMMING) != GetPlayer()->IsInWater())
+    if (movementInfo.HasMovementFlag(MOVEFLAG_SWIMMING) != pPlayer->IsInWater())
     {
         // now client not include swimming flag in case jumping under water
-        GetPlayer()->SetInWater(!GetPlayer()->IsInWater() || GetPlayer()->GetBaseMap()->IsUnderWater(movementInfo.GetPos()->x, movementInfo.GetPos()->y, movementInfo.GetPos()->z));
+        pPlayer->SetInWater(!pPlayer->IsInWater() || pPlayer->GetBaseMap()->IsUnderWater(movementInfo.GetPos()->x, movementInfo.GetPos()->y, movementInfo.GetPos()->z));
     }
 
-    if (sWorld.m_ac.activated() && !GetPlayer()->hasUnitState(UNIT_STAT_LOST_CONTROL | UNIT_STAT_NOT_MOVE) && !GetPlayer()->isGameMaster() && GetPlayer()->m_AC_timer == 0 && recv_data.GetOpcode() != MSG_MOVE_SET_FACING)
-        sWorld.m_ac.execute(new ACRequest(GetPlayer(), GetLatency(), GetPlayer()->m_movementInfo, movementInfo, GetPlayer()->GetLastSpeedRate()));
+    if (sWorld.m_ac.activated() && !pPlayer->hasUnitState(UNIT_STAT_LOST_CONTROL | UNIT_STAT_NOT_MOVE) && !pPlayer->isGameMaster() && pPlayer->m_AC_timer == 0 && recv_data.GetOpcode() != MSG_MOVE_SET_FACING)
+        sWorld.m_ac.execute(new ACRequest(pPlayer, GetLatency(), pPlayer->m_movementInfo, movementInfo, pPlayer->GetLastSpeedRate()));
 
     /*----------------------*/
     uint8 uiMoveType = 0;
 
-    if (GetPlayer()->IsFlying())
+    if (pPlayer->IsFlying())
        uiMoveType = MOVE_FLIGHT;
-    else if (GetPlayer()->IsUnderWater())
+    else if (pPlayer->IsUnderWater())
         uiMoveType = MOVE_SWIM;
-    else 
+    else
         uiMoveType = MOVE_RUN;
 
-    GetPlayer()->SetLastSpeedRate(GetPlayer()->GetSpeedRate(UnitMoveType(uiMoveType)));
+    pPlayer->SetLastSpeedRate(pPlayer->GetSpeedRate(UnitMoveType(uiMoveType)));
 
     /* process position-change */
     recv_data.put<uint32>(5, WorldTimer::getMSTime());                  // offset flags(4) + unk(1)
-    WorldPacket data(recv_data.GetOpcode(), (GetPlayer()->GetPackGUID().size()+recv_data.size()));
-    data << GetPlayer()->GetPackGUID();
+    WorldPacket data(recv_data.GetOpcode(), (pPlayer->GetPackGUID().size()+recv_data.size()));
+    data << pPlayer->GetPackGUID();
     data.append(recv_data.contents(), recv_data.size());
-    GetPlayer()->SendMessageToSet(&data, false);
+    pPlayer->SendMessageToSet(&data, false);
 
-    GetPlayer()->SetPosition(movementInfo.GetPos()->x, movementInfo.GetPos()->y, movementInfo.GetPos()->z, movementInfo.GetPos()->o);
-    GetPlayer()->m_movementInfo = movementInfo;
-    GetPlayer()->UpdateFallInformationIfNeed(movementInfo, recv_data.GetOpcode());
+    pPlayer->SetPosition(movementInfo.GetPos()->x, movementInfo.GetPos()->y, movementInfo.GetPos()->z, movementInfo.GetPos()->o);
+    pPlayer->m_movementInfo = movementInfo;
+    pPlayer->UpdateFallInformationIfNeed(movementInfo, recv_data.GetOpcode());
 
-    if (GetPlayer()->isMovingOrTurning())
-        GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
+    if (pPlayer->isMovingOrTurning())
+        pPlayer->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
 
     if (movementInfo.GetPos()->z < -500.0f)
-        GetPlayer()->HandleFallUnderMap();
+        pPlayer->HandleFallUnderMap();
 }
 
 void WorldSession::HandlePossessedMovement(WorldPacket& recv_data, MovementInfo& movementInfo)
@@ -463,17 +517,17 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket & recv_data)
 
     MovementInfo movementInfo;
     uint64 guid;
- 
+
     recv_data >> guid;                                      // guid
     recv_data >> Unused<uint32>();                          // unk
     recv_data >> movementInfo;
- 
+
     if (GetPlayer()->GetGUID() != guid)
         return;
- 
+
     // Save movement flags
     _player->SetUnitMovementFlags(movementInfo.GetMovementFlags());
- 
+
     // skip not personal message;
     GetPlayer()->m_movementInfo = movementInfo;
 }

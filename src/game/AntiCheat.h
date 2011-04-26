@@ -31,6 +31,20 @@ class ACRequest : public ACE_Method_Request
             if (!pPlayer)
                 return -1;
 
+            // teleport to plane cheat
+            if (m_newPacket.pos.z == 0.0f)
+            {
+                float tmpZ = pPlayer->GetMap()->GetHeight(m_newPacket.pos.x, m_newPacket.pos.y, MAX_HEIGHT, false);
+                if ((tmpZ > 2.0f || tmpZ < -2.0f) && tmpZ > -100000.0f)
+                {
+                    sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) - teleport to plane cheat. MapId: %u, MapHeight: %u, coords: %f, %f, %f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s\n",
+                           pPlayer->GetName(), pPlayer->GetGUIDLow(), pPlayer->GetSession()->GetAccountId(), pPlayer->GetMapId(), tmpZ, m_newPacket.pos.x, m_newPacket.pos.y, m_newPacket.pos.z, m_newPacket.GetMovementFlags(), m_latency, pPlayer->GetMap() ? (pPlayer->GetMap()->IsBattleGroundOrArena() ? "Yes" : "No") : "No");
+                    pPlayer->Relocate(m_pos.x, m_pos.y, tmpZ, m_pos.o);
+                    pPlayer->GetSession()->KickPlayer();
+                    return 0;
+                }
+            }
+
             // is on taxi
             if (pPlayer->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_TAXI_FLIGHT))
                 return -1;
@@ -43,19 +57,56 @@ class ACRequest : public ACE_Method_Request
                 return -1;
 
             // we don't love that movement flags
-            if (m_newPacket.GetMovementFlags() & (MOVEFLAG_FALLING | MOVEFLAG_FALLINGFAR | MOVEFLAG_SWIMMING | MOVEFLAG_ONTRANSPORT))
+            if (m_newPacket.GetMovementFlags() & (MOVEFLAG_FALLING | MOVEFLAG_FALLINGFAR | MOVEFLAG_ONTRANSPORT))
                 return -1;
 
             // charging
             if (pPlayer->hasUnitState(UNIT_STAT_CHARGING))
                 return -1;
 
-            if (m_newPacket.GetMovementFlags() & MOVEFLAG_CAN_FLY && !(pPlayer->HasAuraType(SPELL_AURA_FLY) || pPlayer->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED)))
+            // fly cheat
+            if (!m_newPacket.HasMovementFlag(MOVEFLAG_SWIMMING) && m_newPacket.GetMovementFlags() & (MOVEFLAG_CAN_FLY | SPLINEFLAG_FLYINGING | SPLINEFLAG_FLYINGING2) &&
+                !(pPlayer->HasAuraType(SPELL_AURA_FLY) || pPlayer->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED) || pPlayer->HasAuraType(SPELL_AURA_MOD_SPEED_FLIGHT)))
             {
                 sWorld.SendGMText(LANG_ANTICHEAT_FLY, pPlayer->GetName());
                 sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) - possible Fly Cheat. MapId: %u, coords: x: %f, y: %f, z: %f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s",
                               pPlayer->GetName(), pPlayer->GetGUIDLow(), pPlayer->GetSession()->GetAccountId(), pPlayer->GetMapId(), m_newPacket.pos.x, m_newPacket.pos.y, m_newPacket.pos.z, m_newPacket.GetMovementFlags(), m_latency, pPlayer->GetMap() ? (pPlayer->GetMap()->IsBattleGroundOrArena() ? "Yes" : "No") : "No");
             }
+
+            // water walk cheat
+            if ((m_newPacket.HasMovementFlag(MOVEFLAG_WATERWALKING))
+                && !pPlayer->HasAuraType(SPELL_AURA_WATER_WALK) && pPlayer->isAlive() && !pPlayer->isGameMaster())
+            {
+                sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) - possible water walk Cheat. MapId: %u, coords: %f %f %f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s\n",
+                                      pPlayer->GetName(), pPlayer->GetGUIDLow(), pPlayer->GetSession()->GetAccountId(), pPlayer->GetMapId(), m_newPacket.pos.x, m_newPacket.pos.y, m_newPacket.pos.z, m_newPacket.GetMovementFlags(), m_latency, pPlayer->GetMap() ? (pPlayer->GetMap()->IsBattleGroundOrArena() ? "Yes" : "No") : "No");
+
+                //m_newPacket.RemoveMovementFlag(MOVEFLAG_WATERWALKING);
+                sWorld.SendGMText(LANG_ANTICHEAT_WATERWALK, pPlayer->GetName());
+            }
+
+/*  NOT USED
+            // hover cheat
+            if ((newPacket.HasMovementFlag(MOVEFLAG_HOVER))
+                && !pPlayer->HasAuraType(SPELL_AURA_HOVER) && !pPlayer->isGameMaster())
+            {
+                sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) - possible Hover Cheat. MapId: %u, coords: x: %f, y: %f, z: %f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s\n",
+                                      pPlayer->GetName(), pPlayer->GetGUIDLow(), pPlayer->GetSession()->GetAccountId(), pPlayer->GetMapId(), m_newPacket.pos.x, m_newPacket.pos.y, m_newPacket.pos.z, m_newPacket.GetMovementFlags(), m_latency, pPlayer->GetMap() ? (pPlayer->GetMap()->IsBattleGroundOrArena() ? "Yes" : "No") : "No");
+
+                //m_newPacket.RemoveMovementFlag(MOVEFLAG_HOVER);
+                sWorld.SendGMText(LANG_ANTICHEAT_FLY, pPlayer->GetName());
+            }
+
+            // safe fall cheat
+            if ((newPacket.HasMovementFlag(MOVEFLAG_SAFE_FALL))
+                && !pPlayer->HasAuraType(SPELL_AURA_SAFE_FALL) && !pPlayer->HasAuraType(SPELL_AURA_FEATHER_FALL) && !pPlayer->isGameMaster())
+            {
+                sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) - possible safe fall Cheat. MapId: %u, coords: %f %f %f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s\n",
+                                      pPlayer->GetName(), pPlayer->GetGUIDLow(), pPlayer->GetSession()->GetAccountId(), pPlayer->GetMapId(), m_newPacket.pos.x, m_newPacket.pos.y, m_newPacket.pos.z, m_newPacket.GetMovementFlags(), m_latency, pPlayer->GetMap() ? (pPlayer->GetMap()->IsBattleGroundOrArena() ? "Yes" : "No") : "No");
+
+                //m_newPacket.RemoveMovementFlag(MOVEFLAG_SAFE_FALL);
+                sWorld.SendGMText(LANG_ANTICHEAT_FLY, pPlayer->GetName());
+            }
+*/
 
             //// who is cheating on arena ?
             //if (pPlayer->GetMap() && pPlayer->GetMap()->IsBattleGroundOrArena())

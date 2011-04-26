@@ -6183,7 +6183,7 @@ void Spell::EffectAddComboPoints(uint32 /*i*/)
 
 void Spell::EffectDuel(uint32 i)
 {
-    if (sWorld.getConfig(CONFIG_DISABLE_DUEL));
+    if (sWorld.getConfig(CONFIG_DISABLE_DUEL))
         return;
 
     if (!m_caster || !unitTarget || m_caster->GetTypeId() != TYPEID_PLAYER || unitTarget->GetTypeId() != TYPEID_PLAYER)
