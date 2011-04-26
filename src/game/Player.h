@@ -2007,7 +2007,8 @@ class TRINITY_DLL_SPEC Player : public Unit
         void BuildTeleportAckMsg( WorldPacket *data, float x, float y, float z, float ang) const;
 
         bool isMoving() const { return HasUnitMovementFlag(MOVEFLAG_MOVING); }
-        bool isMovingOrTurning() const { return HasUnitMovementFlag(MOVEFLAG_TURNING); }
+        bool isTurning() const { return HasUnitMovementFlag(MOVEFLAG_TURNING); }
+        bool isMovingOrTurning() const { return HasUnitMovementFlag(MOVEFLAG_TURNING | MOVEFLAG_MOVING); }
 
         bool CanFly() const { return HasUnitMovementFlag(MOVEFLAG_CAN_FLY); }
         bool IsFlying() const { return HasUnitMovementFlag(SPLINEFLAG_FLYINGING2); }

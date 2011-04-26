@@ -340,11 +340,11 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     pPlayer->m_movementInfo = movementInfo;
     pPlayer->UpdateFallInformationIfNeed(movementInfo, recv_data.GetOpcode());
 
-    if (pPlayer->isMovingOrTurning())
-        pPlayer->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
-
     if (pPlayer->isMoving())
-        pPlayer->RemoveAurasWithInterruptFlags(262272);
+        pPlayer->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_MOVE | AURA_INTERRUPT_FLAG_NOT_SEATED);
+
+    if (pPlayer->isTurning())
+        pPlayer->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TURNING | AURA_INTERRUPT_FLAG_NOT_SEATED);
 
     if (movementInfo.GetPos()->z < -500.0f)
         pPlayer->HandleFallUnderMap();
@@ -394,7 +394,7 @@ void WorldSession::HandlePossessedMovement(WorldPacket& recv_data, MovementInfo&
         plr->SetPosition(movementInfo.GetPos()->x, movementInfo.GetPos()->y, movementInfo.GetPos()->z, movementInfo.GetPos()->o, false);
         plr->m_movementInfo = movementInfo;
 
-        if (plr->isMovingOrTurning())
+        if (plr->isTurning())
             plr->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
 
         if (movementInfo.GetPos()->z < -500.0f)
