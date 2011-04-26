@@ -205,10 +205,7 @@ enum CreatureEntries
 
 struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
 {
-    boss_illidan_stormrageAI(Creature* c) : BossAI(c, 1)
-    {
-        ForceSpellCast(me, SPELL_ILLIDAN_KNEEL_INTRO, INTERRUPT_AND_CAST_INSTANTLY);
-    }
+    boss_illidan_stormrageAI(Creature* c) : BossAI(c, 1){}
 
     uint32 m_hoverPoint;
 
@@ -227,21 +224,20 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
         summons.DespawnAll();
 
         m_combatTimer = 1000;
-        m_enrageTimer = 25*60000;
-
-        b_maievDone = false;
+        m_enrageTimer = 25*60000 +30000;
 
         m_hoverPoint = 0;
 
+        b_maievDone = false;
         b_maievPhase = false;
 
         m_phase = PHASE_NULL;
 
         SetWarglaivesEquipped(false);
 
-        me->SetReactState(REACT_AGGRESSIVE);
-        me->RemoveUnitMovementFlag(MOVEFLAG_LEVITATING);
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        me->RemoveUnitMovementFlag(MOVEFLAG_LEVITATING);
+        me->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
     }
 
     void SetWarglaivesEquipped(bool equip)
@@ -378,8 +374,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
                             pAkama->DeleteThreatList();
                             pAkama->SetReactState(REACT_PASSIVE);
 
-                            if (HostilReference* pRef = me->getThreatManager().getOnlineContainer().getReferenceByTarget(pAkama))
-                                 pRef->removeReference();
+                            DoModifyThreatPercent(pAkama, -101);
 
                             if (me->getThreatManager().isThreatListEmpty())
                             {
@@ -427,7 +422,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
                 case EVENT_ILLIDAN_PARASITIC_SHADOWFIEND:
                 {
                     if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 250.0f, true, me->getVictimGUID()))
-                        AddSpellToCast(pTarget, SPELL_ILLIDAN_PARASITIC_SHADOWFIEND);
+                        AddSpellToCast(pTarget, SPELL_ILLIDAN_PARASITIC_SHADOWFIEND, false, true);
 
                     events.ScheduleEvent(EVENT_ILLIDAN_PARASITIC_SHADOWFIEND, 30000, m_phase);
                     break;
@@ -435,7 +430,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
                 case EVENT_ILLIDAN_AGONIZING_FLAMES:
                 {
                     if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0 , 250.0f, true, 0, 15.0f))
-                        AddSpellToCast(pTarget, SPELL_ILLIDAN_AGONIZING_FLAMES);
+                        AddSpellToCast(pTarget, SPELL_ILLIDAN_AGONIZING_FLAMES, false, true);
 
                     events.ScheduleEvent(EVENT_ILLIDAN_AGONIZING_FLAMES, urand(30000, 35000), m_phase);
                     break;
@@ -467,8 +462,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
             {
                 WorldLocation final;
                 pTrigger->GetClosePoint(final.coord_x, final.coord_y, final.coord_z, 80.0f, false, pTrigger->GetAngle(pGlaive));
-                pTrigger->SetSpeed(MOVE_WALK, 4.15f);
-                pTrigger->SetUnitMovementFlags(SPLINEFLAG_WALKMODE_MODE);
+                pTrigger->SetSpeed(MOVE_RUN, 1.0f);
                 pTrigger->GetMotionMaster()->MovePoint(0, final.coord_x, final.coord_y, final.coord_z);
                 pTrigger->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 //pTrigger->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -697,6 +691,9 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
                 }
                 case EVENT_ILLIDAN_KILL:
                 {
+                    if (Creature *pAkama = instance->GetCreature(instance->GetData64(DATA_AKAMA)))
+                        pAkama->AI()->DoAction(15);
+
                     me->Kill(me, false);
                     instance->SetData(EVENT_ILLIDANSTORMRAGE, DONE);
                     break;
@@ -725,11 +722,6 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
             default:
                 return true;
         }
-    }
-
-    void EnterCombat(Unit *pWho)
-    {
-        DoZoneInCombat();
     }
 
     void KilledUnit(Unit *pWho)
@@ -775,6 +767,11 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
             me->setHover(true);
     }
 
+    void JustRespawned()
+    {
+        JustReachedHome();
+    }
+
     void JustReachedHome()
     {
         ForceSpellCast(me, SPELL_ILLIDAN_KNEEL_INTRO, INTERRUPT_AND_CAST_INSTANTLY);
@@ -801,7 +798,20 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
             case EVENT_ILLIDAN_START:
             {
                 DoScriptText(YELL_ILLIDAN_AGGRO, me);
-                DoZoneInCombat();
+                me->SetReactState(REACT_AGGRESSIVE);
+
+                Map::PlayerList const &plList = me->GetMap()->GetPlayers();
+                for (Map::PlayerList::const_iterator i = plList.begin(); i != plList.end(); ++i)
+                {
+                    if (Player* pPlayer = i->getSource())
+                    {
+                        if (pPlayer->isGameMaster())
+                            continue;
+
+                        if (pPlayer->isAlive() && me->IsWithinDistInMap(pPlayer, 150.0f))
+                            me->AddThreat(pPlayer, 10.0f);
+                    }
+                }
 
                 me->RemoveAurasDueToSpell(SPELL_ILLIDAN_KNEEL_INTRO);
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -828,10 +838,10 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
             me->UpdateSpeed(MOVE_RUN, 1.5f);
 
             if (Creature *pAkama = instance->GetCreature(instance->GetData64(DATA_AKAMA)))
-                DoModifyThreatPercent(pAkama, -100);
+                DoModifyThreatPercent(pAkama, -101);
 
             if (Creature *pMaiev = GetClosestCreatureWithEntry(me, 23197, 200.0f))
-                DoModifyThreatPercent(pMaiev, -100);
+                DoModifyThreatPercent(pMaiev, -101);
 
             m_combatTimer = 2000;
         }
@@ -1114,6 +1124,10 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
 
     void EnterEvadeMode()
     {
+        ClearCastQueue();
+        events.Reset();
+        summons.DespawnAll();
+
         me->InterruptNonMeleeSpells(true);
         me->RemoveAllAuras();
         me->DeleteThreatList();
@@ -1122,6 +1136,11 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
 
     void KilledUnit(Unit *pWho)
     {
+        if (summons.isEmpty())
+            return;
+
+        if (Unit *pUnit = GetClosestCreatureWithEntry(me, 23226, 40.0f))
+            AttackStartNoMove(pUnit);
     }
 
     void DoAction(const int32 action)
@@ -1139,8 +1158,9 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
                 {
                     float x,y,z;
                     pIllidan->GetClosePoint(x, y, z, 0.0f, 8.0f, -pIllidan->GetAngle(CENTER_X, CENTER_Y));
-                    me->NearTeleportTo(x, y, z +0.5f, 0.0f);
 
+                    me->Relocate(x, y, z);
+                    me->UpdateObjectVisibility();
                     me->StopMoving();
                 }
                 break;
@@ -1250,7 +1270,7 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
                     {
                         pElite->AI()->AttackStart(me);
                         if (!me->getVictim())
-                            AttackStart(pElite);
+                            AttackStartNoMove(pElite);
 
                         events.ScheduleEvent(EVENT_AKAMA_SUMMON_ELITE, 12000);
                     }
@@ -1322,8 +1342,12 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
 
     void IsSummonedBy(Unit *pSummoner)
     {
-        me->NearTeleportTo(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() +1.0f, 0.0f);
+        me->Relocate(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() +1.0f);
+        me->UpdateObjectVisibility();
+
         ForceSpellCast(me, SPELL_MAIEV_TELEPORT_VISUAL);
+
+        me->StopMoving();
 
         if (pSummoner->GetTypeId() == TYPEID_UNIT)
         {
@@ -1350,10 +1374,13 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
                     if (Creature *pIllidan = instance->GetCreature(instance->GetData64(DATA_ILLIDANSTORMRAGE)))
                     {
                         float x, y, z;
-                        pIllidan->GetClosePoint(x, y, z, 0.0f, 35.0f, -pIllidan->GetAngle(CENTER_X, CENTER_Y));
-                        me->NearTeleportTo(x, y, z +0.5f, 0.0f);
+                        pIllidan->GetClosePoint(x, y, z, 0.0f, 45.0f, -pIllidan->GetAngle(CENTER_X, CENTER_Y));
+
+                        me->Relocate(x, y, z);
+                        me->UpdateObjectVisibility();
 
                         ForceSpellCast(me, SPELL_MAIEV_TELEPORT_VISUAL, INTERRUPT_AND_CAST_INSTANTLY);
+                        me->StopMoving();
                     }
 
                     SetAutocast(SPELL_MAIEV_THROW_DAGGER, 2000, false, AUTOCAST_TANK);
@@ -1375,7 +1402,9 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
 
                 float x, y, z;
                 me->GetClosePoint(x, y, z, 0.0f, 25.0f, frand(0, 2*M_PI));
-                me->NearTeleportTo(x, y, z +0.5f, 0.0f);
+
+                me->Relocate(x, y, z);
+                me->UpdateObjectVisibility();
 
                 ForceSpellCast(me, SPELL_MAIEV_TELEPORT_VISUAL, INTERRUPT_AND_CAST_INSTANTLY);
                 ForceSpellCast(me, SPELL_MAIEV_SUMMON_CAGE_TRAP, INTERRUPT_AND_CAST_INSTANTLY, true);
@@ -1393,7 +1422,8 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
                 {
                     float x, y, z;
                     pIllidan->GetClosePoint(x, y, z, 0.0f, 7.0f, pIllidan->GetOrientation());
-                    me->NearTeleportTo(x, y, z +0.5f, 0.0f);
+                    me->Relocate(x, y, z);
+                    me->UpdateObjectVisibility();
                 }
                 events.CancelEvent(EVENT_MAIEV_RANDOM_TAUNT);
 
@@ -1605,7 +1635,7 @@ struct TRINITY_DLL_DECL boss_illidan_flameofazzinothAI : public ScriptedAI
                 case EVENT_FLAME_FLAME_BLAST:
                 {
                     AddSpellToCast(me->getVictim(), SPELL_FLAME_FLAME_BLAST);
-                    AddSpellToCast(me,  SPELL_FLAME_BLAZE, true);
+                    AddSpellToCast(me, SPELL_FLAME_BLAZE);
                     events.ScheduleEvent(EVENT_FLAME_FLAME_BLAST, urand(25000, 30000));
                     break;
                 }
@@ -1920,80 +1950,3 @@ void AddSC_boss_illidan()
     newscript->GetAI = &GetAI_boss_illidan_parasite_shadowfiend;
     newscript->RegisterSelf();
 }
-/*
-23304
-DELETE FROM `spell_script_target` WHERE `entry` = '39635';
-INSERT INTO `spell_script_target` (`entry`,`type`,`targetEntry`) VALUES ('39635','1','23448');
-UPDATE `creature_template` SET `ScriptName` = 'boss_illidan_glaive' WHERE `entry` ='22996';
-UPDATE `creature_template` SET `ScriptName` = 'boss_illidan_parasite_shadowfiend' WHERE `entry` ='23498';
-UPDATE `creature_template` SET `ScriptName` = 'boss_illidan_akama' WHERE `entry` = '23089';
-UPDATE `creature_template` SET `ScriptName` = 'boss_illidan_shadowdemon' WHERE `entry` = '23375';
-UPDATE `creature` SET `spawntimesecs`='10' WHERE `id` = '23448';
-UPDATE `script_texts` SET `type` = 0 WHERE entry IN(-1529099, -1529000, -1529001);
-DELETE FROM `creature_template_addon` WHERE `entry` = '22917';
-REPLACE INTO spell_script_target VALUES (41268, 1, 23412), (41269, 1, 23412), (41271, 1, 23412);
-
-INSERT INTO `waypoint_data` VALUES ('2109', '1', '769.23', '305.157', '312.292', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2109', '2', '775.453', '305.138', '316.401', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2109', '3', '780.276', '305.124', '319.72', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2109', '4', '785.867', '300.098', '319.76', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2109', '5', '793.835', '292.918', '319.771', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2109', '6', '796.945', '289.077', '319.836', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2109', '7', '796.373', '284.29', '323.751', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2109', '8', '795.95', '278.861', '328.191', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2109', '9', '795.542', '273.43', '332.631', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2109', '10', '795.153', '268.159', '336.941', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2109', '11', '795.024', '262.407', '341.464', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2109', '12', '791.342', '257.2', '341.464', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2109', '13', '788.019', '252.503', '341.464', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2109', '14', '783.752', '246.57', '341.724', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2109', '15', '777.176', '244.22', '346.029', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2109', '16', '772.464', '242.619', '349.101', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2109', '17', '765.657', '240.153', '353.684', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2109', '18', '757.588', '239.638', '353.281', '0', '1', '0', '100', '0');
-
-INSERT INTO `script_texts`(`entry`,`content_default`,`content_loc1`,`content_loc2`,`content_loc3`,`content_loc4`,`content_loc5`,`content_loc6`,`content_loc7`,`content_loc8`,`sound`,`type`,`language`,`emote`,`comment`)VALUES('-1309024','I cannot do this alone.',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'0','0','0','274','Akama before door\r\n');
-INSERT INTO `script_texts`(`entry`,`content_default`,`content_loc1`,`content_loc2`,`content_loc3`,`content_loc4`,`content_loc5`,`content_loc6`,`content_loc7`,`content_loc8`,`sound`,`type`,`language`,`emote`,`comment`)VALUES('-1309025','The door is all what stands between us and the Betrayer. Stand a side friends.',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'0','0','0','0','Akama door cast');
-INSERT INTO `script_texts`(`entry`,`content_default`,`content_loc1`,`content_loc2`,`content_loc3`,`content_loc4`,`content_loc5`,`content_loc6`,`content_loc7`,`content_loc8`,`sound`,`type`,`language`,`emote`,`comment`)VALUES('-1309026','You are not alone, Akama.',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'0','0','0','0','Akama speech no 1 helper');
-INSERT INTO `script_texts`(`entry`,`content_default`,`content_loc1`,`content_loc2`,`content_loc3`,`content_loc4`,`content_loc5`,`content_loc6`,`content_loc7`,`content_loc8`,`sound`,`type`,`language`,`emote`,`comment`)VALUES('-1309027','Your people will always be with you.',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'0','0','0','0','Akama speech no 2 helper');
-INSERT INTO `script_texts`(`entry`,`content_default`,`content_loc1`,`content_loc2`,`content_loc3`,`content_loc4`,`content_loc5`,`content_loc6`,`content_loc7`,`content_loc8`,`sound`,`type`,`language`,`emote`,`comment`)VALUES('-1309028','I thank you for your aid, brothers. Our people will be redeemed!',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'0','0','0','66','Akama end speech');
-
-INSERT INTO `waypoint_data` VALUES ('2110', '1', '669.205', '321.226', '271.69', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2110', '2', '666.536', '337.008', '271.69', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2110', '3', '670.742', '347.471', '271.69', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2110', '4', '679.681', '364.894', '271.681', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2110', '5', '692.234', '373.568', '271.68', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2110', '6', '701.046', '379.66', '272.862', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2110', '7', '714.898', '373.266', '278.119', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2110', '8', '722.923', '367.704', '283.035', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2110', '9', '730.117', '360.733', '289.848', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2110', '10', '736.486', '352.951', '296.095', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2110', '11', '740.103', '345.393', '300.454', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2110', '12', '744.947', '334.724', '306.903', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2110', '13', '747.264', '324.849', '309.56', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2110', '14', '751.097', '308.212', '312.069', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2110', '15', '751.998', '304.3', '312.065', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2110', '16', '759.091', '304.063', '312.274', '0', '1', '0', '100', '0');
-
-INSERT INTO `waypoint_data` VALUES ('2111', '1', '735.911', '335.327', '352.996', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2111', '2', '748.758', '361.503', '352.996', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2111', '3', '766.342', '369.532', '353.674', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2111', '4', '775.964', '366.737', '347.46', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2111', '5', '784.779', '363.882', '341.741', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2111', '6', '792.534', '357.53', '341.418', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2111', '7', '795.411', '346.043', '341.211', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2111', '8', '795.9', '333.309', '330.807', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2111', '9', '795.997', '319.96', '319.897', '0', '1', '0', '100', '0');
-INSERT INTO `waypoint_data` VALUES ('2111', '10', '794.935', '304.499', '319.761', '0', '1', '0', '100', '0');
-
-insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values(DEFAULT,'23089','564','1','0','1679','757.588','239.638','353.281','2.26385','300','0','0','960707','607000','0','0');
-insert into `creature` (`guid`, `id`, `map`, `spawnMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `DeathState`, `MovementType`) values(DEFAULT,'22917','564','1','0','442','701.94','307.019','354.27','0.7300','4294967295','0','0','6070400','7588','0','0');
-UPDATE `creature_template` SET `ScriptName`='boss_illidan_flameofazzinoth', `flags_extra` = `flags_extra` | 262144 WHERE `entry`='22997';
-....
-UPDATE script_texts SET TYPE = 1 WHERE entry IN(-1999998,-1529099,-1529000,-1529001);
-UPDATE `creature_template` SET `ScriptName` = 'boss_illidan_maiev' WHERE `entry` ='23197';
-REPLACE INTO spell_script_target VALUES (40761, 1, 23304);
-UPDATE gameobject_template SET scriptname="boss_illidan_cage_trap" WHERE entry = 185916;
-UPDATE creature_template SET scriptname = "boss_illidan_cage_beamer" WHERE entry = '23304';
-DELETE from spell_script_target where `spell_effect`='41915';
-*/

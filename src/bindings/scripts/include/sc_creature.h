@@ -33,6 +33,7 @@ public:
     void Despawn(Creature *summon);
     void DespawnEntry(uint32 entry);
     void DespawnAll();
+    bool isEmpty();
     void AuraOnEntry(uint32 entry, uint32 spellId, bool apply);
     void DoAction(uint32 entry, uint32 info);
 private:

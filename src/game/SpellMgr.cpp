@@ -2651,6 +2651,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
         switch (i)
         {
+        case 40017: // If we can't adjust speed :P we spawn it in bigger periods
+            spellInfo->EffectAmplitude[1] = 2000;
+            break;
         case 40841:
             spellInfo->EffectRadiusIndex[0] = 15;
             break;

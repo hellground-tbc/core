@@ -92,6 +92,11 @@ void SummonList::DespawnAll()
     clear();
 }
 
+bool SummonList::isEmpty()
+{
+    return empty();
+}
+
 
 ScriptedAI::ScriptedAI(Creature* pCreature) :
 CreatureAI(pCreature), m_creature(pCreature), IsFleeing(false), m_bCombatMovement(true), m_uiEvadeCheckCooldown(2500), autocast(false)

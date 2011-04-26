@@ -1519,6 +1519,9 @@
     <ClCompile Include="..\scripts\zone\aunchindoun\mana_tombs\instance_mana_tombs.cpp">
       <Filter>Scripts\zone\Aunchindoun\Mana Tombs</Filter>
     </ClCompile>
+    <ClCompile Include="..\scripts\zone\sunwell_plateau\sunwell_plateau_trash.cpp">
+      <Filter>Scripts\zone\Sunwell Plateau</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\scripts\creature\simple_ai.h">

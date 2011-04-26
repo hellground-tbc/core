@@ -288,6 +288,7 @@
     <ClCompile Include="..\scripts\zone\ruins_of_ahnqiraj\boss_ossirian.cpp" />
     <ClCompile Include="..\scripts\zone\ruins_of_ahnqiraj\boss_rajaxx.cpp" />
     <ClCompile Include="..\scripts\zone\ruins_of_ahnqiraj\instance_ruins_of_ahnqiraj.cpp" />
+    <ClCompile Include="..\scripts\zone\sunwell_plateau\sunwell_plateau_trash.cpp" />
     <ClCompile Include="..\scripts\zone\swamp of sorrows\swamp_of_sorrows.cpp" />
     <ClCompile Include="..\scripts\zone\scarlet_monastery\boss_arcanist_doan.cpp" />
     <ClCompile Include="..\scripts\zone\scarlet_monastery\boss_azshir_the_sleepless.cpp" />
