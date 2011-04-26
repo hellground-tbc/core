@@ -343,6 +343,9 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     if (pPlayer->isMovingOrTurning())
         pPlayer->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
 
+    if (pPlayer->isMoving())
+        pPlayer->RemoveAurasWithInterruptFlags(262272);
+
     if (movementInfo.GetPos()->z < -500.0f)
         pPlayer->HandleFallUnderMap();
 }
