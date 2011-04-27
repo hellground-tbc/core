@@ -848,7 +848,7 @@ void Map::PlayerRelocation(Player *player, float x, float y, float z, float orie
         AddToGrid(player, newGrid,new_cell);
     }
 
-    player->UpdateObjectVisibility(false);
+    player->UpdateObjectVisibility(player->GetMotionMaster()->GetCurrentMovementGeneratorType() != IDLE_MOTION_TYPE);
 }
 
 void Map::CreatureRelocation(Creature *creature, float x, float y, float z, float ang)
