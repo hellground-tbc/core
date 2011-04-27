@@ -234,7 +234,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
             case 23426:
                 m_illidariGUID = pCreature->GetGUID();
                 if (GetData(EVENT_ILLIDARICOUNCIL) == DONE && GetData(EVENT_ILLIDARIDOOR) != DONE)
-                    if (Creature *pAkama = me->SummonCreature(23089, 671.309f, 305.427f, 271.689f, 6.068f, TEMPSUMMON_DEAD_DESPAWN, 0))
+                    if (Creature *pAkama = pCreature->SummonCreature(23089, 671.309f, 305.427f, 271.689f, 6.068f, TEMPSUMMON_DEAD_DESPAWN, 0))
                         pAkama->AI()->DoAction(6);
                 break;
             case 23499:

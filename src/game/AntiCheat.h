@@ -37,7 +37,7 @@ class ACRequest : public ACE_Method_Request
                 float tmpZ = pPlayer->GetMap()->GetHeight(m_newPacket.pos.x, m_newPacket.pos.y, MAX_HEIGHT, false);
                 if ((tmpZ > 2.0f || tmpZ < -2.0f) && tmpZ > -100000.0f)
                 {
-                    sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) - teleport to plane cheat. MapId: %u, MapHeight: %u, coords: %f, %f, %f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s\n",
+                    sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) - teleport to plane cheat. MapId: %u, MapHeight: %u, coords: %f, %f, %f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s",
                            pPlayer->GetName(), pPlayer->GetGUIDLow(), pPlayer->GetSession()->GetAccountId(), pPlayer->GetMapId(), tmpZ, m_newPacket.pos.x, m_newPacket.pos.y, m_newPacket.pos.z, m_newPacket.GetMovementFlags(), m_latency, pPlayer->GetMap() ? (pPlayer->GetMap()->IsBattleGroundOrArena() ? "Yes" : "No") : "No");
                     pPlayer->Relocate(m_pos.x, m_pos.y, tmpZ, m_pos.o);
                     pPlayer->GetSession()->KickPlayer();
@@ -77,7 +77,7 @@ class ACRequest : public ACE_Method_Request
             if ((m_newPacket.HasMovementFlag(MOVEFLAG_WATERWALKING))
                 && !pPlayer->HasAuraType(SPELL_AURA_WATER_WALK) && pPlayer->isAlive() && !pPlayer->isGameMaster())
             {
-                sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) - possible water walk Cheat. MapId: %u, coords: %f %f %f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s\n",
+                sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) - possible water walk Cheat. MapId: %u, coords: %f %f %f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s",
                                       pPlayer->GetName(), pPlayer->GetGUIDLow(), pPlayer->GetSession()->GetAccountId(), pPlayer->GetMapId(), m_newPacket.pos.x, m_newPacket.pos.y, m_newPacket.pos.z, m_newPacket.GetMovementFlags(), m_latency, pPlayer->GetMap() ? (pPlayer->GetMap()->IsBattleGroundOrArena() ? "Yes" : "No") : "No");
 
                 //m_newPacket.RemoveMovementFlag(MOVEFLAG_WATERWALKING);
@@ -89,7 +89,7 @@ class ACRequest : public ACE_Method_Request
             if ((newPacket.HasMovementFlag(MOVEFLAG_HOVER))
                 && !pPlayer->HasAuraType(SPELL_AURA_HOVER) && !pPlayer->isGameMaster())
             {
-                sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) - possible Hover Cheat. MapId: %u, coords: x: %f, y: %f, z: %f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s\n",
+                sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) - possible Hover Cheat. MapId: %u, coords: x: %f, y: %f, z: %f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s",
                                       pPlayer->GetName(), pPlayer->GetGUIDLow(), pPlayer->GetSession()->GetAccountId(), pPlayer->GetMapId(), m_newPacket.pos.x, m_newPacket.pos.y, m_newPacket.pos.z, m_newPacket.GetMovementFlags(), m_latency, pPlayer->GetMap() ? (pPlayer->GetMap()->IsBattleGroundOrArena() ? "Yes" : "No") : "No");
 
                 //m_newPacket.RemoveMovementFlag(MOVEFLAG_HOVER);
@@ -100,7 +100,7 @@ class ACRequest : public ACE_Method_Request
             if ((newPacket.HasMovementFlag(MOVEFLAG_SAFE_FALL))
                 && !pPlayer->HasAuraType(SPELL_AURA_SAFE_FALL) && !pPlayer->HasAuraType(SPELL_AURA_FEATHER_FALL) && !pPlayer->isGameMaster())
             {
-                sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) - possible safe fall Cheat. MapId: %u, coords: %f %f %f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s\n",
+                sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) - possible safe fall Cheat. MapId: %u, coords: %f %f %f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s",
                                       pPlayer->GetName(), pPlayer->GetGUIDLow(), pPlayer->GetSession()->GetAccountId(), pPlayer->GetMapId(), m_newPacket.pos.x, m_newPacket.pos.y, m_newPacket.pos.z, m_newPacket.GetMovementFlags(), m_latency, pPlayer->GetMap() ? (pPlayer->GetMap()->IsBattleGroundOrArena() ? "Yes" : "No") : "No");
 
                 //m_newPacket.RemoveMovementFlag(MOVEFLAG_SAFE_FALL);
