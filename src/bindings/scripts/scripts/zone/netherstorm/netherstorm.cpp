@@ -1081,42 +1081,40 @@ CreatureAI* GetAI_npc_withered_corpse(Creature *_Creature)
 
 float ethereum_NPC[2][7] =
 {
- {20785,20790,20789,20784,20786,20783,20788}, // hostile npc
- {22810,22811,22812,22813,22814,22815,0}      // fiendly npc (need script in acid ? only to cast spell reputation reward)
+    {20785,20790,20789,20784,20786,20783,20788}, // hostile npc
+    {22810,22811,22812,22813,22814,22815,0}      // fiendly npc (need script in acid ? only to cast spell reputation reward)
 };
 
 bool GOHello_go_ethereum_prison(Player *player, GameObject* _GO)
 {
- _GO->SetGoState(GO_STATE_ACTIVE);
- uint32 entry;
+    uint32 entry;
 
-switch(rand()%2)
-{
-    case 0:
-        entry = ethereum_NPC[0][rand()%7];
-        _GO->SummonCreature(entry,_GO->GetPositionX(),_GO->GetPositionY(),_GO->GetPositionZ()+0.3, 0,TEMPSUMMON_CORPSE_TIMED_DESPAWN,10000);
-    break;
-    case 1:
-        entry = ethereum_NPC[1][rand()%6];
-        if(Creature *prisoner = _GO->SummonCreature(entry,_GO->GetPositionX(),_GO->GetPositionY(),_GO->GetPositionZ()+0.3, 0,TEMPSUMMON_TIMED_DESPAWN,10000))
-        {
-            int32 spellId = NULL;
-            switch(prisoner->GetEntry())
+    switch(rand()%2)
+    {
+        case 0:
+            entry = ethereum_NPC[0][rand()%7];
+            _GO->SummonCreature(entry,_GO->GetPositionX(),_GO->GetPositionY(),_GO->GetPositionZ()+0.3, 0,TEMPSUMMON_CORPSE_TIMED_DESPAWN,10000);
+        break;
+        case 1:
+            entry = ethereum_NPC[1][rand()%6];
+            if(Creature *prisoner = _GO->SummonCreature(entry,_GO->GetPositionX(),_GO->GetPositionY(),_GO->GetPositionZ()+0.3, 0,TEMPSUMMON_TIMED_DESPAWN,10000))
             {
-                case 22810: spellId = 39460; break;  // Cenarion Expedition +500
-                case 22811: spellId = 39456; break;  // Lower City +500
-                case 22812: spellId = 39457; break;  // Sha'tar +500
-                case 22813: spellId = 39474; break;  // Consortium +500
-                case 22814: spellId = 39476; break;  // Sporegar +500
-                case 22815: spellId = 39475; break;  // Keepers of Time +500
+                int32 spellId = NULL;
+                switch(prisoner->GetEntry())
+                {
+                    case 22810: spellId = 39460; break;  // Cenarion Expedition +500
+                    case 22811: spellId = 39456; break;  // Lower City +500
+                    case 22812: spellId = 39457; break;  // Sha'tar +500
+                    case 22813: spellId = 39474; break;  // Consortium +500
+                    case 22814: spellId = 39476; break;  // Sporegar +500
+                    case 22815: spellId = 39475; break;  // Keepers of Time +500
+                }
+                prisoner->CastSpell(player,spellId,false,false,false,0);
             }
-            prisoner->CastSpell(player,spellId,false,false,false,0);
-        }
-
-    break;
-}
- _GO->SetRespawnTime(120);
-return true;
+        break;
+    }
+    _GO->UseDoorOrButton(120);
+    return true;
 }
 
 /***
