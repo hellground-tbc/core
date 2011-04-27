@@ -2897,6 +2897,9 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 41363: // Shared Bonds
             spellInfo->AttributesEx &= ~SPELL_ATTR_EX_CHANNELED_1;
+        case 16007: // DRACO_INCARCINATRIX_900
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
+            break;
         default:
             break;
         }

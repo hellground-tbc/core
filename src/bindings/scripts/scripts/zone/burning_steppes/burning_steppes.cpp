@@ -155,6 +155,72 @@ bool GOHello_go_proudtuskremains(Player *player, GameObject* _GO)
     return false;
 }
 
+/*######
+## Script for Quest: Broodling Essence
+######*/
+
+// Spells
+#define SPELL_DRACO_INCARCINATRIX_900   16007
+#define SPELL_CREATE_BROODLING_ESSENCE  16027
+#define SPELL_FIREBALL					13375
+
+struct TRINITY_DLL_DECL mob_broodlingessenceAI : public ScriptedAI
+{
+
+    mob_broodlingessenceAI(Creature *c) : ScriptedAI(c) {}
+
+    bool onSpellEffect;
+    uint32 Fireball_Timer;
+
+    void Reset()
+    {
+		Fireball_Timer = 0;
+		onSpellEffect = false;
+    }
+
+    void EnterCombat(Unit *who){}
+
+    void SpellHit(Unit *caster, const SpellEntry *spell)
+    {
+        if(spell->Id == SPELL_DRACO_INCARCINATRIX_900)
+		{
+            onSpellEffect = true;
+		}
+	}
+
+    void JustDied(Unit* killer)
+    {
+        if(onSpellEffect)
+		{
+            me->CastSpell(me, SPELL_CREATE_BROODLING_ESSENCE, true);
+			me->RemoveCorpse();
+		}
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        //Return since we have no target
+        if (!UpdateVictim() )
+            return;
+
+        //Fireball_Timer
+        if (Fireball_Timer < diff)
+        {
+			DoCast(m_creature->getVictim(),SPELL_FIREBALL);
+            Fireball_Timer = 10000;
+        }
+        else
+            Fireball_Timer -= diff;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_broodlingessence(Creature *_Creature)
+{
+    return new mob_broodlingessenceAI (_Creature);
+}
+
 void AddSC_burning_steppes()
 {
     Script *newscript;
@@ -169,6 +235,11 @@ void AddSC_burning_steppes()
     newscript = new Script;
     newscript->Name = "go_proudtuskremains";
     newscript->pGOHello = &GOHello_go_proudtuskremains;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_broodlingessence";
+    newscript->GetAI = &GetAI_mob_broodlingessence;
     newscript->RegisterSelf();
 }
 
