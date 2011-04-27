@@ -27,7 +27,7 @@ EndScriptData */
 /************* Quotes and Sounds ***********************/
 // Gossip for when a player clicks Akama
 #define GOSSIP_ITEM           "We are ready to face Illidan"
-#define GOSSIP_ITEM1          "We are not ready to face Illidan yet. "
+
 
 // Yells for/by Akama
 #define SAY_AKAMA_BEWARE      -1999988
@@ -1798,11 +1798,7 @@ bool GossipSelect_boss_illidan_akama(Player *pPlayer, Creature *pCreature, uint3
 
 bool GossipHello_boss_illidan_akama(Player *player, Creature *_Creature)
 {
-    if (player->isGameMaster())
-        player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
-    else
-        player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
-
+    player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
     player->SEND_GOSSIP_MENU(10465, _Creature->GetGUID());
     return true;
 }
