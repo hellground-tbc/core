@@ -1,2 +1,0 @@
-UPDATE creature_template SET minlevel = 70, maxlevel = 71, minhealth = 6986, maxhealth = 7181, armor = 700, faction_A = 16, faction_H = 16, speed = 1.25, mindmg = 300, maxdmg = 400, baseattacktime = 2000, spell1 = 44855, mingold = 218, maxgold = 287 WHERE entry = 24917;
-REPLACE INTO creature_template_addon (entry, auras) VALUES (24917, "44855 0");
