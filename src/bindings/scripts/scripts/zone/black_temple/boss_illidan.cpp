@@ -289,6 +289,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
 
                 if (m_phase == PHASE_ONE)
                 {
+                    me->SetReactState(REACT_AGGRESSIVE);
                     instance->SetData(EVENT_ILLIDANSTORMRAGE, IN_PROGRESS);
 
                     Map::PlayerList const &plList = me->GetMap()->GetPlayers();
@@ -787,6 +788,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
 
     void EnterEvadeMode()
     {
+        me->SetReactState(REACT_PASSIVE);
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         instance->SetData(EVENT_ILLIDANSTORMRAGE, NOT_STARTED);
 
