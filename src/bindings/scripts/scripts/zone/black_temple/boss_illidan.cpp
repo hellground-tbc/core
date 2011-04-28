@@ -867,7 +867,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
                     if (pPlayer->isGameMaster())
                          continue;
 
-                    if (pPlayer->isAlive() && pPlayer->isInCombat() && me->IsWithinDistInMap(pPlayer, 150.0f))
+                    if (pPlayer->isAlive() && pPlayer->isInCombat() && me->IsWithinDistInMap(pPlayer, 200.0f))
                     {
                         found = true;
                         break;
@@ -1651,6 +1651,9 @@ struct TRINITY_DLL_DECL boss_illidan_flameofazzinothAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
+        me->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+        me->UpdateSpeed(MOVE_RUN, 2.5f);
+
         events.Update(diff);
         while(uint32 eventId = events.ExecuteEvent())
         {
@@ -1659,7 +1662,6 @@ struct TRINITY_DLL_DECL boss_illidan_flameofazzinothAI : public ScriptedAI
                 case EVENT_FLAME_RANGE_CHECK:
                 {
                     DoZoneInCombat();
-                    me->UpdateSpeed(MOVE_RUN, 2.5f);
 
                     if (Unit *pTarget = SelectUnit(SELECT_TARGET_FARTHEST, 0, 200.0f, true, 0, 40.0f))
                     {
