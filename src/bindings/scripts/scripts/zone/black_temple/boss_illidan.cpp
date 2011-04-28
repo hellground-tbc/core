@@ -474,7 +474,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
 
     void CastEyeBlast()
     {
-        Locations initial = EyeBlast[urand(0,4)];
+        Locations initial = EyeBlast[rand()%5];
         if (Creature* pTrigger = me->SummonTrigger(initial.x, initial.y, initial.z, 0, 13000))
         {
             if (Creature *pGlaive = GetClosestCreatureWithEntry(pTrigger, 23448, 70.0f))
@@ -844,7 +844,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!UpdateVictim())
+        if (m_phase != PHASE_TWO && !UpdateVictim())
             return;
 
         if (m_combatTimer < diff)
@@ -858,8 +858,8 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
             if (Creature *pMaiev = GetClosestCreatureWithEntry(me, 23197, 200.0f))
                 DoModifyThreatPercent(pMaiev, -101);
 
-            Map::PlayerList const &plList = me->GetMap()->GetPlayers();
             bool found = false;
+            Map::PlayerList const &plList = me->GetMap()->GetPlayers();
             for (Map::PlayerList::const_iterator i = plList.begin(); i != plList.end(); ++i)
             {
                 if (Player* pPlayer = i->getSource())
