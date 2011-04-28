@@ -796,10 +796,8 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
 
         if (Creature *pAkama = instance->GetCreature(instance->GetData64(DATA_AKAMA)))
         {
-            pAkama->AI()->Reset();
-            pAkama->AI()->EnterEvadeMode();
-            pAkama->GetMotionMaster()->Clear(false); // need reset waypoint movegen, to test
-            pAkama->GetMotionMaster()->MoveTargetedHome();
+            pAkama->Kill(pAkama, false);
+            pAkama->Respawn();
         }
     }
 
