@@ -785,14 +785,10 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
             me->setHover(true);
     }
 
-    void JustRespawned()
+    void EnterEvadeMode()
     {
-        JustReachedHome();
-    }
-
-    void JustReachedHome()
-    {
-        ForceSpellCast(me, SPELL_ILLIDAN_KNEEL_INTRO, INTERRUPT_AND_CAST_INSTANTLY);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        instance->SetData(EVENT_ILLIDANSTORMRAGE, NOT_STARTED);
 
         if (Creature *pAkama = instance->GetCreature(instance->GetData64(DATA_AKAMA)))
         {
@@ -801,6 +797,18 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
             pAkama->AI()->Reset();
             pAkama->GetMotionMaster()->MoveTargetedHome();
         }
+
+        BossAI::EnterEvadeMode();
+    }
+
+    void JustReachedHome()
+    {
+        ForceSpellCast(me, SPELL_ILLIDAN_KNEEL_INTRO, INTERRUPT_AND_CAST_INSTANTLY);
+    }
+
+    void JustRespawned()
+    {
+        ForceSpellCast(me, SPELL_ILLIDAN_KNEEL_INTRO, INTERRUPT_AND_CAST_INSTANTLY);
     }
 
     void OnAuraApply(Aura *aura, Unit *, bool stackApply)
