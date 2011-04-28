@@ -840,7 +840,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
         if (m_combatTimer < diff)
         {
             DoZoneInCombat();
-            me->UpdateSpeed(MOVE_RUN, 1.5f);
+            me->UpdateSpeed(MOVE_RUN, 2.5f);
 
             if (Creature *pAkama = instance->GetCreature(instance->GetData64(DATA_AKAMA)))
                 DoModifyThreatPercent(pAkama, -101);
@@ -1629,7 +1629,7 @@ struct TRINITY_DLL_DECL boss_illidan_flameofazzinothAI : public ScriptedAI
                 case EVENT_FLAME_RANGE_CHECK:
                 {
                     DoZoneInCombat();
-                    me->UpdateSpeed(MOVE_RUN, 1.5f);
+                    me->UpdateSpeed(MOVE_RUN, 2.5f);
 
                     if (Unit *pTarget = SelectUnit(SELECT_TARGET_FARTHEST, 0, 200.0f, true, 0, 40.0f))
                     {
