@@ -241,6 +241,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         me->RemoveUnitMovementFlag(MOVEFLAG_LEVITATING);
         me->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
+        me->SetSelection(NULL);
 
         instance->SetData(EVENT_ILLIDANSTORMRAGE, NOT_STARTED);
     }
