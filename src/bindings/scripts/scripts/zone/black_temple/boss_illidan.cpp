@@ -1718,7 +1718,12 @@ enum ShadowDemonSpells
 
 struct TRINITY_DLL_DECL boss_illidan_shadowdemonAI : public ScriptedAI
 {
-    boss_illidan_shadowdemonAI(Creature *c) : ScriptedAI(c){}
+    boss_illidan_shadowdemonAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = c->GetInstanceData();
+    }
+
+    ScriptedInstance *pInstance;
 
     uint64 m_targetGUID;
 
@@ -1749,6 +1754,12 @@ struct TRINITY_DLL_DECL boss_illidan_shadowdemonAI : public ScriptedAI
 
         ForceSpellCast(pSummoner, SPELL_SHADOW_DEMON_FOUND_TARGET);
         ForceSpellCast(me, SPELL_SHADOW_DEMON_PASSIVE);
+
+        if (!pInstance)
+            return;
+
+        if (Creature *pIllidan = pInstance->GetCreature(pInstance->GetData64(DATA_ILLIDANSTORMRAGE)))
+            pIllidan->AI()->JustSummoned(me);
     }
 
     void JustDied(Unit *pKiller)
