@@ -475,7 +475,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
 
     void CastEyeBlast()
     {
-        Locations initial = EyeBlast[rand()%5];
+        Locations initial = EyeBlast[urand(0,4)];
         if (Creature* pTrigger = me->SummonTrigger(initial.x, initial.y, initial.z, 0, 13000))
         {
             if (Creature *pGlaive = GetClosestCreatureWithEntry(pTrigger, 23448, 70.0f))
@@ -1623,6 +1623,7 @@ struct TRINITY_DLL_DECL boss_illidan_flameofazzinothAI : public ScriptedAI
 
     EventMap events;
     SummonList summons;
+    uint32 check_timer;
 
     void Reset()
     {
@@ -1630,6 +1631,7 @@ struct TRINITY_DLL_DECL boss_illidan_flameofazzinothAI : public ScriptedAI
         summons.DespawnAll();
         ClearCastQueue();
 
+        check_timer = 2000;
         m_creature->SetMeleeDamageSchool(SPELL_SCHOOL_FIRE);
     }
 
@@ -1654,8 +1656,15 @@ struct TRINITY_DLL_DECL boss_illidan_flameofazzinothAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
-        me->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
-        me->UpdateSpeed(MOVE_RUN, 2.5f);
+        if(check_timer < diff)
+        {
+            me->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+            me->UpdateSpeed(MOVE_RUN, 2.5f);
+            me->UpdateSpeed(MOVE_WALK, 4.5f);       // test?
+            check_timer = 2000;
+        }
+        else
+            check_timer -= diff;
 
         events.Update(diff);
         while(uint32 eventId = events.ExecuteEvent())
