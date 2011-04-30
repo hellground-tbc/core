@@ -488,7 +488,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
                 pTrigger->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 //pTrigger->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
 
-                m_hoverPoint = urand(0,4);
+                m_hoverPoint = urand(0,3);
                 me->GetMotionMaster()->MovePoint(1, HoverPosition[m_hoverPoint].x, HoverPosition[m_hoverPoint].y, HoverPosition[m_hoverPoint].z);
 
                 ForceSpellCastWithScriptText(pTrigger, SPELL_ILLIDAN_EYE_BLAST, YELL_ILLIDAN_EYE_BLAST, INTERRUPT_AND_CAST_INSTANTLY, false, true);
