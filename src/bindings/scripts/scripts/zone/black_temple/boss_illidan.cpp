@@ -481,7 +481,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
             if (Creature *pGlaive = GetClosestCreatureWithEntry(pTrigger, 23448, 70.0f))
             {
                 WorldLocation final;
-                pTrigger->GetClosePoint(final.coord_x, final.coord_y, final.coord_z, 80.0f, false, pTrigger->GetAngle(pGlaive));
+                pTrigger->GetClosePoint(final.coord_x, final.coord_y, 354.519f, 80.0f, false, pTrigger->GetAngle(pGlaive));
                 pTrigger->SetSpeed(MOVE_RUN, 1.0f);
                 pTrigger->GetMotionMaster()->MovePoint(0, final.coord_x, final.coord_y, final.coord_z);
                 pTrigger->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
