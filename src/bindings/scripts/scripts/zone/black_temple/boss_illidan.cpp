@@ -1612,7 +1612,7 @@ enum FlameEvents
 enum FlameSpells
 {
     SPELL_FLAME_FLAME_BLAST = 40631,
-    SPELL_FLAME_BLAZE       = 40637,
+    SPELL_FLAME_BLAZE       = 40609,
     SPELL_FLAME_CHARGE      = 40602,
     SPELL_FLAME_ENRAGE      = 45078
 };
@@ -1625,12 +1625,15 @@ struct TRINITY_DLL_DECL boss_illidan_flameofazzinothAI : public ScriptedAI
     SummonList summons;
     uint32 check_timer;
 
+    uint64 m_owner;
+
     void Reset()
     {
         events.Reset();
         summons.DespawnAll();
         ClearCastQueue();
 
+        m_owner = 0;
         check_timer = 2000;
         m_creature->SetMeleeDamageSchool(SPELL_SCHOOL_FIRE);
     }
@@ -1649,6 +1652,11 @@ struct TRINITY_DLL_DECL boss_illidan_flameofazzinothAI : public ScriptedAI
     void JustSummoned(Creature *pWho)
     {
         summons.Summon(pWho);
+    }
+
+    void IsSummonedBy(Unit *pWho)
+    {
+        m_owner = pWho->GetGUID();
     }
 
     void UpdateAI(const uint32 diff)
@@ -1675,7 +1683,7 @@ struct TRINITY_DLL_DECL boss_illidan_flameofazzinothAI : public ScriptedAI
                 {
                     DoZoneInCombat();
 
-                    if (Unit *pTarget = SelectUnit(SELECT_TARGET_FARTHEST, 0, 200.0f, true, 0, 40.0f))
+                    if (Unit *pTarget = SelectUnit(SELECT_TARGET_FARTHEST, 0, 200.0f, true, 0, 50.0f))
                     {
                         // wipe mode on :]
                         DoResetThreat();
@@ -1683,20 +1691,36 @@ struct TRINITY_DLL_DECL boss_illidan_flameofazzinothAI : public ScriptedAI
                         me->AI()->AttackStart(pTarget);
 
                         ForceSpellCast(pTarget, SPELL_FLAME_CHARGE);
-                        ForceSpellCast(me, SPELL_FLAME_ENRAGE);
+                        if (!me->HasAura(SPELL_FLAME_ENRAGE, 0))
+                            ForceSpellCast(me, SPELL_FLAME_ENRAGE);
+
+                        me->UpdateSpeed(MOVE_RUN, 20.0f);
+
+                        check_timer = 4000;
 
                         events.ScheduleEvent(EVENT_FLAME_RANGE_CHECK, 15000);
                     }
                     else
+                    {
+                        if (Creature *pOwner = me->GetMap()->GetCreature(m_owner))
+                        {
+                            if (!me->IsWithinDistInMap(pOwner, 45.0f) && !me->HasAura(SPELL_FLAME_ENRAGE, 0))
+                            {
+                                check_timer = 4000;
+                                me->UpdateSpeed(MOVE_RUN, 20.0f);
+                                ForceSpellCast(me, SPELL_FLAME_ENRAGE);
+                            }
+                        }
                         events.ScheduleEvent(EVENT_FLAME_RANGE_CHECK, 2000);
+                    }
 
                     break;
                 }
                 case EVENT_FLAME_FLAME_BLAST:
                 {
                     AddSpellToCast(me->getVictim(), SPELL_FLAME_FLAME_BLAST);
-                    AddSpellToCast(me, SPELL_FLAME_BLAZE);
-                    events.ScheduleEvent(EVENT_FLAME_FLAME_BLAST, urand(25000, 30000));
+                    AddSpellToCast(me->getVictim(), SPELL_FLAME_BLAZE);
+                    events.ScheduleEvent(EVENT_FLAME_FLAME_BLAST, urand(16000, 25000));
                     break;
                 }
             }
