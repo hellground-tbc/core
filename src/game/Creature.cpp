@@ -1680,6 +1680,11 @@ void Creature::setDeathState(DeathState s)
     {
         m_deathTimer = m_corpseDelay*IN_MILISECONDS;
 
+        // if no loot in DB, remove corpse quickly (20 sec ?)
+        CreatureInfo const* cInfo = GetCreatureInfo();
+        if (cInfo && !cInfo->lootid && !(cInfo->mingold || cInfo->maxgold))
+            m_deathTimer = 20*IN_MILISECONDS;
+
         // always save boss respawn time at death to prevent crash cheating
         if (sWorld.getConfig(CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY) || isWorldBoss())
             SaveRespawnTime();
