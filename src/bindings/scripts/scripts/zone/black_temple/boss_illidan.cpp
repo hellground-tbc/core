@@ -40,7 +40,7 @@ EndScriptData */
 // Other defines
 #define CENTER_X            676.740
 #define CENTER_Y            305.297
-#define CENTER_Z            353.192
+#define CENTER_Z            354.519
 
 #define SPELL_CAGED                     40695 // Caged Trap triggers will cast this on Illidan if he is within 3 yards
 
@@ -51,10 +51,10 @@ struct Locations
 
 static Locations HoverPosition[]=
 {
-    {657, 340, 354.256f},
-    {657, 275, 354.256f},
-    {705, 275, 354.256f},
-    {705, 340, 354.256f}
+    {657, 340, 354.519f},
+    {657, 275, 354.519f},
+    {705, 275, 354.519f},
+    {705, 340, 354.519f}
 };
 
 static Locations GlaivePosition[]=
@@ -1423,12 +1423,15 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
                     {
                         float x, y, z;
                         pIllidan->GetClosePoint(x, y, z, 0.0f, 45.0f, -pIllidan->GetAngle(CENTER_X, CENTER_Y));
+                        z = 354.519;
 
                         me->Relocate(x, y, z);
                         me->UpdateObjectVisibility();
 
                         ForceSpellCast(me, SPELL_MAIEV_TELEPORT_VISUAL, INTERRUPT_AND_CAST_INSTANTLY);
                         me->StopMoving();
+
+                        me->SetSelection(pIllidan->GetGUID());
                     }
 
                     SetAutocast(SPELL_MAIEV_THROW_DAGGER, 2000, false, AUTOCAST_TANK);
@@ -1450,6 +1453,7 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
 
                 float x, y, z;
                 me->GetClosePoint(x, y, z, 0.0f, 25.0f, frand(0, 2*M_PI));
+                z = 354.519;
 
                 me->Relocate(x, y, z);
                 me->UpdateObjectVisibility();
@@ -1470,8 +1474,12 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
                 {
                     float x, y, z;
                     pIllidan->GetClosePoint(x, y, z, 0.0f, 7.0f, pIllidan->GetOrientation());
+                    z = 354.519;
+
                     me->Relocate(x, y, z);
                     me->UpdateObjectVisibility();
+
+                    me->SetSelection(pIllidan->GetGUID());
                 }
                 events.CancelEvent(EVENT_MAIEV_RANDOM_TAUNT);
 
@@ -1520,6 +1528,7 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
                         pIllidan->SetReactState(REACT_AGGRESSIVE);
                         pIllidan->AI()->DoAction(EVENT_ILLIDAN_CHANGE_PHASE);
                         pIllidan->AI()->AttackStart(me);
+                        me->SetSelection(pIllidan->GetGUID());
                         AttackStart(pIllidan);
                     }
                     events.ScheduleEvent(EVENT_MAIEV_RANDOM_TAUNT, urand(30000, 40000));
