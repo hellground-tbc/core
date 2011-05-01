@@ -773,7 +773,8 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
                     case ACTION_T_DIE:                      //No Params
                     case ACTION_T_ZONE_COMBAT_PULSE:        //No Params
                     case ACTION_T_FORCE_DESPAWN:            //No Params
-                    case ACTION_T_REMOVE_CORPSE:             //No Params
+                    case ACTION_T_REMOVE_CORPSE:            //No Params
+                    case ACTION_T_COMBAT_STOP:              //No Params
                     case ACTION_T_AUTO_ATTACK:              //AllowAttackState (0 = stop attack, anything else means continue attacking)
                     case ACTION_T_COMBAT_MOVEMENT:          //AllowCombatMovement (0 = stop combat based movement, anything else continue attacking)
                     case ACTION_T_RANGED_MOVEMENT:          //Distance, Angle
@@ -1371,6 +1372,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts(uint32 creatureId)
                     case ACTION_T_COMBAT_MOVEMENT:          //AllowCombatMovement (0 = stop combat based movement, anything else continue attacking)
                     case ACTION_T_RANGED_MOVEMENT:          //Distance, Angle
                     case ACTION_T_CALL_FOR_HELP:            //Distance
+                    case ACTION_T_COMBAT_STOP:              //No Params
                         break;
 
                     case ACTION_T_RANDOM_SAY:

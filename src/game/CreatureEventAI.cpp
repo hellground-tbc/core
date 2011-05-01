@@ -686,6 +686,9 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
                 m_creature->GetMotionMaster()->MoveIdle();
             }
             break;
+        case ACTION_T_COMBAT_STOP:
+            _EnterEvadeMode();
+            break;
         case ACTION_T_SET_PHASE:
             Phase = action.set_phase.phase;
             break;
@@ -1141,7 +1144,7 @@ void CreatureEventAI::MoveInLineOfSight(Unit *who)
                 {
                     //if friendly event&&who is not hostile OR hostile event&&who is hostile
                     if (((*itr).Event.ooc_los.noHostile && !m_creature->IsHostileTo(who)) ||
-                        ((!(*itr).Event.ooc_los.noHostile) && m_creature->IsHostileTo(who)))
+                        ((!(*itr).Event.ooc_los.noHostile) && (me->IsHostileTo(who) || who->IsHostileTo(me))))
                         ProcessEvent(*itr, who);
                 }
             }

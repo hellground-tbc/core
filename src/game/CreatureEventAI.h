@@ -112,6 +112,7 @@ enum EventAI_ActionType
     ACTION_T_SET_INVINCIBILITY_HP_LEVEL = 42,               // MinHpValue, format(0-flat,1-percent from max health)
     ACTION_T_REMOVE_CORPSE              = 43,               // No Params
     ACTION_T_CAST_GUID                  = 44,               // SpellId, TargetGUID, CastFlags
+    ACTION_T_COMBAT_STOP                = 45,               // No Params
 
     ACTION_T_SET_PHASE_MASK             = 97,
     ACTION_T_SET_STAND_STATE            = 98,
