@@ -1277,6 +1277,8 @@ inline Unit* CreatureEventAI::GetTargetByType(uint32 Target, Unit* pActionInvoke
             return SelectUnit(ATTACKING_TARGET_RANDOM,1);
         case TARGET_T_ACTION_INVOKER:
             return pActionInvoker;
+        case TARGET_T_ACTION_INVOKER_NOT_PLAYER:
+            return pActionInvoker->GetTypeId()==TYPEID_PLAYER ? NULL : pActionInvoker;
         case TARGET_T_NULL:
         default:
             return NULL;

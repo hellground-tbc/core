@@ -148,7 +148,7 @@ enum Target
     TARGET_T_HOSTILE_WPET_RANDOM,                           //Just any random target on our threat list
     TARGET_T_HOSTILE_WPET_RANDOM_NOT_TOP,                   //Any random target except top threat
 
-    TARGET_T_ACTION_INVOKER_WPET,
+    TARGET_T_ACTION_INVOKER_NOT_PLAYER,
 
     // use (Unit*)NULL as target
     TARGET_T_NULL,
