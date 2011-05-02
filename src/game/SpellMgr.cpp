@@ -2649,6 +2649,9 @@ void SpellMgr::LoadSpellCustomAttr()
         if (spellInfo->SpellFamilyName == SPELLFAMILY_WARLOCK && spellInfo->SpellFamilyFlags & 0x10000LL)
             spellInfo->SchoolMask = SPELL_SCHOOL_MASK_SHADOW;
 
+        if (spellInfo->SpellFamilyName == SPELLFAMILY_MAGE && spellInfo->SpellFamilyFlags & 0x200000LL)
+            spellInfo->AttributesEx2 &= ~SPELL_ATTR_EX2_CANT_REFLECTED;
+
         switch (i)
         {
         case 40017: // If we can't adjust speed :P we spawn it in bigger periods
