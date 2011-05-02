@@ -1088,7 +1088,6 @@ float ethereum_NPC[2][7] =
 bool GOHello_go_ethereum_prison(Player *player, GameObject* _GO)
 {
     uint32 entry;
-
     switch(rand()%2)
     {
         case 0:
@@ -1113,8 +1112,7 @@ bool GOHello_go_ethereum_prison(Player *player, GameObject* _GO)
             }
         break;
     }
-    _GO->UseDoorOrButton(120);
-    return true;
+    return false;
 }
 
 /***
