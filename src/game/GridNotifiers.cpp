@@ -112,11 +112,15 @@ VisibleChangesNotifier::Visit(DynamicObjectMapType &m)
 
 inline void CreatureUnitRelocationWorker(Creature* c, Unit* u)
 {
-    if (!u->isAlive() || !c->isAlive() || c == u || u->isInFlight())
+    if (!u->isAlive() || !c->isAlive() || c == u)
+        return;
+
+    // hacky exception for Sunblade Lookout, Shattered Sun Bombardier and Brutallus
+    if (u->isInFlight() && c->GetEntry() != 25132 && c->GetEntry() != 25144 && c->GetEntry() != 25158)
         return;
 
     if (c->HasReactState(REACT_AGGRESSIVE) && !c->hasUnitState(UNIT_STAT_SIGHTLESS))
-        if (c->_IsWithinDist(u, 50.0f, true) && c->IsAIEnabled)
+        if (c->_IsWithinDist(u, DEFAULT_VISIBILITY_DISTANCE, true) && c->IsAIEnabled)
             c->AI()->MoveInLineOfSight_Safe(u);
 }
 

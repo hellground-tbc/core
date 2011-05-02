@@ -38,7 +38,8 @@ EndContentData */
 #define GOSSIP_FLY2 "I need to intercept the Dawnblade reinforcements."
 bool GossipHello_npc_ayren_cloudbreaker(Player *player, Creature *_Creature)
 {
-    if( player->GetQuestStatus(11532) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(11533) == QUEST_STATUS_INCOMPLETE)
+    if( player->GetQuestStatus(11532) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(11533) == QUEST_STATUS_INCOMPLETE ||
+        (player->GetQuestStatus(11532) == QUEST_STATUS_COMPLETE && !player->GetQuestRewardStatus(11532)) || (player->GetQuestStatus(11533) == QUEST_STATUS_COMPLETE && !player->GetQuestRewardStatus(11533)))
         player->ADD_GOSSIP_ITEM(0, GOSSIP_FLY1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
     if( player->GetQuestStatus(11542) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(11543) == QUEST_STATUS_INCOMPLETE)
@@ -61,6 +62,96 @@ bool GossipSelect_npc_ayren_cloudbreaker(Player *player, Creature *_Creature, ui
         player->CastSpell(player,45113,true);               //TaxiPath 784
     }
     return true;
+}
+
+/*######
+## npc_shattered_sun_bombardier
+######*/
+
+#define BOMBARDIER_FLY_PATH     1776
+
+const char* BombardierYell[6] = 
+{
+    "Fall into formation! We're approaching the Dead Scar.",
+    "Keep your eye on the demons. We're not concerned with killing Scourge today.",
+    "Be quick with those charges. Some of those demons are going to take more than one direct hit to bring down.",
+    "Move up and hit them from above. Let's try to get $n some cover.",
+    "It's show time! Blast them hard, blast them fast!",
+    "We've got your back, $n"
+};
+
+struct TRINITY_DLL_DECL npc_shattered_sun_bombardierAI : public ScriptedAI
+{
+    npc_shattered_sun_bombardierAI(Creature* c) : ScriptedAI(c) {}
+
+    uint64 PlayerGUID;
+    uint32 yell_timer;
+    uint8 yell;
+    bool PathFly;
+
+    void Reset()
+    {
+        me->SetVisibility(VISIBILITY_OFF);
+        PlayerGUID = 0;
+        yell_timer = 60000000;
+        PathFly = false;
+        yell = 0;
+        me->GetMotionMaster()->MoveIdle();
+    }
+
+    void MoveInLineOfSight(Unit* who)
+    {
+        if(who->GetTypeId() != TYPEID_PLAYER)
+            return;
+
+        if (who->isInFlight() && who->IsWithinDistInMap(me, 40) && !PathFly)
+        {
+            PlayerGUID = who->GetGUID();
+            me->GetMotionMaster()->Clear(false);
+            m_creature->SetUnitMovementFlags(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
+            m_creature->GetMotionMaster()->MovePath(BOMBARDIER_FLY_PATH, false);
+            me->SetSpeed(MOVE_WALK, 1.4*who->GetSpeed(MOVE_FLIGHT));
+            me->SetVisibility(VISIBILITY_ON);
+            yell_timer = 5000;
+            PathFly = true;
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (yell_timer < diff)
+        {
+            switch(yell)
+            {
+                case 0:
+                    if(me->GetGUIDLow() == 85370)
+                        me->Yell(BombardierYell[rand()%3], 0, PlayerGUID);
+                    me->SetSpeed(MOVE_WALK, 1.01*me->GetSpeed(MOVE_WALK));
+                    yell++;
+                    break;
+                case 1:
+                    if(me->GetGUIDLow() == 85370)
+                        me->Yell(BombardierYell[3+rand()%3], 0, PlayerGUID);
+                    yell++;
+                    break;
+                case 2:
+                    me->DisappearAndDie();
+                    me->Respawn();
+                    Reset();
+                    break;
+                default:
+                    break;
+            }
+            yell_timer = 7000;
+        }
+        else
+            yell_timer -= diff;
+    }
+};
+
+CreatureAI* GetAI_npc_shattered_sun_bombardierAI(Creature* _Creature)
+{
+    return new npc_shattered_sun_bombardierAI(_Creature);
 }
 
 /*######
@@ -149,6 +240,11 @@ void AddSC_isle_of_queldanas()
     newscript->Name="npc_ayren_cloudbreaker";
     newscript->pGossipHello = &GossipHello_npc_ayren_cloudbreaker;
     newscript->pGossipSelect = &GossipSelect_npc_ayren_cloudbreaker;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_shattered_sun_bombardier";
+    newscript->GetAI = &GetAI_npc_shattered_sun_bombardierAI;
     newscript->RegisterSelf();
 
     newscript = new Script;
