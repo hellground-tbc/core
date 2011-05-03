@@ -92,6 +92,7 @@ struct TRINITY_DLL_DECL npc_shattered_sun_bombardierAI : public ScriptedAI
     void Reset()
     {
         me->SetVisibility(VISIBILITY_OFF);
+        me->setActive(true);
         PlayerGUID = 0;
         yell_timer = 60000000;
         PathFly = false;
@@ -128,21 +129,21 @@ struct TRINITY_DLL_DECL npc_shattered_sun_bombardierAI : public ScriptedAI
                         me->Yell(BombardierYell[rand()%3], 0, PlayerGUID);
                     me->SetSpeed(MOVE_WALK, 1.01*me->GetSpeed(MOVE_WALK));
                     yell++;
+                    yell_timer = 7000;
                     break;
                 case 1:
                     if(me->GetGUIDLow() == 85370)
                         me->Yell(BombardierYell[3+rand()%3], 0, PlayerGUID);
                     yell++;
+                    yell_timer = 7000;
                     break;
                 case 2:
                     me->DisappearAndDie();
                     me->Respawn();
-                    Reset();
                     break;
                 default:
                     break;
             }
-            yell_timer = 7000;
         }
         else
             yell_timer -= diff;
