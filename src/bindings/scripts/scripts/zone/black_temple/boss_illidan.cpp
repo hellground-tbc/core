@@ -328,7 +328,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
 
                 me->GetMotionMaster()->MovePoint(0, CENTER_X +5.0f, CENTER_Y, CENTER_Z);
 
-                SetAutocast(SPELL_ILLIDAN_FIREBALL, 3000, false, AUTOCAST_RANDOM);
+                SetAutocast(SPELL_ILLIDAN_FIREBALL, 3000, false, AUTOCAST_RANDOM, 0, true);
 
                 events.ScheduleEvent(EVENT_ILLIDAN_THROW_GLAIVE, 15000, m_phase);
                 events.ScheduleEvent(EVENT_ILLIDAN_EYE_BLAST, urand(30000, 40000), m_phase);
@@ -846,7 +846,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (m_phase != PHASE_TWO && !UpdateVictim())
+        if (!UpdateVictim())
             return;
 
         if (m_combatTimer < diff)
@@ -928,7 +928,7 @@ static float SpiritSpawns[][4]=
 };
 
 //Akama spells
-enum AkamaSpells  
+enum AkamaSpells
 {
     SPELL_AKAMA_DOOR_CAST_SUCCESS = 41268,
     SPELL_AKAMA_DOOR_CAST_FAIL    = 41271,
