@@ -85,7 +85,9 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/blackrock_depths/boss_high_interrogator_gerstahn.cpp
    scripts/zone/blackrock_depths/boss_magmus.cpp
    scripts/zone/blackrock_depths/boss_moira_bronzebeard.cpp
-   scripts/zone/blackrock_depths/boss_tomb_of_seven.cpp
+   scripts/zone/blackrock_depths/boss_theldren.cpp
+  
+scripts/zone/blackrock_depths/boss_tomb_of_seven.cpp
    scripts/zone/blackrock_depths/def_blackrock_depths.h
    scripts/zone/blackrock_depths/instance_blackrock_depths.cpp
    scripts/zone/blackrock_spire/boss_drakkisath.cpp

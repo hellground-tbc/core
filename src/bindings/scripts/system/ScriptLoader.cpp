@@ -123,6 +123,7 @@ extern void AddSC_boss_high_interrogator_gerstahn();
 extern void AddSC_boss_magmus();
 extern void AddSC_boss_moira_bronzebeard();
 extern void AddSC_boss_tomb_of_seven();
+extern void AddSC_boss_theldren();
 extern void AddSC_instance_blackrock_depths();
 
 //Blackrock Spire
@@ -728,6 +729,7 @@ void AddScripts()
     AddSC_boss_magmus();
     AddSC_boss_moira_bronzebeard();
     AddSC_boss_tomb_of_seven();
+    AddSC_boss_theldren();
     AddSC_instance_blackrock_depths();
 
     //Blackrock Spire

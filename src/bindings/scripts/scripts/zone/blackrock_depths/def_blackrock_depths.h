@@ -11,6 +11,7 @@
 #define TYPE_TOMB_OF_SEVEN      4
 #define TYPE_LYCEUM             5
 #define TYPE_IRON_HALL          6
+#define TYPE_THELDREN            7
 
 #define DATA_EMPEROR            10
 #define DATA_PHALANX            11

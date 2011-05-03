@@ -40,7 +40,7 @@ EndContentData */
 #include "def_blackrock_depths.h"
 
 #define C_GRIMSTONE         10096
-#define C_THELDREN          16059
+
 
 //4 or 6 in total? 1+2+1 / 2+2+2 / 3+3. Depending on this, code should be changed.
 #define MOB_AMOUNT          4
@@ -81,6 +81,10 @@ bool AreaTrigger_at_ring_of_law(Player *player, AreaTriggerEntry *at)
 
     if(pInstance)
     {
+        //if(pInstance->GetData(TYPE_THELDREN) == DONE)
+            //player->CastedCreatureOrGO(QUEST_THE_CHALLENGE, 0,0);
+            //player->CompleteQuest(9015);
+
         if(pInstance->GetData(TYPE_RING_OF_LAW) == IN_PROGRESS || pInstance->GetData(TYPE_RING_OF_LAW) == DONE)
             return false;
 
@@ -133,7 +137,7 @@ struct TRINITY_DLL_DECL npc_grimstoneAI : public npc_escortAI
             RingMobGUID[i] = 0;
 
         RingBossGUID = 0;
-
+        DoGate(DATA_ARENA4,0);
         CanWalk = false;
     }
 

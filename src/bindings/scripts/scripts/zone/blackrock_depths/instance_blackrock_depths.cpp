@@ -32,7 +32,7 @@ update `instance_template` set `script`='instance_blackrock_depths' where `map`=
 #include "precompiled.h"
 #include "def_blackrock_depths.h"
 
-#define ENCOUNTERS              13
+#define ENCOUNTERS              14
 
 #define C_EMPEROR               9019
 #define C_PHALANX               9502
@@ -221,6 +221,9 @@ struct TRINITY_DLL_DECL instance_blackrock_depths : public ScriptedInstance
         case DATA_SUPPLY_ROOM:
             Encounter[12] = data;
             break;
+        case TYPE_THELDREN:
+            Encounter[13] = data;
+            break;
         }
 
         if (data == DONE)
@@ -266,6 +269,8 @@ struct TRINITY_DLL_DECL instance_blackrock_depths : public ScriptedInstance
             return Encounter[11];
         case DATA_SUPPLY_ROOM:
             return Encounter[12];
+        case TYPE_THELDREN:
+            return Encounter[13];
         }
         return 0;
     }
