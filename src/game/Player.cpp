@@ -9164,7 +9164,7 @@ bool Player::IsValidPos(uint8 bag, uint8 slot) const
 
 Item * Player::HasEquiped(uint32 item) const
 {
-    for (int i = EQUIPMENT_SLOT_START; i < INVENTORY_SLOT_ITEM_END; i++)
+    for (int i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; i++)
     {
         Item *pItem = GetItemByPos(INVENTORY_SLOT_BAG_0, i);
         if (pItem && pItem->GetEntry() == item)
