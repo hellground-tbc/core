@@ -165,7 +165,7 @@ struct TRINITY_DLL_DECL boss_theldrenAI : public ScriptedAI
 
         if (BattleShout_Timer <= diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_BATTLE_SHOUT);
+            AddSpellToCast(m_creature, SPELL_BATTLE_SHOUT);
             BattleShout_Timer = 10000;
         }
         else
@@ -173,7 +173,7 @@ struct TRINITY_DLL_DECL boss_theldrenAI : public ScriptedAI
 
         if (DemoralizingShout_Timer <= diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_DEMORALIZING_SHOUT);
+            AddSpellToCast(m_creature, SPELL_DEMORALIZING_SHOUT);
             DemoralizingShout_Timer = 120000;
         }
         else
@@ -330,7 +330,7 @@ struct TRINITY_DLL_DECL boss_malgen_longspearAI : public ScriptedAI
 
         if (FreezingTrap_Timer <= diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_FREEZING_TRAP);
+            AddSpellToCast(m_creature, SPELL_FREEZING_TRAP);
             FreezingTrap_Timer = 60000;
         }
         else

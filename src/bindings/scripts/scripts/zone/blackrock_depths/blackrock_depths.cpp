@@ -81,10 +81,6 @@ bool AreaTrigger_at_ring_of_law(Player *player, AreaTriggerEntry *at)
 
     if(pInstance)
     {
-        //if(pInstance->GetData(TYPE_THELDREN) == DONE)
-            //player->CastedCreatureOrGO(QUEST_THE_CHALLENGE, 0,0);
-            //player->CompleteQuest(9015);
-
         if(pInstance->GetData(TYPE_RING_OF_LAW) == IN_PROGRESS || pInstance->GetData(TYPE_RING_OF_LAW) == DONE)
             return false;
 
