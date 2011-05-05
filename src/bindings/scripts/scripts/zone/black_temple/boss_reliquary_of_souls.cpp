@@ -451,6 +451,9 @@ struct TRINITY_DLL_DECL npc_ros_triggerAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit * who)
     {
+        if (!me->IsWithinLOSInMap(who))
+            return;
+
         if (!RosGUID)
             RosGUID = pInstance->GetData64(EVENT_RELIQUARYOFSOULS);
 
