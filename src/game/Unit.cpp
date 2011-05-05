@@ -12064,15 +12064,19 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
         {
             if ((*itr)->GetSpellProto()->Id == 40251)
             {
-                // save value before aura remove
-                uint32 ressSpellId = pVictim->GetUInt32Value(PLAYER_SELF_RES_SPELL);
-                if (!ressSpellId)
-                    ressSpellId = ((Player*)pVictim)->GetResurrectionSpellId();
+                // save value before aura remove if not already saved by SoR
+                if (!SpiritOfRedemption)
+                {
+                        uint32 ressSpellId = pVictim->GetUInt32Value(PLAYER_SELF_RES_SPELL);
+                        if (!ressSpellId)
+                            ressSpellId = ((Player*)pVictim)->GetResurrectionSpellId();
+                }
 
                 //Remove all expected to remove at death auras (most important negative case like DoT or periodic triggers)
                 pVictim->RemoveAllAurasOnDeath();
-                // restore for use at real death
-                pVictim->SetUInt32Value(PLAYER_SELF_RES_SPELL,ressSpellId);
+                // restore for use at real death if not already stored
+                if (!SpiritOfRedemption)
+                    pVictim->SetUInt32Value(PLAYER_SELF_RES_SPELL,ressSpellId);
 
                 pVictim->CastSpell(pVictim, 40282, true);   //Possess Spirit Immune
                 VengeanceSpirit = true;
