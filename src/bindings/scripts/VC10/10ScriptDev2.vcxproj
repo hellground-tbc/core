@@ -253,6 +253,7 @@
     <ClCompile Include="..\scripts\zone\azshara\boss_azuregos.cpp" />
     <ClCompile Include="..\scripts\zone\barrens\the_barrens.cpp" />
     <ClCompile Include="..\scripts\zone\arathi_highlands\arathi_highlands.cpp" />
+    <ClCompile Include="..\scripts\zone\blackrock_depths\boss_theldren.cpp" />
     <ClCompile Include="..\scripts\zone\deadmines\deadmines.cpp" />
     <ClCompile Include="..\scripts\zone\desolace\desolace.cpp" />
     <ClCompile Include="..\scripts\zone\dun_morogh\dun_morogh.cpp" />
