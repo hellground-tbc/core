@@ -587,7 +587,7 @@ struct TRINITY_DLL_DECL feather_vortexAI : public ScriptedAI
     void UpdateAI(const uint32 diff)
     {
         //if the vortex reach the target, it change his target to another player
-        if(m_creature->IsWithinMeleeRange(m_creature->getVictim()))
+        if(!m_creature->getVictim() || m_creature->IsWithinMeleeRange(m_creature->getVictim()) || !m_creature->getVictim()->isAlive())
         {
             if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0))
                 AttackStart(target);
