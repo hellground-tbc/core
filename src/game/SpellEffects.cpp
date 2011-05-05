@@ -6049,8 +6049,8 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         //5,000 Gold
         case 46642:
         {
-            if (unitTarget->GetTypeId() == TYPEID_PLAYER)
-                ((Player*)unitTarget)->ModifyMoney(50000000);
+            //if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+            //    ((Player*)unitTarget)->ModifyMoney(50000000);
             return;
         }
         case 48917:

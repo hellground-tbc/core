@@ -250,7 +250,7 @@ bool GOHello_go_cache_of_the_legion(Player *player, GameObject* _GO)
 {
     Map* m = player->GetMap();
     if (!m->IsHeroic())
-        return true;
+        return false;
 
     if (ScriptedInstance* pInstance = (_GO->GetInstanceData()))
     {
@@ -278,10 +278,10 @@ bool GOHello_go_cache_of_the_legion(Player *player, GameObject* _GO)
 
             ((InstanceMap*)m)->PermBindAllPlayers(player);
             pInstance->SetData(DATA_CACHE_OF_LEGION_EVENT, DONE);
-            return true;
+            return false;
         }
     }
-    return false;;
+    return true;
 }
 
 void AddSC_instance_mechanar()

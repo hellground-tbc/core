@@ -7444,10 +7444,25 @@ void Aura::PeriodicDummyTick()
 //        case 49472: break;
         // Listening to Music
         case 50493:
-            m_target->HandleEmoteCommand(EMOTE_STATE_DANCE);
+        {
+            Creature* target = NULL;
+            Trinity::AllCreaturesOfEntryInRange check(m_target, 27989, 10.0f);
+            Trinity::CreatureSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(target, check);
+            Cell::VisitAllObjects(m_target, searcher, 10.0f);
+
+            if (target)
+                m_target->HandleEmoteCommand(EMOTE_STATE_DANCE);
+            else
+                m_target->RemoveAurasDueToSpell(50493);
+
             break;
-//        // Love Rocket Barrage
-//        case 50530: break;
+        }
+        // Love Rocket Barrage
+        case 50530:
+        {
+            m_target->CastSpell(m_target, 45152, true);
+            break;
+        }
         default:
             break;
     }
