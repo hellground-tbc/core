@@ -12065,11 +12065,11 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
             if ((*itr)->GetSpellProto()->Id == 40251)
             {
                 // save value before aura remove if not already saved by SoR
+                uint32 ressSpellId = pVictim->GetUInt32Value(PLAYER_SELF_RES_SPELL);
                 if (!SpiritOfRedemption)
                 {
-                        uint32 ressSpellId = pVictim->GetUInt32Value(PLAYER_SELF_RES_SPELL);
-                        if (!ressSpellId)
-                            ressSpellId = ((Player*)pVictim)->GetResurrectionSpellId();
+                    if (!ressSpellId)
+                        ressSpellId = ((Player*)pVictim)->GetResurrectionSpellId();
                 }
 
                 //Remove all expected to remove at death auras (most important negative case like DoT or periodic triggers)
