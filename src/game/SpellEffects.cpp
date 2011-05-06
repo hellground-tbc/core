@@ -731,6 +731,16 @@ void Spell::EffectDummy(uint32 i)
         {
             switch (m_spellInfo->Id)
             {
+                case 17950:                                 // Shadow Portal
+                {
+                    if (!unitTarget)
+                        return;
+                    // Shadow Portal
+                    const uint32 spell_list[6] = {17863, 17939, 17943, 17944, 17946, 17948};
+
+                    m_caster->CastSpell(unitTarget, spell_list[urand(0, 5)], true);
+                    return;
+                }
                 case 38782:
                 {
                     if (i == 0)

@@ -2656,7 +2656,7 @@ void SpellMgr::LoadSpellCustomAttr()
         {
         // Blind fly mode
         case 2094:
-            spellInfo->speed = 35;
+            spellInfo->speed = 25;
             break;
         case 40017: // If we can't adjust speed :P we spawn it in bigger periods
             spellInfo->EffectAmplitude[1] = 2000;
