@@ -73,6 +73,7 @@ extern void AddSC_instance_mana_tombs();
 //--Sekketh Halls
 extern void AddSC_boss_darkweaver_syth();
 extern void AddSC_boss_talon_king_ikiss();
+extern void AddSC_boss_anzu();
 extern void AddSC_instance_sethekk_halls();
 
 //--Onyxia's Lair
@@ -682,6 +683,7 @@ void AddScripts()
     //--Sekketh Halls
     AddSC_boss_darkweaver_syth();
     AddSC_boss_talon_king_ikiss();
+    AddSC_boss_anzu();
     AddSC_instance_sethekk_halls();
 
     //--Shadow Labyrinth

@@ -57,7 +57,7 @@ struct TRINITY_DLL_DECL instance_sethekk_halls : public ScriptedInstance
         switch(entry)
         {
             case 23035:
-                if(GetData(DATA_ANZUEVENT) != NOT_STARTED)
+                if(GetData(DATA_ANZUEVENT) == DONE)
                 {
                     creature->Kill(creature);
                     creature->RemoveCorpse();
