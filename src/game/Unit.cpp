@@ -6148,7 +6148,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         ? ((Player*)this)->GetItemByGuid(triggeredByAura->GetCastItemGUID()) : NULL;
 
     // Try handle unknown trigger spells
-    if (sSpellStore.LookupEntry(trigger_spell_id) == NULL) // hack for expose weakness
+    if (sSpellStore.LookupEntry(trigger_spell_id) == NULL)
     switch (auraSpellInfo->SpellFamilyName)
     {
      //=====================================================================
@@ -6248,7 +6248,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
 //          trigger_spell_id = ;
 //     else if (auraSpellInfo->Id==40250) // Improved Duration
 //          trigger_spell_id = ;
-     else if (auraSpellInfo->Id==27522)   // Mana Drain Trigger
+     else if (trigger_spell_id == 18350)   // Mana Drain Trigger
      {
          // On successful melee or ranged attack gain $29471s1 mana and if possible drain $27526s1 mana from the target.
          if (this && this->isAlive())
