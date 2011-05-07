@@ -5332,16 +5332,39 @@ void Spell::EffectScriptEffect(uint32 effIndex)
 
                 if (m_caster->GetTypeId() == TYPEID_PLAYER)
                 {
-                    if (((Player*)m_caster)->GetQuestStatus(10637) == QUEST_STATUS_INCOMPLETE)
-                        ((Player*)m_caster)->CompleteQuest(10637);
-
-                    if (((Player*)m_caster)->GetQuestStatus(10688) == QUEST_STATUS_INCOMPLETE)
-                        ((Player*)m_caster)->CompleteQuest(10688);
+                   if( Group* pGroup = ((Player*)player)->GetGroup() )
+                {
+                    for(GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
+                    {
+                        Player *pGroupie = itr->getSource();
+                        if( pGroupie && pGroupie->GetQuestStatus(10637) == QUEST_STATUS_INCOMPLETE)
+                        {
+                              pGroupie->CompleteQuest(10637);
+                              pGroupie->AreaExploredOrEventHappens(10637);
+                        }
+                        if( pGroupie && pGroupie->GetQuestStatus(10688) == QUEST_STATUS_INCOMPLETE)
+                        {
+                             pGroupie->CompleteQuest(10688);
+                             pGroupie->AreaExploredOrEventHappens(10688);
+                        }
+                    }
+                } else
+                      {
+                         if (((Player*)player)->GetQuestStatus(10637) == QUEST_STATUS_INCOMPLETE)
+                         {
+                             ((Player*)player)->CompleteQuest(10637);
+                             ((Player*)player)->AreaExploredOrEventHappens(10637);
+                         }
+                         if (((Player*)player)->GetQuestStatus(10688) == QUEST_STATUS_INCOMPLETE)
+                         {
+                             ((Player*)player)->CompleteQuest(10688);
+                             ((Player*)player)->AreaExploredOrEventHappens(10688);
+                         }
+                      }
                 }
             }
             else
                  SendCastResult(SPELL_FAILED_BAD_TARGETS);
-
             break;
         }
         // Draenei Tomb Relic
@@ -5351,6 +5374,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 if (((Player*)m_caster)->GetQuestStatus(10842) == QUEST_STATUS_INCOMPLETE)
                     m_caster->SummonCreature(21445, m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), m_caster->GetOrientation(), TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 600000);
                 else SendCastResult(SPELL_FAILED_NOT_READY);
+                break;
         }
         // Destroy Deathforged Infernal
         case 38055:
