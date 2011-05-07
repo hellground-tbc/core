@@ -5344,6 +5344,14 @@ void Spell::EffectScriptEffect(uint32 effIndex)
 
             break;
         }
+        // Draenei Tomb Relic
+        case 36867:
+        {
+            if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                if (((Player*)m_caster)->GetQuestStatus(10842) == QUEST_STATUS_INCOMPLETE)
+                    m_caster->SummonCreature(21445, m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), m_caster->GetOrientation(), TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 600000);
+                else SendCastResult(SPELL_FAILED_NOT_READY);
+        }
         // Destroy Deathforged Infernal
         case 38055:
         {
