@@ -1849,7 +1849,7 @@ struct TRINITY_DLL_DECL quest_the_vengeful_harbringerAI : public ScriptedAI
 
     uint32 visual_1_timer;
     uint32 trash_timer;
-    uint32 checktimer;s
+    uint32 checktimer;
 
     int trash_counter;
 
@@ -1996,7 +1996,7 @@ struct TRINITY_DLL_DECL quest_the_vengeful_harbringerAI : public ScriptedAI
 
         if (checktimer <= diff)
         {
-            Unit * player = Unit::GetUnit(owner);
+            Unit * player = me->GetUnit(owner);
             if (!player)
                 return;
 
