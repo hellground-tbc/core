@@ -24,7 +24,7 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_molten_core.h"
 
-#define ENCOUNTERS      10
+#define ENCOUNTERS      11
 
 #define ID_LUCIFRON     12118
 #define ID_MAGMADAR     11982
@@ -37,6 +37,20 @@ EndScriptData */
 #define ID_DOMO         12018
 #define ID_RAGNAROS     11502
 #define ID_FLAMEWAKERPRIEST     11662
+
+
+enum RuneFlags
+{
+    RUNE_ZETH_FLAG      = 1,
+    RUNE_MAZJ_FLAG      = 2,
+    RUNE_THERI_FLAG     = 4,
+    RUNE_BLAZ_FLAG      = 8,
+    RUNE_KRESS_FLAG     = 16,
+    RUNE_MOHN_FLAG      = 32,
+    RUNE_KORO_FLAG      = 64,
+    RUNES_COMPLETE      = RUNE_ZETH_FLAG | RUNE_MAZJ_FLAG | RUNE_THERI_FLAG | RUNE_BLAZ_FLAG | RUNE_KRESS_FLAG | RUNE_MOHN_FLAG | RUNE_KORO_FLAG
+};
+
 
 struct TRINITY_DLL_DECL instance_molten_core : public ScriptedInstance
 {
@@ -69,44 +83,89 @@ struct TRINITY_DLL_DECL instance_molten_core : public ScriptedInstance
         RuneKress = 0;
         RuneMohn = 0;
 
-        for(uint8 i = 0; i < ENCOUNTERS; i++)
+        for(uint8 i = 0; i < ENCOUNTERS-1; i++)
             Encounter[i] = NOT_STARTED;
+        Encounter[10] = 0;
+
     }
 
     bool IsEncounterInProgress() const
     {
-        for (uint8 i = 0; i < ENCOUNTERS; ++i)
+        for (uint8 i = 0; i < ENCOUNTERS-1; ++i)
             if (Encounter[i] != DONE && Encounter[i] != NOT_STARTED)
                 return true;
 
         return false;
     };
 
+    void Update(uint32 diff)
+    {
+        uint32 runes = 0;
 
-   void OnObjectCreate(GameObject *go)
+        if(GameObject *go = instance->GetGameObject(RuneKoro))
+            if( go->GetGoState() == GO_STATE_READY )
+                runes |= RUNE_KORO_FLAG;
+        if(GameObject *go = instance->GetGameObject(RuneZeth))
+            if( go->GetGoState() == GO_STATE_READY )
+                runes |= RUNE_ZETH_FLAG;
+        if(GameObject *go = instance->GetGameObject(RuneMazj))
+            if( go->GetGoState() == GO_STATE_READY )
+                runes |= RUNE_MAZJ_FLAG;
+        if(GameObject *go = instance->GetGameObject(RuneTheri))
+            if( go->GetGoState() == GO_STATE_READY )
+                runes |= RUNE_THERI_FLAG;
+        if(GameObject *go = instance->GetGameObject(RuneBlaz))
+            if( go->GetGoState() == GO_STATE_READY )
+                runes |= RUNE_BLAZ_FLAG;
+        if(GameObject *go = instance->GetGameObject(RuneKress))
+            if( go->GetGoState() == GO_STATE_READY )
+                runes |= RUNE_KRESS_FLAG;
+        if(GameObject *go = instance->GetGameObject(RuneMohn))
+            if( go->GetGoState() == GO_STATE_READY )
+                runes |= RUNE_MOHN_FLAG;
+
+        if(GetData(DATA_RUNES) != runes)
+            SetData(DATA_RUNES, runes);
+    }
+
+    void OnObjectCreate(GameObject *go)
     {
          switch(go->GetEntry())
          {
          case 176951:                                    //Sulfuron
              RuneKoro = go->GetGUID();
+             if(Encounter[10] & RUNE_KORO_FLAG)
+                 HandleGameObject(RuneKoro, false, go);
              break;
          case 176952:                                    //Geddon
              RuneZeth = go->GetGUID();
+             if(Encounter[10] & RUNE_ZETH_FLAG)
+                 HandleGameObject(RuneZeth, false, go);
              break;
          case 176953:                                    //Shazzrah
              RuneMazj = go->GetGUID();
+             if(Encounter[10] & RUNE_MAZJ_FLAG)
+                 HandleGameObject(RuneMazj, false, go);
              break;
          case 176954:                                    //Golemagg
              RuneTheri = go->GetGUID();
+             if(Encounter[10] & RUNE_THERI_FLAG)
+                 HandleGameObject(RuneTheri, false, go);
              break;
          case 176955:                                    //Garr
              RuneBlaz = go->GetGUID();
+             if(Encounter[10] & RUNE_BLAZ_FLAG)
+                 HandleGameObject(RuneBlaz, false, go);
              break;
          case 176956:                                    //Magmadar
              RuneKress = go->GetGUID();
+             if(Encounter[10] & RUNE_KRESS_FLAG)
+                 HandleGameObject(RuneKress, false, go);
              break;
          case 176957:                                    //Gehennas
              RuneMohn = go->GetGUID();
+             if(Encounter[10] & RUNE_MOHN_FLAG)
+                 HandleGameObject(RuneMohn, false, go);
              break;
              }
     }
@@ -207,7 +266,7 @@ struct TRINITY_DLL_DECL instance_molten_core : public ScriptedInstance
             case DATA_SULFURON:
                 return Sulfuron;
             case DATA_GOLEMAGG:
-                return Sulfuron;
+                return Golemagg;
 
             case DATA_FLAMEWAKERPRIEST:
                 return FlamewakerPriest;
@@ -240,6 +299,8 @@ struct TRINITY_DLL_DECL instance_molten_core : public ScriptedInstance
                 return Encounter[8];
             case DATA_RAGNAROS_EVENT:
                 return Encounter[9];
+            case DATA_RUNES:
+                return Encounter[10];
         }
 
         return 0;
@@ -289,9 +350,13 @@ struct TRINITY_DLL_DECL instance_molten_core : public ScriptedInstance
                 if(Encounter[9] != DONE)
                     Encounter[9] = data;
                 break;
+            case DATA_RUNES:
+                if(Encounter[10] != RUNES_COMPLETE)
+                    Encounter[10] = data;
+                break;
         }
 
-        if (data == DONE)
+        if (data == DONE || type == DATA_RUNES)
             SaveToDB();
     }
 
@@ -309,7 +374,8 @@ struct TRINITY_DLL_DECL instance_molten_core : public ScriptedInstance
         stream << Encounter[6] << " ";
         stream << Encounter[7] << " ";
         stream << Encounter[8] << " ";
-        stream << Encounter[9];
+        stream << Encounter[9] << " ";
+        stream << Encounter[10];
 
         OUT_SAVE_INST_DATA_COMPLETE;
 
@@ -327,10 +393,12 @@ struct TRINITY_DLL_DECL instance_molten_core : public ScriptedInstance
         OUT_LOAD_INST_DATA(in);
         std::istringstream stream(in);
         stream >> Encounter[0] >> Encounter[1] >> Encounter[2] >> Encounter[3] >> Encounter[4]
-             >> Encounter[5] >> Encounter[6] >> Encounter[7] >> Encounter[8] >> Encounter[9];
-        for(uint8 i = 0; i < ENCOUNTERS; ++i)
+             >> Encounter[5] >> Encounter[6] >> Encounter[7] >> Encounter[8] >> Encounter[9] >> Encounter[10];
+        for(uint8 i = 0; i < ENCOUNTERS - 1; ++i)
             if(Encounter[i] == IN_PROGRESS)                // Do not load an encounter as "In Progress" - reset it instead.
                 Encounter[i] = NOT_STARTED;
+
+
         OUT_LOAD_INST_DATA_COMPLETE;
     }
 };

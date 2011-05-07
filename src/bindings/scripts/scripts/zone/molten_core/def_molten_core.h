@@ -19,6 +19,7 @@
 #define DATA_SULFURON                       11
 #define DATA_FLAMEWAKERPRIEST               12
 #define DATA_GOLEMAGG                       13
+#define DATA_RUNES                          14
 
 #endif
 
