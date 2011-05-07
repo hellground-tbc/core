@@ -3332,9 +3332,7 @@ void Player::RemoveArenaSpellCooldowns()
         ++next;
         SpellEntry const * entry = sSpellStore.LookupEntry(itr->first);
         // check if spellentry is present and if the cooldown is less than 15 mins
-        if (entry &&
-            entry->RecoveryTime <= 15 * MINUTE * 1000 &&
-            entry->CategoryRecoveryTime <= 15 * MINUTE * 1000)
+        if (entry && !(entry->AttributesEx4 & SPELL_ATTR_EX4_NOT_USABLE_IN_ARENA) && entry->RecoveryTime <= 15 * MINUTE * 1000 && entry->CategoryRecoveryTime <= 15 * MINUTE * 1000)
         {
             // notify player
             WorldPacket data(SMSG_CLEAR_COOLDOWN, (4+8));
