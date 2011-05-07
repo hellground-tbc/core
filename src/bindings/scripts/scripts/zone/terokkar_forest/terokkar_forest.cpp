@@ -1845,15 +1845,19 @@ CreatureAI* GetAI_npc_razorthorn_ravagerAI(Creature *_creature)
 
 struct TRINITY_DLL_DECL quest_the_vengeful_harbringerAI : public ScriptedAI
 {
-    quest_the_vengeful_harbringerAI(Creature* c) : ScriptedAI(c) { }
+    quest_the_vengeful_harbringerAI(Creature* c) : ScriptedAI(c){}
 
     uint32 visual_1_timer;
     uint32 trash_timer;
+    uint32 checktimer;s
+
     int trash_counter;
+
+    uint64 owner;
+
     bool event_done;
-    Unit *owner;
-    Creature * Dranei_Guardian;
-    bool IS_ASCENDANT_ALREADY_SUMMONED,corpse_moved;
+    bool IS_ASCENDANT_ALREADY_SUMMONED;
+    bool corpse_moved;
 
     void SpawnVengefulHarbringer()
     {
@@ -1866,41 +1870,47 @@ struct TRINITY_DLL_DECL quest_the_vengeful_harbringerAI : public ScriptedAI
         if (!Portal_Trigger || !Dranei_Guardian || !Event_Trigger_B)
             return;
 
-        Creature * Boss = Portal_Trigger->SummonCreature(21638, Portal_Trigger->GetPositionX(), Portal_Trigger->GetPositionY(), Portal_Trigger->GetPositionZ(), Portal_Trigger->GetOrientation(), TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 180000);
-
         Portal_Trigger->CastSpell(me,35510,true); // Visual BOOM
-        Event_Trigger_B->GetClosePoint(x, y, z, 5.0f);
-        Boss->GetMotionMaster()->MovePoint(1,x,y,z);
+
+        if (Creature * Boss = Portal_Trigger->SummonCreature(21638, Portal_Trigger->GetPositionX(), Portal_Trigger->GetPositionY(), Portal_Trigger->GetPositionZ(), Portal_Trigger->GetOrientation(), TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 180000))
+        {
+            Event_Trigger_B->GetClosePoint(x, y, z, 5.0f);
+            Boss->GetMotionMaster()->MovePoint(1,x,y,z);
+        }
     }
 
     void SpawnVengefulDraenei()
     {
-
         float x,y,z;
 
-        Creature * Event_Trigger_B = GetClosestCreatureWithEntry(me, 21489,50.0f);
-        Creature * Portal_Trigger  = GetClosestCreatureWithEntry(Event_Trigger_B, 21433, 90.0f);
-        Creature * Dranei_Guardian = GetClosestCreatureWithEntry(Event_Trigger_B, 22285,50.0f);
+        if (Creature * Event_Trigger_B = GetClosestCreatureWithEntry(me, 21489,50.0f))
+        {
+            Creature * Portal_Trigger  = GetClosestCreatureWithEntry(Event_Trigger_B, 21433, 90.0f);
+            Creature * Dranei_Guardian = GetClosestCreatureWithEntry(Event_Trigger_B, 22285,50.0f);
 
-        if (!Portal_Trigger || !Dranei_Guardian || !Event_Trigger_B)
-            return;
+            if (!Portal_Trigger || !Dranei_Guardian)
+                return;
 
-        Portal_Trigger->CastSpell(me,35510,true); // Visual BOOM
+            Portal_Trigger->CastSpell(me,35510,true); // Visual BOOM
 
-        Creature * Trash1 = Portal_Trigger->SummonCreature(21636, Portal_Trigger->GetPositionX(),   Portal_Trigger->GetPositionY(), Portal_Trigger->GetPositionZ(), me->GetOrientation(), TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 180000);
-        Creature * Trash2 = Portal_Trigger->SummonCreature(21636, Portal_Trigger->GetPositionX()+6, Portal_Trigger->GetPositionY(), Portal_Trigger->GetPositionZ(), me->GetOrientation(), TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 180000);
-        Creature * Trash3 = Portal_Trigger->SummonCreature(21636, Portal_Trigger->GetPositionX()-6, Portal_Trigger->GetPositionY(), Portal_Trigger->GetPositionZ(), me->GetOrientation(), TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 180000);
+            Creature * Trash1 = Portal_Trigger->SummonCreature(21636, Portal_Trigger->GetPositionX(),   Portal_Trigger->GetPositionY(), Portal_Trigger->GetPositionZ(), me->GetOrientation(), TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 180000);
+            Creature * Trash2 = Portal_Trigger->SummonCreature(21636, Portal_Trigger->GetPositionX()+6, Portal_Trigger->GetPositionY(), Portal_Trigger->GetPositionZ(), me->GetOrientation(), TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 180000);
+            Creature * Trash3 = Portal_Trigger->SummonCreature(21636, Portal_Trigger->GetPositionX()-6, Portal_Trigger->GetPositionY(), Portal_Trigger->GetPositionZ(), me->GetOrientation(), TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 180000);
 
-        Event_Trigger_B->GetClosePoint(x, y, z, 5.0f);
+            if (!Trash1 || !Trash2 || !Trash3)
+                return;
 
-        Trash1->GetMotionMaster()->MovePoint(1,x,y,z);
-        Trash2->GetMotionMaster()->MovePoint(1,x+5,y,z);
-        Trash3->GetMotionMaster()->MovePoint(1,x-5,y,z);
+            Event_Trigger_B->GetClosePoint(x, y, z, 5.0f);
+
+            Trash1->GetMotionMaster()->MovePoint(1, x, y, z);
+            Trash2->GetMotionMaster()->MovePoint(1, x +5.0f, y, z);
+            Trash3->GetMotionMaster()->MovePoint(1, x -5.0f, y, z);
+        }
     }
 
     void IsSummonedBy(Unit *summoner) 
     {
-        owner=summoner;
+        owner = summoner->GetGUID();
     }
     void Reset()
 
@@ -1911,6 +1921,9 @@ struct TRINITY_DLL_DECL quest_the_vengeful_harbringerAI : public ScriptedAI
         visual_1_timer=5000;
         IS_ASCENDANT_ALREADY_SUMMONED=false;
         corpse_moved=false;
+
+        owner = 0;
+        checktimer = 2000;
 
         Creature *visual_energy  = GetClosestCreatureWithEntry(me, 21429, 30.0f);
         Creature *portal_trigger = GetClosestCreatureWithEntry(me, 21463, 30.0f);
@@ -1928,112 +1941,133 @@ struct TRINITY_DLL_DECL quest_the_vengeful_harbringerAI : public ScriptedAI
 
     void StopEventAndCleanUp()
     {
-        Creature * visual_energy = GetClosestCreatureWithEntry(me, 21429, 30.0f);
-        visual_energy->RemoveAurasDueToSpell(46242);
+        if (Creature * visual_energy = GetClosestCreatureWithEntry(me, 21429, 30.0f))
+            visual_energy->RemoveAurasDueToSpell(46242);
+
         std::list<Unit*> DeadList = DoFindAllDeadInRange(90);
         // Remove Guardians and Harbringer corpses
         for(std::list<Unit*>::iterator i = DeadList.begin(); i != DeadList.end(); ++i)
         {
-            if ((*i)->GetEntry()==22285) if ((*i)->GetTypeId()==TYPEID_UNIT) ((Creature*)*i)->RemoveCorpse();
-            if ((*i)->GetEntry()==21638) if ((*i)->GetTypeId()==TYPEID_UNIT) ((Creature*)*i)->RemoveCorpse();
+            if ((*i)->GetTypeId()==TYPEID_UNIT && ((*i)->GetEntry()==22285 || (*i)->GetEntry()==21638))
+                ((Creature*)*i)->RemoveCorpse();
         }
+
         me->DisappearAndDie();
     }
+
     void UpdateAI(const uint32 diff)
     {
-        Creature * visual_energy = GetClosestCreatureWithEntry(me, 21429, 30.0f);
-        Unit * player = owner;
-        Creature * Dranei_Guardian;
-        Creature * Defender_Trigger;
-
-        if (!visual_energy) return;
-
         if (visual_1_timer < diff)
         {
-            visual_energy->CastSpell(visual_energy,35510,true); // Visual BOOM
-            visual_1_timer=250000;
-            Dranei_Guardian = m_creature->SummonCreature(22285, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation(), TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 240000);
-            Defender_Trigger = GetClosestCreatureWithEntry(me,21431, 20.0f);
+            if (Creature * visual_energy = GetClosestCreatureWithEntry(me, 21429, 30.0f))
+            {
+                visual_energy->CastSpell(visual_energy,35510,true); // Visual BOOM
+                visual_1_timer=250000;
 
-            if (!Defender_Trigger || !Dranei_Guardian)
-                return;
+                Creature * Dranei_Guardian = m_creature->SummonCreature(22285, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation(), TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 240000);
+                Creature * Defender_Trigger = GetClosestCreatureWithEntry(me,21431, 20.0f);
 
-            Dranei_Guardian->GetMotionMaster()->MovePoint(0,Defender_Trigger->GetPositionX(),Defender_Trigger->GetPositionY(),Defender_Trigger->GetPositionZ());
-            Dranei_Guardian->SendMonsterMove(Defender_Trigger->GetPositionX(),Defender_Trigger->GetPositionY(),Defender_Trigger->GetPositionZ(),6000); //we ned this to visual movement with delay
+                if (!Defender_Trigger || !Dranei_Guardian)
+                    return;
 
+                Dranei_Guardian->GetMotionMaster()->MovePoint(0,Defender_Trigger->GetPositionX(),Defender_Trigger->GetPositionY(),Defender_Trigger->GetPositionZ());
+                Dranei_Guardian->SendMonsterMove(Defender_Trigger->GetPositionX(),Defender_Trigger->GetPositionY(),Defender_Trigger->GetPositionZ(),6000); //we ned this to visual movement with delay
+            }
         }
-        else visual_1_timer-=diff;
+        else
+            visual_1_timer-=diff;
 
         if (trash_timer <= diff)
         {     
             trash_timer=18000;
             if (trash_counter<=4)
             {
-                if (trash_counter<4) SpawnVengefulDraenei();
-                else SpawnVengefulHarbringer();
+                if (trash_counter<4)
+                    SpawnVengefulDraenei();
+                else
+                    SpawnVengefulHarbringer();
+
                 trash_counter++;
             }
 
         }
-        else trash_timer-=diff;
+        else
+            trash_timer-=diff;
 
-        if (!player) return;
-
-        std::list<Unit*> DeadList = DoFindAllDeadInRange(50);
-        bool IS_DEFENDER_DEAD=false, IS_BOSS_DEAD=false;
-        for(std::list<Unit*>::iterator i = DeadList.begin(); i != DeadList.end(); ++i)
+        if (checktimer <= diff)
         {
-            if ((*i)->GetEntry()==22285) IS_DEFENDER_DEAD=true;
-            if ((*i)->GetEntry()==21638) IS_BOSS_DEAD=true;
-        }
+            Unit * player = Unit::GetUnit(owner);
+            if (!player)
+                return;
 
-        if (trash_counter>=4)
-        {
-            if (player->GetTypeId() == TYPEID_PLAYER)
-                if( Group* pGroup = ((Player*)player)->GetGroup() )
+            std::list<Unit*> DeadList = DoFindAllDeadInRange(50);
+            bool IS_DEFENDER_DEAD=false, IS_BOSS_DEAD=false;
+            for(std::list<Unit*>::iterator i = DeadList.begin(); i != DeadList.end(); ++i)
+            {
+                if ((*i)->GetEntry()==22285) IS_DEFENDER_DEAD=true;
+                if ((*i)->GetEntry()==21638) IS_BOSS_DEAD=true;
+            }
+
+            if (trash_counter>=4)
+            {
+                if (player->GetTypeId() == TYPEID_PLAYER)
                 {
-                    for(GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
+                    if(Group* pGroup = ((Player*)player)->GetGroup() )
                     {
-                        Player *pGroupie = itr->getSource();
-                        if( pGroupie &&
-                            pGroupie->GetQuestStatus(10842) == QUEST_STATUS_INCOMPLETE) 
+                        for(GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
+                        {
+                            Player *pGroupie = itr->getSource();
+                            if(pGroupie && pGroupie->GetQuestStatus(10842) == QUEST_STATUS_INCOMPLETE) 
+                            {
+                                if (IS_DEFENDER_DEAD) 
+                                {
+                                    pGroupie->FailQuest(10842);
+                                    StopEventAndCleanUp();
+                                }
+                                else 
+                                    if (IS_BOSS_DEAD) 
+                                        pGroupie->CompleteQuest(10842);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (((Player*)player)->GetQuestStatus(10842) == QUEST_STATUS_INCOMPLETE)
                         {
                             if (IS_DEFENDER_DEAD) 
                             {
-                                pGroupie->FailQuest(10842);
-                                StopEventAndCleanUp();
+                                ((Player*)player)->FailQuest(10842);
+                               StopEventAndCleanUp();
                             }
                             else 
-                                if (IS_BOSS_DEAD) 
-                                pGroupie->CompleteQuest(10842);
+                                if (IS_BOSS_DEAD)
+                                   ((Player*)player)->CompleteQuest(10842);
                         }
                     }
-                } else
-                    if (((Player*)player)->GetQuestStatus(10842) == QUEST_STATUS_INCOMPLETE)
-                    {
-                        if (IS_DEFENDER_DEAD) 
-                        {
-                            ((Player*)player)->FailQuest(10842);
-                            StopEventAndCleanUp();
-                        }
-                        else 
-                            if (IS_BOSS_DEAD)
-                               ((Player*)player)->CompleteQuest(10842);
-                    }
-        }
+                }
+            }
 
-        if (IS_BOSS_DEAD && !IS_DEFENDER_DEAD)
-        {
-            //summon Draenei Ascendant
-            Creature *portal_trigger = GetClosestCreatureWithEntry(me, 21463, 50.0f);
-            Creature * Dranei_Guardian = GetClosestCreatureWithEntry(me, 22285,50.0f);
-            Creature * corpse_move_trigger = GetClosestCreatureWithEntry(me, 66012,50.0f);
+            if (IS_BOSS_DEAD && !IS_DEFENDER_DEAD)
+            {
+                //summon Draenei Ascendant
+                Creature *portal_trigger = GetClosestCreatureWithEntry(me, 21463, 50.0f);
+                Creature * corpse_move_trigger = GetClosestCreatureWithEntry(me, 66012,50.0f);
             
-            if (!portal_trigger || !Dranei_Guardian || !corpse_move_trigger) return;
-            if (!IS_ASCENDANT_ALREADY_SUMMONED)
-                me->SummonGameObject(184830, portal_trigger->GetPositionX(), portal_trigger->GetPositionY(), portal_trigger->GetPositionZ(),  0, 0, 0, 0.70959, 0.704615, 240000);
-            IS_ASCENDANT_ALREADY_SUMMONED=true;
-            if (Dranei_Guardian) Dranei_Guardian->DisappearAndDie();
+                if (!portal_trigger || !corpse_move_trigger)
+                    return;
+
+                if (!IS_ASCENDANT_ALREADY_SUMMONED)
+                    me->SummonGameObject(184830, portal_trigger->GetPositionX(), portal_trigger->GetPositionY(), portal_trigger->GetPositionZ(),  0, 0, 0, 0.70959, 0.704615, 240000);
+
+                IS_ASCENDANT_ALREADY_SUMMONED=true;
+
+                if (Creature * Dranei_Guardian = GetClosestCreatureWithEntry(me, 22285,50.0f))
+                    Dranei_Guardian->DisappearAndDie();
+            }
+            checktimer = 2000;
+        }
+        else
+            checktimer -= diff;
 
 /* Moving Corpse event - need TO DO ;p
         std::list<Unit*> DeadList = DoFindAllDeadInRange(50);
@@ -2056,7 +2090,6 @@ struct TRINITY_DLL_DECL quest_the_vengeful_harbringerAI : public ScriptedAI
             }
         }
         */
-        }
     }
 };
 
