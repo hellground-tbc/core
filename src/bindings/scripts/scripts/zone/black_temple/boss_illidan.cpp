@@ -168,6 +168,8 @@ enum IllidanEvent
     EVENT_ILLIDAN_KILL                   = 30,
     EVENT_ILLIDAN_DEATH_SPEECH           = 31,
 
+    EVENT_ILLIDAN_FLAME_DEATH            = 32,
+
     EVENT_ILLIDAN_RANDOM_YELL
 };
 
@@ -210,6 +212,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
         ForceSpellCast(me, SPELL_ILLIDAN_KNEEL_INTRO, INTERRUPT_AND_CAST_INSTANTLY);
     }
 
+    uint8 m_flameCount;
     uint32 m_hoverPoint;
 
     uint32 m_combatTimer;
@@ -230,6 +233,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
         m_enrageTimer = 25*60000 +34000; // DBM value
 
         m_hoverPoint = 0;
+        m_flameCount = 0;
 
         b_maievDone = false;
         b_maievPhase = false;
@@ -313,6 +317,8 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
             }
             case PHASE_TWO:
             {
+                m_flameCount = 0;
+
                 DoScriptText(YELL_ILLIDAN_PHASE_TWO, me);
 
                 me->RemoveAllAuras();
@@ -333,7 +339,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
                 events.ScheduleEvent(EVENT_ILLIDAN_THROW_GLAIVE, 15000, m_phase);
                 events.ScheduleEvent(EVENT_ILLIDAN_EYE_BLAST, urand(30000, 40000), m_phase);
                 events.ScheduleEvent(EVENT_ILLIDAN_DARK_BARRAGE, 80000, m_phase);
-                events.ScheduleEvent(EVENT_ILLIDAN_CHANGE_PHASE, 30000, m_phase); // DEBUG ONLY ! SET TO 20-30s
+                events.ScheduleEvent(EVENT_ILLIDAN_CHANGE_PHASE, 2000, m_phase);
                 break;
             }
             case PHASE_FOUR:
@@ -504,7 +510,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
             {
                 case EVENT_ILLIDAN_CHANGE_PHASE:
                 {
-                    if (!FindCreature(FLAME_OF_AZZINOTH, 200.0f, me))
+                    if (m_flameCount >= 2)
                     {
                         StopAutocast();
                         me->GetMotionMaster()->MovePoint(0, CENTER_X, CENTER_Y, CENTER_Z);
@@ -839,6 +845,11 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
             case EVENT_ILLIDAN_CHANGE_PHASE:
             {
                 ChangePhase(PHASE_FIVE);
+                break;
+            }
+            case EVENT_ILLIDAN_FLAME_DEATH:
+            {
+                m_flameCount++;
                 break;
             }
         }
@@ -1629,7 +1640,15 @@ enum FlameSpells
 
 struct TRINITY_DLL_DECL boss_illidan_flameofazzinothAI : public ScriptedAI
 {
-    boss_illidan_flameofazzinothAI(Creature *c) : ScriptedAI(c), summons(me){}
+    boss_illidan_flameofazzinothAI(Creature *c) : ScriptedAI(c), summons(me)
+    {
+        pInstance = c->GetInstanceData();
+
+        me->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 8.0f);
+        me->SetFloatValue(UNIT_FIELD_COMBATREACH, 8.0f);
+    }
+
+    ScriptedInstance *pInstance;
 
     EventMap events;
     SummonList summons;
@@ -1656,6 +1675,9 @@ struct TRINITY_DLL_DECL boss_illidan_flameofazzinothAI : public ScriptedAI
 
     void JustDied(Unit *pKiller)
     {
+        if (Creature *pIllidan = pInstance->GetCreature(pInstance->GetData64(DATA_ILLIDANSTORMRAGE)))
+            pIllidan->AI()->DoAction(EVENT_ILLIDAN_FLAME_DEATH);
+
         me->RemoveCorpse();
     }
 
@@ -1693,20 +1715,14 @@ struct TRINITY_DLL_DECL boss_illidan_flameofazzinothAI : public ScriptedAI
                 {
                     DoZoneInCombat();
 
-                    if (Unit *pTarget = SelectUnit(SELECT_TARGET_FARTHEST, 0, 200.0f, true, 0, 50.0f))
+                    if (Unit *pTarget = SelectUnit(SELECT_TARGET_FARTHEST, 0, 200.0f, true, 0, 45.0f))
                     {
-                        // wipe mode on :]
-                        DoResetThreat();
-                        me->AddThreat(pTarget, 10000.0f);
-                        me->AI()->AttackStart(pTarget);
+                        AttackStart(pTarget);
+                        me->CastSpell(pTarget, SPELL_FLAME_CHARGE, true);
 
-                        ForceSpellCast(pTarget, SPELL_FLAME_CHARGE);
-                        if (!me->HasAura(SPELL_FLAME_ENRAGE, 0))
-                            ForceSpellCast(me, SPELL_FLAME_ENRAGE);
+                        check_timer = 1000;
 
                         me->UpdateSpeed(MOVE_RUN, 20.0f);
-
-                        check_timer = 4000;
 
                         events.ScheduleEvent(EVENT_FLAME_RANGE_CHECK, 15000);
                     }
@@ -1714,7 +1730,7 @@ struct TRINITY_DLL_DECL boss_illidan_flameofazzinothAI : public ScriptedAI
                     {
                         if (Creature *pOwner = me->GetMap()->GetCreature(m_owner))
                         {
-                            if (!me->IsWithinDistInMap(pOwner, 45.0f) && !me->HasAura(SPELL_FLAME_ENRAGE, 0))
+                            if (!me->IsWithinDistInMap(pOwner, 30.0f) && !me->HasAura(SPELL_FLAME_ENRAGE, 0))
                             {
                                 check_timer = 4000;
                                 me->UpdateSpeed(MOVE_RUN, 20.0f);
