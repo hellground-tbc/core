@@ -1718,11 +1718,11 @@ struct TRINITY_DLL_DECL boss_illidan_flameofazzinothAI : public ScriptedAI
                     if (Unit *pTarget = SelectUnit(SELECT_TARGET_FARTHEST, 0, 200.0f, true, 0, 48.0f))
                     {
                         AttackStart(pTarget);
+
+                        me->UpdateSpeed(MOVE_RUN, 20.0f);
                         me->CastSpell(pTarget, SPELL_FLAME_CHARGE, true);
 
                         check_timer = 8000;
-
-                        me->UpdateSpeed(MOVE_RUN, 20.0f);
                     }
 
                     if (Creature *pOwner = me->GetMap()->GetCreature(m_owner))
