@@ -1863,11 +1863,14 @@ struct TRINITY_DLL_DECL boss_illidan_parasite_shadowfiendAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!me->getVictim())
+        if (!me->getVictim() || me->getVictim()->GetTypeId() == TYPEID_UNIT)
         {
             DoZoneInCombat();
             if (Unit *pTemp = SelectUnit(SELECT_TARGET_RANDOM, 0, 200.0f, true, 0, 5.0f))
             {
+                if (me->getVictim())
+                    DoModifyThreatPercent(me->getVictim(), -101);
+
                 me->AddThreat(pTemp, 10000.0f);
                 ScriptedAI::AttackStart(pTemp);
             }
