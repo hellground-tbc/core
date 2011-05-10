@@ -35,22 +35,23 @@ EndScriptData */
 //Pure energy spell info
 #define SPELL_ENERGY_BOLT           44342
 #define SPELL_ENERGY_FEEDBACK       44335
+#define SPELL_ENERGY_PASSIVE        44326
 
 //Vexallus spell info
 #define SPELL_CHAIN_LIGHTNING       44318
-#define SPELL_SUMMON_PURE_ENERGY    44322                   //not-working, this script summon this creatures without this spell
+#define SPELL_SUMMON_PURE_ENERGY    44322
+#define SPELL_H_SUMMON_PURE_ENERGY1 46159
+#define SPELL_H_SUMMON_PURE_ENERGY2 46154
 #define SPELL_OVERLOAD              44353
 #define SPELL_ARCANE_SHOCK          44319
-#define ASTRAL_FLARE_VISUAL         30237
 
-//Creatures
-#define CREATURE_PURE_ENERGY        24745
 
 struct TRINITY_DLL_DECL boss_vexallusAI : public ScriptedAI
 {
     boss_vexallusAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = (c->GetInstanceData());         Heroic = c->GetMap()->IsHeroic();
+        pInstance = (c->GetInstanceData());         
+        Heroic = c->GetMap()->IsHeroic();
     }
 
     ScriptedInstance* pInstance;
@@ -74,11 +75,7 @@ struct TRINITY_DLL_DECL boss_vexallusAI : public ScriptedAI
         Enraged = false;
 
         if(pInstance)
-        {
-            if (m_creature->isDead())
-                pInstance->SetData(DATA_VEXALLUS_EVENT, DONE);
-            else pInstance->SetData(DATA_VEXALLUS_EVENT, NOT_STARTED);
-        }
+            pInstance->SetData(DATA_VEXALLUS_EVENT, NOT_STARTED);
     }
 
     void KilledUnit(Unit *victim)
@@ -90,14 +87,7 @@ struct TRINITY_DLL_DECL boss_vexallusAI : public ScriptedAI
     {
         DoYell(SAY_DEATH, LANG_UNIVERSAL, NULL);
         if (pInstance)
-        {
             pInstance->SetData(DATA_VEXALLUS_EVENT, DONE);
-
-            GameObject* Door = NULL;
-            Door = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_VEXALLUS_DOOR));
-            if(Door)
-                Door->SetGoState(GO_STATE_ACTIVE);
-        }
     }
 
     void EnterCombat(Unit *who)
@@ -107,37 +97,35 @@ struct TRINITY_DLL_DECL boss_vexallusAI : public ScriptedAI
             pInstance->SetData(DATA_VEXALLUS_EVENT, IN_PROGRESS);
     }
 
+    void JustSummoned(Creature *c)
+    {
+        if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            c->AI()->AttackStart(target);
+        c->CastSpell(c, SPELL_ENERGY_PASSIVE, true);
+    }
+
     void UpdateAI(const uint32 diff)
     {
-        if (!UpdateVictim() )
+        if (!UpdateVictim())
             return;
 
-        if(m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 11)
-        {
+        if(HealthBelowPct(11))
             Enraged = true;
-        }
 
         if(!Enraged)
         {
             //used for check, when Vexallus cast adds 85%, 70%, 55%, 40%, 25%
-            if ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < (100-(SpawnAddInterval*(AlreadySpawnedAmount+1))))
+            if (HealthBelowPct(100-(SpawnAddInterval*(AlreadySpawnedAmount+1))))
             {
                 DoScriptText(SAY_ENERGY, m_creature);
                 DoScriptText(EMOTE_DISCHARGE_ENERGY, m_creature);
-                Creature* PureEnergyCreature = NULL;
-                PureEnergyCreature = DoSpawnCreature(CREATURE_PURE_ENERGY, 10, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
-                Unit* target = NULL;
-                target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                if (PureEnergyCreature && target)
-                    PureEnergyCreature->AI()->AttackStart(target);
-
-                if(Heroic)                                  // *Heroic mode only - he summons two instead of one.
+                if(Heroic)
                 {
-                    PureEnergyCreature = DoSpawnCreature(CREATURE_PURE_ENERGY, -10, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
-                    target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                    if (PureEnergyCreature && target)
-                        PureEnergyCreature->AI()->AttackStart(target);
+                    AddSpellToCast(m_creature, SPELL_H_SUMMON_PURE_ENERGY1);
+                    AddSpellToCast(m_creature, SPELL_H_SUMMON_PURE_ENERGY2);
                 }
+                else
+                    AddSpellToCast(m_creature, SPELL_SUMMON_PURE_ENERGY);
 
                 ++AlreadySpawnedAmount;
             };
@@ -145,27 +133,29 @@ struct TRINITY_DLL_DECL boss_vexallusAI : public ScriptedAI
             if(ChainLightningTimer < diff)
             {
                 if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                    DoCast(target, SPELL_CHAIN_LIGHTNING);
+                    AddSpellToCast(target, SPELL_CHAIN_LIGHTNING);
                 ChainLightningTimer = 10000;
-            }else ChainLightningTimer -= diff;
+            }else 
+                ChainLightningTimer -= diff;
 
             if(ArcaneShockTimer < diff)
             {
-                Unit* target = NULL;
-                target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                if(target)
-                    DoCast(target, SPELL_ARCANE_SHOCK);
+                if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    AddSpellToCast(target, SPELL_ARCANE_SHOCK);
                 ArcaneShockTimer = 8000;
-            }else ArcaneShockTimer -= diff;
-        }else
+            }else 
+                ArcaneShockTimer -= diff;
+        }
+        else
         {
             if(OverloadTimer < diff)
-            {
-                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                    DoCast(target, SPELL_OVERLOAD);
+            {   
+                AddSpellToCast(m_creature, SPELL_OVERLOAD);
                 OverloadTimer = 2200;
-            }else OverloadTimer -= diff;
+            }else 
+                OverloadTimer -= diff;
         }
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };
@@ -199,19 +189,23 @@ struct TRINITY_DLL_DECL mob_pure_energyAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(!UpdateVictim())
-            return;
+        //if(!UpdateVictim())
+        //    return;
 
         if(EnergyBoltTimer < diff)
         {
             DoCast(m_creature->getVictim(), SPELL_ENERGY_BOLT);
             EnergyBoltTimer = 1700;
-        }else   EnergyBoltTimer -= diff;
+        }else   
+            EnergyBoltTimer -= diff;
+/*
         if(VisualTimer < diff)
         {
             DoCast(m_creature->getVictim(), ASTRAL_FLARE_VISUAL, true);
             VisualTimer = 1000;
-        }else   VisualTimer -= diff;
+        }else   
+            VisualTimer -= diff;
+            */
     }
 };
 
