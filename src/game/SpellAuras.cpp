@@ -662,7 +662,7 @@ bool AreaAura::CheckTarget(Unit *target)
                 {
                     Aura* aur = (*it).second;
                     if (aur->GetSpellProto()->SpellFamilyName == SPELLFAMILY_SHAMAN && aur->GetSpellProto()->SpellIconID == GetSpellProto()->SpellIconID &&
-                        aur->GetSpellProto()->SpellFamilyFlags == GetSpellProto()->SpellFamilyFlags)
+                        aur->GetSpellProto()->SpellFamilyFlags == GetSpellProto()->SpellFamilyFlags && aur->GetEffIndex() == m_effIndex)
                     {
                         if (GetId() < aur->GetId())        // HACK: higher id => higher spell rank
                             return false;
