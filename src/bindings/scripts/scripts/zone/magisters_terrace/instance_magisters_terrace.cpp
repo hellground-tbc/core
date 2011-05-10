@@ -24,7 +24,7 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_magisters_terrace.h"
 
-#define NUMBER_OF_ENCOUNTERS      4
+#define ENCOUNTERS      4
 
 /*
 0  - Selin Fireheart
@@ -37,8 +37,8 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
 {
     instance_magisters_terrace(Map* map) : ScriptedInstance(map) {Initialize();}
 
-    uint32 DoorState[3];//0seline, 1vexallus, 2derlissa
-    uint32 Encounters[NUMBER_OF_ENCOUNTERS];
+    //uint32 DoorState[3];//0seline, 1vexallus, 2derlissa
+    uint32 Encounters[ENCOUNTERS];
     uint32 DelrissaDeathCount;
 
     //std::list<uint64> FelCrystals;
@@ -53,14 +53,14 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
     uint64 DelrissaDoorGUID;
     uint64 KaelStatue[2];
 
-    bool InitializedItr;
+    //bool InitializedItr;
 
     void Initialize()
     {
-        for(uint8 i = 0; i < 3; i++)
-            DoorState[i] = 1;//1 closed, 0 opened
+        //for(uint8 i = 0; i < 3; i++)
+        //    DoorState[i] = 1;//1 closed, 0 opened
 
-        for(uint8 i = 0; i < NUMBER_OF_ENCOUNTERS; i++)
+        for(uint8 i = 0; i < ENCOUNTERS; i++)
             Encounters[i] = NOT_STARTED;
 
         //FelCrystals.clear();
@@ -77,12 +77,12 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
         KaelStatue[0] = 0;
         KaelStatue[1] = 0;
 
-        InitializedItr = false;
+        //InitializedItr = false;
     }
 
     bool IsEncounterInProgress() const
     {
-        for(uint8 i = 0; i < NUMBER_OF_ENCOUNTERS; i++)
+        for(uint8 i = 0; i < ENCOUNTERS; i++)
             if(Encounters[i] == IN_PROGRESS)
                 return true;
         return false;
@@ -109,33 +109,32 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
             case DATA_SELIN_EVENT:
                 if(Encounters[0] != DONE)
                     Encounters[0] = data;
-
                 if(data == DONE)
                     HandleGameObject(SelinDoorGUID, true);
                 HandleGameObject(SelinEncounterDoorGUID, data != IN_PROGRESS);
-
                 break;
             case DATA_VEXALLUS_EVENT:
-                Encounters[1] = data;
-                if(data==DONE)
-                {
-                    DoorState[1] = 0;
-                    SaveToDB();
-                }
+                if(Encounters[1] != DONE)
+                    Encounters[1] = data;
+                if(data == DONE)        
+                    HandleGameObject(VexallusDoorGUID, true);
                 break;
             case DATA_DELRISSA_EVENT:
-                Encounters[2] = data;
-                if(data==DONE)
-                {
-                    DoorState[2] = 0;
-                    SaveToDB();
-                }
+                if(Encounters[2] != DONE)
+                    Encounters[2] = data;
+                if(data == DONE)
+                    HandleGameObject(DelrissaDoorGUID, true);
                 break;
-            case DATA_KAELTHAS_EVENT:    Encounters[3] = data;  break;
-
+            case DATA_KAELTHAS_EVENT:    
+                if(Encounters[3] != DONE)
+                    Encounters[3] = data;
+                break;
             case DATA_DELRISSA_DEATH_COUNT:
-                if(data)  ++DelrissaDeathCount;
-                else      DelrissaDeathCount = 0;
+                if(data)  
+                    ++DelrissaDeathCount;
+                else
+                    DelrissaDeathCount = 0;
+                break;
         }
 
         if(data == DONE)
@@ -147,29 +146,30 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
         OUT_SAVE_INST_DATA;
 
         std::ostringstream stream;
-        stream << "S ";
-        stream << DoorState[0] << " ";
-        stream << DoorState[1] << " ";
-        stream << DoorState[2];
+        stream << Encounters[0] << " ";
+        stream << Encounters[1] << " ";
+        stream << Encounters[2] << " ";
+        stream << Encounters[3];
 
         OUT_SAVE_INST_DATA_COMPLETE;
 
         return stream.str();
     }
 
-    void Load(const char* load)
+    void Load(const char* in)
     {
-        if(!load) return;
-        std::istringstream ss(load);
-        char dataHead; // S
-        uint32 data1, data2, data3;
-        ss >> dataHead >> data1 >> data2 >> data3;
-        if(dataHead == 'S')
+        if(!in)
         {
-            DoorState[0] = data1;
-            DoorState[1] = data2;
-            DoorState[2] = data3;
-        }else error_log("TSCR: Magister's Terrace: corrupted save data.");
+            OUT_LOAD_INST_DATA_FAIL;
+            return;
+        }
+        OUT_LOAD_INST_DATA(in);
+        std::istringstream stream(in);
+        stream >> Encounters[0] >> Encounters[1] >> Encounters[2] >> Encounters[3];
+        for(uint8 i = 0; i < ENCOUNTERS; ++i)
+            if(Encounters[i] == IN_PROGRESS)
+                Encounters[i] = NOT_STARTED;
+        OUT_LOAD_INST_DATA_COMPLETE;
     }
 
     void OnCreatureCreate(Creature *creature, uint32 entry)
@@ -189,12 +189,12 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
         {
             case 187896:
                 VexallusDoorGUID = go->GetGUID();
-                go->SetGoState(GOState(DoorState[1]));
+                go->SetGoState(GOState(GetData(DATA_VEXALLUS_EVENT) != DONE));
                 break;
             //SunwellRaid Gate 02
             case 187979:
                 SelinDoorGUID = go->GetGUID();
-                go->SetGoState((GOState)(GetData(DATA_SELIN_EVENT) != DONE));
+                go->SetGoState(GOState(GetData(DATA_SELIN_EVENT) != DONE));
                 break;
             //Assembly Chamber Door
             case 188065:  
@@ -202,10 +202,14 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
                 break;
             case 187770:
                 DelrissaDoorGUID = go->GetGUID();
-                go->SetGoState(GOState(DoorState[2]));
+                go->SetGoState(GOState(GetData(DATA_DELRISSA_EVENT) != DONE));
                 break;
-            case 188165:  KaelStatue[0] = go->GetGUID();          break;
-            case 188166:  KaelStatue[1] = go->GetGUID();          break;
+            case 188165:  
+                KaelStatue[0] = go->GetGUID();
+                break;
+            case 188166:  
+                KaelStatue[1] = go->GetGUID();
+                break;
         }
     }
 
@@ -222,27 +226,6 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
             case DATA_DELRISSA_DOOR:        return DelrissaDoorGUID;
             case DATA_KAEL_STATUE_LEFT:     return KaelStatue[0];
             case DATA_KAEL_STATUE_RIGHT:    return KaelStatue[1];
-
-            /*
-            case DATA_FEL_CRYSTAL:
-            {
-                if(FelCrystals.empty())
-                {
-                    error_log("TSCR: Magisters Terrace: No Fel Crystals loaded in Inst Data");
-                    return 0;
-                }
-
-                if(!InitializedItr)
-                {
-                    CrystalItr = FelCrystals.begin();
-                    InitializedItr = true;
-                }
-
-                uint64 guid = *CrystalItr;
-                ++CrystalItr;
-                return guid;
-            }
-            */
         }
         return 0;
     }
