@@ -741,6 +741,18 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->CastSpell(unitTarget, spell_list[urand(0, 5)], true);
                     return;
                 }
+                case 46476:
+                {
+                    if(!m_originalCaster)
+                        return;
+
+                    if(unitTarget->GetTypeId() == TYPEID_UNIT && m_originalCaster->getVictim())
+                    {
+                        ((Creature*)unitTarget)->AI()->AttackStart(m_originalCaster->getVictim());
+                        m_originalCaster->GetMotionMaster()->MoveChase(m_originalCaster->getVictim(), 0, 0);
+                    }
+                    return;
+                }
                 case 38782:
                 {
                     if (i == 0)
