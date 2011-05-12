@@ -20,6 +20,18 @@
 #define DATA_FLAMEWAKERPRIEST               12
 #define DATA_GOLEMAGG                       13
 #define DATA_RUNES                          14
+#define DATA_SUMMON_RAGNAROS                15
 
 #endif
 
+enum RuneFlags
+{
+    RUNE_ZETH_FLAG      = 1,
+    RUNE_MAZJ_FLAG      = 2,
+    RUNE_THERI_FLAG     = 4,
+    RUNE_BLAZ_FLAG      = 8,
+    RUNE_KRESS_FLAG     = 16,
+    RUNE_MOHN_FLAG      = 32,
+    RUNE_KORO_FLAG      = 64,
+    RUNES_COMPLETE      = RUNE_ZETH_FLAG | RUNE_MAZJ_FLAG | RUNE_THERI_FLAG | RUNE_BLAZ_FLAG | RUNE_KRESS_FLAG | RUNE_MOHN_FLAG | RUNE_KORO_FLAG
+};

@@ -89,6 +89,9 @@ struct TRINITY_DLL_DECL boss_ragnarosAI : public Scripted_NoMovementAI
     boss_ragnarosAI(Creature *c) : Scripted_NoMovementAI(c)
     {
         pInstance = (ScriptedInstance*)c->GetInstanceData();
+        me->SetVisibility(VISIBILITY_OFF);
+        me->SetReactState(REACT_PASSIVE);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
     }
 
     ScriptedInstance * pInstance;
@@ -100,6 +103,7 @@ struct TRINITY_DLL_DECL boss_ragnarosAI : public Scripted_NoMovementAI
     uint32 Erruption_Timer;
     uint32 Submerge_Timer;
     uint32 Attack_Timer;
+    uint32 Summon_Timer;
     Creature *Summoned;
     bool HasYelledMagmaBurst;
     bool HasSubmergedOnce;
@@ -119,6 +123,7 @@ struct TRINITY_DLL_DECL boss_ragnarosAI : public Scripted_NoMovementAI
         HasYelledMagmaBurst = false;
         HasSubmergedOnce = false;
         WasBanished = false;
+        Summon_Timer = 10000;
 
         m_creature->CastSpell(m_creature,SPELL_MELTWEAPON,true);
         HasAura = true;
@@ -137,6 +142,9 @@ struct TRINITY_DLL_DECL boss_ragnarosAI : public Scripted_NoMovementAI
 
     void EnterCombat(Unit *who)
     {
+        if (me->GetVisibility() == VISIBILITY_OFF || me->GetReactState() == REACT_PASSIVE)
+            return;
+
         if (pInstance)
             pInstance->SetData(DATA_RAGNAROS_EVENT, IN_PROGRESS);
     }
@@ -149,6 +157,24 @@ struct TRINITY_DLL_DECL boss_ragnarosAI : public Scripted_NoMovementAI
 
     void UpdateAI(const uint32 diff)
     {
+        if(pInstance->GetData(DATA_MAJORDOMO_EXECUTUS_EVENT) == DONE && pInstance->GetData(DATA_SUMMON_RAGNAROS) == DONE && me->GetVisibility() == VISIBILITY_OFF)
+        {
+            if(Summon_Timer <= diff)
+            {
+                me->SetVisibility(VISIBILITY_ON);
+                me->SetReactState(REACT_AGGRESSIVE);
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                Unit *domo = me->GetUnit(pInstance->GetData64(12018));
+                if(domo && domo->isAlive())
+                {
+                    me->Kill(domo, false);
+                }
+
+            }
+            else Summon_Timer -= diff;
+            return;
+        }
+
         if (WasBanished && Attack_Timer < diff)
         {
             //Become unbanished again
@@ -215,7 +241,7 @@ struct TRINITY_DLL_DECL boss_ragnarosAI : public Scripted_NoMovementAI
         }else ElementalFire_Timer -= diff;
 
         //Submerge_Timer
-        if (!WasBanished && Submerge_Timer < diff)
+        if (!WasBanished && Submerge_Timer <= diff)
         {
             //Creature spawning and ragnaros becomming unattackable
             //is not very well supported in the core

@@ -5332,35 +5332,35 @@ void Spell::EffectScriptEffect(uint32 effIndex)
 
                 if (m_caster->GetTypeId() == TYPEID_PLAYER)
                 {
-                            if( Group* pGroup = ((Player*)m_caster)->GetGroup() )
+                    if( Group* pGroup = ((Player*)m_caster)->GetGroup() )
+                    {
+                        for(GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
+                        {
+                            Player *pGroupie = itr->getSource();
+                            if( pGroupie && pGroupie->GetQuestStatus(10637) == QUEST_STATUS_INCOMPLETE)
                             {
-                                for(GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
-                                {
-                                    Player *pGroupie = itr->getSource();
-                                    if( pGroupie && pGroupie->GetQuestStatus(10637) == QUEST_STATUS_INCOMPLETE)
-                                    {
-                                        pGroupie->CompleteQuest(10637);
-                                        pGroupie->AreaExploredOrEventHappens(10637);
-                                    }
-                                    if( pGroupie && pGroupie->GetQuestStatus(10688) == QUEST_STATUS_INCOMPLETE)
-                                    {
-                                        pGroupie->CompleteQuest(10688);
-                                        pGroupie->AreaExploredOrEventHappens(10688);
-                                    }
-                                }
-                            } else
-                            {
-                                if (((Player*)m_caster)->GetQuestStatus(10637) == QUEST_STATUS_INCOMPLETE)
-                                {
-                                    ((Player*)m_caster)->CompleteQuest(10637);
-                                    ((Player*)m_caster)->AreaExploredOrEventHappens(10637);
-                                }
-                                if (((Player*)m_caster)->GetQuestStatus(10688) == QUEST_STATUS_INCOMPLETE)
-                                {
-                                    ((Player*)m_caster)->CompleteQuest(10688);
-                                    ((Player*)m_caster)->AreaExploredOrEventHappens(10688);
-                                }
+                                pGroupie->CompleteQuest(10637);
+                                pGroupie->AreaExploredOrEventHappens(10637);
                             }
+                            if( pGroupie && pGroupie->GetQuestStatus(10688) == QUEST_STATUS_INCOMPLETE)
+                            {
+                                pGroupie->CompleteQuest(10688);
+                                pGroupie->AreaExploredOrEventHappens(10688);
+                            }
+                        }
+                    } else
+                    {
+                        if (((Player*)m_caster)->GetQuestStatus(10637) == QUEST_STATUS_INCOMPLETE)
+                        {
+                            ((Player*)m_caster)->CompleteQuest(10637);
+                            ((Player*)m_caster)->AreaExploredOrEventHappens(10637);
+                        }
+                        if (((Player*)m_caster)->GetQuestStatus(10688) == QUEST_STATUS_INCOMPLETE)
+                        {
+                            ((Player*)m_caster)->CompleteQuest(10688);
+                            ((Player*)m_caster)->AreaExploredOrEventHappens(10688);
+                        }
+                    }
                 }
             }
             else
