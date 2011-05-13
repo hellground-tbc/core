@@ -71,6 +71,7 @@ struct TRINITY_DLL_DECL instance_sethekk_halls : public ScriptedInstance
         switch(go->GetEntry())
         {
             case IKISS_DOOR:
+                IkissDoorGUID = go->GetGUID();
                 if(GetData(DATA_IKISSEVENT) == DONE)
                     HandleGameObject(IkissDoorGUID, true);
                 break;
@@ -141,7 +142,7 @@ struct TRINITY_DLL_DECL instance_sethekk_halls : public ScriptedInstance
         loadStream >> Encounter[0] >> Encounter[1] >> Encounter[2];
 
         for(uint8 i = 0; i < ENCOUNTERS; ++i)
-            if (Encounter[i] == IN_PROGRESS || Encounter[i] == SPECIAL)
+            if (Encounter[i] == IN_PROGRESS)
                 Encounter[i] = NOT_STARTED;
 
         OUT_LOAD_INST_DATA_COMPLETE;
