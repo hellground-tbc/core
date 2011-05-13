@@ -741,6 +741,18 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->CastSpell(unitTarget, spell_list[urand(0, 5)], true);
                     return;
                 }
+                case 46476:
+                {
+                    if(!m_originalCaster)
+                        return;
+
+                    if(unitTarget->GetTypeId() == TYPEID_UNIT && m_originalCaster->getVictim())
+                    {
+                        ((Creature*)unitTarget)->AI()->AttackStart(m_originalCaster->getVictim());
+                        m_originalCaster->GetMotionMaster()->MoveChase(m_originalCaster->getVictim(), 0, 0);
+                    }
+                    return;
+                }
                 case 38782:
                 {
                     if (i == 0)
@@ -1585,6 +1597,74 @@ void Spell::EffectDummy(uint32 i)
                     // Emissary of Hate Credit
                     m_caster->CastSpell(m_caster, 45088, true);
                     return;
+                }
+                case 46573:                                 // Blink (Sunblade Arch Mage)
+                {
+                    if(m_caster->GetTypeId() == TYPEID_UNIT)
+                    {
+                        //firts AoE stun
+                        unitTarget->CastSpell(unitTarget, 41421, true);
+                        // than Blink
+                        uint32 mapid = m_caster->GetMapId();
+
+                        // Start Info //
+                        float cx,cy,cz;
+                        float dx,dy,dz;
+                        float angle = m_caster->GetOrientation();
+                        m_caster->GetPosition(cx,cy,cz);
+
+                        //Check use of vamps//
+                        bool useVmap = false;
+                        bool swapZone = true;
+
+                        if (VMAP::VMapFactory::createOrGetVMapManager()->isHeightCalcEnabled(mapid))
+                            useVmap = true;
+
+                        //Going foward 0.5f until max distance
+                        for (float i=0.5f; i<45; i+=0.5f)
+                        {
+                            m_caster->GetNearPoint2D(dx,dy,i,angle);
+                            dz = m_caster->GetMap()->GetHeight(dx, dy, cz, useVmap);
+
+                            //Prevent climbing and go around object maybe 2.0f is to small? use 3.0f?
+                            if ((dz-cz) < 2.0f && (dz-cz) > -2.0f && (m_caster->IsWithinLOS(dx, dy, dz)))
+                            {
+                                //No climb, the z differenze between this and prev step is ok. Store this destination for future use or check.
+                                cx = dx;
+                                cy = dy;
+                                cz = dz;
+                            }
+                            else
+                            {
+                                //Something wrong with los or z differenze... maybe we are going from outer world inside a building or viceversa
+                                if (swapZone)
+                                {
+                                    //so... change use of vamp and go back 1 step backward and recheck again.
+                                    swapZone = false;
+                                    useVmap = !useVmap;
+                                    i-=0.5f;
+                                }
+                                else
+                                {
+                                    //bad recheck result... so break this and use last good coord for teleport player...
+                                    dz += 0.5f;
+                                    break;
+                                }
+                            }
+                        }
+
+                        //Prevent Falling during swap building/outerspace
+                        m_caster->SetVisibility(VISIBILITY_OFF);
+                        m_caster->Relocate(cx, cy, cz, m_caster->GetOrientation());
+                        m_caster->SendMonsterMove(cx, cy, cz, 0);
+                        WorldPacket data;
+                        m_caster->BuildHeartBeatMsg(&data);
+                        m_caster->SendMessageToSet(&data,false);
+                        m_caster->GetMotionMaster()->Clear();
+                        if(m_caster->getVictim())
+                            m_caster->GetMotionMaster()->MoveChase(m_caster->getVictim());
+                        m_caster->SetVisibility(VISIBILITY_ON);
+                    }
                 }
                 case 50243:                                 // Teach Language
                 {
