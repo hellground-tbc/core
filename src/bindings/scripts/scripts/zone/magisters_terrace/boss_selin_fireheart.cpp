@@ -116,7 +116,22 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
             DoScriptText(EMOTE_CRYSTAL, m_creature);
 
             float x, y, z;                                  // coords that we move to, close to the crystal.
-            CrystalChosen->GetClosePoint(x, y, z, m_creature->GetObjectSize(), CONTACT_DISTANCE);
+            switch(CrystalChosen->GetGUIDLow())
+            {
+                // for two crystals close point is not good enough, because selin ends up out of los
+                case 96870:
+                    x = 250;
+                    y = 13
+                    z = 4;
+                    break;
+                case 96873:
+                    x = 250;
+                    y = -13;
+                    z = 4;
+                    break;
+                default:
+                    CrystalChosen->GetClosePoint(x, y, z, m_creature->GetObjectSize(), CONTACT_DISTANCE);
+            }
 
             m_creature->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
             m_creature->GetMotionMaster()->MovePoint(1, x, y, z);

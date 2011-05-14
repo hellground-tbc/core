@@ -100,7 +100,10 @@ struct TRINITY_DLL_DECL boss_vexallusAI : public ScriptedAI
     void JustSummoned(Creature *c)
     {
         if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+        {
             c->AI()->AttackStart(target);
+            c->AddThreat(target, 1000);
+        }
         c->CastSpell(c, SPELL_ENERGY_PASSIVE, true);
     }
 
@@ -189,8 +192,8 @@ struct TRINITY_DLL_DECL mob_pure_energyAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        //if(!UpdateVictim())
-        //    return;
+        if(!UpdateVictim())
+            return;
 
         if(EnergyBoltTimer < diff)
         {
