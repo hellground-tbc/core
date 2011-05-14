@@ -865,7 +865,7 @@ bool ChatHandler::ExecuteCommandInTable(ChatCommand *table, const char* text, co
         // table[i].Name == "" is special case: send original command to handler
         if ((this->*(table[i].Handler))(strlen(table[i].Name)!=0 ? text : oldtext))
         {
-            if (table[i].SecurityLevel >= sWorld.getConfig(CONFIG_MIN_GM_TEXT_LVL))
+            if (table[i].SecurityLevel >= sWorld.getConfig(CONFIG_MIN_GM_COMMAND_LOG_LEVEL))
             {
                 // chat case
                 if (m_session)
