@@ -330,6 +330,10 @@ MapUpdate.Threads = 1
 #                     in form Logname_#ID_YYYY-MM-DD_HH-MM-SS.Ext
 #                     or form Logname_#ID.Ext
 #
+#    GmLogMinLevel
+#        Min GM Level to log commands
+#        Default: 1
+#
 #    ArenaLogFile
 #        Log file of arena fights and arena team creations
 #        Default: "" - do not create arena log file
@@ -361,6 +365,7 @@ CharLogDump = 0
 GmLogFile = "gm_commands.log"
 GmLogTimestamp = 0
 GmLogPerAccount = 0
+GmLogMinLevel = 1
 ArenaLogFile = ""
 CheatLogFile = "cheat.log"
 ACLogFile = "AC.log"
