@@ -24,6 +24,85 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_karazhan.h"
 
+struct TRINITY_DLL_DECL boss_operaAI : public ScriptedAI
+{
+    boss_operaAI(Creature* c) : ScriptedAI(c)
+    {
+        pInstance = (c->GetInstanceData());
+        evade = false;
+        AggroTimer = 0;
+    }
+
+    ScriptedInstance* pInstance;
+
+    uint32 checkTimer;
+    uint32 AggroTimer;
+
+    bool evade;
+    bool eventStarted;
+
+    void Reset()
+    {
+        ClearCastQueue();
+        eventStarted = false;
+        checkTimer = 3000;
+    }
+
+    void AttackStart(Unit* who)
+    {
+        if(m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
+            return;
+
+        ScriptedAI::AttackStart(who);
+    }
+
+    void MoveInLineOfSight(Unit* who)
+    {
+        if(m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
+            return;
+
+        ScriptedAI::MoveInLineOfSight(who);
+    }
+
+    void StartEvent()
+    {
+        eventStarted = true;
+        DoZoneInCombat();
+    }
+
+    void EnterEvadeMode()
+    {
+        if (!eventStarted || AggroTimer)
+            return;
+
+        evade = true;
+
+        ScriptedAI::EnterEvadeMode();
+
+        me->Kill(me, false);
+        me->RemoveCorpse();
+    }
+
+    void JustRespawned()
+    {
+        DoZoneInCombat();
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (checkTimer <= diff)
+        {
+            DoZoneInCombat();
+            checkTimer = 3000;
+        }
+        else
+            checkTimer -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
 /***********************************/
 /*** OPERA WIZARD OF OZ EVENT *****/
 /*********************************/
@@ -100,19 +179,9 @@ void SummonCroneIfReady(ScriptedInstance* pInstance, Creature *_Creature)
     }
 };
 
-struct TRINITY_DLL_DECL boss_dorotheeAI : public ScriptedAI
+struct TRINITY_DLL_DECL boss_dorotheeAI : public boss_operaAI
 {
-    boss_dorotheeAI(Creature* c) : ScriptedAI(c)
-    {
-        pInstance = (c->GetInstanceData());
-        evade = false;
-    }
-
-    ScriptedInstance* pInstance;
-
-    uint32 AggroTimer;
-
-    uint32 checkTimer;
+    boss_dorotheeAI(Creature* c) : boss_operaAI(c) {}
 
     uint32 WaterBoltTimer;
     uint32 FearTimer;
@@ -121,15 +190,9 @@ struct TRINITY_DLL_DECL boss_dorotheeAI : public ScriptedAI
     bool SummonedTito;
     bool TitoDied;
 
-    bool evade;
-
     void Reset()
     {
-        ClearCastQueue();
-
         AggroTimer = 500;
-
-        checkTimer = 3000;
 
         WaterBoltTimer = 5000;
         FearTimer = 15000;
@@ -137,6 +200,8 @@ struct TRINITY_DLL_DECL boss_dorotheeAI : public ScriptedAI
 
         SummonedTito = false;
         TitoDied = false;
+
+        boss_operaAI::Reset();
     }
 
     void EnterCombat(Unit* who)
@@ -156,47 +221,17 @@ struct TRINITY_DLL_DECL boss_dorotheeAI : public ScriptedAI
             SummonCroneIfReady(pInstance, m_creature);
     }
 
-    void AttackStart(Unit* who)
-    {
-        if(m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-            return;
-
-        ScriptedAI::AttackStart(who);
-    }
-
-    void MoveInLineOfSight(Unit* who)
-    {
-        if(m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
-    }
-
-    void EnterEvadeMode()
-    {
-        if (AggroTimer)
-            return;
-
-        evade = true;
-
-        ScriptedAI::EnterEvadeMode();
-
-        me->Kill(me, false);
-        me->RemoveCorpse();
-    }
-
-    void JustRespawned()
-    {
-        DoZoneInCombat();
-    }
-
     void UpdateAI(const uint32 diff)
     {
+        if (!eventStarted)
+            return;
+
         if (AggroTimer)
         {
             if (AggroTimer <= diff)
             {
                 m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                DoZoneInCombat();
                 AggroTimer = 0;
             }
             else
@@ -205,14 +240,6 @@ struct TRINITY_DLL_DECL boss_dorotheeAI : public ScriptedAI
 
         if (!UpdateVictim())
             return;
-
-        if (checkTimer <= diff)
-        {
-            DoZoneInCombat();
-            checkTimer = 3000;
-        }
-        else
-            checkTimer -= diff;
 
         if (WaterBoltTimer < diff)
         {
@@ -238,8 +265,7 @@ struct TRINITY_DLL_DECL boss_dorotheeAI : public ScriptedAI
                 SummonTitoTimer -= diff;
         }
 
-        CastNextSpellIfAnyAndReady();
-        DoMeleeAttackIfReady();
+        boss_operaAI::UpdateAI(diff);
     }
 };
 
@@ -304,63 +330,23 @@ void boss_dorotheeAI::SummonTito()
     }
 }
 
-struct TRINITY_DLL_DECL boss_strawmanAI : public ScriptedAI
+struct TRINITY_DLL_DECL boss_strawmanAI : public boss_operaAI
 {
-    boss_strawmanAI(Creature* c) : ScriptedAI(c)
-    {
-        pInstance = (c->GetInstanceData());
-        evade = false;
-    }
+    boss_strawmanAI(Creature* c) : boss_operaAI(c){}
 
     ScriptedInstance* pInstance;
 
-    uint32 AggroTimer;
-    uint32 checkTimer;
     uint32 BrainBashTimer;
     uint32 BrainWipeTimer;
 
-    bool evade;
 
     void Reset()
     {
-        ClearCastQueue();
-
         AggroTimer = 13000;
-        checkTimer = 3000;
         BrainBashTimer = 5000;
         BrainWipeTimer = 7000;
-    }
 
-    void AttackStart(Unit* who)
-    {
-        if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-            return;
-
-        ScriptedAI::AttackStart(who);
-    }
-
-    void EnterEvadeMode()
-    {
-        if (AggroTimer)
-            return;
-
-        evade = true;
-
-        ScriptedAI::EnterEvadeMode();
-
-        if (Creature * barnes = me->GetCreature(pInstance->GetData64(DATA_BARNES)))
-            barnes->AI()->EnterEvadeMode();
-
-        me->Kill(me, false);
-        me->RemoveCorpse();
-    }
-
-    void MoveInLineOfSight(Unit* who)
-    {
-        if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
+        boss_operaAI::Reset();
     }
 
     void EnterCombat(Unit* who)
@@ -389,18 +375,17 @@ struct TRINITY_DLL_DECL boss_strawmanAI : public ScriptedAI
         DoScriptText(SAY_STRAWMAN_SLAY, m_creature);
     }
 
-    void JustRespawned()
-    {
-        DoZoneInCombat();
-    }
-
     void UpdateAI(const uint32 diff)
     {
+        if (!eventStarted)
+            return;
+
         if (AggroTimer)
         {
             if (AggroTimer <= diff)
             {
                 m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                DoZoneInCombat();
                 AggroTimer = 0;
             }
             else
@@ -409,14 +394,6 @@ struct TRINITY_DLL_DECL boss_strawmanAI : public ScriptedAI
 
         if (!UpdateVictim())
             return;
-
-        if (checkTimer <= diff)
-        {
-            DoZoneInCombat();
-            checkTimer = 3000;
-        }
-        else
-            checkTimer -= diff;
 
         if (BrainBashTimer < diff)
         {
@@ -434,77 +411,33 @@ struct TRINITY_DLL_DECL boss_strawmanAI : public ScriptedAI
         else
             BrainWipeTimer -= diff;
 
-        CastNextSpellIfAnyAndReady();
-        DoMeleeAttackIfReady();
+        boss_operaAI::UpdateAI(diff);
     }
 };
 
-struct TRINITY_DLL_DECL boss_tinheadAI : public ScriptedAI
+struct TRINITY_DLL_DECL boss_tinheadAI : public boss_operaAI
 {
-    boss_tinheadAI(Creature* c) : ScriptedAI(c)
-    {
-        pInstance = (c->GetInstanceData());
-        evade = false;
-    }
+    boss_tinheadAI(Creature* c) : boss_operaAI(c){}
 
-    ScriptedInstance* pInstance;
-
-    uint32 AggroTimer;
-    uint32 checkTimer;
     uint32 CleaveTimer;
     uint32 RustTimer;
 
     uint8 RustCount;
 
-    bool evade;
-
     void Reset()
     {
-        ClearCastQueue();
-
         AggroTimer = 15000;
-        checkTimer = 3000;
         CleaveTimer = 5000;
         RustTimer   = 30000;
 
         RustCount   = 0;
-    }
 
-    void EnterEvadeMode()
-    {
-        if (AggroTimer)
-            return;
-
-        evade = true;
-
-        ScriptedAI::EnterEvadeMode();
-
-        if (Creature * barnes = me->GetCreature(pInstance->GetData64(DATA_BARNES)))
-            barnes->AI()->EnterEvadeMode();
-
-        me->Kill(me, false);
-        me->RemoveCorpse();
+        boss_operaAI::Reset();
     }
 
     void EnterCombat(Unit* who)
     {
         DoScriptText(SAY_TINHEAD_AGGRO, m_creature);
-    }
-
-    void AttackStart(Unit* who)
-    {
-        if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-            return;
-
-        ScriptedAI::AttackStart(who);
-    }
-
-    void MoveInLineOfSight(Unit* who)
-    {
-        if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
     }
 
     void JustDied(Unit* killer)
@@ -522,18 +455,17 @@ struct TRINITY_DLL_DECL boss_tinheadAI : public ScriptedAI
         DoScriptText(SAY_TINHEAD_SLAY, m_creature);
     }
 
-    void JustRespawned()
-    {
-        DoZoneInCombat();
-    }
-
     void UpdateAI(const uint32 diff)
     {
+        if (!eventStarted)
+            return;
+
         if (AggroTimer)
         {
             if (AggroTimer < diff)
             {
                 m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                DoZoneInCombat();
                 AggroTimer = 0;
             }
             else
@@ -542,14 +474,6 @@ struct TRINITY_DLL_DECL boss_tinheadAI : public ScriptedAI
 
         if (!UpdateVictim())
             return;
-
-        if (checkTimer <= diff)
-        {
-            DoZoneInCombat();
-            checkTimer = 3000;
-        }
-        else
-            checkTimer -= diff;
 
         if (CleaveTimer < diff)
         {
@@ -571,70 +495,26 @@ struct TRINITY_DLL_DECL boss_tinheadAI : public ScriptedAI
                 RustTimer -= diff;
         }
 
-        CastNextSpellIfAnyAndReady();
-        DoMeleeAttackIfReady();
+        boss_operaAI::UpdateAI(diff);
     }
 };
 
-struct TRINITY_DLL_DECL boss_roarAI : public ScriptedAI
+struct TRINITY_DLL_DECL boss_roarAI : public boss_operaAI
 {
-    boss_roarAI(Creature* c) : ScriptedAI(c)
-    {
-        pInstance = (c->GetInstanceData());
-        evade = false;
-    }
+    boss_roarAI(Creature* c) : boss_operaAI(c){}
 
-    ScriptedInstance* pInstance;
-
-    uint32 AggroTimer;
-    uint32 checkTimer;
     uint32 MangleTimer;
     uint32 ShredTimer;
     uint32 ScreamTimer;
 
-    bool evade;
-
     void Reset()
     {
-        ClearCastQueue();
-
         AggroTimer = 20000;
-        checkTimer = 3000;
         MangleTimer = 5000;
         ShredTimer  = 10000;
         ScreamTimer = 15000;
-    }
 
-    void MoveInLineOfSight(Unit* who)
-    {
-        if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
-    }
-
-    void EnterEvadeMode()
-    {
-        if (AggroTimer)
-            return;
-
-        evade = true;
-
-        ScriptedAI::EnterEvadeMode();
-
-        if (Creature * barnes = me->GetCreature(pInstance->GetData64(DATA_BARNES)))
-            barnes->AI()->EnterEvadeMode();
-
-        me->Kill(me, false);
-        me->RemoveCorpse();
-    }
-
-    void AttackStart(Unit* who)
-    {
-        if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-            return;
-
-        ScriptedAI::AttackStart(who);
+        boss_operaAI::Reset();
     }
 
     void EnterCombat(Unit* who)
@@ -657,18 +537,17 @@ struct TRINITY_DLL_DECL boss_roarAI : public ScriptedAI
         DoScriptText(SAY_ROAR_SLAY, m_creature);
     }
 
-    void JustRespawned()
-    {
-        DoZoneInCombat();
-    }
-
     void UpdateAI(const uint32 diff)
     {
+        if (!eventStarted)
+            return;
+
         if (AggroTimer)
         {
             if (AggroTimer <= diff)
             {
                 m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                DoZoneInCombat();
                 AggroTimer = 0;
             }
             else
@@ -677,14 +556,6 @@ struct TRINITY_DLL_DECL boss_roarAI : public ScriptedAI
 
         if (!UpdateVictim())
             return;
-
-        if (checkTimer <= diff)
-        {
-            DoZoneInCombat();
-            checkTimer = 3000;
-        }
-        else
-            checkTimer -= diff;
 
         if (MangleTimer < diff)
         {
@@ -710,34 +581,25 @@ struct TRINITY_DLL_DECL boss_roarAI : public ScriptedAI
         else
             ScreamTimer -= diff;
 
-        CastNextSpellIfAnyAndReady();
-        DoMeleeAttackIfReady();
+        boss_operaAI::UpdateAI(diff);
     }
 };
 
-struct TRINITY_DLL_DECL boss_croneAI : public ScriptedAI
+struct TRINITY_DLL_DECL boss_croneAI : public boss_operaAI
 {
-    boss_croneAI(Creature* c) : ScriptedAI(c)
-    {
-        pInstance = (c->GetInstanceData());
-        evade = false;
-    }
-
-    ScriptedInstance* pInstance;
+    boss_croneAI(Creature* c) : boss_operaAI(c){}
 
     uint32 CycloneTimer;
     uint32 ChainLightningTimer;
-    uint32 checkTimer;
-
-    bool evade;
 
     void Reset()
     {
-        ClearCastQueue();
-
         CycloneTimer = 30000;
         ChainLightningTimer = 10000;
         checkTimer = 3000;
+
+        boss_operaAI::Reset();
+        eventStarted = true;
     }
 
     void EnterCombat(Unit* who)
@@ -746,18 +608,6 @@ struct TRINITY_DLL_DECL boss_croneAI : public ScriptedAI
 
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
-    }
-
-    void EnterEvadeMode()
-    {
-        evade = true;
-        ScriptedAI::EnterEvadeMode();
-
-        if (Creature * barnes = me->GetCreature(pInstance->GetData64(DATA_BARNES)))
-            barnes->AI()->EnterEvadeMode();
-
-        me->Kill(me, false);
-        me->RemoveCorpse();
     }
 
     void JustDied(Unit* killer)
@@ -772,14 +622,6 @@ struct TRINITY_DLL_DECL boss_croneAI : public ScriptedAI
     {
         if (!UpdateVictim())
             return;
-
-        if (checkTimer <= diff)
-        {
-            DoZoneInCombat();
-            checkTimer = 3000;
-        }
-        else
-            checkTimer -= diff;
 
         if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
             m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -802,8 +644,7 @@ struct TRINITY_DLL_DECL boss_croneAI : public ScriptedAI
         else
             ChainLightningTimer -= diff;
 
-        CastNextSpellIfAnyAndReady();
-        DoMeleeAttackIfReady();
+        boss_operaAI::UpdateAI(diff);
     }
 };
 
@@ -817,7 +658,6 @@ struct TRINITY_DLL_DECL mob_cycloneAI : public ScriptedAI
     {
         MoveTimer = 1000;
     }
-
 
     void MoveInLineOfSight(Unit* who)
     {
@@ -925,20 +765,13 @@ bool GossipSelect_npc_grandmother(Player* player, Creature* _Creature, uint32 se
     return true;
 }
 
-struct TRINITY_DLL_DECL boss_bigbadwolfAI : public ScriptedAI
+struct TRINITY_DLL_DECL boss_bigbadwolfAI : public boss_operaAI
 {
-    boss_bigbadwolfAI(Creature* c) : ScriptedAI(c)
-    {
-        pInstance = (c->GetInstanceData());
-        evade = false;
-    }
-
-    ScriptedInstance* pInstance;
+    boss_bigbadwolfAI(Creature* c) : boss_operaAI(c) {}
 
     uint32 ChaseTimer;
     uint32 FearTimer;
     uint32 SwipeTimer;
-    uint32 checkTimer;
 
     uint64 HoodGUID;
     float TempThreat;
@@ -948,29 +781,17 @@ struct TRINITY_DLL_DECL boss_bigbadwolfAI : public ScriptedAI
 
     void Reset()
     {
-        ClearCastQueue();
-
         ChaseTimer = 30000;
         FearTimer = 25000 + rand()%10000;
         SwipeTimer = 5000;
-        checkTimer = 3000;
 
         HoodGUID = 0;
         TempThreat = 0;
 
         IsChasing = false;
-    }
 
-    void EnterEvadeMode()
-    {
-        evade = true;
-        ScriptedAI::EnterEvadeMode();
-
-        if (Creature * barnes = me->GetCreature(pInstance->GetData64(DATA_BARNES)))
-            barnes->AI()->EnterEvadeMode();
-
-        me->Kill(me, false);
-        me->RemoveCorpse();
+        boss_operaAI::Reset();
+        eventStarted = true;
     }
 
     void EnterCombat(Unit* who)
@@ -1144,20 +965,15 @@ void Resurrect(Creature* target)
         target->GetMotionMaster()->Initialize();
 };
 
-struct TRINITY_DLL_DECL boss_julianneAI : public ScriptedAI
+struct TRINITY_DLL_DECL boss_julianneAI : public boss_operaAI
 {
-    boss_julianneAI(Creature* c) : ScriptedAI(c)
+    boss_julianneAI(Creature* c) : boss_operaAI(c)
     {
-        pInstance = (c->GetInstanceData());
         EntryYellTimer = 1000;
-        AggroYellTimer = 10000;
-        evade = false;
+        AggroTimer = 10000;
     }
 
-    ScriptedInstance* pInstance;
-
     uint32 EntryYellTimer;
-    uint32 AggroYellTimer;
 
     uint32 Phase;
     uint64 RomuloGUID;
@@ -1170,12 +986,9 @@ struct TRINITY_DLL_DECL boss_julianneAI : public ScriptedAI
     uint32 DrinkPoisonTimer;
     uint32 ResurrectSelfTimer;
 
-    uint32 checkTimer;
-
     bool IsFakingDeath;
     bool SummonedRomulo;
     bool RomuloDead;
-    bool evade;
 
     void Reset()
     {
@@ -1184,7 +997,7 @@ struct TRINITY_DLL_DECL boss_julianneAI : public ScriptedAI
             if (Unit* Romulo = Unit::GetUnit(*m_creature, RomuloGUID))
             {
                 Romulo->SetVisibility(VISIBILITY_OFF);
-                Romulo->DealDamage(Romulo, Romulo->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                Romulo->Kill(Romulo, false);
             }
         }
 
@@ -1200,45 +1013,13 @@ struct TRINITY_DLL_DECL boss_julianneAI : public ScriptedAI
         DrinkPoisonTimer = 0;
         ResurrectSelfTimer = 0;
 
-        checkTimer = 3000;
-
         if (IsFakingDeath)
             Resurrect(m_creature);
 
         IsFakingDeath = false;
         SummonedRomulo = false;
         RomuloDead = false;
-    }
-
-    void AttackStart(Unit* who)
-    {
-        if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-            return;
-
-        ScriptedAI::AttackStart(who);
-    }
-
-    void EnterEvadeMode()
-    {
-        if (AggroYellTimer)
-            return;
-
-        evade = true;
-        ScriptedAI::EnterEvadeMode();
-
-        if (Creature * barnes = me->GetCreature(pInstance->GetData64(DATA_BARNES)))
-            barnes->AI()->EnterEvadeMode();
-
-        me->Kill(me, false);
-        me->RemoveCorpse();
-    }
-
-    void MoveInLineOfSight(Unit* who)
-    {
-        if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
+        boss_operaAI::Reset();
     }
 
     void SpellHit(Unit* caster, const SpellEntry *Spell)
@@ -1268,34 +1049,27 @@ struct TRINITY_DLL_DECL boss_julianneAI : public ScriptedAI
     void UpdateAI(const uint32 diff);
 };
 
-struct TRINITY_DLL_DECL boss_romuloAI : public ScriptedAI
+struct TRINITY_DLL_DECL boss_romuloAI : public boss_operaAI
 {
-    boss_romuloAI(Creature* c) : ScriptedAI(c)
+    boss_romuloAI(Creature* c) : boss_operaAI(c)
     {
-        pInstance = (c->GetInstanceData());
         EntryYellTimer = 8000;
-        AggroYellTimer = 15000;
-        evade = false;
+        AggroTimer = 15000;
     }
-
-    ScriptedInstance* pInstance;
 
     uint64 JulianneGUID;
 
     uint32 Phase;
 
     uint32 EntryYellTimer;
-    uint32 AggroYellTimer;
     uint32 BackwardLungeTimer;
     uint32 DaringTimer;
     uint32 DeadlySwatheTimer;
     uint32 PoisonThrustTimer;
     uint32 ResurrectTimer;
-    uint32 checkTimer;
 
     bool JulianneDead;
     bool IsFakingDeath;
-    bool evade;
 
     void Reset()
     {
@@ -1308,25 +1082,14 @@ struct TRINITY_DLL_DECL boss_romuloAI : public ScriptedAI
         DeadlySwatheTimer = 25000;
         PoisonThrustTimer = 10000;
         ResurrectTimer = 10000;
-        checkTimer = 3000;
 
         IsFakingDeath = false;
         JulianneDead = false;
+        boss_operaAI::Reset();
+        eventStarted = true;
     }
 
     void DamageTaken(Unit* done_by, uint32 &damage);
-
-    void EnterEvadeMode()
-    {
-        evade = true;
-        ScriptedAI::EnterEvadeMode();
-
-        if (Creature * barnes = me->GetCreature(pInstance->GetData64(DATA_BARNES)))
-            barnes->AI()->EnterEvadeMode();
-
-        me->Kill(me, false);
-        me->RemoveCorpse();
-    }
 
     void EnterCombat(Unit* who)
     {
@@ -1339,14 +1102,6 @@ struct TRINITY_DLL_DECL boss_romuloAI : public ScriptedAI
                 m_creature->AddThreat(Julianne->getVictim(), 1.0f);
             }
         }
-    }
-
-    void MoveInLineOfSight(Unit* who)
-    {
-        if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-            return;
-
-        ScriptedAI::MoveInLineOfSight(who);
     }
 
     void JustDied(Unit* killer)
@@ -1477,6 +1232,9 @@ void boss_romuloAI::DamageTaken(Unit* done_by, uint32 &damage)
 
 void boss_julianneAI::UpdateAI(const uint32 diff)
 {
+    if (!eventStarted)
+        return;
+
     if (EntryYellTimer)
     {
         if (EntryYellTimer <= diff)
@@ -1488,19 +1246,19 @@ void boss_julianneAI::UpdateAI(const uint32 diff)
             EntryYellTimer -= diff;
     }
 
-    if (AggroYellTimer)
+    if (AggroTimer)
     {
-        if (AggroYellTimer < diff)
+        if (AggroTimer < diff)
         {
             DoScriptText(SAY_JULIANNE_AGGRO, m_creature);
             m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             m_creature->setFaction(16);
-            AggroYellTimer = 0;
+            AggroTimer = 0;
             DoZoneInCombat();
             return;
         }
         else
-            AggroYellTimer -= diff;
+            AggroTimer -= diff;
     }
 
     if (DrinkPoisonTimer)
@@ -1563,14 +1321,6 @@ void boss_julianneAI::UpdateAI(const uint32 diff)
     if (!UpdateVictim() || IsFakingDeath)
         return;
 
-    if (checkTimer <= diff)
-    {
-        DoZoneInCombat();
-        checkTimer = 3000;
-    }
-    else
-        checkTimer -= diff;
-
     if (RomuloDead)
     {
         if (ResurrectTimer < diff)
@@ -1591,7 +1341,7 @@ void boss_julianneAI::UpdateAI(const uint32 diff)
 
     if (BlindingPassionTimer < diff)
     {
-        DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_BLINDING_PASSION);
+        AddSpellToCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_BLINDING_PASSION);
         BlindingPassionTimer = 30000 + rand()%15000;
     }
     else
@@ -1599,7 +1349,7 @@ void boss_julianneAI::UpdateAI(const uint32 diff)
 
     if (DevotionTimer < diff)
     {
-        DoCast(m_creature, SPELL_DEVOTION);
+        AddSpellToCast(m_creature, SPELL_DEVOTION);
         DevotionTimer = 15000 + rand()%30000;
     }
     else
@@ -1607,7 +1357,7 @@ void boss_julianneAI::UpdateAI(const uint32 diff)
 
     if (PowerfulAttractionTimer < diff)
     {
-        DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_POWERFUL_ATTRACTION);
+        AddSpellToCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_POWERFUL_ATTRACTION);
         PowerfulAttractionTimer = 5000 + rand()%25000;
     }
     else
@@ -1619,32 +1369,24 @@ void boss_julianneAI::UpdateAI(const uint32 diff)
         {
             Creature* Romulo = (Unit::GetCreature((*m_creature), RomuloGUID));
             if (Romulo && Romulo->isAlive() && !RomuloDead)
-                DoCast(Romulo, SPELL_ETERNAL_AFFECTION);
+                AddSpellToCast(Romulo, SPELL_ETERNAL_AFFECTION);
 
         }
         else
-            DoCast(m_creature, SPELL_ETERNAL_AFFECTION);
+            AddSpellToCast(m_creature, SPELL_ETERNAL_AFFECTION);
 
         EternalAffectionTimer = 45000 + rand()%15000;
     }
     else
         EternalAffectionTimer -= diff;
 
-    DoMeleeAttackIfReady();
+    boss_operaAI::UpdateAI(diff);
 }
 
 void boss_romuloAI::UpdateAI(const uint32 diff)
 {
     if (!UpdateVictim() || IsFakingDeath)
         return;
-
-    if (checkTimer <= diff)
-    {
-        DoZoneInCombat();
-        checkTimer = 3000;
-    }
-    else
-        checkTimer -= diff;
 
     if (JulianneDead)
     {
@@ -1669,7 +1411,7 @@ void boss_romuloAI::UpdateAI(const uint32 diff)
         Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, 200, true, m_creature->getVictimGUID());
         if (target && !m_creature->HasInArc(M_PI, target))
         {
-            DoCast(target, SPELL_BACKWARD_LUNGE);
+            AddSpellToCast(target, SPELL_BACKWARD_LUNGE);
             BackwardLungeTimer = 15000 + rand()%15000;
         }
     }
@@ -1678,7 +1420,7 @@ void boss_romuloAI::UpdateAI(const uint32 diff)
 
     if (DaringTimer < diff)
     {
-        DoCast(m_creature, SPELL_DARING);
+        AddSpellToCast(m_creature, SPELL_DARING);
         DaringTimer = 20000 + rand()%20000;
     }
     else
@@ -1686,7 +1428,7 @@ void boss_romuloAI::UpdateAI(const uint32 diff)
 
     if (DeadlySwatheTimer < diff)
     {
-        DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_DEADLY_SWATHE);
+        AddSpellToCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_DEADLY_SWATHE);
         DeadlySwatheTimer = 15000 + rand()%10000;
     }
     else
@@ -1694,13 +1436,13 @@ void boss_romuloAI::UpdateAI(const uint32 diff)
 
     if (PoisonThrustTimer < diff)
     {
-        DoCast(m_creature->getVictim(), SPELL_POISON_THRUST);
+        AddSpellToCast(m_creature->getVictim(), SPELL_POISON_THRUST);
         PoisonThrustTimer = 10000 + rand()%10000;
     }
     else
         PoisonThrustTimer -= diff;
 
-    DoMeleeAttackIfReady();
+    boss_operaAI::UpdateAI(diff);
 }
 
 CreatureAI* GetAI_boss_julianne(Creature* _Creature)
@@ -1713,9 +1455,375 @@ CreatureAI* GetAI_boss_romulo(Creature* _Creature)
     return new boss_romuloAI(_Creature);
 }
 
-void AddSC_bosses_opera()
+/*######
+# npc_barnesAI
+######*/
+
+#define GOSSIP_READY        "I'm not an actor."
+
+#define SAY_READY           "Splendid, I'm going to get the audience ready. Break a leg!"
+#define SAY_OZ_INTRO1       "Finally, everything is in place. Are you ready for your big stage debut?"
+#define OZ_GOSSIP1          "I'm not an actor."
+#define SAY_OZ_INTRO2       "Don't worry, you'll be fine. You look like a natural!"
+#define OZ_GOSSIP2          "Ok, I'll give it a try, then."
+
+#define SAY_RAJ_INTRO1      "The romantic plays are really tough, but you'll do better this time. You have TALENT. Ready?"
+#define RAJ_GOSSIP1         "I've never been more ready."
+
+struct Dialogue
+{
+    int32 textid;
+    uint32 timer;
+};
+
+static Dialogue OzDialogue[]=
+{
+    {-1532103, 6000},
+    {-1532104, 18000},
+    {-1532105, 9000},
+    {-1532106, 15000}
+};
+
+static Dialogue HoodDialogue[]=
+{
+    {-1532107, 6000},
+    {-1532108, 10000},
+    {-1532109, 14000},
+    {-1532110, 15000}
+};
+
+static Dialogue RAJDialogue[]=
+{
+    {-1532111, 5000},
+    {-1532112, 7000},
+    {-1532113, 14000},
+    {-1532114, 14000}
+};
+
+// Entries and spawn locations for creatures in Oz event
+float Spawns[6][2]=
+{
+    {17535, -10896},                                        // Dorothee
+    {17546, -10891},                                        // Roar
+    {17547, -10884},                                        // Tinhead
+    {17543, -10902},                                        // Strawman
+    {17603, -10892},                                        // Grandmother
+    {17534, -10900},                                        // Julianne
+};
+
+float StageLocations[7][2]=
+{
+    {-10866.711, -1779.816},                                // Open door, begin walking (0)
+    {-10894.917, -1775.467},                                // (1)
+    {-10896.044, -1782.619},                                // Begin Speech after this (2)
+    {-10894.917, -1775.467},                                // Resume walking (back to spawn point now) after speech (3)
+    {-10866.711, -1779.816},                                // (4)
+    {-10866.700, -1781.030}                                 // Summon mobs, open curtains, close door (5)
+};
+
+#define CREATURE_SPOTLIGHT  19525
+
+#define SPELL_SPOTLIGHT     25824
+#define SPELL_TUXEDO        32616
+
+#define SPAWN_Z             90.5
+#define SPAWN_Y             -1758
+#define SPAWN_O             4.738
+
+struct TRINITY_DLL_DECL npc_barnesAI : public ScriptedAI
+{
+    npc_barnesAI(Creature* c) : ScriptedAI(c), operaAdds(m_creature)
+    {
+        RaidWiped = false;
+        pInstance = c->GetInstanceData();
+    }
+
+    ScriptedInstance* pInstance;
+
+    uint64 SpotlightGUID;
+
+    uint32 TalkCount;
+    uint32 TalkTimer;
+    uint32 WipeTimer;
+    uint32 Event;
+
+    bool PerformanceReady;
+    bool RaidWiped;
+    bool IsTalking;
+
+    SummonList operaAdds;
+
+    void EnterEvadeMode()
+    {
+        m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+        RaidWiped = true;
+
+        ScriptedAI::EnterEvadeMode();
+    }
+
+    void Reset()
+    {
+        TalkCount = 0;
+        TalkTimer = 2000;
+        WipeTimer = 5000;
+
+        PerformanceReady = false;
+        IsTalking = false;
+
+        operaAdds.DespawnAll();
+
+        if(pInstance)
+        {
+            Event = pInstance->GetData(DATA_OPERA_PERFORMANCE);
+
+            pInstance->HandleGameObject(pInstance->GetData64(DATA_GAMEOBJECT_STAGEDOORLEFT), true);
+
+            if (GameObject* Curtain = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_CURTAINS)))
+                Curtain->SetGoState(pInstance->GetData(DATA_OPERA_EVENT) == DONE ? GO_STATE_ACTIVE : GO_STATE_READY);
+        }
+
+        me->RemoveAurasDueToSpell(SPELL_TUXEDO);
+    }
+
+    void JustSummoned(Creature * summon)
+    {
+        operaAdds.Summon(summon);
+    }
+
+    void SummonedCreatureDespawn(Creature * summon)
+    {
+        operaAdds.Despawn(summon);
+    }
+
+    void MovementInform(uint32 type, uint32 id)
+    {
+        if(type == POINT_MOTION_TYPE)
+        {
+            switch(id)
+            {
+                case 3:
+                    PrepareEncounter();
+                case 0:
+                case 1:
+                case 4:
+                    m_creature->GetMotionMaster()->MovePoint(id+1, StageLocations[id+1][0], StageLocations[id+1][1], SPAWN_Z);
+                    break;
+                case 2:
+                    IsTalking = true;
+                    TalkCount = 0;
+
+                    float x,y,z;
+                    m_creature->GetPosition(x, y, z);
+                    if (Creature* Spotlight = m_creature->SummonCreature(CREATURE_SPOTLIGHT, x, y, z, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 50000))
+                    {
+                        Spotlight->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                        Spotlight->CastSpell(Spotlight, SPELL_SPOTLIGHT, false);
+                        SpotlightGUID = Spotlight->GetGUID();
+                    }
+                    break;
+                case 5:
+                    if(pInstance)
+                    {
+                        if (GameObject* Door = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_STAGEDOORLEFT)))
+                            Door->SetGoState(GO_STATE_READY);
+
+                        if (GameObject* Curtain = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_CURTAINS)))
+                            Curtain->SetGoState(GO_STATE_ACTIVE);
+                    }
+
+
+
+                    me->RemoveAurasDueToSpell(SPELL_TUXEDO);
+                    me->GetMotionMaster()->MoveTargetedHome();
+                    break;
+            }
+        }
+    }
+
+    void Talk(uint32 count)
+    {
+        int32 text = 0;
+
+        switch(Event)
+        {
+            case EVENT_OZ:
+                if (OzDialogue[count].textid)
+                     text = OzDialogue[count].textid;
+                if(OzDialogue[count].timer)
+                    TalkTimer = OzDialogue[count].timer;
+                break;
+
+            case EVENT_HOOD:
+                if (HoodDialogue[count].textid)
+                    text = HoodDialogue[count].textid;
+                if(HoodDialogue[count].timer)
+                    TalkTimer = HoodDialogue[count].timer;
+                break;
+
+            case EVENT_RAJ:
+                 if (RAJDialogue[count].textid)
+                     text = RAJDialogue[count].textid;
+                if(RAJDialogue[count].timer)
+                    TalkTimer = RAJDialogue[count].timer;
+                break;
+        }
+
+        if(text)
+             DoScriptText(text, m_creature);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(IsTalking)
+        {
+            if(TalkTimer < diff)
+            {
+                if(TalkCount > 3)
+                {
+                    if (Creature* Spotlight = m_creature->GetCreature(SpotlightGUID))
+                    {
+                        Spotlight->Kill(Spotlight, false);
+                        Spotlight->RemoveCorpse();
+                    }
+
+                    m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_STAND);
+                    IsTalking = false;
+                    m_creature->GetMotionMaster()->MovePoint(3, StageLocations[3][0], StageLocations[3][1], SPAWN_Z);
+                    return;
+                }
+
+                m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_TALK);
+                Talk(TalkCount++);
+            }
+            else
+                TalkTimer -= diff;
+        }
+
+        if (PerformanceReady)
+        {
+            if (WipeTimer < diff)
+            {
+                if (operaAdds.isEmpty())
+                    EnterEvadeMode();
+
+                WipeTimer = 2000;
+            }
+            else
+                WipeTimer -= diff;
+        }
+    }
+
+    void StartEvent()
+    {
+        if(!pInstance)
+            return;
+
+        pInstance->SetData(DATA_OPERA_EVENT, IN_PROGRESS);
+
+        if (GameObject* Door = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_STAGEDOORLEFT)))
+            Door->SetGoState(GO_STATE_ACTIVE);
+
+        m_creature->CastSpell(m_creature, SPELL_TUXEDO, true);
+        m_creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+
+        m_creature->GetMotionMaster()->MovePoint(0, StageLocations[0][0], StageLocations[0][1], SPAWN_Z);
+    }
+
+    void PrepareEncounter()
+    {
+        debug_log("TSCR: Barnes Opera Event - Introduction complete - preparing encounter %d", Event);
+        uint8 index = 0;
+        uint8 count = 0;
+        switch(Event)
+        {
+            case EVENT_OZ:
+                index = 0;
+                count = 4;
+                break;
+
+            case EVENT_HOOD:
+                index = 4;
+                count = index+1;
+                break;
+
+            case EVENT_RAJ:
+                index = 5;
+                count = index+1;
+                break;
+        }
+
+        for( ; index < count; ++index)
+        {
+            uint32 entry = ((uint32)Spawns[index][0]);
+            float PosX = Spawns[index][1];
+            if (Creature* pCreature = m_creature->SummonCreature(entry, PosX, SPAWN_Y, SPAWN_Z, SPAWN_O, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 120000))
+            {
+                                                            // In case database has bad flags
+                pCreature->SetUInt32Value(UNIT_FIELD_FLAGS, 0);
+                pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            }
+        }
+
+        PerformanceReady = true;
+        RaidWiped = false;
+    }
+};
+
+CreatureAI* GetAI_npc_barnesAI(Creature* _Creature)
+{
+    npc_barnesAI* Barnes_AI = new npc_barnesAI(_Creature);
+
+    return ((CreatureAI*)Barnes_AI);
+}
+
+bool GossipHello_npc_barnes(Player* player, Creature* _Creature)
+{
+    // Check for death of Moroes.
+    ScriptedInstance* pInstance = (_Creature->GetInstanceData());
+    if(pInstance && (pInstance->GetData(DATA_MOROES_EVENT) >= DONE && pInstance->GetData(DATA_OPERA_EVENT) != DONE))
+    {
+        player->ADD_GOSSIP_ITEM(0, OZ_GOSSIP1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+
+        if(!((npc_barnesAI*)_Creature->AI())->RaidWiped)
+            player->SEND_GOSSIP_MENU(8970, _Creature->GetGUID());
+        else
+            player->SEND_GOSSIP_MENU(8975, _Creature->GetGUID());
+    }
+    else
+        player->SEND_GOSSIP_MENU(8978, _Creature->GetGUID());
+
+    return true;
+}
+
+bool GossipSelect_npc_barnes(Player *player, Creature *_Creature, uint32 sender, uint32 action)
+{
+    switch(action)
+    {
+        case GOSSIP_ACTION_INFO_DEF+1:
+            player->ADD_GOSSIP_ITEM(0, OZ_GOSSIP2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+            player->SEND_GOSSIP_MENU(8971, _Creature->GetGUID());
+            break;
+
+        case GOSSIP_ACTION_INFO_DEF+2:
+            player->CLOSE_GOSSIP_MENU();
+            ((npc_barnesAI*)_Creature->AI())->StartEvent();
+            break;
+    }
+
+    return true;
+}
+
+void AddSC_opera_event()
 {
     Script* newscript;
+
+    // Barnes
+    newscript = new Script;
+    newscript->GetAI = &GetAI_npc_barnesAI;
+    newscript->Name = "npc_barnes";
+    newscript->pGossipHello = &GossipHello_npc_barnes;
+    newscript->pGossipSelect = &GossipSelect_npc_barnes;
+    newscript->RegisterSelf();
 
     // Oz
     newscript = new Script;
