@@ -121,7 +121,7 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
                 // for two crystals close point is not good enough, because selin ends up out of los
                 case 96870:
                     x = 250;
-                    y = 13
+                    y = 13;
                     z = 4;
                     break;
                 case 96873:
