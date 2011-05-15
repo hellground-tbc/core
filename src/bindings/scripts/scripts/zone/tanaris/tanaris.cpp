@@ -757,6 +757,45 @@ bool QuestAccept_npc_tooga(Player* pPlayer, Creature* pCreature, const Quest* pQ
     return true;
 }
 
+struct npc_anachronosAI : public ScriptedAI
+{
+    npc_anachronosAI(Creature* pCreature) : ScriptedAI(pCreature) { }
+
+    uint32 checkTimer;
+
+    void Reset()
+    {
+        checkTimer = 3000;
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim())
+            return;
+
+        if (checkTimer < diff)
+        {
+            if (100 * m_creature->GetHealth()/m_creature->GetMaxHealth() < 20)
+            {
+                m_creature->Yell("A terrible and costly mistake you have made. It is not my time, mortals.", LANG_UNIVERSAL, NULL);
+                m_creature->SetVisibility(VISIBILITY_OFF);
+                m_creature->DestroyForNearbyPlayers();
+                m_creature->Kill(m_creature, false);
+                return;
+            }
+        }
+        else
+            checkTimer -= diff;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_anachronos(Creature* pCreature)
+{
+    return new npc_anachronosAI(pCreature);
+}
+
 void AddSC_tanaris()
 {
     Script *newscript;
@@ -805,5 +844,10 @@ void AddSC_tanaris()
     newscript->Name = "npc_tooga";
     newscript->GetAI = &GetAI_npc_tooga;
     newscript->pQuestAccept = &QuestAccept_npc_tooga;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_anachronos";
+    newscript->GetAI = &GetAI_npc_anachronos;
     newscript->RegisterSelf();
 }
