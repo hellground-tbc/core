@@ -221,7 +221,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                        pPlayer->GetName(), pPlayer->GetGUIDLow(), pPlayer->GetSession()->GetAccountId(), pPlayer->GetMapId(), oldMovementInfo.GetFallTime(), oldMovementInfo.pos.x, oldMovementInfo.pos.y, oldMovementInfo.pos.z, movementInfo.pos.x, movementInfo.pos.y, movementInfo.pos.z, movementInfo.pos.z, movementInfo.GetMovementFlags(), m_latency, pPlayer->GetMap() ? (pPlayer->GetMap()->IsBattleGroundOrArena() ? "Yes" : "No") : "No");
 
             //pPlayer->Kill(pPlayer, true);
-            if (pPlayer->m_AC_NoFall_count % 5)
+            if (!(pPlayer->m_AC_NoFall_count % 5))
                 sWorld.SendGMText(LANG_ANTICHEAT_NOFALLDMG, pPlayer->GetName(), pPlayer->m_AC_NoFall_count);
         }
     }
