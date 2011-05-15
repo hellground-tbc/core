@@ -215,12 +215,14 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     {
         if (oldMovementInfo.GetFallTime() == 357)
         {
+            pPlayer->m_AC_NoFall_count ++;
             // falltime = 357 <--- WEH  No Fall Damage Cheat
-            sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) - possible no fall damage cheat. Killing! MapId: %u, falltime: %u, coords old: %f, %f, %f,coords new: %f, %f, %f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s",
+            sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) - possible no fall damage cheat. MapId: %u, falltime: %u, coords old: %f, %f, %f,coords new: %f, %f, %f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s",
                        pPlayer->GetName(), pPlayer->GetGUIDLow(), pPlayer->GetSession()->GetAccountId(), pPlayer->GetMapId(), oldMovementInfo.GetFallTime(), oldMovementInfo.pos.x, oldMovementInfo.pos.y, oldMovementInfo.pos.z, movementInfo.pos.x, movementInfo.pos.y, movementInfo.pos.z, movementInfo.pos.z, movementInfo.GetMovementFlags(), m_latency, pPlayer->GetMap() ? (pPlayer->GetMap()->IsBattleGroundOrArena() ? "Yes" : "No") : "No");
 
             //pPlayer->Kill(pPlayer, true);
-            sWorld.SendGMText(LANG_ANTICHEAT_NOFALLDMG, pPlayer->GetName());
+            if (pPlayer->m_AC_NoFall_count % 5)
+                sWorld.SendGMText(LANG_ANTICHEAT_NOFALLDMG, pPlayer->GetName(), pPlayer->m_AC_NoFall_count);
         }
     }
 
