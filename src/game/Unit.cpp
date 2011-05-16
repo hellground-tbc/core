@@ -3205,6 +3205,9 @@ void Unit::_UpdateAutoRepeatSpell()
         Spell* spell = new Spell(this, m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo, true, 0);
         spell->prepare(&(m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_targets));
 
+        if (!IsStandState())
+            SetStandState(PLAYER_STATE_NONE);
+
         // all went good, reset attack
         resetAttackTimer(RANGED_ATTACK);
     }
