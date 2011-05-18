@@ -81,7 +81,7 @@ struct TRINITY_DLL_DECL instance_steam_vault : public ScriptedInstance
 
     bool IsEncounterInProgress() const
     {
-        for(uint8 i = 0; i < ENCOUNTERS; i++)
+        for(uint8 i = 0; i < ENCOUNTERS-1; i++)
              if (Encounter[i] == IN_PROGRESS)
                  return true;
 
@@ -187,7 +187,7 @@ struct TRINITY_DLL_DECL instance_steam_vault : public ScriptedInstance
    std::string GetSaveData()
     {
         OUT_SAVE_INST_DATA;
-        
+
         std::ostringstream stream;
         stream << Encounter[0] << " ";
         stream << Encounter[1] << " ";
@@ -209,7 +209,7 @@ struct TRINITY_DLL_DECL instance_steam_vault : public ScriptedInstance
         OUT_LOAD_INST_DATA(in);
         std::istringstream stream(in);
         stream >> Encounter[0] >> Encounter[1] >> Encounter[2] >> Encounter[3];
-        for(uint8 i = 0; i < ENCOUNTERS; ++i)
+        for(uint8 i = 0; i < ENCOUNTERS-1; ++i)
             if(Encounter[i] == IN_PROGRESS)
                 Encounter[i] = NOT_STARTED;
         OUT_LOAD_INST_DATA_COMPLETE;
