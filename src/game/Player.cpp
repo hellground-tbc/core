@@ -10365,6 +10365,9 @@ uint8 Player::CanBankItem(uint8 bag, uint8 slot, ItemPosCountVec &dest, Item *pI
             if (!pItem->IsBag())
                  return EQUIP_ERR_ITEM_DOESNT_GO_TO_SLOT;
 
+            if(!HasBankBagSlot(slot))
+                return EQUIP_ERR_MUST_PURCHASE_THAT_BAG_SLOT;
+
             if (uint8 cantuse = CanUseItem(pItem, not_loading) != EQUIP_ERR_OK)
                 return cantuse;
         }
