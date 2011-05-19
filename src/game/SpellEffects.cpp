@@ -3476,7 +3476,7 @@ void Spell::EffectEnergize(uint32 i)
         if (!elixirs.empty())
         {
             // cast random elixir on target
-          uint32 rand_spell = m_caster->GetMap()->urand(0,elixirs.size()-1);
+            uint32 rand_spell = m_caster->GetMap()->urand(0,elixirs.size()-1);
             m_caster->CastSpell(unitTarget,elixirs[rand_spell],true,m_CastItem);
         }
     }
@@ -6460,8 +6460,6 @@ void Spell::EffectSummonTotem(uint32 i)
     pTotem->ApplySpellImmune(m_spellInfo->Id,IMMUNITY_STATE,SPELL_AURA_MOD_FEAR,true);
     pTotem->ApplySpellImmune(m_spellInfo->Id,IMMUNITY_STATE,SPELL_AURA_TRANSFORM,true);
 
-    pTotem->Summon(m_caster);
-
     if (slot < MAX_TOTEM && m_caster->GetTypeId() == TYPEID_PLAYER)
     {
         WorldPacket data(SMSG_TOTEM_CREATED, 17);
@@ -6471,6 +6469,8 @@ void Spell::EffectSummonTotem(uint32 i)
         data << uint32(m_spellInfo->Id);
         ((Player*)m_caster)->SendDirectMessage(&data);
     }
+
+    pTotem->Summon(m_caster);
 }
 
 void Spell::EffectEnchantHeldItem(uint32 i)

@@ -3674,6 +3674,7 @@ bool Unit::AddAura(Aura *Aur)
     {
         bool isDotOrHot = false;
         for (uint8 i = 0; i < 3; i++)
+        {
             switch (aurSpellInfo->EffectApplyAuraName[i])
             {
                 // DOT or HOT from different casters will stack
@@ -3689,6 +3690,7 @@ bool Unit::AddAura(Aura *Aur)
                     isDotOrHot = true;
                     break;
             }
+        }
 
         for (AuraMap::iterator i2 = m_Auras.lower_bound(spair); i2 != m_Auras.upper_bound(spair);)
         {
@@ -3716,6 +3718,7 @@ bool Unit::AddAura(Aura *Aur)
                     continue;
                 }
             }
+
             if (i2->second->GetCasterGUID() == Aur->GetCasterGUID() || Aur->StackNotByCaster() || (Aur->GetCaster() && Aur->GetCaster()->GetTypeId() != TYPEID_PLAYER))    // always stack auras from different creatures
             {
                 if (!stackModified)
@@ -6515,7 +6518,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                  if (((Player*)pVictim)->HasSpellCooldown(trigger_spell_id))
                      return false;
 
-                 ((Player*)pVictim)->AddSpellCooldown(trigger_spell_id, NULL, time(NULL) +4);
+                 ((Player*)pVictim)->AddSpellCooldown(trigger_spell_id, NULL, time(NULL) +1);
              }
 
              // Improved Judgement of Light: bonus heal from t4 set
@@ -6673,14 +6676,19 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
     {
         next = i;
         ++next;
-        if (!(*i).second) continue;
-            aura_id = (*i).second->GetSpellProto()->Id;
-            if (IsPassiveSpell(aura_id) || aura_id == trigger_spell_id || aura_id == triggeredByAura->GetSpellProto()->Id) continue;
+
+        if (!(*i).second)
+            continue;
+
+        aura_id = (*i).second->GetSpellProto()->Id;
+        if (IsPassiveSpell(aura_id) || aura_id == trigger_spell_id || aura_id == triggeredByAura->GetSpellProto()->Id)
+            continue;
+
         if (spellmgr.IsNoStackSpellDueToSpell(trigger_spell_id, (*i).second->GetSpellProto()->Id, ((*i).second->GetCasterGUID() == GetGUID())))
             return false;
     }
 
-    // Costum requirements (not listed in procEx) Warning! damage dealing after this
+    // Custom requirements (not listed in procEx) Warning! damage dealing after this
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
