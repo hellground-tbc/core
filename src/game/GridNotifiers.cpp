@@ -85,10 +85,10 @@ VisibleChangesNotifier::Visit(PlayerMapType &m)
 
         iter->getSource()->UpdateVisibilityOf(&i_object);
 
-
         if (!iter->getSource()->GetSharedVisionList().empty())
             for (SharedVisionList::const_iterator i = iter->getSource()->GetSharedVisionList().begin(); i != iter->getSource()->GetSharedVisionList().end(); ++i)
-                (*i)->UpdateVisibilityOf(&i_object);
+                if ((*i)->GetFarsightTarget() == iter->getSource())
+                    (*i)->UpdateVisibilityOf(&i_object);
     }
 }
 
@@ -98,7 +98,8 @@ VisibleChangesNotifier::Visit(CreatureMapType &m)
     for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
         if(!iter->getSource()->GetSharedVisionList().empty())
             for(SharedVisionList::const_iterator i = iter->getSource()->GetSharedVisionList().begin(); i != iter->getSource()->GetSharedVisionList().end(); ++i)
-                (*i)->UpdateVisibilityOf(&i_object);
+                if ((*i)->GetFarsightTarget() == iter->getSource())
+                    (*i)->UpdateVisibilityOf(&i_object);
 }
 
 void
@@ -134,7 +135,10 @@ void PlayerRelocationNotifier::Visit(PlayerMapType &m)
 
         i_player.UpdateVisibilityOf(plr,i_data,i_visibleNow);
 
-        if (plr->isNeedNotify(NOTIFY_VISIBILITY_CHANGED))
+        WorldObject const* viewPoint = plr->GetFarsightTarget();
+        if (!viewPoint) viewPoint = plr;
+
+        if (viewPoint->isNeedNotify(NOTIFY_VISIBILITY_CHANGED))
             continue;
 
         plr->UpdateVisibilityOf(&i_player);
@@ -143,6 +147,7 @@ void PlayerRelocationNotifier::Visit(PlayerMapType &m)
 
 void PlayerRelocationNotifier::Visit(CreatureMapType &m)
 {
+    bool relocated_for_ai = (i_player.GetFarsightTarget() == NULL);
     for (CreatureMapType::iterator iter=m.begin(); iter != m.end(); ++iter)
     {
         Creature * c = iter->getSource();
@@ -151,7 +156,7 @@ void PlayerRelocationNotifier::Visit(CreatureMapType &m)
 
         i_player.UpdateVisibilityOf(c,i_data,i_visibleNow);
 
-        if (!c->isNeedNotify(NOTIFY_VISIBILITY_CHANGED))
+        if (relocated_for_ai && !c->isNeedNotify(NOTIFY_VISIBILITY_CHANGED))
             CreatureUnitRelocationWorker(c, &i_player);
     }
 }
@@ -161,8 +166,10 @@ void CreatureRelocationNotifier::Visit(PlayerMapType &m)
     for (PlayerMapType::iterator iter=m.begin(); iter != m.end(); ++iter)
     {
         Player * pl = iter->getSource();
+        WorldObject const* viewPoint = pl->GetFarsightTarget();
+        if (!viewPoint) viewPoint = pl;
 
-        if (!pl->isNeedNotify(NOTIFY_VISIBILITY_CHANGED))
+        if (!viewPoint->isNeedNotify(NOTIFY_VISIBILITY_CHANGED))
             pl->UpdateVisibilityOf(&i_creature);
 
         CreatureUnitRelocationWorker(&i_creature, pl);
@@ -207,7 +214,9 @@ void DelayedUnitRelocation::Visit(PlayerMapType &m)
     for (PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
         Player * player = iter->getSource();
-        WorldObject const *viewPoint = player;
+
+        WorldObject const *viewPoint = player->GetFarsightTarget();
+        if (!viewPoint) viewPoint = player;
 
         if (!viewPoint->isNeedNotify(NOTIFY_VISIBILITY_CHANGED))
             continue;

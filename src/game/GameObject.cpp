@@ -807,8 +807,10 @@ bool GameObject::isVisibleForInState(Player const* u, bool inVisibleList) const
     }
 
     // check distance
-    return IsWithinDistInMap(u,World::GetMaxVisibleDistanceForObject() +
-        (inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), false);
+    const WorldObject* viewPoint = u->GetFarsightTarget();
+    if (!viewPoint) viewPoint = u;
+
+    return IsWithinDistInMap(viewPoint, World::GetMaxVisibleDistanceForObject() + (inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), false);
 }
 
 bool GameObject::canDetectTrap(Player const* u, float distance) const
