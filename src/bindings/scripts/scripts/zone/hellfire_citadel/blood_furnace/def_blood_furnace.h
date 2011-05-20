@@ -6,5 +6,7 @@
 #define DEF_BLOOD_FURNACE_H
 
 #define DATA_KELIDANEVENT           1
-#endif
+#define DATA_BROGGOKEVENT           2
+#define DATA_MAKEREVENT             3
 
+#endif
