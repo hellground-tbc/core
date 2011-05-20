@@ -6254,21 +6254,21 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
 //          trigger_spell_id = ;
 //     else if (auraSpellInfo->Id==40250) // Improved Duration
 //          trigger_spell_id = ;
-     else if (trigger_spell_id == 18350)   // Mana Drain Trigger
-     {
-         // On successful melee or ranged attack gain $29471s1 mana and if possible drain $27526s1 mana from the target.
-         if (this && this->isAlive())
-             CastSpell(this, 29471, true, castItem, triggeredByAura);
-         if (pVictim && pVictim->isAlive())
-             CastSpell(pVictim, 27526, true, castItem, triggeredByAura);
-         return true;
-     }
-     else if (auraSpellInfo->Id==24905)   // Moonkin Form (Passive)
+     else if (auraSpellInfo->Id == 24905)   // Moonkin Form (Passive)
      {
          // Elune's Touch (instead non-existed triggered spell) 30% from AP
          trigger_spell_id = 33926;
          basepoints0 = GetTotalAttackPowerValue(BASE_ATTACK) * 30 / 100;
          target = this;
+     }
+     else if (auraSpellInfo->Id == 46939 || auraSpellInfo->Id == 27522)
+     {
+         // On successful melee or ranged attack gain $29471s1 mana and if possible drain $27526s1 mana from the target.
+         if (pVictim && pVictim->GetPower(POWER_MANA))
+             CastSpell(pVictim, 27526, true, castItem, triggeredByAura);
+         else
+             CastSpell(this, 29471, true, castItem, triggeredByAura);
+         return true;
      }
 //     else if (auraSpellInfo->Id==43453) // Rune Ward
 //          trigger_spell_id = ;
