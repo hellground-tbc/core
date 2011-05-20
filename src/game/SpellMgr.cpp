@@ -2650,9 +2650,6 @@ void SpellMgr::LoadSpellCustomAttr()
         if (spellInfo->SpellFamilyName == SPELLFAMILY_WARLOCK && spellInfo->SpellFamilyFlags & 0x10000LL)
             spellInfo->SchoolMask = SPELL_SCHOOL_MASK_SHADOW;
 
-        if (spellInfo->SpellFamilyName == SPELLFAMILY_MAGE && spellInfo->SpellFamilyFlags & 0x200000LL)
-            spellInfo->AttributesEx2 &= ~SPELL_ATTR_EX2_CANT_REFLECTED;
-
         switch (i)
         {
         // Blind fly mode
@@ -2660,7 +2657,7 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->speed = 25;
             break;
         case 40017: // If we can't adjust speed :P we spawn it in bigger periods
-            spellInfo->EffectAmplitude[1] = 2000;
+            spellInfo->EffectAmplitude[1] = 1900;
             break;
         case 40841:
             spellInfo->EffectRadiusIndex[0] = 15;
@@ -2899,9 +2896,6 @@ void SpellMgr::LoadSpellCustomAttr()
         case 37459: // Chess event: Holy Lance
             spellInfo->AttributesCu |= SPELL_ATTR_CU_CONE_LINE;
             spellInfo->EffectRadiusIndex[0] = 18;   // effect radius from 18 to 15 yd
-            break;
-        case 41360: // L5 Arcane Charge should not be reflectable
-            spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_CANT_REFLECTED;
             break;
         case 41363: // Shared Bonds
             spellInfo->AttributesEx &= ~SPELL_ATTR_EX_CHANNELED_1;
