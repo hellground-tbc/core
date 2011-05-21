@@ -413,7 +413,11 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                 // Bloodthirst
                 if (m_spellInfo->SpellFamilyFlags & 0x40000000000LL)
                 {
-                    damage = uint32(damage * (m_caster->GetTotalAttackPowerValue(BASE_ATTACK)) / 100);  // !?
+                    float attackPower = m_caster->GetTotalAttackPowerValue(BASE_ATTACK) + unitTarget->GetMeleeApAttackerBonus();
+                    if (unitTarget->GetTypeId() == TYPEID_UNIT)
+                        attackPower += m_caster->GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_MELEE_ATTACK_POWER_VERSUS, ((Creature*)unitTarget)->GetCreatureTypeMask());
+
+                    damage = uint32(damage * (attackPower / 100));  // !?
                 }
                 // Shield Slam
                 else if (m_spellInfo->SpellFamilyFlags & 0x100000000LL)
@@ -421,7 +425,11 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                 // Victory Rush
                 else if (m_spellInfo->SpellFamilyFlags & 0x10000000000LL)
                 {
-                    damage = uint32(damage * m_caster->GetTotalAttackPowerValue(BASE_ATTACK) / 100);    // !?
+                    float attackPower = m_caster->GetTotalAttackPowerValue(BASE_ATTACK) + unitTarget->GetMeleeApAttackerBonus();
+                    if (unitTarget->GetTypeId() == TYPEID_UNIT)
+                        attackPower += m_caster->GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_MELEE_ATTACK_POWER_VERSUS, ((Creature*)unitTarget)->GetCreatureTypeMask());
+
+                    damage = uint32(damage * attackPower / 100);    // !?
                     m_caster->ModifyAuraState(AURA_STATE_WARRIOR_VICTORY_RUSH, false);
                 }
                 break;
@@ -702,10 +710,22 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
         }
 
         if (attackPowerCoefficient)
-            damage += attackPowerCoefficient * (m_caster->GetTotalAttackPowerValue(BASE_ATTACK) + unitTarget->GetMeleeApAttackerBonus());
+        {
+            float attackPower = m_caster->GetTotalAttackPowerValue(BASE_ATTACK) + unitTarget->GetMeleeApAttackerBonus();
+            if (unitTarget->GetTypeId() == TYPEID_UNIT)
+                attackPower += m_caster->GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_MELEE_ATTACK_POWER_VERSUS, ((Creature*)unitTarget)->GetCreatureTypeMask());
+
+            damage += attackPowerCoefficient * attackPower;
+        }
 
         if (rangedAttackPowerCoefficient)
-            damage += rangedAttackPowerCoefficient * (m_caster->GetTotalAttackPowerValue(RANGED_ATTACK) + unitTarget->GetTotalAuraModifier(SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS));
+        {
+            float attackPower = m_caster->GetTotalAttackPowerValue(RANGED_ATTACK) + unitTarget->GetTotalAuraModifier(SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS);
+            if (unitTarget->GetTypeId() == TYPEID_UNIT)
+                attackPower += m_caster->GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_RANGED_ATTACK_POWER_VERSUS, ((Creature*)unitTarget)->GetCreatureTypeMask());
+
+            damage += rangedAttackPowerCoefficient * attackPower;
+        }
 
         if (m_originalCaster && damage > 0)
             damage = m_originalCaster->SpellDamageBonus(unitTarget, m_spellInfo, (uint32)damage, SPELL_DIRECT_DAMAGE);
