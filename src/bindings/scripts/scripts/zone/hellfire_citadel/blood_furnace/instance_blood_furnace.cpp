@@ -35,11 +35,26 @@ struct TRINITY_DLL_DECL instance_blood_furnace : public ScriptedInstance
     uint64 Sewer1GUID;
     uint64 Sewer2GUID;
 
+    uint32 BroggokEncounter;
+    uint32 MakerEncounter;
+
+    uint64 BroggokDoor;
+    uint64 MakerDoorGUID;
+
+    uint64 CellDoor[4];
 
     void Initialize()
     {
         Sewer1GUID = 0;
         Sewer2GUID = 0;
+        MakerDoorGUID = 0;
+        BroggokEncounter = NOT_STARTED;
+        MakerEncounter = NOT_STARTED;
+
+        for(int i = 0; i < 4; i++)
+            CellDoor[i] = 0;
+
+        BroggokDoor = 0;
     }
 
     void OnObjectCreate(GameObject *go)
@@ -48,6 +63,12 @@ struct TRINITY_DLL_DECL instance_blood_furnace : public ScriptedInstance
         {
             case ENTRY_SEWER1: Sewer1GUID = go->GetGUID(); break;
             case ENTRY_SEWER2: Sewer2GUID = go->GetGUID(); break;
+            case 181819: BroggokDoor = go->GetGUID(); break;
+            case 181821: CellDoor[0] = go->GetGUID(); break;
+            case 181820: CellDoor[1] = go->GetGUID(); break;
+            case 181818: CellDoor[2] = go->GetGUID(); break;
+            case 181817: CellDoor[3] = go->GetGUID(); break;
+            case 181812: MakerDoorGUID = go->GetGUID(); break;
         }
     }
 
@@ -93,7 +114,76 @@ struct TRINITY_DLL_DECL instance_blood_furnace : public ScriptedInstance
                     HandleGameObject(Sewer2GUID,0);
                 }
                 break;
+            case DATA_BROGGOKEVENT:
+                if( data == DONE )
+                    HandleGameObject(BroggokDoor, 0);
+
+                BroggokEncounter = data;
+                break;
+            case DATA_MAKEREVENT:
+                if( data == DONE )
+                    HandleGameObject(MakerDoorGUID,0);
+
+                MakerEncounter = data;
+                break;
         }
+    }
+
+    uint32 GetData(uint32 type)
+    {
+        if (type == DATA_BROGGOKEVENT)
+            return BroggokEncounter;
+
+        return NULL;
+    }
+
+    uint64 GetData64(uint32 type)
+    {
+        switch (type)
+        {
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+                return CellDoor[type-1];
+            case 5:
+                return BroggokDoor;
+            default:
+                return NULL;
+        }
+    }
+
+    std::string GetSaveData()
+    {
+        OUT_SAVE_INST_DATA;
+
+        std::ostringstream stream;
+        stream << MakerEncounter << " ";
+        stream << BroggokEncounter;
+
+        OUT_SAVE_INST_DATA_COMPLETE;
+
+        return stream.str();
+    }
+
+    void Load(const char* in)
+    {
+        if(!in)
+        {
+            OUT_LOAD_INST_DATA_FAIL;
+            return;
+        }
+        OUT_LOAD_INST_DATA(in);
+        std::istringstream stream(in);
+        stream >> MakerEncounter >> BroggokEncounter;
+
+        if (MakerEncounter == DONE)
+            HandleGameObject(MakerDoorGUID,0);
+
+        if (BroggokEncounter == DONE)
+            HandleGameObject(BroggokDoor, 0);
+
+        OUT_LOAD_INST_DATA_COMPLETE;
     }
 };
 

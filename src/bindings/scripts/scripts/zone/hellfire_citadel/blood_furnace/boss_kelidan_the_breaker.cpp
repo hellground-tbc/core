@@ -59,6 +59,12 @@ const float ShadowmoonChannelers[5][4]=
     {316,-109,-24.6,1.257}
 };
 
+class TRINITY_DLL_DECL BurningNovaAura : public Aura
+{
+    public:
+        BurningNovaAura(SpellEntry *spell, uint32 eff, Unit *target, Unit *caster) : Aura(spell, eff, NULL, target, caster, NULL){}
+};
+
 struct TRINITY_DLL_DECL boss_kelidan_the_breakerAI : public ScriptedAI
 {
     boss_kelidan_the_breakerAI(Creature *c) : ScriptedAI(c)
@@ -225,7 +231,17 @@ struct TRINITY_DLL_DECL boss_kelidan_the_breakerAI : public ScriptedAI
 
             DoScriptText(SAY_NOVA, m_creature);
 
-            ForceSpellCast(me, SPELL_BURNING_NOVA, INTERRUPT_AND_CAST_INSTANTLY, true);
+            if (SpellEntry *nova = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_BURNING_NOVA))
+            {
+                for (uint32 i = 0; i < 3; ++i)
+                {
+                    if (nova->Effect[i] == SPELL_EFFECT_APPLY_AURA)
+                    {
+                        Aura *Aur = new BurningNovaAura(nova, i, m_creature, m_creature);
+                        m_creature->AddAura(Aur);
+                    }
+                }
+            }
 
             if (HeroicMode)
                 ForceSpellCast(me, SPELL_VORTEX);

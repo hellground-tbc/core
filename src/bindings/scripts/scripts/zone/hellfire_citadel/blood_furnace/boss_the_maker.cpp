@@ -22,6 +22,7 @@ SDCategory: Hellfire Citadel, Blood Furnace
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_blood_furnace.h"
 
 #define SAY_AGGRO_1                 -1542009
 #define SAY_AGGRO_2                 -1542010
@@ -37,12 +38,14 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_the_makerAI : public ScriptedAI
 {
-    boss_the_makerAI(Creature *c) : ScriptedAI(c){}
+    boss_the_makerAI(Creature *c) : ScriptedAI(c){ pInstance = c->GetInstanceData(); }
 
     uint32 AcidSpray_Timer;
     uint32 ExplodingBreaker_Timer;
     uint32 Domination_Timer;
     uint32 Knockdown_Timer;
+
+    ScriptedInstance *pInstance;
 
     void Reset()
     {
@@ -65,6 +68,7 @@ struct TRINITY_DLL_DECL boss_the_makerAI : public ScriptedAI
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_DIE, m_creature);
+        pInstance->SetData(DATA_MAKEREVENT, DONE);
     }
 
     void UpdateAI(const uint32 diff)
