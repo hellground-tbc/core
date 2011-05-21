@@ -640,6 +640,7 @@ bool Creature::AIM_Initialize(CreatureAI* ai)
 
     UnitAI * oldAI = i_AI;
 
+    i_motionMaster.Initialize();
     i_AI = FactorySelector::selectAI(this);
     
     if (oldAI)
@@ -649,7 +650,6 @@ bool Creature::AIM_Initialize(CreatureAI* ai)
     i_AI->InitializeAI();
     m_aiInitializeTime = WorldTimer::getMSTime();
 
-    i_motionMaster.Initialize();
     return true;
 }
 
@@ -1727,10 +1727,9 @@ void Creature::setDeathState(DeathState s)
         AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
         SetUInt32Value(UNIT_NPC_FLAGS, cinfo->npcflag);
         clearUnitState(UNIT_STAT_ALL_STATE);
+        i_motionMaster.Initialize();
         SetMeleeDamageSchool(SpellSchools(cinfo->dmgschool));
         LoadCreaturesAddon(true);
-
-        i_motionMaster.Initialize();
     }
 }
 
