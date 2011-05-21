@@ -53,6 +53,7 @@ EndScriptData */
 #define SPELL_FIRE_BLAST            20623
 #define SPELL_FIREBALL              20420
 
+#define SPELL_TELEPORT_VISUAL       19484
 #define ENTRY_FLAMEWALKER_HEALER    11663
 #define ENTRY_FLAMEWALKER_ELITE     11664
 
@@ -82,6 +83,7 @@ struct TRINITY_DLL_DECL boss_majordomoAI : public BossAI
     uint32 MagicReflection_Timer;
     uint32 DamageReflection_Timer;
     uint32 Blastwave_Timer;
+    uint32 TeleportVisual_Timer;
     uint32 Teleport_Timer;
     bool Teleport_Use;
     uint32 SummonRag_Timer;
@@ -92,8 +94,9 @@ struct TRINITY_DLL_DECL boss_majordomoAI : public BossAI
         MagicReflection_Timer =  45000;                     //Damage reflection first so we alternate
         DamageReflection_Timer = 15000;
         Blastwave_Timer = 10000;
-        Teleport_Timer = 30000;
-        Teleport_Use = false;
+        TeleportVisual_Timer = 30000;
+        Teleport_Timer = 20000;
+
         SummonRag_Timer = 20000;
 
         ClearCastQueue();
@@ -102,6 +105,7 @@ struct TRINITY_DLL_DECL boss_majordomoAI : public BossAI
         {
             pInstance->SetData(DATA_MAJORDOMO_EXECUTUS_EVENT, NOT_STARTED);
             me->SetVisibility(VISIBILITY_OFF);
+            SpawnAdds();
         }
 
         me->SetReactState(REACT_PASSIVE);
@@ -126,7 +130,10 @@ struct TRINITY_DLL_DECL boss_majordomoAI : public BossAI
         {
             Creature* Temp = Unit::GetCreature((*m_creature),AddGUID[i]);
             if(Temp && Temp->isAlive())
+            {
+                Temp->SetReactState(REACT_AGGRESSIVE);
                 Temp->AI()->AttackStart(m_creature->getVictim());
+            }
             else
             {
                 EnterEvadeMode();
@@ -136,13 +143,18 @@ struct TRINITY_DLL_DECL boss_majordomoAI : public BossAI
         DoAction(2);
     }
 
+    void AttackStart(Unit *who)
+    {
+        if (me->GetVisibility() == VISIBILITY_ON || me->GetReactState() == REACT_AGGRESSIVE)
+            BossAI::AttackStart(who);
+    }
+
     void DoAction(const int32 action)
     {
         switch (action)
         {
             case 1:
             {
-                SpawnAdds();
                 DoScriptText(SAY_SPAWN, m_creature);
                 me->SetVisibility(VISIBILITY_ON);
                 me->SetReactState(REACT_AGGRESSIVE);
@@ -152,7 +164,7 @@ struct TRINITY_DLL_DECL boss_majordomoAI : public BossAI
                 {
                     if(Creature* add = Unit::GetCreature((*m_creature),AddGUID[i]))
                     {
-                        add->SetReactState(REACT_AGGRESSIVE);
+                        add->SetVisibility(VISIBILITY_ON);
                     }
                 }
                 break;
@@ -173,8 +185,7 @@ struct TRINITY_DLL_DECL boss_majordomoAI : public BossAI
             }
             case 4:
             {
-                me->CastSpell(me, SPELL_TELEPORT, false);
-                //me->SetPosition(SPAWN_RAG_X, SPAWN_RAG_Y, SPAWN_RAG_Z, SPAWN_RAG_O, true);
+                me->CastSpell(me, SPELL_TELEPORT_VISUAL, false);
                 me->SetPosition(847.636, -814.667725, -229.79, 1.7, true);
                 pInstance->SetData(DATA_SUMMON_RAGNAROS, IN_PROGRESS);
                 break;
@@ -204,13 +215,13 @@ struct TRINITY_DLL_DECL boss_majordomoAI : public BossAI
 
         if(pInstance->GetData(DATA_MAJORDOMO_EXECUTUS_EVENT) == DONE && pInstance->GetData(DATA_SUMMON_RAGNAROS) == NOT_STARTED)
         {
-            if (Teleport_Timer <= diff)
+            if (TeleportVisual_Timer <= diff)
             {
                 DoAction(4);
-                Teleport_Timer = 1000000;
+                TeleportVisual_Timer = 1000000;
             }
             else
-                Teleport_Timer -= diff;
+                TeleportVisual_Timer -= diff;
             return;
         }
 
@@ -244,6 +255,19 @@ struct TRINITY_DLL_DECL boss_majordomoAI : public BossAI
         {
             DoCast(m_creature,SPELL_AEGIS);
         }
+
+        //Teleport
+        if (Teleport_Timer <= diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_TELEPORT), true))
+            {
+                ForceSpellCast(target, SPELL_TELEPORT, DONT_INTERRUPT, false, true);
+                target->SetPosition(736.767456, -1176.591797, -118.948753, 0, true);
+                ((Player*)target)->TeleportTo(me->GetMapId(), 736.767456, -1176.591797, -118.948753, 0);
+                Teleport_Timer = 20000;
+            }
+        }
+        else Teleport_Timer -= diff;
 
         //MagicReflection_Timer
         if (MagicReflection_Timer <= diff)
@@ -313,14 +337,32 @@ struct TRINITY_DLL_DECL MCflamewakerAI : public ScriptedAI
 {
     MCflamewakerAI(Creature *c) : ScriptedAI(c)
     {
+        me->SetVisibility(VISIBILITY_OFF);
         me->SetReactState(REACT_PASSIVE);
     }
 
     Unit *owner;
+
+    void Reset()
+    {
+        me->SetVisibility(VISIBILITY_OFF);
+        me->SetReactState(REACT_PASSIVE);
+        me->AI()->EnterEvadeMode();
+        ScriptedAI::Reset();
+    }
+
     void EnterCombat(Unit *who)
     {
-        if(me->GetReactState() == REACT_AGGRESSIVE && owner && who)
-            ((Creature*)owner)->AI()->EnterCombat(who);
+        me->AI()->AttackStart(who);
+    }
+
+    void AttackStart(Unit *who)
+    {
+        if(me->GetReactState() == REACT_AGGRESSIVE)
+            ScriptedAI::AttackStart(who);
+        else if(me->GetReactState() == REACT_PASSIVE && owner && who)
+            ((Creature*)owner)->AI()->AttackStart(who);
+
     }
 
     void IsSummonedBy(Unit *summoner)
@@ -347,7 +389,7 @@ struct TRINITY_DLL_DECL flamewaker_healerAI : public MCflamewakerAI
     {
         ShadownBolt_Timer = 0;
         ShadownShock_Timer = 8000;
-        ScriptedAI::Reset();
+        MCflamewakerAI::Reset();
     }
 
     void UpdateAI(const uint32 diff)
@@ -360,7 +402,7 @@ struct TRINITY_DLL_DECL flamewaker_healerAI : public MCflamewakerAI
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_SHADOW_BOLT), true))
             {
                 AddSpellToCast(target, SPELL_SHADOW_BOLT, false);
-                ShadownBolt_Timer = 500;
+                ShadownBolt_Timer = 1000;
             }
         }
         else ShadownBolt_Timer -= diff;
@@ -397,7 +439,7 @@ struct TRINITY_DLL_DECL flamewaker_eliteAI : public MCflamewakerAI
         BlastWave_Timer = 6000;
         FireBlast_Timer = 3000;
         Fireball_Timer = 0;
-        ScriptedAI::Reset();
+        MCflamewakerAI::Reset();
     }
 
     void UpdateAI(const uint32 diff)
