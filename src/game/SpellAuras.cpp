@@ -5044,9 +5044,13 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
                 // Dmg/tick = $AP*min(0.01*$cp, 0.03) [Like Rip: only the first three CP increase the contribution from AP]
                 if (apply && !loading && caster && caster->GetTypeId() == TYPEID_PLAYER)
                 {
+                    float attackPower = caster->GetTotalAttackPowerValue(BASE_ATTACK) + m_target->GetMeleeApAttackerBonus();
+                    if (m_target->GetTypeId() == TYPEID_UNIT)
+                        attackPower += caster->GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_MELEE_ATTACK_POWER_VERSUS, ((Creature*)m_target)->GetCreatureTypeMask());
+
                     uint8 cp = ((Player*)caster)->GetComboPoints();
                     if (cp > 3) cp = 3;
-                    m_modifier.m_amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * cp / 100);
+                    m_modifier.m_amount += int32(attackPower * cp / 100);
                 }
                 return;
             }
