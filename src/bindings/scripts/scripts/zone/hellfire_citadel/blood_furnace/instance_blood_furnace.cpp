@@ -126,6 +126,9 @@ struct TRINITY_DLL_DECL instance_blood_furnace : public ScriptedInstance
 
                 MakerEncounter = data;
                 break;
+
+            if (data == DONE)
+                SaveToDB();
         }
     }
 
