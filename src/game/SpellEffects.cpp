@@ -706,7 +706,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
         if (attackPowerCoefficient)
         {
             float attackPower = m_caster->GetTotalAttackPowerValue(BASE_ATTACK) + unitTarget->GetMeleeApAttackerBonus();
-            attackPower += m_caster->GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_MELEE_ATTACK_POWER_VERSUS, unitTarget->GetCreatureTypeMask());
+            attackPower += m_caster->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_MELEE_ATTACK_POWER_VERSUS, unitTarget->GetCreatureTypeMask());
 
             damage += attackPowerCoefficient * attackPower;
         }
@@ -714,7 +714,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
         if (rangedAttackPowerCoefficient)
         {
             float attackPower = m_caster->GetTotalAttackPowerValue(RANGED_ATTACK) + unitTarget->GetTotalAuraModifier(SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS);
-            attackPower += m_caster->GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_RANGED_ATTACK_POWER_VERSUS, unitTarget->GetCreatureTypeMask());
+            attackPower += m_caster->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_RANGED_ATTACK_POWER_VERSUS, unitTarget->GetCreatureTypeMask());
 
             damage += rangedAttackPowerCoefficient * attackPower;
         }
