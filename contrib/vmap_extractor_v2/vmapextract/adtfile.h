@@ -121,10 +121,10 @@ public:
 
     //uint32 wmo_count;
 /*
-const mcell& Getmcell() const
-{
-return Mcell;
-}
+    const mcell& Getmcell() const
+    {
+        return Mcell;
+    }
 */
 private:
     //size_t mcnk_offsets[256], mcnk_sizes[256];

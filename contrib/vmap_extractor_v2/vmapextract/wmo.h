@@ -92,7 +92,7 @@ public:
     int mopy_size,moba_size;
     int LiquEx_size;
     unsigned int nVertices; // number when loaded
-    int nTriangles; // number when loaded
+    int nTriangles;         // number when loaded
     char *MOPY;
     uint16 *MOVI;
     uint16 *MoviEx;

@@ -1178,6 +1178,7 @@ void World::LoadConfigSettings(bool reload)
     VMAP::VMapFactory::createOrGetVMapManager()->setHeightonmaps(heightMaps.c_str());
     VMAP::VMapFactory::createOrGetVMapManager()->setPosCollisiononmaps(posCollisionMaps.c_str());
     VMAP::VMapFactory::preventSpellsFromBeingTestedForLoS(ignoreSpellIds.c_str());
+    m_configs[CONFIG_VMAP_INDOOR_CHECK] = sConfig.GetBoolDefault("vmap.enableIndoorCheck", true);
 
     sLog.outString("WORLD: VMap support included. \nLineOfSight on maps: %s \nheight on maps: %s \npos collision on maps: %s",losMaps.c_str(), heightMaps.c_str(), posCollisionMaps.c_str());
     sLog.outString("WORLD: VMap data directory is: %svmaps",m_dataPath.c_str());

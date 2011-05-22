@@ -112,11 +112,11 @@ struct ModelVertex {
 
 struct ModelView {
     uint32 nIndex, ofsIndex; // Vertices in this model (index into vertices[])
-    uint32 nTris, ofsTris; // indices
+    uint32 nTris, ofsTris;  // indices
     uint32 nProps, ofsProps; // additional vtx properties
-    uint32 nSub, ofsSub; // materials/renderops/submeshes
-    uint32 nTex, ofsTex; // material properties/textures
-    int32 lod; // LOD bias?
+    uint32 nSub, ofsSub;    // materials/renderops/submeshes
+    uint32 nTex, ofsTex;    // material properties/textures
+    int32 lod;              // LOD bias?
 };
 
 #pragma pack(pop)

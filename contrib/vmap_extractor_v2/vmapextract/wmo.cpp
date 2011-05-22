@@ -74,46 +74,46 @@ bool WMORoot::open()
             break;
         }
         /*
-else if (!strcmp(fourcc,"MOTX"))
-{
-}
-else if (!strcmp(fourcc,"MOMT"))
-{
-}
-else if (!strcmp(fourcc,"MOGN"))
-{
-}
-else if (!strcmp(fourcc,"MOGI"))
-{
-}
-else if (!strcmp(fourcc,"MOLT"))
-{
-}
-else if (!strcmp(fourcc,"MODN"))
-{
-}
-else if (!strcmp(fourcc,"MODS"))
-{
-}
-else if (!strcmp(fourcc,"MODD"))
-{
-}
-else if (!strcmp(fourcc,"MOSB"))
-{
-}
-else if (!strcmp(fourcc,"MOPV"))
-{
-}
-else if (!strcmp(fourcc,"MOPT"))
-{
-}
-else if (!strcmp(fourcc,"MOPR"))
-{
-}
-else if (!strcmp(fourcc,"MFOG"))
-{
-}
-*/
+        else if (!strcmp(fourcc,"MOTX"))
+        {
+        }
+        else if (!strcmp(fourcc,"MOMT"))
+        {
+        }
+        else if (!strcmp(fourcc,"MOGN"))
+        {
+        }
+        else if (!strcmp(fourcc,"MOGI"))
+        {
+        }
+        else if (!strcmp(fourcc,"MOLT"))
+        {
+        }
+        else if (!strcmp(fourcc,"MODN"))
+        {
+        }
+        else if (!strcmp(fourcc,"MODS"))
+        {
+        }
+        else if (!strcmp(fourcc,"MODD"))
+        {
+        }
+        else if (!strcmp(fourcc,"MOSB"))
+        {
+        }
+        else if (!strcmp(fourcc,"MOPV"))
+        {
+        }
+        else if (!strcmp(fourcc,"MOPT"))
+        {
+        }
+        else if (!strcmp(fourcc,"MOPR"))
+        {
+        }
+        else if (!strcmp(fourcc,"MFOG"))
+        {
+        }
+        */
         f.seek((int)nextpos);
     }
     f.close ();
@@ -225,12 +225,12 @@ bool WMOGroup::open()
             f.read(LiquBytes, nLiquBytes);
 
             /* std::ofstream llog("Buildings/liquid.log", ios_base::out | ios_base::app);
-llog << filename;
-llog << "\nbbox: " << bbcorn1[0] << ", " << bbcorn1[1] << ", " << bbcorn1[2] << " | " << bbcorn2[0] << ", " << bbcorn2[1] << ", " << bbcorn2[2];
-llog << "\nlpos: " << hlq->pos_x << ", " << hlq->pos_y << ", " << hlq->pos_z;
-llog << "\nx-/yvert: " << hlq->xverts << "/" << hlq->yverts << " size: " << size << " expected size: " << 30 + hlq->xverts*hlq->yverts*8 + 
-hlq->xtiles*hlq->ytiles << std::endl;
-llog.close(); */
+            llog << filename;
+            llog << "\nbbox: " << bbcorn1[0] << ", " << bbcorn1[1] << ", " << bbcorn1[2] << " | " << bbcorn2[0] << ", " << bbcorn2[1] << ", " << bbcorn2[2];
+            llog << "\nlpos: " << hlq->pos_x << ", " << hlq->pos_y << ", " << hlq->pos_z;
+            llog << "\nx-/yvert: " << hlq->xverts << "/" << hlq->yverts << " size: " << size << " expected size: " << 30 + hlq->xverts*hlq->yverts*8 +
+            hlq->xtiles*hlq->ytiles << std::endl;
+            llog.close(); */
         }
         f.seek((int)nextpos);
     }
@@ -521,14 +521,14 @@ WMOInstance::WMOInstance(MPQFile &f,const char* WmoInstName, uint32 mapID, uint3
     fwrite(WmoInstName, sizeof(char), nlen, pDirfile);
 
     /* fprintf(pDirfile,"%s/%s %f,%f,%f_%f,%f,%f 1.0 %d %d %d,%d %d\n",
-MapName,
-WmoInstName,
-(float) x, (float) pos.y, (float) z,
-(float) rot.x, (float) rot.y, (float) rot.z,
-nVertices,
-realx1, realy1,
-realx2, realy2
-); */
+    MapName,
+    WmoInstName,
+    (float) x, (float) pos.y, (float) z,
+    (float) rot.x, (float) rot.y, (float) rot.z,
+    nVertices,
+    realx1, realy1,
+    realx2, realy2
+    ); */
 
     // fclose(dirfile);
 }
