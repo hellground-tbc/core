@@ -413,7 +413,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                 // Bloodthirst
                 if (m_spellInfo->SpellFamilyFlags & 0x40000000000LL)
                 {
-                    attackPowerCoefficient +=  float(damage / 100); // Base damage shows us percentage of AP that need be added
+                    attackPowerCoefficient += float(damage) *0.01f; // Base damage shows us percentage of AP that need be added
                     damage = 0; // clear this, we have now how much AP should be taken
                 }
                 // Shield Slam
@@ -422,7 +422,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                 // Victory Rush
                 else if (m_spellInfo->SpellFamilyFlags & 0x10000000000LL)
                 {
-                    attackPowerCoefficient += float(damage / 100); // Base damage shows us percentage of AP that need be added
+                    attackPowerCoefficient += float(damage) *0.01f; // Base damage shows us percentage of AP that need be added
                     damage = 0; // clear this, we have now how much AP should be taken
                     m_caster->ModifyAuraState(AURA_STATE_WARRIOR_VICTORY_RUSH, false);
                 }
