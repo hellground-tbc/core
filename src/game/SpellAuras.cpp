@@ -2040,7 +2040,41 @@ void Aura::TriggerSpell()
                     // Cat Form
                     // trigger_spell_id not set and unknown effect triggered in this case, ignoring for while
                     case 768:
+                    {
+                        if (m_target->GetTypeId() == TYPEID_PLAYER)
+                        {
+                            const PlayerSpellMap& sp_list = ((Player *)m_target)->GetSpellMap();
+                            for (PlayerSpellMap::const_iterator itr = sp_list.begin(); itr != sp_list.end(); ++itr)
+                            {
+                                if (itr->second.state == PLAYERSPELL_REMOVED)
+                                    continue;
+
+                                SpellEntry const *spellInfo = sSpellStore.LookupEntry(itr->first);
+                                if (!spellInfo || !(spellInfo->Attributes & ((1<<6) | (1<<7))))
+                                    continue;
+
+                                if (!spellInfo->Stances & (1<<((Player *)m_target)->m_form))
+                                    continue;
+
+                                bool outdoor = m_target->GetMap()->IsOutdoors(m_target->GetPositionX(), m_target->GetPositionY(), m_target->GetPositionZ());
+                                if (outdoor && spellInfo->Attributes & SPELL_ATTR_OUTDOORS_ONLY)
+                                {
+                                    if (m_target->HasAura(spellInfo->Id, 0))
+                                        continue;
+                                    else
+                                        m_target->CastSpell(m_target, spellInfo->Id, true, NULL, this);
+                                }
+                                else if (!outdoor && spellInfo->Attributes & SPELL_ATTR_INDOORS_ONLY)
+                                {
+                                    if (m_target->HasAura(spellInfo->Id, 0))
+                                        continue;
+                                    else
+                                        m_target->CastSpell(m_target, spellInfo->Id, true, NULL, this);
+                                }
+                            }
+                        }
                         return;
+                    }
                     // Frenzied Regeneration
                     case 22842:
                     case 22895:
@@ -6172,6 +6206,13 @@ void Aura::HandleShapeshiftBoosts(bool apply)
 
                 SpellEntry const *spellInfo = sSpellStore.LookupEntry(itr->first);
                 if (!spellInfo || !(spellInfo->Attributes & ((1<<6) | (1<<7))))
+                    continue;
+
+                bool outdoor = m_target->GetMap()->IsOutdoors(m_target->GetPositionX(), m_target->GetPositionY(), m_target->GetPositionZ());
+                if (outdoor && spellInfo->Attributes & SPELL_ATTR_INDOORS_ONLY)
+                    continue;
+
+                if (!outdoor && spellInfo->Attributes & SPELL_ATTR_OUTDOORS_ONLY)
                     continue;
 
                 if (spellInfo->Stances & (1<<form))
