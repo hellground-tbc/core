@@ -1227,8 +1227,8 @@ inline bool IsOutdoorWMO(uint32 mogpFlags, uint32 mapid, int32 adtId, int32 root
             return false;
     }
 
-    //sLog.outString("flags: %u", mogpFlags);
-    outdoor = (mogpFlags & 0x8000) || (mapid > 530 && mogpFlags & 0x8);
+    MapEntry const* mapEntry = sMapStore.LookupEntry(mapid);
+    outdoor = (mogpFlags & 0x8000) || (mapEntry->Expansion() && mogpFlags & 0x8);
 
     if (wmoEntry)
     {
