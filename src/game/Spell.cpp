@@ -3100,7 +3100,7 @@ void Spell::SendSpellGo()
 
     // triggered spells with spell visual != 0 and not auto shot
     if ((m_IsTriggeredSpell && (m_spellInfo->AttributesEx4 & SPELL_ATTR_EX4_AUTOSHOT) == 0) || m_triggeredByAuraSpell)
-        castFlags |= CAST_FLAG_UNKNOWN0;
+        castFlags |= CAST_FLAG_HIDDEN_COMBATLOG;
 
     if (IsRangedSpell())
         castFlags |= CAST_FLAG_AMMO;                        // arrows/bullets visual
