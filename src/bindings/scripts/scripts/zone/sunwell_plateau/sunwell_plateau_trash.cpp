@@ -7,7 +7,7 @@
 
 /* ScriptData
 SDName: Sunwell_Plateau_Trash
-SD%Complete: 0% (0/33)
+SD%Complete: 27% (9/33)
 SDComment: Trash NPCs divided by to boss links
 SDCategory: Sunwell Plateau
 EndScriptData */
