@@ -2633,6 +2633,10 @@ void Spell::EffectTriggerSpell(uint32 i)
             m_caster->CastCustomSpell((Unit*)NULL, triggered_spell_id, &damage, NULL, NULL, true, m_CastItem, NULL, m_originalCasterGUID);
             return;
         }
+        // Activate Crystal Ward
+        case 44969:
+            unitTarget = m_caster;
+            break;
     }
 
     // normal case
