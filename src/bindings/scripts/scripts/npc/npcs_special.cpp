@@ -23,24 +23,26 @@ EndScriptData
 */
 
 /* ContentData
-npc_chicken_cluck       100%    support for quest 3861 (Cluck!)
-npc_dancing_flames      100%    midsummer event NPC
-npc_guardian            100%    guardianAI used to prevent players from accessing off-limits areas. Not in use by SD2
-npc_injured_patient     100%    patients for triage-quests (6622 and 6624)
-npc_doctor              100%    Gustaf Vanhowzen and Gregory Victor, quest 6622 and 6624 (Triage)
-npc_mount_vendor        100%    Regular mount vendors all over the world. Display gossip if player doesn't meet the requirements to buy
-npc_rogue_trainer       80%     Scripted trainers, so they are able to offer item 17126 for class quest 6681
-npc_sayge               100%    Darkmoon event fortune teller, buff player based on answers given
-npc_snake_trap_serpents 80%     AI for snakes that summoned by Snake Trap
-npc_flight_master       100%    AI for flight masters.
-npc_lazy_peon                   AI for peons for quest 5441 (Lazy Peons)
-npc_mojo                %       AI for companion Mojo (summoned by item: 33993)
-npc_master_omarion      100%    Master Craftsman Omarion, patterns menu
-npc_lorekeeper_lydros   100%    Dialogue (story) + add A Dull and Flat Elven Blade
+npc_chicken_cluck           100%    support for quest 3861 (Cluck!)
+npc_dancing_flames          100%    midsummer event NPC
+npc_guardian                100%    guardianAI used to prevent players from accessing off-limits areas. Not in use by SD2
+npc_injured_patient         100%    patients for triage-quests (6622 and 6624)
+npc_doctor                  100%    Gustaf Vanhowzen and Gregory Victor, quest 6622 and 6624 (Triage)
+npc_mount_vendor            100%    Regular mount vendors all over the world. Display gossip if player doesn't meet the requirements to buy
+npc_rogue_trainer           80%     Scripted trainers, so they are able to offer item 17126 for class quest 6681
+npc_sayge                   100%    Darkmoon event fortune teller, buff player based on answers given
+npc_snake_trap_serpents     80%     AI for snakes that summoned by Snake Trap
+npc_flight_master           100%    AI for flight masters.
+npc_lazy_peon               100%    AI for peons for quest 5441 (Lazy Peons)
+npc_mojo                    100%    AI for companion Mojo (summoned by item: 33993)
+npc_master_omarion          100%    Master Craftsman Omarion, patterns menu
+npc_lorekeeper_lydros       100%    Dialogue (story) + add A Dull and Flat Elven Blade
+npc_crashin_thrashin_robot  100%    AI for Crashin' Thrashin' Robot from engineering
 EndContentData */
 
 #include "precompiled.h"
 #include "Totem.h"
+#include <list>
 
 /*########
 # npc_chicken_cluck
@@ -1704,13 +1706,13 @@ struct TRINITY_DLL_DECL npc_elemental_guardianAI : public ScriptedAI
         if(m_checkTimer < diff)
         {
             Creature *pTotem = m_creature->GetCreature(*m_creature, m_creature->GetOwnerGUID());
-            
+
             if(!me->getVictim() && pTotem)
             {
                 if(!m_creature->hasUnitState(UNIT_STAT_FOLLOW))
                     m_creature->GetMotionMaster()->MoveFollow(pTotem, 2.0f, M_PI);
 
-                if(Unit *pOwner = pTotem->GetOwner()) 
+                if(Unit *pOwner = pTotem->GetOwner())
                 {
                     if(pOwner->GetTypeId() != TYPEID_PLAYER || !pOwner->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_SANCTUARY))
                     {
@@ -1789,7 +1791,7 @@ isrevered = false;
     if(isrevered)
     {
       player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION0    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-      player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION1    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2); 
+      player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION1    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
     if(isexalted)
     {
       player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION2    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
@@ -1823,7 +1825,7 @@ isrevered = false;
     {
       player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION9    , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 10);
       player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION10   , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 11);
-    if(isexalted) 
+    if(isexalted)
     {
       player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION11   , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 12);
       player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_OMARION12   , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 13);
@@ -1837,7 +1839,7 @@ return true;
 bool GossipSelect_npc_master_omarion(Player *player, Creature *_Creature, uint32 sender, uint32 action )
 {
 switch (action)
-{    
+{
       case GOSSIP_ACTION_INFO_DEF + 1:         // Icebane Bracers
         player->learnSpell( 28244 );
         break;
@@ -1867,7 +1869,7 @@ switch (action)
         break;
       case GOSSIP_ACTION_INFO_DEF + 10:        // Glacial Wrists
         player->learnSpell( 28209 );
-        break; 
+        break;
       case GOSSIP_ACTION_INFO_DEF + 11:        // Glacial Gloves
         player->learnSpell( 28205 );
         break;
@@ -1898,7 +1900,7 @@ bool GossipHello_npc_lorekeeper_lydros(Player *player, Creature *_Creature)
         player->PrepareQuestMenu( _Creature->GetGUID() );
     if(player->GetQuestRewardStatus(7507) && !player->HasItemCount(18513,1))
         player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_LOREKEEPER1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1 );
-        
+
 player->SEND_GOSSIP_MENU(24999, _Creature->GetGUID());
 return true;
 }
@@ -1939,6 +1941,186 @@ bool GossipSelect_npc_lorekeeper_lydros(Player *player, Creature *_Creature, uin
             break;
     }
     return true;
+}
+
+
+/*########
+# npc_crashin_trashin_robot
+#########*/
+
+#define SPELL_MACHINE_GUN           42382
+#define SPELL_NET                   41580
+#define SPELL_ELECTRICAL            42372
+#define CRASHIN_TRASHIN_ROBOT_ID    17299
+
+struct TRINITY_DLL_DECL npc_crashin_trashin_robotAI : public ScriptedAI
+{
+    npc_crashin_trashin_robotAI(Creature *c) : ScriptedAI(c){}
+
+    uint32 machineGunTimer;
+    uint32 netTimer;
+    uint32 electricalTimer;
+    uint32 checkTimer;
+    uint32 moveTimer;
+    uint32 despawnTimer;
+
+    void Reset()
+    {
+        machineGunTimer = urand(1000, 3000);
+        netTimer = urand(10000, 20000);
+        electricalTimer = urand(5000, 35000);
+        checkTimer = 3000;
+        m_creature->SetDefaultMovementType(RANDOM_MOTION_TYPE);
+        m_creature->GetMotionMaster()->Initialize();
+        m_creature->GetMotionMaster()->Clear();
+        m_creature->GetMotionMaster()->MoveRandom(10.0);
+        moveTimer = urand(1000, 10000);
+        despawnTimer = 180000;
+    }
+
+    void EnterCombat(Unit *who)
+    {
+        checkTimer = 0;
+    }
+
+    std::list<Creature*> FindCrashinTrashinRobots()
+    {
+        std::list<Creature*> crashinTrashinRobots = DoFindAllCreaturesWithEntry(CRASHIN_TRASHIN_ROBOT_ID, 10.0);
+
+        for (std::list<Creature*>::iterator itr = crashinTrashinRobots.begin(); itr != crashinTrashinRobots.end();)
+        {
+            std::list<Creature*>::iterator tmpItr = itr;
+            ++itr;
+            if ((*tmpItr)->GetGUID() == me->GetGUID())
+            {
+                crashinTrashinRobots.erase(tmpItr);
+                break;
+            }
+        }
+
+        return crashinTrashinRobots;
+    }
+
+    void SpellHit(Unit * caster, const SpellEntry * spell)
+    {
+        if (m_creature->isInCombat() || !caster || !spell || caster->GetEntry() != CRASHIN_TRASHIN_ROBOT_ID)
+            return;
+
+        m_creature->SetInCombatWith(caster);
+        caster->SetInCombatWith(m_creature);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!m_creature->isAlive())
+            return;
+
+        if (despawnTimer < diff)
+        {
+            m_creature->Kill(m_creature, false);
+            return;
+        }
+        else
+            despawnTimer -= diff;
+
+        if (checkTimer)
+        {
+            if (checkTimer <= diff)
+            {
+                if (!(FindCrashinTrashinRobots().empty()))
+                    checkTimer = 0;
+                else
+                    checkTimer = 3000;
+            }
+            else
+                checkTimer -= diff;
+
+            return;
+        }
+
+        std::list<Creature*> otherCrashinTrashinRobots;
+        std::list<Creature*>::iterator itr;
+
+        if (moveTimer < diff)
+        {
+            if (!m_creature->HasAura(SPELL_NET, 0))
+                otherCrashinTrashinRobots = FindCrashinTrashinRobots();
+
+            if (!otherCrashinTrashinRobots.empty())
+            {
+                float x, y, z;
+                itr = otherCrashinTrashinRobots.begin();
+                advance(itr, rand()%otherCrashinTrashinRobots.size());
+                Creature * tmp = *(itr);
+
+                me->GetNearPoint(tmp, x, y, z, 0, 5.0f, (rand()%(int)(me->GetAngle(tmp) * 100))/100.0);
+                me->GetMotionMaster()->Clear();
+                me->GetMotionMaster()->MovePoint(0, x, y, z);
+            }
+
+            moveTimer = urand(5000, 15000);
+        }
+        else
+            moveTimer -= diff;
+
+        if (machineGunTimer < diff)
+        {
+            if (otherCrashinTrashinRobots.empty())
+                otherCrashinTrashinRobots = FindCrashinTrashinRobots();
+
+            if (!otherCrashinTrashinRobots.empty())
+            {
+                itr = otherCrashinTrashinRobots.begin();
+                advance(itr, rand()%otherCrashinTrashinRobots.size());
+                AddSpellToCast(*itr, SPELL_MACHINE_GUN, false, true);
+            }
+
+            machineGunTimer = urand(500, 2000);
+        }
+        else
+            machineGunTimer -= diff;
+
+        if (netTimer < diff)
+        {
+            if (otherCrashinTrashinRobots.empty())
+                otherCrashinTrashinRobots = FindCrashinTrashinRobots();
+
+            if (!otherCrashinTrashinRobots.empty())
+            {
+                itr = otherCrashinTrashinRobots.begin();
+                advance(itr, rand()%otherCrashinTrashinRobots.size());
+                AddSpellToCast(*itr, SPELL_NET, false, true);
+            }
+
+            netTimer = urand(10000, 30000);
+        }
+        else
+            netTimer -= diff;
+
+        if (electricalTimer < diff)
+        {
+            if (otherCrashinTrashinRobots.empty())
+                otherCrashinTrashinRobots = FindCrashinTrashinRobots();
+
+            if (!otherCrashinTrashinRobots.empty())
+            {
+                itr = otherCrashinTrashinRobots.begin();
+                advance(itr, rand()%otherCrashinTrashinRobots.size());
+                AddSpellToCast(*itr, SPELL_ELECTRICAL, false, true);
+            }
+
+            electricalTimer = urand(5000, 45000);
+        }
+        else
+            electricalTimer -= diff;
+
+        CastNextSpellIfAnyAndReady();
+    }
+};
+
+CreatureAI* GetAI_npc_crashin_trashin_robot(Creature* pCreature)
+{
+    return new npc_crashin_trashin_robotAI(pCreature);
 }
 
 void AddSC_npcs_special()
@@ -2049,17 +2231,21 @@ void AddSC_npcs_special()
     newscript->Name="npc_elemental_guardian";
     newscript->GetAI = &GetAI_npc_elemental_guardian;
     newscript->RegisterSelf();
-    
+
     newscript = new Script;
     newscript->Name="npc_master_omarion";
     newscript->pGossipHello =  &GossipHello_npc_master_omarion;
     newscript->pGossipSelect = &GossipSelect_npc_master_omarion;
     newscript->RegisterSelf();
-    
+
     newscript = new Script;
     newscript->Name="npc_lorekeeper_lydros";
     newscript->pGossipHello =  &GossipHello_npc_lorekeeper_lydros;
     newscript->pGossipSelect = &GossipSelect_npc_lorekeeper_lydros;
     newscript->RegisterSelf();
-}
 
+    newscript = new Script;
+    newscript->Name="npc_crashin_trashin_robot";
+    newscript->GetAI = &GetAI_npc_crashin_trashin_robot;
+    newscript->RegisterSelf();
+}
