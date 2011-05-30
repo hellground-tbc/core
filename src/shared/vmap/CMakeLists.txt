@@ -1,6 +1,11 @@
 
 ########### next target ###############
 
+remove_definitions(
+-ffast-math
+-funsafe-math-optimizations
+)
+
 SET(vmaps_STAT_SRCS
    BIH.h
    BIH.cpp

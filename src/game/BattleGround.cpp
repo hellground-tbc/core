@@ -1560,7 +1560,7 @@ const char *BattleGround::GetTrinityString(int32 entry)
     return objmgr.GetTrinityStringForDBCLocale(entry);
 }
 
-bool BattleGround::HandlePlayerUnderMap(Player * plr);
+bool BattleGround::HandlePlayerUnderMap(Player * plr)
 {
     WorldSafeLocsEntry const *graveyard = GetClosestGraveYard(plr->GetPositionX(), plr->GetPositionY(), plr->GetPositionZ(), plr->GetTeam());
     if (graveyard)
@@ -1569,10 +1569,10 @@ bool BattleGround::HandlePlayerUnderMap(Player * plr);
         if (plr->isDead())                                        // not send if alive, because it used in TeleportTo()
         {
             WorldPacket data(SMSG_DEATH_RELEASE_LOC, 4*4);  // show spirit healer position on minimap
-            data << ClosestGrave->map_id;
-            data << ClosestGrave->x;
-            data << ClosestGrave->y;
-            data << ClosestGrave->z;
+            data << graveyard->map_id;
+            data << graveyard->x;
+            data << graveyard->y;
+            data << graveyard->z;
             plr->GetSession()->SendPacket(&data);
         }
         return true;

@@ -25,6 +25,10 @@ add_definitions("-O3
 -fno-math-errno
 -funsafe-math-optimizations
 -funroll-loops
+-m64
+-pipe
+-DFD_SETSIZE=4096
+-frename-registers
 ")
 
 OPTION(DO_MYSQL "With MySQL support" 1)
