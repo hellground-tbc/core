@@ -1560,6 +1560,26 @@ const char *BattleGround::GetTrinityString(int32 entry)
     return objmgr.GetTrinityStringForDBCLocale(entry);
 }
 
+bool BattleGround::HandlePlayerUnderMap(Player * plr);
+{
+    WorldSafeLocsEntry const *graveyard = GetClosestGraveYard(plr->GetPositionX(), plr->GetPositionY(), plr->GetPositionZ(), plr->GetTeam());
+    if (graveyard)
+    {
+        plr->TeleportTo(graveyard->map_id, graveyard->x, graveyard->y, graveyard->z, plr->GetOrientation());
+        if (plr->isDead())                                        // not send if alive, because it used in TeleportTo()
+        {
+            WorldPacket data(SMSG_DEATH_RELEASE_LOC, 4*4);  // show spirit healer position on minimap
+            data << ClosestGrave->map_id;
+            data << ClosestGrave->x;
+            data << ClosestGrave->y;
+            data << ClosestGrave->z;
+            plr->GetSession()->SendPacket(&data);
+        }
+        return true;
+    }
+    return false;
+}
+
 /*
 important notice:
 buffs aren't spawned/despawned when players captures anything
