@@ -1185,7 +1185,7 @@ void Aura::SetAuraFlag(uint32 slot, bool add)
         flags |= AFLAG_EFF_INDEX_0;
         if(GetCasterGUID() == m_target->GetGUID())
             flags |= AFLAG_NOT_GUID;
-        if (m_maxduration > 0)
+        if (m_maxduration > 0 && !(GetSpellProto()->AttributesEx5 & SPELL_ATTR_EX5_HIDE_DURATION))
             flags |= AFLAG_HAS_DURATION;
 
         val |= flags << byte;
