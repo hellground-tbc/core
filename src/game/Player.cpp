@@ -6279,6 +6279,21 @@ void Player::UpdatePvpTitles()
     }
 }
 
+void Player::UpdateBgTitle()
+{
+    uint64 titles = GetUInt64Value(PLAYER__FIELD_KNOWN_TITLES);
+
+    uint32 index = 0;
+
+    if (!HasTitle(PLAYER_TITLE_CONQUEROR) && 
+        ((m_team == HORDE && GetReputationRank(729) == REP_EXALTED && GetReputationRank(510) == REP_EXALTED && GetReputationRank(889) == REP_EXALTED) || 
+        (m_team == ALLIANCE && GetReputationRank(730) == REP_EXALTED && GetReputationRank(509) == REP_EXALTED && GetReputationRank(890) == REP_EXALTED)))
+    {
+        SetUInt64Value(PLAYER__FIELD_KNOWN_TITLES, titles | PLAYER_TITLE_CONQUEROR);
+        SetUInt32Value(PLAYER_CHOSEN_TITLE, index);
+    }
+}
+
 void Player::UpdateHonorFields()
 {
     /// called when rewarding honor and at each save

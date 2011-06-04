@@ -1518,6 +1518,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         void UpdateArea(uint32 newArea);
 
         void UpdatePvpTitles();
+        void UpdateBgTitle();
 
         void UpdateZoneDependentAuras(uint32 zone_id);    // zones
         void UpdateAreaDependentAuras(uint32 area_id);    // subzones
