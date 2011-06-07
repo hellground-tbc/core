@@ -7407,9 +7407,9 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                 // Flametongue Weapon support
                 switch (pEnchant->ID)
                 {
-                    case 3:    spell_id =  8026; break; // Rank1
+                    case 3:    spell_id =  8029; break; // Rank1
                     case 4:    spell_id =  8028; break; // Rank2
-                    case 5:    spell_id =  8029; break; // Rank3
+                    case 5:    spell_id =  8026; break; // Rank3
                     case 523:  spell_id = 10445; break; // Rank4
                     case 1665: spell_id = 16343; break; // Rank5
                     case 1666: spell_id = 16344; break; // Rank6
