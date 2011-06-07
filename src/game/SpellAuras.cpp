@@ -7550,9 +7550,7 @@ void Aura::HandlePreventFleeing(bool apply, bool Real)
 
     Unit::AuraList const& fearAuras = m_target->GetAurasByType(SPELL_AURA_MOD_FEAR);
     if (!fearAuras.empty())
-    {
-        m_target->SetControlled(!apply, UNIT_STAT_FLEEING);
-    }
+        m_target->SetFeared(!apply);
 }
 
 void Aura::HandleManaShield(bool apply, bool Real)
