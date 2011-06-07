@@ -1313,8 +1313,10 @@ struct ChainHealingOrder : public std::binary_function<const Unit*, const Unit*,
             else
                 return 20000 - Target->GetMaxHealth() + Target->GetHealth();
         }
-        else
+        else if(!((Creature*)Target)->isTotem())
             return 40000 - Target->GetMaxHealth() + Target->GetHealth();
+        else
+            return 50000 - Target->GetMaxHealth() + Target->GetHealth();
     }
 };
 
