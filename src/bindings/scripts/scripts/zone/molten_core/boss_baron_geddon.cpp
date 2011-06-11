@@ -30,6 +30,7 @@ EndScriptData */
 #define SPELL_IGNITEMANA            19659
 #define SPELL_LIVINGBOMB            20475
 #define SPELL_ARMAGEDDOM            20478 //20479 triggered
+#define SPELL_SUMMONPLAYER          20477 //not implemented
 
 struct TRINITY_DLL_DECL boss_baron_geddonAI : public ScriptedAI
 {
@@ -46,7 +47,7 @@ struct TRINITY_DLL_DECL boss_baron_geddonAI : public ScriptedAI
 
     void Reset()
     {
-        Inferno_Timer = 45000;                              //These times are probably wrong
+        Inferno_Timer = 10000;
         IgniteMana_Timer = 30000;
         LivingBomb_Timer = 35000;
         Armageddon_Timer = 0;
@@ -72,6 +73,9 @@ struct TRINITY_DLL_DECL boss_baron_geddonAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
+        if (m_creature->HasAura(19695, 1))
+            return;
+
         //If we are <2% hp cast Armageddom
         if (m_creature->GetHealth()*100 / m_creature->GetMaxHealth() <= 2 && Armageddon_Timer < diff)
         {
@@ -88,8 +92,8 @@ struct TRINITY_DLL_DECL boss_baron_geddonAI : public ScriptedAI
         //Inferno_Timer
         if (Inferno_Timer < diff)
         {
-            DoCast(m_creature,SPELL_INFERNO);
-            Inferno_Timer = 45000;
+            AddSpellToCast(m_creature, SPELL_INFERNO, false);
+            Inferno_Timer = 22000;
         }else Inferno_Timer -= diff;
 
         //IgniteMana_Timer
@@ -110,6 +114,7 @@ struct TRINITY_DLL_DECL boss_baron_geddonAI : public ScriptedAI
             LivingBomb_Timer = 35000;
         }else LivingBomb_Timer -= diff;
 
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };

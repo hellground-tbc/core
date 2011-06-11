@@ -1445,8 +1445,13 @@ void Aura::TriggerSpell()
 //                    case 18347: break;
 //                    // Ranshalla Waiting
 //                    case 18953: break;
-//                    // Inferno
-//                    case 19695: break;
+                    // Inferno
+                    case 19695: 
+                    {
+                        int32 damage = 500 * (m_tickNumber%2 == 0 ? m_tickNumber/2 : (m_tickNumber + 1)/2);
+                        m_target->CastCustomSpell(m_target, 19698, &damage, NULL, NULL, true, 0, this, originalCasterGUID);
+                        return;
+                    }
 //                    // Frostwolf Muzzle DND
 //                    case 21794: break;
 //                    // Alterac Ram Collar DND
