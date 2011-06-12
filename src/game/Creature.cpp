@@ -1956,6 +1956,10 @@ bool Creature::IsVisibleInGridForPlayer(Player const* pl) const
     if (isSpiritService())
         return true;
 
+    // Dead player can see ghost creatures
+    if (GetCreatureInfo()->type_flags & CREATURE_TYPEFLAGS_GHOST)
+        return true;
+
     // and not see any other
     return false;
 }

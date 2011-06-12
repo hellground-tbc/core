@@ -2176,7 +2176,7 @@ Creature* Player::GetNPCIfCanInteractWith(uint64 guid, uint32 npcflagmask)
         return NULL;
 
     // player check
-    if (!CanInteractWithNPCs(!unit->isSpiritService()))
+    if (!CanInteractWithNPCs(!unit->isSpiritService() && !(unit->GetCreatureInfo()->type_flags & CREATURE_TYPEFLAGS_GHOST)))
         return NULL;
 
     if (IsHostileTo(unit))
