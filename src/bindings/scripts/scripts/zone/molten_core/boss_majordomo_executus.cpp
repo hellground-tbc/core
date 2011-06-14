@@ -387,7 +387,7 @@ struct TRINITY_DLL_DECL flamewaker_healerAI : public MCflamewakerAI
 
     void Reset()
     {
-        ShadownBolt_Timer = 0;
+        ShadownBolt_Timer = 1000;
         ShadownShock_Timer = 8000;
         MCflamewakerAI::Reset();
     }
@@ -402,7 +402,7 @@ struct TRINITY_DLL_DECL flamewaker_healerAI : public MCflamewakerAI
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_SHADOW_BOLT), true))
             {
                 AddSpellToCast(target, SPELL_SHADOW_BOLT, false);
-                ShadownBolt_Timer = 1000;
+                ShadownBolt_Timer = 2000;
             }
         }
         else ShadownBolt_Timer -= diff;
@@ -410,7 +410,7 @@ struct TRINITY_DLL_DECL flamewaker_healerAI : public MCflamewakerAI
         if (ShadownShock_Timer <= diff)
         {
             AddSpellToCast(m_creature, SPELL_SHADOW_SHOCK, false);
-            ShadownShock_Timer = 15000;
+            ShadownShock_Timer = 9000;
         }
         else ShadownShock_Timer -= diff;
 
@@ -436,9 +436,9 @@ struct TRINITY_DLL_DECL flamewaker_eliteAI : public MCflamewakerAI
 
     void Reset()
     {
-        BlastWave_Timer = 6000;
-        FireBlast_Timer = 3000;
-        Fireball_Timer = 0;
+        BlastWave_Timer = 12000;
+        FireBlast_Timer = 5000;
+        Fireball_Timer = 1000;
         MCflamewakerAI::Reset();
     }
 
@@ -450,21 +450,21 @@ struct TRINITY_DLL_DECL flamewaker_eliteAI : public MCflamewakerAI
         if (BlastWave_Timer <= diff)
         {
             AddSpellToCast(m_creature, SPELL_BLASTWAVE, false);
-            BlastWave_Timer = 10000;
+            BlastWave_Timer = 12000;
         }
         else BlastWave_Timer -= diff;
 
         if (FireBlast_Timer <= diff)
         {
             AddSpellToCast(m_creature->getVictim(), SPELL_FIRE_BLAST, false);
-            FireBlast_Timer = urand(8000, 15000);
+            FireBlast_Timer = 15000;
         }
         else FireBlast_Timer -= diff;
 
         if (Fireball_Timer <= diff)
         {
             AddSpellToCast(m_creature->getVictim(), SPELL_FIREBALL, false);
-            Fireball_Timer = urand(5000, 35000);
+            Fireball_Timer = 8000;
         }
         else Fireball_Timer -= diff;
 
