@@ -52,7 +52,7 @@ void Reset()
         TCSpell = selectHighestRank(THUNDERCLAP_R1);
         BloodrageSpell = selectHighestRank(BLOODRAGE);
         DemoSpell = selectHighestRank(DEMORALIZING_R1);
-        
+
         TC_Timer = 3000+urand(0, 10000);
         Bloodrage_Timer = 3000+urand(0, 10000);
         Demo_Timer = 3000+urand(0, 10000);
@@ -128,11 +128,11 @@ void Reset()
 };
 
 #define AVENGING            31884
-#define CRUSADER_R1            35395
-#define CONSECRATION_R1        26573
-#define JUDGEMENT            20271
-#define HOLY_SHOCK_R1        20473
-#define FLASH_R1            19750
+#define CRUSADER_R1         35395
+#define CONSECRATION_R1     26573
+#define JUDGEMENT           20271
+#define HOLY_SHOCK_R1       20473
+#define FLASH_LIGHT_R1      19750
 
 struct PaladinAI: public PlayerAI
 {
@@ -147,7 +147,7 @@ void Reset()
         JudgementSpell = selectHighestRank(JUDGEMENT);
         if (!(ShockSpell = selectHighestRank(HOLY_SHOCK_R1)))
             shock=false;
-        FlashSpell = selectHighestRank(FLASH_R1);
+        FlashSpell = selectHighestRank(FLASH_LIGHT_R1);
 
         Avenging_Timer = urand (0, 35000);
         Crusader_Timer = 1000+urand(0, 6000);
@@ -240,7 +240,7 @@ struct WarlockAI: public PlayerAI
     SpellEntry const *NormalSpell;
 };
 
-#define DIREBEAR            9635                
+#define DIREBEAR            9635
 #define CAT                    3025
 #define MOONKIN                24905
 #define TREE                33891
@@ -334,7 +334,7 @@ void Reset()
     }
 
     void UpdateAI(const uint32 diff);
-    
+
     bool blade;
     uint32 Flurry_Timer;
     SpellEntry const *FlurrySpell;
@@ -396,7 +396,7 @@ struct ShamanAI: public PlayerAI
 
     uint32 Lightning_Timer;
     SpellEntry const *LightningSpell;
-    
+
 
     void UpdateAI(const uint32 diff);
 };
@@ -416,14 +416,14 @@ struct PriestAI: public PlayerAI
 
     void Reset()
     {
-        if (VampiricSpell = selectHighestRank(VAMPIRIC)) 
+        if (VampiricSpell = selectHighestRank(VAMPIRIC))
             vampiric = true;
 
-        if (!(DOTSpell = selectHighestRank(MINDFLY_R1))) 
-            DOTSpell = selectHighestRank(HOLY_FIRE_R1);   
+        if (!(DOTSpell = selectHighestRank(MINDFLY_R1)))
+            DOTSpell = selectHighestRank(HOLY_FIRE_R1);
 
         DmgSpell = selectHighestRank(SMITE_R1);
-        if (vampiric == true)       
+        if (vampiric == true)
             DmgSpell = selectHighestRank(MINDBLAST_R1);
 
         FlashSpell = selectHighestRank(FLASH_R1);
@@ -520,7 +520,7 @@ struct MageAI: public PlayerAI
 
     uint32 NormalSpell_Timer;
     SpellEntry const *NormalSpell;
-    
+
     bool Special;
     SpellEntry const *SpecialSpell;
 

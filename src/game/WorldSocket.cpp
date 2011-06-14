@@ -696,7 +696,8 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
                                 "mutetime, "        //9
                                 "locale, "          //10
                                 "speciallogs, "     //11
-                                "opcodesDisabled "  //12
+                                "opcodesDisabled, " //12
+                                "operatingSystem "  //13
                                 "FROM account "
                                 "WHERE username = '%s'",
                                 safe_account.c_str ());
@@ -715,6 +716,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
 
     Field* fields = result->Fetch ();
 
+    uint8 operatingSystem = fields[13].GetUInt8();
     uint8 expansion = fields[8].GetUInt8();
     uint32 world_expansion = sWorld.getConfig(CONFIG_EXPANSION);
     if (expansion > world_expansion)
@@ -879,6 +881,8 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
 
     m_Crypt.SetKey (&K);
     m_Crypt.Init ();
+
+    m_Session->InitWarden(&K, operatingSystem);
 
     // In case needed sometime the second arg is in microseconds 1 000 000 = 1 sec
     ACE_OS::sleep (ACE_Time_Value (0, 10000));

@@ -41,6 +41,8 @@
 #include "Language.h"                                       // for CMSG_CANCEL_MOUNT_AURA handler
 #include "Chat.h"
 #include "SocialMgr.h"
+#include "WardenWin.h"
+#include "WardenMac.h"
 
 bool MapSessionFilter::Process(WorldPacket * packet)
 {
@@ -87,7 +89,7 @@ LookingForGroup_auto_join(false), LookingForGroup_auto_add(false), m_muteTime(mu
 _player(NULL), m_Socket(sock), _security(sec), _accountId(id), m_expansion(expansion), m_opcodesDisabled(opcDisabled),
 m_sessionDbcLocale(sWorld.GetAvailableDbcLocale(locale)), m_sessionDbLocaleIndex(objmgr.GetIndexForLocale(locale)),
 _logoutTime(0), m_inQueue(false), m_playerLoading(false), m_playerLogout(false), m_playerSave(false), m_playerRecentlyLogout(false), m_latency(0),
-m_kickTimer(MINUTE * 15 * 1000), m_speciallogs(speciallogs)
+m_kickTimer(MINUTE * 15 * 1000), m_speciallogs(speciallogs), m_Warden(NULL)
 {
     if (sock)
     {
@@ -111,6 +113,9 @@ WorldSession::~WorldSession()
         m_Socket->RemoveReference ();
         m_Socket = NULL;
     }
+
+    if (m_Warden)
+        delete m_Warden;
 
     WorldPacket* packet;
     while (_recvQueue.next(packet))
@@ -277,6 +282,9 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
         }
         delete packet;
     }
+
+    if (m_Socket && m_Warden)
+        m_Warden->Update();
 
     //check if we are safe to proceed with logout
     //logout procedure should happen only in World::UpdateSessions() method!!!
@@ -596,4 +604,21 @@ void WorldSession::SendAuthWaitQue(uint32 position)
         packet << uint32 (position);
         SendPacket(&packet);
     }
+}
+
+void WorldSession::InitWarden(BigNumber *K, uint8& OperatingSystem)
+{
+    switch (OperatingSystem)
+    {
+        case 0:
+            m_Warden = (WardenBase*)new WardenWin();
+            break;
+        case 1:
+            m_Warden = (WardenBase*)new WardenMac();
+        default:
+            sLog.outWarden("Client %u got unsupported operating system (%i)", GetAccountId(), OperatingSystem);
+    }
+
+    if (m_Warden)
+        m_Warden->Init(this, K);
 }
