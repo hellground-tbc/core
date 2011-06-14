@@ -355,7 +355,6 @@ bool processArgv(int argc, char ** argv, const char *versionString)
 {
     bool result = true;
     hasInputPathParam = false;
-    bool preciseVectorData = false;
 
     for(int i=1; i< argc; ++i)
     {
@@ -502,7 +501,7 @@ int main(int argc, char ** argv)
         getchar();
     }
 
-    printf("Extract %s. Work complete. No errors.\n",versionString);
+    printf("Extract %s. Work complete. No errors. Precise vector data = %d\n",versionString, preciseVectorData);
     return 0;
 }
 
