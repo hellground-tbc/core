@@ -394,11 +394,13 @@ void WardenWin::HandleData(ByteBuffer &buff)
                 uint8 Mem_Result;
                 buff >> Mem_Result;
 
-                printf("textlike:\n");
-                buff.textlike();
+                string tmpstr = buff.GetString(size());
 
-                printf("hezlike:\n");
-                buff.hexlike();
+                printf("P: buff all: %s", tmpstr.c_str());
+
+                tmpstr = buff.GetString(rd->Length, buff.rpos());
+
+                printf("P: buff small: %s", tmpstr.c_str());
 
                 printf("P: mem_result: %u\n", Mem_Result);
 
@@ -411,7 +413,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
                     continue;
                 }
 
-                printf("P: buff.contents(): %s | buff.rpos(): %i | rs->res.AsByteArray(): %s | rd->Length: %i\n", buff.contents(), buff.rpos(), rs->res.AsByteArray(0), rd->Length);
+                printf("P: buff.contents(): %s | buff.rpos(): %i | rs->res.AsHexStr(): %s | rd->Length: %i\n", buff.contents(), buff.rpos(), rs->res.AsHexStr(), rd->Length);
 
                 if (memcmp(buff.contents() + buff.rpos(), rs->res.AsByteArray(0), rd->Length) != 0)
                 {
