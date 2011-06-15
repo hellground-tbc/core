@@ -1,4 +1,4 @@
-/*
+ /*
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -325,6 +325,9 @@ void WardenWin::RequestData()
     sLog.outWarden(stream.str().c_str());
 }
 
+#include <iostream>
+using namespace std;
+
 void WardenWin::HandleData(ByteBuffer &buff)
 {
     sLog.outWarden("Handle data");
@@ -384,8 +387,29 @@ void WardenWin::HandleData(ByteBuffer &buff)
         {
             case MEM_CHECK:
             {
+                printf("id: %u\n");
+                printf("rd->Address: %u\n", rd->Address);
+                printf("rd->i.AsByteArray(0): %s\n", rd->i.AsByteArray(0));
+                printf("rd->Type: %u\n", rd->Type);
+                printf("rd->Length: %u\n", rd->Length);
+                if (rs)
+                    printf("rs->res.AsByteArray(0): %s\n", rs->res.AsByteArray(0));
+
                 uint8 Mem_Result;
                 buff >> Mem_Result;
+
+                int size = buff.size();
+
+                const uint8 * contents = buff.contents();
+                string str;
+                for (int i = 0; i < size; ++i)
+                    str.push_back(contents[i]);
+
+                printf("P: str: %s\n", str.c_str());
+
+                printf("P: mem_result: %u\n", Mem_Result);
+
+                printf("P: size(): %i\n", buff.size());
 
                 if (Mem_Result != 0)
                 {
@@ -393,6 +417,8 @@ void WardenWin::HandleData(ByteBuffer &buff)
                     found = true;
                     continue;
                 }
+
+                printf("P: buff.contents(): %s | buff.rpos(): %i | rs->res.AsByteArray(0): %s | rd->Length: %i\n", buff.contents(), buff.rpos(), rs->res.AsByteArray(0), rd->Length);
 
                 if (memcmp(buff.contents() + buff.rpos(), rs->res.AsByteArray(0), rd->Length) != 0)
                 {
