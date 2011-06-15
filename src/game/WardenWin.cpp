@@ -389,8 +389,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
                 printf("rd->i.AsHexStr(): %s\n", rd->i.AsHexStr());
                 printf("rd->Type: %u\n", rd->Type);
                 printf("rd->Length: %u\n", rd->Length);
-                if (rs)
-                    printf("rs->res.AsHexStr(): %s\n", rs->res.AsHexStr());
+                printf("rs->res.AsHexStr(): %s\n", rs->res.AsHexStr());
 
                 uint8 Mem_Result;
                 buff >> Mem_Result;
@@ -412,7 +411,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
                     continue;
                 }
 
-                printf("P: buff.AsHexStr(): %s | buff.rpos(): %i | rs->res.AsHexStr(): %s | rd->Length: %i\n", buff.AsHexStr(), buff.rpos(), rs->res.AsHexStr(), rd->Length);
+                printf("P: buff.contents(): %s | buff.rpos(): %i | rs->res.AsByteArray(): %s | rd->Length: %i\n", buff.contents(), buff.rpos(), rs->res.AsByteArray(0), rd->Length);
 
                 if (memcmp(buff.contents() + buff.rpos(), rs->res.AsByteArray(0), rd->Length) != 0)
                 {
