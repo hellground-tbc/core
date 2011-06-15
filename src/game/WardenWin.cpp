@@ -386,16 +386,20 @@ void WardenWin::HandleData(ByteBuffer &buff)
             {
                 printf("id: %u\n");
                 printf("rd->Address: %u\n", rd->Address);
-                printf("rd->i.AsByteArray(0): %s\n", rd->i.AsHexStr());
+                printf("rd->i.AsHexStr(): %s\n", rd->i.AsHexStr());
                 printf("rd->Type: %u\n", rd->Type);
                 printf("rd->Length: %u\n", rd->Length);
                 if (rs)
-                    printf("rs->res.AsByteArray(0): %s\n", rs->res.AsHexStr());
+                    printf("rs->res.AsHexStr(): %s\n", rs->res.AsHexStr());
 
                 uint8 Mem_Result;
                 buff >> Mem_Result;
 
-                printf("P: buff: %s\n", buff.AsHexStr());
+                printf("textlike:\n");
+                buff.textlike();
+
+                printf("hezlike:\n");
+                buff.hexlike();
 
                 printf("P: mem_result: %u\n", Mem_Result);
 
