@@ -325,9 +325,6 @@ void WardenWin::RequestData()
     sLog.outWarden(stream.str().c_str());
 }
 
-#include <iostream>
-using namespace std;
-
 void WardenWin::HandleData(ByteBuffer &buff)
 {
     sLog.outWarden("Handle data");
@@ -389,23 +386,16 @@ void WardenWin::HandleData(ByteBuffer &buff)
             {
                 printf("id: %u\n");
                 printf("rd->Address: %u\n", rd->Address);
-                printf("rd->i.AsByteArray(0): %s\n", rd->i.AsByteArray(0));
+                printf("rd->i.AsByteArray(0): %s\n", rd->i.AsHexStr());
                 printf("rd->Type: %u\n", rd->Type);
                 printf("rd->Length: %u\n", rd->Length);
                 if (rs)
-                    printf("rs->res.AsByteArray(0): %s\n", rs->res.AsByteArray(0));
+                    printf("rs->res.AsByteArray(0): %s\n", rs->res.AsHexStr());
 
                 uint8 Mem_Result;
                 buff >> Mem_Result;
 
-                int size = buff.size();
-
-                const uint8 * contents = buff.contents();
-                string str;
-                for (int i = 0; i < size; ++i)
-                    str.push_back(contents[i]);
-
-                printf("P: str: %s\n", str.c_str());
+                printf("P: buff: %s\n", buff.AsHexStr());
 
                 printf("P: mem_result: %u\n", Mem_Result);
 
@@ -418,7 +408,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
                     continue;
                 }
 
-                printf("P: buff.contents(): %s | buff.rpos(): %i | rs->res.AsByteArray(0): %s | rd->Length: %i\n", buff.contents(), buff.rpos(), rs->res.AsByteArray(0), rd->Length);
+                printf("P: buff.AsHexStr(): %s | buff.rpos(): %i | rs->res.AsHexStr(): %s | rd->Length: %i\n", buff.AsHexStr(), buff.rpos(), rs->res.AsHexStr(), rd->Length);
 
                 if (memcmp(buff.contents() + buff.rpos(), rs->res.AsByteArray(0), rd->Length) != 0)
                 {
