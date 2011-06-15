@@ -125,7 +125,7 @@ void WardenWin::InitializeModule()
     Request.Function2 = 0x00419D40;                         // 0x00400000 + 0x00419D40 FrameScript::GetText
     Request.Function2_set = 1;
 
-    Request.Command3 = WARDEN_SMSG_MODULE_INITIALIZE;
+/*    Request.Command3 = WARDEN_SMSG_MODULE_INITIALIZE;
     Request.Size3 = 8;
     Request.CheckSumm3 = BuildChecksum(&Request.Unk5, 8);
     Request.Unk5 = 1;
@@ -133,7 +133,7 @@ void WardenWin::InitializeModule()
     Request.String_library3 = 0;
     Request.Function3 = 0x0046AE20;                         // 0x00400000 + 0x0046AE20 PerformanceCounter
     Request.Function3_set = 1;
-
+*/
     // Encrypt with warden RC4 key.
     EncryptData((uint8*)&Request, sizeof(WardenInitModuleRequest));
 
@@ -325,6 +325,9 @@ void WardenWin::RequestData()
     sLog.outWarden(stream.str().c_str());
 }
 
+#include <string>
+using namespace std;
+
 void WardenWin::HandleData(ByteBuffer &buff)
 {
     sLog.outWarden("Handle data");
@@ -384,27 +387,22 @@ void WardenWin::HandleData(ByteBuffer &buff)
         {
             case MEM_CHECK:
             {
-                printf("id: %u\n");
-                printf("rd->Address: %u\n", rd->Address);
-                printf("rd->i.AsHexStr(): %s\n", rd->i.AsHexStr());
-                printf("rd->Type: %u\n", rd->Type);
-                printf("rd->Length: %u\n", rd->Length);
-                printf("rs->res.AsHexStr(): %s\n", rs->res.AsHexStr());
+//                printf("id: %u\n");
+//                printf("rd->Address: %u\n", rd->Address);
+//                printf("rd->i.AsHexStr(): %s\n", rd->i.AsHexStr());
+//                printf("rd->Type: %u\n", rd->Type);
+//                printf("rd->Length: %u\n", rd->Length);
+//                printf("rs->res.AsHexStr(): %s\n", rs->res.AsHexStr());
 
                 uint8 Mem_Result;
                 buff >> Mem_Result;
 
-                string tmpstr = buff.GetString(size());
-
-                printf("P: buff all: %s", tmpstr.c_str());
-
-                tmpstr = buff.GetString(rd->Length, buff.rpos());
-
-                printf("P: buff small: %s", tmpstr.c_str());
-
-                printf("P: mem_result: %u\n", Mem_Result);
-
-                printf("P: size(): %i\n", buff.size());
+                printf("\n");
+                WardenBase::PrintHexArray("buff: ", buff.contents(), buff.size(), true);
+                WardenBase::PrintHexArray("rs->res.AsByteArray(0): ", rs->res.AsByteArray(0), rd->Length, true);
+                WardenBase::PrintHexArray("buff.contents() + buff.rpos(): ", buff.contents() + buff.rpos(), rd->Length, true);
+                WardenBase::PrintHexArray("rs->res.AsByteBuffer().contents()", rs->res.AsByteBuffer().contents(), rs->res.AsByteBuffer().size(), true);
+                printf("\n");
 
                 if (Mem_Result != 0)
                 {
@@ -413,15 +411,15 @@ void WardenWin::HandleData(ByteBuffer &buff)
                     continue;
                 }
 
-                printf("P: buff.contents(): %s | buff.rpos(): %i | rs->res.AsHexStr(): %s | rd->Length: %i\n", buff.contents(), buff.rpos(), rs->res.AsHexStr(), rd->Length);
+//                printf("P: buff.contents(): %s | buff.rpos(): %i | rs->res.AsHexStr(): %s | rd->Length: %i\n", buff.contents(), buff.rpos(), rs->res.AsHexStr(), rd->Length);
 
-                if (memcmp(buff.contents() + buff.rpos(), rs->res.AsByteArray(0), rd->Length) != 0)
-                {
-                    sLog.outWarden("RESULT MEM_CHECK fail CheckId %u account Id %u", *itr, Client->GetAccountId());
-                    found = true;
-                    buff.rpos(buff.rpos() + rd->Length);
-                    continue;
-                }
+//                if (memcmp(buff.contents() + buff.rpos(), rs->res.AsByteArray(0), rd->Length) != 0)
+//                {
+//                    sLog.outWarden("RESULT MEM_CHECK fail CheckId %u account Id %u", *itr, Client->GetAccountId());
+//                    found = true;
+//                    buff.rpos(buff.rpos() + rd->Length);
+//                    continue;
+//                }
 
                 buff.rpos(buff.rpos() + rd->Length);
                 sLog.outWarden("RESULT MEM_CHECK passed CheckId %u account Id %u", *itr, Client->GetAccountId());

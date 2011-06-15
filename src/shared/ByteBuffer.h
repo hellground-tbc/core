@@ -429,7 +429,7 @@ class ByteBuffer
 
             std::string str;
             for(uint32 i = pos; i < len; ++i)
-                str.push_back((char)read<uint8>(i));
+                str.push_back(read<char>(i));
 
             return str;
         }

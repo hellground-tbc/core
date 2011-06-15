@@ -62,7 +62,7 @@ struct WardenInitModuleRequest
     uint8 String_library2;
     uint32 Function2;
     uint8 Function2_set;
-
+/*
     uint8 Command3;
     uint16 Size3;
     uint32 CheckSumm3;
@@ -70,7 +70,7 @@ struct WardenInitModuleRequest
     uint8 Unk6;
     uint8 String_library3;
     uint32 Function3;
-    uint8 Function3_set;
+    uint8 Function3_set;*/
 };
 
 #if defined(__GNUC__)
