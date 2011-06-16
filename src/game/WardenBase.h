@@ -110,7 +110,7 @@ class WardenBase
         void EncryptData(uint8 *Buffer, uint32 Len);
 
         static void PrintHexArray(const char *Before, const uint8 *Buffer, uint32 Len, bool BreakWithNewline);
-        static bool IsValidCheckSum(uint32 checksum, const uint8 *Data, const uint16 Length);
+        static bool IsValidCheckSum(uint32 checksum, const uint8 *Data, const uint16 Length, uint32 acc);
         static uint32 BuildChecksum(const uint8 *data, uint32 dataLen);
 
     private:
