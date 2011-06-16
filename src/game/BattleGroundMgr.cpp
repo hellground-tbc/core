@@ -341,6 +341,23 @@ bool BattleGroundQueue::SelectionPool::Build(uint32 MinPlayers, uint32 MaxPlayer
         if ((premade && !(*itr1)->Premade) || (!premade && (*itr1)->Premade))
             continue;
 
+        // Prioritize eglible groups currently not in battleground
+        bool inBattleGround = false;
+        for (std::map<uint64, PlayerQueueInfo*>::iterator it = (*itr1)->Players.begin(); it != (*itr1)->Players.end(); ++it)
+        {
+            if (Player *plr = objmgr.GetPlayer(it->first))
+            {
+                if (plr->GetBattleGround())
+                {
+                    inBattleGround = true;
+                    break;
+                }
+            }
+        }
+
+        if (inBattleGround)
+            continue;
+
         // if it fits in, select it
         if (GetPlayerCount() + (*itr1)->Players.size() <= MaxPlayers)
         {
