@@ -67,6 +67,7 @@
 #include "CreatureGroups.h"
 #include "Transports.h"
 #include "CreatureEventAIMgr.h"
+#include "WardenDataStorage.h"
 
 INSTANTIATE_SINGLETON_1(World);
 
@@ -1225,6 +1226,7 @@ void World::LoadConfigSettings(bool reload)
     delete[] forbiddenMaps;
 
     m_configs[CONFIG_MIN_GM_TEXT_LVL] = sConfig.GetIntDefault("MinGMTextLevel", 1);
+    m_configs[CONFIG_WARDEN_KICK] = sConfig.GetBoolDefault("Warden.Kick", true);
 }
 
 /// Initialize the World
@@ -1619,6 +1621,9 @@ void World::SetInitialWorldSettings()
     sLog.outString("Starting Game Event system...");
     uint32 nextGameEvent = gameeventmgr.Initialize();
     m_timers[WUPDATE_EVENTS].SetInterval(nextGameEvent);    //depend on next event
+
+    sLog.outString("Loading Warden Data..." );
+    WardenDataStorage.Init();
 
     //sLog.outString("Initialize AuctionHouseBot...");
     //auctionbot.Initialize();

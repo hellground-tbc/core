@@ -28,6 +28,7 @@
 #include "Common.h"
 #include "Log.h"
 #include "QueryResult.h"
+#include "WardenBase.h"
 
 class MailItemsInfo;
 struct ItemPrototype;
@@ -155,6 +156,7 @@ class TRINITY_DLL_SPEC WorldSession
         void RemoveOpcodeDisableFlag(uint16 flag);
         uint16 GetOpcodesDisabledFlag() { return m_opcodesDisabled;}
 
+        void InitWarden(BigNumber *K, uint8& OperatingSystem);
 
         /// Session in auth.queue currently
         void SetInQueue(bool state) { m_inQueue = state; }
@@ -699,6 +701,9 @@ class TRINITY_DLL_SPEC WorldSession
         uint32 _security;
         uint32 _accountId;
         uint8 m_expansion;
+
+        // Warden
+        WardenBase * m_Warden;
 
         time_t _logoutTime;
         bool m_inQueue;                                     // session wait in auth.queue

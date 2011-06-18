@@ -336,6 +336,9 @@ void AuthSocket::_SetVSFields(const std::string& rI)
     OPENSSL_free((void*)s_hex);
 }
 
+#include <iostream>
+using namespace std;
+
 /// Logon Challenge command handler
 bool AuthSocket::_HandleLogonChallenge()
 {
@@ -375,6 +378,11 @@ bool AuthSocket::_HandleLogonChallenge()
     ibuf.Read((char *)&buf[4], remaining);
     DEBUG_LOG("[AuthChallenge] got full packet, %#04x bytes", ch->size);
     DEBUG_LOG("[AuthChallenge] name(%d): '%s'", ch->I_len, ch->I);
+
+    if (ch->os[3]) operatingSystem.push_back(ch->os[3]);
+    if (ch->os[2]) operatingSystem.push_back(ch->os[2]);
+    if (ch->os[1]) operatingSystem.push_back(ch->os[1]);
+    if (ch->os[0]) operatingSystem.push_back(ch->os[0]);
 
     ByteBuffer pkt;
 
@@ -665,7 +673,23 @@ bool AuthSocket::_HandleLogonProof()
         ///- Update the sessionkey, last_ip, last login time and reset number of failed logins in the account table for this account
         // No SQL injection (escaped user name) and IP address as received by socket
         const char* K_hex = K.AsHexStr();
-        LoginDatabase.PExecute("UPDATE account SET sessionkey = '%s', last_ip = '%s', last_login = NOW(), locale = '%u', failed_logins = 0 WHERE username = '%s'", K_hex, GetRemoteAddress().c_str(), GetLocaleByName(_localizationName), _safelogin.c_str() );
+
+        uint8 OS;
+
+        if (!strcmp(operatingSystem.c_str(), "Win"))
+            OS = 0;
+        else if (!strcmp(operatingSystem.c_str(), "OSX"))
+            OS = 1;
+        else
+        {
+            OS = 2;
+            LoginDatabase.escape_string(operatingSystem);
+            sLog.outWarden("Client %s got unsupported operating system (%s)", _safelogin.c_str(), operatingSystem.c_str());
+        }
+
+        cout << "Client " << _safelogin.c_str() << " got operating system " << operatingSystem.c_str() << " OS: " << OS << endl;
+
+        LoginDatabase.PExecute("UPDATE account SET sessionkey = '%s', last_ip = '%s', last_login = NOW(), locale = '%u', failed_logins = 0, operatingSystem = '%u' WHERE username = '%s'", K_hex, GetRemoteAddress().c_str(), GetLocaleByName(_localizationName), OS, _safelogin.c_str());
         OPENSSL_free((void*)K_hex);
 
         ///- Finish SRP6 and send the final result to the client

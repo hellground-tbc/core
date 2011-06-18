@@ -1652,7 +1652,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_mysticAI : public ScriptedAI
         WindfuryTotem = urand(500, 30000);
         CycloneTotem = urand(500, 30000);
     }
-    void EnterCombat(Unit*) 
+    void EnterCombat(Unit*)
     {
         DoZoneInCombat(80.0f);
         DoCast(m_creature, SPELL_BLOODLUST);
@@ -1755,7 +1755,7 @@ CreatureAI* GetAI_mob_ashtongue_mystic(Creature *_Creature)
 *****************/
 
 #define SPELL_MULTI_SHOT            41187
-#define SPELL_SHOOT                 41188
+#define SPELL_AP_SHOOT              41188
 #define SPELL_WYVERN_STING          41186
 #define SPELL_SWEEPING_WING_CLIP    39584
 
@@ -1815,7 +1815,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_primalistAI : public ScriptedAI
         {
             Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0f, true);
             if(canShoot && target && m_creature->GetDistance(target) > 5.0f)
-                ForceSpellCast(target, SPELL_SHOOT);
+                ForceSpellCast(target, SPELL_AP_SHOOT);
             Shoot = 1500;
         }
         else
@@ -2238,7 +2238,7 @@ CreatureAI* GetAI_mob_illidari_defiler(Creature *_Creature)
 *****************/
 
 #define SPELL_RAPID_SHOT                41173
-#define SPELL_SHOOT                     41169
+#define SPELL_IH_SHOOT                  41169
 #define SPELL_SKELETON_SHOT             41171
 #define SPELL_CURSE_OF_THE_BLEAKHEART   6946  //41170 proper spell blocks 6947 proc
 
@@ -2282,7 +2282,7 @@ struct TRINITY_DLL_DECL mob_illidari_heartseekerAI : public ScriptedAI
         {
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
             {
-                AddSpellToCast(target, SPELL_SHOOT);
+                AddSpellToCast(target, SPELL_IH_SHOOT);
                 Shoot = 1800;
             }
         }
@@ -3234,7 +3234,7 @@ static float fieldPositions [8][2] =
 #define SPELL_DEFENSIVE_STANCE          41101
 #define SPELL_KNOCK_AWAY                18813
 #define SPELL_MUTILATE                  41103
-#define SPELL_SHIELD_WALL               41104
+#define SPELL_SWM_SHIELD_WALL           41104
 #define SPELL_WHIRLWIND_1               41097
 
 #define AXE_MODEL                       45073
@@ -3336,8 +3336,8 @@ struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
                 m_creature->RemoveAurasDueToSpell(SPELL_DEFENSIVE_STANCE);
                 m_creature->RemoveAurasDueToSpell(SPELL_DEFENSIVE_AURA);
                 DoYell(BATTLE_STANCE_YELL, 0, m_creature);
-                if(m_creature->HasAura(SPELL_SHIELD_WALL, 0))
-                    m_creature->RemoveAurasDueToSpell(SPELL_SHIELD_WALL);
+                if(m_creature->HasAura(SPELL_SWM_SHIELD_WALL, 0))
+                    m_creature->RemoveAurasDueToSpell(SPELL_SWM_SHIELD_WALL);
                 ForceSpellCast(m_creature, SPELL_BERSERKER_STANCE, INTERRUPT_AND_CAST_INSTANTLY);
                 ForceSpellCast(m_creature, SPELL_BERSERKER_AURA, INTERRUPT_AND_CAST_INSTANTLY);
                 Stance = BERSERKER;
@@ -3474,7 +3474,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
             switch(Stance)
             {
                 case DEFENSIVE:
-                    AddSpellToCast(m_creature, SPELL_SHIELD_WALL);
+                    AddSpellToCast(m_creature, SPELL_SWM_SHIELD_WALL);
                     SpecialTimer = 40000;
                     break;
                 case BERSERKER:
@@ -3698,7 +3698,7 @@ CreatureAI* GetAI_mob_bonechewer_behemoth(Creature *_Creature)
 
 #define SPELL_INTERVENE                 41198
 #define SPELL_SHIELD_BASH               41197
-#define SPELL_SHIELD_WALL               41196
+#define SPELL_BSD_SHIELD_WALL           41196
 #define SPELL_THROW_SHIELD              41213
 
 #define MOB_BONECHEWER_BLADE_FURY       23235
@@ -3727,8 +3727,8 @@ struct TRINITY_DLL_DECL mob_bonechewer_shield_discipleAI: public ScriptedAI
     {
         if(damage)
         {
-            if(m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 30 && !m_creature->HasAura(SPELL_SHIELD_WALL, 0))
-                ForceSpellCast(m_creature, SPELL_SHIELD_WALL);
+            if(m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 30 && !m_creature->HasAura(SPELL_BSD_SHIELD_WALL, 0))
+                ForceSpellCast(m_creature, SPELL_BSD_SHIELD_WALL);
         }
     }
 
@@ -3784,7 +3784,7 @@ CreatureAI* GetAI_mob_bonechewer_shield_disciple(Creature *_Creature)
 
 #define SPELL_WHIRLWIND_2               41194
 
-uint32 CCMechanics[8] = 
+uint32 CCMechanics[8] =
 {
     MECHANIC_FEAR,
     MECHANIC_ROOT,
@@ -5448,7 +5448,7 @@ enum PromenadeSentinel
     SPELL_L5_ARCANE_CHARGE          = 41360
 };
 
-#define YELL_PROMENADE_SENTINEL    "Unauthorized entry detected. Engaging annihilation protocols." 
+#define YELL_PROMENADE_SENTINEL    "Unauthorized entry detected. Engaging annihilation protocols."
 
 struct TRINITY_DLL_DECL mob_promenade_sentinelAI: public ScriptedAI
 {
@@ -5741,7 +5741,7 @@ void AddSC_black_temple_trash()
     newscript->Name = "mob_shadowmoon_weapon_master";
     newscript->GetAI = &GetAI_mob_shadowmoon_weapon_master;
     newscript->RegisterSelf();
-    
+
     newscript = new Script;
     newscript->Name = "mob_wrathbone_flayer";
     newscript->GetAI = &GetAI_mob_wrathbone_flayer;
