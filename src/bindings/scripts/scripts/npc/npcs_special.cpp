@@ -2050,10 +2050,10 @@ struct TRINITY_DLL_DECL npc_crashin_trashin_robotAI : public ScriptedAI
             {
                 float x, y, z;
                 itr = otherCrashinTrashinRobots.begin();
-                advance(itr, rand()%otherCrashinTrashinRobots.size());
+                advance(itr, rand()%(otherCrashinTrashinRobots.size() - 1));
                 Creature * tmp = *(itr);
 
-                me->GetNearPoint(tmp, x, y, z, 0, 5.0f, (rand()%(int)(me->GetAngle(tmp) * 100))/100.0);
+                me->GetNearPoint(tmp, x, y, z, 0, 2.5f, (rand()%(int)(me->GetAngle(tmp) * 100))/100.0);
                 me->GetMotionMaster()->Clear();
                 me->GetMotionMaster()->MovePoint(0, x, y, z);
             }
@@ -2071,7 +2071,7 @@ struct TRINITY_DLL_DECL npc_crashin_trashin_robotAI : public ScriptedAI
             if (!otherCrashinTrashinRobots.empty())
             {
                 itr = otherCrashinTrashinRobots.begin();
-                advance(itr, rand()%otherCrashinTrashinRobots.size());
+                advance(itr, rand()%(otherCrashinTrashinRobots.size() - 1));
                 AddSpellToCast(*itr, SPELL_MACHINE_GUN, false, true);
             }
 
@@ -2088,7 +2088,7 @@ struct TRINITY_DLL_DECL npc_crashin_trashin_robotAI : public ScriptedAI
             if (!otherCrashinTrashinRobots.empty())
             {
                 itr = otherCrashinTrashinRobots.begin();
-                advance(itr, rand()%otherCrashinTrashinRobots.size());
+                advance(itr, rand()%(otherCrashinTrashinRobots.size() - 1));
                 AddSpellToCast(*itr, SPELL_NET, false, true);
             }
 
@@ -2105,7 +2105,7 @@ struct TRINITY_DLL_DECL npc_crashin_trashin_robotAI : public ScriptedAI
             if (!otherCrashinTrashinRobots.empty())
             {
                 itr = otherCrashinTrashinRobots.begin();
-                advance(itr, rand()%otherCrashinTrashinRobots.size());
+                advance(itr, rand()%(otherCrashinTrashinRobots.size() - 1));
                 AddSpellToCast(*itr, SPELL_ELECTRICAL, false, true);
             }
 
