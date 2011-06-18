@@ -1528,6 +1528,50 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="Warden"
+			>
+			<File
+				RelativePath="..\..\src\game\WardenBase.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\WardenBase.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\WardenDataStorage.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\WardenDataStorage.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\WardenMac.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\WardenMac.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\WardenModuleMac.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\WardenModuleWin.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\WardenWin.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\WardenWin.h"
+				>
+			</File>
+		</Filter>
 		<File
 			RelativePath="..\..\src\game\MapUpdater.cpp"
 			>
