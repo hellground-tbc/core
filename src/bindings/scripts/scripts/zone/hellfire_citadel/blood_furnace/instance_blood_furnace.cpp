@@ -59,16 +59,24 @@ struct TRINITY_DLL_DECL instance_blood_furnace : public ScriptedInstance
 
     void OnObjectCreate(GameObject *go)
     {
-        switch(go->GetEntry())
+        switch (go->GetEntry())
         {
             case ENTRY_SEWER1: Sewer1GUID = go->GetGUID(); break;
             case ENTRY_SEWER2: Sewer2GUID = go->GetGUID(); break;
-            case 181819: BroggokDoor = go->GetGUID(); break;
+            case 181819:
+                BroggokDoor = go->GetGUID();
+                if (BroggokEncounter == DONE)
+                    HandleGameObject(BroggokDoor, 0);
+                break;
             case 181821: CellDoor[0] = go->GetGUID(); break;
             case 181820: CellDoor[1] = go->GetGUID(); break;
             case 181818: CellDoor[2] = go->GetGUID(); break;
             case 181817: CellDoor[3] = go->GetGUID(); break;
-            case 181812: MakerDoorGUID = go->GetGUID(); break;
+            case 181812:
+                MakerDoorGUID = go->GetGUID();
+                if (MakerEncounter == DONE)
+                    HandleGameObject(MakerDoorGUID,0);
+                break;
         }
     }
 
@@ -105,23 +113,23 @@ struct TRINITY_DLL_DECL instance_blood_furnace : public ScriptedInstance
 
     void SetData(uint32 type, uint32 data)
     {
-        switch(type)
+        switch (type)
         {
             case DATA_KELIDANEVENT:
-                if( data == DONE )
+                if (data == DONE)
                 {
                     HandleGameObject(Sewer1GUID,0);
                     HandleGameObject(Sewer2GUID,0);
                 }
                 break;
             case DATA_BROGGOKEVENT:
-                if( data == DONE )
+                if (data == DONE)
                     HandleGameObject(BroggokDoor, 0);
 
                 BroggokEncounter = data;
                 break;
             case DATA_MAKEREVENT:
-                if( data == DONE )
+                if (data == DONE)
                     HandleGameObject(MakerDoorGUID,0);
 
                 MakerEncounter = data;
