@@ -7302,7 +7302,6 @@ void Player::UpdateEquipSpellsAtFormChange()
 }
 void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, SpellEntry const *spellInfo)
 {
-
     if (spellInfo && ((spellInfo->Attributes & SPELL_ATTR_STOP_ATTACK_TARGET) ||
       (spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC || spellInfo->DmgClass == SPELL_DAMAGE_CLASS_NONE)))
         return;
@@ -7329,19 +7328,19 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                             case RANGED_ATTACK: slot = EQUIPMENT_SLOT_RANGED;   break;
                             default: slot = EQUIPMENT_SLOT_END; break;
                         }
+
                         if (slot != i)
                             continue;
+
                         // Check if item is useable (forms or disarm)
                         if (attType == BASE_ATTACK)
                         {
                             if (!((Player*)this)->IsUseEquipedWeapon(true))
                                 continue;
                         }
-                        else
-                        {
-                            if (((Player*)this)->IsInFeralForm())
-                                continue;
-                        }
+
+                        if (((Player*)this)->IsInFeralForm())
+                            continue;
                     }
                     ((Player*)this)->CastItemCombatSpell(target, attType, procVictim, procEx, item, proto, spellInfo);
                 }
