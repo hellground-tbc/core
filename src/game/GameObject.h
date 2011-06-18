@@ -497,7 +497,7 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
                 case GAMEOBJECT_TYPE_DOOR:       return GetGOInfo()->door.noDamageImmune;
                 case GAMEOBJECT_TYPE_BUTTON:     return GetGOInfo()->button.noDamageImmune;
                 case GAMEOBJECT_TYPE_QUESTGIVER: return GetGOInfo()->questgiver.noDamageImmune;
-                case GAMEOBJECT_TYPE_GOOBER:     return GetGOInfo()->goober.noDamageImmune;
+                case GAMEOBJECT_TYPE_GOOBER:     return GetGOInfo()->goober.consumable;
                 case GAMEOBJECT_TYPE_FLAGSTAND:  return GetGOInfo()->flagstand.noDamageImmune;
                 case GAMEOBJECT_TYPE_FLAGDROP:   return GetGOInfo()->flagdrop.noDamageImmune;
                 default: return true;
@@ -536,13 +536,13 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
         void getFishLoot(Loot *loot);
         GameobjectTypes GetGoType() const { return GameobjectTypes(GetUInt32Value(GAMEOBJECT_TYPE_ID)); }
         void SetGoType(GameobjectTypes type) { SetUInt32Value(GAMEOBJECT_TYPE_ID, type); }
-        
+
         GOState GetGoState() const { return GOState(GetUInt32Value(GAMEOBJECT_STATE)); }
         void SetGoState(GOState state) { SetUInt32Value(GAMEOBJECT_STATE, state); }
-        
+
         uint32 GetGoArtKit() const { return GetUInt32Value(GAMEOBJECT_ARTKIT); }
         void SetGoArtKit(uint32 artkit);
-        
+
         uint32 GetGoAnimProgress() const { return GetUInt32Value(GAMEOBJECT_ANIMPROGRESS); }
         void SetGoAnimProgress(uint32 animprogress) { SetUInt32Value(GAMEOBJECT_ANIMPROGRESS, animprogress); }
 
@@ -633,7 +633,7 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
         uint32 m_usetimes;
 
         uint32 m_DBTableGuid;                               ///< For new or temporary gameobjects is 0 for saved it is lowguid
-        
+
         GameObjectInfo const* m_goInfo;
         GameObjectData const* m_goData;
 
