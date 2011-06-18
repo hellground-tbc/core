@@ -134,11 +134,12 @@ bool GOHello_go_field_repair_bot_74A(Player *player, GameObject* _GO)
 ## go_orb_of_command
 ######*/
 
-#define GOSSIP_ORB_OF_COMMAND   "<Place my hand on the orb.>"
+#define GOSSIP_ORB_OF_COMMAND       "<Place my hand on the orb.>"
+#define QUEST_BLACKHANDS_COMMAND    7761
 
 bool GOHello_go_orb_of_command(Player* pPlayer, GameObject* pGO)
 {
-    if (player->GetQuestRewardStatus(7761))
+    if (player->GetQuestRewardStatus(QUEST_BLACKHANDS_COMMAND))
     {
         pPlayer->ADD_GOSSIP_ITEM(NULL, GOSSIP_ORB_OF_COMMAND, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
         pPlayer->SEND_GOSSIP_MENU(7155, pGO->GetGUID());
@@ -152,18 +153,11 @@ bool GOSelect_go_orb_of_command(Player* pPlayer, GameObject* pGO, uint32 Sender,
     switch(action)
     {
         case GOSSIP_ACTION_INFO_DEF+1:
-            player->CastSpell(player,23460,true);
+            player->CastSpell(player, 23460, true);
             break;
     }
 
     pPlayer->CLOSE_GOSSIP_MENU();
-    return true;
-}
-
-bool GOHello_go_orb_of_command(Player *player, GameObject* _GO)
-{
-
-
     return true;
 }
 
