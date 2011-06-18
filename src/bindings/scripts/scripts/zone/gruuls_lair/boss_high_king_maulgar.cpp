@@ -111,6 +111,8 @@ struct TRINITY_DLL_DECL boss_high_king_maulgarAI : public ScriptedAI
         pInstance = (c->GetInstanceData());
         for(uint8 i = 0; i < 4; ++i)
             Council[i] = 0;
+
+        c->GetPosition(wLoc);
     }
 
     ScriptedInstance* pInstance;
@@ -120,6 +122,9 @@ struct TRINITY_DLL_DECL boss_high_king_maulgarAI : public ScriptedAI
     uint32 Whirlwind_Timer;
     uint32 Charging_Timer;
     uint32 Roar_Timer;
+    uint32 checkTimer;
+
+    WorldLocation wLoc;
 
     bool Phase2;
 
@@ -137,6 +142,7 @@ struct TRINITY_DLL_DECL boss_high_king_maulgarAI : public ScriptedAI
         Whirlwind_Timer = 30000;
         Charging_Timer = 0;
         Roar_Timer = 0;
+        checkTimer = 3000;
 
         m_creature->CastSpell(m_creature, SPELL_DUAL_WIELD, false);
 
@@ -225,6 +231,20 @@ struct TRINITY_DLL_DECL boss_high_king_maulgarAI : public ScriptedAI
             EnterEvadeMode();
             return;
         }
+
+        if (checkTimer < diff)
+        {
+            if (!m_creature->IsWithinDistInMap(wLoc, 200.0f, true))
+            {
+                EnterEvadeMode();
+                return;
+            }
+
+            DoZoneInCombat();
+            checkTimer = 3000;
+        }
+        else
+            checkTimer -= diff;
 
         //ArcingSmash_Timer
         if (ArcingSmash_Timer < diff)
