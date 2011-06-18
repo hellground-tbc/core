@@ -2902,6 +2902,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 16007: // DRACO_INCARCINATRIX_900
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
             break;
+        case 39331: // Spell In Session
+            spellInfo->DurationIndex = 21;  // infinity
+            break;
         default:
             break;
         }

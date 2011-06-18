@@ -2102,10 +2102,9 @@ void boss_MedivhAI::SayChessPieceDied(Unit * piece)
 
             case NPC_KING_A:
 
-                // temporary - Uncomment when all spells will be fixed
                 if (pInstance->GetData(DATA_DUST_COVERED_CHEST) != DONE)
-                    me->Say("Teraz powinna sie skrzynka pojawic", LANG_UNIVERSAL, NULL);
-                //    m_creature->SummonGameObject(DUST_COVERED_CHEST, -11058, -1903, 221, 2.24, 0, 0, 0, 0, 7200000);
+                    m_creature->SummonGameObject(DUST_COVERED_CHEST, -11058, -1903, 221, 2.24, 0, 0, 0, 0, 7200000);
+                //    me->Say("Teraz powinna sie skrzynka pojawic", LANG_UNIVERSAL, NULL); // temporary
 
                 DoScriptText(SCRIPTTEXT_PLAYER_WIN, m_creature);
                 pInstance->SetData(DATA_CHESS_EVENT, DONE);
@@ -2167,10 +2166,9 @@ void boss_MedivhAI::SayChessPieceDied(Unit * piece)
 
             case NPC_KING_H:
 
-                // temporary - Uncomment when all spells will be fixed
                 if (pInstance->GetData(DATA_CHESS_EVENT) != DONE)
-                    me->Say("Teraz powinna sie skrzynka pojawic", LANG_UNIVERSAL, NULL);
-                //    m_creature->SummonGameObject(DUST_COVERED_CHEST, -11058, -1903, 221, 2.24, 0, 0, 0, 0, 7200000);
+                    m_creature->SummonGameObject(DUST_COVERED_CHEST, -11058, -1903, 221, 2.24, 0, 0, 0, 0, 7200000);
+                //    me->Say("Teraz powinna sie skrzynka pojawic", LANG_UNIVERSAL, NULL); // temporary
 
                 DoScriptText(SCRIPTTEXT_PLAYER_WIN, m_creature);
                 pInstance->SetData(DATA_CHESS_EVENT, DONE);
@@ -2850,6 +2848,20 @@ void boss_MedivhAI::UpdateAI(const uint32 diff)
         }
         else
             endEventTimer -= diff;
+
+        if (endEventLightningTimer < diff)
+        {
+            Creature * tmpC;
+            int count = rand()%5;
+
+            for (int i = 0; i < count; ++i)
+                if (tmpC = me->GetCreature(chessBoard[rand()%8][rand()%8].trigger))
+                    me->CastSpell(tmpC, SPELL_GAME_OVER, true);
+
+            endEventLightningTimer = urand(100, 1000);
+        }
+        else
+            endEventLightningTimer -= diff;
 
         return;
     }
