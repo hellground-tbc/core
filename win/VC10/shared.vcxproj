@@ -243,6 +243,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\shared\Auth\SARC4.cpp" />
     <ClCompile Include="..\..\src\shared\Database\Database.cpp" />
     <ClCompile Include="..\..\src\shared\Database\DatabaseMysql.cpp" />
     <ClCompile Include="..\..\src\shared\Database\Field.cpp" />
@@ -285,6 +286,8 @@
     <ClCompile Include="..\..\src\shared\Threading.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\shared\Auth\SARC4.h" />
+    <ClInclude Include="..\..\src\shared\Auth\WardenKeyGeneration.h" />
     <ClInclude Include="..\..\src\shared\Database\Database.h" />
     <ClInclude Include="..\..\src\shared\Database\DatabaseEnv.h" />
     <ClInclude Include="..\..\src\shared\Database\DatabaseImpl.h" />
