@@ -339,7 +339,6 @@ void WorldSession::LogoutPlayer(bool Save)
         }
         else
         {
-
             InstanceMap *pTempMap = NULL;
             if (_player->GetMap() && _player->GetMap()->IsDungeon())
                 pTempMap = ((InstanceMap*)_player->GetMap());
