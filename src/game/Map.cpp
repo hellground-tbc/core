@@ -2602,6 +2602,7 @@ bool InstanceMap::EncounterInProgress(Player *player)
     }
     return false;
 }
+
 bool InstanceMap::CanEnter(Player *player)
 {
     if (player->GetMapRef().getTarget() == this)
@@ -2619,6 +2620,9 @@ bool InstanceMap::CanEnter(Player *player)
         player->SendTransferAborted(GetId(), TRANSFER_ABORT_MAX_PLAYERS);
         return false;
     }
+
+    if (EncounterInProgress(player))
+        return false
 
     return Map::CanEnter(player);
 }
