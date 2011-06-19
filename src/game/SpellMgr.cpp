@@ -680,7 +680,6 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 41406:                                         // Dementia +
         case 41409:                                         // Dementia -
         case 30529:                                         // Chess event: Recently In Game
-        case 39331:
         case 37469:
         case 37465:
             return false;
@@ -2904,6 +2903,8 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 39331: // Spell In Session
             spellInfo->DurationIndex = 21;  // infinity
+            spellInfo->Effect[0] = SPELL_EFFECT_APPLY_AREA_AURA_FRIEND;
+            spellInfo->EffectRadiusIndex[0] = 31;   // effect radius from 65 to 80 yd
             break;
         default:
             break;
