@@ -2594,6 +2594,14 @@ void SpellMgr::LoadSpellCustomAttr()
                 case SPELL_AURA_MOD_DECREASE_SPEED:
                     spellInfo->AttributesCu |= SPELL_ATTR_CU_MOVEMENT_IMPAIR;
                     break;
+                case SPELL_AURA_MOD_POSSESS:
+                case SPELL_AURA_MOD_CONFUSE:
+                case SPELL_AURA_MOD_CHARM:
+                case SPELL_AURA_MOD_FEAR:
+                case SPELL_AURA_MOD_STUN:
+                    spellInfo->AttributesCu |= SPELL_ATTR_CU_AURA_CC;
+                    spellInfo->AttributesCu &= ~SPELL_ATTR_CU_MOVEMENT_IMPAIR;
+                    break;
                 default:
                     break;
             }
@@ -2619,21 +2627,12 @@ void SpellMgr::LoadSpellCustomAttr()
                         spellInfo->Targets & (TARGET_FLAG_SOURCE_LOCATION|TARGET_FLAG_DEST_LOCATION))
                         spellInfo->Effect[j] = SPELL_EFFECT_TRIGGER_MISSILE;
                     break;
-            }
-        }
-
-
-        for (uint32 j = 0; j < 3; ++j)
-        {
-            switch (spellInfo->EffectApplyAuraName[j])
-            {
-                case SPELL_AURA_MOD_POSSESS:
-                case SPELL_AURA_MOD_CONFUSE:
-                case SPELL_AURA_MOD_CHARM:
-                case SPELL_AURA_MOD_FEAR:
-                case SPELL_AURA_MOD_STUN:
-                    spellInfo->AttributesCu |= SPELL_ATTR_CU_AURA_CC;
-                    spellInfo->AttributesCu &= ~SPELL_ATTR_CU_MOVEMENT_IMPAIR;
+                case SPELL_EFFECT_TELEPORT_UNITS:
+                    if (spellInfo->EffectImplicitTargetA[j] == 17 && spellInfo->EffectImplicitTargetB[j] == 0)
+                    {
+                        spellInfo->EffectImplicitTargetA[j] = 1;
+                        spellInfo->EffectImplicitTargetB[j] = 17;
+                    }
                     break;
             }
         }
