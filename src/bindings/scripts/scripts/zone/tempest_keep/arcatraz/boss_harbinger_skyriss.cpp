@@ -226,7 +226,7 @@ struct TRINITY_DLL_DECL boss_harbinger_skyrissAI : public ScriptedAI
 
             if (!alive)
             {
-                me->Kill(me->GetVictim(), false);
+                me->Kill(me->getVictim(), false);
                 EnterEvadeMode();
                 return;
             }

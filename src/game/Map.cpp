@@ -2622,7 +2622,7 @@ bool InstanceMap::CanEnter(Player *player)
     }
 
     if (EncounterInProgress(player))
-        return false
+        return false;
 
     return Map::CanEnter(player);
 }

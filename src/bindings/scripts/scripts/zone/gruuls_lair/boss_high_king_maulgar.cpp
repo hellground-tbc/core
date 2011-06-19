@@ -234,7 +234,7 @@ struct TRINITY_DLL_DECL boss_high_king_maulgarAI : public ScriptedAI
 
         if (checkTimer < diff)
         {
-            if (!m_creature->IsWithinDistInMap(wLoc, 200.0f, true))
+            if (!m_creature->IsWithinDistInMap(&wLoc, 200.0f, true))
             {
                 EnterEvadeMode();
                 return;
