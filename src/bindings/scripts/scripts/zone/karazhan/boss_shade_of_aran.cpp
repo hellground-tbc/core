@@ -233,10 +233,10 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
         {
             Player* i_pl = i->getSource();
-            if (i_pl->HasItemCount(22632, 1, false) ||
-                i_pl->HasItemCount(22631, 1, false) ||
-                i_pl->HasItemCount(22630, 1, false) ||
-                i_pl->HasItemCount(22589, 1, false))
+            if (i_pl->HasEquiped(22632) ||
+                i_pl->HasEquiped(22631) ||
+                i_pl->HasEquiped(22630) ||
+                i_pl->HasEquiped(22589))
                 return true;
         }
 
@@ -456,7 +456,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                 if (AvailableSpells)
                 {
                     CurrentNormalSpell = Spells[rand() % AvailableSpells];
-                    AddSpellToCast(target, CurrentNormalSpell);
+                    AddSpellToCast(target, CurrentNormalSpell, false, true);
                 }
             }
             NormalCastTimer = 1000;
