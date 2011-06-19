@@ -256,6 +256,16 @@ SET(game_STAT_SRCS
    UpdateFields.h
    UpdateMask.h
    VoiceChatHandler.cpp
+   WardenBase.cpp
+   WardenBase.h
+   WardenDataStorage.cpp
+   WardenDataStorage.h
+   WardenMac.cpp
+   WardenMac.h
+   WardenModuleMac.h
+   WardenModuleWin.h
+   WardenWin.cpp
+   WardenWin.h
    WaypointManager.cpp
    WaypointManager.h
    WaypointMovementGenerator.cpp

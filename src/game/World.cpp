@@ -67,6 +67,7 @@
 #include "CreatureGroups.h"
 #include "Transports.h"
 #include "CreatureEventAIMgr.h"
+#include "WardenDataStorage.h"
 
 INSTANTIATE_SINGLETON_1(World);
 
@@ -1178,6 +1179,7 @@ void World::LoadConfigSettings(bool reload)
     VMAP::VMapFactory::createOrGetVMapManager()->setHeightonmaps(heightMaps.c_str());
     VMAP::VMapFactory::createOrGetVMapManager()->setPosCollisiononmaps(posCollisionMaps.c_str());
     VMAP::VMapFactory::preventSpellsFromBeingTestedForLoS(ignoreSpellIds.c_str());
+    m_configs[CONFIG_VMAP_INDOOR_CHECK] = sConfig.GetBoolDefault("vmap.enableIndoorCheck", true);
 
     sLog.outString("WORLD: VMap support included. \nLineOfSight on maps: %s \nheight on maps: %s \npos collision on maps: %s",losMaps.c_str(), heightMaps.c_str(), posCollisionMaps.c_str());
     sLog.outString("WORLD: VMap data directory is: %svmaps",m_dataPath.c_str());
@@ -1224,6 +1226,7 @@ void World::LoadConfigSettings(bool reload)
     delete[] forbiddenMaps;
 
     m_configs[CONFIG_MIN_GM_TEXT_LVL] = sConfig.GetIntDefault("MinGMTextLevel", 1);
+    m_configs[CONFIG_WARDEN_KICK] = sConfig.GetBoolDefault("Warden.Kick", true);
     m_configs[CONFIG_MIN_GM_COMMAND_LOG_LEVEL] = sConfig.GetIntDefault("GmLogMinLevel", 1);
 }
 
@@ -1619,6 +1622,9 @@ void World::SetInitialWorldSettings()
     sLog.outString("Starting Game Event system...");
     uint32 nextGameEvent = gameeventmgr.Initialize();
     m_timers[WUPDATE_EVENTS].SetInterval(nextGameEvent);    //depend on next event
+
+    sLog.outString("Loading Warden Data..." );
+    WardenDataStorage.Init();
 
     //sLog.outString("Initialize AuctionHouseBot...");
     //auctionbot.Initialize();

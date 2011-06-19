@@ -67,7 +67,7 @@ class TRINITY_DLL_SPEC HostilReference : public Reference<Unit, ThreatManager>
 
         void setThreat(float pThreat) { addThreat(pThreat - getThreat()); }
 
-        void addThreatPercent(int32 pPercent) { float tmpThreat = iThreat; tmpThreat = tmpThreat * (pPercent+100) / 100; addThreat(tmpThreat-iThreat); }
+        void addThreatPercent(int32 pPercent) { addThreat(pPercent == -100 ? -iThreat : iThreat * pPercent / 100.0f); }
 
         float getThreat() const { return iThreat; }
 

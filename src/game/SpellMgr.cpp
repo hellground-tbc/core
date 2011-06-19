@@ -680,7 +680,6 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 41406:                                         // Dementia +
         case 41409:                                         // Dementia -
         case 30529:                                         // Chess event: Recently In Game
-        case 39331:
         case 37469:
         case 37465:
             return false;
@@ -2650,9 +2649,6 @@ void SpellMgr::LoadSpellCustomAttr()
         if (spellInfo->SpellFamilyName == SPELLFAMILY_WARLOCK && spellInfo->SpellFamilyFlags & 0x10000LL)
             spellInfo->SchoolMask = SPELL_SCHOOL_MASK_SHADOW;
 
-        if (spellInfo->SpellFamilyName == SPELLFAMILY_MAGE && spellInfo->SpellFamilyFlags & 0x200000LL)
-            spellInfo->AttributesEx2 &= ~SPELL_ATTR_EX2_CANT_REFLECTED;
-
         switch (i)
         {
         // Blind fly mode
@@ -2660,7 +2656,7 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->speed = 25;
             break;
         case 40017: // If we can't adjust speed :P we spawn it in bigger periods
-            spellInfo->EffectAmplitude[1] = 2000;
+            spellInfo->EffectAmplitude[1] = 1900;
             break;
         case 40841:
             spellInfo->EffectRadiusIndex[0] = 15;
@@ -2900,13 +2896,15 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->AttributesCu |= SPELL_ATTR_CU_CONE_LINE;
             spellInfo->EffectRadiusIndex[0] = 18;   // effect radius from 18 to 15 yd
             break;
-        case 41360: // L5 Arcane Charge should not be reflectable
-            spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_CANT_REFLECTED;
-            break;
         case 41363: // Shared Bonds
             spellInfo->AttributesEx &= ~SPELL_ATTR_EX_CHANNELED_1;
         case 16007: // DRACO_INCARCINATRIX_900
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
+            break;
+        case 39331: // Spell In Session
+            spellInfo->DurationIndex = 21;  // infinity
+            spellInfo->Effect[0] = SPELL_EFFECT_APPLY_AREA_AURA_FRIEND;
+            spellInfo->EffectRadiusIndex[0] = 31;   // effect radius from 65 to 80 yd
             break;
         default:
             break;

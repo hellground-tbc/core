@@ -3205,6 +3205,9 @@ void Unit::_UpdateAutoRepeatSpell()
         Spell* spell = new Spell(this, m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo, true, 0);
         spell->prepare(&(m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_targets));
 
+        if (!IsStandState())
+            SetStandState(PLAYER_STATE_NONE);
+
         // all went good, reset attack
         resetAttackTimer(RANGED_ATTACK);
     }
@@ -3671,6 +3674,7 @@ bool Unit::AddAura(Aura *Aur)
     {
         bool isDotOrHot = false;
         for (uint8 i = 0; i < 3; i++)
+        {
             switch (aurSpellInfo->EffectApplyAuraName[i])
             {
                 // DOT or HOT from different casters will stack
@@ -3686,6 +3690,7 @@ bool Unit::AddAura(Aura *Aur)
                     isDotOrHot = true;
                     break;
             }
+        }
 
         for (AuraMap::iterator i2 = m_Auras.lower_bound(spair); i2 != m_Auras.upper_bound(spair);)
         {
@@ -3713,6 +3718,7 @@ bool Unit::AddAura(Aura *Aur)
                     continue;
                 }
             }
+
             if (i2->second->GetCasterGUID() == Aur->GetCasterGUID() || Aur->StackNotByCaster() || (Aur->GetCaster() && Aur->GetCaster()->GetTypeId() != TYPEID_PLAYER))    // always stack auras from different creatures
             {
                 if (!stackModified)
@@ -6248,21 +6254,21 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
 //          trigger_spell_id = ;
 //     else if (auraSpellInfo->Id==40250) // Improved Duration
 //          trigger_spell_id = ;
-     else if (trigger_spell_id == 18350)   // Mana Drain Trigger
-     {
-         // On successful melee or ranged attack gain $29471s1 mana and if possible drain $27526s1 mana from the target.
-         if (this && this->isAlive())
-             CastSpell(this, 29471, true, castItem, triggeredByAura);
-         if (pVictim && pVictim->isAlive())
-             CastSpell(pVictim, 27526, true, castItem, triggeredByAura);
-         return true;
-     }
-     else if (auraSpellInfo->Id==24905)   // Moonkin Form (Passive)
+     else if (auraSpellInfo->Id == 24905)   // Moonkin Form (Passive)
      {
          // Elune's Touch (instead non-existed triggered spell) 30% from AP
          trigger_spell_id = 33926;
          basepoints0 = GetTotalAttackPowerValue(BASE_ATTACK) * 30 / 100;
          target = this;
+     }
+     else if (auraSpellInfo->Id == 46939 || auraSpellInfo->Id == 27522)
+     {
+         // On successful melee or ranged attack gain $29471s1 mana and if possible drain $27526s1 mana from the target.
+         if (pVictim && pVictim->GetPower(POWER_MANA))
+             CastSpell(pVictim, 27526, true, castItem, triggeredByAura);
+         else
+             CastSpell(this, 29471, true, castItem, triggeredByAura);
+         return true;
      }
 //     else if (auraSpellInfo->Id==43453) // Rune Ward
 //          trigger_spell_id = ;
@@ -6512,7 +6518,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                  if (((Player*)pVictim)->HasSpellCooldown(trigger_spell_id))
                      return false;
 
-                 ((Player*)pVictim)->AddSpellCooldown(trigger_spell_id, NULL, time(NULL) +4);
+                 ((Player*)pVictim)->AddSpellCooldown(trigger_spell_id, NULL, time(NULL) +1);
              }
 
              // Improved Judgement of Light: bonus heal from t4 set
@@ -6670,14 +6676,19 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
     {
         next = i;
         ++next;
-        if (!(*i).second) continue;
-            aura_id = (*i).second->GetSpellProto()->Id;
-            if (IsPassiveSpell(aura_id) || aura_id == trigger_spell_id || aura_id == triggeredByAura->GetSpellProto()->Id) continue;
+
+        if (!(*i).second)
+            continue;
+
+        aura_id = (*i).second->GetSpellProto()->Id;
+        if (IsPassiveSpell(aura_id) || aura_id == trigger_spell_id || aura_id == triggeredByAura->GetSpellProto()->Id)
+            continue;
+
         if (spellmgr.IsNoStackSpellDueToSpell(trigger_spell_id, (*i).second->GetSpellProto()->Id, ((*i).second->GetCasterGUID() == GetGUID())))
             return false;
     }
 
-    // Costum requirements (not listed in procEx) Warning! damage dealing after this
+    // Custom requirements (not listed in procEx) Warning! damage dealing after this
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
@@ -8739,10 +8750,7 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage,WeaponAttackType attT
     int32 TakenFlatBenefit = 0;
 
     // ..done (for creature type by mask) in taken
-    AuraList const& mDamageDoneCreature = GetAurasByType(SPELL_AURA_MOD_DAMAGE_DONE_CREATURE);
-    for (AuraList::const_iterator i = mDamageDoneCreature.begin();i != mDamageDoneCreature.end(); ++i)
-        if (creatureTypeMask & uint32((*i)->GetModifier()->m_miscvalue))
-            DoneFlatBenefit += (*i)->GetModifierValue();
+    DoneFlatBenefit += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_DAMAGE_DONE_CREATURE, creatureTypeMask);
 
     // ..done
     // SPELL_AURA_MOD_DAMAGE_DONE included in weapon damage
@@ -8752,22 +8760,12 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage,WeaponAttackType attT
     if (attType == RANGED_ATTACK)
     {
         APbonus += pVictim->GetTotalAuraModifier(SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS);
-
-        // ..done (base at attack power and creature type)
-        AuraList const& mCreatureAttackPower = GetAurasByType(SPELL_AURA_MOD_RANGED_ATTACK_POWER_VERSUS);
-        for (AuraList::const_iterator i = mCreatureAttackPower.begin();i != mCreatureAttackPower.end(); ++i)
-            if (creatureTypeMask & uint32((*i)->GetModifier()->m_miscvalue))
-                APbonus += (*i)->GetModifierValue();
+        APbonus += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_RANGED_ATTACK_POWER_VERSUS, creatureTypeMask);
     }
     else
     {
         APbonus += pVictim->GetMeleeApAttackerBonus(); //pVictim->GetTotalAuraModifier(SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS);
-
-        // ..done (base at attack power and creature type)
-        AuraList const& mCreatureAttackPower = GetAurasByType(SPELL_AURA_MOD_MELEE_ATTACK_POWER_VERSUS);
-        for (AuraList::const_iterator i = mCreatureAttackPower.begin();i != mCreatureAttackPower.end(); ++i)
-            if (creatureTypeMask & uint32((*i)->GetModifier()->m_miscvalue))
-                APbonus += (*i)->GetModifierValue();
+        APbonus += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_MELEE_ATTACK_POWER_VERSUS, creatureTypeMask);
     }
 
     if (APbonus!=0)                                         // Can be negative
@@ -8789,10 +8787,7 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage,WeaponAttackType attT
     }
 
     // ..taken
-    AuraList const& mDamageTaken = pVictim->GetAurasByType(SPELL_AURA_MOD_DAMAGE_TAKEN);
-    for (AuraList::const_iterator i = mDamageTaken.begin();i != mDamageTaken.end(); ++i)
-        if ((*i)->GetModifier()->m_miscvalue & GetMeleeDamageSchoolMask())
-            TakenFlatBenefit += (*i)->GetModifierValue();
+    TakenFlatBenefit += pVictim->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_DAMAGE_TAKEN, GetMeleeDamageSchoolMask());
 
     if (attType!=RANGED_ATTACK)
         TakenFlatBenefit += pVictim->GetTotalAuraModifier(SPELL_AURA_MOD_MELEE_DAMAGE_TAKEN);

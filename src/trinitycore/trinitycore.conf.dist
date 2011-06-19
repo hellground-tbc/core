@@ -208,6 +208,11 @@ EAIErrorLevel = 2
 #         Number of threads to update maps.
 #         Default: 1
 #
+#    Warden.Kick
+#        Kick player on failed check
+#        Default: 0 (Disabled)
+#                 1 (Enabled)
+#
 ###################################################################################################################
 
 UseProcessors = 0
@@ -240,6 +245,8 @@ MaxCoreStuckTime = 0
 MaxVmapCalcTime = 30
 AddonChannel = 1
 MapUpdate.Threads = 1
+
+Warden.Kick = 0
 
 ###################################################################################################################
 # SERVER LOGGING
@@ -345,6 +352,11 @@ MapUpdate.Threads = 1
 #        Default: "" - none colors
 #        Example: "13 7 11 9"
 #
+#    WardenLogFile
+#        Log file of Warden
+#        Default: "warden.log"
+#                 "" - Empty name for disable
+#
 ###################################################################################################################
 
 LogSQL = 1
@@ -372,6 +384,7 @@ ACLogFile = "AC.log"
 mailLogFile = "sendmail.log"
 WhispLogDir = "whisps/"
 LogColors = ""
+WardenLogFile = "warden.log"
 
 IrcParser = "parser.trc"
 

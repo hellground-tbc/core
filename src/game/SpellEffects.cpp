@@ -413,7 +413,8 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                 // Bloodthirst
                 if (m_spellInfo->SpellFamilyFlags & 0x40000000000LL)
                 {
-                    damage = uint32(damage * (m_caster->GetTotalAttackPowerValue(BASE_ATTACK)) / 100);  // !?
+                    attackPowerCoefficient += float(damage) *0.01f; // Base damage shows us percentage of AP that need be added
+                    damage = 0; // clear this, we have now how much AP should be taken
                 }
                 // Shield Slam
                 else if (m_spellInfo->SpellFamilyFlags & 0x100000000LL)
@@ -421,7 +422,8 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                 // Victory Rush
                 else if (m_spellInfo->SpellFamilyFlags & 0x10000000000LL)
                 {
-                    damage = uint32(damage * m_caster->GetTotalAttackPowerValue(BASE_ATTACK) / 100);    // !?
+                    attackPowerCoefficient += float(damage) *0.01f; // Base damage shows us percentage of AP that need be added
+                    damage = 0; // clear this, we have now how much AP should be taken
                     m_caster->ModifyAuraState(AURA_STATE_WARRIOR_VICTORY_RUSH, false);
                 }
                 break;
@@ -702,10 +704,20 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
         }
 
         if (attackPowerCoefficient)
-            damage += attackPowerCoefficient * (m_caster->GetTotalAttackPowerValue(BASE_ATTACK) + unitTarget->GetMeleeApAttackerBonus());
+        {
+            float attackPower = m_caster->GetTotalAttackPowerValue(BASE_ATTACK) + unitTarget->GetMeleeApAttackerBonus();
+            attackPower += m_caster->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_MELEE_ATTACK_POWER_VERSUS, unitTarget->GetCreatureTypeMask());
+
+            damage += attackPowerCoefficient * attackPower;
+        }
 
         if (rangedAttackPowerCoefficient)
-            damage += rangedAttackPowerCoefficient * (m_caster->GetTotalAttackPowerValue(RANGED_ATTACK) + unitTarget->GetTotalAuraModifier(SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS));
+        {
+            float attackPower = m_caster->GetTotalAttackPowerValue(RANGED_ATTACK) + unitTarget->GetTotalAuraModifier(SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS);
+            attackPower += m_caster->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_RANGED_ATTACK_POWER_VERSUS, unitTarget->GetCreatureTypeMask());
+
+            damage += rangedAttackPowerCoefficient * attackPower;
+        }
 
         if (m_originalCaster && damage > 0)
             damage = m_originalCaster->SpellDamageBonus(unitTarget, m_spellInfo, (uint32)damage, SPELL_DIRECT_DAMAGE);
@@ -1250,6 +1262,20 @@ void Spell::EffectDummy(uint32 i)
                     if (unitTarget)
                         m_caster->CastSpell(m_caster,20578,false,NULL);
                     return;
+                case 21147:                                 // Arcane Vacuum
+                {
+                    if (!unitTarget)
+                        return;
+
+                    // Spell used by Azuregos to teleport all the players to him
+                    // This also resets the target threat
+                    if (m_caster->getThreatManager().getThreat(unitTarget))
+                        m_caster->getThreatManager().modifyThreatPercent(unitTarget, -100);
+
+                    // cast summon player
+                    m_caster->CastSpell(unitTarget, 21150, true);
+                    return;
+                }
                 case 23019:                                 // Crystal Prison Dummy DND
                 {
                     if (!unitTarget || !unitTarget->isAlive() || unitTarget->GetTypeId() != TYPEID_UNIT || ((Creature*)unitTarget)->isPet())
@@ -2607,6 +2633,10 @@ void Spell::EffectTriggerSpell(uint32 i)
             m_caster->CastCustomSpell((Unit*)NULL, triggered_spell_id, &damage, NULL, NULL, true, m_CastItem, NULL, m_originalCasterGUID);
             return;
         }
+        // Activate Crystal Ward
+        case 44969:
+            unitTarget = m_caster;
+            break;
     }
 
     // normal case
@@ -3493,10 +3523,6 @@ void Spell::EffectEnergize(uint32 i)
             level_diff = m_caster->getLevel() - 60;
             multiplier = 4;
             break;
-        //Elune's Touch (30% AP)
-        case 33926:
-            damage = m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 30 / 100;
-            break;
         default:
             break;
     }
@@ -3513,9 +3539,10 @@ void Spell::EffectEnergize(uint32 i)
         return;
 
     int32 gain = unitTarget->ModifyPower(power,damage);
-//No threat from life tap
-    if (m_spellInfo->Id!=31818)
-    unitTarget->getHostilRefManager().threatAssist(m_caster, float(gain) * 0.5f, m_spellInfo);
+    
+    //No threat from life tap
+    if (m_spellInfo->Id != 31818)
+        unitTarget->getHostilRefManager().threatAssist(m_caster, float(gain) * 0.5f, m_spellInfo);
 
     m_caster->SendEnergizeSpellLog(unitTarget, m_spellInfo->Id, damage, power);
 
@@ -3556,7 +3583,7 @@ void Spell::EffectEnergize(uint32 i)
         if (!elixirs.empty())
         {
             // cast random elixir on target
-          uint32 rand_spell = m_caster->GetMap()->urand(0,elixirs.size()-1);
+            uint32 rand_spell = m_caster->GetMap()->urand(0,elixirs.size()-1);
             m_caster->CastSpell(unitTarget,elixirs[rand_spell],true,m_CastItem);
         }
     }
@@ -6323,23 +6350,16 @@ void Spell::EffectDuel(uint32 i)
     if (caster->duel || target->duel || !target->GetSocial() || target->GetSocial()->HasIgnore(caster->GetGUIDLow()))
         return;
 
-    // Players can only fight a duel with each other outside (=not inside dungeons and not in capital cities)
-    // Don't have to check the target's map since you cannot challenge someone across maps
-    if (caster->GetMap()->Instanceable())
+    // Players can only fight a duel in zones with this flag
+    AreaTableEntry const* casterAreaEntry = GetAreaEntryByAreaID(caster->GetAreaId());
+    if (casterAreaEntry && !(casterAreaEntry->flags & AREA_FLAG_ALLOW_DUELS))
     {
         SendCastResult(SPELL_FAILED_NO_DUELING);            // Dueling isn't allowed here
         return;
     }
 
-    AreaTableEntry const* casterAreaEntry = GetAreaEntryByAreaID(caster->GetZoneId());
-    if (casterAreaEntry && (casterAreaEntry->flags & AREA_FLAG_CAPITAL))
-    {
-        SendCastResult(SPELL_FAILED_NO_DUELING);            // Dueling isn't allowed here
-        return;
-    }
-
-    AreaTableEntry const* targetAreaEntry = GetAreaEntryByAreaID(target->GetZoneId());
-    if (targetAreaEntry && (targetAreaEntry->flags & AREA_FLAG_CAPITAL))
+    AreaTableEntry const* targetAreaEntry = GetAreaEntryByAreaID(target->GetAreaId());
+    if (targetAreaEntry && !(targetAreaEntry->flags & AREA_FLAG_ALLOW_DUELS))
     {
         SendCastResult(SPELL_FAILED_NO_DUELING);            // Dueling isn't allowed here
         return;
@@ -6540,8 +6560,6 @@ void Spell::EffectSummonTotem(uint32 i)
     pTotem->ApplySpellImmune(m_spellInfo->Id,IMMUNITY_STATE,SPELL_AURA_MOD_FEAR,true);
     pTotem->ApplySpellImmune(m_spellInfo->Id,IMMUNITY_STATE,SPELL_AURA_TRANSFORM,true);
 
-    pTotem->Summon(m_caster);
-
     if (slot < MAX_TOTEM && m_caster->GetTypeId() == TYPEID_PLAYER)
     {
         WorldPacket data(SMSG_TOTEM_CREATED, 17);
@@ -6551,6 +6569,8 @@ void Spell::EffectSummonTotem(uint32 i)
         data << uint32(m_spellInfo->Id);
         ((Player*)m_caster)->SendDirectMessage(&data);
     }
+
+    pTotem->Summon(m_caster);
 }
 
 void Spell::EffectEnchantHeldItem(uint32 i)

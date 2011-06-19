@@ -96,32 +96,32 @@ struct TRINITY_DLL_DECL instance_molten_core : public ScriptedInstance
     {
         if(Runes_timer <= diff && GetData(DATA_RUNES) != RUNES_COMPLETE)
         {
-            uint32 runes = 0;
+//            uint32 runes = 0;
 
             if(GameObject *go = instance->GetGameObject(RuneKoro))
                 if( go->GetGoState() == GO_STATE_READY )
-                    runes |= RUNE_KORO_FLAG;
+                    Runes |= RUNE_KORO_FLAG;
             if(GameObject *go = instance->GetGameObject(RuneZeth))
                 if( go->GetGoState() == GO_STATE_READY )
-                    runes |= RUNE_ZETH_FLAG;
+                    Runes |= RUNE_ZETH_FLAG;
             if(GameObject *go = instance->GetGameObject(RuneMazj))
                 if( go->GetGoState() == GO_STATE_READY )
-                    runes |= RUNE_MAZJ_FLAG;
+                    Runes |= RUNE_MAZJ_FLAG;
             if(GameObject *go = instance->GetGameObject(RuneTheri))
                 if( go->GetGoState() == GO_STATE_READY )
-                    runes |= RUNE_THERI_FLAG;
+                    Runes |= RUNE_THERI_FLAG;
             if(GameObject *go = instance->GetGameObject(RuneBlaz))
                 if( go->GetGoState() == GO_STATE_READY )
-                    runes |= RUNE_BLAZ_FLAG;
+                    Runes |= RUNE_BLAZ_FLAG;
             if(GameObject *go = instance->GetGameObject(RuneKress))
                 if( go->GetGoState() == GO_STATE_READY )
-                    runes |= RUNE_KRESS_FLAG;
+                    Runes |= RUNE_KRESS_FLAG;
             if(GameObject *go = instance->GetGameObject(RuneMohn))
                 if( go->GetGoState() == GO_STATE_READY )
-                    runes |= RUNE_MOHN_FLAG;
+                    Runes |= RUNE_MOHN_FLAG;
 
-            if(GetData(DATA_RUNES) != runes)
-                SetData(DATA_RUNES, runes);
+//            if(GetData(DATA_RUNES) != runes)
+                SetData(DATA_RUNES, Runes);
             Runes_timer = 10000;
         }
         else Runes_timer -= diff;

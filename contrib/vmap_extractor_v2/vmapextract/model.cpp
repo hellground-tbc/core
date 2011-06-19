@@ -1,3 +1,21 @@
+/*
+* Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
+*
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program; if not, write to the Free Software
+* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+*/
+
 #include "vmapexport.h"
 #include "model.h"
 #include "wmo.h"
@@ -31,7 +49,7 @@ bool Model::open()
 
         for (size_t i=0; i<header.nVertices; i++)
         {
-            vertices[i] = fixCoordSystem(origVertices[i].pos);
+            vertices[i] = fixCoordSystem(origVertices[i].pos);;
         }
 
         ModelView *view = (ModelView*)(f.getBuffer() + header.ofsViews);
@@ -65,8 +83,9 @@ bool Model::ConvertToVMAPModel(char * outfilename)
         printf("Can't create the output file '%s'\n",outfilename);
         return false;
     }
-    fwrite("VMAP003",8,1,output);
-    uint32 nVertices = header.nVertices;
+    fwrite(szRawVMAPMagic,8,1,output);
+    uint32 nVertices = 0;
+    nVertices = header.nVertices;
     fwrite(&nVertices, sizeof(int), 1, output);
     uint32 nofgroups = 1;
     fwrite(&nofgroups,sizeof(uint32), 1, output);
@@ -159,7 +178,7 @@ ModelInstance::ModelInstance(MPQFile &f,const char* ModelInstName, uint32 mapID,
 
     uint16 adtId = 0;// not used for models
     uint32 flags = MOD_M2;
-    if(tileX == 65 && tileY == 65) flags |= MOD_WORLDSPAWN;
+if(tileX == 65 && tileY == 65) flags |= MOD_WORLDSPAWN;
     //write mapID, tileX, tileY, Flags, ID, Pos, Rot, Scale, name
     fwrite(&mapID, sizeof(uint32), 1, pDirfile);
     fwrite(&tileX, sizeof(uint32), 1, pDirfile);
@@ -180,13 +199,14 @@ ModelInstance::ModelInstance(MPQFile &f,const char* ModelInstName, uint32 mapID,
     int realy2 = (int) ((float) pos.z / 533.333333f);
 
     fprintf(pDirfile,"%s/%s %f,%f,%f_%f,%f,%f %f %d %d %d,%d %d\n",
-        MapName,
-        ModelInstName,
-        (float) pos.x, (float) pos.y, (float) pos.z,
-        (float) rot.x, (float) rot.y, (float) rot.z,
-        sc,
-        nVertices,
-        realx1, realy1,
-        realx2, realy2
-        ); */
+    MapName,
+    ModelInstName,
+    (float) pos.x, (float) pos.y, (float) pos.z,
+    (float) rot.x, (float) rot.y, (float) rot.z,
+    sc,
+    nVertices,
+    realx1, realy1,
+    realx2, realy2
+    ); */
 }
+

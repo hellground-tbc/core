@@ -43,12 +43,9 @@ EndContentData */
 #define SPELL_CORRUPTION            30938
 #define SPELL_EVOCATION             30935
 #define SPELL_BURNING_NOVA          30940
-
-#define SPELL_FIRE_NOVA             33132
-#define H_SPELL_FIRE_NOVA           37371
-
-#define SPELL_SHADOW_BOLT_VOLLEY    28599
-#define H_SPELL_SHADOW_BOLT_VOLLEY  40070
+#define SPELL_VORTEX                37370
+#define SPELL_FIRE_NOVA             (HeroicMode ? 37371 : 33132)
+#define SPELL_SHADOW_BOLT_VOLLEY    (HeroicMode ? 40070 : 28599)
 
 #define ENTRY_KELIDAN               17377
 #define ENTRY_CHANNELER             17653
@@ -73,20 +70,20 @@ struct TRINITY_DLL_DECL boss_kelidan_the_breakerAI : public ScriptedAI
     boss_kelidan_the_breakerAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = (c->GetInstanceData());
-        HeroicMode = m_creature->GetMap()->IsHeroic();
         for(int i=0; i<5; ++i) Channelers[i] = 0;
     }
 
     ScriptedInstance* pInstance;
-    bool HeroicMode;
 
     uint32 ShadowVolley_Timer;
     uint32 BurningNova_Timer;
     uint32 Firenova_Timer;
     uint32 Corruption_Timer;
     uint32 check_Timer;
+
     bool Firenova;
     bool addYell;
+
     uint64 Channelers[5];
 
     void Reset()
@@ -188,8 +185,12 @@ struct TRINITY_DLL_DECL boss_kelidan_the_breakerAI : public ScriptedAI
             {
                 if (!m_creature->IsNonMeleeSpellCasted(false))
                     DoCast(m_creature,SPELL_EVOCATION);
+
                 check_Timer = 5000;
-            }else check_Timer -= diff;
+            }
+            else
+                check_Timer -= diff;
+
             return;
         }
 
@@ -197,25 +198,31 @@ struct TRINITY_DLL_DECL boss_kelidan_the_breakerAI : public ScriptedAI
         {
             if (Firenova_Timer < diff)
             {
-                DoCast(m_creature,HeroicMode ? H_SPELL_FIRE_NOVA : SPELL_FIRE_NOVA,true);
+                AddSpellToCast(m_creature,SPELL_FIRE_NOVA);
                 Firenova = false;
                 ShadowVolley_Timer = 2000;
-            }else Firenova_Timer -=diff;
+            }
+            else
+                Firenova_Timer -=diff;
 
             return;
         }
 
         if (ShadowVolley_Timer < diff)
         {
-            DoCast(m_creature,HeroicMode ? H_SPELL_SHADOW_BOLT_VOLLEY : SPELL_SHADOW_BOLT_VOLLEY);
-            ShadowVolley_Timer = 5000+rand()%8000;
-        }else ShadowVolley_Timer -=diff;
+            AddSpellToCast(m_creature, SPELL_SHADOW_BOLT_VOLLEY);
+            ShadowVolley_Timer = urand(5000, 13000);
+        }
+        else
+            ShadowVolley_Timer -=diff;
 
         if (Corruption_Timer < diff)
         {
-            DoCast(m_creature,SPELL_CORRUPTION);
-            Corruption_Timer = 30000+rand()%20000;
-        }else Corruption_Timer -=diff;
+            AddSpellToCast(me,SPELL_CORRUPTION);
+            Corruption_Timer = urand(30000, 50000);
+        }
+        else
+            Corruption_Timer -=diff;
 
         if (BurningNova_Timer < diff)
         {
@@ -224,24 +231,29 @@ struct TRINITY_DLL_DECL boss_kelidan_the_breakerAI : public ScriptedAI
 
             DoScriptText(SAY_NOVA, m_creature);
 
-            if(SpellEntry *nova = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_BURNING_NOVA))
+            if (SpellEntry *nova = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_BURNING_NOVA))
             {
-                for(uint32 i = 0; i < 3; ++i)
-                    if(nova->Effect[i] == SPELL_EFFECT_APPLY_AURA)
+                for (uint32 i = 0; i < 3; ++i)
+                {
+                    if (nova->Effect[i] == SPELL_EFFECT_APPLY_AURA)
                     {
                         Aura *Aur = new BurningNovaAura(nova, i, m_creature, m_creature);
                         m_creature->AddAura(Aur);
                     }
+                }
             }
 
             if (HeroicMode)
-                DoTeleportAll(m_creature->GetPositionX(),m_creature->GetPositionY(),m_creature->GetPositionZ(),m_creature->GetOrientation());
+                ForceSpellCast(me, SPELL_VORTEX);
 
-            BurningNova_Timer = 20000+rand()%8000;
-            Firenova_Timer= 5000;
+            BurningNova_Timer = urand(20000, 28000);
+            Firenova_Timer= 6500;
             Firenova = true;
-        }else BurningNova_Timer -=diff;
+        }
+        else
+            BurningNova_Timer -= diff;
 
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };
@@ -255,8 +267,7 @@ CreatureAI* GetAI_boss_kelidan_the_breaker(Creature *_Creature)
 ## mob_shadowmoon_channeler
 ######*/
 
-#define SPELL_SHADOW_BOLT       12739
-#define H_SPELL_SHADOW_BOLT     15472
+#define SPELL_SHADOW_BOLT       (HeroicMode ? 15472 : 12739)
 
 #define SPELL_MARK_OF_SHADOW    30937
 #define SPELL_CHANNELING        39123
@@ -266,11 +277,9 @@ struct TRINITY_DLL_DECL mob_shadowmoon_channelerAI : public ScriptedAI
     mob_shadowmoon_channelerAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = (c->GetInstanceData());
-        HeroicMode = m_creature->GetMap()->IsHeroic();
     }
 
     ScriptedInstance* pInstance;
-    bool HeroicMode;
 
     uint32 ShadowBolt_Timer;
     uint32 MarkOfShadow_Timer;
@@ -278,8 +287,8 @@ struct TRINITY_DLL_DECL mob_shadowmoon_channelerAI : public ScriptedAI
 
     void Reset()
     {
-        ShadowBolt_Timer = 1000+rand()%1000;
-        MarkOfShadow_Timer = 5000+rand()%2000;
+        ShadowBolt_Timer = urand(1000, 2000);
+        MarkOfShadow_Timer = urand(5000, 7000);
         check_Timer = 0;
         if (m_creature->IsNonMeleeSpellCasted(false))
             m_creature->InterruptNonMeleeSpells(true);
@@ -289,6 +298,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_channelerAI : public ScriptedAI
     {
         if(Creature *Kelidan = (Creature *)FindCreature(ENTRY_KELIDAN, 100, m_creature))
             ((boss_kelidan_the_breakerAI*)Kelidan->AI())->ChannelerEngaged(who);
+
         if (m_creature->IsNonMeleeSpellCasted(false))
             m_creature->InterruptNonMeleeSpells(true);
 
@@ -315,23 +325,32 @@ struct TRINITY_DLL_DECL mob_shadowmoon_channelerAI : public ScriptedAI
                             DoCast(channeled,SPELL_CHANNELING);
                     }
                 check_Timer = 5000;
-            }else check_Timer -= diff;
+            }
+            else
+                check_Timer -= diff;
+
             return;
         }
 
         if (MarkOfShadow_Timer < diff)
         {
             if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                DoCast(target,SPELL_MARK_OF_SHADOW);
+                AddSpellToCast(target,SPELL_MARK_OF_SHADOW);
+
             MarkOfShadow_Timer = 15000+rand()%5000;
-        }else MarkOfShadow_Timer -=diff;
+        }
+        else
+            MarkOfShadow_Timer -=diff;
 
         if (ShadowBolt_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),HeroicMode ? H_SPELL_SHADOW_BOLT : SPELL_SHADOW_BOLT);
-            ShadowBolt_Timer = 5000+rand()%1000;
-        }else ShadowBolt_Timer -=diff;
+            AddSpellToCast(me->getVictim(), SPELL_SHADOW_BOLT);
+            ShadowBolt_Timer = urand(5000, 6000);
+        }
+        else
+            ShadowBolt_Timer -=diff;
 
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };

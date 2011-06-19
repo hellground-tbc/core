@@ -457,6 +457,7 @@ void BattleGround::RewardReputationToTeam(uint32 faction_id, uint32 Reputation, 
         {
             int32 rep = plr->CalculateReputationGain(70, Reputation, faction_id, false);
             plr->ModifyFactionReputation(factionEntry, rep);
+            plr->UpdateBgTitle();
         }
     }
 }
@@ -904,7 +905,7 @@ void BattleGround::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
 
         // Do next only if found in battleground
         plr->SetBattleGroundId(0);                          // We're not in BG.
-        
+
         // reset destination bg team
         plr->SetBGTeam(0);
         plr->GetMotionMaster()->MovementExpired();
@@ -1560,6 +1561,26 @@ const char *BattleGround::GetTrinityString(int32 entry)
     return objmgr.GetTrinityStringForDBCLocale(entry);
 }
 
+bool BattleGround::HandlePlayerUnderMap(Player * plr)
+{
+    WorldSafeLocsEntry const *graveyard = GetClosestGraveYard(plr->GetPositionX(), plr->GetPositionY(), plr->GetPositionZ(), plr->GetTeam());
+    if (graveyard)
+    {
+        plr->TeleportTo(graveyard->map_id, graveyard->x, graveyard->y, graveyard->z, plr->GetOrientation());
+        if (plr->isDead())                                        // not send if alive, because it used in TeleportTo()
+        {
+            WorldPacket data(SMSG_DEATH_RELEASE_LOC, 4*4);  // show spirit healer position on minimap
+            data << graveyard->map_id;
+            data << graveyard->x;
+            data << graveyard->y;
+            data << graveyard->z;
+            plr->GetSession()->SendPacket(&data);
+        }
+        return true;
+    }
+    return false;
+}
+
 /*
 important notice:
 buffs aren't spawned/despawned when players captures anything
@@ -1722,5 +1743,5 @@ void BattleGround::EventPlayerLoggedOut(Player* player)
     }
 
     if (isArena())
-        player->LeaveBattleground();
+        RemovePlayerAtLeave(player->GetGUID(), true, true);
 }

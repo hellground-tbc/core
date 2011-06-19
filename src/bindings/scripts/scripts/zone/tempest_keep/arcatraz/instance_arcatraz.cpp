@@ -97,12 +97,12 @@ struct TRINITY_DLL_DECL instance_arcatraz : public ScriptedInstance
         {
             case CONTAINMENT_CORE_SECURITY_FIELD_ALPHA:
                 Containment_Core_Security_Field_Alpha = go->GetGUID();
-                if(GetData(TYPE_SOCCOTHRATES) == DONE)
+                if (GetData(TYPE_SOCCOTHRATES) == DONE)
                     HandleGameObject(NULL, true, go);
                 break;
             case CONTAINMENT_CORE_SECURITY_FIELD_BETA:
                 Containment_Core_Security_Field_Beta =  go->GetGUID();
-                if(GetData(TYPE_DALLIAH) == DONE)
+                if (GetData(TYPE_DALLIAH) == DONE)
                     HandleGameObject(NULL, true, go);
                 break;
             case SEAL_SPHERE: GoSphereGUID = go->GetGUID(); break;
@@ -123,26 +123,26 @@ struct TRINITY_DLL_DECL instance_arcatraz : public ScriptedInstance
 
     void SetData(uint32 type, uint32 data)
     {
-        switch(type)
+        switch (type)
         {
             case TYPE_ZEREKETH:
                 Encounter[0] = data;
                 break;
 
             case TYPE_DALLIAH:
-                if( data == DONE )
+                if (data == DONE)
                    HandleGameObject(Containment_Core_Security_Field_Beta, true);
                 Encounter[1] = data;
                 break;
 
             case TYPE_SOCCOTHRATES:
-                if( data == DONE )
+                if (data == DONE)
                     HandleGameObject(Containment_Core_Security_Field_Alpha, true);
                 Encounter[2] = data;
                 break;
 
             case TYPE_HARBINGERSKYRISS:
-                if( data == NOT_STARTED || data == FAIL )
+                if (data == NOT_STARTED || data == FAIL)
                 {
                     Encounter[4] = NOT_STARTED;
                     Encounter[5] = NOT_STARTED;
@@ -154,43 +154,43 @@ struct TRINITY_DLL_DECL instance_arcatraz : public ScriptedInstance
                 break;
 
             case TYPE_WARDEN_1:
-                if( data == IN_PROGRESS )
-                    if( Pod_Alpha )
+                if (data == IN_PROGRESS)
+                    if (Pod_Alpha)
                         Pod_Alpha->UseDoorOrButton();
                 Encounter[4] = data;
                 break;
 
             case TYPE_WARDEN_2:
-                if( data == IN_PROGRESS )
-                    if( Pod_Beta )
+                if ( data == IN_PROGRESS )
+                    if (Pod_Beta)
                         Pod_Beta->UseDoorOrButton();
                 Encounter[5] = data;
                 break;
 
             case TYPE_WARDEN_3:
-                if( data == IN_PROGRESS )
-                    if( Pod_Delta )
+                if (data == IN_PROGRESS)
+                    if (Pod_Delta)
                         Pod_Delta->UseDoorOrButton();
                 Encounter[6] = data;
                 break;
 
             case TYPE_WARDEN_4:
-                if( data == IN_PROGRESS )
-                    if( Pod_Gamma )
+                if (data == IN_PROGRESS)
+                    if (Pod_Gamma)
                         Pod_Gamma->UseDoorOrButton();
                 Encounter[7] = data;
                 break;
 
             case TYPE_WARDEN_5:
-                if( data == IN_PROGRESS )
-                    if( Pod_Omega )
+                if (data == IN_PROGRESS)
+                    if (Pod_Omega)
                         Pod_Omega->UseDoorOrButton();
                 Encounter[8] = data;
                 break;
 
             case TYPE_SHIELD_OPEN:
-                if( data == IN_PROGRESS )
-                    if( Wardens_Shield )
+                if (data == IN_PROGRESS)
+                    if (Wardens_Shield)
                         Wardens_Shield->UseDoorOrButton();
                 break;
         }
@@ -243,6 +243,12 @@ struct TRINITY_DLL_DECL instance_arcatraz : public ScriptedInstance
     {
          switch(type)
         {
+            case TYPE_ZEREKETH:
+                return Encounter[0];
+            case TYPE_DALLIAH:
+                return Encounter[1];
+            case TYPE_SOCCOTHRATES:
+                return Encounter[2];
             case TYPE_HARBINGERSKYRISS:
                 return Encounter[3];
             case TYPE_WARDEN_1:

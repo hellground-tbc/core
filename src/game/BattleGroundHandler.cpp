@@ -256,6 +256,9 @@ void WorldSession::HandleBattleGroundPVPlogdataOpcode(WorldPacket & /*recv_data*
     if (!bg)
         return;
 
+    if (bg->isArena())
+        return;
+
     WorldPacket data;
     sBattleGroundMgr.BuildPvpLogDataPacket(&data, bg);
     SendPacket(&data);

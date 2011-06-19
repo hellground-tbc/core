@@ -34,47 +34,74 @@ struct TRINITY_DLL_DECL boss_thebeastAI : public ScriptedAI
     uint32 Flamebreak_Timer;
     uint32 Immolate_Timer;
     uint32 TerrifyingRoar_Timer;
+    uint32 checkTimer;
 
     void Reset()
     {
         Flamebreak_Timer = 12000;
         Immolate_Timer = 3000;
         TerrifyingRoar_Timer = 23000;
+        checkTimer = 3000;
     }
 
     void EnterCombat(Unit *who)
     {
+        if (who->GetTypeId() != TYPEID_PLAYER)
+        {
+            me->Kill(who, false);
+
+            if (Player * owner = who->GetCharmerOrOwnerPlayerOrPlayerItself())
+                me->Kill(owner, true);
+
+            EnterEvadeMode();
+        }
     }
 
     void UpdateAI(const uint32 diff)
     {
         //Return since we have no target
-        if (!UpdateVictim() )
+        if (!UpdateVictim())
             return;
+
+        if (checkTimer < diff)
+        {
+            DoZoneInCombat();
+            checkTimer = 3000;
+        }
+        else
+            checkTimer -= diff;
 
         //Flamebreak_Timer
         if (Flamebreak_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_FLAMEBREAK);
+            AddSpellToCast(m_creature->getVictim(), SPELL_FLAMEBREAK);
             Flamebreak_Timer = 10000;
-        }else Flamebreak_Timer -= diff;
+        }
+        else
+            Flamebreak_Timer -= diff;
 
         //Immolate_Timer
         if (Immolate_Timer < diff)
         {
             Unit* target = NULL;
             target = SelectUnit(SELECT_TARGET_RANDOM,0);
-            if (target) DoCast(target,SPELL_IMMOLATE);
+            if (target)
+                AddSpellToCast(target, SPELL_IMMOLATE);
             Immolate_Timer = 8000;
-        }else Immolate_Timer -= diff;
+        }
+        else
+            Immolate_Timer -= diff;
 
         //TerrifyingRoar_Timer
         if (TerrifyingRoar_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_TERRIFYINGROAR);
+            AddSpellToCast(m_creature->getVictim(), SPELL_TERRIFYINGROAR);
             TerrifyingRoar_Timer = 20000;
-        }else TerrifyingRoar_Timer -= diff;
+        }
+        else
+            TerrifyingRoar_Timer -= diff;
 
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };

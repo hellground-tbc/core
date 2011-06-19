@@ -290,7 +290,55 @@ bool GossipSelect_npc_cenarion_scout_landion(Player *player, Creature *_Creature
     return true;
 }
 
+///////
+/// Wind Stone
+///////
 
+#define GOSSIP_WIND_STONE         "You will listen to this, ville duke! I am not your Twilight's Hammer lapdog! I am here to challenge you! Come! Come, and meet your death..."
+
+#define DUKE_OF_SHARDS          15208
+#define DUKE_OF_ZEPHYRS         15220
+#define DUKE_OF_FATHOMS         15207
+#define DUKE_OF_CYNDERS         15206
+
+bool GossipHello_go_wind_stone(Player *player, GameObject* _GO)
+{
+    if(player->HasEquiped(20406) && player->HasEquiped(20408) && player->HasEquiped(20407) && player->HasEquiped(20422))
+    {
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_WIND_STONE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+    }
+
+    player->SEND_GOSSIP_MENU(_GO->GetGOInfo()->questgiver.gossipID, _GO->GetGUID());
+    return true;
+}
+
+void SendActionMenu_go_wind_stone(Player *player, GameObject* _GO, uint32 action)
+{
+    _GO->SetGoState(GO_STATE_ACTIVE);
+    _GO->SetRespawnTime(600);
+    player->CLOSE_GOSSIP_MENU();
+
+    float x,y,z;
+    player->GetClosePoint(x,y,z, 0.0f, 2.0f, frand(0, M_PI));
+
+    switch(action)
+    {
+    case GOSSIP_ACTION_INFO_DEF:
+        player->CastSpell(player,24762,false);
+        player->SummonCreature(RAND(DUKE_OF_CYNDERS, DUKE_OF_FATHOMS, DUKE_OF_SHARDS, DUKE_OF_ZEPHYRS), x,y,z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 600000);
+        player->DestroyItemCount(20422, 1, true, true);
+        break;
+    }
+}
+
+bool GossipSelect_go_wind_stone(Player *player, GameObject* _GO, uint32 sender, uint32 action )
+{
+    switch(sender)
+    {
+        case GOSSIP_SENDER_MAIN:    SendActionMenu_go_wind_stone(player, _GO, action); break;
+    }
+    return true;
+}
 /*###
 ##
 ####*/
@@ -327,6 +375,12 @@ void AddSC_silithus()
     newscript->Name="npc_cenarion_scout_landion";
     newscript->pGossipHello = &GossipHello_npc_cenarion_scout_landion;
     newscript->pGossipSelect = &GossipSelect_npc_cenarion_scout_landion;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="go_wind_stone";
+    newscript->pGOHello  = &GossipHello_go_wind_stone;
+    newscript->pGOSelect = &GossipSelect_go_wind_stone;
     newscript->RegisterSelf();
 }
 

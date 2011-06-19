@@ -159,6 +159,7 @@
       <AdditionalDependencies>.\g3dlite__$(Platform)_$(Configuration)\g3dlite.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>.\shared__$(Platform)_$(Configuration)\shared.lib</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>dep\lib\$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -242,6 +243,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\shared\Auth\SARC4.cpp" />
     <ClCompile Include="..\..\src\shared\Database\Database.cpp" />
     <ClCompile Include="..\..\src\shared\Database\DatabaseMysql.cpp" />
     <ClCompile Include="..\..\src\shared\Database\Field.cpp" />
@@ -284,6 +286,8 @@
     <ClCompile Include="..\..\src\shared\Threading.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\shared\Auth\SARC4.h" />
+    <ClInclude Include="..\..\src\shared\Auth\WardenKeyGeneration.h" />
     <ClInclude Include="..\..\src\shared\Database\Database.h" />
     <ClInclude Include="..\..\src\shared\Database\DatabaseEnv.h" />
     <ClInclude Include="..\..\src\shared\Database\DatabaseImpl.h" />

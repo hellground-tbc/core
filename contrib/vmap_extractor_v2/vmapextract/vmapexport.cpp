@@ -1,3 +1,21 @@
+/*
+* Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
+*
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program; if not, write to the Free Software
+* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+*/
+
 #define _CRT_SECURE_NO_DEPRECATE
 #include <cstdio>
 #include <iostream>
@@ -5,13 +23,13 @@
 #include <list>
 #include <errno.h>
 
-#ifdef _WIN32
-    #include <Windows.h>
-    #include <sys/stat.h>
-    #include <direct.h>
-    #define mkdir _mkdir
+#ifdef WIN32
+#include <Windows.h>
+#include <sys/stat.h>
+#include <direct.h>
+#define mkdir _mkdir
 #else
-    #include <sys/stat.h>
+#include <sys/stat.h>
 #endif
 
 #undef min
@@ -45,7 +63,6 @@ typedef struct
 }map_id;
 
 map_id * map_ids;
-uint16 *LiqType = 0;
 uint32 map_count;
 char output_path[128]=".";
 char input_path[1024]=".";
@@ -56,22 +73,9 @@ bool preciseVectorData = false;
 
 //static const char * szWorkDirMaps = ".\\Maps";
 const char * szWorkDirWmo = "./Buildings";
+const char * szRawVMAPMagic = "VMAP003";
 
 // Local testing functions
-
-static void clreol()
-{
-    printf("\r                                                                              \r");
-}
-
-void strToLower(char* str)
-{
-    while(*str)
-    {
-        *str=tolower(*str);
-        ++str;
-    }
-}
 
 static const char * GetPlainName(const char * szFileName)
 {
@@ -82,31 +86,9 @@ static const char * GetPlainName(const char * szFileName)
     return szFileName;
 }
 
-// copied from contrib/extractor/System.cpp
-void ReadLiquidTypeTableDBC()
-{
-    printf("Read LiquidType.dbc file...");
-    DBCFile dbc("DBFilesClient\\LiquidType.dbc");
-    if(!dbc.open())
-    {
-        printf("Fatal error: Invalid LiquidType.dbc file format!\n");
-        exit(1);
-    }
-
-    size_t LiqType_count = dbc.getRecordCount();
-    size_t LiqType_maxid = dbc.getRecord(LiqType_count - 1).getUInt(0);
-    LiqType = new uint16[LiqType_maxid + 1];
-    memset(LiqType, 0xff, (LiqType_maxid + 1) * sizeof(uint16));
-
-    for(uint32 x = 0; x < LiqType_count; ++x)
-        LiqType[dbc.getRecord(x).getUInt(0)] = dbc.getRecord(x).getUInt(3);
-
-    printf("Done! (%u LiqTypes loaded)\n", (unsigned int)LiqType_count);
-}
-
 int ExtractWmo()
 {
-    char   szLocalFile[1024] = "";
+    char szLocalFile[1024] = "";
     bool success=true;
 
     //const char* ParsArchiveNames[] = {"patch-2.MPQ", "patch.MPQ", "common.MPQ", "expansion.MPQ"};
@@ -205,10 +187,6 @@ int ExtractWmo()
         printf("\nExtract wmo complete (No (fatal) errors)\n");
 
     return success;
-}
-
-void ExtractMapsFromMpq()
-{
 }
 
 void ParsMapFiles()
@@ -312,6 +290,11 @@ bool fillArchiveNameVector(std::vector<std::string>& pArchiveNames)
     searchLocales.push_back("esES");
     searchLocales.push_back("frFR");
     searchLocales.push_back("koKR");
+    searchLocales.push_back("zhCN");
+    searchLocales.push_back("zhTW");
+    searchLocales.push_back("enCN");
+    searchLocales.push_back("enTW");
+    searchLocales.push_back("esMX");
     searchLocales.push_back("ruRU");
 
     for (std::vector<std::string>::iterator i = searchLocales.begin(); i != searchLocales.end(); ++i)
@@ -372,7 +355,6 @@ bool processArgv(int argc, char ** argv, const char *versionString)
 {
     bool result = true;
     hasInputPathParam = false;
-    bool preciseVectorData = false;
 
     for(int i=1; i< argc; ++i)
     {
@@ -413,10 +395,10 @@ bool processArgv(int argc, char ** argv, const char *versionString)
     {
         printf("Extract %s.\n",versionString);
         printf("%s [-?][-s][-l][-d <path>]\n", argv[0]);
-        printf("   -s : (default) small size (data size optimization), ~500MB less vmap data.\n");
-        printf("   -l : large size, ~500MB more vmap data. (might contain more details)\n");
-        printf("   -d <path>: Path to the vector data source folder.\n");
-        printf("   -? : This message.\n");
+        printf(" -s : (default) small size (data size optimization), ~500MB less vmap data.\n");
+        printf(" -l : large size, ~500MB more vmap data. (might contain more details)\n");
+        printf(" -d <path>: Path to the vector data source folder.\n");
+        printf(" -? : This message.\n");
     }
     return result;
 }
@@ -459,7 +441,7 @@ int main(int argc, char ** argv)
     //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     // Create the working directory
     if(mkdir(szWorkDirWmo
-#ifdef _XOPEN_UNIX
+#ifdef __linux__
                     , 0711
 #endif
                     ))
@@ -480,7 +462,6 @@ int main(int argc, char ** argv)
         printf("FATAL ERROR: None MPQ archive found by path '%s'. Use -d option with proper path.\n",input_path);
         return 1;
     }
-    ReadLiquidTypeTableDBC();
 
     // extract data
     if(success)
@@ -513,14 +494,14 @@ int main(int argc, char ** argv)
         //nError = ERROR_SUCCESS;
     }
 
-    clreol();
+    printf("\n");
     if(!success)
     {
-        printf("ERROR: Extract %s. Work NOT complete.\n   Precise vector data=%d.\nPress any key.\n",versionString, preciseVectorData);
+        printf("ERROR: Extract %s. Work NOT complete.\n Precise vector data=%d.\nPress any key.\n",versionString, preciseVectorData);
         getchar();
     }
 
-    printf("Extract %s. Work complete. No errors.\n",versionString);
-    delete [] LiqType;
+    printf("Extract %s. Work complete. No errors. Precise vector data = %d\n",versionString, preciseVectorData);
     return 0;
 }
+

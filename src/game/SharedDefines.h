@@ -251,7 +251,7 @@ enum SpellCategory
 #define SPELL_ATTR_EX_SUMMON_PET                  0x00000001            // 0 many summon/control pet spells have this attr (like enslave, min control, call pet, summon warlock minion)
 #define SPELL_ATTR_EX_DRAIN_ALL_POWER             0x00000002            // 1 use all power (Only paladin Lay of Hands and Bunyanize)
 #define SPELL_ATTR_EX_CHANNELED_1                 0x00000004            // 2 channeled 1
-#define SPELL_ATTR_EX_PUT_CASTER_IN_COMBAT        0x00000008            // 3 spells that cause a caster to enter a combat
+#define SPELL_ATTR_EX_CANT_REFLECTED              0x00000008            // 3 spells that can not be reflected
 #define SPELL_ATTR_EX_UNK4                        0x00000010            // 4
 #define SPELL_ATTR_EX_NOT_BREAK_STEALTH           0x00000020            // 5 Not break stealth
 #define SPELL_ATTR_EX_CHANNELED_2                 0x00000040            // 6 channeled self
@@ -284,7 +284,7 @@ enum SpellCategory
 
 #define SPELL_ATTR_EX2_UNK0                       0x00000001            // 0
 #define SPELL_ATTR_EX2_UNK1                       0x00000002            // 1 ? many triggered spells have this flag
-#define SPELL_ATTR_EX2_CANT_REFLECTED             0x00000004            // 2 ? used for detect can or not spell reflected
+#define SPELL_ATTR_EX2_IGNORE_LOS                 0x00000004            // 2 used to detect when ever spell can ignore los check
 #define SPELL_ATTR_EX2_UNK3                       0x00000008            // 3
 #define SPELL_ATTR_EX2_UNK4                       0x00000010            // 4
 #define SPELL_ATTR_EX2_AUTOREPEAT_FLAG            0x00000020            // 5
@@ -392,7 +392,7 @@ enum SpellCategory
 #define SPELL_ATTR_EX5_UNK8                       0x00000100            // 8
 #define SPELL_ATTR_EX5_UNK9                       0x00000200            // 9
 //in TC2 & mangos: #define SPELL_ATTR_EX5_START_PERIODIC_AT_APPLY    0x00000200            // 9  begin periodic tick at aura apply
-#define SPELL_ATTR_EX5_UNK10                      0x00000400            // 10
+#define SPELL_ATTR_EX5_HIDE_DURATION              0x00000400            // 10 do not send duration to client
 #define SPELL_ATTR_EX5_UNK11                      0x00000800            // 11
 #define SPELL_ATTR_EX5_UNK12                      0x00001000            // 12
 #define SPELL_ATTR_EX5_UNK13                      0x00002000            // 13
@@ -1675,7 +1675,7 @@ enum CreatureFamily
 enum CreatureTypeFlags
 {
     CREATURE_TYPEFLAGS_TAMEABLE        = 0x00001,           //tameable by any hunter
-    CREATURE_TYPEFLAGS_UNK2            = 0x00002,           //? Related to spirits/ghosts in any form? Allow gossip interaction if player is also ghost? Visibility?
+    CREATURE_TYPEFLAGS_GHOST           = 0x00002,           //? Related to spirits/ghosts in any form? Allow gossip interaction if player is also ghost? Visibility?
     CREATURE_TYPEFLAGS_UNK3            = 0x00004,
     CREATURE_TYPEFLAGS_UNK4            = 0x00008,
     CREATURE_TYPEFLAGS_UNK5            = 0x00010,

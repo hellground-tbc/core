@@ -49,6 +49,9 @@
     <Filter Include="Managers">
       <UniqueIdentifier>{3bbc353e-a9e0-4ab2-af96-9cc546f2f0d0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Warden">
+      <UniqueIdentifier>{8944d8f8-adfe-406e-aeae-235e04130e1b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\game\Channel.cpp">
@@ -478,6 +481,18 @@
       <Filter>Managers</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\game\MapUpdater.cpp" />
+    <ClCompile Include="..\..\src\game\WardenBase.cpp">
+      <Filter>Warden</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\WardenDataStorage.cpp">
+      <Filter>Warden</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\WardenMac.cpp">
+      <Filter>Warden</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\WardenWin.cpp">
+      <Filter>Warden</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\game\Channel.h">
@@ -888,6 +903,24 @@
     </ClInclude>
     <ClInclude Include="..\..\src\game\OutdoorPvPImpl.h">
       <Filter>Outdoor PvP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\WardenBase.h">
+      <Filter>Warden</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\WardenDataStorage.h">
+      <Filter>Warden</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\WardenMac.h">
+      <Filter>Warden</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\WardenModuleMac.h">
+      <Filter>Warden</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\WardenModuleWin.h">
+      <Filter>Warden</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\WardenWin.h">
+      <Filter>Warden</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

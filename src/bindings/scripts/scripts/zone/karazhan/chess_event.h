@@ -188,6 +188,7 @@ enum ChessEventSpells
     SPELL_FURY_OF_MEDIVH    = 39383,  // 1st cheat: AOE spell burn cell under enemy chesspieces.
     SPELL_HAND_OF_MEDIVH    = 39339,  // 2nd cheat: Berserk own chesspieces.
     // 3rd cheat: set own creatures to max health
+    SPELL_GAME_OVER         = 39401
 };
 
 enum ChessPiecesSpells
@@ -509,6 +510,7 @@ private:
 
     int32 miniEventTimer;
     uint32 endEventTimer;
+    uint32 endEventLightningTimer;
 
     uint32 firstCheatTimer;
     uint32 secondCheatTimer;

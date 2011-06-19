@@ -39,7 +39,7 @@ enum LogType
 const int LogType_count = int(LogError) +1;
 
 Log::Log() :
-    logfile(NULL), gmLogfile(NULL), charLogfile(NULL), specialLogFile(NULL), mailLogFile(NULL),
+    logfile(NULL), gmLogfile(NULL), charLogfile(NULL), specialLogFile(NULL), mailLogFile(NULL), wardenLogFile(NULL),
     dberLogfile(NULL), arenaLogFile(NULL), bossLogFile(NULL), cheatLogFile(NULL), acLogFile(NULL), m_colored(false), m_includeTime(false), m_gmlog_per_account(false)
 {
     Initialize();
@@ -243,6 +243,8 @@ void Log::Initialize()
     cheatLogFile = openLogFile("CheatLogFile", NULL, "a");
 
     acLogFile = openLogFile("ACLogFile", NULL, "a");
+
+    wardenLogFile = openLogFile("WardenLogFile", NULL, "a");
 
     // Main log file settings
     m_includeTime  = sConfig.GetBoolDefault("LogTime", false);
@@ -829,6 +831,23 @@ void Log::outMail(const char * str, ... )
         fprintf(mailLogFile, "\n" );
         va_end(ap);
         fflush(mailLogFile);
+    }
+}
+
+void Log::outWarden(const char * str, ...)
+{
+    if(!str)
+        return;
+
+    if (wardenLogFile)
+    {
+        va_list ap;
+        outTimestamp(wardenLogFile);
+        va_start(ap, str);
+        vfprintf(wardenLogFile, str, ap);
+        fprintf(wardenLogFile, "\n");
+        va_end(ap);
+        fflush(wardenLogFile);
     }
 }
 

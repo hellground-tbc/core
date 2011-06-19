@@ -421,6 +421,19 @@ class ByteBuffer
             sLog.outDebug(" ");
         }
 
+        std::string GetString(int len, int pos = 0) const
+        {
+            len += pos;
+            if (len > size())
+                len = size();
+
+            std::string str;
+            for(uint32 i = pos; i < len; ++i)
+                str.push_back(read<char>(i));
+
+            return str;
+        }
+
         void hexlike() const
         {
             if(!sLog.IsOutDebug())                          // optimize disabled debug output

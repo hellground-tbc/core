@@ -74,6 +74,7 @@ class AuthSocket: public TcpSocket
 
         std::string _login;
         std::string _safelogin;
+        std::string operatingSystem;
 
         // Since GetLocaleByName() is _NOT_ bijective, we have to store the locale as a string. Otherwise we can't differ
         // between enUS and enGB, which is important for the patch system

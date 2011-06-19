@@ -356,7 +356,7 @@ Spell::Spell(Unit* Caster, SpellEntry const *info, bool triggered, uint64 origin
 
     // determine reflection
     m_canReflect = false;
-    if (!(m_spellInfo->SchoolMask & SPELL_SCHOOL_MASK_NORMAL) && m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC && !IsAreaOfEffectSpell(m_spellInfo) && (m_spellInfo->AttributesEx2 & 0x4)==0)
+    if (!(m_spellInfo->SchoolMask & SPELL_SCHOOL_MASK_NORMAL) && m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC && !(m_spellInfo->AttributesEx & SPELL_ATTR_EX_CANT_REFLECTED) && !IsAreaOfEffectSpell(m_spellInfo))
     {
         for (int j = 0; j < 3; j++)
         {
@@ -1305,9 +1305,7 @@ struct ChainHealingOrder : public std::binary_function<const Unit*, const Unit*,
 
     int32 ChainHealingHash(Unit const* Target) const
     {
-        /*if (Target == MainTarget)
-            return 0;
-        else*/ if (Target->GetTypeId() == TYPEID_PLAYER && MainTarget->GetTypeId() == TYPEID_PLAYER &&
+        if (Target->GetTypeId() == TYPEID_PLAYER && MainTarget->GetTypeId() == TYPEID_PLAYER &&
             ((Player const*)Target)->IsInSameRaidWith((Player const*)MainTarget))
         {
             if (Target->GetHealth() == Target->GetMaxHealth())
@@ -1315,8 +1313,10 @@ struct ChainHealingOrder : public std::binary_function<const Unit*, const Unit*,
             else
                 return 20000 - Target->GetMaxHealth() + Target->GetHealth();
         }
-        else
+        else if(!((Creature*)Target)->isTotem())
             return 40000 - Target->GetMaxHealth() + Target->GetHealth();
+        else
+            return 50000 - Target->GetMaxHealth() + Target->GetHealth();
     }
 };
 
@@ -1369,7 +1369,7 @@ void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uin
         {
             next = tempUnitMap.begin();
             while (cur->GetDistance(*next) > CHAIN_SPELL_JUMP_RADIUS
-                || !cur->IsWithinLOSInMap(*next) || (*next)->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_PL_SPELL_TARGET))
+                || !(m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_IGNORE_LOS) && !cur->IsWithinLOSInMap(*next) || (*next)->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_PL_SPELL_TARGET))
             {
                 ++next;
                 if (next == tempUnitMap.end())
@@ -1398,7 +1398,7 @@ void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uin
             while (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MELEE
                 && !m_caster->isInFront(*next, max_range)
                 || !m_caster->canSeeOrDetect(*next, false)
-                || !cur->IsWithinLOSInMap(*next))
+                || !(m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_IGNORE_LOS) && !cur->IsWithinLOSInMap(*next))
             {
                 ++next;
                 if (next == tempUnitMap.end() || cur->GetDistance(*next) > CHAIN_SPELL_JUMP_RADIUS)
@@ -1904,6 +1904,10 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                             m_targets.setDestination(st->target_X, st->target_Y, st->target_Z, (int32)st->target_mapId);
                         else if (st->target_mapId == m_caster->GetMapId())
                             m_targets.setDestination(st->target_X, st->target_Y, st->target_Z);
+
+                        // for spells with implicit 17, 0
+                        if (!m_targets.getUnitTarget())
+                            m_targets.setUnitTarget(m_caster);
                     }
                     else
                         sLog.outError("SPELL: unknown target coordinates for spell ID %u\n", m_spellInfo->Id);
@@ -3069,7 +3073,7 @@ void Spell::SendSpellStart()
 
     sLog.outDebug("Sending SMSG_SPELL_START id=%u", m_spellInfo->Id);
 
-    uint32 castFlags = CAST_FLAG_UNKNOWN1;
+    uint32 castFlags = CAST_FLAG_UNKNOWN2;
     if (IsRangedSpell())
         castFlags |= CAST_FLAG_AMMO;
 
@@ -3088,7 +3092,7 @@ void Spell::SendSpellStart()
     data << uint32(m_timer);                                // delay?
     data << m_targets;
 
-    if (castFlags & CAST_FLAG_AMMO)
+    if (castFlags & CAST_FLAG_AMMO)                         // projectile info
         WriteAmmoToPacket(&data);
 
     m_caster->SendMessageToSet(&data, true);
@@ -3104,11 +3108,11 @@ void Spell::SendSpellGo()
 
     Unit *target = m_targets.getUnitTarget() ? m_targets.getUnitTarget() : m_caster;
 
-    uint32 castFlags = CAST_FLAG_UNKNOWN3;
+    uint32 castFlags = CAST_FLAG_UNKNOWN9;
 
     // triggered spells with spell visual != 0 and not auto shot
     if ((m_IsTriggeredSpell && (m_spellInfo->AttributesEx4 & SPELL_ATTR_EX4_AUTOSHOT) == 0) || m_triggeredByAuraSpell)
-        castFlags |= CAST_FLAG_UNKNOWN0;
+        castFlags |= CAST_FLAG_HIDDEN_COMBATLOG;
 
     if (IsRangedSpell())
         castFlags |= CAST_FLAG_AMMO;                        // arrows/bullets visual
@@ -3122,13 +3126,13 @@ void Spell::SendSpellGo()
     data << m_caster->GetPackGUID();
     data << uint32(m_spellInfo->Id);                        // spellId
     data << uint16(castFlags);                              // cast flags
-    data << uint32(WorldTimer::getMSTime());                            // timestamp
+    data << uint32(WorldTimer::getMSTime());                // timestamp
 
     WriteSpellGoTargets(&data);
 
     data << m_targets;
 
-    if (castFlags & CAST_FLAG_AMMO)
+    if (castFlags & CAST_FLAG_AMMO)                         // projectile info
         WriteAmmoToPacket(&data);
 
     m_caster->SendMessageToSet(&data, true);
@@ -3722,6 +3726,19 @@ uint8 Spell::CanCast(bool strict)
             return SPELL_FAILED_MOVING;
     }
 
+    if (m_caster->GetTypeId() == TYPEID_PLAYER && !((Player*)m_caster)->isGameMaster() &&
+        sWorld.getConfig(CONFIG_VMAP_INDOOR_CHECK) &&
+        VMAP::VMapFactory::createOrGetVMapManager()->isLineOfSightCalcEnabled(m_caster->GetMapId()))
+    {
+        if (m_spellInfo->Attributes & SPELL_ATTR_OUTDOORS_ONLY &&
+                !m_caster->GetMap()->IsOutdoors(m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ()))
+            return SPELL_FAILED_ONLY_OUTDOORS;
+
+        if(m_spellInfo->Attributes & SPELL_ATTR_INDOORS_ONLY &&
+                m_caster->GetMap()->IsOutdoors(m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ()))
+            return SPELL_FAILED_ONLY_INDOORS;
+    }
+
     Unit *target = m_targets.getUnitTarget();
 
     if (target)
@@ -3740,7 +3757,7 @@ uint8 Spell::CanCast(bool strict)
             if (target->isInFlight() && m_caster->GetTypeId() == TYPEID_PLAYER)
                 return SPELL_FAILED_BAD_TARGETS;
 
-            if (!m_IsTriggeredSpell && VMAP::VMapFactory::checkSpellForLoS(m_spellInfo->Id) && !m_caster->IsWithinLOSInMap(target))
+            if (!m_IsTriggeredSpell && !(m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_IGNORE_LOS) && VMAP::VMapFactory::checkSpellForLoS(m_spellInfo->Id) && !m_caster->IsWithinLOSInMap(target))
                 return SPELL_FAILED_LINE_OF_SIGHT;
 
             // auto selection spell rank implemented in WorldSession::HandleCastSpellOpcode
@@ -3842,7 +3859,7 @@ uint8 Spell::CanCast(bool strict)
             {
                 if (Pet *pPet = m_caster->GetPet())
                 {
-                    if (!pPet->IsWithinLOSInMap(m_caster))
+                    if (!(m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_IGNORE_LOS) && !pPet->IsWithinLOSInMap(m_caster))
                         return SPELL_FAILED_LINE_OF_SIGHT;
                 }
                 break;
@@ -5352,7 +5369,7 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
             //fall through
         case SPELL_EFFECT_RESURRECT_NEW:
             // player far away, maybe his corpse near?
-            if (target!=m_caster && !target->IsWithinLOSInMap(m_caster))
+            if (target!=m_caster && !(m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_IGNORE_LOS) && !target->IsWithinLOSInMap(m_caster))
             {
                 if (!m_targets.getCorpseTargetGUID())
                     return false;
@@ -5364,14 +5381,14 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
                 if (target->GetGUID()!=corpse->GetOwnerGUID())
                     return false;
 
-                if (!corpse->IsWithinLOSInMap(m_caster))
+                if (!(m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_IGNORE_LOS) && !corpse->IsWithinLOSInMap(m_caster))
                     return false;
             }
 
             // all ok by some way or another, skip normal check
             break;
         default:                                            // normal case
-            if (target!=m_caster && !target->IsWithinLOSInMap(m_caster))
+            if (target!=m_caster && !(m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_IGNORE_LOS) && !target->IsWithinLOSInMap(m_caster))
                 return false;
 
             break;

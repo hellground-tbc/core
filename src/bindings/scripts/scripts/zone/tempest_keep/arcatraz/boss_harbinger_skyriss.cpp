@@ -78,6 +78,7 @@ struct TRINITY_DLL_DECL boss_harbinger_skyrissAI : public ScriptedAI
     uint32 Fear_Timer;
     uint32 Domination_Timer;
     uint32 ManaBurn_Timer;
+    uint32 checkTimer;
 
     void Reset()
     {
@@ -203,6 +204,37 @@ struct TRINITY_DLL_DECL boss_harbinger_skyrissAI : public ScriptedAI
 
         if( !UpdateVictim() )
             return;
+
+        if (checkTimer < diff)
+        {
+            bool alive = false;
+            Player* pl;
+            InstanceMap::PlayerList const &playerliste = ((InstanceMap*)m_creature->GetMap())->GetPlayers();
+            InstanceMap::PlayerList::const_iterator it;
+
+            Map::PlayerList const &PlayerList = ((InstanceMap*)m_creature->GetMap())->GetPlayers();
+            for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+            {
+                pl = i->getSource();
+
+                if (pl && pl->isAlive())
+                {
+                    alive = true;
+                    break;
+                }
+            }
+
+            if (!alive)
+            {
+                me->Kill(me->getVictim(), false);
+                EnterEvadeMode();
+                return;
+            }
+
+            checkTimer = 3000;
+        }
+        else
+            checkTimer -= diff;
 
         if( !IsImage66 && ((m_creature->GetHealth()*100) / m_creature->GetMaxHealth() <= 66) )
         {

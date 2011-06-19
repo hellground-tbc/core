@@ -1,3 +1,21 @@
+/*
+* Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
+*
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program; if not, write to the Free Software
+* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+*/
+
 #ifndef WMO_H
 #define WMO_H
 #define TILESIZE (533.33333f)
@@ -9,13 +27,13 @@
 #include "loadlib/loadlib.h"
 
 // MOPY flags
-#define WMO_MATERIAL_NOCAMCOLLIDE    0x01
-#define WMO_MATERIAL_DETAIL          0x02
-#define WMO_MATERIAL_NO_COLLISION    0x04
-#define WMO_MATERIAL_HINT            0x08
-#define WMO_MATERIAL_RENDER          0x10
-#define WMO_MATERIAL_COLLIDE_HIT     0x20
-#define WMO_MATERIAL_WALL_SURFACE    0x40
+#define WMO_MATERIAL_NOCAMCOLLIDE 0x01
+#define WMO_MATERIAL_DETAIL 0x02
+#define WMO_MATERIAL_NO_COLLISION 0x04
+#define WMO_MATERIAL_HINT 0x08
+#define WMO_MATERIAL_RENDER 0x10
+#define WMO_MATERIAL_COLLIDE_HIT 0x20
+#define WMO_MATERIAL_WALL_SURFACE 0x40
 
 class WMOInstance;
 class WMOManager;
@@ -74,7 +92,7 @@ public:
     int mopy_size,moba_size;
     int LiquEx_size;
     unsigned int nVertices; // number when loaded
-    int nTriangles; // number when loaded
+    int nTriangles;         // number when loaded
     char *MOPY;
     uint16 *MOVI;
     uint16 *MoviEx;
@@ -91,6 +109,7 @@ public:
 
     bool open();
     int ConvertToVMAPGroupWmo(FILE *output, WMORoot *rootWMO, bool pPreciseVectorData);
+    int ConvertLiquidType(int hlqLiquid, std::string &filename);
 
 private:
     std::string filename;
@@ -116,3 +135,4 @@ public:
 };
 
 #endif
+

@@ -13,16 +13,16 @@ MPQArchive::MPQArchive(const char* filename)
             case LIBMPQ_ERROR_OPEN :
                 printf("Error opening archive '%s': Does file really exist?\n", filename);
                 break;
-            case LIBMPQ_ERROR_FORMAT :            /* bad file format */
+            case LIBMPQ_ERROR_FORMAT : /* bad file format */
                 printf("Error opening archive '%s': Bad file format\n", filename);
                 break;
-            case LIBMPQ_ERROR_SEEK :         /* seeking in file failed */
+            case LIBMPQ_ERROR_SEEK : /* seeking in file failed */
                 printf("Error opening archive '%s': Seeking in file failed\n", filename);
                 break;
-            case LIBMPQ_ERROR_READ :              /* Read error in archive */
+            case LIBMPQ_ERROR_READ : /* Read error in archive */
                 printf("Error opening archive '%s': Read error in archive\n", filename);
                 break;
-            case LIBMPQ_ERROR_MALLOC :               /* maybe not enough memory? :) */
+            case LIBMPQ_ERROR_MALLOC : /* maybe not enough memory? :) */
                 printf("Error opening archive '%s': Maybe not enough memory\n", filename);
                 break;
             default:
@@ -109,3 +109,4 @@ void MPQFile::close()
     buffer = 0;
     eof = true;
 }
+
