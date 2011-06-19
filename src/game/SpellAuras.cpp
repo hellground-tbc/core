@@ -1446,7 +1446,7 @@ void Aura::TriggerSpell()
 //                    // Ranshalla Waiting
 //                    case 18953: break;
                     // Inferno
-                    case 19695: 
+                    case 19695:
                     {
                         int32 damage = 500 * (m_tickNumber%2 == 0 ? m_tickNumber/2 : (m_tickNumber + 1)/2);
                         m_target->CastCustomSpell(m_target, 19698, &damage, NULL, NULL, true, 0, this, originalCasterGUID);
@@ -2438,7 +2438,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 switch (GetId())
                 {
                     case 38224: spellId = (gender == GENDER_MALE ? 38225 : 38227); break;
-                    case 37096: spellId = (gender == GENDER_MALE ? 37092 : 37094); break;
+                    case 37096: spellId = (gender == GENDER_MALE ? 37093 : 37095); break;
                     case 46354: spellId = (gender == GENDER_MALE ? 46355 : 46356); break;
                     default: return;
                 }
