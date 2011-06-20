@@ -3196,6 +3196,12 @@ bool IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_id,uint32 z
         case 30567:
         case 30557:
             return map_id == 532;
+        // Zul'Aman Amani Charms
+        case 43818:
+        case 43816:
+        case 43822:
+        case 43820:
+            return map_id == 568;
     }
 
     return true;
