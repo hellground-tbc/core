@@ -64,7 +64,7 @@ bool  CONF_allow_height_limit = true;
 float CONF_use_minHeight = -500.0f;
 
 // This option allow use float to int conversion
-bool  CONF_allow_float_to_int   = true;
+bool  CONF_allow_float_to_int   = false;
 float CONF_float_to_int8_limit  = 2.0f;      // Max accuracy = val/256
 float CONF_float_to_int16_limit = 2048.0f;   // Max accuracy = val/65536
 float CONF_flat_height_delta_limit = 0.005f; // If max - min less this value - surface is flat
@@ -73,11 +73,14 @@ float CONF_flat_liquid_delta_limit = 0.001f; // If max - min less this value - l
 // List MPQ for extract from
 char *CONF_mpq_list[]={
     "common.MPQ",
+    "common-2.MPQ",
+    "lichking.MPQ",
     "expansion.MPQ",
     "patch.MPQ",
     "patch-2.MPQ",
     "patch-3.MPQ",
     "patch-4.MPQ",
+    "patch-5.MPQ",
 };
 
 static char* const langs[] = {"enGB", "enUS", "deDE", "esES", "frFR", "koKR", "zhCN", "zhTW", "enCN", "enTW", "esMX", "ruRU" };
@@ -235,11 +238,11 @@ void ReadLiquidTypeTableDBC()
 //
 
 // Map file format data
-#define MAP_MAGIC             'SPAM'
-#define MAP_VERSION_MAGIC     '0.1w'
-#define MAP_AREA_MAGIC        'AERA'
-#define MAP_HEIGHT_MAGIC      'TGHM'
-#define MAP_LIQUID_MAGIC      'QILM'
+static char const* MAP_MAGIC         = "MAPS";
+static char const* MAP_VERSION_MAGIC = "w1.0";
+static char const* MAP_AREA_MAGIC    = "AREA";
+static char const* MAP_HEIGHT_MAGIC  = "MHGT";
+static char const* MAP_LIQUID_MAGIC  = "MLIQ";
 
 struct map_fileheader
 {
@@ -341,8 +344,8 @@ bool ConvertADT(char *filename, char *filename2, int cell_y, int cell_x)
 
     // Prepare map header
     map_fileheader map;
-    map.mapMagic = MAP_MAGIC;
-    map.versionMagic = MAP_VERSION_MAGIC;
+    map.mapMagic = *(uint32 const*)MAP_MAGIC;
+    map.versionMagic = *(uint32 const*)MAP_VERSION_MAGIC;
 
     // Get area flags data
     for (int i=0;i<ADT_CELLS_PER_GRID;i++)
@@ -358,7 +361,7 @@ bool ConvertADT(char *filename, char *filename2, int cell_y, int cell_x)
                     area_flags[i][j] = areas[areaid];
                     continue;
                 }
-                printf("File: filename\nCan't find area flag for areaid %u [%d, %d].\n", filename, areaid, cell->ix, cell->iy);
+                printf("File: %s\nCan't find area flag for areaid %u [%d, %d].\n", filename, areaid, cell->ix, cell->iy);
             }
             area_flags[i][j] = 0xffff;
         }
@@ -384,7 +387,7 @@ bool ConvertADT(char *filename, char *filename2, int cell_y, int cell_x)
     map.areaMapSize   = sizeof(map_areaHeader);
 
     map_areaHeader areaHeader;
-    areaHeader.fourcc = MAP_AREA_MAGIC;
+    areaHeader.fourcc = *(uint32 const*)MAP_AREA_MAGIC;
     areaHeader.flags = 0;
     if (fullAreaData)
     {
@@ -513,7 +516,7 @@ bool ConvertADT(char *filename, char *filename2, int cell_y, int cell_x)
     map.heightMapSize = sizeof(map_heightHeader);
 
     map_heightHeader heightHeader;
-    heightHeader.fourcc = MAP_HEIGHT_MAGIC;
+    heightHeader.fourcc = *(uint32 const*)MAP_HEIGHT_MAGIC;
     heightHeader.flags = 0;
     heightHeader.gridHeight    = minHeight;
     heightHeader.gridMaxHeight = maxHeight;
@@ -613,7 +616,7 @@ bool ConvertADT(char *filename, char *filename2, int cell_y, int cell_x)
                 // Dark water detect
                 if (type == LIQUID_TYPE_OCEAN)
                 {
-                    uint8 *lm = h2o->getLiquidLightMap(h); 
+                    uint8 *lm = h2o->getLiquidLightMap(h);
                     if (!lm)
                         liquid_type[i][j]|=MAP_LIQUID_TYPE_DARK_WATER;
                 }
@@ -748,7 +751,7 @@ bool ConvertADT(char *filename, char *filename2, int cell_y, int cell_x)
         }
         map.liquidMapOffset = map.heightMapOffset + map.heightMapSize;
         map.liquidMapSize = sizeof(map_liquidHeader);
-        liquidHeader.fourcc = MAP_LIQUID_MAGIC;
+        liquidHeader.fourcc = *(uint32 const*)MAP_LIQUID_MAGIC;
         liquidHeader.flags = 0;
         liquidHeader.liquidType = 0;
         liquidHeader.offsetX = minX;
@@ -771,7 +774,7 @@ bool ConvertADT(char *filename, char *filename2, int cell_y, int cell_x)
             liquidHeader.liquidType = type;
         else
             map.liquidMapSize+=sizeof(liquid_type);
-     
+
         if (!(liquidHeader.flags & MAP_LIQUID_NO_HEIGHT))
             map.liquidMapSize += sizeof(float)*liquidHeader.width*liquidHeader.height;
     }
@@ -875,11 +878,27 @@ void ExtractMapsFromMpq()
     delete [] map_ids;
 }
 
+bool ExtractFile( char const* mpq_name, std::string const& filename )
+{
+    FILE *output = fopen(filename.c_str(), "wb");
+    if(!output)
+    {
+        printf("Can't create the output file '%s'\n", filename.c_str());
+        return false;
+    }
+    MPQFile m(mpq_name);
+    if(!m.isEof())
+        fwrite(m.getPointer(), 1, m.getSize(), output);
+
+    fclose(output);
+    return true;
+}
+
 void ExtractDBCFiles(int locale, bool basicLocale)
 {
     printf("Extracting dbc files...\n");
 
-    set<string> dbcfiles;
+    std::set<std::string> dbcfiles;
 
     // get DBC file list
     for(ArchiveSet::iterator i = gOpenArchives.begin(); i != gOpenArchives.end();++i)
@@ -891,7 +910,7 @@ void ExtractDBCFiles(int locale, bool basicLocale)
                     dbcfiles.insert(*iter);
     }
 
-    string path = output_path;
+    std::string path = output_path;
     path += "/dbc/";
     CreateDir(path);
     if(!basicLocale)
@@ -908,18 +927,8 @@ void ExtractDBCFiles(int locale, bool basicLocale)
         string filename = path;
         filename += (iter->c_str() + strlen("DBFilesClient\\"));
 
-        FILE *output = fopen(filename.c_str(), "wb");
-        if(!output)
-        {
-            printf("Can't create the output file '%s'\n", filename.c_str());
-            continue;
-        }
-        MPQFile m(iter->c_str());
-        if(!m.isEof())
-            fwrite(m.getPointer(), 1, m.getSize(), output);
-
-        fclose(output);
-        ++count;
+        if(ExtractFile(iter->c_str(), filename))
+            ++count;
     }
     printf("Extracted %u DBC files\n\n", count);
 }
@@ -990,8 +999,8 @@ int main(int argc, char * arg[])
             //Extract DBC files
             if(FirstLocale < 0)
             {
-                ExtractDBCFiles(i, true);
                 FirstLocale = i;
+                ExtractDBCFiles(i, true);
             }
             else
                 ExtractDBCFiles(i, false);
@@ -1022,6 +1031,17 @@ int main(int argc, char * arg[])
         CloseMPQFiles();
     }
 
+    printf("\n\n===================\n");
+    printf("Extraction completed. \n"
+           "CONF_extract: %i\n"
+           "CONF_allow_height_limit: %i\n"
+           "CONF_use_minHeight: %f\n"
+           "CONF_allow_float_to_int: %i\n"
+           "CONF_float_to_int8_limit: %f\n"
+           "CONF_float_to_int16_limit: %f\n"
+           "CONF_flat_height_delta_limit: %f\n"
+           "CONF_flat_liquid_delta_limit: %f\n",
+           CONF_extract, CONF_allow_height_limit, CONF_use_minHeight, CONF_allow_float_to_int, CONF_float_to_int8_limit, CONF_float_to_int16_limit, CONF_flat_height_delta_limit, CONF_flat_liquid_delta_limit);
+
     return 0;
 }
-
