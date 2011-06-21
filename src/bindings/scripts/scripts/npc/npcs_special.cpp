@@ -2046,14 +2046,23 @@ struct TRINITY_DLL_DECL npc_crashin_trashin_robotAI : public ScriptedAI
             if (!m_creature->HasAura(SPELL_NET, 0))
                 otherCrashinTrashinRobots = FindCrashinTrashinRobots();
 
-            if (!otherCrashinTrashinRobots.empty())
+            int count = otherCrashinTrashinRobots.size();
+
+            if (count)
             {
                 float x, y, z;
                 itr = otherCrashinTrashinRobots.begin();
-                advance(itr, rand()%(otherCrashinTrashinRobots.size() - 1));
+
+                if (count > 1)
+                    advance(itr, rand()%(count - 1));
+
                 Creature * tmp = *(itr);
 
-                me->GetNearPoint(tmp, x, y, z, 0, 2.5f, (rand()%(int)(me->GetAngle(tmp) * 100))/100.0);
+                int radius = me->GetAngle(tmp) * 100;
+                radius = rand()%radius;
+                float fRadius = radius/100.0;
+
+                me->GetNearPoint(tmp, x, y, z, 0, 2.5f, fRadius);
                 me->GetMotionMaster()->Clear();
                 me->GetMotionMaster()->MovePoint(0, x, y, z);
             }
@@ -2068,10 +2077,15 @@ struct TRINITY_DLL_DECL npc_crashin_trashin_robotAI : public ScriptedAI
             if (otherCrashinTrashinRobots.empty())
                 otherCrashinTrashinRobots = FindCrashinTrashinRobots();
 
-            if (!otherCrashinTrashinRobots.empty())
+            int count = otherCrashinTrashinRobots.size();
+
+            if (count)
             {
                 itr = otherCrashinTrashinRobots.begin();
-                advance(itr, rand()%(otherCrashinTrashinRobots.size() - 1));
+
+                if (count > 1)
+                    advance(itr, rand()%(count - 1));
+
                 AddSpellToCast(*itr, SPELL_MACHINE_GUN, false, true);
             }
 
@@ -2085,10 +2099,15 @@ struct TRINITY_DLL_DECL npc_crashin_trashin_robotAI : public ScriptedAI
             if (otherCrashinTrashinRobots.empty())
                 otherCrashinTrashinRobots = FindCrashinTrashinRobots();
 
-            if (!otherCrashinTrashinRobots.empty())
+            int count = otherCrashinTrashinRobots.size();
+
+            if (count)
             {
                 itr = otherCrashinTrashinRobots.begin();
-                advance(itr, rand()%(otherCrashinTrashinRobots.size() - 1));
+
+                if (count > 1)
+                    advance(itr, rand()%(count - 1));
+
                 AddSpellToCast(*itr, SPELL_NET, false, true);
             }
 
@@ -2102,10 +2121,14 @@ struct TRINITY_DLL_DECL npc_crashin_trashin_robotAI : public ScriptedAI
             if (otherCrashinTrashinRobots.empty())
                 otherCrashinTrashinRobots = FindCrashinTrashinRobots();
 
-            if (!otherCrashinTrashinRobots.empty())
+            int count = otherCrashinTrashinRobots.size();
+
+            if (count)
             {
                 itr = otherCrashinTrashinRobots.begin();
-                advance(itr, rand()%(otherCrashinTrashinRobots.size() - 1));
+                if (count > 1)
+                    advance(itr, rand()%(count - 1));
+
                 AddSpellToCast(*itr, SPELL_ELECTRICAL, false, true);
             }
 
