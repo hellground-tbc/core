@@ -38,6 +38,7 @@ npc_mojo                    100%    AI for companion Mojo (summoned by item: 339
 npc_master_omarion          100%    Master Craftsman Omarion, patterns menu
 npc_lorekeeper_lydros       100%    Dialogue (story) + add A Dull and Flat Elven Blade
 npc_crashin_thrashin_robot  100%    AI for Crashin' Thrashin' Robot from engineering
+npc_lurky                   100%    AI for Lurky, Blue Murloc and Pink Murloc
 EndContentData */
 
 #include "precompiled.h"
@@ -2146,6 +2147,55 @@ CreatureAI* GetAI_npc_crashin_trashin_robot(Creature* pCreature)
     return new npc_crashin_trashin_robotAI(pCreature);
 }
 
+/*########
+# npc_lurky
+#########*/
+
+#define MIN_DANCE_TIMER             30000
+#define MAX_DANCE_TIMER             300000
+#define SPELL_BABY_MURLOC_DANCE     25165
+
+struct TRINITY_DLL_DECL npc_lurkyAI : public ScriptedAI
+{
+    npc_lurkyAI(Creature *c) : ScriptedAI(c){}
+
+    uint32 danceTimer;
+    bool inDance;
+
+    void Reset()
+    {
+        inDance = false;
+        danceTimer = urand(MIN_DANCE_TIMER, MAX_DANCE_TIMER);
+    }
+
+    void OnAuraRemove(Aura* aur, bool stackRemove)
+    {
+        if (aur->GetId() == SPELL_BABY_MURLOC_DANCE)
+        {
+            inDance = false;
+            danceTimer = urand(MIN_DANCE_TIMER, MAX_DANCE_TIMER);
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (inDance || m_creature->hasUnitState(UNIT_STAT_MOVE))
+            return;
+
+        if (danceTimer < diff)
+        {
+            inDance = true;
+            m_creature->CastSpell(m_creature, SPELL_BABY_MURLOC_DANCE, false);
+            m_creature->HandleEmoteCommand(EMOTE_STATE_DANCE);
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_lurky(Creature* pCreature)
+{
+    return new npc_lurkyAI(pCreature);
+}
+
 void AddSC_npcs_special()
 {
     Script *newscript;
@@ -2270,5 +2320,10 @@ void AddSC_npcs_special()
     newscript = new Script;
     newscript->Name="npc_crashin_trashin_robot";
     newscript->GetAI = &GetAI_npc_crashin_trashin_robot;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_lurky";
+    newscript->GetAI = &GetAI_npc_lurky;
     newscript->RegisterSelf();
 }
