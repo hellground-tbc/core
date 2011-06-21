@@ -120,7 +120,7 @@ class TRINITY_DLL_SPEC WorldSession
 {
     friend class CharacterHandler;
     public:
-        WorldSession(uint32 id, WorldSocket *sock, uint32 sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint64 speciallog = 0, uint16 opcDisabled = 0);
+        WorldSession(uint32 id, WorldSocket *sock, uint32 sec, uint8 expansion, LocaleConstant locale, time_t mute_time = 0, std::string mute_reason = "", uint64 speciallog = 0, uint16 opcDisabled = 0);
         ~WorldSession();
 
         bool PlayerLoading() const { return m_playerLoading; }
@@ -257,6 +257,7 @@ class TRINITY_DLL_SPEC WorldSession
 
         // Account mute time
         time_t m_muteTime;
+        std::string m_muteReason;
 
         // Locales
         LocaleConstant GetSessionDbcLocale() const { return m_sessionDbcLocale; }

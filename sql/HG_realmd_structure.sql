@@ -41,6 +41,19 @@ CREATE TABLE `account_banned` (
   PRIMARY KEY (`id`,`bandate`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='Ban List';
 
+/*Table structure for table `account_mute` */
+
+DROP TABLE IF EXISTS `account_mute`;
+CREATE TABLE `account_mute` (
+  `id` int(11) NOT NULL DEFAULT '0' COMMENT 'Account id',
+  `mutedate` bigint(40) NOT NULL DEFAULT '0',
+  `unmutedate` bigint(40) NOT NULL DEFAULT '0',
+  `mutedby` varchar(50) NOT NULL,
+  `mutereason` varchar(255) NOT NULL,
+  `active` tinyint(4) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id`,`mutedate`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='Mute List';
+
 /*Table structure for table `blocked_ips` */
 
 DROP TABLE IF EXISTS `blocked_ips`;
@@ -50,7 +63,7 @@ CREATE TABLE `blocked_ips` (
   `rec_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `cnt` int(11) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`ip`,`recorded`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 /*Table structure for table `ip_banned` */
 

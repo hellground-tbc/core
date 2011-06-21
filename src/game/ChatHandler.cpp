@@ -131,6 +131,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
         {
             std::string timeStr = secsToTimeString(m_muteTime - time(NULL));
             SendNotification(GetTrinityString(LANG_WAIT_BEFORE_SPEAKING),timeStr.c_str());
+            ChatHandler(_player).PSendSysMessage(LANG_YOUR_CHAT_IS_DISABLED, timeStr.c_str(), m_muteReason.c_str());
             return;
         }
 
@@ -534,6 +535,7 @@ void WorldSession::HandleTextEmoteOpcode(WorldPacket & recv_data)
     {
         std::string timeStr = secsToTimeString(m_muteTime - time(NULL));
         SendNotification(GetTrinityString(LANG_WAIT_BEFORE_SPEAKING),timeStr.c_str());
+        ChatHandler(_player).PSendSysMessage(LANG_YOUR_CHAT_IS_DISABLED, timeStr.c_str(), m_muteReason.c_str());
         return;
     }
 

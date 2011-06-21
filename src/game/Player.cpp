@@ -16626,7 +16626,10 @@ void Player::UpdateSpeakTime()
             // prevent overwrite mute time, if message send just before mutes set, for example.
             time_t new_mute = current + sWorld.getConfig(CONFIG_CHATFLOOD_MUTE_TIME);
             if (GetSession()->m_muteTime < new_mute)
+            {
                 GetSession()->m_muteTime = new_mute;
+                GetSession()->m_muteReason = "Flood protection";
+            }
 
             m_speakCount = 0;
         }

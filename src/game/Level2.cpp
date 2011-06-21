@@ -80,6 +80,9 @@ bool ChatHandler::HandleMuteCommand(const char* args)
 
     uint32 notspeaktime = (uint32) atoi(timetonotspeak);
 
+    if (notspeaktime == 0)
+        return false;
+
     if (!normalizePlayerName(cname))
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -121,10 +124,24 @@ bool ChatHandler::HandleMuteCommand(const char* args)
 
     time_t mutetime = time(NULL) + notspeaktime*60;
 
-    if (chr)
-        chr->GetSession()->m_muteTime = mutetime;
+    LoginDatabase.escape_string(mutereasonstr);
 
-    LoginDatabase.PExecute("UPDATE account SET mutetime = " UI64FMTD " WHERE id = '%u'",uint64(mutetime), account_id);
+    if (chr)
+    {
+        chr->GetSession()->m_muteTime = mutetime;
+        chr->GetSession()->m_muteReason = mutereasonstr;
+    }
+
+    std::string author;
+
+    if (m_session)
+        author = m_session->GetPlayerName();
+    else
+        author = "[CONSOLE]";
+
+    LoginDatabase.escape_string(author);
+
+    LoginDatabase.PExecute("INSERT INTO account_mute VALUES ('%u', UNIX_TIMESTAMP(), '" UI64FMTD "', '%s', '%s', '1')", account_id, uint64(mutetime), author.c_str(), mutereasonstr.c_str());
 
     if (chr)
         ChatHandler(chr).PSendSysMessage(LANG_YOUR_CHAT_DISABLED, notspeaktime, mutereasonstr.c_str());
@@ -195,14 +212,73 @@ bool ChatHandler::HandleUnmuteCommand(const char* args)
         }
 
         chr->GetSession()->m_muteTime = 0;
+        chr->GetSession()->m_muteReason = "";
     }
 
-    LoginDatabase.PExecute("UPDATE account SET mutetime = '0' WHERE id = '%u'", account_id);
+    LoginDatabase.PExecute("UPDATE account_mute SET active = '0' WHERE id = '%u'", account_id);
 
     if (chr)
         ChatHandler(chr).PSendSysMessage(LANG_YOUR_CHAT_ENABLED);
 
     PSendSysMessage(LANG_YOU_ENABLE_CHAT, cname.c_str());
+    return true;
+}
+
+bool ChatHandler::HandleMuteInfoCommand(const char* args)
+{
+    if (!args)
+        return false;
+
+    char* cname = strtok ((char*)args, "");
+    if (!cname)
+        return false;
+
+    std::string name = cname;
+    if (!normalizePlayerName(name))
+    {
+        SendSysMessage(LANG_PLAYER_NOT_FOUND);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    uint32 accountid = objmgr.GetPlayerAccountIdByPlayerName(name);
+    if (!accountid)
+    {
+        SendSysMessage(LANG_PLAYER_NOT_FOUND);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    std::string accountname;
+    if (!accmgr.GetName(accountid,accountname))
+    {
+        PSendSysMessage(LANG_MUTEINFO_NOCHARACTER);
+        return true;
+    }
+
+    QueryResultAutoPtr result = LoginDatabase.PQuery("SELECT FROM_UNIXTIME(mutedate), unmutedate-mutedate, active, unmutedate, mutereason, mutedby FROM account_mute WHERE id = '%u' ORDER BY mutedate ASC", accountid);
+    if (!result)
+    {
+        PSendSysMessage(LANG_MUTEINFO_NOACCOUNTMUTE, accountname.c_str());
+        return true;
+    }
+
+    PSendSysMessage(LANG_MUTEINFO_MUTEHISTORY, accountname.c_str());
+    do
+    {
+        Field* fields = result->Fetch();
+
+        time_t unmutedate = time_t(fields[3].GetUInt64());
+        bool active = false;
+        if (fields[2].GetBool() && (fields[1].GetUInt64() == (uint64)0 ||unmutedate >= time(NULL)))
+            active = true;
+
+        std::string mutetime = secsToTimeString(fields[1].GetUInt64(), true);
+        PSendSysMessage(LANG_MUTEINFO_HISTORYENTRY,
+            fields[0].GetString(), mutetime.c_str(), active ? GetTrinityString(LANG_MUTEINFO_YES):GetTrinityString(LANG_MUTEINFO_NO), fields[4].GetString(), fields[5].GetString());
+    }
+    while(result->NextRow());
+
     return true;
 }
 
