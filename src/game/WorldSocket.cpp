@@ -905,6 +905,8 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
     m_Crypt.SetKey (&K);
     m_Crypt.Init ();
 
+    LoginDatabase.PExecute("INSERT INTO account_login VALUES ('%u', NOW(), '%s')", id, address.c_str());
+
     m_Session->InitWarden(&K, operatingSystem);
 
     // In case needed sometime the second arg is in microseconds 1 000 000 = 1 sec
