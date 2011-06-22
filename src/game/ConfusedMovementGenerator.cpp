@@ -47,8 +47,7 @@ void ConfusedMovementGenerator<T>::GenerateMovement(T &unit)
     bool is_water_ok, is_land_ok;
     _InitSpecific(unit, is_water_ok, is_land_ok);
 
-
-    for (unsigned int idx = 0; idx < MAX_CONF_WAYPOINTS+1; ++idx)
+    for (uint8 idx = 0; idx < MAX_CONF_WAYPOINTS+1; ++idx)
     {
         unit.GetNearPoint(&unit, i_waypoints[idx][0], i_waypoints[idx][1], i_waypoints[idx][2], unit.GetObjectSize(), WANDER_DISTANCE, frand(0, M_PI));
 
@@ -64,7 +63,16 @@ void ConfusedMovementGenerator<T>::GenerateMovement(T &unit)
             }
         }
 
-        VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(unit.GetMapId(), unit.GetPositionX(), unit.GetPositionY(),  unit.GetPositionZ(), i_waypoints[idx][0], i_waypoints[idx][1], i_waypoints[idx][2] +0.5f,  i_waypoints[idx][0], i_waypoints[idx][1], i_waypoints[idx][2], -2.0f);
+        VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(unit.GetMapId(), unit.GetPositionX(), unit.GetPositionY(),  unit.GetPositionZ(), i_waypoints[idx][0], i_waypoints[idx][1], i_waypoints[idx][2],  i_waypoints[idx][0], i_waypoints[idx][1], i_waypoints[idx][2], 0.0f);
+
+        if (unit.IsWithinLOS(i_waypoints[idx][0] ,i_waypoints[idx][1], i_waypoints[idx][2] -1.5f)
+            continue;
+        else
+        {
+            i_waypoints[idx][0] = unit.GetPositionX();
+            i_waypoints[idx][1] = unit.GetPositionY();
+            i_waypoints[idx][2] = unit.GetPositionZ();
+        }
     }
 }
 
