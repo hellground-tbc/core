@@ -2040,8 +2040,6 @@ void boss_MedivhAI::Reset()
     tpList.clear();
     moveList.clear();
 
-    m_creature->CastSpell(m_creature, SPELL_GAME_IN_SESSION, false);
-
     m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
     m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
     m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
@@ -2728,7 +2726,6 @@ void boss_MedivhAI::PrepareBoardForEvent()
 void boss_MedivhAI::StartMiniEvent()
 {
     ClearBoard();
-    me->CastSpell(me, SPELL_GAME_IN_SESSION, false);
     miniEventState = MINI_EVENT_KING;
 
     pInstance->SetData(DATA_DUST_COVERED_CHEST, IN_PROGRESS);
