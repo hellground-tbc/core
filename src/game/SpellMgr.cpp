@@ -2903,7 +2903,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 39331: // Spell In Session
             spellInfo->DurationIndex = 21;  // infinity
             spellInfo->Effect[0] = SPELL_EFFECT_APPLY_AREA_AURA_FRIEND;
-            spellInfo->EffectRadiusIndex[0] = 31;   // effect radius from 65 to 80 yd
+            spellInfo->EffectRadiusIndex[0] = 27;   // effect radius from 65 to 50 yd
             break;
         default:
             break;

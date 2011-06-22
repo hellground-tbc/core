@@ -2103,7 +2103,7 @@ void boss_MedivhAI::SayChessPieceDied(Unit * piece)
             case NPC_KING_A:
 
                 if (pInstance->GetData(DATA_DUST_COVERED_CHEST) != DONE)
-                    m_creature->SummonGameObject(DUST_COVERED_CHEST, -11058, -1903, 221, 2.24, 0, 0, 0, 0, 7200000);
+                    m_creature->SummonGameObject(DUST_COVERED_CHEST, DUST_COVERED_CHEST_LOCATION, 0, 0, 0, 0, 7200000);
                 //    me->Say("Teraz powinna sie skrzynka pojawic", LANG_UNIVERSAL, NULL); // temporary
 
                 DoScriptText(SCRIPTTEXT_PLAYER_WIN, m_creature);
@@ -2167,7 +2167,7 @@ void boss_MedivhAI::SayChessPieceDied(Unit * piece)
             case NPC_KING_H:
 
                 if (pInstance->GetData(DATA_CHESS_EVENT) != DONE)
-                    m_creature->SummonGameObject(DUST_COVERED_CHEST, -11058, -1903, 221, 2.24, 0, 0, 0, 0, 7200000);
+                    m_creature->SummonGameObject(DUST_COVERED_CHEST, DUST_COVERED_CHEST_LOCATION, 0, 0, 0, 0, 7200000);
                 //    me->Say("Teraz powinna sie skrzynka pojawic", LANG_UNIVERSAL, NULL); // temporary
 
                 DoScriptText(SCRIPTTEXT_PLAYER_WIN, m_creature);
@@ -4076,6 +4076,14 @@ bool GossipHello_npc_chesspiece(Player* player, Creature* _Creature)
     return true;
 }
 
+void npc_chess_statusAI::Reset()
+{
+    m_creature->AddUnitMovementFlag(MOVEFLAG_CAN_FLY|MOVEFLAG_LEVITATING);
+    m_creature->Relocate(-11080.599609, -1876.380005, 231.000092);
+    m_creature->SendMonsterMove(-11080.599609, -1876.380005, 231.000092, 0);
+    me->CastSpell(me, SPELL_GAME_IN_SESSION, false);
+}
+
 bool GossipSelect_npc_chesspiece(Player* player, Creature* _Creature, uint32 sender, uint32 action)
 {
     ScriptedInstance* pInstance = ((ScriptedInstance*)_Creature->GetInstanceData());
@@ -4145,6 +4153,11 @@ CreatureAI* GetAI_move_trigger(Creature *_Creature)
     return new move_triggerAI (_Creature);
 }
 
+CreatureAI* GetAI_npc_chess_statusAI(Creature *_Creature)
+{
+    return new npc_chess_statusAI (_Creature);
+}
+
 void AddSC_chess_event()
 {
     Script* newscript;
@@ -4166,5 +4179,10 @@ void AddSC_chess_event()
     newscript = new Script;
     newscript->Name = "chess_move_trigger";
     newscript->GetAI = &GetAI_move_trigger;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_chess_status";
+    newscript->GetAI = &GetAI_npc_chess_statusAI;
     newscript->RegisterSelf();
 }

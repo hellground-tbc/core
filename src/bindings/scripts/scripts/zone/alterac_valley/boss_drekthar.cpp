@@ -51,7 +51,6 @@ struct TRINITY_DLL_DECL boss_drektharAI : public ScriptedAI
         m_creature->GetPosition(wLoc);
     }
 
-
     uint32 WhirlwindTimer;
     uint32 Whirlwind2Timer;
     uint32 KnockdownTimer;
@@ -62,12 +61,12 @@ struct TRINITY_DLL_DECL boss_drektharAI : public ScriptedAI
 
     void Reset()
     {
-    WhirlwindTimer          = (rand()%10)*1000;
-    Whirlwind2Timer         = (rand()%15)*1000;
-    KnockdownTimer          = 12000;
-    FrenzyTimer             = 6000;
-    YellTimer               = (20+rand()%10)*1000; //20 to 30 seconds
-    CheckTimer              = 2000;
+        WhirlwindTimer          = urand(0, 10000);
+        Whirlwind2Timer         = urand(0, 15000);
+        KnockdownTimer          = 12000;
+        FrenzyTimer             = 6000;
+        YellTimer               = urand(20000, 30000); //20 to 30 seconds
+        CheckTimer              = 2000;
     }
 
     void EnterCombat(Unit *who)
@@ -102,32 +101,32 @@ struct TRINITY_DLL_DECL boss_drektharAI : public ScriptedAI
 
         if (WhirlwindTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_WHIRLWIND);
-            WhirlwindTimer =  (8+rand()%10)*1000;
+            AddSpellToCast(m_creature->getVictim(), SPELL_WHIRLWIND);
+            WhirlwindTimer =  urand(8000, 18000);
         }
         else
             WhirlwindTimer -= diff;
 
         if (Whirlwind2Timer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_WHIRLWIND2);
-            Whirlwind2Timer = (7+rand()%18)*1000;
+            AddSpellToCast(m_creature->getVictim(), SPELL_WHIRLWIND2);
+            Whirlwind2Timer = urand(7000, 25000);
         }
         else
             Whirlwind2Timer -= diff;
 
         if (KnockdownTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_KNOCKDOWN);
-            KnockdownTimer = (10+rand()%5)*1000;
+            AddSpellToCast(m_creature->getVictim(), SPELL_KNOCKDOWN);
+            KnockdownTimer = urand(10000, 15000);
         }
         else
             KnockdownTimer -= diff;
 
         if (FrenzyTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_FRENZY);
-            FrenzyTimer = (20+rand()%5)*1000;
+            AddSpellToCast(m_creature->getVictim(), SPELL_FRENZY);
+            FrenzyTimer = urand(20000, 25000);
         }
         else
             FrenzyTimer -= diff;
@@ -135,11 +134,12 @@ struct TRINITY_DLL_DECL boss_drektharAI : public ScriptedAI
         if (YellTimer < diff)
         {
             DoScriptText(RAND(YELL_RANDOM1, YELL_RANDOM2, YELL_RANDOM3, YELL_RANDOM4, YELL_RANDOM5), m_creature);
-            YellTimer = (20+rand()%10)*1000; //20 to 30 seconds
+            YellTimer = urand(20000, 30000); //20 to 30 seconds
         }
         else
             YellTimer -= diff;
 
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };

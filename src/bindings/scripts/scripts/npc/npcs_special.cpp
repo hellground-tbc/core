@@ -1165,6 +1165,7 @@ struct TRINITY_DLL_DECL npc_flight_masterAI : public ScriptedAI
             }
         }
     }
+
     void JustSummoned(Creature *add)
     {
        if(add)
@@ -1179,6 +1180,7 @@ struct TRINITY_DLL_DECL npc_flight_masterAI : public ScriptedAI
     {
         SummonAdvisor();
     }
+
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())

@@ -144,14 +144,14 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
 
     void SetBlizzardWaypoints()
     {
-        blizzardWaypoints[0][0] = -11156.6;    blizzardWaypoints[1][0] = -1905.2;
-        blizzardWaypoints[0][1] = -11163.9;    blizzardWaypoints[1][1] = -1901.1;
-        blizzardWaypoints[0][2] = -11171.6;    blizzardWaypoints[1][2] = -1903.6;
-        blizzardWaypoints[0][3] = -11176.1;    blizzardWaypoints[1][3] = -1910.8;
-        blizzardWaypoints[0][4] = -11173.5;    blizzardWaypoints[1][4] = -1918.7;
-        blizzardWaypoints[0][5] = -11166.4;    blizzardWaypoints[1][5] = -1922.9;
-        blizzardWaypoints[0][6] = -11158.4;    blizzardWaypoints[1][6] = -1920.4;
-        blizzardWaypoints[0][7] = -11154.2;    blizzardWaypoints[1][7] = -1913.1;
+        blizzardWaypoints[0][0] = -11154.3;    blizzardWaypoints[1][0] = -1903.3;
+        blizzardWaypoints[0][1] = -11163.6;    blizzardWaypoints[1][1] = -1898.7;
+        blizzardWaypoints[0][2] = -11173.6;    blizzardWaypoints[1][2] = -1901.2;
+        blizzardWaypoints[0][3] = -11178.1;    blizzardWaypoints[1][3] = -1910.4;
+        blizzardWaypoints[0][4] = -11175.4;    blizzardWaypoints[1][4] = -1920.6;
+        blizzardWaypoints[0][5] = -11166.6;    blizzardWaypoints[1][5] = -1925.1;
+        blizzardWaypoints[0][6] = -11156.5;    blizzardWaypoints[1][6] = -1922.8;
+        blizzardWaypoints[0][7] = -11151.8;    blizzardWaypoints[1][7] = -1913.5;
     }
 
     void Reset()

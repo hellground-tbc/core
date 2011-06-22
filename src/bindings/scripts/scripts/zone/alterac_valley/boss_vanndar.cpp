@@ -49,7 +49,6 @@ struct TRINITY_DLL_DECL boss_vanndarAI : public ScriptedAI
         m_creature->GetPosition(wLoc);
     }
 
-
     uint32 AvatarTimer;
     uint32 ThunderclapTimer;
     uint32 StormboltTimer;
@@ -57,13 +56,12 @@ struct TRINITY_DLL_DECL boss_vanndarAI : public ScriptedAI
     uint32 CheckTimer;
     WorldLocation wLoc;
 
-
     void Reset()
     {
         AvatarTimer             = 3000;
         ThunderclapTimer        = 4000;
         StormboltTimer          = 6000;
-        YellTimer               = 20000+rand()%10000; //20 to 30 seconds
+        YellTimer               = urand(20000, 30000); //20 to 30 seconds
         CheckTimer              = 2000;
     }
 
@@ -87,9 +85,9 @@ struct TRINITY_DLL_DECL boss_vanndarAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
-        if(CheckTimer < diff)
+        if (CheckTimer < diff)
         {
-            if(!m_creature->IsWithinDistInMap(&wLoc, 20.0f))
+            if (!m_creature->IsWithinDistInMap(&wLoc, 20.0f))
                 EnterEvadeMode();
 
             CheckTimer = 2000;
@@ -99,24 +97,26 @@ struct TRINITY_DLL_DECL boss_vanndarAI : public ScriptedAI
 
         if (AvatarTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_AVATAR);
-            AvatarTimer =  (15+rand()%5)*1000;
+            ForceSpellCast(m_creature->getVictim(), SPELL_AVATAR);
+            AvatarTimer = urand(15000, 20000);
         }
         else
             AvatarTimer -= diff;
 
         if (ThunderclapTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_THUNDERCLAP);
-            ThunderclapTimer = (5+rand()%10)*1000;
+            AddSpellToCast(m_creature->getVictim(), SPELL_THUNDERCLAP);
+            ThunderclapTimer = urand(5000, 15000);
         }
         else
             ThunderclapTimer -= diff;
 
         if (StormboltTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_STORMBOLT);
-            StormboltTimer = (10+rand()%15)*1000;
+            Unit * victim = SelectUnit(SELECT_TARGET_RANDOM, 1, 30.0f, true);
+            if (victim)
+                AddSpellToCast(victim, SPELL_STORMBOLT);
+            StormboltTimer = urand(10000, 25000);
         }
         else
             StormboltTimer -= diff;
@@ -124,11 +124,12 @@ struct TRINITY_DLL_DECL boss_vanndarAI : public ScriptedAI
         if (YellTimer < diff)
         {
             DoScriptText(RAND(YELL_RANDOM1, YELL_RANDOM2, YELL_RANDOM3, YELL_RANDOM4, YELL_RANDOM5, YELL_RANDOM6, YELL_RANDOM7), m_creature);
-            YellTimer = (20+rand()%10)*1000; //20 to 30 seconds
+            YellTimer = urand(20000, 30000); //20 to 30 seconds
         }
         else
             YellTimer -= diff;
 
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };

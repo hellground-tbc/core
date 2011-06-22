@@ -50,8 +50,8 @@ struct TRINITY_DLL_DECL boss_galvangarAI : public ScriptedAI
     void Reset()
     {
         CleaveTimer                = 4000;
-        FrighteningShoutTimer      = 15000;
-        WhirlwindTimer             = 10000;
+        FrighteningShoutTimer      = 10000;
+        WhirlwindTimer             = 5000;
         MortalStrikeTimer          = 2000;
         CheckTimer                 = 2000;
     }
@@ -72,8 +72,8 @@ struct TRINITY_DLL_DECL boss_galvangarAI : public ScriptedAI
 
     void UpdateTimer(uint32 &timer, const uint32 diff)
     {
-        if(timer)
-            if(timer > diff)
+        if (timer)
+            if (timer > diff)
                 timer -= diff;
             else
                 timer = 0;
@@ -84,16 +84,17 @@ struct TRINITY_DLL_DECL boss_galvangarAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
-        if(CheckTimer < diff)
+        if (CheckTimer < diff)
         {
-            if(!m_creature->IsWithinDistInMap(&wLoc, 20.0f))
+            if (!m_creature->IsWithinDistInMap(&wLoc, 20.0f))
             {
                 EnterEvadeMode();
                 return;
             }
             CheckTimer = 2000;
         }
-        else CheckTimer -= diff;
+        else
+            CheckTimer -= diff;
 
 
         UpdateTimer(CleaveTimer, diff);
@@ -101,35 +102,31 @@ struct TRINITY_DLL_DECL boss_galvangarAI : public ScriptedAI
         UpdateTimer(FrighteningShoutTimer, diff);
         UpdateTimer(MortalStrikeTimer, diff);
 
-        // don't update if whirlwind active
-        if(m_creature->HasAura(SPELL_WHIRLWIND, 0))
-            return;
-
         if (CleaveTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_CLEAVE);
-            CleaveTimer =  (4+rand()%8)*1000;
+            AddSpellToCast(m_creature->getVictim(), SPELL_CLEAVE);
+            CleaveTimer =  urand(4000, 12000);
         }
 
         if (FrighteningShoutTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_FRIGHTENING_SHOUT);
-            FrighteningShoutTimer = (14+rand()%8)*1000;
+            AddSpellToCast(m_creature->getVictim(), SPELL_FRIGHTENING_SHOUT);
+            FrighteningShoutTimer = urand(14000, 24000);
         }
-
 
         if (MortalStrikeTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_MORTAL_STRIKE);
+            AddSpellToCast(m_creature->getVictim(), SPELL_MORTAL_STRIKE);
             MortalStrikeTimer = 6000;
         }
 
         if (WhirlwindTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_WHIRLWIND);
+            AddSpellToCast(m_creature->getVictim(), SPELL_WHIRLWIND);
             WhirlwindTimer = 10000;
         }
 
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };
