@@ -2168,6 +2168,8 @@ struct TRINITY_DLL_DECL npc_lurkyAI : public ScriptedAI
     {
         inDance = false;
         danceTimer = urand(MIN_DANCE_TIMER, MAX_DANCE_TIMER);
+        m_creature->GetMotionMaster()->Clear();
+        m_creature->GetMotionMaster()->MoveFollow(m_creature->GetOwner(), 2.0, M_PI/2);
     }
 
     void OnAuraRemove(Aura* aur, bool stackRemove)
