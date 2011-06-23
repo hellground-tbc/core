@@ -118,7 +118,7 @@ bool ConfusedMovementGenerator<T>::Update(T &unit, const uint32 &diff)
             const float y = i_waypoints[i_nextMove][1];
             const float z = i_waypoints[i_nextMove][2];
             i_destinationHolder.SetDestination(traveller, x, y, z);
-            i_nextMove = urand(1,MAX_CONF_WAYPOINTS);
+            i_nextMove = urand(1, MAX_CONF_WAYPOINTS);
         }
     }
     return true;
@@ -141,4 +141,3 @@ template void ConfusedMovementGenerator<Player>::Reset(Player &player);
 template void ConfusedMovementGenerator<Creature>::Reset(Creature &creature);
 template bool ConfusedMovementGenerator<Player>::Update(Player &player, const uint32 &diff);
 template bool ConfusedMovementGenerator<Creature>::Update(Creature &creature, const uint32 &diff);
-

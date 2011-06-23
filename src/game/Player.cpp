@@ -5150,7 +5150,7 @@ void Player::UpdateWeaponSkill (WeaponAttackType attType)
     if (pVictim && pVictim->isCharmedOwnedByPlayerOrPlayer())
         return;
 
-    if (IsInFeralForm())
+    if (IsInFeralForm(true))
         return;                                             // always maximized SKILL_FERAL_COMBAT in fact
 
     if (m_form == FORM_TREE)
@@ -7339,7 +7339,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                                 continue;
                         }
 
-                        if (((Player*)this)->IsInFeralForm())
+                        if (((Player*)this)->IsInFeralForm(true))
                             continue;
                     }
                     ((Player*)this)->CastItemCombatSpell(target, attType, procVictim, procEx, item, proto, spellInfo);

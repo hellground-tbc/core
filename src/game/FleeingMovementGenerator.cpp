@@ -30,17 +30,13 @@
 #define MAX_QUIET_DISTANCE 43.0f
 
 template<class T>
-void
-FleeingMovementGenerator<T>::_setTargetLocation(T &owner)
+void FleeingMovementGenerator<T>::_setTargetLocation(T &owner)
 {
     if (!&owner)
         return;
 
     if (owner.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED))
         return;
-
-//    if (!_setMoveData(owner))
-//        return;
 
     float x, y, z;
     if (!_getPoint(owner, x, y, z))
@@ -68,8 +64,7 @@ bool FleeingMovementGenerator<Player>::GetDestination(float &x, float &y, float 
 }
 
 template<class T>
-bool
-FleeingMovementGenerator<T>::_getPoint(T &owner, float &x, float &y, float &z)
+bool FleeingMovementGenerator<T>::_getPoint(T &owner, float &x, float &y, float &z)
 {
     if (!&owner)
         return false;
@@ -137,7 +132,6 @@ FleeingMovementGenerator<T>::_getPoint(T &owner, float &x, float &y, float &z)
         float dest_y = y;
         float dest_z = z;
 
-
         for (int j = 1; j <= 7; ++j)
         {
             float dist = j*2.0f;
@@ -173,15 +167,13 @@ FleeingMovementGenerator<T>::_getPoint(T &owner, float &x, float &y, float &z)
 }
 
 template<class T>
-bool
-FleeingMovementGenerator<T>::_setMoveData(T &owner)
+bool FleeingMovementGenerator<T>::_setMoveData(T &owner)
 {
     return true;
 }
 
 template<class T>
-void
-FleeingMovementGenerator<T>::Initialize(T &owner)
+void FleeingMovementGenerator<T>::Initialize(T &owner)
 {
     if (!&owner)
         return;
@@ -199,17 +191,15 @@ FleeingMovementGenerator<T>::Initialize(T &owner)
     i_dest_x = i_caster_x = fright->GetPositionX();
     i_dest_y = i_caster_y = fright->GetPositionY();
     i_dest_z = i_caster_z = fright->GetPositionZ();
+
     i_only_forward = true;
     i_cur_angle = fright->GetAngle(&owner);
-//    i_angle_multi = 1.0f;
-//    i_last_distance_from_caster = 0.0f;
-//    i_to_distance_from_caster = 0.0f;
+
     _setTargetLocation(owner);
 }
 
 template<>
-void
-FleeingMovementGenerator<Creature>::_Init(Creature &owner)
+void FleeingMovementGenerator<Creature>::_Init(Creature &owner)
 {
     if (!&owner)
         return;
@@ -219,16 +209,14 @@ FleeingMovementGenerator<Creature>::_Init(Creature &owner)
 }
 
 template<>
-void
-FleeingMovementGenerator<Player>::_Init(Player &)
+void FleeingMovementGenerator<Player>::_Init(Player &)
 {
     is_water_ok = true;
     is_land_ok  = true;
 }
 
 template<class T>
-void
-FleeingMovementGenerator<T>::Finalize(T &owner)
+void FleeingMovementGenerator<T>::Finalize(T &owner)
 {
     owner.RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
     owner.clearUnitState(UNIT_STAT_FLEEING | UNIT_STAT_ROAMING);
@@ -237,32 +225,25 @@ FleeingMovementGenerator<T>::Finalize(T &owner)
 }
 
 template<class T>
-void
-FleeingMovementGenerator<T>::Reset(T &owner)
+void FleeingMovementGenerator<T>::Reset(T &owner)
 {
     Initialize(owner);
 }
 
 template<class T>
-bool
-FleeingMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
+bool FleeingMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
 {
     if (!&owner || !owner.isAlive())
         return false;
+
     if (owner.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED))
         return true;
 
     Traveller<T> traveller(owner);
-/*
-    if ((owner.IsStopped() && !i_destinationHolder.HasArrived()) || !i_destinationHolder.HasDestination())
-    {
-        _setTargetLocation(owner);
-        return true;
-    }*/
-
     if (i_destinationHolder.UpdateTraveller(traveller, time_diff))
         if (i_destinationHolder.HasArrived())
             _setTargetLocation(owner);
+
     return true;
 }
 
@@ -311,4 +292,3 @@ bool TimedFleeingMovementGenerator::Update(Unit & owner, const uint32 & time_dif
     // This is done instead of casting Unit& to Creature& and call parent method, then we can use Unit directly
     return MovementGeneratorMedium< Creature, FleeingMovementGenerator<Creature> >::Update(owner, time_diff);
 }
-
