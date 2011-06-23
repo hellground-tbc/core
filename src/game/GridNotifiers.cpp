@@ -33,8 +33,7 @@
 
 using namespace Trinity;
 
-void
-VisibleNotifier::SendToSelf()
+void VisibleNotifier::SendToSelf()
 {
     // at this moment i_clientGUIDs have guids that not iterate at grid level checks
     // but exist one case when this possible and object not out of range: transports
@@ -75,8 +74,7 @@ VisibleNotifier::SendToSelf()
         i_player.SendInitialVisiblePackets(*it);
 }
 
-void
-VisibleChangesNotifier::Visit(PlayerMapType &m)
+void VisibleChangesNotifier::Visit(PlayerMapType &m)
 {
     for (PlayerMapType::iterator iter=m.begin(); iter != m.end(); ++iter)
     {
@@ -87,23 +85,21 @@ VisibleChangesNotifier::Visit(PlayerMapType &m)
 
         if (!iter->getSource()->GetSharedVisionList().empty())
             for (SharedVisionList::const_iterator i = iter->getSource()->GetSharedVisionList().begin(); i != iter->getSource()->GetSharedVisionList().end(); ++i)
-                if ((*i)->GetFarsightTarget() == iter->getSource())
+                if ((*i)->HasFarsightVision() && (*i)->GetFarsightTarget() == iter->getSource())
                     (*i)->UpdateVisibilityOf(&i_object);
     }
 }
 
-void
-VisibleChangesNotifier::Visit(CreatureMapType &m)
+void VisibleChangesNotifier::Visit(CreatureMapType &m)
 {
     for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
         if(!iter->getSource()->GetSharedVisionList().empty())
             for(SharedVisionList::const_iterator i = iter->getSource()->GetSharedVisionList().begin(); i != iter->getSource()->GetSharedVisionList().end(); ++i)
-                if ((*i)->GetFarsightTarget() == iter->getSource())
+                if ((*i)->HasFarsightVision() && (*i)->GetFarsightTarget() == iter->getSource())
                     (*i)->UpdateVisibilityOf(&i_object);
 }
 
-void
-VisibleChangesNotifier::Visit(DynamicObjectMapType &m)
+void VisibleChangesNotifier::Visit(DynamicObjectMapType &m)
 {
     for (DynamicObjectMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
         if(IS_PLAYER_GUID(iter->getSource()->GetCasterGUID()))
@@ -135,8 +131,8 @@ void PlayerRelocationNotifier::Visit(PlayerMapType &m)
 
         i_player.UpdateVisibilityOf(plr,i_data,i_visibleNow);
 
-        WorldObject const* viewPoint = plr; //->GetFarsightTarget();
-        if (!viewPoint) viewPoint = plr;
+        WorldObject const* viewPoint = plr->GetFarsightTarget();
+        if (!viewPoint || !plr->HasFarsightVision()) viewPoint = plr;
 
         if (viewPoint->isNeedNotify(NOTIFY_VISIBILITY_CHANGED))
             continue;
@@ -166,10 +162,9 @@ void CreatureRelocationNotifier::Visit(PlayerMapType &m)
     for (PlayerMapType::iterator iter=m.begin(); iter != m.end(); ++iter)
     {
         Player * pl = iter->getSource();
-        WorldObject const* viewPoint = pl->GetFarsightTarget();
-        if (!viewPoint) viewPoint = pl;
 
-        if (!viewPoint->isNeedNotify(NOTIFY_VISIBILITY_CHANGED))
+        WorldObject const* viewPoint = pl->GetFarsightTarget();
+        if (!viewPoint || !pl->HasFarsightVision()) viewPoint = pl;
             pl->UpdateVisibilityOf(&i_creature);
 
         CreatureUnitRelocationWorker(&i_creature, pl);
@@ -215,8 +210,8 @@ void DelayedUnitRelocation::Visit(PlayerMapType &m)
     {
         Player * player = iter->getSource();
 
-        WorldObject const *viewPoint = player; //->GetFarsightTarget();
-        if (!viewPoint) viewPoint = player;
+        WorldObject const* viewPoint = player->GetFarsightTarget();
+        if (!viewPoint || !player->HasFarsightVision()) viewPoint = player;
 
         if (!viewPoint->isNeedNotify(NOTIFY_VISIBILITY_CHANGED))
             continue;
@@ -226,7 +221,6 @@ void DelayedUnitRelocation::Visit(PlayerMapType &m)
 
         CellPair pair2(Trinity::ComputeCellPair(viewPoint->GetPositionX(), viewPoint->GetPositionY()));
         Cell cell2(pair2);
-        //cell.SetNoCreate(); need load cells around viewPoint or player, that's why its commented
 
         PlayerRelocationNotifier relocate(*player);
         TypeContainerVisitor<PlayerRelocationNotifier, WorldTypeMapContainer > c2world_relocation(relocate);
@@ -325,8 +319,7 @@ void DynamicObjectUpdater::Visit(PlayerMapType &m)
         VisitHelper(itr->getSource());
 }
 
-void
-Deliverer::Visit(PlayerMapType &m)
+void Deliverer::Visit(PlayerMapType &m)
 {
     for (PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
@@ -345,8 +338,7 @@ Deliverer::Visit(PlayerMapType &m)
     }
 }
 
-void
-Deliverer::Visit(CreatureMapType &m)
+void Deliverer::Visit(CreatureMapType &m)
 {
     for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
@@ -363,8 +355,7 @@ Deliverer::Visit(CreatureMapType &m)
     }
 }
 
-void
-Deliverer::Visit(DynamicObjectMapType &m)
+void Deliverer::Visit(DynamicObjectMapType &m)
 {
     for (DynamicObjectMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
@@ -379,8 +370,7 @@ Deliverer::Visit(DynamicObjectMapType &m)
     }
 }
 
-void
-Deliverer::SendPacket(Player* plr)
+void Deliverer::SendPacket(Player* plr)
 {
     if (!plr)
         return;
@@ -401,14 +391,12 @@ Deliverer::SendPacket(Player* plr)
     }
 }
 
-void
-MessageDeliverer::VisitObject(Player* plr)
+void MessageDeliverer::VisitObject(Player* plr)
 {
     SendPacket(plr);
 }
 
-void
-MessageDistDeliverer::VisitObject(Player* plr)
+void MessageDistDeliverer::VisitObject(Player* plr)
 {
     if (!i_ownTeamOnly || (i_source.GetTypeId() == TYPEID_PLAYER && plr->GetTeam() == ((Player&)i_source).GetTeam()))
     {
@@ -448,4 +436,3 @@ bool CannibalizeObjectCheck::operator()(Corpse* u)
 
 template void ObjectUpdater::Visit<GameObject>(GameObjectMapType &);
 template void ObjectUpdater::Visit<DynamicObject>(DynamicObjectMapType &);
-

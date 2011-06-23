@@ -810,7 +810,7 @@ bool GameObject::isVisibleForInState(Player const* u, bool inVisibleList) const
 
     // check distance
     const WorldObject* viewPoint = u->GetFarsightTarget();
-    if (!viewPoint) viewPoint = u;
+    if (!viewPoint || !u->HasFarsightVision()) viewPoint = u;
 
     return IsWithinDistInMap(viewPoint, World::GetMaxVisibleDistanceForObject() + (inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), false);
 }

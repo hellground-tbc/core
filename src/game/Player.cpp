@@ -18416,7 +18416,7 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
 
     // If the player is currently channeling vision, update visibility from the target unit's location
     const WorldObject* viewPoint = GetFarsightTarget();
-    if (!viewPoint) viewPoint = u;
+    if (!viewPoint || !HasFarsightVision()) viewPoint = u;
 
     // different visible distance checks
     if (isInFlight())                                     // what see player in flight
@@ -18719,8 +18719,9 @@ void Player::UpdateObjectVisibility(bool forced)
 void Player::UpdateVisibilityForPlayer()
 {
     WorldObject const *viewPoint = GetFarsightTarget();
-    if (!viewPoint) viewPoint = this;
+    if (!viewPoint || !HasFarsightVision()) viewPoint = this;
 
+    // updates visibility of all objects around point of view for current player
     Trinity::VisibleNotifier notifier(*this);
     Cell::VisitAllObjects(viewPoint, notifier, GetMap()->GetVisibilityDistance());
     notifier.SendToSelf();   // send gathered data

@@ -1023,7 +1023,7 @@ void Group::UpdatePlayerOutOfRange(Player* pPlayer)
     for (GroupReference *itr = GetFirstMember(); itr != NULL; itr = itr->next())
     {
         player = itr->getSource();
-        if (player && player != pPlayer && !pPlayer->isVisiblefor (player))
+        if (player && player != pPlayer && !pPlayer->IsWithinDistInMap(player, pPlayer->GetMap()->GetVisibilityDistance())/* && !pPlayer->isVisiblefor(player)*/)
             player->GetSession()->SendPacket(&data);
     }
 }
