@@ -165,6 +165,8 @@ void CreatureRelocationNotifier::Visit(PlayerMapType &m)
 
         WorldObject const* viewPoint = pl->GetFarsightTarget();
         if (!viewPoint || !pl->HasFarsightVision()) viewPoint = pl;
+
+        if (!viewPoint->isNeedNotify(NOTIFY_VISIBILITY_CHANGED))
             pl->UpdateVisibilityOf(&i_creature);
 
         CreatureUnitRelocationWorker(&i_creature, pl);
