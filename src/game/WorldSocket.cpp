@@ -881,7 +881,8 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
                                 "mutereason "
                                 "FROM account_mute "
                                 "WHERE id = '%u' "
-                                "AND active = 1",
+                                "AND active = 1 "
+                                "ORDER BY unmutedate DESC LIMIT 1",
                                 id);
 
     time_t mutetime;
@@ -889,7 +890,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
 
     if (muteresult)
     {
-        Field* mutefields = result->Fetch ();
+        Field* mutefields = muteresult->Fetch ();
         mutetime = time_t(mutefields[0].GetUInt64());
         mutereason = mutefields[1].GetString();
     }
